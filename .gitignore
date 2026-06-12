@@ -1,0 +1,156 @@
+# ── Ported from the ai-agents monorepo root .gitignore, adapted to the
+# ── MeTTapedia layout (lean-projects/→lean/, mizar-projects/→mizar/).
+
+venv/
+venvs/
+__pycache__/
+*.pyc
+*.env
+
+*.backup
+
+*.tar
+*.tar.gz
+*.tgz
+*.zip
+
+.lake
+.lake-backup*/
+
+# Mizar build artifacts (running the Mizar verifier)
+*.aco
+*.ano
+*.atr
+*.cho
+*.dct
+*.dcx
+*.dfs
+*.ecl
+*.eid
+*.eno
+*.epr
+*.erd
+*.ere
+*.err
+*.esh
+*.eth
+*.evl
+*.fil
+*.frm
+*.frx
+*.idx
+*.irv
+*.log
+*.msx
+*.nol
+*.par
+*.prf
+*.ref
+*.sgl
+*.vcl
+*.wsx
+*.xml
+*.out
+
+# Dotfiles and dotdirs (agent scratch, caches, configs)
+# Use `git add -f` to force-track specific dotfiles if needed
+.*
+!.gitignore
+!.gitmodules
+!.gitattributes
+
+# Root-level temp/scratch prefixed with _
+/_*
+
+# Temp/build artifacts
+tmp/
+_test/
+
+# C build artifacts
+*.o
+*.stage0.o
+
+# Rust build targets
+target/
+target-*/
+
+# Experimental results, data, and scripts (regenerable)
+lean/mettapedia/results/
+lean/mettapedia/data/
+lean/mettapedia/scripts/
+lean/algorithms/lean-toolchain
+lean/mettapedia/Mettapedia/CategoricalLogic/lakefile.lean
+lean/mettapedia/Mettapedia/CategoricalLogic/lean-toolchain
+lean/mettapedia/Mettapedia/SetTheory/BorelDeterminacy/lakefile.lean
+lean/mettapedia/Mettapedia/SetTheory/BorelDeterminacy/lean-toolchain
+
+# External Lean deps (now git-pinned in lakefile.toml; if a local working
+# clone is ever placed back at these paths, keep it out of version control)
+lean/mettapedia/Mettapedia/external/CertifyingDatalog/
+lean/mettapedia/Mettapedia/external/exchangeability/
+lean/mettapedia/Mettapedia/external/provenance-lean/
+lean/mettapedia/Mettapedia/Logic/Foundation/
+lean/mettapedia/Mettapedia/Algebra/OrderedSemigroups/
+lean/mettapedia/Mettapedia/Metatheory/
+
+# Auto-generated conformance runner output
+*.jsonl
+
+# AI review bundles (copies of source for external review)
+GPT-Pro_Responses/
+ai_review_bundles/
+review_bundles/
+**/ai_review_bundles/
+**/gpt54_review_bundle/
+
+# 4cp (four color) project - archived/inactive scratch dirs
+mizar/4cp/theories/00_infrastructure/text/
+mizar/4cp/theories/00_curriculum/text/
+mizar/4cp/theories/00_infrastructure/old_first_draft/
+mizar/4cp/theories/*/text/
+mizar/4cp/theories/*/old_*/
+
+# Megalodon prover + large external theory libraries (Chad Brown's server /
+# separate repos) — local-only reference, never tracked
+megalodon/bin/
+megalodon/src/
+megalodon/examples/
+megalodon/mgw_test
+megalodon/secp256k1/
+megalodon/INSTALL
+megalodon/LICENSE
+megalodon/README
+megalodon/makebytecode
+megalodon/makeopt
+megalodon/Megalodon/
+megalodon/theory/metamath/mmmg/
+megalodon/theory/mizar/mmlmg/
+megalodon/_archive/
+
+# Block all markdown files (use git add -f for whitelisted files)
+*.md
+!README.md
+!megalodon/how-to-megalodon.md
+!megalodon/PNP_crux/RIGOROUS_ANALYSIS_REPORT.md
+!lean/mettapedia/EXTERNAL_REPOS.md
+!megalodon/theory/mizar/mml/README.md
+
+# LaTeX build artifacts
+*.aux
+*.fdb_latexmk
+*.fls
+*.toc
+*.synctex.gz
+*.xdv
+*.bbl
+*.blg
+
+# Agent scratch/archive artifacts
+_archive/
+_archive_logs/
+_archive_scratch/
+_archive_scripts/
+_archive_test_files/
+codex_scratch/
+*/_scratch/
+**/_scratch/
