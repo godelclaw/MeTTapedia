@@ -35,22 +35,22 @@ Mettapedia/
 
 - The toolchain uses Lean 4.28.0 (see lean-toolchain).
 - The toolchain uses Mathlib v4.28.0 (see lakefile.toml).
-- Local dependencies live in local subdirectories when needed.
+- External dependencies (Foundation, exchangeability, provenance,
+  OrderedSemigroups, Metatheory, CertifyingDatalog, mm-lean4) are git-pinned
+  in lakefile.toml and fetched by Lake; lake-manifest.json is the lock.
 
 ## Build
 
 ```bash
-cd lean-projects/mettapedia
-lake update && lake exe cache get
-
-export LAKE_JOBS=3
-nice -n 19 lake build
+cd lean/mettapedia
+lake exe cache get
+lake build
 ```
 
-- the build runs from lean-projects/mettapedia.
-- The first build runs lake update and lake exe cache get.
-- the build uses LAKE_JOBS=3 by default.
-- the build runs nice -n 19 lake build.
+- the build runs from lean/mettapedia.
+- The first build runs lake exe cache get (mathlib oleans).
+- prefer targeted `lake update <pkg>` over bare `lake update`; the bare form
+  can bump transitive pins (e.g. batteries) past the v4.28.0 toolchain.
 
 ## Notable subprojects
 
@@ -113,17 +113,17 @@ nice -n 19 lake build
 
 ## Lean to mettail-rust example
 
-The roundtrip script checks Lean export, Rust build, and one-step rewrite behavior.
-The benchmark script runs three rounds by default.
+The roundtrip and benchmark scripts live in the companion ai-agents workspace
+(`hyperon/mettail-rust`), outside this repository.
 
 ```bash
-cd ~/claude/hyperon/mettail-rust
-
+# in the ai-agents workspace:
+cd hyperon/mettail-rust
 ./scripts/roundtrip_mettaminimal.sh
 ./scripts/bench_mettaminimal_roundtrip.sh
 ```
 
-- the exporter is hyperon/mettail-rust/scripts/lean/ExportMeTTaMinimalRoundTrip.lean.
+- the exporter is hyperon/mettail-rust/scripts/lean/ExportMeTTaMinimalRoundTrip.lean (same workspace).
 
 ## Status review
 
@@ -147,4 +147,4 @@ rg -n "sorry" Mettapedia/
 - the policy uses actual source repos as upstream remotes and uses godelclaw only as a separate named remote when relevant.
 - the policy references EXTERNAL_REPOS.md for exact commands.
 
-Accountability trace: the CertifyingDatalog bridge at `/home/zar/claude/lean-projects/mettapedia/Mettapedia/Logic/LP/CertifyingDatalogBridge.lean` was reviewed by Codex 5.4 and Claude Code Opus 4.6.
+Accountability trace: the CertifyingDatalog bridge at `Mettapedia/Logic/LP/CertifyingDatalogBridge.lean` was reviewed by Codex 5.4 and Claude Code Opus 4.6.
