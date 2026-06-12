@@ -19,25 +19,29 @@ name = "mathlib"
 scope = "leanprover-community"
 rev = "v4.28.0"
 
-# Eric Luap's OrderedSemigroups (local dependency)
+# Eric Luap's OrderedSemigroups (pinned fork)
 [[require]]
 name = "ordered_semigroups"
-path = "Mettapedia/Algebra/OrderedSemigroups"
+git = "https://github.com/zariuq/OrderedSemigroups.git"
+rev = "63e9c6c3457420c16749837102966a5c32f27825"
 
-# Foundation (local dependency)
+# Foundation (pinned fork, mathlib-4.28 port on branch `mettapedia`)
 [[require]]
 name = "Foundation"
-path = "Mettapedia/Logic/Foundation"
+git = "https://github.com/zariuq/Foundation.git"
+rev = "c79048ee84be6e86f5a6d05f145576ecbe8379d1"
 
-# Exchangeability (local dependency; includes ForMathlib support library)
+# Exchangeability (pinned fork, branch `mettapedia`; includes ForMathlib support library)
 [[require]]
 name = "exchangeability"
-path = "Mettapedia/external/exchangeability"
+git = "https://github.com/zariuq/exchangeability.git"
+rev = "98f6c86e6131df562cc2f715c2e93b70b978c689"
 
-# Provenance semiring library (local dependency)
+# Provenance semiring library (pinned fork)
 [[require]]
 name = "provenance"
-path = "Mettapedia/external/provenance-lean"
+git = "https://github.com/zariuq/provenance-lean.git"
+rev = "79aca19592af945e08f2d204dc1545a13849af3f"
 
 # BorelDeterminacy (local dependency)
 [[require]]
@@ -49,10 +53,11 @@ path = "Mettapedia/SetTheory/BorelDeterminacy"
 name = "catLogic"
 path = "Mettapedia/CategoricalLogic"
 
-# Metatheory (local dependency)
+# Metatheory (pinned fork)
 [[require]]
 name = "Metatheory"
-path = "Mettapedia/Metatheory"
+git = "https://github.com/zariuq/Metatheory.git"
+rev = "5ebc2dcecf05787432a18f96d6202518b3d5a8db"
 
 # Pure algorithm checker kernels (Init-only)
 [[require]]
@@ -69,12 +74,14 @@ path = "../batteries/mettail-core"
 name = "gf_core"
 path = "../batteries/gf-core"
 
-# CertifyingDatalog (Tantow et al., ITP 2025) — local dependency
+# CertifyingDatalog (Tantow et al., ITP 2025) — pinned fork
 [[require]]
 name = "certifyingDatalog"
-path = "Mettapedia/external/CertifyingDatalog"
+git = "https://github.com/zariuq/CertifyingDatalog.git"
+rev = "a269a8fdd097afad2a12081a04263214762faf1b"
 
-# Verified Metamath checker (local dependency)
+# Verified Metamath checker (pinned, branch `verified-mm-latest`)
 [[require]]
 name = "mm-lean4"
-path = "../../hyperon/metamath/mm-lean4"
+git = "https://github.com/zariuq/mm-lean4.git"
+rev = "2c149b810396b80c29e4e3fb7890bc41794235bd"
