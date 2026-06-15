@@ -38,5 +38,5 @@
 
 - `../../AIrxiv/` — Published/archived preprints
 - `../../literature/` — External reference literature (hyperseed, 4CP, etc.)
-- `../../lean-projects/ramsey36/related_literature/` — Ramsey theory references
-- `../../lean-projects/fourcolor/FourColor/Goertzel_4CP/` — Four color proof papers
+- `../../Mettapedia/lean/ramsey36/related_literature/` — Ramsey theory references
+- `../../Mettapedia/lean/fourcolor/FourColor/Goertzel_4CP/` — Four color proof papers

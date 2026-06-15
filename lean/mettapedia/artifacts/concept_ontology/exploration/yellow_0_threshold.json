@@ -22,7 +22,7 @@
     "max_count": 8,
     "name": "yellow_0",
     "objects": 98,
-    "source": "/home/zar/claude/lean-projects/mettapedia/artifacts/concept_ontology/mizar_family/yellow_0.json"
+    "source": "/home/zar/claude/Mettapedia/lean/mettapedia/artifacts/concept_ontology/mizar_family/yellow_0.json"
   },
   "gate_family": {
     "concept_count_by_gate": [

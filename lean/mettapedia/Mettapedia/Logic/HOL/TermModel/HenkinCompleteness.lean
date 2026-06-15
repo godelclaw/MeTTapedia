@@ -83,5 +83,29 @@ theorem henkin_model_exists {T : ClosedTheorySet (WithParams Const)}
   exact ⟨N, fun ψ hψ => hN ψ (Set.mem_union_left _ (subset_witnessLimit T enum hψ)),
     fun ψ hψ => hN ψ (Set.mem_union_right _ hψ)⟩
 
+/-- Public corollary in the honest classical/Henkin regime: if a theory over
+`WithParams Const` is already parameter-free and already contains the excluded-middle
+schema, then ordinary consistency of that theory is enough to obtain a Henkin model of
+the theory itself.  The witnessing expansion is still used internally, but no extra
+consistency hypothesis beyond the original classical theory is needed. -/
+theorem henkin_model_exists_of_consistent_classical
+    {T : ClosedTheorySet (WithParams Const)} (enum : Nat → Body Const)
+    (henum : ∀ b : Body Const, ∃ n, enum n = b)
+    (hCons : Consistent (Const := WithParams Const) T)
+    (hT0 : ∀ ψ ∈ T, ∀ (σ : Ty Base) (k : Nat), NoConstOccurrence (param σ k) ψ)
+    (hEM : ∀ ψ ∈ EMSchema Const, ψ ∈ T) :
+    ∃ N : HenkinModel.{u, v, v} Base (WithParams Const),
+      ∀ ψ ∈ T, N.models ψ := by
+  have hWitness : Consistent (Const := WithParams Const) (witnessLimit T enum) :=
+    witnessLimit_consistent T enum hCons hT0
+  have hEMsub : EMSchema Const ⊆ witnessLimit T enum := by
+    intro ψ hψ
+    exact subset_witnessLimit T enum (hEM ψ hψ)
+  have hClassicalWitness :
+      Consistent (Const := WithParams Const) (witnessLimit T enum ∪ EMSchema Const) := by
+    simpa [Set.union_eq_left.2 hEMsub] using hWitness
+  obtain ⟨N, hN, _hEMN⟩ := henkin_model_exists enum henum hClassicalWitness
+  exact ⟨N, hN⟩
+
 end ClosedTheorySet
 end Mettapedia.Logic.HOL

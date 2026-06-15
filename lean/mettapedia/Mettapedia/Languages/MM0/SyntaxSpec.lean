@@ -168,7 +168,7 @@ structure MM0SyntaxAuthorityProfile where
   primaryAuthoritySource : String := "mm0/mm0.md (grammar section)"
   cReferenceVerifier : String := "mm0/mm0-c/verifier.c"
   rustReferenceCompiler : String := "mm0/mm0-rs/ (mm0-rs compile)"
-  sharedArtifactSchema : String := "lean-projects/mettapedia/artifacts/parser_artifact_schema.json"
+  sharedArtifactSchema : String := "Mettapedia/lean/mettapedia/artifacts/parser_artifact_schema.json"
   notes : List String :=
     [ "Full MM0 has two-stage parsing: primary (.mm0 structure) + secondary (math-string notation)."
     , "The MMB binary format (.mmb) is the trust boundary for proof verification."

@@ -1,8 +1,12 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-CETTA=${CETTA:-/home/zar/claude/hyperon/CeTTa/cetta}
-CETTA_TEST_DIR=${CETTA_TEST_DIR:-/home/zar/claude/hyperon/CeTTa/tests}
+script_dir=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
+metta_ref_root=$(CDPATH= cd -- "$script_dir/.." && pwd)
+workspace_root=$(CDPATH= cd -- "$metta_ref_root/../../.." && pwd)
+
+CETTA=${CETTA:-"$workspace_root/hyperon/CeTTa/cetta"}
+CETTA_TEST_DIR=${CETTA_TEST_DIR:-"$workspace_root/hyperon/CeTTa/tests"}
 
 if [[ ! -x "$CETTA" ]]; then
   echo "missing executable: $CETTA" >&2

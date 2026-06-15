@@ -1,5 +1,5 @@
 import Mettapedia.Logic.PLNProofCalculus
-import Mettapedia.Logic.Foundation.Foundation.Propositional.Tait.Calculus
+import Foundation.Propositional.Tait.Calculus
 
 /-!
 # Bridge: PLN Proof Calculus ↔ Foundation's Tait Calculus

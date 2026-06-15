@@ -302,7 +302,7 @@ concrete DocTextClaimsEng of DocTextClaims = {
     Clm_00297 = {s = "mm-lean4 formalizes a Metamath verifier in Lean 4"} ;
     Clm_00298 = {s = "premise experiments use Probabilistic Logic Networks on the extended MPTP 5k dataset"} ;
     Clm_00299 = {s = "selectors run PeTTa inference"} ;
-    Clm_00300 = {s = "the build runs from lean-projects/mettapedia"} ;
+    Clm_00300 = {s = "the build runs from Mettapedia/lean/mettapedia"} ;
     Clm_00301 = {s = "the build runs nice -n 19 lake build"} ;
     Clm_00302 = {s = "the build uses LAKE_JOBS=3 by default"} ;
     Clm_00303 = {s = "the build uses a 6 GiB memory cap via ulimit -Sv 6291456"} ;

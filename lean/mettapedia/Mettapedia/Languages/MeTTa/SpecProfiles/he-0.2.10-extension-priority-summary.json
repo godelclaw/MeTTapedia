@@ -1,5 +1,5 @@
 {
-  "matrix_csv": "/home/zar/claude/lean-projects/mettapedia/Mettapedia/Languages/MeTTa/SpecProfiles/he-0.2.10-feature-coverage-matrix.csv",
+  "matrix_csv": "/home/zar/claude/Mettapedia/lean/mettapedia/Mettapedia/Languages/MeTTa/SpecProfiles/he-0.2.10-feature-coverage-matrix.csv",
   "stdlib_path": "/home/zar/claude/hyperon/hyperon-experimental/lib/src/metta/runner/stdlib/stdlib.metta",
   "total_extension_features": 176,
   "runtime_only_extensions": 131,

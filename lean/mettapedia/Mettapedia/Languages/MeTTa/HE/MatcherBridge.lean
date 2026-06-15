@@ -1400,6 +1400,160 @@ theorem GroundBindings.hasLoop_false {b : Bindings} (hb : GroundBindings b) :
       unfold Mettapedia.Languages.MeTTa.HE.Bindings.hasLoop.hasLoopFrom
       simp [Bindings.lookup, hlookup]
 
+private def collectVarsListAux (es : List Atom) (fuel : Nat) : List String :=
+  match es with
+  | [] => []
+  | a :: as => collectVars a fuel ++ collectVarsListAux as fuel
+
+private theorem collectVarsList_eq_aux (es : List Atom) (fuel : Nat) :
+    collectVars.collectVarsList es fuel = collectVarsListAux es fuel := by
+  induction es with
+  | nil =>
+      rfl
+  | cons a as ih =>
+      simp [collectVars.collectVarsList, collectVarsListAux, ih]
+
+private theorem collectVars_expr_eq_aux (es : List Atom) (fuel : Nat) :
+    collectVars (.expression es) (fuel + 1) = collectVarsListAux es fuel := by
+  simp [collectVars, collectVarsList_eq_aux]
+
+/-- On ground matcher bindings, `Bindings.apply` depends only on the lookups
+of variables that syntactically occur in the atom being substituted.
+
+Positive example:
+- if `b₂` agrees with `b₁` on every variable in `body`, then applying either
+  bindings set to `body` yields the same substituted atom.
+
+Negative example:
+- this theorem is intentionally restricted to *ground* `b₁`; without that,
+  a variable in `body` could resolve through an extra indirection not
+  mentioned syntactically in `body` itself. -/
+private theorem apply_eq_of_lookup_eq_on_collectVars :
+    ∀ fuel : Nat,
+      (∀ {a : Atom} {b₁ b₂ : Bindings},
+        GroundBindings b₁ →
+        (∀ v, v ∈ collectVars a fuel → b₂.lookup v = b₁.lookup v) →
+        b₂.apply a fuel = b₁.apply a fuel) ∧
+      (∀ {es : List Atom} {b₁ b₂ : Bindings},
+        GroundBindings b₁ →
+        (∀ v, v ∈ collectVarsListAux es fuel → b₂.lookup v = b₁.lookup v) →
+        es.map (b₂.apply · fuel) = es.map (b₁.apply · fuel)) := by
+  intro fuel
+  induction fuel with
+  | zero =>
+      refine ⟨?_, ?_⟩
+      · intro a b₁ b₂ _ _
+        simp [Bindings.apply]
+      · intro es b₁ b₂ _ _
+        induction es with
+        | nil => rfl
+        | cons a as ih => simp [Bindings.apply]
+  | succ n ih =>
+      obtain ⟨ihAtom, ihList⟩ := ih
+      have hAtom :
+          ∀ {a : Atom} {b₁ b₂ : Bindings},
+            GroundBindings b₁ →
+            (∀ v, v ∈ collectVars a (n + 1) → b₂.lookup v = b₁.lookup v) →
+            b₂.apply a (n + 1) = b₁.apply a (n + 1) := by
+        intro a b₁ b₂ hb hagree
+        cases a with
+        | symbol s =>
+            simp [Bindings.apply]
+        | grounded g =>
+            simp [Bindings.apply]
+        | var v =>
+            have hlookEq : b₂.lookup v = b₁.lookup v := by
+              exact hagree v (by simp [collectVars])
+            cases h₁ : b₁.lookup v with
+            | none =>
+                have h₂ : b₂.lookup v = none := by
+                  rw [h₁] at hlookEq
+                  exact hlookEq
+                cases n with
+                | zero =>
+                    simp [Bindings.apply, Bindings.resolve]
+                | succ m =>
+                    simp [Bindings.apply, Bindings.resolve, h₁, h₂]
+            | some val =>
+                have h₂ : b₂.lookup v = some val := by
+                  rw [h₁] at hlookEq
+                  exact hlookEq
+                have hground : GroundAtom val := lookup_ground hb h₁
+                cases val with
+                | var w =>
+                    exact (GroundAtom.not_var hground).elim
+                | symbol s =>
+                    cases n with
+                    | zero =>
+                        simp [Bindings.apply, Bindings.resolve]
+                    | succ m =>
+                        simp [Bindings.apply, Bindings.resolve, h₁, h₂]
+                | grounded g =>
+                    cases n with
+                    | zero =>
+                        simp [Bindings.apply, Bindings.resolve]
+                    | succ m =>
+                        simp [Bindings.apply, Bindings.resolve, h₁, h₂]
+                | expression es =>
+                    cases n with
+                    | zero =>
+                        simp [Bindings.apply, Bindings.resolve]
+                    | succ m =>
+                        simp [Bindings.apply, Bindings.resolve, h₁, h₂]
+        | expression es =>
+            have hvars :
+                ∀ v, v ∈ collectVarsListAux es n → b₂.lookup v = b₁.lookup v := by
+              intro v hv
+              exact hagree v (by simpa [collectVars_expr_eq_aux es n] using hv)
+            have hmap := ihList (es := es) (b₁ := b₁) (b₂ := b₂) hb hvars
+            simpa [Bindings.apply] using congrArg Atom.expression hmap
+      have hList :
+          ∀ {es : List Atom} {b₁ b₂ : Bindings},
+            GroundBindings b₁ →
+            (∀ v, v ∈ collectVarsListAux es (n + 1) → b₂.lookup v = b₁.lookup v) →
+            es.map (b₂.apply · (n + 1)) = es.map (b₁.apply · (n + 1)) := by
+        intro es b₁ b₂ hb hagree
+        induction es with
+        | nil =>
+            rfl
+        | cons a as ihEs =>
+            have hHead :
+                b₂.apply a (n + 1) = b₁.apply a (n + 1) := by
+              apply hAtom hb
+              intro v hv
+              exact hagree v (by simp [collectVarsListAux, hv])
+            have hTail :
+                as.map (b₂.apply · (n + 1)) = as.map (b₁.apply · (n + 1)) := by
+              exact ihEs
+                (fun v hv => hagree v (by simp [collectVarsListAux, hv]))
+            simp [hHead, hTail]
+      exact ⟨hAtom, hList⟩
+
+private theorem apply_eq_of_lookup_eq_on_collectVars_atom
+    {a : Atom} {b₁ b₂ : Bindings} {fuel : Nat}
+    (hb₁ : GroundBindings b₁)
+    (hagree : ∀ v, v ∈ collectVars a fuel → b₂.lookup v = b₁.lookup v) :
+    b₂.apply a fuel = b₁.apply a fuel :=
+  (apply_eq_of_lookup_eq_on_collectVars fuel).1 hb₁ hagree
+
+/-- If a deterministic no-equalities merge adds only bindings on variable
+names absent from a body, then substituting that body is unchanged compared
+to substituting with the original ground matcher bindings alone. -/
+private theorem apply_eq_of_mergeGround_irrel
+    {body : Atom} {mb qb merged : Bindings} {fuel : Nat}
+    (hmb : GroundBindings mb)
+    (hqbEq : qb.equalities = [])
+    (hqbKeys : (qb.assignments.map Prod.fst).Nodup)
+    (hmerge : mergeGround? mb qb = some merged)
+    (habsent : ∀ v, v ∈ collectVars body fuel → qb.lookup v = none) :
+    merged.apply body fuel = mb.apply body fuel := by
+  apply apply_eq_of_lookup_eq_on_collectVars_atom hmb
+  intro v hv
+  have hspec :=
+    mergeGround_lookup_spec (left := mb) (right := qb) (out := merged)
+      hqbEq hqbKeys hmerge v
+  simpa [habsent v hv] using hspec
+
 /-- Once the factorization theorem is known for singleton seeds, it lifts
 immediately to arbitrary seed lists via `matchAtomsList_seedwise`. -/
 private theorem matchAtomsList_lift_singleton_factor
@@ -3536,6 +3690,55 @@ structure UnifyGroundRealization (space : Space) (d : GroundedDispatch) where
         (.expression [.symbol "unify", target, pattern, thenBranch, elseBranch])
         Atom.undefinedType Bindings.empty
         (elseBranch, Bindings.empty)
+  noMatchFollowStable :
+    ∀ {target pattern thenBranch elseBranch fuel r},
+      GroundAtom target →
+      simpleMatch pattern target Bindings.empty fuel = none →
+      EvalAtom space d elseBranch Atom.undefinedType Bindings.empty r →
+      EvalAtomStablyReaches space d
+        (.expression [.symbol "unify", target, pattern, thenBranch, elseBranch])
+        Atom.undefinedType Bindings.empty r
+
+/-- Stronger executable-boundary realization for the equation-helper route:
+in addition to the empty-seed `unify` outcomes above, some sugar wrappers
+need the evaluator to realize the same official `unify` behavior when the
+incoming bindings are a non-empty seed supplied by an outer equation query.
+
+Positive example:
+- a seeded official `unify_match` result under query bindings still evaluates
+  to the merged substituted success branch.
+
+Negative example:
+- a seeded official `unify_no_match` result still returns its else branch
+  under the same incoming bindings, rather than silently resetting to empty. -/
+structure UnifyGroundSeededRealization (space : Space) (d : GroundedDispatch)
+    extends UnifyGroundRealization space d where
+  matchStableSeeded :
+    ∀ {seed target pattern thenBranch elseBranch mb merged fuel},
+      GroundAtom target →
+      mb ∈ matchAtoms target pattern fuel →
+      merged ∈ mergeBindings mb seed fuel →
+      merged.hasLoop = false →
+      EvalAtomStablyReaches space d
+        (.expression [.symbol "unify", target, pattern, thenBranch, elseBranch])
+        Atom.undefinedType seed
+        (merged.applyDefault thenBranch, merged)
+  noMatchStableSeeded :
+    ∀ {seed target pattern thenBranch elseBranch fuel},
+      GroundAtom target →
+      matchAtoms target pattern fuel = [] →
+      EvalAtomStablyReaches space d
+        (.expression [.symbol "unify", target, pattern, thenBranch, elseBranch])
+        Atom.undefinedType seed
+        (elseBranch, seed)
+  noMatchFollowStableSeeded :
+    ∀ {seed target pattern thenBranch elseBranch fuel r},
+      GroundAtom target →
+      matchAtoms target pattern fuel = [] →
+      EvalAtom space d elseBranch Atom.undefinedType seed r →
+      EvalAtomStablyReaches space d
+        (.expression [.symbol "unify", target, pattern, thenBranch, elseBranch])
+        Atom.undefinedType seed r
 
 /-- Spending the realization boundary on the success branch: a successful
 coarse ground match yields the public declarative `EvalAtom` judgment for the
@@ -3574,6 +3777,114 @@ theorem evalAtom_realizes_unify_no_match_ground
     Atom.undefinedType Bindings.empty
     (elseBranch, Bindings.empty)
     (hReal.noMatchStable hground hmatch)
+
+/-- Stronger miss-side consumer: if the else branch itself officially
+evaluates to `r`, then the whole `unify` expression can stably realize the
+same result on the no-match branch.  This is the recursive form that
+`switch-internal` needs: its else branch is not a terminal atom but a live
+`chain` program. -/
+theorem evalAtom_realizes_unify_no_match_ground_of_else
+    {space : Space} {d : GroundedDispatch}
+    (hReal : UnifyGroundRealization space d)
+    {target pattern thenBranch elseBranch : Atom}
+    {fuel : Nat} {r : ResultPair}
+    (hground : GroundAtom target)
+    (hmatch : simpleMatch pattern target Bindings.empty fuel = none)
+    (h_else :
+      EvalAtom space d elseBranch Atom.undefinedType Bindings.empty r) :
+    EvalAtom space d
+      (.expression [.symbol "unify", target, pattern, thenBranch, elseBranch])
+      Atom.undefinedType Bindings.empty
+      r :=
+  evalAtomStablyReaches_to_EvalAtom space d
+    (.expression [.symbol "unify", target, pattern, thenBranch, elseBranch])
+    Atom.undefinedType Bindings.empty
+    r
+    (hReal.noMatchFollowStable hground hmatch h_else)
+
+/-- Seeded consumer of the stronger evaluator boundary: an official ground
+`unify_match` witness can be spent under any incoming seed bindings, not just
+the empty seed.  This is the exact form the stdlib equation-helper wrappers
+need after `queryEquations` has contributed its fresh local bindings. -/
+theorem evalAtom_realizes_unify_match_ground_seeded
+    {space : Space} {d : GroundedDispatch}
+    (hReal : UnifyGroundSeededRealization space d)
+    {seed mb merged : Bindings}
+    {target pattern thenBranch elseBranch : Atom} {fuel : Nat}
+    (hground : GroundAtom target)
+    (hmatch : mb ∈ matchAtoms target pattern fuel)
+    (hmerge : merged ∈ mergeBindings mb seed fuel)
+    (h_no_loop : merged.hasLoop = false) :
+    EvalAtom space d
+      (.expression [.symbol "unify", target, pattern, thenBranch, elseBranch])
+      Atom.undefinedType seed
+      (merged.applyDefault thenBranch, merged) :=
+  evalAtomStablyReaches_to_EvalAtom space d
+    (.expression [.symbol "unify", target, pattern, thenBranch, elseBranch])
+    Atom.undefinedType seed
+    (merged.applyDefault thenBranch, merged)
+    (hReal.matchStableSeeded hground hmatch hmerge h_no_loop)
+
+/-- Seeded no-match consumer of the stronger evaluator boundary: an official
+ground `unify_no_match` witness can also be spent under non-empty incoming
+bindings.  This is the equation-helper companion to the empty-seed theorem
+above. -/
+theorem evalAtom_realizes_unify_no_match_ground_seeded
+    {space : Space} {d : GroundedDispatch}
+    (hReal : UnifyGroundSeededRealization space d)
+    {seed : Bindings}
+    {target pattern thenBranch elseBranch : Atom} {fuel : Nat}
+    (hground : GroundAtom target)
+    (hmatch : matchAtoms target pattern fuel = []) :
+    EvalAtom space d
+      (.expression [.symbol "unify", target, pattern, thenBranch, elseBranch])
+      Atom.undefinedType seed
+      (elseBranch, seed) :=
+  evalAtomStablyReaches_to_EvalAtom space d
+    (.expression [.symbol "unify", target, pattern, thenBranch, elseBranch])
+    Atom.undefinedType seed
+    (elseBranch, seed)
+    (hReal.noMatchStableSeeded hground hmatch)
+
+/-- Seeded recursive miss-side consumer of the stronger evaluator boundary:
+if the else branch itself officially evaluates under the same seed bindings,
+the whole seeded `unify` expression can realize that same result. -/
+theorem evalAtom_realizes_unify_no_match_ground_of_else_seeded
+    {space : Space} {d : GroundedDispatch}
+    (hReal : UnifyGroundSeededRealization space d)
+    {seed : Bindings}
+    {target pattern thenBranch elseBranch : Atom}
+    {fuel : Nat} {r : ResultPair}
+    (hground : GroundAtom target)
+    (hmatch : matchAtoms target pattern fuel = [])
+    (h_else :
+      EvalAtom space d elseBranch Atom.undefinedType seed r) :
+    EvalAtom space d
+      (.expression [.symbol "unify", target, pattern, thenBranch, elseBranch])
+      Atom.undefinedType seed
+      r :=
+  evalAtomStablyReaches_to_EvalAtom space d
+    (.expression [.symbol "unify", target, pattern, thenBranch, elseBranch])
+    Atom.undefinedType seed
+    r
+    (hReal.noMatchFollowStableSeeded hground hmatch h_else)
+
+/-- Seeded specialization for `let`'s `unify` rhs.  This is the missing
+equation-helper form of the already-landed empty-seed consumer. -/
+theorem evalAtom_realizes_let_subst_ground_seeded
+    {space : Space} {d : GroundedDispatch}
+    (hReal : UnifyGroundSeededRealization space d)
+    {seed mb merged : Bindings}
+    {pt value body : Atom} {fuel : Nat}
+    (hground : GroundAtom value)
+    (hmatch : mb ∈ matchAtoms value pt fuel)
+    (hmerge : merged ∈ mergeBindings mb seed fuel)
+    (h_no_loop : merged.hasLoop = false) :
+    EvalAtom space d
+      (.expression [.symbol "unify", value, pt, body, Atom.empty])
+      Atom.undefinedType seed
+      (merged.applyDefault body, merged) :=
+  evalAtom_realizes_unify_match_ground_seeded hReal hground hmatch hmerge h_no_loop
 
 /-- Realized evaluator form of the `let` substitution half on the ground
 fragment.  This is the first surface-sugar consumer of the explicit `unify`
@@ -3678,7 +3989,57 @@ private theorem evalAtom_let_head_typed
   · simp [letFunctionType, getMetaType, Atom.atomType,
       Atom.symbolType, Atom.undefinedType, Atom.variableType]
   · rw [typeCast, h_types]
-    native_decide
+    have hmatch : matchAtoms letFunctionType letFunctionType 10 = [Bindings.empty] := by
+      native_decide
+    have hmerge : mergeBindings Bindings.empty Bindings.empty 10 = [Bindings.empty] := by
+      simpa using mergeBindings_empty_right Bindings.empty 9
+    have hflat :
+        List.flatMap (fun mb => mergeBindings Bindings.empty mb 10)
+          (matchAtoms letFunctionType letFunctionType 10) = [Bindings.empty] := by
+      rw [hmatch]
+      simp [hmerge]
+    have hmt : matchTypes letFunctionType letFunctionType Bindings.empty 10 = [Bindings.empty] := by
+      unfold matchTypes
+      have hcond :
+          (letFunctionType == Atom.undefinedType || letFunctionType == Atom.atomType ||
+              letFunctionType == Atom.undefinedType || letFunctionType == Atom.atomType) = false := by
+        native_decide
+      simp [hcond, hflat]
+    rw [typeCast.typeCastLoop, hmt]
+    simp
+
+/-- Seeded companion to `evalAtom_let_head_typed`: the typed `let` head
+evaluates to itself under any incoming bindings thread, not just
+`Bindings.empty`.  This is the head-side boundary the source-progress half
+of `HES_Let` will need once value evaluation has already shifted the
+bindings thread. -/
+private theorem evalAtom_let_head_typed_seeded
+    {space : Space} {d : GroundedDispatch} {seed : Bindings}
+    (h_types : getAtomTypes space (.symbol "let") = [letFunctionType]) :
+    EvalAtom space d (.symbol "let") letFunctionType seed
+      (.symbol "let", seed) := by
+  refine EvalAtom.type_cast _ _ _ _ 10 rfl ?_ (Or.inl rfl) ?_
+  · simp [letFunctionType, getMetaType, Atom.atomType,
+      Atom.symbolType, Atom.undefinedType, Atom.variableType]
+  · rw [typeCast, h_types]
+    have hmatch : matchAtoms letFunctionType letFunctionType 10 = [Bindings.empty] := by
+      native_decide
+    have hmerge : mergeBindings seed Bindings.empty 10 = [seed] := by
+      simpa using mergeBindings_empty_right seed 9
+    have hflat :
+        List.flatMap (fun mb => mergeBindings seed mb 10)
+          (matchAtoms letFunctionType letFunctionType 10) = [seed] := by
+      rw [hmatch]
+      simp [hmerge]
+    have hmt : matchTypes letFunctionType letFunctionType seed 10 = [seed] := by
+      unfold matchTypes
+      have hcond :
+          (letFunctionType == Atom.undefinedType || letFunctionType == Atom.atomType ||
+              letFunctionType == Atom.undefinedType || letFunctionType == Atom.atomType) = false := by
+        native_decide
+      simp [hcond, hflat]
+    rw [typeCast.typeCastLoop, hmt]
+    simp
 
 /-- Any atom can be evaluated against the expected type `Atom`, producing
 itself with unchanged bindings. -/
@@ -3731,6 +4092,46 @@ private theorem interpretArgs_let_self
     h_pt (Or.inr rfl) h_tail_value ?_
   exact isEmptyOrError_expr_false [body] h_value_nerr
 
+/-- Seeded companion to `interpretArgs_let_self`: the three `let` arguments
+interpret to themselves under an arbitrary incoming bindings thread when the
+value is in the quiescent self-evaluation fragment. -/
+private theorem interpretArgs_let_self_seeded
+    {space : Space} {d : GroundedDispatch} {fuel : Nat}
+    {pt value body : Atom} {seed : Bindings}
+    (h_value_nerr : value ≠ Atom.symbol "Error")
+    (h_body_nerr : body ≠ Atom.symbol "Error")
+    (h_value_q : SelfEvalQuiescent space d fuel value) :
+    InterpretArgs space d [pt, value, body]
+      [Atom.atomType, Atom.undefinedType, Atom.atomType]
+      seed
+      (.expression [pt, value, body], seed) := by
+  have h_pt : EvalAtom space d pt Atom.atomType seed (pt, seed) :=
+    evalAtom_atom_type pt seed
+  have h_value : EvalAtom space d value Atom.undefinedType seed
+      (value, seed) :=
+    selfEval_of_quiescent value h_value_q seed
+  have h_body : EvalAtom space d body Atom.atomType seed
+      (body, seed) :=
+    evalAtom_atom_type body seed
+  have h_tail_body : InterpretArgs space d [body] [Atom.atomType]
+      seed (.expression [body], seed) := by
+    exact InterpretArgs.cons_ok body [] Atom.atomType [] seed
+      (body, seed) (Atom.unit, seed)
+      h_body (Or.inr rfl) InterpretArgs.nil rfl
+  have h_tail_value : InterpretArgs space d [value, body]
+      [Atom.undefinedType, Atom.atomType] seed
+      (.expression [value, body], seed) := by
+    refine InterpretArgs.cons_ok value [body] Atom.undefinedType
+      [Atom.atomType] seed
+      (value, seed) (.expression [body], seed)
+      h_value (Or.inr rfl) h_tail_body ?_
+    exact isEmptyOrError_expr_false [] h_body_nerr
+  refine InterpretArgs.cons_ok pt [value, body] Atom.atomType
+    [Atom.undefinedType, Atom.atomType] seed
+    (pt, seed) (.expression [value, body], seed)
+    h_pt (Or.inr rfl) h_tail_value ?_
+  exact isEmptyOrError_expr_false [body] h_value_nerr
+
 /-- The official typed function-path shell for the verbatim upstream `let`
 surface form on the certified fragment.  This is the outer function wrapper
 that the later `HES_Let` theorem will spend before taking the equation-match
@@ -3763,6 +4164,127 @@ theorem interpretFunction_let_self
     rfl rfl h_head rfl h_tail ?_
   exact isEmptyOrError_expr_false (value :: [body]) h_pt_nerr
 
+/-- Seeded typed function-path shell for the verbatim upstream `let` surface
+form.  This is the incoming-bindings companion to `interpretFunction_let_self`
+that the source-progress side of `HES_Let` will need after the value
+evaluation has already produced a non-empty bindings thread. -/
+theorem interpretFunction_let_self_seeded
+    {space : Space} {d : GroundedDispatch} {fuel : Nat}
+    {pt value body : Atom} {seed : Bindings}
+    (h_types : getAtomTypes space (.symbol "let") = [letFunctionType])
+    (h_pt_nerr : pt ≠ Atom.symbol "Error")
+    (h_value_nerr : value ≠ Atom.symbol "Error")
+    (h_body_nerr : body ≠ Atom.symbol "Error")
+    (h_value_q : SelfEvalQuiescent space d fuel value) :
+    InterpretFunction space d (letExpr pt value body)
+      letFunctionType Atom.undefinedType seed
+      (letExpr pt value body, seed) := by
+  have h_head : EvalAtom space d (.symbol "let") letFunctionType seed
+      (.symbol "let", seed) :=
+    evalAtom_let_head_typed_seeded h_types
+  have h_tail : InterpretArgs space d [pt, value, body]
+      [Atom.atomType, Atom.undefinedType, Atom.atomType]
+      seed
+      (.expression [pt, value, body], seed) :=
+    interpretArgs_let_self_seeded h_value_nerr h_body_nerr h_value_q
+  refine InterpretFunction.head_ok_tail_ok
+    (letExpr pt value body) letFunctionType Atom.undefinedType seed
+    (.symbol "let") [pt, value, body]
+    [Atom.atomType, Atom.undefinedType, Atom.atomType]
+    (.symbol "let", seed)
+    (.expression [pt, value, body], seed)
+    rfl rfl h_head rfl h_tail ?_
+  exact isEmptyOrError_expr_false (value :: [body]) h_pt_nerr
+
+/-- Source-progress companion to the quiescent `let` shell: if the bound
+value has already been officially evaluated to a non-empty/non-error atom,
+then the `let` function path rebuilds around that evaluated value and threads
+its bindings forward into the body position. -/
+private theorem interpretFunction_let_of_value_eval_ok
+    {space : Space} {d : GroundedDispatch}
+    {pt value body : Atom} {valueResult : ResultPair}
+    (h_types : getAtomTypes space (.symbol "let") = [letFunctionType])
+    (h_pt_nerr : pt ≠ Atom.symbol "Error")
+    (h_value_nerr : valueResult.1 ≠ Atom.symbol "Error")
+    (h_body_nerr : body ≠ Atom.symbol "Error")
+    (h_value : EvalAtom space d value Atom.undefinedType Bindings.empty valueResult)
+    (h_value_ok : isEmptyOrError valueResult.1 = false) :
+    InterpretFunction space d (letExpr pt value body)
+      letFunctionType Atom.undefinedType Bindings.empty
+      (letExpr pt valueResult.1 body, valueResult.2) := by
+  have h_head : EvalAtom space d (.symbol "let") letFunctionType Bindings.empty
+      (.symbol "let", Bindings.empty) :=
+    evalAtom_let_head_typed h_types
+  have h_pt : EvalAtom space d pt Atom.atomType Bindings.empty
+      (pt, Bindings.empty) :=
+    evalAtom_atom_type pt Bindings.empty
+  have h_body : EvalAtom space d body Atom.atomType valueResult.2
+      (body, valueResult.2) :=
+    evalAtom_atom_type body valueResult.2
+  have h_tail_body : InterpretArgs space d [body] [Atom.atomType]
+      valueResult.2 (.expression [body], valueResult.2) := by
+    exact InterpretArgs.cons_ok body [] Atom.atomType [] valueResult.2
+      (body, valueResult.2) (Atom.unit, valueResult.2)
+      h_body (Or.inr rfl) InterpretArgs.nil rfl
+  have h_tail_value : InterpretArgs space d [value, body]
+      [Atom.undefinedType, Atom.atomType] Bindings.empty
+      (.expression [valueResult.1, body], valueResult.2) := by
+    refine InterpretArgs.cons_ok value [body] Atom.undefinedType
+      [Atom.atomType] Bindings.empty
+      valueResult (.expression [body], valueResult.2)
+      h_value (Or.inl h_value_ok) h_tail_body ?_
+    exact isEmptyOrError_expr_false [] h_body_nerr
+  refine InterpretFunction.head_ok_tail_ok
+    (letExpr pt value body) letFunctionType Atom.undefinedType Bindings.empty
+    (.symbol "let") [pt, value, body]
+    [Atom.atomType, Atom.undefinedType, Atom.atomType]
+    (.symbol "let", Bindings.empty)
+    (.expression [pt, valueResult.1, body], valueResult.2)
+    rfl rfl h_head rfl ?_ ?_
+  · refine InterpretArgs.cons_ok pt [value, body] Atom.atomType
+      [Atom.undefinedType, Atom.atomType] Bindings.empty
+      (pt, Bindings.empty) (.expression [valueResult.1, body], valueResult.2)
+      h_pt (Or.inr rfl) h_tail_value ?_
+    exact isEmptyOrError_expr_false [body] h_value_nerr
+  · exact isEmptyOrError_expr_false (valueResult.1 :: [body]) h_pt_nerr
+
+/-- Error/Empty propagation companion to the quiescent `let` shell: if the
+bound value already officially evaluates to a changed Empty/Error result, the
+`let` function path propagates that result immediately without touching the
+body. -/
+private theorem interpretFunction_let_of_value_eval_bad
+    {space : Space} {d : GroundedDispatch}
+    {pt value body : Atom} {valueResult : ResultPair}
+    (h_types : getAtomTypes space (.symbol "let") = [letFunctionType])
+    (h_value : EvalAtom space d value Atom.undefinedType Bindings.empty valueResult)
+    (h_value_bad : isEmptyOrError valueResult.1 = true)
+    (h_changed : valueResult.1 ≠ value) :
+    InterpretFunction space d (letExpr pt value body)
+      letFunctionType Atom.undefinedType Bindings.empty
+      valueResult := by
+  have h_head : EvalAtom space d (.symbol "let") letFunctionType Bindings.empty
+      (.symbol "let", Bindings.empty) :=
+    evalAtom_let_head_typed h_types
+  have h_pt : EvalAtom space d pt Atom.atomType Bindings.empty
+      (pt, Bindings.empty) :=
+    evalAtom_atom_type pt Bindings.empty
+  have h_tail_value : InterpretArgs space d [value, body]
+      [Atom.undefinedType, Atom.atomType] Bindings.empty valueResult := by
+    exact InterpretArgs.head_changed_error value [body]
+      Atom.undefinedType [Atom.atomType] Bindings.empty valueResult
+      h_value h_value_bad h_changed
+  refine InterpretFunction.head_ok_tail_error
+    (letExpr pt value body) letFunctionType Atom.undefinedType Bindings.empty
+    (.symbol "let") [pt, value, body]
+    [Atom.atomType, Atom.undefinedType, Atom.atomType]
+    (.symbol "let", Bindings.empty) valueResult
+    rfl rfl h_head rfl ?_ h_value_bad
+  exact InterpretArgs.cons_tail_error pt [value, body]
+    Atom.atomType [Atom.undefinedType, Atom.atomType]
+    Bindings.empty
+    (pt, Bindings.empty) valueResult
+    h_pt (Or.inr rfl) h_tail_value h_value_bad
+
 /-- Generic equation-call wrapper for the verbatim upstream `let` surface
 form.  Once the typed function-path shell is in place, any official evaluation
 of the matched rhs composes into an official `MettaCall` of the original
@@ -3783,6 +4305,75 @@ theorem mettaCall_absorbs_let_equation
     (by simp [letExpr, isErrorAtom])
     (by simpa [letExpr] using h_not_exec)
     h_query h_merge h_no_loop h_eval
+
+/-- Seeded equation-call wrapper for the verbatim upstream `let` surface
+form.  Once the typed function-path shell has already threaded some incoming
+bindings through the value evaluation, the same equation-match packaging
+still applies at that seed. -/
+theorem mettaCall_absorbs_let_equation_seeded
+    {space : Space} {d : GroundedDispatch}
+    {pt value body rhs : Atom} {seed qb merged : Bindings}
+    {final : ResultPair} {fuel : Nat}
+    (h_not_exec : d.isExecutable (.symbol "let") = false)
+    (h_query : (rhs, qb) ∈ queryEquations space (letExpr pt value body) fuel)
+    (h_merge : merged ∈ mergeBindings qb seed fuel)
+    (h_no_loop : merged.hasLoop = false)
+    (h_eval : EvalAtom space d (merged.apply rhs fuel)
+      Atom.undefinedType merged final) :
+    MettaCall space d (letExpr pt value body) Atom.undefinedType
+      seed final :=
+  MettaCall.equation_match _ _ _ rhs qb merged final fuel
+    (by simp [letExpr, isErrorAtom])
+    (by simpa [letExpr] using h_not_exec)
+    h_query h_merge h_no_loop h_eval
+
+/-- Generic outer official `let` shell, parameterized by the actual
+`InterpretFunction` result.  This is the right theorem boundary for the
+source-progress half: once the `let` function path has been derived honestly,
+the remaining official `EvalAtom` judgment is just the usual function-path +
+`MettaCall` composition. -/
+theorem evalAtom_absorbs_let_shell_of_interp
+    {space : Space} {d : GroundedDispatch}
+    {pt value body : Atom} {seed : Bindings}
+    {interpResult final : ResultPair}
+    {succs : List Bindings} {fuel : Nat}
+    (h_op_type : letFunctionType ∈ getAtomTypes space (.symbol "let"))
+    (h_check : checkIfFunctionTypeIsApplicable
+      (letExpr pt value body) letFunctionType Atom.undefinedType
+      space seed fuel = .inr succs)
+    (h_check_b : seed ∈ succs)
+    (h_interp : InterpretFunction space d (letExpr pt value body)
+      letFunctionType Atom.undefinedType seed interpResult)
+    (h_call : MettaCall space d interpResult.1
+      Atom.undefinedType interpResult.2 final) :
+    EvalAtom space d (letExpr pt value body)
+      Atom.undefinedType seed final := by
+  by_cases h_final_err : isErrorAtom final.1 = true
+  · refine EvalAtom.interpret_error _ _ _ _ ?_ ?_ rfl ?_ ?_ h_final_err
+    · exact isEmptyOrError_expr_false [pt, value, body] (by simp)
+    · simp [letExpr, getMetaType, Atom.undefinedType, Atom.atomType,
+        Atom.expressionType, Atom.variableType]
+    · intro h_unit
+      simp [letExpr, Atom.unit] at h_unit
+    · refine InterpretExpression.function_path _ _ _
+        (.symbol "let") [pt, value, body]
+        letFunctionType Atom.undefinedType seed
+        interpResult final fuel
+        rfl h_op_type ?_ succs h_check h_check_b rfl h_interp h_call
+      rfl
+  · refine EvalAtom.interpret_success _ _ _ _ ?_ ?_ rfl ?_ ?_ ?_
+    · exact isEmptyOrError_expr_false [pt, value, body] (by simp)
+    · simp [letExpr, getMetaType, Atom.undefinedType, Atom.atomType,
+        Atom.expressionType, Atom.variableType]
+    · intro h_unit
+      simp [letExpr, Atom.unit] at h_unit
+    · refine InterpretExpression.function_path _ _ _
+        (.symbol "let") [pt, value, body]
+        letFunctionType Atom.undefinedType seed
+        interpResult final fuel
+        rfl h_op_type ?_ succs h_check h_check_b rfl h_interp h_call
+      rfl
+    · simpa using h_final_err
 
 /-- The outer official `let` shell, relative to the explicit typed-function
 path and equation-match hypotheses.  This theorem packages the exact remaining
@@ -3818,6 +4409,850 @@ theorem evalAtom_absorbs_let_shell
       (letExpr pt value body, Bindings.empty) final fuel
       rfl h_op_type ?_ succs h_check h_check_b rfl h_interp h_call
     rfl
+
+/-- Error-side companion to `evalAtom_absorbs_let_shell`: when the outer
+typed-function path and equation-call are supplied and the final result is
+error-shaped, the full official `EvalAtom` judgment follows on the error
+branch rather than the success branch. -/
+theorem evalAtom_absorbs_let_shell_error
+    {space : Space} {d : GroundedDispatch}
+    {pt value body : Atom} {final : ResultPair}
+    {succs : List Bindings} {fuel : Nat}
+    (h_op_type : letFunctionType ∈ getAtomTypes space (.symbol "let"))
+    (h_check : checkIfFunctionTypeIsApplicable
+      (letExpr pt value body) letFunctionType Atom.undefinedType
+      space Bindings.empty fuel = .inr succs)
+    (h_check_b : Bindings.empty ∈ succs)
+    (h_interp : InterpretFunction space d (letExpr pt value body)
+      letFunctionType Atom.undefinedType Bindings.empty
+      (letExpr pt value body, Bindings.empty))
+    (h_call : MettaCall space d (letExpr pt value body)
+      Atom.undefinedType Bindings.empty final)
+    (h_final_err : isErrorAtom final.1 = true) :
+    EvalAtom space d (letExpr pt value body)
+      Atom.undefinedType Bindings.empty final := by
+  refine EvalAtom.interpret_error _ _ _ _ ?_ ?_ rfl ?_ ?_ h_final_err
+  · exact isEmptyOrError_expr_false [pt, value, body] (by simp)
+  · simp [letExpr, getMetaType, Atom.undefinedType, Atom.atomType,
+      Atom.expressionType, Atom.variableType]
+  · intro h_unit
+    simp [letExpr, Atom.unit] at h_unit
+  · refine InterpretExpression.function_path _ _ _
+      (.symbol "let") [pt, value, body]
+      letFunctionType Atom.undefinedType Bindings.empty
+      (letExpr pt value body, Bindings.empty) final fuel
+      rfl h_op_type ?_ succs h_check h_check_b rfl h_interp h_call
+    rfl
+
+/-- Source-progress shell for `let` on the non-empty/non-error value-result
+fragment.  Once the bound value has an official evaluation result and the
+continuation `let` surface at that result is officially callable, the whole
+original `let` expression officially evaluates to the same final result. -/
+theorem evalAtom_absorbs_let_value_eval_ok
+    {space : Space} {d : GroundedDispatch}
+    {pt value body valueAtom : Atom} {valueBindings : Bindings}
+    {final : ResultPair}
+    {succs : List Bindings} {fuel : Nat}
+    (h_types : getAtomTypes space (.symbol "let") = [letFunctionType])
+    (h_check : checkIfFunctionTypeIsApplicable
+      (letExpr pt value body) letFunctionType Atom.undefinedType
+      space Bindings.empty fuel = .inr succs)
+    (h_check_b : Bindings.empty ∈ succs)
+    (h_pt_nerr : pt ≠ Atom.symbol "Error")
+    (h_value_nerr : valueAtom ≠ Atom.symbol "Error")
+    (h_body_nerr : body ≠ Atom.symbol "Error")
+    (h_value : EvalAtom space d value Atom.undefinedType Bindings.empty
+      (valueAtom, valueBindings))
+    (h_value_ok : isEmptyOrError valueAtom = false)
+    (h_call : MettaCall space d (letExpr pt valueAtom body)
+      Atom.undefinedType valueBindings final) :
+    EvalAtom space d (letExpr pt value body)
+      Atom.undefinedType Bindings.empty final := by
+  have h_interp :
+      InterpretFunction space d (letExpr pt value body)
+        letFunctionType Atom.undefinedType Bindings.empty
+        (letExpr pt valueAtom body, valueBindings) :=
+    interpretFunction_let_of_value_eval_ok
+      h_types h_pt_nerr h_value_nerr h_body_nerr h_value h_value_ok
+  have h_op_type : letFunctionType ∈ getAtomTypes space (.symbol "let") := by
+    rw [h_types]
+    simp
+  exact evalAtom_absorbs_let_shell_of_interp
+    h_op_type h_check h_check_b h_interp h_call
+
+/-- Source-progress shell for `let` on the changed Empty/Error value-result
+fragment.  If evaluating the bound value already produces a changed
+Empty/Error result, the `let` propagates that result without touching the
+body. -/
+theorem evalAtom_absorbs_let_value_eval_bad
+    {space : Space} {d : GroundedDispatch}
+    {pt value body valueAtom : Atom} {valueBindings : Bindings}
+    {final : ResultPair}
+    {succs : List Bindings} {fuel : Nat}
+    (h_types : getAtomTypes space (.symbol "let") = [letFunctionType])
+    (h_check : checkIfFunctionTypeIsApplicable
+      (letExpr pt value body) letFunctionType Atom.undefinedType
+      space Bindings.empty fuel = .inr succs)
+    (h_check_b : Bindings.empty ∈ succs)
+    (h_value : EvalAtom space d value Atom.undefinedType Bindings.empty
+      (valueAtom, valueBindings))
+    (h_value_bad : isEmptyOrError valueAtom = true)
+    (h_changed : valueAtom ≠ value)
+    (h_call : MettaCall space d valueAtom
+      Atom.undefinedType valueBindings final) :
+    EvalAtom space d (letExpr pt value body)
+      Atom.undefinedType Bindings.empty final := by
+  have h_interp :
+      InterpretFunction space d (letExpr pt value body)
+        letFunctionType Atom.undefinedType Bindings.empty
+        (valueAtom, valueBindings) :=
+    interpretFunction_let_of_value_eval_bad
+      h_types h_value h_value_bad h_changed
+  have h_op_type : letFunctionType ∈ getAtomTypes space (.symbol "let") := by
+    rw [h_types]
+    simp
+  exact evalAtom_absorbs_let_shell_of_interp
+    h_op_type h_check h_check_b h_interp h_call
+
+/-- Source-progress half of `HES_Let`, non-error fragment: if the bound value
+takes a certified fragment step, any official evaluation of the successor
+value can be lifted back to an official evaluation of the original `let`
+provided the continuation `let` surface at the evaluated value is officially
+callable. -/
+theorem evalAtom_absorbs_let_source_frag_ok
+    {space : Space} {d : GroundedDispatch}
+    {fuel fuelShell : Nat}
+    {pt value value' body : Atom} {valueResult final : ResultPair}
+    {succs : List Bindings}
+    (h_empty_no_eqs : ∀ f, queryEquations space Atom.empty f = [])
+    (h_frag : FragStep space d fuel value value')
+    (h_types : getAtomTypes space (.symbol "let") = [letFunctionType])
+    (h_check : checkIfFunctionTypeIsApplicable
+      (letExpr pt value body) letFunctionType Atom.undefinedType
+      space Bindings.empty fuelShell = .inr succs)
+    (h_check_b : Bindings.empty ∈ succs)
+    (h_pt_nerr : pt ≠ Atom.symbol "Error")
+    (h_value_nerr : valueResult.1 ≠ Atom.symbol "Error")
+    (h_body_nerr : body ≠ Atom.symbol "Error")
+    (h_eval' : EvalAtom space d value' Atom.undefinedType Bindings.empty valueResult)
+    (h_value_ok : isEmptyOrError valueResult.1 = false)
+    (h_call : ∀ {rb},
+      EvalAtom space d value Atom.undefinedType Bindings.empty (valueResult.1, rb) →
+      MettaCall space d (letExpr pt valueResult.1 body)
+        Atom.undefinedType rb final) :
+    ∃ rb,
+      EvalAtom space d (letExpr pt value body)
+        Atom.undefinedType Bindings.empty (final.1, rb) := by
+  obtain ⟨rb, h_value⟩ := evalAtom_absorbs_fragStep h_empty_no_eqs h_frag h_eval'
+  refine ⟨final.2, ?_⟩
+  exact evalAtom_absorbs_let_value_eval_ok
+    h_types h_check h_check_b h_pt_nerr h_value_nerr h_body_nerr
+    h_value h_value_ok (h_call h_value)
+
+/-- Source-progress half of `HES_Let`, changed Empty/Error fragment: if the
+bound value takes a certified fragment step and the lifted official
+evaluation already yields a changed Empty/Error result, the original `let`
+propagates that result immediately. -/
+theorem evalAtom_absorbs_let_source_frag_bad
+    {space : Space} {d : GroundedDispatch}
+    {fuel fuelShell : Nat}
+    {pt value value' body : Atom} {valueResult final : ResultPair}
+    {succs : List Bindings}
+    (h_empty_no_eqs : ∀ f, queryEquations space Atom.empty f = [])
+    (h_frag : FragStep space d fuel value value')
+    (h_types : getAtomTypes space (.symbol "let") = [letFunctionType])
+    (h_check : checkIfFunctionTypeIsApplicable
+      (letExpr pt value body) letFunctionType Atom.undefinedType
+      space Bindings.empty fuelShell = .inr succs)
+    (h_check_b : Bindings.empty ∈ succs)
+    (h_eval' : EvalAtom space d value' Atom.undefinedType Bindings.empty valueResult)
+    (h_value_bad : isEmptyOrError valueResult.1 = true)
+    (h_changed : valueResult.1 ≠ value)
+    (h_call : ∀ {rb},
+      EvalAtom space d value Atom.undefinedType Bindings.empty (valueResult.1, rb) →
+      MettaCall space d valueResult.1 Atom.undefinedType rb final) :
+    ∃ rb,
+      EvalAtom space d (letExpr pt value body)
+        Atom.undefinedType Bindings.empty (final.1, rb) := by
+  obtain ⟨rb, h_value⟩ := evalAtom_absorbs_fragStep h_empty_no_eqs h_frag h_eval'
+  refine ⟨final.2, ?_⟩
+  exact evalAtom_absorbs_let_value_eval_bad
+    h_types h_check h_check_b h_value h_value_bad h_changed (h_call h_value)
+
+/-- Step-shaped source-progress certification theorem for `HES_Let` on the
+non-error fragment.
+
+This ties `evalAtom_absorbs_let_source_frag_ok` back to the coarse
+`HESmallStep.let_source` rule, without pretending the continuation call on the
+evaluated value has already been discharged automatically. -/
+theorem evalAtom_absorbs_let_source_frag_rule_ok
+    {space : Space} {d : GroundedDispatch}
+    {fuelStep fuelShell : Nat}
+    {pt value value' body valueAtom : Atom}
+    {valueBindings : Bindings} {final : ResultPair}
+    {succs : List Bindings}
+    (_h_step : HESmallStep space d fuelStep
+      (letExpr pt value body) (letExpr pt value' body))
+    (h_empty_no_eqs : ∀ f, queryEquations space Atom.empty f = [])
+    (h_frag : FragStep space d fuelStep value value')
+    (h_types : getAtomTypes space (.symbol "let") = [letFunctionType])
+    (h_check : checkIfFunctionTypeIsApplicable
+      (letExpr pt value body) letFunctionType Atom.undefinedType
+      space Bindings.empty fuelShell = .inr succs)
+    (h_check_b : Bindings.empty ∈ succs)
+    (h_pt_nerr : pt ≠ Atom.symbol "Error")
+    (h_value_nerr : valueAtom ≠ Atom.symbol "Error")
+    (h_body_nerr : body ≠ Atom.symbol "Error")
+    (h_eval' : EvalAtom space d value' Atom.undefinedType Bindings.empty
+      (valueAtom, valueBindings))
+    (h_value_ok : isEmptyOrError valueAtom = false)
+    (h_call : ∀ {rb},
+      EvalAtom space d value Atom.undefinedType Bindings.empty (valueAtom, rb) →
+      MettaCall space d (letExpr pt valueAtom body)
+        Atom.undefinedType rb final) :
+    ∃ rb,
+      EvalAtom space d (letExpr pt value body)
+        Atom.undefinedType Bindings.empty (final.1, rb) := by
+  exact evalAtom_absorbs_let_source_frag_ok
+    h_empty_no_eqs h_frag h_types h_check h_check_b
+    h_pt_nerr h_value_nerr h_body_nerr h_eval' h_value_ok h_call
+
+/-- Step-shaped source-progress certification theorem for `HES_Let` on the
+changed Empty/Error fragment.
+
+This ties `evalAtom_absorbs_let_source_frag_bad` back to the coarse
+`HESmallStep.let_source` rule.  If the lifted value evaluation already
+produces a changed Empty/Error result, the original surface `let` propagates
+that result immediately. -/
+theorem evalAtom_absorbs_let_source_frag_rule_bad
+    {space : Space} {d : GroundedDispatch}
+    {fuelStep fuelShell : Nat}
+    {pt value value' body valueAtom : Atom}
+    {valueBindings : Bindings} {final : ResultPair}
+    {succs : List Bindings}
+    (_h_step : HESmallStep space d fuelStep
+      (letExpr pt value body) (letExpr pt value' body))
+    (h_empty_no_eqs : ∀ f, queryEquations space Atom.empty f = [])
+    (h_frag : FragStep space d fuelStep value value')
+    (h_types : getAtomTypes space (.symbol "let") = [letFunctionType])
+    (h_check : checkIfFunctionTypeIsApplicable
+      (letExpr pt value body) letFunctionType Atom.undefinedType
+      space Bindings.empty fuelShell = .inr succs)
+    (h_check_b : Bindings.empty ∈ succs)
+    (h_eval' : EvalAtom space d value' Atom.undefinedType Bindings.empty
+      (valueAtom, valueBindings))
+    (h_value_bad : isEmptyOrError valueAtom = true)
+    (h_changed : valueAtom ≠ value)
+    (h_call : ∀ {rb},
+      EvalAtom space d value Atom.undefinedType Bindings.empty (valueAtom, rb) →
+      MettaCall space d valueAtom Atom.undefinedType rb final) :
+    ∃ rb,
+      EvalAtom space d (letExpr pt value body)
+        Atom.undefinedType Bindings.empty (final.1, rb) := by
+  exact evalAtom_absorbs_let_source_frag_bad
+    h_empty_no_eqs h_frag h_types h_check h_check_b
+    h_eval' h_value_bad h_changed h_call
+
+/-- Full ground-success `let` wrapper through the verbatim stdlib helper
+route, with the query-side freshness assumptions made explicit.
+
+This theorem spends:
+- the typed/equational outer `let` shell,
+- the seeded `unify` realization boundary, and
+- the body-side non-interference lemma for query-local fresh variables.
+
+It is the honest substitution-half certification theorem for surface `let`
+on the stated fragment: the outer query bindings may be non-empty, but they
+must not affect the user body's actual variables. -/
+theorem evalAtom_absorbs_let_subst_ground_shell
+    {space : Space} {d : GroundedDispatch}
+    (hReal : UnifyGroundSeededRealization space d)
+    {pt value body rhs : Atom}
+    {qb mb merged : Bindings}
+    {succs : List Bindings}
+    {fuelShell fuelQuery fuelUnify : Nat}
+    (h_types : getAtomTypes space (.symbol "let") = [letFunctionType])
+    (h_check : checkIfFunctionTypeIsApplicable
+      (letExpr pt value body) letFunctionType Atom.undefinedType
+      space Bindings.empty fuelShell = .inr succs)
+    (h_check_b : Bindings.empty ∈ succs)
+    (h_not_exec : d.isExecutable (.symbol "let") = false)
+    (h_pt_nerr : pt ≠ Atom.symbol "Error")
+    (h_value_nerr : value ≠ Atom.symbol "Error")
+    (h_body_nerr : body ≠ Atom.symbol "Error")
+    (h_value_q : SelfEvalQuiescent space d fuelShell value)
+    (hground : GroundAtom value)
+    (h_query : (rhs, qb) ∈ queryEquations space (letExpr pt value body) fuelQuery)
+    (h_query_merge : qb ∈ mergeBindings qb Bindings.empty fuelQuery)
+    (h_query_no_loop : qb.hasLoop = false)
+    (h_rhs : qb.apply rhs fuelQuery = letUnifyRhs pt value body)
+    (hqbEq : qb.equalities = [])
+    (hqbKeys : (qb.assignments.map Prod.fst).Nodup)
+    (hbody_irrel : ∀ v, v ∈ collectVars body 100 → qb.lookup v = none)
+    (hmatch : mb ∈ matchAtoms value pt fuelUnify)
+    (hmerge : merged ∈ mergeBindings mb qb fuelUnify)
+    (hmerge_det : mergeGround? mb qb = some merged)
+    (h_unify_no_loop : merged.hasLoop = false)
+    (h_final_ok : isErrorAtom (mb.applyDefault body) = false) :
+    EvalAtom space d (letExpr pt value body)
+      Atom.undefinedType Bindings.empty
+      (mb.applyDefault body, merged) := by
+  have h_interp :
+      InterpretFunction space d (letExpr pt value body)
+        letFunctionType Atom.undefinedType Bindings.empty
+        (letExpr pt value body, Bindings.empty) :=
+    interpretFunction_let_self h_types h_pt_nerr h_value_nerr h_body_nerr h_value_q
+  have hmbGround : GroundBindings mb :=
+    (matchAtoms_ground_canon hground hmatch).1
+  have h_body_eq : merged.applyDefault body = mb.applyDefault body := by
+    exact apply_eq_of_mergeGround_irrel hmbGround hqbEq hqbKeys hmerge_det hbody_irrel
+  have h_eval_rhs :
+      EvalAtom space d (qb.apply rhs fuelQuery)
+        Atom.undefinedType qb
+        (mb.applyDefault body, merged) := by
+    rw [h_rhs]
+    have h_unify :
+        EvalAtom space d (letUnifyRhs pt value body)
+          Atom.undefinedType qb
+          (merged.applyDefault body, merged) :=
+      evalAtom_realizes_let_subst_ground_seeded hReal hground hmatch hmerge h_unify_no_loop
+    simpa [letUnifyRhs, h_body_eq] using h_unify
+  have h_call :
+      MettaCall space d (letExpr pt value body)
+        Atom.undefinedType Bindings.empty
+        (mb.applyDefault body, merged) :=
+    mettaCall_absorbs_let_equation h_not_exec h_query h_query_merge
+      h_query_no_loop h_eval_rhs
+  have h_op_type : letFunctionType ∈ getAtomTypes space (.symbol "let") := by
+    rw [h_types]
+    simp
+  exact evalAtom_absorbs_let_shell h_op_type h_check h_check_b
+    h_interp h_call h_final_ok
+
+/-- Seeded outer official `let` shell, relative to the explicit typed-function
+path and equation-match hypotheses.  This is the incoming-bindings companion
+to `evalAtom_absorbs_let_shell`, keeping the shell theorem honest when the
+value-evaluation side has already produced a non-empty bindings thread. -/
+theorem evalAtom_absorbs_let_shell_seeded
+    {space : Space} {d : GroundedDispatch}
+    {pt value body : Atom} {seed : Bindings} {final : ResultPair}
+    {succs : List Bindings} {fuel : Nat}
+    (h_op_type : letFunctionType ∈ getAtomTypes space (.symbol "let"))
+    (h_check : checkIfFunctionTypeIsApplicable
+      (letExpr pt value body) letFunctionType Atom.undefinedType
+      space seed fuel = .inr succs)
+    (h_check_b : seed ∈ succs)
+    (h_interp : InterpretFunction space d (letExpr pt value body)
+      letFunctionType Atom.undefinedType seed
+      (letExpr pt value body, seed))
+    (h_call : MettaCall space d (letExpr pt value body)
+      Atom.undefinedType seed final)
+    (h_final_ok : isErrorAtom final.1 = false) :
+    EvalAtom space d (letExpr pt value body)
+      Atom.undefinedType seed final := by
+  refine EvalAtom.interpret_success _ _ _ _ ?_ ?_ rfl ?_ ?_ h_final_ok
+  · exact isEmptyOrError_expr_false [pt, value, body] (by simp)
+  · simp [letExpr, getMetaType, Atom.undefinedType, Atom.atomType,
+      Atom.expressionType, Atom.variableType]
+  · intro h_unit
+    simp [letExpr, Atom.unit] at h_unit
+  · refine InterpretExpression.function_path _ _ _
+      (.symbol "let") [pt, value, body]
+      letFunctionType Atom.undefinedType seed
+      (letExpr pt value body, seed) final fuel
+      rfl h_op_type ?_ succs h_check h_check_b rfl h_interp h_call
+    rfl
+
+/-- Seeded error-side companion to `evalAtom_absorbs_let_shell_seeded`.
+This keeps the outer `let` shell honest when the value-evaluation side has
+already shifted the bindings thread and the eventual result is error-shaped. -/
+theorem evalAtom_absorbs_let_shell_seeded_error
+    {space : Space} {d : GroundedDispatch}
+    {pt value body : Atom} {seed : Bindings} {final : ResultPair}
+    {succs : List Bindings} {fuel : Nat}
+    (h_op_type : letFunctionType ∈ getAtomTypes space (.symbol "let"))
+    (h_check : checkIfFunctionTypeIsApplicable
+      (letExpr pt value body) letFunctionType Atom.undefinedType
+      space seed fuel = .inr succs)
+    (h_check_b : seed ∈ succs)
+    (h_interp : InterpretFunction space d (letExpr pt value body)
+      letFunctionType Atom.undefinedType seed
+      (letExpr pt value body, seed))
+    (h_call : MettaCall space d (letExpr pt value body)
+      Atom.undefinedType seed final)
+    (h_final_err : isErrorAtom final.1 = true) :
+    EvalAtom space d (letExpr pt value body)
+      Atom.undefinedType seed final := by
+  refine EvalAtom.interpret_error _ _ _ _ ?_ ?_ rfl ?_ ?_ h_final_err
+  · exact isEmptyOrError_expr_false [pt, value, body] (by simp)
+  · simp [letExpr, getMetaType, Atom.undefinedType, Atom.atomType,
+      Atom.expressionType, Atom.variableType]
+  · intro h_unit
+    simp [letExpr, Atom.unit] at h_unit
+  · refine InterpretExpression.function_path _ _ _
+      (.symbol "let") [pt, value, body]
+      letFunctionType Atom.undefinedType seed
+      (letExpr pt value body, seed) final fuel
+      rfl h_op_type ?_ succs h_check h_check_b rfl h_interp h_call
+    rfl
+
+/-- Step-shaped substitution-side certification theorem for `HES_Let` on the
+ground fragment.
+
+This is a thin wrapper over `evalAtom_absorbs_let_subst_ground_shell`: it
+ties that shell theorem back to the coarse `HESmallStep.let_subst` rule,
+without pretending the source-progress half of `let` is already certified.
+
+Positive example:
+- a coarse `let_subst` step with a ground quiescent value and an irrelevant
+  query-local binding layer yields the official evaluation of the whole
+  surface `let` to the substituted body result.
+
+Negative example:
+- if the query-local bindings can affect variables actually occurring in the
+  user body, this theorem does not apply; that no-capture boundary remains
+  explicit in `hbody_irrel`. -/
+theorem evalAtom_absorbs_let_subst_ground_rule
+    {space : Space} {d : GroundedDispatch}
+    (hReal : UnifyGroundSeededRealization space d)
+    {pt value body rhs : Atom}
+    {qb mb merged : Bindings}
+    {succs : List Bindings}
+    {fuelStep fuelShell fuelQuery fuelUnify : Nat}
+    (_h_step : HESmallStep space d fuelStep
+      (letExpr pt value body) (mb.applyDefault body))
+    (h_types : getAtomTypes space (.symbol "let") = [letFunctionType])
+    (h_check : checkIfFunctionTypeIsApplicable
+      (letExpr pt value body) letFunctionType Atom.undefinedType
+      space Bindings.empty fuelShell = .inr succs)
+    (h_check_b : Bindings.empty ∈ succs)
+    (h_not_exec : d.isExecutable (.symbol "let") = false)
+    (h_pt_nerr : pt ≠ Atom.symbol "Error")
+    (h_value_nerr : value ≠ Atom.symbol "Error")
+    (h_body_nerr : body ≠ Atom.symbol "Error")
+    (h_value_q : SelfEvalQuiescent space d fuelShell value)
+    (hground : GroundAtom value)
+    (h_query : (rhs, qb) ∈ queryEquations space (letExpr pt value body) fuelQuery)
+    (h_query_merge : qb ∈ mergeBindings qb Bindings.empty fuelQuery)
+    (h_query_no_loop : qb.hasLoop = false)
+    (h_rhs : qb.apply rhs fuelQuery = letUnifyRhs pt value body)
+    (hqbEq : qb.equalities = [])
+    (hqbKeys : (qb.assignments.map Prod.fst).Nodup)
+    (hbody_irrel : ∀ v, v ∈ collectVars body 100 → qb.lookup v = none)
+    (hmatch : mb ∈ matchAtoms value pt fuelUnify)
+    (hmerge : merged ∈ mergeBindings mb qb fuelUnify)
+    (hmerge_det : mergeGround? mb qb = some merged)
+    (h_unify_no_loop : merged.hasLoop = false)
+    (h_final_ok : isErrorAtom (mb.applyDefault body) = false) :
+    EvalAtom space d (letExpr pt value body)
+      Atom.undefinedType Bindings.empty
+      (mb.applyDefault body, merged) := by
+  simpa [letExpr] using
+    (evalAtom_absorbs_let_subst_ground_shell
+      (hReal := hReal)
+      (pt := pt) (value := value) (body := body) (rhs := rhs)
+      (qb := qb) (mb := mb) (merged := merged) (succs := succs)
+      (fuelShell := fuelShell) (fuelQuery := fuelQuery) (fuelUnify := fuelUnify)
+      h_types h_check h_check_b h_not_exec h_pt_nerr h_value_nerr h_body_nerr
+      h_value_q hground h_query h_query_merge h_query_no_loop h_rhs
+      hqbEq hqbKeys hbody_irrel hmatch hmerge hmerge_det
+      h_unify_no_loop h_final_ok)
+
+/-! ## F3a: Primitive `switch-minimal` Selector Core
+
+The stdlib helper route for `switch-minimal` is still useful context, but the
+coarse rule itself is really about one simpler semantic fact: scanning the raw
+branch list left-to-right, skipping malformed branches, and choosing the first
+well-formed branch whose pattern matches the raw scrutinee.
+
+We record that selector directly here, in the same one-way matcher language as
+`HESmallStep.switch_minimal_match`.  This keeps the eventual primitive-route
+certification honest and local: the recursive selector proof should spend these
+facts instead of reproving the branch scan from scratch. -/
+
+/-- Coarse first-match selector for `switch-minimal`, matching the runtime's
+left-to-right raw-branch scan: malformed branches are skipped, the first
+well-formed matching branch contributes its substituted template, and total
+failure yields `NotReducible`. -/
+private def selectSwitchTemplateCoarse
+    (scrut : Atom) (branches : List Atom) (fuel : Nat) : Atom :=
+  match branches with
+  | [] => Atom.notReducible
+  | .expression [pt, template] :: rest =>
+      match simpleMatch pt scrut Bindings.empty fuel with
+      | some mb => mb.applyDefault template
+      | none => selectSwitchTemplateCoarse scrut rest fuel
+  | _ :: rest => selectSwitchTemplateCoarse scrut rest fuel
+
+/-- Positive example: if a particular well-formed branch is the first one
+whose pattern matches the raw scrutinee, the coarse selector returns exactly
+that branch's substituted template.
+
+Negative example: malformed earlier branches do not block the match; they are
+skipped by the selector and therefore need no "earlier failure" witness. -/
+theorem selectSwitchTemplateCoarse_of_prefix_match
+    {scrut pt template : Atom} {pre post : List Atom}
+    {mb : Bindings} {fuel : Nat}
+    (h_match : simpleMatch pt scrut Bindings.empty fuel = some mb)
+    (h_earlier : ∀ branch ∈ pre, ∀ pt' template',
+      branch = Atom.expression [pt', template'] →
+      simpleMatch pt' scrut Bindings.empty fuel = none) :
+    selectSwitchTemplateCoarse scrut
+      (pre ++ Atom.expression [pt, template] :: post) fuel =
+      mb.applyDefault template := by
+  induction pre with
+  | nil =>
+      simp [selectSwitchTemplateCoarse, h_match]
+  | cons head rest ih =>
+      have h_rest :
+          ∀ branch ∈ rest, ∀ pt' template',
+            branch = Atom.expression [pt', template'] →
+            simpleMatch pt' scrut Bindings.empty fuel = none := by
+        intro branch hmem pt' template' hshape
+        exact h_earlier branch (by simp [hmem]) pt' template' hshape
+      cases h_head : head with
+      | symbol s =>
+          simp [selectSwitchTemplateCoarse]
+          exact ih h_rest
+      | var v =>
+          simp [selectSwitchTemplateCoarse]
+          exact ih h_rest
+      | grounded g =>
+          simp [selectSwitchTemplateCoarse]
+          exact ih h_rest
+      | expression hs =>
+          cases hs with
+          | nil =>
+              simp [selectSwitchTemplateCoarse]
+              exact ih h_rest
+          | cons a hs1 =>
+              cases hs1 with
+              | nil =>
+                  simp [selectSwitchTemplateCoarse]
+                  exact ih h_rest
+              | cons b hs2 =>
+                  cases hs2 with
+                  | nil =>
+                      have h_fail : simpleMatch a scrut Bindings.empty fuel = none :=
+                        h_earlier (Atom.expression [a, b]) (by
+                          simp [h_head]) a b rfl
+                      simp [selectSwitchTemplateCoarse, h_fail]
+                      exact ih h_rest
+                  | cons c hs3 =>
+                      simp [selectSwitchTemplateCoarse]
+                      exact ih h_rest
+
+/-- Indexed companion to `selectSwitchTemplateCoarse_of_prefix_match`.
+This is the exact first-match theorem shape that the coarse
+`HESmallStep.switch_minimal_match` constructor already carries: a selected
+well-formed branch at index `i`, a successful match there, and failure of all
+earlier well-formed branches. -/
+theorem selectSwitchTemplateCoarse_of_index_match
+    {scrut : Atom} {branches : List Atom} {i : Nat}
+    {pt template : Atom} {mb : Bindings} {fuel : Nat}
+    (h_branch : branches[i]? = some (.expression [pt, template]))
+    (h_match : simpleMatch pt scrut Bindings.empty fuel = some mb)
+    (h_earlier : ∀ j < i, ∀ pt' template',
+      branches[j]? = some (.expression [pt', template']) →
+      simpleMatch pt' scrut Bindings.empty fuel = none) :
+    selectSwitchTemplateCoarse scrut branches fuel =
+      mb.applyDefault template := by
+  rcases (List.getElem?_eq_some_iff.mp h_branch) with ⟨hi, hget⟩
+  have hsplit :
+      branches =
+        List.take i branches ++ Atom.expression [pt, template] ::
+          List.drop (i + 1) branches := by
+    calc
+      branches = List.take i branches ++ List.drop i branches := by
+        symm
+        exact List.take_append_drop i branches
+      _ = List.take i branches ++ branches[i] :: List.drop (i + 1) branches := by
+        rw [List.drop_eq_getElem_cons hi]
+      _ = List.take i branches ++ Atom.expression [pt, template] ::
+            List.drop (i + 1) branches := by
+        rw [hget]
+  have h_prefix :
+      ∀ branch ∈ List.take i branches, ∀ pt' template',
+        branch = Atom.expression [pt', template'] →
+        simpleMatch pt' scrut Bindings.empty fuel = none := by
+    intro branch hmem pt' template' hshape
+    rcases (List.mem_iff_getElem.mp hmem) with ⟨j, hj, hj_eq⟩
+    have htake_len : (List.take i branches).length = i := by
+      rw [List.length_take, Nat.min_eq_left (Nat.le_of_lt hi)]
+    have hj_lt_i : j < i := by
+      simpa [htake_len] using hj
+    have hj_lt_len : j < branches.length := lt_trans hj_lt_i hi
+    have hj_eq_branch : branches[j] = branch := by
+      have htakej :
+          (List.take i branches)[j] = branches[j] :=
+        List.getElem_take (xs := branches) (j := i) (i := j) (h := hj)
+      exact htakej.symm.trans hj_eq
+    have hj_some :
+        branches[j]? = some (Atom.expression [pt', template']) := by
+      simp [List.getElem?_eq_getElem hj_lt_len, hj_eq_branch, hshape]
+    exact h_earlier j hj_lt_i pt' template' hj_some
+  rw [hsplit]
+  exact selectSwitchTemplateCoarse_of_prefix_match h_match h_prefix
+
+/-- If every well-formed branch fails to match the raw scrutinee, the coarse
+selector returns the `NotReducible` sentinel.
+
+Positive example: a branch list of only malformed branches returns
+`NotReducible`.
+
+Negative example: as soon as some well-formed branch matches, this theorem no
+longer applies and `selectSwitchTemplateCoarse_of_prefix_match` becomes the
+relevant fact instead. -/
+theorem selectSwitchTemplateCoarse_notReducible_of_all_fail
+    {scrut : Atom} {branches : List Atom} {fuel : Nat}
+    (h_all_fail : ∀ branch ∈ branches, ∀ pt template,
+      branch = Atom.expression [pt, template] →
+      simpleMatch pt scrut Bindings.empty fuel = none) :
+    selectSwitchTemplateCoarse scrut branches fuel = Atom.notReducible := by
+  induction branches with
+  | nil =>
+      simp [selectSwitchTemplateCoarse]
+  | cons head rest ih =>
+      have h_rest :
+          ∀ branch ∈ rest, ∀ pt template,
+            branch = Atom.expression [pt, template] →
+            simpleMatch pt scrut Bindings.empty fuel = none := by
+        intro branch hmem pt template hshape
+        exact h_all_fail branch (by simp [hmem]) pt template hshape
+      cases h_head : head with
+      | symbol s =>
+          simp [selectSwitchTemplateCoarse]
+          exact ih h_rest
+      | var v =>
+          simp [selectSwitchTemplateCoarse]
+          exact ih h_rest
+      | grounded g =>
+          simp [selectSwitchTemplateCoarse]
+          exact ih h_rest
+      | expression hs =>
+          cases hs with
+          | nil =>
+              simp [selectSwitchTemplateCoarse]
+              exact ih h_rest
+          | cons a hs1 =>
+              cases hs1 with
+              | nil =>
+                  simp [selectSwitchTemplateCoarse]
+                  exact ih h_rest
+              | cons b hs2 =>
+                  cases hs2 with
+                  | nil =>
+                      have h_head_fail :
+                          simpleMatch a scrut Bindings.empty fuel = none :=
+                        h_all_fail (Atom.expression [a, b]) (by
+                          simp [h_head]) a b rfl
+                      simp [selectSwitchTemplateCoarse, h_head_fail]
+                      exact ih h_rest
+                  | cons c hs3 =>
+                      simp [selectSwitchTemplateCoarse]
+                      exact ih h_rest
+
+/-- Indexed companion to `selectSwitchTemplateCoarse_notReducible_of_all_fail`.
+If every indexed well-formed branch fails to match the raw scrutinee, the
+coarse selector returns `NotReducible`. -/
+theorem selectSwitchTemplateCoarse_notReducible_of_index_fail
+    {scrut : Atom} {branches : List Atom} {fuel : Nat}
+    (h_all_fail : ∀ (i : Nat) (pt template : Atom),
+      branches[i]? = some (Atom.expression [pt, template]) →
+      simpleMatch pt scrut Bindings.empty fuel = none) :
+    selectSwitchTemplateCoarse scrut branches fuel = Atom.notReducible := by
+  apply selectSwitchTemplateCoarse_notReducible_of_all_fail
+  intro branch hmem pt template hshape
+  rcases (List.mem_iff_getElem.mp hmem) with ⟨i, hi, hi_eq⟩
+  have hi_some :
+      branches[i]? = some (Atom.expression [pt, template]) := by
+    simp [List.getElem?_eq_getElem hi, hi_eq, hshape]
+  exact h_all_fail i pt template hi_some
+
+/-- Positive selector-to-coarse-step bridge: the indexed witness carried by
+`HESmallStep.switch_minimal_match` produces a coarse step whose result is
+exactly the primitive first-match selector result.  This keeps later
+`switch-minimal` packaging aligned with the primitive selector surface rather
+than only the raw `mb.applyDefault template` witness. -/
+theorem step_switchMinimal_to_selector_of_index_match
+    {space : Space} {d : GroundedDispatch} {fuel : Nat}
+    {scrut : Atom} {branches : List Atom} {i : Nat}
+    {pt template : Atom} {mb : Bindings}
+    (h_branch : branches[i]? = some (.expression [pt, template]))
+    (h_match : simpleMatch pt scrut Bindings.empty fuel = some mb)
+    (h_earlier : ∀ j < i, ∀ pt' template',
+      branches[j]? = some (.expression [pt', template']) →
+      simpleMatch pt' scrut Bindings.empty fuel = none) :
+    HESmallStep space d fuel
+      (.expression [.symbol "switch-minimal", scrut, .expression branches])
+      (selectSwitchTemplateCoarse scrut branches fuel) := by
+  have hsel :
+      selectSwitchTemplateCoarse scrut branches fuel =
+        mb.applyDefault template :=
+    selectSwitchTemplateCoarse_of_index_match h_branch h_match h_earlier
+  rw [hsel]
+  exact HESmallStep.switch_minimal_match rfl h_branch h_match h_earlier
+
+/-- Converse selector witness on the honest non-sentinel fragment: if the
+primitive first-match selector returns some atom other than `NotReducible`,
+then that result really came from a well-formed matching branch, together
+with the exact indexed earlier-failure witness carried by the coarse
+`switch_minimal_match` rule.  The sentinel case stays explicit because a
+matching template may itself literally be `NotReducible`, so equality to the
+sentinel alone is not enough to recover a coarse witness. -/
+theorem selectSwitchTemplateCoarse_exists_of_ne_notReducible
+    {scrut : Atom} {branches : List Atom} {fuel : Nat} {result : Atom}
+    (hsel : selectSwitchTemplateCoarse scrut branches fuel = result)
+    (hred : result ≠ Atom.notReducible) :
+    ∃ (i : Nat) (pt template : Atom) (mb : Bindings),
+      branches[i]? = some (.expression [pt, template]) ∧
+      simpleMatch pt scrut Bindings.empty fuel = some mb ∧
+      (∀ j < i, ∀ pt' template',
+        branches[j]? = some (.expression [pt', template']) →
+        simpleMatch pt' scrut Bindings.empty fuel = none) ∧
+      result = mb.applyDefault template := by
+  induction branches generalizing result with
+  | nil =>
+      simp [selectSwitchTemplateCoarse] at hsel
+      exact False.elim (hred hsel.symm)
+  | cons head tail ih =>
+      cases h_head : head with
+      | symbol s =>
+          have hsel_tail : selectSwitchTemplateCoarse scrut tail fuel = result := by
+            simpa [selectSwitchTemplateCoarse, h_head] using hsel
+          rcases ih hsel_tail hred with
+            ⟨i, pt, template, mb, h_branch, h_match, h_earlier, h_result⟩
+          refine ⟨i + 1, pt, template, mb, ?_, h_match, ?_, h_result⟩
+          · simpa using h_branch
+          · intro j hj pt' template' h_branch_j
+            cases j with
+            | zero =>
+                simp at h_branch_j
+            | succ j' =>
+                have hj' : j' < i := Nat.lt_of_succ_lt_succ hj
+                exact h_earlier j' hj' pt' template' (by simpa using h_branch_j)
+      | var v =>
+          have hsel_tail : selectSwitchTemplateCoarse scrut tail fuel = result := by
+            simpa [selectSwitchTemplateCoarse, h_head] using hsel
+          rcases ih hsel_tail hred with
+            ⟨i, pt, template, mb, h_branch, h_match, h_earlier, h_result⟩
+          refine ⟨i + 1, pt, template, mb, ?_, h_match, ?_, h_result⟩
+          · simpa using h_branch
+          · intro j hj pt' template' h_branch_j
+            cases j with
+            | zero =>
+                simp at h_branch_j
+            | succ j' =>
+                have hj' : j' < i := Nat.lt_of_succ_lt_succ hj
+                exact h_earlier j' hj' pt' template' (by simpa using h_branch_j)
+      | grounded g =>
+          have hsel_tail : selectSwitchTemplateCoarse scrut tail fuel = result := by
+            simpa [selectSwitchTemplateCoarse, h_head] using hsel
+          rcases ih hsel_tail hred with
+            ⟨i, pt, template, mb, h_branch, h_match, h_earlier, h_result⟩
+          refine ⟨i + 1, pt, template, mb, ?_, h_match, ?_, h_result⟩
+          · simpa using h_branch
+          · intro j hj pt' template' h_branch_j
+            cases j with
+            | zero =>
+                simp at h_branch_j
+            | succ j' =>
+                have hj' : j' < i := Nat.lt_of_succ_lt_succ hj
+                exact h_earlier j' hj' pt' template' (by simpa using h_branch_j)
+      | expression hs =>
+          cases hs with
+          | nil =>
+              have hsel_tail : selectSwitchTemplateCoarse scrut tail fuel = result := by
+                simpa [selectSwitchTemplateCoarse, h_head] using hsel
+              rcases ih hsel_tail hred with
+                ⟨i, pt, template, mb, h_branch, h_match, h_earlier, h_result⟩
+              refine ⟨i + 1, pt, template, mb, ?_, h_match, ?_, h_result⟩
+              · simpa using h_branch
+              · intro j hj pt' template' h_branch_j
+                cases j with
+                | zero =>
+                    simp at h_branch_j
+                | succ j' =>
+                    have hj' : j' < i := Nat.lt_of_succ_lt_succ hj
+                    exact h_earlier j' hj' pt' template' (by simpa using h_branch_j)
+          | cons a hs1 =>
+              cases hs1 with
+              | nil =>
+                  have hsel_tail : selectSwitchTemplateCoarse scrut tail fuel = result := by
+                    simpa [selectSwitchTemplateCoarse, h_head] using hsel
+                  rcases ih hsel_tail hred with
+                    ⟨i, pt, template, mb, h_branch, h_match, h_earlier, h_result⟩
+                  refine ⟨i + 1, pt, template, mb, ?_, h_match, ?_, h_result⟩
+                  · simpa using h_branch
+                  · intro j hj pt' template' h_branch_j
+                    cases j with
+                    | zero =>
+                        simp at h_branch_j
+                    | succ j' =>
+                        have hj' : j' < i := Nat.lt_of_succ_lt_succ hj
+                        exact h_earlier j' hj' pt' template' (by simpa using h_branch_j)
+              | cons b hs2 =>
+                  cases hs2 with
+                  | nil =>
+                      cases h_match0 : simpleMatch a scrut Bindings.empty fuel with
+                      | none =>
+                          have hsel_tail :
+                              selectSwitchTemplateCoarse scrut tail fuel = result := by
+                            simpa [selectSwitchTemplateCoarse, h_head, h_match0] using hsel
+                          rcases ih hsel_tail hred with
+                            ⟨i, pt, template, mb, h_branch, h_match, h_earlier, h_result⟩
+                          refine ⟨i + 1, pt, template, mb, ?_, h_match, ?_, h_result⟩
+                          · simpa using h_branch
+                          · intro j hj pt' template' h_branch_j
+                            cases j with
+                            | zero =>
+                                have h_pair :
+                                    Atom.expression [a, b] =
+                                      Atom.expression [pt', template'] := by
+                                  simpa [h_head] using h_branch_j
+                                cases h_pair
+                                simpa using h_match0
+                            | succ j' =>
+                                have hj' : j' < i := Nat.lt_of_succ_lt_succ hj
+                                exact h_earlier j' hj' pt' template'
+                                  (by simpa using h_branch_j)
+                      | some mb0 =>
+                          refine ⟨0, a, b, mb0, ?_, h_match0, ?_, ?_⟩
+                          · simp
+                          · intro j hj
+                            exact False.elim (Nat.not_lt_zero _ hj)
+                          · simpa [selectSwitchTemplateCoarse, h_head, h_match0] using hsel.symm
+                  | cons c hs3 =>
+                      have hsel_tail : selectSwitchTemplateCoarse scrut tail fuel = result := by
+                        simpa [selectSwitchTemplateCoarse, h_head] using hsel
+                      rcases ih hsel_tail hred with
+                        ⟨i, pt, template, mb, h_branch, h_match, h_earlier, h_result⟩
+                      refine ⟨i + 1, pt, template, mb, ?_, h_match, ?_, h_result⟩
+                      · simpa using h_branch
+                      · intro j hj pt' template' h_branch_j
+                        cases j with
+                        | zero =>
+                            simp at h_branch_j
+                        | succ j' =>
+                            have hj' : j' < i := Nat.lt_of_succ_lt_succ hj
+                            exact h_earlier j' hj' pt' template' (by simpa using h_branch_j)
+
+/-- Selector-to-coarse-step converse on the honest non-sentinel fragment.
+If the primitive selector returns some atom other than `NotReducible`, then
+the coarse `switch-minimal` relation really does have a visible match step to
+that result. -/
+theorem step_switchMinimal_of_selector_ne_notReducible
+    {space : Space} {d : GroundedDispatch} {fuel : Nat}
+    {scrut : Atom} {branches : List Atom} {result : Atom}
+    (hsel : selectSwitchTemplateCoarse scrut branches fuel = result)
+    (hred : result ≠ Atom.notReducible) :
+    HESmallStep space d fuel
+      (.expression [.symbol "switch-minimal", scrut, .expression branches])
+      result := by
+  rcases selectSwitchTemplateCoarse_exists_of_ne_notReducible hsel hred with
+    ⟨i, pt, template, mb, h_branch, h_match, h_earlier, h_result⟩
+  rw [h_result]
+  exact HESmallStep.switch_minimal_match rfl h_branch h_match h_earlier
 
 /-! ## F3: `switch-minimal` / `switch-internal` Typed Function + Equation Shells
 
@@ -3861,6 +5296,46 @@ private def switchInternalUnify
 private def switchInternalBody
     (scrut pt template : Atom) (tail : List Atom) : Atom :=
   .expression [.symbol "function", switchInternalUnify scrut pt template tail]
+
+/-- Alpha-renamed variant of the recursive else-branch used by
+`switch-internal`: the local chain binder may be any fresh variable name,
+not just the unsuffixed surface spelling.  This matches the real
+`queryEquations` route, which freshens all equation-local variables. -/
+private def switchInternalElseChainVar
+    (retVar : String) (scrut : Atom) (tail : List Atom) : Atom :=
+  .expression [.symbol "chain",
+    .expression [.symbol "eval", switchMinimalExpr scrut tail],
+    .var retVar,
+    .expression [.symbol "return", .var retVar]]
+
+/-- Alpha-renamed variant of the upstream `unify` core inside
+`switch-internal`, parameterized by the freshened local binder used in the
+recursive else branch. -/
+private def switchInternalUnifyVar
+    (retVar : String) (scrut pt template : Atom) (tail : List Atom) : Atom :=
+  .expression [.symbol "unify", scrut, pt,
+    .expression [.symbol "return", template],
+    switchInternalElseChainVar retVar scrut tail]
+
+/-- Alpha-renamed variant of the verbatim upstream `function` body for
+`switch-internal`, parameterized by the freshened local binder. -/
+private def switchInternalBodyVar
+    (retVar : String) (scrut pt template : Atom) (tail : List Atom) : Atom :=
+  .expression [.symbol "function", switchInternalUnifyVar retVar scrut pt template tail]
+
+private theorem switchInternalElseChainVar_ret
+    (scrut : Atom) (tail : List Atom) :
+    switchInternalElseChainVar "ret" scrut tail = switchInternalElseChain scrut tail := rfl
+
+private theorem switchInternalUnifyVar_ret
+    (scrut pt template : Atom) (tail : List Atom) :
+    switchInternalUnifyVar "ret" scrut pt template tail =
+      switchInternalUnify scrut pt template tail := rfl
+
+private theorem switchInternalBodyVar_ret
+    (scrut pt template : Atom) (tail : List Atom) :
+    switchInternalBodyVar "ret" scrut pt template tail =
+      switchInternalBody scrut pt template tail := rfl
 
 /-- If the space presents `switch-minimal` with exactly its stdlib function
 type, then the official type-cast path evaluates the head symbol to itself at
@@ -4141,6 +5616,38 @@ structure SwitchInternalGroundRealization (space : Space) (d : GroundedDispatch)
         Atom.undefinedType Bindings.empty
         (ret, rb)
 
+/-- Seeded companion to `SwitchInternalGroundRealization`: the exact same
+minimal helper boundaries, but under an arbitrary incoming bindings seed.
+This is the form the stdlib equation-helper route needs after
+`queryEquations` has contributed fresh local bindings before the recursive
+`switch-internal` body runs. -/
+structure SwitchInternalGroundSeededRealization (space : Space)
+    (d : GroundedDispatch) extends UnifyGroundSeededRealization space d where
+  evalStableSeeded :
+    ∀ {seed : Bindings} {atom : Atom} {r : ResultPair},
+      EvalAtom space d atom Atom.undefinedType seed r →
+      EvalAtomStablyReaches space d
+        (.expression [.symbol "eval", atom])
+        Atom.undefinedType seed r
+  chainStableSeeded :
+    ∀ {seed : Bindings} {atom template : Atom} {v : String}
+      {result : Atom} {rb : Bindings},
+      EvalAtom space d atom Atom.undefinedType seed (result, rb) →
+      result ≠ Atom.empty →
+      EvalAtomStablyReaches space d
+        (.expression [.symbol "chain", atom, .var v, template])
+        Atom.undefinedType seed
+        ((Bindings.assign rb v result).applyDefault template,
+          Bindings.assign rb v result)
+  functionReturnStableSeeded :
+    ∀ {seed : Bindings} {body ret : Atom} {rb : Bindings},
+      EvalAtom space d body Atom.undefinedType seed
+        (.expression [.symbol "return", ret], rb) →
+      EvalAtomStablyReaches space d
+        (.expression [.symbol "function", body])
+        Atom.undefinedType seed
+        (ret, rb)
+
 /-- Applying bindings to a `(return ...)` wrapper preserves the head symbol
 and substitutes only inside the payload.  This makes the `function/return`
 boundary spendable without pretending the inner payload saw the same fuel as a
@@ -4239,5 +5746,334 @@ theorem evalAtom_realizes_switch_internal_else_chain_of_tail
           Bindings.assign rb "ret" ret) := by
     simpa [applyDefault_return_shape] using h_chain
   exact h_chain_ret
+
+/-- Head-miss branch of the *function body* used by `switch-internal`,
+parametrized by the official evaluation of the tail `switch-minimal`.
+This is the honest recursive miss-side companion to
+`evalAtom_realizes_switch_internal_body_match_ground`: the `unify` miss does
+not stop the computation, it follows its else branch through the recursive
+`chain`, and then the surrounding `function` consumes the resulting
+`(return ...)`. -/
+theorem evalAtom_realizes_switch_internal_body_no_match_of_tail
+    {space : Space} {d : GroundedDispatch}
+    (hReal : SwitchInternalGroundRealization space d)
+    {scrut pt template : Atom} {tail : List Atom}
+    {ret : Atom} {rb : Bindings} {fuel : Nat}
+    (hground : GroundAtom scrut)
+    (hmatch : simpleMatch pt scrut Bindings.empty fuel = none)
+    (h_tail :
+      EvalAtom space d
+        (switchMinimalExpr scrut tail)
+        Atom.undefinedType Bindings.empty
+        (ret, rb))
+    (h_ret_nonempty : ret ≠ Atom.empty) :
+    EvalAtom space d
+      (switchInternalBody scrut pt template tail)
+      Atom.undefinedType Bindings.empty
+      ((Bindings.assign rb "ret" ret).apply (.var "ret") 99,
+        Bindings.assign rb "ret" ret) := by
+  have h_else :
+      EvalAtom space d
+        (switchInternalElseChain scrut tail)
+        Atom.undefinedType Bindings.empty
+        (.expression [.symbol "return",
+            (Bindings.assign rb "ret" ret).apply (.var "ret") 99],
+          Bindings.assign rb "ret" ret) := by
+    exact evalAtom_realizes_switch_internal_else_chain_of_tail
+      hReal h_tail h_ret_nonempty
+  have h_unify :
+      EvalAtom space d
+        (switchInternalUnify scrut pt template tail)
+        Atom.undefinedType Bindings.empty
+        (.expression [.symbol "return",
+            (Bindings.assign rb "ret" ret).apply (.var "ret") 99],
+          Bindings.assign rb "ret" ret) := by
+    exact evalAtom_realizes_unify_no_match_ground_of_else
+      hReal.toUnifyGroundRealization hground hmatch h_else
+  exact evalAtomStablyReaches_to_EvalAtom space d
+    (switchInternalBody scrut pt template tail)
+    Atom.undefinedType Bindings.empty
+    ((Bindings.assign rb "ret" ret).apply (.var "ret") 99,
+      Bindings.assign rb "ret" ret)
+    (hReal.functionReturnStable h_unify)
+
+/-- Seeded head-hit branch of the `switch-internal` function body.  This is
+the equation-helper companion to
+`evalAtom_realizes_switch_internal_body_match_ground`: when an outer query has
+already contributed incoming bindings, the seeded `unify_match` result still
+feeds the surrounding `function` body to the same returned branch payload. -/
+theorem evalAtom_realizes_switch_internal_body_match_ground_seeded
+    {space : Space} {d : GroundedDispatch}
+    (hReal : SwitchInternalGroundSeededRealization space d)
+    {seed mb merged : Bindings}
+    {scrut pt template : Atom} {tail : List Atom} {fuel : Nat}
+    (hground : GroundAtom scrut)
+    (hmatch : mb ∈ matchAtoms scrut pt fuel)
+    (hmerge : merged ∈ mergeBindings mb seed fuel)
+    (h_no_loop : merged.hasLoop = false) :
+    EvalAtom space d
+      (switchInternalBody scrut pt template tail)
+      Atom.undefinedType seed
+      (merged.apply template 99, merged) := by
+  have h_unify :
+      EvalAtom space d
+        (switchInternalUnify scrut pt template tail)
+        Atom.undefinedType seed
+        (merged.applyDefault (.expression [.symbol "return", template]), merged) := by
+    simpa [switchInternalUnify, switchInternalElseChain] using
+      evalAtom_realizes_unify_match_ground_seeded
+        hReal.toUnifyGroundSeededRealization hground hmatch hmerge h_no_loop
+  have h_unify_ret :
+      EvalAtom space d
+        (switchInternalUnify scrut pt template tail)
+        Atom.undefinedType seed
+        (.expression [.symbol "return", merged.apply template 99], merged) := by
+    simpa [applyDefault_return_shape] using h_unify
+  exact evalAtomStablyReaches_to_EvalAtom space d
+    (switchInternalBody scrut pt template tail)
+    Atom.undefinedType seed
+    (merged.apply template 99, merged)
+    (hReal.functionReturnStableSeeded h_unify_ret)
+
+/-- Seeded recursive else-chain core used by the head-miss branch of
+`switch-internal`: if the tail `switch-minimal` already has an official
+evaluation under the same incoming query bindings, the seeded `eval/chain`
+helper path realizes the corresponding `(return ...)` body result. -/
+theorem evalAtom_realizes_switch_internal_else_chain_of_tail_seeded
+    {space : Space} {d : GroundedDispatch}
+    (hReal : SwitchInternalGroundSeededRealization space d)
+    {seed : Bindings} {scrut : Atom} {tail : List Atom}
+    {ret : Atom} {rb : Bindings}
+    (h_tail :
+      EvalAtom space d
+        (switchMinimalExpr scrut tail)
+        Atom.undefinedType seed
+        (ret, rb))
+    (h_ret_nonempty : ret ≠ Atom.empty) :
+    EvalAtom space d
+      (switchInternalElseChain scrut tail)
+      Atom.undefinedType seed
+      (.expression [.symbol "return",
+          (Bindings.assign rb "ret" ret).apply (.var "ret") 99],
+        Bindings.assign rb "ret" ret) := by
+  have h_eval_switch :
+      EvalAtom space d
+        (.expression [.symbol "eval", switchMinimalExpr scrut tail])
+        Atom.undefinedType seed
+        (ret, rb) :=
+    evalAtomStablyReaches_to_EvalAtom space d
+      (.expression [.symbol "eval", switchMinimalExpr scrut tail])
+      Atom.undefinedType seed
+      (ret, rb)
+      (hReal.evalStableSeeded h_tail)
+  have h_chain :
+      EvalAtom space d
+        (switchInternalElseChain scrut tail)
+        Atom.undefinedType seed
+        ((Bindings.assign rb "ret" ret).applyDefault
+          (.expression [.symbol "return", .var "ret"]),
+          Bindings.assign rb "ret" ret) :=
+    evalAtomStablyReaches_to_EvalAtom space d
+      (switchInternalElseChain scrut tail)
+      Atom.undefinedType seed
+      ((Bindings.assign rb "ret" ret).applyDefault
+        (.expression [.symbol "return", .var "ret"]),
+        Bindings.assign rb "ret" ret)
+      (hReal.chainStableSeeded h_eval_switch h_ret_nonempty)
+  have h_chain_ret :
+      EvalAtom space d
+        (switchInternalElseChain scrut tail)
+        Atom.undefinedType seed
+        (.expression [.symbol "return",
+            (Bindings.assign rb "ret" ret).apply (.var "ret") 99],
+          Bindings.assign rb "ret" ret) := by
+    simpa [applyDefault_return_shape] using h_chain
+  exact h_chain_ret
+
+/-- Seeded head-miss branch of the `switch-internal` function body.  This is
+the equation-helper companion to
+`evalAtom_realizes_switch_internal_body_no_match_of_tail`: the seeded
+`unify_no_match` branch follows its recursive else-chain under the same
+incoming query bindings, then the surrounding `function` consumes the
+resulting `(return ...)`. -/
+theorem evalAtom_realizes_switch_internal_body_no_match_of_tail_seeded
+    {space : Space} {d : GroundedDispatch}
+    (hReal : SwitchInternalGroundSeededRealization space d)
+    {seed : Bindings} {scrut pt template : Atom} {tail : List Atom}
+    {ret : Atom} {rb : Bindings} {fuel : Nat}
+    (hground : GroundAtom scrut)
+    (hmatch : matchAtoms scrut pt fuel = [])
+    (h_tail :
+      EvalAtom space d
+        (switchMinimalExpr scrut tail)
+        Atom.undefinedType seed
+        (ret, rb))
+    (h_ret_nonempty : ret ≠ Atom.empty) :
+    EvalAtom space d
+      (switchInternalBody scrut pt template tail)
+      Atom.undefinedType seed
+      ((Bindings.assign rb "ret" ret).apply (.var "ret") 99,
+        Bindings.assign rb "ret" ret) := by
+  have h_else :
+      EvalAtom space d
+        (switchInternalElseChain scrut tail)
+        Atom.undefinedType seed
+        (.expression [.symbol "return",
+            (Bindings.assign rb "ret" ret).apply (.var "ret") 99],
+          Bindings.assign rb "ret" ret) := by
+    exact evalAtom_realizes_switch_internal_else_chain_of_tail_seeded
+      hReal h_tail h_ret_nonempty
+  have h_unify :
+      EvalAtom space d
+        (switchInternalUnify scrut pt template tail)
+        Atom.undefinedType seed
+        (.expression [.symbol "return",
+            (Bindings.assign rb "ret" ret).apply (.var "ret") 99],
+          Bindings.assign rb "ret" ret) := by
+    exact evalAtom_realizes_unify_no_match_ground_of_else_seeded
+      hReal.toUnifyGroundSeededRealization hground hmatch h_else
+  exact evalAtomStablyReaches_to_EvalAtom space d
+    (switchInternalBody scrut pt template tail)
+    Atom.undefinedType seed
+    ((Bindings.assign rb "ret" ret).apply (.var "ret") 99,
+      Bindings.assign rb "ret" ret)
+    (hReal.functionReturnStableSeeded h_unify)
+
+/-- Alpha-renamed seeded head-hit branch of the `switch-internal` function
+body.  This is the exact equation-helper form needed after
+`queryEquations` freshens the local `ret` binder. -/
+theorem evalAtom_realizes_switch_internal_body_match_ground_seeded_var
+    {space : Space} {d : GroundedDispatch}
+    (hReal : SwitchInternalGroundSeededRealization space d)
+    {retVar : String} {seed mb merged : Bindings}
+    {scrut pt template : Atom} {tail : List Atom} {fuel : Nat}
+    (hground : GroundAtom scrut)
+    (hmatch : mb ∈ matchAtoms scrut pt fuel)
+    (hmerge : merged ∈ mergeBindings mb seed fuel)
+    (h_no_loop : merged.hasLoop = false) :
+    EvalAtom space d
+      (switchInternalBodyVar retVar scrut pt template tail)
+      Atom.undefinedType seed
+      (merged.apply template 99, merged) := by
+  have h_unify :
+      EvalAtom space d
+        (switchInternalUnifyVar retVar scrut pt template tail)
+        Atom.undefinedType seed
+        (merged.applyDefault (.expression [.symbol "return", template]), merged) := by
+    simpa [switchInternalUnifyVar, switchInternalElseChainVar] using
+      evalAtom_realizes_unify_match_ground_seeded
+        hReal.toUnifyGroundSeededRealization hground hmatch hmerge h_no_loop
+  have h_unify_ret :
+      EvalAtom space d
+        (switchInternalUnifyVar retVar scrut pt template tail)
+        Atom.undefinedType seed
+        (.expression [.symbol "return", merged.apply template 99], merged) := by
+    simpa [applyDefault_return_shape] using h_unify
+  exact evalAtomStablyReaches_to_EvalAtom space d
+    (switchInternalBodyVar retVar scrut pt template tail)
+    Atom.undefinedType seed
+    (merged.apply template 99, merged)
+    (hReal.functionReturnStableSeeded h_unify_ret)
+
+/-- Alpha-renamed seeded recursive else-chain core used by the head-miss
+branch of `switch-internal`.  This is the exact equation-helper form needed
+after `queryEquations` freshens the local `ret` binder. -/
+theorem evalAtom_realizes_switch_internal_else_chain_of_tail_seeded_var
+    {space : Space} {d : GroundedDispatch}
+    (hReal : SwitchInternalGroundSeededRealization space d)
+    {retVar : String} {seed : Bindings} {scrut : Atom} {tail : List Atom}
+    {ret : Atom} {rb : Bindings}
+    (h_tail :
+      EvalAtom space d
+        (switchMinimalExpr scrut tail)
+        Atom.undefinedType seed
+        (ret, rb))
+    (h_ret_nonempty : ret ≠ Atom.empty) :
+    EvalAtom space d
+      (switchInternalElseChainVar retVar scrut tail)
+      Atom.undefinedType seed
+      (.expression [.symbol "return",
+          (Bindings.assign rb retVar ret).apply (.var retVar) 99],
+        Bindings.assign rb retVar ret) := by
+  have h_eval_switch :
+      EvalAtom space d
+        (.expression [.symbol "eval", switchMinimalExpr scrut tail])
+        Atom.undefinedType seed
+        (ret, rb) :=
+    evalAtomStablyReaches_to_EvalAtom space d
+      (.expression [.symbol "eval", switchMinimalExpr scrut tail])
+      Atom.undefinedType seed
+      (ret, rb)
+      (hReal.evalStableSeeded h_tail)
+  have h_chain :
+      EvalAtom space d
+        (switchInternalElseChainVar retVar scrut tail)
+        Atom.undefinedType seed
+        ((Bindings.assign rb retVar ret).applyDefault
+          (.expression [.symbol "return", .var retVar]),
+          Bindings.assign rb retVar ret) :=
+    evalAtomStablyReaches_to_EvalAtom space d
+      (switchInternalElseChainVar retVar scrut tail)
+      Atom.undefinedType seed
+      ((Bindings.assign rb retVar ret).applyDefault
+        (.expression [.symbol "return", .var retVar]),
+        Bindings.assign rb retVar ret)
+      (hReal.chainStableSeeded h_eval_switch h_ret_nonempty)
+  have h_chain_ret :
+      EvalAtom space d
+        (switchInternalElseChainVar retVar scrut tail)
+        Atom.undefinedType seed
+        (.expression [.symbol "return",
+            (Bindings.assign rb retVar ret).apply (.var retVar) 99],
+          Bindings.assign rb retVar ret) := by
+    simpa [applyDefault_return_shape] using h_chain
+  exact h_chain_ret
+
+/-- Alpha-renamed seeded head-miss branch of the `switch-internal` function
+body.  This is the exact equation-helper form needed after
+`queryEquations` freshens the local `ret` binder. -/
+theorem evalAtom_realizes_switch_internal_body_no_match_of_tail_seeded_var
+    {space : Space} {d : GroundedDispatch}
+    (hReal : SwitchInternalGroundSeededRealization space d)
+    {retVar : String} {seed : Bindings}
+    {scrut pt template : Atom} {tail : List Atom}
+    {ret : Atom} {rb : Bindings} {fuel : Nat}
+    (hground : GroundAtom scrut)
+    (hmatch : matchAtoms scrut pt fuel = [])
+    (h_tail :
+      EvalAtom space d
+        (switchMinimalExpr scrut tail)
+        Atom.undefinedType seed
+        (ret, rb))
+    (h_ret_nonempty : ret ≠ Atom.empty) :
+    EvalAtom space d
+      (switchInternalBodyVar retVar scrut pt template tail)
+      Atom.undefinedType seed
+      ((Bindings.assign rb retVar ret).apply (.var retVar) 99,
+        Bindings.assign rb retVar ret) := by
+  have h_else :
+      EvalAtom space d
+        (switchInternalElseChainVar retVar scrut tail)
+        Atom.undefinedType seed
+        (.expression [.symbol "return",
+            (Bindings.assign rb retVar ret).apply (.var retVar) 99],
+          Bindings.assign rb retVar ret) := by
+    exact evalAtom_realizes_switch_internal_else_chain_of_tail_seeded_var
+      hReal h_tail h_ret_nonempty
+  have h_unify :
+      EvalAtom space d
+        (switchInternalUnifyVar retVar scrut pt template tail)
+        Atom.undefinedType seed
+        (.expression [.symbol "return",
+            (Bindings.assign rb retVar ret).apply (.var retVar) 99],
+          Bindings.assign rb retVar ret) := by
+    exact evalAtom_realizes_unify_no_match_ground_of_else_seeded
+      hReal.toUnifyGroundSeededRealization hground hmatch h_else
+  exact evalAtomStablyReaches_to_EvalAtom space d
+    (switchInternalBodyVar retVar scrut pt template tail)
+    Atom.undefinedType seed
+    ((Bindings.assign rb retVar ret).apply (.var retVar) 99,
+      Bindings.assign rb retVar ret)
+    (hReal.functionReturnStableSeeded h_unify)
 
 end Mettapedia.Languages.MeTTa.HE

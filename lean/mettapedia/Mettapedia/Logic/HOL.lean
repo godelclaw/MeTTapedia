@@ -46,6 +46,10 @@ Completeness (Henkin 1950 for the theory of types — sorry-free, axiom-clean):
   and `models_iff_mem`,
 - the headline `TermModel.HenkinCompleteness.henkin_satisfiable`: a consistent
   *witnessed + excluded-middle* theory has a Henkin general model satisfying it.
+- the public corollary
+  `TermModel.HenkinCompleteness.henkin_model_exists_of_consistent_classical`:
+  a consistent parameter-free classical theory over `WithParams` has a Henkin
+  general model satisfying the theory itself.
 
 Legacy `WorldModelCompleteness.lean` (hypothesis-parameterised) is retained but is not
 the active completeness surface.

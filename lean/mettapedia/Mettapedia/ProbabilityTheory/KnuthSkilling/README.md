@@ -180,7 +180,7 @@ For the hypercube's "weakness preorder" + quantale-semantics layer (inspired by 
 ## Build
 
 ```bash
-cd lean-projects/mettapedia
+cd Mettapedia/lean/mettapedia
 export LAKE_JOBS=3
 nice -n 19 lake build Mettapedia.ProbabilityTheory.KnuthSkilling
 ```

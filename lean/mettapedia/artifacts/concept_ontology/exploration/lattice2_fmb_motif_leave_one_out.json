@@ -30,7 +30,7 @@
     "max_count": 1,
     "name": "lattice2_fmb_motifs",
     "objects": 8,
-    "source": "/home/zar/claude/lean-projects/mettapedia/artifacts/concept_ontology/exploration/lattice2_fmb_motif_context.json"
+    "source": "/home/zar/claude/Mettapedia/lean/mettapedia/artifacts/concept_ontology/exploration/lattice2_fmb_motif_context.json"
   },
   "gate_family": {
     "concept_count_by_gate": [

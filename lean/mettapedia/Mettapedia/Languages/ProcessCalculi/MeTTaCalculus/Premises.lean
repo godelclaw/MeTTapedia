@@ -29,7 +29,7 @@ Semantics aligns with:
 
 - `/home/zar/claude/hyperon/rho4u/metta-calculus/metta-calculus.core.tex`
 - relation-name discipline inspired by
-  `/home/zar/claude/lean-projects/mettapedia/Mettapedia/Languages/MeTTa/HE/HEPremises.lean`
+  `/home/zar/claude/Mettapedia/lean/mettapedia/Mettapedia/Languages/MeTTa/HE/HEPremises.lean`
 -/
 
 namespace Mettapedia.Languages.ProcessCalculi.MeTTaCalculus.Premises

@@ -1,6 +1,6 @@
 # Algorithms — executable Lean (MeTTa runtime, GF parsing, graph & quantitative checkers)
 
-`lean-projects/algorithms` is the lightweight, *executable*-Lean counterpart to
+`Mettapedia/lean/algorithms` is the lightweight, *executable*-Lean counterpart to
 the Mettapedia OSLF semantic IL: where `Mettapedia/OSLF` proves language-level
 properties, this project hosts runnable implementations — a MeTTa interpreter,
 Grammatical Framework parsing, graph algorithms, and quantitative checkers.
@@ -19,7 +19,7 @@ Lean library: `«Algorithms»` (`Algorithms.lean` is the root aggregator).
 ## Build
 
 ```bash
-cd lean-projects/algorithms
+cd /home/zar/claude/Mettapedia/lean/algorithms
 lake build
 ```
 

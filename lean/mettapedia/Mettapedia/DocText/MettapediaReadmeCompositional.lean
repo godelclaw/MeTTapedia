@@ -98,7 +98,7 @@ def renderMettapediaClaim : MettapediaClaim → String
       mkPresPos subj vp
   | .buildRunsFromMettapediaRoot =>
       let subj := linDetCN theDefArt (linUseN build_N)
-      let vp := advVP (predV (regV "run")) (ppAdv from_Prep (properNameNP "lean-projects/mettapedia"))
+      let vp := advVP (predV (regV "run")) (ppAdv from_Prep (properNameNP "Mettapedia/lean/mettapedia"))
       mkPresPos subj vp
   | .firstBuildRunsUpdateAndCache =>
       let subj := properNameNP "The first build"
@@ -294,7 +294,7 @@ def mettapediaReadmeBlocks : List ReadmeBlock :=
       ]
   , .heading 2 (renderMettapediaHeading .build)
   , .codeBlock "bash"
-      "cd lean-projects/mettapedia\nlake update && lake exe cache get\n\nexport LAKE_JOBS=3\nulimit -Sv 6291456\nnice -n 19 lake build"
+      "cd Mettapedia/lean/mettapedia\nlake update && lake exe cache get\n\nexport LAKE_JOBS=3\nulimit -Sv 6291456\nnice -n 19 lake build"
   , .claimBullets
       [ claimBullet .buildRunsFromMettapediaRoot
       , claimBullet .firstBuildRunsUpdateAndCache

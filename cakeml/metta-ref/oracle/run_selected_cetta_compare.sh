@@ -1,9 +1,19 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-POLY=${POLY:-/home/zar/claude/CakeML/polyml-local/bin/poly}
-CETTA=${CETTA:-/home/zar/claude/hyperon/CeTTa/cetta}
-CETTA_TEST_DIR=${CETTA_TEST_DIR:-/home/zar/claude/hyperon/CeTTa/tests}
+script_dir=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
+metta_ref_root=$(CDPATH= cd -- "$script_dir/.." && pwd)
+workspace_root=$(CDPATH= cd -- "$metta_ref_root/../../.." && pwd)
+
+if [[ -n "${CAKEML_HOME:-}" ]]; then
+  cakeml_home="$CAKEML_HOME"
+else
+  cakeml_home="$workspace_root/CakeML"
+fi
+
+POLY=${POLY:-"$cakeml_home/polyml-local/bin/poly"}
+CETTA=${CETTA:-"$workspace_root/hyperon/CeTTa/cetta"}
+CETTA_TEST_DIR=${CETTA_TEST_DIR:-"$workspace_root/hyperon/CeTTa/tests"}
 LOCAL_TEST_DIR=${LOCAL_TEST_DIR:-tests/cetta_selected}
 CML_RUNNER=${CML_RUNNER:-./cml/metta_m1_runner.cake}
 NORMALIZER=${NORMALIZER:-oracle/normalize_metta_output.py}

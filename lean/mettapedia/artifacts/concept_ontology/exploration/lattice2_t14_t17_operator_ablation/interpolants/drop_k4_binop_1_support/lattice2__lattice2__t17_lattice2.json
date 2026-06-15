@@ -1,6 +1,6 @@
 {
   "failure_kind": "timeout",
-  "input_file": "/home/zar/claude/lean-projects/mettapedia/artifacts/concept_ontology/exploration/lattice2_t14_t17_operator_ablation/inputs/drop_k4_binop_1_support/lattice2__lattice2__t17_lattice2",
+  "input_file": "/home/zar/claude/Mettapedia/lean/mettapedia/artifacts/concept_ontology/exploration/lattice2_t14_t17_operator_ablation/inputs/drop_k4_binop_1_support/lattice2__lattice2__t17_lattice2",
   "interpolant": null,
   "interpolant_features": null,
   "interpolant_found": false,

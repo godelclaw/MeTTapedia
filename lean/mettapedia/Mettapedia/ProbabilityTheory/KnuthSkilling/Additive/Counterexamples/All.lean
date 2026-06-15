@@ -23,7 +23,7 @@ Build this file to compile the entire counterexample suite in one go:
 
 ```bash
 ulimit -Sv 6291456
-cd lean-projects/mettapedia
+cd Mettapedia/lean/mettapedia
 export LAKE_JOBS=1
 nice -n 19 lake build Mettapedia.ProbabilityTheory.KnuthSkilling.Additive.Counterexamples.All
 ```

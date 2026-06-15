@@ -1,9 +1,9 @@
 {
   "inputs": {
-    "gate_summary_heavy": "/home/zar/claude/lean-projects/mettapedia/artifacts/concept_ontology/exploration/lattice2_t18_t25_right_partition_gates/summary.json",
-    "gate_summary_light": "/home/zar/claude/lean-projects/mettapedia/artifacts/concept_ontology/exploration/lattice2_t14_t17_right_partition_gates/summary.json",
-    "track_a": "/home/zar/claude/lean-projects/mettapedia/artifacts/concept_ontology/exploration/finite_structure_property_benchmark_v2.json",
-    "track_b": "/home/zar/claude/lean-projects/mettapedia/artifacts/concept_ontology/exploration/lattice2_selector_family_candidates_v2.json"
+    "gate_summary_heavy": "/home/zar/claude/Mettapedia/lean/mettapedia/artifacts/concept_ontology/exploration/lattice2_t18_t25_right_partition_gates/summary.json",
+    "gate_summary_light": "/home/zar/claude/Mettapedia/lean/mettapedia/artifacts/concept_ontology/exploration/lattice2_t14_t17_right_partition_gates/summary.json",
+    "track_a": "/home/zar/claude/Mettapedia/lean/mettapedia/artifacts/concept_ontology/exploration/finite_structure_property_benchmark_v2.json",
+    "track_b": "/home/zar/claude/Mettapedia/lean/mettapedia/artifacts/concept_ontology/exploration/lattice2_selector_family_candidates_v2.json"
   },
   "shared_assessment": {
     "baseline_contrast": {
@@ -605,7 +605,7 @@
     "microgate_probe": {
       "all_timeout": true,
       "best_memory_run": {
-        "artifact": "/home/zar/claude/lean-projects/mettapedia/artifacts/concept_ontology/exploration/t21_t23_microgate_probe/t22_d11_lattices_right_20s.json",
+        "artifact": "/home/zar/claude/Mettapedia/lean/mettapedia/artifacts/concept_ontology/exploration/t21_t23_microgate_probe/t22_d11_lattices_right_20s.json",
         "extra_right_records": [
           "d11_lattices"
         ],
@@ -615,11 +615,11 @@
         "problem": "lattice2__lattice2__t22_lattice2",
         "time_elapsed_s": 20.0
       },
-      "probe_dir": "/home/zar/claude/lean-projects/mettapedia/artifacts/concept_ontology/exploration/t21_t23_microgate_probe",
+      "probe_dir": "/home/zar/claude/Mettapedia/lean/mettapedia/artifacts/concept_ontology/exploration/t21_t23_microgate_probe",
       "run_count": 10,
       "runs": [
         {
-          "artifact": "/home/zar/claude/lean-projects/mettapedia/artifacts/concept_ontology/exploration/t21_t23_microgate_probe/t21_full_20s.json",
+          "artifact": "/home/zar/claude/Mettapedia/lean/mettapedia/artifacts/concept_ontology/exploration/t21_t23_microgate_probe/t21_full_20s.json",
           "extra_right_records": [],
           "failure_kind": "timeout",
           "interpolant_found": false,
@@ -628,7 +628,7 @@
           "time_elapsed_s": 20.001
         },
         {
-          "artifact": "/home/zar/claude/lean-projects/mettapedia/artifacts/concept_ontology/exploration/t21_t23_microgate_probe/t21_prior_t11_right_20s.json",
+          "artifact": "/home/zar/claude/Mettapedia/lean/mettapedia/artifacts/concept_ontology/exploration/t21_t23_microgate_probe/t21_prior_t11_right_20s.json",
           "extra_right_records": [
             "prior_lattice2__t11_lattice2"
           ],
@@ -639,7 +639,7 @@
           "time_elapsed_s": 20.001
         },
         {
-          "artifact": "/home/zar/claude/lean-projects/mettapedia/artifacts/concept_ontology/exploration/t21_t23_microgate_probe/t21_prior_t18_right_20s.json",
+          "artifact": "/home/zar/claude/Mettapedia/lean/mettapedia/artifacts/concept_ontology/exploration/t21_t23_microgate_probe/t21_prior_t18_right_20s.json",
           "extra_right_records": [
             "prior_lattice2__t18_lattice2"
           ],
@@ -650,7 +650,7 @@
           "time_elapsed_s": 20.0
         },
         {
-          "artifact": "/home/zar/claude/lean-projects/mettapedia/artifacts/concept_ontology/exploration/t21_t23_microgate_probe/t21_prior_t20_right_20s.json",
+          "artifact": "/home/zar/claude/Mettapedia/lean/mettapedia/artifacts/concept_ontology/exploration/t21_t23_microgate_probe/t21_prior_t20_right_20s.json",
           "extra_right_records": [
             "prior_lattice2__t20_lattice2"
           ],
@@ -661,7 +661,7 @@
           "time_elapsed_s": 20.0
         },
         {
-          "artifact": "/home/zar/claude/lean-projects/mettapedia/artifacts/concept_ontology/exploration/t21_t23_microgate_probe/t22_d11_lattices_right_20s.json",
+          "artifact": "/home/zar/claude/Mettapedia/lean/mettapedia/artifacts/concept_ontology/exploration/t21_t23_microgate_probe/t22_d11_lattices_right_20s.json",
           "extra_right_records": [
             "d11_lattices"
           ],
@@ -672,7 +672,7 @@
           "time_elapsed_s": 20.0
         },
         {
-          "artifact": "/home/zar/claude/lean-projects/mettapedia/artifacts/concept_ontology/exploration/t21_t23_microgate_probe/t22_d11_lattices_right_30s.json",
+          "artifact": "/home/zar/claude/Mettapedia/lean/mettapedia/artifacts/concept_ontology/exploration/t21_t23_microgate_probe/t22_d11_lattices_right_30s.json",
           "extra_right_records": [
             "d11_lattices"
           ],
@@ -683,7 +683,7 @@
           "time_elapsed_s": 30.001
         },
         {
-          "artifact": "/home/zar/claude/lean-projects/mettapedia/artifacts/concept_ontology/exploration/t21_t23_microgate_probe/t22_full_20s.json",
+          "artifact": "/home/zar/claude/Mettapedia/lean/mettapedia/artifacts/concept_ontology/exploration/t21_t23_microgate_probe/t22_full_20s.json",
           "extra_right_records": [],
           "failure_kind": "timeout",
           "interpolant_found": false,
@@ -692,7 +692,7 @@
           "time_elapsed_s": 20.001
         },
         {
-          "artifact": "/home/zar/claude/lean-projects/mettapedia/artifacts/concept_ontology/exploration/t21_t23_microgate_probe/t22_prior_t20_right_20s.json",
+          "artifact": "/home/zar/claude/Mettapedia/lean/mettapedia/artifacts/concept_ontology/exploration/t21_t23_microgate_probe/t22_prior_t20_right_20s.json",
           "extra_right_records": [
             "prior_lattice2__t20_lattice2"
           ],
@@ -703,7 +703,7 @@
           "time_elapsed_s": 20.0
         },
         {
-          "artifact": "/home/zar/claude/lean-projects/mettapedia/artifacts/concept_ontology/exploration/t21_t23_microgate_probe/t22_prior_t21_right_20s.json",
+          "artifact": "/home/zar/claude/Mettapedia/lean/mettapedia/artifacts/concept_ontology/exploration/t21_t23_microgate_probe/t22_prior_t21_right_20s.json",
           "extra_right_records": [
             "prior_lattice2__t21_lattice2"
           ],
@@ -714,7 +714,7 @@
           "time_elapsed_s": 20.0
         },
         {
-          "artifact": "/home/zar/claude/lean-projects/mettapedia/artifacts/concept_ontology/exploration/t21_t23_microgate_probe/t24_d11_lattices_right_30s.json",
+          "artifact": "/home/zar/claude/Mettapedia/lean/mettapedia/artifacts/concept_ontology/exploration/t21_t23_microgate_probe/t24_d11_lattices_right_30s.json",
           "extra_right_records": [
             "d11_lattices"
           ],

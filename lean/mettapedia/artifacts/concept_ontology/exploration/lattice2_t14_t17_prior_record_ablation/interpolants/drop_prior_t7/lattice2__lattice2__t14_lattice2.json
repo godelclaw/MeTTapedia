@@ -1,6 +1,6 @@
 {
   "failure_kind": null,
-  "input_file": "/home/zar/claude/lean-projects/mettapedia/artifacts/concept_ontology/exploration/lattice2_t14_t17_prior_record_ablation/inputs/drop_prior_t7/lattice2__lattice2__t14_lattice2",
+  "input_file": "/home/zar/claude/Mettapedia/lean/mettapedia/artifacts/concept_ontology/exploration/lattice2_t14_t17_prior_record_ablation/inputs/drop_prior_t7/lattice2__lattice2__t14_lattice2",
   "interpolant": "(! [X2] : (~m1_subset_1(X2,u1_struct_0(sK23)) | k3_lattices(sK23,sK24,X2) = X2) & sK24 != k5_lattices(sK23) & m1_subset_1(sK24,u1_struct_0(sK23)) & ~v2_struct_0(sK23) & v10_lattices(sK23) & l3_lattices(sK23)) => ((365 => $false) & ~l3_lattices(sK23))",
   "interpolant_features": {
     "avatar_component_count": 1,

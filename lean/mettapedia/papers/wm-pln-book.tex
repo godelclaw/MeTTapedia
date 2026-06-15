@@ -10712,7 +10712,7 @@ functions.
 \paragraph{Reproducing the Lean proofs.}
 
 \begin{lstlisting}
-cd lean-projects/mettapedia
+cd Mettapedia/lean/mettapedia
 lake build                          # full build
 grep -rn sorry Mettapedia/Logic/PLN*.lean | wc -l  # sorry audit
 \end{lstlisting}
@@ -11477,7 +11477,7 @@ The refresh script is:
 
 Run command:
 \begin{lstlisting}
-cd ~/claude/lean-projects/mettapedia
+cd ~/claude/Mettapedia/lean/mettapedia
 ulimit -v 6291456
 python3 scripts/wm_pln_pplbench_easy_refresh.py
 \end{lstlisting}
@@ -11536,7 +11536,7 @@ Companion regression checks against the updated bridge also passed for:
 
 The second script lifts the refresh into a proper held-out benchmark report:
 \begin{lstlisting}
-cd ~/claude/lean-projects/mettapedia
+cd ~/claude/Mettapedia/lean/mettapedia
 ulimit -v 6291456
 python3 scripts/wm_pln_pplbench_holdout_report.py
 \end{lstlisting}
@@ -12876,7 +12876,7 @@ lake build Mettapedia.Logic.PLNBrokenSensorDemo \
 \section{Build}
 
 \begin{lstlisting}
-cd ~/claude/lean-projects/mettapedia
+cd ~/claude/Mettapedia/lean/mettapedia
 export LAKE_JOBS=3
 nice -n 19 lake build          # full build
 lake exe cache get             # cache after update

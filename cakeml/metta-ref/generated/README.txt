@@ -4,7 +4,7 @@ Generated bridge artifacts
 This directory is for CakeML artifacts emitted by HOL bridge scripts.
 
 bridge_eval_match_fragment.sexp is emitted by
-/home/zar/claude/CakeML/metta-ref/hol/metta_m1_cake_bridgeScript.sml from the
+hol/metta_m1_cake_bridgeScript.sml from the
 CakeML translator program state after bridge_eval_match_fragment is translated.
 It is an auditable artifact, not a semantic source of truth. The corresponding
 proof objects are the translator theorem, app spec, and CF wrapper theorems in

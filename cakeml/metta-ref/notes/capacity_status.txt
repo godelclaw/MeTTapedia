@@ -10,23 +10,23 @@ Implemented executable prototypes
 ---------------------------------
 
 1. M1 pure symbolic kernel
-   - SML: /home/zar/claude/CakeML/metta-ref/sml/metta_m1.sml
-   - CakeML: /home/zar/claude/CakeML/metta-ref/cml/metta_m1.cml
-   - Tests: /home/zar/claude/CakeML/metta-ref/tests/m1_tests.sml
+   - SML: sml/metta_m1.sml
+   - CakeML: cml/metta_m1.cml
+   - Tests: tests/m1_tests.sml
 
 2. Broad capacity witnesses
-   - SML harness: /home/zar/claude/CakeML/metta-ref/tests/capacity_prototypes.sml
-   - MeTTa witness catalog: /home/zar/claude/CakeML/metta-ref/tests/capacity_prototypes.metta
-   - Local oracle runner: /home/zar/claude/CakeML/metta-ref/oracle/run_local_oracle.sh
-   - CeTTa HE golden runner: /home/zar/claude/CakeML/metta-ref/oracle/run_cetta_goldens.sh
+   - SML harness: tests/capacity_prototypes.sml
+   - MeTTa witness catalog: tests/capacity_prototypes.metta
+   - Local oracle runner: oracle/run_local_oracle.sh
+   - CeTTa HE golden runner: oracle/run_cetta_goldens.sh
 
 3. Direct .metta script runners
-   - SML runner: /home/zar/claude/CakeML/metta-ref/tests/run_metta_file.sml
-   - CakeML runner generator: /home/zar/claude/CakeML/metta-ref/tools/make_cml_runner.sh
-   - Curated local scripts: /home/zar/claude/CakeML/metta-ref/tests/curated/
-   - SML/CakeML runner oracle: /home/zar/claude/CakeML/metta-ref/oracle/run_curated_local.sh
+   - SML runner: tests/run_metta_file.sml
+   - CakeML runner generator: tools/make_cml_runner.sh
+   - Curated local scripts: tests/curated/
+   - SML/CakeML runner oracle: oracle/run_curated_local.sh
    - Selected CeTTa comparison oracle:
-     /home/zar/claude/CakeML/metta-ref/oracle/run_selected_cetta_compare.sh
+     oracle/run_selected_cetta_compare.sh
 
 Covered by runnable tests
 -------------------------
@@ -76,8 +76,8 @@ Covered by runnable tests
   witness, context-space matching, and the official evalc context-space
   script.
 - CakeML FFI byte-protocol witness:
-  /home/zar/claude/CakeML/metta-ref/ffi/ffi_probe.cml and
-  /home/zar/claude/CakeML/metta-ref/ffi/ffi_probe.c exercise call-ml and a
+  ffi/ffi_probe.cml and
+  ffi/ffi_probe.c exercise call-ml and a
   call-native-to-call-ml front tag over a small mutable byte request/response.
   The byte protocol now covers inc, dec, and echo opcodes.
 
@@ -85,8 +85,8 @@ Proof foothold
 --------------
 
 HOL4 theory:
-- /home/zar/claude/CakeML/metta-ref/hol/metta_m1Script.sml
-- /home/zar/claude/CakeML/metta-ref/hol/substitution_zooScript.sml
+- hol/metta_m1Script.sml
+- hol/substitution_zooScript.sml
 
 Currently proves:
 - atom equality decidability;
@@ -202,7 +202,7 @@ Currently proves:
   export_atom/import_exported_atom, export_eval_m1_rec, and
   import_export_eval_m1_rec prove that exported recursive evaluator results
   import back to exactly the HOL result list. The bridge note is
-  /home/zar/claude/CakeML/metta-ref/notes/hol_to_cakeml_extraction_bridge.txt.
+  notes/hol_to_cakeml_extraction_bridge.txt.
 - nested family soundness is now proved for chain, evalc, case, switch, and
   let*. Chain/case/switch expose family-soundness for the evaluated selector
   and selected branch result; evalc exposes family-soundness when it evaluates
@@ -236,7 +236,7 @@ Currently proves:
   exported fragment imports back exactly, and matching SML/CakeML tests
   exercise those import/export paths.
 - fragment parity is now lint-checked for the SML and CakeML mirrors:
-  /home/zar/claude/CakeML/metta-ref/tools/check_fragment_exports.py no longer
+  tools/check_fragment_exports.py no longer
   owns semantic fragment bodies. It derives the fragment inventory from the
   HOL theory and checks that every HOL fragment has export, import/export, and
   semantic-agreement theorems and appears in the marked SML/CakeML fragment
@@ -259,14 +259,14 @@ Currently proves:
   eval_return_fragment, and bridge_eval_match_fragment_hand calls the
   translated bridge_eval_match_fragment. HOL proves CF app specs for both.
   The match translation also emits
-  /home/zar/claude/CakeML/metta-ref/generated/bridge_eval_match_fragment.sexp
+  generated/bridge_eval_match_fragment.sexp
   as an auditable translated-code artifact.
 - the bridge now lifts the bridge_surface_atom return-core behavior through
   the numeric eval_return_fragment: bridge_surface_eval_return_fragment_core
   is proved to import to eval_return_fragment whenever the surface atom imports
   successfully. The string-boundary return predicate
   bridge_surface_is_return_symbol_hand is directly CF-proved, and
-  /home/zar/claude/CakeML/metta-ref/tools/check_generated_match_sexp.sh now
+  tools/check_generated_match_sexp.sh now
   consumes the generated match s-expression with the CakeML compiler's
   s-expression mode as a harness check.
 - the bridge now defines a source-string atom layer, bridge_source_atom, and a
@@ -361,7 +361,7 @@ Currently proves:
   theorem through the env-aware wrapper. These control wrappers are not yet
   translator/CF-certified because the branch bodies close over eval_m1_rec or
   semantic fragments not yet translated in this bridge theory.
-- /home/zar/claude/CakeML/metta-ref/notes/fragment_block_audit.txt now
+- notes/fragment_block_audit.txt now
   classifies every marked SML/CakeML fragment block. The audit intentionally
   classifies all marked blocks as exploratory only; translated helpers and
   numeric CF wrappers currently live in the bridge theory. The marked return
@@ -746,7 +746,7 @@ Substitution zoo foothold:
   pattern.
 
 Literature/source map:
-- /home/zar/claude/literature/substitution_unification_sources_2026-05-30.txt
+- $WORKSPACE_ROOT/literature/substitution_unification_sources_2026-05-30.txt
 
 Next proofs
 -----------
