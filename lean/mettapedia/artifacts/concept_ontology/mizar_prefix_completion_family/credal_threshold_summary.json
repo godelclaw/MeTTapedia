@@ -2959,7 +2959,7 @@
     }
   ],
   "criterion": "per-article count-valued threshold gates; lower concepts form under every sampled threshold, upper concepts form under at least one sampled threshold",
-  "family_summary": "/home/zar/claude/lean-projects/mettapedia/artifacts/concept_ontology/mizar_prefix_completion_family/family_summary.json",
+  "family_summary": "/home/zar/claude/Mettapedia/lean/mettapedia/artifacts/concept_ontology/mizar_prefix_completion_family/family_summary.json",
   "gate_family": "threshold",
   "max_thresholds": 4
 }

@@ -184,7 +184,7 @@
           "t8_boole"
         ],
         "problem": "lattice2__lattice2__t14_lattice2",
-        "restricted_input": "/home/zar/claude/lean-projects/mettapedia/artifacts/concept_ontology/exploration/lattice2_t14_t17_targeted_record_ablation/inputs/drop_dt_k4_binop_1/lattice2__lattice2__t14_lattice2"
+        "restricted_input": "/home/zar/claude/Mettapedia/lean/mettapedia/artifacts/concept_ontology/exploration/lattice2_t14_t17_targeted_record_ablation/inputs/drop_dt_k4_binop_1/lattice2__lattice2__t14_lattice2"
       },
       {
         "dropped_record_count": 1,
@@ -323,7 +323,7 @@
           "t8_boole"
         ],
         "problem": "lattice2__lattice2__t15_lattice2",
-        "restricted_input": "/home/zar/claude/lean-projects/mettapedia/artifacts/concept_ontology/exploration/lattice2_t14_t17_targeted_record_ablation/inputs/drop_dt_k4_binop_1/lattice2__lattice2__t15_lattice2"
+        "restricted_input": "/home/zar/claude/Mettapedia/lean/mettapedia/artifacts/concept_ontology/exploration/lattice2_t14_t17_targeted_record_ablation/inputs/drop_dt_k4_binop_1/lattice2__lattice2__t15_lattice2"
       },
       {
         "dropped_record_count": 1,
@@ -473,7 +473,7 @@
           "t8_boole"
         ],
         "problem": "lattice2__lattice2__t16_lattice2",
-        "restricted_input": "/home/zar/claude/lean-projects/mettapedia/artifacts/concept_ontology/exploration/lattice2_t14_t17_targeted_record_ablation/inputs/drop_dt_k4_binop_1/lattice2__lattice2__t16_lattice2"
+        "restricted_input": "/home/zar/claude/Mettapedia/lean/mettapedia/artifacts/concept_ontology/exploration/lattice2_t14_t17_targeted_record_ablation/inputs/drop_dt_k4_binop_1/lattice2__lattice2__t16_lattice2"
       },
       {
         "dropped_record_count": 1,
@@ -614,7 +614,7 @@
           "t8_boole"
         ],
         "problem": "lattice2__lattice2__t17_lattice2",
-        "restricted_input": "/home/zar/claude/lean-projects/mettapedia/artifacts/concept_ontology/exploration/lattice2_t14_t17_targeted_record_ablation/inputs/drop_dt_k4_binop_1/lattice2__lattice2__t17_lattice2"
+        "restricted_input": "/home/zar/claude/Mettapedia/lean/mettapedia/artifacts/concept_ontology/exploration/lattice2_t14_t17_targeted_record_ablation/inputs/drop_dt_k4_binop_1/lattice2__lattice2__t17_lattice2"
       }
     ],
     "drop_dt_m1_subset_1": [
@@ -764,7 +764,7 @@
           "t8_boole"
         ],
         "problem": "lattice2__lattice2__t14_lattice2",
-        "restricted_input": "/home/zar/claude/lean-projects/mettapedia/artifacts/concept_ontology/exploration/lattice2_t14_t17_targeted_record_ablation/inputs/drop_dt_m1_subset_1/lattice2__lattice2__t14_lattice2"
+        "restricted_input": "/home/zar/claude/Mettapedia/lean/mettapedia/artifacts/concept_ontology/exploration/lattice2_t14_t17_targeted_record_ablation/inputs/drop_dt_m1_subset_1/lattice2__lattice2__t14_lattice2"
       },
       {
         "dropped_record_count": 1,
@@ -903,7 +903,7 @@
           "t8_boole"
         ],
         "problem": "lattice2__lattice2__t15_lattice2",
-        "restricted_input": "/home/zar/claude/lean-projects/mettapedia/artifacts/concept_ontology/exploration/lattice2_t14_t17_targeted_record_ablation/inputs/drop_dt_m1_subset_1/lattice2__lattice2__t15_lattice2"
+        "restricted_input": "/home/zar/claude/Mettapedia/lean/mettapedia/artifacts/concept_ontology/exploration/lattice2_t14_t17_targeted_record_ablation/inputs/drop_dt_m1_subset_1/lattice2__lattice2__t15_lattice2"
       },
       {
         "dropped_record_count": 1,
@@ -1053,7 +1053,7 @@
           "t8_boole"
         ],
         "problem": "lattice2__lattice2__t16_lattice2",
-        "restricted_input": "/home/zar/claude/lean-projects/mettapedia/artifacts/concept_ontology/exploration/lattice2_t14_t17_targeted_record_ablation/inputs/drop_dt_m1_subset_1/lattice2__lattice2__t16_lattice2"
+        "restricted_input": "/home/zar/claude/Mettapedia/lean/mettapedia/artifacts/concept_ontology/exploration/lattice2_t14_t17_targeted_record_ablation/inputs/drop_dt_m1_subset_1/lattice2__lattice2__t16_lattice2"
       },
       {
         "dropped_record_count": 1,
@@ -1194,7 +1194,7 @@
           "t8_boole"
         ],
         "problem": "lattice2__lattice2__t17_lattice2",
-        "restricted_input": "/home/zar/claude/lean-projects/mettapedia/artifacts/concept_ontology/exploration/lattice2_t14_t17_targeted_record_ablation/inputs/drop_dt_m1_subset_1/lattice2__lattice2__t17_lattice2"
+        "restricted_input": "/home/zar/claude/Mettapedia/lean/mettapedia/artifacts/concept_ontology/exploration/lattice2_t14_t17_targeted_record_ablation/inputs/drop_dt_m1_subset_1/lattice2__lattice2__t17_lattice2"
       }
     ],
     "drop_dt_u1_struct_0": [
@@ -1344,7 +1344,7 @@
           "t8_boole"
         ],
         "problem": "lattice2__lattice2__t14_lattice2",
-        "restricted_input": "/home/zar/claude/lean-projects/mettapedia/artifacts/concept_ontology/exploration/lattice2_t14_t17_targeted_record_ablation/inputs/drop_dt_u1_struct_0/lattice2__lattice2__t14_lattice2"
+        "restricted_input": "/home/zar/claude/Mettapedia/lean/mettapedia/artifacts/concept_ontology/exploration/lattice2_t14_t17_targeted_record_ablation/inputs/drop_dt_u1_struct_0/lattice2__lattice2__t14_lattice2"
       },
       {
         "dropped_record_count": 1,
@@ -1483,7 +1483,7 @@
           "t8_boole"
         ],
         "problem": "lattice2__lattice2__t15_lattice2",
-        "restricted_input": "/home/zar/claude/lean-projects/mettapedia/artifacts/concept_ontology/exploration/lattice2_t14_t17_targeted_record_ablation/inputs/drop_dt_u1_struct_0/lattice2__lattice2__t15_lattice2"
+        "restricted_input": "/home/zar/claude/Mettapedia/lean/mettapedia/artifacts/concept_ontology/exploration/lattice2_t14_t17_targeted_record_ablation/inputs/drop_dt_u1_struct_0/lattice2__lattice2__t15_lattice2"
       },
       {
         "dropped_record_count": 1,
@@ -1633,7 +1633,7 @@
           "t8_boole"
         ],
         "problem": "lattice2__lattice2__t16_lattice2",
-        "restricted_input": "/home/zar/claude/lean-projects/mettapedia/artifacts/concept_ontology/exploration/lattice2_t14_t17_targeted_record_ablation/inputs/drop_dt_u1_struct_0/lattice2__lattice2__t16_lattice2"
+        "restricted_input": "/home/zar/claude/Mettapedia/lean/mettapedia/artifacts/concept_ontology/exploration/lattice2_t14_t17_targeted_record_ablation/inputs/drop_dt_u1_struct_0/lattice2__lattice2__t16_lattice2"
       },
       {
         "dropped_record_count": 1,
@@ -1774,7 +1774,7 @@
           "t8_boole"
         ],
         "problem": "lattice2__lattice2__t17_lattice2",
-        "restricted_input": "/home/zar/claude/lean-projects/mettapedia/artifacts/concept_ontology/exploration/lattice2_t14_t17_targeted_record_ablation/inputs/drop_dt_u1_struct_0/lattice2__lattice2__t17_lattice2"
+        "restricted_input": "/home/zar/claude/Mettapedia/lean/mettapedia/artifacts/concept_ontology/exploration/lattice2_t14_t17_targeted_record_ablation/inputs/drop_dt_u1_struct_0/lattice2__lattice2__t17_lattice2"
       }
     ],
     "drop_rc14_lattices": [
@@ -1924,7 +1924,7 @@
           "t8_boole"
         ],
         "problem": "lattice2__lattice2__t14_lattice2",
-        "restricted_input": "/home/zar/claude/lean-projects/mettapedia/artifacts/concept_ontology/exploration/lattice2_t14_t17_targeted_record_ablation/inputs/drop_rc14_lattices/lattice2__lattice2__t14_lattice2"
+        "restricted_input": "/home/zar/claude/Mettapedia/lean/mettapedia/artifacts/concept_ontology/exploration/lattice2_t14_t17_targeted_record_ablation/inputs/drop_rc14_lattices/lattice2__lattice2__t14_lattice2"
       },
       {
         "dropped_record_count": 1,
@@ -2063,7 +2063,7 @@
           "t8_boole"
         ],
         "problem": "lattice2__lattice2__t15_lattice2",
-        "restricted_input": "/home/zar/claude/lean-projects/mettapedia/artifacts/concept_ontology/exploration/lattice2_t14_t17_targeted_record_ablation/inputs/drop_rc14_lattices/lattice2__lattice2__t15_lattice2"
+        "restricted_input": "/home/zar/claude/Mettapedia/lean/mettapedia/artifacts/concept_ontology/exploration/lattice2_t14_t17_targeted_record_ablation/inputs/drop_rc14_lattices/lattice2__lattice2__t15_lattice2"
       },
       {
         "dropped_record_count": 1,
@@ -2213,7 +2213,7 @@
           "t8_boole"
         ],
         "problem": "lattice2__lattice2__t16_lattice2",
-        "restricted_input": "/home/zar/claude/lean-projects/mettapedia/artifacts/concept_ontology/exploration/lattice2_t14_t17_targeted_record_ablation/inputs/drop_rc14_lattices/lattice2__lattice2__t16_lattice2"
+        "restricted_input": "/home/zar/claude/Mettapedia/lean/mettapedia/artifacts/concept_ontology/exploration/lattice2_t14_t17_targeted_record_ablation/inputs/drop_rc14_lattices/lattice2__lattice2__t16_lattice2"
       },
       {
         "dropped_record_count": 1,
@@ -2354,7 +2354,7 @@
           "t8_boole"
         ],
         "problem": "lattice2__lattice2__t17_lattice2",
-        "restricted_input": "/home/zar/claude/lean-projects/mettapedia/artifacts/concept_ontology/exploration/lattice2_t14_t17_targeted_record_ablation/inputs/drop_rc14_lattices/lattice2__lattice2__t17_lattice2"
+        "restricted_input": "/home/zar/claude/Mettapedia/lean/mettapedia/artifacts/concept_ontology/exploration/lattice2_t14_t17_targeted_record_ablation/inputs/drop_rc14_lattices/lattice2__lattice2__t17_lattice2"
       }
     ],
     "drop_rc15_lattices": [
@@ -2504,7 +2504,7 @@
           "t8_boole"
         ],
         "problem": "lattice2__lattice2__t14_lattice2",
-        "restricted_input": "/home/zar/claude/lean-projects/mettapedia/artifacts/concept_ontology/exploration/lattice2_t14_t17_targeted_record_ablation/inputs/drop_rc15_lattices/lattice2__lattice2__t14_lattice2"
+        "restricted_input": "/home/zar/claude/Mettapedia/lean/mettapedia/artifacts/concept_ontology/exploration/lattice2_t14_t17_targeted_record_ablation/inputs/drop_rc15_lattices/lattice2__lattice2__t14_lattice2"
       },
       {
         "dropped_record_count": 1,
@@ -2643,7 +2643,7 @@
           "t8_boole"
         ],
         "problem": "lattice2__lattice2__t15_lattice2",
-        "restricted_input": "/home/zar/claude/lean-projects/mettapedia/artifacts/concept_ontology/exploration/lattice2_t14_t17_targeted_record_ablation/inputs/drop_rc15_lattices/lattice2__lattice2__t15_lattice2"
+        "restricted_input": "/home/zar/claude/Mettapedia/lean/mettapedia/artifacts/concept_ontology/exploration/lattice2_t14_t17_targeted_record_ablation/inputs/drop_rc15_lattices/lattice2__lattice2__t15_lattice2"
       },
       {
         "dropped_record_count": 1,
@@ -2793,7 +2793,7 @@
           "t8_boole"
         ],
         "problem": "lattice2__lattice2__t16_lattice2",
-        "restricted_input": "/home/zar/claude/lean-projects/mettapedia/artifacts/concept_ontology/exploration/lattice2_t14_t17_targeted_record_ablation/inputs/drop_rc15_lattices/lattice2__lattice2__t16_lattice2"
+        "restricted_input": "/home/zar/claude/Mettapedia/lean/mettapedia/artifacts/concept_ontology/exploration/lattice2_t14_t17_targeted_record_ablation/inputs/drop_rc15_lattices/lattice2__lattice2__t16_lattice2"
       },
       {
         "dropped_record_count": 1,
@@ -2934,7 +2934,7 @@
           "t8_boole"
         ],
         "problem": "lattice2__lattice2__t17_lattice2",
-        "restricted_input": "/home/zar/claude/lean-projects/mettapedia/artifacts/concept_ontology/exploration/lattice2_t14_t17_targeted_record_ablation/inputs/drop_rc15_lattices/lattice2__lattice2__t17_lattice2"
+        "restricted_input": "/home/zar/claude/Mettapedia/lean/mettapedia/artifacts/concept_ontology/exploration/lattice2_t14_t17_targeted_record_ablation/inputs/drop_rc15_lattices/lattice2__lattice2__t17_lattice2"
       }
     ],
     "drop_redefinition_r2_tarski": [
@@ -3084,7 +3084,7 @@
           "t8_boole"
         ],
         "problem": "lattice2__lattice2__t14_lattice2",
-        "restricted_input": "/home/zar/claude/lean-projects/mettapedia/artifacts/concept_ontology/exploration/lattice2_t14_t17_targeted_record_ablation/inputs/drop_redefinition_r2_tarski/lattice2__lattice2__t14_lattice2"
+        "restricted_input": "/home/zar/claude/Mettapedia/lean/mettapedia/artifacts/concept_ontology/exploration/lattice2_t14_t17_targeted_record_ablation/inputs/drop_redefinition_r2_tarski/lattice2__lattice2__t14_lattice2"
       },
       {
         "dropped_record_count": 1,
@@ -3223,7 +3223,7 @@
           "t8_boole"
         ],
         "problem": "lattice2__lattice2__t15_lattice2",
-        "restricted_input": "/home/zar/claude/lean-projects/mettapedia/artifacts/concept_ontology/exploration/lattice2_t14_t17_targeted_record_ablation/inputs/drop_redefinition_r2_tarski/lattice2__lattice2__t15_lattice2"
+        "restricted_input": "/home/zar/claude/Mettapedia/lean/mettapedia/artifacts/concept_ontology/exploration/lattice2_t14_t17_targeted_record_ablation/inputs/drop_redefinition_r2_tarski/lattice2__lattice2__t15_lattice2"
       },
       {
         "dropped_record_count": 1,
@@ -3373,7 +3373,7 @@
           "t8_boole"
         ],
         "problem": "lattice2__lattice2__t16_lattice2",
-        "restricted_input": "/home/zar/claude/lean-projects/mettapedia/artifacts/concept_ontology/exploration/lattice2_t14_t17_targeted_record_ablation/inputs/drop_redefinition_r2_tarski/lattice2__lattice2__t16_lattice2"
+        "restricted_input": "/home/zar/claude/Mettapedia/lean/mettapedia/artifacts/concept_ontology/exploration/lattice2_t14_t17_targeted_record_ablation/inputs/drop_redefinition_r2_tarski/lattice2__lattice2__t16_lattice2"
       },
       {
         "dropped_record_count": 1,
@@ -3514,7 +3514,7 @@
           "t8_boole"
         ],
         "problem": "lattice2__lattice2__t17_lattice2",
-        "restricted_input": "/home/zar/claude/lean-projects/mettapedia/artifacts/concept_ontology/exploration/lattice2_t14_t17_targeted_record_ablation/inputs/drop_redefinition_r2_tarski/lattice2__lattice2__t17_lattice2"
+        "restricted_input": "/home/zar/claude/Mettapedia/lean/mettapedia/artifacts/concept_ontology/exploration/lattice2_t14_t17_targeted_record_ablation/inputs/drop_redefinition_r2_tarski/lattice2__lattice2__t17_lattice2"
       }
     ],
     "full": [
@@ -3661,7 +3661,7 @@
           "t8_boole"
         ],
         "problem": "lattice2__lattice2__t14_lattice2",
-        "restricted_input": "/home/zar/claude/lean-projects/mettapedia/artifacts/concept_ontology/exploration/lattice2_t14_t17_targeted_record_ablation/inputs/full/lattice2__lattice2__t14_lattice2"
+        "restricted_input": "/home/zar/claude/Mettapedia/lean/mettapedia/artifacts/concept_ontology/exploration/lattice2_t14_t17_targeted_record_ablation/inputs/full/lattice2__lattice2__t14_lattice2"
       },
       {
         "dropped_record_count": 0,
@@ -3797,7 +3797,7 @@
           "t8_boole"
         ],
         "problem": "lattice2__lattice2__t15_lattice2",
-        "restricted_input": "/home/zar/claude/lean-projects/mettapedia/artifacts/concept_ontology/exploration/lattice2_t14_t17_targeted_record_ablation/inputs/full/lattice2__lattice2__t15_lattice2"
+        "restricted_input": "/home/zar/claude/Mettapedia/lean/mettapedia/artifacts/concept_ontology/exploration/lattice2_t14_t17_targeted_record_ablation/inputs/full/lattice2__lattice2__t15_lattice2"
       },
       {
         "dropped_record_count": 0,
@@ -3944,7 +3944,7 @@
           "t8_boole"
         ],
         "problem": "lattice2__lattice2__t16_lattice2",
-        "restricted_input": "/home/zar/claude/lean-projects/mettapedia/artifacts/concept_ontology/exploration/lattice2_t14_t17_targeted_record_ablation/inputs/full/lattice2__lattice2__t16_lattice2"
+        "restricted_input": "/home/zar/claude/Mettapedia/lean/mettapedia/artifacts/concept_ontology/exploration/lattice2_t14_t17_targeted_record_ablation/inputs/full/lattice2__lattice2__t16_lattice2"
       },
       {
         "dropped_record_count": 0,
@@ -4082,7 +4082,7 @@
           "t8_boole"
         ],
         "problem": "lattice2__lattice2__t17_lattice2",
-        "restricted_input": "/home/zar/claude/lean-projects/mettapedia/artifacts/concept_ontology/exploration/lattice2_t14_t17_targeted_record_ablation/inputs/full/lattice2__lattice2__t17_lattice2"
+        "restricted_input": "/home/zar/claude/Mettapedia/lean/mettapedia/artifacts/concept_ontology/exploration/lattice2_t14_t17_targeted_record_ablation/inputs/full/lattice2__lattice2__t17_lattice2"
       }
     ]
   },

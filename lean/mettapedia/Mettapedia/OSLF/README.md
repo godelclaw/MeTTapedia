@@ -142,7 +142,7 @@ The engine and the OSLF synthesis pipeline use this canonical representation.
 
 Executable runtime implementations belong in the separate lightweight project:
 
-- `lean-projects/algorithms/Algorithms/MeTTa/...`
+- `Mettapedia/lean/algorithms/Algorithms/MeTTa/...`
 - simple interpreter/runtime path
 - staged/specialized runtime path
 
@@ -243,7 +243,7 @@ The scope isn't blanket future-work parity.
 ## Build
 
 ```bash
-cd lean-projects/mettapedia
+cd Mettapedia/lean/mettapedia
 lake build Mettapedia.OSLF.CoreMain
 lake build Mettapedia.OSLF.Main
 ```

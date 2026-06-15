@@ -25,7 +25,7 @@
     "max_count": 1,
     "name": "lattice2_interpolant_symbols",
     "objects": 7,
-    "source": "/home/zar/claude/lean-projects/mettapedia/artifacts/concept_ontology/exploration/lattice2_interpolant_context.json"
+    "source": "/home/zar/claude/Mettapedia/lean/mettapedia/artifacts/concept_ontology/exploration/lattice2_interpolant_context.json"
   },
   "gate_family": {
     "concept_count_by_gate": [

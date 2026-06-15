@@ -1119,7 +1119,7 @@ def oslfReadmeBlocks : List ReadmeBlock :=
   , .heading 2 (renderOSLFHeading .build)
 
   , .codeBlock "bash"
-      ("cd lean-projects/mettapedia\n" ++
+      ("cd Mettapedia/lean/mettapedia\n" ++
        "lake build Mettapedia.OSLF.CoreMain\n" ++
        "lake build Mettapedia.OSLF.Main")
 

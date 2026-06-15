@@ -1,6 +1,12 @@
-POLY ?= /home/zar/claude/CakeML/polyml-local/bin/poly
-CAKE ?= /home/zar/claude/CakeML/cake-x64-64/cake
-BASIS_FFI ?= /home/zar/claude/CakeML/cake-x64-64/basis_ffi.c
+METTA_REF_DIR := $(abspath $(dir $(lastword $(MAKEFILE_LIST))))
+WORKSPACE_ROOT := $(abspath $(METTA_REF_DIR)/../../..)
+CAKEML_HOME ?= $(WORKSPACE_ROOT)/CakeML
+POLY ?= $(CAKEML_HOME)/polyml-local/bin/poly
+CAKE ?= $(CAKEML_HOME)/cake-x64-64/cake
+BASIS_FFI ?= $(CAKEML_HOME)/cake-x64-64/basis_ffi.c
+HOLDIR ?= $(CAKEML_HOME)/HOL4
+CAKEMLDIR ?= $(CAKEML_HOME)/cakeml-src
+HOL_PATH := $(CAKEML_HOME)/polyml-local/bin:$(HOLDIR)/bin:$(PATH)
 CC ?= cc
 LDLIBS += -lm
 
@@ -54,7 +60,7 @@ test-ffi: ffi/ffi_probe.cake
 	./ffi/ffi_probe.cake
 
 test-hol:
-	cd hol && . /home/zar/claude/CakeML/env.sh && Holmake
+	cd hol && PATH="$(HOL_PATH)" Holmake HOLDIR="$(HOLDIR)" CAKEMLDIR="$(CAKEMLDIR)" POLY="$(POLY)"
 
 test-cetta-goldens:
 	oracle/run_cetta_goldens.sh

@@ -7,7 +7,7 @@ private def gfRglCzechRoot : System.FilePath :=
   "/home/zar/claude/gf-rgl/src/czech"
 
 private def leanCzechRoot : System.FilePath :=
-  "/home/zar/claude/lean-projects/mettapedia/Mettapedia/Languages/GF/Czech"
+  "/home/zar/claude/Mettapedia/lean/mettapedia/Mettapedia/Languages/GF/Czech"
 
 private def actualGFCzechModules : List (String × String) :=
   [ ("core.adjective", "AdjectiveCze.gf")

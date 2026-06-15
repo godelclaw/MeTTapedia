@@ -7,11 +7,11 @@ Purpose
 The current MeTTa prototype has three related artifacts:
 
 1. HOL definitions and theorems in
-   /home/zar/claude/CakeML/metta-ref/hol/metta_m1Script.sml.
+   hol/metta_m1Script.sml.
 2. A handwritten SML executable prototype in
-   /home/zar/claude/CakeML/metta-ref/sml/metta_m1.sml.
+   sml/metta_m1.sml.
 3. A handwritten CakeML executable prototype in
-   /home/zar/claude/CakeML/metta-ref/cml/metta_m1.cml.
+   cml/metta_m1.cml.
 
 The next verified-execution goal is to replace disciplined handwritten parity
 with a small, auditable path from HOL definitions to CakeML-representable code.
@@ -346,13 +346,13 @@ The SML and CakeML mirrors now use marked fragment blocks guarded by:
 - BEGIN GENERATED PRE_EVAL_FRAGMENTS
 - BEGIN GENERATED POST_EVAL_FRAGMENTS
 
-/home/zar/claude/CakeML/metta-ref/tools/check_fragment_exports.py lint-checks
-those blocks in both /home/zar/claude/CakeML/metta-ref/sml/metta_m1.sml and
-/home/zar/claude/CakeML/metta-ref/cml/metta_m1.cml. The Makefile target
+tools/check_fragment_exports.py lint-checks
+those blocks in both sml/metta_m1.sml and
+cml/metta_m1.cml. The Makefile target
 check-fragments runs this check before the normal test target.
 
 The same tool also derives the fragment inventory from
-/home/zar/claude/CakeML/metta-ref/hol/metta_m1Script.sml. For each HOL
+hol/metta_m1Script.sml. For each HOL
 fragment definition it checks that the HOL source contains the corresponding
 export definition, import/export theorem, and semantic-agreement theorem, and
 that the marked SML/CakeML fragment blocks expose the fragment and exporter.
@@ -598,7 +598,7 @@ surface match wrapper.
 
 The generated translated-code artifact:
 
-  /home/zar/claude/CakeML/metta-ref/generated/bridge_eval_match_fragment.sexp
+  generated/bridge_eval_match_fragment.sexp
 
 is emitted from the CakeML translator program state after
 bridge_eval_match_fragment is translated. It is an auditable artifact; the
@@ -607,7 +607,7 @@ objects.
 
 The harness:
 
-  /home/zar/claude/CakeML/metta-ref/tools/check_generated_match_sexp.sh
+  tools/check_generated_match_sexp.sh
 
 consumes that s-expression through the CakeML compiler's s-expression input
 mode and emits an ignored assembly file. This checks that the generated
@@ -626,7 +626,7 @@ certificate as the semantic authority.
 Marked block audit
 ------------------
 
-/home/zar/claude/CakeML/metta-ref/notes/fragment_block_audit.txt classifies
+notes/fragment_block_audit.txt classifies
 each marked SML/CakeML fragment block. At present every marked block is
 exploratory only. Some have translated helper or numeric CF-wrapper backing,
 but no marked string-world block is itself verified yet. The return block has

@@ -7,7 +7,7 @@
           "family": "encoded-u1-left-identity",
           "problem": "lattice2__lattice2__t17_lattice2",
           "role": "left_identity",
-          "schema_file": "/home/zar/claude/lean-projects/mettapedia/artifacts/concept_ontology/exploration/lattice2_t14_t17_synthesized_schema.json",
+          "schema_file": "/home/zar/claude/Mettapedia/lean/mettapedia/artifacts/concept_ontology/exploration/lattice2_t14_t17_synthesized_schema.json",
           "schema_kind": "left_identity_extremum_uniqueness",
           "selector_key": "u1",
           "symbols": [
@@ -27,7 +27,7 @@
           "family": "encoded-u1-unity",
           "problem": "lattice2__lattice2__t19_lattice2",
           "role": "unity",
-          "schema_file": "/home/zar/claude/lean-projects/mettapedia/artifacts/concept_ontology/exploration/lattice2_t18_t19_synthesized_schema.json",
+          "schema_file": "/home/zar/claude/Mettapedia/lean/mettapedia/artifacts/concept_ontology/exploration/lattice2_t18_t19_synthesized_schema.json",
           "schema_kind": "unity_extremum_identification",
           "selector_key": "u1",
           "symbols": [
@@ -65,7 +65,7 @@
           "family": "encoded-u2-left-identity",
           "problem": "lattice2__lattice2__t15_lattice2",
           "role": "left_identity",
-          "schema_file": "/home/zar/claude/lean-projects/mettapedia/artifacts/concept_ontology/exploration/lattice2_t14_t17_synthesized_schema.json",
+          "schema_file": "/home/zar/claude/Mettapedia/lean/mettapedia/artifacts/concept_ontology/exploration/lattice2_t14_t17_synthesized_schema.json",
           "schema_kind": "left_identity_extremum_uniqueness",
           "selector_key": "u2",
           "symbols": [
@@ -85,7 +85,7 @@
           "family": "encoded-u2-unity",
           "problem": "lattice2__lattice2__t18_lattice2",
           "role": "unity",
-          "schema_file": "/home/zar/claude/lean-projects/mettapedia/artifacts/concept_ontology/exploration/lattice2_t18_t19_synthesized_schema.json",
+          "schema_file": "/home/zar/claude/Mettapedia/lean/mettapedia/artifacts/concept_ontology/exploration/lattice2_t18_t19_synthesized_schema.json",
           "schema_kind": "unity_extremum_identification",
           "selector_key": "u2",
           "symbols": [

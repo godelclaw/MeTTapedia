@@ -6,7 +6,7 @@ Lean 4 formalization of MeTTa surface syntax specs and intermediate language
 **Toolchain:** Lean 4.28.0
 
 ```bash
-cd lean-projects/batteries/mettail-core
+cd /home/zar/claude/Mettapedia/lean/batteries/mettail-core
 lake build
 ```
 

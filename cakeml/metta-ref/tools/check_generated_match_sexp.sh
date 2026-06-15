@@ -2,7 +2,14 @@
 set -euo pipefail
 
 root="$(cd "$(dirname "$0")/.." && pwd)"
-cake="${CAKE:-/home/zar/claude/CakeML/cake-x64-64/cake}"
+workspace_root=$(CDPATH= cd -- "$root/../../.." && pwd)
+if [[ -n "${CAKEML_HOME:-}" ]]; then
+  cakeml_home="$CAKEML_HOME"
+else
+  cakeml_home="$workspace_root/CakeML"
+fi
+
+cake="${CAKE:-"$cakeml_home/cake-x64-64/cake"}"
 src="$root/generated/bridge_eval_match_fragment.sexp"
 out="$root/generated/bridge_eval_match_fragment.S"
 

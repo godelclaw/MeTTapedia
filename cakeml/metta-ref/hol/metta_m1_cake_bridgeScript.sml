@@ -13982,6 +13982,8 @@ Proof
   xcf "bridge_run_program_state_prefix_hand"
     bridge_eval_fragment_hand_st \\
   xapp_spec bridge_run_program_state_prefix_v_app_spec \\
+  xsimpl \\
+  qexists_tac ‘NUM’ \\
   xsimpl
 QED
 

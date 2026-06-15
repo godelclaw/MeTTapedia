@@ -87,7 +87,7 @@ git merge --ff-only upstream/main
 - If a checkout is missing, clone it manually:
 
 ```bash
-cd lean-projects/mettapedia/Mettapedia/external
+cd Mettapedia/lean/mettapedia/Mettapedia/external
 git clone --branch main git@github.com:zariuq/CertifyingDatalog.git CertifyingDatalog
 git clone --branch mettapedia git@github.com:zariuq/exchangeability.git exchangeability
 git clone --branch update/4.28 git@github.com:zariuq/provenance-lean.git provenance-lean

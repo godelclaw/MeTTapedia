@@ -1,7 +1,17 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-POLY=${POLY:-/home/zar/claude/CakeML/polyml-local/bin/poly}
+script_dir=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
+metta_ref_root=$(CDPATH= cd -- "$script_dir/.." && pwd)
+workspace_root=$(CDPATH= cd -- "$metta_ref_root/../../.." && pwd)
+
+if [[ -n "${CAKEML_HOME:-}" ]]; then
+  cakeml_home="$CAKEML_HOME"
+else
+  cakeml_home="$workspace_root/CakeML"
+fi
+
+POLY=${POLY:-"$cakeml_home/polyml-local/bin/poly"}
 CML_RUNNER=${CML_RUNNER:-./cml/metta_m1_runner.cake}
 CURATED_DIR=${CURATED_DIR:-tests/curated}
 

@@ -21,7 +21,7 @@
     "max_count": 7,
     "name": "lattice2",
     "objects": 45,
-    "source": "/home/zar/claude/lean-projects/mettapedia/artifacts/concept_ontology/mizar_family/lattice2.json"
+    "source": "/home/zar/claude/Mettapedia/lean/mettapedia/artifacts/concept_ontology/mizar_family/lattice2.json"
   },
   "gate_family": {
     "concept_count_by_gate": [
