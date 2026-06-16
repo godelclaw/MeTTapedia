@@ -5,10 +5,6 @@ open System Lake DSL
 package Mettapedia where
   version := v!"0.1.0"
   weakLeanArgs := #["-j", "1"]
-  -- Share compiled artifacts across local workspaces on this toolchain.
-  enableArtifactCache := true
-  -- Keep dependency artifacts visible in package build directories.
-  restoreAllArtifacts := true
 
 require "leanprover-community" / mathlib @ git "v4.28.0"
 
