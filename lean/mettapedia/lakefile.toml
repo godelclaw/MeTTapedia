@@ -29,7 +29,7 @@ rev = "63e9c6c3457420c16749837102966a5c32f27825"
 [[require]]
 name = "Foundation"
 git = "https://github.com/zariuq/Foundation.git"
-rev = "c79048ee84be6e86f5a6d05f145576ecbe8379d1"
+rev = "81ca74a1b6d4c7f46dba70b34db7c692f931f695"
 
 # Exchangeability (pinned fork, branch `mettapedia`; includes ForMathlib support library)
 [[require]]
