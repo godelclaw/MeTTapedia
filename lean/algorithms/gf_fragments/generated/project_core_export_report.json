@@ -5,8 +5,8 @@
   "targets": {
     "english": {
       "source": "/home/zar/claude/gf-rgl/src/english/GrammarEng.gf",
-      "json": "/home/zar/claude/Mettapedia/lean/algorithms/gf_fragments/generated/GrammarEng.project_core.json",
-      "pgf": "/home/zar/claude/Mettapedia/lean/algorithms/gf_fragments/generated/GrammarEng.project_core.pgf",
+      "json": "/home/zar/claude/lean-projects/algorithms/gf_fragments/generated/GrammarEng.project_core.json",
+      "pgf": "/home/zar/claude/lean-projects/algorithms/gf_fragments/generated/GrammarEng.project_core.pgf",
       "summary": {
         "abstractName": "Grammar",
         "startcat": "S",
@@ -43,8 +43,8 @@
     },
     "czech": {
       "source": "/home/zar/claude/gf-rgl/src/czech/GrammarCze.gf",
-      "json": "/home/zar/claude/Mettapedia/lean/algorithms/gf_fragments/generated/GrammarCze.project_core.json",
-      "pgf": "/home/zar/claude/Mettapedia/lean/algorithms/gf_fragments/generated/GrammarCze.project_core.pgf",
+      "json": "/home/zar/claude/lean-projects/algorithms/gf_fragments/generated/GrammarCze.project_core.json",
+      "pgf": "/home/zar/claude/lean-projects/algorithms/gf_fragments/generated/GrammarCze.project_core.pgf",
       "summary": {
         "abstractName": "Grammar",
         "startcat": "S",

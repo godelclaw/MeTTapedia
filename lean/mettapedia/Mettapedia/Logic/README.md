@@ -1,4 +1,4 @@
-# Probabilistic Logic Networks (PLN) in Lean 4
+# Mettapedia logic module
 
 Mettapedia Logic formalizes probabilistic logic networks with theorem-level bridges.
 The module connects probability theory, Heyting semantics, quantales, and Solomonoff-style prediction.
@@ -21,12 +21,6 @@ The module connects probability theory, Heyting semantics, quantales, and Solomo
 | Foundations/ | 90+ | Embedded |
 | System Bridges | 4 | Complete |
 ```
-
-Sorry status (verified 2026-05-31): **0 `axiom`** across all 710 `.lean` files,
-and every category marked *Complete* above is `sorry`-free; the only `sorry`s are
-in the work-in-progress `UniversalHyperprior/` lane. Reproduce from this
-directory: `rg -n --glob '*.lean' '^\s*sorry\b' .` (all hits are under
-`UniversalHyperprior/`).
 
 ## Semantics tree
 
@@ -58,12 +52,13 @@ directory: `rg -n --glob '*.lean' '^\s*sorry\b' .` (all hits are under
 - Chapter 11 quantifier regression tracks a broad canary.
 
 ```bash
-cd /home/zar/claude/Mettapedia/lean/mettapedia
-lake build Mettapedia.Logic.PLNFirstOrder.QuantifierRegression
+cd /home/zar/claude/lean-projects/mettapedia
+ulimit -Sv 6291456 && export LAKE_JOBS=3 && nice -n 19 \
+  lake build Mettapedia.Logic.PLNFirstOrder.QuantifierRegression
 ```
 
 ```bash
-cd /home/zar/claude/Mettapedia/lean/mettapedia
+cd /home/zar/claude/lean-projects/mettapedia
 ./scripts/check_ch11_quantifiers.sh
 ./scripts/check_ch11_fuzzy_syllogism.sh
 ```
@@ -80,12 +75,13 @@ cd /home/zar/claude/Mettapedia/lean/mettapedia
 - Chapter 12 intensional inheritance regression includes selector-specialized one-call final-bundle wrappers with mixed-policy non-equivalence canaries.
 
 ```bash
-cd /home/zar/claude/Mettapedia/lean/mettapedia
-lake build Mettapedia.Logic.PLNIntensionalRegression
+cd /home/zar/claude/lean-projects/mettapedia
+ulimit -Sv 6291456 && export LAKE_JOBS=3 && nice -n 19 \
+  lake build Mettapedia.Logic.PLNIntensionalRegression
 ```
 
 ```bash
-cd /home/zar/claude/Mettapedia/lean/mettapedia
+cd /home/zar/claude/lean-projects/mettapedia
 ./scripts/check_ch12_intensional.sh
 ```
 
@@ -101,12 +97,13 @@ cd /home/zar/claude/Mettapedia/lean/mettapedia
 - Chapter 13 inference-control regression includes selector, ranking, and coverage theorems with composed core modules and positive and negative canaries.
 
 ```bash
-cd /home/zar/claude/Mettapedia/lean/mettapedia
-lake build Mettapedia.Logic.PLNInferenceControlRegression
+cd /home/zar/claude/lean-projects/mettapedia
+ulimit -Sv 6291456 && export LAKE_JOBS=3 && nice -n 19 \
+  lake build Mettapedia.Logic.PLNInferenceControlRegression
 ```
 
 ```bash
-cd /home/zar/claude/Mettapedia/lean/mettapedia
+cd /home/zar/claude/lean-projects/mettapedia
 ./scripts/check_ch13_inference_control.sh
 ```
 
@@ -125,13 +122,14 @@ cd /home/zar/claude/Mettapedia/lean/mettapedia
   categorical institution/Beck-Chevalley endpoint fixtures.
 
 ```bash
-cd /home/zar/claude/Mettapedia/lean/mettapedia
-lake build Mettapedia.Logic.PLNWorldModelNeighborhoodConsequence \
+cd /home/zar/claude/lean-projects/mettapedia
+ulimit -Sv 6291456 && export LAKE_JOBS=3 && nice -n 19 \
+  lake build Mettapedia.Logic.PLNWorldModelNeighborhoodConsequence \
              Mettapedia.Logic.PLNWorldModelCategoricalRegression
 ```
 
 ```bash
-cd /home/zar/claude/Mettapedia/lean/mettapedia
+cd /home/zar/claude/lean-projects/mettapedia
 ./scripts/check_ch8_neighborhood.sh
 ```
 
@@ -145,12 +143,13 @@ cd /home/zar/claude/Mettapedia/lean/mettapedia
   class-packaged BN side-condition discharge plus one-call selector→rewrite→threshold composition.
 
 ```bash
-cd /home/zar/claude/Mettapedia/lean/mettapedia
-lake build Mettapedia.Logic.PLNSelectorRewriteThresholdRegression
+cd /home/zar/claude/lean-projects/mettapedia
+ulimit -Sv 6291456 && export LAKE_JOBS=3 && nice -n 19 \
+  lake build Mettapedia.Logic.PLNSelectorRewriteThresholdRegression
 ```
 
 ```bash
-cd /home/zar/claude/Mettapedia/lean/mettapedia
+cd /home/zar/claude/lean-projects/mettapedia
 ./scripts/check_ch9_positive.sh
 ```
 
@@ -262,7 +261,7 @@ Foundations -> Core inference -> Algebraic semantics -> Bridges
 - The build section lists core, quantifier, and full-build commands.
 
 ```bash
-cd /home/zar/claude/Mettapedia/lean/mettapedia
+cd /home/zar/claude/lean-projects/mettapedia
 # Quantifier regression
 lake build Mettapedia.Logic.PLNFirstOrder.QuantifierRegression
 # Intensional inheritance regression

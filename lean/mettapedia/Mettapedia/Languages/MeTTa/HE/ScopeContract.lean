@@ -53,9 +53,8 @@ private def unifyTheoremRefs : List String :=
   ]
 
 private def matchTheoremRefs : List String :=
-  [ "Mettapedia.Languages.MeTTa.HE.HEPremises.parseMatchCallRules"
-  , "Mettapedia.Languages.MeTTa.HE.HEPremises.spaceQueryMatchRules"
-  , "Mettapedia.Languages.MeTTa.HE.LanguageDef.mettaHE (MC_Match, MC_Match_Empty)"
+  [ "Mettapedia.Languages.MeTTa.HE.EvalSpec.MettaCall.match_success"
+  , "Mettapedia.Languages.MeTTa.HE.EvalSpec.MettaCall.match_empty"
   ]
 
 private def caseTheoremRefs : List String :=
@@ -116,7 +115,7 @@ def unifyScopeEntry : ScopeContractEntry where
 
 /-- `(match <space> <pattern> <template>)` — query space for pattern matches.
     Pattern variables bound in template.
-    Ref: HEPremises.lean parseMatchCall/spaceQueryMatch + HELanguageDef MC_Match.
+    Ref: EvalSpec.lean MettaCall match constructors.
     Value position 0 (space ref), binder position 1 (pattern),
     body position 2 (template, scoped with match bindings). -/
 def matchScopeEntry : ScopeContractEntry where

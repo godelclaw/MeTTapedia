@@ -1,13 +1,13 @@
 import Mathlib.Tactic
 import Mathlib.Data.Real.Basic
 import Mathlib.Analysis.SpecialFunctions.Log.Basic
-import Mettapedia.Logic.PeTTaLibPLNTruthFunctions
+import Mettapedia.Logic.PLNMettaTruthFunctions
 
 /-!
 # PLN Bug Analysis: Formal Proofs and Corrections
 
-This file formally proves historical confidence bugs in MeTTa-style PLN
-formula surfaces and provides computationally tractable corrections.
+This file formally proves three bugs in the MeTTa PLN implementation
+and provides computationally tractable corrections.
 
 ## Summary of Bugs
 
@@ -17,19 +17,13 @@ formula surfaces and provides computationally tractable corrections.
 
 ## References
 
-- historical/raw-min MeTTa implementation surface, retained here as a
-  bug witness after the local PeTTa mirror moved to the corrected
-  weight-space-min formula
+- MeTTa implementation: `hyperon/PeTTa/lib/lib_pln.metta`
 - Lean PLN BinaryEvidence: `Mettapedia.Logic.EvidenceQuantale`
-
-This file analyzes the raw confidence-space-min line `w2c(min(c1, c2))`.
-The current local mirror in `Mettapedia.Logic.PeTTaLibPLNTruthFunctions`
-uses the corrected weight-space formula instead.
 -/
 
 namespace Mettapedia.Logic.PLNBugAnalysis
 
-open Mettapedia.Logic.PeTTaLibPLNTruthFunctions
+open Mettapedia.Logic.PLNMettaTruthFunctions
 
 /-! ## Bug 1: Double-Damping in Induction/Abduction
 
@@ -55,7 +49,7 @@ noncomputable def c2w' (c : ℝ) : ℝ := c / (1 - c)
 noncomputable def w2c' (w : ℝ) : ℝ := w / (w + 1)
 
 /-- Round-trip: w2c(c2w(c)) = c for c ∈ [0,1). -/
-theorem w2c'_c2w' (c : ℝ) (_hc : 0 ≤ c) (hc1 : c < 1) : w2c' (c2w' c) = c := by
+theorem w2c'_c2w' (c : ℝ) (hc : 0 ≤ c) (hc1 : c < 1) : w2c' (c2w' c) = c := by
   unfold w2c' c2w'
   have h : (1 : ℝ) - c ≠ 0 := by linarith
   field_simp

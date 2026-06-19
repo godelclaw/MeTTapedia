@@ -6,7 +6,7 @@ open Algorithms.MeTTa.PeTTa
 open Mettapedia.Languages.MeTTa.PeTTa.Artifacts
 
 private def defaultOutDir : System.FilePath :=
-  "/home/zar/claude/Mettapedia/lean/mettapedia/.artifacts/petta_frozen_bundle_sample"
+  "/home/zar/claude/lean-projects/mettapedia/.artifacts/petta_frozen_bundle_sample"
 
 private def sym (name : String) : Pattern := .apply name []
 

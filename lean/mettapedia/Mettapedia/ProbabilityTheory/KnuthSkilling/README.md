@@ -180,7 +180,7 @@ For the hypercube's "weakness preorder" + quantale-semantics layer (inspired by 
 ## Build
 
 ```bash
-cd Mettapedia/lean/mettapedia
+cd lean-projects/mettapedia
 export LAKE_JOBS=3
 nice -n 19 lake build Mettapedia.ProbabilityTheory.KnuthSkilling
 ```
@@ -188,11 +188,6 @@ nice -n 19 lake build Mettapedia.ProbabilityTheory.KnuthSkilling
 ## Status
 
 Complete. Roughly human-checked. Zero `sorry`, zero `axiom`.
-
-> Note: alongside the verified paper formalization, this directory also keeps
-> some exploratory work-in-progress — e.g. `Exploration/OpenIntervalLattice.lean`
-> and `Multiplicative/Scratch/FibonacciProofScratch.lean` — which still contain
-> `sorry`. These are not imported by the paper development and remain open.
 
 ## Examples
 

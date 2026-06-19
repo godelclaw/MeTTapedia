@@ -168,7 +168,7 @@ See `HypercubeGap.lean` for the formalized connection.
 ## Build & Test
 
 ```bash
-cd Mettapedia/lean/mettapedia
+cd lean-projects/mettapedia
 ulimit -Sv 6291456
 export LAKE_JOBS=1  # `ThetaPrime.lean` can exceed 6GB when compiled in parallel
 nice -n 19 lake build Mettapedia.ProbabilityTheory.KnuthSkilling.RepresentationTheorem
@@ -177,7 +177,7 @@ nice -n 19 lake build Mettapedia.ProbabilityTheory.KnuthSkilling.RepresentationT
 To build the cuts-based alternative:
 
 ```bash
-cd Mettapedia/lean/mettapedia
+cd lean-projects/mettapedia
 ulimit -Sv 6291456
 export LAKE_JOBS=1
 nice -n 19 lake build Mettapedia.ProbabilityTheory.KnuthSkilling.RepresentationTheorem.Alternative.Main

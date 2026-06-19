@@ -2,14 +2,14 @@
 
 **Goal**: Prove R(3,6) = 18 to claim 800 bar ProofGold bounty at address `TMbJ1MogStdKCGN3J3j1hThprkcWjA8ggEB`.
 
-**Source**: Complete Lean 4 proof (15,021 lines, zero sorries) at `/home/zar/claude/Mettapedia/lean/ramsey36/`
+**Source**: Complete Lean 4 proof (15,021 lines, zero sorries) at `/home/zar/claude/lean-projects/ramsey36/`
 
 **Plan**: `/home/zar/.claude/plans/mighty-greeting-gizmo.md` (16 weeks, ~5,700 lines estimated)
 
 ## Phase 1: COMPLETE ✅ (2025-12-18)
 
 **Deliverables**:
-- ✅ Workspace set up at `/home/zar/claude/Mettapedia/megalodon/ramsey36/`
+- ✅ Workspace set up at `/home/zar/claude/megalodon/ramsey36/`
 - ✅ `preamble.mgs` (6107 lines) - Full Egal theory foundation
 - ✅ `r36_definitions.mg` (27 lines) - Graph theory foundations, compiles successfully
 

@@ -22,8 +22,7 @@ READ THIS FILE. It is the single entry point for the entire formalization.
 
 2. The probability hypercube classifies 4 WM regimes at 4 probability vertices.
    The ℂ carrier sits at the quantum vertex (no lattice → amplitude inference).
-   KS-style additive structure provides the foundation; bridge files then
-   connect evidence summaries and measure-theoretic readings.
+   KS axioms provide the foundation; the representation theorem gives uniqueness.
 
 3. Implementations of the WM calculus prove `CalculusSound` to get ALL algebraic
    properties for free — the certification path for any backend.
@@ -66,8 +65,8 @@ All four structural rules of classical sequent calculus are proven. -/
 
 /-! ## 2. KS Foundation
 
-The evidence algebra satisfies the additive/monotone structure used here.
-Θ = `.ess` (total evidence count) is the additive statistic proved in the bridge.
+The evidence algebra IS a Knuth-Skilling ordered semigroup.
+Θ = `.ess` (total evidence count) is the additive representation.
 The measure bridge factors through Θ via Dirac weighting.
 σ-additivity requires countable additivity — finitely additive measures
 do NOT extend (proven by counterexample from the KS formalization). -/

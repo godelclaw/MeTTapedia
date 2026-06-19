@@ -65,5 +65,9 @@ HOL4/CakeML) are not vendored here; install them separately:
   in-file).
 - `lean/foet/Foet/AfpGewirth/` derives from the Fuenmayor–Benzmüller AFP
   entry.
+- `cakeml/milawa-ref/`, if present locally, is a vendored reference copy of
+  Magnus O. Myreen's Milawa theorem prover (from CakeML). It carries only a
+  copyright notice and no bundled license, so it is **git-ignored and never
+  committed here**; fetch it from upstream CakeML if needed.
 - Proof-gap review: `rg -n "sorry"` in any subtree; completeness varies by
   subproject and is documented locally.
