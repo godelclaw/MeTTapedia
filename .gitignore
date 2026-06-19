@@ -159,3 +159,8 @@ _archive_test_files/
 codex_scratch/
 */_scratch/
 **/_scratch/
+
+# Third-party vendored reference, local-only — NOT part of this repo.
+# Magnus Myreen's Milawa prover (from CakeML); only a copyright notice, no
+# bundled license, so it is never committed here. See README provenance.
+cakeml/milawa-ref/
