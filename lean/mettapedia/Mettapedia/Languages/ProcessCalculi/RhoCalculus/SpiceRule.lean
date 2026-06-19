@@ -399,26 +399,15 @@ theorem value_no_future (p : Pattern) (h : Value p) :
   have : (presentMoment p).Nonempty := ⟨q, hq⟩
   exact ((value_iff_presentMoment_empty p).mp h) this
 
-/-- Concrete witness: some values still have predecessors in the paper-faithful core.
+/-- Concrete witness: values CAN have predecessors.
 
-    Here `{c!(0) | for(<-c){0}} ⇝ {0}`, so the singleton-zero bag has an
-    immediate predecessor via COMM even though free drop is inert.
+    *(@p) ⇝ p by DROP, so p has *(@p) as an immediate predecessor.
+    This holds regardless of whether p is a value.
 -/
-theorem zeroSingleton_in_immediatePast_via_comm :
-    (.collection .hashBag
-      [.apply "POutput" [.fvar "c", .apply "PZero" []],
-       .apply "PInput" [.fvar "c", .lambda none (.apply "PZero" [])]]
-      none) ∈ immediatePast (.collection .hashBag [.apply "PZero" []] none) := by
+theorem drop_in_immediatePast (p : Pattern) :
+    .apply "PDrop" [.apply "NQuote" [p]] ∈ immediatePast p := by
   simp [immediatePast, pastStates]
-  refine ⟨?_⟩
-  simpa [semanticCommSubst, semanticSubstProc, semanticSubstName,
-    semanticSubstNameMark, semanticNormalizeName, semanticNormalizeProc] using
-    (ReducesN.succ
-      (@Reduces.comm (.fvar "c") (.apply "PZero" []) (.apply "PZero" []) [])
-      (ReducesN.zero (.collection .hashBag
-        ([semanticCommSubst
-            (.apply "PZero" []) (.apply "PZero" [])] ++ [])
-        none)))
+  exact ⟨ReducesN.succ Reduces.drop (ReducesN.zero p)⟩
 
 /-- Past is monotone: more steps gives more predecessors.
 

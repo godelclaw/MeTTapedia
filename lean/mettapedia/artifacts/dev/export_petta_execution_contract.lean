@@ -5,7 +5,7 @@ open Mettapedia.Languages.MeTTa.PeTTa.ExecutionContract
 open Mettapedia.Languages.MeTTa.PeTTa.ScopeContract
 
 private def defaultOutDir : System.FilePath :=
-  "/home/zar/claude/Mettapedia/lean/mettapedia/artifacts/transition"
+  "/home/zar/claude/lean-projects/mettapedia/artifacts/transition"
 
 def main (args : List String) : IO UInt32 := do
   let outDir :=

@@ -1,5 +1,5 @@
 import Mettapedia.OSLF.Formula
-import Foundation.Modal.Kripke.AxiomGeach
+import Mettapedia.Logic.Foundation.Foundation.Modal.Kripke.AxiomGeach
 
 /-!
 # OSLF ↔ Foundation Kripke Bridge

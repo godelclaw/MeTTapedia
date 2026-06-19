@@ -126,12 +126,17 @@ def rhoGSLT : GSLT where
 def nilProcess : Pattern := .apply "PZero" []
 
 /-- A one-step COMM reduction (example).
-    `{n!(q) | for(<-n){p}} ⇝ {semanticCommSubst p q}` -/
+    `{n!(q) | for(<-n){p}} ⇝ {commSubst p q}` -/
 example (n q p : Pattern) :
     rhoGSLT.Step
       (.collection .hashBag [.apply "POutput" [n, q], .apply "PInput" [n, .lambda none p]] none)
-      (.collection .hashBag [semanticCommSubst p q] none) :=
+      (.collection .hashBag [Mettapedia.OSLF.MeTTaIL.Substitution.commSubst p q] none) :=
   ⟨Reduces.comm⟩
+
+/-- A DROP reduction example: `*(@ p) ⇝ p`. -/
+example (p : Pattern) :
+    rhoGSLT.Step (.apply "PDrop" [.apply "NQuote" [p]]) p :=
+  ⟨Reduces.drop⟩
 
 /-! ## Step 6: Connection to the Lambda Theory -/
 

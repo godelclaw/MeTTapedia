@@ -154,28 +154,27 @@ section BayesianNetworkConnection
 
 variable [Fintype V]
 
-/-- Lightweight historical witness for the shape of the BN-to-factor-graph map.
+/-- Convert a Bayesian Network to a Factor Graph.
 
-    The production construction used by the exactness stack is
-    `DiscreteCPT.toFactorGraph` in `DiscreteSemantics.lean`, with exactness
-    bridges in `VEBridge.lean`. This structure is intentionally only a small
-    documentation-facing witness: every BN variable contributes one factor whose
-    scope is `{v} ∪ parents(v)`. -/
+    Each node v in the BN creates a factor with:
+    - Scope = {v} ∪ parents(v)
+    - Potential = CPT P(v | parents(v))
+
+    This is stated as a type; the actual construction requires
+    measurability and kernel-to-function conversion. -/
 structure BNToFactorGraphData (bn : BayesianNetwork V) where
   /-- For each BN variable, there is one factor -/
   factorForNode : V → Fin (Fintype.card V)
   /-- The scope of each factor -/
   factorScope : Fin (Fintype.card V) → Finset V
 
-/-- Documentation-facing count witness: the production BN factor graph has one
-node factor for each BN variable. -/
+/-- The factor graph induced by a Bayesian network has one factor per variable. -/
 theorem bn_factor_count (_bn : BayesianNetwork V) :
     -- Each variable creates exactly one factor
     ∃ (n : ℕ), n = Fintype.card V := ⟨Fintype.card V, rfl⟩
 
 omit [Fintype V] in
-/-- Documentation-facing scope witness: the production BN factor graph uses the
-local CPT scope `{v} ∪ parents(v)`. -/
+/-- In a BN-induced factor graph, each factor's scope is {v} ∪ parents(v). -/
 theorem bn_factor_scope_structure (bn : BayesianNetwork V) (v : V) :
     -- The scope for v's factor contains v and its parents
     ∃ (S : Set V), v ∈ S ∧ bn.parents v ⊆ S :=
