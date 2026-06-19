@@ -394,6 +394,73 @@ classify the rest.  Python handles, Git imports, MORK/PathMap handles, runtime
 statistics, and other host resources are not pure \HE{} merely because the
 syntax is readable by an \HE{} parser.
 
+\section{Where the Engines Actually Differ (Measured)}
+
+The preceding sections state the contract abstractly.  This section records the
+concrete semantic divergences observed empirically between upstream \HE{} and
+\PeTTa{} \code{--he} --- the points where MeTTa syntax coincides but operational
+meaning does not.
+
+\paragraph{Method.}
+Each \HE{} surface is run on upstream Rust \HE{} (the sole oracle of \HE{}
+meaning) and on \PeTTa{} \code{--he} (the subject under test); result lines are
+compared after safe normalization only.  Over the 34 canonical \HE{} example
+programs (the \code{a}--\code{g} families), \PeTTa{} \code{--he} reproduces the
+upstream result on \textbf{26 of 34}; the 8 divergences are not scattered but
+cluster in the families below, and per-surface probes corroborate and add finer
+cases (such as the \code{if}-arity row).  The machine-readable record is the
+surface registry \code{petta-he-profile/tests/he\_spec\_surfaces.tsv} and the
+divergence registry \code{petta-he-profile/src/he/DIVERGENCES.md} (measured
+2026-06).
+
+\begin{longtable}{>{\raggedright\arraybackslash}p{0.19\linewidth}
+                  >{\raggedright\arraybackslash}p{0.55\linewidth}
+                  >{\raggedright\arraybackslash}p{0.16\linewidth}}
+\toprule
+Family & Difference (\HE{} vs \PeTTa{}) & Status \\
+\midrule
+\endhead
+Source-head no-match & \HE{} keeps an unmatched source-head application inert
+(arguments evaluated); \PeTTa{} returns the empty result.  This is the
+foundational difference and the reason the \code{call-or-inert} helper exists. &
+bridged by helper \\
+\code{quote} & \PeTTa{}'s \code{quote} reduces to its argument
+(\code{(quote X)} $\to$ \code{X}); \HE{} preserves the quoted form, changing
+match-template and eval staging. & bridged by helper \\
+Arity strictness & \HE{} errors \code{IncorrectNumberOfArguments} on a
+two-argument \code{if}; \PeTTa{} \code{--he} evaluates it as if-then
+(\code{(if True 42)} $\to$ \code{42}). & DIV-011; leniency \\
+Typed-error surface & \HE{} emits structured \code{BadArgType}/\code{BadType};
+\PeTTa{} is more permissive (inferred type, \code{\%Undefined\%}, or empty), and
+grounded arithmetic on non-numbers must be guarded to avoid a host abort. &
+\code{b5}; leniency \\
+Recursive reduction & \HE{} reduces post-match templates and recursive equality
+rules to a fixpoint; \PeTTa{} one-step post-match evaluation can leave a compound
+recursive template unreduced. & \code{b1}, \code{d4}; genuine gap \\
+Higher order & \HE{} hand-rolls currying (no native partial application);
+\PeTTa{} applies partials natively, so the encodings differ. & \code{d2} \\
+Imports and spaces & Module scoping, transitive-import materialization, and
+printed variable naming (gensym vs source name) differ. & \code{f1}; engine
+boundary \\
+Documentation & \code{get-doc} arity and behavior differ by build. & \code{g1};
+minor \\
+\bottomrule
+\end{longtable}
+
+\paragraph{Consequence.}
+\PeTTa{} \code{--he} is faithful to upstream \HE{} on many broad shared-core
+surfaces (for example arithmetic, \code{eval}, \code{chain},
+\code{cons-atom}/\code{decons-atom}, simple defining equations, and simple type
+queries), but falls back to \PeTTa{} semantics on the families above ---
+precisely the surfaces where the two dialects genuinely disagree.  \PeTTa{}
+\code{--he} is
+therefore a useful compatibility profile, \emph{not} a faithful \HE{} reference:
+it must not be used as an \HE{} oracle or as evidence of \HE{} conformance.  For
+any question about \HE{} meaning, upstream Rust \HE{} is the oracle and
+\code{--he} is a subject under test.  Making \code{--he} faithful on these
+families would mean implementing \HE{}'s distinctive reduction and typing
+behavior inside \PeTTa{}, which is outside the compatibility-profile scope.
+
 \section{Evidence And Gates}
 
 There are several distinct evidence layers:

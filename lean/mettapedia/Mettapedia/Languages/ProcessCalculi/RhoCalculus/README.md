@@ -3,7 +3,7 @@
 Lean 4.28 formalization of Meredith's ρ-calculus (Meredith & Radestock 2005).
 **11 files, 4,954 lines. Zero sorry.**
 
-Part of `papers/process-calculi.tex` (Section 2).
+Part of `../../../../../../papers/process-calculi.tex` (Section 2).
 
 ## Key Idea
 
