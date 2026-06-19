@@ -22,9 +22,8 @@ PeTTa together with the translator bridge between them.
    `HEStableExecutableBoundary`, `HECertifiedTopLevelSemantics`, and
    `PeTTaExecutableBoundaryBundle`
 5. **Translator bridge**
-   `HEPeTTaTranslateCore`, validated roundtrip theorems, the shared
-   atomspace/import fragments, and an explicit empty state-identity boundary
-   for surfaces whose PeTTa and HE operational contracts diverge
+   `HEPeTTaTranslateCore`, validated roundtrip theorems, and the operational
+   bridge for the currently shared state/space/import fragments
 
 Positive example:
 - HE can remain the clearest declarative anchor while PeTTa contributes a

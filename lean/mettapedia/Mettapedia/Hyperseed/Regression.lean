@@ -22,8 +22,8 @@ open Mettapedia.Logic
 open Mettapedia.Logic.EvidenceClass
 open Mettapedia.Logic.EvidenceQuantale
 open Mettapedia.Logic.PLNWorldModel
-open Mettapedia.Logic.PLNWorldModelGeneric
 open Mettapedia.Logic.PLNWorldModelAdditive
+open Mettapedia.Logic.PLNWorldModelGeneric
 open Mettapedia.Logic.PLNWorldModelFixpointClosure
 open Mettapedia.Logic.PLNWorldModelFixpointCascade
 open Mettapedia.Logic.SufficientStatisticSurface
@@ -66,7 +66,8 @@ noncomputable instance : EvidenceType (Multiset AgentObservation) :=
 noncomputable instance : BinaryWorldModel (Multiset AgentObservation) AgentQuery :=
   worldModelOfAtomicEvidence agentSurface.observe
 
-noncomputable instance : AdditiveWorldModel (Multiset AgentObservation) AgentQuery BinaryEvidence :=
+noncomputable instance : AdditiveWorldModel
+    (Multiset AgentObservation) AgentQuery BinaryEvidence :=
   agentSurface.inducedWorldModel
 
 def agentFrontier (_ : AgentObservation) : Set AgentQuery :=
@@ -457,23 +458,23 @@ empty observation traces are exactly the count-zero / revision-idempotent case. 
 theorem selfAware_triviality_iff
     (σ : Multiset AgentObservation) :
     letI : EvidenceType (Multiset AgentObservation) := multisetEvidenceType AgentObservation
-    letI : AdditiveWorldModel (Multiset AgentObservation) AgentQuery BinaryEvidence :=
-      agentSurface.inducedWorldModel
+    letI : AdditiveWorldModel
+      (Multiset AgentObservation) AgentQuery BinaryEvidence := agentSurface.inducedWorldModel
     σ = 0 ↔
       AdditiveWorldModel.queryObservationCount
           (State := Multiset AgentObservation) (Query := AgentQuery) (Ev := BinaryEvidence)
           σ AgentQuery.awareReady = 0 ∧
       (σ + σ : Multiset AgentObservation) = σ := by
   letI : EvidenceType (Multiset AgentObservation) := multisetEvidenceType AgentObservation
-  letI : AdditiveWorldModel (Multiset AgentObservation) AgentQuery BinaryEvidence :=
-    agentSurface.inducedWorldModel
+  letI : AdditiveWorldModel
+    (Multiset AgentObservation) AgentQuery BinaryEvidence := agentSurface.inducedWorldModel
   constructor
   · intro hσ
     constructor
     · exact
         (queryObservationCount_inducedWorldModel_eq_zero_iff_empty_of_unit
           (S := agentSurface) agentSurface_unitObservation σ AgentQuery.awareReady).2 hσ
-    · simp [hσ]
+    · simpa [hσ]
   · intro h
     exact
       (revision_idempotent_inducedWorldModel_iff_empty_of_unit

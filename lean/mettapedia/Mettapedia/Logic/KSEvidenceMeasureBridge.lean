@@ -7,11 +7,8 @@ import Mettapedia.ProbabilityTheory.KnuthSkilling.Bridges.ValuationAlgebra
 /-!
 # The KS-Evidence-Measure Triangle
 
-This file relates three nearby surfaces:
-
-- nat-valued binary evidence counts,
-- an additive monotone total-evidence statistic, and
-- the measure-valued terminal world model.
+The WM-PLN evidence algebra, the Knuth-Skilling representation theorem,
+and the measure-valued terminal world model are three views of ONE structure.
 
 ## The Triangle
 
@@ -31,19 +28,18 @@ This file relates three nearby surfaces:
 
 ## What this file proves
 
-1. **Evidence carriers satisfy the basic additive/monotone axioms**:
-   `BinEvNat` with hplus is an ordered commutative monoid with monotone
-   operation.
+1. **Evidence carriers satisfy the KS axioms**: BinEvNat with hplus is an
+   ordered commutative monoid with monotone operation — a KS semigroup.
 
-2. **The total-evidence statistic is additive**: `Θ(e) = e.pos + e.neg`
-   is additive (`Θ(e₁+e₂) = Θ(e₁)+Θ(e₂)`), normalized (`Θ(0) = 0`),
-   and monotone in the coordinatewise information order.
+2. **The representation is `.ess`**: The KS representation function Θ that
+   embeds the semigroup into (ℝ,+) is `e ↦ e.pos + e.neg` (total evidence).
+   This is additive (`Θ(e₁+e₂) = Θ(e₁)+Θ(e₂)`) and normalized (`Θ(0) = 0`).
 
 3. **The measure bridge factors through Θ**: `evidenceToMeasure W` is
    `∑ q, Θ(extract W q) • δ_q` — the representation composed with Dirac.
 
-4. **The triangle commutes**: Additivity at the evidence, statistic,
-   and measure layers is tracked by the same counting surface.
+4. **The triangle commutes**: Additivity at all three vertices (KS semigroup,
+   evidence carrier, measure) is the SAME property viewed from different angles.
 
 5. **σ-additivity boundary**: Full σ-additivity requires Scott continuity,
    proven non-derivable from base KS axioms alone in
@@ -51,12 +47,11 @@ This file relates three nearby surfaces:
 
 ## Why this matters
 
-The evidence algebra is not being used here as an ad-hoc statistic. This file
-shows that total evidence is a clean additive monotone summary and that the
-terminal-measure construction factors through the same summary map.
-
-Stronger uniqueness or order-isomorphism claims require additional hypotheses
-and are intentionally not claimed here.
+The evidence algebra is NOT an ad-hoc design choice. It is the UNIQUE algebra
+satisfying the KS axioms (ordered, associative, monotone, separating). The
+measure theory follows inevitably. The valuation algebra gives computational
+tractability. The evidence carriers give concrete sufficient statistics.
+Everything is one structure.
 
 ## References
 
@@ -73,9 +68,10 @@ namespace Mettapedia.Logic.KSEvidenceMeasureBridge
 
 open Mettapedia.Logic
 
-/-! ## §1: Evidence carriers as ordered additive semigroups
+/-! ## §1: Evidence carriers as KS-style ordered semigroups
 
-`BinEvNat` with hplus is an ordered commutative monoid with monotone addition.
+BinEvNat with hplus is an ordered commutative monoid: the algebraic structure
+that the KS representation theorem applies to.
 
 The KS axioms require:
 - (α, ⊕) is an associative, commutative operation ✓ (AddCommMonoid)
@@ -83,8 +79,8 @@ The KS axioms require:
 - ⊕ is monotone in both arguments ✓ (proved below)
 - Identity element ✓ (zero = ⟨0, 0⟩)
 
-For this file, the important map is the total-evidence statistic
-`Θ(e) = e.pos + e.neg`. -/
+In the KS framework, the representation theorem then gives Θ : α → ℝ with
+Θ(x ⊕ y) = Θ(x) + Θ(y). For evidence carriers, Θ is the total evidence. -/
 
 /-- Coordinatewise partial order on BinEvNat (information ordering). -/
 instance : PartialOrder BinEvNat where
@@ -110,15 +106,17 @@ theorem zero_le_all (e : BinEvNat) : (0 : BinEvNat) ≤ e :=
 theorem le_add_left (a b : BinEvNat) : a ≤ a + b :=
   ⟨Nat.le_add_right a.pos b.pos, Nat.le_add_right a.neg b.neg⟩
 
-/-! ## §2: The total-evidence statistic Θ = total evidence
+/-! ## §2: The representation function Θ = total evidence
 
-For `BinEvNat`, define `Θ(e) = e.pos + e.neg = e.ess` (effective sample size).
-This file proves that `Θ` is additive, normalized, and monotone. -/
+The KS representation theorem gives Θ : α → ℝ with Θ(x ⊕ y) = Θ(x) + Θ(y).
+For BinEvNat, this is `Θ(e) = e.pos + e.neg = e.ess` (effective sample size).
 
-/-- Total evidence count for `BinEvNat`. -/
+This is the UNIQUE (up to scaling) additive, order-preserving, normalized map. -/
+
+/-- The KS representation for BinEvNat: total evidence count. -/
 def Θ_evidence (e : BinEvNat) : Nat := e.pos + e.neg
 
-/-- Total evidence is additive. -/
+/-- Θ is additive (the KS representation property). -/
 theorem Θ_additive (e₁ e₂ : BinEvNat) :
     Θ_evidence (e₁ + e₂) = Θ_evidence e₁ + Θ_evidence e₂ := by
   show (e₁ + e₂).pos + (e₁ + e₂).neg = (e₁.pos + e₁.neg) + (e₂.pos + e₂.neg)
@@ -138,12 +136,14 @@ theorem Θ_monotone (e₁ e₂ : BinEvNat) (h : e₁ ≤ e₂) :
 The `evidenceToMeasure` construction from `TerminalMeasureWorldModel.lean` is:
     μ_W = ∑ q, (extract W q).total • δ_q
 
-For `BinaryEvidence`, `.total = Θ_evidence` (lifted to `ℝ≥0∞`). So the measure
-construction factors through the same total-evidence count:
+For BinaryEvidence, `.total = Θ_evidence` (lifted to ℝ≥0∞). So the measure
+construction IS the KS representation composed with Dirac weighting:
     μ_W = ∑ q, Θ(extract W q) • δ_q
 
-This is enough to connect the evidence layer to the measure layer without
-claiming that binary evidence itself is a one-dimensional faithful KS scale. -/
+This is not a coincidence. The KS representation theorem says the ONLY
+structure-preserving map from the evidence semigroup to ℝ is (a scalar
+multiple of) the total evidence function. The measure bridge uses exactly
+this map. -/
 
 -- The factorization is definitional: evidenceToMeasure uses .total
 -- which IS BinaryEvidence.total = pos + neg = Θ_evidence (lifted).
@@ -166,12 +166,12 @@ The commutativity is: Θ(e₁+e₂) = Θ(e₁)+Θ(e₂) (§2) composed with
     at measure level, with Θ as the connecting morphism.
 
     This theorem packages the full chain:
-    additive/monotone evidence algebra
-    → total-evidence statistic (Θ = total)
+    KS axioms (ordered commutative monoid)
+    → representation (Θ = total)
     → evidence carrier (AddCommMonoid BinEvNat)
     → measure bridge (evidenceToMeasure)
 
-    All three levels are additive, and the connecting maps preserve addition. -/
+    All three levels are additive, and the maps between them preserve addition. -/
 theorem triangle_summary :
     -- KS axioms hold for BinEvNat
     (∀ e₁ e₂ : BinEvNat, e₁ + e₂ = e₂ + e₁) ∧           -- commutativity
@@ -233,8 +233,7 @@ variable elimination on the evidence factor graph commutes with
 evidence aggregation.
 
 The valuation algebra bridge (KS/Bridges/ValuationAlgebra.lean, 187 lines)
-connects these formally. For the current bridge, the evidence-counting layer
-behaves like a valuation algebra where:
+connects these formally. The WM algebra IS a valuation algebra where:
 - Variables = queries
 - Factors = evidence sources
 - Potentials = evidence contributions

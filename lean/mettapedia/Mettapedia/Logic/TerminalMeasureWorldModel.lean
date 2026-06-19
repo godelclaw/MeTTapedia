@@ -74,7 +74,6 @@ private theorem total_add (e₁ e₂ : BinaryEvidence) :
     (e₁.pos + e₁.neg) + (e₂.pos + e₂.neg)
   simp [BinaryEvidence.hplus]; ring
 
-omit [MeasurableSingletonClass Query] in
 /-- The terminal WM property: the evidence-to-measure construction is additive.
     Revising states and then measuring equals measuring and then adding measures.
     This is the key theorem connecting the WM algebra to measure theory. -/
@@ -106,7 +105,6 @@ noncomputable def evidenceToMeasureCountable (W : State) : MeasureTheory.Measure
     (AdditiveWorldModel.extract (Ev := BinaryEvidence) W q).total •
     MeasureTheory.Measure.dirac q
 
-omit [MeasurableSingletonClass Query] in
 /-- The terminal property for countable queries: measure construction is additive. -/
 theorem evidenceToMeasureCountable_add (W₁ W₂ : State) :
     evidenceToMeasureCountable (W₁ + W₂) =
@@ -117,7 +115,6 @@ theorem evidenceToMeasureCountable_add (W₁ W₂ : State) :
   congr 1; ext q
   rw [AdditiveWorldModel.extract_add (Ev := BinaryEvidence), total_add, add_smul]
 
-omit [MeasurableSingletonClass Query] in
 /-- Bridge: on finite query spaces, the countable variant equals the finite one. -/
 theorem evidenceToMeasureCountable_eq_finite [Fintype Query] (W : State) :
     evidenceToMeasureCountable W =

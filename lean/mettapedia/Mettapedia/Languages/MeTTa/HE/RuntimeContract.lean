@@ -28,8 +28,6 @@ For each HE op that Rust may execute, this artifact exports:
 - `Space.lean` — queryEquations, getAtomTypes, simpleMatch
 - `Matching.lean` — matchAtoms, mergeBindings
 - `TypeCheck.lean` — typeCast, checkIfFunctionTypeIsApplicable
-- `HELanguageDef.lean` — explicit MettaCall rewrites for surface ops like `match`
-- `HEPremises.lean` — computable premise relations for rewrite-lane surface ops
 - `Types.lean` — Bindings, ResultSet, Bindings.toAtom round-trip
 -/
 
@@ -85,7 +83,7 @@ structure OpRuntimeContract where
   arity : Nat
   /-- Argument role descriptions (positional). -/
   argRoles : List String
-  /-- Which formal constructor(s) or rewrite rule(s) define this op. -/
+  /-- Which MinimalMeTTa constructor(s) define this op. -/
   specConstructors : List String
   /-- Which computable Lean functions are the semantic authority. -/
   semanticAuthority : List String
@@ -117,19 +115,20 @@ def matchContract : OpRuntimeContract where
   arity := 3
   argRoles := ["space-ref", "pattern", "template"]
   specConstructors :=
-    [ "MC_Match"
-    , "MC_Match_Empty"
+    [ "MinimalStep.match"       -- HELanguageDef: MC_Match
+    , "MinimalStep.match_empty" -- HELanguageDef: MC_Match_Empty
     ]
   semanticAuthority :=
-    [ "parseMatchCallArgs"  -- parse `(match <space> <pattern> <template>)`
-    , "spacePatternQuery"   -- iterate space matches, one result per match
-    , "Bindings.apply"      -- template substitution
+    [ "Space.queryEquations"    -- equation lookup
+    , "Matching.matchAtoms"     -- bidirectional unification
+    , "Matching.mergeBindings"  -- binding merge
+    , "Bindings.apply"          -- template substitution
     ]
   determinism := .nondeterministic
   bindingsFlow := .mergeFromMatch
   resultCases :=
     [ "match succeeds: template with pattern variables substituted, one result per match"
-    , "no match: internal Empty sentinel, surfaced as no user-visible results"
+    , "no match: Empty atom"
     ]
   errorCases := []
   mutatesSpace := false
@@ -141,11 +140,11 @@ def matchContract : OpRuntimeContract where
         expectedResults := ["b"]
         expectedBindings := some [("x", "b")]
       }
-    , { label := "match: no equation → no results"
+    , { label := "match: no equation → Empty"
         positive := true
         instructionAtom := "(match &self (= z $x) $x)"
         inputBindings := []
-        expectedResults := []
+        expectedResults := ["Empty"]
         expectedBindings := none
       }
     , { label := "match: multiple results (nondeterministic)"
@@ -222,7 +221,7 @@ def chainContract : OpRuntimeContract where
   bindingsFlow := .assignVariable
   resultCases :=
     [ "eval succeeds (non-Empty): template with $var substituted, output bindings include $var assignment"
-    , "eval yields Empty: internal Empty sentinel, surfaced as no user-visible results"
+    , "eval yields Empty: return Empty, output bindings from eval (no $var assignment)"
     ]
   errorCases := []
   mutatesSpace := false
@@ -234,19 +233,19 @@ def chainContract : OpRuntimeContract where
         expectedResults := ["(tag x)"]
         expectedBindings := some [("v", "x")]
       }
-    , { label := "chain: eval yields Empty → no results"
+    , { label := "chain: eval yields Empty → return Empty"
         positive := true
         instructionAtom := "(chain Empty $v (tag $v))"
         inputBindings := []
-        expectedResults := []
-        expectedBindings := none
+        expectedResults := ["Empty"]
+        expectedBindings := some []
       }
     ]
 
 /-- `switch` / `switch-minimal` — the primitive pattern-matching control op.
     Both surface names are accepted by parseSwitchMinimalCallArgs.
     Scrutinee is already evaluated; branches are `((pattern template) ...)`.
-    First matching branch wins; on no match, yields no user-visible results. -/
+    First matching branch wins; on no match, returns Empty. -/
 def switchContract : OpRuntimeContract where
   head := "switch"
   arity := 2
@@ -267,7 +266,7 @@ def switchContract : OpRuntimeContract where
   bindingsFlow := .mergeFromMatch
   resultCases :=
     [ "first matching branch: template with pattern variables substituted (may yield multiple results if match is nondeterministic)"
-    , "no matching branch: internal Empty sentinel, surfaced as no user-visible results"
+    , "no matching branch: Empty"
     ]
   errorCases := []
   mutatesSpace := false
@@ -286,11 +285,11 @@ def switchContract : OpRuntimeContract where
         expectedResults := ["(tag z)"]
         expectedBindings := some [("x", "z")]
       }
-    , { label := "switch: no match → no results"
+    , { label := "switch: no match → Empty"
         positive := false
         instructionAtom := "(switch z ((a ok) (b bad)))"
         inputBindings := []
-        expectedResults := []
+        expectedResults := ["Empty"]
         expectedBindings := none
       }
     , { label := "switch-minimal: identical to switch"
@@ -322,7 +321,7 @@ def caseContract : OpRuntimeContract where
   bindingsFlow := .mergeFromMatch
   resultCases :=
     [ "scrutinee evaluates, then matching branch selected (via switch semantics)"
-    , "no matching branch: internal Empty sentinel, surfaced as no user-visible results"
+    , "no matching branch: Empty"
     ]
   errorCases := []
   mutatesSpace := false
@@ -334,11 +333,11 @@ def caseContract : OpRuntimeContract where
         expectedResults := ["ok"]
         expectedBindings := some []
       }
-    , { label := "case: no match → no results"
+    , { label := "case: no match → Empty"
         positive := false
         instructionAtom := "(case z ((a ok) (b bad)))"
         inputBindings := []
-        expectedResults := []
+        expectedResults := ["Empty"]
         expectedBindings := none
       }
     ]
@@ -380,13 +379,6 @@ def collapseBindContract : OpRuntimeContract where
         instructionAtom := "(collapse-bind (match &self (= z $w) $w))"
         inputBindings := []
         expectedResults := ["()"]
-        expectedBindings := some []
-      }
-    , { label := "collapse-bind: filters Empty branches"
-        positive := true
-        instructionAtom := "(collapse-bind (superpose (a Empty b)))"
-        inputBindings := []
-        expectedResults := ["((a (Bindings () ())) (b (Bindings () ())))"]
         expectedBindings := some []
       }
     ]
@@ -650,7 +642,7 @@ def superposeContract : OpRuntimeContract where
   bindingsFlow := .passthrough
   resultCases :=
     [ "non-empty expression: one result per element (nondeterministic)"
-    , "empty expression (): internal Empty sentinel, surfaced as no user-visible results"
+    , "empty expression (): return Empty"
     ]
   errorCases := []
   mutatesSpace := false
@@ -662,12 +654,12 @@ def superposeContract : OpRuntimeContract where
         expectedResults := ["a", "b", "c"]
         expectedBindings := none
       }
-    , { label := "superpose: empty → no results"
+    , { label := "superpose: empty → Empty"
         positive := false
         instructionAtom := "(superpose ())"
         inputBindings := []
-        expectedResults := []
-        expectedBindings := none
+        expectedResults := ["Empty"]
+        expectedBindings := some []
       }
     ]
 

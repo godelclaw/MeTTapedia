@@ -4,7 +4,7 @@ Mettapedia hosts formalizations across probability theory, information theory, l
 
 ## High-level structure
 
-The package layout is:
+the structure presents the high-level Mettapedia directory layout.
 
 ```
 Mettapedia/
@@ -22,42 +22,37 @@ Mettapedia/
 ├── Languages/
 ├── Logic/
 ├── MeasureTheory/
-├── Metatheory/
 ├── OSLF/
 ├── ProbabilityTheory/
 ├── QuantumTheory/
 ├── SetTheory/
 ├── UniversalAI/
-└── externals/
+└── external/
+    └── Metatheory/
 ```
 
 ## Toolchain
 
 - The toolchain uses Lean 4.28.0 (see lean-toolchain).
-- The toolchain uses Mathlib v4.28.0.
-- The default local developer configuration is `lakefile.lean`, which uses
-  local repos in `../externals/` for Foundation, exchangeability, provenance,
-  OrderedSemigroups, Metatheory, CertifyingDatalog, and `mm-lean4`.
-- `lakefile.toml` stays as the git-pinned fallback. If you remove
-  `lakefile.lean`, Lake falls back to the pinned git dependency graph.
+- The toolchain uses Mathlib v4.28.0 (see lakefile.toml).
+- Local dependencies live in local subdirectories when needed.
 
 ## Build
 
 ```bash
-cd lean
-./bootstrap_local_repos.sh
-cd lean/mettapedia
-lake exe cache get
-lake build
+cd lean-projects/mettapedia
+lake update && lake exe cache get
+
+export LAKE_JOBS=3
+ulimit -Sv 6291456
+nice -n 19 lake build
 ```
 
-- `bootstrap_local_repos.sh` clones the local editable repos into
-  `lean/externals/` and `lean/standalone/` if they are missing, then leaves
-  existing working trees alone.
-- The build runs from `lean/mettapedia`.
-- The first build should run `lake exe cache get` to fetch mathlib oleans.
-- Prefer targeted `lake update <pkg>` over bare `lake update`; the bare form
-  can bump transitive pins (e.g. batteries) past the v4.28.0 toolchain.
+- the build runs from lean-projects/mettapedia.
+- The first build runs lake update and lake exe cache get.
+- the build uses LAKE_JOBS=3 by default.
+- the build uses a 6 GiB memory cap via ulimit -Sv 6291456.
+- the build runs nice -n 19 lake build.
 
 ## Notable subprojects
 
@@ -120,24 +115,23 @@ lake build
 
 ## Lean to mettail-rust example
 
-The roundtrip and benchmark scripts live in the companion ai-agents workspace
-(`hyperon/mettail-rust`), outside this repository.
+The roundtrip script checks Lean export, Rust build, and one-step rewrite behavior.
+The benchmark script runs three rounds by default.
 
 ```bash
-# in the ai-agents workspace:
-cd hyperon/mettail-rust
+cd ~/claude/hyperon/mettail-rust
+
 ./scripts/roundtrip_mettaminimal.sh
 ./scripts/bench_mettaminimal_roundtrip.sh
 ```
 
-- the exporter is hyperon/mettail-rust/scripts/lean/ExportMeTTaMinimalRoundTrip.lean (same workspace).
+- the exporter is hyperon/mettail-rust/scripts/lean/ExportMeTTaMinimalRoundTrip.lean.
 
 ## Status review
 
-- Proof completeness varies by subproject.
-- Use `rg -n "sorry" Mettapedia/` to find proof gaps.
-- `Mettapedia/ProbabilityTheory/KnuthSkilling/README.md` contains the
-  Knuth-Skilling structure and build targets.
+- the proof completeness varies by the subproject.
+- the local check runs rg -n "sorry" Mettapedia/ to find proof gaps.
+- Mettapedia/ProbabilityTheory/KnuthSkilling/README.md contains the Knuth-Skilling structure and build targets.
 
 ```bash
 rg -n "sorry" Mettapedia/
@@ -145,13 +139,14 @@ rg -n "sorry" Mettapedia/
 
 ## Contribution
 
-- Contributions require explicit proofs.
-- Contributions require documented theorem sources.
-- Contributions require frequent `lake build` checks.
+- the contribution requires explicit proofs.
+- the contribution requires documented theorem sources.
+- the contribution requires frequent lake build checks.
 
 ## External repo policy
 
-- Use `zariuq` forks as `origin` remotes.
-- Use source projects as `upstream` remotes, and use `godelclaw` only as a
-  separate named remote when relevant.
-- See `EXTERNAL_REPOS.md` for exact commands.
+- the policy keeps canonical remotes in EXTERNAL_REPOS.md.
+- the policy keeps external checkouts untracked in ai-agents.
+- the policy references EXTERNAL_REPOS.md for exact clone and sync commands.
+
+Accountability trace: the CertifyingDatalog bridge at `/home/zar/claude/lean-projects/mettapedia/Mettapedia/Logic/LP/CertifyingDatalogBridge.lean` was reviewed by Codex 5.4 and Claude Code Opus 4.6.

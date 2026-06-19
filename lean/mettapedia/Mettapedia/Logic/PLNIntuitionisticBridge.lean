@@ -32,10 +32,10 @@ we inherit proven soundness and can derive completeness via Lindenbaum algebras.
 -/
 
 import Mettapedia.Logic.EvidenceQuantale
-import Foundation.Propositional.Heyting.Semantics
-import Foundation.Propositional.Kripke.Logic.Int
-import Foundation.Propositional.Kripke.AxiomDummett
-import Foundation.Propositional.Hilbert.Standard.Glivenko
+import Mettapedia.Logic.Foundation.Foundation.Propositional.Heyting.Semantics
+import Mettapedia.Logic.Foundation.Foundation.Propositional.Kripke.Logic.Int
+import Mettapedia.Logic.Foundation.Foundation.Propositional.Kripke.AxiomDummett
+import Mettapedia.Logic.Foundation.Foundation.Propositional.Hilbert.Standard.Glivenko
 
 namespace Mettapedia.Logic.PLNIntuitionisticBridge
 

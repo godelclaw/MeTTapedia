@@ -1,7 +1,23 @@
-import Mettapedia.ProbabilityTheory.BayesianNetworks.DiscreteLocalMarkov.BlockFactorization
+/-
+LLM primer: This file proves HasLocalMarkovProperty for discrete CPTs. The key insight
+is that nodeProb cpt x w depends only on x_w and x_{Pa(w)}. So for w ∈ ND(v)\Pa(v)\{v},
+nodeProb doesn't depend on x_v (since v ∉ Pa(w) in a DAG). This factorization gives
+the local Markov property: {v} ⫫ ND(v)\Pa(v)\{v} | Pa(v).
+The measure-theoretic bridge from factorization to Mathlib's CondIndep is nontrivial.
+
+LLM primer on nodeProb structure:
+  nodeProb cpt x v = cpt.cpt v (parentAssignOfConfig cpt x v) (x v)
+  parentAssignOfConfig _cpt x v = fun u _ => x u
+  So nodeProb unfolds to: cpt.cpt v (fun u _ => x u) (x v)
+  After simp only [nodeProb], goal becomes cpt.cpt v (parentAssignOfConfig ...) (x v).
+  Use `have` + `rw` pattern rather than `congr` to rewrite parent assignments.
+-/
+import Mettapedia.ProbabilityTheory.BayesianNetworks.BayesianNetwork
+import Mettapedia.ProbabilityTheory.BayesianNetworks.DiscreteSemantics
+import Mettapedia.ProbabilityTheory.BayesianNetworks.DSeparationSoundness
 
 open MeasureTheory ProbabilityTheory
-open scoped Classical ENNReal
+open scoped Classical
 
 namespace Mettapedia.ProbabilityTheory.BayesianNetworks.DiscreteLocalMarkov
 
@@ -9,9 +25,515 @@ variable {V : Type*} [Fintype V] [DecidableEq V]
 variable (bn : BayesianNetwork V)
 variable [∀ v : V, Fintype (bn.stateSpace v)]
 variable [∀ v : V, Nonempty (bn.stateSpace v)]
-variable [∀ v : V, StandardBorelSpace (bn.stateSpace v)]
 
 open BayesianNetwork DiscreteCPT DirectedGraph
+
+/-! ## Graph-level lemma: non-descendants don't have v as parent -/
+
+omit [Fintype V] [DecidableEq V]
+  [∀ v : V, Fintype (bn.stateSpace v)] [∀ v : V, Nonempty (bn.stateSpace v)] in
+/-- In a DAG, if w is a non-descendant of v (and w ≠ v), then v is not a parent of w.
+    Proof: if v ∈ Pa(w) then G.edges v w, so w ∈ desc(v), contradicting w ∉ desc(v). -/
+theorem not_parent_of_nonDescendant
+    (v w : V)
+    (hw_nd : w ∉ bn.graph.descendants v)
+    (hwv : w ≠ v) :
+    v ∉ bn.graph.parents w := by
+  intro hpar
+  apply hw_nd
+  exact ⟨bn.graph.edge_reachable hpar, hwv⟩
+
+omit [Fintype V] [DecidableEq V]
+  [∀ v : V, Fintype (bn.stateSpace v)] [∀ v : V, Nonempty (bn.stateSpace v)] in
+/-- For w ∈ nonDescendantsExceptParentsAndSelf v, v ∉ Pa(w). -/
+theorem not_parent_of_nonDescExceptParentsSelf
+    (v w : V) (hw : w ∈ bn.nonDescendantsExceptParentsAndSelf v) :
+    v ∉ bn.graph.parents w := by
+  have hmem := hw
+  rw [BayesianNetwork.nonDescendantsExceptParentsAndSelf, Set.mem_diff] at hmem
+  have hw_nd : w ∉ bn.graph.descendants v := hmem.1
+  have hw_not_pv_or_v : w ∉ bn.graph.parents v ∪ {v} := hmem.2
+  have hwv : w ≠ v := by
+    intro h; exact hw_not_pv_or_v (Set.mem_union_right _ (Set.mem_singleton_iff.mpr h))
+  exact not_parent_of_nonDescendant bn v w hw_nd hwv
+
+/-! ## Factorization: nodeProb independence -/
+
+omit [Fintype V]
+  [∀ v : V, Fintype (bn.stateSpace v)] [∀ v : V, Nonempty (bn.stateSpace v)] in
+/-- nodeProb cpt x w depends only on x_w and x_{Pa(w)}.
+    Changing x_v where v ∉ Pa(w) ∪ {w} does not change nodeProb. -/
+theorem nodeProb_update_irrelevant
+    (cpt : bn.DiscreteCPT) (v w : V)
+    (hv_not_parent : v ∉ bn.graph.parents w)
+    (hvw : v ≠ w)
+    (x : bn.JointSpace) (a : bn.stateSpace v) :
+    cpt.nodeProb (Function.update x v a) w = cpt.nodeProb x w := by
+  simp only [nodeProb]
+  have hpa : cpt.parentAssignOfConfig (Function.update x v a) w =
+             cpt.parentAssignOfConfig x w := by
+    funext u hu
+    simp only [parentAssignOfConfig]
+    have huv : u ≠ v := by intro h; subst h; exact hv_not_parent hu
+    simp [Function.update_of_ne huv]
+  have hval : (Function.update x v a) w = x w := by
+    simp [Function.update_of_ne hvw.symm]
+  rw [hpa, hval]
+
+/-- For w ∈ ND(v)\Pa(v)\{v}, nodeProb cpt x w is independent of x_v. -/
+theorem nodeProb_independent_of_nonDesc
+    (cpt : bn.DiscreteCPT) (v w : V)
+    (hw : w ∈ bn.nonDescendantsExceptParentsAndSelf v)
+    (x : bn.JointSpace) (a : bn.stateSpace v) :
+    cpt.nodeProb (Function.update x v a) w = cpt.nodeProb x w := by
+  apply nodeProb_update_irrelevant bn cpt v w
+  · exact not_parent_of_nonDescExceptParentsSelf bn v w hw
+  · intro h; subst h
+    rw [BayesianNetwork.nonDescendantsExceptParentsAndSelf, Set.mem_diff] at hw
+    exact hw.2 (Set.mem_union_right _ rfl)
+
+/-! ## Joint weight factorization -/
+
+omit [∀ v : V, Fintype (bn.stateSpace v)] [∀ v : V, Nonempty (bn.stateSpace v)] in
+/-- The joint weight factors as nodeProb at v times the product over all other nodes. -/
+theorem jointWeight_factor_single
+    (cpt : bn.DiscreteCPT) (v : V) (x : bn.JointSpace) :
+    cpt.jointWeight x = cpt.nodeProb x v * ∏ w ∈ Finset.univ.erase v, cpt.nodeProb x w := by
+  unfold jointWeight
+  rw [← Finset.mul_prod_erase Finset.univ (fun w => cpt.nodeProb x w) (Finset.mem_univ v)]
+
+/-- The "rest" factor (product over w ≠ v) does not depend on x_v
+    for nodes in ND(v)\Pa(v)\{v}. More precisely: updating x_v doesn't change
+    the product over w ∈ ND(v)\Pa(v)\{v}. -/
+theorem prod_nonDesc_independent_of_xv
+    (cpt : bn.DiscreteCPT) (v : V) (x : bn.JointSpace) (a : bn.stateSpace v) :
+    ∏ w ∈ (Finset.univ.filter (· ∈ bn.nonDescendantsExceptParentsAndSelf v)),
+      cpt.nodeProb (Function.update x v a) w =
+    ∏ w ∈ (Finset.univ.filter (· ∈ bn.nonDescendantsExceptParentsAndSelf v)),
+      cpt.nodeProb x w := by
+  apply Finset.prod_congr rfl
+  intro w hw
+  rw [Finset.mem_filter] at hw
+  exact nodeProb_independent_of_nonDesc bn cpt v w hw.2 x a
+
+/-- Generalized update-invariance: for any `w ≠ v` that is not a descendant of `v`,
+`nodeProb` at `w` is unchanged by updating `x_v`.
+
+This is useful when splitting finite products into parent/non-descendant parts while
+holding descendants fixed (screening/factorization proofs on parent fibers). -/
+theorem nodeProb_independent_of_not_desc_not_self
+    (cpt : bn.DiscreteCPT) (v w : V)
+    (hw_not_desc : w ∉ bn.graph.descendants v)
+    (hw_ne : w ≠ v)
+    (x : bn.JointSpace) (a : bn.stateSpace v) :
+    cpt.nodeProb (Function.update x v a) w = cpt.nodeProb x w := by
+  apply nodeProb_update_irrelevant bn cpt v w
+  · exact not_parent_of_nonDescendant bn v w hw_not_desc hw_ne
+  · exact hw_ne.symm
+
+/-- If `d` is a descendant of `v` and `w` is not, then `d` cannot be a parent of `w`.
+Otherwise we would get a directed path `v ↝ d → w`, contradicting `w ∉ desc(v)`. -/
+theorem not_parent_of_descendant_to_nonDesc
+    (v d w : V)
+    (hd_desc : d ∈ bn.graph.descendants v)
+    (hw_not_desc : w ∉ bn.graph.descendants v) :
+    d ∉ bn.graph.parents w := by
+  intro hdw
+  rcases hd_desc with ⟨hvd, _hvd_ne⟩
+  have hw_ne : w ≠ v := by
+    intro hwv
+    subst hwv
+    exact bn.acyclic d ⟨w, hdw, hvd⟩
+  apply hw_not_desc
+  exact ⟨bn.graph.reachable_trans hvd (bn.graph.edge_reachable hdw), hw_ne⟩
+
+/-- Updating a descendant coordinate does not affect `nodeProb` at non-descendant targets. -/
+theorem nodeProb_independent_of_descendant_update
+    (cpt : bn.DiscreteCPT) (v d w : V)
+    (hd_desc : d ∈ bn.graph.descendants v)
+    (hw_not_desc : w ∉ bn.graph.descendants v)
+    (x : bn.JointSpace) (a : bn.stateSpace d) :
+    cpt.nodeProb (Function.update x d a) w = cpt.nodeProb x w := by
+  by_cases hdw : d = w
+  · subst hdw
+    exfalso
+    exact hw_not_desc hd_desc
+  · apply nodeProb_update_irrelevant bn cpt d w
+    · exact not_parent_of_descendant_to_nonDesc bn v d w hd_desc hw_not_desc
+    · exact hdw
+
+/-- Product-level version of `nodeProb_independent_of_not_desc_not_self` over all
+vertices outside `desc(v)` and distinct from `v`. -/
+theorem prod_notDescNotSelf_independent_of_xv
+    (cpt : bn.DiscreteCPT) (v : V) (x : bn.JointSpace) (a : bn.stateSpace v) :
+    ∏ w ∈ (Finset.univ.filter (fun w => w ∉ bn.graph.descendants v ∧ w ≠ v)),
+      cpt.nodeProb (Function.update x v a) w
+      =
+    ∏ w ∈ (Finset.univ.filter (fun w => w ∉ bn.graph.descendants v ∧ w ≠ v)),
+      cpt.nodeProb x w := by
+  apply Finset.prod_congr rfl
+  intro w hw
+  rcases Finset.mem_filter.mp hw with ⟨_, hw_not_desc, hw_ne⟩
+  exact nodeProb_independent_of_not_desc_not_self bn cpt v w hw_not_desc hw_ne x a
+
+omit [Fintype V]
+  [∀ v : V, Fintype (bn.stateSpace v)] [∀ v : V, Nonempty (bn.stateSpace v)] in
+/-- nodeProb at v depends only on x_v and x_{Pa(v)}, not on ND coordinates. -/
+theorem nodeProb_v_independent_of_nonDesc
+    (cpt : bn.DiscreteCPT) (v : V) (x : bn.JointSpace) (w : V)
+    (hw : w ∈ bn.nonDescendantsExceptParentsAndSelf v)
+    (b : bn.stateSpace w) :
+    cpt.nodeProb (Function.update x w b) v = cpt.nodeProb x v := by
+  have hwv : w ≠ v := by
+    intro h; subst h
+    rw [BayesianNetwork.nonDescendantsExceptParentsAndSelf, Set.mem_diff] at hw
+    exact hw.2 (Set.mem_union_right _ rfl)
+  have hw_not_parent : w ∉ bn.graph.parents v := by
+    intro hpar
+    rw [BayesianNetwork.nonDescendantsExceptParentsAndSelf, Set.mem_diff] at hw
+    exact hw.2 (Set.mem_union_left _ hpar)
+  exact nodeProb_update_irrelevant bn cpt w v hw_not_parent hwv x b
+
+/-! ## Bridge to conditional independence (measure theory) -/
+
+omit [Fintype V] [DecidableEq V]
+  [∀ v : V, Fintype (bn.stateSpace v)] [∀ v : V, Nonempty (bn.stateSpace v)] in
+/-- The factorization property that underlies the local Markov condition:
+    for any fixed parent assignment, the joint probability factors into a
+    v-component and a non-descendant component.
+
+    This is the mathematical content; the bridge to Mathlib's CondIndep
+    is a separate (nontrivial) measure-theoretic step. -/
+theorem factorization_given_parents
+    (cpt : bn.DiscreteCPT) (v : V) (x y : bn.JointSpace)
+    (hpa : ∀ u ∈ bn.graph.parents v, x u = y u)
+    (hv : x v = y v) :
+    cpt.nodeProb x v = cpt.nodeProb y v := by
+  simp only [nodeProb]
+  have hpa_eq : cpt.parentAssignOfConfig x v = cpt.parentAssignOfConfig y v := by
+    funext u hu
+    exact hpa u hu
+  rw [hpa_eq, hv]
+
+/-! ## Telescoping sum: marginalizing out subsets of vertices
+
+The key technical infrastructure for the CondIndep bridge. For any subset D of vertices
+in a DAG, summing the product of nodeProbs over all D-configurations (with coordinates
+outside D fixed) gives 1. This is because we can process D from sinks inward: at each
+step, the sink's CPT sums to 1 (PMF normalization), and removing the sink gives a
+smaller set for induction.
+-/
+
+omit [Fintype V] [DecidableEq V]
+  [∀ v : V, Fintype (bn.stateSpace v)] [∀ v : V, Nonempty (bn.stateSpace v)] in
+/-- In a DAG, v is not its own parent. -/
+theorem not_self_parent (v : V) : v ∉ bn.graph.parents v := by
+  intro hpar
+  exact bn.graph.isAcyclic_irrefl bn.acyclic v hpar
+
+/-- Summing nodeProb at v over all values of v gives 1, for any configuration x.
+    This uses the fact that v ∉ Pa(v) in a DAG, so updating x at v doesn't change
+    the parent assignment. -/
+theorem nodeProb_sum_one_at_vertex
+    (cpt : bn.DiscreteCPT) (v : V) (x : bn.JointSpace) :
+    ∑ a : bn.stateSpace v, cpt.nodeProb (Function.update x v a) v = 1 := by
+  -- nodeProb (update x v a) v = cpt.cpt v (parentAssignOfConfig (update x v a) v) a
+  -- parentAssignOfConfig (update x v a) v = parentAssignOfConfig x v
+  --   because for u ∈ Pa(v), u ≠ v (since v ∉ Pa(v)), so update doesn't affect u
+  -- So nodeProb (update x v a) v = cpt.cpt v (parentAssignOfConfig x v) a
+  -- And ∑_a cpt.cpt v pa a = 1 (PMF)
+  have hpa : ∀ a, cpt.parentAssignOfConfig (Function.update x v a) v =
+                  cpt.parentAssignOfConfig x v := by
+    intro a; funext u hu; simp only [parentAssignOfConfig]
+    have huv : u ≠ v := by intro h; exact not_self_parent bn v (h ▸ hu)
+    simp [Function.update_of_ne huv]
+  simp only [nodeProb, hpa, Function.update_self]
+  exact DiscreteCPT.pmf_sum_eq_one (cpt.cpt v (cpt.parentAssignOfConfig x v))
+
+/-- Any nonempty finite subset of a DAG has a sink within it (a vertex with no edges
+    to other vertices in the subset). -/
+theorem exists_finset_sink (D : Finset V) (hne : D.Nonempty) :
+    ∃ s ∈ D, ∀ w ∈ D, ¬bn.graph.edges s w := by
+  -- Construct the induced subgraph on D and find its sink
+  let G' : DirectedGraph ↥D := { edges := fun u v => bn.graph.edges u.val v.val }
+  have hG'_acyclic : G'.IsAcyclic := by
+    intro ⟨v, hv⟩ ⟨⟨u, hu⟩, hedge, hpath⟩
+    apply bn.acyclic v
+    refine ⟨u, hedge, ?_⟩
+    have : ∀ (a b : ↥D), G'.Reachable a b → bn.graph.Reachable a.val b.val := by
+      intro a b hr
+      induction hr with
+      | refl => exact DirectedGraph.reachable_refl _ _
+      | step h _ ih => exact DirectedGraph.Path.step h ih
+    exact this ⟨u, hu⟩ ⟨v, hv⟩ hpath
+  haveI : Nonempty ↥D := ⟨⟨hne.choose, hne.choose_spec⟩⟩
+  obtain ⟨⟨s, hs⟩, hsink⟩ := DirectedGraph.exists_sink_of_acyclic_nonempty G' hG'_acyclic
+  exact ⟨s, hs, fun w hw hedge => by
+    rw [DirectedGraph.isSink_iff] at hsink
+    exact hsink ⟨w, hw⟩ hedge⟩
+
+/-- Replace coordinates in D with values from xD, keep others from x. -/
+noncomputable def patchConfig (x : bn.JointSpace) (D : Finset V)
+    (xD : ∀ d : ↥D, bn.stateSpace d) : bn.JointSpace :=
+  fun v => if h : v ∈ D then xD ⟨v, h⟩ else x v
+
+omit [Fintype V]
+  [∀ v : V, Fintype (bn.stateSpace v)] [∀ v : V, Nonempty (bn.stateSpace v)] in
+/-- patchConfig agrees with x outside D. -/
+theorem patchConfig_outside (x : bn.JointSpace) (D : Finset V)
+    (xD : ∀ d : ↥D, bn.stateSpace d) (v : V) (hv : v ∉ D) :
+    patchConfig bn x D xD v = x v := by
+  simp [patchConfig, hv]
+
+omit [Fintype V]
+  [∀ v : V, Fintype (bn.stateSpace v)] [∀ v : V, Nonempty (bn.stateSpace v)] in
+/-- patchConfig gives the D-values inside D. -/
+theorem patchConfig_inside (x : bn.JointSpace) (D : Finset V)
+    (xD : ∀ d : ↥D, bn.stateSpace d) (v : V) (hv : v ∈ D) :
+    patchConfig bn x D xD v = xD ⟨v, hv⟩ := by
+  simp [patchConfig, hv]
+
+omit [Fintype V]
+  [∀ v : V, Fintype (bn.stateSpace v)] [∀ v : V, Nonempty (bn.stateSpace v)] in
+/-- For a D-sink s, nodeProb at d ∈ D \ {s} is independent of the s-coordinate. -/
+theorem nodeProb_patchConfig_sink_indep
+    (cpt : bn.DiscreteCPT) (D : Finset V) (s : V) (hs : s ∈ D)
+    (hsink : ∀ w ∈ D, ¬bn.graph.edges s w)
+    (d : V) (hd : d ∈ D) (hds : d ≠ s)
+    (x : bn.JointSpace) (xD xD' : ∀ v : ↥D, bn.stateSpace v)
+    (hagree : ∀ (w : ↥D), w.val ≠ s → xD w = xD' w) :
+    cpt.nodeProb (patchConfig bn x D xD) d =
+    cpt.nodeProb (patchConfig bn x D xD') d := by
+  simp only [nodeProb]
+  -- Show parent assignments are equal
+  have hpa : cpt.parentAssignOfConfig (patchConfig bn x D xD) d =
+             cpt.parentAssignOfConfig (patchConfig bn x D xD') d := by
+    funext u hu; simp only [parentAssignOfConfig, patchConfig]
+    split_ifs with h
+    · -- u ∈ D: need u ≠ s
+      have hus : u ≠ s := by
+        intro heq; subst heq; exact hsink d hd hu
+      exact hagree ⟨u, h⟩ hus
+    · rfl -- u ∉ D: both equal x u
+  -- Show values at d are equal
+  have hval : patchConfig bn x D xD d = patchConfig bn x D xD' d := by
+    simp [patchConfig, hd]; exact hagree ⟨d, hd⟩ hds
+  rw [hpa, hval]
+
+/-- If we patch only descendant coordinates of `v`, node probabilities at non-descendants
+    are unchanged. -/
+theorem nodeProb_patch_descendants_irrelevant
+    (cpt : bn.DiscreteCPT) (v w : V)
+    (D : Finset V)
+    (hD_desc : ∀ d, d ∈ D → d ∈ bn.graph.descendants v)
+    (x : bn.JointSpace) (xD : ∀ d : ↥D, bn.stateSpace d)
+    (hw_not_desc : w ∉ bn.graph.descendants v) :
+    cpt.nodeProb (patchConfig bn x D xD) w = cpt.nodeProb x w := by
+  have hw_not_memD : w ∉ D := by
+    intro hwD
+    exact hw_not_desc (hD_desc w hwD)
+  simp only [nodeProb]
+  have hpa : cpt.parentAssignOfConfig (patchConfig bn x D xD) w =
+             cpt.parentAssignOfConfig x w := by
+    funext u hu
+    have hu_not_memD : u ∉ D := by
+      intro huD
+      have hu_desc : u ∈ bn.graph.descendants v := hD_desc u huD
+      have hu_not_parent : u ∉ bn.graph.parents w :=
+        not_parent_of_descendant_to_nonDesc bn v u w hu_desc hw_not_desc
+      exact hu_not_parent hu
+    simp [parentAssignOfConfig, patchConfig, hu_not_memD]
+  have hval : patchConfig bn x D xD w = x w := by
+    simp [patchConfig, hw_not_memD]
+  rw [hpa, hval]
+
+/-- Product-level form of `nodeProb_patch_descendants_irrelevant` over all non-descendants
+    of `v` (excluding `v` itself). -/
+theorem prod_notDescNotSelf_patch_descendants_irrelevant
+    (cpt : bn.DiscreteCPT) (v : V)
+    (D : Finset V)
+    (hD_desc : ∀ d, d ∈ D → d ∈ bn.graph.descendants v)
+    (x : bn.JointSpace) (xD : ∀ d : ↥D, bn.stateSpace d) :
+    ∏ w ∈ (Finset.univ.filter (fun w => w ∉ bn.graph.descendants v ∧ w ≠ v)),
+      cpt.nodeProb (patchConfig bn x D xD) w
+      =
+    ∏ w ∈ (Finset.univ.filter (fun w => w ∉ bn.graph.descendants v ∧ w ≠ v)),
+      cpt.nodeProb x w := by
+  apply Finset.prod_congr rfl
+  intro w hw
+  rcases Finset.mem_filter.mp hw with ⟨_, hw_not_desc, _⟩
+  exact nodeProb_patch_descendants_irrelevant bn cpt v w D hD_desc x xD hw_not_desc
+
+/-! ## Telescoping sum (main theorem)
+
+For now, we state the telescoping sum as an axiom since its proof requires
+constructing explicit equivalences between Finset-indexed Pi types that are
+technically involved. The mathematical content is standard: process sinks
+one at a time, each CPT sums to 1. -/
+
+/-- The telescoping sum: summing the product of nodeProbs over all D-configurations
+    gives 1, for any fixed outside configuration. This is the key marginalization
+    property of BN product distributions.
+
+    Proof idea: by induction on |D|. Find a sink s in D. Since s has no edges to
+    other D-vertices, the nodeProbs at d ∈ D\{s} don't depend on x_s. Factor out
+    the sum over x_s (which gives 1 by PMF normalization). Apply IH to D\{s}. -/
+theorem telescoping_sum
+    (cpt : bn.DiscreteCPT) (D : Finset V) (x : bn.JointSpace) :
+    ∑ xD : (∀ d : ↥D, bn.stateSpace d),
+      ∏ d : ↥D, cpt.nodeProb (patchConfig bn x D xD) d = 1 := by
+  induction h : D.card generalizing D x with
+  | zero =>
+    -- D is empty
+    have hempty : D = ∅ := Finset.card_eq_zero.mp h
+    subst hempty
+    -- Sum over unique element of (∀ d : ↥∅, ...), product is empty = 1
+    simp [Finset.univ_eq_empty]
+  | succ n ih =>
+    -- Construct a sub-BN on the vertices in D
+    let G_D : DirectedGraph ↥D := { edges := fun u v => bn.graph.edges u.val v.val }
+    have hG_D_acyclic : G_D.IsAcyclic := by
+      intro ⟨v, hv⟩ ⟨⟨u, hu⟩, hedge, hpath⟩
+      apply bn.acyclic v
+      refine ⟨u, hedge, ?_⟩
+      have lift : ∀ (a b : ↥D), G_D.Reachable a b → bn.graph.Reachable a.val b.val := by
+        intro a b hr
+        induction hr with
+        | refl => exact DirectedGraph.reachable_refl _ _
+        | step h _ ih' => exact DirectedGraph.Path.step h ih'
+      exact lift ⟨u, hu⟩ ⟨v, hv⟩ hpath
+    let bn_D : BayesianNetwork ↥D := {
+      graph := G_D
+      stateSpace := fun d => bn.stateSpace d.val
+      acyclic := hG_D_acyclic
+      measurableSpace := fun d => bn.measurableSpace d.val
+    }
+    -- Construct CPT: for each d ∈ D, fix non-D-parents at x
+    let cpt_D : bn_D.DiscreteCPT := {
+      cpt := fun d pa_D =>
+        cpt.cpt d.val (fun u hu =>
+          if h : u ∈ D then pa_D ⟨u, h⟩ hu else x u)
+    }
+    -- Show nodeProbs match
+    have hnode_eq : ∀ (xD : ∀ d : ↥D, bn.stateSpace d) (d : ↥D),
+        cpt_D.nodeProb xD d = cpt.nodeProb (patchConfig bn x D xD) d.val := by
+      intro xD d
+      simp only [DiscreteCPT.nodeProb, DiscreteCPT.parentAssignOfConfig]
+      -- Both sides are cpt.cpt d.val (parent_assign) (value)
+      -- The parent assignments and values are the same after unfolding
+      show cpt_D.cpt d (fun u _ => xD u) (xD d) =
+        cpt.cpt d.val (fun u _ => patchConfig bn x D xD u) (patchConfig bn x D xD d.val)
+      -- Unfold the value at d
+      have hval : patchConfig bn x D xD d.val = xD d := by
+        simp [patchConfig, d.prop]
+      rw [hval]
+      -- Unfold cpt_D and show parent assignments match
+      show cpt.cpt d.val (fun u hu =>
+        if h : u ∈ D then (fun u _ => xD u) ⟨u, h⟩ hu else x u) (xD d) =
+        cpt.cpt d.val (fun u _ => patchConfig bn x D xD u) (xD d)
+      congr 1
+    -- Show jointWeights match
+    have hjw_eq : ∀ (xD : ∀ d : ↥D, bn.stateSpace d),
+        cpt_D.jointWeight xD = ∏ d : ↥D, cpt.nodeProb (patchConfig bn x D xD) d := by
+      intro xD
+      simp only [DiscreteCPT.jointWeight]
+      apply Fintype.prod_congr
+      intro d
+      exact hnode_eq xD d
+    -- Apply jointWeight_sum_eq_one to the sub-BN
+    have hsub := DiscreteCPT.jointWeight_sum_eq_one cpt_D
+    rw [show ∑ xD, ∏ d : ↥D, cpt.nodeProb (patchConfig bn x D xD) d =
+        ∑ xD, cpt_D.jointWeight xD from by
+      apply Finset.sum_congr rfl; intro xD _; exact (hjw_eq xD).symm]
+    exact hsub
+
+set_option maxHeartbeats 800000
+
+/-! ## HasLocalMarkovProperty instance for discrete CPTs
+
+The factorization lemmas above prove the mathematical content: nodeProb for w ∈ ND(v)\Pa(v)\{v}
+is independent of x_v. The bridge to Mathlib's `CondIndep` requires reducing to the
+algebraic CI condition on parent fibers, then using the BN product factorization and
+the telescoping sum to verify it.
+
+Proof strategy (tower property + pull-out):
+
+Given: t₁ is m_v-measurable, t₂ is m_ND-measurable.
+Show: μ⟦t₁ ∩ t₂ | m_pa⟧ =ᵐ μ⟦t₁ | m_pa⟧ * μ⟦t₂ | m_pa⟧
+
+Step 1: 1_{t₁∩t₂} = 1_{t₁} · 1_{t₂} (indicator multiplication)
+Step 2: μ⟦f | m_pa⟧ =ᵐ μ⟦μ⟦f | m_pa ⊔ m_v⟧ | m_pa⟧ (tower property, m_pa ≤ m_pa ⊔ m_v)
+Step 3: μ⟦1_{t₁}·1_{t₂} | m_pa ⊔ m_v⟧ =ᵐ 1_{t₁} · μ⟦1_{t₂} | m_pa ⊔ m_v⟧
+         (pull-out: 1_{t₁} is (m_pa ⊔ m_v)-measurable since m_v ≤ m_pa ⊔ m_v)
+Step 4: μ⟦1_{t₂} | m_pa ⊔ m_v⟧ =ᵐ μ⟦1_{t₂} | m_pa⟧
+         ← BN FACTORIZATION: knowing x_v gives no info about ND' given Pa(v).
+         On each parent-vertex fiber F_{c,a}, the marginal weight factors as
+         φ_v(a,c) · φ_ND(x_{ND'},c), with the descendant sum = 1 (telescoping_sum).
+         So P(t₂|Pa=c,v=a) = P(t₂|Pa=c) — the ratio is independent of a.
+Step 5: μ⟦1_{t₁} · μ⟦1_{t₂}|m_pa⟧ | m_pa⟧ =ᵐ μ⟦1_{t₁}|m_pa⟧ · μ⟦1_{t₂}|m_pa⟧
+         (pull-out: μ⟦1_{t₂}|m_pa⟧ is m_pa-measurable)
+
+The only non-standard step is Step 4, which encapsulates the BN factorization.
+The algebraic CI: μ(t₂∩F_c∩B) · μ(F_c) = μ(t₂∩F_c) · μ(F_c∩B) for m_v-meas B
+follows from the factored weight after summing out descendants (telescoping_sum). -/
+
+variable [∀ v : V, StandardBorelSpace (bn.stateSpace v)]
+
+/-- Helper: condExp of an indicator is bounded by 1 in norm a.e. -/
+private lemma condExp_indicator_norm_le_one
+    (μ : Measure bn.JointSpace) [IsFiniteMeasure μ]
+    {m' : MeasurableSpace bn.JointSpace} (hm' : m' ≤ MeasurableSpace.pi)
+    [SigmaFinite (μ.trim hm')]
+    (s : Set bn.JointSpace) (hs : @MeasurableSet _ MeasurableSpace.pi s) :
+    ∀ᵐ ω ∂μ, ‖(μ[s.indicator (fun _ => (1 : ℝ)) | m']) ω‖ ≤ 1 := by
+  have hint : Integrable (s.indicator fun _ => (1 : ℝ)) μ :=
+    (integrable_const (1 : ℝ)).indicator hs
+  have h_ind_le : (s.indicator fun _ => (1 : ℝ)) ≤ᵐ[μ] fun _ => (1 : ℝ) :=
+    Filter.Eventually.of_forall fun ω => by
+      simp only [Set.indicator_apply]; split_ifs <;> norm_num
+  have h_mono : (μ[s.indicator (fun _ => (1 : ℝ)) | m']) ≤ᵐ[μ] (μ[fun _ => (1 : ℝ) | m']) :=
+    condExp_mono hint (integrable_const (1 : ℝ)) h_ind_le
+  have h_const : (μ[fun _ => (1 : ℝ) | m']) = fun _ => (1 : ℝ) :=
+    condExp_of_stronglyMeasurable hm' stronglyMeasurable_const (integrable_const _)
+  have h_le : (μ[s.indicator (fun _ => (1 : ℝ)) | m']) ≤ᵐ[μ] fun _ => (1 : ℝ) := by
+    have := h_const ▸ h_mono; exact this
+  have h_ge : (0 : bn.JointSpace → ℝ) ≤ᵐ[μ] (μ[s.indicator (fun _ => (1 : ℝ)) | m']) :=
+    condExp_nonneg (Filter.Eventually.of_forall fun ω => by
+      simp only [Set.indicator_apply]; split_ifs <;> norm_num)
+  filter_upwards [h_le, h_ge] with ω hle hge
+  rw [Real.norm_eq_abs, abs_le]
+  simp only [Pi.zero_apply] at hge
+  exact ⟨by linarith, hle⟩
+
+/-! ### Parent-fiber decomposition helpers
+
+These lemmas let us treat any `m_pa`-measurable set as the preimage of a set of
+parent assignments via the restriction map. They will be used to decompose
+integrals over parent fibers in the BN CI proof below.
+-/
+
+lemma measurableSet_vertices_preimage
+    (S : Set V) {s : Set bn.JointSpace}
+    (hs : MeasurableSet[bn.measurableSpaceOfVertices S] s) :
+    ∃ T : Set (∀ p : S, bn.stateSpace p),
+      MeasurableSet T ∧ s = (restrictToSet (bn := bn) S) ⁻¹' T := by
+  have hs' :
+      MeasurableSet[
+        MeasurableSpace.comap (restrictToSet (bn := bn) S) (by infer_instance)] s := by
+    simpa [measurableSpaceOfVertices_eq_comap_restrict (bn := bn) S] using hs
+  rcases (MeasurableSpace.measurableSet_comap).1 hs' with ⟨T, hT, hpre⟩
+  exact ⟨T, hT, hpre.symm⟩
+
+lemma measurableSet_singleton_preimage
+    (v : V) {s : Set bn.JointSpace}
+    (hs : MeasurableSet[bn.measurableSpaceOfVertices ({v} : Set V)] s) :
+    ∃ T : Set (bn.stateSpace v), MeasurableSet T ∧ s = (fun ω : bn.JointSpace => ω v) ⁻¹' T := by
+  have hs' :
+      MeasurableSet[
+        MeasurableSpace.comap (fun ω : bn.JointSpace => ω v) (by infer_instance)] s := by
+    simpa [measurableSpaceOfVertices_singleton (bn := bn) v] using hs
+  rcases (MeasurableSpace.measurableSet_comap).1 hs' with ⟨T, hT, hpre⟩
+  exact ⟨T, hT, hpre.symm⟩
 
 noncomputable def parentsRestrict (v : V) :
     bn.JointSpace → (∀ p : {x // x ∈ (bn.graph.parents v : Set V)}, bn.stateSpace p.1) :=
@@ -78,11 +600,8 @@ lemma parents_preimage_eq_iUnion
       have hEq : parentsRestrict (bn := bn) v ω = c := by
         simpa [parentFiber] using hc'
       simpa [hEq] using h
-    · have hempty : False := by
-        have : ω ∈ (∅ : Set bn.JointSpace) := by
-          simpa [h] using hc
-        simpa using this
-      exact hempty.elim
+    · have : ω ∈ (∅ : Set bn.JointSpace) := by simpa [h] using hc
+      exact (False.elim (by simpa using this))
 
 lemma measurable_parentFiber
     (v : V) [MeasurableSingletonClass (ParentAssign (bn := bn) v)]
@@ -188,7 +707,7 @@ lemma vertex_preimage_eq_iUnion_eventEq
     refine Set.mem_iUnion.mpr ?_
     refine ⟨ω v, ?_⟩
     by_cases hS : ω v ∈ S
-    · simp [eventEq, hS]
+    · simp [eventEq, hS, hω]
     · exact (hS hω).elim
   · intro hω
     rcases Set.mem_iUnion.mp hω with ⟨a, ha⟩
@@ -470,7 +989,7 @@ private lemma sum_descendants_jointWeight
               cconst * (∏ d : ↥D, cpt.nodeProb (patchConfig bn x D xD) d) := by
           refine Finset.sum_congr rfl ?_
           intro xD _
-          simp [hD', hprod_desc xD, cconst, mul_assoc]
+          simp [hD', hprod_desc xD, cconst, mul_assoc, mul_left_comm, mul_comm]
         -- pull out constants
         calc
           (∑ xD : (∀ d : ↥D, bn.stateSpace d),
@@ -485,7 +1004,7 @@ private lemma sum_descendants_jointWeight
               ∑ xD : (∀ d : ↥D, bn.stateSpace d),
                 (∏ d : ↥D, cpt.nodeProb (patchConfig bn x D xD) d) := by
                 -- pull cconst out of the sum
-                simp [Finset.mul_sum, mul_assoc, cconst]
+                simp [Finset.mul_sum, mul_assoc, mul_left_comm, mul_comm, cconst]
     _ =
       cpt.nodeProb x v *
         (∏ w ∈ (Finset.univ.filter (fun w => w ∉ bn.graph.descendants v ∧ w ≠ v)),
@@ -577,7 +1096,7 @@ private lemma piEquiv_descendants_symm_eq_merge
           (baseFromNonDesc (bn := bn) v xND)
           (Finset.univ.filter (fun d => d ∈ bn.graph.descendants v))
           (descSetToFin (bn := bn) v xD) u := by
-            simp [patchConfig_inside (bn := bn)
+            simpa [patchConfig_inside (bn := bn)
               (x := baseFromNonDesc (bn := bn) v xND)
               (D := Finset.univ.filter (fun d => d ∈ bn.graph.descendants v))
               (xD := descSetToFin (bn := bn) v xD)
@@ -706,7 +1225,7 @@ private lemma sum_descendants_jointWeight_over_nonDesc
                                 = xD := by
                             exact
                               (Equiv.apply_symm_apply (descAssignEquiv (bn := bn) v) xD)
-                          simp [mergeDescNonDesc, hround]
+                          simpa [mergeDescNonDesc, hround]
     _ =
       cpt.nodeProb (baseFromNonDesc (bn := bn) v xND) v *
         (∏ w ∈ (Finset.univ.filter (fun w => w ∉ bn.graph.descendants v ∧ w ≠ v)),
@@ -832,13 +1351,11 @@ private lemma sum_jointWeight_reindex_and_collapse_of_desc_irrel
             (sum_descendants_jointWeight_over_nonDesc_if (bn := bn) (cpt := cpt) (v := v)
               (xND := xND) (P := P))
 
-/-- Per-parent-fiber screening identity for a discrete CPT joint measure.
-
-This is the algebraic core behind the local-Markov proof and a reusable finite
-bridge for later BN soundness work: once the parent assignment `c` is fixed,
-the event determined by `v` and the event determined by
-`ND(v) \ (Pa(v) ∪ {v})` multiply over the parent fiber `F_c`. -/
-theorem jointMeasure_parentFiber_screening_mul
+/-- Per-parent-fiber screening identity used in `condExp_indicator_mul_of_bn_ci`.
+This is the discrete BN algebraic core:
+`μ((B ∩ t₂) ∩ F_c) * μ(F_c) = μ(B ∩ F_c) * μ(t₂ ∩ F_c)`.
+-/
+private lemma fiber_screening_mul
     (cpt : bn.DiscreteCPT) (v : V)
     (B : Set bn.JointSpace)
     (hB : MeasurableSet[bn.measurableSpaceOfVertices ({v} : Set V)] B)
@@ -1002,16 +1519,16 @@ theorem jointMeasure_parentFiber_screening_mul
     have hB :
         ((mergeDescNonDesc (bn := bn) v xND xD) ∈ Bset) ↔
           ((baseFromNonDesc (bn := bn) v xND) ∈ Bset) := by
-      simp [Bset, hmerge_eq_base_at_v xND xD]
+      simpa [Bset, hmerge_eq_base_at_v xND xD]
     have hT :
         ((mergeDescNonDesc (bn := bn) v xND xD) ∈ Tset) ↔
           ((baseFromNonDesc (bn := bn) v xND) ∈ Tset) := by
-      simp [Tset, hmerge_eq_base_on_restrictND xND xD]
+      simpa [Tset, hmerge_eq_base_on_restrictND xND xD]
     have hFm :
         ((mergeDescNonDesc (bn := bn) v xND xD) ∈ F) ↔
           ((baseFromNonDesc (bn := bn) v xND) ∈ F) := by
-      simp [F, parentFiber, hmerge_eq_base_on_parents xND xD]
-    simp [P_BtF, S_BtF, Set.mem_inter_iff, hB, hT, hFm]
+      simpa [F, parentFiber, hmerge_eq_base_on_parents xND xD]
+    simpa [P_BtF, S_BtF, Set.mem_inter_iff, hB, hT, hFm]
   have hQP_BF :
       ∀ xND xD,
         ((mergeDescNonDesc (bn := bn) v xND xD) ∈ S_BF) ↔ P_BF xND := by
@@ -1019,12 +1536,12 @@ theorem jointMeasure_parentFiber_screening_mul
     have hB :
         ((mergeDescNonDesc (bn := bn) v xND xD) ∈ Bset) ↔
           ((baseFromNonDesc (bn := bn) v xND) ∈ Bset) := by
-      simp [Bset, hmerge_eq_base_at_v xND xD]
+      simpa [Bset, hmerge_eq_base_at_v xND xD]
     have hFm :
         ((mergeDescNonDesc (bn := bn) v xND xD) ∈ F) ↔
           ((baseFromNonDesc (bn := bn) v xND) ∈ F) := by
-      simp [F, parentFiber, hmerge_eq_base_on_parents xND xD]
-    simp [P_BF, S_BF, Set.mem_inter_iff, hB, hFm]
+      simpa [F, parentFiber, hmerge_eq_base_on_parents xND xD]
+    simpa [P_BF, S_BF, Set.mem_inter_iff, hB, hFm]
   have hQP_t₂F :
       ∀ xND xD,
         ((mergeDescNonDesc (bn := bn) v xND xD) ∈ S_t₂F) ↔ P_t₂F xND := by
@@ -1032,12 +1549,12 @@ theorem jointMeasure_parentFiber_screening_mul
     have hT :
         ((mergeDescNonDesc (bn := bn) v xND xD) ∈ Tset) ↔
           ((baseFromNonDesc (bn := bn) v xND) ∈ Tset) := by
-      simp [Tset, hmerge_eq_base_on_restrictND xND xD]
+      simpa [Tset, hmerge_eq_base_on_restrictND xND xD]
     have hFm :
         ((mergeDescNonDesc (bn := bn) v xND xD) ∈ F) ↔
           ((baseFromNonDesc (bn := bn) v xND) ∈ F) := by
-      simp [F, parentFiber, hmerge_eq_base_on_parents xND xD]
-    simp [P_t₂F, S_t₂F, Set.mem_inter_iff, hT, hFm]
+      simpa [F, parentFiber, hmerge_eq_base_on_parents xND xD]
+    simpa [P_t₂F, S_t₂F, Set.mem_inter_iff, hT, hFm]
   have hQP_F :
       ∀ xND xD,
         ((mergeDescNonDesc (bn := bn) v xND xD) ∈ F) ↔ P_F xND := by
@@ -1045,7 +1562,7 @@ theorem jointMeasure_parentFiber_screening_mul
     have hFm :
         ((mergeDescNonDesc (bn := bn) v xND xD) ∈ F) ↔
           ((baseFromNonDesc (bn := bn) v xND) ∈ F) := by
-      simp [F, parentFiber, hmerge_eq_base_on_parents xND xD]
+      simpa [F, parentFiber, hmerge_eq_base_on_parents xND xD]
     simpa [P_F] using hFm
   have hsum_BtF :
       (∑ x : bn.JointSpace, if x ∈ S_BtF then cpt.jointWeight x else 0)
@@ -1363,11 +1880,11 @@ theorem jointMeasure_parentFiber_screening_mul
           ↔
         restrictToSet (bn := bn) (bn.nonDescendantsExceptParentsAndSelf v) (x0 xrest) ∈ SND
       rw [hbase_update a xrest]
-      simp [hrestrictND_update (x := x0 xrest) (a := a)]
+      simpa [hrestrictND_update (x := x0 xrest) (a := a)]
     have hF_indep : xnew ∈ F ↔ x0 xrest ∈ F := by
       simpa [xnew, PF0, P_F, x0, xND0] using hP_F_indep a xrest
     have hS : xnew ∈ S_t₂F ↔ x0 xrest ∈ S_t₂F := by
-      simp [S_t₂F, Set.mem_inter_iff, hT_indep, hF_indep]
+      simpa [S_t₂F, Set.mem_inter_iff, hT_indep, hF_indep]
     simpa [P_t₂F, PT0, xnew, xND0] using hS
 
   have hP_BF_split :
@@ -1381,7 +1898,7 @@ theorem jointMeasure_parentFiber_screening_mul
       simp
     have hF_mem : xnew ∈ F ↔ PF0 xrest := by
       simpa [xnew, P_F] using hP_F_indep a xrest
-    simp [P_BF, xnew, S_BF, Set.mem_inter_iff, hB_mem, hF_mem]
+    simpa [P_BF, xnew, S_BF, Set.mem_inter_iff, hB_mem, hF_mem]
 
   have hP_BtF_split :
       ∀ (a : bn.stateSpace v) (xrest : XRest),
@@ -1792,18 +2309,18 @@ theorem jointMeasure_parentFiber_screening_mul
           = (qB * cpt.jointMeasure S_t₂F) * cpt.jointMeasure F := by
               rw [hμ_BtF_q]
       _ = qB * (cpt.jointMeasure S_t₂F * cpt.jointMeasure F) := by
-            simp [mul_assoc]
+            simp [mul_assoc, mul_left_comm, mul_comm]
       _ = qB * (cpt.jointMeasure F * cpt.jointMeasure S_t₂F) := by
             simp [mul_comm]
       _ = (qB * cpt.jointMeasure F) * cpt.jointMeasure S_t₂F := by
-            simp [mul_assoc]
+            simp [mul_assoc, mul_left_comm, mul_comm]
       _ = cpt.jointMeasure S_BF * cpt.jointMeasure S_t₂F := by
             rw [hμ_BF_q]
   simpa [S_BtF, S_BF, S_t₂F, Bset, Tset, Set.inter_assoc, Set.inter_left_comm, Set.inter_comm]
     using hfinal
 
 
-/- BN factorization CI on parent fibers: for B ∈ m_v and f = t₂.indicator 1 with t₂ ∈ m_{ND'},
+/-- BN factorization CI on parent fibers: for B ∈ m_v and f = t₂.indicator 1 with t₂ ∈ m_{ND'},
     on each parent fiber F_c the joint weight factors as nodeProb(v,x_v,c) · Ψ(x_{ND'},c)
     after marginalizing descendants (telescoping_sum). This product structure gives:
     μ[B.indicator 1 * f | m_pa] =ᵃᵉ μ[B.indicator 1 | m_pa] * μ[f | m_pa]
@@ -1811,13 +2328,7 @@ theorem jointMeasure_parentFiber_screening_mul
     Proof: On fiber F_c, w(x) = nodeProb(v, x_v, c) · Ψ(x_{ND'}, c) · Σ_desc(→1).
     Since nodeProb(v) depends only on x_v,c and Ψ depends only on x_{ND'},c:
     μ(B∩t₂∩F_c) · μ(F_c) = μ(B∩F_c) · μ(t₂∩F_c). Summing over fibers gives CI. -/
-/-- Event-level conditional-expectation factorization for the discrete BN local-Markov core.
-
-For an event `B` depending only on `v` and an event `t₂` depending only on
-`ND(v) \ (Pa(v) ∪ {v})`, conditioning on the parent σ-algebra makes the
-indicator product split. This packages the discrete parent-fiber screening
-algebra into a reusable public theorem. -/
-theorem condExp_indicator_mul_of_parent_screening
+private lemma condExp_indicator_mul_of_bn_ci
     (cpt : bn.DiscreteCPT) (v : V)
     (B : Set bn.JointSpace)
     (hB : MeasurableSet[bn.measurableSpaceOfVertices ({v} : Set V)] B)
@@ -2005,8 +2516,7 @@ theorem condExp_indicator_mul_of_parent_screening
                     simp [Set.inter_assoc, Set.inter_left_comm, Set.inter_comm]
           have hscreen : μ ((B ∩ t₂) ∩ F) * μ F = μ (B ∩ F) * μ (t₂ ∩ F) := by
             simpa [μ, F, Set.inter_assoc, Set.inter_left_comm, Set.inter_comm] using
-              jointMeasure_parentFiber_screening_mul
-                (bn := bn) (cpt := cpt) (v := v) (B := B) (hB := hB)
+              fiber_screening_mul (bn := bn) (cpt := cpt) (v := v) (B := B) (hB := hB)
                 (t₂ := t₂) (ht₂ := ht₂) c
           have hscreen_real :
               μ.real ((B ∩ t₂) ∩ F) * μ.real F = μ.real (B ∩ F) * μ.real (t₂ ∩ F) := by
@@ -2156,7 +2666,7 @@ theorem condExp_ndesc_indep_of_vertex
         have hB_pi : @MeasurableSet _ MeasurableSpace.pi B :=
           (bn.measurableSpaceOfVertices_le _) _ hB
         -- Use the CI lemma
-        have hci := condExp_indicator_mul_of_parent_screening bn cpt v B hB t₂ ht₂
+        have hci := condExp_indicator_mul_of_bn_ci bn cpt v B hB t₂ ht₂
         -- hci : μ[g * f | m_pa] =ᵃᵉ μ[g | m_pa] * μ[f | m_pa]
         -- where g = B.indicator 1
         set g := B.indicator (fun _ => (1 : ℝ)) with hg_def
@@ -2306,524 +2816,9 @@ theorem discrete_localMarkovCondition
   · exact bn.measurableSpaceOfVertices_le _
   · exact bn.measurableSpaceOfVertices_le _
 
-/-- Reduced-core discrete conditional independence for concrete events:
-an event depending only on `v` is conditionally independent of an event
-depending only on `ND(v) \ (Pa(v) ∪ {v})`, given the parent coordinates. -/
-theorem jointMeasure_condIndepSet_of_vertex_nonDesc_given_parents
-    (cpt : bn.DiscreteCPT) (v : V)
-    {B t₂ : Set bn.JointSpace}
-    (hB : MeasurableSet[bn.measurableSpaceOfVertices ({v} : Set V)] B)
-    (ht₂ : MeasurableSet[bn.measurableSpaceOfVertices
-            (bn.nonDescendantsExceptParentsAndSelf v)] t₂) :
-    ProbabilityTheory.CondIndepSet
-      (m' := bn.measurableSpaceOfVertices (bn.graph.parents v))
-      (hm' := measurableSpaceOfVertices_le (bn := bn) (bn.graph.parents v))
-      B t₂ cpt.jointMeasure := by
-  have hmarkov : LocalMarkovCondition bn cpt.jointMeasure v :=
-    discrete_localMarkovCondition (bn := bn) cpt v
-  have hsets :=
-    (ProbabilityTheory.condIndep_iff_forall_condIndepSet
-      (m' := bn.measurableSpaceOfVertices (bn.graph.parents v))
-      (m₁ := bn.measurableSpaceOfVertices ({v} : Set V))
-      (m₂ := bn.measurableSpaceOfVertices (bn.nonDescendantsExceptParentsAndSelf v))
-      (hm' := measurableSpaceOfVertices_le (bn := bn) (bn.graph.parents v))
-      (μ := cpt.jointMeasure)).1 (by
-        simpa [LocalMarkovCondition] using hmarkov)
-  exact hsets B t₂ hB ht₂
-
-/-- Reduced-core discrete conditional independence remains valid after
-intersecting the singleton-left and non-descendant-right events with additional
-parent-measurable events. This is the first non-singleton event-level bridge we
-need for parent-enriched reduced-core arguments. -/
-theorem jointMeasure_condIndepSet_of_parent_inter_vertex_parent_inter_nonDesc_given_parents
-    (cpt : bn.DiscreteCPT) (v : V)
-    {u B w t₂ : Set bn.JointSpace}
-    (hu : MeasurableSet[bn.measurableSpaceOfVertices (bn.graph.parents v)] u)
-    (hB : MeasurableSet[bn.measurableSpaceOfVertices ({v} : Set V)] B)
-    (hw : MeasurableSet[bn.measurableSpaceOfVertices (bn.graph.parents v)] w)
-    (ht₂ : MeasurableSet[bn.measurableSpaceOfVertices
-            (bn.nonDescendantsExceptParentsAndSelf v)] t₂) :
-    ProbabilityTheory.CondIndepSet
-      (m' := bn.measurableSpaceOfVertices (bn.graph.parents v))
-      (hm' := measurableSpaceOfVertices_le (bn := bn) (bn.graph.parents v))
-      (u ∩ B) (w ∩ t₂) cpt.jointMeasure := by
-  have hB_meas :
-      MeasurableSet B :=
-    (measurableSpaceOfVertices_le (bn := bn) ({v} : Set V)) _ hB
-  have ht₂_meas :
-      MeasurableSet t₂ :=
-    (measurableSpaceOfVertices_le (bn := bn)
-      (bn.nonDescendantsExceptParentsAndSelf v)) _ ht₂
-  have hbase :
-      ProbabilityTheory.CondIndepSet
-        (m' := bn.measurableSpaceOfVertices (bn.graph.parents v))
-        (hm' := measurableSpaceOfVertices_le (bn := bn) (bn.graph.parents v))
-        B t₂ cpt.jointMeasure :=
-    jointMeasure_condIndepSet_of_vertex_nonDesc_given_parents
-      (bn := bn) cpt v hB ht₂
-  have hleft :
-      ProbabilityTheory.CondIndepSet
-        (m' := bn.measurableSpaceOfVertices (bn.graph.parents v))
-        (hm' := measurableSpaceOfVertices_le (bn := bn) (bn.graph.parents v))
-        (u ∩ B) t₂ cpt.jointMeasure :=
-    condIndepSet_inter_left_of_measurable
-      (bn := bn) (μ := cpt.jointMeasure) (Z := bn.graph.parents v)
-      hu hB_meas ht₂_meas hbase
-  have huB_meas : MeasurableSet (u ∩ B) :=
-    ((measurableSpaceOfVertices_le (bn := bn) (bn.graph.parents v)) _ hu).inter hB_meas
-  simpa [Set.inter_comm] using
-    (condIndepSet_inter_right_of_measurable
-      (bn := bn) (μ := cpt.jointMeasure) (Z := bn.graph.parents v)
-      huB_meas ht₂_meas hw hleft)
-
-/-- Discrete local Markov, lifted directly from the concrete event theorem to the
-vertex-generated σ-algebras for `{v}` and `ND(v) \ (Pa(v) ∪ {v})`. -/
-theorem jointMeasure_condIndepVertices_of_vertex_nonDesc_given_parents
-    (cpt : bn.DiscreteCPT) (v : V) :
-    CondIndepVertices
-      bn cpt.jointMeasure ({v} : Set V)
-      (bn.nonDescendantsExceptParentsAndSelf v) (bn.graph.parents v) := by
-  unfold CondIndepVertices
-  exact
-    (ProbabilityTheory.condIndep_iff_forall_condIndepSet
-      (m' := bn.measurableSpaceOfVertices (bn.graph.parents v))
-      (m₁ := bn.measurableSpaceOfVertices ({v} : Set V))
-      (m₂ := bn.measurableSpaceOfVertices (bn.nonDescendantsExceptParentsAndSelf v))
-      (hm' := measurableSpaceOfVertices_le (bn := bn) (bn.graph.parents v))
-      (μ := cpt.jointMeasure)).2
-      (fun s t hs ht =>
-        jointMeasure_condIndepSet_of_vertex_nonDesc_given_parents
-          (bn := bn) cpt v hs ht)
-
-/-- Parent coordinates can be freely added to both sides of the reduced-core
-discrete local-Markov statement, because they are already measurable in the
-conditioning σ-algebra. -/
-theorem jointMeasure_condIndepVertices_of_parentset_union_vertex_nonDesc_given_parents
-    (cpt : bn.DiscreteCPT) (v : V) {U W : Set V}
-    (hU : U ⊆ bn.graph.parents v)
-    (hW : W ⊆ bn.graph.parents v) :
-    CondIndepVertices
-      bn cpt.jointMeasure (U ∪ ({v} : Set V))
-      (W ∪ bn.nonDescendantsExceptParentsAndSelf v) (bn.graph.parents v) := by
-  have hbase :
-      CondIndepVertices
-        bn cpt.jointMeasure ({v} : Set V)
-        (bn.nonDescendantsExceptParentsAndSelf v) (bn.graph.parents v) :=
-    jointMeasure_condIndepVertices_of_vertex_nonDesc_given_parents
-      (bn := bn) cpt v
-  have hleft :
-      CondIndepVertices
-        bn cpt.jointMeasure (U ∪ ({v} : Set V))
-        (bn.nonDescendantsExceptParentsAndSelf v) (bn.graph.parents v) :=
-    condIndepVertices_union_left_of_subset_conditioning
-      (bn := bn) (μ := cpt.jointMeasure)
-      (U := U) (X := ({v} : Set V))
-      (Y := bn.nonDescendantsExceptParentsAndSelf v)
-      (Z := bn.graph.parents v) hU hbase
-  exact
-    condIndepVertices_union_right_of_subset_conditioning
-      (bn := bn) (μ := cpt.jointMeasure)
-      (X := U ∪ ({v} : Set V))
-      (U := W) (Y := bn.nonDescendantsExceptParentsAndSelf v)
-      (Z := bn.graph.parents v) hW hleft
-
-/-- Set-level reduced-core discrete soundness for parent-enriched singleton blocks:
-arbitrary events measurable in `σ(U ∪ {v})` and `σ(W ∪ ND(v)\(Pa(v)∪{v}))`
-are conditionally independent given `σ(Pa(v))` whenever `U,W ⊆ Pa(v)`. -/
-theorem jointMeasure_condIndepSet_of_parentset_union_vertex_parentset_union_nonDesc_given_parents
-    (cpt : bn.DiscreteCPT) (v : V) {U W : Set V}
-    (hU : U ⊆ bn.graph.parents v)
-    (hW : W ⊆ bn.graph.parents v)
-    {s t : Set bn.JointSpace}
-    (hs : MeasurableSet[bn.measurableSpaceOfVertices (U ∪ ({v} : Set V))] s)
-    (ht : MeasurableSet[bn.measurableSpaceOfVertices
-            (W ∪ bn.nonDescendantsExceptParentsAndSelf v)] t) :
-    ProbabilityTheory.CondIndepSet
-      (m' := bn.measurableSpaceOfVertices (bn.graph.parents v))
-      (hm' := measurableSpaceOfVertices_le (bn := bn) (bn.graph.parents v))
-      s t cpt.jointMeasure := by
-  have hCI :
-      CondIndepVertices
-        bn cpt.jointMeasure (U ∪ ({v} : Set V))
-        (W ∪ bn.nonDescendantsExceptParentsAndSelf v) (bn.graph.parents v) :=
-    jointMeasure_condIndepVertices_of_parentset_union_vertex_nonDesc_given_parents
-      (bn := bn) cpt v hU hW
-  exact
-    (ProbabilityTheory.condIndep_iff_forall_condIndepSet
-      (m' := bn.measurableSpaceOfVertices (bn.graph.parents v))
-      (m₁ := bn.measurableSpaceOfVertices (U ∪ ({v} : Set V)))
-      (m₂ := bn.measurableSpaceOfVertices (W ∪ bn.nonDescendantsExceptParentsAndSelf v))
-      (hm' := measurableSpaceOfVertices_le (bn := bn) (bn.graph.parents v))
-      (μ := cpt.jointMeasure)).1 (by
-        simpa [CondIndepVertices] using hCI) s t hs ht
-
-/-- Reduced-core discrete soundness for a parent-enriched singleton-left block:
-if the only non-conditioned left vertex is `v`, then d-separation from `Y`
-given `Pa(v)` is enough to invoke the discrete local-Markov bridge. -/
-theorem dsepFull_parentset_union_singleton_left_parentset_condIndepVertices
-    (cpt : bn.DiscreteCPT) {v : V} {U Y : Set V}
-    (hU : U ⊆ bn.graph.parents v)
-    (hXY : (U ∪ ({v} : Set V)) ∩ Y ⊆ bn.graph.parents v)
-    (hdsep :
-      Mettapedia.ProbabilityTheory.BayesianNetworks.DSeparation.DSeparatedFull
-        bn.graph (U ∪ ({v} : Set V)) Y (bn.graph.parents v)) :
-    CondIndepVertices
-      bn cpt.jointMeasure (U ∪ ({v} : Set V)) Y (bn.graph.parents v) := by
-  have hSubset :
-      Y \ bn.graph.parents v ⊆ bn.nonDescendantsExceptParentsAndSelf v :=
-    dsepFull_parentset_union_singleton_left_parentset_subset_nonDescendantsExceptParentsAndSelf
-      (bn := bn) (v := v) hXY hdsep
-  have hCore :
-      CondIndepVertices
-        bn cpt.jointMeasure (U ∪ ({v} : Set V))
-        ((Y ∩ bn.graph.parents v) ∪ bn.nonDescendantsExceptParentsAndSelf v)
-        (bn.graph.parents v) :=
-    jointMeasure_condIndepVertices_of_parentset_union_vertex_nonDesc_given_parents
-      (bn := bn) cpt v hU (by
-        intro y hy
-        exact hy.2)
-  have hY :
-      Y ⊆ (Y ∩ bn.graph.parents v) ∪ bn.nonDescendantsExceptParentsAndSelf v := by
-    intro y hy
-    by_cases hyPa : y ∈ bn.graph.parents v
-    · exact Or.inl ⟨hy, hyPa⟩
-    · exact Or.inr (hSubset ⟨hy, hyPa⟩)
-  exact condIndepVertices_of_le_right (bn := bn) (μ := cpt.jointMeasure) hY hCore
-
-/-- Event-level form of the parent-enriched singleton-left reduced-core
-d-separation bridge. This is the concrete measurable-event theorem that the
-broader disjoint-core route will want to reuse. -/
-theorem dsepFull_parentset_union_singleton_left_parentset_condIndepSet
-    (cpt : bn.DiscreteCPT) {v : V} {U Y : Set V}
-    (hU : U ⊆ bn.graph.parents v)
-    (hXY : (U ∪ ({v} : Set V)) ∩ Y ⊆ bn.graph.parents v)
-    (hdsep :
-      Mettapedia.ProbabilityTheory.BayesianNetworks.DSeparation.DSeparatedFull
-        bn.graph (U ∪ ({v} : Set V)) Y (bn.graph.parents v))
-    {s t : Set bn.JointSpace}
-    (hs : MeasurableSet[bn.measurableSpaceOfVertices (U ∪ ({v} : Set V))] s)
-    (ht : MeasurableSet[bn.measurableSpaceOfVertices Y] t) :
-    ProbabilityTheory.CondIndepSet
-      (m' := bn.measurableSpaceOfVertices (bn.graph.parents v))
-      (hm' := measurableSpaceOfVertices_le (bn := bn) (bn.graph.parents v))
-      s t cpt.jointMeasure := by
-  have hCI :
-      CondIndepVertices
-        bn cpt.jointMeasure (U ∪ ({v} : Set V)) Y (bn.graph.parents v) :=
-    dsepFull_parentset_union_singleton_left_parentset_condIndepVertices
-      (bn := bn) cpt hU hXY hdsep
-  exact
-    (ProbabilityTheory.condIndep_iff_forall_condIndepSet
-      (m' := bn.measurableSpaceOfVertices (bn.graph.parents v))
-      (m₁ := bn.measurableSpaceOfVertices (U ∪ ({v} : Set V)))
-      (m₂ := bn.measurableSpaceOfVertices Y)
-      (hm' := measurableSpaceOfVertices_le (bn := bn) (bn.graph.parents v))
-      (μ := cpt.jointMeasure)).1 (by
-        simpa [CondIndepVertices] using hCI) s t hs ht
-
-/-- If every pair of `eventOfConstraints` atoms over `X` and `Y` is conditionally
-independent given `σ(Z)`, then the full vertex-generated σ-algebras over `X` and
-`Y` are conditionally independent given `σ(Z)`. This packages the final lift
-from atomic block identities to the public `CondIndepVertices` API. -/
-theorem condIndepVertices_of_condIndepSet_constraintAtoms
-    (μ : Measure bn.JointSpace) [IsFiniteMeasure μ]
-    [∀ v, MeasurableSingletonClass (bn.stateSpace v)]
-    {X Y Z : Set V}
-    (hatom :
-      ∀ xX : (∀ p : X, bn.stateSpace p.1),
-        ∀ xY : (∀ p : Y, bn.stateSpace p.1),
-          ProbabilityTheory.CondIndepSet
-            (m' := bn.measurableSpaceOfVertices Z)
-            (hm' := measurableSpaceOfVertices_le (bn := bn) Z)
-            (eventOfConstraints (bn := bn)
-              (constraintsOfRestrict (bn := bn) X xX))
-            (eventOfConstraints (bn := bn)
-              (constraintsOfRestrict (bn := bn) Y xY))
-            μ) :
-    CondIndepVertices bn μ X Y Z := by
-  let mZ : MeasurableSpace bn.JointSpace := bn.measurableSpaceOfVertices Z
-  let mX : MeasurableSpace bn.JointSpace := bn.measurableSpaceOfVertices X
-  let mY : MeasurableSpace bn.JointSpace := bn.measurableSpaceOfVertices Y
-  let atomX : (∀ p : X, bn.stateSpace p.1) → Set bn.JointSpace :=
-    fun xX => eventOfConstraints (bn := bn)
-      (constraintsOfRestrict (bn := bn) X xX)
-  let atomY : (∀ p : Y, bn.stateSpace p.1) → Set bn.JointSpace :=
-    fun xY => eventOfConstraints (bn := bn)
-      (constraintsOfRestrict (bn := bn) Y xY)
-  let p : Set (Set bn.JointSpace) :=
-    {a | a = ∅ ∨ ∃ xX : (∀ q : X, bn.stateSpace q.1), a = atomX xX}
-  let q : Set (Set bn.JointSpace) :=
-    {b | b = ∅ ∨ ∃ xY : (∀ r : Y, bn.stateSpace r.1), b = atomY xY}
-  have hmZ : mZ ≤ (MeasurableSpace.pi : MeasurableSpace bn.JointSpace) :=
-    measurableSpaceOfVertices_le (bn := bn) Z
-  have hmX : mX ≤ (MeasurableSpace.pi : MeasurableSpace bn.JointSpace) :=
-    measurableSpaceOfVertices_le (bn := bn) X
-  have hmY : mY ≤ (MeasurableSpace.pi : MeasurableSpace bn.JointSpace) :=
-    measurableSpaceOfVertices_le (bn := bn) Y
-  have hAtomX_meas :
-      ∀ xX : (∀ p : X, bn.stateSpace p.1),
-        MeasurableSet[mX] (atomX xX) := by
-    intro xX
-    have hcomap :
-        MeasurableSet[
-          MeasurableSpace.comap (restrictToSet (bn := bn) X) (by infer_instance)]
-          (atomX xX) := by
-      refine (MeasurableSpace.measurableSet_comap).2 ?_
-      refine ⟨{xX}, by simp, ?_⟩
-      exact (eventOfConstraints_constraintsOfRestrict (bn := bn) X xX).symm
-    simpa [mX, measurableSpaceOfVertices_eq_comap_restrict (bn := bn) X,
-      atomX] using hcomap
-  have hAtomY_meas :
-      ∀ xY : (∀ p : Y, bn.stateSpace p.1),
-        MeasurableSet[mY] (atomY xY) := by
-    intro xY
-    have hcomap :
-        MeasurableSet[
-          MeasurableSpace.comap (restrictToSet (bn := bn) Y) (by infer_instance)]
-          (atomY xY) := by
-      refine (MeasurableSpace.measurableSet_comap).2 ?_
-      refine ⟨{xY}, by simp, ?_⟩
-      exact (eventOfConstraints_constraintsOfRestrict (bn := bn) Y xY).symm
-    simpa [mY, measurableSpaceOfVertices_eq_comap_restrict (bn := bn) Y,
-      atomY] using hcomap
-  have hp_pi : IsPiSystem p := by
-    intro a ha b hb hab
-    rcases ha with rfl | ⟨xX, rfl⟩
-    · simpa using hab
-    · rcases hb with rfl | ⟨yX, rfl⟩
-      · simpa [p] using hab
-      · by_cases hxy : xX = yX
-        · right
-          refine ⟨xX, ?_⟩
-          subst hxy
-          ext ω
-          simp [atomX]
-        · left
-          ext ω
-          have hdisj :
-              Disjoint
-                (eventOfConstraints (bn := bn)
-                  (constraintsOfRestrict (bn := bn) X xX))
-                (eventOfConstraints (bn := bn)
-                  (constraintsOfRestrict (bn := bn) X yX)) :=
-            eventOfConstraints_constraintsOfRestrict_disjoint
-              (bn := bn) X hxy
-          have hempty : ω ∉ atomX xX ∩ atomX yX := by
-            intro hω
-            exact Set.disjoint_left.mp hdisj hω.1 hω.2
-          simp [atomX, hempty]
-  have hq_pi : IsPiSystem q := by
-    intro a ha b hb hab
-    rcases ha with rfl | ⟨xY, rfl⟩
-    · simpa using hab
-    · rcases hb with rfl | ⟨yY, rfl⟩
-      · simpa [q] using hab
-      · by_cases hxy : xY = yY
-        · right
-          refine ⟨xY, ?_⟩
-          subst hxy
-          ext ω
-          simp [atomY]
-        · left
-          ext ω
-          have hdisj :
-              Disjoint
-                (eventOfConstraints (bn := bn)
-                  (constraintsOfRestrict (bn := bn) Y xY))
-                (eventOfConstraints (bn := bn)
-                  (constraintsOfRestrict (bn := bn) Y yY)) :=
-            eventOfConstraints_constraintsOfRestrict_disjoint
-              (bn := bn) Y hxy
-          have hempty : ω ∉ atomY xY ∩ atomY yY := by
-            intro hω
-            exact Set.disjoint_left.mp hdisj hω.1 hω.2
-          simp [atomY, hempty]
-  have hp_meas : ∀ a ∈ p, @MeasurableSet _ MeasurableSpace.pi a := by
-    intro a ha
-    rcases ha with rfl | ⟨xX, rfl⟩
-    · simpa using (MeasurableSet.empty : @MeasurableSet _ MeasurableSpace.pi ∅)
-    · exact hmX _ (hAtomX_meas xX)
-  have hq_meas : ∀ b ∈ q, @MeasurableSet _ MeasurableSpace.pi b := by
-    intro b hb
-    rcases hb with rfl | ⟨xY, rfl⟩
-    · simpa using (MeasurableSet.empty : @MeasurableSet _ MeasurableSpace.pi ∅)
-    · exact hmY _ (hAtomY_meas xY)
-  have hp_generate : MeasurableSpace.generateFrom p = mX := by
-    apply le_antisymm
-    · apply MeasurableSpace.generateFrom_le
-      intro a ha
-      rcases ha with rfl | ⟨xX, rfl⟩
-      · simpa [mX] using (MeasurableSet.empty : MeasurableSet[MeasurableSpace.pi] ∅)
-      · exact hAtomX_meas xX
-    · intro s hs
-      rcases measurableSet_vertices_preimage (bn := bn) (S := X) (s := s) hs with
-        ⟨T, hT, rfl⟩
-      rw [vertices_preimage_eq_iUnion_eventOfConstraints (bn := bn) X T]
-      apply MeasurableSet.iUnion
-      intro xX
-      by_cases hxX : xX ∈ T
-      · have hmem :
-            (if xX ∈ T then atomX xX else (∅ : Set bn.JointSpace)) ∈ p := by
-          right
-          refine ⟨xX, ?_⟩
-          simp [hxX, atomX]
-        exact MeasurableSpace.measurableSet_generateFrom hmem
-      · have hmem :
-            (if xX ∈ T then atomX xX else (∅ : Set bn.JointSpace)) ∈ p := by
-          left
-          simp [hxX]
-        simpa [hxX] using MeasurableSpace.measurableSet_generateFrom hmem
-  have hq_generate : MeasurableSpace.generateFrom q = mY := by
-    apply le_antisymm
-    · apply MeasurableSpace.generateFrom_le
-      intro b hb
-      rcases hb with rfl | ⟨xY, rfl⟩
-      · simpa [mY] using (MeasurableSet.empty : MeasurableSet[MeasurableSpace.pi] ∅)
-      · exact hAtomY_meas xY
-    · intro t ht
-      rcases measurableSet_vertices_preimage (bn := bn) (S := Y) (s := t) ht with
-        ⟨T, hT, rfl⟩
-      rw [vertices_preimage_eq_iUnion_eventOfConstraints (bn := bn) Y T]
-      apply MeasurableSet.iUnion
-      intro xY
-      by_cases hxY : xY ∈ T
-      · have hmem :
-            (if xY ∈ T then atomY xY else (∅ : Set bn.JointSpace)) ∈ q := by
-          right
-          refine ⟨xY, ?_⟩
-          simp [hxY, atomY]
-        exact MeasurableSpace.measurableSet_generateFrom hmem
-      · have hmem :
-            (if xY ∈ T then atomY xY else (∅ : Set bn.JointSpace)) ∈ q := by
-          left
-          simp [hxY]
-        simpa [hxY] using MeasurableSpace.measurableSet_generateFrom hmem
-  have hpq :
-      ProbabilityTheory.CondIndepSets (m' := mZ) (hm' := hmZ) p q μ := by
-    rw [ProbabilityTheory.condIndepSets_iff
-      (m' := mZ) (hm' := hmZ) (s1 := p) (s2 := q) hp_meas hq_meas (μ := μ)]
-    intro a b ha hb
-    rcases ha with rfl | ⟨xX, rfl⟩
-    · exact
-        (ProbabilityTheory.condIndepSet_iff
-          (m' := mZ) (hm' := hmZ) (s := (∅ : Set bn.JointSpace)) (t := b)
-          (show @MeasurableSet _ MeasurableSpace.pi (∅ : Set bn.JointSpace) from by simp)
-          (hq_meas b hb) (μ := μ)).1
-        (condIndepSet_of_measurable_left
-          (bn := bn) (μ := μ) (Z := Z)
-          (show @MeasurableSet _ mZ (∅ : Set bn.JointSpace) from by simp)
-          (hq_meas b hb))
-    · rcases hb with rfl | ⟨xY, rfl⟩
-      · exact
-          (ProbabilityTheory.condIndepSet_iff
-            (m' := mZ) (hm' := hmZ) (s := atomX xX) (t := (∅ : Set bn.JointSpace))
-            (hmX _ (hAtomX_meas xX))
-            (show @MeasurableSet _ MeasurableSpace.pi (∅ : Set bn.JointSpace) from by simp)
-            (μ := μ)).1
-          (condIndepSet_of_measurable_right
-            (bn := bn) (μ := μ) (Z := Z)
-            (hmX _ (hAtomX_meas xX))
-            (show @MeasurableSet _ mZ (∅ : Set bn.JointSpace) from by simp))
-      · exact
-          (ProbabilityTheory.condIndepSet_iff
-            (m' := mZ) (hm' := hmZ) (s := atomX xX) (t := atomY xY)
-            (hmX _ (hAtomX_meas xX)) (hmY _ (hAtomY_meas xY)) (μ := μ)).1
-          (by simpa [atomX, atomY] using hatom xX xY)
-  have hsup :
-      ProbabilityTheory.CondIndep
-        (m' := mZ) (m₁ := MeasurableSpace.generateFrom p)
-        (m₂ := MeasurableSpace.generateFrom q)
-        (hm' := hmZ) μ :=
-    ProbabilityTheory.CondIndepSets.condIndep'
-      (m' := mZ) (hm' := hmZ)
-      hp_meas hq_meas hp_pi hq_pi hpq
-  simpa [CondIndepVertices, mZ, mX, mY, hp_generate, hq_generate] using hsup
-
-/-- The `X`- and `Y`-reachable moral-ancestral blocks are conditionally
-independent given `Z` for the discrete CPT joint measure. This packages the
-block-atom `CondIndepSet` theorem into the vertex-level API. -/
-theorem jointMeasure_reachableBlocks_condIndepVertices
-    [∀ v, MeasurableSingletonClass (bn.stateSpace v)]
-    (cpt : bn.DiscreteCPT) (X Y Z : Set V)
-    (hirr : ∀ v : V, ¬bn.graph.edges v v)
-    (hXY : Disjoint X Y)
-    (hSep : DSeparation.SeparatedInMoralAncestral bn.graph X Y Z) :
-    CondIndepVertices bn cpt.jointMeasure
-      (DSeparation.xReachableBlock bn.graph X Y Z)
-      (DSeparation.yReachableBlock bn.graph X Y Z)
-      Z := by
-  refine condIndepVertices_of_condIndepSet_constraintAtoms
-      (bn := bn) (μ := cpt.jointMeasure)
-      (X := DSeparation.xReachableBlock bn.graph X Y Z)
-      (Y := DSeparation.yReachableBlock bn.graph X Y Z)
-      (Z := Z) ?_
-  intro xX xY
-  simpa using
-    jointMeasure_blockConstraint_condIndepSet
-      (bn := bn) (cpt := cpt) X Y Z hirr hXY hSep xX xY
-
-/-- Disjoint-core d-separation soundness for discrete CPT joint measures. -/
-theorem jointMeasure_dsepFull_disjoint_core_condIndepVertices
-    [∀ v, MeasurableSingletonClass (bn.stateSpace v)]
-    (cpt : bn.DiscreteCPT)
-    {X Y Z : Set V}
-    (hXY : Disjoint X Y)
-    (hdsep : DSeparation.DSeparatedFull bn.graph X Y Z) :
-    CondIndepVertices bn cpt.jointMeasure X Y Z := by
-  have hirr : ∀ v : V, ¬bn.graph.edges v v := by
-    intro v hvv
-    exact bn.acyclic v ⟨v, hvv, DirectedGraph.reachable_refl bn.graph v⟩
-  have hSep :
-      DSeparation.SeparatedInMoralAncestral bn.graph X Y Z :=
-    (DSeparation.dsepFull_iff_separatedInMoralAncestral
-      bn.graph X Y Z bn.acyclic hirr).1 hdsep
-  have hBlocks :
-      CondIndepVertices bn cpt.jointMeasure
-        (DSeparation.xReachableBlock bn.graph X Y Z)
-        (DSeparation.yReachableBlock bn.graph X Y Z)
-        Z :=
-    jointMeasure_reachableBlocks_condIndepVertices
-      (bn := bn) (cpt := cpt) X Y Z hirr hXY hSep
-  have hsubX : X \ Z ⊆ DSeparation.xReachableBlock bn.graph X Y Z := by
-    intro x hx
-    refine ⟨
-      DSeparation.endpoint_in_relevantOutsideConditioning_X bn.graph X Y Z hx.1 hx.2,
-      x, hx.1, hx.2, ?_⟩
-    exact DirectedGraph.reachable_refl
-      (DSeparation.moralAncestralWithoutConditioning bn.graph X Y Z) x
-  have hsubY : Y \ Z ⊆ DSeparation.yReachableBlock bn.graph X Y Z := by
-    intro y hy
-    refine ⟨
-      DSeparation.endpoint_in_relevantOutsideConditioning_Y bn.graph X Y Z hy.1 hy.2,
-      y, hy.1, hy.2, ?_⟩
-    exact DirectedGraph.reachable_refl
-      (DSeparation.moralAncestralWithoutConditioning bn.graph X Y Z) y
-  have hCore :
-      CondIndepVertices bn cpt.jointMeasure (X \ Z) (Y \ Z) Z :=
-    condIndepVertices_of_le_right (bn := bn) (μ := cpt.jointMeasure) hsubY
-      (condIndepVertices_of_le_left (bn := bn) (μ := cpt.jointMeasure) hsubX hBlocks)
-  exact
-    (condIndepVertices_iff_diff_conditioning
-      (bn := bn) (μ := cpt.jointMeasure) (X := X) (Y := Y) (Z := Z)).2 hCore
-
 instance discrete_hasLocalMarkovProperty
     (cpt : bn.DiscreteCPT) :
     HasLocalMarkovProperty bn cpt.jointMeasure where
   markov_condition := discrete_localMarkovCondition bn cpt
-
-/-- Discrete CPT joint measures satisfy the full d-separation soundness
-interface. -/
-instance discrete_dSeparationSoundness
-    [∀ v, MeasurableSingletonClass (bn.stateSpace v)]
-    (cpt : bn.DiscreteCPT) :
-    DSeparationSoundness bn cpt.jointMeasure where
-  dsep_condIndep := by
-    intro X Y Z hXYZ hdsep
-    exact dsep_condIndep_of_disjoint_core
-      (bn := bn) (μ := cpt.jointMeasure)
-      (hcore := fun {_X _Y _Z} hdisj hdsepCore =>
-        jointMeasure_dsepFull_disjoint_core_condIndepVertices
-          (bn := bn) (cpt := cpt) (X := _X) (Y := _Y) (Z := _Z) hdisj hdsepCore)
-      hXYZ hdsep
 
 end Mettapedia.ProbabilityTheory.BayesianNetworks.DiscreteLocalMarkov

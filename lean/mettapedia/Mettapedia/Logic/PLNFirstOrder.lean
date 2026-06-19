@@ -135,7 +135,7 @@ Complete formalization of PLN first-order quantifiers via:
 ## Build
 
 ```bash
-cd /home/zar/claude/Mettapedia/lean/mettapedia
+cd /home/zar/claude/lean-projects/mettapedia
 ulimit -v 6291456 && lake build Mettapedia.Logic.PLNFirstOrder
 ```
 
