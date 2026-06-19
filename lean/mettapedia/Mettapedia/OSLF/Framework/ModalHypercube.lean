@@ -278,9 +278,9 @@ theorem wmFull_product : 24 * 128 = 3072 := by decide
 
 PeTTa programs produce a concrete `LanguageDef` via the artifact bridge:
 - Runtime: `Algorithms.MeTTa.PeTTa.toLanguageDef : FrozenPeTTaConfig → LanguageDef`
-  (`Mettapedia/lean/algorithms/Algorithms/MeTTa/PeTTa/Lowering.lean:79`)
+  (`lean-projects/algorithms/Algorithms/MeTTa/PeTTa/Lowering.lean:79`)
 - Formal: `pettaSpaceToLangDef : PeTTaSpace → LanguageDef`
-  (`Mettapedia/lean/mettapedia/Mettapedia/Languages/MeTTa/PeTTa/LPSoundness.lean:71`)
+  (`lean-projects/mettapedia/Mettapedia/Languages/MeTTa/PeTTa/LPSoundness.lean:71`)
 - Bridge: `frozenConfigToPeTTaSpace` proves behavioral identity
   (`Mettapedia/Conformance/PeTTaArtifactBridge.lean:42`)
 

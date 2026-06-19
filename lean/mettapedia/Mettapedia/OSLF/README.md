@@ -1,12 +1,10 @@
-# OSLF — Operational Semantics in Logical Form (Lean 4)
+# OSLF overview
 
 OSLF turns operational rewrite systems into a logical/type-theoretic interface.
 Lean justifies the interface mechanically.
 The core idea starts from `LanguageDef`.
 The core idea connects the step relation to the executable engine.
 The core idea derives modal operators with a Galois connection.
-
-Reference orientation: OSLF is the Lean-formalized bridge from operational rules to modal/type-theoretic structure; [Native Type Theory](https://arxiv.org/abs/2102.04672) supplies the broader categorical foundation, [Generating Hypercubes of Type Systems](https://github.com/F1R3FLY-io/publications/blob/main/drafts/Hypercube/main.pdf) refines the generated type-system family, and [MeTTaIL](https://github.com/F1R3FLY-io/mettail-rust) is the executable-language-generation side.
 
 ## OSLF is a construction
 
@@ -90,7 +88,7 @@ open Mettapedia.OSLF
 
 ## MeTTa spec-facing slice
 
-The spec-facing MeTTa slice uses `Mettapedia/Languages/MeTTa/OSLFCore/FullLanguageDef.lean`.
+The spec-facing MeTTa slice uses `Mettapedia/Languages/MeTTa/Core/FullLanguageDef.lean`.
 
 It uses explicit syntax patterns for display.
 
@@ -116,15 +114,15 @@ It uses explicit syntax patterns for display.
 ### Same example at the Lean level
 
 ```lean
-import Mettapedia.Languages.MeTTa.OSLFCore.FullLanguageDef
-import Mettapedia.Languages.MeTTa.OSLFCore.Premises
+import Mettapedia.Languages.MeTTa.Core.FullLanguageDef
+import Mettapedia.Languages.MeTTa.Core.Premises
 
 open Mettapedia.OSLF.MeTTaIL.Syntax
 
 def exState : Pattern :=
   .apply "State"
     [ .apply "Eval" [.apply "ATrue" []]
-    , Mettapedia.Languages.MeTTa.OSLFCore.Premises.space0Pattern
+    , Mettapedia.Languages.MeTTa.Core.Premises.space0Pattern
     , .apply "AFalse" [] ]
 ```
 
@@ -142,7 +140,7 @@ The engine and the OSLF synthesis pipeline use this canonical representation.
 
 Executable runtime implementations belong in the separate lightweight project:
 
-- `Mettapedia/lean/algorithms/Algorithms/MeTTa/...`
+- `lean-projects/algorithms/Algorithms/MeTTa/...`
 - simple interpreter/runtime path
 - staged/specialized runtime path
 
@@ -228,8 +226,8 @@ The scope isn't blanket future-work parity.
 - `Mettapedia/OSLF/Framework/TinyMLInstance.lean`
 - `Mettapedia/OSLF/Framework/MeTTaMinimalInstance.lean`
 - `Mettapedia/OSLF/Framework/MeTTaFullInstance.lean`
-- `Mettapedia/Languages/MeTTa/OSLFCore/FullLanguageDef.lean`
-- `Mettapedia/Languages/MeTTa/OSLFCore/Premises.lean`
+- `Mettapedia/OSLF/MeTTaCore/FullLanguageDef.lean`
+- `Mettapedia/OSLF/MeTTaCore/Premises.lean`
 
 ## Practical workflow
 
@@ -243,7 +241,7 @@ The scope isn't blanket future-work parity.
 ## Build
 
 ```bash
-cd Mettapedia/lean/mettapedia
+cd lean-projects/mettapedia
 lake build Mettapedia.OSLF.CoreMain
 lake build Mettapedia.OSLF.Main
 ```
@@ -254,7 +252,6 @@ lake build Mettapedia.OSLF.Main
 - `Main` aligns the same focused OSLF boundary.
 - Process-calculus modules are available.
 - Maintainers rely `FULLStatus.lean` and concrete theorem names for exact completion claims.
-- 0 `sorry`, 0 `axiom` across `Mettapedia/OSLF/` (reproduce: `rg '^\s*sorry\b' --glob '*.lean' OSLF`); paper-claim parity is machine-checked in `Framework/NTTClaimTracker.lean` and `Framework/PaperClaimTracker.lean`.
 
 - `Mettapedia/Languages/ProcessCalculi/PiCalculus.lean`
 - `Mettapedia/Languages/ProcessCalculi/RhoCalculus.lean`
@@ -274,12 +271,3 @@ It validates roundtrip scripts in `hyperon/mettail-rust`.
 
 It exports a premise-free subset for current Rust ingestion.
 The current boundary isn't full premise-rich MeTTaFull ingestion.
-
-## References
-
-- L. Gregory Meredith and Mike Stay, ["Operational Semantics in Logical Form" (2020)](../../papers/references.bib) — the source OSLF algorithm, cited in the local bibliography; see also this project's [Lean 4 OSLF writeup](../../papers/leanOSLF.pdf).
-- Christian Williams and Mike Stay, ["Native Type Theory"](https://arxiv.org/abs/2102.04672) — categorical foundation for the [`NativeType/`](NativeType/) endpoints and [`NTTClaimTracker.lean`](Framework/NTTClaimTracker.lean).
-- Mike Stay, L. Gregory Meredith, and Christian Wells, ["Generating Hypercubes of Type Systems"](https://github.com/F1R3FLY-io/publications/blob/main/drafts/Hypercube/main.pdf) — modal type-former and hypercube background for [`ModalHypercube.lean`](Framework/ModalHypercube.lean) and related GSLT functor files.
-- [`../../papers/leanOSLF.pdf`](../../papers/leanOSLF.pdf) — this project's Lean 4 formalization writeup.
-- [`../../papers/MeTTaIL.pdf`](../../papers/MeTTaIL.pdf) and [`F1R3FLY-io/mettail-rust`](https://github.com/F1R3FLY-io/mettail-rust) — the MeTTaIL specification/runtime-generation companion.
-- [`../../papers/process-calculi.pdf`](../../papers/process-calculi.pdf) — the ρ/π/Petri-net instance writeups.

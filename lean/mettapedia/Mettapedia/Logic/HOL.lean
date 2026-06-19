@@ -2,55 +2,91 @@ import Mettapedia.Logic.HOL.Syntax.Type
 import Mettapedia.Logic.HOL.Syntax.Term
 import Mettapedia.Logic.HOL.Syntax.Subst
 import Mettapedia.Logic.HOL.Syntax.Closed
-import Mettapedia.Logic.HOL.Syntax.ConstMap
+import Mettapedia.Logic.HOL.Henkinization
+import Mettapedia.Logic.HOL.HenkinizationStages
+import Mettapedia.Logic.HOL.HenkinizationInfinity
+import Mettapedia.Logic.HOL.Semantics.HeytingHenkin
+import Mettapedia.Logic.HOL.Semantics.Henkin
+import Mettapedia.Logic.HOL.Semantics.Extensionality
+import Mettapedia.Logic.HOL.Semantics.Reduct
+import Mettapedia.Logic.HOL.Semantics.SetBased
+import Mettapedia.Logic.HOL.Probabilistic
 import Mettapedia.Logic.HOL.Derivation
 import Mettapedia.Logic.HOL.DerivationExtensionality
 import Mettapedia.Logic.HOL.Lindenbaum
-import Mettapedia.Logic.HOL.CanonicalTheory
 import Mettapedia.Logic.HOL.LindenbaumSet
+import Mettapedia.Logic.HOL.CanonicalTheory
+import Mettapedia.Logic.HOL.CanonicalExtension
+import Mettapedia.Logic.HOL.HenkinWitnessClosure
 import Mettapedia.Logic.HOL.PrimeHenkinExtension
-import Mettapedia.Logic.HOL.Syntax.FreshConst
-import Mettapedia.Logic.HOL.CanonicalQuantifierBridges
-import Mettapedia.Logic.HOL.WitnessedExtension
-import Mettapedia.Logic.HOL.WitnessedSaturation
-import Mettapedia.Logic.HOL.MaximalConsistent
-import Mettapedia.Logic.HOL.WitnessedWorld
-import Mettapedia.Logic.HOL.WorldEquality
-import Mettapedia.Logic.HOL.ClassicalExcludedMiddle
-import Mettapedia.Logic.HOL.ClassicalWorld
-import Mettapedia.Logic.HOL.TermModel.Domain
-import Mettapedia.Logic.HOL.TermModel.Truth
-import Mettapedia.Logic.HOL.TermModel.Realize
-import Mettapedia.Logic.HOL.TermModel.Denote
-import Mettapedia.Logic.HOL.TermModel.PreModelWrapper
-import Mettapedia.Logic.HOL.TermModel.Fundamental
-import Mettapedia.Logic.HOL.TermModel.HenkinCompleteness
+import Mettapedia.Logic.HOL.HenkinAxiomsInfinity
+import Mettapedia.Logic.HOL.CanonicalKripke
+import Mettapedia.Logic.HOL.CanonicalSemantics
+import Mettapedia.Logic.HOL.CanonicalModel
+import Mettapedia.Logic.HOL.PlainIntuitionistic
+import Mettapedia.Logic.HOL.IntuitionisticCompleteness
+import Mettapedia.Logic.HOL.OriginalReflectionReduction
+import Mettapedia.Logic.HOL.OriginalReflectionObstruction
+import Mettapedia.Logic.HOL.OriginalReflectionWitnessed
+import Mettapedia.Logic.HOL.IntuitionisticSoundness
+import Mettapedia.Logic.HOL.Soundness
+import Mettapedia.Logic.HOL.Embedding.FirstOrder
+import Mettapedia.Logic.HOL.WorldModel
+import Mettapedia.Logic.HOL.WorldModelCompleteness
+import Mettapedia.Logic.HOL.LogicalInduction
 
 /-!
-# Higher-Order Logic Core
+# Real Higher-Order Logic
 
-Public surface for HOL: the trusted substrate plus the completed **classical Henkin
-completeness** development.
+Public entrypoint for the real Church-style HOL layer:
 
-Substrate:
-- typed syntax and substitutions, const-map transport,
-- extensional natural deduction, closed-theory provability,
-- Lindenbaum machinery, prime-extension infrastructure.
+- intrinsically typed syntax,
+- witness-provider and one-step Henkinization syntax infrastructure,
+- stage-indexed and cumulative Henkinization syntax infrastructure,
+- intuitionistic-extensional Heyting/Henkin-style semantics,
+- classical `Prop`-valued Henkin semantics,
+- direct set-based grounding into Henkin models,
+- infinitary semantic probability over measurable indexed model spaces,
+- hierarchical and infinite-order semantic probability over measures on those
+  indexed model spaces,
+- a small natural-deduction core, its extensional overlay, and soundness,
+- a Lindenbaum-style closed-theory quotient over the extensional proof layer,
+- a set-based Lindenbaum quotient over closed-theory provability,
+- a typed closed-theory / canonical-world layer for the future completeness proof,
+- extension lemmas for implication/consistency over those canonical theories,
+- one-step and cumulative witness-closure infrastructure for the quantifier layer,
+- a prime-extension theorem and cumulative Henkin axiom family for canonical worlds,
+- a canonical Kripke/world semantics layer for closed formulas over those worlds,
+- a canonical truth-event semantics for closed formulas over those worlds,
+- a typed companion canonical model semantics over closed substitutions into the
+  cumulative Henkin language,
+- a plain-intuitionistic mainline entrypoint exposing the already formalized
+  soundness theorem and the internal cumulative-Henkin completeness milestone,
+- an internal finite closed-context completeness theorem for the cumulative
+  Henkin language over canonical Henkin worlds,
+- an auxiliary proof-theoretic reduction theorem isolating the exact remaining
+  blockers in the constant-based original-reflection detour,
+- an auxiliary obstruction showing that naive constant-based original reflection
+  is false for empty-signature source semantics with empty admissible domains,
+- a witnessed-source replacement layer showing that base-type source witnesses
+  recursively yield closed terms at every simple type and recover existential
+  source theorems of the form `∃ x : τ, ⊤`,
+- first-order embedding,
+- and the world-model bridge over pointed Henkin models.
 
-Completeness (Henkin 1950 for the theory of types — sorry-free, axiom-clean):
-- the fresh-constant generalization `provable_all_intro_fresh` and the Henkin
-  witnessing/saturation chain (`witnessLimit_consistent`, `exists_witnessAxiom`),
-- the Lindenbaum maximal extension and the classical canonical world
-  (`exists_classical_world`, including the `all_counterexample` field),
-- the canonical Henkin **general** term model (`TermModel/`), the fundamental lemma,
-  and `models_iff_mem`,
-- the headline `TermModel.HenkinCompleteness.henkin_satisfiable`: a consistent
-  *witnessed + excluded-middle* theory has a Henkin general model satisfying it.
-- the public corollary
-  `TermModel.HenkinCompleteness.henkin_model_exists_of_consistent_classical`:
-  a consistent parameter-free classical theory over `WithParams` has a Henkin
-  general model satisfying the theory itself.
+Important status boundary:
 
-Legacy `WorldModelCompleteness.lean` (hypothesis-parameterised) is retained but is not
-the active completeness surface.
+- the corrected intuitionistic-extensional HOL core, soundness layer, cumulative
+  Henkinization infrastructure, world-level canonical truth machinery, and an
+  internal cumulative-Henkin finite-context completeness theorem are real;
+- `/home/zar/claude/lean-projects/mettapedia/Mettapedia/Logic/HOL/PlainIntuitionistic.lean`
+  is the intended public entrypoint for the plain intuitionistic metatheory;
+- the old constant-based original-signature reflection target is now formally
+  known to fail against the current source semantics;
+- the original-reflection files remain auxiliary diagnostics / strengthened
+  detours rather than the main route to plain intuitionistic completeness;
+- the final typed original-signature canonical-model bridge and plain
+  intuitionistic HOL completeness theorem are still in progress;
+- the logical-induction and planner-facing belief/process files imported here are
+  experimental overlays rather than part of the mature HOL metatheory.
 -/

@@ -18,7 +18,7 @@ checked GF artifacts into the MeTTaIL DSL:
 - generic soundness lemmas for checked GF trees
 
 It intentionally excludes the legacy authored semantic overlay. That older
-overlay remains in `/home/zar/claude/Mettapedia/lean/mettapedia/Mettapedia/Languages/GF/OSLFBridge.lean`
+overlay remains in `/home/zar/claude/lean-projects/mettapedia/Mettapedia/Languages/GF/OSLFBridge.lean`
 for explicitly legacy modules, but trust-critical GF imports should prefer this
 file.
 -/

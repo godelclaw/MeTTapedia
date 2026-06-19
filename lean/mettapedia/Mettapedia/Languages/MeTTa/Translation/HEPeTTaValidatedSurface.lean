@@ -23,9 +23,7 @@ set_option maxHeartbeats 800000
 mutual
 /-- A recursive common fragment that neither translator rewrites.
     Positive example: shared `let`/`match` terms whose subterms are also stable.
-    Negative example: any nested `chain`, `unique`, special `unique-atom (collapse X)`,
-    short 3-argument `foldl-atom`, raw `reduce`, PeTTa named-state forms,
-    `progn`, or `@<` headed expression. -/
+    Negative example: any nested `chain`, `unique`, `progn`, or `@<` headed expression. -/
 def isStableCommonForm : Atom → Bool
   | .expression (.symbol "chain" :: _) => false
   | .expression (.symbol "collapse-bind" :: _) => false
@@ -36,17 +34,9 @@ def isStableCommonForm : Atom → Bool
   | .expression (.symbol "nop" :: _) => false
   | .expression (.symbol "function" :: _) => false
   | .expression (.symbol "unique" :: _) => false
-  | .expression (.symbol "unique-atom" :: _) => false
-  | .expression [.symbol "foldl-atom", xs, init, acc, item, step] =>
-      isStableCommonList [xs, init, acc, item, step]
   | .expression (.symbol "progn" :: _) => false
   | .expression (.symbol "prog1" :: _) => false
   | .expression (.symbol "foldall" :: _) => false
-  | .expression [.symbol "foldl-atom", _, _, _] => false
-  | .expression (.symbol "bind!" :: _) => false
-  | .expression (.symbol "new-state" :: _) => false
-  | .expression (.symbol "get-state" :: _) => false
-  | .expression (.symbol "change-state!" :: _) => false
   | .expression (.symbol "@<" :: _) => false
   | .expression (.symbol "@>" :: _) => false
   | .expression es => isStableCommonExpr es
@@ -63,16 +53,9 @@ def isForbiddenHeadSymbol : Atom → Bool
   | .symbol "nop" => true
   | .symbol "function" => true
   | .symbol "unique" => true
-  | .symbol "unique-atom" => true
-  | .symbol "foldl-atom" => true
-  | .symbol "reduce" => true
   | .symbol "progn" => true
   | .symbol "prog1" => true
   | .symbol "foldall" => true
-  | .symbol "bind!" => true
-  | .symbol "new-state" => true
-  | .symbol "get-state" => true
-  | .symbol "change-state!" => true
   | .symbol "@<" => true
   | .symbol "@>" => true
   | _ => false
@@ -98,8 +81,8 @@ mutual
 
     It enforces two semantic side conditions:
     1. HE binder slots contain only variables or `_`.
-    2. PeTTa-only heads (`progn`, `prog1`, short `foldl-atom`, raw `reduce`,
-       `@<`, `@>`) do not already appear in the source tree.
+    2. PeTTa-only heads (`progn`, `prog1`, `@<`, `@>`) do not already appear in
+       the source tree.
 
     Positive example: `(chain e $x body)` with recursively validated subterms.
     Negative example: a `chain` whose binder slot itself contains another
@@ -121,11 +104,8 @@ def isValidatedHESource : Atom → Bool
       isValidatedHESource x
   | .expression [.symbol "function", .expression [.symbol "return", x]] =>
       isValidatedHESource x
-  | .expression [.symbol "unique", _] =>
-      false
-  | .expression [.symbol "foldl-atom", xs, init, acc, item, step] =>
-      isValidatedHESource xs && isValidatedHESource init &&
-        isHEBinderAtom acc && isHEBinderAtom item && isValidatedHESource step
+  | .expression [.symbol "unique", x] =>
+      isValidatedHESource x
   | .expression (.symbol "chain" :: _) => false
   | .expression (.symbol "collapse-bind" :: _) => false
   | .expression (.symbol "superpose-bind" :: _) => false
@@ -135,16 +115,9 @@ def isValidatedHESource : Atom → Bool
   | .expression (.symbol "nop" :: _) => false
   | .expression (.symbol "function" :: _) => false
   | .expression (.symbol "unique" :: _) => false
-  | .expression (.symbol "unique-atom" :: _) => false
-  | .expression (.symbol "reduce" :: _) => false
   | .expression (.symbol "progn" :: _) => false
   | .expression (.symbol "prog1" :: _) => false
   | .expression (.symbol "foldall" :: _) => false
-  | .expression (.symbol "foldl-atom" :: _) => false
-  | .expression (.symbol "bind!" :: _) => false
-  | .expression (.symbol "new-state" :: _) => false
-  | .expression (.symbol "get-state" :: _) => false
-  | .expression (.symbol "change-state!" :: _) => false
   | .expression (.symbol "@<" :: _) => false
   | .expression (.symbol "@>" :: _) => false
   | .expression [] => true
@@ -162,16 +135,9 @@ def isValidatedHEHeadSource : Atom → Bool
   | .symbol "nop" => false
   | .symbol "function" => false
   | .symbol "unique" => false
-  | .symbol "unique-atom" => false
-  | .symbol "foldl-atom" => false
-  | .symbol "reduce" => false
   | .symbol "progn" => false
   | .symbol "prog1" => false
   | .symbol "foldall" => false
-  | .symbol "bind!" => false
-  | .symbol "new-state" => false
-  | .symbol "get-state" => false
-  | .symbol "change-state!" => false
   | .symbol "@<" => false
   | .symbol "@>" => false
   | .expression [.symbol "function", .expression [.symbol "return", x]] =>
@@ -193,21 +159,8 @@ example : isStableCommonForm (.expression [.symbol "progn", .symbol "a", .symbol
 example : isStableCommonForm (.expression [.symbol "unique", .symbol "goal"]) = false := by
   native_decide
 
-example : isStableCommonForm (.expression
-    [.symbol "unique-atom", .expression [.symbol "collapse", .symbol "xs"]]) = false := by
-  native_decide
-
 example : isStableCommonForm (.expression [.symbol "foldall",
     .symbol "merge", .symbol "goal", .symbol "0"]) = false := by
-  native_decide
-
-example : isStableCommonForm (.expression [.symbol "foldl-atom",
-    .symbol "xs", .symbol "0", .symbol "merge"]) = false := by
-  native_decide
-
-example : isStableCommonForm (.expression
-    [.symbol "foldl-atom", .symbol "xs", .symbol "0", .var "$acc", .var "$item",
-      .expression [.symbol "eval", .expression [.symbol "merge", .var "$acc", .var "$item"]]]) = true := by
   native_decide
 
 example : isValidatedHESource (.expression [.symbol "chain",
@@ -225,12 +178,6 @@ example : isValidatedHESource (.expression
      .symbol "arg"]) = false := by
   native_decide
 
-example : isValidatedHESource (.expression [.symbol "unique-atom", .symbol "xs"]) = false := by
-  native_decide
-
-example : isValidatedHESource (.expression [.symbol "unique", .symbol "xs"]) = false := by
-  native_decide
-
 /-- PeTTa `foldall` reducers that remain first-order callable after lowering to
     HE's ordinary application surface. -/
 def isFirstOrderReducerAtom : Atom → Bool
@@ -239,24 +186,16 @@ def isFirstOrderReducerAtom : Atom → Bool
 
 mutual
 /-- Executable validator for the PeTTa source fragment on which the new
-    `foldall` and raw 3-argument `foldl-atom` lowerings stay inside the common
-    stable form.
+    `foldall` lowering stays inside the common stable form.
 
-    The key extra side condition is that these reducers must be first-order
+    The key extra side condition is that `foldall` reducers must be first-order
     symbols, so the lowered HE application `(Agg acc item)` stays symbol-headed.
 -/
 def isValidatedPeTTaSource : Atom → Bool
   | .expression (.symbol "progn" :: args) => isValidatedPeTTaList args
   | .expression (.symbol "prog1" :: args) => isValidatedPeTTaList args
-  | .expression [.symbol "foldl-atom", xs, init, acc, item, step] =>
-      isValidatedPeTTaSource xs && isValidatedPeTTaSource init &&
-        isHEBinderAtom acc && isHEBinderAtom item && isValidatedPeTTaSource step
   | .expression [.symbol "foldall", agg, goal, init] =>
       isFirstOrderReducerAtom agg && isValidatedPeTTaSource goal && isValidatedPeTTaSource init
-  | .expression [.symbol "foldl-atom", xs, init, agg] =>
-      isFirstOrderReducerAtom agg && isValidatedPeTTaSource xs && isValidatedPeTTaSource init
-  | .expression [.symbol "reduce", arg] =>
-      isValidatedPeTTaSource arg
   | .expression [.symbol "@<", a, b] =>
       isValidatedPeTTaSource a && isValidatedPeTTaSource b
   | .expression [.symbol "@>", a, b] =>
@@ -271,7 +210,6 @@ def isValidatedPeTTaSource : Atom → Bool
   | .expression (.symbol "function" :: _) => false
   | .expression (.symbol "unique" :: _) => false
   | .expression (.symbol "foldall" :: _) => false
-  | .expression (.symbol "foldl-atom" :: _) => false
   | .expression (.symbol "@<" :: _) => false
   | .expression (.symbol "@>" :: _) => false
   | .expression [] => true
@@ -303,29 +241,15 @@ def isValidatedPeTTaHeadSource : Atom → Bool
   | .symbol "nop" => false
   | .symbol "function" => false
   | .symbol "unique" => false
-  | .symbol "unique-atom" => false
-  | .symbol "foldl-atom" => false
-  | .symbol "reduce" => false
   | .symbol "progn" => false
   | .symbol "prog1" => false
   | .symbol "foldall" => false
-  | .symbol "bind!" => false
-  | .symbol "new-state" => false
-  | .symbol "get-state" => false
-  | .symbol "change-state!" => false
   | .symbol "@<" => false
   | .symbol "@>" => false
   | .expression (.symbol "progn" :: args) => isValidatedPeTTaPrognHeadArgs args
   | .expression (.symbol "prog1" :: args) => isValidatedPeTTaProg1HeadArgs args
-  | .expression [.symbol "foldl-atom", xs, init, acc, item, step] =>
-      isValidatedPeTTaSource xs && isValidatedPeTTaSource init &&
-        isHEBinderAtom acc && isHEBinderAtom item && isValidatedPeTTaSource step
   | .expression [.symbol "foldall", agg, goal, init] =>
       isFirstOrderReducerAtom agg && isValidatedPeTTaSource goal && isValidatedPeTTaSource init
-  | .expression [.symbol "foldl-atom", xs, init, agg] =>
-      isFirstOrderReducerAtom agg && isValidatedPeTTaSource xs && isValidatedPeTTaSource init
-  | .expression [.symbol "reduce", arg] =>
-      isValidatedPeTTaSource arg
   | .expression [.symbol "@<", a, b] =>
       isValidatedPeTTaSource a && isValidatedPeTTaSource b
   | .expression [.symbol "@>", a, b] =>
@@ -351,26 +275,6 @@ example : isValidatedPeTTaSource (.expression
   native_decide
 
 example : isValidatedPeTTaSource (.expression
-    [.symbol "reduce", .expression [.symbol "fib", .symbol "5"]]) = true := by
-  native_decide
-
-example : isValidatedPeTTaSource (.expression
-    [.symbol "foldl-atom", .expression [.symbol "collapse", .symbol "xs"], .symbol "0",
-      .symbol "merge"]) = true := by
-  native_decide
-
-example : isValidatedPeTTaSource (.expression
-    [.symbol "foldl-atom", .expression [.symbol "collapse", .symbol "xs"], .symbol "0",
-      .var "$acc", .var "$item",
-      .expression [.symbol "eval", .expression [.symbol "merge", .var "$acc", .var "$item"]]]) = true := by
-  native_decide
-
-example : isValidatedPeTTaSource (.expression
-    [.symbol "foldl-atom", .expression [.symbol "collapse", .symbol "xs"], .symbol "0",
-      .var "$f"]) = false := by
-  native_decide
-
-example : isValidatedPeTTaSource (.expression
     [.symbol "prog1", .expression [.symbol "foldall", .symbol "merge",
       .expression [.symbol "twohop-item"], .symbol "0"], .symbol "done"]) = true := by
   native_decide
@@ -380,13 +284,6 @@ example : isValidatedPeTTaSource (.expression
   native_decide
 
 example : isValidatedPeTTaSource (.expression [.symbol "unique", .symbol "goal"]) = false := by
-  native_decide
-
-example : isValidatedPeTTaSource (.expression
-    [.symbol "unique-atom", .expression [.symbol "collapse", .symbol "xs"]]) = false := by
-  native_decide
-
-example : isValidatedPeTTaSource (.expression [.symbol "unique-atom", .symbol "xs"]) = false := by
   native_decide
 
 example : isValidatedPeTTaSource (.expression
@@ -485,61 +382,25 @@ theorem stableCommonForm_cons_of_head (hd : Atom) (args : List Atom)
                             have hfalse : False := by
                               simp [isStableCommonHead, isStableCommonForm, isForbiddenHeadSymbol] at hhd
                             exact False.elim hfalse
-                          · by_cases hfoldl : c = "foldl-atom"
-                            · subst hfoldl
+                          · by_cases hlt : c = "@<"
+                            · subst hlt
                               have hfalse : False := by
                                 simp [isStableCommonHead, isStableCommonForm, isForbiddenHeadSymbol] at hhd
                               exact False.elim hfalse
-                            · by_cases hbind : c = "bind!"
-                              · subst hbind
+                            · by_cases hgt : c = "@>"
+                              · subst hgt
                                 have hfalse : False := by
                                   simp [isStableCommonHead, isStableCommonForm, isForbiddenHeadSymbol] at hhd
                                 exact False.elim hfalse
-                              · by_cases huniqueatom : c = "unique-atom"
-                                · subst huniqueatom
+                              · by_cases hunique : c = "unique"
+                                · subst hunique
                                   have hfalse : False := by
                                     simp [isStableCommonHead, isStableCommonForm, isForbiddenHeadSymbol] at hhd
                                   exact False.elim hfalse
-                                · by_cases hlt : c = "@<"
-                                  · subst hlt
-                                    have hfalse : False := by
-                                      simp [isStableCommonHead, isStableCommonForm, isForbiddenHeadSymbol] at hhd
-                                    exact False.elim hfalse
-                                  · by_cases hgt : c = "@>"
-                                    · subst hgt
-                                      have hfalse : False := by
-                                        simp [isStableCommonHead, isStableCommonForm, isForbiddenHeadSymbol] at hhd
-                                      exact False.elim hfalse
-                                    · by_cases hreduce : c = "reduce"
-                                      · subst hreduce
-                                        have hfalse : False := by
-                                          simp [isStableCommonHead, isStableCommonForm, isForbiddenHeadSymbol] at hhd
-                                        exact False.elim hfalse
-                                      · by_cases hunique : c = "unique"
-                                        · subst hunique
-                                          have hfalse : False := by
-                                            simp [isStableCommonHead, isStableCommonForm, isForbiddenHeadSymbol] at hhd
-                                          exact False.elim hfalse
-                                        · by_cases hnew : c = "new-state"
-                                          · subst hnew
-                                            have hfalse : False := by
-                                              simp [isStableCommonHead, isStableCommonForm, isForbiddenHeadSymbol] at hhd
-                                            exact False.elim hfalse
-                                          · by_cases hget : c = "get-state"
-                                            · subst hget
-                                              have hfalse : False := by
-                                                simp [isStableCommonHead, isStableCommonForm, isForbiddenHeadSymbol] at hhd
-                                              exact False.elim hfalse
-                                            · by_cases hchange : c = "change-state!"
-                                              · subst hchange
-                                                have hfalse : False := by
-                                                  simp [isStableCommonHead, isStableCommonForm, isForbiddenHeadSymbol] at hhd
-                                                exact False.elim hfalse
-                                              · simp [isStableCommonForm, isStableCommonExpr, isStableCommonHead,
-                                                  isForbiddenHeadSymbol, isStableCommonList, hchain, hcollapse,
-                                                  hsuperpose, hswitch, hswitchm, hatomsubst, hnop, hfunction,
-                                                  hprogn, hprog1, hfoldall, hfoldl, hbind, huniqueatom, hlt, hgt,
-                                                  hreduce, hunique, hnew, hget, hchange]
+                                · simp [isStableCommonForm, isStableCommonExpr, isStableCommonHead,
+                                    isForbiddenHeadSymbol, isStableCommonList, hchain, hcollapse,
+                                    hsuperpose, hswitch, hswitchm, hatomsubst, hnop, hfunction,
+                                    hprogn, hprog1, hfoldall, hlt, hgt, hunique]
   | grounded _ =>
       simp [isStableCommonForm, isStableCommonExpr, isStableCommonHead, isForbiddenHeadSymbol]
   | expression es =>
@@ -1020,68 +881,164 @@ theorem defaultAtomSpaceSharedFragment_preserves_stableCommonForm
                                 simp [isDefaultAtomSpaceSharedFragment] at h
                               exact False.elim hfalse
 
-/-- There is currently no state surface in the stable-common identity fragment.
+/-- Shared state operational fragment already modeled on both runtimes.
 
-    PeTTa named state and HE native state share spellings (`new-state`,
-    `get-state`, `change-state!`) but not the same operational contract:
-    PeTTa uses a symbolic cell name, while HE allocates/updates explicit state
-    handles.  The PeTTa→HE translator therefore lowers PeTTa named state through
-    helper calls rather than treating these forms as fixed points.
+    This extends the theoremic shared surface to the state core:
+    `new-state`, `get-state`, and `change-state!`.
 
-    Positive example for the empty shared-state identity fragment:
-    - ordinary non-state shared forms are handled by `isStableCommonForm` and
-      the atomspace fragments above.
+    Positive examples:
+    - `(new-state 0)`
+    - `(get-state &counter)`
+    - `(change-state! (status (Goal lunch-order)) active)`
 
-    Negative examples:
-    - `(new-state 0)` is not stable-common identity.
-    - `(get-state &counter)` is not stable-common identity.
-    - `(change-state! &counter 1)` is not stable-common identity.
+    Negative example:
+    - `(get-state (chain e $x body))` is outside the fragment because the
+      state reference itself is not in stable common form.
 -/
-def isSharedStateFragment (_ : Atom) : Bool :=
-  false
-
-example : isSharedStateFragment (.expression [.symbol "new-state", .symbol "zero"]) = false := by
-  native_decide
-
-example : isStableCommonForm (.expression [.symbol "get-state", .symbol "&counter"]) = false := by
-  native_decide
-
-/-- PeTTa named-state source surface recognized by the translator bridge.
-
-    This is a source classifier, not a stable-common identity claim.  The
-    executable PeTTa→HE translator maps these forms to helper calls.
--/
-def isPeTTaNamedStateFragment : Atom → Bool
-  | .expression [.symbol "bind!", stateRef, .expression [.symbol "new-state", init]] =>
-      isStableCommonForm stateRef && isStableCommonForm init
+def isSharedStateFragment : Atom → Bool
+  | .expression [.symbol "new-state", init] =>
+      isStableCommonForm init
   | .expression [.symbol "get-state", stateRef] =>
       isStableCommonForm stateRef
   | .expression [.symbol "change-state!", stateRef, value] =>
       isStableCommonForm stateRef && isStableCommonForm value
-  | .expression [.symbol "new-state", init] =>
-      isStableCommonForm init
   | _ => false
 
-example : isPeTTaNamedStateFragment
-    (.expression [.symbol "bind!", .symbol "counter",
-      .expression [.symbol "new-state", .symbol "zero"]]) = true := by
+example : isSharedStateFragment (.expression [.symbol "new-state", .symbol "zero"]) = true := by
   native_decide
 
-example : isPeTTaNamedStateFragment
+example : isSharedStateFragment (.expression [.symbol "get-state", .symbol "&counter"]) = true := by
+  native_decide
+
+example : isSharedStateFragment
     (.expression [.symbol "get-state",
       .expression [.symbol "chain", .symbol "e", .var "$x", .symbol "body"]]) = false := by
   native_decide
 
 inductive SharedStateOperationalBridge : Atom → Prop where
+  | newState (init : Atom)
+      (hinit : isStableCommonForm init = true) :
+      SharedStateOperationalBridge
+        (.expression [.symbol "new-state", init])
+  | getState (stateRef : Atom)
+      (href : isStableCommonForm stateRef = true) :
+      SharedStateOperationalBridge
+        (.expression [.symbol "get-state", stateRef])
+  | changeState (stateRef value : Atom)
+      (href : isStableCommonForm stateRef = true)
+      (hvalue : isStableCommonForm value = true) :
+      SharedStateOperationalBridge
+        (.expression [.symbol "change-state!", stateRef, value])
 
 theorem sharedStateFragment_has_operational_bridge
     (a : Atom) (h : isSharedStateFragment a = true) :
     SharedStateOperationalBridge a := by
-  cases h
+  cases a with
+  | var _ => cases h
+  | symbol _ => cases h
+  | grounded _ => cases h
+  | expression es =>
+      cases es with
+      | nil => cases h
+      | cons hd args =>
+          cases hd with
+          | var _ => cases h
+          | grounded _ => cases h
+          | expression _ => cases h
+          | symbol c =>
+              cases args with
+              | nil =>
+                  have hfalse : False := by
+                    simp [isSharedStateFragment] at h
+                  exact False.elim hfalse
+              | cons a1 rest =>
+                  cases rest with
+                  | nil =>
+                      by_cases hnew : c = "new-state"
+                      · subst hnew
+                        have hinit : isStableCommonForm a1 = true := by
+                          simpa [isSharedStateFragment] using h
+                        exact .newState a1 hinit
+                      · by_cases hget : c = "get-state"
+                        · subst hget
+                          have href : isStableCommonForm a1 = true := by
+                            simpa [isSharedStateFragment] using h
+                          exact .getState a1 href
+                        · simp [isSharedStateFragment, hnew, hget] at h
+                  | cons a2 rest =>
+                      cases rest with
+                      | nil =>
+                          by_cases hchange : c = "change-state!"
+                          · subst hchange
+                            have hparts :
+                                isStableCommonForm a1 = true ∧
+                                  isStableCommonForm a2 = true := by
+                              simpa [isSharedStateFragment, Bool.and_eq_true] using h
+                            exact .changeState a1 a2 hparts.1 hparts.2
+                          · simp [isSharedStateFragment, hchange] at h
+                      | cons _ _ =>
+                          have hfalse : False := by
+                            simp [isSharedStateFragment] at h
+                          exact False.elim hfalse
 
 theorem sharedStateFragment_preserves_stableCommonForm
     (a : Atom) (h : isSharedStateFragment a = true) :
     isStableCommonForm a = true := by
-  cases h
+  cases a with
+  | var _ => cases h
+  | symbol _ => cases h
+  | grounded _ => cases h
+  | expression es =>
+      cases es with
+      | nil => cases h
+      | cons hd args =>
+          cases hd with
+          | var _ => cases h
+          | grounded _ => cases h
+          | expression _ => cases h
+          | symbol c =>
+              cases args with
+              | nil =>
+                  have hfalse : False := by
+                    simp [isSharedStateFragment] at h
+                  exact False.elim hfalse
+              | cons a1 rest =>
+                  cases rest with
+                  | nil =>
+                      by_cases hnew : c = "new-state"
+                      · subst hnew
+                        have hinit : isStableCommonForm a1 = true := by
+                          simpa [isSharedStateFragment] using h
+                        have hhead : isStableCommonHead (.symbol "new-state") = true := by
+                          simp [isStableCommonHead, isStableCommonForm, isForbiddenHeadSymbol]
+                        rw [stableCommonForm_cons_of_head (.symbol "new-state") [a1] hhead]
+                        simp [isStableCommonList, hinit]
+                      · by_cases hget : c = "get-state"
+                        · subst hget
+                          have href : isStableCommonForm a1 = true := by
+                            simpa [isSharedStateFragment] using h
+                          have hhead : isStableCommonHead (.symbol "get-state") = true := by
+                            simp [isStableCommonHead, isStableCommonForm, isForbiddenHeadSymbol]
+                          rw [stableCommonForm_cons_of_head (.symbol "get-state") [a1] hhead]
+                          simp [isStableCommonList, href]
+                        · simp [isSharedStateFragment, hnew, hget] at h
+                  | cons a2 rest =>
+                      cases rest with
+                      | nil =>
+                          by_cases hchange : c = "change-state!"
+                          · subst hchange
+                            have hparts :
+                                isStableCommonForm a1 = true ∧
+                                  isStableCommonForm a2 = true := by
+                              simpa [isSharedStateFragment, Bool.and_eq_true] using h
+                            have hhead : isStableCommonHead (.symbol "change-state!") = true := by
+                              simp [isStableCommonHead, isStableCommonForm, isForbiddenHeadSymbol]
+                            rw [stableCommonForm_cons_of_head (.symbol "change-state!") [a1, a2] hhead]
+                            simp [isStableCommonList, hparts.1, hparts.2]
+                          · simp [isSharedStateFragment, hchange] at h
+                      | cons _ _ =>
+                          have hfalse : False := by
+                            simp [isSharedStateFragment] at h
+                          exact False.elim hfalse
 
 end Mettapedia.Languages.MeTTa.Translation

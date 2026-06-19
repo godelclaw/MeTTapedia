@@ -241,10 +241,8 @@ to the **bag** (every `space_add`). But the tabling cache keys on
 **support** (via canonical query). `support_bind` proves this is
 sound: if two bags have the same support, their bound results have
 the same support too. So caching at the support level is correct
-for consumers that are intentionally quotiented to support
-(`SpaceQuerySupport.queryResultSupport`, PathMap/index backends, and
-support-level cache entries), but NOT for raw multiplicity-observing
-consumers like `queryEquations` or duplicate-sensitive `match`.
+for any consumer that only observes support (which includes `match`
+and `queryEquations` in their current form).
 -/
 
 end Mettapedia.Languages.MeTTa.HE

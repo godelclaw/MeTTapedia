@@ -235,7 +235,7 @@ of why classical probability emerges from quantum probability when measuring com
 ## Building the Formalization
 
 ```bash
-cd Mettapedia/lean/mettapedia
+cd lean-projects/mettapedia
 export LAKE_JOBS=3
 ulimit -Sv 6291456
 nice -n 19 lake build Mettapedia.ProbabilityTheory.Hypercube
@@ -308,7 +308,7 @@ Extended Dempster-Shafer theory:
 
 Part of the Mettapedia project formalizing mathematical foundations of inference, probability, and universal AI.
 
-For questions about this formalization, see `Mettapedia/lean/mettapedia/CLAUDE.md`.
+For questions about this formalization, see `lean-projects/mettapedia/CLAUDE.md`.
 
 ## Literature
 

@@ -167,7 +167,7 @@ theorem full_classification_injective :
   cases a <;> cases b <;>
     simp [wmToProbVertex, additiveVertex, overlapVertex, evidenceVertex,
       trustGatedVertex, ProbabilityVertex.mk.injEq] at hab <;>
-    rfl
+    (first | rfl | exact absurd hab.1 (by decide) | exact absurd hab.2.1 (by decide))
 
 /-! ## 5. Summary -/
 

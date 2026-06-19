@@ -22,12 +22,13 @@ codex_*.txt
 codex_*.md
 codex_prompts/
 
+# Generated dependency/progress snapshots
+/DEPS*
+/Mettapedia/AutoBooks/DEPS*
+/Mettapedia/AutoBooks/PROGRESS*
+
 # Build logs
 /build_logs/
-
-# Generated Codex dependency/progress reports
-Mettapedia/AutoBooks/Codex/DEPS*
-Mettapedia/AutoBooks/Codex/PROGRESS*
 
 # LaTeX build artifacts
 /papers/_minted/
@@ -38,7 +39,7 @@ Mettapedia/AutoBooks/Codex/PROGRESS*
 
 # Separate repositories (subprojects)
 Mettapedia/Algebra/OrderedSemigroups/
-Mettapedia/Metatheory/
+Mettapedia/external/Metatheory/
 Mettapedia/Logic/Foundation/
 
 # Nested repos with parent-owned Lean 4 wrapper files

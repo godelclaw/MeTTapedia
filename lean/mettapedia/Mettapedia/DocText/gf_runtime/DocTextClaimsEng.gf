@@ -302,7 +302,7 @@ concrete DocTextClaimsEng of DocTextClaims = {
     Clm_00297 = {s = "mm-lean4 formalizes a Metamath verifier in Lean 4"} ;
     Clm_00298 = {s = "premise experiments use Probabilistic Logic Networks on the extended MPTP 5k dataset"} ;
     Clm_00299 = {s = "selectors run PeTTa inference"} ;
-    Clm_00300 = {s = "the build runs from Mettapedia/lean/mettapedia"} ;
+    Clm_00300 = {s = "the build runs from lean-projects/mettapedia"} ;
     Clm_00301 = {s = "the build runs nice -n 19 lake build"} ;
     Clm_00302 = {s = "the build uses LAKE_JOBS=3 by default"} ;
     Clm_00303 = {s = "the build uses a 6 GiB memory cap via ulimit -Sv 6291456"} ;
@@ -315,8 +315,8 @@ concrete DocTextClaimsEng of DocTextClaims = {
     Clm_00310 = {s = "the local check runs rg -n \"sorry\" Mettapedia/ to find proof gaps"} ;
     Clm_00311 = {s = "the per-problem limit is 5 seconds for E prover"} ;
     Clm_00312 = {s = "the policy references EXTERNAL_REPOS.md for exact commands"} ;
-    Clm_00313 = {s = "the policy uses zariuq forks as origin remotes"} ;
-    Clm_00314 = {s = "the policy uses actual source repos as upstream remotes and godelclaw only as a separate named remote when relevant"} ;
+    Clm_00313 = {s = "the policy uses godelclaw forks as origin remotes"} ;
+    Clm_00314 = {s = "the policy uses zariuq repos as upstream remotes"} ;
     Clm_00315 = {s = "the proof completeness varies by the subproject"} ;
     Clm_00316 = {s = "the structure presents the high-level Mettapedia directory layout"} ;
     Clm_00317 = {s = "toEvidence_strength is Evidence.strength = expected fraction of 1s"} ;
