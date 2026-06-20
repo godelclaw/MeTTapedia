@@ -75,6 +75,10 @@ semantic correspondence between \HE{} and \PeTTa{} evaluation on the
 pure fragment, including import commutativity and operational bridges
 for state and space allocation.  A kernel-checked HE$'$ telescope
 formalization extends the type system with dependent binder semantics.
+The \RhoCalc{} reaction machine's eval-at-\textsc{comm} semantics is given a
+witness-free, axiom-clean Lean characterization: the quiescent run of the
+canonical payload-evaluation process equals its structurally observable
+outcome set.
 We present a complete benchmark ladder from shallow evaluation through
 depth-10 PLN inference, callgrind/massif-based performance analysis,
 a specification gap analysis, and a three-machine architecture (local
@@ -136,6 +140,11 @@ Three implementations exist:
 \item \code{with-space-snapshot}: a CeTTa extension for branch-isolated
   mutation, enabling semi-naive forward chaining and speculative search
   without the side-effect hazards of shared mutable state.
+\item A witness-free, axiom-clean Lean characterization of the \RhoCalc{}
+  reaction machine's eval-at-\textsc{comm} semantics: the quiescent run of the
+  canonical payload-evaluation process equals its
+  structural-congruence-observed outcome set, with no certification witness in
+  the carrier (Section~\ref{sec:rho-lean}).
 \end{enumerate}
 
 %% ────────────────────────────────────────────────────────────────────
@@ -1058,6 +1067,77 @@ the reusable substrate---budgets, machine slices, indexed reaction state,
 cancellation tokens, and eventually worker pools---while keeping \HE{},
 \PeTTa{}, and \RhoCalc{} free to choose different surface semantics.
 
+\subsection{Lean Certification of the Reaction Semantics}
+\label{sec:rho-lean}
+
+The reaction machine's most delicate capability is \emph{eval-at-\textsc{comm}}:
+a communication that does not merely move a message but evaluates the
+transmitted payload.  The canonical pattern is the two-component process
+\[
+  \texttt{eval\_drop}(x, p)\;\equiv\;
+  x!\big(@p\big)\;\mid\;\mathsf{for}(y \leftarrow x)\{\,*y\,\},
+\]
+where $@p$ is a deferred (quoted) payload and the receiver immediately drops
+($*$, dereferences and runs) whatever it receives.  The single available
+\textsc{comm} consumes the message and the drop executes the payload; the
+process then runs to quiescence at the evaluated result.
+
+This semantics is formalized in Lean (\code{RhometaReduction.lean}) over the
+same locally-nameless syntax, structural congruence, and semantic substitution
+used for the rest of the \RhoCalc{} development.  The reduction relation
+\code{RhometaReduces} is the rho reaction relation restricted so that the
+ordinary core \textsc{comm} cannot silently consume an explicit eval payload,
+and \code{RhometaSCObservedOutcomes} collects the
+structural-congruence-observable outcomes of its quiescent reducts.  The main
+theorem, \code{rhometta\_bridge\_scObserved}, is a \emph{witness-free
+operational characterization}: on the ready branch (some payload evaluation is
+certified) and for a hash-set-free channel, the concrete quiescent run of
+$\texttt{eval\_drop}(x,p)$ equals
+\[
+  \texttt{RhometaSCObservedOutcomes}\,\big(\texttt{eval\_drop}(x,p)\big),
+\]
+with \emph{no} certification witness exposed in the carrier.  Earlier bridges
+characterized the run only through an explicit \code{CertifiedPayloadResult}
+witness; the witness-free form states the run purely in terms of what is
+structurally observable---the property a caller of the reaction machine can
+actually rely on.
+
+The proof is axiom-clean (\code{\{propext, Classical.choice, Quot.sound\}}, zero
+sorries).  Its keystone is a canonical-form argument: a normalizer
+\code{nfAtom} that is \emph{complete} for structural congruence (congruent terms
+have equal normal forms), which turns the symmetric/transitive structural
+closure---where direct inductions stall---into an equation on canonical forms.
+The load-bearing substitution lemma carries an opacity side condition---that the
+communicated variable does not occur \emph{under a quote}
+(\code{noBoundUnderQuote})---and this condition is necessary, not cosmetic:
+without it a payload can hide a bound occurrence inside a quoted name and the
+characterization fails, as a concrete counterexample witnesses.  The
+\code{NoHashSet} hypothesis on the channel records that the result is stated for
+the bag-structured reaction fragment, the same opaque-name boundary the
+executable index already relies on (quoted process names stay on the fallback
+path).
+
+\paragraph{From the bridge to a running cognitive substrate.}
+The eval-at-\textsc{comm} bridge is not only a soundness result; it licenses a
+programming idiom.  Because a deferred payload may itself evaluate to \emph{more}
+rho process, a reaction's payload can plant the next reactions---communication is
+at once computation and construction.  Two self-contained demos exercise this on
+the executable engine.  A \emph{self-unfolding backward-chaining prover} seeds a
+single cell for a goal; each \textsc{comm} evaluates one inference step whose
+result is the cells for that goal's subgoals, so the reaction network grows
+itself into a proof tree and forks into the may-set wherever a goal has several
+rules: \code{rhometta:run} returns one quiescent residual per complete proof
+tree (two for the sample goal; a single-rule goal stays confluent at one).  A
+larger showcase runs three cognitive services as parallel reactions---a
+PLN-style two-hop proof search, overlap-corrected evidence revision across two
+agents, and one ECAN-style attention-spreading round---and chains their
+channel-gathered results into a final deferred payload that synthesizes one
+action plan per proof path.  Every cell in these demos is an \code{eval\_drop},
+so \code{rhometta\_bridge\_scObserved} is exactly the theorem that licenses
+reading the quiescent residual as the computed result.  Both run on the
+\code{make BUILD=core} binary (the showcase additionally importing the shipped
+\code{lib\_pln}); they live under \code{benchmarks/rho/rhometta-*}.
+
 \subsection{Faithful Backend Obligations}
 
 The indexed shared-space machine needs a sharper correctness contract than
@@ -1415,6 +1495,11 @@ commutativity and operational bridges for state and space allocation,
 establishes that MeTTa's three runtimes are semantically compatible
 on the shared fragment.  The compiled \code{.act} space format via
 MORK enables zero-copy indexed loading of large knowledge bases.
+On the process-calculus side, the \RhoCalc{} reaction machine's
+eval-at-\textsc{comm} semantics now has a witness-free, axiom-clean Lean
+characterization (Section~\ref{sec:rho-lean}): the quiescent run of the
+canonical payload-evaluation process is exactly its structurally observable
+outcome set, with no certification witness in the carrier.
 
 Beyond raw performance, \CeTTa{} now treats its own semantics as a
 first-class object.  The profile family makes \code{he-compat} (literal
@@ -1491,6 +1576,10 @@ ambient, or user-visible.}
 \item \textbf{Translator CLI:} \code{translate.sh} with
   \code{he2petta}/\code{petta2he}, recursive and bundle modes.
   Lean proof covers pure fragment + state + spaces (0~sorries).
+\item \textbf{Reaction-semantics formalization:} extend the witness-free
+  eval-at-\textsc{comm} characterization (Section~\ref{sec:rho-lean}) from the
+  single-reaction bag fragment to concurrent and persistent reactions, and
+  relax the hash-set-free channel side condition.
 \item Full pattern miner on \CeTTa{} end-to-end
   ($\sim$12$\times$ speedup over \PeTTa{}).
 \end{itemize}
