@@ -7376,6 +7376,332 @@ private theorem nfBagList_mem {xs : List Pattern} {z : Pattern} :
   unfold nfBagList
   rw [Multiset.mem_toList, Multiset.mem_coe]
 
+/-- Append a fixed prefix under bag-congruence: `[pre…, a…] ≡ [pre…, b…]` from
+`[a…] ≡ [b…]`.  Inductively prepends each prefix element via `scHashBag_cons_cong2`. -/
+private theorem scHashBag_append_cong_right (pre : List Pattern) {a b : List Pattern}
+    (h : StructuralCongruence
+          (.collection .hashBag a none) (.collection .hashBag b none)) :
+    StructuralCongruence
+      (.collection .hashBag (pre ++ a) none)
+      (.collection .hashBag (pre ++ b) none) := by
+  induction pre with
+  | nil => simpa using h
+  | cons x pre ih =>
+      simpa using scHashBag_cons_cong2 (StructuralCongruence.refl x) ih
+
+/-- **Flatten step as SC**: a parallel bag is structurally congruent to the bag of
+its one-level splice `xs.flatMap bagSplice` — each nested `hashBag` element is
+flattened into its parent by `par_flatten`. -/
+private theorem scHashBag_bagSplice (xs : List Pattern) :
+    StructuralCongruence
+      (.collection .hashBag xs none)
+      (.collection .hashBag (xs.flatMap bagSplice) none) := by
+  induction xs with
+  | nil => exact StructuralCongruence.refl _
+  | cons x rest ih =>
+      -- `(x :: rest).flatMap bagSplice = bagSplice x ++ rest.flatMap bagSplice`
+      rw [List.flatMap_cons]
+      -- First splice the head, then congruence on the (already-spliced) tail.
+      have hhead :
+          StructuralCongruence
+            (.collection .hashBag (x :: rest) none)
+            (.collection .hashBag (bagSplice x ++ rest) none) := by
+        cases x with
+        | collection ct elems g =>
+            cases ct with
+            | hashBag =>
+                cases g with
+                | none =>
+                    -- `bagSplice (bag elems) = elems`; flatten via `par_flatten`.
+                    show StructuralCongruence
+                      (.collection .hashBag
+                        (.collection .hashBag elems none :: rest) none)
+                      (.collection .hashBag (elems ++ rest) none)
+                    -- `[bag elems] ++ rest` reorder to put nested bag last, flatten, reorder back.
+                    have hperm1 :
+                        StructuralCongruence
+                          (.collection .hashBag
+                            (.collection .hashBag elems none :: rest) none)
+                          (.collection .hashBag
+                            (rest ++ [.collection .hashBag elems none]) none) :=
+                      StructuralCongruence.par_perm _ _
+                        (by simpa using (List.perm_append_singleton
+                          (.collection .hashBag elems none) rest).symm)
+                    have hflat :
+                        StructuralCongruence
+                          (.collection .hashBag
+                            (rest ++ [.collection .hashBag elems none]) none)
+                          (.collection .hashBag (rest ++ elems) none) :=
+                      StructuralCongruence.par_flatten rest elems
+                    have hperm2 :
+                        StructuralCongruence
+                          (.collection .hashBag (rest ++ elems) none)
+                          (.collection .hashBag (elems ++ rest) none) :=
+                      StructuralCongruence.par_perm _ _ (List.perm_append_comm)
+                    exact StructuralCongruence.trans _ _ _ hperm1
+                      (StructuralCongruence.trans _ _ _ hflat hperm2)
+                | some _ =>
+                    show StructuralCongruence
+                      (.collection .hashBag
+                        (.collection .hashBag elems (some _) :: rest) none)
+                      (.collection .hashBag
+                        ([.collection .hashBag elems (some _)] ++ rest) none)
+                    simp only [List.singleton_append]
+                    exact StructuralCongruence.refl _
+            | hashSet =>
+                show StructuralCongruence
+                  (.collection .hashBag
+                    (.collection .hashSet elems g :: rest) none)
+                  (.collection .hashBag
+                    ([.collection .hashSet elems g] ++ rest) none)
+                simp only [List.singleton_append]
+                exact StructuralCongruence.refl _
+            | vec =>
+                show StructuralCongruence
+                  (.collection .hashBag
+                    (.collection .vec elems g :: rest) none)
+                  (.collection .hashBag
+                    ([.collection .vec elems g] ++ rest) none)
+                simp only [List.singleton_append]
+                exact StructuralCongruence.refl _
+        | bvar i =>
+            show StructuralCongruence _
+              (.collection .hashBag ([.bvar i] ++ rest) none)
+            simp only [List.singleton_append]; exact StructuralCongruence.refl _
+        | fvar s =>
+            show StructuralCongruence _
+              (.collection .hashBag ([.fvar s] ++ rest) none)
+            simp only [List.singleton_append]; exact StructuralCongruence.refl _
+        | apply f args =>
+            show StructuralCongruence _
+              (.collection .hashBag ([.apply f args] ++ rest) none)
+            simp only [List.singleton_append]; exact StructuralCongruence.refl _
+        | lambda nm b =>
+            show StructuralCongruence _
+              (.collection .hashBag ([.lambda nm b] ++ rest) none)
+            simp only [List.singleton_append]; exact StructuralCongruence.refl _
+        | multiLambda k nms b =>
+            show StructuralCongruence _
+              (.collection .hashBag ([.multiLambda k nms b] ++ rest) none)
+            simp only [List.singleton_append]; exact StructuralCongruence.refl _
+        | subst b r =>
+            show StructuralCongruence _
+              (.collection .hashBag ([.subst b r] ++ rest) none)
+            simp only [List.singleton_append]; exact StructuralCongruence.refl _
+      -- Now congruence on the tail: splice `rest`, holding `bagSplice x` fixed.
+      have htail :
+          StructuralCongruence
+            (.collection .hashBag (bagSplice x ++ rest) none)
+            (.collection .hashBag (bagSplice x ++ rest.flatMap bagSplice) none) :=
+        scHashBag_append_cong_right (bagSplice x) ih
+      exact StructuralCongruence.trans _ _ _ hhead htail
+
+/-- `nfAtomList`'s `i`-th element is the `nfAtom` of the `i`-th input element. -/
+private theorem nfAtomList_get (xs : List Pattern) (i : Nat) (h : i < xs.length)
+    (h' : i < (nfAtomList xs).length) :
+    (nfAtomList xs).get ⟨i, h'⟩ = nfAtom (xs.get ⟨i, h⟩) := by
+  simp only [List.get_eq_getElem]
+  have : (nfAtomList xs)[i] = (xs.map nfAtom)[i]'(by rw [nfAtomList_eq_map] at h'; exact h') := by
+    congr 1
+    exact nfAtomList_eq_map xs
+  rw [this, List.getElem_map]
+
+private theorem nfAtomList_length (xs : List Pattern) :
+    (nfAtomList xs).length = xs.length := by
+  rw [nfAtomList_eq_map]; simp
+
+/-- Element-wise bag congruence from a list of pointwise SCs: `[xs…] ≡ [ys…]`. -/
+private theorem scHashBag_listPointwise {xs ys : List Pattern}
+    (hlen : xs.length = ys.length)
+    (hpt : ∀ i (h₁ : i < xs.length) (h₂ : i < ys.length),
+      StructuralCongruence (xs.get ⟨i, h₁⟩) (ys.get ⟨i, h₂⟩)) :
+    StructuralCongruence
+      (.collection .hashBag xs none) (.collection .hashBag ys none) :=
+  StructuralCongruence.par_cong xs ys hlen hpt
+
+/-- The quote-drop collapse `nfQuote q` is structurally congruent to `NQuote[q]`. -/
+private theorem scNfQuote (q : Pattern) :
+    StructuralCongruence (.apply "NQuote" [q]) (nfQuote q) := by
+  unfold nfQuote
+  split
+  · rename_i n'
+    exact StructuralCongruence.quote_drop n'
+  · exact StructuralCongruence.refl _
+
+mutual
+/-- **The SC-induction wall, crossed for the `hashSet`-free fragment**: every
+`hashSet`-free pattern is structurally congruent to its canonical normal form
+`nfAtom p`.  Together with soundness (`nfAtom_sc_complete`) this gives the
+completeness `nfAtom p = nfAtom q → p ≡ q` for `NoHashSet` terms, which is the
+keystone the residual/source classifiers were missing. -/
+private theorem noHashSet_structuralCongruence_nfAtom :
+    ∀ {p : Pattern}, NoHashSet p → StructuralCongruence p (nfAtom p)
+  | .bvar i, _ => StructuralCongruence.refl _
+  | .fvar s, _ => StructuralCongruence.refl _
+  | .apply "NQuote" [arg], hns => by
+      have hns_arg : NoHashSet arg := by
+        simpa [NoHashSet, NoHashSetList] using hns
+      have hih : StructuralCongruence arg (nfAtom arg) :=
+        noHashSet_structuralCongruence_nfAtom hns_arg
+      have hquote : StructuralCongruence
+          (.apply "NQuote" [arg]) (.apply "NQuote" [nfAtom arg]) := by
+        refine StructuralCongruence.apply_cong "NQuote" [arg] [nfAtom arg] rfl ?_
+        intro i h₁ h₂
+        match i, h₁ with
+        | 0, _ => simpa using hih
+      have hcollapse : StructuralCongruence
+          (.apply "NQuote" [nfAtom arg]) (nfQuote (nfAtom arg)) :=
+        scNfQuote (nfAtom arg)
+      rw [show nfAtom (.apply "NQuote" [arg]) = nfQuote (nfAtom arg) from rfl]
+      exact StructuralCongruence.trans _ _ _ hquote hcollapse
+  | .apply f args, hns => by
+      by_cases hq : f = "NQuote" ∧ ∃ a, args = [a]
+      · obtain ⟨hf, a, ha⟩ := hq
+        subst hf; subst ha
+        have hns_arg : NoHashSet a := by
+          simpa [NoHashSet, NoHashSetList] using hns
+        have hih : StructuralCongruence a (nfAtom a) :=
+          noHashSet_structuralCongruence_nfAtom hns_arg
+        have hquote : StructuralCongruence
+            (.apply "NQuote" [a]) (.apply "NQuote" [nfAtom a]) := by
+          refine StructuralCongruence.apply_cong "NQuote" [a] [nfAtom a] rfl ?_
+          intro i h₁ h₂
+          match i, h₁ with
+          | 0, _ => simpa using hih
+        rw [show nfAtom (.apply "NQuote" [a]) = nfQuote (nfAtom a) from rfl]
+        exact StructuralCongruence.trans _ _ _ hquote (scNfQuote (nfAtom a))
+      · rw [nfAtom_apply_general f args hq]
+        have hns_list : NoHashSetList args := by
+          simpa [NoHashSet] using hns
+        refine StructuralCongruence.apply_cong f args (nfAtomList args)
+          (nfAtomList_length args).symm ?_
+        intro i h₁ h₂
+        rw [nfAtomList_get args i h₁ h₂]
+        exact noHashSet_structuralCongruence_nfAtomList hns_list i h₁
+  | .lambda nm body, hns => by
+      have hns_body : NoHashSet body := by simpa [NoHashSet] using hns
+      rw [show nfAtom (.lambda nm body) = .lambda nm (nfAtom body) from rfl]
+      exact StructuralCongruence.lambda_cong nm _ _
+        (noHashSet_structuralCongruence_nfAtom hns_body)
+  | .multiLambda k nms body, hns => by
+      have hns_body : NoHashSet body := by simpa [NoHashSet] using hns
+      rw [show nfAtom (.multiLambda k nms body) = .multiLambda k nms (nfAtom body) from rfl]
+      exact StructuralCongruence.multiLambda_cong k nms _ _
+        (noHashSet_structuralCongruence_nfAtom hns_body)
+  | .subst b r, hns => by
+      have hns_b : NoHashSet b := by simpa [NoHashSet] using hns.1
+      have hns_r : NoHashSet r := by simpa [NoHashSet] using hns.2
+      rw [show nfAtom (.subst b r) = .subst (nfAtom b) (nfAtom r) from rfl]
+      exact StructuralCongruence.subst_cong _ _ _ _
+        (noHashSet_structuralCongruence_nfAtom hns_b)
+        (noHashSet_structuralCongruence_nfAtom hns_r)
+  | .collection .hashBag elems none, hns => by
+      have hns_list : NoHashSetList elems := by simpa [NoHashSet] using hns
+      rw [nfAtom_hashBag_none]
+      -- Step 1: element-wise normalize.
+      have h1 : StructuralCongruence
+          (.collection .hashBag elems none)
+          (.collection .hashBag (nfAtomList elems) none) := by
+        refine scHashBag_listPointwise (nfAtomList_length elems).symm ?_
+        intro i h₁ h₂
+        rw [nfAtomList_get elems i h₁ h₂]
+        exact noHashSet_structuralCongruence_nfAtomList hns_list i h₁
+      -- Step 2: flatten nested bags.
+      have h2 : StructuralCongruence
+          (.collection .hashBag (nfAtomList elems) none)
+          (.collection .hashBag ((nfAtomList elems).flatMap bagSplice) none) :=
+        scHashBag_bagSplice (nfAtomList elems)
+      -- Step 3: drop PZeros.
+      have h3 : StructuralCongruence
+          (.collection .hashBag ((nfAtomList elems).flatMap bagSplice) none)
+          (.collection .hashBag
+            (((nfAtomList elems).flatMap bagSplice).filter
+              (fun e => e ≠ .apply "PZero" [])) none) :=
+        scHashBag_filterPZero _
+      -- Step 4: reorder into the canonical multiset representative `nfBagList`.
+      have hperm :
+          (((nfAtomList elems).flatMap bagSplice).filter
+              (fun e => e ≠ .apply "PZero" [])).Perm
+            (nfBagList (nfAtomList elems)) := by
+        unfold nfBagList
+        exact Multiset.coe_eq_coe.mp
+          (Multiset.coe_toList
+            (Multiset.ofList
+              (((nfAtomList elems).flatMap bagSplice).filter
+                (fun e => e ≠ .apply "PZero" [])))).symm
+      have h4 : StructuralCongruence
+          (.collection .hashBag
+            (((nfAtomList elems).flatMap bagSplice).filter
+              (fun e => e ≠ .apply "PZero" [])) none)
+          (.collection .hashBag (nfBagList (nfAtomList elems)) none) :=
+        StructuralCongruence.par_perm _ _ hperm
+      -- Step 5: collapse.
+      have h5 : StructuralCongruence
+          (.collection .hashBag (nfBagList (nfAtomList elems)) none)
+          (collapseBag (nfBagList (nfAtomList elems))) := by
+        match hz : nfBagList (nfAtomList elems) with
+        | [] =>
+            rw [show collapseBag ([] : List Pattern) = .apply "PZero" [] from rfl]
+            exact StructuralCongruence.par_empty
+        | [e] =>
+            rw [show collapseBag [e] = e from rfl]
+            exact StructuralCongruence.par_singleton e
+        | a :: b :: rest =>
+            rw [show collapseBag (a :: b :: rest)
+                = .collection .hashBag (a :: b :: rest) none from rfl]
+            exact StructuralCongruence.refl _
+      exact StructuralCongruence.trans _ _ _ h1
+        (StructuralCongruence.trans _ _ _ h2
+          (StructuralCongruence.trans _ _ _ h3
+            (StructuralCongruence.trans _ _ _ h4 h5)))
+  | .collection .hashSet _ _, hns => by
+      simp [NoHashSet] at hns
+  | .collection .vec elems g, hns => by
+      have hns_list : NoHashSetList elems := by simpa [NoHashSet] using hns
+      rw [show nfAtom (.collection .vec elems g) = .collection .vec (nfAtomList elems) g from rfl]
+      refine StructuralCongruence.collection_general_cong .vec elems (nfAtomList elems) g
+        (nfAtomList_length elems).symm ?_
+      intro i h₁ h₂
+      rw [nfAtomList_get elems i h₁ h₂]
+      exact noHashSet_structuralCongruence_nfAtomList hns_list i h₁
+  | .collection .hashBag elems (some g), hns => by
+      have hns_list : NoHashSetList elems := by simpa [NoHashSet] using hns
+      rw [show nfAtom (.collection .hashBag elems (some g))
+          = .collection .hashBag (nfAtomList elems) (some g) from rfl]
+      refine StructuralCongruence.collection_general_cong .hashBag elems
+        (nfAtomList elems) (some g) (nfAtomList_length elems).symm ?_
+      intro i h₁ h₂
+      rw [nfAtomList_get elems i h₁ h₂]
+      exact noHashSet_structuralCongruence_nfAtomList hns_list i h₁
+
+private theorem noHashSet_structuralCongruence_nfAtomList :
+    ∀ {xs : List Pattern}, NoHashSetList xs →
+      ∀ i (h : i < xs.length),
+        StructuralCongruence (xs.get ⟨i, h⟩) (nfAtom (xs.get ⟨i, h⟩))
+  | [], _, i, h => by simp at h
+  | x :: xs, hns, i, h => by
+      match i, h with
+      | 0, _ =>
+          have hns_x : NoHashSet x := hns.1
+          simpa using noHashSet_structuralCongruence_nfAtom hns_x
+      | (j+1), h =>
+          have hns_xs : NoHashSetList xs := hns.2
+          have hj : j < xs.length := by simpa using h
+          simpa using noHashSet_structuralCongruence_nfAtomList hns_xs j hj
+end
+
+/-- **`nfAtom`-completeness on the `hashSet`-free fragment**: equal canonical
+normal forms imply structural congruence.  This is the converse of
+`nfAtom_sc_complete` (soundness), available now that `p ≡ nfAtom p` is proven. -/
+private theorem structuralCongruence_of_nfAtom_eq
+    {p q : Pattern} (hp : NoHashSet p) (hq : NoHashSet q)
+    (h : nfAtom p = nfAtom q) :
+    StructuralCongruence p q :=
+  StructuralCongruence.trans _ _ _
+    (noHashSet_structuralCongruence_nfAtom hp)
+    (StructuralCongruence.trans _ _ _ (h ▸ StructuralCongruence.refl (nfAtom p))
+      (StructuralCongruence.symm _ _ (noHashSet_structuralCongruence_nfAtom hq)))
+
 mutual
 /-- Normal-form invariant: `nfAtom`'s `hashBag` output is canonical, `PZero`-free,
 flat (no nested bag), length ≥ 2, with normal elements. -/
@@ -7742,6 +8068,718 @@ private theorem nfAtom_sc_complete {p q : Pattern}
       show Pattern.subst (nfAtom p₁) (nfAtom a₁) = Pattern.subst (nfAtom p₂) (nfAtom a₂)
       rw [ihp, iha]
   | quote_drop n => exact nfAtom_quote_drop n
+
+/-- A `PInput` body that is `SC`-equal (under the binder) to the canonical drop
+`PDrop[bvar 0]` has that exact canonical normal form. Completeness of `nfAtom`
+gives the clean binder-inversion the direct `lambda_cong` SC-inversion cannot. -/
+private theorem nfAtom_body_eq_pdrop_of_inputDrop
+    {body : Pattern}
+    (hbody : StructuralCongruence
+      (.lambda none body) (.lambda none (.apply "PDrop" [.bvar 0]))) :
+    nfAtom body = .apply "PDrop" [.bvar 0] := by
+  have h := nfAtom_sc_complete hbody
+  simpa [nfAtom, nfAtomList] using h
+
+/-! ### Hygiene preservation: `noBVar` survives `nfAtom`
+
+The keystone needs that `nfAtom` never *introduces* a bound variable: if `BVar k`
+is absent from `p`, it is absent from `nfAtom p`. The canonical normal form only
+reorders/flattens/drops, so this is membership-preservation, not a deep fact. -/
+
+/-- `noBVarList` is the pointwise conjunction over the list. -/
+private theorem noBVarList_iff_forall (k : Nat) :
+    ∀ xs : List Pattern, noBVarList k xs = true ↔ ∀ x ∈ xs, noBVar k x = true
+  | [] => by simp [noBVarList]
+  | p :: ps => by
+      simp only [noBVarList, Bool.and_eq_true, List.mem_cons, forall_eq_or_imp,
+        noBVarList_iff_forall k ps]
+
+/-- A nested-bag splice cannot introduce a fresh bound variable. -/
+private theorem noBVar_bagSplice {k : Nat} {x z : Pattern}
+    (hx : noBVar k x = true) (hz : z ∈ bagSplice x) : noBVar k z = true := by
+  rcases bagSplice_mem hz with ⟨ys, hxeq, hzys⟩ | ⟨hzeq, _⟩
+  · subst hxeq
+    rw [noBVar] at hx
+    exact (noBVarList_iff_forall k ys).mp hx z hzys
+  · subst hzeq; exact hx
+
+/-- `nfBagList` never introduces a fresh bound variable. -/
+private theorem noBVarList_nfBagList {k : Nat} {xs : List Pattern}
+    (hxs : noBVarList k xs = true) : noBVarList k (nfBagList xs) = true := by
+  rw [noBVarList_iff_forall]
+  intro z hz
+  rw [nfBagList_mem, List.mem_filter, List.mem_flatMap] at hz
+  obtain ⟨⟨x, hxmem, hzx⟩, _⟩ := hz
+  exact noBVar_bagSplice ((noBVarList_iff_forall k xs).mp hxs x hxmem) hzx
+
+/-- `collapseBag` never introduces a fresh bound variable. -/
+private theorem noBVar_collapseBag {k : Nat} {xs : List Pattern}
+    (hxs : noBVarList k xs = true) : noBVar k (collapseBag xs) = true := by
+  unfold collapseBag
+  split
+  · simp [noBVar, noBVarList]
+  · rw [noBVarList, Bool.and_eq_true] at hxs; exact hxs.1
+  · rw [noBVar]; exact hxs
+
+/-- `nfQuote` never introduces a fresh bound variable. -/
+private theorem noBVar_nfQuote {k : Nat} {p : Pattern}
+    (hp : noBVar k p = true) : noBVar k (nfQuote p) = true := by
+  unfold nfQuote
+  split
+  · rw [noBVar, noBVarList, Bool.and_eq_true] at hp; exact hp.1
+  · rw [noBVar, noBVarList, Bool.and_eq_true]; exact ⟨hp, rfl⟩
+
+mutual
+/-- **Hygiene preservation**: `nfAtom` never introduces a fresh bound variable. -/
+private theorem noBVar_nfAtom : ∀ {k : Nat} {p : Pattern},
+    noBVar k p = true → noBVar k (nfAtom p) = true
+  | _, .bvar _, h => by simpa [nfAtom] using h
+  | _, .fvar _, _ => by simp [nfAtom, noBVar]
+  | k, .apply f args, h => by
+      by_cases hq : f = "NQuote" ∧ ∃ a, args = [a]
+      · obtain ⟨hf, a, ha⟩ := hq; subst hf; subst ha
+        rw [show nfAtom (.apply "NQuote" [a]) = nfQuote (nfAtom a) from rfl]
+        rw [noBVar] at h
+        exact noBVar_nfQuote (noBVar_nfAtom ((noBVarList_iff_forall k _).mp h a (by simp)))
+      · rw [nfAtom_apply_general f args hq, noBVar]
+        rw [noBVar] at h
+        exact noBVarList_nfAtomList h
+  | k, .lambda nm body, h => by
+      rw [show nfAtom (.lambda nm body) = .lambda nm (nfAtom body) from rfl, noBVar]
+      rw [noBVar] at h
+      exact noBVar_nfAtom h
+  | k, .multiLambda n nms body, h => by
+      rw [show nfAtom (.multiLambda n nms body) = .multiLambda n nms (nfAtom body) from rfl,
+        noBVar]
+      rw [noBVar] at h
+      exact noBVar_nfAtom h
+  | k, .subst b r, h => by
+      rw [show nfAtom (.subst b r) = .subst (nfAtom b) (nfAtom r) from rfl, noBVar,
+        Bool.and_eq_true]
+      rw [noBVar, Bool.and_eq_true] at h
+      exact ⟨noBVar_nfAtom h.1, noBVar_nfAtom h.2⟩
+  | k, .collection .hashBag elems none, h => by
+      rw [nfAtom_hashBag_none, noBVar] at *
+      exact noBVar_collapseBag (noBVarList_nfBagList (noBVarList_nfAtomList h))
+  | k, .collection .hashSet elems none, h => by
+      rw [nfAtom_hashSet_none, noBVar] at *
+      rw [noBVarList_iff_forall]
+      intro z hz
+      rw [Multiset.mem_toList, Multiset.mem_coe] at hz
+      exact (noBVarList_iff_forall k _).mp (noBVarList_nfAtomList h) z hz
+  | k, .collection .vec elems g, h => by
+      rw [show nfAtom (.collection .vec elems g) = .collection .vec (nfAtomList elems) g
+          from rfl, noBVar]
+      rw [noBVar] at h
+      exact noBVarList_nfAtomList h
+  | k, .collection .hashBag elems (some gg), h => by
+      rw [show nfAtom (.collection .hashBag elems (some gg))
+          = .collection .hashBag (nfAtomList elems) (some gg) from rfl, noBVar]
+      rw [noBVar] at h
+      exact noBVarList_nfAtomList h
+  | k, .collection .hashSet elems (some gg), h => by
+      rw [show nfAtom (.collection .hashSet elems (some gg))
+          = .collection .hashSet (nfAtomList elems) (some gg) from rfl, noBVar]
+      rw [noBVar] at h
+      exact noBVarList_nfAtomList h
+private theorem noBVarList_nfAtomList : ∀ {k : Nat} {xs : List Pattern},
+    noBVarList k xs = true → noBVarList k (nfAtomList xs) = true
+  | _, [], _ => by simp [nfAtomList, noBVarList]
+  | k, p :: ps, h => by
+      rw [noBVarList, Bool.and_eq_true] at h
+      rw [show nfAtomList (p :: ps) = nfAtom p :: nfAtomList ps from rfl,
+        noBVarList, Bool.and_eq_true]
+      exact ⟨noBVar_nfAtom h.1, noBVarList_nfAtomList h.2⟩
+end
+
+/-! ### The keystone: bound drop bodies reduce to their payload
+
+We prove that a strict-core, hygienic body whose normal form is exactly the bound
+drop `*0` is structurally congruent, after substituting `@p` for the bound name,
+to `p` itself. The hygiene hypothesis `noBoundUnderQuote 0 body` is *essential*:
+without it, a body like `*(@(*0))` is still `rhoProcCoreShape` and normalizes to
+`*0`, yet COMM leaves the buried quote untouched. -/
+
+/-- `nfQuote x = *0` forces `x` to be the bound drop `PDrop[bvar 0]`. -/
+private theorem nfQuote_eq_bvar_zero {x : Pattern}
+    (h : nfQuote x = .bvar 0) : x = .apply "PDrop" [.bvar 0] := by
+  unfold nfQuote at h
+  split at h
+  · rename_i n' _; cases h; rfl
+  · exact absurd h (by simp)
+
+/-- Inversion for `rhoNameCoreShape` on `apply`: only `NQuote [p]` (with a
+strict-core process) is admissible. -/
+private theorem rhoNameCoreShape_apply_inv {f : String} {args : List Pattern}
+    (h : rhoNameCoreShape (.apply f args) = true) :
+    ∃ p, f = "NQuote" ∧ args = [p] ∧ rhoProcCoreShape p = true := by
+  unfold rhoNameCoreShape at h
+  split at h
+  · exact absurd ‹Pattern.apply f args = Pattern.bvar _› (by simp)
+  · exact absurd ‹Pattern.apply f args = Pattern.fvar _› (by simp)
+  · rename_i p heq
+    obtain ⟨hf, hargs⟩ := Pattern.apply.inj heq
+    subst hf; subst hargs
+    exact ⟨p, rfl, rfl, h⟩
+  · simp at h
+
+/-- **Name keystone**: a strict-core name whose normal form is `*0`, with no bound
+name buried under a quote, normalizes (semantically) to the bound variable `0`.
+The only `rhoNameCoreShape` name normalizing to `*0` is literally `bvar 0`; the
+quoted alternative `@(*0)` is excluded by the under-quote hygiene hypothesis. -/
+private theorem semanticNormalizeName_eq_bvar_of_nfAtom_drop {n : Pattern}
+    (hcore : rhoNameCoreShape n = true)
+    (hhyg : noBoundUnderQuote 0 n = true)
+    (hnf : nfAtom n = .bvar 0) :
+    semanticNormalizeName n = .bvar 0 := by
+  match n with
+  | .bvar i =>
+      rw [show nfAtom (.bvar i) = .bvar i from rfl] at hnf
+      cases hnf
+      rfl
+  | .fvar s =>
+      rw [show nfAtom (.fvar s) = .fvar s from rfl] at hnf
+      exact absurd hnf (by simp)
+  | .apply f args =>
+      obtain ⟨pp, hf, hargs, _⟩ := rhoNameCoreShape_apply_inv hcore
+      subst hf; subst hargs
+      exfalso
+      rw [show nfAtom (.apply "NQuote" [pp]) = nfQuote (nfAtom pp) from rfl] at hnf
+      have hpp : nfAtom pp = .apply "PDrop" [.bvar 0] := nfQuote_eq_bvar_zero hnf
+      rw [show noBoundUnderQuote 0 (.apply "NQuote" [pp]) = noBVar 0 pp from rfl] at hhyg
+      have := noBVar_nfAtom (k := 0) (p := pp) hhyg
+      rw [hpp] at this
+      simp [noBVar, noBVarList] at this
+  | .lambda nm body => exact absurd hcore (by simp [rhoNameCoreShape])
+  | .multiLambda n nms body => exact absurd hcore (by simp [rhoNameCoreShape])
+  | .subst a b => exact absurd hcore (by simp [rhoNameCoreShape])
+  | .collection ct elems g => exact absurd hcore (by simp [rhoNameCoreShape])
+
+/-- `collapseBag xs = *0` forces `xs` to be the canonical singleton `[*0]`. -/
+private theorem collapseBag_eq_drop {xs : List Pattern}
+    (h : collapseBag xs = .apply "PDrop" [.bvar 0]) : xs = [.apply "PDrop" [.bvar 0]] := by
+  unfold collapseBag at h
+  split at h <;> first | (subst h; rfl) | exact absurd h (by simp)
+
+/-- `f e` is a sublist of `xs.flatMap f` whenever `e ∈ xs`. -/
+private theorem sublist_flatMap_of_mem {α β : Type*} {xs : List α} {e : α}
+    (he : e ∈ xs) (f : α → List β) : (f e).Sublist (xs.flatMap f) := by
+  obtain ⟨l, r, rfl⟩ := List.append_of_mem he
+  rw [List.flatMap_append, List.flatMap_cons]
+  refine (List.sublist_append_left (f e) (r.flatMap f)).trans ?_
+  exact List.sublist_append_right (l.flatMap f) (f e ++ r.flatMap f)
+
+/-- The canonical bag list as a multiset equals the raw flatMap-filter multiset. -/
+private theorem nfBagList_coe (xs : List Pattern) :
+    Multiset.ofList (nfBagList xs)
+      = Multiset.ofList ((xs.flatMap bagSplice).filter (fun e => e ≠ .apply "PZero" [])) := by
+  unfold nfBagList
+  rw [Multiset.coe_toList]
+
+/-- **Bag classification**: if the canonical bag list of `nfAtomList elems` is the
+singleton `[*0]`, every element's normal form is either the contributing `*0` or
+the inert `PZero`. Bags-within (length ≥ 2) and any second surviving element are
+ruled out by a multiset-cardinality bound. -/
+private theorem nfAtom_elem_classify {elems : List Pattern} {e : Pattern}
+    (hbag : nfBagList (nfAtomList elems) = [.apply "PDrop" [.bvar 0]])
+    (he : e ∈ elems) :
+    nfAtom e = .apply "PDrop" [.bvar 0] ∨ nfAtom e = .apply "PZero" [] := by
+  have hmem_nf : nfAtom e ∈ nfAtomList elems := by
+    rw [nfAtomList_eq_map]; exact List.mem_map_of_mem he
+  -- Every surviving spliced child of `nfAtom e` is the unique `*0`.
+  have hchild : ∀ z ∈ bagSplice (nfAtom e), z ≠ .apply "PZero" [] →
+      z = .apply "PDrop" [.bvar 0] := by
+    intro z hz hzne
+    have : z ∈ nfBagList (nfAtomList elems) := by
+      rw [nfBagList_mem, List.mem_filter, List.mem_flatMap]
+      exact ⟨⟨nfAtom e, hmem_nf, hz⟩, by simpa using hzne⟩
+    rw [hbag, List.mem_singleton] at this
+    exact this
+  -- The filtered splice of `nfAtom e` is a sub-multiset of `{*0}` (card 1).
+  have hcard : ((bagSplice (nfAtom e)).filter (fun e => e ≠ .apply "PZero" [])).length ≤ 1 := by
+    have hsub : ((bagSplice (nfAtom e)).filter (fun e => e ≠ .apply "PZero" [])).Sublist
+        ((nfAtomList elems).flatMap bagSplice |>.filter (fun e => e ≠ .apply "PZero" [])) :=
+      List.Sublist.filter _ (sublist_flatMap_of_mem hmem_nf bagSplice)
+    have hle : Multiset.ofList
+        ((bagSplice (nfAtom e)).filter (fun e => e ≠ .apply "PZero" []))
+        ≤ Multiset.ofList [.apply "PDrop" [.bvar 0]] := by
+      refine le_trans (Multiset.coe_le.mpr hsub.subperm) ?_
+      rw [← nfBagList_coe, hbag]
+    have := Multiset.card_le_card hle
+    simpa using this
+  have hnorm : NormP (nfAtom e) := nfAtom_norm e
+  by_cases hbg : ∃ ys, nfAtom e = .collection .hashBag ys none
+  · -- A NormP bag has length ≥ 2 and no PZero, so ≥ 2 survivors, contradicting card ≤ 1.
+    exfalso
+    obtain ⟨ys, hys⟩ := hbg
+    have hsplice : bagSplice (nfAtom e) = ys := by rw [hys]; rfl
+    rw [hys] at hnorm
+    simp only [NormP] at hnorm
+    obtain ⟨hlen, _, hnoz, _⟩ := hnorm
+    have hfilter : ys.filter (fun e => e ≠ .apply "PZero" []) = ys := by
+      apply List.filter_eq_self.mpr
+      intro z hz
+      simpa using (hnoz z hz).1
+    rw [hsplice, hfilter] at hcard
+    omega
+  · -- Non-bag: splice is `[nfAtom e]`.
+    have hsplice : bagSplice (nfAtom e) = [nfAtom e] := by
+      unfold bagSplice
+      split
+      · rename_i ys _; exact absurd ⟨ys, by assumption⟩ hbg
+      · rfl
+    by_cases hz : nfAtom e = .apply "PZero" []
+    · exact Or.inr hz
+    · exact Or.inl (hchild (nfAtom e) (by rw [hsplice]; simp) hz)
+
+/-! ### Bag-assembly congruences (pure structural congruence). -/
+
+/-- A leading `PZero` can be dropped from a parallel bag. -/
+private theorem bag_pzero_cons_sc (rest : List Pattern) :
+    StructuralCongruence
+      (.collection .hashBag (.apply "PZero" [] :: rest) none)
+      (.collection .hashBag rest none) := by
+  have h1 : StructuralCongruence
+      (.collection .hashBag ([.apply "PZero" []] ++ [.collection .hashBag rest none]) none)
+      (.collection .hashBag ([.apply "PZero" []] ++ rest) none) :=
+    StructuralCongruence.par_flatten _ _
+  have h2 : StructuralCongruence
+      (.collection .hashBag [.apply "PZero" [], .collection .hashBag rest none] none)
+      (.collection .hashBag rest none) :=
+    StructuralCongruence.par_nil_left _
+  exact StructuralCongruence.trans _ _ _
+    (StructuralCongruence.symm _ _ (by simpa using h1)) h2
+
+/-- A parallel bag whose tail is all-`PZero` collapses to its head. -/
+private theorem bag_head_pzeros_sc (p : Pattern) :
+    ∀ {qs : List Pattern}, (∀ q ∈ qs, q = .apply "PZero" []) →
+      StructuralCongruence (.collection .hashBag (p :: qs) none) p
+  | [], _ => StructuralCongruence.par_singleton p
+  | q :: qs, hq => by
+      have hq0 : q = .apply "PZero" [] := hq q (by simp)
+      subst hq0
+      have hperm : StructuralCongruence
+          (.collection .hashBag (p :: .apply "PZero" [] :: qs) none)
+          (.collection .hashBag (.apply "PZero" [] :: p :: qs) none) :=
+        StructuralCongruence.par_perm _ _ (by exact List.Perm.swap _ _ _)
+      have hdrop : StructuralCongruence
+          (.collection .hashBag (.apply "PZero" [] :: p :: qs) none)
+          (.collection .hashBag (p :: qs) none) :=
+        bag_pzero_cons_sc _
+      exact StructuralCongruence.trans _ _ _ hperm
+        (StructuralCongruence.trans _ _ _ hdrop
+          (bag_head_pzeros_sc p (fun q hq' => hq q (by simp [hq']))))
+
+/-- Multiset cons-split for the canonical bag list. -/
+private theorem nfBagList_cons_multiset (x : Pattern) (xs : List Pattern) :
+    Multiset.ofList (nfBagList (x :: xs))
+      = Multiset.ofList ((bagSplice x).filter (fun e => e ≠ .apply "PZero" []))
+        + Multiset.ofList (nfBagList xs) := by
+  rw [nfBagList_coe, nfBagList_coe, List.flatMap_cons, List.filter_append, ← Multiset.coe_add]
+
+/-- Drop a `PZero`-normalizing head from the canonical bag list. -/
+private theorem nfBagList_cons_pzero {x : Pattern} (xs : List Pattern)
+    (hx : x = .apply "PZero" []) :
+    nfBagList (x :: xs) = nfBagList xs := by
+  have hm : Multiset.ofList (nfBagList (x :: xs)) = Multiset.ofList (nfBagList xs) := by
+    rw [nfBagList_cons_multiset, hx]
+    simp [bagSplice]
+  -- Both sides are already canonical `toList`s, so multiset equality ⟹ list equality.
+  have : (Multiset.ofList (nfBagList (x :: xs))).toList = (Multiset.ofList (nfBagList xs)).toList :=
+    congrArg Multiset.toList hm
+  rwa [nfBagList_idem, nfBagList_idem] at this
+
+/-- A `*0`-normalizing head consumes the entire (singleton) canonical bag list. -/
+private theorem nfBagList_cons_drop_tail_nil {x : Pattern} (xs : List Pattern)
+    (hx : x = .apply "PDrop" [.bvar 0])
+    (hsingle : nfBagList (x :: xs) = [.apply "PDrop" [.bvar 0]]) :
+    nfBagList xs = [] := by
+  have hm : Multiset.ofList (nfBagList (x :: xs))
+      = {(.apply "PDrop" [.bvar 0] : Pattern)} + Multiset.ofList (nfBagList xs) := by
+    rw [nfBagList_cons_multiset, hx]
+    simp [bagSplice]
+  rw [hsingle] at hm
+  have hcancel : Multiset.ofList (nfBagList xs) = 0 := by
+    have h1 : ({(.apply "PDrop" [.bvar 0] : Pattern)} : Multiset Pattern)
+        = {(.apply "PDrop" [.bvar 0] : Pattern)} + Multiset.ofList (nfBagList xs) := by
+      simpa using hm
+    simpa using h1.symm
+  simpa using hcancel
+
+/-- Inversion for an empty canonical bag list at a `nfAtom`-headed cons: the head
+must normalize to `PZero` and the tail's canonical list is still empty. -/
+private theorem nfBagList_cons_nil_inv {e : Pattern} {rest : List Pattern}
+    (hnil : nfBagList (nfAtom e :: nfAtomList rest) = []) :
+    nfAtom e = .apply "PZero" [] ∧ nfBagList (nfAtomList rest) = [] := by
+  have hm : Multiset.ofList ((bagSplice (nfAtom e)).filter (fun e => e ≠ .apply "PZero" []))
+      + Multiset.ofList (nfBagList (nfAtomList rest)) = 0 := by
+    rw [← nfBagList_cons_multiset, hnil]; rfl
+  have hhead : Multiset.ofList ((bagSplice (nfAtom e)).filter (fun e => e ≠ .apply "PZero" [])) = 0 :=
+    (add_eq_zero.mp hm).1
+  have htail0 : Multiset.ofList (nfBagList (nfAtomList rest)) = 0 := (add_eq_zero.mp hm).2
+  have htail : nfBagList (nfAtomList rest) = [] := by simpa using htail0
+  have hfilter : (bagSplice (nfAtom e)).filter (fun e => e ≠ .apply "PZero" []) = [] := by
+    simpa using hhead
+  refine ⟨?_, htail⟩
+  have hnorm : NormP (nfAtom e) := nfAtom_norm e
+  by_cases hbg : ∃ ys, nfAtom e = .collection .hashBag ys none
+  · exfalso
+    obtain ⟨ys, hys⟩ := hbg
+    have hsplice : bagSplice (nfAtom e) = ys := by rw [hys]; rfl
+    rw [hys] at hnorm
+    simp only [NormP] at hnorm
+    obtain ⟨hlen, _, hnoz, _⟩ := hnorm
+    rw [hsplice] at hfilter
+    have hself : ys.filter (fun e => e ≠ .apply "PZero" []) = ys := by
+      apply List.filter_eq_self.mpr
+      intro z hz; simpa using (hnoz z hz).1
+    rw [hself] at hfilter
+    rw [hfilter] at hlen; simp at hlen
+  · have hsplice : bagSplice (nfAtom e) = [nfAtom e] := by
+      unfold bagSplice
+      split
+      · rename_i ys _; exact absurd ⟨ys, by assumption⟩ hbg
+      · rfl
+    rw [hsplice] at hfilter
+    by_contra hne
+    rw [List.filter_cons] at hfilter
+    simp only [decide_not, ne_eq] at hfilter
+    rw [if_pos (by simpa using hne)] at hfilter
+    simp at hfilter
+
+/-- `collapseBag (nfBagList ws) = PZero` forces the (`PZero`-free) canonical list
+to be empty. -/
+private theorem collapseBag_nfBagList_eq_pzero {ws : List Pattern}
+    (h : collapseBag (nfBagList ws) = .apply "PZero" []) : nfBagList ws = [] := by
+  unfold collapseBag at h
+  split at h
+  · assumption
+  · rename_i e heq
+    exact absurd h (nfBagList_no_pzero (xs := ws) (z := e) (by rw [heq]; simp))
+  · exact absurd h (by simp)
+
+/-- The bound drop after substituting `@p` for bound name `0` is exactly `p`. -/
+private theorem semanticSubstProc_drop_eq {p n : Pattern}
+    (hn : semanticNormalizeName n = .bvar 0) :
+    semanticSubstProc 0 (.apply "NQuote" [p]) (.apply "PDrop" [n]) = p := by
+  simp only [semanticSubstProc, semanticSubstNameMark, hn]
+  simp
+
+/-- Inversion for `rhoProcCoreShape` on `apply`: only the four strict-core process
+heads (with correct arity) are admissible. -/
+private theorem rhoProcCoreShape_apply_inv {f : String} {args : List Pattern}
+    (h : rhoProcCoreShape (.apply f args) = true) :
+    (f = "PZero" ∧ args = []) ∨
+    (∃ n, f = "PDrop" ∧ args = [n]) ∨
+    (∃ n q, f = "POutput" ∧ args = [n, q]) ∨
+    (∃ n b, f = "PInput" ∧ args = [n, .lambda none b]) := by
+  by_cases h0 : f = "PZero"
+  · subst h0; rcases args with _ | ⟨a, as⟩
+    · exact Or.inl ⟨rfl, rfl⟩
+    · exact absurd h (by simp [rhoProcCoreShape])
+  by_cases h1 : f = "PDrop"
+  · subst h1; rcases args with _ | ⟨a, _ | ⟨b, _⟩⟩
+    · exact absurd h (by simp [rhoProcCoreShape])
+    · exact Or.inr (Or.inl ⟨a, rfl, rfl⟩)
+    · exact absurd h (by simp [rhoProcCoreShape])
+  by_cases h2 : f = "POutput"
+  · subst h2; rcases args with _ | ⟨a, _ | ⟨b, _ | ⟨c, _⟩⟩⟩
+    · exact absurd h (by simp [rhoProcCoreShape])
+    · exact absurd h (by simp [rhoProcCoreShape])
+    · exact Or.inr (Or.inr (Or.inl ⟨a, b, rfl, rfl⟩))
+    · exact absurd h (by simp [rhoProcCoreShape])
+  by_cases h3 : f = "PInput"
+  · subst h3; rcases args with _ | ⟨a, _ | ⟨b, _ | ⟨c, _⟩⟩⟩
+    · exact absurd h (by simp [rhoProcCoreShape])
+    · exact absurd h (by simp [rhoProcCoreShape])
+    · rcases b with _ | _ | _ | ⟨nm, bd⟩ | _ | _ | _
+      all_goals first
+        | (rcases nm with _ | nm0
+           · exact Or.inr (Or.inr (Or.inr ⟨a, bd, rfl, rfl⟩))
+           · exact absurd h (by simp [rhoProcCoreShape]))
+        | exact absurd h (by simp [rhoProcCoreShape])
+    · exact absurd h (by simp [rhoProcCoreShape])
+  exact absurd h (by unfold rhoProcCoreShape; simp [h0, h1, h2, h3])
+
+mutual
+/-- **Keystone (process)**: a strict-core hygienic body whose normal form is the
+bound drop `*0` becomes its payload `p` after the COMM substitution `@p / 0`. -/
+private theorem subst_drop_keystone {p body : Pattern}
+    (hcore : rhoProcCoreShape body = true)
+    (hhyg : noBoundUnderQuote 0 body = true)
+    (hnf : nfAtom body = .apply "PDrop" [.bvar 0]) :
+    StructuralCongruence (semanticSubstProc 0 (.apply "NQuote" [p]) body) p := by
+  match body with
+  | .bvar i => exact absurd hnf (by simp [nfAtom])
+  | .fvar s => exact absurd hnf (by simp [nfAtom])
+  | .apply f args =>
+      rcases rhoProcCoreShape_apply_inv hcore with
+        ⟨hf, ha⟩ | ⟨n, hf, ha⟩ | ⟨n, q, hf, ha⟩ | ⟨n, b, hf, ha⟩
+      · subst hf; subst ha
+        exact absurd hnf (by
+          rw [nfAtom_apply_general "PZero" [] (by rintro ⟨h, _⟩; exact absurd h (by decide))]
+          simp [nfAtomList])
+      · subst hf; subst ha
+        have hcore' : rhoNameCoreShape n = true := by
+          simpa [rhoProcCoreShape] using hcore
+        have hhyg' : noBoundUnderQuote 0 n = true := by
+          simpa [noBoundUnderQuote, noBoundUnderQuoteList] using hhyg
+        have hnfn : nfAtom n = .bvar 0 := by
+          rw [show nfAtom (.apply "PDrop" [n]) = .apply "PDrop" [nfAtom n] from by
+            rw [nfAtom_apply_general "PDrop" [n] (by rintro ⟨h, _⟩; exact absurd h (by decide))];
+            rfl] at hnf
+          have h1 := Pattern.apply.inj hnf
+          exact (List.cons.inj h1.2).1
+        have hnorm := semanticNormalizeName_eq_bvar_of_nfAtom_drop hcore' hhyg' hnfn
+        rw [semanticSubstProc_drop_eq hnorm]
+        exact StructuralCongruence.refl _
+      · subst hf; subst ha
+        refine absurd hnf ?_
+        rw [nfAtom_apply_general "POutput" _ (by rintro ⟨h, _⟩; exact absurd h (by decide))]
+        simp [nfAtomList]
+      · subst hf; subst ha
+        refine absurd hnf ?_
+        rw [nfAtom_apply_general "PInput" _ (by rintro ⟨h, _⟩; exact absurd h (by decide))]
+        simp [nfAtomList]
+  | .lambda nm b => exact absurd hcore (by simp [rhoProcCoreShape])
+  | .multiLambda n nms b => exact absurd hcore (by simp [rhoProcCoreShape])
+  | .subst a b => exact absurd hcore (by simp [rhoProcCoreShape])
+  | .collection .hashBag elems none =>
+      have hbag : nfBagList (nfAtomList elems) = [.apply "PDrop" [.bvar 0]] :=
+        collapseBag_eq_drop (by rw [← nfAtom_hashBag_none]; exact hnf)
+      have hcore' : rhoProcCoreShapeList elems = true := by
+        simpa [rhoProcCoreShape] using hcore
+      have hhyg' : noBoundUnderQuoteList 0 elems = true := by
+        simpa [noBoundUnderQuote] using hhyg
+      show StructuralCongruence
+        (.collection .hashBag (semanticSubstProcList 0 (.apply "NQuote" [p]) elems) none) p
+      exact subst_drop_bag hcore' hhyg' hbag
+  | .collection .hashSet elems g =>
+      exact absurd hcore (by simp [rhoProcCoreShape])
+  | .collection .vec elems g =>
+      exact absurd hcore (by simp [rhoProcCoreShape])
+  | .collection .hashBag elems (some gg) =>
+      exact absurd hcore (by simp [rhoProcCoreShape])
+termination_by sizeOf body
+
+/-- **Keystone (PZero)**: a strict-core hygienic body whose normal form is `PZero`
+becomes (structurally) `PZero` after the COMM substitution. -/
+private theorem subst_pzero_keystone {p body : Pattern}
+    (hcore : rhoProcCoreShape body = true)
+    (hhyg : noBoundUnderQuote 0 body = true)
+    (hnf : nfAtom body = .apply "PZero" []) :
+    StructuralCongruence (semanticSubstProc 0 (.apply "NQuote" [p]) body)
+      (.apply "PZero" []) := by
+  match body with
+  | .bvar i => exact absurd hnf (by simp [nfAtom])
+  | .fvar s => exact absurd hnf (by simp [nfAtom])
+  | .apply f args =>
+      rcases rhoProcCoreShape_apply_inv hcore with
+        ⟨hf, ha⟩ | ⟨n, hf, ha⟩ | ⟨n, q, hf, ha⟩ | ⟨n, b, hf, ha⟩
+      · subst hf; subst ha
+        exact StructuralCongruence.refl _
+      · subst hf; subst ha
+        refine absurd hnf ?_
+        rw [nfAtom_apply_general "PDrop" [n] (by rintro ⟨h, _⟩; exact absurd h (by decide))]
+        simp [nfAtomList]
+      · subst hf; subst ha
+        refine absurd hnf ?_
+        rw [nfAtom_apply_general "POutput" _ (by rintro ⟨h, _⟩; exact absurd h (by decide))]
+        simp [nfAtomList]
+      · subst hf; subst ha
+        refine absurd hnf ?_
+        rw [nfAtom_apply_general "PInput" _ (by rintro ⟨h, _⟩; exact absurd h (by decide))]
+        simp [nfAtomList]
+  | .lambda nm b => exact absurd hcore (by simp [rhoProcCoreShape])
+  | .multiLambda n nms b => exact absurd hcore (by simp [rhoProcCoreShape])
+  | .subst a b => exact absurd hcore (by simp [rhoProcCoreShape])
+  | .collection .hashBag elems none =>
+      have hnil : nfBagList (nfAtomList elems) = [] :=
+        collapseBag_nfBagList_eq_pzero (ws := nfAtomList elems)
+          (by rw [← nfAtom_hashBag_none]; exact hnf)
+      have hcore' : rhoProcCoreShapeList elems = true := by
+        simpa [rhoProcCoreShape] using hcore
+      have hhyg' : noBoundUnderQuoteList 0 elems = true := by
+        simpa [noBoundUnderQuote] using hhyg
+      show StructuralCongruence
+        (.collection .hashBag (semanticSubstProcList 0 (.apply "NQuote" [p]) elems) none)
+        (.apply "PZero" [])
+      exact subst_pzero_bag hcore' hhyg' hnil
+  | .collection .hashSet elems g =>
+      exact absurd hcore (by simp [rhoProcCoreShape])
+  | .collection .vec elems g =>
+      exact absurd hcore (by simp [rhoProcCoreShape])
+  | .collection .hashBag elems (some gg) =>
+      exact absurd hcore (by simp [rhoProcCoreShape])
+termination_by sizeOf body
+
+/-- **Bag keystone (drop)**: a strict-core hygienic bag whose canonical list is the
+singleton `[*0]` becomes `p` after the COMM substitution. -/
+private theorem subst_drop_bag {p : Pattern} :
+    ∀ {elems : List Pattern},
+      rhoProcCoreShapeList elems = true →
+      noBoundUnderQuoteList 0 elems = true →
+      nfBagList (nfAtomList elems) = [.apply "PDrop" [.bvar 0]] →
+      StructuralCongruence
+        (.collection .hashBag (semanticSubstProcList 0 (.apply "NQuote" [p]) elems) none) p
+  | [], _, _, hbag => by simp [nfAtomList, nfBagList_nil] at hbag
+  | e :: rest, hcore, hhyg, hbag => by
+      have hcoreE : rhoProcCoreShape e = true := by
+        rw [rhoProcCoreShapeList, Bool.and_eq_true] at hcore; exact hcore.1
+      have hcoreRest : rhoProcCoreShapeList rest = true := by
+        rw [rhoProcCoreShapeList, Bool.and_eq_true] at hcore; exact hcore.2
+      have hhygE : noBoundUnderQuote 0 e = true := by
+        rw [noBoundUnderQuoteList, Bool.and_eq_true] at hhyg; exact hhyg.1
+      have hhygRest : noBoundUnderQuoteList 0 rest = true := by
+        rw [noBoundUnderQuoteList, Bool.and_eq_true] at hhyg; exact hhyg.2
+      rcases nfAtom_elem_classify hbag (List.mem_cons_self) with hdrop | hpz
+      · -- `e` is the unique drop; the tail is all-`PZero`.
+        have htail : nfBagList (nfAtomList rest) = [] := by
+          have := nfBagList_cons_drop_tail_nil (x := nfAtom e) (xs := nfAtomList rest) hdrop
+            (by rw [show nfAtom e :: nfAtomList rest = nfAtomList (e :: rest) from rfl]; exact hbag)
+          exact this
+        have hSCe : StructuralCongruence (semanticSubstProc 0 (.apply "NQuote" [p]) e) p :=
+          subst_drop_keystone hcoreE hhygE hdrop
+        have hSCrest : StructuralCongruence
+            (.collection .hashBag (semanticSubstProcList 0 (.apply "NQuote" [p]) rest) none)
+            (.apply "PZero" []) :=
+          subst_pzero_bag hcoreRest hhygRest htail
+        -- bag (se :: sr) ≡ bag (se :: [bag sr]) ≡ bag (se :: [PZero]) ≡ se ≡ p
+        show StructuralCongruence
+          (.collection .hashBag
+            (semanticSubstProc 0 (.apply "NQuote" [p]) e ::
+              semanticSubstProcList 0 (.apply "NQuote" [p]) rest) none) p
+        refine StructuralCongruence.trans _ _ _ ?_ hSCe
+        refine StructuralCongruence.trans _ _ _ ?_
+          (bag_head_pzeros_sc (semanticSubstProc 0 (.apply "NQuote" [p]) e)
+            (qs := [.apply "PZero" []]) (by simp))
+        -- flatten the tail into a nested bag, then rewrite it to PZero
+        have hflat : StructuralCongruence
+            (.collection .hashBag
+              ([semanticSubstProc 0 (.apply "NQuote" [p]) e] ++
+                [.collection .hashBag
+                  (semanticSubstProcList 0 (.apply "NQuote" [p]) rest) none]) none)
+            (.collection .hashBag
+              ([semanticSubstProc 0 (.apply "NQuote" [p]) e] ++
+                semanticSubstProcList 0 (.apply "NQuote" [p]) rest) none) :=
+          StructuralCongruence.par_flatten _ _
+        have hcong : StructuralCongruence
+            (.collection .hashBag
+              [semanticSubstProc 0 (.apply "NQuote" [p]) e,
+                .collection .hashBag
+                  (semanticSubstProcList 0 (.apply "NQuote" [p]) rest) none] none)
+            (.collection .hashBag
+              [semanticSubstProc 0 (.apply "NQuote" [p]) e, .apply "PZero" []] none) :=
+          StructuralCongruence.collection_general_cong _ _ _ _ (by simp)
+            (by
+              intro i h1 h2
+              match i with
+              | 0 => exact StructuralCongruence.refl _
+              | 1 => exact hSCrest
+              | (k+2) => simp at h1)
+        exact StructuralCongruence.trans _ _ _
+          (StructuralCongruence.symm _ _ (by simpa using hflat)) hcong
+      · -- `e` normalizes to `PZero`; recurse on the tail.
+        have htail : nfBagList (nfAtomList rest) = [.apply "PDrop" [.bvar 0]] := by
+          have := nfBagList_cons_pzero (x := nfAtom e) (xs := nfAtomList rest) hpz
+          rw [show nfAtom e :: nfAtomList rest = nfAtomList (e :: rest) from rfl] at this
+          rw [← this]; exact hbag
+        have hSCe : StructuralCongruence (semanticSubstProc 0 (.apply "NQuote" [p]) e)
+            (.apply "PZero" []) :=
+          subst_pzero_keystone hcoreE hhygE hpz
+        have hSCrest : StructuralCongruence
+            (.collection .hashBag (semanticSubstProcList 0 (.apply "NQuote" [p]) rest) none) p :=
+          subst_drop_bag hcoreRest hhygRest htail
+        show StructuralCongruence
+          (.collection .hashBag
+            (semanticSubstProc 0 (.apply "NQuote" [p]) e ::
+              semanticSubstProcList 0 (.apply "NQuote" [p]) rest) none) p
+        have hcong : StructuralCongruence
+            (.collection .hashBag
+              (semanticSubstProc 0 (.apply "NQuote" [p]) e ::
+                semanticSubstProcList 0 (.apply "NQuote" [p]) rest) none)
+            (.collection .hashBag
+              (.apply "PZero" [] ::
+                semanticSubstProcList 0 (.apply "NQuote" [p]) rest) none) :=
+          StructuralCongruence.collection_general_cong _ _ _ _ (by simp)
+            (by
+              intro i h1 h2
+              match i with
+              | 0 => exact hSCe
+              | (k+1) => exact StructuralCongruence.refl _)
+        refine StructuralCongruence.trans _ _ _ hcong ?_
+        exact StructuralCongruence.trans _ _ _ (bag_pzero_cons_sc _) hSCrest
+termination_by elems => sizeOf elems
+
+/-- **Bag keystone (PZero)**: a strict-core hygienic bag whose canonical list is
+empty becomes (structurally) `PZero` after the COMM substitution. -/
+private theorem subst_pzero_bag {p : Pattern} :
+    ∀ {elems : List Pattern},
+      rhoProcCoreShapeList elems = true →
+      noBoundUnderQuoteList 0 elems = true →
+      nfBagList (nfAtomList elems) = [] →
+      StructuralCongruence
+        (.collection .hashBag (semanticSubstProcList 0 (.apply "NQuote" [p]) elems) none)
+        (.apply "PZero" [])
+  | [], _, _, _ => by
+      show StructuralCongruence (.collection .hashBag [] none) (.apply "PZero" [])
+      exact StructuralCongruence.par_empty
+  | e :: rest, hcore, hhyg, hnil => by
+      have hcoreE : rhoProcCoreShape e = true := by
+        rw [rhoProcCoreShapeList, Bool.and_eq_true] at hcore; exact hcore.1
+      have hcoreRest : rhoProcCoreShapeList rest = true := by
+        rw [rhoProcCoreShapeList, Bool.and_eq_true] at hcore; exact hcore.2
+      have hhygE : noBoundUnderQuote 0 e = true := by
+        rw [noBoundUnderQuoteList, Bool.and_eq_true] at hhyg; exact hhyg.1
+      have hhygRest : noBoundUnderQuoteList 0 rest = true := by
+        rw [noBoundUnderQuoteList, Bool.and_eq_true] at hhyg; exact hhyg.2
+      -- The empty canonical list forces `nfAtom e = PZero` and a still-empty tail.
+      have hcons : nfBagList (nfAtom e :: nfAtomList rest) = [] := by
+        rw [show nfAtom e :: nfAtomList rest = nfAtomList (e :: rest) from rfl]; exact hnil
+      obtain ⟨hpz, htail⟩ := nfBagList_cons_nil_inv hcons
+      have hSCe : StructuralCongruence (semanticSubstProc 0 (.apply "NQuote" [p]) e)
+          (.apply "PZero" []) :=
+        subst_pzero_keystone hcoreE hhygE hpz
+      have hSCrest : StructuralCongruence
+          (.collection .hashBag (semanticSubstProcList 0 (.apply "NQuote" [p]) rest) none)
+          (.apply "PZero" []) :=
+        subst_pzero_bag hcoreRest hhygRest htail
+      show StructuralCongruence
+        (.collection .hashBag
+          (semanticSubstProc 0 (.apply "NQuote" [p]) e ::
+            semanticSubstProcList 0 (.apply "NQuote" [p]) rest) none)
+        (.apply "PZero" [])
+      have hcong : StructuralCongruence
+          (.collection .hashBag
+            (semanticSubstProc 0 (.apply "NQuote" [p]) e ::
+              semanticSubstProcList 0 (.apply "NQuote" [p]) rest) none)
+          (.collection .hashBag
+            (.apply "PZero" [] ::
+              semanticSubstProcList 0 (.apply "NQuote" [p]) rest) none) :=
+        StructuralCongruence.collection_general_cong _ _ _ _ (by simp)
+          (by
+            intro i h1 h2
+            match i with
+            | 0 => exact hSCe
+            | (k+1) => exact StructuralCongruence.refl _)
+      refine StructuralCongruence.trans _ _ _ hcong ?_
+      exact StructuralCongruence.trans _ _ _ (bag_pzero_cons_sc _) hSCrest
+termination_by elems => sizeOf elems
+
+end
+
+/-- **The keystone**: a strict-core, hygienic body whose canonical normal form is
+the bound drop `*0` is structurally congruent, after substituting the quoted
+payload `@p` for the bound name `0`, to `p` itself. The hygiene hypothesis
+`noBoundUnderQuote 0 body` is required — without it a body like `*(@(*0))` is still
+`rhoProcCoreShape` and normalizes to `*0`, yet COMM leaves the buried quote
+untouched. -/
+theorem rhometta_keystone {p body : Pattern}
+    (hcore : rhoProcCoreShape body = true)
+    (hhyg : noBoundUnderQuote 0 body = true)
+    (hnf : nfAtom body = .apply "PDrop" [.bvar 0]) :
+    StructuralCongruence (semanticSubstProc 0 (.apply "NQuote" [p]) body) p :=
+  subst_drop_keystone hcore hhyg hnf
 
 /-- **Atom-rigidity**: structurally-congruent atom embeddings encode the same atom.
 The canonical normal form is SC-invariant and the identity on atom-shapes, so it
@@ -8447,6 +9485,851 @@ private theorem dropShellLike_evalComm_scObservedOutcome_classifies_of_structura
   refine ⟨value', hcert', ?_⟩
   simpa [Set.mem_singleton_iff] using hobs'
 
+/-- A drop-shell source over a `hashSet`-free channel is never `hashSet`-headed:
+`SC` cannot relate a `hashSet` to the `hashBag`-headed source. Excludes the
+`par_set`/`par_set_any` first-step cases. -/
+private theorem not_dropShellLike_hashSet
+    {chan : Pattern} {payload : Atom} (hchan : NoHashSet chan)
+    {xs : List Pattern} {g : Option String} :
+    ¬ DropShellLike chan payload (.collection .hashSet xs g) := by
+  intro h
+  have hmem : NoHashSet (.collection .hashSet xs g) :=
+    (noHashSet_iff_of_structuralCongruence h.source_sc).mpr
+      (noHashSet_evalDropSource_of_channel payload hchan)
+  simp [NoHashSet] at hmem
+
+/-- A canonical (`nfBagList`) bag list is never a singleton nested bag: its sole
+element, if any, is non-bag.  Used to make `collapseBag` injective up to multiset. -/
+private theorem nfBagList_singleton_non_bag {A : List Pattern}
+    (hA : NormPList A) {e : Pattern} (he : nfBagList A = [e]) :
+    ∀ zs, e ≠ .collection .hashBag zs none := by
+  have hmem : e ∈ nfBagList A := by rw [he]; simp
+  exact (nfBagList_elem_norm hA e hmem).2
+
+/-- **`collapseBag` injectivity up to multiset** on canonical bag lists: equal
+collapses of canonical lists have equal underlying multisets.  The conflations
+`[]↦PZero` and `[e]↦e` are harmless because canonical lists carry no `PZero` and
+no nested bag. -/
+private theorem collapseBag_nfBagList_multiset_eq {A B : List Pattern}
+    (hA : NormPList A) (hB : NormPList B)
+    (h : collapseBag (nfBagList A) = collapseBag (nfBagList B)) :
+    Multiset.ofList (nfBagList A) = Multiset.ofList (nfBagList B) := by
+  -- Case on both canonical lists.
+  match hzA : nfBagList A, hzB : nfBagList B with
+  | [], [] => rfl
+  | [], (b :: bs) =>
+      exfalso
+      rw [hzA, hzB] at h
+      -- LHS = PZero; RHS = collapseBag (b :: bs)
+      match bs, h with
+      | [], h =>
+          -- RHS = b, and b ≠ PZero since canonical.
+          have hb : b ≠ .apply "PZero" [] :=
+            nfBagList_no_pzero (xs := B) (z := b) (by rw [hzB]; simp)
+          rw [show collapseBag ([] : List Pattern) = .apply "PZero" [] from rfl,
+            show collapseBag [b] = b from rfl] at h
+          exact hb h.symm
+      | b' :: bs', h =>
+          -- RHS = bag (b :: b' :: bs') ≠ PZero.
+          rw [show collapseBag ([] : List Pattern) = .apply "PZero" [] from rfl,
+            show collapseBag (b :: b' :: bs')
+              = .collection .hashBag (b :: b' :: bs') none from rfl] at h
+          exact absurd h (by simp)
+  | (a :: as), [] =>
+      exfalso
+      rw [hzA, hzB] at h
+      match as, h with
+      | [], h =>
+          have ha : a ≠ .apply "PZero" [] :=
+            nfBagList_no_pzero (xs := A) (z := a) (by rw [hzA]; simp)
+          rw [show collapseBag ([] : List Pattern) = .apply "PZero" [] from rfl,
+            show collapseBag [a] = a from rfl] at h
+          exact ha h
+      | a' :: as', h =>
+          rw [show collapseBag ([] : List Pattern) = .apply "PZero" [] from rfl,
+            show collapseBag (a :: a' :: as')
+              = .collection .hashBag (a :: a' :: as') none from rfl] at h
+          exact absurd h (by simp)
+  | [a], [b] =>
+      rw [hzA, hzB] at h
+      rw [show collapseBag [a] = a from rfl, show collapseBag [b] = b from rfl] at h
+      rw [h]
+  | [a], (b :: b' :: bs') =>
+      exfalso
+      rw [hzA, hzB] at h
+      -- LHS = a (non-bag), RHS = bag (...): contradiction.
+      have hnb : ∀ zs, a ≠ .collection .hashBag zs none :=
+        nfBagList_singleton_non_bag hA hzA
+      rw [show collapseBag [a] = a from rfl,
+        show collapseBag (b :: b' :: bs')
+          = .collection .hashBag (b :: b' :: bs') none from rfl] at h
+      exact hnb (b :: b' :: bs') h
+  | (a :: a' :: as'), [b] =>
+      exfalso
+      rw [hzA, hzB] at h
+      have hnb : ∀ zs, b ≠ .collection .hashBag zs none :=
+        nfBagList_singleton_non_bag hB hzB
+      rw [show collapseBag [b] = b from rfl,
+        show collapseBag (a :: a' :: as')
+          = .collection .hashBag (a :: a' :: as') none from rfl] at h
+      exact hnb (a :: a' :: as') h.symm
+  | (a :: a' :: as'), (b :: b' :: bs') =>
+      rw [hzA, hzB] at h
+      rw [show collapseBag (a :: a' :: as')
+          = .collection .hashBag (a :: a' :: as') none from rfl,
+        show collapseBag (b :: b' :: bs')
+          = .collection .hashBag (b :: b' :: bs') none from rfl] at h
+      have hlist : (a :: a' :: as') = (b :: b' :: bs') := by
+        injection h with _ hl _
+      rw [hlist]
+
+/-- **Generic drop-shell COMM residual** (keystone + `nfAtom`-completeness): when a
+comm-shape bag `[POutput[n, deferredPayload payload'], PInput[n, λ body]] ++ rest`
+is `DropShellLike` over a `hashSet`-free channel, its one-step `evalComm` residual
+`[semanticCommSubst body (wrappedValue value')] ++ rest` is structurally congruent
+to the canonical `evalDropResidual value'`.  The body collapses via `rhometta_keystone`;
+the (canonically empty) `rest` collapses via `nfAtom`-completeness on the `hashSet`-free
+fragment. -/
+private theorem dropShellLike_evalComm_residual_sc
+    {chan n body : Pattern} {rest : List Pattern}
+    {payload payload' value' : Atom}
+    (hchan : NoHashSet chan)
+    (hshape : DropShellLike chan payload
+      (.collection .hashBag
+        ([.apply "POutput" [n, deferredPayload payload'],
+          .apply "PInput" [n, .lambda none body]] ++ rest) none))
+    (hcanon : EvalCommCanonicalShell body payload') :
+    StructuralCongruence
+      (.collection .hashBag
+        ([semanticCommSubst body (wrappedValue value')] ++ rest) none)
+      (evalDropResidual value') := by
+  -- The body normalizes to the drop and is strict-core hygienic.
+  have hnf : nfAtom body = .apply "PDrop" [.bvar 0] :=
+    dropShellLike_evalComm_body_nf hshape
+  obtain ⟨hcore, hhyg⟩ := (strictCoreCommBody_eq_true_iff body).mp hcanon.2.1
+  -- Keystone: substituting the value into the drop body yields the value.
+  have hkey :
+      StructuralCongruence
+        (semanticCommSubst body (wrappedValue value'))
+        (wrappedValue value') := by
+    have h := rhometta_keystone
+      (p := semanticNormalizeProc (wrappedValue value')) hcore hhyg hnf
+    rw [semanticNormalizeProc_wrappedValue] at h
+    -- `semanticCommSubst body X = semanticSubstProc 0 (NQuote [semanticNormalizeProc X]) body`
+    simpa [semanticCommSubst, semanticNormalizeProc_wrappedValue] using h
+  -- Push the keystone through the bag head.
+  have hcons :
+      StructuralCongruence
+        (.collection .hashBag
+          (semanticCommSubst body (wrappedValue value') :: rest) none)
+        (.collection .hashBag (wrappedValue value' :: rest) none) :=
+    scHashBag_cons_cong2 hkey (StructuralCongruence.refl _)
+  -- The whole source bag is `hashSet`-free, hence so is `rest`.
+  have hns_src : NoHashSet
+      (.collection .hashBag
+        ([.apply "POutput" [n, deferredPayload payload'],
+          .apply "PInput" [n, .lambda none body]] ++ rest) none) :=
+    (noHashSet_iff_of_structuralCongruence hshape.source_sc).mpr
+      (noHashSet_evalDropSource_of_channel payload hchan)
+  have hns_rest : NoHashSetList rest := by
+    have := hns_src
+    simp only [NoHashSet, NoHashSetList, List.cons_append, List.nil_append] at this
+    exact this.2.2
+  -- `rest` is canonically empty: its `nfAtom`-flatten contributes nothing, because
+  -- the source's normal form is the two-element drop source.
+  have hrest_nf : nfBagList (nfAtomList rest) = [] := by
+    have hsc := nfAtom_sc_complete hshape.source_sc
+    rw [nfAtom_hashBag_none] at hsc
+    rw [show nfAtom (evalDropSource chan payload)
+        = collapseBag (nfBagList (nfAtomList
+            [.apply "POutput" [chan, deferredPayload payload],
+             .apply "PInput" [chan, .lambda none (.apply "PDrop" [.bvar 0])]])) from by
+      rw [show evalDropSource chan payload
+          = .collection .hashBag
+              [.apply "POutput" [chan, deferredPayload payload],
+               .apply "PInput" [chan, .lambda none (.apply "PDrop" [.bvar 0])]] none from rfl,
+        nfAtom_hashBag_none]] at hsc
+    -- Multiset equality of the two canonical lists.
+    have hms := collapseBag_nfBagList_multiset_eq
+      (A := nfAtomList
+        ([.apply "POutput" [n, deferredPayload payload'],
+          .apply "PInput" [n, .lambda none body]] ++ rest))
+      (B := nfAtomList
+        [.apply "POutput" [chan, deferredPayload payload],
+         .apply "PInput" [chan, .lambda none (.apply "PDrop" [.bvar 0])]])
+      (nfAtomList_norm _) (nfAtomList_norm _) hsc
+    -- Take cardinalities; both heads contribute card 1, leaving the rest at card 0.
+    -- LHS: `nfAtomList ([out, in] ++ rest) = nfAtom out :: nfAtom in :: nfAtomList rest`.
+    have hLeft : (nfAtomList
+        ([.apply "POutput" [n, deferredPayload payload'],
+          .apply "PInput" [n, .lambda none body]] ++ rest))
+        = nfAtom (.apply "POutput" [n, deferredPayload payload'])
+          :: nfAtom (.apply "PInput" [n, .lambda none body])
+          :: nfAtomList rest := by
+      simp [nfAtomList_eq_map]
+    have hRight : (nfAtomList
+        [.apply "POutput" [chan, deferredPayload payload],
+         .apply "PInput" [chan, .lambda none (.apply "PDrop" [.bvar 0])]])
+        = [nfAtom (.apply "POutput" [chan, deferredPayload payload]),
+           nfAtom (.apply "PInput" [chan, .lambda none (.apply "PDrop" [.bvar 0])])] := by
+      simp [nfAtomList_eq_map]
+    rw [hLeft, hRight] at hms
+    -- Cardinalities: peel the two heads on each side via `nfBagList_cons_multiset`.
+    have hcard := congrArg Multiset.card hms
+    -- Each `POutput`/`PInput` head has a singleton non-`PZero` bagSplice-filter.
+    have hsplice_out : ∀ (c : Pattern) (q : Atom),
+        ((bagSplice (nfAtom (.apply "POutput" [c, deferredPayload q]))).filter
+          (fun e => e ≠ .apply "PZero" [])).length = 1 := by
+      intro c q
+      rw [nfAtom_apply_general "POutput" _ (by rintro ⟨h, _⟩; exact absurd h (by decide))]
+      simp [bagSplice]
+    have hsplice_in : ∀ (c b : Pattern),
+        ((bagSplice (nfAtom (.apply "PInput" [c, .lambda none b]))).filter
+          (fun e => e ≠ .apply "PZero" [])).length = 1 := by
+      intro c b
+      rw [nfAtom_apply_general "PInput" _ (by rintro ⟨h, _⟩; exact absurd h (by decide))]
+      simp [bagSplice]
+    -- Expand both cardinalities.
+    rw [nfBagList_cons_multiset, nfBagList_cons_multiset,
+      nfBagList_cons_multiset, nfBagList_cons_multiset, nfBagList_nil] at hcard
+    simp only [Multiset.card_add, Multiset.coe_card,
+      hsplice_out, hsplice_in] at hcard
+    -- hcard : 1 + (1 + (nfBagList (nfAtomList rest)).length) = 1 + (1 + [].length)
+    have hzero : (nfBagList (nfAtomList rest)).length = 0 := by
+      simp only [List.length_nil] at hcard; omega
+    exact List.length_eq_zero_iff.mp hzero
+  -- Final assembly: `bag (wrappedValue value' :: rest) ≡ evalDropResidual value'`.
+  have hrest_drop :
+      StructuralCongruence
+        (.collection .hashBag (wrappedValue value' :: rest) none)
+        (evalDropResidual value') := by
+    have hns_wv : NoHashSet (wrappedValue value') := by
+      simp [wrappedValue, NoHashSet, NoHashSetList, noHashSet_atomToPattern]
+    have hns_lhs : NoHashSet
+        (.collection .hashBag (wrappedValue value' :: rest) none) := by
+      simp only [NoHashSet, NoHashSetList]
+      exact ⟨hns_wv, hns_rest⟩
+    have hnf_eq :
+        nfAtom (.collection .hashBag (wrappedValue value' :: rest) none)
+          = nfAtom (evalDropResidual value') := by
+      rw [nfAtom_hashBag_none]
+      -- RHS: `evalDropResidual value' = bag [wrappedValue value']`.
+      rw [show nfAtom (evalDropResidual value')
+          = collapseBag (nfBagList (nfAtomList [wrappedValue value'])) from by
+        rw [evalDropResidual, semanticNormalizeProc_wrappedValue, nfAtom_hashBag_none]]
+      -- It suffices the two canonical bag lists agree.
+      congr 1
+      -- `nfAtomList (wrappedValue value' :: rest) = nfAtom (wv) :: nfAtomList rest`
+      show nfBagList (nfAtom (wrappedValue value') :: nfAtomList rest)
+        = nfBagList (nfAtom (wrappedValue value') :: nfAtomList [])
+      -- Multiset equality (both already canonical via `nfBagList_idem`).
+      have hm :
+          Multiset.ofList
+              (nfBagList (nfAtom (wrappedValue value') :: nfAtomList rest))
+            = Multiset.ofList
+              (nfBagList (nfAtom (wrappedValue value') :: nfAtomList [])) := by
+        rw [nfBagList_cons_multiset, nfBagList_cons_multiset]
+        rw [show nfAtomList ([] : List Pattern) = [] from rfl, nfBagList_nil]
+        rw [hrest_nf]
+      have := congrArg Multiset.toList hm
+      rwa [nfBagList_idem, nfBagList_idem] at this
+    exact structuralCongruence_of_nfAtom_eq hns_lhs
+      (noHashSet_evalDropResidual value') hnf_eq
+  simpa using StructuralCongruence.trans _ _ _ hcons hrest_drop
+
+private theorem outputsPayloadList_mem {payload : Atom} :
+    ∀ {xs : List Pattern}, OutputsPayloadList payload xs →
+      ∀ {x}, x ∈ xs → OutputsPayload payload x
+  | [], _, _, h => absurd h (by simp)
+  | a :: as, hop, x, hx => by
+      simp only [OutputsPayloadList] at hop
+      rcases List.mem_cons.mp hx with rfl | hx'
+      · exact hop.1
+      · exact outputsPayloadList_mem hop.2 hx'
+
+/-- `core` exclusion: when every output carries the deferred payload, every core
+reduction consumes it — so `RhometaReduces.core`'s `¬CoreConsumesEvalPayload`
+guard is unsatisfiable on a drop-shell source. -/
+private theorem coreConsumesEvalPayload_of_outputsPayload {payload : Atom} :
+    ∀ {p q : Pattern} (hred : Reduction.Reduces p q),
+      OutputsPayload payload p → CoreConsumesEvalPayload hred
+  | _, _, .comm, hop => by
+      refine CoreConsumesEvalPayload.comm ⟨payload, ?_⟩
+      have hp := outputsPayloadList_mem
+        (by simpa [OutputsPayload] using hop) (List.mem_cons_self ..)
+      simpa [OutputsPayload] using hp
+  | _, _, .equiv hsc₁ hred' _, hop =>
+      CoreConsumesEvalPayload.equiv
+        (coreConsumesEvalPayload_of_outputsPayload hred'
+          ((outputsPayload_iff_of_structuralCongruence hsc₁).mp hop))
+  | _, _, .par hred', hop => by
+      refine CoreConsumesEvalPayload.par ?_
+      exact coreConsumesEvalPayload_of_outputsPayload hred'
+        (outputsPayloadList_mem (by simpa [OutputsPayload] using hop) (List.mem_cons_self ..))
+  | _, _, .par_any hred', hop => by
+      refine CoreConsumesEvalPayload.par_any ?_
+      exact coreConsumesEvalPayload_of_outputsPayload hred'
+        (outputsPayloadList_mem (by simpa [OutputsPayload] using hop) (by simp))
+  | _, _, .par_set hred', hop => by
+      refine CoreConsumesEvalPayload.par_set ?_
+      exact coreConsumesEvalPayload_of_outputsPayload hred'
+        (outputsPayloadList_mem (by simpa [OutputsPayload] using hop) (List.mem_cons_self ..))
+  | _, _, .par_set_any hred', hop => by
+      refine CoreConsumesEvalPayload.par_set_any ?_
+      exact coreConsumesEvalPayload_of_outputsPayload hred'
+        (outputsPayloadList_mem (by simpa [OutputsPayload] using hop) (by simp))
+
+/-- `nfAtom` preserves `shellWidth` on the `hashSet`-free fragment (it is an SC
+operation, and `shellWidth` is SC-invariant). -/
+private theorem shellWidth_nfAtom {p : Pattern} (hns : NoHashSet p) :
+    shellWidth (nfAtom p) = shellWidth p :=
+  (shellWidth_SC (noHashSet_structuralCongruence_nfAtom hns)).symm
+
+/-- When `rest` is canonically empty, the canonical bag lists of `x :: rest` and
+`[x]` agree. -/
+private theorem nfBagList_cons_rest_nil {x : Pattern} {rest : List Pattern}
+    (hrest : nfBagList (nfAtomList rest) = []) :
+    nfBagList (nfAtomList (x :: rest)) = nfBagList (nfAtomList [x]) := by
+  show nfBagList (nfAtom x :: nfAtomList rest) = nfBagList (nfAtom x :: nfAtomList [])
+  have hm :
+      Multiset.ofList (nfBagList (nfAtom x :: nfAtomList rest))
+        = Multiset.ofList (nfBagList (nfAtom x :: nfAtomList [])) := by
+    rw [nfBagList_cons_multiset, nfBagList_cons_multiset]
+    rw [show nfAtomList ([] : List Pattern) = [] from rfl, nfBagList_nil, hrest]
+  have := congrArg Multiset.toList hm
+  rwa [nfBagList_idem, nfBagList_idem] at this
+
+/-- When `rest` is canonically empty, the bag `[x] ++ rest` is structurally
+congruent to `[x]` (hence to `x`), on the `hashSet`-free fragment. -/
+private theorem bag_cons_rest_collapse
+    {x : Pattern} {rest : List Pattern}
+    (hns_x : NoHashSet x) (hns_rest : NoHashSetList rest)
+    (hrest : nfBagList (nfAtomList rest) = []) :
+    StructuralCongruence
+      (.collection .hashBag (x :: rest) none)
+      (.collection .hashBag [x] none) := by
+  refine structuralCongruence_of_nfAtom_eq ?_ ?_ ?_
+  · simp only [NoHashSet, NoHashSetList]; exact ⟨hns_x, hns_rest⟩
+  · simp only [NoHashSet, NoHashSetList]; exact ⟨hns_x, trivial⟩
+  · rw [nfAtom_hashBag_none, nfAtom_hashBag_none, nfBagList_cons_rest_nil hrest]
+
+/-- `bagSplice` preserves the total `shellWidth`: flattening one bag level keeps
+the summed width. -/
+private theorem shellWidth_bagSplice_sum (q : Pattern) :
+    ((bagSplice q).map shellWidth).sum = shellWidth q := by
+  cases q with
+  | collection ct elems g => cases ct <;> cases g <;> simp [bagSplice, shellWidth]
+  | _ => simp [bagSplice]
+
+/-- The drop-source's two-element canonical bag has every element of `shellWidth`
+1 (each is a `POutput`/`PInput` head). -/
+private theorem shellWidth_evalDropSource_canon_elem
+    {chan : Pattern} {payload : Atom} {z : Pattern}
+    (hz : z ∈ nfBagList (nfAtomList
+      [.apply "POutput" [chan, deferredPayload payload],
+       .apply "PInput" [chan, .lambda none (.apply "PDrop" [.bvar 0])]])) :
+    shellWidth z = 1 := by
+  rw [nfBagList_mem, List.mem_filter, List.mem_flatMap] at hz
+  obtain ⟨⟨x, hxmem, hzx⟩, _⟩ := hz
+  rw [nfAtomList_eq_map] at hxmem
+  simp only [List.map_cons, List.map_nil, List.mem_cons,
+    List.not_mem_nil, or_false] at hxmem
+  rcases hxmem with hx | hx <;> subst hx <;>
+    (rw [nfAtom_apply_general _ _ (by rintro ⟨h, _⟩; exact absurd h (by decide))] at hzx
+     simp [bagSplice] at hzx; subst hzx; simp [shellWidth])
+
+/-- **Lemma 2 — the `par` rest collapses canonically.**  When a drop-shell source
+factors as a cons whose head already carries the full `shellWidth` 2, the
+remaining parallel components contribute nothing to the canonical bag.  This is
+the counting heart of the `par`/`par_any` classifier case. -/
+private theorem dropShellLike_par_rest_nf_nil
+    {chan : Pattern} {payload : Atom} {p0 : Pattern} {rest : List Pattern}
+    (hchan : NoHashSet chan)
+    (hshape : DropShellLike chan payload
+      (.collection .hashBag (p0 :: rest) none))
+    (hwidth : 2 ≤ shellWidth p0) :
+    nfBagList (nfAtomList rest) = [] := by
+  -- Canonical normal forms coincide across the source SC.
+  have hsc := nfAtom_sc_complete hshape.source_sc
+  rw [nfAtom_hashBag_none] at hsc
+  rw [show nfAtom (evalDropSource chan payload)
+      = collapseBag (nfBagList (nfAtomList
+          [.apply "POutput" [chan, deferredPayload payload],
+           .apply "PInput" [chan, .lambda none (.apply "PDrop" [.bvar 0])]])) from by
+    rw [show evalDropSource chan payload
+        = .collection .hashBag
+            [.apply "POutput" [chan, deferredPayload payload],
+             .apply "PInput" [chan, .lambda none (.apply "PDrop" [.bvar 0])]] none from rfl,
+      nfAtom_hashBag_none]] at hsc
+  -- Multiset equality of the two canonical bag lists.
+  have hms := collapseBag_nfBagList_multiset_eq
+    (A := nfAtomList (p0 :: rest))
+    (B := nfAtomList
+      [.apply "POutput" [chan, deferredPayload payload],
+       .apply "PInput" [chan, .lambda none (.apply "PDrop" [.bvar 0])]])
+    (nfAtomList_norm _) (nfAtomList_norm _) hsc
+  -- Every element of the canonical source bag (= LHS, via `hms`) has `shellWidth` 1.
+  have hsw1_rhs := @shellWidth_evalDropSource_canon_elem chan payload
+  have hsw1_lhs : ∀ z ∈ nfBagList (nfAtomList (p0 :: rest)), shellWidth z = 1 := by
+    intro z hz
+    exact hsw1_rhs (by
+      have : z ∈ Multiset.ofList (nfBagList (nfAtomList (p0 :: rest))) := by
+        simpa using hz
+      rw [hms] at this
+      simpa using this)
+  -- Card of the source canonical bag is 2.
+  have hcard_rhs :
+      (Multiset.ofList (nfBagList (nfAtomList
+        [.apply "POutput" [chan, deferredPayload payload],
+         .apply "PInput" [chan, .lambda none (.apply "PDrop" [.bvar 0])]]))).card = 2 := by
+    have hcard := congrArg Multiset.card hms
+    rw [show nfAtomList (p0 :: rest) = nfAtom p0 :: nfAtomList rest from by
+      simp [nfAtomList_eq_map]] at hcard
+    -- card of RHS via the two singleton-splice heads.
+    rw [show nfAtomList
+          [.apply "POutput" [chan, deferredPayload payload],
+           .apply "PInput" [chan, .lambda none (.apply "PDrop" [.bvar 0])]]
+        = [nfAtom (.apply "POutput" [chan, deferredPayload payload]),
+           nfAtom (.apply "PInput" [chan, .lambda none (.apply "PDrop" [.bvar 0])])] from by
+      simp [nfAtomList_eq_map]]
+    rw [nfBagList_cons_multiset, nfBagList_cons_multiset, nfBagList_nil]
+    have ho : ((bagSplice (nfAtom (.apply "POutput" [chan, deferredPayload payload]))).filter
+        (fun e => e ≠ .apply "PZero" [])).length = 1 := by
+      rw [nfAtom_apply_general "POutput" _ (by rintro ⟨h, _⟩; exact absurd h (by decide))]
+      simp [bagSplice]
+    have hi : ((bagSplice (nfAtom (.apply "PInput"
+        [chan, .lambda none (.apply "PDrop" [.bvar 0])]))).filter
+        (fun e => e ≠ .apply "PZero" [])).length = 1 := by
+      rw [nfAtom_apply_general "PInput" _ (by rintro ⟨h, _⟩; exact absurd h (by decide))]
+      simp [bagSplice]
+    simp only [Multiset.card_add, Multiset.coe_card, ho, hi, List.length_nil]
+  -- Decompose the LHS card via the cons-head and rest.
+  have hcons : Multiset.ofList (nfBagList (nfAtomList (p0 :: rest)))
+      = Multiset.ofList ((bagSplice (nfAtom p0)).filter (fun e => e ≠ .apply "PZero" []))
+        + Multiset.ofList (nfBagList (nfAtomList rest)) := by
+    rw [show nfAtomList (p0 :: rest) = nfAtom p0 :: nfAtomList rest from by
+      simp [nfAtomList_eq_map]]
+    exact nfBagList_cons_multiset _ _
+  -- `p0` is `hashSet`-free (the source bag is, via SC).
+  have hns_p0 : NoHashSet p0 := by
+    have hns : NoHashSet (.collection .hashBag (p0 :: rest) none) :=
+      (noHashSet_iff_of_structuralCongruence hshape.source_sc).mpr
+        (noHashSet_evalDropSource_of_channel payload hchan)
+    simpa [NoHashSet, NoHashSetList] using hns.1
+  -- Head `shellWidth` contribution equals `shellWidth p0` (≥ 2).
+  have hheadwidth :
+      (((bagSplice (nfAtom p0)).filter (fun e => e ≠ .apply "PZero" [])).map shellWidth).sum
+        = shellWidth p0 := by
+    have hfilt := shellWidth_filter_nonzero_sum (bagSplice (nfAtom p0))
+    simp only [ne_eq, decide_not] at hfilt ⊢
+    rw [hfilt, shellWidth_bagSplice_sum, shellWidth_nfAtom hns_p0]
+  -- Head card = head `shellWidth` (all head elements have `shellWidth` 1).
+  have hheadcard :
+      ((bagSplice (nfAtom p0)).filter (fun e => e ≠ .apply "PZero" [])).length
+        = shellWidth p0 := by
+    rw [← hheadwidth]
+    have hall : ∀ z ∈ ((bagSplice (nfAtom p0)).filter (fun e => e ≠ .apply "PZero" [])),
+        shellWidth z = 1 := by
+      intro z hz
+      have hzmem : z ∈ nfBagList (nfAtomList (p0 :: rest)) := by
+        rw [nfBagList_mem, List.mem_filter, List.mem_flatMap]
+        refine ⟨⟨nfAtom p0, ?_, ?_⟩, ?_⟩
+        · rw [show nfAtomList (p0 :: rest) = nfAtom p0 :: nfAtomList rest from by
+            simp [nfAtomList_eq_map]]; exact List.mem_cons_self ..
+        · exact (List.mem_filter.mp hz).1
+        · exact (List.mem_filter.mp hz).2
+      exact hsw1_lhs z hzmem
+    -- sum of shellWidths over an all-1 list is its length.
+    generalize hF : (bagSplice (nfAtom p0)).filter (fun e => e ≠ .apply "PZero" []) = F at hall ⊢
+    clear hF
+    induction F with
+    | nil => simp
+    | cons a as ih =>
+        simp only [List.map_cons, List.sum_cons, List.length_cons,
+          hall a (by simp)]
+        rw [ih (fun z hz => hall z (by simp [hz]))]; omega
+  -- Rest card = total − head card.
+  have hcardsum :
+      ((bagSplice (nfAtom p0)).filter (fun e => e ≠ .apply "PZero" [])).length
+        + (nfBagList (nfAtomList rest)).length = 2 := by
+    have hcard := congrArg Multiset.card hcons
+    rw [hms, hcard_rhs] at hcard
+    simpa [Multiset.card_add] using hcard.symm
+  -- Conclude.
+  have : (nfBagList (nfAtomList rest)).length = 0 := by omega
+  exact List.length_eq_zero_iff.mp this
+
+/-! ### `NoHashSet` preservation through semantic substitution and reduction
+
+The semantic substitution/normalization operators never introduce a `hashSet`
+node: every `collection` they emit reuses the source's collection type, and the
+only externally supplied content is the `replacementName`.  These mutual
+structural inductions feed the `par`/`par_any` classifier case, where the reduced
+parallel component must remain `hashSet`-free in order to recurse. -/
+
+mutual
+
+/-- `semanticNormalizeProc` preserves `NoHashSet`: every emitted `collection`
+reuses the source's collection type, so no `hashSet` can be introduced. -/
+private theorem noHashSet_semanticNormalizeProc :
+    ∀ {p : Pattern}, NoHashSet p → NoHashSet (semanticNormalizeProc p)
+  | p, h => by
+      fun_cases semanticNormalizeProc p with
+      | case1 n => simpa [semanticNormalizeProc] using h
+      | case2 x => simpa [semanticNormalizeProc] using h
+      | case3 n q =>
+          simp only [NoHashSet, NoHashSetList] at h ⊢
+          exact ⟨noHashSet_semanticNormalizeName h.1,
+            noHashSet_semanticNormalizeProc h.2.1, trivial⟩
+      | case4 n body =>
+          simp only [NoHashSet, NoHashSetList] at h ⊢
+          exact ⟨noHashSet_semanticNormalizeName h.1,
+            noHashSet_semanticNormalizeProc h.2.1, trivial⟩
+      | case5 n =>
+          simp only [NoHashSet, NoHashSetList] at h ⊢
+          exact ⟨noHashSet_semanticNormalizeName h.1, trivial⟩
+      | case6 p =>
+          simp only [NoHashSet, NoHashSetList] at h ⊢
+          exact ⟨noHashSet_semanticNormalizeProc h.1, trivial⟩
+      | case7 nm body =>
+          simp only [NoHashSet] at h ⊢
+          exact noHashSet_semanticNormalizeProc h
+      | case8 n nms body =>
+          simp only [NoHashSet] at h ⊢
+          exact noHashSet_semanticNormalizeProc h
+      | case9 body repl =>
+          simp only [NoHashSet] at h ⊢
+          exact ⟨noHashSet_semanticNormalizeProc h.1,
+            noHashSet_semanticNormalizeProc h.2⟩
+      | case10 ct elems rest =>
+          cases ct with
+          | hashSet => exact absurd h (by simp [NoHashSet])
+          | hashBag =>
+              simp only [NoHashSet] at h ⊢
+              exact noHashSet_semanticNormalizeProcList h
+          | vec =>
+              simp only [NoHashSet] at h ⊢
+              exact noHashSet_semanticNormalizeProcList h
+      | case11 x _ _ _ _ _ _ _ _ _ =>
+          simpa [semanticNormalizeProc] using h
+
+/-- List variant for `semanticNormalizeProcList`. -/
+private theorem noHashSet_semanticNormalizeProcList :
+    ∀ {xs : List Pattern}, NoHashSetList xs →
+      NoHashSetList (semanticNormalizeProcList xs)
+  | [], _ => by simp [semanticNormalizeProcList, NoHashSetList]
+  | x :: xs, h => by
+      simp only [NoHashSetList] at h
+      rw [semanticNormalizeProcList]
+      simp only [NoHashSetList]
+      exact ⟨noHashSet_semanticNormalizeProc h.1,
+        noHashSet_semanticNormalizeProcList h.2⟩
+
+/-- `semanticNormalizeName` preserves `NoHashSet`. -/
+private theorem noHashSet_semanticNormalizeName :
+    ∀ {name : Pattern}, NoHashSet name → NoHashSet (semanticNormalizeName name)
+  | name, h => by
+      fun_cases semanticNormalizeName name with
+      | case1 n => simpa [semanticNormalizeName] using h
+      | case2 x => simpa [semanticNormalizeName] using h
+      | case3 n =>
+          -- NQuote [PDrop [n]] → semanticNormalizeName n
+          simp only [NoHashSet, NoHashSetList] at h ⊢
+          exact noHashSet_semanticNormalizeName h.1.1
+      | case4 p _ =>
+          -- NQuote [p] (p not PDrop) → NQuote [semanticNormalizeProc p]
+          simp only [NoHashSet, NoHashSetList] at h ⊢
+          exact ⟨noHashSet_semanticNormalizeProc h.1, trivial⟩
+      | case5 x _ _ _ =>
+          -- catch-all: name unchanged
+          simpa [semanticNormalizeName] using h
+
+end
+
+/-- `semanticSubstName` preserves `NoHashSet`: the result is either the
+`replacementName` (matched bound variable) or the normalized name. -/
+private theorem noHashSet_semanticSubstName
+    {k : Nat} {repl name : Pattern}
+    (hr : NoHashSet repl) (hn : NoHashSet name) :
+    NoHashSet (semanticSubstName k repl name) := by
+  have hnn := noHashSet_semanticNormalizeName hn
+  unfold semanticSubstName semanticSubstNameMark
+  dsimp only
+  split <;> (try split) <;> simp_all [NoHashSet]
+
+mutual
+
+/-- `semanticSubstProc` preserves `NoHashSet`, given a `hashSet`-free
+`replacementName`.  The only externally supplied content is `replacementName`
+(substituted for a bound variable, or surfaced through a matched `PDrop`),
+and every emitted `collection` reuses the source's collection type. -/
+private theorem noHashSet_semanticSubstProc {repl : Pattern} (hr : NoHashSet repl) :
+    ∀ {k : Nat} {p : Pattern}, NoHashSet p →
+      NoHashSet (semanticSubstProc k repl p)
+  | k, p, h => by
+      fun_cases semanticSubstProc k repl p with
+      | case1 n => exact hr                          -- bvar matched → repl
+      | case2 n hne => exact h                       -- bvar non-matched → bvar n
+      | case3 x => exact h                           -- fvar
+      | case4 p => exact h                           -- NQuote [p] (opaque, unchanged)
+      | case5 name p' hmk =>
+          -- PDrop matched a quote: surface `p'` from `name' = NQuote [p']`.
+          have hname : NoHashSet name := by
+            simpa [NoHashSet, NoHashSetList] using h
+          have hname' : NoHashSet (semanticSubstName k repl name) :=
+            noHashSet_semanticSubstName hr hname
+          have heq : semanticSubstName k repl name = .apply "NQuote" [p'] := by
+            simp [semanticSubstName, hmk]
+          rw [heq] at hname'
+          simpa [NoHashSet, NoHashSetList] using hname'
+      | case6 name name' matched hmk hne =>
+          -- PDrop fallthrough → `PDrop [name']` where `name' = semanticSubstName ..`.
+          have hname : NoHashSet name := by
+            simpa [NoHashSet, NoHashSetList] using h
+          have hname' : NoHashSet (semanticSubstName k repl name) :=
+            noHashSet_semanticSubstName hr hname
+          have heq : name' = semanticSubstName k repl name := by
+            simp [semanticSubstName, hmk]
+          subst heq
+          simp only [NoHashSet, NoHashSetList]
+          exact ⟨hname', trivial⟩
+      | case7 n q =>
+          simp only [NoHashSet, NoHashSetList] at h ⊢
+          exact ⟨noHashSet_semanticSubstName hr h.1,
+            noHashSet_semanticSubstProc hr h.2.1, trivial⟩
+      | case8 n body =>
+          simp only [NoHashSet, NoHashSetList] at h ⊢
+          exact ⟨noHashSet_semanticSubstName hr h.1,
+            noHashSet_semanticSubstProc hr h.2.1, trivial⟩
+      | case9 nm body =>
+          simp only [NoHashSet] at h ⊢
+          exact noHashSet_semanticSubstProc hr h
+      | case10 n nms body =>
+          simp only [NoHashSet] at h ⊢
+          exact noHashSet_semanticSubstProc hr h
+      | case11 body rp =>
+          simp only [NoHashSet] at h ⊢
+          exact ⟨noHashSet_semanticSubstProc hr h.1,
+            noHashSet_semanticSubstProc hr h.2⟩
+      | case12 ct elems rest =>
+          cases ct with
+          | hashSet => exact absurd h (by simp [NoHashSet])
+          | hashBag =>
+              simp only [NoHashSet] at h ⊢
+              exact noHashSet_semanticSubstProcList hr h
+          | vec =>
+              simp only [NoHashSet] at h ⊢
+              exact noHashSet_semanticSubstProcList hr h
+      | case13 _ _ _ _ _ _ _ _ _ _ =>
+          -- catch-all apply: returned unchanged
+          exact h
+
+/-- List variant for `semanticSubstProcList`. -/
+private theorem noHashSet_semanticSubstProcList {repl : Pattern} (hr : NoHashSet repl) :
+    ∀ {k : Nat} {xs : List Pattern}, NoHashSetList xs →
+      NoHashSetList (semanticSubstProcList k repl xs)
+  | _, [], _ => by simp [semanticSubstProcList, NoHashSetList]
+  | k, x :: xs, h => by
+      simp only [NoHashSetList] at h
+      rw [semanticSubstProcList]
+      simp only [NoHashSetList]
+      exact ⟨noHashSet_semanticSubstProc hr h.1,
+        noHashSet_semanticSubstProcList hr h.2⟩
+
+end
+
+/-- The COMM substitution `semanticCommSubst body q` is `hashSet`-free when both
+the input body and the communicated process are. -/
+private theorem noHashSet_semanticCommSubst {body q : Pattern}
+    (hbody : NoHashSet body) (hq : NoHashSet q) :
+    NoHashSet (semanticCommSubst body q) := by
+  unfold semanticCommSubst
+  refine noHashSet_semanticSubstProc ?_ hbody
+  simp only [NoHashSet, NoHashSetList]
+  exact ⟨noHashSet_semanticNormalizeProc hq, trivial⟩
+
+/-- `NoHashSet` is preserved by the core ρ-calculus reduction relation.  The
+only structure-introducing case is COMM, whose residual is a `semanticCommSubst`
+of `hashSet`-free constituents; every other rule reuses the source skeleton. -/
+private theorem noHashSet_of_reduces :
+    ∀ {p q : Pattern}, Reduction.Reduces p q → NoHashSet p → NoHashSet q
+  | _, _, .comm, h => by
+      -- {POutput[n,q] | PInput[n, λ p] | rest} ⇝ {semanticCommSubst p q | rest}
+      simp only [NoHashSet, List.cons_append, List.nil_append, NoHashSetList] at h ⊢
+      refine ⟨?_, h.2.2⟩
+      have hqval : NoHashSet _ := h.1.2.1
+      have hbody : NoHashSet _ := h.2.1.2.1
+      exact noHashSet_semanticCommSubst hbody hqval
+  | _, _, .equiv hsc₁ hred hsc₂, h => by
+      have h' : NoHashSet _ := (noHashSet_iff_of_structuralCongruence hsc₁).mp h
+      exact (noHashSet_iff_of_structuralCongruence hsc₂).mp (noHashSet_of_reduces hred h')
+  | _, _, .par hred, h => by
+      simp only [NoHashSet, NoHashSetList] at h ⊢
+      exact ⟨noHashSet_of_reduces hred h.1, h.2⟩
+  | _, _, .par_any hred, h => by
+      simp only [NoHashSet] at h ⊢
+      rw [noHashSetList_append_iff] at h ⊢
+      refine ⟨?_, h.2⟩
+      rw [noHashSetList_append_iff] at h ⊢
+      refine ⟨h.1.1, ?_⟩
+      simp only [NoHashSetList] at h ⊢
+      exact ⟨noHashSet_of_reduces hred h.1.2.1, trivial⟩
+  | _, _, .par_set _, h => by simp only [NoHashSet] at h
+  | _, _, .par_set_any _, h => by simp only [NoHashSet] at h
+
+/-- **Lemma 1 — `NoHashSet` preservation under Rhometta reduction.**  Each of the
+substitution/normalization/core-reduction operators stays inside the
+`hashSet`-free fragment, and `equiv` transports `NoHashSet` across SC. -/
+private theorem noHashSet_of_rhometaReduces
+    {space : Space} {dispatch : GroundedDispatch} :
+    ∀ {p q : Pattern}, RhometaReduces space dispatch p q → NoHashSet p → NoHashSet q
+  | _, _, .core hcore _, h => noHashSet_of_reduces hcore h
+  | _, _, .evalComm _ _, h => by
+      -- {POutput[n, deferred] | PInput[n, λ body] | rest}
+      --   ⇝ {semanticCommSubst body (wrappedValue value) | rest}
+      simp only [NoHashSet, List.cons_append, List.nil_append, NoHashSetList] at h ⊢
+      refine ⟨?_, h.2.2⟩
+      rename_i value _ _
+      have hbody : NoHashSet _ := h.2.1.2.1
+      have hwv : NoHashSet (wrappedValue value) := by
+        simp [wrappedValue, NoHashSet, NoHashSetList, noHashSet_atomToPattern]
+      exact noHashSet_semanticCommSubst hbody hwv
+  | _, _, .equiv hsc₁ hred hsc₂, h => by
+      have h' : NoHashSet _ := (noHashSet_iff_of_structuralCongruence hsc₁).mp h
+      exact (noHashSet_iff_of_structuralCongruence hsc₂).mp
+        (noHashSet_of_rhometaReduces hred h')
+  | _, _, .par hred, h => by
+      simp only [NoHashSet, NoHashSetList] at h ⊢
+      exact ⟨noHashSet_of_rhometaReduces hred h.1, h.2⟩
+  | _, _, .par_any hred, h => by
+      simp only [NoHashSet] at h ⊢
+      rw [noHashSetList_append_iff] at h ⊢
+      refine ⟨?_, h.2⟩
+      rw [noHashSetList_append_iff] at h ⊢
+      refine ⟨h.1.1, ?_⟩
+      simp only [NoHashSetList] at h ⊢
+      exact ⟨noHashSet_of_rhometaReduces hred h.1.2.1, trivial⟩
+  | _, _, .par_set _, h => by simp only [NoHashSet] at h
+  | _, _, .par_set_any _, h => by simp only [NoHashSet] at h
+
+/-- A drop-shell-headed parallel `bag (p₀ :: rest)` is structurally congruent to
+its head `p₀` once the rest collapses canonically (Lemma 2). -/
+private theorem dropShellLike_par_head_sc
+    {chan : Pattern} {payload : Atom} {p0 : Pattern} {rest : List Pattern}
+    (hchan : NoHashSet chan)
+    (hshape : DropShellLike chan payload (.collection .hashBag (p0 :: rest) none))
+    (hwidth : 2 ≤ shellWidth p0) :
+    StructuralCongruence (.collection .hashBag (p0 :: rest) none) p0 := by
+  have hns : NoHashSet (.collection .hashBag (p0 :: rest) none) :=
+    (noHashSet_iff_of_structuralCongruence hshape.source_sc).mpr
+      (noHashSet_evalDropSource_of_channel payload hchan)
+  obtain ⟨hns_p0, hns_rest⟩ : NoHashSet p0 ∧ NoHashSetList rest := by
+    simpa [NoHashSet, NoHashSetList] using hns
+  have hrest := dropShellLike_par_rest_nf_nil hchan hshape hwidth
+  exact StructuralCongruence.trans _ _ _
+    (bag_cons_rest_collapse hns_p0 hns_rest hrest)
+    (StructuralCongruence.par_singleton p0)
+
+/-- **Step A — first-step classifier.**  A single Rhometta step out of a
+drop-shell source produces exactly the singleton observation of one certified
+payload value.  Proved by induction on the step; the `par`/`par_any` cases reduce
+to the head via Lemmas 1–2 and recurse. -/
+private theorem dropShellLike_first_step_classifies
+    {space : Space} {dispatch : GroundedDispatch}
+    {chan : Pattern} {payload : Atom}
+    {p r : Pattern} (hchan : NoHashSet chan) (hshape : DropShellLike chan payload p)
+    (hred : RhometaReduces space dispatch p r) :
+    ∀ {obs : Multiset Atom × (Unit × Multiplicative (Multiset Empty))},
+      obs ∈ RhometaSCObservedOutcomes space dispatch r →
+      ∃ value,
+        CertifiedPayloadResult space dispatch payload value ∧
+        obs = (({value} : Multiset Atom), ((), (1 : Multiplicative (Multiset Empty)))) := by
+  induction hred with
+  | core hcore hguard =>
+      exact absurd hguard (by
+        by_contra hg
+        exact no_rhometaCore_from_dropShellLike hshape hg)
+  | @evalComm n body rest payload' value' hcanon hcert =>
+      intro obs hobs
+      have hresidual := dropShellLike_evalComm_residual_sc
+        (value' := value') hchan hshape hcanon
+      exact dropShellLike_evalComm_scObservedOutcome_classifies_of_structuralResidual
+        hshape hcert hresidual hobs
+  | @equiv p p' q q' hsc₁ hredmid hsc₂ ih =>
+      intro obs hobs
+      have hshape' : DropShellLike chan payload p' :=
+        dropShellLike_of_structuralCongruence hsc₁ hshape
+      have hobs' : obs ∈ RhometaSCObservedOutcomes space dispatch q' := by
+        rw [rhometaSCObservedOutcomes_eq_of_source_structuralCongruence hsc₂]
+        exact hobs
+      exact ih hshape' hobs'
+  | @par p' q' rest' hredmid ih =>
+      intro obs hobs
+      -- `bag(p'::rest') ≡ p'`; recurse on `p' ⇝ q'`.
+      have hwidth : 2 ≤ shellWidth p' := shellWidth_ge_two_of_rhometaReduces hredmid
+      have hsc_src : StructuralCongruence (.collection .hashBag (p' :: rest') none) p' :=
+        dropShellLike_par_head_sc hchan hshape hwidth
+      have hshape' : DropShellLike chan payload p' :=
+        dropShellLike_of_structuralCongruence hsc_src hshape
+      have hns : NoHashSet (.collection .hashBag (p' :: rest') none) :=
+        (noHashSet_iff_of_structuralCongruence hshape.source_sc).mpr
+          (noHashSet_evalDropSource_of_channel payload hchan)
+      obtain ⟨hns_p', hns_rest⟩ : NoHashSet p' ∧ NoHashSetList rest' := by
+        simpa [NoHashSet, NoHashSetList] using hns
+      have hrest := dropShellLike_par_rest_nf_nil hchan hshape hwidth
+      have hns_q : NoHashSet q' := noHashSet_of_rhometaReduces hredmid hns_p'
+      have hsc_red : StructuralCongruence (.collection .hashBag (q' :: rest') none) q' :=
+        StructuralCongruence.trans _ _ _
+          (bag_cons_rest_collapse hns_q hns_rest hrest)
+          (StructuralCongruence.par_singleton q')
+      have hobs' : obs ∈ RhometaSCObservedOutcomes space dispatch q' := by
+        rw [← rhometaSCObservedOutcomes_eq_of_source_structuralCongruence hsc_red]
+        exact hobs
+      exact ih hshape' hobs'
+  | @par_any p' q' before after hredmid ih =>
+      intro obs hobs
+      -- Permute the reducing element to the head, then reduce to the `par` case.
+      have hwidth : 2 ≤ shellWidth p' := shellWidth_ge_two_of_rhometaReduces hredmid
+      have hperm_src : StructuralCongruence
+          (.collection .hashBag (before ++ [p'] ++ after) none)
+          (.collection .hashBag (p' :: (before ++ after)) none) :=
+        StructuralCongruence.par_perm _ _ (by
+          rw [List.append_assoc, List.singleton_append]; exact List.perm_middle)
+      have hshape_perm : DropShellLike chan payload
+          (.collection .hashBag (p' :: (before ++ after)) none) :=
+        dropShellLike_of_structuralCongruence hperm_src hshape
+      have hsc_src : StructuralCongruence
+          (.collection .hashBag (p' :: (before ++ after)) none) p' :=
+        dropShellLike_par_head_sc hchan hshape_perm hwidth
+      have hshape' : DropShellLike chan payload p' :=
+        dropShellLike_of_structuralCongruence hsc_src hshape_perm
+      have hns : NoHashSet (.collection .hashBag (p' :: (before ++ after)) none) :=
+        (noHashSet_iff_of_structuralCongruence hshape_perm.source_sc).mpr
+          (noHashSet_evalDropSource_of_channel payload hchan)
+      obtain ⟨hns_p', hns_rest⟩ : NoHashSet p' ∧ NoHashSetList (before ++ after) := by
+        simpa [NoHashSet, NoHashSetList] using hns
+      have hrest := dropShellLike_par_rest_nf_nil hchan hshape_perm hwidth
+      have hns_q : NoHashSet q' := noHashSet_of_rhometaReduces hredmid hns_p'
+      have hperm_red : StructuralCongruence
+          (.collection .hashBag (before ++ [q'] ++ after) none)
+          (.collection .hashBag (q' :: (before ++ after)) none) :=
+        StructuralCongruence.par_perm _ _ (by
+          rw [List.append_assoc, List.singleton_append]; exact List.perm_middle)
+      have hsc_red : StructuralCongruence
+          (.collection .hashBag (q' :: (before ++ after)) none) q' :=
+        StructuralCongruence.trans _ _ _
+          (bag_cons_rest_collapse hns_q hns_rest hrest)
+          (StructuralCongruence.par_singleton q')
+      have hobs' : obs ∈ RhometaSCObservedOutcomes space dispatch q' := by
+        rw [← rhometaSCObservedOutcomes_eq_of_source_structuralCongruence hsc_red,
+          ← rhometaSCObservedOutcomes_eq_of_source_structuralCongruence hperm_red]
+        exact hobs
+      exact ih hshape' hobs'
+  | par_set hredmid ih =>
+      exact absurd hshape (not_dropShellLike_hashSet hchan)
+  | par_set_any hredmid ih =>
+      exact absurd hshape (not_dropShellLike_hashSet hchan)
+
 theorem rhometta_scObserved_carrier_faithfulness_gate :
     Function.Injective (fun value : Atom =>
       (({value} : Multiset Atom),
@@ -9068,6 +10951,29 @@ theorem evalDrop_scObservedOutcome_factors_through_one_step
   | step hstep htail =>
       refine ⟨_, q, s, ⟨hstep⟩, ?_, hqs, hdec⟩
       exact ⟨⟨htail⟩, hnf⟩
+
+/-- **Step B — converse over the source.**  Every SC-observed outcome of the
+drop-observer source is the singleton observation of one certified payload
+value.  Factor the observation through one Rhometta step, then apply the
+first-step classifier (the source is itself `DropShellLike`). -/
+theorem evalDrop_scObserved_subset_certified
+    {space : Space} {dispatch : GroundedDispatch}
+    {chan : Pattern} {payload : Atom}
+    {obs : Multiset Atom × (Unit × Multiplicative (Multiset Empty))}
+    (hchan : NoHashSet chan)
+    (hobs :
+      obs ∈ RhometaSCObservedOutcomes space dispatch
+        (evalDropSource chan payload)) :
+    ∃ value,
+      CertifiedPayloadResult space dispatch payload value ∧
+      obs = (({value} : Multiset Atom), ((), (1 : Multiplicative (Multiset Empty)))) := by
+  obtain ⟨r, q, s, ⟨hstep⟩, hq, hqs, hdec⟩ :=
+    evalDrop_scObservedOutcome_factors_through_one_step
+      (space := space) (dispatch := dispatch)
+      (chan := chan) (payload := payload) hobs
+  have hobs_r : obs ∈ RhometaSCObservedOutcomes space dispatch r := ⟨q, s, hq, hqs, hdec⟩
+  exact dropShellLike_first_step_classifies hchan
+    (dropShellLike_evalDropSource chan payload) hstep hobs_r
 
 theorem certifiedPayloadReified_singleton_fold_mem_of_certified
     {space : Space} {dispatch : GroundedDispatch} {payload value : Atom}
@@ -10656,6 +12562,36 @@ theorem rhometta_bridge_certified_scObserved
   exact evalDrop_quiescent_run_eq_certified_scObserved_image
     (space := space) (dispatch := dispatch)
     (chan := chan) (payload := payload) hready
+
+/-- **Step C — witness-free SC-observed bridge.**  On the ready branch, with a
+`hashSet`-free channel, the concrete drop-system's quiescent run accumulators are
+*exactly* the SC-observed outcomes of the drop-observer source — no
+`CertifiedPayloadResult` witness appears in the right-hand carrier.  The certified
+conjunct of `rhometta_bridge_certified_scObserved` is absorbed because Step B
+(`evalDrop_scObserved_subset_certified`) shows every SC-observed outcome already
+*is* a certified singleton. -/
+theorem rhometta_bridge_scObserved
+    {space : Space} {dispatch : GroundedDispatch}
+    {chan : Pattern} {payload : Atom}
+    (hready : (certifiedPayloadReified space dispatch payload).Nonempty)
+    (hchan : NoHashSet chan) :
+    {acc' | ∃ s',
+        (∃ n,
+          (s', acc') ∈
+            runOutcomes (evalDropSystem space dispatch chan payload) allPol n
+              (evalDropSource chan payload,
+                ((0 : Multiset Atom), (1 : Unit × ExportBag Empty)))) ∧
+        (evalDropSystem space dispatch chan payload).enabled s' = ∅} =
+    RhometaSCObservedOutcomes space dispatch (evalDropSource chan payload) := by
+  rw [rhometta_bridge_certified_scObserved
+    (space := space) (dispatch := dispatch)
+    (chan := chan) (payload := payload) hready]
+  ext obs
+  constructor
+  · rintro ⟨hsc, -⟩
+    exact hsc
+  · intro hsc
+    exact ⟨hsc, evalDrop_scObserved_subset_certified hchan hsc⟩
 
 /-- Certified-slice bridge with the SC-observed carrier conjunct collapsed:
 on the ready branch, the concrete drop-system quiescent accumulators are

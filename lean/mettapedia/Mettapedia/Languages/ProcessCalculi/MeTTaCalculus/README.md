@@ -3,7 +3,7 @@
 Lean 4.28 formalization of the MeTTa-calculus (Meredith 2024).
 **9 files, 1,174 lines. Zero sorry.**
 
-Part of `papers/process-calculi.tex` (Section 5).
+Part of `../../../../../../papers/process-calculi.tex` (Section 5).
 
 ## Key Idea
 

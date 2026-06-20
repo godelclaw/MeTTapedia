@@ -4,7 +4,7 @@ Formalization of PLN first-order quantifier semantics via Goertzel's
 weakness theory and fuzzy quantifier algebra (QFM).
 **40 files, ~6,774 lines. Zero sorry.**
 
-Companion text: `papers/wm-pln-book.tex`, Chapter 11 (Quantifiers).
+Companion text: `../../../../../papers/wm-pln-book.tex`, Chapter 11 (Quantifiers).
 
 ## Key Idea
 

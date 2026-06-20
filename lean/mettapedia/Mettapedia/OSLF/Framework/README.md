@@ -4,7 +4,7 @@ Core construction and applications of **OSLF** (Operational Semantics as
 a Logical Framework). **74 files, ~33,800 lines. Zero sorry. Zero
 custom axioms.**
 
-Paper: `papers/leanOSLF.pdf` — "Verified Operational Semantics in
+Paper: `../../../../../papers/leanOSLF.pdf` — "Verified Operational Semantics in
 Logical Form: A Lean 4 Formalization of the OSLF Algorithm"
 (Meredith & Stay 2020; Lean 4 formalization 2026).
 
@@ -140,4 +140,4 @@ OSLF is **not**:
 
 - Meredith, L.G. & Stay, M. (2020). "Operational Semantics as a
   Logical Framework"
-- Paper: `papers/leanOSLF.pdf` (March 2026 draft)
+- Paper: `../../../../../papers/leanOSLF.pdf` (March 2026 draft)

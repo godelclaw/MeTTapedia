@@ -2,7 +2,7 @@
 
 Formalization of MeTTa-Pure: a dependently-typed, proof-oriented fragment of
 MeTTa with full metatheory. This is the **proof branch** of the two-target
-architecture described in `papers/PureMeTTa.tex`:
+architecture described in `../../../../../../papers/PureMeTTa.tex`:
 
 ```
 Surface MeTTa → Elaborated MeTTa-Core → ┬─ MeTTa-Pure / PureKernel  (proof target)

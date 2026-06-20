@@ -3,7 +3,8 @@
 ; ============================================================================
 ;
 ; This implements the Evidence type and operations as formalized in:
-;   Mettapedia/Logic/PLNEvidence.lean
+;   Mettapedia/Logic/BinaryEvidence.lean
+;   Mettapedia/Logic/PLNConfidenceDoFCanary.lean
 ;
 ; Key insight from the Lean formalization:
 ;   Evidence counts (n⁺, n⁻) ∈ ℝ≥0 × ℝ≥0 form a QUANTALE, and
@@ -77,7 +78,8 @@
 
 ; ----------------------------------------------------------------------------
 ; Power Scaling: Regraduation of evidence by informativeness weight
-; Lean (to prove): def power (e : Evidence) (w : ℝ≥0) := ⟨e.pos ^ w, e.neg ^ w⟩
+; Lean oracle: PLNConfidenceDoFCanary.power_discount_scales_logodds
+; implements the log-odds law for this power operation.
 ;
 ; Key theorem (log-odds linearity):
 ;   logOdds(power(e, w)) = w * logOdds(e)
@@ -169,7 +171,7 @@
 ; KEY THEOREM: REVISION AS WEIGHTED AVERAGE
 ; ============================================================================
 
-; The Lean theorem toStrength_hplus proves:
+; The Lean theorem EvidenceQuantale.BinaryEvidence.toStrength_hplus proves:
 ;   toStrength(x + y) = (x.total / (x+y).total) * toStrength(x)
 ;                     + (y.total / (x+y).total) * toStrength(y)
 ;
@@ -184,7 +186,7 @@
 ; Deduction via Evidence
 ; Given evidence E_AB (A→B) and E_BC (B→C), compute E_AC (A→C)
 ;
-; The Lean formalization in PLNEvidence.lean:deductionEvidence shows this
+; The Lean formalization in EvidenceQuantale.BinaryEvidence.deductionEvidence shows this
 ; involves both direct path (tensor) and indirect path (via complement).
 ;
 ; For simplicity, we delegate to Truth_Deduction which computes the

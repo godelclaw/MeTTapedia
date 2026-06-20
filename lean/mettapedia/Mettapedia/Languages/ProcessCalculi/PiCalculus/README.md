@@ -3,7 +3,7 @@
 Lean 4.28 formalization of the asynchronous, choice-free π-calculus
 following Lybech (2022). **19 files, 9,134 lines. Zero sorry.**
 
-Part of `papers/process-calculi.tex` (Section 3).
+Part of `../../../../../../papers/process-calculi.tex` (Section 3).
 
 ## Syntax
 

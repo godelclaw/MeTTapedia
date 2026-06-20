@@ -16,8 +16,8 @@
 ;   finite-prefix forecasts before any global compatibility witness exists.
 ;   Calling those a full process law without compatibility is assumption laundering.
 ;
-; Lean oracle (the REAL claim): DeFinettiProjectiveCredalBridge
-;   impreciseDeFinetti_analyticMixingFamily_sharpCompatibilityCrown
+; Lean oracle (the REAL claim):
+;   DeFinettiProjectiveCredalBridge.impreciseDeFinetti_analyticMixingFamily_sharpCompatibilityCrown
 ;   (raw crown <-> exists respecting lower prevision), and the counterexample
 ;   exists_..._not_pointwiseZeroInterior (pointwise zero-interior is NOT necessary).
 ; Portable: self-contained, float literals -> CeTTa(HE) + PeTTa.

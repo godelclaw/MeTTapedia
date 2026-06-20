@@ -3,7 +3,7 @@
 Lean 4.28 formalization of five process-algebraic systems with cross-calculus
 bridges. **17,821 lines across 55 files. Zero sorry. Zero custom axioms.**
 
-Paper: `papers/process-calculi.tex` — *Process Calculi Formalized in Lean 4:
+Paper: `../../../../../papers/process-calculi.tex` — *Process Calculi Formalized in Lean 4:
 Rho, Pi, MQ, and Modal Mu-Calculus with Cross-Calculus Bridges* (March 2026)
 
 ## Common Infrastructure (4 files)

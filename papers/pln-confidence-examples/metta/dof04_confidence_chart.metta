@@ -12,8 +12,9 @@
 ; WHY KEEP IT.  A user-facing risk dashboard may want a compressed visual scale.
 ;   But REVISION must run in evidence-weight space, not in a display chart.
 ;
-; Lean oracle: PLNConfidenceWeight  walley_width_complement_forces_plnOdds (the odds chart is
-;   forced after the bridge)  and  reserveHalfCoordinate_not_walley_width_complement (reserve-half
+; Lean oracle: PLNConfidenceWeight.EvidenceWeightCoordinate
+;   walley_width_complement_forces_plnOdds (the odds chart is forced after the bridge) and
+;   reserveHalfCoordinate_not_walley_width_complement (reserve-half
 ;   reconstructs evidence but fails the bridge — so "can reconstruct" != "is PLN confidence").
 ; Portable: atan-math is available on BOTH CeTTa and PeTTa; pi is written as a
 ; numeric literal because PeTTa treats PI as an atom, not an arithmetic constant.

@@ -9,7 +9,8 @@
 ; WHY KEEP IT.  Sparse data needs shrinkage toward a baseline; mature data can
 ;   safely use near-MLE.  Pretending strength is canonical hides this choice.
 ;
-; Lean oracle: PLNTruthTower  posteriorMeanStrength / posteriorMeanStrength_improper_eq_mle
+; Lean oracle: PLNTruthTower.BinaryCounts.posteriorMeanStrength /
+;   posteriorMeanStrength_improper_eq_mle
 ;   (MLE = the improper-prior limit) and BinaryContext.uniform.
 ; Portable: self-contained, float literals -> CeTTa(HE) + PeTTa.
 ; ============================================================================

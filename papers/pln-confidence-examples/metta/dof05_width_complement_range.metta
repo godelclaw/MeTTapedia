@@ -12,8 +12,9 @@
 ; WHY KEEP IT.  Binary truth has a canonical unit scale; dollar-valued utilities
 ;   do not — they must be range-normalized before width-complement is meaningful.
 ;
-; Lean oracle: PLNConfidenceWeight  walleyPredictiveWidth / WidthComplementCompatible
-;   and the forcing theorem walley_width_complement_forces_plnOdds.
+; Lean oracle: PLNConfidenceWeight.EvidenceWeightCoordinate.walleyPredictiveWidth,
+;   PLNTruthTower.WidthComplementCompatible, and
+;   EvidenceWeightCoordinate.walley_width_complement_forces_plnOdds.
 ; Portable: self-contained, float literals -> CeTTa(HE) + PeTTa.
 ; ============================================================================
 

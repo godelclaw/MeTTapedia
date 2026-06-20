@@ -10,7 +10,8 @@
 ; WHY KEEP IT.  Reporting only strength hides "how much do we know"; reporting
 ;   only confidence hides "which way."  Both are needed.
 ;
-; Lean oracle: PLNTruthTower  (strength / total separation, strength_mem_unit_of_total_ne_zero).
+; Lean oracle: PLNTruthTower.BinaryCounts
+;   strength / total separation, strength_mem_unit_of_total_ne_zero.
 ; Portable: self-contained, float literals -> CeTTa(HE) + PeTTa.
 ; ============================================================================
 
