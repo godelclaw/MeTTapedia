@@ -132,6 +132,15 @@ megalodon/theory/metamath/mmmg/
 megalodon/theory/mizar/mmlmg/
 megalodon/_archive/
 
+# External Megalodon theory corpora — NOT vendored here (provenance/no clear license).
+# See megalodon/theory/EXTERNAL-CORPORA.md for sources and fetch instructions.
+# numbers/ = Chad E. Brown's FormalNumbers (rendered HTML); atp/ = Proofgold/mgwiki mgw_test AIM bounties.
+megalodon/theory/numbers/
+megalodon/theory/atp/
+# Large generated test fixtures
+megalodon/tests/dedukti_bridge/test_triangle.dk
+megalodon/tests/dedukti_bridge/test_triangle.mg
+
 # Block all markdown files (use git add -f for whitelisted files)
 *.md
 !README.md
@@ -139,6 +148,7 @@ megalodon/_archive/
 !megalodon/PNP_crux/RIGOROUS_ANALYSIS_REPORT.md
 !lean/mettapedia/EXTERNAL_REPOS.md
 !megalodon/theory/mizar/mml/README.md
+!megalodon/theory/EXTERNAL-CORPORA.md
 
 # LaTeX build artifacts
 *.aux
