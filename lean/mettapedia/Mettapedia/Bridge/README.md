@@ -54,7 +54,7 @@ Still missing:
 References:
 - Abadi et al., "Explicit Substitutions", JFP 1991
 - CeTTa: `c-projects/CeTTa-TermUniverse/src/variant_shape.h`
-- Roadmap: `papers/cetta_roadmap.tex` Section 8 (Dual-Target Architecture)
+- Roadmap: `../../../../papers/cetta_roadmap.tex` Section 8 (Dual-Target Architecture)
 
 ## Status
 

@@ -12,7 +12,7 @@
 ;   the *odds form* c = N/(N+kappa) once you pick the chart (see DoF 4/5), but it
 ;   never picks kappa.  So kappa stays a domain calibration knob.
 ;
-; Lean oracle: PLNTruthTower (posteriorMeanStrength family) + EvidenceBeta;
+; Lean oracle: PLNTruthTower.BinaryCounts.posteriorMeanStrength + EvidenceBeta;
 ;   the forcing of the odds *shape* is walley_width_complement_forces_plnOdds
 ;   (PLNConfidenceWeight.lean) which leaves kappa free.
 ;

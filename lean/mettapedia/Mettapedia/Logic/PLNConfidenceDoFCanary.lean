@@ -14,11 +14,11 @@ degree of freedom whose `.metta` demonstration is intuition only.
 - **DoF 11 (discounting)** `power_discount_scales_logodds`
 - **DoF 18 (provenance/route)** `route_kappa_changes_confidence_not_strength`
 
-DoF 14 (completion-level extreme point) needs no new theorem: the strict-width
-envelope of the two-spin magnet is already a property of the *credal set* (not of
-any completion) — witnessed by `…ImpreciseProbability.ProjectiveCredal.nEnvelope_nontrivial`.
-So the STV read-off, being a function of the envelope, is invariant to which
-completion the world selects.
+DoF 14 (completion-level extreme point) needs no new theorem: the existing
+bounded-measurable credal layer expresses completion disagreement with
+`boundedMeasurableCredalSetHasStrictWidth`, and
+`boundedMeasurableCredalSet_not_determines_of_strictWidth` proves that such
+completion freedom prevents a determined single readout.
 -/
 
 namespace Mettapedia.Logic.PLNConfidenceDoFCanary
@@ -31,14 +31,22 @@ MEAN (a single point, `3/7`) lies strictly inside the Walley IDM predictive
 INTERVAL `[2/7, 4/7]` (strength `s = 2`), which itself has strictly positive width.
 A precise point estimate and a robust interval are genuinely different backends —
 collapsing the interval to the point hides real imprecision. -/
-theorem beta_mean_strictly_inside_walley_idm_interval :
-    lowerEndpoint 2 3 2 < (withUniformPrior 2 3).posteriorMean ∧
-      (withUniformPrior 2 3).posteriorMean < upperEndpoint 2 3 2 ∧
-      lowerEndpoint 2 3 2 < upperEndpoint 2 3 2 := by
+theorem beta_idm_sample_values :
+    lowerEndpoint 2 3 2 = (2 / 7 : ℝ) ∧
+      (withUniformPrior 2 3).posteriorMean = (3 / 7 : ℝ) ∧
+      upperEndpoint 2 3 2 = (4 / 7 : ℝ) := by
   refine ⟨?_, ?_, ?_⟩ <;>
     simp only [lowerEndpoint, upperEndpoint, EvidenceBetaParams.posteriorMean,
       EvidenceBetaParams.alpha, EvidenceBetaParams.beta, withUniformPrior] <;>
     norm_num
+
+theorem beta_mean_strictly_inside_walley_idm_interval :
+    lowerEndpoint 2 3 2 < (withUniformPrior 2 3).posteriorMean ∧
+      (withUniformPrior 2 3).posteriorMean < upperEndpoint 2 3 2 ∧
+      lowerEndpoint 2 3 2 < upperEndpoint 2 3 2 := by
+  rcases beta_idm_sample_values with ⟨hlo, hmid, hhi⟩
+  rw [hlo, hmid, hhi]
+  norm_num
 
 /-- **DoF 11 — Feature/evidence discounting.**
 The `evidence-power` regraduation raises both counts to a power `w`; this scales
@@ -68,26 +76,43 @@ noncomputable def routeStrength (pos neg : ℝ) : ℝ := pos / (pos + neg)
 noncomputable def routeConf (r : Route) (pos neg : ℝ) : ℝ :=
   (pos + neg) / (pos + neg + routeKappa r)
 
+/-- The displayed route-aware truth readout: common strength plus
+route-dependent confidence. -/
+noncomputable def routeReadout (r : Route) (pos neg : ℝ) : ℝ × ℝ :=
+  (routeStrength pos neg, routeConf r pos neg)
+
 /-- **DoF 18 — Provenance / route semantics.**
 On the SAME counts `(3, 0)`, confidence depends on the route (`3/4` direct vs
-`3/11` pathway), while strength does not depend on the route at all (it has no
-`Route` argument). Same final `<s,c>`-strength, different provenance-aware
-confidence. -/
+`3/11` pathway), while strength is the same first coordinate. Same displayed
+strength, different provenance-aware confidence. -/
 theorem route_kappa_changes_confidence_not_strength :
-    routeConf Route.direct 3 0 = 3 / 4 ∧
-      routeConf Route.pathway 3 0 = 3 / 11 ∧
-      routeConf Route.direct 3 0 ≠ routeConf Route.pathway 3 0 := by
-  refine ⟨?_, ?_, ?_⟩ <;> simp only [routeConf, routeKappa] <;> norm_num
+    (routeReadout Route.direct 3 0).1 =
+        (routeReadout Route.pathway 3 0).1 ∧
+      (routeReadout Route.direct 3 0).2 = 3 / 4 ∧
+      (routeReadout Route.pathway 3 0).2 = 3 / 11 ∧
+      (routeReadout Route.direct 3 0).2 ≠
+        (routeReadout Route.pathway 3 0).2 := by
+  refine ⟨?_, ?_, ?_, ?_⟩ <;>
+    simp only [routeReadout, routeStrength, routeConf, routeKappa] <;>
+    norm_num
 
 /-- Aggregator: the three new degree-of-freedom canaries at sample points, for a
 single `#print axioms` seal. -/
 theorem fullDoFZooProfile :
-    (lowerEndpoint 2 3 2 < (withUniformPrior 2 3).posteriorMean) ∧
-      (Real.log ((2 : ℝ) ^ (2 : ℝ)) - Real.log ((3 : ℝ) ^ (2 : ℝ))
-        = 2 * (Real.log 2 - Real.log 3)) ∧
-      (routeConf Route.direct 3 0 ≠ routeConf Route.pathway 3 0) :=
-  ⟨beta_mean_strictly_inside_walley_idm_interval.1,
-    power_discount_scales_logodds 2 3 2 (by norm_num) (by norm_num),
-    route_kappa_changes_confidence_not_strength.2.2⟩
+    (lowerEndpoint 2 3 2 < (withUniformPrior 2 3).posteriorMean ∧
+      (withUniformPrior 2 3).posteriorMean < upperEndpoint 2 3 2 ∧
+      lowerEndpoint 2 3 2 < upperEndpoint 2 3 2) ∧
+      (∀ p n w : ℝ, 0 < p → 0 < n →
+        Real.log (p ^ w) - Real.log (n ^ w) =
+          w * (Real.log p - Real.log n)) ∧
+      ((routeReadout Route.direct 3 0).1 =
+          (routeReadout Route.pathway 3 0).1 ∧
+        (routeReadout Route.direct 3 0).2 = 3 / 4 ∧
+        (routeReadout Route.pathway 3 0).2 = 3 / 11 ∧
+        (routeReadout Route.direct 3 0).2 ≠
+          (routeReadout Route.pathway 3 0).2) :=
+  ⟨beta_mean_strictly_inside_walley_idm_interval,
+    fun p n w hp hn => power_discount_scales_logodds p n w hp hn,
+    route_kappa_changes_confidence_not_strength⟩
 
 end Mettapedia.Logic.PLNConfidenceDoFCanary

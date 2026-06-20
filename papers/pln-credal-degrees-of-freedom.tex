@@ -158,7 +158,11 @@ through PLN's compositional rules (deduction, induction, abduction,
 revision); that material is in the existing PLN corpus
 (\xiPLN, \nuPLN, the WM-PLN book; see Sec.~\ref{sec:related}). The paper's
 contribution is the determinacy / freedom characterization at the level
-of a single truth value, with formal Lean hooks.
+of a single truth value, with formal Lean hooks. Each named degree of
+freedom additionally comes with a small runnable PeTTa/CeTTa canary paired
+with its Lean oracle, in the companion package
+\lpath{papers/pln-confidence-examples/} (one-command build and run via
+\lpath{run_all.sh}; see Appendix~\ref{app:examples}).
 
 \paragraph{Sibling papers.}
 This paper is a sibling of \xiPLN\ and the \emph{PLN Review}
@@ -238,7 +242,7 @@ nonempty $\Omega$.
 \subsection{PLN $\STV{s}{c}$ as the credal-envelope summary}\label{sec:stv-summary}
 
 The canonical Lean STV type lives in
-\codepath{Mettapedia.Logic.PLNDeduction} at lines 138--139:
+\codepath{Mettapedia.Logic.PLNDeduction}:
 \begin{lstlisting}
 /-- Simple Truth Value: (strength, confidence) pair -/
 structure STV where
@@ -350,9 +354,8 @@ information ceiling, and $s$ is the single value $P X_q$.
 
 The contribution of the recent landing in ProjectiveCredal.lean is to
 make the ``determined / has width'' distinction \emph{predicate-level},
-not theorem-level. Two definitions are added (lines~746 and~753), each
-followed by collapse / non-triviality theorems that pin down the
-PLN-side consequence.
+not theorem-level. The collapse and non-triviality theorems following
+those definitions pin down the PLN-side consequence.
 
 \subsection{The two predicates}
 
@@ -722,7 +725,7 @@ for strict credal width.
 
 \subsection{Two-spin magnet}
 
-In ProjectiveCredal.lean around lines~1064--1101, the type
+In \lpath{ProjectiveCredal.lean}, the type
 \lid{TwoSpin}, defined as $\mathrm{Bool} \times \mathrm{Bool}$, carries the two-spin
 magnet credal set
 \begin{lstlisting}
@@ -1157,8 +1160,9 @@ of an infinite or joint fact --- the Lean theorem is the real claim), and
 Thirteen runnable canaries (DoF 1--8, 10, 11, 13, 17, 18) are portable across
 CeTTa(HE) and PeTTa; the three new Lean canaries (DoF 8, 11, 18) live in
 \lpath{Mettapedia/lean/mettapedia/Mettapedia/Logic/PLNConfidenceDoFCanary.lean}
-and are axiom-clean. DoF 14 deliberately points to the existing strict-envelope
-theorem rather than inventing a fake ``extreme point'' executable. The table
+and are axiom-clean. DoF 14 deliberately points to the existing strict-width /
+non-determination theorem rather than inventing a misleading ``extreme point''
+executable. The table
 below records each row's current artifact and what that artifact demonstrates;
 for Lean-ref rows, it names the example story that would illustrate the theorem.
 
@@ -1168,95 +1172,106 @@ Freedom & Current artifact & Demonstration \\
 \midrule
 \endhead
 Evidence total versus ratio &
-\lpath{Mettapedia/papers/examples/RavenAsymmetricInduction.metta} &
-Keep the raven asymmetry example; add explicit confidence readouts for
-$5/0$, $5/95$, and $50/950$ under at least two $\kappa$ values. \\
+Raven example; \lpath{metta/dof03_ratio_vs_total.metta} &
+Shows the raven asymmetry pattern and then isolates the ratio/total split:
+$5/5$, $50/50$, and $500/500$ have the same strength but rising confidence. \\
 
 Evidence scale $\kappa$ &
-\lpath{Mettapedia/papers/pln-confidence-examples/metta/dof01_kappa_calibration.metta} &
-Add a small table showing the same evidence count under $\kappa=1,10,50$.
-Use curated clinical, noisy omics, and pathway-mediated labels. \\
+\lpath{metta/dof01_kappa_calibration.metta} &
+Shows the same evidence count under $\kappa=1,10,50$, matching the intuition
+that curated clinical, noisy omics, and pathway-mediated labels may need
+different evidence scales. \\
 
 Strength prior context &
+\lpath{metta/dof02_strength_prior_contexts.metta};
 Lean canaries in \lid{PLNTruthTower} &
-Add a PeTTa/CeTTa count example where MLE, uniform prior, and Jeffreys prior
-produce different strength displays from the same sparse counts. \\
+Shows MLE, uniform-prior, and Jeffreys-prior strengths from the same sparse
+counts, so the prior context is visible rather than silently fixed. \\
 
 Confidence chart freedom &
-\lid{reserveHalfCoordinate\_not\_walley\_width\_complement} in Lean &
-Add a runnable chart comparison: PLN odds chart versus reserve-half display,
-same decoded evidence, different displayed confidence. \\
+\lpath{metta/dof04_confidence_chart.metta};
+Lean chart-separation theorem &
+Compares PLN odds, reserve-half, and smooth arctangent charts on the same
+decoded evidence, demonstrating chart freedom without changing the evidence. \\
 
 Revision as evidence addition &
-\lpath{Mettapedia/papers/pln-confidence-examples/metta/dof17_revision_transport.metta} &
-Keep \lid{Truth\_Revision}; add a canary that revising two STVs equals adding
-decoded evidence weights and re-encoding. \\
+\lpath{metta/dof17_revision_transport.metta} &
+Shows \lid{Truth\_Revision} by adding decoded evidence weights and re-encoding
+the result, while contrasting it with separate prior choices. \\
 
 Rule-level confidence transport &
-\lpath{Mettapedia/lean/mettapedia/Mettapedia/Logic/PeTTaLibPLNFormalAnalysis.lean} &
-Add a PeTTa regression for the raw-min double-damping bug: old formula below
-weight-space formula on unit evidence. \\
+Lean transport analysis &
+The Lean analysis records the weight-space transport discipline; a PeTTa
+regression can show the old raw-min double-damping bug as an executable shadow. \\
 
 Interval point selector &
+\lpath{metta/dof06_interval_selector.metta};
 Lean generic ITV selector canary &
-Add a three-selector example showing lower, midpoint, and upper produce
-different displayed strengths on the same interval. \\
+Shows lower, midpoint, and upper selectors producing different displayed
+strengths on the same interval. \\
 
 Width-complement range normalization &
-Paper convention &
-Add binary and dollar-utility examples: binary width uses $1-(U-L)$; bounded
-utility uses $1-(U-L)/(b-a)$. \\
+\lpath{metta/dof05_width_complement_range.metta};
+paper convention &
+Shows binary width as $1-(U-L)$ and bounded-utility width as
+$1-(U-L)/(b-a)$, including the negative example where raw dollar width is
+misleading. \\
 
 Credal shape beyond one interval &
+\lpath{metta/dof07_credal_shape.metta};
 Lean credal projection tower canaries &
-Add two small finite credal sets with the same query interval and different
+Shows two finite credal shapes with the same marginal interval and different
 joint/correlation behavior. \\
 
 Backend choice &
-Lean typed ITV constructors &
-Add side-by-side Bayesian credible interval and Walley IDM interval from the
-same counts, with provenance printed in the result. \\
+\lpath{metta/dof08_backend_beta_vs_idm.metta};
+\lid{beta\_mean\_strictly\_inside\_walley\_idm\_interval} &
+Compares a Bayesian beta posterior point with the Walley IDM interval from the
+same counts, keeping backend provenance explicit. \\
 
 Categorical query choice &
+\lpath{metta/dof10_categorical_query.metta};
 Lean categorical evidence tower &
-Add a three-category classifier where total evidence is high but the rare
-category remains wide. \\
+Shows a three-category classifier where total evidence is high but a rare
+category still has low confidence. \\
 
 Feature/evidence discounting &
-\lpath{Mettapedia/papers/pln-confidence-examples/metta/dof11_evidence_discounting.metta} &
-Add IDF/source-quality examples: duplicate text-mined hits discounted,
-curated independent hits amplified. \\
+\lpath{metta/dof11_evidence_discounting.metta} &
+Shows evidence-power discounting and amplification, matching the Lean theorem
+that the log-odds scale linearly with the evidence power. \\
 
 Biomedical route provenance &
-\lpath{Mettapedia/papers/pln-confidence-examples/metta/dof18_route_provenance.metta} &
-Keep direct-versus-pathway route tests; add route-specific $\kappa$ or
-discounting before supported-drug revision. \\
+\lpath{metta/dof18_route_provenance.metta} &
+Shows direct, pathway-mediated, and weak-literature routes with the same
+strength and route-specific confidence scales. \\
 
 Exchangeable de~Finetti F2 &
+\lpath{metta/dof13_f2_finite_shadow.metta};
 Lean F2 crown &
-Add a finite-prefix coin/patient-response stream: external readout always
-exists; raw all-gambles crown marked as requiring compatibility. Include the
-counterexample to pointwise zero-interior necessity as a symbolic canary. \\
+Uses a finite-prefix shadow to show the always-available external readout,
+while the raw all-gambles crown remains the Lean compatibility theorem. \\
 
 Dobrushin F3 collapse &
 Lean F3 crown &
-Add a weakly coupled sensor-grid story: all finite-query completions agree
-under the Dobrushin budget, so the interval collapses. \\
+The intended finite story is a weakly coupled sensor grid: all finite-query
+completions agree under the Dobrushin budget, so the interval collapses. \\
 
 Ising F4 strict width &
 Lean F4 crown &
-Add a spatial contagion or image-segmentation story: low-temperature coupling
-and boundary conditions keep the origin query interval nontrivial. \\
+The intended finite story is spatial contagion or image segmentation:
+low-temperature coupling and boundary conditions keep the origin query
+interval nontrivial. \\
 
 Completion-level extreme point &
-Credal-set semantics &
-Add a scenario-sampling example where two precise completions are sampled
-from the same credal set but the displayed STV remains the envelope summary. \\
+\lid{boundedMeasurableCredalSetHasStrictWidth} and
+\lid{boundedMeasurableCredalSet\_not\_determines\_of\_strictWidth} &
+The theorem-level layer says two admissible precise completions can disagree
+and therefore no single determined readout is justified. \\
 
 Extra hidden structure &
 Amplitude/phase Lean boundary &
-Add an optional example with two hidden-phase states that share classical STV
-but differ under a composition rule that sees phase. \\
+The Lean boundary marks hidden phase/amplitude structure that shares classical
+STV but can differ under a composition rule that sees the hidden coordinate. \\
 \bottomrule
 \end{longtable}
 

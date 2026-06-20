@@ -11,7 +11,7 @@
 ;   feeding an already-decoded confidence through w2c as if it were a weight is
 ;   the classic bug.
 ;
-; Lean oracle: PLNConfidenceWeightRevision  transportedConfidenceRevision /
+; Lean oracle: PLNConfidenceWeight.EvidenceWeightCoordinate.transportedConfidenceRevision /
 ;   plnConfidenceRevision / expConfidenceRevision / tanhConfidenceRevision
 ;   (one decode-add-reencode pattern, three charts).
 ; Portable: imports the shared evidence API (co-located ./pln_evidence.metta).

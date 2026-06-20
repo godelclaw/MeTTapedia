@@ -223,4 +223,4 @@ Complete. Roughly human-checked. Zero `sorry`, zero `axiom`.
 
 ## Papers
 
-See `papers/ks-lean-overview.pdf` for a Lean code walkthrough with line numbers.
+See `../../../../../papers/ks-lean-overview.pdf` for a Lean code walkthrough with line numbers.

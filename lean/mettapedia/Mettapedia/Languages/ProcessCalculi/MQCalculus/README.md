@@ -3,7 +3,7 @@
 Lean 4.28 formalization of the MQ-calculus (Stay & Meredith 2026).
 **10 files, 1,433 lines. Zero sorry.**
 
-Part of `papers/process-calculi.tex` (Section 4).
+Part of `../../../../../../papers/process-calculi.tex` (Section 4).
 
 ## Key Idea
 

@@ -11,7 +11,7 @@
 ;   interval but differ in adverse-event dependence; an STV per marginal hides
 ;   the incompatible joint structure.
 ;
-; Lean oracle: PLNTruthTower  CredalProjectionTower (credal envelope vs projective
+; Lean oracle: PLNTruthTower.CredalProjectionTower (credal envelope vs projective
 ;   width-complement vs lower-prevision bounds — four distinct semantics of "shape").
 ; Portable: self-contained, float literals -> CeTTa(HE) + PeTTa.
 ; ============================================================================

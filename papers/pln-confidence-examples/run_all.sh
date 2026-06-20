@@ -38,7 +38,7 @@ if command -v swipl >/dev/null 2>&1 && [ -f "$PETTA_DIR/run.sh" ]; then
     echo "----- $(basename "$f") -----"
     if ! ( cd "$PETTA_DIR" && sh run.sh "$f" 2>&1 \
         | sed 's/\x1b\[[0-9;]*m//g' \
-        | grep -E '^\[|^[0-9-]|^\(evidence|^\(stv|^true$|^false$' ); then
+        | grep -E '^\[|^[-]?[0-9]|^\(evidence|^\(stv|^true$|^false$' ); then
       echo "    [FAILED]"
       failures=$((failures + 1))
     fi

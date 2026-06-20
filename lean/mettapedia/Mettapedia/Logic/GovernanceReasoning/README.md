@@ -75,5 +75,5 @@ The formalization has three layers:
 
 ## Paper
 
-`papers/governance-deontic-logic.tex` — "Verified Dyadic Deontic Logic and
+`../../../../../papers/governance-deontic-logic.tex` — "Verified Dyadic Deontic Logic and
 Governance Reasoning in Lean 4"
