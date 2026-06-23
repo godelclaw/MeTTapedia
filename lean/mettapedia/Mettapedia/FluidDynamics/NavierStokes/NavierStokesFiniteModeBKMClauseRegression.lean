@@ -1,4 +1,5 @@
 import Mettapedia.FluidDynamics.NavierStokes.NavierStokesFiniteModeBKMClause
+import Mettapedia.FluidDynamics.NavierStokes.NavierStokesBKMZeroOutput
 
 /-!
 # Regression Tests for Finite-Mode BKM Clause Packaging

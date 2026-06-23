@@ -1,0 +1,10 @@
+import Mettapedia.FluidDynamics.NavierStokes.NavierStokesFiniteModePolynomialPressurePrimitive
+import Mettapedia.FluidDynamics.NavierStokes.NavierStokesFiniteModePolynomialPressureEvaluation
+import Mettapedia.FluidDynamics.NavierStokes.NavierStokesFiniteModePolynomialPressureDefect
+import Mettapedia.FluidDynamics.NavierStokes.NavierStokesFiniteModePolynomialPressureClosure
+
+/-!
+# Finite-mode polynomial pressure interface
+
+Compatibility hub for the finite-mode polynomial pressure library.
+-/

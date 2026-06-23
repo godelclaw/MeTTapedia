@@ -1,5 +1,6 @@
 import Mettapedia.Computability.PNP.CanonicalABTargetRoute
-import Mettapedia.Computability.PNP.ExactZABDecisionListStructuralObstruction
+import Mettapedia.Computability.PNP.ExactZABDecisionListStructuralObstructionCore
+import Mettapedia.Computability.PNP.ExactZABDecisionListStructuralObstructionActualInterface
 import Mettapedia.Computability.PNP.SharedExactZABAffineDecisionListCharacterization
 
 namespace Mettapedia.Computability.PNP

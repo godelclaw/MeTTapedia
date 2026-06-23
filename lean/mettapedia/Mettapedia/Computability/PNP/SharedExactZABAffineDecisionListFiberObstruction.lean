@@ -1,6 +1,11 @@
-import Mettapedia.Computability.PNP.SharedExactZABAffineDecisionListStructuralObstruction
-import Mettapedia.Computability.PNP.SharedExactZABTargetInterface
-import Mathlib.Tactic
+import Mettapedia.Computability.PNP.SharedExactZABAffineDecisionListCharacterization
+import Mettapedia.Computability.PNP.SharedExactZABAffineDecisionListStructuralObstructionRawBitVec
+import Mettapedia.Computability.PNP.SharedExactZABTargetInterfaceData
+import Mettapedia.Computability.PNP.SharedExactZABTargetInterfaceAffineFeature
+import Mettapedia.Computability.PNP.SharedExactZABTargetInterfaceSparseThreshold
+import Mettapedia.Computability.PNP.SharedExactZABTargetInterfaceDecisionList
+import Mettapedia.Computability.PNP.SharedExactZABTargetInterfaceDecisionListRecovery
+import Mathlib.Tactic.NormNum
 
 /-!
 # P vs NP crux: shared exact affine decision-list signatures already fail on

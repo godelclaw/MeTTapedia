@@ -1,4 +1,9 @@
-import Mettapedia.Computability.PNP.PNPv13SwitchingInstantiation
+import Mettapedia.Computability.PNP.PNPv13SwitchingInstantiationCore
+import Mettapedia.Computability.PNP.PNPv13SwitchingInstantiationConcrete
+import Mettapedia.Computability.PNP.PNPv13SwitchingHistoryConcretePrefix
+import Mettapedia.Computability.PNP.PNPv13SwitchingFieldedSuffixObstructions
+import Mettapedia.Computability.PNP.PNPv13SwitchingFailureLocalization
+import Mettapedia.Computability.PNP.PNPv13BoolPairProductObstructions
 
 /-!
 # PNP v13 switching route synthesis

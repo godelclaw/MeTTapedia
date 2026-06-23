@@ -1,6 +1,6 @@
 import Mettapedia.GraphTheory.FourColor.Theorem49ColoringGeneratorCoordinateDetector
-import Mettapedia.GraphTheory.FourColor.Legacy.Theorem49PlanarBoundaryAnnulusWheelWitnessRegression
-import Mathlib.Tactic
+import Mettapedia.GraphTheory.FourColor.Theorem49WheelWithInnerTriangleBenchmark
+import Mathlib.Tactic.NormNum
 
 namespace Mettapedia.GraphTheory.FourColor
 

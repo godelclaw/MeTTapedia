@@ -1,4 +1,3 @@
-import Mathlib.Tactic
 import Mettapedia.QuantumTheory.YangMills.ExtractionOddCutoff
 
 /-!
@@ -92,7 +91,7 @@ theorem extractionRemainder_fifteen_eq_fourteen_of_vanishOnOddDimensions
     (hvanish : VanishesOnOddDimensions coeff) :
     extractionRemainder 15 coeff = extractionRemainder 14 coeff := by
   exact extractionRemainder_succ_eq_of_succ_vanish
-    (d := 14) (coeff := coeff) (hvanish (by norm_num))
+    (d := 14) (coeff := coeff) (hvanish (by decide))
 
 end YangMills
 end QuantumTheory

@@ -1,5 +1,5 @@
 import Mettapedia.Computability.PNP.ActualSwitchedLocalBoundedSampleSharedExactZABSparseThresholdERMSampleBound
-import Mathlib.Tactic
+import Mathlib.Tactic.NormNum
 
 namespace Mettapedia.Computability.PNP
 
@@ -30,7 +30,7 @@ theorem boundedSamplePluginMajorityActualSwitchedLocalInterface_visibleWidthBudg
   exact
     ActualSwitchedLocalInterface.boundedSamplePluginMajorityActualSwitchedLocalInterface_visibleWidthBudget_lt_sampleBound_of_visibleSurfaceCard_le_of_width_le
       (n := 1) (r := 1) (k := 0) (sampleBound := 17)
-      (by omega)
+      (by norm_num)
       (by
         rw [card_exactVisiblePostSwitchSurface_bitVec]
         norm_num)

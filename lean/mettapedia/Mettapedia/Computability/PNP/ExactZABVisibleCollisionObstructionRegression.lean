@@ -1,4 +1,7 @@
-import Mettapedia.Computability.PNP.ExactZABVisibleCollisionObstruction
+import Mettapedia.Computability.PNP.ExactZABVisibleCollisionObstructionCore
+import Mettapedia.Computability.PNP.ExactZABVisibleCollisionObstructionTargets
+import Mettapedia.Computability.PNP.ExactZABVisibleCollisionObstructionRecovery
+import Mettapedia.Computability.PNP.ExactZABVisibleCollisionObstructionERM
 
 /-!
 # Regression checks for exact-ZAB visible-summary collision obstructions

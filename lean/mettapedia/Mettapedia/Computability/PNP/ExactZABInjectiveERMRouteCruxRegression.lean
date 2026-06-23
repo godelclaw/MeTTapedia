@@ -1,5 +1,5 @@
 import Mettapedia.Computability.PNP.ExactZABInjectiveERMRouteCrux
-import Mathlib.Tactic
+import Mathlib.Tactic.NormNum
 
 /-!
 # Regression checks for widened injective exact-ZAB ERM route contradictions

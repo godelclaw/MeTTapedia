@@ -1,7 +1,7 @@
 import Mettapedia.Computability.PNP.ActualSwitchedLocalSharedExactZABSparseThresholdERMWidthCharacterization
 import Mettapedia.Computability.PNP.BitFamilyUniformRecoveryLowerBound
 import Mettapedia.Computability.PNP.BitVecZABCompressionObstruction
-import Mathlib.Tactic
+import Mathlib.Tactic.NormNum
 
 /-!
 # P vs NP route consequence: the current sparse-threshold ERM liveness packet

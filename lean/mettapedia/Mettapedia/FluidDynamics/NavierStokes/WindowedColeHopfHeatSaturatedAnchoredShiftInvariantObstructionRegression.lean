@@ -1,4 +1,4 @@
-import Mettapedia.FluidDynamics.NavierStokes.WindowedColeHopfHeatSaturatedAnchoredShiftInvariantObstruction
+import Mettapedia.FluidDynamics.NavierStokes.WindowedColeHopfHeatSaturatedAnchoredShiftInvariantObstructionComponentwise
 
 /-!
 # Regression Tests for Componentwise Saturated Anchored Shift-Invariant Obstruction

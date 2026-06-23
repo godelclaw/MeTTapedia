@@ -288,7 +288,7 @@ theorem pathGraph_isAcyclic : pathGraph.IsAcyclic := by
               | cons h4 c4 =>
                   simp at hlen
 
-/-- No embedding of the three-edge path graph can admit the honest facial closed-walk source
+/-- No embedding of the three-edge path graph can support the honest facial closed-walk source
 interface: any such witness would give a nonempty closed trail in an acyclic graph. -/
 theorem not_nonempty_planarBoundaryClosedWalkEmbeddingData_pathGraph
     {emb : PlaneEmbeddingWithBoundary pathGraph} :
@@ -452,7 +452,7 @@ theorem
     (nonempty_planarBoundaryCyclicOrderedFaceArcEmbeddingData_iff_exists_planarBoundaryCyclicFaceBoundaryVertexWalkGeometryAndSelectedBoundaryArcOnFace).1
       nonempty_planarBoundaryCyclicOrderedFaceArcEmbeddingData_starEmbedding
 
-/-- The star graph cannot admit the honest facial closed-walk source interface on any embedding:
+/-- The star graph cannot support the honest facial closed-walk source interface on any embedding:
 any such witness would give a nonempty closed trail in an acyclic graph. -/
 theorem not_nonempty_planarBoundaryClosedWalkEmbeddingData_starGraph
     {emb : PlaneEmbeddingWithBoundary starGraph} :

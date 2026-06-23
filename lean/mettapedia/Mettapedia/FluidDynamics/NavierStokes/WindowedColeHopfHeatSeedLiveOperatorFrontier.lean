@@ -2,7 +2,7 @@ import Mettapedia.FluidDynamics.NavierStokes.WindowedColeHopfHeatPackage
 import Mettapedia.FluidDynamics.NavierStokes.FeffermanSeedLiveOperatorFrontier
 import Mettapedia.FluidDynamics.NavierStokes.WindowedColeHopfHeatSeedLiveProfileFrontier
 import Mettapedia.FluidDynamics.NavierStokes.WindowedColeHopfHeatSampleKernelFrontier
-import Mettapedia.FluidDynamics.NavierStokes.WindowedColeHopfHeatShiftKernelFrontier
+import Mettapedia.FluidDynamics.NavierStokes.WindowedColeHopfHeatShiftKernelFrontierCore
 
 /-!
 # Seed/Live Operator Frontier on the Windowed Cole-Hopf Heat Route

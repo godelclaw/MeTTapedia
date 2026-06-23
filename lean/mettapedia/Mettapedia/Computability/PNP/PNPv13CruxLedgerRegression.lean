@@ -1,4 +1,8 @@
-import Mettapedia.Computability.PNP.PNPv13CruxLedger
+import Mettapedia.Computability.PNP.PNPv13CruxLedgerReadoutCore
+import Mettapedia.Computability.PNP.PNPv13CruxLedgerReadoutAmbiguity
+import Mettapedia.Computability.PNP.PNPv13CruxLedgerBoolReadoutCounterexample
+import Mettapedia.Computability.PNP.PNPv13CruxLedgerBoolProductCore
+import Mettapedia.Computability.PNP.PNPv13CruxLedgerBoolPairProduct
 
 /-!
 # Regression checks for the PNP v13 crux ledger

@@ -1,4 +1,4 @@
-import Mettapedia.Computability.PNP.SharedABTargetInterface
+import Mettapedia.Computability.PNP.SharedABDecisionListRecoveryInterface
 
 /-!
 # P vs NP grassroots: canonical raw `(a, b)` specialization of the target route

@@ -1,4 +1,5 @@
 import Mettapedia.GraphTheory.FourColor.Theorem49PlanarBoundaryAnnulusHonestGeometryRegression
+import Mettapedia.GraphTheory.FourColor.PlanarBoundaryClosedWalkSourceProjectionAtMostOne
 
 /-!
 # Route impossibility: at-most-one does not guarantee nonempty carrier

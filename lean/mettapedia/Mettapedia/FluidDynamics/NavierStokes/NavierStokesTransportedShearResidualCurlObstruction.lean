@@ -1,4 +1,6 @@
-import Mettapedia.FluidDynamics.NavierStokes.NavierStokesBKMContinuationTarget
+import Mettapedia.FluidDynamics.NavierStokes.NavierStokesBKMContinuationCore
+import Mettapedia.FluidDynamics.NavierStokes.NavierStokesUniformVorticityContinuationSurface
+import Mettapedia.FluidDynamics.NavierStokes.VectorCalculusR3TransportVorticity
 
 /-!
 # Transported shear residual-curl obstructions

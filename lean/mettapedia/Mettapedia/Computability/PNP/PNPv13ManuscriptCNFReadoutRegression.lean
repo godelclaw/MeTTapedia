@@ -1,4 +1,7 @@
-import Mettapedia.Computability.PNP.PNPv13ManuscriptCNFReadout
+import Mettapedia.Computability.PNP.PNPv13ManuscriptCNFReadoutCore
+import Mettapedia.Computability.PNP.PNPv13ManuscriptCNFReadoutLockedLayer
+import Mettapedia.Computability.PNP.PNPv13ManuscriptCNFReadoutDeterministic
+import Mettapedia.Computability.PNP.PNPv13ManuscriptCNFReadoutCountermodels
 
 /-!
 # Regression checks for manuscript-shaped v13 CNF readout constancy

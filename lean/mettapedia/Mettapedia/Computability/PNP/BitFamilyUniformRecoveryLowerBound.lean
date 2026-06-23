@@ -1,5 +1,6 @@
 import Mettapedia.Computability.PNP.BitFamilyUniformRecoveryBinary
-import Mathlib.Tactic
+import Init.Omega
+import Mathlib.Tactic.NormNum
 
 /-!
 # P vs NP background theory: lower bounds forced by finite recovery gaps

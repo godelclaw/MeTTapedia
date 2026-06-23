@@ -1,5 +1,5 @@
 import Mettapedia.FluidDynamics.NavierStokes.NavierStokesFiniteModeFixedPressureExactClassification
-import Mettapedia.FluidDynamics.NavierStokes.NavierStokesFiniteModeSchwartzBKMBridge
+import Mettapedia.FluidDynamics.NavierStokes.NavierStokesFiniteModeVorticity
 
 /-!
 # Finite-Mode Fixed-Pressure BKM Classification

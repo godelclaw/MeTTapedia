@@ -1,6 +1,6 @@
 import Mettapedia.Computability.PNP.ActualSwitchedLocalBitFallbackWrapperSparseThresholdERMRecoveryHeavyRegionCharacterization
 import Mettapedia.Computability.PNP.ActualSwitchedLocalSharedExactZABSparseThresholdERMRecoveryRegionObstructionRegression
-import Mathlib.Tactic
+import Mathlib.Tactic.NormNum
 
 namespace Mettapedia.Computability.PNP
 

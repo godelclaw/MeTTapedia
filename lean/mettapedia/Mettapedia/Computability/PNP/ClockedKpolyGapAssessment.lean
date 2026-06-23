@@ -1,4 +1,6 @@
-import Mettapedia.Computability.PNP.ExactVisibleImageBudget
+import Mettapedia.Computability.PNP.ExactVisibleImageBudgetFiniteCovers
+import Mettapedia.Computability.PNP.ExactVisibleImageBudgetLowerBounds
+import Mettapedia.Computability.PNP.ExactVisibleImageBudgetExactVisible
 
 /-!
 # PNP clocked `Kpoly` gap assessment

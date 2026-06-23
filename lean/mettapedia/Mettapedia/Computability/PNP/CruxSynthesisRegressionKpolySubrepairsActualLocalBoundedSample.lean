@@ -1,0 +1,209 @@
+import Mettapedia.Computability.PNP.CruxKpolySubrepairCoverage
+
+/-!
+# Regression checks for PNP Kpoly subrepairs: actual-local bounded-sample subrepair membership checks
+
+This module is part of the decomposed Kpoly subrepair regression ledger.
+It keeps the historical `CruxSynthesisRegression` theorem namespace while
+separating membership checks by mathematical role.
+-/
+
+namespace Mettapedia.Computability.PNP.CruxSynthesisRegression
+
+open Mettapedia.Computability.PNP
+
+universe u v w z
+
+theorem current_pnp_kpoly_actual_local_plugin_lookup_regression :
+    PNPKpolySubrepairClass.actualLocalPluginLookupFullRuleObstruction ∈
+      currentPNPKpolyCoveredSubrepairs := by
+  exact currentPNPKpolyCoveredSubrepairs_exact
+    PNPKpolySubrepairClass.actualLocalPluginLookupFullRuleObstruction
+
+theorem current_pnp_kpoly_actual_local_plugin_majority_regression :
+    PNPKpolySubrepairClass.actualLocalPluginMajorityFullRuleObstruction ∈
+      currentPNPKpolyCoveredSubrepairs := by
+  exact currentPNPKpolyCoveredSubrepairs_exact
+    PNPKpolySubrepairClass.actualLocalPluginMajorityFullRuleObstruction
+
+theorem current_pnp_kpoly_actual_local_plugin_sample_majority_regression :
+    PNPKpolySubrepairClass.actualLocalPluginSampleMajorityFullRuleObstruction ∈
+      currentPNPKpolyCoveredSubrepairs := by
+  exact currentPNPKpolyCoveredSubrepairs_exact
+    PNPKpolySubrepairClass.actualLocalPluginSampleMajorityFullRuleObstruction
+
+theorem current_pnp_kpoly_actual_local_plugin_sample_majority_sparse_threshold_erm_visible_budget_regression :
+    PNPKpolySubrepairClass.actualLocalPluginSampleMajoritySparseThresholdERMVisibleBudgetBoundary ∈
+      currentPNPKpolyCoveredSubrepairs := by
+  exact currentPNPKpolyCoveredSubrepairs_exact
+    PNPKpolySubrepairClass.actualLocalPluginSampleMajoritySparseThresholdERMVisibleBudgetBoundary
+
+theorem current_pnp_kpoly_actual_local_bounded_sample_majority_regression :
+    PNPKpolySubrepairClass.actualLocalBoundedSampleMajorityThresholdBoundary ∈
+      currentPNPKpolyCoveredSubrepairs := by
+  exact currentPNPKpolyCoveredSubrepairs_exact
+    PNPKpolySubrepairClass.actualLocalBoundedSampleMajorityThresholdBoundary
+
+theorem current_pnp_kpoly_actual_local_bounded_sample_majority_false_support_regression :
+    PNPKpolySubrepairClass.actualLocalBoundedSampleMajorityFalseSupportBoundary ∈
+      currentPNPKpolyCoveredSubrepairs := by
+  exact currentPNPKpolyCoveredSubrepairs_exact
+    PNPKpolySubrepairClass.actualLocalBoundedSampleMajorityFalseSupportBoundary
+
+theorem current_pnp_kpoly_actual_local_bounded_sample_majority_default_tie_regression :
+    PNPKpolySubrepairClass.actualLocalBoundedSampleMajorityDefaultTieBoundary ∈
+      currentPNPKpolyCoveredSubrepairs := by
+  exact currentPNPKpolyCoveredSubrepairs_exact
+    PNPKpolySubrepairClass.actualLocalBoundedSampleMajorityDefaultTieBoundary
+
+theorem current_pnp_kpoly_actual_local_bounded_sample_majority_fallback_side_channel_regression :
+    PNPKpolySubrepairClass.actualLocalBoundedSampleMajorityFallbackSideChannelBoundary ∈
+      currentPNPKpolyCoveredSubrepairs := by
+  exact currentPNPKpolyCoveredSubrepairs_exact
+    PNPKpolySubrepairClass.actualLocalBoundedSampleMajorityFallbackSideChannelBoundary
+
+theorem current_pnp_kpoly_actual_local_bounded_sample_majority_fallback_finite_predictor_cover_obstruction_regression :
+    PNPKpolySubrepairClass.actualLocalBoundedSampleMajorityFallbackFinitePredictorCoverObstruction ∈
+      currentPNPKpolyCoveredSubrepairs := by
+  exact currentPNPKpolyCoveredSubrepairs_exact
+    PNPKpolySubrepairClass.actualLocalBoundedSampleMajorityFallbackFinitePredictorCoverObstruction
+
+theorem current_pnp_kpoly_actual_local_bounded_sample_majority_fallback_finite_index_representative_cover_obstruction_regression :
+    PNPKpolySubrepairClass.actualLocalBoundedSampleMajorityFallbackFiniteIndexRepresentativeCoverObstruction ∈
+      currentPNPKpolyCoveredSubrepairs := by
+  exact currentPNPKpolyCoveredSubrepairs_exact
+    PNPKpolySubrepairClass.actualLocalBoundedSampleMajorityFallbackFiniteIndexRepresentativeCoverObstruction
+
+theorem current_pnp_kpoly_actual_local_bounded_sample_majority_fallback_finite_predictor_quotient_obstruction_regression :
+    PNPKpolySubrepairClass.actualLocalBoundedSampleMajorityFallbackFinitePredictorQuotientObstruction ∈
+      currentPNPKpolyCoveredSubrepairs := by
+  exact currentPNPKpolyCoveredSubrepairs_exact
+    PNPKpolySubrepairClass.actualLocalBoundedSampleMajorityFallbackFinitePredictorQuotientObstruction
+
+theorem current_pnp_kpoly_actual_local_bounded_sample_majority_fallback_exact_visible_compression_obstruction_regression :
+    PNPKpolySubrepairClass.actualLocalBoundedSampleMajorityFallbackExactVisibleCompressionObstruction ∈
+      currentPNPKpolyCoveredSubrepairs := by
+  exact currentPNPKpolyCoveredSubrepairs_exact
+    PNPKpolySubrepairClass.actualLocalBoundedSampleMajorityFallbackExactVisibleCompressionObstruction
+
+theorem current_pnp_kpoly_actual_local_bounded_sample_majority_fallback_clocked_realization_obstruction_regression :
+    PNPKpolySubrepairClass.actualLocalBoundedSampleMajorityFallbackClockedRealizationObstruction ∈
+      currentPNPKpolyCoveredSubrepairs := by
+  exact currentPNPKpolyCoveredSubrepairs_exact
+    PNPKpolySubrepairClass.actualLocalBoundedSampleMajorityFallbackClockedRealizationObstruction
+
+theorem current_pnp_kpoly_actual_local_bounded_sample_majority_fallback_clocked_payload_obstruction_regression :
+    PNPKpolySubrepairClass.actualLocalBoundedSampleMajorityFallbackClockedPayloadObstruction ∈
+      currentPNPKpolyCoveredSubrepairs := by
+  exact currentPNPKpolyCoveredSubrepairs_exact
+    PNPKpolySubrepairClass.actualLocalBoundedSampleMajorityFallbackClockedPayloadObstruction
+
+theorem current_pnp_kpoly_actual_local_bounded_sample_majority_fallback_family_sparse_regression :
+    PNPKpolySubrepairClass.actualLocalBoundedSampleMajorityFallbackFamilySparseBoundary ∈
+      currentPNPKpolyCoveredSubrepairs := by
+  exact currentPNPKpolyCoveredSubrepairs_exact
+    PNPKpolySubrepairClass.actualLocalBoundedSampleMajorityFallbackFamilySparseBoundary
+
+theorem current_pnp_kpoly_actual_local_bounded_sample_majority_fallback_family_empty_sample_realization_regression :
+    PNPKpolySubrepairClass.actualLocalBoundedSampleMajorityFallbackFamilyEmptySampleRealizationBoundary ∈
+      currentPNPKpolyCoveredSubrepairs := by
+  exact currentPNPKpolyCoveredSubrepairs_exact
+    PNPKpolySubrepairClass.actualLocalBoundedSampleMajorityFallbackFamilyEmptySampleRealizationBoundary
+
+theorem current_pnp_kpoly_actual_local_bounded_sample_majority_fallback_family_radius_cover_regression :
+    PNPKpolySubrepairClass.actualLocalBoundedSampleMajorityFallbackFamilyRadiusCoverBoundary ∈
+      currentPNPKpolyCoveredSubrepairs := by
+  exact currentPNPKpolyCoveredSubrepairs_exact
+    PNPKpolySubrepairClass.actualLocalBoundedSampleMajorityFallbackFamilyRadiusCoverBoundary
+
+theorem current_pnp_kpoly_actual_local_bounded_sample_majority_fallback_family_finite_predictor_cover_regression :
+    PNPKpolySubrepairClass.actualLocalBoundedSampleMajorityFallbackFamilyFinitePredictorCoverBoundary ∈
+      currentPNPKpolyCoveredSubrepairs := by
+  exact currentPNPKpolyCoveredSubrepairs_exact
+    PNPKpolySubrepairClass.actualLocalBoundedSampleMajorityFallbackFamilyFinitePredictorCoverBoundary
+
+theorem current_pnp_kpoly_actual_local_bounded_sample_majority_fallback_family_radius_cover_surjectivity_regression :
+    PNPKpolySubrepairClass.actualLocalBoundedSampleMajorityFallbackFamilyRadiusCoverSurjectivityBoundary ∈
+      currentPNPKpolyCoveredSubrepairs := by
+  exact currentPNPKpolyCoveredSubrepairs_exact
+    PNPKpolySubrepairClass.actualLocalBoundedSampleMajorityFallbackFamilyRadiusCoverSurjectivityBoundary
+
+theorem current_pnp_kpoly_actual_local_bounded_sample_majority_fallback_family_pointwise_radius_cover_surjectivity_regression :
+    PNPKpolySubrepairClass.actualLocalBoundedSampleMajorityFallbackFamilyPointwiseRadiusCoverSurjectivityBoundary ∈
+      currentPNPKpolyCoveredSubrepairs := by
+  exact currentPNPKpolyCoveredSubrepairs_exact
+    PNPKpolySubrepairClass.actualLocalBoundedSampleMajorityFallbackFamilyPointwiseRadiusCoverSurjectivityBoundary
+
+theorem current_pnp_kpoly_actual_local_bounded_sample_majority_fallback_family_fallback_surjective_regression :
+    PNPKpolySubrepairClass.actualLocalBoundedSampleMajorityFallbackFamilyFallbackSurjectiveBoundary ∈
+      currentPNPKpolyCoveredSubrepairs := by
+  exact currentPNPKpolyCoveredSubrepairs_exact
+    PNPKpolySubrepairClass.actualLocalBoundedSampleMajorityFallbackFamilyFallbackSurjectiveBoundary
+
+theorem current_pnp_kpoly_actual_local_bounded_sample_majority_fallback_family_large_disagreement_support_obstruction_regression :
+    PNPKpolySubrepairClass.actualLocalBoundedSampleMajorityFallbackFamilyLargeDisagreementSupportObstruction ∈
+      currentPNPKpolyCoveredSubrepairs := by
+  exact currentPNPKpolyCoveredSubrepairs_exact
+    PNPKpolySubrepairClass.actualLocalBoundedSampleMajorityFallbackFamilyLargeDisagreementSupportObstruction
+
+theorem current_pnp_kpoly_actual_local_bounded_sample_majority_fallback_family_small_subsets_product_regression :
+    PNPKpolySubrepairClass.actualLocalBoundedSampleMajorityFallbackFamilySmallSubsetsProductBoundary ∈
+      currentPNPKpolyCoveredSubrepairs := by
+  exact currentPNPKpolyCoveredSubrepairs_exact
+    PNPKpolySubrepairClass.actualLocalBoundedSampleMajorityFallbackFamilySmallSubsetsProductBoundary
+
+theorem current_pnp_kpoly_actual_local_bounded_sample_majority_fallback_family_small_subsets_product_surjectivity_obstruction_regression :
+    PNPKpolySubrepairClass.actualLocalBoundedSampleMajorityFallbackFamilySmallSubsetsProductSurjectivityObstruction ∈
+      currentPNPKpolyCoveredSubrepairs := by
+  exact currentPNPKpolyCoveredSubrepairs_exact
+    PNPKpolySubrepairClass.actualLocalBoundedSampleMajorityFallbackFamilySmallSubsetsProductSurjectivityObstruction
+
+theorem current_pnp_kpoly_actual_local_bounded_sample_majority_fallback_family_full_radius_regression :
+    PNPKpolySubrepairClass.actualLocalBoundedSampleMajorityFallbackFamilyFullRadiusBoundary ∈
+      currentPNPKpolyCoveredSubrepairs := by
+  exact currentPNPKpolyCoveredSubrepairs_exact
+    PNPKpolySubrepairClass.actualLocalBoundedSampleMajorityFallbackFamilyFullRadiusBoundary
+
+theorem current_pnp_kpoly_actual_local_bounded_sample_majority_fallback_family_zero_sample_fallback_equivalence_regression :
+    PNPKpolySubrepairClass.actualLocalBoundedSampleMajorityFallbackFamilyZeroSampleFallbackEquivalence ∈
+      currentPNPKpolyCoveredSubrepairs := by
+  exact currentPNPKpolyCoveredSubrepairs_exact
+    PNPKpolySubrepairClass.actualLocalBoundedSampleMajorityFallbackFamilyZeroSampleFallbackEquivalence
+
+theorem current_pnp_kpoly_actual_local_bounded_sample_majority_fallback_family_zero_sample_finite_predictor_cover_regression :
+    PNPKpolySubrepairClass.actualLocalBoundedSampleMajorityFallbackFamilyZeroSampleFinitePredictorCoverBoundary ∈
+      currentPNPKpolyCoveredSubrepairs := by
+  exact currentPNPKpolyCoveredSubrepairs_exact
+    PNPKpolySubrepairClass.actualLocalBoundedSampleMajorityFallbackFamilyZeroSampleFinitePredictorCoverBoundary
+
+theorem current_pnp_kpoly_actual_local_bounded_sample_majority_fallback_family_zero_sample_finite_index_representative_cover_regression :
+    PNPKpolySubrepairClass.actualLocalBoundedSampleMajorityFallbackFamilyZeroSampleFiniteIndexRepresentativeCoverBoundary ∈
+      currentPNPKpolyCoveredSubrepairs := by
+  exact currentPNPKpolyCoveredSubrepairs_exact
+    PNPKpolySubrepairClass.actualLocalBoundedSampleMajorityFallbackFamilyZeroSampleFiniteIndexRepresentativeCoverBoundary
+
+theorem current_pnp_kpoly_actual_local_bounded_sample_majority_fallback_family_zero_sample_finite_predictor_quotient_regression :
+    PNPKpolySubrepairClass.actualLocalBoundedSampleMajorityFallbackFamilyZeroSampleFinitePredictorQuotientBoundary ∈
+      currentPNPKpolyCoveredSubrepairs := by
+  exact currentPNPKpolyCoveredSubrepairs_exact
+    PNPKpolySubrepairClass.actualLocalBoundedSampleMajorityFallbackFamilyZeroSampleFinitePredictorQuotientBoundary
+
+theorem current_pnp_kpoly_actual_local_bounded_sample_majority_fallback_family_zero_sample_exact_visible_compression_regression :
+    PNPKpolySubrepairClass.actualLocalBoundedSampleMajorityFallbackFamilyZeroSampleExactVisibleCompressionBoundary ∈
+      currentPNPKpolyCoveredSubrepairs := by
+  exact currentPNPKpolyCoveredSubrepairs_exact
+    PNPKpolySubrepairClass.actualLocalBoundedSampleMajorityFallbackFamilyZeroSampleExactVisibleCompressionBoundary
+
+theorem current_pnp_kpoly_actual_local_bounded_sample_majority_fallback_family_zero_sample_clocked_realization_regression :
+    PNPKpolySubrepairClass.actualLocalBoundedSampleMajorityFallbackFamilyZeroSampleClockedRealizationBoundary ∈
+      currentPNPKpolyCoveredSubrepairs := by
+  exact currentPNPKpolyCoveredSubrepairs_exact
+    PNPKpolySubrepairClass.actualLocalBoundedSampleMajorityFallbackFamilyZeroSampleClockedRealizationBoundary
+
+theorem current_pnp_kpoly_actual_local_bounded_sample_majority_fallback_family_zero_sample_clocked_payload_regression :
+    PNPKpolySubrepairClass.actualLocalBoundedSampleMajorityFallbackFamilyZeroSampleClockedPayloadBoundary ∈
+      currentPNPKpolyCoveredSubrepairs := by
+  exact currentPNPKpolyCoveredSubrepairs_exact
+    PNPKpolySubrepairClass.actualLocalBoundedSampleMajorityFallbackFamilyZeroSampleClockedPayloadBoundary
+
+end Mettapedia.Computability.PNP.CruxSynthesisRegression

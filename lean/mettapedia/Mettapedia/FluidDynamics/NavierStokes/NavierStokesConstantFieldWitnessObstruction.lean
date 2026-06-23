@@ -1,5 +1,8 @@
-import Mettapedia.FluidDynamics.NavierStokes.NavierStokesWitnessConstruction
-import Mettapedia.FluidDynamics.NavierStokes.NavierStokesUniformVorticityContinuationTarget
+import Mettapedia.FluidDynamics.NavierStokes.NavierStokesWitnessConstructionZero
+import Mettapedia.FluidDynamics.NavierStokes.NavierStokesWitnessConstructionTimeIndependent
+import Mettapedia.FluidDynamics.NavierStokes.NavierStokesWitnessConstructionPressureGauge
+import Mettapedia.FluidDynamics.NavierStokes.NavierStokesWitnessConstructionBoxed
+import Mettapedia.FluidDynamics.NavierStokes.NavierStokesUniformVorticityEnergyObstructions
 
 /-!
 # Constant-field finite-time witness obstruction

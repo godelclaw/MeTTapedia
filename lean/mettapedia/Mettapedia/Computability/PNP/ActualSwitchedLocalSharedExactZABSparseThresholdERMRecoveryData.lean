@@ -1,6 +1,8 @@
 import Mettapedia.Computability.PNP.ActualSwitchedLocalSharedExactZABSparseThresholdERMData
 import Mettapedia.Computability.PNP.ClockedKpolyGapAssessment
-import Mettapedia.Computability.PNP.SharedExactZABFeatureERMInterface
+import Mettapedia.Computability.PNP.SharedExactZABFeatureERMInterfaceData
+import Mettapedia.Computability.PNP.SharedExactZABFeatureERMInterfaceAffineFeature
+import Mettapedia.Computability.PNP.SharedExactZABFeatureERMInterfaceSparseThreshold
 
 /-!
 # P vs NP route bridge: actual switched-local point-block sparse-threshold ERM

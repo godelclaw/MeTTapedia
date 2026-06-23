@@ -1,5 +1,5 @@
 import Mettapedia.Computability.PNP.ActualSwitchedLocalStructure
-import Mettapedia.Computability.PNP.ProductSuccessKpolyBridgeObstruction
+import Mettapedia.Computability.PNP.ProductSuccessKpolyBridgeObstructionClockedObstructions
 
 /-!
 # PNP route bridge: actual switched-history wrappers

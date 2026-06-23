@@ -1,5 +1,7 @@
-import Mettapedia.FluidDynamics.NavierStokes.NavierStokesFiniteModeBoundedEnergy
-import Mettapedia.FluidDynamics.NavierStokes.NavierStokesUniformVorticityContinuationTarget
+import Mettapedia.FluidDynamics.NavierStokes.NavierStokesFiniteModeBoundedEnergyCore
+import Mettapedia.FluidDynamics.NavierStokes.NavierStokesFiniteModeBoundedEnergyAntiProfile
+import Mettapedia.FluidDynamics.NavierStokes.NavierStokesFiniteModeBoundedEnergyGlobal
+import Mettapedia.FluidDynamics.NavierStokes.NavierStokesUniformVorticityRegularityTransfers
 
 /-!
 # Finite-Mode Uniform Continuation Clause Packaging

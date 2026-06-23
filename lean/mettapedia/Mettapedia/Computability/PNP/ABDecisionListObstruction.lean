@@ -1,5 +1,6 @@
 import Mettapedia.Computability.PNP.ABVisibleCompressionObstruction
-import Mathlib.Tactic
+import Init.Omega
+import Mathlib.Tactic.NormNum
 
 /-!
 # PNP crux: raw `(a, b)` decision lists are a strict repair subclass

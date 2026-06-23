@@ -1,4 +1,4 @@
-import Mettapedia.FluidDynamics.NavierStokes.NavierStokesFiniteModeSchwartzBKMBridge
+import Mettapedia.FluidDynamics.NavierStokes.NavierStokesFiniteModeSchwartzBKMEqualAmplitudeMomentum
 import Mettapedia.FluidDynamics.NavierStokes.NavierStokesWitnessConstructionGlobalOutputObstruction
 
 /-!

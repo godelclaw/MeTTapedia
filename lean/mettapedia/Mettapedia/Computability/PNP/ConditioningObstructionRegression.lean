@@ -1,4 +1,8 @@
-import Mettapedia.Computability.PNP.ConditioningObstruction
+import Mettapedia.Computability.PNP.ConditioningObstructionLabelFiber
+import Mettapedia.Computability.PNP.ConditioningObstructionCountIndependence
+import Mettapedia.Computability.PNP.ConditioningObstructionBoolRecoding
+import Mettapedia.Computability.PNP.ConditioningObstructionAnyRecoding
+import Mettapedia.Computability.PNP.ConditioningObstructionBoolPair
 
 /-!
 # Regression checks for conditioning obstructions

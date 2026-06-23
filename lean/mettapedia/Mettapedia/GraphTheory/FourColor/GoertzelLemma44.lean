@@ -1,3 +1,4 @@
+import Mathlib.Algebra.BigOperators.Pi
 import Mettapedia.GraphTheory.FourColor.GoertzelDefinition48Literal
 
 namespace Mettapedia.GraphTheory.FourColor
@@ -130,7 +131,7 @@ theorem sum_v23_single_component_purifications_eq_literalPolarizedFaceGenerator
             exact v23_single_component_purification C a b faceBoundary K
     _ = literalPolarizedFaceGenerator C a b faceBoundary := by
           funext e
-          simp [literalPolarizedFaceGenerator]
+          simp [literalPolarizedFaceGenerator, Finset.sum_apply]
 
 /-- Consequently, the finite sum of exact v23 Step 2 purification terms matches the simplified
 boundary-only generator already used downstream in the theorem-4.9 files. -/

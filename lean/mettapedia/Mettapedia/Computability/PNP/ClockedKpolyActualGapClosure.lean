@@ -1,7 +1,7 @@
 import Mettapedia.Computability.PNP.BitVecZABERMInterface
 import Mettapedia.Computability.PNP.ClockedKpolyGapAssessment
 import Mettapedia.Computability.PNP.ExactZABERMRoute
-import Mettapedia.Computability.PNP.ProductSuccessKpolyBridgeObstruction
+import Mettapedia.Computability.PNP.ProductSuccessKpolyBridgeObstructionClockedObstructions
 
 /-!
 # PNP clocked `Kpoly`: actual exact-visible family gap closure

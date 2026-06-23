@@ -11,7 +11,7 @@ previous-boundary witness geometry, as outlined in `Theorem49NextHardProblemSumm
 ## Main finding
 
 The `counterCollarGeometry` obstruction (which shows basic collar geometry does NOT force
-previous-boundary witness) **cannot admit a honest closed-walk source** because its underlying
+previous-boundary witness) **cannot support a honest closed-walk source** because its underlying
 graph `counterGraph` is disconnected.
 
 ### Graph structure of counterCollarGeometry
@@ -41,8 +41,8 @@ both edges `eo` and `ep`. But:
 4. And vertices 2,3 are only connected to each other (via `ep`)
 5. There is **no path** between these disjoint components
 
-Therefore, no closed walk can exist on face `f0`, which means `counterEmbedding` cannot admit
-`PlanarBoundaryClosedWalkEmbeddingData`, and hence cannot admit
+Therefore, no closed walk can exist on face `f0`, which means `counterEmbedding` cannot support
+`PlanarBoundaryClosedWalkEmbeddingData`, and hence cannot support
 `PlanarBoundaryClosedWalkAnnulusBoundarySource`.
 
 ## Implications
@@ -56,14 +56,14 @@ This result is significant because:
 
 3. **The mechanism is connectivity:** Honest sources require facial closed walks, which require
    the graph to be sufficiently connected. Disconnected graphs with face boundaries spanning
-   multiple components cannot admit honest sources.
+   multiple components cannot support honest sources.
 
 ## Next steps: Deriving previous-boundary witness from honest sources
 
 The investigation strategy now becomes:
 
 1. **Characterize the connectivity forced by honest sources**
-   - What graph connectivity properties must hold for a graph to admit
+   - What graph connectivity properties must hold for a graph to support
      `PlanarBoundaryClosedWalkEmbeddingData`?
    - For each face, the boundary edges must form a connected subgraph
 
@@ -94,7 +94,7 @@ open Theorem49PlanarBoundaryAnnulusWitnessRegression
 open Theorem49PlanarBoundaryAnnulusHonestGeometryRegression
 
 /-!
-### Main negative result: counterCollarGeometry cannot admit honest source
+### Main negative result: counterCollarGeometry cannot support honest source
 -/
 
 /-- The unique matching partner of a vertex in `counterGraph`. -/
@@ -226,7 +226,7 @@ theorem not_admits_faceBoundaryClosedWalk_counterEmbedding_fa :
   rw [hnil] at hnonempty
   simp at hnonempty
 
-/-- Since face f0 does not admit a facial closed walk, the counterEmbedding cannot admit
+/-- Since face f0 does not support a facial closed walk, the counterEmbedding cannot support
 a closed-walk embedding data structure (which requires every face to have a closed walk). -/
 theorem not_admits_closedWalkEmbeddingData_counterEmbedding :
     ¬ Nonempty (PlanarBoundaryClosedWalkEmbeddingData counterEmbedding) := by
@@ -247,7 +247,7 @@ theorem not_admitsPlanarBoundaryClosedWalkAnnulusBoundarySource_counterGraph :
       counterGraph_isAcyclic counterGraph_edgeSet_nonempty
 
 /-- **Main result**: The counterCollarGeometry obstruction (which violates previous-boundary
-witness geometry) cannot admit a honest closed-walk source.
+witness geometry) cannot support a honest closed-walk source.
 
 This establishes that honest sources rule out the known obstruction to deriving previous-boundary
 witness from collar geometry. -/
@@ -260,7 +260,7 @@ theorem not_admits_honestSource_counterCollarGeometry :
 ### Contrast with the positive example
 
 Recall from `Theorem49PlanarBoundaryAnnulusHonestGeometryRegression` that `diamondWithTriangle`
-DOES admit both an honest source (`diamondWithTriangleHonestSource`) and previous-boundary witness
+DOES support both an honest source (`diamondWithTriangleHonestSource`) and previous-boundary witness
 geometry (`diamondWithTriangleOneCollarPreviousBoundaryWitnessGeometry`).
 
 The key difference: `diamondWithTriangle` has a **connected** graph where facial closed walks

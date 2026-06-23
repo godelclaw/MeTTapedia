@@ -1,0 +1,14 @@
+import Mettapedia.Computability.PNP.CruxSynthesisRegressionKpolyBoundedSampleBase
+import Mettapedia.Computability.PNP.CruxSynthesisRegressionKpolyBoundedSampleFallbackFamily
+import Mettapedia.Computability.PNP.CruxSynthesisRegressionKpolyBoundedSampleBitFallbackCovers
+import Mettapedia.Computability.PNP.CruxSynthesisRegressionKpolyBoundedSampleBitFallbackZeroSample
+import Mettapedia.Computability.PNP.CruxSynthesisRegressionKpolyBoundedSampleBitFallbackExactDecoderObstructions
+import Mettapedia.Computability.PNP.CruxSynthesisRegressionKpolyBoundedSampleBitFallbackBudgets
+import Mettapedia.Computability.PNP.CruxSynthesisRegressionKpolyBoundedSampleTerminalObstructions
+
+/-!
+# Regression checks for PNP Kpoly bounded-sample anchors
+
+Import-preserving hub for the decomposed bounded-sample Kpoly regression
+family.  The declarations live in focused sibling modules by mathematical role.
+-/

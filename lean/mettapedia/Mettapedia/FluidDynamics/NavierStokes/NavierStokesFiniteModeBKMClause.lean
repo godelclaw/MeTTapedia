@@ -1,5 +1,7 @@
-import Mettapedia.FluidDynamics.NavierStokes.NavierStokesBKMContinuationTarget
-import Mettapedia.FluidDynamics.NavierStokes.NavierStokesFiniteModeBoundedEnergy
+import Mettapedia.FluidDynamics.NavierStokes.NavierStokesBKMContinuationCore
+import Mettapedia.FluidDynamics.NavierStokes.NavierStokesFiniteModeBoundedEnergyCore
+import Mettapedia.FluidDynamics.NavierStokes.NavierStokesFiniteModeBoundedEnergyAntiProfile
+import Mettapedia.FluidDynamics.NavierStokes.NavierStokesFiniteModeBoundedEnergyGlobal
 
 /-!
 # Finite-Mode BKM Clause Packaging

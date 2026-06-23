@@ -1,4 +1,5 @@
-import Mettapedia.Computability.PNP.ExactZABDecisionListStructuralObstruction
+import Mettapedia.Computability.PNP.ExactZABDecisionListStructuralObstructionCore
+import Mettapedia.Computability.PNP.ExactZABDecisionListStructuralObstructionActualInterface
 
 namespace Mettapedia.Computability.PNP
 

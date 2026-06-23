@@ -1,5 +1,5 @@
 import Mettapedia.FluidDynamics.NavierStokes.WindowedColeHopfHeatSampleKernelFrontier
-import Mettapedia.FluidDynamics.NavierStokes.WindowedColeHopfHeatSeedBlendObstruction
+import Mettapedia.FluidDynamics.NavierStokes.WindowedColeHopfHeatSeedBlendObstructionSelfCompatibility
 
 /-!
 # Same-Route Obstruction for Identity-Anchor Sample Kernels

@@ -1,6 +1,6 @@
 import Mettapedia.GraphTheory.FourColor.Theorem49InteriorVerticesEndpointObstruction
+import Mettapedia.GraphTheory.FourColor.Theorem49InteriorVerticesEndpointObstructionDiamondWithTriangleModel
 import Mettapedia.GraphTheory.FourColor.Theorem49PlanarBoundaryPeeling
-import Mathlib.Tactic
 
 namespace Mettapedia.GraphTheory.FourColor
 

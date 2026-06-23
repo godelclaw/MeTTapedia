@@ -1,5 +1,6 @@
-import Mettapedia.FluidDynamics.NavierStokes.NavierStokesFiniteModeReconstruction
-import Mettapedia.FluidDynamics.NavierStokes.NavierStokesUniformVorticityContinuationTarget
+import Mettapedia.FluidDynamics.NavierStokes.NavierStokesFiniteModeLinearMatrixExamples
+import Mettapedia.FluidDynamics.NavierStokes.NavierStokesUniformVorticityZeroFiniteEnergy
+import Mettapedia.FluidDynamics.NavierStokes.NavierStokesUniformVorticityZeroWitness
 
 /-!
 # Finite-Mode Energy Obstructions

@@ -1,0 +1,11 @@
+import Mettapedia.Computability.PNP.ApproximateDecorrelationPostprocessedFibersRegressionPostprocessedSide
+import Mettapedia.Computability.PNP.ApproximateDecorrelationPostprocessedFibersRegressionCoinwiseOutput
+import Mettapedia.Computability.PNP.ApproximateDecorrelationPostprocessedFibersRegressionCoinwiseSource
+import Mettapedia.Computability.PNP.ApproximateDecorrelationPostprocessedFibersRegressionZeroTolerance
+
+/-!
+# Regression wrappers for postprocessed and coinwise fiber-level blockers
+
+Compatibility hub preserving the historical module name while the regression surface
+lives in semantic submodules.
+-/

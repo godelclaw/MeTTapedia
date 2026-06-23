@@ -1,4 +1,5 @@
-import Mettapedia.Computability.PNP.SharedExactZABAffineDecisionListStructuralObstruction
+import Mettapedia.Computability.PNP.SharedExactZABAffineDecisionListStructuralObstructionExactZAB
+import Mettapedia.Computability.PNP.SharedExactZABAffineDecisionListStructuralObstructionRawBitVec
 
 namespace Mettapedia.Computability.PNP
 

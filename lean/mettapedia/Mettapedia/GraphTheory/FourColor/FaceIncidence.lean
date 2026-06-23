@@ -109,6 +109,66 @@ theorem mem_interiorEdgeSupport_iff (faceBoundary : F → Finset E)
       e ∈ allFaces.biUnion faceBoundary ∧ totalIncidenceCount faceBoundary allFaces e = 2 := by
   simp [interiorEdgeSupport]
 
+/-- The two ambient faces incident to a fixed interior edge, with a completeness principle saying
+that no third ambient face contains that edge. -/
+structure InteriorEdgeFacePair (faceBoundary : F → Finset E) (allFaces : Finset F)
+    (e : E) where
+  edge_interior : e ∈ interiorEdgeSupport faceBoundary allFaces
+  left : AmbientFace allFaces
+  right : AmbientFace allFaces
+  left_ne_right : left ≠ right
+  edge_mem_left : e ∈ faceBoundary left.1
+  edge_mem_right : e ∈ faceBoundary right.1
+  complete : ∀ f : AmbientFace allFaces, e ∈ faceBoundary f.1 → f = left ∨ f = right
+
+/-- Every edge in `interiorEdgeSupport` has exactly two incident ambient faces, extracted as a
+reusable pair object. -/
+theorem exists_interiorEdgeFacePair_of_mem_interiorEdgeSupport
+    (faceBoundary : F → Finset E) (allFaces : Finset F) {e : E}
+    (he : e ∈ interiorEdgeSupport faceBoundary allFaces) :
+    Nonempty (InteriorEdgeFacePair faceBoundary allFaces e) := by
+  rcases (mem_interiorEdgeSupport_iff faceBoundary allFaces).1 he with ⟨_heSupport, hcount⟩
+  let incidentFaces : Finset F := allFaces.filter fun f => e ∈ faceBoundary f
+  have hcard : incidentFaces.card = 2 := by
+    simpa [incidentFaces, totalIncidenceCount] using hcount
+  rcases Finset.card_eq_two.1 hcard with ⟨leftFace, rightFace, hne, hincident_eq⟩
+  have hleft_mem : leftFace ∈ incidentFaces := by
+    simp [incidentFaces, hincident_eq]
+  have hright_mem : rightFace ∈ incidentFaces := by
+    simp [incidentFaces, hincident_eq]
+  let left : AmbientFace allFaces :=
+    ⟨leftFace, (Finset.mem_filter.1 hleft_mem).1⟩
+  let right : AmbientFace allFaces :=
+    ⟨rightFace, (Finset.mem_filter.1 hright_mem).1⟩
+  refine ⟨{
+    edge_interior := he
+    left := left
+    right := right
+    left_ne_right := ?_
+    edge_mem_left := (Finset.mem_filter.1 hleft_mem).2
+    edge_mem_right := (Finset.mem_filter.1 hright_mem).2
+    complete := ?_
+  }⟩
+  · intro h
+    exact hne (Subtype.ext_iff.mp h)
+  · intro f hf
+    have hf_mem : f.1 ∈ incidentFaces := Finset.mem_filter.2 ⟨f.2, hf⟩
+    have hfaces : f.1 = leftFace ∨ f.1 = rightFace := by
+      simpa [incidentFaces, hincident_eq] using hf_mem
+    rcases hfaces with hleft | hright
+    · left
+      exact Subtype.ext hleft
+    · right
+      exact Subtype.ext hright
+
+/-- Canonical, noncomputable extraction of the two ambient faces incident to an interior edge. -/
+noncomputable def interiorEdgeFacePairOfMem
+    (faceBoundary : F → Finset E) (allFaces : Finset F) {e : E}
+    (he : e ∈ interiorEdgeSupport faceBoundary allFaces) :
+    InteriorEdgeFacePair faceBoundary allFaces e :=
+  Classical.choice (exists_interiorEdgeFacePair_of_mem_interiorEdgeSupport
+    faceBoundary allFaces he)
+
 omit [DecidableEq F] in
 theorem selectedBoundarySupport_disjoint_interiorEdgeSupport
     (faceBoundary : F → Finset E) (allFaces : Finset F) :
@@ -284,6 +344,29 @@ theorem interiorDualGraph_adj_iff (faceBoundary : F → Finset E)
         e ∈ faceBoundary f.1 ∧ e ∈ faceBoundary g.1 := by
   rfl
 
+namespace InteriorEdgeFacePair
+
+omit [DecidableEq F] in
+/-- The two faces attached to an `InteriorEdgeFacePair` are adjacent in the generic interior dual
+graph. -/
+theorem interiorDualGraph_adj {faceBoundary : F → Finset E} {allFaces : Finset F} {e : E}
+    (pair : InteriorEdgeFacePair faceBoundary allFaces e) :
+    (interiorDualGraph faceBoundary allFaces).Adj pair.left pair.right := by
+  refine (interiorDualGraph_adj_iff faceBoundary allFaces).2 ?_
+  refine ⟨?_, e, pair.edge_interior, pair.edge_mem_left, pair.edge_mem_right⟩
+  intro h
+  exact pair.left_ne_right (Subtype.ext h)
+
+end InteriorEdgeFacePair
+
+theorem interiorEdgeFacePairOfMem_interiorDualGraph_adj
+    (faceBoundary : F → Finset E) (allFaces : Finset F) {e : E}
+    (he : e ∈ interiorEdgeSupport faceBoundary allFaces) :
+    (interiorDualGraph faceBoundary allFaces).Adj
+      (interiorEdgeFacePairOfMem faceBoundary allFaces he).left
+      (interiorEdgeFacePairOfMem faceBoundary allFaces he).right :=
+  (interiorEdgeFacePairOfMem faceBoundary allFaces he).interiorDualGraph_adj
+
 omit [DecidableEq F] in
 theorem totalIncidenceCount_eq_two_of_mem_faceBoundary_of_mem_faceBoundary_of_ne
     (faceBoundary : F → Finset E) (allFaces : Finset F)
@@ -420,6 +503,34 @@ theorem sharedInteriorEdgeOfAdjOfPairwiseUnique_eq_of_mem_sharedInteriorEdges
   have hneq : f.1 ≠ g.1 := (interiorDualGraph_adj_iff faceBoundary allFaces).1 hfg |>.1
   exact (hunique f.1 f.2 g.1 g.2 hneq |> Finset.card_le_one_iff.1)
     (sharedInteriorEdgeOfAdjOfPairwiseUnique_mem_sharedInteriorEdges faceBoundary allFaces hunique hfg) he
+
+omit [DecidableEq F] in
+/-- If an interior edge has been packaged with its two incident faces, the canonical primal edge
+selected for any proof of that dual adjacency is the original edge, provided shared interior edges
+are pairwise unique. -/
+theorem sharedInteriorEdgeOfAdjOfPairwiseUnique_eq_of_interiorEdgeFacePair_of_adj
+    (faceBoundary : F → Finset E) (allFaces : Finset F)
+    (hunique : PairwiseUniqueSharedInteriorEdges faceBoundary allFaces)
+    {e : E} (pair : InteriorEdgeFacePair faceBoundary allFaces e)
+    (hfg : (interiorDualGraph faceBoundary allFaces).Adj pair.left pair.right) :
+    sharedInteriorEdgeOfAdjOfPairwiseUnique faceBoundary allFaces hunique hfg = e := by
+  exact sharedInteriorEdgeOfAdjOfPairwiseUnique_eq_of_mem_sharedInteriorEdges
+    faceBoundary allFaces hunique hfg <|
+      (mem_sharedInteriorEdges_iff faceBoundary allFaces).2
+        ⟨pair.edge_interior, pair.edge_mem_left, pair.edge_mem_right⟩
+
+omit [DecidableEq F] in
+/-- If an interior edge has been packaged with its two incident faces, the canonical primal edge
+selected for that dual adjacency is the original edge, provided shared interior edges are pairwise
+unique. -/
+theorem sharedInteriorEdgeOfAdjOfPairwiseUnique_eq_of_interiorEdgeFacePair
+    (faceBoundary : F → Finset E) (allFaces : Finset F)
+    (hunique : PairwiseUniqueSharedInteriorEdges faceBoundary allFaces)
+    {e : E} (pair : InteriorEdgeFacePair faceBoundary allFaces e) :
+    sharedInteriorEdgeOfAdjOfPairwiseUnique faceBoundary allFaces hunique
+      pair.interiorDualGraph_adj = e := by
+  exact sharedInteriorEdgeOfAdjOfPairwiseUnique_eq_of_interiorEdgeFacePair_of_adj
+    faceBoundary allFaces hunique pair pair.interiorDualGraph_adj
 
 omit [DecidableEq F] in
 theorem sharedInteriorEdgeOfAdjOfPairwiseUnique_mem_faceBoundary_left

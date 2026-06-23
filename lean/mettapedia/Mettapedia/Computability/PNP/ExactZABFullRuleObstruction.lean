@@ -1,8 +1,12 @@
 import Mettapedia.Computability.PNP.ExactZABTargetInterface
-import Mettapedia.Computability.PNP.SharedExactZABTargetInterface
+import Mettapedia.Computability.PNP.SharedExactZABTargetInterfaceData
+import Mettapedia.Computability.PNP.SharedExactZABTargetInterfaceAffineFeature
+import Mettapedia.Computability.PNP.SharedExactZABTargetInterfaceSparseThreshold
+import Mettapedia.Computability.PNP.SharedExactZABTargetInterfaceDecisionList
+import Mettapedia.Computability.PNP.SharedExactZABTargetInterfaceDecisionListRecovery
 import Mettapedia.Computability.PNP.BitVecZABCompressionObstruction
-import Mettapedia.Computability.PNP.ProductSuccessKpolyBridgeObstruction
-import Mathlib.Tactic
+import Mettapedia.Computability.PNP.ProductSuccessKpolyBridgeObstructionClockedObstructions
+import Init.Omega
 
 /-!
 # P vs NP crux: small exact-ZAB classes miss the full exact-visible rule family

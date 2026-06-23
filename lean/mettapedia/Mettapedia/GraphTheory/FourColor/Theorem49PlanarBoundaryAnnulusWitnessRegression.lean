@@ -1,6 +1,6 @@
 import Mettapedia.GraphTheory.FourColor.PlanarBoundaryAnnulusConstruction
 import Mettapedia.GraphTheory.FourColor.Theorem49PlanarBoundaryAnnulusWitness
-import Mathlib.Tactic
+import Mathlib.Tactic.FinCases
 
 namespace Mettapedia.GraphTheory.FourColor
 

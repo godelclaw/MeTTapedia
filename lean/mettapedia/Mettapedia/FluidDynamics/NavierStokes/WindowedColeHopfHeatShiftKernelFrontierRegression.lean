@@ -1,4 +1,4 @@
-import Mettapedia.FluidDynamics.NavierStokes.WindowedColeHopfHeatShiftKernelFrontier
+import Mettapedia.FluidDynamics.NavierStokes.WindowedColeHopfHeatShiftKernelFrontierCore
 
 /-!
 # Regression Tests for Componentwise Windowed Cole-Hopf Heat Shift-Kernel Frontier

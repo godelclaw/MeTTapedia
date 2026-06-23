@@ -1,5 +1,4 @@
 import Mathlib.Data.Fintype.Card
-import Mathlib.Tactic
 
 /-!
 # P vs NP crux: feature-preserving involutions force exact `1/2` accuracy
@@ -105,8 +104,8 @@ theorem two_mul_card_correct_eq_card
   set a : ℕ := Fintype.card {x : α // Correct u y h x}
   have hcomp :
       Fintype.card {x : α // Incorrect u y h x} = Fintype.card α - a := by
-    simpa [a, incorrect_iff_not_correct] using
-      (Fintype.card_subtype_compl fun x : α => Correct u y h x)
+    simp [a, incorrect_iff_not_correct,
+      Fintype.card_subtype_compl fun x : α => Correct u y h x]
   have heq : a = Fintype.card {x : α // Incorrect u y h x} := by
     simpa [a] using card_correct_eq_card_incorrect τ u y h hτ hu hy
   have hsub : Fintype.card α - a = a := by
@@ -114,7 +113,7 @@ theorem two_mul_card_correct_eq_card
   have hle : a ≤ Fintype.card α := by
     simpa [a] using Fintype.card_subtype_le (fun x : α => Correct u y h x)
   have hsum : Fintype.card α = a + a := Nat.eq_add_of_sub_eq hle hsub
-  simpa [a, two_mul, Nat.add_comm] using hsum.symm
+  simpa [a, Nat.two_mul, Nat.add_comm] using hsum.symm
 
 end
 

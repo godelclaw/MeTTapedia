@@ -1,5 +1,5 @@
 import Mettapedia.Computability.PNP.ProjectedZABCompressionObstruction
-import Mathlib.Tactic
+import Mathlib.Tactic.NormNum
 
 /-!
 # Projected `(z, a, b)` Route Regression

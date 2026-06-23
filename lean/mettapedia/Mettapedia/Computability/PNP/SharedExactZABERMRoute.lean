@@ -1,5 +1,9 @@
 import Mettapedia.Computability.PNP.BitFamilyERM
-import Mettapedia.Computability.PNP.SharedExactZABTargetInterface
+import Mettapedia.Computability.PNP.SharedExactZABTargetInterfaceData
+import Mettapedia.Computability.PNP.SharedExactZABTargetInterfaceAffineFeature
+import Mettapedia.Computability.PNP.SharedExactZABTargetInterfaceSparseThreshold
+import Mettapedia.Computability.PNP.SharedExactZABTargetInterfaceDecisionList
+import Mettapedia.Computability.PNP.SharedExactZABTargetInterfaceDecisionListRecovery
 
 /-!
 # P vs NP grassroots: ERM over shared-basis `(zfeat(z), a, b)` classes

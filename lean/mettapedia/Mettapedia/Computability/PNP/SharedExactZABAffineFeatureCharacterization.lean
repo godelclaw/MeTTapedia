@@ -1,5 +1,5 @@
 import Mettapedia.Computability.PNP.ExactVisibleCompressionObstruction
-import Mettapedia.Computability.PNP.ProductSuccessKpolyBridgeObstruction
+import Mettapedia.Computability.PNP.ProductSuccessKpolyBridgeObstructionClockedObstructions
 import Mettapedia.Computability.PNP.SharedExactZABFeatureFamilies
 
 /-!

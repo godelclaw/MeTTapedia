@@ -3,7 +3,7 @@ import Mettapedia.GraphTheory.FourColor.Theorem49InteriorVertices
 import Mettapedia.GraphTheory.FourColor.Theorem49PlanarBoundaryAnnulusGeometry
 import Mettapedia.GraphTheory.FourColor.Theorem49PlanarBoundaryAnnulusWitness
 import Mettapedia.GraphTheory.FourColor.Theorem49PlanarBoundaryDegenerateCertificate
-import Mathlib.Tactic
+import Mathlib.Tactic.FinCases
 
 namespace Mettapedia.GraphTheory.FourColor
 
@@ -21,32 +21,43 @@ def sharedInteriorPairAnnulusGraph : SimpleGraph (Fin 8) :=
     ({s(0, 1), s(1, 2), s(2, 3), s(3, 0), s(2, 4), s(4, 0),
         s(5, 6), s(6, 7), s(7, 5)} : Set (Sym2 (Fin 8)))
 
-def sip01 : sharedInteriorPairAnnulusGraph.edgeSet := ⟨s(0, 1), by
-  simp [sharedInteriorPairAnnulusGraph]⟩
+theorem mem_sharedInteriorPairAnnulusGraph_edgeSet_of_eq
+    {e : Sym2 (Fin 8)}
+    (h : e = s(0, 1) ∨ e = s(1, 2) ∨ e = s(2, 3) ∨ e = s(3, 0) ∨
+      e = s(2, 4) ∨ e = s(4, 0) ∨ e = s(5, 6) ∨ e = s(6, 7) ∨
+      e = s(7, 5)) : e ∈ sharedInteriorPairAnnulusGraph.edgeSet := by
+  rw [sharedInteriorPairAnnulusGraph, SimpleGraph.edgeSet_fromEdgeSet]
+  refine ⟨?_, ?_⟩
+  · simpa only [Set.mem_insert_iff, Set.mem_singleton_iff] using h
+  · rcases h with h | h | h | h | h | h | h | h | h
+    all_goals subst e; decide
 
-def sip12 : sharedInteriorPairAnnulusGraph.edgeSet := ⟨s(1, 2), by
-  simp [sharedInteriorPairAnnulusGraph]⟩
+def sip01 : sharedInteriorPairAnnulusGraph.edgeSet :=
+  ⟨s(0, 1), mem_sharedInteriorPairAnnulusGraph_edgeSet_of_eq (by decide)⟩
 
-def sip23 : sharedInteriorPairAnnulusGraph.edgeSet := ⟨s(2, 3), by
-  simp [sharedInteriorPairAnnulusGraph]⟩
+def sip12 : sharedInteriorPairAnnulusGraph.edgeSet :=
+  ⟨s(1, 2), mem_sharedInteriorPairAnnulusGraph_edgeSet_of_eq (by decide)⟩
 
-def sip30 : sharedInteriorPairAnnulusGraph.edgeSet := ⟨s(3, 0), by
-  simp [sharedInteriorPairAnnulusGraph]⟩
+def sip23 : sharedInteriorPairAnnulusGraph.edgeSet :=
+  ⟨s(2, 3), mem_sharedInteriorPairAnnulusGraph_edgeSet_of_eq (by decide)⟩
 
-def sip24 : sharedInteriorPairAnnulusGraph.edgeSet := ⟨s(2, 4), by
-  simp [sharedInteriorPairAnnulusGraph]⟩
+def sip30 : sharedInteriorPairAnnulusGraph.edgeSet :=
+  ⟨s(3, 0), mem_sharedInteriorPairAnnulusGraph_edgeSet_of_eq (by decide)⟩
 
-def sip40 : sharedInteriorPairAnnulusGraph.edgeSet := ⟨s(4, 0), by
-  simp [sharedInteriorPairAnnulusGraph]⟩
+def sip24 : sharedInteriorPairAnnulusGraph.edgeSet :=
+  ⟨s(2, 4), mem_sharedInteriorPairAnnulusGraph_edgeSet_of_eq (by decide)⟩
 
-def sip56 : sharedInteriorPairAnnulusGraph.edgeSet := ⟨s(5, 6), by
-  simp [sharedInteriorPairAnnulusGraph]⟩
+def sip40 : sharedInteriorPairAnnulusGraph.edgeSet :=
+  ⟨s(4, 0), mem_sharedInteriorPairAnnulusGraph_edgeSet_of_eq (by decide)⟩
 
-def sip67 : sharedInteriorPairAnnulusGraph.edgeSet := ⟨s(6, 7), by
-  simp [sharedInteriorPairAnnulusGraph]⟩
+def sip56 : sharedInteriorPairAnnulusGraph.edgeSet :=
+  ⟨s(5, 6), mem_sharedInteriorPairAnnulusGraph_edgeSet_of_eq (by decide)⟩
 
-def sip75 : sharedInteriorPairAnnulusGraph.edgeSet := ⟨s(7, 5), by
-  simp [sharedInteriorPairAnnulusGraph]⟩
+def sip67 : sharedInteriorPairAnnulusGraph.edgeSet :=
+  ⟨s(6, 7), mem_sharedInteriorPairAnnulusGraph_edgeSet_of_eq (by decide)⟩
+
+def sip75 : sharedInteriorPairAnnulusGraph.edgeSet :=
+  ⟨s(7, 5), mem_sharedInteriorPairAnnulusGraph_edgeSet_of_eq (by decide)⟩
 
 theorem sip01_ne_sip12 : sip01 ≠ sip12 := by
   intro h
@@ -103,52 +114,59 @@ theorem sharedInteriorPairAnnulus_edge_eq
   · exact Or.inr <| Or.inr <| Or.inr <| Or.inr <| Or.inr <| Or.inr <| Or.inr
       <| Or.inr (Subtype.ext h75)
 
+noncomputable instance sharedInteriorPairAnnulusGraph_edgeSet_fintype :
+    Fintype sharedInteriorPairAnnulusGraph.edgeSet :=
+  ⟨{sip01, sip12, sip23, sip30, sip24, sip40, sip56, sip67, sip75}, by
+    intro e
+    rcases sharedInteriorPairAnnulus_edge_eq e with
+      rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl <;> simp⟩
+
+instance sharedInteriorPairAnnulusGraph_lineGraph_adj_decidable :
+    DecidableRel sharedInteriorPairAnnulusGraph.lineGraph.Adj := by
+  intro e f
+  rw [SimpleGraph.lineGraph_adj_iff_exists]
+  infer_instance
+
 def sharedInteriorPairEdgeColor (e : sharedInteriorPairAnnulusGraph.edgeSet) : Color :=
-  if e = sip01 ∨ e = sip24 ∨ e = sip56 then red
-  else if e = sip12 ∨ e = sip30 ∨ e = sip67 then blue
+  if e.1 = s(0, 1) ∨ e.1 = s(2, 4) ∨ e.1 = s(5, 6) then red
+  else if e.1 = s(1, 2) ∨ e.1 = s(3, 0) ∨ e.1 = s(6, 7) then blue
   else purple
 
 @[simp] theorem sharedInteriorPairEdgeColor_sip01 :
     sharedInteriorPairEdgeColor sip01 = red := by
-  simp [sharedInteriorPairEdgeColor]
+  simp [sharedInteriorPairEdgeColor, sip01, red]
 
 @[simp] theorem sharedInteriorPairEdgeColor_sip12 :
     sharedInteriorPairEdgeColor sip12 = blue := by
-  simp [sharedInteriorPairEdgeColor, sharedInteriorPairAnnulusGraph, sip01, sip12, sip24,
-    sip30, sip56, sip67]
+  simp [sharedInteriorPairEdgeColor, sip12, blue]
 
 @[simp] theorem sharedInteriorPairEdgeColor_sip23 :
     sharedInteriorPairEdgeColor sip23 = purple := by
-  simp [sharedInteriorPairEdgeColor, sharedInteriorPairAnnulusGraph, sip01, sip12, sip23,
-    sip24, sip30, sip56, sip67]
+  simp [sharedInteriorPairEdgeColor, sip23, purple]
 
 @[simp] theorem sharedInteriorPairEdgeColor_sip30 :
     sharedInteriorPairEdgeColor sip30 = blue := by
-  simp [sharedInteriorPairEdgeColor, sharedInteriorPairAnnulusGraph, sip01, sip12, sip24,
-    sip30, sip56, sip67]
+  simp [sharedInteriorPairEdgeColor, sip30, blue]
 
 @[simp] theorem sharedInteriorPairEdgeColor_sip24 :
     sharedInteriorPairEdgeColor sip24 = red := by
-  simp [sharedInteriorPairEdgeColor, sharedInteriorPairAnnulusGraph, sip01, sip24]
+  simp [sharedInteriorPairEdgeColor, sip24, red]
 
 @[simp] theorem sharedInteriorPairEdgeColor_sip40 :
     sharedInteriorPairEdgeColor sip40 = purple := by
-  simp [sharedInteriorPairEdgeColor, sharedInteriorPairAnnulusGraph, sip01, sip12, sip24,
-    sip30, sip40, sip56, sip67]
+  simp [sharedInteriorPairEdgeColor, sip40, purple]
 
 @[simp] theorem sharedInteriorPairEdgeColor_sip56 :
     sharedInteriorPairEdgeColor sip56 = red := by
-  simp [sharedInteriorPairEdgeColor, sharedInteriorPairAnnulusGraph, sip01, sip24, sip56]
+  simp [sharedInteriorPairEdgeColor, sip56, red]
 
 @[simp] theorem sharedInteriorPairEdgeColor_sip67 :
     sharedInteriorPairEdgeColor sip67 = blue := by
-  simp [sharedInteriorPairEdgeColor, sharedInteriorPairAnnulusGraph, sip01, sip12, sip24,
-    sip30, sip56, sip67]
+  simp [sharedInteriorPairEdgeColor, sip67, blue]
 
 @[simp] theorem sharedInteriorPairEdgeColor_sip75 :
     sharedInteriorPairEdgeColor sip75 = purple := by
-  simp [sharedInteriorPairEdgeColor, sharedInteriorPairAnnulusGraph, sip01, sip12, sip24,
-    sip30, sip56, sip67, sip75]
+  simp [sharedInteriorPairEdgeColor, sip75, purple]
 
 theorem sharedInteriorPair_edge_mem_zero
     {e : sharedInteriorPairAnnulusGraph.edgeSet} (h : (0 : Fin 8) ∈ (e : Sym2 (Fin 8))) :
@@ -214,37 +232,17 @@ theorem sharedInteriorPair_edge_mem_seven
     simp [sharedInteriorPairAnnulusGraph, sip01, sip12, sip23, sip30, sip24, sip40,
       sip56, sip67, sip75] at h ⊢
 
+theorem sharedInteriorPairEdgeColor_ne_of_lineGraph_adj
+    {e f : sharedInteriorPairAnnulusGraph.edgeSet}
+    (hadj : sharedInteriorPairAnnulusGraph.lineGraph.Adj e f) :
+    sharedInteriorPairEdgeColor e ≠ sharedInteriorPairEdgeColor f := by
+  decide +revert
+
 def sharedInteriorPairTaitEdgeColoring :
     sharedInteriorPairAnnulusGraph.EdgeColoring Color :=
   Coloring.mk sharedInteriorPairEdgeColor (by
     intro e f hadj hcolor
-    rw [SimpleGraph.lineGraph_adj_iff_exists] at hadj
-    rcases hadj with ⟨hne, v, he, hf⟩
-    fin_cases v
-    · rcases sharedInteriorPair_edge_mem_zero he with rfl | rfl | rfl <;>
-        rcases sharedInteriorPair_edge_mem_zero hf with rfl | rfl | rfl <;>
-        simp [red, blue, purple] at hne hcolor
-    · rcases sharedInteriorPair_edge_mem_one he with rfl | rfl <;>
-        rcases sharedInteriorPair_edge_mem_one hf with rfl | rfl <;>
-        simp [red, blue] at hne hcolor
-    · rcases sharedInteriorPair_edge_mem_two he with rfl | rfl | rfl <;>
-        rcases sharedInteriorPair_edge_mem_two hf with rfl | rfl | rfl <;>
-        simp [red, blue, purple] at hne hcolor
-    · rcases sharedInteriorPair_edge_mem_three he with rfl | rfl <;>
-        rcases sharedInteriorPair_edge_mem_three hf with rfl | rfl <;>
-        simp [blue, purple] at hne hcolor
-    · rcases sharedInteriorPair_edge_mem_four he with rfl | rfl <;>
-        rcases sharedInteriorPair_edge_mem_four hf with rfl | rfl <;>
-        simp [red, purple] at hne hcolor
-    · rcases sharedInteriorPair_edge_mem_five he with rfl | rfl <;>
-        rcases sharedInteriorPair_edge_mem_five hf with rfl | rfl <;>
-        simp [red, purple] at hne hcolor
-    · rcases sharedInteriorPair_edge_mem_six he with rfl | rfl <;>
-        rcases sharedInteriorPair_edge_mem_six hf with rfl | rfl <;>
-        simp [red, blue] at hne hcolor
-    · rcases sharedInteriorPair_edge_mem_seven he with rfl | rfl <;>
-        rcases sharedInteriorPair_edge_mem_seven hf with rfl | rfl <;>
-        simp [blue, purple] at hne hcolor)
+    exact sharedInteriorPairEdgeColor_ne_of_lineGraph_adj hadj hcolor)
 
 theorem sharedInteriorPairTaitEdgeColoring_isTait :
     IsTaitEdgeColoring sharedInteriorPairAnnulusGraph
@@ -836,6 +834,22 @@ theorem sip_boundaryEdge_eq
   · exact Or.inr <| Or.inr <| Or.inr <| Or.inr <| Or.inr <| Or.inr
       (Subtype.ext h75)
 
+noncomputable instance sharedInteriorPairBoundaryEdgeVertex_fintype :
+    Fintype (PlanarBoundaryEdgeVertex sharedInteriorPairAnnulusEmbedding) :=
+  ⟨{⟨sip23, sip23_mem_selectedBoundarySupport⟩, ⟨sip30, sip30_mem_selectedBoundarySupport⟩,
+      ⟨sip24, sip24_mem_selectedBoundarySupport⟩, ⟨sip40, sip40_mem_selectedBoundarySupport⟩,
+      ⟨sip56, sip56_mem_selectedBoundarySupport⟩, ⟨sip67, sip67_mem_selectedBoundarySupport⟩,
+      ⟨sip75, sip75_mem_selectedBoundarySupport⟩}, by
+    intro e
+    rcases sip_boundaryEdge_eq e with
+      rfl | rfl | rfl | rfl | rfl | rfl | rfl <;> simp⟩
+
+instance sharedInteriorPairBoundaryEndpointAdj_decidable :
+    DecidableRel (planarBoundarySupportEndpointAdjGraph sharedInteriorPairAnnulusEmbedding).Adj := by
+  intro e f
+  rw [planarBoundarySupportEndpointAdjGraph]
+  infer_instance
+
 theorem vertex_one_mem_selectedBoundaryInteriorEdgeEndpointVertices_sharedInteriorPair :
     (1 : Fin 8) ∈
       selectedBoundaryInteriorEdgeEndpointVertices sharedInteriorPairAnnulusEmbedding := by
@@ -876,18 +890,7 @@ theorem sipBoundaryAdj_preserves_label :
     ∀ ⦃e f : PlanarBoundaryEdgeVertex sharedInteriorPairAnnulusEmbedding⦄,
       (planarBoundarySupportEndpointAdjGraph sharedInteriorPairAnnulusEmbedding).Adj e f →
         sipBoundaryLabel e = sipBoundaryLabel f := by
-  intro e f hadj
-  rcases sip_boundaryEdge_eq e with
-    rfl | rfl | rfl | rfl | rfl | rfl | rfl <;>
-    rcases sip_boundaryEdge_eq f with
-      rfl | rfl | rfl | rfl | rfl | rfl | rfl <;>
-      first
-      | rfl
-      | exact False.elim
-          (by
-            rcases hadj with ⟨_, v, hvE, hvF⟩
-            fin_cases v <;>
-              simp [sip23, sip30, sip24, sip40, sip56, sip67, sip75] at hvE hvF)
+  decide +revert
 
 theorem sipOuterRoot_ne_innerRoot : sipOuterRoot ≠ sipInnerRoot := by
   intro h

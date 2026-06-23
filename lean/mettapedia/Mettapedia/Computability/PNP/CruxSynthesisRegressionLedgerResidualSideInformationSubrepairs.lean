@@ -1,0 +1,78 @@
+import Mettapedia.Computability.PNP.CruxResidualSideInformationSubrepairLedger
+import Mettapedia.Computability.PNP.CruxResidualSideInformationCoverageV13
+import Mettapedia.Computability.PNP.CruxResidualSideInformationCoverageBroad
+
+/-!
+# Regression checks for residual-side-information subrepair ledgers
+
+Subrepair-list and broad coverage-status wrappers extracted from the historical
+residual-side-information ledger regression module.
+-/
+
+namespace Mettapedia.Computability.PNP.CruxSynthesisRegression
+
+open Mettapedia.Computability.PNP
+universe u v w z
+
+theorem current_pnp_residual_side_information_covered_subrepairs_exact_regression
+    (repair : PNPResidualSideInformationSubrepairClass) :
+    repair ∈ currentPNPResidualSideInformationCoveredSubrepairs := by
+  exact currentPNPResidualSideInformationCoveredSubrepairs_exact repair
+
+theorem current_pnp_residual_side_information_toy_collision_subrepair_regression :
+    PNPResidualSideInformationSubrepairClass.concreteSameSourceResidualCollision ∈
+      currentPNPResidualSideInformationCoveredSubrepairs := by
+  exact currentPNPResidualSideInformationCoveredSubrepairs_exact
+    PNPResidualSideInformationSubrepairClass.concreteSameSourceResidualCollision
+
+theorem current_pnp_residual_side_information_supported_collision_subrepair_regression :
+    PNPResidualSideInformationSubrepairClass.positiveAdvantageSupportedResidualCollision ∈
+      currentPNPResidualSideInformationCoveredSubrepairs := by
+  exact currentPNPResidualSideInformationCoveredSubrepairs_exact
+    PNPResidualSideInformationSubrepairClass.positiveAdvantageSupportedResidualCollision
+
+theorem current_pnp_residual_side_information_prediction_separation_subrepair_regression :
+    PNPResidualSideInformationSubrepairClass.strictHalfAdvantagePredictionSeparation ∈
+      currentPNPResidualSideInformationCoveredSubrepairs := by
+  exact currentPNPResidualSideInformationCoveredSubrepairs_exact
+    PNPResidualSideInformationSubrepairClass.strictHalfAdvantagePredictionSeparation
+
+theorem current_pnp_residual_side_information_positive_resolved_mass_subrepair_regression :
+    PNPResidualSideInformationSubrepairClass.positiveAdvantageForcesPositiveResolvedMass ∈
+      currentPNPResidualSideInformationCoveredSubrepairs := by
+  exact currentPNPResidualSideInformationCoveredSubrepairs_exact
+    PNPResidualSideInformationSubrepairClass.positiveAdvantageForcesPositiveResolvedMass
+
+theorem current_pnp_residual_side_information_strict_half_positive_resolved_mass_subrepair_regression :
+    PNPResidualSideInformationSubrepairClass.strictHalfAdvantageForcesPositiveResolvedMass ∈
+      currentPNPResidualSideInformationCoveredSubrepairs := by
+  exact currentPNPResidualSideInformationCoveredSubrepairs_exact
+    PNPResidualSideInformationSubrepairClass.strictHalfAdvantageForcesPositiveResolvedMass
+
+theorem current_pnp_residual_side_information_positive_resolved_mass_pure_package_subrepair_regression :
+    PNPResidualSideInformationSubrepairClass.positiveResolvedMassPureResidualPackage ∈
+      currentPNPResidualSideInformationCoveredSubrepairs := by
+  exact currentPNPResidualSideInformationCoveredSubrepairs_exact
+    PNPResidualSideInformationSubrepairClass.positiveResolvedMassPureResidualPackage
+
+theorem current_pnp_residual_side_information_exact_post_switch_pure_package_subrepair_regression :
+    PNPResidualSideInformationSubrepairClass.exactPostSwitchConcretePureResidualWitness ∈
+      currentPNPResidualSideInformationCoveredSubrepairs := by
+  exact currentPNPResidualSideInformationCoveredSubrepairs_exact
+    PNPResidualSideInformationSubrepairClass.exactPostSwitchConcretePureResidualWitness
+
+theorem current_pnp_residual_side_information_exact_post_switch_fork_subrepair_regression :
+    PNPResidualSideInformationSubrepairClass.exactPostSwitchPredictionWitnessForcesForkObstruction ∈
+      currentPNPResidualSideInformationCoveredSubrepairs := by
+  exact currentPNPResidualSideInformationCoveredSubrepairs_exact
+    PNPResidualSideInformationSubrepairClass.exactPostSwitchPredictionWitnessForcesForkObstruction
+
+theorem v13_residual_side_information_subcoverage_regression :
+    V13ResidualSideInformationSubcoverage := by
+  exact v13ResidualSideInformationSubcoverage
+
+theorem residual_side_information_broad_coverage_regression :
+    ResidualSideInformationCoverage := by
+  exact residualSideInformationCoverage
+
+end Mettapedia.Computability.PNP.CruxSynthesisRegression

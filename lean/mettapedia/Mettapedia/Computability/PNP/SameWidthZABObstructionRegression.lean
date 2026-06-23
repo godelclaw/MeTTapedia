@@ -1,4 +1,6 @@
-import Mettapedia.Computability.PNP.SameWidthZABObstruction
+import Mettapedia.Computability.PNP.SameWidthZABObstructionArithmetic
+import Mettapedia.Computability.PNP.SameWidthZABObstructionExactERM
+import Mettapedia.Computability.PNP.SameWidthZABObstructionActualLocal
 
 /-!
 # Regression checks for the same-width exact ZAB obstruction

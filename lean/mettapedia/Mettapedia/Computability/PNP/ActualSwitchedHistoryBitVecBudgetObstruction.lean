@@ -1,5 +1,8 @@
 import Mettapedia.Computability.PNP.ActualSwitchedHistoryRouteReduction
-import Mettapedia.Computability.PNP.ExactZABCompressionObstruction
+import Mettapedia.Computability.PNP.ExactZABCompressionObstructionAffineFeature
+import Mettapedia.Computability.PNP.ExactZABCompressionObstructionSparseThreshold
+import Mettapedia.Computability.PNP.ExactZABCompressionObstructionDecisionList
+import Mettapedia.Computability.PNP.ExactZABCompressionObstructionFinalERM
 
 /-!
 # PNP route obstruction: switched-history wrappers at manuscript bit budgets

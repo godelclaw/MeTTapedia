@@ -1,5 +1,5 @@
-import Mettapedia.Computability.PNP.SharedExactABCompressionObstruction
-import Mathlib.Tactic
+import Mettapedia.Computability.PNP.SharedExactABCompressionObstructionDecisionList
+import Mathlib.Tactic.NormNum
 
 /-!
 # Shared Exact `(a, b)` Route Regression

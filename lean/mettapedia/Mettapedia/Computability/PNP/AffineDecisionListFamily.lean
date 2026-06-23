@@ -1,4 +1,5 @@
 import Mettapedia.Computability.PNP.AffineFeatureFamily
+import Mettapedia.Computability.PNP.FirstActiveFeature
 import Mathlib.Data.Fintype.EquivFin
 
 /-!
@@ -33,12 +34,6 @@ variable {r k : ℕ}
 output bit. -/
 abbrev AffineDecisionListCode (r k : ℕ) :=
   (Fin r → AffineColumnCode k) × BitCode r × Bool
-
-/-- The first active feature in the fixed order `0, 1, ..., r-1`, if any. -/
-noncomputable def firstActiveFeature? (featureVec : BitVec r) : Option (Fin r) := by
-  classical
-  let active : Finset (Fin r) := (Finset.univ : Finset (Fin r)).filter fun j => featureVec j
-  exact if h : active.Nonempty then some (active.min' h) else none
 
 /-- Evaluate the affine decision-list predictor on one VV column vector `a`. -/
 noncomputable def affineDecisionListPredict

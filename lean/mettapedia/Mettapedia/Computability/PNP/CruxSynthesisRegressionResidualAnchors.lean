@@ -1,0 +1,17 @@
+import Mettapedia.Computability.PNP.CruxSynthesisRegressionResidualGlobalAnchors
+import Mettapedia.Computability.PNP.CruxSynthesisRegressionResidualCollisionMass
+import Mettapedia.Computability.PNP.CruxSynthesisRegressionResidualCounterexamplesPure
+import Mettapedia.Computability.PNP.CruxSynthesisRegressionResidualCounterexamplesOrbitInvisible
+import Mettapedia.Computability.PNP.CruxSynthesisRegressionResidualCounterexamplesBalancedWitness
+import Mettapedia.Computability.PNP.CruxSynthesisRegressionResidualCounterexamplesSupportedPackages
+import Mettapedia.Computability.PNP.CruxSynthesisRegressionResidualExactPostSwitch
+import Mettapedia.Computability.PNP.CruxSynthesisRegressionResidualAdvantageConsequences
+import Mettapedia.Computability.PNP.CruxSynthesisRegressionResidualSupportedPackages
+
+/-!
+# Regression checks for PNP residual-side-information anchors
+
+Import-preserving hub for the decomposed residual-side-information anchor
+regression family.  The declarations live in focused sibling modules by
+mathematical role.
+-/

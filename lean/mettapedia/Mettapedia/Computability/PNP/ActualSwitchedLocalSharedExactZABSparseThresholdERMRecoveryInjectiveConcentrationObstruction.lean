@@ -2,7 +2,7 @@ import Mettapedia.Computability.PNP.ActualSwitchedLocalSharedExactZABSparseThres
 import Mettapedia.Computability.PNP.BitVecZABCompressionObstruction
 import Mettapedia.Computability.PNP.FinitePMFPointMassBound
 import Mathlib.Data.ENNReal.Inv
-import Mathlib.Tactic
+import Mathlib.Tactic.NormNum
 
 /-!
 # P vs NP route obstruction: injective recovery packets still force large `q`

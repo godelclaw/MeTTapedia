@@ -1,5 +1,5 @@
 import Mettapedia.Computability.PNP.ExactZABFullRuleObstruction
-import Mathlib.Tactic
+import Mathlib.Tactic.NormNum
 
 /-!
 # Regression checks for exact-ZAB full-rule obstructions

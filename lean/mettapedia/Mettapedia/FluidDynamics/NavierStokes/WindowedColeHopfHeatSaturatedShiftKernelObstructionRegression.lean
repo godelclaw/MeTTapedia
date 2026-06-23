@@ -1,4 +1,6 @@
-import Mettapedia.FluidDynamics.NavierStokes.WindowedColeHopfHeatSaturatedShiftKernelObstruction
+import Mettapedia.FluidDynamics.NavierStokes.WindowedColeHopfHeatSaturatedShiftKernelObstructionCore
+import Mettapedia.FluidDynamics.NavierStokes.WindowedColeHopfHeatSaturatedShiftKernelObstructionAnchored
+import Mettapedia.FluidDynamics.NavierStokes.WindowedColeHopfHeatSaturatedShiftKernelObstructionComponentwise
 
 /-!
 # Regression Tests for Componentwise Saturated Shift-Kernel Obstruction

@@ -1,7 +1,8 @@
 import Mettapedia.GraphTheory.FourColor.PlanarBoundaryAnnulusConstruction
 import Mettapedia.GraphTheory.FourColor.PlanarBoundaryClosedWalkSource
 import Mettapedia.GraphTheory.FourColor.Theorem49KempeGeneratorSpan
-import Mettapedia.GraphTheory.FourColor.Theorem49Synthesis
+import Mettapedia.GraphTheory.FourColor.Theorem49SynthesisNonempty
+import Mettapedia.GraphTheory.FourColor.Theorem49ClosedWalkShellSynthesis
 
 namespace Mettapedia.GraphTheory.FourColor
 
@@ -1447,8 +1448,8 @@ theorem
     (interiorData : InteriorDualBoundaryRootAdjDistancePeelData emb.faces emb.faceBoundary) :
     (planarBoundaryAnnulusConstruction_of_boundaryReachabilityData_and_interiorDualBoundaryRootAdjDistancePeelData_rootDistance
       source.boundaryReachability interiorData).ParentWitnessOrientation :=
-  parentWitnessOrientation_of_boundaryReachabilityData_and_interiorDualBoundaryRootAdjDistancePeelData_rootDistance
-    source.boundaryReachability interiorData
+  closedWalkShellParentWitnessOrientation_of_interiorDualBoundaryRootAdjDistancePeelData
+    source interiorData
 
 /-- Fixed-embedding well-founded witness-cover data from the honest closed-walk annulus-boundary
 source and generic boundary-root interior-dual adjacency-distance data.  This packages the
@@ -1461,10 +1462,8 @@ noncomputable def
     (source : PlanarBoundaryClosedWalkAnnulusBoundarySource emb)
     (interiorData : InteriorDualBoundaryRootAdjDistancePeelData emb.faces emb.faceBoundary) :
     PlanarBoundaryWellFoundedFacePeelWitnessData emb :=
-  (planarBoundaryAnnulusConstruction_of_boundaryReachabilityData_and_interiorDualBoundaryRootAdjDistancePeelData_rootDistance
-    source.boundaryReachability interiorData).toPlanarBoundaryWellFoundedFacePeelWitnessData_of_parentWitness
-      (parentWitnessOrientation_of_closedWalkAnnulusBoundarySource_and_interiorDualBoundaryRootAdjDistancePeelData_rootDistance
-        source interiorData)
+  closedWalkShellWellFoundedFacePeelWitnessData_of_interiorDualBoundaryRootAdjDistancePeelData
+    source interiorData
 
 /-- Fixed-embedding height-ordered witness-cover data from the honest closed-walk source plus
 generic boundary-root interior-dual adjacency-distance data.  This is the source-facing
@@ -1478,8 +1477,8 @@ noncomputable def
     (source : PlanarBoundaryClosedWalkAnnulusBoundarySource emb)
     (interiorData : InteriorDualBoundaryRootAdjDistancePeelData emb.faces emb.faceBoundary) :
     PlanarBoundaryHeightOrderedFacePeelWitnessData emb :=
-  (planarBoundaryWellFoundedFacePeelWitnessData_of_closedWalkAnnulusBoundarySource_and_interiorDualBoundaryRootAdjDistancePeelData
-    source interiorData).toPlanarBoundaryHeightOrderedFacePeelWitnessData
+  closedWalkShellHeightOrderedFacePeelWitnessData_of_interiorDualBoundaryRootAdjDistancePeelData
+    source interiorData
 
 /-- Graph-level parent-witness orientation theorem on the honest closed-walk annulus-boundary
 source shell. This exposes the repaired route at the actual annulus-construction orientation

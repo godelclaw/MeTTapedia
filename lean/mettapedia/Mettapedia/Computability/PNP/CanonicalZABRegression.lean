@@ -1,5 +1,5 @@
 import Mettapedia.Computability.PNP.CanonicalZABCompressionObstruction
-import Mathlib.Tactic
+import Mathlib.Tactic.NormNum
 
 /-!
 # Canonical `(zfeat(z), a, b)` Route Regression

@@ -1,7 +1,12 @@
 import Mettapedia.Computability.PNP.PostSwitchInputObstruction
-import Mettapedia.Computability.PNP.ResolutionDemandObstruction
+import Mettapedia.Computability.PNP.ResolutionDemandObstructionAdvantage
+import Mettapedia.Computability.PNP.ResolutionDemandObstructionPairBounds
+import Mettapedia.Computability.PNP.ResolutionDemandObstructionResolvedMass
+import Mettapedia.Computability.PNP.ResolutionDemandObstructionPrediction
+import Mettapedia.Computability.PNP.ResolutionDemandObstructionWitnesses
 import Mettapedia.Computability.PNP.InvariantScoreObstruction
-import Mathlib.Tactic
+import Mathlib.Data.Fintype.BigOperators
+import Mathlib.Tactic.NormNum
 
 /-!
 # P vs NP crux: the exact post-switch input forces a sharp fork

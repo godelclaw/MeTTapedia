@@ -16,6 +16,19 @@ def AnnihilatesKempeClosureGeneratorFamily {G : SimpleGraph V} {F : Type*}
       chainDot (boundaryBicoloredEdges C a b (faceBoundary f)) z
         (polarizedFaceGenerator C a b (faceBoundary f)) = 0
 
+theorem annihilatesKempeClosureGeneratorFamily_zero {G : SimpleGraph V} {F : Type*}
+    (faceBoundary : F → Finset G.edgeSet) (C₀ : G.EdgeColoring Color) :
+    AnnihilatesKempeClosureGeneratorFamily faceBoundary C₀ (0 : G.edgeSet → Color) := by
+  intro C _hC f a b _hab
+  simp [chainDot]
+
+theorem annihilatesKempeClosureGeneratorFamily_of_eq_zero {G : SimpleGraph V} {F : Type*}
+    {faceBoundary : F → Finset G.edgeSet} {C₀ : G.EdgeColoring Color}
+    {z : G.edgeSet → Color} (hz : z = 0) :
+    AnnihilatesKempeClosureGeneratorFamily faceBoundary C₀ z := by
+  rw [hz]
+  exact annihilatesKempeClosureGeneratorFamily_zero faceBoundary C₀
+
 omit [DecidableEq V] in
 theorem validColorPair_edgeColor_add_generator {G : SimpleGraph V}
     (C : G.EdgeColoring Color) (e : G.edgeSet) {γ : Color}

@@ -1,4 +1,4 @@
-import Mettapedia.GraphTheory.FourColor.Theorem49Synthesis
+import Mettapedia.GraphTheory.FourColor.Theorem49SynthesisCore
 
 namespace Mettapedia.GraphTheory.FourColor
 
@@ -68,6 +68,10 @@ theorem Theorem49BoundaryRootSynthesis.of_edgeKempeClosure_eq
       kempeClosureGeneratorSubspace emb.faceBoundary C₀ =
         kempeClosureGeneratorSubspace emb.faceBoundary C₁ :=
     kempeClosureGeneratorSubspace_eq_of_edgeKempeClosure_eq hclosure
+  have hrawSource :
+      Theorem49RawSource emb C₀ =
+        Theorem49RawSource emb C₁ := by
+    simp [Theorem49RawSource, hrawSubspace]
   have hprojFamily :
       projectedKempeClosureGeneratorFamily emb C₀ =
         projectedKempeClosureGeneratorFamily emb C₁ :=
@@ -131,7 +135,7 @@ theorem Theorem49BoundaryRootSynthesis.of_edgeKempeClosure_eq
       target_le_projectedGeneratorFamilySpan := by
         simpa [hprojFamily] using h.target_le_projectedGeneratorFamilySpan
       target_eq_rawSourceImage := by
-        simpa [hrawSubspace] using h.target_eq_rawSourceImage
+        simpa [hrawSource] using h.target_eq_rawSourceImage
       projectedGeneratorRepresentation := by
         intro z hz
         simpa [hprojFamily] using h.projectedGeneratorRepresentation hz
@@ -140,7 +144,7 @@ theorem Theorem49BoundaryRootSynthesis.of_edgeKempeClosure_eq
         simpa [hrawFamily] using h.rawGeneratorProjectionRepresentation hz
       rawSourcePreimage := by
         intro z hz
-        simpa [hrawSubspace] using h.rawSourcePreimage hz
+        simpa [hrawSource] using h.rawSourcePreimage hz
       rawKirchhoffRepresentative := by
         intro x hx
         simpa [hrawFamily] using h.rawKirchhoffRepresentative hx

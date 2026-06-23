@@ -1,5 +1,5 @@
 import Mettapedia.Computability.PNP.PNPv13AtomicEvidenceBudgetCancellationObstruction
-import Mathlib.Tactic
+import Mathlib.Tactic.NormNum
 
 /-!
 # PNP v13 atomic evidence budget equality sharpness

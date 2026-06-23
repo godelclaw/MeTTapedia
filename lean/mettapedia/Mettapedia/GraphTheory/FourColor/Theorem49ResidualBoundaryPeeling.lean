@@ -1,9 +1,9 @@
+import Mettapedia.GraphTheory.FourColor.Theorem49ResidualBoundaryPositiveGeometry
 import Mettapedia.GraphTheory.FourColor.Theorem49BoundaryFreeSelectorPositiveRoute
-import Mettapedia.GraphTheory.FourColor.PlanarBoundaryClosedWalkSourceProjection
+import Mettapedia.GraphTheory.FourColor.PlanarBoundaryClosedWalkSourceRoute
 import Mettapedia.GraphTheory.FourColor.Theorem49PlanarBoundaryCollarPeeling
 import Mettapedia.GraphTheory.FourColor.Theorem49SpanningGap
 import Mettapedia.GraphTheory.FourColor.PlanarBoundaryFaceIncidence
-import Mettapedia.GraphTheory.FourColor.Theorem49Synthesis
 
 namespace Mettapedia.GraphTheory.FourColor
 
@@ -11,14 +11,6 @@ open SimpleGraph
 open Theorem49ForcingInteriorEdgeObstruction
 
 variable {V F : Type*} [DecidableEq V] [DecidableEq F]
-
-/-- Residual/current-boundary peeling data. The present implementation is intentionally thin: it
-reuses the already formalized local explicit-remainder collar package and exposes the residual
-boundary as the union of selected ambient boundary support with the relative boundary of the
-current remainder. -/
-abbrev ResidualBoundaryLayerFacePeelWitnessData {G : SimpleGraph V}
-    (allFaces : Finset F) (faceBoundary : F → Finset G.edgeSet) :=
-  LocalRemainderBoundaryCollarLayerFacePeelWitnessData allFaces faceBoundary
 
 def ResidualBoundaryLayerFacePeelWitnessData.currentBoundary
     {G : SimpleGraph V}
@@ -152,12 +144,6 @@ def CollarLayerFacePeelWitnessData.toResidualBoundaryLayerFacePeelWitnessData
     ResidualBoundaryLayerFacePeelWitnessData allFaces faceBoundary :=
   data.toLocalRemainderBoundaryCollarLayerFacePeelWitnessData hlayerSubset hall
 
-/-- Embedding-facing residual/current-boundary witness data. -/
-abbrev PlanarBoundaryResidualBoundaryLayerFacePeelWitnessData {G : SimpleGraph V}
-    (emb : PlaneEmbeddingWithBoundary G) :=
-  ResidualBoundaryLayerFacePeelWitnessData emb.faces.attach
-    (ambientFaceBoundary (allFaces := emb.faces) emb.faceBoundary)
-
 /-- Forget the boundary-aware collar layer to the generic attached-face collar interface. -/
 noncomputable def
     genericCollarLayerFacePeelWitnessData_of_planarBoundaryCollarLayerFacePeelWitnessData
@@ -272,19 +258,6 @@ theorem theorem49BoundaryRootNonemptyProjectedSynthesis_of_residualBoundaryLayer
         data)
       C₀ hC₀ hCarrier
 
-theorem theorem49BoundaryRootSynthesis_of_residualBoundaryLayerFacePeelWitnessData
-    {G : SimpleGraph V}
-    [Fintype G.edgeSet] [FiniteDimensional F2 (G.edgeSet → Color)]
-    {emb : PlaneEmbeddingWithBoundary G}
-    (data : PlanarBoundaryResidualBoundaryLayerFacePeelWitnessData emb)
-    (C₀ : G.EdgeColoring Color) (hC₀ : IsTaitEdgeColoring G C₀) :
-    Theorem49BoundaryRootSynthesis emb C₀ := by
-  exact
-    theorem49BoundaryRootSynthesis_of_planarBoundaryCollarLayerFacePeelWitnessData
-      (planarBoundaryCollarLayerFacePeelWitnessData_of_genericLocalRemainderBoundaryCollarLayerFacePeelWitnessData
-        data)
-      C₀ hC₀
-
 theorem
     theorem49BoundaryRootNonemptyProjectedSynthesis_of_residualBoundaryLayerFacePeelWitnessData_and_hasUnblockedInteriorEndpoint
     {G : SimpleGraph V}
@@ -352,13 +325,6 @@ theorem exists_layerFace_currentBoundary_remainders_of_residualBoundaryLayerFace
     exists_layerFace_currentBoundary_remainders_of_residualBoundaryLayerFacePeelWitnessData_and_hasUnblockedInteriorEndpoint
       data hEndpoint
 
-/-- Fixed-embedding positive route using residual/current-boundary witness data and a surviving
-purified endpoint carrier. -/
-def Theorem49ResidualBoundaryPositiveProjectedGeometryOn {G : SimpleGraph V}
-    (emb : PlaneEmbeddingWithBoundary G) : Prop :=
-  ∃ _data : PlanarBoundaryResidualBoundaryLayerFacePeelWitnessData emb,
-    (selectedBoundaryInteriorEdgeEndpointVertices emb).Nonempty
-
 theorem theorem49BoundaryRootNonemptyProjectedSynthesis_of_residualBoundaryPositiveProjectedGeometryOn
     {G : SimpleGraph V}
     [Fintype G.edgeSet] [FiniteDimensional F2 (G.edgeSet → Color)]
@@ -370,18 +336,6 @@ theorem theorem49BoundaryRootNonemptyProjectedSynthesis_of_residualBoundaryPosit
   exact
     theorem49BoundaryRootNonemptyProjectedSynthesis_of_residualBoundaryLayerFacePeelWitnessData
       data C₀ hC₀ hCarrier
-
-theorem theorem49BoundaryRootSynthesis_of_residualBoundaryPositiveProjectedGeometryOn
-    {G : SimpleGraph V}
-    [Fintype G.edgeSet] [FiniteDimensional F2 (G.edgeSet → Color)]
-    {emb : PlaneEmbeddingWithBoundary G}
-    (geom : Theorem49ResidualBoundaryPositiveProjectedGeometryOn emb)
-    (C₀ : G.EdgeColoring Color) (hC₀ : IsTaitEdgeColoring G C₀) :
-    Theorem49BoundaryRootSynthesis emb C₀ := by
-  rcases geom with ⟨data, _hCarrier⟩
-  exact
-    theorem49BoundaryRootSynthesis_of_residualBoundaryLayerFacePeelWitnessData
-      data C₀ hC₀
 
 theorem theorem49CurrentBoundaryRemainders_of_residualBoundaryPositiveProjectedGeometryOn
     {G : SimpleGraph V} {emb : PlaneEmbeddingWithBoundary G}

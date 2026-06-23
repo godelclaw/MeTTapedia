@@ -1,5 +1,5 @@
 import Mettapedia.Computability.PNP.ResidualSymmetryObstruction
-import Mathlib.Tactic
+import Init.Omega
 
 /-!
 # P vs NP crux: advantage is bounded by symmetry-breaking mass

@@ -1,5 +1,4 @@
 import Mettapedia.Computability.PNP.PNPv13AtomicEvidenceBudgetEqualitySharpness
-import Mathlib.Tactic
 
 /-!
 # PNP v13 atomic evidence budget exactness reduction

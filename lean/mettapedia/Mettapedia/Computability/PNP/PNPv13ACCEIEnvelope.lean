@@ -1,5 +1,7 @@
 import Mettapedia.Computability.PNP.FiniteSwitchingAdmissibility
-import Mathlib.Tactic
+import Mathlib.Algebra.Order.BigOperators.Group.Finset
+import Mathlib.Data.Fintype.BigOperators
+import Mathlib.Tactic.NormNum
 
 /-!
 # PNP v13 ACCEI envelope and sequential product skeleton

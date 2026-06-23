@@ -1,4 +1,4 @@
-import Mettapedia.FluidDynamics.NavierStokes.WindowedColeHopfHeatShiftKernelFrontier
+import Mettapedia.FluidDynamics.NavierStokes.WindowedColeHopfHeatShiftKernelFrontierCore
 import Mettapedia.FluidDynamics.NavierStokes.WindowedColeHopfHeatSaturatedFrontier
 
 /-!

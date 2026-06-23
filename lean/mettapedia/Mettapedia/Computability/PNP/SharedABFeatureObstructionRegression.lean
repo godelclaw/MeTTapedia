@@ -1,4 +1,4 @@
-import Mettapedia.Computability.PNP.SharedABFeatureObstruction
+import Mettapedia.Computability.PNP.SharedABFeatureObstructionFullExactPullback
 
 /-!
 # Regression checks for shared raw `(a,b)` feature obstructions

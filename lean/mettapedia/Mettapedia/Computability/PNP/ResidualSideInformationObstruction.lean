@@ -1,4 +1,4 @@
-import Mathlib.Tactic
+import Mathlib.Data.Nat.Basic
 
 /-!
 # P vs NP crux: residual side information cannot be source-only data
@@ -19,37 +19,37 @@ namespace Mettapedia.Computability.PNP
 
 /-- Residual side information is determined by a source summary if it factors
 through that summary. -/
-def SideInfoDeterminedBy {Ω Base Side : Type*}
+def SideInfoDeterminedBy {Ω Base Side : Type _}
     (base : Ω → Base) (side : Ω → Side) : Prop :=
   ∃ decode : Base → Side, ∀ ω, decode (base ω) = side ω
 
 /-- A concrete residual collision: two worlds have the same source summary but
 different residual side information. -/
-def SideInfoCollisionOverBase {Ω Base Side : Type*}
+def SideInfoCollisionOverBase {Ω Base Side : Type _}
     (base : Ω → Base) (side : Ω → Side) : Prop :=
   ∃ x y : Ω, base x = base y ∧ side x ≠ side y
 
 /-- A residual collision whose left endpoint lies on positive weight support. -/
-def PositiveWeightSideInfoCollisionOverBase {Ω Base Side : Type*}
+def PositiveWeightSideInfoCollisionOverBase {Ω Base Side : Type _}
     (base : Ω → Base) (side : Ω → Side) (w : Ω → ℕ) : Prop :=
   ∃ x y : Ω, 0 < w x ∧ base x = base y ∧ side x ≠ side y
 
 /-- A source-only predicate captures one residual equality test when it can be
 decided from the source summary alone. -/
-def SourceOnlyPredicateCapturesSideEq {Ω Base Side : Type*}
+def SourceOnlyPredicateCapturesSideEq {Ω Base Side : Type _}
     (base : Ω → Base) (side : Ω → Side) (s : Side) : Prop :=
   ∃ predicate : Base → Prop, ∀ ω, predicate (base ω) ↔ side ω = s
 
 /-- A source-only Boolean classifier captures a residual Boolean target when it
 factors through the source summary. -/
-def SourceOnlyBooleanClassifier {Ω Base : Type*}
+def SourceOnlyBooleanClassifier {Ω Base : Type _}
     (base : Ω → Base) (target : Ω → Bool) : Prop :=
   ∃ classifier : Base → Bool, ∀ ω, classifier (base ω) = target ω
 
 /-- A classifier on `(base, side)` is source-only on positive support when
 some source-only Boolean classifier gives the same predictions at every
 positive-weight world. -/
-def SupportwiseSourceOnlyPairClassifier {Ω Base Side : Type*}
+def SupportwiseSourceOnlyPairClassifier {Ω Base Side : Type _}
     (base : Ω → Base) (side : Ω → Side) (w : Ω → ℕ)
     (h : Base × Side → Bool) : Prop :=
   ∃ classifier : Base → Bool,
@@ -58,7 +58,7 @@ def SupportwiseSourceOnlyPairClassifier {Ω Base Side : Type*}
 /-- A single same-source/different-residual pair rules out source-only residual
 decoding. -/
 theorem not_sideInfoDeterminedBy_of_same_base_ne_side
-    {Ω Base Side : Type*} {base : Ω → Base} {side : Ω → Side}
+    {Ω Base Side : Type _} {base : Ω → Base} {side : Ω → Side}
     {x y : Ω} (hbase : base x = base y) (hside : side x ≠ side y) :
     ¬ SideInfoDeterminedBy base side := by
   rintro ⟨decode, hdecode⟩
@@ -70,7 +70,7 @@ theorem not_sideInfoDeterminedBy_of_same_base_ne_side
 
 /-- Collision form of the same obstruction. -/
 theorem not_sideInfoDeterminedBy_of_collision
-    {Ω Base Side : Type*} {base : Ω → Base} {side : Ω → Side}
+    {Ω Base Side : Type _} {base : Ω → Base} {side : Ω → Side}
     (hcollision : SideInfoCollisionOverBase base side) :
     ¬ SideInfoDeterminedBy base side := by
   rcases hcollision with ⟨x, y, hbase, hside⟩
@@ -79,7 +79,7 @@ theorem not_sideInfoDeterminedBy_of_collision
 /-- A positive-weight residual collision is, in particular, a residual
 collision. -/
 theorem sideInfoCollisionOverBase_of_positiveWeight_collision
-    {Ω Base Side : Type*} {base : Ω → Base} {side : Ω → Side} {w : Ω → ℕ}
+    {Ω Base Side : Type _} {base : Ω → Base} {side : Ω → Side} {w : Ω → ℕ}
     (hcollision : PositiveWeightSideInfoCollisionOverBase base side w) :
     SideInfoCollisionOverBase base side := by
   rcases hcollision with ⟨x, y, _hxw, hbase, hside⟩
@@ -88,7 +88,7 @@ theorem sideInfoCollisionOverBase_of_positiveWeight_collision
 /-- A positive-weight residual collision rules out source-only residual
 decoding. -/
 theorem not_sideInfoDeterminedBy_of_positiveWeight_collision
-    {Ω Base Side : Type*} {base : Ω → Base} {side : Ω → Side} {w : Ω → ℕ}
+    {Ω Base Side : Type _} {base : Ω → Base} {side : Ω → Side} {w : Ω → ℕ}
     (hcollision : PositiveWeightSideInfoCollisionOverBase base side w) :
     ¬ SideInfoDeterminedBy base side :=
   not_sideInfoDeterminedBy_of_collision
@@ -97,7 +97,7 @@ theorem not_sideInfoDeterminedBy_of_positiveWeight_collision
 /-- If two worlds have the same source summary, one has residual value `s`, and
 the other does not, then no source-only predicate can capture equality to `s`. -/
 theorem not_sourceOnlyPredicateCapturesSideEq_of_same_base_eq_value_ne
-    {Ω Base Side : Type*} {base : Ω → Base} {side : Ω → Side}
+    {Ω Base Side : Type _} {base : Ω → Base} {side : Ω → Side}
     {x y : Ω} {s : Side}
     (hbase : base x = base y) (hx : side x = s) (hy : side y ≠ s) :
     ¬ SourceOnlyPredicateCapturesSideEq base side s := by
@@ -111,7 +111,7 @@ theorem not_sourceOnlyPredicateCapturesSideEq_of_same_base_eq_value_ne
 /-- A same-source/different-residual pair rules out source-only capture of the
 left residual equality predicate. -/
 theorem not_sourceOnlyPredicateCapturesSideEq_left_of_same_base_ne_side
-    {Ω Base Side : Type*} {base : Ω → Base} {side : Ω → Side}
+    {Ω Base Side : Type _} {base : Ω → Base} {side : Ω → Side}
     {x y : Ω} (hbase : base x = base y) (hside : side x ≠ side y) :
     ¬ SourceOnlyPredicateCapturesSideEq base side (side x) := by
   exact
@@ -121,7 +121,7 @@ theorem not_sourceOnlyPredicateCapturesSideEq_left_of_same_base_ne_side
 /-- A positive-weight residual collision exposes a supported residual value
 whose equality predicate cannot be source-only. -/
 theorem exists_positive_not_sourceOnlyPredicateCapturesSideEq_of_positiveWeight_collision
-    {Ω Base Side : Type*} {base : Ω → Base} {side : Ω → Side} {w : Ω → ℕ}
+    {Ω Base Side : Type _} {base : Ω → Base} {side : Ω → Side} {w : Ω → ℕ}
     (hcollision : PositiveWeightSideInfoCollisionOverBase base side w) :
     ∃ x, 0 < w x ∧ ¬ SourceOnlyPredicateCapturesSideEq base side (side x) := by
   rcases hcollision with ⟨x, y, hxw, hbase, hside⟩
@@ -133,7 +133,7 @@ theorem exists_positive_not_sourceOnlyPredicateCapturesSideEq_of_positiveWeight_
 /-- A same-source/different-Boolean-target pair cannot be classified by a
 source-only Boolean classifier. -/
 theorem not_sourceOnlyBooleanClassifier_of_same_base_ne_target
-    {Ω Base : Type*} {base : Ω → Base} {target : Ω → Bool}
+    {Ω Base : Type _} {base : Ω → Base} {target : Ω → Bool}
     {x y : Ω} (hbase : base x = base y) (htarget : target x ≠ target y) :
     ¬ SourceOnlyBooleanClassifier base target := by
   rintro ⟨classifier, hclassifier⟩

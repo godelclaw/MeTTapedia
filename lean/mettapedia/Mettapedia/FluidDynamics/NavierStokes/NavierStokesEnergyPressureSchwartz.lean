@@ -1,0 +1,12 @@
+import Mettapedia.FluidDynamics.NavierStokes.NavierStokesEnergyPressureSchwartzMean
+import Mettapedia.FluidDynamics.NavierStokes.NavierStokesEnergyPressureSchwartzLinear
+import Mettapedia.FluidDynamics.NavierStokes.NavierStokesEnergyPressureSchwartzSmooth
+import Mettapedia.FluidDynamics.NavierStokes.NavierStokesEnergyPressureSchwartzScalar
+import Mettapedia.FluidDynamics.NavierStokes.NavierStokesEnergyPressureSchwartzSlice
+
+/-!
+# Navier-Stokes Energy: PressureSchwartz
+
+Compatibility umbrella for pressure-pairing cancellations against linear,
+scalar-Schwartz, and time-indexed Schwartz pressure fields.
+-/

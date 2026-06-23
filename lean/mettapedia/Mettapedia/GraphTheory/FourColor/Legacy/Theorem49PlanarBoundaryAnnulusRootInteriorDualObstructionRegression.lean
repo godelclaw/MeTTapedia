@@ -1,7 +1,8 @@
 import Mettapedia.GraphTheory.FourColor.Theorem49PlanarBoundaryAnnulusRootInteriorDual
 import Mettapedia.GraphTheory.FourColor.PlanarBoundaryClosedWalkSourceRoute
 import Mettapedia.GraphTheory.FourColor.Theorem49ForcingInteriorEdgeObstruction
-import Mathlib.Tactic
+import Mathlib.Tactic.NormNum
+import Mathlib.Tactic.FinCases
 
 namespace Mettapedia.GraphTheory.FourColor
 

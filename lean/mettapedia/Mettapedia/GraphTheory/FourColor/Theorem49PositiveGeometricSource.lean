@@ -1,4 +1,4 @@
-import Mettapedia.GraphTheory.FourColor.PlanarBoundaryClosedWalkSourceProjection
+import Mettapedia.GraphTheory.FourColor.PlanarBoundaryClosedWalkSourceProjectionPositive
 
 /-!
 # Positive geometric source packages for Theorem 4.9

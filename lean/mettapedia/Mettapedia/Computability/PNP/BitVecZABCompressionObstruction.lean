@@ -1,7 +1,8 @@
 import Mettapedia.Computability.PNP.ExactVisibleCompressionObstruction
 import Mettapedia.Computability.PNP.ExactZABTargetInterface
 import Mettapedia.Computability.PNP.BitVecZABERMInterface
-import Mathlib.Tactic
+import Init.Omega
+import Mathlib.Tactic.NormNum
 
 /-!
 # P vs NP crux: bit-valued exact `(z, a, b)` routes still face truth-table explosion

@@ -1,5 +1,5 @@
 import Mettapedia.Computability.PNP.ExactABCompressionObstruction
-import Mathlib.Tactic
+import Mathlib.Tactic.NormNum
 
 /-!
 # Exact `(a, b)` Route Regression
