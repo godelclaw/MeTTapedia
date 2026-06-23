@@ -1,4 +1,10 @@
-import Mettapedia.FluidDynamics.NavierStokes.NavierStokesEquationTarget
+import Mettapedia.FluidDynamics.NavierStokes.NavierStokesEquationCore
+import Mettapedia.FluidDynamics.NavierStokes.NavierStokesEquationKits
+import Mettapedia.FluidDynamics.NavierStokes.NavierStokesEquationProblemData
+import Mettapedia.FluidDynamics.NavierStokes.NavierStokesEquationFiniteEnergy
+import Mettapedia.FluidDynamics.NavierStokes.NavierStokesEquationComponentBridge
+import Mettapedia.FluidDynamics.NavierStokes.NavierStokesEquationEquivalences
+import Mettapedia.FluidDynamics.NavierStokes.NavierStokesEquationKitIff
 import Mathlib.Analysis.Distribution.SchwartzSpace.Deriv
 import Mathlib.MeasureTheory.Function.L2Space
 

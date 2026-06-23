@@ -1,4 +1,11 @@
-import Mettapedia.Computability.PNP.FiniteCoinPostprocessingFoundation
+import Mettapedia.Computability.PNP.FiniteCoinPostprocessingFoundationExactCore
+import Mettapedia.Computability.PNP.FiniteCoinPostprocessingFoundationExactInjective
+import Mettapedia.Computability.PNP.FiniteCoinPostprocessingFoundationExactObservedLeftInverse
+import Mettapedia.Computability.PNP.FiniteCoinPostprocessingFoundationExactObservedInjective
+import Mettapedia.Computability.PNP.FiniteCoinPostprocessingFoundationExactTolerance
+import Mettapedia.Computability.PNP.FiniteCoinPostprocessingFoundationExactCollision
+import Mettapedia.Computability.PNP.FiniteCoinPostprocessingFoundationBias
+import Mettapedia.Computability.PNP.FiniteCoinPostprocessingFoundationTolerance
 
 /-!
 # P vs NP grassroots: finite-coin postprocessing improvement obstruction

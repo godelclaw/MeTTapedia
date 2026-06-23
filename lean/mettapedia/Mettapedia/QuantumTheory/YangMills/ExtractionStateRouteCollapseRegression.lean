@@ -26,7 +26,7 @@ theorem sampleOddVanishingCoeffs_vanishesOnOddDimensions :
   have hne : n ≠ 14 := by
     intro h
     subst h
-    norm_num at hodd
+    exact (by decide : ¬ Odd 14) hodd
   simp [sampleOddVanishingCoeffs, hne]
 
 /-- Coefficient family whose odd-dimensional `15` term really distinguishes the
@@ -72,7 +72,7 @@ theorem sample_route_witness_holds_on_odd_vanishing_surface_regression :
   constructor
   · simp [extendedExtraction, extractLE, sampleOddVanishingCoeffs]
   · exact extractionRemainder_apply_of_lt (d := 14) (n := 15)
-      (coeff := sampleOddVanishingCoeffs) (by norm_num)
+      (coeff := sampleOddVanishingCoeffs) (by decide)
 
 theorem sample_odd_sensitive_state_is_not_collapsed_regression :
     extractionState 15 sampleOddSensitiveCoeffs ≠

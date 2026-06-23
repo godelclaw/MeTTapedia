@@ -1,5 +1,7 @@
 import Mettapedia.Computability.PNP.ActualSwitchedLocalBitFallbackWrapperObstruction
-import Mettapedia.Computability.PNP.ExactVisibleImageBudget
+import Mettapedia.Computability.PNP.ExactVisibleImageBudgetFiniteCovers
+import Mettapedia.Computability.PNP.ExactVisibleImageBudgetLowerBounds
+import Mettapedia.Computability.PNP.ExactVisibleImageBudgetExactVisible
 
 /-!
 # PNP crux: the zero-sample bit fallback wrapper has exactly the fallback image

@@ -1,6 +1,7 @@
 import Mettapedia.GraphTheory.FourColor.Theorem49ColoringGeneratorFamily
 import Mettapedia.GraphTheory.FourColor.Theorem49PlanarBoundaryAnnulusHonestWitnessRegression
-import Mathlib.Tactic
+import Mathlib.Tactic.NormNum
+import Mathlib.Tactic.FinCases
 
 namespace Mettapedia.GraphTheory.FourColor
 

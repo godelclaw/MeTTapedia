@@ -1,5 +1,8 @@
 import Mettapedia.FluidDynamics.NavierStokes.NavierStokesSchwartzPeriodizationLocalExistencePrerequisites
-import Mettapedia.FluidDynamics.NavierStokes.NavierStokesWitnessConstruction
+import Mettapedia.FluidDynamics.NavierStokes.NavierStokesWitnessConstructionZero
+import Mettapedia.FluidDynamics.NavierStokes.NavierStokesWitnessConstructionTimeIndependent
+import Mettapedia.FluidDynamics.NavierStokes.NavierStokesWitnessConstructionPressureGauge
+import Mettapedia.FluidDynamics.NavierStokes.NavierStokesWitnessConstructionBoxed
 
 /-!
 # Witness-Construction Global-Output Obstruction

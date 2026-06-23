@@ -1,5 +1,6 @@
 import Mettapedia.Computability.PNP.PNPv13AtomicEvidenceBudget
-import Mathlib.Tactic
+import Mathlib.Tactic.NormNum
+import Mathlib.Tactic.FinCases
 
 /-!
 # PNP v13 atomic evidence budget exactness characterization

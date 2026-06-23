@@ -1,4 +1,4 @@
-import Mettapedia.FluidDynamics.NavierStokes.WindowedColeHopfHeatSeedOnlyOperatorObstruction
+import Mettapedia.FluidDynamics.NavierStokes.WindowedColeHopfHeatSeedOnlyShiftKernelObstruction
 
 /-!
 # Regression Tests for Componentwise Seed-Only Operator Obstruction

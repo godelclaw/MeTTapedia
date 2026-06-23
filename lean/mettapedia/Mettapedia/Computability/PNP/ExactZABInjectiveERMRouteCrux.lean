@@ -1,5 +1,7 @@
-import Mettapedia.Computability.PNP.ExactZABInjectiveBranchObstruction
-import Mettapedia.Computability.PNP.ProductSuccessKpolyBridgeObstruction
+import Mettapedia.Computability.PNP.ExactZABInjectiveBranchObstructionExactDecisionList
+import Mettapedia.Computability.PNP.ExactZABInjectiveBranchObstructionSharedAffineFeature
+import Mettapedia.Computability.PNP.ExactZABInjectiveBranchObstructionSharedDecisionList
+import Mettapedia.Computability.PNP.ProductSuccessKpolyBridgeObstructionClockedObstructions
 
 /-!
 # P vs NP crux: widened injective exact-ZAB ERM routes still miss the full rule class

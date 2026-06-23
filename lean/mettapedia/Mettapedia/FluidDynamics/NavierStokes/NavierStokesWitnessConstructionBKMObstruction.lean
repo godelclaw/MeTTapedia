@@ -1,6 +1,9 @@
-import Mettapedia.FluidDynamics.NavierStokes.NavierStokesBKMContinuationTarget
+import Mettapedia.FluidDynamics.NavierStokes.NavierStokesBKMContinuationCore
 import Mettapedia.FluidDynamics.NavierStokes.NavierStokesFiniteModeVorticity
-import Mettapedia.FluidDynamics.NavierStokes.NavierStokesWitnessConstruction
+import Mettapedia.FluidDynamics.NavierStokes.NavierStokesWitnessConstructionZero
+import Mettapedia.FluidDynamics.NavierStokes.NavierStokesWitnessConstructionTimeIndependent
+import Mettapedia.FluidDynamics.NavierStokes.NavierStokesWitnessConstructionPressureGauge
+import Mettapedia.FluidDynamics.NavierStokes.NavierStokesWitnessConstructionBoxed
 
 /-!
 # Witness-Construction BKM Obstruction

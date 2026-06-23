@@ -287,6 +287,27 @@ theorem parentSharedInteriorEdgeOfPairwiseUnique_eq_of_mem_faceBoundary
     (interiorDualSpanningForest_le faceBoundary allFaces (hparentAdj hgf))
     hshared
 
+theorem parentSharedInteriorEdgeOfPairwiseUnique_eq_of_mem_interiorEdgeSupport
+    {E : Type*} [DecidableEq E]
+    (faceBoundary : F → Finset E) (allFaces : Finset F)
+    (hunique : PairwiseUniqueSharedInteriorEdges faceBoundary allFaces)
+    (parentFace : AmbientFace allFaces → Option (AmbientFace allFaces))
+    (fallbackEdge : AmbientFace allFaces → E)
+    (hparentAdj : ∀ {f p : AmbientFace allFaces}, parentFace f = some p →
+      (interiorDualSpanningForest faceBoundary allFaces).Adj f p)
+    {child parent : AmbientFace allFaces} (hchildParent : parentFace child = some parent)
+    {e : E} (heInterior : e ∈ interiorEdgeSupport faceBoundary allFaces)
+    (heChild : e ∈ faceBoundary child.1) (heParent : e ∈ faceBoundary parent.1) :
+    parentSharedInteriorEdgeOfPairwiseUnique faceBoundary allFaces hunique
+        parentFace fallbackEdge hparentAdj child = e := by
+  rw [parentSharedInteriorEdgeOfPairwiseUnique_eq_sharedInteriorEdgeOfAdjOfPairwiseUnique
+    faceBoundary allFaces hunique parentFace fallbackEdge hparentAdj hchildParent]
+  exact sharedInteriorEdgeOfAdjOfPairwiseUnique_eq_of_mem_sharedInteriorEdges
+    faceBoundary allFaces hunique
+    (interiorDualSpanningForest_le faceBoundary allFaces (hparentAdj hchildParent)) <|
+      (mem_sharedInteriorEdges_iff faceBoundary allFaces).2
+        ⟨heInterior, heChild, heParent⟩
+
 /-- Canonical interior-dual-spanning-forest specialization of the current Theorem 4.9 route. This
 packages the chosen forest from Lemma 4.6 and transfers root coverage/separation from the ambient
 interior dual graph to that forest; the remaining burden is then purely the annulus geometry:
@@ -1924,6 +1945,28 @@ theorem rootedSharedInteriorEdgeOfPairwiseUnique_eq_of_mem_faceBoundary
       exact parentTowardsRoot_some_adj
         (interiorDualSpanningForest faceBoundary allFaces) rootFace huv)
     hall hgf heg hef
+
+theorem rootedSharedInteriorEdgeOfPairwiseUnique_eq_of_mem_interiorEdgeSupport
+    {E : Type*} [DecidableEq E]
+    (faceBoundary : F → Finset E) (allFaces : Finset F)
+    (hunique : PairwiseUniqueSharedInteriorEdges faceBoundary allFaces)
+    (rootFace : AmbientFace allFaces → AmbientFace allFaces)
+    (fallbackEdge : AmbientFace allFaces → E)
+    {g f : AmbientFace allFaces}
+    (hgf : parentTowardsRoot (interiorDualSpanningForest faceBoundary allFaces) rootFace g = some f)
+    {e : E} (heInterior : e ∈ interiorEdgeSupport faceBoundary allFaces)
+    (heg : e ∈ faceBoundary g.1) (hef : e ∈ faceBoundary f.1) :
+    rootedSharedInteriorEdgeOfPairwiseUnique faceBoundary allFaces hunique
+        rootFace fallbackEdge g = e := by
+  exact parentSharedInteriorEdgeOfPairwiseUnique_eq_of_mem_interiorEdgeSupport
+    faceBoundary allFaces hunique
+    (parentTowardsRoot (interiorDualSpanningForest faceBoundary allFaces) rootFace)
+    fallbackEdge
+    (by
+      intro u v huv
+      exact parentTowardsRoot_some_adj
+        (interiorDualSpanningForest faceBoundary allFaces) rootFace huv)
+    hgf heInterior heg hef
 
 /-- Nondegenerate canonical-parent cover witness.  If an actual interior edge is covered by the
 rooted shared-edge map, then the covering face is a peeled non-root face with a real shortest-path

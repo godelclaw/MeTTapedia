@@ -1,5 +1,5 @@
 import Mettapedia.Computability.PNP.ActualSwitchedLocalSharedExactZABSparseThresholdERMRecoveryCardinalityObstruction
-import Mathlib.Tactic
+import Mathlib.Tactic.NormNum
 
 /-!
 # P vs NP route obstruction: small recovery thresholds force small visible width

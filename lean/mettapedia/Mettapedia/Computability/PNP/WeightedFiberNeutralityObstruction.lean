@@ -1,5 +1,5 @@
 import Mettapedia.Computability.PNP.FiberNeutralityObstruction
-import Mathlib.Tactic
+import Mathlib.Algebra.BigOperators.Group.Finset.Basic
 
 /-!
 # P vs NP crux: orbit-symmetric weights still force zero conditional margin

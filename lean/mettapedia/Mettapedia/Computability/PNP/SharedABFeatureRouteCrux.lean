@@ -1,4 +1,4 @@
-import Mettapedia.Computability.PNP.SharedABFeatureObstruction
+import Mettapedia.Computability.PNP.SharedABFeatureObstructionFullExactPullback
 
 /-!
 # PNP crux: shared `(a,b)` feature routes cannot keep full reduced expressivity

@@ -1,7 +1,6 @@
 import Mettapedia.Computability.PNP.ActualSwitchedLocalSharedExactZABSparseThresholdERMRecoveryConcentrationObstruction
 import Mettapedia.Computability.PNP.BitVecZABCompressionObstruction
 import Mettapedia.Computability.PNP.FinitePMFPointMassBound
-import Mathlib.Tactic
 
 /-!
 # P vs NP route obstruction: recovery packets force near-uniform concentration

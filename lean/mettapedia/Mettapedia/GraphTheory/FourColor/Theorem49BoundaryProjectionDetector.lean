@@ -1,4 +1,5 @@
 import Mettapedia.GraphTheory.FourColor.Theorem49SynthesisClosureInvariance
+import Mettapedia.GraphTheory.FourColor.Theorem49SynthesisPeelBridge
 
 namespace Mettapedia.GraphTheory.FourColor
 

@@ -1,4 +1,5 @@
-import Mathlib.Tactic
+import Mettapedia.Computability.PNP.BitVec
+import Mathlib.Data.Prod.Basic
 
 /-!
 # P vs NP crux: the exact post-switch input is not `T_i`-invariant
@@ -19,14 +20,6 @@ obstruction files.
 namespace Mettapedia.Computability.PNP
 
 section
-
-abbrev BitVec (n : ℕ) := Fin n → Bool
-
-def zeroVec {n : ℕ} : BitVec n := fun _ => false
-
-/-- The VV right-hand side update `b ↦ b ⊕ a`. -/
-def vvToggle {n : ℕ} (a b : BitVec n) : BitVec n :=
-  fun i => Bool.xor (b i) (a i)
 
 structure PostSwitchInput (Z : Type*) (k : ℕ) where
   z : Z
@@ -65,9 +58,6 @@ theorem tiInputMap_eq_self_iff_zeroColumn
     tiInputMap u = u ↔ u.a = zeroVec := by
   cases u
   simp [tiInputMap, vvToggle_eq_self_iff_zero]
-
-def nonzeroColumn {n : ℕ} (a : BitVec n) : Prop :=
-  ∃ i, a i = true
 
 lemma nonzeroColumn_iff_ne_zero {n : ℕ} (a : BitVec n) :
     nonzeroColumn a ↔ a ≠ zeroVec := by

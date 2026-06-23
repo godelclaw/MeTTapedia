@@ -1,5 +1,8 @@
 import Mathlib.Data.Fintype.Basic
-import Mettapedia.Computability.PNP.PNPv13ManuscriptCNFReadout
+import Mettapedia.Computability.PNP.PNPv13ManuscriptCNFReadoutCore
+import Mettapedia.Computability.PNP.PNPv13ManuscriptCNFReadoutLockedLayer
+import Mettapedia.Computability.PNP.PNPv13ManuscriptCNFReadoutDeterministic
+import Mettapedia.Computability.PNP.PNPv13ManuscriptCNFReadoutCountermodels
 
 /-!
 # PNP v13: Appendix D locked cores and Appendix I readout

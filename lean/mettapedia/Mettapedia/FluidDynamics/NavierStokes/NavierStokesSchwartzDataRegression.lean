@@ -1,5 +1,5 @@
 import Mettapedia.FluidDynamics.NavierStokes.NavierStokesSchwartzData
-import Mettapedia.FluidDynamics.NavierStokes.NavierStokesUniformVorticityContinuationTarget
+import Mettapedia.FluidDynamics.NavierStokes.NavierStokesUniformVorticityZeroPressureGaugeWitnesses
 
 /-!
 # Navier-Stokes Schwartz Data Regression

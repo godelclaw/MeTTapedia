@@ -1,4 +1,4 @@
-import Mettapedia.FluidDynamics.NavierStokes.WindowedColeHopfHeatGeneralShiftKernelObstruction
+import Mettapedia.FluidDynamics.NavierStokes.WindowedColeHopfHeatGeneralShiftKernelCoefficientLaws
 import Mettapedia.FluidDynamics.NavierStokes.WindowedColeHopfHeatIdentitySampleKernelObstruction
 
 /-!

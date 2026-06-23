@@ -1,6 +1,5 @@
 import Mettapedia.Computability.PNP.ActualSwitchedLocalSharedExactZABSparseThresholdERMRecoveryInjectiveConcentrationObstruction
 import Mettapedia.Computability.PNP.ActualSwitchedLocalSharedExactZABSparseThresholdERMRecoveryThresholdWidthObstruction
-import Mathlib.Tactic
 
 /-!
 # P vs NP route obstruction: injective bounded-sample recovery thresholds need

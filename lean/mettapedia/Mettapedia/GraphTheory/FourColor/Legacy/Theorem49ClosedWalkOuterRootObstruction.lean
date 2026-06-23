@@ -1,6 +1,6 @@
 import Mettapedia.GraphTheory.FourColor.PlanarBoundaryClosedWalkSource
 import Mettapedia.GraphTheory.FourColor.Theorem49PlanarBoundaryOuterBoundaryRootInteriorDual
-import Mettapedia.GraphTheory.FourColor.Theorem49Synthesis
+import Mettapedia.GraphTheory.FourColor.Theorem49SynthesisNonempty
 
 namespace Mettapedia.GraphTheory.FourColor
 

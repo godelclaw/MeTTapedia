@@ -1,4 +1,8 @@
-import Mathlib.Tactic
+import Mathlib.Data.Real.Basic
+import Mathlib.Tactic.IntervalCases
+import Mathlib.Tactic.Linarith
+import Mathlib.Tactic.NormNum
+import Mathlib.Tactic.Ring
 
 /-!
 # Yang-Mills RG Bootstrap Audit

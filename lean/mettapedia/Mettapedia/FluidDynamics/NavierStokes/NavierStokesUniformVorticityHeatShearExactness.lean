@@ -1,0 +1,13 @@
+import Mettapedia.FluidDynamics.NavierStokes.NavierStokesUniformVorticityHeatShearExactnessCore
+import Mettapedia.FluidDynamics.NavierStokes.NavierStokesUniformVorticityHeatShearExactnessStreamwise
+import Mettapedia.FluidDynamics.NavierStokes.NavierStokesUniformVorticityHeatShearExactnessVertical
+import Mettapedia.FluidDynamics.NavierStokes.NavierStokesUniformVorticityHeatShearExactnessFull
+import Mettapedia.FluidDynamics.NavierStokes.NavierStokesUniformVorticityHeatShearExactnessTransport
+
+/-!
+# Heat-Shear Exactness for Uniform-Vorticity Continuation
+
+Compatibility umbrella for the heat-shear exactness surfaces. The implementation
+is split into undrifted, drift, and transported layers so downstream modules can
+import the smallest useful theorem surface.
+-/

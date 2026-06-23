@@ -209,7 +209,7 @@ theorem
   have hrest := data.hrest i f hf e he
   simpa [planarBoundaryAnnulusDecomposition_of_boundaryData, i] using hrest
 
-/-- The canonical one-collar decomposition built directly from annulus boundary data cannot admit
+/-- The canonical one-collar decomposition built directly from annulus boundary data cannot support
 any witness assignment if some ambient face boundary contains two distinct interior edges. The
 reason is geometric rather than witness-specific: whichever interior edge is chosen as witness,
 the other one would have to lie on an ambient annulus boundary, which interior edges never do. -/

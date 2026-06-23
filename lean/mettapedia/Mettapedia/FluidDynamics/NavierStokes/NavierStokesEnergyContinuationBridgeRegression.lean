@@ -1,4 +1,5 @@
 import Mettapedia.FluidDynamics.NavierStokes.NavierStokesEnergyContinuationBridge
+import Mettapedia.FluidDynamics.NavierStokes.NavierStokesUniformVorticityHeatShearEnergyTransport
 
 /-!
 # Navier-Stokes Energy/Continuation Bridge Regression

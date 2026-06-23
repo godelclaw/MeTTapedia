@@ -1,6 +1,5 @@
 import Mettapedia.Computability.PNP.ActualSwitchedLocalBoundedSampleSharedExactZABSparseThresholdERMSampleBound
 import Mettapedia.Computability.PNP.ActualSwitchedLocalSharedExactZABSparseThresholdERMRecoveryData
-import Mathlib.Tactic
 
 /-!
 # P vs NP route obstruction: bounded-sample sparse-threshold packets have a

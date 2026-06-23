@@ -1,7 +1,7 @@
 import Mettapedia.Computability.PNP.ActualSwitchedLocalSharedExactZABSparseThresholdERMRecoveryFullRuleRegionObstruction
 import Mettapedia.Computability.PNP.ActualSwitchedLocalSharedExactZABSparseThresholdERMRecoveryRegionObstructionRegression
 import Mettapedia.Computability.PNP.BitVecZABCompressionObstruction
-import Mathlib.Tactic
+import Mathlib.Tactic.NormNum
 
 namespace Mettapedia.Computability.PNP
 

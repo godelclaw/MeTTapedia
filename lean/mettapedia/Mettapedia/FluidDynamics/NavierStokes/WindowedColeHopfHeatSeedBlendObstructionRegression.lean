@@ -1,4 +1,4 @@
-import Mettapedia.FluidDynamics.NavierStokes.WindowedColeHopfHeatSeedBlendObstruction
+import Mettapedia.FluidDynamics.NavierStokes.WindowedColeHopfHeatSeedBlendObstructionComponentwise
 
 /-!
 # Regression Tests for Componentwise Seed-Blend Obstruction

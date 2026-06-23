@@ -1,7 +1,10 @@
+import Mettapedia.Computability.PNP.BitVec
 import Mathlib.Algebra.BigOperators.Group.Finset.Basic
+import Mathlib.Data.Fintype.BigOperators
 import Mathlib.Data.Fintype.Card
+import Mathlib.Data.Fintype.Pi
 import Mathlib.Algebra.Ring.Parity
-import Mathlib.Tactic
+import Init.Omega
 
 /-!
 # P vs NP crux: majority symmetrization fails at zero margin
@@ -21,9 +24,6 @@ separating the conditional mean away from `1/2`.
 namespace Mettapedia.Computability.PNP
 
 open scoped BigOperators
-
-/-- Length-`n` bit-vectors. -/
-abbrev BitVec (n : ℕ) := Fin n → Bool
 
 /-- Number of `true` entries in a bit-vector. -/
 def ones {n : ℕ} (x : BitVec n) : ℕ :=
@@ -111,6 +111,6 @@ theorem two_mul_card_majority_true {n : ℕ} (hodd : Odd n) :
 number of unbiased labels can match that Bayes rule on at most half the samples. -/
 theorem majority_tie_break_not_high_probability {n : ℕ} (hodd : Odd n) :
     Fintype.card {x : BitVec n // majority x = true} * 2 = Fintype.card (BitVec n) := by
-  simpa [Nat.mul_comm] using two_mul_card_majority_true hodd
+  simpa [Nat.mul_comm, card_bitVec] using two_mul_card_majority_true hodd
 
 end Mettapedia.Computability.PNP

@@ -1,5 +1,6 @@
 import Mettapedia.Computability.PNP.PNPv13AtomicEvidenceBudgetExactnessCharacterization
-import Mathlib.Tactic
+import Mathlib.Algebra.BigOperators.Fin
+import Mathlib.Tactic.NormNum
 
 /-!
 # PNP v13 atomic evidence budget cancellation obstruction
@@ -44,8 +45,9 @@ theorem v13CancellationBudgetSurface_atomBudget :
 
 theorem v13CancellationBudgetSurface_coordinateSummedCost :
     v13CancellationBudgetSurface.coordinateSummedCost = 2 := by
-  norm_num [V13AtomicEvidenceBudgetSurface.coordinateSummedCost,
-    V13AtomicEvidenceBudgetSurface.atomMultiplicity, v13CancellationBudgetSurface]
+  rw [V13AtomicEvidenceBudgetSurface.coordinateSummedCost]
+  rw [Fin.sum_univ_succ, Fin.sum_univ_succ, Fin.sum_univ_zero]
+  norm_num [V13AtomicEvidenceBudgetSurface.atomMultiplicity, v13CancellationBudgetSurface]
 
 theorem v13CancellationBudgetSurface_coordinateSummedCost_eq_atomBudget :
     v13CancellationBudgetSurface.coordinateSummedCost =

@@ -1,4 +1,6 @@
-import Mathlib
+import Mathlib.Data.ZMod.Basic
+import Mathlib.Tactic.FinCases
+import Mathlib.Tactic.NormNum
 
 /-!
 # P vs NP crux: pairwise-independent columns do not imply universal hashing

@@ -1,5 +1,4 @@
 import Mettapedia.Computability.PNP.ExactSwitchedFamily
-import Mathlib.Tactic
 
 /-!
 # P vs NP crux: tree structure alone does not force a small message class

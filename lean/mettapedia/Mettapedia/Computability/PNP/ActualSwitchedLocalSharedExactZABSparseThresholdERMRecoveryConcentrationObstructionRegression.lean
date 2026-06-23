@@ -1,7 +1,7 @@
 import Mettapedia.Computability.PNP.ActualSwitchedLocalSharedExactZABSparseThresholdERMRecoveryConcentrationObstruction
 import Mettapedia.Computability.PNP.ActualSwitchedLocalSharedExactZABSparseThresholdERMDataRegression
 import Mathlib.Probability.ProbabilityMassFunction.Constructions
-import Mathlib.Tactic
+import Mathlib.Tactic.NormNum
 
 namespace Mettapedia.Computability.PNP
 

@@ -1,5 +1,5 @@
 import Mettapedia.Computability.PNP.ActualSwitchedLocalBoundedSampleSharedExactZABSparseThresholdERMVisibleBudgetObstruction
-import Mathlib.Tactic
+import Mathlib.Tactic.NormNum
 
 namespace Mettapedia.Computability.PNP
 

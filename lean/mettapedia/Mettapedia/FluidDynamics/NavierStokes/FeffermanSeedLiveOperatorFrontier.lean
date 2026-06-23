@@ -26,7 +26,7 @@ variable [Fintype ι] [One Time] [Mul Time]
 variable {radius statistic : G → ℝ}
 
 /-- Non-pointwise operator shell: the output at `x` may depend on the full
-seeded/live slices, but must admit a uniform envelope bound. -/
+seeded/live slices, but must satisfy a uniform envelope bound. -/
 structure SeedLiveOperator (X : Type*) where
   operator : (X → ℝ) → (X → ℝ) → X → ℝ
   coeff : ℝ

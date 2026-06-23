@@ -1,0 +1,14 @@
+import Mettapedia.Computability.PNP.CruxResidualSideInformationAnchorsAdvantageConsequencesCore
+import Mettapedia.Computability.PNP.CruxResidualSideInformationAnchorsAdvantageConsequencesPositive
+import Mettapedia.Computability.PNP.CruxResidualSideInformationAnchorsAdvantageConsequencesStrictHalf
+import Mettapedia.Computability.PNP.CruxResidualSideInformationAnchorsAdvantageConsequencesPrediction
+import Mettapedia.Computability.PNP.CruxResidualSideInformationAnchorsAdvantageConsequencesSupportedPackages
+
+/-!
+# P vs NP crux: residual side-information advantage consequences
+
+Compatibility hub preserving the historical residual-side advantage-consequence import path.
+The anchor layer is split into source/visibility consequences, positive-advantage
+consequences, strict-half consequences, prediction separation, and supported
+obstruction packages.
+-/

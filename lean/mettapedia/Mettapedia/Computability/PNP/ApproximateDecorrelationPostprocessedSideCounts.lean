@@ -1,0 +1,11 @@
+import Mettapedia.Computability.PNP.ApproximateDecorrelationPostprocessedSideBalance
+import Mettapedia.Computability.PNP.ApproximateDecorrelationPostprocessedSideImbalance
+import Mettapedia.Computability.PNP.ApproximateDecorrelationPostprocessedSidePredicates
+import Mettapedia.Computability.PNP.ApproximateDecorrelationPostprocessedSideDecoders
+import Mettapedia.Computability.PNP.ApproximateDecorrelationPostprocessedSideRanges
+
+/-!
+# PNP approximate decorrelation: postprocessed-side count interface
+
+Compatibility hub for postprocessed-side balance, predicate, decoder, and range-separation count lemmas.
+-/

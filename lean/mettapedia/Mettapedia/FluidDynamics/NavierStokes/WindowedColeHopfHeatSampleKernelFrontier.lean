@@ -1,6 +1,6 @@
 import Mettapedia.FluidDynamics.NavierStokes.WindowedColeHopfHeatPackage
 import Mettapedia.FluidDynamics.NavierStokes.WindowedColeHopfHeatSeedBlendFrontier
-import Mettapedia.FluidDynamics.NavierStokes.WindowedColeHopfHeatSeedBlendObstruction
+import Mettapedia.FluidDynamics.NavierStokes.WindowedColeHopfHeatSeedBlendObstructionSelfCompatibility
 import Mettapedia.FluidDynamics.NavierStokes.FeffermanSeedLiveSampleKernelFrontier
 
 /-!

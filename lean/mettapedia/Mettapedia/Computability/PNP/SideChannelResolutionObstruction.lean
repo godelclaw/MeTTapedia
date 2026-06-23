@@ -1,5 +1,4 @@
 import Mettapedia.Computability.PNP.AsymmetryBudgetObstruction
-import Mathlib.Tactic
 
 /-!
 # P vs NP crux: side channels help only on orbit-resolving mass

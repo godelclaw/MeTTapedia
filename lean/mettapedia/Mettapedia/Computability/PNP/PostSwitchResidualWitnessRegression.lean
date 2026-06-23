@@ -1,4 +1,7 @@
-import Mettapedia.Computability.PNP.PostSwitchResidualWitness
+import Mettapedia.Computability.PNP.PostSwitchResidualWitnessCore
+import Mettapedia.Computability.PNP.PostSwitchResidualWitnessSupport
+import Mettapedia.Computability.PNP.PostSwitchResidualWitnessAdvantage
+import Mettapedia.Computability.PNP.PostSwitchResidualWitnessPackages
 
 /-!
 # Regression checks for the exact post-switch residual witness

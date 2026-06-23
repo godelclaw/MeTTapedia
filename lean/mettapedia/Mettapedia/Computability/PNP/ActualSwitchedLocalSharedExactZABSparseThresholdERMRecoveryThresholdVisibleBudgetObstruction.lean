@@ -1,5 +1,5 @@
 import Mettapedia.Computability.PNP.ActualSwitchedLocalSharedExactZABSparseThresholdERMRecoveryThresholdWidthObstruction
-import Mathlib.Tactic
+import Mathlib.Tactic.NormNum
 
 /-!
 # P vs NP route obstruction: small recovery thresholds tighten the visible budget

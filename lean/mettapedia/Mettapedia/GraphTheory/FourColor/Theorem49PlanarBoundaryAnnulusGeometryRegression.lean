@@ -1,5 +1,4 @@
 import Mettapedia.GraphTheory.FourColor.PlanarBoundaryAnnulusConstruction
-import Mathlib.Tactic
 
 namespace Mettapedia.GraphTheory.FourColor
 

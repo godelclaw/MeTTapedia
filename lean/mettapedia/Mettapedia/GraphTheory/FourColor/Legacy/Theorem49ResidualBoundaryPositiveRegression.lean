@@ -1,7 +1,7 @@
 import Mettapedia.GraphTheory.FourColor.Theorem49ResidualBoundaryRoute
 import Mettapedia.GraphTheory.FourColor.Legacy.Theorem49PlanarBoundaryAnnulusRootInteriorDualPositiveRegression
 import Mettapedia.GraphTheory.FourColor.Theorem49ForcingInteriorEdgeObstruction
-import Mettapedia.GraphTheory.FourColor.Theorem49Synthesis
+import Mettapedia.GraphTheory.FourColor.Theorem49SynthesisRoutes
 
 namespace Mettapedia.GraphTheory.FourColor
 

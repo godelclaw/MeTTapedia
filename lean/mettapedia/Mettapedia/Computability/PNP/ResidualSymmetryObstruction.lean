@@ -1,5 +1,5 @@
 import Mettapedia.Computability.PNP.OrbitNeutralityObstruction
-import Mathlib.Tactic
+import Mathlib.Algebra.BigOperators.Group.Finset.Basic
 
 /-!
 # P vs NP crux: unresolved symmetric slices stay at chance

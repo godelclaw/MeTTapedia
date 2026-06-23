@@ -1,0 +1,15 @@
+import Mettapedia.Computability.PNP.CruxSynthesisRegressionKpolyFiniteCoverEquivalences
+import Mettapedia.Computability.PNP.CruxSynthesisRegressionKpolyFiniteCoverFactorThrough
+import Mettapedia.Computability.PNP.CruxSynthesisRegressionKpolyFiniteCoverABPullback
+import Mettapedia.Computability.PNP.CruxSynthesisRegressionKpolyFiniteCoverCardinality
+import Mettapedia.Computability.PNP.CruxSynthesisRegressionKpolyFiniteCoverInjectiveFactorThrough
+import Mettapedia.Computability.PNP.CruxSynthesisRegressionKpolyFiniteCoverExactVisibleObstructions
+
+/-!
+# Regression checks for PNP Kpoly finite-cover transfers
+
+Compatibility umbrella for the finite-cover transfer regressions. The
+semantic modules separate equivalences, generic factor-through transport,
+reduced AB pullbacks, cardinality bounds, injective factor-through pullbacks,
+and exact-visible terminal obstructions.
+-/

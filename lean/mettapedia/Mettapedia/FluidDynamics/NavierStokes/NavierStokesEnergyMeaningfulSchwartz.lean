@@ -1,0 +1,12 @@
+import Mettapedia.FluidDynamics.NavierStokes.NavierStokesEnergyMeaningfulSchwartzCore
+import Mettapedia.FluidDynamics.NavierStokes.NavierStokesEnergyMeaningfulSchwartzPressures
+import Mettapedia.FluidDynamics.NavierStokes.NavierStokesEnergyMeaningfulSchwartzAffineScalar
+import Mettapedia.FluidDynamics.NavierStokes.NavierStokesEnergyMeaningfulSchwartzInequalities
+import Mettapedia.FluidDynamics.NavierStokes.NavierStokesEnergyMeaningfulSchwartzDivergenceFree
+
+/-!
+# Navier-Stokes Energy: MeaningfulSchwartz
+
+Compatibility umbrella for bounded two-profile Schwartz energy identities,
+pressure lanes, energy inequalities, and divergence-free shortcuts.
+-/

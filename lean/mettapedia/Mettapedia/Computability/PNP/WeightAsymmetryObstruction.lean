@@ -1,5 +1,7 @@
 import Mettapedia.Computability.PNP.InvariantScoreObstruction
-import Mathlib.Tactic
+import Init.Omega
+import Mathlib.Tactic.NormNum
+import Mathlib.Tactic.Ring
 
 /-!
 # P vs NP crux: invariant-score signal comes only from weight asymmetry
@@ -55,12 +57,11 @@ theorem two_mul_signedScore_sum_eq_antisymmetricWeight_sum
     _ = ∑ x : α, (f x + f (τ x)) := by
       simpa using hadd.symm
     _ = ∑ x : α, antisymmetricWeightContribution τ u y w score x := by
-      refine Fintype.sum_congr (fun x : α => f x + f (τ x))
-        (fun x : α => antisymmetricWeightContribution τ u y w score x) ?_
-      intro x
+      refine Finset.sum_congr rfl ?_
+      intro x _
       dsimp [f, signedScoreContribution, antisymmetricWeightContribution]
       rw [hu x, hy x, targetSign_flip]
-      ring
+      ring_nf
 
 /- A nonzero antisymmetric contribution must come from a point whose weight is
 not invariant and whose score is nonzero. -/

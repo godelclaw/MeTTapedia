@@ -1,6 +1,6 @@
 import Mettapedia.Computability.PNP.BitVecZABCompressionObstruction
 import Mettapedia.Computability.PNP.ProjectedZABERMInterface
-import Mathlib.Tactic
+import Init.Omega
 
 /-!
 # P vs NP crux: projected exact `(z, a, b)` routes still face the full surface size

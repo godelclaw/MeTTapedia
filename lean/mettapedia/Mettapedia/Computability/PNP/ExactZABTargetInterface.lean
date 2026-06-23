@@ -1,6 +1,8 @@
 import Mettapedia.Computability.PNP.ExactZABDecisionListFamily
 import Mettapedia.Computability.PNP.ExactVisibleCompressionObstruction
-import Mettapedia.Computability.PNP.ExactVisibleImageBudget
+import Mettapedia.Computability.PNP.ExactVisibleImageBudgetFiniteCovers
+import Mettapedia.Computability.PNP.ExactVisibleImageBudgetLowerBounds
+import Mettapedia.Computability.PNP.ExactVisibleImageBudgetExactVisible
 
 /-!
 # P vs NP grassroots: target interfaces for the shared `z+a+b` decision-list route

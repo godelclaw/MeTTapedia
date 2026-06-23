@@ -1,4 +1,7 @@
-import Mettapedia.Computability.PNP.ExactZABCompressionObstruction
+import Mettapedia.Computability.PNP.ExactZABCompressionObstructionAffineFeature
+import Mettapedia.Computability.PNP.ExactZABCompressionObstructionSparseThreshold
+import Mettapedia.Computability.PNP.ExactZABCompressionObstructionDecisionList
+import Mettapedia.Computability.PNP.ExactZABCompressionObstructionFinalERM
 
 /-!
 # Exact `(zfeat(z), a, b)` Route Regression

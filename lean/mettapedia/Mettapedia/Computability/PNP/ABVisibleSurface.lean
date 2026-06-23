@@ -1,5 +1,6 @@
 import Mettapedia.Computability.PNP.VisiblePostSwitchSurface
 import Mathlib.Data.Fin.Tuple.Basic
+import Mathlib.Data.Fintype.BigOperators
 
 /-!
 # P vs NP grassroots: the reduced raw visible surface `(a, b)`
@@ -49,7 +50,7 @@ theorem card_abVisibleSurface (k : ℕ) :
     Fintype.card (ABVisibleSurface k) = 2 ^ k * 2 ^ k := by
       simp [ABVisibleSurface, BitVec]
     _ = 2 ^ (k + k) := by rw [← Nat.pow_add]
-    _ = 2 ^ (2 * k) := by simp [two_mul]
+    _ = 2 ^ (2 * k) := by simp [Nat.two_mul]
 
 end
 

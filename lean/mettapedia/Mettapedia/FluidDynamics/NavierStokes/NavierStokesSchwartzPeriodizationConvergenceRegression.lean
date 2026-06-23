@@ -1,4 +1,8 @@
-import Mettapedia.FluidDynamics.NavierStokes.NavierStokesSchwartzPeriodizationConvergence
+import Mettapedia.FluidDynamics.NavierStokes.NavierStokesSchwartzPeriodizationLattice
+import Mettapedia.FluidDynamics.NavierStokes.NavierStokesSchwartzPeriodizationSeries
+import Mettapedia.FluidDynamics.NavierStokes.NavierStokesSchwartzPeriodizationLimit
+import Mettapedia.FluidDynamics.NavierStokes.NavierStokesSchwartzPeriodizationProblemData
+import Mettapedia.FluidDynamics.NavierStokes.NavierStokesSchwartzPeriodizationLocalConvergence
 
 /-!
 # Navier-Stokes Schwartz Periodization Convergence Regression

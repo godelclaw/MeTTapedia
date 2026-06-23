@@ -1,6 +1,6 @@
 import Mettapedia.Computability.PNP.ActualSwitchedLocalBoundedSampleSharedExactZABSparseThresholdERMRecoverySampleBoundObstruction
 import Mathlib.Probability.Distributions.Uniform
-import Mathlib.Tactic
+import Mathlib.Tactic.NormNum
 
 namespace Mettapedia.Computability.PNP
 

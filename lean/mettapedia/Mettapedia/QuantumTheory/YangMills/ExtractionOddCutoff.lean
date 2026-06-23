@@ -1,4 +1,4 @@
-import Mathlib.Tactic
+import Mathlib.Algebra.Ring.Parity
 import Mettapedia.QuantumTheory.YangMills.ExtractionProjection
 
 /-!
@@ -64,7 +64,7 @@ theorem extendedExtraction_fifteen_eq_fourteen_of_vanishOnOddDimensions
     (hvanish : VanishesOnOddDimensions coeff) :
     extendedExtraction 15 coeff = extendedExtraction 14 coeff := by
   exact extendedExtraction_succ_eq_of_succOdd_and_vanishOnOddDimensions
-    (d := 14) (coeff := coeff) (by norm_num) hvanish
+    (d := 14) (coeff := coeff) (by decide) hvanish
 
 /-- If the new successor coefficient already vanishes, then enlarging the
 higher extracted block cutoff from `d` to `d + 1` changes nothing. -/
@@ -96,7 +96,7 @@ theorem higherExtractionBlock_fifteen_eq_fourteen_of_vanishOnOddDimensions
     (hvanish : VanishesOnOddDimensions coeff) :
     higherExtractionBlock 15 coeff = higherExtractionBlock 14 coeff := by
   exact higherExtractionBlock_succ_eq_of_succ_vanish
-    (d := 14) (coeff := coeff) (hvanish (by norm_num))
+    (d := 14) (coeff := coeff) (hvanish (by decide))
 
 end YangMills
 end QuantumTheory

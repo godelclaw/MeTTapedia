@@ -1,5 +1,12 @@
-import Mettapedia.Computability.PNP.ActualSwitchedLocalBoundedSampleMajorityObstruction
-import Mettapedia.Computability.PNP.ExactVisibleImageBudget
+import Mettapedia.Computability.PNP.ActualSwitchedLocalBoundedSampleMajoritySupport
+import Mettapedia.Computability.PNP.ActualSwitchedLocalBoundedSampleMajorityCombinatorics
+import Mettapedia.Computability.PNP.ActualSwitchedLocalBoundedSampleMajorityInterfaces
+import Mettapedia.Computability.PNP.ActualSwitchedLocalBoundedSampleMajorityFallbackFamily
+import Mettapedia.Computability.PNP.ActualSwitchedLocalBoundedSampleMajorityBitBounds
+import Mettapedia.Computability.PNP.ActualSwitchedLocalBoundedSampleMajorityExactConsequences
+import Mettapedia.Computability.PNP.ExactVisibleImageBudgetFiniteCovers
+import Mettapedia.Computability.PNP.ExactVisibleImageBudgetLowerBounds
+import Mettapedia.Computability.PNP.ExactVisibleImageBudgetExactVisible
 
 /-!
 # PNP crux: the zero-sample structured fallback wrapper has exactly the fallback image

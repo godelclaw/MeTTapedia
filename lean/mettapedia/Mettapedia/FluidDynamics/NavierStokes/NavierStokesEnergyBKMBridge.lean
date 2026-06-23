@@ -1,4 +1,5 @@
-import Mettapedia.FluidDynamics.NavierStokes.NavierStokesBKMContinuationTarget
+import Mettapedia.FluidDynamics.NavierStokes.NavierStokesBKMConcreteEnvelopes
+import Mettapedia.FluidDynamics.NavierStokes.NavierStokesBKMZeroOutput
 import Mettapedia.FluidDynamics.NavierStokes.NavierStokesEnergyContinuationBridge
 import Mettapedia.FluidDynamics.NavierStokes.NavierStokesFiniteModeVorticity
 

@@ -1,3 +1,7 @@
+import Mathlib.Analysis.Normed.Group.Basic
+import Mathlib.Analysis.Normed.Group.Real
+import Mathlib.Tactic.Abel
+import Mathlib.Tactic.Linarith
 import Mettapedia.QuantumTheory.YangMills.ExtractionProjection
 
 /-!

@@ -1,4 +1,4 @@
-import Mettapedia.FluidDynamics.NavierStokes.WindowedColeHopfHeatShiftKernelObstruction
+import Mettapedia.FluidDynamics.NavierStokes.WindowedColeHopfHeatAnchoredShiftKernelObstructionSelfCompatibility
 
 /-!
 # Same-Route Obstruction for a Finite Masked Shift-Kernel Family

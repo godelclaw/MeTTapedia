@@ -414,13 +414,6 @@ theorem boundaryZeroProjectionKirchhoffQuotientEquivImage_apply_mk
   rw [boundaryZeroProjectionKirchhoffQuotientEquivImage]
   simp [LinearMap.quotKerEquivRange_apply_mk]
 
-theorem chain_add_self_add (x y : E → Color) :
-    x + (x + y) = y := by
-  funext e
-  change x e + (x e + y e) = y e
-  rw [← add_assoc]
-  simp
-
 /-- A boundary-zero left input cannot see the erased boundary coordinates of the right input. -/
 theorem chainDotBilinForm_boundaryZeroProjection_right_eq_of_left_boundaryZero
     {E : Type*} [Fintype E] [DecidableEq E]
@@ -2378,10 +2371,8 @@ theorem boundaryZeroProjectionKempeKirchhoffQuotientClass_eq_zero_iff_annihilate
     have hzero :
         ((φ 0 : theorem49BoundaryZeroKirchhoffSubspace emb vertices) :
           G.edgeSet → Color) = 0 := by
-      simp [φ]
-    intro C _hC f a b _hab
-    rw [hzero]
-    simp [chainDot]
+      exact congrArg Subtype.val (map_zero φ)
+    exact annihilatesKempeClosureGeneratorFamily_of_eq_zero hzero
   · intro hAnnih
     have hzeroEdges :
         ∀ edge : G.edgeSet,
@@ -2398,9 +2389,7 @@ theorem boundaryZeroProjectionKempeKirchhoffQuotientClass_eq_zero_iff_annihilate
       apply Subtype.ext
       funext edge
       exact hzeroEdges edge
-    have hφq0 : φ q = φ 0 := by
-      simpa using hφq
-    exact φ.injective hφq0
+    exact (LinearEquiv.map_eq_zero_iff φ).1 hφq
 
 /-- Orthogonality-facing form of the corrected quotient route: a source quotient class maps into
 the projected-generator orthogonal complement exactly when the class is zero. -/
@@ -2439,7 +2428,7 @@ theorem boundaryZeroProjectionKempeKirchhoffQuotientClass_eq_zero_iff_image_mem_
     have hzero :
         ((φ 0 : theorem49BoundaryZeroKirchhoffSubspace emb vertices) :
           G.edgeSet → Color) = 0 := by
-      simp [φ]
+      exact congrArg Subtype.val (map_zero φ)
     intro x _hx
     rw [hzero]
     exact (chainDotBilinForm G.edgeSet x).map_zero
@@ -2569,14 +2558,9 @@ theorem exists_projectedKempeClosureGeneratorSubspace_chainDot_ne_zero_of_ne_zer
       (G := G) emb data C₀ hC₀ vertices hboundary
   let q := φ.symm z
   have hq : q ≠ 0 := by
-    intro hq0
-    have hz0 : z = 0 := by
-      calc
-        z = φ (φ.symm z) := (φ.apply_symm_apply z).symm
-        _ = φ q := rfl
-        _ = φ 0 := by rw [hq0]
-        _ = 0 := map_zero φ
-    exact hz hz0
+    have hφq : φ q ≠ 0 := by
+      rwa [φ.apply_symm_apply z]
+    exact (φ.map_ne_zero_iff).1 hφq
   rcases
     exists_projectedKempeClosureGeneratorSubspace_chainDot_ne_zero_of_ne_zero_boundaryZeroProjectionKempeKirchhoffQuotientClass_of_planarBoundaryInteriorDualBoundaryRootAdjDistancePeelData
       (G := G) (emb := emb) (data := data) (C₀ := C₀) (hC₀ := hC₀)

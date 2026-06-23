@@ -1,7 +1,8 @@
 import Mettapedia.GraphTheory.FourColor.Legacy.Theorem49WheelEndpointRegression
 import Mettapedia.GraphTheory.FourColor.Theorem49BoundaryProjectionDetector
 import Mettapedia.GraphTheory.FourColor.Theorem49SynthesisClosureInvariance
-import Mathlib.Tactic
+import Mathlib.Tactic.NormNum
+import Mathlib.Tactic.FinCases
 
 namespace Mettapedia.GraphTheory.FourColor
 

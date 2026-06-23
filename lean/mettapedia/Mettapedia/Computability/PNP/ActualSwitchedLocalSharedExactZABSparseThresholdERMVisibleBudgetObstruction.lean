@@ -1,6 +1,6 @@
 import Mettapedia.Computability.PNP.ActualSwitchedLocalSharedExactZABSparseThresholdERMBitCode
 import Mettapedia.Computability.PNP.BitVecZABCompressionObstruction
-import Mathlib.Tactic
+import Mathlib.Tactic.NormNum
 
 /-!
 # P vs NP crux: actual switched-local shared exact sparse-threshold ERM data

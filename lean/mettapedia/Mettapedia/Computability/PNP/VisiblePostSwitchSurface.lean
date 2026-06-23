@@ -1,4 +1,5 @@
 import Mettapedia.Computability.PNP.PostSwitchInputObstruction
+import Mathlib.Logic.Equiv.Basic
 
 /-!
 # P vs NP crux: the exact visible post-switch surface

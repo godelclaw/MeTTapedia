@@ -1,5 +1,11 @@
-import Mettapedia.Computability.PNP.PNPv13CruxLedger
-import Mathlib.Tactic
+import Mettapedia.Computability.PNP.PNPv13CruxLedgerReadoutCore
+import Mettapedia.Computability.PNP.PNPv13CruxLedgerReadoutAmbiguity
+import Mettapedia.Computability.PNP.PNPv13CruxLedgerBoolReadoutCounterexample
+import Mettapedia.Computability.PNP.PNPv13CruxLedgerBoolProductCore
+import Mettapedia.Computability.PNP.PNPv13CruxLedgerBoolPairProduct
+import Mathlib.Algebra.Order.BigOperators.Group.Finset
+import Mathlib.Data.Fintype.BigOperators
+import Mathlib.Tactic.NormNum
 
 /-!
 # PNP v13 atomic evidence budget boundary
@@ -13,6 +19,8 @@ using the atom budget without a no-double-counting theorem.
 -/
 
 namespace Mettapedia.Computability.PNP
+
+open scoped BigOperators
 
 universe u v
 

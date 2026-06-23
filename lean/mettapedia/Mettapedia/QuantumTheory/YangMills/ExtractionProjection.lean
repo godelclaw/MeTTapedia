@@ -1,4 +1,6 @@
-import Mathlib.Tactic
+import Mathlib.Algebra.Group.Basic
+import Mathlib.Algebra.Group.Pi.Basic
+import Mathlib.Data.Nat.Basic
 
 /-!
 # Yang-Mills Extraction Projection Audit

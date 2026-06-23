@@ -1,0 +1,14 @@
+import Mettapedia.Computability.PNP.CruxKpolySupportFullRuleObserved
+import Mettapedia.Computability.PNP.CruxKpolySupportFullRuleUniformSection
+import Mettapedia.Computability.PNP.CruxKpolySupportFullRuleExactDecoder
+import Mettapedia.Computability.PNP.CruxKpolySupportFullRulePropertyDecoder
+import Mettapedia.Computability.PNP.CruxKpolySupportFullRulePointQuery
+import Mettapedia.Computability.PNP.CruxKpolySupportFullRuleAdaptiveQuery
+import Mettapedia.Computability.PNP.CruxKpolySupportFullRuleCardinality
+import Mettapedia.Computability.PNP.CruxKpolySupportFullRuleOneBlock
+
+/-!
+# PNP `Kpoly` support/full-rule anchors
+
+Compatibility umbrella for the semantically split support/full-rule anchors.
+-/

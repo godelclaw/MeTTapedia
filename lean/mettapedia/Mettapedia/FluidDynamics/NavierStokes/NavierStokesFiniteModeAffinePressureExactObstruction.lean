@@ -1,4 +1,4 @@
-import Mettapedia.FluidDynamics.NavierStokes.NavierStokesFiniteModeSchwartzBKMBridge
+import Mettapedia.FluidDynamics.NavierStokes.NavierStokesFiniteModeSchwartzBKMAffinePressureObstructions
 import Mettapedia.FluidDynamics.NavierStokes.NavierStokesWitnessConstructionGlobalOutputObstruction
 
 /-!

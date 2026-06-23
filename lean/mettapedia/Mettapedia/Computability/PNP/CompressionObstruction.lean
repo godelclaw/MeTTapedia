@@ -1,7 +1,7 @@
 import Mettapedia.Computability.PNP.LocalityObstruction
 
 /-!
-# P vs NP crux: arbitrary local rules do not admit short uniform encodings
+# P vs NP crux: arbitrary local rules have no short uniform encodings
 
 This file isolates the missing compression theorem behind the current switching step.
 
