@@ -160,6 +160,40 @@ theorem isLocalTaitTriple_of_nowhereZeroFlow_at_incidentTriple {G : SimpleGraph 
       add_assoc] using hv
   · exact ⟨hx.2 e1, hx.2 e2, hx.2 e3⟩
 
+/-- Graph-level local form of the Tait-coloring direction: at a cubic vertex
+whose incident edge-set is explicitly enumerated, an edge coloring using only
+nonzero `F₂²` colors produces three nonzero, pairwise distinct local values. -/
+theorem isLocalTaitTriple_of_taitEdgeColoring_at_incidentTriple {G : SimpleGraph V}
+    [Fintype G.edgeSet] {C : G.EdgeColoring Color} {v : V} {e1 e2 e3 : G.edgeSet}
+    (hincident : IsIncidentEdgeTriple G v e1 e2 e3)
+    (hC : IsTaitEdgeColoring G C) :
+    IsLocalTaitTriple (C e1) (C e2) (C e3) := by
+  have he1_mem : e1 ∈ incidentEdgeFinset G v := by
+    rw [hincident.1]
+    simp
+  have he2_mem : e2 ∈ incidentEdgeFinset G v := by
+    rw [hincident.1]
+    simp
+  have he3_mem : e3 ∈ incidentEdgeFinset G v := by
+    rw [hincident.1]
+    simp
+  have he1v : v ∈ (e1 : Sym2 V) := by
+    simpa [incidentEdgeFinset] using he1_mem
+  have he2v : v ∈ (e2 : Sym2 V) := by
+    simpa [incidentEdgeFinset] using he2_mem
+  have he3v : v ∈ (e3 : Sym2 V) := by
+    simpa [incidentEdgeFinset] using he3_mem
+  have h12 : C e1 ≠ C e2 := by
+    exact C.valid ((SimpleGraph.lineGraph_adj_iff_exists).2
+      ⟨hincident.2.1, ⟨v, he1v, he2v⟩⟩)
+  have h13 : C e1 ≠ C e3 := by
+    exact C.valid ((SimpleGraph.lineGraph_adj_iff_exists).2
+      ⟨hincident.2.2.1, ⟨v, he1v, he3v⟩⟩)
+  have h23 : C e2 ≠ C e3 := by
+    exact C.valid ((SimpleGraph.lineGraph_adj_iff_exists).2
+      ⟨hincident.2.2.2, ⟨v, he2v, he3v⟩⟩)
+  exact ⟨⟨hC e1, hC e2, hC e3⟩, h12, h13, h23⟩
+
 /-- The canonical CDL-good local condition is weaker than local nowhere-zero:
 the Kirchhoff triple `(0, red, red)` is CDL-good and sums to zero, but still
 has a zero edge-value. -/
