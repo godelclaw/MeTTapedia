@@ -600,6 +600,35 @@ theorem theorem49BoundaryRootSynthesis_of_enumeratedExceptionalAnnulusForcedEdge
       intro e hedge
       exact hwitnessBlue e ((hcert e).2 hedge))
 
+/-- Failure certificate for the finite CAP5 emitted-edge control route.  If the concrete finite
+checker output does not control the selected-boundary-zero chains, the failed check produces a
+nonzero selected-boundary-zero chain that vanishes on every edge emitted by the enumerated CAP5
+generator.  This is the falsification payload for the algebraic branch. -/
+theorem exists_boundaryZeroChain_vanishingOnEnumeratedExceptionalAnnulusForcedEdges_of_not_finsetControl
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    [Fintype G.edgeSet]
+    (emb : PlaneEmbeddingWithBoundary G)
+    (p0Inside p4Inside : Bool) (side : V → Prop) (emitted : Finset G.edgeSet)
+    (hcert :
+      data.EnumeratedExceptionalAnnulusForcedEdgeFinset p0Inside p4Inside side emitted)
+    (hnotControl :
+      ¬ ∀ ⦃z : G.edgeSet → Color⦄,
+        z ∈ planarBoundaryZeroSubmodule emb →
+        (∀ e ∈ emitted, z e = 0) →
+          z = 0) :
+    ∃ z : G.edgeSet → Color,
+      z ∈ planarBoundaryZeroSubmodule emb ∧
+        z ≠ 0 ∧
+          ∀ e : G.edgeSet,
+            data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e →
+              z e = 0 := by
+  rcases (not_finsetControls_iff_exists_nonzero_vanishes_on_finset
+      (G := G) (emb := emb) emitted).1 hnotControl with
+    ⟨z, hzBoundary, hzNonzero, hvanish⟩
+  exact ⟨z, hzBoundary, hzNonzero, by
+    intro e hedge
+    exact hvanish e ((hcert e).2 hedge)⟩
+
 /-- Theorem 4.9 synthesis route from a concrete finite checker output.  The checker need only
 certify that its finite edge set is exactly the enumerated CAP5 emitted-edge predicate, and then
 prove the local nonzero/witness obligations by finite membership in that set. -/

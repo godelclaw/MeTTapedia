@@ -324,6 +324,32 @@ theorem finsetControls_iff_forall_nonzero_exists_mem_nonzero
     rcases hwitness hzBoundary hzNonzero with ⟨e, he, hze⟩
     exact hze (hvanish e he)
 
+/-- Failure certificate for a finite control check.  If vanishing on the finite control set does
+not force a selected-boundary-zero chain to vanish, then there is an explicit nonzero selected-
+boundary-zero chain invisible on all controlling coordinates.  This is the obstruction a finite
+checker should return when the control/rank test fails. -/
+theorem not_finsetControls_iff_exists_nonzero_vanishes_on_finset
+    {G : SimpleGraph V} [Fintype G.edgeSet]
+    {emb : PlaneEmbeddingWithBoundary G}
+    (controlEdges : Finset G.edgeSet) :
+    (¬ ∀ ⦃z : G.edgeSet → Color⦄,
+      z ∈ planarBoundaryZeroSubmodule emb →
+      (∀ e ∈ controlEdges, z e = 0) →
+        z = 0) ↔
+    ∃ z : G.edgeSet → Color,
+      z ∈ planarBoundaryZeroSubmodule emb ∧
+        z ≠ 0 ∧
+          ∀ e ∈ controlEdges, z e = 0 := by
+  constructor
+  · intro hnot
+    by_contra hno
+    apply hnot
+    intro z hzBoundary hvanish
+    by_contra hzNonzero
+    exact hno ⟨z, hzBoundary, hzNonzero, hvanish⟩
+  · rintro ⟨z, hzBoundary, hzNonzero, hvanish⟩ hcontrol
+    exact hzNonzero (hcontrol hzBoundary hvanish)
+
 /-- Predicate-indexed coordinate separation from the witness form of control.  This is the
 checker-facing route: for every nonzero selected-boundary-zero chain, emit a `P` edge where it is
 nonzero; red/blue single-coordinate witnesses on `P` edges then separate all family pairings. -/
