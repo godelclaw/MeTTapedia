@@ -3060,17 +3060,51 @@ theorem sum_zeroIncidentEdgeCount_eq_two_mul_zeroEdgeCount
   rw [← zeroEdgeGraph_incidentEdgeFinset_card]
   rw [incidentEdgeFinset_card_eq_degree]
 
+/-- Indicator-sum form of the manuscript's touched-vertex statistic `I(x)`. -/
+theorem zeroIncidentVertexCount_eq_sum_zeroIncidentIndicator
+    {G : SimpleGraph V} [Fintype V] [Fintype G.edgeSet] {x : G.edgeSet → Color} :
+    zeroIncidentVertexCount G x =
+      ∑ v, if 0 < zeroIncidentEdgeCount G x v then 1 else 0 := by
+  rw [zeroIncidentVertexCount, zeroIncidentVertexFinset, Finset.card_filter]
+
+/-- The local identity behind the manuscript's statistics: for each vertex,
+the touched-vertex indicator plus the clustering penalty recovers the local
+zero-incidence count. -/
+theorem zeroIncidentIndicator_add_zeroClusteringLocalTerm_eq_zeroIncidentEdgeCount
+    {G : SimpleGraph V} [Fintype G.edgeSet] {x : G.edgeSet → Color} (v : V) :
+    (if 0 < zeroIncidentEdgeCount G x v then 1 else 0) +
+        (zeroIncidentEdgeCount G x v - 1) =
+      zeroIncidentEdgeCount G x v := by
+  by_cases hpos : 0 < zeroIncidentEdgeCount G x v
+  · simp [hpos]
+    omega
+  · have hzero : zeroIncidentEdgeCount G x v = 0 :=
+      Nat.eq_zero_of_not_pos hpos
+    simp [hzero]
+
+/-- Global form of the local counting identity: touched zero vertices plus
+zero clustering count every zero edge twice. -/
+theorem zeroIncidentVertexCount_add_zeroClusteringCount_eq_two_mul_zeroEdgeCount
+    {G : SimpleGraph V} [Fintype V] [Fintype G.edgeSet] {x : G.edgeSet → Color} :
+    zeroIncidentVertexCount G x + zeroClusteringCount G x =
+      2 * zeroEdgeCount G x := by
+  rw [← sum_zeroIncidentEdgeCount_eq_two_mul_zeroEdgeCount,
+    zeroIncidentVertexCount_eq_sum_zeroIncidentIndicator, zeroClusteringCount,
+    ← Finset.sum_add_distrib]
+  apply Finset.sum_congr rfl
+  intro v _hv
+  exact zeroIncidentIndicator_add_zeroClusteringLocalTerm_eq_zeroIncidentEdgeCount v
+
 /-- If the zero edges form a matching, the number of vertices touched by zero
 edges is the sum of the local zero-incidence counts. -/
 theorem zeroIncidentVertexCount_eq_sum_zeroIncidentEdgeCount_of_zeroEdgesFormMatching
     {G : SimpleGraph V} [Fintype V] [Fintype G.edgeSet] {x : G.edgeSet → Color}
     (hmatch : ZeroEdgesFormMatching G x) :
     zeroIncidentVertexCount G x = ∑ v, zeroIncidentEdgeCount G x v := by
-  rw [zeroIncidentVertexCount, zeroIncidentVertexFinset]
-  symm
+  rw [zeroIncidentVertexCount_eq_sum_zeroIncidentIndicator]
   calc
-    ∑ v, zeroIncidentEdgeCount G x v =
-        ∑ v, if 0 < zeroIncidentEdgeCount G x v then 1 else 0 := by
+    ∑ v, (if 0 < zeroIncidentEdgeCount G x v then 1 else 0) =
+        ∑ v, zeroIncidentEdgeCount G x v := by
       apply Finset.sum_congr rfl
       intro v _hv
       by_cases hvpos : 0 < zeroIncidentEdgeCount G x v
@@ -3079,8 +3113,6 @@ theorem zeroIncidentVertexCount_eq_sum_zeroIncidentEdgeCount_of_zeroEdgesFormMat
         simp [hk]
       · have hk : zeroIncidentEdgeCount G x v = 0 := Nat.eq_zero_of_not_pos hvpos
         simp [hk]
-    _ = (Finset.univ.filter fun v => 0 < zeroIncidentEdgeCount G x v).card := by
-      rw [Finset.card_filter]
 
 /-- Manuscript count form for matching zero patterns: `I(x)=2 Z(x)`. -/
 theorem zeroIncidentVertexCount_eq_two_mul_zeroEdgeCount_of_zeroEdgesFormMatching
@@ -3090,6 +3122,28 @@ theorem zeroIncidentVertexCount_eq_two_mul_zeroEdgeCount_of_zeroEdgesFormMatchin
   rw [zeroIncidentVertexCount_eq_sum_zeroIncidentEdgeCount_of_zeroEdgesFormMatching hmatch,
     sum_zeroIncidentEdgeCount_eq_two_mul_zeroEdgeCount]
 
+/-- Conversely, the manuscript count identity `I(x)=2Z(x)` forces the zero
+edges to form a matching. -/
+theorem zeroEdgesFormMatching_of_zeroIncidentVertexCount_eq_two_mul_zeroEdgeCount
+    {G : SimpleGraph V} [Fintype V] [Fintype G.edgeSet] {x : G.edgeSet → Color}
+    (hI : zeroIncidentVertexCount G x = 2 * zeroEdgeCount G x) :
+    ZeroEdgesFormMatching G x := by
+  rw [← zeroClusteringCount_eq_zero_iff_zeroEdgesFormMatching]
+  have hcount :=
+    zeroIncidentVertexCount_add_zeroClusteringCount_eq_two_mul_zeroEdgeCount
+      (G := G) (x := x)
+  rw [hI] at hcount
+  omega
+
+/-- The manuscript's matching-zero condition is equivalent to the count
+identity `I(x)=2Z(x)`. -/
+theorem zeroEdgesFormMatching_iff_zeroIncidentVertexCount_eq_two_mul_zeroEdgeCount
+    {G : SimpleGraph V} [Fintype V] [Fintype G.edgeSet] {x : G.edgeSet → Color} :
+    ZeroEdgesFormMatching G x ↔
+      zeroIncidentVertexCount G x = 2 * zeroEdgeCount G x :=
+  ⟨zeroIncidentVertexCount_eq_two_mul_zeroEdgeCount_of_zeroEdgesFormMatching,
+    zeroEdgesFormMatching_of_zeroIncidentVertexCount_eq_two_mul_zeroEdgeCount⟩
+
 /-- Since `C(x)=0` is equivalent to the zero-edge set being a matching, zero
 clustering also yields the manuscript count `I(x)=2 Z(x)`. -/
 theorem zeroIncidentVertexCount_eq_two_mul_zeroEdgeCount_of_zeroClusteringCount_eq_zero
@@ -3098,6 +3152,15 @@ theorem zeroIncidentVertexCount_eq_two_mul_zeroEdgeCount_of_zeroClusteringCount_
     zeroIncidentVertexCount G x = 2 * zeroEdgeCount G x :=
   zeroIncidentVertexCount_eq_two_mul_zeroEdgeCount_of_zeroEdgesFormMatching
     (zeroClusteringCount_eq_zero_iff_zeroEdgesFormMatching.mp hC)
+
+/-- The manuscript's two numeric forms of matching zero support are
+equivalent: no clustering exactly when `I(x)=2Z(x)`. -/
+theorem zeroClusteringCount_eq_zero_iff_zeroIncidentVertexCount_eq_two_mul_zeroEdgeCount
+    {G : SimpleGraph V} [Fintype V] [Fintype G.edgeSet] {x : G.edgeSet → Color} :
+    zeroClusteringCount G x = 0 ↔
+      zeroIncidentVertexCount G x = 2 * zeroEdgeCount G x := by
+  rw [zeroClusteringCount_eq_zero_iff_zeroEdgesFormMatching,
+    zeroEdgesFormMatching_iff_zeroIncidentVertexCount_eq_two_mul_zeroEdgeCount]
 
 /-- Manuscript count form of the abstract matching-zeros theorem: at repaired
 `D₀` local minima, `I(x)=2Z(x)`. -/
