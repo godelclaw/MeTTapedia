@@ -565,6 +565,44 @@ theorem exists_outside_zero_incident_edge_of_cubic_two_support_forced_zero_move
     simpa [hedata.2] using hforced e hedata.1
   exact ⟨e, hedata.1, hedata.2, hx⟩
 
+theorem zeroIncidentEdgeCount_eq_one_of_cubic_two_support_forced_zero_move
+    {G : SimpleGraph V} [Fintype G.edgeSet]
+    {C : Finset G.edgeSet} {g : Color} {x : G.edgeSet → Color} {v : V}
+    (hg : g ≠ 0)
+    (hcard : (incidentEdgeFinset G v).card = 3)
+    (htwo : ((incidentEdgeFinset G v).filter fun e => e ∈ C).card = 2)
+    (hforced :
+      ∀ e ∈ incidentEdgeFinset G v, if e ∈ C then x e = g else x e = 0) :
+    zeroIncidentEdgeCount G x v = 1 := by
+  have hzero_set :
+      zeroIncidentEdgeFinset G x v =
+        (incidentEdgeFinset G v).filter fun e => e ∉ C := by
+    ext e
+    constructor
+    · intro he
+      have hedata : e ∈ incidentEdgeFinset G v ∧ x e = 0 := by
+        simpa [zeroIncidentEdgeFinset] using he
+      refine Finset.mem_filter.mpr ⟨hedata.1, ?_⟩
+      intro heC
+      have hxg : x e = g := by
+        simpa [heC] using hforced e hedata.1
+      have hg0 : g = 0 := by
+        rw [← hxg, hedata.2]
+      exact hg hg0
+    · intro he
+      have hedata : e ∈ incidentEdgeFinset G v ∧ e ∉ C := by
+        simpa using Finset.mem_filter.mp he
+      have hx : x e = 0 := by
+        simpa [hedata.2] using hforced e hedata.1
+      exact Finset.mem_filter.mpr ⟨hedata.1, hx⟩
+  have houtside_card :
+      ((incidentEdgeFinset G v).filter fun e => e ∉ C).card = 1 := by
+    have hsplit :=
+      Finset.card_filter_add_card_filter_not
+        (s := incidentEdgeFinset G v) (p := fun e => e ∈ C)
+    omega
+  rw [zeroIncidentEdgeCount, hzero_set, houtside_card]
+
 theorem vertexKirchhoffSum_cdlOneStepMoveOn_eq
     {G : SimpleGraph V} [Fintype G.edgeSet]
     (C : Finset G.edgeSet) (g : Color) (x : G.edgeSet → Color) (v : V) :
@@ -1128,6 +1166,45 @@ theorem
         (hcard v) htwo hforced with ⟨e, heinc, heC, hx⟩
     exact Or.inr (Or.inr ⟨v, e, heinc, heC, hx, hforced⟩)
 
+theorem
+    exists_cubic_zeroIncidentEdgeCount_eq_one_for_basic_color_obstruction_of_d0LocalMinimum_kirchhoffNeutral_small_support
+    {G : SimpleGraph V} [Fintype V] [Fintype G.edgeSet]
+    {moveSupports : Finset (Finset G.edgeSet)} {x : G.edgeSet → Color}
+    {C : Finset G.edgeSet}
+    (hcard : ∀ v : V, (incidentEdgeFinset G v).card = 3)
+    (hmin : IsD0LocalMinimumForMoveSupports G moveSupports x)
+    (hCmem : C ∈ moveSupports)
+    (hC : IsKirchhoffNeutralMoveSupport G C)
+    (herase : ∃ e ∈ C, x e = 0)
+    (hsmall : C.card ≤ 3) :
+    (∃ v : V, zeroIncidentEdgeCount G x v = 1 ∧
+      ∀ e ∈ incidentEdgeFinset G v,
+        if e ∈ C then x e = red else x e = 0) ∨
+      (∃ v : V, zeroIncidentEdgeCount G x v = 1 ∧
+        ∀ e ∈ incidentEdgeFinset G v,
+          if e ∈ C then x e = blue else x e = 0) ∨
+        (∃ v : V, zeroIncidentEdgeCount G x v = 1 ∧
+          ∀ e ∈ incidentEdgeFinset G v,
+            if e ∈ C then x e = purple else x e = 0) := by
+  rcases
+    exists_cubic_two_support_edges_for_basic_color_obstruction_of_d0LocalMinimum_kirchhoffNeutral_small_support
+      hcard hmin hCmem hC herase hsmall with hred | hblue | hpurple
+  · rcases hred with ⟨v, htwo, hforced⟩
+    exact Or.inl ⟨v,
+      zeroIncidentEdgeCount_eq_one_of_cubic_two_support_forced_zero_move
+        red_ne_zero (hcard v) htwo hforced,
+      hforced⟩
+  · rcases hblue with ⟨v, htwo, hforced⟩
+    exact Or.inr (Or.inl ⟨v,
+      zeroIncidentEdgeCount_eq_one_of_cubic_two_support_forced_zero_move
+        blue_ne_zero (hcard v) htwo hforced,
+      hforced⟩)
+  · rcases hpurple with ⟨v, htwo, hforced⟩
+    exact Or.inr (Or.inr ⟨v,
+      zeroIncidentEdgeCount_eq_one_of_cubic_two_support_forced_zero_move
+        purple_ne_zero (hcard v) htwo hforced,
+      hforced⟩)
+
 theorem zeroDefectD0_le_of_isD0LocalMinimumForMoveSupports_of_isKempeCycle
     {G : SimpleGraph V} [Fintype V] [Fintype G.edgeSet]
     {moveSupports : Finset (Finset G.edgeSet)} {x : G.edgeSet → Color}
@@ -1384,6 +1461,29 @@ theorem
             ∀ e' ∈ incidentEdgeFinset G v,
               if e' ∈ C then x e' = purple else x e' = 0) :=
   exists_cubic_outside_zero_edge_for_basic_color_obstruction_of_d0LocalMinimum_kirchhoffNeutral_small_support
+    hcard hmin hCmem (isKirchhoffNeutralMoveSupport_of_isKempeCycle hC) herase hsmall
+
+theorem
+    exists_cubic_zeroIncidentEdgeCount_eq_one_for_basic_color_obstruction_of_d0LocalMinimum_isKempeCycle_small_support
+    {G : SimpleGraph V} [Fintype V] [Fintype G.edgeSet]
+    {moveSupports : Finset (Finset G.edgeSet)} {x : G.edgeSet → Color}
+    {C : Finset G.edgeSet} {α β : Color}
+    (hcard : ∀ v : V, (incidentEdgeFinset G v).card = 3)
+    (hmin : IsD0LocalMinimumForMoveSupports G moveSupports x)
+    (hCmem : C ∈ moveSupports)
+    (hC : IsKempeCycle (incidentEdgeFinset G) x C α β)
+    (herase : ∃ e ∈ C, x e = 0)
+    (hsmall : C.card ≤ 3) :
+    (∃ v : V, zeroIncidentEdgeCount G x v = 1 ∧
+      ∀ e ∈ incidentEdgeFinset G v,
+        if e ∈ C then x e = red else x e = 0) ∨
+      (∃ v : V, zeroIncidentEdgeCount G x v = 1 ∧
+        ∀ e ∈ incidentEdgeFinset G v,
+          if e ∈ C then x e = blue else x e = 0) ∨
+        (∃ v : V, zeroIncidentEdgeCount G x v = 1 ∧
+          ∀ e ∈ incidentEdgeFinset G v,
+            if e ∈ C then x e = purple else x e = 0) :=
+  exists_cubic_zeroIncidentEdgeCount_eq_one_for_basic_color_obstruction_of_d0LocalMinimum_kirchhoffNeutral_small_support
     hcard hmin hCmem (isKirchhoffNeutralMoveSupport_of_isKempeCycle hC) herase hsmall
 
 theorem zeroDefectD0_le_of_isD0LocalMinimumForMoveSupports_of_rotationDiskData_internalFace
@@ -1661,6 +1761,31 @@ theorem
             ∀ e' ∈ incidentEdgeFinset G v,
               if e' ∈ f then x e' = purple else x e' = 0) :=
   exists_cubic_outside_zero_edge_for_basic_color_obstruction_of_d0LocalMinimum_kirchhoffNeutral_small_support
+    hcard hmin hfmem (isKirchhoffNeutralMoveSupport_of_rotationDiskData_internalFace
+      D hincident hf) herase hsmall
+
+theorem
+    exists_cubic_zeroIncidentEdgeCount_eq_one_for_basic_color_obstruction_of_d0LocalMinimum_rotationDiskData_internalFace_small_support
+    {G : SimpleGraph V} [Fintype V] [Fintype G.edgeSet]
+    {moveSupports : Finset (Finset G.edgeSet)} {x : G.edgeSet → Color}
+    (D : RotationDiskData V G.edgeSet)
+    (hincident : ∀ v : V, D.asZeroBoundary.incident v = incidentEdgeFinset G v)
+    {f : Finset G.edgeSet} (hf : f ∈ D.rotation.internalFaces)
+    (hcard : ∀ v : V, (incidentEdgeFinset G v).card = 3)
+    (hfmem : f ∈ moveSupports)
+    (hmin : IsD0LocalMinimumForMoveSupports G moveSupports x)
+    (herase : ∃ e ∈ f, x e = 0)
+    (hsmall : f.card ≤ 3) :
+    (∃ v : V, zeroIncidentEdgeCount G x v = 1 ∧
+      ∀ e ∈ incidentEdgeFinset G v,
+        if e ∈ f then x e = red else x e = 0) ∨
+      (∃ v : V, zeroIncidentEdgeCount G x v = 1 ∧
+        ∀ e ∈ incidentEdgeFinset G v,
+          if e ∈ f then x e = blue else x e = 0) ∨
+        (∃ v : V, zeroIncidentEdgeCount G x v = 1 ∧
+          ∀ e ∈ incidentEdgeFinset G v,
+            if e ∈ f then x e = purple else x e = 0) :=
+  exists_cubic_zeroIncidentEdgeCount_eq_one_for_basic_color_obstruction_of_d0LocalMinimum_kirchhoffNeutral_small_support
     hcard hmin hfmem (isKirchhoffNeutralMoveSupport_of_rotationDiskData_internalFace
       D hincident hf) herase hsmall
 
