@@ -35,4 +35,24 @@ theorem SmallCyclicEdgeCut.edge_mem_iff {G : SimpleGraph V} (cut : SmallCyclicEd
     e ∈ cut.edgeCut ↔ EdgeCrossesVertexSide G cut.side e :=
   cut.hcut_eq e
 
+/-- Existence form for the manuscript's forbidden small cyclic edge cut. -/
+def HasCyclicEdgeCutOfSizeAtMostFour (G : SimpleGraph V) : Prop :=
+  ∃ cut : SmallCyclicEdgeCut G, cut.edgeCut.card <= 4
+
+/-- Obstruction hypothesis used by the CAP5 exceptional-annulus branch: there is no cyclic edge
+cut of size at most four. -/
+def NoCyclicEdgeCutOfSizeAtMostFour (G : SimpleGraph V) : Prop :=
+  ¬ HasCyclicEdgeCutOfSizeAtMostFour G
+
+theorem SmallCyclicEdgeCut.hasCyclicEdgeCutOfSizeAtMostFour
+    {G : SimpleGraph V} (cut : SmallCyclicEdgeCut G) :
+    HasCyclicEdgeCutOfSizeAtMostFour G :=
+  ⟨cut, cut.hcard_le_four⟩
+
+theorem NoCyclicEdgeCutOfSizeAtMostFour.not_smallCyclicEdgeCut
+    {G : SimpleGraph V} (h : NoCyclicEdgeCutOfSizeAtMostFour G)
+    (cut : SmallCyclicEdgeCut G) :
+    False :=
+  h cut.hasCyclicEdgeCutOfSizeAtMostFour
+
 end Mettapedia.GraphTheory.FourColor
