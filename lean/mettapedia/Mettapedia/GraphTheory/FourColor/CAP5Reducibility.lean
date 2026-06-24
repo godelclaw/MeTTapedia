@@ -503,6 +503,17 @@ theorem CAP5ExceptionalAnnulusBoundaryEdgeSupportCandidate.edgeSupport_subset_bo
   rcases Finset.mem_image.1 he with ⟨i, _hi, rfl⟩
   exact Finset.mem_image.2 ⟨i, by simp, rfl⟩
 
+/-- Membership in a CAP5 boundary-edge support candidate is exactly membership in the image of
+the finite separator-portal set under the boundary-edge map. -/
+theorem CAP5ExceptionalAnnulusBoundaryEdgeSupportCandidate.mem_edgeSupport_iff_exists_portal
+    {E : Type*} [DecidableEq E] {boundaryEdge : Fin 5 → E}
+    (candidate : CAP5ExceptionalAnnulusBoundaryEdgeSupportCandidate boundaryEdge)
+    (e : E) :
+    e ∈ candidate.edgeSupport ↔
+      ∃ i : Fin 5, i ∈ candidate.portalCandidate.portalSet ∧ boundaryEdge i = e := by
+  rw [candidate.hedgeSupport]
+  exact Finset.mem_image
+
 /-- A boundary-edge support candidate has been promoted to the graph-level cyclic-cut target when
 some small cyclic edge cut has exactly the candidate's finite edge support.  This predicate names
 the planar/Jordan realization step without deriving it from the finite CAP5 bookkeeping alone. -/
@@ -570,6 +581,25 @@ theorem CAP5ExceptionalAnnulusBoundaryEdgeSupportCandidate.exists_mem_edgeSuppor
     ∃ e : G.edgeSet, e ∈ candidate.edgeSupport ∧ (e : Sym2 V) ∈ p.edges :=
   realization.exists_mem_edgeCut_of_walk_endpoint_sides p hu hv
 
+/-- Portal-level separator consequence: when a realized CAP5 candidate separates two endpoints,
+any walk between them contains one of the named boundary edges belonging to the candidate's portal
+set. -/
+theorem CAP5ExceptionalAnnulusBoundaryEdgeSupportCandidate.exists_portal_boundaryEdge_mem_walk_of_realizationData_endpoint_sides
+    {V : Type*} {G : SimpleGraph V} [DecidableEq G.edgeSet]
+    {boundaryEdge : Fin 5 → G.edgeSet}
+    (candidate : CAP5ExceptionalAnnulusBoundaryEdgeSupportCandidate boundaryEdge)
+    (realization : candidate.CyclicEdgeCutRealizationData (G := G))
+    {u v : V} (p : G.Walk u v) (hu : realization.side u) (hv : ¬ realization.side v) :
+    ∃ i : Fin 5, i ∈ candidate.portalCandidate.portalSet ∧
+      ((boundaryEdge i : G.edgeSet) : Sym2 V) ∈ p.edges := by
+  rcases candidate.exists_mem_edgeSupport_of_realizationData_walk_endpoint_sides
+      realization p hu hv with
+    ⟨e, heSupport, heEdges⟩
+  rcases (candidate.mem_edgeSupport_iff_exists_portal e).1 heSupport with
+    ⟨i, hi, hboundary⟩
+  subst e
+  exact ⟨i, hi, heEdges⟩
+
 /-- Candidate-level invariance form: a walk avoiding the finite CAP5 boundary support candidate
 cannot move between the two realized sides. -/
 theorem CAP5ExceptionalAnnulusBoundaryEdgeSupportCandidate.side_iff_of_forall_not_mem_edgeSupport_of_realizationData_walk
@@ -581,6 +611,24 @@ theorem CAP5ExceptionalAnnulusBoundaryEdgeSupportCandidate.side_iff_of_forall_no
     (havoid : ∀ e : G.edgeSet, e ∈ candidate.edgeSupport → (e : Sym2 V) ∉ p.edges) :
     realization.side u ↔ realization.side v :=
   realization.side_iff_of_forall_not_mem_edgeCut_of_walk p havoid
+
+/-- Portal-level invariance form: a walk that avoids every boundary edge named by the candidate's
+separator portals cannot move between the two realized sides. -/
+theorem CAP5ExceptionalAnnulusBoundaryEdgeSupportCandidate.side_iff_of_forall_not_mem_portalBoundaryEdge_of_realizationData_walk
+    {V : Type*} {G : SimpleGraph V} [DecidableEq G.edgeSet]
+    {boundaryEdge : Fin 5 → G.edgeSet}
+    (candidate : CAP5ExceptionalAnnulusBoundaryEdgeSupportCandidate boundaryEdge)
+    (realization : candidate.CyclicEdgeCutRealizationData (G := G))
+    {u v : V} (p : G.Walk u v)
+    (havoid : ∀ i : Fin 5, i ∈ candidate.portalCandidate.portalSet →
+      ((boundaryEdge i : G.edgeSet) : Sym2 V) ∉ p.edges) :
+    realization.side u ↔ realization.side v :=
+  candidate.side_iff_of_forall_not_mem_edgeSupport_of_realizationData_walk realization p
+    (by
+      intro e heSupport
+      rcases (candidate.mem_edgeSupport_iff_exists_portal e).1 heSupport with
+        ⟨i, hi, hboundary⟩
+      simpa [hboundary] using havoid i hi)
 
 /-- A realized CAP5 boundary-edge support candidate gives the forbidden small-cyclic-cut
 existence form because the candidate support has cardinality at most four. -/
