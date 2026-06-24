@@ -219,6 +219,39 @@ theorem cap5WordExtendsAcrossCycle_unrotate_iff {w : CAP5BoundaryWord} :
   · intro h
     exact cap5WordExtendsAcrossCycle_unrotate h
 
+/-- Rotate a CAP5 boundary word forward `n` cyclic steps. -/
+def cap5RotateBoundaryWordN : Nat → CAP5BoundaryWord → CAP5BoundaryWord
+  | 0, w => w
+  | n + 1, w => cap5RotateBoundaryWord (cap5RotateBoundaryWordN n w)
+
+/-- CAP5 extendability is preserved by any finite forward cyclic rotation. -/
+theorem cap5WordExtendsAcrossCycle_rotateN {n : Nat} {w : CAP5BoundaryWord}
+    (h : CAP5WordExtendsAcrossCycle w) :
+    CAP5WordExtendsAcrossCycle (cap5RotateBoundaryWordN n w) := by
+  induction n with
+  | zero =>
+      simpa [cap5RotateBoundaryWordN] using h
+  | succ n ih =>
+      simpa [cap5RotateBoundaryWordN] using cap5WordExtendsAcrossCycle_rotate ih
+
+/-- CAP5 extendability is unchanged by any finite forward cyclic rotation. -/
+theorem cap5WordExtendsAcrossCycle_rotateN_iff (n : Nat) {w : CAP5BoundaryWord} :
+    CAP5WordExtendsAcrossCycle (cap5RotateBoundaryWordN n w) ↔
+      CAP5WordExtendsAcrossCycle w := by
+  induction n with
+  | zero =>
+      simp [cap5RotateBoundaryWordN]
+  | succ n ih =>
+      exact (cap5WordExtendsAcrossCycle_rotate_iff (w := cap5RotateBoundaryWordN n w)).trans ih
+
+/-- CAP5 extendability is unchanged by zero-fixing color relabeling followed by cyclic rotation. -/
+theorem cap5WordExtendsAcrossCycle_rotateN_map_equiv_iff_of_map_zero
+    {σ : Color ≃ Color} (hσ0 : σ 0 = 0) (n : Nat) {w : CAP5BoundaryWord} :
+    CAP5WordExtendsAcrossCycle (cap5RotateBoundaryWordN n (cap5MapBoundaryWord σ w)) ↔
+      CAP5WordExtendsAcrossCycle w :=
+  (cap5WordExtendsAcrossCycle_rotateN_iff n (w := cap5MapBoundaryWord σ w)).trans
+    (cap5WordExtendsAcrossCycle_map_equiv_iff_of_map_zero hσ0)
+
 /-- Normal-form good CAP5 word with block structure `(3,1,1)`. -/
 def cap5GoodBoundaryWord311 : CAP5BoundaryWord
   | 0 => red
@@ -288,6 +321,15 @@ theorem not_cap5BadBoundaryWord2111_extendsAcrossCycle :
   have hx2_eq_purple : x 2 = purple :=
     color_eq_purple_of_ne_zero_of_ne_red_of_ne_blue hx2 hx2_ne_red hx2_ne_blue
   exact hx1_x2 (hx1_eq_purple.trans hx2_eq_purple.symm)
+
+/-- Every rotated, zero-fixing color relabeling of the canonical bad CAP5 word is still bad. -/
+theorem not_cap5BadBoundaryWord2111_rotateN_map_equiv_extendsAcrossCycle
+    {σ : Color ≃ Color} (hσ0 : σ 0 = 0) (n : Nat) :
+    ¬ CAP5WordExtendsAcrossCycle
+      (cap5RotateBoundaryWordN n (cap5MapBoundaryWord σ cap5BadBoundaryWord2111)) := by
+  intro h
+  exact not_cap5BadBoundaryWord2111_extendsAcrossCycle
+    ((cap5WordExtendsAcrossCycle_rotateN_map_equiv_iff_of_map_zero hσ0 n).mp h)
 
 /-- Swap two colors, leaving the third color fixed. -/
 def cap5SwapColor (a b : Color) (c : Color) : Color :=
