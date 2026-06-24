@@ -260,6 +260,27 @@ theorem detector_of_ker_planarBoundaryZeroFamilyPairingMap_eq_bot
   rcases hexists with ⟨i, hi⟩
   exact ⟨family i, (family i).property, by simpa [planarBoundaryZeroFamilyPairingMap] using hi⟩
 
+/-- Coordinatewise separation by an explicit projected-generator family is already the
+explicit-family detector property.  This is the direct target shape for finite configuration
+generators: every selected-boundary-zero chain whose pairings vanish against all generated
+vectors must itself be zero. -/
+theorem detector_of_familyPairing_separates
+    {G : SimpleGraph V} [Fintype G.edgeSet]
+    {emb : PlaneEmbeddingWithBoundary G}
+    {colorings : Set (G.EdgeColoring Color)}
+    {κ : Type*}
+    (family : κ → projectedColoringGeneratorSubspace emb colorings)
+    (hseparates :
+      ∀ z : planarBoundaryZeroSubmodule emb,
+        (∀ i,
+          chainDotBilinForm G.edgeSet (family i : G.edgeSet → Color)
+            (z : G.edgeSet → Color) = 0) →
+          z = 0) :
+    BoundaryZeroProjectedColoringGeneratorDetector emb colorings :=
+  detector_of_ker_planarBoundaryZeroFamilyPairingMap_eq_bot family
+    ((ker_planarBoundaryZeroFamilyPairingMap_eq_bot_iff_forall_pairing_eq_zero_imp_eq_zero
+      family).2 hseparates)
+
 /-- If the indexed family spans the whole projected explicit-family subspace, then the
 explicit-family detector forces the concrete family-evaluation pairing map to have trivial
 kernel.  This is the converse direction needed when a future finite certificate chooses a
@@ -397,6 +418,29 @@ theorem theorem49BoundaryRootSynthesis_of_familyPairingKerEqBot
   theorem49BoundaryRootSynthesis_of_boundaryZeroProjectedColoringGeneratorDetector
     emb C₀ colorings hsubset
     (detector_of_ker_planarBoundaryZeroFamilyPairingMap_eq_bot family hker)
+
+/-- Route theorem stated directly in the coordinatewise separation form produced by finite
+family generators.  No kernel equality needs to be exposed at the call site: it is enough to show
+that all-zero pairings against the generated projected colorings force the boundary-zero chain to
+be zero. -/
+theorem theorem49BoundaryRootSynthesis_of_familyPairingSeparates
+    {G : SimpleGraph V}
+    [Fintype G.edgeSet] [FiniteDimensional F2 (G.edgeSet → Color)]
+    (emb : PlaneEmbeddingWithBoundary G) (C₀ : G.EdgeColoring Color)
+    (colorings : Set (G.EdgeColoring Color))
+    (hsubset : colorings ⊆ G.EdgeKempeClosure C₀)
+    {κ : Type*}
+    (family : κ → projectedColoringGeneratorSubspace emb colorings)
+    (hseparates :
+      ∀ z : planarBoundaryZeroSubmodule emb,
+        (∀ i,
+          chainDotBilinForm G.edgeSet (family i : G.edgeSet → Color)
+            (z : G.edgeSet → Color) = 0) →
+          z = 0) :
+    Theorem49BoundaryRootSynthesis emb C₀ :=
+  theorem49BoundaryRootSynthesis_of_boundaryZeroProjectedColoringGeneratorDetector
+    emb C₀ colorings hsubset
+    (detector_of_familyPairing_separates family hseparates)
 
 /-- A left inverse for the concrete selected-boundary-zero pairing map is a kernel-checkable
 certificate of injectivity.  This is the linear-algebra hook needed to turn future finite `F₂`
