@@ -39,6 +39,16 @@ def CAP5WordExtendsAcrossCycle (w : CAP5BoundaryWord) : Prop :=
 def cap5BoundaryColorCount (w : CAP5BoundaryWord) (c : Color) : Nat :=
   (Finset.univ.filter fun i : Fin 5 => w i = c).card
 
+/-- Every CAP5 boundary edge carries a genuine Tait color. -/
+def CAP5BoundaryWordIsNonzero (w : CAP5BoundaryWord) : Prop :=
+  ∀ i : Fin 5, w i ≠ 0
+
+/-- The three nonzero Tait colors each occur an odd number of times in a CAP5 boundary word. -/
+def CAP5BoundaryWordHasOddColorCounts (w : CAP5BoundaryWord) : Prop :=
+  Odd (cap5BoundaryColorCount w red) ∧
+  Odd (cap5BoundaryColorCount w blue) ∧
+  Odd (cap5BoundaryColorCount w purple)
+
 private def cap5ColorIndicator (c d : Color) : F2 :=
   if d = c then 1 else 0
 
@@ -135,6 +145,36 @@ theorem cap5BoundaryColorCount_odd_of_extendsAcrossCycle
   apply odd_of_natCast_f2_eq_one
   rw [cap5BoundaryColorCount_cast_eq_sum_indicator]
   exact boundary_indicator_sum_eq_one_of_extendsWith hc hx
+
+/-- A fixed CAP5 internal extension forces every boundary edge to carry a nonzero color. -/
+theorem cap5BoundaryWordIsNonzero_of_extendsAcrossCycleWith
+    {w : CAP5BoundaryWord} {x : CAP5InternalCycleColoring}
+    (h : CAP5ExtendsAcrossCycleWith w x) :
+    CAP5BoundaryWordIsNonzero w := by
+  intro i
+  rcases h with ⟨hv0, hv1, hv2, hv3, hv4⟩
+  fin_cases i
+  · exact hv0.1
+  · exact hv1.1
+  · exact hv2.1
+  · exact hv3.1
+  · exact hv4.1
+
+/-- CAP5 extendability forces every boundary edge to carry a nonzero color. -/
+theorem cap5BoundaryWordIsNonzero_of_extendsAcrossCycle
+    {w : CAP5BoundaryWord} (h : CAP5WordExtendsAcrossCycle w) :
+    CAP5BoundaryWordIsNonzero w := by
+  rcases h with ⟨x, hx⟩
+  exact cap5BoundaryWordIsNonzero_of_extendsAcrossCycleWith hx
+
+/-- CAP5 extendability forces the parity shape used in the manuscript extension criterion:
+red, blue, and purple each occur an odd number of times. -/
+theorem cap5BoundaryWordHasOddColorCounts_of_extendsAcrossCycle
+    {w : CAP5BoundaryWord} (h : CAP5WordExtendsAcrossCycle w) :
+    CAP5BoundaryWordHasOddColorCounts w :=
+  ⟨cap5BoundaryColorCount_odd_of_extendsAcrossCycle red_ne_zero h,
+    cap5BoundaryColorCount_odd_of_extendsAcrossCycle blue_ne_zero h,
+    cap5BoundaryColorCount_odd_of_extendsAcrossCycle purple_ne_zero h⟩
 
 /-- Relabel every color in a CAP5 boundary word. -/
 def cap5MapBoundaryWord (σ : Color → Color) (w : CAP5BoundaryWord) : CAP5BoundaryWord :=
@@ -484,6 +524,13 @@ theorem not_cap5_extendsAcrossCycle_of_block2111
     ¬ CAP5WordExtendsAcrossCycle w := by
   rcases h with ⟨σ, n, hσ0, rfl⟩
   exact not_cap5TransportedBadBoundaryWord_extendsAcrossCycle hσ0 n
+
+/-- An extendable CAP5 boundary word cannot have normalized block structure `(2,1,1,1)`. -/
+theorem not_cap5BoundaryWordHasBlock2111_of_extendsAcrossCycle
+    {w : CAP5BoundaryWord} (h : CAP5WordExtendsAcrossCycle w) :
+    ¬ CAP5BoundaryWordHasBlock2111 w := by
+  intro hblock
+  exact not_cap5_extendsAcrossCycle_of_block2111 hblock h
 
 /-- Swap two colors, leaving the third color fixed. -/
 def cap5SwapColor (a b : Color) (c : Color) : Color :=
