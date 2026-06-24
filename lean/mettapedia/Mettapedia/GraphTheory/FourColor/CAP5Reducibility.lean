@@ -559,6 +559,17 @@ theorem CAP5ExceptionalAnnulusBoundaryEdgeSupportCandidate.exists_realizesSmallC
       candidate.RealizesSmallCyclicEdgeCut cut := by
   exact ⟨realization.toSmallCyclicEdgeCut candidate.hcard_le_four, rfl⟩
 
+/-- A bundled small cyclic edge cut whose support is exactly a CAP5 boundary-edge candidate gives
+the realization-data form consumed by the sharper exceptional-annulus endpoint. -/
+def CAP5ExceptionalAnnulusBoundaryEdgeSupportCandidate.cyclicEdgeCutRealizationData_of_realizesSmallCyclicEdgeCut
+    {V : Type*} {G : SimpleGraph V} [DecidableEq G.edgeSet]
+    {boundaryEdge : Fin 5 → G.edgeSet}
+    (candidate : CAP5ExceptionalAnnulusBoundaryEdgeSupportCandidate boundaryEdge)
+    (cut : SmallCyclicEdgeCut G)
+    (hcut : candidate.RealizesSmallCyclicEdgeCut cut) :
+    candidate.CyclicEdgeCutRealizationData (G := G) :=
+  cut.toCyclicEdgeCutRealization_of_edgeCut_eq hcut
+
 /-- Once core component-cover data is in the exceptional branch, every annulus side case has a
 finite separator-portal candidate using at most four CAP5 portals.  This is the finite input to the
 later theorem that must turn an embedded annulus/Jordan curve into an actual cyclic edge cut. -/
@@ -773,6 +784,31 @@ theorem CAP5TransportedEdgeComponentCoverCore.hasSomeExceptionalAnnulusCyclicCut
     ⟨edgeCandidate, horientation, hsideCase, _hedgeSupport, _hcard⟩
   exact ⟨edgeCandidate, horientation, hsideCase,
     hrealizationData edgeCandidate horientation hsideCase⟩
+
+/-- The concrete small-cyclic-cut interface also supplies the sharper existential realization-data
+obligation.  This is useful for the planar/Jordan layer: it can construct a `SmallCyclicEdgeCut`
+with the candidate edge support, and this bridge turns that into the realization-data package used
+by the graph-facing CAP5 endpoints. -/
+theorem CAP5TransportedEdgeComponentCoverCore.hasSomeExceptionalAnnulusCyclicCutRealizationData_of_isExceptional_of_realizesSmallCyclicEdgeCut
+    {V : Type*} {G : SimpleGraph V} [DecidableEq G.edgeSet]
+    {boundaryEdge : Fin 5 → G.edgeSet} {n : Nat}
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    (p0Inside p4Inside : Bool) (h : data.IsExceptional)
+    (hrealizes :
+      ∀ edgeCandidate : CAP5ExceptionalAnnulusBoundaryEdgeSupportCandidate boundaryEdge,
+        data.RealizesExceptionalBoundarySupportOrientation
+            edgeCandidate.portalCandidate.orientation →
+        edgeCandidate.portalCandidate.sideCase =
+            CAP5ExceptionalAnnulusSideCase.ofPortalSides p0Inside p4Inside →
+        ∃ cut : SmallCyclicEdgeCut G,
+          edgeCandidate.RealizesSmallCyclicEdgeCut cut) :
+    data.HasSomeExceptionalAnnulusCyclicCutRealizationData (G := G) p0Inside p4Inside := by
+  rcases exists_exceptionalAnnulusBoundaryEdgeSupportCandidate_of_isExceptional_of_portalSides
+      p0Inside p4Inside h with
+    ⟨edgeCandidate, horientation, hsideCase, _hedgeSupport, _hcard⟩
+  rcases hrealizes edgeCandidate horientation hsideCase with ⟨cut, hcut⟩
+  exact ⟨edgeCandidate, horientation, hsideCase,
+    ⟨edgeCandidate.cyclicEdgeCutRealizationData_of_realizesSmallCyclicEdgeCut cut hcut⟩⟩
 
 /-- The canonical orientation-by-orientation realization obligation supplies the weaker
 existential realization-data route once the exceptional branch has selected an orientation. -/
