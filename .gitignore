@@ -144,6 +144,8 @@ megalodon/tests/dedukti_bridge/test_triangle.mg
 # Block all markdown files (use git add -f for whitelisted files)
 *.md
 !README.md
+!/AGENTS.md
+!/CLAUDE.md
 !megalodon/how-to-megalodon.md
 !megalodon/PNP_crux/RIGOROUS_ANALYSIS_REPORT.md
 !lean/mettapedia/EXTERNAL_REPOS.md
