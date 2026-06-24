@@ -638,6 +638,28 @@ theorem exists_isZeroBoundary_edgeSupport_switch_extendsAcrossCycle_of_switchRep
         switchRepairOutcomeUsesKempeFinset_of_dataUsesKempeFinsets
           (hkempeData outcome))
 
+/-- Data-level full-zero-boundary form of the repair-outcome projection.  The caller supplies
+Kempe certificates for the transported component-cover data, and the selected switch remains in
+`D.zeroBoundarySet`. -/
+theorem exists_mem_zeroBoundarySet_edgeSupport_switch_extendsAcrossCycle_of_switchRepairOutcomeDataUsesKempeFinsets
+    {V E : Type*} [Fintype E] [DecidableEq E]
+    {boundaryEdge : Fin 5 → E} {C : E → Color} {D : ZeroBoundaryData V E}
+    (h : Nonempty (CAP5EdgeSwitchRepairOutcome boundaryEdge C))
+    (hC : C ∈ D.zeroBoundarySet)
+    (hkempeData :
+      ∀ outcome : CAP5EdgeSwitchRepairOutcome boundaryEdge C,
+        CAP5TransportedEdgeComponentCoverDataUsesKempeFinsets D C outcome.σ outcome.data) :
+    ∃ edgeSupport : Finset E, ∃ a b : Color,
+      switch a b (edgeSupport : Set E) C ∈ D.zeroBoundarySet ∧
+      CAP5WordExtendsAcrossCycle
+        (cap5BoundaryWordOfEdges boundaryEdge (switch a b (edgeSupport : Set E) C)) := by
+  exact
+    exists_mem_zeroBoundarySet_edgeSupport_switch_extendsAcrossCycle_of_switchRepairOutcomeUsesKempeFinset
+      h hC
+      (fun outcome =>
+        switchRepairOutcomeUsesKempeFinset_of_dataUsesKempeFinsets
+          (hkempeData outcome))
+
 /-- Raw support-cover repair action for an arbitrary transported bad CAP5 word.  This exposes the
 actual support-carried boundary action, not just the solved-word conclusion. -/
 theorem exists_boundaryActionRepairsWord_usingTransportedComponentCoverSupport_of_eq_transportBad_of_componentCoverSupports
@@ -1341,6 +1363,77 @@ theorem cap5BoundaryWordOfEdges_extends_or_exists_isZeroBoundary_edgeSupport_swi
         CAP5WordExtendsAcrossCycle
           (cap5BoundaryWordOfEdges boundaryEdge (switch a b (edgeSupport : Set E) C)) :=
   cap5BoundaryWordOfEdges_extends_or_exists_isZeroBoundary_edgeSupport_switch_extends_of_nonzero_of_sum_zero_of_transportEdgeComponentCoverDataWithKempeFinsets
+    boundaryEdge C hCzero hnz hsum
+    (fun hσ0 hw => (hcomponentCovers hσ0 hw).toEdgeComponentCoverData)
+    (fun hσ0 hw => (hcomponentCovers hσ0 hw).usesKempeFinsets)
+
+/-- Direct data-level CAP5 split preserving the full zero-boundary set.  This is the
+iteration-friendly form of the graph-facing CAP5 repair: the switched coloring remains in
+`D.zeroBoundarySet`, not merely in the vertex-sum kernel. -/
+theorem cap5BoundaryWordOfEdges_extends_or_exists_mem_zeroBoundarySet_edgeSupport_switch_extends_of_nonzero_of_sum_zero_of_transportEdgeComponentCoverDataWithKempeFinsets
+    {V E : Type*} [Fintype E] [DecidableEq E]
+    {D : ZeroBoundaryData V E} (boundaryEdge : Fin 5 → E) (C : E → Color)
+    (hCzero : C ∈ D.zeroBoundarySet)
+    (hnz : CAP5BoundaryWordIsNonzero (cap5BoundaryWordOfEdges boundaryEdge C))
+    (hsum : (∑ i : Fin 5, cap5BoundaryWordOfEdges boundaryEdge C i) = 0)
+    (hcomponentCovers :
+      ∀ {σ : Color ≃ Color} {n : Nat},
+        σ 0 = 0 →
+        cap5BoundaryWordOfEdges boundaryEdge C = cap5TransportedBadBoundaryWord σ n →
+        CAP5TransportedEdgeComponentCoverData boundaryEdge n)
+    (hkempeCovers :
+      ∀ {σ : Color ≃ Color} {n : Nat}
+        (hσ0 : σ 0 = 0)
+        (hw : cap5BoundaryWordOfEdges boundaryEdge C = cap5TransportedBadBoundaryWord σ n),
+        CAP5TransportedEdgeComponentCoverDataUsesKempeFinsets
+          D C σ (hcomponentCovers hσ0 hw)) :
+    CAP5WordExtendsAcrossCycle (cap5BoundaryWordOfEdges boundaryEdge C) ∨
+      ∃ edgeSupport : Finset E, ∃ a b : Color,
+        switch a b (edgeSupport : Set E) C ∈ D.zeroBoundarySet ∧
+        CAP5WordExtendsAcrossCycle
+          (cap5BoundaryWordOfEdges boundaryEdge (switch a b (edgeSupport : Set E) C)) := by
+  have hodd :
+      CAP5BoundaryWordHasOddColorCounts (cap5BoundaryWordOfEdges boundaryEdge C) :=
+    cap5BoundaryWordHasOddColorCounts_of_nonzero_of_sum_eq_zero hnz hsum
+  rcases cap5BoundaryWord_coloredBlock311_or_coloredBlock2111_of_nonzero_of_odd
+      hnz hodd with hgood | hbad
+  · exact Or.inl (cap5_extendsAcrossCycle_of_coloredBlock311 hgood)
+  · rcases cap5BoundaryWordHasBlock2111_of_coloredBlock2111 hbad with
+      ⟨σ, n, hσ0, hw⟩
+    let data : CAP5TransportedEdgeComponentCoverData boundaryEdge n :=
+      hcomponentCovers hσ0 hw
+    rcases
+        exists_edgeSupport_switch_extendsAcrossCycle_of_eq_transportBad_of_componentCoverData
+          boundaryEdge C hσ0 data hw with
+      ⟨edgeSupport, a, b, huses, hextends⟩
+    have hsupport : CAP5EdgeSupportUsesKempeFinset D C edgeSupport a b :=
+      edgeSupportUsesKempeFinset_of_dataUsesKempeFinsets_of_uses
+        (hkempeCovers hσ0 hw) huses
+    exact Or.inr
+      ⟨edgeSupport, a, b,
+        switch_mem_zeroBoundarySet_of_edgeSupportUsesKempeFinset hCzero hsupport,
+        hextends⟩
+
+/-- Bundled-data form of the full-zero-boundary CAP5 split.  The graph geometry layer supplies
+the transported edge-Kempe component-cover data directly; the repair branch stays inside
+`D.zeroBoundarySet`. -/
+theorem cap5BoundaryWordOfEdges_extends_or_exists_mem_zeroBoundarySet_edgeSupport_switch_extends_of_nonzero_of_sum_zero_of_transportEdgeKempeComponentCoverData
+    {V E : Type*} [Fintype E] [DecidableEq E]
+    {D : ZeroBoundaryData V E} (boundaryEdge : Fin 5 → E) (C : E → Color)
+    (hCzero : C ∈ D.zeroBoundarySet)
+    (hnz : CAP5BoundaryWordIsNonzero (cap5BoundaryWordOfEdges boundaryEdge C))
+    (hsum : (∑ i : Fin 5, cap5BoundaryWordOfEdges boundaryEdge C i) = 0)
+    (hcomponentCovers :
+      ∀ {σ : Color ≃ Color} {n : Nat},
+        (hσ0 : σ 0 = 0) →
+        cap5BoundaryWordOfEdges boundaryEdge C = cap5TransportedBadBoundaryWord σ n →
+        CAP5TransportedEdgeKempeComponentCoverData D C σ boundaryEdge n) :
+    CAP5WordExtendsAcrossCycle (cap5BoundaryWordOfEdges boundaryEdge C) ∨
+      ∃ edgeSupport : Finset E, ∃ a b : Color,
+        switch a b (edgeSupport : Set E) C ∈ D.zeroBoundarySet ∧
+        CAP5WordExtendsAcrossCycle
+          (cap5BoundaryWordOfEdges boundaryEdge (switch a b (edgeSupport : Set E) C)) :=
+  cap5BoundaryWordOfEdges_extends_or_exists_mem_zeroBoundarySet_edgeSupport_switch_extends_of_nonzero_of_sum_zero_of_transportEdgeComponentCoverDataWithKempeFinsets
     boundaryEdge C hCzero hnz hsum
     (fun hσ0 hw => (hcomponentCovers hσ0 hw).toEdgeComponentCoverData)
     (fun hσ0 hw => (hcomponentCovers hσ0 hw).usesKempeFinsets)
