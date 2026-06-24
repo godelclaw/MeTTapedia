@@ -122,6 +122,44 @@ theorem zeroEdgeGraph_edgeSet {G : SimpleGraph V} [Fintype G.edgeSet]
   intro hG _hx
   exact G.not_isDiag_of_mem_edgeSet hG
 
+noncomputable def zeroEdgeGraphEdgeEquiv (G : SimpleGraph V) [Fintype G.edgeSet]
+    (x : G.edgeSet → Color) :
+    (zeroEdgeGraph G x).edgeSet ≃ {e : G.edgeSet // x e = 0} where
+  toFun e := by
+    have hz : ∃ h : e.1 ∈ G.edgeSet, x ⟨e.1, h⟩ = 0 := by
+      have hez : e.1 ∈ zeroEdgeSym2Finset G x := by
+        have hezdiag : e.1 ∈ (zeroEdgeSym2Finset G x : Set (Sym2 V)) ∧
+            ¬ e.1.IsDiag := by
+          simpa [zeroEdgeGraph, SimpleGraph.edgeSet_fromEdgeSet] using e.2
+        exact hezdiag.1
+      rcases Finset.mem_map.mp hez with ⟨eg, heg, h_eq⟩
+      have hG : e.1 ∈ G.edgeSet := by
+        simp [← h_eq, eg.2]
+      have hxeg : x eg = 0 := by simpa [zeroEdgeFinset] using heg
+      have heg_eq : (⟨e.1, hG⟩ : G.edgeSet) = eg := by
+        apply Subtype.ext
+        exact h_eq.symm
+      exact ⟨hG, by simpa [heg_eq] using hxeg⟩
+    exact ⟨⟨e.1, hz.choose⟩, hz.choose_spec⟩
+  invFun e :=
+    ⟨e.1.1, by
+      rw [zeroEdgeGraph, SimpleGraph.edgeSet_fromEdgeSet]
+      constructor
+      · rw [zeroEdgeSym2Finset]
+        exact Finset.mem_map.mpr ⟨e.1, by simpa [zeroEdgeFinset] using e.2, rfl⟩
+      · exact G.not_isDiag_of_mem_edgeSet e.1.2⟩
+  left_inv e := by
+    ext
+    rfl
+  right_inv e := by
+    ext
+    rfl
+
+omit [DecidableEq V] in
+@[simp] theorem zeroEdgeGraphEdgeEquiv_coe (G : SimpleGraph V) [Fintype G.edgeSet]
+    (x : G.edgeSet → Color) (e : (zeroEdgeGraph G x).edgeSet) :
+    ((zeroEdgeGraphEdgeEquiv G x e).1 : Sym2 V) = (e : Sym2 V) := rfl
+
 theorem zeroEdgeSym2Finset_disjoint_diagSet {G : SimpleGraph V}
     [Fintype V] [Fintype G.edgeSet] {x : G.edgeSet → Color} :
     Disjoint (zeroEdgeSym2Finset G x) Sym2.diagSet.toFinset := by
@@ -143,6 +181,50 @@ theorem zeroEdgeGraph_sum_degrees_eq_two_mul_zeroEdgeCount
   simp [SimpleGraph.edgeFinset]
   rw [Finset.sdiff_eq_self_of_disjoint zeroEdgeSym2Finset_disjoint_diagSet]
   rw [zeroEdgeSym2Finset_card]
+
+theorem zeroEdgeGraph_incidentEdgeFinset_card
+    {G : SimpleGraph V} [Fintype V] [Fintype G.edgeSet]
+    {x : G.edgeSet → Color} (v : V) :
+    (incidentEdgeFinset (zeroEdgeGraph G x) v).card = zeroIncidentEdgeCount G x v := by
+  classical
+  let E := zeroEdgeGraphEdgeEquiv G x
+  rw [zeroIncidentEdgeCount]
+  refine Finset.card_bij (fun e _he => (E e).1) ?_ ?_ ?_
+  · intro e he
+    have hv : v ∈ (e : Sym2 V) := by simpa [incidentEdgeFinset] using he
+    have hEcoe : ((E e).1 : Sym2 V) = (e : Sym2 V) := by
+      change ((zeroEdgeGraphEdgeEquiv G x e).1 : Sym2 V) = (e : Sym2 V)
+      simp
+    have hinc : (E e).1 ∈ incidentEdgeFinset G v := by
+      simpa [incidentEdgeFinset, hEcoe] using hv
+    exact by simp [zeroIncidentEdgeFinset, hinc, (E e).2]
+  · intro e1 _he1 e2 _he2 h
+    apply Subtype.ext
+    have hsymE := congrArg (fun e : G.edgeSet => (e : Sym2 V)) h
+    have h1 : ((E e1).1 : Sym2 V) = (e1 : Sym2 V) := by
+      change ((zeroEdgeGraphEdgeEquiv G x e1).1 : Sym2 V) = (e1 : Sym2 V)
+      simp
+    have h2 : ((E e2).1 : Sym2 V) = (e2 : Sym2 V) := by
+      change ((zeroEdgeGraphEdgeEquiv G x e2).1 : Sym2 V) = (e2 : Sym2 V)
+      simp
+    exact h1.symm.trans (hsymE.trans h2)
+  · intro e he
+    have he_pair : e ∈ incidentEdgeFinset G v ∧ x e = 0 := by
+      simpa [zeroIncidentEdgeFinset] using he
+    let ez : (zeroEdgeGraph G x).edgeSet :=
+      ⟨e.1, by
+        rw [zeroEdgeGraph, SimpleGraph.edgeSet_fromEdgeSet]
+        constructor
+        · rw [zeroEdgeSym2Finset]
+          exact Finset.mem_map.mpr ⟨e, by simpa [zeroEdgeFinset] using he_pair.2, rfl⟩
+        · exact G.not_isDiag_of_mem_edgeSet e.2⟩
+    have hez : ez ∈ incidentEdgeFinset (zeroEdgeGraph G x) v := by
+      have hv : v ∈ (e : Sym2 V) := by simpa [incidentEdgeFinset] using he_pair.1
+      simpa [incidentEdgeFinset, ez] using hv
+    refine ⟨ez, hez, ?_⟩
+    apply Subtype.ext
+    change ((zeroEdgeGraphEdgeEquiv G x ez).1 : Sym2 V) = (e : Sym2 V)
+    simp [ez]
 
 theorem zeroIncidentEdgeFinset_eq_empty_iff {G : SimpleGraph V} [Fintype G.edgeSet]
     {x : G.edgeSet → Color} {v : V} :
@@ -351,6 +433,56 @@ theorem incidentEdgeFinset_card_eq_degree {G : SimpleGraph V} [Fintype G.edgeSet
       simp
     _ = (G.incidenceFinset v).card := by rw [hmap]
     _ = G.degree v := by simp
+
+/-- Summing the manuscript's local zero-incidence counts `k_v(x)` counts every
+zero edge twice. -/
+theorem sum_zeroIncidentEdgeCount_eq_two_mul_zeroEdgeCount
+    {G : SimpleGraph V} [Fintype V] [Fintype G.edgeSet] {x : G.edgeSet → Color} :
+    ∑ v, zeroIncidentEdgeCount G x v = 2 * zeroEdgeCount G x := by
+  rw [← zeroEdgeGraph_sum_degrees_eq_two_mul_zeroEdgeCount]
+  apply Finset.sum_congr rfl
+  intro v _hv
+  rw [← zeroEdgeGraph_incidentEdgeFinset_card]
+  rw [incidentEdgeFinset_card_eq_degree]
+
+/-- If the zero edges form a matching, the number of vertices touched by zero
+edges is the sum of the local zero-incidence counts. -/
+theorem zeroIncidentVertexCount_eq_sum_zeroIncidentEdgeCount_of_zeroEdgesFormMatching
+    {G : SimpleGraph V} [Fintype V] [Fintype G.edgeSet] {x : G.edgeSet → Color}
+    (hmatch : ZeroEdgesFormMatching G x) :
+    zeroIncidentVertexCount G x = ∑ v, zeroIncidentEdgeCount G x v := by
+  rw [zeroIncidentVertexCount, zeroIncidentVertexFinset]
+  symm
+  calc
+    ∑ v, zeroIncidentEdgeCount G x v =
+        ∑ v, if 0 < zeroIncidentEdgeCount G x v then 1 else 0 := by
+      apply Finset.sum_congr rfl
+      intro v _hv
+      by_cases hvpos : 0 < zeroIncidentEdgeCount G x v
+      · have hk : zeroIncidentEdgeCount G x v = 1 :=
+          Nat.le_antisymm (hmatch v) (Nat.succ_le_of_lt hvpos)
+        simp [hk]
+      · have hk : zeroIncidentEdgeCount G x v = 0 := Nat.eq_zero_of_not_pos hvpos
+        simp [hk]
+    _ = (Finset.univ.filter fun v => 0 < zeroIncidentEdgeCount G x v).card := by
+      rw [Finset.card_filter]
+
+/-- Manuscript count form for matching zero patterns: `I(x)=2 Z(x)`. -/
+theorem zeroIncidentVertexCount_eq_two_mul_zeroEdgeCount_of_zeroEdgesFormMatching
+    {G : SimpleGraph V} [Fintype V] [Fintype G.edgeSet] {x : G.edgeSet → Color}
+    (hmatch : ZeroEdgesFormMatching G x) :
+    zeroIncidentVertexCount G x = 2 * zeroEdgeCount G x := by
+  rw [zeroIncidentVertexCount_eq_sum_zeroIncidentEdgeCount_of_zeroEdgesFormMatching hmatch,
+    sum_zeroIncidentEdgeCount_eq_two_mul_zeroEdgeCount]
+
+/-- Since `C(x)=0` is equivalent to the zero-edge set being a matching, zero
+clustering also yields the manuscript count `I(x)=2 Z(x)`. -/
+theorem zeroIncidentVertexCount_eq_two_mul_zeroEdgeCount_of_zeroClusteringCount_eq_zero
+    {G : SimpleGraph V} [Fintype V] [Fintype G.edgeSet] {x : G.edgeSet → Color}
+    (hC : zeroClusteringCount G x = 0) :
+    zeroIncidentVertexCount G x = 2 * zeroEdgeCount G x :=
+  zeroIncidentVertexCount_eq_two_mul_zeroEdgeCount_of_zeroEdgesFormMatching
+    (zeroClusteringCount_eq_zero_iff_zeroEdgesFormMatching.mp hC)
 
 /-- A graph with Mathlib degree `3` at every vertex has the explicit cubic
 incident triples needed by the local Tait-flow bridge. -/
