@@ -278,6 +278,28 @@ theorem cdlOneStepMoveOn_apply_mem_eq_zero_of_eq_color
     cdlOneStepMoveOn G C g x e = 0 := by
   rw [cdlOneStepMoveOn_apply_mem he, hx, color_add_self]
 
+theorem zeroEdgeFinset_cdlOneStepMoveOn_eq
+    {G : SimpleGraph V} [Fintype G.edgeSet]
+    {C : Finset G.edgeSet} {g : Color} {x : G.edgeSet → Color} :
+    zeroEdgeFinset G (cdlOneStepMoveOn G C g x) =
+      (zeroEdgeFinset G x).filter (fun e => e ∉ C) ∪ C.filter (fun e => x e = g) := by
+  ext e
+  by_cases heC : e ∈ C
+  · simp [zeroEdgeFinset, cdlOneStepMoveOn, heC, add_eq_zero_iff_eq]
+  · simp [zeroEdgeFinset, cdlOneStepMoveOn, heC]
+
+theorem zeroEdgeCount_cdlOneStepMoveOn_eq
+    {G : SimpleGraph V} [Fintype G.edgeSet]
+    {C : Finset G.edgeSet} {g : Color} {x : G.edgeSet → Color} :
+    zeroEdgeCount G (cdlOneStepMoveOn G C g x) =
+      ((zeroEdgeFinset G x).filter (fun e => e ∉ C)).card +
+        (C.filter (fun e => x e = g)).card := by
+  rw [zeroEdgeCount, zeroEdgeFinset_cdlOneStepMoveOn_eq]
+  rw [Finset.card_union_of_disjoint]
+  rw [Finset.disjoint_left]
+  intro e heZero heC
+  exact (Finset.mem_filter.mp heZero).2 (Finset.mem_filter.mp heC).1
+
 theorem isCDLGoodAtVertex_cdlOneStepMoveOn_iff
     {G : SimpleGraph V} [Fintype G.edgeSet]
     {C : Finset G.edgeSet} {g : Color} {x : G.edgeSet → Color} {v : V} :
