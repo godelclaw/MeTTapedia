@@ -172,6 +172,41 @@ def CAP5TransportedBoundaryActionUsesEdgeComponentCoverSupport
 /-- Structured graph-facing edge support data for one transported CAP5 bad-word presentation.
 It keeps the finite edge supports, their induced transported boundary supports, and the finite
 CAP5 component-cover facts together as a reusable obligation object. -/
+structure CAP5TransportedEdgeComponentCoverCore
+    {E : Type*} [DecidableEq E] (boundaryEdge : Fin 5 → E) (n : Nat) where
+  redBlueEdge₁ : Finset E
+  redBlueEdge₂ : Finset E
+  redPurpleEdge₁ : Finset E
+  redPurpleEdge₂ : Finset E
+  redBlue₁ : Finset (Fin 5)
+  redBlue₂ : Finset (Fin 5)
+  redPurple₁ : Finset (Fin 5)
+  redPurple₂ : Finset (Fin 5)
+  hredBlue₁ :
+    cap5BoundarySupportOfEdges boundaryEdge redBlueEdge₁ =
+      cap5RotateBoundarySupportN n redBlue₁
+  hredBlue₂ :
+    cap5BoundarySupportOfEdges boundaryEdge redBlueEdge₂ =
+      cap5RotateBoundarySupportN n redBlue₂
+  hredPurple₁ :
+    cap5BoundarySupportOfEdges boundaryEdge redPurpleEdge₁ =
+      cap5RotateBoundarySupportN n redPurple₁
+  hredPurple₂ :
+    cap5BoundarySupportOfEdges boundaryEdge redPurpleEdge₂ =
+      cap5RotateBoundarySupportN n redPurple₂
+  hredBlue : CAP5BadRedBlueComponentCover redBlue₁ redBlue₂
+  hredPurple : CAP5BadRedPurpleComponentCover redPurple₁ redPurple₂
+
+/-- The exceptional-pairing obstruction carried by transported edge component-cover core data. -/
+def CAP5TransportedEdgeComponentCoverCore.IsExceptional
+    {E : Type*} [DecidableEq E] {boundaryEdge : Fin 5 → E} {n : Nat}
+    (data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n) : Prop :=
+  CAP5BadExceptionalPairingPattern
+    data.redBlue₁ data.redBlue₂ data.redPurple₁ data.redPurple₂
+
+/-- Full transported component-cover data is core component-cover data plus exclusion of the
+simultaneous exceptional pattern.  The core form is the honest target before the planar separator
+argument has ruled the exceptional branch out. -/
 structure CAP5TransportedEdgeComponentCoverData
     {E : Type*} [DecidableEq E] (boundaryEdge : Fin 5 → E) (n : Nat) where
   redBlueEdge₁ : Finset E
@@ -199,8 +234,63 @@ structure CAP5TransportedEdgeComponentCoverData
   hnotExceptional :
     ¬ CAP5BadExceptionalPairingPattern redBlue₁ redBlue₂ redPurple₁ redPurple₂
 
+/-- Forget the non-exceptional proof from full transported component-cover data. -/
+def CAP5TransportedEdgeComponentCoverData.toCore
+    {E : Type*} [DecidableEq E] {boundaryEdge : Fin 5 → E} {n : Nat}
+    (data : CAP5TransportedEdgeComponentCoverData boundaryEdge n) :
+    CAP5TransportedEdgeComponentCoverCore boundaryEdge n where
+  redBlueEdge₁ := data.redBlueEdge₁
+  redBlueEdge₂ := data.redBlueEdge₂
+  redPurpleEdge₁ := data.redPurpleEdge₁
+  redPurpleEdge₂ := data.redPurpleEdge₂
+  redBlue₁ := data.redBlue₁
+  redBlue₂ := data.redBlue₂
+  redPurple₁ := data.redPurple₁
+  redPurple₂ := data.redPurple₂
+  hredBlue₁ := data.hredBlue₁
+  hredBlue₂ := data.hredBlue₂
+  hredPurple₁ := data.hredPurple₁
+  hredPurple₂ := data.hredPurple₂
+  hredBlue := data.hredBlue
+  hredPurple := data.hredPurple
+
+/-- Rebuild full transported component-cover data from core data after the exceptional branch is
+excluded. -/
+def CAP5TransportedEdgeComponentCoverData.ofCore
+    {E : Type*} [DecidableEq E] {boundaryEdge : Fin 5 → E} {n : Nat}
+    (data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n)
+    (hnotExceptional : ¬ data.IsExceptional) :
+    CAP5TransportedEdgeComponentCoverData boundaryEdge n where
+  redBlueEdge₁ := data.redBlueEdge₁
+  redBlueEdge₂ := data.redBlueEdge₂
+  redPurpleEdge₁ := data.redPurpleEdge₁
+  redPurpleEdge₂ := data.redPurpleEdge₂
+  redBlue₁ := data.redBlue₁
+  redBlue₂ := data.redBlue₂
+  redPurple₁ := data.redPurple₁
+  redPurple₂ := data.redPurple₂
+  hredBlue₁ := data.hredBlue₁
+  hredBlue₂ := data.hredBlue₂
+  hredPurple₁ := data.hredPurple₁
+  hredPurple₂ := data.hredPurple₂
+  hredBlue := data.hredBlue
+  hredPurple := data.hredPurple
+  hnotExceptional := by
+    simpa [CAP5TransportedEdgeComponentCoverCore.IsExceptional] using hnotExceptional
+
 /-- An edge-level color switch uses one of the four edge supports carried by a transported CAP5
 component-cover package. -/
+def CAP5TransportedEdgeSwitchUsesComponentCoverCoreSupport
+    {E : Type*} [DecidableEq E] {boundaryEdge : Fin 5 → E} {n : Nat}
+    (data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n)
+    (σ : Color → Color) (edgeSupport : Finset E) (a b : Color) : Prop :=
+  (edgeSupport = data.redBlueEdge₁ ∧ a = σ red ∧ b = σ blue) ∨
+  (edgeSupport = data.redBlueEdge₂ ∧ a = σ red ∧ b = σ blue) ∨
+  (edgeSupport = data.redPurpleEdge₁ ∧ a = σ red ∧ b = σ purple) ∨
+  (edgeSupport = data.redPurpleEdge₂ ∧ a = σ red ∧ b = σ purple)
+
+/-- An edge-level color switch uses one of the four edge supports carried by a transported CAP5
+component-cover package after the exceptional branch has already been excluded. -/
 def CAP5TransportedEdgeSwitchUsesComponentCoverSupport
     {E : Type*} [DecidableEq E] {boundaryEdge : Fin 5 → E} {n : Nat}
     (data : CAP5TransportedEdgeComponentCoverData boundaryEdge n)
@@ -209,6 +299,19 @@ def CAP5TransportedEdgeSwitchUsesComponentCoverSupport
   (edgeSupport = data.redBlueEdge₂ ∧ a = σ red ∧ b = σ blue) ∨
   (edgeSupport = data.redPurpleEdge₁ ∧ a = σ red ∧ b = σ purple) ∨
   (edgeSupport = data.redPurpleEdge₂ ∧ a = σ red ∧ b = σ purple)
+
+/-- Full-data support use is the same support-use predicate on its core data. -/
+theorem componentCoverCoreSupport_of_componentCoverDataSupport
+    {E : Type*} [DecidableEq E] {boundaryEdge : Fin 5 → E} {n : Nat}
+    {data : CAP5TransportedEdgeComponentCoverData boundaryEdge n}
+    {σ : Color → Color} {edgeSupport : Finset E} {a b : Color}
+    (h :
+      CAP5TransportedEdgeSwitchUsesComponentCoverSupport data σ edgeSupport a b) :
+    CAP5TransportedEdgeSwitchUsesComponentCoverCoreSupport
+      data.toCore σ edgeSupport a b := by
+  simpa [CAP5TransportedEdgeSwitchUsesComponentCoverSupport,
+    CAP5TransportedEdgeSwitchUsesComponentCoverCoreSupport,
+    CAP5TransportedEdgeComponentCoverData.toCore] using h
 
 /-- A finite edge support is realized by an interior edge-Kempe component and has even
 incidence at every vertex.  This is the reusable graph-side certificate needed to ensure that a
@@ -739,6 +842,32 @@ theorem exists_boundaryActionRepairsWord_usingTransportedEdgeSupport_of_eq_trans
     · simpa [cap5BoundaryActionOfEdgeSet, hredPurple₂] using hrealizes
     · simpa [cap5BoundaryActionOfEdgeSet, hredPurple₂] using hrepairs
 
+/-- Edge-support repair-or-exceptional split for core transported component-cover data.  This is
+the exact finite CAP5 move-realizability surface before the planar separator argument has excluded
+the simultaneous exceptional pairing pattern. -/
+theorem exists_boundaryActionRepairsWord_usingTransportedEdgeSupport_or_exceptional_of_eq_transportBad_of_componentCoverCore
+    {E : Type*} [DecidableEq E]
+    {w : CAP5BoundaryWord} {boundaryEdge : Fin 5 → E}
+    {σ : Color ≃ Color} (hσ0 : σ 0 = 0) {n : Nat}
+    (data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n)
+    (hw : w = cap5TransportedBadBoundaryWord σ n) :
+    (∃ action : CAP5BoundaryAction,
+      CAP5TransportedBoundaryActionUsesEdgeComponentCoverSupport
+        boundaryEdge data.redBlueEdge₁ data.redBlueEdge₂
+          data.redPurpleEdge₁ data.redPurpleEdge₂ σ action ∧
+      CAP5BoundaryActionRealizesSomeTransportedRepairType action σ n ∧
+      CAP5BoundaryActionRepairsWord action w) ∨
+    data.IsExceptional := by
+  by_cases hnotExceptional : data.IsExceptional
+  · exact Or.inr hnotExceptional
+  · exact Or.inl
+      (exists_boundaryActionRepairsWord_usingTransportedEdgeSupport_of_eq_transportBad_of_componentCoverSupports
+        boundaryEdge hσ0 data.hredBlue₁ data.hredBlue₂ data.hredPurple₁ data.hredPurple₂
+        data.hredBlue data.hredPurple
+        (by
+          simpa [CAP5TransportedEdgeComponentCoverCore.IsExceptional] using hnotExceptional)
+        hw)
+
 /-- Raw support-cover endpoint for an arbitrary transported bad CAP5 word.  This is the
 interface a later graph/Kempe extraction should naturally target: it supplies the four boundary
 supports directly, rather than first packaging them as `CAP5BadPairingSupports`. -/
@@ -851,6 +980,51 @@ theorem exists_edgeSupport_switch_extendsAcrossCycle_of_eq_transportBad_of_compo
     · rw [← cap5BoundaryActionOfEdgeSet_apply_eq_boundaryWordOfEdges_switch]
       simpa [hw]
         using hextends
+
+/-- Core component-cover data gives either a concrete transported edge switch whose boundary word
+extends across the CAP5 cap, or the finite exceptional pairing pattern remains as the explicit
+obstruction. -/
+theorem exists_edgeSupport_switch_extendsAcrossCycle_or_exceptional_of_eq_transportBad_of_componentCoverCore
+    {E : Type*} [DecidableEq E]
+    (boundaryEdge : Fin 5 → E) (C : E → Color)
+    {σ : Color ≃ Color} (hσ0 : σ 0 = 0) {n : Nat}
+    (data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n)
+    (hw : cap5BoundaryWordOfEdges boundaryEdge C = cap5TransportedBadBoundaryWord σ n) :
+    (∃ edgeSupport : Finset E, ∃ a b : Color,
+      CAP5TransportedEdgeSwitchUsesComponentCoverCoreSupport data σ edgeSupport a b ∧
+      CAP5WordExtendsAcrossCycle
+        (cap5BoundaryWordOfEdges boundaryEdge (switch a b (edgeSupport : Set E) C))) ∨
+    data.IsExceptional := by
+  rcases
+      exists_boundaryActionRepairsWord_usingTransportedEdgeSupport_or_exceptional_of_eq_transportBad_of_componentCoverCore
+        hσ0 data hw with hrepair | hexceptional
+  · rcases hrepair with ⟨action, huses, _hrealizes, _hnotExtends, hextends⟩
+    rcases huses with huses | huses | huses | huses
+    · subst action
+      refine Or.inl ⟨data.redBlueEdge₁, σ red, σ blue, ?_, ?_⟩
+      · exact Or.inl ⟨rfl, rfl, rfl⟩
+      · rw [← cap5BoundaryActionOfEdgeSet_apply_eq_boundaryWordOfEdges_switch]
+        simpa [hw]
+          using hextends
+    · subst action
+      refine Or.inl ⟨data.redBlueEdge₂, σ red, σ blue, ?_, ?_⟩
+      · exact Or.inr (Or.inl ⟨rfl, rfl, rfl⟩)
+      · rw [← cap5BoundaryActionOfEdgeSet_apply_eq_boundaryWordOfEdges_switch]
+        simpa [hw]
+          using hextends
+    · subst action
+      refine Or.inl ⟨data.redPurpleEdge₁, σ red, σ purple, ?_, ?_⟩
+      · exact Or.inr (Or.inr (Or.inl ⟨rfl, rfl, rfl⟩))
+      · rw [← cap5BoundaryActionOfEdgeSet_apply_eq_boundaryWordOfEdges_switch]
+        simpa [hw]
+          using hextends
+    · subst action
+      refine Or.inl ⟨data.redPurpleEdge₂, σ red, σ purple, ?_, ?_⟩
+      · exact Or.inr (Or.inr (Or.inr ⟨rfl, rfl, rfl⟩))
+      · rw [← cap5BoundaryActionOfEdgeSet_apply_eq_boundaryWordOfEdges_switch]
+        simpa [hw]
+          using hextends
+  · exact Or.inr hexceptional
 
 /-- Bundled edge-Kempe component-cover data for one transported bad CAP5 word gives an actual
 edge switch that preserves zero-boundary and makes the restricted boundary word extend. -/
