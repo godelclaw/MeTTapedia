@@ -256,6 +256,75 @@ theorem CAP5TransportedEdgeKempeComponentCoverData.usesKempeFinsets
       D C σ data.toEdgeComponentCoverData :=
   data.husesKempeFinsets
 
+/-- Seed-level certificate for turning transported CAP5 edge component-cover data into bundled
+edge-Kempe component-cover data.  This is the shape the graph geometry layer should naturally
+prove: each of the four CAP5 support sets is a concrete edge-Kempe component, and each such
+component has even incidence at every vertex. -/
+structure CAP5TransportedEdgeKempeSeeds
+    {V E : Type*} [Fintype E] [DecidableEq E]
+    (D : ZeroBoundaryData V E) (C : E → Color) (σ : Color → Color)
+    {boundaryEdge : Fin 5 → E} {n : Nat}
+    (data : CAP5TransportedEdgeComponentCoverData boundaryEdge n) where
+  redBlueSeed₁ : V
+  redBlueEdge₁_eq :
+    data.redBlueEdge₁ =
+      EdgeKempe.edgeKempeFinset D.incident D C redBlueSeed₁ (σ red) (σ blue)
+  redBlueEven₁ :
+    ∀ v : V,
+      Even ((EdgeKempe.edgeKempeFinset D.incident D C redBlueSeed₁ (σ red) (σ blue) ∩
+        D.incident v).card)
+  redBlueSeed₂ : V
+  redBlueEdge₂_eq :
+    data.redBlueEdge₂ =
+      EdgeKempe.edgeKempeFinset D.incident D C redBlueSeed₂ (σ red) (σ blue)
+  redBlueEven₂ :
+    ∀ v : V,
+      Even ((EdgeKempe.edgeKempeFinset D.incident D C redBlueSeed₂ (σ red) (σ blue) ∩
+        D.incident v).card)
+  redPurpleSeed₁ : V
+  redPurpleEdge₁_eq :
+    data.redPurpleEdge₁ =
+      EdgeKempe.edgeKempeFinset D.incident D C redPurpleSeed₁ (σ red) (σ purple)
+  redPurpleEven₁ :
+    ∀ v : V,
+      Even ((EdgeKempe.edgeKempeFinset D.incident D C redPurpleSeed₁ (σ red) (σ purple) ∩
+        D.incident v).card)
+  redPurpleSeed₂ : V
+  redPurpleEdge₂_eq :
+    data.redPurpleEdge₂ =
+      EdgeKempe.edgeKempeFinset D.incident D C redPurpleSeed₂ (σ red) (σ purple)
+  redPurpleEven₂ :
+    ∀ v : V,
+      Even ((EdgeKempe.edgeKempeFinset D.incident D C redPurpleSeed₂ (σ red) (σ purple) ∩
+        D.incident v).card)
+
+/-- A seed-level CAP5/Kempe certificate gives the four support-level Kempe certificates used by
+the reducibility endpoints. -/
+theorem CAP5TransportedEdgeKempeSeeds.usesKempeFinsets
+    {V E : Type*} [Fintype E] [DecidableEq E]
+    {D : ZeroBoundaryData V E} {C : E → Color} {σ : Color → Color}
+    {boundaryEdge : Fin 5 → E} {n : Nat}
+    {data : CAP5TransportedEdgeComponentCoverData boundaryEdge n}
+    (seeds : CAP5TransportedEdgeKempeSeeds D C σ data) :
+    CAP5TransportedEdgeComponentCoverDataUsesKempeFinsets D C σ data := by
+  exact
+    ⟨⟨seeds.redBlueSeed₁, seeds.redBlueEdge₁_eq, seeds.redBlueEven₁⟩,
+      ⟨seeds.redBlueSeed₂, seeds.redBlueEdge₂_eq, seeds.redBlueEven₂⟩,
+      ⟨seeds.redPurpleSeed₁, seeds.redPurpleEdge₁_eq, seeds.redPurpleEven₁⟩,
+      ⟨seeds.redPurpleSeed₂, seeds.redPurpleEdge₂_eq, seeds.redPurpleEven₂⟩⟩
+
+/-- Constructor for bundled transported CAP5 edge-Kempe component-cover data from ordinary
+component-cover data plus four explicit Kempe seeds. -/
+def CAP5TransportedEdgeKempeComponentCoverData.ofSeeds
+    {V E : Type*} [Fintype E] [DecidableEq E]
+    {D : ZeroBoundaryData V E} {C : E → Color} {σ : Color → Color}
+    {boundaryEdge : Fin 5 → E} {n : Nat}
+    (data : CAP5TransportedEdgeComponentCoverData boundaryEdge n)
+    (seeds : CAP5TransportedEdgeKempeSeeds D C σ data) :
+    CAP5TransportedEdgeKempeComponentCoverData D C σ boundaryEdge n where
+  toEdgeComponentCoverData := data
+  husesKempeFinsets := seeds.usesKempeFinsets
+
 /-- If a transported CAP5 repair uses one of the four supports in Kempe-certified component-cover
 data, then that selected edge support is itself Kempe-certified. -/
 theorem edgeSupportUsesKempeFinset_of_dataUsesKempeFinsets_of_uses
