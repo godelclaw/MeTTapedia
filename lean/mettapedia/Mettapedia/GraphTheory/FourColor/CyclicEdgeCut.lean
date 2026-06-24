@@ -38,6 +38,26 @@ theorem edgeCrossesVertexSide_compl (G : SimpleGraph V) (side : V → Prop) (e :
   · rintro ⟨u, v, hu, hv, hside, hnotSide⟩
     exact ⟨v, u, hv, hu, hnotSide, fun h => h hside⟩
 
+/-- An edge that does not cross a side predicate preserves that side between any two listed
+endpoints.  This is the local graph fact that turns an exact crossing-edge classification into
+the side-preservation interface used by cyclic-cut realization data. -/
+theorem not_edgeCrossesVertexSide_iff_forall_side_iff
+    (G : SimpleGraph V) (side : V → Prop) (e : G.edgeSet) :
+    (¬ EdgeCrossesVertexSide G side e) ↔
+      ∀ u v : V, u ∈ (e : Sym2 V) → v ∈ (e : Sym2 V) → (side u ↔ side v) := by
+  constructor
+  · intro hnotCross u v hu hv
+    constructor
+    · intro hsu
+      by_contra hsv
+      exact hnotCross ⟨u, v, hu, hv, hsu, hsv⟩
+    · intro hsv
+      by_contra hsu
+      exact hnotCross ⟨v, u, hv, hu, hsv, hsu⟩
+  · intro hpreserve hcross
+    rcases hcross with ⟨u, v, hu, hv, hsu, hsv⟩
+    exact hsv ((hpreserve u v hu hv).1 hsu)
+
 /-- An unordered pair with two distinct listed members is exactly the unordered pair of those
 members. -/
 theorem sym2_eq_mk_of_mem_of_mem_of_ne
@@ -322,6 +342,23 @@ def CyclicEdgeCutRealization.of_edge_side_classification
       exact hsv ((hnoncut_preserves e hnot u v hu hv).1 hsu)
   hinside_cycle := hinside_cycle
   houtside_cycle := houtside_cycle
+
+/-- Exact crossing-edge constructor for cyclic-edge-cut realization data.  It is enough to show
+that the listed finite support crosses the side, and every unlisted edge does not cross it. -/
+def CyclicEdgeCutRealization.of_edge_crossing_classification
+    {G : SimpleGraph V} {edgeCut : Finset G.edgeSet} (side : V → Prop)
+    (hcut_crosses :
+      ∀ e : G.edgeSet, e ∈ edgeCut → EdgeCrossesVertexSide G side e)
+    (hnoncut_not_crosses :
+      ∀ e : G.edgeSet, e ∉ edgeCut → ¬ EdgeCrossesVertexSide G side e)
+    (hinside_cycle : HasCycleOnSide G side)
+    (houtside_cycle : HasCycleOnSide G (fun v => ¬ side v)) :
+    CyclicEdgeCutRealization G edgeCut :=
+  CyclicEdgeCutRealization.of_edge_side_classification side hcut_crosses
+    (fun e hnot =>
+      (not_edgeCrossesVertexSide_iff_forall_side_iff G side e).1
+        (hnoncut_not_crosses e hnot))
+    hinside_cycle houtside_cycle
 
 theorem SmallCyclicEdgeCut.exists_mem_edgeCut_of_walk_endpoint_sides
     {G : SimpleGraph V} (cut : SmallCyclicEdgeCut G)
