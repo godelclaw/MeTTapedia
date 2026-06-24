@@ -1072,6 +1072,38 @@ theorem exists_created_zero_of_isD0LocalMinimumForMoveSupports_of_allowed_erases
     (not_isD0LocalMinimumForMoveSupports_of_allowed_erases_zero_no_new_zero_descent
       hCmem hmove herase hnew) hmin
 
+theorem
+    not_isD0LocalMinimumForMoveSupports_of_allowed_erases_incident_zero_no_new_zero_descent
+    {G : SimpleGraph V} [Fintype V] [Fintype G.edgeSet]
+    {moveSupports : Finset (Finset G.edgeSet)} {x : G.edgeSet → Color}
+    {C : Finset G.edgeSet} {g : Color} {v : V}
+    (hCmem : C ∈ moveSupports)
+    (hmove : IsAllowedD0OneStepMoveOn G C g x (cdlOneStepMoveOn G C g x))
+    (heraseAt : ∃ e ∈ C, e ∈ incidentEdgeFinset G v ∧ x e = 0)
+    (hnew : ∀ e ∈ C, x e ≠ g) :
+    ¬ IsD0LocalMinimumForMoveSupports G moveSupports x := by
+  rcases heraseAt with ⟨e, heC, _heinc, hzero⟩
+  exact
+    not_isD0LocalMinimumForMoveSupports_of_allowed_erases_zero_no_new_zero_descent
+      hCmem hmove ⟨e, heC, hzero⟩ hnew
+
+theorem exists_created_zero_of_isD0LocalMinimumForMoveSupports_of_allowed_erases_incident_zero
+    {G : SimpleGraph V} [Fintype V] [Fintype G.edgeSet]
+    {moveSupports : Finset (Finset G.edgeSet)} {x : G.edgeSet → Color}
+    {C : Finset G.edgeSet} {g : Color} {v : V}
+    (hmin : IsD0LocalMinimumForMoveSupports G moveSupports x)
+    (hCmem : C ∈ moveSupports)
+    (hmove : IsAllowedD0OneStepMoveOn G C g x (cdlOneStepMoveOn G C g x))
+    (heraseAt : ∃ e ∈ C, e ∈ incidentEdgeFinset G v ∧ x e = 0) :
+    ∃ e ∈ C, x e = g := by
+  by_contra hnone
+  have hnew : ∀ e ∈ C, x e ≠ g := by
+    intro e heC hxg
+    exact hnone ⟨e, heC, hxg⟩
+  exact
+    (not_isD0LocalMinimumForMoveSupports_of_allowed_erases_incident_zero_no_new_zero_descent
+      hCmem hmove heraseAt hnew) hmin
+
 theorem support_card_ge_four_of_contains_zero_red_blue_purple
     {E : Type*} [DecidableEq E] {C : Finset E} {x : E → Color}
     (hzero : ∃ e ∈ C, x e = 0)
@@ -1596,6 +1628,25 @@ theorem exists_created_zero_of_isD0LocalMinimumForMoveSupports_of_isKempeCycle_e
       hg hmin.source_flow hC hgood)
     herase
 
+theorem
+    exists_created_zero_of_isD0LocalMinimumForMoveSupports_of_isKempeCycle_erases_incident_zero
+    {G : SimpleGraph V} [Fintype V] [Fintype G.edgeSet]
+    {moveSupports : Finset (Finset G.edgeSet)} {x : G.edgeSet → Color}
+    {C : Finset G.edgeSet} {g α β : Color} {v : V}
+    (hmin : IsD0LocalMinimumForMoveSupports G moveSupports x)
+    (hCmem : C ∈ moveSupports) (hg : g ≠ 0)
+    (hC : IsKempeCycle (incidentEdgeFinset G) x C α β)
+    (hgood :
+      ∀ v : V, ∃ e ∈ incidentEdgeFinset G v,
+        if e ∈ C then x e ≠ g else x e ≠ 0)
+    (heraseAt : ∃ e ∈ C, e ∈ incidentEdgeFinset G v ∧ x e = 0) :
+    ∃ e ∈ C, x e = g :=
+  exists_created_zero_of_isD0LocalMinimumForMoveSupports_of_allowed_erases_incident_zero
+    hmin hCmem
+    (isAllowedD0OneStepMoveOn_of_isKempeCycle_and_vertex_witnesses
+      hg hmin.source_flow hC hgood)
+    heraseAt
+
 theorem not_isD0LocalMinimumForMoveSupports_of_isKempeCycle_basic_color_moves_small_support
     {G : SimpleGraph V} [Fintype V] [Fintype G.edgeSet]
     {moveSupports : Finset (Finset G.edgeSet)} {x : G.edgeSet → Color}
@@ -1956,6 +2007,26 @@ theorem
     (isAllowedD0OneStepMoveOn_of_rotationDiskData_internalFace_and_vertex_witnesses
       D hincident hf hg hmin.source_flow hgood)
     herase
+
+theorem
+    exists_created_zero_of_isD0LocalMinimumForMoveSupports_of_rotationDiskData_internalFace_erases_incident_zero
+    {G : SimpleGraph V} [Fintype V] [Fintype G.edgeSet]
+    {moveSupports : Finset (Finset G.edgeSet)} {x : G.edgeSet → Color}
+    (D : RotationDiskData V G.edgeSet)
+    (hincident : ∀ v : V, D.asZeroBoundary.incident v = incidentEdgeFinset G v)
+    {f : Finset G.edgeSet} (hf : f ∈ D.rotation.internalFaces)
+    (hfmem : f ∈ moveSupports) {g : Color} (hg : g ≠ 0)
+    (hmin : IsD0LocalMinimumForMoveSupports G moveSupports x)
+    (hgood :
+      ∀ v : V, ∃ e ∈ incidentEdgeFinset G v,
+        if e ∈ f then x e ≠ g else x e ≠ 0)
+    {v : V} (heraseAt : ∃ e ∈ f, e ∈ incidentEdgeFinset G v ∧ x e = 0) :
+    ∃ e ∈ f, x e = g :=
+  exists_created_zero_of_isD0LocalMinimumForMoveSupports_of_allowed_erases_incident_zero
+    hmin hfmem
+    (isAllowedD0OneStepMoveOn_of_rotationDiskData_internalFace_and_vertex_witnesses
+      D hincident hf hg hmin.source_flow hgood)
+    heraseAt
 
 theorem
     not_isD0LocalMinimumForMoveSupports_of_rotationDiskData_internalFace_basic_color_moves_small_support
