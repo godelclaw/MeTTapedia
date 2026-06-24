@@ -192,6 +192,36 @@ theorem edgeKempeFinset_interior [Fintype E] [DecidableEq E]
   edgeKempePred_interior incident D x seed α β
     ((mem_edgeKempeFinset_iff incident D x seed α β).1 he)
 
+/-- Finset-wrapper form of `switch_edgeKempePred_preserves_isZeroBoundary`. This is the
+coloring-level invariant needed by CAP5 repair endpoints: the switched coloring still has zero
+vertex sums when the selected finite Kempe component has even incidence at every vertex. -/
+theorem switch_edgeKempeFinset_preserves_isZeroBoundary [Fintype E] [DecidableEq E]
+    (D : ZeroBoundaryData V E) (x : E → Color) (seed : V) (α β : Color)
+    (hx : D.isZeroBoundary x)
+    (even_at : ∀ v : V,
+      Even ((edgeKempeFinset D.incident D x seed α β ∩ D.incident v).card)) :
+    D.isZeroBoundary (switch α β (edgeKempeFinset D.incident D x seed α β : Set E) x) := by
+  classical
+  have even_pred :
+      ∀ v : V,
+        Even ((D.incident v).filter
+          (edgeKempePred D.incident D x seed α β)).card := by
+    intro v
+    have hfilter :
+        (D.incident v).filter (edgeKempePred D.incident D x seed α β) =
+          edgeKempeFinset D.incident D x seed α β ∩ D.incident v := by
+      ext e
+      simp [edgeKempeFinset, and_comm]
+    rw [hfilter]
+    exact even_at v
+  have hset :
+      (edgeKempeFinset D.incident D x seed α β : Set E) =
+        {e | edgeKempePred D.incident D x seed α β e} := by
+    ext e
+    simp [edgeKempeFinset]
+  rw [hset]
+  exact switch_edgeKempePred_preserves_isZeroBoundary D x seed α β hx even_pred
+
 /-- Finset-wrapper form of `switch_edgeKempePred_mem_zeroBoundarySet`. This lets later
 finite-component arguments use `edgeKempeFinset` directly while preserving the same
 zero-boundary invariant. -/
