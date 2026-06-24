@@ -600,6 +600,48 @@ def CAP5ExceptionalAnnulusBoundaryEdgeSupportCandidate.cyclicEdgeCutRealizationD
           heEdges))
     hinside_cycle houtside_cycle
 
+/-- Build CAP5 cyclic-cut realization data from local edge classification: the candidate support
+crosses the side, and every non-candidate edge preserves the side. -/
+def CAP5ExceptionalAnnulusBoundaryEdgeSupportCandidate.cyclicEdgeCutRealizationData_of_edge_side_classification
+    {V : Type*} {G : SimpleGraph V} [DecidableEq G.edgeSet]
+    {boundaryEdge : Fin 5 → G.edgeSet}
+    (candidate : CAP5ExceptionalAnnulusBoundaryEdgeSupportCandidate boundaryEdge)
+    (side : V → Prop)
+    (hcandidate_crosses :
+      ∀ e : G.edgeSet, e ∈ candidate.edgeSupport → EdgeCrossesVertexSide G side e)
+    (hnoncandidate_preserves :
+      ∀ e : G.edgeSet, e ∉ candidate.edgeSupport →
+        ∀ u v : V, u ∈ (e : Sym2 V) → v ∈ (e : Sym2 V) → (side u ↔ side v))
+    (hinside_cycle : HasCycleOnSide G side)
+    (houtside_cycle : HasCycleOnSide G (fun v => ¬ side v)) :
+    candidate.CyclicEdgeCutRealizationData (G := G) :=
+  CyclicEdgeCutRealization.of_edge_side_classification side hcandidate_crosses
+    hnoncandidate_preserves hinside_cycle houtside_cycle
+
+/-- Portal-language edge-classification constructor.  The planar/Jordan layer may prove that the
+named separator portals cross the side and every edge outside their image preserves the side. -/
+def CAP5ExceptionalAnnulusBoundaryEdgeSupportCandidate.cyclicEdgeCutRealizationData_of_portal_edge_side_classification
+    {V : Type*} {G : SimpleGraph V} [DecidableEq G.edgeSet]
+    {boundaryEdge : Fin 5 → G.edgeSet}
+    (candidate : CAP5ExceptionalAnnulusBoundaryEdgeSupportCandidate boundaryEdge)
+    (side : V → Prop)
+    (hportal_crosses :
+      ∀ i : Fin 5, i ∈ candidate.portalCandidate.portalSet →
+        EdgeCrossesVertexSide G side (boundaryEdge i))
+    (hnoncandidate_preserves :
+      ∀ e : G.edgeSet, e ∉ candidate.edgeSupport →
+        ∀ u v : V, u ∈ (e : Sym2 V) → v ∈ (e : Sym2 V) → (side u ↔ side v))
+    (hinside_cycle : HasCycleOnSide G side)
+    (houtside_cycle : HasCycleOnSide G (fun v => ¬ side v)) :
+    candidate.CyclicEdgeCutRealizationData (G := G) :=
+  candidate.cyclicEdgeCutRealizationData_of_edge_side_classification side
+    (by
+      intro e he
+      rcases (candidate.mem_edgeSupport_iff_exists_portal e).1 he with ⟨i, hi, hboundary⟩
+      subst e
+      exact hportal_crosses i hi)
+    hnoncandidate_preserves hinside_cycle houtside_cycle
+
 /-- If a finite CAP5 boundary-edge support candidate is realized by a graph-level small cyclic
 edge cut, the cardinality bound transfers to that cut. -/
 theorem CAP5ExceptionalAnnulusBoundaryEdgeSupportCandidate.exists_smallCyclicEdgeCut_of_realizes
