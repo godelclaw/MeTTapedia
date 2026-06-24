@@ -374,6 +374,30 @@ theorem exists_mem_edgeCut_of_walk_endpoint_sides_of_edge_crossing_classificatio
   · exact ⟨e, hecut, heEdges⟩
   · exact (hnoncut_not_crosses e hecut hcross).elim
 
+/-- The graph-facing separator statement is equivalent to exact non-crossing of every unlisted
+edge.  This removes a layer of conditional bookkeeping from the CAP5 route: proving that every
+walk between opposite sides hits the listed support is the same local edge-classification target
+as proving that no edge outside the support crosses the side. -/
+theorem forall_walk_hits_edgeCut_iff_noncrossing_outside_edgeCut
+    {G : SimpleGraph V} {edgeCut : Finset G.edgeSet} (side : V → Prop) :
+    (∀ {u v : V} (p : G.Walk u v), side u → ¬ side v →
+        ∃ e : G.edgeSet, e ∈ edgeCut ∧ (e : Sym2 V) ∈ p.edges) ↔
+      (∀ e : G.edgeSet, e ∉ edgeCut → ¬ EdgeCrossesVertexSide G side e) := by
+  constructor
+  · intro hwalk e hnot hcross
+    rcases hcross with ⟨u, v, hu, hv, hsu, hsv⟩
+    rcases exists_walk_edges_eq_singleton_of_edge_endpoint_sides
+        (G := G) (side := side) (e := e) hu hv hsu hsv with
+      ⟨p, hpEdges⟩
+    rcases hwalk p hsu hsv with ⟨e', he'cut, he'edges⟩
+    have heq : e' = e := by
+      apply Subtype.ext
+      simpa [hpEdges] using he'edges
+    exact hnot (by simpa [heq] using he'cut)
+  · intro hnoncut u v p hu hv
+    exact exists_mem_edgeCut_of_walk_endpoint_sides_of_edge_crossing_classification
+      side hnoncut p hu hv
+
 theorem SmallCyclicEdgeCut.exists_mem_edgeCut_of_walk_endpoint_sides
     {G : SimpleGraph V} (cut : SmallCyclicEdgeCut G)
     {u v : V} (p : G.Walk u v) (hu : cut.side u) (hv : ¬ cut.side v) :
