@@ -1483,6 +1483,26 @@ def CAP5BadExceptionalPairingPattern
   CAP5BadRedBlueExceptionalPairing redBlue₁ redBlue₂ ∧
   CAP5BadRedPurpleExceptionalPairing redPurple₁ redPurple₂
 
+/-- Raw support-use predicate for graph-extracted component covers: a boundary action swaps one
+of the four component supports attached to the two active CAP5 color pairs. -/
+def CAP5BoundaryActionUsesComponentCoverSupport
+    (redBlue₁ redBlue₂ redPurple₁ redPurple₂ : Finset (Fin 5))
+    (action : CAP5BoundaryAction) : Prop :=
+  action = cap5BoundarySwap red blue redBlue₁ ∨
+  action = cap5BoundarySwap red blue redBlue₂ ∨
+  action = cap5BoundarySwap red purple redPurple₁ ∨
+  action = cap5BoundarySwap red purple redPurple₂
+
+/-- Transported raw support-use predicate for graph-extracted component covers after cyclic
+rotation and color relabeling of the normalized CAP5 bad word. -/
+def CAP5TransportedBoundaryActionUsesComponentCoverSupport
+    (redBlue₁ redBlue₂ redPurple₁ redPurple₂ : Finset (Fin 5))
+    (σ : Color → Color) (n : Nat) (action : CAP5BoundaryAction) : Prop :=
+  action = cap5BoundarySwap (σ red) (σ blue) (cap5RotateBoundarySupportN n redBlue₁) ∨
+  action = cap5BoundarySwap (σ red) (σ blue) (cap5RotateBoundarySupportN n redBlue₂) ∨
+  action = cap5BoundarySwap (σ red) (σ purple) (cap5RotateBoundarySupportN n redPurple₁) ∨
+  action = cap5BoundarySwap (σ red) (σ purple) (cap5RotateBoundarySupportN n redPurple₂)
+
 private theorem cap5_subset_left_of_union_eq {S₁ S₂ A : Finset (Fin 5)}
     (hunion : S₁ ∪ S₂ = A) : S₁ ⊆ A := by
   intro i hi
@@ -2292,5 +2312,37 @@ theorem exists_boundaryActionRepairsWord_usingTransportedSupport_of_componentCov
     (hasActivePairings_of_componentCovers hcovers) hnotExceptional hσ0 n
 
 end CAP5BadPairingSupports
+
+/-- Raw component-cover endpoint: if graph-extracted red/blue and red/purple support pairs cover
+the active CAP5 boundary positions and avoid the simultaneous exceptional pattern, then one of
+those four concrete supports carries a transported boundary action that genuinely repairs the
+transported canonical bad word. -/
+theorem exists_boundaryActionRepairsWord_usingTransportedComponentCoverSupport_of_componentCovers_of_notExceptional
+    {redBlue₁ redBlue₂ redPurple₁ redPurple₂ : Finset (Fin 5)}
+    (hredBlue : CAP5BadRedBlueComponentCover redBlue₁ redBlue₂)
+    (hredPurple : CAP5BadRedPurpleComponentCover redPurple₁ redPurple₂)
+    (hnotExceptional :
+      ¬ CAP5BadExceptionalPairingPattern redBlue₁ redBlue₂ redPurple₁ redPurple₂)
+    {σ : Color ≃ Color} (hσ0 : σ 0 = 0) (n : Nat) :
+    ∃ action : CAP5BoundaryAction,
+      CAP5TransportedBoundaryActionUsesComponentCoverSupport
+        redBlue₁ redBlue₂ redPurple₁ redPurple₂ σ n action ∧
+      CAP5BoundaryActionRealizesSomeTransportedRepairType action σ n ∧
+      CAP5BoundaryActionRepairsWord action (cap5TransportedBadBoundaryWord σ n) := by
+  let p : CAP5BadPairingSupports :=
+    { redBlue₁ := redBlue₁
+      redBlue₂ := redBlue₂
+      redPurple₁ := redPurple₁
+      redPurple₂ := redPurple₂ }
+  rcases
+      CAP5BadPairingSupports.exists_boundaryActionRepairsWord_usingTransportedSupport_of_componentCovers_of_not_isExceptional
+        (p := p) ⟨hredBlue, hredPurple⟩
+        (by
+          simpa [p, CAP5BadPairingSupports.IsExceptional] using hnotExceptional)
+        hσ0 n with
+    ⟨action, huses, hrealizes, hrepairs⟩
+  refine ⟨action, ?_, hrealizes, hrepairs⟩
+  simpa [p, CAP5TransportedBoundaryActionUsesComponentCoverSupport,
+    CAP5BadPairingSupports.TransportedBoundaryActionUsesSupport] using huses
 
 end Mettapedia.GraphTheory.FourColor
