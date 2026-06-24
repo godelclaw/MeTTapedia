@@ -450,6 +450,38 @@ def CAP5ExceptionalAnnulusSeparatorPortalCandidate.ofOrientationAndSideCase
   hportalSet := rfl
   hcard_le_four := CAP5ExceptionalAnnulusSideCase.separatorPortalSet_card_le_four sideCase
 
+/-- Boundary-edge support candidate obtained by translating a finite separator-portal candidate
+through the five CAP5 boundary edges.  This is the first graph-side finite object used by the
+later separator theorem; it is not yet a proof that the support separates the graph cyclically. -/
+structure CAP5ExceptionalAnnulusBoundaryEdgeSupportCandidate
+    {E : Type*} [DecidableEq E] (boundaryEdge : Fin 5 → E) where
+  portalCandidate : CAP5ExceptionalAnnulusSeparatorPortalCandidate
+  edgeSupport : Finset E
+  hedgeSupport : edgeSupport = portalCandidate.portalSet.image boundaryEdge
+  hcard_le_four : edgeSupport.card <= 4
+
+/-- Translate a separator-portal candidate into the corresponding finite set of CAP5 boundary
+edges.  The cardinality bound survives even if two listed portals happen to name the same edge,
+because image cardinality can only decrease. -/
+def CAP5ExceptionalAnnulusBoundaryEdgeSupportCandidate.ofPortalCandidate
+    {E : Type*} [DecidableEq E] (boundaryEdge : Fin 5 → E)
+    (candidate : CAP5ExceptionalAnnulusSeparatorPortalCandidate) :
+    CAP5ExceptionalAnnulusBoundaryEdgeSupportCandidate boundaryEdge where
+  portalCandidate := candidate
+  edgeSupport := candidate.portalSet.image boundaryEdge
+  hedgeSupport := rfl
+  hcard_le_four := le_trans Finset.card_image_le candidate.hcard_le_four
+
+/-- The boundary-edge support candidate only uses the five named CAP5 boundary edges. -/
+theorem CAP5ExceptionalAnnulusBoundaryEdgeSupportCandidate.edgeSupport_subset_boundaryEdges
+    {E : Type*} [DecidableEq E] {boundaryEdge : Fin 5 → E}
+    (candidate : CAP5ExceptionalAnnulusBoundaryEdgeSupportCandidate boundaryEdge) :
+    candidate.edgeSupport ⊆ (Finset.univ.image boundaryEdge : Finset E) := by
+  intro e he
+  rw [candidate.hedgeSupport] at he
+  rcases Finset.mem_image.1 he with ⟨i, _hi, rfl⟩
+  exact Finset.mem_image.2 ⟨i, by simp, rfl⟩
+
 /-- Once core component-cover data is in the exceptional branch, every annulus side case has a
 finite separator-portal candidate using at most four CAP5 portals.  This is the finite input to the
 later theorem that must turn an embedded annulus/Jordan curve into an actual cyclic edge cut. -/
@@ -489,6 +521,30 @@ theorem CAP5TransportedEdgeComponentCoverCore.exists_exceptionalAnnulusSeparator
     _ =
         (CAP5ExceptionalAnnulusSideCase.ofPortalSides p0Inside p4Inside).separatorPortalSet := by
           rw [hsideCase]
+
+/-- Boundary-edge support form of the exceptional-annulus finite side split.  After the finite
+portal-side case has been chosen, the candidate separator portals translate to at most four
+actual CAP5 boundary edges.  The missing topological theorem must still prove that this edge
+support is a cyclic separator in the ambient graph. -/
+theorem CAP5TransportedEdgeComponentCoverCore.exists_exceptionalAnnulusBoundaryEdgeSupportCandidate_of_isExceptional_of_portalSides
+    {E : Type*} [DecidableEq E] {boundaryEdge : Fin 5 → E} {n : Nat}
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    (p0Inside p4Inside : Bool) (h : data.IsExceptional) :
+    ∃ edgeCandidate : CAP5ExceptionalAnnulusBoundaryEdgeSupportCandidate boundaryEdge,
+      data.RealizesExceptionalBoundarySupportOrientation
+          edgeCandidate.portalCandidate.orientation ∧
+        edgeCandidate.portalCandidate.sideCase =
+          CAP5ExceptionalAnnulusSideCase.ofPortalSides p0Inside p4Inside ∧
+        edgeCandidate.edgeSupport =
+          edgeCandidate.portalCandidate.portalSet.image boundaryEdge ∧
+        edgeCandidate.edgeSupport.card <= 4 := by
+  rcases exists_exceptionalAnnulusSeparatorPortalCandidate_of_isExceptional_of_portalSides
+      p0Inside p4Inside h with
+    ⟨candidate, horientation, hsideCase, _hportalSet, hcard⟩
+  let edgeCandidate :=
+    CAP5ExceptionalAnnulusBoundaryEdgeSupportCandidate.ofPortalCandidate boundaryEdge candidate
+  exact ⟨edgeCandidate, horientation, hsideCase, rfl,
+    le_trans Finset.card_image_le hcard⟩
 
 /-- Full transported component-cover data is core component-cover data plus exclusion of the
 simultaneous exceptional pattern.  The core form is the honest target before the planar separator
