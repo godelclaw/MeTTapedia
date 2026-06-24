@@ -272,6 +272,32 @@ def CyclicEdgeCutRealization.of_walk_separator
   hinside_cycle := hinside_cycle
   houtside_cycle := houtside_cycle
 
+/-- Avoidance-side constructor for cyclic-edge-cut realization data.  If every walk avoiding the
+listed finite support stays on the same side, while every listed edge really crosses the side,
+then the listed support is exactly the side edge cut.  This is often the most natural output of a
+planar/Jordan separation argument. -/
+def CyclicEdgeCutRealization.of_walk_avoid_side_invariant
+    {G : SimpleGraph V} {edgeCut : Finset G.edgeSet} (side : V → Prop)
+    (hcut_crosses :
+      ∀ e : G.edgeSet, e ∈ edgeCut → EdgeCrossesVertexSide G side e)
+    (hwalk_invariant :
+      ∀ {u v : V} (p : G.Walk u v),
+        (∀ e : G.edgeSet, e ∈ edgeCut → (e : Sym2 V) ∉ p.edges) →
+        (side u ↔ side v))
+    (hinside_cycle : HasCycleOnSide G side)
+    (houtside_cycle : HasCycleOnSide G (fun v => ¬ side v)) :
+    CyclicEdgeCutRealization G edgeCut :=
+  CyclicEdgeCutRealization.of_walk_separator side hcut_crosses
+    (by
+      intro u v p hu hv
+      by_contra hnone
+      have havoid :
+          ∀ e : G.edgeSet, e ∈ edgeCut → (e : Sym2 V) ∉ p.edges := by
+        intro e hecut heEdges
+        exact hnone ⟨e, hecut, heEdges⟩
+      exact hv ((hwalk_invariant p havoid).1 hu))
+    hinside_cycle houtside_cycle
+
 theorem SmallCyclicEdgeCut.exists_mem_edgeCut_of_walk_endpoint_sides
     {G : SimpleGraph V} (cut : SmallCyclicEdgeCut G)
     {u v : V} (p : G.Walk u v) (hu : cut.side u) (hv : ¬ cut.side v) :
