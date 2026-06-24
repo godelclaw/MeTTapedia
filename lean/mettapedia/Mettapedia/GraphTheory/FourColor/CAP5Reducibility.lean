@@ -2261,6 +2261,55 @@ theorem exists_edgeSupport_switch_extendsAcrossCycle_or_exceptional_of_eq_transp
           using hextends
   · exact Or.inr hexceptional
 
+/-- Core component-cover data plus the canonical annulus/Jordan cyclic-cut realization route gives
+an actual edge switch whose restricted CAP5 boundary word extends.  This is the graph-facing
+version of the exceptional-branch elimination: the finite CAP5 split may produce an exceptional
+orientation, but the canonical realization data turns that orientation into a forbidden small
+cyclic edge cut. -/
+theorem exists_edgeSupport_switch_extendsAcrossCycle_of_eq_transportBad_of_componentCoverCore_of_noCyclicEdgeCut_of_canonicalRealizationData
+    {V : Type*} {G : SimpleGraph V} [DecidableEq G.edgeSet]
+    (boundaryEdge : Fin 5 → G.edgeSet) (C : G.edgeSet → Color)
+    {σ : Color ≃ Color} (hσ0 : σ 0 = 0) {n : Nat}
+    (data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n)
+    (hw : cap5BoundaryWordOfEdges boundaryEdge C = cap5TransportedBadBoundaryWord σ n)
+    (p0Inside p4Inside : Bool)
+    (hnoCut : NoCyclicEdgeCutOfSizeAtMostFour G)
+    (hcanonical :
+      data.HasCanonicalExceptionalAnnulusCyclicCutRealizationData (G := G)
+        p0Inside p4Inside) :
+    ∃ edgeSupport : Finset G.edgeSet, ∃ a b : Color,
+      CAP5TransportedEdgeSwitchUsesComponentCoverCoreSupport data σ edgeSupport a b ∧
+      CAP5WordExtendsAcrossCycle
+        (cap5BoundaryWordOfEdges boundaryEdge (switch a b (edgeSupport : Set G.edgeSet) C)) := by
+  rcases
+      exists_edgeSupport_switch_extendsAcrossCycle_or_exceptional_of_eq_transportBad_of_componentCoverCore
+        boundaryEdge C hσ0 data hw with
+    hrepair | hexceptional
+  · exact hrepair
+  · exact False.elim
+      ((data.not_isExceptional_of_noCyclicEdgeCut_of_canonicalRealizationData
+          p0Inside p4Inside hnoCut hcanonical) hexceptional)
+
+/-- Named cyclic-edge-connectivity form of the graph-facing core CAP5 switch endpoint. -/
+theorem exists_edgeSupport_switch_extendsAcrossCycle_of_eq_transportBad_of_componentCoverCore_of_cyclicallyFiveEdgeConnected_of_canonicalRealizationData
+    {V : Type*} {G : SimpleGraph V} [DecidableEq G.edgeSet]
+    (boundaryEdge : Fin 5 → G.edgeSet) (C : G.edgeSet → Color)
+    {σ : Color ≃ Color} (hσ0 : σ 0 = 0) {n : Nat}
+    (data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n)
+    (hw : cap5BoundaryWordOfEdges boundaryEdge C = cap5TransportedBadBoundaryWord σ n)
+    (p0Inside p4Inside : Bool)
+    (hcyclic : CyclicallyFiveEdgeConnected G)
+    (hcanonical :
+      data.HasCanonicalExceptionalAnnulusCyclicCutRealizationData (G := G)
+        p0Inside p4Inside) :
+    ∃ edgeSupport : Finset G.edgeSet, ∃ a b : Color,
+      CAP5TransportedEdgeSwitchUsesComponentCoverCoreSupport data σ edgeSupport a b ∧
+      CAP5WordExtendsAcrossCycle
+        (cap5BoundaryWordOfEdges boundaryEdge (switch a b (edgeSupport : Set G.edgeSet) C)) :=
+  exists_edgeSupport_switch_extendsAcrossCycle_of_eq_transportBad_of_componentCoverCore_of_noCyclicEdgeCut_of_canonicalRealizationData
+    boundaryEdge C hσ0 data hw p0Inside p4Inside
+    hcyclic.noCyclicEdgeCutOfSizeAtMostFour hcanonical
+
 /-- Bundled edge-Kempe component-cover data for one transported bad CAP5 word gives an actual
 edge switch that preserves zero-boundary and makes the restricted boundary word extend. -/
 theorem exists_isZeroBoundary_edgeSupport_switch_extendsAcrossCycle_of_eq_transportBad_of_edgeKempeComponentCoverData
