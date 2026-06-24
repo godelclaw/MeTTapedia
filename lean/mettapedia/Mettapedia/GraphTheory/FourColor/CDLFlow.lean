@@ -43,17 +43,36 @@ def zeroEdgeFinset (G : SimpleGraph V) [Fintype G.edgeSet]
     (x : G.edgeSet → Color) : Finset G.edgeSet :=
   Finset.univ.filter fun e => x e = 0
 
+/-- The manuscript's zero-edge defect count `Z(x)`. -/
+def zeroEdgeCount (G : SimpleGraph V) [Fintype G.edgeSet]
+    (x : G.edgeSet → Color) : Nat :=
+  (zeroEdgeFinset G x).card
+
 omit [DecidableEq V] in
 theorem zeroEdgeFinset_eq_empty_iff {G : SimpleGraph V} [Fintype G.edgeSet]
     {x : G.edgeSet → Color} :
     zeroEdgeFinset G x = ∅ ↔ ∀ e : G.edgeSet, x e ≠ 0 := by
   simp [zeroEdgeFinset, Finset.filter_eq_empty_iff]
 
+omit [DecidableEq V] in
+theorem zeroEdgeCount_eq_zero_iff {G : SimpleGraph V} [Fintype G.edgeSet]
+    {x : G.edgeSet → Color} :
+    zeroEdgeCount G x = 0 ↔ ∀ e : G.edgeSet, x e ≠ 0 := by
+  rw [zeroEdgeCount, Finset.card_eq_zero, zeroEdgeFinset_eq_empty_iff]
+
 /-- A nowhere-zero flow is exactly a graph flow whose zero-edge set is empty. -/
 theorem isNowhereZeroFlow_iff_isGraphFlow_and_zeroEdgeFinset_eq_empty
     {G : SimpleGraph V} [Fintype G.edgeSet] {x : G.edgeSet → Color} :
     IsNowhereZeroFlow G x ↔ IsGraphFlow G x ∧ zeroEdgeFinset G x = ∅ := by
   rw [zeroEdgeFinset_eq_empty_iff]
+  rfl
+
+/-- A nowhere-zero flow is exactly a graph flow with zero zero-edge defect
+count. -/
+theorem isNowhereZeroFlow_iff_isGraphFlow_and_zeroEdgeCount_eq_zero
+    {G : SimpleGraph V} [Fintype G.edgeSet] {x : G.edgeSet → Color} :
+    IsNowhereZeroFlow G x ↔ IsGraphFlow G x ∧ zeroEdgeCount G x = 0 := by
+  rw [zeroEdgeCount_eq_zero_iff]
   rfl
 
 /-- Manuscript-facing name for cubic graphs: every vertex has Mathlib degree
@@ -628,6 +647,20 @@ theorem hasCDLGoodNowhereZeroFlow_iff_exists_cdlGoodFlow_zeroEdgeFinset_eq_empty
   · rintro ⟨x, hgood, hzero⟩
     exact ⟨x, hgood,
       (isNowhereZeroFlow_iff_isGraphFlow_and_zeroEdgeFinset_eq_empty).mpr
+        ⟨hgood.1, hzero⟩⟩
+
+/-- Count form of the safe CDL/Tait flow surface: the CDL-good flow has zero
+zero-edge defect. -/
+theorem hasCDLGoodNowhereZeroFlow_iff_exists_cdlGoodFlow_zeroEdgeCount_eq_zero
+    {G : SimpleGraph V} [Fintype G.edgeSet] :
+    HasCDLGoodNowhereZeroFlow G ↔
+      ∃ x : G.edgeSet → Color, IsCDLGoodFlow G x ∧ zeroEdgeCount G x = 0 := by
+  constructor
+  · rintro ⟨x, hgood, hx⟩
+    exact ⟨x, hgood, zeroEdgeCount_eq_zero_iff.mpr hx.2⟩
+  · rintro ⟨x, hgood, hzero⟩
+    exact ⟨x, hgood,
+      (isNowhereZeroFlow_iff_isGraphFlow_and_zeroEdgeCount_eq_zero).mpr
         ⟨hgood.1, hzero⟩⟩
 
 /-- Manuscript-facing safe CDL/Tait reformulation for cubic graphs. -/
