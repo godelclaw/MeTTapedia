@@ -6264,6 +6264,85 @@ theorem le_zeroDefectD0_of_isD0LocalMinimumForMoveSupports_of_clusteredZeroVerte
       hmin hrepair)
     hmin.has_zero
 
+/-- Kempe-cycle source form of the blocker scale for the strongest current
+pinned-target second-step route.  If the route holds at a `D₀` local minimum,
+then its positive matching-zero defect is already at least `120`. -/
+theorem
+    le_zeroDefectD0_of_isD0LocalMinimumForMoveSupports_of_kempe_candidates_and_cubic_star_pinned_target_repairs
+    {G : SimpleGraph V} [Fintype V] [Fintype G.edgeSet]
+    {moveSupports : Finset (Finset G.edgeSet)} {x : G.edgeSet → Color}
+    (hcard : ∀ v : V, (incidentEdgeFinset G v).card = 3)
+    (hmin : IsD0LocalMinimumForMoveSupports G moveSupports x)
+    (hcandidate : EveryClusteredZeroVertexHasKempeD0Candidate G moveSupports x)
+    (hrepair :
+      EveryCubicD0BasicColorObstructionStarHasPinnedTargetD0Descent
+        G moveSupports x) :
+    120 ≤ zeroDefectD0 G x :=
+  le_zeroDefectD0_of_zeroEdgesFormMatching_and_zeroEdgeCount_pos
+    (zeroEdgesFormMatching_of_isD0LocalMinimumForMoveSupports_of_kempe_candidates_and_cubic_star_pinned_target_repairs
+      hcard hmin hcandidate hrepair)
+    hmin.has_zero
+
+/-- Rotation-disk source form of the blocker scale for the strongest current
+pinned-target second-step route. -/
+theorem
+    le_zeroDefectD0_of_isD0LocalMinimumForMoveSupports_of_rotationDisk_candidates_and_cubic_star_pinned_target_repairs
+    {G : SimpleGraph V} [Fintype V] [Fintype G.edgeSet]
+    (D : RotationDiskData V G.edgeSet)
+    (hincident : ∀ v : V, D.asZeroBoundary.incident v = incidentEdgeFinset G v)
+    {moveSupports : Finset (Finset G.edgeSet)} {x : G.edgeSet → Color}
+    (hcard : ∀ v : V, (incidentEdgeFinset G v).card = 3)
+    (hmin : IsD0LocalMinimumForMoveSupports G moveSupports x)
+    (hcandidate :
+      EveryClusteredZeroVertexHasRotationDiskD0Candidate G D moveSupports x)
+    (hrepair :
+      EveryCubicD0BasicColorObstructionStarHasPinnedTargetD0Descent
+        G moveSupports x) :
+    120 ≤ zeroDefectD0 G x :=
+  le_zeroDefectD0_of_zeroEdgesFormMatching_and_zeroEdgeCount_pos
+    (zeroEdgesFormMatching_of_isD0LocalMinimumForMoveSupports_of_rotationDisk_candidates_and_cubic_star_pinned_target_repairs
+      D hincident hcard hmin hcandidate hrepair)
+    hmin.has_zero
+
+/-- Low-defect refutation form of the Kempe-cycle pinned-target route: a
+positive-zero `D₀` local minimum below the first matching-zero scale cannot
+satisfy the source-level Kempe candidate and pinned-target repair hypotheses. -/
+theorem
+    not_isD0LocalMinimumForMoveSupports_of_zeroDefectD0_lt_120_and_kempe_candidates_and_cubic_star_pinned_target_repairs
+    {G : SimpleGraph V} [Fintype V] [Fintype G.edgeSet]
+    {moveSupports : Finset (Finset G.edgeSet)} {x : G.edgeSet → Color}
+    (hcard : ∀ v : V, (incidentEdgeFinset G v).card = 3)
+    (hD : zeroDefectD0 G x < 120)
+    (hcandidate : EveryClusteredZeroVertexHasKempeD0Candidate G moveSupports x)
+    (hrepair :
+      EveryCubicD0BasicColorObstructionStarHasPinnedTargetD0Descent
+        G moveSupports x) :
+    ¬ IsD0LocalMinimumForMoveSupports G moveSupports x := by
+  intro hmin
+  exact not_lt_of_ge
+    (le_zeroDefectD0_of_isD0LocalMinimumForMoveSupports_of_kempe_candidates_and_cubic_star_pinned_target_repairs
+      hcard hmin hcandidate hrepair) hD
+
+/-- Low-defect refutation form of the rotation-disk pinned-target route. -/
+theorem
+    not_isD0LocalMinimumForMoveSupports_of_zeroDefectD0_lt_120_and_rotationDisk_candidates_and_cubic_star_pinned_target_repairs
+    {G : SimpleGraph V} [Fintype V] [Fintype G.edgeSet]
+    (D : RotationDiskData V G.edgeSet)
+    (hincident : ∀ v : V, D.asZeroBoundary.incident v = incidentEdgeFinset G v)
+    {moveSupports : Finset (Finset G.edgeSet)} {x : G.edgeSet → Color}
+    (hcard : ∀ v : V, (incidentEdgeFinset G v).card = 3)
+    (hD : zeroDefectD0 G x < 120)
+    (hcandidate :
+      EveryClusteredZeroVertexHasRotationDiskD0Candidate G D moveSupports x)
+    (hrepair :
+      EveryCubicD0BasicColorObstructionStarHasPinnedTargetD0Descent
+        G moveSupports x) :
+    ¬ IsD0LocalMinimumForMoveSupports G moveSupports x := by
+  intro hmin
+  exact not_lt_of_ge
+    (le_zeroDefectD0_of_isD0LocalMinimumForMoveSupports_of_rotationDisk_candidates_and_cubic_star_pinned_target_repairs
+      D hincident hcard hmin hcandidate hrepair) hD
+
 /-- A matching zero pattern with an explicit zero edge is already at the first
 positive cheap-defect scale `120`. -/
 theorem le_zeroDefectD0_of_zeroEdgesFormMatching_and_exists_edge_eq_zero
