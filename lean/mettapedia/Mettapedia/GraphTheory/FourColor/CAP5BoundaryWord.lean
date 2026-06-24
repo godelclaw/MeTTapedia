@@ -1210,6 +1210,31 @@ theorem repairOrExceptional_outcome
   · exact Or.inl (exists_repairingBoundaryAction_of_hasRepair hrepair)
   · exact Or.inr hexceptional
 
+/-- Repair-predicate form of the finite CAP5 move-realizability split: the repair side gives a
+boundary action whose input is the canonical bad word and whose output extends across the cap. -/
+theorem repairOrExceptional_repairOutcome
+    {p : CAP5BadPairingSupports} (h : p.RepairOrExceptional) :
+    (∃ action : CAP5BoundaryAction,
+      CAP5BoundaryActionRealizesSomeRepairType action cap5BadBoundaryWord2111 ∧
+      CAP5BoundaryActionRepairsWord action cap5BadBoundaryWord2111) ∨
+    p.IsExceptional := by
+  rcases h with hrepair | hexceptional
+  · exact Or.inl (exists_boundaryActionRepairsWord_of_hasRepair hrepair)
+  · exact Or.inr hexceptional
+
+/-- Support-aware repair-predicate form of the finite CAP5 split.  On the repair side, the
+boundary action is one of the four swaps carried by the component supports. -/
+theorem repairOrExceptional_repairOutcome_usingSupport
+    {p : CAP5BadPairingSupports} (h : p.RepairOrExceptional) :
+    (∃ action : CAP5BoundaryAction,
+      p.BoundaryActionUsesSupport action ∧
+      CAP5BoundaryActionRealizesSomeRepairType action cap5BadBoundaryWord2111 ∧
+      CAP5BoundaryActionRepairsWord action cap5BadBoundaryWord2111) ∨
+    p.IsExceptional := by
+  rcases h with hrepair | hexceptional
+  · exact Or.inl (exists_boundaryActionRepairsWord_usingSupport_of_hasRepair hrepair)
+  · exact Or.inr hexceptional
+
 /-- Boundary-action outcome for active CAP5 pairings: graph-level component pairings immediately
 yield a finite repair action unless they are exactly the simultaneous exceptional pattern. -/
 theorem activePairings_outcome
@@ -1219,6 +1244,46 @@ theorem activePairings_outcome
       CAP5WordExtendsAcrossCycle (action cap5BadBoundaryWord2111)) ∨
     p.IsExceptional :=
   repairOrExceptional_outcome (repairOrExceptional_of_activePairings h)
+
+/-- Repair-predicate outcome for active CAP5 pairings: a graph-level active-pairing package
+either exposes a genuine boundary-action repair or is exactly the simultaneous exceptional
+pattern. -/
+theorem activePairings_repairOutcome
+    {p : CAP5BadPairingSupports} (h : p.HasActivePairings) :
+    (∃ action : CAP5BoundaryAction,
+      CAP5BoundaryActionRealizesSomeRepairType action cap5BadBoundaryWord2111 ∧
+      CAP5BoundaryActionRepairsWord action cap5BadBoundaryWord2111) ∨
+    p.IsExceptional :=
+  repairOrExceptional_repairOutcome (repairOrExceptional_of_activePairings h)
+
+/-- Support-aware repair-predicate outcome for active CAP5 pairings. -/
+theorem activePairings_repairOutcome_usingSupport
+    {p : CAP5BadPairingSupports} (h : p.HasActivePairings) :
+    (∃ action : CAP5BoundaryAction,
+      p.BoundaryActionUsesSupport action ∧
+      CAP5BoundaryActionRealizesSomeRepairType action cap5BadBoundaryWord2111 ∧
+      CAP5BoundaryActionRepairsWord action cap5BadBoundaryWord2111) ∨
+    p.IsExceptional :=
+  repairOrExceptional_repairOutcome_usingSupport (repairOrExceptional_of_activePairings h)
+
+/-- Repair-predicate outcome from graph-level component-cover data. -/
+theorem componentCovers_repairOutcome
+    {p : CAP5BadPairingSupports} (h : p.HasComponentCovers) :
+    (∃ action : CAP5BoundaryAction,
+      CAP5BoundaryActionRealizesSomeRepairType action cap5BadBoundaryWord2111 ∧
+      CAP5BoundaryActionRepairsWord action cap5BadBoundaryWord2111) ∨
+    p.IsExceptional :=
+  activePairings_repairOutcome (hasActivePairings_of_componentCovers h)
+
+/-- Support-aware repair-predicate outcome from graph-level component-cover data. -/
+theorem componentCovers_repairOutcome_usingSupport
+    {p : CAP5BadPairingSupports} (h : p.HasComponentCovers) :
+    (∃ action : CAP5BoundaryAction,
+      p.BoundaryActionUsesSupport action ∧
+      CAP5BoundaryActionRealizesSomeRepairType action cap5BadBoundaryWord2111 ∧
+      CAP5BoundaryActionRepairsWord action cap5BadBoundaryWord2111) ∨
+    p.IsExceptional :=
+  activePairings_repairOutcome_usingSupport (hasActivePairings_of_componentCovers h)
 
 /-- Final finite CAP5 move-realizability endpoint after the graph-level separator proof excludes
 the simultaneous exceptional pattern.  Once active pairings are supplied, a proof that the
