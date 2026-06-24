@@ -52,6 +52,90 @@ theorem cap5BoundaryWordOfEdges_sum_eq_zero_of_mem_zeroBoundarySet_at
   cap5BoundaryWordOfEdges_sum_eq_zero_of_isZeroBoundary_at boundaryEdge C hinj
     hincident hzero.1
 
+/-- Graph-facing CAP5 parity: a Tait edge coloring whose five CAP5 boundary edges enumerate a
+zero-boundary incidence set has odd red/blue/purple boundary counts. -/
+theorem cap5BoundaryWordOfEdges_hasOddColorCounts_of_isTaitEdgeColoring_of_isZeroBoundary_at
+    {U : Type*} {G : SimpleGraph V} {D : ZeroBoundaryData U G.edgeSet} {v : U}
+    (boundaryEdge : Fin 5 → G.edgeSet) (C : G.EdgeColoring Color)
+    (hC : IsTaitEdgeColoring G C)
+    (hinj : Function.Injective boundaryEdge)
+    (hincident : D.incident v = Finset.univ.map ⟨boundaryEdge, hinj⟩)
+    (hzero : D.isZeroBoundary C) :
+    CAP5BoundaryWordHasOddColorCounts (cap5BoundaryWordOfEdges boundaryEdge C) :=
+  cap5BoundaryWordHasOddColorCounts_of_nonzero_of_sum_eq_zero
+    (cap5BoundaryWordOfEdges_isNonzero_of_isTaitEdgeColoring boundaryEdge C hC)
+    (cap5BoundaryWordOfEdges_sum_eq_zero_of_isZeroBoundary_at boundaryEdge C hinj hincident hzero)
+
+/-- Full-zero-boundary-set variant of the graph-facing CAP5 parity theorem. -/
+theorem cap5BoundaryWordOfEdges_hasOddColorCounts_of_isTaitEdgeColoring_of_mem_zeroBoundarySet_at
+    {U : Type*} {G : SimpleGraph V} {D : ZeroBoundaryData U G.edgeSet} {v : U}
+    (boundaryEdge : Fin 5 → G.edgeSet) (C : G.EdgeColoring Color)
+    (hC : IsTaitEdgeColoring G C)
+    (hinj : Function.Injective boundaryEdge)
+    (hincident : D.incident v = Finset.univ.map ⟨boundaryEdge, hinj⟩)
+    (hzero : (C : G.edgeSet → Color) ∈ D.zeroBoundarySet) :
+    CAP5BoundaryWordHasOddColorCounts (cap5BoundaryWordOfEdges boundaryEdge C) :=
+  cap5BoundaryWordOfEdges_hasOddColorCounts_of_isTaitEdgeColoring_of_isZeroBoundary_at
+    boundaryEdge C hC hinj hincident hzero.1
+
+/-- Graph-facing CAP5 block classifier: under the Tait and zero-boundary cut hypotheses, the
+induced CAP5 boundary word is either a good `(3,1,1)` block or a bad `(2,1,1,1)` block. -/
+theorem cap5BoundaryWordOfEdges_coloredBlock311_or_coloredBlock2111_of_isTaitEdgeColoring_of_isZeroBoundary_at
+    {U : Type*} {G : SimpleGraph V} {D : ZeroBoundaryData U G.edgeSet} {v : U}
+    (boundaryEdge : Fin 5 → G.edgeSet) (C : G.EdgeColoring Color)
+    (hC : IsTaitEdgeColoring G C)
+    (hinj : Function.Injective boundaryEdge)
+    (hincident : D.incident v = Finset.univ.map ⟨boundaryEdge, hinj⟩)
+    (hzero : D.isZeroBoundary C) :
+    CAP5BoundaryWordHasColoredBlock311 (cap5BoundaryWordOfEdges boundaryEdge C) ∨
+      CAP5BoundaryWordHasColoredBlock2111 (cap5BoundaryWordOfEdges boundaryEdge C) :=
+  cap5BoundaryWord_coloredBlock311_or_coloredBlock2111_of_nonzero_of_odd
+    (cap5BoundaryWordOfEdges_isNonzero_of_isTaitEdgeColoring boundaryEdge C hC)
+    (cap5BoundaryWordOfEdges_hasOddColorCounts_of_isTaitEdgeColoring_of_isZeroBoundary_at
+      boundaryEdge C hC hinj hincident hzero)
+
+/-- Full-zero-boundary-set variant of the graph-facing CAP5 block classifier. -/
+theorem cap5BoundaryWordOfEdges_coloredBlock311_or_coloredBlock2111_of_isTaitEdgeColoring_of_mem_zeroBoundarySet_at
+    {U : Type*} {G : SimpleGraph V} {D : ZeroBoundaryData U G.edgeSet} {v : U}
+    (boundaryEdge : Fin 5 → G.edgeSet) (C : G.EdgeColoring Color)
+    (hC : IsTaitEdgeColoring G C)
+    (hinj : Function.Injective boundaryEdge)
+    (hincident : D.incident v = Finset.univ.map ⟨boundaryEdge, hinj⟩)
+    (hzero : (C : G.edgeSet → Color) ∈ D.zeroBoundarySet) :
+    CAP5BoundaryWordHasColoredBlock311 (cap5BoundaryWordOfEdges boundaryEdge C) ∨
+      CAP5BoundaryWordHasColoredBlock2111 (cap5BoundaryWordOfEdges boundaryEdge C) :=
+  cap5BoundaryWordOfEdges_coloredBlock311_or_coloredBlock2111_of_isTaitEdgeColoring_of_isZeroBoundary_at
+    boundaryEdge C hC hinj hincident hzero.1
+
+/-- Graph-facing CAP5 nonextension criterion under the manuscript cut hypotheses: failure to
+extend is exactly the bad `(2,1,1,1)` case. -/
+theorem cap5BoundaryWordOfEdges_not_extendsAcrossCycle_iff_coloredBlock2111_of_isTaitEdgeColoring_of_isZeroBoundary_at
+    {U : Type*} {G : SimpleGraph V} {D : ZeroBoundaryData U G.edgeSet} {v : U}
+    (boundaryEdge : Fin 5 → G.edgeSet) (C : G.EdgeColoring Color)
+    (hC : IsTaitEdgeColoring G C)
+    (hinj : Function.Injective boundaryEdge)
+    (hincident : D.incident v = Finset.univ.map ⟨boundaryEdge, hinj⟩)
+    (hzero : D.isZeroBoundary C) :
+    ¬ CAP5WordExtendsAcrossCycle (cap5BoundaryWordOfEdges boundaryEdge C) ↔
+      CAP5BoundaryWordHasColoredBlock2111 (cap5BoundaryWordOfEdges boundaryEdge C) :=
+  not_cap5_extendsAcrossCycle_iff_coloredBlock2111_of_nonzero_of_odd
+    (cap5BoundaryWordOfEdges_isNonzero_of_isTaitEdgeColoring boundaryEdge C hC)
+    (cap5BoundaryWordOfEdges_hasOddColorCounts_of_isTaitEdgeColoring_of_isZeroBoundary_at
+      boundaryEdge C hC hinj hincident hzero)
+
+/-- Full-zero-boundary-set variant of the graph-facing CAP5 nonextension criterion. -/
+theorem cap5BoundaryWordOfEdges_not_extendsAcrossCycle_iff_coloredBlock2111_of_isTaitEdgeColoring_of_mem_zeroBoundarySet_at
+    {U : Type*} {G : SimpleGraph V} {D : ZeroBoundaryData U G.edgeSet} {v : U}
+    (boundaryEdge : Fin 5 → G.edgeSet) (C : G.EdgeColoring Color)
+    (hC : IsTaitEdgeColoring G C)
+    (hinj : Function.Injective boundaryEdge)
+    (hincident : D.incident v = Finset.univ.map ⟨boundaryEdge, hinj⟩)
+    (hzero : (C : G.edgeSet → Color) ∈ D.zeroBoundarySet) :
+    ¬ CAP5WordExtendsAcrossCycle (cap5BoundaryWordOfEdges boundaryEdge C) ↔
+      CAP5BoundaryWordHasColoredBlock2111 (cap5BoundaryWordOfEdges boundaryEdge C) :=
+  cap5BoundaryWordOfEdges_not_extendsAcrossCycle_iff_coloredBlock2111_of_isTaitEdgeColoring_of_isZeroBoundary_at
+    boundaryEdge C hC hinj hincident hzero.1
+
 /-- If a CAP5 boundary edge is one of the distinguished zero-boundary edges, its boundary-word
 color is forced to zero by membership in the full zero-boundary set. -/
 theorem cap5BoundaryWordOfEdges_eq_zero_of_mem_zeroBoundarySet_boundaryEdge
