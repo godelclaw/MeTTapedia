@@ -300,6 +300,45 @@ theorem zeroEdgeCount_cdlOneStepMoveOn_eq
   intro e heZero heC
   exact (Finset.mem_filter.mp heZero).2 (Finset.mem_filter.mp heC).1
 
+theorem zeroEdgeCount_eq_outside_support_add_inside_support
+    {G : SimpleGraph V} [Fintype G.edgeSet]
+    {C : Finset G.edgeSet} {x : G.edgeSet → Color} :
+    zeroEdgeCount G x =
+      ((zeroEdgeFinset G x).filter (fun e => e ∉ C)).card +
+        ((zeroEdgeFinset G x).filter (fun e => e ∈ C)).card := by
+  rw [zeroEdgeCount]
+  have hdisj :
+      Disjoint ((zeroEdgeFinset G x).filter (fun e => e ∉ C))
+        ((zeroEdgeFinset G x).filter (fun e => e ∈ C)) := by
+    rw [Finset.disjoint_left]
+    intro e heOutside heInside
+    exact (Finset.mem_filter.mp heOutside).2 (Finset.mem_filter.mp heInside).2
+  have hunion :
+      (zeroEdgeFinset G x).filter (fun e => e ∉ C) ∪
+        (zeroEdgeFinset G x).filter (fun e => e ∈ C) =
+          zeroEdgeFinset G x := by
+    ext e
+    by_cases heC : e ∈ C <;> simp [heC]
+  calc
+    (zeroEdgeFinset G x).card =
+        ((zeroEdgeFinset G x).filter (fun e => e ∉ C) ∪
+          (zeroEdgeFinset G x).filter (fun e => e ∈ C)).card := by
+          rw [hunion]
+    _ = ((zeroEdgeFinset G x).filter (fun e => e ∉ C)).card +
+          ((zeroEdgeFinset G x).filter (fun e => e ∈ C)).card := by
+          rw [Finset.card_union_of_disjoint hdisj]
+
+theorem zeroEdgeCount_cdlOneStepMoveOn_add_one_le_of_support_zero_surplus
+    {G : SimpleGraph V} [Fintype G.edgeSet]
+    {C : Finset G.edgeSet} {g : Color} {x : G.edgeSet → Color}
+    (h :
+      (C.filter (fun e => x e = g)).card + 1 ≤
+        ((zeroEdgeFinset G x).filter (fun e => e ∈ C)).card) :
+    zeroEdgeCount G (cdlOneStepMoveOn G C g x) + 1 ≤ zeroEdgeCount G x := by
+  rw [zeroEdgeCount_cdlOneStepMoveOn_eq,
+    zeroEdgeCount_eq_outside_support_add_inside_support (C := C)]
+  omega
+
 theorem isCDLGoodAtVertex_cdlOneStepMoveOn_iff
     {G : SimpleGraph V} [Fintype G.edgeSet]
     {C : Finset G.edgeSet} {g : Color} {x : G.edgeSet → Color} {v : V} :
