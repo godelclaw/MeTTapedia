@@ -601,6 +601,49 @@ theorem CAP5TransportedEdgeComponentCoverCore.exists_smallCyclicEdgeCutCandidate
     rw [hcut]
     exact hcard⟩
 
+/-- Exceptional CAP5 annulus data plus the topological realization input produces the forbidden
+small cyclic edge cut promised by the manuscript's annulus separator step. -/
+theorem CAP5TransportedEdgeComponentCoverCore.hasCyclicEdgeCutOfSizeAtMostFour_of_isExceptional_of_portalSides
+    {V : Type*} {G : SimpleGraph V} [DecidableEq G.edgeSet]
+    {boundaryEdge : Fin 5 → G.edgeSet} {n : Nat}
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    (p0Inside p4Inside : Bool) (h : data.IsExceptional)
+    (hrealizes :
+      ∀ edgeCandidate : CAP5ExceptionalAnnulusBoundaryEdgeSupportCandidate boundaryEdge,
+        data.RealizesExceptionalBoundarySupportOrientation
+            edgeCandidate.portalCandidate.orientation →
+        edgeCandidate.portalCandidate.sideCase =
+            CAP5ExceptionalAnnulusSideCase.ofPortalSides p0Inside p4Inside →
+        ∃ cut : SmallCyclicEdgeCut G,
+          edgeCandidate.RealizesSmallCyclicEdgeCut cut) :
+    HasCyclicEdgeCutOfSizeAtMostFour G := by
+  rcases exists_smallCyclicEdgeCutCandidate_of_isExceptional_of_portalSides
+      p0Inside p4Inside h hrealizes with
+    ⟨_edgeCandidate, _horientation, _hsideCase, cut, _hcut, hcard⟩
+  exact ⟨cut, hcard⟩
+
+/-- Under a no-small-cyclic-cut hypothesis, the exceptional CAP5 annulus branch is impossible
+once the planar/Jordan layer realizes each candidate support as an actual small cyclic edge cut. -/
+theorem CAP5TransportedEdgeComponentCoverCore.not_isExceptional_of_noCyclicEdgeCut_of_portalSides
+    {V : Type*} {G : SimpleGraph V} [DecidableEq G.edgeSet]
+    {boundaryEdge : Fin 5 → G.edgeSet} {n : Nat}
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    (p0Inside p4Inside : Bool)
+    (hnoCut : NoCyclicEdgeCutOfSizeAtMostFour G)
+    (hrealizes :
+      ∀ edgeCandidate : CAP5ExceptionalAnnulusBoundaryEdgeSupportCandidate boundaryEdge,
+        data.RealizesExceptionalBoundarySupportOrientation
+            edgeCandidate.portalCandidate.orientation →
+        edgeCandidate.portalCandidate.sideCase =
+            CAP5ExceptionalAnnulusSideCase.ofPortalSides p0Inside p4Inside →
+        ∃ cut : SmallCyclicEdgeCut G,
+          edgeCandidate.RealizesSmallCyclicEdgeCut cut) :
+    ¬ data.IsExceptional := by
+  intro hExceptional
+  exact hnoCut
+    (hasCyclicEdgeCutOfSizeAtMostFour_of_isExceptional_of_portalSides
+      p0Inside p4Inside hExceptional hrealizes)
+
 /-- Full transported component-cover data is core component-cover data plus exclusion of the
 simultaneous exceptional pattern.  The core form is the honest target before the planar separator
 argument has ruled the exceptional branch out. -/
