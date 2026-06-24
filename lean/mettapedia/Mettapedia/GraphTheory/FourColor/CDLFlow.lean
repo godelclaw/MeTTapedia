@@ -2498,6 +2498,22 @@ theorem not_zeroEdgesFormMatching_iff_hasClusteredZeroVertex
     have hvle := hmatch v
     omega
 
+/-- Matching zeros are equivalently the absence of a clustered zero vertex. -/
+theorem zeroEdgesFormMatching_iff_not_hasClusteredZeroVertex
+    {G : SimpleGraph V} [Fintype G.edgeSet] {x : G.edgeSet → Color} :
+    ZeroEdgesFormMatching G x ↔ ¬ HasClusteredZeroVertex G x := by
+  rw [← not_zeroEdgesFormMatching_iff_hasClusteredZeroVertex]
+  exact not_not.symm
+
+/-- Positive clustering is exactly the presence of a vertex incident to at
+least two zero edges. -/
+theorem zeroClusteringCount_pos_iff_hasClusteredZeroVertex
+    {G : SimpleGraph V} [Fintype V] [Fintype G.edgeSet] {x : G.edgeSet → Color} :
+    0 < zeroClusteringCount G x ↔ HasClusteredZeroVertex G x := by
+  rw [← not_zeroEdgesFormMatching_iff_hasClusteredZeroVertex,
+    ← zeroClusteringCount_eq_zero_iff_zeroEdgesFormMatching]
+  exact Nat.pos_iff_ne_zero
+
 /-- The vertex-local repair hypothesis implies the global nonmatching repair
 hypothesis, because every nonmatching zero pattern has a clustered zero
 vertex. -/
@@ -2539,6 +2555,32 @@ theorem zeroEdgesFormMatching_of_isD0LocalMinimumForMoveSupports_of_clusteredZer
   zeroEdgesFormMatching_of_isD0LocalMinimumForMoveSupports_of_nonmatching_descent
     hmin (everyNonmatchingZeroPatternHasD0Descent_of_clusteredZeroVertex_descent
       hrepair)
+
+/-- Refutation form: under the vertex-local repair hypothesis, a flow with a
+clustered zero vertex cannot be a `D₀` local minimum. -/
+theorem not_isD0LocalMinimumForMoveSupports_of_hasClusteredZeroVertex_and_clusteredZeroVertex_descent
+    {G : SimpleGraph V} [Fintype V] [Fintype G.edgeSet]
+    {moveSupports : Finset (Finset G.edgeSet)} {x : G.edgeSet → Color}
+    (hcluster : HasClusteredZeroVertex G x)
+    (hrepair : EveryClusteredZeroVertexHasD0Descent G moveSupports x) :
+    ¬ IsD0LocalMinimumForMoveSupports G moveSupports x := by
+  intro hmin
+  have hmatch :
+      ZeroEdgesFormMatching G x :=
+    zeroEdgesFormMatching_of_isD0LocalMinimumForMoveSupports_of_clusteredZeroVertex_descent
+      hmin hrepair
+  exact (not_zeroEdgesFormMatching_iff_hasClusteredZeroVertex.mpr hcluster) hmatch
+
+/-- Numeric refutation form: under the vertex-local repair hypothesis, positive
+clustering excludes `D₀` local minimality. -/
+theorem not_isD0LocalMinimumForMoveSupports_of_zeroClusteringCount_pos_and_clusteredZeroVertex_descent
+    {G : SimpleGraph V} [Fintype V] [Fintype G.edgeSet]
+    {moveSupports : Finset (Finset G.edgeSet)} {x : G.edgeSet → Color}
+    (hCpos : 0 < zeroClusteringCount G x)
+    (hrepair : EveryClusteredZeroVertexHasD0Descent G moveSupports x) :
+    ¬ IsD0LocalMinimumForMoveSupports G moveSupports x :=
+  not_isD0LocalMinimumForMoveSupports_of_hasClusteredZeroVertex_and_clusteredZeroVertex_descent
+    ((zeroClusteringCount_pos_iff_hasClusteredZeroVertex).mp hCpos) hrepair
 
 /-- Count form of the abstract matching-zeros theorem: the clustering statistic
 vanishes at repaired `D₀` local minima. -/
