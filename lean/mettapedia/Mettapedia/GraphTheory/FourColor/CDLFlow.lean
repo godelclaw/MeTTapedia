@@ -48,6 +48,18 @@ def zeroEdgeCount (G : SimpleGraph V) [Fintype G.edgeSet]
     (x : G.edgeSet → Color) : Nat :=
   (zeroEdgeFinset G x).card
 
+/-- The same zero-edge set, but viewed in the ambient `Sym2 V` edge type. -/
+def zeroEdgeSym2Finset (G : SimpleGraph V) [Fintype G.edgeSet]
+    (x : G.edgeSet → Color) : Finset (Sym2 V) :=
+  (zeroEdgeFinset G x).map
+    (Function.Embedding.subtype (fun e : Sym2 V => e ∈ G.edgeSet))
+
+/-- The graph consisting exactly of the zero-valued edges of a chain.  This is
+the graph-theoretic object behind the manuscript's zero pattern `Z(x)`. -/
+abbrev zeroEdgeGraph (G : SimpleGraph V) [Fintype G.edgeSet]
+    (x : G.edgeSet → Color) : SimpleGraph V :=
+  SimpleGraph.fromEdgeSet (zeroEdgeSym2Finset G x : Set (Sym2 V))
+
 /-- The zero-valued edges incident to a vertex.  This is the finite set whose
 cardinality is the manuscript's local statistic `k_v(x)`. -/
 def zeroIncidentEdgeFinset (G : SimpleGraph V) [Fintype G.edgeSet]
@@ -93,6 +105,44 @@ theorem zeroEdgeCount_eq_zero_iff {G : SimpleGraph V} [Fintype G.edgeSet]
     {x : G.edgeSet → Color} :
     zeroEdgeCount G x = 0 ↔ ∀ e : G.edgeSet, x e ≠ 0 := by
   rw [zeroEdgeCount, Finset.card_eq_zero, zeroEdgeFinset_eq_empty_iff]
+
+omit [DecidableEq V] in
+theorem zeroEdgeSym2Finset_card {G : SimpleGraph V} [Fintype G.edgeSet]
+    {x : G.edgeSet → Color} :
+    (zeroEdgeSym2Finset G x).card = zeroEdgeCount G x := by
+  simp [zeroEdgeSym2Finset, zeroEdgeCount]
+
+omit [DecidableEq V] in
+theorem zeroEdgeGraph_edgeSet {G : SimpleGraph V} [Fintype G.edgeSet]
+    {x : G.edgeSet → Color} :
+    (zeroEdgeGraph G x).edgeSet = (zeroEdgeSym2Finset G x : Set (Sym2 V)) := by
+  rw [zeroEdgeGraph, SimpleGraph.edgeSet_fromEdgeSet]
+  ext e
+  simp [zeroEdgeSym2Finset, zeroEdgeFinset]
+  intro hG _hx
+  exact G.not_isDiag_of_mem_edgeSet hG
+
+theorem zeroEdgeSym2Finset_disjoint_diagSet {G : SimpleGraph V}
+    [Fintype V] [Fintype G.edgeSet] {x : G.edgeSet → Color} :
+    Disjoint (zeroEdgeSym2Finset G x) Sym2.diagSet.toFinset := by
+  rw [Finset.disjoint_left]
+  intro e he hdiag
+  rw [Set.mem_toFinset] at hdiag
+  rw [zeroEdgeSym2Finset] at he
+  rcases Finset.mem_map.mp he with ⟨eg, _heg, heg_eq⟩
+  rw [← heg_eq] at hdiag
+  exact G.not_isDiag_of_mem_edgeSet eg.2 hdiag
+
+/-- Handshake form for the zero pattern: the sum of degrees in the zero-edge
+graph is twice the manuscript's zero-edge count `Z(x)`. -/
+theorem zeroEdgeGraph_sum_degrees_eq_two_mul_zeroEdgeCount
+    {G : SimpleGraph V} [Fintype V] [Fintype G.edgeSet] {x : G.edgeSet → Color} :
+    ∑ v, (zeroEdgeGraph G x).degree v = 2 * zeroEdgeCount G x := by
+  classical
+  rw [SimpleGraph.sum_degrees_eq_twice_card_edges]
+  simp [SimpleGraph.edgeFinset]
+  rw [Finset.sdiff_eq_self_of_disjoint zeroEdgeSym2Finset_disjoint_diagSet]
+  rw [zeroEdgeSym2Finset_card]
 
 theorem zeroIncidentEdgeFinset_eq_empty_iff {G : SimpleGraph V} [Fintype G.edgeSet]
     {x : G.edgeSet → Color} {v : V} :
