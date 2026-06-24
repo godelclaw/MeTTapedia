@@ -2630,6 +2630,41 @@ theorem cap5BoundaryWordSolved_of_nonzero_of_sum_zero_of_transportEdgeComponentC
     hnz (cap5BoundaryWordHasOddColorCounts_of_nonzero_of_sum_eq_zero hnz hsum)
     hcomponentCovers
 
+/-- Sum-zero CAP5 reducibility split from core edge component-cover data.  Unlike
+`CAP5TransportedEdgeComponentCoverData`, the core package may still be in the simultaneous
+exceptional pairing branch; the canonical annulus/Jordan realization obligation eliminates that
+branch under cyclic five-edge-connectivity. -/
+theorem cap5BoundaryWordSolved_of_nonzero_of_sum_zero_of_transportEdgeComponentCoverCore_of_cyclicallyFiveEdgeConnected_of_canonicalRealizationData
+    {V : Type*} {G : SimpleGraph V} [DecidableEq G.edgeSet]
+    {boundaryEdge : Fin 5 → G.edgeSet} {w : CAP5BoundaryWord}
+    (hnz : CAP5BoundaryWordIsNonzero w)
+    (hsum : (∑ i : Fin 5, w i) = 0)
+    (p0Inside p4Inside : Bool)
+    (hcyclic : CyclicallyFiveEdgeConnected G)
+    (hcomponentCovers :
+      ∀ {σ : Color ≃ Color} {n : Nat},
+        σ 0 = 0 →
+        w = cap5TransportedBadBoundaryWord σ n →
+        CAP5TransportedEdgeComponentCoverCore boundaryEdge n)
+    (hcanonical :
+      ∀ {σ : Color ≃ Color} {n : Nat}
+        (hσ0 : σ 0 = 0)
+        (hw : w = cap5TransportedBadBoundaryWord σ n),
+        (hcomponentCovers hσ0 hw).HasCanonicalExceptionalAnnulusCyclicCutRealizationData
+          (G := G) p0Inside p4Inside) :
+    CAP5BoundaryWordSolved w := by
+  have hodd : CAP5BoundaryWordHasOddColorCounts w :=
+    cap5BoundaryWordHasOddColorCounts_of_nonzero_of_sum_eq_zero hnz hsum
+  rcases cap5BoundaryWord_coloredBlock311_or_coloredBlock2111_of_nonzero_of_odd
+      hnz hodd with hgood | hbad
+  · exact cap5BoundaryWordSolved_of_coloredBlock311 hgood
+  · rcases cap5BoundaryWordHasBlock2111_of_coloredBlock2111 hbad with
+      ⟨σ, n, hσ0, hw⟩
+    exact
+      cap5BoundaryWordSolved_of_eq_transportBad_of_transportEdgeComponentCoverCore_of_cyclicallyFiveEdgeConnected_of_canonicalRealizationData
+        hσ0 (hcomponentCovers hσ0 hw) hw p0Inside p4Inside hcyclic
+        (hcanonical hσ0 hw)
+
 /-- Graph-facing split for a CAP5 boundary word obtained from an edge coloring.  Under the
 nonzero boundary and zero-sum equations, either the boundary word already extends across the cap,
 or structured component-cover data produces a concrete edge-level switch whose restricted
@@ -2692,6 +2727,48 @@ theorem cap5BoundaryWordOfEdges_extends_or_exists_edgeSupport_switch_extends_of_
   · exact Or.inl hextends
   · exact Or.inr
       (exists_edgeSupport_switch_extendsAcrossCycle_of_switchRepairOutcome houtcome)
+
+/-- Core-data graph-facing CAP5 split.  The bad branch may produce the simultaneous exceptional
+pairing, but cyclic five-edge-connectivity plus canonical annulus/Jordan realization data rules it
+out and still produces an actual finite edge-support switch. -/
+theorem cap5BoundaryWordOfEdges_extends_or_exists_edgeSupport_switch_extends_of_nonzero_of_sum_zero_of_transportEdgeComponentCoverCore_of_cyclicallyFiveEdgeConnected_of_canonicalRealizationData
+    {V : Type*} {G : SimpleGraph V} [DecidableEq G.edgeSet]
+    (boundaryEdge : Fin 5 → G.edgeSet) (C : G.edgeSet → Color)
+    (hnz : CAP5BoundaryWordIsNonzero (cap5BoundaryWordOfEdges boundaryEdge C))
+    (hsum : (∑ i : Fin 5, cap5BoundaryWordOfEdges boundaryEdge C i) = 0)
+    (p0Inside p4Inside : Bool)
+    (hcyclic : CyclicallyFiveEdgeConnected G)
+    (hcomponentCovers :
+      ∀ {σ : Color ≃ Color} {n : Nat},
+        σ 0 = 0 →
+        cap5BoundaryWordOfEdges boundaryEdge C = cap5TransportedBadBoundaryWord σ n →
+        CAP5TransportedEdgeComponentCoverCore boundaryEdge n)
+    (hcanonical :
+      ∀ {σ : Color ≃ Color} {n : Nat}
+        (hσ0 : σ 0 = 0)
+        (hw : cap5BoundaryWordOfEdges boundaryEdge C = cap5TransportedBadBoundaryWord σ n),
+        (hcomponentCovers hσ0 hw).HasCanonicalExceptionalAnnulusCyclicCutRealizationData
+          (G := G) p0Inside p4Inside) :
+    CAP5WordExtendsAcrossCycle (cap5BoundaryWordOfEdges boundaryEdge C) ∨
+      ∃ edgeSupport : Finset G.edgeSet, ∃ a b : Color,
+        CAP5WordExtendsAcrossCycle
+          (cap5BoundaryWordOfEdges boundaryEdge (switch a b (edgeSupport : Set G.edgeSet) C)) := by
+  have hodd :
+      CAP5BoundaryWordHasOddColorCounts (cap5BoundaryWordOfEdges boundaryEdge C) :=
+    cap5BoundaryWordHasOddColorCounts_of_nonzero_of_sum_eq_zero hnz hsum
+  rcases cap5BoundaryWord_coloredBlock311_or_coloredBlock2111_of_nonzero_of_odd
+      hnz hodd with hgood | hbad
+  · exact Or.inl (cap5_extendsAcrossCycle_of_coloredBlock311 hgood)
+  · rcases cap5BoundaryWordHasBlock2111_of_coloredBlock2111 hbad with
+      ⟨σ, n, hσ0, hw⟩
+    let data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n :=
+      hcomponentCovers hσ0 hw
+    rcases
+        exists_edgeSupport_switch_extendsAcrossCycle_of_eq_transportBad_of_componentCoverCore_of_cyclicallyFiveEdgeConnected_of_canonicalRealizationData
+          boundaryEdge C hσ0 data hw p0Inside p4Inside hcyclic
+          (hcanonical hσ0 hw) with
+      ⟨edgeSupport, a, b, _huses, hextends⟩
+    exact Or.inr ⟨edgeSupport, a, b, hextends⟩
 
 /-- Kempe-certified edge-switch form of the graph-facing CAP5 split.  The repair alternative is
 now strong enough for the surrounding zero-boundary route: the switched coloring still satisfies
