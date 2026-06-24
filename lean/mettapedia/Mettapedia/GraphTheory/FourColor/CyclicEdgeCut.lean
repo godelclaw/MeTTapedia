@@ -466,6 +466,92 @@ def CyclicEdgeCutRealization.of_no_walk_avoiding_edgeCut
       (G := G) (edgeCut := edgeCut) side).1 hno_counterexample)
     hinside_cycle houtside_cycle
 
+/-- A finite candidate for a cyclic separator.  This is the checker-facing form: list the
+candidate edge support, prove the listed edges really cross the chosen vertex side, and record
+cycles on both sides.  The checker then has two exact outcomes: either no outside edge crosses the
+side, so the candidate realizes a cyclic edge cut, or an outside crossing edge gives a concrete
+walk avoiding the candidate support. -/
+structure CyclicSeparatorCandidate (G : SimpleGraph V) where
+  edgeCut : Finset G.edgeSet
+  side : V → Prop
+  hcard_le_four : edgeCut.card <= 4
+  hcut_crosses : ∀ e : G.edgeSet, e ∈ edgeCut → EdgeCrossesVertexSide G side e
+  hinside_cycle : HasCycleOnSide G side
+  houtside_cycle : HasCycleOnSide G (fun v => ¬ side v)
+
+namespace CyclicSeparatorCandidate
+
+/-- The candidate realizes an actual cyclic edge cut when its listed support is exactly the
+side-crossing support. -/
+def Realizes {G : SimpleGraph V} (candidate : CyclicSeparatorCandidate G) : Prop :=
+  ∀ e : G.edgeSet, e ∈ candidate.edgeCut ↔ EdgeCrossesVertexSide G candidate.side e
+
+/-- Turn exact candidate realization into the bundled realization-data structure. -/
+def toCyclicEdgeCutRealization
+    {G : SimpleGraph V} (candidate : CyclicSeparatorCandidate G)
+    (hrealizes : candidate.Realizes) :
+    CyclicEdgeCutRealization G candidate.edgeCut where
+  side := candidate.side
+  hcut_eq := hrealizes
+  hinside_cycle := candidate.hinside_cycle
+  houtside_cycle := candidate.houtside_cycle
+
+/-- Forced-counterexample outcome for a candidate separator: a walk changes sides while avoiding
+all listed candidate edges. -/
+def Counterexample {G : SimpleGraph V} (candidate : CyclicSeparatorCandidate G) : Prop :=
+  ∃ u v : V, ∃ p : G.Walk u v,
+    candidate.side u ∧ ¬ candidate.side v ∧
+      ∀ e : G.edgeSet, e ∈ candidate.edgeCut → (e : Sym2 V) ∉ p.edges
+
+/-- Local finite-check outcome: the counterexample walk exists exactly when some unlisted edge
+crosses the chosen side. -/
+theorem counterexample_iff_exists_crossing_outside
+    {G : SimpleGraph V} (candidate : CyclicSeparatorCandidate G) :
+    candidate.Counterexample ↔
+      ∃ e : G.edgeSet, e ∉ candidate.edgeCut ∧
+        EdgeCrossesVertexSide G candidate.side e :=
+  exists_walk_avoiding_edgeCut_iff_exists_crossing_outside_edgeCut
+    (G := G) (edgeCut := candidate.edgeCut) candidate.side
+
+/-- The candidate realizes a cyclic edge cut exactly when the forced-counterexample walk is absent.
+This packages the finite generator's holds-vs-counterexample boundary without appealing to planar
+topology. -/
+theorem realizes_iff_not_counterexample
+    {G : SimpleGraph V} (candidate : CyclicSeparatorCandidate G) :
+    candidate.Realizes ↔ ¬ candidate.Counterexample := by
+  constructor
+  · intro hrealizes hcounter
+    rcases hcounter with ⟨u, v, p, hu, hv, havoid⟩
+    let realization := candidate.toCyclicEdgeCutRealization hrealizes
+    rcases realization.exists_mem_edgeCut_of_walk_endpoint_sides p hu hv with
+      ⟨e, hecut, heEdges⟩
+    exact havoid e hecut heEdges
+  · intro hno_counterexample
+    exact
+      (CyclicEdgeCutRealization.of_no_walk_avoiding_edgeCut candidate.side
+        candidate.hcut_crosses hno_counterexample
+        candidate.hinside_cycle candidate.houtside_cycle).hcut_eq
+
+/-- Equivalent finite-check form: realization is the same as having no unlisted side-crossing
+edge. -/
+theorem realizes_iff_no_crossing_outside
+    {G : SimpleGraph V} (candidate : CyclicSeparatorCandidate G) :
+    candidate.Realizes ↔
+      ¬ ∃ e : G.edgeSet, e ∉ candidate.edgeCut ∧
+        EdgeCrossesVertexSide G candidate.side e := by
+  rw [realizes_iff_not_counterexample, counterexample_iff_exists_crossing_outside]
+
+/-- An unlisted crossing edge gives the concrete avoiding-walk counterexample for the candidate. -/
+theorem counterexample_of_crossing_outside
+    {G : SimpleGraph V} {candidate : CyclicSeparatorCandidate G}
+    (hcrossing :
+      ∃ e : G.edgeSet, e ∉ candidate.edgeCut ∧
+        EdgeCrossesVertexSide G candidate.side e) :
+    candidate.Counterexample :=
+  (candidate.counterexample_iff_exists_crossing_outside).2 hcrossing
+
+end CyclicSeparatorCandidate
+
 theorem SmallCyclicEdgeCut.exists_mem_edgeCut_of_walk_endpoint_sides
     {G : SimpleGraph V} (cut : SmallCyclicEdgeCut G)
     {u v : V} (p : G.Walk u v) (hu : cut.side u) (hv : ¬ cut.side v) :
@@ -579,5 +665,38 @@ theorem CyclicallyFiveEdgeConnected.false_of_no_walk_avoiding_edgeCut_of_card_le
   hno_counterexample
     (hcyclic.exists_walk_avoiding_edgeCut_of_card_le_four_of_crosses
       side hcard hcut_crosses hinside_cycle houtside_cycle)
+
+namespace CyclicSeparatorCandidate
+
+/-- In a cyclically five-edge-connected graph, every candidate of size at most four is forced into
+the counterexample bin.  This is the checker-facing form of the separator refutation. -/
+theorem counterexample_of_cyclicallyFiveEdgeConnected
+    {G : SimpleGraph V} (candidate : CyclicSeparatorCandidate G)
+    (hcyclic : CyclicallyFiveEdgeConnected G) :
+    candidate.Counterexample :=
+  hcyclic.exists_walk_avoiding_edgeCut_of_card_le_four_of_crosses
+    candidate.side candidate.hcard_le_four candidate.hcut_crosses
+    candidate.hinside_cycle candidate.houtside_cycle
+
+/-- Equivalently, cyclic five-edge-connectivity supplies an unlisted side-crossing edge for every
+size-at-most-four separator candidate. -/
+theorem exists_crossing_outside_of_cyclicallyFiveEdgeConnected
+    {G : SimpleGraph V} (candidate : CyclicSeparatorCandidate G)
+    (hcyclic : CyclicallyFiveEdgeConnected G) :
+    ∃ e : G.edgeSet, e ∉ candidate.edgeCut ∧
+      EdgeCrossesVertexSide G candidate.side e :=
+  (candidate.counterexample_iff_exists_crossing_outside).1
+    (candidate.counterexample_of_cyclicallyFiveEdgeConnected hcyclic)
+
+/-- Therefore a size-at-most-four candidate cannot realize a cyclic edge cut in a cyclically
+five-edge-connected graph. -/
+theorem not_realizes_of_cyclicallyFiveEdgeConnected
+    {G : SimpleGraph V} (candidate : CyclicSeparatorCandidate G)
+    (hcyclic : CyclicallyFiveEdgeConnected G) :
+    ¬ candidate.Realizes := by
+  rw [candidate.realizes_iff_not_counterexample]
+  exact not_not_intro (candidate.counterexample_of_cyclicallyFiveEdgeConnected hcyclic)
+
+end CyclicSeparatorCandidate
 
 end Mettapedia.GraphTheory.FourColor

@@ -533,6 +533,74 @@ def CAP5ExceptionalAnnulusBoundaryEdgeSupportCandidate.CyclicEdgeCutRealizationD
     (candidate : CAP5ExceptionalAnnulusBoundaryEdgeSupportCandidate boundaryEdge) :=
   CyclicEdgeCutRealization G candidate.edgeSupport
 
+/-- Promote a CAP5 boundary-edge support candidate to the generic checker-facing cyclic-separator
+candidate.  The only CAP5-specific input is the portal-language proof that each named separator
+portal really crosses the chosen side; the generic layer then supplies the holds-vs-counterexample
+boundary. -/
+def CAP5ExceptionalAnnulusBoundaryEdgeSupportCandidate.toCyclicSeparatorCandidate_of_portal_crosses
+    {V : Type*} {G : SimpleGraph V} [DecidableEq G.edgeSet]
+    {boundaryEdge : Fin 5 → G.edgeSet}
+    (candidate : CAP5ExceptionalAnnulusBoundaryEdgeSupportCandidate boundaryEdge)
+    (side : V → Prop)
+    (hportal_crosses :
+      ∀ i : Fin 5, i ∈ candidate.portalCandidate.portalSet →
+        EdgeCrossesVertexSide G side (boundaryEdge i))
+    (hinside_cycle : HasCycleOnSide G side)
+    (houtside_cycle : HasCycleOnSide G (fun v => ¬ side v)) :
+    CyclicSeparatorCandidate G where
+  edgeCut := candidate.edgeSupport
+  side := side
+  hcard_le_four := candidate.hcard_le_four
+  hcut_crosses := by
+    intro e heSupport
+    rcases (candidate.mem_edgeSupport_iff_exists_portal e).1 heSupport with
+      ⟨i, hi, hboundary⟩
+    subst e
+    exact hportal_crosses i hi
+  hinside_cycle := hinside_cycle
+  houtside_cycle := houtside_cycle
+
+/-- If the generic separator checker verifies exact realization for the promoted CAP5 candidate,
+the result is precisely the realization-data package consumed by the CAP5 exceptional-annulus
+endpoint. -/
+def CAP5ExceptionalAnnulusBoundaryEdgeSupportCandidate.cyclicEdgeCutRealizationData_of_cyclicSeparatorCandidate
+    {V : Type*} {G : SimpleGraph V} [DecidableEq G.edgeSet]
+    {boundaryEdge : Fin 5 → G.edgeSet}
+    (candidate : CAP5ExceptionalAnnulusBoundaryEdgeSupportCandidate boundaryEdge)
+    (side : V → Prop)
+    (hportal_crosses :
+      ∀ i : Fin 5, i ∈ candidate.portalCandidate.portalSet →
+        EdgeCrossesVertexSide G side (boundaryEdge i))
+    (hinside_cycle : HasCycleOnSide G side)
+    (houtside_cycle : HasCycleOnSide G (fun v => ¬ side v))
+    (hrealizes :
+      (candidate.toCyclicSeparatorCandidate_of_portal_crosses
+        side hportal_crosses hinside_cycle houtside_cycle).Realizes) :
+    candidate.CyclicEdgeCutRealizationData (G := G) :=
+  (candidate.toCyclicSeparatorCandidate_of_portal_crosses
+    side hportal_crosses hinside_cycle houtside_cycle).toCyclicEdgeCutRealization hrealizes
+
+/-- Cyclic five-edge-connectivity refutes the exact-realization bin for any CAP5 candidate promoted
+through crossing portals and two side cycles. -/
+theorem CAP5ExceptionalAnnulusBoundaryEdgeSupportCandidate.false_of_cyclicallyFiveEdgeConnected_of_cyclicSeparatorCandidate
+    {V : Type*} {G : SimpleGraph V} [DecidableEq G.edgeSet]
+    {boundaryEdge : Fin 5 → G.edgeSet}
+    (candidate : CAP5ExceptionalAnnulusBoundaryEdgeSupportCandidate boundaryEdge)
+    (side : V → Prop)
+    (hcyclic : CyclicallyFiveEdgeConnected G)
+    (hportal_crosses :
+      ∀ i : Fin 5, i ∈ candidate.portalCandidate.portalSet →
+        EdgeCrossesVertexSide G side (boundaryEdge i))
+    (hinside_cycle : HasCycleOnSide G side)
+    (houtside_cycle : HasCycleOnSide G (fun v => ¬ side v))
+    (hrealizes :
+      (candidate.toCyclicSeparatorCandidate_of_portal_crosses
+        side hportal_crosses hinside_cycle houtside_cycle).Realizes) :
+    False :=
+  ((candidate.toCyclicSeparatorCandidate_of_portal_crosses
+    side hportal_crosses hinside_cycle houtside_cycle).not_realizes_of_cyclicallyFiveEdgeConnected
+      hcyclic) hrealizes
+
 /-- Build the cyclic-cut realization data for a CAP5 boundary-edge support candidate from the
 direct path-separation interface expected of the planar/Jordan layer.  The listed candidate
 support must consist of side-crossing edges, every walk crossing the side must contain a listed
@@ -1077,15 +1145,10 @@ theorem CAP5ExceptionalAnnulusBoundaryEdgeSupportCandidate.exists_walk_avoiding_
       side u ∧ ¬ side v ∧
         ∀ i : Fin 5, i ∈ candidate.portalCandidate.portalSet →
           ((boundaryEdge i : G.edgeSet) : Sym2 V) ∉ p.edges := by
-  rcases hcyclic.exists_walk_avoiding_edgeCut_of_card_le_four_of_crosses
-      side candidate.hcard_le_four
-      (by
-        intro e heSupport
-        rcases (candidate.mem_edgeSupport_iff_exists_portal e).1 heSupport with
-          ⟨i, hi, hboundary⟩
-        subst e
-        exact hportal_crosses i hi)
-      hinside_cycle houtside_cycle with
+  let separatorCandidate :=
+    candidate.toCyclicSeparatorCandidate_of_portal_crosses
+      side hportal_crosses hinside_cycle houtside_cycle
+  rcases separatorCandidate.counterexample_of_cyclicallyFiveEdgeConnected hcyclic with
     ⟨u, v, p, hu, hv, havoidSupport⟩
   refine ⟨u, v, p, hu, hv, ?_⟩
   intro i hi hiEdges
