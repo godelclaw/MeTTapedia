@@ -52,6 +52,11 @@ def IsLocalCDLGoodTriple (a b c : Color) : Prop :=
 def IsLocalNowhereZeroTriple (a b c : Color) : Prop :=
   a ≠ 0 ∧ b ≠ 0 ∧ c ≠ 0
 
+/-- Local Tait condition for a cubic vertex: the three incident colors are
+nonzero and pairwise distinct. -/
+def IsLocalTaitTriple (a b c : Color) : Prop :=
+  IsLocalNowhereZeroTriple a b c ∧ a ≠ b ∧ a ≠ c ∧ b ≠ c
+
 theorem isGraphFlow_iff {G : SimpleGraph V} [Fintype G.edgeSet]
     {x : G.edgeSet → Color} :
     IsGraphFlow G x ↔ ∀ v : V, vertexKirchhoffSum G x v = 0 :=
@@ -87,6 +92,51 @@ theorem not_localNowhereZero_zero_left (b c : Color) :
     ¬ IsLocalNowhereZeroTriple 0 b c := by
   intro h
   exact h.1 rfl
+
+theorem isLocalNowhereZeroTriple_of_tait {a b c : Color}
+    (h : IsLocalTaitTriple a b c) :
+    IsLocalNowhereZeroTriple a b c :=
+  h.1
+
+/-- Over `F2^2`, the local Kirchhoff law plus nowhere-zero values forces the
+three colors at a cubic vertex to be pairwise distinct. -/
+theorem isLocalTaitTriple_of_kirchhoff_nowhereZero {a b c : Color}
+    (hK : IsLocalKirchhoffTriple a b c)
+    (hnz : IsLocalNowhereZeroTriple a b c) :
+    IsLocalTaitTriple a b c := by
+  refine ⟨hnz, ?_, ?_, ?_⟩
+  · intro hab
+    have hsum : a + b + c = 0 := by
+      simpa [IsLocalKirchhoffTriple] using hK
+    have hc0 : c = 0 := by
+      have hsum' : a + a + c = 0 := by
+        simpa [hab] using hsum
+      simpa [color_add_self] using hsum'
+    exact hnz.2.2 hc0
+  · intro hac
+    have hsum : a + b + c = 0 := by
+      simpa [IsLocalKirchhoffTriple] using hK
+    have hsum' : c + b + c = 0 := by
+      simpa [hac] using hsum
+    have hb0 : b = 0 := by
+      calc
+        b = 0 + b := by simp
+        _ = (c + c) + b := by rw [color_add_self]
+        _ = c + b + c := by abel
+        _ = 0 := hsum'
+    exact hnz.2.1 hb0
+  · intro hbc
+    have hsum : a + b + c = 0 := by
+      simpa [IsLocalKirchhoffTriple] using hK
+    have hsum' : a + c + c = 0 := by
+      simpa [hbc] using hsum
+    have ha0 : a = 0 := by
+      calc
+        a = a + 0 := by simp
+        _ = a + (c + c) := by rw [color_add_self]
+        _ = a + c + c := by abel
+        _ = 0 := hsum'
+    exact hnz.1 ha0
 
 /-- The canonical CDL-good local condition is weaker than local nowhere-zero:
 the Kirchhoff triple `(0, red, red)` is CDL-good and sums to zero, but still
