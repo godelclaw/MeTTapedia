@@ -3567,6 +3567,63 @@ def EveryCubicD0BasicColorObstructionHasD0Descent (G : SimpleGraph V)
     HasCubicD0BasicColorObstructionAt G x C v g →
       HasD0DescentRepairAt G moveSupports x v
 
+/-- The same second-step repair hypothesis, normalized to the actual repair
+shape forced by a cubic obstruction: the repair must erase an incident zero
+edge outside the original failed support. -/
+def EveryCubicD0BasicColorObstructionHasOutsideSupportD0Descent
+    (G : SimpleGraph V) [Fintype V] [Fintype G.edgeSet]
+    (moveSupports : Finset (Finset G.edgeSet)) (x : G.edgeSet → Color) :
+    Prop :=
+  ∀ (C : Finset G.edgeSet) (v : V) (g : Color),
+    HasCubicD0BasicColorObstructionAt G x C v g →
+      ∃ C' ∈ moveSupports, ∃ h : Color,
+        IsAllowedD0OneStepMoveOn G C' h x (cdlOneStepMoveOn G C' h x) ∧
+          ∃ e : G.edgeSet,
+            e ∈ C' ∧ e ∈ incidentEdgeFinset G v ∧ e ∉ C ∧ x e = 0 ∧
+              ∀ e' ∈ C', x e' ≠ h
+
+/-- Any abstract cubic-obstruction repair hypothesis can be sharpened to the
+outside-support form that the obstruction forces. -/
+theorem
+    everyCubicD0BasicColorObstructionHasOutsideSupportD0Descent_of_cubicObstruction_descent
+    {G : SimpleGraph V} [Fintype V] [Fintype G.edgeSet]
+    {moveSupports : Finset (Finset G.edgeSet)} {x : G.edgeSet → Color}
+    (hrepair : EveryCubicD0BasicColorObstructionHasD0Descent G moveSupports x) :
+    EveryCubicD0BasicColorObstructionHasOutsideSupportD0Descent G moveSupports x := by
+  intro C v g hobst
+  exact
+    hasD0DescentRepairAt_erases_outside_obstruction_support_of_hasCubicD0BasicColorObstructionAt
+      hobst (hrepair C v g hobst)
+
+/-- The outside-support form still discharges the abstract cubic-obstruction
+repair hypothesis; it is a normalized presentation of the same obligation. -/
+theorem
+    everyCubicD0BasicColorObstructionHasD0Descent_of_outsideSupport_descent
+    {G : SimpleGraph V} [Fintype V] [Fintype G.edgeSet]
+    {moveSupports : Finset (Finset G.edgeSet)} {x : G.edgeSet → Color}
+    (hrepair :
+      EveryCubicD0BasicColorObstructionHasOutsideSupportD0Descent
+        G moveSupports x) :
+    EveryCubicD0BasicColorObstructionHasD0Descent G moveSupports x := by
+  intro C v g hobst
+  rcases hrepair C v g hobst with
+    ⟨C', hC'mem, h, hmove, e, heC', heinc, _heOutside, hx0, hnew⟩
+  exact ⟨C', hC'mem, h, hmove, ⟨e, heC', heinc, hx0⟩, hnew⟩
+
+/-- The manuscript's cubic-obstruction repair obligation is equivalent to its
+outside-support normal form. -/
+theorem
+    everyCubicD0BasicColorObstructionHasOutsideSupportD0Descent_iff_cubicObstruction_descent
+    {G : SimpleGraph V} [Fintype V] [Fintype G.edgeSet]
+    {moveSupports : Finset (Finset G.edgeSet)} {x : G.edgeSet → Color} :
+    EveryCubicD0BasicColorObstructionHasOutsideSupportD0Descent
+        G moveSupports x ↔
+      EveryCubicD0BasicColorObstructionHasD0Descent G moveSupports x := by
+  constructor
+  · exact everyCubicD0BasicColorObstructionHasD0Descent_of_outsideSupport_descent
+  · exact
+      everyCubicD0BasicColorObstructionHasOutsideSupportD0Descent_of_cubicObstruction_descent
+
 /-- Concrete-star version of the second-step local repair hypothesis: every
 three-edge obstruction star (two support edges of color `g`, one outside zero
 edge) admits a vertex-local zero-erasing/no-new-zero repair. -/
