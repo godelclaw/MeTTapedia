@@ -1059,6 +1059,40 @@ theorem CAP5ExceptionalAnnulusBoundaryEdgeSupportCandidate.false_of_noCyclicEdge
     False :=
   hnoCut (candidate.hasCyclicEdgeCutOfSizeAtMostFour_of_realizationData realization)
 
+/-- Cyclic five-edge-connectivity refutes the counterexample-free CAP5 portal separator target.
+If the named portal edges cross the proposed side and both sides contain cycles, then there is an
+explicit opposite-side walk avoiding all named portals. -/
+theorem CAP5ExceptionalAnnulusBoundaryEdgeSupportCandidate.exists_walk_avoiding_portalBoundaryEdges_of_cyclicallyFiveEdgeConnected_of_portal_crosses
+    {V : Type*} {G : SimpleGraph V} [DecidableEq G.edgeSet]
+    {boundaryEdge : Fin 5 → G.edgeSet}
+    (candidate : CAP5ExceptionalAnnulusBoundaryEdgeSupportCandidate boundaryEdge)
+    (side : V → Prop)
+    (hcyclic : CyclicallyFiveEdgeConnected G)
+    (hportal_crosses :
+      ∀ i : Fin 5, i ∈ candidate.portalCandidate.portalSet →
+        EdgeCrossesVertexSide G side (boundaryEdge i))
+    (hinside_cycle : HasCycleOnSide G side)
+    (houtside_cycle : HasCycleOnSide G (fun v => ¬ side v)) :
+    ∃ u v : V, ∃ p : G.Walk u v,
+      side u ∧ ¬ side v ∧
+        ∀ i : Fin 5, i ∈ candidate.portalCandidate.portalSet →
+          ((boundaryEdge i : G.edgeSet) : Sym2 V) ∉ p.edges := by
+  rcases hcyclic.exists_walk_avoiding_edgeCut_of_card_le_four_of_crosses
+      side candidate.hcard_le_four
+      (by
+        intro e heSupport
+        rcases (candidate.mem_edgeSupport_iff_exists_portal e).1 heSupport with
+          ⟨i, hi, hboundary⟩
+        subst e
+        exact hportal_crosses i hi)
+      hinside_cycle houtside_cycle with
+    ⟨u, v, p, hu, hv, havoidSupport⟩
+  refine ⟨u, v, p, hu, hv, ?_⟩
+  intro i hi hiEdges
+  exact havoidSupport (boundaryEdge i)
+    ((candidate.mem_edgeSupport_iff_exists_portal (boundaryEdge i)).2 ⟨i, hi, rfl⟩)
+    hiEdges
+
 /-- A bundled small cyclic edge cut whose support is exactly a CAP5 boundary-edge candidate gives
 the realization-data form consumed by the sharper exceptional-annulus endpoint. -/
 def CAP5ExceptionalAnnulusBoundaryEdgeSupportCandidate.cyclicEdgeCutRealizationData_of_realizesSmallCyclicEdgeCut
