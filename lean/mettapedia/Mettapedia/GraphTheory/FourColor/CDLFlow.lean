@@ -4400,6 +4400,68 @@ theorem
       D hincident hcandidate)
     hrepair
 
+/-- Fully source-level Kempe-cycle form of the two-step route: first-step Kempe
+candidates and second-step Kempe-cycle support witnesses for each obstruction
+star exclude clustered zero vertices at a `D₀` local minimum. -/
+theorem
+    not_hasClusteredZeroVertex_of_isD0LocalMinimumForMoveSupports_of_kempe_candidates_and_cubic_star_kempe_support_witnesses
+    {G : SimpleGraph V} [Fintype V] [Fintype G.edgeSet]
+    {moveSupports : Finset (Finset G.edgeSet)} {x : G.edgeSet → Color}
+    (hcard : ∀ v : V, (incidentEdgeFinset G v).card = 3)
+    (hmin : IsD0LocalMinimumForMoveSupports G moveSupports x)
+    (hcandidate : EveryClusteredZeroVertexHasKempeD0Candidate G moveSupports x)
+    (hrepair :
+      ∀ (C : Finset G.edgeSet) (v : V) (g : Color)
+        (e₁ e₂ e₀ : G.edgeSet),
+        g ≠ 0 →
+          e₁ ≠ e₂ → e₁ ≠ e₀ → e₂ ≠ e₀ →
+            incidentEdgeFinset G v = {e₁, e₂, e₀} →
+              e₁ ∈ C → e₂ ∈ C → e₀ ∉ C →
+                x e₁ = g → x e₂ = g → x e₀ = 0 →
+                  ∃ C' ∈ moveSupports, ∃ α β h : Color,
+                    h ≠ 0 ∧
+                      IsKempeCycle (incidentEdgeFinset G) x C' α β ∧
+                        (∀ w : V, ∃ e ∈ incidentEdgeFinset G w,
+                          if e ∈ C' then x e ≠ h else x e ≠ 0) ∧
+                          e₀ ∈ C' ∧ ∀ e' ∈ C', x e' ≠ h) :
+    ¬ HasClusteredZeroVertex G x :=
+  not_hasClusteredZeroVertex_of_isD0LocalMinimumForMoveSupports_of_kempe_candidates_and_cubic_star_pinned_target_repairs
+    hcard hmin hcandidate
+    (everyCubicD0BasicColorObstructionStarHasPinnedTargetD0Descent_of_kempeCycle_support_witnesses
+      hmin.source_flow hrepair)
+
+/-- Fully source-level rotation-disk form of the two-step route: first-step
+rotation-disk candidates and second-step internal-face support witnesses for
+each obstruction star exclude clustered zero vertices at a `D₀` local minimum. -/
+theorem
+    not_hasClusteredZeroVertex_of_isD0LocalMinimumForMoveSupports_of_rotationDisk_candidates_and_cubic_star_rotationDisk_support_witnesses
+    {G : SimpleGraph V} [Fintype V] [Fintype G.edgeSet]
+    (D : RotationDiskData V G.edgeSet)
+    (hincident : ∀ v : V, D.asZeroBoundary.incident v = incidentEdgeFinset G v)
+    {moveSupports : Finset (Finset G.edgeSet)} {x : G.edgeSet → Color}
+    (hcard : ∀ v : V, (incidentEdgeFinset G v).card = 3)
+    (hmin : IsD0LocalMinimumForMoveSupports G moveSupports x)
+    (hcandidate :
+      EveryClusteredZeroVertexHasRotationDiskD0Candidate G D moveSupports x)
+    (hrepair :
+      ∀ (C : Finset G.edgeSet) (v : V) (g : Color)
+        (e₁ e₂ e₀ : G.edgeSet),
+        g ≠ 0 →
+          e₁ ≠ e₂ → e₁ ≠ e₀ → e₂ ≠ e₀ →
+            incidentEdgeFinset G v = {e₁, e₂, e₀} →
+              e₁ ∈ C → e₂ ∈ C → e₀ ∉ C →
+                x e₁ = g → x e₂ = g → x e₀ = 0 →
+                  ∃ f ∈ moveSupports, ∃ h : Color,
+                    h ≠ 0 ∧ f ∈ D.rotation.internalFaces ∧
+                      (∀ w : V, ∃ e ∈ incidentEdgeFinset G w,
+                        if e ∈ f then x e ≠ h else x e ≠ 0) ∧
+                        e₀ ∈ f ∧ ∀ e' ∈ f, x e' ≠ h) :
+    ¬ HasClusteredZeroVertex G x :=
+  not_hasClusteredZeroVertex_of_isD0LocalMinimumForMoveSupports_of_rotationDisk_candidates_and_cubic_star_pinned_target_repairs
+    D hincident hcard hmin hcandidate
+    (everyCubicD0BasicColorObstructionStarHasPinnedTargetD0Descent_of_rotationDiskData_internalFace_support_witnesses
+      D hincident hmin.source_flow hrepair)
+
 /-- Matching-zero form of the two-step neutral-candidate route. -/
 theorem
     zeroEdgesFormMatching_of_isD0LocalMinimumForMoveSupports_of_neutral_candidates_and_cubicObstruction_descent
