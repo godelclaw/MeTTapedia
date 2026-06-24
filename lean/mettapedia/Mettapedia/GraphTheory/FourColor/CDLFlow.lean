@@ -3201,6 +3201,98 @@ theorem
       D hincident hf)
     heraseAt hnew
 
+/-- Second-step local hypothesis for the blocker left by a failed proposed
+`D₀` repair: every cubic basic-color obstruction admits a vertex-local
+zero-erasing/no-new-zero repair. -/
+def EveryCubicD0BasicColorObstructionHasD0Descent (G : SimpleGraph V)
+    [Fintype V] [Fintype G.edgeSet] (moveSupports : Finset (Finset G.edgeSet))
+    (x : G.edgeSet → Color) : Prop :=
+  ∀ (C : Finset G.edgeSet) (v : V) (g : Color),
+    HasCubicD0BasicColorObstructionAt G x C v g →
+      HasD0DescentRepairAt G moveSupports x v
+
+/-- A `D₀` local minimum cannot contain a repairable cubic basic-color
+obstruction.  This is the precise second-step obligation exposed by the
+forced-zero analysis. -/
+theorem
+    not_exists_hasCubicD0BasicColorObstructionAt_of_isD0LocalMinimumForMoveSupports_of_cubicObstruction_descent
+    {G : SimpleGraph V} [Fintype V] [Fintype G.edgeSet]
+    {moveSupports : Finset (Finset G.edgeSet)} {x : G.edgeSet → Color}
+    (hmin : IsD0LocalMinimumForMoveSupports G moveSupports x)
+    (hrepair : EveryCubicD0BasicColorObstructionHasD0Descent G moveSupports x) :
+    ¬ ∃ (C : Finset G.edgeSet) (v : V) (g : Color),
+      HasCubicD0BasicColorObstructionAt G x C v g := by
+  rintro ⟨C, v, g, hobst⟩
+  exact (not_hasD0DescentRepairAt_of_isD0LocalMinimumForMoveSupports
+    (v := v) hmin) (hrepair C v g hobst)
+
+/-- If every cubic basic-color obstruction has a second-step repair, then a
+neutral support at a `D₀` local minimum cannot erase an incident zero while
+creating no new zero.  Otherwise the first step leaves exactly such a repairable
+cubic obstruction. -/
+theorem
+    not_exists_kirchhoffNeutral_erases_incident_zero_creates_no_zero_of_isD0LocalMinimumForMoveSupports_of_cubicObstruction_descent
+    {G : SimpleGraph V} [Fintype V] [Fintype G.edgeSet]
+    {moveSupports : Finset (Finset G.edgeSet)} {x : G.edgeSet → Color}
+    (hcard : ∀ v : V, (incidentEdgeFinset G v).card = 3)
+    (hmin : IsD0LocalMinimumForMoveSupports G moveSupports x)
+    (hrepair : EveryCubicD0BasicColorObstructionHasD0Descent G moveSupports x) :
+    ¬ ∃ C ∈ moveSupports, ∃ g : Color, ∃ v : V,
+      g ≠ 0 ∧ IsKirchhoffNeutralMoveSupport G C ∧
+        (∃ e ∈ C, e ∈ incidentEdgeFinset G v ∧ x e = 0) ∧
+          ∀ e ∈ C, x e ≠ g := by
+  rintro ⟨C, hCmem, g, v, hg, hC, heraseAt, hnew⟩
+  rcases
+    exists_hasCubicD0BasicColorObstructionAt_of_isD0LocalMinimumForMoveSupports_kirchhoffNeutral_erases_incident_zero_creates_no_zero
+      hcard hmin hCmem hg hC heraseAt hnew with ⟨w, hobst⟩
+  exact (not_exists_hasCubicD0BasicColorObstructionAt_of_isD0LocalMinimumForMoveSupports_of_cubicObstruction_descent
+    hmin hrepair) ⟨C, w, g, hobst⟩
+
+/-- Kempe-cycle version of the second-step obstruction theorem. -/
+theorem
+    not_exists_isKempeCycle_erases_incident_zero_creates_no_zero_of_isD0LocalMinimumForMoveSupports_of_cubicObstruction_descent
+    {G : SimpleGraph V} [Fintype V] [Fintype G.edgeSet]
+    {moveSupports : Finset (Finset G.edgeSet)} {x : G.edgeSet → Color}
+    (hcard : ∀ v : V, (incidentEdgeFinset G v).card = 3)
+    (hmin : IsD0LocalMinimumForMoveSupports G moveSupports x)
+    (hrepair : EveryCubicD0BasicColorObstructionHasD0Descent G moveSupports x) :
+    ¬ ∃ C ∈ moveSupports, ∃ α β g : Color, ∃ v : V,
+      g ≠ 0 ∧ IsKempeCycle (incidentEdgeFinset G) x C α β ∧
+        (∃ e ∈ C, e ∈ incidentEdgeFinset G v ∧ x e = 0) ∧
+          ∀ e ∈ C, x e ≠ g := by
+  intro hbad
+  apply
+    not_exists_kirchhoffNeutral_erases_incident_zero_creates_no_zero_of_isD0LocalMinimumForMoveSupports_of_cubicObstruction_descent
+      hcard hmin hrepair
+  rcases hbad with ⟨C, hCmem, α, β, g, v, hg, hC, heraseAt, hnew⟩
+  exact ⟨C, hCmem, g, v, hg,
+    isKirchhoffNeutralMoveSupport_of_isKempeCycle hC, heraseAt, hnew⟩
+
+/-- Rotation-disk internal-face version of the second-step obstruction theorem. -/
+theorem
+    not_exists_rotationDiskData_internalFace_erases_incident_zero_creates_no_zero_of_isD0LocalMinimumForMoveSupports_of_cubicObstruction_descent
+    {G : SimpleGraph V} [Fintype V] [Fintype G.edgeSet]
+    (D : RotationDiskData V G.edgeSet)
+    (hincident : ∀ v : V, D.asZeroBoundary.incident v = incidentEdgeFinset G v)
+    {moveSupports : Finset (Finset G.edgeSet)} {x : G.edgeSet → Color}
+    (hcard : ∀ v : V, (incidentEdgeFinset G v).card = 3)
+    (hmin : IsD0LocalMinimumForMoveSupports G moveSupports x)
+    (hrepair : EveryCubicD0BasicColorObstructionHasD0Descent G moveSupports x) :
+    ¬ ∃ f ∈ moveSupports, f ∈ D.rotation.internalFaces ∧
+      ∃ g : Color, ∃ v : V,
+        g ≠ 0 ∧
+          (∃ e ∈ f, e ∈ incidentEdgeFinset G v ∧ x e = 0) ∧
+            ∀ e ∈ f, x e ≠ g := by
+  intro hbad
+  apply
+    not_exists_kirchhoffNeutral_erases_incident_zero_creates_no_zero_of_isD0LocalMinimumForMoveSupports_of_cubicObstruction_descent
+      hcard hmin hrepair
+  rcases hbad with ⟨f, hfmem, hf, g, v, hg, heraseAt, hnew⟩
+  exact ⟨f, hfmem, g, v, hg,
+    isKirchhoffNeutralMoveSupport_of_rotationDiskData_internalFace
+      D hincident hf,
+    heraseAt, hnew⟩
+
 /-- The vertex-local repair hypothesis implies the global nonmatching repair
 hypothesis, because every nonmatching zero pattern has a clustered zero
 vertex. -/
