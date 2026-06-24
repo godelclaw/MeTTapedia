@@ -209,6 +209,23 @@ def CAP5TransportedEdgeSwitchUsesComponentCoverSupport
   (edgeSupport = data.redPurpleEdge₁ ∧ a = σ red ∧ b = σ purple) ∨
   (edgeSupport = data.redPurpleEdge₂ ∧ a = σ red ∧ b = σ purple)
 
+/-- Concrete edge-level repair outcome for a transported bad CAP5 boundary word.  It records
+the transported normal form, the component-cover data used, and the actual edge switch whose
+restricted boundary word extends across the cap. -/
+structure CAP5EdgeSwitchRepairOutcome
+    {E : Type*} [DecidableEq E] (boundaryEdge : Fin 5 → E) (C : E → Color) where
+  σ : Color ≃ Color
+  n : Nat
+  hσ0 : σ 0 = 0
+  data : CAP5TransportedEdgeComponentCoverData boundaryEdge n
+  edgeSupport : Finset E
+  a : Color
+  b : Color
+  huses : CAP5TransportedEdgeSwitchUsesComponentCoverSupport data σ edgeSupport a b
+  hextends :
+    CAP5WordExtendsAcrossCycle
+      (cap5BoundaryWordOfEdges boundaryEdge (switch a b (edgeSupport : Set E) C))
+
 /-- Raw support-cover repair action for an arbitrary transported bad CAP5 word.  This exposes the
 actual support-carried boundary action, not just the solved-word conclusion. -/
 theorem exists_boundaryActionRepairsWord_usingTransportedComponentCoverSupport_of_eq_transportBad_of_componentCoverSupports
@@ -696,6 +713,72 @@ theorem cap5BoundaryWordSolved_of_nonzero_of_sum_zero_of_transportEdgeComponentC
     CAP5BoundaryWordSolved w :=
   cap5BoundaryWordSolved_of_nonzero_of_odd_of_transportEdgeComponentCoverData
     hnz (cap5BoundaryWordHasOddColorCounts_of_nonzero_of_sum_eq_zero hnz hsum)
+    hcomponentCovers
+
+/-- Graph-facing split for a CAP5 boundary word obtained from an edge coloring.  Under the
+nonzero boundary and zero-sum equations, either the boundary word already extends across the cap,
+or structured component-cover data produces a concrete edge-level switch whose restricted
+boundary word extends. -/
+theorem cap5BoundaryWordOfEdges_extends_or_switchRepairOutcome_of_nonzero_of_sum_zero_of_transportEdgeComponentCoverData
+    {E : Type*} [DecidableEq E] (boundaryEdge : Fin 5 → E) (C : E → Color)
+    (hnz : CAP5BoundaryWordIsNonzero (cap5BoundaryWordOfEdges boundaryEdge C))
+    (hsum : (∑ i : Fin 5, cap5BoundaryWordOfEdges boundaryEdge C i) = 0)
+    (hcomponentCovers :
+      ∀ {σ : Color ≃ Color} {n : Nat},
+        σ 0 = 0 →
+        cap5BoundaryWordOfEdges boundaryEdge C = cap5TransportedBadBoundaryWord σ n →
+        CAP5TransportedEdgeComponentCoverData boundaryEdge n) :
+    CAP5WordExtendsAcrossCycle (cap5BoundaryWordOfEdges boundaryEdge C) ∨
+      Nonempty (CAP5EdgeSwitchRepairOutcome boundaryEdge C) := by
+  have hodd :
+      CAP5BoundaryWordHasOddColorCounts (cap5BoundaryWordOfEdges boundaryEdge C) :=
+    cap5BoundaryWordHasOddColorCounts_of_nonzero_of_sum_eq_zero hnz hsum
+  rcases cap5BoundaryWord_coloredBlock311_or_coloredBlock2111_of_nonzero_of_odd
+      hnz hodd with hgood | hbad
+  · exact Or.inl (cap5_extendsAcrossCycle_of_coloredBlock311 hgood)
+  · rcases cap5BoundaryWordHasBlock2111_of_coloredBlock2111 hbad with
+      ⟨σ, n, hσ0, hw⟩
+    let data : CAP5TransportedEdgeComponentCoverData boundaryEdge n :=
+      hcomponentCovers hσ0 hw
+    rcases
+        exists_edgeSupport_switch_extendsAcrossCycle_of_eq_transportBad_of_componentCoverData
+          boundaryEdge C hσ0 data hw with
+      ⟨edgeSupport, a, b, huses, hextends⟩
+    exact Or.inr ⟨
+      { σ := σ
+        n := n
+        hσ0 := hσ0
+        data := data
+        edgeSupport := edgeSupport
+        a := a
+        b := b
+        huses := huses
+        hextends := hextends }⟩
+
+/-- Manuscript-facing edge-switch split for a Tait edge coloring.  If the CAP5 boundary edges
+enumerate a zero-boundary incidence set, then the restricted boundary word either extends across
+the cap immediately or admits a concrete edge-level switch repair extracted from the supplied
+component-cover data. -/
+theorem cap5BoundaryWordOfEdges_extends_or_switchRepairOutcome_of_isTaitEdgeColoring_of_isZeroBoundary_at_of_transportEdgeComponentCoverData
+    {V U : Type*} [DecidableEq V] {G : SimpleGraph V}
+    {D : ZeroBoundaryData U G.edgeSet} {v : U}
+    (boundaryEdge : Fin 5 → G.edgeSet) (C : G.EdgeColoring Color)
+    (hC : IsTaitEdgeColoring G C)
+    (hinj : Function.Injective boundaryEdge)
+    (hincident : D.incident v = Finset.univ.map ⟨boundaryEdge, hinj⟩)
+    (hzero : D.isZeroBoundary C)
+    (hcomponentCovers :
+      ∀ {σ : Color ≃ Color} {n : Nat},
+        σ 0 = 0 →
+        cap5BoundaryWordOfEdges boundaryEdge C = cap5TransportedBadBoundaryWord σ n →
+        CAP5TransportedEdgeComponentCoverData boundaryEdge n) :
+    CAP5WordExtendsAcrossCycle (cap5BoundaryWordOfEdges boundaryEdge C) ∨
+      Nonempty (CAP5EdgeSwitchRepairOutcome boundaryEdge C) :=
+  cap5BoundaryWordOfEdges_extends_or_switchRepairOutcome_of_nonzero_of_sum_zero_of_transportEdgeComponentCoverData
+    boundaryEdge C
+    (cap5BoundaryWordOfEdges_isNonzero_of_isTaitEdgeColoring boundaryEdge C hC)
+    (cap5BoundaryWordOfEdges_sum_eq_zero_of_isZeroBoundary_at
+      boundaryEdge C hinj hincident hzero)
     hcomponentCovers
 
 /-- Edge-coloring boundary restriction form of the structured CAP5 reducibility split.  This is
