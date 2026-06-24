@@ -313,4 +313,44 @@ theorem cap5_extendsAcrossCycle_of_realizesRepairType_bad
   rcases h with ⟨τ, rfl⟩
   exact τ.apply_bad_extendsAcrossCycle
 
+/-- A boundary action transforms CAP5 boundary words.  A graph-level outside-only Kempe component
+will later supply this map by restricting its color swap to the five cap boundary edges. -/
+abbrev CAP5BoundaryAction := CAP5BoundaryWord → CAP5BoundaryWord
+
+/-- A boundary action induces a named finite repair type at a given boundary word. -/
+def CAP5BoundaryActionInducesRepairType
+    (action : CAP5BoundaryAction) (w : CAP5BoundaryWord) (τ : CAP5RepairType) : Prop :=
+  action w = τ.apply w
+
+/-- Boundary-action form of `CAP5RealizesRepairType`: if the action induces a repair type, its
+output word realizes that repair type. -/
+theorem cap5RealizesRepairType_of_boundaryActionInducesRepairType
+    {action : CAP5BoundaryAction} {w : CAP5BoundaryWord} {τ : CAP5RepairType}
+    (h : CAP5BoundaryActionInducesRepairType action w τ) :
+    CAP5RealizesRepairType w (action w) := by
+  exact ⟨τ, h⟩
+
+/-- A boundary action realizes some finite repair type at a given boundary word. -/
+def CAP5BoundaryActionRealizesSomeRepairType
+    (action : CAP5BoundaryAction) (w : CAP5BoundaryWord) : Prop :=
+  ∃ τ : CAP5RepairType, CAP5BoundaryActionInducesRepairType action w τ
+
+/-- If a boundary action induces a particular finite repair type on the canonical bad word, then
+the action's output extends across the CAP5 cap. -/
+theorem cap5_extendsAcrossCycle_of_boundaryActionInducesRepairType_bad
+    {action : CAP5BoundaryAction} {τ : CAP5RepairType}
+    (h : CAP5BoundaryActionInducesRepairType action cap5BadBoundaryWord2111 τ) :
+    CAP5WordExtendsAcrossCycle (action cap5BadBoundaryWord2111) :=
+  cap5_extendsAcrossCycle_of_realizesRepairType_bad
+    (cap5RealizesRepairType_of_boundaryActionInducesRepairType h)
+
+/-- If a boundary action realizes some finite repair type on the canonical bad word, then the
+action's output extends across the CAP5 cap. -/
+theorem cap5_extendsAcrossCycle_of_boundaryActionRealizesSomeRepairType_bad
+    {action : CAP5BoundaryAction}
+    (h : CAP5BoundaryActionRealizesSomeRepairType action cap5BadBoundaryWord2111) :
+    CAP5WordExtendsAcrossCycle (action cap5BadBoundaryWord2111) := by
+  rcases h with ⟨τ, hτ⟩
+  exact cap5_extendsAcrossCycle_of_boundaryActionInducesRepairType_bad (τ := τ) hτ
+
 end Mettapedia.GraphTheory.FourColor
