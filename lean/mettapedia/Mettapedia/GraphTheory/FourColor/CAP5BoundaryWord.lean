@@ -793,6 +793,55 @@ private def decidableCAP5BoundaryWordHasOddColorCounts (w : CAP5BoundaryWord) :
   unfold CAP5BoundaryWordHasOddColorCounts
   infer_instance
 
+set_option maxRecDepth 10000 in
+private theorem cap5BoundaryWordHasOddColorCounts_of_nonzero_of_sum_eq_zero_core :
+    ∀ w : CAP5BoundaryWord,
+      CAP5BoundaryWordIsNonzero w →
+      (∑ i : Fin 5, w i) = 0 →
+      CAP5BoundaryWordHasOddColorCounts w := by
+  letI : DecidablePred CAP5BoundaryWordIsNonzero := decidableCAP5BoundaryWordIsNonzero
+  letI : DecidablePred CAP5BoundaryWordHasOddColorCounts :=
+    decidableCAP5BoundaryWordHasOddColorCounts
+  decide
+
+set_option maxRecDepth 10000 in
+private theorem cap5BoundaryWord_sum_eq_zero_of_nonzero_of_odd_core :
+    ∀ w : CAP5BoundaryWord,
+      CAP5BoundaryWordIsNonzero w →
+      CAP5BoundaryWordHasOddColorCounts w →
+      (∑ i : Fin 5, w i) = 0 := by
+  letI : DecidablePred CAP5BoundaryWordIsNonzero := decidableCAP5BoundaryWordIsNonzero
+  letI : DecidablePred CAP5BoundaryWordHasOddColorCounts :=
+    decidableCAP5BoundaryWordHasOddColorCounts
+  decide
+
+/-- Boundary-sum parity for a nonzero CAP5 word: if the five boundary colors sum to zero in
+`𝔽₂²`, then red, blue, and purple each occur an odd number of times.  This is the local algebraic
+shape supplied by a cubic Tait-coloring cut condition. -/
+theorem cap5BoundaryWordHasOddColorCounts_of_nonzero_of_sum_eq_zero
+    {w : CAP5BoundaryWord}
+    (hnz : CAP5BoundaryWordIsNonzero w)
+    (hsum : (∑ i : Fin 5, w i) = 0) :
+    CAP5BoundaryWordHasOddColorCounts w :=
+  cap5BoundaryWordHasOddColorCounts_of_nonzero_of_sum_eq_zero_core w hnz hsum
+
+/-- Conversely, a nonzero CAP5 word with odd red/blue/purple counts has zero total color sum in
+`𝔽₂²`. -/
+theorem cap5BoundaryWord_sum_eq_zero_of_nonzero_of_odd
+    {w : CAP5BoundaryWord}
+    (hnz : CAP5BoundaryWordIsNonzero w)
+    (hodd : CAP5BoundaryWordHasOddColorCounts w) :
+    (∑ i : Fin 5, w i) = 0 :=
+  cap5BoundaryWord_sum_eq_zero_of_nonzero_of_odd_core w hnz hodd
+
+/-- For a nonzero CAP5 boundary word, the manuscript's odd-count hypothesis is equivalent to the
+zero-sum `𝔽₂²` boundary parity condition. -/
+theorem cap5BoundaryWordHasOddColorCounts_iff_sum_eq_zero_of_nonzero
+    {w : CAP5BoundaryWord} (hnz : CAP5BoundaryWordIsNonzero w) :
+    CAP5BoundaryWordHasOddColorCounts w ↔ (∑ i : Fin 5, w i) = 0 :=
+  ⟨cap5BoundaryWord_sum_eq_zero_of_nonzero_of_odd hnz,
+    cap5BoundaryWordHasOddColorCounts_of_nonzero_of_sum_eq_zero hnz⟩
+
 private def decidableCAP5BoundaryWordHasColoredBlock311Rotation
     (w : CAP5BoundaryWord) (a b c : Color) :
     Decidable (∃ n : Fin 5,
