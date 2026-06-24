@@ -298,6 +298,31 @@ def CyclicEdgeCutRealization.of_walk_avoid_side_invariant
       exact hv ((hwalk_invariant p havoid).1 hu))
     hinside_cycle houtside_cycle
 
+/-- Local edge-classification constructor for cyclic-edge-cut realization data.  If the listed
+finite support consists of side-crossing edges, and every unlisted edge has both endpoints on the
+same side, then the listed support is exactly the side edge cut. -/
+def CyclicEdgeCutRealization.of_edge_side_classification
+    {G : SimpleGraph V} {edgeCut : Finset G.edgeSet} (side : V → Prop)
+    (hcut_crosses :
+      ∀ e : G.edgeSet, e ∈ edgeCut → EdgeCrossesVertexSide G side e)
+    (hnoncut_preserves :
+      ∀ e : G.edgeSet, e ∉ edgeCut →
+        ∀ u v : V, u ∈ (e : Sym2 V) → v ∈ (e : Sym2 V) → (side u ↔ side v))
+    (hinside_cycle : HasCycleOnSide G side)
+    (houtside_cycle : HasCycleOnSide G (fun v => ¬ side v)) :
+    CyclicEdgeCutRealization G edgeCut where
+  side := side
+  hcut_eq := by
+    intro e
+    constructor
+    · exact hcut_crosses e
+    · intro hcross
+      by_contra hnot
+      rcases hcross with ⟨u, v, hu, hv, hsu, hsv⟩
+      exact hsv ((hnoncut_preserves e hnot u v hu hv).1 hsu)
+  hinside_cycle := hinside_cycle
+  houtside_cycle := houtside_cycle
+
 theorem SmallCyclicEdgeCut.exists_mem_edgeCut_of_walk_endpoint_sides
     {G : SimpleGraph V} (cut : SmallCyclicEdgeCut G)
     {u v : V} (p : G.Walk u v) (hu : cut.side u) (hv : ¬ cut.side v) :
