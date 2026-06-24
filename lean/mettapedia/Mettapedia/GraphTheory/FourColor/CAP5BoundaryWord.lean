@@ -405,6 +405,20 @@ def CAP5BadRedPurpleActivePairing (S₁ S₂ : Finset (Fin 5)) : Prop :=
   (S₁ = {0, 4} ∧ S₂ = {1, 3}) ∨
   (S₁ = {1, 3} ∧ S₂ = {0, 4})
 
+/-- Graph-facing red/blue component cover condition for the normalized CAP5 bad word:
+two disjoint two-point supports cover exactly the active red/blue boundary positions
+`{0,1,2,3}`. -/
+def CAP5BadRedBlueComponentCover (S₁ S₂ : Finset (Fin 5)) : Prop :=
+  S₁.card = 2 ∧ S₂.card = 2 ∧ Disjoint S₁ S₂ ∧
+    S₁ ∪ S₂ = ({0, 1, 2, 3} : Finset (Fin 5))
+
+/-- Graph-facing red/purple component cover condition for the normalized CAP5 bad word:
+two disjoint two-point supports cover exactly the active red/purple boundary positions
+`{0,1,3,4}`. -/
+def CAP5BadRedPurpleComponentCover (S₁ S₂ : Finset (Fin 5)) : Prop :=
+  S₁.card = 2 ∧ S₂.card = 2 ∧ Disjoint S₁ S₂ ∧
+    S₁ ∪ S₂ = ({0, 1, 3, 4} : Finset (Fin 5))
+
 /-- The exceptional red/blue pairing in the canonical bad CAP5 word. -/
 def CAP5BadRedBlueExceptionalPairing (S₁ S₂ : Finset (Fin 5)) : Prop :=
   (S₁ = {0, 3} ∧ S₂ = {1, 2}) ∨
@@ -421,6 +435,213 @@ def CAP5BadExceptionalPairingPattern
     (redBlue₁ redBlue₂ redPurple₁ redPurple₂ : Finset (Fin 5)) : Prop :=
   CAP5BadRedBlueExceptionalPairing redBlue₁ redBlue₂ ∧
   CAP5BadRedPurpleExceptionalPairing redPurple₁ redPurple₂
+
+private theorem cap5_subset_left_of_union_eq {S₁ S₂ A : Finset (Fin 5)}
+    (hunion : S₁ ∪ S₂ = A) : S₁ ⊆ A := by
+  intro i hi
+  simpa [hunion] using (Finset.mem_union_left S₂ hi)
+
+private theorem cap5RedBluePairCases_of_card_two_subset
+    {S : Finset (Fin 5)}
+    (hcard : S.card = 2)
+    (hsubset : S ⊆ ({0, 1, 2, 3} : Finset (Fin 5))) :
+    S = {0, 1} ∨ S = {0, 2} ∨ S = {0, 3} ∨
+      S = {1, 2} ∨ S = {1, 3} ∨ S = ({2, 3} : Finset (Fin 5)) := by
+  rcases Finset.card_eq_two.mp hcard with ⟨a, b, hab, hS⟩
+  rw [hS] at hsubset ⊢
+  fin_cases a <;> fin_cases b <;> simp [Finset.subset_iff] at hab hsubset ⊢
+  all_goals first
+    | exact Or.inl (by decide)
+    | exact Or.inr (Or.inl (by decide))
+    | exact Or.inr (Or.inr (Or.inl (by decide)))
+    | exact Or.inr (Or.inr (Or.inr (Or.inl (by decide))))
+    | exact Or.inr (Or.inr (Or.inr (Or.inr (Or.inl (by decide)))))
+    | exact Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (by decide)))))
+
+private theorem cap5RedPurplePairCases_of_card_two_subset
+    {S : Finset (Fin 5)}
+    (hcard : S.card = 2)
+    (hsubset : S ⊆ ({0, 1, 3, 4} : Finset (Fin 5))) :
+    S = {0, 1} ∨ S = {0, 3} ∨ S = {0, 4} ∨
+      S = {1, 3} ∨ S = {1, 4} ∨ S = ({3, 4} : Finset (Fin 5)) := by
+  rcases Finset.card_eq_two.mp hcard with ⟨a, b, hab, hS⟩
+  rw [hS] at hsubset ⊢
+  fin_cases a <;> fin_cases b <;> simp [Finset.subset_iff] at hab hsubset ⊢
+  all_goals first
+    | exact Or.inl (by decide)
+    | exact Or.inr (Or.inl (by decide))
+    | exact Or.inr (Or.inr (Or.inl (by decide)))
+    | exact Or.inr (Or.inr (Or.inr (Or.inl (by decide))))
+    | exact Or.inr (Or.inr (Or.inr (Or.inr (Or.inl (by decide)))))
+    | exact Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (by decide)))))
+
+private theorem cap5RedBlueComplement_01 {S₂ : Finset (Fin 5)}
+    (hdisj : Disjoint ({0, 1} : Finset (Fin 5)) S₂)
+    (hunion : ({0, 1} : Finset (Fin 5)) ∪ S₂ =
+      ({0, 1, 2, 3} : Finset (Fin 5))) :
+    S₂ = ({2, 3} : Finset (Fin 5)) := by
+  ext i
+  have hmem := congrArg (fun T : Finset (Fin 5) => i ∈ T) hunion
+  fin_cases i <;> simp [Finset.disjoint_left] at hdisj hmem ⊢ <;> tauto
+
+private theorem cap5RedBlueComplement_02 {S₂ : Finset (Fin 5)}
+    (hdisj : Disjoint ({0, 2} : Finset (Fin 5)) S₂)
+    (hunion : ({0, 2} : Finset (Fin 5)) ∪ S₂ =
+      ({0, 1, 2, 3} : Finset (Fin 5))) :
+    S₂ = ({1, 3} : Finset (Fin 5)) := by
+  ext i
+  have hmem := congrArg (fun T : Finset (Fin 5) => i ∈ T) hunion
+  fin_cases i <;> simp [Finset.disjoint_left] at hdisj hmem ⊢ <;> tauto
+
+private theorem cap5RedBlueComplement_03 {S₂ : Finset (Fin 5)}
+    (hdisj : Disjoint ({0, 3} : Finset (Fin 5)) S₂)
+    (hunion : ({0, 3} : Finset (Fin 5)) ∪ S₂ =
+      ({0, 1, 2, 3} : Finset (Fin 5))) :
+    S₂ = ({1, 2} : Finset (Fin 5)) := by
+  ext i
+  have hmem := congrArg (fun T : Finset (Fin 5) => i ∈ T) hunion
+  fin_cases i <;> simp [Finset.disjoint_left] at hdisj hmem ⊢ <;> tauto
+
+private theorem cap5RedBlueComplement_12 {S₂ : Finset (Fin 5)}
+    (hdisj : Disjoint ({1, 2} : Finset (Fin 5)) S₂)
+    (hunion : ({1, 2} : Finset (Fin 5)) ∪ S₂ =
+      ({0, 1, 2, 3} : Finset (Fin 5))) :
+    S₂ = ({0, 3} : Finset (Fin 5)) := by
+  ext i
+  have hmem := congrArg (fun T : Finset (Fin 5) => i ∈ T) hunion
+  fin_cases i <;> simp [Finset.disjoint_left] at hdisj hmem ⊢ <;> tauto
+
+private theorem cap5RedBlueComplement_13 {S₂ : Finset (Fin 5)}
+    (hdisj : Disjoint ({1, 3} : Finset (Fin 5)) S₂)
+    (hunion : ({1, 3} : Finset (Fin 5)) ∪ S₂ =
+      ({0, 1, 2, 3} : Finset (Fin 5))) :
+    S₂ = ({0, 2} : Finset (Fin 5)) := by
+  ext i
+  have hmem := congrArg (fun T : Finset (Fin 5) => i ∈ T) hunion
+  fin_cases i <;> simp [Finset.disjoint_left] at hdisj hmem ⊢ <;> tauto
+
+private theorem cap5RedBlueComplement_23 {S₂ : Finset (Fin 5)}
+    (hdisj : Disjoint ({2, 3} : Finset (Fin 5)) S₂)
+    (hunion : ({2, 3} : Finset (Fin 5)) ∪ S₂ =
+      ({0, 1, 2, 3} : Finset (Fin 5))) :
+    S₂ = ({0, 1} : Finset (Fin 5)) := by
+  ext i
+  have hmem := congrArg (fun T : Finset (Fin 5) => i ∈ T) hunion
+  fin_cases i <;> simp [Finset.disjoint_left] at hdisj hmem ⊢ <;> tauto
+
+private theorem cap5RedPurpleComplement_01 {S₂ : Finset (Fin 5)}
+    (hdisj : Disjoint ({0, 1} : Finset (Fin 5)) S₂)
+    (hunion : ({0, 1} : Finset (Fin 5)) ∪ S₂ =
+      ({0, 1, 3, 4} : Finset (Fin 5))) :
+    S₂ = ({3, 4} : Finset (Fin 5)) := by
+  ext i
+  have hmem := congrArg (fun T : Finset (Fin 5) => i ∈ T) hunion
+  fin_cases i <;> simp [Finset.disjoint_left] at hdisj hmem ⊢ <;> tauto
+
+private theorem cap5RedPurpleComplement_03 {S₂ : Finset (Fin 5)}
+    (hdisj : Disjoint ({0, 3} : Finset (Fin 5)) S₂)
+    (hunion : ({0, 3} : Finset (Fin 5)) ∪ S₂ =
+      ({0, 1, 3, 4} : Finset (Fin 5))) :
+    S₂ = ({1, 4} : Finset (Fin 5)) := by
+  ext i
+  have hmem := congrArg (fun T : Finset (Fin 5) => i ∈ T) hunion
+  fin_cases i <;> simp [Finset.disjoint_left] at hdisj hmem ⊢ <;> tauto
+
+private theorem cap5RedPurpleComplement_04 {S₂ : Finset (Fin 5)}
+    (hdisj : Disjoint ({0, 4} : Finset (Fin 5)) S₂)
+    (hunion : ({0, 4} : Finset (Fin 5)) ∪ S₂ =
+      ({0, 1, 3, 4} : Finset (Fin 5))) :
+    S₂ = ({1, 3} : Finset (Fin 5)) := by
+  ext i
+  have hmem := congrArg (fun T : Finset (Fin 5) => i ∈ T) hunion
+  fin_cases i <;> simp [Finset.disjoint_left] at hdisj hmem ⊢ <;> tauto
+
+private theorem cap5RedPurpleComplement_13 {S₂ : Finset (Fin 5)}
+    (hdisj : Disjoint ({1, 3} : Finset (Fin 5)) S₂)
+    (hunion : ({1, 3} : Finset (Fin 5)) ∪ S₂ =
+      ({0, 1, 3, 4} : Finset (Fin 5))) :
+    S₂ = ({0, 4} : Finset (Fin 5)) := by
+  ext i
+  have hmem := congrArg (fun T : Finset (Fin 5) => i ∈ T) hunion
+  fin_cases i <;> simp [Finset.disjoint_left] at hdisj hmem ⊢ <;> tauto
+
+private theorem cap5RedPurpleComplement_14 {S₂ : Finset (Fin 5)}
+    (hdisj : Disjoint ({1, 4} : Finset (Fin 5)) S₂)
+    (hunion : ({1, 4} : Finset (Fin 5)) ∪ S₂ =
+      ({0, 1, 3, 4} : Finset (Fin 5))) :
+    S₂ = ({0, 3} : Finset (Fin 5)) := by
+  ext i
+  have hmem := congrArg (fun T : Finset (Fin 5) => i ∈ T) hunion
+  fin_cases i <;> simp [Finset.disjoint_left] at hdisj hmem ⊢ <;> tauto
+
+private theorem cap5RedPurpleComplement_34 {S₂ : Finset (Fin 5)}
+    (hdisj : Disjoint ({3, 4} : Finset (Fin 5)) S₂)
+    (hunion : ({3, 4} : Finset (Fin 5)) ∪ S₂ =
+      ({0, 1, 3, 4} : Finset (Fin 5))) :
+    S₂ = ({0, 1} : Finset (Fin 5)) := by
+  ext i
+  have hmem := congrArg (fun T : Finset (Fin 5) => i ∈ T) hunion
+  fin_cases i <;> simp [Finset.disjoint_left] at hdisj hmem ⊢ <;> tauto
+
+/-- A disjoint two-component cover of the active red/blue support is one of the three
+red/blue active pairings, with ordered component slots. -/
+theorem cap5BadRedBlueActivePairing_of_componentCover
+    {S₁ S₂ : Finset (Fin 5)}
+    (h : CAP5BadRedBlueComponentCover S₁ S₂) :
+    CAP5BadRedBlueActivePairing S₁ S₂ := by
+  rcases h with ⟨hcard₁, _hcard₂, hdisj, hunion⟩
+  have hsubset : S₁ ⊆ ({0, 1, 2, 3} : Finset (Fin 5)) :=
+    cap5_subset_left_of_union_eq hunion
+  rcases cap5RedBluePairCases_of_card_two_subset hcard₁ hsubset with
+    hS₁ | hS₁ | hS₁ | hS₁ | hS₁ | hS₁
+  · rw [hS₁] at hdisj hunion ⊢
+    have hS₂ := cap5RedBlueComplement_01 hdisj hunion
+    simp [CAP5BadRedBlueActivePairing, hS₂]
+  · rw [hS₁] at hdisj hunion ⊢
+    have hS₂ := cap5RedBlueComplement_02 hdisj hunion
+    simp [CAP5BadRedBlueActivePairing, hS₂]
+  · rw [hS₁] at hdisj hunion ⊢
+    have hS₂ := cap5RedBlueComplement_03 hdisj hunion
+    simp [CAP5BadRedBlueActivePairing, hS₂]
+  · rw [hS₁] at hdisj hunion ⊢
+    have hS₂ := cap5RedBlueComplement_12 hdisj hunion
+    simp [CAP5BadRedBlueActivePairing, hS₂]
+  · rw [hS₁] at hdisj hunion ⊢
+    have hS₂ := cap5RedBlueComplement_13 hdisj hunion
+    simp [CAP5BadRedBlueActivePairing, hS₂]
+  · rw [hS₁] at hdisj hunion ⊢
+    have hS₂ := cap5RedBlueComplement_23 hdisj hunion
+    simp [CAP5BadRedBlueActivePairing, hS₂]
+
+/-- A disjoint two-component cover of the active red/purple support is one of the three
+red/purple active pairings, with ordered component slots. -/
+theorem cap5BadRedPurpleActivePairing_of_componentCover
+    {S₁ S₂ : Finset (Fin 5)}
+    (h : CAP5BadRedPurpleComponentCover S₁ S₂) :
+    CAP5BadRedPurpleActivePairing S₁ S₂ := by
+  rcases h with ⟨hcard₁, _hcard₂, hdisj, hunion⟩
+  have hsubset : S₁ ⊆ ({0, 1, 3, 4} : Finset (Fin 5)) :=
+    cap5_subset_left_of_union_eq hunion
+  rcases cap5RedPurplePairCases_of_card_two_subset hcard₁ hsubset with
+    hS₁ | hS₁ | hS₁ | hS₁ | hS₁ | hS₁
+  · rw [hS₁] at hdisj hunion ⊢
+    have hS₂ := cap5RedPurpleComplement_01 hdisj hunion
+    simp [CAP5BadRedPurpleActivePairing, hS₂]
+  · rw [hS₁] at hdisj hunion ⊢
+    have hS₂ := cap5RedPurpleComplement_03 hdisj hunion
+    simp [CAP5BadRedPurpleActivePairing, hS₂]
+  · rw [hS₁] at hdisj hunion ⊢
+    have hS₂ := cap5RedPurpleComplement_04 hdisj hunion
+    simp [CAP5BadRedPurpleActivePairing, hS₂]
+  · rw [hS₁] at hdisj hunion ⊢
+    have hS₂ := cap5RedPurpleComplement_13 hdisj hunion
+    simp [CAP5BadRedPurpleActivePairing, hS₂]
+  · rw [hS₁] at hdisj hunion ⊢
+    have hS₂ := cap5RedPurpleComplement_14 hdisj hunion
+    simp [CAP5BadRedPurpleActivePairing, hS₂]
+  · rw [hS₁] at hdisj hunion ⊢
+    have hS₂ := cap5RedPurpleComplement_34 hdisj hunion
+    simp [CAP5BadRedPurpleActivePairing, hS₂]
 
 /-- Every red/blue pairing of `{0,1,2,3}` either exposes a repair support or is the exceptional
 red/blue pairing. -/
@@ -549,6 +770,19 @@ normalized bad word: red/blue pairs `{0,1,2,3}` and red/purple pairs `{0,1,3,4}`
 def HasActivePairings (p : CAP5BadPairingSupports) : Prop :=
   CAP5BadRedBlueActivePairing p.redBlue₁ p.redBlue₂ ∧
   CAP5BadRedPurpleActivePairing p.redPurple₁ p.redPurple₂
+
+/-- Graph-facing cover hypotheses for the two active color pairs in the normalized CAP5 bad word. -/
+def HasComponentCovers (p : CAP5BadPairingSupports) : Prop :=
+  CAP5BadRedBlueComponentCover p.redBlue₁ p.redBlue₂ ∧
+  CAP5BadRedPurpleComponentCover p.redPurple₁ p.redPurple₂
+
+/-- Component-cover data from the graph-level Kempe-component proof supplies the active-pairing
+hypotheses needed by the finite CAP5 repair enumeration. -/
+theorem hasActivePairings_of_componentCovers
+    {p : CAP5BadPairingSupports} (h : p.HasComponentCovers) :
+    p.HasActivePairings := by
+  exact ⟨cap5BadRedBlueActivePairing_of_componentCover h.1,
+    cap5BadRedPurpleActivePairing_of_componentCover h.2⟩
 
 /-- Finite pairing enumeration for the normalized CAP5 bad word: once the outside components
 give pairings of the two active four-point supports, either a repair support appears or the
@@ -697,6 +931,19 @@ theorem exists_repairingBoundaryAction_usingSupport_of_activePairings_of_not_isE
       CAP5WordExtendsAcrossCycle (action cap5BadBoundaryWord2111) :=
   exists_repairingBoundaryAction_usingSupport_of_hasRepair
     ((hasRepair_iff_not_isExceptional_of_activePairings hpair).2 hnotExceptional)
+
+/-- Graph-facing final CAP5 endpoint: disjoint component covers of both active supports already
+supply active pairings, so excluding the simultaneous exceptional pattern produces a support-carried
+repair action whose boundary word extends across the cap. -/
+theorem exists_repairingBoundaryAction_usingSupport_of_componentCovers_of_not_isExceptional
+    {p : CAP5BadPairingSupports}
+    (hcovers : p.HasComponentCovers) (hnotExceptional : ¬ p.IsExceptional) :
+    ∃ action : CAP5BoundaryAction,
+      p.BoundaryActionUsesSupport action ∧
+      CAP5BoundaryActionRealizesSomeRepairType action cap5BadBoundaryWord2111 ∧
+      CAP5WordExtendsAcrossCycle (action cap5BadBoundaryWord2111) :=
+  exists_repairingBoundaryAction_usingSupport_of_activePairings_of_not_isExceptional
+    (hasActivePairings_of_componentCovers hcovers) hnotExceptional
 
 end CAP5BadPairingSupports
 
