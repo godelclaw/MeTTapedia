@@ -644,6 +644,25 @@ theorem CAP5TransportedEdgeComponentCoverCore.not_isExceptional_of_noCyclicEdgeC
     (hasCyclicEdgeCutOfSizeAtMostFour_of_isExceptional_of_portalSides
       p0Inside p4Inside hExceptional hrealizes)
 
+/-- Named cyclic-edge-connectivity form of the CAP5 exceptional-annulus obstruction. -/
+theorem CAP5TransportedEdgeComponentCoverCore.not_isExceptional_of_cyclicallyFiveEdgeConnected_of_portalSides
+    {V : Type*} {G : SimpleGraph V} [DecidableEq G.edgeSet]
+    {boundaryEdge : Fin 5 → G.edgeSet} {n : Nat}
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    (p0Inside p4Inside : Bool)
+    (hcyclic : CyclicallyFiveEdgeConnected G)
+    (hrealizes :
+      ∀ edgeCandidate : CAP5ExceptionalAnnulusBoundaryEdgeSupportCandidate boundaryEdge,
+        data.RealizesExceptionalBoundarySupportOrientation
+            edgeCandidate.portalCandidate.orientation →
+        edgeCandidate.portalCandidate.sideCase =
+            CAP5ExceptionalAnnulusSideCase.ofPortalSides p0Inside p4Inside →
+        ∃ cut : SmallCyclicEdgeCut G,
+          edgeCandidate.RealizesSmallCyclicEdgeCut cut) :
+    ¬ data.IsExceptional :=
+  data.not_isExceptional_of_noCyclicEdgeCut_of_portalSides
+    p0Inside p4Inside hcyclic.noCyclicEdgeCutOfSizeAtMostFour hrealizes
+
 /-- Full transported component-cover data is core component-cover data plus exclusion of the
 simultaneous exceptional pattern.  The core form is the honest target before the planar separator
 argument has ruled the exceptional branch out. -/
@@ -1341,6 +1360,32 @@ theorem exists_boundaryActionRepairsWord_usingTransportedEdgeSupport_of_eq_trans
       ((data.not_isExceptional_of_noCyclicEdgeCut_of_portalSides
           p0Inside p4Inside hnoCut hrealizes) hexceptional)
 
+/-- Named cyclic-edge-connectivity form of the CAP5 core repair endpoint. -/
+theorem exists_boundaryActionRepairsWord_usingTransportedEdgeSupport_of_eq_transportBad_of_componentCoverCore_of_cyclicallyFiveEdgeConnected
+    {V : Type*} {G : SimpleGraph V} [DecidableEq G.edgeSet]
+    {w : CAP5BoundaryWord} {boundaryEdge : Fin 5 → G.edgeSet}
+    {σ : Color ≃ Color} (hσ0 : σ 0 = 0) {n : Nat}
+    (data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n)
+    (hw : w = cap5TransportedBadBoundaryWord σ n)
+    (p0Inside p4Inside : Bool)
+    (hcyclic : CyclicallyFiveEdgeConnected G)
+    (hrealizes :
+      ∀ edgeCandidate : CAP5ExceptionalAnnulusBoundaryEdgeSupportCandidate boundaryEdge,
+        data.RealizesExceptionalBoundarySupportOrientation
+            edgeCandidate.portalCandidate.orientation →
+        edgeCandidate.portalCandidate.sideCase =
+            CAP5ExceptionalAnnulusSideCase.ofPortalSides p0Inside p4Inside →
+        ∃ cut : SmallCyclicEdgeCut G,
+          edgeCandidate.RealizesSmallCyclicEdgeCut cut) :
+    ∃ action : CAP5BoundaryAction,
+      CAP5TransportedBoundaryActionUsesEdgeComponentCoverSupport
+        boundaryEdge data.redBlueEdge₁ data.redBlueEdge₂
+          data.redPurpleEdge₁ data.redPurpleEdge₂ σ action ∧
+      CAP5BoundaryActionRealizesSomeTransportedRepairType action σ n ∧
+      CAP5BoundaryActionRepairsWord action w :=
+  exists_boundaryActionRepairsWord_usingTransportedEdgeSupport_of_eq_transportBad_of_componentCoverCore_of_noCyclicEdgeCut
+    hσ0 data hw p0Inside p4Inside hcyclic.noCyclicEdgeCutOfSizeAtMostFour hrealizes
+
 /-- Solved-boundary-word form of the core CAP5 endpoint under the no-small-cyclic-cut obstruction.
 This is the boundary-layer conclusion once component covers are available and the exceptional
 annulus branch has been ruled out by the graph-level cyclic-cut hypothesis. -/
@@ -1366,6 +1411,27 @@ theorem cap5BoundaryWordSolved_of_eq_transportBad_of_transportEdgeComponentCover
         hσ0 data hw p0Inside p4Inside hnoCut hrealizes with
     ⟨_action, _huses, _hrealizes, hrepairs⟩
   exact cap5BoundaryWordSolved_of_boundaryActionRepairsWord hrepairs
+
+/-- Named cyclic-edge-connectivity form of the solved-boundary-word CAP5 endpoint. -/
+theorem cap5BoundaryWordSolved_of_eq_transportBad_of_transportEdgeComponentCoverCore_of_cyclicallyFiveEdgeConnected
+    {V : Type*} {G : SimpleGraph V} [DecidableEq G.edgeSet]
+    {w : CAP5BoundaryWord} {boundaryEdge : Fin 5 → G.edgeSet}
+    {σ : Color ≃ Color} (hσ0 : σ 0 = 0) {n : Nat}
+    (data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n)
+    (hw : w = cap5TransportedBadBoundaryWord σ n)
+    (p0Inside p4Inside : Bool)
+    (hcyclic : CyclicallyFiveEdgeConnected G)
+    (hrealizes :
+      ∀ edgeCandidate : CAP5ExceptionalAnnulusBoundaryEdgeSupportCandidate boundaryEdge,
+        data.RealizesExceptionalBoundarySupportOrientation
+            edgeCandidate.portalCandidate.orientation →
+        edgeCandidate.portalCandidate.sideCase =
+            CAP5ExceptionalAnnulusSideCase.ofPortalSides p0Inside p4Inside →
+        ∃ cut : SmallCyclicEdgeCut G,
+          edgeCandidate.RealizesSmallCyclicEdgeCut cut) :
+    CAP5BoundaryWordSolved w :=
+  cap5BoundaryWordSolved_of_eq_transportBad_of_transportEdgeComponentCoverCore_of_noCyclicEdgeCut
+    hσ0 data hw p0Inside p4Inside hcyclic.noCyclicEdgeCutOfSizeAtMostFour hrealizes
 
 /-- Raw support-cover endpoint for an arbitrary transported bad CAP5 word.  This is the
 interface a later graph/Kempe extraction should naturally target: it supplies the four boundary
