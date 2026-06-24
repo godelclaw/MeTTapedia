@@ -42,6 +42,11 @@ def IsIncidentEdgeTriple (G : SimpleGraph V) [Fintype G.edgeSet] (v : V)
     (e1 e2 e3 : G.edgeSet) : Prop :=
   incidentEdgeFinset G v = {e1, e2, e3} ∧ e1 ≠ e2 ∧ e1 ≠ e3 ∧ e2 ≠ e3
 
+/-- A lightweight cubic-incidence hypothesis: every vertex has its incident
+edge-set explicitly enumerated by three distinct edges. -/
+def HasCubicIncidentEdgeTriples (G : SimpleGraph V) [Fintype G.edgeSet] : Prop :=
+  ∀ v : V, ∃ e1 e2 e3 : G.edgeSet, IsIncidentEdgeTriple G v e1 e2 e3
+
 /-- Local Kirchhoff law for the three incident edge-values at a cubic vertex. -/
 def IsLocalKirchhoffTriple (a b c : Color) : Prop :=
   a + b + c = 0
@@ -67,6 +72,14 @@ theorem isGraphFlow_iff {G : SimpleGraph V} [Fintype G.edgeSet]
     {x : G.edgeSet → Color} :
     IsGraphFlow G x ↔ ∀ v : V, vertexKirchhoffSum G x v = 0 :=
   Iff.rfl
+
+theorem incidentEdgeFinset_nonempty_of_hasCubicIncidentEdgeTriples {G : SimpleGraph V}
+    [Fintype G.edgeSet] (hG : HasCubicIncidentEdgeTriples G) (v : V) :
+    (incidentEdgeFinset G v).Nonempty := by
+  rcases hG v with ⟨e1, _e2, _e3, hincident⟩
+  refine ⟨e1, ?_⟩
+  rw [hincident.1]
+  simp
 
 theorem isLocalCDLGoodTriple_iff_not_bad {a b c : Color} :
     IsLocalCDLGoodTriple a b c ↔ ¬ IsLocalCDLBadTriple a b c := by
@@ -231,6 +244,25 @@ theorem vertexKirchhoffSum_eq_zero_of_taitEdgeColoring_at_incidentTriple
     add_assoc] using
     (isLocalKirchhoffTriple_of_taitEdgeColoring_at_incidentTriple hincident hC)
 
+/-- Graph-level Tait-flow direction, phrased with the explicit cubic-incidence
+package used by the local API: a Tait edge coloring satisfies Kirchhoff's law
+at every vertex. -/
+theorem isGraphFlow_of_taitEdgeColoring_of_hasCubicIncidentEdgeTriples
+    {G : SimpleGraph V} [Fintype G.edgeSet] {C : G.EdgeColoring Color}
+    (hG : HasCubicIncidentEdgeTriples G) (hC : IsTaitEdgeColoring G C) :
+    IsGraphFlow G C := by
+  intro v
+  rcases hG v with ⟨e1, e2, e3, hincident⟩
+  exact vertexKirchhoffSum_eq_zero_of_taitEdgeColoring_at_incidentTriple hincident hC
+
+/-- A Tait edge coloring is a nowhere-zero `F₂²` graph flow once every vertex
+has the expected cubic incident triple. -/
+theorem isNowhereZeroFlow_of_taitEdgeColoring_of_hasCubicIncidentEdgeTriples
+    {G : SimpleGraph V} [Fintype G.edgeSet] {C : G.EdgeColoring Color}
+    (hG : HasCubicIncidentEdgeTriples G) (hC : IsTaitEdgeColoring G C) :
+    IsNowhereZeroFlow G C := by
+  exact ⟨isGraphFlow_of_taitEdgeColoring_of_hasCubicIncidentEdgeTriples hG hC, hC⟩
+
 /-- The canonical CDL-good local condition is weaker than local nowhere-zero:
 the Kirchhoff triple `(0, red, red)` is CDL-good and sums to zero, but still
 has a zero edge-value. -/
@@ -291,6 +323,16 @@ theorem isCDLGoodFlow_of_nowhereZeroFlow {G : SimpleGraph V} [Fintype G.edgeSet]
     (hx : IsNowhereZeroFlow G x) :
     IsCDLGoodFlow G x := by
   exact ⟨hx.1, fun v => isCDLGoodAtVertex_of_nowhereZero (hincident v) hx.2⟩
+
+/-- For the canonical all-zero-bad CDL gadget, a Tait edge coloring is a
+CDL-good flow under the same explicit cubic-incidence hypothesis. -/
+theorem isCDLGoodFlow_of_taitEdgeColoring_of_hasCubicIncidentEdgeTriples
+    {G : SimpleGraph V} [Fintype G.edgeSet] {C : G.EdgeColoring Color}
+    (hG : HasCubicIncidentEdgeTriples G) (hC : IsTaitEdgeColoring G C) :
+    IsCDLGoodFlow G C := by
+  exact isCDLGoodFlow_of_nowhereZeroFlow
+    (incidentEdgeFinset_nonempty_of_hasCubicIncidentEdgeTriples hG)
+    (isNowhereZeroFlow_of_taitEdgeColoring_of_hasCubicIncidentEdgeTriples hG hC)
 
 theorem zeroChain_isGraphFlow (G : SimpleGraph V) [Fintype G.edgeSet] :
     IsGraphFlow G (zeroChain : G.edgeSet → Color) := by
