@@ -36,6 +36,25 @@ def IsNowhereZeroFlow (G : SimpleGraph V) [Fintype G.edgeSet]
     (x : G.edgeSet → Color) : Prop :=
   IsGraphFlow G x ∧ ∀ e : G.edgeSet, x e ≠ 0
 
+/-- Manuscript-facing name for cubic graphs: every vertex has Mathlib degree
+`3`. -/
+def IsCubic (G : SimpleGraph V) [G.LocallyFinite] : Prop :=
+  G.IsRegularOfDegree 3
+
+/-- Existence of a Tait edge coloring of `G`. -/
+def HasTaitEdgeColoring (G : SimpleGraph V) [Fintype G.edgeSet] : Prop :=
+  ∃ C : G.EdgeColoring Color, IsTaitEdgeColoring G C
+
+/-- Existence of a nowhere-zero `F₂²` graph flow on `G`. -/
+def HasNowhereZeroFlow (G : SimpleGraph V) [Fintype G.edgeSet] : Prop :=
+  ∃ x : G.edgeSet → Color, IsNowhereZeroFlow G x
+
+/-- Existence of a flow that is both CDL-good and nowhere-zero.  The
+nowhere-zero conjunct is deliberate: canonical CDL-goodness alone only rules
+out the all-zero local triple. -/
+def HasCDLGoodNowhereZeroFlow (G : SimpleGraph V) [Fintype G.edgeSet] : Prop :=
+  ∃ x : G.edgeSet → Color, IsCDLGoodFlow G x ∧ IsNowhereZeroFlow G x
+
 /-- A named cubic incidence package: the incident edges at `v` are exactly
 `e1`, `e2`, and `e3`, with no duplicates. -/
 def IsIncidentEdgeTriple (G : SimpleGraph V) [Fintype G.edgeSet] (v : V)
@@ -141,6 +160,14 @@ theorem hasCubicIncidentEdgeTriples_of_isRegularOfDegree_three
     (hregular : G.IsRegularOfDegree 3) :
     HasCubicIncidentEdgeTriples G :=
   hasCubicIncidentEdgeTriples_of_degree_eq_three hregular.degree_eq
+
+/-- Cubic graphs in the manuscript-facing sense have explicit cubic incident
+triples. -/
+theorem hasCubicIncidentEdgeTriples_of_isCubic
+    {G : SimpleGraph V} [Fintype G.edgeSet] [G.LocallyFinite]
+    (hG : IsCubic G) :
+    HasCubicIncidentEdgeTriples G :=
+  hasCubicIncidentEdgeTriples_of_isRegularOfDegree_three hG
 
 theorem isLocalCDLGoodTriple_iff_not_bad {a b c : Color} :
     IsLocalCDLGoodTriple a b c ↔ ¬ IsLocalCDLBadTriple a b c := by
@@ -424,6 +451,15 @@ theorem exists_taitEdgeColoring_iff_exists_nowhereZeroFlow_of_isRegularOfDegree_
   exact exists_taitEdgeColoring_iff_exists_nowhereZeroFlow_of_degree_eq_three
     hregular.degree_eq
 
+/-- Manuscript-facing Tait/flow reformulation for cubic graphs. -/
+theorem hasTaitEdgeColoring_iff_hasNowhereZeroFlow_of_isCubic
+    {G : SimpleGraph V} [Fintype G.edgeSet] [G.LocallyFinite]
+    (hG : IsCubic G) :
+    HasTaitEdgeColoring G ↔ HasNowhereZeroFlow G := by
+  simpa [HasTaitEdgeColoring, HasNowhereZeroFlow, IsCubic] using
+    exists_taitEdgeColoring_iff_exists_nowhereZeroFlow_of_isRegularOfDegree_three
+      (G := G) hG
+
 /-- The canonical CDL-good local condition is weaker than local nowhere-zero:
 the Kirchhoff triple `(0, red, red)` is CDL-good and sums to zero, but still
 has a zero edge-value. -/
@@ -542,6 +578,31 @@ theorem
       ∃ x : G.edgeSet → Color, IsCDLGoodFlow G x ∧ IsNowhereZeroFlow G x := by
   exact exists_taitEdgeColoring_iff_exists_cdlGood_nowhereZeroFlow_of_degree_eq_three
     hregular.degree_eq
+
+/-- On cubic graphs, the CDL-safe flow predicate is equivalent to a
+nowhere-zero flow. -/
+theorem hasCDLGoodNowhereZeroFlow_iff_hasNowhereZeroFlow_of_isCubic
+    {G : SimpleGraph V} [Fintype G.edgeSet] [G.LocallyFinite]
+    (hG : IsCubic G) :
+    HasCDLGoodNowhereZeroFlow G ↔ HasNowhereZeroFlow G := by
+  constructor
+  · rintro ⟨x, _hgood, hx⟩
+    exact ⟨x, hx⟩
+  · rintro ⟨x, hx⟩
+    exact ⟨x,
+      isCDLGoodFlow_of_nowhereZeroFlow
+        (incidentEdgeFinset_nonempty_of_hasCubicIncidentEdgeTriples
+          (hasCubicIncidentEdgeTriples_of_isCubic hG)) hx,
+      hx⟩
+
+/-- Manuscript-facing safe CDL/Tait reformulation for cubic graphs. -/
+theorem hasTaitEdgeColoring_iff_hasCDLGoodNowhereZeroFlow_of_isCubic
+    {G : SimpleGraph V} [Fintype G.edgeSet] [G.LocallyFinite]
+    (hG : IsCubic G) :
+    HasTaitEdgeColoring G ↔ HasCDLGoodNowhereZeroFlow G := by
+  simpa [HasTaitEdgeColoring, HasCDLGoodNowhereZeroFlow, IsCubic] using
+    exists_taitEdgeColoring_iff_exists_cdlGood_nowhereZeroFlow_of_isRegularOfDegree_three
+      (G := G) hG
 
 theorem zeroChain_isGraphFlow (G : SimpleGraph V) [Fintype G.edgeSet] :
     IsGraphFlow G (zeroChain : G.edgeSet → Color) := by
