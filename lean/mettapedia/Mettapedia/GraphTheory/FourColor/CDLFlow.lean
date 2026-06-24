@@ -104,6 +104,18 @@ theorem isLocalNowhereZeroTriple_of_tait {a b c : Color}
     IsLocalNowhereZeroTriple a b c :=
   h.1
 
+/-- Over `F₂²`, a local Tait triple at a cubic vertex automatically satisfies
+Kirchhoff's law.  This is the local algebra behind the manuscript's Tait-flow
+translation. -/
+theorem isLocalKirchhoffTriple_of_tait {a b c : Color}
+    (h : IsLocalTaitTriple a b c) :
+    IsLocalKirchhoffTriple a b c := by
+  rcases h with ⟨hnz, hab, hac, hbc⟩
+  rcases eq_red_or_eq_blue_or_eq_purple_of_ne_zero a hnz.1 with rfl | rfl | rfl <;>
+    rcases eq_red_or_eq_blue_or_eq_purple_of_ne_zero b hnz.2.1 with rfl | rfl | rfl <;>
+    rcases eq_red_or_eq_blue_or_eq_purple_of_ne_zero c hnz.2.2 with rfl | rfl | rfl <;>
+    simp [IsLocalKirchhoffTriple, red, blue, purple] at *
+
 /-- Over `F2^2`, the local Kirchhoff law plus nowhere-zero values forces the
 three colors at a cubic vertex to be pairwise distinct. -/
 theorem isLocalTaitTriple_of_kirchhoff_nowhereZero {a b c : Color}
@@ -193,6 +205,31 @@ theorem isLocalTaitTriple_of_taitEdgeColoring_at_incidentTriple {G : SimpleGraph
     exact C.valid ((SimpleGraph.lineGraph_adj_iff_exists).2
       ⟨hincident.2.2.2, ⟨v, he2v, he3v⟩⟩)
   exact ⟨⟨hC e1, hC e2, hC e3⟩, h12, h13, h23⟩
+
+/-- A Tait edge coloring induces the local Kirchhoff equation at an explicitly
+enumerated cubic vertex. -/
+theorem isLocalKirchhoffTriple_of_taitEdgeColoring_at_incidentTriple {G : SimpleGraph V}
+    [Fintype G.edgeSet] {C : G.EdgeColoring Color} {v : V} {e1 e2 e3 : G.edgeSet}
+    (hincident : IsIncidentEdgeTriple G v e1 e2 e3)
+    (hC : IsTaitEdgeColoring G C) :
+    IsLocalKirchhoffTriple (C e1) (C e2) (C e3) := by
+  exact isLocalKirchhoffTriple_of_tait
+    (isLocalTaitTriple_of_taitEdgeColoring_at_incidentTriple hincident hC)
+
+/-- Vertex-sum form of the local Tait-flow translation: if the incident
+edge-set at `v` is exactly `e1,e2,e3`, then a Tait edge coloring has zero
+Kirchhoff sum at `v`. -/
+theorem vertexKirchhoffSum_eq_zero_of_taitEdgeColoring_at_incidentTriple
+    {G : SimpleGraph V} [Fintype G.edgeSet] {C : G.EdgeColoring Color}
+    {v : V} {e1 e2 e3 : G.edgeSet}
+    (hincident : IsIncidentEdgeTriple G v e1 e2 e3)
+    (hC : IsTaitEdgeColoring G C) :
+    vertexKirchhoffSum G C v = 0 := by
+  unfold vertexKirchhoffSum
+  rw [hincident.1]
+  simpa [IsLocalKirchhoffTriple, hincident.2.1, hincident.2.2.1, hincident.2.2.2,
+    add_assoc] using
+    (isLocalKirchhoffTriple_of_taitEdgeColoring_at_incidentTriple hincident hC)
 
 /-- The canonical CDL-good local condition is weaker than local nowhere-zero:
 the Kirchhoff triple `(0, red, red)` is CDL-good and sums to zero, but still
