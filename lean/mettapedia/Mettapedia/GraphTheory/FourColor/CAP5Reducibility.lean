@@ -1,4 +1,4 @@
-import Mettapedia.GraphTheory.FourColor.CAP5BoundaryWord
+import Mettapedia.GraphTheory.FourColor.CAP5GraphBoundary
 
 open scoped BigOperators
 
@@ -675,6 +675,49 @@ theorem cap5BoundaryWordOfEdges_solved_of_nonzero_of_sum_zero_of_transportEdgeCo
     CAP5BoundaryWordSolved (cap5BoundaryWordOfEdges boundaryEdge C) :=
   cap5BoundaryWordSolved_of_nonzero_of_sum_zero_of_transportEdgeComponentCoverData
     hnz hsum hcomponentCovers
+
+/-- Zero-boundary incidence form of the graph-facing CAP5 endpoint.  If the five boundary
+edges enumerate a zero-boundary incidence set, the color-sum equation needed by the CAP5 parity
+split follows from `D.isZeroBoundary C`. -/
+theorem cap5BoundaryWordOfEdges_solved_of_forall_nonzero_of_isZeroBoundary_at_of_transportEdgeComponentCoverData
+    {U E : Type*} [DecidableEq E] {D : ZeroBoundaryData U E} {v : U}
+    (boundaryEdge : Fin 5 → E) (C : E → Color)
+    (hC : ∀ i : Fin 5, C (boundaryEdge i) ≠ 0)
+    (hinj : Function.Injective boundaryEdge)
+    (hincident : D.incident v = Finset.univ.map ⟨boundaryEdge, hinj⟩)
+    (hzero : D.isZeroBoundary C)
+    (hcomponentCovers :
+      ∀ {σ : Color ≃ Color} {n : Nat},
+        σ 0 = 0 →
+        cap5BoundaryWordOfEdges boundaryEdge C = cap5TransportedBadBoundaryWord σ n →
+        CAP5TransportedEdgeComponentCoverData boundaryEdge n) :
+    CAP5BoundaryWordSolved (cap5BoundaryWordOfEdges boundaryEdge C) :=
+  cap5BoundaryWordOfEdges_solved_of_nonzero_of_sum_zero_of_transportEdgeComponentCoverData
+    boundaryEdge C
+    (cap5BoundaryWordOfEdges_isNonzero_of_forall_nonzero boundaryEdge C hC)
+    (cap5BoundaryWordOfEdges_sum_eq_zero_of_isZeroBoundary_at
+      boundaryEdge C hinj hincident hzero)
+    hcomponentCovers
+
+/-- Tait-coloring form of the zero-boundary CAP5 endpoint.  This is the manuscript-facing
+interface: a Tait edge-coloring gives nonzero boundary colors, while the zero-boundary incidence
+equation gives the CAP5 parity sum. -/
+theorem cap5BoundaryWordOfEdges_solved_of_isTaitEdgeColoring_of_isZeroBoundary_at_of_transportEdgeComponentCoverData
+    {V U : Type*} [DecidableEq V] {G : SimpleGraph V}
+    {D : ZeroBoundaryData U G.edgeSet} {v : U}
+    (boundaryEdge : Fin 5 → G.edgeSet) (C : G.EdgeColoring Color)
+    (hC : IsTaitEdgeColoring G C)
+    (hinj : Function.Injective boundaryEdge)
+    (hincident : D.incident v = Finset.univ.map ⟨boundaryEdge, hinj⟩)
+    (hzero : D.isZeroBoundary C)
+    (hcomponentCovers :
+      ∀ {σ : Color ≃ Color} {n : Nat},
+        σ 0 = 0 →
+        cap5BoundaryWordOfEdges boundaryEdge C = cap5TransportedBadBoundaryWord σ n →
+        CAP5TransportedEdgeComponentCoverData boundaryEdge n) :
+    CAP5BoundaryWordSolved (cap5BoundaryWordOfEdges boundaryEdge C) :=
+  cap5BoundaryWordOfEdges_solved_of_forall_nonzero_of_isZeroBoundary_at_of_transportEdgeComponentCoverData
+    boundaryEdge C (fun i => hC (boundaryEdge i)) hinj hincident hzero hcomponentCovers
 
 /-- If an edge coloring restricts to a transported bad CAP5 boundary word, structured
 edge-component-cover data supplies a boundary repair of that restricted word. -/
