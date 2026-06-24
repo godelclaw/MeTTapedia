@@ -2628,6 +2628,35 @@ theorem zeroIncidentEdgeCount_le_one_of_isD0LocalMinimumForMoveSupports_of_clust
   (zeroEdgesFormMatching_of_isD0LocalMinimumForMoveSupports_of_clusteredZeroVertex_descent
     hmin hrepair) v
 
+/-- Case-analysis form of the abstract matching-zeros theorem: each vertex has
+zero or one incident zero edge. -/
+theorem zeroIncidentEdgeCount_eq_zero_or_eq_one_of_isD0LocalMinimumForMoveSupports_of_nonmatching_descent
+    {G : SimpleGraph V} [Fintype V] [Fintype G.edgeSet]
+    {moveSupports : Finset (Finset G.edgeSet)} {x : G.edgeSet → Color}
+    (hmin : IsD0LocalMinimumForMoveSupports G moveSupports x)
+    (hrepair : EveryNonmatchingZeroPatternHasD0Descent G moveSupports x)
+    (v : V) :
+    zeroIncidentEdgeCount G x v = 0 ∨ zeroIncidentEdgeCount G x v = 1 := by
+  have hle :
+      zeroIncidentEdgeCount G x v ≤ 1 :=
+    zeroIncidentEdgeCount_le_one_of_isD0LocalMinimumForMoveSupports_of_nonmatching_descent
+      hmin hrepair v
+  omega
+
+/-- Vertex-local repair form: each vertex has zero or one incident zero edge. -/
+theorem zeroIncidentEdgeCount_eq_zero_or_eq_one_of_isD0LocalMinimumForMoveSupports_of_clusteredZeroVertex_descent
+    {G : SimpleGraph V} [Fintype V] [Fintype G.edgeSet]
+    {moveSupports : Finset (Finset G.edgeSet)} {x : G.edgeSet → Color}
+    (hmin : IsD0LocalMinimumForMoveSupports G moveSupports x)
+    (hrepair : EveryClusteredZeroVertexHasD0Descent G moveSupports x)
+    (v : V) :
+    zeroIncidentEdgeCount G x v = 0 ∨ zeroIncidentEdgeCount G x v = 1 := by
+  have hle :
+      zeroIncidentEdgeCount G x v ≤ 1 :=
+    zeroIncidentEdgeCount_le_one_of_isD0LocalMinimumForMoveSupports_of_clusteredZeroVertex_descent
+      hmin hrepair v
+  omega
+
 /-- No-cluster form of the abstract matching-zeros theorem. -/
 theorem not_hasClusteredZeroVertex_of_isD0LocalMinimumForMoveSupports_of_nonmatching_descent
     {G : SimpleGraph V} [Fintype V] [Fintype G.edgeSet]
