@@ -599,6 +599,73 @@ theorem mem_one_status_bin_of_mem_all
   | partialCase =>
       exact Or.inr <| Or.inr ((report.mem_partialLatents_iff).2 ⟨hmem, hstatus⟩)
 
+/-- Membership in the realized-separator bin carries the certified realized-separator payload.
+This is the consumer-facing soundness theorem for finite report outputs. -/
+theorem inBin_realizedSeparator_of_mem_realizedSeparatorLatents
+    (report : CAP5ExceptionalAnnulusGeneratorReport boundaryEdge side)
+    {latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge}
+    (hmem : latent ∈ report.realizedSeparatorLatents) :
+    (report.node latent).InBin CAP5SeparatorGeneratorStatus.realizedSeparator := by
+  have hstatus :
+      report.classify latent = CAP5SeparatorGeneratorStatus.realizedSeparator :=
+    (report.mem_realizedSeparatorLatents_iff).1 hmem |>.2
+  have hcert : (report.node latent).InBin (report.classify latent) := by
+    simpa [nodeReport] using (report.nodeReport latent).cert
+  simpa [hstatus] using hcert
+
+/-- Membership in the forced-counterexample bin carries the certified counterexample payload.
+Finite checker runs can use this theorem to turn a list membership proof into the actual
+outside-crossing edge witness. -/
+theorem inBin_forcedCounterexample_of_mem_forcedCounterexampleLatents
+    (report : CAP5ExceptionalAnnulusGeneratorReport boundaryEdge side)
+    {latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge}
+    (hmem : latent ∈ report.forcedCounterexampleLatents) :
+    (report.node latent).InBin CAP5SeparatorGeneratorStatus.forcedCounterexample := by
+  have hstatus :
+      report.classify latent = CAP5SeparatorGeneratorStatus.forcedCounterexample :=
+    (report.mem_forcedCounterexampleLatents_iff).1 hmem |>.2
+  have hcert : (report.node latent).InBin (report.classify latent) := by
+    simpa [nodeReport] using (report.nodeReport latent).cert
+  simpa [hstatus] using hcert
+
+/-- Membership in the partial bin carries the certified reason why the checker could not yet
+resolve the node. -/
+theorem inBin_partialCase_of_mem_partialLatents
+    (report : CAP5ExceptionalAnnulusGeneratorReport boundaryEdge side)
+    {latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge}
+    (hmem : latent ∈ report.partialLatents) :
+    (report.node latent).InBin CAP5SeparatorGeneratorStatus.partialCase := by
+  have hstatus :
+      report.classify latent = CAP5SeparatorGeneratorStatus.partialCase :=
+    (report.mem_partialLatents_iff).1 hmem |>.2
+  have hcert : (report.node latent).InBin (report.classify latent) := by
+    simpa [nodeReport] using (report.nodeReport latent).cert
+  simpa [hstatus] using hcert
+
+/-- Projection of the realized-separator payload from a finite report bin. -/
+theorem realizedSeparator_of_mem_realizedSeparatorLatents
+    (report : CAP5ExceptionalAnnulusGeneratorReport boundaryEdge side)
+    {latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge}
+    (hmem : latent ∈ report.realizedSeparatorLatents) :
+    (report.node latent).RealizedSeparator :=
+  (report.inBin_realizedSeparator_of_mem_realizedSeparatorLatents hmem).2.2
+
+/-- Projection of the forced-counterexample payload from a finite report bin. -/
+theorem forcedCounterexample_of_mem_forcedCounterexampleLatents
+    (report : CAP5ExceptionalAnnulusGeneratorReport boundaryEdge side)
+    {latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge}
+    (hmem : latent ∈ report.forcedCounterexampleLatents) :
+    (report.node latent).ForcedCounterexample :=
+  (report.inBin_forcedCounterexample_of_mem_forcedCounterexampleLatents hmem).2.2
+
+/-- Projection of the partial-checker reason from a finite report bin. -/
+theorem partial_of_mem_partialLatents
+    (report : CAP5ExceptionalAnnulusGeneratorReport boundaryEdge side)
+    {latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge}
+    (hmem : latent ∈ report.partialLatents) :
+    (report.node latent).Partial :=
+  report.inBin_partialCase_of_mem_partialLatents hmem
+
 /-- If every generated latent has complete checker evidence in a cyclically five-edge-connected
 graph, the full finite report has no realized or partial cases: every enumerated latent is forced
 into the counterexample bin. -/
