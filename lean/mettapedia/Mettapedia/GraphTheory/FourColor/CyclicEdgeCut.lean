@@ -447,6 +447,25 @@ theorem no_walk_avoiding_edgeCut_iff_noncrossing_outside_edgeCut
       ⟨e, hnot, hcross⟩
     exact hnoncrossing e hnot hcross
 
+/-- Constructor from the counterexample-free separator form.  To realize a finite support as the
+side cut, it is enough to prove that all listed edges cross the side and that no opposite-side
+walk can avoid the listed edges. -/
+def CyclicEdgeCutRealization.of_no_walk_avoiding_edgeCut
+    {G : SimpleGraph V} {edgeCut : Finset G.edgeSet} (side : V → Prop)
+    (hcut_crosses :
+      ∀ e : G.edgeSet, e ∈ edgeCut → EdgeCrossesVertexSide G side e)
+    (hno_counterexample :
+      ¬ ∃ u v : V, ∃ p : G.Walk u v,
+        side u ∧ ¬ side v ∧
+          ∀ e : G.edgeSet, e ∈ edgeCut → (e : Sym2 V) ∉ p.edges)
+    (hinside_cycle : HasCycleOnSide G side)
+    (houtside_cycle : HasCycleOnSide G (fun v => ¬ side v)) :
+    CyclicEdgeCutRealization G edgeCut :=
+  CyclicEdgeCutRealization.of_edge_crossing_classification side hcut_crosses
+    ((no_walk_avoiding_edgeCut_iff_noncrossing_outside_edgeCut
+      (G := G) (edgeCut := edgeCut) side).1 hno_counterexample)
+    hinside_cycle houtside_cycle
+
 theorem SmallCyclicEdgeCut.exists_mem_edgeCut_of_walk_endpoint_sides
     {G : SimpleGraph V} (cut : SmallCyclicEdgeCut G)
     {u v : V} (p : G.Walk u v) (hu : cut.side u) (hv : ¬ cut.side v) :
