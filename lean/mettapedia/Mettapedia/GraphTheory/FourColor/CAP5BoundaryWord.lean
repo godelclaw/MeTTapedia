@@ -244,4 +244,73 @@ theorem cap5BadBoundaryWord2111_repairBasis_extendsAcrossCycle :
     cap5BadBoundaryWord2111_repair_red_purple_14_extendsAcrossCycle,
     cap5BadBoundaryWord2111_repair_red_purple_34_extendsAcrossCycle⟩
 
+/-- The eight canonical finite CAP5 repair types in the normal-form boundary word calculation. -/
+inductive CAP5RepairType where
+  | redBlue01
+  | redBlue02
+  | redBlue13
+  | redBlue23
+  | redPurple01
+  | redPurple03
+  | redPurple14
+  | redPurple34
+
+namespace CAP5RepairType
+
+/-- The color pair swapped by a finite CAP5 repair type. -/
+def colorPair : CAP5RepairType → Color × Color
+  | redBlue01 => (red, blue)
+  | redBlue02 => (red, blue)
+  | redBlue13 => (red, blue)
+  | redBlue23 => (red, blue)
+  | redPurple01 => (red, purple)
+  | redPurple03 => (red, purple)
+  | redPurple14 => (red, purple)
+  | redPurple34 => (red, purple)
+
+/-- The two boundary positions acted on by a finite CAP5 repair type. -/
+def support : CAP5RepairType → Finset (Fin 5)
+  | redBlue01 => {0, 1}
+  | redBlue02 => {0, 2}
+  | redBlue13 => {1, 3}
+  | redBlue23 => {2, 3}
+  | redPurple01 => {0, 1}
+  | redPurple03 => {0, 3}
+  | redPurple14 => {1, 4}
+  | redPurple34 => {3, 4}
+
+/-- Apply a finite CAP5 repair type as a boundary-word operation. -/
+def apply (τ : CAP5RepairType) (w : CAP5BoundaryWord) : CAP5BoundaryWord :=
+  cap5BoundarySwap (colorPair τ).1 (colorPair τ).2 (support τ) w
+
+/-- Every canonical finite CAP5 repair type repairs the canonical bad word into an
+extendable boundary word. -/
+theorem apply_bad_extendsAcrossCycle (τ : CAP5RepairType) :
+    CAP5WordExtendsAcrossCycle (τ.apply cap5BadBoundaryWord2111) := by
+  cases τ <;> simp [apply, colorPair, support]
+  · exact cap5BadBoundaryWord2111_repair_red_blue_01_extendsAcrossCycle
+  · exact cap5BadBoundaryWord2111_repair_red_blue_02_extendsAcrossCycle
+  · exact cap5BadBoundaryWord2111_repair_red_blue_13_extendsAcrossCycle
+  · exact cap5BadBoundaryWord2111_repair_red_blue_23_extendsAcrossCycle
+  · exact cap5BadBoundaryWord2111_repair_red_purple_01_extendsAcrossCycle
+  · exact cap5BadBoundaryWord2111_repair_red_purple_03_extendsAcrossCycle
+  · exact cap5BadBoundaryWord2111_repair_red_purple_14_extendsAcrossCycle
+  · exact cap5BadBoundaryWord2111_repair_red_purple_34_extendsAcrossCycle
+
+end CAP5RepairType
+
+/-- A boundary word `w'` realizes one of the finite repair actions on `w`.  Later
+graph-level Kempe-component realizability theorems should target this interface. -/
+def CAP5RealizesRepairType (w w' : CAP5BoundaryWord) : Prop :=
+  ∃ τ : CAP5RepairType, w' = τ.apply w
+
+/-- If a boundary action realizes one of the finite CAP5 repair types on the canonical bad word,
+then the resulting boundary word extends across the cap. -/
+theorem cap5_extendsAcrossCycle_of_realizesRepairType_bad
+    {w' : CAP5BoundaryWord}
+    (h : CAP5RealizesRepairType cap5BadBoundaryWord2111 w') :
+    CAP5WordExtendsAcrossCycle w' := by
+  rcases h with ⟨τ, rfl⟩
+  exact τ.apply_bad_extendsAcrossCycle
+
 end Mettapedia.GraphTheory.FourColor
