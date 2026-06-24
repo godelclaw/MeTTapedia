@@ -1349,6 +1349,85 @@ theorem CAP5TransportedEdgeComponentCoverCore.exists_exceptionalAnnulusBoundaryE
   exact ⟨edgeCandidate, horientation, hsideCase, rfl,
     le_trans Finset.card_image_le hcard⟩
 
+/-- Generator-level classifier for the exceptional CAP5 annulus branch.  Once the finite
+exceptional data has selected an orientation/side case, any graph-side interpretation of the
+corresponding portals as crossing a chosen vertex side bins the candidate into either realized
+cyclic-cut data or an explicit one-edge portal-avoiding counterexample. -/
+theorem CAP5TransportedEdgeComponentCoverCore.exists_exceptionalAnnulusBoundaryEdgeSupportCandidate_classifier_of_isExceptional_of_portalSides
+    {V : Type*} {G : SimpleGraph V} [DecidableEq G.edgeSet]
+    {boundaryEdge : Fin 5 → G.edgeSet} {n : Nat}
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    (p0Inside p4Inside : Bool) (h : data.IsExceptional)
+    (side : V → Prop)
+    (hportal_crosses :
+      ∀ edgeCandidate : CAP5ExceptionalAnnulusBoundaryEdgeSupportCandidate boundaryEdge,
+        data.RealizesExceptionalBoundarySupportOrientation
+            edgeCandidate.portalCandidate.orientation →
+        edgeCandidate.portalCandidate.sideCase =
+            CAP5ExceptionalAnnulusSideCase.ofPortalSides p0Inside p4Inside →
+        ∀ i : Fin 5, i ∈ edgeCandidate.portalCandidate.portalSet →
+          EdgeCrossesVertexSide G side (boundaryEdge i))
+    (hinside_cycle : HasCycleOnSide G side)
+    (houtside_cycle : HasCycleOnSide G (fun v => ¬ side v)) :
+    ∃ edgeCandidate : CAP5ExceptionalAnnulusBoundaryEdgeSupportCandidate boundaryEdge,
+      data.RealizesExceptionalBoundarySupportOrientation
+          edgeCandidate.portalCandidate.orientation ∧
+        edgeCandidate.portalCandidate.sideCase =
+          CAP5ExceptionalAnnulusSideCase.ofPortalSides p0Inside p4Inside ∧
+        (Nonempty (edgeCandidate.CyclicEdgeCutRealizationData (G := G)) ∨
+          ∃ u v : V, ∃ e : G.edgeSet, ∃ p : G.Walk u v,
+            e ∉ edgeCandidate.edgeSupport ∧
+              side u ∧ ¬ side v ∧
+                p.edges = [(e : Sym2 V)] ∧
+                  ∀ i : Fin 5, i ∈ edgeCandidate.portalCandidate.portalSet →
+                    ((boundaryEdge i : G.edgeSet) : Sym2 V) ∉ p.edges) := by
+  rcases data.exists_exceptionalAnnulusBoundaryEdgeSupportCandidate_of_isExceptional_of_portalSides
+      p0Inside p4Inside h with
+    ⟨edgeCandidate, horientation, hsideCase, _hedgeSupport, _hcard⟩
+  exact ⟨edgeCandidate, horientation, hsideCase,
+    edgeCandidate.cyclicEdgeCutRealizationData_or_oneEdge_walk_avoiding_portalBoundaryEdges_of_portal_crosses
+      side (hportal_crosses edgeCandidate horientation hsideCase)
+      hinside_cycle houtside_cycle⟩
+
+/-- Cyclic-five-edge-connected specialization of the exceptional-branch generator classifier.
+Under the minimal-counterexample cyclic-connectivity hypothesis, the finite exceptional branch
+cannot land in the realized small-separator bin; it emits an explicit one-edge outside witness. -/
+theorem CAP5TransportedEdgeComponentCoverCore.exists_exceptionalAnnulusBoundaryEdgeSupportCandidate_oneEdgeCounterexample_of_isExceptional_of_portalSides
+    {V : Type*} {G : SimpleGraph V} [DecidableEq G.edgeSet]
+    {boundaryEdge : Fin 5 → G.edgeSet} {n : Nat}
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    (p0Inside p4Inside : Bool) (h : data.IsExceptional)
+    (side : V → Prop)
+    (hcyclic : CyclicallyFiveEdgeConnected G)
+    (hportal_crosses :
+      ∀ edgeCandidate : CAP5ExceptionalAnnulusBoundaryEdgeSupportCandidate boundaryEdge,
+        data.RealizesExceptionalBoundarySupportOrientation
+            edgeCandidate.portalCandidate.orientation →
+        edgeCandidate.portalCandidate.sideCase =
+            CAP5ExceptionalAnnulusSideCase.ofPortalSides p0Inside p4Inside →
+        ∀ i : Fin 5, i ∈ edgeCandidate.portalCandidate.portalSet →
+          EdgeCrossesVertexSide G side (boundaryEdge i))
+    (hinside_cycle : HasCycleOnSide G side)
+    (houtside_cycle : HasCycleOnSide G (fun v => ¬ side v)) :
+    ∃ edgeCandidate : CAP5ExceptionalAnnulusBoundaryEdgeSupportCandidate boundaryEdge,
+      data.RealizesExceptionalBoundarySupportOrientation
+          edgeCandidate.portalCandidate.orientation ∧
+        edgeCandidate.portalCandidate.sideCase =
+          CAP5ExceptionalAnnulusSideCase.ofPortalSides p0Inside p4Inside ∧
+        ∃ u v : V, ∃ e : G.edgeSet, ∃ p : G.Walk u v,
+          e ∉ edgeCandidate.edgeSupport ∧
+            side u ∧ ¬ side v ∧
+              p.edges = [(e : Sym2 V)] ∧
+                ∀ i : Fin 5, i ∈ edgeCandidate.portalCandidate.portalSet →
+                  ((boundaryEdge i : G.edgeSet) : Sym2 V) ∉ p.edges := by
+  rcases data.exists_exceptionalAnnulusBoundaryEdgeSupportCandidate_of_isExceptional_of_portalSides
+      p0Inside p4Inside h with
+    ⟨edgeCandidate, horientation, hsideCase, _hedgeSupport, _hcard⟩
+  exact ⟨edgeCandidate, horientation, hsideCase,
+    edgeCandidate.exists_oneEdge_walk_avoiding_portalBoundaryEdges_of_cyclicallyFiveEdgeConnected_of_portal_crosses
+      side hcyclic (hportal_crosses edgeCandidate horientation hsideCase)
+      hinside_cycle houtside_cycle⟩
+
 /-- Graph-level endpoint for the exceptional CAP5 annulus branch.  Finite CAP5 data supplies the
 candidate boundary-edge support; the topological realization input must identify that support with
 a genuine small cyclic edge cut in the ambient graph. -/
