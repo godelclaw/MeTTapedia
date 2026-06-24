@@ -1156,6 +1156,59 @@ theorem CAP5ExceptionalAnnulusBoundaryEdgeSupportCandidate.exists_walk_avoiding_
     ((candidate.mem_edgeSupport_iff_exists_portal (boundaryEdge i)).2 ⟨i, hi, rfl⟩)
     hiEdges
 
+/-- Edge-witness version of the CAP5 forced-counterexample outcome.  Under cyclic
+five-edge-connectivity, a promoted CAP5 support candidate cannot merely fail abstractly: there is
+an explicit side-crossing edge outside the named portal support. -/
+theorem CAP5ExceptionalAnnulusBoundaryEdgeSupportCandidate.exists_crossing_edge_outside_portalSupport_of_cyclicallyFiveEdgeConnected_of_portal_crosses
+    {V : Type*} {G : SimpleGraph V} [DecidableEq G.edgeSet]
+    {boundaryEdge : Fin 5 → G.edgeSet}
+    (candidate : CAP5ExceptionalAnnulusBoundaryEdgeSupportCandidate boundaryEdge)
+    (side : V → Prop)
+    (hcyclic : CyclicallyFiveEdgeConnected G)
+    (hportal_crosses :
+      ∀ i : Fin 5, i ∈ candidate.portalCandidate.portalSet →
+        EdgeCrossesVertexSide G side (boundaryEdge i))
+    (hinside_cycle : HasCycleOnSide G side)
+    (houtside_cycle : HasCycleOnSide G (fun v => ¬ side v)) :
+    ∃ e : G.edgeSet, e ∉ candidate.edgeSupport ∧
+      EdgeCrossesVertexSide G side e :=
+  let separatorCandidate :=
+    candidate.toCyclicSeparatorCandidate_of_portal_crosses
+      side hportal_crosses hinside_cycle houtside_cycle
+  separatorCandidate.exists_crossing_outside_of_cyclicallyFiveEdgeConnected hcyclic
+
+/-- Strong CAP5 generator output: cyclic five-edge-connectivity produces an outside crossing edge
+and the one-edge opposite-side walk across it, avoiding every named portal edge.  This is the
+finite witness boundary between the separator route and the algebraic/cocycle repair lane. -/
+theorem CAP5ExceptionalAnnulusBoundaryEdgeSupportCandidate.exists_oneEdge_walk_avoiding_portalBoundaryEdges_of_cyclicallyFiveEdgeConnected_of_portal_crosses
+    {V : Type*} {G : SimpleGraph V} [DecidableEq G.edgeSet]
+    {boundaryEdge : Fin 5 → G.edgeSet}
+    (candidate : CAP5ExceptionalAnnulusBoundaryEdgeSupportCandidate boundaryEdge)
+    (side : V → Prop)
+    (hcyclic : CyclicallyFiveEdgeConnected G)
+    (hportal_crosses :
+      ∀ i : Fin 5, i ∈ candidate.portalCandidate.portalSet →
+        EdgeCrossesVertexSide G side (boundaryEdge i))
+    (hinside_cycle : HasCycleOnSide G side)
+    (houtside_cycle : HasCycleOnSide G (fun v => ¬ side v)) :
+    ∃ u v : V, ∃ e : G.edgeSet, ∃ p : G.Walk u v,
+      e ∉ candidate.edgeSupport ∧
+        side u ∧ ¬ side v ∧
+          p.edges = [(e : Sym2 V)] ∧
+            ∀ i : Fin 5, i ∈ candidate.portalCandidate.portalSet →
+              ((boundaryEdge i : G.edgeSet) : Sym2 V) ∉ p.edges := by
+  let separatorCandidate :=
+    candidate.toCyclicSeparatorCandidate_of_portal_crosses
+      side hportal_crosses hinside_cycle houtside_cycle
+  rcases separatorCandidate.exists_oneEdge_counterexample_of_cyclicallyFiveEdgeConnected
+      hcyclic with
+    ⟨u, v, e, p, heOutside, hu, hv, hpEdges, havoidSupport⟩
+  refine ⟨u, v, e, p, heOutside, hu, hv, hpEdges, ?_⟩
+  intro i hi hiEdges
+  exact havoidSupport (boundaryEdge i)
+    ((candidate.mem_edgeSupport_iff_exists_portal (boundaryEdge i)).2 ⟨i, hi, rfl⟩)
+    hiEdges
+
 /-- Direct obstruction to the counterexample-free CAP5 portal separator target: in a cyclically
 five-edge-connected graph, the Sublemma-6.8 shape with crossing named portals and cycles on both
 sides cannot rule out all portal-avoiding opposite-side walks. -/
