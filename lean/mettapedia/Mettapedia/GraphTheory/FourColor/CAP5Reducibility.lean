@@ -793,6 +793,29 @@ theorem CAP5ExceptionalAnnulusBoundaryEdgeSupportCandidate.exists_walk_avoiding_
   exact hnot ((candidate.mem_edgeSupport_iff_exists_portal e).2
     ⟨i, hi, hboundary_eq⟩)
 
+/-- Converse diagnostic for the portal walk-hit target.  Any opposite-side walk that avoids all
+named CAP5 separator boundary edges must contain a crossing edge outside the candidate support.
+Thus a failed portal walk-separator instance is not mysterious: it exposes a concrete
+non-candidate crossing edge. -/
+theorem CAP5ExceptionalAnnulusBoundaryEdgeSupportCandidate.exists_noncandidate_crosses_of_walk_avoids_portalBoundaryEdges
+    {V : Type*} {G : SimpleGraph V} [DecidableEq G.edgeSet]
+    {boundaryEdge : Fin 5 → G.edgeSet}
+    (candidate : CAP5ExceptionalAnnulusBoundaryEdgeSupportCandidate boundaryEdge)
+    (side : V → Prop) {u v : V} (p : G.Walk u v)
+    (hu : side u) (hv : ¬ side v)
+    (havoid : ∀ i : Fin 5, i ∈ candidate.portalCandidate.portalSet →
+      ((boundaryEdge i : G.edgeSet) : Sym2 V) ∉ p.edges) :
+    ∃ e : G.edgeSet,
+      e ∉ candidate.edgeSupport ∧ EdgeCrossesVertexSide G side e ∧
+        (e : Sym2 V) ∈ p.edges := by
+  rcases exists_edgeCrossesVertexSide_of_walk_endpoint_sides side p hu hv with
+    ⟨e, heEdges, hcross⟩
+  refine ⟨e, ?_, hcross, heEdges⟩
+  intro heSupport
+  rcases (candidate.mem_edgeSupport_iff_exists_portal e).1 heSupport with
+    ⟨i, hi, hboundary⟩
+  exact havoid i hi (by simpa [hboundary] using heEdges)
+
 /-- If a finite CAP5 boundary-edge support candidate is realized by a graph-level small cyclic
 edge cut, the cardinality bound transfers to that cut. -/
 theorem CAP5ExceptionalAnnulusBoundaryEdgeSupportCandidate.exists_smallCyclicEdgeCut_of_realizes
