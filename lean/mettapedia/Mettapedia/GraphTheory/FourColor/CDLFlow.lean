@@ -913,6 +913,34 @@ theorem exists_failed_basic_color_move_of_d0LocalMinimum_small_support
     · exact Or.inr (Or.inl hblue)
   · exact Or.inl hred
 
+theorem exists_forced_zero_basic_color_move_of_d0LocalMinimum_kirchhoffNeutral_small_support
+    {G : SimpleGraph V} [Fintype V] [Fintype G.edgeSet]
+    {moveSupports : Finset (Finset G.edgeSet)} {x : G.edgeSet → Color}
+    {C : Finset G.edgeSet}
+    (hmin : IsD0LocalMinimumForMoveSupports G moveSupports x)
+    (hCmem : C ∈ moveSupports)
+    (hC : IsKirchhoffNeutralMoveSupport G C)
+    (herase : ∃ e ∈ C, x e = 0)
+    (hsmall : C.card ≤ 3) :
+    (∃ v : V, ∀ e ∈ incidentEdgeFinset G v,
+      if e ∈ C then x e = red else x e = 0) ∨
+      (∃ v : V, ∀ e ∈ incidentEdgeFinset G v,
+        if e ∈ C then x e = blue else x e = 0) ∨
+        (∃ v : V, ∀ e ∈ incidentEdgeFinset G v,
+          if e ∈ C then x e = purple else x e = 0) := by
+  rcases
+    exists_failed_basic_color_move_of_d0LocalMinimum_small_support
+      hmin hCmem herase hsmall with hred | hblue | hpurple
+  · exact Or.inl
+      ((not_isAllowedD0OneStepMoveOn_iff_exists_vertex_forced_zero_of_kirchhoffNeutral
+        red_ne_zero hmin.source_flow hC).mp hred)
+  · exact Or.inr (Or.inl
+      ((not_isAllowedD0OneStepMoveOn_iff_exists_vertex_forced_zero_of_kirchhoffNeutral
+        blue_ne_zero hmin.source_flow hC).mp hblue))
+  · exact Or.inr (Or.inr
+      ((not_isAllowedD0OneStepMoveOn_iff_exists_vertex_forced_zero_of_kirchhoffNeutral
+        purple_ne_zero hmin.source_flow hC).mp hpurple))
+
 theorem zeroDefectD0_le_of_isD0LocalMinimumForMoveSupports_of_isKempeCycle
     {G : SimpleGraph V} [Fintype V] [Fintype G.edgeSet]
     {moveSupports : Finset (Finset G.edgeSet)} {x : G.edgeSet → Color}
@@ -1075,6 +1103,24 @@ theorem exists_failed_basic_color_witness_of_d0LocalMinimum_isKempeCycle_small_s
       · exact Or.inr (Or.inr hpurplegood)
     · exact Or.inr (Or.inl hbluegood)
   · exact Or.inl hredgood
+
+theorem exists_forced_zero_basic_color_move_of_d0LocalMinimum_isKempeCycle_small_support
+    {G : SimpleGraph V} [Fintype V] [Fintype G.edgeSet]
+    {moveSupports : Finset (Finset G.edgeSet)} {x : G.edgeSet → Color}
+    {C : Finset G.edgeSet} {α β : Color}
+    (hmin : IsD0LocalMinimumForMoveSupports G moveSupports x)
+    (hCmem : C ∈ moveSupports)
+    (hC : IsKempeCycle (incidentEdgeFinset G) x C α β)
+    (herase : ∃ e ∈ C, x e = 0)
+    (hsmall : C.card ≤ 3) :
+    (∃ v : V, ∀ e ∈ incidentEdgeFinset G v,
+      if e ∈ C then x e = red else x e = 0) ∨
+      (∃ v : V, ∀ e ∈ incidentEdgeFinset G v,
+        if e ∈ C then x e = blue else x e = 0) ∨
+        (∃ v : V, ∀ e ∈ incidentEdgeFinset G v,
+          if e ∈ C then x e = purple else x e = 0) :=
+  exists_forced_zero_basic_color_move_of_d0LocalMinimum_kirchhoffNeutral_small_support
+    hmin hCmem (isKirchhoffNeutralMoveSupport_of_isKempeCycle hC) herase hsmall
 
 theorem zeroDefectD0_le_of_isD0LocalMinimumForMoveSupports_of_rotationDiskData_internalFace
     {G : SimpleGraph V} [Fintype V] [Fintype G.edgeSet]
@@ -1249,6 +1295,27 @@ theorem
       · exact Or.inr (Or.inr hpurplegood)
     · exact Or.inr (Or.inl hbluegood)
   · exact Or.inl hredgood
+
+theorem
+    exists_forced_zero_basic_color_move_of_d0LocalMinimum_rotationDiskData_internalFace_small_support
+    {G : SimpleGraph V} [Fintype V] [Fintype G.edgeSet]
+    {moveSupports : Finset (Finset G.edgeSet)} {x : G.edgeSet → Color}
+    (D : RotationDiskData V G.edgeSet)
+    (hincident : ∀ v : V, D.asZeroBoundary.incident v = incidentEdgeFinset G v)
+    {f : Finset G.edgeSet} (hf : f ∈ D.rotation.internalFaces)
+    (hfmem : f ∈ moveSupports)
+    (hmin : IsD0LocalMinimumForMoveSupports G moveSupports x)
+    (herase : ∃ e ∈ f, x e = 0)
+    (hsmall : f.card ≤ 3) :
+    (∃ v : V, ∀ e ∈ incidentEdgeFinset G v,
+      if e ∈ f then x e = red else x e = 0) ∨
+      (∃ v : V, ∀ e ∈ incidentEdgeFinset G v,
+        if e ∈ f then x e = blue else x e = 0) ∨
+        (∃ v : V, ∀ e ∈ incidentEdgeFinset G v,
+          if e ∈ f then x e = purple else x e = 0) :=
+  exists_forced_zero_basic_color_move_of_d0LocalMinimum_kirchhoffNeutral_small_support
+    hmin hfmem (isKirchhoffNeutralMoveSupport_of_rotationDiskData_internalFace
+      D hincident hf) herase hsmall
 
 /-- The zero-edge set is a matching in the manuscript's local sense: no vertex
 is incident to two or more zero-valued edges. -/
