@@ -691,6 +691,15 @@ theorem hasCubicD0BasicColorObstructionAt_of_cubic_two_support_forced_zero_move
       hcard htwo hforced with ⟨e, heinc, heC, hx⟩
   exact ⟨e, heinc, heC, hx, hforced⟩
 
+theorem not_isCDLGoodAtVertex_cdlOneStepMoveOn_of_hasCubicD0BasicColorObstructionAt
+    {G : SimpleGraph V} [Fintype V] [Fintype G.edgeSet]
+    {C : Finset G.edgeSet} {g : Color} {x : G.edgeSet → Color} {v : V}
+    (hobst : HasCubicD0BasicColorObstructionAt G x C v g) :
+    ¬ IsCDLGoodAtVertex G (cdlOneStepMoveOn G C g x) v := by
+  rcases hobst with ⟨_hg, _hcount, _hclustering, _hincident, _e, _heinc, _heC, _hx,
+    hforced⟩
+  exact not_isCDLGoodAtVertex_cdlOneStepMoveOn_iff.mpr hforced
+
 theorem vertexKirchhoffSum_cdlOneStepMoveOn_eq
     {G : SimpleGraph V} [Fintype G.edgeSet]
     (C : Finset G.edgeSet) (g : Color) (x : G.edgeSet → Color) (v : V) :
@@ -815,6 +824,19 @@ theorem not_isAllowedD0OneStepMoveOn_iff_exists_vertex_forced_zero_of_kirchhoffN
     exact ⟨v, (not_isCDLGoodAtVertex_cdlOneStepMoveOn_iff.mp hv)⟩
   · rintro ⟨v, hv⟩
     exact ⟨v, (not_isCDLGoodAtVertex_cdlOneStepMoveOn_iff.mpr hv)⟩
+
+theorem not_isAllowedD0OneStepMoveOn_of_hasCubicD0BasicColorObstructionAt
+    {G : SimpleGraph V} [Fintype V] [Fintype G.edgeSet]
+    {C : Finset G.edgeSet} {g : Color} {x : G.edgeSet → Color} {v : V}
+    (hx : IsGraphFlow G x)
+    (hC : IsKirchhoffNeutralMoveSupport G C)
+    (hobst : HasCubicD0BasicColorObstructionAt G x C v g) :
+    ¬ IsAllowedD0OneStepMoveOn G C g x (cdlOneStepMoveOn G C g x) := by
+  rcases hobst with ⟨hg, _hcount, _hclustering, _hincident, _e, _heinc, _heC, _hx,
+    hforced⟩
+  rw [not_isAllowedD0OneStepMoveOn_iff_exists_vertex_forced_zero_of_kirchhoffNeutral
+    hg hx hC]
+  exact ⟨v, hforced⟩
 
 theorem isAllowedD0OneStepMoveOn_of_isKempeCycle_and_vertex_witnesses
     {G : SimpleGraph V} [Fintype G.edgeSet] {C : Finset G.edgeSet}
