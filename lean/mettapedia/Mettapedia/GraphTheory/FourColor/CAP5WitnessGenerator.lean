@@ -27,6 +27,79 @@ namespace CAP5ExceptionalAnnulusGeneratorLatent
 
 variable {E : Type*} [DecidableEq E] {boundaryEdge : Fin 5 → E}
 
+/-- The four exceptional component-pairing orientations. -/
+def allExceptionalBoundarySupportOrientations :
+    List CAP5ExceptionalBoundarySupportOrientation :=
+  [.redBlue03_redPurple04, .redBlue03_redPurple13,
+    .redBlue12_redPurple04, .redBlue12_redPurple13]
+
+/-- The four Boolean portal-side choices for the exceptional annulus case. -/
+def allPortalSideChoices : List (Bool × Bool) :=
+  [(true, true), (true, false), (false, true), (false, false)]
+
+/-- The finite latent space for one CAP5 boundary-edge interpretation: four orientations times
+four portal-side choices. -/
+def all (boundaryEdge : Fin 5 → E) :
+    List (CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge) :=
+  allExceptionalBoundarySupportOrientations.flatMap fun orientation =>
+    allPortalSideChoices.map fun sideChoice =>
+      { orientation := orientation
+        p0Inside := sideChoice.1
+        p4Inside := sideChoice.2 }
+
+/-- Every exceptional orientation occurs in the finite latent enumeration. -/
+theorem mem_allExceptionalBoundarySupportOrientations
+    (orientation : CAP5ExceptionalBoundarySupportOrientation) :
+    orientation ∈ allExceptionalBoundarySupportOrientations := by
+  cases orientation <;> simp [allExceptionalBoundarySupportOrientations]
+
+/-- Every Boolean portal-side choice occurs in the finite latent enumeration. -/
+theorem mem_allPortalSideChoices (p0Inside p4Inside : Bool) :
+    (p0Inside, p4Inside) ∈ allPortalSideChoices := by
+  cases p0Inside <;> cases p4Inside <;> simp [allPortalSideChoices]
+
+/-- Constructor-level membership in the finite CAP5 latent enumeration. -/
+theorem mem_all_of_fields
+    (boundaryEdge : Fin 5 → E)
+    (orientation : CAP5ExceptionalBoundarySupportOrientation)
+    (p0Inside p4Inside : Bool) :
+    ({ orientation := orientation
+       p0Inside := p0Inside
+       p4Inside := p4Inside } :
+      CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge) ∈ all boundaryEdge := by
+  unfold all
+  exact List.mem_flatMap.2
+    ⟨orientation, mem_allExceptionalBoundarySupportOrientations orientation,
+      List.mem_map.2
+        ⟨(p0Inside, p4Inside), mem_allPortalSideChoices p0Inside p4Inside, rfl⟩⟩
+
+/-- Every generated latent is present in the finite CAP5 latent enumeration. -/
+theorem mem_all (latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge) :
+    latent ∈ all boundaryEdge := by
+  rcases latent with ⟨orientation, p0Inside, p4Inside⟩
+  exact mem_all_of_fields boundaryEdge orientation p0Inside p4Inside
+
+/-- Exceptional component-cover data selects an orientation occurring in the finite latent
+enumeration, for any fixed portal-side choice. -/
+theorem exists_mem_all_of_isExceptional_of_portalSides
+    {n : Nat}
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    (p0Inside p4Inside : Bool) (h : data.IsExceptional) :
+    ∃ latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge,
+      latent ∈ all boundaryEdge ∧
+        latent.p0Inside = p0Inside ∧
+          latent.p4Inside = p4Inside ∧
+            data.RealizesExceptionalBoundarySupportOrientation latent.orientation := by
+  rcases CAP5TransportedEdgeComponentCoverCore.exists_exceptionalBoundarySupportOrientation_of_isExceptional
+      h with
+    ⟨orientation, horientation⟩
+  exact
+    ⟨{ orientation := orientation
+       p0Inside := p0Inside
+       p4Inside := p4Inside },
+      mem_all_of_fields boundaryEdge orientation p0Inside p4Inside, rfl, rfl,
+      horientation⟩
+
 /-- Side-case selected by the two portal-side bits. -/
 def sideCase (latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge) :
     CAP5ExceptionalAnnulusSideCase :=
@@ -75,6 +148,18 @@ variable {boundaryEdge : Fin 5 → G.edgeSet}
 def candidate (node : CAP5ExceptionalAnnulusGeneratorNode boundaryEdge) :
     CAP5ExceptionalAnnulusBoundaryEdgeSupportCandidate boundaryEdge :=
   node.latent.candidate
+
+@[simp]
+theorem candidate_orientation
+    (node : CAP5ExceptionalAnnulusGeneratorNode boundaryEdge) :
+    node.candidate.portalCandidate.orientation = node.latent.orientation := by
+  exact node.latent.candidate_orientation
+
+@[simp]
+theorem candidate_sideCase
+    (node : CAP5ExceptionalAnnulusGeneratorNode boundaryEdge) :
+    node.candidate.portalCandidate.sideCase = node.latent.sideCase := by
+  exact node.latent.candidate_sideCase
 
 /-- Checker prerequisite: every named portal in the generated support crosses the proposed
 vertex side. -/
@@ -148,6 +233,56 @@ theorem inBin_realizedSeparator_or_forcedCounterexample_of_complete
   · exact Or.inl ⟨hportal, hcycles, hrealized⟩
   · exact Or.inr ⟨hportal, hcycles, hforced⟩
 
+/-- Data-level generator theorem.  Exceptional CAP5 component-cover data chooses an enumerated
+latent.  If the graph-side interpretation certifies portal crossings and two side cycles for the
+selected portal-side bits, that enumerated node resolves into either the realized-separator bin
+or the forced-counterexample bin. -/
+theorem exists_enumeratedNode_inBin_realizedSeparator_or_forcedCounterexample_of_isExceptional_of_portalSides
+    {n : Nat}
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    (p0Inside p4Inside : Bool) (h : data.IsExceptional)
+    (side : V → Prop)
+    (hportal_crosses :
+      ∀ edgeCandidate : CAP5ExceptionalAnnulusBoundaryEdgeSupportCandidate boundaryEdge,
+        data.RealizesExceptionalBoundarySupportOrientation
+            edgeCandidate.portalCandidate.orientation →
+        edgeCandidate.portalCandidate.sideCase =
+            CAP5ExceptionalAnnulusSideCase.ofPortalSides p0Inside p4Inside →
+        ∀ i : Fin 5, i ∈ edgeCandidate.portalCandidate.portalSet →
+          EdgeCrossesVertexSide G side (boundaryEdge i))
+    (hcycles : HasCycleOnSide G side ∧ HasCycleOnSide G (fun v => ¬ side v)) :
+    ∃ latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge,
+      latent ∈ CAP5ExceptionalAnnulusGeneratorLatent.all boundaryEdge ∧
+        latent.p0Inside = p0Inside ∧
+          latent.p4Inside = p4Inside ∧
+            data.RealizesExceptionalBoundarySupportOrientation latent.orientation ∧
+              (let node : CAP5ExceptionalAnnulusGeneratorNode boundaryEdge :=
+                { latent := latent, side := side };
+                node.InBin CAP5SeparatorGeneratorStatus.realizedSeparator ∨
+                  node.InBin CAP5SeparatorGeneratorStatus.forcedCounterexample) := by
+  rcases CAP5ExceptionalAnnulusGeneratorLatent.exists_mem_all_of_isExceptional_of_portalSides
+      (boundaryEdge := boundaryEdge) p0Inside p4Inside h with
+    ⟨latent, hmem, hp0, hp4, horientation⟩
+  let node : CAP5ExceptionalAnnulusGeneratorNode boundaryEdge :=
+    { latent := latent, side := side }
+  have hnodePortal : node.PortalCrosses := by
+    intro i hi
+    have horientation' :
+        data.RealizesExceptionalBoundarySupportOrientation
+          node.candidate.portalCandidate.orientation := by
+      simpa using horientation
+    have hsideCase :
+        node.candidate.portalCandidate.sideCase =
+          CAP5ExceptionalAnnulusSideCase.ofPortalSides p0Inside p4Inside := by
+      change CAP5ExceptionalAnnulusSideCase.ofPortalSides
+          node.latent.p0Inside node.latent.p4Inside =
+        CAP5ExceptionalAnnulusSideCase.ofPortalSides p0Inside p4Inside
+      rw [hp0, hp4]
+    exact hportal_crosses node.candidate horientation' hsideCase i hi
+  have hresolved :=
+    node.inBin_realizedSeparator_or_forcedCounterexample_of_complete hnodePortal hcycles
+  exact ⟨latent, hmem, hp0, hp4, horientation, by simpa [node] using hresolved⟩
+
 /-- In a cyclically five-edge-connected graph, any complete size-at-most-four CAP5 generated
 node is forced into the counterexample bin.  This is the finite falsification form of the
 separator route. -/
@@ -162,6 +297,56 @@ theorem forcedCounterexample_of_cyclicallyFiveEdgeConnected
         node.side hcyclic hportal hinside_cycle houtside_cycle with
     ⟨u, v, e, p, heOutside, hu, hv, hpEdges, havoid⟩
   exact ⟨e, u, v, p, heOutside, hu, hv, hpEdges, havoid⟩
+
+/-- Data-level cyclic-connectivity specialization of the finite CAP5 generator.  Exceptional
+component-cover data selects an enumerated latent, and cyclic five-edge-connectivity forces the
+complete generated node into the counterexample bin rather than the small-separator bin. -/
+theorem exists_enumeratedNode_inBin_forcedCounterexample_of_isExceptional_of_portalSides_of_cyclicallyFiveEdgeConnected
+    {n : Nat}
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    (p0Inside p4Inside : Bool) (h : data.IsExceptional)
+    (side : V → Prop) (hcyclic : CyclicallyFiveEdgeConnected G)
+    (hportal_crosses :
+      ∀ edgeCandidate : CAP5ExceptionalAnnulusBoundaryEdgeSupportCandidate boundaryEdge,
+        data.RealizesExceptionalBoundarySupportOrientation
+            edgeCandidate.portalCandidate.orientation →
+        edgeCandidate.portalCandidate.sideCase =
+            CAP5ExceptionalAnnulusSideCase.ofPortalSides p0Inside p4Inside →
+        ∀ i : Fin 5, i ∈ edgeCandidate.portalCandidate.portalSet →
+          EdgeCrossesVertexSide G side (boundaryEdge i))
+    (hcycles : HasCycleOnSide G side ∧ HasCycleOnSide G (fun v => ¬ side v)) :
+    ∃ latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge,
+      latent ∈ CAP5ExceptionalAnnulusGeneratorLatent.all boundaryEdge ∧
+        latent.p0Inside = p0Inside ∧
+          latent.p4Inside = p4Inside ∧
+            data.RealizesExceptionalBoundarySupportOrientation latent.orientation ∧
+              (let node : CAP5ExceptionalAnnulusGeneratorNode boundaryEdge :=
+                { latent := latent, side := side };
+                node.InBin CAP5SeparatorGeneratorStatus.forcedCounterexample) := by
+  rcases CAP5ExceptionalAnnulusGeneratorLatent.exists_mem_all_of_isExceptional_of_portalSides
+      (boundaryEdge := boundaryEdge) p0Inside p4Inside h with
+    ⟨latent, hmem, hp0, hp4, horientation⟩
+  let node : CAP5ExceptionalAnnulusGeneratorNode boundaryEdge :=
+    { latent := latent, side := side }
+  have hnodePortal : node.PortalCrosses := by
+    intro i hi
+    have horientation' :
+        data.RealizesExceptionalBoundarySupportOrientation
+          node.candidate.portalCandidate.orientation := by
+      simpa using horientation
+    have hsideCase :
+        node.candidate.portalCandidate.sideCase =
+          CAP5ExceptionalAnnulusSideCase.ofPortalSides p0Inside p4Inside := by
+      change CAP5ExceptionalAnnulusSideCase.ofPortalSides
+          node.latent.p0Inside node.latent.p4Inside =
+        CAP5ExceptionalAnnulusSideCase.ofPortalSides p0Inside p4Inside
+      rw [hp0, hp4]
+    exact hportal_crosses node.candidate horientation' hsideCase i hi
+  have hforced := node.forcedCounterexample_of_cyclicallyFiveEdgeConnected
+    hcyclic hnodePortal hcycles
+  exact ⟨latent, hmem, hp0, hp4, horientation, by
+    simpa [node] using (show node.InBin CAP5SeparatorGeneratorStatus.forcedCounterexample from
+      ⟨hnodePortal, hcycles, hforced⟩)⟩
 
 /-- Cyclic five-edge-connectivity rules out the realized-separator bin for any complete CAP5
 generated node. -/
