@@ -525,6 +525,28 @@ def EnumeratedExceptionalAnnulusForcedEdgeFinset
   ∀ e : G.edgeSet,
     e ∈ emitted ↔ data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e
 
+/-- Canonical finite emitted-edge set when the enumerated generator predicate is decidable.  This
+is the concrete artifact a finite checker can compute: filter all graph edges by the generated
+CAP5 forced-edge predicate. -/
+def enumeratedExceptionalAnnulusForcedEdgeFinset
+    (data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n)
+    [Fintype G.edgeSet]
+    (p0Inside p4Inside : Bool) (side : V → Prop)
+    [DecidablePred (data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side)] :
+    Finset G.edgeSet :=
+  Finset.univ.filter (data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side)
+
+/-- The canonical filtered finite set is a correct emitted-edge certificate. -/
+theorem enumeratedExceptionalAnnulusForcedEdgeFinset_spec
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    [Fintype G.edgeSet]
+    (p0Inside p4Inside : Bool) (side : V → Prop)
+    [DecidablePred (data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side)] :
+    data.EnumeratedExceptionalAnnulusForcedEdgeFinset p0Inside p4Inside side
+      (data.enumeratedExceptionalAnnulusForcedEdgeFinset p0Inside p4Inside side) := by
+  intro e
+  simp [enumeratedExceptionalAnnulusForcedEdgeFinset]
+
 /-- The finite emitted-edge list is nonempty whenever the CAP5 generator emits a forced edge.
 This is the first sanity check a finite forward run should pass under cyclic five-edge-connectivity:
 the generated forced-counterexample bin must expose at least one concrete edge. -/
@@ -600,6 +622,46 @@ theorem theorem49BoundaryRootSynthesis_of_enumeratedExceptionalAnnulusForcedEdge
       intro e hedge
       exact hwitnessBlue e ((hcert e).2 hedge))
 
+/-- Theorem 4.9 synthesis route from the canonical filtered emitted-edge set.  Compared with the
+abstract certificate form, the finite artifact is fixed to `Finset.univ.filter` on the generated
+predicate, so a decidable checker can target this statement directly. -/
+theorem theorem49BoundaryRootSynthesis_of_decidableEnumeratedExceptionalAnnulusForcedEdgeFinsetControl
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    [Fintype G.edgeSet] [FiniteDimensional F2 (G.edgeSet → Color)]
+    (emb : PlaneEmbeddingWithBoundary G) (C₀ : G.EdgeColoring Color)
+    (colorings : Set (G.EdgeColoring Color))
+    (hsubset : colorings ⊆ G.EdgeKempeClosure C₀)
+    {κ : Type*}
+    (family : κ → projectedColoringGeneratorSubspace emb colorings)
+    (p0Inside p4Inside : Bool) (side : V → Prop)
+    [DecidablePred (data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side)]
+    (hcontrol :
+      ∀ ⦃z : G.edgeSet → Color⦄,
+        z ∈ planarBoundaryZeroSubmodule emb →
+        (∀ e ∈ data.enumeratedExceptionalAnnulusForcedEdgeFinset p0Inside p4Inside side,
+          z e = 0) →
+          z = 0)
+    (hwitnessRed :
+      ∀ e : G.edgeSet,
+        e ∈ data.enumeratedExceptionalAnnulusForcedEdgeFinset p0Inside p4Inside side →
+          ∃ i : κ,
+            ((family i : projectedColoringGeneratorSubspace emb colorings) :
+                G.edgeSet → Color) =
+              Pi.single e red)
+    (hwitnessBlue :
+      ∀ e : G.edgeSet,
+        e ∈ data.enumeratedExceptionalAnnulusForcedEdgeFinset p0Inside p4Inside side →
+          ∃ i : κ,
+            ((family i : projectedColoringGeneratorSubspace emb colorings) :
+                G.edgeSet → Color) =
+              Pi.single e blue) :
+    Theorem49BoundaryRootSynthesis emb C₀ :=
+  theorem49BoundaryRootSynthesis_of_enumeratedExceptionalAnnulusForcedEdgeFinsetControl
+    emb C₀ colorings hsubset family p0Inside p4Inside side
+    (data.enumeratedExceptionalAnnulusForcedEdgeFinset p0Inside p4Inside side)
+    (data.enumeratedExceptionalAnnulusForcedEdgeFinset_spec p0Inside p4Inside side)
+    hcontrol hwitnessRed hwitnessBlue
+
 /-- Failure certificate for the finite CAP5 emitted-edge control route.  If the concrete finite
 checker output does not control the selected-boundary-zero chains, the failed check produces a
 nonzero selected-boundary-zero chain that vanishes on every edge emitted by the enumerated CAP5
@@ -628,6 +690,33 @@ theorem exists_boundaryZeroChain_vanishingOnEnumeratedExceptionalAnnulusForcedEd
   exact ⟨z, hzBoundary, hzNonzero, by
     intro e hedge
     exact hvanish e ((hcert e).2 hedge)⟩
+
+/-- Falsification payload for the canonical filtered emitted-edge set.  If the finite checker's
+kernel/control test fails on the generated `Finset.univ.filter` edge set, the result is a concrete
+nonzero selected-boundary-zero chain invisible to every enumerated CAP5 emitted edge. -/
+theorem exists_boundaryZeroChain_vanishingOnEnumeratedExceptionalAnnulusForcedEdges_of_not_decidableFinsetControl
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    [Fintype G.edgeSet]
+    (emb : PlaneEmbeddingWithBoundary G)
+    (p0Inside p4Inside : Bool) (side : V → Prop)
+    [DecidablePred (data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side)]
+    (hnotControl :
+      ¬ ∀ ⦃z : G.edgeSet → Color⦄,
+        z ∈ planarBoundaryZeroSubmodule emb →
+        (∀ e ∈ data.enumeratedExceptionalAnnulusForcedEdgeFinset p0Inside p4Inside side,
+          z e = 0) →
+          z = 0) :
+    ∃ z : G.edgeSet → Color,
+      z ∈ planarBoundaryZeroSubmodule emb ∧
+        z ≠ 0 ∧
+          ∀ e : G.edgeSet,
+            data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e →
+              z e = 0 :=
+  exists_boundaryZeroChain_vanishingOnEnumeratedExceptionalAnnulusForcedEdges_of_not_finsetControl
+    emb p0Inside p4Inside side
+    (data.enumeratedExceptionalAnnulusForcedEdgeFinset p0Inside p4Inside side)
+    (data.enumeratedExceptionalAnnulusForcedEdgeFinset_spec p0Inside p4Inside side)
+    hnotControl
 
 /-- Theorem 4.9 synthesis route from a concrete finite checker output.  The checker need only
 certify that its finite edge set is exactly the enumerated CAP5 emitted-edge predicate, and then
