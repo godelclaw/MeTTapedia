@@ -547,6 +547,44 @@ theorem enumeratedExceptionalAnnulusForcedEdgeFinset_spec
   intro e
   simp [enumeratedExceptionalAnnulusForcedEdgeFinset]
 
+/-- Boolean checker certificate for the finite exceptional CAP5 generator.  The checker returns
+`true` exactly on the edges emitted by the enumerated forced-edge predicate, so its filtered edge
+list is an auditable finite artifact rather than an implicit decidability instance. -/
+structure EnumeratedExceptionalAnnulusForcedEdgeClassifier
+    (data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n)
+    (p0Inside p4Inside : Bool) (side : V → Prop) where
+  accept : G.edgeSet → Bool
+  accept_spec :
+    ∀ e : G.edgeSet,
+      accept e = true ↔ data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e
+
+namespace EnumeratedExceptionalAnnulusForcedEdgeClassifier
+
+/-- The concrete finite edge set emitted by a Boolean exceptional CAP5 checker. -/
+def emittedFinset
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    {p0Inside p4Inside : Bool} {side : V → Prop}
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    [Fintype G.edgeSet] :
+    Finset G.edgeSet :=
+  Finset.univ.filter (fun e => classifier.accept e = true)
+
+/-- The filtered output of a correct Boolean checker is exactly the enumerated CAP5 forced-edge
+predicate. -/
+theorem emittedFinset_spec
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    [Fintype G.edgeSet]
+    {p0Inside p4Inside : Bool} {side : V → Prop}
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side) :
+    data.EnumeratedExceptionalAnnulusForcedEdgeFinset p0Inside p4Inside side
+      classifier.emittedFinset := by
+  intro e
+  simp [emittedFinset, classifier.accept_spec e]
+
+end EnumeratedExceptionalAnnulusForcedEdgeClassifier
+
 /-- The finite emitted-edge list is nonempty whenever the CAP5 generator emits a forced edge.
 This is the first sanity check a finite forward run should pass under cyclic five-edge-connectivity:
 the generated forced-counterexample bin must expose at least one concrete edge. -/
@@ -662,6 +700,44 @@ theorem theorem49BoundaryRootSynthesis_of_decidableEnumeratedExceptionalAnnulusF
     (data.enumeratedExceptionalAnnulusForcedEdgeFinset_spec p0Inside p4Inside side)
     hcontrol hwitnessRed hwitnessBlue
 
+/-- Theorem 4.9 synthesis route from a Boolean exceptional CAP5 checker.  The classifier is the
+operational finite artifact: after its correctness spec identifies the emitted edge set, the same
+finite control/rank obligation discharges the boundary-root synthesis route. -/
+theorem theorem49BoundaryRootSynthesis_of_enumeratedExceptionalAnnulusForcedEdgeClassifierControl
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    [Fintype G.edgeSet] [FiniteDimensional F2 (G.edgeSet → Color)]
+    (emb : PlaneEmbeddingWithBoundary G) (C₀ : G.EdgeColoring Color)
+    (colorings : Set (G.EdgeColoring Color))
+    (hsubset : colorings ⊆ G.EdgeKempeClosure C₀)
+    {κ : Type*}
+    (family : κ → projectedColoringGeneratorSubspace emb colorings)
+    (p0Inside p4Inside : Bool) (side : V → Prop)
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (hcontrol :
+      ∀ ⦃z : G.edgeSet → Color⦄,
+        z ∈ planarBoundaryZeroSubmodule emb →
+        (∀ e ∈ classifier.emittedFinset, z e = 0) →
+          z = 0)
+    (hwitnessRed :
+      ∀ e : G.edgeSet,
+        e ∈ classifier.emittedFinset →
+          ∃ i : κ,
+            ((family i : projectedColoringGeneratorSubspace emb colorings) :
+                G.edgeSet → Color) =
+              Pi.single e red)
+    (hwitnessBlue :
+      ∀ e : G.edgeSet,
+        e ∈ classifier.emittedFinset →
+          ∃ i : κ,
+            ((family i : projectedColoringGeneratorSubspace emb colorings) :
+                G.edgeSet → Color) =
+              Pi.single e blue) :
+    Theorem49BoundaryRootSynthesis emb C₀ :=
+  theorem49BoundaryRootSynthesis_of_enumeratedExceptionalAnnulusForcedEdgeFinsetControl
+    emb C₀ colorings hsubset family p0Inside p4Inside side classifier.emittedFinset
+    classifier.emittedFinset_spec hcontrol hwitnessRed hwitnessBlue
+
 /-- Failure certificate for the finite CAP5 emitted-edge control route.  If the concrete finite
 checker output does not control the selected-boundary-zero chains, the failed check produces a
 nonzero selected-boundary-zero chain that vanishes on every edge emitted by the enumerated CAP5
@@ -716,6 +792,31 @@ theorem exists_boundaryZeroChain_vanishingOnEnumeratedExceptionalAnnulusForcedEd
     emb p0Inside p4Inside side
     (data.enumeratedExceptionalAnnulusForcedEdgeFinset p0Inside p4Inside side)
     (data.enumeratedExceptionalAnnulusForcedEdgeFinset_spec p0Inside p4Inside side)
+    hnotControl
+
+/-- Falsification payload for a Boolean exceptional CAP5 checker.  If the classifier's finite
+edge output does not control the selected-boundary-zero chains, the failed check returns a nonzero
+boundary-zero chain invisible to every edge the generated CAP5 predicate can emit. -/
+theorem exists_boundaryZeroChain_vanishingOnEnumeratedExceptionalAnnulusForcedEdges_of_not_classifierControl
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    [Fintype G.edgeSet]
+    (emb : PlaneEmbeddingWithBoundary G)
+    (p0Inside p4Inside : Bool) (side : V → Prop)
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (hnotControl :
+      ¬ ∀ ⦃z : G.edgeSet → Color⦄,
+        z ∈ planarBoundaryZeroSubmodule emb →
+        (∀ e ∈ classifier.emittedFinset, z e = 0) →
+          z = 0) :
+    ∃ z : G.edgeSet → Color,
+      z ∈ planarBoundaryZeroSubmodule emb ∧
+        z ≠ 0 ∧
+          ∀ e : G.edgeSet,
+            data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e →
+              z e = 0 :=
+  exists_boundaryZeroChain_vanishingOnEnumeratedExceptionalAnnulusForcedEdges_of_not_finsetControl
+    emb p0Inside p4Inside side classifier.emittedFinset classifier.emittedFinset_spec
     hnotControl
 
 /-- Theorem 4.9 synthesis route from a concrete finite checker output.  The checker need only
