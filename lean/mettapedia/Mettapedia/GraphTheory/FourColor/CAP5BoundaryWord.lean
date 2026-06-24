@@ -353,4 +353,87 @@ theorem cap5_extendsAcrossCycle_of_boundaryActionRealizesSomeRepairType_bad
   rcases h with ⟨τ, hτ⟩
   exact cap5_extendsAcrossCycle_of_boundaryActionInducesRepairType_bad (τ := τ) hτ
 
+/-- The boundary indices carrying one of two colors in a CAP5 word. -/
+def cap5ActiveSupport (a b : Color) (w : CAP5BoundaryWord) : Finset (Fin 5) :=
+  Finset.univ.filter fun i => w i = a ∨ w i = b
+
+/-- In the canonical bad CAP5 word, the red/blue active indices are `{0,1,2,3}`. -/
+theorem cap5BadBoundaryWord2111_activeSupport_red_blue :
+    cap5ActiveSupport red blue cap5BadBoundaryWord2111 = ({0, 1, 2, 3} : Finset (Fin 5)) := by
+  ext i
+  fin_cases i <;> simp [cap5ActiveSupport, cap5BadBoundaryWord2111, red, blue, purple]
+
+/-- In the canonical bad CAP5 word, the red/purple active indices are `{0,1,3,4}`. -/
+theorem cap5BadBoundaryWord2111_activeSupport_red_purple :
+    cap5ActiveSupport red purple cap5BadBoundaryWord2111 = ({0, 1, 3, 4} : Finset (Fin 5)) := by
+  ext i
+  fin_cases i <;> simp [cap5ActiveSupport, cap5BadBoundaryWord2111, red, blue, purple]
+
+/-- The two red/blue pair supports in the exceptional CAP5 pairing pattern. -/
+def CAP5BadRedBlueExceptionalSupport (S : Finset (Fin 5)) : Prop :=
+  S = {0, 3} ∨ S = {1, 2}
+
+/-- The two red/purple pair supports in the exceptional CAP5 pairing pattern. -/
+def CAP5BadRedPurpleExceptionalSupport (S : Finset (Fin 5)) : Prop :=
+  S = {0, 4} ∨ S = {1, 3}
+
+/-- Red/blue pair supports that are immediate finite repairs for the canonical bad word. -/
+def CAP5BadRedBlueRepairSupport (S : Finset (Fin 5)) : Prop :=
+  S = {0, 1} ∨ S = {0, 2} ∨ S = {1, 3} ∨ S = {2, 3}
+
+/-- Red/purple pair supports that are immediate finite repairs for the canonical bad word. -/
+def CAP5BadRedPurpleRepairSupport (S : Finset (Fin 5)) : Prop :=
+  S = {0, 1} ∨ S = {0, 3} ∨ S = {1, 4} ∨ S = {3, 4}
+
+/-- The simultaneous exceptional pairing pattern from the manuscript, stated at the level of
+boundary supports.  The order of the two components in each color pair is irrelevant. -/
+def CAP5BadExceptionalPairingPattern
+    (redBlue₁ redBlue₂ redPurple₁ redPurple₂ : Finset (Fin 5)) : Prop :=
+  ((redBlue₁ = {0, 3} ∧ redBlue₂ = {1, 2}) ∨
+    (redBlue₁ = {1, 2} ∧ redBlue₂ = {0, 3})) ∧
+  ((redPurple₁ = {0, 4} ∧ redPurple₂ = {1, 3}) ∨
+    (redPurple₁ = {1, 3} ∧ redPurple₂ = {0, 4}))
+
+/-- Any red/blue support on the repair side of the CAP5 split induces one of the eight finite
+repair types on the canonical bad word. -/
+theorem cap5BoundaryActionRealizesSomeRepairType_of_redBlueRepairSupport_bad
+    {S : Finset (Fin 5)}
+    (hS : CAP5BadRedBlueRepairSupport S) :
+    CAP5BoundaryActionRealizesSomeRepairType (cap5BoundarySwap red blue S)
+      cap5BadBoundaryWord2111 := by
+  rcases hS with rfl | rfl | rfl | rfl
+  · exact ⟨CAP5RepairType.redBlue01, rfl⟩
+  · exact ⟨CAP5RepairType.redBlue02, rfl⟩
+  · exact ⟨CAP5RepairType.redBlue13, rfl⟩
+  · exact ⟨CAP5RepairType.redBlue23, rfl⟩
+
+/-- Any red/purple support on the repair side of the CAP5 split induces one of the eight finite
+repair types on the canonical bad word. -/
+theorem cap5BoundaryActionRealizesSomeRepairType_of_redPurpleRepairSupport_bad
+    {S : Finset (Fin 5)}
+    (hS : CAP5BadRedPurpleRepairSupport S) :
+    CAP5BoundaryActionRealizesSomeRepairType (cap5BoundarySwap red purple S)
+      cap5BadBoundaryWord2111 := by
+  rcases hS with rfl | rfl | rfl | rfl
+  · exact ⟨CAP5RepairType.redPurple01, rfl⟩
+  · exact ⟨CAP5RepairType.redPurple03, rfl⟩
+  · exact ⟨CAP5RepairType.redPurple14, rfl⟩
+  · exact ⟨CAP5RepairType.redPurple34, rfl⟩
+
+/-- Red/blue support-level form of immediate CAP5 repair. -/
+theorem cap5_extendsAcrossCycle_of_redBlueRepairSupport_bad
+    {S : Finset (Fin 5)}
+    (hS : CAP5BadRedBlueRepairSupport S) :
+    CAP5WordExtendsAcrossCycle (cap5BoundarySwap red blue S cap5BadBoundaryWord2111) :=
+  cap5_extendsAcrossCycle_of_boundaryActionRealizesSomeRepairType_bad
+    (cap5BoundaryActionRealizesSomeRepairType_of_redBlueRepairSupport_bad hS)
+
+/-- Red/purple support-level form of immediate CAP5 repair. -/
+theorem cap5_extendsAcrossCycle_of_redPurpleRepairSupport_bad
+    {S : Finset (Fin 5)}
+    (hS : CAP5BadRedPurpleRepairSupport S) :
+    CAP5WordExtendsAcrossCycle (cap5BoundarySwap red purple S cap5BadBoundaryWord2111) :=
+  cap5_extendsAcrossCycle_of_boundaryActionRealizesSomeRepairType_bad
+    (cap5BoundaryActionRealizesSomeRepairType_of_redPurpleRepairSupport_bad hS)
+
 end Mettapedia.GraphTheory.FourColor
