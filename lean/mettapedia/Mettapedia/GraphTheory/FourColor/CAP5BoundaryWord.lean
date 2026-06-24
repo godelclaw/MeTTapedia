@@ -327,6 +327,25 @@ def cap5UnrotateBoundaryWord (w : CAP5BoundaryWord) : CAP5BoundaryWord
   | 3 => w 2
   | 4 => w 3
 
+/-- The original boundary index read at a rotated boundary index. -/
+def cap5RotateBoundaryPreimageIndex : Fin 5 → Fin 5
+  | 0 => 1
+  | 1 => 2
+  | 2 => 3
+  | 3 => 4
+  | 4 => 0
+
+/-- Rotate a finite set of CAP5 boundary indices compatibly with `cap5RotateBoundaryWord`.
+If an action used support `S` before rotation, it uses `cap5RotateBoundarySupport S` after one
+boundary rotation. -/
+def cap5RotateBoundarySupport (S : Finset (Fin 5)) : Finset (Fin 5) :=
+  Finset.univ.filter fun i => cap5RotateBoundaryPreimageIndex i ∈ S
+
+/-- Rotate a finite set of CAP5 boundary indices forward `n` cyclic steps. -/
+def cap5RotateBoundarySupportN : Nat → Finset (Fin 5) → Finset (Fin 5)
+  | 0, S => S
+  | n + 1, S => cap5RotateBoundarySupport (cap5RotateBoundarySupportN n S)
+
 /-- Rotate a CAP5 internal 5-cycle coloring in the inverse cyclic direction. -/
 def cap5UnrotateInternalCycleColoring
     (x : CAP5InternalCycleColoring) : CAP5InternalCycleColoring
@@ -1000,6 +1019,52 @@ def cap5BoundarySwap (a b : Color) (S : Finset (Fin 5))
     (w : CAP5BoundaryWord) : CAP5BoundaryWord :=
   fun i => if i ∈ S then cap5SwapColor a b (w i) else w i
 
+/-- Boundary swaps commute with zero-free color relabeling when the swapped colors are relabeled
+at the same time. -/
+theorem cap5BoundarySwap_map_equiv {σ : Color ≃ Color}
+    (a b : Color) (S : Finset (Fin 5)) (w : CAP5BoundaryWord) :
+    cap5BoundarySwap (σ a) (σ b) S (cap5MapBoundaryWord σ w) =
+      cap5MapBoundaryWord σ (cap5BoundarySwap a b S w) := by
+  funext i
+  by_cases hi : i ∈ S
+  · unfold cap5BoundarySwap cap5MapBoundaryWord
+    simp only [hi, ↓reduceIte]
+    by_cases hia : w i = a
+    · simp [cap5SwapColor, hia]
+    · have hσia : σ (w i) ≠ σ a := fun h => hia (σ.injective h)
+      by_cases hib : w i = b
+      · have hba : b ≠ a := by
+          intro hba
+          exact hia (hib.trans hba)
+        simp [cap5SwapColor, hib, hba]
+      · have hσib : σ (w i) ≠ σ b := fun h => hib (σ.injective h)
+        simp [cap5SwapColor, hia, hσia, hib, hσib]
+  · simp [cap5BoundarySwap, cap5MapBoundaryWord, hi]
+
+/-- Rotating the support of a boundary swap gives the same result as rotating the boundary word
+after applying the swap. -/
+theorem cap5BoundarySwap_rotate
+    (a b : Color) (S : Finset (Fin 5)) (w : CAP5BoundaryWord) :
+    cap5BoundarySwap a b (cap5RotateBoundarySupport S) (cap5RotateBoundaryWord w) =
+      cap5RotateBoundaryWord (cap5BoundarySwap a b S w) := by
+  funext i
+  fin_cases i <;>
+    simp [cap5BoundarySwap, cap5RotateBoundarySupport, cap5RotateBoundaryPreimageIndex,
+      cap5RotateBoundaryWord]
+
+/-- Rotating a boundary-swap support by `n` steps is compatible with rotating the boundary word
+by `n` steps. -/
+theorem cap5BoundarySwap_rotateN
+    (a b : Color) (S : Finset (Fin 5)) (w : CAP5BoundaryWord) (n : Nat) :
+    cap5BoundarySwap a b (cap5RotateBoundarySupportN n S) (cap5RotateBoundaryWordN n w) =
+      cap5RotateBoundaryWordN n (cap5BoundarySwap a b S w) := by
+  induction n with
+  | zero =>
+      simp [cap5RotateBoundarySupportN, cap5RotateBoundaryWordN]
+  | succ n ih =>
+      simp only [cap5RotateBoundarySupportN, cap5RotateBoundaryWordN]
+      rw [cap5BoundarySwap_rotate, ih]
+
 /-- First red/blue finite CAP5 repair type: swap positions `{0,1}`. -/
 theorem cap5BadBoundaryWord2111_repair_red_blue_01_extendsAcrossCycle :
     CAP5WordExtendsAcrossCycle
@@ -1245,11 +1310,34 @@ def CAP5BoundaryActionInducesTransportedRepairType
     (action : CAP5BoundaryAction) (τ : CAP5RepairType) (σ : Color → Color) (n : Nat) : Prop :=
   action (cap5TransportedBadBoundaryWord σ n) = τ.transportedApply σ n
 
+/-- The transported support-swap action induces the transported finite repair type.  This is the
+boundary-support algebra expected from a graph-level outside-only Kempe component after cyclic
+normalization and color relabeling. -/
+theorem cap5BoundaryActionInducesTransportedRepairType_of_transportSupportSwap
+    (τ : CAP5RepairType) (σ : Color ≃ Color) (n : Nat) :
+    CAP5BoundaryActionInducesTransportedRepairType
+      (cap5BoundarySwap (σ (τ.colorPair).1) (σ (τ.colorPair).2)
+        (cap5RotateBoundarySupportN n τ.support))
+      τ σ n := by
+  unfold CAP5BoundaryActionInducesTransportedRepairType
+  unfold cap5TransportedBadBoundaryWord CAP5RepairType.transportedApply CAP5RepairType.apply
+  rw [cap5BoundarySwap_rotateN]
+  rw [cap5BoundarySwap_map_equiv]
+
 /-- A boundary action realizes some transported canonical finite repair type at a transported
 normal-form bad CAP5 word. -/
 def CAP5BoundaryActionRealizesSomeTransportedRepairType
     (action : CAP5BoundaryAction) (σ : Color → Color) (n : Nat) : Prop :=
   ∃ τ : CAP5RepairType, CAP5BoundaryActionInducesTransportedRepairType action τ σ n
+
+/-- The transported support-swap action realizes the corresponding transported finite repair type. -/
+theorem cap5BoundaryActionRealizesSomeTransportedRepairType_of_transportSupportSwap
+    (τ : CAP5RepairType) (σ : Color ≃ Color) (n : Nat) :
+    CAP5BoundaryActionRealizesSomeTransportedRepairType
+      (cap5BoundarySwap (σ (τ.colorPair).1) (σ (τ.colorPair).2)
+        (cap5RotateBoundarySupportN n τ.support))
+      σ n :=
+  ⟨τ, cap5BoundaryActionInducesTransportedRepairType_of_transportSupportSwap τ σ n⟩
 
 /-- If a boundary action induces a particular finite repair type on the canonical bad word, then
 the action's output extends across the CAP5 cap. -/
