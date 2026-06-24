@@ -3428,6 +3428,110 @@ theorem
       D hincident hcandidate)
     hrepair
 
+/-- Refutation-facing form of the two-step route: a state with clustered zero
+support cannot be a `D₀` local minimum once every clustered vertex has a
+first-step neutral candidate and every cubic obstruction left by such a
+candidate has a second-step repair. -/
+theorem
+    not_isD0LocalMinimumForMoveSupports_of_hasClusteredZeroVertex_and_neutral_candidates_and_cubicObstruction_descent
+    {G : SimpleGraph V} [Fintype V] [Fintype G.edgeSet]
+    {moveSupports : Finset (Finset G.edgeSet)} {x : G.edgeSet → Color}
+    (hcard : ∀ v : V, (incidentEdgeFinset G v).card = 3)
+    (hcluster : HasClusteredZeroVertex G x)
+    (hcandidate : EveryClusteredZeroVertexHasNeutralD0Candidate G moveSupports x)
+    (hrepair : EveryCubicD0BasicColorObstructionHasD0Descent G moveSupports x) :
+    ¬ IsD0LocalMinimumForMoveSupports G moveSupports x := by
+  intro hmin
+  exact
+    (not_hasClusteredZeroVertex_of_isD0LocalMinimumForMoveSupports_of_neutral_candidates_and_cubicObstruction_descent
+      hcard hmin hcandidate hrepair) hcluster
+
+/-- Numeric refutation-facing form of the two-step route: positive zero
+clustering rules out `D₀` local minimality under the neutral-candidate plus
+cubic-obstruction repair hypotheses. -/
+theorem
+    not_isD0LocalMinimumForMoveSupports_of_zeroClusteringCount_pos_and_neutral_candidates_and_cubicObstruction_descent
+    {G : SimpleGraph V} [Fintype V] [Fintype G.edgeSet]
+    {moveSupports : Finset (Finset G.edgeSet)} {x : G.edgeSet → Color}
+    (hcard : ∀ v : V, (incidentEdgeFinset G v).card = 3)
+    (hCpos : 0 < zeroClusteringCount G x)
+    (hcandidate : EveryClusteredZeroVertexHasNeutralD0Candidate G moveSupports x)
+    (hrepair : EveryCubicD0BasicColorObstructionHasD0Descent G moveSupports x) :
+    ¬ IsD0LocalMinimumForMoveSupports G moveSupports x :=
+  not_isD0LocalMinimumForMoveSupports_of_hasClusteredZeroVertex_and_neutral_candidates_and_cubicObstruction_descent
+    hcard ((zeroClusteringCount_pos_iff_hasClusteredZeroVertex).mp hCpos)
+    hcandidate hrepair
+
+/-- Kempe-cycle source form of the two-step local-minimum refutation. -/
+theorem
+    not_isD0LocalMinimumForMoveSupports_of_hasClusteredZeroVertex_and_kempe_candidates_and_cubicObstruction_descent
+    {G : SimpleGraph V} [Fintype V] [Fintype G.edgeSet]
+    {moveSupports : Finset (Finset G.edgeSet)} {x : G.edgeSet → Color}
+    (hcard : ∀ v : V, (incidentEdgeFinset G v).card = 3)
+    (hcluster : HasClusteredZeroVertex G x)
+    (hcandidate : EveryClusteredZeroVertexHasKempeD0Candidate G moveSupports x)
+    (hrepair : EveryCubicD0BasicColorObstructionHasD0Descent G moveSupports x) :
+    ¬ IsD0LocalMinimumForMoveSupports G moveSupports x :=
+  not_isD0LocalMinimumForMoveSupports_of_hasClusteredZeroVertex_and_neutral_candidates_and_cubicObstruction_descent
+    hcard hcluster
+    (everyClusteredZeroVertexHasNeutralD0Candidate_of_kempeD0Candidate
+      hcandidate)
+    hrepair
+
+/-- Kempe-cycle source form with the manuscript statistic `C(x)>0`. -/
+theorem
+    not_isD0LocalMinimumForMoveSupports_of_zeroClusteringCount_pos_and_kempe_candidates_and_cubicObstruction_descent
+    {G : SimpleGraph V} [Fintype V] [Fintype G.edgeSet]
+    {moveSupports : Finset (Finset G.edgeSet)} {x : G.edgeSet → Color}
+    (hcard : ∀ v : V, (incidentEdgeFinset G v).card = 3)
+    (hCpos : 0 < zeroClusteringCount G x)
+    (hcandidate : EveryClusteredZeroVertexHasKempeD0Candidate G moveSupports x)
+    (hrepair : EveryCubicD0BasicColorObstructionHasD0Descent G moveSupports x) :
+    ¬ IsD0LocalMinimumForMoveSupports G moveSupports x :=
+  not_isD0LocalMinimumForMoveSupports_of_zeroClusteringCount_pos_and_neutral_candidates_and_cubicObstruction_descent
+    hcard hCpos
+    (everyClusteredZeroVertexHasNeutralD0Candidate_of_kempeD0Candidate
+      hcandidate)
+    hrepair
+
+/-- Rotation-disk source form of the two-step local-minimum refutation. -/
+theorem
+    not_isD0LocalMinimumForMoveSupports_of_hasClusteredZeroVertex_and_rotationDisk_candidates_and_cubicObstruction_descent
+    {G : SimpleGraph V} [Fintype V] [Fintype G.edgeSet]
+    (D : RotationDiskData V G.edgeSet)
+    (hincident : ∀ v : V, D.asZeroBoundary.incident v = incidentEdgeFinset G v)
+    {moveSupports : Finset (Finset G.edgeSet)} {x : G.edgeSet → Color}
+    (hcard : ∀ v : V, (incidentEdgeFinset G v).card = 3)
+    (hcluster : HasClusteredZeroVertex G x)
+    (hcandidate :
+      EveryClusteredZeroVertexHasRotationDiskD0Candidate G D moveSupports x)
+    (hrepair : EveryCubicD0BasicColorObstructionHasD0Descent G moveSupports x) :
+    ¬ IsD0LocalMinimumForMoveSupports G moveSupports x :=
+  not_isD0LocalMinimumForMoveSupports_of_hasClusteredZeroVertex_and_neutral_candidates_and_cubicObstruction_descent
+    hcard hcluster
+    (everyClusteredZeroVertexHasNeutralD0Candidate_of_rotationDiskD0Candidate
+      D hincident hcandidate)
+    hrepair
+
+/-- Rotation-disk source form with the manuscript statistic `C(x)>0`. -/
+theorem
+    not_isD0LocalMinimumForMoveSupports_of_zeroClusteringCount_pos_and_rotationDisk_candidates_and_cubicObstruction_descent
+    {G : SimpleGraph V} [Fintype V] [Fintype G.edgeSet]
+    (D : RotationDiskData V G.edgeSet)
+    (hincident : ∀ v : V, D.asZeroBoundary.incident v = incidentEdgeFinset G v)
+    {moveSupports : Finset (Finset G.edgeSet)} {x : G.edgeSet → Color}
+    (hcard : ∀ v : V, (incidentEdgeFinset G v).card = 3)
+    (hCpos : 0 < zeroClusteringCount G x)
+    (hcandidate :
+      EveryClusteredZeroVertexHasRotationDiskD0Candidate G D moveSupports x)
+    (hrepair : EveryCubicD0BasicColorObstructionHasD0Descent G moveSupports x) :
+    ¬ IsD0LocalMinimumForMoveSupports G moveSupports x :=
+  not_isD0LocalMinimumForMoveSupports_of_zeroClusteringCount_pos_and_neutral_candidates_and_cubicObstruction_descent
+    hcard hCpos
+    (everyClusteredZeroVertexHasNeutralD0Candidate_of_rotationDiskD0Candidate
+      D hincident hcandidate)
+    hrepair
+
 /-- The vertex-local repair hypothesis implies the global nonmatching repair
 hypothesis, because every nonmatching zero pattern has a clustered zero
 vertex. -/
