@@ -391,6 +391,56 @@ theorem isAllowedD0OneStepMoveOn_of_kirchhoffNeutral_and_outside_witnesses
   intro v
   exact isCDLGoodAtVertex_cdlOneStepMoveOn_of_outside_witness (hgood v)
 
+theorem isAllowedD0OneStepMoveOn_of_isKempeCycle_and_vertex_witnesses
+    {G : SimpleGraph V} [Fintype G.edgeSet] {C : Finset G.edgeSet}
+    {g : Color} {x : G.edgeSet → Color} {α β : Color}
+    (hg : g ≠ 0) (hx : IsGraphFlow G x)
+    (hC : IsKempeCycle (incidentEdgeFinset G) x C α β)
+    (hgood :
+      ∀ v : V, ∃ e ∈ incidentEdgeFinset G v,
+        if e ∈ C then x e ≠ g else x e ≠ 0) :
+    IsAllowedD0OneStepMoveOn G C g x (cdlOneStepMoveOn G C g x) := by
+  exact isAllowedD0OneStepMoveOn_of_kirchhoffNeutral_and_vertex_witnesses
+    hg hx (isKirchhoffNeutralMoveSupport_of_isKempeCycle hC) hgood
+
+theorem isAllowedD0OneStepMoveOn_of_isKempeCycle_and_outside_witnesses
+    {G : SimpleGraph V} [Fintype G.edgeSet] {C : Finset G.edgeSet}
+    {g : Color} {x : G.edgeSet → Color} {α β : Color}
+    (hg : g ≠ 0) (hx : IsGraphFlow G x)
+    (hC : IsKempeCycle (incidentEdgeFinset G) x C α β)
+    (hgood : ∀ v : V, ∃ e ∈ incidentEdgeFinset G v, e ∉ C ∧ x e ≠ 0) :
+    IsAllowedD0OneStepMoveOn G C g x (cdlOneStepMoveOn G C g x) := by
+  exact isAllowedD0OneStepMoveOn_of_kirchhoffNeutral_and_outside_witnesses
+    hg hx (isKirchhoffNeutralMoveSupport_of_isKempeCycle hC) hgood
+
+theorem isAllowedD0OneStepMoveOn_of_rotationDiskData_internalFace_and_vertex_witnesses
+    {G : SimpleGraph V} [Fintype V] [Fintype G.edgeSet]
+    (D : RotationDiskData V G.edgeSet)
+    (hincident : ∀ v : V, D.asZeroBoundary.incident v = incidentEdgeFinset G v)
+    {f : Finset G.edgeSet} (hf : f ∈ D.rotation.internalFaces)
+    {g : Color} {x : G.edgeSet → Color}
+    (hg : g ≠ 0) (hx : IsGraphFlow G x)
+    (hgood :
+      ∀ v : V, ∃ e ∈ incidentEdgeFinset G v,
+        if e ∈ f then x e ≠ g else x e ≠ 0) :
+    IsAllowedD0OneStepMoveOn G f g x (cdlOneStepMoveOn G f g x) := by
+  exact isAllowedD0OneStepMoveOn_of_kirchhoffNeutral_and_vertex_witnesses
+    hg hx
+    (isKirchhoffNeutralMoveSupport_of_rotationDiskData_internalFace D hincident hf) hgood
+
+theorem isAllowedD0OneStepMoveOn_of_rotationDiskData_internalFace_and_outside_witnesses
+    {G : SimpleGraph V} [Fintype V] [Fintype G.edgeSet]
+    (D : RotationDiskData V G.edgeSet)
+    (hincident : ∀ v : V, D.asZeroBoundary.incident v = incidentEdgeFinset G v)
+    {f : Finset G.edgeSet} (hf : f ∈ D.rotation.internalFaces)
+    {g : Color} {x : G.edgeSet → Color}
+    (hg : g ≠ 0) (hx : IsGraphFlow G x)
+    (hgood : ∀ v : V, ∃ e ∈ incidentEdgeFinset G v, e ∉ f ∧ x e ≠ 0) :
+    IsAllowedD0OneStepMoveOn G f g x (cdlOneStepMoveOn G f g x) := by
+  exact isAllowedD0OneStepMoveOn_of_kirchhoffNeutral_and_outside_witnesses
+    hg hx
+    (isKirchhoffNeutralMoveSupport_of_rotationDiskData_internalFace D hincident hf) hgood
+
 /-- Manuscript-facing `D₀` local minimum for a finite family of permitted move
 supports.  A patch-specific file can instantiate `moveSupports` with its finite
 cycle list and then discharge `IsAllowedD0OneStepMoveOn` for each target. -/
