@@ -1321,6 +1321,23 @@ theorem cap5_extendsAcrossCycle_of_realizesRepairType_bad
 will later supply this map by restricting its color swap to the five cap boundary edges. -/
 abbrev CAP5BoundaryAction := CAP5BoundaryWord → CAP5BoundaryWord
 
+/-- Boundary action induced by switching two colors on a selected finite edge set and then
+restricting to the five CAP5 boundary edges. -/
+def cap5BoundaryActionOfEdgeSet {E : Type*} [DecidableEq E]
+    (boundaryEdge : Fin 5 → E) (S : Finset E) (a b : Color) : CAP5BoundaryAction :=
+  cap5BoundarySwap a b (cap5BoundarySupportOfEdges boundaryEdge S)
+
+/-- The edge-set boundary action is exactly the restriction of the corresponding edge-level
+color switch. -/
+theorem cap5BoundaryActionOfEdgeSet_apply_eq_boundaryWordOfEdges_switch
+    {E : Type*} [DecidableEq E]
+    (boundaryEdge : Fin 5 → E) (S : Finset E) (C : E → Color) (a b : Color) :
+    cap5BoundaryActionOfEdgeSet boundaryEdge S a b
+        (cap5BoundaryWordOfEdges boundaryEdge C) =
+      cap5BoundaryWordOfEdges boundaryEdge (switch a b (S : Set E) C) := by
+  rw [cap5BoundaryWordOfEdges_switch_eq_boundarySwap]
+  rfl
+
 /-- A boundary action induces a named finite repair type at a given boundary word. -/
 def CAP5BoundaryActionInducesRepairType
     (action : CAP5BoundaryAction) (w : CAP5BoundaryWord) (τ : CAP5RepairType) : Prop :=
@@ -1852,6 +1869,81 @@ theorem cap5_extendsAcrossCycle_of_redPurpleRepairSupport_transport
         (cap5TransportedBadBoundaryWord σ n)) :=
   cap5_extendsAcrossCycle_of_boundaryActionRealizesSomeTransportedRepairType_bad hσ0
     (cap5BoundaryActionRealizesSomeTransportedRepairType_of_redPurpleRepairSupport hS σ n)
+
+/-- If an edge set induces a transported red/blue CAP5 repair support on the boundary, its
+boundary action realizes a transported finite CAP5 repair type. -/
+theorem cap5BoundaryActionOfEdgeSet_realizesTransportedRepairType_of_redBlueRepairSupport
+    {E : Type*} [DecidableEq E]
+    (boundaryEdge : Fin 5 → E) (edgeSupport : Finset E)
+    (σ : Color ≃ Color) (n : Nat)
+    {boundarySupport : Finset (Fin 5)}
+    (hboundarySupport :
+      cap5BoundarySupportOfEdges boundaryEdge edgeSupport =
+        cap5RotateBoundarySupportN n boundarySupport)
+    (hrepair : CAP5BadRedBlueRepairSupport boundarySupport) :
+    CAP5BoundaryActionRealizesSomeTransportedRepairType
+      (cap5BoundaryActionOfEdgeSet boundaryEdge edgeSupport (σ red) (σ blue)) σ n := by
+  unfold cap5BoundaryActionOfEdgeSet
+  rw [hboundarySupport]
+  exact cap5BoundaryActionRealizesSomeTransportedRepairType_of_redBlueRepairSupport
+    hrepair σ n
+
+/-- Red/purple analogue of
+`cap5BoundaryActionOfEdgeSet_realizesTransportedRepairType_of_redBlueRepairSupport`. -/
+theorem cap5BoundaryActionOfEdgeSet_realizesTransportedRepairType_of_redPurpleRepairSupport
+    {E : Type*} [DecidableEq E]
+    (boundaryEdge : Fin 5 → E) (edgeSupport : Finset E)
+    (σ : Color ≃ Color) (n : Nat)
+    {boundarySupport : Finset (Fin 5)}
+    (hboundarySupport :
+      cap5BoundarySupportOfEdges boundaryEdge edgeSupport =
+        cap5RotateBoundarySupportN n boundarySupport)
+    (hrepair : CAP5BadRedPurpleRepairSupport boundarySupport) :
+    CAP5BoundaryActionRealizesSomeTransportedRepairType
+      (cap5BoundaryActionOfEdgeSet boundaryEdge edgeSupport (σ red) (σ purple)) σ n := by
+  unfold cap5BoundaryActionOfEdgeSet
+  rw [hboundarySupport]
+  exact cap5BoundaryActionRealizesSomeTransportedRepairType_of_redPurpleRepairSupport
+    hrepair σ n
+
+/-- If an edge-level switch induces a transported red/blue CAP5 repair support on the boundary,
+then applying that switch to an edge coloring whose boundary word is the transported bad word
+makes the resulting boundary word extend across the CAP5 cap. -/
+theorem cap5BoundaryWordOfEdges_switch_extendsAcrossCycle_of_redBlueRepairSupport
+    {E : Type*} [DecidableEq E]
+    (boundaryEdge : Fin 5 → E) (edgeSupport : Finset E)
+    {boundarySupport : Finset (Fin 5)} {C : E → Color} {σ : Color ≃ Color} {n : Nat}
+    (hboundarySupport :
+      cap5BoundarySupportOfEdges boundaryEdge edgeSupport =
+        cap5RotateBoundarySupportN n boundarySupport)
+    (hrepair : CAP5BadRedBlueRepairSupport boundarySupport)
+    (hσ0 : σ 0 = 0)
+    (hw : cap5BoundaryWordOfEdges boundaryEdge C = cap5TransportedBadBoundaryWord σ n) :
+    CAP5WordExtendsAcrossCycle
+      (cap5BoundaryWordOfEdges boundaryEdge
+        (switch (σ red) (σ blue) (edgeSupport : Set E) C)) := by
+  rw [cap5BoundaryWordOfEdges_switch_eq_boundarySwap]
+  rw [hboundarySupport, hw]
+  exact cap5_extendsAcrossCycle_of_redBlueRepairSupport_transport hrepair hσ0 n
+
+/-- Red/purple analogue of
+`cap5BoundaryWordOfEdges_switch_extendsAcrossCycle_of_redBlueRepairSupport`. -/
+theorem cap5BoundaryWordOfEdges_switch_extendsAcrossCycle_of_redPurpleRepairSupport
+    {E : Type*} [DecidableEq E]
+    (boundaryEdge : Fin 5 → E) (edgeSupport : Finset E)
+    {boundarySupport : Finset (Fin 5)} {C : E → Color} {σ : Color ≃ Color} {n : Nat}
+    (hboundarySupport :
+      cap5BoundarySupportOfEdges boundaryEdge edgeSupport =
+        cap5RotateBoundarySupportN n boundarySupport)
+    (hrepair : CAP5BadRedPurpleRepairSupport boundarySupport)
+    (hσ0 : σ 0 = 0)
+    (hw : cap5BoundaryWordOfEdges boundaryEdge C = cap5TransportedBadBoundaryWord σ n) :
+    CAP5WordExtendsAcrossCycle
+      (cap5BoundaryWordOfEdges boundaryEdge
+        (switch (σ red) (σ purple) (edgeSupport : Set E) C)) := by
+  rw [cap5BoundaryWordOfEdges_switch_eq_boundarySwap]
+  rw [hboundarySupport, hw]
+  exact cap5_extendsAcrossCycle_of_redPurpleRepairSupport_transport hrepair hσ0 n
 
 /-- The four two-color component supports that appear in the normalized CAP5 bad-word
 move-realizability split: two red/blue components and two red/purple components. -/
