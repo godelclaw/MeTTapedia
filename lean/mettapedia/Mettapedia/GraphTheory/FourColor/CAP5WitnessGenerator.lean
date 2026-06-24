@@ -411,6 +411,36 @@ theorem status_eq_forcedCounterexample_of_complete_of_cyclicallyFiveEdgeConnecte
       exact False.elim
         (report.status_ne_partialCase_of_complete hportal hcycles hstatus)
 
+/-- Canonical certified report from three concrete checker decisions: whether the node has
+portal crossings, whether it has cycles on both sides, and whether the proposed separator is
+actually realized.  If the complete checker data is present but realization fails, the generic
+holds-vs-counterexample theorem supplies the forced-counterexample certificate. -/
+def ofDecidableChecks
+    (node : CAP5ExceptionalAnnulusGeneratorNode boundaryEdge)
+    [Decidable node.PortalCrosses] [Decidable node.SideCycles]
+    [Decidable node.RealizedSeparator] :
+    node.Report := by
+  by_cases hportal : node.PortalCrosses
+  · by_cases hcycles : node.SideCycles
+    · by_cases hrealized : node.RealizedSeparator
+      · exact
+          { status := CAP5SeparatorGeneratorStatus.realizedSeparator
+            cert := ⟨hportal, hcycles, hrealized⟩ }
+      · have hforced : node.ForcedCounterexample := by
+          rcases node.realizedSeparator_or_forcedCounterexample_of_complete hportal hcycles with
+            hrealized' | hforced
+          · exact False.elim (hrealized hrealized')
+          · exact hforced
+        exact
+          { status := CAP5SeparatorGeneratorStatus.forcedCounterexample
+            cert := ⟨hportal, hcycles, hforced⟩ }
+    · exact
+        { status := CAP5SeparatorGeneratorStatus.partialCase
+          cert := Or.inr hcycles }
+  · exact
+      { status := CAP5SeparatorGeneratorStatus.partialCase
+        cert := Or.inl hportal }
+
 end Report
 
 /-- A forced generator edge is exactly the emitted-edge predicate consumed by the existing
@@ -467,11 +497,17 @@ namespace CAP5ExceptionalAnnulusGeneratorReport
 variable {G : SimpleGraph V}
 variable {boundaryEdge : Fin 5 → G.edgeSet} {side : V → Prop}
 
+/-- The node represented by a latent and a proposed side predicate, independent of any report. -/
+def latentNode (boundaryEdge : Fin 5 → G.edgeSet) (side : V → Prop)
+    (latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge) :
+    CAP5ExceptionalAnnulusGeneratorNode boundaryEdge :=
+  { latent := latent, side := side }
+
 /-- The node represented by one latent inside a full generator report. -/
 def node (_report : CAP5ExceptionalAnnulusGeneratorReport boundaryEdge side)
     (latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge) :
     CAP5ExceptionalAnnulusGeneratorNode boundaryEdge :=
-  { latent := latent, side := side }
+  latentNode boundaryEdge side latent
 
 /-- Extract the one-node certified report from a full generator report. -/
 def nodeReport (report : CAP5ExceptionalAnnulusGeneratorReport boundaryEdge side)
@@ -479,7 +515,28 @@ def nodeReport (report : CAP5ExceptionalAnnulusGeneratorReport boundaryEdge side
     (report.node latent).Report where
   status := report.classify latent
   cert := by
-    simpa [node] using report.cert latent
+    simpa [node, latentNode] using report.cert latent
+
+/-- Construct the full finite generator report from per-latent checker decisions.  This is the
+operational report producer: a finite implementation can decide the portal, side-cycle, and
+realization checks for each of the 16 latents, and this constructor turns those decisions into a
+certified three-bin report. -/
+def ofDecidableChecks
+    (boundaryEdge : Fin 5 → G.edgeSet) (side : V → Prop)
+    [∀ latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge,
+      Decidable ((latentNode boundaryEdge side latent).PortalCrosses)]
+    [∀ latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge,
+      Decidable ((latentNode boundaryEdge side latent).SideCycles)]
+    [∀ latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge,
+      Decidable ((latentNode boundaryEdge side latent).RealizedSeparator)] :
+    CAP5ExceptionalAnnulusGeneratorReport boundaryEdge side where
+  classify latent :=
+    (CAP5ExceptionalAnnulusGeneratorNode.Report.ofDecidableChecks
+      (latentNode boundaryEdge side latent)).status
+  cert latent := by
+    exact
+      (CAP5ExceptionalAnnulusGeneratorNode.Report.ofDecidableChecks
+        (latentNode boundaryEdge side latent)).cert
 
 /-- Latents reported in the realized-separator bin. -/
 def realizedSeparatorLatents
