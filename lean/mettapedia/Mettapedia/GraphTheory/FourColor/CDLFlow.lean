@@ -48,6 +48,34 @@ def zeroEdgeCount (G : SimpleGraph V) [Fintype G.edgeSet]
     (x : G.edgeSet → Color) : Nat :=
   (zeroEdgeFinset G x).card
 
+/-- The zero-valued edges incident to a vertex.  This is the finite set whose
+cardinality is the manuscript's local statistic `k_v(x)`. -/
+def zeroIncidentEdgeFinset (G : SimpleGraph V) [Fintype G.edgeSet]
+    (x : G.edgeSet → Color) (v : V) : Finset G.edgeSet :=
+  (incidentEdgeFinset G v).filter fun e => x e = 0
+
+/-- The manuscript's local statistic `k_v(x)`: the number of zero-valued edges
+incident to `v`. -/
+def zeroIncidentEdgeCount (G : SimpleGraph V) [Fintype G.edgeSet]
+    (x : G.edgeSet → Color) (v : V) : Nat :=
+  (zeroIncidentEdgeFinset G x v).card
+
+/-- Vertices incident to at least one zero-valued edge. -/
+def zeroIncidentVertexFinset (G : SimpleGraph V) [Fintype V] [Fintype G.edgeSet]
+    (x : G.edgeSet → Color) : Finset V :=
+  Finset.univ.filter fun v => 0 < zeroIncidentEdgeCount G x v
+
+/-- The manuscript's defect statistic `I(x)`: vertices touched by zero edges. -/
+def zeroIncidentVertexCount (G : SimpleGraph V) [Fintype V] [Fintype G.edgeSet]
+    (x : G.edgeSet → Color) : Nat :=
+  (zeroIncidentVertexFinset G x).card
+
+/-- The manuscript's clustering statistic `C(x) = ∑_v max(0, k_v(x)-1)`.
+Natural-number subtraction implements the truncated maximum. -/
+def zeroClusteringCount (G : SimpleGraph V) [Fintype V] [Fintype G.edgeSet]
+    (x : G.edgeSet → Color) : Nat :=
+  Finset.univ.sum fun v => zeroIncidentEdgeCount G x v - 1
+
 omit [DecidableEq V] in
 theorem zeroEdgeFinset_eq_empty_iff {G : SimpleGraph V} [Fintype G.edgeSet]
     {x : G.edgeSet → Color} :
@@ -59,6 +87,51 @@ theorem zeroEdgeCount_eq_zero_iff {G : SimpleGraph V} [Fintype G.edgeSet]
     {x : G.edgeSet → Color} :
     zeroEdgeCount G x = 0 ↔ ∀ e : G.edgeSet, x e ≠ 0 := by
   rw [zeroEdgeCount, Finset.card_eq_zero, zeroEdgeFinset_eq_empty_iff]
+
+theorem zeroIncidentEdgeFinset_eq_empty_iff {G : SimpleGraph V} [Fintype G.edgeSet]
+    {x : G.edgeSet → Color} {v : V} :
+    zeroIncidentEdgeFinset G x v = ∅ ↔
+      ∀ e ∈ incidentEdgeFinset G v, x e ≠ 0 := by
+  simp [zeroIncidentEdgeFinset, Finset.filter_eq_empty_iff]
+
+theorem zeroIncidentEdgeCount_eq_zero_iff {G : SimpleGraph V} [Fintype G.edgeSet]
+    {x : G.edgeSet → Color} {v : V} :
+    zeroIncidentEdgeCount G x v = 0 ↔
+      ∀ e ∈ incidentEdgeFinset G v, x e ≠ 0 := by
+  rw [zeroIncidentEdgeCount, Finset.card_eq_zero, zeroIncidentEdgeFinset_eq_empty_iff]
+
+theorem zeroIncidentVertexCount_eq_zero_iff {G : SimpleGraph V}
+    [Fintype V] [Fintype G.edgeSet] {x : G.edgeSet → Color} :
+    zeroIncidentVertexCount G x = 0 ↔
+      ∀ v : V, zeroIncidentEdgeCount G x v = 0 := by
+  simp [zeroIncidentVertexCount, zeroIncidentVertexFinset, Finset.card_eq_zero]
+
+/-- If the global zero-edge defect is zero, then no vertex is incident to a
+zero edge. -/
+theorem zeroIncidentVertexCount_eq_zero_of_zeroEdgeCount_eq_zero {G : SimpleGraph V}
+    [Fintype V] [Fintype G.edgeSet] {x : G.edgeSet → Color}
+    (hZ : zeroEdgeCount G x = 0) :
+    zeroIncidentVertexCount G x = 0 := by
+  rw [zeroIncidentVertexCount_eq_zero_iff]
+  intro v
+  rw [zeroIncidentEdgeCount_eq_zero_iff]
+  intro e _he
+  exact (zeroEdgeCount_eq_zero_iff.mp hZ) e
+
+/-- If the global zero-edge defect is zero, then the zero-clustering defect is
+zero. -/
+theorem zeroClusteringCount_eq_zero_of_zeroEdgeCount_eq_zero {G : SimpleGraph V}
+    [Fintype V] [Fintype G.edgeSet] {x : G.edgeSet → Color}
+    (hZ : zeroEdgeCount G x = 0) :
+    zeroClusteringCount G x = 0 := by
+  unfold zeroClusteringCount
+  apply Finset.sum_eq_zero
+  intro v _hv
+  have hk : zeroIncidentEdgeCount G x v = 0 := by
+    rw [zeroIncidentEdgeCount_eq_zero_iff]
+    intro e _he
+    exact (zeroEdgeCount_eq_zero_iff.mp hZ) e
+  simp [hk]
 
 /-- A nowhere-zero flow is exactly a graph flow whose zero-edge set is empty. -/
 theorem isNowhereZeroFlow_iff_isGraphFlow_and_zeroEdgeFinset_eq_empty
