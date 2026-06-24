@@ -111,4 +111,88 @@ theorem exists_familyPairing_ne_zero_of_exceptionalAnnulusOneEdgeCounterexampleE
   · exact hwitnessRed
   · exact hwitnessBlue
 
+/-- Predicate-level algebraic target for the exceptional CAP5 counterexample bin.  If the edges
+emitted by the one-edge counterexample generator control all selected-boundary-zero chains, then
+red/blue single-coordinate witnesses on those emitted edges separate family pairings on the whole
+selected-boundary-zero subspace. -/
+theorem familyPairing_separates_of_exceptionalAnnulusOneEdgeCounterexampleEdges
+    {G : SimpleGraph V} [Fintype G.edgeSet]
+    {boundaryEdge : Fin 5 → G.edgeSet} {n : Nat}
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    {emb : PlaneEmbeddingWithBoundary G}
+    {colorings : Set (G.EdgeColoring Color)}
+    {κ : Type*}
+    (family : κ → projectedColoringGeneratorSubspace emb colorings)
+    (p0Inside p4Inside : Bool) (side : V → Prop)
+    (hcontrol :
+      ∀ ⦃z : G.edgeSet → Color⦄,
+        z ∈ planarBoundaryZeroSubmodule emb →
+        (∀ e : G.edgeSet,
+          data.ExceptionalAnnulusOneEdgeCounterexampleEdge p0Inside p4Inside side e →
+            z e = 0) →
+          z = 0)
+    (hwitnessRed :
+      ∀ e : G.edgeSet,
+        data.ExceptionalAnnulusOneEdgeCounterexampleEdge p0Inside p4Inside side e →
+          ∃ i : κ,
+            ((family i : projectedColoringGeneratorSubspace emb colorings) :
+                G.edgeSet → Color) =
+              Pi.single e red)
+    (hwitnessBlue :
+      ∀ e : G.edgeSet,
+        data.ExceptionalAnnulusOneEdgeCounterexampleEdge p0Inside p4Inside side e →
+          ∃ i : κ,
+            ((family i : projectedColoringGeneratorSubspace emb colorings) :
+                G.edgeSet → Color) =
+              Pi.single e blue) :
+    ∀ z : planarBoundaryZeroSubmodule emb,
+      (∀ i,
+        chainDotBilinForm G.edgeSet (family i : G.edgeSet → Color)
+          (z : G.edgeSet → Color) = 0) →
+        z = 0 :=
+  familyPairing_separates_of_edgePredicateWitnesses family
+    (data.ExceptionalAnnulusOneEdgeCounterexampleEdge p0Inside p4Inside side)
+    hcontrol hwitnessRed hwitnessBlue
+
+/-- Full Theorem 4.9 synthesis route from the exceptional CAP5 emitted-edge predicate.  The
+remaining finite-generator obligation is exactly the control hypothesis: every selected-
+boundary-zero chain is determined by its coordinates on the emitted counterexample edges. -/
+theorem theorem49BoundaryRootSynthesis_of_exceptionalAnnulusCounterexampleEdgeControl
+    {G : SimpleGraph V}
+    [Fintype G.edgeSet] [FiniteDimensional F2 (G.edgeSet → Color)]
+    {boundaryEdge : Fin 5 → G.edgeSet} {n : Nat}
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    (emb : PlaneEmbeddingWithBoundary G) (C₀ : G.EdgeColoring Color)
+    (colorings : Set (G.EdgeColoring Color))
+    (hsubset : colorings ⊆ G.EdgeKempeClosure C₀)
+    {κ : Type*}
+    (family : κ → projectedColoringGeneratorSubspace emb colorings)
+    (p0Inside p4Inside : Bool) (side : V → Prop)
+    (hcontrol :
+      ∀ ⦃z : G.edgeSet → Color⦄,
+        z ∈ planarBoundaryZeroSubmodule emb →
+        (∀ e : G.edgeSet,
+          data.ExceptionalAnnulusOneEdgeCounterexampleEdge p0Inside p4Inside side e →
+            z e = 0) →
+          z = 0)
+    (hwitnessRed :
+      ∀ e : G.edgeSet,
+        data.ExceptionalAnnulusOneEdgeCounterexampleEdge p0Inside p4Inside side e →
+          ∃ i : κ,
+            ((family i : projectedColoringGeneratorSubspace emb colorings) :
+                G.edgeSet → Color) =
+              Pi.single e red)
+    (hwitnessBlue :
+      ∀ e : G.edgeSet,
+        data.ExceptionalAnnulusOneEdgeCounterexampleEdge p0Inside p4Inside side e →
+          ∃ i : κ,
+            ((family i : projectedColoringGeneratorSubspace emb colorings) :
+                G.edgeSet → Color) =
+              Pi.single e blue) :
+    Theorem49BoundaryRootSynthesis emb C₀ :=
+  theorem49BoundaryRootSynthesis_of_edgePredicateFamilyPairingSeparation
+    emb C₀ colorings hsubset family
+    (data.ExceptionalAnnulusOneEdgeCounterexampleEdge p0Inside p4Inside side)
+    hcontrol hwitnessRed hwitnessBlue
+
 end Mettapedia.GraphTheory.FourColor

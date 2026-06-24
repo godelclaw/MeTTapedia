@@ -116,6 +116,48 @@ theorem exists_familyPairing_ne_zero_of_edgePredicateWitness
   exact exists_familyPairing_ne_zero_of_redBlueSingleCoordinateWitness
     family e hz (hwitnessRed e hP) (hwitnessBlue e hP)
 
+/-- Predicate-indexed coordinate separation.  Instead of first materializing a finite control
+set, a checker may expose a predicate `P` for its emitted edge witnesses.  If vanishing on all
+`P` edges forces a selected-boundary-zero chain to vanish, and if the generator family supplies
+red/blue single-coordinate chains on every `P` edge, then family pairings separate the whole
+selected-boundary-zero subspace. -/
+theorem familyPairing_separates_of_edgePredicateWitnesses
+    {G : SimpleGraph V} [Fintype G.edgeSet]
+    {emb : PlaneEmbeddingWithBoundary G}
+    {colorings : Set (G.EdgeColoring Color)}
+    {κ : Type*}
+    (family : κ → projectedColoringGeneratorSubspace emb colorings)
+    (P : G.edgeSet → Prop)
+    (hcontrol :
+      ∀ ⦃z : G.edgeSet → Color⦄,
+        z ∈ planarBoundaryZeroSubmodule emb →
+        (∀ e : G.edgeSet, P e → z e = 0) →
+          z = 0)
+    (hwitnessRed :
+      ∀ e : G.edgeSet, P e →
+        ∃ i : κ,
+          ((family i : projectedColoringGeneratorSubspace emb colorings) : G.edgeSet → Color) =
+            Pi.single e red)
+    (hwitnessBlue :
+      ∀ e : G.edgeSet, P e →
+        ∃ i : κ,
+          ((family i : projectedColoringGeneratorSubspace emb colorings) : G.edgeSet → Color) =
+            Pi.single e blue) :
+    ∀ z : planarBoundaryZeroSubmodule emb,
+      (∀ i,
+        chainDotBilinForm G.edgeSet (family i : G.edgeSet → Color)
+          (z : G.edgeSet → Color) = 0) →
+        z = 0 := by
+  intro z hzero
+  apply Subtype.ext
+  apply hcontrol z.property
+  intro e hP
+  by_contra hze
+  rcases exists_familyPairing_ne_zero_of_redBlueSingleCoordinateWitness
+      family e hze (hwitnessRed e hP) (hwitnessBlue e hP) with
+    ⟨i, hpairNonzero⟩
+  exact hpairNonzero (hzero i)
+
 /-- Red/blue basis form of the coordinatewise separation certificate.  For each controlling edge
 it is enough for the generated family to contain the red and blue single-coordinate chains there:
 one of the two has nonzero dot product with any nonzero color on that edge. -/
@@ -193,6 +235,37 @@ theorem ker_planarBoundaryZeroFamilyPairingMap_eq_bot_of_singleCoordinateWitness
     (familyPairing_separates_of_singleCoordinateWitnesses
       family controlEdges hcontrol hwitness)
 
+/-- Direct producer-side kernel certificate from a checker-emitted edge predicate.  The predicate
+must control the selected-boundary-zero chains, and the generator family must provide red/blue
+single-coordinate witnesses on every emitted edge. -/
+theorem ker_planarBoundaryZeroFamilyPairingMap_eq_bot_of_edgePredicateWitnesses
+    {G : SimpleGraph V} [Fintype G.edgeSet]
+    {emb : PlaneEmbeddingWithBoundary G}
+    {colorings : Set (G.EdgeColoring Color)}
+    {κ : Type*}
+    (family : κ → projectedColoringGeneratorSubspace emb colorings)
+    (P : G.edgeSet → Prop)
+    (hcontrol :
+      ∀ ⦃z : G.edgeSet → Color⦄,
+        z ∈ planarBoundaryZeroSubmodule emb →
+        (∀ e : G.edgeSet, P e → z e = 0) →
+          z = 0)
+    (hwitnessRed :
+      ∀ e : G.edgeSet, P e →
+        ∃ i : κ,
+          ((family i : projectedColoringGeneratorSubspace emb colorings) : G.edgeSet → Color) =
+            Pi.single e red)
+    (hwitnessBlue :
+      ∀ e : G.edgeSet, P e →
+        ∃ i : κ,
+          ((family i : projectedColoringGeneratorSubspace emb colorings) : G.edgeSet → Color) =
+            Pi.single e blue) :
+    LinearMap.ker (planarBoundaryZeroFamilyPairingMap family) = ⊥ :=
+  (ker_planarBoundaryZeroFamilyPairingMap_eq_bot_iff_forall_pairing_eq_zero_imp_eq_zero
+    family).2
+    (familyPairing_separates_of_edgePredicateWitnesses
+      family P hcontrol hwitnessRed hwitnessBlue)
+
 /-- Route form through the coordinatewise separation interface: explicit single-coordinate
 witnesses for a controlling edge set already give the full theorem-4.9 synthesis package. -/
 theorem theorem49BoundaryRootSynthesis_of_singleCoordinateFamilyPairingSeparation
@@ -252,6 +325,38 @@ theorem theorem49BoundaryRootSynthesis_of_redBlueSingleCoordinateFamilyPairingSe
   theorem49BoundaryRootSynthesis_of_familyPairingSeparates emb C₀ colorings hsubset family
     (familyPairing_separates_of_redBlueSingleCoordinateWitnesses
       family controlEdges hcontrol hwitnessRed hwitnessBlue)
+
+/-- Synthesis route from a predicate-indexed finite generator.  This is the checker-facing form:
+identify the emitted edge predicate, prove that the predicate controls selected-boundary-zero
+chains, and provide red/blue single-coordinate generator witnesses on those emitted edges. -/
+theorem theorem49BoundaryRootSynthesis_of_edgePredicateFamilyPairingSeparation
+    {G : SimpleGraph V}
+    [Fintype G.edgeSet] [FiniteDimensional F2 (G.edgeSet → Color)]
+    (emb : PlaneEmbeddingWithBoundary G) (C₀ : G.EdgeColoring Color)
+    (colorings : Set (G.EdgeColoring Color))
+    (hsubset : colorings ⊆ G.EdgeKempeClosure C₀)
+    {κ : Type*}
+    (family : κ → projectedColoringGeneratorSubspace emb colorings)
+    (P : G.edgeSet → Prop)
+    (hcontrol :
+      ∀ ⦃z : G.edgeSet → Color⦄,
+        z ∈ planarBoundaryZeroSubmodule emb →
+        (∀ e : G.edgeSet, P e → z e = 0) →
+          z = 0)
+    (hwitnessRed :
+      ∀ e : G.edgeSet, P e →
+        ∃ i : κ,
+          ((family i : projectedColoringGeneratorSubspace emb colorings) : G.edgeSet → Color) =
+            Pi.single e red)
+    (hwitnessBlue :
+      ∀ e : G.edgeSet, P e →
+        ∃ i : κ,
+          ((family i : projectedColoringGeneratorSubspace emb colorings) : G.edgeSet → Color) =
+            Pi.single e blue) :
+    Theorem49BoundaryRootSynthesis emb C₀ :=
+  theorem49BoundaryRootSynthesis_of_familyPairingSeparates emb C₀ colorings hsubset family
+    (familyPairing_separates_of_edgePredicateWitnesses
+      family P hcontrol hwitnessRed hwitnessBlue)
 
 /-- Route form of the same producer-side certificate: explicit coordinate witnesses for a chosen
 family already give the full theorem-4.9 synthesis package for the base coloring. -/
