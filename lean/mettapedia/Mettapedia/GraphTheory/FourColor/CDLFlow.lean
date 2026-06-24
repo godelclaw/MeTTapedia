@@ -4215,6 +4215,47 @@ theorem
     (everyCubicD0BasicColorObstructionHasD0Descent_of_cubic_star_pinned_target_repairs
       hcard hrepair)
 
+/-- Kempe-cycle source form with the second-step obligation reduced to the
+strong pinned-target star-repair interface. -/
+theorem
+    not_hasClusteredZeroVertex_of_isD0LocalMinimumForMoveSupports_of_kempe_candidates_and_cubic_star_pinned_target_repairs
+    {G : SimpleGraph V} [Fintype V] [Fintype G.edgeSet]
+    {moveSupports : Finset (Finset G.edgeSet)} {x : G.edgeSet → Color}
+    (hcard : ∀ v : V, (incidentEdgeFinset G v).card = 3)
+    (hmin : IsD0LocalMinimumForMoveSupports G moveSupports x)
+    (hcandidate : EveryClusteredZeroVertexHasKempeD0Candidate G moveSupports x)
+    (hrepair :
+      EveryCubicD0BasicColorObstructionStarHasPinnedTargetD0Descent
+        G moveSupports x) :
+    ¬ HasClusteredZeroVertex G x :=
+  not_hasClusteredZeroVertex_of_isD0LocalMinimumForMoveSupports_of_neutral_candidates_and_cubic_star_pinned_target_repairs
+    hcard hmin
+    (everyClusteredZeroVertexHasNeutralD0Candidate_of_kempeD0Candidate
+      hcandidate)
+    hrepair
+
+/-- Rotation-disk source form with the second-step obligation reduced to the
+strong pinned-target star-repair interface. -/
+theorem
+    not_hasClusteredZeroVertex_of_isD0LocalMinimumForMoveSupports_of_rotationDisk_candidates_and_cubic_star_pinned_target_repairs
+    {G : SimpleGraph V} [Fintype V] [Fintype G.edgeSet]
+    (D : RotationDiskData V G.edgeSet)
+    (hincident : ∀ v : V, D.asZeroBoundary.incident v = incidentEdgeFinset G v)
+    {moveSupports : Finset (Finset G.edgeSet)} {x : G.edgeSet → Color}
+    (hcard : ∀ v : V, (incidentEdgeFinset G v).card = 3)
+    (hmin : IsD0LocalMinimumForMoveSupports G moveSupports x)
+    (hcandidate :
+      EveryClusteredZeroVertexHasRotationDiskD0Candidate G D moveSupports x)
+    (hrepair :
+      EveryCubicD0BasicColorObstructionStarHasPinnedTargetD0Descent
+        G moveSupports x) :
+    ¬ HasClusteredZeroVertex G x :=
+  not_hasClusteredZeroVertex_of_isD0LocalMinimumForMoveSupports_of_neutral_candidates_and_cubic_star_pinned_target_repairs
+    hcard hmin
+    (everyClusteredZeroVertexHasNeutralD0Candidate_of_rotationDiskD0Candidate
+      D hincident hcandidate)
+    hrepair
+
 /-- Matching-zero form of the two-step neutral-candidate route. -/
 theorem
     zeroEdgesFormMatching_of_isD0LocalMinimumForMoveSupports_of_neutral_candidates_and_cubicObstruction_descent
@@ -4280,6 +4321,47 @@ theorem
     hcard hmin hcandidate
     (everyCubicD0BasicColorObstructionHasD0Descent_of_cubic_star_pinned_target_repairs
       hcard hrepair)
+
+/-- Kempe-cycle source form with the second-step obligation reduced to the
+strong pinned-target star-repair interface. -/
+theorem
+    zeroEdgesFormMatching_of_isD0LocalMinimumForMoveSupports_of_kempe_candidates_and_cubic_star_pinned_target_repairs
+    {G : SimpleGraph V} [Fintype V] [Fintype G.edgeSet]
+    {moveSupports : Finset (Finset G.edgeSet)} {x : G.edgeSet → Color}
+    (hcard : ∀ v : V, (incidentEdgeFinset G v).card = 3)
+    (hmin : IsD0LocalMinimumForMoveSupports G moveSupports x)
+    (hcandidate : EveryClusteredZeroVertexHasKempeD0Candidate G moveSupports x)
+    (hrepair :
+      EveryCubicD0BasicColorObstructionStarHasPinnedTargetD0Descent
+        G moveSupports x) :
+    ZeroEdgesFormMatching G x :=
+  zeroEdgesFormMatching_of_isD0LocalMinimumForMoveSupports_of_neutral_candidates_and_cubic_star_pinned_target_repairs
+    hcard hmin
+    (everyClusteredZeroVertexHasNeutralD0Candidate_of_kempeD0Candidate
+      hcandidate)
+    hrepair
+
+/-- Rotation-disk source form with the second-step obligation reduced to the
+strong pinned-target star-repair interface. -/
+theorem
+    zeroEdgesFormMatching_of_isD0LocalMinimumForMoveSupports_of_rotationDisk_candidates_and_cubic_star_pinned_target_repairs
+    {G : SimpleGraph V} [Fintype V] [Fintype G.edgeSet]
+    (D : RotationDiskData V G.edgeSet)
+    (hincident : ∀ v : V, D.asZeroBoundary.incident v = incidentEdgeFinset G v)
+    {moveSupports : Finset (Finset G.edgeSet)} {x : G.edgeSet → Color}
+    (hcard : ∀ v : V, (incidentEdgeFinset G v).card = 3)
+    (hmin : IsD0LocalMinimumForMoveSupports G moveSupports x)
+    (hcandidate :
+      EveryClusteredZeroVertexHasRotationDiskD0Candidate G D moveSupports x)
+    (hrepair :
+      EveryCubicD0BasicColorObstructionStarHasPinnedTargetD0Descent
+        G moveSupports x) :
+    ZeroEdgesFormMatching G x :=
+  zeroEdgesFormMatching_of_isD0LocalMinimumForMoveSupports_of_neutral_candidates_and_cubic_star_pinned_target_repairs
+    hcard hmin
+    (everyClusteredZeroVertexHasNeutralD0Candidate_of_rotationDiskD0Candidate
+      D hincident hcandidate)
+    hrepair
 
 /-- Kempe-cycle source form with the second-step obligation reduced to concrete
 cubic star repairs. -/
@@ -5004,6 +5086,42 @@ theorem
     (zeroEdgesFormMatching_of_isD0LocalMinimumForMoveSupports_of_neutral_candidates_and_cubic_star_pinned_target_repairs
       hcard hmin hcandidate hrepair)
 
+/-- Kempe-cycle source form of the pinned-target clustering identity `C(x)=0`. -/
+theorem
+    zeroClusteringCount_eq_zero_of_isD0LocalMinimumForMoveSupports_of_kempe_candidates_and_cubic_star_pinned_target_repairs
+    {G : SimpleGraph V} [Fintype V] [Fintype G.edgeSet]
+    {moveSupports : Finset (Finset G.edgeSet)} {x : G.edgeSet → Color}
+    (hcard : ∀ v : V, (incidentEdgeFinset G v).card = 3)
+    (hmin : IsD0LocalMinimumForMoveSupports G moveSupports x)
+    (hcandidate : EveryClusteredZeroVertexHasKempeD0Candidate G moveSupports x)
+    (hrepair :
+      EveryCubicD0BasicColorObstructionStarHasPinnedTargetD0Descent
+        G moveSupports x) :
+    zeroClusteringCount G x = 0 :=
+  zeroClusteringCount_eq_zero_iff_zeroEdgesFormMatching.mpr
+    (zeroEdgesFormMatching_of_isD0LocalMinimumForMoveSupports_of_kempe_candidates_and_cubic_star_pinned_target_repairs
+      hcard hmin hcandidate hrepair)
+
+/-- Rotation-disk source form of the pinned-target clustering identity
+`C(x)=0`. -/
+theorem
+    zeroClusteringCount_eq_zero_of_isD0LocalMinimumForMoveSupports_of_rotationDisk_candidates_and_cubic_star_pinned_target_repairs
+    {G : SimpleGraph V} [Fintype V] [Fintype G.edgeSet]
+    (D : RotationDiskData V G.edgeSet)
+    (hincident : ∀ v : V, D.asZeroBoundary.incident v = incidentEdgeFinset G v)
+    {moveSupports : Finset (Finset G.edgeSet)} {x : G.edgeSet → Color}
+    (hcard : ∀ v : V, (incidentEdgeFinset G v).card = 3)
+    (hmin : IsD0LocalMinimumForMoveSupports G moveSupports x)
+    (hcandidate :
+      EveryClusteredZeroVertexHasRotationDiskD0Candidate G D moveSupports x)
+    (hrepair :
+      EveryCubicD0BasicColorObstructionStarHasPinnedTargetD0Descent
+        G moveSupports x) :
+    zeroClusteringCount G x = 0 :=
+  zeroClusteringCount_eq_zero_iff_zeroEdgesFormMatching.mpr
+    (zeroEdgesFormMatching_of_isD0LocalMinimumForMoveSupports_of_rotationDisk_candidates_and_cubic_star_pinned_target_repairs
+      D hincident hcard hmin hcandidate hrepair)
+
 /-- Kempe-cycle source form of the star-repair clustering identity. -/
 theorem
     zeroClusteringCount_eq_zero_of_isD0LocalMinimumForMoveSupports_of_kempe_candidates_and_cubic_star_repairs
@@ -5498,6 +5616,42 @@ theorem
     (zeroEdgesFormMatching_of_isD0LocalMinimumForMoveSupports_of_neutral_candidates_and_cubic_star_pinned_target_repairs
       hcard hmin hcandidate hrepair)
 
+/-- Kempe-cycle source form of the pinned-target count identity `I(x)=2Z(x)`. -/
+theorem
+    zeroIncidentVertexCount_eq_two_mul_zeroEdgeCount_of_isD0LocalMinimumForMoveSupports_of_kempe_candidates_and_cubic_star_pinned_target_repairs
+    {G : SimpleGraph V} [Fintype V] [Fintype G.edgeSet]
+    {moveSupports : Finset (Finset G.edgeSet)} {x : G.edgeSet → Color}
+    (hcard : ∀ v : V, (incidentEdgeFinset G v).card = 3)
+    (hmin : IsD0LocalMinimumForMoveSupports G moveSupports x)
+    (hcandidate : EveryClusteredZeroVertexHasKempeD0Candidate G moveSupports x)
+    (hrepair :
+      EveryCubicD0BasicColorObstructionStarHasPinnedTargetD0Descent
+        G moveSupports x) :
+    zeroIncidentVertexCount G x = 2 * zeroEdgeCount G x :=
+  zeroIncidentVertexCount_eq_two_mul_zeroEdgeCount_of_zeroEdgesFormMatching
+    (zeroEdgesFormMatching_of_isD0LocalMinimumForMoveSupports_of_kempe_candidates_and_cubic_star_pinned_target_repairs
+      hcard hmin hcandidate hrepair)
+
+/-- Rotation-disk source form of the pinned-target count identity
+`I(x)=2Z(x)`. -/
+theorem
+    zeroIncidentVertexCount_eq_two_mul_zeroEdgeCount_of_isD0LocalMinimumForMoveSupports_of_rotationDisk_candidates_and_cubic_star_pinned_target_repairs
+    {G : SimpleGraph V} [Fintype V] [Fintype G.edgeSet]
+    (D : RotationDiskData V G.edgeSet)
+    (hincident : ∀ v : V, D.asZeroBoundary.incident v = incidentEdgeFinset G v)
+    {moveSupports : Finset (Finset G.edgeSet)} {x : G.edgeSet → Color}
+    (hcard : ∀ v : V, (incidentEdgeFinset G v).card = 3)
+    (hmin : IsD0LocalMinimumForMoveSupports G moveSupports x)
+    (hcandidate :
+      EveryClusteredZeroVertexHasRotationDiskD0Candidate G D moveSupports x)
+    (hrepair :
+      EveryCubicD0BasicColorObstructionStarHasPinnedTargetD0Descent
+        G moveSupports x) :
+    zeroIncidentVertexCount G x = 2 * zeroEdgeCount G x :=
+  zeroIncidentVertexCount_eq_two_mul_zeroEdgeCount_of_zeroEdgesFormMatching
+    (zeroEdgesFormMatching_of_isD0LocalMinimumForMoveSupports_of_rotationDisk_candidates_and_cubic_star_pinned_target_repairs
+      D hincident hcard hmin hcandidate hrepair)
+
 /-- Kempe-cycle source form of the star-repair count identity `I(x)=2Z(x)`. -/
 theorem
     zeroIncidentVertexCount_eq_two_mul_zeroEdgeCount_of_isD0LocalMinimumForMoveSupports_of_kempe_candidates_and_cubic_star_repairs
@@ -5696,6 +5850,43 @@ theorem
   zeroDefectD0_eq_120_mul_zeroEdgeCount_of_zeroEdgesFormMatching
     (zeroEdgesFormMatching_of_isD0LocalMinimumForMoveSupports_of_neutral_candidates_and_cubic_star_pinned_target_repairs
       hcard hmin hcandidate hrepair)
+
+/-- Kempe-cycle source form of the pinned-target cheap-defect collapse
+`D₀(x)=120Z(x)`. -/
+theorem
+    zeroDefectD0_eq_120_mul_zeroEdgeCount_of_isD0LocalMinimumForMoveSupports_of_kempe_candidates_and_cubic_star_pinned_target_repairs
+    {G : SimpleGraph V} [Fintype V] [Fintype G.edgeSet]
+    {moveSupports : Finset (Finset G.edgeSet)} {x : G.edgeSet → Color}
+    (hcard : ∀ v : V, (incidentEdgeFinset G v).card = 3)
+    (hmin : IsD0LocalMinimumForMoveSupports G moveSupports x)
+    (hcandidate : EveryClusteredZeroVertexHasKempeD0Candidate G moveSupports x)
+    (hrepair :
+      EveryCubicD0BasicColorObstructionStarHasPinnedTargetD0Descent
+        G moveSupports x) :
+    zeroDefectD0 G x = 120 * zeroEdgeCount G x :=
+  zeroDefectD0_eq_120_mul_zeroEdgeCount_of_zeroEdgesFormMatching
+    (zeroEdgesFormMatching_of_isD0LocalMinimumForMoveSupports_of_kempe_candidates_and_cubic_star_pinned_target_repairs
+      hcard hmin hcandidate hrepair)
+
+/-- Rotation-disk source form of the pinned-target cheap-defect collapse
+`D₀(x)=120Z(x)`. -/
+theorem
+    zeroDefectD0_eq_120_mul_zeroEdgeCount_of_isD0LocalMinimumForMoveSupports_of_rotationDisk_candidates_and_cubic_star_pinned_target_repairs
+    {G : SimpleGraph V} [Fintype V] [Fintype G.edgeSet]
+    (D : RotationDiskData V G.edgeSet)
+    (hincident : ∀ v : V, D.asZeroBoundary.incident v = incidentEdgeFinset G v)
+    {moveSupports : Finset (Finset G.edgeSet)} {x : G.edgeSet → Color}
+    (hcard : ∀ v : V, (incidentEdgeFinset G v).card = 3)
+    (hmin : IsD0LocalMinimumForMoveSupports G moveSupports x)
+    (hcandidate :
+      EveryClusteredZeroVertexHasRotationDiskD0Candidate G D moveSupports x)
+    (hrepair :
+      EveryCubicD0BasicColorObstructionStarHasPinnedTargetD0Descent
+        G moveSupports x) :
+    zeroDefectD0 G x = 120 * zeroEdgeCount G x :=
+  zeroDefectD0_eq_120_mul_zeroEdgeCount_of_zeroEdgesFormMatching
+    (zeroEdgesFormMatching_of_isD0LocalMinimumForMoveSupports_of_rotationDisk_candidates_and_cubic_star_pinned_target_repairs
+      D hincident hcard hmin hcandidate hrepair)
 
 /-- Kempe-cycle source form of the star-repair cheap-defect collapse. -/
 theorem
