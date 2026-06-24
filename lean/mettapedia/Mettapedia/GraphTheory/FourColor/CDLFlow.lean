@@ -2582,6 +2582,57 @@ theorem not_isD0LocalMinimumForMoveSupports_of_zeroClusteringCount_pos_and_clust
   not_isD0LocalMinimumForMoveSupports_of_hasClusteredZeroVertex_and_clusteredZeroVertex_descent
     ((zeroClusteringCount_pos_iff_hasClusteredZeroVertex).mp hCpos) hrepair
 
+/-- Obstruction form at a chosen clustered zero vertex: a `D₀` local minimum
+cannot have the zero-erasing/no-new-zero repair used by the matching-zero
+descent theorem available at that vertex. -/
+theorem not_exists_d0DescentRepair_at_clusteredZeroVertex_of_isD0LocalMinimumForMoveSupports
+    {G : SimpleGraph V} [Fintype V] [Fintype G.edgeSet]
+    {moveSupports : Finset (Finset G.edgeSet)} {x : G.edgeSet → Color} {v : V}
+    (hmin : IsD0LocalMinimumForMoveSupports G moveSupports x)
+    (_hvcluster : 2 ≤ zeroIncidentEdgeCount G x v) :
+    ¬ ∃ C ∈ moveSupports, ∃ g : Color,
+      IsAllowedD0OneStepMoveOn G C g x (cdlOneStepMoveOn G C g x) ∧
+        (∃ e ∈ C, x e = 0) ∧
+          ∀ e ∈ C, x e ≠ g := by
+  rintro ⟨C, hCmem, g, hmove, herase, hnew⟩
+  exact
+    (not_isD0LocalMinimumForMoveSupports_of_allowed_erases_zero_no_new_zero_descent
+      hCmem hmove herase hnew) hmin
+
+/-- Manuscript-facing obstruction form: if a `D₀` local minimum has clustered
+zeros, then some clustered vertex has no zero-erasing/no-new-zero repair in the
+selected move family. -/
+theorem exists_clusteredZeroVertex_without_d0DescentRepair_of_isD0LocalMinimumForMoveSupports
+    {G : SimpleGraph V} [Fintype V] [Fintype G.edgeSet]
+    {moveSupports : Finset (Finset G.edgeSet)} {x : G.edgeSet → Color}
+    (hmin : IsD0LocalMinimumForMoveSupports G moveSupports x)
+    (hcluster : HasClusteredZeroVertex G x) :
+    ∃ v : V, 2 ≤ zeroIncidentEdgeCount G x v ∧
+      ¬ ∃ C ∈ moveSupports, ∃ g : Color,
+        IsAllowedD0OneStepMoveOn G C g x (cdlOneStepMoveOn G C g x) ∧
+          (∃ e ∈ C, x e = 0) ∧
+            ∀ e ∈ C, x e ≠ g := by
+  rcases hcluster with ⟨v, hvcluster⟩
+  exact
+    ⟨v, hvcluster,
+      not_exists_d0DescentRepair_at_clusteredZeroVertex_of_isD0LocalMinimumForMoveSupports
+        hmin hvcluster⟩
+
+/-- Numeric obstruction form: positive clustering at a `D₀` local minimum
+exhibits a clustered vertex where the zero-erasing/no-new-zero repair fails. -/
+theorem exists_clusteredZeroVertex_without_d0DescentRepair_of_isD0LocalMinimumForMoveSupports_of_zeroClusteringCount_pos
+    {G : SimpleGraph V} [Fintype V] [Fintype G.edgeSet]
+    {moveSupports : Finset (Finset G.edgeSet)} {x : G.edgeSet → Color}
+    (hmin : IsD0LocalMinimumForMoveSupports G moveSupports x)
+    (hCpos : 0 < zeroClusteringCount G x) :
+    ∃ v : V, 2 ≤ zeroIncidentEdgeCount G x v ∧
+      ¬ ∃ C ∈ moveSupports, ∃ g : Color,
+        IsAllowedD0OneStepMoveOn G C g x (cdlOneStepMoveOn G C g x) ∧
+          (∃ e ∈ C, x e = 0) ∧
+            ∀ e ∈ C, x e ≠ g :=
+  exists_clusteredZeroVertex_without_d0DescentRepair_of_isD0LocalMinimumForMoveSupports
+    hmin ((zeroClusteringCount_pos_iff_hasClusteredZeroVertex).mp hCpos)
+
 /-- Count form of the abstract matching-zeros theorem: the clustering statistic
 vanishes at repaired `D₀` local minima. -/
 theorem zeroClusteringCount_eq_zero_of_isD0LocalMinimumForMoveSupports_of_nonmatching_descent
