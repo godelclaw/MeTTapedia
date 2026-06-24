@@ -856,6 +856,15 @@ theorem zeroEdgeCount_pos_of_hasCubicD0BasicColorObstructionAt
   exact Finset.card_pos.mpr
     (zeroEdgeFinset_nonempty_of_hasCubicD0BasicColorObstructionAt hobst)
 
+omit [DecidableEq V] in
+theorem zeroEdgeCount_pos_of_exists_edge_eq_zero
+    {G : SimpleGraph V} [Fintype G.edgeSet] {x : G.edgeSet → Color}
+    (hzero : ∃ e : G.edgeSet, x e = 0) :
+    0 < zeroEdgeCount G x := by
+  rcases hzero with ⟨e, he⟩
+  unfold zeroEdgeCount
+  exact Finset.card_pos.mpr ⟨e, by simp [zeroEdgeFinset, he]⟩
+
 theorem zeroDefectD0_pos_of_hasCubicD0BasicColorObstructionAt
     {G : SimpleGraph V} [Fintype V] [Fintype G.edgeSet]
     {C : Finset G.edgeSet} {g : Color} {x : G.edgeSet → Color} {v : V}
@@ -891,6 +900,15 @@ theorem zeroDefectD0_pos_of_exists_hasCubicD0BasicColorObstructionAt
     exact zeroDefectD0_pos_of_hasCubicD0BasicColorObstructionAt hobst
   · rcases hpurple with ⟨_v, hobst⟩
     exact zeroDefectD0_pos_of_hasCubicD0BasicColorObstructionAt hobst
+
+theorem zeroDefectD0_pos_of_exists_edge_eq_zero
+    {G : SimpleGraph V} [Fintype V] [Fintype G.edgeSet] {x : G.edgeSet → Color}
+    (hzero : ∃ e : G.edgeSet, x e = 0) :
+    0 < zeroDefectD0 G x := by
+  have hZ : 0 < zeroEdgeCount G x :=
+    zeroEdgeCount_pos_of_exists_edge_eq_zero hzero
+  unfold zeroDefectD0
+  omega
 
 theorem isAllowedD0OneStepMoveOn_of_isKempeCycle_and_vertex_witnesses
     {G : SimpleGraph V} [Fintype G.edgeSet] {C : Finset G.edgeSet}
@@ -2689,6 +2707,15 @@ theorem le_zeroDefectD0_of_zeroEdgesFormMatching_and_zeroEdgeCount_pos
   rw [zeroDefectD0_eq_120_mul_zeroEdgeCount_of_zeroEdgesFormMatching hmatch]
   omega
 
+/-- A matching zero pattern with an explicit zero edge is already at the first
+positive cheap-defect scale `120`. -/
+theorem le_zeroDefectD0_of_zeroEdgesFormMatching_and_exists_edge_eq_zero
+    {G : SimpleGraph V} [Fintype V] [Fintype G.edgeSet] {x : G.edgeSet → Color}
+    (hmatch : ZeroEdgesFormMatching G x) (hzero : ∃ e : G.edgeSet, x e = 0) :
+    120 ≤ zeroDefectD0 G x :=
+  le_zeroDefectD0_of_zeroEdgesFormMatching_and_zeroEdgeCount_pos hmatch
+    (zeroEdgeCount_pos_of_exists_edge_eq_zero hzero)
+
 /-- Equivalent form using positivity of the cheap defect itself. -/
 theorem le_zeroDefectD0_of_zeroEdgesFormMatching_and_zeroDefectD0_pos
     {G : SimpleGraph V} [Fintype V] [Fintype G.edgeSet] {x : G.edgeSet → Color}
@@ -2720,6 +2747,67 @@ theorem le_zeroDefectD0_of_exists_hasCubicD0BasicColorObstructionAt_and_zeroEdge
     120 ≤ zeroDefectD0 G x :=
   le_zeroDefectD0_of_zeroEdgesFormMatching_and_zeroDefectD0_pos hmatch
     (zeroDefectD0_pos_of_exists_hasCubicD0BasicColorObstructionAt hobst)
+
+/-- Route-specific form: under the matching-zero hypothesis, a small
+Kirchhoff-neutral basic color obstruction at a `D₀` local minimum is already a
+`D₀≥120` blocker. -/
+theorem
+    le_zeroDefectD0_of_basic_color_obstruction_of_d0LocalMinimum_kirchhoffNeutral_small_support_and_zeroEdgesFormMatching
+    {G : SimpleGraph V} [Fintype V] [Fintype G.edgeSet]
+    {moveSupports : Finset (Finset G.edgeSet)} {x : G.edgeSet → Color}
+    {C : Finset G.edgeSet}
+    (hcard : ∀ v : V, (incidentEdgeFinset G v).card = 3)
+    (hmin : IsD0LocalMinimumForMoveSupports G moveSupports x)
+    (hCmem : C ∈ moveSupports)
+    (hC : IsKirchhoffNeutralMoveSupport G C)
+    (herase : ∃ e ∈ C, x e = 0)
+    (hsmall : C.card ≤ 3)
+    (hmatch : ZeroEdgesFormMatching G x) :
+    120 ≤ zeroDefectD0 G x :=
+  le_zeroDefectD0_of_exists_hasCubicD0BasicColorObstructionAt_and_zeroEdgesFormMatching
+    (exists_hasCubicD0BasicColorObstructionAt_for_basic_color_obstruction_of_d0LocalMinimum_kirchhoffNeutral_small_support
+      hcard hmin hCmem hC herase hsmall)
+    hmatch
+
+/-- Kempe-cycle source form of the local-minimum blocker lower bound. -/
+theorem
+    le_zeroDefectD0_of_basic_color_obstruction_of_d0LocalMinimum_isKempeCycle_small_support_and_zeroEdgesFormMatching
+    {G : SimpleGraph V} [Fintype V] [Fintype G.edgeSet]
+    {moveSupports : Finset (Finset G.edgeSet)} {x : G.edgeSet → Color}
+    {C : Finset G.edgeSet} {α β : Color}
+    (hcard : ∀ v : V, (incidentEdgeFinset G v).card = 3)
+    (hmin : IsD0LocalMinimumForMoveSupports G moveSupports x)
+    (hCmem : C ∈ moveSupports)
+    (hC : IsKempeCycle (incidentEdgeFinset G) x C α β)
+    (herase : ∃ e ∈ C, x e = 0)
+    (hsmall : C.card ≤ 3)
+    (hmatch : ZeroEdgesFormMatching G x) :
+    120 ≤ zeroDefectD0 G x :=
+  le_zeroDefectD0_of_basic_color_obstruction_of_d0LocalMinimum_kirchhoffNeutral_small_support_and_zeroEdgesFormMatching
+    hcard hmin hCmem (isKirchhoffNeutralMoveSupport_of_isKempeCycle hC) herase
+    hsmall hmatch
+
+/-- Rotation-disk internal-face source form of the local-minimum blocker lower
+bound. -/
+theorem
+    le_zeroDefectD0_of_basic_color_obstruction_of_d0LocalMinimum_rotationDiskData_internalFace_small_support_and_zeroEdgesFormMatching
+    {G : SimpleGraph V} [Fintype V] [Fintype G.edgeSet]
+    (D : RotationDiskData V G.edgeSet)
+    (hincident : ∀ v : V, D.asZeroBoundary.incident v = incidentEdgeFinset G v)
+    {moveSupports : Finset (Finset G.edgeSet)} {x : G.edgeSet → Color}
+    {f : Finset G.edgeSet}
+    (hcard : ∀ v : V, (incidentEdgeFinset G v).card = 3)
+    (hmin : IsD0LocalMinimumForMoveSupports G moveSupports x)
+    (hfmem : f ∈ moveSupports)
+    (hf : f ∈ D.rotation.internalFaces)
+    (herase : ∃ e ∈ f, x e = 0)
+    (hsmall : f.card ≤ 3)
+    (hmatch : ZeroEdgesFormMatching G x) :
+    120 ≤ zeroDefectD0 G x :=
+  le_zeroDefectD0_of_basic_color_obstruction_of_d0LocalMinimum_kirchhoffNeutral_small_support_and_zeroEdgesFormMatching
+    hcard hmin hfmem
+    (isKirchhoffNeutralMoveSupport_of_rotationDiskData_internalFace D hincident hf)
+    herase hsmall hmatch
 
 /-- A graph with Mathlib degree `3` at every vertex has the explicit cubic
 incident triples needed by the local Tait-flow bridge. -/
