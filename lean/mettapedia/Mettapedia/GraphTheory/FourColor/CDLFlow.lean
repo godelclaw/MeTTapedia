@@ -76,6 +76,12 @@ def zeroClusteringCount (G : SimpleGraph V) [Fintype V] [Fintype G.edgeSet]
     (x : G.edgeSet → Color) : Nat :=
   Finset.univ.sum fun v => zeroIncidentEdgeCount G x v - 1
 
+/-- The zero-edge set is a matching in the manuscript's local sense: no vertex
+is incident to two or more zero-valued edges. -/
+def ZeroEdgesFormMatching (G : SimpleGraph V) [Fintype G.edgeSet]
+    (x : G.edgeSet → Color) : Prop :=
+  ∀ v : V, zeroIncidentEdgeCount G x v ≤ 1
+
 omit [DecidableEq V] in
 theorem zeroEdgeFinset_eq_empty_iff {G : SimpleGraph V} [Fintype G.edgeSet]
     {x : G.edgeSet → Color} :
@@ -157,6 +163,13 @@ theorem zeroClusteringCount_eq_zero_of_zeroEdgeCount_eq_zero {G : SimpleGraph V}
     intro e _he
     exact (zeroEdgeCount_eq_zero_iff.mp hZ) e
   simp [hk]
+
+/-- The clustering defect is zero exactly when the zero-edge set forms a
+matching. -/
+theorem zeroClusteringCount_eq_zero_iff_zeroEdgesFormMatching
+    {G : SimpleGraph V} [Fintype V] [Fintype G.edgeSet] {x : G.edgeSet → Color} :
+    zeroClusteringCount G x = 0 ↔ ZeroEdgesFormMatching G x := by
+  simp [ZeroEdgesFormMatching, zeroClusteringCount, Nat.sub_eq_zero_iff_le]
 
 /-- If no vertex is touched by a zero edge, then the zero-clustering defect is
 zero. -/
