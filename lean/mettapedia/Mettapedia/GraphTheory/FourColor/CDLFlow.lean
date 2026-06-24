@@ -118,6 +118,31 @@ theorem zeroIncidentVertexCount_eq_zero_of_zeroEdgeCount_eq_zero {G : SimpleGrap
   intro e _he
   exact (zeroEdgeCount_eq_zero_iff.mp hZ) e
 
+/-- If no vertex is touched by a zero edge, then the global zero-edge defect is
+zero.  The endpoint witness is supplied by `Sym2.out`. -/
+theorem zeroEdgeCount_eq_zero_of_zeroIncidentVertexCount_eq_zero {G : SimpleGraph V}
+    [Fintype V] [Fintype G.edgeSet] {x : G.edgeSet → Color}
+    (hI : zeroIncidentVertexCount G x = 0) :
+    zeroEdgeCount G x = 0 := by
+  rw [zeroEdgeCount_eq_zero_iff]
+  intro e
+  let v : V := (e : Sym2 V).out.1
+  have he_inc : e ∈ incidentEdgeFinset G v := by
+    have hv : v ∈ (e : Sym2 V) := Sym2.out_fst_mem (e : Sym2 V)
+    simp [incidentEdgeFinset, hv]
+  have hk : zeroIncidentEdgeCount G x v = 0 :=
+    (zeroIncidentVertexCount_eq_zero_iff.mp hI) v
+  exact (zeroIncidentEdgeCount_eq_zero_iff.mp hk) e he_inc
+
+/-- `I(x)=0` is equivalent to `Z(x)=0`: no vertex is touched by a zero edge
+exactly when there are no zero edges. -/
+theorem zeroIncidentVertexCount_eq_zero_iff_zeroEdgeCount_eq_zero {G : SimpleGraph V}
+    [Fintype V] [Fintype G.edgeSet] {x : G.edgeSet → Color} :
+    zeroIncidentVertexCount G x = 0 ↔ zeroEdgeCount G x = 0 := by
+  constructor
+  · exact zeroEdgeCount_eq_zero_of_zeroIncidentVertexCount_eq_zero
+  · exact zeroIncidentVertexCount_eq_zero_of_zeroEdgeCount_eq_zero
+
 /-- If the global zero-edge defect is zero, then the zero-clustering defect is
 zero. -/
 theorem zeroClusteringCount_eq_zero_of_zeroEdgeCount_eq_zero {G : SimpleGraph V}
@@ -132,6 +157,15 @@ theorem zeroClusteringCount_eq_zero_of_zeroEdgeCount_eq_zero {G : SimpleGraph V}
     intro e _he
     exact (zeroEdgeCount_eq_zero_iff.mp hZ) e
   simp [hk]
+
+/-- If no vertex is touched by a zero edge, then the zero-clustering defect is
+zero. -/
+theorem zeroClusteringCount_eq_zero_of_zeroIncidentVertexCount_eq_zero
+    {G : SimpleGraph V} [Fintype V] [Fintype G.edgeSet] {x : G.edgeSet → Color}
+    (hI : zeroIncidentVertexCount G x = 0) :
+    zeroClusteringCount G x = 0 :=
+  zeroClusteringCount_eq_zero_of_zeroEdgeCount_eq_zero
+    (zeroEdgeCount_eq_zero_of_zeroIncidentVertexCount_eq_zero hI)
 
 /-- A nowhere-zero flow is exactly a graph flow whose zero-edge set is empty. -/
 theorem isNowhereZeroFlow_iff_isGraphFlow_and_zeroEdgeFinset_eq_empty
