@@ -574,6 +574,23 @@ theorem exists_oneEdge_counterexample_of_crossing_outside
   have hfe : f = e := Subtype.ext hsym
   exact heOutside (by simpa [hfe] using hf)
 
+/-- Complete holds-vs-forced-counterexample classifier for a separator candidate.  Either the
+listed support realizes the exact side cut, or the checker can emit an unlisted crossing edge with
+the one-edge walk across it. -/
+theorem realizes_or_exists_oneEdge_counterexample
+    {G : SimpleGraph V} (candidate : CyclicSeparatorCandidate G) :
+    candidate.Realizes ∨
+      ∃ u v : V, ∃ e : G.edgeSet, ∃ p : G.Walk u v,
+        e ∉ candidate.edgeCut ∧
+          candidate.side u ∧ ¬ candidate.side v ∧
+            p.edges = [(e : Sym2 V)] ∧
+              ∀ f : G.edgeSet, f ∈ candidate.edgeCut → (f : Sym2 V) ∉ p.edges := by
+  by_cases hcrossing :
+      ∃ e : G.edgeSet, e ∉ candidate.edgeCut ∧
+        EdgeCrossesVertexSide G candidate.side e
+  · exact Or.inr (candidate.exists_oneEdge_counterexample_of_crossing_outside hcrossing)
+  · exact Or.inl ((candidate.realizes_iff_no_crossing_outside).2 hcrossing)
+
 end CyclicSeparatorCandidate
 
 theorem SmallCyclicEdgeCut.exists_mem_edgeCut_of_walk_endpoint_sides
