@@ -493,6 +493,15 @@ def CAP5ExceptionalAnnulusBoundaryEdgeSupportCandidate.RealizesSmallCyclicEdgeCu
     (cut : SmallCyclicEdgeCut G) : Prop :=
   cut.edgeCut = candidate.edgeSupport
 
+/-- Concrete realization data for a CAP5 boundary-edge support candidate.  This is the shape the
+planar/Jordan layer should provide: a vertex side whose crossing edges are exactly the candidate
+support, plus cycles on both sides. -/
+def CAP5ExceptionalAnnulusBoundaryEdgeSupportCandidate.CyclicEdgeCutRealizationData
+    {V : Type*} {G : SimpleGraph V} [DecidableEq G.edgeSet]
+    {boundaryEdge : Fin 5 → G.edgeSet}
+    (candidate : CAP5ExceptionalAnnulusBoundaryEdgeSupportCandidate boundaryEdge) :=
+  CyclicEdgeCutRealization G candidate.edgeSupport
+
 /-- If a finite CAP5 boundary-edge support candidate is realized by a graph-level small cyclic
 edge cut, the cardinality bound transfers to that cut. -/
 theorem CAP5ExceptionalAnnulusBoundaryEdgeSupportCandidate.exists_smallCyclicEdgeCut_of_realizes
@@ -505,6 +514,18 @@ theorem CAP5ExceptionalAnnulusBoundaryEdgeSupportCandidate.exists_smallCyclicEdg
       candidate.RealizesSmallCyclicEdgeCut cut ∧ cut.edgeCut.card <= 4 := by
   rcases hrealizes with ⟨cut, hcut⟩
   exact ⟨cut, hcut, by rw [hcut]; exact candidate.hcard_le_four⟩
+
+/-- CAP5 support realization data gives the graph-level realized small cyclic cut expected by the
+exceptional-annulus endpoint. -/
+theorem CAP5ExceptionalAnnulusBoundaryEdgeSupportCandidate.exists_smallCyclicEdgeCut_of_realizationData
+    {V : Type*} {G : SimpleGraph V} [DecidableEq G.edgeSet]
+    {boundaryEdge : Fin 5 → G.edgeSet}
+    (candidate : CAP5ExceptionalAnnulusBoundaryEdgeSupportCandidate boundaryEdge)
+    (realization : candidate.CyclicEdgeCutRealizationData (G := G)) :
+    ∃ cut : SmallCyclicEdgeCut G,
+      candidate.RealizesSmallCyclicEdgeCut cut ∧ cut.edgeCut.card <= 4 := by
+  let cut := realization.toSmallCyclicEdgeCut candidate.hcard_le_four
+  exact ⟨cut, rfl, candidate.hcard_le_four⟩
 
 /-- Once core component-cover data is in the exceptional branch, every annulus side case has a
 finite separator-portal candidate using at most four CAP5 portals.  This is the finite input to the
