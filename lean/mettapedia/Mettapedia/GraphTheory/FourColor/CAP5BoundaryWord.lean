@@ -1174,6 +1174,29 @@ theorem exists_repairingBoundaryAction_of_hasRepair
     ⟨action, _huses, hrealizes, hextends⟩
   exact ⟨action, hrealizes, hextends⟩
 
+/-- Support-aware immediate CAP5 repair, packaged as an actual repair of the canonical bad word:
+the input is nonextendable and the support-carried boundary action's output is extendable. -/
+theorem exists_boundaryActionRepairsWord_usingSupport_of_hasRepair
+    {p : CAP5BadPairingSupports} (h : p.HasRepair) :
+    ∃ action : CAP5BoundaryAction,
+      p.BoundaryActionUsesSupport action ∧
+      CAP5BoundaryActionRealizesSomeRepairType action cap5BadBoundaryWord2111 ∧
+      CAP5BoundaryActionRepairsWord action cap5BadBoundaryWord2111 := by
+  rcases exists_repairingBoundaryAction_usingSupport_of_hasRepair h with
+    ⟨action, huses, hrealizes, _hextends⟩
+  exact ⟨action, huses, hrealizes,
+    cap5_boundaryActionRepairsWord_of_boundaryActionRealizesSomeRepairType_bad hrealizes⟩
+
+/-- Immediate CAP5 repair, packaged as an actual repair of the canonical bad word. -/
+theorem exists_boundaryActionRepairsWord_of_hasRepair
+    {p : CAP5BadPairingSupports} (h : p.HasRepair) :
+    ∃ action : CAP5BoundaryAction,
+      CAP5BoundaryActionRealizesSomeRepairType action cap5BadBoundaryWord2111 ∧
+      CAP5BoundaryActionRepairsWord action cap5BadBoundaryWord2111 := by
+  rcases exists_boundaryActionRepairsWord_usingSupport_of_hasRepair h with
+    ⟨action, _huses, hrealizes, hrepairs⟩
+  exact ⟨action, hrealizes, hrepairs⟩
+
 /-- Packaged outcome of the finite CAP5 move-realizability split.  The graph-level proof should
 produce `RepairOrExceptional`; this theorem turns its repair side into the concrete boundary
 extension endpoint and leaves the exceptional pattern explicit. -/
@@ -1220,6 +1243,28 @@ theorem exists_repairingBoundaryAction_of_componentCovers_of_not_isExceptional
   exists_repairingBoundaryAction_of_hasRepair
     ((hasRepair_iff_not_isExceptional_of_componentCovers hcovers).2 hnotExceptional)
 
+/-- Packaged graph-facing endpoint from active CAP5 pairings after excluding the simultaneous
+exceptional pattern: the produced boundary action genuinely repairs the canonical bad word. -/
+theorem exists_boundaryActionRepairsWord_of_activePairings_of_not_isExceptional
+    {p : CAP5BadPairingSupports}
+    (hpair : p.HasActivePairings) (hnotExceptional : ¬ p.IsExceptional) :
+    ∃ action : CAP5BoundaryAction,
+      CAP5BoundaryActionRealizesSomeRepairType action cap5BadBoundaryWord2111 ∧
+      CAP5BoundaryActionRepairsWord action cap5BadBoundaryWord2111 :=
+  exists_boundaryActionRepairsWord_of_hasRepair
+    ((hasRepair_iff_not_isExceptional_of_activePairings hpair).2 hnotExceptional)
+
+/-- Packaged non-support-aware graph-facing endpoint from component covers after excluding the
+simultaneous exceptional pattern. -/
+theorem exists_boundaryActionRepairsWord_of_componentCovers_of_not_isExceptional
+    {p : CAP5BadPairingSupports}
+    (hcovers : p.HasComponentCovers) (hnotExceptional : ¬ p.IsExceptional) :
+    ∃ action : CAP5BoundaryAction,
+      CAP5BoundaryActionRealizesSomeRepairType action cap5BadBoundaryWord2111 ∧
+      CAP5BoundaryActionRepairsWord action cap5BadBoundaryWord2111 :=
+  exists_boundaryActionRepairsWord_of_hasRepair
+    ((hasRepair_iff_not_isExceptional_of_componentCovers hcovers).2 hnotExceptional)
+
 /-- Support-aware final endpoint after the graph-level separator proof excludes the simultaneous
 exceptional pattern.  The produced repair action is one of the four swaps attached to the active
 component supports. -/
@@ -1233,6 +1278,18 @@ theorem exists_repairingBoundaryAction_usingSupport_of_activePairings_of_not_isE
   exists_repairingBoundaryAction_usingSupport_of_hasRepair
     ((hasRepair_iff_not_isExceptional_of_activePairings hpair).2 hnotExceptional)
 
+/-- Packaged support-aware final endpoint from active CAP5 pairings after excluding the simultaneous
+exceptional pattern. -/
+theorem exists_boundaryActionRepairsWord_usingSupport_of_activePairings_of_not_isExceptional
+    {p : CAP5BadPairingSupports}
+    (hpair : p.HasActivePairings) (hnotExceptional : ¬ p.IsExceptional) :
+    ∃ action : CAP5BoundaryAction,
+      p.BoundaryActionUsesSupport action ∧
+      CAP5BoundaryActionRealizesSomeRepairType action cap5BadBoundaryWord2111 ∧
+      CAP5BoundaryActionRepairsWord action cap5BadBoundaryWord2111 :=
+  exists_boundaryActionRepairsWord_usingSupport_of_hasRepair
+    ((hasRepair_iff_not_isExceptional_of_activePairings hpair).2 hnotExceptional)
+
 /-- Graph-facing final CAP5 endpoint: disjoint component covers of both active supports already
 supply active pairings, so excluding the simultaneous exceptional pattern produces a support-carried
 repair action whose boundary word extends across the cap. -/
@@ -1244,6 +1301,19 @@ theorem exists_repairingBoundaryAction_usingSupport_of_componentCovers_of_not_is
       CAP5BoundaryActionRealizesSomeRepairType action cap5BadBoundaryWord2111 ∧
       CAP5WordExtendsAcrossCycle (action cap5BadBoundaryWord2111) :=
   exists_repairingBoundaryAction_usingSupport_of_activePairings_of_not_isExceptional
+    (hasActivePairings_of_componentCovers hcovers) hnotExceptional
+
+/-- Packaged graph-facing final CAP5 endpoint: disjoint component covers of both active supports,
+plus exclusion of the simultaneous exceptional pattern, produce a support-carried boundary action
+that genuinely repairs the canonical bad word. -/
+theorem exists_boundaryActionRepairsWord_usingSupport_of_componentCovers_of_not_isExceptional
+    {p : CAP5BadPairingSupports}
+    (hcovers : p.HasComponentCovers) (hnotExceptional : ¬ p.IsExceptional) :
+    ∃ action : CAP5BoundaryAction,
+      p.BoundaryActionUsesSupport action ∧
+      CAP5BoundaryActionRealizesSomeRepairType action cap5BadBoundaryWord2111 ∧
+      CAP5BoundaryActionRepairsWord action cap5BadBoundaryWord2111 :=
+  exists_boundaryActionRepairsWord_usingSupport_of_activePairings_of_not_isExceptional
     (hasActivePairings_of_componentCovers hcovers) hnotExceptional
 
 end CAP5BadPairingSupports
