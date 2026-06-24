@@ -198,6 +198,17 @@ structure CAP5TransportedEdgeComponentCoverData
   hnotExceptional :
     ¬ CAP5BadExceptionalPairingPattern redBlue₁ redBlue₂ redPurple₁ redPurple₂
 
+/-- An edge-level color switch uses one of the four edge supports carried by a transported CAP5
+component-cover package. -/
+def CAP5TransportedEdgeSwitchUsesComponentCoverSupport
+    {E : Type*} [DecidableEq E] {boundaryEdge : Fin 5 → E} {n : Nat}
+    (data : CAP5TransportedEdgeComponentCoverData boundaryEdge n)
+    (σ : Color → Color) (edgeSupport : Finset E) (a b : Color) : Prop :=
+  (edgeSupport = data.redBlueEdge₁ ∧ a = σ red ∧ b = σ blue) ∨
+  (edgeSupport = data.redBlueEdge₂ ∧ a = σ red ∧ b = σ blue) ∨
+  (edgeSupport = data.redPurpleEdge₁ ∧ a = σ red ∧ b = σ purple) ∨
+  (edgeSupport = data.redPurpleEdge₂ ∧ a = σ red ∧ b = σ purple)
+
 /-- Raw support-cover repair action for an arbitrary transported bad CAP5 word.  This exposes the
 actual support-carried boundary action, not just the solved-word conclusion. -/
 theorem exists_boundaryActionRepairsWord_usingTransportedComponentCoverSupport_of_eq_transportBad_of_componentCoverSupports
@@ -346,6 +357,49 @@ theorem exists_boundaryActionRepairsWord_usingTransportedEdgeSupport_of_eq_trans
   exists_boundaryActionRepairsWord_usingTransportedEdgeSupport_of_eq_transportBad_of_componentCoverSupports
     boundaryEdge hσ0 data.hredBlue₁ data.hredBlue₂ data.hredPurple₁ data.hredPurple₂
     data.hredBlue data.hredPurple data.hnotExceptional hw
+
+/-- Structured component-cover data yields an actual edge-level switch whose restricted CAP5
+boundary word extends across the cap.  This is the concrete graph-facing form of the boundary
+repair action. -/
+theorem exists_edgeSupport_switch_extendsAcrossCycle_of_eq_transportBad_of_componentCoverData
+    {E : Type*} [DecidableEq E]
+    (boundaryEdge : Fin 5 → E) (C : E → Color)
+    {σ : Color ≃ Color} (hσ0 : σ 0 = 0) {n : Nat}
+    (data : CAP5TransportedEdgeComponentCoverData boundaryEdge n)
+    (hw : cap5BoundaryWordOfEdges boundaryEdge C = cap5TransportedBadBoundaryWord σ n) :
+    ∃ edgeSupport : Finset E, ∃ a b : Color,
+      CAP5TransportedEdgeSwitchUsesComponentCoverSupport data σ edgeSupport a b ∧
+      CAP5WordExtendsAcrossCycle
+        (cap5BoundaryWordOfEdges boundaryEdge (switch a b (edgeSupport : Set E) C)) := by
+  rcases
+      exists_boundaryActionRepairsWord_usingTransportedEdgeSupport_of_eq_transportBad_of_componentCoverData
+        hσ0 data hw with
+    ⟨action, huses, _hrealizes, _hnotExtends, hextends⟩
+  rcases huses with huses | huses | huses | huses
+  · subst action
+    refine ⟨data.redBlueEdge₁, σ red, σ blue, ?_, ?_⟩
+    · exact Or.inl ⟨rfl, rfl, rfl⟩
+    · rw [← cap5BoundaryActionOfEdgeSet_apply_eq_boundaryWordOfEdges_switch]
+      simpa [hw]
+        using hextends
+  · subst action
+    refine ⟨data.redBlueEdge₂, σ red, σ blue, ?_, ?_⟩
+    · exact Or.inr (Or.inl ⟨rfl, rfl, rfl⟩)
+    · rw [← cap5BoundaryActionOfEdgeSet_apply_eq_boundaryWordOfEdges_switch]
+      simpa [hw]
+        using hextends
+  · subst action
+    refine ⟨data.redPurpleEdge₁, σ red, σ purple, ?_, ?_⟩
+    · exact Or.inr (Or.inr (Or.inl ⟨rfl, rfl, rfl⟩))
+    · rw [← cap5BoundaryActionOfEdgeSet_apply_eq_boundaryWordOfEdges_switch]
+      simpa [hw]
+        using hextends
+  · subst action
+    refine ⟨data.redPurpleEdge₂, σ red, σ purple, ?_, ?_⟩
+    · exact Or.inr (Or.inr (Or.inr ⟨rfl, rfl, rfl⟩))
+    · rw [← cap5BoundaryActionOfEdgeSet_apply_eq_boundaryWordOfEdges_switch]
+      simpa [hw]
+        using hextends
 
 /-- Structured-data form of the edge-support solved-word endpoint for one transported bad CAP5
 word. -/
