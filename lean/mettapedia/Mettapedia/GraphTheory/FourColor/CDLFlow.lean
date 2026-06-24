@@ -1181,6 +1181,31 @@ theorem moveSupport_card_ge_four_of_d0LocalMinimum_basic_color_moves
     (exists_created_zero_of_isD0LocalMinimumForMoveSupports_of_allowed_erases_zero
       hmin hCmem hpurple herase)
 
+theorem
+    moveSupport_card_ge_four_of_d0LocalMinimum_basic_color_moves_erases_incident_zero
+    {G : SimpleGraph V} [Fintype V] [Fintype G.edgeSet]
+    {moveSupports : Finset (Finset G.edgeSet)} {x : G.edgeSet → Color}
+    {C : Finset G.edgeSet} {v : V}
+    (hmin : IsD0LocalMinimumForMoveSupports G moveSupports x)
+    (hCmem : C ∈ moveSupports)
+    (hred :
+      IsAllowedD0OneStepMoveOn G C red x (cdlOneStepMoveOn G C red x))
+    (hblue :
+      IsAllowedD0OneStepMoveOn G C blue x (cdlOneStepMoveOn G C blue x))
+    (hpurple :
+      IsAllowedD0OneStepMoveOn G C purple x (cdlOneStepMoveOn G C purple x))
+    (heraseAt : ∃ e ∈ C, e ∈ incidentEdgeFinset G v ∧ x e = 0) :
+    4 ≤ C.card := by
+  rcases heraseAt with ⟨e0, he0C, he0inc, he0zero⟩
+  exact support_card_ge_four_of_contains_zero_red_blue_purple
+    ⟨e0, he0C, he0zero⟩
+    (exists_created_zero_of_isD0LocalMinimumForMoveSupports_of_allowed_erases_incident_zero
+      hmin hCmem hred ⟨e0, he0C, he0inc, he0zero⟩)
+    (exists_created_zero_of_isD0LocalMinimumForMoveSupports_of_allowed_erases_incident_zero
+      hmin hCmem hblue ⟨e0, he0C, he0inc, he0zero⟩)
+    (exists_created_zero_of_isD0LocalMinimumForMoveSupports_of_allowed_erases_incident_zero
+      hmin hCmem hpurple ⟨e0, he0C, he0inc, he0zero⟩)
+
 theorem not_isD0LocalMinimumForMoveSupports_of_basic_color_moves_small_support
     {G : SimpleGraph V} [Fintype V] [Fintype G.edgeSet]
     {moveSupports : Finset (Finset G.edgeSet)} {x : G.edgeSet → Color}
@@ -1199,6 +1224,27 @@ theorem not_isD0LocalMinimumForMoveSupports_of_basic_color_moves_small_support
   have hfour : 4 ≤ C.card :=
     moveSupport_card_ge_four_of_d0LocalMinimum_basic_color_moves
       hmin hCmem hred hblue hpurple herase
+  omega
+
+theorem
+    not_isD0LocalMinimumForMoveSupports_of_basic_color_moves_small_support_erases_incident_zero
+    {G : SimpleGraph V} [Fintype V] [Fintype G.edgeSet]
+    {moveSupports : Finset (Finset G.edgeSet)} {x : G.edgeSet → Color}
+    {C : Finset G.edgeSet} {v : V}
+    (hCmem : C ∈ moveSupports)
+    (hred :
+      IsAllowedD0OneStepMoveOn G C red x (cdlOneStepMoveOn G C red x))
+    (hblue :
+      IsAllowedD0OneStepMoveOn G C blue x (cdlOneStepMoveOn G C blue x))
+    (hpurple :
+      IsAllowedD0OneStepMoveOn G C purple x (cdlOneStepMoveOn G C purple x))
+    (heraseAt : ∃ e ∈ C, e ∈ incidentEdgeFinset G v ∧ x e = 0)
+    (hsmall : C.card ≤ 3) :
+    ¬ IsD0LocalMinimumForMoveSupports G moveSupports x := by
+  intro hmin
+  have hfour : 4 ≤ C.card :=
+    moveSupport_card_ge_four_of_d0LocalMinimum_basic_color_moves_erases_incident_zero
+      hmin hCmem hred hblue hpurple heraseAt
   omega
 
 theorem exists_failed_basic_color_move_of_d0LocalMinimum_small_support
@@ -1227,6 +1273,32 @@ theorem exists_failed_basic_color_move_of_d0LocalMinimum_small_support
     · exact Or.inr (Or.inl hblue)
   · exact Or.inl hred
 
+theorem exists_failed_basic_color_move_of_d0LocalMinimum_small_support_erases_incident_zero
+    {G : SimpleGraph V} [Fintype V] [Fintype G.edgeSet]
+    {moveSupports : Finset (Finset G.edgeSet)} {x : G.edgeSet → Color}
+    {C : Finset G.edgeSet} {v : V}
+    (hmin : IsD0LocalMinimumForMoveSupports G moveSupports x)
+    (hCmem : C ∈ moveSupports)
+    (heraseAt : ∃ e ∈ C, e ∈ incidentEdgeFinset G v ∧ x e = 0)
+    (hsmall : C.card ≤ 3) :
+    ¬ IsAllowedD0OneStepMoveOn G C red x (cdlOneStepMoveOn G C red x) ∨
+      ¬ IsAllowedD0OneStepMoveOn G C blue x (cdlOneStepMoveOn G C blue x) ∨
+        ¬ IsAllowedD0OneStepMoveOn G C purple x
+          (cdlOneStepMoveOn G C purple x) := by
+  by_cases hred :
+      IsAllowedD0OneStepMoveOn G C red x (cdlOneStepMoveOn G C red x)
+  · by_cases hblue :
+        IsAllowedD0OneStepMoveOn G C blue x (cdlOneStepMoveOn G C blue x)
+    · by_cases hpurple :
+          IsAllowedD0OneStepMoveOn G C purple x
+            (cdlOneStepMoveOn G C purple x)
+      · exact False.elim
+          ((not_isD0LocalMinimumForMoveSupports_of_basic_color_moves_small_support_erases_incident_zero
+            hCmem hred hblue hpurple heraseAt hsmall) hmin)
+      · exact Or.inr (Or.inr hpurple)
+    · exact Or.inr (Or.inl hblue)
+  · exact Or.inl hred
+
 theorem exists_forced_zero_basic_color_move_of_d0LocalMinimum_kirchhoffNeutral_small_support
     {G : SimpleGraph V} [Fintype V] [Fintype G.edgeSet]
     {moveSupports : Finset (Finset G.edgeSet)} {x : G.edgeSet → Color}
@@ -1245,6 +1317,35 @@ theorem exists_forced_zero_basic_color_move_of_d0LocalMinimum_kirchhoffNeutral_s
   rcases
     exists_failed_basic_color_move_of_d0LocalMinimum_small_support
       hmin hCmem herase hsmall with hred | hblue | hpurple
+  · exact Or.inl
+      ((not_isAllowedD0OneStepMoveOn_iff_exists_vertex_forced_zero_of_kirchhoffNeutral
+        red_ne_zero hmin.source_flow hC).mp hred)
+  · exact Or.inr (Or.inl
+      ((not_isAllowedD0OneStepMoveOn_iff_exists_vertex_forced_zero_of_kirchhoffNeutral
+        blue_ne_zero hmin.source_flow hC).mp hblue))
+  · exact Or.inr (Or.inr
+      ((not_isAllowedD0OneStepMoveOn_iff_exists_vertex_forced_zero_of_kirchhoffNeutral
+        purple_ne_zero hmin.source_flow hC).mp hpurple))
+
+theorem
+    exists_forced_zero_basic_color_move_of_d0LocalMinimum_kirchhoffNeutral_small_support_erases_incident_zero
+    {G : SimpleGraph V} [Fintype V] [Fintype G.edgeSet]
+    {moveSupports : Finset (Finset G.edgeSet)} {x : G.edgeSet → Color}
+    {C : Finset G.edgeSet} {v : V}
+    (hmin : IsD0LocalMinimumForMoveSupports G moveSupports x)
+    (hCmem : C ∈ moveSupports)
+    (hC : IsKirchhoffNeutralMoveSupport G C)
+    (heraseAt : ∃ e ∈ C, e ∈ incidentEdgeFinset G v ∧ x e = 0)
+    (hsmall : C.card ≤ 3) :
+    (∃ v : V, ∀ e ∈ incidentEdgeFinset G v,
+      if e ∈ C then x e = red else x e = 0) ∨
+      (∃ v : V, ∀ e ∈ incidentEdgeFinset G v,
+        if e ∈ C then x e = blue else x e = 0) ∨
+        (∃ v : V, ∀ e ∈ incidentEdgeFinset G v,
+          if e ∈ C then x e = purple else x e = 0) := by
+  rcases
+    exists_failed_basic_color_move_of_d0LocalMinimum_small_support_erases_incident_zero
+      hmin hCmem heraseAt hsmall with hred | hblue | hpurple
   · exact Or.inl
       ((not_isAllowedD0OneStepMoveOn_iff_exists_vertex_forced_zero_of_kirchhoffNeutral
         red_ne_zero hmin.source_flow hC).mp hred)
