@@ -1019,6 +1019,42 @@ def cap5BoundarySwap (a b : Color) (S : Finset (Fin 5))
     (w : CAP5BoundaryWord) : CAP5BoundaryWord :=
   fun i => if i ∈ S then cap5SwapColor a b (w i) else w i
 
+/-- `cap5SwapColor` is the boundary-word spelling of the reusable color swap from
+`ColorAlgebra`. -/
+theorem cap5SwapColor_eq_colorSwap (a b c : Color) :
+    cap5SwapColor a b c = Color.swap a b c :=
+  rfl
+
+/-- Restrict an edge coloring to the five boundary edges of a CAP5 interface. -/
+def cap5BoundaryWordOfEdges {E : Type*} (boundaryEdge : Fin 5 → E)
+    (C : E → Color) : CAP5BoundaryWord :=
+  fun i => C (boundaryEdge i)
+
+/-- The CAP5 boundary positions whose boundary edges lie in a selected edge set. -/
+def cap5BoundarySupportOfEdges {E : Type*} [DecidableEq E]
+    (boundaryEdge : Fin 5 → E) (S : Finset E) : Finset (Fin 5) :=
+  Finset.univ.filter fun i => boundaryEdge i ∈ S
+
+@[simp] theorem mem_cap5BoundarySupportOfEdges_iff {E : Type*} [DecidableEq E]
+    {boundaryEdge : Fin 5 → E} {S : Finset E} {i : Fin 5} :
+    i ∈ cap5BoundarySupportOfEdges boundaryEdge S ↔ boundaryEdge i ∈ S := by
+  simp [cap5BoundarySupportOfEdges]
+
+/-- Restricting an edge-level color switch to the five CAP5 boundary edges is exactly the CAP5
+boundary-swap action on the induced boundary support.  This is the basic bridge from a finite
+edge/Kempe support to the boundary action used by the CAP5 repair endpoints. -/
+theorem cap5BoundaryWordOfEdges_switch_eq_boundarySwap {E : Type*} [DecidableEq E]
+    (boundaryEdge : Fin 5 → E) (S : Finset E) (C : E → Color) (a b : Color) :
+    cap5BoundaryWordOfEdges boundaryEdge (switch a b (S : Set E) C) =
+      cap5BoundarySwap a b (cap5BoundarySupportOfEdges boundaryEdge S)
+        (cap5BoundaryWordOfEdges boundaryEdge C) := by
+  funext i
+  by_cases hi : boundaryEdge i ∈ S
+  · simp [cap5BoundaryWordOfEdges, cap5BoundarySupportOfEdges, cap5BoundarySwap,
+      cap5SwapColor_eq_colorSwap, switch, hi]
+  · simp [cap5BoundaryWordOfEdges, cap5BoundarySupportOfEdges, cap5BoundarySwap,
+      switch, hi]
+
 /-- Boundary swaps commute with zero-free color relabeling when the swapped colors are relabeled
 at the same time. -/
 theorem cap5BoundarySwap_map_equiv {σ : Color ≃ Color}
