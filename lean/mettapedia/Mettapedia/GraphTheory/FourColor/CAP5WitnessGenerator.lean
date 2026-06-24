@@ -763,6 +763,73 @@ theorem theorem49BoundaryRootSynthesis_of_enumeratedExceptionalAnnulusForcedEdge
     emb C₀ colorings hsubset family p0Inside p4Inside side classifier.emittedFinset
     classifier.emittedFinset_spec hcontrol hwitnessRed hwitnessBlue
 
+/-- Witness form of the Boolean-classifier finite control obligation.  A classifier output
+controls the selected-boundary-zero chains exactly when every nonzero such chain has a nonzero
+coordinate on some emitted edge. -/
+theorem enumeratedExceptionalAnnulusForcedEdgeClassifierControl_iff_forall_nonzero_exists_mem_nonzero
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    [Fintype G.edgeSet]
+    {emb : PlaneEmbeddingWithBoundary G}
+    {p0Inside p4Inside : Bool} {side : V → Prop}
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side) :
+    (∀ ⦃z : G.edgeSet → Color⦄,
+      z ∈ planarBoundaryZeroSubmodule emb →
+      (∀ e ∈ classifier.emittedFinset, z e = 0) →
+        z = 0) ↔
+    (∀ ⦃z : G.edgeSet → Color⦄,
+      z ∈ planarBoundaryZeroSubmodule emb →
+      z ≠ 0 →
+        ∃ e : G.edgeSet, e ∈ classifier.emittedFinset ∧ z e ≠ 0) :=
+  finsetControls_iff_forall_nonzero_exists_mem_nonzero classifier.emittedFinset
+
+/-- Theorem 4.9 synthesis route from a Boolean classifier in nonzero-coordinate witness form.
+This is the checker-facing shape: for each nonzero selected-boundary-zero chain, the finite
+classifier output supplies an emitted coordinate where the chain is nonzero. -/
+theorem theorem49BoundaryRootSynthesis_of_enumeratedExceptionalAnnulusForcedEdgeClassifierNonzeroWitnesses
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    [Fintype G.edgeSet] [FiniteDimensional F2 (G.edgeSet → Color)]
+    (emb : PlaneEmbeddingWithBoundary G) (C₀ : G.EdgeColoring Color)
+    (colorings : Set (G.EdgeColoring Color))
+    (hsubset : colorings ⊆ G.EdgeKempeClosure C₀)
+    {κ : Type*}
+    (family : κ → projectedColoringGeneratorSubspace emb colorings)
+    (p0Inside p4Inside : Bool) (side : V → Prop)
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (hnonzero :
+      ∀ ⦃z : G.edgeSet → Color⦄,
+        z ∈ planarBoundaryZeroSubmodule emb →
+        z ≠ 0 →
+          ∃ e : G.edgeSet, e ∈ classifier.emittedFinset ∧ z e ≠ 0)
+    (hwitnessRed :
+      ∀ e : G.edgeSet,
+        e ∈ classifier.emittedFinset →
+          ∃ i : κ,
+            ((family i : projectedColoringGeneratorSubspace emb colorings) :
+                G.edgeSet → Color) =
+              Pi.single e red)
+    (hwitnessBlue :
+      ∀ e : G.edgeSet,
+        e ∈ classifier.emittedFinset →
+          ∃ i : κ,
+            ((family i : projectedColoringGeneratorSubspace emb colorings) :
+                G.edgeSet → Color) =
+              Pi.single e blue) :
+    Theorem49BoundaryRootSynthesis emb C₀ :=
+  theorem49BoundaryRootSynthesis_of_enumeratedExceptionalAnnulusForcedEdgeNonzeroWitnesses
+    emb C₀ colorings hsubset family p0Inside p4Inside side
+    (by
+      intro z hz hzNonzero
+      rcases hnonzero hz hzNonzero with ⟨e, hemitted, hze⟩
+      exact ⟨e, (classifier.emittedFinset_spec e).1 hemitted, hze⟩)
+    (by
+      intro e hedge
+      exact hwitnessRed e ((classifier.emittedFinset_spec e).2 hedge))
+    (by
+      intro e hedge
+      exact hwitnessBlue e ((classifier.emittedFinset_spec e).2 hedge))
+
 /-- Failure certificate for the finite CAP5 emitted-edge control route.  If the concrete finite
 checker output does not control the selected-boundary-zero chains, the failed check produces a
 nonzero selected-boundary-zero chain that vanishes on every edge emitted by the enumerated CAP5
