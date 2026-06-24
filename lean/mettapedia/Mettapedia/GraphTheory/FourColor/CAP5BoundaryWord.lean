@@ -744,6 +744,147 @@ theorem cap5BoundaryWordHasColoredBlock2111_iff_block2111
   ⟨cap5BoundaryWordHasBlock2111_of_coloredBlock2111,
     cap5BoundaryWordHasColoredBlock2111_of_block2111⟩
 
+/-- Bounded CAP5 block structure `(3,1,1)`: the rotation witness is reduced to
+`Fin 5`. This finite variant is only used to prove the exhaustive CAP5 boundary
+classifier. -/
+private def CAP5BoundaryWordHasColoredBlock311Bounded (w : CAP5BoundaryWord) : Prop :=
+  ∃ a b c : Color, IsTaitColorTriple a b c ∧
+    ∃ n : Fin 5, w = cap5RotateBoundaryWordN n (cap5BoundaryWord311Of a b c)
+
+/-- Bounded CAP5 block structure `(2,1,1,1)`: the rotation witness is reduced to
+`Fin 5`. This finite variant is only used to prove the exhaustive CAP5 boundary
+classifier. -/
+private def CAP5BoundaryWordHasColoredBlock2111Bounded (w : CAP5BoundaryWord) : Prop :=
+  ∃ a b c : Color, IsTaitColorTriple a b c ∧
+    ∃ n : Fin 5, w = cap5RotateBoundaryWordN n (cap5BoundaryWord2111Of a b c)
+
+private def decidableIsTaitColorTriple (a b c : Color) :
+    Decidable (IsTaitColorTriple a b c) := by
+  unfold IsTaitColorTriple
+  infer_instance
+
+private def decidableCAP5BoundaryWordIsNonzero (w : CAP5BoundaryWord) :
+    Decidable (CAP5BoundaryWordIsNonzero w) := by
+  unfold CAP5BoundaryWordIsNonzero
+  exact @Fintype.decidableForallFintype (Fin 5) (fun i => w i ≠ 0)
+    (fun _ => inferInstance) inferInstance
+
+private def decidableCAP5BoundaryWordHasOddColorCounts (w : CAP5BoundaryWord) :
+    Decidable (CAP5BoundaryWordHasOddColorCounts w) := by
+  unfold CAP5BoundaryWordHasOddColorCounts
+  infer_instance
+
+private def decidableCAP5BoundaryWordHasColoredBlock311Rotation
+    (w : CAP5BoundaryWord) (a b c : Color) :
+    Decidable (∃ n : Fin 5,
+      w = cap5RotateBoundaryWordN n (cap5BoundaryWord311Of a b c)) :=
+  @Fintype.decidableExistsFintype (Fin 5)
+    (fun n => w = cap5RotateBoundaryWordN n (cap5BoundaryWord311Of a b c))
+    (fun _ => inferInstance) inferInstance
+
+private def decidableCAP5BoundaryWordHasColoredBlock2111Rotation
+    (w : CAP5BoundaryWord) (a b c : Color) :
+    Decidable (∃ n : Fin 5,
+      w = cap5RotateBoundaryWordN n (cap5BoundaryWord2111Of a b c)) :=
+  @Fintype.decidableExistsFintype (Fin 5)
+    (fun n => w = cap5RotateBoundaryWordN n (cap5BoundaryWord2111Of a b c))
+    (fun _ => inferInstance) inferInstance
+
+private def decidableCAP5BoundaryWordHasColoredBlock311Core
+    (w : CAP5BoundaryWord) (a b c : Color) :
+    Decidable (IsTaitColorTriple a b c ∧
+      ∃ n : Fin 5, w = cap5RotateBoundaryWordN n (cap5BoundaryWord311Of a b c)) := by
+  letI : Decidable (IsTaitColorTriple a b c) := decidableIsTaitColorTriple a b c
+  letI : Decidable (∃ n : Fin 5,
+      w = cap5RotateBoundaryWordN n (cap5BoundaryWord311Of a b c)) :=
+    decidableCAP5BoundaryWordHasColoredBlock311Rotation w a b c
+  infer_instance
+
+private def decidableCAP5BoundaryWordHasColoredBlock2111Core
+    (w : CAP5BoundaryWord) (a b c : Color) :
+    Decidable (IsTaitColorTriple a b c ∧
+      ∃ n : Fin 5, w = cap5RotateBoundaryWordN n (cap5BoundaryWord2111Of a b c)) := by
+  letI : Decidable (IsTaitColorTriple a b c) := decidableIsTaitColorTriple a b c
+  letI : Decidable (∃ n : Fin 5,
+      w = cap5RotateBoundaryWordN n (cap5BoundaryWord2111Of a b c)) :=
+    decidableCAP5BoundaryWordHasColoredBlock2111Rotation w a b c
+  infer_instance
+
+private def decidableCAP5BoundaryWordHasColoredBlock311Bounded
+    (w : CAP5BoundaryWord) :
+    Decidable (CAP5BoundaryWordHasColoredBlock311Bounded w) :=
+  @Fintype.decidableExistsFintype Color
+    (fun a => ∃ b c : Color, IsTaitColorTriple a b c ∧
+      ∃ n : Fin 5, w = cap5RotateBoundaryWordN n (cap5BoundaryWord311Of a b c))
+    (fun a => @Fintype.decidableExistsFintype Color
+      (fun b => ∃ c : Color, IsTaitColorTriple a b c ∧
+        ∃ n : Fin 5, w = cap5RotateBoundaryWordN n (cap5BoundaryWord311Of a b c))
+      (fun b => @Fintype.decidableExistsFintype Color
+        (fun c => IsTaitColorTriple a b c ∧
+          ∃ n : Fin 5, w = cap5RotateBoundaryWordN n (cap5BoundaryWord311Of a b c))
+        (fun c => decidableCAP5BoundaryWordHasColoredBlock311Core w a b c)
+        inferInstance)
+      inferInstance)
+    inferInstance
+
+private def decidableCAP5BoundaryWordHasColoredBlock2111Bounded
+    (w : CAP5BoundaryWord) :
+    Decidable (CAP5BoundaryWordHasColoredBlock2111Bounded w) :=
+  @Fintype.decidableExistsFintype Color
+    (fun a => ∃ b c : Color, IsTaitColorTriple a b c ∧
+      ∃ n : Fin 5, w = cap5RotateBoundaryWordN n (cap5BoundaryWord2111Of a b c))
+    (fun a => @Fintype.decidableExistsFintype Color
+      (fun b => ∃ c : Color, IsTaitColorTriple a b c ∧
+        ∃ n : Fin 5, w = cap5RotateBoundaryWordN n (cap5BoundaryWord2111Of a b c))
+      (fun b => @Fintype.decidableExistsFintype Color
+        (fun c => IsTaitColorTriple a b c ∧
+          ∃ n : Fin 5, w = cap5RotateBoundaryWordN n (cap5BoundaryWord2111Of a b c))
+        (fun c => decidableCAP5BoundaryWordHasColoredBlock2111Core w a b c)
+        inferInstance)
+      inferInstance)
+    inferInstance
+
+private theorem cap5BoundaryWordHasColoredBlock311_of_bounded
+    {w : CAP5BoundaryWord} (h : CAP5BoundaryWordHasColoredBlock311Bounded w) :
+    CAP5BoundaryWordHasColoredBlock311 w := by
+  rcases h with ⟨a, b, c, htriple, n, hw⟩
+  exact ⟨a, b, c, htriple, n, hw⟩
+
+private theorem cap5BoundaryWordHasColoredBlock2111_of_bounded
+    {w : CAP5BoundaryWord} (h : CAP5BoundaryWordHasColoredBlock2111Bounded w) :
+    CAP5BoundaryWordHasColoredBlock2111 w := by
+  rcases h with ⟨a, b, c, htriple, n, hw⟩
+  exact ⟨a, b, c, htriple, n, hw⟩
+
+set_option maxRecDepth 10000 in
+private theorem cap5BoundaryWord_coloredBlock311_or_coloredBlock2111_bounded_of_nonzero_of_odd :
+    ∀ w : CAP5BoundaryWord,
+      CAP5BoundaryWordIsNonzero w →
+      CAP5BoundaryWordHasOddColorCounts w →
+      CAP5BoundaryWordHasColoredBlock311Bounded w ∨
+        CAP5BoundaryWordHasColoredBlock2111Bounded w := by
+  letI : DecidablePred CAP5BoundaryWordIsNonzero := decidableCAP5BoundaryWordIsNonzero
+  letI : DecidablePred CAP5BoundaryWordHasOddColorCounts :=
+    decidableCAP5BoundaryWordHasOddColorCounts
+  letI : DecidablePred CAP5BoundaryWordHasColoredBlock311Bounded :=
+    decidableCAP5BoundaryWordHasColoredBlock311Bounded
+  letI : DecidablePred CAP5BoundaryWordHasColoredBlock2111Bounded :=
+    decidableCAP5BoundaryWordHasColoredBlock2111Bounded
+  decide
+
+/-- Exhaustive CAP5 parity-shape classifier: every nonzero boundary word whose three Tait
+colors occur with odd parity is either a colored `(3,1,1)` block or a colored `(2,1,1,1)`
+block, up to cyclic rotation. -/
+theorem cap5BoundaryWord_coloredBlock311_or_coloredBlock2111_of_nonzero_of_odd
+    {w : CAP5BoundaryWord}
+    (hnz : CAP5BoundaryWordIsNonzero w)
+    (hodd : CAP5BoundaryWordHasOddColorCounts w) :
+    CAP5BoundaryWordHasColoredBlock311 w ∨ CAP5BoundaryWordHasColoredBlock2111 w := by
+  rcases cap5BoundaryWord_coloredBlock311_or_coloredBlock2111_bounded_of_nonzero_of_odd
+      w hnz hodd with h311 | h2111
+  · exact Or.inl (cap5BoundaryWordHasColoredBlock311_of_bounded h311)
+  · exact Or.inr (cap5BoundaryWordHasColoredBlock2111_of_bounded h2111)
+
 /-- Any CAP5 boundary word with normalized block structure `(2,1,1,1)` does not extend
 across the cap. -/
 theorem not_cap5_extendsAcrossCycle_of_block2111
@@ -784,6 +925,39 @@ theorem not_cap5_extendsAcrossCycle_iff_block2111_of_block311_or_block2111
     · exact False.elim (hnotExtends (cap5_extendsAcrossCycle_of_block311 h311))
     · exact h2111
   · exact not_cap5_extendsAcrossCycle_of_block2111
+
+/-- CAP5 extension criterion from the finite parity shape alone: under the nonzero
+odd-count hypotheses forced by any extendable boundary word, extendability is exactly the
+colored `(3,1,1)` block case. -/
+theorem cap5_extendsAcrossCycle_iff_coloredBlock311_of_nonzero_of_odd
+    {w : CAP5BoundaryWord}
+    (hnz : CAP5BoundaryWordIsNonzero w)
+    (hodd : CAP5BoundaryWordHasOddColorCounts w) :
+    CAP5WordExtendsAcrossCycle w ↔ CAP5BoundaryWordHasColoredBlock311 w := by
+  have hclassColored :=
+    cap5BoundaryWord_coloredBlock311_or_coloredBlock2111_of_nonzero_of_odd hnz hodd
+  have hclassBlock : CAP5BoundaryWordHasBlock311 w ∨ CAP5BoundaryWordHasBlock2111 w := by
+    rcases hclassColored with h311 | h2111
+    · exact Or.inl (cap5BoundaryWordHasBlock311_of_coloredBlock311 h311)
+    · exact Or.inr (cap5BoundaryWordHasBlock2111_of_coloredBlock2111 h2111)
+  exact (cap5_extendsAcrossCycle_iff_block311_of_block311_or_block2111 hclassBlock).trans
+    cap5BoundaryWordHasColoredBlock311_iff_block311.symm
+
+/-- Dual CAP5 extension criterion from the finite parity shape alone: under the nonzero
+odd-count hypotheses, nonextendability is exactly the colored `(2,1,1,1)` block case. -/
+theorem not_cap5_extendsAcrossCycle_iff_coloredBlock2111_of_nonzero_of_odd
+    {w : CAP5BoundaryWord}
+    (hnz : CAP5BoundaryWordIsNonzero w)
+    (hodd : CAP5BoundaryWordHasOddColorCounts w) :
+    ¬ CAP5WordExtendsAcrossCycle w ↔ CAP5BoundaryWordHasColoredBlock2111 w := by
+  have hclassColored :=
+    cap5BoundaryWord_coloredBlock311_or_coloredBlock2111_of_nonzero_of_odd hnz hodd
+  have hclassBlock : CAP5BoundaryWordHasBlock311 w ∨ CAP5BoundaryWordHasBlock2111 w := by
+    rcases hclassColored with h311 | h2111
+    · exact Or.inl (cap5BoundaryWordHasBlock311_of_coloredBlock311 h311)
+    · exact Or.inr (cap5BoundaryWordHasBlock2111_of_coloredBlock2111 h2111)
+  exact (not_cap5_extendsAcrossCycle_iff_block2111_of_block311_or_block2111 hclassBlock).trans
+    cap5BoundaryWordHasColoredBlock2111_iff_block2111.symm
 
 /-- Swap two colors, leaving the third color fixed. -/
 def cap5SwapColor (a b : Color) (c : Color) : Color :=
