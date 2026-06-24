@@ -378,6 +378,35 @@ inductive CAP5ExceptionalAnnulusSideCase where
 
 namespace CAP5ExceptionalAnnulusSideCase
 
+/-- Boolean form of the manuscript's four-way side split: whether `p0` and `p4` lie on
+the inside side of the first Jordan curve.  This is only the finite case distinction, not the
+topological proof that either side contains the required graph pieces. -/
+def ofPortalSides (p0Inside p4Inside : Bool) : CAP5ExceptionalAnnulusSideCase :=
+  match p0Inside, p4Inside with
+  | true, false => .p0Inside_p4Outside
+  | false, true => .p0Outside_p4Inside
+  | true, true => .p0Inside_p4Inside
+  | false, false => .p0Outside_p4Outside
+
+/-- Read off whether `p0` is on the inside side in a finite exceptional-annulus side case. -/
+def p0Inside : CAP5ExceptionalAnnulusSideCase → Bool
+  | .p0Inside_p4Outside => true
+  | .p0Outside_p4Inside => false
+  | .p0Inside_p4Inside => true
+  | .p0Outside_p4Outside => false
+
+/-- Read off whether `p4` is on the inside side in a finite exceptional-annulus side case. -/
+def p4Inside : CAP5ExceptionalAnnulusSideCase → Bool
+  | .p0Inside_p4Outside => false
+  | .p0Outside_p4Inside => true
+  | .p0Inside_p4Inside => true
+  | .p0Outside_p4Outside => false
+
+/-- The Boolean side data classify the finite exceptional-annulus side cases exactly. -/
+theorem ofPortalSides_p0Inside_p4Inside (sideCase : CAP5ExceptionalAnnulusSideCase) :
+    ofPortalSides sideCase.p0Inside sideCase.p4Inside = sideCase := by
+  cases sideCase <;> rfl
+
 /-- A conservative portal set for the small separator candidate in each exceptional-annulus side
 case.  These are the CAP5 boundary portals touched by the manuscript's case split before the
 topological/Jordan-curve-to-edge-cut conversion is attempted. -/
@@ -391,6 +420,12 @@ def separatorPortalSet : CAP5ExceptionalAnnulusSideCase → Finset (Fin 5)
 theorem separatorPortalSet_card_le_four (sideCase : CAP5ExceptionalAnnulusSideCase) :
     sideCase.separatorPortalSet.card <= 4 := by
   cases sideCase <;> decide
+
+/-- The finite side split generated from Boolean portal-side data always gives a separator
+candidate using at most four portals. -/
+theorem separatorPortalSet_ofPortalSides_card_le_four (p0Inside p4Inside : Bool) :
+    (ofPortalSides p0Inside p4Inside).separatorPortalSet.card <= 4 :=
+  separatorPortalSet_card_le_four (ofPortalSides p0Inside p4Inside)
 
 end CAP5ExceptionalAnnulusSideCase
 
@@ -430,6 +465,30 @@ theorem CAP5TransportedEdgeComponentCoverCore.exists_exceptionalAnnulusSeparator
     ⟨orientation, horientation⟩
   exact ⟨CAP5ExceptionalAnnulusSeparatorPortalCandidate.ofOrientationAndSideCase
       orientation sideCase, horientation, rfl⟩
+
+/-- Boolean portal-side form of the exceptional-annulus finite case split.  Once the topological
+layer has determined on which side of the first Jordan curve `p0` and `p4` lie, exceptional core
+component-cover data supplies the corresponding small separator-portal candidate. -/
+theorem CAP5TransportedEdgeComponentCoverCore.exists_exceptionalAnnulusSeparatorPortalCandidate_of_isExceptional_of_portalSides
+    {E : Type*} [DecidableEq E] {boundaryEdge : Fin 5 → E} {n : Nat}
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    (p0Inside p4Inside : Bool) (h : data.IsExceptional) :
+    ∃ candidate : CAP5ExceptionalAnnulusSeparatorPortalCandidate,
+      data.RealizesExceptionalBoundarySupportOrientation candidate.orientation ∧
+        candidate.sideCase =
+          CAP5ExceptionalAnnulusSideCase.ofPortalSides p0Inside p4Inside ∧
+        candidate.portalSet =
+          (CAP5ExceptionalAnnulusSideCase.ofPortalSides p0Inside p4Inside).separatorPortalSet ∧
+        candidate.portalSet.card <= 4 := by
+  rcases exists_exceptionalAnnulusSeparatorPortalCandidate_of_isExceptional
+      (CAP5ExceptionalAnnulusSideCase.ofPortalSides p0Inside p4Inside) h with
+    ⟨candidate, horientation, hsideCase⟩
+  refine ⟨candidate, horientation, hsideCase, ?_, candidate.hcard_le_four⟩
+  calc
+    candidate.portalSet = candidate.sideCase.separatorPortalSet := candidate.hportalSet
+    _ =
+        (CAP5ExceptionalAnnulusSideCase.ofPortalSides p0Inside p4Inside).separatorPortalSet := by
+          rw [hsideCase]
 
 /-- Full transported component-cover data is core component-cover data plus exclusion of the
 simultaneous exceptional pattern.  The core form is the honest target before the planar separator
