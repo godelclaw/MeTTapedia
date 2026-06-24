@@ -2,5 +2,6 @@ import Mettapedia.GraphTheory.FourColor.CAP5BoundaryWord
 import Mettapedia.GraphTheory.FourColor.CAP5AlgebraBridge
 import Mettapedia.GraphTheory.FourColor.CAP5GraphBoundary
 import Mettapedia.GraphTheory.FourColor.CAP5Reducibility
+import Mettapedia.GraphTheory.FourColor.CAP5WitnessGenerator
 import Mettapedia.GraphTheory.FourColor.CDLFlow
 import Mettapedia.GraphTheory.FourColor.Goal
