@@ -636,6 +636,29 @@ theorem all_latents_forcedCounterexample_of_complete_of_cyclicallyFiveEdgeConnec
   exact report.mem_forcedCounterexampleLatents_of_mem_all_of_complete_of_cyclicallyFiveEdgeConnected
     hcyclic hportal hcycles hmem
 
+/-- A complete CAP5 report in a cyclically five-edge-connected graph has a concrete
+forced-counterexample latent.  This is the nonempty-output form consumed by finite checker runs:
+the generated report cannot be vacuous once every latent has the graph-side evidence needed by the
+checker. -/
+theorem exists_mem_forcedCounterexampleLatents_of_complete_of_cyclicallyFiveEdgeConnected
+    (report : CAP5ExceptionalAnnulusGeneratorReport boundaryEdge side)
+    (hcyclic : CyclicallyFiveEdgeConnected G)
+    (hportal :
+      ∀ latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge,
+        (report.node latent).PortalCrosses)
+    (hcycles :
+      ∀ latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge,
+        (report.node latent).SideCycles) :
+    ∃ latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge,
+      latent ∈ report.forcedCounterexampleLatents := by
+  let latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge :=
+    { orientation := CAP5ExceptionalBoundarySupportOrientation.redBlue03_redPurple04
+      p0Inside := true
+      p4Inside := true }
+  exact ⟨latent,
+    report.mem_forcedCounterexampleLatents_of_mem_all_of_complete_of_cyclicallyFiveEdgeConnected
+      hcyclic hportal hcycles (CAP5ExceptionalAnnulusGeneratorLatent.mem_all latent)⟩
+
 end CAP5ExceptionalAnnulusGeneratorReport
 
 namespace CAP5TransportedEdgeComponentCoverCore
