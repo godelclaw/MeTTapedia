@@ -587,6 +587,20 @@ theorem isExceptional_iff_not_hasRepair_of_activePairings
     · exact False.elim (hnoRepair hrepair)
     · exact hexceptional
 
+/-- Under active pairings, excluding the simultaneous exceptional pattern is exactly the same
+as exposing at least one immediate finite repair support. -/
+theorem hasRepair_iff_not_isExceptional_of_activePairings
+    {p : CAP5BadPairingSupports} (h : p.HasActivePairings) :
+    p.HasRepair ↔ ¬ p.IsExceptional := by
+  constructor
+  · intro hrepair hexceptional
+    exact not_hasRepair_of_isExceptional hexceptional hrepair
+  · intro hnotExceptional
+    by_cases hrepair : p.HasRepair
+    · exact hrepair
+    · exact False.elim (hnotExceptional
+        ((isExceptional_iff_not_hasRepair_of_activePairings h).2 hrepair))
+
 /-- If a component-support package has a repair support, then some induced boundary action repairs
 the canonical bad CAP5 word and the repaired word extends across the cap. -/
 theorem exists_repairingBoundaryAction_of_hasRepair
@@ -630,6 +644,19 @@ theorem activePairings_outcome
       CAP5WordExtendsAcrossCycle (action cap5BadBoundaryWord2111)) ∨
     p.IsExceptional :=
   repairOrExceptional_outcome (repairOrExceptional_of_activePairings h)
+
+/-- Final finite CAP5 move-realizability endpoint after the graph-level separator proof excludes
+the simultaneous exceptional pattern.  Once active pairings are supplied, a proof that the
+exceptional pattern cannot occur produces an explicit repair action whose boundary word extends
+across the cap. -/
+theorem exists_repairingBoundaryAction_of_activePairings_of_not_isExceptional
+    {p : CAP5BadPairingSupports}
+    (hpair : p.HasActivePairings) (hnotExceptional : ¬ p.IsExceptional) :
+    ∃ action : CAP5BoundaryAction,
+      CAP5BoundaryActionRealizesSomeRepairType action cap5BadBoundaryWord2111 ∧
+      CAP5WordExtendsAcrossCycle (action cap5BadBoundaryWord2111) :=
+  exists_repairingBoundaryAction_of_hasRepair
+    ((hasRepair_iff_not_isExceptional_of_activePairings hpair).2 hnotExceptional)
 
 end CAP5BadPairingSupports
 
