@@ -153,6 +153,19 @@ theorem cap5BoundaryWordSolved_of_coloredBlock2111_of_transportComponentCovers
   cap5BoundaryWordSolved_of_block2111_of_transportComponentCovers
     (cap5BoundaryWordHasBlock2111_of_coloredBlock2111 hbad) hcomponentCovers
 
+/-- Edge-set form of support use for a transported component-cover repair.  The graph/Kempe
+layer should naturally produce finite edge supports; this predicate says that the boundary action
+is the restriction of switching one of those edge supports. -/
+def CAP5TransportedBoundaryActionUsesEdgeComponentCoverSupport
+    {E : Type*} [DecidableEq E]
+    (boundaryEdge : Fin 5 → E)
+    (redBlue₁ redBlue₂ redPurple₁ redPurple₂ : Finset E)
+    (σ : Color → Color) (action : CAP5BoundaryAction) : Prop :=
+  action = cap5BoundaryActionOfEdgeSet boundaryEdge redBlue₁ (σ red) (σ blue) ∨
+  action = cap5BoundaryActionOfEdgeSet boundaryEdge redBlue₂ (σ red) (σ blue) ∨
+  action = cap5BoundaryActionOfEdgeSet boundaryEdge redPurple₁ (σ red) (σ purple) ∨
+  action = cap5BoundaryActionOfEdgeSet boundaryEdge redPurple₂ (σ red) (σ purple)
+
 /-- Raw support-cover repair action for an arbitrary transported bad CAP5 word.  This exposes the
 actual support-carried boundary action, not just the solved-word conclusion. -/
 theorem exists_boundaryActionRepairsWord_usingTransportedComponentCoverSupport_of_eq_transportBad_of_componentCoverSupports
@@ -174,6 +187,64 @@ theorem exists_boundaryActionRepairsWord_usingTransportedComponentCoverSupport_o
     exists_boundaryActionRepairsWord_usingTransportedComponentCoverSupport_of_componentCovers_of_notExceptional
       hredBlue hredPurple hnotExceptional hσ0 n
 
+/-- Edge-support repair action for an arbitrary transported bad CAP5 word.  This is the
+graph-facing version of the raw support-cover endpoint: it accepts four finite edge supports,
+plus proofs that their restrictions to the five CAP5 boundary edges are the transported
+component supports required by the finite CAP5 enumeration. -/
+theorem exists_boundaryActionRepairsWord_usingTransportedEdgeSupport_of_eq_transportBad_of_componentCoverSupports
+    {E : Type*} [DecidableEq E]
+    {w : CAP5BoundaryWord} (boundaryEdge : Fin 5 → E)
+    {redBlueEdge₁ redBlueEdge₂ redPurpleEdge₁ redPurpleEdge₂ : Finset E}
+    {redBlue₁ redBlue₂ redPurple₁ redPurple₂ : Finset (Fin 5)}
+    {σ : Color ≃ Color} (hσ0 : σ 0 = 0) {n : Nat}
+    (hredBlue₁ :
+      cap5BoundarySupportOfEdges boundaryEdge redBlueEdge₁ =
+        cap5RotateBoundarySupportN n redBlue₁)
+    (hredBlue₂ :
+      cap5BoundarySupportOfEdges boundaryEdge redBlueEdge₂ =
+        cap5RotateBoundarySupportN n redBlue₂)
+    (hredPurple₁ :
+      cap5BoundarySupportOfEdges boundaryEdge redPurpleEdge₁ =
+        cap5RotateBoundarySupportN n redPurple₁)
+    (hredPurple₂ :
+      cap5BoundarySupportOfEdges boundaryEdge redPurpleEdge₂ =
+        cap5RotateBoundarySupportN n redPurple₂)
+    (hredBlue : CAP5BadRedBlueComponentCover redBlue₁ redBlue₂)
+    (hredPurple : CAP5BadRedPurpleComponentCover redPurple₁ redPurple₂)
+    (hnotExceptional :
+      ¬ CAP5BadExceptionalPairingPattern redBlue₁ redBlue₂ redPurple₁ redPurple₂)
+    (hw : w = cap5TransportedBadBoundaryWord σ n) :
+    ∃ action : CAP5BoundaryAction,
+      CAP5TransportedBoundaryActionUsesEdgeComponentCoverSupport
+        boundaryEdge redBlueEdge₁ redBlueEdge₂ redPurpleEdge₁ redPurpleEdge₂ σ action ∧
+      CAP5BoundaryActionRealizesSomeTransportedRepairType action σ n ∧
+      CAP5BoundaryActionRepairsWord action w := by
+  rcases
+      exists_boundaryActionRepairsWord_usingTransportedComponentCoverSupport_of_eq_transportBad_of_componentCoverSupports
+        hredBlue hredPurple hnotExceptional hσ0 hw with
+    ⟨action, huses, hrealizes, hrepairs⟩
+  rcases huses with huses | huses | huses | huses
+  · subst action
+    refine ⟨cap5BoundaryActionOfEdgeSet boundaryEdge redBlueEdge₁ (σ red) (σ blue), ?_, ?_, ?_⟩
+    · exact Or.inl rfl
+    · simpa [cap5BoundaryActionOfEdgeSet, hredBlue₁] using hrealizes
+    · simpa [cap5BoundaryActionOfEdgeSet, hredBlue₁] using hrepairs
+  · subst action
+    refine ⟨cap5BoundaryActionOfEdgeSet boundaryEdge redBlueEdge₂ (σ red) (σ blue), ?_, ?_, ?_⟩
+    · exact Or.inr (Or.inl rfl)
+    · simpa [cap5BoundaryActionOfEdgeSet, hredBlue₂] using hrealizes
+    · simpa [cap5BoundaryActionOfEdgeSet, hredBlue₂] using hrepairs
+  · subst action
+    refine ⟨cap5BoundaryActionOfEdgeSet boundaryEdge redPurpleEdge₁ (σ red) (σ purple), ?_, ?_, ?_⟩
+    · exact Or.inr (Or.inr (Or.inl rfl))
+    · simpa [cap5BoundaryActionOfEdgeSet, hredPurple₁] using hrealizes
+    · simpa [cap5BoundaryActionOfEdgeSet, hredPurple₁] using hrepairs
+  · subst action
+    refine ⟨cap5BoundaryActionOfEdgeSet boundaryEdge redPurpleEdge₂ (σ red) (σ purple), ?_, ?_, ?_⟩
+    · exact Or.inr (Or.inr (Or.inr rfl))
+    · simpa [cap5BoundaryActionOfEdgeSet, hredPurple₂] using hrealizes
+    · simpa [cap5BoundaryActionOfEdgeSet, hredPurple₂] using hrepairs
+
 /-- Raw support-cover endpoint for an arbitrary transported bad CAP5 word.  This is the
 interface a later graph/Kempe extraction should naturally target: it supplies the four boundary
 supports directly, rather than first packaging them as `CAP5BadPairingSupports`. -/
@@ -190,6 +261,39 @@ theorem cap5BoundaryWordSolved_of_eq_transportBad_of_transportComponentCoverSupp
   rcases
       exists_boundaryActionRepairsWord_usingTransportedComponentCoverSupport_of_eq_transportBad_of_componentCoverSupports
         hredBlue hredPurple hnotExceptional hσ0 hw with
+    ⟨_action, _huses, _hrealizes, hrepairs⟩
+  exact cap5BoundaryWordSolved_of_boundaryActionRepairsWord hrepairs
+
+/-- Edge-support endpoint for an arbitrary transported bad CAP5 word.  It packages the
+edge-set support repair action into the boundary-layer solved predicate. -/
+theorem cap5BoundaryWordSolved_of_eq_transportBad_of_transportEdgeComponentCoverSupports
+    {E : Type*} [DecidableEq E]
+    {w : CAP5BoundaryWord} (boundaryEdge : Fin 5 → E)
+    {redBlueEdge₁ redBlueEdge₂ redPurpleEdge₁ redPurpleEdge₂ : Finset E}
+    {redBlue₁ redBlue₂ redPurple₁ redPurple₂ : Finset (Fin 5)}
+    {σ : Color ≃ Color} (hσ0 : σ 0 = 0) {n : Nat}
+    (hredBlue₁ :
+      cap5BoundarySupportOfEdges boundaryEdge redBlueEdge₁ =
+        cap5RotateBoundarySupportN n redBlue₁)
+    (hredBlue₂ :
+      cap5BoundarySupportOfEdges boundaryEdge redBlueEdge₂ =
+        cap5RotateBoundarySupportN n redBlue₂)
+    (hredPurple₁ :
+      cap5BoundarySupportOfEdges boundaryEdge redPurpleEdge₁ =
+        cap5RotateBoundarySupportN n redPurple₁)
+    (hredPurple₂ :
+      cap5BoundarySupportOfEdges boundaryEdge redPurpleEdge₂ =
+        cap5RotateBoundarySupportN n redPurple₂)
+    (hredBlue : CAP5BadRedBlueComponentCover redBlue₁ redBlue₂)
+    (hredPurple : CAP5BadRedPurpleComponentCover redPurple₁ redPurple₂)
+    (hnotExceptional :
+      ¬ CAP5BadExceptionalPairingPattern redBlue₁ redBlue₂ redPurple₁ redPurple₂)
+    (hw : w = cap5TransportedBadBoundaryWord σ n) :
+    CAP5BoundaryWordSolved w := by
+  rcases
+      exists_boundaryActionRepairsWord_usingTransportedEdgeSupport_of_eq_transportBad_of_componentCoverSupports
+        boundaryEdge hσ0 hredBlue₁ hredBlue₂ hredPurple₁ hredPurple₂
+        hredBlue hredPurple hnotExceptional hw with
     ⟨_action, _huses, _hrealizes, hrepairs⟩
   exact cap5BoundaryWordSolved_of_boundaryActionRepairsWord hrepairs
 
