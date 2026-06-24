@@ -192,6 +192,31 @@ theorem edgeKempeFinset_interior [Fintype E] [DecidableEq E]
   edgeKempePred_interior incident D x seed α β
     ((mem_edgeKempeFinset_iff incident D x seed α β).1 he)
 
+/-- Every edge in the finite edge-Kempe component has one of the selected colors. -/
+theorem edgeKempeFinset_forall_inTwoColors [Fintype E] [DecidableEq E]
+    (incident : V → Finset E) (D : ZeroBoundaryData V E)
+    (x : E → Color) (seed : V) (α β : Color) :
+    ∀ e ∈ edgeKempeFinset incident D x seed α β, inTwoColors x α β e := by
+  intro e he
+  exact edgeKempeFinset_inTwoColors incident D x seed α β he
+
+/-- Every edge in the finite edge-Kempe component is interior. -/
+theorem edgeKempeFinset_forall_interior [Fintype E] [DecidableEq E]
+    (incident : V → Finset E) (D : ZeroBoundaryData V E)
+    (x : E → Color) (seed : V) (α β : Color) :
+    ∀ e ∈ edgeKempeFinset incident D x seed α β, e ∉ D.boundaryEdges := by
+  intro e he
+  exact edgeKempeFinset_interior incident D x seed α β he
+
+/-- The finite edge-Kempe component never touches the boundary-edge support. -/
+theorem edgeKempeFinset_disjoint_boundaryEdges [Fintype E] [DecidableEq E]
+    (incident : V → Finset E) (D : ZeroBoundaryData V E)
+    (x : E → Color) (seed : V) (α β : Color) :
+    Disjoint (edgeKempeFinset incident D x seed α β) D.boundaryEdges := by
+  rw [Finset.disjoint_left]
+  intro e he hBoundary
+  exact edgeKempeFinset_interior incident D x seed α β he hBoundary
+
 /-- Finset-wrapper form of `switch_edgeKempePred_preserves_isZeroBoundary`. This is the
 coloring-level invariant needed by CAP5 repair endpoints: the switched coloring still has zero
 vertex sums when the selected finite Kempe component has even incidence at every vertex. -/
@@ -267,6 +292,15 @@ theorem mem_overapprox_iff [Fintype E] [DecidableEq E]
     (x : E → Color) (α β : Color) {e : E} :
     e ∈ overapprox x α β ↔ inTwoColors x α β e := by
   simp [overapprox, inTwoColors]
+
+/-- The finite edge-Kempe component is contained in the finite two-color support. -/
+theorem edgeKempeFinset_subset_overapprox [Fintype E] [DecidableEq E]
+    (incident : V → Finset E) (D : ZeroBoundaryData V E)
+    (x : E → Color) (seed : V) (α β : Color) :
+    edgeKempeFinset incident D x seed α β ⊆ overapprox x α β := by
+  intro e he
+  exact (mem_overapprox_iff x α β).2
+    (edgeKempeFinset_inTwoColors incident D x seed α β he)
 
 theorem overapprox_hits_boundary [Fintype E] [DecidableEq E]
     (D : ZeroBoundaryData V E) (x : E → Color) (α β : Color)
