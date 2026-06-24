@@ -477,6 +477,21 @@ theorem switch_isZeroBoundary_of_edgeSupportUsesKempeFinset
   exact EdgeKempe.switch_edgeKempeFinset_preserves_isZeroBoundary
     D C seed a b hC heven
 
+/-- Switching along a Kempe-certified finite edge support preserves the full zero-boundary set:
+vertex sums remain zero and boundary-edge colors remain zero. -/
+theorem switch_mem_zeroBoundarySet_of_edgeSupportUsesKempeFinset
+    {V E : Type*} [Fintype E] [DecidableEq E]
+    {D : ZeroBoundaryData V E} {C : E → Color}
+    {edgeSupport : Finset E} {a b : Color}
+    (hC : C ∈ D.zeroBoundarySet)
+    (hkempe : CAP5EdgeSupportUsesKempeFinset D C edgeSupport a b) :
+    switch a b (edgeSupport : Set E) C ∈ D.zeroBoundarySet := by
+  classical
+  rcases hkempe with ⟨seed, hsupp, heven⟩
+  rw [hsupp]
+  exact EdgeKempe.switch_edgeKempeFinset_mem_zeroBoundarySet
+    D C seed a b hC heven
+
 /-- A switch using one of the supports in bundled edge-Kempe component-cover data preserves the
 zero-boundary equation. -/
 theorem switch_isZeroBoundary_of_edgeKempeComponentCoverData_of_uses
@@ -490,6 +505,21 @@ theorem switch_isZeroBoundary_of_edgeKempeComponentCoverData_of_uses
         data.toEdgeComponentCoverData σ edgeSupport a b) :
     D.isZeroBoundary (switch a b (edgeSupport : Set E) C) :=
   switch_isZeroBoundary_of_edgeSupportUsesKempeFinset hC
+    (edgeSupportUsesKempeFinset_of_edgeKempeComponentCoverData_of_uses huses)
+
+/-- A switch using one of the supports in bundled edge-Kempe component-cover data preserves the
+full zero-boundary set. -/
+theorem switch_mem_zeroBoundarySet_of_edgeKempeComponentCoverData_of_uses
+    {V E : Type*} [Fintype E] [DecidableEq E] {boundaryEdge : Fin 5 → E}
+    {n : Nat} {D : ZeroBoundaryData V E} {C : E → Color} {σ : Color → Color}
+    {data : CAP5TransportedEdgeKempeComponentCoverData D C σ boundaryEdge n}
+    {edgeSupport : Finset E} {a b : Color}
+    (hC : C ∈ D.zeroBoundarySet)
+    (huses :
+      CAP5TransportedEdgeSwitchUsesComponentCoverSupport
+        data.toEdgeComponentCoverData σ edgeSupport a b) :
+    switch a b (edgeSupport : Set E) C ∈ D.zeroBoundarySet :=
+  switch_mem_zeroBoundarySet_of_edgeSupportUsesKempeFinset hC
     (edgeSupportUsesKempeFinset_of_edgeKempeComponentCoverData_of_uses huses)
 
 /-- If the selected support of a repair outcome is certified as a finite Kempe component, then
@@ -533,6 +563,17 @@ theorem switch_isZeroBoundary_of_switchRepairOutcomeUsesKempeFinset
   exact EdgeKempe.switch_edgeKempeFinset_preserves_isZeroBoundary
     D C seed outcome.a outcome.b hC heven
 
+/-- A CAP5 repair outcome certified as a finite Kempe-component switch preserves the full
+zero-boundary set of the edge coloring. -/
+theorem switch_mem_zeroBoundarySet_of_switchRepairOutcomeUsesKempeFinset
+    {V E : Type*} [Fintype E] [DecidableEq E]
+    {boundaryEdge : Fin 5 → E} {C : E → Color}
+    {D : ZeroBoundaryData V E} {outcome : CAP5EdgeSwitchRepairOutcome boundaryEdge C}
+    (hC : C ∈ D.zeroBoundarySet)
+    (hkempe : CAP5EdgeSwitchRepairOutcomeUsesKempeFinset D outcome) :
+    switch outcome.a outcome.b (outcome.edgeSupport : Set E) C ∈ D.zeroBoundarySet := by
+  exact switch_mem_zeroBoundarySet_of_edgeSupportUsesKempeFinset hC hkempe
+
 /-- If a CAP5 repair outcome is certified as a finite Kempe-component switch, then it gives an
 explicit edge switch that both preserves the zero-boundary equation and makes the CAP5 boundary
 word extend. -/
@@ -552,6 +593,27 @@ theorem exists_isZeroBoundary_edgeSupport_switch_extendsAcrossCycle_of_switchRep
   exact
     ⟨outcome.edgeSupport, outcome.a, outcome.b,
       switch_isZeroBoundary_of_switchRepairOutcomeUsesKempeFinset hC (hkempe outcome),
+      outcome.hextends⟩
+
+/-- If a CAP5 repair outcome is certified as a finite Kempe-component switch, then it gives an
+explicit edge switch that stays inside the full zero-boundary set and makes the CAP5 boundary
+word extend. -/
+theorem exists_mem_zeroBoundarySet_edgeSupport_switch_extendsAcrossCycle_of_switchRepairOutcomeUsesKempeFinset
+    {V E : Type*} [Fintype E] [DecidableEq E]
+    {boundaryEdge : Fin 5 → E} {C : E → Color} {D : ZeroBoundaryData V E}
+    (h : Nonempty (CAP5EdgeSwitchRepairOutcome boundaryEdge C))
+    (hC : C ∈ D.zeroBoundarySet)
+    (hkempe :
+      ∀ outcome : CAP5EdgeSwitchRepairOutcome boundaryEdge C,
+        CAP5EdgeSwitchRepairOutcomeUsesKempeFinset D outcome) :
+    ∃ edgeSupport : Finset E, ∃ a b : Color,
+      switch a b (edgeSupport : Set E) C ∈ D.zeroBoundarySet ∧
+      CAP5WordExtendsAcrossCycle
+        (cap5BoundaryWordOfEdges boundaryEdge (switch a b (edgeSupport : Set E) C)) := by
+  rcases h with ⟨outcome⟩
+  exact
+    ⟨outcome.edgeSupport, outcome.a, outcome.b,
+      switch_mem_zeroBoundarySet_of_switchRepairOutcomeUsesKempeFinset hC (hkempe outcome),
       outcome.hextends⟩
 
 /-- Data-level Kempe-certified form of the repair-outcome projection.  The caller supplies
