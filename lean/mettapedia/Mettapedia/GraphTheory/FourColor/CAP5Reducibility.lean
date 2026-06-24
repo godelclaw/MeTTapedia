@@ -473,6 +473,26 @@ def CAP5ExceptionalAnnulusBoundaryEdgeSupportCandidate.ofPortalCandidate
   hedgeSupport := rfl
   hcard_le_four := le_trans Finset.card_image_le candidate.hcard_le_four
 
+/-- Canonical boundary-edge support candidate for one exceptional orientation and one annulus
+side case.  This is the finite object the planar/Jordan micro-enumeration should realize as a
+cyclic cut. -/
+def CAP5ExceptionalAnnulusBoundaryEdgeSupportCandidate.ofOrientationAndSideCase
+    {E : Type*} [DecidableEq E] (boundaryEdge : Fin 5 → E)
+    (orientation : CAP5ExceptionalBoundarySupportOrientation)
+    (sideCase : CAP5ExceptionalAnnulusSideCase) :
+    CAP5ExceptionalAnnulusBoundaryEdgeSupportCandidate boundaryEdge :=
+  ofPortalCandidate boundaryEdge
+    (CAP5ExceptionalAnnulusSeparatorPortalCandidate.ofOrientationAndSideCase orientation sideCase)
+
+/-- Boolean-side version of the canonical exceptional-annulus boundary-edge candidate. -/
+def CAP5ExceptionalAnnulusBoundaryEdgeSupportCandidate.ofOrientationAndPortalSides
+    {E : Type*} [DecidableEq E] (boundaryEdge : Fin 5 → E)
+    (orientation : CAP5ExceptionalBoundarySupportOrientation)
+    (p0Inside p4Inside : Bool) :
+    CAP5ExceptionalAnnulusBoundaryEdgeSupportCandidate boundaryEdge :=
+  ofOrientationAndSideCase boundaryEdge orientation
+    (CAP5ExceptionalAnnulusSideCase.ofPortalSides p0Inside p4Inside)
+
 /-- The boundary-edge support candidate only uses the five named CAP5 boundary edges. -/
 theorem CAP5ExceptionalAnnulusBoundaryEdgeSupportCandidate.edgeSupport_subset_boundaryEdges
     {E : Type*} [DecidableEq E] {boundaryEdge : Fin 5 → E}
@@ -664,6 +684,21 @@ def CAP5TransportedEdgeComponentCoverCore.HasSomeExceptionalAnnulusCyclicCutReal
         CAP5ExceptionalAnnulusSideCase.ofPortalSides p0Inside p4Inside ∧
     Nonempty (edgeCandidate.CyclicEdgeCutRealizationData (G := G))
 
+/-- Canonical realization-data obligation for the exceptional-annulus micro-enumeration.  For
+each exceptional portal-pairing orientation realized by the component-cover data, realize the
+canonical boundary-edge candidate for the selected `p0`/`p4` side case as a cyclic cut.  This is
+weaker and more precise than realizing every compatible candidate. -/
+def CAP5TransportedEdgeComponentCoverCore.HasCanonicalExceptionalAnnulusCyclicCutRealizationData
+    {V : Type*} {G : SimpleGraph V} [DecidableEq G.edgeSet]
+    {boundaryEdge : Fin 5 → G.edgeSet} {n : Nat}
+    (data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n)
+    (p0Inside p4Inside : Bool) : Prop :=
+  ∀ orientation : CAP5ExceptionalBoundarySupportOrientation,
+    data.RealizesExceptionalBoundarySupportOrientation orientation →
+    Nonempty
+      ((CAP5ExceptionalAnnulusBoundaryEdgeSupportCandidate.ofOrientationAndPortalSides
+          boundaryEdge orientation p0Inside p4Inside).CyclicEdgeCutRealizationData (G := G))
+
 /-- Constructor for the existential realization-data obligation from one concrete candidate.  This
 is the direct target shape for the planar/Jordan micro-enumeration: identify the candidate support
 for the selected side case and provide the cyclic-cut realization data for that support. -/
@@ -682,6 +717,26 @@ theorem CAP5TransportedEdgeComponentCoverCore.hasSomeExceptionalAnnulusCyclicCut
     (realization : edgeCandidate.CyclicEdgeCutRealizationData (G := G)) :
     data.HasSomeExceptionalAnnulusCyclicCutRealizationData (G := G) p0Inside p4Inside :=
   ⟨edgeCandidate, horientation, hsideCase, ⟨realization⟩⟩
+
+/-- Canonical-candidate constructor for the existential realization-data obligation.  The later
+topological proof can work orientation-by-orientation and only produce realization data for the
+canonical candidate selected by the side case. -/
+theorem CAP5TransportedEdgeComponentCoverCore.hasSomeExceptionalAnnulusCyclicCutRealizationData_of_orientationAndPortalSides
+    {V : Type*} {G : SimpleGraph V} [DecidableEq G.edgeSet]
+    {boundaryEdge : Fin 5 → G.edgeSet} {n : Nat}
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    (p0Inside p4Inside : Bool)
+    (orientation : CAP5ExceptionalBoundarySupportOrientation)
+    (horientation : data.RealizesExceptionalBoundarySupportOrientation orientation)
+    (realization :
+      ((CAP5ExceptionalAnnulusBoundaryEdgeSupportCandidate.ofOrientationAndPortalSides
+          boundaryEdge orientation p0Inside p4Inside).CyclicEdgeCutRealizationData (G := G))) :
+    data.HasSomeExceptionalAnnulusCyclicCutRealizationData (G := G) p0Inside p4Inside :=
+  data.hasSomeExceptionalAnnulusCyclicCutRealizationData_of_candidate
+    p0Inside p4Inside
+    (CAP5ExceptionalAnnulusBoundaryEdgeSupportCandidate.ofOrientationAndPortalSides
+      boundaryEdge orientation p0Inside p4Inside)
+    horientation rfl realization
 
 /-- Realization data implies the older existential cut-realization interface. -/
 theorem CAP5TransportedEdgeComponentCoverCore.realizesSmallCyclicEdgeCut_of_realizationData
@@ -718,6 +773,24 @@ theorem CAP5TransportedEdgeComponentCoverCore.hasSomeExceptionalAnnulusCyclicCut
     ⟨edgeCandidate, horientation, hsideCase, _hedgeSupport, _hcard⟩
   exact ⟨edgeCandidate, horientation, hsideCase,
     hrealizationData edgeCandidate horientation hsideCase⟩
+
+/-- The canonical orientation-by-orientation realization obligation supplies the weaker
+existential realization-data route once the exceptional branch has selected an orientation. -/
+theorem CAP5TransportedEdgeComponentCoverCore.hasSomeExceptionalAnnulusCyclicCutRealizationData_of_isExceptional_of_canonicalRealizationData
+    {V : Type*} {G : SimpleGraph V} [DecidableEq G.edgeSet]
+    {boundaryEdge : Fin 5 → G.edgeSet} {n : Nat}
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    (p0Inside p4Inside : Bool) (h : data.IsExceptional)
+    (hcanonical :
+      data.HasCanonicalExceptionalAnnulusCyclicCutRealizationData (G := G)
+        p0Inside p4Inside) :
+    data.HasSomeExceptionalAnnulusCyclicCutRealizationData (G := G) p0Inside p4Inside := by
+  rcases exists_exceptionalBoundarySupportOrientation_of_isExceptional h with
+    ⟨orientation, horientation⟩
+  rcases hcanonical orientation horientation with ⟨realization⟩
+  exact
+    data.hasSomeExceptionalAnnulusCyclicCutRealizationData_of_orientationAndPortalSides
+      p0Inside p4Inside orientation horientation realization
 
 /-- Realization-data version of the graph-level exceptional-annulus endpoint. -/
 theorem CAP5TransportedEdgeComponentCoverCore.exists_smallCyclicEdgeCutCandidate_of_isExceptional_of_portalSides_of_realizationData
@@ -806,6 +879,22 @@ theorem CAP5TransportedEdgeComponentCoverCore.hasCyclicEdgeCutOfSizeAtMostFour_o
     ⟨_edgeCandidate, _horientation, _hsideCase, cut, _hcut, hcard⟩
   exact ⟨cut, hcard⟩
 
+/-- Canonical orientation-by-orientation realization-data version of the forbidden
+small-cyclic-cut endpoint. -/
+theorem CAP5TransportedEdgeComponentCoverCore.hasCyclicEdgeCutOfSizeAtMostFour_of_isExceptional_of_canonicalRealizationData
+    {V : Type*} {G : SimpleGraph V} [DecidableEq G.edgeSet]
+    {boundaryEdge : Fin 5 → G.edgeSet} {n : Nat}
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    (p0Inside p4Inside : Bool) (h : data.IsExceptional)
+    (hcanonical :
+      data.HasCanonicalExceptionalAnnulusCyclicCutRealizationData (G := G)
+        p0Inside p4Inside) :
+    HasCyclicEdgeCutOfSizeAtMostFour G :=
+  data.hasCyclicEdgeCutOfSizeAtMostFour_of_someExceptionalAnnulusCyclicCutRealizationData
+    p0Inside p4Inside
+    (data.hasSomeExceptionalAnnulusCyclicCutRealizationData_of_isExceptional_of_canonicalRealizationData
+      p0Inside p4Inside h hcanonical)
+
 /-- Concrete-candidate realization-data version of the forbidden small-cyclic-cut endpoint. -/
 theorem CAP5TransportedEdgeComponentCoverCore.hasCyclicEdgeCutOfSizeAtMostFour_of_candidate_realizationData
     {V : Type*} {G : SimpleGraph V} [DecidableEq G.edgeSet]
@@ -891,12 +980,29 @@ theorem CAP5TransportedEdgeComponentCoverCore.not_isExceptional_of_noCyclicEdgeC
     (hnoCut : NoCyclicEdgeCutOfSizeAtMostFour G)
     (hrealizationData :
       data.IsExceptional →
-        data.HasSomeExceptionalAnnulusCyclicCutRealizationData (G := G) p0Inside p4Inside) :
+      data.HasSomeExceptionalAnnulusCyclicCutRealizationData (G := G) p0Inside p4Inside) :
     ¬ data.IsExceptional := by
   intro hExceptional
   exact hnoCut
     (data.hasCyclicEdgeCutOfSizeAtMostFour_of_someExceptionalAnnulusCyclicCutRealizationData
       p0Inside p4Inside (hrealizationData hExceptional))
+
+/-- Canonical orientation-by-orientation realization-data version of the no-small-cyclic-cut CAP5
+obstruction. -/
+theorem CAP5TransportedEdgeComponentCoverCore.not_isExceptional_of_noCyclicEdgeCut_of_canonicalRealizationData
+    {V : Type*} {G : SimpleGraph V} [DecidableEq G.edgeSet]
+    {boundaryEdge : Fin 5 → G.edgeSet} {n : Nat}
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    (p0Inside p4Inside : Bool)
+    (hnoCut : NoCyclicEdgeCutOfSizeAtMostFour G)
+    (hcanonical :
+      data.HasCanonicalExceptionalAnnulusCyclicCutRealizationData (G := G)
+        p0Inside p4Inside) :
+    ¬ data.IsExceptional := by
+  intro hExceptional
+  exact hnoCut
+    (data.hasCyclicEdgeCutOfSizeAtMostFour_of_isExceptional_of_canonicalRealizationData
+      p0Inside p4Inside hExceptional hcanonical)
 
 /-- Named cyclic-edge-connectivity form of the CAP5 exceptional-annulus obstruction. -/
 theorem CAP5TransportedEdgeComponentCoverCore.not_isExceptional_of_cyclicallyFiveEdgeConnected_of_portalSides
@@ -943,6 +1049,21 @@ theorem CAP5TransportedEdgeComponentCoverCore.not_isExceptional_of_cyclicallyFiv
     ¬ data.IsExceptional :=
   data.not_isExceptional_of_noCyclicEdgeCut_of_someExceptionalAnnulusCyclicCutRealizationData
     p0Inside p4Inside hcyclic.noCyclicEdgeCutOfSizeAtMostFour hrealizationData
+
+/-- Canonical orientation-by-orientation realization-data version of the named
+cyclic-edge-connectivity CAP5 obstruction. -/
+theorem CAP5TransportedEdgeComponentCoverCore.not_isExceptional_of_cyclicallyFiveEdgeConnected_of_canonicalRealizationData
+    {V : Type*} {G : SimpleGraph V} [DecidableEq G.edgeSet]
+    {boundaryEdge : Fin 5 → G.edgeSet} {n : Nat}
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    (p0Inside p4Inside : Bool)
+    (hcyclic : CyclicallyFiveEdgeConnected G)
+    (hcanonical :
+      data.HasCanonicalExceptionalAnnulusCyclicCutRealizationData (G := G)
+        p0Inside p4Inside) :
+    ¬ data.IsExceptional :=
+  data.not_isExceptional_of_noCyclicEdgeCut_of_canonicalRealizationData
+    p0Inside p4Inside hcyclic.noCyclicEdgeCutOfSizeAtMostFour hcanonical
 
 /-- Concrete-candidate realization-data contradiction under cyclic five-edge-connectivity. -/
 theorem CAP5TransportedEdgeComponentCoverCore.false_of_cyclicallyFiveEdgeConnected_of_candidate_realizationData
@@ -1711,6 +1832,31 @@ theorem exists_boundaryActionRepairsWord_usingTransportedEdgeSupport_of_eq_trans
       ((data.not_isExceptional_of_noCyclicEdgeCut_of_someExceptionalAnnulusCyclicCutRealizationData
           p0Inside p4Inside hnoCut hrealizationData) hexceptional)
 
+/-- Canonical orientation-by-orientation realization-data version of the core CAP5 repair
+endpoint under the no-small-cyclic-cut obstruction. -/
+theorem exists_boundaryActionRepairsWord_usingTransportedEdgeSupport_of_eq_transportBad_of_componentCoverCore_of_noCyclicEdgeCut_of_canonicalRealizationData
+    {V : Type*} {G : SimpleGraph V} [DecidableEq G.edgeSet]
+    {w : CAP5BoundaryWord} {boundaryEdge : Fin 5 → G.edgeSet}
+    {σ : Color ≃ Color} (hσ0 : σ 0 = 0) {n : Nat}
+    (data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n)
+    (hw : w = cap5TransportedBadBoundaryWord σ n)
+    (p0Inside p4Inside : Bool)
+    (hnoCut : NoCyclicEdgeCutOfSizeAtMostFour G)
+    (hcanonical :
+      data.HasCanonicalExceptionalAnnulusCyclicCutRealizationData (G := G)
+        p0Inside p4Inside) :
+    ∃ action : CAP5BoundaryAction,
+      CAP5TransportedBoundaryActionUsesEdgeComponentCoverSupport
+        boundaryEdge data.redBlueEdge₁ data.redBlueEdge₂
+          data.redPurpleEdge₁ data.redPurpleEdge₂ σ action ∧
+      CAP5BoundaryActionRealizesSomeTransportedRepairType action σ n ∧
+      CAP5BoundaryActionRepairsWord action w :=
+  exists_boundaryActionRepairsWord_usingTransportedEdgeSupport_of_eq_transportBad_of_componentCoverCore_of_noCyclicEdgeCut_of_someExceptionalAnnulusCyclicCutRealizationData
+    hσ0 data hw p0Inside p4Inside hnoCut
+    (fun hExceptional =>
+      data.hasSomeExceptionalAnnulusCyclicCutRealizationData_of_isExceptional_of_canonicalRealizationData
+        p0Inside p4Inside hExceptional hcanonical)
+
 /-- Named cyclic-edge-connectivity form of the CAP5 core repair endpoint. -/
 theorem exists_boundaryActionRepairsWord_usingTransportedEdgeSupport_of_eq_transportBad_of_componentCoverCore_of_cyclicallyFiveEdgeConnected
     {V : Type*} {G : SimpleGraph V} [DecidableEq G.edgeSet]
@@ -1779,6 +1925,28 @@ theorem exists_boundaryActionRepairsWord_usingTransportedEdgeSupport_of_eq_trans
   exists_boundaryActionRepairsWord_usingTransportedEdgeSupport_of_eq_transportBad_of_componentCoverCore_of_noCyclicEdgeCut_of_someExceptionalAnnulusCyclicCutRealizationData
     hσ0 data hw p0Inside p4Inside hcyclic.noCyclicEdgeCutOfSizeAtMostFour hrealizationData
 
+/-- Canonical orientation-by-orientation realization-data version of the named
+cyclic-edge-connectivity core CAP5 repair endpoint. -/
+theorem exists_boundaryActionRepairsWord_usingTransportedEdgeSupport_of_eq_transportBad_of_componentCoverCore_of_cyclicallyFiveEdgeConnected_of_canonicalRealizationData
+    {V : Type*} {G : SimpleGraph V} [DecidableEq G.edgeSet]
+    {w : CAP5BoundaryWord} {boundaryEdge : Fin 5 → G.edgeSet}
+    {σ : Color ≃ Color} (hσ0 : σ 0 = 0) {n : Nat}
+    (data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n)
+    (hw : w = cap5TransportedBadBoundaryWord σ n)
+    (p0Inside p4Inside : Bool)
+    (hcyclic : CyclicallyFiveEdgeConnected G)
+    (hcanonical :
+      data.HasCanonicalExceptionalAnnulusCyclicCutRealizationData (G := G)
+        p0Inside p4Inside) :
+    ∃ action : CAP5BoundaryAction,
+      CAP5TransportedBoundaryActionUsesEdgeComponentCoverSupport
+        boundaryEdge data.redBlueEdge₁ data.redBlueEdge₂
+          data.redPurpleEdge₁ data.redPurpleEdge₂ σ action ∧
+      CAP5BoundaryActionRealizesSomeTransportedRepairType action σ n ∧
+      CAP5BoundaryActionRepairsWord action w :=
+  exists_boundaryActionRepairsWord_usingTransportedEdgeSupport_of_eq_transportBad_of_componentCoverCore_of_noCyclicEdgeCut_of_canonicalRealizationData
+    hσ0 data hw p0Inside p4Inside hcyclic.noCyclicEdgeCutOfSizeAtMostFour hcanonical
+
 /-- Solved-boundary-word form of the core CAP5 endpoint under the no-small-cyclic-cut obstruction.
 This is the boundary-layer conclusion once component covers are available and the exceptional
 annulus branch has been ruled out by the graph-level cyclic-cut hypothesis. -/
@@ -1844,6 +2012,26 @@ theorem cap5BoundaryWordSolved_of_eq_transportBad_of_transportEdgeComponentCover
     ⟨_action, _huses, _hrealizes, hrepairs⟩
   exact cap5BoundaryWordSolved_of_boundaryActionRepairsWord hrepairs
 
+/-- Canonical orientation-by-orientation realization-data version of the solved-boundary-word
+CAP5 endpoint under the no-small-cyclic-cut obstruction. -/
+theorem cap5BoundaryWordSolved_of_eq_transportBad_of_transportEdgeComponentCoverCore_of_noCyclicEdgeCut_of_canonicalRealizationData
+    {V : Type*} {G : SimpleGraph V} [DecidableEq G.edgeSet]
+    {w : CAP5BoundaryWord} {boundaryEdge : Fin 5 → G.edgeSet}
+    {σ : Color ≃ Color} (hσ0 : σ 0 = 0) {n : Nat}
+    (data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n)
+    (hw : w = cap5TransportedBadBoundaryWord σ n)
+    (p0Inside p4Inside : Bool)
+    (hnoCut : NoCyclicEdgeCutOfSizeAtMostFour G)
+    (hcanonical :
+      data.HasCanonicalExceptionalAnnulusCyclicCutRealizationData (G := G)
+        p0Inside p4Inside) :
+    CAP5BoundaryWordSolved w := by
+  rcases
+      exists_boundaryActionRepairsWord_usingTransportedEdgeSupport_of_eq_transportBad_of_componentCoverCore_of_noCyclicEdgeCut_of_canonicalRealizationData
+        hσ0 data hw p0Inside p4Inside hnoCut hcanonical with
+    ⟨_action, _huses, _hrealizes, hrepairs⟩
+  exact cap5BoundaryWordSolved_of_boundaryActionRepairsWord hrepairs
+
 /-- Named cyclic-edge-connectivity form of the solved-boundary-word CAP5 endpoint. -/
 theorem cap5BoundaryWordSolved_of_eq_transportBad_of_transportEdgeComponentCoverCore_of_cyclicallyFiveEdgeConnected
     {V : Type*} {G : SimpleGraph V} [DecidableEq G.edgeSet]
@@ -1897,6 +2085,23 @@ theorem cap5BoundaryWordSolved_of_eq_transportBad_of_transportEdgeComponentCover
     CAP5BoundaryWordSolved w :=
   cap5BoundaryWordSolved_of_eq_transportBad_of_transportEdgeComponentCoverCore_of_noCyclicEdgeCut_of_someExceptionalAnnulusCyclicCutRealizationData
     hσ0 data hw p0Inside p4Inside hcyclic.noCyclicEdgeCutOfSizeAtMostFour hrealizationData
+
+/-- Canonical orientation-by-orientation realization-data version of the named
+cyclic-edge-connectivity solved-boundary-word CAP5 endpoint. -/
+theorem cap5BoundaryWordSolved_of_eq_transportBad_of_transportEdgeComponentCoverCore_of_cyclicallyFiveEdgeConnected_of_canonicalRealizationData
+    {V : Type*} {G : SimpleGraph V} [DecidableEq G.edgeSet]
+    {w : CAP5BoundaryWord} {boundaryEdge : Fin 5 → G.edgeSet}
+    {σ : Color ≃ Color} (hσ0 : σ 0 = 0) {n : Nat}
+    (data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n)
+    (hw : w = cap5TransportedBadBoundaryWord σ n)
+    (p0Inside p4Inside : Bool)
+    (hcyclic : CyclicallyFiveEdgeConnected G)
+    (hcanonical :
+      data.HasCanonicalExceptionalAnnulusCyclicCutRealizationData (G := G)
+        p0Inside p4Inside) :
+    CAP5BoundaryWordSolved w :=
+  cap5BoundaryWordSolved_of_eq_transportBad_of_transportEdgeComponentCoverCore_of_noCyclicEdgeCut_of_canonicalRealizationData
+    hσ0 data hw p0Inside p4Inside hcyclic.noCyclicEdgeCutOfSizeAtMostFour hcanonical
 
 /-- Raw support-cover endpoint for an arbitrary transported bad CAP5 word.  This is the
 interface a later graph/Kempe extraction should naturally target: it supplies the four boundary
