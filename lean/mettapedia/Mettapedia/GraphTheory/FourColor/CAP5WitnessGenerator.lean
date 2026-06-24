@@ -396,4 +396,126 @@ theorem exists_exceptionalAnnulusOneEdgeCounterexampleEdge_of_forcedCounterexamp
 
 end CAP5ExceptionalAnnulusGeneratorNode
 
+namespace CAP5TransportedEdgeComponentCoverCore
+
+variable {G : SimpleGraph V}
+variable {boundaryEdge : Fin 5 → G.edgeSet} {n : Nat}
+
+/-- Edge predicate emitted by the enumerated exceptional CAP5 witness generator.  The predicate
+is intentionally tied to the finite latent list: an emitted edge comes from one of the sixteen
+orientation/portal-side samples, with transported component-cover data realizing that sample's
+orientation, and the generated node forced into the one-edge counterexample bin. -/
+def EnumeratedExceptionalAnnulusForcedEdge
+    (data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n)
+    (p0Inside p4Inside : Bool) (side : V → Prop) (e : G.edgeSet) : Prop :=
+  ∃ latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge,
+    latent ∈ CAP5ExceptionalAnnulusGeneratorLatent.all boundaryEdge ∧
+      latent.p0Inside = p0Inside ∧
+        latent.p4Inside = p4Inside ∧
+          data.RealizesExceptionalBoundarySupportOrientation latent.orientation ∧
+            (let node : CAP5ExceptionalAnnulusGeneratorNode boundaryEdge :=
+              { latent := latent, side := side };
+              node.ForcedCounterexampleEdge e)
+
+/-- Every edge emitted by the enumerated generator is an edge emitted by the broader exceptional
+CAP5 one-edge counterexample predicate used by the algebraic lane. -/
+theorem enumeratedExceptionalAnnulusForcedEdge_to_exceptionalAnnulusOneEdgeCounterexampleEdge
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    {p0Inside p4Inside : Bool} {side : V → Prop} {e : G.edgeSet}
+    (h :
+      data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e) :
+    data.ExceptionalAnnulusOneEdgeCounterexampleEdge p0Inside p4Inside side e := by
+  rcases h with ⟨latent, _hmem, hp0, hp4, horientation, hforced⟩
+  let node : CAP5ExceptionalAnnulusGeneratorNode boundaryEdge :=
+    { latent := latent, side := side }
+  have hedge :
+      data.ExceptionalAnnulusOneEdgeCounterexampleEdge
+        node.latent.p0Inside node.latent.p4Inside node.side e :=
+    node.forcedCounterexampleEdge_to_exceptionalAnnulusOneEdgeCounterexampleEdge
+      horientation (by simpa [node] using hforced)
+  simpa [node, hp0, hp4] using hedge
+
+/-- Cyclic five-edge-connectivity makes the enumerated exceptional CAP5 generator emit at least
+one forced edge for the selected portal-side bits, provided the graph-side portal crossings and
+side cycles are certified. -/
+theorem exists_enumeratedExceptionalAnnulusForcedEdge_of_isExceptional_of_portalSides_of_cyclicallyFiveEdgeConnected
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    (p0Inside p4Inside : Bool) (h : data.IsExceptional)
+    (side : V → Prop) (hcyclic : CyclicallyFiveEdgeConnected G)
+    (hportal_crosses :
+      ∀ edgeCandidate : CAP5ExceptionalAnnulusBoundaryEdgeSupportCandidate boundaryEdge,
+        data.RealizesExceptionalBoundarySupportOrientation
+            edgeCandidate.portalCandidate.orientation →
+        edgeCandidate.portalCandidate.sideCase =
+            CAP5ExceptionalAnnulusSideCase.ofPortalSides p0Inside p4Inside →
+        ∀ i : Fin 5, i ∈ edgeCandidate.portalCandidate.portalSet →
+          EdgeCrossesVertexSide G side (boundaryEdge i))
+    (hcycles : HasCycleOnSide G side ∧ HasCycleOnSide G (fun v => ¬ side v)) :
+    ∃ e : G.edgeSet,
+      data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e := by
+  rcases CAP5ExceptionalAnnulusGeneratorLatent.exists_mem_all_of_isExceptional_of_portalSides
+      (boundaryEdge := boundaryEdge) p0Inside p4Inside h with
+    ⟨latent, hmem, hp0, hp4, horientation⟩
+  let node : CAP5ExceptionalAnnulusGeneratorNode boundaryEdge :=
+    { latent := latent, side := side }
+  have hnodePortal : node.PortalCrosses := by
+    intro i hi
+    have horientation' :
+        data.RealizesExceptionalBoundarySupportOrientation
+          node.candidate.portalCandidate.orientation := by
+      simpa using horientation
+    have hsideCase :
+        node.candidate.portalCandidate.sideCase =
+          CAP5ExceptionalAnnulusSideCase.ofPortalSides p0Inside p4Inside := by
+      change CAP5ExceptionalAnnulusSideCase.ofPortalSides
+          node.latent.p0Inside node.latent.p4Inside =
+        CAP5ExceptionalAnnulusSideCase.ofPortalSides p0Inside p4Inside
+      rw [hp0, hp4]
+    exact hportal_crosses node.candidate horientation' hsideCase i hi
+  rcases node.forcedCounterexample_of_cyclicallyFiveEdgeConnected
+      hcyclic hnodePortal hcycles with
+    ⟨e, hforced⟩
+  exact ⟨e, latent, hmem, hp0, hp4, horientation, by simpa [node] using hforced⟩
+
+/-- Theorem 4.9 synthesis route from the finite enumerated CAP5 generator predicate.  The checker
+target is local: every nonzero selected-boundary-zero chain exposes a nonzero coordinate on an
+edge emitted by one of the enumerated forced CAP5 samples. -/
+theorem theorem49BoundaryRootSynthesis_of_enumeratedExceptionalAnnulusForcedEdgeNonzeroWitnesses
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    [Fintype G.edgeSet] [FiniteDimensional F2 (G.edgeSet → Color)]
+    (emb : PlaneEmbeddingWithBoundary G) (C₀ : G.EdgeColoring Color)
+    (colorings : Set (G.EdgeColoring Color))
+    (hsubset : colorings ⊆ G.EdgeKempeClosure C₀)
+    {κ : Type*}
+    (family : κ → projectedColoringGeneratorSubspace emb colorings)
+    (p0Inside p4Inside : Bool) (side : V → Prop)
+    (hnonzero :
+      ∀ ⦃z : G.edgeSet → Color⦄,
+        z ∈ planarBoundaryZeroSubmodule emb →
+        z ≠ 0 →
+          ∃ e : G.edgeSet,
+            data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e ∧
+              z e ≠ 0)
+    (hwitnessRed :
+      ∀ e : G.edgeSet,
+        data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e →
+          ∃ i : κ,
+            ((family i : projectedColoringGeneratorSubspace emb colorings) :
+                G.edgeSet → Color) =
+              Pi.single e red)
+    (hwitnessBlue :
+      ∀ e : G.edgeSet,
+        data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e →
+          ∃ i : κ,
+            ((family i : projectedColoringGeneratorSubspace emb colorings) :
+                G.edgeSet → Color) =
+              Pi.single e blue) :
+    Theorem49BoundaryRootSynthesis emb C₀ :=
+  theorem49BoundaryRootSynthesis_of_edgePredicateNonzeroWitnesses
+    emb C₀ colorings hsubset family
+    (data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side)
+    hnonzero hwitnessRed hwitnessBlue
+
+end CAP5TransportedEdgeComponentCoverCore
+
 end Mettapedia.GraphTheory.FourColor
