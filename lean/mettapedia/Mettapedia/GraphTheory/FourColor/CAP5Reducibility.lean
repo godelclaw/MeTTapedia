@@ -766,6 +766,33 @@ theorem CAP5ExceptionalAnnulusBoundaryEdgeSupportCandidate.forall_portal_boundar
     exact candidate.exists_portal_boundaryEdge_mem_walk_of_noncandidate_not_crosses
       side hnoncandidate p hu hv
 
+/-- Explicit one-edge falsifier for the portal walk-hit target.  If an edge outside the CAP5
+candidate support crosses the chosen side, then that edge itself gives an opposite-side walk that
+contains no named separator portal boundary edge.  This is the cheap graph-level obstruction the
+planar/Jordan layer must rule out before the Sublemma 6.8 walk-separator route can close. -/
+theorem CAP5ExceptionalAnnulusBoundaryEdgeSupportCandidate.exists_walk_avoiding_portalBoundaryEdges_of_noncandidate_crosses
+    {V : Type*} {G : SimpleGraph V} [DecidableEq G.edgeSet]
+    {boundaryEdge : Fin 5 → G.edgeSet}
+    (candidate : CAP5ExceptionalAnnulusBoundaryEdgeSupportCandidate boundaryEdge)
+    (side : V → Prop) {e : G.edgeSet}
+    (hnot : e ∉ candidate.edgeSupport)
+    (hcross : EdgeCrossesVertexSide G side e) :
+    ∃ u v : V, ∃ p : G.Walk u v,
+      side u ∧ ¬ side v ∧
+        ∀ i : Fin 5, i ∈ candidate.portalCandidate.portalSet →
+          ((boundaryEdge i : G.edgeSet) : Sym2 V) ∉ p.edges := by
+  rcases hcross with ⟨u, v, hu, hv, hsu, hsv⟩
+  rcases exists_walk_edges_eq_singleton_of_edge_endpoint_sides
+      (G := G) (side := side) (e := e) hu hv hsu hsv with
+    ⟨p, hpEdges⟩
+  refine ⟨u, v, p, hsu, hsv, ?_⟩
+  intro i hi hiEdges
+  have hboundary_eq : boundaryEdge i = e := by
+    apply Subtype.ext
+    simpa [hpEdges] using hiEdges
+  exact hnot ((candidate.mem_edgeSupport_iff_exists_portal e).2
+    ⟨i, hi, hboundary_eq⟩)
+
 /-- If a finite CAP5 boundary-edge support candidate is realized by a graph-level small cyclic
 edge cut, the cardinality bound transfers to that cut. -/
 theorem CAP5ExceptionalAnnulusBoundaryEdgeSupportCandidate.exists_smallCyclicEdgeCut_of_realizes
