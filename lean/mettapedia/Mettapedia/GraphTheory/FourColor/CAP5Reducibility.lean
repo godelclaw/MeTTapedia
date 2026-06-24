@@ -233,6 +233,29 @@ def CAP5TransportedEdgeComponentCoverDataUsesKempeFinsets
   CAP5EdgeSupportUsesKempeFinset D C data.redPurpleEdge₁ (σ red) (σ purple) ∧
   CAP5EdgeSupportUsesKempeFinset D C data.redPurpleEdge₂ (σ red) (σ purple)
 
+/-- Structured transported CAP5 component-cover data whose four edge supports are already
+certified as finite Kempe components.  This is the object the graph geometry layer should
+construct: the component-cover data and its Kempe/even-incidence certificates travel together. -/
+structure CAP5TransportedEdgeKempeComponentCoverData
+    {V E : Type*} [Fintype E] [DecidableEq E]
+    (D : ZeroBoundaryData V E) (C : E → Color) (σ : Color → Color)
+    (boundaryEdge : Fin 5 → E) (n : Nat) where
+  toEdgeComponentCoverData : CAP5TransportedEdgeComponentCoverData boundaryEdge n
+  husesKempeFinsets :
+    CAP5TransportedEdgeComponentCoverDataUsesKempeFinsets
+      D C σ toEdgeComponentCoverData
+
+/-- Forgetting the Kempe certificates from a transported edge-Kempe component-cover package
+returns the ordinary transported edge component-cover data. -/
+theorem CAP5TransportedEdgeKempeComponentCoverData.usesKempeFinsets
+    {V E : Type*} [Fintype E] [DecidableEq E]
+    {D : ZeroBoundaryData V E} {C : E → Color} {σ : Color → Color}
+    {boundaryEdge : Fin 5 → E} {n : Nat}
+    (data : CAP5TransportedEdgeKempeComponentCoverData D C σ boundaryEdge n) :
+    CAP5TransportedEdgeComponentCoverDataUsesKempeFinsets
+      D C σ data.toEdgeComponentCoverData :=
+  data.husesKempeFinsets
+
 /-- If a transported CAP5 repair uses one of the four supports in Kempe-certified component-cover
 data, then that selected edge support is itself Kempe-certified. -/
 theorem edgeSupportUsesKempeFinset_of_dataUsesKempeFinsets_of_uses
@@ -1070,6 +1093,30 @@ theorem cap5BoundaryWordOfEdges_extends_or_exists_isZeroBoundary_edgeSupport_swi
         switch_isZeroBoundary_of_edgeSupportUsesKempeFinset hCzero hsupport,
         hextends⟩
 
+/-- Bundled-data form of the direct data-level Kempe-certified CAP5 split.  The caller supplies
+one aligned object per transported bad CAP5 presentation, rather than separate component-cover
+and Kempe-certificate functions. -/
+theorem cap5BoundaryWordOfEdges_extends_or_exists_isZeroBoundary_edgeSupport_switch_extends_of_nonzero_of_sum_zero_of_transportEdgeKempeComponentCoverData
+    {V E : Type*} [Fintype E] [DecidableEq E]
+    {D : ZeroBoundaryData V E} (boundaryEdge : Fin 5 → E) (C : E → Color)
+    (hCzero : D.isZeroBoundary C)
+    (hnz : CAP5BoundaryWordIsNonzero (cap5BoundaryWordOfEdges boundaryEdge C))
+    (hsum : (∑ i : Fin 5, cap5BoundaryWordOfEdges boundaryEdge C i) = 0)
+    (hcomponentCovers :
+      ∀ {σ : Color ≃ Color} {n : Nat},
+        (hσ0 : σ 0 = 0) →
+        cap5BoundaryWordOfEdges boundaryEdge C = cap5TransportedBadBoundaryWord σ n →
+        CAP5TransportedEdgeKempeComponentCoverData D C σ boundaryEdge n) :
+    CAP5WordExtendsAcrossCycle (cap5BoundaryWordOfEdges boundaryEdge C) ∨
+      ∃ edgeSupport : Finset E, ∃ a b : Color,
+        D.isZeroBoundary (switch a b (edgeSupport : Set E) C) ∧
+        CAP5WordExtendsAcrossCycle
+          (cap5BoundaryWordOfEdges boundaryEdge (switch a b (edgeSupport : Set E) C)) :=
+  cap5BoundaryWordOfEdges_extends_or_exists_isZeroBoundary_edgeSupport_switch_extends_of_nonzero_of_sum_zero_of_transportEdgeComponentCoverDataWithKempeFinsets
+    boundaryEdge C hCzero hnz hsum
+    (fun hσ0 hw => (hcomponentCovers hσ0 hw).toEdgeComponentCoverData)
+    (fun hσ0 hw => (hcomponentCovers hσ0 hw).usesKempeFinsets)
+
 /-- Manuscript-facing edge-switch split for a Tait edge coloring.  If the CAP5 boundary edges
 enumerate a zero-boundary incidence set, then the restricted boundary word either extends across
 the cap immediately or admits a concrete edge-level switch repair extracted from the supplied
@@ -1218,6 +1265,34 @@ theorem cap5BoundaryWordOfEdges_extends_or_exists_isZeroBoundary_edgeSupport_swi
     (cap5BoundaryWordOfEdges_sum_eq_zero_of_isZeroBoundary_at
       boundaryEdge C hinj hincident hzero)
     hcomponentCovers hkempeCovers
+
+/-- Manuscript-facing bundled-data CAP5 endpoint.  The graph geometry layer supplies the
+transported edge-Kempe component-cover data directly; the theorem returns either immediate
+extension or an explicit zero-boundary-preserving edge switch. -/
+theorem cap5BoundaryWordOfEdges_extends_or_exists_isZeroBoundary_edgeSupport_switch_extends_of_isTaitEdgeColoring_of_isZeroBoundary_at_of_transportEdgeKempeComponentCoverData
+    {V U : Type*} [DecidableEq V] {G : SimpleGraph V} [Fintype G.edgeSet]
+    {D : ZeroBoundaryData U G.edgeSet} {v : U}
+    (boundaryEdge : Fin 5 → G.edgeSet) (C : G.EdgeColoring Color)
+    (hC : IsTaitEdgeColoring G C)
+    (hinj : Function.Injective boundaryEdge)
+    (hincident : D.incident v = Finset.univ.map ⟨boundaryEdge, hinj⟩)
+    (hzero : D.isZeroBoundary C)
+    (hcomponentCovers :
+      ∀ {σ : Color ≃ Color} {n : Nat},
+        (hσ0 : σ 0 = 0) →
+        cap5BoundaryWordOfEdges boundaryEdge C = cap5TransportedBadBoundaryWord σ n →
+        CAP5TransportedEdgeKempeComponentCoverData D C σ boundaryEdge n) :
+    CAP5WordExtendsAcrossCycle (cap5BoundaryWordOfEdges boundaryEdge C) ∨
+      ∃ edgeSupport : Finset G.edgeSet, ∃ a b : Color,
+        D.isZeroBoundary (switch a b (edgeSupport : Set G.edgeSet) C) ∧
+        CAP5WordExtendsAcrossCycle
+          (cap5BoundaryWordOfEdges boundaryEdge (switch a b (edgeSupport : Set G.edgeSet) C)) :=
+  cap5BoundaryWordOfEdges_extends_or_exists_isZeroBoundary_edgeSupport_switch_extends_of_nonzero_of_sum_zero_of_transportEdgeKempeComponentCoverData
+    boundaryEdge C hzero
+    (cap5BoundaryWordOfEdges_isNonzero_of_isTaitEdgeColoring boundaryEdge C hC)
+    (cap5BoundaryWordOfEdges_sum_eq_zero_of_isZeroBoundary_at
+      boundaryEdge C hinj hincident hzero)
+    hcomponentCovers
 
 /-- Edge-coloring boundary restriction form of the structured CAP5 reducibility split.  This is
 the graph-facing spelling: given an edge coloring `C`, solve the CAP5 boundary word obtained by
