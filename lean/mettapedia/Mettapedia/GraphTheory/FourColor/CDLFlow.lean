@@ -339,6 +339,27 @@ theorem zeroEdgeCount_cdlOneStepMoveOn_add_one_le_of_support_zero_surplus
     zeroEdgeCount_eq_outside_support_add_inside_support (C := C)]
   omega
 
+theorem zeroEdgeCount_cdlOneStepMoveOn_add_one_le_of_erases_zero_and_creates_no_zero
+    {G : SimpleGraph V} [Fintype G.edgeSet]
+    {C : Finset G.edgeSet} {g : Color} {x : G.edgeSet → Color}
+    (herase : ∃ e ∈ C, x e = 0)
+    (hnew : ∀ e ∈ C, x e ≠ g) :
+    zeroEdgeCount G (cdlOneStepMoveOn G C g x) + 1 ≤ zeroEdgeCount G x := by
+  apply zeroEdgeCount_cdlOneStepMoveOn_add_one_le_of_support_zero_surplus
+  have hnew_empty : C.filter (fun e => x e = g) = ∅ := by
+    rw [Finset.filter_eq_empty_iff]
+    exact hnew
+  rw [hnew_empty]
+  rw [Finset.card_empty, zero_add]
+  rcases herase with ⟨e, heC, hx⟩
+  have hzero : e ∈ zeroEdgeFinset G x := by
+    rw [zeroEdgeFinset]
+    exact Finset.mem_filter.mpr ⟨Finset.mem_univ e, hx⟩
+  have hinside : e ∈ (zeroEdgeFinset G x).filter (fun e => e ∈ C) :=
+    Finset.mem_filter.mpr ⟨hzero, heC⟩
+  exact Nat.succ_le_of_lt
+    (Finset.card_pos.mpr ⟨e, hinside⟩)
+
 theorem isCDLGoodAtVertex_cdlOneStepMoveOn_iff
     {G : SimpleGraph V} [Fintype G.edgeSet]
     {C : Finset G.edgeSet} {g : Color} {x : G.edgeSet → Color} {v : V} :
@@ -628,6 +649,29 @@ theorem not_isD0LocalMinimumForMoveSupports_of_allowed_side_budget_descent
     ¬ IsD0LocalMinimumForMoveSupports G moveSupports x := by
   exact not_isD0LocalMinimumForMoveSupports_of_allowed_descent hCmem hmove
     (zeroDefectD0_lt_of_one_zero_removed_and_side_budget hZ hI hC hbudget)
+
+theorem
+    not_isD0LocalMinimumForMoveSupports_of_allowed_erases_zero_no_new_zero_side_budget_descent
+    {G : SimpleGraph V} [Fintype V] [Fintype G.edgeSet]
+    {moveSupports : Finset (Finset G.edgeSet)} {x : G.edgeSet → Color}
+    {C : Finset G.edgeSet} {g : Color} {dI dC : Nat}
+    (hCmem : C ∈ moveSupports)
+    (hmove : IsAllowedD0OneStepMoveOn G C g x (cdlOneStepMoveOn G C g x))
+    (herase : ∃ e ∈ C, x e = 0)
+    (hnew : ∀ e ∈ C, x e ≠ g)
+    (hI :
+      zeroIncidentVertexCount G (cdlOneStepMoveOn G C g x) ≤
+        zeroIncidentVertexCount G x + dI)
+    (hC :
+      zeroClusteringCount G (cdlOneStepMoveOn G C g x) ≤
+        zeroClusteringCount G x + dC)
+    (hbudget : 10 * dI + dC < 100) :
+    ¬ IsD0LocalMinimumForMoveSupports G moveSupports x := by
+  exact not_isD0LocalMinimumForMoveSupports_of_allowed_side_budget_descent
+    hCmem hmove
+    (zeroEdgeCount_cdlOneStepMoveOn_add_one_le_of_erases_zero_and_creates_no_zero
+      herase hnew)
+    hI hC hbudget
 
 theorem zeroDefectD0_le_of_isD0LocalMinimumForMoveSupports_of_isKempeCycle
     {G : SimpleGraph V} [Fintype V] [Fintype G.edgeSet]
