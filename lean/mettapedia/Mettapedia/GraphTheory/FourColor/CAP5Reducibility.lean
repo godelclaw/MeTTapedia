@@ -553,6 +553,39 @@ def CAP5ExceptionalAnnulusBoundaryEdgeSupportCandidate.cyclicEdgeCutRealizationD
   CyclicEdgeCutRealization.of_walk_separator side hcandidate_crosses hwalk_separator
     hinside_cycle houtside_cycle
 
+/-- Portal-language version of the direct walk-separator constructor.  This is the manuscript
+shape of the CAP5/Sublemma 6.8 topological input: the named separator portals cross the chosen
+side, and every walk between opposite sides contains one of those named boundary edges. -/
+def CAP5ExceptionalAnnulusBoundaryEdgeSupportCandidate.cyclicEdgeCutRealizationData_of_portal_walk_separator
+    {V : Type*} {G : SimpleGraph V} [DecidableEq G.edgeSet]
+    {boundaryEdge : Fin 5 → G.edgeSet}
+    (candidate : CAP5ExceptionalAnnulusBoundaryEdgeSupportCandidate boundaryEdge)
+    (side : V → Prop)
+    (hportal_crosses :
+      ∀ i : Fin 5, i ∈ candidate.portalCandidate.portalSet →
+        EdgeCrossesVertexSide G side (boundaryEdge i))
+    (hportal_walk_separator :
+      ∀ {u v : V} (p : G.Walk u v), side u → ¬ side v →
+        ∃ i : Fin 5, i ∈ candidate.portalCandidate.portalSet ∧
+          ((boundaryEdge i : G.edgeSet) : Sym2 V) ∈ p.edges)
+    (hinside_cycle : HasCycleOnSide G side)
+    (houtside_cycle : HasCycleOnSide G (fun v => ¬ side v)) :
+    candidate.CyclicEdgeCutRealizationData (G := G) :=
+  candidate.cyclicEdgeCutRealizationData_of_walk_separator side
+    (by
+      intro e heSupport
+      rcases (candidate.mem_edgeSupport_iff_exists_portal e).1 heSupport with
+        ⟨i, hi, hboundary⟩
+      subst e
+      exact hportal_crosses i hi)
+    (by
+      intro u v p hu hv
+      rcases hportal_walk_separator p hu hv with ⟨i, hi, hiEdges⟩
+      exact ⟨boundaryEdge i,
+        (candidate.mem_edgeSupport_iff_exists_portal (boundaryEdge i)).2 ⟨i, hi, rfl⟩,
+        hiEdges⟩)
+    hinside_cycle houtside_cycle
+
 /-- Build CAP5 cyclic-cut realization data from the avoidance form of the planar/Jordan
 separator theorem: every walk avoiding the candidate support must stay on the same side. -/
 def CAP5ExceptionalAnnulusBoundaryEdgeSupportCandidate.cyclicEdgeCutRealizationData_of_walk_avoid_side_invariant
