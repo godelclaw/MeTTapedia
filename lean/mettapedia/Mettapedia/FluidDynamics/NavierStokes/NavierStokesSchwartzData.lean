@@ -46,7 +46,11 @@ theorem smoothInitialVelocityData_of_schwartzInitialVelocity
 theorem finiteInitialKineticEnergy_of_schwartzInitialVelocity
     (u₀ : NSSchwartzInitialVelocity) :
     finiteInitialKineticEnergy (u₀ : NSSpace → NSSpace) := by
-  simpa [finiteInitialKineticEnergy, initialKineticEnergyDensity] using
+  unfold finiteInitialKineticEnergy
+  change MeasureTheory.Integrable
+    (fun x : NSSpace => ‖(u₀ : NSSpace → NSSpace) x‖ ^ (2 : ℕ))
+    (MeasureTheory.volume : MeasureTheory.Measure NSSpace)
+  exact
     (MeasureTheory.memLp_two_iff_integrable_sq_norm
       (μ := (MeasureTheory.volume : MeasureTheory.Measure NSSpace))
       u₀.continuous.aestronglyMeasurable).mp

@@ -1060,6 +1060,76 @@ private theorem activeTrail_snoc
                   simpa [List.cons_append, List.append_assoc] using
                     (ActiveTrail.cons hab hbc hac hAct0 hTail')
 
+/-- Reversing the endpoints of an active triple preserves activity. -/
+theorem isActive_reverse_triple
+    (G : DirectedGraph V) (Z : Set V)
+    {a b c : V}
+    (hab : UndirectedEdge G a b) (hbc : UndirectedEdge G b c) (hac : a ≠ c)
+    (hcb : UndirectedEdge G c b) (hba : UndirectedEdge G b a) (hca : c ≠ a)
+    (hAct : IsActive G Z ⟨a, b, c, hab, hbc, hac⟩) :
+    IsActive G Z ⟨c, b, a, hcb, hba, hca⟩ := by
+  unfold IsActive at hAct ⊢
+  intro hblocked
+  apply hAct
+  unfold IsBlocked at hblocked ⊢
+  rcases hblocked with ⟨hnc, hbZ⟩ | ⟨hc, hbNotZ, hdesc⟩
+  · left
+    refine ⟨?_, hbZ⟩
+    unfold IsNonCollider IsCollider at hnc ⊢
+    rw [and_comm]
+    exact hnc
+  · right
+    refine ⟨?_, hbNotZ, hdesc⟩
+    unfold IsCollider at hc ⊢
+    exact ⟨hc.2, hc.1⟩
+
+/-- Active trails are closed under list reversal. -/
+theorem activeTrail_reverse (G : DirectedGraph V) (Z : Set V) :
+    ∀ {p : List V}, ActiveTrail G Z p → ActiveTrail G Z p.reverse := by
+  intro p hTrail
+  induction hTrail with
+  | single v =>
+      simpa using ActiveTrail.single (G := G) (Z := Z) v
+  | @two u v hEdge =>
+      have hEdge' : UndirectedEdge G v u := (undirectedEdge_symm G u v).1 hEdge
+      simpa using ActiveTrail.two (G := G) (Z := Z) hEdge'
+  | @cons a b c rest hab hbc hac hAct hTail ih =>
+      have hTailShape :
+          ActiveTrail G Z (rest.reverse ++ [c, b]) := by
+        simpa [List.reverse_cons', List.concat_eq_append, List.append_assoc] using ih
+      have hba : UndirectedEdge G b a := (undirectedEdge_symm G a b).1 hab
+      have hca : c ≠ a := fun h => hac h.symm
+      have hActRev :
+          IsActive G Z
+            ⟨c, b, a,
+              (activeTrail_last_edge G Z (p := rest.reverse) (b := c) (c := b) hTailShape),
+              hba, hca⟩ := by
+        have hcb : UndirectedEdge G c b := by
+          exact activeTrail_last_edge G Z (p := rest.reverse) (b := c) (c := b) hTailShape
+        exact
+          isActive_reverse_triple G Z hab hbc hac hcb hba hca hAct
+      have hSnoc :
+          ActiveTrail G Z (rest.reverse ++ [c, b, a]) :=
+        activeTrail_snoc G Z hTailShape hba hca hActRev
+      simpa [List.reverse_cons', List.concat_eq_append, List.append_assoc] using hSnoc
+
+/-- Full trail-based d-separation is symmetric in the two endpoint sets. -/
+theorem dsepFull_symmetric
+    (G : DirectedGraph V) (X Y Z : Set V)
+    (_hacyclic : G.IsAcyclic) (_hirr : ∀ u : V, ¬G.edges u u)
+    (hdsep : DSeparatedFull G X Y Z) :
+    DSeparatedFull G Y X Z := by
+  intro y hy x hx hne hTrail
+  apply hdsep x hx y hy hne.symm
+  rcases hTrail with ⟨p, hpne, hEnds, hActive⟩
+  refine ⟨p.reverse, ?_, ?_, ?_⟩
+  · intro hRev
+    apply hpne
+    have := congrArg List.reverse hRev
+    simpa using this
+  · simpa using pathEndpoints_reverse hpne hEnds
+  · exact activeTrail_reverse G Z hActive
+
 /-- Lift one explicit snoc extension into `HasActiveTrail` form. -/
 private theorem hasActiveTrail_extend_from_snoc
     (G : DirectedGraph V) (Z : Set V)
@@ -1401,7 +1471,7 @@ private theorem activeFromXNeY_of_anchor_step_spouse_activated
           exact (Prod.mk.inj hPair).1.symm
         refine ⟨x0, hx0, hx0NeY, ?_⟩
         refine ⟨[x0, b], by simp, by simp [PathEndpoints], ?_⟩
-        exact ActiveTrail.two (by simpa [hx0c] using (Or.inr hbc : UndirectedEdge G c b))
+        exact ActiveTrail.two (by simpa [hx0c] using! (Or.inr hbc : UndirectedEdge G c b))
       · let v : V := pref.getLast hpref
         let p2 : List V := pref.dropLast
         have hpref_eq : pref = p2 ++ [v] := by

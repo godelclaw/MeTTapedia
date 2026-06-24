@@ -55,8 +55,15 @@ theorem WeightedObservable.windowedColeHopfHeatSeedLiveProfile_eq_live_of_selfCo
       (L.windowedColeHopfHeatUniformVorticityTendril
         (ι := ι) (X := X)
         selector c ν hc hν curlFrame curlBound curlBound_nonneg hcurl x).vorticity t y := by
-  simpa [selfCompatibility, WeightedObservable.windowedColeHopfHeatSeedLiveCandidate] using
-    hself t y
+  change
+    ((L.windowedColeHopfHeatUniformVorticityTendril
+          (ι := ι) (X := X)
+          selector c ν hc hν curlFrame curlBound curlBound_nonneg hcurl x).seedLiveCandidate
+        P).velocity t y =
+      (L.windowedColeHopfHeatUniformVorticityTendril
+        (ι := ι) (X := X)
+        selector c ν hc hν curlFrame curlBound curlBound_nonneg hcurl x).vorticity t y
+  exact hself t y
 
 theorem WeightedObservable.windowedColeHopfHeatSeedLiveProfile_eq_live_of_topDownBridge_of_nonzero_vorticity
     (L : WeightedObservable)

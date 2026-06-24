@@ -327,14 +327,10 @@ theorem v13BoolPairFirstSecondUnitFielded_instantiated :
     V13FieldSwitchingInstantiated
       [v13BoolPairUnitFieldedStep,
         v13BoolPairSecondCoordinateUnitFieldedStep] := by
-  refine ⟨v13FieldPrefixInstantiation_unitField_empty, ?_⟩
-  simpa [v13BoolPairUnitFieldedStep,
-    v13BoolPairSecondCoordinateUnitFieldedStep] using
-    (⟨v13FieldPrefixInstantiation_secondCoordinateUnitField_after_first,
-      trivial⟩ :
-      V13FieldSwitchingInstantiatedFrom
-        [v13BoolPairRepeatedStep.successEvent]
-        [v13BoolPairSecondCoordinateUnitFieldedStep])
+  dsimp [V13FieldSwitchingInstantiated, V13FieldSwitchingInstantiatedFrom,
+    v13BoolPairUnitFieldedStep, v13BoolPairSecondCoordinateUnitFieldedStep]
+  exact ⟨v13FieldPrefixInstantiation_unitField_empty,
+    v13FieldPrefixInstantiation_secondCoordinateUnitField_after_first, trivial⟩
 
 /-- The three-step Boolean-square list has a forced positive third fielded
 step: after the two coordinate successes, diagonal success is automatic. -/

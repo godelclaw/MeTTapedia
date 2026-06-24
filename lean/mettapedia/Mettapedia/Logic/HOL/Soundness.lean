@@ -1,4 +1,4 @@
-import Mettapedia.Logic.HOL.Derivation
+import Mettapedia.Logic.HOL.DerivationExtensionality
 import Mettapedia.Logic.HOL.Semantics.Extensionality
 
 namespace Mettapedia.Logic.HOL
@@ -28,6 +28,16 @@ theorem renameVal_lift (M : HenkinModel.{u, v, w} Base Const)
         HenkinModel.Valuation M (σ :: Γ)) := by
   funext τ v
   cases v <;> rfl
+
+/-- Weakening a valuation by `x` and then precomposing with `Rename.weaken`
+recovers the original valuation: the two operations cancel definitionally. -/
+theorem renameVal_weaken_extend (M : HenkinModel.{u, v, w} Base Const)
+    {Γ : Ctx Base} (ρ : HenkinModel.Valuation M Γ) (x : Ty.denote M.Carrier σ) :
+    (renameVal M (Rename.weaken (Base := Base) (Γ := Γ) (σ := σ))
+        (HenkinModel.extend M ρ x) : HenkinModel.Valuation M Γ) =
+      (fun {_τ} => ρ : HenkinModel.Valuation M Γ) := by
+  funext _ v
+  rfl
 
 theorem denote_rename (M : HenkinModel.{u, v, w} Base Const) :
     ∀ {Γ Δ : Ctx Base} {τ : Ty Base}
@@ -107,9 +117,10 @@ theorem denote_rename (M : HenkinModel.{u, v, w} Base Const) :
     (ρ : HenkinModel.Valuation M Γ) (x : Ty.denote M.Carrier σ) :
     HenkinModel.denote M (weaken (Base := Base) (σ := σ) t) (HenkinModel.extend M ρ x) =
       HenkinModel.denote M t ρ := by
-  simpa [weaken, renameVal, renameVal_lift] using
-    (denote_rename M (Rename.weaken (Base := Base) (Γ := Γ) (σ := σ)) t
-      (HenkinModel.extend M ρ x))
+  rw [weaken,
+    denote_rename M (Rename.weaken (Base := Base) (Γ := Γ) (σ := σ)) t
+      (HenkinModel.extend M ρ x),
+    renameVal_weaken_extend M ρ x]
 
 /-- Substitute denotations of a term substitution into a valuation. -/
 def substVal (M : HenkinModel.{u, v, w} Base Const)
@@ -129,7 +140,8 @@ theorem substVal_lift (M : HenkinModel.{u, v, w} Base Const)
       rfl
   | vs v =>
       have h := denote_weaken (M := M) (t := σs v) (ρ := ν) (x := x)
-      simpa [substVal, Subst.lift, weaken] using h
+      simp only [substVal, Subst.lift, HenkinModel.extend, PreModel.extend]
+      exact h
 
 theorem denote_subst (M : HenkinModel.{u, v, w} Base Const) :
     ∀ {Γ Δ : Ctx Base} {τ : Ty Base}
@@ -341,7 +353,7 @@ theorem derivation_sound
       simpa using hbody'
   | eqRefl t =>
       intro M ρ hρ hΔ
-      simpa using HenkinModel.eqv_refl M (HenkinModel.denote_admissible M hρ t)
+      exact HenkinModel.eqv_refl M (HenkinModel.denote_admissible M hρ t)
   | eqSymm h ih =>
       intro M ρ hρ hΔ
       exact HenkinModel.eqv_symm M (ih hρ hΔ)
@@ -359,7 +371,8 @@ theorem derivation_sound
   | funExt h ih =>
       intro M ρ hρ hΔ x hx
       have hpoint := ih hρ hΔ x hx
-      simpa [HenkinModel.denote, PreModel.denote] using hpoint
+      simpa [HenkinModel.denote, PreModel.denote, HenkinModel.extend, PreModel.extend]
+        using hpoint
   | beta t u =>
       intro M ρ hρ hΔ
       simpa [HenkinModel.denote, PreModel.denote] using
@@ -367,7 +380,158 @@ theorem derivation_sound
           (HenkinModel.denote_admissible M hρ (instantiate (Base := Base) t u))
   | eta f =>
       intro M ρ hρ hΔ x hx
+      simpa [HenkinModel.denote, PreModel.denote, HenkinModel.extend, PreModel.extend] using
+        (HenkinModel.eqv_refl M
+          (M.app_mem (HenkinModel.denote_admissible M hρ f) hx))
+
+/-- Soundness for the extensional derivation overlay. The only semantic
+strengthening beyond ordinary Henkin soundness is `FunctionsRespectEqv`, needed
+exactly for `eqAppArg`. -/
+theorem extDerivation_sound
+    {Γ : Ctx Base} {Δ : List (Formula Const Γ)} {φ : Formula Const Γ}
+    (d : ExtDerivation Const Δ φ) :
+    ∀ {M : HenkinModel.{u, v, w} Base Const} {ρ : HenkinModel.Valuation M Γ},
+      HenkinModel.FunctionsRespectEqv M →
+      HenkinModel.ValuationAdmissible M ρ →
+      SatisfiesHyps M ρ Δ →
+      (HenkinModel.denote M φ ρ).down := by
+  induction d with
+  | hyp hmem =>
+      intro M ρ hExt hρ hΔ
+      exact hΔ _ hmem
+  | topI =>
+      intro M ρ hExt hρ hΔ
+      simp
+  | botE h ih =>
+      intro M ρ hExt hρ hΔ
+      exact False.elim (ih hExt hρ hΔ)
+  | andI hφ hψ ihφ ihψ =>
+      intro M ρ hExt hρ hΔ
+      exact ⟨ihφ hExt hρ hΔ, ihψ hExt hρ hΔ⟩
+  | andEL h ih =>
+      intro M ρ hExt hρ hΔ
+      exact (ih hExt hρ hΔ).1
+  | andER h ih =>
+      intro M ρ hExt hρ hΔ
+      exact (ih hExt hρ hΔ).2
+  | orIL h ih =>
+      intro M ρ hExt hρ hΔ
+      exact Or.inl (ih hExt hρ hΔ)
+  | orIR h ih =>
+      intro M ρ hExt hρ hΔ
+      exact Or.inr (ih hExt hρ hΔ)
+  | orE hor hφ hψ ihor ihφ ihψ =>
+      intro M ρ hExt hρ hΔ
+      rcases ihor hExt hρ hΔ with h | h
+      · exact ihφ hExt hρ (by
+          intro χ hχ
+          rw [List.mem_cons] at hχ
+          rcases hχ with rfl | hχ
+          · simpa using h
+          · exact hΔ _ hχ)
+      · exact ihψ hExt hρ (by
+          intro χ hχ
+          rw [List.mem_cons] at hχ
+          rcases hχ with rfl | hχ
+          · simpa using h
+          · exact hΔ _ hχ)
+  | impI h ih =>
+      intro M ρ hExt hρ hΔ hφ
+      exact ih hExt hρ (by
+        intro χ hχ
+        rw [List.mem_cons] at hχ
+        rcases hχ with rfl | hχ
+        · simpa using hφ
+        · exact hΔ _ hχ)
+  | impE himp hφ ihimp ihφ =>
+      intro M ρ hExt hρ hΔ
+      exact (ihimp hExt hρ hΔ) (ihφ hExt hρ hΔ)
+  | notI h ih =>
+      intro M ρ hExt hρ hΔ hφ
+      exact ih hExt hρ (by
+        intro χ hχ
+        rw [List.mem_cons] at hχ
+        rcases hχ with rfl | hχ
+        · simpa using hφ
+        · exact hΔ _ hχ)
+  | notE hnot hφ ihnot ihφ =>
+      intro M ρ hExt hρ hΔ
+      exact (ihnot hExt hρ hΔ) (ihφ hExt hρ hΔ)
+  | allI h ih =>
+      intro M ρ hExt hρ hΔ x hx
+      exact ih hExt (HenkinModel.extend_admissible M hρ hx)
+        (satisfies_weakenHyps M hΔ x)
+  | allE t h ih =>
+      intro M ρ hExt hρ hΔ
+      have hall := ih hExt hρ hΔ
+      have ht : M.adm _ (HenkinModel.denote M t ρ) :=
+        HenkinModel.denote_admissible M hρ t
+      exact (denote_instantiate M t _ ρ).mpr (hall _ ht)
+  | exI t h ih =>
+      intro M ρ hExt hρ hΔ
+      refine ⟨HenkinModel.denote M t ρ, HenkinModel.denote_admissible M hρ t, ?_⟩
+      exact (denote_instantiate M t _ ρ).mp (ih hExt hρ hΔ)
+  | exE hex hbody ihex ihbody =>
+      intro M ρ hExt hρ hΔ
+      rcases ihex hExt hρ hΔ with ⟨x, hx, hφ⟩
+      have hbody' :=
+        ihbody hExt (HenkinModel.extend_admissible M hρ hx) (by
+          intro χ hχ
+          rw [List.mem_cons] at hχ
+          rcases hχ with rfl | hχ
+          · exact hφ
+          · exact satisfies_weakenHyps M hΔ x _ hχ)
+      simpa using hbody'
+  | eqRefl t =>
+      intro M ρ hExt hρ hΔ
+      exact HenkinModel.eqv_refl M (HenkinModel.denote_admissible M hρ t)
+  | eqSymm h ih =>
+      intro M ρ hExt hρ hΔ
+      exact HenkinModel.eqv_symm M (ih hExt hρ hΔ)
+  | eqTrans htu huv ihtu ihuv =>
+      intro M ρ hExt hρ hΔ
+      exact HenkinModel.eqv_trans M (ihtu hExt hρ hΔ) (ihuv hExt hρ hΔ)
+  | eqPropI hpq hqp ihpq ihqp =>
+      intro M ρ hExt hρ hΔ
+      constructor
+      · intro hp
+        exact (ihpq hExt hρ hΔ) hp
+      · intro hq
+        exact (ihqp hExt hρ hΔ) hq
+  | eqPropEL hpq ihpq =>
+      intro M ρ hExt hρ hΔ hp
+      exact (ihpq hExt hρ hΔ).1 hp
+  | eqPropER hpq ihpq =>
+      intro M ρ hExt hρ hΔ hq
+      exact (ihpq hExt hρ hΔ).2 hq
+  | eqApp t h ih =>
+      intro M ρ hExt hρ hΔ
+      exact HenkinModel.eqv_arr_apply M (ih hExt hρ hΔ)
+        (HenkinModel.denote_admissible M hρ t)
+  | eqAppArg f h ih =>
+      intro M ρ hExt hρ hΔ
+      exact hExt
+        (HenkinModel.denote_admissible M hρ f)
+        (HenkinModel.denote_admissible M hρ _)
+        (HenkinModel.denote_admissible M hρ _)
+        (ih hExt hρ hΔ)
+  | eqLam h ih =>
+      intro M ρ hExt hρ hΔ x hx
+      exact ih hExt (HenkinModel.extend_admissible M hρ hx)
+        (satisfies_weakenHyps M hΔ x)
+  | funExt h ih =>
+      intro M ρ hExt hρ hΔ x hx
+      have hpoint := ih hExt hρ hΔ x hx
+      simpa [HenkinModel.denote, PreModel.denote, HenkinModel.extend, PreModel.extend]
+        using hpoint
+  | beta t u =>
+      intro M ρ hExt hρ hΔ
       simpa [HenkinModel.denote, PreModel.denote] using
+        HenkinModel.eqv_refl M
+          (HenkinModel.denote_admissible M hρ (instantiate (Base := Base) t u))
+  | eta f =>
+      intro M ρ hExt hρ hΔ x hx
+      simpa [HenkinModel.denote, PreModel.denote, HenkinModel.extend, PreModel.extend] using
         (HenkinModel.eqv_refl M
           (M.app_mem (HenkinModel.denote_admissible M hρ f) hx))
 
@@ -378,6 +542,17 @@ theorem theorem_sound {φ : ClosedFormula Const}
   exact derivation_sound d (M := M) (ρ := fun v => nomatch v) (by intro τ v; nomatch v) (by
     intro ψ hψ
     nomatch hψ)
+
+/-- Closed extensional HOL theorems are valid in every extensional Henkin model. -/
+theorem extTheorem_sound {φ : ClosedFormula Const}
+    (d : ExtDerivation.Theorem Const φ)
+    (M : HenkinModel.{u, v, w} Base Const)
+    (hExt : HenkinModel.FunctionsRespectEqv M) :
+    HenkinModel.models M φ := by
+  exact extDerivation_sound d (M := M) (ρ := fun v => nomatch v) hExt
+    (by intro τ v; nomatch v) (by
+      intro ψ hψ
+      nomatch hψ)
 
 end Soundness
 

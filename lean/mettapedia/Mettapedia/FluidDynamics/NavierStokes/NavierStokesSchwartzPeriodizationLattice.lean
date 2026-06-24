@@ -67,10 +67,10 @@ theorem nsCoordinateLatticePoint_coe_apply
       ((nsCoordinateLatticeBasis.repr (nsCoordinateLatticePoint n) i : ℤ) : ℝ) =
         ((EuclideanSpace.basisFun (Fin 3) ℝ).toBasis.repr
           (((nsCoordinateLatticePoint n : NSCoordinateLattice) : NSSpace)) i) := by
-    simpa [nsCoordinateLatticeBasis] using
-      (Module.Basis.restrictScalars_repr_apply
+    exact
+      Module.Basis.restrictScalars_repr_apply
         (R := ℤ) ((EuclideanSpace.basisFun (Fin 3) ℝ).toBasis)
-        (nsCoordinateLatticePoint n) i)
+        (nsCoordinateLatticePoint n) i
   simpa [EuclideanSpace.basisFun_repr, hrepr] using hcast.symm
 
 /-- The periodization shift is exactly scalar multiplication of the associated

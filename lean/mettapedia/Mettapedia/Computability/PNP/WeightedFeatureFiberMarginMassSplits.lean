@@ -67,8 +67,11 @@ theorem weightedCorrectMass_eq_sum_predictedTrue_trueMass_add_sum_predictedFalse
   have hfilter :
       weightedCorrectMass u y w h =
         ∑ x ∈ (Finset.univ : Finset α) with h (u x) = y x, w x := by
-    unfold weightedCorrectMass
-    simpa [Correct] using
+    unfold weightedCorrectMass Correct
+    change ∑ x : {x : α // h (u x) = y x}, w x.1 =
+      ∑ x ∈ (Finset.univ : Finset α) with h (u x) = y x, w x
+    rw [← Finset.subtype_univ (fun x : α => h (u x) = y x)]
+    exact
       (Finset.sum_subtype_eq_sum_filter
         (s := (Finset.univ : Finset α))
         (p := fun x => h (u x) = y x)
@@ -158,7 +161,10 @@ theorem weightedIncorrectMass_eq_sum_predictedTrue_falseMass_add_sum_predictedFa
       weightedIncorrectMass u y w h =
         ∑ x ∈ (Finset.univ : Finset α) with ¬ h (u x) = y x, w x := by
     unfold weightedIncorrectMass Incorrect
-    simpa using
+    change ∑ x : {x : α // ¬ h (u x) = y x}, w x.1 =
+      ∑ x ∈ (Finset.univ : Finset α) with ¬ h (u x) = y x, w x
+    rw [← Finset.subtype_univ (fun x : α => ¬ h (u x) = y x)]
+    exact
       (Finset.sum_subtype_eq_sum_filter
         (s := (Finset.univ : Finset α))
         (p := fun x => ¬ h (u x) = y x)

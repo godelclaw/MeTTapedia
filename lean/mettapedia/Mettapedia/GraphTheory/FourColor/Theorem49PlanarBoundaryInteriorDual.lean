@@ -650,7 +650,17 @@ theorem zero_on_allEdges_of_planarBoundaryInteriorDualBoundaryRootAdjDistancePee
                 (emb.faceBoundary f.1)) = 0 := by
     intro i f hfi γ hγ0 hγd
     have hf : f ∈ heightData.peelFaces := (Finset.mem_filter.1 hfi).1
-    exact horth f hf γ hγ0 (by simpa [heightData, collarData] using hγd)
+    have hwitness :
+        collarData.witnessEdge f =
+          rootedSharedInteriorEdgeOfPairwiseUnique emb.faceBoundary emb.faces data.hunique
+            (interiorDualSpanningForestRoot emb.faceBoundary emb.faces data.roots
+              data.hcoverRoots data.hsepRoots)
+            data.fallbackEdge f := by
+      simp [heightData, collarData,
+        planarBoundaryCollarLayerFacePeelWitnessData_of_heightOrderedFacePeelWitnessData,
+        planarBoundaryHeightOrderedFacePeelWitnessData_of_interiorDualBoundaryRootAdjDistancePeelData]
+    simpa [hwitness] using
+      horth f hf γ hγ0 (by simpa [hwitness] using hγd)
   exact zero_on_allEdges_of_planarBoundaryCollarLayerFacePeelWitnessData
     (emb := emb) (C := C) (htait := htait) (z := z)
     (data := collarData)

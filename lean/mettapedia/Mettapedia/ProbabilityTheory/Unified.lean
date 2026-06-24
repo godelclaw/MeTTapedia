@@ -61,7 +61,7 @@ Cox's theorem does the same from a different starting point.
 
 import Mettapedia.ProbabilityTheory.Cox
 import Mettapedia.ProbabilityTheory.ImpreciseProbability
-import Mettapedia.ProbabilityTheory.KnuthSkilling
+import KnuthSkilling.Overview
 -- Note: BeliefFunctions and QuantumProbability imported separately
 
 namespace Mettapedia.ProbabilityTheory.Unified
@@ -239,7 +239,7 @@ The intended content here is a bridge from:
 to a point-valued additive representation.
 
 This should eventually be backed by the concrete Lean results in:
-- `Mettapedia/ProbabilityTheory/KnuthSkilling/Core/TotalityImprecision.lean`
+- external `KnuthSkilling/Core/TotalityImprecision.lean`
 - and the KS representation pipeline.
 
 We intentionally do not leave a placeholder theorem of type `True`.

@@ -83,7 +83,8 @@ theorem constantVelocityField_exhibits_uniformCandidate_except_boundedEnergy
       ¬ boundedKineticEnergyUpTo u T := by
   refine ⟨constantVelocityField c, 0, 0, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩
   · exact smoothSpaceTimeVelocity_constantVelocityField c
-  · simpa using smoothSpaceTimePressure_const (0 : ℝ)
+  · change smoothSpaceTimePressure (fun _ : NSTime => fun _ : NSSpace => (0 : ℝ))
+    exact smoothSpaceTimePressure_const (0 : ℝ)
   · intro t x ht0 htT
     simp [timeVelocityDerivative_constantVelocityField,
       spatialConvection_constantVelocityField, spatialPressureGradient_zero,
@@ -209,11 +210,10 @@ theorem ExplicitConcreteNavierStokesGlobalOutput_constantInitialVelocity_iff
     subst hc
     refine ⟨constantVelocityField 0, 0, ?_, ?_, ?_, ?_, ?_, ?_⟩
     · exact smoothSpaceTimeVelocity_constantVelocityField 0
-    · simpa using smoothSpaceTimePressure_const (0 : ℝ)
+    · change smoothSpaceTimePressure (fun _ : NSTime => fun _ : NSSpace => (0 : ℝ))
+      exact smoothSpaceTimePressure_const (0 : ℝ)
     · intro t x
-      simp [timeVelocityDerivative_constantVelocityField,
-        spatialConvection_constantVelocityField, spatialPressureGradient_zero,
-        spatialLaplacian_constantVelocityField]
+      simpa using momentumEquation_constantVelocityField_zeroPressure ν (0 : NSSpace) t x
     · intro t x
       simpa using spatialDivergence_constantVelocityField (0 : NSSpace) t x
     · simpa using matchesInitialVelocity_constantVelocityField (0 : NSSpace)

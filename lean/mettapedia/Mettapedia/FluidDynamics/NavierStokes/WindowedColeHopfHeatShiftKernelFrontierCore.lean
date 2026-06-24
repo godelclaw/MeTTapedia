@@ -104,14 +104,22 @@ theorem WeightedObservable.windowedColeHopfHeatShiftKernelCandidate_has_shiftKer
       (L.windowedColeHopfHeatUniformVorticityTendril
         (ι := ι) (X := X)
         selector c ν hc hν curlFrame curlBound curlBound_nonneg hcurl x)
-      (L.windowedColeHopfHeatShiftKernelCandidate
+        (L.windowedColeHopfHeatShiftKernelCandidate
+          (ι := ι) (X := X)
+          selector K c ν hc hν curlFrame curlBound curlBound_nonneg hcurl x).velocity := by
+    change sampleKernelCompatibilityPred (Time := NNReal) (X := X) K.toSampleKernel
+      (L.windowedColeHopfHeatUniformVorticityTendril
         (ι := ι) (X := X)
-        selector K c ν hc hν curlFrame curlBound curlBound_nonneg hcurl x).velocity := by
-  simpa [shiftKernelCompatibilityPred] using
-    (L.windowedColeHopfHeatUniformVorticityTendril
-      (ι := ι) (X := X)
-      selector c ν hc hν curlFrame curlBound curlBound_nonneg hcurl x).seedLiveOperatorCandidate_has_seedLiveOperatorCompatibility
-        K.toSampleKernel.toSeedLiveOperator
+        selector c ν hc hν curlFrame curlBound curlBound_nonneg hcurl x)
+      ((L.windowedColeHopfHeatUniformVorticityTendril
+          (ι := ι) (X := X)
+          selector c ν hc hν curlFrame curlBound curlBound_nonneg hcurl x).seedLiveOperatorCandidate
+        K.toSampleKernel.toSeedLiveOperator).velocity
+    exact
+      (L.windowedColeHopfHeatUniformVorticityTendril
+        (ι := ι) (X := X)
+        selector c ν hc hν curlFrame curlBound curlBound_nonneg hcurl x).seedLiveOperatorCandidate_has_seedLiveOperatorCompatibility
+          K.toSampleKernel.toSeedLiveOperator
 
 theorem WeightedObservable.windowedColeHopfHeatShiftKernelCandidate_has_shiftKernelCompatibility_of_componentwise_abs_le
     (L : WeightedObservable)
@@ -129,14 +137,22 @@ theorem WeightedObservable.windowedColeHopfHeatShiftKernelCandidate_has_shiftKer
       (L.windowedColeHopfHeatUniformVorticityTendril_of_componentwise_abs_le
         (ι := ι) (X := X)
         selector c ν hc hν curlFrame curlComponentBound hcurlComponentBound_nonneg hcurl x)
-      (L.windowedColeHopfHeatShiftKernelCandidate_of_componentwise_abs_le
+        (L.windowedColeHopfHeatShiftKernelCandidate_of_componentwise_abs_le
+          (ι := ι) (X := X)
+          selector K c ν hc hν curlFrame curlComponentBound hcurlComponentBound_nonneg hcurl x).velocity := by
+    change sampleKernelCompatibilityPred (Time := NNReal) (X := X) K.toSampleKernel
+      (L.windowedColeHopfHeatUniformVorticityTendril_of_componentwise_abs_le
         (ι := ι) (X := X)
-        selector K c ν hc hν curlFrame curlComponentBound hcurlComponentBound_nonneg hcurl x).velocity := by
-  simpa [shiftKernelCompatibilityPred] using
-    (L.windowedColeHopfHeatUniformVorticityTendril_of_componentwise_abs_le
-      (ι := ι) (X := X)
-      selector c ν hc hν curlFrame curlComponentBound hcurlComponentBound_nonneg hcurl x).seedLiveOperatorCandidate_has_seedLiveOperatorCompatibility
-        K.toSampleKernel.toSeedLiveOperator
+        selector c ν hc hν curlFrame curlComponentBound hcurlComponentBound_nonneg hcurl x)
+      ((L.windowedColeHopfHeatUniformVorticityTendril_of_componentwise_abs_le
+          (ι := ι) (X := X)
+          selector c ν hc hν curlFrame curlComponentBound hcurlComponentBound_nonneg hcurl x).seedLiveOperatorCandidate
+        K.toSampleKernel.toSeedLiveOperator).velocity
+    exact
+      (L.windowedColeHopfHeatUniformVorticityTendril_of_componentwise_abs_le
+        (ι := ι) (X := X)
+        selector c ν hc hν curlFrame curlComponentBound hcurlComponentBound_nonneg hcurl x).seedLiveOperatorCandidate_has_seedLiveOperatorCompatibility
+          K.toSampleKernel.toSeedLiveOperator
 
 theorem WeightedObservable.windowedColeHopfHeatShiftKernelCandidate_has_selfCompatibility_of_zero_vorticity
     (L : WeightedObservable)

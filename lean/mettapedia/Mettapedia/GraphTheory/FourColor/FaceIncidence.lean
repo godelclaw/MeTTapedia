@@ -326,10 +326,11 @@ def interiorDualGraph (faceBoundary : F → Finset E) (allFaces : Finset F) :
   Adj f g := f.1 ≠ g.1 ∧
     ∃ e, e ∈ interiorEdgeSupport faceBoundary allFaces ∧
       e ∈ faceBoundary f.1 ∧ e ∈ faceBoundary g.1
-  symm := by
+  symm := ⟨by
     intro f g hfg
     rcases hfg with ⟨hneq, e, heint, hef, heg⟩
     exact ⟨hneq.symm, e, heint, heg, hef⟩
+  ⟩
   loopless := ⟨by
     intro f hff
     exact hff.1 rfl

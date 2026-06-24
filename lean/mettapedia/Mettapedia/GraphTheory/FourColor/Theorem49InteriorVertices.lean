@@ -125,7 +125,8 @@ theorem edgeEndpointSupport_nonempty_of_nonempty {G : SimpleGraph V}
   rcases hEdges with ⟨e, he⟩
   rcases Sym2.mk_surjective (e : Sym2 V) with ⟨⟨x, y⟩, hxy⟩
   refine ⟨x, (mem_edgeEndpointSupport_iff edges).2 ⟨e, he, ?_⟩⟩
-  simpa [hxy] using Sym2.mem_mk_left x y
+  rw [← hxy]
+  exact Sym2.mem_mk_left x y
 
 theorem edgeEndpointSupport_disjoint_iff_no_shared_endpoint {G : SimpleGraph V}
     (left right : Finset G.edgeSet) :

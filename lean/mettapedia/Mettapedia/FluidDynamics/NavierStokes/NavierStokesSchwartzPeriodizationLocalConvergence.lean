@@ -60,7 +60,8 @@ theorem BoxedPartialPeriodizationConvergesOn_of_schwartz
   have hsum : HasSum f (schwartzPeriodizedInitialVelocity L u₀ x) := by
     simpa [f, schwartzPeriodizedInitialVelocity] using
       hasSum_schwartzPeriodizedInitialVelocity hL u₀ x
-  simpa [f, boxedPartialPeriodizedInitialVelocity, finitePartialPeriodizedInitialVelocity] using
+  simpa [f, Function.comp_def, boxedPartialPeriodizedInitialVelocity,
+    finitePartialPeriodizedInitialVelocity] using
     hsum.comp centeredLatticeBox_tendsto_atTop
 
 /-- Fixed-cube specialization of the Schwartz boxed-periodization convergence

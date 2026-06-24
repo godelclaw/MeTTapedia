@@ -66,7 +66,9 @@ theorem smoothInitialVelocityData_translateInitialVelocity
     (a : NSSpace) :
     smoothInitialVelocityData (translateInitialVelocity u₀ a) := by
   unfold smoothInitialVelocityData translateInitialVelocity
-  simpa using hsmooth.comp (contDiff_id.add contDiff_const)
+  exact contDiff_congr_global
+    (hsmooth.comp (contDiff_id.add contDiff_const))
+    (by intro x; rfl)
 
 /-- Initial divergence commutes with spatial translation on smooth data. -/
 theorem initialSpatialDivergence_translateInitialVelocity
@@ -85,7 +87,9 @@ theorem initialSpatialDivergence_translateInitialVelocity
   have hfd :
       fderiv ℝ (fun y : NSSpace => u₀ (y + a)) x =
         fderiv ℝ u₀ (x + a) := by
-    simpa using (hu.comp x ha).fderiv
+    rw [show (fun y : NSSpace => u₀ (y + a)) = u₀ ∘ fun y : NSSpace => y + a by
+      rfl]
+    exact (hu.comp x ha).fderiv
   rw [hfd]
 
 /-- Divergence freeness is preserved by spatial translation on smooth data. -/
@@ -103,8 +107,8 @@ theorem divergenceFreeInitialVelocityData_translateInitialVelocity
 theorem antilipschitzWith_translateNSSpace
     (a : NSSpace) :
     AntilipschitzWith 1 (fun x : NSSpace => x + a) := by
-  simpa using
-    (IsometryClass.antilipschitz (IsometryEquiv.addRight a : NSSpace ≃ᵢ NSSpace))
+  intro x y
+  exact IsometryClass.antilipschitz (IsometryEquiv.addRight a : NSSpace ≃ᵢ NSSpace) x y
 
 /-- Finite sums of smooth initial data are smooth. -/
 theorem smoothInitialVelocityData_finset_sum
@@ -114,8 +118,8 @@ theorem smoothInitialVelocityData_finset_sum
   classical
   induction s using Finset.induction_on generalizing u with
   | empty =>
-      simpa [smoothInitialVelocityData] using
-        (contDiff_const : ContDiff ℝ ∞ (0 : NSInitialVelocity))
+      change ContDiff ℝ ∞ (fun _ : NSSpace => (0 : NSSpace))
+      exact contDiff_const
   | @insert i s hi ih =>
       rw [Finset.sum_insert hi]
       exact

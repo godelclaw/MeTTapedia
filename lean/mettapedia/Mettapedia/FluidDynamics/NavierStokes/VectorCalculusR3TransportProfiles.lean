@@ -111,7 +111,8 @@ theorem smoothInitialVelocityData_heatShearTransportInitialVelocity
     (a k b : ℝ) :
     smoothInitialVelocityData (heatShearTransportInitialVelocity a k b) := by
   simpa [heatShearTransportInitialVelocity] using
-    (smoothInitialVelocityData_heatShearInitialVelocity a k).add
+    smoothInitialVelocityData_add
+      (smoothInitialVelocityData_heatShearInitialVelocity a k)
       (smoothInitialVelocityData_constantInitialVelocity
         (EuclideanSpace.single nsCoord1 b))
 
@@ -121,18 +122,22 @@ theorem smoothSpaceTimeVelocity_heatShearTransportVelocityField
     smoothSpaceTimeVelocity (heatShearTransportVelocityField ν a k b) := by
   have htime : ContDiff ℝ ∞
       (fun tx : NSSpacetime => Real.exp (-(ν * k ^ (2 : ℕ)) * tx.1)) := by
-    simpa [smul_eq_mul, mul_assoc] using
-      (Real.contDiff_exp.comp (contDiff_fst.const_smul (-(ν * k ^ (2 : ℕ)))))
+    exact contDiff_congr_global
+      (Real.contDiff_exp.comp
+        (contDiff_fst.const_smul (-(ν * k ^ (2 : ℕ)))))
+      (by intro tx; simp [Function.comp, smul_eq_mul, mul_assoc])
   have hphase : ContDiff ℝ ∞
       (fun tx : NSSpacetime => tx.2 nsCoord1 - b * tx.1) := by
     have hcoord : ContDiff ℝ ∞ (fun tx : NSSpacetime => tx.2 nsCoord1) := by
-      simpa using
-        (EuclideanSpace.proj nsCoord1 : NSSpace →L[ℝ] ℝ).contDiff.comp contDiff_snd
+      exact contDiff_congr_global
+        ((EuclideanSpace.proj nsCoord1 : NSSpace →L[ℝ] ℝ).contDiff.comp contDiff_snd)
+        (by intro tx; rfl)
     exact hcoord.sub (contDiff_fst.const_smul b)
   have hspace : ContDiff ℝ ∞
       (fun tx : NSSpacetime => Real.sin (k * (tx.2 nsCoord1 - b * tx.1))) := by
-    simpa [smul_eq_mul, mul_assoc] using
+    exact contDiff_congr_global
       (Real.contDiff_sin.comp (hphase.const_smul k))
+      (by intro tx; simp [Function.comp, smul_eq_mul])
   have hscalar : ContDiff ℝ ∞ (fun tx : NSSpacetime =>
       a * Real.exp (-(ν * k ^ (2 : ℕ)) * tx.1) *
         Real.sin (k * (tx.2 nsCoord1 - b * tx.1))) := by
@@ -141,11 +146,16 @@ theorem smoothSpaceTimeVelocity_heatShearTransportVelocityField
   have hosc :
       smoothSpaceTimeVelocity
         (fun t x => coord0Embedding (heatShearTransportScalar ν a k b t x)) := by
-    simpa [smoothSpaceTimeVelocity, spaceTimeVelocityMap, heatShearTransportScalar, mul_assoc] using
-      coord0Embedding.contDiff.comp hscalar
+    rw [smoothSpaceTimeVelocity]
+    exact contDiff_congr_global
+      (coord0Embedding.contDiff.comp hscalar)
+      (by
+        intro tx
+        simp [Function.comp, spaceTimeVelocityMap, heatShearTransportScalar, mul_assoc])
   simpa [heatShearTransportVelocityField] using
-    hosc.add (smoothSpaceTimeVelocity_constantVelocityField
-      (EuclideanSpace.single nsCoord1 b))
+    smoothSpaceTimeVelocity_add hosc
+      (smoothSpaceTimeVelocity_constantVelocityField
+        (EuclideanSpace.single nsCoord1 b))
 
 /-- Initial velocity data `x ↦ (d + a * sin (k * x₁), b, c)` are smooth on
 `ℝ^3`. -/
@@ -153,7 +163,8 @@ theorem smoothInitialVelocityData_heatShearTransportFullDriftInitialVelocity
     (a k b d c : ℝ) :
     smoothInitialVelocityData (heatShearTransportFullDriftInitialVelocity a k b d c) := by
   simpa [heatShearTransportFullDriftInitialVelocity] using
-    (smoothInitialVelocityData_heatShearTransportInitialVelocity a k b).add
+    smoothInitialVelocityData_add
+      (smoothInitialVelocityData_heatShearTransportInitialVelocity a k b)
       (smoothInitialVelocityData_constantInitialVelocity
         (EuclideanSpace.single nsCoord0 d + EuclideanSpace.single nsCoord2 c))
 
@@ -162,7 +173,8 @@ theorem smoothSpaceTimeVelocity_heatShearTransportFullDriftVelocityField
     (ν a k b d c : ℝ) :
     smoothSpaceTimeVelocity (heatShearTransportFullDriftVelocityField ν a k b d c) := by
   simpa [heatShearTransportFullDriftVelocityField] using
-    (smoothSpaceTimeVelocity_heatShearTransportVelocityField ν a k b).add
+    smoothSpaceTimeVelocity_add
+      (smoothSpaceTimeVelocity_heatShearTransportVelocityField ν a k b)
       (smoothSpaceTimeVelocity_constantVelocityField
         (EuclideanSpace.single nsCoord0 d + EuclideanSpace.single nsCoord2 c))
 

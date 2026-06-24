@@ -27,7 +27,9 @@ theorem smoothSpaceTimePressure_scalar_smul_schwartzPressure
     hρ.comp (contDiff_fst : ContDiff ℝ ∞ fun tx : NSSpacetime => tx.1)
   have hqSpace : ContDiff ℝ ∞ (fun tx : NSSpacetime => q tx.2) :=
     q.smooth'.comp (contDiff_snd : ContDiff ℝ ∞ fun tx : NSSpacetime => tx.2)
-  simpa [smoothSpaceTimePressure, spaceTimePressureMap] using hρTime.mul hqSpace
+  rw [smoothSpaceTimePressure]
+  exact contDiff_congr_global (hρTime.mul hqSpace)
+    (by intro tx; rfl)
 
 /-- A smooth time-dependent affine spatial pressure profile
 `p(t,x) = ⟪c(t), x⟫ + π(t)` is a smooth concrete space-time pressure field. -/
@@ -50,9 +52,12 @@ theorem smoothSpaceTimePressure_affinePressure
         (fun i _ => hCoord i))
   have hπTime : ContDiff ℝ ∞ (fun tx : NSSpacetime => π tx.1) :=
     hπ.comp (contDiff_fst : ContDiff ℝ ∞ fun tx : NSSpacetime => tx.1)
-  simpa [smoothSpaceTimePressure, spaceTimePressureMap,
-    EuclideanSpace.inner_eq_star_dotProduct, dotProduct, mul_comm] using
-      hInnerSum.add hπTime
+  rw [smoothSpaceTimePressure]
+  exact contDiff_congr_global (hInnerSum.add hπTime)
+    (by
+      intro tx
+      simp [spaceTimePressureMap, EuclideanSpace.inner_eq_star_dotProduct,
+        dotProduct, mul_comm])
 
 /-- Smooth affine pressures remain smooth after adding a smooth time
 coefficient times a Schwartz spatial profile. -/

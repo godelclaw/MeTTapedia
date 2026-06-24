@@ -28,19 +28,16 @@ section UniformVorticityContinuation
 /-- Zero initial velocity data are smooth on `ℝ^3`. -/
 theorem smoothInitialVelocityData_zero :
     smoothInitialVelocityData (0 : NSInitialVelocity) := by
-  simpa [smoothInitialVelocityData] using (contDiff_const : ContDiff ℝ ∞ (0 : NSInitialVelocity))
+  change ContDiff ℝ ∞ (fun _ : NSSpace => (0 : NSSpace))
+  exact contDiff_const
 
 /-- Canonical finite-time witness on any slab for zero initial data. -/
 def zeroFiniteTimeRegularityWitness (ν T : ℝ) :
     ExplicitFiniteTimeRegularityWitness ν (0 : NSInitialVelocity) T where
   velocity := 0
   pressure := 0
-  smooth_velocity := by
-    simpa [smoothSpaceTimeVelocity, spaceTimeVelocityMap] using
-      (contDiff_const : ContDiff ℝ ∞ (fun _ : NSSpacetime => (0 : NSSpace)))
-  smooth_pressure := by
-    simpa [smoothSpaceTimePressure, spaceTimePressureMap] using
-      (contDiff_const : ContDiff ℝ ∞ (fun _ : NSSpacetime => (0 : ℝ)))
+  smooth_velocity := smoothSpaceTimeVelocity_zero
+  smooth_pressure := smoothSpaceTimePressure_zero
   momentum_equation_on := by
     intro t x ht0 htT
     have hu0 : ContDiffAt ℝ 2 (fun y : NSSpace => (0 : NSSpace)) x := by
@@ -255,10 +252,8 @@ theorem ExplicitConcreteNavierStokesGlobalOutput_zero
     (ν : ℝ) :
     ExplicitConcreteNavierStokesGlobalOutput ν (0 : NSInitialVelocity) := by
   refine ⟨0, 0, ?_, ?_, ?_, ?_, ?_, ?_⟩
-  · simpa [smoothSpaceTimeVelocity, spaceTimeVelocityMap] using
-      (contDiff_const : ContDiff ℝ ∞ (fun _ : NSSpacetime => (0 : NSSpace)))
-  · simpa [smoothSpaceTimePressure, spaceTimePressureMap] using
-      (contDiff_const : ContDiff ℝ ∞ (fun _ : NSSpacetime => (0 : ℝ)))
+  · exact smoothSpaceTimeVelocity_zero
+  · exact smoothSpaceTimePressure_zero
   · intro t x
     have hu0 : ContDiffAt ℝ 2 (fun y : NSSpace => (0 : NSSpace)) x := by
       simpa using

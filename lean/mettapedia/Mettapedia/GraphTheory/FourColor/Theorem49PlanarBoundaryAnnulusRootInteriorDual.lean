@@ -236,7 +236,9 @@ theorem exists_root_mem_outerBoundaryFaces_of_closedWalkAnnulusBoundarySource_an
   let data :=
     planarBoundaryAnnulusRootAdjDistancePeelData_of_closedWalkAnnulusBoundarySource_and_interiorDualBoundaryRootAdjDistancePeelData
       source interiorData
-  simpa [data] using
+  simpa [data,
+    planarBoundaryAnnulusRootAdjDistancePeelData_of_closedWalkAnnulusBoundarySource_and_interiorDualBoundaryRootAdjDistancePeelData,
+    planarBoundaryAnnulusRootAdjDistancePeelData_of_boundaryData_and_interiorDualBoundaryRootAdjDistancePeelData] using
     (PlanarBoundaryAnnulusRootAdjDistancePeelData.exists_root_mem_outerBoundaryFaces data)
 
 theorem exists_root_mem_innerBoundaryFaces_of_closedWalkAnnulusBoundarySource_and_interiorDualBoundaryRootAdjDistancePeelData
@@ -249,7 +251,9 @@ theorem exists_root_mem_innerBoundaryFaces_of_closedWalkAnnulusBoundarySource_an
   let data :=
     planarBoundaryAnnulusRootAdjDistancePeelData_of_closedWalkAnnulusBoundarySource_and_interiorDualBoundaryRootAdjDistancePeelData
       source interiorData
-  simpa [data] using
+  simpa [data,
+    planarBoundaryAnnulusRootAdjDistancePeelData_of_closedWalkAnnulusBoundarySource_and_interiorDualBoundaryRootAdjDistancePeelData,
+    planarBoundaryAnnulusRootAdjDistancePeelData_of_boundaryData_and_interiorDualBoundaryRootAdjDistancePeelData] using
     (PlanarBoundaryAnnulusRootAdjDistancePeelData.exists_root_mem_innerBoundaryFaces data)
 
 /-- The canonical source-side root set for the two-sided interior-dual attack: all faces meeting
@@ -348,11 +352,15 @@ theorem PlanarBoundaryClosedWalkAnnulusBoundarySource.not_reachable_outerBoundar
     planarBoundaryAnnulusRootAdjDistancePeelData_of_closedWalkAnnulusBoundarySource_and_interiorDualBoundaryRootAdjDistancePeelData
       source interiorData
   have hfoRoot : fo ∈ interiorData.roots := by
-    simpa [data] using
+    simpa [data,
+      planarBoundaryAnnulusRootAdjDistancePeelData_of_closedWalkAnnulusBoundarySource_and_interiorDualBoundaryRootAdjDistancePeelData,
+      planarBoundaryAnnulusRootAdjDistancePeelData_of_boundaryData_and_interiorDualBoundaryRootAdjDistancePeelData] using
       (PlanarBoundaryAnnulusRootAdjDistancePeelData.mem_roots_of_mem_outerBoundaryFaces
         data hfo)
   have hfiRoot : fi ∈ interiorData.roots := by
-    simpa [data] using
+    simpa [data,
+      planarBoundaryAnnulusRootAdjDistancePeelData_of_closedWalkAnnulusBoundarySource_and_interiorDualBoundaryRootAdjDistancePeelData,
+      planarBoundaryAnnulusRootAdjDistancePeelData_of_boundaryData_and_interiorDualBoundaryRootAdjDistancePeelData] using
       (PlanarBoundaryAnnulusRootAdjDistancePeelData.mem_roots_of_mem_innerBoundaryFaces
         data hfi)
   have hEq : fo = fi := interiorData.hsepRoots hfoRoot hfiRoot hreach

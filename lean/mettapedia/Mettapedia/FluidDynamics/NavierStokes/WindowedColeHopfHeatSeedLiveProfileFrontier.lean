@@ -110,7 +110,18 @@ theorem WeightedObservable.windowedColeHopfHeatSeedLiveCandidate_has_selfCompati
         (ι := ι) (X := X)
         selector P c ν hc hν curlFrame curlBound curlBound_nonneg hcurl x).velocity := by
   intro t y
-  simpa [selfCompatibility, WeightedObservable.windowedColeHopfHeatSeedLiveCandidate] using
+  change
+    P.profile
+        ((L.windowedColeHopfHeatUniformVorticityTendril
+          (ι := ι) (X := X)
+          selector c ν hc hν curlFrame curlBound curlBound_nonneg hcurl x).vorticity 1 y)
+        ((L.windowedColeHopfHeatUniformVorticityTendril
+          (ι := ι) (X := X)
+          selector c ν hc hν curlFrame curlBound curlBound_nonneg hcurl x).vorticity t y) =
+      (L.windowedColeHopfHeatUniformVorticityTendril
+        (ι := ι) (X := X)
+        selector c ν hc hν curlFrame curlBound curlBound_nonneg hcurl x).vorticity t y
+  exact
     hP
       ((L.windowedColeHopfHeatUniformVorticityTendril
         (ι := ι) (X := X)

@@ -110,8 +110,13 @@ theorem v13BoolPairUnitFieldedRepeatedTwoSteps_second_step_bad_cell :
           v13BoolPairUnitFieldedStep.step
           v13BoolPairUnitFieldedStep.field.cellOf cell := by
   refine ⟨PUnit.unit, ?_⟩
-  simpa [v13FieldedSuccessEvents, v13BoolPairUnitFieldedStep] using
-    v13BoolPairUnitField_repeatedSuccess_bad_cell
+  change v13ConcreteFailureCount (Ω := Bool × Bool)
+      [v13BoolPairRepeatedStep.successEvent] v13BoolPairRepeatedStep
+      v13BoolPairUnitField.cellOf PUnit.unit <
+    v13ConcreteSuccessCount (Ω := Bool × Bool)
+      [v13BoolPairRepeatedStep.successEvent] v13BoolPairRepeatedStep
+      v13BoolPairUnitField.cellOf PUnit.unit
+  exact v13BoolPairUnitField_repeatedSuccess_bad_cell
 
 /-- The fielded product failure for two repeated one-cell cuts localizes
 exactly to the second step and its unique bad cell. -/

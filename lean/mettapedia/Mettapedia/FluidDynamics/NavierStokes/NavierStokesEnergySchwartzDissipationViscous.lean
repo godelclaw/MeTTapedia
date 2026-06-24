@@ -33,8 +33,11 @@ theorem schwartz_integral_laplacianEnergyPairing_eq_neg_coordinateEnstrophy
   have hIntSecond :
       ∀ i : NSStdBasisIndex, Integrable (fun x : NSSpace => ⟪f x, ∂_{b i} (∂_{b i} f) x⟫) := by
     intro i
-    simpa [SchwartzMap.pairing_apply_apply] using
-      (SchwartzMap.pairing (innerSL ℝ) f (∂_{b i} (∂_{b i} f))).integrable
+    refine ((SchwartzMap.pairing (innerSL ℝ) f (∂_{b i} (∂_{b i} f))).integrable).congr ?_
+    filter_upwards with x
+    show ((innerSL ℝ) (f x)) ((∂_{b i} (∂_{b i} f)) x) =
+      ⟪f x, (∂_{b i} (∂_{b i} f)) x⟫
+    rfl
   have hIntDiag :
       ∀ i : NSStdBasisIndex, Integrable (fun x : NSSpace => ‖(∂_{b i} f) x‖ ^ (2 : ℕ)) := by
     intro i
@@ -49,7 +52,9 @@ theorem schwartz_integral_laplacianEnergyPairing_eq_neg_coordinateEnstrophy
         (⇑(((SchwartzMap.pairing (innerSL ℝ)) (∂_{b i} f)) (∂_{b i} f))) =
           fun x : NSSpace => ‖(∂_{b i} f) x‖ ^ (2 : ℕ) := by
       funext x
-      rw [SchwartzMap.pairing_apply_apply, innerSL_apply_apply, real_inner_self_eq_norm_sq]
+      rw [SchwartzMap.pairing_apply_apply]
+      change ⟪(∂_{b i} f) x, (∂_{b i} f) x⟫ = ‖(∂_{b i} f) x‖ ^ (2 : ℕ)
+      rw [real_inner_self_eq_norm_sq]
     rw [← hEq]
     exact hPair
   have hIBP :
@@ -68,12 +73,13 @@ theorem schwartz_integral_laplacianEnergyPairing_eq_neg_coordinateEnstrophy
         (fun x : NSSpace => ((innerSL ℝ) (f x)) ((∂_{b i} (∂_{b i} f)) x)) =
           fun x : NSSpace => ⟪f x, (∂_{b i} (∂_{b i} f)) x⟫ := by
       funext x
-      simp [innerSL_apply_apply]
+      rfl
     have hRight :
         (fun x : NSSpace => ((innerSL ℝ) ((∂_{b i} f) x)) ((∂_{b i} f) x)) =
           fun x : NSSpace => ‖(∂_{b i} f) x‖ ^ (2 : ℕ) := by
       funext x
-      rw [innerSL_apply_apply, real_inner_self_eq_norm_sq]
+      change ⟪(∂_{b i} f) x, (∂_{b i} f) x⟫ = ‖(∂_{b i} f) x‖ ^ (2 : ℕ)
+      rw [real_inner_self_eq_norm_sq]
     rw [hLeft, hRight] at hRaw
     exact hRaw
   have hLapExpand :
@@ -85,9 +91,9 @@ theorem schwartz_integral_laplacianEnergyPairing_eq_neg_coordinateEnstrophy
     ∫ x, ⟪f x, Δ f x⟫ ∂volume
         = ∫ x, ∑ i : NSStdBasisIndex, ⟪f x, ∂_{b i} (∂_{b i} f) x⟫ ∂volume := hLapExpand
     _ = ∑ i : NSStdBasisIndex, ∫ x, ⟪f x, ∂_{b i} (∂_{b i} f) x⟫ ∂volume := by
-          rw [integral_finset_sum]
-          intro i hi
-          exact hIntSecond i
+      rw [integral_finsetSum]
+      intro i hi
+      exact hIntSecond i
     _ = ∑ i : NSStdBasisIndex, - ∫ x, ‖(∂_{b i} f) x‖ ^ (2 : ℕ) ∂volume := by
           refine Finset.sum_congr rfl ?_
           intro i hi
@@ -95,10 +101,10 @@ theorem schwartz_integral_laplacianEnergyPairing_eq_neg_coordinateEnstrophy
     _ = - ∑ i : NSStdBasisIndex, ∫ x, ‖(∂_{b i} f) x‖ ^ (2 : ℕ) ∂volume := by
           rw [Finset.sum_neg_distrib]
     _ = - ∫ x, ∑ i : NSStdBasisIndex, ‖(∂_{b i} f) x‖ ^ (2 : ℕ) ∂volume := by
-          congr 1
-          rw [integral_finset_sum]
-          intro i hi
-          exact hIntDiag i
+      congr 1
+      rw [integral_finsetSum]
+      intro i hi
+      exact hIntDiag i
     _ = - ∫ x, ∑ i : NSStdBasisIndex, ‖∂_{b i} f x‖ ^ (2 : ℕ) ∂volume := by
           rfl
 

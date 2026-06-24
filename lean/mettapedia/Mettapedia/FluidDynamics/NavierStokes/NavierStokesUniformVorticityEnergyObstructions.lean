@@ -246,8 +246,17 @@ theorem not_finiteInitialKineticEnergy_constantInitialVelocity
   intro hE
   have hIntConst :
       MeasureTheory.Integrable (kineticEnergyDensity (constantVelocityField c) 0) := by
-    simpa [finiteInitialKineticEnergy, initialKineticEnergyDensity,
-      constantVelocityField, constantInitialVelocity] using hE
+    have hInitial :
+        MeasureTheory.Integrable (initialKineticEnergyDensity (constantInitialVelocity c)) := by
+      simpa [finiteInitialKineticEnergy] using hE
+    have hDensity :
+        kineticEnergyDensity (constantVelocityField c) 0 =
+          initialKineticEnergyDensity (constantInitialVelocity c) := by
+      funext x
+      simp [kineticEnergyDensity, initialKineticEnergyDensity,
+        constantVelocityField, constantInitialVelocity]
+    rw [hDensity]
+    exact hInitial
   exact not_integrable_kineticEnergyDensity_constantVelocityField hc 0 hIntConst
 
 /-- Constant initial data have finite whole-space kinetic energy exactly in the

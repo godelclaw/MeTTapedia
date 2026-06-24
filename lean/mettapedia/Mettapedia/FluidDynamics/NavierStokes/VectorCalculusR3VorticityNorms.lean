@@ -30,7 +30,7 @@ theorem norm_spatialVorticity_linearShearVelocityField
     (a : ℝ) (t : NSTime) (x : NSSpace) :
     ‖spatialVorticity (linearShearVelocityField a) t x‖ = |a| := by
   rw [spatialVorticity_linearShearVelocityField]
-  simp [EuclideanSpace.norm_single]
+  simp
 
 /-- Adding constant drifts to steady linear shear does not change the vorticity
 norm. -/
@@ -38,7 +38,7 @@ theorem norm_spatialVorticity_linearShearFullDriftVelocityField
     (a b c : ℝ) (t : NSTime) (x : NSSpace) :
     ‖spatialVorticity (linearShearFullDriftVelocityField a b c) t x‖ = |a| := by
   rw [spatialVorticity_linearShearFullDriftVelocityField]
-  simp [EuclideanSpace.norm_single]
+  simp
 
 /-- Exact pointwise vorticity norm for the damped sinusoidal heat-shear field. -/
 theorem norm_spatialVorticity_heatShearVelocityField
@@ -47,7 +47,7 @@ theorem norm_spatialVorticity_heatShearVelocityField
       |a| * Real.exp (-(ν * k ^ (2 : ℕ)) * t) *
         |Real.cos (k * x nsCoord1)| * |k| := by
   rw [spatialVorticity_heatShearVelocityField]
-  simp [EuclideanSpace.norm_single, mul_assoc, mul_left_comm, mul_comm]
+  simp [mul_assoc, mul_left_comm, mul_comm]
 
 /-- The heat-shear vorticity norm is bounded by its damped amplitude envelope,
 uniformly in the oscillatory phase. -/
@@ -73,7 +73,7 @@ theorem norm_spatialVorticity_heatShearTransportVelocityField
       |a| * Real.exp (-(ν * k ^ (2 : ℕ)) * t) *
         |Real.cos (k * (x nsCoord1 - b * t))| * |k| := by
   rw [spatialVorticity_heatShearTransportVelocityField]
-  simp [EuclideanSpace.norm_single, mul_assoc, mul_left_comm, mul_comm]
+  simp [mul_assoc, mul_left_comm, mul_comm]
 
 /-- Transported heat-shear vorticity has the same damped amplitude envelope as
 the untransported heat-shear field. -/
@@ -98,7 +98,7 @@ theorem norm_spatialVorticity_heatShearTransportFullDriftVelocityField
       |a| * Real.exp (-(ν * k ^ (2 : ℕ)) * t) *
         |Real.cos (k * (x nsCoord1 - b * t))| * |k| := by
   rw [spatialVorticity_heatShearTransportFullDriftVelocityField]
-  simp [EuclideanSpace.norm_single, mul_assoc, mul_left_comm, mul_comm]
+  simp [mul_assoc, mul_left_comm, mul_comm]
 
 /-- Full-drift transported heat shear has the same damped vorticity envelope as
 the drift-free transported branch. -/

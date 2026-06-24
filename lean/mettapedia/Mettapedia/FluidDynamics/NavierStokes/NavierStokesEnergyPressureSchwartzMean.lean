@@ -54,13 +54,19 @@ theorem integral_coord0_zero_of_schwartzSlice_of_spatialDivergence_zero
   have hCoordFDeriv (i j : Fin 3) (x : NSSpace) :
       fderiv ℝ (coord i) x (EuclideanSpace.single j (1 : ℝ)) =
         fderiv ℝ f x (EuclideanSpace.single j (1 : ℝ)) i := by
+    have hcoordFun : (coord i : NSSpace → ℝ) = fun y : NSSpace => (f y) i := by
+      funext y
+      simp [coord, SchwartzMap.bilinLeftCLM_apply, ContinuousLinearMap.apply_apply]
     have hproj :=
       congrArg
         (fun L : NSSpace →L[ℝ] ℝ => L (EuclideanSpace.single j (1 : ℝ)))
         (((EuclideanSpace.proj i : NSSpace →L[ℝ] ℝ).hasFDerivAt.comp x
           (f.hasFDerivAt x)).fderiv)
-    simpa [coord, SchwartzMap.bilinLeftCLM_apply, ContinuousLinearMap.apply_apply,
-      ContinuousLinearMap.comp_apply] using hproj
+    rw [hcoordFun]
+    change fderiv ℝ ((fun y : NSSpace => y i) ∘ (f : NSSpace → NSSpace)) x
+        (EuclideanSpace.single j (1 : ℝ)) =
+      fderiv ℝ f x (EuclideanSpace.single j (1 : ℝ)) i
+    simpa [ContinuousLinearMap.comp_apply] using hproj
   have hx0_hasFDeriv (x : NSSpace) :
       HasFDerivAt x0 (EuclideanSpace.proj nsCoord0 : NSSpace →L[ℝ] ℝ) x := by
     simpa [x0] using
@@ -122,7 +128,7 @@ theorem integral_coord0_zero_of_schwartzSlice_of_spatialDivergence_zero
             (fderiv ℝ (coord nsCoord1) x e1 + fderiv ℝ (coord nsCoord2) x e2) = 0 := by
       rw [hCoordFDeriv nsCoord0 nsCoord0 x, hCoordFDeriv nsCoord1 nsCoord1 x,
         hCoordFDeriv nsCoord2 nsCoord2 x]
-      simpa [e0, e1, e2, add_assoc] using hx
+      simpa [e0, e1, e2, nsCoord0, nsCoord1, nsCoord2, add_assoc] using hx
     exact eq_neg_of_add_eq_zero_left hx'
   have hIBP0 :
       ∫ x, x0 x * fderiv ℝ (coord nsCoord0) x e0 ∂volume =
@@ -142,8 +148,8 @@ theorem integral_coord0_zero_of_schwartzSlice_of_spatialDivergence_zero
           exact (coord nsCoord0).integrable)
         (hIntWeightedDeriv nsCoord0 e0)
         (hIntWeighted nsCoord0)
-        hx0_diff
-        (fun x => (coord nsCoord0).differentiableAt)
+        (fun x _ => hx0_diff x)
+        (fun x _ => (coord nsCoord0).differentiableAt)
     simpa [hx0_e0] using hIBP0raw
   have hIBP1 :
       ∫ x, x0 x * fderiv ℝ (coord nsCoord1) x e1 ∂volume = 0 := by
@@ -162,8 +168,8 @@ theorem integral_coord0_zero_of_schwartzSlice_of_spatialDivergence_zero
           exact integrable_zero NSSpace ℝ (volume : Measure NSSpace))
         (hIntWeightedDeriv nsCoord1 e1)
         (hIntWeighted nsCoord1)
-        hx0_diff
-        (fun x => (coord nsCoord1).differentiableAt)
+        (fun x _ => hx0_diff x)
+        (fun x _ => (coord nsCoord1).differentiableAt)
     simpa [hx0_e1] using hIBP1raw
   have hIBP2 :
       ∫ x, x0 x * fderiv ℝ (coord nsCoord2) x e2 ∂volume = 0 := by
@@ -182,8 +188,8 @@ theorem integral_coord0_zero_of_schwartzSlice_of_spatialDivergence_zero
           exact integrable_zero NSSpace ℝ (volume : Measure NSSpace))
         (hIntWeightedDeriv nsCoord2 e2)
         (hIntWeighted nsCoord2)
-        hx0_diff
-        (fun x => (coord nsCoord2).differentiableAt)
+        (fun x _ => hx0_diff x)
+        (fun x _ => (coord nsCoord2).differentiableAt)
     simpa [hx0_e2] using hIBP2raw
   have hCoord0Eq :
       (fun x : NSSpace => (u t x) nsCoord0) = coord nsCoord0 := by
@@ -216,7 +222,12 @@ theorem integral_coord0_zero_of_schwartzSlice_of_spatialDivergence_zero
         funext x
         simp [mul_add]
       rw [hSplit]
-      simpa using
+      change
+        (∫ x, x0 x * fderiv ℝ (coord nsCoord1) x e1 +
+          x0 x * fderiv ℝ (coord nsCoord2) x e2 ∂volume) =
+        ∫ x, x0 x * fderiv ℝ (coord nsCoord1) x e1 ∂volume +
+          ∫ x, x0 x * fderiv ℝ (coord nsCoord2) x e2 ∂volume
+      exact
         integral_add
           (hIntWeightedDeriv nsCoord1 e1)
           (hIntWeightedDeriv nsCoord2 e2)
@@ -247,13 +258,19 @@ theorem integral_coord_zero_of_schwartzSlice_of_spatialDivergence_zero
   have hCoordFDeriv (i j : Fin 3) (x : NSSpace) :
       fderiv ℝ (coord i) x (EuclideanSpace.single j (1 : ℝ)) =
         fderiv ℝ f x (EuclideanSpace.single j (1 : ℝ)) i := by
+    have hcoordFun : (coord i : NSSpace → ℝ) = fun y : NSSpace => (f y) i := by
+      funext y
+      simp [coord, SchwartzMap.bilinLeftCLM_apply, ContinuousLinearMap.apply_apply]
     have hproj :=
       congrArg
         (fun L : NSSpace →L[ℝ] ℝ => L (EuclideanSpace.single j (1 : ℝ)))
         (((EuclideanSpace.proj i : NSSpace →L[ℝ] ℝ).hasFDerivAt.comp x
           (f.hasFDerivAt x)).fderiv)
-    simpa [coord, SchwartzMap.bilinLeftCLM_apply, ContinuousLinearMap.apply_apply,
-      ContinuousLinearMap.comp_apply] using hproj
+    rw [hcoordFun]
+    change fderiv ℝ ((fun y : NSSpace => y i) ∘ (f : NSSpace → NSSpace)) x
+        (EuclideanSpace.single j (1 : ℝ)) =
+      fderiv ℝ f x (EuclideanSpace.single j (1 : ℝ)) i
+    simpa [ContinuousLinearMap.comp_apply] using hproj
   have hxk_hasFDeriv (x : NSSpace) :
       HasFDerivAt xk (EuclideanSpace.proj k : NSSpace →L[ℝ] ℝ) x := by
     simpa [xk] using
@@ -346,8 +363,8 @@ theorem integral_coord_zero_of_schwartzSlice_of_spatialDivergence_zero
           exact (coord k).integrable)
         (hIntWeightedDeriv k ek)
         (hIntWeighted k)
-        hxk_diff
-        (fun x => (coord k).differentiableAt)
+        (fun x _ => hxk_diff x)
+        (fun x _ => (coord k).differentiableAt)
     simpa [hxk_ek] using hIBPkRaw
   have hIBPzero (i : Fin 3) (hik : i ≠ k) :
       ∫ x, xk x * fderiv ℝ (coord i) x (EuclideanSpace.single i (1 : ℝ)) ∂volume = 0 := by
@@ -367,8 +384,8 @@ theorem integral_coord_zero_of_schwartzSlice_of_spatialDivergence_zero
           exact integrable_zero NSSpace ℝ (volume : Measure NSSpace))
         (hIntWeightedDeriv i (EuclideanSpace.single i (1 : ℝ)))
         (hIntWeighted i)
-        hxk_diff
-        (fun x => (coord i).differentiableAt)
+        (fun x _ => hxk_diff x)
+        (fun x _ => (coord i).differentiableAt)
     simpa [hxk_ei_zero i hik] using hIBPRaw
   have hCoordkEq :
       (fun x : NSSpace => (u t x) k) = coord k := by
@@ -410,7 +427,7 @@ theorem integral_coord_zero_of_schwartzSlice_of_spatialDivergence_zero
           funext x
           rw [Finset.mul_sum]
         simpa [remainder] using hSplit'
-      rw [hSplit, integral_finset_sum]
+      rw [hSplit, integral_finsetSum]
       intro i hi
       exact hIntWeightedDeriv i (EuclideanSpace.single i (1 : ℝ))
     _ = 0 := by

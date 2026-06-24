@@ -63,7 +63,7 @@ theorem boxedPartialPeriodizationSteadySeed_nonMomentumFiniteTimeFields
         (boxedPartialPeriodizationSteadySeedVelocity N L u₀ hν) T := by
   rcases boxedPartialPeriodizationSteadySeed_basic hν N L u₀ with
     ⟨hsmooth, hinit, hdiv, _htime, _henergyDensity⟩
-  exact ⟨hsmooth, by simpa using smoothSpaceTimePressure_const (0 : ℝ),
+  exact ⟨hsmooth, smoothSpaceTimePressure_zero,
     hdiv, hinit, boundedKineticEnergyUpTo_boxedPartialPeriodizationSteadySeed hν N L u₀ T⟩
 
 end BoxedPeriodizationLocalExistencePrerequisites

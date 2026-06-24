@@ -49,7 +49,8 @@ theorem traceDecoderFamily_surjective_of_capturesAllBoolObservers
   rcases hcapture observer with ⟨decode, hdecode⟩
   refine ⟨decode, ?_⟩
   funext s
-  simpa [traceDecoderFamily, observer, s.2] using hdecode s.1 s.2
+  simpa [traceDecoderFamily, V13TraceCaptureSurface.traceOnRelevant, observer, s.2]
+    using hdecode s.1 s.2
 
 /-- The full trace-decoder family is itself a finite cover of size
 `2^|Trace|`: just enumerate all Boolean decoders on the trace alphabet. -/

@@ -169,8 +169,7 @@ theorem linearShearVelocityField_exhibits_uniformCandidate_except_boundedEnergy
       ¬ boundedKineticEnergyUpTo u T := by
   refine ⟨linearShearVelocityField a, 0, |a|, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩
   · exact smoothSpaceTimeVelocity_linearShearVelocityField a
-  · simpa [smoothSpaceTimePressure, spaceTimePressureMap] using
-      (contDiff_const : ContDiff ℝ ∞ (fun _ : NSSpacetime => (0 : ℝ)))
+  · exact smoothSpaceTimePressure_const (0 : ℝ)
   · intro t x ht0 htT
     simp [timeVelocityDerivative_linearShearVelocityField,
       spatialConvection_linearShearVelocityField,
@@ -201,8 +200,7 @@ theorem linearShearVerticalDriftVelocityField_exhibits_uniformCandidate_except_b
       ¬ boundedKineticEnergyUpTo u T := by
   refine ⟨linearShearVerticalDriftVelocityField a b, 0, |a|, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩
   · exact smoothSpaceTimeVelocity_linearShearVerticalDriftVelocityField a b
-  · simpa [smoothSpaceTimePressure, spaceTimePressureMap] using
-      (contDiff_const : ContDiff ℝ ∞ (fun _ : NSSpacetime => (0 : ℝ)))
+  · exact smoothSpaceTimePressure_const (0 : ℝ)
   · intro t x ht0 htT
     simp [timeVelocityDerivative_linearShearVerticalDriftVelocityField,
       spatialConvection_linearShearVerticalDriftVelocityField,
@@ -403,8 +401,7 @@ theorem linearShearVelocityField_exhibits_concreteCandidate_except_boundedEnergy
       ¬ boundedKineticEnergy u := by
   refine ⟨linearShearVelocityField a, 0, ?_, ?_, ?_, ?_, ?_, ?_⟩
   · exact smoothSpaceTimeVelocity_linearShearVelocityField a
-  · simpa [smoothSpaceTimePressure, spaceTimePressureMap] using
-      (contDiff_const : ContDiff ℝ ∞ (fun _ : NSSpacetime => (0 : ℝ)))
+  · exact smoothSpaceTimePressure_const (0 : ℝ)
   · intro t x
     simp [timeVelocityDerivative_linearShearVelocityField,
       spatialConvection_linearShearVelocityField,
@@ -456,8 +453,7 @@ theorem linearShearVerticalDriftVelocityField_exhibits_concreteCandidate_except_
       ¬ boundedKineticEnergy u := by
   refine ⟨linearShearVerticalDriftVelocityField a b, 0, ?_, ?_, ?_, ?_, ?_, ?_⟩
   · exact smoothSpaceTimeVelocity_linearShearVerticalDriftVelocityField a b
-  · simpa [smoothSpaceTimePressure, spaceTimePressureMap] using
-      (contDiff_const : ContDiff ℝ ∞ (fun _ : NSSpacetime => (0 : ℝ)))
+  · exact smoothSpaceTimePressure_const (0 : ℝ)
   · intro t x
     simp [timeVelocityDerivative_linearShearVerticalDriftVelocityField,
       spatialConvection_linearShearVerticalDriftVelocityField,

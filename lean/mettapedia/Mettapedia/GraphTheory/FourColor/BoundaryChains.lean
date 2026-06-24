@@ -56,7 +56,12 @@ theorem sum_mem_zero {ι : Type*} [DecidableEq ι]
   classical
   induction S using Finset.induction with
   | empty =>
-      simpa using D.zeroChain_mem_zeroBoundarySet
+      change (0 : E → Color) ∈ D.zeroBoundarySet
+      refine ⟨?_, ?_⟩
+      · intro v
+        simp
+      · intro e _he
+        rfl
   | insert i S hi ih =>
       have hi' : f i ∈ D.zeroBoundarySet := h i (Finset.mem_insert_self _ _)
       have hS : ∀ j ∈ S, f j ∈ D.zeroBoundarySet :=
@@ -302,13 +307,13 @@ theorem support₁_relativeFaceBoundaryChain_red {E : Type*} [Fintype E] [Decida
     (boundaryEdges : Finset E) (face : Finset E) :
     support₁ (relativeFaceBoundaryChain boundaryEdges red face) = face \ boundaryEdges := by
   simpa [relativeFaceBoundaryChain] using
-    support₁_faceBoundaryChain_red (f := face \ boundaryEdges)
+    support₁_indicatorChain_red (S := face \ boundaryEdges)
 
 theorem support₂_relativeFaceBoundaryChain_blue {E : Type*} [Fintype E] [DecidableEq E]
     (boundaryEdges : Finset E) (face : Finset E) :
     support₂ (relativeFaceBoundaryChain boundaryEdges blue face) = face \ boundaryEdges := by
   simpa [relativeFaceBoundaryChain] using
-    support₂_faceBoundaryChain_blue (f := face \ boundaryEdges)
+    support₂_indicatorChain_blue (S := face \ boundaryEdges)
 
 /-- Sum of relative face-boundary chains over a finite face set. -/
 def relativeFaceBoundarySum {E : Type*} [DecidableEq E]

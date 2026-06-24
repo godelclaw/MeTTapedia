@@ -227,13 +227,21 @@ instance toEncodedFamilyCodeNonempty :
   change Nonempty (BitCode s)
   exact ⟨fun _ => false⟩
 
+omit [Fintype Input] [Nonempty Input] in
+theorem toEncodedFamily_code_card :
+    Fintype.card F.toEncodedFamily.Code = 2 ^ s := by
+  change Fintype.card (BitCode s) = 2 ^ s
+  exact card_bitCode s
+
 /-- Bit-budget form of the deceptive-rate bound: an `s`-bit classifier family
 has deceptive uniform sample rate at most `2^s * ρ_X^m`. -/
 theorem deceptiveRate_le_bitBudget_uniformMissRatio_pow
     (target : Input → Bool) (m : ℕ) :
     F.toEncodedFamily.deceptiveRate target m ≤
       (2 ^ s : ℚ) * uniformMissRatio Input ^ m := by
-  simpa [BitEncodedClassifierFamily.toEncodedFamily, card_bitCode] using
+  have hcard : (Fintype.card F.toEncodedFamily.Code : ℚ) = (2 ^ s : ℚ) := by
+    exact_mod_cast F.toEncodedFamily_code_card
+  simpa [hcard] using
     F.toEncodedFamily.deceptiveRate_le_codeMul_uniformMissRatio_pow target m
 
 theorem bitBudget_uniformMissRatio_pow_le_of_le
@@ -250,9 +258,10 @@ theorem nondeceptiveRate_ge_one_sub_bitBudget_uniformMissRatio_pow
     (target : Input → Bool) (m : ℕ) :
     1 - (2 ^ s : ℚ) * uniformMissRatio Input ^ m ≤
       F.toEncodedFamily.nondeceptiveRate target m := by
-  simpa [BitEncodedClassifierFamily.toEncodedFamily, card_bitCode] using
-    F.toEncodedFamily.nondeceptiveRate_ge_one_sub_codeMul_uniformMissRatio_pow
-      target m
+  have hcard : (Fintype.card F.toEncodedFamily.Code : ℚ) = (2 ^ s : ℚ) := by
+    exact_mod_cast F.toEncodedFamily_code_card
+  simpa [hcard] using
+    F.toEncodedFamily.nondeceptiveRate_ge_one_sub_codeMul_uniformMissRatio_pow target m
 
 /-- Epsilon-style bit-budget non-deceptive-rate corollary. -/
 theorem nondeceptiveRate_ge_one_sub_of_bitBudget_uniformMissRatio_pow_le
@@ -262,7 +271,9 @@ theorem nondeceptiveRate_ge_one_sub_of_bitBudget_uniformMissRatio_pow_le
   have hε' :
       (Fintype.card F.toEncodedFamily.Code : ℚ) *
           uniformMissRatio Input ^ m ≤ ε := by
-    simpa [BitEncodedClassifierFamily.toEncodedFamily, card_bitCode] using hε
+    have hcard : (Fintype.card F.toEncodedFamily.Code : ℚ) = (2 ^ s : ℚ) := by
+      exact_mod_cast F.toEncodedFamily_code_card
+    simpa [hcard] using hε
   exact
     F.toEncodedFamily.nondeceptiveRate_ge_one_sub_of_codeMul_uniformMissRatio_pow_le
       target m hε'
@@ -275,7 +286,9 @@ theorem nondeceptiveRate_pos_of_bitBudget_uniformMissRatio_pow_lt_one
   have hlt' :
       (Fintype.card F.toEncodedFamily.Code : ℚ) *
           uniformMissRatio Input ^ m < 1 := by
-    simpa [BitEncodedClassifierFamily.toEncodedFamily, card_bitCode] using hlt
+    have hcard : (Fintype.card F.toEncodedFamily.Code : ℚ) = (2 ^ s : ℚ) := by
+      exact_mod_cast F.toEncodedFamily_code_card
+    simpa [hcard] using hlt
   exact
     F.toEncodedFamily.nondeceptiveRate_pos_of_codeMul_uniformMissRatio_pow_lt_one
       target m hlt'
@@ -284,9 +297,10 @@ theorem nondeceptiveRate_ge_one_sub_bitBudget_uniformMissRatio_pow_of_le
     (target : Input → Bool) {m n : ℕ} (hmn : m ≤ n) :
     1 - (2 ^ s : ℚ) * uniformMissRatio Input ^ m ≤
       F.toEncodedFamily.nondeceptiveRate target n := by
-  simpa [BitEncodedClassifierFamily.toEncodedFamily, card_bitCode] using
-    F.toEncodedFamily.nondeceptiveRate_ge_one_sub_codeMul_uniformMissRatio_pow_of_le
-      target hmn
+  have hcard : (Fintype.card F.toEncodedFamily.Code : ℚ) = (2 ^ s : ℚ) := by
+    exact_mod_cast F.toEncodedFamily_code_card
+  simpa [hcard] using
+    F.toEncodedFamily.nondeceptiveRate_ge_one_sub_codeMul_uniformMissRatio_pow_of_le target hmn
 
 /-- Bit-budget form of the exact ERM recovery lower bound.  This is the
 finite-uniform positive bridge needed by any grassroots compression route:
@@ -300,9 +314,10 @@ theorem exactRecoveryRate_ge_one_sub_bitBudget_uniformMissRatio_pow
   letI : Nonempty F.toEncodedFamily.Code := by
     change Nonempty (BitCode s)
     exact ⟨fun _ => false⟩
-  simpa [BitEncodedClassifierFamily.toEncodedFamily, card_bitCode] using
-    F.toEncodedFamily.exactRecoveryRate_ge_one_sub_codeMul_uniformMissRatio_pow
-      target m htarget
+  have hcard : (Fintype.card F.toEncodedFamily.Code : ℚ) = (2 ^ s : ℚ) := by
+    exact_mod_cast F.toEncodedFamily_code_card
+  simpa [hcard] using
+    F.toEncodedFamily.exactRecoveryRate_ge_one_sub_codeMul_uniformMissRatio_pow target m htarget
 
 /-- Epsilon-style bit-budget recovery corollary. -/
 theorem exactRecoveryRate_ge_one_sub_of_bitBudget_uniformMissRatio_pow_le
@@ -316,7 +331,9 @@ theorem exactRecoveryRate_ge_one_sub_of_bitBudget_uniformMissRatio_pow_le
   have hε' :
       (Fintype.card F.toEncodedFamily.Code : ℚ) *
           uniformMissRatio Input ^ m ≤ ε := by
-    simpa [BitEncodedClassifierFamily.toEncodedFamily, card_bitCode] using hε
+    have hcard : (Fintype.card F.toEncodedFamily.Code : ℚ) = (2 ^ s : ℚ) := by
+      exact_mod_cast F.toEncodedFamily_code_card
+    simpa [hcard] using hε
   exact
     F.toEncodedFamily.exactRecoveryRate_ge_one_sub_of_codeMul_uniformMissRatio_pow_le
       target m htarget hε'
@@ -333,7 +350,9 @@ theorem exactRecoveryRate_pos_of_bitBudget_uniformMissRatio_pow_lt_one
   have hlt' :
       (Fintype.card F.toEncodedFamily.Code : ℚ) *
           uniformMissRatio Input ^ m < 1 := by
-    simpa [BitEncodedClassifierFamily.toEncodedFamily, card_bitCode] using hlt
+    have hcard : (Fintype.card F.toEncodedFamily.Code : ℚ) = (2 ^ s : ℚ) := by
+      exact_mod_cast F.toEncodedFamily_code_card
+    simpa [hcard] using hlt
   exact
     F.toEncodedFamily.exactRecoveryRate_pos_of_codeMul_uniformMissRatio_pow_lt_one
       target m htarget hlt'
@@ -347,7 +366,9 @@ theorem exactRecoveryRate_ge_one_sub_bitBudget_uniformMissRatio_pow_of_le
   letI : Nonempty F.toEncodedFamily.Code := by
     change Nonempty (BitCode s)
     exact ⟨fun _ => false⟩
-  simpa [BitEncodedClassifierFamily.toEncodedFamily, card_bitCode] using
+  have hcard : (Fintype.card F.toEncodedFamily.Code : ℚ) = (2 ^ s : ℚ) := by
+    exact_mod_cast F.toEncodedFamily_code_card
+  simpa [hcard] using
     F.toEncodedFamily.exactRecoveryRate_ge_one_sub_codeMul_uniformMissRatio_pow_of_le
       target htarget hmn
 

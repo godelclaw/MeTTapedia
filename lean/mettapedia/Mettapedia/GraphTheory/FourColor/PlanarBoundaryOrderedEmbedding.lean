@@ -398,11 +398,11 @@ def PlanarBoundaryClosedWalkEmbeddingData.toPlanarBoundaryOrderedFaceEmbeddingDa
 
 /-- Honest facial walks also yield the linear face-boundary run shell used by selected-boundary
 arc arguments. -/
-def PlanarBoundaryClosedWalkEmbeddingData.toPlanarBoundaryFaceBoundaryRunGeometry
+noncomputable def PlanarBoundaryClosedWalkEmbeddingData.toPlanarBoundaryFaceBoundaryRunGeometry
     {G : SimpleGraph V} {emb : PlaneEmbeddingWithBoundary G}
     (data : PlanarBoundaryClosedWalkEmbeddingData emb) :
     PlanarBoundaryFaceBoundaryRunGeometry emb :=
-  data.toPlanarBoundaryCyclicOrderedFaceEmbeddingData.toPlanarBoundaryFaceBoundaryRunGeometry
+  data.toPlanarBoundaryCyclicFaceBoundaryVertexWalkGeometry.toPlanarBoundaryFaceBoundaryRunGeometry
 
 theorem
     nonempty_planarBoundaryOrderedFaceEmbeddingData_iff_nonempty_planarBoundaryOrderedFaceVertexEmbeddingData
@@ -989,9 +989,8 @@ def PlanarBoundaryOrderedFaceArcEmbeddingData.toPlanarBoundarySelectedBoundaryAr
     data.toPlanarBoundaryOrderedFaceEmbeddingData
   selectedBoundaryArc := by
     intro f
-    simpa [PlanarBoundaryOrderedFaceEmbeddingData.faceBoundaryRun,
-      PlaneEmbeddingWithBoundary.OrderedFaceBoundaryData.faceBoundaryRun]
-      using data.selectedBoundaryArc f
+    rcases data.selectedBoundaryArc f with ⟨selectedRun, hinfix, hselected⟩
+    exact ⟨selectedRun, hinfix, hselected⟩
 
 /-- Bundled selected-boundary arc geometry can be repackaged back into the stronger ordered
 face-boundary-plus-arc embedding interface. -/
@@ -1087,6 +1086,35 @@ theorem
   data.toPlanarBoundaryOrderedFaceArcEmbeddingData
     |>.toPlanarBoundaryFaceBoundaryRunGeometryAndSelectedBoundaryArcOnFace
 
+theorem
+    PlanarBoundaryCyclicOrderedFaceArcEmbeddingData.toPlanarBoundaryCyclicFaceBoundaryVertexWalkGeometryAndSelectedBoundaryArcOnFace
+    {G : SimpleGraph V} {emb : PlaneEmbeddingWithBoundary G}
+    (data : PlanarBoundaryCyclicOrderedFaceArcEmbeddingData emb) :
+    ∀ f : AmbientFace emb.faces,
+      (data.toPlanarBoundaryCyclicOrderedFaceEmbeddingData
+        |>.toPlanarBoundaryCyclicFaceBoundaryVertexWalkGeometry
+        |>.toPlanarBoundaryFaceBoundaryRunGeometry).SelectedBoundaryArcOnFace f := by
+  intro f
+  rcases data.selectedBoundaryArc f with ⟨selectedRun, hinfix, hselected⟩
+  refine ⟨selectedRun, ?_, hselected⟩
+  simpa
+    [PlanarBoundaryCyclicOrderedFaceArcEmbeddingData.toPlanarBoundaryCyclicOrderedFaceEmbeddingData,
+      PlanarBoundaryCyclicOrderedFaceEmbeddingData.toPlanarBoundaryCyclicFaceBoundaryVertexWalkGeometry,
+      PlanarBoundaryCyclicFaceBoundaryVertexWalkGeometry.toPlanarBoundaryFaceBoundaryRunGeometry,
+      PlanarBoundaryCyclicFaceBoundaryVertexWalkGeometry.toPlanarBoundaryCyclicOrderedFaceEmbeddingData,
+      PlanarBoundaryCyclicOrderedFaceEmbeddingData.toPlanarBoundaryFaceBoundaryRunGeometry,
+      PlanarBoundaryCyclicOrderedFaceVertexSequenceEmbeddingData.toPlanarBoundaryCyclicOrderedFaceEmbeddingData,
+      PlaneEmbeddingWithBoundary.CyclicOrderedFaceBoundaryData.toFaceBoundaryRunGeometry,
+      PlaneEmbeddingWithBoundary.OrderedFaceBoundaryData.toFaceBoundaryRunGeometry,
+      PlaneEmbeddingWithBoundary.OrderedFaceBoundaryData.faceBoundaryRun,
+      PlaneEmbeddingWithBoundary.CyclicOrderedFaceBoundaryData.toCyclicOrderedFaceBoundaryVertexSequenceData,
+      PlaneEmbeddingWithBoundary.CyclicOrderedFaceBoundaryData.faceBoundaryClosedRun,
+      PlaneEmbeddingWithBoundary.CyclicOrderedFaceBoundaryVertexSequenceData.faceBoundaryClosedVertexWalk,
+      PlaneEmbeddingWithBoundary.CyclicOrderedFaceBoundaryVertexSequenceData.toFaceBoundaryClosedVertexWalkGeometry,
+      PlaneEmbeddingWithBoundary.FaceBoundaryClosedVertexWalkGeometry.toCyclicOrderedFaceBoundaryVertexSequenceData,
+      PlaneEmbeddingWithBoundary.CyclicOrderedFaceBoundaryVertexSequenceData.toCyclicOrderedFaceBoundaryData]
+    using hinfix
+
 /-- Cyclic alternating edge/vertex face-boundary walks together with per-face selected-boundary
 contiguity on the induced linear runs can be repackaged into the cyclic ordered face-arc
 embedding interface. -/
@@ -1136,9 +1164,7 @@ theorem
   constructor
   · rintro ⟨data⟩
     refine ⟨data.toPlanarBoundaryCyclicOrderedFaceEmbeddingData.toPlanarBoundaryCyclicFaceBoundaryVertexWalkGeometry, ?_⟩
-    simpa [PlanarBoundaryCyclicFaceBoundaryVertexWalkGeometry.toPlanarBoundaryFaceBoundaryRunGeometry,
-      PlanarBoundaryCyclicOrderedFaceEmbeddingData.toPlanarBoundaryCyclicFaceBoundaryVertexWalkGeometry]
-      using data.toPlanarBoundaryFaceBoundaryRunGeometryAndSelectedBoundaryArcOnFace
+    exact data.toPlanarBoundaryCyclicFaceBoundaryVertexWalkGeometryAndSelectedBoundaryArcOnFace
   · rintro ⟨geom, harc⟩
     exact ⟨geom.toPlanarBoundaryCyclicOrderedFaceArcEmbeddingData harc⟩
 
@@ -1237,9 +1263,7 @@ theorem
     AdmitsPlanarBoundaryCyclicFaceBoundaryVertexWalkGeometryAndSelectedBoundaryArcOnFace G := by
   rcases hG with ⟨emb, ⟨data⟩⟩
   refine ⟨emb, data.toPlanarBoundaryCyclicOrderedFaceEmbeddingData.toPlanarBoundaryCyclicFaceBoundaryVertexWalkGeometry, ?_⟩
-  simpa [PlanarBoundaryCyclicFaceBoundaryVertexWalkGeometry.toPlanarBoundaryFaceBoundaryRunGeometry,
-    PlanarBoundaryCyclicOrderedFaceEmbeddingData.toPlanarBoundaryCyclicFaceBoundaryVertexWalkGeometry]
-    using data.toPlanarBoundaryFaceBoundaryRunGeometryAndSelectedBoundaryArcOnFace
+  exact data.toPlanarBoundaryCyclicFaceBoundaryVertexWalkGeometryAndSelectedBoundaryArcOnFace
 
 theorem
     admitsPlanarBoundaryCyclicOrderedFaceArcEmbeddingData_of_admitsPlanarBoundaryCyclicFaceBoundaryVertexWalkGeometryAndSelectedBoundaryArcOnFace

@@ -54,8 +54,15 @@ theorem WeightedObservable.windowedColeHopfHeatSaturated_a_eq_one_add_abs_of_sel
       selector c ν hc hν curlFrame curlBound curlBound_nonneg hcurl x).vorticity t y
   have hEq :
       a * (w / (1 + |w|)) = w := by
-    simpa [selfCompatibility, WeightedObservable.windowedColeHopfHeatSaturatedCandidate, w]
-      using hself t y
+    change
+      ((L.windowedColeHopfHeatUniformVorticityTendril
+            (ι := ι) (X := X)
+            selector c ν hc hν curlFrame curlBound curlBound_nonneg hcurl x).saturatedCandidate
+          a).velocity t y =
+        (L.windowedColeHopfHeatUniformVorticityTendril
+          (ι := ι) (X := X)
+          selector c ν hc hν curlFrame curlBound curlBound_nonneg hcurl x).vorticity t y
+    exact hself t y
   have hden : (1 + |w|) ≠ 0 := by positivity
   have hMul : a * w = w * (1 + |w|) := by
     have hDiv : (a * w) / (1 + |w|) = w := by

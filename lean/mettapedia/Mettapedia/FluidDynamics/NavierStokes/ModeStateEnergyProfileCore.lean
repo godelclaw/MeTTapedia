@@ -49,9 +49,18 @@ def hardProfileThresholdRadius (P : EnergyProfile) (m : ℕ) (x : ModeState) : �
 
 theorem continuous_profiledEnergyTerm (P : EnergyProfile) (m n : ℕ) :
     Continuous fun x : ModeState => profiledEnergyTerm P m x n := by
-  simpa [profiledEnergyTerm] using
-    ((P.continuous_profile.comp ((continuous_sobolevAmplification m n).pow 2)).mul
-      (continuous_const : Continuous fun _ : ModeState => sobolevEnergyWeight m n))
+  have hcomp :=
+    P.continuous_profile.comp ((continuous_sobolevAmplification m n).pow 2)
+  have hprofile :
+      Continuous fun x : ModeState => P.profile (sobolevAmplification m x n ^ (2 : ℕ)) := by
+    exact hcomp.congr (by intro x; rfl)
+  have hterm :
+      Continuous fun x : ModeState =>
+        P.profile (sobolevAmplification m x n ^ (2 : ℕ)) * sobolevEnergyWeight m n := by
+    exact (hprofile.mul
+      (continuous_const : Continuous fun _ : ModeState => sobolevEnergyWeight m n)).congr
+        (by intro x; rfl)
+  simpa [profiledEnergyTerm] using hterm
 
 theorem profiledEnergyTerm_le_sobolevEnergyTerm
     (P : EnergyProfile) (m : ℕ) (x : ModeState) (n : ℕ) :

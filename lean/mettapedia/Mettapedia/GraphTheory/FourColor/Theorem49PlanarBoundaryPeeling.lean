@@ -815,7 +815,7 @@ theorem
   have hwitnessEq : witnessEdge f = oldWitness f := by
     simp [witnessEdge, oldWitness, parentSharedInteriorEdgeOfPairwiseUnique, peelParentFace, hf]
   simpa [planarBoundaryWellFoundedFacePeelWitnessData_of_interiorDualHeightParentPeelData,
-    oldWitness] using hwitnessEq
+    witnessEdge, oldWitness, peelParentFace] using hwitnessEq
 
 /-- The existing interior-dual height-parent package canonically lowers to the more primitive
 boundary-aware height-sorted witness-cover interface. This shows the new annulus-side theorem

@@ -146,9 +146,8 @@ theorem WeightedObservable.geometricColeHopfHeat_abs_vorticity_le_uniform
       (ι := ι) (X := X)
       selector ν B hν hB cutoff hcutoff_cont hcutoff
       curlFrame curlBound curlBound_nonneg hcurl x
-  have h := S.abs_vorticity_le_uniform
-  simpa [WeightedObservable.geometricColeHopfHeatEnvelope,
-    WeightedObservable.geometricColeHopfHeatUniformVorticityTendril, S] using h
+  change ∀ t y, |S.vorticity t y| ≤ S.envelope
+  exact S.abs_vorticity_le_uniform
 
 theorem WeightedObservable.geometricColeHopfHeat_abs_vorticity_le_uniform_of_componentwise_abs_le
     (L : WeightedObservable)
@@ -176,9 +175,8 @@ theorem WeightedObservable.geometricColeHopfHeat_abs_vorticity_le_uniform_of_com
       (ι := ι) (X := X)
       selector ν B hν hB cutoff hcutoff_cont hcutoff
       curlFrame curlComponentBound hcurlComponentBound_nonneg hcurl x
-  have h := S.abs_vorticity_le_uniform
-  simpa [WeightedObservable.geometricColeHopfHeatEnvelope,
-    WeightedObservable.geometricColeHopfHeatUniformVorticityTendril_of_componentwise_abs_le, S] using h
+  change ∀ t y, |S.vorticity t y| ≤ S.envelope
+  exact S.abs_vorticity_le_uniform
 
 /-- The current concrete positive route only needs the generic shared-package
 lift data on top of its heat-decayed package. -/

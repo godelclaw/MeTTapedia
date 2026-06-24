@@ -20,10 +20,11 @@ def planarBoundarySupportEndpointAdjGraph {G : SimpleGraph V}
     (emb : PlaneEmbeddingWithBoundary G) :
     SimpleGraph (PlanarBoundaryEdgeVertex emb) where
   Adj e f := e ≠ f ∧ ∃ v : V, v ∈ (e.1 : Sym2 V) ∧ v ∈ (f.1 : Sym2 V)
-  symm := by
+  symm := ⟨by
     intro e f h
     rcases h with ⟨hne, v, hvE, hvF⟩
     exact ⟨hne.symm, v, hvF, hvE⟩
+  ⟩
   loopless := ⟨fun e h => h.1 rfl⟩
 
 /-- Facewise boundary-component coherence in the root-free boundary graph: any two

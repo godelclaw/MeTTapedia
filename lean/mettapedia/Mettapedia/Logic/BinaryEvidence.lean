@@ -299,46 +299,48 @@ noncomputable instance : CompleteLattice BinaryEvidence where
   -- Complete lattice operations
   sSup := evidenceSSup
   sInf := evidenceSInf
-  le_sSup := fun S x hx => by
-    simp [evidenceSSup, le_def]
-    constructor
-    · exact le_sSup (Set.mem_image_of_mem BinaryEvidence.pos hx)
-    · exact le_sSup (Set.mem_image_of_mem BinaryEvidence.neg hx)
-  sSup_le := fun S x h => by
-    simp only [evidenceSSup, le_def]
-    constructor
-    · -- sSup of positive components ≤ x.pos
-      apply sSup_le
-      intro p hp
-      simp only [Set.mem_image] at hp
-      obtain ⟨e, heS, rfl⟩ := hp
-      exact (h e heS).1
-    · -- sSup of negative components ≤ x.neg
-      apply sSup_le
-      intro n hn
-      simp only [Set.mem_image] at hn
-      obtain ⟨e, heS, rfl⟩ := hn
-      exact (h e heS).2
-  sInf_le := fun S x hx => by
-    simp [evidenceSInf, le_def]
-    constructor
-    · exact sInf_le (Set.mem_image_of_mem BinaryEvidence.pos hx)
-    · exact sInf_le (Set.mem_image_of_mem BinaryEvidence.neg hx)
-  le_sInf := fun S x h => by
-    simp only [evidenceSInf, le_def]
-    constructor
-    · -- x.pos ≤ sInf of positive components
-      apply le_sInf
-      intro p hp
-      simp only [Set.mem_image] at hp
-      obtain ⟨e, heS, rfl⟩ := hp
-      exact (h e heS).1
-    · -- x.neg ≤ sInf of negative components
-      apply le_sInf
-      intro n hn
-      simp only [Set.mem_image] at hn
-      obtain ⟨e, heS, rfl⟩ := hn
-      exact (h e heS).2
+  -- 4.31 `CompleteLattice` field shape: `isLUB_sSup`/`isGLB_sInf` replace the four
+  -- `le_sSup`/`sSup_le`/`sInf_le`/`le_sInf` fields.  An `IsLUB S a` bundles the
+  -- upper-bound fact (`le_sSup`) and the least-upper-bound fact (`sSup_le`) as
+  -- `a ∈ upperBounds S ∧ a ∈ lowerBounds (upperBounds S)`; dually for `IsGLB`.
+  isLUB_sSup := fun S => by
+    refine ⟨fun x hx => ?_, fun x h => ?_⟩
+    · -- `evidenceSSup S` is an upper bound (former `le_sSup`).
+      simp only [evidenceSSup, le_def]
+      exact ⟨le_sSup (Set.mem_image_of_mem BinaryEvidence.pos hx),
+             le_sSup (Set.mem_image_of_mem BinaryEvidence.neg hx)⟩
+    · -- `evidenceSSup S` is below every upper bound (former `sSup_le`).
+      simp only [evidenceSSup, le_def]
+      refine ⟨?_, ?_⟩
+      · apply sSup_le
+        intro p hp
+        simp only [Set.mem_image] at hp
+        obtain ⟨e, heS, rfl⟩ := hp
+        exact (h heS).1
+      · apply sSup_le
+        intro n hn
+        simp only [Set.mem_image] at hn
+        obtain ⟨e, heS, rfl⟩ := hn
+        exact (h heS).2
+  isGLB_sInf := fun S => by
+    refine ⟨fun x hx => ?_, fun x h => ?_⟩
+    · -- `evidenceSInf S` is a lower bound (former `sInf_le`).
+      simp only [evidenceSInf, le_def]
+      exact ⟨sInf_le (Set.mem_image_of_mem BinaryEvidence.pos hx),
+             sInf_le (Set.mem_image_of_mem BinaryEvidence.neg hx)⟩
+    · -- `evidenceSInf S` is above every lower bound (former `le_sInf`).
+      simp only [evidenceSInf, le_def]
+      refine ⟨?_, ?_⟩
+      · apply le_sInf
+        intro p hp
+        simp only [Set.mem_image] at hp
+        obtain ⟨e, heS, rfl⟩ := hp
+        exact (h heS).1
+      · apply le_sInf
+        intro n hn
+        simp only [Set.mem_image] at hn
+        obtain ⟨e, heS, rfl⟩ := hn
+        exact (h heS).2
 
 /-! ### Heyting Algebra Structure
 
@@ -718,10 +720,29 @@ noncomputable def toOdds (e : BinaryEvidence) : ℝ≥0∞ :=
 noncomputable def toLogOdds (e : BinaryEvidence) : ℝ :=
   Real.log (toOdds e).toReal
 
+/-- Support/truth odds `n⁺ / n⁻` on the strength/direction axis.
+
+This is a naming alias for `toOdds`, kept distinct from confidence odds
+`c / (1 - c)` on the evidence-weight/concentration axis. -/
+noncomputable def truthOdds (e : BinaryEvidence) : ℝ≥0∞ :=
+  toOdds e
+
+/-- Log support/truth odds on the strength/direction axis. -/
+noncomputable def truthLogOdds (e : BinaryEvidence) : ℝ :=
+  toLogOdds e
+
 /-- Nondegenerate case of `toOdds`: when `neg ≠ 0`, odds are `pos/neg`. -/
 @[simp] lemma toOdds_eq_div (e : BinaryEvidence) (hneg : e.neg ≠ 0) :
     toOdds e = e.pos / e.neg := by
   simp [toOdds, hneg]
+
+@[simp] theorem truthOdds_eq_toOdds (e : BinaryEvidence) :
+    truthOdds e = toOdds e :=
+  rfl
+
+@[simp] theorem truthLogOdds_eq_toLogOdds (e : BinaryEvidence) :
+    truthLogOdds e = toLogOdds e :=
+  rfl
 
 /-- Tensor multiplication is multiplicative in odds space. -/
 theorem toOdds_tensor_mul (x y : BinaryEvidence)
@@ -734,6 +755,12 @@ theorem toOdds_tensor_mul (x y : BinaryEvidence)
   rw [div_eq_mul_inv, div_eq_mul_inv, div_eq_mul_inv]
   rw [← (ENNReal.mul_inv (Or.inl hx) (Or.inr hy)).symm]
   ring
+
+/-- Tensor multiplication is multiplicative in support/truth-odds space. -/
+theorem truthOdds_tensor_mul (x y : BinaryEvidence)
+    (hx : x.neg ≠ 0) (hy : y.neg ≠ 0) :
+    truthOdds (x * y) = truthOdds x * truthOdds y := by
+  simpa [truthOdds] using toOdds_tensor_mul x y hx hy
 
 /-- Tensor multiplication is additive in log-odds space (finite/nonzero regime). -/
 theorem toLogOdds_tensor_add (x y : BinaryEvidence)
@@ -755,6 +782,16 @@ theorem toLogOdds_tensor_add (x y : BinaryEvidence)
           simpa using Real.log_mul (ne_of_gt hx_pos_real) (ne_of_gt hy_pos_real)
     _ = toLogOdds x + toLogOdds y := by
           simp [toLogOdds]
+
+/-- Tensor multiplication is additive in log support/truth-odds space
+(finite/nonzero regime). -/
+theorem truthLogOdds_tensor_add (x y : BinaryEvidence)
+    (hx_neg : x.neg ≠ 0) (hy_neg : y.neg ≠ 0)
+    (hx_odds0 : truthOdds x ≠ 0) (hy_odds0 : truthOdds y ≠ 0)
+    (hx_oddsTop : truthOdds x ≠ ⊤) (hy_oddsTop : truthOdds y ≠ ⊤) :
+    truthLogOdds (x * y) = truthLogOdds x + truthLogOdds y := by
+  simpa [truthOdds, truthLogOdds] using
+    toLogOdds_tensor_add x y hx_neg hy_neg hx_odds0 hy_odds0 hx_oddsTop hy_oddsTop
 
 /-- Regraduation by exponentiation in evidence space.
 
@@ -975,7 +1012,7 @@ theorem toStrength_tensor_ge (x y : BinaryEvidence) :
         calc x.pos * y.pos + x.neg * y.neg
             ≤ x.pos * y.pos + x.neg * y.neg + (x.pos * y.neg + x.neg * y.pos) := by
               apply le_add_of_nonneg_right
-              exact add_nonneg (zero_le _) (zero_le _)
+              exact zero_le
           _ = (x.pos + x.neg) * (y.pos + y.neg) := by ring
 
 end BinaryEvidence

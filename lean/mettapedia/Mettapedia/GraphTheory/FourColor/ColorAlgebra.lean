@@ -386,9 +386,17 @@ theorem support₁_after_indicatorChain_red {E : Type*} [Fintype E] [DecidableEq
   ext e
   by_cases he : e ∈ S
   · generalize ha : (x e).1 = a
-    fin_cases a <;>
-      simp [support₁, indicatorChain, red, he, ha,
+    fin_cases a
+    · simp [support₁, indicatorChain, red, he, ha,
         Finset.mem_union, Finset.mem_sdiff]
+      constructor
+      · intro _; rfl
+      · intro _ h; cases h
+    · simp [support₁, indicatorChain, red, he, ha,
+        Finset.mem_union, Finset.mem_sdiff]
+      constructor
+      · intro h; exact False.elim (h rfl)
+      · intro h; cases h
   · simp [support₁, indicatorChain, red, he,
       Finset.mem_union, Finset.mem_sdiff]
 
@@ -409,9 +417,17 @@ theorem support₂_after_indicatorChain_blue {E : Type*} [Fintype E] [DecidableE
   ext e
   by_cases he : e ∈ S
   · generalize ha : (x e).2 = a
-    fin_cases a <;>
-      simp [support₂, indicatorChain, blue, he, ha,
+    fin_cases a
+    · simp [support₂, indicatorChain, blue, he, ha,
         Finset.mem_union, Finset.mem_sdiff]
+      constructor
+      · intro _; rfl
+      · intro _ h; cases h
+    · simp [support₂, indicatorChain, blue, he, ha,
+        Finset.mem_union, Finset.mem_sdiff]
+      constructor
+      · intro h; exact False.elim (h rfl)
+      · intro h; cases h
   · simp [support₂, indicatorChain, blue, he,
       Finset.mem_union, Finset.mem_sdiff]
 

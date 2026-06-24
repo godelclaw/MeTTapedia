@@ -135,7 +135,8 @@ theorem EnergyDerivativeFormula_of_scalar_smul_schwartz
   rw [hEnergy, hPair]
   have hPow :
       HasDerivAt (fun s : ℝ => (a s) ^ (2 : ℕ)) (2 * a t * a' t) t := by
-    simpa [pow_two, mul_assoc, mul_left_comm, mul_comm] using (ha t).pow 2
+    change HasDerivAt (a ^ (2 : ℕ)) (2 * a t * a' t) t
+    simpa [pow_one, mul_assoc, mul_left_comm, mul_comm] using (ha t).pow 2
   have hDeriv :
       HasDerivAt (fun s : ℝ => ((1 / 2 : ℝ) * E) * (a s) ^ (2 : ℕ))
         (((1 / 2 : ℝ) * E) * (2 * a t * a' t)) t := by
@@ -148,8 +149,10 @@ integrable against Lebesgue measure. -/
 theorem integrable_inner_schwartz
     (f g : 𝓢(NSSpace, NSSpace)) :
     Integrable (fun x : NSSpace => ⟪f x, g x⟫) := by
-  simpa [SchwartzMap.pairing_apply_apply] using
-    (SchwartzMap.pairing (innerSL ℝ) f g).integrable
+  refine ((SchwartzMap.pairing (innerSL ℝ) f g).integrable).congr ?_
+  filter_upwards with x
+  show ((innerSL ℝ) (f x)) (g x) = ⟪f x, g x⟫
+  rfl
 
 /-- Time derivative of a two-profile scalar superposition
 `u(t,x)=a(t)•f(x)+b(t)•g(x)`. -/
@@ -303,13 +306,16 @@ theorem EnergyDerivativeFormula_of_add_scalar_smul_schwartz
   rw [hEnergy, hPair]
   have hA2 :
       HasDerivAt (fun s : ℝ => (a s) ^ (2 : ℕ)) (2 * a t * a' t) t := by
-    simpa [pow_two, mul_assoc, mul_left_comm, mul_comm] using (ha t).pow 2
+    change HasDerivAt (a ^ (2 : ℕ)) (2 * a t * a' t) t
+    simpa [pow_one, mul_assoc, mul_left_comm, mul_comm] using (ha t).pow 2
   have hAB :
       HasDerivAt (fun s : ℝ => a s * b s) (a' t * b t + a t * b' t) t := by
-    simpa [mul_comm, mul_left_comm, mul_assoc] using (ha t).mul (hb t)
+    change HasDerivAt (a * b) (a' t * b t + a t * b' t) t
+    exact (ha t).mul (hb t)
   have hB2 :
       HasDerivAt (fun s : ℝ => (b s) ^ (2 : ℕ)) (2 * b t * b' t) t := by
-    simpa [pow_two, mul_assoc, mul_left_comm, mul_comm] using (hb t).pow 2
+    change HasDerivAt (b ^ (2 : ℕ)) (2 * b t * b' t) t
+    simpa [pow_one, mul_assoc, mul_left_comm, mul_comm] using (hb t).pow 2
   have hDeriv :
       HasDerivAt
         (fun s : ℝ =>
@@ -319,9 +325,25 @@ theorem EnergyDerivativeFormula_of_add_scalar_smul_schwartz
         ((((1 / 2 : ℝ) * F) * (2 * a t * a' t)) +
           (FG * (a' t * b t + a t * b' t)) +
             (((1 / 2 : ℝ) * G) * (2 * b t * b' t))) t := by
-    simpa [add_assoc] using
+    have hraw :=
       (hA2.const_mul (((1 / 2 : ℝ) * F))).add
         ((hAB.const_mul FG).add (hB2.const_mul (((1 / 2 : ℝ) * G))))
+    have hfun :
+        (fun s : ℝ =>
+          ((1 / 2 : ℝ) * F) * (a s) ^ (2 : ℕ) +
+            FG * (a s * b s) +
+              ((1 / 2 : ℝ) * G) * (b s) ^ (2 : ℕ)) =ᶠ[nhds t]
+        ((fun y => ((1 / 2 : ℝ) * F) * a y ^ (2 : ℕ)) +
+          ((fun y => FG * (a y * b y)) +
+            fun y => ((1 / 2 : ℝ) * G) * b y ^ (2 : ℕ))) := by
+      exact Filter.Eventually.of_forall (by
+        intro s
+        change ((1 / 2 : ℝ) * F) * a s ^ (2 : ℕ) + FG * (a s * b s) +
+            ((1 / 2 : ℝ) * G) * b s ^ (2 : ℕ) =
+          ((1 / 2 : ℝ) * F) * a s ^ (2 : ℕ) +
+            (FG * (a s * b s) + ((1 / 2 : ℝ) * G) * b s ^ (2 : ℕ))
+        ring)
+    exact (hraw.congr_of_eventuallyEq hfun).congr_deriv (by ring)
   convert hDeriv using 1
   ring
 end NavierStokes

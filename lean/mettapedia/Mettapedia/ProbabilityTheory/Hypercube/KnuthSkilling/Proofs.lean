@@ -1,6 +1,10 @@
-import Mettapedia.ProbabilityTheory.KnuthSkilling.Core.Basic
-import Mettapedia.ProbabilityTheory.KnuthSkilling.Core.Algebra
-import Mettapedia.ProbabilityTheory.KnuthSkilling.Additive.Proofs.GridInduction.CredalSets
+/-
+Knuth–Skilling slice of the probability hypercube. See the aggregator
+`Mettapedia/ProbabilityTheory/Hypercube/KnuthSkilling.lean` for the overview.
+-/
+import KnuthSkilling.Core.Basic
+import KnuthSkilling.Core.Algebra
+import Mettapedia.ProbabilityTheory.ImpreciseProbability.CredalSets
 import Mettapedia.ProbabilityTheory.Hypercube.KnuthSkilling.ToyFreeMonoid2
 
 /-!
@@ -30,16 +34,21 @@ In particular, nothing here proves the main K&S representation theorem.
 
 - Stay & Wells, "Generating Hypercubes of Type Systems" (hypercube.pdf)
 - K&S, "Foundations of Inference" Appendix A
-- `Additive/Proofs/GridInduction/CredalSets.lean` (interval / credal-set exploration)
+- `ProbabilityTheory/ImpreciseProbability/CredalSets.lean` (interval / credal-set exploration)
 - `Hypercube/KnuthSkilling/ToyFreeMonoid2.lean` (toy noncommutative monoid)
 -/
 
 
+set_option autoImplicit false
+
 namespace Mettapedia.ProbabilityTheory.Hypercube.KnuthSkilling.Proofs
 
-open Mettapedia.ProbabilityTheory.KnuthSkilling
-open KnuthSkillingAlgebra
-open Mettapedia.ProbabilityTheory.KnuthSkilling.Additive.Proofs.GridInduction.CredalSets
+-- `_root_.` forces the standalone K&S package; the enclosing
+-- `…Hypercube.KnuthSkilling` namespace would otherwise shadow `KnuthSkilling`.
+open _root_.KnuthSkilling
+open _root_.KnuthSkilling.KnuthSkillingAlgebra
+open _root_.KnuthSkilling.KnuthSkillingAlgebraBase
+open Mettapedia.ProbabilityTheory.ImpreciseProbability.CredalSets
 
 /-! ## Section 1: Vertex Characterization
 
@@ -118,7 +127,7 @@ def freeMenoidIsV0 : VertexV0 ToyFreeMonoid2.FreeMonoid2 where
 
 This is proven below. Whether such Θ exists from the K&S axioms is the substantive content of
 the representation-theorem development (see
-`Mettapedia/ProbabilityTheory/KnuthSkilling/Additive/Main.lean`).
+external `KnuthSkilling/Additive/Main.lean`).
 -/
 
 /-- **Commutativity Emergence Theorem** (Informal Statement)

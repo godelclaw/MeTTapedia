@@ -62,7 +62,11 @@ theorem finite_nsCoordinateLatticePoints_mem_closedBall
       (s := Metric.closedBall y r)
       (hs := Metric.isBounded_closedBall)).preimage_embedding (.subtype _)
   ext z
-  simp [NSCoordinateLattice, Metric.mem_closedBall, dist_eq_norm_sub]
+  constructor
+  · intro hz
+    exact ⟨by simpa [Metric.mem_closedBall, dist_eq_norm] using hz, z.property⟩
+  · intro hz
+    simpa [Metric.mem_closedBall, dist_eq_norm] using hz.1
 
 /-- Off the small exceptional ball around `-(c⁻¹) • x`, a Schwartz translate is
 dominated by the rank-3 lattice `‖·‖^{-4}` majorant needed for comparison. -/

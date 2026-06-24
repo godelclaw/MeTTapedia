@@ -34,8 +34,10 @@ theorem spatialFDeriv_heatShearTransportVelocityField
   let A : ℝ := a * Real.exp (-(ν * k ^ (2 : ℕ)) * t)
   have hcoord : HasFDerivAt (fun y : NSSpace => k * (y nsCoord1 - b * t))
       ((k : ℝ) • (EuclideanSpace.proj nsCoord1 : NSSpace →L[ℝ] ℝ)) x := by
-    simpa [smul_eq_mul, sub_eq_add_neg, mul_assoc] using
-      (((EuclideanSpace.proj nsCoord1 : NSSpace →L[ℝ] ℝ).hasFDerivAt.sub_const (b * t)).const_smul k)
+    refine
+      (((EuclideanSpace.proj nsCoord1 : NSSpace →L[ℝ] ℝ).hasFDerivAt.sub_const (b * t)).const_smul k).congr_of_eventuallyEq ?_
+    filter_upwards with y
+    simp [smul_eq_mul, sub_eq_add_neg]
   have hsin : HasFDerivAt (fun y : NSSpace => Real.sin (k * (y nsCoord1 - b * t)))
       (Real.cos (k * (x nsCoord1 - b * t)) •
         ((k : ℝ) • (EuclideanSpace.proj nsCoord1 : NSSpace →L[ℝ] ℝ))) x := by
@@ -45,7 +47,9 @@ theorem spatialFDeriv_heatShearTransportVelocityField
       ((A : ℝ) •
         (Real.cos (k * (x nsCoord1 - b * t)) •
           ((k : ℝ) • (EuclideanSpace.proj nsCoord1 : NSSpace →L[ℝ] ℝ)))) x := by
-    simpa [A, smul_eq_mul] using hsin.const_smul A
+    refine (hsin.const_smul A).congr_of_eventuallyEq ?_
+    filter_upwards with y
+    simp [smul_eq_mul]
   have hvec : HasFDerivAt
       (fun y : NSSpace => coord0Embedding (A * Real.sin (k * (y nsCoord1 - b * t))))
       (coord0Embedding.comp
@@ -128,13 +132,50 @@ theorem timeVelocityDerivative_heatShearTransportVelocityField
         a * Real.exp (-(ν * k ^ (2 : ℕ)) * s) *
           Real.sin (k * (x nsCoord1 - b * s)))
       (-(ν * k ^ (2 : ℕ)) * (a * E * S) - a * E * (b * k * C)) t := by
-    convert (hexp.mul hsin).const_mul a using 1
-    · simp [mul_assoc]
-    · simp [E, S, C, mul_assoc, mul_left_comm, mul_comm]
+    have hprod : HasDerivAt
+        (fun s : ℝ =>
+          a * (Real.exp (-(ν * k ^ (2 : ℕ)) * s) *
+            Real.sin (k * (x nsCoord1 - b * s))))
+        (a *
+          (Real.exp (-(ν * k ^ (2 : ℕ)) * t) * (-(ν * k ^ (2 : ℕ))) *
+              Real.sin (k * (x nsCoord1 - b * t)) +
+            Real.exp (-(ν * k ^ (2 : ℕ)) * t) *
+              (Real.cos (k * (x nsCoord1 - b * t)) * (-(b * k))))) t := by
+      simpa [Pi.mul_apply, mul_assoc] using (hexp.mul hsin).const_mul a
+    have hfun :
+        (fun s : ℝ =>
+          a * Real.exp (-(ν * k ^ (2 : ℕ)) * s) *
+            Real.sin (k * (x nsCoord1 - b * s))) =
+        (fun s : ℝ =>
+          a * (Real.exp (-(ν * k ^ (2 : ℕ)) * s) *
+            Real.sin (k * (x nsCoord1 - b * s)))) := by
+      funext s
       ring
+    have hderiv :
+        a *
+          (Real.exp (-(ν * k ^ (2 : ℕ)) * t) * (-(ν * k ^ (2 : ℕ))) *
+              Real.sin (k * (x nsCoord1 - b * t)) +
+            Real.exp (-(ν * k ^ (2 : ℕ)) * t) *
+              (Real.cos (k * (x nsCoord1 - b * t)) * (-(b * k)))) =
+        -(ν * k ^ (2 : ℕ)) * (a * E * S) - a * E * (b * k * C) := by
+      dsimp [E, S, C]
+      ring
+    rw [hfun, ← hderiv]
+    exact hprod
   have hvec := coord0Embedding.hasFDerivAt.comp t hscalar.hasFDerivAt
+  have hvec' : HasFDerivAt
+      (fun s : NSTime =>
+        coord0Embedding
+          (a * Real.exp (-(ν * k ^ (2 : ℕ)) * s) *
+            Real.sin (k * (x nsCoord1 - b * s))))
+      (coord0Embedding.comp
+        (ContinuousLinearMap.toSpanSingleton ℝ
+          (-(ν * k ^ (2 : ℕ)) * (a * E * S) - a * E * (b * k * C)))) t := by
+    refine hvec.congr_of_eventuallyEq ?_
+    filter_upwards with s
+    rfl
   have happly :=
-    congrArg (fun L : ℝ →L[ℝ] NSSpace => L (1 : ℝ)) hvec.fderiv
+    congrArg (fun L : ℝ →L[ℝ] NSSpace => L (1 : ℝ)) hvec'.fderiv
   have hcore :
       timeVelocityDerivative
           (fun t x => coord0Embedding (heatShearTransportScalar ν a k b t x)) t x =
@@ -144,7 +185,7 @@ theorem timeVelocityDerivative_heatShearTransportVelocityField
       E, S, C, ContinuousLinearMap.comp_apply, mul_assoc, mul_left_comm, mul_comm] using happly
   have htdiff :
       DifferentiableAt ℝ (fun s : ℝ => coord0Embedding (heatShearTransportScalar ν a k b s x)) t := by
-    simpa [heatShearTransportScalar, mul_assoc] using hvec.differentiableAt
+    simpa [heatShearTransportScalar, mul_assoc] using hvec'.differentiableAt
   rw [heatShearTransportVelocityField]
   rw [timeVelocityDerivative_add]
   · simpa [hcore, E, S, C] using timeVelocityDerivative_constantVelocityField
@@ -165,25 +206,43 @@ theorem timeVelocityDerivative_amplitudeShearTransportVelocityField
   let S : ℝ := Real.sin (k * (x nsCoord1 - b * t))
   let C : ℝ := Real.cos (k * (x nsCoord1 - b * t))
   have hphase : HasDerivAt
-      (fun s : ℝ => k * (x nsCoord1 - b * s))
+      (fun s : NSTime => k * (x nsCoord1 - b * s))
       (-(b * k)) t := by
-    have hbase : HasDerivAt (fun s : ℝ => x nsCoord1 - b * s) (-b) t := by
+    have hbase : HasDerivAt (fun s : NSTime => x nsCoord1 - b * s) (-b) t := by
       simpa [mul_comm, mul_left_comm, mul_assoc] using
         (((hasDerivAt_id' t).const_mul b).const_sub (x nsCoord1))
     simpa [mul_comm, mul_left_comm, mul_assoc] using hbase.const_mul k
   have hsin : HasDerivAt
-      (fun s : ℝ => Real.sin (k * (x nsCoord1 - b * s)))
+      (fun s : NSTime => Real.sin (k * (x nsCoord1 - b * s)))
       (C * (-(b * k))) t := by
     simpa [C] using hphase.sin
   have hscalar : HasDerivAt
-      (fun s : ℝ => A s * Real.sin (k * (x nsCoord1 - b * s)))
+      (fun s : NSTime => A s * Real.sin (k * (x nsCoord1 - b * s)))
       (A' * S - A t * (b * k * C)) t := by
-    convert hA.mul hsin using 1
-    simp [S, C, mul_assoc, mul_left_comm, mul_comm]
-    ring
+    have hprod := hA.mul hsin
+    have hfun :
+        (fun s : NSTime => A s * Real.sin (k * (x nsCoord1 - b * s))) =
+        A * (fun s : NSTime => Real.sin (k * (x nsCoord1 - b * s))) := by
+      funext s
+      rfl
+    have hderiv :
+        A' * S - A t * (b * k * C) =
+        A' * Real.sin (k * (x nsCoord1 - b * t)) + A t * (C * (-(b * k))) := by
+      dsimp [S, C]
+      ring
+    rw [hfun, hderiv]
+    exact hprod
   have hvec := coord0Embedding.hasFDerivAt.comp t hscalar.hasFDerivAt
+  have hvec' : HasFDerivAt
+      (fun s : NSTime =>
+        coord0Embedding (A s * Real.sin (k * (x nsCoord1 - b * s))))
+      (coord0Embedding.comp
+        (ContinuousLinearMap.toSpanSingleton ℝ (A' * S - A t * (b * k * C)))) t := by
+    refine hvec.congr_of_eventuallyEq ?_
+    filter_upwards with s
+    rfl
   have happly :=
-    congrArg (fun L : ℝ →L[ℝ] NSSpace => L (1 : ℝ)) hvec.fderiv
+    congrArg (fun L : ℝ →L[ℝ] NSSpace => L (1 : ℝ)) hvec'.fderiv
   have hcore :
       timeVelocityDerivative
           (fun t x => coord0Embedding
@@ -193,8 +252,8 @@ theorem timeVelocityDerivative_amplitudeShearTransportVelocityField
       ContinuousLinearMap.comp_apply, mul_assoc, mul_left_comm, mul_comm] using happly
   have htdiff :
       DifferentiableAt ℝ
-        (fun s : ℝ => coord0Embedding (A s * Real.sin (k * (x nsCoord1 - b * s)))) t := by
-    simpa using hvec.differentiableAt
+        (fun s : NSTime => coord0Embedding (A s * Real.sin (k * (x nsCoord1 - b * s)))) t := by
+    exact hvec'.differentiableAt
   rw [amplitudeShearTransportVelocityField]
   rw [timeVelocityDerivative_add]
   · simp [hcore, timeVelocityDerivative_constantVelocityField, S, C]

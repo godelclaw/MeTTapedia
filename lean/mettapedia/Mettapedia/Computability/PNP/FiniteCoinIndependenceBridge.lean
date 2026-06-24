@@ -62,10 +62,19 @@ theorem finiteCoinSourceTrue_count
     {Coin : Type*} [Fintype Coin] :
     finiteEventCount (Bool × Coin) (finiteCoinSourceTrue (Coin := Coin)) =
       Fintype.card Coin := by
-  simpa [finiteCoinSourceTrue, finiteEventCount] using
-    finiteEventCount_prod
-      (Ω := Bool) (Coin := Coin)
-      (fun b : Bool => b = true) (fun _c : Coin => True)
+  have hcongr :
+      finiteEventCount (Bool × Coin) (finiteCoinSourceTrue (Coin := Coin)) =
+        finiteEventCount (Bool × Coin)
+          (fun ω : Bool × Coin => ω.1 = true ∧ True) := by
+    exact finiteEventCount_congr_approximate (Ω := Bool × Coin)
+      (E := finiteCoinSourceTrue (Coin := Coin))
+      (F := fun ω : Bool × Coin => ω.1 = true ∧ True)
+      (by intro ω; simp [finiteCoinSourceTrue])
+  rw [hcongr]
+  rw [finiteEventCount_prod
+    (Ω := Bool) (Coin := Coin)
+    (fun b : Bool => b = true) (fun _c : Coin => True)]
+  simp [finiteEventCount]
 
 /-- Counting a true-source output predicate on `Bool × Coin` reduces to the
 true-side coin count. -/
