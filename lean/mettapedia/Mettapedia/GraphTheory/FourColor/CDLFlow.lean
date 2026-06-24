@@ -3073,6 +3073,68 @@ theorem not_hasD0DescentRepairAt_of_isD0LocalMinimumForMoveSupports
   exact (not_hasD0DescentRepair_of_isD0LocalMinimumForMoveSupports hmin)
     (hasD0DescentRepair_of_hasD0DescentRepairAt hrepair)
 
+/-- Concrete obstruction form for a proposed neutral local repair: at a `D₀`
+local minimum, a neutral support that erases an incident zero and creates no
+new zero cannot also remain CDL-good.  Its failure is witnessed by a vertex
+whose whole incident neighborhood is forced to zero after the move. -/
+theorem exists_forced_zero_vertex_of_isD0LocalMinimumForMoveSupports_kirchhoffNeutral_erases_incident_zero_creates_no_zero
+    {G : SimpleGraph V} [Fintype V] [Fintype G.edgeSet]
+    {moveSupports : Finset (Finset G.edgeSet)} {x : G.edgeSet → Color}
+    {C : Finset G.edgeSet} {g : Color} {v : V}
+    (hmin : IsD0LocalMinimumForMoveSupports G moveSupports x)
+    (hCmem : C ∈ moveSupports) (hg : g ≠ 0)
+    (hC : IsKirchhoffNeutralMoveSupport G C)
+    (heraseAt : ∃ e ∈ C, e ∈ incidentEdgeFinset G v ∧ x e = 0)
+    (hnew : ∀ e ∈ C, x e ≠ g) :
+    ∃ w : V, ∀ e ∈ incidentEdgeFinset G w,
+      if e ∈ C then x e = g else x e = 0 := by
+  have hnotAllowed :
+      ¬ IsAllowedD0OneStepMoveOn G C g x (cdlOneStepMoveOn G C g x) := by
+    intro hmove
+    exact (not_hasD0DescentRepairAt_of_isD0LocalMinimumForMoveSupports
+      (v := v) hmin)
+      ⟨C, hCmem, g, hmove, heraseAt, hnew⟩
+  exact
+    (not_isAllowedD0OneStepMoveOn_iff_exists_vertex_forced_zero_of_kirchhoffNeutral
+      hg hmin.source_flow hC).mp hnotAllowed
+
+/-- Kempe-cycle specialization of the forced-zero obstruction. -/
+theorem exists_forced_zero_vertex_of_isD0LocalMinimumForMoveSupports_isKempeCycle_erases_incident_zero_creates_no_zero
+    {G : SimpleGraph V} [Fintype V] [Fintype G.edgeSet]
+    {moveSupports : Finset (Finset G.edgeSet)} {x : G.edgeSet → Color}
+    {C : Finset G.edgeSet} {α β g : Color} {v : V}
+    (hmin : IsD0LocalMinimumForMoveSupports G moveSupports x)
+    (hCmem : C ∈ moveSupports) (hg : g ≠ 0)
+    (hC : IsKempeCycle (incidentEdgeFinset G) x C α β)
+    (heraseAt : ∃ e ∈ C, e ∈ incidentEdgeFinset G v ∧ x e = 0)
+    (hnew : ∀ e ∈ C, x e ≠ g) :
+    ∃ w : V, ∀ e ∈ incidentEdgeFinset G w,
+      if e ∈ C then x e = g else x e = 0 :=
+  exists_forced_zero_vertex_of_isD0LocalMinimumForMoveSupports_kirchhoffNeutral_erases_incident_zero_creates_no_zero
+    hmin hCmem hg (isKirchhoffNeutralMoveSupport_of_isKempeCycle hC)
+    heraseAt hnew
+
+/-- Rotation-disk internal-face specialization of the forced-zero obstruction. -/
+theorem
+    exists_forced_zero_vertex_of_isD0LocalMinimumForMoveSupports_rotationDiskData_internalFace_erases_incident_zero_creates_no_zero
+    {G : SimpleGraph V} [Fintype V] [Fintype G.edgeSet]
+    (D : RotationDiskData V G.edgeSet)
+    (hincident : ∀ v : V, D.asZeroBoundary.incident v = incidentEdgeFinset G v)
+    {moveSupports : Finset (Finset G.edgeSet)} {x : G.edgeSet → Color}
+    {f : Finset G.edgeSet} {g : Color} {v : V}
+    (hmin : IsD0LocalMinimumForMoveSupports G moveSupports x)
+    (hfmem : f ∈ moveSupports) (hf : f ∈ D.rotation.internalFaces)
+    (hg : g ≠ 0)
+    (heraseAt : ∃ e ∈ f, e ∈ incidentEdgeFinset G v ∧ x e = 0)
+    (hnew : ∀ e ∈ f, x e ≠ g) :
+    ∃ w : V, ∀ e ∈ incidentEdgeFinset G w,
+      if e ∈ f then x e = g else x e = 0 :=
+  exists_forced_zero_vertex_of_isD0LocalMinimumForMoveSupports_kirchhoffNeutral_erases_incident_zero_creates_no_zero
+    hmin hfmem hg
+    (isKirchhoffNeutralMoveSupport_of_rotationDiskData_internalFace
+      D hincident hf)
+    heraseAt hnew
+
 /-- The vertex-local repair hypothesis implies the global nonmatching repair
 hypothesis, because every nonmatching zero pattern has a clustered zero
 vertex. -/
