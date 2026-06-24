@@ -88,6 +88,11 @@ def zeroClusteringCount (G : SimpleGraph V) [Fintype V] [Fintype G.edgeSet]
     (x : G.edgeSet → Color) : Nat :=
   Finset.univ.sum fun v => zeroIncidentEdgeCount G x v - 1
 
+/-- The manuscript's cheap defect score `D₀(x)=100 Z(x)+10 I(x)+C(x)`. -/
+def zeroDefectD0 (G : SimpleGraph V) [Fintype V] [Fintype G.edgeSet]
+    (x : G.edgeSet → Color) : Nat :=
+  100 * zeroEdgeCount G x + 10 * zeroIncidentVertexCount G x + zeroClusteringCount G x
+
 /-- The zero-edge set is a matching in the manuscript's local sense: no vertex
 is incident to two or more zero-valued edges. -/
 def ZeroEdgesFormMatching (G : SimpleGraph V) [Fintype G.edgeSet]
@@ -482,6 +487,25 @@ theorem zeroIncidentVertexCount_eq_two_mul_zeroEdgeCount_of_zeroClusteringCount_
     (hC : zeroClusteringCount G x = 0) :
     zeroIncidentVertexCount G x = 2 * zeroEdgeCount G x :=
   zeroIncidentVertexCount_eq_two_mul_zeroEdgeCount_of_zeroEdgesFormMatching
+    (zeroClusteringCount_eq_zero_iff_zeroEdgesFormMatching.mp hC)
+
+/-- Under a matching zero pattern, the cheap defect collapses to `120 Z(x)`. -/
+theorem zeroDefectD0_eq_120_mul_zeroEdgeCount_of_zeroEdgesFormMatching
+    {G : SimpleGraph V} [Fintype V] [Fintype G.edgeSet] {x : G.edgeSet → Color}
+    (hmatch : ZeroEdgesFormMatching G x) :
+    zeroDefectD0 G x = 120 * zeroEdgeCount G x := by
+  unfold zeroDefectD0
+  rw [zeroIncidentVertexCount_eq_two_mul_zeroEdgeCount_of_zeroEdgesFormMatching hmatch,
+    (zeroClusteringCount_eq_zero_iff_zeroEdgesFormMatching.mpr hmatch)]
+  omega
+
+/-- Since `C(x)=0` is equivalent to matching zeros, zero clustering also
+collapses the cheap defect to `120 Z(x)`. -/
+theorem zeroDefectD0_eq_120_mul_zeroEdgeCount_of_zeroClusteringCount_eq_zero
+    {G : SimpleGraph V} [Fintype V] [Fintype G.edgeSet] {x : G.edgeSet → Color}
+    (hC : zeroClusteringCount G x = 0) :
+    zeroDefectD0 G x = 120 * zeroEdgeCount G x :=
+  zeroDefectD0_eq_120_mul_zeroEdgeCount_of_zeroEdgesFormMatching
     (zeroClusteringCount_eq_zero_iff_zeroEdgesFormMatching.mp hC)
 
 /-- A graph with Mathlib degree `3` at every vertex has the explicit cubic
