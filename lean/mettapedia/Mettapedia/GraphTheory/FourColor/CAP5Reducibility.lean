@@ -367,6 +367,70 @@ theorem CAP5TransportedEdgeComponentCoverCore.hasBoundaryRepairSupport_or_exists
   · exact Or.inr (exists_exceptionalBoundarySupportOrientation_of_isExceptional hexceptional)
   · exact Or.inl ((data.hasBoundaryRepairSupport_iff_not_isExceptional).2 hexceptional)
 
+/-- The four side cases in the manuscript's exceptional CAP5 annulus argument, according to which
+side of the first Jordan curve contains portals `p0` and `p4`.  This is still finite bookkeeping:
+it does not assert that the corresponding curve exists in a graph embedding. -/
+inductive CAP5ExceptionalAnnulusSideCase where
+  | p0Inside_p4Outside
+  | p0Outside_p4Inside
+  | p0Inside_p4Inside
+  | p0Outside_p4Outside
+
+namespace CAP5ExceptionalAnnulusSideCase
+
+/-- A conservative portal set for the small separator candidate in each exceptional-annulus side
+case.  These are the CAP5 boundary portals touched by the manuscript's case split before the
+topological/Jordan-curve-to-edge-cut conversion is attempted. -/
+def separatorPortalSet : CAP5ExceptionalAnnulusSideCase → Finset (Fin 5)
+  | .p0Inside_p4Outside => {0, 1, 2, 3}
+  | .p0Outside_p4Inside => {1, 2, 3, 4}
+  | .p0Inside_p4Inside => {0, 1, 3}
+  | .p0Outside_p4Outside => {0, 1, 2, 4}
+
+/-- Each finite side-case separator candidate uses at most four CAP5 portals. -/
+theorem separatorPortalSet_card_le_four (sideCase : CAP5ExceptionalAnnulusSideCase) :
+    sideCase.separatorPortalSet.card <= 4 := by
+  cases sideCase <;> decide
+
+end CAP5ExceptionalAnnulusSideCase
+
+/-- Finite data handed to the later planar separator theorem: an exceptional orientation, an
+annulus side case, and the corresponding small CAP5 portal set. -/
+structure CAP5ExceptionalAnnulusSeparatorPortalCandidate where
+  orientation : CAP5ExceptionalBoundarySupportOrientation
+  sideCase : CAP5ExceptionalAnnulusSideCase
+  portalSet : Finset (Fin 5)
+  hportalSet : portalSet = sideCase.separatorPortalSet
+  hcard_le_four : portalSet.card <= 4
+
+/-- Constructor for the finite portal-set candidate attached to one exceptional orientation and
+one annulus side case. -/
+def CAP5ExceptionalAnnulusSeparatorPortalCandidate.ofOrientationAndSideCase
+    (orientation : CAP5ExceptionalBoundarySupportOrientation)
+    (sideCase : CAP5ExceptionalAnnulusSideCase) :
+    CAP5ExceptionalAnnulusSeparatorPortalCandidate where
+  orientation := orientation
+  sideCase := sideCase
+  portalSet := sideCase.separatorPortalSet
+  hportalSet := rfl
+  hcard_le_four := CAP5ExceptionalAnnulusSideCase.separatorPortalSet_card_le_four sideCase
+
+/-- Once core component-cover data is in the exceptional branch, every annulus side case has a
+finite separator-portal candidate using at most four CAP5 portals.  This is the finite input to the
+later theorem that must turn an embedded annulus/Jordan curve into an actual cyclic edge cut. -/
+theorem CAP5TransportedEdgeComponentCoverCore.exists_exceptionalAnnulusSeparatorPortalCandidate_of_isExceptional
+    {E : Type*} [DecidableEq E] {boundaryEdge : Fin 5 → E} {n : Nat}
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    (sideCase : CAP5ExceptionalAnnulusSideCase)
+    (h : data.IsExceptional) :
+    ∃ candidate : CAP5ExceptionalAnnulusSeparatorPortalCandidate,
+      data.RealizesExceptionalBoundarySupportOrientation candidate.orientation ∧
+        candidate.sideCase = sideCase := by
+  rcases exists_exceptionalBoundarySupportOrientation_of_isExceptional h with
+    ⟨orientation, horientation⟩
+  exact ⟨CAP5ExceptionalAnnulusSeparatorPortalCandidate.ofOrientationAndSideCase
+      orientation sideCase, horientation, rfl⟩
+
 /-- Full transported component-cover data is core component-cover data plus exclusion of the
 simultaneous exceptional pattern.  The core form is the honest target before the planar separator
 argument has ruled the exceptional branch out. -/
