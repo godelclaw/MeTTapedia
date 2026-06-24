@@ -425,6 +425,20 @@ theorem theorem49_submodule_spanning_of_planarBoundaryCollarLayerFacePeelWitness
     (boundaryZeroAnnihilatorTrivialForEmbedding_of_planarBoundaryCollarLayerFacePeelWitnessData
       emb data C0 hC0)
 
+/-- Same submodule-duality spanning theorem with the annihilator endpoint supplied by the
+weaker local explicit-remainder collar package. -/
+theorem theorem49_submodule_spanning_of_planarBoundaryLocalRemainderBoundaryCollarLayerFacePeelWitnessData
+    {G : SimpleGraph V}
+    [FiniteDimensional F2 (G.edgeSet → Color)]
+    (emb : PlaneEmbeddingWithBoundary G)
+    (data : PlanarBoundaryLocalRemainderBoundaryCollarLayerFacePeelWitnessData emb)
+    (C0 : G.EdgeColoring Color) (hC0 : IsTaitEdgeColoring G C0)
+    (algebra : Theorem49SubmoduleDualityData emb C0) :
+    algebra.generatorSubspace = algebra.differenceSubspace :=
+  algebra.generatorSubspace_eq_differenceSubspace
+    (boundaryZeroAnnihilatorTrivialForEmbedding_of_planarBoundaryLocalRemainderBoundaryCollarLayerFacePeelWitnessData
+      emb data C0 hC0)
+
 /-- Chain-dot specialization of the finite collar-layer witness-cover spanning bridge.  This is the
 paper-facing finite-collar version of the submodule-duality spanning gap. -/
 theorem theorem49_chainDot_spanning_of_planarBoundaryCollarLayerFacePeelWitnessData
@@ -445,6 +459,29 @@ theorem theorem49_chainDot_spanning_of_planarBoundaryCollarLayerFacePeelWitnessD
           AnnihilatesKempeClosureGeneratorFamily emb.faceBoundary C0 z) :
     generatorSubspace = differenceSubspace :=
   theorem49_submodule_spanning_of_planarBoundaryCollarLayerFacePeelWitnessData
+    emb data C0 hC0
+    (Theorem49SubmoduleDualityData.ofChainDot
+      differenceSubspace generatorSubspace hle hboundary horth)
+
+/-- Chain-dot specialization of the local explicit-remainder collar spanning bridge. -/
+theorem theorem49_chainDot_spanning_of_planarBoundaryLocalRemainderBoundaryCollarLayerFacePeelWitnessData
+    {G : SimpleGraph V}
+    [Fintype G.edgeSet] [FiniteDimensional F2 (G.edgeSet → Color)]
+    (emb : PlaneEmbeddingWithBoundary G)
+    (data : PlanarBoundaryLocalRemainderBoundaryCollarLayerFacePeelWitnessData emb)
+    (C0 : G.EdgeColoring Color) (hC0 : IsTaitEdgeColoring G C0)
+    (differenceSubspace generatorSubspace : Submodule F2 (G.edgeSet → Color))
+    (hle : generatorSubspace ≤ differenceSubspace)
+    (hboundary :
+      ∀ ⦃z : G.edgeSet → Color⦄,
+        z ∈ differenceSubspace →
+          ∀ e ∈ selectedBoundarySupport emb.faceBoundary emb.faces emb.faces, z e = 0)
+    (horth :
+      ∀ ⦃z : G.edgeSet → Color⦄,
+        z ∈ (chainDotBilinForm G.edgeSet).orthogonal generatorSubspace →
+          AnnihilatesKempeClosureGeneratorFamily emb.faceBoundary C0 z) :
+    generatorSubspace = differenceSubspace :=
+  theorem49_submodule_spanning_of_planarBoundaryLocalRemainderBoundaryCollarLayerFacePeelWitnessData
     emb data C0 hC0
     (Theorem49SubmoduleDualityData.ofChainDot
       differenceSubspace generatorSubspace hle hboundary horth)
@@ -536,6 +573,20 @@ theorem theorem49_relative_submodule_spanning_of_planarBoundaryCollarLayerFacePe
     (boundaryZeroAnnihilatorTrivialForEmbedding_of_planarBoundaryCollarLayerFacePeelWitnessData
       emb data C0 hC0)
 
+/-- Same spanning theorem for the relative submodule bridge, with the annihilator endpoint supplied
+by the weaker local explicit-remainder collar package. -/
+theorem theorem49_relative_submodule_spanning_of_planarBoundaryLocalRemainderBoundaryCollarLayerFacePeelWitnessData
+    {G : SimpleGraph V}
+    [FiniteDimensional F2 (G.edgeSet → Color)]
+    (emb : PlaneEmbeddingWithBoundary G)
+    (data : PlanarBoundaryLocalRemainderBoundaryCollarLayerFacePeelWitnessData emb)
+    (C0 : G.EdgeColoring Color) (hC0 : IsTaitEdgeColoring G C0)
+    (algebra : Theorem49RelativeSubmoduleDualityData emb C0) :
+    algebra.generatorSubspace = algebra.differenceSubspace :=
+  algebra.generatorSubspace_eq_differenceSubspace
+    (boundaryZeroAnnihilatorTrivialForEmbedding_of_planarBoundaryLocalRemainderBoundaryCollarLayerFacePeelWitnessData
+      emb data C0 hC0)
+
 /-- Chain-dot specialization of the relative height-ordered submodule spanning theorem. -/
 theorem theorem49_chainDot_relative_spanning_of_planarBoundaryHeightOrderedFacePeelWitnessData
     {G : SimpleGraph V}
@@ -584,6 +635,30 @@ theorem theorem49_chainDot_relative_spanning_of_planarBoundaryCollarLayerFacePee
     (Theorem49RelativeSubmoduleDualityData.ofChainDot
       differenceSubspace generatorSubspace hle hboundary horth)
 
+/-- Chain-dot specialization of the relative local explicit-remainder collar spanning theorem. -/
+theorem theorem49_chainDot_relative_spanning_of_planarBoundaryLocalRemainderBoundaryCollarLayerFacePeelWitnessData
+    {G : SimpleGraph V}
+    [Fintype G.edgeSet] [FiniteDimensional F2 (G.edgeSet → Color)]
+    (emb : PlaneEmbeddingWithBoundary G)
+    (data : PlanarBoundaryLocalRemainderBoundaryCollarLayerFacePeelWitnessData emb)
+    (C0 : G.EdgeColoring Color) (hC0 : IsTaitEdgeColoring G C0)
+    (differenceSubspace generatorSubspace : Submodule F2 (G.edgeSet → Color))
+    (hle : generatorSubspace ≤ differenceSubspace)
+    (hboundary :
+      ∀ ⦃z : G.edgeSet → Color⦄,
+        z ∈ differenceSubspace →
+          ∀ e ∈ selectedBoundarySupport emb.faceBoundary emb.faces emb.faces, z e = 0)
+    (horth :
+      ∀ ⦃z : G.edgeSet → Color⦄,
+        z ∈ differenceSubspace →
+        z ∈ (chainDotBilinForm G.edgeSet).orthogonal generatorSubspace →
+          AnnihilatesKempeClosureGeneratorFamily emb.faceBoundary C0 z) :
+    generatorSubspace = differenceSubspace :=
+  theorem49_relative_submodule_spanning_of_planarBoundaryLocalRemainderBoundaryCollarLayerFacePeelWitnessData
+    emb data C0 hC0
+    (Theorem49RelativeSubmoduleDualityData.ofChainDot
+      differenceSubspace generatorSubspace hle hboundary horth)
+
 /-- Graph-level height-ordered submodule bridge: an admissible witnessing embedding is enough to
 run any same-embedding `Theorem49SubmoduleDualityData` package through the spanning gap. -/
 theorem exists_theorem49_submodule_spanning_of_admitsPlanarBoundaryHeightOrderedFacePeelWitnessData
@@ -615,6 +690,22 @@ theorem exists_theorem49_submodule_spanning_of_admitsPlanarBoundaryCollarLayerFa
   rcases hG with ⟨emb, ⟨data⟩⟩
   exact ⟨emb, data,
     theorem49_submodule_spanning_of_planarBoundaryCollarLayerFacePeelWitnessData
+      emb data C0 hC0 (algebraOf emb data)⟩
+
+/-- Graph-level local explicit-remainder collar submodule bridge. -/
+theorem exists_theorem49_submodule_spanning_of_admitsPlanarBoundaryLocalRemainderBoundaryCollarLayerFacePeelWitnessData
+    {G : SimpleGraph V} [FiniteDimensional F2 (G.edgeSet → Color)]
+    (hG : AdmitsPlanarBoundaryLocalRemainderBoundaryCollarLayerFacePeelWitnessData G)
+    (C0 : G.EdgeColoring Color) (hC0 : IsTaitEdgeColoring G C0)
+    (algebraOf : ∀ emb : PlaneEmbeddingWithBoundary G,
+      PlanarBoundaryLocalRemainderBoundaryCollarLayerFacePeelWitnessData emb →
+        Theorem49SubmoduleDualityData emb C0) :
+    ∃ emb : PlaneEmbeddingWithBoundary G,
+      ∃ data : PlanarBoundaryLocalRemainderBoundaryCollarLayerFacePeelWitnessData emb,
+        (algebraOf emb data).generatorSubspace = (algebraOf emb data).differenceSubspace := by
+  rcases hG with ⟨emb, ⟨data⟩⟩
+  exact ⟨emb, data,
+    theorem49_submodule_spanning_of_planarBoundaryLocalRemainderBoundaryCollarLayerFacePeelWitnessData
       emb data C0 hC0 (algebraOf emb data)⟩
 
 /-- Graph-level height-ordered chain-dot bridge.  This wrapper constructs the concrete
@@ -682,6 +773,40 @@ theorem exists_theorem49_chainDot_spanning_of_admitsPlanarBoundaryCollarLayerFac
       emb data C0 hC0 (differenceSubspaceOf emb data) (generatorSubspaceOf emb data)
       (hle emb data) (hboundary emb data) (horth emb data)⟩
 
+/-- Graph-level local explicit-remainder collar chain-dot bridge. -/
+theorem exists_theorem49_chainDot_spanning_of_admitsPlanarBoundaryLocalRemainderBoundaryCollarLayerFacePeelWitnessData
+    {G : SimpleGraph V}
+    [Fintype G.edgeSet] [FiniteDimensional F2 (G.edgeSet → Color)]
+    (hG : AdmitsPlanarBoundaryLocalRemainderBoundaryCollarLayerFacePeelWitnessData G)
+    (C0 : G.EdgeColoring Color) (hC0 : IsTaitEdgeColoring G C0)
+    (differenceSubspaceOf : ∀ emb : PlaneEmbeddingWithBoundary G,
+      PlanarBoundaryLocalRemainderBoundaryCollarLayerFacePeelWitnessData emb →
+        Submodule F2 (G.edgeSet → Color))
+    (generatorSubspaceOf : ∀ emb : PlaneEmbeddingWithBoundary G,
+      PlanarBoundaryLocalRemainderBoundaryCollarLayerFacePeelWitnessData emb →
+        Submodule F2 (G.edgeSet → Color))
+    (hle : ∀ emb : PlaneEmbeddingWithBoundary G,
+      ∀ data : PlanarBoundaryLocalRemainderBoundaryCollarLayerFacePeelWitnessData emb,
+        generatorSubspaceOf emb data ≤ differenceSubspaceOf emb data)
+    (hboundary : ∀ emb : PlaneEmbeddingWithBoundary G,
+      ∀ data : PlanarBoundaryLocalRemainderBoundaryCollarLayerFacePeelWitnessData emb,
+        ∀ ⦃z : G.edgeSet → Color⦄,
+          z ∈ differenceSubspaceOf emb data →
+            ∀ e ∈ selectedBoundarySupport emb.faceBoundary emb.faces emb.faces, z e = 0)
+    (horth : ∀ emb : PlaneEmbeddingWithBoundary G,
+      ∀ data : PlanarBoundaryLocalRemainderBoundaryCollarLayerFacePeelWitnessData emb,
+        ∀ ⦃z : G.edgeSet → Color⦄,
+          z ∈ (chainDotBilinForm G.edgeSet).orthogonal (generatorSubspaceOf emb data) →
+            AnnihilatesKempeClosureGeneratorFamily emb.faceBoundary C0 z) :
+    ∃ emb : PlaneEmbeddingWithBoundary G,
+      ∃ data : PlanarBoundaryLocalRemainderBoundaryCollarLayerFacePeelWitnessData emb,
+        generatorSubspaceOf emb data = differenceSubspaceOf emb data := by
+  rcases hG with ⟨emb, ⟨data⟩⟩
+  exact ⟨emb, data,
+    theorem49_chainDot_spanning_of_planarBoundaryLocalRemainderBoundaryCollarLayerFacePeelWitnessData
+      emb data C0 hC0 (differenceSubspaceOf emb data) (generatorSubspaceOf emb data)
+      (hle emb data) (hboundary emb data) (horth emb data)⟩
+
 /-- Graph-level height-ordered relative submodule bridge. -/
 theorem exists_theorem49_relative_submodule_spanning_of_admitsPlanarBoundaryHeightOrderedFacePeelWitnessData
     {G : SimpleGraph V} [FiniteDimensional F2 (G.edgeSet → Color)]
@@ -712,6 +837,22 @@ theorem exists_theorem49_relative_submodule_spanning_of_admitsPlanarBoundaryColl
   rcases hG with ⟨emb, ⟨data⟩⟩
   exact ⟨emb, data,
     theorem49_relative_submodule_spanning_of_planarBoundaryCollarLayerFacePeelWitnessData
+      emb data C0 hC0 (algebraOf emb data)⟩
+
+/-- Graph-level local explicit-remainder collar relative submodule bridge. -/
+theorem exists_theorem49_relative_submodule_spanning_of_admitsPlanarBoundaryLocalRemainderBoundaryCollarLayerFacePeelWitnessData
+    {G : SimpleGraph V} [FiniteDimensional F2 (G.edgeSet → Color)]
+    (hG : AdmitsPlanarBoundaryLocalRemainderBoundaryCollarLayerFacePeelWitnessData G)
+    (C0 : G.EdgeColoring Color) (hC0 : IsTaitEdgeColoring G C0)
+    (algebraOf : ∀ emb : PlaneEmbeddingWithBoundary G,
+      PlanarBoundaryLocalRemainderBoundaryCollarLayerFacePeelWitnessData emb →
+        Theorem49RelativeSubmoduleDualityData emb C0) :
+    ∃ emb : PlaneEmbeddingWithBoundary G,
+      ∃ data : PlanarBoundaryLocalRemainderBoundaryCollarLayerFacePeelWitnessData emb,
+        (algebraOf emb data).generatorSubspace = (algebraOf emb data).differenceSubspace := by
+  rcases hG with ⟨emb, ⟨data⟩⟩
+  exact ⟨emb, data,
+    theorem49_relative_submodule_spanning_of_planarBoundaryLocalRemainderBoundaryCollarLayerFacePeelWitnessData
       emb data C0 hC0 (algebraOf emb data)⟩
 
 /-- Graph-level height-ordered chain-dot bridge for the relative submodule interface. -/
@@ -777,6 +918,42 @@ theorem exists_theorem49_chainDot_relative_spanning_of_admitsPlanarBoundaryColla
   rcases hG with ⟨emb, ⟨data⟩⟩
   exact ⟨emb, data,
     theorem49_chainDot_relative_spanning_of_planarBoundaryCollarLayerFacePeelWitnessData
+      emb data C0 hC0 (differenceSubspaceOf emb data) (generatorSubspaceOf emb data)
+      (hle emb data) (hboundary emb data) (horth emb data)⟩
+
+/-- Graph-level local explicit-remainder collar chain-dot bridge for the relative submodule
+interface. -/
+theorem exists_theorem49_chainDot_relative_spanning_of_admitsPlanarBoundaryLocalRemainderBoundaryCollarLayerFacePeelWitnessData
+    {G : SimpleGraph V}
+    [Fintype G.edgeSet] [FiniteDimensional F2 (G.edgeSet → Color)]
+    (hG : AdmitsPlanarBoundaryLocalRemainderBoundaryCollarLayerFacePeelWitnessData G)
+    (C0 : G.EdgeColoring Color) (hC0 : IsTaitEdgeColoring G C0)
+    (differenceSubspaceOf : ∀ emb : PlaneEmbeddingWithBoundary G,
+      PlanarBoundaryLocalRemainderBoundaryCollarLayerFacePeelWitnessData emb →
+        Submodule F2 (G.edgeSet → Color))
+    (generatorSubspaceOf : ∀ emb : PlaneEmbeddingWithBoundary G,
+      PlanarBoundaryLocalRemainderBoundaryCollarLayerFacePeelWitnessData emb →
+        Submodule F2 (G.edgeSet → Color))
+    (hle : ∀ emb : PlaneEmbeddingWithBoundary G,
+      ∀ data : PlanarBoundaryLocalRemainderBoundaryCollarLayerFacePeelWitnessData emb,
+        generatorSubspaceOf emb data ≤ differenceSubspaceOf emb data)
+    (hboundary : ∀ emb : PlaneEmbeddingWithBoundary G,
+      ∀ data : PlanarBoundaryLocalRemainderBoundaryCollarLayerFacePeelWitnessData emb,
+        ∀ ⦃z : G.edgeSet → Color⦄,
+          z ∈ differenceSubspaceOf emb data →
+            ∀ e ∈ selectedBoundarySupport emb.faceBoundary emb.faces emb.faces, z e = 0)
+    (horth : ∀ emb : PlaneEmbeddingWithBoundary G,
+      ∀ data : PlanarBoundaryLocalRemainderBoundaryCollarLayerFacePeelWitnessData emb,
+        ∀ ⦃z : G.edgeSet → Color⦄,
+          z ∈ differenceSubspaceOf emb data →
+          z ∈ (chainDotBilinForm G.edgeSet).orthogonal (generatorSubspaceOf emb data) →
+            AnnihilatesKempeClosureGeneratorFamily emb.faceBoundary C0 z) :
+    ∃ emb : PlaneEmbeddingWithBoundary G,
+      ∃ data : PlanarBoundaryLocalRemainderBoundaryCollarLayerFacePeelWitnessData emb,
+        generatorSubspaceOf emb data = differenceSubspaceOf emb data := by
+  rcases hG with ⟨emb, ⟨data⟩⟩
+  exact ⟨emb, data,
+    theorem49_chainDot_relative_spanning_of_planarBoundaryLocalRemainderBoundaryCollarLayerFacePeelWitnessData
       emb data C0 hC0 (differenceSubspaceOf emb data) (generatorSubspaceOf emb data)
       (hle emb data) (hboundary emb data) (horth emb data)⟩
 
