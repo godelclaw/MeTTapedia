@@ -226,6 +226,33 @@ structure CAP5EdgeSwitchRepairOutcome
     CAP5WordExtendsAcrossCycle
       (cap5BoundaryWordOfEdges boundaryEdge (switch a b (edgeSupport : Set E) C))
 
+/-- A repair outcome exposes the concrete edge switch whose restricted boundary word extends. -/
+theorem exists_edgeSupport_switch_extendsAcrossCycle_of_switchRepairOutcome
+    {E : Type*} [DecidableEq E] {boundaryEdge : Fin 5 → E} {C : E → Color}
+    (h : Nonempty (CAP5EdgeSwitchRepairOutcome boundaryEdge C)) :
+    ∃ edgeSupport : Finset E, ∃ a b : Color,
+      CAP5WordExtendsAcrossCycle
+        (cap5BoundaryWordOfEdges boundaryEdge (switch a b (edgeSupport : Set E) C)) := by
+  rcases h with ⟨outcome⟩
+  exact ⟨outcome.edgeSupport, outcome.a, outcome.b, outcome.hextends⟩
+
+/-- A repair outcome also retains the transported component-cover support that produced the
+edge switch.  This is the provenance-preserving projection for later graph/Kempe extraction. -/
+theorem exists_transportData_edgeSupport_switch_extendsAcrossCycle_of_switchRepairOutcome
+    {E : Type*} [DecidableEq E] {boundaryEdge : Fin 5 → E} {C : E → Color}
+    (h : Nonempty (CAP5EdgeSwitchRepairOutcome boundaryEdge C)) :
+    ∃ σ : Color ≃ Color, ∃ n : Nat,
+    ∃ data : CAP5TransportedEdgeComponentCoverData boundaryEdge n,
+    ∃ edgeSupport : Finset E, ∃ a b : Color,
+      σ 0 = 0 ∧
+      CAP5TransportedEdgeSwitchUsesComponentCoverSupport data σ edgeSupport a b ∧
+      CAP5WordExtendsAcrossCycle
+        (cap5BoundaryWordOfEdges boundaryEdge (switch a b (edgeSupport : Set E) C)) := by
+  rcases h with ⟨outcome⟩
+  exact
+    ⟨outcome.σ, outcome.n, outcome.data, outcome.edgeSupport, outcome.a, outcome.b,
+      outcome.hσ0, outcome.huses, outcome.hextends⟩
+
 /-- Raw support-cover repair action for an arbitrary transported bad CAP5 word.  This exposes the
 actual support-carried boundary action, not just the solved-word conclusion. -/
 theorem exists_boundaryActionRepairsWord_usingTransportedComponentCoverSupport_of_eq_transportBad_of_componentCoverSupports
@@ -755,6 +782,29 @@ theorem cap5BoundaryWordOfEdges_extends_or_switchRepairOutcome_of_nonzero_of_sum
         huses := huses
         hextends := hextends }⟩
 
+/-- Edge-switch form of the graph-facing CAP5 split.  This erases the repair-outcome package
+when downstream code only needs the actual switch that makes the boundary word extend. -/
+theorem cap5BoundaryWordOfEdges_extends_or_exists_edgeSupport_switch_extends_of_nonzero_of_sum_zero_of_transportEdgeComponentCoverData
+    {E : Type*} [DecidableEq E] (boundaryEdge : Fin 5 → E) (C : E → Color)
+    (hnz : CAP5BoundaryWordIsNonzero (cap5BoundaryWordOfEdges boundaryEdge C))
+    (hsum : (∑ i : Fin 5, cap5BoundaryWordOfEdges boundaryEdge C i) = 0)
+    (hcomponentCovers :
+      ∀ {σ : Color ≃ Color} {n : Nat},
+        σ 0 = 0 →
+        cap5BoundaryWordOfEdges boundaryEdge C = cap5TransportedBadBoundaryWord σ n →
+        CAP5TransportedEdgeComponentCoverData boundaryEdge n) :
+    CAP5WordExtendsAcrossCycle (cap5BoundaryWordOfEdges boundaryEdge C) ∨
+      ∃ edgeSupport : Finset E, ∃ a b : Color,
+        CAP5WordExtendsAcrossCycle
+          (cap5BoundaryWordOfEdges boundaryEdge (switch a b (edgeSupport : Set E) C)) := by
+  rcases
+      cap5BoundaryWordOfEdges_extends_or_switchRepairOutcome_of_nonzero_of_sum_zero_of_transportEdgeComponentCoverData
+        boundaryEdge C hnz hsum hcomponentCovers with
+    hextends | houtcome
+  · exact Or.inl hextends
+  · exact Or.inr
+      (exists_edgeSupport_switch_extendsAcrossCycle_of_switchRepairOutcome houtcome)
+
 /-- Manuscript-facing edge-switch split for a Tait edge coloring.  If the CAP5 boundary edges
 enumerate a zero-boundary incidence set, then the restricted boundary word either extends across
 the cap immediately or admits a concrete edge-level switch repair extracted from the supplied
@@ -775,6 +825,33 @@ theorem cap5BoundaryWordOfEdges_extends_or_switchRepairOutcome_of_isTaitEdgeColo
     CAP5WordExtendsAcrossCycle (cap5BoundaryWordOfEdges boundaryEdge C) ∨
       Nonempty (CAP5EdgeSwitchRepairOutcome boundaryEdge C) :=
   cap5BoundaryWordOfEdges_extends_or_switchRepairOutcome_of_nonzero_of_sum_zero_of_transportEdgeComponentCoverData
+    boundaryEdge C
+    (cap5BoundaryWordOfEdges_isNonzero_of_isTaitEdgeColoring boundaryEdge C hC)
+    (cap5BoundaryWordOfEdges_sum_eq_zero_of_isZeroBoundary_at
+      boundaryEdge C hinj hincident hzero)
+    hcomponentCovers
+
+/-- Manuscript-facing edge-switch endpoint with the repair package erased.  It states exactly
+what the graph route can use next: either the original CAP5 boundary word extends, or an explicit
+edge switch makes the restricted boundary word extend. -/
+theorem cap5BoundaryWordOfEdges_extends_or_exists_edgeSupport_switch_extends_of_isTaitEdgeColoring_of_isZeroBoundary_at_of_transportEdgeComponentCoverData
+    {V U : Type*} [DecidableEq V] {G : SimpleGraph V}
+    {D : ZeroBoundaryData U G.edgeSet} {v : U}
+    (boundaryEdge : Fin 5 → G.edgeSet) (C : G.EdgeColoring Color)
+    (hC : IsTaitEdgeColoring G C)
+    (hinj : Function.Injective boundaryEdge)
+    (hincident : D.incident v = Finset.univ.map ⟨boundaryEdge, hinj⟩)
+    (hzero : D.isZeroBoundary C)
+    (hcomponentCovers :
+      ∀ {σ : Color ≃ Color} {n : Nat},
+        σ 0 = 0 →
+        cap5BoundaryWordOfEdges boundaryEdge C = cap5TransportedBadBoundaryWord σ n →
+        CAP5TransportedEdgeComponentCoverData boundaryEdge n) :
+    CAP5WordExtendsAcrossCycle (cap5BoundaryWordOfEdges boundaryEdge C) ∨
+      ∃ edgeSupport : Finset G.edgeSet, ∃ a b : Color,
+        CAP5WordExtendsAcrossCycle
+          (cap5BoundaryWordOfEdges boundaryEdge (switch a b (edgeSupport : Set G.edgeSet) C)) :=
+  cap5BoundaryWordOfEdges_extends_or_exists_edgeSupport_switch_extends_of_nonzero_of_sum_zero_of_transportEdgeComponentCoverData
     boundaryEdge C
     (cap5BoundaryWordOfEdges_isNonzero_of_isTaitEdgeColoring boundaryEdge C hC)
     (cap5BoundaryWordOfEdges_sum_eq_zero_of_isZeroBoundary_at
