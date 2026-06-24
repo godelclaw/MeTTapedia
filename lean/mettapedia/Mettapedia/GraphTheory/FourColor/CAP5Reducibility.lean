@@ -559,6 +559,50 @@ theorem CAP5ExceptionalAnnulusBoundaryEdgeSupportCandidate.exists_realizesSmallC
       candidate.RealizesSmallCyclicEdgeCut cut := by
   exact ⟨realization.toSmallCyclicEdgeCut candidate.hcard_le_four, rfl⟩
 
+/-- Candidate-level separator consequence of the realization data: any walk crossing from one
+realized side to the other must use an edge in the finite CAP5 boundary support candidate. -/
+theorem CAP5ExceptionalAnnulusBoundaryEdgeSupportCandidate.exists_mem_edgeSupport_of_realizationData_walk_endpoint_sides
+    {V : Type*} {G : SimpleGraph V} [DecidableEq G.edgeSet]
+    {boundaryEdge : Fin 5 → G.edgeSet}
+    (candidate : CAP5ExceptionalAnnulusBoundaryEdgeSupportCandidate boundaryEdge)
+    (realization : candidate.CyclicEdgeCutRealizationData (G := G))
+    {u v : V} (p : G.Walk u v) (hu : realization.side u) (hv : ¬ realization.side v) :
+    ∃ e : G.edgeSet, e ∈ candidate.edgeSupport ∧ (e : Sym2 V) ∈ p.edges :=
+  realization.exists_mem_edgeCut_of_walk_endpoint_sides p hu hv
+
+/-- Candidate-level invariance form: a walk avoiding the finite CAP5 boundary support candidate
+cannot move between the two realized sides. -/
+theorem CAP5ExceptionalAnnulusBoundaryEdgeSupportCandidate.side_iff_of_forall_not_mem_edgeSupport_of_realizationData_walk
+    {V : Type*} {G : SimpleGraph V} [DecidableEq G.edgeSet]
+    {boundaryEdge : Fin 5 → G.edgeSet}
+    (candidate : CAP5ExceptionalAnnulusBoundaryEdgeSupportCandidate boundaryEdge)
+    (realization : candidate.CyclicEdgeCutRealizationData (G := G))
+    {u v : V} (p : G.Walk u v)
+    (havoid : ∀ e : G.edgeSet, e ∈ candidate.edgeSupport → (e : Sym2 V) ∉ p.edges) :
+    realization.side u ↔ realization.side v :=
+  realization.side_iff_of_forall_not_mem_edgeCut_of_walk p havoid
+
+/-- A realized CAP5 boundary-edge support candidate gives the forbidden small-cyclic-cut
+existence form because the candidate support has cardinality at most four. -/
+theorem CAP5ExceptionalAnnulusBoundaryEdgeSupportCandidate.hasCyclicEdgeCutOfSizeAtMostFour_of_realizationData
+    {V : Type*} {G : SimpleGraph V} [DecidableEq G.edgeSet]
+    {boundaryEdge : Fin 5 → G.edgeSet}
+    (candidate : CAP5ExceptionalAnnulusBoundaryEdgeSupportCandidate boundaryEdge)
+    (realization : candidate.CyclicEdgeCutRealizationData (G := G)) :
+    HasCyclicEdgeCutOfSizeAtMostFour G :=
+  realization.hasCyclicEdgeCutOfSizeAtMostFour candidate.hcard_le_four
+
+/-- Under the no-small-cyclic-cut hypothesis, no CAP5 boundary-edge support candidate can be
+realized as a cyclic cut. -/
+theorem CAP5ExceptionalAnnulusBoundaryEdgeSupportCandidate.false_of_noCyclicEdgeCut_of_realizationData
+    {V : Type*} {G : SimpleGraph V} [DecidableEq G.edgeSet]
+    {boundaryEdge : Fin 5 → G.edgeSet}
+    (candidate : CAP5ExceptionalAnnulusBoundaryEdgeSupportCandidate boundaryEdge)
+    (hnoCut : NoCyclicEdgeCutOfSizeAtMostFour G)
+    (realization : candidate.CyclicEdgeCutRealizationData (G := G)) :
+    False :=
+  hnoCut (candidate.hasCyclicEdgeCutOfSizeAtMostFour_of_realizationData realization)
+
 /-- A bundled small cyclic edge cut whose support is exactly a CAP5 boundary-edge candidate gives
 the realization-data form consumed by the sharper exceptional-annulus endpoint. -/
 def CAP5ExceptionalAnnulusBoundaryEdgeSupportCandidate.cyclicEdgeCutRealizationData_of_realizesSmallCyclicEdgeCut
