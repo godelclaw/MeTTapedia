@@ -263,6 +263,77 @@ theorem isNowhereZeroFlow_of_taitEdgeColoring_of_hasCubicIncidentEdgeTriples
     IsNowhereZeroFlow G C := by
   exact ⟨isGraphFlow_of_taitEdgeColoring_of_hasCubicIncidentEdgeTriples hG hC, hC⟩
 
+/-- Converse local-to-global edge-coloring step: in a nowhere-zero `F₂²` flow
+on a graph with explicit cubic incident triples, adjacent line-graph vertices
+(i.e. incident graph edges) have distinct values. -/
+theorem edge_values_ne_of_nowhereZeroFlow_of_hasCubicIncidentEdgeTriples
+    {G : SimpleGraph V} [Fintype G.edgeSet] {x : G.edgeSet → Color}
+    (hG : HasCubicIncidentEdgeTriples G) (hx : IsNowhereZeroFlow G x)
+    {e f : G.edgeSet} (hadj : G.lineGraph.Adj e f) :
+    x e ≠ x f := by
+  rcases (SimpleGraph.lineGraph_adj_iff_exists).1 hadj with ⟨hef, v, hev, hfv⟩
+  rcases hG v with ⟨e1, e2, e3, hincident⟩
+  have he_mem : e ∈ incidentEdgeFinset G v := by
+    simpa [incidentEdgeFinset] using hev
+  have hf_mem : f ∈ incidentEdgeFinset G v := by
+    simpa [incidentEdgeFinset] using hfv
+  rw [hincident.1] at he_mem hf_mem
+  have htrip := isLocalTaitTriple_of_nowhereZeroFlow_at_incidentTriple hincident hx
+  rcases htrip with ⟨_hnz, h12, h13, h23⟩
+  simp only [Finset.mem_insert, Finset.mem_singleton] at he_mem hf_mem
+  rcases he_mem with rfl | rfl | rfl
+  · rcases hf_mem with rfl | rfl | rfl
+    · exact (hef rfl).elim
+    · exact h12
+    · exact h13
+  · rcases hf_mem with rfl | rfl | rfl
+    · exact fun h => h12 h.symm
+    · exact (hef rfl).elim
+    · exact h23
+  · rcases hf_mem with rfl | rfl | rfl
+    · exact fun h => h13 h.symm
+    · exact fun h => h23 h.symm
+    · exact (hef rfl).elim
+
+/-- Package a nowhere-zero `F₂²` flow as a proper edge coloring. -/
+def edgeColoringOfNowhereZeroFlow
+    {G : SimpleGraph V} [Fintype G.edgeSet] (x : G.edgeSet → Color)
+    (hG : HasCubicIncidentEdgeTriples G) (hx : IsNowhereZeroFlow G x) :
+    G.EdgeColoring Color :=
+  SimpleGraph.Coloring.mk x
+    (fun hadj => edge_values_ne_of_nowhereZeroFlow_of_hasCubicIncidentEdgeTriples hG hx hadj)
+
+/-- The edge coloring obtained from a nowhere-zero `F₂²` flow is Tait: all
+edge-values are nonzero. -/
+theorem isTaitEdgeColoring_edgeColoringOfNowhereZeroFlow
+    {G : SimpleGraph V} [Fintype G.edgeSet] {x : G.edgeSet → Color}
+    (hG : HasCubicIncidentEdgeTriples G) (hx : IsNowhereZeroFlow G x) :
+    IsTaitEdgeColoring G (edgeColoringOfNowhereZeroFlow x hG hx) := by
+  intro e
+  exact hx.2 e
+
+/-- Nowhere-zero `F₂²` flows produce Tait edge colorings under the explicit
+cubic-incidence hypothesis. -/
+theorem exists_taitEdgeColoring_of_nowhereZeroFlow_of_hasCubicIncidentEdgeTriples
+    {G : SimpleGraph V} [Fintype G.edgeSet]
+    (hG : HasCubicIncidentEdgeTriples G) (x : G.edgeSet → Color)
+    (hx : IsNowhereZeroFlow G x) :
+    ∃ C : G.EdgeColoring Color, IsTaitEdgeColoring G C := by
+  exact ⟨edgeColoringOfNowhereZeroFlow x hG hx,
+    isTaitEdgeColoring_edgeColoringOfNowhereZeroFlow hG hx⟩
+
+/-- Existence-level Tait/flow reformulation for the explicit cubic-incidence
+API: Tait edge colorings are equivalent to nowhere-zero `F₂²` graph flows. -/
+theorem exists_taitEdgeColoring_iff_exists_nowhereZeroFlow_of_hasCubicIncidentEdgeTriples
+    {G : SimpleGraph V} [Fintype G.edgeSet] (hG : HasCubicIncidentEdgeTriples G) :
+    (∃ C : G.EdgeColoring Color, IsTaitEdgeColoring G C) ↔
+      ∃ x : G.edgeSet → Color, IsNowhereZeroFlow G x := by
+  constructor
+  · rintro ⟨C, hC⟩
+    exact ⟨C, isNowhereZeroFlow_of_taitEdgeColoring_of_hasCubicIncidentEdgeTriples hG hC⟩
+  · rintro ⟨x, hx⟩
+    exact exists_taitEdgeColoring_of_nowhereZeroFlow_of_hasCubicIncidentEdgeTriples hG x hx
+
 /-- The canonical CDL-good local condition is weaker than local nowhere-zero:
 the Kirchhoff triple `(0, red, red)` is CDL-good and sums to zero, but still
 has a zero edge-value. -/
@@ -333,6 +404,22 @@ theorem isCDLGoodFlow_of_taitEdgeColoring_of_hasCubicIncidentEdgeTriples
   exact isCDLGoodFlow_of_nowhereZeroFlow
     (incidentEdgeFinset_nonempty_of_hasCubicIncidentEdgeTriples hG)
     (isNowhereZeroFlow_of_taitEdgeColoring_of_hasCubicIncidentEdgeTriples hG hC)
+
+/-- The CDL formulation used here keeps the nonzero condition explicit:
+Tait edge colorings are equivalent to flows that are both CDL-good and
+nowhere-zero.  This deliberately does not identify CDL-goodness alone with
+nowhere-zero. -/
+theorem
+    exists_taitEdgeColoring_iff_exists_cdlGood_nowhereZeroFlow_of_hasCubicIncidentEdgeTriples
+    {G : SimpleGraph V} [Fintype G.edgeSet] (hG : HasCubicIncidentEdgeTriples G) :
+    (∃ C : G.EdgeColoring Color, IsTaitEdgeColoring G C) ↔
+      ∃ x : G.edgeSet → Color, IsCDLGoodFlow G x ∧ IsNowhereZeroFlow G x := by
+  constructor
+  · rintro ⟨C, hC⟩
+    have hx := isNowhereZeroFlow_of_taitEdgeColoring_of_hasCubicIncidentEdgeTriples hG hC
+    exact ⟨C, isCDLGoodFlow_of_taitEdgeColoring_of_hasCubicIncidentEdgeTriples hG hC, hx⟩
+  · rintro ⟨x, _hgood, hx⟩
+    exact exists_taitEdgeColoring_of_nowhereZeroFlow_of_hasCubicIncidentEdgeTriples hG x hx
 
 theorem zeroChain_isGraphFlow (G : SimpleGraph V) [Fintype G.edgeSet] :
     IsGraphFlow G (zeroChain : G.edgeSet → Color) := by
