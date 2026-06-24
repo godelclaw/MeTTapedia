@@ -790,6 +790,103 @@ theorem exists_created_zero_of_isD0LocalMinimumForMoveSupports_of_allowed_erases
     (not_isD0LocalMinimumForMoveSupports_of_allowed_erases_zero_no_new_zero_descent
       hCmem hmove herase hnew) hmin
 
+theorem support_card_ge_four_of_contains_zero_red_blue_purple
+    {E : Type*} [DecidableEq E] {C : Finset E} {x : E → Color}
+    (hzero : ∃ e ∈ C, x e = 0)
+    (hred : ∃ e ∈ C, x e = red)
+    (hblue : ∃ e ∈ C, x e = blue)
+    (hpurple : ∃ e ∈ C, x e = purple) :
+    4 ≤ C.card := by
+  rcases hzero with ⟨e0, he0C, he0⟩
+  rcases hred with ⟨er, herC, her⟩
+  rcases hblue with ⟨eb, hebC, heb⟩
+  rcases hpurple with ⟨ep, hepC, hep⟩
+  have h0r : e0 ≠ er := by
+    intro h
+    have : red = 0 := by
+      rw [← her, ← h, he0]
+    exact red_ne_zero this
+  have h0b : e0 ≠ eb := by
+    intro h
+    have : blue = 0 := by
+      rw [← heb, ← h, he0]
+    exact blue_ne_zero this
+  have h0p : e0 ≠ ep := by
+    intro h
+    have : purple = 0 := by
+      rw [← hep, ← h, he0]
+    exact purple_ne_zero this
+  have hrb : er ≠ eb := by
+    intro h
+    have : red = blue := by
+      rw [← her, h, heb]
+    exact red_ne_blue this
+  have hrp : er ≠ ep := by
+    intro h
+    have : red = purple := by
+      rw [← her, h, hep]
+    exact red_ne_purple this
+  have hbp : eb ≠ ep := by
+    intro h
+    have : blue = purple := by
+      rw [← heb, h, hep]
+    exact blue_ne_purple this
+  have hsubset : ({e0, er, eb, ep} : Finset E) ⊆ C := by
+    intro e he
+    simp only [Finset.mem_insert, Finset.mem_singleton] at he
+    rcases he with rfl | rfl | rfl | rfl
+    · exact he0C
+    · exact herC
+    · exact hebC
+    · exact hepC
+  have hcard : ({e0, er, eb, ep} : Finset E).card = 4 := by
+    simp [h0r, h0b, h0p, hrb, hrp, hbp]
+  have hle := Finset.card_le_card hsubset
+  omega
+
+theorem moveSupport_card_ge_four_of_d0LocalMinimum_basic_color_moves
+    {G : SimpleGraph V} [Fintype V] [Fintype G.edgeSet]
+    {moveSupports : Finset (Finset G.edgeSet)} {x : G.edgeSet → Color}
+    {C : Finset G.edgeSet}
+    (hmin : IsD0LocalMinimumForMoveSupports G moveSupports x)
+    (hCmem : C ∈ moveSupports)
+    (hred :
+      IsAllowedD0OneStepMoveOn G C red x (cdlOneStepMoveOn G C red x))
+    (hblue :
+      IsAllowedD0OneStepMoveOn G C blue x (cdlOneStepMoveOn G C blue x))
+    (hpurple :
+      IsAllowedD0OneStepMoveOn G C purple x (cdlOneStepMoveOn G C purple x))
+    (herase : ∃ e ∈ C, x e = 0) :
+    4 ≤ C.card := by
+  exact support_card_ge_four_of_contains_zero_red_blue_purple
+    herase
+    (exists_created_zero_of_isD0LocalMinimumForMoveSupports_of_allowed_erases_zero
+      hmin hCmem hred herase)
+    (exists_created_zero_of_isD0LocalMinimumForMoveSupports_of_allowed_erases_zero
+      hmin hCmem hblue herase)
+    (exists_created_zero_of_isD0LocalMinimumForMoveSupports_of_allowed_erases_zero
+      hmin hCmem hpurple herase)
+
+theorem not_isD0LocalMinimumForMoveSupports_of_basic_color_moves_small_support
+    {G : SimpleGraph V} [Fintype V] [Fintype G.edgeSet]
+    {moveSupports : Finset (Finset G.edgeSet)} {x : G.edgeSet → Color}
+    {C : Finset G.edgeSet}
+    (hCmem : C ∈ moveSupports)
+    (hred :
+      IsAllowedD0OneStepMoveOn G C red x (cdlOneStepMoveOn G C red x))
+    (hblue :
+      IsAllowedD0OneStepMoveOn G C blue x (cdlOneStepMoveOn G C blue x))
+    (hpurple :
+      IsAllowedD0OneStepMoveOn G C purple x (cdlOneStepMoveOn G C purple x))
+    (herase : ∃ e ∈ C, x e = 0)
+    (hsmall : C.card ≤ 3) :
+    ¬ IsD0LocalMinimumForMoveSupports G moveSupports x := by
+  intro hmin
+  have hfour : 4 ≤ C.card :=
+    moveSupport_card_ge_four_of_d0LocalMinimum_basic_color_moves
+      hmin hCmem hred hblue hpurple herase
+  omega
+
 theorem zeroDefectD0_le_of_isD0LocalMinimumForMoveSupports_of_isKempeCycle
     {G : SimpleGraph V} [Fintype V] [Fintype G.edgeSet]
     {moveSupports : Finset (Finset G.edgeSet)} {x : G.edgeSet → Color}
