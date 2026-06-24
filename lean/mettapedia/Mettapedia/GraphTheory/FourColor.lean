@@ -1,2 +1,3 @@
+import Mettapedia.GraphTheory.FourColor.CAP5BoundaryWord
 import Mettapedia.GraphTheory.FourColor.CDLFlow
 import Mettapedia.GraphTheory.FourColor.Goal
