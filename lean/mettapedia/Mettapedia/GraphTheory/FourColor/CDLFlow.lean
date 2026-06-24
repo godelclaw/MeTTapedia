@@ -2626,6 +2626,25 @@ def EveryClusteredZeroVertexHasD0Descent (G : SimpleGraph V)
   ∀ v : V, 2 ≤ zeroIncidentEdgeCount G x v →
     HasD0DescentRepairAt G moveSupports x v
 
+/-- A Kirchhoff-neutral support with CDL-good target witnesses gives the
+vertex-local repair obligation used by the manuscript's matching-zero route. -/
+theorem hasD0DescentRepairAt_of_kirchhoffNeutral_and_vertex_witnesses
+    {G : SimpleGraph V} [Fintype G.edgeSet]
+    {moveSupports : Finset (Finset G.edgeSet)} {x : G.edgeSet → Color}
+    {C : Finset G.edgeSet} {g : Color} {v : V}
+    (hCmem : C ∈ moveSupports) (hg : g ≠ 0) (hx : IsGraphFlow G x)
+    (hC : IsKirchhoffNeutralMoveSupport G C)
+    (hgood :
+      ∀ v : V, ∃ e ∈ incidentEdgeFinset G v,
+        if e ∈ C then x e ≠ g else x e ≠ 0)
+    (heraseAt : ∃ e ∈ C, e ∈ incidentEdgeFinset G v ∧ x e = 0)
+    (hnew : ∀ e ∈ C, x e ≠ g) :
+    HasD0DescentRepairAt G moveSupports x v :=
+  ⟨C, hCmem, g,
+    isAllowedD0OneStepMoveOn_of_kirchhoffNeutral_and_vertex_witnesses
+      hg hx hC hgood,
+    heraseAt, hnew⟩
+
 /-- A concrete Kempe-cycle move gives the vertex-local repair obligation used
 by the manuscript's matching-zero route, provided it erases an incident zero
 and creates no new zero on its support. -/
@@ -2641,10 +2660,9 @@ theorem hasD0DescentRepairAt_of_isKempeCycle_and_vertex_witnesses
     (heraseAt : ∃ e ∈ C, e ∈ incidentEdgeFinset G v ∧ x e = 0)
     (hnew : ∀ e ∈ C, x e ≠ g) :
     HasD0DescentRepairAt G moveSupports x v :=
-  ⟨C, hCmem, g,
-    isAllowedD0OneStepMoveOn_of_isKempeCycle_and_vertex_witnesses
-      hg hx hC hgood,
-    heraseAt, hnew⟩
+  hasD0DescentRepairAt_of_kirchhoffNeutral_and_vertex_witnesses
+    hCmem hg hx (isKirchhoffNeutralMoveSupport_of_isKempeCycle hC) hgood
+    heraseAt hnew
 
 /-- A concrete rotation-disk internal face gives the same vertex-local repair
 obligation once it is an allowed CDL-good move and creates no new zero. -/
@@ -2662,10 +2680,33 @@ theorem hasD0DescentRepairAt_of_rotationDiskData_internalFace_and_vertex_witness
     {v : V} (heraseAt : ∃ e ∈ f, e ∈ incidentEdgeFinset G v ∧ x e = 0)
     (hnew : ∀ e ∈ f, x e ≠ g) :
     HasD0DescentRepairAt G moveSupports x v :=
-  ⟨f, hfmem, g,
-    isAllowedD0OneStepMoveOn_of_rotationDiskData_internalFace_and_vertex_witnesses
-      D hincident hf hg hx hgood,
-    heraseAt, hnew⟩
+  hasD0DescentRepairAt_of_kirchhoffNeutral_and_vertex_witnesses
+    hfmem hg hx
+    (isKirchhoffNeutralMoveSupport_of_rotationDiskData_internalFace
+      D hincident hf)
+    hgood heraseAt hnew
+
+/-- Kirchhoff-neutral local repair data at every clustered-zero vertex is exactly
+enough to instantiate the vertex-local repair hypothesis. -/
+theorem everyClusteredZeroVertexHasD0Descent_of_kirchhoffNeutral_vertex_repairs
+    {G : SimpleGraph V} [Fintype V] [Fintype G.edgeSet]
+    {moveSupports : Finset (Finset G.edgeSet)} {x : G.edgeSet → Color}
+    (hx : IsGraphFlow G x)
+    (hrepair :
+      ∀ v : V, 2 ≤ zeroIncidentEdgeCount G x v →
+        ∃ C ∈ moveSupports, ∃ g : Color,
+          g ≠ 0 ∧
+            IsKirchhoffNeutralMoveSupport G C ∧
+              (∀ w : V, ∃ e ∈ incidentEdgeFinset G w,
+                if e ∈ C then x e ≠ g else x e ≠ 0) ∧
+                (∃ e ∈ C, e ∈ incidentEdgeFinset G v ∧ x e = 0) ∧
+                  ∀ e ∈ C, x e ≠ g) :
+    EveryClusteredZeroVertexHasD0Descent G moveSupports x := by
+  intro v hv
+  rcases hrepair v hv with
+    ⟨C, hCmem, g, hg, hC, hgood, heraseAt, hnew⟩
+  exact hasD0DescentRepairAt_of_kirchhoffNeutral_and_vertex_witnesses
+    hCmem hg hx hC hgood heraseAt hnew
 
 /-- Kempe-cycle local data at every clustered-zero vertex is exactly enough to
 instantiate the vertex-local repair hypothesis. -/
@@ -2683,11 +2724,13 @@ theorem everyClusteredZeroVertexHasD0Descent_of_kempeCycle_vertex_repairs
                 (∃ e ∈ C, e ∈ incidentEdgeFinset G v ∧ x e = 0) ∧
                   ∀ e ∈ C, x e ≠ g) :
     EveryClusteredZeroVertexHasD0Descent G moveSupports x := by
+  apply everyClusteredZeroVertexHasD0Descent_of_kirchhoffNeutral_vertex_repairs hx
   intro v hv
   rcases hrepair v hv with
     ⟨C, hCmem, α, β, g, hg, hC, hgood, heraseAt, hnew⟩
-  exact hasD0DescentRepairAt_of_isKempeCycle_and_vertex_witnesses
-    hCmem hg hx hC hgood heraseAt hnew
+  exact ⟨C, hCmem, g, hg,
+    isKirchhoffNeutralMoveSupport_of_isKempeCycle hC,
+    hgood, heraseAt, hnew⟩
 
 /-- Rotation-disk local data at every clustered-zero vertex is exactly enough
 to instantiate the vertex-local repair hypothesis. -/
@@ -2707,12 +2750,14 @@ theorem everyClusteredZeroVertexHasD0Descent_of_rotationDiskData_internalFace_re
                 (∃ e ∈ f, e ∈ incidentEdgeFinset G v ∧ x e = 0) ∧
                   ∀ e ∈ f, x e ≠ g) :
     EveryClusteredZeroVertexHasD0Descent G moveSupports x := by
+  apply everyClusteredZeroVertexHasD0Descent_of_kirchhoffNeutral_vertex_repairs hx
   intro v hv
   rcases hrepair v hv with
     ⟨f, hfmem, hf, g, hg, hgood, heraseAt, hnew⟩
-  exact
-    hasD0DescentRepairAt_of_rotationDiskData_internalFace_and_vertex_witnesses
-      D hincident hf hfmem hg hx hgood heraseAt hnew
+  exact ⟨f, hfmem, g, hg,
+    isKirchhoffNeutralMoveSupport_of_rotationDiskData_internalFace
+      D hincident hf,
+    hgood, heraseAt, hnew⟩
 
 omit [DecidableEq V] in
 theorem zeroEdgeFinset_eq_empty_iff {G : SimpleGraph V} [Fintype G.edgeSet]
@@ -3067,6 +3112,29 @@ theorem zeroEdgesFormMatching_of_isD0LocalMinimumForMoveSupports_of_clusteredZer
   zeroEdgesFormMatching_of_isD0LocalMinimumForMoveSupports_of_nonmatching_descent
     hmin (everyNonmatchingZeroPatternHasD0Descent_of_clusteredZeroVertex_descent
       hrepair)
+
+/-- Kirchhoff-neutral form of the matching-zero theorem: if every clustered-zero
+vertex has a concrete zero-erasing/no-new-zero neutral support repair, then
+every `D₀` local minimum has matching zero support. -/
+theorem
+    zeroEdgesFormMatching_of_isD0LocalMinimumForMoveSupports_of_kirchhoffNeutral_vertex_repairs
+    {G : SimpleGraph V} [Fintype V] [Fintype G.edgeSet]
+    {moveSupports : Finset (Finset G.edgeSet)} {x : G.edgeSet → Color}
+    (hmin : IsD0LocalMinimumForMoveSupports G moveSupports x)
+    (hrepair :
+      ∀ v : V, 2 ≤ zeroIncidentEdgeCount G x v →
+        ∃ C ∈ moveSupports, ∃ g : Color,
+          g ≠ 0 ∧
+            IsKirchhoffNeutralMoveSupport G C ∧
+              (∀ w : V, ∃ e ∈ incidentEdgeFinset G w,
+                if e ∈ C then x e ≠ g else x e ≠ 0) ∧
+                (∃ e ∈ C, e ∈ incidentEdgeFinset G v ∧ x e = 0) ∧
+                  ∀ e ∈ C, x e ≠ g) :
+    ZeroEdgesFormMatching G x :=
+  zeroEdgesFormMatching_of_isD0LocalMinimumForMoveSupports_of_clusteredZeroVertex_descent
+    hmin
+    (everyClusteredZeroVertexHasD0Descent_of_kirchhoffNeutral_vertex_repairs
+      hmin.source_flow hrepair)
 
 /-- Kempe-cycle form of the matching-zero theorem: if every clustered-zero
 vertex has a concrete zero-erasing/no-new-zero Kempe repair, then every `D₀`
@@ -3453,6 +3521,26 @@ theorem zeroClusteringCount_eq_zero_of_isD0LocalMinimumForMoveSupports_of_cluste
     (zeroEdgesFormMatching_of_isD0LocalMinimumForMoveSupports_of_clusteredZeroVertex_descent
       hmin hrepair)
 
+/-- Concrete neutral-repair form of the manuscript clustering identity `C(x)=0`. -/
+theorem
+    zeroClusteringCount_eq_zero_of_isD0LocalMinimumForMoveSupports_of_kirchhoffNeutral_vertex_repairs
+    {G : SimpleGraph V} [Fintype V] [Fintype G.edgeSet]
+    {moveSupports : Finset (Finset G.edgeSet)} {x : G.edgeSet → Color}
+    (hmin : IsD0LocalMinimumForMoveSupports G moveSupports x)
+    (hrepair :
+      ∀ v : V, 2 ≤ zeroIncidentEdgeCount G x v →
+        ∃ C ∈ moveSupports, ∃ g : Color,
+          g ≠ 0 ∧
+            IsKirchhoffNeutralMoveSupport G C ∧
+              (∀ w : V, ∃ e ∈ incidentEdgeFinset G w,
+                if e ∈ C then x e ≠ g else x e ≠ 0) ∧
+                (∃ e ∈ C, e ∈ incidentEdgeFinset G v ∧ x e = 0) ∧
+                  ∀ e ∈ C, x e ≠ g) :
+    zeroClusteringCount G x = 0 :=
+  zeroClusteringCount_eq_zero_iff_zeroEdgesFormMatching.mpr
+    (zeroEdgesFormMatching_of_isD0LocalMinimumForMoveSupports_of_kirchhoffNeutral_vertex_repairs
+      hmin hrepair)
+
 /-- If no vertex is touched by a zero edge, then the zero-clustering defect is
 zero. -/
 theorem zeroClusteringCount_eq_zero_of_zeroIncidentVertexCount_eq_zero
@@ -3815,6 +3903,26 @@ theorem
     zeroIncidentVertexCount G x = 2 * zeroEdgeCount G x :=
   zeroIncidentVertexCount_eq_two_mul_zeroEdgeCount_of_zeroEdgesFormMatching
     (zeroEdgesFormMatching_of_isD0LocalMinimumForMoveSupports_of_clusteredZeroVertex_descent
+      hmin hrepair)
+
+/-- Concrete neutral-repair form of the manuscript count identity `I(x)=2Z(x)`. -/
+theorem
+    zeroIncidentVertexCount_eq_two_mul_zeroEdgeCount_of_isD0LocalMinimumForMoveSupports_of_kirchhoffNeutral_vertex_repairs
+    {G : SimpleGraph V} [Fintype V] [Fintype G.edgeSet]
+    {moveSupports : Finset (Finset G.edgeSet)} {x : G.edgeSet → Color}
+    (hmin : IsD0LocalMinimumForMoveSupports G moveSupports x)
+    (hrepair :
+      ∀ v : V, 2 ≤ zeroIncidentEdgeCount G x v →
+        ∃ C ∈ moveSupports, ∃ g : Color,
+          g ≠ 0 ∧
+            IsKirchhoffNeutralMoveSupport G C ∧
+              (∀ w : V, ∃ e ∈ incidentEdgeFinset G w,
+                if e ∈ C then x e ≠ g else x e ≠ 0) ∧
+                (∃ e ∈ C, e ∈ incidentEdgeFinset G v ∧ x e = 0) ∧
+                  ∀ e ∈ C, x e ≠ g) :
+    zeroIncidentVertexCount G x = 2 * zeroEdgeCount G x :=
+  zeroIncidentVertexCount_eq_two_mul_zeroEdgeCount_of_zeroEdgesFormMatching
+    (zeroEdgesFormMatching_of_isD0LocalMinimumForMoveSupports_of_kirchhoffNeutral_vertex_repairs
       hmin hrepair)
 
 /-- Under a matching zero pattern, the cheap defect collapses to `120 Z(x)`. -/
