@@ -1,4 +1,5 @@
 import Mettapedia.GraphTheory.FourColor.CAP5GraphBoundary
+import Mettapedia.GraphTheory.FourColor.CyclicEdgeCut
 import Mettapedia.GraphTheory.FourColor.EdgeKempe
 
 open scoped BigOperators
@@ -482,6 +483,29 @@ theorem CAP5ExceptionalAnnulusBoundaryEdgeSupportCandidate.edgeSupport_subset_bo
   rcases Finset.mem_image.1 he with ⟨i, _hi, rfl⟩
   exact Finset.mem_image.2 ⟨i, by simp, rfl⟩
 
+/-- A boundary-edge support candidate has been promoted to the graph-level cyclic-cut target when
+some small cyclic edge cut has exactly the candidate's finite edge support.  This predicate names
+the planar/Jordan realization step without deriving it from the finite CAP5 bookkeeping alone. -/
+def CAP5ExceptionalAnnulusBoundaryEdgeSupportCandidate.RealizesSmallCyclicEdgeCut
+    {V : Type*} {G : SimpleGraph V} [DecidableEq G.edgeSet]
+    {boundaryEdge : Fin 5 → G.edgeSet}
+    (candidate : CAP5ExceptionalAnnulusBoundaryEdgeSupportCandidate boundaryEdge)
+    (cut : SmallCyclicEdgeCut G) : Prop :=
+  cut.edgeCut = candidate.edgeSupport
+
+/-- If a finite CAP5 boundary-edge support candidate is realized by a graph-level small cyclic
+edge cut, the cardinality bound transfers to that cut. -/
+theorem CAP5ExceptionalAnnulusBoundaryEdgeSupportCandidate.exists_smallCyclicEdgeCut_of_realizes
+    {V : Type*} {G : SimpleGraph V} [DecidableEq G.edgeSet]
+    {boundaryEdge : Fin 5 → G.edgeSet}
+    (candidate : CAP5ExceptionalAnnulusBoundaryEdgeSupportCandidate boundaryEdge)
+    (hrealizes :
+      ∃ cut : SmallCyclicEdgeCut G, candidate.RealizesSmallCyclicEdgeCut cut) :
+    ∃ cut : SmallCyclicEdgeCut G,
+      candidate.RealizesSmallCyclicEdgeCut cut ∧ cut.edgeCut.card <= 4 := by
+  rcases hrealizes with ⟨cut, hcut⟩
+  exact ⟨cut, hcut, by rw [hcut]; exact candidate.hcard_le_four⟩
+
 /-- Once core component-cover data is in the exceptional branch, every annulus side case has a
 finite separator-portal candidate using at most four CAP5 portals.  This is the finite input to the
 later theorem that must turn an embedded annulus/Jordan curve into an actual cyclic edge cut. -/
@@ -545,6 +569,37 @@ theorem CAP5TransportedEdgeComponentCoverCore.exists_exceptionalAnnulusBoundaryE
     CAP5ExceptionalAnnulusBoundaryEdgeSupportCandidate.ofPortalCandidate boundaryEdge candidate
   exact ⟨edgeCandidate, horientation, hsideCase, rfl,
     le_trans Finset.card_image_le hcard⟩
+
+/-- Graph-level endpoint for the exceptional CAP5 annulus branch.  Finite CAP5 data supplies the
+candidate boundary-edge support; the topological realization input must identify that support with
+a genuine small cyclic edge cut in the ambient graph. -/
+theorem CAP5TransportedEdgeComponentCoverCore.exists_smallCyclicEdgeCutCandidate_of_isExceptional_of_portalSides
+    {V : Type*} {G : SimpleGraph V} [DecidableEq G.edgeSet]
+    {boundaryEdge : Fin 5 → G.edgeSet} {n : Nat}
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    (p0Inside p4Inside : Bool) (h : data.IsExceptional)
+    (hrealizes :
+      ∀ edgeCandidate : CAP5ExceptionalAnnulusBoundaryEdgeSupportCandidate boundaryEdge,
+        data.RealizesExceptionalBoundarySupportOrientation
+            edgeCandidate.portalCandidate.orientation →
+        edgeCandidate.portalCandidate.sideCase =
+            CAP5ExceptionalAnnulusSideCase.ofPortalSides p0Inside p4Inside →
+        ∃ cut : SmallCyclicEdgeCut G,
+          edgeCandidate.RealizesSmallCyclicEdgeCut cut) :
+    ∃ edgeCandidate : CAP5ExceptionalAnnulusBoundaryEdgeSupportCandidate boundaryEdge,
+      data.RealizesExceptionalBoundarySupportOrientation
+          edgeCandidate.portalCandidate.orientation ∧
+        edgeCandidate.portalCandidate.sideCase =
+          CAP5ExceptionalAnnulusSideCase.ofPortalSides p0Inside p4Inside ∧
+        ∃ cut : SmallCyclicEdgeCut G,
+          edgeCandidate.RealizesSmallCyclicEdgeCut cut ∧ cut.edgeCut.card <= 4 := by
+  rcases exists_exceptionalAnnulusBoundaryEdgeSupportCandidate_of_isExceptional_of_portalSides
+      p0Inside p4Inside h with
+    ⟨edgeCandidate, horientation, hsideCase, _hedgeSupport, hcard⟩
+  rcases hrealizes edgeCandidate horientation hsideCase with ⟨cut, hcut⟩
+  exact ⟨edgeCandidate, horientation, hsideCase, cut, hcut, by
+    rw [hcut]
+    exact hcard⟩
 
 /-- Full transported component-cover data is core component-cover data plus exclusion of the
 simultaneous exceptional pattern.  The core form is the honest target before the planar separator
