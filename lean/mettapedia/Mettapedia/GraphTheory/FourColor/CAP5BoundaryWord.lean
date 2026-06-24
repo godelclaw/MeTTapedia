@@ -436,4 +436,66 @@ theorem cap5_extendsAcrossCycle_of_redPurpleRepairSupport_bad
   cap5_extendsAcrossCycle_of_boundaryActionRealizesSomeRepairType_bad
     (cap5BoundaryActionRealizesSomeRepairType_of_redPurpleRepairSupport_bad hS)
 
+/-- The four two-color component supports that appear in the normalized CAP5 bad-word
+move-realizability split: two red/blue components and two red/purple components. -/
+structure CAP5BadPairingSupports where
+  redBlue₁ : Finset (Fin 5)
+  redBlue₂ : Finset (Fin 5)
+  redPurple₁ : Finset (Fin 5)
+  redPurple₂ : Finset (Fin 5)
+
+namespace CAP5BadPairingSupports
+
+/-- One of the four component supports is already on the finite repair side. -/
+def HasRepair (p : CAP5BadPairingSupports) : Prop :=
+  CAP5BadRedBlueRepairSupport p.redBlue₁ ∨
+  CAP5BadRedBlueRepairSupport p.redBlue₂ ∨
+  CAP5BadRedPurpleRepairSupport p.redPurple₁ ∨
+  CAP5BadRedPurpleRepairSupport p.redPurple₂
+
+/-- The simultaneous exceptional pattern left over when no immediate repair support appears. -/
+def IsExceptional (p : CAP5BadPairingSupports) : Prop :=
+  CAP5BadExceptionalPairingPattern p.redBlue₁ p.redBlue₂ p.redPurple₁ p.redPurple₂
+
+/-- The exact finite target for the graph-level move-realizability lemma: either an immediate
+repair support is present, or the exceptional pairing pattern is the remaining obstruction. -/
+def RepairOrExceptional (p : CAP5BadPairingSupports) : Prop :=
+  p.HasRepair ∨ p.IsExceptional
+
+/-- If a component-support package has a repair support, then some induced boundary action repairs
+the canonical bad CAP5 word and the repaired word extends across the cap. -/
+theorem exists_repairingBoundaryAction_of_hasRepair
+    {p : CAP5BadPairingSupports} (h : p.HasRepair) :
+    ∃ action : CAP5BoundaryAction,
+      CAP5BoundaryActionRealizesSomeRepairType action cap5BadBoundaryWord2111 ∧
+      CAP5WordExtendsAcrossCycle (action cap5BadBoundaryWord2111) := by
+  rcases h with h₁ | h₂ | h₃ | h₄
+  · refine ⟨cap5BoundarySwap red blue p.redBlue₁, ?_, ?_⟩
+    · exact cap5BoundaryActionRealizesSomeRepairType_of_redBlueRepairSupport_bad h₁
+    · exact cap5_extendsAcrossCycle_of_redBlueRepairSupport_bad h₁
+  · refine ⟨cap5BoundarySwap red blue p.redBlue₂, ?_, ?_⟩
+    · exact cap5BoundaryActionRealizesSomeRepairType_of_redBlueRepairSupport_bad h₂
+    · exact cap5_extendsAcrossCycle_of_redBlueRepairSupport_bad h₂
+  · refine ⟨cap5BoundarySwap red purple p.redPurple₁, ?_, ?_⟩
+    · exact cap5BoundaryActionRealizesSomeRepairType_of_redPurpleRepairSupport_bad h₃
+    · exact cap5_extendsAcrossCycle_of_redPurpleRepairSupport_bad h₃
+  · refine ⟨cap5BoundarySwap red purple p.redPurple₂, ?_, ?_⟩
+    · exact cap5BoundaryActionRealizesSomeRepairType_of_redPurpleRepairSupport_bad h₄
+    · exact cap5_extendsAcrossCycle_of_redPurpleRepairSupport_bad h₄
+
+/-- Packaged outcome of the finite CAP5 move-realizability split.  The graph-level proof should
+produce `RepairOrExceptional`; this theorem turns its repair side into the concrete boundary
+extension endpoint and leaves the exceptional pattern explicit. -/
+theorem repairOrExceptional_outcome
+    {p : CAP5BadPairingSupports} (h : p.RepairOrExceptional) :
+    (∃ action : CAP5BoundaryAction,
+      CAP5BoundaryActionRealizesSomeRepairType action cap5BadBoundaryWord2111 ∧
+      CAP5WordExtendsAcrossCycle (action cap5BadBoundaryWord2111)) ∨
+    p.IsExceptional := by
+  rcases h with hrepair | hexceptional
+  · exact Or.inl (exists_repairingBoundaryAction_of_hasRepair hrepair)
+  · exact Or.inr hexceptional
+
+end CAP5BadPairingSupports
+
 end Mettapedia.GraphTheory.FourColor
