@@ -99,6 +99,27 @@ def CyclicEdgeCutRealization.toSmallCyclicEdgeCut
   hinside_cycle := realization.hinside_cycle
   houtside_cycle := realization.houtside_cycle
 
+/-- Forget the cardinality bound from a bundled small cyclic edge cut, retaining the exact
+realization data for its finite edge support. -/
+def SmallCyclicEdgeCut.toCyclicEdgeCutRealization
+    {G : SimpleGraph V} (cut : SmallCyclicEdgeCut G) :
+    CyclicEdgeCutRealization G cut.edgeCut where
+  side := cut.side
+  hcut_eq := cut.hcut_eq
+  hinside_cycle := cut.hinside_cycle
+  houtside_cycle := cut.houtside_cycle
+
+/-- Reindex a bundled small cyclic edge cut as realization data for an equal finite support.
+This is the bridge needed when a planar/Jordan argument naturally returns a `SmallCyclicEdgeCut`
+and an equality with a candidate support rather than constructing `CyclicEdgeCutRealization`
+directly. -/
+def SmallCyclicEdgeCut.toCyclicEdgeCutRealization_of_edgeCut_eq
+    {G : SimpleGraph V} (cut : SmallCyclicEdgeCut G) {edgeCut : Finset G.edgeSet}
+    (h : cut.edgeCut = edgeCut) :
+    CyclicEdgeCutRealization G edgeCut := by
+  rw [← h]
+  exact cut.toCyclicEdgeCutRealization
+
 @[simp]
 theorem CyclicEdgeCutRealization.toSmallCyclicEdgeCut_edgeCut
     {G : SimpleGraph V} {edgeCut : Finset G.edgeSet}
