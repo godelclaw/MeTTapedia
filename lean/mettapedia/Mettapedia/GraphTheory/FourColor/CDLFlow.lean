@@ -36,6 +36,12 @@ def IsNowhereZeroFlow (G : SimpleGraph V) [Fintype G.edgeSet]
     (x : G.edgeSet → Color) : Prop :=
   IsGraphFlow G x ∧ ∀ e : G.edgeSet, x e ≠ 0
 
+/-- A named cubic incidence package: the incident edges at `v` are exactly
+`e1`, `e2`, and `e3`, with no duplicates. -/
+def IsIncidentEdgeTriple (G : SimpleGraph V) [Fintype G.edgeSet] (v : V)
+    (e1 e2 e3 : G.edgeSet) : Prop :=
+  incidentEdgeFinset G v = {e1, e2, e3} ∧ e1 ≠ e2 ∧ e1 ≠ e3 ∧ e2 ≠ e3
+
 /-- Local Kirchhoff law for the three incident edge-values at a cubic vertex. -/
 def IsLocalKirchhoffTriple (a b c : Color) : Prop :=
   a + b + c = 0
@@ -137,6 +143,22 @@ theorem isLocalTaitTriple_of_kirchhoff_nowhereZero {a b c : Color}
         _ = a + c + c := by abel
         _ = 0 := hsum'
     exact hnz.1 ha0
+
+/-- Graph-level local form of the Tait-flow direction: at a cubic vertex whose
+incident edge-set is explicitly enumerated, a nowhere-zero graph flow produces
+a local Tait triple on those three edges. -/
+theorem isLocalTaitTriple_of_nowhereZeroFlow_at_incidentTriple {G : SimpleGraph V}
+    [Fintype G.edgeSet] {x : G.edgeSet → Color} {v : V} {e1 e2 e3 : G.edgeSet}
+    (hincident : IsIncidentEdgeTriple G v e1 e2 e3)
+    (hx : IsNowhereZeroFlow G x) :
+    IsLocalTaitTriple (x e1) (x e2) (x e3) := by
+  apply isLocalTaitTriple_of_kirchhoff_nowhereZero
+  · have hv := hx.1 v
+    unfold vertexKirchhoffSum at hv
+    rw [hincident.1] at hv
+    simpa [IsLocalKirchhoffTriple, hincident.2.1, hincident.2.2.1, hincident.2.2.2,
+      add_assoc] using hv
+  · exact ⟨hx.2 e1, hx.2 e2, hx.2 e3⟩
 
 /-- The canonical CDL-good local condition is weaker than local nowhere-zero:
 the Kirchhoff triple `(0, red, red)` is CDL-good and sums to zero, but still
