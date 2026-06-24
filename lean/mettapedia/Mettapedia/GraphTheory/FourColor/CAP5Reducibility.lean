@@ -153,6 +153,75 @@ theorem cap5BoundaryWordSolved_of_coloredBlock2111_of_transportComponentCovers
   cap5BoundaryWordSolved_of_block2111_of_transportComponentCovers
     (cap5BoundaryWordHasBlock2111_of_coloredBlock2111 hbad) hcomponentCovers
 
+/-- Raw support-cover endpoint for an arbitrary transported bad CAP5 word.  This is the
+interface a later graph/Kempe extraction should naturally target: it supplies the four boundary
+supports directly, rather than first packaging them as `CAP5BadPairingSupports`. -/
+theorem cap5BoundaryWordSolved_of_eq_transportBad_of_transportComponentCoverSupports
+    {w : CAP5BoundaryWord}
+    {redBlue₁ redBlue₂ redPurple₁ redPurple₂ : Finset (Fin 5)}
+    (hredBlue : CAP5BadRedBlueComponentCover redBlue₁ redBlue₂)
+    (hredPurple : CAP5BadRedPurpleComponentCover redPurple₁ redPurple₂)
+    (hnotExceptional :
+      ¬ CAP5BadExceptionalPairingPattern redBlue₁ redBlue₂ redPurple₁ redPurple₂)
+    {σ : Color ≃ Color} (hσ0 : σ 0 = 0) {n : Nat}
+    (hw : w = cap5TransportedBadBoundaryWord σ n) :
+    CAP5BoundaryWordSolved w := by
+  let p : CAP5BadPairingSupports :=
+    { redBlue₁ := redBlue₁
+      redBlue₂ := redBlue₂
+      redPurple₁ := redPurple₁
+      redPurple₂ := redPurple₂ }
+  exact
+    cap5BoundaryWordSolved_of_eq_transportBad_of_transportComponentCovers
+      (p := p) ⟨hredBlue, hredPurple⟩
+      (by
+        simpa [p, CAP5BadPairingSupports.IsExceptional] using hnotExceptional)
+      hσ0 hw
+
+/-- Block-`(2,1,1,1)` endpoint from raw component-cover supports.  This removes an
+administrative record-construction step from the graph-facing obligation: for every transported
+normal form, it is enough to supply the two red/blue supports, the two red/purple supports, their
+cover facts, and the non-exceptional witness. -/
+theorem cap5BoundaryWordSolved_of_block2111_of_transportComponentCoverSupports
+    {w : CAP5BoundaryWord}
+    (hbad : CAP5BoundaryWordHasBlock2111 w)
+    (hcomponentCovers :
+      ∀ {σ : Color ≃ Color} {n : Nat},
+        σ 0 = 0 →
+        w = cap5TransportedBadBoundaryWord σ n →
+        ∃ redBlue₁ redBlue₂ redPurple₁ redPurple₂ : Finset (Fin 5),
+          CAP5BadRedBlueComponentCover redBlue₁ redBlue₂ ∧
+          CAP5BadRedPurpleComponentCover redPurple₁ redPurple₂ ∧
+          ¬ CAP5BadExceptionalPairingPattern redBlue₁ redBlue₂ redPurple₁ redPurple₂) :
+    CAP5BoundaryWordSolved w := by
+  refine cap5BoundaryWordSolved_of_block2111_of_transportComponentCovers hbad ?_
+  intro σ n hσ0 hw
+  rcases hcomponentCovers hσ0 hw with
+    ⟨redBlue₁, redBlue₂, redPurple₁, redPurple₂, hredBlue, hredPurple, hnotExceptional⟩
+  let p : CAP5BadPairingSupports :=
+    { redBlue₁ := redBlue₁
+      redBlue₂ := redBlue₂
+      redPurple₁ := redPurple₁
+      redPurple₂ := redPurple₂ }
+  refine ⟨p, ⟨hredBlue, hredPurple⟩, ?_⟩
+  simpa [p, CAP5BadPairingSupports.IsExceptional] using hnotExceptional
+
+/-- Colored block-`(2,1,1,1)` endpoint from raw component-cover supports. -/
+theorem cap5BoundaryWordSolved_of_coloredBlock2111_of_transportComponentCoverSupports
+    {w : CAP5BoundaryWord}
+    (hbad : CAP5BoundaryWordHasColoredBlock2111 w)
+    (hcomponentCovers :
+      ∀ {σ : Color ≃ Color} {n : Nat},
+        σ 0 = 0 →
+        w = cap5TransportedBadBoundaryWord σ n →
+        ∃ redBlue₁ redBlue₂ redPurple₁ redPurple₂ : Finset (Fin 5),
+          CAP5BadRedBlueComponentCover redBlue₁ redBlue₂ ∧
+          CAP5BadRedPurpleComponentCover redPurple₁ redPurple₂ ∧
+          ¬ CAP5BadExceptionalPairingPattern redBlue₁ redBlue₂ redPurple₁ redPurple₂) :
+    CAP5BoundaryWordSolved w :=
+  cap5BoundaryWordSolved_of_block2111_of_transportComponentCoverSupports
+    (cap5BoundaryWordHasBlock2111_of_coloredBlock2111 hbad) hcomponentCovers
+
 /-- Boundary-layer form of the CAP5 reducibility split.  Under the parity shape
 forced by a proper cubic coloring, it is enough to repair the bad
 `(2,1,1,1)` branch; the good `(3,1,1)` branch extends immediately. -/
@@ -206,6 +275,29 @@ theorem cap5BoundaryWordSolved_of_nonzero_of_odd_of_transportComponentCovers
       hnz hodd with hgood | hbad
   · exact cap5BoundaryWordSolved_of_coloredBlock311 hgood
   · exact cap5BoundaryWordSolved_of_coloredBlock2111_of_transportComponentCovers
+      hbad hcomponentCovers
+
+/-- Raw support-cover form of the transported CAP5 reducibility split.  Under the parity shape
+forced by a proper cubic coloring, the graph/Kempe layer only has to produce four concrete
+boundary support sets for each normalized bad-word presentation, prove that they cover the two
+active color-pair supports, and exclude the simultaneous exceptional pattern. -/
+theorem cap5BoundaryWordSolved_of_nonzero_of_odd_of_transportComponentCoverSupports
+    {w : CAP5BoundaryWord}
+    (hnz : CAP5BoundaryWordIsNonzero w)
+    (hodd : CAP5BoundaryWordHasOddColorCounts w)
+    (hcomponentCovers :
+      ∀ {σ : Color ≃ Color} {n : Nat},
+        σ 0 = 0 →
+        w = cap5TransportedBadBoundaryWord σ n →
+        ∃ redBlue₁ redBlue₂ redPurple₁ redPurple₂ : Finset (Fin 5),
+          CAP5BadRedBlueComponentCover redBlue₁ redBlue₂ ∧
+          CAP5BadRedPurpleComponentCover redPurple₁ redPurple₂ ∧
+          ¬ CAP5BadExceptionalPairingPattern redBlue₁ redBlue₂ redPurple₁ redPurple₂) :
+    CAP5BoundaryWordSolved w := by
+  rcases cap5BoundaryWord_coloredBlock311_or_coloredBlock2111_of_nonzero_of_odd
+      hnz hodd with hgood | hbad
+  · exact cap5BoundaryWordSolved_of_coloredBlock311 hgood
+  · exact cap5BoundaryWordSolved_of_coloredBlock2111_of_transportComponentCoverSupports
       hbad hcomponentCovers
 
 /-- Canonical bad CAP5 word: active component pairings plus exclusion of the
