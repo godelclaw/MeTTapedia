@@ -36,6 +36,26 @@ def IsNowhereZeroFlow (G : SimpleGraph V) [Fintype G.edgeSet]
     (x : G.edgeSet → Color) : Prop :=
   IsGraphFlow G x ∧ ∀ e : G.edgeSet, x e ≠ 0
 
+/-- The finite set of edges where a flow/chain takes the zero color.  The
+manuscript's nowhere-zero flow surface is equivalently the case where this set
+is empty. -/
+def zeroEdgeFinset (G : SimpleGraph V) [Fintype G.edgeSet]
+    (x : G.edgeSet → Color) : Finset G.edgeSet :=
+  Finset.univ.filter fun e => x e = 0
+
+omit [DecidableEq V] in
+theorem zeroEdgeFinset_eq_empty_iff {G : SimpleGraph V} [Fintype G.edgeSet]
+    {x : G.edgeSet → Color} :
+    zeroEdgeFinset G x = ∅ ↔ ∀ e : G.edgeSet, x e ≠ 0 := by
+  simp [zeroEdgeFinset, Finset.filter_eq_empty_iff]
+
+/-- A nowhere-zero flow is exactly a graph flow whose zero-edge set is empty. -/
+theorem isNowhereZeroFlow_iff_isGraphFlow_and_zeroEdgeFinset_eq_empty
+    {G : SimpleGraph V} [Fintype G.edgeSet] {x : G.edgeSet → Color} :
+    IsNowhereZeroFlow G x ↔ IsGraphFlow G x ∧ zeroEdgeFinset G x = ∅ := by
+  rw [zeroEdgeFinset_eq_empty_iff]
+  rfl
+
 /-- Manuscript-facing name for cubic graphs: every vertex has Mathlib degree
 `3`. -/
 def IsCubic (G : SimpleGraph V) [G.LocallyFinite] : Prop :=
@@ -594,6 +614,21 @@ theorem hasCDLGoodNowhereZeroFlow_iff_hasNowhereZeroFlow_of_isCubic
         (incidentEdgeFinset_nonempty_of_hasCubicIncidentEdgeTriples
           (hasCubicIncidentEdgeTriples_of_isCubic hG)) hx,
       hx⟩
+
+/-- Manuscript-facing form: a CDL-good nowhere-zero flow is a CDL-good flow
+whose zero-edge set is empty.  This keeps the empty-zero-set condition explicit,
+instead of treating CDL-goodness alone as if it were nowhere-zero. -/
+theorem hasCDLGoodNowhereZeroFlow_iff_exists_cdlGoodFlow_zeroEdgeFinset_eq_empty
+    {G : SimpleGraph V} [Fintype G.edgeSet] :
+    HasCDLGoodNowhereZeroFlow G ↔
+      ∃ x : G.edgeSet → Color, IsCDLGoodFlow G x ∧ zeroEdgeFinset G x = ∅ := by
+  constructor
+  · rintro ⟨x, hgood, hx⟩
+    exact ⟨x, hgood, zeroEdgeFinset_eq_empty_iff.mpr hx.2⟩
+  · rintro ⟨x, hgood, hzero⟩
+    exact ⟨x, hgood,
+      (isNowhereZeroFlow_iff_isGraphFlow_and_zeroEdgeFinset_eq_empty).mpr
+        ⟨hgood.1, hzero⟩⟩
 
 /-- Manuscript-facing safe CDL/Tait reformulation for cubic graphs. -/
 theorem hasTaitEdgeColoring_iff_hasCDLGoodNowhereZeroFlow_of_isCubic
