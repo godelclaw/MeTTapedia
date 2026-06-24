@@ -1,5 +1,8 @@
 import Mettapedia.GraphTheory.FourColor.CAP5BoundaryWord
+import Mettapedia.GraphTheory.FourColor.BoundaryChains
 import Mettapedia.GraphTheory.FourColor.GoertzelDefinition48
+
+open scoped BigOperators
 
 open SimpleGraph
 
@@ -22,5 +25,19 @@ theorem cap5BoundaryWordOfEdges_isNonzero_of_isTaitEdgeColoring
     CAP5BoundaryWordIsNonzero (cap5BoundaryWordOfEdges boundaryEdge C) :=
   cap5BoundaryWordOfEdges_isNonzero_of_forall_nonzero boundaryEdge C
     (fun i => hC (boundaryEdge i))
+
+/-- If the five CAP5 boundary edges enumerate a zero-boundary incidence set, the restricted
+CAP5 boundary word has zero total color sum.  This is the graph-side cut equation in the
+boundary-word language. -/
+theorem cap5BoundaryWordOfEdges_sum_eq_zero_of_isZeroBoundary_at
+    {U E : Type*} {D : ZeroBoundaryData U E} {v : U}
+    (boundaryEdge : Fin 5 → E) (C : E → Color)
+    (hinj : Function.Injective boundaryEdge)
+    (hincident : D.incident v = Finset.univ.map ⟨boundaryEdge, hinj⟩)
+    (hzero : D.isZeroBoundary C) :
+    (∑ i : Fin 5, cap5BoundaryWordOfEdges boundaryEdge C i) = 0 := by
+  have hv := hzero v
+  rw [hincident] at hv
+  simpa [cap5BoundaryWordOfEdges] using hv
 
 end Mettapedia.GraphTheory.FourColor
