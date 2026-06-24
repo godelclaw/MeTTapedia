@@ -766,6 +766,34 @@ theorem CAP5ExceptionalAnnulusBoundaryEdgeSupportCandidate.forall_portal_boundar
     exact candidate.exists_portal_boundaryEdge_mem_walk_of_noncandidate_not_crosses
       side hnoncandidate p hu hv
 
+/-- Counterexample-free form of the CAP5 portal walk-hit target.  The Sublemma 6.8
+planar/Jordan obligation can be attacked either by proving every opposite-side walk hits a named
+portal boundary edge, or equivalently by ruling out a concrete opposite-side walk avoiding all
+named portal boundary edges. -/
+theorem CAP5ExceptionalAnnulusBoundaryEdgeSupportCandidate.forall_portal_boundaryEdge_mem_walk_iff_no_counterexample_walk
+    {V : Type*} {G : SimpleGraph V} [DecidableEq G.edgeSet]
+    {boundaryEdge : Fin 5 → G.edgeSet}
+    (candidate : CAP5ExceptionalAnnulusBoundaryEdgeSupportCandidate boundaryEdge)
+    (side : V → Prop) :
+    (∀ {u v : V} (p : G.Walk u v), side u → ¬ side v →
+        ∃ i : Fin 5, i ∈ candidate.portalCandidate.portalSet ∧
+          ((boundaryEdge i : G.edgeSet) : Sym2 V) ∈ p.edges) ↔
+      ¬ ∃ u v : V, ∃ p : G.Walk u v,
+        side u ∧ ¬ side v ∧
+          ∀ i : Fin 5, i ∈ candidate.portalCandidate.portalSet →
+            ((boundaryEdge i : G.edgeSet) : Sym2 V) ∉ p.edges := by
+  constructor
+  · intro hwalk hcounter
+    rcases hcounter with ⟨u, v, p, hu, hv, havoid⟩
+    rcases hwalk p hu hv with ⟨i, hi, hiEdges⟩
+    exact havoid i hi hiEdges
+  · intro hno_counter u v p hu hv
+    classical
+    by_contra hmiss
+    exact hno_counter ⟨u, v, p, hu, hv, by
+      intro i hi hiEdges
+      exact hmiss ⟨i, hi, hiEdges⟩⟩
+
 /-- Explicit one-edge falsifier for the portal walk-hit target.  If an edge outside the CAP5
 candidate support crosses the chosen side, then that edge itself gives an opposite-side walk that
 contains no named separator portal boundary edge.  This is the cheap graph-level obstruction the
