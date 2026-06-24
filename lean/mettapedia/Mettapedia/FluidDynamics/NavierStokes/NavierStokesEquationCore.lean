@@ -51,9 +51,31 @@ abbrev NSSpacetime := NSTime × NSSpace
 def spaceTimeVelocityMap (u : NSVelocityField) : NSSpacetime → NSSpace :=
   fun tx => u tx.1 tx.2
 
+@[simp]
+theorem spaceTimeVelocityMap_apply (u : NSVelocityField) (tx : NSSpacetime) :
+    spaceTimeVelocityMap u tx = u tx.1 tx.2 :=
+  rfl
+
+@[simp]
+theorem spaceTimeVelocityMap_zero :
+    spaceTimeVelocityMap (0 : NSVelocityField) = fun _ : NSSpacetime => (0 : NSSpace) := by
+  funext tx
+  simp [spaceTimeVelocityMap]
+
 /-- Uncurried space-time form of a pressure field. -/
 def spaceTimePressureMap (p : NSPressureField) : NSSpacetime → ℝ :=
   fun tx => p tx.1 tx.2
+
+@[simp]
+theorem spaceTimePressureMap_apply (p : NSPressureField) (tx : NSSpacetime) :
+    spaceTimePressureMap p tx = p tx.1 tx.2 :=
+  rfl
+
+@[simp]
+theorem spaceTimePressureMap_zero :
+    spaceTimePressureMap (0 : NSPressureField) = fun _ : NSSpacetime => (0 : ℝ) := by
+  funext tx
+  simp [spaceTimePressureMap]
 
 /-- Concrete `C^∞` smoothness predicate for velocity fields on `ℝ × ℝ^3`. -/
 def smoothSpaceTimeVelocity (u : NSVelocityField) : Prop :=
@@ -118,6 +140,11 @@ def kineticEnergyAt (u : NSVelocityField) (t : NSTime) : ℝ :=
 /-- Pointwise initial kinetic-energy density `|u₀(x)|^2` on `ℝ^3`. -/
 def initialKineticEnergyDensity (u₀ : NSInitialVelocity) : NSSpace → ℝ :=
   fun x => ‖u₀ x‖ ^ (2 : ℕ)
+
+@[simp]
+theorem initialKineticEnergyDensity_apply (u₀ : NSInitialVelocity) (x : NSSpace) :
+    initialKineticEnergyDensity u₀ x = ‖u₀ x‖ ^ (2 : ℕ) :=
+  rfl
 
 /-- Finite-energy admissibility for concrete initial data on `ℝ^3`. -/
 def finiteInitialKineticEnergy (u₀ : NSInitialVelocity) : Prop :=

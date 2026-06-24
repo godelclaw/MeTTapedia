@@ -69,8 +69,15 @@ theorem fderiv_gradient_component_eq_second_fderiv
       fderiv ℝ (fun y : NSSpace => (gradient f y) comp) x =
         (EuclideanSpace.proj comp : NSSpace →L[ℝ] ℝ).comp
           (fderiv ℝ (fun y : NSSpace => gradient f y) x) := by
-    simpa [Function.comp] using
+    change
+      fderiv ℝ ((EuclideanSpace.proj comp : NSSpace →L[ℝ] ℝ) ∘
+          fun y : NSSpace => gradient f y) x =
+        (EuclideanSpace.proj comp : NSSpace →L[ℝ] ℝ).comp
+          (fderiv ℝ (fun y : NSSpace => gradient f y) x)
+    have hraw :=
       fderiv_comp x (EuclideanSpace.proj comp : NSSpace →L[ℝ] ℝ).differentiableAt hgrad_diff
+    rw [(EuclideanSpace.proj comp : NSSpace →L[ℝ] ℝ).fderiv] at hraw
+    exact hraw
   have hvec_scalar :
       (fderiv ℝ (fun y : NSSpace => gradient f y) x ecoord) comp =
         fderiv ℝ (fun y : NSSpace => (gradient f y) comp) x ecoord := by
@@ -80,13 +87,14 @@ theorem fderiv_gradient_component_eq_second_fderiv
       (fun y : NSSpace => (gradient f y) comp) =
         fun y : NSSpace => fderiv ℝ f y ecomp := by
     funext y
-    have hdy : DifferentiableAt ℝ f y := (hf.differentiable (by simp)) y
     have hinner : inner ℝ ecomp (gradient f y) = fderiv ℝ f y ecomp := by
-      simpa [ecomp] using inner_gradient_right (x := ecomp) (y := y) hdy
-    calc
-      (gradient f y) comp = inner ℝ ecomp (gradient f y) := by
-        simp [ecomp, EuclideanSpace.inner_single_left]
-      _ = fderiv ℝ f y ecomp := hinner
+      rw [inner_gradient_right (𝕜 := ℝ) (f := f) (x := ecomp) (y := y)]
+      simp
+    have hcoord : inner ℝ ecomp (gradient f y) = (gradient f y) comp := by
+      change inner ℝ (EuclideanSpace.single comp (1 : ℝ)) (gradient f y) = (gradient f y) comp
+      rw [EuclideanSpace.inner_single_left]
+      simp
+    exact hcoord.symm.trans hinner
   have hscalar :
       fderiv ℝ (fun y : NSSpace => (gradient f y) comp) x ecoord =
         fderiv ℝ (fun y : NSSpace => fderiv ℝ f y ecomp) x ecoord := by
@@ -94,7 +102,18 @@ theorem fderiv_gradient_component_eq_second_fderiv
   have happly :
       fderiv ℝ (fun y : NSSpace => fderiv ℝ f y ecomp) x ecoord =
         fderiv ℝ (fun y : NSSpace => fderiv ℝ f y) x ecoord ecomp := by
-    have h := fderiv_comp x (ContinuousLinearMap.apply ℝ ℝ ecomp).differentiableAt hfdiff
+    have h :
+        fderiv ℝ (fun y : NSSpace => fderiv ℝ f y ecomp) x =
+          (ContinuousLinearMap.apply ℝ ℝ ecomp).comp
+            (fderiv ℝ (fun y : NSSpace => fderiv ℝ f y) x) := by
+      change
+        fderiv ℝ ((ContinuousLinearMap.apply ℝ ℝ ecomp) ∘
+            fun y : NSSpace => fderiv ℝ f y) x =
+          (ContinuousLinearMap.apply ℝ ℝ ecomp).comp
+            (fderiv ℝ (fun y : NSSpace => fderiv ℝ f y) x)
+      have hraw := fderiv_comp x (ContinuousLinearMap.apply ℝ ℝ ecomp).differentiableAt hfdiff
+      rw [(ContinuousLinearMap.apply ℝ ℝ ecomp).fderiv] at hraw
+      exact hraw
     simpa [ContinuousLinearMap.comp_apply, ecoord] using
       congrArg (fun L : NSSpace →L[ℝ] ℝ => L ecoord) h
   calc

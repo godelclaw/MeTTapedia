@@ -1,5 +1,6 @@
 import Mettapedia.Logic.PLNDerivation
 import Mathlib.Algebra.BigOperators.Ring.Finset
+import Mathlib.MeasureTheory.MeasurableSpace.Instances
 import Mettapedia.ProbabilityTheory.BayesianNetworks.DiscreteSemantics
 import Mettapedia.ProbabilityTheory.BayesianNetworks.Examples
 import Mettapedia.ProbabilityTheory.BayesianNetworks.ScreeningOffFromCondIndep
@@ -38,13 +39,14 @@ abbrev ChainBN : BayesianNetwork Three := chainBN
 
 namespace ChainBN
 
-instance (v : Three) : Fintype (ChainBN.stateSpace v) := by
-  dsimp [ChainBN, chainBN]
-  infer_instance
+instance (v : Three) : Fintype (ChainBN.stateSpace v) :=
+  inferInstanceAs (Fintype Bool)
 
-instance (v : Three) : Nonempty (ChainBN.stateSpace v) := by
-  dsimp [ChainBN, chainBN]
-  infer_instance
+instance (v : Three) : Nonempty (ChainBN.stateSpace v) :=
+  inferInstanceAs (Nonempty Bool)
+
+instance (v : Three) : MeasurableSingletonClass (ChainBN.stateSpace v) :=
+  inferInstanceAs (MeasurableSingletonClass Bool)
 
 variable (cpt : ChainBN.DiscreteCPT)
 
@@ -57,7 +59,8 @@ instance (cpt : ChainBN.DiscreteCPT) : IsProbabilityMeasure (μ (cpt := cpt)) :=
 /-! ## Events A,B,C as cylinder sets on the joint sample space -/
 
 abbrev eventTrue (v : Three) : Set ChainBN.JointSpace :=
-  (fun ω : ChainBN.JointSpace => ω v) ⁻¹' ({true} : Set Bool)
+  (fun ω : ChainBN.JointSpace => ω v) ⁻¹'
+    ({(show ChainBN.stateSpace v from true)} : Set (ChainBN.stateSpace v))
 
 abbrev A : Set ChainBN.JointSpace := eventTrue Three.A
 abbrev B : Set ChainBN.JointSpace := eventTrue Three.B
@@ -66,7 +69,8 @@ abbrev C : Set ChainBN.JointSpace := eventTrue Three.C
 lemma measurable_eventTrue (v : Three) : MeasurableSet (eventTrue v) := by
   have hproj : Measurable (fun ω : ChainBN.JointSpace => ω v) := by
     fun_prop
-  have hsing : MeasurableSet ({true} : Set Bool) := by
+  have hsing : MeasurableSet
+      ({(show ChainBN.stateSpace v from true)} : Set (ChainBN.stateSpace v)) := by
     simp
   simpa [eventTrue] using hsing.preimage hproj
 
@@ -125,7 +129,7 @@ lemma cfg_apply_of_ne_C {v : Three} (hv : v ≠ Three.C) (c : ChainBN.stateSpace
 
 lemma sum_piSplitAtC (f : ChainBN.JointSpace → ℝ≥0∞) :
     (∑ ω : ChainBN.JointSpace, f ω) =
-      ∑ c : ChainBN.stateSpace Three.C, ∑ r : Rest, f (cfg c r) := by
+      ∑ c : Bool, ∑ r : Rest, f (cfg c r) := by
   classical
   -- Sum over `JointSpace` via the equivalence `piSplitAt`, then split the product type.
   have h :
@@ -140,8 +144,10 @@ lemma sum_piSplitAtC (f : ChainBN.JointSpace → ℝ≥0∞) :
         (Equiv.symm_apply_apply (Equiv.piSplitAt Three.C ChainBN.stateSpace) ω).symm
   calc
     (∑ ω : ChainBN.JointSpace, f ω) = ∑ p : ChainBN.stateSpace Three.C × Rest, f (cfg p.1 p.2) := h
-    _ = ∑ c : ChainBN.stateSpace Three.C, ∑ r : Rest, f (cfg c r) := by
+    _ = ∑ c : Bool, ∑ r : Rest, f (cfg c r) := by
         -- `Fintype.sum_prod_type` turns the sum over pairs into a nested sum.
+        change (∑ p : ChainBN.stateSpace Three.C × Rest, f (cfg p.1 p.2)) =
+          ∑ c : ChainBN.stateSpace Three.C, ∑ r : Rest, f (cfg c r)
         simpa using
           (Fintype.sum_prod_type (f := fun p : ChainBN.stateSpace Three.C × Rest => f (cfg p.1 p.2)))
 
@@ -152,11 +158,13 @@ abbrev idxB : { v : Three // v ≠ Three.C } := ⟨Three.B, by decide⟩
 
 lemma cfg_apply_A (c : ChainBN.stateSpace Three.C) (r : Rest) :
     cfg c r Three.A = r idxA := by
-  simpa [idxA] using cfg_apply_of_ne_C (v := Three.A) (by decide) c r
+  change cfg c r Three.A = r ⟨Three.A, idxA.property⟩
+  exact cfg_apply_of_ne_C (v := Three.A) idxA.property c r
 
 lemma cfg_apply_B (c : ChainBN.stateSpace Three.C) (r : Rest) :
     cfg c r Three.B = r idxB := by
-  simpa [idxB] using cfg_apply_of_ne_C (v := Three.B) (by decide) c r
+  change cfg c r Three.B = r ⟨Three.B, idxB.property⟩
+  exact cfg_apply_of_ne_C (v := Three.B) idxB.property c r
 
 noncomputable def prodNonC (c : ChainBN.stateSpace Three.C) (r : Rest) : ℝ≥0∞ :=
   ∏ v : { v : Three // v ≠ Three.C }, nodeProb cpt (cfg c r) v.val
@@ -217,14 +225,13 @@ lemma jointWeight_split_C (c : ChainBN.stateSpace Three.C) (r : Rest) :
     have hprod :
         (∏ v : { v : Three // ¬(v ≠ Three.C) }, nodeProb cpt (cfg c r) v.val) =
           nodeProb cpt (cfg c r) (default : { v : Three // ¬(v ≠ Three.C) }).val := by
-      simpa using
-        (Fintype.prod_unique
-          (fun v : { v : Three // ¬(v ≠ Three.C) } => nodeProb cpt (cfg c r) v.val))
+      simp
     have hdef : (default : { v : Three // ¬(v ≠ Three.C) }).val = Three.C := by
       have : (default : { v : Three // ¬(v ≠ Three.C) }) = ⟨Three.C, by simp⟩ :=
         Subsingleton.elim _ _
       simpa using congrArg Subtype.val this
-    simpa [hdef] using hprod
+    rw [hdef] at hprod
+    exact hprod
   -- Put it together, commuting the multiplication to match the statement.
   -- (The product split lemma gives `(prodNonC) * (nodeProb C)`; we want `nodeProb C * prodNonC`.)
   calc
@@ -236,7 +243,7 @@ lemma jointWeight_split_C (c : ChainBN.stateSpace Three.C) (r : Rest) :
       rw [hC]
     _ = nodeProb cpt (cfg c r) Three.C *
           (∏ v : { v : Three // v ≠ Three.C }, nodeProb cpt (cfg c r) v.val) := by
-      simpa [mul_comm, mul_left_comm, mul_assoc]
+      rw [mul_comm]
 
 
 end SplitAtC
@@ -280,8 +287,8 @@ lemma nodeProb_C_eq_of_B_eq (c : Bool) {r r' : Rest} (hB : r idxB = r' idxB) :
     have hu' : u = Three.B := by
       simpa [ChainBN, chain_parents_C] using hu
     subst hu'
-    simp [DiscreteCPT.parentAssignOfConfig, cfg_apply_B, hB]
-  simpa [hpa]
+    simp [DiscreteCPT.parentAssignOfConfig, hB]
+  simp [hpa]
 
 noncomputable def qC_givenB (b : Bool) : ℝ≥0∞ :=
   nodeProb cpt (cfg true (restB b)) Three.C
@@ -291,7 +298,7 @@ lemma nodeProb_C_true_eq_qC_givenB {r : Rest} {b : Bool} (hb : r idxB = b) :
   classical
   -- Replace `r` by the canonical rest assignment that agrees on `B`.
   have hb' : r idxB = (restB b) idxB := by
-    simpa [restB, hb]
+    simp [restB, hb]
   simpa [qC_givenB] using nodeProb_C_eq_of_B_eq (cpt := cpt) (c := true) hb'
 
 end ScreeningOff
@@ -317,29 +324,20 @@ private lemma mu_B_eq_sum_rest :
   rw [sum_piSplitAtC (f := fun ω => (B : Set ChainBN.JointSpace).indicator cpt.jointWeight ω)]
   -- Simplify membership in `B`: it depends only on the `B` coordinate (i.e. on `r idxB`).
   simp [B, eventTrue, Set.indicator]
-  -- Expand the sum over the Boolean `C` coordinate, then combine the two summands.
-  -- First, expand the outer sum over the Boolean `C` coordinate.
-  have hC :
-      (∑ c : Bool, ∑ r : Rest, if r idxB = true then cpt.jointWeight (cfg c r) else 0) =
-        (∑ r : Rest, if r idxB = true then cpt.jointWeight (cfg true r) else 0) +
-          ∑ r : Rest, if r idxB = true then cpt.jointWeight (cfg false r) else 0 := by
-    simpa [Fintype.sum_bool]
-  -- Then, combine the two `Rest` sums into one, and simplify the pointwise addition.
   calc
-    (∑ c : Bool, ∑ r : Rest, if r idxB = true then cpt.jointWeight (cfg c r) else 0) =
-        (∑ r : Rest, if r idxB = true then cpt.jointWeight (cfg true r) else 0) +
-          ∑ r : Rest, if r idxB = true then cpt.jointWeight (cfg false r) else 0 := hC
-    _ = ∑ r : Rest,
+    ((∑ r : Rest, if r idxB = true then cpt.jointWeight (cfg true r) else 0) +
+        ∑ r : Rest, if r idxB = true then cpt.jointWeight (cfg false r) else 0) =
+      ∑ r : Rest,
         ((if r idxB = true then cpt.jointWeight (cfg true r) else 0) +
           (if r idxB = true then cpt.jointWeight (cfg false r) else 0)) := by
-      simpa using
+      simpa [idxB] using
         (Finset.sum_add_distrib (s := (Finset.univ : Finset Rest))
           (f := fun r : Rest => if r idxB = true then cpt.jointWeight (cfg true r) else 0)
           (g := fun r : Rest => if r idxB = true then cpt.jointWeight (cfg false r) else 0)).symm
     _ = ∑ r : Rest,
         (if r idxB = true then cpt.jointWeight (cfg true r) + cpt.jointWeight (cfg false r) else 0) := by
-      refine Fintype.sum_congr _ _ (fun r => ?_)
-      by_cases h : r idxB = true <;> simp [h, add_assoc]
+      refine Fintype.sum_congr (α := Rest) (M := ℝ≥0∞) _ _ (fun r => ?_)
+      by_cases h : r idxB = true <;> simp [h]
 
 private lemma mu_C_inter_B_eq_sum_rest :
     (μ (cpt := cpt)) (C ∩ (B : Set ChainBN.JointSpace)) =
@@ -350,27 +348,6 @@ private lemma mu_C_inter_B_eq_sum_rest :
   rw [sum_piSplitAtC (f := fun ω => (C ∩ (B : Set ChainBN.JointSpace)).indicator cpt.jointWeight ω)]
   -- Only the `c = true` summand contributes to `C`.
   simp [C, B, eventTrue, Set.indicator]
-  -- Expand the sum over the Boolean `C` coordinate, and simplify away the `c = false` term.
-  dsimp [ChainBN, chainBN] at ⊢
-  -- Discharge proof-irrelevance in the `B`-index subtype used to access `r idxB`.
-  -- We normalize all occurrences of the `B`-index to the canonical `idxB`.
-  have hBnorm :
-      (⟨Three.B, (by decide : Three.B ≠ Three.C)⟩ : { v : Three // v ≠ Three.C }) = idxB := by
-    ext
-    rfl
-  -- Evaluate the explicit `{true,false}` sum, using `hBnorm` to normalize the `B`-index proof.
-  simpa [idxB, hBnorm] using (by
-    -- The only remaining mismatch is the proof component inside the subtype used for indexing `Rest`.
-    -- We eliminate it via `Subtype.ext` inside a `Fintype.sum_congr`.
-    refine Fintype.sum_congr _ _ (fun r => ?_)
-    -- Any two `B`-indices are equal as subtypes, since their `.val` components agree.
-    have hBidx :
-        (⟨Three.B, (by decide : Three.B ≠ Three.C)⟩ : { v : Three // v ≠ Three.C }) =
-          ⟨Three.B, idxB._proof_1⟩ := by
-      ext
-      rfl
-    -- Rewrite the `Rest` lookup along `hBidx`.
-    simpa [hBidx])
 
 private lemma mu_Bc_eq_sum_rest :
     (μ (cpt := cpt)) ((B : Set ChainBN.JointSpace)ᶜ) =
@@ -383,32 +360,25 @@ private lemma mu_Bc_eq_sum_rest :
         (hS := measurable_B.compl)]
   rw [sum_piSplitAtC (f := fun ω => ((B : Set ChainBN.JointSpace)ᶜ).indicator cpt.jointWeight ω)]
   simp [B, eventTrue, Set.indicator]
-  -- Combine the two `C`-summands into a single sum over `r`.
-  have hC :
-      (∑ c : Bool, ∑ r : Rest, if r idxB = true then 0 else cpt.jointWeight (cfg c r)) =
-        (∑ r : Rest, if r idxB = true then 0 else cpt.jointWeight (cfg true r)) +
-          ∑ r : Rest, if r idxB = true then 0 else cpt.jointWeight (cfg false r) := by
-    simpa [Fintype.sum_bool]
   calc
-    (∑ c : Bool, ∑ r : Rest, if r idxB = true then 0 else cpt.jointWeight (cfg c r)) =
-        (∑ r : Rest, if r idxB = true then 0 else cpt.jointWeight (cfg true r)) +
-          ∑ r : Rest, if r idxB = true then 0 else cpt.jointWeight (cfg false r) := hC
-    _ = ∑ r : Rest,
+    ((∑ r : Rest, if r idxB = true then 0 else cpt.jointWeight (cfg true r)) +
+        ∑ r : Rest, if r idxB = true then 0 else cpt.jointWeight (cfg false r)) =
+      ∑ r : Rest,
         ((if r idxB = true then 0 else cpt.jointWeight (cfg true r)) +
           (if r idxB = true then 0 else cpt.jointWeight (cfg false r))) := by
-      simpa using
+      simpa [idxB] using
         (Finset.sum_add_distrib (s := (Finset.univ : Finset Rest))
           (f := fun r : Rest => if r idxB = true then 0 else cpt.jointWeight (cfg true r))
           (g := fun r : Rest => if r idxB = true then 0 else cpt.jointWeight (cfg false r))).symm
     _ = ∑ r : Rest,
         (if r idxB = true then 0 else
             (cpt.jointWeight (cfg true r) + cpt.jointWeight (cfg false r))) := by
-      refine Fintype.sum_congr _ _ (fun r => ?_)
-      by_cases h : r idxB = true <;> simp [h, add_assoc]
+      refine Fintype.sum_congr (α := Rest) (M := ℝ≥0∞) _ _ (fun r => ?_)
+      by_cases h : r idxB = true <;> simp [h]
     _ = ∑ r : Rest,
         (if r idxB = false then cpt.jointWeight (cfg true r) + cpt.jointWeight (cfg false r) else 0) := by
-      refine Fintype.sum_congr _ _ (fun r => ?_)
-      cases hb : r idxB <;> simp [hb]
+      refine Fintype.sum_congr (α := Rest) (M := ℝ≥0∞) _ _ (fun r => ?_)
+      cases hb : r idxB <;> simp
 
 private lemma mu_C_inter_Bc_eq_sum_rest :
     (μ (cpt := cpt)) (C ∩ (B : Set ChainBN.JointSpace)ᶜ) =
@@ -418,19 +388,8 @@ private lemma mu_C_inter_Bc_eq_sum_rest :
         (hS := measurable_C.inter measurable_B.compl)]
   rw [sum_piSplitAtC (f := fun ω => (C ∩ (B : Set ChainBN.JointSpace)ᶜ).indicator cpt.jointWeight ω)]
   simp [C, B, eventTrue, Set.indicator]
-  dsimp [ChainBN, chainBN] at ⊢
-  have hBnorm :
-      (⟨Three.B, (by decide : Three.B ≠ Three.C)⟩ : { v : Three // v ≠ Three.C }) = idxB := by
-    ext
-    rfl
-  simpa [idxB, hBnorm] using (by
-    refine Fintype.sum_congr _ _ (fun r => ?_)
-    have hBidx :
-        (⟨Three.B, (by decide : Three.B ≠ Three.C)⟩ : { v : Three // v ≠ Three.C }) =
-          ⟨Three.B, idxB._proof_1⟩ := by
-      ext
-      rfl
-    simpa [hBidx])
+  refine Fintype.sum_congr (α := Rest) (M := ℝ≥0∞) _ _ (fun r => ?_)
+  cases hb : r idxB <;> simp
 
 private lemma mu_A_inter_B_eq_sum_rest :
     (μ (cpt := cpt)) (A ∩ (B : Set ChainBN.JointSpace)) =
@@ -443,21 +402,13 @@ private lemma mu_A_inter_B_eq_sum_rest :
         (hS := measurable_A.inter measurable_B)]
   rw [sum_piSplitAtC (f := fun ω => (A ∩ (B : Set ChainBN.JointSpace)).indicator cpt.jointWeight ω)]
   simp [A, B, eventTrue, Set.indicator]
-  have hC :
-      (∑ c : Bool, ∑ r : Rest,
-          if r idxA = true ∧ r idxB = true then cpt.jointWeight (cfg c r) else 0) =
-        (∑ r : Rest, if r idxA = true ∧ r idxB = true then cpt.jointWeight (cfg true r) else 0) +
-          ∑ r : Rest, if r idxA = true ∧ r idxB = true then cpt.jointWeight (cfg false r) else 0 := by
-    simpa [Fintype.sum_bool]
   calc
-    (∑ c : Bool, ∑ r : Rest,
-        if r idxA = true ∧ r idxB = true then cpt.jointWeight (cfg c r) else 0) =
-        (∑ r : Rest, if r idxA = true ∧ r idxB = true then cpt.jointWeight (cfg true r) else 0) +
-          ∑ r : Rest, if r idxA = true ∧ r idxB = true then cpt.jointWeight (cfg false r) else 0 := hC
-    _ = ∑ r : Rest,
+    ((∑ r : Rest, if r idxA = true ∧ r idxB = true then cpt.jointWeight (cfg true r) else 0) +
+        ∑ r : Rest, if r idxA = true ∧ r idxB = true then cpt.jointWeight (cfg false r) else 0) =
+      ∑ r : Rest,
         ((if r idxA = true ∧ r idxB = true then cpt.jointWeight (cfg true r) else 0) +
           (if r idxA = true ∧ r idxB = true then cpt.jointWeight (cfg false r) else 0)) := by
-      simpa using
+      simpa [idxA, idxB] using
         (Finset.sum_add_distrib (s := (Finset.univ : Finset Rest))
           (f := fun r : Rest =>
             if r idxA = true ∧ r idxB = true then cpt.jointWeight (cfg true r) else 0)
@@ -467,8 +418,8 @@ private lemma mu_A_inter_B_eq_sum_rest :
         (if r idxA = true ∧ r idxB = true then
             cpt.jointWeight (cfg true r) + cpt.jointWeight (cfg false r)
           else 0) := by
-      refine Fintype.sum_congr _ _ (fun r => ?_)
-      by_cases h : r idxA = true ∧ r idxB = true <;> simp [h, add_assoc]
+      refine Fintype.sum_congr (α := Rest) (M := ℝ≥0∞) _ _ (fun r => ?_)
+      by_cases h : r idxA = true ∧ r idxB = true <;> simp [h]
 
 private lemma mu_C_inter_A_inter_B_eq_sum_rest :
     (μ (cpt := cpt)) (C ∩ (A ∩ (B : Set ChainBN.JointSpace))) =
@@ -478,19 +429,6 @@ private lemma mu_C_inter_A_inter_B_eq_sum_rest :
         (hS := measurable_C.inter (measurable_A.inter measurable_B))]
   rw [sum_piSplitAtC (f := fun ω => (C ∩ (A ∩ (B : Set ChainBN.JointSpace))).indicator cpt.jointWeight ω)]
   simp [C, A, B, eventTrue, Set.indicator]
-  dsimp [ChainBN, chainBN] at ⊢
-  have hBnorm :
-      (⟨Three.B, (by decide : Three.B ≠ Three.C)⟩ : { v : Three // v ≠ Three.C }) = idxB := by
-    ext
-    rfl
-  simpa [idxB, hBnorm] using (by
-    refine Fintype.sum_congr _ _ (fun r => ?_)
-    have hBidx :
-        (⟨Three.B, (by decide : Three.B ≠ Three.C)⟩ : { v : Three // v ≠ Three.C }) =
-          ⟨Three.B, idxB._proof_1⟩ := by
-      ext
-      rfl
-    simpa [hBidx])
 
 private lemma mu_A_inter_Bc_eq_sum_rest :
     (μ (cpt := cpt)) (A ∩ (B : Set ChainBN.JointSpace)ᶜ) =
@@ -508,24 +446,16 @@ private lemma mu_A_inter_Bc_eq_sum_rest :
       (if r idxA = true ∧ ¬r idxB = true then cpt.jointWeight (cfg c r) else 0) =
         (if r idxA = true ∧ r idxB = false then cpt.jointWeight (cfg c r) else 0) := by
     by_cases hA : r idxA = true
-    · cases hb : r idxB <;> simp [hA, hb]
+    · cases hb : r idxB <;> simp [hA]
     · simp [hA]
   simp_rw [hnormB]
-  have hC :
-      (∑ c : Bool, ∑ r : Rest,
-          if r idxA = true ∧ r idxB = false then cpt.jointWeight (cfg c r) else 0) =
-        (∑ r : Rest, if r idxA = true ∧ r idxB = false then cpt.jointWeight (cfg true r) else 0) +
-          ∑ r : Rest, if r idxA = true ∧ r idxB = false then cpt.jointWeight (cfg false r) else 0 := by
-    simpa [Fintype.sum_bool]
   calc
-    (∑ c : Bool, ∑ r : Rest,
-        if r idxA = true ∧ r idxB = false then cpt.jointWeight (cfg c r) else 0) =
-        (∑ r : Rest, if r idxA = true ∧ r idxB = false then cpt.jointWeight (cfg true r) else 0) +
-          ∑ r : Rest, if r idxA = true ∧ r idxB = false then cpt.jointWeight (cfg false r) else 0 := hC
-    _ = ∑ r : Rest,
+    ((∑ r : Rest, if r idxA = true ∧ r idxB = false then cpt.jointWeight (cfg true r) else 0) +
+        ∑ r : Rest, if r idxA = true ∧ r idxB = false then cpt.jointWeight (cfg false r) else 0) =
+      ∑ r : Rest,
         ((if r idxA = true ∧ r idxB = false then cpt.jointWeight (cfg true r) else 0) +
           (if r idxA = true ∧ r idxB = false then cpt.jointWeight (cfg false r) else 0)) := by
-      simpa using
+      simpa [idxA, idxB] using
         (Finset.sum_add_distrib (s := (Finset.univ : Finset Rest))
           (f := fun r : Rest =>
             if r idxA = true ∧ r idxB = false then cpt.jointWeight (cfg true r) else 0)
@@ -535,8 +465,8 @@ private lemma mu_A_inter_Bc_eq_sum_rest :
         (if r idxA = true ∧ r idxB = false then
             cpt.jointWeight (cfg true r) + cpt.jointWeight (cfg false r)
           else 0) := by
-      refine Fintype.sum_congr _ _ (fun r => ?_)
-      by_cases h : r idxA = true ∧ r idxB = false <;> simp [h, add_assoc]
+      refine Fintype.sum_congr (α := Rest) (M := ℝ≥0∞) _ _ (fun r => ?_)
+      by_cases h : r idxA = true ∧ r idxB = false <;> simp [h]
 
 private lemma mu_C_inter_A_inter_Bc_eq_sum_rest :
     (μ (cpt := cpt)) (C ∩ (A ∩ (B : Set ChainBN.JointSpace)ᶜ)) =
@@ -546,19 +476,8 @@ private lemma mu_C_inter_A_inter_Bc_eq_sum_rest :
         (hS := measurable_C.inter (measurable_A.inter measurable_B.compl))]
   rw [sum_piSplitAtC (f := fun ω => (C ∩ (A ∩ (B : Set ChainBN.JointSpace)ᶜ)).indicator cpt.jointWeight ω)]
   simp [C, A, B, eventTrue, Set.indicator]
-  dsimp [ChainBN, chainBN] at ⊢
-  have hBnorm :
-      (⟨Three.B, (by decide : Three.B ≠ Three.C)⟩ : { v : Three // v ≠ Three.C }) = idxB := by
-    ext
-    rfl
-  simpa [idxB, hBnorm] using (by
-    refine Fintype.sum_congr _ _ (fun r => ?_)
-    have hBidx :
-        (⟨Three.B, (by decide : Three.B ≠ Three.C)⟩ : { v : Three // v ≠ Three.C }) =
-          ⟨Three.B, idxB._proof_1⟩ := by
-      ext
-      rfl
-    simpa [hBidx])
+  refine Fintype.sum_congr (α := Rest) (M := ℝ≥0∞) _ _ (fun r => ?_)
+  cases hA : r idxA <;> cases hb : r idxB <;> simp
 
 /-! ### Screening-off equalities as BN theorems -/
 
@@ -575,7 +494,7 @@ private lemma nodeProb_C_true_add_false (r : Rest) :
     have hu' : u = Three.B := by
       simpa [ChainBN, chain_parents_C] using hu
     subst hu'
-    simp [pa, DiscreteCPT.parentAssignOfConfig, cfg_apply_B]
+    simp [pa, DiscreteCPT.parentAssignOfConfig]
   have hsum : (∑ c : Bool, (cpt.cpt Three.C pa c : ℝ≥0∞)) = 1 :=
     pmf_sum_eq_one (cpt.cpt Three.C pa)
   have hsum' :
@@ -625,7 +544,7 @@ private lemma mu_C_inter_B_eq_q_mul_mu_B :
   have hrewrite :
       (∑ r : Rest, if r idxB = true then cpt.jointWeight (cfg true r) else 0) =
         ∑ r : Rest, if r idxB = true then qC_givenB (cpt := cpt) true * prodNonC (cpt := cpt) (c := true) r else 0 := by
-    refine Fintype.sum_congr _ _ (fun r => ?_)
+    refine Fintype.sum_congr (α := Rest) (M := ℝ≥0∞) _ _ (fun r => ?_)
     by_cases hb : r idxB = true
     · have hnode : nodeProb cpt (cfg true r) Three.C = qC_givenB (cpt := cpt) true := by
         simpa using
@@ -853,7 +772,7 @@ private lemma real_ratio_eq_toReal_q {X Y : Set ChainBN.JointSpace} (hY_pos : (�
   calc
     ((μ (cpt := cpt)) (X ∩ Y)).toReal / ((μ (cpt := cpt)) Y).toReal =
         ((q * (μ (cpt := cpt)) Y).toReal) / ((μ (cpt := cpt)) Y).toReal := by
-          simpa [hXY]
+          simp [hXY]
     _ = (q.toReal * ((μ (cpt := cpt)) Y).toReal) / ((μ (cpt := cpt)) Y).toReal := by
           simp [ENNReal.toReal_mul]
     _ = q.toReal := by
@@ -1011,21 +930,21 @@ section ForkBN
 
 open Mettapedia.ProbabilityTheory.BayesianNetworks.Examples
 
-instance forkBN_fintype (v : Three) : Fintype (forkBN.stateSpace v) := by
-  dsimp [forkBN]; infer_instance
+instance forkBN_fintype (v : Three) : Fintype (forkBN.stateSpace v) :=
+  inferInstanceAs (Fintype Bool)
 
-instance forkBN_nonempty (v : Three) : Nonempty (forkBN.stateSpace v) := by
-  dsimp [forkBN]; infer_instance
+instance forkBN_nonempty (v : Three) : Nonempty (forkBN.stateSpace v) :=
+  inferInstanceAs (Nonempty Bool)
 
-instance forkBN_inhabited (v : Three) : Inhabited (forkBN.stateSpace v) := by
-  dsimp [forkBN]; infer_instance
+instance forkBN_inhabited (v : Three) : Inhabited (forkBN.stateSpace v) :=
+  inferInstanceAs (Inhabited Bool)
 
-instance forkBN_decidableEq (v : Three) : DecidableEq (forkBN.stateSpace v) := by
-  dsimp [forkBN]; infer_instance
+instance forkBN_decidableEq (v : Three) : DecidableEq (forkBN.stateSpace v) :=
+  inferInstanceAs (DecidableEq Bool)
 
 instance forkBN_measurableSingletonClass (v : Three) :
-    MeasurableSingletonClass (forkBN.stateSpace v) := by
-  dsimp [forkBN]; infer_instance
+    MeasurableSingletonClass (forkBN.stateSpace v) :=
+  inferInstanceAs (MeasurableSingletonClass Bool)
 
 variable (cpt : forkBN.DiscreteCPT)
 
@@ -1065,7 +984,7 @@ private lemma forkBN_screeningOff_mul
   -- CondIndepVertices {C} {A} {B} → CondIndepOn C B A → CondIndepOn A B C (by symmetry)
   have hciOn : CondIndepOn (bn := forkBN) (μ := cpt.jointMeasure) Three.A Three.B Three.C := by
     have : CondIndepOn (bn := forkBN) (μ := cpt.jointMeasure) Three.C Three.B Three.A := by
-      simpa [CondIndepOn] using hci
+      simpa [CondIndepOn, CondIndepVertices] using hci
     exact this.symm
   exact condIndep_eventEq_mul_cond (bn := forkBN) (μ := cpt.jointMeasure)
     Three.A Three.B Three.C valA valB valC hciOn

@@ -59,8 +59,15 @@ theorem WeightedObservable.windowedColeHopfHeatSeedBlend_sum_eq_one_of_selfCompa
         (L.windowedColeHopfHeatUniformVorticityTendril
           (ι := ι) (X := X)
           selector c ν hc hν curlFrame curlBound curlBound_nonneg hcurl x).vorticity 1 y := by
-    simpa [windowedSelfCompatibility, WeightedObservable.windowedColeHopfHeatSeedBlendCandidate] using
-      hself 1 y
+    change
+      ((L.windowedColeHopfHeatUniformVorticityTendril
+            (ι := ι) (X := X)
+            selector c ν hc hν curlFrame curlBound curlBound_nonneg hcurl x).seedBlendCandidate
+          a b).velocity 1 y =
+        (L.windowedColeHopfHeatUniformVorticityTendril
+          (ι := ι) (X := X)
+          selector c ν hc hν curlFrame curlBound curlBound_nonneg hcurl x).vorticity 1 y
+    exact hself 1 y
   have hMul :
       (a + b - 1) *
           (L.windowedColeHopfHeatUniformVorticityTendril
@@ -113,8 +120,15 @@ theorem WeightedObservable.windowedColeHopfHeatSeedBlend_a_eq_one_of_selfCompati
         (L.windowedColeHopfHeatUniformVorticityTendril
           (ι := ι) (X := X)
           selector c ν hc hν curlFrame curlBound curlBound_nonneg hcurl x).vorticity t y := by
-    simpa [windowedSelfCompatibility, WeightedObservable.windowedColeHopfHeatSeedBlendCandidate] using
-      hself t y
+    change
+      ((L.windowedColeHopfHeatUniformVorticityTendril
+            (ι := ι) (X := X)
+            selector c ν hc hν curlFrame curlBound curlBound_nonneg hcurl x).seedBlendCandidate
+          a b).velocity t y =
+        (L.windowedColeHopfHeatUniformVorticityTendril
+          (ι := ι) (X := X)
+          selector c ν hc hν curlFrame curlBound curlBound_nonneg hcurl x).vorticity t y
+    exact hself t y
   have hMul :
       (a - 1) *
           (L.windowedColeHopfHeatUniformVorticityTendril
@@ -168,8 +182,15 @@ theorem WeightedObservable.windowedColeHopfHeatSeedBlend_b_eq_zero_of_selfCompat
         (L.windowedColeHopfHeatUniformVorticityTendril
           (ι := ι) (X := X)
           selector c ν hc hν curlFrame curlBound curlBound_nonneg hcurl x).vorticity t y := by
-    simpa [windowedSelfCompatibility, WeightedObservable.windowedColeHopfHeatSeedBlendCandidate] using
-      hself t y
+    change
+      ((L.windowedColeHopfHeatUniformVorticityTendril
+            (ι := ι) (X := X)
+            selector c ν hc hν curlFrame curlBound curlBound_nonneg hcurl x).seedBlendCandidate
+          a b).velocity t y =
+        (L.windowedColeHopfHeatUniformVorticityTendril
+          (ι := ι) (X := X)
+          selector c ν hc hν curlFrame curlBound curlBound_nonneg hcurl x).vorticity t y
+    exact hself t y
   have hMul :
       b *
           (L.windowedColeHopfHeatUniformVorticityTendril

@@ -45,9 +45,31 @@ def nsCoord2 : Fin 3 := ⟨2, by decide⟩
 def constantVelocityField (c : NSSpace) : NSVelocityField :=
   fun _ : NSTime => fun _ : NSSpace => c
 
+@[simp]
+theorem constantVelocityField_apply (c : NSSpace) (t : NSTime) (x : NSSpace) :
+    constantVelocityField c t x = c :=
+  rfl
+
+@[simp]
+theorem constantVelocityField_zero :
+    constantVelocityField (0 : NSSpace) = (0 : NSVelocityField) := by
+  funext t x
+  simp [constantVelocityField]
+
 /-- Constant initial velocity data on `ℝ^3`. -/
 def constantInitialVelocity (c : NSSpace) : NSInitialVelocity :=
   fun _ : NSSpace => c
+
+@[simp]
+theorem constantInitialVelocity_apply (c : NSSpace) (x : NSSpace) :
+    constantInitialVelocity c x = c :=
+  rfl
+
+@[simp]
+theorem constantInitialVelocity_zero :
+    constantInitialVelocity (0 : NSSpace) = (0 : NSInitialVelocity) := by
+  funext x
+  simp [constantInitialVelocity]
 
 /-- Addition of constant initial data is again constant initial data. -/
 theorem constantInitialVelocity_add

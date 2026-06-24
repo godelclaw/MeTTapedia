@@ -129,7 +129,7 @@ theorem norm_spatialVorticity_le_sum_abs_spatialDerivativeComponent
             gcongr
             exact norm_add_le _ _
       _ = |d12 - d21| + |d20 - d02| + |d01 - d10| := by
-            simp [EuclideanSpace.norm_single, add_assoc]
+            simp [add_assoc]
   have h12 : |d12 - d21| ≤ |d12| + |d21| := by
     simpa [sub_eq_add_neg, abs_neg] using abs_add_le d12 (-d21)
   have h20 : |d20 - d02| ≤ |d20| + |d02| := by

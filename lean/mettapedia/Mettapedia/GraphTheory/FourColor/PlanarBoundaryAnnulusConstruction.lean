@@ -829,7 +829,8 @@ theorem
         boundaryData data).innerBoundaryFaces := by
   simpa [PlanarBoundaryAnnulusConstruction.outerBoundaryFaces,
     PlanarBoundaryAnnulusConstruction.innerBoundaryFaces,
-    planarBoundaryAnnulusConstruction_of_boundaryReachabilityData_and_interiorDualBoundaryRootAdjDistancePeelData]
+    planarBoundaryAnnulusConstruction_of_boundaryReachabilityData_and_interiorDualBoundaryRootAdjDistancePeelData,
+    planarBoundaryAnnulusConstruction_of_boundaryData_and_interiorDualBoundaryRootAdjDistancePeelData]
     using
       boundaryData.outerBoundaryFaces_disjoint_innerBoundaryFaces_of_boundaryComponentConstant
         hconst
@@ -848,7 +849,8 @@ theorem
         boundaryData data).innerBoundaryFaces := by
   simpa [PlanarBoundaryAnnulusConstruction.outerBoundaryFaces,
     PlanarBoundaryAnnulusConstruction.innerBoundaryFaces,
-    planarBoundaryAnnulusConstruction_of_boundaryReachabilityData_and_interiorDualBoundaryRootAdjDistancePeelData]
+    planarBoundaryAnnulusConstruction_of_boundaryReachabilityData_and_interiorDualBoundaryRootAdjDistancePeelData,
+    planarBoundaryAnnulusConstruction_of_boundaryData_and_interiorDualBoundaryRootAdjDistancePeelData]
     using
       boundaryData.outerBoundaryFaces_disjoint_innerBoundaryFaces_of_boundaryComponentReachable
         hreach
@@ -867,7 +869,8 @@ theorem
         boundaryData data).innerBoundaryFaces := by
   simpa [PlanarBoundaryAnnulusConstruction.outerBoundaryFaces,
     PlanarBoundaryAnnulusConstruction.innerBoundaryFaces,
-    planarBoundaryAnnulusConstruction_of_boundaryReachabilityData_and_interiorDualBoundaryRootAdjDistancePeelData]
+    planarBoundaryAnnulusConstruction_of_boundaryReachabilityData_and_interiorDualBoundaryRootAdjDistancePeelData,
+    planarBoundaryAnnulusConstruction_of_boundaryData_and_interiorDualBoundaryRootAdjDistancePeelData]
     using
       boundaryData.outerBoundaryFaces_disjoint_innerBoundaryFaces_of_boundaryEdgesShareEndpoint
         hshare
@@ -886,7 +889,8 @@ theorem
         boundaryData data).innerBoundaryFaces := by
   simpa [PlanarBoundaryAnnulusConstruction.outerBoundaryFaces,
     PlanarBoundaryAnnulusConstruction.innerBoundaryFaces,
-    planarBoundaryAnnulusConstruction_of_boundaryReachabilityData_and_interiorDualBoundaryRootAdjDistancePeelData]
+    planarBoundaryAnnulusConstruction_of_boundaryReachabilityData_and_interiorDualBoundaryRootAdjDistancePeelData,
+    planarBoundaryAnnulusConstruction_of_boundaryData_and_interiorDualBoundaryRootAdjDistancePeelData]
     using
       boundaryData.outerBoundaryFaces_disjoint_innerBoundaryFaces_of_boundaryComponentWalkOnFace
         hwalk
@@ -905,7 +909,8 @@ theorem
         boundaryData data).innerBoundaryFaces := by
   simpa [PlanarBoundaryAnnulusConstruction.outerBoundaryFaces,
     PlanarBoundaryAnnulusConstruction.innerBoundaryFaces,
-    planarBoundaryAnnulusConstruction_of_boundaryReachabilityData_and_interiorDualBoundaryRootAdjDistancePeelData]
+    planarBoundaryAnnulusConstruction_of_boundaryReachabilityData_and_interiorDualBoundaryRootAdjDistancePeelData,
+    planarBoundaryAnnulusConstruction_of_boundaryData_and_interiorDualBoundaryRootAdjDistancePeelData]
     using
       boundaryData.outerBoundaryFaces_disjoint_innerBoundaryFaces_of_boundaryComponentRunOnFace
         hrun
@@ -924,7 +929,8 @@ theorem
         boundaryData data).innerBoundaryFaces := by
   simpa [PlanarBoundaryAnnulusConstruction.outerBoundaryFaces,
     PlanarBoundaryAnnulusConstruction.innerBoundaryFaces,
-    planarBoundaryAnnulusConstruction_of_boundaryReachabilityData_and_interiorDualBoundaryRootAdjDistancePeelData]
+    planarBoundaryAnnulusConstruction_of_boundaryReachabilityData_and_interiorDualBoundaryRootAdjDistancePeelData,
+    planarBoundaryAnnulusConstruction_of_boundaryData_and_interiorDualBoundaryRootAdjDistancePeelData]
     using
       PlanarBoundaryAnnulusBoundaryReachabilityData.outerBoundaryFaces_disjoint_innerBoundaryFaces_of_boundarySelectedBoundaryRunOnFace
         boundaryData hrun
@@ -943,7 +949,8 @@ theorem
         boundaryData data).innerBoundaryFaces := by
   simpa [PlanarBoundaryAnnulusConstruction.outerBoundaryFaces,
     PlanarBoundaryAnnulusConstruction.innerBoundaryFaces,
-    planarBoundaryAnnulusConstruction_of_boundaryReachabilityData_and_interiorDualBoundaryRootAdjDistancePeelData]
+    planarBoundaryAnnulusConstruction_of_boundaryReachabilityData_and_interiorDualBoundaryRootAdjDistancePeelData,
+    planarBoundaryAnnulusConstruction_of_boundaryData_and_interiorDualBoundaryRootAdjDistancePeelData]
     using
       PlanarBoundaryAnnulusBoundaryReachabilityData.outerBoundaryFaces_disjoint_innerBoundaryFaces_of_boundarySelectedBoundaryArcOnFace
         boundaryData harc
@@ -961,7 +968,8 @@ theorem
         boundaryData data).innerBoundaryFaces := by
   simpa [PlanarBoundaryAnnulusConstruction.outerBoundaryFaces,
     PlanarBoundaryAnnulusConstruction.innerBoundaryFaces,
-    planarBoundaryAnnulusConstruction_of_boundaryReachabilityData_and_interiorDualBoundaryRootAdjDistancePeelData]
+    planarBoundaryAnnulusConstruction_of_boundaryReachabilityData_and_interiorDualBoundaryRootAdjDistancePeelData,
+    planarBoundaryAnnulusConstruction_of_boundaryData_and_interiorDualBoundaryRootAdjDistancePeelData]
     using
       PlanarBoundaryAnnulusBoundaryReachabilityData.outerBoundaryFaces_disjoint_innerBoundaryFaces_of_selectedBoundaryArcGeometry
         boundaryData geom
@@ -980,7 +988,8 @@ theorem
         boundaryData data).innerBoundaryFaces := by
   simpa [PlanarBoundaryAnnulusConstruction.outerBoundaryFaces,
     PlanarBoundaryAnnulusConstruction.innerBoundaryFaces,
-    planarBoundaryAnnulusConstruction_of_boundaryReachabilityData_and_interiorDualBoundaryRootAdjDistancePeelData]
+    planarBoundaryAnnulusConstruction_of_boundaryReachabilityData_and_interiorDualBoundaryRootAdjDistancePeelData,
+    planarBoundaryAnnulusConstruction_of_boundaryData_and_interiorDualBoundaryRootAdjDistancePeelData]
     using
       PlanarBoundaryAnnulusBoundaryReachabilityData.outerBoundaryFaces_disjoint_innerBoundaryFaces_of_faceBoundaryRunGeometry_and_selectedBoundaryArcOnFace
         boundaryData geom harc
@@ -998,7 +1007,8 @@ theorem
         boundaryData data).innerBoundaryFaces := by
   simpa [PlanarBoundaryAnnulusConstruction.outerBoundaryFaces,
     PlanarBoundaryAnnulusConstruction.innerBoundaryFaces,
-    planarBoundaryAnnulusConstruction_of_boundaryReachabilityData_and_interiorDualBoundaryRootAdjDistancePeelData]
+    planarBoundaryAnnulusConstruction_of_boundaryReachabilityData_and_interiorDualBoundaryRootAdjDistancePeelData,
+    planarBoundaryAnnulusConstruction_of_boundaryData_and_interiorDualBoundaryRootAdjDistancePeelData]
     using
       PlanarBoundaryAnnulusBoundaryReachabilityData.outerBoundaryFaces_disjoint_innerBoundaryFaces_of_orderedFaceArcEmbeddingData
         boundaryData geom
@@ -1016,7 +1026,8 @@ theorem
         boundaryData data).innerBoundaryFaces := by
   simpa [PlanarBoundaryAnnulusConstruction.outerBoundaryFaces,
     PlanarBoundaryAnnulusConstruction.innerBoundaryFaces,
-    planarBoundaryAnnulusConstruction_of_boundaryReachabilityData_and_interiorDualBoundaryRootAdjDistancePeelData]
+    planarBoundaryAnnulusConstruction_of_boundaryReachabilityData_and_interiorDualBoundaryRootAdjDistancePeelData,
+    planarBoundaryAnnulusConstruction_of_boundaryData_and_interiorDualBoundaryRootAdjDistancePeelData]
     using
       PlanarBoundaryAnnulusBoundaryReachabilityData.outerBoundaryFaces_disjoint_innerBoundaryFaces_of_cyclicOrderedFaceArcEmbeddingData
         boundaryData geom
@@ -1036,7 +1047,8 @@ theorem
         boundaryData data).innerBoundaryFaces := by
   simpa [PlanarBoundaryAnnulusConstruction.outerBoundaryFaces,
     PlanarBoundaryAnnulusConstruction.innerBoundaryFaces,
-    planarBoundaryAnnulusConstruction_of_boundaryReachabilityData_and_interiorDualBoundaryRootAdjDistancePeelData]
+    planarBoundaryAnnulusConstruction_of_boundaryReachabilityData_and_interiorDualBoundaryRootAdjDistancePeelData,
+    planarBoundaryAnnulusConstruction_of_boundaryData_and_interiorDualBoundaryRootAdjDistancePeelData]
     using
       PlanarBoundaryAnnulusBoundaryReachabilityData.outerBoundaryFaces_disjoint_innerBoundaryFaces_of_cyclicFaceBoundaryVertexWalkGeometry_and_selectedBoundaryArcOnFace
         boundaryData geom harc
@@ -3462,7 +3474,8 @@ noncomputable def
         intro f hf
         simpa [outerData,
           planarBoundaryAnnulusConstruction_of_planarBoundaryOuterBoundaryRootAdjDistancePeelData,
-          planarBoundaryAnnulusConstruction_of_boundaryReachabilityData_and_interiorDualBoundaryRootAdjDistancePeelData]
+          planarBoundaryAnnulusConstruction_of_boundaryReachabilityData_and_interiorDualBoundaryRootAdjDistancePeelData,
+    planarBoundaryAnnulusConstruction_of_boundaryData_and_interiorDualBoundaryRootAdjDistancePeelData]
           using
             nonPeelSelectedBoundary_of_planarBoundaryOuterBoundaryRootAdjDistancePeelData
               outerData f hf)

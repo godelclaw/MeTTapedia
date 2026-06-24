@@ -53,14 +53,15 @@ theorem integrable_convectionEnergyPairing_of_schwartzSlice
       Integrable
         (fun x : NSSpace =>
           coord i x * ⟪f x, ∂_{EuclideanSpace.single i (1 : ℝ)} f x⟫) := by
-    simpa [coord, SchwartzMap.bilinLeftCLM_apply, ContinuousLinearMap.apply_apply,
-      SchwartzMap.pairing_apply_apply] using
-      (SchwartzMap.pairing
+    refine ((SchwartzMap.pairing
         (ContinuousLinearMap.mul ℝ ℝ)
         (coord i)
-        (SchwartzMap.pairing (innerSL ℝ) f (∂_{EuclideanSpace.single i (1 : ℝ)} f))).integrable
+        (SchwartzMap.pairing (innerSL ℝ) f (∂_{EuclideanSpace.single i (1 : ℝ)} f))).integrable).congr ?_
+    filter_upwards with x
+    rw [SchwartzMap.pairing_apply_apply, hCoordEq i x]
+    rfl
   rw [hConvectionEq]
-  simpa using integrable_finset_sum (Finset.univ : Finset (Fin 3)) (fun i hi => hTermIntegrable i)
+  simpa using integrable_finsetSum (Finset.univ : Finset (Fin 3)) (fun i hi => hTermIntegrable i)
 
 /-- A concrete Navier-Stokes time slice that agrees pointwise with a
 divergence-free Schwartz function has vanishing convection energy integral. -/
@@ -81,21 +82,34 @@ theorem integral_convectionEnergyPairing_of_schwartzSlice_of_spatialDivergence_z
   have hCoordDeriv (i : Fin 3) (x : NSSpace) :
       (∂_{EuclideanSpace.single i (1 : ℝ)} (coord i)) x =
         (∂_{EuclideanSpace.single i (1 : ℝ)} f x) i := by
+    have hcoordFun : (coord i : NSSpace → ℝ) = fun y : NSSpace => (f y) i := by
+      funext y
+      simp [coord, SchwartzMap.bilinLeftCLM_apply, ContinuousLinearMap.apply_apply]
     have hproj :=
       congrArg
         (fun L : NSSpace →L[ℝ] ℝ => L (EuclideanSpace.single i (1 : ℝ)))
         (((EuclideanSpace.proj i : NSSpace →L[ℝ] ℝ).hasFDerivAt.comp x
           (f.hasFDerivAt x)).fderiv)
-    simpa [coord, SchwartzMap.bilinLeftCLM_apply, ContinuousLinearMap.apply_apply,
-      ContinuousLinearMap.comp_apply, SchwartzMap.lineDerivOp_apply_eq_fderiv] using hproj
+    calc
+      (∂_{EuclideanSpace.single i (1 : ℝ)} (coord i)) x =
+          fderiv ℝ (fun y : NSSpace => (f y) i) x (EuclideanSpace.single i (1 : ℝ)) := by
+        rw [SchwartzMap.lineDerivOp_apply_eq_fderiv, hcoordFun]
+      _ = fderiv ℝ f x (EuclideanSpace.single i (1 : ℝ)) i := by
+        change fderiv ℝ ((fun y : NSSpace => y i) ∘ (f : NSSpace → NSSpace)) x
+            (EuclideanSpace.single i (1 : ℝ)) =
+          fderiv ℝ f x (EuclideanSpace.single i (1 : ℝ)) i
+        simpa [ContinuousLinearMap.comp_apply] using hproj
+      _ = (∂_{EuclideanSpace.single i (1 : ℝ)} f x) i := by
+        rw [SchwartzMap.lineDerivOp_apply_eq_fderiv]
   have hNormSqDeriv (i : Fin 3) (x : NSSpace) :
       ∂_{EuclideanSpace.single i (1 : ℝ)} normSq x =
         2 * ⟪f x, ∂_{EuclideanSpace.single i (1 : ℝ)} f x⟫ := by
     have hNormSqEq :
         (normSq : NSSpace → ℝ) = fun y : NSSpace => ‖f y‖ ^ (2 : ℕ) := by
       funext y
-      simp [normSq, SchwartzMap.pairing_apply_apply]
-      rw [innerSL_apply_apply, real_inner_self_eq_norm_sq]
+      rw [SchwartzMap.pairing_apply_apply]
+      change ⟪f y, f y⟫ = ‖f y‖ ^ (2 : ℕ)
+      rw [real_inner_self_eq_norm_sq]
     have hnorm :=
       congrArg
         (fun L : NSSpace →L[ℝ] ℝ => L (EuclideanSpace.single i (1 : ℝ)))
@@ -123,21 +137,24 @@ theorem integral_convectionEnergyPairing_of_schwartzSlice_of_spatialDivergence_z
       Integrable
         (fun x : NSSpace =>
           coord i x * ⟪f x, ∂_{EuclideanSpace.single i (1 : ℝ)} f x⟫) := by
-    simpa [coord, SchwartzMap.bilinLeftCLM_apply, ContinuousLinearMap.apply_apply,
-      SchwartzMap.pairing_apply_apply] using
-      (SchwartzMap.pairing
+    refine ((SchwartzMap.pairing
         (ContinuousLinearMap.mul ℝ ℝ)
         (coord i)
-        (SchwartzMap.pairing (innerSL ℝ) f (∂_{EuclideanSpace.single i (1 : ℝ)} f))).integrable
+        (SchwartzMap.pairing (innerSL ℝ) f (∂_{EuclideanSpace.single i (1 : ℝ)} f))).integrable).congr ?_
+    filter_upwards with x
+    rw [SchwartzMap.pairing_apply_apply, hCoordEq i x]
+    rfl
   have hDivTermIntegrable (i : Fin 3) :
       Integrable
         (fun x : NSSpace =>
           (∂_{EuclideanSpace.single i (1 : ℝ)} (coord i)) x * normSq x) := by
-    simpa [normSq, SchwartzMap.pairing_apply_apply] using
-      (SchwartzMap.pairing
+    refine ((SchwartzMap.pairing
         (ContinuousLinearMap.mul ℝ ℝ)
         (∂_{EuclideanSpace.single i (1 : ℝ)} (coord i))
-        normSq).integrable
+        normSq).integrable).congr ?_
+    filter_upwards with x
+    rw [SchwartzMap.pairing_apply_apply]
+    rfl
   have hDivEq (x : NSSpace) :
       ∑ i : Fin 3, (∂_{EuclideanSpace.single i (1 : ℝ)} (coord i)) x = 0 := by
     have hx : spatialDivergence u t x = 0 := hdiv x
@@ -154,7 +171,7 @@ theorem integral_convectionEnergyPairing_of_schwartzSlice_of_spatialDivergence_z
             rw [hConvectionEq]
     _ = ∑ i : Fin 3,
           ∫ x, coord i x * ⟪f x, ∂_{EuclideanSpace.single i (1 : ℝ)} f x⟫ ∂volume := by
-          rw [integral_finset_sum]
+          rw [integral_finsetSum]
           intro i hi
           exact hTermIntegrable i
     _ = ∑ i : Fin 3,
@@ -187,10 +204,10 @@ theorem integral_convectionEnergyPairing_of_schwartzSlice_of_spatialDivergence_z
     _ = (-(1 / 2 : ℝ)) *
           ∫ x,
             ∑ i : Fin 3, (∂_{EuclideanSpace.single i (1 : ℝ)} (coord i)) x * normSq x ∂volume := by
-          congr 2
-          rw [integral_finset_sum]
-          intro i hi
-          exact hDivTermIntegrable i
+      congr 2
+      rw [integral_finsetSum]
+      intro i hi
+      exact hDivTermIntegrable i
     _ = (-(1 / 2 : ℝ)) * ∫ x, (0 : ℝ) ∂volume := by
           congr 2
           funext x

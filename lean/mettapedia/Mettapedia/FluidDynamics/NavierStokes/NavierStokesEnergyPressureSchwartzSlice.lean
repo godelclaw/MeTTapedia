@@ -38,14 +38,21 @@ theorem pressureEnergyPairing_schwartzPressureSlice
   have hGradCoord (i : Fin 3) :
       (gradient (fun y : NSSpace => q t y) x) i =
         (∂_{EuclideanSpace.single i (1 : ℝ)} (q t)) x := by
-    have h :=
-      hgradq.fderiv_apply (𝕜 := ℝ) (y := EuclideanSpace.single i (1 : ℝ))
     rw [SchwartzMap.lineDerivOp_apply_eq_fderiv]
-    simpa [EuclideanSpace.inner_single_right] using h.symm
+    have hinner :=
+      inner_gradient_left (𝕜 := ℝ) (f := fun y : NSSpace => q t y) (x := x)
+        (y := EuclideanSpace.single i (1 : ℝ))
+    have hcoord :
+        (gradient (fun y : NSSpace => q t y) x) i =
+          ⟪gradient (fun y : NSSpace => q t y) x, EuclideanSpace.single i (1 : ℝ)⟫ := by
+      rw [EuclideanSpace.inner_single_right]
+      simp
+    exact hcoord.trans hinner
   have hInnerRaw :
       ⟪u t x, gradient (fun y : NSSpace => q t y) x⟫ =
         ∑ i : Fin 3, (u t x) i * (gradient (fun y : NSSpace => q t y) x) i := by
-    simp [EuclideanSpace.inner_eq_star_dotProduct, dotProduct, mul_comm]
+    simpa [Real.inner_apply, mul_comm] using
+      (PiLp.inner_apply (𝕜 := ℝ) (u t x) (gradient (fun y : NSSpace => q t y) x))
   have hInner :
       ⟪u t x, gradient (fun y : NSSpace => q t y) x⟫ =
         ∑ i : Fin 3, (u t x) i * (∂_{EuclideanSpace.single i (1 : ℝ)} (q t)) x := by
@@ -83,13 +90,14 @@ theorem integrable_pressureEnergyPairing_of_schwartzSlice_schwartzPressureSlice
       Integrable
         (fun x : NSSpace =>
           coord i x * (∂_{EuclideanSpace.single i (1 : ℝ)} (q t)) x) := by
-    simpa [coord, SchwartzMap.bilinLeftCLM_apply, ContinuousLinearMap.apply_apply] using
-      (SchwartzMap.pairing
+    refine ((SchwartzMap.pairing
         (ContinuousLinearMap.mul ℝ ℝ)
         (coord i)
-        (∂_{EuclideanSpace.single i (1 : ℝ)} (q t))).integrable
+        (∂_{EuclideanSpace.single i (1 : ℝ)} (q t))).integrable).congr ?_
+    filter_upwards with x
+    simp [coord, SchwartzMap.bilinLeftCLM_apply, ContinuousLinearMap.apply_apply]
   rw [hPair]
-  exact integrable_finset_sum (Finset.univ : Finset (Fin 3)) (fun i _ => hTermIntegrable i)
+  exact integrable_finsetSum (Finset.univ : Finset (Fin 3)) (fun i _ => hTermIntegrable i)
 
 /-- A divergence-free Schwartz velocity time slice has zero pressure work
 against any time-indexed Schwartz pressure slice. -/
@@ -110,13 +118,25 @@ theorem integral_pressureEnergyPairing_of_schwartzSlice_schwartzPressureSlice_of
   have hCoordDeriv (i : Fin 3) (x : NSSpace) :
       (∂_{EuclideanSpace.single i (1 : ℝ)} (coord i)) x =
         (∂_{EuclideanSpace.single i (1 : ℝ)} f x) i := by
+    have hcoordFun : (coord i : NSSpace → ℝ) = fun y : NSSpace => (f y) i := by
+      funext y
+      simp [coord, SchwartzMap.bilinLeftCLM_apply, ContinuousLinearMap.apply_apply]
     have hproj :=
       congrArg
         (fun L : NSSpace →L[ℝ] ℝ => L (EuclideanSpace.single i (1 : ℝ)))
         (((EuclideanSpace.proj i : NSSpace →L[ℝ] ℝ).hasFDerivAt.comp x
           (f.hasFDerivAt x)).fderiv)
-    simpa [coord, SchwartzMap.bilinLeftCLM_apply, ContinuousLinearMap.apply_apply,
-      ContinuousLinearMap.comp_apply, SchwartzMap.lineDerivOp_apply_eq_fderiv] using hproj
+    calc
+      (∂_{EuclideanSpace.single i (1 : ℝ)} (coord i)) x =
+          fderiv ℝ (fun y : NSSpace => (f y) i) x (EuclideanSpace.single i (1 : ℝ)) := by
+        rw [SchwartzMap.lineDerivOp_apply_eq_fderiv, hcoordFun]
+      _ = fderiv ℝ f x (EuclideanSpace.single i (1 : ℝ)) i := by
+        change fderiv ℝ ((fun y : NSSpace => y i) ∘ (f : NSSpace → NSSpace)) x
+            (EuclideanSpace.single i (1 : ℝ)) =
+          fderiv ℝ f x (EuclideanSpace.single i (1 : ℝ)) i
+        simpa [ContinuousLinearMap.comp_apply] using hproj
+      _ = (∂_{EuclideanSpace.single i (1 : ℝ)} f x) i := by
+        rw [SchwartzMap.lineDerivOp_apply_eq_fderiv]
   have hPair :
       pressureEnergyPairing u (fun s : NSTime => fun y : NSSpace => q s y) t =
         fun x : NSSpace =>
@@ -131,20 +151,22 @@ theorem integral_pressureEnergyPairing_of_schwartzSlice_schwartzPressureSlice_of
       Integrable
         (fun x : NSSpace =>
           coord i x * (∂_{EuclideanSpace.single i (1 : ℝ)} (q t)) x) := by
-    simpa [coord, SchwartzMap.bilinLeftCLM_apply, ContinuousLinearMap.apply_apply] using
-      (SchwartzMap.pairing
+    refine ((SchwartzMap.pairing
         (ContinuousLinearMap.mul ℝ ℝ)
         (coord i)
-        (∂_{EuclideanSpace.single i (1 : ℝ)} (q t))).integrable
+        (∂_{EuclideanSpace.single i (1 : ℝ)} (q t))).integrable).congr ?_
+    filter_upwards with x
+    simp [coord, SchwartzMap.bilinLeftCLM_apply, ContinuousLinearMap.apply_apply]
   have hDivTermIntegrable (i : Fin 3) :
       Integrable
         (fun x : NSSpace =>
           (∂_{EuclideanSpace.single i (1 : ℝ)} (coord i)) x * q t x) := by
-    simpa [coord, SchwartzMap.bilinLeftCLM_apply, ContinuousLinearMap.apply_apply] using
-      (SchwartzMap.pairing
+    refine ((SchwartzMap.pairing
         (ContinuousLinearMap.mul ℝ ℝ)
         (∂_{EuclideanSpace.single i (1 : ℝ)} (coord i))
-        (q t)).integrable
+        (q t)).integrable).congr ?_
+    filter_upwards with x
+    simp [coord]
   have hDivEq (x : NSSpace) :
       ∑ i : Fin 3, (∂_{EuclideanSpace.single i (1 : ℝ)} (coord i)) x = 0 := by
     have hx : spatialDivergence u t x = 0 := hdiv x
@@ -158,7 +180,7 @@ theorem integral_pressureEnergyPairing_of_schwartzSlice_schwartzPressureSlice_of
     ∫ x, ∑ i : Fin 3, coord i x * (∂_{EuclideanSpace.single i (1 : ℝ)} (q t)) x ∂volume
         = ∑ i : Fin 3,
             ∫ x, coord i x * (∂_{EuclideanSpace.single i (1 : ℝ)} (q t)) x ∂volume := by
-          rw [integral_finset_sum]
+          rw [integral_finsetSum]
           intro i hi
           exact hTermIntegrable i
     _ = ∑ i : Fin 3,
@@ -173,7 +195,7 @@ theorem integral_pressureEnergyPairing_of_schwartzSlice_schwartzPressureSlice_of
     _ = -∫ x,
           ∑ i : Fin 3, (∂_{EuclideanSpace.single i (1 : ℝ)} (coord i)) x * q t x ∂volume := by
           congr 1
-          rw [integral_finset_sum]
+          rw [integral_finsetSum]
           intro i hi
           exact hDivTermIntegrable i
     _ = -∫ x, (0 : ℝ) ∂volume := by

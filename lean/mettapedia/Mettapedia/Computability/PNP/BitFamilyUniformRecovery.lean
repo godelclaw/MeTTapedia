@@ -51,8 +51,10 @@ theorem exists_sample_empiricalRiskPredictor_eq_target_of_bitBudget_bound_lt
         target m htarget' hbound' with
     ⟨sample, hsample⟩
   refine ⟨sample, ?_⟩
-  simpa [BitEncodedClassifierFamily.empiricalRiskPredictor,
-    BitEncodedClassifierFamily.empiricalRiskCode] using hsample
+  change F.decode (F.empiricalRiskCode (labeledByTarget target sample)) = target
+  change F.decode
+      (F.toEncodedFamily.empiricalRiskMinimizer (labeledByTarget target sample)) = target at hsample
+  exact hsample
 
 end UniformRecovery
 

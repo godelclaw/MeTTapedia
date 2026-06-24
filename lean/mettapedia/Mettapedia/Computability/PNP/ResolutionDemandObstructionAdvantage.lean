@@ -26,8 +26,8 @@ theorem weightedTotalMass_eq_weightedCorrectMass_add_weightedIncorrectMass
     weightedTotalMass w =
       weightedCorrectMass u y w h + weightedIncorrectMass u y w h := by
   classical
-  unfold weightedTotalMass weightedCorrectMass weightedIncorrectMass
-  simpa [incorrect_iff_not_correct] using
+  unfold weightedTotalMass weightedCorrectMass weightedIncorrectMass Correct Incorrect
+  exact
     (Fintype.sum_subtype_add_sum_subtype (Correct u y h) w).symm
 
 /-- If every positive-weight point is classified correctly, the incorrect mass

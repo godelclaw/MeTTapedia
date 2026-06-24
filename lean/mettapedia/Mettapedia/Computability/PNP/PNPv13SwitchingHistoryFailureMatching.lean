@@ -101,14 +101,15 @@ theorem v13FieldFailureMatching_iff_success_le_failure
   · intro hmatch cell
     rcases hmatch cell with ⟨emb⟩
     have hcard := Fintype.card_le_of_embedding emb
-    simpa [V13CellSuccessFiber, V13CellFailureFiber,
-      v13ConcreteSuccessCount, v13ConcreteFailureCount, finiteEventCount]
-      using hcard
+    change Fintype.card (V13CellSuccessFiber field hist step cell) ≤
+      Fintype.card (V13CellFailureFiber field hist step cell)
+    exact hcard
   · intro hbalance cell
     rw [Function.Embedding.nonempty_iff_card_le]
-    simpa [V13CellSuccessFiber, V13CellFailureFiber,
-      v13ConcreteSuccessCount, v13ConcreteFailureCount, finiteEventCount]
-      using hbalance cell
+    have hcard := hbalance cell
+    change Fintype.card (V13CellSuccessFiber field hist step cell) ≤
+      Fintype.card (V13CellFailureFiber field hist step cell) at hcard
+    exact hcard
 
 /-- If fixed-field same-cell matching fails, then some supplied cell has more
 next-success prefix points than next-failure prefix points. -/

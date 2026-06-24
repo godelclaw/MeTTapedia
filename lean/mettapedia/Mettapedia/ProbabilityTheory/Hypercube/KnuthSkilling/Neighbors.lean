@@ -1,5 +1,9 @@
-import Mettapedia.ProbabilityTheory.KnuthSkilling.Core.Algebra
-import Mettapedia.ProbabilityTheory.KnuthSkilling.Additive.Proofs.GridInduction.CredalSets
+/-
+Knuth–Skilling slice of the probability hypercube. See the aggregator
+`Mettapedia/ProbabilityTheory/Hypercube/KnuthSkilling.lean` for the overview.
+-/
+import KnuthSkilling.Core.Algebra
+import Mettapedia.ProbabilityTheory.ImpreciseProbability.CredalSets
 import Mettapedia.ProbabilityTheory.Hypercube.KnuthSkilling.SequentialSemantics
 import Mettapedia.ProbabilityTheory.Hypercube.KnuthSkilling.ScaleDichotomy
 import Mettapedia.ProbabilityTheory.Hypercube.Basic
@@ -46,13 +50,19 @@ Not all are consistent - some collapse, others are empty.
 4. **Inference properties**: What can you compute at each vertex?
 -/
 
+set_option autoImplicit false
+
 namespace Mettapedia.ProbabilityTheory.Hypercube.KnuthSkilling.Neighbors
 
 open Classical
-open Mettapedia.ProbabilityTheory.KnuthSkilling
-open Mettapedia.ProbabilityTheory.KnuthSkilling.Additive
-open Mettapedia.ProbabilityTheory.KnuthSkilling.Additive.Proofs.GridInduction
-open KnuthSkillingAlgebra
+-- `_root_.` forces the standalone K&S package; the enclosing
+-- `…Hypercube.KnuthSkilling` namespace would otherwise shadow `KnuthSkilling`.
+open _root_.KnuthSkilling
+open Mettapedia.ProbabilityTheory.ImpreciseProbability.CredalSets
+open _root_.KnuthSkilling.Additive
+open _root_.KnuthSkilling.Additive.Proofs.GridInduction
+open _root_.KnuthSkilling.KnuthSkillingAlgebra
+open _root_.KnuthSkilling.KnuthSkillingAlgebraBase
 
 /-!
 ## §1: Vertex Classification
@@ -80,7 +90,7 @@ open KnuthSkillingAlgebra
 /- TODO: "Separation implies commutativity" collapse lemma in hypercube form.
 
 We already have the core commutativity result in the KS development:
-`Mettapedia.ProbabilityTheory.KnuthSkilling.Additive.Proofs.GridInduction.Core.op_comm_of_KSSeparation`.
+`KnuthSkilling.Additive.Proofs.GridInduction.Core.op_comm_of_KSSeparation`.
 
 This file should eventually restate it as a clean emptiness/collapse result for the relevant
 hypercube vertices (2,3,6,7).
@@ -159,7 +169,7 @@ The correct steelman is:
 3. For real-valued completions, this induces an **interval** `[sInf, sSup]` for each term.
 
 This is formalized (for the K&S value scale, independent of event lattices) in
-`Mettapedia/ProbabilityTheory/KnuthSkilling/Additive/Proofs/GridInduction/CredalSets.lean`:
+`Mettapedia/ProbabilityTheory/ImpreciseProbability/CredalSets.lean`:
 - `CredalSets.IntervalAddSemantics.ofThetaFamily` (family of completions ⇒ interval semantics)
 - `CredalSets.intervalOf_unique` (singleton family ⇒ precise interval)
 - `CredalSets.IntervalAddSemantics.width_subadditive` (imprecision accumulates subadditively)
@@ -178,8 +188,8 @@ noncomputable def intervalSemantics_ofThetaFamily (op : α → α → α)
     (hAdd : ∀ i x y, Θ i (op x y) = Θ i x + Θ i y)
     (hBddBelow : ∀ x, BddBelow (Set.range fun i => Θ i x))
     (hBddAbove : ∀ x, BddAbove (Set.range fun i => Θ i x)) :
-    CredalSets.IntervalAddSemantics α :=
-  CredalSets.IntervalAddSemantics.ofThetaFamily op ι Θ hAssoc hAdd hBddBelow hBddAbove
+    IntervalAddSemantics α :=
+  IntervalAddSemantics.ofThetaFamily op ι Θ hAssoc hAdd hBddBelow hBddAbove
 
 /-- A concrete “imprecise” consequence: widths are subadditive for the canonical interval semantics
 induced by any family of additive completions. -/
@@ -194,9 +204,9 @@ theorem intervalSemantics_width_subadditive (op : α → α → α)
     ((intervalSemantics_ofThetaFamily op ι Θ hAssoc hAdd hBddBelow hBddAbove).μ (op x y)).width ≤
       ((intervalSemantics_ofThetaFamily op ι Θ hAssoc hAdd hBddBelow hBddAbove).μ x).width +
         ((intervalSemantics_ofThetaFamily op ι Θ hAssoc hAdd hBddBelow hBddAbove).μ y).width := by
-  simpa [intervalSemantics_ofThetaFamily] using
-    CredalSets.IntervalAddSemantics.width_subadditive
-      (S := CredalSets.IntervalAddSemantics.ofThetaFamily op ι Θ hAssoc hAdd hBddBelow hBddAbove) x y
+  simpa [intervalSemantics_ofThetaFamily, IntervalAddSemantics.ofThetaFamily] using
+    IntervalAddSemantics.width_subadditive
+      (S := IntervalAddSemantics.ofThetaFamily op ι Θ hAssoc hAdd hBddBelow hBddAbove) x y
 
 end CanonicalIntervals
 

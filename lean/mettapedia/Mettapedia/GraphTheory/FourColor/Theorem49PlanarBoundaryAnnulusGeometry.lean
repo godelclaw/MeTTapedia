@@ -904,7 +904,7 @@ theorem
   exact
     hcurrent
       ⟨data.toPlanarBoundaryAnnulusDecomposition.toPlanarBoundaryAnnulusCurrentBoundaryData, by
-        simpa using hnum⟩
+        simpa [PlanarBoundaryAnnulusDecomposition.toPlanarBoundaryAnnulusCurrentBoundaryData] using hnum⟩
 
 /-- The same bridge can be stated with the ambient annulus boundary split fixed. This is the form
 used by honest-source regressions: if no `numCollars = n` current-boundary package exists with a
@@ -924,8 +924,8 @@ theorem
   exact
     hcurrent
       ⟨data.toPlanarBoundaryAnnulusDecomposition.toPlanarBoundaryAnnulusCurrentBoundaryData, by
-          simpa using hnum, by
-          simpa using hboundary⟩
+          simpa [PlanarBoundaryAnnulusDecomposition.toPlanarBoundaryAnnulusCurrentBoundaryData] using hnum, by
+          simpa [PlanarBoundaryAnnulusDecomposition.toPlanarBoundaryAnnulusCurrentBoundaryData] using hboundary⟩
 
 /-- Any explicit same-embedding witness carrying the honest closed-walk annulus source but no
 weak annulus collar geometry preserving that source's extracted boundary split refutes a universal

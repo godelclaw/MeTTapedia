@@ -218,8 +218,9 @@ theorem pressureEnergyPairing_linear
     unfold spatialPressureGradient
     apply HasGradientAt.gradient
     rw [hasGradientAt_iff_hasFDerivAt]
-    simpa [InnerProductSpace.toDual_apply_apply, real_inner_comm] using
-      (((InnerProductSpace.toDual ℝ NSSpace) c)).hasFDerivAt
+    refine (((InnerProductSpace.toDual ℝ NSSpace) c)).hasFDerivAt.congr_of_eventuallyEq ?_
+    filter_upwards with y
+    simp [InnerProductSpace.toDual_apply_apply]
   rw [hgrad]
 
 /-- The pressure energy pairing against an affine-in-space pressure gauge
@@ -236,8 +237,10 @@ theorem pressureEnergyPairing_affine
     unfold spatialPressureGradient
     apply HasGradientAt.gradient
     rw [hasGradientAt_iff_hasFDerivAt]
-    simpa [InnerProductSpace.toDual_apply_apply, real_inner_comm] using
-      ((((InnerProductSpace.toDual ℝ NSSpace) (c t))).hasFDerivAt).add_const (π t)
+    refine
+      (((((InnerProductSpace.toDual ℝ NSSpace) (c t))).hasFDerivAt).add_const (π t)).congr_of_eventuallyEq ?_
+    filter_upwards with y
+    simp [InnerProductSpace.toDual_apply_apply]
   rw [hgrad]
 end NavierStokes
 end FluidDynamics

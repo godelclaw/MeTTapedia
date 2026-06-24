@@ -29,7 +29,7 @@ theorem boxedPartialPeriodizationSchwartzInitialVelocity_tendsto
   have hsum : HasSum f (schwartzPeriodizedInitialVelocity L u₀ x) := by
     simpa [f, schwartzPeriodizedInitialVelocity] using
       hasSum_schwartzPeriodizedInitialVelocity hL u₀ x
-  simpa [f, boxedPartialPeriodizationSchwartzInitialVelocity,
+  simpa [f, Function.comp_def, boxedPartialPeriodizationSchwartzInitialVelocity,
     finitePartialPeriodizationSchwartzInitialVelocity] using
     hsum.comp centeredLatticeBox_tendsto_atTop
 

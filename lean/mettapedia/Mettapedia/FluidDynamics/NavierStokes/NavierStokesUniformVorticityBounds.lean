@@ -99,7 +99,7 @@ theorem uniformVorticityBoundUpTo_heatShearVelocityField
       ‖EuclideanSpace.single nsCoord2
           (-(a * Real.exp (-(ν * k ^ (2 : ℕ)) * t) * Real.cos (k * x nsCoord1) * k))‖
           = |a| * Real.exp (-(ν * k ^ (2 : ℕ)) * t) * |Real.cos (k * x nsCoord1)| * |k| := by
-            simp [EuclideanSpace.norm_single, mul_assoc, mul_left_comm, mul_comm]
+            simp [mul_assoc, mul_left_comm, mul_comm]
       _ ≤ |a| * 1 * |Real.cos (k * x nsCoord1)| * |k| := by
             gcongr
       _ ≤ |a| * 1 * 1 * |k| := by
@@ -129,7 +129,7 @@ theorem uniformVorticityBoundUpTo_heatShearStreamwiseDriftVelocityField
       ‖EuclideanSpace.single nsCoord2
           (-(a * Real.exp (-(ν * k ^ (2 : ℕ)) * t) * Real.cos (k * x nsCoord1) * k))‖
           = |a| * Real.exp (-(ν * k ^ (2 : ℕ)) * t) * |Real.cos (k * x nsCoord1)| * |k| := by
-            simp [EuclideanSpace.norm_single, mul_assoc, mul_left_comm, mul_comm]
+            simp [mul_assoc, mul_left_comm, mul_comm]
       _ ≤ |a| * 1 * |Real.cos (k * x nsCoord1)| * |k| := by
             gcongr
       _ ≤ |a| * 1 * 1 * |k| := by
@@ -159,7 +159,7 @@ theorem uniformVorticityBoundUpTo_heatShearVerticalDriftVelocityField
       ‖EuclideanSpace.single nsCoord2
           (-(a * Real.exp (-(ν * k ^ (2 : ℕ)) * t) * Real.cos (k * x nsCoord1) * k))‖
           = |a| * Real.exp (-(ν * k ^ (2 : ℕ)) * t) * |Real.cos (k * x nsCoord1)| * |k| := by
-            simp [EuclideanSpace.norm_single, mul_assoc, mul_left_comm, mul_comm]
+            simp [mul_assoc, mul_left_comm, mul_comm]
       _ ≤ |a| * 1 * |Real.cos (k * x nsCoord1)| * |k| := by
             gcongr
       _ ≤ |a| * 1 * 1 * |k| := by
@@ -189,7 +189,7 @@ theorem uniformVorticityBoundUpTo_heatShearFullDriftVelocityField
       ‖EuclideanSpace.single nsCoord2
           (-(a * Real.exp (-(ν * k ^ (2 : ℕ)) * t) * Real.cos (k * x nsCoord1) * k))‖
           = |a| * Real.exp (-(ν * k ^ (2 : ℕ)) * t) * |Real.cos (k * x nsCoord1)| * |k| := by
-            simp [EuclideanSpace.norm_single, mul_assoc, mul_left_comm, mul_comm]
+            simp [mul_assoc, mul_left_comm, mul_comm]
       _ ≤ |a| * 1 * |Real.cos (k * x nsCoord1)| * |k| := by
             gcongr
       _ ≤ |a| * 1 * 1 * |k| := by
@@ -220,7 +220,7 @@ theorem uniformVorticityBoundUpTo_heatShearTransportVelocityField
             Real.cos (k * (x nsCoord1 - b * t)) * k))‖
           = |a| * Real.exp (-(ν * k ^ (2 : ℕ)) * t) *
               |Real.cos (k * (x nsCoord1 - b * t))| * |k| := by
-            simp [EuclideanSpace.norm_single, mul_assoc, mul_left_comm, mul_comm]
+            simp [mul_assoc, mul_left_comm, mul_comm]
       _ ≤ |a| * 1 * |Real.cos (k * (x nsCoord1 - b * t))| * |k| := by
             gcongr
       _ ≤ |a| * 1 * 1 * |k| := by
@@ -252,7 +252,7 @@ theorem uniformVorticityBoundUpTo_heatShearTransportFullDriftVelocityField
             Real.cos (k * (x nsCoord1 - b * t)) * k))‖
           = |a| * Real.exp (-(ν * k ^ (2 : ℕ)) * t) *
               |Real.cos (k * (x nsCoord1 - b * t))| * |k| := by
-            simp [EuclideanSpace.norm_single, mul_assoc, mul_left_comm, mul_comm]
+            simp [mul_assoc, mul_left_comm, mul_comm]
       _ ≤ |a| * 1 * |Real.cos (k * (x nsCoord1 - b * t))| * |k| := by
             gcongr
       _ ≤ |a| * 1 * 1 * |k| := by

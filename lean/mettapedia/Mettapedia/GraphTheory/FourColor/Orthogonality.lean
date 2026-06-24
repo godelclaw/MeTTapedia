@@ -47,7 +47,11 @@ theorem colorDot_add_right (x y z : Color) :
 theorem eq_zero_or_eq_red_or_eq_blue_or_eq_purple (c : Color) :
     c = 0 ∨ c = red ∨ c = blue ∨ c = purple := by
   rcases c with ⟨x, y⟩
-  fin_cases x <;> fin_cases y <;> simp [red, blue, purple]
+  fin_cases x <;> fin_cases y
+  · exact Or.inl rfl
+  · exact Or.inr <| Or.inr <| Or.inl rfl
+  · exact Or.inr <| Or.inl rfl
+  · exact Or.inr <| Or.inr <| Or.inr rfl
 
 theorem eq_red_or_eq_blue_or_eq_purple_of_ne_zero (c : Color) (hc : c ≠ 0) :
     c = red ∨ c = blue ∨ c = purple := by

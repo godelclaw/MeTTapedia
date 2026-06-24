@@ -39,17 +39,15 @@ def zeroNavierStokesGlobalRegularityWitness
   velocity := 0
   pressure := 0
   smooth_velocity := by
-    simpa [smoothSpaceTimeVelocity, spaceTimeVelocityMap] using
-      (contDiff_const : ContDiff ℝ ∞ (fun _ : NSSpacetime => (0 : NSSpace)))
+    simpa [mkFullyConcreteNavierStokesSurface] using smoothSpaceTimeVelocity_zero
   smooth_pressure := by
-    simpa [smoothSpaceTimePressure, spaceTimePressureMap] using
-      (contDiff_const : ContDiff ℝ ∞ (fun _ : NSSpacetime => (0 : ℝ)))
+    simpa [mkFullyConcreteNavierStokesSurface] using smoothSpaceTimePressure_zero
   momentum_equation := by
     intro t x
     exact momentumEquation_zeroVelocityField_zeroPressure ν t x
   incompressible := by
     intro t x
-    simpa using (spatialDivergence_zero t x)
+    simpa [mkFullyConcreteNavierStokesSurface] using (spatialDivergence_zero t x)
   initial_condition := by
     intro x
     rfl

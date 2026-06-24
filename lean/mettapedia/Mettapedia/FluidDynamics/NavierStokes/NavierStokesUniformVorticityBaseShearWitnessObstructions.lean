@@ -41,17 +41,16 @@ theorem heatShearVelocityField_exhibits_concreteCandidate_except_boundedEnergy
       (∀ t x, spatialDivergence u t x = 0) ∧
       MatchesInitialVelocity (heatShearInitialVelocity a k) u ∧
       ¬ boundedKineticEnergy u := by
-  refine ⟨heatShearVelocityField ν a k, 0, ?_, ?_, ?_, ?_, ?_, ?_⟩
-  · exact smoothSpaceTimeVelocity_heatShearVelocityField ν a k
-  · simpa [smoothSpaceTimePressure, spaceTimePressureMap] using
-      (contDiff_const : ContDiff ℝ ∞ (fun _ : NSSpacetime => (0 : ℝ)))
-  · intro t x
-    simpa using momentumEquation_heatShearVelocityField_zeroPressure ν a k t x
-  · intro t x
-    simpa using spatialDivergence_heatShearVelocityField ν a k t x
-  · exact matchesInitialVelocity_heatShearVelocityField ν a k
-  · exact not_boundedKineticEnergy_heatShearVelocityField
-      (ν := ν) (a := a) (k := k) ha hk
+    refine ⟨heatShearVelocityField ν a k, 0, ?_, ?_, ?_, ?_, ?_, ?_⟩
+    · exact smoothSpaceTimeVelocity_heatShearVelocityField ν a k
+    · exact smoothSpaceTimePressure_const (0 : ℝ)
+    · intro t x
+      simpa using momentumEquation_heatShearVelocityField_zeroPressure ν a k t x
+    · intro t x
+      simpa using spatialDivergence_heatShearVelocityField ν a k t x
+    · exact matchesInitialVelocity_heatShearVelocityField ν a k
+    · exact not_boundedKineticEnergy_heatShearVelocityField
+        (ν := ν) (a := a) (k := k) ha hk
 
 /-- The damped sinusoidal heat-shear field therefore exhibits the same exact
 mismatch on the global explicit theorem surface: an honest smooth PDE-side
@@ -180,18 +179,17 @@ theorem heatShearVelocityField_exhibits_uniformCandidate_except_boundedEnergy
       MatchesInitialVelocity (heatShearInitialVelocity a k) u ∧
       uniformVorticityBoundUpTo u T B ∧
       ¬ boundedKineticEnergyUpTo u T := by
-  refine ⟨heatShearVelocityField ν a k, 0, |a * k|, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩
-  · exact smoothSpaceTimeVelocity_heatShearVelocityField ν a k
-  · simpa [smoothSpaceTimePressure, spaceTimePressureMap] using
-      (contDiff_const : ContDiff ℝ ∞ (fun _ : NSSpacetime => (0 : ℝ)))
-  · intro t x ht0 htT
-    simpa using momentumEquation_heatShearVelocityField_zeroPressure ν a k t x
-  · intro t x ht0 htT
-    simpa using spatialDivergence_heatShearVelocityField ν a k t x
-  · exact matchesInitialVelocity_heatShearVelocityField ν a k
-  · exact uniformVorticityBoundUpTo_heatShearVelocityField ν a k T hν
-  · exact not_boundedKineticEnergyUpTo_heatShearVelocityField
-      (ν := ν) (a := a) (k := k) ha hk hT
+    refine ⟨heatShearVelocityField ν a k, 0, |a * k|, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩
+    · exact smoothSpaceTimeVelocity_heatShearVelocityField ν a k
+    · exact smoothSpaceTimePressure_const (0 : ℝ)
+    · intro t x ht0 htT
+      simpa using momentumEquation_heatShearVelocityField_zeroPressure ν a k t x
+    · intro t x ht0 htT
+      simpa using spatialDivergence_heatShearVelocityField ν a k t x
+    · exact matchesInitialVelocity_heatShearVelocityField ν a k
+    · exact uniformVorticityBoundUpTo_heatShearVelocityField ν a k T hν
+    · exact not_boundedKineticEnergyUpTo_heatShearVelocityField
+        (ν := ν) (a := a) (k := k) ha hk hT
 
 /-- The same witness-level obstruction applies to the nontrivial heat-shear
 datum on every nonnegative slab. -/

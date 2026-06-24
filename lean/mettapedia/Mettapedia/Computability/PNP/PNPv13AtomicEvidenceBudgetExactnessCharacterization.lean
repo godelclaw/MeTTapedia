@@ -167,8 +167,13 @@ theorem v13MissedPositiveBudgetSurface_atomBudget :
 
 theorem v13MissedPositiveBudgetSurface_coordinateSummedCost :
     v13MissedPositiveBudgetSurface.coordinateSummedCost = 1 := by
-  norm_num [V13AtomicEvidenceBudgetSurface.coordinateSummedCost,
-    V13AtomicEvidenceBudgetSurface.atomMultiplicity, v13MissedPositiveBudgetSurface]
+  rw [V13AtomicEvidenceBudgetSurface.coordinateSummedCost]
+  rw [Fintype.sum_eq_single (0 : Fin 2)]
+  · norm_num [V13AtomicEvidenceBudgetSurface.atomMultiplicity, v13MissedPositiveBudgetSurface]
+  · intro a ha
+    fin_cases a
+    · contradiction
+    · norm_num [V13AtomicEvidenceBudgetSurface.atomMultiplicity, v13MissedPositiveBudgetSurface]
 
 theorem v13MissedPositiveBudgetSurface_missedPositiveCostAtom :
     v13MissedPositiveBudgetSurface.MissedPositiveCostAtom := by

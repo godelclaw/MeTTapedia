@@ -283,7 +283,7 @@ def knuthSkillingGroup : ProbabilityVertex :=
 /-!
 Note: the same semantic vertex `knuthSkilling` can be justified by different *axiom bundles*
 at the K&S level (e.g. explicitly assuming commutativity/Archimedean vs assuming `KSSeparation`
-and deriving consequences). See `Mettapedia/ProbabilityTheory/KnuthSkilling/AxiomSystemEquivalence.lean`.
+and deriving consequences). See external `KnuthSkilling/Core/AxiomSystemEquivalence.lean`.
 -/
 
 /-- Dempster-Shafer belief functions. -/

@@ -113,7 +113,7 @@ def renderMettapediaClaim : MettapediaClaim → String
       let subj := linDetCN theDefArt (linUseN build_N)
       mkPresPos subj (complV2 (mkV2 (regV "run")) (properNameNP "nice -n 19 lake build"))
   | .subprojectKnuthSkilling =>
-      let subj := properNameNP "ProbabilityTheory/KnuthSkilling"
+      let subj := properNameNP "external KnuthSkilling"
       mkPresPos subj (complV2 (mkV2 (regV "host")) (properNameNP "Knuth-Skilling Foundations of Inference proofs"))
   | .subprojectCox =>
       let subj := properNameNP "ProbabilityTheory/Cox"
@@ -165,7 +165,7 @@ def renderMettapediaClaim : MettapediaClaim → String
       let subj := linDetCN theDefArt (linAdjCN (linPositA (regA "local")) (linUseN check_N))
       mkPresPos subj (complV2 (mkV2 (regV "run")) (properNameNP "rg -n \"sorry\" Mettapedia/ to find proof gaps"))
   | .knuthSkillingReadmeCarriesBuildTargets =>
-      let subj := properNameNP "Mettapedia/ProbabilityTheory/KnuthSkilling/README.md"
+      let subj := properNameNP "external KnuthSkilling/Overview.lean"
       mkPresPos subj (complV2 (mkV2 (regV "contain")) (properNameNP "the Knuth-Skilling structure and build targets"))
   | .contributionKeepProofsExplicit =>
       let subj := linDetCN theDefArt (linUseN contribution_N)
@@ -303,7 +303,7 @@ def mettapediaReadmeBlocks : List ReadmeBlock :=
       , claimBullet .buildRunsNiceLakeBuild
       ]
   , .heading 2 (renderMettapediaHeading .notableSubprojects)
-  , .fileRef "ProbabilityTheory/KnuthSkilling/" (renderMettapediaClaim .subprojectKnuthSkilling)
+  , .fileRef "external KnuthSkilling/" (renderMettapediaClaim .subprojectKnuthSkilling)
   , .fileRef "ProbabilityTheory/Cox/" (renderMettapediaClaim .subprojectCox)
   , .fileRef "InformationTheory/ShannonEntropy/" (renderMettapediaClaim .subprojectShannon)
   , .fileRef "Logic/" (renderMettapediaClaim .subprojectLogic)

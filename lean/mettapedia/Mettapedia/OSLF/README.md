@@ -1,10 +1,12 @@
-# OSLF overview
+# OSLF — Operational Semantics in Logical Form (Lean 4)
 
 OSLF turns operational rewrite systems into a logical/type-theoretic interface.
 Lean justifies the interface mechanically.
 The core idea starts from `LanguageDef`.
 The core idea connects the step relation to the executable engine.
 The core idea derives modal operators with a Galois connection.
+
+Reference orientation: OSLF is the Lean-formalized bridge from operational rules to modal/type-theoretic structure; [Native Type Theory](https://arxiv.org/abs/2102.04672) supplies the broader categorical foundation, [Generating Hypercubes of Type Systems](https://github.com/F1R3FLY-io/publications/blob/main/drafts/Hypercube/main.pdf) refines the generated type-system family, and [MeTTaIL](https://github.com/F1R3FLY-io/mettail-rust) is the executable-language-generation side.
 
 ## OSLF is a construction
 
@@ -45,6 +47,63 @@ open Mettapedia.OSLF
 -- 3) Use langOSLF to derive the type system and modal operators.
 -- 4) Use Formula.sem and checkLangUsing for properties.
 ```
+
+### Run it: GSLT → NTT (executable)
+
+A **GSLT** (Graph-Structured Lambda Theory) is given in Lean as a `LanguageDef`
+(grammar + equations + rewrite rules). OSLF turns it into an `OSLFTypeSystem`
+(predicates-as-frames with `◇`/`□` and a proven Galois connection); the **NTT**
+(Native Type Theory) view exposes its native types `(sort, predicate)` and the
+sort-crossing constructor diagram.
+
+Run the worked ρ-calculus GSLT end to end (only needs a built tree) from
+`lean/mettapedia/`:
+
+```bash
+lake env lean Mettapedia/OSLF/Tools/OSLFRunDemo.lean
+```
+
+which prints the ρ-calculus NTT crossings:
+
+```
+"rho NTT crossing count = 2"
+[("PDrop", "Name", "Proc"), ("NQuote", "Proc", "Name")]
+```
+
+Those crossings **are** the ρ-calculus GSLT's native-type constructors — the
+sort-crossing operations (`NQuote : Proc → Name`, `PDrop : Name → Proc`) that
+generate its native types. So that one command *is* "run OSLF over a GSLT and read
+off its native types." `langNativeType` then packages any chosen `(sort, predicate)`
+as a native type object.
+
+To run OSLF on your own GSLT and read off its NTT (fill in `myGSLT`; `procSort`
+defaults to `"Proc"`):
+
+```lean
+import Mettapedia.OSLF.CoreMain
+import Mettapedia.OSLF.Framework.ConstructorCategory
+open Mettapedia.OSLF
+open Mettapedia.OSLF.Framework.ConstructorCategory
+
+def myGSLT : LanguageDef := { /- types, terms, equations, rewrites, premises -/ }
+
+-- OSLF type system + modal operators (◇ ⊣ □):
+#check langOSLF myGSLT                    -- : OSLFTypeSystem …
+#check langDiamond myGSLT                 -- ◇ : (Pattern → Prop) → (Pattern → Prop)
+#check langBox myGSLT                     -- □
+#check langGaloisUsing RelationEnv.empty myGSLT  -- proof ◇ ⊣ □ (use a non-empty RelationEnv if the GSLT has premise relations)
+
+-- The NTT: native (sort, predicate) types + the sort-crossing diagram:
+#check langNativeType myGSLT              -- native (sort, predicate) type
+#eval  unaryCrossings myGSLT              -- NTT crossing constructors, as the demo above
+
+-- Check a modal property of a term (see Formula.lean: `sem`, `checkLang`/`checkLangUsing`):
+#check checkLang myGSLT
+```
+
+Fuller worked GSLTs to copy from: `Framework/TinyMLInstance.lean`,
+`Framework/MeTTaMinimalInstance.lean`, `Framework/MeTTaFullInstance.lean`; the
+ρ-calculus DSL at `Languages/ProcessCalculi/RhoCalculus/LanguageDefDSL.lean`.
 
 ### Canonical APIs
 
@@ -88,7 +147,7 @@ open Mettapedia.OSLF
 
 ## MeTTa spec-facing slice
 
-The spec-facing MeTTa slice uses `Mettapedia/Languages/MeTTa/Core/FullLanguageDef.lean`.
+The spec-facing MeTTa slice uses `Mettapedia/Languages/MeTTa/OSLFCore/FullLanguageDef.lean`.
 
 It uses explicit syntax patterns for display.
 
@@ -114,15 +173,15 @@ It uses explicit syntax patterns for display.
 ### Same example at the Lean level
 
 ```lean
-import Mettapedia.Languages.MeTTa.Core.FullLanguageDef
-import Mettapedia.Languages.MeTTa.Core.Premises
+import Mettapedia.Languages.MeTTa.OSLFCore.FullLanguageDef
+import Mettapedia.Languages.MeTTa.OSLFCore.Premises
 
 open Mettapedia.OSLF.MeTTaIL.Syntax
 
 def exState : Pattern :=
   .apply "State"
     [ .apply "Eval" [.apply "ATrue" []]
-    , Mettapedia.Languages.MeTTa.Core.Premises.space0Pattern
+    , Mettapedia.Languages.MeTTa.OSLFCore.Premises.space0Pattern
     , .apply "AFalse" [] ]
 ```
 
@@ -140,7 +199,7 @@ The engine and the OSLF synthesis pipeline use this canonical representation.
 
 Executable runtime implementations belong in the separate lightweight project:
 
-- `lean-projects/algorithms/Algorithms/MeTTa/...`
+- `Mettapedia/lean/algorithms/Algorithms/MeTTa/...`
 - simple interpreter/runtime path
 - staged/specialized runtime path
 
@@ -226,8 +285,8 @@ The scope isn't blanket future-work parity.
 - `Mettapedia/OSLF/Framework/TinyMLInstance.lean`
 - `Mettapedia/OSLF/Framework/MeTTaMinimalInstance.lean`
 - `Mettapedia/OSLF/Framework/MeTTaFullInstance.lean`
-- `Mettapedia/OSLF/MeTTaCore/FullLanguageDef.lean`
-- `Mettapedia/OSLF/MeTTaCore/Premises.lean`
+- `Mettapedia/Languages/MeTTa/OSLFCore/FullLanguageDef.lean`
+- `Mettapedia/Languages/MeTTa/OSLFCore/Premises.lean`
 
 ## Practical workflow
 
@@ -241,7 +300,7 @@ The scope isn't blanket future-work parity.
 ## Build
 
 ```bash
-cd lean-projects/mettapedia
+cd Mettapedia/lean/mettapedia
 lake build Mettapedia.OSLF.CoreMain
 lake build Mettapedia.OSLF.Main
 ```
@@ -252,6 +311,7 @@ lake build Mettapedia.OSLF.Main
 - `Main` aligns the same focused OSLF boundary.
 - Process-calculus modules are available.
 - Maintainers rely `FULLStatus.lean` and concrete theorem names for exact completion claims.
+- 0 `sorry`, 0 `axiom` across `Mettapedia/OSLF/` (reproduce: `rg '^\s*sorry\b' --glob '*.lean' OSLF`); paper-claim parity is machine-checked in `Framework/NTTClaimTracker.lean` and `Framework/PaperClaimTracker.lean`.
 
 - `Mettapedia/Languages/ProcessCalculi/PiCalculus.lean`
 - `Mettapedia/Languages/ProcessCalculi/RhoCalculus.lean`
@@ -271,3 +331,12 @@ It validates roundtrip scripts in `hyperon/mettail-rust`.
 
 It exports a premise-free subset for current Rust ingestion.
 The current boundary isn't full premise-rich MeTTaFull ingestion.
+
+## References
+
+- L. Gregory Meredith and Mike Stay, ["Operational Semantics in Logical Form" (2020)](../../../../papers/references.bib) — the source OSLF algorithm, cited in the local bibliography; see also this project's [Lean 4 OSLF writeup](../../../../papers/leanOSLF.pdf).
+- Christian Williams and Mike Stay, ["Native Type Theory"](https://arxiv.org/abs/2102.04672) — categorical foundation for the [`NativeType/`](NativeType/) endpoints and [`NTTClaimTracker.lean`](Framework/NTTClaimTracker.lean).
+- Mike Stay, L. Gregory Meredith, and Christian Wells, ["Generating Hypercubes of Type Systems"](https://github.com/F1R3FLY-io/publications/blob/main/drafts/Hypercube/main.pdf) — modal type-former and hypercube background for [`ModalHypercube.lean`](Framework/ModalHypercube.lean) and related GSLT functor files.
+- [`../../../../papers/leanOSLF.pdf`](../../../../papers/leanOSLF.pdf) — this project's Lean 4 formalization writeup.
+- [`../../../../papers/MeTTaIL.pdf`](../../../../papers/MeTTaIL.pdf) and [`F1R3FLY-io/mettail-rust`](https://github.com/F1R3FLY-io/mettail-rust) — the MeTTaIL specification/runtime-generation companion.
+- [`../../../../papers/process-calculi.pdf`](../../../../papers/process-calculi.pdf) — the ρ/π/Petri-net instance writeups.
