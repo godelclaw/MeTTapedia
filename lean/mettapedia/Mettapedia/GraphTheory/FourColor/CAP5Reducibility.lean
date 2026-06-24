@@ -297,6 +297,68 @@ theorem cap5BoundaryWordSolved_of_eq_transportBad_of_transportEdgeComponentCover
     ⟨_action, _huses, _hrealizes, hrepairs⟩
   exact cap5BoundaryWordSolved_of_boundaryActionRepairsWord hrepairs
 
+/-- Block-`(2,1,1,1)` endpoint from transported edge-support component covers.  For every
+normal-form presentation of the bad CAP5 boundary word, the graph/Kempe layer may provide four
+finite edge supports plus their normalized boundary restrictions. -/
+theorem cap5BoundaryWordSolved_of_block2111_of_transportEdgeComponentCoverSupports
+    {E : Type*} [DecidableEq E] (boundaryEdge : Fin 5 → E)
+    {w : CAP5BoundaryWord}
+    (hbad : CAP5BoundaryWordHasBlock2111 w)
+    (hcomponentCovers :
+      ∀ {σ : Color ≃ Color} {n : Nat},
+        σ 0 = 0 →
+        w = cap5TransportedBadBoundaryWord σ n →
+        ∃ redBlueEdge₁ redBlueEdge₂ redPurpleEdge₁ redPurpleEdge₂ : Finset E,
+        ∃ redBlue₁ redBlue₂ redPurple₁ redPurple₂ : Finset (Fin 5),
+          cap5BoundarySupportOfEdges boundaryEdge redBlueEdge₁ =
+            cap5RotateBoundarySupportN n redBlue₁ ∧
+          cap5BoundarySupportOfEdges boundaryEdge redBlueEdge₂ =
+            cap5RotateBoundarySupportN n redBlue₂ ∧
+          cap5BoundarySupportOfEdges boundaryEdge redPurpleEdge₁ =
+            cap5RotateBoundarySupportN n redPurple₁ ∧
+          cap5BoundarySupportOfEdges boundaryEdge redPurpleEdge₂ =
+            cap5RotateBoundarySupportN n redPurple₂ ∧
+          CAP5BadRedBlueComponentCover redBlue₁ redBlue₂ ∧
+          CAP5BadRedPurpleComponentCover redPurple₁ redPurple₂ ∧
+          ¬ CAP5BadExceptionalPairingPattern redBlue₁ redBlue₂ redPurple₁ redPurple₂) :
+    CAP5BoundaryWordSolved w := by
+  rcases hbad with ⟨σ, n, hσ0, hw⟩
+  rcases hcomponentCovers hσ0 hw with
+    ⟨redBlueEdge₁, redBlueEdge₂, redPurpleEdge₁, redPurpleEdge₂,
+      redBlue₁, redBlue₂, redPurple₁, redPurple₂,
+      hredBlue₁, hredBlue₂, hredPurple₁, hredPurple₂,
+      hredBlue, hredPurple, hnotExceptional⟩
+  exact
+    cap5BoundaryWordSolved_of_eq_transportBad_of_transportEdgeComponentCoverSupports
+      boundaryEdge hσ0 hredBlue₁ hredBlue₂ hredPurple₁ hredPurple₂
+      hredBlue hredPurple hnotExceptional hw
+
+/-- Colored block-`(2,1,1,1)` endpoint from transported edge-support component covers. -/
+theorem cap5BoundaryWordSolved_of_coloredBlock2111_of_transportEdgeComponentCoverSupports
+    {E : Type*} [DecidableEq E] (boundaryEdge : Fin 5 → E)
+    {w : CAP5BoundaryWord}
+    (hbad : CAP5BoundaryWordHasColoredBlock2111 w)
+    (hcomponentCovers :
+      ∀ {σ : Color ≃ Color} {n : Nat},
+        σ 0 = 0 →
+        w = cap5TransportedBadBoundaryWord σ n →
+        ∃ redBlueEdge₁ redBlueEdge₂ redPurpleEdge₁ redPurpleEdge₂ : Finset E,
+        ∃ redBlue₁ redBlue₂ redPurple₁ redPurple₂ : Finset (Fin 5),
+          cap5BoundarySupportOfEdges boundaryEdge redBlueEdge₁ =
+            cap5RotateBoundarySupportN n redBlue₁ ∧
+          cap5BoundarySupportOfEdges boundaryEdge redBlueEdge₂ =
+            cap5RotateBoundarySupportN n redBlue₂ ∧
+          cap5BoundarySupportOfEdges boundaryEdge redPurpleEdge₁ =
+            cap5RotateBoundarySupportN n redPurple₁ ∧
+          cap5BoundarySupportOfEdges boundaryEdge redPurpleEdge₂ =
+            cap5RotateBoundarySupportN n redPurple₂ ∧
+          CAP5BadRedBlueComponentCover redBlue₁ redBlue₂ ∧
+          CAP5BadRedPurpleComponentCover redPurple₁ redPurple₂ ∧
+          ¬ CAP5BadExceptionalPairingPattern redBlue₁ redBlue₂ redPurple₁ redPurple₂) :
+    CAP5BoundaryWordSolved w :=
+  cap5BoundaryWordSolved_of_block2111_of_transportEdgeComponentCoverSupports
+    boundaryEdge (cap5BoundaryWordHasBlock2111_of_coloredBlock2111 hbad) hcomponentCovers
+
 /-- Block-`(2,1,1,1)` endpoint from raw component-cover supports.  This removes an
 administrative record-construction step from the graph-facing obligation: for every transported
 normal form, it is enough to supply the two red/blue supports, the two red/purple supports, their
@@ -418,6 +480,39 @@ theorem cap5BoundaryWordSolved_of_nonzero_of_odd_of_transportComponentCoverSuppo
   · exact cap5BoundaryWordSolved_of_coloredBlock311 hgood
   · exact cap5BoundaryWordSolved_of_coloredBlock2111_of_transportComponentCoverSupports
       hbad hcomponentCovers
+
+/-- Edge-support form of the transported CAP5 reducibility split.  Under the parity shape
+forced by a proper cubic coloring, it is enough for each transported bad-word presentation to
+provide four finite edge supports whose boundary restrictions give non-exceptional CAP5
+component covers. -/
+theorem cap5BoundaryWordSolved_of_nonzero_of_odd_of_transportEdgeComponentCoverSupports
+    {E : Type*} [DecidableEq E] (boundaryEdge : Fin 5 → E)
+    {w : CAP5BoundaryWord}
+    (hnz : CAP5BoundaryWordIsNonzero w)
+    (hodd : CAP5BoundaryWordHasOddColorCounts w)
+    (hcomponentCovers :
+      ∀ {σ : Color ≃ Color} {n : Nat},
+        σ 0 = 0 →
+        w = cap5TransportedBadBoundaryWord σ n →
+        ∃ redBlueEdge₁ redBlueEdge₂ redPurpleEdge₁ redPurpleEdge₂ : Finset E,
+        ∃ redBlue₁ redBlue₂ redPurple₁ redPurple₂ : Finset (Fin 5),
+          cap5BoundarySupportOfEdges boundaryEdge redBlueEdge₁ =
+            cap5RotateBoundarySupportN n redBlue₁ ∧
+          cap5BoundarySupportOfEdges boundaryEdge redBlueEdge₂ =
+            cap5RotateBoundarySupportN n redBlue₂ ∧
+          cap5BoundarySupportOfEdges boundaryEdge redPurpleEdge₁ =
+            cap5RotateBoundarySupportN n redPurple₁ ∧
+          cap5BoundarySupportOfEdges boundaryEdge redPurpleEdge₂ =
+            cap5RotateBoundarySupportN n redPurple₂ ∧
+          CAP5BadRedBlueComponentCover redBlue₁ redBlue₂ ∧
+          CAP5BadRedPurpleComponentCover redPurple₁ redPurple₂ ∧
+          ¬ CAP5BadExceptionalPairingPattern redBlue₁ redBlue₂ redPurple₁ redPurple₂) :
+    CAP5BoundaryWordSolved w := by
+  rcases cap5BoundaryWord_coloredBlock311_or_coloredBlock2111_of_nonzero_of_odd
+      hnz hodd with hgood | hbad
+  · exact cap5BoundaryWordSolved_of_coloredBlock311 hgood
+  · exact cap5BoundaryWordSolved_of_coloredBlock2111_of_transportEdgeComponentCoverSupports
+      boundaryEdge hbad hcomponentCovers
 
 /-- Canonical bad CAP5 word: active component pairings plus exclusion of the
 simultaneous exceptional pattern produce a boundary-level solution. -/
