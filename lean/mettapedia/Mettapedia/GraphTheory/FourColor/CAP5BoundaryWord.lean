@@ -395,6 +395,105 @@ theorem cap5WordExtendsAcrossCycle_rotateN_map_equiv_iff_of_map_zero
   (cap5WordExtendsAcrossCycle_rotateN_iff n (w := cap5MapBoundaryWord σ w)).trans
     (cap5WordExtendsAcrossCycle_map_equiv_iff_of_map_zero hσ0)
 
+/-- Parameterized normal-form good CAP5 word with block structure `(3,1,1)`. -/
+def cap5BoundaryWord311Of (a b c : Color) : CAP5BoundaryWord
+  | 0 => a
+  | 1 => a
+  | 2 => a
+  | 3 => b
+  | 4 => c
+
+/-- The internal 5-cycle coloring that extends `cap5BoundaryWord311Of a b c` when
+`a,b,c` are the three distinct nonzero Tait colors. -/
+def cap5InternalCycleColoring311Of (a b c : Color) : CAP5InternalCycleColoring
+  | 0 => c
+  | 1 => b
+  | 2 => c
+  | 3 => a
+  | 4 => b
+
+/-- Every parameterized `(3,1,1)` CAP5 boundary word extends across the cap. -/
+theorem cap5BoundaryWord311Of_extendsAcrossCycle {a b c : Color}
+    (h : IsTaitColorTriple a b c) :
+    CAP5WordExtendsAcrossCycle (cap5BoundaryWord311Of a b c) := by
+  refine ⟨cap5InternalCycleColoring311Of a b c, ?_⟩
+  rcases h with ⟨ha0, hb0, hc0, hab, hac, hbc⟩
+  simp [CAP5ExtendsAcrossCycleWith, IsTaitColorTriple, cap5BoundaryWord311Of,
+    cap5InternalCycleColoring311Of, ha0, hb0, hc0, hab, hac, hbc, hab.symm,
+    hac.symm, hbc.symm]
+
+/-- Parameterized normal-form bad CAP5 word with block structure `(2,1,1,1)`. -/
+def cap5BoundaryWord2111Of (a b c : Color) : CAP5BoundaryWord
+  | 0 => a
+  | 1 => a
+  | 2 => b
+  | 3 => a
+  | 4 => c
+
+/-- No parameterized `(2,1,1,1)` CAP5 boundary word extends across the cap. -/
+theorem not_cap5BoundaryWord2111Of_extendsAcrossCycle {a b c : Color}
+    (h : IsTaitColorTriple a b c) :
+    ¬ CAP5WordExtendsAcrossCycle (cap5BoundaryWord2111Of a b c) := by
+  intro hextends
+  rcases hextends with ⟨x, hx⟩
+  rcases h with ⟨ha0, hb0, hc0, hab, hac, hbc⟩
+  have htriple : IsTaitColorTriple a b c := ⟨ha0, hb0, hc0, hab, hac, hbc⟩
+  rcases hx with ⟨_hv0, hv1, hv2, hv3, _hv4⟩
+  rcases hv1 with ⟨_hw1, _hx0, hx1, _hw1_x0, hw1_x1, _hx0_x1⟩
+  rcases hv2 with ⟨_hw2, _hx1', hx2, hw2_x1, hw2_x2, hx1_x2⟩
+  rcases hv3 with ⟨_hw3, _hx2', _hx3, hw3_x2, _hw3_x3, _hx2_x3⟩
+  have hx1_eq_c : x 1 = c := by
+    have hx1_ne_a : x 1 ≠ a := by
+      intro hx1a
+      exact hw1_x1 (by simp [cap5BoundaryWord2111Of, hx1a])
+    have hx1_ne_b : x 1 ≠ b := by
+      intro hx1b
+      exact hw2_x1 (by simp [cap5BoundaryWord2111Of, hx1b])
+    rcases isTaitColorTriple_color_mem hx1 htriple with hx1a | hx1b | hx1c
+    · exact False.elim (hx1_ne_a hx1a)
+    · exact False.elim (hx1_ne_b hx1b)
+    · exact hx1c
+  have hx2_eq_c : x 2 = c := by
+    have hx2_ne_b : x 2 ≠ b := by
+      intro hx2b
+      exact hw2_x2 (by simp [cap5BoundaryWord2111Of, hx2b])
+    have hx2_ne_a : x 2 ≠ a := by
+      intro hx2a
+      exact hw3_x2 (by simp [cap5BoundaryWord2111Of, hx2a])
+    rcases isTaitColorTriple_color_mem hx2 htriple with hx2a | hx2b | hx2c
+    · exact False.elim (hx2_ne_a hx2a)
+    · exact False.elim (hx2_ne_b hx2b)
+    · exact hx2c
+  exact hx1_x2 (hx1_eq_c.trans hx2_eq_c.symm)
+
+/-- CAP5 block structure `(3,1,1)` with explicit color names. -/
+def CAP5BoundaryWordHasColoredBlock311 (w : CAP5BoundaryWord) : Prop :=
+  ∃ a b c : Color, IsTaitColorTriple a b c ∧
+    ∃ n : Nat, w = cap5RotateBoundaryWordN n (cap5BoundaryWord311Of a b c)
+
+/-- CAP5 block structure `(2,1,1,1)` with explicit color names. -/
+def CAP5BoundaryWordHasColoredBlock2111 (w : CAP5BoundaryWord) : Prop :=
+  ∃ a b c : Color, IsTaitColorTriple a b c ∧
+    ∃ n : Nat, w = cap5RotateBoundaryWordN n (cap5BoundaryWord2111Of a b c)
+
+/-- Any CAP5 boundary word with colored block structure `(3,1,1)` extends across the cap. -/
+theorem cap5_extendsAcrossCycle_of_coloredBlock311
+    {w : CAP5BoundaryWord} (h : CAP5BoundaryWordHasColoredBlock311 w) :
+    CAP5WordExtendsAcrossCycle w := by
+  rcases h with ⟨a, b, c, htriple, n, rfl⟩
+  exact cap5WordExtendsAcrossCycle_rotateN
+    (cap5BoundaryWord311Of_extendsAcrossCycle htriple)
+
+/-- Any CAP5 boundary word with colored block structure `(2,1,1,1)` does not extend
+across the cap. -/
+theorem not_cap5_extendsAcrossCycle_of_coloredBlock2111
+    {w : CAP5BoundaryWord} (h : CAP5BoundaryWordHasColoredBlock2111 w) :
+    ¬ CAP5WordExtendsAcrossCycle w := by
+  rcases h with ⟨a, b, c, htriple, n, rfl⟩
+  intro hextends
+  exact not_cap5BoundaryWord2111Of_extendsAcrossCycle htriple
+    ((cap5WordExtendsAcrossCycle_rotateN_iff n).mp hextends)
+
 /-- Normal-form good CAP5 word with block structure `(3,1,1)`. -/
 def cap5GoodBoundaryWord311 : CAP5BoundaryWord
   | 0 => red
