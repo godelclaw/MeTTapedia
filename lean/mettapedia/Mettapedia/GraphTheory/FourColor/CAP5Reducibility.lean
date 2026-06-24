@@ -204,6 +204,75 @@ def CAP5TransportedEdgeComponentCoverCore.IsExceptional
   CAP5BadExceptionalPairingPattern
     data.redBlue₁ data.redBlue₂ data.redPurple₁ data.redPurple₂
 
+/-- One of the four normalized component supports lies on the finite CAP5 repair side. -/
+def CAP5TransportedEdgeComponentCoverCore.HasBoundaryRepairSupport
+    {E : Type*} [DecidableEq E] {boundaryEdge : Fin 5 → E} {n : Nat}
+    (data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n) : Prop :=
+  CAP5BadRedBlueRepairSupport data.redBlue₁ ∨
+  CAP5BadRedBlueRepairSupport data.redBlue₂ ∨
+  CAP5BadRedPurpleRepairSupport data.redPurple₁ ∨
+  CAP5BadRedPurpleRepairSupport data.redPurple₂
+
+/-- Boundary-support equations carried by the simultaneous exceptional CAP5 pairing after the
+chosen cyclic transport.  This is the finite portal-pairing surface of the manuscript's
+`(0,3),(1,2)` and `(0,4),(1,3)` exceptional annulus case. -/
+def CAP5TransportedEdgeComponentCoverCore.HasExceptionalBoundarySupportPairings
+    {E : Type*} [DecidableEq E] {boundaryEdge : Fin 5 → E} {n : Nat}
+    (data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n) : Prop :=
+  ((cap5BoundarySupportOfEdges boundaryEdge data.redBlueEdge₁ =
+        cap5RotateBoundarySupportN n ({0, 3} : Finset (Fin 5)) ∧
+      cap5BoundarySupportOfEdges boundaryEdge data.redBlueEdge₂ =
+        cap5RotateBoundarySupportN n ({1, 2} : Finset (Fin 5))) ∨
+    (cap5BoundarySupportOfEdges boundaryEdge data.redBlueEdge₁ =
+        cap5RotateBoundarySupportN n ({1, 2} : Finset (Fin 5)) ∧
+      cap5BoundarySupportOfEdges boundaryEdge data.redBlueEdge₂ =
+        cap5RotateBoundarySupportN n ({0, 3} : Finset (Fin 5)))) ∧
+  ((cap5BoundarySupportOfEdges boundaryEdge data.redPurpleEdge₁ =
+        cap5RotateBoundarySupportN n ({0, 4} : Finset (Fin 5)) ∧
+      cap5BoundarySupportOfEdges boundaryEdge data.redPurpleEdge₂ =
+        cap5RotateBoundarySupportN n ({1, 3} : Finset (Fin 5))) ∨
+    (cap5BoundarySupportOfEdges boundaryEdge data.redPurpleEdge₁ =
+        cap5RotateBoundarySupportN n ({1, 3} : Finset (Fin 5)) ∧
+      cap5BoundarySupportOfEdges boundaryEdge data.redPurpleEdge₂ =
+        cap5RotateBoundarySupportN n ({0, 4} : Finset (Fin 5))))
+
+/-- In core component-cover data, the finite boundary repair side is exactly the complement of
+the simultaneous exceptional pairing. -/
+theorem CAP5TransportedEdgeComponentCoverCore.hasBoundaryRepairSupport_iff_not_isExceptional
+    {E : Type*} [DecidableEq E] {boundaryEdge : Fin 5 → E} {n : Nat}
+    (data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n) :
+    data.HasBoundaryRepairSupport ↔ ¬ data.IsExceptional := by
+  let p : CAP5BadPairingSupports :=
+    { redBlue₁ := data.redBlue₁
+      redBlue₂ := data.redBlue₂
+      redPurple₁ := data.redPurple₁
+      redPurple₂ := data.redPurple₂ }
+  have hcovers : p.HasComponentCovers := ⟨data.hredBlue, data.hredPurple⟩
+  simpa [p, CAP5TransportedEdgeComponentCoverCore.HasBoundaryRepairSupport,
+    CAP5TransportedEdgeComponentCoverCore.IsExceptional,
+    CAP5BadPairingSupports.HasRepair, CAP5BadPairingSupports.IsExceptional] using
+    (CAP5BadPairingSupports.hasRepair_iff_not_isExceptional_of_componentCovers hcovers)
+
+/-- The exceptional branch of core component-cover data exposes the exact transported boundary
+support pairings needed by the subsequent annulus/Jordan-separator argument. -/
+theorem CAP5TransportedEdgeComponentCoverCore.hasExceptionalBoundarySupportPairings_of_isExceptional
+    {E : Type*} [DecidableEq E] {boundaryEdge : Fin 5 → E} {n : Nat}
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    (h : data.IsExceptional) :
+    data.HasExceptionalBoundarySupportPairings := by
+  rcases h with ⟨hredBlue, hredPurple⟩
+  constructor
+  · rcases hredBlue with ⟨h₁, h₂⟩ | ⟨h₁, h₂⟩
+    · exact Or.inl ⟨by simpa [h₁] using data.hredBlue₁,
+        by simpa [h₂] using data.hredBlue₂⟩
+    · exact Or.inr ⟨by simpa [h₁] using data.hredBlue₁,
+        by simpa [h₂] using data.hredBlue₂⟩
+  · rcases hredPurple with ⟨h₁, h₂⟩ | ⟨h₁, h₂⟩
+    · exact Or.inl ⟨by simpa [h₁] using data.hredPurple₁,
+        by simpa [h₂] using data.hredPurple₂⟩
+    · exact Or.inr ⟨by simpa [h₁] using data.hredPurple₁,
+        by simpa [h₂] using data.hredPurple₂⟩
+
 /-- Full transported component-cover data is core component-cover data plus exclusion of the
 simultaneous exceptional pattern.  The core form is the honest target before the planar separator
 argument has ruled the exceptional branch out. -/
