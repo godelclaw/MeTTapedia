@@ -166,6 +166,36 @@ def CAP5TransportedBoundaryActionUsesEdgeComponentCoverSupport
   action = cap5BoundaryActionOfEdgeSet boundaryEdge redPurple₁ (σ red) (σ purple) ∨
   action = cap5BoundaryActionOfEdgeSet boundaryEdge redPurple₂ (σ red) (σ purple)
 
+/-- Structured graph-facing edge support data for one transported CAP5 bad-word presentation.
+It keeps the finite edge supports, their induced transported boundary supports, and the finite
+CAP5 component-cover facts together as a reusable obligation object. -/
+structure CAP5TransportedEdgeComponentCoverData
+    {E : Type*} [DecidableEq E] (boundaryEdge : Fin 5 → E) (n : Nat) where
+  redBlueEdge₁ : Finset E
+  redBlueEdge₂ : Finset E
+  redPurpleEdge₁ : Finset E
+  redPurpleEdge₂ : Finset E
+  redBlue₁ : Finset (Fin 5)
+  redBlue₂ : Finset (Fin 5)
+  redPurple₁ : Finset (Fin 5)
+  redPurple₂ : Finset (Fin 5)
+  hredBlue₁ :
+    cap5BoundarySupportOfEdges boundaryEdge redBlueEdge₁ =
+      cap5RotateBoundarySupportN n redBlue₁
+  hredBlue₂ :
+    cap5BoundarySupportOfEdges boundaryEdge redBlueEdge₂ =
+      cap5RotateBoundarySupportN n redBlue₂
+  hredPurple₁ :
+    cap5BoundarySupportOfEdges boundaryEdge redPurpleEdge₁ =
+      cap5RotateBoundarySupportN n redPurple₁
+  hredPurple₂ :
+    cap5BoundarySupportOfEdges boundaryEdge redPurpleEdge₂ =
+      cap5RotateBoundarySupportN n redPurple₂
+  hredBlue : CAP5BadRedBlueComponentCover redBlue₁ redBlue₂
+  hredPurple : CAP5BadRedPurpleComponentCover redPurple₁ redPurple₂
+  hnotExceptional :
+    ¬ CAP5BadExceptionalPairingPattern redBlue₁ redBlue₂ redPurple₁ redPurple₂
+
 /-- Raw support-cover repair action for an arbitrary transported bad CAP5 word.  This exposes the
 actual support-carried boundary action, not just the solved-word conclusion. -/
 theorem exists_boundaryActionRepairsWord_usingTransportedComponentCoverSupport_of_eq_transportBad_of_componentCoverSupports
@@ -297,6 +327,39 @@ theorem cap5BoundaryWordSolved_of_eq_transportBad_of_transportEdgeComponentCover
     ⟨_action, _huses, _hrealizes, hrepairs⟩
   exact cap5BoundaryWordSolved_of_boundaryActionRepairsWord hrepairs
 
+/-- Structured-data form of the edge-support repair action endpoint for one transported bad
+CAP5 word. -/
+theorem exists_boundaryActionRepairsWord_usingTransportedEdgeSupport_of_eq_transportBad_of_componentCoverData
+    {E : Type*} [DecidableEq E]
+    {w : CAP5BoundaryWord} {boundaryEdge : Fin 5 → E}
+    {σ : Color ≃ Color} (hσ0 : σ 0 = 0) {n : Nat}
+    (data : CAP5TransportedEdgeComponentCoverData boundaryEdge n)
+    (hw : w = cap5TransportedBadBoundaryWord σ n) :
+    ∃ action : CAP5BoundaryAction,
+      CAP5TransportedBoundaryActionUsesEdgeComponentCoverSupport
+        boundaryEdge data.redBlueEdge₁ data.redBlueEdge₂
+          data.redPurpleEdge₁ data.redPurpleEdge₂ σ action ∧
+      CAP5BoundaryActionRealizesSomeTransportedRepairType action σ n ∧
+      CAP5BoundaryActionRepairsWord action w :=
+  exists_boundaryActionRepairsWord_usingTransportedEdgeSupport_of_eq_transportBad_of_componentCoverSupports
+    boundaryEdge hσ0 data.hredBlue₁ data.hredBlue₂ data.hredPurple₁ data.hredPurple₂
+    data.hredBlue data.hredPurple data.hnotExceptional hw
+
+/-- Structured-data form of the edge-support solved-word endpoint for one transported bad CAP5
+word. -/
+theorem cap5BoundaryWordSolved_of_eq_transportBad_of_transportEdgeComponentCoverData
+    {E : Type*} [DecidableEq E]
+    {w : CAP5BoundaryWord} {boundaryEdge : Fin 5 → E}
+    {σ : Color ≃ Color} (hσ0 : σ 0 = 0) {n : Nat}
+    (data : CAP5TransportedEdgeComponentCoverData boundaryEdge n)
+    (hw : w = cap5TransportedBadBoundaryWord σ n) :
+    CAP5BoundaryWordSolved w := by
+  rcases
+      exists_boundaryActionRepairsWord_usingTransportedEdgeSupport_of_eq_transportBad_of_componentCoverData
+        hσ0 data hw with
+    ⟨_action, _huses, _hrealizes, hrepairs⟩
+  exact cap5BoundaryWordSolved_of_boundaryActionRepairsWord hrepairs
+
 /-- Block-`(2,1,1,1)` endpoint from transported edge-support component covers.  For every
 normal-form presentation of the bad CAP5 boundary word, the graph/Kempe layer may provide four
 finite edge supports plus their normalized boundary restrictions. -/
@@ -358,6 +421,35 @@ theorem cap5BoundaryWordSolved_of_coloredBlock2111_of_transportEdgeComponentCove
     CAP5BoundaryWordSolved w :=
   cap5BoundaryWordSolved_of_block2111_of_transportEdgeComponentCoverSupports
     boundaryEdge (cap5BoundaryWordHasBlock2111_of_coloredBlock2111 hbad) hcomponentCovers
+
+/-- Structured-data form of the block-`(2,1,1,1)` edge-support endpoint. -/
+theorem cap5BoundaryWordSolved_of_block2111_of_transportEdgeComponentCoverData
+    {E : Type*} [DecidableEq E] {boundaryEdge : Fin 5 → E}
+    {w : CAP5BoundaryWord}
+    (hbad : CAP5BoundaryWordHasBlock2111 w)
+    (hcomponentCovers :
+      ∀ {σ : Color ≃ Color} {n : Nat},
+        σ 0 = 0 →
+        w = cap5TransportedBadBoundaryWord σ n →
+        CAP5TransportedEdgeComponentCoverData boundaryEdge n) :
+    CAP5BoundaryWordSolved w := by
+  rcases hbad with ⟨σ, n, hσ0, hw⟩
+  exact cap5BoundaryWordSolved_of_eq_transportBad_of_transportEdgeComponentCoverData
+    hσ0 (hcomponentCovers hσ0 hw) hw
+
+/-- Structured-data form of the colored block-`(2,1,1,1)` edge-support endpoint. -/
+theorem cap5BoundaryWordSolved_of_coloredBlock2111_of_transportEdgeComponentCoverData
+    {E : Type*} [DecidableEq E] {boundaryEdge : Fin 5 → E}
+    {w : CAP5BoundaryWord}
+    (hbad : CAP5BoundaryWordHasColoredBlock2111 w)
+    (hcomponentCovers :
+      ∀ {σ : Color ≃ Color} {n : Nat},
+        σ 0 = 0 →
+        w = cap5TransportedBadBoundaryWord σ n →
+        CAP5TransportedEdgeComponentCoverData boundaryEdge n) :
+    CAP5BoundaryWordSolved w :=
+  cap5BoundaryWordSolved_of_block2111_of_transportEdgeComponentCoverData
+    (cap5BoundaryWordHasBlock2111_of_coloredBlock2111 hbad) hcomponentCovers
 
 /-- Block-`(2,1,1,1)` endpoint from raw component-cover supports.  This removes an
 administrative record-construction step from the graph-facing obligation: for every transported
@@ -513,6 +605,24 @@ theorem cap5BoundaryWordSolved_of_nonzero_of_odd_of_transportEdgeComponentCoverS
   · exact cap5BoundaryWordSolved_of_coloredBlock311 hgood
   · exact cap5BoundaryWordSolved_of_coloredBlock2111_of_transportEdgeComponentCoverSupports
       boundaryEdge hbad hcomponentCovers
+
+/-- Structured-data form of the edge-support transported CAP5 reducibility split. -/
+theorem cap5BoundaryWordSolved_of_nonzero_of_odd_of_transportEdgeComponentCoverData
+    {E : Type*} [DecidableEq E] {boundaryEdge : Fin 5 → E}
+    {w : CAP5BoundaryWord}
+    (hnz : CAP5BoundaryWordIsNonzero w)
+    (hodd : CAP5BoundaryWordHasOddColorCounts w)
+    (hcomponentCovers :
+      ∀ {σ : Color ≃ Color} {n : Nat},
+        σ 0 = 0 →
+        w = cap5TransportedBadBoundaryWord σ n →
+        CAP5TransportedEdgeComponentCoverData boundaryEdge n) :
+    CAP5BoundaryWordSolved w := by
+  rcases cap5BoundaryWord_coloredBlock311_or_coloredBlock2111_of_nonzero_of_odd
+      hnz hodd with hgood | hbad
+  · exact cap5BoundaryWordSolved_of_coloredBlock311 hgood
+  · exact cap5BoundaryWordSolved_of_coloredBlock2111_of_transportEdgeComponentCoverData
+      hbad hcomponentCovers
 
 /-- Canonical bad CAP5 word: active component pairings plus exclusion of the
 simultaneous exceptional pattern produce a boundary-level solution. -/
