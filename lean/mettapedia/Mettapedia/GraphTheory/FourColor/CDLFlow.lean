@@ -2962,6 +2962,38 @@ theorem
         hobst ⟨e, heC, heinc, hx0⟩
   exact ⟨C', hC'mem, h, hmove, e, heC', heinc, heC, hx0, hnew⟩
 
+/-- Concrete-star sharpening: if the obstruction star is presented explicitly
+as two support edges of nonzero color `g` and one outside zero edge `e₀`, then
+any vertex-local repair must erase that particular outside zero edge. -/
+theorem
+    hasD0DescentRepairAt_erases_star_outside_edge_of_cubic_obstruction_star
+    {G : SimpleGraph V} [Fintype G.edgeSet]
+    {moveSupports : Finset (Finset G.edgeSet)}
+    {C : Finset G.edgeSet} {g : Color} {x : G.edgeSet → Color} {v : V}
+    {e₁ e₂ e₀ : G.edgeSet}
+    (hg : g ≠ 0)
+    (hstar : incidentEdgeFinset G v = {e₁, e₂, e₀})
+    (he₁C : e₁ ∈ C) (he₂C : e₂ ∈ C) (he₀C : e₀ ∉ C)
+    (hx₁ : x e₁ = g) (hx₂ : x e₂ = g) (hx₀ : x e₀ = 0)
+    (hrepair : HasD0DescentRepairAt G moveSupports x v) :
+    ∃ C' ∈ moveSupports, ∃ h : Color,
+      IsAllowedD0OneStepMoveOn G C' h x (cdlOneStepMoveOn G C' h x) ∧
+        e₀ ∈ C' ∧ e₀ ∈ incidentEdgeFinset G v ∧ e₀ ∉ C ∧ x e₀ = 0 ∧
+          ∀ e' ∈ C', x e' ≠ h := by
+  rcases hrepair with ⟨C', hC'mem, h, hmove, heraseAt, hnew⟩
+  rcases heraseAt with ⟨e, heC', heinc, hx0⟩
+  have he_cases : e = e₁ ∨ e = e₂ ∨ e = e₀ := by
+    have he_mem : e ∈ ({e₁, e₂, e₀} : Finset G.edgeSet) := by
+      simpa [hstar] using heinc
+    simpa only [Finset.mem_insert, Finset.mem_singleton] using he_mem
+  have he_eq : e = e₀ := by
+    rcases he_cases with rfl | rfl | rfl
+    · exact False.elim (hg (hx₁.symm.trans hx0))
+    · exact False.elim (hg (hx₂.symm.trans hx0))
+    · rfl
+  exact ⟨C', hC'mem, h, hmove, by simpa [he_eq] using heC',
+    by simpa [he_eq] using heinc, he₀C, hx₀, hnew⟩
+
 /-- Patch/local-combinatorics hypothesis for the manuscript's matching-zeros
 step: every non-matching zero pattern admits a permitted one-step repair that
 erases an existing zero and creates no new zero on its support.  Theorems below
