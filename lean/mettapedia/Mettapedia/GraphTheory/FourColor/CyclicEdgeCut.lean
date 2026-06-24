@@ -550,6 +550,30 @@ theorem counterexample_of_crossing_outside
     candidate.Counterexample :=
   (candidate.counterexample_iff_exists_crossing_outside).2 hcrossing
 
+/-- Edge-witness form of the forced-counterexample bin.  When the finite checker finds an
+unlisted crossing edge, the avoiding walk can be chosen to be the one-edge walk across that edge.
+This is the concrete witness shape later algebraic/cocycle checks should consume. -/
+theorem exists_oneEdge_counterexample_of_crossing_outside
+    {G : SimpleGraph V} {candidate : CyclicSeparatorCandidate G}
+    (hcrossing :
+      ∃ e : G.edgeSet, e ∉ candidate.edgeCut ∧
+        EdgeCrossesVertexSide G candidate.side e) :
+    ∃ u v : V, ∃ e : G.edgeSet, ∃ p : G.Walk u v,
+      e ∉ candidate.edgeCut ∧
+        candidate.side u ∧ ¬ candidate.side v ∧
+          p.edges = [(e : Sym2 V)] ∧
+            ∀ f : G.edgeSet, f ∈ candidate.edgeCut → (f : Sym2 V) ∉ p.edges := by
+  rcases hcrossing with ⟨e, heOutside, u, v, hu, hv, huSide, hvSide⟩
+  rcases exists_walk_edges_eq_singleton_of_edge_endpoint_sides
+      (G := G) (side := candidate.side) hu hv huSide hvSide with
+    ⟨p, hpEdges⟩
+  refine ⟨u, v, e, p, heOutside, huSide, hvSide, hpEdges, ?_⟩
+  intro f hf hmem
+  have hsym : (f : Sym2 V) = (e : Sym2 V) := by
+    simpa [hpEdges] using hmem
+  have hfe : f = e := Subtype.ext hsym
+  exact heOutside (by simpa [hfe] using hf)
+
 end CyclicSeparatorCandidate
 
 theorem SmallCyclicEdgeCut.exists_mem_edgeCut_of_walk_endpoint_sides
@@ -687,6 +711,20 @@ theorem exists_crossing_outside_of_cyclicallyFiveEdgeConnected
       EdgeCrossesVertexSide G candidate.side e :=
   (candidate.counterexample_iff_exists_crossing_outside).1
     (candidate.counterexample_of_cyclicallyFiveEdgeConnected hcyclic)
+
+/-- Strong finite-generator output under cyclic five-edge-connectivity: every size-at-most-four
+candidate has an explicit outside crossing edge, and the avoiding counterexample walk can be the
+one-edge walk across that edge. -/
+theorem exists_oneEdge_counterexample_of_cyclicallyFiveEdgeConnected
+    {G : SimpleGraph V} (candidate : CyclicSeparatorCandidate G)
+    (hcyclic : CyclicallyFiveEdgeConnected G) :
+    ∃ u v : V, ∃ e : G.edgeSet, ∃ p : G.Walk u v,
+      e ∉ candidate.edgeCut ∧
+        candidate.side u ∧ ¬ candidate.side v ∧
+          p.edges = [(e : Sym2 V)] ∧
+            ∀ f : G.edgeSet, f ∈ candidate.edgeCut → (f : Sym2 V) ∉ p.edges :=
+  candidate.exists_oneEdge_counterexample_of_crossing_outside
+    (candidate.exists_crossing_outside_of_cyclicallyFiveEdgeConnected hcyclic)
 
 /-- Therefore a size-at-most-four candidate cannot realize a cyclic edge cut in a cyclically
 five-edge-connected graph. -/
