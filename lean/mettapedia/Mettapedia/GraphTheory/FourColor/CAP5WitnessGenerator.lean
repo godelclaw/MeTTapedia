@@ -767,6 +767,45 @@ theorem enumeratedExceptionalAnnulusForcedEdge_to_exceptionalAnnulusOneEdgeCount
       horientation (by simpa [node] using hforced)
   simpa [node, hp0, hp4] using hedge
 
+/-- A forced latent emitted by a certified finite report gives an enumerated forced edge once the
+component-cover data realizes that latent's orientation.  This is the report-output bridge into
+the algebraic checker predicate. -/
+theorem exists_enumeratedExceptionalAnnulusForcedEdge_of_mem_forcedCounterexampleLatents
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    (report : CAP5ExceptionalAnnulusGeneratorReport boundaryEdge side)
+    {latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge}
+    (hmem : latent ∈ report.forcedCounterexampleLatents)
+    (horientation : data.RealizesExceptionalBoundarySupportOrientation latent.orientation) :
+    ∃ e : G.edgeSet,
+      data.EnumeratedExceptionalAnnulusForcedEdge
+        latent.p0Inside latent.p4Inside side e := by
+  have hlatentMem :
+      latent ∈ CAP5ExceptionalAnnulusGeneratorLatent.all boundaryEdge :=
+    (report.mem_forcedCounterexampleLatents_iff).1 hmem |>.1
+  rcases report.forcedCounterexample_of_mem_forcedCounterexampleLatents hmem with
+    ⟨e, hedge⟩
+  exact ⟨e, latent, hlatentMem, rfl, rfl, horientation, by
+    simpa [CAP5ExceptionalAnnulusGeneratorReport.node,
+      CAP5ExceptionalAnnulusGeneratorReport.latentNode] using hedge⟩
+
+/-- A forced latent emitted by a certified finite report gives the broader exceptional-annulus
+one-edge counterexample consumed by the algebraic lane. -/
+theorem exists_exceptionalAnnulusOneEdgeCounterexampleEdge_of_mem_forcedCounterexampleLatents
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    (report : CAP5ExceptionalAnnulusGeneratorReport boundaryEdge side)
+    {latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge}
+    (hmem : latent ∈ report.forcedCounterexampleLatents)
+    (horientation : data.RealizesExceptionalBoundarySupportOrientation latent.orientation) :
+    ∃ e : G.edgeSet,
+      data.ExceptionalAnnulusOneEdgeCounterexampleEdge
+        latent.p0Inside latent.p4Inside side e := by
+  rcases data.exists_enumeratedExceptionalAnnulusForcedEdge_of_mem_forcedCounterexampleLatents
+      report hmem horientation with
+    ⟨e, hedge⟩
+  exact ⟨e,
+    data.enumeratedExceptionalAnnulusForcedEdge_to_exceptionalAnnulusOneEdgeCounterexampleEdge
+      hedge⟩
+
 /-- Cyclic five-edge-connectivity makes the enumerated exceptional CAP5 generator emit at least
 one forced edge for the selected portal-side bits, provided the graph-side portal crossings and
 side cycles are certified. -/
