@@ -3277,6 +3277,84 @@ theorem everyClusteredZeroVertexHasNeutralD0Candidate_of_rotationDiskD0Candidate
       D hincident hf,
     heraseAt, hnew⟩
 
+/-- Diagnostic form of the two-step route: if clustered zeros survive at a
+`D₀` local minimum despite first-step neutral candidates, then one of the
+candidate moves exposes a cubic basic-color obstruction with no vertex-local
+zero-erasing/no-new-zero repair. -/
+theorem
+    exists_unrepaired_hasCubicD0BasicColorObstructionAt_of_isD0LocalMinimumForMoveSupports_of_hasClusteredZeroVertex_and_neutral_candidates
+    {G : SimpleGraph V} [Fintype V] [Fintype G.edgeSet]
+    {moveSupports : Finset (Finset G.edgeSet)} {x : G.edgeSet → Color}
+    (hcard : ∀ v : V, (incidentEdgeFinset G v).card = 3)
+    (hmin : IsD0LocalMinimumForMoveSupports G moveSupports x)
+    (hcluster : HasClusteredZeroVertex G x)
+    (hcandidate : EveryClusteredZeroVertexHasNeutralD0Candidate G moveSupports x) :
+    ∃ (C : Finset G.edgeSet) (w : V) (g : Color),
+      HasCubicD0BasicColorObstructionAt G x C w g ∧
+        ¬ HasD0DescentRepairAt G moveSupports x w := by
+  rcases hcluster with ⟨v, hvcluster⟩
+  rcases hcandidate v hvcluster with
+    ⟨C, hCmem, g, hg, hC, heraseAt, hnew⟩
+  rcases
+    exists_hasCubicD0BasicColorObstructionAt_of_isD0LocalMinimumForMoveSupports_kirchhoffNeutral_erases_incident_zero_creates_no_zero
+      hcard hmin hCmem hg hC heraseAt hnew with
+    ⟨w, hobst⟩
+  exact ⟨C, w, g, hobst,
+    not_hasD0DescentRepairAt_of_isD0LocalMinimumForMoveSupports hmin⟩
+
+/-- Numeric form of the diagnostic obstruction theorem. -/
+theorem
+    exists_unrepaired_hasCubicD0BasicColorObstructionAt_of_isD0LocalMinimumForMoveSupports_of_zeroClusteringCount_pos_and_neutral_candidates
+    {G : SimpleGraph V} [Fintype V] [Fintype G.edgeSet]
+    {moveSupports : Finset (Finset G.edgeSet)} {x : G.edgeSet → Color}
+    (hcard : ∀ v : V, (incidentEdgeFinset G v).card = 3)
+    (hmin : IsD0LocalMinimumForMoveSupports G moveSupports x)
+    (hCpos : 0 < zeroClusteringCount G x)
+    (hcandidate : EveryClusteredZeroVertexHasNeutralD0Candidate G moveSupports x) :
+    ∃ (C : Finset G.edgeSet) (w : V) (g : Color),
+      HasCubicD0BasicColorObstructionAt G x C w g ∧
+        ¬ HasD0DescentRepairAt G moveSupports x w :=
+  exists_unrepaired_hasCubicD0BasicColorObstructionAt_of_isD0LocalMinimumForMoveSupports_of_hasClusteredZeroVertex_and_neutral_candidates
+    hcard hmin ((zeroClusteringCount_pos_iff_hasClusteredZeroVertex).mp hCpos)
+    hcandidate
+
+/-- Kempe-cycle source form of the diagnostic obstruction theorem. -/
+theorem
+    exists_unrepaired_hasCubicD0BasicColorObstructionAt_of_isD0LocalMinimumForMoveSupports_of_hasClusteredZeroVertex_and_kempe_candidates
+    {G : SimpleGraph V} [Fintype V] [Fintype G.edgeSet]
+    {moveSupports : Finset (Finset G.edgeSet)} {x : G.edgeSet → Color}
+    (hcard : ∀ v : V, (incidentEdgeFinset G v).card = 3)
+    (hmin : IsD0LocalMinimumForMoveSupports G moveSupports x)
+    (hcluster : HasClusteredZeroVertex G x)
+    (hcandidate : EveryClusteredZeroVertexHasKempeD0Candidate G moveSupports x) :
+    ∃ (C : Finset G.edgeSet) (w : V) (g : Color),
+      HasCubicD0BasicColorObstructionAt G x C w g ∧
+        ¬ HasD0DescentRepairAt G moveSupports x w :=
+  exists_unrepaired_hasCubicD0BasicColorObstructionAt_of_isD0LocalMinimumForMoveSupports_of_hasClusteredZeroVertex_and_neutral_candidates
+    hcard hmin hcluster
+    (everyClusteredZeroVertexHasNeutralD0Candidate_of_kempeD0Candidate
+      hcandidate)
+
+/-- Rotation-disk source form of the diagnostic obstruction theorem. -/
+theorem
+    exists_unrepaired_hasCubicD0BasicColorObstructionAt_of_isD0LocalMinimumForMoveSupports_of_hasClusteredZeroVertex_and_rotationDisk_candidates
+    {G : SimpleGraph V} [Fintype V] [Fintype G.edgeSet]
+    (D : RotationDiskData V G.edgeSet)
+    (hincident : ∀ v : V, D.asZeroBoundary.incident v = incidentEdgeFinset G v)
+    {moveSupports : Finset (Finset G.edgeSet)} {x : G.edgeSet → Color}
+    (hcard : ∀ v : V, (incidentEdgeFinset G v).card = 3)
+    (hmin : IsD0LocalMinimumForMoveSupports G moveSupports x)
+    (hcluster : HasClusteredZeroVertex G x)
+    (hcandidate :
+      EveryClusteredZeroVertexHasRotationDiskD0Candidate G D moveSupports x) :
+    ∃ (C : Finset G.edgeSet) (w : V) (g : Color),
+      HasCubicD0BasicColorObstructionAt G x C w g ∧
+        ¬ HasD0DescentRepairAt G moveSupports x w :=
+  exists_unrepaired_hasCubicD0BasicColorObstructionAt_of_isD0LocalMinimumForMoveSupports_of_hasClusteredZeroVertex_and_neutral_candidates
+    hcard hmin hcluster
+    (everyClusteredZeroVertexHasNeutralD0Candidate_of_rotationDiskD0Candidate
+      D hincident hcandidate)
+
 /-- A `D₀` local minimum cannot contain a repairable cubic basic-color
 obstruction.  This is the precise second-step obligation exposed by the
 forced-zero analysis. -/
