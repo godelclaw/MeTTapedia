@@ -108,6 +108,50 @@ def IsKirchhoffNeutralMoveSupport (G : SimpleGraph V) [Fintype G.edgeSet]
     (C : Finset G.edgeSet) : Prop :=
   ∀ v : V, Even ((incidentEdgeFinset G v).filter fun e => e ∈ C).card
 
+theorem isKirchhoffNeutralMoveSupport_of_even_inter_incidentEdgeFinset
+    {G : SimpleGraph V} [Fintype G.edgeSet] {C : Finset G.edgeSet}
+    (hC : ∀ v : V, Even (C ∩ incidentEdgeFinset G v).card) :
+    IsKirchhoffNeutralMoveSupport G C := by
+  intro v
+  have hfilter :
+      (incidentEdgeFinset G v).filter (fun e => e ∈ C) =
+        C ∩ incidentEdgeFinset G v := by
+    ext e
+    simp [and_comm]
+  rw [hfilter]
+  exact hC v
+
+theorem isKirchhoffNeutralMoveSupport_of_even_incidentEdgeFinset_inter
+    {G : SimpleGraph V} [Fintype G.edgeSet] {C : Finset G.edgeSet}
+    (hC : ∀ v : V, Even (incidentEdgeFinset G v ∩ C).card) :
+    IsKirchhoffNeutralMoveSupport G C := by
+  apply isKirchhoffNeutralMoveSupport_of_even_inter_incidentEdgeFinset
+  intro v
+  rw [Finset.inter_comm]
+  exact hC v
+
+theorem isKirchhoffNeutralMoveSupport_of_even_inter_incident
+    {G : SimpleGraph V} [Fintype G.edgeSet] {C : Finset G.edgeSet}
+    (incident : V → Finset G.edgeSet)
+    (hincident : ∀ v : V, incident v = incidentEdgeFinset G v)
+    (hC : ∀ v : V, Even (C ∩ incident v).card) :
+    IsKirchhoffNeutralMoveSupport G C := by
+  apply isKirchhoffNeutralMoveSupport_of_even_inter_incidentEdgeFinset
+  intro v
+  simpa [hincident v] using hC v
+
+theorem isKirchhoffNeutralMoveSupport_of_even_incident_inter
+    {G : SimpleGraph V} [Fintype G.edgeSet] {C : Finset G.edgeSet}
+    (incident : V → Finset G.edgeSet)
+    (hincident : ∀ v : V, incident v = incidentEdgeFinset G v)
+    (hC : ∀ v : V, Even (incident v ∩ C).card) :
+    IsKirchhoffNeutralMoveSupport G C := by
+  apply isKirchhoffNeutralMoveSupport_of_even_inter_incident
+    (incident := incident) hincident
+  intro v
+  rw [Finset.inter_comm]
+  exact hC v
+
 theorem isKirchhoffNeutralMoveSupport_empty
     {G : SimpleGraph V} [Fintype G.edgeSet] :
     IsKirchhoffNeutralMoveSupport G ∅ := by
