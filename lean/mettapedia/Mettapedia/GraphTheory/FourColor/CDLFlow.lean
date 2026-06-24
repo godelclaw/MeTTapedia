@@ -93,6 +93,74 @@ def zeroDefectD0 (G : SimpleGraph V) [Fintype V] [Fintype G.edgeSet]
     (x : G.edgeSet → Color) : Nat :=
   100 * zeroEdgeCount G x + 10 * zeroIncidentVertexCount G x + zeroClusteringCount G x
 
+/-- Add a fixed nonzero color on a selected finite edge support.  In the
+manuscript this is the abstract `x + g · 1_C` one-step move; cycle and patch
+conditions are supplied separately by the caller. -/
+def cdlOneStepMoveOn (G : SimpleGraph V) [Fintype G.edgeSet]
+    (C : Finset G.edgeSet) (g : Color) (x : G.edgeSet → Color) :
+    G.edgeSet → Color :=
+  fun e => if e ∈ C then x e + g else x e
+
+@[simp] theorem cdlOneStepMoveOn_apply_mem {G : SimpleGraph V} [Fintype G.edgeSet]
+    {C : Finset G.edgeSet} {g : Color} {x : G.edgeSet → Color} {e : G.edgeSet}
+    (he : e ∈ C) :
+    cdlOneStepMoveOn G C g x e = x e + g := by
+  simp [cdlOneStepMoveOn, he]
+
+@[simp] theorem cdlOneStepMoveOn_apply_not_mem {G : SimpleGraph V} [Fintype G.edgeSet]
+    {C : Finset G.edgeSet} {g : Color} {x : G.edgeSet → Color} {e : G.edgeSet}
+    (he : e ∉ C) :
+    cdlOneStepMoveOn G C g x e = x e := by
+  simp [cdlOneStepMoveOn, he]
+
+/-- A permitted manuscript one-step move on a selected edge support.  This
+records the target assignment, the nonzero move color, and the two semantic
+checks that are not automatic for an arbitrary support: Kirchhoff and CDL
+goodness. -/
+structure IsAllowedD0OneStepMoveOn (G : SimpleGraph V) [Fintype G.edgeSet]
+    (C : Finset G.edgeSet) (g : Color) (x y : G.edgeSet → Color) : Prop where
+  color_ne_zero : g ≠ 0
+  target_eq : y = cdlOneStepMoveOn G C g x
+  target_flow : IsGraphFlow G y
+  target_good : ∀ v : V, IsCDLGoodAtVertex G y v
+
+/-- Manuscript-facing `D₀` local minimum for a finite family of permitted move
+supports.  A patch-specific file can instantiate `moveSupports` with its finite
+cycle list and then discharge `IsAllowedD0OneStepMoveOn` for each target. -/
+structure IsD0LocalMinimumForMoveSupports (G : SimpleGraph V)
+    [Fintype V] [Fintype G.edgeSet] (moveSupports : Finset (Finset G.edgeSet))
+    (x : G.edgeSet → Color) : Prop where
+  source_flow : IsGraphFlow G x
+  source_good : ∀ v : V, IsCDLGoodAtVertex G x v
+  has_zero : 0 < zeroEdgeCount G x
+  d0_le_of_allowed_move :
+    ∀ ⦃C : Finset G.edgeSet⦄, C ∈ moveSupports →
+    ∀ ⦃g : Color⦄ ⦃y : G.edgeSet → Color⦄,
+      IsAllowedD0OneStepMoveOn G C g x y →
+        zeroDefectD0 G x ≤ zeroDefectD0 G y
+
+/-- Projection lemma for the defining local-minimum inequality. -/
+theorem zeroDefectD0_le_of_isD0LocalMinimumForMoveSupports
+    {G : SimpleGraph V} [Fintype V] [Fintype G.edgeSet]
+    {moveSupports : Finset (Finset G.edgeSet)} {x y : G.edgeSet → Color}
+    {C : Finset G.edgeSet} {g : Color}
+    (hmin : IsD0LocalMinimumForMoveSupports G moveSupports x)
+    (hC : C ∈ moveSupports) (hmove : IsAllowedD0OneStepMoveOn G C g x y) :
+    zeroDefectD0 G x ≤ zeroDefectD0 G y :=
+  hmin.d0_le_of_allowed_move hC hmove
+
+/-- Any permitted one-step move that strictly lowers `D₀` refutes local
+minimality for the selected move-support family. -/
+theorem not_isD0LocalMinimumForMoveSupports_of_allowed_descent
+    {G : SimpleGraph V} [Fintype V] [Fintype G.edgeSet]
+    {moveSupports : Finset (Finset G.edgeSet)} {x y : G.edgeSet → Color}
+    {C : Finset G.edgeSet} {g : Color}
+    (hC : C ∈ moveSupports) (hmove : IsAllowedD0OneStepMoveOn G C g x y)
+    (hdesc : zeroDefectD0 G y < zeroDefectD0 G x) :
+    ¬ IsD0LocalMinimumForMoveSupports G moveSupports x := by
+  intro hmin
+  exact not_lt_of_ge (hmin.d0_le_of_allowed_move hC hmove) hdesc
+
 /-- The zero-edge set is a matching in the manuscript's local sense: no vertex
 is incident to two or more zero-valued edges. -/
 def ZeroEdgesFormMatching (G : SimpleGraph V) [Fintype G.edgeSet]
