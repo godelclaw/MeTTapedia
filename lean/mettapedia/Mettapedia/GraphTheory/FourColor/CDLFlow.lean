@@ -3432,6 +3432,32 @@ def EveryCubicD0BasicColorObstructionHasD0Descent (G : SimpleGraph V)
     HasCubicD0BasicColorObstructionAt G x C v g →
       HasD0DescentRepairAt G moveSupports x v
 
+/-- To discharge the abstract second-step cubic-obstruction repair hypothesis,
+it is enough to repair every concrete three-edge obstruction star: two support
+edges of color `g` and the unique outside zero edge. -/
+theorem
+    everyCubicD0BasicColorObstructionHasD0Descent_of_cubic_star_repairs
+    {G : SimpleGraph V} [Fintype V] [Fintype G.edgeSet]
+    {moveSupports : Finset (Finset G.edgeSet)} {x : G.edgeSet → Color}
+    (hcard : ∀ v : V, (incidentEdgeFinset G v).card = 3)
+    (hrepair :
+      ∀ (C : Finset G.edgeSet) (v : V) (g : Color)
+        (e₁ e₂ e₀ : G.edgeSet),
+        e₁ ≠ e₂ → e₁ ≠ e₀ → e₂ ≠ e₀ →
+          incidentEdgeFinset G v = {e₁, e₂, e₀} →
+            e₁ ∈ C → e₂ ∈ C → e₀ ∉ C →
+              x e₁ = g → x e₂ = g → x e₀ = 0 →
+                HasD0DescentRepairAt G moveSupports x v) :
+    EveryCubicD0BasicColorObstructionHasD0Descent G moveSupports x := by
+  intro C v g hobst
+  rcases
+    exists_incidentEdgeFinset_eq_support_pair_insert_outside_zero_of_hasCubicD0BasicColorObstructionAt
+      (hcard v) hobst with
+    ⟨e₁, e₂, e₀, h12, h10, h20, hstar, he₁C, he₂C, he₀C, hx₁,
+      hx₂, hx₀⟩
+  exact hrepair C v g e₁ e₂ e₀ h12 h10 h20 hstar he₁C he₂C he₀C
+    hx₁ hx₂ hx₀
+
 /-- First-step local candidate for the two-step `D₀` route: at every
 clustered-zero vertex there is a Kirchhoff-neutral support that erases an
 incident zero and creates no new zero on its support.  Unlike
@@ -3708,6 +3734,30 @@ theorem
       hcard hmin hrepair)
       ⟨C, hCmem, g, v, hg, hC, heraseAt, hnew⟩
 
+/-- Star-checkable form of the two-step route: first-step neutral candidates
+plus repairs for every concrete cubic obstruction star exclude clustered zeros
+at a `D₀` local minimum. -/
+theorem
+    not_hasClusteredZeroVertex_of_isD0LocalMinimumForMoveSupports_of_neutral_candidates_and_cubic_star_repairs
+    {G : SimpleGraph V} [Fintype V] [Fintype G.edgeSet]
+    {moveSupports : Finset (Finset G.edgeSet)} {x : G.edgeSet → Color}
+    (hcard : ∀ v : V, (incidentEdgeFinset G v).card = 3)
+    (hmin : IsD0LocalMinimumForMoveSupports G moveSupports x)
+    (hcandidate : EveryClusteredZeroVertexHasNeutralD0Candidate G moveSupports x)
+    (hrepair :
+      ∀ (C : Finset G.edgeSet) (v : V) (g : Color)
+        (e₁ e₂ e₀ : G.edgeSet),
+        e₁ ≠ e₂ → e₁ ≠ e₀ → e₂ ≠ e₀ →
+          incidentEdgeFinset G v = {e₁, e₂, e₀} →
+            e₁ ∈ C → e₂ ∈ C → e₀ ∉ C →
+              x e₁ = g → x e₂ = g → x e₀ = 0 →
+                HasD0DescentRepairAt G moveSupports x v) :
+    ¬ HasClusteredZeroVertex G x :=
+  not_hasClusteredZeroVertex_of_isD0LocalMinimumForMoveSupports_of_neutral_candidates_and_cubicObstruction_descent
+    hcard hmin hcandidate
+    (everyCubicD0BasicColorObstructionHasD0Descent_of_cubic_star_repairs
+      hcard hrepair)
+
 /-- Matching-zero form of the two-step neutral-candidate route. -/
 theorem
     zeroEdgesFormMatching_of_isD0LocalMinimumForMoveSupports_of_neutral_candidates_and_cubicObstruction_descent
@@ -3721,6 +3771,79 @@ theorem
   zeroEdgesFormMatching_iff_not_hasClusteredZeroVertex.mpr
     (not_hasClusteredZeroVertex_of_isD0LocalMinimumForMoveSupports_of_neutral_candidates_and_cubicObstruction_descent
       hcard hmin hcandidate hrepair)
+
+/-- Matching-zero form with the remaining second-step obligation reduced to
+concrete cubic star repairs. -/
+theorem
+    zeroEdgesFormMatching_of_isD0LocalMinimumForMoveSupports_of_neutral_candidates_and_cubic_star_repairs
+    {G : SimpleGraph V} [Fintype V] [Fintype G.edgeSet]
+    {moveSupports : Finset (Finset G.edgeSet)} {x : G.edgeSet → Color}
+    (hcard : ∀ v : V, (incidentEdgeFinset G v).card = 3)
+    (hmin : IsD0LocalMinimumForMoveSupports G moveSupports x)
+    (hcandidate : EveryClusteredZeroVertexHasNeutralD0Candidate G moveSupports x)
+    (hrepair :
+      ∀ (C : Finset G.edgeSet) (v : V) (g : Color)
+        (e₁ e₂ e₀ : G.edgeSet),
+        e₁ ≠ e₂ → e₁ ≠ e₀ → e₂ ≠ e₀ →
+          incidentEdgeFinset G v = {e₁, e₂, e₀} →
+            e₁ ∈ C → e₂ ∈ C → e₀ ∉ C →
+              x e₁ = g → x e₂ = g → x e₀ = 0 →
+                HasD0DescentRepairAt G moveSupports x v) :
+    ZeroEdgesFormMatching G x :=
+  zeroEdgesFormMatching_iff_not_hasClusteredZeroVertex.mpr
+    (not_hasClusteredZeroVertex_of_isD0LocalMinimumForMoveSupports_of_neutral_candidates_and_cubic_star_repairs
+      hcard hmin hcandidate hrepair)
+
+/-- Kempe-cycle source form with the second-step obligation reduced to concrete
+cubic star repairs. -/
+theorem
+    zeroEdgesFormMatching_of_isD0LocalMinimumForMoveSupports_of_kempe_candidates_and_cubic_star_repairs
+    {G : SimpleGraph V} [Fintype V] [Fintype G.edgeSet]
+    {moveSupports : Finset (Finset G.edgeSet)} {x : G.edgeSet → Color}
+    (hcard : ∀ v : V, (incidentEdgeFinset G v).card = 3)
+    (hmin : IsD0LocalMinimumForMoveSupports G moveSupports x)
+    (hcandidate : EveryClusteredZeroVertexHasKempeD0Candidate G moveSupports x)
+    (hrepair :
+      ∀ (C : Finset G.edgeSet) (v : V) (g : Color)
+        (e₁ e₂ e₀ : G.edgeSet),
+        e₁ ≠ e₂ → e₁ ≠ e₀ → e₂ ≠ e₀ →
+          incidentEdgeFinset G v = {e₁, e₂, e₀} →
+            e₁ ∈ C → e₂ ∈ C → e₀ ∉ C →
+              x e₁ = g → x e₂ = g → x e₀ = 0 →
+                HasD0DescentRepairAt G moveSupports x v) :
+    ZeroEdgesFormMatching G x :=
+  zeroEdgesFormMatching_of_isD0LocalMinimumForMoveSupports_of_neutral_candidates_and_cubic_star_repairs
+    hcard hmin
+    (everyClusteredZeroVertexHasNeutralD0Candidate_of_kempeD0Candidate
+      hcandidate)
+    hrepair
+
+/-- Rotation-disk internal-face source form with the second-step obligation
+reduced to concrete cubic star repairs. -/
+theorem
+    zeroEdgesFormMatching_of_isD0LocalMinimumForMoveSupports_of_rotationDisk_candidates_and_cubic_star_repairs
+    {G : SimpleGraph V} [Fintype V] [Fintype G.edgeSet]
+    (D : RotationDiskData V G.edgeSet)
+    (hincident : ∀ v : V, D.asZeroBoundary.incident v = incidentEdgeFinset G v)
+    {moveSupports : Finset (Finset G.edgeSet)} {x : G.edgeSet → Color}
+    (hcard : ∀ v : V, (incidentEdgeFinset G v).card = 3)
+    (hmin : IsD0LocalMinimumForMoveSupports G moveSupports x)
+    (hcandidate :
+      EveryClusteredZeroVertexHasRotationDiskD0Candidate G D moveSupports x)
+    (hrepair :
+      ∀ (C : Finset G.edgeSet) (v : V) (g : Color)
+        (e₁ e₂ e₀ : G.edgeSet),
+        e₁ ≠ e₂ → e₁ ≠ e₀ → e₂ ≠ e₀ →
+          incidentEdgeFinset G v = {e₁, e₂, e₀} →
+            e₁ ∈ C → e₂ ∈ C → e₀ ∉ C →
+              x e₁ = g → x e₂ = g → x e₀ = 0 →
+                HasD0DescentRepairAt G moveSupports x v) :
+    ZeroEdgesFormMatching G x :=
+  zeroEdgesFormMatching_of_isD0LocalMinimumForMoveSupports_of_neutral_candidates_and_cubic_star_repairs
+    hcard hmin
+    (everyClusteredZeroVertexHasNeutralD0Candidate_of_rotationDiskD0Candidate
+      D hincident hcandidate)
+    hrepair
 
 /-- Kempe-cycle source form of the two-step matching-zero route. -/
 theorem
