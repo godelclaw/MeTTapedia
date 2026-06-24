@@ -360,6 +360,84 @@ theorem zeroEdgeCount_cdlOneStepMoveOn_add_one_le_of_erases_zero_and_creates_no_
   exact Nat.succ_le_of_lt
     (Finset.card_pos.mpr ⟨e, hinside⟩)
 
+theorem zeroEdgeFinset_cdlOneStepMoveOn_eq_filter_not_mem_of_creates_no_zero
+    {G : SimpleGraph V} [Fintype G.edgeSet]
+    {C : Finset G.edgeSet} {g : Color} {x : G.edgeSet → Color}
+    (hnew : ∀ e ∈ C, x e ≠ g) :
+    zeroEdgeFinset G (cdlOneStepMoveOn G C g x) =
+      (zeroEdgeFinset G x).filter (fun e => e ∉ C) := by
+  rw [zeroEdgeFinset_cdlOneStepMoveOn_eq]
+  have hnew_empty : C.filter (fun e => x e = g) = ∅ := by
+    rw [Finset.filter_eq_empty_iff]
+    exact hnew
+  rw [hnew_empty, Finset.union_empty]
+
+theorem zeroIncidentEdgeFinset_cdlOneStepMoveOn_subset_of_creates_no_zero
+    {G : SimpleGraph V} [Fintype G.edgeSet]
+    {C : Finset G.edgeSet} {g : Color} {x : G.edgeSet → Color}
+    (hnew : ∀ e ∈ C, x e ≠ g) (v : V) :
+    zeroIncidentEdgeFinset G (cdlOneStepMoveOn G C g x) v ⊆
+      zeroIncidentEdgeFinset G x v := by
+  intro e he
+  have htarget :
+      e ∈ incidentEdgeFinset G v ∧ cdlOneStepMoveOn G C g x e = 0 := by
+    simpa [zeroIncidentEdgeFinset] using he
+  by_cases heC : e ∈ C
+  · have hxg : x e = g :=
+      (cdlOneStepMoveOn_apply_mem_eq_zero_iff heC).mp htarget.2
+    exact False.elim ((hnew e heC) hxg)
+  · have hx0 : x e = 0 :=
+      (cdlOneStepMoveOn_apply_not_mem_eq_zero_iff heC).mp htarget.2
+    exact Finset.mem_filter.mpr ⟨htarget.1, hx0⟩
+
+theorem zeroIncidentEdgeCount_cdlOneStepMoveOn_le_of_creates_no_zero
+    {G : SimpleGraph V} [Fintype G.edgeSet]
+    {C : Finset G.edgeSet} {g : Color} {x : G.edgeSet → Color}
+    (hnew : ∀ e ∈ C, x e ≠ g) (v : V) :
+    zeroIncidentEdgeCount G (cdlOneStepMoveOn G C g x) v ≤
+      zeroIncidentEdgeCount G x v := by
+  rw [zeroIncidentEdgeCount, zeroIncidentEdgeCount]
+  exact Finset.card_le_card
+    (zeroIncidentEdgeFinset_cdlOneStepMoveOn_subset_of_creates_no_zero hnew v)
+
+theorem zeroIncidentVertexFinset_cdlOneStepMoveOn_subset_of_creates_no_zero
+    {G : SimpleGraph V} [Fintype V] [Fintype G.edgeSet]
+    {C : Finset G.edgeSet} {g : Color} {x : G.edgeSet → Color}
+    (hnew : ∀ e ∈ C, x e ≠ g) :
+    zeroIncidentVertexFinset G (cdlOneStepMoveOn G C g x) ⊆
+      zeroIncidentVertexFinset G x := by
+  intro v hv
+  have hvpos :
+      0 < zeroIncidentEdgeCount G (cdlOneStepMoveOn G C g x) v := by
+    simpa [zeroIncidentVertexFinset] using hv
+  have hle :
+      zeroIncidentEdgeCount G (cdlOneStepMoveOn G C g x) v ≤
+        zeroIncidentEdgeCount G x v :=
+    zeroIncidentEdgeCount_cdlOneStepMoveOn_le_of_creates_no_zero hnew v
+  exact Finset.mem_filter.mpr ⟨Finset.mem_univ v, lt_of_lt_of_le hvpos hle⟩
+
+theorem zeroIncidentVertexCount_cdlOneStepMoveOn_le_of_creates_no_zero
+    {G : SimpleGraph V} [Fintype V] [Fintype G.edgeSet]
+    {C : Finset G.edgeSet} {g : Color} {x : G.edgeSet → Color}
+    (hnew : ∀ e ∈ C, x e ≠ g) :
+    zeroIncidentVertexCount G (cdlOneStepMoveOn G C g x) ≤
+      zeroIncidentVertexCount G x := by
+  rw [zeroIncidentVertexCount, zeroIncidentVertexCount]
+  exact Finset.card_le_card
+    (zeroIncidentVertexFinset_cdlOneStepMoveOn_subset_of_creates_no_zero hnew)
+
+theorem zeroClusteringCount_cdlOneStepMoveOn_le_of_creates_no_zero
+    {G : SimpleGraph V} [Fintype V] [Fintype G.edgeSet]
+    {C : Finset G.edgeSet} {g : Color} {x : G.edgeSet → Color}
+    (hnew : ∀ e ∈ C, x e ≠ g) :
+    zeroClusteringCount G (cdlOneStepMoveOn G C g x) ≤
+      zeroClusteringCount G x := by
+  unfold zeroClusteringCount
+  apply Finset.sum_le_sum
+  intro v _hv
+  exact Nat.sub_le_sub_right
+    (zeroIncidentEdgeCount_cdlOneStepMoveOn_le_of_creates_no_zero hnew v) 1
+
 theorem isCDLGoodAtVertex_cdlOneStepMoveOn_iff
     {G : SimpleGraph V} [Fintype G.edgeSet]
     {C : Finset G.edgeSet} {g : Color} {x : G.edgeSet → Color} {v : V} :
@@ -672,6 +750,28 @@ theorem
     (zeroEdgeCount_cdlOneStepMoveOn_add_one_le_of_erases_zero_and_creates_no_zero
       herase hnew)
     hI hC hbudget
+
+theorem not_isD0LocalMinimumForMoveSupports_of_allowed_erases_zero_no_new_zero_descent
+    {G : SimpleGraph V} [Fintype V] [Fintype G.edgeSet]
+    {moveSupports : Finset (Finset G.edgeSet)} {x : G.edgeSet → Color}
+    {C : Finset G.edgeSet} {g : Color}
+    (hCmem : C ∈ moveSupports)
+    (hmove : IsAllowedD0OneStepMoveOn G C g x (cdlOneStepMoveOn G C g x))
+    (herase : ∃ e ∈ C, x e = 0)
+    (hnew : ∀ e ∈ C, x e ≠ g) :
+    ¬ IsD0LocalMinimumForMoveSupports G moveSupports x := by
+  exact
+    not_isD0LocalMinimumForMoveSupports_of_allowed_erases_zero_no_new_zero_side_budget_descent
+      (dI := 0) (dC := 0) hCmem hmove herase hnew
+      (by
+        exact Nat.le_trans
+          (zeroIncidentVertexCount_cdlOneStepMoveOn_le_of_creates_no_zero hnew)
+          (Nat.le_add_right _ _))
+      (by
+        exact Nat.le_trans
+          (zeroClusteringCount_cdlOneStepMoveOn_le_of_creates_no_zero hnew)
+          (Nat.le_add_right _ _))
+      (by norm_num)
 
 theorem zeroDefectD0_le_of_isD0LocalMinimumForMoveSupports_of_isKempeCycle
     {G : SimpleGraph V} [Fintype V] [Fintype G.edgeSet]
