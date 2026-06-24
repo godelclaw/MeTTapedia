@@ -28,7 +28,8 @@ theorem not_nonempty_faceBoundaryClosedWalkGeometry_of_isAcyclic_of_faces_nonemp
   have htrail : data.walk.IsTrail := by
     simpa [SimpleGraph.Walk.isTrail_def] using data.hnodup_edges
   have hpath : data.walk.IsPath := (hAcyc.isPath_iff_isTrail data.walk).2 htrail
-  have hnil : data.walk = .nil := (SimpleGraph.Walk.isPath_iff_eq_nil data.walk).1 hpath
+  have hnil : data.walk = .nil := SimpleGraph.Walk.Nil.eq_nil
+    (SimpleGraph.Walk.isPath_iff_nil.mp hpath)
   have hnonempty := data.hnonempty
   rw [hnil] at hnonempty
   simp at hnonempty
