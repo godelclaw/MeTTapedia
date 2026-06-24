@@ -3913,6 +3913,79 @@ theorem
     hasPinnedTargetD0DescentRepair_of_concrete_star_support_witnesses
       hx hstar he₀C hx₀ hC'mem hh hC'neutral hgood he₀C' hnew
 
+/-- Kempe-cycle source constructor for the pinned-target star-repair
+interface.  It is enough to find a permitted Kempe-cycle support through the
+pinned outside zero edge, together with the vertex witnesses that the target is
+CDL-good and creates no new zero. -/
+theorem
+    everyCubicD0BasicColorObstructionStarHasPinnedTargetD0Descent_of_kempeCycle_support_witnesses
+    {G : SimpleGraph V} [Fintype V] [Fintype G.edgeSet]
+    {moveSupports : Finset (Finset G.edgeSet)} {x : G.edgeSet → Color}
+    (hx : IsGraphFlow G x)
+    (hrepair :
+      ∀ (C : Finset G.edgeSet) (v : V) (g : Color)
+        (e₁ e₂ e₀ : G.edgeSet),
+        g ≠ 0 →
+          e₁ ≠ e₂ → e₁ ≠ e₀ → e₂ ≠ e₀ →
+            incidentEdgeFinset G v = {e₁, e₂, e₀} →
+              e₁ ∈ C → e₂ ∈ C → e₀ ∉ C →
+                x e₁ = g → x e₂ = g → x e₀ = 0 →
+                  ∃ C' ∈ moveSupports, ∃ α β h : Color,
+                    h ≠ 0 ∧
+                      IsKempeCycle (incidentEdgeFinset G) x C' α β ∧
+                        (∀ w : V, ∃ e ∈ incidentEdgeFinset G w,
+                          if e ∈ C' then x e ≠ h else x e ≠ 0) ∧
+                          e₀ ∈ C' ∧ ∀ e' ∈ C', x e' ≠ h) :
+    EveryCubicD0BasicColorObstructionStarHasPinnedTargetD0Descent
+        G moveSupports x := by
+  apply
+    everyCubicD0BasicColorObstructionStarHasPinnedTargetD0Descent_of_concrete_star_support_witnesses
+      hx
+  intro C v g e₁ e₂ e₀ hg h12 h10 h20 hstar he₁C he₂C he₀C hx₁ hx₂ hx₀
+  rcases hrepair C v g e₁ e₂ e₀ hg h12 h10 h20 hstar he₁C he₂C
+      he₀C hx₁ hx₂ hx₀ with
+    ⟨C', hC'mem, α, β, h, hh, hKempe, hgood, he₀C', hnew⟩
+  exact ⟨C', hC'mem, h, hh,
+    isKirchhoffNeutralMoveSupport_of_isKempeCycle hKempe, hgood, he₀C',
+      hnew⟩
+
+/-- Rotation-disk internal-face source constructor for the pinned-target
+star-repair interface.  Internal faces are already Kirchhoff-neutral by the
+rotation data parity law, so the remaining local work is the same pinned edge
+and vertex-witness obligation. -/
+theorem
+    everyCubicD0BasicColorObstructionStarHasPinnedTargetD0Descent_of_rotationDiskData_internalFace_support_witnesses
+    {G : SimpleGraph V} [Fintype V] [Fintype G.edgeSet]
+    (D : RotationDiskData V G.edgeSet)
+    (hincident : ∀ v : V, D.asZeroBoundary.incident v = incidentEdgeFinset G v)
+    {moveSupports : Finset (Finset G.edgeSet)} {x : G.edgeSet → Color}
+    (hx : IsGraphFlow G x)
+    (hrepair :
+      ∀ (C : Finset G.edgeSet) (v : V) (g : Color)
+        (e₁ e₂ e₀ : G.edgeSet),
+        g ≠ 0 →
+          e₁ ≠ e₂ → e₁ ≠ e₀ → e₂ ≠ e₀ →
+            incidentEdgeFinset G v = {e₁, e₂, e₀} →
+              e₁ ∈ C → e₂ ∈ C → e₀ ∉ C →
+                x e₁ = g → x e₂ = g → x e₀ = 0 →
+                  ∃ f ∈ moveSupports, ∃ h : Color,
+                    h ≠ 0 ∧ f ∈ D.rotation.internalFaces ∧
+                      (∀ w : V, ∃ e ∈ incidentEdgeFinset G w,
+                        if e ∈ f then x e ≠ h else x e ≠ 0) ∧
+                        e₀ ∈ f ∧ ∀ e' ∈ f, x e' ≠ h) :
+    EveryCubicD0BasicColorObstructionStarHasPinnedTargetD0Descent
+        G moveSupports x := by
+  apply
+    everyCubicD0BasicColorObstructionStarHasPinnedTargetD0Descent_of_concrete_star_support_witnesses
+      hx
+  intro C v g e₁ e₂ e₀ hg h12 h10 h20 hstar he₁C he₂C he₀C hx₁ hx₂ hx₀
+  rcases hrepair C v g e₁ e₂ e₀ hg h12 h10 h20 hstar he₁C he₂C
+      he₀C hx₁ hx₂ hx₀ with
+    ⟨f, hfmem, h, hh, hf, hgood, he₀f, hnew⟩
+  exact ⟨f, hfmem, h, hh,
+    isKirchhoffNeutralMoveSupport_of_rotationDiskData_internalFace
+      D hincident hf, hgood, he₀f, hnew⟩
+
 /-- To discharge the abstract second-step cubic-obstruction repair hypothesis,
 it is enough to repair every concrete three-edge obstruction star: two support
 edges of color `g` and the unique outside zero edge. -/
