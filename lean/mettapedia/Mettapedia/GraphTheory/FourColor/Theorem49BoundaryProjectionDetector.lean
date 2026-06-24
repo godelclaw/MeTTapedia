@@ -183,7 +183,7 @@ theorem projectedKempeClosureGeneratorSubspace_eq_planarBoundaryZeroSubmodule_of
   exact submodule_eq_of_le_of_inf_orthogonal_eq_bot
     (B := chainDotBilinForm G.edgeSet)
     (hB := chainDotBilinForm_nondegenerate (E := G.edgeSet))
-    (hB₀ := chainDotBilinForm_isRefl (E := G.edgeSet))
+    (_hB₀ := chainDotBilinForm_isRefl (E := G.edgeSet))
     (projectedKempeClosureGeneratorSubspace_le_planarBoundaryZeroSubmodule emb C₀)
     (planarBoundaryZeroSubmodule_inf_chainDot_orthogonal_projectedKempeClosureGeneratorSubspace_eq_bot_of_boundaryZeroProjectedGeneratorDetector
       hdet)

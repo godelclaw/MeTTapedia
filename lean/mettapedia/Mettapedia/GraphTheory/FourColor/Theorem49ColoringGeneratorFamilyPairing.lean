@@ -152,6 +152,80 @@ noncomputable def planarBoundaryZeroFamilyPairingMap
       ((chainDotBilinForm G.edgeSet (family i : G.edgeSet → Color)).map_smul a
         (z : G.edgeSet → Color))
 
+/-- Membership in the kernel of the concrete family-pairing map is exactly coordinatewise
+vanishing against every selected projected coloring generator. -/
+theorem mem_ker_planarBoundaryZeroFamilyPairingMap_iff_forall_pairing_eq_zero
+    {G : SimpleGraph V} [Fintype G.edgeSet]
+    {emb : PlaneEmbeddingWithBoundary G}
+    {colorings : Set (G.EdgeColoring Color)}
+    {κ : Type*}
+    (family : κ → projectedColoringGeneratorSubspace emb colorings)
+    (z : planarBoundaryZeroSubmodule emb) :
+    z ∈ LinearMap.ker (planarBoundaryZeroFamilyPairingMap family) ↔
+      ∀ i,
+        chainDotBilinForm G.edgeSet (family i : G.edgeSet → Color)
+          (z : G.edgeSet → Color) = 0 := by
+  constructor
+  · intro hz i
+    have hmap : planarBoundaryZeroFamilyPairingMap family z = 0 := by
+      simpa using hz
+    have hcoord := congrArg (fun f : κ → F2 => f i) hmap
+    simpa [planarBoundaryZeroFamilyPairingMap] using hcoord
+  · intro hzero
+    change planarBoundaryZeroFamilyPairingMap family z = 0
+    ext i
+    simpa [planarBoundaryZeroFamilyPairingMap] using hzero i
+
+/-- Trivial kernel of the explicit family-pairing map is equivalent to the concrete
+finite-certificate condition that coordinatewise vanishing against the family separates every
+selected-boundary-zero chain. -/
+theorem ker_planarBoundaryZeroFamilyPairingMap_eq_bot_iff_forall_pairing_eq_zero_imp_eq_zero
+    {G : SimpleGraph V} [Fintype G.edgeSet]
+    {emb : PlaneEmbeddingWithBoundary G}
+    {colorings : Set (G.EdgeColoring Color)}
+    {κ : Type*}
+    (family : κ → projectedColoringGeneratorSubspace emb colorings) :
+    LinearMap.ker (planarBoundaryZeroFamilyPairingMap family) = ⊥ ↔
+      ∀ z : planarBoundaryZeroSubmodule emb,
+        (∀ i,
+          chainDotBilinForm G.edgeSet (family i : G.edgeSet → Color)
+            (z : G.edgeSet → Color) = 0) →
+          z = 0 := by
+  constructor
+  · intro hker z hzero
+    have hzker :
+        z ∈ LinearMap.ker (planarBoundaryZeroFamilyPairingMap family) :=
+      (mem_ker_planarBoundaryZeroFamilyPairingMap_iff_forall_pairing_eq_zero family z).2
+        hzero
+    have hzbot : z ∈ (⊥ : Submodule F2 (planarBoundaryZeroSubmodule emb)) := by
+      simpa [hker] using hzker
+    simpa using hzbot
+  · intro hseparates
+    rw [Submodule.eq_bot_iff]
+    intro z hzker
+    exact hseparates z
+      ((mem_ker_planarBoundaryZeroFamilyPairingMap_iff_forall_pairing_eq_zero family z).1
+        hzker)
+
+/-- Direct elimination form of a finite family-pairing certificate.  Once a future certificate
+proves that the family pairing map has trivial kernel, every boundary-zero chain whose pairings
+all vanish is forced to be zero. -/
+theorem eq_zero_of_forall_family_pairing_eq_zero_of_ker_planarBoundaryZeroFamilyPairingMap_eq_bot
+    {G : SimpleGraph V} [Fintype G.edgeSet]
+    {emb : PlaneEmbeddingWithBoundary G}
+    {colorings : Set (G.EdgeColoring Color)}
+    {κ : Type*}
+    {family : κ → projectedColoringGeneratorSubspace emb colorings}
+    (hker : LinearMap.ker (planarBoundaryZeroFamilyPairingMap family) = ⊥)
+    {z : planarBoundaryZeroSubmodule emb}
+    (hzero :
+      ∀ i,
+        chainDotBilinForm G.edgeSet (family i : G.edgeSet → Color)
+          (z : G.edgeSet → Color) = 0) :
+    z = 0 :=
+  (ker_planarBoundaryZeroFamilyPairingMap_eq_bot_iff_forall_pairing_eq_zero_imp_eq_zero
+    family).1 hker z hzero
+
 /-- Trivial kernel of the concrete family-evaluation pairing map already gives the
 explicit-family detector property.  This is the most direct kernel-checkable route from a finite
 explicit family to the theorem-4.9 detector surface. -/
