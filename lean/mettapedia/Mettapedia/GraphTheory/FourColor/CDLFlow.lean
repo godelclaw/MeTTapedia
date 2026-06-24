@@ -3724,6 +3724,28 @@ def EveryCubicD0BasicColorObstructionStarHasPinnedOutsideEdgeD0Descent
                   e₀ ∈ C' ∧ e₀ ∈ incidentEdgeFinset G v ∧ e₀ ∉ C ∧
                     x e₀ = 0 ∧ ∀ e' ∈ C', x e' ≠ h
 
+/-- Strongest current concrete-star repair target: the repair support is
+different from the failed support, contains the pinned outside zero edge, and
+the resulting target assignment makes that edge nonzero. -/
+def EveryCubicD0BasicColorObstructionStarHasPinnedTargetD0Descent
+    (G : SimpleGraph V) [Fintype V] [Fintype G.edgeSet]
+    (moveSupports : Finset (Finset G.edgeSet)) (x : G.edgeSet → Color) :
+    Prop :=
+  ∀ (C : Finset G.edgeSet) (v : V) (g : Color)
+    (e₁ e₂ e₀ : G.edgeSet),
+    g ≠ 0 →
+      e₁ ≠ e₂ → e₁ ≠ e₀ → e₂ ≠ e₀ →
+        incidentEdgeFinset G v = {e₁, e₂, e₀} →
+          e₁ ∈ C → e₂ ∈ C → e₀ ∉ C →
+            x e₁ = g → x e₂ = g → x e₀ = 0 →
+              ∃ C' ∈ moveSupports, ∃ h : Color,
+                IsAllowedD0OneStepMoveOn G C' h x
+                  (cdlOneStepMoveOn G C' h x) ∧
+                  C' ≠ C ∧ e₀ ∈ C' ∧ e₀ ∈ incidentEdgeFinset G v ∧
+                    e₀ ∉ C ∧ x e₀ = 0 ∧
+                      cdlOneStepMoveOn G C' h x e₀ ≠ 0 ∧
+                        ∀ e' ∈ C', x e' ≠ h
+
 /-- The broader concrete-star repair hypothesis entails the pinned-edge
 version on the genuine nonzero obstruction stars. -/
 theorem
@@ -3740,6 +3762,42 @@ theorem
       hg hstar he₁C he₂C he₀C hx₁ hx₂ hx₀
       (hrepair C v g e₁ e₂ e₀ h12 h10 h20 hstar he₁C he₂C he₀C
         hx₁ hx₂ hx₀)
+
+/-- The broader concrete-star repair hypothesis entails the strongest pinned
+target form: on each genuine obstruction star, the forced outside zero edge is
+made nonzero in the repaired target assignment. -/
+theorem
+    everyCubicD0BasicColorObstructionStarHasPinnedTargetD0Descent_of_cubic_star_repairs
+    {G : SimpleGraph V} [Fintype V] [Fintype G.edgeSet]
+    {moveSupports : Finset (Finset G.edgeSet)} {x : G.edgeSet → Color}
+    (hrepair :
+      EveryCubicD0BasicColorObstructionStarHasD0Descent G moveSupports x) :
+    EveryCubicD0BasicColorObstructionStarHasPinnedTargetD0Descent
+        G moveSupports x := by
+  intro C v g e₁ e₂ e₀ hg h12 h10 h20 hstar he₁C he₂C he₀C hx₁ hx₂ hx₀
+  exact
+    hasD0DescentRepairAt_erases_star_outside_edge_in_target_of_cubic_obstruction_star
+      hg hstar he₁C he₂C he₀C hx₁ hx₂ hx₀
+      (hrepair C v g e₁ e₂ e₀ h12 h10 h20 hstar he₁C he₂C he₀C
+        hx₁ hx₂ hx₀)
+
+/-- The target-erasing concrete-star interface forgets to the pinned-edge
+interface. -/
+theorem
+    everyCubicD0BasicColorObstructionStarHasPinnedOutsideEdgeD0Descent_of_pinnedTarget_repairs
+    {G : SimpleGraph V} [Fintype V] [Fintype G.edgeSet]
+    {moveSupports : Finset (Finset G.edgeSet)} {x : G.edgeSet → Color}
+    (hrepair :
+      EveryCubicD0BasicColorObstructionStarHasPinnedTargetD0Descent
+        G moveSupports x) :
+    EveryCubicD0BasicColorObstructionStarHasPinnedOutsideEdgeD0Descent
+        G moveSupports x := by
+  intro C v g e₁ e₂ e₀ hg h12 h10 h20 hstar he₁C he₂C he₀C hx₁ hx₂ hx₀
+  rcases hrepair C v g e₁ e₂ e₀ hg h12 h10 h20 hstar he₁C he₂C
+      he₀C hx₁ hx₂ hx₀ with
+    ⟨C', hC'mem, h, hmove, _hsupport_ne, he₀C', he₀inc, he₀C,
+      hx₀, _htarget, hnew⟩
+  exact ⟨C', hC'mem, h, hmove, he₀C', he₀inc, he₀C, hx₀, hnew⟩
 
 /-- To discharge the abstract second-step cubic-obstruction repair hypothesis,
 it is enough to repair every concrete three-edge obstruction star: two support
@@ -3784,6 +3842,22 @@ theorem
       he₀C hx₁ hx₂ hx₀ with
     ⟨C', hC'mem, h, hmove, he₀C', he₀inc, _he₀Outside, hx₀', hnew⟩
   exact ⟨C', hC'mem, h, hmove, ⟨e₀, he₀C', he₀inc, hx₀'⟩, hnew⟩
+
+/-- The strongest pinned-target star-repair interface is enough for the
+abstract cubic-obstruction repair obligation. -/
+theorem
+    everyCubicD0BasicColorObstructionHasD0Descent_of_cubic_star_pinned_target_repairs
+    {G : SimpleGraph V} [Fintype V] [Fintype G.edgeSet]
+    {moveSupports : Finset (Finset G.edgeSet)} {x : G.edgeSet → Color}
+    (hcard : ∀ v : V, (incidentEdgeFinset G v).card = 3)
+    (hrepair :
+      EveryCubicD0BasicColorObstructionStarHasPinnedTargetD0Descent
+        G moveSupports x) :
+    EveryCubicD0BasicColorObstructionHasD0Descent G moveSupports x :=
+  everyCubicD0BasicColorObstructionHasD0Descent_of_cubic_star_pinned_outside_edge_repairs
+    hcard
+    (everyCubicD0BasicColorObstructionStarHasPinnedOutsideEdgeD0Descent_of_pinnedTarget_repairs
+      hrepair)
 
 /-- First-step local candidate for the two-step `D₀` route: at every
 clustered-zero vertex there is a Kirchhoff-neutral support that erases an
@@ -4079,6 +4153,25 @@ theorem
     (everyCubicD0BasicColorObstructionHasD0Descent_of_cubic_star_repairs
       hcard hrepair)
 
+/-- Strong pinned-target form of the two-step route: it is enough to repair
+each concrete obstruction star by changing the forced outside zero edge to a
+nonzero target value. -/
+theorem
+    not_hasClusteredZeroVertex_of_isD0LocalMinimumForMoveSupports_of_neutral_candidates_and_cubic_star_pinned_target_repairs
+    {G : SimpleGraph V} [Fintype V] [Fintype G.edgeSet]
+    {moveSupports : Finset (Finset G.edgeSet)} {x : G.edgeSet → Color}
+    (hcard : ∀ v : V, (incidentEdgeFinset G v).card = 3)
+    (hmin : IsD0LocalMinimumForMoveSupports G moveSupports x)
+    (hcandidate : EveryClusteredZeroVertexHasNeutralD0Candidate G moveSupports x)
+    (hrepair :
+      EveryCubicD0BasicColorObstructionStarHasPinnedTargetD0Descent
+        G moveSupports x) :
+    ¬ HasClusteredZeroVertex G x :=
+  not_hasClusteredZeroVertex_of_isD0LocalMinimumForMoveSupports_of_neutral_candidates_and_cubicObstruction_descent
+    hcard hmin hcandidate
+    (everyCubicD0BasicColorObstructionHasD0Descent_of_cubic_star_pinned_target_repairs
+      hcard hrepair)
+
 /-- Matching-zero form of the two-step neutral-candidate route. -/
 theorem
     zeroEdgesFormMatching_of_isD0LocalMinimumForMoveSupports_of_neutral_candidates_and_cubicObstruction_descent
@@ -4125,6 +4218,24 @@ theorem
   zeroEdgesFormMatching_of_isD0LocalMinimumForMoveSupports_of_neutral_candidates_and_cubicObstruction_descent
     hcard hmin hcandidate
     (everyCubicD0BasicColorObstructionHasD0Descent_of_cubic_star_pinned_outside_edge_repairs
+      hcard hrepair)
+
+/-- Matching-zero form with the second-step obligation reduced to the strong
+pinned-target star-repair interface. -/
+theorem
+    zeroEdgesFormMatching_of_isD0LocalMinimumForMoveSupports_of_neutral_candidates_and_cubic_star_pinned_target_repairs
+    {G : SimpleGraph V} [Fintype V] [Fintype G.edgeSet]
+    {moveSupports : Finset (Finset G.edgeSet)} {x : G.edgeSet → Color}
+    (hcard : ∀ v : V, (incidentEdgeFinset G v).card = 3)
+    (hmin : IsD0LocalMinimumForMoveSupports G moveSupports x)
+    (hcandidate : EveryClusteredZeroVertexHasNeutralD0Candidate G moveSupports x)
+    (hrepair :
+      EveryCubicD0BasicColorObstructionStarHasPinnedTargetD0Descent
+        G moveSupports x) :
+    ZeroEdgesFormMatching G x :=
+  zeroEdgesFormMatching_of_isD0LocalMinimumForMoveSupports_of_neutral_candidates_and_cubicObstruction_descent
+    hcard hmin hcandidate
+    (everyCubicD0BasicColorObstructionHasD0Descent_of_cubic_star_pinned_target_repairs
       hcard hrepair)
 
 /-- Kempe-cycle source form with the second-step obligation reduced to concrete
@@ -4834,6 +4945,22 @@ theorem
     (zeroEdgesFormMatching_of_isD0LocalMinimumForMoveSupports_of_neutral_candidates_and_cubic_star_repairs
       hcard hmin hcandidate hrepair)
 
+/-- Strong pinned-target form of the manuscript clustering identity `C(x)=0`. -/
+theorem
+    zeroClusteringCount_eq_zero_of_isD0LocalMinimumForMoveSupports_of_neutral_candidates_and_cubic_star_pinned_target_repairs
+    {G : SimpleGraph V} [Fintype V] [Fintype G.edgeSet]
+    {moveSupports : Finset (Finset G.edgeSet)} {x : G.edgeSet → Color}
+    (hcard : ∀ v : V, (incidentEdgeFinset G v).card = 3)
+    (hmin : IsD0LocalMinimumForMoveSupports G moveSupports x)
+    (hcandidate : EveryClusteredZeroVertexHasNeutralD0Candidate G moveSupports x)
+    (hrepair :
+      EveryCubicD0BasicColorObstructionStarHasPinnedTargetD0Descent
+        G moveSupports x) :
+    zeroClusteringCount G x = 0 :=
+  zeroClusteringCount_eq_zero_iff_zeroEdgesFormMatching.mpr
+    (zeroEdgesFormMatching_of_isD0LocalMinimumForMoveSupports_of_neutral_candidates_and_cubic_star_pinned_target_repairs
+      hcard hmin hcandidate hrepair)
+
 /-- Kempe-cycle source form of the star-repair clustering identity. -/
 theorem
     zeroClusteringCount_eq_zero_of_isD0LocalMinimumForMoveSupports_of_kempe_candidates_and_cubic_star_repairs
@@ -5312,6 +5439,22 @@ theorem
     (zeroEdgesFormMatching_of_isD0LocalMinimumForMoveSupports_of_neutral_candidates_and_cubic_star_repairs
       hcard hmin hcandidate hrepair)
 
+/-- Strong pinned-target form of the manuscript count identity `I(x)=2Z(x)`. -/
+theorem
+    zeroIncidentVertexCount_eq_two_mul_zeroEdgeCount_of_isD0LocalMinimumForMoveSupports_of_neutral_candidates_and_cubic_star_pinned_target_repairs
+    {G : SimpleGraph V} [Fintype V] [Fintype G.edgeSet]
+    {moveSupports : Finset (Finset G.edgeSet)} {x : G.edgeSet → Color}
+    (hcard : ∀ v : V, (incidentEdgeFinset G v).card = 3)
+    (hmin : IsD0LocalMinimumForMoveSupports G moveSupports x)
+    (hcandidate : EveryClusteredZeroVertexHasNeutralD0Candidate G moveSupports x)
+    (hrepair :
+      EveryCubicD0BasicColorObstructionStarHasPinnedTargetD0Descent
+        G moveSupports x) :
+    zeroIncidentVertexCount G x = 2 * zeroEdgeCount G x :=
+  zeroIncidentVertexCount_eq_two_mul_zeroEdgeCount_of_zeroEdgesFormMatching
+    (zeroEdgesFormMatching_of_isD0LocalMinimumForMoveSupports_of_neutral_candidates_and_cubic_star_pinned_target_repairs
+      hcard hmin hcandidate hrepair)
+
 /-- Kempe-cycle source form of the star-repair count identity `I(x)=2Z(x)`. -/
 theorem
     zeroIncidentVertexCount_eq_two_mul_zeroEdgeCount_of_isD0LocalMinimumForMoveSupports_of_kempe_candidates_and_cubic_star_repairs
@@ -5493,6 +5636,22 @@ theorem
     zeroDefectD0 G x = 120 * zeroEdgeCount G x :=
   zeroDefectD0_eq_120_mul_zeroEdgeCount_of_zeroEdgesFormMatching
     (zeroEdgesFormMatching_of_isD0LocalMinimumForMoveSupports_of_neutral_candidates_and_cubic_star_repairs
+      hcard hmin hcandidate hrepair)
+
+/-- Strong pinned-target form of the cheap-defect collapse `D₀(x)=120Z(x)`. -/
+theorem
+    zeroDefectD0_eq_120_mul_zeroEdgeCount_of_isD0LocalMinimumForMoveSupports_of_neutral_candidates_and_cubic_star_pinned_target_repairs
+    {G : SimpleGraph V} [Fintype V] [Fintype G.edgeSet]
+    {moveSupports : Finset (Finset G.edgeSet)} {x : G.edgeSet → Color}
+    (hcard : ∀ v : V, (incidentEdgeFinset G v).card = 3)
+    (hmin : IsD0LocalMinimumForMoveSupports G moveSupports x)
+    (hcandidate : EveryClusteredZeroVertexHasNeutralD0Candidate G moveSupports x)
+    (hrepair :
+      EveryCubicD0BasicColorObstructionStarHasPinnedTargetD0Descent
+        G moveSupports x) :
+    zeroDefectD0 G x = 120 * zeroEdgeCount G x :=
+  zeroDefectD0_eq_120_mul_zeroEdgeCount_of_zeroEdgesFormMatching
+    (zeroEdgesFormMatching_of_isD0LocalMinimumForMoveSupports_of_neutral_candidates_and_cubic_star_pinned_target_repairs
       hcard hmin hcandidate hrepair)
 
 /-- Kempe-cycle source form of the star-repair cheap-defect collapse. -/
