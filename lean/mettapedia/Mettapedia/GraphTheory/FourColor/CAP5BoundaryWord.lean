@@ -208,6 +208,56 @@ theorem isTaitColorTriple_map_equiv_of_map_zero {σ : Color ≃ Color}
   · intro h
     exact hbc (σ.injective h)
 
+theorem isTaitColorTriple_red_blue_purple : IsTaitColorTriple red blue purple := by
+  simp [IsTaitColorTriple]
+
+/-- The unique color-name equivalence sending the standard Tait triple
+`(red, blue, purple)` to any given Tait triple `(a,b,c)`, while fixing `0`. -/
+private def colorEquivOfTaitTriple {a b c : Color}
+    (h : IsTaitColorTriple a b c) : Color ≃ Color where
+  toFun d := if d = 0 then 0 else if d = red then a else if d = blue then b else c
+  invFun d := if d = 0 then 0 else if d = a then red else if d = b then blue else purple
+  left_inv := by
+    intro d
+    rcases h with ⟨ha0, hb0, hc0, hab, hac, hbc⟩
+    rcases color_eq_red_or_blue_or_purple ha0 with rfl | rfl | rfl <;>
+      rcases color_eq_red_or_blue_or_purple hb0 with rfl | rfl | rfl <;>
+      rcases color_eq_red_or_blue_or_purple hc0 with rfl | rfl | rfl <;>
+      rcases d with ⟨d₁, d₂⟩ <;>
+      fin_cases d₁ <;> fin_cases d₂ <;>
+      simp [red, blue, purple] at hab hac hbc
+    all_goals decide
+  right_inv := by
+    intro d
+    rcases h with ⟨ha0, hb0, hc0, hab, hac, hbc⟩
+    rcases color_eq_red_or_blue_or_purple ha0 with rfl | rfl | rfl <;>
+      rcases color_eq_red_or_blue_or_purple hb0 with rfl | rfl | rfl <;>
+      rcases color_eq_red_or_blue_or_purple hc0 with rfl | rfl | rfl <;>
+      rcases d with ⟨d₁, d₂⟩ <;>
+      fin_cases d₁ <;> fin_cases d₂ <;>
+      simp [red, blue, purple] at hab hac hbc
+    all_goals decide
+
+@[simp] private theorem colorEquivOfTaitTriple_zero {a b c : Color}
+    (h : IsTaitColorTriple a b c) :
+    colorEquivOfTaitTriple h 0 = 0 := by
+  simp [colorEquivOfTaitTriple]
+
+@[simp] private theorem colorEquivOfTaitTriple_red {a b c : Color}
+    (h : IsTaitColorTriple a b c) :
+    colorEquivOfTaitTriple h red = a := by
+  simp [colorEquivOfTaitTriple, red_ne_zero]
+
+@[simp] private theorem colorEquivOfTaitTriple_blue {a b c : Color}
+    (h : IsTaitColorTriple a b c) :
+    colorEquivOfTaitTriple h blue = b := by
+  simp [colorEquivOfTaitTriple, blue_ne_zero, red_ne_blue.symm]
+
+@[simp] private theorem colorEquivOfTaitTriple_purple {a b c : Color}
+    (h : IsTaitColorTriple a b c) :
+    colorEquivOfTaitTriple h purple = c := by
+  simp [colorEquivOfTaitTriple, purple_ne_zero, red_ne_purple.symm, blue_ne_purple.symm]
+
 /-- CAP5 extension by a fixed internal coloring is invariant under zero-fixing color relabeling. -/
 theorem cap5ExtendsAcrossCycleWith_map_equiv_of_map_zero {σ : Color ≃ Color}
     (hσ0 : σ 0 = 0) {w : CAP5BoundaryWord} {x : CAP5InternalCycleColoring}
@@ -502,6 +552,19 @@ def cap5GoodBoundaryWord311 : CAP5BoundaryWord
   | 3 => blue
   | 4 => purple
 
+theorem cap5MapBoundaryWord_goodBoundaryWord311 (σ : Color → Color) :
+    cap5MapBoundaryWord σ cap5GoodBoundaryWord311 =
+      cap5BoundaryWord311Of (σ red) (σ blue) (σ purple) := by
+  funext i
+  fin_cases i <;> rfl
+
+theorem cap5MapBoundaryWord_goodBoundaryWord311_of_taitTriple {a b c : Color}
+    (h : IsTaitColorTriple a b c) :
+    cap5MapBoundaryWord (colorEquivOfTaitTriple h) cap5GoodBoundaryWord311 =
+      cap5BoundaryWord311Of a b c := by
+  rw [cap5MapBoundaryWord_goodBoundaryWord311]
+  simp
+
 /-- The internal 5-cycle coloring that extends `cap5GoodBoundaryWord311`. -/
 def cap5GoodInternalColoring311 : CAP5InternalCycleColoring
   | 0 => purple
@@ -537,6 +600,32 @@ def CAP5BoundaryWordHasBlock311 (w : CAP5BoundaryWord) : Prop :=
   ∃ (σ : Color ≃ Color) (n : Nat),
     σ 0 = 0 ∧ w = cap5TransportedGoodBoundaryWord σ n
 
+theorem cap5BoundaryWordHasColoredBlock311_of_block311
+    {w : CAP5BoundaryWord} (h : CAP5BoundaryWordHasBlock311 w) :
+    CAP5BoundaryWordHasColoredBlock311 w := by
+  rcases h with ⟨σ, n, hσ0, hw⟩
+  refine ⟨σ red, σ blue, σ purple,
+    isTaitColorTriple_map_equiv_of_map_zero hσ0 isTaitColorTriple_red_blue_purple,
+    n, ?_⟩
+  rw [hw]
+  unfold cap5TransportedGoodBoundaryWord
+  rw [cap5MapBoundaryWord_goodBoundaryWord311]
+
+theorem cap5BoundaryWordHasBlock311_of_coloredBlock311
+    {w : CAP5BoundaryWord} (h : CAP5BoundaryWordHasColoredBlock311 w) :
+    CAP5BoundaryWordHasBlock311 w := by
+  rcases h with ⟨a, b, c, htriple, n, hw⟩
+  refine ⟨colorEquivOfTaitTriple htriple, n, colorEquivOfTaitTriple_zero htriple, ?_⟩
+  rw [hw]
+  unfold cap5TransportedGoodBoundaryWord
+  rw [cap5MapBoundaryWord_goodBoundaryWord311_of_taitTriple htriple]
+
+theorem cap5BoundaryWordHasColoredBlock311_iff_block311
+    {w : CAP5BoundaryWord} :
+    CAP5BoundaryWordHasColoredBlock311 w ↔ CAP5BoundaryWordHasBlock311 w :=
+  ⟨cap5BoundaryWordHasBlock311_of_coloredBlock311,
+    cap5BoundaryWordHasColoredBlock311_of_block311⟩
+
 /-- Any CAP5 boundary word with normalized block structure `(3,1,1)` extends across the cap. -/
 theorem cap5_extendsAcrossCycle_of_block311
     {w : CAP5BoundaryWord} (h : CAP5BoundaryWordHasBlock311 w) :
@@ -551,6 +640,19 @@ def cap5BadBoundaryWord2111 : CAP5BoundaryWord
   | 2 => blue
   | 3 => red
   | 4 => purple
+
+theorem cap5MapBoundaryWord_badBoundaryWord2111 (σ : Color → Color) :
+    cap5MapBoundaryWord σ cap5BadBoundaryWord2111 =
+      cap5BoundaryWord2111Of (σ red) (σ blue) (σ purple) := by
+  funext i
+  fin_cases i <;> rfl
+
+theorem cap5MapBoundaryWord_badBoundaryWord2111_of_taitTriple {a b c : Color}
+    (h : IsTaitColorTriple a b c) :
+    cap5MapBoundaryWord (colorEquivOfTaitTriple h) cap5BadBoundaryWord2111 =
+      cap5BoundaryWord2111Of a b c := by
+  rw [cap5MapBoundaryWord_badBoundaryWord2111]
+  simp
 
 theorem color_eq_purple_of_ne_zero_of_ne_red_of_ne_blue {c : Color}
     (h0 : c ≠ 0) (hr : c ≠ red) (hb : c ≠ blue) :
@@ -615,6 +717,32 @@ under cyclic rotation and zero-fixing color relabeling. -/
 def CAP5BoundaryWordHasBlock2111 (w : CAP5BoundaryWord) : Prop :=
   ∃ (σ : Color ≃ Color) (n : Nat),
     σ 0 = 0 ∧ w = cap5TransportedBadBoundaryWord σ n
+
+theorem cap5BoundaryWordHasColoredBlock2111_of_block2111
+    {w : CAP5BoundaryWord} (h : CAP5BoundaryWordHasBlock2111 w) :
+    CAP5BoundaryWordHasColoredBlock2111 w := by
+  rcases h with ⟨σ, n, hσ0, hw⟩
+  refine ⟨σ red, σ blue, σ purple,
+    isTaitColorTriple_map_equiv_of_map_zero hσ0 isTaitColorTriple_red_blue_purple,
+    n, ?_⟩
+  rw [hw]
+  unfold cap5TransportedBadBoundaryWord
+  rw [cap5MapBoundaryWord_badBoundaryWord2111]
+
+theorem cap5BoundaryWordHasBlock2111_of_coloredBlock2111
+    {w : CAP5BoundaryWord} (h : CAP5BoundaryWordHasColoredBlock2111 w) :
+    CAP5BoundaryWordHasBlock2111 w := by
+  rcases h with ⟨a, b, c, htriple, n, hw⟩
+  refine ⟨colorEquivOfTaitTriple htriple, n, colorEquivOfTaitTriple_zero htriple, ?_⟩
+  rw [hw]
+  unfold cap5TransportedBadBoundaryWord
+  rw [cap5MapBoundaryWord_badBoundaryWord2111_of_taitTriple htriple]
+
+theorem cap5BoundaryWordHasColoredBlock2111_iff_block2111
+    {w : CAP5BoundaryWord} :
+    CAP5BoundaryWordHasColoredBlock2111 w ↔ CAP5BoundaryWordHasBlock2111 w :=
+  ⟨cap5BoundaryWordHasBlock2111_of_coloredBlock2111,
+    cap5BoundaryWordHasColoredBlock2111_of_block2111⟩
 
 /-- Any CAP5 boundary word with normalized block structure `(2,1,1,1)` does not extend
 across the cap. -/
