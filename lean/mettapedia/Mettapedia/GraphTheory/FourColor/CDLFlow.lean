@@ -2937,6 +2937,31 @@ def HasD0DescentRepairAt (G : SimpleGraph V) [Fintype G.edgeSet]
       (∃ e ∈ C, e ∈ incidentEdgeFinset G v ∧ x e = 0) ∧
         ∀ e ∈ C, x e ≠ g
 
+/-- Any vertex-local repair of a cubic obstruction must erase the unique zero
+edge outside the original failed support.  This isolates the next local
+search-space constraint for the manuscript's second step: the repair support
+must reach outside the blocked support at the obstructed vertex. -/
+theorem
+    hasD0DescentRepairAt_erases_outside_obstruction_support_of_hasCubicD0BasicColorObstructionAt
+    {G : SimpleGraph V} [Fintype V] [Fintype G.edgeSet]
+    {moveSupports : Finset (Finset G.edgeSet)}
+    {C : Finset G.edgeSet} {g : Color} {x : G.edgeSet → Color} {v : V}
+    (hobst : HasCubicD0BasicColorObstructionAt G x C v g)
+    (hrepair : HasD0DescentRepairAt G moveSupports x v) :
+    ∃ C' ∈ moveSupports, ∃ h : Color,
+      IsAllowedD0OneStepMoveOn G C' h x (cdlOneStepMoveOn G C' h x) ∧
+        ∃ e : G.edgeSet,
+          e ∈ C' ∧ e ∈ incidentEdgeFinset G v ∧ e ∉ C ∧ x e = 0 ∧
+            ∀ e' ∈ C', x e' ≠ h := by
+  rcases hrepair with ⟨C', hC'mem, h, hmove, heraseAt, hnew⟩
+  rcases heraseAt with ⟨e, heC', heinc, hx0⟩
+  have heC : e ∉ C := by
+    intro heC
+    exact
+      not_exists_zero_incident_edge_on_obstruction_support_of_hasCubicD0BasicColorObstructionAt
+        hobst ⟨e, heC, heinc, hx0⟩
+  exact ⟨C', hC'mem, h, hmove, e, heC', heinc, heC, hx0, hnew⟩
+
 /-- Patch/local-combinatorics hypothesis for the manuscript's matching-zeros
 step: every non-matching zero pattern admits a permitted one-step repair that
 erases an existing zero and creates no new zero on its support.  Theorems below
