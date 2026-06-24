@@ -360,6 +360,20 @@ def CyclicEdgeCutRealization.of_edge_crossing_classification
         (hnoncut_not_crosses e hnot))
     hinside_cycle houtside_cycle
 
+/-- Exact crossing classification already gives the graph-facing separator theorem: every walk
+whose endpoints lie on opposite sides contains one of the listed crossing edges. -/
+theorem exists_mem_edgeCut_of_walk_endpoint_sides_of_edge_crossing_classification
+    {G : SimpleGraph V} {edgeCut : Finset G.edgeSet} (side : V → Prop)
+    (hnoncut_not_crosses :
+      ∀ e : G.edgeSet, e ∉ edgeCut → ¬ EdgeCrossesVertexSide G side e)
+    {u v : V} (p : G.Walk u v) (hu : side u) (hv : ¬ side v) :
+    ∃ e : G.edgeSet, e ∈ edgeCut ∧ (e : Sym2 V) ∈ p.edges := by
+  rcases exists_edgeCrossesVertexSide_of_walk_endpoint_sides side p hu hv with
+    ⟨e, heEdges, hcross⟩
+  by_cases hecut : e ∈ edgeCut
+  · exact ⟨e, hecut, heEdges⟩
+  · exact (hnoncut_not_crosses e hecut hcross).elim
+
 theorem SmallCyclicEdgeCut.exists_mem_edgeCut_of_walk_endpoint_sides
     {G : SimpleGraph V} (cut : SmallCyclicEdgeCut G)
     {u v : V} (p : G.Walk u v) (hu : cut.side u) (hv : ¬ cut.side v) :

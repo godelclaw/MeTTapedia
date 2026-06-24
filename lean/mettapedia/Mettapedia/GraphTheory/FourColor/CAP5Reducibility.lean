@@ -682,6 +682,28 @@ def CAP5ExceptionalAnnulusBoundaryEdgeSupportCandidate.cyclicEdgeCutRealizationD
       exact hportal_crosses i hi)
     hnoncandidate_not_crosses hinside_cycle houtside_cycle
 
+/-- Direct separator consequence of non-candidate edge non-crossing: any walk crossing the chosen
+side contains one of the named CAP5 separator boundary edges.  This is the graph-facing Sublemma
+6.8 target after the planar/Jordan layer supplies a side for which edges outside the candidate
+support do not cross. -/
+theorem CAP5ExceptionalAnnulusBoundaryEdgeSupportCandidate.exists_portal_boundaryEdge_mem_walk_of_noncandidate_not_crosses
+    {V : Type*} {G : SimpleGraph V} [DecidableEq G.edgeSet]
+    {boundaryEdge : Fin 5 → G.edgeSet}
+    (candidate : CAP5ExceptionalAnnulusBoundaryEdgeSupportCandidate boundaryEdge)
+    (side : V → Prop)
+    (hnoncandidate_not_crosses :
+      ∀ e : G.edgeSet, e ∉ candidate.edgeSupport → ¬ EdgeCrossesVertexSide G side e)
+    {u v : V} (p : G.Walk u v) (hu : side u) (hv : ¬ side v) :
+    ∃ i : Fin 5, i ∈ candidate.portalCandidate.portalSet ∧
+      ((boundaryEdge i : G.edgeSet) : Sym2 V) ∈ p.edges := by
+  rcases exists_mem_edgeCut_of_walk_endpoint_sides_of_edge_crossing_classification
+      side hnoncandidate_not_crosses p hu hv with
+    ⟨e, heSupport, heEdges⟩
+  rcases (candidate.mem_edgeSupport_iff_exists_portal e).1 heSupport with
+    ⟨i, hi, hboundary⟩
+  subst e
+  exact ⟨i, hi, heEdges⟩
+
 /-- If a finite CAP5 boundary-edge support candidate is realized by a graph-level small cyclic
 edge cut, the cardinality bound transfers to that cut. -/
 theorem CAP5ExceptionalAnnulusBoundaryEdgeSupportCandidate.exists_smallCyclicEdgeCut_of_realizes
