@@ -2657,6 +2657,44 @@ theorem zeroIncidentEdgeCount_eq_zero_or_eq_one_of_isD0LocalMinimumForMoveSuppor
       hmin hrepair v
   omega
 
+/-- If a repaired `D₀` local minimum has an explicit zero edge incident to a
+vertex, then that vertex has exactly one incident zero edge. -/
+theorem zeroIncidentEdgeCount_eq_one_of_isD0LocalMinimumForMoveSupports_of_nonmatching_descent_of_exists_incident_zero
+    {G : SimpleGraph V} [Fintype V] [Fintype G.edgeSet]
+    {moveSupports : Finset (Finset G.edgeSet)} {x : G.edgeSet → Color}
+    (hmin : IsD0LocalMinimumForMoveSupports G moveSupports x)
+    (hrepair : EveryNonmatchingZeroPatternHasD0Descent G moveSupports x)
+    {v : V} (hzero : ∃ e ∈ incidentEdgeFinset G v, x e = 0) :
+    zeroIncidentEdgeCount G x v = 1 := by
+  rcases
+    zeroIncidentEdgeCount_eq_zero_or_eq_one_of_isD0LocalMinimumForMoveSupports_of_nonmatching_descent
+      hmin hrepair v with hcount | hcount
+  · rcases hzero with ⟨e, he_inc, he_zero⟩
+    have hnozero :
+        ∀ e ∈ incidentEdgeFinset G v, x e ≠ 0 :=
+      (zeroIncidentEdgeCount_eq_zero_iff.mp hcount)
+    exact False.elim (hnozero e he_inc he_zero)
+  · exact hcount
+
+/-- Vertex-local repair form: an explicit incident zero forces exactly one
+incident zero edge at that vertex. -/
+theorem zeroIncidentEdgeCount_eq_one_of_isD0LocalMinimumForMoveSupports_of_clusteredZeroVertex_descent_of_exists_incident_zero
+    {G : SimpleGraph V} [Fintype V] [Fintype G.edgeSet]
+    {moveSupports : Finset (Finset G.edgeSet)} {x : G.edgeSet → Color}
+    (hmin : IsD0LocalMinimumForMoveSupports G moveSupports x)
+    (hrepair : EveryClusteredZeroVertexHasD0Descent G moveSupports x)
+    {v : V} (hzero : ∃ e ∈ incidentEdgeFinset G v, x e = 0) :
+    zeroIncidentEdgeCount G x v = 1 := by
+  rcases
+    zeroIncidentEdgeCount_eq_zero_or_eq_one_of_isD0LocalMinimumForMoveSupports_of_clusteredZeroVertex_descent
+      hmin hrepair v with hcount | hcount
+  · rcases hzero with ⟨e, he_inc, he_zero⟩
+    have hnozero :
+        ∀ e ∈ incidentEdgeFinset G v, x e ≠ 0 :=
+      (zeroIncidentEdgeCount_eq_zero_iff.mp hcount)
+    exact False.elim (hnozero e he_inc he_zero)
+  · exact hcount
+
 /-- No-cluster form of the abstract matching-zeros theorem. -/
 theorem not_hasClusteredZeroVertex_of_isD0LocalMinimumForMoveSupports_of_nonmatching_descent
     {G : SimpleGraph V} [Fintype V] [Fintype G.edgeSet]
