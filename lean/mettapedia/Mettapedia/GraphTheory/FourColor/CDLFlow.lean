@@ -104,6 +104,44 @@ theorem hasCubicIncidentEdgeTriples_iff_incidentEdgeFinset_card_eq_three
   · exact incidentEdgeFinset_card_eq_three_of_hasCubicIncidentEdgeTriples
   · exact hasCubicIncidentEdgeTriples_of_incidentEdgeFinset_card_eq_three
 
+/-- The local incident-edge finset used by the `F₂²` Kirchhoff layer has the
+same cardinality as Mathlib's graph degree. -/
+theorem incidentEdgeFinset_card_eq_degree {G : SimpleGraph V} [Fintype G.edgeSet]
+    (v : V) [Fintype (G.neighborSet v)] :
+    (incidentEdgeFinset G v).card = G.degree v := by
+  have hmap :
+      (incidentEdgeFinset G v).map
+          (Function.Embedding.subtype (fun e : Sym2 V => e ∈ G.edgeSet)) =
+        G.incidenceFinset v := by
+    rw [SimpleGraph.incidenceFinset_eq_filter]
+    ext e
+    simp [incidentEdgeFinset, and_comm]
+  calc
+    (incidentEdgeFinset G v).card =
+        ((incidentEdgeFinset G v).map
+          (Function.Embedding.subtype (fun e : Sym2 V => e ∈ G.edgeSet))).card := by
+      simp
+    _ = (G.incidenceFinset v).card := by rw [hmap]
+    _ = G.degree v := by simp
+
+/-- A graph with Mathlib degree `3` at every vertex has the explicit cubic
+incident triples needed by the local Tait-flow bridge. -/
+theorem hasCubicIncidentEdgeTriples_of_degree_eq_three
+    {G : SimpleGraph V} [Fintype G.edgeSet] [G.LocallyFinite]
+    (hdegree : ∀ v : V, G.degree v = 3) :
+    HasCubicIncidentEdgeTriples G := by
+  apply hasCubicIncidentEdgeTriples_of_incidentEdgeFinset_card_eq_three
+  intro v
+  rw [incidentEdgeFinset_card_eq_degree, hdegree v]
+
+/-- Regular cubic graphs in Mathlib's sense have the explicit cubic incident
+triples needed by the local Tait-flow bridge. -/
+theorem hasCubicIncidentEdgeTriples_of_isRegularOfDegree_three
+    {G : SimpleGraph V} [Fintype G.edgeSet] [G.LocallyFinite]
+    (hregular : G.IsRegularOfDegree 3) :
+    HasCubicIncidentEdgeTriples G :=
+  hasCubicIncidentEdgeTriples_of_degree_eq_three hregular.degree_eq
+
 theorem isLocalCDLGoodTriple_iff_not_bad {a b c : Color} :
     IsLocalCDLGoodTriple a b c ↔ ¬ IsLocalCDLBadTriple a b c := by
   constructor
@@ -367,6 +405,25 @@ theorem exists_taitEdgeColoring_iff_exists_nowhereZeroFlow_of_incidentEdgeFinset
   exact exists_taitEdgeColoring_iff_exists_nowhereZeroFlow_of_hasCubicIncidentEdgeTriples
     (hasCubicIncidentEdgeTriples_of_incidentEdgeFinset_card_eq_three hcard)
 
+/-- Tait/flow reformulation for graphs whose Mathlib degree is `3` at every
+vertex. -/
+theorem exists_taitEdgeColoring_iff_exists_nowhereZeroFlow_of_degree_eq_three
+    {G : SimpleGraph V} [Fintype G.edgeSet] [G.LocallyFinite]
+    (hdegree : ∀ v : V, G.degree v = 3) :
+    (∃ C : G.EdgeColoring Color, IsTaitEdgeColoring G C) ↔
+      ∃ x : G.edgeSet → Color, IsNowhereZeroFlow G x := by
+  exact exists_taitEdgeColoring_iff_exists_nowhereZeroFlow_of_hasCubicIncidentEdgeTriples
+    (hasCubicIncidentEdgeTriples_of_degree_eq_three hdegree)
+
+/-- Tait/flow reformulation for regular cubic graphs in Mathlib's sense. -/
+theorem exists_taitEdgeColoring_iff_exists_nowhereZeroFlow_of_isRegularOfDegree_three
+    {G : SimpleGraph V} [Fintype G.edgeSet] [G.LocallyFinite]
+    (hregular : G.IsRegularOfDegree 3) :
+    (∃ C : G.EdgeColoring Color, IsTaitEdgeColoring G C) ↔
+      ∃ x : G.edgeSet → Color, IsNowhereZeroFlow G x := by
+  exact exists_taitEdgeColoring_iff_exists_nowhereZeroFlow_of_degree_eq_three
+    hregular.degree_eq
+
 /-- The canonical CDL-good local condition is weaker than local nowhere-zero:
 the Kirchhoff triple `(0, red, red)` is CDL-good and sums to zero, but still
 has a zero edge-value. -/
@@ -464,6 +521,27 @@ theorem
       ∃ x : G.edgeSet → Color, IsCDLGoodFlow G x ∧ IsNowhereZeroFlow G x := by
   exact exists_taitEdgeColoring_iff_exists_cdlGood_nowhereZeroFlow_of_hasCubicIncidentEdgeTriples
     (hasCubicIncidentEdgeTriples_of_incidentEdgeFinset_card_eq_three hcard)
+
+/-- CDL-safe Tait/flow reformulation for graphs whose Mathlib degree is `3` at
+every vertex. -/
+theorem exists_taitEdgeColoring_iff_exists_cdlGood_nowhereZeroFlow_of_degree_eq_three
+    {G : SimpleGraph V} [Fintype G.edgeSet] [G.LocallyFinite]
+    (hdegree : ∀ v : V, G.degree v = 3) :
+    (∃ C : G.EdgeColoring Color, IsTaitEdgeColoring G C) ↔
+      ∃ x : G.edgeSet → Color, IsCDLGoodFlow G x ∧ IsNowhereZeroFlow G x := by
+  exact exists_taitEdgeColoring_iff_exists_cdlGood_nowhereZeroFlow_of_hasCubicIncidentEdgeTriples
+    (hasCubicIncidentEdgeTriples_of_degree_eq_three hdegree)
+
+/-- CDL-safe Tait/flow reformulation for regular cubic graphs in Mathlib's
+sense. -/
+theorem
+    exists_taitEdgeColoring_iff_exists_cdlGood_nowhereZeroFlow_of_isRegularOfDegree_three
+    {G : SimpleGraph V} [Fintype G.edgeSet] [G.LocallyFinite]
+    (hregular : G.IsRegularOfDegree 3) :
+    (∃ C : G.EdgeColoring Color, IsTaitEdgeColoring G C) ↔
+      ∃ x : G.edgeSet → Color, IsCDLGoodFlow G x ∧ IsNowhereZeroFlow G x := by
+  exact exists_taitEdgeColoring_iff_exists_cdlGood_nowhereZeroFlow_of_degree_eq_three
+    hregular.degree_eq
 
 theorem zeroChain_isGraphFlow (G : SimpleGraph V) [Fintype G.edgeSet] :
     IsGraphFlow G (zeroChain : G.edgeSet → Color) := by
