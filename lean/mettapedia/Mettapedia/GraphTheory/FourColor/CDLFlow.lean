@@ -2994,6 +2994,39 @@ theorem
   exact ⟨C', hC'mem, h, hmove, by simpa [he_eq] using heC',
     by simpa [he_eq] using heinc, he₀C, hx₀, hnew⟩
 
+/-- Strong concrete-star postcondition: a vertex-local repair of the explicit
+cubic obstruction star uses a support different from the failed one and makes
+the pinned outside zero edge nonzero in the target assignment. -/
+theorem
+    hasD0DescentRepairAt_erases_star_outside_edge_in_target_of_cubic_obstruction_star
+    {G : SimpleGraph V} [Fintype G.edgeSet]
+    {moveSupports : Finset (Finset G.edgeSet)}
+    {C : Finset G.edgeSet} {g : Color} {x : G.edgeSet → Color} {v : V}
+    {e₁ e₂ e₀ : G.edgeSet}
+    (hg : g ≠ 0)
+    (hstar : incidentEdgeFinset G v = {e₁, e₂, e₀})
+    (he₁C : e₁ ∈ C) (he₂C : e₂ ∈ C) (he₀C : e₀ ∉ C)
+    (hx₁ : x e₁ = g) (hx₂ : x e₂ = g) (hx₀ : x e₀ = 0)
+    (hrepair : HasD0DescentRepairAt G moveSupports x v) :
+    ∃ C' ∈ moveSupports, ∃ h : Color,
+      IsAllowedD0OneStepMoveOn G C' h x (cdlOneStepMoveOn G C' h x) ∧
+        C' ≠ C ∧
+          e₀ ∈ C' ∧ e₀ ∈ incidentEdgeFinset G v ∧ e₀ ∉ C ∧ x e₀ = 0 ∧
+            cdlOneStepMoveOn G C' h x e₀ ≠ 0 ∧
+              ∀ e' ∈ C', x e' ≠ h := by
+  rcases
+    hasD0DescentRepairAt_erases_star_outside_edge_of_cubic_obstruction_star
+      hg hstar he₁C he₂C he₀C hx₁ hx₂ hx₀ hrepair with
+    ⟨C', hC'mem, h, hmove, he₀C', he₀inc, he₀C, hx₀, hnew⟩
+  have hsupport_ne : C' ≠ C := by
+    intro hEq
+    exact he₀C (by simpa [hEq] using he₀C')
+  have htarget_nonzero : cdlOneStepMoveOn G C' h x e₀ ≠ 0 :=
+    cdlOneStepMoveOn_apply_mem_ne_zero_of_eq_zero hmove.color_ne_zero he₀C'
+      hx₀
+  exact ⟨C', hC'mem, h, hmove, hsupport_ne, he₀C', he₀inc, he₀C, hx₀,
+    htarget_nonzero, hnew⟩
+
 /-- Patch/local-combinatorics hypothesis for the manuscript's matching-zeros
 step: every non-matching zero pattern admits a permitted one-step repair that
 erases an existing zero and creates no new zero on its support.  Theorems below
