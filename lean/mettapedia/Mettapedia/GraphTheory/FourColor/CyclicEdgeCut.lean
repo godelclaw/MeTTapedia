@@ -398,6 +398,55 @@ theorem forall_walk_hits_edgeCut_iff_noncrossing_outside_edgeCut
     exact exists_mem_edgeCut_of_walk_endpoint_sides_of_edge_crossing_classification
       side hnoncut p hu hv
 
+/-- Exact counterexample form of graph separation by a finite edge set.  A walk crossing the
+chosen side while avoiding the listed edges exists exactly when an unlisted graph edge crosses
+that side. -/
+theorem exists_walk_avoiding_edgeCut_iff_exists_crossing_outside_edgeCut
+    {G : SimpleGraph V} {edgeCut : Finset G.edgeSet} (side : V → Prop) :
+    (∃ u v : V, ∃ p : G.Walk u v,
+      side u ∧ ¬ side v ∧
+        ∀ e : G.edgeSet, e ∈ edgeCut → (e : Sym2 V) ∉ p.edges) ↔
+      ∃ e : G.edgeSet, e ∉ edgeCut ∧ EdgeCrossesVertexSide G side e := by
+  constructor
+  · intro hwalk
+    rcases hwalk with ⟨u, v, p, hu, hv, havoid⟩
+    rcases exists_edgeCrossesVertexSide_of_walk_endpoint_sides side p hu hv with
+      ⟨e, heEdges, hcross⟩
+    by_cases heCut : e ∈ edgeCut
+    · exact (havoid e heCut heEdges).elim
+    · exact ⟨e, heCut, hcross⟩
+  · intro hcrossing
+    rcases hcrossing with ⟨e, hnot, hcross⟩
+    rcases hcross with ⟨u, v, hu, hv, hsu, hsv⟩
+    rcases exists_walk_edges_eq_singleton_of_edge_endpoint_sides
+        (G := G) (side := side) (e := e) hu hv hsu hsv with
+      ⟨p, hpEdges⟩
+    refine ⟨u, v, p, hsu, hsv, ?_⟩
+    intro e' he'cut he'edges
+    have heq : e' = e := by
+      apply Subtype.ext
+      simpa [hpEdges] using he'edges
+    exact hnot (by simpa [heq] using he'cut)
+
+/-- Counterexample-free form of graph separation by a finite edge set.  Ruling out every
+opposite-side walk avoiding the listed edges is exactly ruling out every unlisted crossing edge. -/
+theorem no_walk_avoiding_edgeCut_iff_noncrossing_outside_edgeCut
+    {G : SimpleGraph V} {edgeCut : Finset G.edgeSet} (side : V → Prop) :
+    (¬ ∃ u v : V, ∃ p : G.Walk u v,
+      side u ∧ ¬ side v ∧
+        ∀ e : G.edgeSet, e ∈ edgeCut → (e : Sym2 V) ∉ p.edges) ↔
+      ∀ e : G.edgeSet, e ∉ edgeCut → ¬ EdgeCrossesVertexSide G side e := by
+  constructor
+  · intro hno_walk e hnot hcross
+    exact hno_walk
+      ((exists_walk_avoiding_edgeCut_iff_exists_crossing_outside_edgeCut
+        (G := G) (edgeCut := edgeCut) side).2 ⟨e, hnot, hcross⟩)
+  · intro hnoncrossing hwalk
+    rcases (exists_walk_avoiding_edgeCut_iff_exists_crossing_outside_edgeCut
+        (G := G) (edgeCut := edgeCut) side).1 hwalk with
+      ⟨e, hnot, hcross⟩
+    exact hnoncrossing e hnot hcross
+
 theorem SmallCyclicEdgeCut.exists_mem_edgeCut_of_walk_endpoint_sides
     {G : SimpleGraph V} (cut : SmallCyclicEdgeCut G)
     {u v : V} (p : G.Walk u v) (hu : cut.side u) (hv : ¬ cut.side v) :

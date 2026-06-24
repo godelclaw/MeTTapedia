@@ -860,14 +860,26 @@ theorem CAP5ExceptionalAnnulusBoundaryEdgeSupportCandidate.exists_walk_avoiding_
   constructor
   · intro hwalk
     rcases hwalk with ⟨u, v, p, hu, hv, havoid⟩
-    rcases candidate.exists_noncandidate_crosses_of_walk_avoids_portalBoundaryEdges
-        side p hu hv havoid with
-      ⟨e, hnot, hcross, _heEdges⟩
+    have havoidSupport :
+        ∀ e : G.edgeSet, e ∈ candidate.edgeSupport → (e : Sym2 V) ∉ p.edges := by
+      intro e heSupport heEdges
+      rcases (candidate.mem_edgeSupport_iff_exists_portal e).1 heSupport with
+        ⟨i, hi, hboundary⟩
+      exact havoid i hi (by simpa [hboundary] using heEdges)
+    rcases (exists_walk_avoiding_edgeCut_iff_exists_crossing_outside_edgeCut
+        (G := G) (edgeCut := candidate.edgeSupport) side).1
+        ⟨u, v, p, hu, hv, havoidSupport⟩ with
+      ⟨e, hnot, hcross⟩
     exact ⟨e, hnot, hcross⟩
   · intro hcrossing
-    rcases hcrossing with ⟨e, hnot, hcross⟩
-    exact candidate.exists_walk_avoiding_portalBoundaryEdges_of_noncandidate_crosses
-      side hnot hcross
+    rcases (exists_walk_avoiding_edgeCut_iff_exists_crossing_outside_edgeCut
+        (G := G) (edgeCut := candidate.edgeSupport) side).2 hcrossing with
+      ⟨u, v, p, hu, hv, havoidSupport⟩
+    refine ⟨u, v, p, hu, hv, ?_⟩
+    intro i hi hiEdges
+    exact havoidSupport (boundaryEdge i)
+      ((candidate.mem_edgeSupport_iff_exists_portal (boundaryEdge i)).2 ⟨i, hi, rfl⟩)
+      hiEdges
 
 /-- Counterexample-free local form of the CAP5 portal separator target.  Ruling out every
 opposite-side walk avoiding the named portals is exactly ruling out every non-candidate crossing
@@ -885,13 +897,12 @@ theorem CAP5ExceptionalAnnulusBoundaryEdgeSupportCandidate.no_walk_avoiding_port
   constructor
   · intro hno_walk e hnot hcross
     exact hno_walk
-      (candidate.exists_walk_avoiding_portalBoundaryEdges_of_noncandidate_crosses
-        side hnot hcross)
+      ((candidate.exists_walk_avoiding_portalBoundaryEdges_iff_exists_noncandidate_crosses
+        side).2 ⟨e, hnot, hcross⟩)
   · intro hnoncandidate_not_crosses hwalk
-    rcases hwalk with ⟨u, v, p, hu, hv, havoid⟩
-    rcases candidate.exists_noncandidate_crosses_of_walk_avoids_portalBoundaryEdges
-        side p hu hv havoid with
-      ⟨e, hnot, hcross, _heEdges⟩
+    rcases (candidate.exists_walk_avoiding_portalBoundaryEdges_iff_exists_noncandidate_crosses
+        side).1 hwalk with
+      ⟨e, hnot, hcross⟩
     exact hnoncandidate_not_crosses e hnot hcross
 
 /-- If a finite CAP5 boundary-edge support candidate is realized by a graph-level small cyclic
