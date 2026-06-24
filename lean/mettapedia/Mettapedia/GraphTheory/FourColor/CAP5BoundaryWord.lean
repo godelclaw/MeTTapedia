@@ -532,6 +532,32 @@ theorem not_cap5BoundaryWordHasBlock2111_of_extendsAcrossCycle
   intro hblock
   exact not_cap5_extendsAcrossCycle_of_block2111 hblock h
 
+/-- Once a CAP5 boundary word has been classified into one of the two parity-allowed block
+orbits, extendability is exactly the `(3,1,1)` case. -/
+theorem cap5_extendsAcrossCycle_iff_block311_of_block311_or_block2111
+    {w : CAP5BoundaryWord}
+    (hclass : CAP5BoundaryWordHasBlock311 w ∨ CAP5BoundaryWordHasBlock2111 w) :
+    CAP5WordExtendsAcrossCycle w ↔ CAP5BoundaryWordHasBlock311 w := by
+  constructor
+  · intro hextends
+    rcases hclass with h311 | h2111
+    · exact h311
+    · exact False.elim (not_cap5_extendsAcrossCycle_of_block2111 h2111 hextends)
+  · exact cap5_extendsAcrossCycle_of_block311
+
+/-- Once a CAP5 boundary word has been classified into one of the two parity-allowed block
+orbits, nonextendability is exactly the `(2,1,1,1)` case. -/
+theorem not_cap5_extendsAcrossCycle_iff_block2111_of_block311_or_block2111
+    {w : CAP5BoundaryWord}
+    (hclass : CAP5BoundaryWordHasBlock311 w ∨ CAP5BoundaryWordHasBlock2111 w) :
+    ¬ CAP5WordExtendsAcrossCycle w ↔ CAP5BoundaryWordHasBlock2111 w := by
+  constructor
+  · intro hnotExtends
+    rcases hclass with h311 | h2111
+    · exact False.elim (hnotExtends (cap5_extendsAcrossCycle_of_block311 h311))
+    · exact h2111
+  · exact not_cap5_extendsAcrossCycle_of_block2111
+
 /-- Swap two colors, leaving the third color fixed. -/
 def cap5SwapColor (a b : Color) (c : Color) : Color :=
   if c = a then b else if c = b then a else c
