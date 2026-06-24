@@ -103,4 +103,145 @@ theorem not_cap5BadBoundaryWord2111_extendsAcrossCycle :
     color_eq_purple_of_ne_zero_of_ne_red_of_ne_blue hx2 hx2_ne_red hx2_ne_blue
   exact hx1_x2 (hx1_eq_purple.trans hx2_eq_purple.symm)
 
+/-- Swap two colors, leaving the third color fixed. -/
+def cap5SwapColor (a b : Color) (c : Color) : Color :=
+  if c = a then b else if c = b then a else c
+
+/-- Boundary operation that swaps colors `a` and `b` exactly on support `S`. -/
+def cap5BoundarySwap (a b : Color) (S : Finset (Fin 5))
+    (w : CAP5BoundaryWord) : CAP5BoundaryWord :=
+  fun i => if i ∈ S then cap5SwapColor a b (w i) else w i
+
+/-- First red/blue finite CAP5 repair type: swap positions `{0,1}`. -/
+theorem cap5BadBoundaryWord2111_repair_red_blue_01_extendsAcrossCycle :
+    CAP5WordExtendsAcrossCycle
+      (cap5BoundarySwap red blue ({0, 1} : Finset (Fin 5)) cap5BadBoundaryWord2111) := by
+  refine ⟨(fun
+    | 0 => purple
+    | 1 => red
+    | 2 => purple
+    | 3 => blue
+    | 4 => red), ?_⟩
+  simp [CAP5ExtendsAcrossCycleWith, IsTaitColorTriple, cap5BoundarySwap,
+    cap5SwapColor, cap5BadBoundaryWord2111, red, blue, purple]
+
+/-- Second red/blue finite CAP5 repair type: swap positions `{0,2}`. -/
+theorem cap5BadBoundaryWord2111_repair_red_blue_02_extendsAcrossCycle :
+    CAP5WordExtendsAcrossCycle
+      (cap5BoundarySwap red blue ({0, 2} : Finset (Fin 5)) cap5BadBoundaryWord2111) := by
+  refine ⟨(fun
+    | 0 => purple
+    | 1 => blue
+    | 2 => purple
+    | 3 => blue
+    | 4 => red), ?_⟩
+  simp [CAP5ExtendsAcrossCycleWith, IsTaitColorTriple, cap5BoundarySwap,
+    cap5SwapColor, cap5BadBoundaryWord2111, red, blue, purple]
+
+/-- Third red/blue finite CAP5 repair type: swap positions `{1,3}`. -/
+theorem cap5BadBoundaryWord2111_repair_red_blue_13_extendsAcrossCycle :
+    CAP5WordExtendsAcrossCycle
+      (cap5BoundarySwap red blue ({1, 3} : Finset (Fin 5)) cap5BadBoundaryWord2111) := by
+  refine ⟨(fun
+    | 0 => purple
+    | 1 => red
+    | 2 => purple
+    | 3 => red
+    | 4 => blue), ?_⟩
+  simp [CAP5ExtendsAcrossCycleWith, IsTaitColorTriple, cap5BoundarySwap,
+    cap5SwapColor, cap5BadBoundaryWord2111, red, blue, purple]
+
+/-- Fourth red/blue finite CAP5 repair type: swap positions `{2,3}`. -/
+theorem cap5BadBoundaryWord2111_repair_red_blue_23_extendsAcrossCycle :
+    CAP5WordExtendsAcrossCycle
+      (cap5BoundarySwap red blue ({2, 3} : Finset (Fin 5)) cap5BadBoundaryWord2111) := by
+  refine ⟨(fun
+    | 0 => purple
+    | 1 => blue
+    | 2 => purple
+    | 3 => red
+    | 4 => blue), ?_⟩
+  simp [CAP5ExtendsAcrossCycleWith, IsTaitColorTriple, cap5BoundarySwap,
+    cap5SwapColor, cap5BadBoundaryWord2111, red, blue, purple]
+
+/-- First red/purple finite CAP5 repair type: swap positions `{0,1}`. -/
+theorem cap5BadBoundaryWord2111_repair_red_purple_01_extendsAcrossCycle :
+    CAP5WordExtendsAcrossCycle
+      (cap5BoundarySwap red purple ({0, 1} : Finset (Fin 5)) cap5BadBoundaryWord2111) := by
+  refine ⟨(fun
+    | 0 => blue
+    | 1 => red
+    | 2 => purple
+    | 3 => blue
+    | 4 => red), ?_⟩
+  simp [CAP5ExtendsAcrossCycleWith, IsTaitColorTriple, cap5BoundarySwap,
+    cap5SwapColor, cap5BadBoundaryWord2111, red, blue, purple]
+
+/-- Second red/purple finite CAP5 repair type: swap positions `{0,3}`. -/
+theorem cap5BadBoundaryWord2111_repair_red_purple_03_extendsAcrossCycle :
+    CAP5WordExtendsAcrossCycle
+      (cap5BoundarySwap red purple ({0, 3} : Finset (Fin 5)) cap5BadBoundaryWord2111) := by
+  refine ⟨(fun
+    | 0 => blue
+    | 1 => purple
+    | 2 => red
+    | 3 => blue
+    | 4 => red), ?_⟩
+  simp [CAP5ExtendsAcrossCycleWith, IsTaitColorTriple, cap5BoundarySwap,
+    cap5SwapColor, cap5BadBoundaryWord2111, red, blue, purple]
+
+/-- Third red/purple finite CAP5 repair type: swap positions `{1,4}`. -/
+theorem cap5BadBoundaryWord2111_repair_red_purple_14_extendsAcrossCycle :
+    CAP5WordExtendsAcrossCycle
+      (cap5BoundarySwap red purple ({1, 4} : Finset (Fin 5)) cap5BadBoundaryWord2111) := by
+  refine ⟨(fun
+    | 0 => blue
+    | 1 => red
+    | 2 => purple
+    | 3 => blue
+    | 4 => purple), ?_⟩
+  simp [CAP5ExtendsAcrossCycleWith, IsTaitColorTriple, cap5BoundarySwap,
+    cap5SwapColor, cap5BadBoundaryWord2111, red, blue, purple]
+
+/-- Fourth red/purple finite CAP5 repair type: swap positions `{3,4}`. -/
+theorem cap5BadBoundaryWord2111_repair_red_purple_34_extendsAcrossCycle :
+    CAP5WordExtendsAcrossCycle
+      (cap5BoundarySwap red purple ({3, 4} : Finset (Fin 5)) cap5BadBoundaryWord2111) := by
+  refine ⟨(fun
+    | 0 => blue
+    | 1 => purple
+    | 2 => red
+    | 3 => blue
+    | 4 => purple), ?_⟩
+  simp [CAP5ExtendsAcrossCycleWith, IsTaitColorTriple, cap5BoundarySwap,
+    cap5SwapColor, cap5BadBoundaryWord2111, red, blue, purple]
+
+/-- The eight canonical finite repair types from the CAP5 normal-form calculation all turn the
+canonical bad boundary word into a CAP5-extendable boundary word. -/
+theorem cap5BadBoundaryWord2111_repairBasis_extendsAcrossCycle :
+    CAP5WordExtendsAcrossCycle
+      (cap5BoundarySwap red blue ({0, 1} : Finset (Fin 5)) cap5BadBoundaryWord2111) ∧
+    CAP5WordExtendsAcrossCycle
+      (cap5BoundarySwap red blue ({0, 2} : Finset (Fin 5)) cap5BadBoundaryWord2111) ∧
+    CAP5WordExtendsAcrossCycle
+      (cap5BoundarySwap red blue ({1, 3} : Finset (Fin 5)) cap5BadBoundaryWord2111) ∧
+    CAP5WordExtendsAcrossCycle
+      (cap5BoundarySwap red blue ({2, 3} : Finset (Fin 5)) cap5BadBoundaryWord2111) ∧
+    CAP5WordExtendsAcrossCycle
+      (cap5BoundarySwap red purple ({0, 1} : Finset (Fin 5)) cap5BadBoundaryWord2111) ∧
+    CAP5WordExtendsAcrossCycle
+      (cap5BoundarySwap red purple ({0, 3} : Finset (Fin 5)) cap5BadBoundaryWord2111) ∧
+    CAP5WordExtendsAcrossCycle
+      (cap5BoundarySwap red purple ({1, 4} : Finset (Fin 5)) cap5BadBoundaryWord2111) ∧
+    CAP5WordExtendsAcrossCycle
+      (cap5BoundarySwap red purple ({3, 4} : Finset (Fin 5)) cap5BadBoundaryWord2111) :=
+  ⟨cap5BadBoundaryWord2111_repair_red_blue_01_extendsAcrossCycle,
+    cap5BadBoundaryWord2111_repair_red_blue_02_extendsAcrossCycle,
+    cap5BadBoundaryWord2111_repair_red_blue_13_extendsAcrossCycle,
+    cap5BadBoundaryWord2111_repair_red_blue_23_extendsAcrossCycle,
+    cap5BadBoundaryWord2111_repair_red_purple_01_extendsAcrossCycle,
+    cap5BadBoundaryWord2111_repair_red_purple_03_extendsAcrossCycle,
+    cap5BadBoundaryWord2111_repair_red_purple_14_extendsAcrossCycle,
+    cap5BadBoundaryWord2111_repair_red_purple_34_extendsAcrossCycle⟩
+
 end Mettapedia.GraphTheory.FourColor
