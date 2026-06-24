@@ -2605,6 +2605,52 @@ theorem zeroEdgesFormMatching_of_isD0LocalMinimumForMoveSupports_of_clusteredZer
     hmin (everyNonmatchingZeroPatternHasD0Descent_of_clusteredZeroVertex_descent
       hrepair)
 
+/-- Vertex-count form of the abstract matching-zeros theorem. -/
+theorem zeroIncidentEdgeCount_le_one_of_isD0LocalMinimumForMoveSupports_of_nonmatching_descent
+    {G : SimpleGraph V} [Fintype V] [Fintype G.edgeSet]
+    {moveSupports : Finset (Finset G.edgeSet)} {x : G.edgeSet → Color}
+    (hmin : IsD0LocalMinimumForMoveSupports G moveSupports x)
+    (hrepair : EveryNonmatchingZeroPatternHasD0Descent G moveSupports x)
+    (v : V) :
+    zeroIncidentEdgeCount G x v ≤ 1 :=
+  (zeroEdgesFormMatching_of_isD0LocalMinimumForMoveSupports_of_nonmatching_descent
+    hmin hrepair) v
+
+/-- Vertex-local repair form: each vertex is incident to at most one zero edge
+at a repaired `D₀` local minimum. -/
+theorem zeroIncidentEdgeCount_le_one_of_isD0LocalMinimumForMoveSupports_of_clusteredZeroVertex_descent
+    {G : SimpleGraph V} [Fintype V] [Fintype G.edgeSet]
+    {moveSupports : Finset (Finset G.edgeSet)} {x : G.edgeSet → Color}
+    (hmin : IsD0LocalMinimumForMoveSupports G moveSupports x)
+    (hrepair : EveryClusteredZeroVertexHasD0Descent G moveSupports x)
+    (v : V) :
+    zeroIncidentEdgeCount G x v ≤ 1 :=
+  (zeroEdgesFormMatching_of_isD0LocalMinimumForMoveSupports_of_clusteredZeroVertex_descent
+    hmin hrepair) v
+
+/-- No-cluster form of the abstract matching-zeros theorem. -/
+theorem not_hasClusteredZeroVertex_of_isD0LocalMinimumForMoveSupports_of_nonmatching_descent
+    {G : SimpleGraph V} [Fintype V] [Fintype G.edgeSet]
+    {moveSupports : Finset (Finset G.edgeSet)} {x : G.edgeSet → Color}
+    (hmin : IsD0LocalMinimumForMoveSupports G moveSupports x)
+    (hrepair : EveryNonmatchingZeroPatternHasD0Descent G moveSupports x) :
+    ¬ HasClusteredZeroVertex G x :=
+  zeroEdgesFormMatching_iff_not_hasClusteredZeroVertex.mp
+    (zeroEdgesFormMatching_of_isD0LocalMinimumForMoveSupports_of_nonmatching_descent
+      hmin hrepair)
+
+/-- Vertex-local repair form: repaired `D₀` local minima have no clustered
+zero vertices. -/
+theorem not_hasClusteredZeroVertex_of_isD0LocalMinimumForMoveSupports_of_clusteredZeroVertex_descent
+    {G : SimpleGraph V} [Fintype V] [Fintype G.edgeSet]
+    {moveSupports : Finset (Finset G.edgeSet)} {x : G.edgeSet → Color}
+    (hmin : IsD0LocalMinimumForMoveSupports G moveSupports x)
+    (hrepair : EveryClusteredZeroVertexHasD0Descent G moveSupports x) :
+    ¬ HasClusteredZeroVertex G x :=
+  zeroEdgesFormMatching_iff_not_hasClusteredZeroVertex.mp
+    (zeroEdgesFormMatching_of_isD0LocalMinimumForMoveSupports_of_clusteredZeroVertex_descent
+      hmin hrepair)
+
 /-- Refutation form: under the vertex-local repair hypothesis, a flow with a
 clustered zero vertex cannot be a `D₀` local minimum. -/
 theorem not_isD0LocalMinimumForMoveSupports_of_hasClusteredZeroVertex_and_clusteredZeroVertex_descent
