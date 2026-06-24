@@ -385,14 +385,66 @@ def CAP5BadRedBlueRepairSupport (S : Finset (Fin 5)) : Prop :=
 def CAP5BadRedPurpleRepairSupport (S : Finset (Fin 5)) : Prop :=
   S = {0, 1} ∨ S = {0, 3} ∨ S = {1, 4} ∨ S = {3, 4}
 
+/-- The three unordered red/blue pairings of the active support `{0,1,2,3}` for the
+canonical bad CAP5 word, written with ordered component slots. -/
+def CAP5BadRedBlueActivePairing (S₁ S₂ : Finset (Fin 5)) : Prop :=
+  (S₁ = {0, 1} ∧ S₂ = {2, 3}) ∨
+  (S₁ = {2, 3} ∧ S₂ = {0, 1}) ∨
+  (S₁ = {0, 2} ∧ S₂ = {1, 3}) ∨
+  (S₁ = {1, 3} ∧ S₂ = {0, 2}) ∨
+  (S₁ = {0, 3} ∧ S₂ = {1, 2}) ∨
+  (S₁ = {1, 2} ∧ S₂ = {0, 3})
+
+/-- The three unordered red/purple pairings of the active support `{0,1,3,4}` for the
+canonical bad CAP5 word, written with ordered component slots. -/
+def CAP5BadRedPurpleActivePairing (S₁ S₂ : Finset (Fin 5)) : Prop :=
+  (S₁ = {0, 1} ∧ S₂ = {3, 4}) ∨
+  (S₁ = {3, 4} ∧ S₂ = {0, 1}) ∨
+  (S₁ = {0, 3} ∧ S₂ = {1, 4}) ∨
+  (S₁ = {1, 4} ∧ S₂ = {0, 3}) ∨
+  (S₁ = {0, 4} ∧ S₂ = {1, 3}) ∨
+  (S₁ = {1, 3} ∧ S₂ = {0, 4})
+
+/-- The exceptional red/blue pairing in the canonical bad CAP5 word. -/
+def CAP5BadRedBlueExceptionalPairing (S₁ S₂ : Finset (Fin 5)) : Prop :=
+  (S₁ = {0, 3} ∧ S₂ = {1, 2}) ∨
+  (S₁ = {1, 2} ∧ S₂ = {0, 3})
+
+/-- The exceptional red/purple pairing in the canonical bad CAP5 word. -/
+def CAP5BadRedPurpleExceptionalPairing (S₁ S₂ : Finset (Fin 5)) : Prop :=
+  (S₁ = {0, 4} ∧ S₂ = {1, 3}) ∨
+  (S₁ = {1, 3} ∧ S₂ = {0, 4})
+
 /-- The simultaneous exceptional pairing pattern from the manuscript, stated at the level of
 boundary supports.  The order of the two components in each color pair is irrelevant. -/
 def CAP5BadExceptionalPairingPattern
     (redBlue₁ redBlue₂ redPurple₁ redPurple₂ : Finset (Fin 5)) : Prop :=
-  ((redBlue₁ = {0, 3} ∧ redBlue₂ = {1, 2}) ∨
-    (redBlue₁ = {1, 2} ∧ redBlue₂ = {0, 3})) ∧
-  ((redPurple₁ = {0, 4} ∧ redPurple₂ = {1, 3}) ∨
-    (redPurple₁ = {1, 3} ∧ redPurple₂ = {0, 4}))
+  CAP5BadRedBlueExceptionalPairing redBlue₁ redBlue₂ ∧
+  CAP5BadRedPurpleExceptionalPairing redPurple₁ redPurple₂
+
+/-- Every red/blue pairing of `{0,1,2,3}` either exposes a repair support or is the exceptional
+red/blue pairing. -/
+theorem cap5BadRedBlueActivePairing_repair_or_exceptional
+    {S₁ S₂ : Finset (Fin 5)}
+    (h : CAP5BadRedBlueActivePairing S₁ S₂) :
+    CAP5BadRedBlueRepairSupport S₁ ∨
+      CAP5BadRedBlueRepairSupport S₂ ∨
+      CAP5BadRedBlueExceptionalPairing S₁ S₂ := by
+  rcases h with h | h | h | h | h | h <;>
+    rcases h with ⟨rfl, rfl⟩ <;>
+    simp [CAP5BadRedBlueRepairSupport, CAP5BadRedBlueExceptionalPairing]
+
+/-- Every red/purple pairing of `{0,1,3,4}` either exposes a repair support or is the exceptional
+red/purple pairing. -/
+theorem cap5BadRedPurpleActivePairing_repair_or_exceptional
+    {S₁ S₂ : Finset (Fin 5)}
+    (h : CAP5BadRedPurpleActivePairing S₁ S₂) :
+    CAP5BadRedPurpleRepairSupport S₁ ∨
+      CAP5BadRedPurpleRepairSupport S₂ ∨
+      CAP5BadRedPurpleExceptionalPairing S₁ S₂ := by
+  rcases h with h | h | h | h | h | h <;>
+    rcases h with ⟨rfl, rfl⟩ <;>
+    simp [CAP5BadRedPurpleRepairSupport, CAP5BadRedPurpleExceptionalPairing]
 
 /-- Any red/blue support on the repair side of the CAP5 split induces one of the eight finite
 repair types on the canonical bad word. -/
@@ -462,6 +514,31 @@ repair support is present, or the exceptional pairing pattern is the remaining o
 def RepairOrExceptional (p : CAP5BadPairingSupports) : Prop :=
   p.HasRepair ∨ p.IsExceptional
 
+/-- The two color-pair component families really pair the active CAP5 boundary supports in the
+normalized bad word: red/blue pairs `{0,1,2,3}` and red/purple pairs `{0,1,3,4}`. -/
+def HasActivePairings (p : CAP5BadPairingSupports) : Prop :=
+  CAP5BadRedBlueActivePairing p.redBlue₁ p.redBlue₂ ∧
+  CAP5BadRedPurpleActivePairing p.redPurple₁ p.redPurple₂
+
+/-- Finite pairing enumeration for the normalized CAP5 bad word: once the outside components
+give pairings of the two active four-point supports, either a repair support appears or the
+simultaneous exceptional pairing pattern is the only remaining case. -/
+theorem repairOrExceptional_of_activePairings
+    {p : CAP5BadPairingSupports} (h : p.HasActivePairings) :
+    p.RepairOrExceptional := by
+  rcases h with ⟨hredBlue, hredPurple⟩
+  have hredBlue' :=
+    cap5BadRedBlueActivePairing_repair_or_exceptional hredBlue
+  have hredPurple' :=
+    cap5BadRedPurpleActivePairing_repair_or_exceptional hredPurple
+  rcases hredBlue' with hredBlue₁ | hredBlue₂ | hredBlueExceptional
+  · exact Or.inl (Or.inl hredBlue₁)
+  · exact Or.inl (Or.inr (Or.inl hredBlue₂))
+  · rcases hredPurple' with hredPurple₁ | hredPurple₂ | hredPurpleExceptional
+    · exact Or.inl (Or.inr (Or.inr (Or.inl hredPurple₁)))
+    · exact Or.inl (Or.inr (Or.inr (Or.inr hredPurple₂)))
+    · exact Or.inr ⟨hredBlueExceptional, hredPurpleExceptional⟩
+
 /-- If a component-support package has a repair support, then some induced boundary action repairs
 the canonical bad CAP5 word and the repaired word extends across the cap. -/
 theorem exists_repairingBoundaryAction_of_hasRepair
@@ -495,6 +572,16 @@ theorem repairOrExceptional_outcome
   rcases h with hrepair | hexceptional
   · exact Or.inl (exists_repairingBoundaryAction_of_hasRepair hrepair)
   · exact Or.inr hexceptional
+
+/-- Boundary-action outcome for active CAP5 pairings: graph-level component pairings immediately
+yield a finite repair action unless they are exactly the simultaneous exceptional pattern. -/
+theorem activePairings_outcome
+    {p : CAP5BadPairingSupports} (h : p.HasActivePairings) :
+    (∃ action : CAP5BoundaryAction,
+      CAP5BoundaryActionRealizesSomeRepairType action cap5BadBoundaryWord2111 ∧
+      CAP5WordExtendsAcrossCycle (action cap5BadBoundaryWord2111)) ∨
+    p.IsExceptional :=
+  repairOrExceptional_outcome (repairOrExceptional_of_activePairings h)
 
 end CAP5BadPairingSupports
 
