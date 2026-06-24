@@ -2780,6 +2780,56 @@ theorem not_everyNonmatchingZeroPatternHasD0Descent_of_isD0LocalMinimumForMoveSu
   exact (not_hasD0DescentRepair_of_isD0LocalMinimumForMoveSupports hmin)
     (hrepair hnonmatch)
 
+/-- At a `D₀` local minimum, failure of the global nonmatching-repair
+hypothesis is equivalent to nonmatching zero support. -/
+theorem not_everyNonmatchingZeroPatternHasD0Descent_iff_not_zeroEdgesFormMatching_of_isD0LocalMinimumForMoveSupports
+    {G : SimpleGraph V} [Fintype V] [Fintype G.edgeSet]
+    {moveSupports : Finset (Finset G.edgeSet)} {x : G.edgeSet → Color}
+    (hmin : IsD0LocalMinimumForMoveSupports G moveSupports x) :
+    ¬ EveryNonmatchingZeroPatternHasD0Descent G moveSupports x ↔
+      ¬ ZeroEdgesFormMatching G x := by
+  constructor
+  · intro hnot hmatch
+    exact hnot (fun hnonmatch => False.elim (hnonmatch hmatch))
+  · exact not_everyNonmatchingZeroPatternHasD0Descent_of_isD0LocalMinimumForMoveSupports
+      hmin
+
+/-- At a `D₀` local minimum, the global nonmatching-repair hypothesis is
+equivalent to matching zero support. -/
+theorem everyNonmatchingZeroPatternHasD0Descent_iff_zeroEdgesFormMatching_of_isD0LocalMinimumForMoveSupports
+    {G : SimpleGraph V} [Fintype V] [Fintype G.edgeSet]
+    {moveSupports : Finset (Finset G.edgeSet)} {x : G.edgeSet → Color}
+    (hmin : IsD0LocalMinimumForMoveSupports G moveSupports x) :
+    EveryNonmatchingZeroPatternHasD0Descent G moveSupports x ↔
+      ZeroEdgesFormMatching G x := by
+  constructor
+  · exact zeroEdgesFormMatching_of_isD0LocalMinimumForMoveSupports_of_nonmatching_descent
+      hmin
+  · intro hmatch hnonmatch
+    exact False.elim (hnonmatch hmatch)
+
+/-- At a `D₀` local minimum, failure of the global nonmatching-repair
+hypothesis is equivalent to the presence of clustered zero support. -/
+theorem not_everyNonmatchingZeroPatternHasD0Descent_iff_hasClusteredZeroVertex_of_isD0LocalMinimumForMoveSupports
+    {G : SimpleGraph V} [Fintype V] [Fintype G.edgeSet]
+    {moveSupports : Finset (Finset G.edgeSet)} {x : G.edgeSet → Color}
+    (hmin : IsD0LocalMinimumForMoveSupports G moveSupports x) :
+    ¬ EveryNonmatchingZeroPatternHasD0Descent G moveSupports x ↔
+      HasClusteredZeroVertex G x :=
+  (not_everyNonmatchingZeroPatternHasD0Descent_iff_not_zeroEdgesFormMatching_of_isD0LocalMinimumForMoveSupports
+    hmin).trans not_zeroEdgesFormMatching_iff_hasClusteredZeroVertex
+
+/-- Numeric form: at a `D₀` local minimum, failure of the global
+nonmatching-repair hypothesis is equivalent to positive zero clustering. -/
+theorem not_everyNonmatchingZeroPatternHasD0Descent_iff_zeroClusteringCount_pos_of_isD0LocalMinimumForMoveSupports
+    {G : SimpleGraph V} [Fintype V] [Fintype G.edgeSet]
+    {moveSupports : Finset (Finset G.edgeSet)} {x : G.edgeSet → Color}
+    (hmin : IsD0LocalMinimumForMoveSupports G moveSupports x) :
+    ¬ EveryNonmatchingZeroPatternHasD0Descent G moveSupports x ↔
+      0 < zeroClusteringCount G x :=
+  (not_everyNonmatchingZeroPatternHasD0Descent_iff_hasClusteredZeroVertex_of_isD0LocalMinimumForMoveSupports
+    hmin).trans zeroClusteringCount_pos_iff_hasClusteredZeroVertex.symm
+
 /-- Obstruction form for the vertex-local repair hypothesis: a clustered-zero
 `D₀` local minimum is a counterexample to the manuscript's clustered-vertex
 repair principle. -/
@@ -3224,6 +3274,17 @@ theorem zeroClusteringCount_eq_zero_iff_zeroIncidentVertexCount_eq_two_mul_zeroE
   rw [zeroClusteringCount_eq_zero_iff_zeroEdgesFormMatching,
     zeroEdgesFormMatching_iff_zeroIncidentVertexCount_eq_two_mul_zeroEdgeCount]
 
+/-- At a `D₀` local minimum, the global nonmatching-repair hypothesis is
+equivalent to vanishing zero clustering. -/
+theorem everyNonmatchingZeroPatternHasD0Descent_iff_zeroClusteringCount_eq_zero_of_isD0LocalMinimumForMoveSupports
+    {G : SimpleGraph V} [Fintype V] [Fintype G.edgeSet]
+    {moveSupports : Finset (Finset G.edgeSet)} {x : G.edgeSet → Color}
+    (hmin : IsD0LocalMinimumForMoveSupports G moveSupports x) :
+    EveryNonmatchingZeroPatternHasD0Descent G moveSupports x ↔
+      zeroClusteringCount G x = 0 :=
+  (everyNonmatchingZeroPatternHasD0Descent_iff_zeroEdgesFormMatching_of_isD0LocalMinimumForMoveSupports
+    hmin).trans zeroClusteringCount_eq_zero_iff_zeroEdgesFormMatching.symm
+
 /-- At a `D₀` local minimum, the vertex-local repair hypothesis is equivalent
 to vanishing zero clustering. -/
 theorem everyClusteredZeroVertexHasD0Descent_iff_zeroClusteringCount_eq_zero_of_isD0LocalMinimumForMoveSupports
@@ -3234,6 +3295,17 @@ theorem everyClusteredZeroVertexHasD0Descent_iff_zeroClusteringCount_eq_zero_of_
       zeroClusteringCount G x = 0 :=
   (everyClusteredZeroVertexHasD0Descent_iff_zeroEdgesFormMatching_of_isD0LocalMinimumForMoveSupports
     hmin).trans zeroClusteringCount_eq_zero_iff_zeroEdgesFormMatching.symm
+
+/-- At a `D₀` local minimum, the global nonmatching-repair hypothesis is
+equivalent to the manuscript count identity `I(x)=2Z(x)`. -/
+theorem everyNonmatchingZeroPatternHasD0Descent_iff_zeroIncidentVertexCount_eq_two_mul_zeroEdgeCount_of_isD0LocalMinimumForMoveSupports
+    {G : SimpleGraph V} [Fintype V] [Fintype G.edgeSet]
+    {moveSupports : Finset (Finset G.edgeSet)} {x : G.edgeSet → Color}
+    (hmin : IsD0LocalMinimumForMoveSupports G moveSupports x) :
+    EveryNonmatchingZeroPatternHasD0Descent G moveSupports x ↔
+      zeroIncidentVertexCount G x = 2 * zeroEdgeCount G x :=
+  (everyNonmatchingZeroPatternHasD0Descent_iff_zeroEdgesFormMatching_of_isD0LocalMinimumForMoveSupports
+    hmin).trans zeroEdgesFormMatching_iff_zeroIncidentVertexCount_eq_two_mul_zeroEdgeCount
 
 /-- At a `D₀` local minimum, the vertex-local repair hypothesis is equivalent
 to the manuscript count identity `I(x)=2Z(x)`. -/
@@ -3314,6 +3386,17 @@ theorem zeroDefectD0_eq_120_mul_zeroEdgeCount_iff_zeroClusteringCount_eq_zero
       zeroClusteringCount G x = 0 :=
   zeroDefectD0_eq_120_mul_zeroEdgeCount_iff_zeroEdgesFormMatching.trans
     zeroClusteringCount_eq_zero_iff_zeroEdgesFormMatching.symm
+
+/-- At a `D₀` local minimum, the global nonmatching-repair hypothesis is
+equivalent to the cheap-defect collapse `D₀(x)=120Z(x)`. -/
+theorem everyNonmatchingZeroPatternHasD0Descent_iff_zeroDefectD0_eq_120_mul_zeroEdgeCount_of_isD0LocalMinimumForMoveSupports
+    {G : SimpleGraph V} [Fintype V] [Fintype G.edgeSet]
+    {moveSupports : Finset (Finset G.edgeSet)} {x : G.edgeSet → Color}
+    (hmin : IsD0LocalMinimumForMoveSupports G moveSupports x) :
+    EveryNonmatchingZeroPatternHasD0Descent G moveSupports x ↔
+      zeroDefectD0 G x = 120 * zeroEdgeCount G x :=
+  (everyNonmatchingZeroPatternHasD0Descent_iff_zeroEdgesFormMatching_of_isD0LocalMinimumForMoveSupports
+    hmin).trans zeroDefectD0_eq_120_mul_zeroEdgeCount_iff_zeroEdgesFormMatching.symm
 
 /-- At a `D₀` local minimum, the vertex-local repair hypothesis is equivalent
 to the cheap-defect collapse `D₀(x)=120Z(x)`. -/
