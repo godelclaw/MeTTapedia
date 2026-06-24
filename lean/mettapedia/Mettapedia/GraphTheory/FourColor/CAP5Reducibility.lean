@@ -153,6 +153,27 @@ theorem cap5BoundaryWordSolved_of_coloredBlock2111_of_transportComponentCovers
   cap5BoundaryWordSolved_of_block2111_of_transportComponentCovers
     (cap5BoundaryWordHasBlock2111_of_coloredBlock2111 hbad) hcomponentCovers
 
+/-- Raw support-cover repair action for an arbitrary transported bad CAP5 word.  This exposes the
+actual support-carried boundary action, not just the solved-word conclusion. -/
+theorem exists_boundaryActionRepairsWord_usingTransportedComponentCoverSupport_of_eq_transportBad_of_componentCoverSupports
+    {w : CAP5BoundaryWord}
+    {redBlue₁ redBlue₂ redPurple₁ redPurple₂ : Finset (Fin 5)}
+    (hredBlue : CAP5BadRedBlueComponentCover redBlue₁ redBlue₂)
+    (hredPurple : CAP5BadRedPurpleComponentCover redPurple₁ redPurple₂)
+    (hnotExceptional :
+      ¬ CAP5BadExceptionalPairingPattern redBlue₁ redBlue₂ redPurple₁ redPurple₂)
+    {σ : Color ≃ Color} (hσ0 : σ 0 = 0) {n : Nat}
+    (hw : w = cap5TransportedBadBoundaryWord σ n) :
+    ∃ action : CAP5BoundaryAction,
+      CAP5TransportedBoundaryActionUsesComponentCoverSupport
+        redBlue₁ redBlue₂ redPurple₁ redPurple₂ σ n action ∧
+      CAP5BoundaryActionRealizesSomeTransportedRepairType action σ n ∧
+      CAP5BoundaryActionRepairsWord action w := by
+  subst w
+  exact
+    exists_boundaryActionRepairsWord_usingTransportedComponentCoverSupport_of_componentCovers_of_notExceptional
+      hredBlue hredPurple hnotExceptional hσ0 n
+
 /-- Raw support-cover endpoint for an arbitrary transported bad CAP5 word.  This is the
 interface a later graph/Kempe extraction should naturally target: it supplies the four boundary
 supports directly, rather than first packaging them as `CAP5BadPairingSupports`. -/
@@ -166,17 +187,11 @@ theorem cap5BoundaryWordSolved_of_eq_transportBad_of_transportComponentCoverSupp
     {σ : Color ≃ Color} (hσ0 : σ 0 = 0) {n : Nat}
     (hw : w = cap5TransportedBadBoundaryWord σ n) :
     CAP5BoundaryWordSolved w := by
-  let p : CAP5BadPairingSupports :=
-    { redBlue₁ := redBlue₁
-      redBlue₂ := redBlue₂
-      redPurple₁ := redPurple₁
-      redPurple₂ := redPurple₂ }
-  exact
-    cap5BoundaryWordSolved_of_eq_transportBad_of_transportComponentCovers
-      (p := p) ⟨hredBlue, hredPurple⟩
-      (by
-        simpa [p, CAP5BadPairingSupports.IsExceptional] using hnotExceptional)
-      hσ0 hw
+  rcases
+      exists_boundaryActionRepairsWord_usingTransportedComponentCoverSupport_of_eq_transportBad_of_componentCoverSupports
+        hredBlue hredPurple hnotExceptional hσ0 hw with
+    ⟨_action, _huses, _hrealizes, hrepairs⟩
+  exact cap5BoundaryWordSolved_of_boundaryActionRepairsWord hrepairs
 
 /-- Block-`(2,1,1,1)` endpoint from raw component-cover supports.  This removes an
 administrative record-construction step from the graph-facing obligation: for every transported
