@@ -601,6 +601,47 @@ theorem CAP5ExceptionalAnnulusBoundaryEdgeSupportCandidate.false_of_cyclicallyFi
     side hportal_crosses hinside_cycle houtside_cycle).not_realizes_of_cyclicallyFiveEdgeConnected
       hcyclic) hrealizes
 
+/-- CAP5-facing holds-vs-counterexample classifier.  Given portal-crossing and two-sided-cycle
+data, the finite separator generator has exactly the two operational outcomes needed downstream:
+either realization data for the proposed CAP5 cyclic cut, or an explicit outside crossing edge
+with the one-edge portal-avoiding walk across it. -/
+theorem CAP5ExceptionalAnnulusBoundaryEdgeSupportCandidate.cyclicEdgeCutRealizationData_or_oneEdge_walk_avoiding_portalBoundaryEdges_of_portal_crosses
+    {V : Type*} {G : SimpleGraph V} [DecidableEq G.edgeSet]
+    {boundaryEdge : Fin 5 → G.edgeSet}
+    (candidate : CAP5ExceptionalAnnulusBoundaryEdgeSupportCandidate boundaryEdge)
+    (side : V → Prop)
+    (hportal_crosses :
+      ∀ i : Fin 5, i ∈ candidate.portalCandidate.portalSet →
+        EdgeCrossesVertexSide G side (boundaryEdge i))
+    (hinside_cycle : HasCycleOnSide G side)
+    (houtside_cycle : HasCycleOnSide G (fun v => ¬ side v)) :
+    Nonempty (candidate.CyclicEdgeCutRealizationData (G := G)) ∨
+      ∃ u v : V, ∃ e : G.edgeSet, ∃ p : G.Walk u v,
+        e ∉ candidate.edgeSupport ∧
+          side u ∧ ¬ side v ∧
+            p.edges = [(e : Sym2 V)] ∧
+              ∀ i : Fin 5, i ∈ candidate.portalCandidate.portalSet →
+                ((boundaryEdge i : G.edgeSet) : Sym2 V) ∉ p.edges := by
+  let separatorCandidate :=
+    candidate.toCyclicSeparatorCandidate_of_portal_crosses
+      side hportal_crosses hinside_cycle houtside_cycle
+  rcases separatorCandidate.realizes_or_exists_oneEdge_counterexample with
+    hrealizes | hcounter
+  · exact Or.inl
+      ⟨candidate.cyclicEdgeCutRealizationData_of_cyclicSeparatorCandidate
+        side hportal_crosses hinside_cycle houtside_cycle hrealizes⟩
+  · rcases hcounter with ⟨u, v, e, p, heOutside, hu, hv, hpEdges, havoidSupport⟩
+    have hEdgeCut : separatorCandidate.edgeCut = candidate.edgeSupport := rfl
+    have heOutside' : e ∉ candidate.edgeSupport := by
+      rw [← hEdgeCut]
+      exact heOutside
+    refine Or.inr ⟨u, v, e, p, heOutside', hu, hv, hpEdges, ?_⟩
+    intro i hi hiEdges
+    have hsupport : boundaryEdge i ∈ separatorCandidate.edgeCut := by
+      rw [hEdgeCut]
+      exact (candidate.mem_edgeSupport_iff_exists_portal (boundaryEdge i)).2 ⟨i, hi, rfl⟩
+    exact havoidSupport (boundaryEdge i) hsupport hiEdges
+
 /-- Build the cyclic-cut realization data for a CAP5 boundary-edge support candidate from the
 direct path-separation interface expected of the planar/Jordan layer.  The listed candidate
 support must consist of side-crossing edges, every walk crossing the side must contain a listed
