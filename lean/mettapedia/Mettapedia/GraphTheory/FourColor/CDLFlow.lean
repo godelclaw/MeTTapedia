@@ -2430,6 +2430,24 @@ theorem zeroIncidentEdgeCount_eq_zero_iff {G : SimpleGraph V} [Fintype G.edgeSet
       ∀ e ∈ incidentEdgeFinset G v, x e ≠ 0 := by
   rw [zeroIncidentEdgeCount, Finset.card_eq_zero, zeroIncidentEdgeFinset_eq_empty_iff]
 
+theorem zeroIncidentEdgeCount_pos_iff_exists_incident_zero {G : SimpleGraph V}
+    [Fintype G.edgeSet] {x : G.edgeSet → Color} {v : V} :
+    0 < zeroIncidentEdgeCount G x v ↔
+      ∃ e ∈ incidentEdgeFinset G v, x e = 0 := by
+  constructor
+  · intro hpos
+    by_contra hnone
+    have hzero : zeroIncidentEdgeCount G x v = 0 := by
+      rw [zeroIncidentEdgeCount_eq_zero_iff]
+      intro e he_inc he_zero
+      exact hnone ⟨e, he_inc, he_zero⟩
+    omega
+  · rintro ⟨e, he_inc, he_zero⟩
+    by_contra hnotpos
+    have hcount : zeroIncidentEdgeCount G x v = 0 := by
+      omega
+    exact (zeroIncidentEdgeCount_eq_zero_iff.mp hcount e he_inc) he_zero
+
 theorem zeroIncidentVertexCount_eq_zero_iff {G : SimpleGraph V}
     [Fintype V] [Fintype G.edgeSet] {x : G.edgeSet → Color} :
     zeroIncidentVertexCount G x = 0 ↔
@@ -2519,6 +2537,23 @@ theorem zeroEdgesFormMatching_iff_not_hasClusteredZeroVertex
     ZeroEdgesFormMatching G x ↔ ¬ HasClusteredZeroVertex G x := by
   rw [← not_zeroEdgesFormMatching_iff_hasClusteredZeroVertex]
   exact not_not.symm
+
+/-- Under a matching zero pattern, a vertex has exactly one incident zero edge
+iff there is an explicit incident zero edge. -/
+theorem zeroIncidentEdgeCount_eq_one_iff_exists_incident_zero_of_zeroEdgesFormMatching
+    {G : SimpleGraph V} [Fintype G.edgeSet] {x : G.edgeSet → Color}
+    (hmatch : ZeroEdgesFormMatching G x) (v : V) :
+    zeroIncidentEdgeCount G x v = 1 ↔
+      ∃ e ∈ incidentEdgeFinset G v, x e = 0 := by
+  constructor
+  · intro hcount
+    exact zeroIncidentEdgeCount_pos_iff_exists_incident_zero.mp (by omega)
+  · intro hzero
+    have hpos :
+        0 < zeroIncidentEdgeCount G x v :=
+      zeroIncidentEdgeCount_pos_iff_exists_incident_zero.mpr hzero
+    have hle : zeroIncidentEdgeCount G x v ≤ 1 := hmatch v
+    omega
 
 /-- Positive clustering is exactly the presence of a vertex incident to at
 least two zero edges. -/
@@ -2665,16 +2700,10 @@ theorem zeroIncidentEdgeCount_eq_one_of_isD0LocalMinimumForMoveSupports_of_nonma
     (hmin : IsD0LocalMinimumForMoveSupports G moveSupports x)
     (hrepair : EveryNonmatchingZeroPatternHasD0Descent G moveSupports x)
     {v : V} (hzero : ∃ e ∈ incidentEdgeFinset G v, x e = 0) :
-    zeroIncidentEdgeCount G x v = 1 := by
-  rcases
-    zeroIncidentEdgeCount_eq_zero_or_eq_one_of_isD0LocalMinimumForMoveSupports_of_nonmatching_descent
-      hmin hrepair v with hcount | hcount
-  · rcases hzero with ⟨e, he_inc, he_zero⟩
-    have hnozero :
-        ∀ e ∈ incidentEdgeFinset G v, x e ≠ 0 :=
-      (zeroIncidentEdgeCount_eq_zero_iff.mp hcount)
-    exact False.elim (hnozero e he_inc he_zero)
-  · exact hcount
+    zeroIncidentEdgeCount G x v = 1 :=
+  (zeroIncidentEdgeCount_eq_one_iff_exists_incident_zero_of_zeroEdgesFormMatching
+    (zeroEdgesFormMatching_of_isD0LocalMinimumForMoveSupports_of_nonmatching_descent
+      hmin hrepair) v).mpr hzero
 
 /-- Vertex-local repair form: an explicit incident zero forces exactly one
 incident zero edge at that vertex. -/
@@ -2684,16 +2713,10 @@ theorem zeroIncidentEdgeCount_eq_one_of_isD0LocalMinimumForMoveSupports_of_clust
     (hmin : IsD0LocalMinimumForMoveSupports G moveSupports x)
     (hrepair : EveryClusteredZeroVertexHasD0Descent G moveSupports x)
     {v : V} (hzero : ∃ e ∈ incidentEdgeFinset G v, x e = 0) :
-    zeroIncidentEdgeCount G x v = 1 := by
-  rcases
-    zeroIncidentEdgeCount_eq_zero_or_eq_one_of_isD0LocalMinimumForMoveSupports_of_clusteredZeroVertex_descent
-      hmin hrepair v with hcount | hcount
-  · rcases hzero with ⟨e, he_inc, he_zero⟩
-    have hnozero :
-        ∀ e ∈ incidentEdgeFinset G v, x e ≠ 0 :=
-      (zeroIncidentEdgeCount_eq_zero_iff.mp hcount)
-    exact False.elim (hnozero e he_inc he_zero)
-  · exact hcount
+    zeroIncidentEdgeCount G x v = 1 :=
+  (zeroIncidentEdgeCount_eq_one_iff_exists_incident_zero_of_zeroEdgesFormMatching
+    (zeroEdgesFormMatching_of_isD0LocalMinimumForMoveSupports_of_clusteredZeroVertex_descent
+      hmin hrepair) v).mpr hzero
 
 /-- No-cluster form of the abstract matching-zeros theorem. -/
 theorem not_hasClusteredZeroVertex_of_isD0LocalMinimumForMoveSupports_of_nonmatching_descent
