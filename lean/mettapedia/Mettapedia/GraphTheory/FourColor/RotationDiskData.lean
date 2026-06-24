@@ -5,14 +5,16 @@ namespace Mettapedia.GraphTheory.FourColor
 
 open Relation
 
-variable {V E : Type*} [Fintype V] [DecidableEq V] [Fintype E] [DecidableEq E]
+universe u v w
+
+variable {V : Type u} {E : Type v} [Fintype V] [DecidableEq V] [Fintype E] [DecidableEq E]
 
 /-- Abstract disk-style data built over a bare rotation system and the modern
 zero-boundary algebra. This ports the useful data surface from the old
 `DiskTypes.lean` without importing the old gap-bearing planar-geometry layer. -/
-structure RotationDiskData (V E : Type*) [Fintype V] [DecidableEq V]
+structure RotationDiskData (V : Type u) (E : Type v) [Fintype V] [DecidableEq V]
     [Fintype E] [DecidableEq E] where
-  rotation : RotationSystem V E
+  rotation : RotationSystem.{u, v, w} V E
   zeroBoundarySet : Set (E → Color)
   asZeroBoundary : ZeroBoundaryData V E
   boundary_compat : asZeroBoundary.boundaryEdges = rotation.boundaryEdges
