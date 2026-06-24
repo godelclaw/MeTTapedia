@@ -819,6 +819,60 @@ theorem exists_boundaryZeroChain_vanishingOnEnumeratedExceptionalAnnulusForcedEd
     emb p0Inside p4Inside side classifier.emittedFinset classifier.emittedFinset_spec
     hnotControl
 
+/-- Decidable finite-checker dichotomy for a Boolean exceptional CAP5 classifier.  Once the
+checker supplies red/blue single-edge witnesses for every emitted edge, deciding the finite
+control/rank obligation has exactly two outputs: either Theorem 4.9 boundary-root synthesis, or a
+nonzero boundary-zero obstruction invisible to every generated CAP5 emitted edge. -/
+theorem theorem49BoundaryRootSynthesis_or_boundaryZeroChainObstruction_of_classifierControl
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    [Fintype G.edgeSet] [FiniteDimensional F2 (G.edgeSet → Color)]
+    (emb : PlaneEmbeddingWithBoundary G) (C₀ : G.EdgeColoring Color)
+    (colorings : Set (G.EdgeColoring Color))
+    (hsubset : colorings ⊆ G.EdgeKempeClosure C₀)
+    {κ : Type*}
+    (family : κ → projectedColoringGeneratorSubspace emb colorings)
+    (p0Inside p4Inside : Bool) (side : V → Prop)
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    [Decidable
+      (∀ ⦃z : G.edgeSet → Color⦄,
+        z ∈ planarBoundaryZeroSubmodule emb →
+        (∀ e ∈ classifier.emittedFinset, z e = 0) →
+          z = 0)]
+    (hwitnessRed :
+      ∀ e : G.edgeSet,
+        e ∈ classifier.emittedFinset →
+          ∃ i : κ,
+            ((family i : projectedColoringGeneratorSubspace emb colorings) :
+                G.edgeSet → Color) =
+              Pi.single e red)
+    (hwitnessBlue :
+      ∀ e : G.edgeSet,
+        e ∈ classifier.emittedFinset →
+          ∃ i : κ,
+            ((family i : projectedColoringGeneratorSubspace emb colorings) :
+                G.edgeSet → Color) =
+              Pi.single e blue) :
+    Theorem49BoundaryRootSynthesis emb C₀ ∨
+      ∃ z : G.edgeSet → Color,
+        z ∈ planarBoundaryZeroSubmodule emb ∧
+          z ≠ 0 ∧
+            ∀ e : G.edgeSet,
+              data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e →
+                z e = 0 := by
+  by_cases hcontrol :
+      ∀ ⦃z : G.edgeSet → Color⦄,
+        z ∈ planarBoundaryZeroSubmodule emb →
+        (∀ e ∈ classifier.emittedFinset, z e = 0) →
+          z = 0
+  · exact Or.inl
+      (theorem49BoundaryRootSynthesis_of_enumeratedExceptionalAnnulusForcedEdgeClassifierControl
+        emb C₀ colorings hsubset family p0Inside p4Inside side classifier hcontrol
+        hwitnessRed hwitnessBlue)
+  · exact Or.inr
+      (exists_boundaryZeroChain_vanishingOnEnumeratedExceptionalAnnulusForcedEdges_of_not_classifierControl
+        emb p0Inside p4Inside side classifier hcontrol)
+
 /-- Theorem 4.9 synthesis route from a concrete finite checker output.  The checker need only
 certify that its finite edge set is exactly the enumerated CAP5 emitted-edge predicate, and then
 prove the local nonzero/witness obligations by finite membership in that set. -/
