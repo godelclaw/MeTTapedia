@@ -3842,6 +3842,77 @@ theorem
   · exact
       everyCubicD0BasicColorObstructionStarHasPinnedTargetD0Descent_of_pinnedOutsideEdge_repairs
 
+/-- Concrete support-witness constructor for the pinned-target repair
+obligation.  To repair a displayed cubic obstruction star it suffices to give
+a permitted support containing the forced outside zero edge, together with the
+Kirchhoff-neutrality and vertex-witness data needed for the moved flow to stay
+CDL-good. -/
+theorem hasPinnedTargetD0DescentRepair_of_concrete_star_support_witnesses
+    {G : SimpleGraph V} [Fintype V] [Fintype G.edgeSet]
+    {moveSupports : Finset (Finset G.edgeSet)}
+    {C C' : Finset G.edgeSet} {h : Color} {x : G.edgeSet → Color} {v : V}
+    {e₁ e₂ e₀ : G.edgeSet}
+    (hx : IsGraphFlow G x)
+    (hstar : incidentEdgeFinset G v = {e₁, e₂, e₀})
+    (he₀C : e₀ ∉ C) (hx₀ : x e₀ = 0)
+    (hC'mem : C' ∈ moveSupports) (hh : h ≠ 0)
+    (hC'neutral : IsKirchhoffNeutralMoveSupport G C')
+    (hgood :
+      ∀ w : V, ∃ e ∈ incidentEdgeFinset G w,
+        if e ∈ C' then x e ≠ h else x e ≠ 0)
+    (he₀C' : e₀ ∈ C') (hnew : ∀ e' ∈ C', x e' ≠ h) :
+    ∃ C'' ∈ moveSupports, ∃ h' : Color,
+      IsAllowedD0OneStepMoveOn G C'' h' x (cdlOneStepMoveOn G C'' h' x) ∧
+        C'' ≠ C ∧ e₀ ∈ C'' ∧ e₀ ∈ incidentEdgeFinset G v ∧ e₀ ∉ C ∧
+          x e₀ = 0 ∧ cdlOneStepMoveOn G C'' h' x e₀ ≠ 0 ∧
+            ∀ e' ∈ C'', x e' ≠ h' := by
+  have hmove : IsAllowedD0OneStepMoveOn G C' h x (cdlOneStepMoveOn G C' h x) :=
+    isAllowedD0OneStepMoveOn_of_kirchhoffNeutral_and_vertex_witnesses
+      hh hx hC'neutral hgood
+  have he₀inc : e₀ ∈ incidentEdgeFinset G v := by
+    rw [hstar]
+    simp
+  have hsupport_ne : C' ≠ C := by
+    intro hEq
+    exact he₀C (by simpa [hEq] using he₀C')
+  have htarget_nonzero : cdlOneStepMoveOn G C' h x e₀ ≠ 0 :=
+    cdlOneStepMoveOn_apply_mem_ne_zero_of_eq_zero hh he₀C' hx₀
+  exact ⟨C', hC'mem, h, hmove, hsupport_ne, he₀C', he₀inc, he₀C, hx₀,
+    htarget_nonzero, hnew⟩
+
+/-- Global finite-search constructor for the pinned-target star-repair
+interface.  The remaining local work is exactly to provide, for each displayed
+obstruction star, a nonzero Kirchhoff-neutral support containing the pinned
+outside zero edge and vertex witnesses that the one-step target remains
+CDL-good. -/
+theorem
+    everyCubicD0BasicColorObstructionStarHasPinnedTargetD0Descent_of_concrete_star_support_witnesses
+    {G : SimpleGraph V} [Fintype V] [Fintype G.edgeSet]
+    {moveSupports : Finset (Finset G.edgeSet)} {x : G.edgeSet → Color}
+    (hx : IsGraphFlow G x)
+    (hrepair :
+      ∀ (C : Finset G.edgeSet) (v : V) (g : Color)
+        (e₁ e₂ e₀ : G.edgeSet),
+        g ≠ 0 →
+          e₁ ≠ e₂ → e₁ ≠ e₀ → e₂ ≠ e₀ →
+            incidentEdgeFinset G v = {e₁, e₂, e₀} →
+              e₁ ∈ C → e₂ ∈ C → e₀ ∉ C →
+                x e₁ = g → x e₂ = g → x e₀ = 0 →
+                  ∃ C' ∈ moveSupports, ∃ h : Color,
+                    h ≠ 0 ∧ IsKirchhoffNeutralMoveSupport G C' ∧
+                      (∀ w : V, ∃ e ∈ incidentEdgeFinset G w,
+                        if e ∈ C' then x e ≠ h else x e ≠ 0) ∧
+                        e₀ ∈ C' ∧ ∀ e' ∈ C', x e' ≠ h) :
+    EveryCubicD0BasicColorObstructionStarHasPinnedTargetD0Descent
+        G moveSupports x := by
+  intro C v g e₁ e₂ e₀ hg h12 h10 h20 hstar he₁C he₂C he₀C hx₁ hx₂ hx₀
+  rcases hrepair C v g e₁ e₂ e₀ hg h12 h10 h20 hstar he₁C he₂C
+      he₀C hx₁ hx₂ hx₀ with
+    ⟨C', hC'mem, h, hh, hC'neutral, hgood, he₀C', hnew⟩
+  exact
+    hasPinnedTargetD0DescentRepair_of_concrete_star_support_witnesses
+      hx hstar he₀C hx₀ hC'mem hh hC'neutral hgood he₀C' hnew
+
 /-- To discharge the abstract second-step cubic-obstruction repair hypothesis,
 it is enough to repair every concrete three-edge obstruction star: two support
 edges of color `g` and the unique outside zero edge. -/
