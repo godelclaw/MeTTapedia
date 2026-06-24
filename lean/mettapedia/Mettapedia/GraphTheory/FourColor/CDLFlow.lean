@@ -95,6 +95,17 @@ def zeroDefectD0 (G : SimpleGraph V) [Fintype V] [Fintype G.edgeSet]
     (x : G.edgeSet → Color) : Nat :=
   100 * zeroEdgeCount G x + 10 * zeroIncidentVertexCount G x + zeroClusteringCount G x
 
+theorem zeroDefectD0_lt_of_one_zero_removed_and_side_budget
+    {G : SimpleGraph V} [Fintype V] [Fintype G.edgeSet]
+    {x y : G.edgeSet → Color} {dI dC : Nat}
+    (hZ : zeroEdgeCount G y + 1 ≤ zeroEdgeCount G x)
+    (hI : zeroIncidentVertexCount G y ≤ zeroIncidentVertexCount G x + dI)
+    (hC : zeroClusteringCount G y ≤ zeroClusteringCount G x + dC)
+    (hbudget : 10 * dI + dC < 100) :
+    zeroDefectD0 G y < zeroDefectD0 G x := by
+  unfold zeroDefectD0
+  omega
+
 /-- Add a fixed nonzero color on a selected finite edge support.  In the
 manuscript this is the abstract `x + g · 1_C` one-step move; cycle and patch
 conditions are supplied separately by the caller. -/
@@ -543,6 +554,19 @@ theorem not_isD0LocalMinimumForMoveSupports_of_allowed_descent
     ¬ IsD0LocalMinimumForMoveSupports G moveSupports x := by
   intro hmin
   exact not_lt_of_ge (hmin.d0_le_of_allowed_move hC hmove) hdesc
+
+theorem not_isD0LocalMinimumForMoveSupports_of_allowed_side_budget_descent
+    {G : SimpleGraph V} [Fintype V] [Fintype G.edgeSet]
+    {moveSupports : Finset (Finset G.edgeSet)} {x y : G.edgeSet → Color}
+    {C : Finset G.edgeSet} {g : Color} {dI dC : Nat}
+    (hCmem : C ∈ moveSupports) (hmove : IsAllowedD0OneStepMoveOn G C g x y)
+    (hZ : zeroEdgeCount G y + 1 ≤ zeroEdgeCount G x)
+    (hI : zeroIncidentVertexCount G y ≤ zeroIncidentVertexCount G x + dI)
+    (hC : zeroClusteringCount G y ≤ zeroClusteringCount G x + dC)
+    (hbudget : 10 * dI + dC < 100) :
+    ¬ IsD0LocalMinimumForMoveSupports G moveSupports x := by
+  exact not_isD0LocalMinimumForMoveSupports_of_allowed_descent hCmem hmove
+    (zeroDefectD0_lt_of_one_zero_removed_and_side_budget hZ hI hC hbudget)
 
 theorem zeroDefectD0_le_of_isD0LocalMinimumForMoveSupports_of_isKempeCycle
     {G : SimpleGraph V} [Fintype V] [Fintype G.edgeSet]
