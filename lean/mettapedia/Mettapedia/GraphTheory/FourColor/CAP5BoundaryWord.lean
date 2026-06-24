@@ -109,6 +109,116 @@ theorem cap5WordExtendsAcrossCycle_map_equiv_iff_of_map_zero {σ : Color ≃ Col
   · intro h
     exact cap5WordExtendsAcrossCycle_map_equiv_of_map_zero hσ0 h
 
+/-- Rotate a CAP5 boundary word one step around the cyclic boundary. -/
+def cap5RotateBoundaryWord (w : CAP5BoundaryWord) : CAP5BoundaryWord
+  | 0 => w 1
+  | 1 => w 2
+  | 2 => w 3
+  | 3 => w 4
+  | 4 => w 0
+
+/-- Rotate a CAP5 internal 5-cycle coloring compatibly with `cap5RotateBoundaryWord`. -/
+def cap5RotateInternalCycleColoring
+    (x : CAP5InternalCycleColoring) : CAP5InternalCycleColoring
+  | 0 => x 1
+  | 1 => x 2
+  | 2 => x 3
+  | 3 => x 4
+  | 4 => x 0
+
+/-- Rotate a CAP5 boundary word one step in the inverse cyclic direction. -/
+def cap5UnrotateBoundaryWord (w : CAP5BoundaryWord) : CAP5BoundaryWord
+  | 0 => w 4
+  | 1 => w 0
+  | 2 => w 1
+  | 3 => w 2
+  | 4 => w 3
+
+/-- Rotate a CAP5 internal 5-cycle coloring in the inverse cyclic direction. -/
+def cap5UnrotateInternalCycleColoring
+    (x : CAP5InternalCycleColoring) : CAP5InternalCycleColoring
+  | 0 => x 4
+  | 1 => x 0
+  | 2 => x 1
+  | 3 => x 2
+  | 4 => x 3
+
+@[simp] theorem cap5Unrotate_rotate_boundaryWord (w : CAP5BoundaryWord) :
+    cap5UnrotateBoundaryWord (cap5RotateBoundaryWord w) = w := by
+  funext i
+  fin_cases i <;> rfl
+
+@[simp] theorem cap5Rotate_unrotate_boundaryWord (w : CAP5BoundaryWord) :
+    cap5RotateBoundaryWord (cap5UnrotateBoundaryWord w) = w := by
+  funext i
+  fin_cases i <;> rfl
+
+@[simp] theorem cap5Unrotate_rotate_internalCycleColoring
+    (x : CAP5InternalCycleColoring) :
+    cap5UnrotateInternalCycleColoring (cap5RotateInternalCycleColoring x) = x := by
+  funext i
+  fin_cases i <;> rfl
+
+@[simp] theorem cap5Rotate_unrotate_internalCycleColoring
+    (x : CAP5InternalCycleColoring) :
+    cap5RotateInternalCycleColoring (cap5UnrotateInternalCycleColoring x) = x := by
+  funext i
+  fin_cases i <;> rfl
+
+/-- CAP5 extension by a fixed internal coloring is invariant under one cyclic rotation. -/
+theorem cap5ExtendsAcrossCycleWith_rotate
+    {w : CAP5BoundaryWord} {x : CAP5InternalCycleColoring}
+    (h : CAP5ExtendsAcrossCycleWith w x) :
+    CAP5ExtendsAcrossCycleWith (cap5RotateBoundaryWord w)
+      (cap5RotateInternalCycleColoring x) := by
+  rcases h with ⟨hv0, hv1, hv2, hv3, hv4⟩
+  exact ⟨hv1, hv2, hv3, hv4, hv0⟩
+
+/-- CAP5 extension by a fixed internal coloring is invariant under inverse cyclic rotation. -/
+theorem cap5ExtendsAcrossCycleWith_unrotate
+    {w : CAP5BoundaryWord} {x : CAP5InternalCycleColoring}
+    (h : CAP5ExtendsAcrossCycleWith w x) :
+    CAP5ExtendsAcrossCycleWith (cap5UnrotateBoundaryWord w)
+      (cap5UnrotateInternalCycleColoring x) := by
+  rcases h with ⟨hv0, hv1, hv2, hv3, hv4⟩
+  exact ⟨hv4, hv0, hv1, hv2, hv3⟩
+
+/-- CAP5 extendability is preserved by one cyclic boundary rotation. -/
+theorem cap5WordExtendsAcrossCycle_rotate {w : CAP5BoundaryWord}
+    (h : CAP5WordExtendsAcrossCycle w) :
+    CAP5WordExtendsAcrossCycle (cap5RotateBoundaryWord w) := by
+  rcases h with ⟨x, hx⟩
+  exact ⟨cap5RotateInternalCycleColoring x, cap5ExtendsAcrossCycleWith_rotate hx⟩
+
+/-- CAP5 extendability is preserved by inverse cyclic boundary rotation. -/
+theorem cap5WordExtendsAcrossCycle_unrotate {w : CAP5BoundaryWord}
+    (h : CAP5WordExtendsAcrossCycle w) :
+    CAP5WordExtendsAcrossCycle (cap5UnrotateBoundaryWord w) := by
+  rcases h with ⟨x, hx⟩
+  exact ⟨cap5UnrotateInternalCycleColoring x, cap5ExtendsAcrossCycleWith_unrotate hx⟩
+
+/-- CAP5 extendability is unchanged by one cyclic boundary rotation. -/
+theorem cap5WordExtendsAcrossCycle_rotate_iff {w : CAP5BoundaryWord} :
+    CAP5WordExtendsAcrossCycle (cap5RotateBoundaryWord w) ↔
+      CAP5WordExtendsAcrossCycle w := by
+  constructor
+  · intro h
+    have h' := cap5WordExtendsAcrossCycle_unrotate h
+    simpa using h'
+  · intro h
+    exact cap5WordExtendsAcrossCycle_rotate h
+
+/-- CAP5 extendability is unchanged by inverse cyclic boundary rotation. -/
+theorem cap5WordExtendsAcrossCycle_unrotate_iff {w : CAP5BoundaryWord} :
+    CAP5WordExtendsAcrossCycle (cap5UnrotateBoundaryWord w) ↔
+      CAP5WordExtendsAcrossCycle w := by
+  constructor
+  · intro h
+    have h' := cap5WordExtendsAcrossCycle_rotate h
+    simpa using h'
+  · intro h
+    exact cap5WordExtendsAcrossCycle_unrotate h
+
 /-- Normal-form good CAP5 word with block structure `(3,1,1)`. -/
 def cap5GoodBoundaryWord311 : CAP5BoundaryWord
   | 0 => red
