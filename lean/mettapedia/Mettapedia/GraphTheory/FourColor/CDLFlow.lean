@@ -1,3 +1,4 @@
+import Mettapedia.GraphTheory.FourColor.KempeCycles
 import Mettapedia.GraphTheory.FourColor.Theorem49TargetSubspace
 
 namespace Mettapedia.GraphTheory.FourColor
@@ -151,6 +152,30 @@ theorem isKirchhoffNeutralMoveSupport_of_even_incident_inter
   intro v
   rw [Finset.inter_comm]
   exact hC v
+
+theorem isKirchhoffNeutralMoveSupport_of_isKempeCycle_incident
+    {G : SimpleGraph V} [Fintype G.edgeSet] {x : G.edgeSet → Color}
+    {C : Finset G.edgeSet} {α β : Color}
+    (incident : V → Finset G.edgeSet)
+    (hincident : ∀ v : V, incident v = incidentEdgeFinset G v)
+    (hC : IsKempeCycle incident x C α β) :
+    IsKirchhoffNeutralMoveSupport G C := by
+  apply isKirchhoffNeutralMoveSupport_of_even_inter_incident incident hincident
+  intro v
+  have hfilter :
+      (C ∩ incident v).filter (fun e => x e = α ∨ x e = β) =
+        C ∩ incident v :=
+    kempeSubgraph_filter_incidence_eq incident x C α β hC.1 v
+  rw [← hfilter]
+  exact kempeCycle_even_at incident x C α β hC v
+
+theorem isKirchhoffNeutralMoveSupport_of_isKempeCycle
+    {G : SimpleGraph V} [Fintype G.edgeSet] {x : G.edgeSet → Color}
+    {C : Finset G.edgeSet} {α β : Color}
+    (hC : IsKempeCycle (incidentEdgeFinset G) x C α β) :
+    IsKirchhoffNeutralMoveSupport G C :=
+  isKirchhoffNeutralMoveSupport_of_isKempeCycle_incident
+    (incident := incidentEdgeFinset G) (fun _ => rfl) hC
 
 theorem isKirchhoffNeutralMoveSupport_empty
     {G : SimpleGraph V} [Fintype G.edgeSet] :
