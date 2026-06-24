@@ -1745,6 +1745,25 @@ theorem cap5BoundaryWordOfEdges_solved_of_forall_nonzero_of_isZeroBoundary_at_of
       boundaryEdge C hinj hincident hzero)
     hcomponentCovers
 
+/-- Full-zero-boundary-set form of the graph-facing CAP5 solved endpoint.  This exposes the
+stronger invariant carried by `D.zeroBoundarySet` while using its vertex-sum component for the CAP5
+cut equation. -/
+theorem cap5BoundaryWordOfEdges_solved_of_forall_nonzero_of_mem_zeroBoundarySet_at_of_transportEdgeComponentCoverData
+    {U E : Type*} [DecidableEq E] {D : ZeroBoundaryData U E} {v : U}
+    (boundaryEdge : Fin 5 → E) (C : E → Color)
+    (hC : ∀ i : Fin 5, C (boundaryEdge i) ≠ 0)
+    (hinj : Function.Injective boundaryEdge)
+    (hincident : D.incident v = Finset.univ.map ⟨boundaryEdge, hinj⟩)
+    (hzero : C ∈ D.zeroBoundarySet)
+    (hcomponentCovers :
+      ∀ {σ : Color ≃ Color} {n : Nat},
+        σ 0 = 0 →
+        cap5BoundaryWordOfEdges boundaryEdge C = cap5TransportedBadBoundaryWord σ n →
+        CAP5TransportedEdgeComponentCoverData boundaryEdge n) :
+    CAP5BoundaryWordSolved (cap5BoundaryWordOfEdges boundaryEdge C) :=
+  cap5BoundaryWordOfEdges_solved_of_forall_nonzero_of_isZeroBoundary_at_of_transportEdgeComponentCoverData
+    boundaryEdge C hC hinj hincident hzero.1 hcomponentCovers
+
 /-- Tait-coloring form of the zero-boundary CAP5 endpoint.  This is the manuscript-facing
 interface: a Tait edge-coloring gives nonzero boundary colors, while the zero-boundary incidence
 equation gives the CAP5 parity sum. -/
@@ -1764,6 +1783,29 @@ theorem cap5BoundaryWordOfEdges_solved_of_isTaitEdgeColoring_of_isZeroBoundary_a
     CAP5BoundaryWordSolved (cap5BoundaryWordOfEdges boundaryEdge C) :=
   cap5BoundaryWordOfEdges_solved_of_forall_nonzero_of_isZeroBoundary_at_of_transportEdgeComponentCoverData
     boundaryEdge C (fun i => hC (boundaryEdge i)) hinj hincident hzero hcomponentCovers
+
+/-- Tait-coloring form of the full-zero-boundary CAP5 solved endpoint.  This is the strongest
+manuscript-facing boundary-word solution surface when the surrounding graph proof carries the full
+`D.zeroBoundarySet` invariant. -/
+theorem cap5BoundaryWordOfEdges_solved_of_isTaitEdgeColoring_of_mem_zeroBoundarySet_at_of_transportEdgeComponentCoverData
+    {V U : Type*} [DecidableEq V] {G : SimpleGraph V}
+    {D : ZeroBoundaryData U G.edgeSet} {v : U}
+    (boundaryEdge : Fin 5 → G.edgeSet) (C : G.EdgeColoring Color)
+    (hC : IsTaitEdgeColoring G C)
+    (hinj : Function.Injective boundaryEdge)
+    (hincident : D.incident v = Finset.univ.map ⟨boundaryEdge, hinj⟩)
+    (hzero : (C : G.edgeSet → Color) ∈ D.zeroBoundarySet)
+    (hcomponentCovers :
+      ∀ {σ : Color ≃ Color} {n : Nat},
+        σ 0 = 0 →
+        cap5BoundaryWordOfEdges boundaryEdge (C : G.edgeSet → Color) =
+          cap5TransportedBadBoundaryWord σ n →
+        CAP5TransportedEdgeComponentCoverData boundaryEdge n) :
+    CAP5BoundaryWordSolved
+      (cap5BoundaryWordOfEdges boundaryEdge (C : G.edgeSet → Color)) :=
+  cap5BoundaryWordOfEdges_solved_of_forall_nonzero_of_mem_zeroBoundarySet_at_of_transportEdgeComponentCoverData
+    boundaryEdge (C : G.edgeSet → Color) (fun i => hC (boundaryEdge i))
+    hinj hincident hzero hcomponentCovers
 
 /-- If an edge coloring restricts to a transported bad CAP5 boundary word, structured
 edge-component-cover data supplies a boundary repair of that restricted word. -/
