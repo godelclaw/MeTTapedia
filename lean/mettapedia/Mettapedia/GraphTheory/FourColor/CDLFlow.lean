@@ -101,6 +101,13 @@ def cdlOneStepMoveOn (G : SimpleGraph V) [Fintype G.edgeSet]
     G.edgeSet → Color :=
   fun e => if e ∈ C then x e + g else x e
 
+/-- A support is Kirchhoff-neutral when it meets the incident edge set of every
+vertex in even cardinality.  Cycle supports satisfy this condition; patch files
+can prove it from their concrete cycle data. -/
+def IsKirchhoffNeutralMoveSupport (G : SimpleGraph V) [Fintype G.edgeSet]
+    (C : Finset G.edgeSet) : Prop :=
+  ∀ v : V, Even ((incidentEdgeFinset G v).filter fun e => e ∈ C).card
+
 @[simp] theorem cdlOneStepMoveOn_apply_mem {G : SimpleGraph V} [Fintype G.edgeSet]
     {C : Finset G.edgeSet} {g : Color} {x : G.edgeSet → Color} {e : G.edgeSet}
     (he : e ∈ C) :
@@ -142,6 +149,40 @@ theorem cdlOneStepMoveOn_apply_mem_eq_zero_of_eq_color
     cdlOneStepMoveOn G C g x e = 0 := by
   rw [cdlOneStepMoveOn_apply_mem he, hx, color_add_self]
 
+theorem vertexKirchhoffSum_cdlOneStepMoveOn_eq
+    {G : SimpleGraph V} [Fintype G.edgeSet]
+    (C : Finset G.edgeSet) (g : Color) (x : G.edgeSet → Color) (v : V) :
+    vertexKirchhoffSum G (cdlOneStepMoveOn G C g x) v =
+      vertexKirchhoffSum G x v +
+        ((incidentEdgeFinset G v).filter fun e => e ∈ C).card • g := by
+  unfold vertexKirchhoffSum
+  calc
+    ∑ e ∈ incidentEdgeFinset G v, cdlOneStepMoveOn G C g x e
+        = ∑ e ∈ incidentEdgeFinset G v, (x e + if e ∈ C then g else 0) := by
+          refine Finset.sum_congr rfl ?_
+          intro e _he
+          by_cases heC : e ∈ C <;> simp [cdlOneStepMoveOn, heC]
+    _ = (∑ e ∈ incidentEdgeFinset G v, x e) +
+          ∑ e ∈ incidentEdgeFinset G v, (if e ∈ C then g else 0) := by
+          rw [Finset.sum_add_distrib]
+    _ = (∑ e ∈ incidentEdgeFinset G v, x e) +
+          ∑ e ∈ (incidentEdgeFinset G v).filter (fun e => e ∈ C), g := by
+          congr 1
+          rw [← Finset.sum_filter]
+    _ = (∑ e ∈ incidentEdgeFinset G v, x e) +
+          ((incidentEdgeFinset G v).filter fun e => e ∈ C).card • g := by
+          rw [sum_const]
+
+theorem isGraphFlow_cdlOneStepMoveOn_of_kirchhoffNeutral
+    {G : SimpleGraph V} [Fintype G.edgeSet] {C : Finset G.edgeSet}
+    {g : Color} {x : G.edgeSet → Color}
+    (hx : IsGraphFlow G x) (hC : IsKirchhoffNeutralMoveSupport G C) :
+    IsGraphFlow G (cdlOneStepMoveOn G C g x) := by
+  intro v
+  rw [vertexKirchhoffSum_cdlOneStepMoveOn_eq]
+  rw [hx v, nsmul_even_eq_zero (hC v)]
+  simp
+
 /-- A permitted manuscript one-step move on a selected edge support.  This
 records the target assignment, the nonzero move color, and the two semantic
 checks that are not automatic for an arbitrary support: Kirchhoff and CDL
@@ -152,6 +193,18 @@ structure IsAllowedD0OneStepMoveOn (G : SimpleGraph V) [Fintype G.edgeSet]
   target_eq : y = cdlOneStepMoveOn G C g x
   target_flow : IsGraphFlow G y
   target_good : ∀ v : V, IsCDLGoodAtVertex G y v
+
+theorem isAllowedD0OneStepMoveOn_of_kirchhoffNeutral
+    {G : SimpleGraph V} [Fintype G.edgeSet] {C : Finset G.edgeSet}
+    {g : Color} {x : G.edgeSet → Color}
+    (hg : g ≠ 0) (hx : IsGraphFlow G x)
+    (hC : IsKirchhoffNeutralMoveSupport G C)
+    (hgood : ∀ v : V, IsCDLGoodAtVertex G (cdlOneStepMoveOn G C g x) v) :
+    IsAllowedD0OneStepMoveOn G C g x (cdlOneStepMoveOn G C g x) where
+  color_ne_zero := hg
+  target_eq := rfl
+  target_flow := isGraphFlow_cdlOneStepMoveOn_of_kirchhoffNeutral hx hC
+  target_good := hgood
 
 /-- Manuscript-facing `D₀` local minimum for a finite family of permitted move
 supports.  A patch-specific file can instantiate `moveSupports` with its finite
