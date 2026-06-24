@@ -921,6 +921,80 @@ theorem not_isCDLGoodAtVertex_cdlOneStepMoveOn_of_hasCubicD0BasicColorObstructio
     hforced⟩
   exact not_isCDLGoodAtVertex_cdlOneStepMoveOn_iff.mpr hforced
 
+/-- In a cubic obstruction, replaying the same failed support and color cannot
+be a zero-erasing/no-new-zero repair: the support already contains an incident
+edge of color `g`.  Thus the manuscript's second step must use genuinely new
+local repair data, not the blocked first-step support itself. -/
+theorem
+    not_creates_no_zero_on_obstruction_support_of_hasCubicD0BasicColorObstructionAt
+    {G : SimpleGraph V} [Fintype V] [Fintype G.edgeSet]
+    {C : Finset G.edgeSet} {g : Color} {x : G.edgeSet → Color} {v : V}
+    (hcard : (incidentEdgeFinset G v).card = 3)
+    (hobst : HasCubicD0BasicColorObstructionAt G x C v g) :
+    ¬ ∀ e ∈ C, x e ≠ g := by
+  intro hnew
+  rcases
+    exists_support_pair_and_outside_zero_of_hasCubicD0BasicColorObstructionAt
+      hcard hobst with
+    ⟨e₁, _e₂, _e₀, _h12, _h10, _h20, _he₁inc, _he₂inc, _he₀inc,
+      he₁C, _he₂C, _he₀C, hx₁, _hx₂, _hx₀⟩
+  exact (hnew e₁ he₁C) hx₁
+
+/-- If a move has the cubic obstruction's forced incident-neighborhood shape,
+then applying that same support/color makes every edge at the obstructed vertex
+zero. -/
+theorem
+    zeroIncidentEdgeFinset_cdlOneStepMoveOn_eq_incidentEdgeFinset_of_forced_zero_move
+    {G : SimpleGraph V} [Fintype G.edgeSet]
+    {C : Finset G.edgeSet} {g : Color} {x : G.edgeSet → Color} {v : V}
+    (hforced :
+      ∀ e ∈ incidentEdgeFinset G v, if e ∈ C then x e = g else x e = 0) :
+    zeroIncidentEdgeFinset G (cdlOneStepMoveOn G C g x) v =
+      incidentEdgeFinset G v := by
+  ext e
+  constructor
+  · intro he
+    exact (Finset.mem_filter.mp he).1
+  · intro heinc
+    refine Finset.mem_filter.mpr ⟨heinc, ?_⟩
+    by_cases heC : e ∈ C
+    · have hx : x e = g := by simpa [heC] using hforced e heinc
+      simp [cdlOneStepMoveOn, heC, hx]
+    · have hx : x e = 0 := by simpa [heC] using hforced e heinc
+      simp [cdlOneStepMoveOn, heC, hx]
+
+/-- Quantitative form of the blocked first step: on a cubic obstruction star,
+the same failed support/color turns the obstructed vertex into an all-zero
+three-edge star. -/
+theorem
+    zeroIncidentEdgeCount_cdlOneStepMoveOn_eq_three_of_hasCubicD0BasicColorObstructionAt
+    {G : SimpleGraph V} [Fintype V] [Fintype G.edgeSet]
+    {C : Finset G.edgeSet} {g : Color} {x : G.edgeSet → Color} {v : V}
+    (hcard : (incidentEdgeFinset G v).card = 3)
+    (hobst : HasCubicD0BasicColorObstructionAt G x C v g) :
+    zeroIncidentEdgeCount G (cdlOneStepMoveOn G C g x) v = 3 := by
+  rcases hobst with
+    ⟨_hg, _hcount, _hclustering, _hincident, _e, _heinc, _heC, _hx,
+      hforced⟩
+  rw [zeroIncidentEdgeCount,
+    zeroIncidentEdgeFinset_cdlOneStepMoveOn_eq_incidentEdgeFinset_of_forced_zero_move
+      hforced,
+    hcard]
+
+/-- The same failed support/color creates local clustering contribution `2` at
+the obstructed cubic vertex, so it is not the manuscript's no-new-zero descent
+repair. -/
+theorem
+    zeroClusteringLocalTerm_cdlOneStepMoveOn_eq_two_of_hasCubicD0BasicColorObstructionAt
+    {G : SimpleGraph V} [Fintype V] [Fintype G.edgeSet]
+    {C : Finset G.edgeSet} {g : Color} {x : G.edgeSet → Color} {v : V}
+    (hcard : (incidentEdgeFinset G v).card = 3)
+    (hobst : HasCubicD0BasicColorObstructionAt G x C v g) :
+    zeroIncidentEdgeCount G (cdlOneStepMoveOn G C g x) v - 1 = 2 := by
+  rw [
+    zeroIncidentEdgeCount_cdlOneStepMoveOn_eq_three_of_hasCubicD0BasicColorObstructionAt
+      hcard hobst]
+
 theorem vertexKirchhoffSum_cdlOneStepMoveOn_eq
     {G : SimpleGraph V} [Fintype G.edgeSet]
     (C : Finset G.edgeSet) (g : Color) (x : G.edgeSet → Color) (v : V) :
