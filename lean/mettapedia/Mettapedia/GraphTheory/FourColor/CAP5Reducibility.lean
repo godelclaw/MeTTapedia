@@ -844,6 +844,56 @@ theorem CAP5ExceptionalAnnulusBoundaryEdgeSupportCandidate.exists_noncandidate_c
     ⟨i, hi, hboundary⟩
   exact havoid i hi (by simpa [hboundary] using heEdges)
 
+/-- Exact failure normal form for the CAP5 portal separator target.  An opposite-side walk
+avoiding every named portal boundary edge exists exactly when some non-candidate edge crosses the
+chosen side.  Thus the Sublemma 6.8 graph obligation has a local edge-level falsifier. -/
+theorem CAP5ExceptionalAnnulusBoundaryEdgeSupportCandidate.exists_walk_avoiding_portalBoundaryEdges_iff_exists_noncandidate_crosses
+    {V : Type*} {G : SimpleGraph V} [DecidableEq G.edgeSet]
+    {boundaryEdge : Fin 5 → G.edgeSet}
+    (candidate : CAP5ExceptionalAnnulusBoundaryEdgeSupportCandidate boundaryEdge)
+    (side : V → Prop) :
+    (∃ u v : V, ∃ p : G.Walk u v,
+      side u ∧ ¬ side v ∧
+        ∀ i : Fin 5, i ∈ candidate.portalCandidate.portalSet →
+          ((boundaryEdge i : G.edgeSet) : Sym2 V) ∉ p.edges) ↔
+      ∃ e : G.edgeSet, e ∉ candidate.edgeSupport ∧ EdgeCrossesVertexSide G side e := by
+  constructor
+  · intro hwalk
+    rcases hwalk with ⟨u, v, p, hu, hv, havoid⟩
+    rcases candidate.exists_noncandidate_crosses_of_walk_avoids_portalBoundaryEdges
+        side p hu hv havoid with
+      ⟨e, hnot, hcross, _heEdges⟩
+    exact ⟨e, hnot, hcross⟩
+  · intro hcrossing
+    rcases hcrossing with ⟨e, hnot, hcross⟩
+    exact candidate.exists_walk_avoiding_portalBoundaryEdges_of_noncandidate_crosses
+      side hnot hcross
+
+/-- Counterexample-free local form of the CAP5 portal separator target.  Ruling out every
+opposite-side walk avoiding the named portals is exactly ruling out every non-candidate crossing
+edge. -/
+theorem CAP5ExceptionalAnnulusBoundaryEdgeSupportCandidate.no_walk_avoiding_portalBoundaryEdges_iff_noncandidate_not_crosses
+    {V : Type*} {G : SimpleGraph V} [DecidableEq G.edgeSet]
+    {boundaryEdge : Fin 5 → G.edgeSet}
+    (candidate : CAP5ExceptionalAnnulusBoundaryEdgeSupportCandidate boundaryEdge)
+    (side : V → Prop) :
+    (¬ ∃ u v : V, ∃ p : G.Walk u v,
+      side u ∧ ¬ side v ∧
+        ∀ i : Fin 5, i ∈ candidate.portalCandidate.portalSet →
+          ((boundaryEdge i : G.edgeSet) : Sym2 V) ∉ p.edges) ↔
+      ∀ e : G.edgeSet, e ∉ candidate.edgeSupport → ¬ EdgeCrossesVertexSide G side e := by
+  constructor
+  · intro hno_walk e hnot hcross
+    exact hno_walk
+      (candidate.exists_walk_avoiding_portalBoundaryEdges_of_noncandidate_crosses
+        side hnot hcross)
+  · intro hnoncandidate_not_crosses hwalk
+    rcases hwalk with ⟨u, v, p, hu, hv, havoid⟩
+    rcases candidate.exists_noncandidate_crosses_of_walk_avoids_portalBoundaryEdges
+        side p hu hv havoid with
+      ⟨e, hnot, hcross, _heEdges⟩
+    exact hnoncandidate_not_crosses e hnot hcross
+
 /-- If a finite CAP5 boundary-edge support candidate is realized by a graph-level small cyclic
 edge cut, the cardinality bound transfers to that cut. -/
 theorem CAP5ExceptionalAnnulusBoundaryEdgeSupportCandidate.exists_smallCyclicEdgeCut_of_realizes
