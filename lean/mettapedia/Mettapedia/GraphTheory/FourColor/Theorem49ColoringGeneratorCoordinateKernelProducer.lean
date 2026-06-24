@@ -295,6 +295,35 @@ theorem edgePredicateControls_iff_forall_nonzero_exists_edgePredicateWitness
     rcases hwitness hzBoundary hzNonzero with ⟨e, hP, hze⟩
     exact hze (hvanish e hP)
 
+/-- Finite-coordinate version of predicate control.  A concrete finite edge set controls the
+selected-boundary-zero chains iff every nonzero selected-boundary-zero chain is nonzero on at
+least one edge of that set.  This is the rank/kernel certificate shape expected from a finite
+checker. -/
+theorem finsetControls_iff_forall_nonzero_exists_mem_nonzero
+    {G : SimpleGraph V} [Fintype G.edgeSet]
+    {emb : PlaneEmbeddingWithBoundary G}
+    (controlEdges : Finset G.edgeSet) :
+    (∀ ⦃z : G.edgeSet → Color⦄,
+      z ∈ planarBoundaryZeroSubmodule emb →
+      (∀ e ∈ controlEdges, z e = 0) →
+        z = 0) ↔
+    (∀ ⦃z : G.edgeSet → Color⦄,
+      z ∈ planarBoundaryZeroSubmodule emb →
+      z ≠ 0 →
+        ∃ e : G.edgeSet, e ∈ controlEdges ∧ z e ≠ 0) := by
+  constructor
+  · intro hcontrol z hzBoundary hzNonzero
+    by_contra hno
+    apply hzNonzero
+    apply hcontrol hzBoundary
+    intro e he
+    by_contra hze
+    exact hno ⟨e, he, hze⟩
+  · intro hwitness z hzBoundary hvanish
+    by_contra hzNonzero
+    rcases hwitness hzBoundary hzNonzero with ⟨e, he, hze⟩
+    exact hze (hvanish e he)
+
 /-- Predicate-indexed coordinate separation from the witness form of control.  This is the
 checker-facing route: for every nonzero selected-boundary-zero chain, emit a `P` edge where it is
 nonzero; red/blue single-coordinate witnesses on `P` edges then separate all family pairings. -/

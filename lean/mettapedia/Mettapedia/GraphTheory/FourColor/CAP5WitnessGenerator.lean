@@ -550,6 +550,56 @@ theorem enumeratedExceptionalAnnulusForcedEdgeFinset_nonempty_of_isExceptional_o
     ⟨e, hedge⟩
   exact ⟨e, (hcert e).2 hedge⟩
 
+/-- Theorem 4.9 synthesis route from a concrete finite checker's control certificate.  The finite
+rank-style obligation is: if a selected-boundary-zero chain vanishes on all emitted edges, then it
+vanishes everywhere.  The edge-set certificate translates that concrete finite obligation back to
+the enumerated CAP5 generator predicate. -/
+theorem theorem49BoundaryRootSynthesis_of_enumeratedExceptionalAnnulusForcedEdgeFinsetControl
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    [Fintype G.edgeSet] [FiniteDimensional F2 (G.edgeSet → Color)]
+    (emb : PlaneEmbeddingWithBoundary G) (C₀ : G.EdgeColoring Color)
+    (colorings : Set (G.EdgeColoring Color))
+    (hsubset : colorings ⊆ G.EdgeKempeClosure C₀)
+    {κ : Type*}
+    (family : κ → projectedColoringGeneratorSubspace emb colorings)
+    (p0Inside p4Inside : Bool) (side : V → Prop) (emitted : Finset G.edgeSet)
+    (hcert :
+      data.EnumeratedExceptionalAnnulusForcedEdgeFinset p0Inside p4Inside side emitted)
+    (hcontrol :
+      ∀ ⦃z : G.edgeSet → Color⦄,
+        z ∈ planarBoundaryZeroSubmodule emb →
+        (∀ e ∈ emitted, z e = 0) →
+          z = 0)
+    (hwitnessRed :
+      ∀ e : G.edgeSet,
+        e ∈ emitted →
+          ∃ i : κ,
+            ((family i : projectedColoringGeneratorSubspace emb colorings) :
+                G.edgeSet → Color) =
+              Pi.single e red)
+    (hwitnessBlue :
+      ∀ e : G.edgeSet,
+        e ∈ emitted →
+          ∃ i : κ,
+            ((family i : projectedColoringGeneratorSubspace emb colorings) :
+                G.edgeSet → Color) =
+              Pi.single e blue) :
+    Theorem49BoundaryRootSynthesis emb C₀ :=
+  theorem49BoundaryRootSynthesis_of_edgePredicateFamilyPairingSeparation
+    emb C₀ colorings hsubset family
+    (data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side)
+    (by
+      intro z hz hvanish
+      apply hcontrol hz
+      intro e hemitted
+      exact hvanish e ((hcert e).1 hemitted))
+    (by
+      intro e hedge
+      exact hwitnessRed e ((hcert e).2 hedge))
+    (by
+      intro e hedge
+      exact hwitnessBlue e ((hcert e).2 hedge))
+
 /-- Theorem 4.9 synthesis route from a concrete finite checker output.  The checker need only
 certify that its finite edge set is exactly the enumerated CAP5 emitted-edge predicate, and then
 prove the local nonzero/witness obligations by finite membership in that set. -/
