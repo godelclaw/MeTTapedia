@@ -108,6 +108,44 @@ def IsKirchhoffNeutralMoveSupport (G : SimpleGraph V) [Fintype G.edgeSet]
     (C : Finset G.edgeSet) : Prop :=
   ∀ v : V, Even ((incidentEdgeFinset G v).filter fun e => e ∈ C).card
 
+theorem isKirchhoffNeutralMoveSupport_empty
+    {G : SimpleGraph V} [Fintype G.edgeSet] :
+    IsKirchhoffNeutralMoveSupport G ∅ := by
+  intro v
+  simp
+
+theorem isKirchhoffNeutralMoveSupport_union_of_disjoint
+    {G : SimpleGraph V} [Fintype G.edgeSet] {C D : Finset G.edgeSet}
+    (hC : IsKirchhoffNeutralMoveSupport G C)
+    (hD : IsKirchhoffNeutralMoveSupport G D)
+    (hdisj : Disjoint C D) :
+    IsKirchhoffNeutralMoveSupport G (C ∪ D) := by
+  intro v
+  let IC := (incidentEdgeFinset G v).filter fun e => e ∈ C
+  let ID := (incidentEdgeFinset G v).filter fun e => e ∈ D
+  have hfilter :
+      ((incidentEdgeFinset G v).filter fun e => e ∈ C ∪ D).card =
+        IC.card + ID.card := by
+    have hsets :
+        (incidentEdgeFinset G v).filter (fun e => e ∈ C ∪ D) = IC ∪ ID := by
+      ext e
+      simp [IC, ID, and_or_left]
+    have hdisj_filter : Disjoint IC ID := by
+      rw [Finset.disjoint_left]
+      intro e heC heD
+      have heCmem : e ∈ C := by
+        have hpair : e ∈ incidentEdgeFinset G v ∧ e ∈ C := by
+          simpa [IC] using heC
+        exact hpair.2
+      have heDmem : e ∈ D := by
+        have hpair : e ∈ incidentEdgeFinset G v ∧ e ∈ D := by
+          simpa [ID] using heD
+        exact hpair.2
+      exact (Finset.disjoint_left.mp hdisj) heCmem heDmem
+    rw [hsets, Finset.card_union_of_disjoint hdisj_filter]
+  rw [hfilter]
+  exact (hC v).add (hD v)
+
 @[simp] theorem cdlOneStepMoveOn_apply_mem {G : SimpleGraph V} [Fintype G.edgeSet]
     {C : Finset G.edgeSet} {g : Color} {x : G.edgeSet → Color} {e : G.edgeSet}
     (he : e ∈ C) :
