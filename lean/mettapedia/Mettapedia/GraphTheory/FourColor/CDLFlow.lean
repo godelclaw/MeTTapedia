@@ -1,4 +1,5 @@
 import Mettapedia.GraphTheory.FourColor.KempeCycles
+import Mettapedia.GraphTheory.FourColor.RotationDiskData
 import Mettapedia.GraphTheory.FourColor.Theorem49TargetSubspace
 
 namespace Mettapedia.GraphTheory.FourColor
@@ -176,6 +177,16 @@ theorem isKirchhoffNeutralMoveSupport_of_isKempeCycle
     IsKirchhoffNeutralMoveSupport G C :=
   isKirchhoffNeutralMoveSupport_of_isKempeCycle_incident
     (incident := incidentEdgeFinset G) (fun _ => rfl) hC
+
+theorem isKirchhoffNeutralMoveSupport_of_rotationDiskData_internalFace
+    {G : SimpleGraph V} [Fintype V] [Fintype G.edgeSet]
+    (D : RotationDiskData V G.edgeSet)
+    (hincident : ∀ v : V, D.asZeroBoundary.incident v = incidentEdgeFinset G v)
+    {f : Finset G.edgeSet} (hf : f ∈ D.rotation.internalFaces) :
+    IsKirchhoffNeutralMoveSupport G f := by
+  apply isKirchhoffNeutralMoveSupport_of_even_incident_inter
+    (incident := D.asZeroBoundary.incident) hincident
+  exact D.face_cycle_parity hf
 
 theorem isKirchhoffNeutralMoveSupport_empty
     {G : SimpleGraph V} [Fintype G.edgeSet] :
