@@ -553,6 +553,53 @@ def CAP5ExceptionalAnnulusBoundaryEdgeSupportCandidate.cyclicEdgeCutRealizationD
   CyclicEdgeCutRealization.of_walk_separator side hcandidate_crosses hwalk_separator
     hinside_cycle houtside_cycle
 
+/-- Build CAP5 cyclic-cut realization data from the avoidance form of the planar/Jordan
+separator theorem: every walk avoiding the candidate support must stay on the same side. -/
+def CAP5ExceptionalAnnulusBoundaryEdgeSupportCandidate.cyclicEdgeCutRealizationData_of_walk_avoid_side_invariant
+    {V : Type*} {G : SimpleGraph V} [DecidableEq G.edgeSet]
+    {boundaryEdge : Fin 5 → G.edgeSet}
+    (candidate : CAP5ExceptionalAnnulusBoundaryEdgeSupportCandidate boundaryEdge)
+    (side : V → Prop)
+    (hcandidate_crosses :
+      ∀ e : G.edgeSet, e ∈ candidate.edgeSupport → EdgeCrossesVertexSide G side e)
+    (hwalk_invariant :
+      ∀ {u v : V} (p : G.Walk u v),
+        (∀ e : G.edgeSet, e ∈ candidate.edgeSupport → (e : Sym2 V) ∉ p.edges) →
+        (side u ↔ side v))
+    (hinside_cycle : HasCycleOnSide G side)
+    (houtside_cycle : HasCycleOnSide G (fun v => ¬ side v)) :
+    candidate.CyclicEdgeCutRealizationData (G := G) :=
+  CyclicEdgeCutRealization.of_walk_avoid_side_invariant side hcandidate_crosses
+    hwalk_invariant hinside_cycle houtside_cycle
+
+/-- Portal-language version of the CAP5 avoidance constructor.  It is enough for the planar/Jordan
+layer to prove that every walk avoiding the named separator portals stays on one side; membership
+in the finite edge support is then discharged through the candidate's image equation. -/
+def CAP5ExceptionalAnnulusBoundaryEdgeSupportCandidate.cyclicEdgeCutRealizationData_of_portal_walk_avoid_side_invariant
+    {V : Type*} {G : SimpleGraph V} [DecidableEq G.edgeSet]
+    {boundaryEdge : Fin 5 → G.edgeSet}
+    (candidate : CAP5ExceptionalAnnulusBoundaryEdgeSupportCandidate boundaryEdge)
+    (side : V → Prop)
+    (hcandidate_crosses :
+      ∀ e : G.edgeSet, e ∈ candidate.edgeSupport → EdgeCrossesVertexSide G side e)
+    (hportal_walk_invariant :
+      ∀ {u v : V} (p : G.Walk u v),
+        (∀ i : Fin 5, i ∈ candidate.portalCandidate.portalSet →
+          ((boundaryEdge i : G.edgeSet) : Sym2 V) ∉ p.edges) →
+        (side u ↔ side v))
+    (hinside_cycle : HasCycleOnSide G side)
+    (houtside_cycle : HasCycleOnSide G (fun v => ¬ side v)) :
+    candidate.CyclicEdgeCutRealizationData (G := G) :=
+  candidate.cyclicEdgeCutRealizationData_of_walk_avoid_side_invariant side hcandidate_crosses
+    (by
+      intro u v p havoid
+      exact hportal_walk_invariant p (by
+        intro i hi heEdges
+        exact havoid (boundaryEdge i)
+          ((candidate.mem_edgeSupport_iff_exists_portal (boundaryEdge i)).2 ⟨i, hi, rfl⟩)
+          heEdges))
+    hinside_cycle houtside_cycle
+
 /-- If a finite CAP5 boundary-edge support candidate is realized by a graph-level small cyclic
 edge cut, the cardinality bound transfers to that cut. -/
 theorem CAP5ExceptionalAnnulusBoundaryEdgeSupportCandidate.exists_smallCyclicEdgeCut_of_realizes
