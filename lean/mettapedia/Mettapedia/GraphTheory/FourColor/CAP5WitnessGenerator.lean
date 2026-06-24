@@ -360,6 +360,59 @@ theorem not_realizedSeparator_of_cyclicallyFiveEdgeConnected
   exact hcyclic.not_smallCyclicEdgeCut_card_le_four cut (by
     simpa [hcut] using hcard)
 
+/-- Certified output for one generated CAP5 separator node.  The status is computationally
+useful only together with the certificate that it really belongs to the advertised bin. -/
+structure Report (node : CAP5ExceptionalAnnulusGeneratorNode boundaryEdge) where
+  status : CAP5SeparatorGeneratorStatus
+  cert : node.InBin status
+
+namespace Report
+
+/-- A complete generator node cannot honestly be reported as partial. -/
+theorem status_ne_partialCase_of_complete
+    {node : CAP5ExceptionalAnnulusGeneratorNode boundaryEdge}
+    (report : node.Report) (hportal : node.PortalCrosses) (hcycles : node.SideCycles) :
+    report.status ≠ CAP5SeparatorGeneratorStatus.partialCase := by
+  intro hstatus
+  have hcert := report.cert
+  rw [hstatus] at hcert
+  change node.Partial at hcert
+  rcases hcert with hnotPortal | hnotCycles
+  · exact hnotPortal hportal
+  · exact hnotCycles hcycles
+
+/-- In a cyclically five-edge-connected graph, a certified report cannot put a generated
+complete CAP5 node in the realized-separator bin. -/
+theorem status_ne_realizedSeparator_of_cyclicallyFiveEdgeConnected
+    {node : CAP5ExceptionalAnnulusGeneratorNode boundaryEdge}
+    (report : node.Report) (hcyclic : CyclicallyFiveEdgeConnected G) :
+    report.status ≠ CAP5SeparatorGeneratorStatus.realizedSeparator := by
+  intro hstatus
+  have hcert := report.cert
+  rw [hstatus] at hcert
+  rcases hcert with ⟨_hportal, _hcycles, hrealized⟩
+  exact node.not_realizedSeparator_of_cyclicallyFiveEdgeConnected hcyclic hrealized
+
+/-- Under cyclic five-edge-connectivity and complete checker evidence, the certified status of a
+generated CAP5 node is forced-counterexample.  This is the report-level falsification form of the
+small-separator route. -/
+theorem status_eq_forcedCounterexample_of_complete_of_cyclicallyFiveEdgeConnected
+    {node : CAP5ExceptionalAnnulusGeneratorNode boundaryEdge}
+    (report : node.Report) (hcyclic : CyclicallyFiveEdgeConnected G)
+    (hportal : node.PortalCrosses) (hcycles : node.SideCycles) :
+    report.status = CAP5SeparatorGeneratorStatus.forcedCounterexample := by
+  cases hstatus : report.status with
+  | realizedSeparator =>
+      exact False.elim
+        (report.status_ne_realizedSeparator_of_cyclicallyFiveEdgeConnected hcyclic hstatus)
+  | forcedCounterexample =>
+      rfl
+  | partialCase =>
+      exact False.elim
+        (report.status_ne_partialCase_of_complete hportal hcycles hstatus)
+
+end Report
+
 /-- A forced generator edge is exactly the emitted-edge predicate consumed by the existing
 exceptional CAP5 algebraic lane, once the finite component-cover data realizes the node's
 orientation. -/
@@ -395,6 +448,138 @@ theorem exists_exceptionalAnnulusOneEdgeCounterexampleEdge_of_forcedCounterexamp
     horientation hedge⟩
 
 end CAP5ExceptionalAnnulusGeneratorNode
+
+/-- Certified finite CAP5 separator-generator report over the full latent list.  The report
+classifies every orientation/portal-side latent, and each classification carries its Lean proof
+obligation. -/
+structure CAP5ExceptionalAnnulusGeneratorReport
+    {V : Type*} [DecidableEq V] {G : SimpleGraph V}
+    (boundaryEdge : Fin 5 → G.edgeSet) (side : V → Prop) where
+  classify : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge → CAP5SeparatorGeneratorStatus
+  cert :
+    ∀ latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge,
+      (let node : CAP5ExceptionalAnnulusGeneratorNode boundaryEdge :=
+        { latent := latent, side := side };
+        node.InBin (classify latent))
+
+namespace CAP5ExceptionalAnnulusGeneratorReport
+
+variable {G : SimpleGraph V}
+variable {boundaryEdge : Fin 5 → G.edgeSet} {side : V → Prop}
+
+/-- The node represented by one latent inside a full generator report. -/
+def node (_report : CAP5ExceptionalAnnulusGeneratorReport boundaryEdge side)
+    (latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge) :
+    CAP5ExceptionalAnnulusGeneratorNode boundaryEdge :=
+  { latent := latent, side := side }
+
+/-- Extract the one-node certified report from a full generator report. -/
+def nodeReport (report : CAP5ExceptionalAnnulusGeneratorReport boundaryEdge side)
+    (latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge) :
+    (report.node latent).Report where
+  status := report.classify latent
+  cert := by
+    simpa [node] using report.cert latent
+
+/-- Latents reported in the realized-separator bin. -/
+def realizedSeparatorLatents
+    (report : CAP5ExceptionalAnnulusGeneratorReport boundaryEdge side) :
+    List (CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge) :=
+  (CAP5ExceptionalAnnulusGeneratorLatent.all boundaryEdge).filter fun latent =>
+    decide (report.classify latent = CAP5SeparatorGeneratorStatus.realizedSeparator)
+
+/-- Latents reported in the forced-counterexample bin. -/
+def forcedCounterexampleLatents
+    (report : CAP5ExceptionalAnnulusGeneratorReport boundaryEdge side) :
+    List (CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge) :=
+  (CAP5ExceptionalAnnulusGeneratorLatent.all boundaryEdge).filter fun latent =>
+    decide (report.classify latent = CAP5SeparatorGeneratorStatus.forcedCounterexample)
+
+/-- Latents reported as partial checker runs. -/
+def partialLatents
+    (report : CAP5ExceptionalAnnulusGeneratorReport boundaryEdge side) :
+    List (CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge) :=
+  (CAP5ExceptionalAnnulusGeneratorLatent.all boundaryEdge).filter fun latent =>
+    decide (report.classify latent = CAP5SeparatorGeneratorStatus.partialCase)
+
+theorem mem_realizedSeparatorLatents_iff
+    (report : CAP5ExceptionalAnnulusGeneratorReport boundaryEdge side)
+    {latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge} :
+    latent ∈ report.realizedSeparatorLatents ↔
+      latent ∈ CAP5ExceptionalAnnulusGeneratorLatent.all boundaryEdge ∧
+        report.classify latent = CAP5SeparatorGeneratorStatus.realizedSeparator := by
+  simp [realizedSeparatorLatents]
+
+theorem mem_forcedCounterexampleLatents_iff
+    (report : CAP5ExceptionalAnnulusGeneratorReport boundaryEdge side)
+    {latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge} :
+    latent ∈ report.forcedCounterexampleLatents ↔
+      latent ∈ CAP5ExceptionalAnnulusGeneratorLatent.all boundaryEdge ∧
+        report.classify latent = CAP5SeparatorGeneratorStatus.forcedCounterexample := by
+  simp [forcedCounterexampleLatents]
+
+theorem mem_partialLatents_iff
+    (report : CAP5ExceptionalAnnulusGeneratorReport boundaryEdge side)
+    {latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge} :
+    latent ∈ report.partialLatents ↔
+      latent ∈ CAP5ExceptionalAnnulusGeneratorLatent.all boundaryEdge ∧
+        report.classify latent = CAP5SeparatorGeneratorStatus.partialCase := by
+  simp [partialLatents]
+
+/-- Every enumerated latent lands in exactly one of the three report bins. -/
+theorem mem_one_status_bin_of_mem_all
+    (report : CAP5ExceptionalAnnulusGeneratorReport boundaryEdge side)
+    {latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge}
+    (hmem : latent ∈ CAP5ExceptionalAnnulusGeneratorLatent.all boundaryEdge) :
+    latent ∈ report.realizedSeparatorLatents ∨
+      latent ∈ report.forcedCounterexampleLatents ∨
+        latent ∈ report.partialLatents := by
+  cases hstatus : report.classify latent with
+  | realizedSeparator =>
+      exact Or.inl ((report.mem_realizedSeparatorLatents_iff).2 ⟨hmem, hstatus⟩)
+  | forcedCounterexample =>
+      exact Or.inr <| Or.inl ((report.mem_forcedCounterexampleLatents_iff).2 ⟨hmem, hstatus⟩)
+  | partialCase =>
+      exact Or.inr <| Or.inr ((report.mem_partialLatents_iff).2 ⟨hmem, hstatus⟩)
+
+/-- If every generated latent has complete checker evidence in a cyclically five-edge-connected
+graph, the full finite report has no realized or partial cases: every enumerated latent is forced
+into the counterexample bin. -/
+theorem mem_forcedCounterexampleLatents_of_mem_all_of_complete_of_cyclicallyFiveEdgeConnected
+    (report : CAP5ExceptionalAnnulusGeneratorReport boundaryEdge side)
+    (hcyclic : CyclicallyFiveEdgeConnected G)
+    (hportal :
+      ∀ latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge,
+        (report.node latent).PortalCrosses)
+    (hcycles :
+      ∀ latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge,
+        (report.node latent).SideCycles)
+    {latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge}
+    (hmem : latent ∈ CAP5ExceptionalAnnulusGeneratorLatent.all boundaryEdge) :
+    latent ∈ report.forcedCounterexampleLatents := by
+  have hstatus :
+      report.classify latent = CAP5SeparatorGeneratorStatus.forcedCounterexample :=
+    (report.nodeReport latent).status_eq_forcedCounterexample_of_complete_of_cyclicallyFiveEdgeConnected
+      hcyclic (hportal latent) (hcycles latent)
+  exact (report.mem_forcedCounterexampleLatents_iff).2 ⟨hmem, hstatus⟩
+
+/-- Full-report form of the CAP5 generator boundary under cyclic five-edge-connectivity. -/
+theorem all_latents_forcedCounterexample_of_complete_of_cyclicallyFiveEdgeConnected
+    (report : CAP5ExceptionalAnnulusGeneratorReport boundaryEdge side)
+    (hcyclic : CyclicallyFiveEdgeConnected G)
+    (hportal :
+      ∀ latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge,
+        (report.node latent).PortalCrosses)
+    (hcycles :
+      ∀ latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge,
+        (report.node latent).SideCycles) :
+    ∀ latent ∈ CAP5ExceptionalAnnulusGeneratorLatent.all boundaryEdge,
+      latent ∈ report.forcedCounterexampleLatents := by
+  intro latent hmem
+  exact report.mem_forcedCounterexampleLatents_of_mem_all_of_complete_of_cyclicallyFiveEdgeConnected
+    hcyclic hportal hcycles hmem
+
+end CAP5ExceptionalAnnulusGeneratorReport
 
 namespace CAP5TransportedEdgeComponentCoverCore
 
