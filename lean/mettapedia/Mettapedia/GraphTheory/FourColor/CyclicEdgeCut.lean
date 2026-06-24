@@ -76,9 +76,71 @@ theorem SmallCyclicEdgeCut.compl_card {G : SimpleGraph V} (cut : SmallCyclicEdge
     cut.compl.edgeCut.card = cut.edgeCut.card :=
   rfl
 
+/-- Realization data for a finite edge support as a cyclic edge cut.  This is the natural
+target for planar/Jordan separator constructions: give the vertex side, prove exact crossing-edge
+equality, and provide cycles on both sides.  A separate cardinality proof turns it into a
+`SmallCyclicEdgeCut`. -/
+structure CyclicEdgeCutRealization (G : SimpleGraph V) (edgeCut : Finset G.edgeSet) where
+  side : V → Prop
+  hcut_eq : ∀ e : G.edgeSet, e ∈ edgeCut ↔ EdgeCrossesVertexSide G side e
+  hinside_cycle : HasCycleOnSide G side
+  houtside_cycle : HasCycleOnSide G (fun v => ¬ side v)
+
+/-- Build a small cyclic edge cut from realization data plus the cardinality bound. -/
+def CyclicEdgeCutRealization.toSmallCyclicEdgeCut
+    {G : SimpleGraph V} {edgeCut : Finset G.edgeSet}
+    (realization : CyclicEdgeCutRealization G edgeCut)
+    (hcard : edgeCut.card <= 4) :
+    SmallCyclicEdgeCut G where
+  edgeCut := edgeCut
+  side := realization.side
+  hcut_eq := realization.hcut_eq
+  hcard_le_four := hcard
+  hinside_cycle := realization.hinside_cycle
+  houtside_cycle := realization.houtside_cycle
+
+@[simp]
+theorem CyclicEdgeCutRealization.toSmallCyclicEdgeCut_edgeCut
+    {G : SimpleGraph V} {edgeCut : Finset G.edgeSet}
+    (realization : CyclicEdgeCutRealization G edgeCut)
+    (hcard : edgeCut.card <= 4) :
+    (realization.toSmallCyclicEdgeCut hcard).edgeCut = edgeCut :=
+  rfl
+
+/-- Complement the chosen side in a cyclic-cut realization without changing the finite edge
+support. -/
+def CyclicEdgeCutRealization.compl
+    {G : SimpleGraph V} {edgeCut : Finset G.edgeSet}
+    (realization : CyclicEdgeCutRealization G edgeCut) :
+    CyclicEdgeCutRealization G edgeCut where
+  side := fun v => ¬ realization.side v
+  hcut_eq := fun e =>
+    (realization.hcut_eq e).trans (edgeCrossesVertexSide_compl G realization.side e).symm
+  hinside_cycle := realization.houtside_cycle
+  houtside_cycle :=
+    HasCycleOnSide.mono (fun _ hv hnot => hnot hv) realization.hinside_cycle
+
+@[simp]
+theorem CyclicEdgeCutRealization.compl_toSmallCyclicEdgeCut_edgeCut
+    {G : SimpleGraph V} {edgeCut : Finset G.edgeSet}
+    (realization : CyclicEdgeCutRealization G edgeCut)
+    (hcard : edgeCut.card <= 4) :
+    ((realization.compl).toSmallCyclicEdgeCut hcard).edgeCut =
+      (realization.toSmallCyclicEdgeCut hcard).edgeCut :=
+  rfl
+
 /-- Existence form for the manuscript's forbidden small cyclic edge cut. -/
 def HasCyclicEdgeCutOfSizeAtMostFour (G : SimpleGraph V) : Prop :=
   ∃ cut : SmallCyclicEdgeCut G, cut.edgeCut.card <= 4
+
+/-- Realization data plus a size bound gives the corresponding small cyclic-edge-cut existence
+form. -/
+theorem CyclicEdgeCutRealization.hasCyclicEdgeCutOfSizeAtMostFour
+    {G : SimpleGraph V} {edgeCut : Finset G.edgeSet}
+    (realization : CyclicEdgeCutRealization G edgeCut)
+    (hcard : edgeCut.card <= 4) :
+    HasCyclicEdgeCutOfSizeAtMostFour G :=
+  ⟨realization.toSmallCyclicEdgeCut hcard, hcard⟩
 
 /-- Obstruction hypothesis used by the CAP5 exceptional-annulus branch: there is no cyclic edge
 cut of size at most four. -/
