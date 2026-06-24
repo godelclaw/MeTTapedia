@@ -691,6 +691,106 @@ theorem hasCubicD0BasicColorObstructionAt_of_cubic_two_support_forced_zero_move
       hcard htwo hforced with ⟨e, heinc, heC, hx⟩
   exact ⟨e, heinc, heC, hx, hforced⟩
 
+/-- The forced incident-neighborhood equation stored in a cubic D₀ basic-color
+obstruction. -/
+theorem forced_incident_colors_of_hasCubicD0BasicColorObstructionAt
+    {G : SimpleGraph V} [Fintype V] [Fintype G.edgeSet]
+    {C : Finset G.edgeSet} {g : Color} {x : G.edgeSet → Color} {v : V}
+    (hobst : HasCubicD0BasicColorObstructionAt G x C v g) :
+    ∀ e ∈ incidentEdgeFinset G v, if e ∈ C then x e = g else x e = 0 := by
+  rcases hobst with
+    ⟨_hg, _hcount, _hclustering, _hincident, _e, _heinc, _heC, _hx, hforced⟩
+  exact hforced
+
+theorem incident_support_color_eq_of_hasCubicD0BasicColorObstructionAt
+    {G : SimpleGraph V} [Fintype V] [Fintype G.edgeSet]
+    {C : Finset G.edgeSet} {g : Color} {x : G.edgeSet → Color} {v : V}
+    (hobst : HasCubicD0BasicColorObstructionAt G x C v g)
+    {e : G.edgeSet} (heinc : e ∈ incidentEdgeFinset G v) (heC : e ∈ C) :
+    x e = g := by
+  simpa [heC] using
+    forced_incident_colors_of_hasCubicD0BasicColorObstructionAt hobst e heinc
+
+theorem incident_outside_color_eq_zero_of_hasCubicD0BasicColorObstructionAt
+    {G : SimpleGraph V} [Fintype V] [Fintype G.edgeSet]
+    {C : Finset G.edgeSet} {g : Color} {x : G.edgeSet → Color} {v : V}
+    (hobst : HasCubicD0BasicColorObstructionAt G x C v g)
+    {e : G.edgeSet} (heinc : e ∈ incidentEdgeFinset G v) (heC : e ∉ C) :
+    x e = 0 := by
+  simpa [heC] using
+    forced_incident_colors_of_hasCubicD0BasicColorObstructionAt hobst e heinc
+
+/-- In a cubic D₀ basic-color obstruction, the incident zero edges are exactly
+the incident edges outside the proposed support. -/
+theorem zeroIncidentEdgeFinset_eq_incident_filter_not_mem_of_hasCubicD0BasicColorObstructionAt
+    {G : SimpleGraph V} [Fintype V] [Fintype G.edgeSet]
+    {C : Finset G.edgeSet} {g : Color} {x : G.edgeSet → Color} {v : V}
+    (hobst : HasCubicD0BasicColorObstructionAt G x C v g) :
+    zeroIncidentEdgeFinset G x v =
+      (incidentEdgeFinset G v).filter fun e => e ∉ C := by
+  rcases hobst with
+    ⟨hg, _hcount, _hclustering, _hincident, _e, _heinc, _heC, _hx, hforced⟩
+  ext e
+  by_cases heinc : e ∈ incidentEdgeFinset G v
+  · by_cases heC : e ∈ C
+    · have hxg : x e = g := by simpa [heC] using hforced e heinc
+      simp [zeroIncidentEdgeFinset, heinc, heC, hxg, hg]
+    · have hx0 : x e = 0 := by simpa [heC] using hforced e heinc
+      simp [zeroIncidentEdgeFinset, heinc, heC, hx0]
+  · simp [zeroIncidentEdgeFinset, heinc]
+
+theorem incident_outside_filter_card_eq_one_of_hasCubicD0BasicColorObstructionAt
+    {G : SimpleGraph V} [Fintype V] [Fintype G.edgeSet]
+    {C : Finset G.edgeSet} {g : Color} {x : G.edgeSet → Color} {v : V}
+    (hobst : HasCubicD0BasicColorObstructionAt G x C v g) :
+    ((incidentEdgeFinset G v).filter fun e => e ∉ C).card = 1 := by
+  have hzeroeq :=
+    zeroIncidentEdgeFinset_eq_incident_filter_not_mem_of_hasCubicD0BasicColorObstructionAt
+      hobst
+  rcases hobst with ⟨_hg, hcount, _hclustering, _hincident, _e, _heinc, _heC,
+    _hx, _hforced⟩
+  rw [← hzeroeq]
+  simpa [zeroIncidentEdgeCount] using hcount
+
+/-- In a cubic obstruction, exactly two incident edges lie in the proposed
+support. -/
+theorem incident_support_filter_card_eq_two_of_hasCubicD0BasicColorObstructionAt
+    {G : SimpleGraph V} [Fintype V] [Fintype G.edgeSet]
+    {C : Finset G.edgeSet} {g : Color} {x : G.edgeSet → Color} {v : V}
+    (hcard : (incidentEdgeFinset G v).card = 3)
+    (hobst : HasCubicD0BasicColorObstructionAt G x C v g) :
+    ((incidentEdgeFinset G v).filter fun e => e ∈ C).card = 2 := by
+  have hout :
+      ((incidentEdgeFinset G v).filter fun e => e ∉ C).card = 1 :=
+    incident_outside_filter_card_eq_one_of_hasCubicD0BasicColorObstructionAt
+      hobst
+  have hsum :=
+    Finset.card_filter_add_card_filter_not
+      (s := incidentEdgeFinset G v) (p := fun e : G.edgeSet => e ∈ C)
+  rw [hout, hcard] at hsum
+  omega
+
+theorem incident_outside_edge_unique_of_hasCubicD0BasicColorObstructionAt
+    {G : SimpleGraph V} [Fintype V] [Fintype G.edgeSet]
+    {C : Finset G.edgeSet} {g : Color} {x : G.edgeSet → Color} {v : V}
+    (hobst : HasCubicD0BasicColorObstructionAt G x C v g)
+    {e e' : G.edgeSet}
+    (heinc : e ∈ incidentEdgeFinset G v) (heC : e ∉ C)
+    (heinc' : e' ∈ incidentEdgeFinset G v) (heC' : e' ∉ C) :
+    e = e' := by
+  have hout :
+      ((incidentEdgeFinset G v).filter fun e => e ∉ C).card = 1 :=
+    incident_outside_filter_card_eq_one_of_hasCubicD0BasicColorObstructionAt
+      hobst
+  rcases Finset.card_eq_one.mp hout with ⟨a, ha⟩
+  have he_mem : e ∈ (incidentEdgeFinset G v).filter (fun e => e ∉ C) := by
+    simp [heinc, heC]
+  have he_mem' : e' ∈ (incidentEdgeFinset G v).filter (fun e => e ∉ C) := by
+    simp [heinc', heC']
+  rw [ha] at he_mem he_mem'
+  simp at he_mem he_mem'
+  exact he_mem.trans he_mem'.symm
+
 theorem not_isCDLGoodAtVertex_cdlOneStepMoveOn_of_hasCubicD0BasicColorObstructionAt
     {G : SimpleGraph V} [Fintype V] [Fintype G.edgeSet]
     {C : Finset G.edgeSet} {g : Color} {x : G.edgeSet → Color} {v : V}
