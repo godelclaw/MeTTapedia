@@ -976,6 +976,21 @@ theorem not_cap5BoundaryWordHasColoredBlock2111_of_extendsAcrossCycle
   intro hbad
   exact not_cap5_extendsAcrossCycle_of_coloredBlock2111 hbad h
 
+/-- Exact CAP5 extension criterion: a CAP5 boundary word extends across the internal
+5-cycle iff it has the good colored `(3,1,1)` block structure. -/
+theorem cap5_extendsAcrossCycle_iff_coloredBlock311
+    {w : CAP5BoundaryWord} :
+    CAP5WordExtendsAcrossCycle w ↔ CAP5BoundaryWordHasColoredBlock311 w :=
+  ⟨cap5BoundaryWordHasColoredBlock311_of_extendsAcrossCycle,
+    cap5_extendsAcrossCycle_of_coloredBlock311⟩
+
+/-- Canonical-orbit form of the exact CAP5 extension criterion. -/
+theorem cap5_extendsAcrossCycle_iff_block311
+    {w : CAP5BoundaryWord} :
+    CAP5WordExtendsAcrossCycle w ↔ CAP5BoundaryWordHasBlock311 w :=
+  cap5_extendsAcrossCycle_iff_coloredBlock311.trans
+    cap5BoundaryWordHasColoredBlock311_iff_block311
+
 /-- Swap two colors, leaving the third color fixed. -/
 def cap5SwapColor (a b : Color) (c : Color) : Color :=
   if c = a then b else if c = b then a else c
