@@ -2438,6 +2438,40 @@ theorem zeroClusteringCount_eq_zero_of_zeroIncidentVertexCount_eq_zero
   zeroClusteringCount_eq_zero_of_zeroEdgeCount_eq_zero
     (zeroEdgeCount_eq_zero_of_zeroIncidentVertexCount_eq_zero hI)
 
+/-- The cheap defect `D₀` vanishes exactly when the zero-edge count vanishes.
+The incident and clustering terms are then forced to vanish as well. -/
+theorem zeroDefectD0_eq_zero_iff_zeroEdgeCount_eq_zero
+    {G : SimpleGraph V} [Fintype V] [Fintype G.edgeSet] {x : G.edgeSet → Color} :
+    zeroDefectD0 G x = 0 ↔ zeroEdgeCount G x = 0 := by
+  constructor
+  · intro hD
+    unfold zeroDefectD0 at hD
+    omega
+  · intro hZ
+    unfold zeroDefectD0
+    rw [hZ, zeroIncidentVertexCount_eq_zero_of_zeroEdgeCount_eq_zero hZ,
+      zeroClusteringCount_eq_zero_of_zeroEdgeCount_eq_zero hZ]
+
+/-- Positivity of the cheap defect is exactly positivity of the zero-edge
+count.  Thus `D₀` is a faithful defect for nowhere-zero flows, despite its
+extra incident and clustering terms. -/
+theorem zeroDefectD0_pos_iff_zeroEdgeCount_pos
+    {G : SimpleGraph V} [Fintype V] [Fintype G.edgeSet] {x : G.edgeSet → Color} :
+    0 < zeroDefectD0 G x ↔ 0 < zeroEdgeCount G x := by
+  constructor
+  · intro hD
+    have hDne : zeroDefectD0 G x ≠ 0 := Nat.ne_of_gt hD
+    have hZne : zeroEdgeCount G x ≠ 0 := by
+      intro hZ
+      exact hDne ((zeroDefectD0_eq_zero_iff_zeroEdgeCount_eq_zero).mpr hZ)
+    exact Nat.pos_of_ne_zero hZne
+  · intro hZ
+    have hZne : zeroEdgeCount G x ≠ 0 := Nat.ne_of_gt hZ
+    have hDne : zeroDefectD0 G x ≠ 0 := by
+      intro hD
+      exact hZne ((zeroDefectD0_eq_zero_iff_zeroEdgeCount_eq_zero).mp hD)
+    exact Nat.pos_of_ne_zero hDne
+
 /-- A nowhere-zero flow is exactly a graph flow whose zero-edge set is empty. -/
 theorem isNowhereZeroFlow_iff_isGraphFlow_and_zeroEdgeFinset_eq_empty
     {G : SimpleGraph V} [Fintype G.edgeSet] {x : G.edgeSet → Color} :
@@ -2452,6 +2486,23 @@ theorem isNowhereZeroFlow_iff_isGraphFlow_and_zeroEdgeCount_eq_zero
     IsNowhereZeroFlow G x ↔ IsGraphFlow G x ∧ zeroEdgeCount G x = 0 := by
   rw [zeroEdgeCount_eq_zero_iff]
   rfl
+
+/-- Manuscript-facing form: a nowhere-zero graph flow is exactly a graph flow
+with cheap defect `D₀=0`. -/
+theorem isNowhereZeroFlow_iff_isGraphFlow_and_zeroDefectD0_eq_zero
+    {G : SimpleGraph V} [Fintype V] [Fintype G.edgeSet] {x : G.edgeSet → Color} :
+    IsNowhereZeroFlow G x ↔ IsGraphFlow G x ∧ zeroDefectD0 G x = 0 := by
+  rw [isNowhereZeroFlow_iff_isGraphFlow_and_zeroEdgeCount_eq_zero,
+    zeroDefectD0_eq_zero_iff_zeroEdgeCount_eq_zero]
+
+/-- For an already-valid graph flow, failure to be nowhere-zero is exactly
+positive cheap defect.  This is the formal bridge behind minimizing `D₀`. -/
+theorem not_isNowhereZeroFlow_iff_zeroDefectD0_pos_of_isGraphFlow
+    {G : SimpleGraph V} [Fintype V] [Fintype G.edgeSet] {x : G.edgeSet → Color}
+    (hx : IsGraphFlow G x) :
+    ¬ IsNowhereZeroFlow G x ↔ 0 < zeroDefectD0 G x := by
+  rw [isNowhereZeroFlow_iff_isGraphFlow_and_zeroDefectD0_eq_zero]
+  simp [hx, Nat.pos_iff_ne_zero]
 
 /-- Manuscript-facing name for cubic graphs: every vertex has Mathlib degree
 `3`. -/
@@ -2628,6 +2679,47 @@ theorem zeroDefectD0_eq_120_mul_zeroEdgeCount_of_zeroClusteringCount_eq_zero
     zeroDefectD0 G x = 120 * zeroEdgeCount G x :=
   zeroDefectD0_eq_120_mul_zeroEdgeCount_of_zeroEdgesFormMatching
     (zeroClusteringCount_eq_zero_iff_zeroEdgesFormMatching.mp hC)
+
+/-- A nonempty matching zero pattern has cheap defect at least `120`, because
+matching zeros force `D₀=120Z`. -/
+theorem le_zeroDefectD0_of_zeroEdgesFormMatching_and_zeroEdgeCount_pos
+    {G : SimpleGraph V} [Fintype V] [Fintype G.edgeSet] {x : G.edgeSet → Color}
+    (hmatch : ZeroEdgesFormMatching G x) (hZ : 0 < zeroEdgeCount G x) :
+    120 ≤ zeroDefectD0 G x := by
+  rw [zeroDefectD0_eq_120_mul_zeroEdgeCount_of_zeroEdgesFormMatching hmatch]
+  omega
+
+/-- Equivalent form using positivity of the cheap defect itself. -/
+theorem le_zeroDefectD0_of_zeroEdgesFormMatching_and_zeroDefectD0_pos
+    {G : SimpleGraph V} [Fintype V] [Fintype G.edgeSet] {x : G.edgeSet → Color}
+    (hmatch : ZeroEdgesFormMatching G x) (hD : 0 < zeroDefectD0 G x) :
+    120 ≤ zeroDefectD0 G x :=
+  le_zeroDefectD0_of_zeroEdgesFormMatching_and_zeroEdgeCount_pos hmatch
+    ((zeroDefectD0_pos_iff_zeroEdgeCount_pos).mp hD)
+
+/-- Cubic basic-color obstructions are nonempty matching-zero blockers with
+cheap defect at least `120`, once the matching-zero hypothesis is available. -/
+theorem le_zeroDefectD0_of_hasCubicD0BasicColorObstructionAt_and_zeroEdgesFormMatching
+    {G : SimpleGraph V} [Fintype V] [Fintype G.edgeSet]
+    {C : Finset G.edgeSet} {g : Color} {x : G.edgeSet → Color} {v : V}
+    (hobst : HasCubicD0BasicColorObstructionAt G x C v g)
+    (hmatch : ZeroEdgesFormMatching G x) :
+    120 ≤ zeroDefectD0 G x :=
+  le_zeroDefectD0_of_zeroEdgesFormMatching_and_zeroEdgeCount_pos hmatch
+    (zeroEdgeCount_pos_of_hasCubicD0BasicColorObstructionAt hobst)
+
+/-- Existence form for the three basic nonzero colors. -/
+theorem le_zeroDefectD0_of_exists_hasCubicD0BasicColorObstructionAt_and_zeroEdgesFormMatching
+    {G : SimpleGraph V} [Fintype V] [Fintype G.edgeSet]
+    {C : Finset G.edgeSet} {x : G.edgeSet → Color}
+    (hobst :
+      (∃ v : V, HasCubicD0BasicColorObstructionAt G x C v red) ∨
+        (∃ v : V, HasCubicD0BasicColorObstructionAt G x C v blue) ∨
+          (∃ v : V, HasCubicD0BasicColorObstructionAt G x C v purple))
+    (hmatch : ZeroEdgesFormMatching G x) :
+    120 ≤ zeroDefectD0 G x :=
+  le_zeroDefectD0_of_zeroEdgesFormMatching_and_zeroDefectD0_pos hmatch
+    (zeroDefectD0_pos_of_exists_hasCubicD0BasicColorObstructionAt hobst)
 
 /-- A graph with Mathlib degree `3` at every vertex has the explicit cubic
 incident triples needed by the local Tait-flow bridge. -/
