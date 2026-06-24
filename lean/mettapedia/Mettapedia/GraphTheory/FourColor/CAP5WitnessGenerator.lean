@@ -585,6 +585,31 @@ theorem emittedFinset_spec
 
 end EnumeratedExceptionalAnnulusForcedEdgeClassifier
 
+/-- Boolean classifier induced by a decidable enumerated CAP5 forced-edge predicate.  This is the
+default bridge from Lean's decidable predicate form to an explicit Boolean checker artifact. -/
+def enumeratedExceptionalAnnulusForcedEdgeClassifier
+    (data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n)
+    (p0Inside p4Inside : Bool) (side : V → Prop)
+    [DecidablePred (data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side)] :
+    data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side where
+  accept e := decide (data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e)
+  accept_spec e := by
+    simp
+
+/-- The decidable-predicate Boolean classifier emits the same finite edge set as the canonical
+filtered predicate. -/
+theorem enumeratedExceptionalAnnulusForcedEdgeClassifier_emittedFinset_eq
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    [Fintype G.edgeSet]
+    (p0Inside p4Inside : Bool) (side : V → Prop)
+    [DecidablePred (data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side)] :
+    (data.enumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side).emittedFinset =
+      data.enumeratedExceptionalAnnulusForcedEdgeFinset p0Inside p4Inside side := by
+  ext e
+  simp [EnumeratedExceptionalAnnulusForcedEdgeClassifier.emittedFinset,
+    enumeratedExceptionalAnnulusForcedEdgeClassifier,
+    enumeratedExceptionalAnnulusForcedEdgeFinset]
+
 /-- The finite emitted-edge list is nonempty whenever the CAP5 generator emits a forced edge.
 This is the first sanity check a finite forward run should pass under cyclic five-edge-connectivity:
 the generated forced-counterexample bin must expose at least one concrete edge. -/
