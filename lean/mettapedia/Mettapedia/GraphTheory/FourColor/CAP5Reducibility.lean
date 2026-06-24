@@ -664,6 +664,25 @@ def CAP5TransportedEdgeComponentCoverCore.HasSomeExceptionalAnnulusCyclicCutReal
         CAP5ExceptionalAnnulusSideCase.ofPortalSides p0Inside p4Inside ∧
     Nonempty (edgeCandidate.CyclicEdgeCutRealizationData (G := G))
 
+/-- Constructor for the existential realization-data obligation from one concrete candidate.  This
+is the direct target shape for the planar/Jordan micro-enumeration: identify the candidate support
+for the selected side case and provide the cyclic-cut realization data for that support. -/
+theorem CAP5TransportedEdgeComponentCoverCore.hasSomeExceptionalAnnulusCyclicCutRealizationData_of_candidate
+    {V : Type*} {G : SimpleGraph V} [DecidableEq G.edgeSet]
+    {boundaryEdge : Fin 5 → G.edgeSet} {n : Nat}
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    (p0Inside p4Inside : Bool)
+    (edgeCandidate : CAP5ExceptionalAnnulusBoundaryEdgeSupportCandidate boundaryEdge)
+    (horientation :
+      data.RealizesExceptionalBoundarySupportOrientation
+        edgeCandidate.portalCandidate.orientation)
+    (hsideCase :
+      edgeCandidate.portalCandidate.sideCase =
+        CAP5ExceptionalAnnulusSideCase.ofPortalSides p0Inside p4Inside)
+    (realization : edgeCandidate.CyclicEdgeCutRealizationData (G := G)) :
+    data.HasSomeExceptionalAnnulusCyclicCutRealizationData (G := G) p0Inside p4Inside :=
+  ⟨edgeCandidate, horientation, hsideCase, ⟨realization⟩⟩
+
 /-- Realization data implies the older existential cut-realization interface. -/
 theorem CAP5TransportedEdgeComponentCoverCore.realizesSmallCyclicEdgeCut_of_realizationData
     {V : Type*} {G : SimpleGraph V} [DecidableEq G.edgeSet]
@@ -787,6 +806,46 @@ theorem CAP5TransportedEdgeComponentCoverCore.hasCyclicEdgeCutOfSizeAtMostFour_o
     ⟨_edgeCandidate, _horientation, _hsideCase, cut, _hcut, hcard⟩
   exact ⟨cut, hcard⟩
 
+/-- Concrete-candidate realization-data version of the forbidden small-cyclic-cut endpoint. -/
+theorem CAP5TransportedEdgeComponentCoverCore.hasCyclicEdgeCutOfSizeAtMostFour_of_candidate_realizationData
+    {V : Type*} {G : SimpleGraph V} [DecidableEq G.edgeSet]
+    {boundaryEdge : Fin 5 → G.edgeSet} {n : Nat}
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    (p0Inside p4Inside : Bool)
+    (edgeCandidate : CAP5ExceptionalAnnulusBoundaryEdgeSupportCandidate boundaryEdge)
+    (horientation :
+      data.RealizesExceptionalBoundarySupportOrientation
+        edgeCandidate.portalCandidate.orientation)
+    (hsideCase :
+      edgeCandidate.portalCandidate.sideCase =
+        CAP5ExceptionalAnnulusSideCase.ofPortalSides p0Inside p4Inside)
+    (realization : edgeCandidate.CyclicEdgeCutRealizationData (G := G)) :
+    HasCyclicEdgeCutOfSizeAtMostFour G :=
+  data.hasCyclicEdgeCutOfSizeAtMostFour_of_someExceptionalAnnulusCyclicCutRealizationData
+    p0Inside p4Inside
+    (data.hasSomeExceptionalAnnulusCyclicCutRealizationData_of_candidate
+      p0Inside p4Inside edgeCandidate horientation hsideCase realization)
+
+/-- Concrete-candidate realization-data contradiction under the no-small-cyclic-cut hypothesis. -/
+theorem CAP5TransportedEdgeComponentCoverCore.false_of_noCyclicEdgeCut_of_candidate_realizationData
+    {V : Type*} {G : SimpleGraph V} [DecidableEq G.edgeSet]
+    {boundaryEdge : Fin 5 → G.edgeSet} {n : Nat}
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    (p0Inside p4Inside : Bool)
+    (hnoCut : NoCyclicEdgeCutOfSizeAtMostFour G)
+    (edgeCandidate : CAP5ExceptionalAnnulusBoundaryEdgeSupportCandidate boundaryEdge)
+    (horientation :
+      data.RealizesExceptionalBoundarySupportOrientation
+        edgeCandidate.portalCandidate.orientation)
+    (hsideCase :
+      edgeCandidate.portalCandidate.sideCase =
+        CAP5ExceptionalAnnulusSideCase.ofPortalSides p0Inside p4Inside)
+    (realization : edgeCandidate.CyclicEdgeCutRealizationData (G := G)) :
+    False :=
+  hnoCut
+    (data.hasCyclicEdgeCutOfSizeAtMostFour_of_candidate_realizationData
+      p0Inside p4Inside edgeCandidate horientation hsideCase realization)
+
 /-- Under a no-small-cyclic-cut hypothesis, the exceptional CAP5 annulus branch is impossible
 once the planar/Jordan layer realizes each candidate support as an actual small cyclic edge cut. -/
 theorem CAP5TransportedEdgeComponentCoverCore.not_isExceptional_of_noCyclicEdgeCut_of_portalSides
@@ -884,6 +943,26 @@ theorem CAP5TransportedEdgeComponentCoverCore.not_isExceptional_of_cyclicallyFiv
     ¬ data.IsExceptional :=
   data.not_isExceptional_of_noCyclicEdgeCut_of_someExceptionalAnnulusCyclicCutRealizationData
     p0Inside p4Inside hcyclic.noCyclicEdgeCutOfSizeAtMostFour hrealizationData
+
+/-- Concrete-candidate realization-data contradiction under cyclic five-edge-connectivity. -/
+theorem CAP5TransportedEdgeComponentCoverCore.false_of_cyclicallyFiveEdgeConnected_of_candidate_realizationData
+    {V : Type*} {G : SimpleGraph V} [DecidableEq G.edgeSet]
+    {boundaryEdge : Fin 5 → G.edgeSet} {n : Nat}
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    (p0Inside p4Inside : Bool)
+    (hcyclic : CyclicallyFiveEdgeConnected G)
+    (edgeCandidate : CAP5ExceptionalAnnulusBoundaryEdgeSupportCandidate boundaryEdge)
+    (horientation :
+      data.RealizesExceptionalBoundarySupportOrientation
+        edgeCandidate.portalCandidate.orientation)
+    (hsideCase :
+      edgeCandidate.portalCandidate.sideCase =
+        CAP5ExceptionalAnnulusSideCase.ofPortalSides p0Inside p4Inside)
+    (realization : edgeCandidate.CyclicEdgeCutRealizationData (G := G)) :
+    False :=
+  data.false_of_noCyclicEdgeCut_of_candidate_realizationData
+    p0Inside p4Inside hcyclic.noCyclicEdgeCutOfSizeAtMostFour edgeCandidate
+    horientation hsideCase realization
 
 /-- Full transported component-cover data is core component-cover data plus exclusion of the
 simultaneous exceptional pattern.  The core form is the honest target before the planar separator
