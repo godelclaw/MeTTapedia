@@ -1735,6 +1735,68 @@ theorem cap5_extendsAcrossCycle_of_redPurpleRepairSupport_bad
   cap5_extendsAcrossCycle_of_boundaryActionRealizesSomeRepairType_bad
     (cap5BoundaryActionRealizesSomeRepairType_of_redPurpleRepairSupport_bad hS)
 
+/-- Transported red/blue support-level form of finite CAP5 repair realization.  This is the
+boundary-support target for a normalized outside-only Kempe component after cyclic rotation and
+color relabeling. -/
+theorem cap5BoundaryActionRealizesSomeTransportedRepairType_of_redBlueRepairSupport
+    {S : Finset (Fin 5)} (hS : CAP5BadRedBlueRepairSupport S)
+    (σ : Color ≃ Color) (n : Nat) :
+    CAP5BoundaryActionRealizesSomeTransportedRepairType
+      (cap5BoundarySwap (σ red) (σ blue) (cap5RotateBoundarySupportN n S)) σ n := by
+  rcases hS with rfl | rfl | rfl | rfl
+  · simpa [CAP5RepairType.colorPair, CAP5RepairType.support] using
+      cap5BoundaryActionRealizesSomeTransportedRepairType_of_transportSupportSwap
+        CAP5RepairType.redBlue01 σ n
+  · simpa [CAP5RepairType.colorPair, CAP5RepairType.support] using
+      cap5BoundaryActionRealizesSomeTransportedRepairType_of_transportSupportSwap
+        CAP5RepairType.redBlue02 σ n
+  · simpa [CAP5RepairType.colorPair, CAP5RepairType.support] using
+      cap5BoundaryActionRealizesSomeTransportedRepairType_of_transportSupportSwap
+        CAP5RepairType.redBlue13 σ n
+  · simpa [CAP5RepairType.colorPair, CAP5RepairType.support] using
+      cap5BoundaryActionRealizesSomeTransportedRepairType_of_transportSupportSwap
+        CAP5RepairType.redBlue23 σ n
+
+/-- Transported red/purple support-level form of finite CAP5 repair realization. -/
+theorem cap5BoundaryActionRealizesSomeTransportedRepairType_of_redPurpleRepairSupport
+    {S : Finset (Fin 5)} (hS : CAP5BadRedPurpleRepairSupport S)
+    (σ : Color ≃ Color) (n : Nat) :
+    CAP5BoundaryActionRealizesSomeTransportedRepairType
+      (cap5BoundarySwap (σ red) (σ purple) (cap5RotateBoundarySupportN n S)) σ n := by
+  rcases hS with rfl | rfl | rfl | rfl
+  · simpa [CAP5RepairType.colorPair, CAP5RepairType.support] using
+      cap5BoundaryActionRealizesSomeTransportedRepairType_of_transportSupportSwap
+        CAP5RepairType.redPurple01 σ n
+  · simpa [CAP5RepairType.colorPair, CAP5RepairType.support] using
+      cap5BoundaryActionRealizesSomeTransportedRepairType_of_transportSupportSwap
+        CAP5RepairType.redPurple03 σ n
+  · simpa [CAP5RepairType.colorPair, CAP5RepairType.support] using
+      cap5BoundaryActionRealizesSomeTransportedRepairType_of_transportSupportSwap
+        CAP5RepairType.redPurple14 σ n
+  · simpa [CAP5RepairType.colorPair, CAP5RepairType.support] using
+      cap5BoundaryActionRealizesSomeTransportedRepairType_of_transportSupportSwap
+        CAP5RepairType.redPurple34 σ n
+
+/-- Transported red/blue support-level form of immediate CAP5 repair. -/
+theorem cap5_extendsAcrossCycle_of_redBlueRepairSupport_transport
+    {S : Finset (Fin 5)} (hS : CAP5BadRedBlueRepairSupport S)
+    {σ : Color ≃ Color} (hσ0 : σ 0 = 0) (n : Nat) :
+    CAP5WordExtendsAcrossCycle
+      (cap5BoundarySwap (σ red) (σ blue) (cap5RotateBoundarySupportN n S)
+        (cap5TransportedBadBoundaryWord σ n)) :=
+  cap5_extendsAcrossCycle_of_boundaryActionRealizesSomeTransportedRepairType_bad hσ0
+    (cap5BoundaryActionRealizesSomeTransportedRepairType_of_redBlueRepairSupport hS σ n)
+
+/-- Transported red/purple support-level form of immediate CAP5 repair. -/
+theorem cap5_extendsAcrossCycle_of_redPurpleRepairSupport_transport
+    {S : Finset (Fin 5)} (hS : CAP5BadRedPurpleRepairSupport S)
+    {σ : Color ≃ Color} (hσ0 : σ 0 = 0) (n : Nat) :
+    CAP5WordExtendsAcrossCycle
+      (cap5BoundarySwap (σ red) (σ purple) (cap5RotateBoundarySupportN n S)
+        (cap5TransportedBadBoundaryWord σ n)) :=
+  cap5_extendsAcrossCycle_of_boundaryActionRealizesSomeTransportedRepairType_bad hσ0
+    (cap5BoundaryActionRealizesSomeTransportedRepairType_of_redPurpleRepairSupport hS σ n)
+
 /-- The four two-color component supports that appear in the normalized CAP5 bad-word
 move-realizability split: two red/blue components and two red/purple components. -/
 structure CAP5BadPairingSupports where
@@ -1761,6 +1823,16 @@ def BoundaryActionUsesSupport (p : CAP5BadPairingSupports)
   action = cap5BoundarySwap red blue p.redBlue₂ ∨
   action = cap5BoundarySwap red purple p.redPurple₁ ∨
   action = cap5BoundarySwap red purple p.redPurple₂
+
+/-- Transported support-use predicate for a boundary action after cyclic rotation and color
+relabeling of the normalized CAP5 bad word.  This is the exact boundary action shape produced by
+a graph-level outside-only Kempe component that uses one of the four component supports. -/
+def TransportedBoundaryActionUsesSupport (p : CAP5BadPairingSupports)
+    (σ : Color → Color) (n : Nat) (action : CAP5BoundaryAction) : Prop :=
+  action = cap5BoundarySwap (σ red) (σ blue) (cap5RotateBoundarySupportN n p.redBlue₁) ∨
+  action = cap5BoundarySwap (σ red) (σ blue) (cap5RotateBoundarySupportN n p.redBlue₂) ∨
+  action = cap5BoundarySwap (σ red) (σ purple) (cap5RotateBoundarySupportN n p.redPurple₁) ∨
+  action = cap5BoundarySwap (σ red) (σ purple) (cap5RotateBoundarySupportN n p.redPurple₂)
 
 /-- The simultaneous exceptional pattern left over when no immediate repair support appears. -/
 def IsExceptional (p : CAP5BadPairingSupports) : Prop :=
@@ -1912,6 +1984,38 @@ theorem exists_repairingBoundaryAction_of_hasRepair
     ⟨action, _huses, hrealizes, hextends⟩
   exact ⟨action, hrealizes, hextends⟩
 
+/-- Transported support-aware form of immediate CAP5 repair.  If one of the normalized
+component supports lies on the repair side, then after cyclic/color normalization there is a
+support-carried transported boundary action realizing a finite repair type. -/
+theorem exists_repairingBoundaryAction_usingTransportedSupport_of_hasRepair
+    {p : CAP5BadPairingSupports} (h : p.HasRepair)
+    {σ : Color ≃ Color} (hσ0 : σ 0 = 0) (n : Nat) :
+    ∃ action : CAP5BoundaryAction,
+      p.TransportedBoundaryActionUsesSupport σ n action ∧
+      CAP5BoundaryActionRealizesSomeTransportedRepairType action σ n ∧
+      CAP5WordExtendsAcrossCycle (action (cap5TransportedBadBoundaryWord σ n)) := by
+  rcases h with h₁ | h₂ | h₃ | h₄
+  · refine ⟨cap5BoundarySwap (σ red) (σ blue)
+        (cap5RotateBoundarySupportN n p.redBlue₁), ?_, ?_, ?_⟩
+    · exact Or.inl rfl
+    · exact cap5BoundaryActionRealizesSomeTransportedRepairType_of_redBlueRepairSupport h₁ σ n
+    · exact cap5_extendsAcrossCycle_of_redBlueRepairSupport_transport h₁ hσ0 n
+  · refine ⟨cap5BoundarySwap (σ red) (σ blue)
+        (cap5RotateBoundarySupportN n p.redBlue₂), ?_, ?_, ?_⟩
+    · exact Or.inr (Or.inl rfl)
+    · exact cap5BoundaryActionRealizesSomeTransportedRepairType_of_redBlueRepairSupport h₂ σ n
+    · exact cap5_extendsAcrossCycle_of_redBlueRepairSupport_transport h₂ hσ0 n
+  · refine ⟨cap5BoundarySwap (σ red) (σ purple)
+        (cap5RotateBoundarySupportN n p.redPurple₁), ?_, ?_, ?_⟩
+    · exact Or.inr (Or.inr (Or.inl rfl))
+    · exact cap5BoundaryActionRealizesSomeTransportedRepairType_of_redPurpleRepairSupport h₃ σ n
+    · exact cap5_extendsAcrossCycle_of_redPurpleRepairSupport_transport h₃ hσ0 n
+  · refine ⟨cap5BoundarySwap (σ red) (σ purple)
+        (cap5RotateBoundarySupportN n p.redPurple₂), ?_, ?_, ?_⟩
+    · exact Or.inr (Or.inr (Or.inr rfl))
+    · exact cap5BoundaryActionRealizesSomeTransportedRepairType_of_redPurpleRepairSupport h₄ σ n
+    · exact cap5_extendsAcrossCycle_of_redPurpleRepairSupport_transport h₄ hσ0 n
+
 /-- Support-aware immediate CAP5 repair, packaged as an actual repair of the canonical bad word:
 the input is nonextendable and the support-carried boundary action's output is extendable. -/
 theorem exists_boundaryActionRepairsWord_usingSupport_of_hasRepair
@@ -1924,6 +2028,22 @@ theorem exists_boundaryActionRepairsWord_usingSupport_of_hasRepair
     ⟨action, huses, hrealizes, _hextends⟩
   exact ⟨action, huses, hrealizes,
     cap5_boundaryActionRepairsWord_of_boundaryActionRealizesSomeRepairType_bad hrealizes⟩
+
+/-- Transported support-aware immediate CAP5 repair, packaged as an actual repair of the
+transported bad word. -/
+theorem exists_boundaryActionRepairsWord_usingTransportedSupport_of_hasRepair
+    {p : CAP5BadPairingSupports} (h : p.HasRepair)
+    {σ : Color ≃ Color} (hσ0 : σ 0 = 0) (n : Nat) :
+    ∃ action : CAP5BoundaryAction,
+      p.TransportedBoundaryActionUsesSupport σ n action ∧
+      CAP5BoundaryActionRealizesSomeTransportedRepairType action σ n ∧
+      CAP5BoundaryActionRepairsWord action (cap5TransportedBadBoundaryWord σ n) := by
+  rcases exists_repairingBoundaryAction_usingTransportedSupport_of_hasRepair
+      h hσ0 n with
+    ⟨action, huses, hrealizes, _hextends⟩
+  exact ⟨action, huses, hrealizes,
+    cap5_boundaryActionRepairsWord_of_boundaryActionRealizesSomeTransportedRepairType_bad
+      hσ0 hrealizes⟩
 
 /-- Immediate CAP5 repair, packaged as an actual repair of the canonical bad word. -/
 theorem exists_boundaryActionRepairsWord_of_hasRepair
@@ -2081,6 +2201,19 @@ theorem exists_repairingBoundaryAction_usingSupport_of_activePairings_of_not_isE
   exists_repairingBoundaryAction_usingSupport_of_hasRepair
     ((hasRepair_iff_not_isExceptional_of_activePairings hpair).2 hnotExceptional)
 
+/-- Transported support-aware endpoint from active CAP5 pairings after excluding the simultaneous
+exceptional pattern. -/
+theorem exists_repairingBoundaryAction_usingTransportedSupport_of_activePairings_of_not_isExceptional
+    {p : CAP5BadPairingSupports}
+    (hpair : p.HasActivePairings) (hnotExceptional : ¬ p.IsExceptional)
+    {σ : Color ≃ Color} (hσ0 : σ 0 = 0) (n : Nat) :
+    ∃ action : CAP5BoundaryAction,
+      p.TransportedBoundaryActionUsesSupport σ n action ∧
+      CAP5BoundaryActionRealizesSomeTransportedRepairType action σ n ∧
+      CAP5WordExtendsAcrossCycle (action (cap5TransportedBadBoundaryWord σ n)) :=
+  exists_repairingBoundaryAction_usingTransportedSupport_of_hasRepair
+    ((hasRepair_iff_not_isExceptional_of_activePairings hpair).2 hnotExceptional) hσ0 n
+
 /-- Packaged support-aware final endpoint from active CAP5 pairings after excluding the simultaneous
 exceptional pattern. -/
 theorem exists_boundaryActionRepairsWord_usingSupport_of_activePairings_of_not_isExceptional
@@ -2092,6 +2225,19 @@ theorem exists_boundaryActionRepairsWord_usingSupport_of_activePairings_of_not_i
       CAP5BoundaryActionRepairsWord action cap5BadBoundaryWord2111 :=
   exists_boundaryActionRepairsWord_usingSupport_of_hasRepair
     ((hasRepair_iff_not_isExceptional_of_activePairings hpair).2 hnotExceptional)
+
+/-- Packaged transported support-aware endpoint from active CAP5 pairings after excluding the
+simultaneous exceptional pattern. -/
+theorem exists_boundaryActionRepairsWord_usingTransportedSupport_of_activePairings_of_not_isExceptional
+    {p : CAP5BadPairingSupports}
+    (hpair : p.HasActivePairings) (hnotExceptional : ¬ p.IsExceptional)
+    {σ : Color ≃ Color} (hσ0 : σ 0 = 0) (n : Nat) :
+    ∃ action : CAP5BoundaryAction,
+      p.TransportedBoundaryActionUsesSupport σ n action ∧
+      CAP5BoundaryActionRealizesSomeTransportedRepairType action σ n ∧
+      CAP5BoundaryActionRepairsWord action (cap5TransportedBadBoundaryWord σ n) :=
+  exists_boundaryActionRepairsWord_usingTransportedSupport_of_hasRepair
+    ((hasRepair_iff_not_isExceptional_of_activePairings hpair).2 hnotExceptional) hσ0 n
 
 /-- Graph-facing final CAP5 endpoint: disjoint component covers of both active supports already
 supply active pairings, so excluding the simultaneous exceptional pattern produces a support-carried
@@ -2106,6 +2252,20 @@ theorem exists_repairingBoundaryAction_usingSupport_of_componentCovers_of_not_is
   exists_repairingBoundaryAction_usingSupport_of_activePairings_of_not_isExceptional
     (hasActivePairings_of_componentCovers hcovers) hnotExceptional
 
+/-- Transported graph-facing final CAP5 endpoint: disjoint component covers of both active
+supports, plus exclusion of the simultaneous exceptional pattern, produce a transported
+support-carried boundary action whose output extends across the cap. -/
+theorem exists_repairingBoundaryAction_usingTransportedSupport_of_componentCovers_of_not_isExceptional
+    {p : CAP5BadPairingSupports}
+    (hcovers : p.HasComponentCovers) (hnotExceptional : ¬ p.IsExceptional)
+    {σ : Color ≃ Color} (hσ0 : σ 0 = 0) (n : Nat) :
+    ∃ action : CAP5BoundaryAction,
+      p.TransportedBoundaryActionUsesSupport σ n action ∧
+      CAP5BoundaryActionRealizesSomeTransportedRepairType action σ n ∧
+      CAP5WordExtendsAcrossCycle (action (cap5TransportedBadBoundaryWord σ n)) :=
+  exists_repairingBoundaryAction_usingTransportedSupport_of_activePairings_of_not_isExceptional
+    (hasActivePairings_of_componentCovers hcovers) hnotExceptional hσ0 n
+
 /-- Packaged graph-facing final CAP5 endpoint: disjoint component covers of both active supports,
 plus exclusion of the simultaneous exceptional pattern, produce a support-carried boundary action
 that genuinely repairs the canonical bad word. -/
@@ -2118,6 +2278,18 @@ theorem exists_boundaryActionRepairsWord_usingSupport_of_componentCovers_of_not_
       CAP5BoundaryActionRepairsWord action cap5BadBoundaryWord2111 :=
   exists_boundaryActionRepairsWord_usingSupport_of_activePairings_of_not_isExceptional
     (hasActivePairings_of_componentCovers hcovers) hnotExceptional
+
+/-- Packaged transported graph-facing final CAP5 endpoint from component covers. -/
+theorem exists_boundaryActionRepairsWord_usingTransportedSupport_of_componentCovers_of_not_isExceptional
+    {p : CAP5BadPairingSupports}
+    (hcovers : p.HasComponentCovers) (hnotExceptional : ¬ p.IsExceptional)
+    {σ : Color ≃ Color} (hσ0 : σ 0 = 0) (n : Nat) :
+    ∃ action : CAP5BoundaryAction,
+      p.TransportedBoundaryActionUsesSupport σ n action ∧
+      CAP5BoundaryActionRealizesSomeTransportedRepairType action σ n ∧
+      CAP5BoundaryActionRepairsWord action (cap5TransportedBadBoundaryWord σ n) :=
+  exists_boundaryActionRepairsWord_usingTransportedSupport_of_activePairings_of_not_isExceptional
+    (hasActivePairings_of_componentCovers hcovers) hnotExceptional hσ0 n
 
 end CAP5BadPairingSupports
 
