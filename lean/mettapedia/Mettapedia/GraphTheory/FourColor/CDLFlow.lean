@@ -2238,6 +2238,13 @@ def ZeroEdgesFormMatching (G : SimpleGraph V) [Fintype G.edgeSet]
     (x : G.edgeSet → Color) : Prop :=
   ∀ v : V, zeroIncidentEdgeCount G x v ≤ 1
 
+/-- A local obstruction to the matching-zero property: at least two zero edges
+meet at one vertex.  This is the local neighborhood that the manuscript says
+must be repaired by finite/local analysis. -/
+def HasClusteredZeroVertex (G : SimpleGraph V) [Fintype G.edgeSet]
+    (x : G.edgeSet → Color) : Prop :=
+  ∃ v : V, 2 ≤ zeroIncidentEdgeCount G x v
+
 /-- Patch/local-combinatorics hypothesis for the manuscript's matching-zeros
 step: every non-matching zero pattern admits a permitted one-step repair that
 erases an existing zero and creates no new zero on its support.  Theorems below
@@ -2247,6 +2254,18 @@ def EveryNonmatchingZeroPatternHasD0Descent (G : SimpleGraph V)
     [Fintype V] [Fintype G.edgeSet] (moveSupports : Finset (Finset G.edgeSet))
     (x : G.edgeSet → Color) : Prop :=
   ¬ ZeroEdgesFormMatching G x →
+    ∃ C ∈ moveSupports, ∃ g : Color,
+      IsAllowedD0OneStepMoveOn G C g x (cdlOneStepMoveOn G C g x) ∧
+        (∃ e ∈ C, x e = 0) ∧
+          ∀ e ∈ C, x e ≠ g
+
+/-- Vertex-local version of the finite repair hypothesis: every clustered-zero
+vertex supplies a permitted one-step repair that erases an existing zero and
+creates no new zero on its support. -/
+def EveryClusteredZeroVertexHasD0Descent (G : SimpleGraph V)
+    [Fintype V] [Fintype G.edgeSet] (moveSupports : Finset (Finset G.edgeSet))
+    (x : G.edgeSet → Color) : Prop :=
+  ∀ v : V, 2 ≤ zeroIncidentEdgeCount G x v →
     ∃ C ∈ moveSupports, ∃ g : Color,
       IsAllowedD0OneStepMoveOn G C g x (cdlOneStepMoveOn G C g x) ∧
         (∃ e ∈ C, x e = 0) ∧
@@ -2461,6 +2480,37 @@ theorem zeroClusteringCount_eq_zero_iff_zeroEdgesFormMatching
     zeroClusteringCount G x = 0 ↔ ZeroEdgesFormMatching G x := by
   simp [ZeroEdgesFormMatching, zeroClusteringCount, Nat.sub_eq_zero_iff_le]
 
+/-- Negating the matching-zero property is exactly the presence of a clustered
+zero vertex. -/
+theorem not_zeroEdgesFormMatching_iff_hasClusteredZeroVertex
+    {G : SimpleGraph V} [Fintype G.edgeSet] {x : G.edgeSet → Color} :
+    ¬ ZeroEdgesFormMatching G x ↔ HasClusteredZeroVertex G x := by
+  constructor
+  · intro hnot
+    by_contra hnone
+    apply hnot
+    intro v
+    by_contra hvle
+    have hvcluster : 2 ≤ zeroIncidentEdgeCount G x v := by
+      omega
+    exact hnone ⟨v, hvcluster⟩
+  · rintro ⟨v, hvcluster⟩ hmatch
+    have hvle := hmatch v
+    omega
+
+/-- The vertex-local repair hypothesis implies the global nonmatching repair
+hypothesis, because every nonmatching zero pattern has a clustered zero
+vertex. -/
+theorem everyNonmatchingZeroPatternHasD0Descent_of_clusteredZeroVertex_descent
+    {G : SimpleGraph V} [Fintype V] [Fintype G.edgeSet]
+    {moveSupports : Finset (Finset G.edgeSet)} {x : G.edgeSet → Color}
+    (hrepair : EveryClusteredZeroVertexHasD0Descent G moveSupports x) :
+    EveryNonmatchingZeroPatternHasD0Descent G moveSupports x := by
+  intro hnonmatch
+  rcases not_zeroEdgesFormMatching_iff_hasClusteredZeroVertex.mp hnonmatch with
+    ⟨v, hvcluster⟩
+  exact hrepair v hvcluster
+
 /-- Abstract matching-zeros theorem: once patch-local combinatorics supplies a
 zero-erasing/no-new-zero repair for every non-matching zero pattern, `D₀`
 local minimality forces the zero pattern to be a matching. -/
@@ -2476,6 +2526,20 @@ theorem zeroEdgesFormMatching_of_isD0LocalMinimumForMoveSupports_of_nonmatching_
     (not_isD0LocalMinimumForMoveSupports_of_allowed_erases_zero_no_new_zero_descent
       hCmem hmove herase hnew) hmin
 
+/-- Vertex-local form of the abstract matching-zeros theorem.  This is the
+form closest to the manuscript's local-neighborhood phrasing: if every vertex
+with two incident zero edges admits a zero-erasing/no-new-zero repair, then a
+`D₀` local minimum has matching zero support. -/
+theorem zeroEdgesFormMatching_of_isD0LocalMinimumForMoveSupports_of_clusteredZeroVertex_descent
+    {G : SimpleGraph V} [Fintype V] [Fintype G.edgeSet]
+    {moveSupports : Finset (Finset G.edgeSet)} {x : G.edgeSet → Color}
+    (hmin : IsD0LocalMinimumForMoveSupports G moveSupports x)
+    (hrepair : EveryClusteredZeroVertexHasD0Descent G moveSupports x) :
+    ZeroEdgesFormMatching G x :=
+  zeroEdgesFormMatching_of_isD0LocalMinimumForMoveSupports_of_nonmatching_descent
+    hmin (everyNonmatchingZeroPatternHasD0Descent_of_clusteredZeroVertex_descent
+      hrepair)
+
 /-- Count form of the abstract matching-zeros theorem: the clustering statistic
 vanishes at repaired `D₀` local minima. -/
 theorem zeroClusteringCount_eq_zero_of_isD0LocalMinimumForMoveSupports_of_nonmatching_descent
@@ -2486,6 +2550,17 @@ theorem zeroClusteringCount_eq_zero_of_isD0LocalMinimumForMoveSupports_of_nonmat
     zeroClusteringCount G x = 0 :=
   zeroClusteringCount_eq_zero_iff_zeroEdgesFormMatching.mpr
     (zeroEdgesFormMatching_of_isD0LocalMinimumForMoveSupports_of_nonmatching_descent
+      hmin hrepair)
+
+/-- Vertex-local repair form: clustering vanishes at `D₀` local minima. -/
+theorem zeroClusteringCount_eq_zero_of_isD0LocalMinimumForMoveSupports_of_clusteredZeroVertex_descent
+    {G : SimpleGraph V} [Fintype V] [Fintype G.edgeSet]
+    {moveSupports : Finset (Finset G.edgeSet)} {x : G.edgeSet → Color}
+    (hmin : IsD0LocalMinimumForMoveSupports G moveSupports x)
+    (hrepair : EveryClusteredZeroVertexHasD0Descent G moveSupports x) :
+    zeroClusteringCount G x = 0 :=
+  zeroClusteringCount_eq_zero_iff_zeroEdgesFormMatching.mpr
+    (zeroEdgesFormMatching_of_isD0LocalMinimumForMoveSupports_of_clusteredZeroVertex_descent
       hmin hrepair)
 
 /-- If no vertex is touched by a zero edge, then the zero-clustering defect is
@@ -2733,6 +2808,18 @@ theorem
     (zeroEdgesFormMatching_of_isD0LocalMinimumForMoveSupports_of_nonmatching_descent
       hmin hrepair)
 
+/-- Vertex-local repair form of the manuscript count identity `I(x)=2Z(x)`. -/
+theorem
+    zeroIncidentVertexCount_eq_two_mul_zeroEdgeCount_of_isD0LocalMinimumForMoveSupports_of_clusteredZeroVertex_descent
+    {G : SimpleGraph V} [Fintype V] [Fintype G.edgeSet]
+    {moveSupports : Finset (Finset G.edgeSet)} {x : G.edgeSet → Color}
+    (hmin : IsD0LocalMinimumForMoveSupports G moveSupports x)
+    (hrepair : EveryClusteredZeroVertexHasD0Descent G moveSupports x) :
+    zeroIncidentVertexCount G x = 2 * zeroEdgeCount G x :=
+  zeroIncidentVertexCount_eq_two_mul_zeroEdgeCount_of_zeroEdgesFormMatching
+    (zeroEdgesFormMatching_of_isD0LocalMinimumForMoveSupports_of_clusteredZeroVertex_descent
+      hmin hrepair)
+
 /-- Under a matching zero pattern, the cheap defect collapses to `120 Z(x)`. -/
 theorem zeroDefectD0_eq_120_mul_zeroEdgeCount_of_zeroEdgesFormMatching
     {G : SimpleGraph V} [Fintype V] [Fintype G.edgeSet] {x : G.edgeSet → Color}
@@ -2764,6 +2851,17 @@ theorem zeroDefectD0_eq_120_mul_zeroEdgeCount_of_isD0LocalMinimumForMoveSupports
     (zeroEdgesFormMatching_of_isD0LocalMinimumForMoveSupports_of_nonmatching_descent
       hmin hrepair)
 
+/-- Vertex-local repair form of the cheap-defect collapse `D₀(x)=120Z(x)`. -/
+theorem zeroDefectD0_eq_120_mul_zeroEdgeCount_of_isD0LocalMinimumForMoveSupports_of_clusteredZeroVertex_descent
+    {G : SimpleGraph V} [Fintype V] [Fintype G.edgeSet]
+    {moveSupports : Finset (Finset G.edgeSet)} {x : G.edgeSet → Color}
+    (hmin : IsD0LocalMinimumForMoveSupports G moveSupports x)
+    (hrepair : EveryClusteredZeroVertexHasD0Descent G moveSupports x) :
+    zeroDefectD0 G x = 120 * zeroEdgeCount G x :=
+  zeroDefectD0_eq_120_mul_zeroEdgeCount_of_zeroEdgesFormMatching
+    (zeroEdgesFormMatching_of_isD0LocalMinimumForMoveSupports_of_clusteredZeroVertex_descent
+      hmin hrepair)
+
 /-- A nonempty matching zero pattern has cheap defect at least `120`, because
 matching zeros force `D₀=120Z`. -/
 theorem le_zeroDefectD0_of_zeroEdgesFormMatching_and_zeroEdgeCount_pos
@@ -2784,6 +2882,19 @@ theorem le_zeroDefectD0_of_isD0LocalMinimumForMoveSupports_of_nonmatching_descen
     120 ≤ zeroDefectD0 G x :=
   le_zeroDefectD0_of_zeroEdgesFormMatching_and_zeroEdgeCount_pos
     (zeroEdgesFormMatching_of_isD0LocalMinimumForMoveSupports_of_nonmatching_descent
+      hmin hrepair)
+    hmin.has_zero
+
+/-- Vertex-local repair form: every such `D₀` local minimum has positive
+matching-zero defect at scale at least `120`. -/
+theorem le_zeroDefectD0_of_isD0LocalMinimumForMoveSupports_of_clusteredZeroVertex_descent
+    {G : SimpleGraph V} [Fintype V] [Fintype G.edgeSet]
+    {moveSupports : Finset (Finset G.edgeSet)} {x : G.edgeSet → Color}
+    (hmin : IsD0LocalMinimumForMoveSupports G moveSupports x)
+    (hrepair : EveryClusteredZeroVertexHasD0Descent G moveSupports x) :
+    120 ≤ zeroDefectD0 G x :=
+  le_zeroDefectD0_of_zeroEdgesFormMatching_and_zeroEdgeCount_pos
+    (zeroEdgesFormMatching_of_isD0LocalMinimumForMoveSupports_of_clusteredZeroVertex_descent
       hmin hrepair)
     hmin.has_zero
 
