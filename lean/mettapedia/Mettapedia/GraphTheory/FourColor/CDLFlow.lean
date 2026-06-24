@@ -989,6 +989,36 @@ theorem exists_created_zero_of_isD0LocalMinimumForMoveSupports_of_isKempeCycle_e
       hg hmin.source_flow hC hgood)
     herase
 
+theorem not_isD0LocalMinimumForMoveSupports_of_isKempeCycle_basic_color_moves_small_support
+    {G : SimpleGraph V} [Fintype V] [Fintype G.edgeSet]
+    {moveSupports : Finset (Finset G.edgeSet)} {x : G.edgeSet → Color}
+    {C : Finset G.edgeSet} {α β : Color}
+    (hCmem : C ∈ moveSupports)
+    (hC : IsKempeCycle (incidentEdgeFinset G) x C α β)
+    (hredgood :
+      ∀ v : V, ∃ e ∈ incidentEdgeFinset G v,
+        if e ∈ C then x e ≠ red else x e ≠ 0)
+    (hbluegood :
+      ∀ v : V, ∃ e ∈ incidentEdgeFinset G v,
+        if e ∈ C then x e ≠ blue else x e ≠ 0)
+    (hpurplegood :
+      ∀ v : V, ∃ e ∈ incidentEdgeFinset G v,
+        if e ∈ C then x e ≠ purple else x e ≠ 0)
+    (herase : ∃ e ∈ C, x e = 0)
+    (hsmall : C.card ≤ 3) :
+    ¬ IsD0LocalMinimumForMoveSupports G moveSupports x := by
+  intro hmin
+  exact
+    (not_isD0LocalMinimumForMoveSupports_of_basic_color_moves_small_support
+      hCmem
+      (isAllowedD0OneStepMoveOn_of_isKempeCycle_and_vertex_witnesses
+        red_ne_zero hmin.source_flow hC hredgood)
+      (isAllowedD0OneStepMoveOn_of_isKempeCycle_and_vertex_witnesses
+        blue_ne_zero hmin.source_flow hC hbluegood)
+      (isAllowedD0OneStepMoveOn_of_isKempeCycle_and_vertex_witnesses
+        purple_ne_zero hmin.source_flow hC hpurplegood)
+      herase hsmall) hmin
+
 theorem zeroDefectD0_le_of_isD0LocalMinimumForMoveSupports_of_rotationDiskData_internalFace
     {G : SimpleGraph V} [Fintype V] [Fintype G.edgeSet]
     {moveSupports : Finset (Finset G.edgeSet)} {x : G.edgeSet → Color}
@@ -1097,6 +1127,38 @@ theorem
     (isAllowedD0OneStepMoveOn_of_rotationDiskData_internalFace_and_vertex_witnesses
       D hincident hf hg hmin.source_flow hgood)
     herase
+
+theorem
+    not_isD0LocalMinimumForMoveSupports_of_rotationDiskData_internalFace_basic_color_moves_small_support
+    {G : SimpleGraph V} [Fintype V] [Fintype G.edgeSet]
+    {moveSupports : Finset (Finset G.edgeSet)} {x : G.edgeSet → Color}
+    (D : RotationDiskData V G.edgeSet)
+    (hincident : ∀ v : V, D.asZeroBoundary.incident v = incidentEdgeFinset G v)
+    {f : Finset G.edgeSet} (hf : f ∈ D.rotation.internalFaces)
+    (hfmem : f ∈ moveSupports)
+    (hredgood :
+      ∀ v : V, ∃ e ∈ incidentEdgeFinset G v,
+        if e ∈ f then x e ≠ red else x e ≠ 0)
+    (hbluegood :
+      ∀ v : V, ∃ e ∈ incidentEdgeFinset G v,
+        if e ∈ f then x e ≠ blue else x e ≠ 0)
+    (hpurplegood :
+      ∀ v : V, ∃ e ∈ incidentEdgeFinset G v,
+        if e ∈ f then x e ≠ purple else x e ≠ 0)
+    (herase : ∃ e ∈ f, x e = 0)
+    (hsmall : f.card ≤ 3) :
+    ¬ IsD0LocalMinimumForMoveSupports G moveSupports x := by
+  intro hmin
+  exact
+    (not_isD0LocalMinimumForMoveSupports_of_basic_color_moves_small_support
+      hfmem
+      (isAllowedD0OneStepMoveOn_of_rotationDiskData_internalFace_and_vertex_witnesses
+        D hincident hf red_ne_zero hmin.source_flow hredgood)
+      (isAllowedD0OneStepMoveOn_of_rotationDiskData_internalFace_and_vertex_witnesses
+        D hincident hf blue_ne_zero hmin.source_flow hbluegood)
+      (isAllowedD0OneStepMoveOn_of_rotationDiskData_internalFace_and_vertex_witnesses
+        D hincident hf purple_ne_zero hmin.source_flow hpurplegood)
+      herase hsmall) hmin
 
 /-- The zero-edge set is a matching in the manuscript's local sense: no vertex
 is incident to two or more zero-valued edges. -/
