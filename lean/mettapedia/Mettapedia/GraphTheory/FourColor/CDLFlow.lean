@@ -2256,6 +2256,16 @@ def HasD0DescentRepair (G : SimpleGraph V) [Fintype G.edgeSet]
       (∃ e ∈ C, x e = 0) ∧
         ∀ e ∈ C, x e ≠ g
 
+/-- Vertex-local `D₀` repair: the move erases a zero edge incident to the
+specified vertex and creates no new zero on its support. -/
+def HasD0DescentRepairAt (G : SimpleGraph V) [Fintype G.edgeSet]
+    (moveSupports : Finset (Finset G.edgeSet)) (x : G.edgeSet → Color)
+    (v : V) : Prop :=
+  ∃ C ∈ moveSupports, ∃ g : Color,
+    IsAllowedD0OneStepMoveOn G C g x (cdlOneStepMoveOn G C g x) ∧
+      (∃ e ∈ C, e ∈ incidentEdgeFinset G v ∧ x e = 0) ∧
+        ∀ e ∈ C, x e ≠ g
+
 /-- Patch/local-combinatorics hypothesis for the manuscript's matching-zeros
 step: every non-matching zero pattern admits a permitted one-step repair that
 erases an existing zero and creates no new zero on its support.  Theorems below
@@ -2274,7 +2284,7 @@ def EveryClusteredZeroVertexHasD0Descent (G : SimpleGraph V)
     [Fintype V] [Fintype G.edgeSet] (moveSupports : Finset (Finset G.edgeSet))
     (x : G.edgeSet → Color) : Prop :=
   ∀ v : V, 2 ≤ zeroIncidentEdgeCount G x v →
-    HasD0DescentRepair G moveSupports x
+    HasD0DescentRepairAt G moveSupports x v
 
 omit [DecidableEq V] in
 theorem zeroEdgeFinset_eq_empty_iff {G : SimpleGraph V} [Fintype G.edgeSet]
@@ -2519,7 +2529,19 @@ theorem zeroClusteringCount_pos_iff_hasClusteredZeroVertex
     ← zeroClusteringCount_eq_zero_iff_zeroEdgesFormMatching]
   exact Nat.pos_iff_ne_zero
 
-/-- A `D₀` local minimum is exactly a blocker to the manuscript's
+/-- A vertex-local repair is, in particular, a global zero-erasing/no-new-zero
+repair. -/
+theorem hasD0DescentRepair_of_hasD0DescentRepairAt
+    {G : SimpleGraph V} [Fintype G.edgeSet]
+    {moveSupports : Finset (Finset G.edgeSet)} {x : G.edgeSet → Color}
+    {v : V} :
+    HasD0DescentRepairAt G moveSupports x v →
+      HasD0DescentRepair G moveSupports x := by
+  rintro ⟨C, hCmem, g, hmove, heraseAt, hnew⟩
+  rcases heraseAt with ⟨e, heC, _hev, hzero⟩
+  exact ⟨C, hCmem, g, hmove, ⟨e, heC, hzero⟩, hnew⟩
+
+/-- A `D₀` local minimum blocks the manuscript's
 zero-erasing/no-new-zero one-step repair obligation. -/
 theorem not_hasD0DescentRepair_of_isD0LocalMinimumForMoveSupports
     {G : SimpleGraph V} [Fintype V] [Fintype G.edgeSet]
@@ -2530,6 +2552,18 @@ theorem not_hasD0DescentRepair_of_isD0LocalMinimumForMoveSupports
   exact
     (not_isD0LocalMinimumForMoveSupports_of_allowed_erases_zero_no_new_zero_descent
       hCmem hmove herase hnew) hmin
+
+/-- A `D₀` local minimum blocks every vertex-local zero-erasing/no-new-zero
+repair. -/
+theorem not_hasD0DescentRepairAt_of_isD0LocalMinimumForMoveSupports
+    {G : SimpleGraph V} [Fintype V] [Fintype G.edgeSet]
+    {moveSupports : Finset (Finset G.edgeSet)} {x : G.edgeSet → Color}
+    {v : V}
+    (hmin : IsD0LocalMinimumForMoveSupports G moveSupports x) :
+    ¬ HasD0DescentRepairAt G moveSupports x v := by
+  intro hrepair
+  exact (not_hasD0DescentRepair_of_isD0LocalMinimumForMoveSupports hmin)
+    (hasD0DescentRepair_of_hasD0DescentRepairAt hrepair)
 
 /-- The vertex-local repair hypothesis implies the global nonmatching repair
 hypothesis, because every nonmatching zero pattern has a clustered zero
@@ -2542,7 +2576,7 @@ theorem everyNonmatchingZeroPatternHasD0Descent_of_clusteredZeroVertex_descent
   intro hnonmatch
   rcases not_zeroEdgesFormMatching_iff_hasClusteredZeroVertex.mp hnonmatch with
     ⟨v, hvcluster⟩
-  exact hrepair v hvcluster
+  exact hasD0DescentRepair_of_hasD0DescentRepairAt (hrepair v hvcluster)
 
 /-- Abstract matching-zeros theorem: once patch-local combinatorics supplies a
 zero-erasing/no-new-zero repair for every non-matching zero pattern, `D₀`
@@ -2619,10 +2653,11 @@ theorem not_everyClusteredZeroVertexHasD0Descent_of_isD0LocalMinimumForMoveSuppo
     (hmin : IsD0LocalMinimumForMoveSupports G moveSupports x)
     (hcluster : HasClusteredZeroVertex G x) :
     ¬ EveryClusteredZeroVertexHasD0Descent G moveSupports x := by
+  rcases hcluster with ⟨v, hvcluster⟩
   intro hrepair
   exact
-    (not_isD0LocalMinimumForMoveSupports_of_hasClusteredZeroVertex_and_clusteredZeroVertex_descent
-      hcluster hrepair) hmin
+    (not_hasD0DescentRepairAt_of_isD0LocalMinimumForMoveSupports
+      (v := v) hmin) (hrepair v hvcluster)
 
 /-- Numeric obstruction form for the vertex-local repair hypothesis. -/
 theorem not_everyClusteredZeroVertexHasD0Descent_of_isD0LocalMinimumForMoveSupports_of_zeroClusteringCount_pos
@@ -2642,8 +2677,8 @@ theorem not_exists_d0DescentRepair_at_clusteredZeroVertex_of_isD0LocalMinimumFor
     {moveSupports : Finset (Finset G.edgeSet)} {x : G.edgeSet → Color} {v : V}
     (hmin : IsD0LocalMinimumForMoveSupports G moveSupports x)
     (_hvcluster : 2 ≤ zeroIncidentEdgeCount G x v) :
-    ¬ HasD0DescentRepair G moveSupports x :=
-  not_hasD0DescentRepair_of_isD0LocalMinimumForMoveSupports hmin
+    ¬ HasD0DescentRepairAt G moveSupports x v :=
+  not_hasD0DescentRepairAt_of_isD0LocalMinimumForMoveSupports hmin
 
 /-- Manuscript-facing obstruction form: if a `D₀` local minimum has clustered
 zeros, then some clustered vertex has no zero-erasing/no-new-zero repair in the
@@ -2654,7 +2689,7 @@ theorem exists_clusteredZeroVertex_without_d0DescentRepair_of_isD0LocalMinimumFo
     (hmin : IsD0LocalMinimumForMoveSupports G moveSupports x)
     (hcluster : HasClusteredZeroVertex G x) :
     ∃ v : V, 2 ≤ zeroIncidentEdgeCount G x v ∧
-      ¬ HasD0DescentRepair G moveSupports x := by
+      ¬ HasD0DescentRepairAt G moveSupports x v := by
   rcases hcluster with ⟨v, hvcluster⟩
   exact
     ⟨v, hvcluster,
@@ -2669,7 +2704,7 @@ theorem exists_clusteredZeroVertex_without_d0DescentRepair_of_isD0LocalMinimumFo
     (hmin : IsD0LocalMinimumForMoveSupports G moveSupports x)
     (hCpos : 0 < zeroClusteringCount G x) :
     ∃ v : V, 2 ≤ zeroIncidentEdgeCount G x v ∧
-      ¬ HasD0DescentRepair G moveSupports x :=
+      ¬ HasD0DescentRepairAt G moveSupports x v :=
   exists_clusteredZeroVertex_without_d0DescentRepair_of_isD0LocalMinimumForMoveSupports
     hmin ((zeroClusteringCount_pos_iff_hasClusteredZeroVertex).mp hCpos)
 
