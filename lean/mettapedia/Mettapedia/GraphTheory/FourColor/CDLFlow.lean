@@ -36,10 +36,89 @@ def IsNowhereZeroFlow (G : SimpleGraph V) [Fintype G.edgeSet]
     (x : G.edgeSet → Color) : Prop :=
   IsGraphFlow G x ∧ ∀ e : G.edgeSet, x e ≠ 0
 
+/-- Local Kirchhoff law for the three incident edge-values at a cubic vertex. -/
+def IsLocalKirchhoffTriple (a b c : Color) : Prop :=
+  a + b + c = 0
+
+/-- The canonical local CDL-bad pattern: all three incident values are zero. -/
+def IsLocalCDLBadTriple (a b c : Color) : Prop :=
+  a = 0 ∧ b = 0 ∧ c = 0
+
+/-- The canonical local CDL-good condition: the incident triple is not all-zero. -/
+def IsLocalCDLGoodTriple (a b c : Color) : Prop :=
+  a ≠ 0 ∨ b ≠ 0 ∨ c ≠ 0
+
+/-- The local nowhere-zero condition needed by a Tait-flow interpretation. -/
+def IsLocalNowhereZeroTriple (a b c : Color) : Prop :=
+  a ≠ 0 ∧ b ≠ 0 ∧ c ≠ 0
+
 theorem isGraphFlow_iff {G : SimpleGraph V} [Fintype G.edgeSet]
     {x : G.edgeSet → Color} :
     IsGraphFlow G x ↔ ∀ v : V, vertexKirchhoffSum G x v = 0 :=
   Iff.rfl
+
+theorem isLocalCDLGoodTriple_iff_not_bad {a b c : Color} :
+    IsLocalCDLGoodTriple a b c ↔ ¬ IsLocalCDLBadTriple a b c := by
+  constructor
+  · intro hgood hbad
+    rcases hbad with ⟨ha, hb, hc⟩
+    rcases hgood with ha_ne | hb_ne | hc_ne
+    · exact ha_ne ha
+    · exact hb_ne hb
+    · exact hc_ne hc
+  · intro hnot
+    by_cases ha : a = 0
+    · by_cases hb : b = 0
+      · by_cases hc : c = 0
+        · exact False.elim (hnot ⟨ha, hb, hc⟩)
+        · exact Or.inr (Or.inr hc)
+      · exact Or.inr (Or.inl hb)
+    · exact Or.inl ha
+
+theorem localKirchhoff_zero_same (c : Color) :
+    IsLocalKirchhoffTriple 0 c c := by
+  simp [IsLocalKirchhoffTriple]
+
+theorem localCDLGood_zero_same_of_ne_zero {c : Color} (hc : c ≠ 0) :
+    IsLocalCDLGoodTriple 0 c c := by
+  exact Or.inr (Or.inl hc)
+
+theorem not_localNowhereZero_zero_left (b c : Color) :
+    ¬ IsLocalNowhereZeroTriple 0 b c := by
+  intro h
+  exact h.1 rfl
+
+/-- The canonical CDL-good local condition is weaker than local nowhere-zero:
+the Kirchhoff triple `(0, red, red)` is CDL-good and sums to zero, but still
+has a zero edge-value. -/
+theorem localCDLGoodKirchhoff_not_nowhereZero_red :
+    IsLocalKirchhoffTriple 0 red red ∧
+      IsLocalCDLGoodTriple 0 red red ∧
+      ¬ IsLocalNowhereZeroTriple 0 red red := by
+  exact
+    ⟨localKirchhoff_zero_same red,
+      localCDLGood_zero_same_of_ne_zero red_ne_zero,
+      not_localNowhereZero_zero_left red red⟩
+
+theorem exists_localCDLGoodKirchhoff_not_nowhereZero :
+    ∃ a b c : Color,
+      IsLocalKirchhoffTriple a b c ∧
+        IsLocalCDLGoodTriple a b c ∧
+        ¬ IsLocalNowhereZeroTriple a b c := by
+  exact ⟨0, red, red, localCDLGoodKirchhoff_not_nowhereZero_red⟩
+
+/-- Thus the local implication from canonical CDL-good Kirchhoff triples to
+nowhere-zero triples is false without an additional hypothesis. -/
+theorem not_forall_localCDLGoodKirchhoff_implies_nowhereZero :
+    ¬ (∀ a b c : Color,
+      IsLocalKirchhoffTriple a b c →
+      IsLocalCDLGoodTriple a b c →
+      IsLocalNowhereZeroTriple a b c) := by
+  intro h
+  exact localCDLGoodKirchhoff_not_nowhereZero_red.2.2
+    (h 0 red red
+      localCDLGoodKirchhoff_not_nowhereZero_red.1
+      localCDLGoodKirchhoff_not_nowhereZero_red.2.1)
 
 theorem isGraphFlow_of_mem_kirchhoffSubmodule_univ {G : SimpleGraph V}
     [Fintype V] [Fintype G.edgeSet] {x : G.edgeSet → Color}
