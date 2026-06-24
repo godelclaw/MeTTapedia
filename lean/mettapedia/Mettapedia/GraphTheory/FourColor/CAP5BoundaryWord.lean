@@ -1079,6 +1079,15 @@ def cap5BoundaryWordOfEdges {E : Type*} (boundaryEdge : Fin 5 → E)
     (C : E → Color) : CAP5BoundaryWord :=
   fun i => C (boundaryEdge i)
 
+/-- A boundary-edge coloring with nonzero colors at all five CAP5 boundary positions induces a
+nonzero CAP5 boundary word. -/
+theorem cap5BoundaryWordOfEdges_isNonzero_of_forall_nonzero {E : Type*}
+    (boundaryEdge : Fin 5 → E) (C : E → Color)
+    (hC : ∀ i : Fin 5, C (boundaryEdge i) ≠ 0) :
+    CAP5BoundaryWordIsNonzero (cap5BoundaryWordOfEdges boundaryEdge C) := by
+  intro i
+  exact hC i
+
 /-- The CAP5 boundary positions whose boundary edges lie in a selected edge set. -/
 def cap5BoundarySupportOfEdges {E : Type*} [DecidableEq E]
     (boundaryEdge : Fin 5 → E) (S : Finset E) : Finset (Fin 5) :=
