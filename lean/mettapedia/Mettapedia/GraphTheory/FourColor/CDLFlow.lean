@@ -791,6 +791,39 @@ theorem incident_outside_edge_unique_of_hasCubicD0BasicColorObstructionAt
   simp at he_mem he_mem'
   exact he_mem.trans he_mem'.symm
 
+/-- In a cubic D₀ basic-color obstruction, the local zero-incidence set at the
+obstructed vertex is a singleton: the unique incident edge outside the proposed
+support. -/
+theorem
+    exists_zeroIncidentEdgeFinset_eq_singleton_of_hasCubicD0BasicColorObstructionAt
+    {G : SimpleGraph V} [Fintype V] [Fintype G.edgeSet]
+    {C : Finset G.edgeSet} {g : Color} {x : G.edgeSet → Color} {v : V}
+    (hobst : HasCubicD0BasicColorObstructionAt G x C v g) :
+    ∃ e : G.edgeSet,
+      zeroIncidentEdgeFinset G x v = {e} ∧
+        e ∈ incidentEdgeFinset G v ∧ e ∉ C ∧ x e = 0 := by
+  have hzeroeq :
+      zeroIncidentEdgeFinset G x v =
+        (incidentEdgeFinset G v).filter fun e => e ∉ C :=
+    zeroIncidentEdgeFinset_eq_incident_filter_not_mem_of_hasCubicD0BasicColorObstructionAt
+      hobst
+  have houtside :
+      ((incidentEdgeFinset G v).filter fun e => e ∉ C).card = 1 :=
+    incident_outside_filter_card_eq_one_of_hasCubicD0BasicColorObstructionAt
+      hobst
+  rcases hobst with
+    ⟨_hg, _hcount, _hclustering, _hincident, e, heinc, heC, hx,
+      _hforced⟩
+  rcases Finset.card_eq_one.mp houtside with ⟨a, ha⟩
+  have he_mem : e ∈ (incidentEdgeFinset G v).filter (fun e => e ∉ C) := by
+    simp [heinc, heC]
+  rw [ha] at he_mem
+  simp at he_mem
+  have hfilter :
+      ((incidentEdgeFinset G v).filter fun e => e ∉ C) = {e} := by
+    simpa [he_mem] using ha
+  exact ⟨e, by rw [hzeroeq, hfilter], heinc, heC, hx⟩
+
 /-- Concrete star form of a cubic D₀ basic-color obstruction: at the obstructed
 vertex there are two distinct support edges, both colored by the proposed move
 color `g`, and one distinct outside edge colored zero. -/
@@ -842,6 +875,42 @@ theorem
       hobst he₂inc he₂C,
     incident_outside_color_eq_zero_of_hasCubicD0BasicColorObstructionAt
       hobst he₀inc he₀C⟩
+
+/-- Exact cubic-star partition for a cubic D₀ basic-color obstruction: the
+three incident edges are precisely the two support edges of color `g` and the
+unique outside zero edge. -/
+theorem
+    exists_incidentEdgeFinset_eq_support_pair_insert_outside_zero_of_hasCubicD0BasicColorObstructionAt
+    {G : SimpleGraph V} [Fintype V] [Fintype G.edgeSet]
+    {C : Finset G.edgeSet} {g : Color} {x : G.edgeSet → Color} {v : V}
+    (hcard : (incidentEdgeFinset G v).card = 3)
+    (hobst : HasCubicD0BasicColorObstructionAt G x C v g) :
+    ∃ e₁ e₂ e₀ : G.edgeSet,
+      e₁ ≠ e₂ ∧ e₁ ≠ e₀ ∧ e₂ ≠ e₀ ∧
+        incidentEdgeFinset G v = {e₁, e₂, e₀} ∧
+          e₁ ∈ C ∧ e₂ ∈ C ∧ e₀ ∉ C ∧
+            x e₁ = g ∧ x e₂ = g ∧ x e₀ = 0 := by
+  rcases
+    exists_support_pair_and_outside_zero_of_hasCubicD0BasicColorObstructionAt
+      hcard hobst with
+    ⟨e₁, e₂, e₀, h12, h10, h20, he₁inc, he₂inc, he₀inc, he₁C, he₂C,
+      he₀C, hx₁, hx₂, hx₀⟩
+  let star : Finset G.edgeSet := {e₁, e₂, e₀}
+  have hstar_subset : star ⊆ incidentEdgeFinset G v := by
+    intro e he
+    simp only [star, Finset.mem_insert, Finset.mem_singleton] at he
+    rcases he with rfl | rfl | rfl
+    · exact he₁inc
+    · exact he₂inc
+    · exact he₀inc
+  have hstar_card : star.card = 3 := by
+    simp [star, h12, h10, h20]
+  have hcard_le : (incidentEdgeFinset G v).card ≤ star.card := by
+    rw [hcard, hstar_card]
+  have hstar_eq : incidentEdgeFinset G v = star :=
+    (Finset.eq_of_subset_of_card_le hstar_subset hcard_le).symm
+  exact ⟨e₁, e₂, e₀, h12, h10, h20, hstar_eq, he₁C, he₂C, he₀C,
+    hx₁, hx₂, hx₀⟩
 
 theorem not_isCDLGoodAtVertex_cdlOneStepMoveOn_of_hasCubicD0BasicColorObstructionAt
     {G : SimpleGraph V} [Fintype V] [Fintype G.edgeSet]
