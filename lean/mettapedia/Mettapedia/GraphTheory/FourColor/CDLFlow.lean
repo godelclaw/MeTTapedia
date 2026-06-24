@@ -3670,6 +3670,44 @@ def EveryCubicD0BasicColorObstructionStarHasD0Descent (G : SimpleGraph V)
           x e₁ = g → x e₂ = g → x e₀ = 0 →
             HasD0DescentRepairAt G moveSupports x v
 
+/-- Nonzero concrete-star repair hypothesis normalized to the exact edge that
+must be erased: for a genuine cubic obstruction star, the repair support must
+contain the outside zero edge `e₀`.  This is the finite-search target exposed
+by `hasD0DescentRepairAt_erases_star_outside_edge_of_cubic_obstruction_star`. -/
+def EveryCubicD0BasicColorObstructionStarHasPinnedOutsideEdgeD0Descent
+    (G : SimpleGraph V) [Fintype V] [Fintype G.edgeSet]
+    (moveSupports : Finset (Finset G.edgeSet)) (x : G.edgeSet → Color) :
+    Prop :=
+  ∀ (C : Finset G.edgeSet) (v : V) (g : Color)
+    (e₁ e₂ e₀ : G.edgeSet),
+    g ≠ 0 →
+      e₁ ≠ e₂ → e₁ ≠ e₀ → e₂ ≠ e₀ →
+        incidentEdgeFinset G v = {e₁, e₂, e₀} →
+          e₁ ∈ C → e₂ ∈ C → e₀ ∉ C →
+            x e₁ = g → x e₂ = g → x e₀ = 0 →
+              ∃ C' ∈ moveSupports, ∃ h : Color,
+                IsAllowedD0OneStepMoveOn G C' h x
+                  (cdlOneStepMoveOn G C' h x) ∧
+                  e₀ ∈ C' ∧ e₀ ∈ incidentEdgeFinset G v ∧ e₀ ∉ C ∧
+                    x e₀ = 0 ∧ ∀ e' ∈ C', x e' ≠ h
+
+/-- The broader concrete-star repair hypothesis entails the pinned-edge
+version on the genuine nonzero obstruction stars. -/
+theorem
+    everyCubicD0BasicColorObstructionStarHasPinnedOutsideEdgeD0Descent_of_cubic_star_repairs
+    {G : SimpleGraph V} [Fintype V] [Fintype G.edgeSet]
+    {moveSupports : Finset (Finset G.edgeSet)} {x : G.edgeSet → Color}
+    (hrepair :
+      EveryCubicD0BasicColorObstructionStarHasD0Descent G moveSupports x) :
+    EveryCubicD0BasicColorObstructionStarHasPinnedOutsideEdgeD0Descent
+        G moveSupports x := by
+  intro C v g e₁ e₂ e₀ hg h12 h10 h20 hstar he₁C he₂C he₀C hx₁ hx₂ hx₀
+  exact
+    hasD0DescentRepairAt_erases_star_outside_edge_of_cubic_obstruction_star
+      hg hstar he₁C he₂C he₀C hx₁ hx₂ hx₀
+      (hrepair C v g e₁ e₂ e₀ h12 h10 h20 hstar he₁C he₂C he₀C
+        hx₁ hx₂ hx₀)
+
 /-- To discharge the abstract second-step cubic-obstruction repair hypothesis,
 it is enough to repair every concrete three-edge obstruction star: two support
 edges of color `g` and the unique outside zero edge. -/
@@ -3689,6 +3727,30 @@ theorem
       hx₂, hx₀⟩
   exact hrepair C v g e₁ e₂ e₀ h12 h10 h20 hstar he₁C he₂C he₀C
     hx₁ hx₂ hx₀
+
+/-- Pinned-edge star repairs are enough for the abstract cubic-obstruction
+repair obligation.  This is the narrowest current theorem-level target for the
+manuscript's second step: prove a permitted repair support containing the
+specific outside zero edge of each nonzero obstruction star. -/
+theorem
+    everyCubicD0BasicColorObstructionHasD0Descent_of_cubic_star_pinned_outside_edge_repairs
+    {G : SimpleGraph V} [Fintype V] [Fintype G.edgeSet]
+    {moveSupports : Finset (Finset G.edgeSet)} {x : G.edgeSet → Color}
+    (hcard : ∀ v : V, (incidentEdgeFinset G v).card = 3)
+    (hrepair :
+      EveryCubicD0BasicColorObstructionStarHasPinnedOutsideEdgeD0Descent
+        G moveSupports x) :
+    EveryCubicD0BasicColorObstructionHasD0Descent G moveSupports x := by
+  intro C v g hobst
+  rcases
+    exists_incidentEdgeFinset_eq_support_pair_insert_outside_zero_of_hasCubicD0BasicColorObstructionAt
+      (hcard v) hobst with
+    ⟨e₁, e₂, e₀, h12, h10, h20, hstar, he₁C, he₂C, he₀C, hx₁,
+      hx₂, hx₀⟩
+  rcases hrepair C v g e₁ e₂ e₀ hobst.1 h12 h10 h20 hstar he₁C he₂C
+      he₀C hx₁ hx₂ hx₀ with
+    ⟨C', hC'mem, h, hmove, he₀C', he₀inc, _he₀Outside, hx₀', hnew⟩
+  exact ⟨C', hC'mem, h, hmove, ⟨e₀, he₀C', he₀inc, hx₀'⟩, hnew⟩
 
 /-- First-step local candidate for the two-step `D₀` route: at every
 clustered-zero vertex there is a Kirchhoff-neutral support that erases an
@@ -4013,6 +4075,24 @@ theorem
   zeroEdgesFormMatching_iff_not_hasClusteredZeroVertex.mpr
     (not_hasClusteredZeroVertex_of_isD0LocalMinimumForMoveSupports_of_neutral_candidates_and_cubic_star_repairs
       hcard hmin hcandidate hrepair)
+
+/-- Matching-zero form with the remaining second-step obligation reduced to
+pinned outside-edge repairs on nonzero cubic obstruction stars. -/
+theorem
+    zeroEdgesFormMatching_of_isD0LocalMinimumForMoveSupports_of_neutral_candidates_and_cubic_star_pinned_outside_edge_repairs
+    {G : SimpleGraph V} [Fintype V] [Fintype G.edgeSet]
+    {moveSupports : Finset (Finset G.edgeSet)} {x : G.edgeSet → Color}
+    (hcard : ∀ v : V, (incidentEdgeFinset G v).card = 3)
+    (hmin : IsD0LocalMinimumForMoveSupports G moveSupports x)
+    (hcandidate : EveryClusteredZeroVertexHasNeutralD0Candidate G moveSupports x)
+    (hrepair :
+      EveryCubicD0BasicColorObstructionStarHasPinnedOutsideEdgeD0Descent
+        G moveSupports x) :
+    ZeroEdgesFormMatching G x :=
+  zeroEdgesFormMatching_of_isD0LocalMinimumForMoveSupports_of_neutral_candidates_and_cubicObstruction_descent
+    hcard hmin hcandidate
+    (everyCubicD0BasicColorObstructionHasD0Descent_of_cubic_star_pinned_outside_edge_repairs
+      hcard hrepair)
 
 /-- Kempe-cycle source form with the second-step obligation reduced to concrete
 cubic star repairs. -/
