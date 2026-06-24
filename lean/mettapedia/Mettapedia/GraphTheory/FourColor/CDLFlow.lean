@@ -267,6 +267,49 @@ theorem cdlOneStepMoveOn_apply_mem_eq_zero_of_eq_color
     cdlOneStepMoveOn G C g x e = 0 := by
   rw [cdlOneStepMoveOn_apply_mem he, hx, color_add_self]
 
+theorem isCDLGoodAtVertex_cdlOneStepMoveOn_iff
+    {G : SimpleGraph V} [Fintype G.edgeSet]
+    {C : Finset G.edgeSet} {g : Color} {x : G.edgeSet → Color} {v : V} :
+    IsCDLGoodAtVertex G (cdlOneStepMoveOn G C g x) v ↔
+      ∃ e ∈ incidentEdgeFinset G v, if e ∈ C then x e ≠ g else x e ≠ 0 := by
+  constructor
+  · rintro ⟨e, heinc, hne⟩
+    refine ⟨e, heinc, ?_⟩
+    by_cases heC : e ∈ C
+    · simp [heC]
+      intro hx
+      exact hne (cdlOneStepMoveOn_apply_mem_eq_zero_of_eq_color heC hx)
+    · simp [heC]
+      intro hx
+      exact hne (by rw [cdlOneStepMoveOn_apply_not_mem heC, hx])
+  · rintro ⟨e, heinc, hwitness⟩
+    refine ⟨e, heinc, ?_⟩
+    by_cases heC : e ∈ C
+    · have hx : x e ≠ g := by simpa [heC] using hwitness
+      intro hzero
+      exact hx ((cdlOneStepMoveOn_apply_mem_eq_zero_iff heC).mp hzero)
+    · have hx : x e ≠ 0 := by simpa [heC] using hwitness
+      intro hzero
+      exact hx ((cdlOneStepMoveOn_apply_not_mem_eq_zero_iff heC).mp hzero)
+
+theorem isCDLGoodAtVertex_cdlOneStepMoveOn_of_outside_witness
+    {G : SimpleGraph V} [Fintype G.edgeSet]
+    {C : Finset G.edgeSet} {g : Color} {x : G.edgeSet → Color} {v : V}
+    (h : ∃ e ∈ incidentEdgeFinset G v, e ∉ C ∧ x e ≠ 0) :
+    IsCDLGoodAtVertex G (cdlOneStepMoveOn G C g x) v := by
+  apply isCDLGoodAtVertex_cdlOneStepMoveOn_iff.mpr
+  rcases h with ⟨e, heinc, heC, hx⟩
+  exact ⟨e, heinc, by simpa [heC] using hx⟩
+
+theorem isCDLGoodAtVertex_cdlOneStepMoveOn_of_inside_witness
+    {G : SimpleGraph V} [Fintype G.edgeSet]
+    {C : Finset G.edgeSet} {g : Color} {x : G.edgeSet → Color} {v : V}
+    (h : ∃ e ∈ incidentEdgeFinset G v, e ∈ C ∧ x e ≠ g) :
+    IsCDLGoodAtVertex G (cdlOneStepMoveOn G C g x) v := by
+  apply isCDLGoodAtVertex_cdlOneStepMoveOn_iff.mpr
+  rcases h with ⟨e, heinc, heC, hx⟩
+  exact ⟨e, heinc, by simpa [heC] using hx⟩
+
 theorem vertexKirchhoffSum_cdlOneStepMoveOn_eq
     {G : SimpleGraph V} [Fintype G.edgeSet]
     (C : Finset G.edgeSet) (g : Color) (x : G.edgeSet → Color) (v : V) :
@@ -323,6 +366,30 @@ theorem isAllowedD0OneStepMoveOn_of_kirchhoffNeutral
   target_eq := rfl
   target_flow := isGraphFlow_cdlOneStepMoveOn_of_kirchhoffNeutral hx hC
   target_good := hgood
+
+theorem isAllowedD0OneStepMoveOn_of_kirchhoffNeutral_and_vertex_witnesses
+    {G : SimpleGraph V} [Fintype G.edgeSet] {C : Finset G.edgeSet}
+    {g : Color} {x : G.edgeSet → Color}
+    (hg : g ≠ 0) (hx : IsGraphFlow G x)
+    (hC : IsKirchhoffNeutralMoveSupport G C)
+    (hgood :
+      ∀ v : V, ∃ e ∈ incidentEdgeFinset G v,
+        if e ∈ C then x e ≠ g else x e ≠ 0) :
+    IsAllowedD0OneStepMoveOn G C g x (cdlOneStepMoveOn G C g x) := by
+  apply isAllowedD0OneStepMoveOn_of_kirchhoffNeutral hg hx hC
+  intro v
+  exact isCDLGoodAtVertex_cdlOneStepMoveOn_iff.mpr (hgood v)
+
+theorem isAllowedD0OneStepMoveOn_of_kirchhoffNeutral_and_outside_witnesses
+    {G : SimpleGraph V} [Fintype G.edgeSet] {C : Finset G.edgeSet}
+    {g : Color} {x : G.edgeSet → Color}
+    (hg : g ≠ 0) (hx : IsGraphFlow G x)
+    (hC : IsKirchhoffNeutralMoveSupport G C)
+    (hgood : ∀ v : V, ∃ e ∈ incidentEdgeFinset G v, e ∉ C ∧ x e ≠ 0) :
+    IsAllowedD0OneStepMoveOn G C g x (cdlOneStepMoveOn G C g x) := by
+  apply isAllowedD0OneStepMoveOn_of_kirchhoffNeutral hg hx hC
+  intro v
+  exact isCDLGoodAtVertex_cdlOneStepMoveOn_of_outside_witness (hgood v)
 
 /-- Manuscript-facing `D₀` local minimum for a finite family of permitted move
 supports.  A patch-specific file can instantiate `moveSupports` with its finite
