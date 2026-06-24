@@ -113,6 +113,35 @@ def cdlOneStepMoveOn (G : SimpleGraph V) [Fintype G.edgeSet]
     cdlOneStepMoveOn G C g x e = x e := by
   simp [cdlOneStepMoveOn, he]
 
+theorem cdlOneStepMoveOn_apply_mem_eq_zero_iff
+    {G : SimpleGraph V} [Fintype G.edgeSet]
+    {C : Finset G.edgeSet} {g : Color} {x : G.edgeSet → Color} {e : G.edgeSet}
+    (he : e ∈ C) :
+    cdlOneStepMoveOn G C g x e = 0 ↔ x e = g := by
+  rw [cdlOneStepMoveOn_apply_mem he, add_eq_zero_iff_eq]
+
+theorem cdlOneStepMoveOn_apply_not_mem_eq_zero_iff
+    {G : SimpleGraph V} [Fintype G.edgeSet]
+    {C : Finset G.edgeSet} {g : Color} {x : G.edgeSet → Color} {e : G.edgeSet}
+    (he : e ∉ C) :
+    cdlOneStepMoveOn G C g x e = 0 ↔ x e = 0 := by
+  rw [cdlOneStepMoveOn_apply_not_mem he]
+
+theorem cdlOneStepMoveOn_apply_mem_ne_zero_of_eq_zero
+    {G : SimpleGraph V} [Fintype G.edgeSet]
+    {C : Finset G.edgeSet} {g : Color} {x : G.edgeSet → Color} {e : G.edgeSet}
+    (hg : g ≠ 0) (he : e ∈ C) (hx : x e = 0) :
+    cdlOneStepMoveOn G C g x e ≠ 0 := by
+  rw [cdlOneStepMoveOn_apply_mem he, hx]
+  simpa using hg
+
+theorem cdlOneStepMoveOn_apply_mem_eq_zero_of_eq_color
+    {G : SimpleGraph V} [Fintype G.edgeSet]
+    {C : Finset G.edgeSet} {g : Color} {x : G.edgeSet → Color} {e : G.edgeSet}
+    (he : e ∈ C) (hx : x e = g) :
+    cdlOneStepMoveOn G C g x e = 0 := by
+  rw [cdlOneStepMoveOn_apply_mem he, hx, color_add_self]
+
 /-- A permitted manuscript one-step move on a selected edge support.  This
 records the target assignment, the nonzero move color, and the two semantic
 checks that are not automatic for an arbitrary support: Kirchhoff and CDL
