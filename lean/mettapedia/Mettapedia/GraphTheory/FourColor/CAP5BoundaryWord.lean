@@ -1,5 +1,7 @@
 import Mettapedia.GraphTheory.FourColor.ColorAlgebra
 
+open scoped BigOperators
+
 namespace Mettapedia.GraphTheory.FourColor
 
 /-!
@@ -32,6 +34,107 @@ def CAP5ExtendsAcrossCycleWith (w : CAP5BoundaryWord) (x : CAP5InternalCycleColo
 proper. -/
 def CAP5WordExtendsAcrossCycle (w : CAP5BoundaryWord) : Prop :=
   ∃ x : CAP5InternalCycleColoring, CAP5ExtendsAcrossCycleWith w x
+
+/-- The number of CAP5 boundary edges carrying a fixed color. -/
+def cap5BoundaryColorCount (w : CAP5BoundaryWord) (c : Color) : Nat :=
+  (Finset.univ.filter fun i : Fin 5 => w i = c).card
+
+private def cap5ColorIndicator (c d : Color) : F2 :=
+  if d = c then 1 else 0
+
+private theorem natCast_f2_eq_zero_of_even {n : Nat} (h : Even n) : (n : F2) = 0 := by
+  rcases h with ⟨k, rfl⟩
+  norm_num [two_mul]
+
+private theorem odd_of_natCast_f2_eq_one {n : Nat} (h : (n : F2) = 1) : Odd n := by
+  rcases Nat.even_or_odd n with he | ho
+  · have hzero : (n : F2) = 0 := natCast_f2_eq_zero_of_even he
+    rw [hzero] at h
+    norm_num at h
+  · exact ho
+
+private theorem color_eq_red_or_blue_or_purple {c : Color} (hc : c ≠ 0) :
+    c = red ∨ c = blue ∨ c = purple := by
+  rcases c with ⟨c₁, c₂⟩
+  fin_cases c₁ <;> fin_cases c₂
+  · exfalso
+    exact hc rfl
+  · exact Or.inr (Or.inl rfl)
+  · exact Or.inl rfl
+  · exact Or.inr (Or.inr rfl)
+
+private theorem isTaitColorTriple_color_mem {a b d c : Color}
+    (hc : c ≠ 0) (h : IsTaitColorTriple a b d) :
+    c = a ∨ c = b ∨ c = d := by
+  rcases h with ⟨ha0, hb0, hd0, hab, had, hbd⟩
+  rcases color_eq_red_or_blue_or_purple hc with rfl | rfl | rfl <;>
+    rcases color_eq_red_or_blue_or_purple ha0 with rfl | rfl | rfl <;>
+    rcases color_eq_red_or_blue_or_purple hb0 with rfl | rfl | rfl <;>
+    rcases color_eq_red_or_blue_or_purple hd0 with rfl | rfl | rfl <;>
+    simp [red_ne_blue, red_ne_purple, blue_ne_purple] at hab had hbd ⊢
+
+private theorem colorIndicator_sum_tait_triple {a b d c : Color}
+    (hc : c ≠ 0) (h : IsTaitColorTriple a b d) :
+    cap5ColorIndicator c a + cap5ColorIndicator c b + cap5ColorIndicator c d = 1 := by
+  rcases h with ⟨ha0, hb0, hd0, hab, had, hbd⟩
+  have htriple : IsTaitColorTriple a b d := ⟨ha0, hb0, hd0, hab, had, hbd⟩
+  rcases isTaitColorTriple_color_mem hc htriple with rfl | rfl | rfl
+  · simp [cap5ColorIndicator, hab.symm, had.symm]
+  · simp [cap5ColorIndicator, hab, hbd.symm]
+  · simp [cap5ColorIndicator, had, hbd]
+
+private theorem cap5BoundaryColorCount_cast_eq_sum_indicator
+    (w : CAP5BoundaryWord) (c : Color) :
+    (cap5BoundaryColorCount w c : F2) = ∑ i : Fin 5, cap5ColorIndicator c (w i) := by
+  rw [cap5BoundaryColorCount, Finset.card_filter]
+  change (Nat.castAddMonoidHom F2) (∑ i : Fin 5, if w i = c then 1 else 0) =
+    ∑ i : Fin 5, cap5ColorIndicator c (w i)
+  rw [map_sum]
+  simp [cap5ColorIndicator]
+
+private theorem sum_fin5_expand (f : Fin 5 → F2) :
+    (∑ i : Fin 5, f i) = f 0 + f 1 + f 2 + f 3 + f 4 := by
+  rw [Finset.sum_fin_eq_sum_range]
+  norm_num [Finset.sum_range_succ, Finset.sum_range_one]
+  abel_nf
+
+private theorem boundary_indicator_sum_eq_one_of_extendsWith
+    {w : CAP5BoundaryWord} {x : CAP5InternalCycleColoring} {c : Color}
+    (hc : c ≠ 0) (h : CAP5ExtendsAcrossCycleWith w x) :
+    (∑ i : Fin 5, cap5ColorIndicator c (w i)) = 1 := by
+  rcases h with ⟨hv0, hv1, hv2, hv3, hv4⟩
+  have h0 := colorIndicator_sum_tait_triple hc hv0
+  have h1 := colorIndicator_sum_tait_triple hc hv1
+  have h2 := colorIndicator_sum_tait_triple hc hv2
+  have h3 := colorIndicator_sum_tait_triple hc hv3
+  have h4 := colorIndicator_sum_tait_triple hc hv4
+  rw [sum_fin5_expand]
+  have hsum :
+      (cap5ColorIndicator c (w 0) + cap5ColorIndicator c (x 4) +
+          cap5ColorIndicator c (x 0)) +
+        (cap5ColorIndicator c (w 1) + cap5ColorIndicator c (x 0) +
+          cap5ColorIndicator c (x 1)) +
+        (cap5ColorIndicator c (w 2) + cap5ColorIndicator c (x 1) +
+          cap5ColorIndicator c (x 2)) +
+        (cap5ColorIndicator c (w 3) + cap5ColorIndicator c (x 2) +
+          cap5ColorIndicator c (x 3)) +
+        (cap5ColorIndicator c (w 4) + cap5ColorIndicator c (x 3) +
+          cap5ColorIndicator c (x 4)) = 1 := by
+    rw [h0, h1, h2, h3, h4]
+    decide
+  abel_nf at hsum ⊢
+  simpa [two_nsmul, zmod2_add_self] using hsum
+
+/-- CAP5 boundary parity: in any extendable CAP5 boundary word, every nonzero color occurs
+an odd number of times on the five boundary edges. -/
+theorem cap5BoundaryColorCount_odd_of_extendsAcrossCycle
+    {w : CAP5BoundaryWord} {c : Color}
+    (hc : c ≠ 0) (h : CAP5WordExtendsAcrossCycle w) :
+    Odd (cap5BoundaryColorCount w c) := by
+  rcases h with ⟨x, hx⟩
+  apply odd_of_natCast_f2_eq_one
+  rw [cap5BoundaryColorCount_cast_eq_sum_indicator]
+  exact boundary_indicator_sum_eq_one_of_extendsWith hc hx
 
 /-- Relabel every color in a CAP5 boundary word. -/
 def cap5MapBoundaryWord (σ : Color → Color) (w : CAP5BoundaryWord) : CAP5BoundaryWord :=
