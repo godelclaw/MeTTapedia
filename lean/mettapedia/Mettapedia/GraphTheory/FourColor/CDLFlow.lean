@@ -874,6 +874,24 @@ theorem
         hg hmin.source_flow hC hgood)
       herase hnew hI hCluster hbudget) hmin
 
+theorem exists_created_zero_of_isD0LocalMinimumForMoveSupports_of_isKempeCycle_erases_zero
+    {G : SimpleGraph V} [Fintype V] [Fintype G.edgeSet]
+    {moveSupports : Finset (Finset G.edgeSet)} {x : G.edgeSet → Color}
+    {C : Finset G.edgeSet} {g α β : Color}
+    (hmin : IsD0LocalMinimumForMoveSupports G moveSupports x)
+    (hCmem : C ∈ moveSupports) (hg : g ≠ 0)
+    (hC : IsKempeCycle (incidentEdgeFinset G) x C α β)
+    (hgood :
+      ∀ v : V, ∃ e ∈ incidentEdgeFinset G v,
+        if e ∈ C then x e ≠ g else x e ≠ 0)
+    (herase : ∃ e ∈ C, x e = 0) :
+    ∃ e ∈ C, x e = g :=
+  exists_created_zero_of_isD0LocalMinimumForMoveSupports_of_allowed_erases_zero
+    hmin hCmem
+    (isAllowedD0OneStepMoveOn_of_isKempeCycle_and_vertex_witnesses
+      hg hmin.source_flow hC hgood)
+    herase
+
 theorem zeroDefectD0_le_of_isD0LocalMinimumForMoveSupports_of_rotationDiskData_internalFace
     {G : SimpleGraph V} [Fintype V] [Fintype G.edgeSet]
     {moveSupports : Finset (Finset G.edgeSet)} {x : G.edgeSet → Color}
@@ -962,6 +980,26 @@ theorem
       (isAllowedD0OneStepMoveOn_of_rotationDiskData_internalFace_and_vertex_witnesses
         D hincident hf hg hmin.source_flow hgood)
       herase hnew hI hCluster hbudget) hmin
+
+theorem
+    exists_created_zero_of_isD0LocalMinimumForMoveSupports_of_rotationDiskData_internalFace_erases_zero
+    {G : SimpleGraph V} [Fintype V] [Fintype G.edgeSet]
+    {moveSupports : Finset (Finset G.edgeSet)} {x : G.edgeSet → Color}
+    (D : RotationDiskData V G.edgeSet)
+    (hincident : ∀ v : V, D.asZeroBoundary.incident v = incidentEdgeFinset G v)
+    {f : Finset G.edgeSet} (hf : f ∈ D.rotation.internalFaces)
+    (hfmem : f ∈ moveSupports) {g : Color} (hg : g ≠ 0)
+    (hmin : IsD0LocalMinimumForMoveSupports G moveSupports x)
+    (hgood :
+      ∀ v : V, ∃ e ∈ incidentEdgeFinset G v,
+        if e ∈ f then x e ≠ g else x e ≠ 0)
+    (herase : ∃ e ∈ f, x e = 0) :
+    ∃ e ∈ f, x e = g :=
+  exists_created_zero_of_isD0LocalMinimumForMoveSupports_of_allowed_erases_zero
+    hmin hfmem
+    (isAllowedD0OneStepMoveOn_of_rotationDiskData_internalFace_and_vertex_witnesses
+      D hincident hf hg hmin.source_flow hgood)
+    herase
 
 /-- The zero-edge set is a matching in the manuscript's local sense: no vertex
 is incident to two or more zero-valued edges. -/
