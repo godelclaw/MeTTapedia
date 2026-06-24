@@ -222,6 +222,51 @@ def CAP5EdgeSupportUsesKempeFinset
     ∀ v : V,
       Even ((EdgeKempe.edgeKempeFinset D.incident D C seed a b ∩ D.incident v).card)
 
+/-- A CAP5 support certified as an edge-Kempe component contains only the two switched colors. -/
+theorem edgeSupport_forall_inTwoColors_of_edgeSupportUsesKempeFinset
+    {V E : Type*} [Fintype E] [DecidableEq E]
+    {D : ZeroBoundaryData V E} {C : E → Color}
+    {edgeSupport : Finset E} {a b : Color}
+    (hkempe : CAP5EdgeSupportUsesKempeFinset D C edgeSupport a b) :
+    ∀ e ∈ edgeSupport, EdgeKempe.inTwoColors C a b e := by
+  rcases hkempe with ⟨seed, hsupp, _heven⟩
+  rw [hsupp]
+  exact EdgeKempe.edgeKempeFinset_forall_inTwoColors D.incident D C seed a b
+
+/-- A CAP5 support certified as an edge-Kempe component contains only interior edges. -/
+theorem edgeSupport_forall_interior_of_edgeSupportUsesKempeFinset
+    {V E : Type*} [Fintype E] [DecidableEq E]
+    {D : ZeroBoundaryData V E} {C : E → Color}
+    {edgeSupport : Finset E} {a b : Color}
+    (hkempe : CAP5EdgeSupportUsesKempeFinset D C edgeSupport a b) :
+    ∀ e ∈ edgeSupport, e ∉ D.boundaryEdges := by
+  rcases hkempe with ⟨seed, hsupp, _heven⟩
+  rw [hsupp]
+  exact EdgeKempe.edgeKempeFinset_forall_interior D.incident D C seed a b
+
+/-- A CAP5 support certified as an edge-Kempe component is disjoint from the boundary support. -/
+theorem edgeSupport_disjoint_boundaryEdges_of_edgeSupportUsesKempeFinset
+    {V E : Type*} [Fintype E] [DecidableEq E]
+    {D : ZeroBoundaryData V E} {C : E → Color}
+    {edgeSupport : Finset E} {a b : Color}
+    (hkempe : CAP5EdgeSupportUsesKempeFinset D C edgeSupport a b) :
+    Disjoint edgeSupport D.boundaryEdges := by
+  rcases hkempe with ⟨seed, hsupp, _heven⟩
+  rw [hsupp]
+  exact EdgeKempe.edgeKempeFinset_disjoint_boundaryEdges D.incident D C seed a b
+
+/-- A CAP5 support certified as an edge-Kempe component is contained in the two-color
+over-approximation for the switched colors. -/
+theorem edgeSupport_subset_overapprox_of_edgeSupportUsesKempeFinset
+    {V E : Type*} [Fintype E] [DecidableEq E]
+    {D : ZeroBoundaryData V E} {C : E → Color}
+    {edgeSupport : Finset E} {a b : Color}
+    (hkempe : CAP5EdgeSupportUsesKempeFinset D C edgeSupport a b) :
+    edgeSupport ⊆ EdgeKempe.overapprox C a b := by
+  rcases hkempe with ⟨seed, hsupp, _heven⟩
+  rw [hsupp]
+  exact EdgeKempe.edgeKempeFinset_subset_overapprox D.incident D C seed a b
+
 /-- The four edge supports in a transported CAP5 component-cover package are all realized by
 finite Kempe components with even vertex incidence. -/
 def CAP5TransportedEdgeComponentCoverDataUsesKempeFinsets
