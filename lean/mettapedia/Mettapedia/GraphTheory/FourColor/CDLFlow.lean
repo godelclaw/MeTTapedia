@@ -478,6 +478,72 @@ theorem not_isD0LocalMinimumForMoveSupports_of_allowed_descent
   intro hmin
   exact not_lt_of_ge (hmin.d0_le_of_allowed_move hC hmove) hdesc
 
+theorem zeroDefectD0_le_of_isD0LocalMinimumForMoveSupports_of_isKempeCycle
+    {G : SimpleGraph V} [Fintype V] [Fintype G.edgeSet]
+    {moveSupports : Finset (Finset G.edgeSet)} {x : G.edgeSet → Color}
+    {C : Finset G.edgeSet} {g α β : Color}
+    (hmin : IsD0LocalMinimumForMoveSupports G moveSupports x)
+    (hCmem : C ∈ moveSupports) (hg : g ≠ 0)
+    (hC : IsKempeCycle (incidentEdgeFinset G) x C α β)
+    (hgood :
+      ∀ v : V, ∃ e ∈ incidentEdgeFinset G v,
+        if e ∈ C then x e ≠ g else x e ≠ 0) :
+    zeroDefectD0 G x ≤ zeroDefectD0 G (cdlOneStepMoveOn G C g x) := by
+  exact zeroDefectD0_le_of_isD0LocalMinimumForMoveSupports hmin hCmem
+    (isAllowedD0OneStepMoveOn_of_isKempeCycle_and_vertex_witnesses
+      hg hmin.source_flow hC hgood)
+
+theorem not_isD0LocalMinimumForMoveSupports_of_isKempeCycle_descent
+    {G : SimpleGraph V} [Fintype V] [Fintype G.edgeSet]
+    {moveSupports : Finset (Finset G.edgeSet)} {x : G.edgeSet → Color}
+    {C : Finset G.edgeSet} {g α β : Color}
+    (hCmem : C ∈ moveSupports) (hg : g ≠ 0)
+    (hC : IsKempeCycle (incidentEdgeFinset G) x C α β)
+    (hgood :
+      ∀ v : V, ∃ e ∈ incidentEdgeFinset G v,
+        if e ∈ C then x e ≠ g else x e ≠ 0)
+    (hdesc : zeroDefectD0 G (cdlOneStepMoveOn G C g x) < zeroDefectD0 G x) :
+    ¬ IsD0LocalMinimumForMoveSupports G moveSupports x := by
+  intro hmin
+  exact not_lt_of_ge
+    (zeroDefectD0_le_of_isD0LocalMinimumForMoveSupports_of_isKempeCycle
+      hmin hCmem hg hC hgood)
+    hdesc
+
+theorem zeroDefectD0_le_of_isD0LocalMinimumForMoveSupports_of_rotationDiskData_internalFace
+    {G : SimpleGraph V} [Fintype V] [Fintype G.edgeSet]
+    {moveSupports : Finset (Finset G.edgeSet)} {x : G.edgeSet → Color}
+    (D : RotationDiskData V G.edgeSet)
+    (hincident : ∀ v : V, D.asZeroBoundary.incident v = incidentEdgeFinset G v)
+    {f : Finset G.edgeSet} (hf : f ∈ D.rotation.internalFaces)
+    (hfmem : f ∈ moveSupports) {g : Color} (hg : g ≠ 0)
+    (hmin : IsD0LocalMinimumForMoveSupports G moveSupports x)
+    (hgood :
+      ∀ v : V, ∃ e ∈ incidentEdgeFinset G v,
+        if e ∈ f then x e ≠ g else x e ≠ 0) :
+    zeroDefectD0 G x ≤ zeroDefectD0 G (cdlOneStepMoveOn G f g x) := by
+  exact zeroDefectD0_le_of_isD0LocalMinimumForMoveSupports hmin hfmem
+    (isAllowedD0OneStepMoveOn_of_rotationDiskData_internalFace_and_vertex_witnesses
+      D hincident hf hg hmin.source_flow hgood)
+
+theorem not_isD0LocalMinimumForMoveSupports_of_rotationDiskData_internalFace_descent
+    {G : SimpleGraph V} [Fintype V] [Fintype G.edgeSet]
+    {moveSupports : Finset (Finset G.edgeSet)} {x : G.edgeSet → Color}
+    (D : RotationDiskData V G.edgeSet)
+    (hincident : ∀ v : V, D.asZeroBoundary.incident v = incidentEdgeFinset G v)
+    {f : Finset G.edgeSet} (hf : f ∈ D.rotation.internalFaces)
+    (hfmem : f ∈ moveSupports) {g : Color} (hg : g ≠ 0)
+    (hgood :
+      ∀ v : V, ∃ e ∈ incidentEdgeFinset G v,
+        if e ∈ f then x e ≠ g else x e ≠ 0)
+    (hdesc : zeroDefectD0 G (cdlOneStepMoveOn G f g x) < zeroDefectD0 G x) :
+    ¬ IsD0LocalMinimumForMoveSupports G moveSupports x := by
+  intro hmin
+  exact not_lt_of_ge
+    (zeroDefectD0_le_of_isD0LocalMinimumForMoveSupports_of_rotationDiskData_internalFace
+      D hincident hf hfmem hg hmin hgood)
+    hdesc
+
 /-- The zero-edge set is a matching in the manuscript's local sense: no vertex
 is incident to two or more zero-valued edges. -/
 def ZeroEdgesFormMatching (G : SimpleGraph V) [Fintype G.edgeSet]
