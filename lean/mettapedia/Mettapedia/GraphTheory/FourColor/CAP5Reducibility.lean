@@ -46,6 +46,53 @@ theorem cap5BoundaryWordSolved_of_coloredBlock2111_of_repair
     CAP5BoundaryWordSolved w :=
   Or.inr hrepair
 
+/-- Transported-repair endpoint for an arbitrary normalized bad CAP5 word.  This is the
+boundary-facing version of the manuscript's "up to cyclic rotation and color relabeling" clause:
+once the graph-level proof supplies a transported repair type for the transported bad word, the
+word is solved. -/
+theorem cap5BoundaryWordSolved_of_eq_transportBad_of_transportRepair
+    {w : CAP5BoundaryWord} {σ : Color ≃ Color} {n : Nat}
+    (hσ0 : σ 0 = 0)
+    (hw : w = cap5TransportedBadBoundaryWord σ n)
+    {action : CAP5BoundaryAction}
+    (hrepair : CAP5BoundaryActionRealizesSomeTransportedRepairType action σ n) :
+    CAP5BoundaryWordSolved w := by
+  subst w
+  exact cap5BoundaryWordSolved_of_boundaryActionRepairsWord
+    (cap5_boundaryActionRepairsWord_of_boundaryActionRealizesSomeTransportedRepairType_bad
+      hσ0 hrepair)
+
+/-- Any normalized `(2,1,1,1)` CAP5 word is solved once the graph-level proof supplies a
+transported finite repair action for its particular rotation and color relabeling. -/
+theorem cap5BoundaryWordSolved_of_block2111_of_transportRepair
+    {w : CAP5BoundaryWord}
+    (hbad : CAP5BoundaryWordHasBlock2111 w)
+    (hrepair :
+      ∀ {σ : Color ≃ Color} {n : Nat},
+        σ 0 = 0 →
+        w = cap5TransportedBadBoundaryWord σ n →
+        ∃ action : CAP5BoundaryAction,
+          CAP5BoundaryActionRealizesSomeTransportedRepairType action σ n) :
+    CAP5BoundaryWordSolved w := by
+  rcases hbad with ⟨σ, n, hσ0, hw⟩
+  rcases hrepair hσ0 hw with ⟨action, haction⟩
+  exact cap5BoundaryWordSolved_of_eq_transportBad_of_transportRepair
+    hσ0 hw (action := action) haction
+
+/-- Colored block-`(2,1,1,1)` form of the transported-repair endpoint. -/
+theorem cap5BoundaryWordSolved_of_coloredBlock2111_of_transportRepair
+    {w : CAP5BoundaryWord}
+    (hbad : CAP5BoundaryWordHasColoredBlock2111 w)
+    (hrepair :
+      ∀ {σ : Color ≃ Color} {n : Nat},
+        σ 0 = 0 →
+        w = cap5TransportedBadBoundaryWord σ n →
+        ∃ action : CAP5BoundaryAction,
+          CAP5BoundaryActionRealizesSomeTransportedRepairType action σ n) :
+    CAP5BoundaryWordSolved w :=
+  cap5BoundaryWordSolved_of_block2111_of_transportRepair
+    (cap5BoundaryWordHasBlock2111_of_coloredBlock2111 hbad) hrepair
+
 /-- Boundary-layer form of the CAP5 reducibility split.  Under the parity shape
 forced by a proper cubic coloring, it is enough to repair the bad
 `(2,1,1,1)` branch; the good `(3,1,1)` branch extends immediately. -/
@@ -60,6 +107,26 @@ theorem cap5BoundaryWordSolved_of_nonzero_of_odd_of_bad_repair
       hnz hodd with hgood | hbad
   · exact cap5BoundaryWordSolved_of_coloredBlock311 hgood
   · exact cap5BoundaryWordSolved_of_coloredBlock2111_of_repair hbad (hbadRepair hbad)
+
+/-- Transport-normalized boundary-layer form of the CAP5 reducibility split.  Under the parity
+shape forced by a proper cubic coloring, the good branch extends immediately; for the bad branch,
+it is enough for the graph-level proof to provide a transported repair type for the word's
+particular cyclic/color normal form. -/
+theorem cap5BoundaryWordSolved_of_nonzero_of_odd_of_transport_bad_repair
+    {w : CAP5BoundaryWord}
+    (hnz : CAP5BoundaryWordIsNonzero w)
+    (hodd : CAP5BoundaryWordHasOddColorCounts w)
+    (hbadRepair :
+      ∀ {σ : Color ≃ Color} {n : Nat},
+        σ 0 = 0 →
+        w = cap5TransportedBadBoundaryWord σ n →
+        ∃ action : CAP5BoundaryAction,
+          CAP5BoundaryActionRealizesSomeTransportedRepairType action σ n) :
+    CAP5BoundaryWordSolved w := by
+  rcases cap5BoundaryWord_coloredBlock311_or_coloredBlock2111_of_nonzero_of_odd
+      hnz hodd with hgood | hbad
+  · exact cap5BoundaryWordSolved_of_coloredBlock311 hgood
+  · exact cap5BoundaryWordSolved_of_coloredBlock2111_of_transportRepair hbad hbadRepair
 
 /-- Canonical bad CAP5 word: active component pairings plus exclusion of the
 simultaneous exceptional pattern produce a boundary-level solution. -/
