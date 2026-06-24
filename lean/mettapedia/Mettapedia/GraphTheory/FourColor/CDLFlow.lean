@@ -81,6 +81,29 @@ theorem incidentEdgeFinset_nonempty_of_hasCubicIncidentEdgeTriples {G : SimpleGr
   rw [hincident.1]
   simp
 
+theorem hasCubicIncidentEdgeTriples_of_incidentEdgeFinset_card_eq_three
+    {G : SimpleGraph V} [Fintype G.edgeSet]
+    (hcard : ∀ v : V, (incidentEdgeFinset G v).card = 3) :
+    HasCubicIncidentEdgeTriples G := by
+  intro v
+  rcases Finset.card_eq_three.mp (hcard v) with ⟨e1, e2, e3, h12, h13, h23, hset⟩
+  exact ⟨e1, e2, e3, hset, h12, h13, h23⟩
+
+theorem incidentEdgeFinset_card_eq_three_of_hasCubicIncidentEdgeTriples
+    {G : SimpleGraph V} [Fintype G.edgeSet]
+    (hG : HasCubicIncidentEdgeTriples G) (v : V) :
+    (incidentEdgeFinset G v).card = 3 := by
+  rcases hG v with ⟨e1, e2, e3, hset, h12, h13, h23⟩
+  rw [hset]
+  simp [h12, h13, h23]
+
+theorem hasCubicIncidentEdgeTriples_iff_incidentEdgeFinset_card_eq_three
+    {G : SimpleGraph V} [Fintype G.edgeSet] :
+    HasCubicIncidentEdgeTriples G ↔ ∀ v : V, (incidentEdgeFinset G v).card = 3 := by
+  constructor
+  · exact incidentEdgeFinset_card_eq_three_of_hasCubicIncidentEdgeTriples
+  · exact hasCubicIncidentEdgeTriples_of_incidentEdgeFinset_card_eq_three
+
 theorem isLocalCDLGoodTriple_iff_not_bad {a b c : Color} :
     IsLocalCDLGoodTriple a b c ↔ ¬ IsLocalCDLBadTriple a b c := by
   constructor
@@ -334,6 +357,16 @@ theorem exists_taitEdgeColoring_iff_exists_nowhereZeroFlow_of_hasCubicIncidentEd
   · rintro ⟨x, hx⟩
     exact exists_taitEdgeColoring_of_nowhereZeroFlow_of_hasCubicIncidentEdgeTriples hG x hx
 
+/-- Tait/flow reformulation using the finite incidence-cardinality form of
+cubicity. -/
+theorem exists_taitEdgeColoring_iff_exists_nowhereZeroFlow_of_incidentEdgeFinset_card_eq_three
+    {G : SimpleGraph V} [Fintype G.edgeSet]
+    (hcard : ∀ v : V, (incidentEdgeFinset G v).card = 3) :
+    (∃ C : G.EdgeColoring Color, IsTaitEdgeColoring G C) ↔
+      ∃ x : G.edgeSet → Color, IsNowhereZeroFlow G x := by
+  exact exists_taitEdgeColoring_iff_exists_nowhereZeroFlow_of_hasCubicIncidentEdgeTriples
+    (hasCubicIncidentEdgeTriples_of_incidentEdgeFinset_card_eq_three hcard)
+
 /-- The canonical CDL-good local condition is weaker than local nowhere-zero:
 the Kirchhoff triple `(0, red, red)` is CDL-good and sums to zero, but still
 has a zero edge-value. -/
@@ -420,6 +453,17 @@ theorem
     exact ⟨C, isCDLGoodFlow_of_taitEdgeColoring_of_hasCubicIncidentEdgeTriples hG hC, hx⟩
   · rintro ⟨x, _hgood, hx⟩
     exact exists_taitEdgeColoring_of_nowhereZeroFlow_of_hasCubicIncidentEdgeTriples hG x hx
+
+/-- CDL-safe Tait/flow reformulation using finite incidence cardinality: the
+flow side includes both CDL-goodness and nowhere-zeroness. -/
+theorem
+    exists_taitEdgeColoring_iff_exists_cdlGood_nowhereZeroFlow_of_incidentEdgeFinset_card_eq_three
+    {G : SimpleGraph V} [Fintype G.edgeSet]
+    (hcard : ∀ v : V, (incidentEdgeFinset G v).card = 3) :
+    (∃ C : G.EdgeColoring Color, IsTaitEdgeColoring G C) ↔
+      ∃ x : G.edgeSet → Color, IsCDLGoodFlow G x ∧ IsNowhereZeroFlow G x := by
+  exact exists_taitEdgeColoring_iff_exists_cdlGood_nowhereZeroFlow_of_hasCubicIncidentEdgeTriples
+    (hasCubicIncidentEdgeTriples_of_incidentEdgeFinset_card_eq_three hcard)
 
 theorem zeroChain_isGraphFlow (G : SimpleGraph V) [Fintype G.edgeSet] :
     IsGraphFlow G (zeroChain : G.edgeSet → Color) := by
