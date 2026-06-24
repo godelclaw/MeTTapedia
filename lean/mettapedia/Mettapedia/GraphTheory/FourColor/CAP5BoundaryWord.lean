@@ -446,6 +446,26 @@ theorem cap5BadRedPurpleActivePairing_repair_or_exceptional
     rcases h with ⟨rfl, rfl⟩ <;>
     simp [CAP5BadRedPurpleRepairSupport, CAP5BadRedPurpleExceptionalPairing]
 
+/-- The exceptional red/blue pairing exposes no red/blue repair support. -/
+theorem not_cap5BadRedBlueRepairSupport_of_exceptionalPairing
+    {S₁ S₂ : Finset (Fin 5)}
+    (h : CAP5BadRedBlueExceptionalPairing S₁ S₂) :
+    ¬ CAP5BadRedBlueRepairSupport S₁ ∧ ¬ CAP5BadRedBlueRepairSupport S₂ := by
+  rcases h with h | h <;>
+    rcases h with ⟨rfl, rfl⟩ <;>
+    simp [CAP5BadRedBlueRepairSupport] <;>
+    decide
+
+/-- The exceptional red/purple pairing exposes no red/purple repair support. -/
+theorem not_cap5BadRedPurpleRepairSupport_of_exceptionalPairing
+    {S₁ S₂ : Finset (Fin 5)}
+    (h : CAP5BadRedPurpleExceptionalPairing S₁ S₂) :
+    ¬ CAP5BadRedPurpleRepairSupport S₁ ∧ ¬ CAP5BadRedPurpleRepairSupport S₂ := by
+  rcases h with h | h <;>
+    rcases h with ⟨rfl, rfl⟩ <;>
+    simp [CAP5BadRedPurpleRepairSupport] <;>
+    decide
+
 /-- Any red/blue support on the repair side of the CAP5 split induces one of the eight finite
 repair types on the canonical bad word. -/
 theorem cap5BoundaryActionRealizesSomeRepairType_of_redBlueRepairSupport_bad
@@ -538,6 +558,34 @@ theorem repairOrExceptional_of_activePairings
     · exact Or.inl (Or.inr (Or.inr (Or.inl hredPurple₁)))
     · exact Or.inl (Or.inr (Or.inr (Or.inr hredPurple₂)))
     · exact Or.inr ⟨hredBlueExceptional, hredPurpleExceptional⟩
+
+/-- The simultaneous exceptional active-pairing pattern has no immediate repair support. -/
+theorem not_hasRepair_of_isExceptional
+    {p : CAP5BadPairingSupports} (h : p.IsExceptional) :
+    ¬ p.HasRepair := by
+  rcases h with ⟨hredBlue, hredPurple⟩
+  obtain ⟨hredBlue₁, hredBlue₂⟩ :=
+    not_cap5BadRedBlueRepairSupport_of_exceptionalPairing hredBlue
+  obtain ⟨hredPurple₁, hredPurple₂⟩ :=
+    not_cap5BadRedPurpleRepairSupport_of_exceptionalPairing hredPurple
+  intro hrepair
+  rcases hrepair with hrepair | hrepair | hrepair | hrepair
+  · exact hredBlue₁ hrepair
+  · exact hredBlue₂ hrepair
+  · exact hredPurple₁ hrepair
+  · exact hredPurple₂ hrepair
+
+/-- Under the active-pairing hypotheses, failure to find an immediate finite repair is exactly
+the simultaneous exceptional pairing pattern. -/
+theorem isExceptional_iff_not_hasRepair_of_activePairings
+    {p : CAP5BadPairingSupports} (h : p.HasActivePairings) :
+    p.IsExceptional ↔ ¬ p.HasRepair := by
+  constructor
+  · exact not_hasRepair_of_isExceptional
+  · intro hnoRepair
+    rcases repairOrExceptional_of_activePairings h with hrepair | hexceptional
+    · exact False.elim (hnoRepair hrepair)
+    · exact hexceptional
 
 /-- If a component-support package has a repair support, then some induced boundary action repairs
 the canonical bad CAP5 word and the repaired word extends across the cap. -/
