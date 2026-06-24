@@ -2626,6 +2626,94 @@ def EveryClusteredZeroVertexHasD0Descent (G : SimpleGraph V)
   ∀ v : V, 2 ≤ zeroIncidentEdgeCount G x v →
     HasD0DescentRepairAt G moveSupports x v
 
+/-- A concrete Kempe-cycle move gives the vertex-local repair obligation used
+by the manuscript's matching-zero route, provided it erases an incident zero
+and creates no new zero on its support. -/
+theorem hasD0DescentRepairAt_of_isKempeCycle_and_vertex_witnesses
+    {G : SimpleGraph V} [Fintype V] [Fintype G.edgeSet]
+    {moveSupports : Finset (Finset G.edgeSet)} {x : G.edgeSet → Color}
+    {C : Finset G.edgeSet} {α β g : Color} {v : V}
+    (hCmem : C ∈ moveSupports) (hg : g ≠ 0) (hx : IsGraphFlow G x)
+    (hC : IsKempeCycle (incidentEdgeFinset G) x C α β)
+    (hgood :
+      ∀ v : V, ∃ e ∈ incidentEdgeFinset G v,
+        if e ∈ C then x e ≠ g else x e ≠ 0)
+    (heraseAt : ∃ e ∈ C, e ∈ incidentEdgeFinset G v ∧ x e = 0)
+    (hnew : ∀ e ∈ C, x e ≠ g) :
+    HasD0DescentRepairAt G moveSupports x v :=
+  ⟨C, hCmem, g,
+    isAllowedD0OneStepMoveOn_of_isKempeCycle_and_vertex_witnesses
+      hg hx hC hgood,
+    heraseAt, hnew⟩
+
+/-- A concrete rotation-disk internal face gives the same vertex-local repair
+obligation once it is an allowed CDL-good move and creates no new zero. -/
+theorem hasD0DescentRepairAt_of_rotationDiskData_internalFace_and_vertex_witnesses
+    {G : SimpleGraph V} [Fintype V] [Fintype G.edgeSet]
+    (D : RotationDiskData V G.edgeSet)
+    (hincident : ∀ v : V, D.asZeroBoundary.incident v = incidentEdgeFinset G v)
+    {moveSupports : Finset (Finset G.edgeSet)} {x : G.edgeSet → Color}
+    {f : Finset G.edgeSet} (hf : f ∈ D.rotation.internalFaces)
+    (hfmem : f ∈ moveSupports) {g : Color}
+    (hg : g ≠ 0) (hx : IsGraphFlow G x)
+    (hgood :
+      ∀ v : V, ∃ e ∈ incidentEdgeFinset G v,
+        if e ∈ f then x e ≠ g else x e ≠ 0)
+    {v : V} (heraseAt : ∃ e ∈ f, e ∈ incidentEdgeFinset G v ∧ x e = 0)
+    (hnew : ∀ e ∈ f, x e ≠ g) :
+    HasD0DescentRepairAt G moveSupports x v :=
+  ⟨f, hfmem, g,
+    isAllowedD0OneStepMoveOn_of_rotationDiskData_internalFace_and_vertex_witnesses
+      D hincident hf hg hx hgood,
+    heraseAt, hnew⟩
+
+/-- Kempe-cycle local data at every clustered-zero vertex is exactly enough to
+instantiate the vertex-local repair hypothesis. -/
+theorem everyClusteredZeroVertexHasD0Descent_of_kempeCycle_vertex_repairs
+    {G : SimpleGraph V} [Fintype V] [Fintype G.edgeSet]
+    {moveSupports : Finset (Finset G.edgeSet)} {x : G.edgeSet → Color}
+    (hx : IsGraphFlow G x)
+    (hrepair :
+      ∀ v : V, 2 ≤ zeroIncidentEdgeCount G x v →
+        ∃ C ∈ moveSupports, ∃ α β g : Color,
+          g ≠ 0 ∧
+            IsKempeCycle (incidentEdgeFinset G) x C α β ∧
+              (∀ w : V, ∃ e ∈ incidentEdgeFinset G w,
+                if e ∈ C then x e ≠ g else x e ≠ 0) ∧
+                (∃ e ∈ C, e ∈ incidentEdgeFinset G v ∧ x e = 0) ∧
+                  ∀ e ∈ C, x e ≠ g) :
+    EveryClusteredZeroVertexHasD0Descent G moveSupports x := by
+  intro v hv
+  rcases hrepair v hv with
+    ⟨C, hCmem, α, β, g, hg, hC, hgood, heraseAt, hnew⟩
+  exact hasD0DescentRepairAt_of_isKempeCycle_and_vertex_witnesses
+    hCmem hg hx hC hgood heraseAt hnew
+
+/-- Rotation-disk local data at every clustered-zero vertex is exactly enough
+to instantiate the vertex-local repair hypothesis. -/
+theorem everyClusteredZeroVertexHasD0Descent_of_rotationDiskData_internalFace_repairs
+    {G : SimpleGraph V} [Fintype V] [Fintype G.edgeSet]
+    (D : RotationDiskData V G.edgeSet)
+    (hincident : ∀ v : V, D.asZeroBoundary.incident v = incidentEdgeFinset G v)
+    {moveSupports : Finset (Finset G.edgeSet)} {x : G.edgeSet → Color}
+    (hx : IsGraphFlow G x)
+    (hrepair :
+      ∀ v : V, 2 ≤ zeroIncidentEdgeCount G x v →
+        ∃ f ∈ moveSupports, f ∈ D.rotation.internalFaces ∧
+          ∃ g : Color,
+            g ≠ 0 ∧
+              (∀ w : V, ∃ e ∈ incidentEdgeFinset G w,
+                if e ∈ f then x e ≠ g else x e ≠ 0) ∧
+                (∃ e ∈ f, e ∈ incidentEdgeFinset G v ∧ x e = 0) ∧
+                  ∀ e ∈ f, x e ≠ g) :
+    EveryClusteredZeroVertexHasD0Descent G moveSupports x := by
+  intro v hv
+  rcases hrepair v hv with
+    ⟨f, hfmem, hf, g, hg, hgood, heraseAt, hnew⟩
+  exact
+    hasD0DescentRepairAt_of_rotationDiskData_internalFace_and_vertex_witnesses
+      D hincident hf hfmem hg hx hgood heraseAt hnew
+
 omit [DecidableEq V] in
 theorem zeroEdgeFinset_eq_empty_iff {G : SimpleGraph V} [Fintype G.edgeSet]
     {x : G.edgeSet → Color} :
@@ -2979,6 +3067,52 @@ theorem zeroEdgesFormMatching_of_isD0LocalMinimumForMoveSupports_of_clusteredZer
   zeroEdgesFormMatching_of_isD0LocalMinimumForMoveSupports_of_nonmatching_descent
     hmin (everyNonmatchingZeroPatternHasD0Descent_of_clusteredZeroVertex_descent
       hrepair)
+
+/-- Kempe-cycle form of the matching-zero theorem: if every clustered-zero
+vertex has a concrete zero-erasing/no-new-zero Kempe repair, then every `D₀`
+local minimum has matching zero support. -/
+theorem zeroEdgesFormMatching_of_isD0LocalMinimumForMoveSupports_of_kempeCycle_vertex_repairs
+    {G : SimpleGraph V} [Fintype V] [Fintype G.edgeSet]
+    {moveSupports : Finset (Finset G.edgeSet)} {x : G.edgeSet → Color}
+    (hmin : IsD0LocalMinimumForMoveSupports G moveSupports x)
+    (hrepair :
+      ∀ v : V, 2 ≤ zeroIncidentEdgeCount G x v →
+        ∃ C ∈ moveSupports, ∃ α β g : Color,
+          g ≠ 0 ∧
+            IsKempeCycle (incidentEdgeFinset G) x C α β ∧
+              (∀ w : V, ∃ e ∈ incidentEdgeFinset G w,
+                if e ∈ C then x e ≠ g else x e ≠ 0) ∧
+                (∃ e ∈ C, e ∈ incidentEdgeFinset G v ∧ x e = 0) ∧
+                  ∀ e ∈ C, x e ≠ g) :
+    ZeroEdgesFormMatching G x :=
+  zeroEdgesFormMatching_of_isD0LocalMinimumForMoveSupports_of_clusteredZeroVertex_descent
+    hmin
+    (everyClusteredZeroVertexHasD0Descent_of_kempeCycle_vertex_repairs
+      hmin.source_flow hrepair)
+
+/-- Rotation-disk internal-face form of the matching-zero theorem.  This is the
+same repair principle phrased in the patch/face language used by the v23 route. -/
+theorem
+    zeroEdgesFormMatching_of_isD0LocalMinimumForMoveSupports_of_rotationDiskData_internalFace_repairs
+    {G : SimpleGraph V} [Fintype V] [Fintype G.edgeSet]
+    (D : RotationDiskData V G.edgeSet)
+    (hincident : ∀ v : V, D.asZeroBoundary.incident v = incidentEdgeFinset G v)
+    {moveSupports : Finset (Finset G.edgeSet)} {x : G.edgeSet → Color}
+    (hmin : IsD0LocalMinimumForMoveSupports G moveSupports x)
+    (hrepair :
+      ∀ v : V, 2 ≤ zeroIncidentEdgeCount G x v →
+        ∃ f ∈ moveSupports, f ∈ D.rotation.internalFaces ∧
+          ∃ g : Color,
+            g ≠ 0 ∧
+              (∀ w : V, ∃ e ∈ incidentEdgeFinset G w,
+                if e ∈ f then x e ≠ g else x e ≠ 0) ∧
+                (∃ e ∈ f, e ∈ incidentEdgeFinset G v ∧ x e = 0) ∧
+                  ∀ e ∈ f, x e ≠ g) :
+    ZeroEdgesFormMatching G x :=
+  zeroEdgesFormMatching_of_isD0LocalMinimumForMoveSupports_of_clusteredZeroVertex_descent
+    hmin
+    (everyClusteredZeroVertexHasD0Descent_of_rotationDiskData_internalFace_repairs
+      D hincident hmin.source_flow hrepair)
 
 /-- Vertex-count form of the abstract matching-zeros theorem. -/
 theorem zeroIncidentEdgeCount_le_one_of_isD0LocalMinimumForMoveSupports_of_nonmatching_descent
