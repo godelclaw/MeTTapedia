@@ -1,5 +1,5 @@
 import Mettapedia.GraphTheory.WalkPlanarEmbeddingWithBoundary
-import Mathlib.Combinatorics.SimpleGraph.Walks.Operations
+import Mathlib.Combinatorics.SimpleGraph.Walk.Operations
 
 namespace Mettapedia.GraphTheory
 
@@ -34,7 +34,8 @@ private theorem dartChainWalk_darts (d : G.Dart) :
     ∀ (ds : List G.Dart) (hchain : List.IsChain G.DartAdj (d :: ds)),
       (dartChainWalk d ds hchain).darts = d :: ds
   | [], _ => by
-      simp [dartChainWalk]
+      change (SimpleGraph.Walk.cons d.adj SimpleGraph.Walk.nil).darts = [d]
+      rfl
   | d' :: ds, hchain => by
       have hAdj : G.DartAdj d d' :=
         (List.isChain_cons.mp hchain).1 d' (by simp)
