@@ -525,6 +525,16 @@ def HasRepair (p : CAP5BadPairingSupports) : Prop :=
   CAP5BadRedPurpleRepairSupport p.redPurple₁ ∨
   CAP5BadRedPurpleRepairSupport p.redPurple₂
 
+/-- A boundary action is one of the four swaps carried by the component-support package.  This
+is the local finite target for an outside-only Kempe component: graph-level data should identify
+which support its boundary action uses. -/
+def BoundaryActionUsesSupport (p : CAP5BadPairingSupports)
+    (action : CAP5BoundaryAction) : Prop :=
+  action = cap5BoundarySwap red blue p.redBlue₁ ∨
+  action = cap5BoundarySwap red blue p.redBlue₂ ∨
+  action = cap5BoundarySwap red purple p.redPurple₁ ∨
+  action = cap5BoundarySwap red purple p.redPurple₂
+
 /-- The simultaneous exceptional pattern left over when no immediate repair support appears. -/
 def IsExceptional (p : CAP5BadPairingSupports) : Prop :=
   CAP5BadExceptionalPairingPattern p.redBlue₁ p.redBlue₂ p.redPurple₁ p.redPurple₂
@@ -601,6 +611,33 @@ theorem hasRepair_iff_not_isExceptional_of_activePairings
     · exact False.elim (hnotExceptional
         ((isExceptional_iff_not_hasRepair_of_activePairings h).2 hrepair))
 
+/-- Support-aware form of immediate CAP5 repair.  If one of the component supports lies on the
+repair side, then one of the four support-carried boundary swaps realizes a finite repair type
+and the resulting word extends across the cap. -/
+theorem exists_repairingBoundaryAction_usingSupport_of_hasRepair
+    {p : CAP5BadPairingSupports} (h : p.HasRepair) :
+    ∃ action : CAP5BoundaryAction,
+      p.BoundaryActionUsesSupport action ∧
+      CAP5BoundaryActionRealizesSomeRepairType action cap5BadBoundaryWord2111 ∧
+      CAP5WordExtendsAcrossCycle (action cap5BadBoundaryWord2111) := by
+  rcases h with h₁ | h₂ | h₃ | h₄
+  · refine ⟨cap5BoundarySwap red blue p.redBlue₁, ?_, ?_, ?_⟩
+    · exact Or.inl rfl
+    · exact cap5BoundaryActionRealizesSomeRepairType_of_redBlueRepairSupport_bad h₁
+    · exact cap5_extendsAcrossCycle_of_redBlueRepairSupport_bad h₁
+  · refine ⟨cap5BoundarySwap red blue p.redBlue₂, ?_, ?_, ?_⟩
+    · exact Or.inr (Or.inl rfl)
+    · exact cap5BoundaryActionRealizesSomeRepairType_of_redBlueRepairSupport_bad h₂
+    · exact cap5_extendsAcrossCycle_of_redBlueRepairSupport_bad h₂
+  · refine ⟨cap5BoundarySwap red purple p.redPurple₁, ?_, ?_, ?_⟩
+    · exact Or.inr (Or.inr (Or.inl rfl))
+    · exact cap5BoundaryActionRealizesSomeRepairType_of_redPurpleRepairSupport_bad h₃
+    · exact cap5_extendsAcrossCycle_of_redPurpleRepairSupport_bad h₃
+  · refine ⟨cap5BoundarySwap red purple p.redPurple₂, ?_, ?_, ?_⟩
+    · exact Or.inr (Or.inr (Or.inr rfl))
+    · exact cap5BoundaryActionRealizesSomeRepairType_of_redPurpleRepairSupport_bad h₄
+    · exact cap5_extendsAcrossCycle_of_redPurpleRepairSupport_bad h₄
+
 /-- If a component-support package has a repair support, then some induced boundary action repairs
 the canonical bad CAP5 word and the repaired word extends across the cap. -/
 theorem exists_repairingBoundaryAction_of_hasRepair
@@ -608,19 +645,9 @@ theorem exists_repairingBoundaryAction_of_hasRepair
     ∃ action : CAP5BoundaryAction,
       CAP5BoundaryActionRealizesSomeRepairType action cap5BadBoundaryWord2111 ∧
       CAP5WordExtendsAcrossCycle (action cap5BadBoundaryWord2111) := by
-  rcases h with h₁ | h₂ | h₃ | h₄
-  · refine ⟨cap5BoundarySwap red blue p.redBlue₁, ?_, ?_⟩
-    · exact cap5BoundaryActionRealizesSomeRepairType_of_redBlueRepairSupport_bad h₁
-    · exact cap5_extendsAcrossCycle_of_redBlueRepairSupport_bad h₁
-  · refine ⟨cap5BoundarySwap red blue p.redBlue₂, ?_, ?_⟩
-    · exact cap5BoundaryActionRealizesSomeRepairType_of_redBlueRepairSupport_bad h₂
-    · exact cap5_extendsAcrossCycle_of_redBlueRepairSupport_bad h₂
-  · refine ⟨cap5BoundarySwap red purple p.redPurple₁, ?_, ?_⟩
-    · exact cap5BoundaryActionRealizesSomeRepairType_of_redPurpleRepairSupport_bad h₃
-    · exact cap5_extendsAcrossCycle_of_redPurpleRepairSupport_bad h₃
-  · refine ⟨cap5BoundarySwap red purple p.redPurple₂, ?_, ?_⟩
-    · exact cap5BoundaryActionRealizesSomeRepairType_of_redPurpleRepairSupport_bad h₄
-    · exact cap5_extendsAcrossCycle_of_redPurpleRepairSupport_bad h₄
+  rcases exists_repairingBoundaryAction_usingSupport_of_hasRepair h with
+    ⟨action, _huses, hrealizes, hextends⟩
+  exact ⟨action, hrealizes, hextends⟩
 
 /-- Packaged outcome of the finite CAP5 move-realizability split.  The graph-level proof should
 produce `RepairOrExceptional`; this theorem turns its repair side into the concrete boundary
@@ -656,6 +683,19 @@ theorem exists_repairingBoundaryAction_of_activePairings_of_not_isExceptional
       CAP5BoundaryActionRealizesSomeRepairType action cap5BadBoundaryWord2111 ∧
       CAP5WordExtendsAcrossCycle (action cap5BadBoundaryWord2111) :=
   exists_repairingBoundaryAction_of_hasRepair
+    ((hasRepair_iff_not_isExceptional_of_activePairings hpair).2 hnotExceptional)
+
+/-- Support-aware final endpoint after the graph-level separator proof excludes the simultaneous
+exceptional pattern.  The produced repair action is one of the four swaps attached to the active
+component supports. -/
+theorem exists_repairingBoundaryAction_usingSupport_of_activePairings_of_not_isExceptional
+    {p : CAP5BadPairingSupports}
+    (hpair : p.HasActivePairings) (hnotExceptional : ¬ p.IsExceptional) :
+    ∃ action : CAP5BoundaryAction,
+      p.BoundaryActionUsesSupport action ∧
+      CAP5BoundaryActionRealizesSomeRepairType action cap5BadBoundaryWord2111 ∧
+      CAP5WordExtendsAcrossCycle (action cap5BadBoundaryWord2111) :=
+  exists_repairingBoundaryAction_usingSupport_of_hasRepair
     ((hasRepair_iff_not_isExceptional_of_activePairings hpair).2 hnotExceptional)
 
 end CAP5BadPairingSupports
