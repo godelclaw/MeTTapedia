@@ -45,6 +45,49 @@ theorem familyPairing_separates_of_singleCoordinateWitnesses
   rw [hfamily, chainDotBilinForm_single_left] at hpairZero
   exact hcdot hpairZero
 
+/-- Edge-local red/blue coordinate detector.  If a selected chain is nonzero on one edge and the
+generated family contains the red and blue single-coordinate chains on that edge, then one member
+of the family pairs nontrivially with the chain.  This is the algebraic witness shape consumed by
+the finite separator/cocycle generator: an edge-sized obstruction becomes a concrete pairing
+counterexample. -/
+theorem exists_familyPairing_ne_zero_of_redBlueSingleCoordinateWitness
+    {G : SimpleGraph V} [Fintype G.edgeSet]
+    {emb : PlaneEmbeddingWithBoundary G}
+    {colorings : Set (G.EdgeColoring Color)}
+    {κ : Type*}
+    (family : κ → projectedColoringGeneratorSubspace emb colorings)
+    (e : G.edgeSet) {z : G.edgeSet → Color}
+    (hz : z e ≠ 0)
+    (hwitnessRed :
+      ∃ i : κ,
+        ((family i : projectedColoringGeneratorSubspace emb colorings) : G.edgeSet → Color) =
+          Pi.single e red)
+    (hwitnessBlue :
+      ∃ i : κ,
+        ((family i : projectedColoringGeneratorSubspace emb colorings) : G.edgeSet → Color) =
+          Pi.single e blue) :
+    ∃ i : κ,
+      chainDotBilinForm G.edgeSet (family i : G.edgeSet → Color) z ≠ 0 := by
+  by_cases hred : colorDot red (z e) ≠ 0
+  · rcases hwitnessRed with ⟨i, hfamily⟩
+    refine ⟨i, ?_⟩
+    rw [hfamily, chainDotBilinForm_single_left]
+    exact hred
+  · have hredZero : colorDot red (z e) = 0 := by
+      by_contra h
+      exact hred h
+    have hblue : colorDot blue (z e) ≠ 0 := by
+      intro hblueZero
+      have hzRed : colorDot (z e) red = 0 := by
+        simpa [colorDot_comm] using hredZero
+      have hzBlue : colorDot (z e) blue = 0 := by
+        simpa [colorDot_comm] using hblueZero
+      exact hz (color_eq_zero_of_colorDot_red_blue hzRed hzBlue)
+    rcases hwitnessBlue with ⟨i, hfamily⟩
+    refine ⟨i, ?_⟩
+    rw [hfamily, chainDotBilinForm_single_left]
+    exact hblue
+
 /-- Red/blue basis form of the coordinatewise separation certificate.  For each controlling edge
 it is enough for the generated family to contain the red and blue single-coordinate chains there:
 one of the two has nonzero dot product with any nonzero color on that edge. -/
@@ -75,24 +118,16 @@ theorem familyPairing_separates_of_redBlueSingleCoordinateWitnesses
         chainDotBilinForm G.edgeSet (family i : G.edgeSet → Color)
           (z : G.edgeSet → Color) = 0) →
         z = 0 :=
-  familyPairing_separates_of_singleCoordinateWitnesses family controlEdges hcontrol
-    (by
-      intro e he d hd
-      by_cases hred : colorDot red d ≠ 0
-      · rcases hwitnessRed e he with ⟨i, hfamily⟩
-        exact ⟨i, red, hfamily, hred⟩
-      · have hredZero : colorDot red d = 0 := by
-          by_contra h
-          exact hred h
-        have hblue : colorDot blue d ≠ 0 := by
-          intro hblueZero
-          have hdRed : colorDot d red = 0 := by
-            simpa [colorDot_comm] using hredZero
-          have hdBlue : colorDot d blue = 0 := by
-            simpa [colorDot_comm] using hblueZero
-          exact hd (color_eq_zero_of_colorDot_red_blue hdRed hdBlue)
-        rcases hwitnessBlue e he with ⟨i, hfamily⟩
-        exact ⟨i, blue, hfamily, hblue⟩)
+by
+  intro z hzero
+  apply Subtype.ext
+  apply hcontrol z.property
+  intro e he
+  by_contra hze
+  rcases exists_familyPairing_ne_zero_of_redBlueSingleCoordinateWitness
+      family e hze (hwitnessRed e he) (hwitnessBlue e he) with
+    ⟨i, hpairNonzero⟩
+  exact hpairNonzero (hzero i)
 
 /-- Direct producer-side kernel certificate: an explicit projected-generator family has trivial
 selected-boundary-zero pairing kernel once a finite set of controlling coordinates has two
