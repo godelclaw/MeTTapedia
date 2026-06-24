@@ -1,5 +1,7 @@
 import Mettapedia.GraphTheory.FourColor.CAP5BoundaryWord
 
+open scoped BigOperators
+
 namespace Mettapedia.GraphTheory.FourColor
 
 /-!
@@ -624,6 +626,24 @@ theorem cap5BoundaryWordSolved_of_nonzero_of_odd_of_transportEdgeComponentCoverD
   · exact cap5BoundaryWordSolved_of_coloredBlock2111_of_transportEdgeComponentCoverData
       hbad hcomponentCovers
 
+/-- Sum-zero form of the edge-support transported CAP5 reducibility split.  For a nonzero CAP5
+word, the zero total color sum is equivalent to the odd red/blue/purple parity shape, but this
+form matches graph-side cubic cut equations more directly. -/
+theorem cap5BoundaryWordSolved_of_nonzero_of_sum_zero_of_transportEdgeComponentCoverData
+    {E : Type*} [DecidableEq E] {boundaryEdge : Fin 5 → E}
+    {w : CAP5BoundaryWord}
+    (hnz : CAP5BoundaryWordIsNonzero w)
+    (hsum : (∑ i : Fin 5, w i) = 0)
+    (hcomponentCovers :
+      ∀ {σ : Color ≃ Color} {n : Nat},
+        σ 0 = 0 →
+        w = cap5TransportedBadBoundaryWord σ n →
+        CAP5TransportedEdgeComponentCoverData boundaryEdge n) :
+    CAP5BoundaryWordSolved w :=
+  cap5BoundaryWordSolved_of_nonzero_of_odd_of_transportEdgeComponentCoverData
+    hnz (cap5BoundaryWordHasOddColorCounts_of_nonzero_of_sum_eq_zero hnz hsum)
+    hcomponentCovers
+
 /-- Edge-coloring boundary restriction form of the structured CAP5 reducibility split.  This is
 the graph-facing spelling: given an edge coloring `C`, solve the CAP5 boundary word obtained by
 restricting `C` to the five boundary edges. -/
@@ -639,6 +659,22 @@ theorem cap5BoundaryWordOfEdges_solved_of_nonzero_of_odd_of_transportEdgeCompone
     CAP5BoundaryWordSolved (cap5BoundaryWordOfEdges boundaryEdge C) :=
   cap5BoundaryWordSolved_of_nonzero_of_odd_of_transportEdgeComponentCoverData
     hnz hodd hcomponentCovers
+
+/-- Edge-coloring boundary restriction form using the graph-side boundary color-sum equation.
+This is the preferred theorem target once the surrounding graph proof has established that the
+five boundary edge colors are nonzero and sum to zero in `𝔽₂²`. -/
+theorem cap5BoundaryWordOfEdges_solved_of_nonzero_of_sum_zero_of_transportEdgeComponentCoverData
+    {E : Type*} [DecidableEq E] (boundaryEdge : Fin 5 → E) (C : E → Color)
+    (hnz : CAP5BoundaryWordIsNonzero (cap5BoundaryWordOfEdges boundaryEdge C))
+    (hsum : (∑ i : Fin 5, cap5BoundaryWordOfEdges boundaryEdge C i) = 0)
+    (hcomponentCovers :
+      ∀ {σ : Color ≃ Color} {n : Nat},
+        σ 0 = 0 →
+        cap5BoundaryWordOfEdges boundaryEdge C = cap5TransportedBadBoundaryWord σ n →
+        CAP5TransportedEdgeComponentCoverData boundaryEdge n) :
+    CAP5BoundaryWordSolved (cap5BoundaryWordOfEdges boundaryEdge C) :=
+  cap5BoundaryWordSolved_of_nonzero_of_sum_zero_of_transportEdgeComponentCoverData
+    hnz hsum hcomponentCovers
 
 /-- If an edge coloring restricts to a transported bad CAP5 boundary word, structured
 edge-component-cover data supplies a boundary repair of that restricted word. -/
