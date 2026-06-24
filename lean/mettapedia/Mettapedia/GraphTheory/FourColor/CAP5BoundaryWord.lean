@@ -639,6 +639,29 @@ theorem cap5_extendsAcrossCycle_of_boundaryActionRealizesSomeTransportedRepairTy
   rcases h with ⟨τ, hτ⟩
   exact cap5_extendsAcrossCycle_of_boundaryActionInducesTransportedRepairType_bad hσ0 hτ
 
+/-- A CAP5 boundary action genuinely repairs a boundary word when the input word does not extend
+across the cap but the action's output word does. -/
+def CAP5BoundaryActionRepairsWord (action : CAP5BoundaryAction) (w : CAP5BoundaryWord) : Prop :=
+  ¬ CAP5WordExtendsAcrossCycle w ∧ CAP5WordExtendsAcrossCycle (action w)
+
+/-- A canonical finite-repair action is a genuine repair of the canonical bad CAP5 word. -/
+theorem cap5_boundaryActionRepairsWord_of_boundaryActionRealizesSomeRepairType_bad
+    {action : CAP5BoundaryAction}
+    (h : CAP5BoundaryActionRealizesSomeRepairType action cap5BadBoundaryWord2111) :
+    CAP5BoundaryActionRepairsWord action cap5BadBoundaryWord2111 :=
+  ⟨not_cap5BadBoundaryWord2111_extendsAcrossCycle,
+    cap5_extendsAcrossCycle_of_boundaryActionRealizesSomeRepairType_bad h⟩
+
+/-- A transported finite-repair action is a genuine repair of the transported canonical bad
+CAP5 word. -/
+theorem cap5_boundaryActionRepairsWord_of_boundaryActionRealizesSomeTransportedRepairType_bad
+    {action : CAP5BoundaryAction} {σ : Color ≃ Color} {n : Nat}
+    (hσ0 : σ 0 = 0)
+    (h : CAP5BoundaryActionRealizesSomeTransportedRepairType action σ n) :
+    CAP5BoundaryActionRepairsWord action (cap5TransportedBadBoundaryWord σ n) :=
+  ⟨not_cap5TransportedBadBoundaryWord_extendsAcrossCycle hσ0 n,
+    cap5_extendsAcrossCycle_of_boundaryActionRealizesSomeTransportedRepairType_bad hσ0 h⟩
+
 /-- The boundary indices carrying one of two colors in a CAP5 word. -/
 def cap5ActiveSupport (a b : Color) (w : CAP5BoundaryWord) : Finset (Fin 5) :=
   Finset.univ.filter fun i => w i = a ∨ w i = b
