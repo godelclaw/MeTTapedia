@@ -45,6 +45,55 @@ theorem familyPairing_separates_of_singleCoordinateWitnesses
   rw [hfamily, chainDotBilinForm_single_left] at hpairZero
   exact hcdot hpairZero
 
+/-- Red/blue basis form of the coordinatewise separation certificate.  For each controlling edge
+it is enough for the generated family to contain the red and blue single-coordinate chains there:
+one of the two has nonzero dot product with any nonzero color on that edge. -/
+theorem familyPairing_separates_of_redBlueSingleCoordinateWitnesses
+    {G : SimpleGraph V} [Fintype G.edgeSet]
+    {emb : PlaneEmbeddingWithBoundary G}
+    {colorings : Set (G.EdgeColoring Color)}
+    {κ : Type*}
+    (family : κ → projectedColoringGeneratorSubspace emb colorings)
+    (controlEdges : Finset G.edgeSet)
+    (hcontrol :
+      ∀ ⦃z : G.edgeSet → Color⦄,
+        z ∈ planarBoundaryZeroSubmodule emb →
+        (∀ e ∈ controlEdges, z e = 0) →
+          z = 0)
+    (hwitnessRed :
+      ∀ e ∈ controlEdges,
+        ∃ i : κ,
+          ((family i : projectedColoringGeneratorSubspace emb colorings) : G.edgeSet → Color) =
+            Pi.single e red)
+    (hwitnessBlue :
+      ∀ e ∈ controlEdges,
+        ∃ i : κ,
+          ((family i : projectedColoringGeneratorSubspace emb colorings) : G.edgeSet → Color) =
+            Pi.single e blue) :
+    ∀ z : planarBoundaryZeroSubmodule emb,
+      (∀ i,
+        chainDotBilinForm G.edgeSet (family i : G.edgeSet → Color)
+          (z : G.edgeSet → Color) = 0) →
+        z = 0 :=
+  familyPairing_separates_of_singleCoordinateWitnesses family controlEdges hcontrol
+    (by
+      intro e he d hd
+      by_cases hred : colorDot red d ≠ 0
+      · rcases hwitnessRed e he with ⟨i, hfamily⟩
+        exact ⟨i, red, hfamily, hred⟩
+      · have hredZero : colorDot red d = 0 := by
+          by_contra h
+          exact hred h
+        have hblue : colorDot blue d ≠ 0 := by
+          intro hblueZero
+          have hdRed : colorDot d red = 0 := by
+            simpa [colorDot_comm] using hredZero
+          have hdBlue : colorDot d blue = 0 := by
+            simpa [colorDot_comm] using hblueZero
+          exact hd (color_eq_zero_of_colorDot_red_blue hdRed hdBlue)
+        rcases hwitnessBlue e he with ⟨i, hfamily⟩
+        exact ⟨i, blue, hfamily, hblue⟩)
+
 /-- Direct producer-side kernel certificate: an explicit projected-generator family has trivial
 selected-boundary-zero pairing kernel once a finite set of controlling coordinates has two
 ingredients:
@@ -108,6 +157,38 @@ theorem theorem49BoundaryRootSynthesis_of_singleCoordinateFamilyPairingSeparatio
   theorem49BoundaryRootSynthesis_of_familyPairingSeparates emb C₀ colorings hsubset family
     (familyPairing_separates_of_singleCoordinateWitnesses
       family controlEdges hcontrol hwitness)
+
+/-- Synthesis route for red/blue coordinate generators.  A finite generator only has to prove that
+the red and blue single-coordinate chains on every controlling edge belong to the selected
+projected coloring family. -/
+theorem theorem49BoundaryRootSynthesis_of_redBlueSingleCoordinateFamilyPairingSeparation
+    {G : SimpleGraph V}
+    [Fintype G.edgeSet] [FiniteDimensional F2 (G.edgeSet → Color)]
+    (emb : PlaneEmbeddingWithBoundary G) (C₀ : G.EdgeColoring Color)
+    (colorings : Set (G.EdgeColoring Color))
+    (hsubset : colorings ⊆ G.EdgeKempeClosure C₀)
+    {κ : Type*}
+    (family : κ → projectedColoringGeneratorSubspace emb colorings)
+    (controlEdges : Finset G.edgeSet)
+    (hcontrol :
+      ∀ ⦃z : G.edgeSet → Color⦄,
+        z ∈ planarBoundaryZeroSubmodule emb →
+        (∀ e ∈ controlEdges, z e = 0) →
+          z = 0)
+    (hwitnessRed :
+      ∀ e ∈ controlEdges,
+        ∃ i : κ,
+          ((family i : projectedColoringGeneratorSubspace emb colorings) : G.edgeSet → Color) =
+            Pi.single e red)
+    (hwitnessBlue :
+      ∀ e ∈ controlEdges,
+        ∃ i : κ,
+          ((family i : projectedColoringGeneratorSubspace emb colorings) : G.edgeSet → Color) =
+            Pi.single e blue) :
+    Theorem49BoundaryRootSynthesis emb C₀ :=
+  theorem49BoundaryRootSynthesis_of_familyPairingSeparates emb C₀ colorings hsubset family
+    (familyPairing_separates_of_redBlueSingleCoordinateWitnesses
+      family controlEdges hcontrol hwitnessRed hwitnessBlue)
 
 /-- Route form of the same producer-side certificate: explicit coordinate witnesses for a chosen
 family already give the full theorem-4.9 synthesis package for the base coloring. -/
