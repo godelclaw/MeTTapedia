@@ -959,6 +959,23 @@ theorem not_cap5_extendsAcrossCycle_iff_coloredBlock2111_of_nonzero_of_odd
   exact (not_cap5_extendsAcrossCycle_iff_block2111_of_block311_or_block2111 hclassBlock).trans
     cap5BoundaryWordHasColoredBlock2111_iff_block2111.symm
 
+/-- Manuscript-facing CAP5 extension consequence: every extendable CAP5 boundary word has
+the good colored `(3,1,1)` block structure. -/
+theorem cap5BoundaryWordHasColoredBlock311_of_extendsAcrossCycle
+    {w : CAP5BoundaryWord} (h : CAP5WordExtendsAcrossCycle w) :
+    CAP5BoundaryWordHasColoredBlock311 w := by
+  exact (cap5_extendsAcrossCycle_iff_coloredBlock311_of_nonzero_of_odd
+    (cap5BoundaryWordIsNonzero_of_extendsAcrossCycle h)
+    (cap5BoundaryWordHasOddColorCounts_of_extendsAcrossCycle h)).mp h
+
+/-- Manuscript-facing CAP5 obstruction consequence: an extendable CAP5 boundary word cannot
+have the bad colored `(2,1,1,1)` block structure. -/
+theorem not_cap5BoundaryWordHasColoredBlock2111_of_extendsAcrossCycle
+    {w : CAP5BoundaryWord} (h : CAP5WordExtendsAcrossCycle w) :
+    ¬ CAP5BoundaryWordHasColoredBlock2111 w := by
+  intro hbad
+  exact not_cap5_extendsAcrossCycle_of_coloredBlock2111 hbad h
+
 /-- Swap two colors, leaving the third color fixed. -/
 def cap5SwapColor (a b : Color) (c : Color) : Color :=
   if c = a then b else if c = b then a else c
