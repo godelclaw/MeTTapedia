@@ -55,4 +55,40 @@ theorem NoCyclicEdgeCutOfSizeAtMostFour.not_smallCyclicEdgeCut
     False :=
   h cut.hasCyclicEdgeCutOfSizeAtMostFour
 
+/-- A graph has cyclic edge-connectivity at least `k` when every cyclic edge cut has at least
+`k` edges. -/
+def CyclicEdgeConnectivityAtLeast (G : SimpleGraph V) (k : Nat) : Prop :=
+  ∀ cut : SmallCyclicEdgeCut G, k <= cut.edgeCut.card
+
+/-- The four-color minimal-counterexample hypothesis usually needed by the CAP5 annulus
+argument: no cyclic edge cut of size at most four. -/
+def CyclicallyFiveEdgeConnected (G : SimpleGraph V) : Prop :=
+  CyclicEdgeConnectivityAtLeast G 5
+
+theorem CyclicallyFiveEdgeConnected.noCyclicEdgeCutOfSizeAtMostFour
+    {G : SimpleGraph V} (h : CyclicallyFiveEdgeConnected G) :
+    NoCyclicEdgeCutOfSizeAtMostFour G := by
+  intro hcut
+  rcases hcut with ⟨cut, hcard⟩
+  exact Nat.not_succ_le_self 4 (le_trans (h cut) hcard)
+
+theorem NoCyclicEdgeCutOfSizeAtMostFour.cyclicallyFiveEdgeConnected
+    {G : SimpleGraph V} (h : NoCyclicEdgeCutOfSizeAtMostFour G) :
+    CyclicallyFiveEdgeConnected G := by
+  intro cut
+  by_contra hnot
+  exact h ⟨cut, Nat.lt_succ_iff.mp (lt_of_not_ge hnot)⟩
+
+theorem cyclicallyFiveEdgeConnected_iff_noCyclicEdgeCutOfSizeAtMostFour
+    {G : SimpleGraph V} :
+    CyclicallyFiveEdgeConnected G ↔ NoCyclicEdgeCutOfSizeAtMostFour G :=
+  ⟨CyclicallyFiveEdgeConnected.noCyclicEdgeCutOfSizeAtMostFour,
+    NoCyclicEdgeCutOfSizeAtMostFour.cyclicallyFiveEdgeConnected⟩
+
+theorem CyclicallyFiveEdgeConnected.not_smallCyclicEdgeCut_card_le_four
+    {G : SimpleGraph V} (h : CyclicallyFiveEdgeConnected G)
+    (cut : SmallCyclicEdgeCut G) (hcard : cut.edgeCut.card <= 4) :
+    False :=
+  h.noCyclicEdgeCutOfSizeAtMostFour ⟨cut, hcard⟩
+
 end Mettapedia.GraphTheory.FourColor
