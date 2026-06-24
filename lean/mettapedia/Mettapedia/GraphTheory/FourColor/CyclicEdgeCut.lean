@@ -11,6 +11,23 @@ This is the graph-theoretic edge-cut predicate, independent of any planar embedd
 def EdgeCrossesVertexSide (G : SimpleGraph V) (side : V → Prop) (e : G.edgeSet) : Prop :=
   ∃ u v : V, u ∈ (e : Sym2 V) ∧ v ∈ (e : Sym2 V) ∧ side u ∧ ¬ side v
 
+/-- A walk from one side of a vertex cut to the other must use a crossing edge.  This is the
+pure graph-theoretic separator lemma needed below the planar/Jordan CAP5 argument. -/
+theorem exists_edgeCrossesVertexSide_of_walk_endpoint_sides
+    {G : SimpleGraph V} (side : V → Prop) {u v : V}
+    (p : G.Walk u v) (hu : side u) (hv : ¬ side v) :
+    ∃ e : G.edgeSet, (e : Sym2 V) ∈ p.edges ∧ EdgeCrossesVertexSide G side e := by
+  induction p with
+  | nil =>
+      exact (hv hu).elim
+  | @cons u' v' w' hadj p ih =>
+      by_cases hv' : side v'
+      · rcases ih hv' hv with ⟨e, heEdges, hcross⟩
+        exact ⟨e, by simp [Walk.edges_cons, heEdges], hcross⟩
+      · let e : G.edgeSet := ⟨s(u', v'), hadj⟩
+        refine ⟨e, by simp [e], ?_⟩
+        refine ⟨u', v', by simp [e], by simp [e], hu, hv'⟩
+
 /-- Crossing a vertex-side predicate is invariant under swapping the two sides. -/
 theorem edgeCrossesVertexSide_compl (G : SimpleGraph V) (side : V → Prop) (e : G.edgeSet) :
     EdgeCrossesVertexSide G (fun v => ¬ side v) e ↔ EdgeCrossesVertexSide G side e := by
@@ -162,6 +179,18 @@ theorem CyclicEdgeCutRealization.hasCyclicEdgeCutOfSizeAtMostFour
     (hcard : edgeCut.card <= 4) :
     HasCyclicEdgeCutOfSizeAtMostFour G :=
   ⟨realization.toSmallCyclicEdgeCut hcard, hcard⟩
+
+/-- A realized cyclic cut intersects every walk joining the two sides.  The planar CAP5 layer can
+use this as the graph-facing separator property after it supplies the vertex side and crossing-edge
+equality. -/
+theorem CyclicEdgeCutRealization.exists_mem_edgeCut_of_walk_endpoint_sides
+    {G : SimpleGraph V} {edgeCut : Finset G.edgeSet}
+    (realization : CyclicEdgeCutRealization G edgeCut)
+    {u v : V} (p : G.Walk u v) (hu : realization.side u) (hv : ¬ realization.side v) :
+    ∃ e : G.edgeSet, e ∈ edgeCut ∧ (e : Sym2 V) ∈ p.edges := by
+  rcases exists_edgeCrossesVertexSide_of_walk_endpoint_sides realization.side p hu hv with
+    ⟨e, heEdges, hcross⟩
+  exact ⟨e, (realization.hcut_eq e).2 hcross, heEdges⟩
 
 /-- Obstruction hypothesis used by the CAP5 exceptional-annulus branch: there is no cyclic edge
 cut of size at most four. -/
