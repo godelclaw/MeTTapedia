@@ -266,6 +266,105 @@ theorem ker_planarBoundaryZeroFamilyPairingMap_eq_bot_of_edgePredicateWitnesses
     (familyPairing_separates_of_edgePredicateWitnesses
       family P hcontrol hwitnessRed hwitnessBlue)
 
+/-- Witness form of predicate control.  Saying that vanishing on all `P` edges forces a selected-
+boundary-zero chain to vanish is equivalent to saying that every nonzero selected-boundary-zero
+chain has a nonzero coordinate on some `P` edge.  This is the finite-generator form of the
+control obligation. -/
+theorem edgePredicateControls_iff_forall_nonzero_exists_edgePredicateWitness
+    {G : SimpleGraph V} [Fintype G.edgeSet]
+    {emb : PlaneEmbeddingWithBoundary G}
+    (P : G.edgeSet → Prop) :
+    (∀ ⦃z : G.edgeSet → Color⦄,
+      z ∈ planarBoundaryZeroSubmodule emb →
+      (∀ e : G.edgeSet, P e → z e = 0) →
+        z = 0) ↔
+    (∀ ⦃z : G.edgeSet → Color⦄,
+      z ∈ planarBoundaryZeroSubmodule emb →
+      z ≠ 0 →
+        ∃ e : G.edgeSet, P e ∧ z e ≠ 0) := by
+  constructor
+  · intro hcontrol z hzBoundary hzNonzero
+    by_contra hno
+    apply hzNonzero
+    apply hcontrol hzBoundary
+    intro e hP
+    by_contra hze
+    exact hno ⟨e, hP, hze⟩
+  · intro hwitness z hzBoundary hvanish
+    by_contra hzNonzero
+    rcases hwitness hzBoundary hzNonzero with ⟨e, hP, hze⟩
+    exact hze (hvanish e hP)
+
+/-- Predicate-indexed coordinate separation from the witness form of control.  This is the
+checker-facing route: for every nonzero selected-boundary-zero chain, emit a `P` edge where it is
+nonzero; red/blue single-coordinate witnesses on `P` edges then separate all family pairings. -/
+theorem familyPairing_separates_of_edgePredicateNonzeroWitnesses
+    {G : SimpleGraph V} [Fintype G.edgeSet]
+    {emb : PlaneEmbeddingWithBoundary G}
+    {colorings : Set (G.EdgeColoring Color)}
+    {κ : Type*}
+    (family : κ → projectedColoringGeneratorSubspace emb colorings)
+    (P : G.edgeSet → Prop)
+    (hnonzero :
+      ∀ ⦃z : G.edgeSet → Color⦄,
+        z ∈ planarBoundaryZeroSubmodule emb →
+        z ≠ 0 →
+          ∃ e : G.edgeSet, P e ∧ z e ≠ 0)
+    (hwitnessRed :
+      ∀ e : G.edgeSet, P e →
+        ∃ i : κ,
+          ((family i : projectedColoringGeneratorSubspace emb colorings) : G.edgeSet → Color) =
+            Pi.single e red)
+    (hwitnessBlue :
+      ∀ e : G.edgeSet, P e →
+        ∃ i : κ,
+          ((family i : projectedColoringGeneratorSubspace emb colorings) : G.edgeSet → Color) =
+            Pi.single e blue) :
+    ∀ z : planarBoundaryZeroSubmodule emb,
+      (∀ i,
+        chainDotBilinForm G.edgeSet (family i : G.edgeSet → Color)
+          (z : G.edgeSet → Color) = 0) →
+        z = 0 := by
+  intro z hzero
+  by_contra hzNonzeroSubtype
+  have hzNonzero : (z : G.edgeSet → Color) ≠ 0 := by
+    intro hz
+    exact hzNonzeroSubtype (Subtype.ext hz)
+  rcases hnonzero z.property hzNonzero with ⟨e, hP, hze⟩
+  rcases exists_familyPairing_ne_zero_of_redBlueSingleCoordinateWitness
+      family e hze (hwitnessRed e hP) (hwitnessBlue e hP) with
+    ⟨i, hpairNonzero⟩
+  exact hpairNonzero (hzero i)
+
+/-- Direct producer-side kernel certificate from witness-form predicate control. -/
+theorem ker_planarBoundaryZeroFamilyPairingMap_eq_bot_of_edgePredicateNonzeroWitnesses
+    {G : SimpleGraph V} [Fintype G.edgeSet]
+    {emb : PlaneEmbeddingWithBoundary G}
+    {colorings : Set (G.EdgeColoring Color)}
+    {κ : Type*}
+    (family : κ → projectedColoringGeneratorSubspace emb colorings)
+    (P : G.edgeSet → Prop)
+    (hnonzero :
+      ∀ ⦃z : G.edgeSet → Color⦄,
+        z ∈ planarBoundaryZeroSubmodule emb →
+        z ≠ 0 →
+          ∃ e : G.edgeSet, P e ∧ z e ≠ 0)
+    (hwitnessRed :
+      ∀ e : G.edgeSet, P e →
+        ∃ i : κ,
+          ((family i : projectedColoringGeneratorSubspace emb colorings) : G.edgeSet → Color) =
+            Pi.single e red)
+    (hwitnessBlue :
+      ∀ e : G.edgeSet, P e →
+        ∃ i : κ,
+          ((family i : projectedColoringGeneratorSubspace emb colorings) : G.edgeSet → Color) =
+            Pi.single e blue) :
+    LinearMap.ker (planarBoundaryZeroFamilyPairingMap family) = ⊥ :=
+  (ker_planarBoundaryZeroFamilyPairingMap_eq_bot_iff_forall_pairing_eq_zero_imp_eq_zero
+    family).2
+    (familyPairing_separates_of_edgePredicateNonzeroWitnesses
+      family P hnonzero hwitnessRed hwitnessBlue)
+
 /-- Route form through the coordinatewise separation interface: explicit single-coordinate
 witnesses for a controlling edge set already give the full theorem-4.9 synthesis package. -/
 theorem theorem49BoundaryRootSynthesis_of_singleCoordinateFamilyPairingSeparation
@@ -357,6 +456,38 @@ theorem theorem49BoundaryRootSynthesis_of_edgePredicateFamilyPairingSeparation
   theorem49BoundaryRootSynthesis_of_familyPairingSeparates emb C₀ colorings hsubset family
     (familyPairing_separates_of_edgePredicateWitnesses
       family P hcontrol hwitnessRed hwitnessBlue)
+
+/-- Synthesis route from witness-form predicate control.  This is the most direct finite-generator
+target: every nonzero selected-boundary-zero chain must expose a nonzero coordinate on an emitted
+edge. -/
+theorem theorem49BoundaryRootSynthesis_of_edgePredicateNonzeroWitnesses
+    {G : SimpleGraph V}
+    [Fintype G.edgeSet] [FiniteDimensional F2 (G.edgeSet → Color)]
+    (emb : PlaneEmbeddingWithBoundary G) (C₀ : G.EdgeColoring Color)
+    (colorings : Set (G.EdgeColoring Color))
+    (hsubset : colorings ⊆ G.EdgeKempeClosure C₀)
+    {κ : Type*}
+    (family : κ → projectedColoringGeneratorSubspace emb colorings)
+    (P : G.edgeSet → Prop)
+    (hnonzero :
+      ∀ ⦃z : G.edgeSet → Color⦄,
+        z ∈ planarBoundaryZeroSubmodule emb →
+        z ≠ 0 →
+          ∃ e : G.edgeSet, P e ∧ z e ≠ 0)
+    (hwitnessRed :
+      ∀ e : G.edgeSet, P e →
+        ∃ i : κ,
+          ((family i : projectedColoringGeneratorSubspace emb colorings) : G.edgeSet → Color) =
+            Pi.single e red)
+    (hwitnessBlue :
+      ∀ e : G.edgeSet, P e →
+        ∃ i : κ,
+          ((family i : projectedColoringGeneratorSubspace emb colorings) : G.edgeSet → Color) =
+            Pi.single e blue) :
+    Theorem49BoundaryRootSynthesis emb C₀ :=
+  theorem49BoundaryRootSynthesis_of_familyPairingSeparates emb C₀ colorings hsubset family
+    (familyPairing_separates_of_edgePredicateNonzeroWitnesses
+      family P hnonzero hwitnessRed hwitnessBlue)
 
 /-- Route form of the same producer-side certificate: explicit coordinate witnesses for a chosen
 family already give the full theorem-4.9 synthesis package for the base coloring. -/

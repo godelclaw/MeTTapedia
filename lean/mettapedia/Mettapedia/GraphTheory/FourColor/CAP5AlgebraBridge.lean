@@ -195,4 +195,111 @@ theorem theorem49BoundaryRootSynthesis_of_exceptionalAnnulusCounterexampleEdgeCo
     (data.ExceptionalAnnulusOneEdgeCounterexampleEdge p0Inside p4Inside side)
     hcontrol hwitnessRed hwitnessBlue
 
+/-- Witness-form equivalent of the CAP5 emitted-edge control obligation.  The algebraic finite
+checker can target the right-hand side: every nonzero selected-boundary-zero chain exposes a
+nonzero coordinate on some edge emitted by the exceptional-annulus counterexample generator. -/
+theorem exceptionalAnnulusCounterexampleEdgeControl_iff_forall_nonzero_exists
+    {G : SimpleGraph V} [Fintype G.edgeSet]
+    {boundaryEdge : Fin 5 → G.edgeSet} {n : Nat}
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    {emb : PlaneEmbeddingWithBoundary G}
+    (p0Inside p4Inside : Bool) (side : V → Prop) :
+    (∀ ⦃z : G.edgeSet → Color⦄,
+      z ∈ planarBoundaryZeroSubmodule emb →
+      (∀ e : G.edgeSet,
+        data.ExceptionalAnnulusOneEdgeCounterexampleEdge p0Inside p4Inside side e →
+          z e = 0) →
+        z = 0) ↔
+    (∀ ⦃z : G.edgeSet → Color⦄,
+      z ∈ planarBoundaryZeroSubmodule emb →
+      z ≠ 0 →
+        ∃ e : G.edgeSet,
+          data.ExceptionalAnnulusOneEdgeCounterexampleEdge p0Inside p4Inside side e ∧
+            z e ≠ 0) :=
+  edgePredicateControls_iff_forall_nonzero_exists_edgePredicateWitness
+    (data.ExceptionalAnnulusOneEdgeCounterexampleEdge p0Inside p4Inside side)
+
+/-- Predicate-level CAP5 algebraic route in witness form.  This avoids making the finite
+generator prove a global control statement directly: it may instead emit a counterexample edge
+where each nonzero selected-boundary-zero chain is nonzero. -/
+theorem familyPairing_separates_of_exceptionalAnnulusOneEdgeCounterexampleNonzeroWitnesses
+    {G : SimpleGraph V} [Fintype G.edgeSet]
+    {boundaryEdge : Fin 5 → G.edgeSet} {n : Nat}
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    {emb : PlaneEmbeddingWithBoundary G}
+    {colorings : Set (G.EdgeColoring Color)}
+    {κ : Type*}
+    (family : κ → projectedColoringGeneratorSubspace emb colorings)
+    (p0Inside p4Inside : Bool) (side : V → Prop)
+    (hnonzero :
+      ∀ ⦃z : G.edgeSet → Color⦄,
+        z ∈ planarBoundaryZeroSubmodule emb →
+        z ≠ 0 →
+          ∃ e : G.edgeSet,
+            data.ExceptionalAnnulusOneEdgeCounterexampleEdge p0Inside p4Inside side e ∧
+              z e ≠ 0)
+    (hwitnessRed :
+      ∀ e : G.edgeSet,
+        data.ExceptionalAnnulusOneEdgeCounterexampleEdge p0Inside p4Inside side e →
+          ∃ i : κ,
+            ((family i : projectedColoringGeneratorSubspace emb colorings) :
+                G.edgeSet → Color) =
+              Pi.single e red)
+    (hwitnessBlue :
+      ∀ e : G.edgeSet,
+        data.ExceptionalAnnulusOneEdgeCounterexampleEdge p0Inside p4Inside side e →
+          ∃ i : κ,
+            ((family i : projectedColoringGeneratorSubspace emb colorings) :
+                G.edgeSet → Color) =
+              Pi.single e blue) :
+    ∀ z : planarBoundaryZeroSubmodule emb,
+      (∀ i,
+        chainDotBilinForm G.edgeSet (family i : G.edgeSet → Color)
+          (z : G.edgeSet → Color) = 0) →
+        z = 0 :=
+  familyPairing_separates_of_edgePredicateNonzeroWitnesses family
+    (data.ExceptionalAnnulusOneEdgeCounterexampleEdge p0Inside p4Inside side)
+    hnonzero hwitnessRed hwitnessBlue
+
+/-- Theorem 4.9 synthesis route from CAP5 witness-form edge control.  The named remaining
+obligation is now local and checker-facing: every nonzero selected-boundary-zero chain must have
+a nonzero coordinate on an emitted exceptional-annulus counterexample edge. -/
+theorem theorem49BoundaryRootSynthesis_of_exceptionalAnnulusCounterexampleNonzeroWitnesses
+    {G : SimpleGraph V}
+    [Fintype G.edgeSet] [FiniteDimensional F2 (G.edgeSet → Color)]
+    {boundaryEdge : Fin 5 → G.edgeSet} {n : Nat}
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    (emb : PlaneEmbeddingWithBoundary G) (C₀ : G.EdgeColoring Color)
+    (colorings : Set (G.EdgeColoring Color))
+    (hsubset : colorings ⊆ G.EdgeKempeClosure C₀)
+    {κ : Type*}
+    (family : κ → projectedColoringGeneratorSubspace emb colorings)
+    (p0Inside p4Inside : Bool) (side : V → Prop)
+    (hnonzero :
+      ∀ ⦃z : G.edgeSet → Color⦄,
+        z ∈ planarBoundaryZeroSubmodule emb →
+        z ≠ 0 →
+          ∃ e : G.edgeSet,
+            data.ExceptionalAnnulusOneEdgeCounterexampleEdge p0Inside p4Inside side e ∧
+              z e ≠ 0)
+    (hwitnessRed :
+      ∀ e : G.edgeSet,
+        data.ExceptionalAnnulusOneEdgeCounterexampleEdge p0Inside p4Inside side e →
+          ∃ i : κ,
+            ((family i : projectedColoringGeneratorSubspace emb colorings) :
+                G.edgeSet → Color) =
+              Pi.single e red)
+    (hwitnessBlue :
+      ∀ e : G.edgeSet,
+        data.ExceptionalAnnulusOneEdgeCounterexampleEdge p0Inside p4Inside side e →
+          ∃ i : κ,
+            ((family i : projectedColoringGeneratorSubspace emb colorings) :
+                G.edgeSet → Color) =
+              Pi.single e blue) :
+    Theorem49BoundaryRootSynthesis emb C₀ :=
+  theorem49BoundaryRootSynthesis_of_edgePredicateNonzeroWitnesses
+    emb C₀ colorings hsubset family
+    (data.ExceptionalAnnulusOneEdgeCounterexampleEdge p0Inside p4Inside side)
+    hnonzero hwitnessRed hwitnessBlue
+
 end Mettapedia.GraphTheory.FourColor
