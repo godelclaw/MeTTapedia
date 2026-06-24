@@ -940,6 +940,25 @@ theorem
       he₁C, _he₂C, _he₀C, hx₁, _hx₂, _hx₀⟩
   exact (hnew e₁ he₁C) hx₁
 
+/-- At the obstructed vertex, the failed support itself contains no zero edge:
+the unique incident zero edge is outside that support.  Hence a second-step
+repair at this vertex cannot reuse the blocked first-step support as the
+zero-erasing support. -/
+theorem
+    not_exists_zero_incident_edge_on_obstruction_support_of_hasCubicD0BasicColorObstructionAt
+    {G : SimpleGraph V} [Fintype V] [Fintype G.edgeSet]
+    {C : Finset G.edgeSet} {g : Color} {x : G.edgeSet → Color} {v : V}
+    (hobst : HasCubicD0BasicColorObstructionAt G x C v g) :
+    ¬ ∃ e : G.edgeSet, e ∈ C ∧ e ∈ incidentEdgeFinset G v ∧ x e = 0 := by
+  rintro ⟨e, heC, heinc, hx0⟩
+  have hg : g ≠ 0 := hobst.1
+  have hxg : x e = g :=
+    incident_support_color_eq_of_hasCubicD0BasicColorObstructionAt
+      hobst heinc heC
+  have hg0 : g = 0 := by
+    rw [← hxg, hx0]
+  exact hg hg0
+
 /-- If a move has the cubic obstruction's forced incident-neighborhood shape,
 then applying that same support/color makes every edge at the obstructed vertex
 zero. -/
@@ -1039,6 +1058,23 @@ structure IsAllowedD0OneStepMoveOn (G : SimpleGraph V) [Fintype G.edgeSet]
   target_eq : y = cdlOneStepMoveOn G C g x
   target_flow : IsGraphFlow G y
   target_good : ∀ v : V, IsCDLGoodAtVertex G y v
+
+/-- Same-support corollary: no repair data using the original obstruction
+support can be a vertex-local `D₀` repair at the obstructed vertex, regardless
+of which move color is tried. -/
+theorem
+    not_exists_same_support_hasD0DescentRepairAt_data_of_hasCubicD0BasicColorObstructionAt
+    {G : SimpleGraph V} [Fintype V] [Fintype G.edgeSet]
+    {C : Finset G.edgeSet} {g : Color} {x : G.edgeSet → Color} {v : V}
+    (hobst : HasCubicD0BasicColorObstructionAt G x C v g) :
+    ¬ ∃ h : Color,
+      IsAllowedD0OneStepMoveOn G C h x (cdlOneStepMoveOn G C h x) ∧
+        (∃ e ∈ C, e ∈ incidentEdgeFinset G v ∧ x e = 0) ∧
+          ∀ e ∈ C, x e ≠ h := by
+  rintro ⟨_h, _hmove, heraseAt, _hnew⟩
+  exact
+    not_exists_zero_incident_edge_on_obstruction_support_of_hasCubicD0BasicColorObstructionAt
+      hobst heraseAt
 
 theorem isAllowedD0OneStepMoveOn_of_kirchhoffNeutral
     {G : SimpleGraph V} [Fintype G.edgeSet] {C : Finset G.edgeSet}
