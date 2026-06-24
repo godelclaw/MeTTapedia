@@ -103,7 +103,8 @@ def SuccessorCycleNeighborhoodCancellationShell.toClosedWalkNeighborhoodCancella
   exactShell := shell.exactShell.toClosedWalkExactShell
   colorings := shell.colorings
   subset_closure := by
-    simpa using shell.subset_closure
+    change shell.colorings ⊆ G.EdgeKempeClosure shell.exactShell.tait.coloring
+    exact shell.subset_closure
   detector := shell.detector
 
 /-- Lower the successor-cycle pairing-kernel shell to the honest closed-walk version.  The
@@ -116,7 +117,8 @@ def SuccessorCycleNeighborhoodPairingKernelShell.toClosedWalkNeighborhoodPairing
   exactShell := shell.exactShell.toClosedWalkExactShell
   colorings := shell.colorings
   subset_closure := by
-    simpa using shell.subset_closure
+    change shell.colorings ⊆ G.EdgeKempeClosure shell.exactShell.tait.coloring
+    exact shell.subset_closure
   κ := shell.κ
   family := shell.family
   pairingKernel_eq_bot := by
