@@ -525,6 +525,21 @@ theorem apply_bad_extendsAcrossCycle (τ : CAP5RepairType) :
   · exact cap5BadBoundaryWord2111_repair_red_purple_14_extendsAcrossCycle
   · exact cap5BadBoundaryWord2111_repair_red_purple_34_extendsAcrossCycle
 
+/-- Apply a canonical CAP5 repair type, then transport the repaired word by color relabeling and
+cyclic rotation.  This is the finite repair-basis counterpart of the manuscript's
+"up to cyclic rotation and permutation of color names" normalization. -/
+def transportedApply (τ : CAP5RepairType) (σ : Color → Color) (n : Nat) :
+    CAP5BoundaryWord :=
+  cap5RotateBoundaryWordN n (cap5MapBoundaryWord σ (τ.apply cap5BadBoundaryWord2111))
+
+/-- Every transported canonical CAP5 repair type yields an extendable boundary word. -/
+theorem transportedApply_extendsAcrossCycle (τ : CAP5RepairType)
+    {σ : Color ≃ Color} (hσ0 : σ 0 = 0) (n : Nat) :
+    CAP5WordExtendsAcrossCycle (τ.transportedApply σ n) := by
+  unfold transportedApply
+  exact cap5WordExtendsAcrossCycle_rotateN
+    (cap5WordExtendsAcrossCycle_map_equiv_of_map_zero hσ0 τ.apply_bad_extendsAcrossCycle)
+
 end CAP5RepairType
 
 /-- A boundary word `w'` realizes one of the finite repair actions on `w`.  Later
