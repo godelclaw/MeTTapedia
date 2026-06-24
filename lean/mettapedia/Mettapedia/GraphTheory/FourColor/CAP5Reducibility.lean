@@ -93,6 +93,66 @@ theorem cap5BoundaryWordSolved_of_coloredBlock2111_of_transportRepair
   cap5BoundaryWordSolved_of_block2111_of_transportRepair
     (cap5BoundaryWordHasBlock2111_of_coloredBlock2111 hbad) hrepair
 
+/-- Transported component-cover repair action for an arbitrary normalized bad CAP5 word.  This is
+the graph-facing boundary endpoint once the outside Kempe-component argument supplies component
+covers and excludes the simultaneous exceptional pairing pattern. -/
+theorem exists_boundaryActionRepairsWord_usingTransportedSupport_of_eq_transportBad_of_componentCovers
+    {w : CAP5BoundaryWord} {p : CAP5BadPairingSupports}
+    (hcovers : p.HasComponentCovers) (hnotExceptional : ¬ p.IsExceptional)
+    {σ : Color ≃ Color} (hσ0 : σ 0 = 0) {n : Nat}
+    (hw : w = cap5TransportedBadBoundaryWord σ n) :
+    ∃ action : CAP5BoundaryAction,
+      p.TransportedBoundaryActionUsesSupport σ n action ∧
+      CAP5BoundaryActionRealizesSomeTransportedRepairType action σ n ∧
+      CAP5BoundaryActionRepairsWord action w := by
+  subst w
+  exact
+    CAP5BadPairingSupports.exists_boundaryActionRepairsWord_usingTransportedSupport_of_componentCovers_of_not_isExceptional
+        hcovers hnotExceptional hσ0 n
+
+/-- Any normalized bad CAP5 word is solved once component-cover data supplies one of the finite
+transported support repairs and the exceptional pairing pattern is excluded. -/
+theorem cap5BoundaryWordSolved_of_eq_transportBad_of_transportComponentCovers
+    {w : CAP5BoundaryWord} {p : CAP5BadPairingSupports}
+    (hcovers : p.HasComponentCovers) (hnotExceptional : ¬ p.IsExceptional)
+    {σ : Color ≃ Color} (hσ0 : σ 0 = 0) {n : Nat}
+    (hw : w = cap5TransportedBadBoundaryWord σ n) :
+    CAP5BoundaryWordSolved w := by
+  rcases
+      exists_boundaryActionRepairsWord_usingTransportedSupport_of_eq_transportBad_of_componentCovers
+        hcovers hnotExceptional hσ0 hw with
+    ⟨_action, _huses, _hrealizes, hrepairs⟩
+  exact cap5BoundaryWordSolved_of_boundaryActionRepairsWord hrepairs
+
+/-- Block-`(2,1,1,1)` CAP5 words are solved if every cyclic/color normal form comes with
+component-cover data whose simultaneous exceptional pattern is ruled out. -/
+theorem cap5BoundaryWordSolved_of_block2111_of_transportComponentCovers
+    {w : CAP5BoundaryWord}
+    (hbad : CAP5BoundaryWordHasBlock2111 w)
+    (hcomponentCovers :
+      ∀ {σ : Color ≃ Color} {n : Nat},
+        σ 0 = 0 →
+        w = cap5TransportedBadBoundaryWord σ n →
+        ∃ p : CAP5BadPairingSupports, p.HasComponentCovers ∧ ¬ p.IsExceptional) :
+    CAP5BoundaryWordSolved w := by
+  rcases hbad with ⟨σ, n, hσ0, hw⟩
+  rcases hcomponentCovers hσ0 hw with ⟨p, hcovers, hnotExceptional⟩
+  exact cap5BoundaryWordSolved_of_eq_transportBad_of_transportComponentCovers
+    hcovers hnotExceptional hσ0 hw
+
+/-- Colored block-`(2,1,1,1)` CAP5 words reduce to transported component-cover data. -/
+theorem cap5BoundaryWordSolved_of_coloredBlock2111_of_transportComponentCovers
+    {w : CAP5BoundaryWord}
+    (hbad : CAP5BoundaryWordHasColoredBlock2111 w)
+    (hcomponentCovers :
+      ∀ {σ : Color ≃ Color} {n : Nat},
+        σ 0 = 0 →
+        w = cap5TransportedBadBoundaryWord σ n →
+        ∃ p : CAP5BadPairingSupports, p.HasComponentCovers ∧ ¬ p.IsExceptional) :
+    CAP5BoundaryWordSolved w :=
+  cap5BoundaryWordSolved_of_block2111_of_transportComponentCovers
+    (cap5BoundaryWordHasBlock2111_of_coloredBlock2111 hbad) hcomponentCovers
+
 /-- Boundary-layer form of the CAP5 reducibility split.  Under the parity shape
 forced by a proper cubic coloring, it is enough to repair the bad
 `(2,1,1,1)` branch; the good `(3,1,1)` branch extends immediately. -/
@@ -127,6 +187,26 @@ theorem cap5BoundaryWordSolved_of_nonzero_of_odd_of_transport_bad_repair
       hnz hodd with hgood | hbad
   · exact cap5BoundaryWordSolved_of_coloredBlock311 hgood
   · exact cap5BoundaryWordSolved_of_coloredBlock2111_of_transportRepair hbad hbadRepair
+
+/-- Component-cover form of the transported CAP5 reducibility split.  Under the parity shape
+forced by a proper cubic coloring, the good branch extends immediately; for the bad branch, it is
+enough for the graph-level proof to supply transported component covers and rule out the
+simultaneous exceptional pairing pattern. -/
+theorem cap5BoundaryWordSolved_of_nonzero_of_odd_of_transportComponentCovers
+    {w : CAP5BoundaryWord}
+    (hnz : CAP5BoundaryWordIsNonzero w)
+    (hodd : CAP5BoundaryWordHasOddColorCounts w)
+    (hcomponentCovers :
+      ∀ {σ : Color ≃ Color} {n : Nat},
+        σ 0 = 0 →
+        w = cap5TransportedBadBoundaryWord σ n →
+        ∃ p : CAP5BadPairingSupports, p.HasComponentCovers ∧ ¬ p.IsExceptional) :
+    CAP5BoundaryWordSolved w := by
+  rcases cap5BoundaryWord_coloredBlock311_or_coloredBlock2111_of_nonzero_of_odd
+      hnz hodd with hgood | hbad
+  · exact cap5BoundaryWordSolved_of_coloredBlock311 hgood
+  · exact cap5BoundaryWordSolved_of_coloredBlock2111_of_transportComponentCovers
+      hbad hcomponentCovers
 
 /-- Canonical bad CAP5 word: active component pairings plus exclusion of the
 simultaneous exceptional pattern produce a boundary-level solution. -/
