@@ -33,6 +33,82 @@ proper. -/
 def CAP5WordExtendsAcrossCycle (w : CAP5BoundaryWord) : Prop :=
   ∃ x : CAP5InternalCycleColoring, CAP5ExtendsAcrossCycleWith w x
 
+/-- Relabel every color in a CAP5 boundary word. -/
+def cap5MapBoundaryWord (σ : Color → Color) (w : CAP5BoundaryWord) : CAP5BoundaryWord :=
+  fun i => σ (w i)
+
+/-- Relabel every color in a CAP5 internal 5-cycle coloring. -/
+def cap5MapInternalCycleColoring (σ : Color → Color)
+    (x : CAP5InternalCycleColoring) : CAP5InternalCycleColoring :=
+  fun i => σ (x i)
+
+/-- An equivalence of color names that fixes `0` transports proper Tait triples. -/
+theorem isTaitColorTriple_map_equiv_of_map_zero {σ : Color ≃ Color}
+    (hσ0 : σ 0 = 0) {a b c : Color}
+    (h : IsTaitColorTriple a b c) :
+    IsTaitColorTriple (σ a) (σ b) (σ c) := by
+  rcases h with ⟨ha0, hb0, hc0, hab, hac, hbc⟩
+  refine ⟨?_, ?_, ?_, ?_, ?_, ?_⟩
+  · intro ha
+    have hσ : σ a = σ 0 := by simpa [hσ0] using ha
+    exact ha0 (σ.injective hσ)
+  · intro hb
+    have hσ : σ b = σ 0 := by simpa [hσ0] using hb
+    exact hb0 (σ.injective hσ)
+  · intro hc
+    have hσ : σ c = σ 0 := by simpa [hσ0] using hc
+    exact hc0 (σ.injective hσ)
+  · intro h
+    exact hab (σ.injective h)
+  · intro h
+    exact hac (σ.injective h)
+  · intro h
+    exact hbc (σ.injective h)
+
+/-- CAP5 extension by a fixed internal coloring is invariant under zero-fixing color relabeling. -/
+theorem cap5ExtendsAcrossCycleWith_map_equiv_of_map_zero {σ : Color ≃ Color}
+    (hσ0 : σ 0 = 0) {w : CAP5BoundaryWord} {x : CAP5InternalCycleColoring}
+    (h : CAP5ExtendsAcrossCycleWith w x) :
+    CAP5ExtendsAcrossCycleWith (cap5MapBoundaryWord σ w)
+      (cap5MapInternalCycleColoring σ x) := by
+  rcases h with ⟨hv0, hv1, hv2, hv3, hv4⟩
+  exact ⟨isTaitColorTriple_map_equiv_of_map_zero hσ0 hv0,
+    isTaitColorTriple_map_equiv_of_map_zero hσ0 hv1,
+    isTaitColorTriple_map_equiv_of_map_zero hσ0 hv2,
+    isTaitColorTriple_map_equiv_of_map_zero hσ0 hv3,
+    isTaitColorTriple_map_equiv_of_map_zero hσ0 hv4⟩
+
+/-- CAP5 extendability is preserved by zero-fixing color relabeling. -/
+theorem cap5WordExtendsAcrossCycle_map_equiv_of_map_zero {σ : Color ≃ Color}
+    (hσ0 : σ 0 = 0) {w : CAP5BoundaryWord}
+    (h : CAP5WordExtendsAcrossCycle w) :
+    CAP5WordExtendsAcrossCycle (cap5MapBoundaryWord σ w) := by
+  rcases h with ⟨x, hx⟩
+  exact ⟨cap5MapInternalCycleColoring σ x,
+    cap5ExtendsAcrossCycleWith_map_equiv_of_map_zero hσ0 hx⟩
+
+private theorem colorEquiv_symm_map_zero {σ : Color ≃ Color}
+    (hσ0 : σ 0 = 0) :
+    σ.symm 0 = 0 := by
+  apply σ.injective
+  simp [hσ0]
+
+/-- CAP5 extendability is unchanged by any color-name equivalence fixing `0`. -/
+theorem cap5WordExtendsAcrossCycle_map_equiv_iff_of_map_zero {σ : Color ≃ Color}
+    (hσ0 : σ 0 = 0) {w : CAP5BoundaryWord} :
+    CAP5WordExtendsAcrossCycle (cap5MapBoundaryWord σ w) ↔
+      CAP5WordExtendsAcrossCycle w := by
+  constructor
+  · intro h
+    have hsymm0 : σ.symm 0 = 0 := colorEquiv_symm_map_zero hσ0
+    have h' :=
+      cap5WordExtendsAcrossCycle_map_equiv_of_map_zero (σ := σ.symm) hsymm0 h
+    convert h' using 1
+    funext i
+    simp [cap5MapBoundaryWord]
+  · intro h
+    exact cap5WordExtendsAcrossCycle_map_equiv_of_map_zero hσ0 h
+
 /-- Normal-form good CAP5 word with block structure `(3,1,1)`. -/
 def cap5GoodBoundaryWord311 : CAP5BoundaryWord
   | 0 => red
