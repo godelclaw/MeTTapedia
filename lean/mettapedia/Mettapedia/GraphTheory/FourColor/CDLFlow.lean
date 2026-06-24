@@ -3523,6 +3523,36 @@ theorem
   exact ⟨C, w, g, hobst,
     not_hasD0DescentRepairAt_of_isD0LocalMinimumForMoveSupports hmin⟩
 
+/-- Concrete-star diagnostic form of the two-step route: a surviving clustered
+zero at a `D₀` local minimum with first-step neutral candidates exposes an
+unrepaired three-edge cubic obstruction star.  This is the local object that
+the remaining finite repair/refutation analysis must eliminate. -/
+theorem
+    exists_unrepaired_cubic_star_of_isD0LocalMinimumForMoveSupports_of_hasClusteredZeroVertex_and_neutral_candidates
+    {G : SimpleGraph V} [Fintype V] [Fintype G.edgeSet]
+    {moveSupports : Finset (Finset G.edgeSet)} {x : G.edgeSet → Color}
+    (hcard : ∀ v : V, (incidentEdgeFinset G v).card = 3)
+    (hmin : IsD0LocalMinimumForMoveSupports G moveSupports x)
+    (hcluster : HasClusteredZeroVertex G x)
+    (hcandidate : EveryClusteredZeroVertexHasNeutralD0Candidate G moveSupports x) :
+    ∃ (C : Finset G.edgeSet) (w : V) (g : Color) (e₁ e₂ e₀ : G.edgeSet),
+      e₁ ≠ e₂ ∧ e₁ ≠ e₀ ∧ e₂ ≠ e₀ ∧
+        incidentEdgeFinset G w = {e₁, e₂, e₀} ∧
+          e₁ ∈ C ∧ e₂ ∈ C ∧ e₀ ∉ C ∧
+            x e₁ = g ∧ x e₂ = g ∧ x e₀ = 0 ∧
+              ¬ HasD0DescentRepairAt G moveSupports x w := by
+  rcases
+    exists_unrepaired_hasCubicD0BasicColorObstructionAt_of_isD0LocalMinimumForMoveSupports_of_hasClusteredZeroVertex_and_neutral_candidates
+      hcard hmin hcluster hcandidate with
+    ⟨C, w, g, hobst, hnorepair⟩
+  rcases
+    exists_incidentEdgeFinset_eq_support_pair_insert_outside_zero_of_hasCubicD0BasicColorObstructionAt
+      (hcard w) hobst with
+    ⟨e₁, e₂, e₀, h12, h10, h20, hstar, he₁C, he₂C, he₀C, hx₁,
+      hx₂, hx₀⟩
+  exact ⟨C, w, g, e₁, e₂, e₀, h12, h10, h20, hstar, he₁C, he₂C,
+    he₀C, hx₁, hx₂, hx₀, hnorepair⟩
+
 /-- Numeric form of the diagnostic obstruction theorem. -/
 theorem
     exists_unrepaired_hasCubicD0BasicColorObstructionAt_of_isD0LocalMinimumForMoveSupports_of_zeroClusteringCount_pos_and_neutral_candidates
