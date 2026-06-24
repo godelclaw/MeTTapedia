@@ -538,4 +538,26 @@ theorem CyclicallyFiveEdgeConnected.not_smallCyclicEdgeCut_card_le_four
     False :=
   h.noCyclicEdgeCutOfSizeAtMostFour ⟨cut, hcard⟩
 
+/-- Counterexample form of cyclic five-edge-connectivity.  A finite set of at most four
+side-crossing edges, with cycles on both sides, cannot separate the two sides: there must be an
+opposite-side walk avoiding that edge set. -/
+theorem CyclicallyFiveEdgeConnected.exists_walk_avoiding_edgeCut_of_card_le_four_of_crosses
+    {G : SimpleGraph V} (hcyclic : CyclicallyFiveEdgeConnected G)
+    {edgeCut : Finset G.edgeSet} (side : V → Prop)
+    (hcard : edgeCut.card <= 4)
+    (hcut_crosses :
+      ∀ e : G.edgeSet, e ∈ edgeCut → EdgeCrossesVertexSide G side e)
+    (hinside_cycle : HasCycleOnSide G side)
+    (houtside_cycle : HasCycleOnSide G (fun v => ¬ side v)) :
+    ∃ u v : V, ∃ p : G.Walk u v,
+      side u ∧ ¬ side v ∧
+        ∀ e : G.edgeSet, e ∈ edgeCut → (e : Sym2 V) ∉ p.edges := by
+  classical
+  by_contra hno_counterexample
+  let realization : CyclicEdgeCutRealization G edgeCut :=
+    CyclicEdgeCutRealization.of_no_walk_avoiding_edgeCut side hcut_crosses
+      hno_counterexample hinside_cycle houtside_cycle
+  exact hcyclic.noCyclicEdgeCutOfSizeAtMostFour.not_cyclicEdgeCutRealization_card_le_four
+    realization hcard
+
 end Mettapedia.GraphTheory.FourColor
