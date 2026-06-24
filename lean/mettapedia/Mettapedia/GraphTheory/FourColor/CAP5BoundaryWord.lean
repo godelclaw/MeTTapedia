@@ -378,6 +378,33 @@ theorem cap5GoodBoundaryWord311_extendsAcrossCycle :
   simp [CAP5ExtendsAcrossCycleWith, IsTaitColorTriple, cap5GoodBoundaryWord311,
     cap5GoodInternalColoring311, red, blue, purple]
 
+/-- The canonical good CAP5 boundary word transported by color relabeling and cyclic rotation. -/
+def cap5TransportedGoodBoundaryWord (σ : Color → Color) (n : Nat) : CAP5BoundaryWord :=
+  cap5RotateBoundaryWordN n (cap5MapBoundaryWord σ cap5GoodBoundaryWord311)
+
+/-- Every zero-fixing color relabeling and cyclic rotation of the canonical good word
+extends across the CAP5 cap. -/
+theorem cap5TransportedGoodBoundaryWord_extendsAcrossCycle
+    {σ : Color ≃ Color} (hσ0 : σ 0 = 0) (n : Nat) :
+    CAP5WordExtendsAcrossCycle (cap5TransportedGoodBoundaryWord σ n) := by
+  unfold cap5TransportedGoodBoundaryWord
+  exact cap5WordExtendsAcrossCycle_rotateN
+    (cap5WordExtendsAcrossCycle_map_equiv_of_map_zero hσ0
+      cap5GoodBoundaryWord311_extendsAcrossCycle)
+
+/-- CAP5 block structure `(3,1,1)`, represented as the orbit of the canonical good word
+under cyclic rotation and zero-fixing color relabeling. -/
+def CAP5BoundaryWordHasBlock311 (w : CAP5BoundaryWord) : Prop :=
+  ∃ (σ : Color ≃ Color) (n : Nat),
+    σ 0 = 0 ∧ w = cap5TransportedGoodBoundaryWord σ n
+
+/-- Any CAP5 boundary word with normalized block structure `(3,1,1)` extends across the cap. -/
+theorem cap5_extendsAcrossCycle_of_block311
+    {w : CAP5BoundaryWord} (h : CAP5BoundaryWordHasBlock311 w) :
+    CAP5WordExtendsAcrossCycle w := by
+  rcases h with ⟨σ, n, hσ0, rfl⟩
+  exact cap5TransportedGoodBoundaryWord_extendsAcrossCycle hσ0 n
+
 /-- Normal-form bad CAP5 word with block structure `(2,1,1,1)`. -/
 def cap5BadBoundaryWord2111 : CAP5BoundaryWord
   | 0 => red
@@ -443,6 +470,20 @@ theorem not_cap5TransportedBadBoundaryWord_extendsAcrossCycle
     {σ : Color ≃ Color} (hσ0 : σ 0 = 0) (n : Nat) :
     ¬ CAP5WordExtendsAcrossCycle (cap5TransportedBadBoundaryWord σ n) :=
   not_cap5BadBoundaryWord2111_rotateN_map_equiv_extendsAcrossCycle hσ0 n
+
+/-- CAP5 block structure `(2,1,1,1)`, represented as the orbit of the canonical bad word
+under cyclic rotation and zero-fixing color relabeling. -/
+def CAP5BoundaryWordHasBlock2111 (w : CAP5BoundaryWord) : Prop :=
+  ∃ (σ : Color ≃ Color) (n : Nat),
+    σ 0 = 0 ∧ w = cap5TransportedBadBoundaryWord σ n
+
+/-- Any CAP5 boundary word with normalized block structure `(2,1,1,1)` does not extend
+across the cap. -/
+theorem not_cap5_extendsAcrossCycle_of_block2111
+    {w : CAP5BoundaryWord} (h : CAP5BoundaryWordHasBlock2111 w) :
+    ¬ CAP5WordExtendsAcrossCycle w := by
+  rcases h with ⟨σ, n, hσ0, rfl⟩
+  exact not_cap5TransportedBadBoundaryWord_extendsAcrossCycle hσ0 n
 
 /-- Swap two colors, leaving the third color fixed. -/
 def cap5SwapColor (a b : Color) (c : Color) : Color :=
