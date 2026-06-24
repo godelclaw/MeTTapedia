@@ -773,6 +773,23 @@ theorem not_isD0LocalMinimumForMoveSupports_of_allowed_erases_zero_no_new_zero_d
           (Nat.le_add_right _ _))
       (by norm_num)
 
+theorem exists_created_zero_of_isD0LocalMinimumForMoveSupports_of_allowed_erases_zero
+    {G : SimpleGraph V} [Fintype V] [Fintype G.edgeSet]
+    {moveSupports : Finset (Finset G.edgeSet)} {x : G.edgeSet → Color}
+    {C : Finset G.edgeSet} {g : Color}
+    (hmin : IsD0LocalMinimumForMoveSupports G moveSupports x)
+    (hCmem : C ∈ moveSupports)
+    (hmove : IsAllowedD0OneStepMoveOn G C g x (cdlOneStepMoveOn G C g x))
+    (herase : ∃ e ∈ C, x e = 0) :
+    ∃ e ∈ C, x e = g := by
+  by_contra hnone
+  have hnew : ∀ e ∈ C, x e ≠ g := by
+    intro e heC hxg
+    exact hnone ⟨e, heC, hxg⟩
+  exact
+    (not_isD0LocalMinimumForMoveSupports_of_allowed_erases_zero_no_new_zero_descent
+      hCmem hmove herase hnew) hmin
+
 theorem zeroDefectD0_le_of_isD0LocalMinimumForMoveSupports_of_isKempeCycle
     {G : SimpleGraph V} [Fintype V] [Fintype G.edgeSet]
     {moveSupports : Finset (Finset G.edgeSet)} {x : G.edgeSet → Color}
