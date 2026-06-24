@@ -331,6 +331,16 @@ theorem not_cap5BadBoundaryWord2111_rotateN_map_equiv_extendsAcrossCycle
   exact not_cap5BadBoundaryWord2111_extendsAcrossCycle
     ((cap5WordExtendsAcrossCycle_rotateN_map_equiv_iff_of_map_zero hσ0 n).mp h)
 
+/-- The canonical bad CAP5 boundary word transported by color relabeling and cyclic rotation. -/
+def cap5TransportedBadBoundaryWord (σ : Color → Color) (n : Nat) : CAP5BoundaryWord :=
+  cap5RotateBoundaryWordN n (cap5MapBoundaryWord σ cap5BadBoundaryWord2111)
+
+/-- Every zero-fixing color relabeling and cyclic rotation of the canonical bad word is still bad. -/
+theorem not_cap5TransportedBadBoundaryWord_extendsAcrossCycle
+    {σ : Color ≃ Color} (hσ0 : σ 0 = 0) (n : Nat) :
+    ¬ CAP5WordExtendsAcrossCycle (cap5TransportedBadBoundaryWord σ n) :=
+  not_cap5BadBoundaryWord2111_rotateN_map_equiv_extendsAcrossCycle hσ0 n
+
 /-- Swap two colors, leaving the third color fixed. -/
 def cap5SwapColor (a b : Color) (c : Color) : Color :=
   if c = a then b else if c = b then a else c
@@ -578,6 +588,19 @@ def CAP5BoundaryActionRealizesSomeRepairType
     (action : CAP5BoundaryAction) (w : CAP5BoundaryWord) : Prop :=
   ∃ τ : CAP5RepairType, CAP5BoundaryActionInducesRepairType action w τ
 
+/-- A boundary action induces a transported canonical finite repair type at a transported
+normal-form bad CAP5 word.  This is the graph-facing target for outside-only Kempe switches
+after normalizing by color relabeling and cyclic rotation. -/
+def CAP5BoundaryActionInducesTransportedRepairType
+    (action : CAP5BoundaryAction) (τ : CAP5RepairType) (σ : Color → Color) (n : Nat) : Prop :=
+  action (cap5TransportedBadBoundaryWord σ n) = τ.transportedApply σ n
+
+/-- A boundary action realizes some transported canonical finite repair type at a transported
+normal-form bad CAP5 word. -/
+def CAP5BoundaryActionRealizesSomeTransportedRepairType
+    (action : CAP5BoundaryAction) (σ : Color → Color) (n : Nat) : Prop :=
+  ∃ τ : CAP5RepairType, CAP5BoundaryActionInducesTransportedRepairType action τ σ n
+
 /-- If a boundary action induces a particular finite repair type on the canonical bad word, then
 the action's output extends across the CAP5 cap. -/
 theorem cap5_extendsAcrossCycle_of_boundaryActionInducesRepairType_bad
@@ -595,6 +618,26 @@ theorem cap5_extendsAcrossCycle_of_boundaryActionRealizesSomeRepairType_bad
     CAP5WordExtendsAcrossCycle (action cap5BadBoundaryWord2111) := by
   rcases h with ⟨τ, hτ⟩
   exact cap5_extendsAcrossCycle_of_boundaryActionInducesRepairType_bad (τ := τ) hτ
+
+/-- If a boundary action induces a transported finite repair type on a transported canonical bad
+word, then the action's output extends across the CAP5 cap. -/
+theorem cap5_extendsAcrossCycle_of_boundaryActionInducesTransportedRepairType_bad
+    {action : CAP5BoundaryAction} {τ : CAP5RepairType} {σ : Color ≃ Color} {n : Nat}
+    (hσ0 : σ 0 = 0)
+    (h : CAP5BoundaryActionInducesTransportedRepairType action τ σ n) :
+    CAP5WordExtendsAcrossCycle (action (cap5TransportedBadBoundaryWord σ n)) := by
+  rw [h]
+  exact τ.transportedApply_extendsAcrossCycle hσ0 n
+
+/-- If a boundary action realizes some transported finite repair type on a transported canonical
+bad word, then the action's output extends across the CAP5 cap. -/
+theorem cap5_extendsAcrossCycle_of_boundaryActionRealizesSomeTransportedRepairType_bad
+    {action : CAP5BoundaryAction} {σ : Color ≃ Color} {n : Nat}
+    (hσ0 : σ 0 = 0)
+    (h : CAP5BoundaryActionRealizesSomeTransportedRepairType action σ n) :
+    CAP5WordExtendsAcrossCycle (action (cap5TransportedBadBoundaryWord σ n)) := by
+  rcases h with ⟨τ, hτ⟩
+  exact cap5_extendsAcrossCycle_of_boundaryActionInducesTransportedRepairType_bad hσ0 hτ
 
 /-- The boundary indices carrying one of two colors in a CAP5 word. -/
 def cap5ActiveSupport (a b : Color) (w : CAP5BoundaryWord) : Finset (Fin 5) :=
