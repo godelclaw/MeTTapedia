@@ -3799,6 +3799,49 @@ theorem
       hx₀, _htarget, hnew⟩
   exact ⟨C', hC'mem, h, hmove, he₀C', he₀inc, he₀C, hx₀, hnew⟩
 
+/-- The pinned-edge interface already entails the stronger target-erasing
+interface: an allowed nonzero move on a support containing an edge currently
+colored zero makes that edge nonzero in the target assignment, and therefore
+the repair support differs from the failed support. -/
+theorem
+    everyCubicD0BasicColorObstructionStarHasPinnedTargetD0Descent_of_pinnedOutsideEdge_repairs
+    {G : SimpleGraph V} [Fintype V] [Fintype G.edgeSet]
+    {moveSupports : Finset (Finset G.edgeSet)} {x : G.edgeSet → Color}
+    (hrepair :
+      EveryCubicD0BasicColorObstructionStarHasPinnedOutsideEdgeD0Descent
+        G moveSupports x) :
+    EveryCubicD0BasicColorObstructionStarHasPinnedTargetD0Descent
+        G moveSupports x := by
+  intro C v g e₁ e₂ e₀ hg h12 h10 h20 hstar he₁C he₂C he₀C hx₁ hx₂ hx₀
+  rcases hrepair C v g e₁ e₂ e₀ hg h12 h10 h20 hstar he₁C he₂C
+      he₀C hx₁ hx₂ hx₀ with
+    ⟨C', hC'mem, h, hmove, he₀C', he₀inc, he₀C, hx₀, hnew⟩
+  have hsupport_ne : C' ≠ C := by
+    intro hEq
+    exact he₀C (by simpa [hEq] using he₀C')
+  have htarget_nonzero : cdlOneStepMoveOn G C' h x e₀ ≠ 0 :=
+    cdlOneStepMoveOn_apply_mem_ne_zero_of_eq_zero hmove.color_ne_zero he₀C'
+      hx₀
+  exact ⟨C', hC'mem, h, hmove, hsupport_ne, he₀C', he₀inc, he₀C, hx₀,
+    htarget_nonzero, hnew⟩
+
+/-- The pinned-edge and pinned-target formulations are equivalent.  The latter
+is more informative for downstream route statements, while the former is the
+leaner finite-search obligation. -/
+theorem
+    everyCubicD0BasicColorObstructionStarHasPinnedTargetD0Descent_iff_pinnedOutsideEdge_repairs
+    {G : SimpleGraph V} [Fintype V] [Fintype G.edgeSet]
+    {moveSupports : Finset (Finset G.edgeSet)} {x : G.edgeSet → Color} :
+    EveryCubicD0BasicColorObstructionStarHasPinnedTargetD0Descent
+        G moveSupports x ↔
+      EveryCubicD0BasicColorObstructionStarHasPinnedOutsideEdgeD0Descent
+        G moveSupports x := by
+  constructor
+  · exact
+      everyCubicD0BasicColorObstructionStarHasPinnedOutsideEdgeD0Descent_of_pinnedTarget_repairs
+  · exact
+      everyCubicD0BasicColorObstructionStarHasPinnedTargetD0Descent_of_pinnedOutsideEdge_repairs
+
 /-- To discharge the abstract second-step cubic-obstruction repair hypothesis,
 it is enough to repair every concrete three-edge obstruction star: two support
 edges of color `g` and the unique outside zero edge. -/
