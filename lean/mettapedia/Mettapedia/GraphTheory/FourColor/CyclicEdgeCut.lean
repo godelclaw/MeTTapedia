@@ -560,4 +560,24 @@ theorem CyclicallyFiveEdgeConnected.exists_walk_avoiding_edgeCut_of_card_le_four
   exact hcyclic.noCyclicEdgeCutOfSizeAtMostFour.not_cyclicEdgeCutRealization_card_le_four
     realization hcard
 
+/-- Refutation form of the same obstruction: a counterexample-free separator target of size at
+most four is incompatible with cyclic five-edge-connectivity once the listed edges cross the side
+and both sides contain cycles. -/
+theorem CyclicallyFiveEdgeConnected.false_of_no_walk_avoiding_edgeCut_of_card_le_four_of_crosses
+    {G : SimpleGraph V} (hcyclic : CyclicallyFiveEdgeConnected G)
+    {edgeCut : Finset G.edgeSet} (side : V → Prop)
+    (hcard : edgeCut.card <= 4)
+    (hcut_crosses :
+      ∀ e : G.edgeSet, e ∈ edgeCut → EdgeCrossesVertexSide G side e)
+    (hno_counterexample :
+      ¬ ∃ u v : V, ∃ p : G.Walk u v,
+        side u ∧ ¬ side v ∧
+          ∀ e : G.edgeSet, e ∈ edgeCut → (e : Sym2 V) ∉ p.edges)
+    (hinside_cycle : HasCycleOnSide G side)
+    (houtside_cycle : HasCycleOnSide G (fun v => ¬ side v)) :
+    False :=
+  hno_counterexample
+    (hcyclic.exists_walk_avoiding_edgeCut_of_card_le_four_of_crosses
+      side hcard hcut_crosses hinside_cycle houtside_cycle)
+
 end Mettapedia.GraphTheory.FourColor

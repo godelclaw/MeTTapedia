@@ -1093,6 +1093,30 @@ theorem CAP5ExceptionalAnnulusBoundaryEdgeSupportCandidate.exists_walk_avoiding_
     ((candidate.mem_edgeSupport_iff_exists_portal (boundaryEdge i)).2 ⟨i, hi, rfl⟩)
     hiEdges
 
+/-- Direct obstruction to the counterexample-free CAP5 portal separator target: in a cyclically
+five-edge-connected graph, the Sublemma-6.8 shape with crossing named portals and cycles on both
+sides cannot rule out all portal-avoiding opposite-side walks. -/
+theorem CAP5ExceptionalAnnulusBoundaryEdgeSupportCandidate.false_of_cyclicallyFiveEdgeConnected_of_portal_no_counterexample_walk
+    {V : Type*} {G : SimpleGraph V} [DecidableEq G.edgeSet]
+    {boundaryEdge : Fin 5 → G.edgeSet}
+    (candidate : CAP5ExceptionalAnnulusBoundaryEdgeSupportCandidate boundaryEdge)
+    (side : V → Prop)
+    (hcyclic : CyclicallyFiveEdgeConnected G)
+    (hportal_crosses :
+      ∀ i : Fin 5, i ∈ candidate.portalCandidate.portalSet →
+        EdgeCrossesVertexSide G side (boundaryEdge i))
+    (hno_counterexample :
+      ¬ ∃ u v : V, ∃ p : G.Walk u v,
+        side u ∧ ¬ side v ∧
+          ∀ i : Fin 5, i ∈ candidate.portalCandidate.portalSet →
+            ((boundaryEdge i : G.edgeSet) : Sym2 V) ∉ p.edges)
+    (hinside_cycle : HasCycleOnSide G side)
+    (houtside_cycle : HasCycleOnSide G (fun v => ¬ side v)) :
+    False :=
+  hno_counterexample
+    (candidate.exists_walk_avoiding_portalBoundaryEdges_of_cyclicallyFiveEdgeConnected_of_portal_crosses
+      side hcyclic hportal_crosses hinside_cycle houtside_cycle)
+
 /-- A bundled small cyclic edge cut whose support is exactly a CAP5 boundary-edge candidate gives
 the realization-data form consumed by the sharper exceptional-annulus endpoint. -/
 def CAP5ExceptionalAnnulusBoundaryEdgeSupportCandidate.cyclicEdgeCutRealizationData_of_realizesSmallCyclicEdgeCut
