@@ -192,6 +192,40 @@ theorem CyclicEdgeCutRealization.exists_mem_edgeCut_of_walk_endpoint_sides
     ⟨e, heEdges, hcross⟩
   exact ⟨e, (realization.hcut_eq e).2 hcross, heEdges⟩
 
+/-- A walk that avoids a realized cyclic cut cannot change sides.  This is the graph-facing
+form of separation that the planar/Jordan layer can use after constructing the side predicate and
+the exact cut support. -/
+theorem CyclicEdgeCutRealization.side_iff_of_forall_not_mem_edgeCut_of_walk
+    {G : SimpleGraph V} {edgeCut : Finset G.edgeSet}
+    (realization : CyclicEdgeCutRealization G edgeCut)
+    {u v : V} (p : G.Walk u v)
+    (havoid : ∀ e : G.edgeSet, e ∈ edgeCut → (e : Sym2 V) ∉ p.edges) :
+    realization.side u ↔ realization.side v := by
+  constructor
+  · intro hu
+    by_contra hv
+    rcases realization.exists_mem_edgeCut_of_walk_endpoint_sides p hu hv with
+      ⟨e, hecut, heEdges⟩
+    exact havoid e hecut heEdges
+  · intro hv
+    by_contra hu
+    rcases realization.exists_mem_edgeCut_of_walk_endpoint_sides p.reverse hv hu with
+      ⟨e, hecut, heReverseEdges⟩
+    exact havoid e hecut (by simpa [Walk.edges_reverse] using heReverseEdges)
+
+theorem SmallCyclicEdgeCut.exists_mem_edgeCut_of_walk_endpoint_sides
+    {G : SimpleGraph V} (cut : SmallCyclicEdgeCut G)
+    {u v : V} (p : G.Walk u v) (hu : cut.side u) (hv : ¬ cut.side v) :
+    ∃ e : G.edgeSet, e ∈ cut.edgeCut ∧ (e : Sym2 V) ∈ p.edges :=
+  cut.toCyclicEdgeCutRealization.exists_mem_edgeCut_of_walk_endpoint_sides p hu hv
+
+theorem SmallCyclicEdgeCut.side_iff_of_forall_not_mem_edgeCut_of_walk
+    {G : SimpleGraph V} (cut : SmallCyclicEdgeCut G)
+    {u v : V} (p : G.Walk u v)
+    (havoid : ∀ e : G.edgeSet, e ∈ cut.edgeCut → (e : Sym2 V) ∉ p.edges) :
+    cut.side u ↔ cut.side v :=
+  cut.toCyclicEdgeCutRealization.side_iff_of_forall_not_mem_edgeCut_of_walk p havoid
+
 /-- Obstruction hypothesis used by the CAP5 exceptional-annulus branch: there is no cyclic edge
 cut of size at most four. -/
 def NoCyclicEdgeCutOfSizeAtMostFour (G : SimpleGraph V) : Prop :=
@@ -207,6 +241,13 @@ theorem NoCyclicEdgeCutOfSizeAtMostFour.not_smallCyclicEdgeCut
     (cut : SmallCyclicEdgeCut G) :
     False :=
   h cut.hasCyclicEdgeCutOfSizeAtMostFour
+
+theorem NoCyclicEdgeCutOfSizeAtMostFour.not_cyclicEdgeCutRealization_card_le_four
+    {G : SimpleGraph V} (h : NoCyclicEdgeCutOfSizeAtMostFour G)
+    {edgeCut : Finset G.edgeSet} (realization : CyclicEdgeCutRealization G edgeCut)
+    (hcard : edgeCut.card <= 4) :
+    False :=
+  h (realization.hasCyclicEdgeCutOfSizeAtMostFour hcard)
 
 /-- A graph has cyclic edge-connectivity at least `k` when every cyclic edge cut has at least
 `k` edges. -/
