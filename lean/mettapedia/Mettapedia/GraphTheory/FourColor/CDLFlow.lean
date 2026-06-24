@@ -3896,6 +3896,52 @@ theorem
     (zeroEdgesFormMatching_of_isD0LocalMinimumForMoveSupports_of_kirchhoffNeutral_vertex_repairs
       hmin hrepair)
 
+/-- Two-step neutral-candidate form of the manuscript clustering identity
+`C(x)=0`. -/
+theorem
+    zeroClusteringCount_eq_zero_of_isD0LocalMinimumForMoveSupports_of_neutral_candidates_and_cubicObstruction_descent
+    {G : SimpleGraph V} [Fintype V] [Fintype G.edgeSet]
+    {moveSupports : Finset (Finset G.edgeSet)} {x : G.edgeSet → Color}
+    (hcard : ∀ v : V, (incidentEdgeFinset G v).card = 3)
+    (hmin : IsD0LocalMinimumForMoveSupports G moveSupports x)
+    (hcandidate : EveryClusteredZeroVertexHasNeutralD0Candidate G moveSupports x)
+    (hrepair : EveryCubicD0BasicColorObstructionHasD0Descent G moveSupports x) :
+    zeroClusteringCount G x = 0 :=
+  zeroClusteringCount_eq_zero_iff_zeroEdgesFormMatching.mpr
+    (zeroEdgesFormMatching_of_isD0LocalMinimumForMoveSupports_of_neutral_candidates_and_cubicObstruction_descent
+      hcard hmin hcandidate hrepair)
+
+/-- Kempe-cycle source form of the two-step clustering identity. -/
+theorem
+    zeroClusteringCount_eq_zero_of_isD0LocalMinimumForMoveSupports_of_kempe_candidates_and_cubicObstruction_descent
+    {G : SimpleGraph V} [Fintype V] [Fintype G.edgeSet]
+    {moveSupports : Finset (Finset G.edgeSet)} {x : G.edgeSet → Color}
+    (hcard : ∀ v : V, (incidentEdgeFinset G v).card = 3)
+    (hmin : IsD0LocalMinimumForMoveSupports G moveSupports x)
+    (hcandidate : EveryClusteredZeroVertexHasKempeD0Candidate G moveSupports x)
+    (hrepair : EveryCubicD0BasicColorObstructionHasD0Descent G moveSupports x) :
+    zeroClusteringCount G x = 0 :=
+  zeroClusteringCount_eq_zero_iff_zeroEdgesFormMatching.mpr
+    (zeroEdgesFormMatching_of_isD0LocalMinimumForMoveSupports_of_kempe_candidates_and_cubicObstruction_descent
+      hcard hmin hcandidate hrepair)
+
+/-- Rotation-disk source form of the two-step clustering identity. -/
+theorem
+    zeroClusteringCount_eq_zero_of_isD0LocalMinimumForMoveSupports_of_rotationDisk_candidates_and_cubicObstruction_descent
+    {G : SimpleGraph V} [Fintype V] [Fintype G.edgeSet]
+    (D : RotationDiskData V G.edgeSet)
+    (hincident : ∀ v : V, D.asZeroBoundary.incident v = incidentEdgeFinset G v)
+    {moveSupports : Finset (Finset G.edgeSet)} {x : G.edgeSet → Color}
+    (hcard : ∀ v : V, (incidentEdgeFinset G v).card = 3)
+    (hmin : IsD0LocalMinimumForMoveSupports G moveSupports x)
+    (hcandidate :
+      EveryClusteredZeroVertexHasRotationDiskD0Candidate G D moveSupports x)
+    (hrepair : EveryCubicD0BasicColorObstructionHasD0Descent G moveSupports x) :
+    zeroClusteringCount G x = 0 :=
+  zeroClusteringCount_eq_zero_iff_zeroEdgesFormMatching.mpr
+    (zeroEdgesFormMatching_of_isD0LocalMinimumForMoveSupports_of_rotationDisk_candidates_and_cubicObstruction_descent
+      D hincident hcard hmin hcandidate hrepair)
+
 /-- If no vertex is touched by a zero edge, then the zero-clustering defect is
 zero. -/
 theorem zeroClusteringCount_eq_zero_of_zeroIncidentVertexCount_eq_zero
@@ -4280,6 +4326,52 @@ theorem
     (zeroEdgesFormMatching_of_isD0LocalMinimumForMoveSupports_of_kirchhoffNeutral_vertex_repairs
       hmin hrepair)
 
+/-- Two-step neutral-candidate form of the manuscript count identity
+`I(x)=2Z(x)`. -/
+theorem
+    zeroIncidentVertexCount_eq_two_mul_zeroEdgeCount_of_isD0LocalMinimumForMoveSupports_of_neutral_candidates_and_cubicObstruction_descent
+    {G : SimpleGraph V} [Fintype V] [Fintype G.edgeSet]
+    {moveSupports : Finset (Finset G.edgeSet)} {x : G.edgeSet → Color}
+    (hcard : ∀ v : V, (incidentEdgeFinset G v).card = 3)
+    (hmin : IsD0LocalMinimumForMoveSupports G moveSupports x)
+    (hcandidate : EveryClusteredZeroVertexHasNeutralD0Candidate G moveSupports x)
+    (hrepair : EveryCubicD0BasicColorObstructionHasD0Descent G moveSupports x) :
+    zeroIncidentVertexCount G x = 2 * zeroEdgeCount G x :=
+  zeroIncidentVertexCount_eq_two_mul_zeroEdgeCount_of_zeroEdgesFormMatching
+    (zeroEdgesFormMatching_of_isD0LocalMinimumForMoveSupports_of_neutral_candidates_and_cubicObstruction_descent
+      hcard hmin hcandidate hrepair)
+
+/-- Kempe-cycle source form of the two-step count identity `I(x)=2Z(x)`. -/
+theorem
+    zeroIncidentVertexCount_eq_two_mul_zeroEdgeCount_of_isD0LocalMinimumForMoveSupports_of_kempe_candidates_and_cubicObstruction_descent
+    {G : SimpleGraph V} [Fintype V] [Fintype G.edgeSet]
+    {moveSupports : Finset (Finset G.edgeSet)} {x : G.edgeSet → Color}
+    (hcard : ∀ v : V, (incidentEdgeFinset G v).card = 3)
+    (hmin : IsD0LocalMinimumForMoveSupports G moveSupports x)
+    (hcandidate : EveryClusteredZeroVertexHasKempeD0Candidate G moveSupports x)
+    (hrepair : EveryCubicD0BasicColorObstructionHasD0Descent G moveSupports x) :
+    zeroIncidentVertexCount G x = 2 * zeroEdgeCount G x :=
+  zeroIncidentVertexCount_eq_two_mul_zeroEdgeCount_of_zeroEdgesFormMatching
+    (zeroEdgesFormMatching_of_isD0LocalMinimumForMoveSupports_of_kempe_candidates_and_cubicObstruction_descent
+      hcard hmin hcandidate hrepair)
+
+/-- Rotation-disk source form of the two-step count identity `I(x)=2Z(x)`. -/
+theorem
+    zeroIncidentVertexCount_eq_two_mul_zeroEdgeCount_of_isD0LocalMinimumForMoveSupports_of_rotationDisk_candidates_and_cubicObstruction_descent
+    {G : SimpleGraph V} [Fintype V] [Fintype G.edgeSet]
+    (D : RotationDiskData V G.edgeSet)
+    (hincident : ∀ v : V, D.asZeroBoundary.incident v = incidentEdgeFinset G v)
+    {moveSupports : Finset (Finset G.edgeSet)} {x : G.edgeSet → Color}
+    (hcard : ∀ v : V, (incidentEdgeFinset G v).card = 3)
+    (hmin : IsD0LocalMinimumForMoveSupports G moveSupports x)
+    (hcandidate :
+      EveryClusteredZeroVertexHasRotationDiskD0Candidate G D moveSupports x)
+    (hrepair : EveryCubicD0BasicColorObstructionHasD0Descent G moveSupports x) :
+    zeroIncidentVertexCount G x = 2 * zeroEdgeCount G x :=
+  zeroIncidentVertexCount_eq_two_mul_zeroEdgeCount_of_zeroEdgesFormMatching
+    (zeroEdgesFormMatching_of_isD0LocalMinimumForMoveSupports_of_rotationDisk_candidates_and_cubicObstruction_descent
+      D hincident hcard hmin hcandidate hrepair)
+
 /-- Under a matching zero pattern, the cheap defect collapses to `120 Z(x)`. -/
 theorem zeroDefectD0_eq_120_mul_zeroEdgeCount_of_zeroEdgesFormMatching
     {G : SimpleGraph V} [Fintype V] [Fintype G.edgeSet] {x : G.edgeSet → Color}
@@ -4368,6 +4460,52 @@ theorem zeroDefectD0_eq_120_mul_zeroEdgeCount_of_isD0LocalMinimumForMoveSupports
   zeroDefectD0_eq_120_mul_zeroEdgeCount_of_zeroEdgesFormMatching
     (zeroEdgesFormMatching_of_isD0LocalMinimumForMoveSupports_of_clusteredZeroVertex_descent
       hmin hrepair)
+
+/-- Two-step neutral-candidate form of the cheap-defect collapse
+`D₀(x)=120Z(x)`. -/
+theorem
+    zeroDefectD0_eq_120_mul_zeroEdgeCount_of_isD0LocalMinimumForMoveSupports_of_neutral_candidates_and_cubicObstruction_descent
+    {G : SimpleGraph V} [Fintype V] [Fintype G.edgeSet]
+    {moveSupports : Finset (Finset G.edgeSet)} {x : G.edgeSet → Color}
+    (hcard : ∀ v : V, (incidentEdgeFinset G v).card = 3)
+    (hmin : IsD0LocalMinimumForMoveSupports G moveSupports x)
+    (hcandidate : EveryClusteredZeroVertexHasNeutralD0Candidate G moveSupports x)
+    (hrepair : EveryCubicD0BasicColorObstructionHasD0Descent G moveSupports x) :
+    zeroDefectD0 G x = 120 * zeroEdgeCount G x :=
+  zeroDefectD0_eq_120_mul_zeroEdgeCount_of_zeroEdgesFormMatching
+    (zeroEdgesFormMatching_of_isD0LocalMinimumForMoveSupports_of_neutral_candidates_and_cubicObstruction_descent
+      hcard hmin hcandidate hrepair)
+
+/-- Kempe-cycle source form of the two-step cheap-defect collapse. -/
+theorem
+    zeroDefectD0_eq_120_mul_zeroEdgeCount_of_isD0LocalMinimumForMoveSupports_of_kempe_candidates_and_cubicObstruction_descent
+    {G : SimpleGraph V} [Fintype V] [Fintype G.edgeSet]
+    {moveSupports : Finset (Finset G.edgeSet)} {x : G.edgeSet → Color}
+    (hcard : ∀ v : V, (incidentEdgeFinset G v).card = 3)
+    (hmin : IsD0LocalMinimumForMoveSupports G moveSupports x)
+    (hcandidate : EveryClusteredZeroVertexHasKempeD0Candidate G moveSupports x)
+    (hrepair : EveryCubicD0BasicColorObstructionHasD0Descent G moveSupports x) :
+    zeroDefectD0 G x = 120 * zeroEdgeCount G x :=
+  zeroDefectD0_eq_120_mul_zeroEdgeCount_of_zeroEdgesFormMatching
+    (zeroEdgesFormMatching_of_isD0LocalMinimumForMoveSupports_of_kempe_candidates_and_cubicObstruction_descent
+      hcard hmin hcandidate hrepair)
+
+/-- Rotation-disk source form of the two-step cheap-defect collapse. -/
+theorem
+    zeroDefectD0_eq_120_mul_zeroEdgeCount_of_isD0LocalMinimumForMoveSupports_of_rotationDisk_candidates_and_cubicObstruction_descent
+    {G : SimpleGraph V} [Fintype V] [Fintype G.edgeSet]
+    (D : RotationDiskData V G.edgeSet)
+    (hincident : ∀ v : V, D.asZeroBoundary.incident v = incidentEdgeFinset G v)
+    {moveSupports : Finset (Finset G.edgeSet)} {x : G.edgeSet → Color}
+    (hcard : ∀ v : V, (incidentEdgeFinset G v).card = 3)
+    (hmin : IsD0LocalMinimumForMoveSupports G moveSupports x)
+    (hcandidate :
+      EveryClusteredZeroVertexHasRotationDiskD0Candidate G D moveSupports x)
+    (hrepair : EveryCubicD0BasicColorObstructionHasD0Descent G moveSupports x) :
+    zeroDefectD0 G x = 120 * zeroEdgeCount G x :=
+  zeroDefectD0_eq_120_mul_zeroEdgeCount_of_zeroEdgesFormMatching
+    (zeroEdgesFormMatching_of_isD0LocalMinimumForMoveSupports_of_rotationDisk_candidates_and_cubicObstruction_descent
+      D hincident hcard hmin hcandidate hrepair)
 
 /-- A nonempty matching zero pattern has cheap defect at least `120`, because
 matching zeros force `D₀=120Z`. -/
