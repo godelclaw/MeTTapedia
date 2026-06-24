@@ -791,6 +791,58 @@ theorem incident_outside_edge_unique_of_hasCubicD0BasicColorObstructionAt
   simp at he_mem he_mem'
   exact he_mem.trans he_mem'.symm
 
+/-- Concrete star form of a cubic D₀ basic-color obstruction: at the obstructed
+vertex there are two distinct support edges, both colored by the proposed move
+color `g`, and one distinct outside edge colored zero. -/
+theorem
+    exists_support_pair_and_outside_zero_of_hasCubicD0BasicColorObstructionAt
+    {G : SimpleGraph V} [Fintype V] [Fintype G.edgeSet]
+    {C : Finset G.edgeSet} {g : Color} {x : G.edgeSet → Color} {v : V}
+    (hcard : (incidentEdgeFinset G v).card = 3)
+    (hobst : HasCubicD0BasicColorObstructionAt G x C v g) :
+    ∃ e₁ e₂ e₀ : G.edgeSet,
+      e₁ ≠ e₂ ∧ e₁ ≠ e₀ ∧ e₂ ≠ e₀ ∧
+        e₁ ∈ incidentEdgeFinset G v ∧ e₂ ∈ incidentEdgeFinset G v ∧
+          e₀ ∈ incidentEdgeFinset G v ∧
+            e₁ ∈ C ∧ e₂ ∈ C ∧ e₀ ∉ C ∧
+              x e₁ = g ∧ x e₂ = g ∧ x e₀ = 0 := by
+  have hsupport :
+      ((incidentEdgeFinset G v).filter fun e => e ∈ C).card = 2 :=
+    incident_support_filter_card_eq_two_of_hasCubicD0BasicColorObstructionAt
+      hcard hobst
+  have houtside :
+      ((incidentEdgeFinset G v).filter fun e => e ∉ C).card = 1 :=
+    incident_outside_filter_card_eq_one_of_hasCubicD0BasicColorObstructionAt
+      hobst
+  rcases Finset.card_eq_two.mp hsupport with ⟨e₁, e₂, h12, hsupp⟩
+  rcases Finset.card_eq_one.mp houtside with ⟨e₀, hout⟩
+  have he₁mem : e₁ ∈ (incidentEdgeFinset G v).filter (fun e => e ∈ C) := by
+    rw [hsupp]
+    simp [h12]
+  have he₂mem : e₂ ∈ (incidentEdgeFinset G v).filter (fun e => e ∈ C) := by
+    rw [hsupp]
+    simp
+  have he₀mem : e₀ ∈ (incidentEdgeFinset G v).filter (fun e => e ∉ C) := by
+    rw [hout]
+    simp
+  rcases Finset.mem_filter.mp he₁mem with ⟨he₁inc, he₁C⟩
+  rcases Finset.mem_filter.mp he₂mem with ⟨he₂inc, he₂C⟩
+  rcases Finset.mem_filter.mp he₀mem with ⟨he₀inc, he₀C⟩
+  have h10 : e₁ ≠ e₀ := by
+    intro h
+    exact he₀C (by simpa [h] using he₁C)
+  have h20 : e₂ ≠ e₀ := by
+    intro h
+    exact he₀C (by simpa [h] using he₂C)
+  exact ⟨e₁, e₂, e₀, h12, h10, h20,
+    he₁inc, he₂inc, he₀inc, he₁C, he₂C, he₀C,
+    incident_support_color_eq_of_hasCubicD0BasicColorObstructionAt
+      hobst he₁inc he₁C,
+    incident_support_color_eq_of_hasCubicD0BasicColorObstructionAt
+      hobst he₂inc he₂C,
+    incident_outside_color_eq_zero_of_hasCubicD0BasicColorObstructionAt
+      hobst he₀inc he₀C⟩
+
 theorem not_isCDLGoodAtVertex_cdlOneStepMoveOn_of_hasCubicD0BasicColorObstructionAt
     {G : SimpleGraph V} [Fintype V] [Fintype G.edgeSet]
     {C : Finset G.edgeSet} {g : Color} {x : G.edgeSet → Color} {v : V}
