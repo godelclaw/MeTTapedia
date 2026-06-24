@@ -600,6 +600,30 @@ theorem not_isD0LocalMinimumForMoveSupports_of_isKempeCycle_descent
       hmin hCmem hg hC hgood)
     hdesc
 
+theorem not_isD0LocalMinimumForMoveSupports_of_isKempeCycle_side_budget_descent
+    {G : SimpleGraph V} [Fintype V] [Fintype G.edgeSet]
+    {moveSupports : Finset (Finset G.edgeSet)} {x : G.edgeSet → Color}
+    {C : Finset G.edgeSet} {g α β : Color} {dI dC : Nat}
+    (hCmem : C ∈ moveSupports) (hg : g ≠ 0)
+    (hC : IsKempeCycle (incidentEdgeFinset G) x C α β)
+    (hgood :
+      ∀ v : V, ∃ e ∈ incidentEdgeFinset G v,
+        if e ∈ C then x e ≠ g else x e ≠ 0)
+    (hZ : zeroEdgeCount G (cdlOneStepMoveOn G C g x) + 1 ≤ zeroEdgeCount G x)
+    (hI :
+      zeroIncidentVertexCount G (cdlOneStepMoveOn G C g x) ≤
+        zeroIncidentVertexCount G x + dI)
+    (hCluster :
+      zeroClusteringCount G (cdlOneStepMoveOn G C g x) ≤
+        zeroClusteringCount G x + dC)
+    (hbudget : 10 * dI + dC < 100) :
+    ¬ IsD0LocalMinimumForMoveSupports G moveSupports x := by
+  intro hmin
+  exact (not_isD0LocalMinimumForMoveSupports_of_allowed_side_budget_descent hCmem
+    (isAllowedD0OneStepMoveOn_of_isKempeCycle_and_vertex_witnesses
+      hg hmin.source_flow hC hgood)
+    hZ hI hCluster hbudget) hmin
+
 theorem zeroDefectD0_le_of_isD0LocalMinimumForMoveSupports_of_rotationDiskData_internalFace
     {G : SimpleGraph V} [Fintype V] [Fintype G.edgeSet]
     {moveSupports : Finset (Finset G.edgeSet)} {x : G.edgeSet → Color}
@@ -633,6 +657,32 @@ theorem not_isD0LocalMinimumForMoveSupports_of_rotationDiskData_internalFace_des
     (zeroDefectD0_le_of_isD0LocalMinimumForMoveSupports_of_rotationDiskData_internalFace
       D hincident hf hfmem hg hmin hgood)
     hdesc
+
+theorem
+    not_isD0LocalMinimumForMoveSupports_of_rotationDiskData_internalFace_side_budget_descent
+    {G : SimpleGraph V} [Fintype V] [Fintype G.edgeSet]
+    {moveSupports : Finset (Finset G.edgeSet)} {x : G.edgeSet → Color}
+    (D : RotationDiskData V G.edgeSet)
+    (hincident : ∀ v : V, D.asZeroBoundary.incident v = incidentEdgeFinset G v)
+    {f : Finset G.edgeSet} (hf : f ∈ D.rotation.internalFaces)
+    (hfmem : f ∈ moveSupports) {g : Color} {dI dC : Nat} (hg : g ≠ 0)
+    (hgood :
+      ∀ v : V, ∃ e ∈ incidentEdgeFinset G v,
+        if e ∈ f then x e ≠ g else x e ≠ 0)
+    (hZ : zeroEdgeCount G (cdlOneStepMoveOn G f g x) + 1 ≤ zeroEdgeCount G x)
+    (hI :
+      zeroIncidentVertexCount G (cdlOneStepMoveOn G f g x) ≤
+        zeroIncidentVertexCount G x + dI)
+    (hCluster :
+      zeroClusteringCount G (cdlOneStepMoveOn G f g x) ≤
+        zeroClusteringCount G x + dC)
+    (hbudget : 10 * dI + dC < 100) :
+    ¬ IsD0LocalMinimumForMoveSupports G moveSupports x := by
+  intro hmin
+  exact (not_isD0LocalMinimumForMoveSupports_of_allowed_side_budget_descent hfmem
+    (isAllowedD0OneStepMoveOn_of_rotationDiskData_internalFace_and_vertex_witnesses
+      D hincident hf hg hmin.source_flow hgood)
+    hZ hI hCluster hbudget) hmin
 
 /-- The zero-edge set is a matching in the manuscript's local sense: no vertex
 is incident to two or more zero-valued edges. -/
