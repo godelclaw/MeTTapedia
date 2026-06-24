@@ -273,6 +273,100 @@ theorem CAP5TransportedEdgeComponentCoverCore.hasExceptionalBoundarySupportPairi
     · exact Or.inr ⟨by simpa [h₁] using data.hredPurple₁,
         by simpa [h₂] using data.hredPurple₂⟩
 
+/-- The four ordered exceptional CAP5 portal-pairing orientations left after the finite
+one-move repair supports have been eliminated.  The names record whether the first stored
+red/blue component is `{0,3}` or `{1,2}`, and whether the first stored red/purple component is
+`{0,4}` or `{1,3}`. -/
+inductive CAP5ExceptionalBoundarySupportOrientation where
+  | redBlue03_redPurple04
+  | redBlue03_redPurple13
+  | redBlue12_redPurple04
+  | redBlue12_redPurple13
+
+/-- A transported core component-cover package realizes one of the four ordered exceptional
+portal-pairing orientations. -/
+def CAP5TransportedEdgeComponentCoverCore.RealizesExceptionalBoundarySupportOrientation
+    {E : Type*} [DecidableEq E] {boundaryEdge : Fin 5 → E} {n : Nat}
+    (data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n)
+    (orientation : CAP5ExceptionalBoundarySupportOrientation) : Prop :=
+  match orientation with
+  | .redBlue03_redPurple04 =>
+      cap5BoundarySupportOfEdges boundaryEdge data.redBlueEdge₁ =
+          cap5RotateBoundarySupportN n ({0, 3} : Finset (Fin 5)) ∧
+        cap5BoundarySupportOfEdges boundaryEdge data.redBlueEdge₂ =
+          cap5RotateBoundarySupportN n ({1, 2} : Finset (Fin 5)) ∧
+        cap5BoundarySupportOfEdges boundaryEdge data.redPurpleEdge₁ =
+          cap5RotateBoundarySupportN n ({0, 4} : Finset (Fin 5)) ∧
+        cap5BoundarySupportOfEdges boundaryEdge data.redPurpleEdge₂ =
+          cap5RotateBoundarySupportN n ({1, 3} : Finset (Fin 5))
+  | .redBlue03_redPurple13 =>
+      cap5BoundarySupportOfEdges boundaryEdge data.redBlueEdge₁ =
+          cap5RotateBoundarySupportN n ({0, 3} : Finset (Fin 5)) ∧
+        cap5BoundarySupportOfEdges boundaryEdge data.redBlueEdge₂ =
+          cap5RotateBoundarySupportN n ({1, 2} : Finset (Fin 5)) ∧
+        cap5BoundarySupportOfEdges boundaryEdge data.redPurpleEdge₁ =
+          cap5RotateBoundarySupportN n ({1, 3} : Finset (Fin 5)) ∧
+        cap5BoundarySupportOfEdges boundaryEdge data.redPurpleEdge₂ =
+          cap5RotateBoundarySupportN n ({0, 4} : Finset (Fin 5))
+  | .redBlue12_redPurple04 =>
+      cap5BoundarySupportOfEdges boundaryEdge data.redBlueEdge₁ =
+          cap5RotateBoundarySupportN n ({1, 2} : Finset (Fin 5)) ∧
+        cap5BoundarySupportOfEdges boundaryEdge data.redBlueEdge₂ =
+          cap5RotateBoundarySupportN n ({0, 3} : Finset (Fin 5)) ∧
+        cap5BoundarySupportOfEdges boundaryEdge data.redPurpleEdge₁ =
+          cap5RotateBoundarySupportN n ({0, 4} : Finset (Fin 5)) ∧
+        cap5BoundarySupportOfEdges boundaryEdge data.redPurpleEdge₂ =
+          cap5RotateBoundarySupportN n ({1, 3} : Finset (Fin 5))
+  | .redBlue12_redPurple13 =>
+      cap5BoundarySupportOfEdges boundaryEdge data.redBlueEdge₁ =
+          cap5RotateBoundarySupportN n ({1, 2} : Finset (Fin 5)) ∧
+        cap5BoundarySupportOfEdges boundaryEdge data.redBlueEdge₂ =
+          cap5RotateBoundarySupportN n ({0, 3} : Finset (Fin 5)) ∧
+        cap5BoundarySupportOfEdges boundaryEdge data.redPurpleEdge₁ =
+          cap5RotateBoundarySupportN n ({1, 3} : Finset (Fin 5)) ∧
+        cap5BoundarySupportOfEdges boundaryEdge data.redPurpleEdge₂ =
+          cap5RotateBoundarySupportN n ({0, 4} : Finset (Fin 5))
+
+/-- The transported exceptional support equations are exactly one of four ordered
+portal-pairing orientations. -/
+theorem CAP5TransportedEdgeComponentCoverCore.exists_exceptionalBoundarySupportOrientation_of_hasExceptionalBoundarySupportPairings
+    {E : Type*} [DecidableEq E] {boundaryEdge : Fin 5 → E} {n : Nat}
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    (h : data.HasExceptionalBoundarySupportPairings) :
+    ∃ orientation : CAP5ExceptionalBoundarySupportOrientation,
+      data.RealizesExceptionalBoundarySupportOrientation orientation := by
+  rcases h with ⟨hredBlue, hredPurple⟩
+  rcases hredBlue with hredBlue | hredBlue <;>
+    rcases hredPurple with hredPurple | hredPurple
+  · exact ⟨.redBlue03_redPurple04, hredBlue.1, hredBlue.2, hredPurple.1, hredPurple.2⟩
+  · exact ⟨.redBlue03_redPurple13, hredBlue.1, hredBlue.2, hredPurple.1, hredPurple.2⟩
+  · exact ⟨.redBlue12_redPurple04, hredBlue.1, hredBlue.2, hredPurple.1, hredPurple.2⟩
+  · exact ⟨.redBlue12_redPurple13, hredBlue.1, hredBlue.2, hredPurple.1, hredPurple.2⟩
+
+/-- The exceptional branch of core component-cover data is a finite four-way portal-pairing case
+split. -/
+theorem CAP5TransportedEdgeComponentCoverCore.exists_exceptionalBoundarySupportOrientation_of_isExceptional
+    {E : Type*} [DecidableEq E] {boundaryEdge : Fin 5 → E} {n : Nat}
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    (h : data.IsExceptional) :
+    ∃ orientation : CAP5ExceptionalBoundarySupportOrientation,
+      data.RealizesExceptionalBoundarySupportOrientation orientation :=
+  exists_exceptionalBoundarySupportOrientation_of_hasExceptionalBoundarySupportPairings
+    (hasExceptionalBoundarySupportPairings_of_isExceptional h)
+
+/-- Finite form of the CAP5 move-realizability split for core edge component-cover data: either
+one stored boundary component is already a one-move repair support, or the remaining branch is one
+of four explicit exceptional portal-pairing orientations. -/
+theorem CAP5TransportedEdgeComponentCoverCore.hasBoundaryRepairSupport_or_exists_exceptionalBoundarySupportOrientation
+    {E : Type*} [DecidableEq E] {boundaryEdge : Fin 5 → E} {n : Nat}
+    (data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n) :
+    data.HasBoundaryRepairSupport ∨
+      ∃ orientation : CAP5ExceptionalBoundarySupportOrientation,
+        data.RealizesExceptionalBoundarySupportOrientation orientation := by
+  by_cases hexceptional : data.IsExceptional
+  · exact Or.inr (exists_exceptionalBoundarySupportOrientation_of_isExceptional hexceptional)
+  · exact Or.inl ((data.hasBoundaryRepairSupport_iff_not_isExceptional).2 hexceptional)
+
 /-- Full transported component-cover data is core component-cover data plus exclusion of the
 simultaneous exceptional pattern.  The core form is the honest target before the planar separator
 argument has ruled the exceptional branch out. -/
