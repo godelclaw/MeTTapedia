@@ -533,6 +533,26 @@ def CAP5ExceptionalAnnulusBoundaryEdgeSupportCandidate.CyclicEdgeCutRealizationD
     (candidate : CAP5ExceptionalAnnulusBoundaryEdgeSupportCandidate boundaryEdge) :=
   CyclicEdgeCutRealization G candidate.edgeSupport
 
+/-- Build the cyclic-cut realization data for a CAP5 boundary-edge support candidate from the
+direct path-separation interface expected of the planar/Jordan layer.  The listed candidate
+support must consist of side-crossing edges, every walk crossing the side must contain a listed
+candidate edge, and both sides must contain cycles. -/
+def CAP5ExceptionalAnnulusBoundaryEdgeSupportCandidate.cyclicEdgeCutRealizationData_of_walk_separator
+    {V : Type*} {G : SimpleGraph V} [DecidableEq G.edgeSet]
+    {boundaryEdge : Fin 5 → G.edgeSet}
+    (candidate : CAP5ExceptionalAnnulusBoundaryEdgeSupportCandidate boundaryEdge)
+    (side : V → Prop)
+    (hcandidate_crosses :
+      ∀ e : G.edgeSet, e ∈ candidate.edgeSupport → EdgeCrossesVertexSide G side e)
+    (hwalk_separator :
+      ∀ {u v : V} (p : G.Walk u v), side u → ¬ side v →
+        ∃ e : G.edgeSet, e ∈ candidate.edgeSupport ∧ (e : Sym2 V) ∈ p.edges)
+    (hinside_cycle : HasCycleOnSide G side)
+    (houtside_cycle : HasCycleOnSide G (fun v => ¬ side v)) :
+    candidate.CyclicEdgeCutRealizationData (G := G) :=
+  CyclicEdgeCutRealization.of_walk_separator side hcandidate_crosses hwalk_separator
+    hinside_cycle houtside_cycle
+
 /-- If a finite CAP5 boundary-edge support candidate is realized by a graph-level small cyclic
 edge cut, the cardinality bound transfers to that cut. -/
 theorem CAP5ExceptionalAnnulusBoundaryEdgeSupportCandidate.exists_smallCyclicEdgeCut_of_realizes

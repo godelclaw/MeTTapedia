@@ -38,6 +38,33 @@ theorem edgeCrossesVertexSide_compl (G : SimpleGraph V) (side : V → Prop) (e :
   · rintro ⟨u, v, hu, hv, hside, hnotSide⟩
     exact ⟨v, u, hv, hu, hnotSide, fun h => h hside⟩
 
+/-- An unordered pair with two distinct listed members is exactly the unordered pair of those
+members. -/
+theorem sym2_eq_mk_of_mem_of_mem_of_ne
+    {u v : V} {e : Sym2 V} (hu : u ∈ e) (hv : v ∈ e) (hne : u ≠ v) :
+    e = s(u, v) := by
+  rcases Sym2.mem_iff_exists.1 hu with ⟨w, rfl⟩
+  rw [Sym2.mem_iff] at hv
+  rcases hv with hv | hv
+  · exact (hne hv.symm).elim
+  · rw [hv]
+
+/-- A side-crossing graph edge gives a one-edge walk whose edge list is exactly that edge.  This
+is the local graph fact needed to convert a Jordan/path-separation statement into exact
+crossing-edge equality. -/
+theorem exists_walk_edges_eq_singleton_of_edge_endpoint_sides
+    {G : SimpleGraph V} {side : V → Prop} {e : G.edgeSet} {u v : V}
+    (hu : u ∈ (e : Sym2 V)) (hv : v ∈ (e : Sym2 V))
+    (hsu : side u) (hsv : ¬ side v) :
+    ∃ p : G.Walk u v, p.edges = [(e : Sym2 V)] := by
+  have hne : u ≠ v := fun huv => hsv (huv ▸ hsu)
+  have heq : (e : Sym2 V) = s(u, v) :=
+    sym2_eq_mk_of_mem_of_mem_of_ne hu hv hne
+  have hadj : G.Adj u v :=
+    (SimpleGraph.mem_edgeSet G).1 (by simpa [heq] using e.property)
+  refine ⟨Walk.cons hadj Walk.nil, ?_⟩
+  simp [Walk.edges_cons, heq]
+
 /-- A graph contains a cycle entirely on one side of a vertex-side predicate. -/
 def HasCycleOnSide (G : SimpleGraph V) (side : V → Prop) : Prop :=
   ∃ u : V, side u ∧ ∃ p : G.Walk u u, p.IsCycle ∧ ∀ v, v ∈ p.support → side v
@@ -212,6 +239,38 @@ theorem CyclicEdgeCutRealization.side_iff_of_forall_not_mem_edgeCut_of_walk
     rcases realization.exists_mem_edgeCut_of_walk_endpoint_sides p.reverse hv hu with
       ⟨e, hecut, heReverseEdges⟩
     exact havoid e hecut (by simpa [Walk.edges_reverse] using heReverseEdges)
+
+/-- Path-separation constructor for cyclic-edge-cut realization data.  If the listed finite
+support consists of side-crossing edges, and every walk crossing the side contains a listed edge,
+then the listed support is exactly the edge cut induced by the side.  This is the graph-level
+interface a planar/Jordan argument should prove for the CAP5 separator candidate. -/
+def CyclicEdgeCutRealization.of_walk_separator
+    {G : SimpleGraph V} {edgeCut : Finset G.edgeSet} (side : V → Prop)
+    (hcut_crosses :
+      ∀ e : G.edgeSet, e ∈ edgeCut → EdgeCrossesVertexSide G side e)
+    (hwalk_separator :
+      ∀ {u v : V} (p : G.Walk u v), side u → ¬ side v →
+        ∃ e : G.edgeSet, e ∈ edgeCut ∧ (e : Sym2 V) ∈ p.edges)
+    (hinside_cycle : HasCycleOnSide G side)
+    (houtside_cycle : HasCycleOnSide G (fun v => ¬ side v)) :
+    CyclicEdgeCutRealization G edgeCut where
+  side := side
+  hcut_eq := by
+    intro e
+    constructor
+    · exact hcut_crosses e
+    · intro hcross
+      rcases hcross with ⟨u, v, hu, hv, hsu, hsv⟩
+      rcases exists_walk_edges_eq_singleton_of_edge_endpoint_sides
+          (G := G) (side := side) (e := e) hu hv hsu hsv with
+        ⟨p, hpEdges⟩
+      rcases hwalk_separator p hsu hsv with ⟨e', he'cut, he'edges⟩
+      have heq : e' = e := by
+        apply Subtype.ext
+        simpa [hpEdges] using he'edges
+      simpa [heq] using he'cut
+  hinside_cycle := hinside_cycle
+  houtside_cycle := houtside_cycle
 
 theorem SmallCyclicEdgeCut.exists_mem_edgeCut_of_walk_endpoint_sides
     {G : SimpleGraph V} (cut : SmallCyclicEdgeCut G)
