@@ -88,6 +88,34 @@ theorem exists_familyPairing_ne_zero_of_redBlueSingleCoordinateWitness
     rw [hfamily, chainDotBilinForm_single_left]
     exact hblue
 
+/-- Predicate-indexed edge-witness form of the red/blue detector.  A finite checker may emit an
+edge satisfying some local predicate `P`; if the selected chain is nonzero on that edge and the
+generator family contains the red and blue single-coordinate chains there, then the family has a
+nonzero pairing with the chain. -/
+theorem exists_familyPairing_ne_zero_of_edgePredicateWitness
+    {G : SimpleGraph V} [Fintype G.edgeSet]
+    {emb : PlaneEmbeddingWithBoundary G}
+    {colorings : Set (G.EdgeColoring Color)}
+    {κ : Type*}
+    (family : κ → projectedColoringGeneratorSubspace emb colorings)
+    (P : G.edgeSet → Prop) {z : G.edgeSet → Color}
+    (hedge : ∃ e : G.edgeSet, P e ∧ z e ≠ 0)
+    (hwitnessRed :
+      ∀ e : G.edgeSet, P e →
+        ∃ i : κ,
+          ((family i : projectedColoringGeneratorSubspace emb colorings) : G.edgeSet → Color) =
+            Pi.single e red)
+    (hwitnessBlue :
+      ∀ e : G.edgeSet, P e →
+        ∃ i : κ,
+          ((family i : projectedColoringGeneratorSubspace emb colorings) : G.edgeSet → Color) =
+            Pi.single e blue) :
+    ∃ i : κ,
+      chainDotBilinForm G.edgeSet (family i : G.edgeSet → Color) z ≠ 0 := by
+  rcases hedge with ⟨e, hP, hz⟩
+  exact exists_familyPairing_ne_zero_of_redBlueSingleCoordinateWitness
+    family e hz (hwitnessRed e hP) (hwitnessBlue e hP)
+
 /-- Red/blue basis form of the coordinatewise separation certificate.  For each controlling edge
 it is enough for the generated family to contain the red and blue single-coordinate chains there:
 one of the two has nonzero dot product with any nonzero color on that edge. -/
