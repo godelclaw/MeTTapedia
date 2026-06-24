@@ -903,7 +903,10 @@ theorem PlanarBoundaryAnnulusConstruction.currentFaces_zero_eq_collarFacesUnion
           apply hEq
           exact Fin.ext hzero
         omega
-      exact (data.mem_currentFaces_iff).2 <| Or.inr ⟨j, by simpa using hjPos, hj⟩
+      have hi0j : i0 < j := by
+        change (0 : ℕ) < j.1
+        exact hjPos
+      exact (data.mem_currentFaces_iff).2 <| Or.inr ⟨j, hi0j, hj⟩
 
 theorem PlanarBoundaryAnnulusConstruction.currentFaces_zero_eq_faces_of_facePartition
     {G : SimpleGraph V} {emb : PlaneEmbeddingWithBoundary G}

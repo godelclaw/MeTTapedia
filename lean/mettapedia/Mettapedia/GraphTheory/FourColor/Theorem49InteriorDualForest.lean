@@ -1479,7 +1479,8 @@ theorem zero_on_ambientFaceSupport_of_interiorDualSpanningForest_adjInvariantCan
   · exact hrootAdj
   · simpa [witnessEdge, rootedSharedInteriorEdgeOfPairwiseUnique, parentFace] using hcover
   · intro f hf e he
-    rcases hchildren f hf e (by simpa [witnessEdge] using he) with
+    rcases hchildren f hf e
+        (by simpa [witnessEdge, rootedSharedInteriorEdgeOfPairwiseUnique, parentFace] using he) with
       hboundary | ⟨g, hg, hadj, heg, hlt⟩
     · exact Or.inl hboundary
     · refine Or.inr ⟨g, hg, ?_, heg, hlt⟩
@@ -2827,7 +2828,8 @@ theorem InteriorDualBoundaryRootAdjDistancePeelData.mem_roots_of_not_mem_peelFac
     (data : InteriorDualBoundaryRootAdjDistancePeelData allFaces faceBoundary)
     {f : AmbientFace allFaces} (hfPeel : f ∉ data.peelFaces) :
     f ∈ data.roots := by
-  simpa using
+  simpa [InteriorDualBoundaryRootAdjDistancePeelData.toInteriorDualBoundaryRootParentPeelData,
+    interiorDualBoundaryRootParentPeelDataOfCoverSeparatedBoundaryRootsCanonicalParentSharedEdgeFaceMembershipCover] using
     (data.toInteriorDualBoundaryRootParentPeelData.mem_roots_of_not_mem_peelFaces hfPeel)
 
 theorem InteriorDualBoundaryRootAdjDistancePeelData.exists_mem_selectedBoundarySupport_of_not_mem_peelFaces

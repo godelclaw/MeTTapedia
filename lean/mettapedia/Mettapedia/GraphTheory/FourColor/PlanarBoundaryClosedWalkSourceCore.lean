@@ -77,7 +77,7 @@ theorem fallbackEdge_mem_faceBoundary
 
 /-- The same source lowers to the existing selected-boundary arc geometry used by the
 boundary-component reductions. -/
-def toPlanarBoundarySelectedBoundaryArcGeometry
+noncomputable def toPlanarBoundarySelectedBoundaryArcGeometry
     {G : SimpleGraph V} {emb : PlaneEmbeddingWithBoundary G}
     (source : PlanarBoundaryClosedWalkAnnulusBoundarySource emb) :
     PlanarBoundarySelectedBoundaryArcGeometry emb :=

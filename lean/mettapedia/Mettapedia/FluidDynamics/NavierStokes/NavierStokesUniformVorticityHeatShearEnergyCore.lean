@@ -50,7 +50,8 @@ theorem continuous_heatShearKineticEnergyDensity
   have hcoord : Continuous fun x : NSSpace => x nsCoord1 := by
     simpa using (EuclideanSpace.proj nsCoord1 : NSSpace →L[ℝ] ℝ).continuous
   have hsin : Continuous fun x : NSSpace => Real.sin (k * x nsCoord1) := by
-    simpa [mul_assoc] using Real.continuous_sin.comp (continuous_const.mul hcoord)
+    change Continuous (Real.sin ∘ fun x : NSSpace => k * x nsCoord1)
+    exact Real.continuous_sin.comp (continuous_const.mul hcoord)
   exact (continuous_const.mul hsin).mul (continuous_const.mul hsin)
 
 /-- An anisotropic scaling that expands only the `x₀` and `x₂` directions by

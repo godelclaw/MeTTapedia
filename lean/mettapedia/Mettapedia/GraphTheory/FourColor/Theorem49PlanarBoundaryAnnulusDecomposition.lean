@@ -474,11 +474,13 @@ theorem laterLayerFaces_eq_collarFaces_union_laterLayerFaces_next {F : Type*} [D
           j = ⟨i.1 + 1, hi⟩ := by
         apply Fin.ext
         exact hEq.symm
-      subst hj
-      exact Finset.mem_union.2 <| Or.inl hfj
+      subst j
+      exact Finset.mem_union.2 (Or.inl hfj)
     · exact Finset.mem_union.2 <| Or.inr <|
         (mem_laterLayerFaces_iff layerFaces ⟨i.1 + 1, hi⟩).2
-          ⟨j, by simpa using hLt, hfj⟩
+          ⟨j, by
+            change i.1 + 1 < j.1
+            exact hLt, hfj⟩
   · intro hf
     rcases Finset.mem_union.1 hf with hnext | hlater
     · exact (mem_laterLayerFaces_iff layerFaces i).2
@@ -1214,7 +1216,8 @@ theorem PlanarBoundaryAnnulusCurrentBoundaryData.numCollars_le_card_faces
     {G : SimpleGraph V} {emb : PlaneEmbeddingWithBoundary G}
     (data : PlanarBoundaryAnnulusCurrentBoundaryData emb) :
     data.numCollars ≤ emb.faces.card := by
-  simpa using data.toPlanarBoundaryAnnulusDecomposition.numCollars_le_card_faces
+  simpa [PlanarBoundaryAnnulusCurrentBoundaryData.toPlanarBoundaryAnnulusDecomposition] using
+    data.toPlanarBoundaryAnnulusDecomposition.numCollars_le_card_faces
 
 theorem PlanarBoundaryAnnulusDecomposition.remainderFaces_nonempty
     {G : SimpleGraph V} {emb : PlaneEmbeddingWithBoundary G}

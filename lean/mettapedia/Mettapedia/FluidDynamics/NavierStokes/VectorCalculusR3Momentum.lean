@@ -187,8 +187,10 @@ theorem momentumEquation_zeroVelocityField_zeroPressure
         spatialConvection (0 : NSVelocityField) t x +
         spatialPressureGradient (0 : NSPressureField) t x =
       ν • spatialLaplacian (0 : NSVelocityField) t x := by
-  simpa [constantVelocityField] using
-    momentumEquation_constantVelocityField_zeroPressure ν (0 : NSSpace) t x
+  have hzero : constantVelocityField (0 : NSSpace) = (0 : NSVelocityField) := by
+    funext t x
+    simp [constantVelocityField]
+  simpa [hzero] using momentumEquation_constantVelocityField_zeroPressure ν (0 : NSSpace) t x
 
 /-- The zero velocity field likewise remains an exact pointwise solution after
 adding any time-only pressure gauge. -/
@@ -198,8 +200,10 @@ theorem momentumEquation_zeroVelocityField_timeOnlyPressure
         spatialConvection (0 : NSVelocityField) t x +
         spatialPressureGradient (fun s : NSTime => fun _ : NSSpace => π s) t x =
       ν • spatialLaplacian (0 : NSVelocityField) t x := by
-  simpa [constantVelocityField] using
-    momentumEquation_constantVelocityField_timeOnlyPressure ν (0 : NSSpace) π t x
+  have hzero : constantVelocityField (0 : NSSpace) = (0 : NSVelocityField) := by
+    funext t x
+    simp [constantVelocityField]
+  simpa [hzero] using momentumEquation_constantVelocityField_timeOnlyPressure ν (0 : NSSpace) π t x
 
 /-- Pointwise momentum identities are stable under adding any extra pressure
 field whose spatial gradient vanishes at the point in question. -/
@@ -265,7 +269,7 @@ theorem spatialConvection_linearShearVerticalDriftVelocityField
     fin_cases i <;>
       simp [linearShearMap, nsCoord0, nsCoord1, nsCoord2,
         ContinuousLinearMap.smulRight_apply]
-  simpa [hmap]
+  simp [hmap]
 
 /-- The steady field `u(t,x) = (a * x₁, b, 0)` has constant convection term
 `(a * b, 0, 0)`. -/
@@ -291,7 +295,7 @@ theorem spatialConvection_linearShearHorizontalDriftVelocityField
     fin_cases i <;>
       simp [linearShearMap, nsCoord0, nsCoord1,
         ContinuousLinearMap.smulRight_apply, mul_comm]
-  simpa [hmap]
+  simp [hmap]
 
 /-- The steady field `u(t,x) = (a * x₁, b, c)` has the same constant
 convection term `(a * b, 0, 0)` as the horizontal-drift branch. -/
@@ -315,7 +319,7 @@ theorem spatialConvection_linearShearFullDriftVelocityField
     fin_cases i <;>
       simp [linearShearMap, nsCoord0, nsCoord1, nsCoord2,
         ContinuousLinearMap.smulRight_apply]
-  simpa [hmap]
+  simp [hmap]
 
 /-- The steady linear shear field satisfies the exact zero-pressure momentum
 identity for every viscosity. -/

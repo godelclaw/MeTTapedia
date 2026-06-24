@@ -75,8 +75,15 @@ theorem WeightedObservable.windowedColeHopfHeatFrozenGate_coeff_mul_seedGate_eq_
         (L.windowedColeHopfHeatUniformVorticityTendril
           (ι := ι) (X := X)
           selector c ν hc hν curlFrame curlBound curlBound_nonneg hcurl x).vorticity t y := by
-    simpa [selfCompatibility, WeightedObservable.windowedColeHopfHeatFrozenGateCandidate] using
-      hself t y
+    change
+      ((L.windowedColeHopfHeatUniformVorticityTendril
+            (ι := ι) (X := X)
+            selector c ν hc hν curlFrame curlBound curlBound_nonneg hcurl x).frozenGateCandidate
+          a).velocity t y =
+        (L.windowedColeHopfHeatUniformVorticityTendril
+          (ι := ι) (X := X)
+          selector c ν hc hν curlFrame curlBound curlBound_nonneg hcurl x).vorticity t y
+    exact hself t y
   have hMul :
       (a *
             (L.windowedColeHopfHeatUniformVorticityTendril

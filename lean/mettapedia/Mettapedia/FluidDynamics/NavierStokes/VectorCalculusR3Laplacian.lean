@@ -68,7 +68,7 @@ theorem laplacian_continuousLinearMap_zero
         (fderiv ℝ (((continuousMultilinearCurryFin0 ℝ NSSpace F).symm : F ≃L[ℝ] _) ∘
           fun y : NSSpace => l y) z) = _
     congr 1
-    simpa [m] using m.fderiv (x := z)
+    exact m.hasFDerivAt.fderiv
   rw [InnerProductSpace.laplacian_eq_iteratedFDeriv_stdOrthonormalBasis]
   rw [iteratedFDeriv_succ_eq_comp_left]
   simp [h1]
@@ -167,7 +167,14 @@ theorem laplacian_heatShearScalar
       iteratedFDeriv ℝ 2 (fun y : NSSpace => heatShearScalar ν a k t y) x =
         (iteratedFDeriv ℝ 2 g (x nsCoord1)).compContinuousLinearMap
           (fun _ => (EuclideanSpace.proj nsCoord1 : NSSpace →L[ℝ] ℝ)) := by
-    simpa [heatShearScalar, g, A, Function.comp, mul_assoc] using
+    have hfun :
+        (fun y : NSSpace => heatShearScalar ν a k t y) =
+          (g ∘ fun y : NSSpace =>
+            (EuclideanSpace.proj nsCoord1 : NSSpace →L[ℝ] ℝ) y) := by
+      funext y
+      simp [heatShearScalar, g, A, Function.comp, mul_assoc]
+    rw [hfun]
+    exact
       (ContinuousLinearMap.iteratedFDeriv_comp_right
         (EuclideanSpace.proj nsCoord1 : NSSpace →L[ℝ] ℝ) hg x (i := 2) (by norm_num))
   rw [hcoord]
@@ -230,8 +237,14 @@ theorem spatialLaplacian_heatShearVelocityField
       (Real.contDiff_sin.comp ((contDiff_id).const_smul k)).const_smul A
   have hscalar : ContDiffAt ℝ 2 (fun y : NSSpace => heatShearScalar ν a k t y) x := by
     have hcont : ContDiff ℝ 2 (fun y : NSSpace => heatShearScalar ν a k t y) := by
-      simpa [heatShearScalar, g, A, Function.comp, mul_assoc] using
-        hg.comp ((EuclideanSpace.proj nsCoord1 : NSSpace →L[ℝ] ℝ).contDiff)
+      have hfun :
+          (fun y : NSSpace => heatShearScalar ν a k t y) =
+            (g ∘ fun y : NSSpace =>
+              (EuclideanSpace.proj nsCoord1 : NSSpace →L[ℝ] ℝ) y) := by
+        funext y
+        simp [heatShearScalar, g, A, Function.comp, mul_assoc]
+      rw [hfun]
+      exact hg.comp ((EuclideanSpace.proj nsCoord1 : NSSpace →L[ℝ] ℝ).contDiff)
     exact hcont.contDiffAt
   unfold spatialLaplacian
   rw [show (fun y : NSSpace => heatShearVelocityField ν a k t y) =

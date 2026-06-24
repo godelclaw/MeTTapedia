@@ -21,6 +21,16 @@ open scoped ContDiff
 
 section VectorCalculusR3
 
+/-- The spatial pressure gradient only depends on the pressure field on the
+fixed time slice. -/
+theorem spatialPressureGradient_congr_at
+    {p q : NSPressureField} {t : NSTime} {x : NSSpace}
+    (h : ∀ y : NSSpace, p t y = q t y) :
+    spatialPressureGradient p t x = spatialPressureGradient q t x := by
+  unfold spatialPressureGradient
+  have hf : (fun y : NSSpace => p t y) = fun y : NSSpace => q t y := funext h
+  rw [hf]
+
 /-- The spatial Fréchet derivative commutes with constant scalar multiplication. -/
 theorem spatialFDeriv_const_smul
     (a : ℝ) (u : NSVelocityField) (t : NSTime) (x : NSSpace) :
@@ -101,8 +111,10 @@ theorem spatialFDeriv_heatShearVelocityField
   let A : ℝ := a * Real.exp (-(ν * k ^ (2 : ℕ)) * t)
   have hcoord : HasFDerivAt (fun y : NSSpace => k * y nsCoord1)
       ((k : ℝ) • (EuclideanSpace.proj nsCoord1 : NSSpace →L[ℝ] ℝ)) x := by
-    simpa [smul_eq_mul] using
-      ((EuclideanSpace.proj nsCoord1 : NSSpace →L[ℝ] ℝ).hasFDerivAt.const_smul k)
+    refine
+      ((EuclideanSpace.proj nsCoord1 : NSSpace →L[ℝ] ℝ).hasFDerivAt.const_smul k).congr_of_eventuallyEq ?_
+    filter_upwards with y
+    simp [smul_eq_mul]
   have hsin : HasFDerivAt (fun y : NSSpace => Real.sin (k * y nsCoord1))
       (Real.cos (k * x nsCoord1) •
         ((k : ℝ) • (EuclideanSpace.proj nsCoord1 : NSSpace →L[ℝ] ℝ))) x := by
@@ -112,8 +124,9 @@ theorem spatialFDeriv_heatShearVelocityField
       ((A : ℝ) •
         (Real.cos (k * x nsCoord1) •
           ((k : ℝ) • (EuclideanSpace.proj nsCoord1 : NSSpace →L[ℝ] ℝ)))) x := by
-    simpa [A, smul_eq_mul] using
-      hsin.const_smul A
+    refine (hsin.const_smul A).congr_of_eventuallyEq ?_
+    filter_upwards with y
+    simp [smul_eq_mul]
   have hvec : HasFDerivAt
       (fun y : NSSpace => coord0Embedding (A * Real.sin (k * y nsCoord1)))
       (coord0Embedding.comp
@@ -181,7 +194,7 @@ theorem timeVelocityDerivative_add
     timeFDeriv]
   change fderiv ℝ ((fun s : NSTime => u s x) + fun s : NSTime => v s x) t (1 : ℝ) = _
   rw [fderiv_add hu hv]
-  simp [ContinuousLinearMap.add_apply]
+  simp
 
 /-- The time derivative of the zero field is zero. -/
 theorem timeVelocityDerivative_zero (t : NSTime) (x : NSSpace) :
@@ -266,9 +279,21 @@ theorem timeVelocityDerivative_heatShearVelocityField
     simpa [S, mul_assoc, mul_left_comm, mul_comm] using
       hexp.mul_const (a * S)
   have hvec := coord0Embedding.hasFDerivAt.comp t hscalar.hasFDerivAt
+  have hvec' : HasFDerivAt
+      (fun s : NSTime =>
+        coord0Embedding
+          (a * Real.exp (-(ν * k ^ (2 : ℕ)) * s) * S))
+      (coord0Embedding.comp
+        (ContinuousLinearMap.toSpanSingleton ℝ
+          (-(ν * k ^ (2 : ℕ)) *
+            (a * Real.exp (-(ν * k ^ (2 : ℕ)) * t) * S)))) t := by
+    refine hvec.congr_of_eventuallyEq ?_
+    filter_upwards with s
+    rfl
   have happly :=
-    congrArg (fun L : ℝ →L[ℝ] NSSpace => L (1 : ℝ)) hvec.fderiv
+    congrArg (fun L : ℝ →L[ℝ] NSSpace => L (1 : ℝ)) hvec'.fderiv
   simpa [timeVelocityDerivative, timeFDeriv, heatShearVelocityField, heatShearScalar,
+    coord0Embedding_apply, ContinuousLinearMap.toSpanSingleton_apply,
     S, ContinuousLinearMap.comp_apply, mul_assoc, mul_left_comm, mul_comm] using happly
 
 /-- The time derivative of the general time-amplitude shear ansatz is exactly
@@ -282,9 +307,16 @@ theorem timeVelocityDerivative_amplitudeShearVelocityField
   have hscalar : HasDerivAt (fun s : ℝ => A s * S) (A' * S) t := by
     simpa [S, mul_assoc, mul_left_comm, mul_comm] using hA.mul_const S
   have hvec := coord0Embedding.hasFDerivAt.comp t hscalar.hasFDerivAt
+  have hvec' : HasFDerivAt
+      (fun s : NSTime => coord0Embedding (A s * S))
+      (coord0Embedding.comp (ContinuousLinearMap.toSpanSingleton ℝ (A' * S))) t := by
+    refine hvec.congr_of_eventuallyEq ?_
+    filter_upwards with s
+    rfl
   have happly :=
-    congrArg (fun L : ℝ →L[ℝ] NSSpace => L (1 : ℝ)) hvec.fderiv
+    congrArg (fun L : ℝ →L[ℝ] NSSpace => L (1 : ℝ)) hvec'.fderiv
   simpa [timeVelocityDerivative, timeFDeriv, amplitudeShearVelocityField,
+    coord0Embedding_apply, ContinuousLinearMap.toSpanSingleton_apply,
     S, ContinuousLinearMap.comp_apply, mul_assoc, mul_left_comm, mul_comm] using happly
 
 /-- The heat-shear family with streamwise drift has the same time derivative as
@@ -726,7 +758,10 @@ theorem spatialPressureGradient_coord0Linear
   apply HasGradientAt.gradient
   rw [hasGradientAt_iff_hasFDerivAt]
   rw [hdual]
-  convert ((c : ℝ) • (EuclideanSpace.proj nsCoord0 : NSSpace →L[ℝ] ℝ)).hasFDerivAt using 1
+  refine
+    (((EuclideanSpace.proj nsCoord0 : NSSpace →L[ℝ] ℝ).hasFDerivAt.const_smul c).congr_of_eventuallyEq ?_)
+  filter_upwards with y
+  simp [smul_eq_mul]
 
 /-- The compensating pressure field `p(t,x) = -(a * b) * x₀` has constant
 spatial gradient `-(a * b) e₀`. -/
@@ -734,8 +769,15 @@ theorem spatialPressureGradient_linearShearHorizontalDriftPressureField
     (a b : ℝ) (t : NSTime) (x : NSSpace) :
     spatialPressureGradient (linearShearHorizontalDriftPressureField a b) t x =
       EuclideanSpace.single nsCoord0 (-(a * b)) := by
-  simpa [linearShearHorizontalDriftPressureField] using
+  rw [spatialPressureGradient_congr_at
+    (p := linearShearHorizontalDriftPressureField a b)
+    (q := fun _ : NSTime => fun y : NSSpace => (-(a * b)) * y nsCoord0)
+    (t := t) (x := x)]
+  · exact
     spatialPressureGradient_coord0Linear (-(a * b)) t x
+  · intro y
+    change -(a * b * y nsCoord0) = (-(a * b)) * y nsCoord0
+    ring
 end VectorCalculusR3
 
 end NavierStokes

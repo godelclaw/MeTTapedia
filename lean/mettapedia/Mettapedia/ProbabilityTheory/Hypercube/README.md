@@ -26,8 +26,7 @@ reflects* `≤`), then your plausibility order must already be **total**: every 
 comparable. Otherwise, no such `Θ` can exist, because `ℝ` is linearly ordered.
 
 This is formalized in:
-- `Mettapedia/ProbabilityTheory/KnuthSkilling/Core/TotalityImprecision.lean`:
-  - `totality_of_faithfulPointRepresentation` (faithful point reps force totality)
+- `Mettapedia/Logic/PLNTruthTower.lean`:
   - `no_pointRepresentation_with_incomparables` (incomparables rule out any faithful `Θ : α → ℝ`)
 
 Interpretation: **Linear order is not cosmetic** in the K&S-style representation theorems; it is
@@ -235,21 +234,17 @@ of why classical probability emerges from quantum probability when measuring com
 ## Building the Formalization
 
 ```bash
-cd lean-projects/mettapedia
+cd Mettapedia/lean/mettapedia
 export LAKE_JOBS=3
-ulimit -Sv 6291456
 nice -n 19 lake build Mettapedia.ProbabilityTheory.Hypercube
 ```
 
-**Dependencies**:
-- Lean 4.27.0
-- Mathlib v4.27.0
-
 ## Current Status
 
-### Build (last checked 2026-01-11)
-
-`lake build Mettapedia.ProbabilityTheory.Hypercube` succeeds with **0** `sorry`s.
+This directory is `sorry`-free (23 `.lean` files; see the comment-stripped footer count
+below). There are no source-level `axiom` declarations here (a source grep, *not* a
+per-theorem `#print axioms` audit, so a theorem can still inherit a standard Mathlib axiom
+transitively), and nothing here uses `native_decide`.
 
 ### Completed (sorry-free)
 - Orthomodular lattice axiomatization (`NovelTheories.lean`)
@@ -270,18 +265,20 @@ nice -n 19 lake build Mettapedia.ProbabilityTheory.Hypercube
 
 ## Relationship to Other Formalizations
 
-### Knuth-Skilling Appendix A (`../KnuthSkilling/`)
-Parallel formalization of K-S Appendix A (representation theorem):
+### Knuth-Skilling Appendix A (`KnuthSkilling/`, inside this directory)
+The K&S Appendix A representation-theorem development lives in `KnuthSkilling.lean` plus the
+`KnuthSkilling/` slice modules *under this directory* (there is no separate top-level
+`KnuthSkilling/` directory):
 - Different focus: derives real-valued probability from abstract lattice symmetries
-- This directory: concrete instantiations (classical, quantum, D-S)
+- The rest of this directory: concrete instantiations (classical, quantum, D-S)
 
 ### Common Foundations (`../Common/`)
-Shared infrastructure:
+Shared infrastructure (files verified present in `../Common/`):
 - `Lattice.lean`: Basic lattice utilities
-- `Valuation.lean`: Abstract valuation functions
 - `LatticeValuation.lean`: Normalized valuations, orthoadditive valuations
 - `LatticeSummation.lean`: Summation over lattice principal ideals
 - `MobiusFunction.lean`: Möbius inversion on lattices
+- `FrechetBounds.lean`, `CombinationRule.lean`: Fréchet bounds and combination rules
 
 ### Belief Functions (`../BeliefFunctions/`)
 Extended Dempster-Shafer theory:
@@ -308,13 +305,14 @@ Extended Dempster-Shafer theory:
 
 Part of the Mettapedia project formalizing mathematical foundations of inference, probability, and universal AI.
 
-For questions about this formalization, see `lean-projects/mettapedia/CLAUDE.md`.
-
 ## Literature
 
-See `literature/KS_codex/README.md` for complete bibliography including:
-- Knuth-Skilling papers
-- Cox's theorem proofs
-- Ordered semigroup embeddings (Hölder, Alimov)
-- Functional equations (Aczél)
-- Orthomodular lattice theory (Kalmbach, Beran, Foulis)
+The bibliography underlying this lane spans:
+- Knuth-Skilling papers (see "Primary References" above);
+- Cox's theorem proofs;
+- ordered-semigroup embeddings (Hölder, Alimov);
+- functional equations (Aczél);
+- orthomodular lattice theory (Kalmbach, Beran, Foulis — see "Primary References" above).
+
+---
+*Status (drafted 2026-06-22 by Claude Code, Opus 4.8): 23 .lean files, 0 with sorries.*

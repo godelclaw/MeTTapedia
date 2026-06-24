@@ -36,32 +36,32 @@ open Mettapedia.OSLF.Framework.CategoryBridge
 open Mettapedia.OSLF.Framework.ConstructorCategory
 
 def mmStmtSort : LangSort metamathCore :=
-  LangSort.mk' metamathCore "Stmt" (by native_decide)
+  LangSort.mk' metamathCore "Stmt" (by decide)
 
 def mmDatabaseSort : LangSort metamathCore :=
-  LangSort.mk' metamathCore "Database" (by native_decide)
+  LangSort.mk' metamathCore "Database" (by decide)
 
 def mmLowerStateSort : LangSort metamathCore :=
-  LangSort.mk' metamathCore "LowerState" (by native_decide)
+  LangSort.mk' metamathCore "LowerState" (by decide)
 
 def mmCompileStateSort : LangSort metamathCore :=
-  LangSort.mk' metamathCore "CompileState" (by native_decide)
+  LangSort.mk' metamathCore "CompileState" (by decide)
 
 theorem dbOne_crossing :
     ("DbOne", "Stmt", "Database") ∈ unaryCrossings metamathCore := by
-  native_decide
+  decide
 
 theorem lower_crossing :
     ("Lower", "Database", "LowerState") ∈ unaryCrossings metamathCore := by
-  native_decide
+  decide
 
 theorem compile_crossing :
     ("Compile", "Database", "CompileState") ∈ unaryCrossings metamathCore := by
-  native_decide
+  decide
 
 theorem compileAfterLower_crossing :
     ("CompileAfterLower", "LowerState", "CompileState") ∈ unaryCrossings metamathCore := by
-  native_decide
+  decide
 
 def dbOneArrow : SortArrow metamathCore mmStmtSort mmDatabaseSort :=
   ⟨"DbOne", dbOne_crossing⟩
@@ -123,11 +123,7 @@ noncomputable def stmtDatabaseOrbitFiber : languageSortFiber metamathCore mmData
 theorem dbOne_in_stmtDatabaseOrbitFiber :
     dbOneArrow.toPath ∈
       stmtDatabaseOrbitFiber.obj (Opposite.op (ConstructorObj.mk mmStmtSort)) := by
-  change dbOneArrow.toPath ∈
-      (languageSortFiber_ofPatternPred metamathCore mmDatabaseSort minimalAxiomStmt
-        stmtDatabaseOrbitPred stmtDatabaseOrbit_natural).obj
-        (Opposite.op (ConstructorObj.mk mmStmtSort))
-  rw [languageSortFiber_ofPatternPred_mem_iff]
+  change stmtDatabaseOrbitPred (pathSem metamathCore dbOneArrow.toPath minimalAxiomStmt)
   exact ⟨mmStmtSort, dbOneArrow.toPath, rfl⟩
 
 theorem minimalCompile_begin_diamond :
@@ -137,9 +133,14 @@ theorem minimalCompile_begin_diamond :
   apply exec_to_langReducesUsing
     (relEnv := Mettapedia.OSLF.MeTTaIL.Engine.RelationEnv.empty)
     (lang := metamathCore)
-  simpa [langReducesExecUsing] using
-    (show minimalCompileAfterLower ∈
-        rewriteWithContextWithPremises metamathCore minimalCompileStart from by
-      native_decide)
+  have hmem : minimalCompileAfterLower ∈
+      rewriteWithContextWithPremisesUsing
+        Mettapedia.OSLF.MeTTaIL.Engine.RelationEnv.empty metamathCore minimalCompileStart := by
+    decide +kernel
+  simpa [langReducesExecUsing] using hmem
+
+/- RUN the OSLF algorithm on the authored `metamathCore` GSLT and OUTPUT the
+    NTT: the full list of constructor-crossings (the native-type arrows). -/
+#eval unaryCrossings metamathCore
 
 end Mettapedia.Languages.Metamath.NTTDiagnostics

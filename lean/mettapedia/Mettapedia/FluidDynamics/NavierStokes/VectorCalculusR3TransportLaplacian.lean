@@ -49,7 +49,13 @@ theorem laplacian_heatShearTransportScalar
       iteratedFDeriv ℝ 2 (fun y : NSSpace => heatShearTransportScalar ν a k b t y) x =
         (iteratedFDeriv ℝ 2 g (x nsCoord1)).compContinuousLinearMap
           (fun _ => (EuclideanSpace.proj nsCoord1 : NSSpace →L[ℝ] ℝ)) := by
-    simpa [heatShearTransportScalar, g, A, Function.comp, mul_assoc] using
+    have hfun :
+        (fun y : NSSpace => heatShearTransportScalar ν a k b t y) =
+          g ∘ (EuclideanSpace.proj nsCoord1 : NSSpace →L[ℝ] ℝ) := by
+      funext y
+      simp [heatShearTransportScalar, g, A, Function.comp, mul_assoc]
+    rw [hfun]
+    exact
       (ContinuousLinearMap.iteratedFDeriv_comp_right
         (EuclideanSpace.proj nsCoord1 : NSSpace →L[ℝ] ℝ) hg x (i := 2) (by norm_num))
   rw [hcoord]
@@ -144,16 +150,24 @@ theorem spatialLaplacian_heatShearTransportVelocityField
       (Real.contDiff_sin.comp ((contDiff_id.sub contDiff_const).const_smul k)).const_smul A
   have hscalar : ContDiffAt ℝ 2 (fun y : NSSpace => heatShearTransportScalar ν a k b t y) x := by
     have hcont : ContDiff ℝ 2 (fun y : NSSpace => heatShearTransportScalar ν a k b t y) := by
-      simpa [heatShearTransportScalar, g, A, Function.comp, mul_assoc] using
-        hg.comp ((EuclideanSpace.proj nsCoord1 : NSSpace →L[ℝ] ℝ).contDiff)
+      exact contDiff_congr_global
+        (hg.comp ((EuclideanSpace.proj nsCoord1 : NSSpace →L[ℝ] ℝ).contDiff))
+        (by
+          intro y
+          dsimp [heatShearTransportScalar, g, A, Function.comp]
+          ring)
     exact hcont.contDiffAt
   have hosc : ContDiffAt ℝ 2
       (fun y : NSSpace => coord0Embedding (heatShearTransportScalar ν a k b t y)) x := by
     have hcont : ContDiff ℝ 2
         (fun y : NSSpace => coord0Embedding (heatShearTransportScalar ν a k b t y)) := by
-      simpa [heatShearTransportScalar, g, A, Function.comp, mul_assoc] using
-        coord0Embedding.contDiff.comp
-          (hg.comp ((EuclideanSpace.proj nsCoord1 : NSSpace →L[ℝ] ℝ).contDiff))
+      exact contDiff_congr_global
+        ((coord0Embedding.contDiff.of_le (by exact le_top)).comp
+          (hg.comp ((EuclideanSpace.proj nsCoord1 : NSSpace →L[ℝ] ℝ).contDiff)))
+        (by
+          intro y
+          dsimp [heatShearTransportScalar, g, A, Function.comp]
+          ring_nf)
     exact hcont.contDiffAt
   have hcore :
       spatialLaplacian (fun t x => coord0Embedding (heatShearTransportScalar ν a k b t x)) t x =

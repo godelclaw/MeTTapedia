@@ -135,24 +135,35 @@ theorem constantVelocityField_finiteTimeWitness_iff_zero_and_spatialPressureGrad
           (T := T) (c := c) hT).1 hbd
     refine ⟨hc0, ?_⟩
     subst hc0
-    have hW0 :
-        ∃ W : ExplicitFiniteTimeRegularityWitness ν (0 : NSInitialVelocity) T,
-          W.velocity = (0 : NSVelocityField) ∧ W.pressure = p := by
-      simpa [constantInitialVelocity, constantVelocityField] using
-        (show ∃ W : ExplicitFiniteTimeRegularityWitness ν
-            (constantInitialVelocity (0 : NSSpace)) T,
-            W.velocity = constantVelocityField (0 : NSSpace) ∧ W.pressure = p from
-            ⟨W, hWvel, hWpress⟩)
-    exact zeroVelocity_finiteTimeWitness_implies_spatialPressureGradient_zero hW0
+    intro t x ht0 htT
+    have hmom := W.momentum_equation_on t x ht0 htT
+    rw [hWvel, hWpress] at hmom
+    have hlap : spatialLaplacian (0 : NSVelocityField) t x = 0 := by
+      simpa using spatialLaplacian_constantVelocityField (0 : NSSpace) t x
+    have hpx : spatialPressureGradient p t x = 0 := by
+      simpa [timeVelocityDerivative_zero, spatialConvection_zero, hlap] using hmom
+    exact hpx
   · rintro ⟨hc0, hgrad⟩
     subst hc0
-    have hW0 :
-        ∃ W : ExplicitFiniteTimeRegularityWitness ν (0 : NSInitialVelocity) T,
-          W.velocity = (0 : NSVelocityField) ∧ W.pressure = p := by
-      exact
-        (zeroVelocity_finiteTimeWitness_iff_spatialPressureGradient_zero
-          (ν := ν) (T := T) p hp).2 hgrad
-    simpa [constantInitialVelocity, constantVelocityField] using hW0
+    let W : ExplicitFiniteTimeRegularityWitness ν (constantInitialVelocity (0 : NSSpace)) T :=
+      { velocity := constantVelocityField (0 : NSSpace)
+        pressure := p
+        smooth_velocity := smoothSpaceTimeVelocity_constantVelocityField (0 : NSSpace)
+        smooth_pressure := hp
+        momentum_equation_on := by
+          intro t x ht0 htT
+          have hlap : spatialLaplacian (0 : NSVelocityField) t x = 0 := by
+            simpa using spatialLaplacian_constantVelocityField (0 : NSSpace) t x
+          have hpx : spatialPressureGradient p t x = 0 := hgrad t x ht0 htT
+          simp [timeVelocityDerivative_zero, spatialConvection_zero, hlap, hpx]
+        incompressible_on := by
+          intro t x _ht0 _htT
+          simpa using spatialDivergence_constantVelocityField (0 : NSSpace) t x
+        initial_condition := matchesInitialVelocity_constantVelocityField (0 : NSSpace)
+        bounded_energy_on :=
+          (boundedKineticEnergyUpTo_constantVelocityField_iff
+            (T := T) (c := (0 : NSSpace)) hT).2 rfl }
+    exact ⟨W, rfl, rfl⟩
 
 /-- On a nonnegative slab, the entire finite-time witness type for constant
 initial data is inhabited exactly in the zero-data case.  This closes not only

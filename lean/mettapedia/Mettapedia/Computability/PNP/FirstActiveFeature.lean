@@ -121,6 +121,8 @@ theorem firstActiveFeature?_append_left
     cases i using Fin.addCases with
     | left i =>
         have hi' : i < j := by
+          change i.1 < j.1
+          change (Fin.castAdd n i).1 < (Fin.castAdd n j).1 at hi
           simpa using hi
         simpa using hxspec.2 i hi'
     | right i =>

@@ -14,7 +14,7 @@ annihilates `W` under a nondegenerate reflexive bilinear form, then `W` is alrea
 This is the linear-algebra content behind the move from the proved annihilator endpoint to the
 paper's spanning conclusion. -/
 theorem submodule_eq_of_le_of_inf_orthogonal_eq_bot [FiniteDimensional K E]
-    (B : LinearMap.BilinForm K E) (hB : B.Nondegenerate) (hB₀ : B.IsRefl)
+    (B : LinearMap.BilinForm K E) (hB : B.Nondegenerate) (_hB₀ : B.IsRefl)
     {W T : Submodule K E} (hWT : W ≤ T)
     (hdisj : T ⊓ B.orthogonal W = ⊥) :
     W = T := by
@@ -27,7 +27,7 @@ theorem submodule_eq_of_le_of_inf_orthogonal_eq_bot [FiniteDimensional K E]
     Submodule.finrank_add_finrank_le_of_disjoint hdisjoint
   have horth :
       finrank K (B.orthogonal W) = finrank K E - finrank K W :=
-    LinearMap.BilinForm.finrank_orthogonal hB hB₀ W
+    LinearMap.BilinForm.finrank_orthogonal hB W
   have hWle : finrank K W ≤ finrank K E := Submodule.finrank_le W
   omega
 

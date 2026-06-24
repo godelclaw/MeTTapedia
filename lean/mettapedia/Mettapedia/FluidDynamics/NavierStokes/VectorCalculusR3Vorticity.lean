@@ -37,7 +37,7 @@ theorem spatialVorticity_add
     spatialVorticity (u + v) t x = spatialVorticity u t x + spatialVorticity v t x := by
   ext i
   fin_cases i
-  · simp [spatialVorticity, nsCoord0, nsCoord1, nsCoord2, EuclideanSpace.single_apply]
+  · simp [spatialVorticity, nsCoord0, nsCoord1, nsCoord2]
     have h12 :
         spatialDerivativeComponent (u + v) t x 1 2 =
           spatialDerivativeComponent u t x 1 2 + spatialDerivativeComponent v t x 1 2 := by
@@ -50,7 +50,7 @@ theorem spatialVorticity_add
         (spatialDerivativeComponent_add hu hv (coord := nsCoord2) (comp := nsCoord1))
     rw [h12, h21]
     ring
-  · simp [spatialVorticity, nsCoord0, nsCoord1, nsCoord2, EuclideanSpace.single_apply]
+  · simp [spatialVorticity, nsCoord0, nsCoord1, nsCoord2]
     have h20 :
         spatialDerivativeComponent (u + v) t x 2 0 =
           spatialDerivativeComponent u t x 2 0 + spatialDerivativeComponent v t x 2 0 := by
@@ -63,7 +63,7 @@ theorem spatialVorticity_add
         (spatialDerivativeComponent_add hu hv (coord := nsCoord0) (comp := nsCoord2))
     rw [h20, h02]
     ring
-  · simp [spatialVorticity, nsCoord0, nsCoord1, nsCoord2, EuclideanSpace.single_apply]
+  · simp [spatialVorticity, nsCoord0, nsCoord1, nsCoord2]
     have h01 :
         spatialDerivativeComponent (u + v) t x 0 1 =
           spatialDerivativeComponent u t x 0 1 + spatialDerivativeComponent v t x 0 1 := by

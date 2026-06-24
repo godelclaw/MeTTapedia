@@ -99,8 +99,10 @@ theorem ambiguousOneVarManuscriptCNFReadoutData_not_exists_correctForAll :
         (ConcreteCNF.IsSatFormula
           (ambiguousOneVarManuscriptCNFReadoutData.formula ()))
         (ambiguousOneVarManuscriptCNFReadoutData.projection ()) msg := by
-  simpa [ambiguousOneVarManuscriptCNFReadoutData] using
-    oneVarTautologyCNF_not_exists_correctForAllSatSearchOutputs
+  change ¬ ∃ msg : Bool,
+    CorrectForAllSatSearchOutputs
+      (ConcreteCNF.IsSatFormula oneVarTautologyCNF) oneVarReadout msg
+  exact oneVarTautologyCNF_not_exists_correctForAllSatSearchOutputs
 
 /-- Complete extraction plus the two-message ambiguity rules out the supported
 arbitrary-output SAT-search obligation globally, not merely at a hand-selected
