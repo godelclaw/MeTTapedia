@@ -624,6 +624,34 @@ theorem cap5BoundaryWordSolved_of_nonzero_of_odd_of_transportEdgeComponentCoverD
   · exact cap5BoundaryWordSolved_of_coloredBlock2111_of_transportEdgeComponentCoverData
       hbad hcomponentCovers
 
+/-- Edge-coloring boundary restriction form of the structured CAP5 reducibility split.  This is
+the graph-facing spelling: given an edge coloring `C`, solve the CAP5 boundary word obtained by
+restricting `C` to the five boundary edges. -/
+theorem cap5BoundaryWordOfEdges_solved_of_nonzero_of_odd_of_transportEdgeComponentCoverData
+    {E : Type*} [DecidableEq E] (boundaryEdge : Fin 5 → E) (C : E → Color)
+    (hnz : CAP5BoundaryWordIsNonzero (cap5BoundaryWordOfEdges boundaryEdge C))
+    (hodd : CAP5BoundaryWordHasOddColorCounts (cap5BoundaryWordOfEdges boundaryEdge C))
+    (hcomponentCovers :
+      ∀ {σ : Color ≃ Color} {n : Nat},
+        σ 0 = 0 →
+        cap5BoundaryWordOfEdges boundaryEdge C = cap5TransportedBadBoundaryWord σ n →
+        CAP5TransportedEdgeComponentCoverData boundaryEdge n) :
+    CAP5BoundaryWordSolved (cap5BoundaryWordOfEdges boundaryEdge C) :=
+  cap5BoundaryWordSolved_of_nonzero_of_odd_of_transportEdgeComponentCoverData
+    hnz hodd hcomponentCovers
+
+/-- If an edge coloring restricts to a transported bad CAP5 boundary word, structured
+edge-component-cover data supplies a boundary repair of that restricted word. -/
+theorem cap5BoundaryWordOfEdges_solved_of_eq_transportBad_of_transportEdgeComponentCoverData
+    {E : Type*} [DecidableEq E] (boundaryEdge : Fin 5 → E) (C : E → Color)
+    {σ : Color ≃ Color} (hσ0 : σ 0 = 0) {n : Nat}
+    (data : CAP5TransportedEdgeComponentCoverData boundaryEdge n)
+    (hw :
+      cap5BoundaryWordOfEdges boundaryEdge C = cap5TransportedBadBoundaryWord σ n) :
+    CAP5BoundaryWordSolved (cap5BoundaryWordOfEdges boundaryEdge C) :=
+  cap5BoundaryWordSolved_of_eq_transportBad_of_transportEdgeComponentCoverData
+    hσ0 data hw
+
 /-- Canonical bad CAP5 word: active component pairings plus exclusion of the
 simultaneous exceptional pattern produce a boundary-level solution. -/
 theorem cap5BadBoundaryWord2111_solved_of_activePairings_of_not_isExceptional
