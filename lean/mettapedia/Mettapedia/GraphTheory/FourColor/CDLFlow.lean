@@ -3135,6 +3135,72 @@ theorem
       D hincident hf)
     heraseAt hnew
 
+/-- Cubic obstruction packaged from a failed proposed neutral local repair.  In
+the cubic case, the forced-zero bad vertex has exactly two support edges and one
+outside zero edge, hence it is an explicit `HasCubicD0BasicColorObstructionAt`. -/
+theorem
+    exists_hasCubicD0BasicColorObstructionAt_of_isD0LocalMinimumForMoveSupports_kirchhoffNeutral_erases_incident_zero_creates_no_zero
+    {G : SimpleGraph V} [Fintype V] [Fintype G.edgeSet]
+    {moveSupports : Finset (Finset G.edgeSet)} {x : G.edgeSet → Color}
+    {C : Finset G.edgeSet} {g : Color} {v : V}
+    (hcard : ∀ v : V, (incidentEdgeFinset G v).card = 3)
+    (hmin : IsD0LocalMinimumForMoveSupports G moveSupports x)
+    (hCmem : C ∈ moveSupports) (hg : g ≠ 0)
+    (hC : IsKirchhoffNeutralMoveSupport G C)
+    (heraseAt : ∃ e ∈ C, e ∈ incidentEdgeFinset G v ∧ x e = 0)
+    (hnew : ∀ e ∈ C, x e ≠ g) :
+    ∃ w : V, HasCubicD0BasicColorObstructionAt G x C w g := by
+  rcases
+    exists_forced_zero_vertex_of_isD0LocalMinimumForMoveSupports_kirchhoffNeutral_erases_incident_zero_creates_no_zero
+      hmin hCmem hg hC heraseAt hnew with ⟨w, hforced⟩
+  have htwo :
+      ((incidentEdgeFinset G w).filter fun e => e ∈ C).card = 2 :=
+    incident_support_card_eq_two_of_isCDLGoodAtVertex_and_forced_zero_move
+      (hcard w) hC (hmin.source_good w) hforced
+  exact ⟨w,
+    hasCubicD0BasicColorObstructionAt_of_cubic_two_support_forced_zero_move
+      hg (hcard w) htwo hforced⟩
+
+/-- Kempe-cycle specialization of the cubic obstruction packaged from a failed
+proposed local repair. -/
+theorem
+    exists_hasCubicD0BasicColorObstructionAt_of_isD0LocalMinimumForMoveSupports_isKempeCycle_erases_incident_zero_creates_no_zero
+    {G : SimpleGraph V} [Fintype V] [Fintype G.edgeSet]
+    {moveSupports : Finset (Finset G.edgeSet)} {x : G.edgeSet → Color}
+    {C : Finset G.edgeSet} {α β g : Color} {v : V}
+    (hcard : ∀ v : V, (incidentEdgeFinset G v).card = 3)
+    (hmin : IsD0LocalMinimumForMoveSupports G moveSupports x)
+    (hCmem : C ∈ moveSupports) (hg : g ≠ 0)
+    (hC : IsKempeCycle (incidentEdgeFinset G) x C α β)
+    (heraseAt : ∃ e ∈ C, e ∈ incidentEdgeFinset G v ∧ x e = 0)
+    (hnew : ∀ e ∈ C, x e ≠ g) :
+    ∃ w : V, HasCubicD0BasicColorObstructionAt G x C w g :=
+  exists_hasCubicD0BasicColorObstructionAt_of_isD0LocalMinimumForMoveSupports_kirchhoffNeutral_erases_incident_zero_creates_no_zero
+    hcard hmin hCmem hg (isKirchhoffNeutralMoveSupport_of_isKempeCycle hC)
+    heraseAt hnew
+
+/-- Rotation-disk internal-face specialization of the cubic obstruction packaged
+from a failed proposed local repair. -/
+theorem
+    exists_hasCubicD0BasicColorObstructionAt_of_isD0LocalMinimumForMoveSupports_rotationDiskData_internalFace_erases_incident_zero_creates_no_zero
+    {G : SimpleGraph V} [Fintype V] [Fintype G.edgeSet]
+    (D : RotationDiskData V G.edgeSet)
+    (hincident : ∀ v : V, D.asZeroBoundary.incident v = incidentEdgeFinset G v)
+    {moveSupports : Finset (Finset G.edgeSet)} {x : G.edgeSet → Color}
+    {f : Finset G.edgeSet} {g : Color} {v : V}
+    (hcard : ∀ v : V, (incidentEdgeFinset G v).card = 3)
+    (hmin : IsD0LocalMinimumForMoveSupports G moveSupports x)
+    (hfmem : f ∈ moveSupports) (hf : f ∈ D.rotation.internalFaces)
+    (hg : g ≠ 0)
+    (heraseAt : ∃ e ∈ f, e ∈ incidentEdgeFinset G v ∧ x e = 0)
+    (hnew : ∀ e ∈ f, x e ≠ g) :
+    ∃ w : V, HasCubicD0BasicColorObstructionAt G x f w g :=
+  exists_hasCubicD0BasicColorObstructionAt_of_isD0LocalMinimumForMoveSupports_kirchhoffNeutral_erases_incident_zero_creates_no_zero
+    hcard hmin hfmem hg
+    (isKirchhoffNeutralMoveSupport_of_rotationDiskData_internalFace
+      D hincident hf)
+    heraseAt hnew
+
 /-- The vertex-local repair hypothesis implies the global nonmatching repair
 hypothesis, because every nonmatching zero pattern has a clustered zero
 vertex. -/
