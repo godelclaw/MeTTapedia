@@ -2191,6 +2191,43 @@ theorem not_ker_planarBoundaryZeroFamilyPairingMap_eq_bot_of_enumeratedException
     family (data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side)
     hfamily hobs
 
+/-- Detector-enrichment boundary for the CAP5 finite generator.  If an emitted-edge CAP5
+obstruction exists but a red/blue single-coordinate family has trivial family-pairing kernel, then
+that family must include at least one probe outside the CAP5 classifier's emitted-edge predicate.
+This is the next-pass instruction produced by the obstruction. -/
+theorem exists_family_singleCoordinate_not_enumeratedExceptionalAnnulusForcedEdge_of_boundaryZeroChainObstruction_of_ker_eq_bot
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    [Fintype G.edgeSet]
+    {emb : PlaneEmbeddingWithBoundary G}
+    {colorings : Set (G.EdgeColoring Color)}
+    {κ : Type*}
+    (family : κ → projectedColoringGeneratorSubspace emb colorings)
+    {p0Inside p4Inside : Bool} {side : V → Prop}
+    (hsingle :
+      ∀ i : κ,
+        ∃ e : G.edgeSet,
+          (((family i : projectedColoringGeneratorSubspace emb colorings) :
+                G.edgeSet → Color) = Pi.single e red ∨
+            ((family i : projectedColoringGeneratorSubspace emb colorings) :
+                G.edgeSet → Color) = Pi.single e blue))
+    (hobs :
+      ∃ z : G.edgeSet → Color,
+        z ∈ planarBoundaryZeroSubmodule emb ∧
+          z ≠ 0 ∧
+            ∀ e : G.edgeSet,
+              data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e →
+                z e = 0)
+    (hker : LinearMap.ker (planarBoundaryZeroFamilyPairingMap family) = ⊥) :
+    ∃ i : κ, ∃ e : G.edgeSet,
+      ¬ data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e ∧
+        (((family i : projectedColoringGeneratorSubspace emb colorings) :
+              G.edgeSet → Color) = Pi.single e red ∨
+          ((family i : projectedColoringGeneratorSubspace emb colorings) :
+              G.edgeSet → Color) = Pi.single e blue) :=
+  exists_family_singleCoordinate_outside_predicate_of_boundaryZeroChainObstruction_of_ker_eq_bot
+    family (data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side)
+    hsingle hobs hker
+
 /-- Theorem 4.9 synthesis route from a Boolean classifier in nonzero-coordinate witness form.
 This is the checker-facing shape: for each nonzero selected-boundary-zero chain, the finite
 classifier output supplies an emitted coordinate where the chain is nonzero. -/
