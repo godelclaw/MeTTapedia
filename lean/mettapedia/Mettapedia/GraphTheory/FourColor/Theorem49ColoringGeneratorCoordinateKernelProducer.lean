@@ -577,6 +577,62 @@ theorem not_finsetControls_iff_exists_nonzero_vanishes_on_finset
   · rintro ⟨z, hzBoundary, hzNonzero, hvanish⟩ hcontrol
     exact hzNonzero (hcontrol hzBoundary hvanish)
 
+/-- A successful finite control extension must see any obstruction to the base control set on
+some genuinely new edge.  This is the finite-checker analogue of the outside-probe theorem:
+given a nonzero selected-boundary-zero chain invisible on `baseEdges`, any larger successful
+control set must contain an edge outside `baseEdges` where the chain is nonzero. -/
+theorem exists_newControlEdge_nonzero_of_vanishes_on_base_of_finsetControls
+    {G : SimpleGraph V} [Fintype G.edgeSet]
+    {emb : PlaneEmbeddingWithBoundary G}
+    (baseEdges controlEdges : Finset G.edgeSet)
+    (z : G.edgeSet → Color)
+    (hzBoundary : z ∈ planarBoundaryZeroSubmodule emb)
+    (hzNonzero : z ≠ 0)
+    (hvanishBase : ∀ e ∈ baseEdges, z e = 0)
+    (hcontrol :
+      ∀ ⦃z : G.edgeSet → Color⦄,
+        z ∈ planarBoundaryZeroSubmodule emb →
+        (∀ e ∈ controlEdges, z e = 0) →
+          z = 0) :
+    ∃ e : G.edgeSet, e ∈ controlEdges ∧ e ∉ baseEdges ∧ z e ≠ 0 := by
+  by_contra hnoNew
+  apply hzNonzero
+  apply hcontrol hzBoundary
+  intro e heControl
+  by_cases heBase : e ∈ baseEdges
+  · exact hvanishBase e heBase
+  · by_contra hze
+    exact hnoNew ⟨e, heControl, heBase, hze⟩
+
+/-- Extension witness for a failed finite control check.  If `baseEdges` does not control the
+selected-boundary-zero chains but `controlEdges` does, then a failed-control chain identifies a
+new controlling edge in `controlEdges \ baseEdges` where it is nonzero. -/
+theorem exists_obstruction_and_newControlEdge_nonzero_of_not_finsetControls_of_finsetControls
+    {G : SimpleGraph V} [Fintype G.edgeSet]
+    {emb : PlaneEmbeddingWithBoundary G}
+    (baseEdges controlEdges : Finset G.edgeSet)
+    (hnotBase :
+      ¬ ∀ ⦃z : G.edgeSet → Color⦄,
+        z ∈ planarBoundaryZeroSubmodule emb →
+        (∀ e ∈ baseEdges, z e = 0) →
+          z = 0)
+    (hcontrol :
+      ∀ ⦃z : G.edgeSet → Color⦄,
+        z ∈ planarBoundaryZeroSubmodule emb →
+        (∀ e ∈ controlEdges, z e = 0) →
+          z = 0) :
+    ∃ z : G.edgeSet → Color,
+      z ∈ planarBoundaryZeroSubmodule emb ∧
+        z ≠ 0 ∧
+          (∀ e ∈ baseEdges, z e = 0) ∧
+            ∃ e : G.edgeSet, e ∈ controlEdges ∧ e ∉ baseEdges ∧ z e ≠ 0 := by
+  rcases (not_finsetControls_iff_exists_nonzero_vanishes_on_finset
+      (G := G) (emb := emb) baseEdges).1 hnotBase with
+    ⟨z, hzBoundary, hzNonzero, hvanishBase⟩
+  exact ⟨z, hzBoundary, hzNonzero, hvanishBase,
+    exists_newControlEdge_nonzero_of_vanishes_on_base_of_finsetControls
+      baseEdges controlEdges z hzBoundary hzNonzero hvanishBase hcontrol⟩
+
 /-- Predicate-indexed coordinate separation from the witness form of control.  This is the
 checker-facing route: for every nonzero selected-boundary-zero chain, emit a `P` edge where it is
 nonzero; red/blue single-coordinate witnesses on `P` edges then separate all family pairings. -/

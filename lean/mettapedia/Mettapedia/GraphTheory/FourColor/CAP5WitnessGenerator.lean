@@ -2437,6 +2437,44 @@ theorem exists_boundaryZeroChain_vanishingOnEnumeratedExceptionalAnnulusForcedEd
     emb p0Inside p4Inside side classifier.emittedFinset classifier.emittedFinset_spec
     hnotControl
 
+/-- Finite-control extension witness for a failed Boolean CAP5 classifier.  If the classifier's
+emitted edge set does not control selected-boundary-zero chains, but a later finite control set
+does, then a returned obstruction identifies a genuinely new control edge outside the classifier
+output where the obstruction is nonzero. -/
+theorem exists_boundaryZeroChain_and_newControlEdge_nonzero_of_not_classifierControl_of_finsetControl
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    [Fintype G.edgeSet]
+    (emb : PlaneEmbeddingWithBoundary G)
+    (p0Inside p4Inside : Bool) (side : V → Prop)
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (controlEdges : Finset G.edgeSet)
+    (hnotControl :
+      ¬ ∀ ⦃z : G.edgeSet → Color⦄,
+        z ∈ planarBoundaryZeroSubmodule emb →
+        (∀ e ∈ classifier.emittedFinset, z e = 0) →
+          z = 0)
+    (hcontrol :
+      ∀ ⦃z : G.edgeSet → Color⦄,
+        z ∈ planarBoundaryZeroSubmodule emb →
+        (∀ e ∈ controlEdges, z e = 0) →
+          z = 0) :
+    ∃ z : G.edgeSet → Color,
+      z ∈ planarBoundaryZeroSubmodule emb ∧
+        z ≠ 0 ∧
+          (∀ e : G.edgeSet,
+            data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e →
+              z e = 0) ∧
+            ∃ e : G.edgeSet,
+              e ∈ controlEdges ∧ e ∉ classifier.emittedFinset ∧ z e ≠ 0 := by
+  rcases exists_obstruction_and_newControlEdge_nonzero_of_not_finsetControls_of_finsetControls
+      classifier.emittedFinset controlEdges hnotControl hcontrol with
+    ⟨z, hzBoundary, hzNonzero, hvanishEmitted, hnew⟩
+  exact ⟨z, hzBoundary, hzNonzero, by
+    intro e hedge
+    exact hvanishEmitted e ((classifier.emittedFinset_spec e).2 hedge),
+    hnew⟩
+
 /-- Decidable finite-checker dichotomy for a Boolean exceptional CAP5 classifier.  Once the
 checker supplies red/blue single-edge witnesses for every emitted edge, deciding the finite
 control/rank obligation has exactly two outputs: either Theorem 4.9 boundary-root synthesis, or a
