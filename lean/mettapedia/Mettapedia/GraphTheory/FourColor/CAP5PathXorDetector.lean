@@ -75,6 +75,45 @@ theorem edgeColorCoordinatePathXor_ne_zero_of_walk_edges_singleton_of_color_ne_z
       simpa using hsnd
     simpa [hpEdges] using hsingle
 
+/-- Finite `𝔽₂` detector marking one emitted graph edge and no other `Sym2` edge. -/
+def edgeIndicatorWeight (e : G.edgeSet) : Sym2 V → F2 :=
+  fun s => if s = (e : Sym2 V) then 1 else 0
+
+@[simp]
+theorem edgeIndicatorWeight_self (e : G.edgeSet) :
+    edgeIndicatorWeight e (e : Sym2 V) = 1 := by
+  simp [edgeIndicatorWeight]
+
+theorem pathXor_edgeIndicatorWeight_singleton (e : G.edgeSet) :
+    Curriculum.pathXor (edgeIndicatorWeight e) [(e : Sym2 V)] = 1 := by
+  simp [Curriculum.pathXor, edgeIndicatorWeight]
+
+namespace CAP5ExceptionalAnnulusGeneratorNode
+
+/--
+A forced edge emitted by a CAP5 node carries its own canonical finite `𝔽₂` detector payload:
+the edge-indicator detector fires on the one-edge forced walk and the same edge is outside the
+generated support while crossing the proposed side.
+-/
+theorem forcedCounterexampleEdge_indicatorDetector_payload
+    (node : CAP5ExceptionalAnnulusGeneratorNode boundaryEdge)
+    {e : G.edgeSet} (h : node.ForcedCounterexampleEdge e) :
+    ∃ u v : V, ∃ p : G.Walk u v,
+      e ∉ node.candidate.edgeSupport ∧
+        node.side u ∧ ¬ node.side v ∧
+          p.edges = [(e : Sym2 V)] ∧
+            (∀ i : Fin 5, i ∈ node.candidate.portalCandidate.portalSet →
+              ((boundaryEdge i : G.edgeSet) : Sym2 V) ∉ p.edges) ∧
+              EdgeCrossesVertexSide G node.side e ∧
+                Curriculum.pathXor (edgeIndicatorWeight e) p.edges = 1 := by
+  have hcross : EdgeCrossesVertexSide G node.side e :=
+    node.forcedCounterexampleEdge_crosses h
+  rcases h with ⟨u, v, p, heOutside, hu, hv, hpEdges, havoid⟩
+  refine ⟨u, v, p, heOutside, hu, hv, hpEdges, havoid, hcross, ?_⟩
+  simp [hpEdges, pathXor_edgeIndicatorWeight_singleton (G := G) e]
+
+end CAP5ExceptionalAnnulusGeneratorNode
+
 namespace CAP5ExceptionalAnnulusGeneratorReport
 
 /--
@@ -112,6 +151,33 @@ theorem exists_oneEdge_forcedCounterexampleWalk_detector_payload_of_mem_forcedCo
     exact (Curriculum.pathXor_singleton_ne_zero_iff weight
       (e := (e : Sym2 V))).1 hsingleton
   exact ⟨e, heOutside, hcross, by simp [hpEdges], hweight⟩
+
+/--
+Canonical detector payload for a forced report row.  Unlike an arbitrary path-xor weight, the
+edge-indicator detector is generated from the emitted forced edge itself, so every forced row
+has a concrete finite `𝔽₂` signal available for the algebraic follow-up lane.
+-/
+theorem exists_oneEdge_forcedCounterexampleWalk_indicatorDetector_payload_of_mem_forcedCounterexampleLatents
+    (report : CAP5ExceptionalAnnulusGeneratorReport boundaryEdge side)
+    {latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge}
+    (hmem : latent ∈ report.forcedCounterexampleLatents) :
+    ∃ u v : V, ∃ e : G.edgeSet, ∃ p : G.Walk u v,
+      e ∉ (report.node latent).candidate.edgeSupport ∧
+        side u ∧ ¬ side v ∧
+          p.edges = [(e : Sym2 V)] ∧
+            (∀ i : Fin 5,
+              i ∈ (report.node latent).candidate.portalCandidate.portalSet →
+                ((boundaryEdge i : G.edgeSet) : Sym2 V) ∉ p.edges) ∧
+              EdgeCrossesVertexSide G side e ∧
+                Curriculum.pathXor (edgeIndicatorWeight e) p.edges = 1 := by
+  rcases report.forcedCounterexample_of_mem_forcedCounterexampleLatents hmem with
+    ⟨e, hedge⟩
+  rcases (report.node latent).forcedCounterexampleEdge_indicatorDetector_payload hedge with
+    ⟨u, v, p, heOutside, hu, hv, hpEdges, havoid, hcross, hxor⟩
+  exact ⟨u, v, e, p, heOutside, by
+      simpa [node, latentNode] using hu,
+    by simpa [node, latentNode] using hv,
+    hpEdges, havoid, by simpa [node, latentNode] using hcross, hxor⟩
 
 /--
 Per-latent complete-frontier detector payload.  In a cyclically five-edge-connected graph, a
