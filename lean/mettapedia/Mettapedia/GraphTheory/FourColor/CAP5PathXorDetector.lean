@@ -232,6 +232,20 @@ def ColorCoordinatePathXorDetectorPayload
                                         (e' : Sym2 V) ∈ p.edges ∧
                                           z e' ≠ 0)
 
+/-- A named path-xor payload carries, in particular, a concrete outside-crossing edge. -/
+theorem exists_exceptionalAnnulusCrossingOutsideEdge_of_colorCoordinatePathXorDetectorPayload
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    {report : CAP5ExceptionalAnnulusGeneratorReport boundaryEdge side}
+    {p0Inside p4Inside : Bool} {z : G.edgeSet → Color}
+    (hpayload : data.ColorCoordinatePathXorDetectorPayload report p0Inside p4Inside z) :
+    ∃ e : G.edgeSet,
+      data.ExceptionalAnnulusCrossingOutsideEdge p0Inside p4Inside side e := by
+  rcases hpayload with
+    ⟨_latent, _hlatentMem, _hp0, _hp4, _horientation, _hforced, _u, _v, e, _p,
+      hedge, _heOutside, _hu, _hv, _hpEdges, _havoid, _hcross, _hcolorToXor,
+      _hxorToEdge⟩
+  exact ⟨e, hedge⟩
+
 /-- Named payload for one finite CAP5 extension signal.  If the current emitted-edge classifier
 does not yet control the selected boundary-zero chains, a later finite control set exposes either a
 side-crossing one-edge path-xor signal or a noncrossing color-coordinate signal. -/
@@ -994,6 +1008,47 @@ theorem ofDecidableChecks_missing_checker_ingredient_or_colorCoordinatePathXorDe
         hmissingEmpty
     simpa [report, CAP5ExceptionalAnnulusGeneratorReport.node,
       CAP5ExceptionalAnnulusGeneratorReport.latentNode] using hingredient
+
+/--
+Edge-obstruction form of the canonical finite-checker dichotomy.  Once the primitive
+missing-checker frontier is empty, cyclic five-edge-connectivity already gives a concrete
+exceptional-annulus crossing-outside edge; otherwise the generator reports exactly which primitive
+checker ingredient is missing.
+-/
+theorem ofDecidableChecks_missing_checker_ingredient_or_exceptionalAnnulusCrossingOutsideEdge_of_isExceptional_of_cyclicallyFiveEdgeConnected
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    (side : V → Prop)
+    [∀ latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge,
+      Decidable ((CAP5ExceptionalAnnulusGeneratorReport.latentNode
+        boundaryEdge side latent).PortalCrosses)]
+    [∀ latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge,
+      Decidable ((CAP5ExceptionalAnnulusGeneratorReport.latentNode
+        boundaryEdge side latent).SideCycles)]
+    [∀ latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge,
+      Decidable ((CAP5ExceptionalAnnulusGeneratorReport.latentNode
+        boundaryEdge side latent).RealizedSeparator)]
+    (p0Inside p4Inside : Bool) (h : data.IsExceptional)
+    (hcyclic : CyclicallyFiveEdgeConnected G) :
+    ((∃ latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge,
+      latent ∈ CAP5ExceptionalAnnulusGeneratorLatent.all boundaryEdge ∧
+        (CAP5ExceptionalAnnulusGeneratorReport.latentNode
+          boundaryEdge side latent).MissingPortalCrossingEvidence) ∨
+      (∃ latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge,
+        latent ∈ CAP5ExceptionalAnnulusGeneratorLatent.all boundaryEdge ∧
+          (CAP5ExceptionalAnnulusGeneratorReport.latentNode
+            boundaryEdge side latent).MissingSelectedSideCycleEvidence) ∨
+        (∃ latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge,
+          latent ∈ CAP5ExceptionalAnnulusGeneratorLatent.all boundaryEdge ∧
+            (CAP5ExceptionalAnnulusGeneratorReport.latentNode
+              boundaryEdge side latent).MissingComplementarySideCycleEvidence)) ∨
+      ∃ e : G.edgeSet,
+        data.ExceptionalAnnulusCrossingOutsideEdge p0Inside p4Inside side e := by
+  rcases data.ofDecidableChecks_missing_checker_ingredient_or_colorCoordinatePathXorDetectorPayload_of_isExceptional_of_cyclicallyFiveEdgeConnected
+      side p0Inside p4Inside h hcyclic (fun _ => 0) with hingredient | hpayload
+  · exact Or.inl hingredient
+  · exact Or.inr
+      (data.exists_exceptionalAnnulusCrossingOutsideEdge_of_colorCoordinatePathXorDetectorPayload
+        hpayload)
 
 /--
 Coordinate-signal form of the failed finite-control extension.  When the current CAP5 emitted
