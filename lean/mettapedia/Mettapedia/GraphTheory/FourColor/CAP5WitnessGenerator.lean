@@ -1322,6 +1322,86 @@ theorem EnumeratedExceptionalAnnulusForcedEdgeClassifier.exists_mem_emittedFinse
     classifier.emittedFinset p0Inside p4Inside h side hcyclic
     classifier.emittedFinset_spec hportal_crosses hcycles
 
+/-- False-negative guard for complete cyclic-five exceptional CAP5 Boolean runs: the checker
+cannot emit the empty finite edge set.  An empty output falsifies one of the supplied hypotheses
+rather than silently advancing the route. -/
+theorem EnumeratedExceptionalAnnulusForcedEdgeClassifier.emittedFinset_nonempty_of_isExceptional_of_portalSides_of_cyclicallyFiveEdgeConnected
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    [Fintype G.edgeSet]
+    (p0Inside p4Inside : Bool) (h : data.IsExceptional)
+    (side : V → Prop) (hcyclic : CyclicallyFiveEdgeConnected G)
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (hportal_crosses :
+      ∀ edgeCandidate : CAP5ExceptionalAnnulusBoundaryEdgeSupportCandidate boundaryEdge,
+        data.RealizesExceptionalBoundarySupportOrientation
+            edgeCandidate.portalCandidate.orientation →
+        edgeCandidate.portalCandidate.sideCase =
+            CAP5ExceptionalAnnulusSideCase.ofPortalSides p0Inside p4Inside →
+        ∀ i : Fin 5, i ∈ edgeCandidate.portalCandidate.portalSet →
+          EdgeCrossesVertexSide G side (boundaryEdge i))
+    (hcycles : HasCycleOnSide G side ∧ HasCycleOnSide G (fun v => ¬ side v)) :
+    classifier.emittedFinset.Nonempty := by
+  rcases classifier.exists_mem_emittedFinset_crossing_of_isExceptional_of_portalSides_of_cyclicallyFiveEdgeConnected
+      p0Inside p4Inside h side hcyclic hportal_crosses hcycles with
+    ⟨e, hemitted, _hcross⟩
+  exact ⟨e, hemitted⟩
+
+/-- Boolean form of the CAP5 false-negative guard: under the complete cyclic-five exceptional
+hypotheses, some graph edge must be accepted by the checker and it is a genuine side-crossing
+edge. -/
+theorem EnumeratedExceptionalAnnulusForcedEdgeClassifier.exists_accept_true_crossing_of_isExceptional_of_portalSides_of_cyclicallyFiveEdgeConnected
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    [Fintype G.edgeSet]
+    (p0Inside p4Inside : Bool) (h : data.IsExceptional)
+    (side : V → Prop) (hcyclic : CyclicallyFiveEdgeConnected G)
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (hportal_crosses :
+      ∀ edgeCandidate : CAP5ExceptionalAnnulusBoundaryEdgeSupportCandidate boundaryEdge,
+        data.RealizesExceptionalBoundarySupportOrientation
+            edgeCandidate.portalCandidate.orientation →
+        edgeCandidate.portalCandidate.sideCase =
+            CAP5ExceptionalAnnulusSideCase.ofPortalSides p0Inside p4Inside →
+        ∀ i : Fin 5, i ∈ edgeCandidate.portalCandidate.portalSet →
+          EdgeCrossesVertexSide G side (boundaryEdge i))
+    (hcycles : HasCycleOnSide G side ∧ HasCycleOnSide G (fun v => ¬ side v)) :
+    ∃ e : G.edgeSet,
+      classifier.accept e = true ∧ EdgeCrossesVertexSide G side e := by
+  rcases classifier.exists_mem_emittedFinset_crossing_of_isExceptional_of_portalSides_of_cyclicallyFiveEdgeConnected
+      p0Inside p4Inside h side hcyclic hportal_crosses hcycles with
+    ⟨e, hemitted, hcross⟩
+  exact ⟨e,
+    by
+      simpa [EnumeratedExceptionalAnnulusForcedEdgeClassifier.emittedFinset] using hemitted,
+    hcross⟩
+
+/-- A complete cyclic-five exceptional CAP5 Boolean checker cannot reject every edge.  This is
+the executable all-false diagnostic form for finite witness-generator experiments. -/
+theorem EnumeratedExceptionalAnnulusForcedEdgeClassifier.not_forall_accept_eq_false_of_isExceptional_of_portalSides_of_cyclicallyFiveEdgeConnected
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    [Fintype G.edgeSet]
+    (p0Inside p4Inside : Bool) (h : data.IsExceptional)
+    (side : V → Prop) (hcyclic : CyclicallyFiveEdgeConnected G)
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (hportal_crosses :
+      ∀ edgeCandidate : CAP5ExceptionalAnnulusBoundaryEdgeSupportCandidate boundaryEdge,
+        data.RealizesExceptionalBoundarySupportOrientation
+            edgeCandidate.portalCandidate.orientation →
+        edgeCandidate.portalCandidate.sideCase =
+            CAP5ExceptionalAnnulusSideCase.ofPortalSides p0Inside p4Inside →
+        ∀ i : Fin 5, i ∈ edgeCandidate.portalCandidate.portalSet →
+          EdgeCrossesVertexSide G side (boundaryEdge i))
+    (hcycles : HasCycleOnSide G side ∧ HasCycleOnSide G (fun v => ¬ side v)) :
+    ¬ ∀ e : G.edgeSet, classifier.accept e = false := by
+  intro hallFalse
+  rcases classifier.exists_accept_true_crossing_of_isExceptional_of_portalSides_of_cyclicallyFiveEdgeConnected
+      p0Inside p4Inside h side hcyclic hportal_crosses hcycles with
+    ⟨e, htrue, _hcross⟩
+  rw [hallFalse e] at htrue
+  contradiction
+
 /-- Theorem 4.9 synthesis route from a concrete finite checker's control certificate.  The finite
 rank-style obligation is: if a selected-boundary-zero chain vanishes on all emitted edges, then it
 vanishes everywhere.  The edge-set certificate translates that concrete finite obligation back to
