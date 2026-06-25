@@ -23,6 +23,14 @@ theorem pathXor_singleton_ne_zero {E : Type*} (weight : E → F2) {e : E}
   rw [pathXor_singleton, hweight]
   decide
 
+theorem pathXor_singleton_ne_zero_iff {E : Type*} (weight : E → F2) {e : E} :
+    pathXor weight [e] ≠ 0 ↔ weight e ≠ 0 := by
+  rw [pathXor_singleton]
+
+theorem exists_mem_weight_ne_zero_singleton_iff {E : Type*} (weight : E → F2) {e : E} :
+    (∃ x, x ∈ ([e] : EdgePath E) ∧ weight x ≠ 0) ↔ weight e ≠ 0 := by
+  simp
+
 theorem pathXor_eq_zero_of_forall_mem_eq_zero {E : Type*} (weight : E → F2)
     {path : EdgePath E} (hzero : ∀ e, e ∈ path → weight e = 0) :
     pathXor weight path = 0 := by
