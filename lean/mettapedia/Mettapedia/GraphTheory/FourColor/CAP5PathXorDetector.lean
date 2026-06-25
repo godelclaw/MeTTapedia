@@ -109,6 +109,80 @@ theorem exists_enumeratedExceptionalAnnulusForcedEdge_oneEdgeWalk_detector_paylo
       (e := (e : Sym2 V))).1 hsingleton
   exact ⟨e, hedge, heOutside, hcross, by simp [hpEdges], hweight⟩
 
+/--
+Complete cyclic-five exceptional CAP5 reports feed the algebraic normal form directly.  The
+one-edge path-xor detector either stays silent, or a nonzero signal exposes an edge in the
+`ExceptionalAnnulusCrossingOutsideEdge` predicate: an edge outside the realized support crossing
+the selected side.
+-/
+theorem exists_exceptionalAnnulusCrossingOutsideEdge_oneEdgeWalk_detector_payload_of_report_complete_of_isExceptional_of_portalSides_of_cyclicallyFiveEdgeConnected
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    (report : CAP5ExceptionalAnnulusGeneratorReport boundaryEdge side)
+    (p0Inside p4Inside : Bool) (h : data.IsExceptional)
+    (hcyclic : CyclicallyFiveEdgeConnected G)
+    (hportal :
+      ∀ latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge,
+        (report.node latent).PortalCrosses)
+    (hcycles :
+      ∀ latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge,
+        (report.node latent).SideCycles)
+    (weight : Sym2 V → F2) :
+    ∃ latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge,
+      latent ∈ CAP5ExceptionalAnnulusGeneratorLatent.all boundaryEdge ∧
+        latent.p0Inside = p0Inside ∧
+          latent.p4Inside = p4Inside ∧
+            data.RealizesExceptionalBoundarySupportOrientation latent.orientation ∧
+              latent ∈ report.forcedCounterexampleLatents ∧
+                ∃ u v : V, ∃ e : G.edgeSet, ∃ p : G.Walk u v,
+                  data.ExceptionalAnnulusCrossingOutsideEdge p0Inside p4Inside side e ∧
+                    e ∉ (report.node latent).candidate.edgeSupport ∧
+                      side u ∧ ¬ side v ∧
+                        p.edges = [(e : Sym2 V)] ∧
+                          (∀ i : Fin 5,
+                            i ∈ (report.node latent).candidate.portalCandidate.portalSet →
+                              ((boundaryEdge i : G.edgeSet) : Sym2 V) ∉ p.edges) ∧
+                            EdgeCrossesVertexSide G side e ∧
+                              (Curriculum.pathXor weight p.edges ≠ 0 →
+                                ∃ e' : G.edgeSet,
+                                  data.ExceptionalAnnulusCrossingOutsideEdge
+                                    p0Inside p4Inside side e' ∧
+                                    e' ∉ (report.node latent).candidate.edgeSupport ∧
+                                      EdgeCrossesVertexSide G side e' ∧
+                                        (e' : Sym2 V) ∈ p.edges ∧
+                                          weight (e' : Sym2 V) ≠ 0) := by
+  rcases data.exists_enumeratedExceptionalAnnulusForcedEdge_oneEdgeWalk_detector_payload_of_report_complete_of_isExceptional_of_portalSides_of_cyclicallyFiveEdgeConnected
+      report p0Inside p4Inside h hcyclic hportal hcycles weight with
+    ⟨latent, hlatentMem, hp0, hp4, horientation, hforced, u, v, e, p, _hedge,
+      heOutside, hu, hv, hpEdges, havoid, hcross, hdetector⟩
+  let edgeCandidate : CAP5ExceptionalAnnulusBoundaryEdgeSupportCandidate boundaryEdge :=
+    (report.node latent).candidate
+  have horientationCandidate :
+      data.RealizesExceptionalBoundarySupportOrientation
+        edgeCandidate.portalCandidate.orientation := by
+    simpa [edgeCandidate, CAP5ExceptionalAnnulusGeneratorReport.node,
+      CAP5ExceptionalAnnulusGeneratorReport.latentNode] using horientation
+  have hsideCase :
+      edgeCandidate.portalCandidate.sideCase =
+        CAP5ExceptionalAnnulusSideCase.ofPortalSides p0Inside p4Inside := by
+    simp [edgeCandidate, CAP5ExceptionalAnnulusGeneratorReport.node,
+      CAP5ExceptionalAnnulusGeneratorReport.latentNode,
+      CAP5ExceptionalAnnulusGeneratorLatent.sideCase, hp0, hp4]
+  have hedgeNormal :
+      data.ExceptionalAnnulusCrossingOutsideEdge p0Inside p4Inside side e :=
+    ⟨edgeCandidate, horientationCandidate, hsideCase, by
+      simpa [edgeCandidate] using heOutside, hcross⟩
+  refine
+    ⟨latent, hlatentMem, hp0, hp4, horientation, hforced, u, v, e, p,
+      hedgeNormal, heOutside, hu, hv, hpEdges, havoid, hcross, ?_⟩
+  intro hxor
+  rcases hdetector hxor with
+    ⟨e', _hedge', heOutside', hcross', heMem, hweight⟩
+  have hedgeNormal' :
+      data.ExceptionalAnnulusCrossingOutsideEdge p0Inside p4Inside side e' :=
+    ⟨edgeCandidate, horientationCandidate, hsideCase, by
+      simpa [edgeCandidate] using heOutside', hcross'⟩
+  exact ⟨e', hedgeNormal', heOutside', hcross', heMem, hweight⟩
+
 end CAP5TransportedEdgeComponentCoverCore
 
 end Mettapedia.GraphTheory.FourColor
