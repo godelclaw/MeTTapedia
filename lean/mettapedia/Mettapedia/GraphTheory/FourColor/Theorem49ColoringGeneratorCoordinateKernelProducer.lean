@@ -148,6 +148,40 @@ theorem edgePredicate_vanishes_of_forall_familyPairing_eq_zero
     ⟨i, hpair⟩
   exact hpair (hpairZero i)
 
+/-- All-zero predicate-indexed family pairings for a nonzero selected-boundary-zero chain produce
+the explicit predicate obstruction used by the finite detector.  This is the reusable diagnostic
+state: the current red/blue single-coordinate family failed to detect `z`, so `z` is a nonzero
+boundary-zero chain invisible to every emitted predicate edge. -/
+theorem exists_boundaryZeroChainObstruction_of_forall_familyPairing_eq_zero
+    {G : SimpleGraph V} [Fintype G.edgeSet]
+    {emb : PlaneEmbeddingWithBoundary G}
+    {colorings : Set (G.EdgeColoring Color)}
+    {κ : Type*}
+    (family : κ → projectedColoringGeneratorSubspace emb colorings)
+    (P : G.edgeSet → Prop) {z : G.edgeSet → Color}
+    (hzBoundary : z ∈ planarBoundaryZeroSubmodule emb)
+    (hzNonzero : z ≠ 0)
+    (hpairZero :
+      ∀ i : κ,
+        chainDotBilinForm G.edgeSet (family i : G.edgeSet → Color) z = 0)
+    (hwitnessRed :
+      ∀ e : G.edgeSet, P e →
+        ∃ i : κ,
+          ((family i : projectedColoringGeneratorSubspace emb colorings) : G.edgeSet → Color) =
+            Pi.single e red)
+    (hwitnessBlue :
+      ∀ e : G.edgeSet, P e →
+        ∃ i : κ,
+          ((family i : projectedColoringGeneratorSubspace emb colorings) : G.edgeSet → Color) =
+            Pi.single e blue) :
+    ∃ z : G.edgeSet → Color,
+      z ∈ planarBoundaryZeroSubmodule emb ∧
+        z ≠ 0 ∧
+          ∀ e : G.edgeSet, P e → z e = 0 :=
+  ⟨z, hzBoundary, hzNonzero,
+    edgePredicate_vanishes_of_forall_familyPairing_eq_zero family P
+      hpairZero hwitnessRed hwitnessBlue⟩
+
 /-- Predicate-indexed coordinate separation.  Instead of first materializing a finite control
 set, a checker may expose a predicate `P` for its emitted edge witnesses.  If vanishing on all
 `P` edges forces a selected-boundary-zero chain to vanish, and if the generator family supplies
