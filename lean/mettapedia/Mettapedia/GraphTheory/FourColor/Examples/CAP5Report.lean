@@ -609,6 +609,16 @@ theorem realizedCAP5Report_forcedLatent_exact_oneEdge_pathXor_ne_zero
     Curriculum.pathXor_singleton_ne_zero weight (e := (r13 : Sym2 RealizedV)) hweight
 
 /--
+A nonzero finite detector signal on the forced walk exposes an actual marked edge in that walk.
+This is the extraction direction needed by cocycle-style falsification passes.
+-/
+theorem realizedCAP5Report_forcedLatent_exists_edge_weight_ne_zero_of_pathXor_ne_zero
+    (weight : Sym2 RealizedV → F2)
+    (hxor : Curriculum.pathXor weight forcedCounterexampleWalk.edges ≠ 0) :
+    ∃ e, e ∈ forcedCounterexampleWalk.edges ∧ weight e ≠ 0 :=
+  Curriculum.exists_mem_weight_ne_zero_of_pathXor_ne_zero weight hxor
+
+/--
 The two-triangle benchmark has a genuinely mixed finite-generator output: one latent certifies
 a small cyclic separator and another certifies a forced counterexample.
 -/

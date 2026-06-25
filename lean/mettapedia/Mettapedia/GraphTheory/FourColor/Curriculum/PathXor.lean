@@ -23,6 +23,30 @@ theorem pathXor_singleton_ne_zero {E : Type*} (weight : E → F2) {e : E}
   rw [pathXor_singleton, hweight]
   decide
 
+theorem pathXor_eq_zero_of_forall_mem_eq_zero {E : Type*} (weight : E → F2)
+    {path : EdgePath E} (hzero : ∀ e, e ∈ path → weight e = 0) :
+    pathXor weight path = 0 := by
+  induction path with
+  | nil =>
+      rfl
+  | cons e path ih =>
+      have he : weight e = 0 := hzero e (by simp)
+      have htail : pathXor weight path = 0 := by
+        exact ih (fun e heMem => hzero e (by simp [heMem]))
+      rw [pathXor]
+      simp [he]
+      simpa [pathXor] using htail
+
+theorem exists_mem_weight_ne_zero_of_pathXor_ne_zero {E : Type*} (weight : E → F2)
+    {path : EdgePath E} (hxor : pathXor weight path ≠ 0) :
+    ∃ e, e ∈ path ∧ weight e ≠ 0 := by
+  by_contra hnone
+  have hzero : ∀ e, e ∈ path → weight e = 0 := by
+    intro e heMem
+    by_contra hweight
+    exact hnone ⟨e, heMem, hweight⟩
+  exact hxor (pathXor_eq_zero_of_forall_mem_eq_zero weight hzero)
+
 theorem pathXor_append {E : Type*} (weight : E → F2) (p q : EdgePath E) :
     pathXor weight (p ++ q) = pathXor weight p + pathXor weight q := by
   simp [pathXor, List.map_append, List.sum_append]
