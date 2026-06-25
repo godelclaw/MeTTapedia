@@ -554,6 +554,39 @@ theorem realizedCAP5Report_forcedLatent_exists_oneEdge_crossing_walk :
     realizedCAP5Report_forcedLatent_mem_forcedCounterexampleLatents
 
 /--
+The report-level forced branch is witnessed by the specific one-edge walk over `r13`.  This is
+the concrete finite-generator payload behind the existential one-edge-walk theorem above.
+-/
+theorem realizedCAP5Report_forcedLatent_exact_oneEdge_crossing_walk :
+    r13 ∉ (realizedCAP5Report.node forcedLatent).candidate.edgeSupport ∧
+      realizedSide (1 : RealizedV) ∧ ¬ realizedSide (3 : RealizedV) ∧
+        forcedCounterexampleWalk.edges = [(r13 : Sym2 RealizedV)] ∧
+          (∀ i : Fin 5,
+            i ∈ (realizedCAP5Report.node forcedLatent).candidate.portalCandidate.portalSet →
+              ((realizedCAP5BoundaryEdge i : realizedGraph.edgeSet) : Sym2 RealizedV) ∉
+                forcedCounterexampleWalk.edges) ∧
+            EdgeCrossesVertexSide realizedGraph realizedSide r13 := by
+  refine ⟨?_, ?_, ?_, ?_, ?_, realized_r13_crosses⟩
+  · change r13 ∉ forcedCandidate.edgeSupport
+    exact forcedCandidate_r13_not_mem
+  · simp [realizedSide]
+  · simp [realizedSide]
+  · simp [forcedCounterexampleWalk, r13]
+  · intro i hi hiEdges
+    fin_cases i <;>
+      simp [CAP5ExceptionalAnnulusGeneratorReport.node,
+        CAP5ExceptionalAnnulusGeneratorReport.latentNode,
+        CAP5ExceptionalAnnulusGeneratorNode.candidate, forcedLatent,
+        CAP5ExceptionalAnnulusGeneratorLatent.candidate,
+        CAP5ExceptionalAnnulusBoundaryEdgeSupportCandidate.ofOrientationAndSideCase,
+        CAP5ExceptionalAnnulusBoundaryEdgeSupportCandidate.ofPortalCandidate,
+        CAP5ExceptionalAnnulusSeparatorPortalCandidate.ofOrientationAndSideCase,
+        CAP5ExceptionalAnnulusGeneratorLatent.sideCase, realizedCAP5BoundaryEdge,
+        CAP5ExceptionalAnnulusSideCase.ofPortalSides,
+        CAP5ExceptionalAnnulusSideCase.separatorPortalSet,
+        forcedCounterexampleWalk, r03, r04, r25] at hi hiEdges
+
+/--
 The two-triangle benchmark has a genuinely mixed finite-generator output: one latent certifies
 a small cyclic separator and another certifies a forced counterexample.
 -/
