@@ -612,6 +612,40 @@ theorem status_ne_partialCase_of_complete
   · exact hnotPortal hportal
   · exact hnotCycles hcycles
 
+/-- A certified partial status is exactly missing checker evidence: portal-crossing evidence or
+two-sided cycle evidence failed for this generated node. -/
+theorem status_eq_partialCase_iff_missing_checker_evidence
+    {node : CAP5ExceptionalAnnulusGeneratorNode boundaryEdge}
+    (report : node.Report) :
+    report.status = CAP5SeparatorGeneratorStatus.partialCase ↔
+      ¬ node.PortalCrosses ∨ ¬ node.SideCycles := by
+  constructor
+  · intro hstatus
+    have hcert := report.cert
+    rw [hstatus] at hcert
+    change node.Partial at hcert
+    exact hcert
+  · intro hpartial
+    cases hstatus : report.status with
+    | realizedSeparator =>
+        have hcert := report.cert
+        rw [hstatus] at hcert
+        rcases hcert with ⟨hportal, hcycles, _hrealized⟩
+        exact False.elim <| by
+          rcases hpartial with hnotPortal | hnotCycles
+          · exact hnotPortal hportal
+          · exact hnotCycles hcycles
+    | forcedCounterexample =>
+        have hcert := report.cert
+        rw [hstatus] at hcert
+        rcases hcert with ⟨hportal, hcycles, _hforced⟩
+        exact False.elim <| by
+          rcases hpartial with hnotPortal | hnotCycles
+          · exact hnotPortal hportal
+          · exact hnotCycles hcycles
+    | partialCase =>
+        rfl
+
 /-- In a cyclically five-edge-connected graph, a certified report cannot put a generated
 complete CAP5 node in the realized-separator bin. -/
 theorem status_ne_realizedSeparator_of_cyclicallyFiveEdgeConnected
@@ -792,6 +826,16 @@ def nodeReport (report : CAP5ExceptionalAnnulusGeneratorReport boundaryEdge side
   cert := by
     simpa [node, latentNode] using report.cert latent
 
+/-- A full generator report classifies one latent as partial exactly when that latent is missing
+portal-crossing evidence or two-sided cycle evidence. -/
+theorem classify_eq_partialCase_iff_missing_checker_evidence
+    (report : CAP5ExceptionalAnnulusGeneratorReport boundaryEdge side)
+    (latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge) :
+    report.classify latent = CAP5SeparatorGeneratorStatus.partialCase ↔
+      ¬ (report.node latent).PortalCrosses ∨ ¬ (report.node latent).SideCycles := by
+  simpa [nodeReport] using
+    (report.nodeReport latent).status_eq_partialCase_iff_missing_checker_evidence
+
 /-- Construct the full finite generator report from per-latent checker decisions.  This is the
 operational report producer: a finite implementation can decide the portal, side-cycle, and
 realization checks for each of the 16 latents, and this constructor turns those decisions into a
@@ -963,6 +1007,27 @@ theorem ofDecidableChecks_classify_eq_partialCase_implies_missing_checker_eviden
     simpa [hstatus'] using hcert'
   change (report.node latent).Partial at hcert
   simpa [CAP5ExceptionalAnnulusGeneratorNode.Partial, report, node, latentNode] using hcert
+
+/-- Executable exactness theorem for a partial output.  The canonical finite report producer
+classifies a latent as partial exactly when portal-crossing evidence or two-sided cycle evidence
+is missing for that latent. -/
+theorem ofDecidableChecks_classify_eq_partialCase_iff_missing_checker_evidence
+    (boundaryEdge : Fin 5 → G.edgeSet) (side : V → Prop)
+    [∀ latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge,
+      Decidable ((latentNode boundaryEdge side latent).PortalCrosses)]
+    [∀ latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge,
+      Decidable ((latentNode boundaryEdge side latent).SideCycles)]
+    [∀ latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge,
+      Decidable ((latentNode boundaryEdge side latent).RealizedSeparator)]
+    (latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge) :
+    (ofDecidableChecks boundaryEdge side).classify latent =
+        CAP5SeparatorGeneratorStatus.partialCase ↔
+      ¬ (latentNode boundaryEdge side latent).PortalCrosses ∨
+        ¬ (latentNode boundaryEdge side latent).SideCycles := by
+  let report : CAP5ExceptionalAnnulusGeneratorReport boundaryEdge side :=
+    ofDecidableChecks boundaryEdge side
+  have hstatus := report.classify_eq_partialCase_iff_missing_checker_evidence latent
+  simpa [report, node, latentNode] using hstatus
 
 /-- Latents reported in the realized-separator bin. -/
 def realizedSeparatorLatents
