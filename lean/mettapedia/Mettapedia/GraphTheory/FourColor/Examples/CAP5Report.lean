@@ -994,4 +994,25 @@ theorem realizedCAP5Report_generator_boundary_payload :
     realizedCAP5Report_forcedLatent_exact_crossing_edge.1,
     realizedCAP5Report_forcedLatent_exact_crossing_edge.2⟩
 
+/--
+The mixed-bin calibration sample instantiates the reusable report-boundary theorem: the
+realized row refutes cyclic five-edge-connectivity, and the forced row emits a canonical one-edge
+indicator detector for the algebraic follow-up lane.
+-/
+theorem realizedCAP5Report_mixed_boundary_indicator_payload :
+    ¬ CyclicallyFiveEdgeConnected realizedGraph ∧
+      ∃ u v : RealizedV, ∃ e : realizedGraph.edgeSet, ∃ p : realizedGraph.Walk u v,
+        e ∉ (realizedCAP5Report.node forcedLatent).candidate.edgeSupport ∧
+          realizedSide u ∧ ¬ realizedSide v ∧
+            p.edges = [(e : Sym2 RealizedV)] ∧
+              (∀ i : Fin 5,
+                i ∈ (realizedCAP5Report.node forcedLatent).candidate.portalCandidate.portalSet →
+                  ((realizedCAP5BoundaryEdge i : realizedGraph.edgeSet) : Sym2 RealizedV) ∉
+                    p.edges) ∧
+                EdgeCrossesVertexSide realizedGraph realizedSide e ∧
+                  Curriculum.pathXor (edgeIndicatorWeight e) p.edges = 1 :=
+  realizedCAP5Report.mixed_boundary_indicatorDetector_payload_of_mem_realizedSeparatorLatents_of_mem_forcedCounterexampleLatents
+    realizedCAP5Report_realizedLatent_mem_realizedSeparatorLatents
+    realizedCAP5Report_forcedLatent_mem_forcedCounterexampleLatents
+
 end Mettapedia.GraphTheory.FourColor.Examples.CAP5Report
