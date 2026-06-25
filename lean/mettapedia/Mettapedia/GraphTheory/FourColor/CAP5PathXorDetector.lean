@@ -312,6 +312,53 @@ theorem exists_exceptionalAnnulusCrossingOutsideEdge_of_colorCoordinatePathXorDe
       _hxorToEdge⟩
   exact ⟨e, hedge⟩
 
+/--
+Data-level forced-generator payload.  Every edge emitted by
+`EnumeratedExceptionalAnnulusForcedEdge` carries the same one-edge indicator detector as the
+node-level forced bin: the edge is outside the generated support, crosses the selected side, and
+the finite `𝔽₂` edge-indicator path-xor fires on the emitted one-edge walk.
+-/
+theorem enumeratedExceptionalAnnulusForcedEdge_indicatorDetector_payload
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    {p0Inside p4Inside : Bool} {side : V → Prop} {e : G.edgeSet}
+    (h : data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e) :
+    ∃ latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge,
+      latent ∈ CAP5ExceptionalAnnulusGeneratorLatent.all boundaryEdge ∧
+        latent.p0Inside = p0Inside ∧
+          latent.p4Inside = p4Inside ∧
+            data.RealizesExceptionalBoundarySupportOrientation latent.orientation ∧
+              ∃ u v : V, ∃ p : G.Walk u v,
+                data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e ∧
+                  e ∉ (CAP5ExceptionalAnnulusGeneratorReport.latentNode
+                    boundaryEdge side latent).candidate.edgeSupport ∧
+                    side u ∧ ¬ side v ∧
+                      p.edges = [(e : Sym2 V)] ∧
+                        (∀ i : Fin 5,
+                          i ∈ (CAP5ExceptionalAnnulusGeneratorReport.latentNode
+                            boundaryEdge side latent).candidate.portalCandidate.portalSet →
+                            ((boundaryEdge i : G.edgeSet) : Sym2 V) ∉ p.edges) ∧
+                          EdgeCrossesVertexSide G side e ∧
+                            Curriculum.pathXor (edgeIndicatorWeight e) p.edges = 1 := by
+  rcases h with ⟨latent, hmem, hp0, hp4, horientation, hforced⟩
+  let node : CAP5ExceptionalAnnulusGeneratorNode boundaryEdge :=
+    CAP5ExceptionalAnnulusGeneratorReport.latentNode boundaryEdge side latent
+  have hforcedNode : node.ForcedCounterexampleEdge e := by
+    simpa [node, CAP5ExceptionalAnnulusGeneratorReport.latentNode] using hforced
+  rcases node.forcedCounterexampleEdge_indicatorDetector_payload hforcedNode with
+    ⟨u, v, p, heOutside, hu, hv, hpEdges, havoid, hcross, hxor⟩
+  have hedge :
+      data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e :=
+    ⟨latent, hmem, hp0, hp4, horientation, by
+      simpa [node, CAP5ExceptionalAnnulusGeneratorReport.latentNode] using hforcedNode⟩
+  refine
+    ⟨latent, hmem, hp0, hp4, horientation, u, v, p, hedge, ?_, ?_, ?_,
+      hpEdges, ?_, ?_, hxor⟩
+  · simpa [node] using heOutside
+  · simpa [node, CAP5ExceptionalAnnulusGeneratorReport.latentNode] using hu
+  · simpa [node, CAP5ExceptionalAnnulusGeneratorReport.latentNode] using hv
+  · simpa [node] using havoid
+  · simpa [node, CAP5ExceptionalAnnulusGeneratorReport.latentNode] using hcross
+
 /-- Named payload for one finite CAP5 extension signal.  If the current emitted-edge classifier
 does not yet control the selected boundary-zero chains, a later finite control set exposes either a
 side-crossing one-edge path-xor signal or a noncrossing color-coordinate signal. -/
