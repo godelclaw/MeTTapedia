@@ -1741,6 +1741,48 @@ theorem enumeratedExceptionalAnnulusForcedEdge_vanishes_of_forall_familyPairing_
     (data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side)
     hpairZero hwitnessRed hwitnessBlue
 
+/-- All-zero red/blue pairings for a nonzero selected-boundary-zero chain produce the CAP5
+emitted-edge obstruction object.  This is the algebraic failure payload for a finite CAP5 run:
+the current report-generated coordinate family did not detect `z`, and `z` is invisible to every
+enumerated exceptional CAP5 forced edge. -/
+theorem exists_boundaryZeroChain_vanishingOnEnumeratedExceptionalAnnulusForcedEdges_of_forall_familyPairing_eq_zero
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    [Fintype G.edgeSet]
+    {emb : PlaneEmbeddingWithBoundary G}
+    {colorings : Set (G.EdgeColoring Color)}
+    {κ : Type*}
+    (family : κ → projectedColoringGeneratorSubspace emb colorings)
+    (p0Inside p4Inside : Bool) (side : V → Prop)
+    {z : G.edgeSet → Color}
+    (hzBoundary : z ∈ planarBoundaryZeroSubmodule emb)
+    (hzNonzero : z ≠ 0)
+    (hpairZero :
+      ∀ i : κ,
+        chainDotBilinForm G.edgeSet (family i : G.edgeSet → Color) z = 0)
+    (hwitnessRed :
+      ∀ e : G.edgeSet,
+        data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e →
+          ∃ i : κ,
+            ((family i : projectedColoringGeneratorSubspace emb colorings) :
+                G.edgeSet → Color) =
+              Pi.single e red)
+    (hwitnessBlue :
+      ∀ e : G.edgeSet,
+        data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e →
+          ∃ i : κ,
+            ((family i : projectedColoringGeneratorSubspace emb colorings) :
+                G.edgeSet → Color) =
+              Pi.single e blue) :
+    ∃ z : G.edgeSet → Color,
+      z ∈ planarBoundaryZeroSubmodule emb ∧
+        z ≠ 0 ∧
+          ∀ e : G.edgeSet,
+            data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e →
+              z e = 0 :=
+  exists_boundaryZeroChainObstruction_of_forall_familyPairing_eq_zero family
+    (data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side)
+    hzBoundary hzNonzero hpairZero hwitnessRed hwitnessBlue
+
 /-- Report-level algebraic falsification diagnostic.  If every generated family pairing vanishes,
 then a complete cyclic-five exceptional CAP5 report exposes a concrete forced-walk emitted edge on
 which the selected chain is zero.  This is the finite coordinate returned when the algebraic lane
