@@ -598,6 +598,17 @@ theorem realizedCAP5Report_forcedLatent_exact_oneEdge_pathXor
   simp [Curriculum.pathXor, forcedCounterexampleWalk, r13]
 
 /--
+If a finite algebraic detector marks the emitted crossing edge, the concrete forced walk has a
+nonzero `𝔽₂` path-xor signal.
+-/
+theorem realizedCAP5Report_forcedLatent_exact_oneEdge_pathXor_ne_zero
+    (weight : Sym2 RealizedV → F2)
+    (hweight : weight (r13 : Sym2 RealizedV) = 1) :
+    Curriculum.pathXor weight forcedCounterexampleWalk.edges ≠ 0 := by
+  rw [realizedCAP5Report_forcedLatent_exact_oneEdge_pathXor weight, hweight]
+  decide
+
+/--
 The two-triangle benchmark has a genuinely mixed finite-generator output: one latent certifies
 a small cyclic separator and another certifies a forced counterexample.
 -/
