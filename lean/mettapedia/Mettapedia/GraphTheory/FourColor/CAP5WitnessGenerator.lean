@@ -1636,6 +1636,75 @@ theorem exists_enumeratedExceptionalAnnulusForcedEdge_and_oneEdge_forcedCountere
     ⟨latent, hlatentMem, hp0, hp4, horientation, hforced, u, v, e, p,
       hedge, heOutside, hu, hv, hpEdges, havoid, hcross⟩
 
+/-- Report-level algebraic emission theorem.  If a complete cyclic-five exceptional CAP5 report
+emits a one-edge forced-walk payload and the selected chain is nonzero on every enumerated emitted
+edge, then the same selected latent also supplies a nonzero red/blue family-pairing witness.  This
+keeps the finite report histogram connected to the non-geometric algebraic detector lane. -/
+theorem exists_enumeratedExceptionalAnnulusForcedEdge_oneEdgeWalk_and_familyPairing_ne_zero_of_report_complete_of_isExceptional_of_portalSides_of_cyclicallyFiveEdgeConnected
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    [Fintype G.edgeSet]
+    {emb : PlaneEmbeddingWithBoundary G}
+    {colorings : Set (G.EdgeColoring Color)}
+    {κ : Type*}
+    (family : κ → projectedColoringGeneratorSubspace emb colorings)
+    (report : CAP5ExceptionalAnnulusGeneratorReport boundaryEdge side)
+    (p0Inside p4Inside : Bool) (h : data.IsExceptional)
+    (hcyclic : CyclicallyFiveEdgeConnected G)
+    (hportal :
+      ∀ latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge,
+        (report.node latent).PortalCrosses)
+    (hcycles :
+      ∀ latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge,
+        (report.node latent).SideCycles)
+    {z : G.edgeSet → Color}
+    (hzNonzero :
+      ∀ e : G.edgeSet,
+        data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e →
+          z e ≠ 0)
+    (hwitnessRed :
+      ∀ e : G.edgeSet,
+        data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e →
+          ∃ i : κ,
+            ((family i : projectedColoringGeneratorSubspace emb colorings) :
+                G.edgeSet → Color) =
+              Pi.single e red)
+    (hwitnessBlue :
+      ∀ e : G.edgeSet,
+        data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e →
+          ∃ i : κ,
+            ((family i : projectedColoringGeneratorSubspace emb colorings) :
+                G.edgeSet → Color) =
+              Pi.single e blue) :
+    ∃ latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge,
+      latent ∈ CAP5ExceptionalAnnulusGeneratorLatent.all boundaryEdge ∧
+        latent.p0Inside = p0Inside ∧
+          latent.p4Inside = p4Inside ∧
+            data.RealizesExceptionalBoundarySupportOrientation latent.orientation ∧
+              latent ∈ report.forcedCounterexampleLatents ∧
+                ∃ u v : V, ∃ e : G.edgeSet, ∃ p : G.Walk u v,
+                  data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e ∧
+                    e ∉ (report.node latent).candidate.edgeSupport ∧
+                      side u ∧ ¬ side v ∧
+                        p.edges = [(e : Sym2 V)] ∧
+                          (∀ i : Fin 5,
+                            i ∈ (report.node latent).candidate.portalCandidate.portalSet →
+                              ((boundaryEdge i : G.edgeSet) : Sym2 V) ∉ p.edges) ∧
+                            EdgeCrossesVertexSide G side e ∧
+                              ∃ i : κ,
+                                chainDotBilinForm G.edgeSet
+                                  (family i : G.edgeSet → Color) z ≠ 0 := by
+  rcases data.exists_enumeratedExceptionalAnnulusForcedEdge_and_oneEdge_forcedCounterexampleWalk_of_report_complete_of_isExceptional_of_portalSides_of_cyclicallyFiveEdgeConnected
+      report p0Inside p4Inside h hcyclic hportal hcycles with
+    ⟨latent, hlatentMem, hp0, hp4, horientation, hforced, u, v, e, p, hedge,
+      heOutside, hu, hv, hpEdges, havoid, hcross⟩
+  rcases exists_familyPairing_ne_zero_of_edgePredicateWitness family
+      (data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side)
+      ⟨e, hedge, hzNonzero e hedge⟩ hwitnessRed hwitnessBlue with
+    ⟨i, hpair⟩
+  exact
+    ⟨latent, hlatentMem, hp0, hp4, horientation, hforced, u, v, e, p,
+      hedge, heOutside, hu, hv, hpEdges, havoid, hcross, i, hpair⟩
+
 /-- Report-level bridge from a complete exceptional CAP5 report to the broader one-edge
 counterexample predicate consumed by the algebraic lane. -/
 theorem exists_exceptionalAnnulusOneEdgeCounterexampleEdge_of_report_complete_of_isExceptional_of_portalSides_of_cyclicallyFiveEdgeConnected
