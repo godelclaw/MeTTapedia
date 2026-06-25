@@ -2272,6 +2272,70 @@ theorem theorem49BoundaryRootSynthesis_or_boundaryZeroChainObstruction_of_classi
       (exists_boundaryZeroChain_vanishingOnEnumeratedExceptionalAnnulusForcedEdges_of_not_classifierControl
         emb p0Inside p4Inside side classifier hcontrol)
 
+/-- Generator-first CAP5 branch theorem.  A complete exceptional CAP5 sample either realizes the
+exact proposed side, or it emits a forced edge and the finite algebraic checker produces the
+next non-geometric outcome: Theorem 4.9 boundary-root synthesis, or a concrete boundary-zero
+obstruction invisible to every generated forced edge. -/
+theorem enumeratedExceptionalAnnulusSameSideRealization_or_forcedEdge_and_theorem49BoundaryRootSynthesis_or_boundaryZeroChainObstruction
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    [Fintype G.edgeSet] [FiniteDimensional F2 (G.edgeSet → Color)]
+    (emb : PlaneEmbeddingWithBoundary G) (C₀ : G.EdgeColoring Color)
+    (colorings : Set (G.EdgeColoring Color))
+    (hsubset : colorings ⊆ G.EdgeKempeClosure C₀)
+    {κ : Type*}
+    (family : κ → projectedColoringGeneratorSubspace emb colorings)
+    (p0Inside p4Inside : Bool) (h : data.IsExceptional)
+    (side : V → Prop)
+    (hportal_crosses :
+      ∀ edgeCandidate : CAP5ExceptionalAnnulusBoundaryEdgeSupportCandidate boundaryEdge,
+        data.RealizesExceptionalBoundarySupportOrientation
+            edgeCandidate.portalCandidate.orientation →
+        edgeCandidate.portalCandidate.sideCase =
+            CAP5ExceptionalAnnulusSideCase.ofPortalSides p0Inside p4Inside →
+        ∀ i : Fin 5, i ∈ edgeCandidate.portalCandidate.portalSet →
+          EdgeCrossesVertexSide G side (boundaryEdge i))
+    (hcycles : HasCycleOnSide G side ∧ HasCycleOnSide G (fun v => ¬ side v))
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    [Decidable
+      (∀ ⦃z : G.edgeSet → Color⦄,
+        z ∈ planarBoundaryZeroSubmodule emb →
+        (∀ e ∈ classifier.emittedFinset, z e = 0) →
+          z = 0)]
+    (hwitnessRed :
+      ∀ e : G.edgeSet,
+        e ∈ classifier.emittedFinset →
+          ∃ i : κ,
+            ((family i : projectedColoringGeneratorSubspace emb colorings) :
+                G.edgeSet → Color) =
+              Pi.single e red)
+    (hwitnessBlue :
+      ∀ e : G.edgeSet,
+        e ∈ classifier.emittedFinset →
+          ∃ i : κ,
+            ((family i : projectedColoringGeneratorSubspace emb colorings) :
+                G.edgeSet → Color) =
+              Pi.single e blue) :
+    data.EnumeratedExceptionalAnnulusSameSideRealization p0Inside p4Inside side ∨
+      (∃ e : G.edgeSet,
+        data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e) ∧
+        (Theorem49BoundaryRootSynthesis emb C₀ ∨
+          ∃ z : G.edgeSet → Color,
+            z ∈ planarBoundaryZeroSubmodule emb ∧
+              z ≠ 0 ∧
+                ∀ e : G.edgeSet,
+                  data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e →
+                    z e = 0) := by
+  rcases data.enumeratedExceptionalAnnulusSameSideRealization_or_exists_enumeratedExceptionalAnnulusForcedEdge_of_isExceptional_of_portalSides
+      p0Inside p4Inside h side hportal_crosses hcycles with
+    hsameSide | hforced
+  · exact Or.inl hsameSide
+  · have halgebraic :=
+      data.theorem49BoundaryRootSynthesis_or_boundaryZeroChainObstruction_of_classifierControl
+        emb C₀ colorings hsubset family p0Inside p4Inside side classifier hwitnessRed
+        hwitnessBlue
+    exact Or.inr ⟨hforced, halgebraic⟩
+
 /-- Theorem 4.9 synthesis route from a concrete finite checker output.  The checker need only
 certify that its finite edge set is exactly the enumerated CAP5 emitted-edge predicate, and then
 prove the local nonzero/witness obligations by finite membership in that set. -/
