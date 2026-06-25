@@ -1158,6 +1158,24 @@ theorem exists_forcedCounterexampleEdge_crossing_of_mem_forcedCounterexampleLate
   exact ⟨e, hedge, by
     simpa [node, latentNode] using (report.node latent).forcedCounterexampleEdge_crosses hedge⟩
 
+/-- Normal-form payload of a forced-counterexample report-bin entry: it gives a concrete edge
+outside the generated candidate support that crosses the reported side.  This is the finite
+failed-separator sample consumed by the separator and algebraic follow-up checks. -/
+theorem exists_crossing_outside_of_mem_forcedCounterexampleLatents
+    (report : CAP5ExceptionalAnnulusGeneratorReport boundaryEdge side)
+    {latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge}
+    (hmem : latent ∈ report.forcedCounterexampleLatents) :
+    ∃ e : G.edgeSet,
+      e ∉ (report.node latent).candidate.edgeSupport ∧
+        EdgeCrossesVertexSide G side e := by
+  rcases report.forcedCounterexample_of_mem_forcedCounterexampleLatents hmem with
+    ⟨e, hedge⟩
+  have hnormal :
+      e ∉ (report.node latent).candidate.edgeSupport ∧
+        EdgeCrossesVertexSide G (report.node latent).side e :=
+    ((report.node latent).forcedCounterexampleEdge_iff_crossing_outside (e := e)).1 hedge
+  exact ⟨e, hnormal.1, by simpa [node, latentNode] using hnormal.2⟩
+
 /-- A forced-counterexample report-bin entry carries the full one-edge avoiding-walk witness
 emitted by the checker.  This is the finite data a cocycle or algebraic-cancellation pass can
 consume directly: endpoints on opposite sides, the emitted outside edge, the one-edge walk, and
@@ -1665,6 +1683,37 @@ theorem exists_enumeratedExceptionalAnnulusForcedEdge_of_mem_forcedCounterexampl
   exact ⟨e, latent, hlatentMem, rfl, rfl, horientation, by
     simpa [CAP5ExceptionalAnnulusGeneratorReport.node,
       CAP5ExceptionalAnnulusGeneratorReport.latentNode] using hedge⟩
+
+/-- A forced latent emitted by a certified finite report supplies an enumerated forced edge in
+the same crossing-outside normal form as the separator checker. -/
+theorem exists_enumeratedExceptionalAnnulusForcedEdge_crossing_outside_of_mem_forcedCounterexampleLatents
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    (report : CAP5ExceptionalAnnulusGeneratorReport boundaryEdge side)
+    {latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge}
+    (hmem : latent ∈ report.forcedCounterexampleLatents)
+    (horientation : data.RealizesExceptionalBoundarySupportOrientation latent.orientation) :
+    ∃ e : G.edgeSet,
+      data.EnumeratedExceptionalAnnulusForcedEdge
+          latent.p0Inside latent.p4Inside side e ∧
+        e ∉ (report.node latent).candidate.edgeSupport ∧
+          EdgeCrossesVertexSide G side e := by
+  have hlatentMem :
+      latent ∈ CAP5ExceptionalAnnulusGeneratorLatent.all boundaryEdge :=
+    (report.mem_forcedCounterexampleLatents_iff).1 hmem |>.1
+  rcases report.exists_crossing_outside_of_mem_forcedCounterexampleLatents hmem with
+    ⟨e, heOutside, hcross⟩
+  have hnormal :
+      e ∉ (report.node latent).candidate.edgeSupport ∧
+        EdgeCrossesVertexSide G (report.node latent).side e := by
+    exact ⟨heOutside, by simpa [CAP5ExceptionalAnnulusGeneratorReport.node,
+      CAP5ExceptionalAnnulusGeneratorReport.latentNode] using hcross⟩
+  have hforced : (report.node latent).ForcedCounterexampleEdge e :=
+    ((report.node latent).forcedCounterexampleEdge_iff_crossing_outside (e := e)).2 hnormal
+  exact ⟨e,
+    ⟨latent, hlatentMem, rfl, rfl, horientation, by
+      simpa [CAP5ExceptionalAnnulusGeneratorReport.node,
+        CAP5ExceptionalAnnulusGeneratorReport.latentNode] using hforced⟩,
+    heOutside, hcross⟩
 
 /-- A forced latent emitted by a certified finite report gives the broader exceptional-annulus
 one-edge counterexample consumed by the algebraic lane. -/
