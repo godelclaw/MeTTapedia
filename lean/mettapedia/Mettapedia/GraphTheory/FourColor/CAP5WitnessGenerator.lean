@@ -317,6 +317,30 @@ def MissingCheckerEvidence (node : CAP5ExceptionalAnnulusGeneratorNode boundaryE
     ¬ HasCycleOnSide G node.side ∨
       ¬ HasCycleOnSide G (fun v => ¬ node.side v)
 
+/-- The portal-crossing checker has not yet certified every generated portal. -/
+def MissingPortalCrossingEvidence
+    (node : CAP5ExceptionalAnnulusGeneratorNode boundaryEdge) : Prop :=
+  ¬ node.PortalCrosses
+
+/-- The checker has not yet certified a cycle on the selected side. -/
+def MissingSelectedSideCycleEvidence
+    (node : CAP5ExceptionalAnnulusGeneratorNode boundaryEdge) : Prop :=
+  ¬ HasCycleOnSide G node.side
+
+/-- The checker has not yet certified a cycle on the complementary side. -/
+def MissingComplementarySideCycleEvidence
+    (node : CAP5ExceptionalAnnulusGeneratorNode boundaryEdge) : Prop :=
+  ¬ HasCycleOnSide G (fun v => ¬ node.side v)
+
+/-- The split missing-evidence predicate is the disjunction of its three primitive bins. -/
+theorem missingCheckerEvidence_iff_missing_ingredient
+    (node : CAP5ExceptionalAnnulusGeneratorNode boundaryEdge) :
+    node.MissingCheckerEvidence ↔
+      node.MissingPortalCrossingEvidence ∨
+        node.MissingSelectedSideCycleEvidence ∨
+          node.MissingComplementarySideCycleEvidence := by
+  rfl
+
 /-- The split missing-evidence predicate is exactly the older partial-bin predicate. -/
 theorem partial_iff_missingCheckerEvidence
     (node : CAP5ExceptionalAnnulusGeneratorNode boundaryEdge) :
@@ -1737,6 +1761,49 @@ theorem missingCheckerEvidenceLatents_ne_nil_iff_exists_missingCheckerEvidence
   rw [← report.partialLatents_eq_missingCheckerEvidenceLatents]
   exact report.partialLatents_ne_nil_iff_exists_missingCheckerEvidence
 
+/-- Three-bin diagnostic form of the missing-frontier boundary.  A nonempty missing-evidence
+frontier means the generator has an enumerated latent in one of the primitive missing-checker
+bins: portal crossings, selected-side cycle, or complementary-side cycle. -/
+theorem missingCheckerEvidenceLatents_ne_nil_iff_exists_missing_checker_ingredient
+    (report : CAP5ExceptionalAnnulusGeneratorReport boundaryEdge side) :
+    report.missingCheckerEvidenceLatents ≠ [] ↔
+      (∃ latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge,
+        latent ∈ CAP5ExceptionalAnnulusGeneratorLatent.all boundaryEdge ∧
+          (report.node latent).MissingPortalCrossingEvidence) ∨
+        (∃ latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge,
+          latent ∈ CAP5ExceptionalAnnulusGeneratorLatent.all boundaryEdge ∧
+            (report.node latent).MissingSelectedSideCycleEvidence) ∨
+          (∃ latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge,
+            latent ∈ CAP5ExceptionalAnnulusGeneratorLatent.all boundaryEdge ∧
+              (report.node latent).MissingComplementarySideCycleEvidence) := by
+  constructor
+  · intro hfrontier
+    rcases (report.missingCheckerEvidenceLatents_ne_nil_iff_exists_missingCheckerEvidence).1
+        hfrontier with
+      ⟨latent, hmem, hmissing⟩
+    rcases ((report.node latent).missingCheckerEvidence_iff_missing_ingredient).1
+        hmissing with hportal | hcycle
+    · exact Or.inl ⟨latent, hmem, hportal⟩
+    · rcases hcycle with hselected | hcomplement
+      · exact Or.inr <| Or.inl ⟨latent, hmem, hselected⟩
+      · exact Or.inr <| Or.inr ⟨latent, hmem, hcomplement⟩
+  · intro hingredient
+    apply (report.missingCheckerEvidenceLatents_ne_nil_iff_exists_missingCheckerEvidence).2
+    rcases hingredient with hportal | hcycle
+    · rcases hportal with ⟨latent, hmem, hportal⟩
+      exact ⟨latent, hmem,
+        ((report.node latent).missingCheckerEvidence_iff_missing_ingredient).2
+          (Or.inl hportal)⟩
+    · rcases hcycle with hselected | hcomplement
+      · rcases hselected with ⟨latent, hmem, hselected⟩
+        exact ⟨latent, hmem,
+          ((report.node latent).missingCheckerEvidence_iff_missing_ingredient).2
+            (Or.inr (Or.inl hselected))⟩
+      · rcases hcomplement with ⟨latent, hmem, hcomplement⟩
+        exact ⟨latent, hmem,
+          ((report.node latent).missingCheckerEvidence_iff_missing_ingredient).2
+            (Or.inr (Or.inr hcomplement))⟩
+
 /--
 In a cyclically five-edge-connected graph, the report's only obstruction to putting every
 enumerated latent in the forced-counterexample bin is genuinely partial checker evidence.  Thus a
@@ -2150,6 +2217,41 @@ theorem ofDecidableChecks_partialLatents_ne_nil_iff_exists_missingCheckerEvidenc
   · rintro ⟨latent, hmem, hmissing⟩
     apply hboundary.2
     exact ⟨latent, hmem, by simpa [report, node, latentNode] using hmissing⟩
+
+/--
+Executable three-bin diagnostic frontier for the canonical finite CAP5 checker.  A nonempty
+missing-evidence list is equivalent to an enumerated latent missing portal crossings, a
+selected-side cycle, or a complementary-side cycle.
+-/
+theorem ofDecidableChecks_missingCheckerEvidenceLatents_ne_nil_iff_exists_missing_checker_ingredient
+    (boundaryEdge : Fin 5 → G.edgeSet) (side : V → Prop)
+    [∀ latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge,
+      Decidable ((latentNode boundaryEdge side latent).PortalCrosses)]
+    [∀ latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge,
+      Decidable ((latentNode boundaryEdge side latent).SideCycles)]
+    [∀ latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge,
+      Decidable ((latentNode boundaryEdge side latent).RealizedSeparator)] :
+    (ofDecidableChecks boundaryEdge side).missingCheckerEvidenceLatents ≠ [] ↔
+      (∃ latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge,
+        latent ∈ CAP5ExceptionalAnnulusGeneratorLatent.all boundaryEdge ∧
+          (latentNode boundaryEdge side latent).MissingPortalCrossingEvidence) ∨
+        (∃ latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge,
+          latent ∈ CAP5ExceptionalAnnulusGeneratorLatent.all boundaryEdge ∧
+            (latentNode boundaryEdge side latent).MissingSelectedSideCycleEvidence) ∨
+          (∃ latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge,
+            latent ∈ CAP5ExceptionalAnnulusGeneratorLatent.all boundaryEdge ∧
+              (latentNode boundaryEdge side latent).MissingComplementarySideCycleEvidence) := by
+  let report : CAP5ExceptionalAnnulusGeneratorReport boundaryEdge side :=
+    ofDecidableChecks boundaryEdge side
+  have hboundary :=
+    report.missingCheckerEvidenceLatents_ne_nil_iff_exists_missing_checker_ingredient
+  constructor
+  · intro hfrontier
+    have hingredient := hboundary.1 hfrontier
+    simpa [report, node, latentNode] using hingredient
+  · intro hingredient
+    apply hboundary.2
+    simpa [report, node, latentNode] using hingredient
 
 /--
 Executable exact boundary for the canonical finite CAP5 checker: under cyclic five-edge-
