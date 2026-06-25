@@ -143,6 +143,46 @@ theorem exists_oneEdge_forcedCounterexampleWalk_detector_payload_of_mem_complete
       hcyclic).2 hmem)
     weight
 
+/--
+Executable report-completeness form.  If the primitive missing-evidence frontier is empty, every
+finite CAP5 latent has the two checker facts needed by the report-level detector bridges.  This is
+the handoff from a finite forward checker to the proof-facing CAP5 route: no separate global
+portal/cycle hypotheses need to be supplied once the checker frontier is empty.
+-/
+theorem all_checker_evidence_of_missingCheckerEvidenceLatents_eq_nil
+    (report : CAP5ExceptionalAnnulusGeneratorReport boundaryEdge side)
+    (hmissingEmpty : report.missingCheckerEvidenceLatents = []) :
+    (∀ latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge,
+      (report.node latent).PortalCrosses) ∧
+      (∀ latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge,
+        (report.node latent).SideCycles) := by
+  have hcompleteAll :
+      report.completeCheckerLatents =
+          CAP5ExceptionalAnnulusGeneratorLatent.all boundaryEdge :=
+    (report.completeCheckerLatents_eq_all_iff_missingCheckerEvidenceLatents_eq_nil).2
+      hmissingEmpty
+  constructor
+  · intro latent
+    have hmemAll :
+        latent ∈ CAP5ExceptionalAnnulusGeneratorLatent.all boundaryEdge :=
+      CAP5ExceptionalAnnulusGeneratorLatent.mem_all latent
+    have hcompleteMem : latent ∈ report.completeCheckerLatents := by
+      simpa [hcompleteAll] using hmemAll
+    have hnotMissing : ¬ (report.node latent).MissingCheckerEvidence :=
+      (report.mem_completeCheckerLatents_iff).1 hcompleteMem |>.2
+    exact (((report.node latent).not_missingCheckerEvidence_iff_complete).1
+      hnotMissing).1
+  · intro latent
+    have hmemAll :
+        latent ∈ CAP5ExceptionalAnnulusGeneratorLatent.all boundaryEdge :=
+      CAP5ExceptionalAnnulusGeneratorLatent.mem_all latent
+    have hcompleteMem : latent ∈ report.completeCheckerLatents := by
+      simpa [hcompleteAll] using hmemAll
+    have hnotMissing : ¬ (report.node latent).MissingCheckerEvidence :=
+      (report.mem_completeCheckerLatents_iff).1 hcompleteMem |>.2
+    exact (((report.node latent).not_missingCheckerEvidence_iff_complete).1
+      hnotMissing).2
+
 end CAP5ExceptionalAnnulusGeneratorReport
 
 namespace CAP5TransportedEdgeComponentCoverCore
@@ -479,6 +519,49 @@ theorem exists_enumeratedExceptionalAnnulusForcedEdge_oneEdgeWalk_detector_paylo
   exact ⟨e, hedge, heOutside, hcross, by simp [hpEdges], hweight⟩
 
 /--
+Empty-frontier form of the one-edge detector payload.  A finite CAP5 checker run with no missing
+primitive checker evidence can be consumed directly by the detector/algebraic lane: cyclic
+five-edge-connectivity turns the complete checker frontier into a forced-counterexample frontier,
+and the emitted edge remains attached to the enumerated exceptional annulus predicate.
+-/
+theorem exists_enumeratedExceptionalAnnulusForcedEdge_oneEdgeWalk_detector_payload_of_missingCheckerEvidenceLatents_eq_nil_of_isExceptional_of_cyclicallyFiveEdgeConnected
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    (report : CAP5ExceptionalAnnulusGeneratorReport boundaryEdge side)
+    (p0Inside p4Inside : Bool) (h : data.IsExceptional)
+    (hcyclic : CyclicallyFiveEdgeConnected G)
+    (hmissingEmpty : report.missingCheckerEvidenceLatents = [])
+    (weight : Sym2 V → F2) :
+    ∃ latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge,
+      latent ∈ CAP5ExceptionalAnnulusGeneratorLatent.all boundaryEdge ∧
+        latent.p0Inside = p0Inside ∧
+          latent.p4Inside = p4Inside ∧
+            data.RealizesExceptionalBoundarySupportOrientation latent.orientation ∧
+              latent ∈ report.forcedCounterexampleLatents ∧
+                ∃ u v : V, ∃ e : G.edgeSet, ∃ p : G.Walk u v,
+                  data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e ∧
+                    e ∉ (report.node latent).candidate.edgeSupport ∧
+                      side u ∧ ¬ side v ∧
+                        p.edges = [(e : Sym2 V)] ∧
+                          (∀ i : Fin 5,
+                            i ∈ (report.node latent).candidate.portalCandidate.portalSet →
+                              ((boundaryEdge i : G.edgeSet) : Sym2 V) ∉ p.edges) ∧
+                            EdgeCrossesVertexSide G side e ∧
+                              (Curriculum.pathXor weight p.edges ≠ 0 →
+                                ∃ e' : G.edgeSet,
+                                  data.EnumeratedExceptionalAnnulusForcedEdge
+                                    p0Inside p4Inside side e' ∧
+                                    e' ∉ (report.node latent).candidate.edgeSupport ∧
+                                      EdgeCrossesVertexSide G side e' ∧
+                                        (e' : Sym2 V) ∈ p.edges ∧
+                                          weight (e' : Sym2 V) ≠ 0) := by
+  rcases report.all_checker_evidence_of_missingCheckerEvidenceLatents_eq_nil
+      hmissingEmpty with
+    ⟨hportal, hcycles⟩
+  exact
+    data.exists_enumeratedExceptionalAnnulusForcedEdge_oneEdgeWalk_detector_payload_of_report_complete_of_isExceptional_of_portalSides_of_cyclicallyFiveEdgeConnected
+      report p0Inside p4Inside h hcyclic hportal hcycles weight
+
+/--
 Complete cyclic-five exceptional CAP5 reports feed the algebraic normal form directly.  The
 one-edge path-xor detector either stays silent, or a nonzero signal exposes an edge in the
 `ExceptionalAnnulusCrossingOutsideEdge` predicate: an edge outside the realized support crossing
@@ -551,6 +634,48 @@ theorem exists_exceptionalAnnulusCrossingOutsideEdge_oneEdgeWalk_detector_payloa
     ⟨edgeCandidate, horientationCandidate, hsideCase, by
       simpa [edgeCandidate] using heOutside', hcross'⟩
   exact ⟨e', hedgeNormal', heOutside', hcross', heMem, hweight⟩
+
+/--
+Empty-frontier crossing-outside detector form.  This is the same executable checker handoff as the
+enumerated-edge theorem, normalized to the broader predicate consumed by the algebraic extension
+machinery.
+-/
+theorem exists_exceptionalAnnulusCrossingOutsideEdge_oneEdgeWalk_detector_payload_of_missingCheckerEvidenceLatents_eq_nil_of_isExceptional_of_cyclicallyFiveEdgeConnected
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    (report : CAP5ExceptionalAnnulusGeneratorReport boundaryEdge side)
+    (p0Inside p4Inside : Bool) (h : data.IsExceptional)
+    (hcyclic : CyclicallyFiveEdgeConnected G)
+    (hmissingEmpty : report.missingCheckerEvidenceLatents = [])
+    (weight : Sym2 V → F2) :
+    ∃ latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge,
+      latent ∈ CAP5ExceptionalAnnulusGeneratorLatent.all boundaryEdge ∧
+        latent.p0Inside = p0Inside ∧
+          latent.p4Inside = p4Inside ∧
+            data.RealizesExceptionalBoundarySupportOrientation latent.orientation ∧
+              latent ∈ report.forcedCounterexampleLatents ∧
+                ∃ u v : V, ∃ e : G.edgeSet, ∃ p : G.Walk u v,
+                  data.ExceptionalAnnulusCrossingOutsideEdge p0Inside p4Inside side e ∧
+                    e ∉ (report.node latent).candidate.edgeSupport ∧
+                      side u ∧ ¬ side v ∧
+                        p.edges = [(e : Sym2 V)] ∧
+                          (∀ i : Fin 5,
+                            i ∈ (report.node latent).candidate.portalCandidate.portalSet →
+                              ((boundaryEdge i : G.edgeSet) : Sym2 V) ∉ p.edges) ∧
+                            EdgeCrossesVertexSide G side e ∧
+                              (Curriculum.pathXor weight p.edges ≠ 0 →
+                                ∃ e' : G.edgeSet,
+                                  data.ExceptionalAnnulusCrossingOutsideEdge
+                                    p0Inside p4Inside side e' ∧
+                                    e' ∉ (report.node latent).candidate.edgeSupport ∧
+                                      EdgeCrossesVertexSide G side e' ∧
+                                        (e' : Sym2 V) ∈ p.edges ∧
+                                          weight (e' : Sym2 V) ≠ 0) := by
+  rcases report.all_checker_evidence_of_missingCheckerEvidenceLatents_eq_nil
+      hmissingEmpty with
+    ⟨hportal, hcycles⟩
+  exact
+    data.exists_exceptionalAnnulusCrossingOutsideEdge_oneEdgeWalk_detector_payload_of_report_complete_of_isExceptional_of_portalSides_of_cyclicallyFiveEdgeConnected
+      report p0Inside p4Inside h hcyclic hportal hcycles weight
 
 /--
 Complete cyclic-five exceptional CAP5 reports turn the emitted one-edge walk into a coordinate
@@ -639,6 +764,56 @@ theorem exists_exceptionalAnnulusCrossingOutsideEdge_colorCoordinatePathXor_dete
         exact (color_ne_zero_iff_fst_or_snd_ne_zero (z e)).2
           (Or.inr (by simpa using hweight))
     exact ⟨e, hedge, heOutside, hcross, heMem, hz⟩
+
+/--
+Empty-frontier coordinate detector form.  A finished finite checker report supplies the
+color-coordinate path-xor witness used by the algebraic lane without separately restating the
+portal-crossing and side-cycle checker facts.
+-/
+theorem exists_exceptionalAnnulusCrossingOutsideEdge_colorCoordinatePathXor_detector_payload_of_missingCheckerEvidenceLatents_eq_nil_of_isExceptional_of_cyclicallyFiveEdgeConnected
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    (report : CAP5ExceptionalAnnulusGeneratorReport boundaryEdge side)
+    (p0Inside p4Inside : Bool) (h : data.IsExceptional)
+    (hcyclic : CyclicallyFiveEdgeConnected G)
+    (hmissingEmpty : report.missingCheckerEvidenceLatents = [])
+    (z : G.edgeSet → Color) :
+    ∃ latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge,
+      latent ∈ CAP5ExceptionalAnnulusGeneratorLatent.all boundaryEdge ∧
+        latent.p0Inside = p0Inside ∧
+          latent.p4Inside = p4Inside ∧
+            data.RealizesExceptionalBoundarySupportOrientation latent.orientation ∧
+              latent ∈ report.forcedCounterexampleLatents ∧
+                ∃ u v : V, ∃ e : G.edgeSet, ∃ p : G.Walk u v,
+                  data.ExceptionalAnnulusCrossingOutsideEdge p0Inside p4Inside side e ∧
+                    e ∉ (report.node latent).candidate.edgeSupport ∧
+                      side u ∧ ¬ side v ∧
+                        p.edges = [(e : Sym2 V)] ∧
+                          (∀ i : Fin 5,
+                            i ∈ (report.node latent).candidate.portalCandidate.portalSet →
+                              ((boundaryEdge i : G.edgeSet) : Sym2 V) ∉ p.edges) ∧
+                            EdgeCrossesVertexSide G side e ∧
+                              (z e ≠ 0 →
+                                Curriculum.pathXor (edgeColorFirstCoordinateWeight z)
+                                    p.edges ≠ 0 ∨
+                                  Curriculum.pathXor (edgeColorSecondCoordinateWeight z)
+                                    p.edges ≠ 0) ∧
+                                ((Curriculum.pathXor (edgeColorFirstCoordinateWeight z)
+                                      p.edges ≠ 0 ∨
+                                    Curriculum.pathXor (edgeColorSecondCoordinateWeight z)
+                                      p.edges ≠ 0) →
+                                  ∃ e' : G.edgeSet,
+                                    data.ExceptionalAnnulusCrossingOutsideEdge
+                                      p0Inside p4Inside side e' ∧
+                                      e' ∉ (report.node latent).candidate.edgeSupport ∧
+                                        EdgeCrossesVertexSide G side e' ∧
+                                          (e' : Sym2 V) ∈ p.edges ∧
+                                            z e' ≠ 0) := by
+  rcases report.all_checker_evidence_of_missingCheckerEvidenceLatents_eq_nil
+      hmissingEmpty with
+    ⟨hportal, hcycles⟩
+  exact
+    data.exists_exceptionalAnnulusCrossingOutsideEdge_colorCoordinatePathXor_detector_payload_of_report_complete_of_isExceptional_of_portalSides_of_cyclicallyFiveEdgeConnected
+      report p0Inside p4Inside h hcyclic hportal hcycles z
 
 /--
 Coordinate-signal form of the failed finite-control extension.  When the current CAP5 emitted
