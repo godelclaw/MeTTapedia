@@ -1705,6 +1705,42 @@ theorem exists_enumeratedExceptionalAnnulusForcedEdge_oneEdgeWalk_and_familyPair
     ⟨latent, hlatentMem, hp0, hp4, horientation, hforced, u, v, e, p,
       hedge, heOutside, hu, hv, hpEdges, havoid, hcross, i, hpair⟩
 
+/-- CAP5 specialization of the all-zero red/blue pairing diagnostic.  If every generated family
+pairing with `z` is zero, then `z` vanishes on every edge emitted by the enumerated exceptional
+CAP5 forced-edge predicate. -/
+theorem enumeratedExceptionalAnnulusForcedEdge_vanishes_of_forall_familyPairing_eq_zero
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    [Fintype G.edgeSet]
+    {emb : PlaneEmbeddingWithBoundary G}
+    {colorings : Set (G.EdgeColoring Color)}
+    {κ : Type*}
+    (family : κ → projectedColoringGeneratorSubspace emb colorings)
+    (p0Inside p4Inside : Bool) (side : V → Prop)
+    {z : G.edgeSet → Color}
+    (hpairZero :
+      ∀ i : κ,
+        chainDotBilinForm G.edgeSet (family i : G.edgeSet → Color) z = 0)
+    (hwitnessRed :
+      ∀ e : G.edgeSet,
+        data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e →
+          ∃ i : κ,
+            ((family i : projectedColoringGeneratorSubspace emb colorings) :
+                G.edgeSet → Color) =
+              Pi.single e red)
+    (hwitnessBlue :
+      ∀ e : G.edgeSet,
+        data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e →
+          ∃ i : κ,
+            ((family i : projectedColoringGeneratorSubspace emb colorings) :
+                G.edgeSet → Color) =
+              Pi.single e blue) :
+    ∀ e : G.edgeSet,
+      data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e →
+        z e = 0 :=
+  edgePredicate_vanishes_of_forall_familyPairing_eq_zero family
+    (data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side)
+    hpairZero hwitnessRed hwitnessBlue
+
 /-- Report-level algebraic falsification diagnostic.  If every generated family pairing vanishes,
 then a complete cyclic-five exceptional CAP5 report exposes a concrete forced-walk emitted edge on
 which the selected chain is zero.  This is the finite coordinate returned when the algebraic lane
@@ -1763,13 +1799,9 @@ theorem exists_enumeratedExceptionalAnnulusForcedEdge_oneEdgeWalk_eq_zero_of_for
       report p0Inside p4Inside h hcyclic hportal hcycles with
     ⟨latent, hlatentMem, hp0, hp4, horientation, hforced, u, v, e, p, hedge,
       heOutside, hu, hv, hpEdges, havoid, hcross⟩
-  have hzeZero : z e = 0 := by
-    by_contra hze
-    rcases exists_familyPairing_ne_zero_of_edgePredicateWitness family
-        (data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side)
-        ⟨e, hedge, hze⟩ hwitnessRed hwitnessBlue with
-      ⟨i, hpair⟩
-    exact hpair (hpairZero i)
+  have hzeZero : z e = 0 :=
+    data.enumeratedExceptionalAnnulusForcedEdge_vanishes_of_forall_familyPairing_eq_zero
+      family p0Inside p4Inside side hpairZero hwitnessRed hwitnessBlue e hedge
   exact
     ⟨latent, hlatentMem, hp0, hp4, horientation, hforced, u, v, e, p,
       hedge, heOutside, hu, hv, hpEdges, havoid, hcross, hzeZero⟩
