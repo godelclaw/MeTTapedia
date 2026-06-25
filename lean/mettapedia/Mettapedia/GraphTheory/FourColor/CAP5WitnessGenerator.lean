@@ -2123,6 +2123,42 @@ theorem enumeratedExceptionalAnnulusForcedEdgeClassifierControl_iff_no_boundaryZ
       intro e hedge
       exact hvanish e ((classifier.emittedFinset_spec e).2 hedge))
 
+/-- A CAP5 emitted-edge obstruction is an explicit nonzero kernel witness for any red/blue
+single-coordinate family that only probes edges emitted by the CAP5 classifier.  Thus a failed
+finite control run returns the exact algebraic payload needed to diagnose why the coordinate
+generator cannot justify the synthesis route without adding a stronger detector. -/
+theorem exists_nonzero_mem_ker_planarBoundaryZeroFamilyPairingMap_of_enumeratedExceptionalAnnulusBoundaryZeroChainObstruction
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    [Fintype G.edgeSet]
+    {emb : PlaneEmbeddingWithBoundary G}
+    {colorings : Set (G.EdgeColoring Color)}
+    {κ : Type*}
+    (family : κ → projectedColoringGeneratorSubspace emb colorings)
+    {p0Inside p4Inside : Bool} {side : V → Prop}
+    (hfamily :
+      ∀ i : κ,
+        ∃ e : G.edgeSet,
+          data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e ∧
+            (((family i : projectedColoringGeneratorSubspace emb colorings) :
+                  G.edgeSet → Color) = Pi.single e red ∨
+              ((family i : projectedColoringGeneratorSubspace emb colorings) :
+                  G.edgeSet → Color) = Pi.single e blue))
+    (hobs :
+      ∃ z : G.edgeSet → Color,
+        z ∈ planarBoundaryZeroSubmodule emb ∧
+          z ≠ 0 ∧
+            ∀ e : G.edgeSet,
+              data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e →
+                z e = 0) :
+    ∃ w : planarBoundaryZeroSubmodule emb,
+      w ∈ LinearMap.ker (planarBoundaryZeroFamilyPairingMap family) ∧
+        w ≠ 0 := by
+  rcases hobs with ⟨z, hzBoundary, hzNonzero, hvanish⟩
+  exact
+    exists_nonzero_mem_ker_planarBoundaryZeroFamilyPairingMap_of_boundaryZeroChainObstruction
+      family (data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side)
+      hfamily z hzBoundary hzNonzero hvanish
+
 /-- Theorem 4.9 synthesis route from a Boolean classifier in nonzero-coordinate witness form.
 This is the checker-facing shape: for each nonzero selected-boundary-zero chain, the finite
 classifier output supplies an emitted coordinate where the chain is nonzero. -/
