@@ -3553,6 +3553,67 @@ theorem theorem49BoundaryRootSynthesis_or_boundaryZeroChainObstruction_of_classi
       (exists_boundaryZeroChain_vanishingOnEnumeratedExceptionalAnnulusForcedEdges_of_not_classifierControl
         emb p0Inside p4Inside side classifier hcontrol)
 
+/-- Kernel-aware finite-checker dichotomy for a Boolean exceptional CAP5 classifier.  If the
+checker's emitted edges are covered by red/blue probes, and the explicit family contains only
+red/blue probes on emitted edges, then the finite control decision returns either Theorem 4.9
+boundary-root synthesis or a nontrivial kernel for the family-pairing map.
+
+This is the algebraic failure form of the checker: an obstruction is no longer just a vanishing
+boundary-zero chain, but a proof that the current emitted-edge probe family cannot have trivial
+kernel. -/
+theorem theorem49BoundaryRootSynthesis_or_ker_planarBoundaryZeroFamilyPairingMap_ne_bot_of_classifierControl
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    [Fintype G.edgeSet] [FiniteDimensional F2 (G.edgeSet → Color)]
+    (emb : PlaneEmbeddingWithBoundary G) (C₀ : G.EdgeColoring Color)
+    (colorings : Set (G.EdgeColoring Color))
+    (hsubset : colorings ⊆ G.EdgeKempeClosure C₀)
+    {κ : Type*}
+    (family : κ → projectedColoringGeneratorSubspace emb colorings)
+    (p0Inside p4Inside : Bool) (side : V → Prop)
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    [Decidable
+      (∀ ⦃z : G.edgeSet → Color⦄,
+        z ∈ planarBoundaryZeroSubmodule emb →
+        (∀ e ∈ classifier.emittedFinset, z e = 0) →
+          z = 0)]
+    (hfamilyOnlyEmitted :
+      ∀ i : κ,
+        ∃ e : G.edgeSet, e ∈ classifier.emittedFinset ∧
+          (((family i : projectedColoringGeneratorSubspace emb colorings) :
+                G.edgeSet → Color) = Pi.single e red ∨
+            ((family i : projectedColoringGeneratorSubspace emb colorings) :
+                G.edgeSet → Color) = Pi.single e blue))
+    (hwitnessRed :
+      ∀ e : G.edgeSet,
+        e ∈ classifier.emittedFinset →
+          ∃ i : κ,
+            ((family i : projectedColoringGeneratorSubspace emb colorings) :
+                G.edgeSet → Color) =
+              Pi.single e red)
+    (hwitnessBlue :
+      ∀ e : G.edgeSet,
+        e ∈ classifier.emittedFinset →
+          ∃ i : κ,
+            ((family i : projectedColoringGeneratorSubspace emb colorings) :
+                G.edgeSet → Color) =
+              Pi.single e blue) :
+    Theorem49BoundaryRootSynthesis emb C₀ ∨
+      LinearMap.ker (planarBoundaryZeroFamilyPairingMap family) ≠ ⊥ := by
+  rcases data.theorem49BoundaryRootSynthesis_or_boundaryZeroChainObstruction_of_classifierControl
+      emb C₀ colorings hsubset family p0Inside p4Inside side classifier
+      hwitnessRed hwitnessBlue with
+    hsynthesis | hobs
+  · exact Or.inl hsynthesis
+  · refine Or.inr ?_
+    apply
+      not_ker_planarBoundaryZeroFamilyPairingMap_eq_bot_of_enumeratedExceptionalAnnulusBoundaryZeroChainObstruction
+        family
+    · intro i
+      rcases hfamilyOnlyEmitted i with ⟨e, hemitted, hprobe⟩
+      exact ⟨e, (classifier.emittedFinset_spec e).1 hemitted, hprobe⟩
+    · exact hobs
+
 /-- Generator-first CAP5 branch theorem.  A complete exceptional CAP5 sample either realizes the
 exact proposed side, or it emits a forced edge and the finite algebraic checker produces the
 next non-geometric outcome: Theorem 4.9 boundary-root synthesis, or a concrete boundary-zero
