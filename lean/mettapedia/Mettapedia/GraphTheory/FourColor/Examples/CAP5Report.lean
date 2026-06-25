@@ -451,6 +451,38 @@ theorem realizedCAP5Report_classify_forcedLatent_eq_forcedCounterexample :
         forcedCandidateBypassWalk_avoids_forcedCandidate
 
 /--
+The concrete finite report exposes the four-edge latent in the realized-separator bin.
+This is the positive side of the two-triangle calibration sample.
+-/
+theorem realizedCAP5Report_realizedLatent_mem_realizedSeparatorLatents :
+    realizedLatent ∈ realizedCAP5Report.realizedSeparatorLatents := by
+  exact (realizedCAP5Report.mem_realizedSeparatorLatents_iff).2
+    ⟨CAP5ExceptionalAnnulusGeneratorLatent.mem_all realizedLatent,
+      realizedCAP5Report_classify_eq_realizedSeparator⟩
+
+/--
+The same finite report exposes the three-edge latent in the forced-counterexample bin.
+This is the negative side of the sample: one graph carries both report outcomes.
+-/
+theorem realizedCAP5Report_forcedLatent_mem_forcedCounterexampleLatents :
+    forcedLatent ∈ realizedCAP5Report.forcedCounterexampleLatents := by
+  exact (realizedCAP5Report.mem_forcedCounterexampleLatents_iff).2
+    ⟨CAP5ExceptionalAnnulusGeneratorLatent.mem_all forcedLatent,
+      realizedCAP5Report_classify_forcedLatent_eq_forcedCounterexample⟩
+
+/-- The realized-bin membership projects back to the certified cyclic-cut payload. -/
+theorem realizedCAP5Report_realizedLatent_payload :
+    (realizedCAP5Report.node realizedLatent).RealizedSeparator :=
+  realizedCAP5Report.realizedSeparator_of_mem_realizedSeparatorLatents
+    realizedCAP5Report_realizedLatent_mem_realizedSeparatorLatents
+
+/-- The forced-bin membership projects back to the certified outside-crossing payload. -/
+theorem realizedCAP5Report_forcedLatent_payload :
+    (realizedCAP5Report.node forcedLatent).ForcedCounterexample :=
+  realizedCAP5Report.forcedCounterexample_of_mem_forcedCounterexampleLatents
+    realizedCAP5Report_forcedLatent_mem_forcedCounterexampleLatents
+
+/--
 The realized-separator bin is a genuine cyclic-five-connectivity refutation for this finite
 sample, so it is a calibration case for the CAP5 witness generator rather than evidence for a
 minimal-counterexample route.
