@@ -26,6 +26,22 @@ def CAP5TransportedEdgeComponentCoverCore.ExceptionalAnnulusOneEdgeCounterexampl
               ∀ i : Fin 5, i ∈ edgeCandidate.portalCandidate.portalSet →
                 ((boundaryEdge i : G.edgeSet) : Sym2 V) ∉ p.edges
 
+/-- Normal-form edge predicate for the exceptional CAP5 counterexample bin.  It forgets the
+canonical one-edge walk payload and keeps exactly the checker-facing data: a realized exceptional
+boundary-support candidate plus an edge outside that support crossing the selected side. -/
+def CAP5TransportedEdgeComponentCoverCore.ExceptionalAnnulusCrossingOutsideEdge
+    {G : SimpleGraph V}
+    {boundaryEdge : Fin 5 → G.edgeSet} {n : Nat}
+    (data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n)
+    (p0Inside p4Inside : Bool) (side : V → Prop) (e : G.edgeSet) : Prop :=
+  ∃ edgeCandidate : CAP5ExceptionalAnnulusBoundaryEdgeSupportCandidate boundaryEdge,
+    data.RealizesExceptionalBoundarySupportOrientation
+        edgeCandidate.portalCandidate.orientation ∧
+      edgeCandidate.portalCandidate.sideCase =
+        CAP5ExceptionalAnnulusSideCase.ofPortalSides p0Inside p4Inside ∧
+        e ∉ edgeCandidate.edgeSupport ∧
+          EdgeCrossesVertexSide G side e
+
 /-- The exceptional CAP5 one-edge counterexample predicate always emits a genuine
 side-crossing edge.  This keeps the algebraic lane connected to the raw cyclic-cut checker
 instead of treating the emitted edge as an opaque witness. -/
@@ -87,6 +103,18 @@ theorem CAP5TransportedEdgeComponentCoverCore.exceptionalAnnulusOneEdgeCounterex
     exact heOutside ((edgeCandidate.mem_edgeSupport_iff_exists_portal e).2
       ⟨i, hi, hboundary_eq⟩)
 
+/-- Named normal-form equivalence for the exceptional CAP5 one-edge counterexample edge
+predicate.  Algebraic follow-up work can use `ExceptionalAnnulusCrossingOutsideEdge` when the
+one-edge walk payload is irrelevant. -/
+theorem CAP5TransportedEdgeComponentCoverCore.exceptionalAnnulusOneEdgeCounterexampleEdge_iff_crossingOutsideEdge
+    {G : SimpleGraph V}
+    {boundaryEdge : Fin 5 → G.edgeSet} {n : Nat}
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    {p0Inside p4Inside : Bool} {side : V → Prop} {e : G.edgeSet} :
+    data.ExceptionalAnnulusOneEdgeCounterexampleEdge p0Inside p4Inside side e ↔
+      data.ExceptionalAnnulusCrossingOutsideEdge p0Inside p4Inside side e :=
+  data.exceptionalAnnulusOneEdgeCounterexampleEdge_iff_exists_candidate_crossing_outside
+
 /-- The cyclic-five-edge-connected exceptional CAP5 branch emits at least one algebraically
 addressable one-edge counterexample edge.  This is the generator-facing edge predicate consumed by
 the non-geometric pairing lane. -/
@@ -142,6 +170,32 @@ theorem CAP5TransportedEdgeComponentCoverCore.exists_crossing_exceptionalAnnulus
       p0Inside p4Inside h side hcyclic hportal_crosses hinside_cycle houtside_cycle with
     ⟨e, hedge⟩
   exact ⟨e, hedge, data.exceptionalAnnulusOneEdgeCounterexampleEdge_crosses hedge⟩
+
+/-- Normal-form raw-checker output: the exceptional CAP5 branch emits an edge outside a realized
+boundary-support candidate that crosses the selected side. -/
+theorem CAP5TransportedEdgeComponentCoverCore.exists_exceptionalAnnulusCrossingOutsideEdge_of_isExceptional_of_portalSides
+    {G : SimpleGraph V}
+    {boundaryEdge : Fin 5 → G.edgeSet} {n : Nat}
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    (p0Inside p4Inside : Bool) (h : data.IsExceptional)
+    (side : V → Prop)
+    (hcyclic : CyclicallyFiveEdgeConnected G)
+    (hportal_crosses :
+      ∀ edgeCandidate : CAP5ExceptionalAnnulusBoundaryEdgeSupportCandidate boundaryEdge,
+        data.RealizesExceptionalBoundarySupportOrientation
+            edgeCandidate.portalCandidate.orientation →
+        edgeCandidate.portalCandidate.sideCase =
+            CAP5ExceptionalAnnulusSideCase.ofPortalSides p0Inside p4Inside →
+        ∀ i : Fin 5, i ∈ edgeCandidate.portalCandidate.portalSet →
+          EdgeCrossesVertexSide G side (boundaryEdge i))
+    (hinside_cycle : HasCycleOnSide G side)
+    (houtside_cycle : HasCycleOnSide G (fun v => ¬ side v)) :
+    ∃ e : G.edgeSet,
+      data.ExceptionalAnnulusCrossingOutsideEdge p0Inside p4Inside side e := by
+  rcases data.exists_exceptionalAnnulusOneEdgeCounterexampleEdge_of_isExceptional_of_portalSides
+      p0Inside p4Inside h side hcyclic hportal_crosses hinside_cycle houtside_cycle with
+    ⟨e, hedge⟩
+  exact ⟨e, (data.exceptionalAnnulusOneEdgeCounterexampleEdge_iff_crossingOutsideEdge).1 hedge⟩
 
 /-- Algebraic consumption of the exceptional CAP5 counterexample bin.  Once the finite generator
 emits a forced outside edge, any selected chain that is nonzero on every such emitted edge is
@@ -307,6 +361,63 @@ theorem exceptionalAnnulusCounterexampleEdgeControl_iff_forall_nonzero_exists
   edgePredicateControls_iff_forall_nonzero_exists_edgePredicateWitness
     (data.ExceptionalAnnulusOneEdgeCounterexampleEdge p0Inside p4Inside side)
 
+/-- Witness-form equivalent of the normal-form CAP5 outside-crossing control obligation.  This is
+the algebraic target naturally emitted by the finite checker: every nonzero selected-boundary-zero
+chain must be visible on some crossing edge outside a realized exceptional boundary-support
+candidate. -/
+theorem exceptionalAnnulusCrossingOutsideEdgeControl_iff_forall_nonzero_exists
+    {G : SimpleGraph V} [Fintype G.edgeSet]
+    {boundaryEdge : Fin 5 → G.edgeSet} {n : Nat}
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    {emb : PlaneEmbeddingWithBoundary G}
+    (p0Inside p4Inside : Bool) (side : V → Prop) :
+    (∀ ⦃z : G.edgeSet → Color⦄,
+      z ∈ planarBoundaryZeroSubmodule emb →
+      (∀ e : G.edgeSet,
+        data.ExceptionalAnnulusCrossingOutsideEdge p0Inside p4Inside side e →
+          z e = 0) →
+        z = 0) ↔
+    (∀ ⦃z : G.edgeSet → Color⦄,
+      z ∈ planarBoundaryZeroSubmodule emb →
+      z ≠ 0 →
+        ∃ e : G.edgeSet,
+          data.ExceptionalAnnulusCrossingOutsideEdge p0Inside p4Inside side e ∧
+            z e ≠ 0) :=
+  edgePredicateControls_iff_forall_nonzero_exists_edgePredicateWitness
+    (data.ExceptionalAnnulusCrossingOutsideEdge p0Inside p4Inside side)
+
+/-- The one-edge payload and the normal-form outside-crossing predicate give the same algebraic
+control obligation. -/
+theorem exceptionalAnnulusCounterexampleEdgeControl_iff_crossingOutsideEdgeControl
+    {G : SimpleGraph V} [Fintype G.edgeSet]
+    {boundaryEdge : Fin 5 → G.edgeSet} {n : Nat}
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    {emb : PlaneEmbeddingWithBoundary G}
+    (p0Inside p4Inside : Bool) (side : V → Prop) :
+    (∀ ⦃z : G.edgeSet → Color⦄,
+      z ∈ planarBoundaryZeroSubmodule emb →
+      (∀ e : G.edgeSet,
+        data.ExceptionalAnnulusOneEdgeCounterexampleEdge p0Inside p4Inside side e →
+          z e = 0) →
+        z = 0) ↔
+    (∀ ⦃z : G.edgeSet → Color⦄,
+      z ∈ planarBoundaryZeroSubmodule emb →
+      (∀ e : G.edgeSet,
+        data.ExceptionalAnnulusCrossingOutsideEdge p0Inside p4Inside side e →
+          z e = 0) →
+        z = 0) := by
+  constructor
+  · intro h z hz hvanish
+    exact h hz (by
+      intro e hedge
+      exact hvanish e
+        ((data.exceptionalAnnulusOneEdgeCounterexampleEdge_iff_crossingOutsideEdge).1 hedge))
+  · intro h z hz hvanish
+    exact h hz (by
+      intro e hedge
+      exact hvanish e
+        ((data.exceptionalAnnulusOneEdgeCounterexampleEdge_iff_crossingOutsideEdge).2 hedge))
+
 /-- Predicate-level CAP5 algebraic route in witness form.  This avoids making the finite
 generator prove a global control statement directly: it may instead emit a counterexample edge
 where each nonzero selected-boundary-zero chain is nonzero. -/
@@ -388,6 +499,48 @@ theorem theorem49BoundaryRootSynthesis_of_exceptionalAnnulusCounterexampleNonzer
   theorem49BoundaryRootSynthesis_of_edgePredicateNonzeroWitnesses
     emb C₀ colorings hsubset family
     (data.ExceptionalAnnulusOneEdgeCounterexampleEdge p0Inside p4Inside side)
+    hnonzero hwitnessRed hwitnessBlue
+
+/-- Theorem 4.9 synthesis route from the normal-form outside-crossing predicate.  This is the
+generator-facing algebraic target after the CAP5 separator candidate has been binned as a
+counterexample: find a crossing edge outside the realized support where every nonzero
+selected-boundary-zero chain is detected. -/
+theorem theorem49BoundaryRootSynthesis_of_exceptionalAnnulusCrossingOutsideNonzeroWitnesses
+    {G : SimpleGraph V}
+    [Fintype G.edgeSet] [FiniteDimensional F2 (G.edgeSet → Color)]
+    {boundaryEdge : Fin 5 → G.edgeSet} {n : Nat}
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    (emb : PlaneEmbeddingWithBoundary G) (C₀ : G.EdgeColoring Color)
+    (colorings : Set (G.EdgeColoring Color))
+    (hsubset : colorings ⊆ G.EdgeKempeClosure C₀)
+    {κ : Type*}
+    (family : κ → projectedColoringGeneratorSubspace emb colorings)
+    (p0Inside p4Inside : Bool) (side : V → Prop)
+    (hnonzero :
+      ∀ ⦃z : G.edgeSet → Color⦄,
+        z ∈ planarBoundaryZeroSubmodule emb →
+        z ≠ 0 →
+          ∃ e : G.edgeSet,
+            data.ExceptionalAnnulusCrossingOutsideEdge p0Inside p4Inside side e ∧
+              z e ≠ 0)
+    (hwitnessRed :
+      ∀ e : G.edgeSet,
+        data.ExceptionalAnnulusCrossingOutsideEdge p0Inside p4Inside side e →
+          ∃ i : κ,
+            ((family i : projectedColoringGeneratorSubspace emb colorings) :
+                G.edgeSet → Color) =
+              Pi.single e red)
+    (hwitnessBlue :
+      ∀ e : G.edgeSet,
+        data.ExceptionalAnnulusCrossingOutsideEdge p0Inside p4Inside side e →
+          ∃ i : κ,
+            ((family i : projectedColoringGeneratorSubspace emb colorings) :
+                G.edgeSet → Color) =
+              Pi.single e blue) :
+    Theorem49BoundaryRootSynthesis emb C₀ :=
+  theorem49BoundaryRootSynthesis_of_edgePredicateNonzeroWitnesses
+    emb C₀ colorings hsubset family
+    (data.ExceptionalAnnulusCrossingOutsideEdge p0Inside p4Inside side)
     hnonzero hwitnessRed hwitnessBlue
 
 end Mettapedia.GraphTheory.FourColor
