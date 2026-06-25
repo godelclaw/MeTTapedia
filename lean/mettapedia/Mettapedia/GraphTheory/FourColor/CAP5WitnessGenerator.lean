@@ -836,6 +836,54 @@ theorem mem_one_status_bin_of_mem_all
   | partialCase =>
       exact Or.inr <| Or.inr ((report.mem_partialLatents_iff).2 ⟨hmem, hstatus⟩)
 
+/-- The realized-separator and forced-counterexample report bins are disjoint. -/
+theorem not_mem_forcedCounterexampleLatents_of_mem_realizedSeparatorLatents
+    (report : CAP5ExceptionalAnnulusGeneratorReport boundaryEdge side)
+    {latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge}
+    (hmem : latent ∈ report.realizedSeparatorLatents) :
+    latent ∉ report.forcedCounterexampleLatents := by
+  intro hforced
+  have hreal :
+      report.classify latent = CAP5SeparatorGeneratorStatus.realizedSeparator :=
+    (report.mem_realizedSeparatorLatents_iff).1 hmem |>.2
+  have hforcedStatus :
+      report.classify latent = CAP5SeparatorGeneratorStatus.forcedCounterexample :=
+    (report.mem_forcedCounterexampleLatents_iff).1 hforced |>.2
+  rw [hreal] at hforcedStatus
+  cases hforcedStatus
+
+/-- The realized-separator and partial report bins are disjoint. -/
+theorem not_mem_partialLatents_of_mem_realizedSeparatorLatents
+    (report : CAP5ExceptionalAnnulusGeneratorReport boundaryEdge side)
+    {latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge}
+    (hmem : latent ∈ report.realizedSeparatorLatents) :
+    latent ∉ report.partialLatents := by
+  intro hpartial
+  have hreal :
+      report.classify latent = CAP5SeparatorGeneratorStatus.realizedSeparator :=
+    (report.mem_realizedSeparatorLatents_iff).1 hmem |>.2
+  have hpartialStatus :
+      report.classify latent = CAP5SeparatorGeneratorStatus.partialCase :=
+    (report.mem_partialLatents_iff).1 hpartial |>.2
+  rw [hreal] at hpartialStatus
+  cases hpartialStatus
+
+/-- The forced-counterexample and partial report bins are disjoint. -/
+theorem not_mem_partialLatents_of_mem_forcedCounterexampleLatents
+    (report : CAP5ExceptionalAnnulusGeneratorReport boundaryEdge side)
+    {latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge}
+    (hmem : latent ∈ report.forcedCounterexampleLatents) :
+    latent ∉ report.partialLatents := by
+  intro hpartial
+  have hforced :
+      report.classify latent = CAP5SeparatorGeneratorStatus.forcedCounterexample :=
+    (report.mem_forcedCounterexampleLatents_iff).1 hmem |>.2
+  have hpartialStatus :
+      report.classify latent = CAP5SeparatorGeneratorStatus.partialCase :=
+    (report.mem_partialLatents_iff).1 hpartial |>.2
+  rw [hforced] at hpartialStatus
+  cases hpartialStatus
+
 /-- Membership in the realized-separator bin carries the certified realized-separator payload.
 This is the consumer-facing soundness theorem for finite report outputs. -/
 theorem inBin_realizedSeparator_of_mem_realizedSeparatorLatents
