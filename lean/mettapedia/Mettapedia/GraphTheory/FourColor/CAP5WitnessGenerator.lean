@@ -1186,6 +1186,88 @@ theorem mem_completeCheckerLatents_iff
   classical
   simp [completeCheckerLatents]
 
+/-- The primitive finite checker frontier is exhaustive: every enumerated latent is either
+missing primitive checker evidence or belongs to the complete-checker frontier. -/
+theorem mem_missingCheckerEvidenceLatents_or_mem_completeCheckerLatents_of_mem_all
+    (report : CAP5ExceptionalAnnulusGeneratorReport boundaryEdge side)
+    {latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge}
+    (hmem : latent ∈ CAP5ExceptionalAnnulusGeneratorLatent.all boundaryEdge) :
+    latent ∈ report.missingCheckerEvidenceLatents ∨
+      latent ∈ report.completeCheckerLatents := by
+  classical
+  by_cases hmissing : (report.node latent).MissingCheckerEvidence
+  · exact Or.inl ((report.mem_missingCheckerEvidenceLatents_iff).2 ⟨hmem, hmissing⟩)
+  · exact Or.inr ((report.mem_completeCheckerLatents_iff).2 ⟨hmem, hmissing⟩)
+
+/-- Membership in the finite CAP5 latent enumeration is exactly membership in one of the two
+primitive checker frontiers: missing evidence or complete evidence.  This is the list-level
+contract consumed by finite enumeration passes. -/
+theorem mem_all_iff_mem_missingCheckerEvidenceLatents_or_mem_completeCheckerLatents
+    (report : CAP5ExceptionalAnnulusGeneratorReport boundaryEdge side)
+    {latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge} :
+    latent ∈ CAP5ExceptionalAnnulusGeneratorLatent.all boundaryEdge ↔
+      latent ∈ report.missingCheckerEvidenceLatents ∨
+        latent ∈ report.completeCheckerLatents := by
+  constructor
+  · exact report.mem_missingCheckerEvidenceLatents_or_mem_completeCheckerLatents_of_mem_all
+  · intro hfrontier
+    rcases hfrontier with hmissing | hcomplete
+    · exact (report.mem_missingCheckerEvidenceLatents_iff).1 hmissing |>.1
+    · exact (report.mem_completeCheckerLatents_iff).1 hcomplete |>.1
+
+/-- The two primitive checker frontiers are disjoint. -/
+theorem not_mem_completeCheckerLatents_of_mem_missingCheckerEvidenceLatents
+    (report : CAP5ExceptionalAnnulusGeneratorReport boundaryEdge side)
+    {latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge}
+    (hmissingMem : latent ∈ report.missingCheckerEvidenceLatents) :
+    latent ∉ report.completeCheckerLatents := by
+  intro hcompleteMem
+  exact ((report.mem_completeCheckerLatents_iff).1 hcompleteMem |>.2)
+    ((report.mem_missingCheckerEvidenceLatents_iff).1 hmissingMem |>.2)
+
+/-- Symmetric disjointness form for the primitive checker frontiers. -/
+theorem not_mem_missingCheckerEvidenceLatents_of_mem_completeCheckerLatents
+    (report : CAP5ExceptionalAnnulusGeneratorReport boundaryEdge side)
+    {latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge}
+    (hcompleteMem : latent ∈ report.completeCheckerLatents) :
+    latent ∉ report.missingCheckerEvidenceLatents := by
+  intro hmissingMem
+  exact report.not_mem_completeCheckerLatents_of_mem_missingCheckerEvidenceLatents
+    hmissingMem hcompleteMem
+
+/-- The complete-checker frontier covers all sixteen finite latents exactly when the
+missing-evidence frontier is empty. -/
+theorem completeCheckerLatents_eq_all_iff_missingCheckerEvidenceLatents_eq_nil
+    (report : CAP5ExceptionalAnnulusGeneratorReport boundaryEdge side) :
+    report.completeCheckerLatents =
+        CAP5ExceptionalAnnulusGeneratorLatent.all boundaryEdge ↔
+      report.missingCheckerEvidenceLatents = [] := by
+  constructor
+  · intro hcompleteAll
+    apply List.eq_nil_iff_forall_not_mem.2
+    intro latent hmissingMem
+    have hmemAll :
+        latent ∈ CAP5ExceptionalAnnulusGeneratorLatent.all boundaryEdge :=
+      (report.mem_missingCheckerEvidenceLatents_iff).1 hmissingMem |>.1
+    have hcompleteMem : latent ∈ report.completeCheckerLatents := by
+      simpa [hcompleteAll] using hmemAll
+    exact report.not_mem_completeCheckerLatents_of_mem_missingCheckerEvidenceLatents
+      hmissingMem hcompleteMem
+  · intro hmissingEmpty
+    unfold completeCheckerLatents
+    apply List.filter_eq_self.2
+    intro latent hmemAll
+    have hnotMissing : ¬ (report.node latent).MissingCheckerEvidence := by
+      intro hmissing
+      have hmissingMem : latent ∈ report.missingCheckerEvidenceLatents :=
+        (report.mem_missingCheckerEvidenceLatents_iff).2 ⟨hmemAll, hmissing⟩
+      have hnil : latent ∈ ([] :
+          List (CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge)) := by
+        rw [hmissingEmpty] at hmissingMem
+        exact hmissingMem
+      cases hnil
+    simp [hnotMissing]
+
 /-- The certified partial bin is exactly the primitive missing-checker-evidence frontier. -/
 theorem partialLatents_eq_missingCheckerEvidenceLatents
     (report : CAP5ExceptionalAnnulusGeneratorReport boundaryEdge side) :
@@ -1810,6 +1892,18 @@ theorem mem_forcedCounterexampleLatents_iff_mem_completeCheckerLatents_of_cyclic
   rw [report.forcedCounterexampleLatents_eq_completeCheckerLatents_of_cyclicallyFiveEdgeConnected
     hcyclic]
 
+/-- Cyclic-five finite frontier in its executable stopping form: the report forces all sixteen
+latents exactly when the primitive missing-evidence frontier is empty. -/
+theorem forcedCounterexampleLatents_eq_all_iff_missingCheckerEvidenceLatents_eq_nil_of_cyclicallyFiveEdgeConnected
+    (report : CAP5ExceptionalAnnulusGeneratorReport boundaryEdge side)
+    (hcyclic : CyclicallyFiveEdgeConnected G) :
+    report.forcedCounterexampleLatents =
+        CAP5ExceptionalAnnulusGeneratorLatent.all boundaryEdge ↔
+      report.missingCheckerEvidenceLatents = [] := by
+  rw [report.forcedCounterexampleLatents_eq_completeCheckerLatents_of_cyclicallyFiveEdgeConnected
+    hcyclic]
+  exact report.completeCheckerLatents_eq_all_iff_missingCheckerEvidenceLatents_eq_nil
+
 /-- A single complete checker latent in a cyclically five-edge-connected report carries a
 forced-counterexample payload.  This is the per-latent form needed by finite generators: they do
 not need every latent to be complete before mining a forced witness from one complete row. -/
@@ -2078,6 +2172,29 @@ theorem ofDecidableChecks_forcedCounterexampleLatents_eq_all_iff_all_checker_evi
     intro latent
     have hdata := hcomplete latent
     simpa [report, node, latentNode] using hdata
+
+/--
+Executable stopping criterion for the canonical finite CAP5 checker: under cyclic
+five-edge-connectivity, all sixteen latents are forced exactly when the primitive
+missing-evidence frontier is empty.
+-/
+theorem ofDecidableChecks_forcedCounterexampleLatents_eq_all_iff_missingCheckerEvidenceLatents_eq_nil_of_cyclicallyFiveEdgeConnected
+    (boundaryEdge : Fin 5 → G.edgeSet) (side : V → Prop)
+    [∀ latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge,
+      Decidable ((latentNode boundaryEdge side latent).PortalCrosses)]
+    [∀ latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge,
+      Decidable ((latentNode boundaryEdge side latent).SideCycles)]
+    [∀ latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge,
+      Decidable ((latentNode boundaryEdge side latent).RealizedSeparator)]
+    (hcyclic : CyclicallyFiveEdgeConnected G) :
+    (ofDecidableChecks boundaryEdge side).forcedCounterexampleLatents =
+        CAP5ExceptionalAnnulusGeneratorLatent.all boundaryEdge ↔
+      (ofDecidableChecks boundaryEdge side).missingCheckerEvidenceLatents = [] := by
+  let report : CAP5ExceptionalAnnulusGeneratorReport boundaryEdge side :=
+    ofDecidableChecks boundaryEdge side
+  exact
+    report.forcedCounterexampleLatents_eq_all_iff_missingCheckerEvidenceLatents_eq_nil_of_cyclicallyFiveEdgeConnected
+      hcyclic
 
 /--
 Executable obstruction frontier for the canonical finite CAP5 checker: under cyclic five-edge-
