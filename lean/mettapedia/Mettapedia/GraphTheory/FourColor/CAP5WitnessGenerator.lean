@@ -666,6 +666,35 @@ theorem partial_of_mem_partialLatents
     (report.node latent).Partial :=
   report.inBin_partialCase_of_mem_partialLatents hmem
 
+/-- In a cyclically five-edge-connected graph, no certified report latent can remain in the
+realized-separator bin: such a latent would expose a forbidden cyclic edge cut of size at most
+four. -/
+theorem not_mem_realizedSeparatorLatents_of_cyclicallyFiveEdgeConnected
+    (report : CAP5ExceptionalAnnulusGeneratorReport boundaryEdge side)
+    (hcyclic : CyclicallyFiveEdgeConnected G)
+    {latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge} :
+    latent ∉ report.realizedSeparatorLatents := by
+  intro hmem
+  exact (report.node latent).not_realizedSeparator_of_cyclicallyFiveEdgeConnected hcyclic
+    (report.realizedSeparator_of_mem_realizedSeparatorLatents hmem)
+
+/-- A complete checker run has no partial latent: portal crossings and side cycles rule out both
+ways that the report can honestly classify a latent as partial. -/
+theorem not_mem_partialLatents_of_complete
+    (report : CAP5ExceptionalAnnulusGeneratorReport boundaryEdge side)
+    (hportal :
+      ∀ latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge,
+        (report.node latent).PortalCrosses)
+    (hcycles :
+      ∀ latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge,
+        (report.node latent).SideCycles)
+    {latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge} :
+    latent ∉ report.partialLatents := by
+  intro hmem
+  rcases report.partial_of_mem_partialLatents hmem with hnotPortal | hnotCycles
+  · exact hnotPortal (hportal latent)
+  · exact hnotCycles (hcycles latent)
+
 /-- If every generated latent has complete checker evidence in a cyclically five-edge-connected
 graph, the full finite report has no realized or partial cases: every enumerated latent is forced
 into the counterexample bin. -/
@@ -702,6 +731,72 @@ theorem all_latents_forcedCounterexample_of_complete_of_cyclicallyFiveEdgeConnec
   intro latent hmem
   exact report.mem_forcedCounterexampleLatents_of_mem_all_of_complete_of_cyclicallyFiveEdgeConnected
     hcyclic hportal hcycles hmem
+
+/-- Exact bin-membership form of the complete cyclic-five report: the forced-counterexample bin
+is precisely the finite latent enumeration. -/
+theorem mem_forcedCounterexampleLatents_iff_mem_all_of_complete_of_cyclicallyFiveEdgeConnected
+    (report : CAP5ExceptionalAnnulusGeneratorReport boundaryEdge side)
+    (hcyclic : CyclicallyFiveEdgeConnected G)
+    (hportal :
+      ∀ latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge,
+        (report.node latent).PortalCrosses)
+    (hcycles :
+      ∀ latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge,
+        (report.node latent).SideCycles)
+    {latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge} :
+    latent ∈ report.forcedCounterexampleLatents ↔
+      latent ∈ CAP5ExceptionalAnnulusGeneratorLatent.all boundaryEdge := by
+  constructor
+  · intro hmem
+    exact (report.mem_forcedCounterexampleLatents_iff).1 hmem |>.1
+  · intro hmem
+    exact report.mem_forcedCounterexampleLatents_of_mem_all_of_complete_of_cyclicallyFiveEdgeConnected
+      hcyclic hportal hcycles hmem
+
+/-- A cyclically five-edge-connected graph makes the realized-separator report bin empty. -/
+theorem realizedSeparatorLatents_eq_nil_of_cyclicallyFiveEdgeConnected
+    (report : CAP5ExceptionalAnnulusGeneratorReport boundaryEdge side)
+    (hcyclic : CyclicallyFiveEdgeConnected G) :
+    report.realizedSeparatorLatents = [] := by
+  apply List.eq_nil_iff_forall_not_mem.2
+  intro latent hmem
+  exact report.not_mem_realizedSeparatorLatents_of_cyclicallyFiveEdgeConnected hcyclic hmem
+
+/-- A complete checker run makes the partial report bin empty. -/
+theorem partialLatents_eq_nil_of_complete
+    (report : CAP5ExceptionalAnnulusGeneratorReport boundaryEdge side)
+    (hportal :
+      ∀ latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge,
+        (report.node latent).PortalCrosses)
+    (hcycles :
+      ∀ latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge,
+        (report.node latent).SideCycles) :
+    report.partialLatents = [] := by
+  apply List.eq_nil_iff_forall_not_mem.2
+  intro latent hmem
+  exact report.not_mem_partialLatents_of_complete hportal hcycles hmem
+
+/-- In a complete cyclic-five run, the forced-counterexample report bin is the whole finite
+latent list.  This is the histogram form of the CAP5 generator falsification boundary. -/
+theorem forcedCounterexampleLatents_eq_all_of_complete_of_cyclicallyFiveEdgeConnected
+    (report : CAP5ExceptionalAnnulusGeneratorReport boundaryEdge side)
+    (hcyclic : CyclicallyFiveEdgeConnected G)
+    (hportal :
+      ∀ latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge,
+        (report.node latent).PortalCrosses)
+    (hcycles :
+      ∀ latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge,
+        (report.node latent).SideCycles) :
+    report.forcedCounterexampleLatents =
+      CAP5ExceptionalAnnulusGeneratorLatent.all boundaryEdge := by
+  unfold forcedCounterexampleLatents
+  apply List.filter_eq_self.2
+  intro latent hmem
+  have hstatus :
+      report.classify latent = CAP5SeparatorGeneratorStatus.forcedCounterexample :=
+    (report.nodeReport latent).status_eq_forcedCounterexample_of_complete_of_cyclicallyFiveEdgeConnected
+      hcyclic (hportal latent) (hcycles latent)
+  simp [hstatus]
 
 /-- A complete CAP5 report in a cyclically five-edge-connected graph has a concrete
 forced-counterexample latent.  This is the nonempty-output form consumed by finite checker runs:
