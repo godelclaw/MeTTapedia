@@ -1122,6 +1122,26 @@ def partialLatents
   (CAP5ExceptionalAnnulusGeneratorLatent.all boundaryEdge).filter fun latent =>
     decide (report.classify latent = CAP5SeparatorGeneratorStatus.partialCase)
 
+/-- Latents whose graph-side checker evidence is incomplete: a portal crossing is missing,
+or one of the two side-cycle witnesses is missing.  This is the diagnostic frontier the
+finite generator should mine before treating a non-all-forced report as mathematical evidence. -/
+noncomputable def missingCheckerEvidenceLatents
+    (report : CAP5ExceptionalAnnulusGeneratorReport boundaryEdge side) :
+    List (CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge) := by
+  classical
+  exact (CAP5ExceptionalAnnulusGeneratorLatent.all boundaryEdge).filter fun latent =>
+    decide ((report.node latent).MissingCheckerEvidence)
+
+/-- Latents with all primitive checker evidence present: portal crossings and two side
+cycles.  Under cyclic five-edge-connectivity these are exactly the forced-counterexample
+latents, so this list is the computable complement of the missing-evidence frontier. -/
+noncomputable def completeCheckerLatents
+    (report : CAP5ExceptionalAnnulusGeneratorReport boundaryEdge side) :
+    List (CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge) := by
+  classical
+  exact (CAP5ExceptionalAnnulusGeneratorLatent.all boundaryEdge).filter fun latent =>
+    decide (¬ (report.node latent).MissingCheckerEvidence)
+
 theorem mem_realizedSeparatorLatents_iff
     (report : CAP5ExceptionalAnnulusGeneratorReport boundaryEdge side)
     {latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge} :
@@ -1145,6 +1165,47 @@ theorem mem_partialLatents_iff
       latent ∈ CAP5ExceptionalAnnulusGeneratorLatent.all boundaryEdge ∧
         report.classify latent = CAP5SeparatorGeneratorStatus.partialCase := by
   simp [partialLatents]
+
+/-- Membership in the primitive missing-evidence frontier. -/
+theorem mem_missingCheckerEvidenceLatents_iff
+    (report : CAP5ExceptionalAnnulusGeneratorReport boundaryEdge side)
+    {latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge} :
+    latent ∈ report.missingCheckerEvidenceLatents ↔
+      latent ∈ CAP5ExceptionalAnnulusGeneratorLatent.all boundaryEdge ∧
+        (report.node latent).MissingCheckerEvidence := by
+  classical
+  simp [missingCheckerEvidenceLatents]
+
+/-- Membership in the primitive complete-checker frontier. -/
+theorem mem_completeCheckerLatents_iff
+    (report : CAP5ExceptionalAnnulusGeneratorReport boundaryEdge side)
+    {latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge} :
+    latent ∈ report.completeCheckerLatents ↔
+      latent ∈ CAP5ExceptionalAnnulusGeneratorLatent.all boundaryEdge ∧
+        ¬ (report.node latent).MissingCheckerEvidence := by
+  classical
+  simp [completeCheckerLatents]
+
+/-- The certified partial bin is exactly the primitive missing-checker-evidence frontier. -/
+theorem partialLatents_eq_missingCheckerEvidenceLatents
+    (report : CAP5ExceptionalAnnulusGeneratorReport boundaryEdge side) :
+    report.partialLatents = report.missingCheckerEvidenceLatents := by
+  classical
+  unfold partialLatents missingCheckerEvidenceLatents
+  apply List.filter_congr
+  intro latent _hmem
+  by_cases hstatus :
+      report.classify latent = CAP5SeparatorGeneratorStatus.partialCase
+  · have hmissing :
+        (report.node latent).MissingCheckerEvidence :=
+      (report.classify_eq_partialCase_iff_missingCheckerEvidence latent).1 hstatus
+    simp [hstatus, hmissing]
+  · have hmissing :
+        ¬ (report.node latent).MissingCheckerEvidence := by
+      intro h
+      exact hstatus
+        ((report.classify_eq_partialCase_iff_missingCheckerEvidence latent).2 h)
+    simp [hstatus, hmissing]
 
 /-- Every enumerated latent lands in exactly one of the three report bins. -/
 theorem mem_one_status_bin_of_mem_all
@@ -1698,6 +1759,45 @@ theorem forcedCounterexampleLatents_eq_all_iff_all_checker_evidence_of_cyclicall
   · intro hcomplete
     exact report.forcedCounterexampleLatents_eq_all_of_complete_of_cyclicallyFiveEdgeConnected
       hcyclic (fun latent => (hcomplete latent).1) (fun latent => (hcomplete latent).2)
+
+/--
+Computable complement form of the cyclic-five CAP5 frontier: under cyclic five-edge-connectivity,
+the forced-counterexample list is exactly the list of latents with complete primitive checker
+evidence.  The remaining latents are therefore precisely diagnostic failures of portal or
+side-cycle evidence, not hidden realized-separator cases.
+-/
+theorem forcedCounterexampleLatents_eq_completeCheckerLatents_of_cyclicallyFiveEdgeConnected
+    (report : CAP5ExceptionalAnnulusGeneratorReport boundaryEdge side)
+    (hcyclic : CyclicallyFiveEdgeConnected G) :
+    report.forcedCounterexampleLatents = report.completeCheckerLatents := by
+  classical
+  unfold forcedCounterexampleLatents completeCheckerLatents
+  apply List.filter_congr
+  intro latent _hmem
+  have hcert : (report.node latent).InBin (report.classify latent) := by
+    simpa [nodeReport] using (report.nodeReport latent).cert
+  cases hstatus : report.classify latent with
+  | realizedSeparator =>
+      have hrealizedBin :
+          (report.node latent).InBin CAP5SeparatorGeneratorStatus.realizedSeparator := by
+        simpa [hstatus] using hcert
+      exact False.elim
+        ((report.node latent).not_realizedSeparator_of_cyclicallyFiveEdgeConnected
+          hcyclic hrealizedBin.2.2)
+  | forcedCounterexample =>
+      have hforcedBin :
+          (report.node latent).InBin CAP5SeparatorGeneratorStatus.forcedCounterexample := by
+        simpa [hstatus] using hcert
+      have hnotMissing :
+          ¬ (report.node latent).MissingCheckerEvidence :=
+        ((report.node latent).not_missingCheckerEvidence_iff_complete).2
+          ⟨hforcedBin.1, hforcedBin.2.1⟩
+      simp [hnotMissing]
+  | partialCase =>
+      have hmissing :
+          (report.node latent).MissingCheckerEvidence :=
+        (report.classify_eq_partialCase_iff_missingCheckerEvidence latent).1 hstatus
+      simp [hmissing]
 
 /--
 Dual form of the exact CAP5 generator boundary: under cyclic five-edge-connectivity, a report
