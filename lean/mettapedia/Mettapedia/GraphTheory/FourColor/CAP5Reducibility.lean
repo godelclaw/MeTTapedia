@@ -550,6 +550,24 @@ theorem CAP5ExceptionalAnnulusBoundaryEdgeSupportCandidate.not_cyclicEdgeCutReal
   exact realization.false_of_mem_edgeCut_of_walk_avoids_edgeCut_between_endpoints
     he_pair hecut p havoid
 
+/-- Same-side outside-crossing obstruction.  A CAP5 support candidate cannot be realized by a
+specific vertex side if an edge outside the support already crosses that same side.  This is the
+precise finite-checker boundary: it refutes realization on the proposed side without claiming to
+rule out unrelated side predicates. -/
+theorem CAP5ExceptionalAnnulusBoundaryEdgeSupportCandidate.not_cyclicEdgeCutRealizationData_on_side_of_crossing_outside
+    {V : Type*} {G : SimpleGraph V} [DecidableEq G.edgeSet]
+    {boundaryEdge : Fin 5 → G.edgeSet}
+    (candidate : CAP5ExceptionalAnnulusBoundaryEdgeSupportCandidate boundaryEdge)
+    (side : V → Prop) {e : G.edgeSet}
+    (heOutside : e ∉ candidate.edgeSupport)
+    (hcross : EdgeCrossesVertexSide G side e) :
+    ¬ ∃ realization : candidate.CyclicEdgeCutRealizationData (G := G),
+      realization.side = side := by
+  rintro ⟨realization, hside⟩
+  have hcross' : EdgeCrossesVertexSide G realization.side e := by
+    simpa [hside] using hcross
+  exact heOutside ((realization.hcut_eq e).2 hcross')
+
 /-- Promote a CAP5 boundary-edge support candidate to the generic checker-facing cyclic-separator
 candidate.  The only CAP5-specific input is the portal-language proof that each named separator
 portal really crosses the chosen side; the generic layer then supplies the holds-vs-counterexample

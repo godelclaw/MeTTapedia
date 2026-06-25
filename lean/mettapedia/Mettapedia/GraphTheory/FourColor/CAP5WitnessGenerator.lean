@@ -189,6 +189,14 @@ def SideCycles (node : CAP5ExceptionalAnnulusGeneratorNode boundaryEdge) : Prop 
 def RealizedSeparator (node : CAP5ExceptionalAnnulusGeneratorNode boundaryEdge) : Prop :=
   Nonempty (node.candidate.CyclicEdgeCutRealizationData (G := G))
 
+/-- Same-side realized bin: the generated candidate is exact cyclic-cut realization data for
+the node's proposed side predicate.  The broader `RealizedSeparator` predicate intentionally
+allows any realizing side; this sharper form is the one directly refuted by an outside crossing
+edge emitted by the finite checker. -/
+def RealizedSeparatorOnSide (node : CAP5ExceptionalAnnulusGeneratorNode boundaryEdge) : Prop :=
+  ∃ realization : node.candidate.CyclicEdgeCutRealizationData (G := G),
+    realization.side = node.side
+
 /-- A generator node cannot be in the realized-separator bin if one of its candidate edges has
 a support-avoiding bypass walk between that edge's endpoints. -/
 theorem not_realizedSeparator_of_candidate_edge_bypass
@@ -232,6 +240,27 @@ theorem forcedCounterexampleEdge_crosses
     simpa [hpEdges] using heEdges
   have heq : e' = e := Subtype.ext hsym
   simpa [heq] using hcross
+
+/-- A forced generator edge refutes realization of the candidate on the same proposed side.  The
+emitted edge is outside the candidate support yet crosses the proposed side, so the proposed side
+cannot make the support exactly equal to its crossing-edge cut. -/
+theorem not_realizedSeparatorOnSide_of_forcedCounterexampleEdge
+    (node : CAP5ExceptionalAnnulusGeneratorNode boundaryEdge)
+    {e : G.edgeSet} (h : node.ForcedCounterexampleEdge e) :
+    ¬ node.RealizedSeparatorOnSide := by
+  have hcross : EdgeCrossesVertexSide G node.side e :=
+    node.forcedCounterexampleEdge_crosses h
+  rcases h with ⟨_u, _v, _p, heOutside, _hu, _hv, _hpEdges, _havoid⟩
+  exact node.candidate.not_cyclicEdgeCutRealizationData_on_side_of_crossing_outside
+    node.side heOutside hcross
+
+/-- A forced-counterexample generator node refutes same-side realization of its candidate. -/
+theorem not_realizedSeparatorOnSide_of_forcedCounterexample
+    (node : CAP5ExceptionalAnnulusGeneratorNode boundaryEdge)
+    (h : node.ForcedCounterexample) :
+    ¬ node.RealizedSeparatorOnSide := by
+  rcases h with ⟨e, hedge⟩
+  exact node.not_realizedSeparatorOnSide_of_forcedCounterexampleEdge hedge
 
 /-- Partial bin: the forward checker has not yet certified the graph-side prerequisites needed
 for the generic holds-vs-counterexample theorem. -/
@@ -942,6 +971,17 @@ theorem forcedCounterexample_of_mem_forcedCounterexampleLatents
     (hmem : latent ∈ report.forcedCounterexampleLatents) :
     (report.node latent).ForcedCounterexample :=
   (report.inBin_forcedCounterexample_of_mem_forcedCounterexampleLatents hmem).2.2
+
+/-- A forced-counterexample report-bin entry refutes realization of the generated candidate on
+the report's proposed side.  It does not claim to refute arbitrary realization data with an
+unrelated side predicate. -/
+theorem not_realizedSeparatorOnSide_of_mem_forcedCounterexampleLatents
+    (report : CAP5ExceptionalAnnulusGeneratorReport boundaryEdge side)
+    {latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge}
+    (hmem : latent ∈ report.forcedCounterexampleLatents) :
+    ¬ (report.node latent).RealizedSeparatorOnSide :=
+  (report.node latent).not_realizedSeparatorOnSide_of_forcedCounterexample
+    (report.forcedCounterexample_of_mem_forcedCounterexampleLatents hmem)
 
 /-- A forced-counterexample report-bin entry carries a concrete emitted edge that crosses the
 reported side.  This is the raw graph-theoretic output consumed by finite cocycle/algebraic
