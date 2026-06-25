@@ -1251,6 +1251,42 @@ theorem enumeratedExceptionalAnnulusForcedEdgeFinset_nonempty_of_isExceptional_o
     ⟨e, hedge⟩
   exact ⟨e, (hcert e).2 hedge⟩
 
+/-- Every edge in a certified finite emitted-edge set is a genuine side-crossing edge.  This is
+the concrete finite-checker form consumed by later separator and cocycle audits. -/
+theorem enumeratedExceptionalAnnulusForcedEdgeFinset_edges_cross
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    {emitted : Finset G.edgeSet}
+    {p0Inside p4Inside : Bool} {side : V → Prop}
+    (hcert :
+      data.EnumeratedExceptionalAnnulusForcedEdgeFinset p0Inside p4Inside side emitted)
+    {e : G.edgeSet} (hemitted : e ∈ emitted) :
+    EdgeCrossesVertexSide G side e :=
+  data.enumeratedExceptionalAnnulusForcedEdge_crosses ((hcert e).1 hemitted)
+
+/-- Strong finite-output sanity check for a complete cyclic-five exceptional CAP5 run: the
+certified emitted-edge set contains an edge, and that edge is a raw side-crossing witness. -/
+theorem exists_mem_enumeratedExceptionalAnnulusForcedEdgeFinset_crossing_of_isExceptional_of_portalSides_of_cyclicallyFiveEdgeConnected
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    (emitted : Finset G.edgeSet)
+    (p0Inside p4Inside : Bool) (h : data.IsExceptional)
+    (side : V → Prop) (hcyclic : CyclicallyFiveEdgeConnected G)
+    (hcert :
+      data.EnumeratedExceptionalAnnulusForcedEdgeFinset p0Inside p4Inside side emitted)
+    (hportal_crosses :
+      ∀ edgeCandidate : CAP5ExceptionalAnnulusBoundaryEdgeSupportCandidate boundaryEdge,
+        data.RealizesExceptionalBoundarySupportOrientation
+            edgeCandidate.portalCandidate.orientation →
+        edgeCandidate.portalCandidate.sideCase =
+            CAP5ExceptionalAnnulusSideCase.ofPortalSides p0Inside p4Inside →
+        ∀ i : Fin 5, i ∈ edgeCandidate.portalCandidate.portalSet →
+          EdgeCrossesVertexSide G side (boundaryEdge i))
+    (hcycles : HasCycleOnSide G side ∧ HasCycleOnSide G (fun v => ¬ side v)) :
+    ∃ e : G.edgeSet, e ∈ emitted ∧ EdgeCrossesVertexSide G side e := by
+  rcases data.exists_crossing_enumeratedExceptionalAnnulusForcedEdge_of_isExceptional_of_portalSides_of_cyclicallyFiveEdgeConnected
+      p0Inside p4Inside h side hcyclic hportal_crosses hcycles with
+    ⟨e, hedge, hcross⟩
+  exact ⟨e, (hcert e).2 hedge, hcross⟩
+
 /-- Theorem 4.9 synthesis route from a concrete finite checker's control certificate.  The finite
 rank-style obligation is: if a selected-boundary-zero chain vanishes on all emitted edges, then it
 vanishes everywhere.  The edge-set certificate translates that concrete finite obligation back to
