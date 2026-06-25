@@ -319,6 +319,12 @@ theorem realized_realizedSeparator :
       realizedCAP5BoundaryEdge realizedSide realizedLatent).RealizedSeparator := by
   exact ⟨realizedCutData⟩
 
+/-- The four-edge latent realizes the separator on the concrete side used by the benchmark. -/
+theorem realized_realizedSeparatorOnSide :
+    (CAP5ExceptionalAnnulusGeneratorReport.latentNode
+      realizedCAP5BoundaryEdge realizedSide realizedLatent).RealizedSeparatorOnSide := by
+  exact ⟨realizedCutData, rfl⟩
+
 theorem forced_portalCrosses :
     (CAP5ExceptionalAnnulusGeneratorReport.latentNode
       realizedCAP5BoundaryEdge realizedSide forcedLatent).PortalCrosses := by
@@ -476,6 +482,12 @@ theorem realizedCAP5Report_realizedLatent_payload :
   realizedCAP5Report.realizedSeparator_of_mem_realizedSeparatorLatents
     realizedCAP5Report_realizedLatent_mem_realizedSeparatorLatents
 
+/-- The realized-bin latent also carries same-side realization data for the report side. -/
+theorem realizedCAP5Report_realizedLatent_payload_onSide :
+    (realizedCAP5Report.node realizedLatent).RealizedSeparatorOnSide := by
+  simpa [CAP5ExceptionalAnnulusGeneratorReport.node,
+    CAP5ExceptionalAnnulusGeneratorReport.latentNode] using realized_realizedSeparatorOnSide
+
 /-- The forced-bin membership projects back to the certified outside-crossing payload. -/
 theorem realizedCAP5Report_forcedLatent_payload :
     (realizedCAP5Report.node forcedLatent).ForcedCounterexample :=
@@ -490,6 +502,16 @@ theorem realizedCAP5Report_forcedLatent_not_realizedSeparatorOnSide :
     ¬ (realizedCAP5Report.node forcedLatent).RealizedSeparatorOnSide :=
   realizedCAP5Report.not_realizedSeparatorOnSide_of_mem_forcedCounterexampleLatents
     realizedCAP5Report_forcedLatent_mem_forcedCounterexampleLatents
+
+/--
+Same-side calibration boundary for the two-triangle report: the four-edge latent realizes the
+report side, while the three-edge latent is forced out of same-side realization.
+-/
+theorem realizedCAP5Report_sameSide_boundary :
+    (realizedCAP5Report.node realizedLatent).RealizedSeparatorOnSide ∧
+      ¬ (realizedCAP5Report.node forcedLatent).RealizedSeparatorOnSide :=
+  ⟨realizedCAP5Report_realizedLatent_payload_onSide,
+    realizedCAP5Report_forcedLatent_not_realizedSeparatorOnSide⟩
 
 /--
 The forced bin in the concrete report exposes an actual side-crossing emitted edge, not just a
