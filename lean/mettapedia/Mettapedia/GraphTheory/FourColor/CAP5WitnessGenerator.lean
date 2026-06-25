@@ -943,6 +943,21 @@ theorem forcedCounterexample_of_mem_forcedCounterexampleLatents
     (report.node latent).ForcedCounterexample :=
   (report.inBin_forcedCounterexample_of_mem_forcedCounterexampleLatents hmem).2.2
 
+/-- A forced-counterexample report-bin entry carries a concrete emitted edge that crosses the
+reported side.  This is the raw graph-theoretic output consumed by finite cocycle/algebraic
+checks. -/
+theorem exists_forcedCounterexampleEdge_crossing_of_mem_forcedCounterexampleLatents
+    (report : CAP5ExceptionalAnnulusGeneratorReport boundaryEdge side)
+    {latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge}
+    (hmem : latent ∈ report.forcedCounterexampleLatents) :
+    ∃ e : G.edgeSet,
+      (report.node latent).ForcedCounterexampleEdge e ∧
+        EdgeCrossesVertexSide G side e := by
+  rcases report.forcedCounterexample_of_mem_forcedCounterexampleLatents hmem with
+    ⟨e, hedge⟩
+  exact ⟨e, hedge, by
+    simpa [node, latentNode] using (report.node latent).forcedCounterexampleEdge_crosses hedge⟩
+
 /-- Projection of the partial-checker reason from a finite report bin. -/
 theorem partial_of_mem_partialLatents
     (report : CAP5ExceptionalAnnulusGeneratorReport boundaryEdge side)
