@@ -195,6 +195,106 @@ def forcedCandidate :
     CAP5ExceptionalAnnulusBoundaryEdgeSupportCandidate realizedCAP5BoundaryEdge :=
   forcedLatent.candidate
 
+/-- Red/blue component support using boundary slots `{0, 3}` in the realized benchmark. -/
+def realizedRedBlueEdge₁ : Finset realizedGraph.edgeSet := {r03, r25}
+
+/-- Red/blue component support using boundary slots `{1, 2}` in the realized benchmark. -/
+def realizedRedBlueEdge₂ : Finset realizedGraph.edgeSet := {r04, r13}
+
+/-- Red/purple component support using boundary slots `{0, 4}` in the realized benchmark. -/
+def realizedRedPurpleEdge₁ : Finset realizedGraph.edgeSet := {r03, r01}
+
+/-- Red/purple component support using boundary slots `{1, 3}` in the realized benchmark. -/
+def realizedRedPurpleEdge₂ : Finset realizedGraph.edgeSet := {r04, r25}
+
+theorem realizedRedBlueEdge₁_boundarySupport :
+    cap5BoundarySupportOfEdges realizedCAP5BoundaryEdge realizedRedBlueEdge₁ =
+      ({0, 3} : Finset (Fin 5)) := by
+  ext i
+  fin_cases i <;>
+    simp [cap5BoundarySupportOfEdges, realizedRedBlueEdge₁,
+      realizedCAP5BoundaryEdge, r01, r03, r04, r13, r25]
+
+theorem realizedRedBlueEdge₂_boundarySupport :
+    cap5BoundarySupportOfEdges realizedCAP5BoundaryEdge realizedRedBlueEdge₂ =
+      ({1, 2} : Finset (Fin 5)) := by
+  ext i
+  fin_cases i <;>
+    simp [cap5BoundarySupportOfEdges, realizedRedBlueEdge₂,
+      realizedCAP5BoundaryEdge, r01, r03, r04, r13, r25]
+
+theorem realizedRedPurpleEdge₁_boundarySupport :
+    cap5BoundarySupportOfEdges realizedCAP5BoundaryEdge realizedRedPurpleEdge₁ =
+      ({0, 4} : Finset (Fin 5)) := by
+  ext i
+  fin_cases i <;>
+    simp [cap5BoundarySupportOfEdges, realizedRedPurpleEdge₁,
+      realizedCAP5BoundaryEdge, r01, r03, r04, r13, r25]
+
+theorem realizedRedPurpleEdge₂_boundarySupport :
+    cap5BoundarySupportOfEdges realizedCAP5BoundaryEdge realizedRedPurpleEdge₂ =
+      ({1, 3} : Finset (Fin 5)) := by
+  ext i
+  fin_cases i <;>
+    simp [cap5BoundarySupportOfEdges, realizedRedPurpleEdge₂,
+      realizedCAP5BoundaryEdge, r01, r03, r04, r13, r25]
+
+/--
+Transported exceptional component-cover data for the two-triangle benchmark.  This packages the
+finite CAP5 support pairing that the witness generator samples against the concrete graph.
+-/
+def realizedCAP5Core :
+    CAP5TransportedEdgeComponentCoverCore realizedCAP5BoundaryEdge 0 where
+  redBlueEdge₁ := realizedRedBlueEdge₁
+  redBlueEdge₂ := realizedRedBlueEdge₂
+  redPurpleEdge₁ := realizedRedPurpleEdge₁
+  redPurpleEdge₂ := realizedRedPurpleEdge₂
+  redBlue₁ := {0, 3}
+  redBlue₂ := {1, 2}
+  redPurple₁ := {0, 4}
+  redPurple₂ := {1, 3}
+  hredBlue₁ := by
+    simpa [cap5RotateBoundarySupportN] using realizedRedBlueEdge₁_boundarySupport
+  hredBlue₂ := by
+    simpa [cap5RotateBoundarySupportN] using realizedRedBlueEdge₂_boundarySupport
+  hredPurple₁ := by
+    simpa [cap5RotateBoundarySupportN] using realizedRedPurpleEdge₁_boundarySupport
+  hredPurple₂ := by
+    simpa [cap5RotateBoundarySupportN] using realizedRedPurpleEdge₂_boundarySupport
+  hredBlue := by
+    rw [CAP5BadRedBlueComponentCover]
+    refine ⟨by simp, by simp, ?_, ?_⟩
+    · rw [Finset.disjoint_left]
+      intro i hi₁ hi₂
+      fin_cases i <;> simp at hi₁ hi₂
+    · ext i
+      fin_cases i <;> simp
+  hredPurple := by
+    rw [CAP5BadRedPurpleComponentCover]
+    refine ⟨by simp, by simp, ?_, ?_⟩
+    · rw [Finset.disjoint_left]
+      intro i hi₁ hi₂
+      fin_cases i <;> simp at hi₁ hi₂
+    · ext i
+      fin_cases i <;> simp
+
+theorem realizedCAP5Core_isExceptional :
+    realizedCAP5Core.IsExceptional := by
+  change CAP5BadExceptionalPairingPattern
+    ({0, 3} : Finset (Fin 5)) ({1, 2} : Finset (Fin 5))
+      ({0, 4} : Finset (Fin 5)) ({1, 3} : Finset (Fin 5))
+  rw [CAP5BadExceptionalPairingPattern, CAP5BadRedBlueExceptionalPairing,
+    CAP5BadRedPurpleExceptionalPairing]
+  exact ⟨Or.inl ⟨rfl, rfl⟩, Or.inl ⟨rfl, rfl⟩⟩
+
+theorem realizedCAP5Core_realizes_redBlue03_redPurple04 :
+    realizedCAP5Core.RealizesExceptionalBoundarySupportOrientation
+      CAP5ExceptionalBoundarySupportOrientation.redBlue03_redPurple04 := by
+  simp [CAP5TransportedEdgeComponentCoverCore.RealizesExceptionalBoundarySupportOrientation,
+    realizedCAP5Core, cap5RotateBoundarySupportN,
+    realizedRedBlueEdge₁_boundarySupport, realizedRedBlueEdge₂_boundarySupport,
+    realizedRedPurpleEdge₁_boundarySupport, realizedRedPurpleEdge₂_boundarySupport]
+
 def realizedInsideCycleWalk : realizedGraph.Walk (0 : RealizedV) 0 :=
   Walk.cons' 0 1 0 (by simp [realizedGraph])
     (Walk.cons' 1 2 0 (by simp [realizedGraph])
@@ -482,6 +582,42 @@ theorem forced_node_forcedCounterexample :
     (CAP5ExceptionalAnnulusGeneratorReport.latentNode
       realizedCAP5BoundaryEdge realizedSide forcedLatent).ForcedCounterexample := by
   exact ⟨r13, forced_node_forcedCounterexampleEdge_r13⟩
+
+/--
+The transported component-cover view of the benchmark puts the four-edge portal choice in the
+same-side realized bin.  This is the finite hold-sample for the CAP5 witness generator.
+-/
+theorem realizedCAP5Core_sameSideRealization :
+    realizedCAP5Core.EnumeratedExceptionalAnnulusSameSideRealization
+      true false realizedSide := by
+  refine ⟨realizedLatent, CAP5ExceptionalAnnulusGeneratorLatent.mem_all realizedLatent,
+    rfl, rfl, realizedCAP5Core_realizes_redBlue03_redPurple04, ?_⟩
+  simpa [CAP5ExceptionalAnnulusGeneratorReport.latentNode] using
+    realized_realizedSeparatorOnSide
+
+/--
+The same transported component-cover sample puts the three-edge portal choice in the forced-edge
+bin, emitting the concrete outside crossing edge `r13`.
+-/
+theorem realizedCAP5Core_forcedEdge_r13 :
+    realizedCAP5Core.EnumeratedExceptionalAnnulusForcedEdge
+      true true realizedSide r13 := by
+  refine ⟨forcedLatent, CAP5ExceptionalAnnulusGeneratorLatent.mem_all forcedLatent,
+    rfl, rfl, realizedCAP5Core_realizes_redBlue03_redPurple04, ?_⟩
+  simpa [CAP5ExceptionalAnnulusGeneratorReport.latentNode] using
+    forced_node_forcedCounterexampleEdge_r13
+
+/--
+Data-level calibration for the CAP5 proof-as-generator pass: one transported exceptional
+component-cover sample has both a same-side realization and a concrete emitted forced edge,
+depending on the finite portal-side latent.
+-/
+theorem realizedCAP5Core_generator_boundary_mixed :
+    realizedCAP5Core.EnumeratedExceptionalAnnulusSameSideRealization true false realizedSide ∧
+      realizedCAP5Core.EnumeratedExceptionalAnnulusForcedEdge true true realizedSide r13 ∧
+        EdgeCrossesVertexSide realizedGraph realizedSide r13 :=
+  ⟨realizedCAP5Core_sameSideRealization,
+    realizedCAP5Core_forcedEdge_r13, realized_r13_crosses⟩
 
 /-- The decidable CAP5 report on the two-triangle realized-separator benchmark. -/
 noncomputable def realizedCAP5Report :
