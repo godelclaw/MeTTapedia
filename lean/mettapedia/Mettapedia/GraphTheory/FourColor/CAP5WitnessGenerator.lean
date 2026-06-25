@@ -435,6 +435,25 @@ theorem status_ne_realizedSeparator_of_cyclicallyFiveEdgeConnected
   rcases hcert with ⟨_hportal, _hcycles, hrealized⟩
   exact node.not_realizedSeparator_of_cyclicallyFiveEdgeConnected hcyclic hrealized
 
+/-- A certified report cannot put a node in the realized-separator bin when a candidate edge has
+a support-avoiding bypass walk between its endpoints. -/
+theorem status_ne_realizedSeparator_of_candidate_edge_bypass
+    {node : CAP5ExceptionalAnnulusGeneratorNode boundaryEdge}
+    (report : node.Report)
+    {u v : V} {e : G.edgeSet}
+    (he_pair : (e : Sym2 V) = s(u, v))
+    (hecut : e ∈ node.candidate.edgeSupport)
+    (p : G.Walk u v)
+    (havoid : ∀ e' : G.edgeSet, e' ∈ node.candidate.edgeSupport →
+      (e' : Sym2 V) ∉ p.edges) :
+    report.status ≠ CAP5SeparatorGeneratorStatus.realizedSeparator := by
+  intro hstatus
+  have hcert := report.cert
+  rw [hstatus] at hcert
+  rcases hcert with ⟨_hportal, _hcycles, hrealized⟩
+  exact node.not_realizedSeparator_of_candidate_edge_bypass
+    he_pair hecut p havoid hrealized
+
 /-- Under cyclic five-edge-connectivity and complete checker evidence, the certified status of a
 generated CAP5 node is forced-counterexample.  This is the report-level falsification form of the
 small-separator route. -/
@@ -447,6 +466,31 @@ theorem status_eq_forcedCounterexample_of_complete_of_cyclicallyFiveEdgeConnecte
   | realizedSeparator =>
       exact False.elim
         (report.status_ne_realizedSeparator_of_cyclicallyFiveEdgeConnected hcyclic hstatus)
+  | forcedCounterexample =>
+      rfl
+  | partialCase =>
+      exact False.elim
+        (report.status_ne_partialCase_of_complete hportal hcycles hstatus)
+
+/-- Under complete checker evidence, a candidate-edge bypass witness forces the certified report
+status to `forcedCounterexample`.  This is the report-level finite-witness form: a concrete
+support-avoiding bypass refutes the realized-separator bin, and completeness rules out `partial`. -/
+theorem status_eq_forcedCounterexample_of_complete_of_candidate_edge_bypass
+    {node : CAP5ExceptionalAnnulusGeneratorNode boundaryEdge}
+    (report : node.Report)
+    (hportal : node.PortalCrosses) (hcycles : node.SideCycles)
+    {u v : V} {e : G.edgeSet}
+    (he_pair : (e : Sym2 V) = s(u, v))
+    (hecut : e ∈ node.candidate.edgeSupport)
+    (p : G.Walk u v)
+    (havoid : ∀ e' : G.edgeSet, e' ∈ node.candidate.edgeSupport →
+      (e' : Sym2 V) ∉ p.edges) :
+    report.status = CAP5SeparatorGeneratorStatus.forcedCounterexample := by
+  cases hstatus : report.status with
+  | realizedSeparator =>
+      exact False.elim
+        (report.status_ne_realizedSeparator_of_candidate_edge_bypass
+          he_pair hecut p havoid hstatus)
   | forcedCounterexample =>
       rfl
   | partialCase =>
@@ -606,6 +650,43 @@ theorem ofDecidableChecks_classify_eq_forcedCounterexample_of_complete_of_cyclic
       hcyclic
       (by simpa [report, node, latentNode] using hportal)
       (by simpa [report, node, latentNode] using hcycles)
+  simpa [report, nodeReport] using hstatus
+
+/-- Executable report theorem for a concrete finite bypass witness.  If the portal and two-cycle
+checks are complete, and one candidate edge has a support-avoiding bypass walk, the canonical
+finite report producer classifies that latent as `forcedCounterexample`. -/
+theorem ofDecidableChecks_classify_eq_forcedCounterexample_of_complete_of_candidate_edge_bypass
+    (boundaryEdge : Fin 5 → G.edgeSet) (side : V → Prop)
+    [∀ latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge,
+      Decidable ((latentNode boundaryEdge side latent).PortalCrosses)]
+    [∀ latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge,
+      Decidable ((latentNode boundaryEdge side latent).SideCycles)]
+    [∀ latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge,
+      Decidable ((latentNode boundaryEdge side latent).RealizedSeparator)]
+    (latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge)
+    (hportal : (latentNode boundaryEdge side latent).PortalCrosses)
+    (hcycles : (latentNode boundaryEdge side latent).SideCycles)
+    {u v : V} {e : G.edgeSet}
+    (he_pair : (e : Sym2 V) = s(u, v))
+    (hecut : e ∈ (latentNode boundaryEdge side latent).candidate.edgeSupport)
+    (p : G.Walk u v)
+    (havoid :
+      ∀ e' : G.edgeSet, e' ∈ (latentNode boundaryEdge side latent).candidate.edgeSupport →
+        (e' : Sym2 V) ∉ p.edges) :
+    (ofDecidableChecks boundaryEdge side).classify latent =
+      CAP5SeparatorGeneratorStatus.forcedCounterexample := by
+  let report : CAP5ExceptionalAnnulusGeneratorReport boundaryEdge side :=
+    ofDecidableChecks boundaryEdge side
+  have hstatus :
+      (report.nodeReport latent).status =
+        CAP5SeparatorGeneratorStatus.forcedCounterexample :=
+    (report.nodeReport latent).status_eq_forcedCounterexample_of_complete_of_candidate_edge_bypass
+      (by simpa [report, node, latentNode] using hportal)
+      (by simpa [report, node, latentNode] using hcycles)
+      he_pair
+      (by simpa [report, node, latentNode] using hecut)
+      p
+      (by simpa [report, node, latentNode] using havoid)
   simpa [report, nodeReport] using hstatus
 
 /-- Diagnostic contrapositive for one executable CAP5 sample.  If the canonical finite report

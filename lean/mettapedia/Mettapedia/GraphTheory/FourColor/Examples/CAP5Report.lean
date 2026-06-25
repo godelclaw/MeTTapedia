@@ -442,14 +442,13 @@ theorem realizedCAP5Report_classify_forcedLatent_eq_forcedCounterexample :
     realizedCAP5Report.classify forcedLatent =
       CAP5SeparatorGeneratorStatus.forcedCounterexample := by
   classical
-  have hnotRealized :
-      ¬ (CAP5ExceptionalAnnulusGeneratorReport.latentNode
-        realizedCAP5BoundaryEdge realizedSide forcedLatent).RealizedSeparator :=
-    forced_realizedSeparator_false
-  simp [realizedCAP5Report,
-    CAP5ExceptionalAnnulusGeneratorReport.ofDecidableChecks,
-    CAP5ExceptionalAnnulusGeneratorNode.Report.ofDecidableChecks,
-    forced_portalCrosses, forced_sideCycles, hnotRealized]
+  exact
+    CAP5ExceptionalAnnulusGeneratorReport.ofDecidableChecks_classify_eq_forcedCounterexample_of_complete_of_candidate_edge_bypass
+        realizedCAP5BoundaryEdge realizedSide forcedLatent
+        forced_portalCrosses forced_sideCycles
+        (u := (0 : RealizedV)) (v := 3) (e := r03)
+        (by simp [r03]) forcedCandidate_r03_mem forcedCandidateBypassWalk
+        forcedCandidateBypassWalk_avoids_forcedCandidate
 
 /--
 The realized-separator bin is a genuine cyclic-five-connectivity refutation for this finite
