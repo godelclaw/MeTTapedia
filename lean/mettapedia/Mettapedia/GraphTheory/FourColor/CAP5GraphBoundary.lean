@@ -342,6 +342,56 @@ theorem cap5BoundaryWord_not_extendsAcrossCycle_iff_coloredBlock2111_of_isTaitEd
   enum.cap5BoundaryWord_not_extendsAcrossCycle_iff_coloredBlock2111_of_isTaitEdgeColoring_of_isZeroBoundary_at
     C hC hzero.1
 
+/-- Pulling an indexed support through a boundary enumeration and then restricting back to
+boundary positions recovers the original indexed support. -/
+theorem cap5BoundarySupportOfEdges_map
+    {E : Type*} [DecidableEq E] {support : Finset E}
+    (enum : CAP5BoundaryEdgeEnumeration support)
+    (T : Finset (Fin 5)) :
+    cap5BoundarySupportOfEdges enum.boundaryEdge
+      (T.map ⟨enum.boundaryEdge, enum.injective⟩) = T := by
+  apply Finset.ext
+  intro i
+  constructor
+  · intro hi
+    rw [mem_cap5BoundarySupportOfEdges_iff] at hi
+    rcases Finset.mem_map.1 hi with ⟨j, hj, hji⟩
+    have hji' : j = i := enum.injective hji
+    simpa [hji'] using hj
+  · intro hi
+    rw [mem_cap5BoundarySupportOfEdges_iff]
+    exact Finset.mem_map.2 ⟨i, hi, rfl⟩
+
+/-- If a boundary coloring is the canonical bad CAP5 word and an edge set restricts to the
+support of a finite repair type, switching that edge set repairs the boundary word. -/
+theorem cap5BoundaryWord_switch_extendsAcrossCycle_of_badBoundaryWord_of_repairTypeSupport
+    {E : Type*} [DecidableEq E] {support : Finset E}
+    (enum : CAP5BoundaryEdgeEnumeration support)
+    (C : E → Color) (S : Finset E) (τ : CAP5RepairType)
+    (hword : cap5BoundaryWordOfEdges enum.boundaryEdge C = cap5BadBoundaryWord2111)
+    (hsupport : cap5BoundarySupportOfEdges enum.boundaryEdge S = τ.support) :
+    CAP5WordExtendsAcrossCycle
+      (cap5BoundaryWordOfEdges enum.boundaryEdge
+        (switch (τ.colorPair).1 (τ.colorPair).2 (S : Set E) C)) := by
+  rw [cap5BoundaryWordOfEdges_switch_eq_boundarySwap, hsupport, hword]
+  simpa [CAP5RepairType.apply] using τ.apply_bad_extendsAcrossCycle
+
+/-- Repair-type support image form of the edge-level CAP5 repair bridge.  A concrete finite
+sample can use the image of `τ.support` under its boundary enumeration as the actual graph-edge
+switch support. -/
+theorem cap5BoundaryWord_switch_extendsAcrossCycle_of_badBoundaryWord_of_repairType
+    {E : Type*} [DecidableEq E] {support : Finset E}
+    (enum : CAP5BoundaryEdgeEnumeration support)
+    (C : E → Color) (τ : CAP5RepairType)
+    (hword : cap5BoundaryWordOfEdges enum.boundaryEdge C = cap5BadBoundaryWord2111) :
+    CAP5WordExtendsAcrossCycle
+      (cap5BoundaryWordOfEdges enum.boundaryEdge
+        (switch (τ.colorPair).1 (τ.colorPair).2
+          ((τ.support.map ⟨enum.boundaryEdge, enum.injective⟩ : Finset E) : Set E) C)) := by
+  exact cap5BoundaryWord_switch_extendsAcrossCycle_of_badBoundaryWord_of_repairTypeSupport enum
+    C (τ.support.map ⟨enum.boundaryEdge, enum.injective⟩) τ hword
+    (cap5BoundarySupportOfEdges_map enum τ.support)
+
 /-- Canonical finite five-edge boundary enumeration used by the CAP5 boundary generator smoke
 tests.  It deliberately has no graph-embedding content: it only checks the boundary-word
 classification layer that a later graph generator consumes. -/
@@ -415,6 +465,20 @@ theorem canonicalBadBoundaryWord_repairType_extendsAcrossCycle
       (τ.apply (cap5BoundaryWordOfEdges canonicalFinFive.boundaryEdge canonicalBadColoring)) := by
   rw [canonicalBadBoundaryWord]
   exact τ.apply_bad_extendsAcrossCycle
+
+/-- Edge-level support form of the canonical bad finite sample: switching the canonical
+repair-type support on the five boundary edges repairs the bad boundary word. -/
+theorem canonicalBadBoundaryWord_switch_repairType_extendsAcrossCycle
+    (τ : CAP5RepairType) :
+    CAP5WordExtendsAcrossCycle
+      (cap5BoundaryWordOfEdges canonicalFinFive.boundaryEdge
+        (switch (τ.colorPair).1 (τ.colorPair).2 (τ.support : Set (Fin 5))
+          canonicalBadColoring)) := by
+  exact cap5BoundaryWord_switch_extendsAcrossCycle_of_badBoundaryWord_of_repairTypeSupport
+    canonicalFinFive canonicalBadColoring τ.support τ canonicalBadBoundaryWord (by
+      apply Finset.ext
+      intro i
+      simp [cap5BoundarySupportOfEdges])
 
 end CAP5BoundaryEdgeEnumeration
 
