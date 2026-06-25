@@ -2757,6 +2757,45 @@ theorem exists_boundaryZeroChain_and_crossingExtensionFinsetWitness_of_not_class
     rw [hnoncrossingEmpty] at heNoncrossingBin
     simp at heNoncrossingBin
 
+/-- Fixed-point criterion for a finite CAP5 classifier.  If a later finite control set controls
+all selected boundary-zero chains, and both extension bins are empty, then the current classifier
+already controls the selected boundary-zero chains.  This is the success case dual to the witness
+generator: nonempty bins produce the next witness; empty bins close the finite classifier. -/
+theorem enumeratedExceptionalAnnulusForcedEdgeClassifierControl_of_finsetControl_of_extensionFinsets_eq_empty
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    [Fintype G.edgeSet]
+    (emb : PlaneEmbeddingWithBoundary G)
+    (p0Inside p4Inside : Bool) (side : V → Prop)
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (controlEdges : Finset G.edgeSet)
+    (hcontrol :
+      ∀ ⦃z : G.edgeSet → Color⦄,
+        z ∈ planarBoundaryZeroSubmodule emb →
+        (∀ e ∈ controlEdges, z e = 0) →
+          z = 0)
+    (hcrossingEmpty : classifier.crossingExtensionFinset controlEdges = ∅)
+    (hnoncrossingEmpty : classifier.noncrossingExtensionFinset controlEdges = ∅) :
+    ∀ ⦃z : G.edgeSet → Color⦄,
+      z ∈ planarBoundaryZeroSubmodule emb →
+      (∀ e ∈ classifier.emittedFinset, z e = 0) →
+        z = 0 := by
+  by_contra hnotControl
+  rcases data.exists_boundaryZeroChain_and_extensionFinsetWitness_crossing_or_noncrossing_of_not_classifierControl_of_finsetControl
+      emb p0Inside p4Inside side classifier controlEdges hnotControl hcontrol with
+    hcrossing | hnoncrossing
+  · rcases hcrossing with
+      ⟨_z, _hzBoundary, _hzNonzero, _hvanish, _u, _v, e, _p,
+        heCrossingBin, _hePredicateOutside, _hze, _hcross, _hsu, _hsv,
+        _hpEdges, _havoid⟩
+    rw [hcrossingEmpty] at heCrossingBin
+    simp at heCrossingBin
+  · rcases hnoncrossing with
+      ⟨_z, _hzBoundary, _hzNonzero, _hvanish, e,
+        heNoncrossingBin, _hePredicateOutside, _hze, _hnotCross⟩
+    rw [hnoncrossingEmpty] at heNoncrossingBin
+    simp at heNoncrossingBin
+
 /-- A successful finite-control extension of a failed Boolean CAP5 classifier makes at least one
 of the two finite extension bins nonempty: either a new side-crossing edge appears, or a new
 noncrossing algebraic detector coordinate appears. -/
@@ -3454,6 +3493,95 @@ theorem forcedEdge_and_crossingExtensionFinsetWitness_of_not_theorem49BoundaryRo
     exact
       data.exists_boundaryZeroChain_and_crossingExtensionFinsetWitness_of_not_classifierControl_of_finsetControl_of_noncrossingExtensionFinset_eq_empty
         emb p0Inside p4Inside side classifier controlEdges hnotControl hcontrol hnoncrossingEmpty
+
+/-- Finite fixed-point synthesis criterion for a Boolean CAP5 classifier.  If a later finite
+control set controls selected boundary-zero chains and both extension bins are empty, then the
+current emitted-edge classifier is already sufficient for the Theorem 4.9 boundary-root synthesis
+route.  This is the finite checker success endpoint dual to the failed-synthesis witness
+generator. -/
+theorem theorem49BoundaryRootSynthesis_of_enumeratedExceptionalAnnulusForcedEdgeClassifierExtensionFinsetsEmpty
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    [Fintype G.edgeSet] [FiniteDimensional F2 (G.edgeSet → Color)]
+    (emb : PlaneEmbeddingWithBoundary G) (C₀ : G.EdgeColoring Color)
+    (colorings : Set (G.EdgeColoring Color))
+    (hsubset : colorings ⊆ G.EdgeKempeClosure C₀)
+    {κ : Type*}
+    (family : κ → projectedColoringGeneratorSubspace emb colorings)
+    (p0Inside p4Inside : Bool) (side : V → Prop)
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (controlEdges : Finset G.edgeSet)
+    (hcontrol :
+      ∀ ⦃z : G.edgeSet → Color⦄,
+        z ∈ planarBoundaryZeroSubmodule emb →
+        (∀ e ∈ controlEdges, z e = 0) →
+          z = 0)
+    (hcrossingEmpty : classifier.crossingExtensionFinset controlEdges = ∅)
+    (hnoncrossingEmpty : classifier.noncrossingExtensionFinset controlEdges = ∅)
+    (hwitnessRed :
+      ∀ e : G.edgeSet,
+        e ∈ classifier.emittedFinset →
+          ∃ i : κ,
+            ((family i : projectedColoringGeneratorSubspace emb colorings) :
+                G.edgeSet → Color) =
+              Pi.single e red)
+    (hwitnessBlue :
+      ∀ e : G.edgeSet,
+        e ∈ classifier.emittedFinset →
+          ∃ i : κ,
+            ((family i : projectedColoringGeneratorSubspace emb colorings) :
+                G.edgeSet → Color) =
+              Pi.single e blue) :
+    Theorem49BoundaryRootSynthesis emb C₀ :=
+  theorem49BoundaryRootSynthesis_of_enumeratedExceptionalAnnulusForcedEdgeClassifierControl
+    emb C₀ colorings hsubset family p0Inside p4Inside side classifier
+    (data.enumeratedExceptionalAnnulusForcedEdgeClassifierControl_of_finsetControl_of_extensionFinsets_eq_empty
+      emb p0Inside p4Inside side classifier controlEdges hcontrol hcrossingEmpty hnoncrossingEmpty)
+    hwitnessRed hwitnessBlue
+
+/-- Failed-synthesis falsification of the finite fixed point.  A CAP5 run cannot simultaneously
+have a successful finite-control superset, empty crossing and noncrossing extension bins, and a
+failed Theorem 4.9 boundary-root synthesis.  Thus an attempted refutation must expose a nonempty
+extension bin rather than stop at an exhausted finite classifier. -/
+theorem false_of_not_theorem49BoundaryRootSynthesis_of_finsetControl_of_extensionFinsets_eq_empty
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    [Fintype G.edgeSet] [FiniteDimensional F2 (G.edgeSet → Color)]
+    (emb : PlaneEmbeddingWithBoundary G) (C₀ : G.EdgeColoring Color)
+    (colorings : Set (G.EdgeColoring Color))
+    (hsubset : colorings ⊆ G.EdgeKempeClosure C₀)
+    {κ : Type*}
+    (family : κ → projectedColoringGeneratorSubspace emb colorings)
+    (p0Inside p4Inside : Bool) (side : V → Prop)
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (controlEdges : Finset G.edgeSet)
+    (hcontrol :
+      ∀ ⦃z : G.edgeSet → Color⦄,
+        z ∈ planarBoundaryZeroSubmodule emb →
+        (∀ e ∈ controlEdges, z e = 0) →
+          z = 0)
+    (hcrossingEmpty : classifier.crossingExtensionFinset controlEdges = ∅)
+    (hnoncrossingEmpty : classifier.noncrossingExtensionFinset controlEdges = ∅)
+    (hwitnessRed :
+      ∀ e : G.edgeSet,
+        e ∈ classifier.emittedFinset →
+          ∃ i : κ,
+            ((family i : projectedColoringGeneratorSubspace emb colorings) :
+                G.edgeSet → Color) =
+              Pi.single e red)
+    (hwitnessBlue :
+      ∀ e : G.edgeSet,
+        e ∈ classifier.emittedFinset →
+          ∃ i : κ,
+            ((family i : projectedColoringGeneratorSubspace emb colorings) :
+                G.edgeSet → Color) =
+              Pi.single e blue)
+    (hnotSynthesis : ¬ Theorem49BoundaryRootSynthesis emb C₀) :
+    False :=
+  hnotSynthesis
+    (data.theorem49BoundaryRootSynthesis_of_enumeratedExceptionalAnnulusForcedEdgeClassifierExtensionFinsetsEmpty
+      emb C₀ colorings hsubset family p0Inside p4Inside side classifier controlEdges
+      hcontrol hcrossingEmpty hnoncrossingEmpty hwitnessRed hwitnessBlue)
 
 /-- Theorem 4.9 synthesis route from a concrete finite checker output.  The checker need only
 certify that its finite edge set is exactly the enumerated CAP5 emitted-edge predicate, and then
