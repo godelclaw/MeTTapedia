@@ -384,31 +384,11 @@ theorem forced_realizedSeparator_false :
     ¬ (CAP5ExceptionalAnnulusGeneratorReport.latentNode
       realizedCAP5BoundaryEdge realizedSide forcedLatent).RealizedSeparator := by
   rintro ⟨realization⟩
-  have hnot01Cross :
-      ¬ EdgeCrossesVertexSide realizedGraph realization.side r01 := by
-    intro hcross
-    exact forcedCandidate_r01_not_mem ((realization.hcut_eq r01).2 hcross)
-  have hnot13Cross :
-      ¬ EdgeCrossesVertexSide realizedGraph realization.side r13 := by
-    intro hcross
-    exact forcedCandidate_r13_not_mem ((realization.hcut_eq r13).2 hcross)
-  have h01 :
-      realization.side (0 : RealizedV) ↔ realization.side 1 :=
-    (not_edgeCrossesVertexSide_iff_forall_side_iff realizedGraph realization.side r01).1
-      hnot01Cross 0 1 (by simp [r01]) (by simp [r01])
-  have h13 :
-      realization.side (1 : RealizedV) ↔ realization.side 3 :=
-    (not_edgeCrossesVertexSide_iff_forall_side_iff realizedGraph realization.side r13).1
-      hnot13Cross 1 3 (by simp [r13]) (by simp [r13])
-  have h03Same : realization.side (0 : RealizedV) ↔ realization.side 3 := h01.trans h13
-  have hnot03Cross :
-      ¬ EdgeCrossesVertexSide realizedGraph realization.side r03 := by
-    rw [not_edgeCrossesVertexSide_iff_forall_side_iff]
-    intro u v hu hv
-    fin_cases u <;> fin_cases v <;> simp [r03] at hu hv ⊢
-    · exact h03Same
-    · exact h03Same.symm
-  exact hnot03Cross ((realization.hcut_eq r03).1 forcedCandidate_r03_mem)
+  exact realization.false_of_triangle_one_cut_edge
+    (a := (0 : RealizedV)) (b := 1) (c := 3)
+    (eab := r01) (ebc := r13) (eac := r03)
+    (by simp [r01]) (by simp [r13]) (by simp [r03])
+    forcedCandidate_r01_not_mem forcedCandidate_r13_not_mem forcedCandidate_r03_mem
 
 /-- The three-edge latent has a concrete outside crossing edge and hence a forced witness. -/
 theorem forced_node_forcedCounterexample :
