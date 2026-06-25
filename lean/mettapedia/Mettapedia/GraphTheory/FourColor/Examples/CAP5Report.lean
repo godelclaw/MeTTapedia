@@ -112,11 +112,32 @@ theorem toyCAP5Report_partialLatents_eq_all :
   intro latent _hmem
   simp [toyCAP5Report_classify_eq_partialCase latent]
 
+/-- The one-edge toy sample puts all latents in the primitive missing-evidence frontier. -/
+theorem toyCAP5Report_missingCheckerEvidenceLatents_eq_all :
+    toyCAP5Report.missingCheckerEvidenceLatents =
+      CAP5ExceptionalAnnulusGeneratorLatent.all toyCAP5BoundaryEdge := by
+  rw [← toyCAP5Report_partialLatents_eq_all]
+  exact toyCAP5Report.partialLatents_eq_missingCheckerEvidenceLatents.symm
+
 @[simp]
 theorem toyCAP5Report_partialLatents_length :
     toyCAP5Report.partialLatents.length = 16 := by
   rw [toyCAP5Report_partialLatents_eq_all]
   simp
+
+@[simp]
+theorem toyCAP5Report_missingCheckerEvidenceLatents_length :
+    toyCAP5Report.missingCheckerEvidenceLatents.length = 16 := by
+  rw [toyCAP5Report_missingCheckerEvidenceLatents_eq_all]
+  simp
+
+/-- The one-edge toy sample has no complete checker latents. -/
+theorem toyCAP5Report_completeCheckerLatents_eq_nil :
+    toyCAP5Report.completeCheckerLatents = [] := by
+  apply List.eq_nil_iff_forall_not_mem.2
+  intro latent hmem
+  have hcomplete := (toyCAP5Report.mem_completeCheckerLatents_iff).1 hmem
+  exact hcomplete.2 (toyCAP5Report_missingCheckerEvidence latent)
 
 /-- A six-vertex benchmark: two triangles joined by four candidate CAP5 separator edges. -/
 abbrev RealizedV := Fin 6
@@ -542,6 +563,27 @@ theorem realizedCAP5Report_named_latents_not_missingCheckerEvidence :
   · simpa [CAP5ExceptionalAnnulusGeneratorReport.node,
       CAP5ExceptionalAnnulusGeneratorReport.latentNode] using
       forced_latent_not_missingCheckerEvidence
+
+/-- The realized benchmark latent is a complete checker run in the report frontier. -/
+theorem realizedCAP5Report_realizedLatent_mem_completeCheckerLatents :
+    realizedLatent ∈ realizedCAP5Report.completeCheckerLatents := by
+  exact (realizedCAP5Report.mem_completeCheckerLatents_iff).2
+    ⟨CAP5ExceptionalAnnulusGeneratorLatent.mem_all realizedLatent,
+      realizedCAP5Report_named_latents_not_missingCheckerEvidence.1⟩
+
+/-- The forced benchmark latent is also a complete checker run, not a missing-evidence case. -/
+theorem realizedCAP5Report_forcedLatent_mem_completeCheckerLatents :
+    forcedLatent ∈ realizedCAP5Report.completeCheckerLatents := by
+  exact (realizedCAP5Report.mem_completeCheckerLatents_iff).2
+    ⟨CAP5ExceptionalAnnulusGeneratorLatent.mem_all forcedLatent,
+      realizedCAP5Report_named_latents_not_missingCheckerEvidence.2⟩
+
+/-- The two named two-triangle latents calibrate the complete-checker frontier. -/
+theorem realizedCAP5Report_named_latents_mem_completeCheckerLatents :
+    realizedLatent ∈ realizedCAP5Report.completeCheckerLatents ∧
+      forcedLatent ∈ realizedCAP5Report.completeCheckerLatents :=
+  ⟨realizedCAP5Report_realizedLatent_mem_completeCheckerLatents,
+    realizedCAP5Report_forcedLatent_mem_completeCheckerLatents⟩
 
 /-- The realized-bin membership projects back to the certified cyclic-cut payload. -/
 theorem realizedCAP5Report_realizedLatent_payload :
