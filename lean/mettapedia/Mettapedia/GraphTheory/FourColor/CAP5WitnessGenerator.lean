@@ -1580,6 +1580,41 @@ theorem enumeratedExceptionalAnnulusForcedEdge_crosses
     { latent := latent, side := side }
   exact node.forcedCounterexampleEdge_crosses (by simpa [node] using hforced)
 
+/-- Exact normal form for the data-level enumerated forced-edge predicate: an emitted edge is
+precisely a non-candidate edge crossing the selected side for one realized exceptional latent.
+This is the transparent finite witness-generator boundary used by separator and cocycle checks. -/
+theorem enumeratedExceptionalAnnulusForcedEdge_iff_exists_latent_crossing_outside
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    {p0Inside p4Inside : Bool} {side : V → Prop} {e : G.edgeSet} :
+    data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e ↔
+      ∃ latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge,
+        latent ∈ CAP5ExceptionalAnnulusGeneratorLatent.all boundaryEdge ∧
+          latent.p0Inside = p0Inside ∧
+            latent.p4Inside = p4Inside ∧
+              data.RealizesExceptionalBoundarySupportOrientation latent.orientation ∧
+                (let node : CAP5ExceptionalAnnulusGeneratorNode boundaryEdge :=
+                  { latent := latent, side := side };
+                  e ∉ node.candidate.edgeSupport ∧ EdgeCrossesVertexSide G side e) := by
+  constructor
+  · rintro ⟨latent, hmem, hp0, hp4, horientation, hforced⟩
+    let node : CAP5ExceptionalAnnulusGeneratorNode boundaryEdge :=
+      { latent := latent, side := side }
+    have hforcedNode : node.ForcedCounterexampleEdge e := by
+      simpa [node] using hforced
+    have hnormal :
+        e ∉ node.candidate.edgeSupport ∧ EdgeCrossesVertexSide G node.side e :=
+      (node.forcedCounterexampleEdge_iff_crossing_outside (e := e)).1 hforcedNode
+    exact ⟨latent, hmem, hp0, hp4, horientation, by simpa [node] using hnormal⟩
+  · rintro ⟨latent, hmem, hp0, hp4, horientation, hnormal⟩
+    let node : CAP5ExceptionalAnnulusGeneratorNode boundaryEdge :=
+      { latent := latent, side := side }
+    have hnormalNode :
+        e ∉ node.candidate.edgeSupport ∧ EdgeCrossesVertexSide G node.side e := by
+      simpa [node] using hnormal
+    have hforcedNode : node.ForcedCounterexampleEdge e :=
+      (node.forcedCounterexampleEdge_iff_crossing_outside (e := e)).2 hnormalNode
+    exact ⟨latent, hmem, hp0, hp4, horientation, by simpa [node] using hforcedNode⟩
+
 /-- Every edge emitted by the enumerated generator is an edge emitted by the broader exceptional
 CAP5 one-edge counterexample predicate used by the algebraic lane. -/
 theorem enumeratedExceptionalAnnulusForcedEdge_to_exceptionalAnnulusOneEdgeCounterexampleEdge
