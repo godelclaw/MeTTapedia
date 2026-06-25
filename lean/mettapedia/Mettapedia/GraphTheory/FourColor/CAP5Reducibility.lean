@@ -533,6 +533,23 @@ def CAP5ExceptionalAnnulusBoundaryEdgeSupportCandidate.CyclicEdgeCutRealizationD
     (candidate : CAP5ExceptionalAnnulusBoundaryEdgeSupportCandidate boundaryEdge) :=
   CyclicEdgeCutRealization G candidate.edgeSupport
 
+/-- Candidate-level bypass obstruction.  A CAP5 separator candidate cannot have exact cyclic-cut
+realization data when one of its listed edges has a walk between its endpoints avoiding the whole
+candidate support.  This is the finite-checker interface for cocycle/parity counterexamples. -/
+theorem CAP5ExceptionalAnnulusBoundaryEdgeSupportCandidate.not_cyclicEdgeCutRealizationData_of_edge_bypass
+    {V : Type*} {G : SimpleGraph V} [DecidableEq G.edgeSet]
+    {boundaryEdge : Fin 5 → G.edgeSet}
+    (candidate : CAP5ExceptionalAnnulusBoundaryEdgeSupportCandidate boundaryEdge)
+    {u v : V} {e : G.edgeSet}
+    (he_pair : (e : Sym2 V) = s(u, v))
+    (hecut : e ∈ candidate.edgeSupport)
+    (p : G.Walk u v)
+    (havoid : ∀ e' : G.edgeSet, e' ∈ candidate.edgeSupport → (e' : Sym2 V) ∉ p.edges) :
+    ¬ Nonempty (candidate.CyclicEdgeCutRealizationData (G := G)) := by
+  rintro ⟨realization⟩
+  exact realization.false_of_mem_edgeCut_of_walk_avoids_edgeCut_between_endpoints
+    he_pair hecut p havoid
+
 /-- Promote a CAP5 boundary-edge support candidate to the generic checker-facing cyclic-separator
 candidate.  The only CAP5-specific input is the portal-language proof that each named separator
 portal really crosses the chosen side; the generic layer then supplies the holds-vs-counterexample
