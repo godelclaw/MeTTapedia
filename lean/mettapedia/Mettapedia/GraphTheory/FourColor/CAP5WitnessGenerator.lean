@@ -310,6 +310,34 @@ for the generic holds-vs-counterexample theorem. -/
 def Partial (node : CAP5ExceptionalAnnulusGeneratorNode boundaryEdge) : Prop :=
   ¬ node.PortalCrosses ∨ ¬ node.SideCycles
 
+/-- Split form of the partial-bin obstruction.  A partial CAP5 node is missing either portal
+crossing evidence, a cycle on the selected side, or a cycle on the complementary side. -/
+def MissingCheckerEvidence (node : CAP5ExceptionalAnnulusGeneratorNode boundaryEdge) : Prop :=
+  ¬ node.PortalCrosses ∨
+    ¬ HasCycleOnSide G node.side ∨
+      ¬ HasCycleOnSide G (fun v => ¬ node.side v)
+
+/-- The split missing-evidence predicate is exactly the older partial-bin predicate. -/
+theorem partial_iff_missingCheckerEvidence
+    (node : CAP5ExceptionalAnnulusGeneratorNode boundaryEdge) :
+    node.Partial ↔ node.MissingCheckerEvidence := by
+  classical
+  constructor
+  · rintro (hnotPortal | hnotCycles)
+    · exact Or.inl hnotPortal
+    · by_cases hinside : HasCycleOnSide G node.side
+      · by_cases houtside : HasCycleOnSide G (fun v => ¬ node.side v)
+        · exact False.elim (hnotCycles ⟨hinside, houtside⟩)
+        · exact Or.inr (Or.inr houtside)
+      · exact Or.inr (Or.inl hinside)
+  · rintro (hnotPortal | hmissingCycle)
+    · exact Or.inl hnotPortal
+    · exact Or.inr <| by
+        intro hcycles
+        rcases hmissingCycle with hnotInside | hnotOutside
+        · exact hnotInside hcycles.1
+        · exact hnotOutside hcycles.2
+
 /-- Predicate associating status labels with their proof obligations. -/
 def InBin (node : CAP5ExceptionalAnnulusGeneratorNode boundaryEdge) :
     CAP5SeparatorGeneratorStatus → Prop
@@ -646,6 +674,19 @@ theorem status_eq_partialCase_iff_missing_checker_evidence
     | partialCase =>
         rfl
 
+/-- Split form of `status_eq_partialCase_iff_missing_checker_evidence`: a certified partial
+status is exactly one of the three primitive missing checker obligations. -/
+theorem status_eq_partialCase_iff_missingCheckerEvidence
+    {node : CAP5ExceptionalAnnulusGeneratorNode boundaryEdge}
+    (report : node.Report) :
+    report.status = CAP5SeparatorGeneratorStatus.partialCase ↔
+      node.MissingCheckerEvidence := by
+  have hpartial :
+      report.status = CAP5SeparatorGeneratorStatus.partialCase ↔ node.Partial := by
+    simpa [CAP5ExceptionalAnnulusGeneratorNode.Partial] using
+      report.status_eq_partialCase_iff_missing_checker_evidence
+  exact hpartial.trans node.partial_iff_missingCheckerEvidence
+
 /-- In a cyclically five-edge-connected graph, a certified report cannot put a generated
 complete CAP5 node in the realized-separator bin. -/
 theorem status_ne_realizedSeparator_of_cyclicallyFiveEdgeConnected
@@ -835,6 +876,15 @@ theorem classify_eq_partialCase_iff_missing_checker_evidence
       ¬ (report.node latent).PortalCrosses ∨ ¬ (report.node latent).SideCycles := by
   simpa [nodeReport] using
     (report.nodeReport latent).status_eq_partialCase_iff_missing_checker_evidence
+
+/-- Split form of the partial-status theorem for full reports. -/
+theorem classify_eq_partialCase_iff_missingCheckerEvidence
+    (report : CAP5ExceptionalAnnulusGeneratorReport boundaryEdge side)
+    (latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge) :
+    report.classify latent = CAP5SeparatorGeneratorStatus.partialCase ↔
+      (report.node latent).MissingCheckerEvidence := by
+  simpa [nodeReport] using
+    (report.nodeReport latent).status_eq_partialCase_iff_missingCheckerEvidence
 
 /-- Construct the full finite generator report from per-latent checker decisions.  This is the
 operational report producer: a finite implementation can decide the portal, side-cycle, and
@@ -1487,6 +1537,29 @@ theorem partialLatents_ne_nil_iff_exists_missing_checker_evidence
       exact hpartial
     cases hnil
 
+/-- Split obstruction form of the nonempty partial-bin boundary.  A nonempty partial list is
+equivalent to a concrete enumerated latent missing one primitive checker ingredient: portal
+crossings, a selected-side cycle, or a complementary-side cycle. -/
+theorem partialLatents_ne_nil_iff_exists_missingCheckerEvidence
+    (report : CAP5ExceptionalAnnulusGeneratorReport boundaryEdge side) :
+    report.partialLatents ≠ [] ↔
+      ∃ latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge,
+        latent ∈ CAP5ExceptionalAnnulusGeneratorLatent.all boundaryEdge ∧
+          (report.node latent).MissingCheckerEvidence := by
+  constructor
+  · intro hpartialNonempty
+    rcases (report.partialLatents_ne_nil_iff_exists_missing_checker_evidence).1
+        hpartialNonempty with
+      ⟨latent, hmem, hmissing⟩
+    have hpartial : (report.node latent).Partial := hmissing
+    exact ⟨latent, hmem,
+      ((report.node latent).partial_iff_missingCheckerEvidence).1 hpartial⟩
+  · rintro ⟨latent, hmem, hmissing⟩
+    apply (report.partialLatents_ne_nil_iff_exists_missing_checker_evidence).2
+    have hpartial : (report.node latent).Partial :=
+      ((report.node latent).partial_iff_missingCheckerEvidence).2 hmissing
+    exact ⟨latent, hmem, hpartial⟩
+
 /--
 In a cyclically five-edge-connected graph, the report's only obstruction to putting every
 enumerated latent in the forced-counterexample bin is genuinely partial checker evidence.  Thus a
@@ -1743,6 +1816,34 @@ theorem ofDecidableChecks_partialLatents_ne_nil_iff_exists_missing_checker_evide
   let report : CAP5ExceptionalAnnulusGeneratorReport boundaryEdge side :=
     ofDecidableChecks boundaryEdge side
   have hboundary := report.partialLatents_ne_nil_iff_exists_missing_checker_evidence
+  constructor
+  · intro hpartialNonempty
+    rcases hboundary.1 hpartialNonempty with ⟨latent, hmem, hmissing⟩
+    exact ⟨latent, hmem, by simpa [report, node, latentNode] using hmissing⟩
+  · rintro ⟨latent, hmem, hmissing⟩
+    apply hboundary.2
+    exact ⟨latent, hmem, by simpa [report, node, latentNode] using hmissing⟩
+
+/--
+Executable split obstruction frontier for the canonical finite CAP5 checker.  A nonempty partial
+list is equivalent to an enumerated latent missing one primitive checker ingredient: portal
+crossings, a selected-side cycle, or a complementary-side cycle.
+-/
+theorem ofDecidableChecks_partialLatents_ne_nil_iff_exists_missingCheckerEvidence
+    (boundaryEdge : Fin 5 → G.edgeSet) (side : V → Prop)
+    [∀ latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge,
+      Decidable ((latentNode boundaryEdge side latent).PortalCrosses)]
+    [∀ latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge,
+      Decidable ((latentNode boundaryEdge side latent).SideCycles)]
+    [∀ latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge,
+      Decidable ((latentNode boundaryEdge side latent).RealizedSeparator)] :
+    (ofDecidableChecks boundaryEdge side).partialLatents ≠ [] ↔
+      ∃ latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge,
+        latent ∈ CAP5ExceptionalAnnulusGeneratorLatent.all boundaryEdge ∧
+          (latentNode boundaryEdge side latent).MissingCheckerEvidence := by
+  let report : CAP5ExceptionalAnnulusGeneratorReport boundaryEdge side :=
+    ofDecidableChecks boundaryEdge side
+  have hboundary := report.partialLatents_ne_nil_iff_exists_missingCheckerEvidence
   constructor
   · intro hpartialNonempty
     rcases hboundary.1 hpartialNonempty with ⟨latent, hmem, hmissing⟩
