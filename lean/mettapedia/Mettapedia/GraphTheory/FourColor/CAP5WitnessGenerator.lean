@@ -352,6 +352,47 @@ theorem realizedSeparatorOnSide_or_forcedCounterexample_of_complete
   · rcases hforced with ⟨u, v, e, p, heOutside, hu, hv, hpEdges, havoid⟩
     exact Or.inr ⟨e, u, v, p, heOutside, hu, hv, hpEdges, havoid⟩
 
+/-- For a complete generated node, same-side realization is exactly the absence of a forced
+counterexample.  This is the finite checker's exact holds-vs-falsifier boundary for the selected
+side. -/
+theorem realizedSeparatorOnSide_iff_not_forcedCounterexample_of_complete
+    (node : CAP5ExceptionalAnnulusGeneratorNode boundaryEdge)
+    (hportal : node.PortalCrosses) (hcycles : node.SideCycles) :
+    node.RealizedSeparatorOnSide ↔ ¬ node.ForcedCounterexample := by
+  constructor
+  · intro hreal hforced
+    exact node.not_realizedSeparatorOnSide_of_forcedCounterexample hforced hreal
+  · intro hnotForced
+    rcases node.realizedSeparatorOnSide_or_forcedCounterexample_of_complete hportal hcycles with
+      hreal | hforced
+    · exact hreal
+    · exact False.elim (hnotForced hforced)
+
+/-- For a complete generated node, the forced-counterexample bin is exactly failure of same-side
+realization. -/
+theorem forcedCounterexample_iff_not_realizedSeparatorOnSide_of_complete
+    (node : CAP5ExceptionalAnnulusGeneratorNode boundaryEdge)
+    (hportal : node.PortalCrosses) (hcycles : node.SideCycles) :
+    node.ForcedCounterexample ↔ ¬ node.RealizedSeparatorOnSide := by
+  constructor
+  · exact node.not_realizedSeparatorOnSide_of_forcedCounterexample
+  · intro hnotReal
+    rcases node.realizedSeparatorOnSide_or_forcedCounterexample_of_complete hportal hcycles with
+      hreal | hforced
+    · exact False.elim (hnotReal hreal)
+    · exact hforced
+
+/-- Complete generated nodes realize the selected side exactly when no non-candidate edge crosses
+that side.  This is the graph-local normal form of the CAP5 generator boundary. -/
+theorem realizedSeparatorOnSide_iff_no_crossing_outside_of_complete
+    (node : CAP5ExceptionalAnnulusGeneratorNode boundaryEdge)
+    (hportal : node.PortalCrosses) (hcycles : node.SideCycles) :
+    node.RealizedSeparatorOnSide ↔
+      ¬ ∃ e : G.edgeSet, e ∉ node.candidate.edgeSupport ∧
+        EdgeCrossesVertexSide G node.side e := by
+  rw [node.realizedSeparatorOnSide_iff_not_forcedCounterexample_of_complete hportal hcycles,
+    node.forcedCounterexample_iff_exists_crossing_outside]
+
 /-- Status-form version of the complete forward-checker boundary. -/
 theorem inBin_realizedSeparator_or_forcedCounterexample_of_complete
     (node : CAP5ExceptionalAnnulusGeneratorNode boundaryEdge)
