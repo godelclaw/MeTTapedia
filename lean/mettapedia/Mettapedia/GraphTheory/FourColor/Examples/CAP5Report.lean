@@ -483,6 +483,15 @@ theorem realizedCAP5Report_forcedLatent_payload :
     realizedCAP5Report_forcedLatent_mem_forcedCounterexampleLatents
 
 /--
+The forced latent refutes realization of its generated support on the concrete report side.
+This is the exact same-side obstruction exposed by the finite checker.
+-/
+theorem realizedCAP5Report_forcedLatent_not_realizedSeparatorOnSide :
+    ¬ (realizedCAP5Report.node forcedLatent).RealizedSeparatorOnSide :=
+  realizedCAP5Report.not_realizedSeparatorOnSide_of_mem_forcedCounterexampleLatents
+    realizedCAP5Report_forcedLatent_mem_forcedCounterexampleLatents
+
+/--
 The forced bin in the concrete report exposes an actual side-crossing emitted edge, not just a
 status label.
 -/
