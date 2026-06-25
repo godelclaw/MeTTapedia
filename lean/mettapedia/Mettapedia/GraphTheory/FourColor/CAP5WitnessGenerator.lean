@@ -2475,6 +2475,77 @@ theorem exists_boundaryZeroChain_and_newControlEdge_nonzero_of_not_classifierCon
     exact hvanishEmitted e ((classifier.emittedFinset_spec e).2 hedge),
     hnew⟩
 
+/-- Geometric/algebraic binning for a failed Boolean CAP5 classifier after a successful later
+finite-control extension.  The new nonzero control edge returned by the algebraic obstruction is
+either a side-crossing one-edge probe outside the classifier output, or a noncrossing coordinate
+that must be handled by the algebraic detector. -/
+theorem exists_boundaryZeroChain_and_newControlEdge_crossing_or_noncrossing_of_not_classifierControl_of_finsetControl
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    [Fintype G.edgeSet]
+    (emb : PlaneEmbeddingWithBoundary G)
+    (p0Inside p4Inside : Bool) (side : V → Prop)
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (controlEdges : Finset G.edgeSet)
+    (hnotControl :
+      ¬ ∀ ⦃z : G.edgeSet → Color⦄,
+        z ∈ planarBoundaryZeroSubmodule emb →
+        (∀ e ∈ classifier.emittedFinset, z e = 0) →
+          z = 0)
+    (hcontrol :
+      ∀ ⦃z : G.edgeSet → Color⦄,
+        z ∈ planarBoundaryZeroSubmodule emb →
+        (∀ e ∈ controlEdges, z e = 0) →
+          z = 0) :
+    (∃ z : G.edgeSet → Color,
+      z ∈ planarBoundaryZeroSubmodule emb ∧
+        z ≠ 0 ∧
+          (∀ e : G.edgeSet,
+            data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e →
+              z e = 0) ∧
+            ∃ u v : V, ∃ e : G.edgeSet, ∃ p : G.Walk u v,
+              e ∈ controlEdges ∧
+                e ∉ classifier.emittedFinset ∧
+                  ¬ data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e ∧
+                    z e ≠ 0 ∧
+                      side u ∧ ¬ side v ∧
+                        p.edges = [(e : Sym2 V)] ∧
+                          ∀ f : G.edgeSet, f ∈ classifier.emittedFinset →
+                            (f : Sym2 V) ∉ p.edges) ∨
+      ∃ z : G.edgeSet → Color,
+        z ∈ planarBoundaryZeroSubmodule emb ∧
+          z ≠ 0 ∧
+            (∀ e : G.edgeSet,
+              data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e →
+                z e = 0) ∧
+              ∃ e : G.edgeSet,
+                e ∈ controlEdges ∧
+                  e ∉ classifier.emittedFinset ∧
+                    ¬ data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e ∧
+                      z e ≠ 0 ∧ ¬ EdgeCrossesVertexSide G side e := by
+  classical
+  rcases data.exists_boundaryZeroChain_and_newControlEdge_nonzero_of_not_classifierControl_of_finsetControl
+      emb p0Inside p4Inside side classifier controlEdges hnotControl hcontrol with
+    ⟨z, hzBoundary, hzNonzero, hvanish, e, heControl, heOutside, hze⟩
+  have hePredicateOutside :
+      ¬ data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e := by
+    intro hedge
+    exact heOutside ((classifier.emittedFinset_spec e).2 hedge)
+  by_cases hcross : EdgeCrossesVertexSide G side e
+  · rcases hcross with ⟨u, v, hu, hv, hsu, hsv⟩
+    rcases exists_walk_edges_eq_singleton_of_edge_endpoint_sides
+        (G := G) (side := side) hu hv hsu hsv with
+      ⟨p, hpEdges⟩
+    refine Or.inl ⟨z, hzBoundary, hzNonzero, hvanish, u, v, e, p,
+      heControl, heOutside, hePredicateOutside, hze, hsu, hsv, hpEdges, ?_⟩
+    intro f hf hmem
+    have hsym : (f : Sym2 V) = (e : Sym2 V) := by
+      simpa [hpEdges] using hmem
+    have hfe : f = e := Subtype.ext hsym
+    exact heOutside (by simpa [hfe] using hf)
+  · exact Or.inr ⟨z, hzBoundary, hzNonzero, hvanish, e,
+      heControl, heOutside, hePredicateOutside, hze, hcross⟩
+
 /-- Decidable finite-checker dichotomy for a Boolean exceptional CAP5 classifier.  Once the
 checker supplies red/blue single-edge witnesses for every emitted edge, deciding the finite
 control/rank obligation has exactly two outputs: either Theorem 4.9 boundary-root synthesis, or a
