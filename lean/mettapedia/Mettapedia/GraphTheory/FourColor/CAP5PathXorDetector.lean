@@ -2554,6 +2554,119 @@ theorem ofDecidableChecks_missing_checker_ingredient_or_histogram_and_forcedEdge
       · exact Or.inr <| Or.inr ⟨latent, hmem, hcomplement⟩
   · exact Or.inr hcomplete
 
+/--
+Closed-frontier branch of the CAP5 generator.  Once the finite checker has no missing primitive
+evidence left to report, a failed Theorem 4.9 synthesis cannot remain in the geometric partial
+case: the report has the complete cyclic-five histogram `(0, 0, 16)` and exposes the same
+boundary-zero algebraic obstruction as the forced-bin detector.
+-/
+theorem histogram_and_forcedEdgeIndicatorPathXorDetectorPayload_and_boundaryZeroChain_familyPairing_ne_zero_of_missingCheckerEvidenceLatents_eq_nil_of_not_theorem49BoundaryRootSynthesis_of_finsetControl
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    [Fintype G.edgeSet] [FiniteDimensional F2 (G.edgeSet → Color)]
+    (emb : PlaneEmbeddingWithBoundary G) (C₀ : G.EdgeColoring Color)
+    (colorings : Set (G.EdgeColoring Color))
+    (hsubset : colorings ⊆ G.EdgeKempeClosure C₀)
+    {κ : Type*}
+    (family : κ → projectedColoringGeneratorSubspace emb colorings)
+    (p0Inside p4Inside : Bool) (h : data.IsExceptional)
+    (side : V → Prop)
+    [∀ latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge,
+      Decidable ((CAP5ExceptionalAnnulusGeneratorReport.latentNode
+        boundaryEdge side latent).PortalCrosses)]
+    [∀ latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge,
+      Decidable ((CAP5ExceptionalAnnulusGeneratorReport.latentNode
+        boundaryEdge side latent).SideCycles)]
+    [∀ latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge,
+      Decidable ((CAP5ExceptionalAnnulusGeneratorReport.latentNode
+        boundaryEdge side latent).RealizedSeparator)]
+    (hcyclic : CyclicallyFiveEdgeConnected G)
+    (hportal_crosses :
+      ∀ edgeCandidate : CAP5ExceptionalAnnulusBoundaryEdgeSupportCandidate boundaryEdge,
+        data.RealizesExceptionalBoundarySupportOrientation
+            edgeCandidate.portalCandidate.orientation →
+        edgeCandidate.portalCandidate.sideCase =
+            CAP5ExceptionalAnnulusSideCase.ofPortalSides p0Inside p4Inside →
+        ∀ i : Fin 5, i ∈ edgeCandidate.portalCandidate.portalSet →
+          EdgeCrossesVertexSide G side (boundaryEdge i))
+    (hcycles : HasCycleOnSide G side ∧ HasCycleOnSide G (fun v => ¬ side v))
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (controlEdges : Finset G.edgeSet)
+    (hcontrol :
+      ∀ ⦃z : G.edgeSet → Color⦄,
+        z ∈ planarBoundaryZeroSubmodule emb →
+        (∀ e ∈ controlEdges, z e = 0) →
+          z = 0)
+    (hwitnessRed :
+      ∀ e : G.edgeSet,
+        e ∈ classifier.emittedFinset →
+          ∃ i : κ,
+            ((family i : projectedColoringGeneratorSubspace emb colorings) :
+                G.edgeSet → Color) =
+              Pi.single e red)
+    (hwitnessBlue :
+      ∀ e : G.edgeSet,
+        e ∈ classifier.emittedFinset →
+          ∃ i : κ,
+            ((family i : projectedColoringGeneratorSubspace emb colorings) :
+                G.edgeSet → Color) =
+              Pi.single e blue)
+    (hwitnessExtensionRed :
+      ∀ e : G.edgeSet,
+        e ∈ classifier.crossingExtensionFinset controlEdges ∨
+            e ∈ classifier.noncrossingExtensionFinset controlEdges →
+          ∃ i : κ,
+            ((family i : projectedColoringGeneratorSubspace emb colorings) :
+                G.edgeSet → Color) =
+              Pi.single e red)
+    (hwitnessExtensionBlue :
+      ∀ e : G.edgeSet,
+        e ∈ classifier.crossingExtensionFinset controlEdges ∨
+            e ∈ classifier.noncrossingExtensionFinset controlEdges →
+          ∃ i : κ,
+            ((family i : projectedColoringGeneratorSubspace emb colorings) :
+                G.edgeSet → Color) =
+              Pi.single e blue)
+    (hmissingEmpty :
+      (CAP5ExceptionalAnnulusGeneratorReport.ofDecidableChecks
+        boundaryEdge side).missingCheckerEvidenceLatents = [])
+    (hnotSynthesis : ¬ Theorem49BoundaryRootSynthesis emb C₀) :
+    ((CAP5ExceptionalAnnulusGeneratorReport.ofDecidableChecks
+        boundaryEdge side).realizedSeparatorLatents.length = 0 ∧
+      (CAP5ExceptionalAnnulusGeneratorReport.ofDecidableChecks
+        boundaryEdge side).partialLatents.length = 0 ∧
+        (CAP5ExceptionalAnnulusGeneratorReport.ofDecidableChecks
+          boundaryEdge side).forcedCounterexampleLatents.length = 16) ∧
+      data.ForcedEdgeIndicatorPathXorDetectorPayload p0Inside p4Inside side ∧
+        ∃ z : G.edgeSet → Color,
+          z ∈ planarBoundaryZeroSubmodule emb ∧
+            z ≠ 0 ∧
+              (∀ e : G.edgeSet,
+                data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e →
+                  z e = 0) ∧
+                ∃ i : κ,
+                  chainDotBilinForm G.edgeSet (family i : G.edgeSet → Color) z ≠ 0 := by
+  let report : CAP5ExceptionalAnnulusGeneratorReport boundaryEdge side :=
+    CAP5ExceptionalAnnulusGeneratorReport.ofDecidableChecks boundaryEdge side
+  have hmissingEmptyReport : report.missingCheckerEvidenceLatents = [] := by
+    simpa [report] using hmissingEmpty
+  rcases report.all_checker_evidence_of_missingCheckerEvidenceLatents_eq_nil
+      hmissingEmptyReport with
+    ⟨hportal, hsideCycles⟩
+  have hhist :
+      report.realizedSeparatorLatents.length = 0 ∧
+        report.partialLatents.length = 0 ∧
+          report.forcedCounterexampleLatents.length = 16 :=
+    report.histogram_lengths_eq_of_complete_of_cyclicallyFiveEdgeConnected
+      hcyclic hportal hsideCycles
+  rcases data.theorem49BoundaryRootSynthesis_or_forcedEdgeIndicatorPathXorDetectorPayload_and_boundaryZeroChain_familyPairing_ne_zero_of_finsetControl
+      emb C₀ colorings hsubset family p0Inside p4Inside h side hcyclic hportal_crosses
+      hcycles classifier controlEdges hcontrol hwitnessRed hwitnessBlue
+      hwitnessExtensionRed hwitnessExtensionBlue with
+    hclosed | hfallback
+  · exact False.elim (hnotSynthesis hclosed)
+  · exact ⟨by simpa [report] using hhist, hfallback⟩
+
 end CAP5TransportedEdgeComponentCoverCore
 
 end Mettapedia.GraphTheory.FourColor
