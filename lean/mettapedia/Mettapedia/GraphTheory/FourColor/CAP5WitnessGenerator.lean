@@ -1338,6 +1338,49 @@ theorem partialLatents_eq_nil_of_complete
   intro latent hmem
   exact report.not_mem_partialLatents_of_complete hportal hcycles hmem
 
+/--
+In a cyclically five-edge-connected graph, the report's only obstruction to putting every
+enumerated latent in the forced-counterexample bin is genuinely partial checker evidence.  Thus a
+finite CAP5 run has a sharp diagnostic boundary: all sixteen latents are forced exactly when no
+latent remains partial.
+-/
+theorem forcedCounterexampleLatents_eq_all_iff_partialLatents_eq_nil_of_cyclicallyFiveEdgeConnected
+    (report : CAP5ExceptionalAnnulusGeneratorReport boundaryEdge side)
+    (hcyclic : CyclicallyFiveEdgeConnected G) :
+    report.forcedCounterexampleLatents =
+        CAP5ExceptionalAnnulusGeneratorLatent.all boundaryEdge ↔
+      report.partialLatents = [] := by
+  constructor
+  · intro hforcedAll
+    apply List.eq_nil_iff_forall_not_mem.2
+    intro latent hpartial
+    have hlatentMem :
+        latent ∈ CAP5ExceptionalAnnulusGeneratorLatent.all boundaryEdge :=
+      (report.mem_partialLatents_iff).1 hpartial |>.1
+    have hforced : latent ∈ report.forcedCounterexampleLatents := by
+      simpa [hforcedAll] using hlatentMem
+    exact report.not_mem_partialLatents_of_mem_forcedCounterexampleLatents hforced hpartial
+  · intro hpartialEmpty
+    unfold forcedCounterexampleLatents
+    apply List.filter_eq_self.2
+    intro latent hlatentMem
+    rcases report.mem_one_status_bin_of_mem_all hlatentMem with
+      hrealized | hforcedOrPartial
+    · exact False.elim
+        (report.not_mem_realizedSeparatorLatents_of_cyclicallyFiveEdgeConnected
+          hcyclic hrealized)
+    · rcases hforcedOrPartial with hforced | hpartial
+      · have hstatus :
+            report.classify latent =
+              CAP5SeparatorGeneratorStatus.forcedCounterexample :=
+          (report.mem_forcedCounterexampleLatents_iff).1 hforced |>.2
+        simp [hstatus]
+      · have hmemEmpty : latent ∈ ([] :
+            List (CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge)) := by
+          rw [← hpartialEmpty]
+          exact hpartial
+        cases hmemEmpty
+
 /-- In a complete cyclic-five run, the forced-counterexample report bin is the whole finite
 latent list.  This is the histogram form of the CAP5 generator falsification boundary. -/
 theorem forcedCounterexampleLatents_eq_all_of_complete_of_cyclicallyFiveEdgeConnected
