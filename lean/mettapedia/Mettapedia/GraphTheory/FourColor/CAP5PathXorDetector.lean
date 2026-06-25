@@ -1275,6 +1275,65 @@ theorem ofDecidableChecks_missing_checker_ingredient_or_forcedEdgeIndicatorPathX
       CAP5ExceptionalAnnulusGeneratorReport.latentNode] using hingredient
 
 /--
+Histogram-plus-detector form of the canonical finite-checker boundary.  Under cyclic
+five-edge-connectivity, the executable CAP5 checker either returns an enumerated latent with
+missing primitive checker evidence, or the run has the complete `(0, 0, 16)` histogram profile
+and emits the named one-edge `𝔽₂` detector for the algebraic/cocycle lane.
+-/
+theorem ofDecidableChecks_missingCheckerEvidence_or_histogram_and_forcedEdgeIndicatorPathXorDetectorPayload_of_isExceptional_of_cyclicallyFiveEdgeConnected
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    (side : V → Prop)
+    [∀ latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge,
+      Decidable ((CAP5ExceptionalAnnulusGeneratorReport.latentNode
+        boundaryEdge side latent).PortalCrosses)]
+    [∀ latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge,
+      Decidable ((CAP5ExceptionalAnnulusGeneratorReport.latentNode
+        boundaryEdge side latent).SideCycles)]
+    [∀ latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge,
+      Decidable ((CAP5ExceptionalAnnulusGeneratorReport.latentNode
+        boundaryEdge side latent).RealizedSeparator)]
+    (p0Inside p4Inside : Bool) (h : data.IsExceptional)
+    (hcyclic : CyclicallyFiveEdgeConnected G) :
+    (∃ latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge,
+      latent ∈ CAP5ExceptionalAnnulusGeneratorLatent.all boundaryEdge ∧
+        (CAP5ExceptionalAnnulusGeneratorReport.latentNode
+          boundaryEdge side latent).MissingCheckerEvidence) ∨
+      ((CAP5ExceptionalAnnulusGeneratorReport.ofDecidableChecks
+          boundaryEdge side).realizedSeparatorLatents.length = 0 ∧
+        (CAP5ExceptionalAnnulusGeneratorReport.ofDecidableChecks
+          boundaryEdge side).partialLatents.length = 0 ∧
+          (CAP5ExceptionalAnnulusGeneratorReport.ofDecidableChecks
+            boundaryEdge side).forcedCounterexampleLatents.length = 16) ∧
+        data.ForcedEdgeIndicatorPathXorDetectorPayload p0Inside p4Inside side := by
+  let report : CAP5ExceptionalAnnulusGeneratorReport boundaryEdge side :=
+    CAP5ExceptionalAnnulusGeneratorReport.ofDecidableChecks boundaryEdge side
+  by_cases hmissingEmpty : report.missingCheckerEvidenceLatents = []
+  · right
+    rcases report.all_checker_evidence_of_missingCheckerEvidenceLatents_eq_nil
+        hmissingEmpty with
+      ⟨hportal, hcycles⟩
+    have hhist :
+        report.realizedSeparatorLatents.length = 0 ∧
+          report.partialLatents.length = 0 ∧
+            report.forcedCounterexampleLatents.length = 16 :=
+      report.histogram_lengths_eq_of_complete_of_cyclicallyFiveEdgeConnected
+        hcyclic hportal hcycles
+    rcases data.exists_enumeratedExceptionalAnnulusForcedEdge_of_report_complete_of_isExceptional_of_portalSides_of_cyclicallyFiveEdgeConnected
+        report p0Inside p4Inside h hcyclic hportal hcycles with
+      ⟨e, hedge⟩
+    exact
+      ⟨by simpa [report] using hhist,
+        data.forcedEdgeIndicatorPathXorDetectorPayload_of_enumeratedExceptionalAnnulusForcedEdge
+          hedge⟩
+  · left
+    rcases (report.missingCheckerEvidenceLatents_ne_nil_iff_exists_missingCheckerEvidence).1
+        hmissingEmpty with
+      ⟨latent, hmem, hmissing⟩
+    exact ⟨latent, hmem, by
+      simpa [report, CAP5ExceptionalAnnulusGeneratorReport.node,
+        CAP5ExceptionalAnnulusGeneratorReport.latentNode] using hmissing⟩
+
+/--
 Edge-obstruction form of the canonical finite-checker dichotomy.  Once the primitive
 missing-checker frontier is empty, cyclic five-edge-connectivity already gives a concrete
 exceptional-annulus crossing-outside edge; otherwise the generator reports exactly which primitive
