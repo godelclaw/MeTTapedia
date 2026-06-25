@@ -566,6 +566,64 @@ def ofDecidableChecks
       (CAP5ExceptionalAnnulusGeneratorNode.Report.ofDecidableChecks
         (latentNode boundaryEdge side latent)).cert
 
+/-- Executable report theorem for one latent: the canonical finite report producer classifies a
+complete cyclic-five CAP5 sample as forced-counterexample.  This is the direct bridge from a
+checked sample to the bin predicted by the abstract report theorem. -/
+theorem ofDecidableChecks_classify_eq_forcedCounterexample_of_complete_of_cyclicallyFiveEdgeConnected
+    (boundaryEdge : Fin 5 → G.edgeSet) (side : V → Prop)
+    [∀ latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge,
+      Decidable ((latentNode boundaryEdge side latent).PortalCrosses)]
+    [∀ latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge,
+      Decidable ((latentNode boundaryEdge side latent).SideCycles)]
+    [∀ latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge,
+      Decidable ((latentNode boundaryEdge side latent).RealizedSeparator)]
+    (latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge)
+    (hcyclic : CyclicallyFiveEdgeConnected G)
+    (hportal : (latentNode boundaryEdge side latent).PortalCrosses)
+    (hcycles : (latentNode boundaryEdge side latent).SideCycles) :
+    (ofDecidableChecks boundaryEdge side).classify latent =
+      CAP5SeparatorGeneratorStatus.forcedCounterexample := by
+  let report : CAP5ExceptionalAnnulusGeneratorReport boundaryEdge side :=
+    ofDecidableChecks boundaryEdge side
+  have hstatus :
+      (report.nodeReport latent).status =
+        CAP5SeparatorGeneratorStatus.forcedCounterexample :=
+    (report.nodeReport latent).status_eq_forcedCounterexample_of_complete_of_cyclicallyFiveEdgeConnected
+      hcyclic
+      (by simpa [report, node, latentNode] using hportal)
+      (by simpa [report, node, latentNode] using hcycles)
+  simpa [report, nodeReport] using hstatus
+
+/-- Diagnostic contrapositive for one executable CAP5 sample.  If the canonical finite report
+producer does not classify a latent as forced-counterexample, then cyclic five-edge-connectivity,
+portal crossings, or two-sided cycles are missing.  This turns a non-forced sample output into a
+precise prerequisite failure rather than another ambiguous route node. -/
+theorem ofDecidableChecks_classify_ne_forcedCounterexample_implies_missing_prerequisite
+    (boundaryEdge : Fin 5 → G.edgeSet) (side : V → Prop)
+    [∀ latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge,
+      Decidable ((latentNode boundaryEdge side latent).PortalCrosses)]
+    [∀ latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge,
+      Decidable ((latentNode boundaryEdge side latent).SideCycles)]
+    [∀ latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge,
+      Decidable ((latentNode boundaryEdge side latent).RealizedSeparator)]
+    (latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge)
+    (hstatus :
+      (ofDecidableChecks boundaryEdge side).classify latent ≠
+        CAP5SeparatorGeneratorStatus.forcedCounterexample) :
+    ¬ CyclicallyFiveEdgeConnected G ∨
+      ¬ (latentNode boundaryEdge side latent).PortalCrosses ∨
+        ¬ (latentNode boundaryEdge side latent).SideCycles := by
+  by_cases hcyclic : CyclicallyFiveEdgeConnected G
+  · by_cases hportal : (latentNode boundaryEdge side latent).PortalCrosses
+    · by_cases hcycles : (latentNode boundaryEdge side latent).SideCycles
+      · have hforced :=
+          ofDecidableChecks_classify_eq_forcedCounterexample_of_complete_of_cyclicallyFiveEdgeConnected
+            boundaryEdge side latent hcyclic hportal hcycles
+        exact False.elim (hstatus hforced)
+      · exact Or.inr <| Or.inr hcycles
+    · exact Or.inr <| Or.inl hportal
+  · exact Or.inl hcyclic
+
 /-- Latents reported in the realized-separator bin. -/
 def realizedSeparatorLatents
     (report : CAP5ExceptionalAnnulusGeneratorReport boundaryEdge side) :
@@ -825,6 +883,59 @@ theorem forcedCounterexampleLatents_eq_all_of_complete_of_cyclicallyFiveEdgeConn
     (report.nodeReport latent).status_eq_forcedCounterexample_of_complete_of_cyclicallyFiveEdgeConnected
       hcyclic (hportal latent) (hcycles latent)
   simp [hstatus]
+
+/-- Executable full-report theorem: when the canonical report producer is run with complete
+checker evidence in a cyclically five-edge-connected graph, its forced-counterexample bin is
+exactly the full sixteen-latent CAP5 enumeration. -/
+theorem ofDecidableChecks_forcedCounterexampleLatents_eq_all_of_complete_of_cyclicallyFiveEdgeConnected
+    (boundaryEdge : Fin 5 → G.edgeSet) (side : V → Prop)
+    [∀ latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge,
+      Decidable ((latentNode boundaryEdge side latent).PortalCrosses)]
+    [∀ latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge,
+      Decidable ((latentNode boundaryEdge side latent).SideCycles)]
+    [∀ latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge,
+      Decidable ((latentNode boundaryEdge side latent).RealizedSeparator)]
+    (hcyclic : CyclicallyFiveEdgeConnected G)
+    (hportal :
+      ∀ latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge,
+        (latentNode boundaryEdge side latent).PortalCrosses)
+    (hcycles :
+      ∀ latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge,
+        (latentNode boundaryEdge side latent).SideCycles) :
+    (ofDecidableChecks boundaryEdge side).forcedCounterexampleLatents =
+      CAP5ExceptionalAnnulusGeneratorLatent.all boundaryEdge := by
+  let report : CAP5ExceptionalAnnulusGeneratorReport boundaryEdge side :=
+    ofDecidableChecks boundaryEdge side
+  exact report.forcedCounterexampleLatents_eq_all_of_complete_of_cyclicallyFiveEdgeConnected
+    hcyclic
+    (by
+      intro latent
+      simpa [report, node, latentNode] using hportal latent)
+    (by
+      intro latent
+      simpa [report, node, latentNode] using hcycles latent)
+
+/-- Executable histogram theorem for complete cyclic-five CAP5 sample runs: the canonical report
+producer emits exactly sixteen forced-counterexample latents. -/
+theorem ofDecidableChecks_forcedCounterexampleLatents_length_eq_sixteen_of_complete_of_cyclicallyFiveEdgeConnected
+    (boundaryEdge : Fin 5 → G.edgeSet) (side : V → Prop)
+    [∀ latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge,
+      Decidable ((latentNode boundaryEdge side latent).PortalCrosses)]
+    [∀ latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge,
+      Decidable ((latentNode boundaryEdge side latent).SideCycles)]
+    [∀ latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge,
+      Decidable ((latentNode boundaryEdge side latent).RealizedSeparator)]
+    (hcyclic : CyclicallyFiveEdgeConnected G)
+    (hportal :
+      ∀ latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge,
+        (latentNode boundaryEdge side latent).PortalCrosses)
+    (hcycles :
+      ∀ latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge,
+        (latentNode boundaryEdge side latent).SideCycles) :
+    (ofDecidableChecks boundaryEdge side).forcedCounterexampleLatents.length = 16 := by
+  rw [ofDecidableChecks_forcedCounterexampleLatents_eq_all_of_complete_of_cyclicallyFiveEdgeConnected
+    boundaryEdge side hcyclic hportal hcycles]
+  exact CAP5ExceptionalAnnulusGeneratorLatent.length_all boundaryEdge
 
 /-- Cardinality form of the realized-bin emptiness theorem. -/
 theorem realizedSeparatorLatents_length_eq_zero_of_cyclicallyFiveEdgeConnected
