@@ -370,6 +370,54 @@ theorem exists_enumeratedNode_inBin_realizedSeparator_or_forcedCounterexample_of
     node.inBin_realizedSeparator_or_forcedCounterexample_of_complete hnodePortal hcycles
   exact ⟨latent, hmem, hp0, hp4, horientation, by simpa [node] using hresolved⟩
 
+/-- Side-preserving data-level generator theorem.  This keeps the selected enumerated latent
+visible while resolving it into the exact-side realized branch or the forced-counterexample
+branch.  It is the sample-level boundary used by the proof-as-generator pass. -/
+theorem exists_enumeratedNode_realizedSeparatorOnSide_or_forcedCounterexample_of_isExceptional_of_portalSides
+    {n : Nat}
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    (p0Inside p4Inside : Bool) (h : data.IsExceptional)
+    (side : V → Prop)
+    (hportal_crosses :
+      ∀ edgeCandidate : CAP5ExceptionalAnnulusBoundaryEdgeSupportCandidate boundaryEdge,
+        data.RealizesExceptionalBoundarySupportOrientation
+            edgeCandidate.portalCandidate.orientation →
+        edgeCandidate.portalCandidate.sideCase =
+            CAP5ExceptionalAnnulusSideCase.ofPortalSides p0Inside p4Inside →
+        ∀ i : Fin 5, i ∈ edgeCandidate.portalCandidate.portalSet →
+          EdgeCrossesVertexSide G side (boundaryEdge i))
+    (hcycles : HasCycleOnSide G side ∧ HasCycleOnSide G (fun v => ¬ side v)) :
+    ∃ latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge,
+      latent ∈ CAP5ExceptionalAnnulusGeneratorLatent.all boundaryEdge ∧
+        latent.p0Inside = p0Inside ∧
+          latent.p4Inside = p4Inside ∧
+            data.RealizesExceptionalBoundarySupportOrientation latent.orientation ∧
+              (let node : CAP5ExceptionalAnnulusGeneratorNode boundaryEdge :=
+                { latent := latent, side := side };
+                node.RealizedSeparatorOnSide ∨ node.ForcedCounterexample) := by
+  rcases CAP5ExceptionalAnnulusGeneratorLatent.exists_mem_all_of_isExceptional_of_portalSides
+      (boundaryEdge := boundaryEdge) p0Inside p4Inside h with
+    ⟨latent, hmem, hp0, hp4, horientation⟩
+  let node : CAP5ExceptionalAnnulusGeneratorNode boundaryEdge :=
+    { latent := latent, side := side }
+  have hnodePortal : node.PortalCrosses := by
+    intro i hi
+    have horientation' :
+        data.RealizesExceptionalBoundarySupportOrientation
+          node.candidate.portalCandidate.orientation := by
+      simpa using horientation
+    have hsideCase :
+        node.candidate.portalCandidate.sideCase =
+          CAP5ExceptionalAnnulusSideCase.ofPortalSides p0Inside p4Inside := by
+      change CAP5ExceptionalAnnulusSideCase.ofPortalSides
+          node.latent.p0Inside node.latent.p4Inside =
+        CAP5ExceptionalAnnulusSideCase.ofPortalSides p0Inside p4Inside
+      rw [hp0, hp4]
+    exact hportal_crosses node.candidate horientation' hsideCase i hi
+  have hresolved :=
+    node.realizedSeparatorOnSide_or_forcedCounterexample_of_complete hnodePortal hcycles
+  exact ⟨latent, hmem, hp0, hp4, horientation, by simpa [node] using hresolved⟩
+
 /-- In a cyclically five-edge-connected graph, any complete size-at-most-four CAP5 generated
 node is forced into the counterexample bin.  This is the finite falsification form of the
 separator route. -/
@@ -1387,27 +1435,13 @@ theorem enumeratedExceptionalAnnulusSameSideRealization_or_exists_enumeratedExce
     data.EnumeratedExceptionalAnnulusSameSideRealization p0Inside p4Inside side ∨
       ∃ e : G.edgeSet,
         data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e := by
-  rcases CAP5ExceptionalAnnulusGeneratorLatent.exists_mem_all_of_isExceptional_of_portalSides
-      (boundaryEdge := boundaryEdge) p0Inside p4Inside h with
-    ⟨latent, hmem, hp0, hp4, horientation⟩
+  rcases
+      CAP5ExceptionalAnnulusGeneratorNode.exists_enumeratedNode_realizedSeparatorOnSide_or_forcedCounterexample_of_isExceptional_of_portalSides
+        (boundaryEdge := boundaryEdge) p0Inside p4Inside h side hportal_crosses hcycles with
+    ⟨latent, hmem, hp0, hp4, horientation, hresolved⟩
   let node : CAP5ExceptionalAnnulusGeneratorNode boundaryEdge :=
     { latent := latent, side := side }
-  have hnodePortal : node.PortalCrosses := by
-    intro i hi
-    have horientation' :
-        data.RealizesExceptionalBoundarySupportOrientation
-          node.candidate.portalCandidate.orientation := by
-      simpa using horientation
-    have hsideCase :
-        node.candidate.portalCandidate.sideCase =
-          CAP5ExceptionalAnnulusSideCase.ofPortalSides p0Inside p4Inside := by
-      change CAP5ExceptionalAnnulusSideCase.ofPortalSides
-          node.latent.p0Inside node.latent.p4Inside =
-        CAP5ExceptionalAnnulusSideCase.ofPortalSides p0Inside p4Inside
-      rw [hp0, hp4]
-    exact hportal_crosses node.candidate horientation' hsideCase i hi
-  rcases node.realizedSeparatorOnSide_or_forcedCounterexample_of_complete
-      hnodePortal hcycles with
+  rcases hresolved with
     hrealized | hforced
   · exact Or.inl ⟨latent, hmem, hp0, hp4, horientation, by
       simpa [node] using hrealized⟩
