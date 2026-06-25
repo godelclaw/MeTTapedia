@@ -260,6 +260,33 @@ theorem CyclicEdgeCutRealization.side_iff_of_forall_not_mem_edgeCut_of_walk
       ⟨e, hecut, heReverseEdges⟩
     exact havoid e hecut (by simpa [Walk.edges_reverse] using heReverseEdges)
 
+/-- Bypass-walk obstruction for realized cuts.  A realized edge cut cannot contain an edge when
+there is a walk between that edge's endpoints avoiding every edge of the cut.  This is the
+checker-facing cocycle form: every cycle must meet a vertex-side cut evenly, so a cut edge plus
+an avoiding return walk is an immediate obstruction. -/
+theorem CyclicEdgeCutRealization.false_of_mem_edgeCut_of_walk_avoids_edgeCut_between_endpoints
+    {G : SimpleGraph V} {edgeCut : Finset G.edgeSet}
+    (realization : CyclicEdgeCutRealization G edgeCut)
+    {u v : V} {e : G.edgeSet}
+    (he_pair : (e : Sym2 V) = s(u, v))
+    (hecut : e ∈ edgeCut)
+    (p : G.Walk u v)
+    (havoid : ∀ e' : G.edgeSet, e' ∈ edgeCut → (e' : Sym2 V) ∉ p.edges) :
+    False := by
+  have huv : realization.side u ↔ realization.side v :=
+    realization.side_iff_of_forall_not_mem_edgeCut_of_walk p havoid
+  have hnot : ¬ EdgeCrossesVertexSide G realization.side e := by
+    rw [not_edgeCrossesVertexSide_iff_forall_side_iff]
+    intro x y hx hy
+    rw [he_pair] at hx hy
+    rw [Sym2.mem_iff] at hx hy
+    rcases hx with rfl | rfl <;> rcases hy with rfl | rfl
+    · exact Iff.rfl
+    · exact huv
+    · exact huv.symm
+    · exact Iff.rfl
+  exact hnot ((realization.hcut_eq e).1 hecut)
+
 /-- Triangle parity obstruction for realized cuts.  A vertex-side edge cut cannot contain exactly
 one edge of a triangle: if two triangle edges are outside the cut, their side-preservation forces
 the third pair of endpoints to be on the same side, contradicting membership of the third edge in
