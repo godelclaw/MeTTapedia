@@ -97,6 +97,27 @@ theorem toyCAP5Report_missing_checker_evidence
         toyCAP5BoundaryEdge toyTrivialSide latent).SideCycles := by
   exact Or.inr (toyCAP5Latent_not_sideCycles latent)
 
+/-- Split diagnostic for the toy sample: the primitive missing ingredient is the outside cycle. -/
+theorem toyCAP5Report_missingCheckerEvidence
+    (latent : CAP5ExceptionalAnnulusGeneratorLatent toyCAP5BoundaryEdge) :
+    (toyCAP5Report.node latent).MissingCheckerEvidence := by
+  exact Or.inr (Or.inr toyTrivialSide_no_outside_cycle)
+
+/-- Every latent of the one-edge toy sample is reported partial. -/
+theorem toyCAP5Report_partialLatents_eq_all :
+    toyCAP5Report.partialLatents =
+      CAP5ExceptionalAnnulusGeneratorLatent.all toyCAP5BoundaryEdge := by
+  unfold CAP5ExceptionalAnnulusGeneratorReport.partialLatents
+  apply List.filter_eq_self.2
+  intro latent _hmem
+  simp [toyCAP5Report_classify_eq_partialCase latent]
+
+@[simp]
+theorem toyCAP5Report_partialLatents_length :
+    toyCAP5Report.partialLatents.length = 16 := by
+  rw [toyCAP5Report_partialLatents_eq_all]
+  simp
+
 /-- A six-vertex benchmark: two triangles joined by four candidate CAP5 separator edges. -/
 abbrev RealizedV := Fin 6
 
@@ -300,6 +321,16 @@ theorem realized_sideCycles :
       realizedCAP5BoundaryEdge realizedSide realizedLatent).SideCycles := by
   exact ⟨realized_inside_cycle, realized_outside_cycle⟩
 
+/-- The realized benchmark latent is complete: it is not in the missing-checker frontier. -/
+theorem realized_latent_not_missingCheckerEvidence :
+    ¬ (CAP5ExceptionalAnnulusGeneratorReport.latentNode
+      realizedCAP5BoundaryEdge realizedSide realizedLatent).MissingCheckerEvidence := by
+  exact
+    ((CAP5ExceptionalAnnulusGeneratorReport.latentNode
+      realizedCAP5BoundaryEdge realizedSide realizedLatent)
+      |>.not_missingCheckerEvidence_iff_complete).2
+      ⟨realized_portalCrosses, realized_sideCycles⟩
+
 def realizedCutData :
     realizedCandidate.CyclicEdgeCutRealizationData (G := realizedGraph) :=
   realizedCandidate.cyclicEdgeCutRealizationData_of_edge_crossing_classification
@@ -349,6 +380,17 @@ theorem forced_sideCycles :
     (CAP5ExceptionalAnnulusGeneratorReport.latentNode
       realizedCAP5BoundaryEdge realizedSide forcedLatent).SideCycles := by
   exact ⟨realized_inside_cycle, realized_outside_cycle⟩
+
+/-- The forced benchmark latent is also complete; its negative result is a real forced edge,
+not missing checker evidence. -/
+theorem forced_latent_not_missingCheckerEvidence :
+    ¬ (CAP5ExceptionalAnnulusGeneratorReport.latentNode
+      realizedCAP5BoundaryEdge realizedSide forcedLatent).MissingCheckerEvidence := by
+  exact
+    ((CAP5ExceptionalAnnulusGeneratorReport.latentNode
+      realizedCAP5BoundaryEdge realizedSide forcedLatent)
+      |>.not_missingCheckerEvidence_iff_complete).2
+      ⟨forced_portalCrosses, forced_sideCycles⟩
 
 def forcedCounterexampleWalk : realizedGraph.Walk (1 : RealizedV) 3 :=
   Walk.cons' 1 3 3 (by simp [realizedGraph]) Walk.nil
@@ -476,6 +518,30 @@ theorem realizedCAP5Report_forcedLatent_mem_forcedCounterexampleLatents :
   exact (realizedCAP5Report.mem_forcedCounterexampleLatents_iff).2
     ⟨CAP5ExceptionalAnnulusGeneratorLatent.mem_all forcedLatent,
       realizedCAP5Report_classify_forcedLatent_eq_forcedCounterexample⟩
+
+/-- The named realized benchmark latent is not a partial run. -/
+theorem realizedCAP5Report_realizedLatent_not_mem_partialLatents :
+    realizedLatent ∉ realizedCAP5Report.partialLatents :=
+  realizedCAP5Report.not_mem_partialLatents_of_mem_realizedSeparatorLatents
+    realizedCAP5Report_realizedLatent_mem_realizedSeparatorLatents
+
+/-- The named forced benchmark latent is not a partial run. -/
+theorem realizedCAP5Report_forcedLatent_not_mem_partialLatents :
+    forcedLatent ∉ realizedCAP5Report.partialLatents :=
+  realizedCAP5Report.not_mem_partialLatents_of_mem_forcedCounterexampleLatents
+    realizedCAP5Report_forcedLatent_mem_forcedCounterexampleLatents
+
+/-- The mixed two-triangle sample's two named latents are complete checker runs. -/
+theorem realizedCAP5Report_named_latents_not_missingCheckerEvidence :
+    ¬ (realizedCAP5Report.node realizedLatent).MissingCheckerEvidence ∧
+      ¬ (realizedCAP5Report.node forcedLatent).MissingCheckerEvidence := by
+  constructor
+  · simpa [CAP5ExceptionalAnnulusGeneratorReport.node,
+      CAP5ExceptionalAnnulusGeneratorReport.latentNode] using
+      realized_latent_not_missingCheckerEvidence
+  · simpa [CAP5ExceptionalAnnulusGeneratorReport.node,
+      CAP5ExceptionalAnnulusGeneratorReport.latentNode] using
+      forced_latent_not_missingCheckerEvidence
 
 /-- The realized-bin membership projects back to the certified cyclic-cut payload. -/
 theorem realizedCAP5Report_realizedLatent_payload :
