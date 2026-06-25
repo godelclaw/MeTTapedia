@@ -241,6 +241,49 @@ theorem forcedCounterexampleEdge_crosses
   have heq : e' = e := Subtype.ext hsym
   simpa [heq] using hcross
 
+/--
+The forced-edge predicate is exactly the local edge-level falsifier for the generated support:
+an emitted edge is forced precisely when it lies outside the candidate and crosses the proposed
+side.  The stored one-edge walk witness is canonical data, not an additional assumption.
+-/
+theorem forcedCounterexampleEdge_iff_crossing_outside
+    (node : CAP5ExceptionalAnnulusGeneratorNode boundaryEdge)
+    {e : G.edgeSet} :
+    node.ForcedCounterexampleEdge e ↔
+      e ∉ node.candidate.edgeSupport ∧ EdgeCrossesVertexSide G node.side e := by
+  constructor
+  · intro h
+    have hcross := node.forcedCounterexampleEdge_crosses h
+    rcases h with ⟨_u, _v, _p, heOutside, _hu, _hv, _hpEdges, _havoid⟩
+    exact ⟨heOutside, hcross⟩
+  · rintro ⟨heOutside, hcross⟩
+    rcases hcross with ⟨u, v, hu, hv, hsu, hsv⟩
+    rcases exists_walk_edges_eq_singleton_of_edge_endpoint_sides
+        (G := G) (side := node.side) (e := e) hu hv hsu hsv with
+      ⟨p, hpEdges⟩
+    refine ⟨u, v, p, heOutside, hsu, hsv, hpEdges, ?_⟩
+    intro i hi hiEdges
+    have hboundary_eq : boundaryEdge i = e := by
+      apply Subtype.ext
+      simpa [hpEdges] using hiEdges
+    exact heOutside ((node.candidate.mem_edgeSupport_iff_exists_portal e).2
+      ⟨i, hi, hboundary_eq⟩)
+
+/--
+The forced-counterexample bin is equivalently the existence of a non-candidate edge crossing the
+proposed side.  This is the CAP5 generator's finite falsifier in its graph-local normal form.
+-/
+theorem forcedCounterexample_iff_exists_crossing_outside
+    (node : CAP5ExceptionalAnnulusGeneratorNode boundaryEdge) :
+    node.ForcedCounterexample ↔
+      ∃ e : G.edgeSet, e ∉ node.candidate.edgeSupport ∧
+        EdgeCrossesVertexSide G node.side e := by
+  constructor
+  · rintro ⟨e, hedge⟩
+    exact ⟨e, (node.forcedCounterexampleEdge_iff_crossing_outside).1 hedge⟩
+  · rintro ⟨e, hedge⟩
+    exact ⟨e, (node.forcedCounterexampleEdge_iff_crossing_outside).2 hedge⟩
+
 /-- A forced generator edge refutes realization of the candidate on the same proposed side.  The
 emitted edge is outside the candidate support yet crosses the proposed side, so the proposed side
 cannot make the support exactly equal to its crossing-edge cut. -/
