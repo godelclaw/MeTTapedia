@@ -608,6 +608,17 @@ theorem realizes_iff_no_crossing_outside
         EdgeCrossesVertexSide G candidate.side e := by
   rw [realizes_iff_not_counterexample, counterexample_iff_exists_crossing_outside]
 
+/-- Failure of exact separator realization is exactly a concrete unlisted crossing edge.  This is
+the finite falsification form of the cyclic-separator checker. -/
+theorem not_realizes_iff_exists_crossing_outside
+    {G : SimpleGraph V} (candidate : CyclicSeparatorCandidate G) :
+    ¬ candidate.Realizes ↔
+      ∃ e : G.edgeSet, e ∉ candidate.edgeCut ∧
+        EdgeCrossesVertexSide G candidate.side e := by
+  classical
+  rw [candidate.realizes_iff_no_crossing_outside]
+  exact not_not
+
 /-- An unlisted crossing edge gives the concrete avoiding-walk counterexample for the candidate. -/
 theorem counterexample_of_crossing_outside
     {G : SimpleGraph V} {candidate : CyclicSeparatorCandidate G}

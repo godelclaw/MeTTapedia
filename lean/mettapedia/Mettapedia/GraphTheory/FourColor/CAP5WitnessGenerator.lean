@@ -393,6 +393,18 @@ theorem realizedSeparatorOnSide_iff_no_crossing_outside_of_complete
   rw [node.realizedSeparatorOnSide_iff_not_forcedCounterexample_of_complete hportal hcycles,
     node.forcedCounterexample_iff_exists_crossing_outside]
 
+/-- Complete generated nodes fail to realize the selected side exactly when there is a concrete
+non-candidate edge crossing that side.  This is the CAP5 node-level falsification boundary for
+the planar/Jordan separator route. -/
+theorem not_realizedSeparatorOnSide_iff_exists_crossing_outside_of_complete
+    (node : CAP5ExceptionalAnnulusGeneratorNode boundaryEdge)
+    (hportal : node.PortalCrosses) (hcycles : node.SideCycles) :
+    ¬ node.RealizedSeparatorOnSide ↔
+      ∃ e : G.edgeSet, e ∉ node.candidate.edgeSupport ∧
+        EdgeCrossesVertexSide G node.side e :=
+  (node.forcedCounterexample_iff_not_realizedSeparatorOnSide_of_complete
+    hportal hcycles).symm.trans node.forcedCounterexample_iff_exists_crossing_outside
+
 /-- Status-form version of the complete forward-checker boundary. -/
 theorem inBin_realizedSeparator_or_forcedCounterexample_of_complete
     (node : CAP5ExceptionalAnnulusGeneratorNode boundaryEdge)
