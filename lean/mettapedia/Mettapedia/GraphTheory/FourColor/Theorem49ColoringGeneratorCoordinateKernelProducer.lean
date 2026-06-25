@@ -295,6 +295,29 @@ theorem edgePredicateControls_iff_forall_nonzero_exists_edgePredicateWitness
     rcases hwitness hzBoundary hzNonzero with ⟨e, hP, hze⟩
     exact hze (hvanish e hP)
 
+/-- Exact obstruction boundary for predicate-indexed control.  Vanishing on all `P` edges controls
+the selected-boundary-zero subspace iff no nonzero selected-boundary-zero chain vanishes on every
+`P` edge.  This is the reusable algebraic success/failure boundary behind finite generator runs. -/
+theorem edgePredicateControls_iff_no_boundaryZeroChainObstruction
+    {G : SimpleGraph V} [Fintype G.edgeSet]
+    {emb : PlaneEmbeddingWithBoundary G}
+    (P : G.edgeSet → Prop) :
+    (∀ ⦃z : G.edgeSet → Color⦄,
+      z ∈ planarBoundaryZeroSubmodule emb →
+      (∀ e : G.edgeSet, P e → z e = 0) →
+        z = 0) ↔
+    ¬ ∃ z : G.edgeSet → Color,
+      z ∈ planarBoundaryZeroSubmodule emb ∧
+        z ≠ 0 ∧
+          ∀ e : G.edgeSet, P e → z e = 0 := by
+  constructor
+  · intro hcontrol hobs
+    rcases hobs with ⟨z, hzBoundary, hzNonzero, hvanish⟩
+    exact hzNonzero (hcontrol hzBoundary hvanish)
+  · intro hno z hzBoundary hvanish
+    by_contra hzNonzero
+    exact hno ⟨z, hzBoundary, hzNonzero, hvanish⟩
+
 /-- Finite-coordinate version of predicate control.  A concrete finite edge set controls the
 selected-boundary-zero chains iff every nonzero selected-boundary-zero chain is nonzero on at
 least one edge of that set.  This is the rank/kernel certificate shape expected from a finite

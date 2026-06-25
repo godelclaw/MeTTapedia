@@ -2111,19 +2111,17 @@ theorem enumeratedExceptionalAnnulusForcedEdgeClassifierControl_iff_no_boundaryZ
           ∀ e : G.edgeSet,
             data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e →
               z e = 0 := by
+  rw [← edgePredicateControls_iff_no_boundaryZeroChainObstruction
+    (data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side)]
   constructor
-  · intro hcontrol hobs
-    rcases hobs with ⟨z, hzBoundary, hzNonzero, hvanish⟩
-    exact hzNonzero
-      (hcontrol hzBoundary (by
-        intro e hemitted
-        exact hvanish e ((classifier.emittedFinset_spec e).1 hemitted)))
-  · intro hno z hzBoundary hvanish
-    by_contra hzNonzero
-    exact hno
-      ⟨z, hzBoundary, hzNonzero, by
-        intro e hedge
-        exact hvanish e ((classifier.emittedFinset_spec e).2 hedge)⟩
+  · intro hcontrol z hzBoundary hvanish
+    exact hcontrol hzBoundary (by
+      intro e hemitted
+      exact hvanish e ((classifier.emittedFinset_spec e).1 hemitted))
+  · intro hcontrol z hzBoundary hvanish
+    exact hcontrol hzBoundary (by
+      intro e hedge
+      exact hvanish e ((classifier.emittedFinset_spec e).2 hedge))
 
 /-- Theorem 4.9 synthesis route from a Boolean classifier in nonzero-coordinate witness form.
 This is the checker-facing shape: for each nonzero selected-boundary-zero chain, the finite
