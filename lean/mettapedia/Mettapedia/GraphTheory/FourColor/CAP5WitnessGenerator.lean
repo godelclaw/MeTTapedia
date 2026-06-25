@@ -1726,6 +1726,62 @@ def emittedFinset
     Finset G.edgeSet :=
   Finset.univ.filter (fun e => classifier.accept e = true)
 
+/-- New control edges outside a Boolean checker output that cross the proposed side.  This is the
+finite geometric bin for a generator extension run. -/
+noncomputable def crossingExtensionFinset
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    [Fintype G.edgeSet]
+    {p0Inside p4Inside : Bool} {side : V → Prop}
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (controlEdges : Finset G.edgeSet) :
+    Finset G.edgeSet := by
+  classical
+  exact controlEdges.filter
+    (fun e => e ∉ classifier.emittedFinset ∧ EdgeCrossesVertexSide G side e)
+
+/-- New control edges outside a Boolean checker output that do not cross the proposed side.  This
+is the finite algebraic-detector bin for a generator extension run. -/
+noncomputable def noncrossingExtensionFinset
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    [Fintype G.edgeSet]
+    {p0Inside p4Inside : Bool} {side : V → Prop}
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (controlEdges : Finset G.edgeSet) :
+    Finset G.edgeSet := by
+  classical
+  exact controlEdges.filter
+    (fun e => e ∉ classifier.emittedFinset ∧ ¬ EdgeCrossesVertexSide G side e)
+
+/-- Membership in the finite geometric extension bin. -/
+theorem mem_crossingExtensionFinset_iff
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    [Fintype G.edgeSet]
+    {p0Inside p4Inside : Bool} {side : V → Prop}
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (controlEdges : Finset G.edgeSet) (e : G.edgeSet) :
+    e ∈ classifier.crossingExtensionFinset controlEdges ↔
+      e ∈ controlEdges ∧ e ∉ classifier.emittedFinset ∧
+        EdgeCrossesVertexSide G side e := by
+  classical
+  simp [crossingExtensionFinset]
+
+/-- Membership in the finite algebraic-detector extension bin. -/
+theorem mem_noncrossingExtensionFinset_iff
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    [Fintype G.edgeSet]
+    {p0Inside p4Inside : Bool} {side : V → Prop}
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (controlEdges : Finset G.edgeSet) (e : G.edgeSet) :
+    e ∈ classifier.noncrossingExtensionFinset controlEdges ↔
+      e ∈ controlEdges ∧ e ∉ classifier.emittedFinset ∧
+        ¬ EdgeCrossesVertexSide G side e := by
+  classical
+  simp [noncrossingExtensionFinset]
+
 /-- The filtered output of a correct Boolean checker is exactly the enumerated CAP5 forced-edge
 predicate. -/
 theorem emittedFinset_spec
@@ -2508,10 +2564,11 @@ theorem exists_boundaryZeroChain_and_newControlEdge_crossing_or_noncrossing_of_n
                 e ∉ classifier.emittedFinset ∧
                   ¬ data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e ∧
                     z e ≠ 0 ∧
-                      side u ∧ ¬ side v ∧
-                        p.edges = [(e : Sym2 V)] ∧
-                          ∀ f : G.edgeSet, f ∈ classifier.emittedFinset →
-                            (f : Sym2 V) ∉ p.edges) ∨
+                      EdgeCrossesVertexSide G side e ∧
+                        side u ∧ ¬ side v ∧
+                          p.edges = [(e : Sym2 V)] ∧
+                            ∀ f : G.edgeSet, f ∈ classifier.emittedFinset →
+                              (f : Sym2 V) ∉ p.edges) ∨
       ∃ z : G.edgeSet → Color,
         z ∈ planarBoundaryZeroSubmodule emb ∧
           z ≠ 0 ∧
@@ -2537,7 +2594,8 @@ theorem exists_boundaryZeroChain_and_newControlEdge_crossing_or_noncrossing_of_n
         (G := G) (side := side) hu hv hsu hsv with
       ⟨p, hpEdges⟩
     refine Or.inl ⟨z, hzBoundary, hzNonzero, hvanish, u, v, e, p,
-      heControl, heOutside, hePredicateOutside, hze, hsu, hsv, hpEdges, ?_⟩
+      heControl, heOutside, hePredicateOutside, hze, ?_, hsu, hsv, hpEdges, ?_⟩
+    · exact ⟨u, v, hu, hv, hsu, hsv⟩
     intro f hf hmem
     have hsym : (f : Sym2 V) = (e : Sym2 V) := by
       simpa [hpEdges] using hmem
@@ -2545,6 +2603,46 @@ theorem exists_boundaryZeroChain_and_newControlEdge_crossing_or_noncrossing_of_n
     exact heOutside (by simpa [hfe] using hf)
   · exact Or.inr ⟨z, hzBoundary, hzNonzero, hvanish, e,
       heControl, heOutside, hePredicateOutside, hze, hcross⟩
+
+/-- A successful finite-control extension of a failed Boolean CAP5 classifier makes at least one
+of the two finite extension bins nonempty: either a new side-crossing edge appears, or a new
+noncrossing algebraic detector coordinate appears. -/
+theorem crossingExtensionFinset_nonempty_or_noncrossingExtensionFinset_nonempty_of_not_classifierControl_of_finsetControl
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    [Fintype G.edgeSet]
+    (emb : PlaneEmbeddingWithBoundary G)
+    (p0Inside p4Inside : Bool) (side : V → Prop)
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (controlEdges : Finset G.edgeSet)
+    (hnotControl :
+      ¬ ∀ ⦃z : G.edgeSet → Color⦄,
+        z ∈ planarBoundaryZeroSubmodule emb →
+        (∀ e ∈ classifier.emittedFinset, z e = 0) →
+          z = 0)
+    (hcontrol :
+      ∀ ⦃z : G.edgeSet → Color⦄,
+        z ∈ planarBoundaryZeroSubmodule emb →
+        (∀ e ∈ controlEdges, z e = 0) →
+          z = 0) :
+    (classifier.crossingExtensionFinset controlEdges).Nonempty ∨
+      (classifier.noncrossingExtensionFinset controlEdges).Nonempty := by
+  rcases data.exists_boundaryZeroChain_and_newControlEdge_crossing_or_noncrossing_of_not_classifierControl_of_finsetControl
+      emb p0Inside p4Inside side classifier controlEdges hnotControl hcontrol with
+    hcrossing | hnoncrossing
+  · rcases hcrossing with
+      ⟨_z, _hzBoundary, _hzNonzero, _hvanish, _u, _v, e, _p,
+        heControl, heOutside, _hePredicateOutside, _hze, hcross, _hsu, _hsv,
+        _hpEdges, _havoid⟩
+    exact Or.inl ⟨e,
+      (classifier.mem_crossingExtensionFinset_iff controlEdges e).2
+        ⟨heControl, heOutside, hcross⟩⟩
+  · rcases hnoncrossing with
+      ⟨_z, _hzBoundary, _hzNonzero, _hvanish, e,
+        heControl, heOutside, _hePredicateOutside, _hze, hnotCross⟩
+    exact Or.inr ⟨e,
+      (classifier.mem_noncrossingExtensionFinset_iff controlEdges e).2
+        ⟨heControl, heOutside, hnotCross⟩⟩
 
 /-- Decidable finite-checker dichotomy for a Boolean exceptional CAP5 classifier.  Once the
 checker supplies red/blue single-edge witnesses for every emitted edge, deciding the finite
