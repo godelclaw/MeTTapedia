@@ -915,6 +915,26 @@ theorem not_mem_realizedSeparatorLatents_of_cyclicallyFiveEdgeConnected
   exact (report.node latent).not_realizedSeparator_of_cyclicallyFiveEdgeConnected hcyclic
     (report.realizedSeparator_of_mem_realizedSeparatorLatents hmem)
 
+/-- A realized-separator bin entry is already a cyclic-five-connectivity refutation.
+This is the consumer-facing finite-generator form: once the report emits a realized small
+separator, the ambient graph is not a valid minimal-counterexample candidate. -/
+theorem not_cyclicallyFiveEdgeConnected_of_mem_realizedSeparatorLatents
+    (report : CAP5ExceptionalAnnulusGeneratorReport boundaryEdge side)
+    {latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge}
+    (hmem : latent ∈ report.realizedSeparatorLatents) :
+    ¬ CyclicallyFiveEdgeConnected G := by
+  intro hcyclic
+  exact report.not_mem_realizedSeparatorLatents_of_cyclicallyFiveEdgeConnected hcyclic hmem
+
+/-- Nonempty realized-separator report bins refute cyclic five-edge-connectivity. -/
+theorem not_cyclicallyFiveEdgeConnected_of_exists_mem_realizedSeparatorLatents
+    (report : CAP5ExceptionalAnnulusGeneratorReport boundaryEdge side)
+    (h : ∃ latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge,
+      latent ∈ report.realizedSeparatorLatents) :
+    ¬ CyclicallyFiveEdgeConnected G := by
+  rcases h with ⟨latent, hmem⟩
+  exact report.not_cyclicallyFiveEdgeConnected_of_mem_realizedSeparatorLatents hmem
+
 /-- A complete checker run has no partial latent: portal crossings and side cycles rule out both
 ways that the report can honestly classify a latent as partial. -/
 theorem not_mem_partialLatents_of_complete

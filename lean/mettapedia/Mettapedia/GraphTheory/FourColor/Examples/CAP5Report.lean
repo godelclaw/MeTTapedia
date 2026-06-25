@@ -483,16 +483,25 @@ theorem realizedCAP5Report_forcedLatent_payload :
     realizedCAP5Report_forcedLatent_mem_forcedCounterexampleLatents
 
 /--
+The two-triangle benchmark has a genuinely mixed finite-generator output: one latent certifies
+a small cyclic separator and another certifies a forced counterexample.
+-/
+theorem realizedCAP5Report_has_mixed_bins :
+    (∃ latent, latent ∈ realizedCAP5Report.realizedSeparatorLatents) ∧
+      (∃ latent, latent ∈ realizedCAP5Report.forcedCounterexampleLatents) :=
+  ⟨⟨realizedLatent,
+      realizedCAP5Report_realizedLatent_mem_realizedSeparatorLatents⟩,
+    ⟨forcedLatent,
+      realizedCAP5Report_forcedLatent_mem_forcedCounterexampleLatents⟩⟩
+
+/--
 The realized-separator bin is a genuine cyclic-five-connectivity refutation for this finite
 sample, so it is a calibration case for the CAP5 witness generator rather than evidence for a
 minimal-counterexample route.
 -/
 theorem realizedCAP5Report_not_cyclicallyFiveEdgeConnected :
     ¬ CyclicallyFiveEdgeConnected realizedGraph := by
-  classical
-  exact
-    CAP5ExceptionalAnnulusGeneratorReport.ofDecidableChecks_classify_eq_realizedSeparator_implies_not_cyclicallyFiveEdgeConnected
-      realizedCAP5BoundaryEdge realizedSide realizedLatent
-      realizedCAP5Report_classify_eq_realizedSeparator
+  exact realizedCAP5Report.not_cyclicallyFiveEdgeConnected_of_mem_realizedSeparatorLatents
+    realizedCAP5Report_realizedLatent_mem_realizedSeparatorLatents
 
 end Mettapedia.GraphTheory.FourColor.Examples.CAP5Report
