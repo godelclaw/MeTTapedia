@@ -410,22 +410,20 @@ theorem exists_nonzero_mem_ker_planarBoundaryZeroFamilyPairingMap_of_boundaryZer
     ∃ w : planarBoundaryZeroSubmodule emb,
       w ∈ LinearMap.ker (planarBoundaryZeroFamilyPairingMap family) ∧
         w ≠ 0 := by
-  let w : planarBoundaryZeroSubmodule emb := ⟨z, hzBoundary⟩
-  refine ⟨w, ?_, ?_⟩
-  · rw [mem_ker_planarBoundaryZeroFamilyPairingMap_iff_forall_pairing_eq_zero]
+  have hpairZero :
+      ∀ i : κ,
+        chainDotBilinForm G.edgeSet (family i : G.edgeSet → Color) z = 0 := by
     intro i
     rcases hfamily i with ⟨e, hP, hred | hblue⟩
     · rw [hred, chainDotBilinForm_single_left]
-      change colorDot red (z e) = 0
       rw [hvanish e hP]
       simp [colorDot]
     · rw [hblue, chainDotBilinForm_single_left]
-      change colorDot blue (z e) = 0
       rw [hvanish e hP]
       simp [colorDot]
-  · intro hwzero
-    exact hzNonzero (congrArg (fun x : planarBoundaryZeroSubmodule emb =>
-      (x : G.edgeSet → Color)) hwzero)
+  exact
+    exists_nonzero_mem_ker_planarBoundaryZeroFamilyPairingMap_of_forall_familyPairing_eq_zero
+      family hzBoundary hzNonzero hpairZero
 
 /-- A predicate obstruction rules out a trivial family-pairing kernel for any family that only
 tests red/blue single-coordinate chains on predicate edges.  This is the exact contradiction form
