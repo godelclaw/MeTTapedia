@@ -1835,6 +1835,39 @@ theorem disjoint_crossingExtensionFinset_noncrossingExtensionFinset
     (classifier.mem_noncrossingExtensionFinset_iff controlEdges e).1 hnoncrossing |>.2.2
   exact hnotCross hcross
 
+/-- Constructive nonempty form of the extension-bin partition.  The finite checker has a next
+extension-bin witness exactly when the later finite control set contains an edge that the
+classifier has not emitted yet. -/
+theorem crossingExtensionFinset_nonempty_or_noncrossingExtensionFinset_nonempty_iff_exists_controlEdge_not_emitted
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    [Fintype G.edgeSet]
+    {p0Inside p4Inside : Bool} {side : V → Prop}
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (controlEdges : Finset G.edgeSet) :
+    (classifier.crossingExtensionFinset controlEdges).Nonempty ∨
+        (classifier.noncrossingExtensionFinset controlEdges).Nonempty ↔
+      ∃ e : G.edgeSet, e ∈ controlEdges ∧ e ∉ classifier.emittedFinset := by
+  classical
+  constructor
+  · rintro (hcrossing | hnoncrossing)
+    · rcases hcrossing with ⟨e, he⟩
+      have he' :=
+        (classifier.mem_crossingExtensionFinset_iff controlEdges e).1 he
+      exact ⟨e, he'.1, he'.2.1⟩
+    · rcases hnoncrossing with ⟨e, he⟩
+      have he' :=
+        (classifier.mem_noncrossingExtensionFinset_iff controlEdges e).1 he
+      exact ⟨e, he'.1, he'.2.1⟩
+  · rintro ⟨e, heControl, heNotEmitted⟩
+    by_cases hcross : EdgeCrossesVertexSide G side e
+    · exact Or.inl ⟨e,
+        (classifier.mem_crossingExtensionFinset_iff controlEdges e).2
+          ⟨heControl, heNotEmitted, hcross⟩⟩
+    · exact Or.inr ⟨e,
+        (classifier.mem_noncrossingExtensionFinset_iff controlEdges e).2
+          ⟨heControl, heNotEmitted, hcross⟩⟩
+
 /-- The two extension bins are empty exactly when the later finite control set introduces no edge
 outside the classifier output.  This is the finite partition fact behind the checker fixed point:
 every new control edge is either crossing or noncrossing with respect to the proposed side. -/
