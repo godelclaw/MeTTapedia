@@ -180,6 +180,33 @@ theorem exists_oneEdge_forcedCounterexampleWalk_indicatorDetector_payload_of_mem
     hpEdges, havoid, by simpa [node, latentNode] using hcross, hxor⟩
 
 /--
+Mixed report boundary for finite CAP5 calibration runs.  A realized-separator row already
+refutes cyclic five-edge-connectivity, while a forced-counterexample row emits a canonical
+one-edge `𝔽₂` detector.  This packages the hold/fail boundary mined by finite generator runs
+without assuming the unresolved planar separator step.
+-/
+theorem mixed_boundary_indicatorDetector_payload_of_mem_realizedSeparatorLatents_of_mem_forcedCounterexampleLatents
+    (report : CAP5ExceptionalAnnulusGeneratorReport boundaryEdge side)
+    {realizedLatent forcedLatent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge}
+    (hrealized : realizedLatent ∈ report.realizedSeparatorLatents)
+    (hforced : forcedLatent ∈ report.forcedCounterexampleLatents) :
+    ¬ CyclicallyFiveEdgeConnected G ∧
+      ∃ u v : V, ∃ e : G.edgeSet, ∃ p : G.Walk u v,
+        e ∉ (report.node forcedLatent).candidate.edgeSupport ∧
+          side u ∧ ¬ side v ∧
+            p.edges = [(e : Sym2 V)] ∧
+              (∀ i : Fin 5,
+                i ∈ (report.node forcedLatent).candidate.portalCandidate.portalSet →
+                  ((boundaryEdge i : G.edgeSet) : Sym2 V) ∉ p.edges) ∧
+                EdgeCrossesVertexSide G side e ∧
+                  Curriculum.pathXor (edgeIndicatorWeight e) p.edges = 1 := by
+  exact
+    ⟨report.not_cyclicallyFiveEdgeConnected_of_mem_realizedSeparatorLatents
+        hrealized,
+      report.exists_oneEdge_forcedCounterexampleWalk_indicatorDetector_payload_of_mem_forcedCounterexampleLatents
+        hforced⟩
+
+/--
 Per-latent complete-frontier detector payload.  In a cyclically five-edge-connected graph, a
 single complete checker latent already has the same one-edge forced-walk detector payload as a
 forced-bin latent.  This lets finite search mine complete rows one at a time instead of requiring
