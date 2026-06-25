@@ -1854,6 +1854,38 @@ theorem missingCheckerEvidenceLatents_ne_nil_iff_exists_missing_checker_ingredie
             (Or.inr (Or.inr hcomplement))⟩
 
 /--
+Closed-frontier form of the three-bin diagnostic boundary.  The checker has no missing-evidence
+latents exactly when none of the enumerated latents is missing portal-crossing evidence, a
+selected-side cycle, or a complementary-side cycle.
+-/
+theorem missingCheckerEvidenceLatents_eq_nil_iff_no_missing_checker_ingredient
+    (report : CAP5ExceptionalAnnulusGeneratorReport boundaryEdge side) :
+    report.missingCheckerEvidenceLatents = [] ↔
+      ¬ ((∃ latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge,
+        latent ∈ CAP5ExceptionalAnnulusGeneratorLatent.all boundaryEdge ∧
+          (report.node latent).MissingPortalCrossingEvidence) ∨
+        (∃ latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge,
+          latent ∈ CAP5ExceptionalAnnulusGeneratorLatent.all boundaryEdge ∧
+            (report.node latent).MissingSelectedSideCycleEvidence) ∨
+          (∃ latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge,
+            latent ∈ CAP5ExceptionalAnnulusGeneratorLatent.all boundaryEdge ∧
+              (report.node latent).MissingComplementarySideCycleEvidence)) := by
+  constructor
+  · intro hnil hingredient
+    have hfrontier :
+        report.missingCheckerEvidenceLatents ≠ [] :=
+      (report.missingCheckerEvidenceLatents_ne_nil_iff_exists_missing_checker_ingredient).2
+        hingredient
+    exact hfrontier hnil
+  · intro hnoIngredient
+    by_cases hnil : report.missingCheckerEvidenceLatents = []
+    · exact hnil
+    · exact False.elim
+        (hnoIngredient
+          ((report.missingCheckerEvidenceLatents_ne_nil_iff_exists_missing_checker_ingredient).1
+            hnil))
+
+/--
 In a cyclically five-edge-connected graph, the report's only obstruction to putting every
 enumerated latent in the forced-counterexample bin is genuinely partial checker evidence.  Thus a
 finite CAP5 run has a sharp diagnostic boundary: all sixteen latents are forced exactly when no
@@ -2301,6 +2333,42 @@ theorem ofDecidableChecks_missingCheckerEvidenceLatents_ne_nil_iff_exists_missin
   · intro hingredient
     apply hboundary.2
     simpa [report, node, latentNode] using hingredient
+
+/--
+Closed-frontier version for the canonical finite CAP5 checker.  Its missing-evidence list is
+empty exactly when the enumerated frontier has no latent in any primitive missing-checker bin.
+-/
+theorem ofDecidableChecks_missingCheckerEvidenceLatents_eq_nil_iff_no_missing_checker_ingredient
+    (boundaryEdge : Fin 5 → G.edgeSet) (side : V → Prop)
+    [∀ latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge,
+      Decidable ((latentNode boundaryEdge side latent).PortalCrosses)]
+    [∀ latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge,
+      Decidable ((latentNode boundaryEdge side latent).SideCycles)]
+    [∀ latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge,
+      Decidable ((latentNode boundaryEdge side latent).RealizedSeparator)] :
+    (ofDecidableChecks boundaryEdge side).missingCheckerEvidenceLatents = [] ↔
+      ¬ ((∃ latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge,
+        latent ∈ CAP5ExceptionalAnnulusGeneratorLatent.all boundaryEdge ∧
+          (latentNode boundaryEdge side latent).MissingPortalCrossingEvidence) ∨
+        (∃ latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge,
+          latent ∈ CAP5ExceptionalAnnulusGeneratorLatent.all boundaryEdge ∧
+            (latentNode boundaryEdge side latent).MissingSelectedSideCycleEvidence) ∨
+          (∃ latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge,
+            latent ∈ CAP5ExceptionalAnnulusGeneratorLatent.all boundaryEdge ∧
+              (latentNode boundaryEdge side latent).MissingComplementarySideCycleEvidence)) := by
+  let report : CAP5ExceptionalAnnulusGeneratorReport boundaryEdge side :=
+    ofDecidableChecks boundaryEdge side
+  have hboundary :=
+    report.missingCheckerEvidenceLatents_eq_nil_iff_no_missing_checker_ingredient
+  constructor
+  · intro hnil hingredient
+    exact hboundary.1 hnil (by
+      simpa [report, node, latentNode] using hingredient)
+  · intro hnoIngredient
+    apply hboundary.2
+    intro hingredient
+    exact hnoIngredient (by
+      simpa [report, node, latentNode] using hingredient)
 
 /--
 Executable exact boundary for the canonical finite CAP5 checker: under cyclic five-edge-
