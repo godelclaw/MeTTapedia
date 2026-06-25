@@ -338,6 +338,28 @@ theorem partial_iff_missingCheckerEvidence
         · exact hnotInside hcycles.1
         · exact hnotOutside hcycles.2
 
+/-- A generated node has no missing primitive checker evidence exactly when it is complete:
+portal crossings and cycles on both sides are present. -/
+theorem not_missingCheckerEvidence_iff_complete
+    (node : CAP5ExceptionalAnnulusGeneratorNode boundaryEdge) :
+    ¬ node.MissingCheckerEvidence ↔ node.PortalCrosses ∧ node.SideCycles := by
+  classical
+  constructor
+  · intro hnotMissing
+    by_cases hportal : node.PortalCrosses
+    · by_cases hcycles : node.SideCycles
+      · exact ⟨hportal, hcycles⟩
+      · exact False.elim <| hnotMissing <|
+          (node.partial_iff_missingCheckerEvidence).1 (Or.inr hcycles)
+    · exact False.elim <| hnotMissing <|
+        (node.partial_iff_missingCheckerEvidence).1 (Or.inl hportal)
+  · rintro ⟨hportal, hcycles⟩ hmissing
+    have hpartial : node.Partial :=
+      (node.partial_iff_missingCheckerEvidence).2 hmissing
+    rcases hpartial with hnotPortal | hnotCycles
+    · exact hnotPortal hportal
+    · exact hnotCycles hcycles
+
 /-- Predicate associating status labels with their proof obligations. -/
 def InBin (node : CAP5ExceptionalAnnulusGeneratorNode boundaryEdge) :
     CAP5SeparatorGeneratorStatus → Prop
