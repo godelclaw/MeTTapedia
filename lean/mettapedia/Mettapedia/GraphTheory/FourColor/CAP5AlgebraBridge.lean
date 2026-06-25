@@ -46,6 +46,47 @@ theorem CAP5TransportedEdgeComponentCoverCore.exceptionalAnnulusOneEdgeCounterex
   have heq : e' = e := Subtype.ext hsym
   simpa [heq] using hcross
 
+/-- Normal form for the exceptional CAP5 one-edge counterexample predicate: the one-edge walk
+payload is canonical, so the predicate is equivalent to a realized exceptional candidate plus a
+concrete edge outside that candidate support crossing the selected side. -/
+theorem CAP5TransportedEdgeComponentCoverCore.exceptionalAnnulusOneEdgeCounterexampleEdge_iff_exists_candidate_crossing_outside
+    {G : SimpleGraph V}
+    {boundaryEdge : Fin 5 → G.edgeSet} {n : Nat}
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    {p0Inside p4Inside : Bool} {side : V → Prop} {e : G.edgeSet} :
+    data.ExceptionalAnnulusOneEdgeCounterexampleEdge p0Inside p4Inside side e ↔
+      ∃ edgeCandidate : CAP5ExceptionalAnnulusBoundaryEdgeSupportCandidate boundaryEdge,
+        data.RealizesExceptionalBoundarySupportOrientation
+            edgeCandidate.portalCandidate.orientation ∧
+          edgeCandidate.portalCandidate.sideCase =
+            CAP5ExceptionalAnnulusSideCase.ofPortalSides p0Inside p4Inside ∧
+            e ∉ edgeCandidate.edgeSupport ∧
+              EdgeCrossesVertexSide G side e := by
+  constructor
+  · intro h
+    rcases h with
+      ⟨edgeCandidate, horientation, hsideCase, u, v, p, heOutside, hu, hv, hpEdges,
+        havoid⟩
+    have hcross :
+        EdgeCrossesVertexSide G side e :=
+      data.exceptionalAnnulusOneEdgeCounterexampleEdge_crosses
+        ⟨edgeCandidate, horientation, hsideCase, u, v, p, heOutside, hu, hv, hpEdges,
+          havoid⟩
+    exact ⟨edgeCandidate, horientation, hsideCase, heOutside, hcross⟩
+  · rintro ⟨edgeCandidate, horientation, hsideCase, heOutside, hcross⟩
+    rcases hcross with ⟨u, v, hu, hv, hsu, hsv⟩
+    rcases exists_walk_edges_eq_singleton_of_edge_endpoint_sides
+        (G := G) (side := side) (e := e) hu hv hsu hsv with
+      ⟨p, hpEdges⟩
+    refine ⟨edgeCandidate, horientation, hsideCase, u, v, p,
+      heOutside, hsu, hsv, hpEdges, ?_⟩
+    intro i hi hiEdges
+    have hboundary_eq : boundaryEdge i = e := by
+      apply Subtype.ext
+      simpa [hpEdges] using hiEdges
+    exact heOutside ((edgeCandidate.mem_edgeSupport_iff_exists_portal e).2
+      ⟨i, hi, hboundary_eq⟩)
+
 /-- The cyclic-five-edge-connected exceptional CAP5 branch emits at least one algebraically
 addressable one-edge counterexample edge.  This is the generator-facing edge predicate consumed by
 the non-geometric pairing lane. -/
