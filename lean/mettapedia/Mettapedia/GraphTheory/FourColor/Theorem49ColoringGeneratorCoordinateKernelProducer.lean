@@ -394,6 +394,56 @@ theorem not_ker_planarBoundaryZeroFamilyPairingMap_eq_bot_of_boundaryZeroChainOb
     simpa [hker] using hwker
   exact hwNonzero (by simpa using hwbot)
 
+/-- Detector-enrichment boundary for predicate-indexed finite generators.  If `P` has a
+boundary-zero obstruction but a red/blue single-coordinate family nevertheless has trivial
+family-pairing kernel, then the family must probe at least one edge outside `P`.
+
+This is the positive form of the obstruction: a failed emitted-edge predicate tells the next
+generator pass exactly what kind of new information is required. -/
+theorem exists_family_singleCoordinate_outside_predicate_of_boundaryZeroChainObstruction_of_ker_eq_bot
+    {G : SimpleGraph V} [Fintype G.edgeSet]
+    {emb : PlaneEmbeddingWithBoundary G}
+    {colorings : Set (G.EdgeColoring Color)}
+    {κ : Type*}
+    (family : κ → projectedColoringGeneratorSubspace emb colorings)
+    (P : G.edgeSet → Prop)
+    (hsingle :
+      ∀ i : κ,
+        ∃ e : G.edgeSet,
+          (((family i : projectedColoringGeneratorSubspace emb colorings) :
+                G.edgeSet → Color) = Pi.single e red ∨
+            ((family i : projectedColoringGeneratorSubspace emb colorings) :
+                G.edgeSet → Color) = Pi.single e blue))
+    (hobs :
+      ∃ z : G.edgeSet → Color,
+        z ∈ planarBoundaryZeroSubmodule emb ∧
+          z ≠ 0 ∧
+            ∀ e : G.edgeSet, P e → z e = 0)
+    (hker : LinearMap.ker (planarBoundaryZeroFamilyPairingMap family) = ⊥) :
+    ∃ i : κ, ∃ e : G.edgeSet,
+      ¬ P e ∧
+        (((family i : projectedColoringGeneratorSubspace emb colorings) :
+              G.edgeSet → Color) = Pi.single e red ∨
+          ((family i : projectedColoringGeneratorSubspace emb colorings) :
+              G.edgeSet → Color) = Pi.single e blue) := by
+  by_contra hnoOutside
+  have hfamilyInside :
+      ∀ i : κ,
+        ∃ e : G.edgeSet, P e ∧
+          (((family i : projectedColoringGeneratorSubspace emb colorings) :
+                G.edgeSet → Color) = Pi.single e red ∨
+            ((family i : projectedColoringGeneratorSubspace emb colorings) :
+                G.edgeSet → Color) = Pi.single e blue) := by
+    intro i
+    rcases hsingle i with ⟨e, hprobe⟩
+    by_cases hP : P e
+    · exact ⟨e, hP, hprobe⟩
+    · exfalso
+      exact hnoOutside ⟨i, e, hP, hprobe⟩
+  exact
+    not_ker_planarBoundaryZeroFamilyPairingMap_eq_bot_of_boundaryZeroChainObstruction
+      family P hfamilyInside hobs hker
+
 /-- Finite-coordinate version of predicate control.  A concrete finite edge set controls the
 selected-boundary-zero chains iff every nonzero selected-boundary-zero chain is nonzero on at
 least one edge of that set.  This is the rank/kernel certificate shape expected from a finite
