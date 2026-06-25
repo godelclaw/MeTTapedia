@@ -1844,6 +1844,93 @@ theorem theorem49BoundaryRootSynthesis_or_forcedEdge_and_boundaryZeroChain_famil
       ⟨z, hzBoundary, hzNonzero, hvanish, i, hpair⟩
     exact Or.inr ⟨hforced, z, hzBoundary, hzNonzero, hvanish, i, hpair⟩
 
+/--
+Runner-level algebraic handoff with the forced-bin detector kept attached.  If the finite CAP5
+step does not already close Theorem 4.9, then the run exposes both the named one-edge forced
+detector payload and a nonzero selected-boundary-zero chain pairing.  This is the compact
+interface between the finite forced-counterexample bin and the surviving algebraic/cocycle lane.
+-/
+theorem theorem49BoundaryRootSynthesis_or_forcedEdgeIndicatorPathXorDetectorPayload_and_boundaryZeroChain_familyPairing_ne_zero_of_finsetControl
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    [Fintype G.edgeSet] [FiniteDimensional F2 (G.edgeSet → Color)]
+    (emb : PlaneEmbeddingWithBoundary G) (C₀ : G.EdgeColoring Color)
+    (colorings : Set (G.EdgeColoring Color))
+    (hsubset : colorings ⊆ G.EdgeKempeClosure C₀)
+    {κ : Type*}
+    (family : κ → projectedColoringGeneratorSubspace emb colorings)
+    (p0Inside p4Inside : Bool) (h : data.IsExceptional)
+    (side : V → Prop) (hcyclic : CyclicallyFiveEdgeConnected G)
+    (hportal_crosses :
+      ∀ edgeCandidate : CAP5ExceptionalAnnulusBoundaryEdgeSupportCandidate boundaryEdge,
+        data.RealizesExceptionalBoundarySupportOrientation
+            edgeCandidate.portalCandidate.orientation →
+        edgeCandidate.portalCandidate.sideCase =
+            CAP5ExceptionalAnnulusSideCase.ofPortalSides p0Inside p4Inside →
+        ∀ i : Fin 5, i ∈ edgeCandidate.portalCandidate.portalSet →
+          EdgeCrossesVertexSide G side (boundaryEdge i))
+    (hcycles : HasCycleOnSide G side ∧ HasCycleOnSide G (fun v => ¬ side v))
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (controlEdges : Finset G.edgeSet)
+    (hcontrol :
+      ∀ ⦃z : G.edgeSet → Color⦄,
+        z ∈ planarBoundaryZeroSubmodule emb →
+        (∀ e ∈ controlEdges, z e = 0) →
+          z = 0)
+    (hwitnessRed :
+      ∀ e : G.edgeSet,
+        e ∈ classifier.emittedFinset →
+          ∃ i : κ,
+            ((family i : projectedColoringGeneratorSubspace emb colorings) :
+                G.edgeSet → Color) =
+              Pi.single e red)
+    (hwitnessBlue :
+      ∀ e : G.edgeSet,
+        e ∈ classifier.emittedFinset →
+          ∃ i : κ,
+            ((family i : projectedColoringGeneratorSubspace emb colorings) :
+                G.edgeSet → Color) =
+              Pi.single e blue)
+    (hwitnessExtensionRed :
+      ∀ e : G.edgeSet,
+        e ∈ classifier.crossingExtensionFinset controlEdges ∨
+            e ∈ classifier.noncrossingExtensionFinset controlEdges →
+          ∃ i : κ,
+            ((family i : projectedColoringGeneratorSubspace emb colorings) :
+                G.edgeSet → Color) =
+              Pi.single e red)
+    (hwitnessExtensionBlue :
+      ∀ e : G.edgeSet,
+        e ∈ classifier.crossingExtensionFinset controlEdges ∨
+            e ∈ classifier.noncrossingExtensionFinset controlEdges →
+          ∃ i : κ,
+            ((family i : projectedColoringGeneratorSubspace emb colorings) :
+                G.edgeSet → Color) =
+              Pi.single e blue) :
+    Theorem49BoundaryRootSynthesis emb C₀ ∨
+      data.ForcedEdgeIndicatorPathXorDetectorPayload p0Inside p4Inside side ∧
+        ∃ z : G.edgeSet → Color,
+          z ∈ planarBoundaryZeroSubmodule emb ∧
+            z ≠ 0 ∧
+              (∀ e : G.edgeSet,
+                data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e →
+                  z e = 0) ∧
+                ∃ i : κ,
+                  chainDotBilinForm G.edgeSet (family i : G.edgeSet → Color) z ≠ 0 := by
+  rcases data.theorem49BoundaryRootSynthesis_or_forcedEdge_and_boundaryZeroChain_familyPairing_ne_zero_of_finsetControl
+      emb C₀ colorings hsubset family p0Inside p4Inside h side hcyclic hportal_crosses
+      hcycles classifier controlEdges hcontrol hwitnessRed hwitnessBlue
+      hwitnessExtensionRed hwitnessExtensionBlue with
+    hclosed | hfallback
+  · exact Or.inl hclosed
+  · rcases hfallback with
+      ⟨hforced, z, hzBoundary, hzNonzero, hvanish, i, hpair⟩
+    rcases hforced with ⟨e, hedge⟩
+    exact Or.inr
+      ⟨data.forcedEdgeIndicatorPathXorDetectorPayload_of_enumeratedExceptionalAnnulusForcedEdge
+          hedge,
+        z, hzBoundary, hzNonzero, hvanish, i, hpair⟩
+
 end CAP5TransportedEdgeComponentCoverCore
 
 end Mettapedia.GraphTheory.FourColor
