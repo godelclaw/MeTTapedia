@@ -26,6 +26,26 @@ def CAP5TransportedEdgeComponentCoverCore.ExceptionalAnnulusOneEdgeCounterexampl
               ∀ i : Fin 5, i ∈ edgeCandidate.portalCandidate.portalSet →
                 ((boundaryEdge i : G.edgeSet) : Sym2 V) ∉ p.edges
 
+/-- The exceptional CAP5 one-edge counterexample predicate always emits a genuine
+side-crossing edge.  This keeps the algebraic lane connected to the raw cyclic-cut checker
+instead of treating the emitted edge as an opaque witness. -/
+theorem CAP5TransportedEdgeComponentCoverCore.exceptionalAnnulusOneEdgeCounterexampleEdge_crosses
+    {G : SimpleGraph V}
+    {boundaryEdge : Fin 5 → G.edgeSet} {n : Nat}
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    {p0Inside p4Inside : Bool} {side : V → Prop} {e : G.edgeSet}
+    (h : data.ExceptionalAnnulusOneEdgeCounterexampleEdge p0Inside p4Inside side e) :
+    EdgeCrossesVertexSide G side e := by
+  rcases h with
+    ⟨_edgeCandidate, _horientation, _hsideCase, u, v, p, _heOutside, hu, hv, hpEdges,
+      _havoid⟩
+  rcases exists_edgeCrossesVertexSide_of_walk_endpoint_sides side p hu hv with
+    ⟨e', heEdges, hcross⟩
+  have hsym : (e' : Sym2 V) = (e : Sym2 V) := by
+    simpa [hpEdges] using heEdges
+  have heq : e' = e := Subtype.ext hsym
+  simpa [heq] using hcross
+
 /-- The cyclic-five-edge-connected exceptional CAP5 branch emits at least one algebraically
 addressable one-edge counterexample edge.  This is the generator-facing edge predicate consumed by
 the non-geometric pairing lane. -/
@@ -54,6 +74,33 @@ theorem CAP5TransportedEdgeComponentCoverCore.exists_exceptionalAnnulusOneEdgeCo
       havoid⟩
   exact ⟨e, edgeCandidate, horientation, hsideCase, u, v, p, heOutside, hu, hv, hpEdges,
     havoid⟩
+
+/-- Stronger raw-checker output form: the exceptional CAP5 branch emits a one-edge
+counterexample and that emitted edge is a genuine side-crossing edge. -/
+theorem CAP5TransportedEdgeComponentCoverCore.exists_crossing_exceptionalAnnulusOneEdgeCounterexampleEdge_of_isExceptional_of_portalSides
+    {G : SimpleGraph V}
+    {boundaryEdge : Fin 5 → G.edgeSet} {n : Nat}
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    (p0Inside p4Inside : Bool) (h : data.IsExceptional)
+    (side : V → Prop)
+    (hcyclic : CyclicallyFiveEdgeConnected G)
+    (hportal_crosses :
+      ∀ edgeCandidate : CAP5ExceptionalAnnulusBoundaryEdgeSupportCandidate boundaryEdge,
+        data.RealizesExceptionalBoundarySupportOrientation
+            edgeCandidate.portalCandidate.orientation →
+        edgeCandidate.portalCandidate.sideCase =
+            CAP5ExceptionalAnnulusSideCase.ofPortalSides p0Inside p4Inside →
+        ∀ i : Fin 5, i ∈ edgeCandidate.portalCandidate.portalSet →
+          EdgeCrossesVertexSide G side (boundaryEdge i))
+    (hinside_cycle : HasCycleOnSide G side)
+    (houtside_cycle : HasCycleOnSide G (fun v => ¬ side v)) :
+    ∃ e : G.edgeSet,
+      data.ExceptionalAnnulusOneEdgeCounterexampleEdge p0Inside p4Inside side e ∧
+        EdgeCrossesVertexSide G side e := by
+  rcases data.exists_exceptionalAnnulusOneEdgeCounterexampleEdge_of_isExceptional_of_portalSides
+      p0Inside p4Inside h side hcyclic hportal_crosses hinside_cycle houtside_cycle with
+    ⟨e, hedge⟩
+  exact ⟨e, hedge, data.exceptionalAnnulusOneEdgeCounterexampleEdge_crosses hedge⟩
 
 /-- Algebraic consumption of the exceptional CAP5 counterexample bin.  Once the finite generator
 emits a forced outside edge, any selected chain that is nonzero on every such emitted edge is
