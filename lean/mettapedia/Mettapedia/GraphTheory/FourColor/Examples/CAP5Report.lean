@@ -142,6 +142,16 @@ def realizedCandidate :
     CAP5ExceptionalAnnulusBoundaryEdgeSupportCandidate realizedCAP5BoundaryEdge :=
   realizedLatent.candidate
 
+/-- The latent selecting a three-edge portal set; `r13` will be the outside crossing edge. -/
+def forcedLatent : CAP5ExceptionalAnnulusGeneratorLatent realizedCAP5BoundaryEdge where
+  orientation := CAP5ExceptionalBoundarySupportOrientation.redBlue03_redPurple04
+  p0Inside := true
+  p4Inside := true
+
+def forcedCandidate :
+    CAP5ExceptionalAnnulusBoundaryEdgeSupportCandidate realizedCAP5BoundaryEdge :=
+  forcedLatent.candidate
+
 def realizedInsideCycleWalk : realizedGraph.Walk (0 : RealizedV) 0 :=
   Walk.cons' 0 1 0 (by simp [realizedGraph])
     (Walk.cons' 1 2 0 (by simp [realizedGraph])
@@ -207,6 +217,20 @@ theorem realized_support_simp (e : realizedGraph.edgeSet) :
   rcases realized_edge_eq_cases e with rfl | rfl | rfl | rfl | rfl | rfl |
     rfl | rfl | rfl | rfl <;>
     simp [realizedCandidate, realizedLatent,
+      CAP5ExceptionalAnnulusGeneratorLatent.candidate,
+      CAP5ExceptionalAnnulusBoundaryEdgeSupportCandidate.ofOrientationAndSideCase,
+      CAP5ExceptionalAnnulusBoundaryEdgeSupportCandidate.ofPortalCandidate,
+      CAP5ExceptionalAnnulusSeparatorPortalCandidate.ofOrientationAndSideCase,
+      CAP5ExceptionalAnnulusGeneratorLatent.sideCase, realizedCAP5BoundaryEdge,
+      CAP5ExceptionalAnnulusSideCase.ofPortalSides,
+      CAP5ExceptionalAnnulusSideCase.separatorPortalSet, r01, r12, r20, r34, r45, r53,
+      r03, r04, r13, r25]
+
+theorem forced_support_simp (e : realizedGraph.edgeSet) :
+    e ∈ forcedCandidate.edgeSupport ↔ e = r03 ∨ e = r04 ∨ e = r25 := by
+  rcases realized_edge_eq_cases e with rfl | rfl | rfl | rfl | rfl | rfl |
+    rfl | rfl | rfl | rfl <;>
+    simp [forcedCandidate, forcedLatent,
       CAP5ExceptionalAnnulusGeneratorLatent.candidate,
       CAP5ExceptionalAnnulusBoundaryEdgeSupportCandidate.ofOrientationAndSideCase,
       CAP5ExceptionalAnnulusBoundaryEdgeSupportCandidate.ofPortalCandidate,
@@ -295,6 +319,103 @@ theorem realized_realizedSeparator :
       realizedCAP5BoundaryEdge realizedSide realizedLatent).RealizedSeparator := by
   exact ⟨realizedCutData⟩
 
+theorem forced_portalCrosses :
+    (CAP5ExceptionalAnnulusGeneratorReport.latentNode
+      realizedCAP5BoundaryEdge realizedSide forcedLatent).PortalCrosses := by
+  intro i hi
+  fin_cases i <;>
+    simp [CAP5ExceptionalAnnulusGeneratorReport.latentNode,
+      CAP5ExceptionalAnnulusGeneratorNode.candidate, forcedLatent,
+      CAP5ExceptionalAnnulusGeneratorLatent.candidate,
+      CAP5ExceptionalAnnulusBoundaryEdgeSupportCandidate.ofOrientationAndSideCase,
+      CAP5ExceptionalAnnulusBoundaryEdgeSupportCandidate.ofPortalCandidate,
+      CAP5ExceptionalAnnulusSeparatorPortalCandidate.ofOrientationAndSideCase,
+      CAP5ExceptionalAnnulusGeneratorLatent.sideCase, realizedCAP5BoundaryEdge,
+      CAP5ExceptionalAnnulusSideCase.ofPortalSides,
+      CAP5ExceptionalAnnulusSideCase.separatorPortalSet] at hi ⊢ <;>
+    first
+    | exact realized_r03_crosses
+    | exact realized_r04_crosses
+    | exact realized_r25_crosses
+
+theorem forced_sideCycles :
+    (CAP5ExceptionalAnnulusGeneratorReport.latentNode
+      realizedCAP5BoundaryEdge realizedSide forcedLatent).SideCycles := by
+  exact ⟨realized_inside_cycle, realized_outside_cycle⟩
+
+def forcedCounterexampleWalk : realizedGraph.Walk (1 : RealizedV) 3 :=
+  Walk.cons' 1 3 3 (by simp [realizedGraph]) Walk.nil
+
+theorem forcedCandidate_r13_not_mem : r13 ∉ forcedCandidate.edgeSupport := by
+  rw [forced_support_simp]
+  simp [r13, r03, r04, r25]
+
+theorem forcedCandidate_r01_not_mem : r01 ∉ forcedCandidate.edgeSupport := by
+  rw [forced_support_simp]
+  simp [r01, r03, r04, r25]
+
+theorem forcedCandidate_r03_mem : r03 ∈ forcedCandidate.edgeSupport := by
+  exact (forced_support_simp r03).2 (Or.inl rfl)
+
+theorem forced_node_forcedCounterexampleEdge_r13 :
+    (CAP5ExceptionalAnnulusGeneratorReport.latentNode
+      realizedCAP5BoundaryEdge realizedSide forcedLatent).ForcedCounterexampleEdge r13 := by
+  refine ⟨1, 3, forcedCounterexampleWalk, forcedCandidate_r13_not_mem,
+    ?_, ?_, ?_, ?_⟩
+  · unfold realizedSide
+    exact Or.inr (Or.inl rfl)
+  · unfold realizedSide
+    rintro (h | h | h) <;> cases h
+  · simp [forcedCounterexampleWalk, r13]
+  · intro i hi hiEdges
+    fin_cases i <;>
+      simp [CAP5ExceptionalAnnulusGeneratorReport.latentNode,
+        CAP5ExceptionalAnnulusGeneratorNode.candidate, forcedLatent,
+        CAP5ExceptionalAnnulusGeneratorLatent.candidate,
+        CAP5ExceptionalAnnulusBoundaryEdgeSupportCandidate.ofOrientationAndSideCase,
+        CAP5ExceptionalAnnulusBoundaryEdgeSupportCandidate.ofPortalCandidate,
+        CAP5ExceptionalAnnulusSeparatorPortalCandidate.ofOrientationAndSideCase,
+        CAP5ExceptionalAnnulusGeneratorLatent.sideCase, realizedCAP5BoundaryEdge,
+        CAP5ExceptionalAnnulusSideCase.ofPortalSides,
+        CAP5ExceptionalAnnulusSideCase.separatorPortalSet,
+        forcedCounterexampleWalk, r03, r04, r25] at hi hiEdges
+
+theorem forced_realizedSeparator_false :
+    ¬ (CAP5ExceptionalAnnulusGeneratorReport.latentNode
+      realizedCAP5BoundaryEdge realizedSide forcedLatent).RealizedSeparator := by
+  rintro ⟨realization⟩
+  have hnot01Cross :
+      ¬ EdgeCrossesVertexSide realizedGraph realization.side r01 := by
+    intro hcross
+    exact forcedCandidate_r01_not_mem ((realization.hcut_eq r01).2 hcross)
+  have hnot13Cross :
+      ¬ EdgeCrossesVertexSide realizedGraph realization.side r13 := by
+    intro hcross
+    exact forcedCandidate_r13_not_mem ((realization.hcut_eq r13).2 hcross)
+  have h01 :
+      realization.side (0 : RealizedV) ↔ realization.side 1 :=
+    (not_edgeCrossesVertexSide_iff_forall_side_iff realizedGraph realization.side r01).1
+      hnot01Cross 0 1 (by simp [r01]) (by simp [r01])
+  have h13 :
+      realization.side (1 : RealizedV) ↔ realization.side 3 :=
+    (not_edgeCrossesVertexSide_iff_forall_side_iff realizedGraph realization.side r13).1
+      hnot13Cross 1 3 (by simp [r13]) (by simp [r13])
+  have h03Same : realization.side (0 : RealizedV) ↔ realization.side 3 := h01.trans h13
+  have hnot03Cross :
+      ¬ EdgeCrossesVertexSide realizedGraph realization.side r03 := by
+    rw [not_edgeCrossesVertexSide_iff_forall_side_iff]
+    intro u v hu hv
+    fin_cases u <;> fin_cases v <;> simp [r03] at hu hv ⊢
+    · exact h03Same
+    · exact h03Same.symm
+  exact hnot03Cross ((realization.hcut_eq r03).1 forcedCandidate_r03_mem)
+
+/-- The three-edge latent has a concrete outside crossing edge and hence a forced witness. -/
+theorem forced_node_forcedCounterexample :
+    (CAP5ExceptionalAnnulusGeneratorReport.latentNode
+      realizedCAP5BoundaryEdge realizedSide forcedLatent).ForcedCounterexample := by
+  exact ⟨r13, forced_node_forcedCounterexampleEdge_r13⟩
+
 /-- The decidable CAP5 report on the two-triangle realized-separator benchmark. -/
 noncomputable def realizedCAP5Report :
     CAP5ExceptionalAnnulusGeneratorReport realizedCAP5BoundaryEdge realizedSide := by
@@ -314,6 +435,24 @@ theorem realizedCAP5Report_classify_eq_realizedSeparator :
     CAP5ExceptionalAnnulusGeneratorReport.ofDecidableChecks,
     CAP5ExceptionalAnnulusGeneratorNode.Report.ofDecidableChecks,
     realized_portalCrosses, realized_sideCycles, realized_realizedSeparator]
+
+/--
+The same graph also contains a forced-counterexample latent: the three-edge candidate cannot be
+a cyclic cut, because the cycle `0-3-1-0` meets it in exactly one edge, while `r13` is the
+concrete outside crossing edge.
+-/
+theorem realizedCAP5Report_classify_forcedLatent_eq_forcedCounterexample :
+    realizedCAP5Report.classify forcedLatent =
+      CAP5SeparatorGeneratorStatus.forcedCounterexample := by
+  classical
+  have hnotRealized :
+      ¬ (CAP5ExceptionalAnnulusGeneratorReport.latentNode
+        realizedCAP5BoundaryEdge realizedSide forcedLatent).RealizedSeparator :=
+    forced_realizedSeparator_false
+  simp [realizedCAP5Report,
+    CAP5ExceptionalAnnulusGeneratorReport.ofDecidableChecks,
+    CAP5ExceptionalAnnulusGeneratorNode.Report.ofDecidableChecks,
+    forced_portalCrosses, forced_sideCycles, hnotRealized]
 
 /--
 The realized-separator bin is a genuine cyclic-five-connectivity refutation for this finite
