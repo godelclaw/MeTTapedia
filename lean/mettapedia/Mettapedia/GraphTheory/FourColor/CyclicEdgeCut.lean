@@ -260,6 +260,46 @@ theorem CyclicEdgeCutRealization.side_iff_of_forall_not_mem_edgeCut_of_walk
       ⟨e, hecut, heReverseEdges⟩
     exact havoid e hecut (by simpa [Walk.edges_reverse] using heReverseEdges)
 
+/-- Triangle parity obstruction for realized cuts.  A vertex-side edge cut cannot contain exactly
+one edge of a triangle: if two triangle edges are outside the cut, their side-preservation forces
+the third pair of endpoints to be on the same side, contradicting membership of the third edge in
+the cut.  This is the local cocycle obstruction used by finite CAP5 witness checks. -/
+theorem CyclicEdgeCutRealization.false_of_triangle_one_cut_edge
+    {G : SimpleGraph V} {edgeCut : Finset G.edgeSet}
+    (realization : CyclicEdgeCutRealization G edgeCut)
+    {a b c : V} {eab ebc eac : G.edgeSet}
+    (heab_pair : (eab : Sym2 V) = s(a, b))
+    (hebc_pair : (ebc : Sym2 V) = s(b, c))
+    (heac_pair : (eac : Sym2 V) = s(a, c))
+    (heab_not : eab ∉ edgeCut)
+    (hebc_not : ebc ∉ edgeCut)
+    (heac : eac ∈ edgeCut) :
+    False := by
+  have hnotab : ¬ EdgeCrossesVertexSide G realization.side eab := by
+    intro hcross
+    exact heab_not ((realization.hcut_eq eab).2 hcross)
+  have hnotbc : ¬ EdgeCrossesVertexSide G realization.side ebc := by
+    intro hcross
+    exact hebc_not ((realization.hcut_eq ebc).2 hcross)
+  have hab : realization.side a ↔ realization.side b :=
+    (not_edgeCrossesVertexSide_iff_forall_side_iff G realization.side eab).1
+      hnotab a b (by simp [heab_pair]) (by simp [heab_pair])
+  have hbc : realization.side b ↔ realization.side c :=
+    (not_edgeCrossesVertexSide_iff_forall_side_iff G realization.side ebc).1
+      hnotbc b c (by simp [hebc_pair]) (by simp [hebc_pair])
+  have hac : realization.side a ↔ realization.side c := hab.trans hbc
+  have hnotac : ¬ EdgeCrossesVertexSide G realization.side eac := by
+    rw [not_edgeCrossesVertexSide_iff_forall_side_iff]
+    intro u v hu hv
+    rw [heac_pair] at hu hv
+    rw [Sym2.mem_iff] at hu hv
+    rcases hu with rfl | rfl <;> rcases hv with rfl | rfl
+    · exact Iff.rfl
+    · exact hac
+    · exact hac.symm
+    · exact Iff.rfl
+  exact hnotac ((realization.hcut_eq eac).1 heac)
+
 /-- Path-separation constructor for cyclic-edge-cut realization data.  If the listed finite
 support consists of side-crossing edges, and every walk crossing the side contains a listed edge,
 then the listed support is exactly the edge cut induced by the side.  This is the graph-level
