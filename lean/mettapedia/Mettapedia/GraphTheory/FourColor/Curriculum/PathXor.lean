@@ -17,6 +17,12 @@ def pathXor {E : Type*} (weight : E → F2) (path : EdgePath E) : F2 :=
     pathXor weight [e] = weight e := by
   simp [pathXor]
 
+theorem pathXor_singleton_ne_zero {E : Type*} (weight : E → F2) {e : E}
+    (hweight : weight e = 1) :
+    pathXor weight [e] ≠ 0 := by
+  rw [pathXor_singleton, hweight]
+  decide
+
 theorem pathXor_append {E : Type*} (weight : E → F2) (p q : EdgePath E) :
     pathXor weight (p ++ q) = pathXor weight p + pathXor weight q := by
   simp [pathXor, List.map_append, List.sum_append]
