@@ -1287,6 +1287,41 @@ theorem exists_mem_enumeratedExceptionalAnnulusForcedEdgeFinset_crossing_of_isEx
     ⟨e, hedge, hcross⟩
   exact ⟨e, (hcert e).2 hedge, hcross⟩
 
+/-- Every edge emitted by a Boolean exceptional CAP5 checker is a raw side-crossing edge. -/
+theorem EnumeratedExceptionalAnnulusForcedEdgeClassifier.emittedFinset_edges_cross
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    [Fintype G.edgeSet]
+    {p0Inside p4Inside : Bool} {side : V → Prop}
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    {e : G.edgeSet} (hemitted : e ∈ classifier.emittedFinset) :
+    EdgeCrossesVertexSide G side e :=
+  data.enumeratedExceptionalAnnulusForcedEdgeFinset_edges_cross
+    classifier.emittedFinset_spec hemitted
+
+/-- Strong Boolean-checker output form for complete cyclic-five exceptional CAP5 runs: the
+checker-emitted finite set contains an edge, and that edge is a raw side-crossing witness. -/
+theorem EnumeratedExceptionalAnnulusForcedEdgeClassifier.exists_mem_emittedFinset_crossing_of_isExceptional_of_portalSides_of_cyclicallyFiveEdgeConnected
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    [Fintype G.edgeSet]
+    (p0Inside p4Inside : Bool) (h : data.IsExceptional)
+    (side : V → Prop) (hcyclic : CyclicallyFiveEdgeConnected G)
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (hportal_crosses :
+      ∀ edgeCandidate : CAP5ExceptionalAnnulusBoundaryEdgeSupportCandidate boundaryEdge,
+        data.RealizesExceptionalBoundarySupportOrientation
+            edgeCandidate.portalCandidate.orientation →
+        edgeCandidate.portalCandidate.sideCase =
+            CAP5ExceptionalAnnulusSideCase.ofPortalSides p0Inside p4Inside →
+        ∀ i : Fin 5, i ∈ edgeCandidate.portalCandidate.portalSet →
+          EdgeCrossesVertexSide G side (boundaryEdge i))
+    (hcycles : HasCycleOnSide G side ∧ HasCycleOnSide G (fun v => ¬ side v)) :
+    ∃ e : G.edgeSet, e ∈ classifier.emittedFinset ∧ EdgeCrossesVertexSide G side e :=
+  data.exists_mem_enumeratedExceptionalAnnulusForcedEdgeFinset_crossing_of_isExceptional_of_portalSides_of_cyclicallyFiveEdgeConnected
+    classifier.emittedFinset p0Inside p4Inside h side hcyclic
+    classifier.emittedFinset_spec hportal_crosses hcycles
+
 /-- Theorem 4.9 synthesis route from a concrete finite checker's control certificate.  The finite
 rank-style obligation is: if a selected-boundary-zero chain vanishes on all emitted edges, then it
 vanishes everywhere.  The edge-set certificate translates that concrete finite obligation back to
