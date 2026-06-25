@@ -806,6 +806,56 @@ theorem exists_exceptionalAnnulusOneEdgeCounterexampleEdge_of_mem_forcedCountere
     data.enumeratedExceptionalAnnulusForcedEdge_to_exceptionalAnnulusOneEdgeCounterexampleEdge
       hedge⟩
 
+/-- Report-level exceptional CAP5 emission theorem.  If a complete certified report is run in a
+cyclically five-edge-connected graph, then any exceptional component-cover branch emits an
+enumerated forced edge for the selected portal-side bits. -/
+theorem exists_enumeratedExceptionalAnnulusForcedEdge_of_report_complete_of_isExceptional_of_portalSides_of_cyclicallyFiveEdgeConnected
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    (report : CAP5ExceptionalAnnulusGeneratorReport boundaryEdge side)
+    (p0Inside p4Inside : Bool) (h : data.IsExceptional)
+    (hcyclic : CyclicallyFiveEdgeConnected G)
+    (hportal :
+      ∀ latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge,
+        (report.node latent).PortalCrosses)
+    (hcycles :
+      ∀ latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge,
+        (report.node latent).SideCycles) :
+    ∃ e : G.edgeSet,
+      data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e := by
+  rcases CAP5ExceptionalAnnulusGeneratorLatent.exists_mem_all_of_isExceptional_of_portalSides
+      (boundaryEdge := boundaryEdge) p0Inside p4Inside h with
+    ⟨latent, hlatentMem, hp0, hp4, horientation⟩
+  have hforced :
+      latent ∈ report.forcedCounterexampleLatents :=
+    report.mem_forcedCounterexampleLatents_of_mem_all_of_complete_of_cyclicallyFiveEdgeConnected
+      hcyclic hportal hcycles hlatentMem
+  rcases data.exists_enumeratedExceptionalAnnulusForcedEdge_of_mem_forcedCounterexampleLatents
+      report hforced horientation with
+    ⟨e, hedge⟩
+  exact ⟨e, by simpa [hp0, hp4] using hedge⟩
+
+/-- Report-level bridge from a complete exceptional CAP5 report to the broader one-edge
+counterexample predicate consumed by the algebraic lane. -/
+theorem exists_exceptionalAnnulusOneEdgeCounterexampleEdge_of_report_complete_of_isExceptional_of_portalSides_of_cyclicallyFiveEdgeConnected
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    (report : CAP5ExceptionalAnnulusGeneratorReport boundaryEdge side)
+    (p0Inside p4Inside : Bool) (h : data.IsExceptional)
+    (hcyclic : CyclicallyFiveEdgeConnected G)
+    (hportal :
+      ∀ latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge,
+        (report.node latent).PortalCrosses)
+    (hcycles :
+      ∀ latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge,
+        (report.node latent).SideCycles) :
+    ∃ e : G.edgeSet,
+      data.ExceptionalAnnulusOneEdgeCounterexampleEdge p0Inside p4Inside side e := by
+  rcases data.exists_enumeratedExceptionalAnnulusForcedEdge_of_report_complete_of_isExceptional_of_portalSides_of_cyclicallyFiveEdgeConnected
+      report p0Inside p4Inside h hcyclic hportal hcycles with
+    ⟨e, hedge⟩
+  exact ⟨e,
+    data.enumeratedExceptionalAnnulusForcedEdge_to_exceptionalAnnulusOneEdgeCounterexampleEdge
+      hedge⟩
+
 /-- Cyclic five-edge-connectivity makes the enumerated exceptional CAP5 generator emit at least
 one forced edge for the selected portal-side bits, provided the graph-side portal crossings and
 side cycles are certified. -/
