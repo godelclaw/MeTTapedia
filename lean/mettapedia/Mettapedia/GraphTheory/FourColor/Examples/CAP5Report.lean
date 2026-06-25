@@ -525,6 +525,19 @@ theorem realizedCAP5Report_forcedLatent_exists_crossing_edge :
     realizedCAP5Report_forcedLatent_mem_forcedCounterexampleLatents
 
 /--
+The forced bin in this calibration sample emits the exact bridge `r13`, not merely an
+unidentified crossing edge.
+-/
+theorem realizedCAP5Report_forcedLatent_exact_crossing_edge :
+    (realizedCAP5Report.node forcedLatent).ForcedCounterexampleEdge r13 ∧
+      EdgeCrossesVertexSide realizedGraph realizedSide r13 := by
+  constructor
+  · simpa [CAP5ExceptionalAnnulusGeneratorReport.node,
+      CAP5ExceptionalAnnulusGeneratorReport.latentNode] using
+      forced_node_forcedCounterexampleEdge_r13
+  · exact realized_r13_crosses
+
+/--
 The forced bin also exposes the one-edge avoiding-walk witness emitted by the checker.
 -/
 theorem realizedCAP5Report_forcedLatent_exists_oneEdge_crossing_walk :
@@ -561,5 +574,20 @@ theorem realizedCAP5Report_not_cyclicallyFiveEdgeConnected :
     ¬ CyclicallyFiveEdgeConnected realizedGraph := by
   exact realizedCAP5Report.not_cyclicallyFiveEdgeConnected_of_mem_realizedSeparatorLatents
     realizedCAP5Report_realizedLatent_mem_realizedSeparatorLatents
+
+/--
+Combined calibration payload for the finite generator: the same two-triangle sample has a
+realized separator refuting cyclic five-edge-connectivity, and its forced branch emits the
+concrete outside crossing edge `r13`.
+-/
+theorem realizedCAP5Report_generator_boundary_payload :
+    (realizedCAP5Report.node realizedLatent).RealizedSeparatorOnSide ∧
+      ¬ CyclicallyFiveEdgeConnected realizedGraph ∧
+        (realizedCAP5Report.node forcedLatent).ForcedCounterexampleEdge r13 ∧
+          EdgeCrossesVertexSide realizedGraph realizedSide r13 := by
+  exact ⟨realizedCAP5Report_realizedLatent_payload_onSide,
+    realizedCAP5Report_not_cyclicallyFiveEdgeConnected,
+    realizedCAP5Report_forcedLatent_exact_crossing_edge.1,
+    realizedCAP5Report_forcedLatent_exact_crossing_edge.2⟩
 
 end Mettapedia.GraphTheory.FourColor.Examples.CAP5Report
