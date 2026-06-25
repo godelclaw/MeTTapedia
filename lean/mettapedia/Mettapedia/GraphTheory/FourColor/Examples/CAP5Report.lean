@@ -924,6 +924,51 @@ theorem realizedCAP5Report_forcedLatent_detector_refutes_separator
     realizedCAP5Report_forcedLatent_pathXor_ne_zero_exposes_outside_crossing_edge
       weight hxor⟩
 
+/-- Concrete finite `𝔽₂` detector marking exactly the emitted forced crossing edge `r13`. -/
+def realizedForcedEdgeDetector (e : Sym2 RealizedV) : F2 :=
+  if e = (r13 : Sym2 RealizedV) then 1 else 0
+
+@[simp]
+theorem realizedForcedEdgeDetector_r13 :
+    realizedForcedEdgeDetector (r13 : Sym2 RealizedV) = 1 := by
+  simp [realizedForcedEdgeDetector]
+
+/--
+The concrete detector sees the exact one-edge forced walk as a nonzero `𝔽₂` signal.
+This is the finite algebraic readout of the emitted CAP5 crossing edge.
+-/
+theorem realizedCAP5Report_forcedLatent_concrete_detector_pathXor :
+    Curriculum.pathXor realizedForcedEdgeDetector forcedCounterexampleWalk.edges = 1 := by
+  simpa [realizedForcedEdgeDetector] using
+    realizedCAP5Report_forcedLatent_exact_oneEdge_pathXor realizedForcedEdgeDetector
+
+theorem realizedCAP5Report_forcedLatent_concrete_detector_pathXor_ne_zero :
+    Curriculum.pathXor realizedForcedEdgeDetector forcedCounterexampleWalk.edges ≠ 0 := by
+  rw [realizedCAP5Report_forcedLatent_concrete_detector_pathXor]
+  decide
+
+/--
+Concrete algebraic calibration of the forced branch: the benchmark's emitted edge is outside the
+generated support, crosses the proposed side, lies on the one-edge forced walk, and is marked by
+the finite `𝔽₂` detector.
+-/
+theorem realizedCAP5Report_forcedLatent_concrete_detector_refutes_separator :
+    ¬ (realizedCAP5Report.node forcedLatent).RealizedSeparator ∧
+      r13 ∉ (realizedCAP5Report.node forcedLatent).candidate.edgeSupport ∧
+        EdgeCrossesVertexSide realizedGraph realizedSide r13 ∧
+          (r13 : Sym2 RealizedV) ∈ forcedCounterexampleWalk.edges ∧
+            realizedForcedEdgeDetector (r13 : Sym2 RealizedV) = 1 := by
+  have hnot :
+      ¬ (realizedCAP5Report.node forcedLatent).RealizedSeparator := by
+    simpa [CAP5ExceptionalAnnulusGeneratorReport.node,
+      CAP5ExceptionalAnnulusGeneratorReport.latentNode] using
+      forced_realizedSeparator_false
+  exact ⟨hnot, by
+      change r13 ∉ forcedCandidate.edgeSupport
+      exact forcedCandidate_r13_not_mem,
+    realized_r13_crosses, by simp [forcedCounterexampleWalk, r13],
+    realizedForcedEdgeDetector_r13⟩
+
 /--
 The two-triangle benchmark has a genuinely mixed finite-generator output: one latent certifies
 a small cyclic separator and another certifies a forced counterexample.
