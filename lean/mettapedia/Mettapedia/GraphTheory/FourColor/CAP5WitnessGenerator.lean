@@ -1782,6 +1782,59 @@ theorem mem_noncrossingExtensionFinset_iff
   classical
   simp [noncrossingExtensionFinset]
 
+/-- The two extension bins together are exactly the later finite control edges that the
+classifier has not emitted yet.  This is the finite witness-generator partition: every new
+control edge is routed either to the side-crossing bin or the noncrossing/algebraic bin. -/
+theorem crossingExtensionFinset_union_noncrossingExtensionFinset_eq_filter_not_emitted
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    [Fintype G.edgeSet]
+    {p0Inside p4Inside : Bool} {side : V → Prop}
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (controlEdges : Finset G.edgeSet) :
+    classifier.crossingExtensionFinset controlEdges ∪
+        classifier.noncrossingExtensionFinset controlEdges =
+      controlEdges.filter fun e => e ∉ classifier.emittedFinset := by
+  classical
+  ext e
+  constructor
+  · intro he
+    rcases Finset.mem_union.1 he with hcrossing | hnoncrossing
+    · have he' :=
+        (classifier.mem_crossingExtensionFinset_iff controlEdges e).1 hcrossing
+      exact Finset.mem_filter.2 ⟨he'.1, he'.2.1⟩
+    · have he' :=
+        (classifier.mem_noncrossingExtensionFinset_iff controlEdges e).1 hnoncrossing
+      exact Finset.mem_filter.2 ⟨he'.1, he'.2.1⟩
+  · intro he
+    rcases Finset.mem_filter.1 he with ⟨heControl, heNotEmitted⟩
+    by_cases hcross : EdgeCrossesVertexSide G side e
+    · exact Finset.mem_union.2 <| Or.inl <|
+        (classifier.mem_crossingExtensionFinset_iff controlEdges e).2
+          ⟨heControl, heNotEmitted, hcross⟩
+    · exact Finset.mem_union.2 <| Or.inr <|
+        (classifier.mem_noncrossingExtensionFinset_iff controlEdges e).2
+          ⟨heControl, heNotEmitted, hcross⟩
+
+/-- The side-crossing and noncrossing extension bins are disjoint. -/
+theorem disjoint_crossingExtensionFinset_noncrossingExtensionFinset
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    [Fintype G.edgeSet]
+    {p0Inside p4Inside : Bool} {side : V → Prop}
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (controlEdges : Finset G.edgeSet) :
+    Disjoint (classifier.crossingExtensionFinset controlEdges)
+      (classifier.noncrossingExtensionFinset controlEdges) := by
+  classical
+  rw [Finset.disjoint_left]
+  intro e hcrossing hnoncrossing
+  have hcross :=
+    (classifier.mem_crossingExtensionFinset_iff controlEdges e).1 hcrossing |>.2.2
+  have hnotCross :=
+    (classifier.mem_noncrossingExtensionFinset_iff controlEdges e).1 hnoncrossing |>.2.2
+  exact hnotCross hcross
+
 /-- The two extension bins are empty exactly when the later finite control set introduces no edge
 outside the classifier output.  This is the finite partition fact behind the checker fixed point:
 every new control edge is either crossing or noncrossing with respect to the proposed side. -/
