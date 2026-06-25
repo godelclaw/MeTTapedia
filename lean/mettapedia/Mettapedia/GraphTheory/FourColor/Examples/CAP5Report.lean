@@ -494,6 +494,22 @@ theorem realizedCAP5Report_forcedLatent_exists_crossing_edge :
     realizedCAP5Report_forcedLatent_mem_forcedCounterexampleLatents
 
 /--
+The forced bin also exposes the one-edge avoiding-walk witness emitted by the checker.
+-/
+theorem realizedCAP5Report_forcedLatent_exists_oneEdge_crossing_walk :
+    ∃ u v : RealizedV, ∃ e : realizedGraph.edgeSet, ∃ p : realizedGraph.Walk u v,
+      e ∉ (realizedCAP5Report.node forcedLatent).candidate.edgeSupport ∧
+        realizedSide u ∧ ¬ realizedSide v ∧
+          p.edges = [(e : Sym2 RealizedV)] ∧
+            (∀ i : Fin 5,
+              i ∈ (realizedCAP5Report.node forcedLatent).candidate.portalCandidate.portalSet →
+                ((realizedCAP5BoundaryEdge i : realizedGraph.edgeSet) : Sym2 RealizedV) ∉
+                  p.edges) ∧
+              EdgeCrossesVertexSide realizedGraph realizedSide e :=
+  realizedCAP5Report.exists_oneEdge_forcedCounterexampleWalk_of_mem_forcedCounterexampleLatents
+    realizedCAP5Report_forcedLatent_mem_forcedCounterexampleLatents
+
+/--
 The two-triangle benchmark has a genuinely mixed finite-generator output: one latent certifies
 a small cyclic separator and another certifies a forced counterexample.
 -/
