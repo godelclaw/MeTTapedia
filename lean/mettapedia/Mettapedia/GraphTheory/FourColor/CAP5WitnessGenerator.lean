@@ -2605,6 +2605,47 @@ theorem exists_mem_enumeratedExceptionalAnnulusForcedEdgeFinset_crossing_of_isEx
     ⟨e, hedge, hcross⟩
   exact ⟨e, (hcert e).2 hedge, hcross⟩
 
+/-- Strong finite-output form for complete cyclic-five exceptional CAP5 runs: the certified
+emitted-edge set contains an edge that crosses the proposed side and is outside the generated
+candidate support for one matching exceptional latent.  This is the finite witness-generator
+obstruction boundary needed by separator and cocycle checks. -/
+theorem exists_mem_enumeratedExceptionalAnnulusForcedEdgeFinset_crossing_outside_of_isExceptional_of_portalSides_of_cyclicallyFiveEdgeConnected
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    (emitted : Finset G.edgeSet)
+    (p0Inside p4Inside : Bool) (h : data.IsExceptional)
+    (side : V → Prop) (hcyclic : CyclicallyFiveEdgeConnected G)
+    (hcert :
+      data.EnumeratedExceptionalAnnulusForcedEdgeFinset p0Inside p4Inside side emitted)
+    (hportal_crosses :
+      ∀ edgeCandidate : CAP5ExceptionalAnnulusBoundaryEdgeSupportCandidate boundaryEdge,
+        data.RealizesExceptionalBoundarySupportOrientation
+            edgeCandidate.portalCandidate.orientation →
+        edgeCandidate.portalCandidate.sideCase =
+            CAP5ExceptionalAnnulusSideCase.ofPortalSides p0Inside p4Inside →
+        ∀ i : Fin 5, i ∈ edgeCandidate.portalCandidate.portalSet →
+          EdgeCrossesVertexSide G side (boundaryEdge i))
+    (hcycles : HasCycleOnSide G side ∧ HasCycleOnSide G (fun v => ¬ side v)) :
+    ∃ latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge,
+      latent ∈ CAP5ExceptionalAnnulusGeneratorLatent.all boundaryEdge ∧
+        latent.p0Inside = p0Inside ∧
+          latent.p4Inside = p4Inside ∧
+            data.RealizesExceptionalBoundarySupportOrientation latent.orientation ∧
+              (let node : CAP5ExceptionalAnnulusGeneratorNode boundaryEdge :=
+                { latent := latent, side := side };
+                ∃ e : G.edgeSet, e ∈ emitted ∧ e ∉ node.candidate.edgeSupport ∧
+                  EdgeCrossesVertexSide G side e) := by
+  rcases data.exists_enumeratedExceptionalAnnulusForcedEdge_of_isExceptional_of_portalSides_of_cyclicallyFiveEdgeConnected
+      p0Inside p4Inside h side hcyclic hportal_crosses hcycles with
+    ⟨e, hedge⟩
+  have hnormal :=
+    (data.enumeratedExceptionalAnnulusForcedEdge_iff_exists_latent_crossing_outside
+      (p0Inside := p0Inside) (p4Inside := p4Inside) (side := side) (e := e)).1 hedge
+  rcases hnormal with ⟨latent, hmem, hp0, hp4, horientation, houtside⟩
+  let node : CAP5ExceptionalAnnulusGeneratorNode boundaryEdge :=
+    { latent := latent, side := side }
+  exact ⟨latent, hmem, hp0, hp4, horientation, by
+    exact ⟨e, (hcert e).2 hedge, by simpa [node] using houtside⟩⟩
+
 /-- Every edge emitted by a Boolean exceptional CAP5 checker is a raw side-crossing edge. -/
 theorem EnumeratedExceptionalAnnulusForcedEdgeClassifier.emittedFinset_edges_cross
     {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
@@ -2637,6 +2678,37 @@ theorem EnumeratedExceptionalAnnulusForcedEdgeClassifier.exists_mem_emittedFinse
     (hcycles : HasCycleOnSide G side ∧ HasCycleOnSide G (fun v => ¬ side v)) :
     ∃ e : G.edgeSet, e ∈ classifier.emittedFinset ∧ EdgeCrossesVertexSide G side e :=
   data.exists_mem_enumeratedExceptionalAnnulusForcedEdgeFinset_crossing_of_isExceptional_of_portalSides_of_cyclicallyFiveEdgeConnected
+    classifier.emittedFinset p0Inside p4Inside h side hcyclic
+    classifier.emittedFinset_spec hportal_crosses hcycles
+
+/-- Strong Boolean-checker output form for complete cyclic-five exceptional CAP5 runs: the
+checker-emitted finite set contains a side-crossing edge outside one matching generated support. -/
+theorem EnumeratedExceptionalAnnulusForcedEdgeClassifier.exists_mem_emittedFinset_crossing_outside_of_isExceptional_of_portalSides_of_cyclicallyFiveEdgeConnected
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    [Fintype G.edgeSet]
+    (p0Inside p4Inside : Bool) (h : data.IsExceptional)
+    (side : V → Prop) (hcyclic : CyclicallyFiveEdgeConnected G)
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (hportal_crosses :
+      ∀ edgeCandidate : CAP5ExceptionalAnnulusBoundaryEdgeSupportCandidate boundaryEdge,
+        data.RealizesExceptionalBoundarySupportOrientation
+            edgeCandidate.portalCandidate.orientation →
+        edgeCandidate.portalCandidate.sideCase =
+            CAP5ExceptionalAnnulusSideCase.ofPortalSides p0Inside p4Inside →
+        ∀ i : Fin 5, i ∈ edgeCandidate.portalCandidate.portalSet →
+          EdgeCrossesVertexSide G side (boundaryEdge i))
+    (hcycles : HasCycleOnSide G side ∧ HasCycleOnSide G (fun v => ¬ side v)) :
+    ∃ latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge,
+      latent ∈ CAP5ExceptionalAnnulusGeneratorLatent.all boundaryEdge ∧
+        latent.p0Inside = p0Inside ∧
+          latent.p4Inside = p4Inside ∧
+            data.RealizesExceptionalBoundarySupportOrientation latent.orientation ∧
+              (let node : CAP5ExceptionalAnnulusGeneratorNode boundaryEdge :=
+                { latent := latent, side := side };
+                ∃ e : G.edgeSet, e ∈ classifier.emittedFinset ∧
+                  e ∉ node.candidate.edgeSupport ∧ EdgeCrossesVertexSide G side e) :=
+  data.exists_mem_enumeratedExceptionalAnnulusForcedEdgeFinset_crossing_outside_of_isExceptional_of_portalSides_of_cyclicallyFiveEdgeConnected
     classifier.emittedFinset p0Inside p4Inside h side hcyclic
     classifier.emittedFinset_spec hportal_crosses hcycles
 
