@@ -205,6 +205,20 @@ def ForcedCounterexampleEdge
 def ForcedCounterexample (node : CAP5ExceptionalAnnulusGeneratorNode boundaryEdge) : Prop :=
   ∃ e : G.edgeSet, node.ForcedCounterexampleEdge e
 
+/-- A forced generator edge is a raw side-crossing edge.  This is the reusable bridge from the
+finite CAP5 report output back to the graph-theoretic cyclic-cut checker. -/
+theorem forcedCounterexampleEdge_crosses
+    (node : CAP5ExceptionalAnnulusGeneratorNode boundaryEdge)
+    {e : G.edgeSet} (h : node.ForcedCounterexampleEdge e) :
+    EdgeCrossesVertexSide G node.side e := by
+  rcases h with ⟨u, v, p, _heOutside, hu, hv, hpEdges, _havoid⟩
+  rcases exists_edgeCrossesVertexSide_of_walk_endpoint_sides node.side p hu hv with
+    ⟨e', heEdges, hcross⟩
+  have hsym : (e' : Sym2 V) = (e : Sym2 V) := by
+    simpa [hpEdges] using heEdges
+  have heq : e' = e := Subtype.ext hsym
+  simpa [heq] using hcross
+
 /-- Partial bin: the forward checker has not yet certified the graph-side prerequisites needed
 for the generic holds-vs-counterexample theorem. -/
 def Partial (node : CAP5ExceptionalAnnulusGeneratorNode boundaryEdge) : Prop :=
@@ -895,6 +909,18 @@ def EnumeratedExceptionalAnnulusForcedEdge
               { latent := latent, side := side };
               node.ForcedCounterexampleEdge e)
 
+/-- Every edge emitted by the enumerated exceptional CAP5 generator is a raw side-crossing edge.
+This is the witness-generator output consumed by finite cyclic-cut and cocycle checks. -/
+theorem enumeratedExceptionalAnnulusForcedEdge_crosses
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    {p0Inside p4Inside : Bool} {side : V → Prop} {e : G.edgeSet}
+    (h : data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e) :
+    EdgeCrossesVertexSide G side e := by
+  rcases h with ⟨latent, _hmem, _hp0, _hp4, _horientation, hforced⟩
+  let node : CAP5ExceptionalAnnulusGeneratorNode boundaryEdge :=
+    { latent := latent, side := side }
+  exact node.forcedCounterexampleEdge_crosses (by simpa [node] using hforced)
+
 /-- Every edge emitted by the enumerated generator is an edge emitted by the broader exceptional
 CAP5 one-edge counterexample predicate used by the algebraic lane. -/
 theorem enumeratedExceptionalAnnulusForcedEdge_to_exceptionalAnnulusOneEdgeCounterexampleEdge
@@ -1043,6 +1069,29 @@ theorem exists_enumeratedExceptionalAnnulusForcedEdge_of_isExceptional_of_portal
       hcyclic hnodePortal hcycles with
     ⟨e, hforced⟩
   exact ⟨e, latent, hmem, hp0, hp4, horientation, by simpa [node] using hforced⟩
+
+/-- Raw-checker output form of the enumerated CAP5 generator: the emitted forced edge is also a
+side-crossing edge, so finite samples can feed it directly to separator or cocycle checks. -/
+theorem exists_crossing_enumeratedExceptionalAnnulusForcedEdge_of_isExceptional_of_portalSides_of_cyclicallyFiveEdgeConnected
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    (p0Inside p4Inside : Bool) (h : data.IsExceptional)
+    (side : V → Prop) (hcyclic : CyclicallyFiveEdgeConnected G)
+    (hportal_crosses :
+      ∀ edgeCandidate : CAP5ExceptionalAnnulusBoundaryEdgeSupportCandidate boundaryEdge,
+        data.RealizesExceptionalBoundarySupportOrientation
+            edgeCandidate.portalCandidate.orientation →
+        edgeCandidate.portalCandidate.sideCase =
+            CAP5ExceptionalAnnulusSideCase.ofPortalSides p0Inside p4Inside →
+        ∀ i : Fin 5, i ∈ edgeCandidate.portalCandidate.portalSet →
+          EdgeCrossesVertexSide G side (boundaryEdge i))
+    (hcycles : HasCycleOnSide G side ∧ HasCycleOnSide G (fun v => ¬ side v)) :
+    ∃ e : G.edgeSet,
+      data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e ∧
+        EdgeCrossesVertexSide G side e := by
+  rcases data.exists_enumeratedExceptionalAnnulusForcedEdge_of_isExceptional_of_portalSides_of_cyclicallyFiveEdgeConnected
+      p0Inside p4Inside h side hcyclic hportal_crosses hcycles with
+    ⟨e, hedge⟩
+  exact ⟨e, hedge, data.enumeratedExceptionalAnnulusForcedEdge_crosses hedge⟩
 
 /-- Theorem 4.9 synthesis route from the finite enumerated CAP5 generator predicate.  The checker
 target is local: every nonzero selected-boundary-zero chain exposes a nonzero coordinate on an
