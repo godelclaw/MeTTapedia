@@ -958,6 +958,30 @@ theorem exists_forcedCounterexampleEdge_crossing_of_mem_forcedCounterexampleLate
   exact ⟨e, hedge, by
     simpa [node, latentNode] using (report.node latent).forcedCounterexampleEdge_crosses hedge⟩
 
+/-- A forced-counterexample report-bin entry carries the full one-edge avoiding-walk witness
+emitted by the checker.  This is the finite data a cocycle or algebraic-cancellation pass can
+consume directly: endpoints on opposite sides, the emitted outside edge, the one-edge walk, and
+avoidance of the generated portal boundary edges. -/
+theorem exists_oneEdge_forcedCounterexampleWalk_of_mem_forcedCounterexampleLatents
+    (report : CAP5ExceptionalAnnulusGeneratorReport boundaryEdge side)
+    {latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge}
+    (hmem : latent ∈ report.forcedCounterexampleLatents) :
+    ∃ u v : V, ∃ e : G.edgeSet, ∃ p : G.Walk u v,
+      e ∉ (report.node latent).candidate.edgeSupport ∧
+        side u ∧ ¬ side v ∧
+          p.edges = [(e : Sym2 V)] ∧
+            (∀ i : Fin 5, i ∈ (report.node latent).candidate.portalCandidate.portalSet →
+              ((boundaryEdge i : G.edgeSet) : Sym2 V) ∉ p.edges) ∧
+              EdgeCrossesVertexSide G side e := by
+  rcases report.exists_forcedCounterexampleEdge_crossing_of_mem_forcedCounterexampleLatents
+      hmem with
+    ⟨e, hedge, hcross⟩
+  rcases hedge with ⟨u, v, p, heOutside, hu, hv, hpEdges, havoid⟩
+  exact ⟨u, v, e, p, heOutside,
+    by simpa [node, latentNode] using hu,
+    by simpa [node, latentNode] using hv,
+    hpEdges, havoid, hcross⟩
+
 /-- Projection of the partial-checker reason from a finite report bin. -/
 theorem partial_of_mem_partialLatents
     (report : CAP5ExceptionalAnnulusGeneratorReport boundaryEdge side)
