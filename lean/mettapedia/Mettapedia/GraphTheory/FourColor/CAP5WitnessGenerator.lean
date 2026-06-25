@@ -1428,6 +1428,33 @@ theorem forcedCounterexampleLatents_eq_all_of_complete_of_cyclicallyFiveEdgeConn
       hcyclic (hportal latent) (hcycles latent)
   simp [hstatus]
 
+/--
+Exact CAP5 generator boundary under cyclic five-edge-connectivity: the finite report forces all
+enumerated latents exactly when every latent has the two checker ingredients still missing from
+partial runs, namely portal crossings and side cycles.  This is the report-level form of the
+hypothesis-discovery boundary: a non-all-forced report is not a new case, but missing checker
+evidence for at least one latent.
+-/
+theorem forcedCounterexampleLatents_eq_all_iff_all_checker_evidence_of_cyclicallyFiveEdgeConnected
+    (report : CAP5ExceptionalAnnulusGeneratorReport boundaryEdge side)
+    (hcyclic : CyclicallyFiveEdgeConnected G) :
+    report.forcedCounterexampleLatents =
+        CAP5ExceptionalAnnulusGeneratorLatent.all boundaryEdge ↔
+      ∀ latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge,
+        (report.node latent).PortalCrosses ∧ (report.node latent).SideCycles := by
+  constructor
+  · intro hforcedAll latent
+    have hmemAll :
+        latent ∈ CAP5ExceptionalAnnulusGeneratorLatent.all boundaryEdge :=
+      CAP5ExceptionalAnnulusGeneratorLatent.mem_all latent
+    have hforced : latent ∈ report.forcedCounterexampleLatents := by
+      simpa [hforcedAll] using hmemAll
+    have hbin := report.inBin_forcedCounterexample_of_mem_forcedCounterexampleLatents hforced
+    exact ⟨hbin.1, hbin.2.1⟩
+  · intro hcomplete
+    exact report.forcedCounterexampleLatents_eq_all_of_complete_of_cyclicallyFiveEdgeConnected
+      hcyclic (fun latent => (hcomplete latent).1) (fun latent => (hcomplete latent).2)
+
 /-- Executable full-report theorem: when the canonical report producer is run with complete
 checker evidence in a cyclically five-edge-connected graph, its forced-counterexample bin is
 exactly the full sixteen-latent CAP5 enumeration. -/
@@ -1485,6 +1512,40 @@ theorem ofDecidableChecks_exists_partialLatent_of_forcedCounterexampleLatents_ne
   exact
     report.exists_partialLatent_of_forcedCounterexampleLatents_ne_all_of_cyclicallyFiveEdgeConnected
       hcyclic hnotAll
+
+/--
+Executable exact boundary for the canonical finite CAP5 checker: under cyclic five-edge-
+connectivity, it emits an all-forced report exactly when every latent has portal-crossing and
+side-cycle evidence.
+-/
+theorem ofDecidableChecks_forcedCounterexampleLatents_eq_all_iff_all_checker_evidence_of_cyclicallyFiveEdgeConnected
+    (boundaryEdge : Fin 5 → G.edgeSet) (side : V → Prop)
+    [∀ latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge,
+      Decidable ((latentNode boundaryEdge side latent).PortalCrosses)]
+    [∀ latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge,
+      Decidable ((latentNode boundaryEdge side latent).SideCycles)]
+    [∀ latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge,
+      Decidable ((latentNode boundaryEdge side latent).RealizedSeparator)]
+    (hcyclic : CyclicallyFiveEdgeConnected G) :
+    (ofDecidableChecks boundaryEdge side).forcedCounterexampleLatents =
+        CAP5ExceptionalAnnulusGeneratorLatent.all boundaryEdge ↔
+      ∀ latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge,
+        (latentNode boundaryEdge side latent).PortalCrosses ∧
+          (latentNode boundaryEdge side latent).SideCycles := by
+  let report : CAP5ExceptionalAnnulusGeneratorReport boundaryEdge side :=
+    ofDecidableChecks boundaryEdge side
+  have hboundary :=
+    report.forcedCounterexampleLatents_eq_all_iff_all_checker_evidence_of_cyclicallyFiveEdgeConnected
+      hcyclic
+  constructor
+  · intro hforcedAll latent
+    have hdata := hboundary.1 hforcedAll latent
+    simpa [report, node, latentNode] using hdata
+  · intro hcomplete
+    apply hboundary.2
+    intro latent
+    have hdata := hcomplete latent
+    simpa [report, node, latentNode] using hdata
 
 /-- Executable histogram theorem for complete cyclic-five CAP5 sample runs: the canonical report
 producer emits exactly sixteen forced-counterexample latents. -/
