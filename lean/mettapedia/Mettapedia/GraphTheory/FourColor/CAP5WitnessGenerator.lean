@@ -189,6 +189,20 @@ def SideCycles (node : CAP5ExceptionalAnnulusGeneratorNode boundaryEdge) : Prop 
 def RealizedSeparator (node : CAP5ExceptionalAnnulusGeneratorNode boundaryEdge) : Prop :=
   Nonempty (node.candidate.CyclicEdgeCutRealizationData (G := G))
 
+/-- A generator node cannot be in the realized-separator bin if one of its candidate edges has
+a support-avoiding bypass walk between that edge's endpoints. -/
+theorem not_realizedSeparator_of_candidate_edge_bypass
+    (node : CAP5ExceptionalAnnulusGeneratorNode boundaryEdge)
+    {u v : V} {e : G.edgeSet}
+    (he_pair : (e : Sym2 V) = s(u, v))
+    (hecut : e ∈ node.candidate.edgeSupport)
+    (p : G.Walk u v)
+    (havoid : ∀ e' : G.edgeSet, e' ∈ node.candidate.edgeSupport →
+      (e' : Sym2 V) ∉ p.edges) :
+    ¬ node.RealizedSeparator := by
+  exact node.candidate.not_cyclicEdgeCutRealizationData_of_edge_bypass
+    he_pair hecut p havoid
+
 /-- Forced-counterexample edge emitted by the finite forward checker.  The edge is outside the
 generated support, crosses the proposed side by a one-edge walk, and avoids every generated
 portal boundary edge. -/

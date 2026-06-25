@@ -399,8 +399,10 @@ theorem forced_node_forcedCounterexampleEdge_r13 :
 theorem forced_realizedSeparator_false :
     ¬ (CAP5ExceptionalAnnulusGeneratorReport.latentNode
       realizedCAP5BoundaryEdge realizedSide forcedLatent).RealizedSeparator := by
-  rintro ⟨realization⟩
-  exact realization.false_of_mem_edgeCut_of_walk_avoids_edgeCut_between_endpoints
+  exact
+    (CAP5ExceptionalAnnulusGeneratorReport.latentNode
+      realizedCAP5BoundaryEdge realizedSide forcedLatent)
+      |>.not_realizedSeparator_of_candidate_edge_bypass
     (u := (0 : RealizedV)) (v := 3) (e := r03)
     (by simp [r03]) forcedCandidate_r03_mem forcedCandidateBypassWalk
     forcedCandidateBypassWalk_avoids_forcedCandidate
