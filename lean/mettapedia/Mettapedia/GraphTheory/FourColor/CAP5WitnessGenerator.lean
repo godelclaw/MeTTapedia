@@ -1581,6 +1581,61 @@ theorem exists_enumeratedExceptionalAnnulusForcedEdge_of_report_complete_of_isEx
     ⟨e, hedge⟩
   exact ⟨e, by simpa [hp0, hp4] using hedge⟩
 
+/-- Report-level exceptional CAP5 emission with the concrete one-edge walk payload kept attached to
+the selected exceptional latent.  This is the data-level bridge from the finite report histogram to
+the algebraic/cocycle lane: the emitted edge is simultaneously an enumerated forced edge for the
+requested portal-side bits and the edge of an outside one-edge walk avoiding the selected portals. -/
+theorem exists_enumeratedExceptionalAnnulusForcedEdge_and_oneEdge_forcedCounterexampleWalk_of_report_complete_of_isExceptional_of_portalSides_of_cyclicallyFiveEdgeConnected
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    (report : CAP5ExceptionalAnnulusGeneratorReport boundaryEdge side)
+    (p0Inside p4Inside : Bool) (h : data.IsExceptional)
+    (hcyclic : CyclicallyFiveEdgeConnected G)
+    (hportal :
+      ∀ latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge,
+        (report.node latent).PortalCrosses)
+    (hcycles :
+      ∀ latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge,
+        (report.node latent).SideCycles) :
+    ∃ latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge,
+      latent ∈ CAP5ExceptionalAnnulusGeneratorLatent.all boundaryEdge ∧
+        latent.p0Inside = p0Inside ∧
+          latent.p4Inside = p4Inside ∧
+            data.RealizesExceptionalBoundarySupportOrientation latent.orientation ∧
+              latent ∈ report.forcedCounterexampleLatents ∧
+                ∃ u v : V, ∃ e : G.edgeSet, ∃ p : G.Walk u v,
+                  data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e ∧
+                    e ∉ (report.node latent).candidate.edgeSupport ∧
+                      side u ∧ ¬ side v ∧
+                        p.edges = [(e : Sym2 V)] ∧
+                          (∀ i : Fin 5,
+                            i ∈ (report.node latent).candidate.portalCandidate.portalSet →
+                              ((boundaryEdge i : G.edgeSet) : Sym2 V) ∉ p.edges) ∧
+                            EdgeCrossesVertexSide G side e := by
+  rcases CAP5ExceptionalAnnulusGeneratorLatent.exists_mem_all_of_isExceptional_of_portalSides
+      (boundaryEdge := boundaryEdge) p0Inside p4Inside h with
+    ⟨latent, hlatentMem, hp0, hp4, horientation⟩
+  have hforced :
+      latent ∈ report.forcedCounterexampleLatents :=
+    report.mem_forcedCounterexampleLatents_of_mem_all_of_complete_of_cyclicallyFiveEdgeConnected
+      hcyclic hportal hcycles hlatentMem
+  rcases report.exists_oneEdge_forcedCounterexampleWalk_of_mem_forcedCounterexampleLatents
+      hforced with
+    ⟨u, v, e, p, heOutside, hu, hv, hpEdges, havoid, hcross⟩
+  have hforcedEdge : (report.node latent).ForcedCounterexampleEdge e :=
+    ⟨u, v, p, heOutside, hu, hv, hpEdges, havoid⟩
+  have hedge :
+      data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e := by
+    have hedgeRaw :
+        data.EnumeratedExceptionalAnnulusForcedEdge
+          latent.p0Inside latent.p4Inside side e :=
+      ⟨latent, hlatentMem, rfl, rfl, horientation, by
+        simpa [CAP5ExceptionalAnnulusGeneratorReport.node,
+          CAP5ExceptionalAnnulusGeneratorReport.latentNode] using hforcedEdge⟩
+    simpa [hp0, hp4] using hedgeRaw
+  exact
+    ⟨latent, hlatentMem, hp0, hp4, horientation, hforced, u, v, e, p,
+      hedge, heOutside, hu, hv, hpEdges, havoid, hcross⟩
+
 /-- Report-level bridge from a complete exceptional CAP5 report to the broader one-edge
 counterexample predicate consumed by the algebraic lane. -/
 theorem exists_exceptionalAnnulusOneEdgeCounterexampleEdge_of_report_complete_of_isExceptional_of_portalSides_of_cyclicallyFiveEdgeConnected
