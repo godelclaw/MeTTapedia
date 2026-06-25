@@ -1403,6 +1403,90 @@ theorem partialLatents_eq_nil_of_complete
   intro latent hmem
   exact report.not_mem_partialLatents_of_complete hportal hcycles hmem
 
+/-- Exact partial-bin boundary: the partial report bin is empty exactly when every enumerated
+latent has the two checker ingredients that rule out partiality, namely portal crossings and
+side cycles.  This theorem does not need cyclic five-edge-connectivity; it isolates the finite
+checker frontier before any global minimal-counterexample hypothesis is used. -/
+theorem partialLatents_eq_nil_iff_all_checker_evidence
+    (report : CAP5ExceptionalAnnulusGeneratorReport boundaryEdge side) :
+    report.partialLatents = [] ↔
+      ∀ latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge,
+        latent ∈ CAP5ExceptionalAnnulusGeneratorLatent.all boundaryEdge →
+          (report.node latent).PortalCrosses ∧
+            (report.node latent).SideCycles := by
+  constructor
+  · intro hpartialEmpty latent hmem
+    have hnotMissing :
+        ¬ (¬ (report.node latent).PortalCrosses ∨
+          ¬ (report.node latent).SideCycles) := by
+      intro hmissing
+      have hstatus :
+          report.classify latent = CAP5SeparatorGeneratorStatus.partialCase :=
+        (report.classify_eq_partialCase_iff_missing_checker_evidence latent).2 hmissing
+      have hpartial : latent ∈ report.partialLatents :=
+        (report.mem_partialLatents_iff).2 ⟨hmem, hstatus⟩
+      have hnil : latent ∈ ([] :
+          List (CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge)) := by
+        rw [hpartialEmpty] at hpartial
+        exact hpartial
+      cases hnil
+    constructor
+    · by_contra hnotPortal
+      exact hnotMissing (Or.inl hnotPortal)
+    · by_contra hnotCycles
+      exact hnotMissing (Or.inr hnotCycles)
+  · intro hcomplete
+    apply List.eq_nil_iff_forall_not_mem.2
+    intro latent hpartial
+    have hpartialData := (report.mem_partialLatents_iff).1 hpartial
+    have hcompleteLatent := hcomplete latent hpartialData.1
+    have hmissing :
+        ¬ (report.node latent).PortalCrosses ∨
+          ¬ (report.node latent).SideCycles :=
+      (report.classify_eq_partialCase_iff_missing_checker_evidence latent).1
+        hpartialData.2
+    rcases hmissing with hnotPortal | hnotCycles
+    · exact hnotPortal hcompleteLatent.1
+    · exact hnotCycles hcompleteLatent.2
+
+/-- Nonempty partial-bin form of the same boundary: a finite report has a partial latent exactly
+when some enumerated latent is missing portal-crossing evidence or side-cycle evidence. -/
+theorem partialLatents_ne_nil_iff_exists_missing_checker_evidence
+    (report : CAP5ExceptionalAnnulusGeneratorReport boundaryEdge side) :
+    report.partialLatents ≠ [] ↔
+      ∃ latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge,
+        latent ∈ CAP5ExceptionalAnnulusGeneratorLatent.all boundaryEdge ∧
+          (¬ (report.node latent).PortalCrosses ∨
+            ¬ (report.node latent).SideCycles) := by
+  constructor
+  · intro hpartialNonempty
+    by_contra hnone
+    have hpartialEmpty : report.partialLatents = [] := by
+      apply (report.partialLatents_eq_nil_iff_all_checker_evidence).2
+      intro latent hmem
+      have hnotMissing :
+          ¬ (¬ (report.node latent).PortalCrosses ∨
+            ¬ (report.node latent).SideCycles) := by
+        intro hmissing
+        exact hnone ⟨latent, hmem, hmissing⟩
+      constructor
+      · by_contra hnotPortal
+        exact hnotMissing (Or.inl hnotPortal)
+      · by_contra hnotCycles
+        exact hnotMissing (Or.inr hnotCycles)
+    exact hpartialNonempty hpartialEmpty
+  · rintro ⟨latent, hmem, hmissing⟩ hpartialEmpty
+    have hstatus :
+        report.classify latent = CAP5SeparatorGeneratorStatus.partialCase :=
+      (report.classify_eq_partialCase_iff_missing_checker_evidence latent).2 hmissing
+    have hpartial : latent ∈ report.partialLatents :=
+      (report.mem_partialLatents_iff).2 ⟨hmem, hstatus⟩
+    have hnil : latent ∈ ([] :
+        List (CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge)) := by
+      rw [hpartialEmpty] at hpartial
+      exact hpartial
+    cases hnil
+
 /--
 In a cyclically five-edge-connected graph, the report's only obstruction to putting every
 enumerated latent in the forced-counterexample bin is genuinely partial checker evidence.  Thus a
@@ -1606,6 +1690,66 @@ theorem ofDecidableChecks_exists_partialLatent_of_forcedCounterexampleLatents_ne
   exact
     report.exists_partialLatent_of_forcedCounterexampleLatents_ne_all_of_cyclicallyFiveEdgeConnected
       hcyclic hnotAll
+
+/--
+Executable exact partial-bin boundary for the canonical finite CAP5 checker.  Its partial list is
+empty exactly when every enumerated latent has portal-crossing evidence and side-cycle evidence.
+This is the local finite-checker frontier, independent of cyclic five-edge-connectivity.
+-/
+theorem ofDecidableChecks_partialLatents_eq_nil_iff_all_checker_evidence
+    (boundaryEdge : Fin 5 → G.edgeSet) (side : V → Prop)
+    [∀ latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge,
+      Decidable ((latentNode boundaryEdge side latent).PortalCrosses)]
+    [∀ latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge,
+      Decidable ((latentNode boundaryEdge side latent).SideCycles)]
+    [∀ latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge,
+      Decidable ((latentNode boundaryEdge side latent).RealizedSeparator)] :
+    (ofDecidableChecks boundaryEdge side).partialLatents = [] ↔
+      ∀ latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge,
+        latent ∈ CAP5ExceptionalAnnulusGeneratorLatent.all boundaryEdge →
+          (latentNode boundaryEdge side latent).PortalCrosses ∧
+            (latentNode boundaryEdge side latent).SideCycles := by
+  let report : CAP5ExceptionalAnnulusGeneratorReport boundaryEdge side :=
+    ofDecidableChecks boundaryEdge side
+  have hboundary := report.partialLatents_eq_nil_iff_all_checker_evidence
+  constructor
+  · intro hpartialEmpty latent hmem
+    have hdata := hboundary.1 hpartialEmpty latent hmem
+    simpa [report, node, latentNode] using hdata
+  · intro hcomplete
+    apply hboundary.2
+    intro latent hmem
+    have hdata := hcomplete latent hmem
+    simpa [report, node, latentNode] using hdata
+
+/--
+Executable nonempty partial-bin boundary for the canonical finite CAP5 checker.  A nonempty
+partial list is equivalent to an enumerated latent with missing portal-crossing or side-cycle
+evidence.
+-/
+theorem ofDecidableChecks_partialLatents_ne_nil_iff_exists_missing_checker_evidence
+    (boundaryEdge : Fin 5 → G.edgeSet) (side : V → Prop)
+    [∀ latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge,
+      Decidable ((latentNode boundaryEdge side latent).PortalCrosses)]
+    [∀ latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge,
+      Decidable ((latentNode boundaryEdge side latent).SideCycles)]
+    [∀ latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge,
+      Decidable ((latentNode boundaryEdge side latent).RealizedSeparator)] :
+    (ofDecidableChecks boundaryEdge side).partialLatents ≠ [] ↔
+      ∃ latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge,
+        latent ∈ CAP5ExceptionalAnnulusGeneratorLatent.all boundaryEdge ∧
+          (¬ (latentNode boundaryEdge side latent).PortalCrosses ∨
+            ¬ (latentNode boundaryEdge side latent).SideCycles) := by
+  let report : CAP5ExceptionalAnnulusGeneratorReport boundaryEdge side :=
+    ofDecidableChecks boundaryEdge side
+  have hboundary := report.partialLatents_ne_nil_iff_exists_missing_checker_evidence
+  constructor
+  · intro hpartialNonempty
+    rcases hboundary.1 hpartialNonempty with ⟨latent, hmem, hmissing⟩
+    exact ⟨latent, hmem, by simpa [report, node, latentNode] using hmissing⟩
+  · rintro ⟨latent, hmem, hmissing⟩
+    apply hboundary.2
+    exact ⟨latent, hmem, by simpa [report, node, latentNode] using hmissing⟩
 
 /--
 Executable exact boundary for the canonical finite CAP5 checker: under cyclic five-edge-
