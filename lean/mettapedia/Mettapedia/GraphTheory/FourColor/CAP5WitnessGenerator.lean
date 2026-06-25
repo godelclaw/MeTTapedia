@@ -1728,6 +1728,33 @@ theorem forcedCounterexampleLatents_ne_all_iff_exists_missing_checker_evidence_o
     · exact hnotPortal hcomplete.1
     · exact hnotCycles hcomplete.2
 
+/--
+Split dual form of the exact CAP5 generator boundary: under cyclic five-edge-connectivity, a
+report fails to force all enumerated latents exactly when some generated latent is missing one
+primitive checker ingredient: portal crossings, a selected-side cycle, or a complementary-side
+cycle.
+-/
+theorem forcedCounterexampleLatents_ne_all_iff_exists_missingCheckerEvidence_of_cyclicallyFiveEdgeConnected
+    (report : CAP5ExceptionalAnnulusGeneratorReport boundaryEdge side)
+    (hcyclic : CyclicallyFiveEdgeConnected G) :
+    report.forcedCounterexampleLatents ≠
+        CAP5ExceptionalAnnulusGeneratorLatent.all boundaryEdge ↔
+      ∃ latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge,
+        (report.node latent).MissingCheckerEvidence := by
+  have hboundary :=
+    report.forcedCounterexampleLatents_ne_all_iff_exists_missing_checker_evidence_of_cyclicallyFiveEdgeConnected
+      hcyclic
+  constructor
+  · intro hnotAll
+    rcases hboundary.1 hnotAll with ⟨latent, hmissing⟩
+    have hpartial : (report.node latent).Partial := hmissing
+    exact ⟨latent, ((report.node latent).partial_iff_missingCheckerEvidence).1 hpartial⟩
+  · rintro ⟨latent, hmissing⟩
+    apply hboundary.2
+    have hpartial : (report.node latent).Partial :=
+      ((report.node latent).partial_iff_missingCheckerEvidence).2 hmissing
+    exact ⟨latent, hpartial⟩
+
 /-- Executable full-report theorem: when the canonical report producer is run with complete
 checker evidence in a cyclically five-edge-connected graph, its forced-counterexample bin is
 exactly the full sixteen-latent CAP5 enumeration. -/
@@ -1931,6 +1958,37 @@ theorem ofDecidableChecks_forcedCounterexampleLatents_ne_all_iff_exists_missing_
     ofDecidableChecks boundaryEdge side
   have hboundary :=
     report.forcedCounterexampleLatents_ne_all_iff_exists_missing_checker_evidence_of_cyclicallyFiveEdgeConnected
+      hcyclic
+  constructor
+  · intro hnotAll
+    rcases hboundary.1 hnotAll with ⟨latent, hmissing⟩
+    exact ⟨latent, by simpa [report, node, latentNode] using hmissing⟩
+  · rintro ⟨latent, hmissing⟩
+    apply hboundary.2
+    exact ⟨latent, by simpa [report, node, latentNode] using hmissing⟩
+
+/--
+Executable split obstruction frontier for the canonical finite CAP5 checker: under cyclic
+five-edge-connectivity, a non-all-forced report is equivalent to an explicit latent missing one
+primitive checker ingredient.
+-/
+theorem ofDecidableChecks_forcedCounterexampleLatents_ne_all_iff_exists_missingCheckerEvidence_of_cyclicallyFiveEdgeConnected
+    (boundaryEdge : Fin 5 → G.edgeSet) (side : V → Prop)
+    [∀ latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge,
+      Decidable ((latentNode boundaryEdge side latent).PortalCrosses)]
+    [∀ latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge,
+      Decidable ((latentNode boundaryEdge side latent).SideCycles)]
+    [∀ latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge,
+      Decidable ((latentNode boundaryEdge side latent).RealizedSeparator)]
+    (hcyclic : CyclicallyFiveEdgeConnected G) :
+    (ofDecidableChecks boundaryEdge side).forcedCounterexampleLatents ≠
+        CAP5ExceptionalAnnulusGeneratorLatent.all boundaryEdge ↔
+      ∃ latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge,
+        (latentNode boundaryEdge side latent).MissingCheckerEvidence := by
+  let report : CAP5ExceptionalAnnulusGeneratorReport boundaryEdge side :=
+    ofDecidableChecks boundaryEdge side
+  have hboundary :=
+    report.forcedCounterexampleLatents_ne_all_iff_exists_missingCheckerEvidence_of_cyclicallyFiveEdgeConnected
       hcyclic
   constructor
   · intro hnotAll
