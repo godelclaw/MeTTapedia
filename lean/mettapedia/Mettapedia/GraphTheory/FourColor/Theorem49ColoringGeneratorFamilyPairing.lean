@@ -280,6 +280,53 @@ theorem not_ker_planarBoundaryZeroFamilyPairingMap_eq_bot_of_forall_familyPairin
     simpa [hker] using hwker
   exact hwNonzero (by simpa using hwbot)
 
+/-- Detector/failure dichotomy for a concrete nonzero selected-boundary-zero chain.  An explicit
+family either has a coordinate that pairs nontrivially with the chain, or that same chain proves
+the family-pairing map has nontrivial kernel. -/
+theorem familyPairing_detects_or_kernel_nontrivial_of_nonzero_boundaryZeroChain
+    {G : SimpleGraph V} [Fintype G.edgeSet]
+    {emb : PlaneEmbeddingWithBoundary G}
+    {colorings : Set (G.EdgeColoring Color)}
+    {κ : Type*}
+    (family : κ → projectedColoringGeneratorSubspace emb colorings)
+    {z : G.edgeSet → Color}
+    (hzBoundary : z ∈ planarBoundaryZeroSubmodule emb)
+    (hzNonzero : z ≠ 0) :
+    (∃ i : κ,
+      chainDotBilinForm G.edgeSet (family i : G.edgeSet → Color) z ≠ 0) ∨
+      LinearMap.ker (planarBoundaryZeroFamilyPairingMap family) ≠ ⊥ := by
+  by_cases hdetect :
+      ∃ i : κ,
+        chainDotBilinForm G.edgeSet (family i : G.edgeSet → Color) z ≠ 0
+  · exact Or.inl hdetect
+  · refine Or.inr ?_
+    apply not_ker_planarBoundaryZeroFamilyPairingMap_eq_bot_of_forall_familyPairing_eq_zero
+      family hzBoundary hzNonzero
+    intro i
+    by_contra hnonzero
+    exact hdetect ⟨i, hnonzero⟩
+
+/-- Trivial kernel forces every nonzero selected-boundary-zero chain to be detected by at least
+one explicit family pairing.  This is the indexed, finite-certificate form of
+`detector_of_ker_planarBoundaryZeroFamilyPairingMap_eq_bot`. -/
+theorem exists_familyPairing_ne_zero_of_ker_planarBoundaryZeroFamilyPairingMap_eq_bot
+    {G : SimpleGraph V} [Fintype G.edgeSet]
+    {emb : PlaneEmbeddingWithBoundary G}
+    {colorings : Set (G.EdgeColoring Color)}
+    {κ : Type*}
+    (family : κ → projectedColoringGeneratorSubspace emb colorings)
+    (hker : LinearMap.ker (planarBoundaryZeroFamilyPairingMap family) = ⊥)
+    {z : G.edgeSet → Color}
+    (hzBoundary : z ∈ planarBoundaryZeroSubmodule emb)
+    (hzNonzero : z ≠ 0) :
+    ∃ i : κ,
+      chainDotBilinForm G.edgeSet (family i : G.edgeSet → Color) z ≠ 0 := by
+  rcases familyPairing_detects_or_kernel_nontrivial_of_nonzero_boundaryZeroChain
+      family hzBoundary hzNonzero with
+    hdetect | hkernel
+  · exact hdetect
+  · exact False.elim (hkernel hker)
+
 /-- Trivial kernel of the concrete family-evaluation pairing map already gives the
 explicit-family detector property.  This is the most direct kernel-checkable route from a finite
 explicit family to the theorem-4.9 detector surface. -/
