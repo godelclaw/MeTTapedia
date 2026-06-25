@@ -293,6 +293,22 @@ theorem realizedSeparator_or_forcedCounterexample_of_complete
   · rcases hforced with ⟨u, v, e, p, heOutside, hu, hv, hpEdges, havoid⟩
     exact Or.inr ⟨e, u, v, p, heOutside, hu, hv, hpEdges, havoid⟩
 
+/-- Side-preserving version of the complete forward-checker boundary.  This is the form the
+planar/Jordan layer needs: the realized branch remembers that the candidate support realizes the
+node's proposed side, while the forced branch emits the same one-edge counterexample as before. -/
+theorem realizedSeparatorOnSide_or_forcedCounterexample_of_complete
+    (node : CAP5ExceptionalAnnulusGeneratorNode boundaryEdge)
+    (hportal : node.PortalCrosses) (hcycles : node.SideCycles) :
+    node.RealizedSeparatorOnSide ∨ node.ForcedCounterexample := by
+  rcases hcycles with ⟨hinside_cycle, houtside_cycle⟩
+  rcases node.candidate
+      |>.cyclicEdgeCutRealizationDataOnSide_or_oneEdge_walk_avoiding_portalBoundaryEdges_of_portal_crosses
+        node.side hportal hinside_cycle houtside_cycle with
+    hrealized | hforced
+  · exact Or.inl hrealized
+  · rcases hforced with ⟨u, v, e, p, heOutside, hu, hv, hpEdges, havoid⟩
+    exact Or.inr ⟨e, u, v, p, heOutside, hu, hv, hpEdges, havoid⟩
+
 /-- Status-form version of the complete forward-checker boundary. -/
 theorem inBin_realizedSeparator_or_forcedCounterexample_of_complete
     (node : CAP5ExceptionalAnnulusGeneratorNode boundaryEdge)
