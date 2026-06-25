@@ -1799,6 +1799,50 @@ theorem forcedCounterexampleLatents_eq_completeCheckerLatents_of_cyclicallyFiveE
         (report.classify_eq_partialCase_iff_missingCheckerEvidence latent).1 hstatus
       simp [hmissing]
 
+/-- Membership form of the computable cyclic-five CAP5 frontier: under cyclic
+five-edge-connectivity, a latent is forced exactly when it is a complete checker run. -/
+theorem mem_forcedCounterexampleLatents_iff_mem_completeCheckerLatents_of_cyclicallyFiveEdgeConnected
+    (report : CAP5ExceptionalAnnulusGeneratorReport boundaryEdge side)
+    (hcyclic : CyclicallyFiveEdgeConnected G)
+    {latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge} :
+    latent ∈ report.forcedCounterexampleLatents ↔
+      latent ∈ report.completeCheckerLatents := by
+  rw [report.forcedCounterexampleLatents_eq_completeCheckerLatents_of_cyclicallyFiveEdgeConnected
+    hcyclic]
+
+/-- A single complete checker latent in a cyclically five-edge-connected report carries a
+forced-counterexample payload.  This is the per-latent form needed by finite generators: they do
+not need every latent to be complete before mining a forced witness from one complete row. -/
+theorem forcedCounterexample_of_mem_completeCheckerLatents_of_cyclicallyFiveEdgeConnected
+    (report : CAP5ExceptionalAnnulusGeneratorReport boundaryEdge side)
+    (hcyclic : CyclicallyFiveEdgeConnected G)
+    {latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge}
+    (hmem : latent ∈ report.completeCheckerLatents) :
+    (report.node latent).ForcedCounterexample := by
+  exact report.forcedCounterexample_of_mem_forcedCounterexampleLatents
+    ((report.mem_forcedCounterexampleLatents_iff_mem_completeCheckerLatents_of_cyclicallyFiveEdgeConnected
+      hcyclic).2 hmem)
+
+/-- A single complete checker latent in a cyclically five-edge-connected report emits the full
+one-edge forced-counterexample walk.  This is the finite payload for hypothesis discovery: an
+outside edge, endpoints on opposite sides, a one-edge crossing walk, and avoidance of the
+generated portal boundary edges. -/
+theorem exists_oneEdge_forcedCounterexampleWalk_of_mem_completeCheckerLatents_of_cyclicallyFiveEdgeConnected
+    (report : CAP5ExceptionalAnnulusGeneratorReport boundaryEdge side)
+    (hcyclic : CyclicallyFiveEdgeConnected G)
+    {latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge}
+    (hmem : latent ∈ report.completeCheckerLatents) :
+    ∃ u v : V, ∃ e : G.edgeSet, ∃ p : G.Walk u v,
+      e ∉ (report.node latent).candidate.edgeSupport ∧
+        side u ∧ ¬ side v ∧
+          p.edges = [(e : Sym2 V)] ∧
+            (∀ i : Fin 5, i ∈ (report.node latent).candidate.portalCandidate.portalSet →
+              ((boundaryEdge i : G.edgeSet) : Sym2 V) ∉ p.edges) ∧
+              EdgeCrossesVertexSide G side e := by
+  exact report.exists_oneEdge_forcedCounterexampleWalk_of_mem_forcedCounterexampleLatents
+    ((report.mem_forcedCounterexampleLatents_iff_mem_completeCheckerLatents_of_cyclicallyFiveEdgeConnected
+      hcyclic).2 hmem)
+
 /--
 Dual form of the exact CAP5 generator boundary: under cyclic five-edge-connectivity, a report
 fails to force all enumerated latents exactly when some generated latent is missing portal-
@@ -2421,6 +2465,46 @@ theorem exists_enumeratedExceptionalAnnulusForcedEdge_crossing_outside_of_mem_fo
       simpa [CAP5ExceptionalAnnulusGeneratorReport.node,
         CAP5ExceptionalAnnulusGeneratorReport.latentNode] using hforced⟩,
     heOutside, hcross⟩
+
+/-- A complete checker latent in a cyclically five-edge-connected report gives an enumerated
+forced edge for the latent's own portal-side bits, once the component-cover data realizes its
+orientation.  This is the per-latent bridge from the computable checker frontier into the
+algebraic forced-edge predicate. -/
+theorem exists_enumeratedExceptionalAnnulusForcedEdge_of_mem_completeCheckerLatents_of_cyclicallyFiveEdgeConnected
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    (report : CAP5ExceptionalAnnulusGeneratorReport boundaryEdge side)
+    (hcyclic : CyclicallyFiveEdgeConnected G)
+    {latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge}
+    (hmem : latent ∈ report.completeCheckerLatents)
+    (horientation : data.RealizesExceptionalBoundarySupportOrientation latent.orientation) :
+    ∃ e : G.edgeSet,
+      data.EnumeratedExceptionalAnnulusForcedEdge
+        latent.p0Inside latent.p4Inside side e := by
+  exact data.exists_enumeratedExceptionalAnnulusForcedEdge_of_mem_forcedCounterexampleLatents
+    report
+    ((report.mem_forcedCounterexampleLatents_iff_mem_completeCheckerLatents_of_cyclicallyFiveEdgeConnected
+      hcyclic).2 hmem)
+    horientation
+
+/-- A complete checker latent in a cyclically five-edge-connected report gives an enumerated
+forced edge in crossing-outside normal form. -/
+theorem exists_enumeratedExceptionalAnnulusForcedEdge_crossing_outside_of_mem_completeCheckerLatents_of_cyclicallyFiveEdgeConnected
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    (report : CAP5ExceptionalAnnulusGeneratorReport boundaryEdge side)
+    (hcyclic : CyclicallyFiveEdgeConnected G)
+    {latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge}
+    (hmem : latent ∈ report.completeCheckerLatents)
+    (horientation : data.RealizesExceptionalBoundarySupportOrientation latent.orientation) :
+    ∃ e : G.edgeSet,
+      data.EnumeratedExceptionalAnnulusForcedEdge
+          latent.p0Inside latent.p4Inside side e ∧
+        e ∉ (report.node latent).candidate.edgeSupport ∧
+          EdgeCrossesVertexSide G side e := by
+  exact data.exists_enumeratedExceptionalAnnulusForcedEdge_crossing_outside_of_mem_forcedCounterexampleLatents
+    report
+    ((report.mem_forcedCounterexampleLatents_iff_mem_completeCheckerLatents_of_cyclicallyFiveEdgeConnected
+      hcyclic).2 hmem)
+    horientation
 
 /-- A forced latent emitted by a certified finite report gives the broader exceptional-annulus
 one-edge counterexample consumed by the algebraic lane. -/
