@@ -624,6 +624,62 @@ theorem ofDecidableChecks_classify_ne_forcedCounterexample_implies_missing_prere
     · exact Or.inr <| Or.inl hportal
   · exact Or.inl hcyclic
 
+/-- Executable report diagnostic for a realized-separator output.  If the canonical finite
+report producer classifies a latent as realized-separator, then the ambient graph cannot be
+cyclically five-edge-connected.  Thus a concrete realized-bin sample is a cyclic-five refutation,
+not evidence for the CAP5 route under the minimal-counterexample hypothesis. -/
+theorem ofDecidableChecks_classify_eq_realizedSeparator_implies_not_cyclicallyFiveEdgeConnected
+    (boundaryEdge : Fin 5 → G.edgeSet) (side : V → Prop)
+    [∀ latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge,
+      Decidable ((latentNode boundaryEdge side latent).PortalCrosses)]
+    [∀ latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge,
+      Decidable ((latentNode boundaryEdge side latent).SideCycles)]
+    [∀ latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge,
+      Decidable ((latentNode boundaryEdge side latent).RealizedSeparator)]
+    (latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge)
+    (hstatus :
+      (ofDecidableChecks boundaryEdge side).classify latent =
+        CAP5SeparatorGeneratorStatus.realizedSeparator) :
+    ¬ CyclicallyFiveEdgeConnected G := by
+  intro hcyclic
+  let report : CAP5ExceptionalAnnulusGeneratorReport boundaryEdge side :=
+    ofDecidableChecks boundaryEdge side
+  have hstatus' :
+      (report.nodeReport latent).status =
+        CAP5SeparatorGeneratorStatus.realizedSeparator := by
+    simpa [report, nodeReport] using hstatus
+  exact (report.nodeReport latent).status_ne_realizedSeparator_of_cyclicallyFiveEdgeConnected
+    hcyclic hstatus'
+
+/-- Executable report diagnostic for a partial output.  A partial classification from the
+canonical finite report producer means the sample is missing portal-crossing evidence or
+two-sided cycle evidence for that latent. -/
+theorem ofDecidableChecks_classify_eq_partialCase_implies_missing_checker_evidence
+    (boundaryEdge : Fin 5 → G.edgeSet) (side : V → Prop)
+    [∀ latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge,
+      Decidable ((latentNode boundaryEdge side latent).PortalCrosses)]
+    [∀ latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge,
+      Decidable ((latentNode boundaryEdge side latent).SideCycles)]
+    [∀ latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge,
+      Decidable ((latentNode boundaryEdge side latent).RealizedSeparator)]
+    (latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge)
+    (hstatus :
+      (ofDecidableChecks boundaryEdge side).classify latent =
+        CAP5SeparatorGeneratorStatus.partialCase) :
+    ¬ (latentNode boundaryEdge side latent).PortalCrosses ∨
+      ¬ (latentNode boundaryEdge side latent).SideCycles := by
+  let report : CAP5ExceptionalAnnulusGeneratorReport boundaryEdge side :=
+    ofDecidableChecks boundaryEdge side
+  have hcert : (report.node latent).InBin CAP5SeparatorGeneratorStatus.partialCase := by
+    have hstatus' :
+        report.classify latent = CAP5SeparatorGeneratorStatus.partialCase := by
+      simpa [report] using hstatus
+    have hcert' : (report.node latent).InBin (report.classify latent) := by
+      simpa [nodeReport] using (report.nodeReport latent).cert
+    simpa [hstatus'] using hcert'
+  change (report.node latent).Partial at hcert
+  simpa [CAP5ExceptionalAnnulusGeneratorNode.Partial, report, node, latentNode] using hcert
+
 /-- Latents reported in the realized-separator bin. -/
 def realizedSeparatorLatents
     (report : CAP5ExceptionalAnnulusGeneratorReport boundaryEdge side) :
