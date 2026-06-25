@@ -113,6 +113,36 @@ theorem exists_oneEdge_forcedCounterexampleWalk_detector_payload_of_mem_forcedCo
       (e := (e : Sym2 V))).1 hsingleton
   exact ⟨e, heOutside, hcross, by simp [hpEdges], hweight⟩
 
+/--
+Per-latent complete-frontier detector payload.  In a cyclically five-edge-connected graph, a
+single complete checker latent already has the same one-edge forced-walk detector payload as a
+forced-bin latent.  This lets finite search mine complete rows one at a time instead of requiring
+the whole 16-latent report to be complete first.
+-/
+theorem exists_oneEdge_forcedCounterexampleWalk_detector_payload_of_mem_completeCheckerLatents_of_cyclicallyFiveEdgeConnected
+    (report : CAP5ExceptionalAnnulusGeneratorReport boundaryEdge side)
+    (hcyclic : CyclicallyFiveEdgeConnected G)
+    {latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge}
+    (hmem : latent ∈ report.completeCheckerLatents)
+    (weight : Sym2 V → F2) :
+    ∃ u v : V, ∃ e : G.edgeSet, ∃ p : G.Walk u v,
+      e ∉ (report.node latent).candidate.edgeSupport ∧
+        side u ∧ ¬ side v ∧
+          p.edges = [(e : Sym2 V)] ∧
+            (∀ i : Fin 5, i ∈ (report.node latent).candidate.portalCandidate.portalSet →
+              ((boundaryEdge i : G.edgeSet) : Sym2 V) ∉ p.edges) ∧
+              EdgeCrossesVertexSide G side e ∧
+                (Curriculum.pathXor weight p.edges ≠ 0 →
+                  ∃ e' : G.edgeSet,
+                    e' ∉ (report.node latent).candidate.edgeSupport ∧
+                      EdgeCrossesVertexSide G side e' ∧
+                        (e' : Sym2 V) ∈ p.edges ∧
+                          weight (e' : Sym2 V) ≠ 0) :=
+  report.exists_oneEdge_forcedCounterexampleWalk_detector_payload_of_mem_forcedCounterexampleLatents
+    ((report.mem_forcedCounterexampleLatents_iff_mem_completeCheckerLatents_of_cyclicallyFiveEdgeConnected
+      hcyclic).2 hmem)
+    weight
+
 end CAP5ExceptionalAnnulusGeneratorReport
 
 namespace CAP5TransportedEdgeComponentCoverCore
@@ -332,6 +362,65 @@ theorem exists_boundaryZeroChain_familyPairing_ne_zero_of_extensionCoordinateSig
   data.exists_boundaryZeroChain_familyPairing_ne_zero_of_extensionCoordinateSignal
     family (data.extensionCoordinateSignal_of_extensionCoordinateSignalWithProgress hsignal)
     hwitnessRed hwitnessBlue
+
+/--
+Per-latent complete-frontier bridge into the algebraic forced-edge predicate.  A single complete
+CAP5 checker row in a cyclically five-edge-connected graph emits an enumerated forced edge and a
+one-edge detector payload for that exact latent.  This is the local handoff from finite
+checker-frontier mining to the F₂/path-xor lane.
+-/
+theorem exists_enumeratedExceptionalAnnulusForcedEdge_oneEdgeWalk_detector_payload_of_mem_completeCheckerLatents_of_cyclicallyFiveEdgeConnected
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    (report : CAP5ExceptionalAnnulusGeneratorReport boundaryEdge side)
+    (hcyclic : CyclicallyFiveEdgeConnected G)
+    {latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge}
+    (hmem : latent ∈ report.completeCheckerLatents)
+    (horientation : data.RealizesExceptionalBoundarySupportOrientation latent.orientation)
+    (weight : Sym2 V → F2) :
+    ∃ u v : V, ∃ e : G.edgeSet, ∃ p : G.Walk u v,
+      data.EnumeratedExceptionalAnnulusForcedEdge
+          latent.p0Inside latent.p4Inside side e ∧
+        e ∉ (report.node latent).candidate.edgeSupport ∧
+          side u ∧ ¬ side v ∧
+            p.edges = [(e : Sym2 V)] ∧
+              (∀ i : Fin 5,
+                i ∈ (report.node latent).candidate.portalCandidate.portalSet →
+                  ((boundaryEdge i : G.edgeSet) : Sym2 V) ∉ p.edges) ∧
+                EdgeCrossesVertexSide G side e ∧
+                  (Curriculum.pathXor weight p.edges ≠ 0 →
+                    ∃ e' : G.edgeSet,
+                      data.EnumeratedExceptionalAnnulusForcedEdge
+                        latent.p0Inside latent.p4Inside side e' ∧
+                        e' ∉ (report.node latent).candidate.edgeSupport ∧
+                          EdgeCrossesVertexSide G side e' ∧
+                            (e' : Sym2 V) ∈ p.edges ∧
+                              weight (e' : Sym2 V) ≠ 0) := by
+  rcases report.exists_oneEdge_forcedCounterexampleWalk_detector_payload_of_mem_completeCheckerLatents_of_cyclicallyFiveEdgeConnected
+      hcyclic hmem weight with
+    ⟨u, v, e, p, heOutside, hu, hv, hpEdges, havoid, hcross, hdetector⟩
+  have hlatentMem :
+      latent ∈ CAP5ExceptionalAnnulusGeneratorLatent.all boundaryEdge :=
+    (report.mem_completeCheckerLatents_iff).1 hmem |>.1
+  have hforcedNode : (report.node latent).ForcedCounterexampleEdge e := by
+    refine ⟨u, v, p, heOutside, ?_, ?_, hpEdges, havoid⟩
+    · simpa [CAP5ExceptionalAnnulusGeneratorReport.node,
+        CAP5ExceptionalAnnulusGeneratorReport.latentNode] using hu
+    · simpa [CAP5ExceptionalAnnulusGeneratorReport.node,
+        CAP5ExceptionalAnnulusGeneratorReport.latentNode] using hv
+  have hedge :
+      data.EnumeratedExceptionalAnnulusForcedEdge
+        latent.p0Inside latent.p4Inside side e :=
+    ⟨latent, hlatentMem, rfl, rfl, horientation, by
+      simpa [CAP5ExceptionalAnnulusGeneratorReport.node,
+        CAP5ExceptionalAnnulusGeneratorReport.latentNode] using hforcedNode⟩
+  refine ⟨u, v, e, p, hedge, heOutside, hu, hv, hpEdges, havoid, hcross, ?_⟩
+  intro hxor
+  rcases hdetector hxor with ⟨e', heOutside', hcross', heMem', hweight'⟩
+  have heqSym : (e' : Sym2 V) = (e : Sym2 V) := by
+    simpa [hpEdges] using heMem'
+  have heq : e' = e := Subtype.ext heqSym
+  subst e'
+  exact ⟨e, hedge, heOutside', hcross', by simp [hpEdges], hweight'⟩
 
 /--
 Complete cyclic-five exceptional CAP5 reports emit a one-edge forced walk.  A nonzero finite
