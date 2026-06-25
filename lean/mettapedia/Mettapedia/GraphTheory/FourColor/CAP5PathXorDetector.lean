@@ -207,6 +207,37 @@ theorem mixed_boundary_indicatorDetector_payload_of_mem_realizedSeparatorLatents
         hforced⟩
 
 /--
+Existential mixed-boundary form for finite generator sweeps.  If a report has at least one
+realized-separator row and at least one forced-counterexample row, then the sample is already a
+cyclic-five-connectivity refutation and it exposes a forced row with a canonical one-edge `𝔽₂`
+detector payload.
+-/
+theorem mixed_boundary_indicatorDetector_payload_of_exists_bins
+    (report : CAP5ExceptionalAnnulusGeneratorReport boundaryEdge side)
+    (hrealized : ∃ latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge,
+      latent ∈ report.realizedSeparatorLatents)
+    (hforced : ∃ latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge,
+      latent ∈ report.forcedCounterexampleLatents) :
+    ¬ CyclicallyFiveEdgeConnected G ∧
+      ∃ forcedLatent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge,
+        forcedLatent ∈ report.forcedCounterexampleLatents ∧
+          ∃ u v : V, ∃ e : G.edgeSet, ∃ p : G.Walk u v,
+            e ∉ (report.node forcedLatent).candidate.edgeSupport ∧
+              side u ∧ ¬ side v ∧
+                p.edges = [(e : Sym2 V)] ∧
+                  (∀ i : Fin 5,
+                    i ∈ (report.node forcedLatent).candidate.portalCandidate.portalSet →
+                      ((boundaryEdge i : G.edgeSet) : Sym2 V) ∉ p.edges) ∧
+                    EdgeCrossesVertexSide G side e ∧
+                      Curriculum.pathXor (edgeIndicatorWeight e) p.edges = 1 := by
+  rcases hrealized with ⟨realizedLatent, hrealizedMem⟩
+  rcases hforced with ⟨forcedLatent, hforcedMem⟩
+  rcases report.mixed_boundary_indicatorDetector_payload_of_mem_realizedSeparatorLatents_of_mem_forcedCounterexampleLatents
+      hrealizedMem hforcedMem with
+    ⟨hnotCyclic, hpayload⟩
+  exact ⟨hnotCyclic, forcedLatent, hforcedMem, hpayload⟩
+
+/--
 Per-latent complete-frontier detector payload.  In a cyclically five-edge-connected graph, a
 single complete checker latent already has the same one-edge forced-walk detector payload as a
 forced-bin latent.  This lets finite search mine complete rows one at a time instead of requiring
