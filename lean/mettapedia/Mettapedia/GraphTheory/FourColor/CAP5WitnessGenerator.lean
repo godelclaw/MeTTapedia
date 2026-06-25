@@ -1318,6 +1318,22 @@ namespace CAP5TransportedEdgeComponentCoverCore
 variable {G : SimpleGraph V}
 variable {boundaryEdge : Fin 5 → G.edgeSet} {n : Nat}
 
+/-- Side-calibrated realized predicate emitted by the enumerated exceptional CAP5 generator.
+Unlike the report's broad `realizedSeparator` status, this predicate records that the candidate
+support realizes the exact side predicate being tested.  This is the hold-bin counterpart to the
+forced-edge predicate below. -/
+def EnumeratedExceptionalAnnulusSameSideRealization
+    (data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n)
+    (p0Inside p4Inside : Bool) (side : V → Prop) : Prop :=
+  ∃ latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge,
+    latent ∈ CAP5ExceptionalAnnulusGeneratorLatent.all boundaryEdge ∧
+      latent.p0Inside = p0Inside ∧
+        latent.p4Inside = p4Inside ∧
+          data.RealizesExceptionalBoundarySupportOrientation latent.orientation ∧
+            (let node : CAP5ExceptionalAnnulusGeneratorNode boundaryEdge :=
+              { latent := latent, side := side };
+              node.RealizedSeparatorOnSide)
+
 /-- Edge predicate emitted by the enumerated exceptional CAP5 witness generator.  The predicate
 is intentionally tied to the finite latent list: an emitted edge comes from one of the sixteen
 orientation/portal-side samples, with transported component-cover data realizing that sample's
@@ -1333,6 +1349,71 @@ def EnumeratedExceptionalAnnulusForcedEdge
             (let node : CAP5ExceptionalAnnulusGeneratorNode boundaryEdge :=
               { latent := latent, side := side };
               node.ForcedCounterexampleEdge e)
+
+/-- Cyclic five-edge-connectivity rules out the side-calibrated realized bin of the enumerated
+exceptional CAP5 generator.  Any such realization would be a cyclic edge cut of size at most four. -/
+theorem not_enumeratedExceptionalAnnulusSameSideRealization_of_cyclicallyFiveEdgeConnected
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    {p0Inside p4Inside : Bool} {side : V → Prop}
+    (hcyclic : CyclicallyFiveEdgeConnected G) :
+    ¬ data.EnumeratedExceptionalAnnulusSameSideRealization p0Inside p4Inside side := by
+  rintro ⟨latent, _hmem, _hp0, _hp4, _horientation, hrealizedOnSide⟩
+  let node : CAP5ExceptionalAnnulusGeneratorNode boundaryEdge :=
+    { latent := latent, side := side }
+  have hrealized : node.RealizedSeparator := by
+    rcases (show node.RealizedSeparatorOnSide from by
+      simpa [node] using hrealizedOnSide) with
+      ⟨realization, _hside⟩
+    exact ⟨realization⟩
+  exact node.not_realizedSeparator_of_cyclicallyFiveEdgeConnected hcyclic hrealized
+
+/-- Side-calibrated generator boundary for exceptional CAP5 data.  Under complete portal and
+two-cycle evidence, the selected latent either realizes the exact proposed side or emits a
+concrete forced edge.  This is the finite hold/fail boundary to mine before pushing the route
+through a separate planar-topology layer. -/
+theorem enumeratedExceptionalAnnulusSameSideRealization_or_exists_enumeratedExceptionalAnnulusForcedEdge_of_isExceptional_of_portalSides
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    (p0Inside p4Inside : Bool) (h : data.IsExceptional)
+    (side : V → Prop)
+    (hportal_crosses :
+      ∀ edgeCandidate : CAP5ExceptionalAnnulusBoundaryEdgeSupportCandidate boundaryEdge,
+        data.RealizesExceptionalBoundarySupportOrientation
+            edgeCandidate.portalCandidate.orientation →
+        edgeCandidate.portalCandidate.sideCase =
+            CAP5ExceptionalAnnulusSideCase.ofPortalSides p0Inside p4Inside →
+        ∀ i : Fin 5, i ∈ edgeCandidate.portalCandidate.portalSet →
+          EdgeCrossesVertexSide G side (boundaryEdge i))
+    (hcycles : HasCycleOnSide G side ∧ HasCycleOnSide G (fun v => ¬ side v)) :
+    data.EnumeratedExceptionalAnnulusSameSideRealization p0Inside p4Inside side ∨
+      ∃ e : G.edgeSet,
+        data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e := by
+  rcases CAP5ExceptionalAnnulusGeneratorLatent.exists_mem_all_of_isExceptional_of_portalSides
+      (boundaryEdge := boundaryEdge) p0Inside p4Inside h with
+    ⟨latent, hmem, hp0, hp4, horientation⟩
+  let node : CAP5ExceptionalAnnulusGeneratorNode boundaryEdge :=
+    { latent := latent, side := side }
+  have hnodePortal : node.PortalCrosses := by
+    intro i hi
+    have horientation' :
+        data.RealizesExceptionalBoundarySupportOrientation
+          node.candidate.portalCandidate.orientation := by
+      simpa using horientation
+    have hsideCase :
+        node.candidate.portalCandidate.sideCase =
+          CAP5ExceptionalAnnulusSideCase.ofPortalSides p0Inside p4Inside := by
+      change CAP5ExceptionalAnnulusSideCase.ofPortalSides
+          node.latent.p0Inside node.latent.p4Inside =
+        CAP5ExceptionalAnnulusSideCase.ofPortalSides p0Inside p4Inside
+      rw [hp0, hp4]
+    exact hportal_crosses node.candidate horientation' hsideCase i hi
+  rcases node.realizedSeparatorOnSide_or_forcedCounterexample_of_complete
+      hnodePortal hcycles with
+    hrealized | hforced
+  · exact Or.inl ⟨latent, hmem, hp0, hp4, horientation, by
+      simpa [node] using hrealized⟩
+  · rcases hforced with ⟨e, hedge⟩
+    exact Or.inr ⟨e, latent, hmem, hp0, hp4, horientation, by
+      simpa [node] using hedge⟩
 
 /-- Every edge emitted by the enumerated exceptional CAP5 generator is a raw side-crossing edge.
 This is the witness-generator output consumed by finite cyclic-cut and cocycle checks. -/
