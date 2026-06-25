@@ -2481,6 +2481,63 @@ theorem forcedCounterexampleLatents_length_eq_sixteen_of_complete_of_cyclicallyF
     hcyclic hportal hcycles]
   exact CAP5ExceptionalAnnulusGeneratorLatent.length_all boundaryEdge
 
+/--
+Complete cyclic-five histogram profile for a finite CAP5 generator sweep.  Once every latent has
+the primitive portal-crossing and side-cycle checker evidence, cyclic five-edge-connectivity rules
+out all realized-separator rows, leaves no partial rows, and sends all sixteen latents to the
+forced-counterexample bin.
+-/
+theorem histogram_lengths_eq_of_complete_of_cyclicallyFiveEdgeConnected
+    (report : CAP5ExceptionalAnnulusGeneratorReport boundaryEdge side)
+    (hcyclic : CyclicallyFiveEdgeConnected G)
+    (hportal :
+      ∀ latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge,
+        (report.node latent).PortalCrosses)
+    (hcycles :
+      ∀ latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge,
+        (report.node latent).SideCycles) :
+    report.realizedSeparatorLatents.length = 0 ∧
+      report.partialLatents.length = 0 ∧
+        report.forcedCounterexampleLatents.length = 16 := by
+  exact
+    ⟨report.realizedSeparatorLatents_length_eq_zero_of_cyclicallyFiveEdgeConnected hcyclic,
+      report.partialLatents_length_eq_zero_of_complete hportal hcycles,
+      report.forcedCounterexampleLatents_length_eq_sixteen_of_complete_of_cyclicallyFiveEdgeConnected
+        hcyclic hportal hcycles⟩
+
+/--
+Executable histogram profile for the canonical decidable CAP5 report.  This is the generator-facing
+contract: a complete cyclic-five sample run has no hold/partial bins and exactly sixteen forced
+rows to feed into the algebraic detector lane.
+-/
+theorem ofDecidableChecks_histogram_lengths_eq_of_complete_of_cyclicallyFiveEdgeConnected
+    (boundaryEdge : Fin 5 → G.edgeSet) (side : V → Prop)
+    [∀ latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge,
+      Decidable ((latentNode boundaryEdge side latent).PortalCrosses)]
+    [∀ latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge,
+      Decidable ((latentNode boundaryEdge side latent).SideCycles)]
+    [∀ latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge,
+      Decidable ((latentNode boundaryEdge side latent).RealizedSeparator)]
+    (hcyclic : CyclicallyFiveEdgeConnected G)
+    (hportal :
+      ∀ latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge,
+        (latentNode boundaryEdge side latent).PortalCrosses)
+    (hcycles :
+      ∀ latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge,
+        (latentNode boundaryEdge side latent).SideCycles) :
+    (ofDecidableChecks boundaryEdge side).realizedSeparatorLatents.length = 0 ∧
+      (ofDecidableChecks boundaryEdge side).partialLatents.length = 0 ∧
+        (ofDecidableChecks boundaryEdge side).forcedCounterexampleLatents.length = 16 := by
+  let report : CAP5ExceptionalAnnulusGeneratorReport boundaryEdge side :=
+    ofDecidableChecks boundaryEdge side
+  exact report.histogram_lengths_eq_of_complete_of_cyclicallyFiveEdgeConnected hcyclic
+    (by
+      intro latent
+      simpa [report, node, latentNode] using hportal latent)
+    (by
+      intro latent
+      simpa [report, node, latentNode] using hcycles latent)
+
 /-- A complete CAP5 report in a cyclically five-edge-connected graph has a concrete
 forced-counterexample latent.  This is the nonempty-output form consumed by finite checker runs:
 the generated report cannot be vacuous once every latent has the graph-side evidence needed by the
