@@ -2126,6 +2126,75 @@ theorem theorem49BoundaryRootSynthesis_of_enumeratedExceptionalAnnulusForcedEdge
     emb C₀ colorings hsubset family p0Inside p4Inside side classifier.emittedFinset
     classifier.emittedFinset_spec hcontrol hwitnessRed hwitnessBlue
 
+/-- Subset fixed-point criterion for a Boolean CAP5 classifier.  If a finite checker has already
+proved control for a control set, and every edge in that control set is already emitted by the
+classifier, then the classifier itself controls the selected boundary-zero chains.  This is the
+implementation-facing fixed point: no new control edges means no extension work remains. -/
+theorem enumeratedExceptionalAnnulusForcedEdgeClassifierControl_of_finsetControl_of_controlEdges_subset_emittedFinset
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    [Fintype G.edgeSet]
+    (emb : PlaneEmbeddingWithBoundary G)
+    (p0Inside p4Inside : Bool) (side : V → Prop)
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (controlEdges : Finset G.edgeSet)
+    (hcontrol :
+      ∀ ⦃z : G.edgeSet → Color⦄,
+        z ∈ planarBoundaryZeroSubmodule emb →
+        (∀ e ∈ controlEdges, z e = 0) →
+          z = 0)
+    (hsubsetEdges : controlEdges ⊆ classifier.emittedFinset) :
+    ∀ ⦃z : G.edgeSet → Color⦄,
+      z ∈ planarBoundaryZeroSubmodule emb →
+      (∀ e ∈ classifier.emittedFinset, z e = 0) →
+        z = 0 := by
+  intro z hzBoundary hvanishEmitted
+  exact hcontrol hzBoundary (by
+    intro e heControl
+    exact hvanishEmitted e (hsubsetEdges heControl))
+
+/-- Synthesis from the subset fixed point.  A finite implementation can close the CAP5
+classifier route by proving a finite control set controls selected boundary-zero chains and then
+checking that this control set introduces no edge outside the classifier output. -/
+theorem theorem49BoundaryRootSynthesis_of_enumeratedExceptionalAnnulusForcedEdgeClassifierControlEdgesSubset
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    [Fintype G.edgeSet] [FiniteDimensional F2 (G.edgeSet → Color)]
+    (emb : PlaneEmbeddingWithBoundary G) (C₀ : G.EdgeColoring Color)
+    (colorings : Set (G.EdgeColoring Color))
+    (hsubset : colorings ⊆ G.EdgeKempeClosure C₀)
+    {κ : Type*}
+    (family : κ → projectedColoringGeneratorSubspace emb colorings)
+    (p0Inside p4Inside : Bool) (side : V → Prop)
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (controlEdges : Finset G.edgeSet)
+    (hcontrol :
+      ∀ ⦃z : G.edgeSet → Color⦄,
+        z ∈ planarBoundaryZeroSubmodule emb →
+        (∀ e ∈ controlEdges, z e = 0) →
+          z = 0)
+    (hsubsetEdges : controlEdges ⊆ classifier.emittedFinset)
+    (hwitnessRed :
+      ∀ e : G.edgeSet,
+        e ∈ classifier.emittedFinset →
+          ∃ i : κ,
+            ((family i : projectedColoringGeneratorSubspace emb colorings) :
+                G.edgeSet → Color) =
+              Pi.single e red)
+    (hwitnessBlue :
+      ∀ e : G.edgeSet,
+        e ∈ classifier.emittedFinset →
+          ∃ i : κ,
+            ((family i : projectedColoringGeneratorSubspace emb colorings) :
+                G.edgeSet → Color) =
+              Pi.single e blue) :
+    Theorem49BoundaryRootSynthesis emb C₀ :=
+  theorem49BoundaryRootSynthesis_of_enumeratedExceptionalAnnulusForcedEdgeClassifierControl
+    emb C₀ colorings hsubset family p0Inside p4Inside side classifier
+    (data.enumeratedExceptionalAnnulusForcedEdgeClassifierControl_of_finsetControl_of_controlEdges_subset_emittedFinset
+      emb p0Inside p4Inside side classifier controlEdges hcontrol hsubsetEdges)
+    hwitnessRed hwitnessBlue
+
 /-- Witness form of the Boolean-classifier finite control obligation.  A classifier output
 controls the selected-boundary-zero chains exactly when every nonzero such chain has a nonzero
 coordinate on some emitted edge. -/
