@@ -3678,6 +3678,72 @@ theorem enumeratedExceptionalAnnulusSameSideRealization_or_forcedEdge_and_theore
         hwitnessBlue
     exact Or.inr ⟨hforced, halgebraic⟩
 
+/-- Kernel-aware generator-first CAP5 branch theorem.  A complete exceptional CAP5 sample either
+realizes the exact proposed side, or it emits a forced edge and the finite algebraic checker
+returns the next non-geometric outcome in kernel form: Theorem 4.9 boundary-root synthesis, or a
+proof that the current emitted-edge probe family has nontrivial family-pairing kernel. -/
+theorem enumeratedExceptionalAnnulusSameSideRealization_or_forcedEdge_and_theorem49BoundaryRootSynthesis_or_ker_planarBoundaryZeroFamilyPairingMap_ne_bot
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    [Fintype G.edgeSet] [FiniteDimensional F2 (G.edgeSet → Color)]
+    (emb : PlaneEmbeddingWithBoundary G) (C₀ : G.EdgeColoring Color)
+    (colorings : Set (G.EdgeColoring Color))
+    (hsubset : colorings ⊆ G.EdgeKempeClosure C₀)
+    {κ : Type*}
+    (family : κ → projectedColoringGeneratorSubspace emb colorings)
+    (p0Inside p4Inside : Bool) (h : data.IsExceptional)
+    (side : V → Prop)
+    (hportal_crosses :
+      ∀ edgeCandidate : CAP5ExceptionalAnnulusBoundaryEdgeSupportCandidate boundaryEdge,
+        data.RealizesExceptionalBoundarySupportOrientation
+            edgeCandidate.portalCandidate.orientation →
+        edgeCandidate.portalCandidate.sideCase =
+            CAP5ExceptionalAnnulusSideCase.ofPortalSides p0Inside p4Inside →
+        ∀ i : Fin 5, i ∈ edgeCandidate.portalCandidate.portalSet →
+          EdgeCrossesVertexSide G side (boundaryEdge i))
+    (hcycles : HasCycleOnSide G side ∧ HasCycleOnSide G (fun v => ¬ side v))
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    [Decidable
+      (∀ ⦃z : G.edgeSet → Color⦄,
+        z ∈ planarBoundaryZeroSubmodule emb →
+        (∀ e ∈ classifier.emittedFinset, z e = 0) →
+          z = 0)]
+    (hfamilyOnlyEmitted :
+      ∀ i : κ,
+        ∃ e : G.edgeSet, e ∈ classifier.emittedFinset ∧
+          (((family i : projectedColoringGeneratorSubspace emb colorings) :
+                G.edgeSet → Color) = Pi.single e red ∨
+            ((family i : projectedColoringGeneratorSubspace emb colorings) :
+                G.edgeSet → Color) = Pi.single e blue))
+    (hwitnessRed :
+      ∀ e : G.edgeSet,
+        e ∈ classifier.emittedFinset →
+          ∃ i : κ,
+            ((family i : projectedColoringGeneratorSubspace emb colorings) :
+                G.edgeSet → Color) =
+              Pi.single e red)
+    (hwitnessBlue :
+      ∀ e : G.edgeSet,
+        e ∈ classifier.emittedFinset →
+          ∃ i : κ,
+            ((family i : projectedColoringGeneratorSubspace emb colorings) :
+                G.edgeSet → Color) =
+              Pi.single e blue) :
+    data.EnumeratedExceptionalAnnulusSameSideRealization p0Inside p4Inside side ∨
+      (∃ e : G.edgeSet,
+        data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e) ∧
+        (Theorem49BoundaryRootSynthesis emb C₀ ∨
+          LinearMap.ker (planarBoundaryZeroFamilyPairingMap family) ≠ ⊥) := by
+  rcases data.enumeratedExceptionalAnnulusSameSideRealization_or_exists_enumeratedExceptionalAnnulusForcedEdge_of_isExceptional_of_portalSides
+      p0Inside p4Inside h side hportal_crosses hcycles with
+    hsameSide | hforced
+  · exact Or.inl hsameSide
+  · have halgebraic :=
+      data.theorem49BoundaryRootSynthesis_or_ker_planarBoundaryZeroFamilyPairingMap_ne_bot_of_classifierControl
+        emb C₀ colorings hsubset family p0Inside p4Inside side classifier
+        hfamilyOnlyEmitted hwitnessRed hwitnessBlue
+    exact Or.inr ⟨hforced, halgebraic⟩
+
 /-- Cyclic-connectivity specialization of the generator-first CAP5 branch theorem.  In the
 target cyclic-five setting the exact same-side realization branch is impossible, so the finite
 sample must emit a forced edge and immediately enter the algebraic fallback: either Theorem 4.9
@@ -3741,6 +3807,70 @@ theorem forcedEdge_and_theorem49BoundaryRootSynthesis_or_boundaryZeroChainObstru
         (p0Inside := p0Inside) (p4Inside := p4Inside) (side := side) hcyclic hsameSide)
   · exact hfallback
 
+/-- Kernel-aware cyclic-connectivity specialization of the generator-first CAP5 branch theorem.
+In the cyclic-five setting, the exact same-side realization branch is impossible, so the finite
+sample emits a forced edge and the algebraic checker returns either Theorem 4.9 boundary-root
+synthesis or a nontrivial kernel for the current emitted-edge family-pairing map. -/
+theorem forcedEdge_and_theorem49BoundaryRootSynthesis_or_ker_planarBoundaryZeroFamilyPairingMap_ne_bot_of_isExceptional_of_portalSides_of_cyclicallyFiveEdgeConnected
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    [Fintype G.edgeSet] [FiniteDimensional F2 (G.edgeSet → Color)]
+    (emb : PlaneEmbeddingWithBoundary G) (C₀ : G.EdgeColoring Color)
+    (colorings : Set (G.EdgeColoring Color))
+    (hsubset : colorings ⊆ G.EdgeKempeClosure C₀)
+    {κ : Type*}
+    (family : κ → projectedColoringGeneratorSubspace emb colorings)
+    (p0Inside p4Inside : Bool) (h : data.IsExceptional)
+    (side : V → Prop) (hcyclic : CyclicallyFiveEdgeConnected G)
+    (hportal_crosses :
+      ∀ edgeCandidate : CAP5ExceptionalAnnulusBoundaryEdgeSupportCandidate boundaryEdge,
+        data.RealizesExceptionalBoundarySupportOrientation
+            edgeCandidate.portalCandidate.orientation →
+        edgeCandidate.portalCandidate.sideCase =
+            CAP5ExceptionalAnnulusSideCase.ofPortalSides p0Inside p4Inside →
+        ∀ i : Fin 5, i ∈ edgeCandidate.portalCandidate.portalSet →
+          EdgeCrossesVertexSide G side (boundaryEdge i))
+    (hcycles : HasCycleOnSide G side ∧ HasCycleOnSide G (fun v => ¬ side v))
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    [Decidable
+      (∀ ⦃z : G.edgeSet → Color⦄,
+        z ∈ planarBoundaryZeroSubmodule emb →
+        (∀ e ∈ classifier.emittedFinset, z e = 0) →
+          z = 0)]
+    (hfamilyOnlyEmitted :
+      ∀ i : κ,
+        ∃ e : G.edgeSet, e ∈ classifier.emittedFinset ∧
+          (((family i : projectedColoringGeneratorSubspace emb colorings) :
+                G.edgeSet → Color) = Pi.single e red ∨
+            ((family i : projectedColoringGeneratorSubspace emb colorings) :
+                G.edgeSet → Color) = Pi.single e blue))
+    (hwitnessRed :
+      ∀ e : G.edgeSet,
+        e ∈ classifier.emittedFinset →
+          ∃ i : κ,
+            ((family i : projectedColoringGeneratorSubspace emb colorings) :
+                G.edgeSet → Color) =
+              Pi.single e red)
+    (hwitnessBlue :
+      ∀ e : G.edgeSet,
+        e ∈ classifier.emittedFinset →
+          ∃ i : κ,
+            ((family i : projectedColoringGeneratorSubspace emb colorings) :
+                G.edgeSet → Color) =
+              Pi.single e blue) :
+    (∃ e : G.edgeSet,
+      data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e) ∧
+      (Theorem49BoundaryRootSynthesis emb C₀ ∨
+        LinearMap.ker (planarBoundaryZeroFamilyPairingMap family) ≠ ⊥) := by
+  rcases data.enumeratedExceptionalAnnulusSameSideRealization_or_forcedEdge_and_theorem49BoundaryRootSynthesis_or_ker_planarBoundaryZeroFamilyPairingMap_ne_bot
+      emb C₀ colorings hsubset family p0Inside p4Inside h side hportal_crosses hcycles
+      classifier hfamilyOnlyEmitted hwitnessRed hwitnessBlue with
+    hsameSide | hfallback
+  · exact False.elim
+      (data.not_enumeratedExceptionalAnnulusSameSideRealization_of_cyclicallyFiveEdgeConnected
+        (p0Inside := p0Inside) (p4Inside := p4Inside) (side := side) hcyclic hsameSide)
+  · exact hfallback
+
 /-- Contrapositive CAP5 target boundary.  In the cyclic-five setting, if the boundary-root
 synthesis route fails after the finite classifier has supplied red/blue witnesses, the failure is
 not ambiguous: the generator has emitted a forced edge and there is a concrete nonzero
@@ -3798,6 +3928,73 @@ theorem forcedEdge_and_boundaryZeroChainObstruction_of_not_theorem49BoundaryRoot
       (data.theorem49BoundaryRootSynthesis_of_no_boundaryZeroChainObstruction_of_classifierWitnesses
         emb C₀ colorings hsubset family p0Inside p4Inside side classifier hnoObstruction
         hwitnessRed hwitnessBlue)
+
+/-- Kernel-aware contrapositive CAP5 target boundary.  In the cyclic-five setting, if the
+boundary-root synthesis route fails and the explicit family only probes emitted red/blue
+coordinates, the finite generator has emitted a forced edge and the current family-pairing map has
+nontrivial kernel.  This is the algebraic failure certificate extracted from the failed CAP5
+branch. -/
+theorem forcedEdge_and_ker_planarBoundaryZeroFamilyPairingMap_ne_bot_of_not_theorem49BoundaryRootSynthesis_of_isExceptional_of_portalSides_of_cyclicallyFiveEdgeConnected
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    [Fintype G.edgeSet] [FiniteDimensional F2 (G.edgeSet → Color)]
+    (emb : PlaneEmbeddingWithBoundary G) (C₀ : G.EdgeColoring Color)
+    (colorings : Set (G.EdgeColoring Color))
+    (hsubset : colorings ⊆ G.EdgeKempeClosure C₀)
+    {κ : Type*}
+    (family : κ → projectedColoringGeneratorSubspace emb colorings)
+    (p0Inside p4Inside : Bool) (h : data.IsExceptional)
+    (side : V → Prop) (hcyclic : CyclicallyFiveEdgeConnected G)
+    (hportal_crosses :
+      ∀ edgeCandidate : CAP5ExceptionalAnnulusBoundaryEdgeSupportCandidate boundaryEdge,
+        data.RealizesExceptionalBoundarySupportOrientation
+            edgeCandidate.portalCandidate.orientation →
+        edgeCandidate.portalCandidate.sideCase =
+            CAP5ExceptionalAnnulusSideCase.ofPortalSides p0Inside p4Inside →
+        ∀ i : Fin 5, i ∈ edgeCandidate.portalCandidate.portalSet →
+          EdgeCrossesVertexSide G side (boundaryEdge i))
+    (hcycles : HasCycleOnSide G side ∧ HasCycleOnSide G (fun v => ¬ side v))
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (hfamilyOnlyEmitted :
+      ∀ i : κ,
+        ∃ e : G.edgeSet, e ∈ classifier.emittedFinset ∧
+          (((family i : projectedColoringGeneratorSubspace emb colorings) :
+                G.edgeSet → Color) = Pi.single e red ∨
+            ((family i : projectedColoringGeneratorSubspace emb colorings) :
+                G.edgeSet → Color) = Pi.single e blue))
+    (hwitnessRed :
+      ∀ e : G.edgeSet,
+        e ∈ classifier.emittedFinset →
+          ∃ i : κ,
+            ((family i : projectedColoringGeneratorSubspace emb colorings) :
+                G.edgeSet → Color) =
+              Pi.single e red)
+    (hwitnessBlue :
+      ∀ e : G.edgeSet,
+        e ∈ classifier.emittedFinset →
+          ∃ i : κ,
+            ((family i : projectedColoringGeneratorSubspace emb colorings) :
+                G.edgeSet → Color) =
+              Pi.single e blue)
+    (hnotSynthesis : ¬ Theorem49BoundaryRootSynthesis emb C₀) :
+    (∃ e : G.edgeSet,
+      data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e) ∧
+      LinearMap.ker (planarBoundaryZeroFamilyPairingMap family) ≠ ⊥ := by
+  constructor
+  · exact
+      data.exists_enumeratedExceptionalAnnulusForcedEdge_of_isExceptional_of_portalSides_of_cyclicallyFiveEdgeConnected
+        p0Inside p4Inside h side hcyclic hportal_crosses hcycles
+  · rcases data.forcedEdge_and_boundaryZeroChainObstruction_of_not_theorem49BoundaryRootSynthesis_of_isExceptional_of_portalSides_of_cyclicallyFiveEdgeConnected
+      emb C₀ colorings hsubset family p0Inside p4Inside h side hcyclic hportal_crosses
+      hcycles classifier hwitnessRed hwitnessBlue hnotSynthesis with
+    ⟨_, hobs⟩
+    apply
+      not_ker_planarBoundaryZeroFamilyPairingMap_eq_bot_of_enumeratedExceptionalAnnulusBoundaryZeroChainObstruction
+        family
+    · intro i
+      rcases hfamilyOnlyEmitted i with ⟨e, hemitted, hprobe⟩
+      exact ⟨e, (classifier.emittedFinset_spec e).1 hemitted, hprobe⟩
+    · exact hobs
 
 /-- Generator handoff after failed CAP5 synthesis.  In the cyclic-five exceptional setting, if the
 current classifier witnesses do not synthesize the boundary root but a later finite control set
