@@ -2159,6 +2159,38 @@ theorem exists_nonzero_mem_ker_planarBoundaryZeroFamilyPairingMap_of_enumeratedE
       family (data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side)
       hfamily z hzBoundary hzNonzero hvanish
 
+/-- A CAP5 emitted-edge obstruction rules out a trivial family-pairing kernel for any red/blue
+single-coordinate family that only probes classifier-emitted edges.  This is the negative
+certificate shape for the generator: once this obstruction is returned, the current emitted-edge
+coordinate detector is provably incomplete. -/
+theorem not_ker_planarBoundaryZeroFamilyPairingMap_eq_bot_of_enumeratedExceptionalAnnulusBoundaryZeroChainObstruction
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    [Fintype G.edgeSet]
+    {emb : PlaneEmbeddingWithBoundary G}
+    {colorings : Set (G.EdgeColoring Color)}
+    {κ : Type*}
+    (family : κ → projectedColoringGeneratorSubspace emb colorings)
+    {p0Inside p4Inside : Bool} {side : V → Prop}
+    (hfamily :
+      ∀ i : κ,
+        ∃ e : G.edgeSet,
+          data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e ∧
+            (((family i : projectedColoringGeneratorSubspace emb colorings) :
+                  G.edgeSet → Color) = Pi.single e red ∨
+              ((family i : projectedColoringGeneratorSubspace emb colorings) :
+                  G.edgeSet → Color) = Pi.single e blue))
+    (hobs :
+      ∃ z : G.edgeSet → Color,
+        z ∈ planarBoundaryZeroSubmodule emb ∧
+          z ≠ 0 ∧
+            ∀ e : G.edgeSet,
+              data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e →
+                z e = 0) :
+    LinearMap.ker (planarBoundaryZeroFamilyPairingMap family) ≠ ⊥ :=
+  not_ker_planarBoundaryZeroFamilyPairingMap_eq_bot_of_boundaryZeroChainObstruction
+    family (data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side)
+    hfamily hobs
+
 /-- Theorem 4.9 synthesis route from a Boolean classifier in nonzero-coordinate witness form.
 This is the checker-facing shape: for each nonzero selected-boundary-zero chain, the finite
 classifier output supplies an emitted coordinate where the chain is nonzero. -/
