@@ -205,6 +205,134 @@ def ExtensionCoordinateSignalWithProgress
                       ((classifier.remainingControlEdges controlEdges).erase e).card <
                         (classifier.remainingControlEdges controlEdges).card
 
+/-- Forget the finite worklist decrease from a CAP5 extension signal. -/
+theorem extensionCoordinateSignal_of_extensionCoordinateSignalWithProgress
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    [Fintype G.edgeSet]
+    {emb : PlaneEmbeddingWithBoundary G}
+    {p0Inside p4Inside : Bool} {side : V → Prop}
+    {classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side}
+    {controlEdges : Finset G.edgeSet}
+    (hsignal :
+      data.ExtensionCoordinateSignalWithProgress emb p0Inside p4Inside side classifier
+        controlEdges) :
+    data.ExtensionCoordinateSignal emb p0Inside p4Inside side classifier controlEdges := by
+  rcases hsignal with hcrossing | hnoncrossing
+  · rcases hcrossing with
+      ⟨z, hzBoundary, hzNonzero, hvanish, u, v, e, p, heBin, hePredicateOutside,
+        hze, hcross, hsideu, hsidev, hpEdges, havoid, hcoordinate, _hprogress⟩
+    exact Or.inl
+      ⟨z, hzBoundary, hzNonzero, hvanish, u, v, e, p, heBin, hePredicateOutside,
+        hze, hcross, hsideu, hsidev, hpEdges, havoid, hcoordinate⟩
+  · rcases hnoncrossing with
+      ⟨z, hzBoundary, hzNonzero, hvanish, e, heBin, hePredicateOutside, hze,
+        hnotCross, hcoordinate, _hprogress⟩
+    exact Or.inr
+      ⟨z, hzBoundary, hzNonzero, hvanish, e, heBin, hePredicateOutside, hze,
+        hnotCross, hcoordinate⟩
+
+/--
+A named CAP5 extension signal is already an algebraic detector handoff.  If the generator
+family contains red and blue single-coordinate probes for every candidate extension edge, the
+obstructing boundary-zero chain exposed by the signal has a nonzero family pairing.
+-/
+theorem exists_boundaryZeroChain_familyPairing_ne_zero_of_extensionCoordinateSignal
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    [Fintype G.edgeSet]
+    {emb : PlaneEmbeddingWithBoundary G}
+    {colorings : Set (G.EdgeColoring Color)}
+    {κ : Type*}
+    (family : κ → projectedColoringGeneratorSubspace emb colorings)
+    {p0Inside p4Inside : Bool} {side : V → Prop}
+    {classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side}
+    {controlEdges : Finset G.edgeSet}
+    (hsignal :
+      data.ExtensionCoordinateSignal emb p0Inside p4Inside side classifier controlEdges)
+    (hwitnessRed :
+      ∀ e : G.edgeSet,
+        e ∈ classifier.crossingExtensionFinset controlEdges ∨
+            e ∈ classifier.noncrossingExtensionFinset controlEdges →
+          ∃ i : κ,
+            ((family i : projectedColoringGeneratorSubspace emb colorings) :
+                G.edgeSet → Color) =
+              Pi.single e red)
+    (hwitnessBlue :
+      ∀ e : G.edgeSet,
+        e ∈ classifier.crossingExtensionFinset controlEdges ∨
+            e ∈ classifier.noncrossingExtensionFinset controlEdges →
+          ∃ i : κ,
+            ((family i : projectedColoringGeneratorSubspace emb colorings) :
+                G.edgeSet → Color) =
+              Pi.single e blue) :
+    ∃ z : G.edgeSet → Color,
+      z ∈ planarBoundaryZeroSubmodule emb ∧
+        z ≠ 0 ∧
+          (∀ e : G.edgeSet,
+            data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e →
+              z e = 0) ∧
+            ∃ i : κ,
+              chainDotBilinForm G.edgeSet (family i : G.edgeSet → Color) z ≠ 0 := by
+  rcases hsignal with hcrossing | hnoncrossing
+  · rcases hcrossing with
+      ⟨z, hzBoundary, hzNonzero, hvanish, _u, _v, e, _p, heBin, _hePredicateOutside,
+        hze, _hcross, _hsideu, _hsidev, _hpEdges, _havoid, _hcoordinate⟩
+    rcases exists_familyPairing_ne_zero_of_redBlueSingleCoordinateWitness
+        family e hze (hwitnessRed e (Or.inl heBin)) (hwitnessBlue e (Or.inl heBin)) with
+      ⟨i, hpair⟩
+    exact ⟨z, hzBoundary, hzNonzero, hvanish, i, hpair⟩
+  · rcases hnoncrossing with
+      ⟨z, hzBoundary, hzNonzero, hvanish, e, heBin, _hePredicateOutside, hze,
+        _hnotCross, _hcoordinate⟩
+    rcases exists_familyPairing_ne_zero_of_redBlueSingleCoordinateWitness
+        family e hze (hwitnessRed e (Or.inr heBin)) (hwitnessBlue e (Or.inr heBin)) with
+      ⟨i, hpair⟩
+    exact ⟨z, hzBoundary, hzNonzero, hvanish, i, hpair⟩
+
+/-- Worklist-progress version of the CAP5 extension-signal algebraic handoff. -/
+theorem exists_boundaryZeroChain_familyPairing_ne_zero_of_extensionCoordinateSignalWithProgress
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    [Fintype G.edgeSet]
+    {emb : PlaneEmbeddingWithBoundary G}
+    {colorings : Set (G.EdgeColoring Color)}
+    {κ : Type*}
+    (family : κ → projectedColoringGeneratorSubspace emb colorings)
+    {p0Inside p4Inside : Bool} {side : V → Prop}
+    {classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side}
+    {controlEdges : Finset G.edgeSet}
+    (hsignal :
+      data.ExtensionCoordinateSignalWithProgress emb p0Inside p4Inside side classifier
+        controlEdges)
+    (hwitnessRed :
+      ∀ e : G.edgeSet,
+        e ∈ classifier.crossingExtensionFinset controlEdges ∨
+            e ∈ classifier.noncrossingExtensionFinset controlEdges →
+          ∃ i : κ,
+            ((family i : projectedColoringGeneratorSubspace emb colorings) :
+                G.edgeSet → Color) =
+              Pi.single e red)
+    (hwitnessBlue :
+      ∀ e : G.edgeSet,
+        e ∈ classifier.crossingExtensionFinset controlEdges ∨
+            e ∈ classifier.noncrossingExtensionFinset controlEdges →
+          ∃ i : κ,
+            ((family i : projectedColoringGeneratorSubspace emb colorings) :
+                G.edgeSet → Color) =
+              Pi.single e blue) :
+    ∃ z : G.edgeSet → Color,
+      z ∈ planarBoundaryZeroSubmodule emb ∧
+        z ≠ 0 ∧
+          (∀ e : G.edgeSet,
+            data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e →
+              z e = 0) ∧
+            ∃ i : κ,
+              chainDotBilinForm G.edgeSet (family i : G.edgeSet → Color) z ≠ 0 :=
+  data.exists_boundaryZeroChain_familyPairing_ne_zero_of_extensionCoordinateSignal
+    family (data.extensionCoordinateSignal_of_extensionCoordinateSignalWithProgress hsignal)
+    hwitnessRed hwitnessBlue
+
 /--
 Complete cyclic-five exceptional CAP5 reports emit a one-edge forced walk.  A nonzero finite
 path-xor detector signal on that emitted walk exposes a marked enumerated forced edge, keeping
