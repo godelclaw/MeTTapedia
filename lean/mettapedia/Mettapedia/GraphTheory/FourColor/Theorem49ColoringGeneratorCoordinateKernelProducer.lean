@@ -444,6 +444,84 @@ theorem exists_family_singleCoordinate_outside_predicate_of_boundaryZeroChainObs
     not_ker_planarBoundaryZeroFamilyPairingMap_eq_bot_of_boundaryZeroChainObstruction
       family P hfamilyInside hobs hker
 
+/-- A trivial-kernel single-coordinate detector must contain an outside-`P` probe that actually
+sees the returned obstruction.  This is the constructive enrichment form: from the obstruction
+chain `z`, the next generator pass gets a concrete family member, edge, and nonzero pairing that
+cannot lie inside the failed predicate. -/
+theorem exists_family_singleCoordinate_outside_predicate_pairing_ne_zero_of_boundaryZeroChainObstruction_of_ker_eq_bot
+    {G : SimpleGraph V} [Fintype G.edgeSet]
+    {emb : PlaneEmbeddingWithBoundary G}
+    {colorings : Set (G.EdgeColoring Color)}
+    {κ : Type*}
+    (family : κ → projectedColoringGeneratorSubspace emb colorings)
+    (P : G.edgeSet → Prop)
+    (hsingle :
+      ∀ i : κ,
+        ∃ e : G.edgeSet,
+          (((family i : projectedColoringGeneratorSubspace emb colorings) :
+                G.edgeSet → Color) = Pi.single e red ∨
+            ((family i : projectedColoringGeneratorSubspace emb colorings) :
+                G.edgeSet → Color) = Pi.single e blue))
+    (z : G.edgeSet → Color)
+    (hzBoundary : z ∈ planarBoundaryZeroSubmodule emb)
+    (hzNonzero : z ≠ 0)
+    (hvanish : ∀ e : G.edgeSet, P e → z e = 0)
+    (hker : LinearMap.ker (planarBoundaryZeroFamilyPairingMap family) = ⊥) :
+    ∃ i : κ, ∃ e : G.edgeSet,
+      ¬ P e ∧
+        (((family i : projectedColoringGeneratorSubspace emb colorings) :
+              G.edgeSet → Color) = Pi.single e red ∨
+          ((family i : projectedColoringGeneratorSubspace emb colorings) :
+              G.edgeSet → Color) = Pi.single e blue) ∧
+        chainDotBilinForm G.edgeSet (family i : G.edgeSet → Color) z ≠ 0 ∧
+        z e ≠ 0 := by
+  let z' : planarBoundaryZeroSubmodule emb := ⟨z, hzBoundary⟩
+  have hzmapNonzero : planarBoundaryZeroFamilyPairingMap family z' ≠ 0 := by
+    intro hzmap
+    have hzkerMem : z' ∈ LinearMap.ker (planarBoundaryZeroFamilyPairingMap family) := by
+      simpa using hzmap
+    have hzbot : z' ∈ (⊥ : Submodule F2 (planarBoundaryZeroSubmodule emb)) := by
+      simpa [hker] using hzkerMem
+    have hzzero' : z' = 0 := by simpa using hzbot
+    have hzzero : z = 0 := by
+      change ((z' : planarBoundaryZeroSubmodule emb) : G.edgeSet → Color) = 0
+      simpa using congrArg Subtype.val hzzero'
+    exact hzNonzero hzzero
+  classical
+  have hexists : ∃ i, planarBoundaryZeroFamilyPairingMap family z' i ≠ 0 := by
+    by_contra hnone
+    apply hzmapNonzero
+    ext i
+    by_contra hi
+    exact hnone ⟨i, hi⟩
+  rcases hexists with ⟨i, hi⟩
+  rcases hsingle i with ⟨e, hprobe⟩
+  have hpair : chainDotBilinForm G.edgeSet (family i : G.edgeSet → Color) z ≠ 0 := by
+    simpa [planarBoundaryZeroFamilyPairingMap, z'] using hi
+  have hnotP : ¬ P e := by
+    intro hP
+    rcases hprobe with hred | hblue
+    · apply hpair
+      rw [hred, chainDotBilinForm_single_left]
+      rw [hvanish e hP]
+      simp [colorDot]
+    · apply hpair
+      rw [hblue, chainDotBilinForm_single_left]
+      rw [hvanish e hP]
+      simp [colorDot]
+  have hze : z e ≠ 0 := by
+    intro hzero
+    rcases hprobe with hred | hblue
+    · apply hpair
+      rw [hred, chainDotBilinForm_single_left]
+      rw [hzero]
+      simp [colorDot]
+    · apply hpair
+      rw [hblue, chainDotBilinForm_single_left]
+      rw [hzero]
+      simp [colorDot]
+  exact ⟨i, e, hnotP, hprobe, hpair, hze⟩
+
 /-- Finite-coordinate version of predicate control.  A concrete finite edge set controls the
 selected-boundary-zero chains iff every nonzero selected-boundary-zero chain is nonzero on at
 least one edge of that set.  This is the rank/kernel certificate shape expected from a finite
