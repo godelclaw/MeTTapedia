@@ -30,6 +30,18 @@ namespace CAP5BoundaryEdgeEnumeration
 
 variable {E : Type*} [DecidableEq E] {support : Finset E}
 
+/-- Build the normalized support directly from an indexed five-edge boundary map. -/
+def ofBoundaryEdge (boundaryEdge : Fin 5 → E) (hinj : Function.Injective boundaryEdge) :
+    CAP5BoundaryEdgeEnumeration (Finset.univ.map ⟨boundaryEdge, hinj⟩) where
+  boundaryEdge := boundaryEdge
+  injective := hinj
+  support_eq := rfl
+
+@[simp] theorem ofBoundaryEdge_boundaryEdge
+    (boundaryEdge : Fin 5 → E) (hinj : Function.Injective boundaryEdge) :
+    (ofBoundaryEdge boundaryEdge hinj).boundaryEdge = boundaryEdge :=
+  rfl
+
 @[simp] theorem mem_support_iff (enum : CAP5BoundaryEdgeEnumeration support) {e : E} :
     e ∈ support ↔ ∃ i : Fin 5, enum.boundaryEdge i = e := by
   constructor
@@ -51,6 +63,37 @@ theorem incident_eq_map {U : Type*} {D : ZeroBoundaryData U E} {v : U}
     (enum : CAP5BoundaryEdgeEnumeration (D.incident v)) :
     D.incident v = Finset.univ.map ⟨enum.boundaryEdge, enum.injective⟩ :=
   enum.support_eq
+
+theorem boundaryEdge_mem_support (enum : CAP5BoundaryEdgeEnumeration support) (i : Fin 5) :
+    enum.boundaryEdge i ∈ support :=
+  enum.mem_support_iff.2 ⟨i, rfl⟩
+
+theorem support_subset_iff (enum : CAP5BoundaryEdgeEnumeration support) {s : Finset E} :
+    support ⊆ s ↔ ∀ i : Fin 5, enum.boundaryEdge i ∈ s := by
+  constructor
+  · intro h i
+    exact h (enum.boundaryEdge_mem_support i)
+  · intro h e he
+    rcases enum.mem_support_iff.1 he with ⟨i, rfl⟩
+    exact h i
+
+theorem forall_support_iff (enum : CAP5BoundaryEdgeEnumeration support) {p : E → Prop} :
+    (∀ e ∈ support, p e) ↔ ∀ i : Fin 5, p (enum.boundaryEdge i) := by
+  constructor
+  · intro h i
+    exact h (enum.boundaryEdge i) (enum.boundaryEdge_mem_support i)
+  · intro h e he
+    rcases enum.mem_support_iff.1 he with ⟨i, rfl⟩
+    exact h i
+
+theorem exists_support_iff (enum : CAP5BoundaryEdgeEnumeration support) {p : E → Prop} :
+    (∃ e ∈ support, p e) ↔ ∃ i : Fin 5, p (enum.boundaryEdge i) := by
+  constructor
+  · rintro ⟨e, he, hp⟩
+    rcases enum.mem_support_iff.1 he with ⟨i, rfl⟩
+    exact ⟨i, hp⟩
+  · rintro ⟨i, hp⟩
+    exact ⟨enum.boundaryEdge i, enum.boundaryEdge_mem_support i, hp⟩
 
 end CAP5BoundaryEdgeEnumeration
 
