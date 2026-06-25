@@ -337,6 +337,183 @@ theorem exists_exceptionalAnnulusCrossingOutsideEdge_colorCoordinatePathXor_dete
           (Or.inr (by simpa using hweight))
     exact ⟨e, hedge, heOutside, hcross, heMem, hz⟩
 
+/--
+Coordinate-signal form of the failed finite-control extension.  When the current CAP5 emitted
+edge classifier does not control all selected boundary-zero chains but a later finite control set
+does, the generator's next witness is not just a nonzero color value: the crossing branch carries
+a first- or second-coordinate path-xor signal on its one-edge walk, while the noncrossing branch
+carries an explicit nonzero color coordinate for the algebraic detector.
+-/
+theorem exists_boundaryZeroChain_and_extensionFinsetWitness_coordinateSignal_crossing_or_noncrossing_of_not_classifierControl_of_finsetControl
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    [Fintype G.edgeSet]
+    (emb : PlaneEmbeddingWithBoundary G)
+    (p0Inside p4Inside : Bool) (side : V → Prop)
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (controlEdges : Finset G.edgeSet)
+    (hnotControl :
+      ¬ ∀ ⦃z : G.edgeSet → Color⦄,
+        z ∈ planarBoundaryZeroSubmodule emb →
+        (∀ e ∈ classifier.emittedFinset, z e = 0) →
+          z = 0)
+    (hcontrol :
+      ∀ ⦃z : G.edgeSet → Color⦄,
+        z ∈ planarBoundaryZeroSubmodule emb →
+        (∀ e ∈ controlEdges, z e = 0) →
+          z = 0) :
+    (∃ z : G.edgeSet → Color,
+      z ∈ planarBoundaryZeroSubmodule emb ∧
+        z ≠ 0 ∧
+          (∀ e : G.edgeSet,
+            data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e →
+              z e = 0) ∧
+            ∃ u v : V, ∃ e : G.edgeSet, ∃ p : G.Walk u v,
+              e ∈ classifier.crossingExtensionFinset controlEdges ∧
+                ¬ data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e ∧
+                  z e ≠ 0 ∧
+                    EdgeCrossesVertexSide G side e ∧
+                      side u ∧ ¬ side v ∧
+                        p.edges = [(e : Sym2 V)] ∧
+                          (∀ f : G.edgeSet, f ∈ classifier.emittedFinset →
+                            (f : Sym2 V) ∉ p.edges) ∧
+                            (Curriculum.pathXor (edgeColorFirstCoordinateWeight z)
+                                p.edges ≠ 0 ∨
+                              Curriculum.pathXor (edgeColorSecondCoordinateWeight z)
+                                p.edges ≠ 0)) ∨
+      ∃ z : G.edgeSet → Color,
+        z ∈ planarBoundaryZeroSubmodule emb ∧
+          z ≠ 0 ∧
+            (∀ e : G.edgeSet,
+              data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e →
+                z e = 0) ∧
+              ∃ e : G.edgeSet,
+                e ∈ classifier.noncrossingExtensionFinset controlEdges ∧
+                  ¬ data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e ∧
+                    z e ≠ 0 ∧ ¬ EdgeCrossesVertexSide G side e ∧
+                      ((z e).1 ≠ 0 ∨ (z e).2 ≠ 0) := by
+  rcases data.exists_boundaryZeroChain_and_extensionFinsetWitness_crossing_or_noncrossing_of_not_classifierControl_of_finsetControl
+      emb p0Inside p4Inside side classifier controlEdges hnotControl hcontrol with
+    hcrossing | hnoncrossing
+  · rcases hcrossing with
+      ⟨z, hzBoundary, hzNonzero, hvanish, u, v, e, p, heBin, hePredicateOutside,
+        hze, hcross, hsideu, hsidev, hpEdges, havoid⟩
+    have hsignal :
+        Curriculum.pathXor (edgeColorFirstCoordinateWeight z) p.edges ≠ 0 ∨
+          Curriculum.pathXor (edgeColorSecondCoordinateWeight z) p.edges ≠ 0 :=
+      edgeColorCoordinatePathXor_ne_zero_of_walk_edges_singleton_of_color_ne_zero
+        z hpEdges hze
+    exact Or.inl
+      ⟨z, hzBoundary, hzNonzero, hvanish, u, v, e, p, heBin, hePredicateOutside,
+        hze, hcross, hsideu, hsidev, hpEdges, havoid, hsignal⟩
+  · rcases hnoncrossing with
+      ⟨z, hzBoundary, hzNonzero, hvanish, e, heBin, hePredicateOutside, hze,
+        hnotCross⟩
+    have hcoord : (z e).1 ≠ 0 ∨ (z e).2 ≠ 0 :=
+      (color_ne_zero_iff_fst_or_snd_ne_zero (z e)).1 hze
+    exact Or.inr
+      ⟨z, hzBoundary, hzNonzero, hvanish, e, heBin, hePredicateOutside, hze,
+        hnotCross, hcoord⟩
+
+/--
+Failed-synthesis generator step with coordinate-level output.  In the cyclic-five exceptional
+CAP5 setting, if the current emitted-edge classifier does not synthesize Theorem 4.9 but a later
+finite control set controls the selected boundary-zero chains, then the run has both an emitted
+forced CAP5 edge and a next extension witness whose nonzero obstruction is visible as either a
+crossing path-xor signal or a noncrossing color-coordinate signal.
+-/
+theorem forcedEdge_and_extensionFinsetWitness_coordinateSignal_of_not_theorem49BoundaryRootSynthesis_of_finsetControl
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    [Fintype G.edgeSet] [FiniteDimensional F2 (G.edgeSet → Color)]
+    (emb : PlaneEmbeddingWithBoundary G) (C₀ : G.EdgeColoring Color)
+    (colorings : Set (G.EdgeColoring Color))
+    (hsubset : colorings ⊆ G.EdgeKempeClosure C₀)
+    {κ : Type*}
+    (family : κ → projectedColoringGeneratorSubspace emb colorings)
+    (p0Inside p4Inside : Bool) (h : data.IsExceptional)
+    (side : V → Prop) (hcyclic : CyclicallyFiveEdgeConnected G)
+    (hportal_crosses :
+      ∀ edgeCandidate : CAP5ExceptionalAnnulusBoundaryEdgeSupportCandidate boundaryEdge,
+        data.RealizesExceptionalBoundarySupportOrientation
+            edgeCandidate.portalCandidate.orientation →
+        edgeCandidate.portalCandidate.sideCase =
+            CAP5ExceptionalAnnulusSideCase.ofPortalSides p0Inside p4Inside →
+        ∀ i : Fin 5, i ∈ edgeCandidate.portalCandidate.portalSet →
+          EdgeCrossesVertexSide G side (boundaryEdge i))
+    (hcycles : HasCycleOnSide G side ∧ HasCycleOnSide G (fun v => ¬ side v))
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (controlEdges : Finset G.edgeSet)
+    (hcontrol :
+      ∀ ⦃z : G.edgeSet → Color⦄,
+        z ∈ planarBoundaryZeroSubmodule emb →
+        (∀ e ∈ controlEdges, z e = 0) →
+          z = 0)
+    (hwitnessRed :
+      ∀ e : G.edgeSet,
+        e ∈ classifier.emittedFinset →
+          ∃ i : κ,
+            ((family i : projectedColoringGeneratorSubspace emb colorings) :
+                G.edgeSet → Color) =
+              Pi.single e red)
+    (hwitnessBlue :
+      ∀ e : G.edgeSet,
+        e ∈ classifier.emittedFinset →
+          ∃ i : κ,
+            ((family i : projectedColoringGeneratorSubspace emb colorings) :
+                G.edgeSet → Color) =
+              Pi.single e blue)
+    (hnotSynthesis : ¬ Theorem49BoundaryRootSynthesis emb C₀) :
+    (∃ e : G.edgeSet,
+      data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e) ∧
+      ((∃ z : G.edgeSet → Color,
+        z ∈ planarBoundaryZeroSubmodule emb ∧
+          z ≠ 0 ∧
+            (∀ e : G.edgeSet,
+              data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e →
+                z e = 0) ∧
+              ∃ u v : V, ∃ e : G.edgeSet, ∃ p : G.Walk u v,
+                e ∈ classifier.crossingExtensionFinset controlEdges ∧
+                  ¬ data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e ∧
+                    z e ≠ 0 ∧
+                      EdgeCrossesVertexSide G side e ∧
+                        side u ∧ ¬ side v ∧
+                          p.edges = [(e : Sym2 V)] ∧
+                            (∀ f : G.edgeSet, f ∈ classifier.emittedFinset →
+                              (f : Sym2 V) ∉ p.edges) ∧
+                              (Curriculum.pathXor (edgeColorFirstCoordinateWeight z)
+                                  p.edges ≠ 0 ∨
+                                Curriculum.pathXor (edgeColorSecondCoordinateWeight z)
+                                  p.edges ≠ 0)) ∨
+        ∃ z : G.edgeSet → Color,
+          z ∈ planarBoundaryZeroSubmodule emb ∧
+            z ≠ 0 ∧
+              (∀ e : G.edgeSet,
+                data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e →
+                  z e = 0) ∧
+                ∃ e : G.edgeSet,
+                  e ∈ classifier.noncrossingExtensionFinset controlEdges ∧
+                    ¬ data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e ∧
+                      z e ≠ 0 ∧ ¬ EdgeCrossesVertexSide G side e ∧
+                        ((z e).1 ≠ 0 ∨ (z e).2 ≠ 0)) := by
+  refine ⟨?_, ?_⟩
+  · exact
+      data.exists_enumeratedExceptionalAnnulusForcedEdge_of_isExceptional_of_portalSides_of_cyclicallyFiveEdgeConnected
+        p0Inside p4Inside h side hcyclic hportal_crosses hcycles
+  · have hnotControl :
+        ¬ ∀ ⦃z : G.edgeSet → Color⦄,
+          z ∈ planarBoundaryZeroSubmodule emb →
+          (∀ e ∈ classifier.emittedFinset, z e = 0) →
+            z = 0 := by
+      intro hclassifierControl
+      exact hnotSynthesis
+        (data.theorem49BoundaryRootSynthesis_of_enumeratedExceptionalAnnulusForcedEdgeClassifierControl
+          emb C₀ colorings hsubset family p0Inside p4Inside side classifier
+          hclassifierControl hwitnessRed hwitnessBlue)
+    exact
+      data.exists_boundaryZeroChain_and_extensionFinsetWitness_coordinateSignal_crossing_or_noncrossing_of_not_classifierControl_of_finsetControl
+        emb p0Inside p4Inside side classifier controlEdges hnotControl hcontrol
+
 end CAP5TransportedEdgeComponentCoverCore
 
 end Mettapedia.GraphTheory.FourColor
