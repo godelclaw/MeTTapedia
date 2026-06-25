@@ -639,6 +639,25 @@ theorem realizedCAP5Report_forcedLatent_exists_edge_weight_ne_zero_iff
   simp [forcedCounterexampleWalk, r13]
 
 /--
+For the exact forced branch, a nonzero finite detector signal exposes the graph obstruction it
+detected: the emitted edge is outside the forced candidate support, crosses the side predicate,
+lies on the forced walk, and carries nonzero detector weight.
+-/
+theorem realizedCAP5Report_forcedLatent_pathXor_ne_zero_exposes_outside_crossing_edge
+    (weight : Sym2 RealizedV → F2)
+    (hxor : Curriculum.pathXor weight forcedCounterexampleWalk.edges ≠ 0) :
+    ∃ e : realizedGraph.edgeSet,
+      e ∉ (realizedCAP5Report.node forcedLatent).candidate.edgeSupport ∧
+        EdgeCrossesVertexSide realizedGraph realizedSide e ∧
+          (e : Sym2 RealizedV) ∈ forcedCounterexampleWalk.edges ∧
+            weight (e : Sym2 RealizedV) ≠ 0 := by
+  refine ⟨r13, ?_, realized_r13_crosses, ?_, ?_⟩
+  · change r13 ∉ forcedCandidate.edgeSupport
+    exact forcedCandidate_r13_not_mem
+  · simp [forcedCounterexampleWalk, r13]
+  · exact (realizedCAP5Report_forcedLatent_exact_oneEdge_pathXor_ne_zero_iff weight).1 hxor
+
+/--
 The two-triangle benchmark has a genuinely mixed finite-generator output: one latent certifies
 a small cyclic separator and another certifies a forced counterexample.
 -/
