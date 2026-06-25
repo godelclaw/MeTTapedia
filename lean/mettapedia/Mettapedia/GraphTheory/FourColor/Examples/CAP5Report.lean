@@ -483,6 +483,17 @@ theorem realizedCAP5Report_forcedLatent_payload :
     realizedCAP5Report_forcedLatent_mem_forcedCounterexampleLatents
 
 /--
+The forced bin in the concrete report exposes an actual side-crossing emitted edge, not just a
+status label.
+-/
+theorem realizedCAP5Report_forcedLatent_exists_crossing_edge :
+    ∃ e : realizedGraph.edgeSet,
+      (realizedCAP5Report.node forcedLatent).ForcedCounterexampleEdge e ∧
+        EdgeCrossesVertexSide realizedGraph realizedSide e :=
+  realizedCAP5Report.exists_forcedCounterexampleEdge_crossing_of_mem_forcedCounterexampleLatents
+    realizedCAP5Report_forcedLatent_mem_forcedCounterexampleLatents
+
+/--
 The two-triangle benchmark has a genuinely mixed finite-generator output: one latent certifies
 a small cyclic separator and another certifies a forced counterexample.
 -/
