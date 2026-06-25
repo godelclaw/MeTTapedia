@@ -318,6 +318,49 @@ theorem edgePredicateControls_iff_no_boundaryZeroChainObstruction
     by_contra hzNonzero
     exact hno ⟨z, hzBoundary, hzNonzero, hvanish⟩
 
+/-- A predicate obstruction is a concrete nonzero kernel witness for a family that only tests the
+red/blue single-coordinate chains on predicate edges.  This is the generator-facing failure mode:
+when a finite run emits a nonzero boundary-zero chain invisible on all emitted edges, every
+predicate-only red/blue probe family has a nontrivial pairing kernel and therefore cannot justify
+the synthesis route by coordinate separation alone. -/
+theorem exists_nonzero_mem_ker_planarBoundaryZeroFamilyPairingMap_of_boundaryZeroChainObstruction
+    {G : SimpleGraph V} [Fintype G.edgeSet]
+    {emb : PlaneEmbeddingWithBoundary G}
+    {colorings : Set (G.EdgeColoring Color)}
+    {κ : Type*}
+    (family : κ → projectedColoringGeneratorSubspace emb colorings)
+    (P : G.edgeSet → Prop)
+    (hfamily :
+      ∀ i : κ,
+        ∃ e : G.edgeSet, P e ∧
+          (((family i : projectedColoringGeneratorSubspace emb colorings) :
+                G.edgeSet → Color) = Pi.single e red ∨
+            ((family i : projectedColoringGeneratorSubspace emb colorings) :
+                G.edgeSet → Color) = Pi.single e blue))
+    (z : G.edgeSet → Color)
+    (hzBoundary : z ∈ planarBoundaryZeroSubmodule emb)
+    (hzNonzero : z ≠ 0)
+    (hvanish : ∀ e : G.edgeSet, P e → z e = 0) :
+    ∃ w : planarBoundaryZeroSubmodule emb,
+      w ∈ LinearMap.ker (planarBoundaryZeroFamilyPairingMap family) ∧
+        w ≠ 0 := by
+  let w : planarBoundaryZeroSubmodule emb := ⟨z, hzBoundary⟩
+  refine ⟨w, ?_, ?_⟩
+  · rw [mem_ker_planarBoundaryZeroFamilyPairingMap_iff_forall_pairing_eq_zero]
+    intro i
+    rcases hfamily i with ⟨e, hP, hred | hblue⟩
+    · rw [hred, chainDotBilinForm_single_left]
+      change colorDot red (z e) = 0
+      rw [hvanish e hP]
+      simp [colorDot]
+    · rw [hblue, chainDotBilinForm_single_left]
+      change colorDot blue (z e) = 0
+      rw [hvanish e hP]
+      simp [colorDot]
+  · intro hwzero
+    exact hzNonzero (congrArg (fun x : planarBoundaryZeroSubmodule emb =>
+      (x : G.edgeSet → Color)) hwzero)
+
 /-- Finite-coordinate version of predicate control.  A concrete finite edge set controls the
 selected-boundary-zero chains iff every nonzero selected-boundary-zero chain is nonzero on at
 least one edge of that set.  This is the rank/kernel certificate shape expected from a finite
