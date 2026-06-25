@@ -1782,6 +1782,54 @@ theorem mem_noncrossingExtensionFinset_iff
   classical
   simp [noncrossingExtensionFinset]
 
+/-- The two extension bins are empty exactly when the later finite control set introduces no edge
+outside the classifier output.  This is the finite partition fact behind the checker fixed point:
+every new control edge is either crossing or noncrossing with respect to the proposed side. -/
+theorem controlEdges_subset_emittedFinset_iff_extensionFinsets_eq_empty
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    [Fintype G.edgeSet]
+    {p0Inside p4Inside : Bool} {side : V → Prop}
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (controlEdges : Finset G.edgeSet) :
+    controlEdges ⊆ classifier.emittedFinset ↔
+      classifier.crossingExtensionFinset controlEdges = ∅ ∧
+        classifier.noncrossingExtensionFinset controlEdges = ∅ := by
+  classical
+  constructor
+  · intro hsubset
+    constructor
+    · ext e
+      constructor
+      · intro he
+        have he' :=
+          (classifier.mem_crossingExtensionFinset_iff controlEdges e).1 he
+        exact False.elim (he'.2.1 (hsubset he'.1))
+      · intro he
+        simp at he
+    · ext e
+      constructor
+      · intro he
+        have he' :=
+          (classifier.mem_noncrossingExtensionFinset_iff controlEdges e).1 he
+        exact False.elim (he'.2.1 (hsubset he'.1))
+      · intro he
+        simp at he
+  · rintro ⟨hcrossingEmpty, hnoncrossingEmpty⟩ e heControl
+    by_cases hcross : EdgeCrossesVertexSide G side e
+    · by_contra heNotEmitted
+      have heCrossing : e ∈ classifier.crossingExtensionFinset controlEdges :=
+        (classifier.mem_crossingExtensionFinset_iff controlEdges e).2
+          ⟨heControl, heNotEmitted, hcross⟩
+      rw [hcrossingEmpty] at heCrossing
+      simp at heCrossing
+    · by_contra heNotEmitted
+      have heNoncrossing : e ∈ classifier.noncrossingExtensionFinset controlEdges :=
+        (classifier.mem_noncrossingExtensionFinset_iff controlEdges e).2
+          ⟨heControl, heNotEmitted, hcross⟩
+      rw [hnoncrossingEmpty] at heNoncrossing
+      simp at heNoncrossing
+
 /-- The filtered output of a correct Boolean checker is exactly the enumerated CAP5 forced-edge
 predicate. -/
 theorem emittedFinset_spec
@@ -2849,21 +2897,12 @@ theorem enumeratedExceptionalAnnulusForcedEdgeClassifierControl_of_finsetControl
       z ∈ planarBoundaryZeroSubmodule emb →
       (∀ e ∈ classifier.emittedFinset, z e = 0) →
         z = 0 := by
-  by_contra hnotControl
-  rcases data.exists_boundaryZeroChain_and_extensionFinsetWitness_crossing_or_noncrossing_of_not_classifierControl_of_finsetControl
-      emb p0Inside p4Inside side classifier controlEdges hnotControl hcontrol with
-    hcrossing | hnoncrossing
-  · rcases hcrossing with
-      ⟨_z, _hzBoundary, _hzNonzero, _hvanish, _u, _v, e, _p,
-        heCrossingBin, _hePredicateOutside, _hze, _hcross, _hsu, _hsv,
-        _hpEdges, _havoid⟩
-    rw [hcrossingEmpty] at heCrossingBin
-    simp at heCrossingBin
-  · rcases hnoncrossing with
-      ⟨_z, _hzBoundary, _hzNonzero, _hvanish, e,
-        heNoncrossingBin, _hePredicateOutside, _hze, _hnotCross⟩
-    rw [hnoncrossingEmpty] at heNoncrossingBin
-    simp at heNoncrossingBin
+  have hsubsetEdges : controlEdges ⊆ classifier.emittedFinset :=
+    (classifier.controlEdges_subset_emittedFinset_iff_extensionFinsets_eq_empty
+      controlEdges).2 ⟨hcrossingEmpty, hnoncrossingEmpty⟩
+  exact
+    data.enumeratedExceptionalAnnulusForcedEdgeClassifierControl_of_finsetControl_of_controlEdges_subset_emittedFinset
+      emb p0Inside p4Inside side classifier controlEdges hcontrol hsubsetEdges
 
 /-- A successful finite-control extension of a failed Boolean CAP5 classifier makes at least one
 of the two finite extension bins nonempty: either a new side-crossing edge appears, or a new
