@@ -346,6 +346,12 @@ theorem forced_sideCycles :
 def forcedCounterexampleWalk : realizedGraph.Walk (1 : RealizedV) 3 :=
   Walk.cons' 1 3 3 (by simp [realizedGraph]) Walk.nil
 
+/-- The return walk witnessing that the candidate edge `r03` is not a true cut edge:
+`0` reaches `3` through the non-candidate edges `r01` and `r13`. -/
+def forcedCandidateBypassWalk : realizedGraph.Walk (0 : RealizedV) 3 :=
+  Walk.cons' 0 1 3 (by simp [realizedGraph])
+    (Walk.cons' 1 3 3 (by simp [realizedGraph]) Walk.nil)
+
 theorem forcedCandidate_r13_not_mem : r13 ∉ forcedCandidate.edgeSupport := by
   rw [forced_support_simp]
   simp [r13, r03, r04, r25]
@@ -356,6 +362,16 @@ theorem forcedCandidate_r01_not_mem : r01 ∉ forcedCandidate.edgeSupport := by
 
 theorem forcedCandidate_r03_mem : r03 ∈ forcedCandidate.edgeSupport := by
   exact (forced_support_simp r03).2 (Or.inl rfl)
+
+/-- The bypass walk avoids the whole forced candidate support. -/
+theorem forcedCandidateBypassWalk_avoids_forcedCandidate :
+    ∀ e : realizedGraph.edgeSet, e ∈ forcedCandidate.edgeSupport →
+      (e : Sym2 RealizedV) ∉ forcedCandidateBypassWalk.edges := by
+  intro e he heEdges
+  rcases (forced_support_simp e).1 he with rfl | rfl | rfl
+  · simp [forcedCandidateBypassWalk, r03] at heEdges
+  · simp [forcedCandidateBypassWalk, r04] at heEdges
+  · simp [forcedCandidateBypassWalk, r25] at heEdges
 
 theorem forced_node_forcedCounterexampleEdge_r13 :
     (CAP5ExceptionalAnnulusGeneratorReport.latentNode
@@ -384,11 +400,10 @@ theorem forced_realizedSeparator_false :
     ¬ (CAP5ExceptionalAnnulusGeneratorReport.latentNode
       realizedCAP5BoundaryEdge realizedSide forcedLatent).RealizedSeparator := by
   rintro ⟨realization⟩
-  exact realization.false_of_triangle_one_cut_edge
-    (a := (0 : RealizedV)) (b := 1) (c := 3)
-    (eab := r01) (ebc := r13) (eac := r03)
-    (by simp [r01]) (by simp [r13]) (by simp [r03])
-    forcedCandidate_r01_not_mem forcedCandidate_r13_not_mem forcedCandidate_r03_mem
+  exact realization.false_of_mem_edgeCut_of_walk_avoids_edgeCut_between_endpoints
+    (u := (0 : RealizedV)) (v := 3) (e := r03)
+    (by simp [r03]) forcedCandidate_r03_mem forcedCandidateBypassWalk
+    forcedCandidateBypassWalk_avoids_forcedCandidate
 
 /-- The three-edge latent has a concrete outside crossing edge and hence a forced witness. -/
 theorem forced_node_forcedCounterexample :
