@@ -1,4 +1,5 @@
 import Mettapedia.GraphTheory.FourColor.CAP5WitnessGenerator
+import Mettapedia.GraphTheory.FourColor.Curriculum.PathXor
 import Mathlib.Tactic.FinCases
 
 /-!
@@ -585,6 +586,16 @@ theorem realizedCAP5Report_forcedLatent_exact_oneEdge_crossing_walk :
         CAP5ExceptionalAnnulusSideCase.ofPortalSides,
         CAP5ExceptionalAnnulusSideCase.separatorPortalSet,
         forcedCounterexampleWalk, r03, r04, r25] at hi hiEdges
+
+/--
+The exact one-edge forced walk contributes exactly the `𝔽₂` weight of the emitted edge.  This
+is the algebraic readout of the concrete generator witness.
+-/
+theorem realizedCAP5Report_forcedLatent_exact_oneEdge_pathXor
+    (weight : Sym2 RealizedV → F2) :
+    Curriculum.pathXor weight forcedCounterexampleWalk.edges =
+      weight (r13 : Sym2 RealizedV) := by
+  simp [Curriculum.pathXor, forcedCounterexampleWalk, r13]
 
 /--
 The two-triangle benchmark has a genuinely mixed finite-generator output: one latent certifies
