@@ -816,6 +816,82 @@ theorem exists_exceptionalAnnulusCrossingOutsideEdge_colorCoordinatePathXor_dete
       report p0Inside p4Inside h hcyclic hportal hcycles z
 
 /--
+Canonical finite-checker dichotomy for the CAP5 generator.  Running the executable checker either
+returns a concrete latent with missing primitive checker evidence, or an empty missing frontier
+feeds the color-coordinate path-xor detector payload.  This is the generator-facing boundary:
+partial rows become the next hypothesis-discovery target, while a finished frontier goes directly
+to the algebraic/cocycle lane.
+-/
+theorem ofDecidableChecks_missingCheckerEvidence_or_colorCoordinatePathXor_detector_payload_of_isExceptional_of_cyclicallyFiveEdgeConnected
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    (side : V → Prop)
+    [∀ latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge,
+      Decidable ((CAP5ExceptionalAnnulusGeneratorReport.latentNode
+        boundaryEdge side latent).PortalCrosses)]
+    [∀ latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge,
+      Decidable ((CAP5ExceptionalAnnulusGeneratorReport.latentNode
+        boundaryEdge side latent).SideCycles)]
+    [∀ latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge,
+      Decidable ((CAP5ExceptionalAnnulusGeneratorReport.latentNode
+        boundaryEdge side latent).RealizedSeparator)]
+    (p0Inside p4Inside : Bool) (h : data.IsExceptional)
+    (hcyclic : CyclicallyFiveEdgeConnected G)
+    (z : G.edgeSet → Color) :
+    (∃ latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge,
+      latent ∈ CAP5ExceptionalAnnulusGeneratorLatent.all boundaryEdge ∧
+        (CAP5ExceptionalAnnulusGeneratorReport.latentNode
+          boundaryEdge side latent).MissingCheckerEvidence) ∨
+      ∃ latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge,
+        latent ∈ CAP5ExceptionalAnnulusGeneratorLatent.all boundaryEdge ∧
+          latent.p0Inside = p0Inside ∧
+            latent.p4Inside = p4Inside ∧
+              data.RealizesExceptionalBoundarySupportOrientation latent.orientation ∧
+                latent ∈ (CAP5ExceptionalAnnulusGeneratorReport.ofDecidableChecks
+                  boundaryEdge side).forcedCounterexampleLatents ∧
+                  ∃ u v : V, ∃ e : G.edgeSet, ∃ p : G.Walk u v,
+                    data.ExceptionalAnnulusCrossingOutsideEdge p0Inside p4Inside side e ∧
+                      e ∉ ((CAP5ExceptionalAnnulusGeneratorReport.ofDecidableChecks
+                        boundaryEdge side).node latent).candidate.edgeSupport ∧
+                        side u ∧ ¬ side v ∧
+                          p.edges = [(e : Sym2 V)] ∧
+                            (∀ i : Fin 5,
+                              i ∈ ((CAP5ExceptionalAnnulusGeneratorReport.ofDecidableChecks
+                                boundaryEdge side).node latent).candidate.portalCandidate.portalSet →
+                                ((boundaryEdge i : G.edgeSet) : Sym2 V) ∉ p.edges) ∧
+                              EdgeCrossesVertexSide G side e ∧
+                                (z e ≠ 0 →
+                                  Curriculum.pathXor (edgeColorFirstCoordinateWeight z)
+                                      p.edges ≠ 0 ∨
+                                    Curriculum.pathXor (edgeColorSecondCoordinateWeight z)
+                                      p.edges ≠ 0) ∧
+                                  ((Curriculum.pathXor (edgeColorFirstCoordinateWeight z)
+                                        p.edges ≠ 0 ∨
+                                      Curriculum.pathXor (edgeColorSecondCoordinateWeight z)
+                                        p.edges ≠ 0) →
+                                    ∃ e' : G.edgeSet,
+                                      data.ExceptionalAnnulusCrossingOutsideEdge
+                                        p0Inside p4Inside side e' ∧
+                                        e' ∉ ((CAP5ExceptionalAnnulusGeneratorReport.ofDecidableChecks
+                                          boundaryEdge side).node latent).candidate.edgeSupport ∧
+                                          EdgeCrossesVertexSide G side e' ∧
+                                            (e' : Sym2 V) ∈ p.edges ∧
+                                              z e' ≠ 0) := by
+  let report : CAP5ExceptionalAnnulusGeneratorReport boundaryEdge side :=
+    CAP5ExceptionalAnnulusGeneratorReport.ofDecidableChecks boundaryEdge side
+  by_cases hmissingEmpty : report.missingCheckerEvidenceLatents = []
+  · right
+    simpa [report] using
+      data.exists_exceptionalAnnulusCrossingOutsideEdge_colorCoordinatePathXor_detector_payload_of_missingCheckerEvidenceLatents_eq_nil_of_isExceptional_of_cyclicallyFiveEdgeConnected
+        report p0Inside p4Inside h hcyclic hmissingEmpty z
+  · left
+    rcases (report.missingCheckerEvidenceLatents_ne_nil_iff_exists_missingCheckerEvidence).1
+        hmissingEmpty with
+      ⟨latent, hmem, hmissing⟩
+    exact ⟨latent, hmem, by
+      simpa [report, CAP5ExceptionalAnnulusGeneratorReport.node,
+        CAP5ExceptionalAnnulusGeneratorReport.latentNode] using hmissing⟩
+
+/--
 Coordinate-signal form of the failed finite-control extension.  When the current CAP5 emitted
 edge classifier does not control all selected boundary-zero chains but a later finite control set
 does, the generator's next witness is not just a nonzero color value: the crossing branch carries
