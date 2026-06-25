@@ -1868,6 +1868,25 @@ theorem crossingExtensionFinset_nonempty_or_noncrossingExtensionFinset_nonempty_
         (classifier.mem_noncrossingExtensionFinset_iff controlEdges e).2
           ⟨heControl, heNotEmitted, hcross⟩⟩
 
+/-- Quantitative progress measure for the extension-bin checker: the number of un-emitted
+finite control edges is exactly the number of crossing-bin edges plus the number of
+noncrossing-bin edges. -/
+theorem card_crossingExtensionFinset_add_card_noncrossingExtensionFinset_eq_card_filter_not_emitted
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    [Fintype G.edgeSet]
+    {p0Inside p4Inside : Bool} {side : V → Prop}
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (controlEdges : Finset G.edgeSet) :
+    (classifier.crossingExtensionFinset controlEdges).card +
+        (classifier.noncrossingExtensionFinset controlEdges).card =
+      (controlEdges.filter fun e => e ∉ classifier.emittedFinset).card := by
+  classical
+  rw [← Finset.card_union_of_disjoint
+    (classifier.disjoint_crossingExtensionFinset_noncrossingExtensionFinset controlEdges)]
+  rw [classifier.crossingExtensionFinset_union_noncrossingExtensionFinset_eq_filter_not_emitted
+    controlEdges]
+
 /-- The two extension bins are empty exactly when the later finite control set introduces no edge
 outside the classifier output.  This is the finite partition fact behind the checker fixed point:
 every new control edge is either crossing or noncrossing with respect to the proposed side. -/
