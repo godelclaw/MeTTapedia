@@ -1725,6 +1725,18 @@ theorem partialLatents_ne_nil_iff_exists_missingCheckerEvidence
       ((report.node latent).partial_iff_missingCheckerEvidence).2 hmissing
     exact ⟨latent, hmem, hpartial⟩
 
+/-- Nonempty primitive missing-frontier boundary.  The executable missing-evidence list is
+nonempty exactly when the finite report has an enumerated latent missing one primitive checker
+ingredient. -/
+theorem missingCheckerEvidenceLatents_ne_nil_iff_exists_missingCheckerEvidence
+    (report : CAP5ExceptionalAnnulusGeneratorReport boundaryEdge side) :
+    report.missingCheckerEvidenceLatents ≠ [] ↔
+      ∃ latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge,
+        latent ∈ CAP5ExceptionalAnnulusGeneratorLatent.all boundaryEdge ∧
+          (report.node latent).MissingCheckerEvidence := by
+  rw [← report.partialLatents_eq_missingCheckerEvidenceLatents]
+  exact report.partialLatents_ne_nil_iff_exists_missingCheckerEvidence
+
 /--
 In a cyclically five-edge-connected graph, the report's only obstruction to putting every
 enumerated latent in the forced-counterexample bin is genuinely partial checker evidence.  Thus a
