@@ -97,6 +97,22 @@ theorem add_eq_zero_iff_eq (a b : Color) : a + b = 0 ↔ a = b := by
   · intro hab
     simp [hab]
 
+/-- A color in `𝔽₂ × 𝔽₂` is nonzero exactly when at least one coordinate is nonzero. -/
+theorem color_ne_zero_iff_fst_or_snd_ne_zero (c : Color) :
+    c ≠ 0 ↔ c.1 ≠ 0 ∨ c.2 ≠ 0 := by
+  constructor
+  · intro hc
+    by_cases hfst : c.1 = 0
+    · right
+      intro hsnd
+      apply hc
+      ext <;> simp [hfst, hsnd]
+    · exact Or.inl hfst
+  · intro hcoord hzero
+    rcases hcoord with hfst | hsnd
+    · exact hfst (by simp [hzero])
+    · exact hsnd (by simp [hzero])
+
 theorem add_ne_zero_of_ne (hab : a ≠ b) : a + b ≠ 0 := by
   intro hzero
   exact hab ((add_eq_zero_iff_eq a b).mp hzero)
