@@ -33,9 +33,17 @@ def allExceptionalBoundarySupportOrientations :
   [.redBlue03_redPurple04, .redBlue03_redPurple13,
     .redBlue12_redPurple04, .redBlue12_redPurple13]
 
+@[simp] theorem length_allExceptionalBoundarySupportOrientations :
+    allExceptionalBoundarySupportOrientations.length = 4 :=
+  rfl
+
 /-- The four Boolean portal-side choices for the exceptional annulus case. -/
 def allPortalSideChoices : List (Bool × Bool) :=
   [(true, true), (true, false), (false, true), (false, false)]
+
+@[simp] theorem length_allPortalSideChoices :
+    allPortalSideChoices.length = 4 :=
+  rfl
 
 /-- The finite latent space for one CAP5 boundary-edge interpretation: four orientations times
 four portal-side choices. -/
@@ -46,6 +54,12 @@ def all (boundaryEdge : Fin 5 → E) :
       { orientation := orientation
         p0Inside := sideChoice.1
         p4Inside := sideChoice.2 }
+
+/-- The CAP5 exceptional-annulus finite generator has exactly sixteen latent choices: four
+component-pairing orientations times four portal-side choices. -/
+@[simp] theorem length_all (boundaryEdge : Fin 5 → E) :
+    (all boundaryEdge).length = 16 := by
+  simp [all, allExceptionalBoundarySupportOrientations, allPortalSideChoices]
 
 /-- Every exceptional orientation occurs in the finite latent enumeration. -/
 theorem mem_allExceptionalBoundarySupportOrientations
@@ -797,6 +811,43 @@ theorem forcedCounterexampleLatents_eq_all_of_complete_of_cyclicallyFiveEdgeConn
     (report.nodeReport latent).status_eq_forcedCounterexample_of_complete_of_cyclicallyFiveEdgeConnected
       hcyclic (hportal latent) (hcycles latent)
   simp [hstatus]
+
+/-- Cardinality form of the realized-bin emptiness theorem. -/
+theorem realizedSeparatorLatents_length_eq_zero_of_cyclicallyFiveEdgeConnected
+    (report : CAP5ExceptionalAnnulusGeneratorReport boundaryEdge side)
+    (hcyclic : CyclicallyFiveEdgeConnected G) :
+    report.realizedSeparatorLatents.length = 0 := by
+  rw [report.realizedSeparatorLatents_eq_nil_of_cyclicallyFiveEdgeConnected hcyclic]
+  rfl
+
+/-- Cardinality form of the partial-bin emptiness theorem. -/
+theorem partialLatents_length_eq_zero_of_complete
+    (report : CAP5ExceptionalAnnulusGeneratorReport boundaryEdge side)
+    (hportal :
+      ∀ latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge,
+        (report.node latent).PortalCrosses)
+    (hcycles :
+      ∀ latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge,
+        (report.node latent).SideCycles) :
+    report.partialLatents.length = 0 := by
+  rw [report.partialLatents_eq_nil_of_complete hportal hcycles]
+  rfl
+
+/-- Quantitative histogram form of the complete cyclic-five report: all sixteen generated latents
+land in the forced-counterexample bin. -/
+theorem forcedCounterexampleLatents_length_eq_sixteen_of_complete_of_cyclicallyFiveEdgeConnected
+    (report : CAP5ExceptionalAnnulusGeneratorReport boundaryEdge side)
+    (hcyclic : CyclicallyFiveEdgeConnected G)
+    (hportal :
+      ∀ latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge,
+        (report.node latent).PortalCrosses)
+    (hcycles :
+      ∀ latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge,
+        (report.node latent).SideCycles) :
+    report.forcedCounterexampleLatents.length = 16 := by
+  rw [report.forcedCounterexampleLatents_eq_all_of_complete_of_cyclicallyFiveEdgeConnected
+    hcyclic hportal hcycles]
+  exact CAP5ExceptionalAnnulusGeneratorLatent.length_all boundaryEdge
 
 /-- A complete CAP5 report in a cyclically five-edge-connected graph has a concrete
 forced-counterexample latent.  This is the nonempty-output form consumed by finite checker runs:
