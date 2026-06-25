@@ -687,6 +687,51 @@ theorem CyclicallyFiveEdgeConnected.exists_walk_avoiding_edgeCut_of_card_le_four
   exact hcyclic.noCyclicEdgeCutOfSizeAtMostFour.not_cyclicEdgeCutRealization_card_le_four
     realization hcard
 
+/-- Edge-checker form of cyclic five-edge-connectivity.  A complete finite separator candidate
+of size at most four cannot contain every side-crossing edge: some unlisted edge must cross the
+chosen side. -/
+theorem CyclicallyFiveEdgeConnected.exists_crossing_outside_edgeCut_of_card_le_four_of_crosses
+    {G : SimpleGraph V} (hcyclic : CyclicallyFiveEdgeConnected G)
+    {edgeCut : Finset G.edgeSet} (side : V → Prop)
+    (hcard : edgeCut.card <= 4)
+    (hcut_crosses :
+      ∀ e : G.edgeSet, e ∈ edgeCut → EdgeCrossesVertexSide G side e)
+    (hinside_cycle : HasCycleOnSide G side)
+    (houtside_cycle : HasCycleOnSide G (fun v => ¬ side v)) :
+    ∃ e : G.edgeSet, e ∉ edgeCut ∧ EdgeCrossesVertexSide G side e :=
+  (exists_walk_avoiding_edgeCut_iff_exists_crossing_outside_edgeCut
+    (G := G) (edgeCut := edgeCut) side).1
+    (hcyclic.exists_walk_avoiding_edgeCut_of_card_le_four_of_crosses
+      side hcard hcut_crosses hinside_cycle houtside_cycle)
+
+/-- One-edge witness form of the same finite-checker boundary: the unlisted side-crossing edge
+itself supplies the avoiding walk. -/
+theorem CyclicallyFiveEdgeConnected.exists_oneEdge_walk_avoiding_edgeCut_of_card_le_four_of_crosses
+    {G : SimpleGraph V} (hcyclic : CyclicallyFiveEdgeConnected G)
+    {edgeCut : Finset G.edgeSet} (side : V → Prop)
+    (hcard : edgeCut.card <= 4)
+    (hcut_crosses :
+      ∀ e : G.edgeSet, e ∈ edgeCut → EdgeCrossesVertexSide G side e)
+    (hinside_cycle : HasCycleOnSide G side)
+    (houtside_cycle : HasCycleOnSide G (fun v => ¬ side v)) :
+    ∃ u v : V, ∃ e : G.edgeSet, ∃ p : G.Walk u v,
+      e ∉ edgeCut ∧
+        side u ∧ ¬ side v ∧
+          p.edges = [(e : Sym2 V)] ∧
+            ∀ f : G.edgeSet, f ∈ edgeCut → (f : Sym2 V) ∉ p.edges := by
+  rcases hcyclic.exists_crossing_outside_edgeCut_of_card_le_four_of_crosses
+      side hcard hcut_crosses hinside_cycle houtside_cycle with
+    ⟨e, heOutside, u, v, hu, hv, huSide, hvSide⟩
+  rcases exists_walk_edges_eq_singleton_of_edge_endpoint_sides
+      (G := G) (side := side) (e := e) hu hv huSide hvSide with
+    ⟨p, hpEdges⟩
+  refine ⟨u, v, e, p, heOutside, huSide, hvSide, hpEdges, ?_⟩
+  intro f hf hmem
+  have hsym : (f : Sym2 V) = (e : Sym2 V) := by
+    simpa [hpEdges] using hmem
+  have hfe : f = e := Subtype.ext hsym
+  exact heOutside (by simpa [hfe] using hf)
+
 /-- Refutation form of the same obstruction: a counterexample-free separator target of size at
 most four is incompatible with cyclic five-edge-connectivity once the listed edges cross the side
 and both sides contain cycles. -/
