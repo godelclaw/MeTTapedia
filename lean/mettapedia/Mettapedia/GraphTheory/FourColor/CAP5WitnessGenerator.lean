@@ -1381,6 +1381,31 @@ theorem forcedCounterexampleLatents_eq_all_iff_partialLatents_eq_nil_of_cyclical
           exact hpartial
         cases hmemEmpty
 
+/--
+Operational generator boundary: in a cyclically five-edge-connected graph, any failure of the
+finite CAP5 report to force all enumerated latents exposes a concrete partial latent.  This is the
+next checker target: such a latent is missing portal-crossing or side-cycle evidence rather than
+opening a fourth report case.
+-/
+theorem exists_partialLatent_of_forcedCounterexampleLatents_ne_all_of_cyclicallyFiveEdgeConnected
+    (report : CAP5ExceptionalAnnulusGeneratorReport boundaryEdge side)
+    (hcyclic : CyclicallyFiveEdgeConnected G)
+    (hnotAll :
+      report.forcedCounterexampleLatents ≠
+        CAP5ExceptionalAnnulusGeneratorLatent.all boundaryEdge) :
+    ∃ latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge,
+      latent ∈ CAP5ExceptionalAnnulusGeneratorLatent.all boundaryEdge ∧
+        report.classify latent = CAP5SeparatorGeneratorStatus.partialCase := by
+  by_contra hnone
+  have hpartialEmpty : report.partialLatents = [] := by
+    apply List.eq_nil_iff_forall_not_mem.2
+    intro latent hpartial
+    have hpartialData := (report.mem_partialLatents_iff).1 hpartial
+    exact hnone ⟨latent, hpartialData.1, hpartialData.2⟩
+  exact hnotAll
+    ((report.forcedCounterexampleLatents_eq_all_iff_partialLatents_eq_nil_of_cyclicallyFiveEdgeConnected
+      hcyclic).2 hpartialEmpty)
+
 /-- In a complete cyclic-five run, the forced-counterexample report bin is the whole finite
 latent list.  This is the histogram form of the CAP5 generator falsification boundary. -/
 theorem forcedCounterexampleLatents_eq_all_of_complete_of_cyclicallyFiveEdgeConnected
@@ -1433,6 +1458,33 @@ theorem ofDecidableChecks_forcedCounterexampleLatents_eq_all_of_complete_of_cycl
     (by
       intro latent
       simpa [report, node, latentNode] using hcycles latent)
+
+/--
+Executable generator boundary: if the canonical finite checker does not force all sixteen CAP5
+latents in a cyclically five-edge-connected graph, it returns an explicit latent whose status is
+`partialCase`.
+-/
+theorem ofDecidableChecks_exists_partialLatent_of_forcedCounterexampleLatents_ne_all_of_cyclicallyFiveEdgeConnected
+    (boundaryEdge : Fin 5 → G.edgeSet) (side : V → Prop)
+    [∀ latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge,
+      Decidable ((latentNode boundaryEdge side latent).PortalCrosses)]
+    [∀ latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge,
+      Decidable ((latentNode boundaryEdge side latent).SideCycles)]
+    [∀ latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge,
+      Decidable ((latentNode boundaryEdge side latent).RealizedSeparator)]
+    (hcyclic : CyclicallyFiveEdgeConnected G)
+    (hnotAll :
+      (ofDecidableChecks boundaryEdge side).forcedCounterexampleLatents ≠
+        CAP5ExceptionalAnnulusGeneratorLatent.all boundaryEdge) :
+    ∃ latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge,
+      latent ∈ CAP5ExceptionalAnnulusGeneratorLatent.all boundaryEdge ∧
+        (ofDecidableChecks boundaryEdge side).classify latent =
+          CAP5SeparatorGeneratorStatus.partialCase := by
+  let report : CAP5ExceptionalAnnulusGeneratorReport boundaryEdge side :=
+    ofDecidableChecks boundaryEdge side
+  exact
+    report.exists_partialLatent_of_forcedCounterexampleLatents_ne_all_of_cyclicallyFiveEdgeConnected
+      hcyclic hnotAll
 
 /-- Executable histogram theorem for complete cyclic-five CAP5 sample runs: the canonical report
 producer emits exactly sixteen forced-counterexample latents. -/
