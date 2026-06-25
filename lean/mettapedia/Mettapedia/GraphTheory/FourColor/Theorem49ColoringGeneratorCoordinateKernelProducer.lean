@@ -116,6 +116,38 @@ theorem exists_familyPairing_ne_zero_of_edgePredicateWitness
   exact exists_familyPairing_ne_zero_of_redBlueSingleCoordinateWitness
     family e hz (hwitnessRed e hP) (hwitnessBlue e hP)
 
+/-- All-zero predicate-indexed red/blue pairings force vanishing on every emitted predicate edge.
+This is the contrapositive diagnostic form of `exists_familyPairing_ne_zero_of_edgePredicateWitness`:
+if a checker has red/blue single-coordinate probes for each `P` edge and every family pairing with
+`z` is zero, then no `P` edge can carry a nonzero coordinate of `z`. -/
+theorem edgePredicate_vanishes_of_forall_familyPairing_eq_zero
+    {G : SimpleGraph V} [Fintype G.edgeSet]
+    {emb : PlaneEmbeddingWithBoundary G}
+    {colorings : Set (G.EdgeColoring Color)}
+    {κ : Type*}
+    (family : κ → projectedColoringGeneratorSubspace emb colorings)
+    (P : G.edgeSet → Prop) {z : G.edgeSet → Color}
+    (hpairZero :
+      ∀ i : κ,
+        chainDotBilinForm G.edgeSet (family i : G.edgeSet → Color) z = 0)
+    (hwitnessRed :
+      ∀ e : G.edgeSet, P e →
+        ∃ i : κ,
+          ((family i : projectedColoringGeneratorSubspace emb colorings) : G.edgeSet → Color) =
+            Pi.single e red)
+    (hwitnessBlue :
+      ∀ e : G.edgeSet, P e →
+        ∃ i : κ,
+          ((family i : projectedColoringGeneratorSubspace emb colorings) : G.edgeSet → Color) =
+            Pi.single e blue) :
+    ∀ e : G.edgeSet, P e → z e = 0 := by
+  intro e hP
+  by_contra hze
+  rcases exists_familyPairing_ne_zero_of_edgePredicateWitness family P
+      ⟨e, hP, hze⟩ hwitnessRed hwitnessBlue with
+    ⟨i, hpair⟩
+  exact hpair (hpairZero i)
+
 /-- Predicate-indexed coordinate separation.  Instead of first materializing a finite control
 set, a checker may expose a predicate `P` for its emitted edge witnesses.  If vanishing on all
 `P` edges forces a selected-boundary-zero chain to vanish, and if the generator family supplies
