@@ -1726,6 +1726,44 @@ def emittedFinset
     Finset G.edgeSet :=
   Finset.univ.filter (fun e => classifier.accept e = true)
 
+/-- Finite worklist of later control edges that are not yet emitted by the checker.  This is the
+measure used by the CAP5 witness generator: every productive extension step must remove an edge
+from this set rather than merely add more report structure around the same obstruction. -/
+def remainingControlEdges
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    [Fintype G.edgeSet]
+    {p0Inside p4Inside : Bool} {side : V → Prop}
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (controlEdges : Finset G.edgeSet) :
+    Finset G.edgeSet :=
+  controlEdges.filter fun e => e ∉ classifier.emittedFinset
+
+/-- Membership in the finite remaining-control-edge worklist. -/
+theorem mem_remainingControlEdges_iff
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    [Fintype G.edgeSet]
+    {p0Inside p4Inside : Bool} {side : V → Prop}
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (controlEdges : Finset G.edgeSet) (e : G.edgeSet) :
+    e ∈ classifier.remainingControlEdges controlEdges ↔
+      e ∈ controlEdges ∧ e ∉ classifier.emittedFinset := by
+  simp [remainingControlEdges]
+
+/-- Erasing any chosen remaining control edge strictly decreases the finite generator worklist. -/
+theorem card_erase_remainingControlEdges_lt_of_mem
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    [Fintype G.edgeSet]
+    {p0Inside p4Inside : Bool} {side : V → Prop}
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (controlEdges : Finset G.edgeSet) {e : G.edgeSet}
+    (he : e ∈ classifier.remainingControlEdges controlEdges) :
+    ((classifier.remainingControlEdges controlEdges).erase e).card <
+      (classifier.remainingControlEdges controlEdges).card :=
+  (classifier.remainingControlEdges controlEdges).card_erase_lt_of_mem he
+
 /-- New control edges outside a Boolean checker output that cross the proposed side.  This is the
 finite geometric bin for a generator extension run. -/
 noncomputable def crossingExtensionFinset
@@ -1816,6 +1854,22 @@ theorem crossingExtensionFinset_union_noncrossingExtensionFinset_eq_filter_not_e
         (classifier.mem_noncrossingExtensionFinset_iff controlEdges e).2
           ⟨heControl, heNotEmitted, hcross⟩
 
+/-- The crossing and noncrossing extension bins are exactly the finite remaining-control-edge
+worklist, packaged under its named generator measure. -/
+theorem crossingExtensionFinset_union_noncrossingExtensionFinset_eq_remainingControlEdges
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    [Fintype G.edgeSet]
+    {p0Inside p4Inside : Bool} {side : V → Prop}
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (controlEdges : Finset G.edgeSet) :
+    classifier.crossingExtensionFinset controlEdges ∪
+        classifier.noncrossingExtensionFinset controlEdges =
+      classifier.remainingControlEdges controlEdges := by
+  simpa [remainingControlEdges] using
+    classifier.crossingExtensionFinset_union_noncrossingExtensionFinset_eq_filter_not_emitted
+      controlEdges
+
 /-- The side-crossing and noncrossing extension bins are disjoint. -/
 theorem disjoint_crossingExtensionFinset_noncrossingExtensionFinset
     {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
@@ -1886,6 +1940,21 @@ theorem card_crossingExtensionFinset_add_card_noncrossingExtensionFinset_eq_card
     (classifier.disjoint_crossingExtensionFinset_noncrossingExtensionFinset controlEdges)]
   rw [classifier.crossingExtensionFinset_union_noncrossingExtensionFinset_eq_filter_not_emitted
     controlEdges]
+
+/-- The extension-bin sizes add up to the named finite worklist size. -/
+theorem card_crossingExtensionFinset_add_card_noncrossingExtensionFinset_eq_card_remainingControlEdges
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    [Fintype G.edgeSet]
+    {p0Inside p4Inside : Bool} {side : V → Prop}
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (controlEdges : Finset G.edgeSet) :
+    (classifier.crossingExtensionFinset controlEdges).card +
+        (classifier.noncrossingExtensionFinset controlEdges).card =
+      (classifier.remainingControlEdges controlEdges).card := by
+  simpa [remainingControlEdges] using
+    classifier.card_crossingExtensionFinset_add_card_noncrossingExtensionFinset_eq_card_filter_not_emitted
+      controlEdges
 
 /-- The two extension bins are empty exactly when the later finite control set introduces no edge
 outside the classifier output.  This is the finite partition fact behind the checker fixed point:
