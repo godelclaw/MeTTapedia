@@ -342,6 +342,80 @@ theorem cap5BoundaryWord_not_extendsAcrossCycle_iff_coloredBlock2111_of_isTaitEd
   enum.cap5BoundaryWord_not_extendsAcrossCycle_iff_coloredBlock2111_of_isTaitEdgeColoring_of_isZeroBoundary_at
     C hC hzero.1
 
+/-- Canonical finite five-edge boundary enumeration used by the CAP5 boundary generator smoke
+tests.  It deliberately has no graph-embedding content: it only checks the boundary-word
+classification layer that a later graph generator consumes. -/
+def canonicalFinFive :
+    CAP5BoundaryEdgeEnumeration (Finset.univ : Finset (Fin 5)) where
+  boundaryEdge := fun i => i
+  injective := fun _ _ h => h
+  support_eq := by
+    ext i
+    simp
+
+@[simp] theorem canonicalFinFive_boundaryEdge (i : Fin 5) :
+    canonicalFinFive.boundaryEdge i = i :=
+  rfl
+
+/-- Canonical good `(3,1,1)` boundary-edge coloring for the finite CAP5 boundary sample. -/
+def canonicalGoodColoring : Fin 5 → Color :=
+  cap5GoodBoundaryWord311
+
+/-- Canonical bad `(2,1,1,1)` boundary-edge coloring for the finite CAP5 boundary sample. -/
+def canonicalBadColoring : Fin 5 → Color :=
+  cap5BadBoundaryWord2111
+
+@[simp] theorem canonicalGoodBoundaryWord :
+    cap5BoundaryWordOfEdges canonicalFinFive.boundaryEdge canonicalGoodColoring =
+      cap5GoodBoundaryWord311 := by
+  funext i
+  rfl
+
+@[simp] theorem canonicalBadBoundaryWord :
+    cap5BoundaryWordOfEdges canonicalFinFive.boundaryEdge canonicalBadColoring =
+      cap5BadBoundaryWord2111 := by
+  funext i
+  rfl
+
+/-- The canonical finite good sample is in the CAP5 extendable bin. -/
+theorem canonicalGoodBoundaryWord_extendsAcrossCycle :
+    CAP5WordExtendsAcrossCycle
+      (cap5BoundaryWordOfEdges canonicalFinFive.boundaryEdge canonicalGoodColoring) := by
+  rw [canonicalGoodBoundaryWord]
+  exact cap5GoodBoundaryWord311_extendsAcrossCycle
+
+/-- The canonical finite good sample has the good colored block shape. -/
+theorem canonicalGoodBoundaryWord_hasColoredBlock311 :
+    CAP5BoundaryWordHasColoredBlock311
+      (cap5BoundaryWordOfEdges canonicalFinFive.boundaryEdge canonicalGoodColoring) := by
+  rw [canonicalGoodBoundaryWord]
+  exact (cap5_extendsAcrossCycle_iff_coloredBlock311).mp
+    cap5GoodBoundaryWord311_extendsAcrossCycle
+
+/-- The canonical finite bad sample is in the CAP5 nonextendable bin. -/
+theorem not_canonicalBadBoundaryWord_extendsAcrossCycle :
+    ¬ CAP5WordExtendsAcrossCycle
+      (cap5BoundaryWordOfEdges canonicalFinFive.boundaryEdge canonicalBadColoring) := by
+  rw [canonicalBadBoundaryWord]
+  exact not_cap5BadBoundaryWord2111_extendsAcrossCycle
+
+/-- The canonical finite bad sample has the bad colored block shape. -/
+theorem canonicalBadBoundaryWord_hasColoredBlock2111 :
+    CAP5BoundaryWordHasColoredBlock2111
+      (cap5BoundaryWordOfEdges canonicalFinFive.boundaryEdge canonicalBadColoring) := by
+  rw [canonicalBadBoundaryWord]
+  refine ⟨red, blue, purple, isTaitColorTriple_red_blue_purple, 0, ?_⟩
+  funext i
+  fin_cases i <;> rfl
+
+/-- Every finite repair type repairs the canonical bad finite sample into the extendable bin. -/
+theorem canonicalBadBoundaryWord_repairType_extendsAcrossCycle
+    (τ : CAP5RepairType) :
+    CAP5WordExtendsAcrossCycle
+      (τ.apply (cap5BoundaryWordOfEdges canonicalFinFive.boundaryEdge canonicalBadColoring)) := by
+  rw [canonicalBadBoundaryWord]
+  exact τ.apply_bad_extendsAcrossCycle
+
 end CAP5BoundaryEdgeEnumeration
 
 end Mettapedia.GraphTheory.FourColor
