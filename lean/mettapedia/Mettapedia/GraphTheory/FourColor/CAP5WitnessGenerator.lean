@@ -1889,6 +1889,39 @@ theorem disjoint_crossingExtensionFinset_noncrossingExtensionFinset
     (classifier.mem_noncrossingExtensionFinset_iff controlEdges e).1 hnoncrossing |>.2.2
   exact hnotCross hcross
 
+/-- A geometric-bin witness can be processed by erasing it from the finite remaining worklist. -/
+theorem card_erase_remainingControlEdges_lt_of_mem_crossingExtensionFinset
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    [Fintype G.edgeSet]
+    {p0Inside p4Inside : Bool} {side : V → Prop}
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (controlEdges : Finset G.edgeSet) {e : G.edgeSet}
+    (he : e ∈ classifier.crossingExtensionFinset controlEdges) :
+    ((classifier.remainingControlEdges controlEdges).erase e).card <
+      (classifier.remainingControlEdges controlEdges).card := by
+  have he' :=
+    (classifier.mem_crossingExtensionFinset_iff controlEdges e).1 he
+  exact classifier.card_erase_remainingControlEdges_lt_of_mem controlEdges
+    ((classifier.mem_remainingControlEdges_iff controlEdges e).2 ⟨he'.1, he'.2.1⟩)
+
+/-- A noncrossing/algebraic-bin witness can be processed by erasing it from the finite remaining
+worklist. -/
+theorem card_erase_remainingControlEdges_lt_of_mem_noncrossingExtensionFinset
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    [Fintype G.edgeSet]
+    {p0Inside p4Inside : Bool} {side : V → Prop}
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (controlEdges : Finset G.edgeSet) {e : G.edgeSet}
+    (he : e ∈ classifier.noncrossingExtensionFinset controlEdges) :
+    ((classifier.remainingControlEdges controlEdges).erase e).card <
+      (classifier.remainingControlEdges controlEdges).card := by
+  have he' :=
+    (classifier.mem_noncrossingExtensionFinset_iff controlEdges e).1 he
+  exact classifier.card_erase_remainingControlEdges_lt_of_mem controlEdges
+    ((classifier.mem_remainingControlEdges_iff controlEdges e).2 ⟨he'.1, he'.2.1⟩)
+
 /-- Constructive nonempty form of the extension-bin partition.  The finite checker has a next
 extension-bin witness exactly when the later finite control set contains an edge that the
 classifier has not emitted yet. -/
