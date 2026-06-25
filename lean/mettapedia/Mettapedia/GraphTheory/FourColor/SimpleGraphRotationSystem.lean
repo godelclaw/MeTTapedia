@@ -138,6 +138,11 @@ noncomputable def toRotationSystem : RotationSystem V G.edgeSet :=
   data.toData.toRotationSystem
 
 @[simp]
+theorem toRotationSystem_alpha (d : G.Dart) :
+    data.toRotationSystem.alpha d = d.symm :=
+  rfl
+
+@[simp]
 theorem toRotationSystem_rho (d : G.Dart) :
     data.toRotationSystem.rho d = data.faceSuccessor d.symm :=
   rfl
@@ -145,7 +150,7 @@ theorem toRotationSystem_rho (d : G.Dart) :
 @[simp]
 theorem toRotationSystem_phi (d : G.Dart) :
     data.toRotationSystem.phi d = data.faceSuccessor d := by
-  simp [toRotationSystem, Data.toRotationSystem, RotationSystem.phi, toData, dartFlip]
+  simp [RotationSystem.phi]
 
 end FaceSuccessorData
 
