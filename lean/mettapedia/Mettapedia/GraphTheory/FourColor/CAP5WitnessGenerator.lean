@@ -479,6 +479,22 @@ theorem not_realizedSeparatorOnSide_iff_exists_crossing_outside_of_complete
   (node.forcedCounterexample_iff_not_realizedSeparatorOnSide_of_complete
     hportal hcycles).symm.trans node.forcedCounterexample_iff_exists_crossing_outside
 
+/--
+Node-level proof-as-generator boundary.  A generated CAP5 node is either missing primitive
+checker evidence, realizes the proposed side exactly, or emits a forced counterexample.  This is
+the local holds / partial / forced-counterexample split independent of any report histogram.
+-/
+theorem missingCheckerEvidence_or_realizedSeparatorOnSide_or_forcedCounterexample
+    (node : CAP5ExceptionalAnnulusGeneratorNode boundaryEdge) :
+    node.MissingCheckerEvidence ∨ node.RealizedSeparatorOnSide ∨ node.ForcedCounterexample := by
+  classical
+  by_cases hmissing : node.MissingCheckerEvidence
+  · exact Or.inl hmissing
+  · rcases (node.not_missingCheckerEvidence_iff_complete).1 hmissing with
+      ⟨hportal, hcycles⟩
+    exact Or.inr (node.realizedSeparatorOnSide_or_forcedCounterexample_of_complete
+      hportal hcycles)
+
 /-- Status-form version of the complete forward-checker boundary. -/
 theorem inBin_realizedSeparator_or_forcedCounterexample_of_complete
     (node : CAP5ExceptionalAnnulusGeneratorNode boundaryEdge)
@@ -602,6 +618,39 @@ theorem forcedCounterexample_of_cyclicallyFiveEdgeConnected
         node.side hcyclic hportal hinside_cycle houtside_cycle with
     ⟨u, v, e, p, heOutside, hu, hv, hpEdges, havoid⟩
   exact ⟨e, u, v, p, heOutside, hu, hv, hpEdges, havoid⟩
+
+/--
+Cyclic-five specialization of the node-level generator boundary.  In a cyclically five-edge
+connected graph, a generated CAP5 node is either still missing primitive checker evidence, or it
+has a forced counterexample.
+-/
+theorem missingCheckerEvidence_or_forcedCounterexample_of_cyclicallyFiveEdgeConnected
+    (node : CAP5ExceptionalAnnulusGeneratorNode boundaryEdge)
+    (hcyclic : CyclicallyFiveEdgeConnected G) :
+    node.MissingCheckerEvidence ∨ node.ForcedCounterexample := by
+  classical
+  by_cases hmissing : node.MissingCheckerEvidence
+  · exact Or.inl hmissing
+  · rcases (node.not_missingCheckerEvidence_iff_complete).1 hmissing with
+      ⟨hportal, hcycles⟩
+    exact Or.inr (node.forcedCounterexample_of_cyclicallyFiveEdgeConnected
+      hcyclic hportal hcycles)
+
+/--
+Concrete-edge form of the cyclic-five generator boundary.  Once cyclic five-edge-connectivity is
+assumed, every generated CAP5 node either exposes the primitive checker evidence still missing or
+emits an actual non-candidate edge crossing the proposed side.
+-/
+theorem missingCheckerEvidence_or_exists_crossing_outside_of_cyclicallyFiveEdgeConnected
+    (node : CAP5ExceptionalAnnulusGeneratorNode boundaryEdge)
+    (hcyclic : CyclicallyFiveEdgeConnected G) :
+    node.MissingCheckerEvidence ∨
+      ∃ e : G.edgeSet, e ∉ node.candidate.edgeSupport ∧
+        EdgeCrossesVertexSide G node.side e := by
+  rcases node.missingCheckerEvidence_or_forcedCounterexample_of_cyclicallyFiveEdgeConnected
+      hcyclic with hmissing | hforced
+  · exact Or.inl hmissing
+  · exact Or.inr ((node.forcedCounterexample_iff_exists_crossing_outside).1 hforced)
 
 /-- Data-level cyclic-connectivity specialization of the finite CAP5 generator.  Exceptional
 component-cover data selects an enumerated latent, and cyclic five-edge-connectivity forces the
