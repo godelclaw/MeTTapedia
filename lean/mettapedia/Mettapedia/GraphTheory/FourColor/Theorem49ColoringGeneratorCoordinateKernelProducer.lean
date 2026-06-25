@@ -361,6 +361,39 @@ theorem exists_nonzero_mem_ker_planarBoundaryZeroFamilyPairingMap_of_boundaryZer
     exact hzNonzero (congrArg (fun x : planarBoundaryZeroSubmodule emb =>
       (x : G.edgeSet → Color)) hwzero)
 
+/-- A predicate obstruction rules out a trivial family-pairing kernel for any family that only
+tests red/blue single-coordinate chains on predicate edges.  This is the exact contradiction form
+a finite generator can use: a returned obstruction means the current predicate-only probe family
+cannot be a complete detector. -/
+theorem not_ker_planarBoundaryZeroFamilyPairingMap_eq_bot_of_boundaryZeroChainObstruction
+    {G : SimpleGraph V} [Fintype G.edgeSet]
+    {emb : PlaneEmbeddingWithBoundary G}
+    {colorings : Set (G.EdgeColoring Color)}
+    {κ : Type*}
+    (family : κ → projectedColoringGeneratorSubspace emb colorings)
+    (P : G.edgeSet → Prop)
+    (hfamily :
+      ∀ i : κ,
+        ∃ e : G.edgeSet, P e ∧
+          (((family i : projectedColoringGeneratorSubspace emb colorings) :
+                G.edgeSet → Color) = Pi.single e red ∨
+            ((family i : projectedColoringGeneratorSubspace emb colorings) :
+                G.edgeSet → Color) = Pi.single e blue))
+    (hobs :
+      ∃ z : G.edgeSet → Color,
+        z ∈ planarBoundaryZeroSubmodule emb ∧
+          z ≠ 0 ∧
+            ∀ e : G.edgeSet, P e → z e = 0) :
+    LinearMap.ker (planarBoundaryZeroFamilyPairingMap family) ≠ ⊥ := by
+  intro hker
+  rcases hobs with ⟨z, hzBoundary, hzNonzero, hvanish⟩
+  rcases exists_nonzero_mem_ker_planarBoundaryZeroFamilyPairingMap_of_boundaryZeroChainObstruction
+      family P hfamily z hzBoundary hzNonzero hvanish with
+    ⟨w, hwker, hwNonzero⟩
+  have hwbot : w ∈ (⊥ : Submodule F2 (planarBoundaryZeroSubmodule emb)) := by
+    simpa [hker] using hwker
+  exact hwNonzero (by simpa using hwbot)
+
 /-- Finite-coordinate version of predicate control.  A concrete finite edge set controls the
 selected-boundary-zero chains iff every nonzero selected-boundary-zero chain is nonzero on at
 least one edge of that set.  This is the rank/kernel certificate shape expected from a finite
