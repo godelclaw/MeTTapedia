@@ -1359,6 +1359,41 @@ theorem exists_mem_forcedCounterexampleLatents_of_complete_of_cyclicallyFiveEdge
     report.mem_forcedCounterexampleLatents_of_mem_all_of_complete_of_cyclicallyFiveEdgeConnected
       hcyclic hportal hcycles (CAP5ExceptionalAnnulusGeneratorLatent.mem_all latent)⟩
 
+/-- A complete cyclic-five CAP5 report emits a concrete one-edge forced-counterexample walk.  This is
+the finite generator payload: an enumerated latent, an outside edge, endpoint sides, a one-edge walk
+crossing the proposed side, and avoidance of the generated portal boundary edges. -/
+theorem exists_oneEdge_forcedCounterexampleWalk_of_complete_of_cyclicallyFiveEdgeConnected
+    (report : CAP5ExceptionalAnnulusGeneratorReport boundaryEdge side)
+    (hcyclic : CyclicallyFiveEdgeConnected G)
+    (hportal :
+      ∀ latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge,
+        (report.node latent).PortalCrosses)
+    (hcycles :
+      ∀ latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge,
+        (report.node latent).SideCycles) :
+    ∃ latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge,
+      latent ∈ CAP5ExceptionalAnnulusGeneratorLatent.all boundaryEdge ∧
+        latent ∈ report.forcedCounterexampleLatents ∧
+          ∃ u v : V, ∃ e : G.edgeSet, ∃ p : G.Walk u v,
+            e ∉ (report.node latent).candidate.edgeSupport ∧
+              side u ∧ ¬ side v ∧
+                p.edges = [(e : Sym2 V)] ∧
+                  (∀ i : Fin 5, i ∈ (report.node latent).candidate.portalCandidate.portalSet →
+                    ((boundaryEdge i : G.edgeSet) : Sym2 V) ∉ p.edges) ∧
+                    EdgeCrossesVertexSide G side e := by
+  rcases report.exists_mem_forcedCounterexampleLatents_of_complete_of_cyclicallyFiveEdgeConnected
+      hcyclic hportal hcycles with
+    ⟨latent, hforcedMem⟩
+  have hlatentMem :
+      latent ∈ CAP5ExceptionalAnnulusGeneratorLatent.all boundaryEdge :=
+    (report.mem_forcedCounterexampleLatents_iff).1 hforcedMem |>.1
+  rcases report.exists_oneEdge_forcedCounterexampleWalk_of_mem_forcedCounterexampleLatents
+      hforcedMem with
+    ⟨u, v, e, p, heOutside, hu, hv, hpEdges, havoid, hcross⟩
+  exact
+    ⟨latent, hlatentMem, hforcedMem, u, v, e, p, heOutside, hu, hv,
+      hpEdges, havoid, hcross⟩
+
 end CAP5ExceptionalAnnulusGeneratorReport
 
 namespace CAP5TransportedEdgeComponentCoverCore
