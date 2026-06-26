@@ -9223,6 +9223,34 @@ theorem sharedInteriorPair_boundaryZeroProjectedColoringGeneratorDetector_of_uni
       sharedInteriorPair_uniqueProjectedBicoloredCertificates.1
       sharedInteriorPair_uniqueProjectedBicoloredCertificates.2
 
+/-- Canonical finite family for the shared focus shell: red and blue single-coordinate probes on
+the two lab-certified controlling edges, realized by the unique projected-bicolored certificate
+colorings. -/
+noncomputable def sharedInteriorPairUniqueCertificateRedBlueFamily :
+    ({e : sharedInteriorPairGraph.edgeSet // e ∈ sharedInteriorPairInteriorControlEdges} × Bool) →
+      projectedColoringGeneratorSubspace sharedInteriorPairEmbedding
+        sharedInteriorPairProjectedGeneratorCertificateColorings :=
+  redBlueSingleCoordinateFamily sharedInteriorPairInteriorControlEdges
+    sharedInteriorPair_redBlueSingleCoordinateMemberships_of_uniqueCertificates.1
+    sharedInteriorPair_redBlueSingleCoordinateMemberships_of_uniqueCertificates.2
+
+/-- Family-pairing kernel form of the shared focus-shell F₂ verdict.  The canonical red/blue
+certificate family has trivial selected-boundary-zero pairing kernel. -/
+theorem sharedInteriorPair_ker_planarBoundaryZeroFamilyPairingMap_uniqueCertificateRedBlueFamily_eq_bot :
+    LinearMap.ker
+        (planarBoundaryZeroFamilyPairingMap
+          sharedInteriorPairUniqueCertificateRedBlueFamily) = ⊥ :=
+  ker_planarBoundaryZeroFamilyPairingMap_eq_bot_of_edgePredicateNonzeroWitnesses
+    sharedInteriorPairUniqueCertificateRedBlueFamily
+    (fun e => e ∈ sharedInteriorPairInteriorControlEdges)
+    sharedInteriorPair_boundaryZero_declaredForcedEdges_nonzeroCoverage
+    (redBlueSingleCoordinateFamily_witnessRed sharedInteriorPairInteriorControlEdges
+      sharedInteriorPair_redBlueSingleCoordinateMemberships_of_uniqueCertificates.1
+      sharedInteriorPair_redBlueSingleCoordinateMemberships_of_uniqueCertificates.2)
+    (redBlueSingleCoordinateFamily_witnessBlue sharedInteriorPairInteriorControlEdges
+      sharedInteriorPair_redBlueSingleCoordinateMemberships_of_uniqueCertificates.1
+      sharedInteriorPair_redBlueSingleCoordinateMemberships_of_uniqueCertificates.2)
+
 /-- Projected-face-generator certificate form of the shared-interior-pair focus verdict.  This
 is the direct active Lean consumer for finite-lab certificates saying that the red and blue
 single-coordinate probes on the declared forced edges are literal projected face generators. -/
@@ -9752,6 +9780,46 @@ theorem wheelWithInnerTriangle_boundaryZeroProjectedColoringGeneratorDetector_of
       wheelWithInnerTriangle_boundaryZero_controlEdges_interiorEdges
       wheelWithInnerTriangle_uniqueProjectedBicoloredCertificates.1
       wheelWithInnerTriangle_uniqueProjectedBicoloredCertificates.2
+
+/-- Canonical finite family for the wheel focus shell: red and blue single-coordinate probes on
+the three lab-certified spoke controls, realized by the unique projected-bicolored certificate
+colorings. -/
+noncomputable def wheelWithInnerTriangleUniqueCertificateRedBlueFamily :
+    ({e : wheelWithInnerTriangleGraph.edgeSet // e ∈ wheelWithInnerTriangleInteriorControlEdges} ×
+        Bool) →
+      projectedColoringGeneratorSubspace wheelWithInnerTriangleEmbedding
+        wheelWithInnerTriangleProjectedGeneratorCertificateColorings :=
+  redBlueSingleCoordinateFamily wheelWithInnerTriangleInteriorControlEdges
+    wheelWithInnerTriangle_redBlueSingleCoordinateMemberships_of_uniqueCertificates.1
+    wheelWithInnerTriangle_redBlueSingleCoordinateMemberships_of_uniqueCertificates.2
+
+/-- Family-pairing kernel form of the wheel focus-shell F₂ verdict.  The canonical red/blue
+certificate family has trivial selected-boundary-zero pairing kernel. -/
+theorem wheelWithInnerTriangle_ker_planarBoundaryZeroFamilyPairingMap_uniqueCertificateRedBlueFamily_eq_bot :
+    LinearMap.ker
+        (planarBoundaryZeroFamilyPairingMap
+          wheelWithInnerTriangleUniqueCertificateRedBlueFamily) = ⊥ :=
+  ker_planarBoundaryZeroFamilyPairingMap_eq_bot_of_edgePredicateNonzeroWitnesses
+    wheelWithInnerTriangleUniqueCertificateRedBlueFamily
+    (fun e => e ∈ wheelWithInnerTriangleInteriorControlEdges)
+    wheelWithInnerTriangle_boundaryZero_declaredForcedEdges_nonzeroCoverage
+    (redBlueSingleCoordinateFamily_witnessRed wheelWithInnerTriangleInteriorControlEdges
+      wheelWithInnerTriangle_redBlueSingleCoordinateMemberships_of_uniqueCertificates.1
+      wheelWithInnerTriangle_redBlueSingleCoordinateMemberships_of_uniqueCertificates.2)
+    (redBlueSingleCoordinateFamily_witnessBlue wheelWithInnerTriangleInteriorControlEdges
+      wheelWithInnerTriangle_redBlueSingleCoordinateMemberships_of_uniqueCertificates.1
+      wheelWithInnerTriangle_redBlueSingleCoordinateMemberships_of_uniqueCertificates.2)
+
+/-- Combined kernel-check form of the finite F₂ verdict for the two focus shells. -/
+theorem focusF2BoundaryZero_uniqueCertificateRedBlueFamilyPairingKernels_eq_bot :
+    LinearMap.ker
+        (planarBoundaryZeroFamilyPairingMap
+          sharedInteriorPairUniqueCertificateRedBlueFamily) = ⊥ ∧
+      LinearMap.ker
+        (planarBoundaryZeroFamilyPairingMap
+          wheelWithInnerTriangleUniqueCertificateRedBlueFamily) = ⊥ :=
+  ⟨sharedInteriorPair_ker_planarBoundaryZeroFamilyPairingMap_uniqueCertificateRedBlueFamily_eq_bot,
+    wheelWithInnerTriangle_ker_planarBoundaryZeroFamilyPairingMap_uniqueCertificateRedBlueFamily_eq_bot⟩
 
 /-- Projected-face-generator certificate form of the wheel focus verdict.  The finite lab can
 feed this theorem with literal projected face-generator equalities for red and blue probes on the
