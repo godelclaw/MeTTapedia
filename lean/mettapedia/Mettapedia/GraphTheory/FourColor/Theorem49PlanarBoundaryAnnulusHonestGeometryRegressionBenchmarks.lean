@@ -210,6 +210,157 @@ theorem crossComponentBridgeBoundary_refutes_componentInduced_to_unionInduced :
       crossComponentBridgeInnerBoundary crossComponentBridgeOuterBoundary_induced
       crossComponentBridgeInnerBoundary_induced)
 
+abbrev CrossComponentBridgeFace := Fin 6
+
+def crossComponentBridgeFaces : Finset CrossComponentBridgeFace :=
+  Finset.univ
+
+def crossComponentBridgeFaceBoundary :
+    CrossComponentBridgeFace → Finset crossComponentBridgeGraph.edgeSet
+  | ⟨0, _⟩ => {ccbO01, ccbR14, ccbD04}
+  | ⟨1, _⟩ => {ccbI34, ccbD04, ccbR03}
+  | ⟨2, _⟩ => {ccbO12, ccbR25, ccbD15}
+  | ⟨3, _⟩ => {ccbI45, ccbD15, ccbR14}
+  | ⟨4, _⟩ => {ccbO20, ccbR03, ccbD23}
+  | ⟨5, _⟩ => {ccbI53, ccbD23, ccbR25}
+
+theorem totalIncidenceCount_ccbO01 :
+    totalIncidenceCount crossComponentBridgeFaceBoundary
+      crossComponentBridgeFaces ccbO01 = 1 := by
+  decide
+
+theorem totalIncidenceCount_ccbO12 :
+    totalIncidenceCount crossComponentBridgeFaceBoundary
+      crossComponentBridgeFaces ccbO12 = 1 := by
+  decide
+
+theorem totalIncidenceCount_ccbO20 :
+    totalIncidenceCount crossComponentBridgeFaceBoundary
+      crossComponentBridgeFaces ccbO20 = 1 := by
+  decide
+
+theorem totalIncidenceCount_ccbI34 :
+    totalIncidenceCount crossComponentBridgeFaceBoundary
+      crossComponentBridgeFaces ccbI34 = 1 := by
+  decide
+
+theorem totalIncidenceCount_ccbI45 :
+    totalIncidenceCount crossComponentBridgeFaceBoundary
+      crossComponentBridgeFaces ccbI45 = 1 := by
+  decide
+
+theorem totalIncidenceCount_ccbI53 :
+    totalIncidenceCount crossComponentBridgeFaceBoundary
+      crossComponentBridgeFaces ccbI53 = 1 := by
+  decide
+
+theorem totalIncidenceCount_ccbR03 :
+    totalIncidenceCount crossComponentBridgeFaceBoundary
+      crossComponentBridgeFaces ccbR03 = 2 := by
+  decide
+
+theorem totalIncidenceCount_ccbR14 :
+    totalIncidenceCount crossComponentBridgeFaceBoundary
+      crossComponentBridgeFaces ccbR14 = 2 := by
+  decide
+
+theorem totalIncidenceCount_ccbR25 :
+    totalIncidenceCount crossComponentBridgeFaceBoundary
+      crossComponentBridgeFaces ccbR25 = 2 := by
+  decide
+
+theorem totalIncidenceCount_ccbD04 :
+    totalIncidenceCount crossComponentBridgeFaceBoundary
+      crossComponentBridgeFaces ccbD04 = 2 := by
+  decide
+
+theorem totalIncidenceCount_ccbD15 :
+    totalIncidenceCount crossComponentBridgeFaceBoundary
+      crossComponentBridgeFaces ccbD15 = 2 := by
+  decide
+
+theorem totalIncidenceCount_ccbD23 :
+    totalIncidenceCount crossComponentBridgeFaceBoundary
+      crossComponentBridgeFaces ccbD23 = 2 := by
+  decide
+
+def crossComponentBridgeEmbedding :
+    PlaneEmbeddingWithBoundary crossComponentBridgeGraph where
+  Face := CrossComponentBridgeFace
+  faceDecidableEq := inferInstance
+  faces := crossComponentBridgeFaces
+  faceBoundary := crossComponentBridgeFaceBoundary
+  edge_mem_faceSupport := by
+    intro e
+    rcases crossComponentBridge_edge_eq e with
+      rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl <;>
+      decide
+  edge_one_or_two_faces := by
+    intro e _he
+    rcases crossComponentBridge_edge_eq e with
+      rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl <;>
+      decide
+
+theorem crossComponentBridge_selectedBoundarySupport_eq :
+    selectedBoundarySupport crossComponentBridgeEmbedding.faceBoundary
+      crossComponentBridgeEmbedding.faces crossComponentBridgeEmbedding.faces =
+        crossComponentBridgeOuterBoundary ∪ crossComponentBridgeInnerBoundary := by
+  ext e
+  rcases crossComponentBridge_edge_eq e with
+    rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl <;>
+    decide
+
+def crossComponentBridgeBoundaryData :
+    PlanarBoundaryAnnulusBoundaryData crossComponentBridgeEmbedding := by
+  refine
+    { outerAmbientBoundary := crossComponentBridgeOuterBoundary
+      innerAmbientBoundary := crossComponentBridgeInnerBoundary
+      houterAmbientBoundaryNonempty := by decide
+      hinnerAmbientBoundaryNonempty := by decide
+      houterAmbientBoundarySubset := by
+        rw [crossComponentBridge_selectedBoundarySupport_eq]
+        intro e he
+        exact Finset.mem_union_left crossComponentBridgeInnerBoundary he
+      hinnerAmbientBoundarySubset := by
+        rw [crossComponentBridge_selectedBoundarySupport_eq]
+        intro e he
+        exact Finset.mem_union_right crossComponentBridgeOuterBoundary he
+      hambientBoundaryCover := by
+        rw [crossComponentBridge_selectedBoundarySupport_eq]
+      hambientBoundaryDisjoint := by decide }
+
+theorem crossComponentBridgeBoundaryData_outer_eq :
+    crossComponentBridgeBoundaryData.outerAmbientBoundary =
+      crossComponentBridgeOuterBoundary := by
+  rfl
+
+theorem crossComponentBridgeBoundaryData_inner_eq :
+    crossComponentBridgeBoundaryData.innerAmbientBoundary =
+      crossComponentBridgeInnerBoundary := by
+  rfl
+
+theorem not_crossComponentBridgeEmbedding_selectedBoundaryInducedSubgraph :
+    ¬ SelectedBoundaryInducedSubgraph crossComponentBridgeEmbedding := by
+  rw [SelectedBoundaryInducedSubgraph, crossComponentBridge_selectedBoundarySupport_eq]
+  exact not_crossComponentBridgeBoundary_union_induced
+
+theorem
+    crossComponentBridgeEmbedding_refutes_componentInducedBoundaryData_to_selectedBoundaryInduced :
+    ¬ ∀ (G : SimpleGraph (Fin 6)) (emb : PlaneEmbeddingWithBoundary G),
+      ∀ data : PlanarBoundaryAnnulusBoundaryData emb,
+        BoundaryEdgeSetInducedSubgraph data.outerAmbientBoundary →
+          BoundaryEdgeSetInducedSubgraph data.innerAmbientBoundary →
+            SelectedBoundaryInducedSubgraph emb := by
+  intro h
+  exact not_crossComponentBridgeEmbedding_selectedBoundaryInducedSubgraph
+    (h crossComponentBridgeGraph crossComponentBridgeEmbedding crossComponentBridgeBoundaryData
+      (by
+        simpa [crossComponentBridgeBoundaryData_outer_eq] using
+          crossComponentBridgeOuterBoundary_induced)
+      (by
+        simpa [crossComponentBridgeBoundaryData_inner_eq] using
+          crossComponentBridgeInnerBoundary_induced))
+
 /-- The honest `diamondWithTriangle` source model also admits a one-collar annulus geometry: all
 three ambient faces are peeled in a single collar, with the diamond pair using the shared
 interior edge as witness and the separate triangle using one inner-boundary edge.  This is the
