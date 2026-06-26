@@ -7733,6 +7733,54 @@ theorem sharedInteriorPair_selectedBoundarySupport_eq :
     rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl <;>
     decide
 
+theorem sharedInteriorPair_selectedBoundarySupport_induced :
+    BoundaryEdgeSetInducedSubgraph
+      ({sip23, sip30, sip24, sip40, sip56, sip67, sip75} :
+        Finset sharedInteriorPairGraph.edgeSet) := by
+  intro e hEndpoints
+  rcases sharedInteriorPair_edge_eq e with
+    rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl
+  · exfalso
+    have hbad := hEndpoints (1 : Fin 8) (by decide)
+    simp [boundaryEdgeSetEndpointSupport, sip23, sip30, sip24, sip40, sip56, sip67,
+      sip75] at hbad
+  · exfalso
+    have hbad := hEndpoints (1 : Fin 8) (by decide)
+    simp [boundaryEdgeSetEndpointSupport, sip23, sip30, sip24, sip40, sip56, sip67,
+      sip75] at hbad
+  · simp
+  · simp
+  · simp
+  · simp
+  · simp
+  · simp
+  · simp
+
+theorem sharedInteriorPair_selectedBoundaryInducedSubgraph :
+    SelectedBoundaryInducedSubgraph sharedInteriorPairEmbedding := by
+  rw [SelectedBoundaryInducedSubgraph, sharedInteriorPair_selectedBoundarySupport_eq]
+  exact sharedInteriorPair_selectedBoundarySupport_induced
+
+theorem sharedInteriorPair_interiorEdgesNotSelectedBoundaryChords :
+    InteriorEdgesNotSelectedBoundaryChords sharedInteriorPairEmbedding :=
+  interiorEdgesNotSelectedBoundaryChords_of_selectedBoundaryInducedSubgraph
+    sharedInteriorPair_selectedBoundaryInducedSubgraph
+
+theorem sharedInteriorPair_interiorEdgeSupport_nonempty :
+    (interiorEdgeSupport
+      sharedInteriorPairEmbedding.faceBoundary
+      sharedInteriorPairEmbedding.faces).Nonempty := by
+  refine ⟨sip01, ?_⟩
+  rw [sharedInteriorPair_interiorEdgeSupport_eq]
+  simp
+
+theorem
+    selectedBoundaryInteriorEdgeEndpointVertices_nonempty_sharedInteriorPair_via_selectedBoundaryInducedSubgraph :
+    (selectedBoundaryInteriorEdgeEndpointVertices sharedInteriorPairEmbedding).Nonempty :=
+  selectedBoundaryInteriorEdgeEndpointVertices_nonempty_of_selectedBoundaryInducedSubgraph_and_nonempty
+    sharedInteriorPair_selectedBoundaryInducedSubgraph
+    sharedInteriorPair_interiorEdgeSupport_nonempty
+
 theorem sharedInteriorPair_mem_selectedBoundarySupport_of_not_mem_interiorEdgeSupport
     {e : sharedInteriorPairGraph.edgeSet}
     (hnotInterior :
@@ -8002,6 +8050,57 @@ theorem wheelWithInnerTriangle_selectedBoundarySupport_eq :
   rcases wheelWithInnerTriangle_edge_eq e with
     rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl <;>
     decide
+
+theorem wheelWithInnerTriangle_selectedBoundarySupport_induced :
+    BoundaryEdgeSetInducedSubgraph
+      ({wit12, wit23, wit31, wit45, wit56, wit64} :
+        Finset wheelWithInnerTriangleGraph.edgeSet) := by
+  intro e hEndpoints
+  rcases wheelWithInnerTriangle_edge_eq e with
+    rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl
+  · exfalso
+    have hbad := hEndpoints (0 : Fin 7) (by decide)
+    simp [boundaryEdgeSetEndpointSupport, wit12, wit23, wit31, wit45, wit56,
+      wit64] at hbad
+  · exfalso
+    have hbad := hEndpoints (0 : Fin 7) (by decide)
+    simp [boundaryEdgeSetEndpointSupport, wit12, wit23, wit31, wit45, wit56,
+      wit64] at hbad
+  · exfalso
+    have hbad := hEndpoints (0 : Fin 7) (by decide)
+    simp [boundaryEdgeSetEndpointSupport, wit12, wit23, wit31, wit45, wit56,
+      wit64] at hbad
+  · simp
+  · simp
+  · simp
+  · simp
+  · simp
+  · simp
+
+theorem wheelWithInnerTriangle_selectedBoundaryInducedSubgraph :
+    SelectedBoundaryInducedSubgraph wheelWithInnerTriangleEmbedding := by
+  rw [SelectedBoundaryInducedSubgraph, wheelWithInnerTriangle_selectedBoundarySupport_eq]
+  exact wheelWithInnerTriangle_selectedBoundarySupport_induced
+
+theorem wheelWithInnerTriangle_interiorEdgesNotSelectedBoundaryChords :
+    InteriorEdgesNotSelectedBoundaryChords wheelWithInnerTriangleEmbedding :=
+  interiorEdgesNotSelectedBoundaryChords_of_selectedBoundaryInducedSubgraph
+    wheelWithInnerTriangle_selectedBoundaryInducedSubgraph
+
+theorem wheelWithInnerTriangle_interiorEdgeSupport_nonempty :
+    (interiorEdgeSupport
+      wheelWithInnerTriangleEmbedding.faceBoundary
+      wheelWithInnerTriangleEmbedding.faces).Nonempty := by
+  refine ⟨wit01, ?_⟩
+  rw [wheelWithInnerTriangle_interiorEdgeSupport_eq]
+  simp
+
+theorem
+    selectedBoundaryInteriorEdgeEndpointVertices_nonempty_wheelWithInnerTriangle_via_selectedBoundaryInducedSubgraph :
+    (selectedBoundaryInteriorEdgeEndpointVertices wheelWithInnerTriangleEmbedding).Nonempty :=
+  selectedBoundaryInteriorEdgeEndpointVertices_nonempty_of_selectedBoundaryInducedSubgraph_and_nonempty
+    wheelWithInnerTriangle_selectedBoundaryInducedSubgraph
+    wheelWithInnerTriangle_interiorEdgeSupport_nonempty
 
 theorem wheelWithInnerTriangle_mem_selectedBoundarySupport_of_not_mem_interiorEdgeSupport
     {e : wheelWithInnerTriangleGraph.edgeSet}
