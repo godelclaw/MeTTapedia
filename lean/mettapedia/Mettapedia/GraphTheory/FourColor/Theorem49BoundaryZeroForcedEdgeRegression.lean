@@ -2,6 +2,7 @@ import Mettapedia.GraphTheory.FourColor.Theorem49TargetSubspace
 import Mettapedia.GraphTheory.FourColor.Theorem49BoundaryFreeSelectorConstruction
 import Mettapedia.GraphTheory.FourColor.PlanarBoundaryClosedWalkSource
 import Mettapedia.GraphTheory.FourColor.CAP5WitnessGenerator
+import Mettapedia.GraphTheory.FourColor.Theorem49ColoringGeneratorCoordinateDetector
 
 /-!
 Finite F2 boundary-zero regressions mined from the ignored CAP5 validation lab.
@@ -8784,6 +8785,78 @@ theorem sharedInteriorPair_theorem49BoundaryRootSynthesis_of_declaredForcedEdgeW
     sharedInteriorPair_boundaryZero_declaredForcedEdges_nonzeroCoverage
     hwitnessRed hwitnessBlue
 
+/-- Projected-face-generator certificate form of the shared-interior-pair focus verdict.  This
+is the direct active Lean consumer for finite-lab certificates saying that the red and blue
+single-coordinate probes on the declared forced edges are literal projected face generators. -/
+theorem sharedInteriorPair_boundaryZeroProjectedColoringGeneratorDetector_of_projectedFaceGeneratorEqualities
+    (colorings : Set (sharedInteriorPairGraph.EdgeColoring Color))
+    (hred :
+      ∀ e ∈ sharedInteriorPairInteriorControlEdges,
+        ∃ C ∈ colorings, ∃ f : sharedInteriorPairEmbedding.Face, ∃ a b : Color,
+          ValidColorPair a b ∧
+            boundaryZeroProjection
+                (selectedBoundarySupport
+                  sharedInteriorPairEmbedding.faceBoundary
+                  sharedInteriorPairEmbedding.faces
+                  sharedInteriorPairEmbedding.faces)
+                (polarizedFaceGenerator C a b
+                  (sharedInteriorPairEmbedding.faceBoundary f)) =
+              Pi.single e red)
+    (hblue :
+      ∀ e ∈ sharedInteriorPairInteriorControlEdges,
+        ∃ C ∈ colorings, ∃ f : sharedInteriorPairEmbedding.Face, ∃ a b : Color,
+          ValidColorPair a b ∧
+            boundaryZeroProjection
+                (selectedBoundarySupport
+                  sharedInteriorPairEmbedding.faceBoundary
+                  sharedInteriorPairEmbedding.faces
+                  sharedInteriorPairEmbedding.faces)
+                (polarizedFaceGenerator C a b
+                  (sharedInteriorPairEmbedding.faceBoundary f)) =
+              Pi.single e blue) :
+    BoundaryZeroProjectedColoringGeneratorDetector sharedInteriorPairEmbedding colorings :=
+  BoundaryZeroProjectedColoringGeneratorDetector.of_projectedFaceGeneratorEqualities
+    sharedInteriorPairInteriorControlEdges
+    sharedInteriorPair_boundaryZero_controlEdges_interiorEdges
+    hred hblue
+
+/-- Boundary-root synthesis form for shared-interior-pair projected-face-generator certificates. -/
+theorem sharedInteriorPair_theorem49BoundaryRootSynthesis_of_projectedFaceGeneratorEqualities
+    [FiniteDimensional F2 (sharedInteriorPairGraph.edgeSet → Color)]
+    (C₀ : sharedInteriorPairGraph.EdgeColoring Color)
+    (colorings : Set (sharedInteriorPairGraph.EdgeColoring Color))
+    (hsubset : colorings ⊆ sharedInteriorPairGraph.EdgeKempeClosure C₀)
+    (hred :
+      ∀ e ∈ sharedInteriorPairInteriorControlEdges,
+        ∃ C ∈ colorings, ∃ f : sharedInteriorPairEmbedding.Face, ∃ a b : Color,
+          ValidColorPair a b ∧
+            boundaryZeroProjection
+                (selectedBoundarySupport
+                  sharedInteriorPairEmbedding.faceBoundary
+                  sharedInteriorPairEmbedding.faces
+                  sharedInteriorPairEmbedding.faces)
+                (polarizedFaceGenerator C a b
+                  (sharedInteriorPairEmbedding.faceBoundary f)) =
+              Pi.single e red)
+    (hblue :
+      ∀ e ∈ sharedInteriorPairInteriorControlEdges,
+        ∃ C ∈ colorings, ∃ f : sharedInteriorPairEmbedding.Face, ∃ a b : Color,
+          ValidColorPair a b ∧
+            boundaryZeroProjection
+                (selectedBoundarySupport
+                  sharedInteriorPairEmbedding.faceBoundary
+                  sharedInteriorPairEmbedding.faces
+                  sharedInteriorPairEmbedding.faces)
+                (polarizedFaceGenerator C a b
+                  (sharedInteriorPairEmbedding.faceBoundary f)) =
+              Pi.single e blue) :
+    Theorem49BoundaryRootSynthesis sharedInteriorPairEmbedding C₀ :=
+  theorem49BoundaryRootSynthesis_of_projectedFaceGeneratorEqualities
+    sharedInteriorPairEmbedding C₀ colorings hsubset
+    sharedInteriorPairInteriorControlEdges
+    sharedInteriorPair_boundaryZero_controlEdges_interiorEdges
+    hred hblue
+
 /--
 Closed-walk shell producer for the wheel-with-inner-triangle focus verdict.  The three declared
 spokes are a complete finite nonzero-coverage set for selected-boundary-zero chains.
@@ -8842,6 +8915,78 @@ theorem wheelWithInnerTriangle_theorem49BoundaryRootSynthesis_of_declaredForcedE
     wheelWithInnerTriangleInteriorControlEdges
     wheelWithInnerTriangle_boundaryZero_declaredForcedEdges_nonzeroCoverage
     hwitnessRed hwitnessBlue
+
+/-- Projected-face-generator certificate form of the wheel focus verdict.  The finite lab can
+feed this theorem with literal projected face-generator equalities for red and blue probes on the
+three declared spoke controls. -/
+theorem wheelWithInnerTriangle_boundaryZeroProjectedColoringGeneratorDetector_of_projectedFaceGeneratorEqualities
+    (colorings : Set (wheelWithInnerTriangleGraph.EdgeColoring Color))
+    (hred :
+      ∀ e ∈ wheelWithInnerTriangleInteriorControlEdges,
+        ∃ C ∈ colorings, ∃ f : wheelWithInnerTriangleEmbedding.Face, ∃ a b : Color,
+          ValidColorPair a b ∧
+            boundaryZeroProjection
+                (selectedBoundarySupport
+                  wheelWithInnerTriangleEmbedding.faceBoundary
+                  wheelWithInnerTriangleEmbedding.faces
+                  wheelWithInnerTriangleEmbedding.faces)
+                (polarizedFaceGenerator C a b
+                  (wheelWithInnerTriangleEmbedding.faceBoundary f)) =
+              Pi.single e red)
+    (hblue :
+      ∀ e ∈ wheelWithInnerTriangleInteriorControlEdges,
+        ∃ C ∈ colorings, ∃ f : wheelWithInnerTriangleEmbedding.Face, ∃ a b : Color,
+          ValidColorPair a b ∧
+            boundaryZeroProjection
+                (selectedBoundarySupport
+                  wheelWithInnerTriangleEmbedding.faceBoundary
+                  wheelWithInnerTriangleEmbedding.faces
+                  wheelWithInnerTriangleEmbedding.faces)
+                (polarizedFaceGenerator C a b
+                  (wheelWithInnerTriangleEmbedding.faceBoundary f)) =
+              Pi.single e blue) :
+    BoundaryZeroProjectedColoringGeneratorDetector wheelWithInnerTriangleEmbedding colorings :=
+  BoundaryZeroProjectedColoringGeneratorDetector.of_projectedFaceGeneratorEqualities
+    wheelWithInnerTriangleInteriorControlEdges
+    wheelWithInnerTriangle_boundaryZero_controlEdges_interiorEdges
+    hred hblue
+
+/-- Boundary-root synthesis form for wheel projected-face-generator certificates. -/
+theorem wheelWithInnerTriangle_theorem49BoundaryRootSynthesis_of_projectedFaceGeneratorEqualities
+    [FiniteDimensional F2 (wheelWithInnerTriangleGraph.edgeSet → Color)]
+    (C₀ : wheelWithInnerTriangleGraph.EdgeColoring Color)
+    (colorings : Set (wheelWithInnerTriangleGraph.EdgeColoring Color))
+    (hsubset : colorings ⊆ wheelWithInnerTriangleGraph.EdgeKempeClosure C₀)
+    (hred :
+      ∀ e ∈ wheelWithInnerTriangleInteriorControlEdges,
+        ∃ C ∈ colorings, ∃ f : wheelWithInnerTriangleEmbedding.Face, ∃ a b : Color,
+          ValidColorPair a b ∧
+            boundaryZeroProjection
+                (selectedBoundarySupport
+                  wheelWithInnerTriangleEmbedding.faceBoundary
+                  wheelWithInnerTriangleEmbedding.faces
+                  wheelWithInnerTriangleEmbedding.faces)
+                (polarizedFaceGenerator C a b
+                  (wheelWithInnerTriangleEmbedding.faceBoundary f)) =
+              Pi.single e red)
+    (hblue :
+      ∀ e ∈ wheelWithInnerTriangleInteriorControlEdges,
+        ∃ C ∈ colorings, ∃ f : wheelWithInnerTriangleEmbedding.Face, ∃ a b : Color,
+          ValidColorPair a b ∧
+            boundaryZeroProjection
+                (selectedBoundarySupport
+                  wheelWithInnerTriangleEmbedding.faceBoundary
+                  wheelWithInnerTriangleEmbedding.faces
+                  wheelWithInnerTriangleEmbedding.faces)
+                (polarizedFaceGenerator C a b
+                  (wheelWithInnerTriangleEmbedding.faceBoundary f)) =
+              Pi.single e blue) :
+    Theorem49BoundaryRootSynthesis wheelWithInnerTriangleEmbedding C₀ :=
+  theorem49BoundaryRootSynthesis_of_projectedFaceGeneratorEqualities
+    wheelWithInnerTriangleEmbedding C₀ colorings hsubset
+    wheelWithInnerTriangleInteriorControlEdges
+    wheelWithInnerTriangle_boundaryZero_controlEdges_interiorEdges
+    hred hblue
 
 end Theorem49BoundaryZeroForcedEdgeRegression
 
