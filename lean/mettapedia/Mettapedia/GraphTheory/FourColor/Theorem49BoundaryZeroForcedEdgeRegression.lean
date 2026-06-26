@@ -14687,14 +14687,45 @@ theorem sharedInteriorPair_CAP5_boundaryZeroKirchhoff_not_forcedEdgeCoverage_of_
       z ∈ theorem49BoundaryZeroKirchhoffSubspace
           sharedInteriorPairEmbedding ({(1 : Fin 8)} : Finset (Fin 8)) →
       z ≠ 0 →
+          ∃ e : sharedInteriorPairGraph.edgeSet,
+            data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e ∧
+              z e ≠ 0 := by
+    intro hcoverage
+    have hge :=
+      (sharedInteriorPair_CAP5_boundaryZeroKirchhoff_forcedEdgeCoverage_iff_emittedInterior_card_ge_one
+        p0Inside p4Inside side classifier).1 hcoverage
+    omega
+
+/-- Exact shared-shell Kirchhoff failure threshold: CAP5 fails to cover every nonzero
+boundary-zero Kirchhoff chain exactly when no lab-certified shared interior control is emitted. -/
+theorem sharedInteriorPair_CAP5_boundaryZeroKirchhoff_not_forcedEdgeCoverage_iff_emittedInterior_card_lt_one
+    {boundaryEdge : Fin 5 → sharedInteriorPairGraph.edgeSet} {n : Nat}
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    (p0Inside p4Inside : Bool) (side : Fin 8 → Prop)
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side) :
+    (¬ ∀ ⦃z : sharedInteriorPairGraph.edgeSet → Color⦄,
+      z ∈ theorem49BoundaryZeroKirchhoffSubspace
+          sharedInteriorPairEmbedding ({(1 : Fin 8)} : Finset (Fin 8)) →
+      z ≠ 0 →
         ∃ e : sharedInteriorPairGraph.edgeSet,
           data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e ∧
-            z e ≠ 0 := by
-  intro hcoverage
-  have hge :=
-    (sharedInteriorPair_CAP5_boundaryZeroKirchhoff_forcedEdgeCoverage_iff_emittedInterior_card_ge_one
-      p0Inside p4Inside side classifier).1 hcoverage
-  omega
+            z e ≠ 0) ↔
+      (classifier.emittedFinset.filter fun e =>
+        e ∈ sharedInteriorPairInteriorControlEdges).card < 1 := by
+  constructor
+  · intro hnotCoverage
+    have hnotGe :
+        ¬ 1 ≤ (classifier.emittedFinset.filter fun e =>
+          e ∈ sharedInteriorPairInteriorControlEdges).card := by
+      intro hge
+      exact hnotCoverage
+        ((sharedInteriorPair_CAP5_boundaryZeroKirchhoff_forcedEdgeCoverage_iff_emittedInterior_card_ge_one
+          p0Inside p4Inside side classifier).2 hge)
+    omega
+  · exact
+      sharedInteriorPair_CAP5_boundaryZeroKirchhoff_not_forcedEdgeCoverage_of_emittedInterior_card_lt_one
+        p0Inside p4Inside side classifier
 
 /-- Certificate-facing shared-shell Kirchhoff refutation: if the classifier emits no
 lab-certified shared interior control, there is a nonzero boundary-zero Kirchhoff chain
@@ -14715,18 +14746,55 @@ theorem sharedInteriorPair_CAP5_exists_boundaryZeroKirchhoffChain_vanishingOnFor
           ∀ e : sharedInteriorPairGraph.edgeSet,
             data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e →
               z e = 0 := by
-  exact
-    data.exists_boundaryZeroKirchhoffChain_vanishingOnEnumeratedExceptionalAnnulusForcedEdges_of_not_classifierKirchhoffControl
-      sharedInteriorPairEmbedding ({(1 : Fin 8)} : Finset (Fin 8))
-      p0Inside p4Inside side classifier
-      (by
-        intro hcontrol
-        exact
-          (sharedInteriorPair_CAP5_boundaryZeroKirchhoff_not_forcedEdgeCoverage_of_emittedInterior_card_lt_one
-            p0Inside p4Inside side classifier hcard)
-            ((data.forcedEdgeKirchhoffCoverage_iff_enumeratedExceptionalAnnulusForcedEdgeClassifierKirchhoffControl
-              sharedInteriorPairEmbedding ({(1 : Fin 8)} : Finset (Fin 8))
-              classifier).2 hcontrol))
+    exact
+      data.exists_boundaryZeroKirchhoffChain_vanishingOnEnumeratedExceptionalAnnulusForcedEdges_of_not_classifierKirchhoffControl
+        sharedInteriorPairEmbedding ({(1 : Fin 8)} : Finset (Fin 8))
+        p0Inside p4Inside side classifier
+        (by
+          intro hcontrol
+          exact
+            (sharedInteriorPair_CAP5_boundaryZeroKirchhoff_not_forcedEdgeCoverage_of_emittedInterior_card_lt_one
+              p0Inside p4Inside side classifier hcard)
+              ((data.forcedEdgeKirchhoffCoverage_iff_enumeratedExceptionalAnnulusForcedEdgeClassifierKirchhoffControl
+                sharedInteriorPairEmbedding ({(1 : Fin 8)} : Finset (Fin 8))
+                classifier).2 hcontrol))
+
+/-- Certificate-facing exact shared-shell Kirchhoff criterion: an invisible nonzero
+boundary-zero Kirchhoff chain exists exactly below the lab minimum of one emitted shared control. -/
+theorem sharedInteriorPair_CAP5_exists_boundaryZeroKirchhoffChain_vanishingOnForcedEdges_iff_emittedInterior_card_lt_one
+    {boundaryEdge : Fin 5 → sharedInteriorPairGraph.edgeSet} {n : Nat}
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    (p0Inside p4Inside : Bool) (side : Fin 8 → Prop)
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side) :
+    (∃ z : sharedInteriorPairGraph.edgeSet → Color,
+      z ∈ theorem49BoundaryZeroKirchhoffSubspace
+          sharedInteriorPairEmbedding ({(1 : Fin 8)} : Finset (Fin 8)) ∧
+        z ≠ 0 ∧
+          ∀ e : sharedInteriorPairGraph.edgeSet,
+            data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e →
+              z e = 0) ↔
+      (classifier.emittedFinset.filter fun e =>
+        e ∈ sharedInteriorPairInteriorControlEdges).card < 1 := by
+  constructor
+  · rintro ⟨z, hz, hzNonzero, hvanish⟩
+    have hnotCoverage :
+        ¬ ∀ ⦃z : sharedInteriorPairGraph.edgeSet → Color⦄,
+          z ∈ theorem49BoundaryZeroKirchhoffSubspace
+              sharedInteriorPairEmbedding ({(1 : Fin 8)} : Finset (Fin 8)) →
+          z ≠ 0 →
+            ∃ e : sharedInteriorPairGraph.edgeSet,
+              data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e ∧
+                z e ≠ 0 := by
+      intro hcoverage
+      rcases hcoverage hz hzNonzero with ⟨e, heForced, hze⟩
+      exact hze (hvanish e heForced)
+    exact
+      (sharedInteriorPair_CAP5_boundaryZeroKirchhoff_not_forcedEdgeCoverage_iff_emittedInterior_card_lt_one
+        p0Inside p4Inside side classifier).1 hnotCoverage
+  · exact
+      sharedInteriorPair_CAP5_exists_boundaryZeroKirchhoffChain_vanishingOnForcedEdges_of_emittedInterior_card_lt_one
+        p0Inside p4Inside side classifier
 
 /-- Wheel-shell Kirchhoff refutation with selected-boundary emissions trimmed away: one emitted
 spoke still leaves a nonzero center-Kirchhoff evader. -/
@@ -14743,14 +14811,45 @@ theorem wheelWithInnerTriangle_CAP5_boundaryZeroKirchhoff_not_forcedEdgeCoverage
       z ∈ theorem49BoundaryZeroKirchhoffSubspace
           wheelWithInnerTriangleEmbedding ({(0 : Fin 7)} : Finset (Fin 7)) →
       z ≠ 0 →
+          ∃ e : wheelWithInnerTriangleGraph.edgeSet,
+            data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e ∧
+              z e ≠ 0 := by
+    intro hcoverage
+    have hge :=
+      (wheelWithInnerTriangle_CAP5_boundaryZeroKirchhoff_forcedEdgeCoverage_iff_emittedInterior_card_ge_two
+        p0Inside p4Inside side classifier).1 hcoverage
+    omega
+
+/-- Exact wheel-shell Kirchhoff failure threshold: CAP5 fails to cover every nonzero boundary-zero
+Kirchhoff chain exactly when it emits fewer than two lab-certified spokes. -/
+theorem wheelWithInnerTriangle_CAP5_boundaryZeroKirchhoff_not_forcedEdgeCoverage_iff_emittedInterior_card_lt_two
+    {boundaryEdge : Fin 5 → wheelWithInnerTriangleGraph.edgeSet} {n : Nat}
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    (p0Inside p4Inside : Bool) (side : Fin 7 → Prop)
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side) :
+    (¬ ∀ ⦃z : wheelWithInnerTriangleGraph.edgeSet → Color⦄,
+      z ∈ theorem49BoundaryZeroKirchhoffSubspace
+          wheelWithInnerTriangleEmbedding ({(0 : Fin 7)} : Finset (Fin 7)) →
+      z ≠ 0 →
         ∃ e : wheelWithInnerTriangleGraph.edgeSet,
           data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e ∧
-            z e ≠ 0 := by
-  intro hcoverage
-  have hge :=
-    (wheelWithInnerTriangle_CAP5_boundaryZeroKirchhoff_forcedEdgeCoverage_iff_emittedInterior_card_ge_two
-      p0Inside p4Inside side classifier).1 hcoverage
-  omega
+            z e ≠ 0) ↔
+      (classifier.emittedFinset.filter fun e =>
+        e ∈ wheelWithInnerTriangleInteriorControlEdges).card < 2 := by
+  constructor
+  · intro hnotCoverage
+    have hnotGe :
+        ¬ 2 ≤ (classifier.emittedFinset.filter fun e =>
+          e ∈ wheelWithInnerTriangleInteriorControlEdges).card := by
+      intro hge
+      exact hnotCoverage
+        ((wheelWithInnerTriangle_CAP5_boundaryZeroKirchhoff_forcedEdgeCoverage_iff_emittedInterior_card_ge_two
+          p0Inside p4Inside side classifier).2 hge)
+    omega
+  · exact
+      wheelWithInnerTriangle_CAP5_boundaryZeroKirchhoff_not_forcedEdgeCoverage_of_emittedInterior_card_lt_two
+        p0Inside p4Inside side classifier
 
 /-- Certificate-facing wheel-shell Kirchhoff refutation: fewer than two emitted spokes produce
 a nonzero boundary-zero Kirchhoff chain invisible to every enumerated forced edge. -/
@@ -14770,18 +14869,55 @@ theorem wheelWithInnerTriangle_CAP5_exists_boundaryZeroKirchhoffChain_vanishingO
           ∀ e : wheelWithInnerTriangleGraph.edgeSet,
             data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e →
               z e = 0 := by
-  exact
-    data.exists_boundaryZeroKirchhoffChain_vanishingOnEnumeratedExceptionalAnnulusForcedEdges_of_not_classifierKirchhoffControl
-      wheelWithInnerTriangleEmbedding ({(0 : Fin 7)} : Finset (Fin 7))
-      p0Inside p4Inside side classifier
-      (by
-        intro hcontrol
-        exact
-          (wheelWithInnerTriangle_CAP5_boundaryZeroKirchhoff_not_forcedEdgeCoverage_of_emittedInterior_card_lt_two
-            p0Inside p4Inside side classifier hcard)
-            ((data.forcedEdgeKirchhoffCoverage_iff_enumeratedExceptionalAnnulusForcedEdgeClassifierKirchhoffControl
-              wheelWithInnerTriangleEmbedding ({(0 : Fin 7)} : Finset (Fin 7))
-              classifier).2 hcontrol))
+    exact
+      data.exists_boundaryZeroKirchhoffChain_vanishingOnEnumeratedExceptionalAnnulusForcedEdges_of_not_classifierKirchhoffControl
+        wheelWithInnerTriangleEmbedding ({(0 : Fin 7)} : Finset (Fin 7))
+        p0Inside p4Inside side classifier
+        (by
+          intro hcontrol
+          exact
+            (wheelWithInnerTriangle_CAP5_boundaryZeroKirchhoff_not_forcedEdgeCoverage_of_emittedInterior_card_lt_two
+              p0Inside p4Inside side classifier hcard)
+              ((data.forcedEdgeKirchhoffCoverage_iff_enumeratedExceptionalAnnulusForcedEdgeClassifierKirchhoffControl
+                wheelWithInnerTriangleEmbedding ({(0 : Fin 7)} : Finset (Fin 7))
+                classifier).2 hcontrol))
+
+/-- Certificate-facing exact wheel-shell Kirchhoff criterion: an invisible nonzero boundary-zero
+Kirchhoff chain exists exactly below the lab minimum of two emitted spokes. -/
+theorem wheelWithInnerTriangle_CAP5_exists_boundaryZeroKirchhoffChain_vanishingOnForcedEdges_iff_emittedInterior_card_lt_two
+    {boundaryEdge : Fin 5 → wheelWithInnerTriangleGraph.edgeSet} {n : Nat}
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    (p0Inside p4Inside : Bool) (side : Fin 7 → Prop)
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side) :
+    (∃ z : wheelWithInnerTriangleGraph.edgeSet → Color,
+      z ∈ theorem49BoundaryZeroKirchhoffSubspace
+          wheelWithInnerTriangleEmbedding ({(0 : Fin 7)} : Finset (Fin 7)) ∧
+        z ≠ 0 ∧
+          ∀ e : wheelWithInnerTriangleGraph.edgeSet,
+            data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e →
+              z e = 0) ↔
+      (classifier.emittedFinset.filter fun e =>
+        e ∈ wheelWithInnerTriangleInteriorControlEdges).card < 2 := by
+  constructor
+  · rintro ⟨z, hz, hzNonzero, hvanish⟩
+    have hnotCoverage :
+        ¬ ∀ ⦃z : wheelWithInnerTriangleGraph.edgeSet → Color⦄,
+          z ∈ theorem49BoundaryZeroKirchhoffSubspace
+              wheelWithInnerTriangleEmbedding ({(0 : Fin 7)} : Finset (Fin 7)) →
+          z ≠ 0 →
+            ∃ e : wheelWithInnerTriangleGraph.edgeSet,
+              data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e ∧
+                z e ≠ 0 := by
+      intro hcoverage
+      rcases hcoverage hz hzNonzero with ⟨e, heForced, hze⟩
+      exact hze (hvanish e heForced)
+    exact
+      (wheelWithInnerTriangle_CAP5_boundaryZeroKirchhoff_not_forcedEdgeCoverage_iff_emittedInterior_card_lt_two
+        p0Inside p4Inside side classifier).1 hnotCoverage
+  · exact
+      wheelWithInnerTriangle_CAP5_exists_boundaryZeroKirchhoffChain_vanishingOnForcedEdges_of_emittedInterior_card_lt_two
+        p0Inside p4Inside side classifier
 
 /-- Shell-specialized detector bound for the shared focus shell.  The generic Kirchhoff target
 dimension inequality reduces here to the lab minimum: Kirchhoff coverage must emit at least one
