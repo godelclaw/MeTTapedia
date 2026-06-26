@@ -10270,18 +10270,34 @@ theorem sharedInteriorPair_CAP5_emittedFinset_card_lt_two_refutes_forcedEdgeCove
         ∃ e : sharedInteriorPairGraph.edgeSet,
           data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e ∧
             z e ≠ 0) := by
-  intro hcoverage
-  have hreport :=
-    sharedInteriorPair_CAP5_ofDecidableChecks_missingCheckerEvidence_or_histogram_and_forcedEdgeIndicatorPathXorDetectorPayload_and_extensionControlEdge_boundaryZeroChain_canonicalFamilyPairing_ne_zero_of_uniqueCertificates_of_emittedFinset_card_lt_two
-      p0Inside p4Inside h side hcyclic hportal_crosses hcycles classifier hcard
-  rcases hreport with hmissing | hcomplete
-  · rcases hmissing with ⟨latent, hmem, hmissing⟩
-    exact hnoMissing latent hmem hmissing
-  · rcases hcomplete with ⟨_, hpayloadAndWitness⟩
-    rcases hpayloadAndWitness with ⟨_, hwitness⟩
-    rcases hwitness with ⟨z, hzBoundary, hzNonzero, hzForcedZero, _⟩
-    rcases hcoverage hzBoundary hzNonzero with ⟨e, heForced, hze⟩
-    exact hze (hzForcedZero e heForced)
+  have hcard' :
+      classifier.emittedFinset.card +
+          Fintype.card {e : sharedInteriorPairGraph.edgeSet //
+            e ∈ selectedBoundarySupport sharedInteriorPairEmbedding.faceBoundary
+              sharedInteriorPairEmbedding.faces sharedInteriorPairEmbedding.faces} <
+        Fintype.card sharedInteriorPairGraph.edgeSet := by
+    have hboundary :
+        Fintype.card {e : sharedInteriorPairGraph.edgeSet //
+          e ∈ selectedBoundarySupport sharedInteriorPairEmbedding.faceBoundary
+            sharedInteriorPairEmbedding.faces sharedInteriorPairEmbedding.faces} = 7 := by
+      rw [sharedInteriorPair_selectedBoundarySupport_eq]
+      decide
+    have hedge : Fintype.card sharedInteriorPairGraph.edgeSet = 9 := by
+      decide
+    rw [hboundary, hedge]
+    omega
+  let hred :=
+    sharedInteriorPair_remainingRedSingleCoordinateMembership_of_uniqueCertificates
+      classifier
+  let hblue :=
+    sharedInteriorPair_remainingBlueSingleCoordinateMembership_of_uniqueCertificates
+      classifier
+  exact
+    data.noMissingCheckerEvidence_refutes_forcedEdgeCoverage_of_emittedFinset_card_add_boundary_card_lt_of_finsetControl
+      sharedInteriorPairEmbedding sharedInteriorPairProjectedGeneratorCertificateColorings
+      p0Inside p4Inside h side hcyclic hportal_crosses hcycles classifier
+      sharedInteriorPairInteriorControlEdges hcard'
+      sharedInteriorPair_boundaryZero_controlEdges_interiorEdges hred hblue hnoMissing
 
 /-- No-missing-evidence form of the wheel focus-shell obstruction.  If CAP5 emits fewer than
 the three lab-required spoke controls, its enumerated forced edges do not cover all nonzero
@@ -10325,18 +10341,37 @@ theorem wheelWithInnerTriangle_CAP5_emittedFinset_card_lt_three_refutes_forcedEd
         ∃ e : wheelWithInnerTriangleGraph.edgeSet,
           data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e ∧
             z e ≠ 0) := by
-  intro hcoverage
-  have hreport :=
-    wheelWithInnerTriangle_CAP5_ofDecidableChecks_missingCheckerEvidence_or_histogram_and_forcedEdgeIndicatorPathXorDetectorPayload_and_extensionControlEdge_boundaryZeroChain_canonicalFamilyPairing_ne_zero_of_uniqueCertificates_of_emittedFinset_card_lt_three
-      p0Inside p4Inside h side hcyclic hportal_crosses hcycles classifier hcard
-  rcases hreport with hmissing | hcomplete
-  · rcases hmissing with ⟨latent, hmem, hmissing⟩
-    exact hnoMissing latent hmem hmissing
-  · rcases hcomplete with ⟨_, hpayloadAndWitness⟩
-    rcases hpayloadAndWitness with ⟨_, hwitness⟩
-    rcases hwitness with ⟨z, hzBoundary, hzNonzero, hzForcedZero, _⟩
-    rcases hcoverage hzBoundary hzNonzero with ⟨e, heForced, hze⟩
-    exact hze (hzForcedZero e heForced)
+  have hcard' :
+      classifier.emittedFinset.card +
+          Fintype.card {e : wheelWithInnerTriangleGraph.edgeSet //
+            e ∈ selectedBoundarySupport wheelWithInnerTriangleEmbedding.faceBoundary
+              wheelWithInnerTriangleEmbedding.faces
+              wheelWithInnerTriangleEmbedding.faces} <
+        Fintype.card wheelWithInnerTriangleGraph.edgeSet := by
+    have hboundary :
+        Fintype.card {e : wheelWithInnerTriangleGraph.edgeSet //
+          e ∈ selectedBoundarySupport wheelWithInnerTriangleEmbedding.faceBoundary
+            wheelWithInnerTriangleEmbedding.faces
+            wheelWithInnerTriangleEmbedding.faces} = 6 := by
+      rw [wheelWithInnerTriangle_selectedBoundarySupport_eq]
+      decide
+    have hedge : Fintype.card wheelWithInnerTriangleGraph.edgeSet = 9 := by
+      decide
+    rw [hboundary, hedge]
+    omega
+  let hred :=
+    wheelWithInnerTriangle_remainingRedSingleCoordinateMembership_of_uniqueCertificates
+      classifier
+  let hblue :=
+    wheelWithInnerTriangle_remainingBlueSingleCoordinateMembership_of_uniqueCertificates
+      classifier
+  exact
+    data.noMissingCheckerEvidence_refutes_forcedEdgeCoverage_of_emittedFinset_card_add_boundary_card_lt_of_finsetControl
+      wheelWithInnerTriangleEmbedding
+      wheelWithInnerTriangleProjectedGeneratorCertificateColorings
+      p0Inside p4Inside h side hcyclic hportal_crosses hcycles classifier
+      wheelWithInnerTriangleInteriorControlEdges hcard'
+      wheelWithInnerTriangle_boundaryZero_controlEdges_interiorEdges hred hblue hnoMissing
 
 end Theorem49BoundaryZeroForcedEdgeRegression
 
