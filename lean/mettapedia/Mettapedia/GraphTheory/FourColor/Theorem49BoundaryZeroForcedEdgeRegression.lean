@@ -8225,6 +8225,49 @@ theorem twoBandAnnulus_boundaryZeroKirchhoff_control_iff_mem_fullRankInteriorCon
       twoBandAnnulus_boundaryZeroKirchhoff_control_of_mem_fullRankInteriorControlComplements
         hfull
 
+theorem twoBandAnnulus_boundaryZeroKirchhoff_control_iff_exists_fullRankIncreasingOmittedIndexTriple_of_mem_sixInteriorControls
+    {control : Finset twoBandAnnulusGraph.edgeSet}
+    (hmemSix : control ∈ twoBandAnnulusSixInteriorControls) :
+    (∀ ⦃z : twoBandAnnulusGraph.edgeSet → Color⦄,
+      z ∈ theorem49BoundaryZeroKirchhoffSubspace
+          twoBandAnnulusEmbedding twoBandAnnulusKirchhoffVertices →
+      (∀ e ∈ control, z e = 0) →
+      z = 0) ↔
+      ∃ a b c : Fin 9,
+        ((a, b), c) ∈ twoBandAnnulusFullRankIncreasingOmittedIndexTriples ∧
+          control = twoBandAnnulusInteriorControlComplementByIndex a b c :=
+  (twoBandAnnulus_boundaryZeroKirchhoff_control_iff_mem_fullRankInteriorControlComplements_of_mem_sixInteriorControls
+    hmemSix).trans
+    (twoBandAnnulus_mem_fullRankInteriorControlComplements_iff control)
+
+set_option maxRecDepth 20000 in
+theorem twoBandAnnulus_not_boundaryZeroKirchhoff_control_iff_mem_nonFullRankInteriorControlComplements_of_mem_sixInteriorControls
+    {control : Finset twoBandAnnulusGraph.edgeSet}
+    (hmemSix : control ∈ twoBandAnnulusSixInteriorControls) :
+    (¬ ∀ ⦃z : twoBandAnnulusGraph.edgeSet → Color⦄,
+      z ∈ theorem49BoundaryZeroKirchhoffSubspace
+          twoBandAnnulusEmbedding twoBandAnnulusKirchhoffVertices →
+      (∀ e ∈ control, z e = 0) →
+      z = 0) ↔
+      control ∈ twoBandAnnulusNonFullRankInteriorControlComplements := by
+  constructor
+  · intro hnotControl
+    have hmemUnion :
+        control ∈ twoBandAnnulusFullRankInteriorControlComplements ∪
+          twoBandAnnulusNonFullRankInteriorControlComplements := by
+      simpa [twoBandAnnulusSixInteriorControls_eq_fullRank_union_nonFullRank]
+        using hmemSix
+    rcases Finset.mem_union.1 hmemUnion with hfull | hnonFull
+    · exact False.elim
+        (hnotControl
+          (twoBandAnnulus_boundaryZeroKirchhoff_control_of_mem_fullRankInteriorControlComplements
+            hfull))
+    · exact hnonFull
+  · intro hnonFull
+    exact
+      twoBandAnnulus_not_boundaryZeroKirchhoff_control_of_mem_nonFullRankInteriorControlComplements
+        hnonFull
+
 theorem twoBandAnnulus_boundaryZeroKirchhoff_control_iff_interiorFilter_control
     (emitted : Finset twoBandAnnulusGraph.edgeSet) :
     (∀ ⦃z : twoBandAnnulusGraph.edgeSet → Color⦄,
@@ -15071,6 +15114,102 @@ theorem twoBandAnnulus_CAP5_boundaryZeroKirchhoff_forcedEdgeCoverage_iff_emitted
         classifier.emittedFinset).trans
         (twoBandAnnulus_boundaryZeroKirchhoff_control_iff_mem_fullRankInteriorControlComplements_of_mem_sixInteriorControls
           hmemSix))
+
+theorem twoBandAnnulus_CAP5_boundaryZeroKirchhoff_forcedEdgeCoverage_iff_exists_fullRankIncreasingOmittedIndexTriple_of_emittedInterior_card_eq_six
+    {boundaryEdge : Fin 5 → twoBandAnnulusGraph.edgeSet} {n : Nat}
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    (p0Inside p4Inside : Bool) (side : Fin 9 → Prop)
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (hcard :
+      (classifier.emittedFinset.filter fun e =>
+        e ∈ interiorEdgeSupport
+          twoBandAnnulusEmbedding.faceBoundary
+          twoBandAnnulusEmbedding.faces).card = 6) :
+    (∀ ⦃z : twoBandAnnulusGraph.edgeSet → Color⦄,
+      z ∈ theorem49BoundaryZeroKirchhoffSubspace
+          twoBandAnnulusEmbedding twoBandAnnulusKirchhoffVertices →
+      z ≠ 0 →
+        ∃ e : twoBandAnnulusGraph.edgeSet,
+          data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e ∧
+            z e ≠ 0) ↔
+      ∃ a b c : Fin 9,
+        ((a, b), c) ∈ twoBandAnnulusFullRankIncreasingOmittedIndexTriples ∧
+          (classifier.emittedFinset.filter fun e =>
+            e ∈ interiorEdgeSupport
+              twoBandAnnulusEmbedding.faceBoundary
+              twoBandAnnulusEmbedding.faces) =
+            twoBandAnnulusInteriorControlComplementByIndex a b c :=
+  (twoBandAnnulus_CAP5_boundaryZeroKirchhoff_forcedEdgeCoverage_iff_emittedInterior_mem_fullRankInteriorControlComplements_of_emittedInterior_card_eq_six
+    p0Inside p4Inside side classifier hcard).trans
+    (twoBandAnnulus_mem_fullRankInteriorControlComplements_iff _)
+
+set_option maxRecDepth 20000 in
+theorem twoBandAnnulus_CAP5_boundaryZeroKirchhoff_not_forcedEdgeCoverage_iff_emittedInterior_mem_nonFullRankInteriorControlComplements_of_emittedInterior_card_eq_six
+    {boundaryEdge : Fin 5 → twoBandAnnulusGraph.edgeSet} {n : Nat}
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    (p0Inside p4Inside : Bool) (side : Fin 9 → Prop)
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (hcard :
+      (classifier.emittedFinset.filter fun e =>
+        e ∈ interiorEdgeSupport
+          twoBandAnnulusEmbedding.faceBoundary
+          twoBandAnnulusEmbedding.faces).card = 6) :
+    (¬ ∀ ⦃z : twoBandAnnulusGraph.edgeSet → Color⦄,
+      z ∈ theorem49BoundaryZeroKirchhoffSubspace
+          twoBandAnnulusEmbedding twoBandAnnulusKirchhoffVertices →
+      z ≠ 0 →
+        ∃ e : twoBandAnnulusGraph.edgeSet,
+          data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e ∧
+            z e ≠ 0) ↔
+      (classifier.emittedFinset.filter fun e =>
+        e ∈ interiorEdgeSupport
+          twoBandAnnulusEmbedding.faceBoundary
+          twoBandAnnulusEmbedding.faces) ∈
+        twoBandAnnulusNonFullRankInteriorControlComplements := by
+  let emittedInterior := classifier.emittedFinset.filter fun e =>
+    e ∈ interiorEdgeSupport
+      twoBandAnnulusEmbedding.faceBoundary
+      twoBandAnnulusEmbedding.faces
+  have hmemSix : emittedInterior ∈ twoBandAnnulusSixInteriorControls := by
+    dsimp [emittedInterior]
+    rw [twoBandAnnulusSixInteriorControls]
+    refine Finset.mem_powersetCard.2 ⟨?_, hcard⟩
+    intro e he
+    have heInterior := (Finset.mem_filter.1 he).2
+    simpa [twoBandAnnulus_interiorEdgeSupport_eq] using heInterior
+  have hcoverageIffControl :
+      (∀ ⦃z : twoBandAnnulusGraph.edgeSet → Color⦄,
+        z ∈ theorem49BoundaryZeroKirchhoffSubspace
+            twoBandAnnulusEmbedding twoBandAnnulusKirchhoffVertices →
+        z ≠ 0 →
+          ∃ e : twoBandAnnulusGraph.edgeSet,
+            data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e ∧
+              z e ≠ 0) ↔
+        ∀ ⦃z : twoBandAnnulusGraph.edgeSet → Color⦄,
+          z ∈ theorem49BoundaryZeroKirchhoffSubspace
+              twoBandAnnulusEmbedding twoBandAnnulusKirchhoffVertices →
+          (∀ e ∈ emittedInterior, z e = 0) →
+          z = 0 := by
+    exact
+      (data.forcedEdgeKirchhoffCoverage_iff_enumeratedExceptionalAnnulusForcedEdgeClassifierKirchhoffControl
+        twoBandAnnulusEmbedding twoBandAnnulusKirchhoffVertices classifier).trans
+        (twoBandAnnulus_boundaryZeroKirchhoff_control_iff_interiorFilter_control
+          classifier.emittedFinset)
+  constructor
+  · intro hnotCoverage
+    exact
+      (twoBandAnnulus_not_boundaryZeroKirchhoff_control_iff_mem_nonFullRankInteriorControlComplements_of_mem_sixInteriorControls
+        hmemSix).1
+        (by
+          intro hcontrol
+          exact hnotCoverage (hcoverageIffControl.2 hcontrol))
+  · intro hnonFull hcoverage
+    exact
+      ((twoBandAnnulus_not_boundaryZeroKirchhoff_control_iff_mem_nonFullRankInteriorControlComplements_of_mem_sixInteriorControls
+        hmemSix).2 hnonFull)
+        (hcoverageIffControl.1 hcoverage)
 
 /-- Low-cardinality refutation for the two-band Kirchhoff detector: five emitted coordinates do
 not cover the boundary-zero Kirchhoff target. -/
