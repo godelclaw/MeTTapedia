@@ -302,7 +302,10 @@ theorem exists_terminal_face_boundary_remainders_and_disjoint_of_closedWalkAnnul
             source.toPlanarBoundaryAnnulusBoundaryData.innerAmbientBoundary) ∧
       Disjoint (emb.faceBoundary f.1)
         (selectedBoundarySupport emb.faceBoundary emb.faces emb.faces) := by
-  simpa using
+  simpa [
+    interiorDualBoundaryRootParentPeelDataOfClosedWalkAnnulusBoundarySourceBoundaryFaceRootsCanonicalParentSharedEdgeCover,
+    interiorDualBoundaryRootParentPeelDataOfCoverSeparatedBoundaryRootsCanonicalParentSharedEdgeCover,
+    interiorDualBoundaryRootParentPeelDataOfCoverSeparatedBoundaryRootsCanonicalParentSharedEdgeFaceMembershipCover] using
     exists_terminal_face_boundary_remainders_and_disjoint_of_interiorDualBoundaryRootParentPeelData_via_boundaryFreeSelector
       source.toPlanarBoundaryAnnulusBoundaryData
       (interiorDualBoundaryRootParentPeelDataOfClosedWalkAnnulusBoundarySourceBoundaryFaceRootsCanonicalParentSharedEdgeCover
@@ -356,7 +359,9 @@ theorem
   let source :=
     PlanarBoundaryClosedWalkAnnulusBoundarySource.ofDartSuccessorCycleFields
       boundaryData dartCycles hboundaryArc
-  simpa [source] using
+  simpa [source, PlanarBoundaryClosedWalkAnnulusBoundarySource.ofDartSuccessorCycleFields,
+    PlanarBoundaryClosedWalkAnnulusBoundarySource.ofFields,
+    PlanarBoundaryClosedWalkAnnulusBoundarySource.toPlanarBoundaryAnnulusBoundaryData] using
     exists_terminal_face_boundary_remainders_and_disjoint_of_closedWalkAnnulusBoundarySourceBoundaryFaceRootsCanonicalParentSharedEdgeCover_via_boundaryFreeSelector
       source peelFaces hunique hcoverRoots hsepRoots hpeelInterior hcover hEndpoint
 
@@ -404,7 +409,12 @@ theorem
             source.toPlanarBoundaryAnnulusBoundaryData.innerAmbientBoundary) ∧
       Disjoint (emb.faceBoundary f.1)
         (selectedBoundarySupport emb.faceBoundary emb.faces emb.faces) := by
-  simpa using
+  simpa [
+    interiorDualBoundaryRootParentPeelDataOfClosedWalkAnnulusBoundarySourceBoundaryFaceRootsCanonicalParentSharedEdgeFaceMembershipCover,
+    planarBoundaryAnnulusRootParentPeelDataOfClosedWalkAnnulusBoundarySourceBoundaryFaceRootsCanonicalParentSharedEdgeFaceMembershipCover,
+    planarBoundaryAnnulusRootParentPeelDataOfCoverSeparatedAnnulusBoundaryRootsCanonicalParentSharedEdgeFaceMembershipCover,
+    interiorDualBoundaryRootParentPeelDataOfCoverSeparatedBoundarySubsetRootsCanonicalParentSharedEdgeFaceMembershipCover,
+    interiorDualBoundaryRootParentPeelDataOfCoverSeparatedBoundaryRootsCanonicalParentSharedEdgeFaceMembershipCover] using
     exists_terminal_face_boundary_remainders_and_disjoint_of_interiorDualBoundaryRootParentPeelData_via_boundaryFreeSelector
       source.toPlanarBoundaryAnnulusBoundaryData
       (interiorDualBoundaryRootParentPeelDataOfClosedWalkAnnulusBoundarySourceBoundaryFaceRootsCanonicalParentSharedEdgeFaceMembershipCover
@@ -474,7 +484,9 @@ theorem
   let source :=
     PlanarBoundaryClosedWalkAnnulusBoundarySource.ofDartSuccessorCycleFields
       boundaryData dartCycles hboundaryArc
-  simpa [source] using
+  simpa [source, PlanarBoundaryClosedWalkAnnulusBoundarySource.ofDartSuccessorCycleFields,
+    PlanarBoundaryClosedWalkAnnulusBoundarySource.ofFields,
+    PlanarBoundaryClosedWalkAnnulusBoundarySource.toPlanarBoundaryAnnulusBoundaryData] using
     exists_terminal_face_boundary_remainders_and_disjoint_of_closedWalkAnnulusBoundarySourceBoundaryFaceRootsCanonicalParentSharedEdgeFaceMembershipCover_via_boundaryFreeSelector
       source peelFaces hunique hcoverRoots hsepRoots hpeelInterior hcover hchildren hEndpoint
 
@@ -526,7 +538,8 @@ theorem exists_terminal_face_boundary_remainders_and_disjoint_of_interiorDualBou
           e ∈ boundaryData.outerAmbientBoundary ∪ boundaryData.innerAmbientBoundary) ∧
       Disjoint (emb.faceBoundary f.1)
         (selectedBoundarySupport emb.faceBoundary emb.faces emb.faces) := by
-  simpa [InteriorDualBoundaryRootAdjDistancePeelData.toInteriorDualBoundaryRootParentPeelData]
+  simpa [InteriorDualBoundaryRootAdjDistancePeelData.toInteriorDualBoundaryRootParentPeelData,
+    interiorDualBoundaryRootParentPeelDataOfCoverSeparatedBoundaryRootsCanonicalParentSharedEdgeFaceMembershipCover]
     using
       exists_terminal_face_boundary_remainders_and_disjoint_of_interiorDualBoundaryRootParentPeelData_via_boundaryFreeSelector
         boundaryData data.toInteriorDualBoundaryRootParentPeelData hEndpoint
