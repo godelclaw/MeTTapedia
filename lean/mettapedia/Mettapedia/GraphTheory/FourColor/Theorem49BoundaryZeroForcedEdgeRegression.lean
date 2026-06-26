@@ -15660,6 +15660,93 @@ theorem twoBandAnnulus_CAP5_boundaryZeroKirchhoff_not_forcedEdgeCoverage_iff_emi
           (by simpa [emittedInterior] using hcard)).2
           (by simpa [emittedInterior] using hnonFull)
 
+theorem
+    twoBandAnnulus_CAP5_exists_boundaryZeroKirchhoffChain_vanishingOnForcedEdges_of_not_forcedEdgeCoverage
+    {boundaryEdge : Fin 5 → twoBandAnnulusGraph.edgeSet} {n : Nat}
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    (p0Inside p4Inside : Bool) (side : Fin 9 → Prop)
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (hnotCoverage :
+      ¬ ∀ ⦃z : twoBandAnnulusGraph.edgeSet → Color⦄,
+        z ∈ theorem49BoundaryZeroKirchhoffSubspace
+            twoBandAnnulusEmbedding twoBandAnnulusKirchhoffVertices →
+        z ≠ 0 →
+          ∃ e : twoBandAnnulusGraph.edgeSet,
+            data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e ∧
+              z e ≠ 0) :
+    ∃ z : twoBandAnnulusGraph.edgeSet → Color,
+      z ∈ theorem49BoundaryZeroKirchhoffSubspace
+          twoBandAnnulusEmbedding twoBandAnnulusKirchhoffVertices ∧
+        z ≠ 0 ∧
+          ∀ e : twoBandAnnulusGraph.edgeSet,
+            data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e →
+              z e = 0 := by
+  exact
+    data.exists_boundaryZeroKirchhoffChain_vanishingOnEnumeratedExceptionalAnnulusForcedEdges_of_not_classifierKirchhoffControl
+      twoBandAnnulusEmbedding twoBandAnnulusKirchhoffVertices p0Inside p4Inside side
+      classifier
+      (by
+        intro hcontrol
+        exact hnotCoverage
+          ((data.forcedEdgeKirchhoffCoverage_iff_enumeratedExceptionalAnnulusForcedEdgeClassifierKirchhoffControl
+            twoBandAnnulusEmbedding twoBandAnnulusKirchhoffVertices classifier).2 hcontrol))
+
+theorem
+    twoBandAnnulus_CAP5_exists_boundaryZeroKirchhoffChain_vanishingOnForcedEdges_of_emittedInterior_card_lt_six
+    {boundaryEdge : Fin 5 → twoBandAnnulusGraph.edgeSet} {n : Nat}
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    (p0Inside p4Inside : Bool) (side : Fin 9 → Prop)
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (hcardLt :
+      (classifier.emittedFinset.filter fun e =>
+        e ∈ interiorEdgeSupport
+          twoBandAnnulusEmbedding.faceBoundary
+          twoBandAnnulusEmbedding.faces).card < 6) :
+    ∃ z : twoBandAnnulusGraph.edgeSet → Color,
+      z ∈ theorem49BoundaryZeroKirchhoffSubspace
+          twoBandAnnulusEmbedding twoBandAnnulusKirchhoffVertices ∧
+        z ≠ 0 ∧
+          ∀ e : twoBandAnnulusGraph.edgeSet,
+            data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e →
+              z e = 0 :=
+  twoBandAnnulus_CAP5_exists_boundaryZeroKirchhoffChain_vanishingOnForcedEdges_of_not_forcedEdgeCoverage
+    p0Inside p4Inside side classifier
+    ((twoBandAnnulus_CAP5_boundaryZeroKirchhoff_not_forcedEdgeCoverage_iff_emittedInterior_card_lt_six_or_mem_nonFullRankInteriorControlComplements_of_emittedInterior_card_le_six
+      p0Inside p4Inside side classifier (Nat.le_of_lt hcardLt)).2 (Or.inl hcardLt))
+
+set_option maxRecDepth 20000 in
+theorem
+    twoBandAnnulus_CAP5_exists_boundaryZeroKirchhoffChain_vanishingOnForcedEdges_of_emittedInterior_mem_nonFullRankInteriorControlComplements_of_emittedInterior_card_le_six
+    {boundaryEdge : Fin 5 → twoBandAnnulusGraph.edgeSet} {n : Nat}
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    (p0Inside p4Inside : Bool) (side : Fin 9 → Prop)
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (hcardLe :
+      (classifier.emittedFinset.filter fun e =>
+        e ∈ interiorEdgeSupport
+          twoBandAnnulusEmbedding.faceBoundary
+          twoBandAnnulusEmbedding.faces).card ≤ 6)
+    (hnonFull :
+      (classifier.emittedFinset.filter fun e =>
+        e ∈ interiorEdgeSupport
+          twoBandAnnulusEmbedding.faceBoundary
+          twoBandAnnulusEmbedding.faces) ∈
+        twoBandAnnulusNonFullRankInteriorControlComplements) :
+    ∃ z : twoBandAnnulusGraph.edgeSet → Color,
+      z ∈ theorem49BoundaryZeroKirchhoffSubspace
+          twoBandAnnulusEmbedding twoBandAnnulusKirchhoffVertices ∧
+        z ≠ 0 ∧
+          ∀ e : twoBandAnnulusGraph.edgeSet,
+            data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e →
+              z e = 0 :=
+  twoBandAnnulus_CAP5_exists_boundaryZeroKirchhoffChain_vanishingOnForcedEdges_of_not_forcedEdgeCoverage
+    p0Inside p4Inside side classifier
+    ((twoBandAnnulus_CAP5_boundaryZeroKirchhoff_not_forcedEdgeCoverage_iff_emittedInterior_card_lt_six_or_mem_nonFullRankInteriorControlComplements_of_emittedInterior_card_le_six
+      p0Inside p4Inside side classifier hcardLe).2 (Or.inr hnonFull))
+
 /-- Pattern refutation for the two-band Kirchhoff detector.  Six emitted interior coordinates
 are not enough when they are the lab-refuted noncontrolling pattern; selected-boundary emissions
 vanish automatically for boundary-zero Kirchhoff chains. -/
