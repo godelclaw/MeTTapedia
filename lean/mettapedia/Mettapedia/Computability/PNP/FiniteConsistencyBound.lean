@@ -190,7 +190,7 @@ theorem card_deceptiveWitnesses_le
       intro c _
       have hneq : ∃ x, H.decode c.1 x ≠ target x := by
         by_contra h
-        push_neg at h
+        push Not at h
         exact c.2 (funext h)
       exact card_consistentSamples_le_of_exists_disagreement target (H.decode c.1) hneq
     _ = Fintype.card (H.BadCodes target) * (Fintype.card Input - 1) ^ m := by

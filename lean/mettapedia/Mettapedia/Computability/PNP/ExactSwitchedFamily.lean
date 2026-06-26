@@ -332,6 +332,7 @@ theorem exactVisibleCompressionTarget_of_factorsThrough_fork_fintype
         (Index := Index) hfactor)
 
 /-- The exact post-switch surface is finite whenever the latent local datum `z` is finite. -/
+@[reducible]
 noncomputable def exactVisibleFintype [Fintype Z] :
     Fintype (ExactVisiblePostSwitchSurface Z k) :=
   Fintype.ofEquiv (ForkPostSwitchSurface Z k) (forkVisibleEquiv (Z := Z) (k := k)).symm

@@ -73,6 +73,39 @@ theorem kpolyCompressionBridge_covered_currentPNPKpolyCompressionBridgePromotedP
       .kpolyCompressionBridge := by
   exact kpolyCompressionBridgeCoverage
 
+/-- The promoted `Kpoly` bridge coverage is a route-refutation packet: the
+clocked payload is exactly finite predictor-image cover, while the empty
+product-bound-only and fixed-field-switching bridge shapes are refuted below the
+exact-visible surface threshold. -/
+theorem currentPNPKpolyCompressionBridgeCoverage_refutation_packet :
+    (∀ {Z : Type*} [Fintype Z] {k s clock : ℕ} {Index : Type*}
+      {G : ExactVisibleSwitchedFamily Z k Index},
+        ClockedKpolyFiniteLearningPayload G s clock ↔
+          G.FinitePredictorCover (2 ^ s)) ∧
+      (∀ {Ω Z : Type*} [Fintype Ω] [Fintype Z] {k s clock : ℕ},
+        s < Fintype.card (ExactVisiblePostSwitchSurface Z k) →
+          ¬ ProductBoundOnlyClockedKpolyFiniteLearningBridge
+              Ω Z k s clock
+              ([] : List (FiniteEvent Ω)) ([] : List (V13FieldedStep Ω))) ∧
+      (∀ {Ω Z : Type*} [Fintype Ω] [Fintype Z] {k s clock : ℕ},
+        s < Fintype.card (ExactVisiblePostSwitchSurface Z k) →
+          ¬ FieldedSwitchingOnlyClockedKpolyFiniteLearningBridge
+              Ω Z k s clock
+              ([] : List (FiniteEvent Ω)) ([] : List (V13FieldedStep Ω))) := by
+  refine ⟨?_, ?_, ?_⟩
+  · intro Z _ k s clock Index G
+    exact
+      kpolyCoverage_anchor_clockedFiniteLearningPayload_iff_finitePredictorCover
+        (G := G) (s := s) (clock := clock)
+  · intro Ω Z _ _ k s clock hs
+    exact
+      kpolyCoverage_anchor_not_productBoundOnlyClockedKpolyFiniteLearningBridge_nil_of_lt_surfaceCard
+        (Ω := Ω) (Z := Z) (k := k) (s := s) (clock := clock) hs
+  · intro Ω Z _ _ k s clock hs
+    exact
+      kpolyCoverage_anchor_not_fieldedSwitchingOnlyClockedKpolyFiniteLearningBridge_nil_of_lt_surfaceCard
+        (Ω := Ω) (Z := Z) (k := k) (s := s) (clock := clock) hs
+
 /-- The `Kpoly`-bridge-promoted packet covers the original current gap list. -/
 theorem currentPNPKpolyCompressionBridgePromotedPacket_covers_current_gaps :
     currentPNPKpolyCompressionBridgePromotedPacket.CoversList

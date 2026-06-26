@@ -87,6 +87,38 @@ def LockedMessageSpec
     (Y : PublicLock) (msg : Message) : Prop :=
   ∀ L : C.LockedCompletion Y, L.message = msg
 
+/-- Public-message invariant candidate: all accepted completions over one
+supported public lock read the message determined by that public lock. -/
+def PublicMessageInvariant
+    (C : AppendixDLockedCore PublicLock Quotient LockAux Message)
+    (publicMessage : PublicLock → Message) : Prop :=
+  ∀ {Y : PublicLock},
+    C.support Y →
+      (L : C.LockedCompletion Y) →
+        L.message = publicMessage Y
+
+/-- A public-message invariant is a sufficient replacement hypothesis for
+Appendix D.8 locked-message rigidity. -/
+theorem lockedMessageRigidity_of_publicMessageInvariant
+    (C : AppendixDLockedCore PublicLock Quotient LockAux Message)
+    {publicMessage : PublicLock → Message}
+    (hinvariant : C.PublicMessageInvariant publicMessage) :
+    C.LockedMessageRigidity := by
+  intro Y hY L L'
+  exact (hinvariant hY L).trans (hinvariant hY L').symm
+
+/-- Two accepted completions with distinct messages refute every candidate
+public-message invariant for that locked core. -/
+theorem not_publicMessageInvariant_of_distinct_completions
+    (C : AppendixDLockedCore PublicLock Quotient LockAux Message)
+    {publicMessage : PublicLock → Message}
+    {Y : PublicLock} (hY : C.support Y)
+    (L L' : C.LockedCompletion Y)
+    (hdiff : L.message ≠ L'.message) :
+    ¬ C.PublicMessageInvariant publicMessage := by
+  intro hinvariant
+  exact hdiff ((hinvariant hY L).trans (hinvariant hY L').symm)
+
 /-- Appendix D.10, existence form: D.7 and D.8 give a well-defined locked
 message for every supported public lock syntax. -/
 theorem exists_lockedMessageSpec_of_lockSatisfiable_of_lockedMessageRigidity
@@ -457,7 +489,9 @@ theorem ambiguousAppendixICNFReadoutData_not_exists_correctForAll :
         (ConcreteCNF.IsSatFormula
           (ambiguousAppendixICNFReadoutData.formula ()))
         (ambiguousAppendixICNFReadoutData.projection ()) msg := by
-  simpa [ambiguousAppendixICNFReadoutData, ambiguousAppendixDWitnessData] using
-    oneVarTautologyCNF_not_exists_correctForAllSatSearchOutputs
+  change ¬ ∃ msg : Bool,
+    CorrectForAllSatSearchOutputs
+      (ConcreteCNF.IsSatFormula oneVarTautologyCNF) oneVarReadout msg
+  exact oneVarTautologyCNF_not_exists_correctForAllSatSearchOutputs
 
 end Mettapedia.Computability.PNP
