@@ -11699,6 +11699,66 @@ theorem sharedInteriorPair_CAP5_theorem49BoundaryRootSynthesis_of_exact_interior
         sharedInteriorPair_redBlueSingleCoordinateMemberships_of_uniqueCertificates.2)
         e (honlyEmits he))
 
+/-- Finite-checker success endpoint for the shared focus shell.  If the extension bins are empty
+for the two lab-certified controls, and the classifier emits no edge outside those controls, the
+unique certificate family closes Theorem 4.9 synthesis. -/
+theorem sharedInteriorPair_CAP5_theorem49BoundaryRootSynthesis_of_extensionFinsets_eq_empty_uniqueCertificates
+    {boundaryEdge : Fin 5 → sharedInteriorPairGraph.edgeSet} {n : Nat}
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    [FiniteDimensional F2 (sharedInteriorPairGraph.edgeSet → Color)]
+    (C₀ : sharedInteriorPairGraph.EdgeColoring Color)
+    (hsubset :
+      sharedInteriorPairProjectedGeneratorCertificateColorings ⊆
+        sharedInteriorPairGraph.EdgeKempeClosure C₀)
+    (p0Inside p4Inside : Bool) (side : Fin 8 → Prop)
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (hcrossingEmpty :
+      classifier.crossingExtensionFinset sharedInteriorPairInteriorControlEdges = ∅)
+    (hnoncrossingEmpty :
+      classifier.noncrossingExtensionFinset sharedInteriorPairInteriorControlEdges = ∅)
+    (honlyEmits : classifier.emittedFinset ⊆ sharedInteriorPairInteriorControlEdges) :
+    Theorem49BoundaryRootSynthesis sharedInteriorPairEmbedding C₀ := by
+  have hemits : sharedInteriorPairInteriorControlEdges ⊆ classifier.emittedFinset :=
+    (classifier.controlEdges_subset_emittedFinset_iff_extensionFinsets_eq_empty
+      sharedInteriorPairInteriorControlEdges).2
+      ⟨hcrossingEmpty, hnoncrossingEmpty⟩
+  exact
+    sharedInteriorPair_CAP5_theorem49BoundaryRootSynthesis_of_exact_interiorControlEdges_uniqueCertificates
+      C₀ hsubset p0Inside p4Inside side classifier hemits honlyEmits
+
+/-- Failed finite-checker diagnostic for the shared focus shell.  Once the extension bins are
+empty for the two lab-certified controls, a failed unique-certificate synthesis run must expose
+an extra emitted classifier edge outside the certified control set. -/
+theorem sharedInteriorPair_CAP5_exists_extra_emittedEdge_of_not_theorem49BoundaryRootSynthesis_of_extensionFinsets_eq_empty_uniqueCertificates
+    {boundaryEdge : Fin 5 → sharedInteriorPairGraph.edgeSet} {n : Nat}
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    [FiniteDimensional F2 (sharedInteriorPairGraph.edgeSet → Color)]
+    (C₀ : sharedInteriorPairGraph.EdgeColoring Color)
+    (hsubset :
+      sharedInteriorPairProjectedGeneratorCertificateColorings ⊆
+        sharedInteriorPairGraph.EdgeKempeClosure C₀)
+    (p0Inside p4Inside : Bool) (side : Fin 8 → Prop)
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (hcrossingEmpty :
+      classifier.crossingExtensionFinset sharedInteriorPairInteriorControlEdges = ∅)
+    (hnoncrossingEmpty :
+      classifier.noncrossingExtensionFinset sharedInteriorPairInteriorControlEdges = ∅)
+    (hnotSynthesis : ¬ Theorem49BoundaryRootSynthesis sharedInteriorPairEmbedding C₀) :
+    ∃ e : sharedInteriorPairGraph.edgeSet,
+      e ∈ classifier.emittedFinset ∧ e ∉ sharedInteriorPairInteriorControlEdges := by
+  classical
+  by_contra hnoExtra
+  have honlyEmits : classifier.emittedFinset ⊆ sharedInteriorPairInteriorControlEdges := by
+    intro e he
+    by_contra hnotControl
+    exact hnoExtra ⟨e, he, hnotControl⟩
+  exact hnotSynthesis
+    (sharedInteriorPair_CAP5_theorem49BoundaryRootSynthesis_of_extensionFinsets_eq_empty_uniqueCertificates
+      C₀ hsubset p0Inside p4Inside side classifier hcrossingEmpty hnoncrossingEmpty
+      honlyEmits)
+
 /-- Classifier-control form for the wheel focus shell: exact CAP5 forced-edge coverage makes the
 emitted classifier output control every selected-boundary-zero chain. -/
 theorem wheelWithInnerTriangle_CAP5_classifierControl_of_forcedEdgeCoverage
@@ -11853,6 +11913,66 @@ theorem wheelWithInnerTriangle_CAP5_theorem49BoundaryRootSynthesis_of_exact_inte
         wheelWithInnerTriangle_redBlueSingleCoordinateMemberships_of_uniqueCertificates.1
         wheelWithInnerTriangle_redBlueSingleCoordinateMemberships_of_uniqueCertificates.2)
         e (honlyEmits he))
+
+/-- Finite-checker success endpoint for the wheel focus shell.  If the extension bins are empty
+for the three lab-certified spoke controls, and the classifier emits no edge outside those
+controls, the unique certificate family closes Theorem 4.9 synthesis. -/
+theorem wheelWithInnerTriangle_CAP5_theorem49BoundaryRootSynthesis_of_extensionFinsets_eq_empty_uniqueCertificates
+    {boundaryEdge : Fin 5 → wheelWithInnerTriangleGraph.edgeSet} {n : Nat}
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    [FiniteDimensional F2 (wheelWithInnerTriangleGraph.edgeSet → Color)]
+    (C₀ : wheelWithInnerTriangleGraph.EdgeColoring Color)
+    (hsubset :
+      wheelWithInnerTriangleProjectedGeneratorCertificateColorings ⊆
+        wheelWithInnerTriangleGraph.EdgeKempeClosure C₀)
+    (p0Inside p4Inside : Bool) (side : Fin 7 → Prop)
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (hcrossingEmpty :
+      classifier.crossingExtensionFinset wheelWithInnerTriangleInteriorControlEdges = ∅)
+    (hnoncrossingEmpty :
+      classifier.noncrossingExtensionFinset wheelWithInnerTriangleInteriorControlEdges = ∅)
+    (honlyEmits : classifier.emittedFinset ⊆ wheelWithInnerTriangleInteriorControlEdges) :
+    Theorem49BoundaryRootSynthesis wheelWithInnerTriangleEmbedding C₀ := by
+  have hemits : wheelWithInnerTriangleInteriorControlEdges ⊆ classifier.emittedFinset :=
+    (classifier.controlEdges_subset_emittedFinset_iff_extensionFinsets_eq_empty
+      wheelWithInnerTriangleInteriorControlEdges).2
+      ⟨hcrossingEmpty, hnoncrossingEmpty⟩
+  exact
+    wheelWithInnerTriangle_CAP5_theorem49BoundaryRootSynthesis_of_exact_interiorControlEdges_uniqueCertificates
+      C₀ hsubset p0Inside p4Inside side classifier hemits honlyEmits
+
+/-- Failed finite-checker diagnostic for the wheel focus shell.  Once the extension bins are
+empty for the three lab-certified spoke controls, a failed unique-certificate synthesis run must
+expose an extra emitted classifier edge outside the certified control set. -/
+theorem wheelWithInnerTriangle_CAP5_exists_extra_emittedEdge_of_not_theorem49BoundaryRootSynthesis_of_extensionFinsets_eq_empty_uniqueCertificates
+    {boundaryEdge : Fin 5 → wheelWithInnerTriangleGraph.edgeSet} {n : Nat}
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    [FiniteDimensional F2 (wheelWithInnerTriangleGraph.edgeSet → Color)]
+    (C₀ : wheelWithInnerTriangleGraph.EdgeColoring Color)
+    (hsubset :
+      wheelWithInnerTriangleProjectedGeneratorCertificateColorings ⊆
+        wheelWithInnerTriangleGraph.EdgeKempeClosure C₀)
+    (p0Inside p4Inside : Bool) (side : Fin 7 → Prop)
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (hcrossingEmpty :
+      classifier.crossingExtensionFinset wheelWithInnerTriangleInteriorControlEdges = ∅)
+    (hnoncrossingEmpty :
+      classifier.noncrossingExtensionFinset wheelWithInnerTriangleInteriorControlEdges = ∅)
+    (hnotSynthesis : ¬ Theorem49BoundaryRootSynthesis wheelWithInnerTriangleEmbedding C₀) :
+    ∃ e : wheelWithInnerTriangleGraph.edgeSet,
+      e ∈ classifier.emittedFinset ∧ e ∉ wheelWithInnerTriangleInteriorControlEdges := by
+  classical
+  by_contra hnoExtra
+  have honlyEmits : classifier.emittedFinset ⊆ wheelWithInnerTriangleInteriorControlEdges := by
+    intro e he
+    by_contra hnotControl
+    exact hnoExtra ⟨e, he, hnotControl⟩
+  exact hnotSynthesis
+    (wheelWithInnerTriangle_CAP5_theorem49BoundaryRootSynthesis_of_extensionFinsets_eq_empty_uniqueCertificates
+      C₀ hsubset p0Inside p4Inside side classifier hcrossingEmpty hnoncrossingEmpty
+      honlyEmits)
 
 /-- Failed-synthesis diagnostic for the shared focus shell.  Once exact CAP5 forced-edge coverage
 holds, a failure of Theorem 4.9 synthesis must expose a forced edge missing a red or blue
