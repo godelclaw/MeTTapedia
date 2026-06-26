@@ -8640,6 +8640,88 @@ theorem wheelWithInnerTriangle_boundaryZeroKirchhoff_minimalControl_profile :
     have h := congrFun hzero wit01
     simp [wheelWithInnerTriangleWit03OnlyEvader] at h
 
+/-! ## Focus F2 nonzero-coverage verdicts -/
+
+/--
+Shared-interior-pair nonzero-coverage form of the lab verdict.  The declared forced edges
+`sip01,sip12` meet every nonzero selected-boundary-zero chain, exactly in the shape consumed by
+the CAP5 pairing-kernel shell constructors.
+-/
+theorem sharedInteriorPair_boundaryZero_declaredForcedEdges_nonzeroCoverage :
+    ∀ ⦃z : sharedInteriorPairGraph.edgeSet → Color⦄,
+      z ∈ planarBoundaryZeroSubmodule sharedInteriorPairEmbedding →
+      z ≠ 0 →
+        ∃ e : sharedInteriorPairGraph.edgeSet,
+          e ∈ sharedInteriorPairInteriorControlEdges ∧ z e ≠ 0 := by
+  classical
+  intro z hzBoundary hzNonzero
+  by_contra hnone
+  have hvanish :
+      ∀ e ∈ sharedInteriorPairInteriorControlEdges, z e = 0 := by
+    intro e he
+    by_contra hze
+    exact hnone ⟨e, he, hze⟩
+  exact hzNonzero
+    (sharedInteriorPair_boundaryZero_no_evader_of_controlEdges hzBoundary hvanish)
+
+/--
+Wheel-with-inner-triangle nonzero-coverage form of the lab verdict.  All three declared forced
+spokes meet every nonzero selected-boundary-zero chain.
+-/
+theorem wheelWithInnerTriangle_boundaryZero_declaredForcedEdges_nonzeroCoverage :
+    ∀ ⦃z : wheelWithInnerTriangleGraph.edgeSet → Color⦄,
+      z ∈ planarBoundaryZeroSubmodule wheelWithInnerTriangleEmbedding →
+      z ≠ 0 →
+        ∃ e : wheelWithInnerTriangleGraph.edgeSet,
+          e ∈ wheelWithInnerTriangleInteriorControlEdges ∧ z e ≠ 0 := by
+  classical
+  intro z hzBoundary hzNonzero
+  by_contra hnone
+  have hvanish :
+      ∀ e ∈ wheelWithInnerTriangleInteriorControlEdges, z e = 0 := by
+    intro e he
+    by_contra hze
+    exact hnone ⟨e, he, hze⟩
+  exact hzNonzero
+    (wheelWithInnerTriangle_boundaryZero_controlEdges_interiorEdges hzBoundary hvanish)
+
+/--
+Combined finite F2 verdict for the two focus shells.  Declared forced edges catch every nonzero
+selected-boundary-zero chain on both shells, while any strictly smaller control set leaves a
+nonzero evader.  This is the Lean form of the lab's `synthesis_no_evader` answer for the declared
+forced-edge rows, together with the minimality obstruction rows.
+-/
+theorem focusF2BoundaryZero_declaredForcedEdges_nonzeroCoverage_and_minimality :
+    (∀ ⦃z : sharedInteriorPairGraph.edgeSet → Color⦄,
+      z ∈ planarBoundaryZeroSubmodule sharedInteriorPairEmbedding →
+      z ≠ 0 →
+        ∃ e : sharedInteriorPairGraph.edgeSet,
+          e ∈ sharedInteriorPairInteriorControlEdges ∧ z e ≠ 0) ∧
+    (∀ control : Finset sharedInteriorPairGraph.edgeSet,
+      control.card < sharedInteriorPairInteriorControlEdges.card →
+        ∃ z : sharedInteriorPairGraph.edgeSet → Color,
+          z ∈ planarBoundaryZeroSubmodule sharedInteriorPairEmbedding ∧
+            (∀ e ∈ control, z e = 0) ∧ z ≠ 0) ∧
+    (∀ ⦃z : wheelWithInnerTriangleGraph.edgeSet → Color⦄,
+      z ∈ planarBoundaryZeroSubmodule wheelWithInnerTriangleEmbedding →
+      z ≠ 0 →
+        ∃ e : wheelWithInnerTriangleGraph.edgeSet,
+          e ∈ wheelWithInnerTriangleInteriorControlEdges ∧ z e ≠ 0) ∧
+    (∀ control : Finset wheelWithInnerTriangleGraph.edgeSet,
+      control.card < wheelWithInnerTriangleInteriorControlEdges.card →
+        ∃ z : wheelWithInnerTriangleGraph.edgeSet → Color,
+          z ∈ planarBoundaryZeroSubmodule wheelWithInnerTriangleEmbedding ∧
+            (∀ e ∈ control, z e = 0) ∧ z ≠ 0) := by
+  refine ⟨?_, ?_, ?_, ?_⟩
+  · exact sharedInteriorPair_boundaryZero_declaredForcedEdges_nonzeroCoverage
+  · intro control hcard
+    exact sharedInteriorPair_boundaryZero_has_evader_of_control_card_lt_two
+      control (by simpa [sharedInteriorPairInteriorControlEdges] using hcard)
+  · exact wheelWithInnerTriangle_boundaryZero_declaredForcedEdges_nonzeroCoverage
+  · intro control hcard
+    exact wheelWithInnerTriangle_boundaryZero_has_evader_of_control_card_lt_three
+      control (by simpa [wheelWithInnerTriangleInteriorControlEdges] using hcard)
+
 end Theorem49BoundaryZeroForcedEdgeRegression
 
 end Mettapedia.GraphTheory.FourColor
