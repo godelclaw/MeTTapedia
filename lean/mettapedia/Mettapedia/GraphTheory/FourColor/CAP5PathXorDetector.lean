@@ -4582,6 +4582,34 @@ theorem noMissingCheckerEvidence_refutes_forcedEdgeCoverage_of_emittedFinset_car
     exact hze (hzForcedZero e heForced)
 
 /--
+Singleton-support form of forced-edge coverage.  If a nonzero selected-boundary-zero chain can
+only be nonzero at one target edge, then any CAP5 coverage predicate for all nonzero
+selected-boundary-zero chains must enumerate that target edge as forced.
+-/
+theorem forcedEdgeCoverage_forces_edge_of_boundaryZero_singletonSupport
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    (emb : PlaneEmbeddingWithBoundary G)
+    (p0Inside p4Inside : Bool) (side : V → Prop)
+    (target : G.edgeSet) (z : G.edgeSet → Color)
+    (hzBoundary : z ∈ planarBoundaryZeroSubmodule emb)
+    (hzTarget : z target ≠ 0)
+    (hzOnly : ∀ ⦃e : G.edgeSet⦄, z e ≠ 0 → e = target)
+    (hcoverage :
+      ∀ ⦃z : G.edgeSet → Color⦄,
+        z ∈ planarBoundaryZeroSubmodule emb →
+        z ≠ 0 →
+          ∃ e : G.edgeSet,
+            data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e ∧
+              z e ≠ 0) :
+    data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side target := by
+  have hzNonzero : z ≠ 0 := by
+    intro hzero
+    exact hzTarget (congrFun hzero target)
+  rcases hcoverage hzBoundary hzNonzero with ⟨e, heForced, hze⟩
+  have heq : e = target := hzOnly hze
+  simpa [heq] using heForced
+
+/--
 Lower-bound form of the no-missing-evidence cardinality handoff.  If the enumerated CAP5 forced
 edges meet every nonzero selected-boundary-zero chain, then the emitted forced-edge count plus
 the selected-boundary edge count must reach the whole edge count.
