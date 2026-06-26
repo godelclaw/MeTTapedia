@@ -780,6 +780,72 @@ theorem crossComponentBridge_boundaryEdge_eq
   · exact False.elim (ccbD15_not_mem_selectedBoundarySupport (by simpa [h15] using e.2))
   · exact False.elim (ccbD23_not_mem_selectedBoundarySupport (by simpa [h23] using e.2))
 
+theorem crossComponentBridgeBoundaryAdj_ccbO01_ccbO12 :
+    (planarBoundarySupportEndpointAdjGraph crossComponentBridgeEmbedding).Adj
+      ⟨ccbO01, ccbO01_mem_selectedBoundarySupport⟩
+      ⟨ccbO12, ccbO12_mem_selectedBoundarySupport⟩ := by
+  refine ⟨?_, 1, ?_, ?_⟩
+  · intro h
+    have := congrArg Subtype.val h
+    simp [ccbO01, ccbO12] at this
+  · simp [ccbO01]
+  · simp [ccbO12]
+
+theorem crossComponentBridgeBoundaryAdj_ccbO12_ccbO20 :
+    (planarBoundarySupportEndpointAdjGraph crossComponentBridgeEmbedding).Adj
+      ⟨ccbO12, ccbO12_mem_selectedBoundarySupport⟩
+      ⟨ccbO20, ccbO20_mem_selectedBoundarySupport⟩ := by
+  refine ⟨?_, 2, ?_, ?_⟩
+  · intro h
+    have := congrArg Subtype.val h
+    simp [ccbO12, ccbO20] at this
+  · simp [ccbO12]
+  · simp [ccbO20]
+
+theorem crossComponentBridgeBoundaryAdj_ccbO20_ccbO01 :
+    (planarBoundarySupportEndpointAdjGraph crossComponentBridgeEmbedding).Adj
+      ⟨ccbO20, ccbO20_mem_selectedBoundarySupport⟩
+      ⟨ccbO01, ccbO01_mem_selectedBoundarySupport⟩ := by
+  refine ⟨?_, 0, ?_, ?_⟩
+  · intro h
+    have := congrArg Subtype.val h
+    simp [ccbO20, ccbO01] at this
+  · simp [ccbO20]
+  · simp [ccbO01]
+
+theorem crossComponentBridgeBoundaryAdj_ccbI34_ccbI45 :
+    (planarBoundarySupportEndpointAdjGraph crossComponentBridgeEmbedding).Adj
+      ⟨ccbI34, ccbI34_mem_selectedBoundarySupport⟩
+      ⟨ccbI45, ccbI45_mem_selectedBoundarySupport⟩ := by
+  refine ⟨?_, 4, ?_, ?_⟩
+  · intro h
+    have := congrArg Subtype.val h
+    simp [ccbI34, ccbI45] at this
+  · simp [ccbI34]
+  · simp [ccbI45]
+
+theorem crossComponentBridgeBoundaryAdj_ccbI45_ccbI53 :
+    (planarBoundarySupportEndpointAdjGraph crossComponentBridgeEmbedding).Adj
+      ⟨ccbI45, ccbI45_mem_selectedBoundarySupport⟩
+      ⟨ccbI53, ccbI53_mem_selectedBoundarySupport⟩ := by
+  refine ⟨?_, 5, ?_, ?_⟩
+  · intro h
+    have := congrArg Subtype.val h
+    simp [ccbI45, ccbI53] at this
+  · simp [ccbI45]
+  · simp [ccbI53]
+
+theorem crossComponentBridgeBoundaryAdj_ccbI53_ccbI34 :
+    (planarBoundarySupportEndpointAdjGraph crossComponentBridgeEmbedding).Adj
+      ⟨ccbI53, ccbI53_mem_selectedBoundarySupport⟩
+      ⟨ccbI34, ccbI34_mem_selectedBoundarySupport⟩ := by
+  refine ⟨?_, 3, ?_, ?_⟩
+  · intro h
+    have := congrArg Subtype.val h
+    simp [ccbI53, ccbI34] at this
+  · simp [ccbI53]
+  · simp [ccbI34]
+
 theorem crossComponentBridgeBoundaryAdj_preserves_label :
     ∀ ⦃e f : PlanarBoundaryEdgeVertex crossComponentBridgeEmbedding⦄,
       (planarBoundarySupportEndpointAdjGraph crossComponentBridgeEmbedding).Adj e f →
@@ -920,6 +986,139 @@ theorem crossComponentBridgeClosedWalkSource_refutes_componentInducedBoundaryDat
   exact not_crossComponentBridgeEmbedding_selectedBoundaryInducedSubgraph
     (h crossComponentBridgeGraph crossComponentBridgeEmbedding
       crossComponentBridgeClosedWalkAnnulusBoundarySource crossComponentBridgeBoundaryData
+      crossComponentBridgeOuterBoundary_induced crossComponentBridgeInnerBoundary_induced)
+
+theorem nonempty_closedWalkAnnulusBoundarySource_crossComponentBridge :
+    Nonempty
+      (PlanarBoundaryClosedWalkAnnulusBoundarySource crossComponentBridgeEmbedding) :=
+  ⟨crossComponentBridgeClosedWalkAnnulusBoundarySource⟩
+
+theorem boundaryEdgeSetCyclicRun_outer_crossComponentBridge :
+    BoundaryEdgeSetCyclicRun crossComponentBridgeEmbedding
+      crossComponentBridgeOuterBoundary := by
+  refine ⟨?_, ?_⟩
+  · rw [crossComponentBridge_selectedBoundarySupport_eq]
+    intro e he
+    exact Finset.mem_union_left crossComponentBridgeInnerBoundary he
+  · refine ⟨[
+      ⟨ccbO01, ccbO01_mem_selectedBoundarySupport⟩,
+      ⟨ccbO12, ccbO12_mem_selectedBoundarySupport⟩,
+      ⟨ccbO20, ccbO20_mem_selectedBoundarySupport⟩], ?_, ?_, ?_, ?_⟩
+    · decide
+    · decide
+    · change List.IsChain (planarBoundarySupportEndpointAdjGraph
+        crossComponentBridgeEmbedding).Adj
+        [⟨ccbO01, ccbO01_mem_selectedBoundarySupport⟩,
+          ⟨ccbO12, ccbO12_mem_selectedBoundarySupport⟩,
+          ⟨ccbO20, ccbO20_mem_selectedBoundarySupport⟩,
+          ⟨ccbO01, ccbO01_mem_selectedBoundarySupport⟩]
+      exact (List.isChain_cons_cons).2
+        ⟨crossComponentBridgeBoundaryAdj_ccbO01_ccbO12,
+          (List.isChain_cons_cons).2
+            ⟨crossComponentBridgeBoundaryAdj_ccbO12_ccbO20,
+              (List.isChain_pair).2
+                crossComponentBridgeBoundaryAdj_ccbO20_ccbO01⟩⟩
+    · intro x
+      rcases crossComponentBridge_boundaryEdge_eq x with
+        rfl | rfl | rfl | rfl | rfl | rfl <;> decide
+
+theorem boundaryEdgeSetCyclicRun_inner_crossComponentBridge :
+    BoundaryEdgeSetCyclicRun crossComponentBridgeEmbedding
+      crossComponentBridgeInnerBoundary := by
+  refine ⟨?_, ?_⟩
+  · rw [crossComponentBridge_selectedBoundarySupport_eq]
+    intro e he
+    exact Finset.mem_union_right crossComponentBridgeOuterBoundary he
+  · refine ⟨[
+      ⟨ccbI34, ccbI34_mem_selectedBoundarySupport⟩,
+      ⟨ccbI45, ccbI45_mem_selectedBoundarySupport⟩,
+      ⟨ccbI53, ccbI53_mem_selectedBoundarySupport⟩], ?_, ?_, ?_, ?_⟩
+    · decide
+    · decide
+    · change List.IsChain (planarBoundarySupportEndpointAdjGraph
+        crossComponentBridgeEmbedding).Adj
+        [⟨ccbI34, ccbI34_mem_selectedBoundarySupport⟩,
+          ⟨ccbI45, ccbI45_mem_selectedBoundarySupport⟩,
+          ⟨ccbI53, ccbI53_mem_selectedBoundarySupport⟩,
+          ⟨ccbI34, ccbI34_mem_selectedBoundarySupport⟩]
+      exact (List.isChain_cons_cons).2
+        ⟨crossComponentBridgeBoundaryAdj_ccbI34_ccbI45,
+          (List.isChain_cons_cons).2
+            ⟨crossComponentBridgeBoundaryAdj_ccbI45_ccbI53,
+              (List.isChain_pair).2
+                crossComponentBridgeBoundaryAdj_ccbI53_ccbI34⟩⟩
+    · intro x
+      rcases crossComponentBridge_boundaryEdge_eq x with
+        rfl | rfl | rfl | rfl | rfl | rfl <;> decide
+
+theorem outer_inner_boundaryCycleEndpointSupports_disjoint_crossComponentBridge :
+    Disjoint
+      (boundaryEdgeSetEndpointSupport crossComponentBridgeOuterBoundary)
+      (boundaryEdgeSetEndpointSupport crossComponentBridgeInnerBoundary) := by
+  rw [Finset.disjoint_left]
+  intro v hvOuter hvInner
+  fin_cases v <;>
+    simp [boundaryEdgeSetEndpointSupport, crossComponentBridgeOuterBoundary,
+      crossComponentBridgeInnerBoundary, ccbO01, ccbO12, ccbO20,
+      ccbI34, ccbI45, ccbI53] at hvOuter hvInner
+
+theorem annulusBoundaryCyclePair_crossComponentBridge :
+    AnnulusBoundaryCyclePair crossComponentBridgeEmbedding
+      crossComponentBridgeOuterBoundary
+      crossComponentBridgeInnerBoundary :=
+  ⟨boundaryEdgeSetCyclicRun_outer_crossComponentBridge,
+    boundaryEdgeSetCyclicRun_inner_crossComponentBridge,
+    outer_inner_boundaryCycleEndpointSupports_disjoint_crossComponentBridge⟩
+
+theorem
+    closedWalkAnnulusBoundarySource_boundaryCyclePair_and_componentInduced_does_not_imply_crossComponentChordFree_crossComponentBridge :
+    Nonempty
+        (PlanarBoundaryClosedWalkAnnulusBoundarySource crossComponentBridgeEmbedding) ∧
+      AnnulusBoundaryCyclePair crossComponentBridgeEmbedding
+        crossComponentBridgeOuterBoundary
+        crossComponentBridgeInnerBoundary ∧
+        BoundaryEdgeSetInducedSubgraph crossComponentBridgeOuterBoundary ∧
+          BoundaryEdgeSetInducedSubgraph crossComponentBridgeInnerBoundary ∧
+            ¬ BoundaryEdgeSetCrossComponentChordFree
+              crossComponentBridgeOuterBoundary
+              crossComponentBridgeInnerBoundary :=
+  ⟨nonempty_closedWalkAnnulusBoundarySource_crossComponentBridge,
+    annulusBoundaryCyclePair_crossComponentBridge,
+    crossComponentBridgeOuterBoundary_induced,
+    crossComponentBridgeInnerBoundary_induced,
+    not_crossComponentBridgeBoundary_crossComponentChordFree⟩
+
+theorem
+    closedWalkAnnulusBoundarySource_boundaryCyclePair_and_componentInduced_does_not_imply_selectedBoundaryInduced_crossComponentBridge :
+    Nonempty
+        (PlanarBoundaryClosedWalkAnnulusBoundarySource crossComponentBridgeEmbedding) ∧
+      AnnulusBoundaryCyclePair crossComponentBridgeEmbedding
+        crossComponentBridgeOuterBoundary
+        crossComponentBridgeInnerBoundary ∧
+        BoundaryEdgeSetInducedSubgraph crossComponentBridgeOuterBoundary ∧
+          BoundaryEdgeSetInducedSubgraph crossComponentBridgeInnerBoundary ∧
+            ¬ SelectedBoundaryInducedSubgraph crossComponentBridgeEmbedding :=
+  ⟨nonempty_closedWalkAnnulusBoundarySource_crossComponentBridge,
+    annulusBoundaryCyclePair_crossComponentBridge,
+    crossComponentBridgeOuterBoundary_induced,
+    crossComponentBridgeInnerBoundary_induced,
+    not_crossComponentBridgeEmbedding_selectedBoundaryInducedSubgraph⟩
+
+theorem
+    crossComponentBridgeClosedWalkSource_boundaryCyclePair_componentInduced_refutes_selectedBoundaryInduced :
+    ¬ ∀ (G : SimpleGraph (Fin 6)) (emb : PlaneEmbeddingWithBoundary G),
+      PlanarBoundaryClosedWalkAnnulusBoundarySource emb →
+        ∀ outer inner : Finset G.edgeSet,
+          AnnulusBoundaryCyclePair emb outer inner →
+            BoundaryEdgeSetInducedSubgraph outer →
+              BoundaryEdgeSetInducedSubgraph inner →
+                SelectedBoundaryInducedSubgraph emb := by
+  intro h
+  exact not_crossComponentBridgeEmbedding_selectedBoundaryInducedSubgraph
+    (h crossComponentBridgeGraph crossComponentBridgeEmbedding
+      crossComponentBridgeClosedWalkAnnulusBoundarySource
+      crossComponentBridgeOuterBoundary crossComponentBridgeInnerBoundary
+      annulusBoundaryCyclePair_crossComponentBridge
       crossComponentBridgeOuterBoundary_induced crossComponentBridgeInnerBoundary_induced)
 
 /-- The honest `diamondWithTriangle` source model also admits a one-collar annulus geometry: all
