@@ -6750,6 +6750,45 @@ theorem twoBandAnnulusKirchhoffColumn_eq_incidentIndicator
       twoBandAnnulus_incidentEdgeFinset_four,
       twoBandAnnulus_incidentEdgeFinset_five]
 
+def threeF2ColumnsFullRank (column : Fin 3 → Fin 3 → F2) : Prop :=
+  column (0 : Fin 3) ≠ 0 ∧
+  column (1 : Fin 3) ≠ 0 ∧
+  column (2 : Fin 3) ≠ 0 ∧
+  column (0 : Fin 3) ≠ column (1 : Fin 3) ∧
+  column (0 : Fin 3) ≠ column (2 : Fin 3) ∧
+  column (1 : Fin 3) ≠ column (2 : Fin 3) ∧
+  column (0 : Fin 3) + column (1 : Fin 3) + column (2 : Fin 3) ≠ 0
+
+def threeF2ColumnsFullRankBool (column : Fin 3 → Fin 3 → F2) : Bool :=
+  (column (0 : Fin 3) != 0) &&
+  (column (1 : Fin 3) != 0) &&
+  (column (2 : Fin 3) != 0) &&
+  (column (0 : Fin 3) != column (1 : Fin 3)) &&
+  (column (0 : Fin 3) != column (2 : Fin 3)) &&
+  (column (1 : Fin 3) != column (2 : Fin 3)) &&
+  (column (0 : Fin 3) + column (1 : Fin 3) + column (2 : Fin 3) != 0)
+
+set_option maxRecDepth 10000 in
+theorem threeF2ColumnsFullRankBool_eq_true_iff
+    (column : Fin 3 → Fin 3 → F2) :
+    threeF2ColumnsFullRankBool column = true ↔
+      threeF2ColumnsFullRank column := by
+  unfold threeF2ColumnsFullRankBool threeF2ColumnsFullRank
+  decide +revert
+
+def threeF2ColumnMap (column : Fin 3 → Fin 3 → F2)
+    (x : Fin 3 → F2) : Fin 3 → F2 :=
+  fun i => ∑ j : Fin 3, x j * column j i
+
+set_option maxRecDepth 10000 in
+theorem threeF2ColumnMap_no_kernel_iff_fullRank
+    (column : Fin 3 → Fin 3 → F2) :
+    (∀ x : Fin 3 → F2, threeF2ColumnMap column x = 0 → x = 0) ↔
+      threeF2ColumnsFullRank column := by
+  unfold threeF2ColumnMap threeF2ColumnsFullRank
+  revert column
+  decide +revert
+
 def twoBandAnnulusOmittedTripleKirchhoffColumnMap
     (omitted : Fin 3 → twoBandAnnulusGraph.edgeSet) :
     (Fin 3 → F2) →ₗ[F2] (Fin 3 → F2) where
@@ -6775,6 +6814,80 @@ def twoBandAnnulusOmittedTripleKirchhoffColumnMap
       _ = a * ∑ j : Fin 3,
           x j * twoBandAnnulusKirchhoffColumn (omitted j) i := by
             rw [Finset.mul_sum]
+
+def twoBandAnnulusOmittedTripleColumns
+    (omitted : Fin 3 → twoBandAnnulusGraph.edgeSet) :
+    Fin 3 → Fin 3 → F2 :=
+  fun j => twoBandAnnulusKirchhoffColumn (omitted j)
+
+theorem twoBandAnnulusOmittedTripleKirchhoffColumnMap_ker_eq_bot_iff_columns_fullRank
+    (omitted : Fin 3 → twoBandAnnulusGraph.edgeSet) :
+    LinearMap.ker (twoBandAnnulusOmittedTripleKirchhoffColumnMap omitted) = ⊥ ↔
+      threeF2ColumnsFullRank (twoBandAnnulusOmittedTripleColumns omitted) := by
+  rw [LinearMap.ker_eq_bot']
+  change
+    (∀ x : Fin 3 → F2,
+      threeF2ColumnMap (twoBandAnnulusOmittedTripleColumns omitted) x = 0 →
+        x = 0) ↔
+      threeF2ColumnsFullRank (twoBandAnnulusOmittedTripleColumns omitted)
+  exact threeF2ColumnMap_no_kernel_iff_fullRank
+    (twoBandAnnulusOmittedTripleColumns omitted)
+
+def twoBandAnnulusInteriorEdgeByIndex : Fin 9 → twoBandAnnulusGraph.edgeSet
+  | ⟨0, _⟩ => tbaR03
+  | ⟨1, _⟩ => tbaR36
+  | ⟨2, _⟩ => tbaR14
+  | ⟨3, _⟩ => tbaR47
+  | ⟨4, _⟩ => tbaR25
+  | ⟨5, _⟩ => tbaR58
+  | ⟨6, _⟩ => tbaM34
+  | ⟨7, _⟩ => tbaM45
+  | ⟨8, _⟩ => tbaM53
+
+theorem twoBandAnnulusInteriorEdgeByIndex_mem_interior
+    (i : Fin 9) :
+    twoBandAnnulusInteriorEdgeByIndex i ∈ twoBandAnnulusInteriorEdges := by
+  fin_cases i <;> decide
+
+def twoBandAnnulusInteriorOmittedTripleByIndex
+    (a b c : Fin 9) : Fin 3 → twoBandAnnulusGraph.edgeSet
+  | ⟨0, _⟩ => twoBandAnnulusInteriorEdgeByIndex a
+  | ⟨1, _⟩ => twoBandAnnulusInteriorEdgeByIndex b
+  | ⟨2, _⟩ => twoBandAnnulusInteriorEdgeByIndex c
+
+def twoBandAnnulusInteriorOmittedIndexTripleFullRank
+    (a b c : Fin 9) : Prop :=
+  threeF2ColumnsFullRank
+    (twoBandAnnulusOmittedTripleColumns
+      (twoBandAnnulusInteriorOmittedTripleByIndex a b c))
+
+theorem twoBandAnnulusInteriorOmittedTripleByIndex_columnMap_ker_eq_bot_iff_fullRank
+    (a b c : Fin 9) :
+    LinearMap.ker
+      (twoBandAnnulusOmittedTripleKirchhoffColumnMap
+        (twoBandAnnulusInteriorOmittedTripleByIndex a b c)) = ⊥ ↔
+      twoBandAnnulusInteriorOmittedIndexTripleFullRank a b c :=
+  twoBandAnnulusOmittedTripleKirchhoffColumnMap_ker_eq_bot_iff_columns_fullRank
+    (twoBandAnnulusInteriorOmittedTripleByIndex a b c)
+
+def twoBandAnnulusFullRankIncreasingOmittedIndexTriples :
+    Finset ((Fin 9 × Fin 9) × Fin 9) :=
+  (Finset.univ.filter fun t =>
+    t.1.1.val < t.1.2.val ∧ t.1.2.val < t.2.val ∧
+      threeF2ColumnsFullRankBool
+        (twoBandAnnulusOmittedTripleColumns
+          (twoBandAnnulusInteriorOmittedTripleByIndex t.1.1 t.1.2 t.2)) = true)
+
+set_option maxRecDepth 10000 in
+theorem twoBandAnnulusFullRankIncreasingOmittedIndexTriples_card :
+    twoBandAnnulusFullRankIncreasingOmittedIndexTriples.card = 50 := by
+  unfold twoBandAnnulusFullRankIncreasingOmittedIndexTriples
+    twoBandAnnulusInteriorOmittedTripleByIndex
+    twoBandAnnulusInteriorEdgeByIndex
+    twoBandAnnulusOmittedTripleColumns
+    threeF2ColumnsFullRankBool
+    twoBandAnnulusKirchhoffColumn
+  decide
 
 def twoBandAnnulusMiddleOuterRadialKirchhoffOmittedTriple :
     Fin 3 → twoBandAnnulusGraph.edgeSet
