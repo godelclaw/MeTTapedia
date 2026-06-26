@@ -1260,6 +1260,41 @@ theorem selectedBoundaryInteriorEdgeEndpointVertices_eq_empty_endpointTouchPath 
   · intro hv
     simp at hv
 
+theorem endpointTouchPath_interiorEdgeSupport_nonempty :
+    (interiorEdgeSupport endpointTouchPathEmbedding.faceBoundary
+      endpointTouchPathEmbedding.faces).Nonempty := by
+  refine ⟨et12, ?_⟩
+  rw [endpointTouchPath_interiorEdgeSupport_eq_singleton]
+  simp
+
+theorem endpointTouchPath_component_induced_purifiedCarrier_empty :
+    BoundaryEdgeSetInducedSubgraph
+        ({et01} : Finset endpointTouchPathGraph.edgeSet) ∧
+      BoundaryEdgeSetInducedSubgraph
+        ({et23} : Finset endpointTouchPathGraph.edgeSet) ∧
+        (interiorEdgeSupport endpointTouchPathEmbedding.faceBoundary
+          endpointTouchPathEmbedding.faces).Nonempty ∧
+          selectedBoundaryInteriorEdgeEndpointVertices endpointTouchPathEmbedding = ∅ :=
+  ⟨endpointTouchPath_outerBoundaryEdgeSet_induced,
+    endpointTouchPath_innerBoundaryEdgeSet_induced,
+    endpointTouchPath_interiorEdgeSupport_nonempty,
+    selectedBoundaryInteriorEdgeEndpointVertices_eq_empty_endpointTouchPath⟩
+
+theorem endpointTouchPath_component_induced_not_purifiedCarrier_nonempty :
+    BoundaryEdgeSetInducedSubgraph
+        ({et01} : Finset endpointTouchPathGraph.edgeSet) ∧
+      BoundaryEdgeSetInducedSubgraph
+        ({et23} : Finset endpointTouchPathGraph.edgeSet) ∧
+        (interiorEdgeSupport endpointTouchPathEmbedding.faceBoundary
+          endpointTouchPathEmbedding.faces).Nonempty ∧
+          ¬ (selectedBoundaryInteriorEdgeEndpointVertices
+            endpointTouchPathEmbedding).Nonempty := by
+  refine ⟨endpointTouchPath_outerBoundaryEdgeSet_induced,
+    endpointTouchPath_innerBoundaryEdgeSet_induced,
+    endpointTouchPath_interiorEdgeSupport_nonempty, ?_⟩
+  rw [selectedBoundaryInteriorEdgeEndpointVertices_eq_empty_endpointTouchPath]
+  simp
+
 theorem endpointTouchPath_boundaryZero_controlEdges_interiorEdge :
     ∀ ⦃z : endpointTouchPathGraph.edgeSet → Color⦄,
       z ∈ planarBoundaryZeroSubmodule endpointTouchPathEmbedding →
