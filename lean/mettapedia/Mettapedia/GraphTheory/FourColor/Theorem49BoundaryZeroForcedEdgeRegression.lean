@@ -15340,6 +15340,154 @@ theorem twoBandAnnulus_CAP5_boundaryZeroKirchhoff_not_forcedEdgeCoverage_of_emit
       p0Inside p4Inside side classifier hcoverage
   omega
 
+set_option maxRecDepth 20000 in
+/-- At-most-minimum positive detector form for the two-band CAP5 Kirchhoff lane.  Under the
+lab-certified lower bound, coverage with at most six emitted interior coordinates is exactly
+six emitted interior coordinates belonging to the full-rank complement family. -/
+theorem twoBandAnnulus_CAP5_boundaryZeroKirchhoff_forcedEdgeCoverage_iff_emittedInterior_card_eq_six_and_mem_fullRankInteriorControlComplements_of_emittedInterior_card_le_six
+    {boundaryEdge : Fin 5 → twoBandAnnulusGraph.edgeSet} {n : Nat}
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    (p0Inside p4Inside : Bool) (side : Fin 9 → Prop)
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (hcardLe :
+      (classifier.emittedFinset.filter fun e =>
+        e ∈ interiorEdgeSupport
+          twoBandAnnulusEmbedding.faceBoundary twoBandAnnulusEmbedding.faces).card ≤ 6) :
+    (∀ ⦃z : twoBandAnnulusGraph.edgeSet → Color⦄,
+      z ∈ theorem49BoundaryZeroKirchhoffSubspace
+          twoBandAnnulusEmbedding twoBandAnnulusKirchhoffVertices →
+      z ≠ 0 →
+        ∃ e : twoBandAnnulusGraph.edgeSet,
+          data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e ∧
+            z e ≠ 0) ↔
+      (classifier.emittedFinset.filter fun e =>
+        e ∈ interiorEdgeSupport
+          twoBandAnnulusEmbedding.faceBoundary
+          twoBandAnnulusEmbedding.faces).card = 6 ∧
+        (classifier.emittedFinset.filter fun e =>
+          e ∈ interiorEdgeSupport
+            twoBandAnnulusEmbedding.faceBoundary
+            twoBandAnnulusEmbedding.faces) ∈
+          twoBandAnnulusFullRankInteriorControlComplements := by
+  let emittedInterior := classifier.emittedFinset.filter fun e =>
+    e ∈ interiorEdgeSupport
+      twoBandAnnulusEmbedding.faceBoundary
+      twoBandAnnulusEmbedding.faces
+  have hcardLe' : emittedInterior.card ≤ 6 := by
+    simpa [emittedInterior] using hcardLe
+  change
+    (∀ ⦃z : twoBandAnnulusGraph.edgeSet → Color⦄,
+      z ∈ theorem49BoundaryZeroKirchhoffSubspace
+          twoBandAnnulusEmbedding twoBandAnnulusKirchhoffVertices →
+      z ≠ 0 →
+        ∃ e : twoBandAnnulusGraph.edgeSet,
+          data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e ∧
+            z e ≠ 0) ↔
+      emittedInterior.card = 6 ∧
+        emittedInterior ∈ twoBandAnnulusFullRankInteriorControlComplements
+  constructor
+  · intro hcoverage
+    have hge :=
+      twoBandAnnulus_CAP5_boundaryZeroKirchhoff_forcedEdgeCoverage_emittedInterior_card_ge_six
+        p0Inside p4Inside side classifier hcoverage
+    have hge' : 6 ≤ emittedInterior.card := by
+      simpa [emittedInterior] using hge
+    have hcard : emittedInterior.card = 6 := by
+      omega
+    exact
+      ⟨hcard,
+        (twoBandAnnulus_CAP5_boundaryZeroKirchhoff_forcedEdgeCoverage_iff_emittedInterior_mem_fullRankInteriorControlComplements_of_emittedInterior_card_eq_six
+          p0Inside p4Inside side classifier
+          (by simpa [emittedInterior] using hcard)).1 hcoverage⟩
+  · rintro ⟨hcard, hfull⟩
+    exact
+      (twoBandAnnulus_CAP5_boundaryZeroKirchhoff_forcedEdgeCoverage_iff_emittedInterior_mem_fullRankInteriorControlComplements_of_emittedInterior_card_eq_six
+        p0Inside p4Inside side classifier
+        (by simpa [emittedInterior] using hcard)).2
+        (by simpa [emittedInterior] using hfull)
+
+set_option maxRecDepth 20000 in
+/-- At-most-minimum negative detector form for the two-band CAP5 Kirchhoff lane.  With at most
+six emitted interior coordinates, noncoverage means either fewer than six interior coordinates
+were emitted, or the exact six-edge pattern lies in the non-full-rank complement family. -/
+theorem twoBandAnnulus_CAP5_boundaryZeroKirchhoff_not_forcedEdgeCoverage_iff_emittedInterior_card_lt_six_or_mem_nonFullRankInteriorControlComplements_of_emittedInterior_card_le_six
+    {boundaryEdge : Fin 5 → twoBandAnnulusGraph.edgeSet} {n : Nat}
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    (p0Inside p4Inside : Bool) (side : Fin 9 → Prop)
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (hcardLe :
+      (classifier.emittedFinset.filter fun e =>
+        e ∈ interiorEdgeSupport
+          twoBandAnnulusEmbedding.faceBoundary twoBandAnnulusEmbedding.faces).card ≤ 6) :
+    (¬ ∀ ⦃z : twoBandAnnulusGraph.edgeSet → Color⦄,
+      z ∈ theorem49BoundaryZeroKirchhoffSubspace
+          twoBandAnnulusEmbedding twoBandAnnulusKirchhoffVertices →
+      z ≠ 0 →
+        ∃ e : twoBandAnnulusGraph.edgeSet,
+          data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e ∧
+            z e ≠ 0) ↔
+      (classifier.emittedFinset.filter fun e =>
+        e ∈ interiorEdgeSupport
+          twoBandAnnulusEmbedding.faceBoundary
+          twoBandAnnulusEmbedding.faces).card < 6 ∨
+        (classifier.emittedFinset.filter fun e =>
+          e ∈ interiorEdgeSupport
+            twoBandAnnulusEmbedding.faceBoundary
+            twoBandAnnulusEmbedding.faces) ∈
+          twoBandAnnulusNonFullRankInteriorControlComplements := by
+  let emittedInterior := classifier.emittedFinset.filter fun e =>
+    e ∈ interiorEdgeSupport
+      twoBandAnnulusEmbedding.faceBoundary
+      twoBandAnnulusEmbedding.faces
+  have hcardLe' : emittedInterior.card ≤ 6 := by
+    simpa [emittedInterior] using hcardLe
+  change
+    (¬ ∀ ⦃z : twoBandAnnulusGraph.edgeSet → Color⦄,
+      z ∈ theorem49BoundaryZeroKirchhoffSubspace
+          twoBandAnnulusEmbedding twoBandAnnulusKirchhoffVertices →
+      z ≠ 0 →
+        ∃ e : twoBandAnnulusGraph.edgeSet,
+          data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e ∧
+            z e ≠ 0) ↔
+      emittedInterior.card < 6 ∨
+        emittedInterior ∈ twoBandAnnulusNonFullRankInteriorControlComplements
+  constructor
+  · intro hnotCoverage
+    by_cases hlt : emittedInterior.card < 6
+    · exact Or.inl hlt
+    · right
+      have hcard : emittedInterior.card = 6 := by
+        omega
+      exact
+        (twoBandAnnulus_CAP5_boundaryZeroKirchhoff_not_forcedEdgeCoverage_iff_emittedInterior_mem_nonFullRankInteriorControlComplements_of_emittedInterior_card_eq_six
+          p0Inside p4Inside side classifier
+          (by simpa [emittedInterior] using hcard)).1
+          hnotCoverage
+  · rintro (hlt | hnonFull)
+    · have hleFive : emittedInterior.card ≤ 5 := by
+        omega
+      exact
+        twoBandAnnulus_CAP5_boundaryZeroKirchhoff_not_forcedEdgeCoverage_of_emittedInterior_card_le_five
+          p0Inside p4Inside side classifier
+          (by simpa [emittedInterior] using hleFive)
+    · have hmemUnion :
+          emittedInterior ∈ twoBandAnnulusFullRankInteriorControlComplements ∪
+            twoBandAnnulusNonFullRankInteriorControlComplements :=
+        Finset.mem_union.2 (Or.inr hnonFull)
+      have hmemSix : emittedInterior ∈ twoBandAnnulusSixInteriorControls := by
+        simpa [twoBandAnnulusSixInteriorControls_eq_fullRank_union_nonFullRank]
+          using hmemUnion
+      have hcard : emittedInterior.card = 6 := by
+        rw [twoBandAnnulusSixInteriorControls] at hmemSix
+        exact (Finset.mem_powersetCard.1 hmemSix).2
+      exact
+        (twoBandAnnulus_CAP5_boundaryZeroKirchhoff_not_forcedEdgeCoverage_iff_emittedInterior_mem_nonFullRankInteriorControlComplements_of_emittedInterior_card_eq_six
+          p0Inside p4Inside side classifier
+          (by simpa [emittedInterior] using hcard)).2
+          (by simpa [emittedInterior] using hnonFull)
+
 /-- Pattern refutation for the two-band Kirchhoff detector.  Six emitted interior coordinates
 are not enough when they are the lab-refuted noncontrolling pattern; selected-boundary emissions
 vanish automatically for boundary-zero Kirchhoff chains. -/
