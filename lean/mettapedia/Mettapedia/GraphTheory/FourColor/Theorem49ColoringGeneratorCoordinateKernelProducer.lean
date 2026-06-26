@@ -924,6 +924,84 @@ theorem theorem49BoundaryRootSynthesis_of_controlEdgeNonzeroWitnesses
     hnonzero hwitnessRed hwitnessBlue
 
 /--
+Boundary-trimmed nonzero-coverage form of finite control.  If a finite control set determines
+every selected-boundary-zero chain, then every nonzero chain has a nonzero coordinate on a
+controlling edge outside the selected-boundary support; selected-boundary coordinates are already
+zero by definition of the boundary-zero submodule.
+-/
+theorem exists_nonboundary_controlEdge_nonzero_of_controlEdges
+    {G : SimpleGraph V} [Fintype G.edgeSet]
+    (emb : PlaneEmbeddingWithBoundary G)
+    (controlEdges : Finset G.edgeSet)
+    (hcontrol :
+      ∀ ⦃z : G.edgeSet → Color⦄,
+        z ∈ planarBoundaryZeroSubmodule emb →
+        (∀ e ∈ controlEdges, z e = 0) →
+          z = 0) :
+    ∀ ⦃z : G.edgeSet → Color⦄,
+      z ∈ planarBoundaryZeroSubmodule emb →
+      z ≠ 0 →
+        ∃ e : G.edgeSet,
+          (e ∈ controlEdges ∧
+            e ∉ selectedBoundarySupport emb.faceBoundary emb.faces emb.faces) ∧
+            z e ≠ 0 := by
+  intro z hzBoundary hzNonzero
+  rcases (finsetControls_iff_forall_nonzero_exists_mem_nonzero
+      (G := G) (emb := emb) controlEdges).1 hcontrol hzBoundary hzNonzero with
+    ⟨e, heControl, hze⟩
+  have heNotBoundary :
+      e ∉ selectedBoundarySupport emb.faceBoundary emb.faces emb.faces := by
+    intro heBoundary
+    exact hze (boundaryZero_of_mem_planarBoundaryZeroSubmodule hzBoundary e heBoundary)
+  exact ⟨e, ⟨heControl, heNotBoundary⟩, hze⟩
+
+/--
+Boundary-trimmed finite-control kernel route.  A finite control set may contain
+selected-boundary coordinates, but the pairing-kernel certificate only needs red/blue probes on
+the non-boundary controlling edges.
+-/
+theorem ker_planarBoundaryZeroFamilyPairingMap_eq_bot_of_controlEdges_nonBoundaryWitnesses
+    {G : SimpleGraph V} [Fintype G.edgeSet]
+    {emb : PlaneEmbeddingWithBoundary G}
+    {colorings : Set (G.EdgeColoring Color)}
+    {κ : Type*}
+    (family : κ → projectedColoringGeneratorSubspace emb colorings)
+    (controlEdges : Finset G.edgeSet)
+    (hcontrol :
+      ∀ ⦃z : G.edgeSet → Color⦄,
+        z ∈ planarBoundaryZeroSubmodule emb →
+        (∀ e ∈ controlEdges, z e = 0) →
+          z = 0)
+    (hwitnessRed :
+      ∀ e : G.edgeSet,
+        e ∈ controlEdges →
+          e ∉ selectedBoundarySupport emb.faceBoundary emb.faces emb.faces →
+            ∃ i : κ,
+              ((family i : projectedColoringGeneratorSubspace emb colorings) :
+                  G.edgeSet → Color) =
+                Pi.single e red)
+    (hwitnessBlue :
+      ∀ e : G.edgeSet,
+        e ∈ controlEdges →
+          e ∉ selectedBoundarySupport emb.faceBoundary emb.faces emb.faces →
+            ∃ i : κ,
+              ((family i : projectedColoringGeneratorSubspace emb colorings) :
+                  G.edgeSet → Color) =
+                Pi.single e blue) :
+    LinearMap.ker (planarBoundaryZeroFamilyPairingMap family) = ⊥ :=
+  ker_planarBoundaryZeroFamilyPairingMap_eq_bot_of_edgePredicateNonzeroWitnesses
+    family
+    (fun e => e ∈ controlEdges ∧
+      e ∉ selectedBoundarySupport emb.faceBoundary emb.faces emb.faces)
+    (exists_nonboundary_controlEdge_nonzero_of_controlEdges emb controlEdges hcontrol)
+    (by
+      intro e he
+      exact hwitnessRed e he.1 he.2)
+    (by
+      intro e he
+      exact hwitnessBlue e he.1 he.2)
+
+/--
 Boundary-trimmed finite-control synthesis route.  A finite edge set may contain selected-boundary
 coordinates, but selected-boundary-zero chains vanish on those coordinates automatically.  Thus
 the projected-generator witnesses are needed only for controlling edges outside the selected
@@ -960,26 +1038,10 @@ theorem theorem49BoundaryRootSynthesis_of_controlEdges_nonBoundaryWitnesses
                   G.edgeSet → Color) =
                 Pi.single e blue) :
     Theorem49BoundaryRootSynthesis emb C₀ :=
-  theorem49BoundaryRootSynthesis_of_edgePredicateNonzeroWitnesses
+  theorem49BoundaryRootSynthesis_of_familyPairingKerEqBot
     emb C₀ colorings hsubset family
-    (fun e => e ∈ controlEdges ∧
-      e ∉ selectedBoundarySupport emb.faceBoundary emb.faces emb.faces)
-    (by
-      intro z hzBoundary hzNonzero
-      rcases (finsetControls_iff_forall_nonzero_exists_mem_nonzero
-          (G := G) (emb := emb) controlEdges).1 hcontrol hzBoundary hzNonzero with
-        ⟨e, heControl, hze⟩
-      have heNotBoundary :
-          e ∉ selectedBoundarySupport emb.faceBoundary emb.faces emb.faces := by
-        intro heBoundary
-        exact hze (boundaryZero_of_mem_planarBoundaryZeroSubmodule hzBoundary e heBoundary)
-      exact ⟨e, ⟨heControl, heNotBoundary⟩, hze⟩)
-    (by
-      intro e he
-      exact hwitnessRed e he.1 he.2)
-    (by
-      intro e he
-      exact hwitnessBlue e he.1 he.2)
+    (ker_planarBoundaryZeroFamilyPairingMap_eq_bot_of_controlEdges_nonBoundaryWitnesses
+      family controlEdges hcontrol hwitnessRed hwitnessBlue)
 
 /--
 Canonical finite red/blue single-coordinate family generated by membership certificates.  Its
