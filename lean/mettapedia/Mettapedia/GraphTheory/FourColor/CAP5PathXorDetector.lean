@@ -1661,6 +1661,149 @@ theorem edge_card_le_emittedFinset_card_add_boundary_card_of_classifierControl
       hcontrol
 
 /--
+Kirchhoff-target cardinality obstruction for the current CAP5 classifier controls.  If the
+emitted edge set plus selected-boundary coordinates plus selected Kirchhoff vertex equations is
+still below the ambient edge-chain dimension, then the classifier cannot control the
+boundary-zero Kirchhoff target.
+-/
+theorem not_classifierKirchhoffControl_of_emittedFinset_card_add_boundary_card_add_vertex_card_lt
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    [Fintype G.edgeSet]
+    (emb : PlaneEmbeddingWithBoundary G) (vertices : Finset V)
+    (p0Inside p4Inside : Bool) (side : V → Prop)
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (hcard :
+      classifier.emittedFinset.card +
+          Fintype.card {e : G.edgeSet //
+            e ∈ selectedBoundarySupport emb.faceBoundary emb.faces emb.faces} +
+        Fintype.card {v : V // v ∈ vertices} <
+        Fintype.card G.edgeSet) :
+    ¬ ∀ ⦃z : G.edgeSet → Color⦄,
+      z ∈ theorem49BoundaryZeroKirchhoffSubspace emb vertices →
+      (∀ e ∈ classifier.emittedFinset, z e = 0) →
+        z = 0 :=
+  not_forall_eq_zero_on_control_of_theorem49BoundaryZeroKirchhoffSubspace_of_card_sum_lt
+    emb vertices classifier.emittedFinset hcard
+
+/--
+Lower-bound form of the Kirchhoff-target classifier obstruction.  Any CAP5 classifier whose
+emitted edges already control the boundary-zero Kirchhoff target must meet the ambient
+dimension bound after adding boundary coordinates and the chosen Kirchhoff vertex equations.
+-/
+theorem edge_card_le_emittedFinset_card_add_boundary_card_add_vertex_card_of_classifierKirchhoffControl
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    [Fintype G.edgeSet]
+    (emb : PlaneEmbeddingWithBoundary G) (vertices : Finset V)
+    (p0Inside p4Inside : Bool) (side : V → Prop)
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (hcontrol :
+      ∀ ⦃z : G.edgeSet → Color⦄,
+        z ∈ theorem49BoundaryZeroKirchhoffSubspace emb vertices →
+        (∀ e ∈ classifier.emittedFinset, z e = 0) →
+          z = 0) :
+    Fintype.card G.edgeSet ≤
+      classifier.emittedFinset.card +
+          Fintype.card {e : G.edgeSet //
+            e ∈ selectedBoundarySupport emb.faceBoundary emb.faces emb.faces} +
+        Fintype.card {v : V // v ∈ vertices} := by
+  by_contra hnotLowerBound
+  exact
+    (data.not_classifierKirchhoffControl_of_emittedFinset_card_add_boundary_card_add_vertex_card_lt
+      emb vertices p0Inside p4Inside side classifier (Nat.lt_of_not_ge hnotLowerBound))
+      hcontrol
+
+/--
+Forced-edge coverage controls the boundary-zero Kirchhoff target.  This is the target-subspace
+version of the ordinary boundary-zero coverage handoff: every forced edge reported by CAP5 is
+also present in the classifier's emitted finite set.
+-/
+theorem enumeratedExceptionalAnnulusForcedEdgeClassifierKirchhoffControl_of_forcedEdgeKirchhoffCoverage
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    [Fintype G.edgeSet]
+    (emb : PlaneEmbeddingWithBoundary G) (vertices : Finset V)
+    {p0Inside p4Inside : Bool} {side : V → Prop}
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (hcoverage :
+      ∀ ⦃z : G.edgeSet → Color⦄,
+        z ∈ theorem49BoundaryZeroKirchhoffSubspace emb vertices →
+        z ≠ 0 →
+          ∃ e : G.edgeSet,
+            data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e ∧
+              z e ≠ 0) :
+    ∀ ⦃z : G.edgeSet → Color⦄,
+      z ∈ theorem49BoundaryZeroKirchhoffSubspace emb vertices →
+      (∀ e ∈ classifier.emittedFinset, z e = 0) →
+        z = 0 := by
+  intro z hz hvanish
+  by_contra hzNonzero
+  rcases hcoverage hz hzNonzero with ⟨e, heForced, hze⟩
+  exact hze (hvanish e ((classifier.emittedFinset_spec e).2 heForced))
+
+/--
+Coverage lower bound for the Kirchhoff target.  If the enumerated CAP5 forced-edge predicate
+meets every nonzero boundary-zero Kirchhoff chain, then the emitted classifier must satisfy the
+target-space dimension inequality.
+-/
+theorem edge_card_le_emittedFinset_card_add_boundary_card_add_vertex_card_of_forcedEdgeKirchhoffCoverage
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    [Fintype G.edgeSet]
+    (emb : PlaneEmbeddingWithBoundary G) (vertices : Finset V)
+    (p0Inside p4Inside : Bool) (side : V → Prop)
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (hcoverage :
+      ∀ ⦃z : G.edgeSet → Color⦄,
+        z ∈ theorem49BoundaryZeroKirchhoffSubspace emb vertices →
+        z ≠ 0 →
+          ∃ e : G.edgeSet,
+            data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e ∧
+              z e ≠ 0) :
+    Fintype.card G.edgeSet ≤
+      classifier.emittedFinset.card +
+          Fintype.card {e : G.edgeSet //
+            e ∈ selectedBoundarySupport emb.faceBoundary emb.faces emb.faces} +
+        Fintype.card {v : V // v ∈ vertices} :=
+  data.edge_card_le_emittedFinset_card_add_boundary_card_add_vertex_card_of_classifierKirchhoffControl
+    emb vertices p0Inside p4Inside side classifier
+    (data.enumeratedExceptionalAnnulusForcedEdgeClassifierKirchhoffControl_of_forcedEdgeKirchhoffCoverage
+      emb vertices classifier hcoverage)
+
+/--
+Fixed-point lower bound for a Kirchhoff-target worklist.  If a finite control set controls the
+boundary-zero Kirchhoff target and all of its edges have already been emitted, then the emitted
+classifier satisfies the same target-space dimension inequality.
+-/
+theorem edge_card_le_emittedFinset_card_add_boundary_card_add_vertex_card_of_finsetKirchhoffControl_of_controlEdges_subset_emittedFinset
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    [Fintype G.edgeSet]
+    (emb : PlaneEmbeddingWithBoundary G) (vertices : Finset V)
+    (p0Inside p4Inside : Bool) (side : V → Prop)
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (controlEdges : Finset G.edgeSet)
+    (hcontrol :
+      ∀ ⦃z : G.edgeSet → Color⦄,
+        z ∈ theorem49BoundaryZeroKirchhoffSubspace emb vertices →
+        (∀ e ∈ controlEdges, z e = 0) →
+          z = 0)
+    (hsubsetEdges : controlEdges ⊆ classifier.emittedFinset) :
+    Fintype.card G.edgeSet ≤
+      classifier.emittedFinset.card +
+          Fintype.card {e : G.edgeSet //
+            e ∈ selectedBoundarySupport emb.faceBoundary emb.faces emb.faces} +
+        Fintype.card {v : V // v ∈ vertices} :=
+  data.edge_card_le_emittedFinset_card_add_boundary_card_add_vertex_card_of_classifierKirchhoffControl
+    emb vertices p0Inside p4Inside side classifier
+    (by
+      intro z hz hvanishEmitted
+      exact hcontrol hz (by
+        intro e heControl
+        exact hvanishEmitted e (hsubsetEdges heControl)))
+
+/--
 Fixed-point lower bound for an implementation worklist.  If a finite control set controls all
 selected boundary-zero chains and the classifier has already emitted every edge in that worklist,
 then the emitted classifier must meet the same dimension lower bound.
