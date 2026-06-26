@@ -6958,6 +6958,109 @@ theorem twoBandAnnulusInteriorControlComplementByIndex_subset_interior
       twoBandAnnulusInteriorEdges :=
   Finset.sdiff_subset
 
+def twoBandAnnulusSixInteriorControls :
+    Finset (Finset twoBandAnnulusGraph.edgeSet) :=
+  Finset.powersetCard 6 twoBandAnnulusInteriorEdges
+
+def twoBandAnnulusFullRankInteriorControlComplements :
+    Finset (Finset twoBandAnnulusGraph.edgeSet) :=
+  twoBandAnnulusFullRankIncreasingOmittedIndexTriples.image fun t =>
+    twoBandAnnulusInteriorControlComplementByIndex t.1.1 t.1.2 t.2
+
+def twoBandAnnulusNonFullRankInteriorControlComplements :
+    Finset (Finset twoBandAnnulusGraph.edgeSet) :=
+  twoBandAnnulusNonFullRankIncreasingOmittedIndexTriples.image fun t =>
+    twoBandAnnulusInteriorControlComplementByIndex t.1.1 t.1.2 t.2
+
+set_option maxRecDepth 10000 in
+theorem twoBandAnnulusSixInteriorControls_card :
+    twoBandAnnulusSixInteriorControls.card = 84 := by
+  unfold twoBandAnnulusSixInteriorControls twoBandAnnulusInteriorEdges
+  decide
+
+set_option maxRecDepth 10000 in
+set_option maxHeartbeats 4000000 in
+theorem twoBandAnnulusFullRankInteriorControlComplements_card :
+    twoBandAnnulusFullRankInteriorControlComplements.card = 50 := by
+  unfold twoBandAnnulusFullRankInteriorControlComplements
+    twoBandAnnulusFullRankIncreasingOmittedIndexTriples
+    twoBandAnnulusInteriorControlComplementByIndex
+    twoBandAnnulusInteriorOmittedSetByIndex
+    twoBandAnnulusInteriorEdgeByIndex
+    twoBandAnnulusInteriorOmittedTripleByIndex
+    twoBandAnnulusOmittedTripleColumns
+    threeF2ColumnsFullRankBool
+    twoBandAnnulusKirchhoffColumn
+  decide
+
+set_option maxRecDepth 10000 in
+set_option maxHeartbeats 4000000 in
+theorem twoBandAnnulusNonFullRankInteriorControlComplements_card :
+    twoBandAnnulusNonFullRankInteriorControlComplements.card = 34 := by
+  unfold twoBandAnnulusNonFullRankInteriorControlComplements
+    twoBandAnnulusNonFullRankIncreasingOmittedIndexTriples
+    twoBandAnnulusInteriorControlComplementByIndex
+    twoBandAnnulusInteriorOmittedSetByIndex
+    twoBandAnnulusInteriorEdgeByIndex
+    twoBandAnnulusInteriorOmittedTripleByIndex
+    twoBandAnnulusOmittedTripleColumns
+    threeF2ColumnsFullRankBool
+    twoBandAnnulusKirchhoffColumn
+  decide
+
+set_option maxRecDepth 10000 in
+set_option maxHeartbeats 8000000 in
+theorem twoBandAnnulusSixInteriorControls_eq_fullRank_union_nonFullRank :
+    twoBandAnnulusSixInteriorControls =
+      twoBandAnnulusFullRankInteriorControlComplements ∪
+        twoBandAnnulusNonFullRankInteriorControlComplements := by
+  unfold twoBandAnnulusSixInteriorControls
+    twoBandAnnulusFullRankInteriorControlComplements
+    twoBandAnnulusNonFullRankInteriorControlComplements
+    twoBandAnnulusFullRankIncreasingOmittedIndexTriples
+    twoBandAnnulusNonFullRankIncreasingOmittedIndexTriples
+    twoBandAnnulusInteriorControlComplementByIndex
+    twoBandAnnulusInteriorOmittedSetByIndex
+    twoBandAnnulusInteriorEdgeByIndex
+    twoBandAnnulusInteriorOmittedTripleByIndex
+    twoBandAnnulusOmittedTripleColumns
+    threeF2ColumnsFullRankBool
+    twoBandAnnulusKirchhoffColumn
+    twoBandAnnulusInteriorEdges
+  decide
+
+set_option maxRecDepth 20000 in
+theorem twoBandAnnulus_mem_fullRankInteriorControlComplements_iff
+    (control : Finset twoBandAnnulusGraph.edgeSet) :
+    control ∈ twoBandAnnulusFullRankInteriorControlComplements ↔
+      ∃ a b c : Fin 9,
+        ((a, b), c) ∈ twoBandAnnulusFullRankIncreasingOmittedIndexTriples ∧
+          control = twoBandAnnulusInteriorControlComplementByIndex a b c := by
+  unfold twoBandAnnulusFullRankInteriorControlComplements
+  constructor
+  · intro hmem
+    rcases Finset.mem_image.1 hmem with ⟨t, ht, htcontrol⟩
+    rcases t with ⟨⟨a, b⟩, c⟩
+    exact ⟨a, b, c, ht, htcontrol.symm⟩
+  · rintro ⟨a, b, c, hmem, rfl⟩
+    exact Finset.mem_image.2 ⟨((a, b), c), hmem, rfl⟩
+
+set_option maxRecDepth 20000 in
+theorem twoBandAnnulus_mem_nonFullRankInteriorControlComplements_iff
+    (control : Finset twoBandAnnulusGraph.edgeSet) :
+    control ∈ twoBandAnnulusNonFullRankInteriorControlComplements ↔
+      ∃ a b c : Fin 9,
+        ((a, b), c) ∈ twoBandAnnulusNonFullRankIncreasingOmittedIndexTriples ∧
+          control = twoBandAnnulusInteriorControlComplementByIndex a b c := by
+  unfold twoBandAnnulusNonFullRankInteriorControlComplements
+  constructor
+  · intro hmem
+    rcases Finset.mem_image.1 hmem with ⟨t, ht, htcontrol⟩
+    rcases t with ⟨⟨a, b⟩, c⟩
+    exact ⟨a, b, c, ht, htcontrol.symm⟩
+  · rintro ⟨a, b, c, hmem, rfl⟩
+    exact Finset.mem_image.2 ⟨((a, b), c), hmem, rfl⟩
+
 def twoBandAnnulusMiddleOuterRadialKirchhoffOmittedTriple :
     Fin 3 → twoBandAnnulusGraph.edgeSet
   | ⟨0, _⟩ => tbaR36
@@ -8057,6 +8160,70 @@ theorem twoBandAnnulusInteriorControlComplementByIndex_not_boundaryZeroKirchhoff
   exact
     twoBandAnnulusInteriorControlComplementByIndex_not_boundaryZeroKirchhoff_control_of_not_fullRank
       a b c hinc hnotFull
+
+set_option maxRecDepth 20000 in
+theorem twoBandAnnulus_boundaryZeroKirchhoff_control_of_mem_fullRankInteriorControlComplements
+    {control : Finset twoBandAnnulusGraph.edgeSet}
+    (hmem : control ∈ twoBandAnnulusFullRankInteriorControlComplements) :
+    ∀ ⦃z : twoBandAnnulusGraph.edgeSet → Color⦄,
+      z ∈ theorem49BoundaryZeroKirchhoffSubspace
+          twoBandAnnulusEmbedding twoBandAnnulusKirchhoffVertices →
+      (∀ e ∈ control, z e = 0) →
+      z = 0 := by
+  rcases (twoBandAnnulus_mem_fullRankInteriorControlComplements_iff
+      control).1 hmem with
+    ⟨a, b, c, htriple, rfl⟩
+  have hparts :
+      a.val < b.val ∧ b.val < c.val ∧
+        twoBandAnnulusInteriorOmittedIndexTripleFullRank a b c :=
+    (twoBandAnnulus_mem_fullRankIncreasingOmittedIndexTriples_iff
+      a b c).1 htriple
+  exact
+    twoBandAnnulusInteriorControlComplementByIndex_boundaryZeroKirchhoff_control_of_fullRank
+      a b c hparts.2.2
+
+set_option maxRecDepth 20000 in
+theorem twoBandAnnulus_not_boundaryZeroKirchhoff_control_of_mem_nonFullRankInteriorControlComplements
+    {control : Finset twoBandAnnulusGraph.edgeSet}
+    (hmem : control ∈ twoBandAnnulusNonFullRankInteriorControlComplements) :
+    ¬ ∀ ⦃z : twoBandAnnulusGraph.edgeSet → Color⦄,
+      z ∈ theorem49BoundaryZeroKirchhoffSubspace
+          twoBandAnnulusEmbedding twoBandAnnulusKirchhoffVertices →
+      (∀ e ∈ control, z e = 0) →
+      z = 0 := by
+  rcases (twoBandAnnulus_mem_nonFullRankInteriorControlComplements_iff
+      control).1 hmem with
+    ⟨a, b, c, htriple, rfl⟩
+  exact
+    twoBandAnnulusInteriorControlComplementByIndex_not_boundaryZeroKirchhoff_control_of_nonFullRankIncreasingOmittedIndexTriple
+      a b c htriple
+
+set_option maxRecDepth 20000 in
+theorem twoBandAnnulus_boundaryZeroKirchhoff_control_iff_mem_fullRankInteriorControlComplements_of_mem_sixInteriorControls
+    {control : Finset twoBandAnnulusGraph.edgeSet}
+    (hmemSix : control ∈ twoBandAnnulusSixInteriorControls) :
+    (∀ ⦃z : twoBandAnnulusGraph.edgeSet → Color⦄,
+      z ∈ theorem49BoundaryZeroKirchhoffSubspace
+          twoBandAnnulusEmbedding twoBandAnnulusKirchhoffVertices →
+      (∀ e ∈ control, z e = 0) →
+      z = 0) ↔
+      control ∈ twoBandAnnulusFullRankInteriorControlComplements := by
+  constructor
+  · intro hcontrol
+    have hmemUnion :
+        control ∈ twoBandAnnulusFullRankInteriorControlComplements ∪
+          twoBandAnnulusNonFullRankInteriorControlComplements := by
+      simpa [twoBandAnnulusSixInteriorControls_eq_fullRank_union_nonFullRank]
+        using hmemSix
+    rcases Finset.mem_union.1 hmemUnion with hfull | hnonFull
+    · exact hfull
+    · exact False.elim
+        ((twoBandAnnulus_not_boundaryZeroKirchhoff_control_of_mem_nonFullRankInteriorControlComplements
+          hnonFull) hcontrol)
+  · intro hfull
+    exact
+      twoBandAnnulus_boundaryZeroKirchhoff_control_of_mem_fullRankInteriorControlComplements
+        hfull
 
 theorem twoBandAnnulus_boundaryZeroKirchhoff_control_iff_interiorFilter_control
     (emitted : Finset twoBandAnnulusGraph.edgeSet) :
@@ -14861,6 +15028,49 @@ theorem twoBandAnnulus_CAP5_boundaryZeroKirchhoff_not_forcedEdgeCoverage_of_emit
     twoBandAnnulus_CAP5_boundaryZeroKirchhoff_not_forcedEdgeCoverage_of_emittedInterior_subset_nonFullRankInteriorControlComplementByIndex
       p0Inside p4Inside side classifier a b c
       ⟨hparts.1, hparts.2.1⟩ hparts.2.2 hsubset
+
+set_option maxRecDepth 20000 in
+theorem twoBandAnnulus_CAP5_boundaryZeroKirchhoff_forcedEdgeCoverage_iff_emittedInterior_mem_fullRankInteriorControlComplements_of_emittedInterior_card_eq_six
+    {boundaryEdge : Fin 5 → twoBandAnnulusGraph.edgeSet} {n : Nat}
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    (p0Inside p4Inside : Bool) (side : Fin 9 → Prop)
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (hcard :
+      (classifier.emittedFinset.filter fun e =>
+        e ∈ interiorEdgeSupport
+          twoBandAnnulusEmbedding.faceBoundary
+          twoBandAnnulusEmbedding.faces).card = 6) :
+    (∀ ⦃z : twoBandAnnulusGraph.edgeSet → Color⦄,
+      z ∈ theorem49BoundaryZeroKirchhoffSubspace
+          twoBandAnnulusEmbedding twoBandAnnulusKirchhoffVertices →
+      z ≠ 0 →
+        ∃ e : twoBandAnnulusGraph.edgeSet,
+          data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e ∧
+            z e ≠ 0) ↔
+      (classifier.emittedFinset.filter fun e =>
+        e ∈ interiorEdgeSupport
+          twoBandAnnulusEmbedding.faceBoundary
+          twoBandAnnulusEmbedding.faces) ∈
+        twoBandAnnulusFullRankInteriorControlComplements := by
+  have hmemSix :
+      (classifier.emittedFinset.filter fun e =>
+        e ∈ interiorEdgeSupport
+          twoBandAnnulusEmbedding.faceBoundary
+          twoBandAnnulusEmbedding.faces) ∈
+        twoBandAnnulusSixInteriorControls := by
+    rw [twoBandAnnulusSixInteriorControls]
+    refine Finset.mem_powersetCard.2 ⟨?_, hcard⟩
+    intro e he
+    have heInterior := (Finset.mem_filter.1 he).2
+    simpa [twoBandAnnulus_interiorEdgeSupport_eq] using heInterior
+  exact
+    (data.forcedEdgeKirchhoffCoverage_iff_enumeratedExceptionalAnnulusForcedEdgeClassifierKirchhoffControl
+      twoBandAnnulusEmbedding twoBandAnnulusKirchhoffVertices classifier).trans
+      ((twoBandAnnulus_boundaryZeroKirchhoff_control_iff_interiorFilter_control
+        classifier.emittedFinset).trans
+        (twoBandAnnulus_boundaryZeroKirchhoff_control_iff_mem_fullRankInteriorControlComplements_of_mem_sixInteriorControls
+          hmemSix))
 
 /-- Low-cardinality refutation for the two-band Kirchhoff detector: five emitted coordinates do
 not cover the boundary-zero Kirchhoff target. -/
