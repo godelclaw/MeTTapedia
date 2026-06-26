@@ -9140,6 +9140,373 @@ theorem wheelWithInnerTriangle_theorem49BoundaryRootSynthesis_of_declaredForcedE
     wheelWithInnerTriangle_boundaryZero_declaredForcedEdges_nonzeroCoverage
     hwitnessRed hwitnessBlue
 
+instance wheelWithInnerTriangleGraph_lineGraph_adj_decidable :
+    DecidableRel wheelWithInnerTriangleGraph.lineGraph.Adj := by
+  intro e f
+  rw [SimpleGraph.lineGraph_adj_iff_exists]
+  infer_instance
+
+def wheelWithInnerTriangleCertificateColorA
+    (e : wheelWithInnerTriangleGraph.edgeSet) : Color :=
+  if e = wit01 ∨ e = wit23 ∨ e = wit45 then red
+  else if e = wit02 ∨ e = wit31 ∨ e = wit56 then blue
+  else purple
+
+def wheelWithInnerTriangleCertificateColorB
+    (e : wheelWithInnerTriangleGraph.edgeSet) : Color :=
+  if e = wit02 ∨ e = wit31 ∨ e = wit45 then red
+  else if e = wit01 ∨ e = wit23 ∨ e = wit56 then blue
+  else purple
+
+def wheelWithInnerTriangleCertificateColorC
+    (e : wheelWithInnerTriangleGraph.edgeSet) : Color :=
+  if e = wit01 ∨ e = wit23 ∨ e = wit45 then red
+  else if e = wit03 ∨ e = wit12 ∨ e = wit56 then blue
+  else purple
+
+theorem wheelWithInnerTriangleCertificateColorA_ne_of_adj
+    {e f : wheelWithInnerTriangleGraph.edgeSet}
+    (hadj : wheelWithInnerTriangleGraph.lineGraph.Adj e f) :
+    wheelWithInnerTriangleCertificateColorA e ≠
+      wheelWithInnerTriangleCertificateColorA f := by
+  decide +revert
+
+theorem wheelWithInnerTriangleCertificateColorB_ne_of_adj
+    {e f : wheelWithInnerTriangleGraph.edgeSet}
+    (hadj : wheelWithInnerTriangleGraph.lineGraph.Adj e f) :
+    wheelWithInnerTriangleCertificateColorB e ≠
+      wheelWithInnerTriangleCertificateColorB f := by
+  decide +revert
+
+theorem wheelWithInnerTriangleCertificateColorC_ne_of_adj
+    {e f : wheelWithInnerTriangleGraph.edgeSet}
+    (hadj : wheelWithInnerTriangleGraph.lineGraph.Adj e f) :
+    wheelWithInnerTriangleCertificateColorC e ≠
+      wheelWithInnerTriangleCertificateColorC f := by
+  decide +revert
+
+def wheelWithInnerTriangleCertificateColoringA :
+    wheelWithInnerTriangleGraph.EdgeColoring Color :=
+  Coloring.mk wheelWithInnerTriangleCertificateColorA (by
+    intro e f hadj
+    exact wheelWithInnerTriangleCertificateColorA_ne_of_adj hadj)
+
+def wheelWithInnerTriangleCertificateColoringB :
+    wheelWithInnerTriangleGraph.EdgeColoring Color :=
+  Coloring.mk wheelWithInnerTriangleCertificateColorB (by
+    intro e f hadj
+    exact wheelWithInnerTriangleCertificateColorB_ne_of_adj hadj)
+
+def wheelWithInnerTriangleCertificateColoringC :
+    wheelWithInnerTriangleGraph.EdgeColoring Color :=
+  Coloring.mk wheelWithInnerTriangleCertificateColorC (by
+    intro e f hadj
+    exact wheelWithInnerTriangleCertificateColorC_ne_of_adj hadj)
+
+@[simp] theorem wheelWithInnerTriangleCertificateColoringA_apply
+    (e : wheelWithInnerTriangleGraph.edgeSet) :
+    wheelWithInnerTriangleCertificateColoringA e =
+      wheelWithInnerTriangleCertificateColorA e := rfl
+
+@[simp] theorem wheelWithInnerTriangleCertificateColoringB_apply
+    (e : wheelWithInnerTriangleGraph.edgeSet) :
+    wheelWithInnerTriangleCertificateColoringB e =
+      wheelWithInnerTriangleCertificateColorB e := rfl
+
+@[simp] theorem wheelWithInnerTriangleCertificateColoringC_apply
+    (e : wheelWithInnerTriangleGraph.edgeSet) :
+    wheelWithInnerTriangleCertificateColoringC e =
+      wheelWithInnerTriangleCertificateColorC e := rfl
+
+@[simp] theorem wheelWithInnerTriangleCertificateColorA_wit01 :
+    wheelWithInnerTriangleCertificateColorA wit01 = red := by
+  decide
+
+@[simp] theorem wheelWithInnerTriangleCertificateColorA_wit02 :
+    wheelWithInnerTriangleCertificateColorA wit02 = blue := by
+  decide
+
+@[simp] theorem wheelWithInnerTriangleCertificateColorA_wit03 :
+    wheelWithInnerTriangleCertificateColorA wit03 = purple := by
+  decide
+
+@[simp] theorem wheelWithInnerTriangleCertificateColorB_wit01 :
+    wheelWithInnerTriangleCertificateColorB wit01 = blue := by
+  decide
+
+@[simp] theorem wheelWithInnerTriangleCertificateColorB_wit02 :
+    wheelWithInnerTriangleCertificateColorB wit02 = red := by
+  decide
+
+@[simp] theorem wheelWithInnerTriangleCertificateColorC_wit02 :
+    wheelWithInnerTriangleCertificateColorC wit02 = purple := by
+  decide
+
+@[simp] theorem wheelWithInnerTriangleCertificateColorC_wit03 :
+    wheelWithInnerTriangleCertificateColorC wit03 = blue := by
+  decide
+
+@[simp] theorem wheelWithInnerTriangleCertificateColoringA_wit01 :
+    wheelWithInnerTriangleCertificateColoringA wit01 = red := by
+  simp
+
+@[simp] theorem wheelWithInnerTriangleCertificateColoringA_wit02 :
+    wheelWithInnerTriangleCertificateColoringA wit02 = blue := by
+  simp
+
+@[simp] theorem wheelWithInnerTriangleCertificateColoringA_wit03 :
+    wheelWithInnerTriangleCertificateColoringA wit03 = purple := by
+  simp
+
+@[simp] theorem wheelWithInnerTriangleCertificateColoringB_wit01 :
+    wheelWithInnerTriangleCertificateColoringB wit01 = blue := by
+  simp
+
+@[simp] theorem wheelWithInnerTriangleCertificateColoringB_wit02 :
+    wheelWithInnerTriangleCertificateColoringB wit02 = red := by
+  simp
+
+@[simp] theorem wheelWithInnerTriangleCertificateColoringC_wit02 :
+    wheelWithInnerTriangleCertificateColoringC wit02 = purple := by
+  simp
+
+@[simp] theorem wheelWithInnerTriangleCertificateColoringC_wit03 :
+    wheelWithInnerTriangleCertificateColoringC wit03 = blue := by
+  simp
+
+def wheelWithInnerTriangleProjectedGeneratorCertificateColorings :
+    Set (wheelWithInnerTriangleGraph.EdgeColoring Color) :=
+  {C | C = wheelWithInnerTriangleCertificateColoringA ∨
+      C = wheelWithInnerTriangleCertificateColoringB ∨
+        C = wheelWithInnerTriangleCertificateColoringC}
+
+private theorem wheelWithInnerTriangleCertificateColoringA_unique_wit01_redPurple :
+    ∀ e : wheelWithInnerTriangleGraph.edgeSet,
+      e ≠ wit01 →
+      e ∉ selectedBoundarySupport
+        wheelWithInnerTriangleEmbedding.faceBoundary
+        wheelWithInnerTriangleEmbedding.faces
+        wheelWithInnerTriangleEmbedding.faces →
+      e ∈ wheelWithInnerTriangleEmbedding.faceBoundary (0 : Fin 4) →
+        ¬ (wheelWithInnerTriangleCertificateColoringA e = red ∨
+          wheelWithInnerTriangleCertificateColoringA e = purple) := by
+  intro e hne hnotBoundary hface
+  have hfaceCases : e = wit01 ∨ e = wit02 ∨ e = wit12 := by
+    simpa [wheelWithInnerTriangleEmbedding, wheelWithInnerTriangleFaceBoundary]
+      using hface
+  rcases hfaceCases with rfl | rfl | rfl
+  · exact False.elim (hne rfl)
+  · decide
+  · exact False.elim (hnotBoundary wit12_mem_selectedBoundarySupport)
+
+private theorem wheelWithInnerTriangleCertificateColoringA_unique_wit02_bluePurple :
+    ∀ e : wheelWithInnerTriangleGraph.edgeSet,
+      e ≠ wit02 →
+      e ∉ selectedBoundarySupport
+        wheelWithInnerTriangleEmbedding.faceBoundary
+        wheelWithInnerTriangleEmbedding.faces
+        wheelWithInnerTriangleEmbedding.faces →
+      e ∈ wheelWithInnerTriangleEmbedding.faceBoundary (0 : Fin 4) →
+        ¬ (wheelWithInnerTriangleCertificateColoringA e = blue ∨
+          wheelWithInnerTriangleCertificateColoringA e = purple) := by
+  intro e hne hnotBoundary hface
+  have hfaceCases : e = wit01 ∨ e = wit02 ∨ e = wit12 := by
+    simpa [wheelWithInnerTriangleEmbedding, wheelWithInnerTriangleFaceBoundary]
+      using hface
+  rcases hfaceCases with rfl | rfl | rfl
+  · decide
+  · exact False.elim (hne rfl)
+  · exact False.elim (hnotBoundary wit12_mem_selectedBoundarySupport)
+
+private theorem wheelWithInnerTriangleCertificateColoringA_unique_wit03_bluePurple_face2 :
+    ∀ e : wheelWithInnerTriangleGraph.edgeSet,
+      e ≠ wit03 →
+      e ∉ selectedBoundarySupport
+        wheelWithInnerTriangleEmbedding.faceBoundary
+        wheelWithInnerTriangleEmbedding.faces
+        wheelWithInnerTriangleEmbedding.faces →
+      e ∈ wheelWithInnerTriangleEmbedding.faceBoundary (2 : Fin 4) →
+        ¬ (wheelWithInnerTriangleCertificateColoringA e = blue ∨
+          wheelWithInnerTriangleCertificateColoringA e = purple) := by
+  intro e hne hnotBoundary hface
+  have hfaceCases : e = wit03 ∨ e = wit01 ∨ e = wit31 := by
+    simpa [wheelWithInnerTriangleEmbedding, wheelWithInnerTriangleFaceBoundary]
+      using hface
+  rcases hfaceCases with rfl | rfl | rfl
+  · exact False.elim (hne rfl)
+  · decide
+  · exact False.elim (hnotBoundary wit31_mem_selectedBoundarySupport)
+
+private theorem wheelWithInnerTriangleCertificateColoringA_unique_wit03_redPurple_face1 :
+    ∀ e : wheelWithInnerTriangleGraph.edgeSet,
+      e ≠ wit03 →
+      e ∉ selectedBoundarySupport
+        wheelWithInnerTriangleEmbedding.faceBoundary
+        wheelWithInnerTriangleEmbedding.faces
+        wheelWithInnerTriangleEmbedding.faces →
+      e ∈ wheelWithInnerTriangleEmbedding.faceBoundary (1 : Fin 4) →
+        ¬ (wheelWithInnerTriangleCertificateColoringA e = red ∨
+          wheelWithInnerTriangleCertificateColoringA e = purple) := by
+  intro e hne hnotBoundary hface
+  have hfaceCases : e = wit02 ∨ e = wit03 ∨ e = wit23 := by
+    simpa [wheelWithInnerTriangleEmbedding, wheelWithInnerTriangleFaceBoundary]
+      using hface
+  rcases hfaceCases with rfl | rfl | rfl
+  · decide
+  · exact False.elim (hne rfl)
+  · exact False.elim (hnotBoundary wit23_mem_selectedBoundarySupport)
+
+private theorem wheelWithInnerTriangleCertificateColoringB_unique_wit01_bluePurple :
+    ∀ e : wheelWithInnerTriangleGraph.edgeSet,
+      e ≠ wit01 →
+      e ∉ selectedBoundarySupport
+        wheelWithInnerTriangleEmbedding.faceBoundary
+        wheelWithInnerTriangleEmbedding.faces
+        wheelWithInnerTriangleEmbedding.faces →
+      e ∈ wheelWithInnerTriangleEmbedding.faceBoundary (0 : Fin 4) →
+        ¬ (wheelWithInnerTriangleCertificateColoringB e = blue ∨
+          wheelWithInnerTriangleCertificateColoringB e = purple) := by
+  intro e hne hnotBoundary hface
+  have hfaceCases : e = wit01 ∨ e = wit02 ∨ e = wit12 := by
+    simpa [wheelWithInnerTriangleEmbedding, wheelWithInnerTriangleFaceBoundary]
+      using hface
+  rcases hfaceCases with rfl | rfl | rfl
+  · exact False.elim (hne rfl)
+  · decide
+  · exact False.elim (hnotBoundary wit12_mem_selectedBoundarySupport)
+
+private theorem wheelWithInnerTriangleCertificateColoringC_unique_wit02_redPurple :
+    ∀ e : wheelWithInnerTriangleGraph.edgeSet,
+      e ≠ wit02 →
+      e ∉ selectedBoundarySupport
+        wheelWithInnerTriangleEmbedding.faceBoundary
+        wheelWithInnerTriangleEmbedding.faces
+        wheelWithInnerTriangleEmbedding.faces →
+      e ∈ wheelWithInnerTriangleEmbedding.faceBoundary (1 : Fin 4) →
+        ¬ (wheelWithInnerTriangleCertificateColoringC e = red ∨
+          wheelWithInnerTriangleCertificateColoringC e = purple) := by
+  intro e hne hnotBoundary hface
+  have hfaceCases : e = wit02 ∨ e = wit03 ∨ e = wit23 := by
+    simpa [wheelWithInnerTriangleEmbedding, wheelWithInnerTriangleFaceBoundary]
+      using hface
+  rcases hfaceCases with rfl | rfl | rfl
+  · exact False.elim (hne rfl)
+  · decide
+  · exact False.elim (hnotBoundary wit23_mem_selectedBoundarySupport)
+
+theorem wheelWithInnerTriangle_uniqueProjectedBicoloredCertificates :
+    (∀ e ∈ wheelWithInnerTriangleInteriorControlEdges,
+      ∃ C ∈ wheelWithInnerTriangleProjectedGeneratorCertificateColorings,
+        ∃ f : wheelWithInnerTriangleEmbedding.Face, ∃ a b : Color,
+          ValidColorPair a b ∧
+            a + b = red ∧
+              e ∈ wheelWithInnerTriangleEmbedding.faceBoundary f ∧
+                e ∉ selectedBoundarySupport
+                  wheelWithInnerTriangleEmbedding.faceBoundary
+                  wheelWithInnerTriangleEmbedding.faces
+                  wheelWithInnerTriangleEmbedding.faces ∧
+                  (C e = a ∨ C e = b) ∧
+                    ∀ e' : wheelWithInnerTriangleGraph.edgeSet,
+                      e' ≠ e →
+                      e' ∉ selectedBoundarySupport
+                        wheelWithInnerTriangleEmbedding.faceBoundary
+                        wheelWithInnerTriangleEmbedding.faces
+                        wheelWithInnerTriangleEmbedding.faces →
+                      e' ∈ wheelWithInnerTriangleEmbedding.faceBoundary f →
+                        ¬ (C e' = a ∨ C e' = b)) ∧
+    (∀ e ∈ wheelWithInnerTriangleInteriorControlEdges,
+      ∃ C ∈ wheelWithInnerTriangleProjectedGeneratorCertificateColorings,
+        ∃ f : wheelWithInnerTriangleEmbedding.Face, ∃ a b : Color,
+          ValidColorPair a b ∧
+            a + b = blue ∧
+              e ∈ wheelWithInnerTriangleEmbedding.faceBoundary f ∧
+                e ∉ selectedBoundarySupport
+                  wheelWithInnerTriangleEmbedding.faceBoundary
+                  wheelWithInnerTriangleEmbedding.faces
+                  wheelWithInnerTriangleEmbedding.faces ∧
+                  (C e = a ∨ C e = b) ∧
+                    ∀ e' : wheelWithInnerTriangleGraph.edgeSet,
+                      e' ≠ e →
+                      e' ∉ selectedBoundarySupport
+                        wheelWithInnerTriangleEmbedding.faceBoundary
+                        wheelWithInnerTriangleEmbedding.faces
+                        wheelWithInnerTriangleEmbedding.faces →
+                      e' ∈ wheelWithInnerTriangleEmbedding.faceBoundary f →
+                        ¬ (C e' = a ∨ C e' = b)) := by
+  constructor
+  · intro e he
+    have heCases : e = wit01 ∨ e = wit02 ∨ e = wit03 := by
+      simpa [wheelWithInnerTriangleInteriorControlEdges] using he
+    rcases heCases with rfl | rfl | rfl
+    · refine ⟨wheelWithInnerTriangleCertificateColoringB, Or.inr (Or.inl rfl),
+        (0 : Fin 4), blue, purple, ?_, ?_, ?_, ?_, ?_, ?_⟩
+      · simp [ValidColorPair]
+      · simp
+      · decide
+      · exact wit01_not_mem_selectedBoundarySupport
+      · left
+        simp
+      · exact wheelWithInnerTriangleCertificateColoringB_unique_wit01_bluePurple
+    · refine ⟨wheelWithInnerTriangleCertificateColoringA, Or.inl rfl,
+        (0 : Fin 4), blue, purple, ?_, ?_, ?_, ?_, ?_, ?_⟩
+      · simp [ValidColorPair]
+      · simp
+      · decide
+      · exact wit02_not_mem_selectedBoundarySupport
+      · left
+        simp
+      · exact wheelWithInnerTriangleCertificateColoringA_unique_wit02_bluePurple
+    · refine ⟨wheelWithInnerTriangleCertificateColoringA, Or.inl rfl,
+        (2 : Fin 4), blue, purple, ?_, ?_, ?_, ?_, ?_, ?_⟩
+      · simp [ValidColorPair]
+      · simp
+      · decide
+      · exact wit03_not_mem_selectedBoundarySupport
+      · right
+        simp
+      · exact wheelWithInnerTriangleCertificateColoringA_unique_wit03_bluePurple_face2
+  · intro e he
+    have heCases : e = wit01 ∨ e = wit02 ∨ e = wit03 := by
+      simpa [wheelWithInnerTriangleInteriorControlEdges] using he
+    rcases heCases with rfl | rfl | rfl
+    · refine ⟨wheelWithInnerTriangleCertificateColoringA, Or.inl rfl,
+        (0 : Fin 4), red, purple, ?_, ?_, ?_, ?_, ?_, ?_⟩
+      · simp [ValidColorPair]
+      · simp
+      · decide
+      · exact wit01_not_mem_selectedBoundarySupport
+      · left
+        simp
+      · exact wheelWithInnerTriangleCertificateColoringA_unique_wit01_redPurple
+    · refine ⟨wheelWithInnerTriangleCertificateColoringC, Or.inr (Or.inr rfl),
+        (1 : Fin 4), red, purple, ?_, ?_, ?_, ?_, ?_, ?_⟩
+      · simp [ValidColorPair]
+      · simp
+      · decide
+      · exact wit02_not_mem_selectedBoundarySupport
+      · right
+        simp
+      · exact wheelWithInnerTriangleCertificateColoringC_unique_wit02_redPurple
+    · refine ⟨wheelWithInnerTriangleCertificateColoringA, Or.inl rfl,
+        (1 : Fin 4), red, purple, ?_, ?_, ?_, ?_, ?_, ?_⟩
+      · simp [ValidColorPair]
+      · simp
+      · decide
+      · exact wit03_not_mem_selectedBoundarySupport
+      · right
+        simp
+      · exact wheelWithInnerTriangleCertificateColoringA_unique_wit03_redPurple_face1
+
+theorem wheelWithInnerTriangle_boundaryZeroProjectedColoringGeneratorDetector_of_uniqueCertificates :
+    BoundaryZeroProjectedColoringGeneratorDetector wheelWithInnerTriangleEmbedding
+      wheelWithInnerTriangleProjectedGeneratorCertificateColorings := by
+  exact
+    BoundaryZeroProjectedColoringGeneratorDetector.of_uniqueProjectedBicoloredCertificates
+      wheelWithInnerTriangleInteriorControlEdges
+      wheelWithInnerTriangle_boundaryZero_controlEdges_interiorEdges
+      wheelWithInnerTriangle_uniqueProjectedBicoloredCertificates.1
+      wheelWithInnerTriangle_uniqueProjectedBicoloredCertificates.2
+
 /-- Projected-face-generator certificate form of the wheel focus verdict.  The finite lab can
 feed this theorem with literal projected face-generator equalities for red and blue probes on the
 three declared spoke controls. -/
