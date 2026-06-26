@@ -361,6 +361,567 @@ theorem
         simpa [crossComponentBridgeBoundaryData_inner_eq] using
           crossComponentBridgeInnerBoundary_induced))
 
+theorem adj_crossComponentBridgeGraph_of_sym2_eq {u v : Fin 6}
+    (h : s(u, v) = s(0, 1) ∨ s(u, v) = s(1, 2) ∨ s(u, v) = s(2, 0) ∨
+      s(u, v) = s(3, 4) ∨ s(u, v) = s(4, 5) ∨ s(u, v) = s(5, 3) ∨
+      s(u, v) = s(0, 3) ∨ s(u, v) = s(1, 4) ∨ s(u, v) = s(2, 5) ∨
+      s(u, v) = s(0, 4) ∨ s(u, v) = s(1, 5) ∨ s(u, v) = s(2, 3))
+    (hne : u ≠ v) :
+    crossComponentBridgeGraph.Adj u v := by
+  rw [crossComponentBridgeGraph, SimpleGraph.fromEdgeSet_adj]
+  exact ⟨by simpa only [Set.mem_insert_iff, Set.mem_singleton_iff] using h, hne⟩
+
+theorem ccbO01_mem_selectedBoundarySupport :
+    ccbO01 ∈ selectedBoundarySupport crossComponentBridgeEmbedding.faceBoundary
+      crossComponentBridgeEmbedding.faces crossComponentBridgeEmbedding.faces := by
+  rw [crossComponentBridge_selectedBoundarySupport_eq]
+  simp [crossComponentBridgeOuterBoundary, ccbO01]
+
+theorem ccbO12_mem_selectedBoundarySupport :
+    ccbO12 ∈ selectedBoundarySupport crossComponentBridgeEmbedding.faceBoundary
+      crossComponentBridgeEmbedding.faces crossComponentBridgeEmbedding.faces := by
+  rw [crossComponentBridge_selectedBoundarySupport_eq]
+  simp [crossComponentBridgeOuterBoundary, ccbO12]
+
+theorem ccbO20_mem_selectedBoundarySupport :
+    ccbO20 ∈ selectedBoundarySupport crossComponentBridgeEmbedding.faceBoundary
+      crossComponentBridgeEmbedding.faces crossComponentBridgeEmbedding.faces := by
+  rw [crossComponentBridge_selectedBoundarySupport_eq]
+  simp [crossComponentBridgeOuterBoundary, ccbO20]
+
+theorem ccbI34_mem_selectedBoundarySupport :
+    ccbI34 ∈ selectedBoundarySupport crossComponentBridgeEmbedding.faceBoundary
+      crossComponentBridgeEmbedding.faces crossComponentBridgeEmbedding.faces := by
+  rw [crossComponentBridge_selectedBoundarySupport_eq]
+  simp [crossComponentBridgeInnerBoundary, ccbI34]
+
+theorem ccbI45_mem_selectedBoundarySupport :
+    ccbI45 ∈ selectedBoundarySupport crossComponentBridgeEmbedding.faceBoundary
+      crossComponentBridgeEmbedding.faces crossComponentBridgeEmbedding.faces := by
+  rw [crossComponentBridge_selectedBoundarySupport_eq]
+  simp [crossComponentBridgeInnerBoundary, ccbI45]
+
+theorem ccbI53_mem_selectedBoundarySupport :
+    ccbI53 ∈ selectedBoundarySupport crossComponentBridgeEmbedding.faceBoundary
+      crossComponentBridgeEmbedding.faces crossComponentBridgeEmbedding.faces := by
+  rw [crossComponentBridge_selectedBoundarySupport_eq]
+  simp [crossComponentBridgeInnerBoundary, ccbI53]
+
+theorem ccbR03_not_mem_selectedBoundarySupport :
+    ccbR03 ∉ selectedBoundarySupport crossComponentBridgeEmbedding.faceBoundary
+      crossComponentBridgeEmbedding.faces crossComponentBridgeEmbedding.faces := by
+  rw [crossComponentBridge_selectedBoundarySupport_eq]
+  decide
+
+theorem ccbR14_not_mem_selectedBoundarySupport :
+    ccbR14 ∉ selectedBoundarySupport crossComponentBridgeEmbedding.faceBoundary
+      crossComponentBridgeEmbedding.faces crossComponentBridgeEmbedding.faces := by
+  rw [crossComponentBridge_selectedBoundarySupport_eq]
+  decide
+
+theorem ccbR25_not_mem_selectedBoundarySupport :
+    ccbR25 ∉ selectedBoundarySupport crossComponentBridgeEmbedding.faceBoundary
+      crossComponentBridgeEmbedding.faces crossComponentBridgeEmbedding.faces := by
+  rw [crossComponentBridge_selectedBoundarySupport_eq]
+  decide
+
+theorem ccbD04_not_mem_selectedBoundarySupport :
+    ccbD04 ∉ selectedBoundarySupport crossComponentBridgeEmbedding.faceBoundary
+      crossComponentBridgeEmbedding.faces crossComponentBridgeEmbedding.faces := by
+  rw [crossComponentBridge_selectedBoundarySupport_eq]
+  decide
+
+theorem ccbD15_not_mem_selectedBoundarySupport :
+    ccbD15 ∉ selectedBoundarySupport crossComponentBridgeEmbedding.faceBoundary
+      crossComponentBridgeEmbedding.faces crossComponentBridgeEmbedding.faces := by
+  rw [crossComponentBridge_selectedBoundarySupport_eq]
+  decide
+
+theorem ccbD23_not_mem_selectedBoundarySupport :
+    ccbD23 ∉ selectedBoundarySupport crossComponentBridgeEmbedding.faceBoundary
+      crossComponentBridgeEmbedding.faces crossComponentBridgeEmbedding.faces := by
+  rw [crossComponentBridge_selectedBoundarySupport_eq]
+  decide
+
+def crossComponentBridgeFace0 : AmbientFace crossComponentBridgeEmbedding.faces :=
+  ⟨(0 : CrossComponentBridgeFace), by decide⟩
+
+def crossComponentBridgeFace1 : AmbientFace crossComponentBridgeEmbedding.faces :=
+  ⟨(1 : CrossComponentBridgeFace), by decide⟩
+
+def crossComponentBridgeFace2 : AmbientFace crossComponentBridgeEmbedding.faces :=
+  ⟨(2 : CrossComponentBridgeFace), by decide⟩
+
+def crossComponentBridgeFace3 : AmbientFace crossComponentBridgeEmbedding.faces :=
+  ⟨(3 : CrossComponentBridgeFace), by decide⟩
+
+def crossComponentBridgeFace4 : AmbientFace crossComponentBridgeEmbedding.faces :=
+  ⟨(4 : CrossComponentBridgeFace), by decide⟩
+
+def crossComponentBridgeFace5 : AmbientFace crossComponentBridgeEmbedding.faces :=
+  ⟨(5 : CrossComponentBridgeFace), by decide⟩
+
+def ccbDart01 : crossComponentBridgeGraph.Dart :=
+  ⟨((0 : Fin 6), 1), adj_crossComponentBridgeGraph_of_sym2_eq (by decide) (by decide)⟩
+
+def ccbDart14 : crossComponentBridgeGraph.Dart :=
+  ⟨((1 : Fin 6), 4), adj_crossComponentBridgeGraph_of_sym2_eq (by decide) (by decide)⟩
+
+def ccbDart40 : crossComponentBridgeGraph.Dart :=
+  ⟨((4 : Fin 6), 0), adj_crossComponentBridgeGraph_of_sym2_eq (by decide) (by decide)⟩
+
+def ccbDart34 : crossComponentBridgeGraph.Dart :=
+  ⟨((3 : Fin 6), 4), adj_crossComponentBridgeGraph_of_sym2_eq (by decide) (by decide)⟩
+
+def ccbDart03 : crossComponentBridgeGraph.Dart :=
+  ⟨((0 : Fin 6), 3), adj_crossComponentBridgeGraph_of_sym2_eq (by decide) (by decide)⟩
+
+def ccbDart12 : crossComponentBridgeGraph.Dart :=
+  ⟨((1 : Fin 6), 2), adj_crossComponentBridgeGraph_of_sym2_eq (by decide) (by decide)⟩
+
+def ccbDart25 : crossComponentBridgeGraph.Dart :=
+  ⟨((2 : Fin 6), 5), adj_crossComponentBridgeGraph_of_sym2_eq (by decide) (by decide)⟩
+
+def ccbDart51 : crossComponentBridgeGraph.Dart :=
+  ⟨((5 : Fin 6), 1), adj_crossComponentBridgeGraph_of_sym2_eq (by decide) (by decide)⟩
+
+def ccbDart45 : crossComponentBridgeGraph.Dart :=
+  ⟨((4 : Fin 6), 5), adj_crossComponentBridgeGraph_of_sym2_eq (by decide) (by decide)⟩
+
+def ccbDart20 : crossComponentBridgeGraph.Dart :=
+  ⟨((2 : Fin 6), 0), adj_crossComponentBridgeGraph_of_sym2_eq (by decide) (by decide)⟩
+
+def ccbDart32 : crossComponentBridgeGraph.Dart :=
+  ⟨((3 : Fin 6), 2), adj_crossComponentBridgeGraph_of_sym2_eq (by decide) (by decide)⟩
+
+def ccbDart53 : crossComponentBridgeGraph.Dart :=
+  ⟨((5 : Fin 6), 3), adj_crossComponentBridgeGraph_of_sym2_eq (by decide) (by decide)⟩
+
+def crossComponentBridgeFace0PureDartCycle
+    (hf : (0 : CrossComponentBridgeFace) ∈ crossComponentBridgeEmbedding.faces) :
+    PlaneEmbeddingWithBoundary.FaceBoundaryPureDartCycle
+      crossComponentBridgeEmbedding ⟨(0 : CrossComponentBridgeFace), hf⟩ where
+  darts := [ccbDart01, ccbDart14, ccbDart40]
+  hnonempty := by simp
+  hclosed := by
+    simp [SimpleGraph.DartAdj, ccbDart01, ccbDart14, ccbDart40]
+  hnodup_edges := by decide
+  hedge_sub := by
+    intro d hd
+    simp only [List.mem_cons, List.not_mem_nil, or_false] at hd
+    rcases hd with rfl | rfl | rfl <;>
+      simp [crossComponentBridgeEmbedding, crossComponentBridgeFaceBoundary,
+        ccbO01, ccbR14, ccbD04, ccbDart01, ccbDart14, ccbDart40]
+  hface_sub := by
+    intro e he
+    have he' : e = ccbO01 ∨ e = ccbR14 ∨ e = ccbD04 := by
+      simpa [crossComponentBridgeEmbedding, crossComponentBridgeFaceBoundary] using he
+    rcases he' with rfl | rfl | rfl <;>
+      simp [ccbO01, ccbR14, ccbD04, ccbDart01, ccbDart14, ccbDart40]
+
+def crossComponentBridgeFace1PureDartCycle
+    (hf : (1 : CrossComponentBridgeFace) ∈ crossComponentBridgeEmbedding.faces) :
+    PlaneEmbeddingWithBoundary.FaceBoundaryPureDartCycle
+      crossComponentBridgeEmbedding ⟨(1 : CrossComponentBridgeFace), hf⟩ where
+  darts := [ccbDart34, ccbDart40, ccbDart03]
+  hnonempty := by simp
+  hclosed := by
+    simp [SimpleGraph.DartAdj, ccbDart34, ccbDart40, ccbDart03]
+  hnodup_edges := by decide
+  hedge_sub := by
+    intro d hd
+    simp only [List.mem_cons, List.not_mem_nil, or_false] at hd
+    rcases hd with rfl | rfl | rfl <;>
+      simp [crossComponentBridgeEmbedding, crossComponentBridgeFaceBoundary,
+        ccbI34, ccbD04, ccbR03, ccbDart34, ccbDart40, ccbDart03]
+  hface_sub := by
+    intro e he
+    have he' : e = ccbI34 ∨ e = ccbD04 ∨ e = ccbR03 := by
+      simpa [crossComponentBridgeEmbedding, crossComponentBridgeFaceBoundary] using he
+    rcases he' with rfl | rfl | rfl <;>
+      simp [ccbI34, ccbD04, ccbR03, ccbDart34, ccbDart40, ccbDart03]
+
+def crossComponentBridgeFace2PureDartCycle
+    (hf : (2 : CrossComponentBridgeFace) ∈ crossComponentBridgeEmbedding.faces) :
+    PlaneEmbeddingWithBoundary.FaceBoundaryPureDartCycle
+      crossComponentBridgeEmbedding ⟨(2 : CrossComponentBridgeFace), hf⟩ where
+  darts := [ccbDart12, ccbDart25, ccbDart51]
+  hnonempty := by simp
+  hclosed := by
+    simp [SimpleGraph.DartAdj, ccbDart12, ccbDart25, ccbDart51]
+  hnodup_edges := by decide
+  hedge_sub := by
+    intro d hd
+    simp only [List.mem_cons, List.not_mem_nil, or_false] at hd
+    rcases hd with rfl | rfl | rfl <;>
+      simp [crossComponentBridgeEmbedding, crossComponentBridgeFaceBoundary,
+        ccbO12, ccbR25, ccbD15, ccbDart12, ccbDart25, ccbDart51]
+  hface_sub := by
+    intro e he
+    have he' : e = ccbO12 ∨ e = ccbR25 ∨ e = ccbD15 := by
+      simpa [crossComponentBridgeEmbedding, crossComponentBridgeFaceBoundary] using he
+    rcases he' with rfl | rfl | rfl <;>
+      simp [ccbO12, ccbR25, ccbD15, ccbDart12, ccbDart25, ccbDart51]
+
+def crossComponentBridgeFace3PureDartCycle
+    (hf : (3 : CrossComponentBridgeFace) ∈ crossComponentBridgeEmbedding.faces) :
+    PlaneEmbeddingWithBoundary.FaceBoundaryPureDartCycle
+      crossComponentBridgeEmbedding ⟨(3 : CrossComponentBridgeFace), hf⟩ where
+  darts := [ccbDart45, ccbDart51, ccbDart14]
+  hnonempty := by simp
+  hclosed := by
+    simp [SimpleGraph.DartAdj, ccbDart45, ccbDart51, ccbDart14]
+  hnodup_edges := by decide
+  hedge_sub := by
+    intro d hd
+    simp only [List.mem_cons, List.not_mem_nil, or_false] at hd
+    rcases hd with rfl | rfl | rfl <;>
+      simp [crossComponentBridgeEmbedding, crossComponentBridgeFaceBoundary,
+        ccbI45, ccbD15, ccbR14, ccbDart45, ccbDart51, ccbDart14]
+  hface_sub := by
+    intro e he
+    have he' : e = ccbI45 ∨ e = ccbD15 ∨ e = ccbR14 := by
+      simpa [crossComponentBridgeEmbedding, crossComponentBridgeFaceBoundary] using he
+    rcases he' with rfl | rfl | rfl <;>
+      simp [ccbI45, ccbD15, ccbR14, ccbDart45, ccbDart51, ccbDart14]
+
+def crossComponentBridgeFace4PureDartCycle
+    (hf : (4 : CrossComponentBridgeFace) ∈ crossComponentBridgeEmbedding.faces) :
+    PlaneEmbeddingWithBoundary.FaceBoundaryPureDartCycle
+      crossComponentBridgeEmbedding ⟨(4 : CrossComponentBridgeFace), hf⟩ where
+  darts := [ccbDart20, ccbDart03, ccbDart32]
+  hnonempty := by simp
+  hclosed := by
+    simp [SimpleGraph.DartAdj, ccbDart20, ccbDart03, ccbDart32]
+  hnodup_edges := by decide
+  hedge_sub := by
+    intro d hd
+    simp only [List.mem_cons, List.not_mem_nil, or_false] at hd
+    rcases hd with rfl | rfl | rfl <;>
+      simp [crossComponentBridgeEmbedding, crossComponentBridgeFaceBoundary,
+        ccbO20, ccbR03, ccbD23, ccbDart20, ccbDart03, ccbDart32]
+  hface_sub := by
+    intro e he
+    have he' : e = ccbO20 ∨ e = ccbR03 ∨ e = ccbD23 := by
+      simpa [crossComponentBridgeEmbedding, crossComponentBridgeFaceBoundary] using he
+    rcases he' with rfl | rfl | rfl <;>
+      simp [ccbO20, ccbR03, ccbD23, ccbDart20, ccbDart03, ccbDart32]
+
+def crossComponentBridgeFace5PureDartCycle
+    (hf : (5 : CrossComponentBridgeFace) ∈ crossComponentBridgeEmbedding.faces) :
+    PlaneEmbeddingWithBoundary.FaceBoundaryPureDartCycle
+      crossComponentBridgeEmbedding ⟨(5 : CrossComponentBridgeFace), hf⟩ where
+  darts := [ccbDart53, ccbDart32, ccbDart25]
+  hnonempty := by simp
+  hclosed := by
+    simp [SimpleGraph.DartAdj, ccbDart53, ccbDart32, ccbDart25]
+  hnodup_edges := by decide
+  hedge_sub := by
+    intro d hd
+    simp only [List.mem_cons, List.not_mem_nil, or_false] at hd
+    rcases hd with rfl | rfl | rfl <;>
+      simp [crossComponentBridgeEmbedding, crossComponentBridgeFaceBoundary,
+        ccbI53, ccbD23, ccbR25, ccbDart53, ccbDart32, ccbDart25]
+  hface_sub := by
+    intro e he
+    have he' : e = ccbI53 ∨ e = ccbD23 ∨ e = ccbR25 := by
+      simpa [crossComponentBridgeEmbedding, crossComponentBridgeFaceBoundary] using he
+    rcases he' with rfl | rfl | rfl <;>
+      simp [ccbI53, ccbD23, ccbR25, ccbDart53, ccbDart32, ccbDart25]
+
+def crossComponentBridgePureDartCycleGeometry :
+    PlaneEmbeddingWithBoundary.FaceBoundaryPureDartCycleGeometry
+      crossComponentBridgeEmbedding where
+  faceBoundaryPureDartCycle := by
+    intro f
+    rcases f with ⟨f, hfmem⟩
+    change CrossComponentBridgeFace at f
+    by_cases h0 : f = (0 : CrossComponentBridgeFace)
+    · subst f
+      exact crossComponentBridgeFace0PureDartCycle hfmem
+    · by_cases h1 : f = (1 : CrossComponentBridgeFace)
+      · subst f
+        exact crossComponentBridgeFace1PureDartCycle hfmem
+      · by_cases h2 : f = (2 : CrossComponentBridgeFace)
+        · subst f
+          exact crossComponentBridgeFace2PureDartCycle hfmem
+        · by_cases h3 : f = (3 : CrossComponentBridgeFace)
+          · subst f
+            exact crossComponentBridgeFace3PureDartCycle hfmem
+          · by_cases h4 : f = (4 : CrossComponentBridgeFace)
+            · subst f
+              exact crossComponentBridgeFace4PureDartCycle hfmem
+            · have h5 : f = (5 : CrossComponentBridgeFace) := by
+                fin_cases f
+                · exact False.elim (h0 rfl)
+                · exact False.elim (h1 rfl)
+                · exact False.elim (h2 rfl)
+                · exact False.elim (h3 rfl)
+                · exact False.elim (h4 rfl)
+                · rfl
+              subst f
+              exact crossComponentBridgeFace5PureDartCycle hfmem
+
+def crossComponentBridgeClosedWalkEmbeddingData :
+    PlanarBoundaryClosedWalkEmbeddingData crossComponentBridgeEmbedding :=
+  crossComponentBridgePureDartCycleGeometry.toFaceBoundaryClosedWalkGeometry
+
+theorem crossComponentBridgeClosedWalkEmbeddingData_selectedBoundaryArcOnFace :
+    ∀ f : AmbientFace crossComponentBridgeEmbedding.faces,
+      (crossComponentBridgeClosedWalkEmbeddingData.toPlanarBoundaryFaceBoundaryRunGeometry)
+        |>.SelectedBoundaryArcOnFace f := by
+  intro f
+  have hf_cases :
+      f = crossComponentBridgeFace0 ∨ f = crossComponentBridgeFace1 ∨
+        f = crossComponentBridgeFace2 ∨ f = crossComponentBridgeFace3 ∨
+          f = crossComponentBridgeFace4 ∨ f = crossComponentBridgeFace5 := by
+    rcases f with ⟨⟨n, hn⟩, hfmem⟩
+    have hn_cases : n = 0 ∨ n = 1 ∨ n = 2 ∨ n = 3 ∨ n = 4 ∨ n = 5 := by
+      omega
+    rcases hn_cases with rfl | rfl | rfl | rfl | rfl | rfl
+    · exact Or.inl (Subtype.ext rfl)
+    · exact Or.inr <| Or.inl (Subtype.ext rfl)
+    · exact Or.inr <| Or.inr <| Or.inl (Subtype.ext rfl)
+    · exact Or.inr <| Or.inr <| Or.inr <| Or.inl (Subtype.ext rfl)
+    · exact Or.inr <| Or.inr <| Or.inr <| Or.inr <| Or.inl (Subtype.ext rfl)
+    · exact Or.inr <| Or.inr <| Or.inr <| Or.inr <| Or.inr (Subtype.ext rfl)
+  rcases hf_cases with rfl | hf_cases
+  · change
+      (crossComponentBridgeClosedWalkEmbeddingData.toPlanarBoundaryFaceBoundaryRunGeometry)
+        |>.SelectedBoundaryArcOnFace crossComponentBridgeFace0
+    refine ⟨[ccbO01], ?_, ?_⟩
+    · decide
+    · intro e
+      rcases crossComponentBridge_edge_eq e with
+        rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl <;>
+        decide
+  · rcases hf_cases with rfl | hf_cases
+    · change
+        (crossComponentBridgeClosedWalkEmbeddingData.toPlanarBoundaryFaceBoundaryRunGeometry)
+          |>.SelectedBoundaryArcOnFace crossComponentBridgeFace1
+      refine ⟨[ccbI34], ?_, ?_⟩
+      · decide
+      · intro e
+        rcases crossComponentBridge_edge_eq e with
+          rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl <;>
+          decide
+    · rcases hf_cases with rfl | hf_cases
+      · change
+          (crossComponentBridgeClosedWalkEmbeddingData.toPlanarBoundaryFaceBoundaryRunGeometry)
+            |>.SelectedBoundaryArcOnFace crossComponentBridgeFace2
+        refine ⟨[ccbO12], ?_, ?_⟩
+        · decide
+        · intro e
+          rcases crossComponentBridge_edge_eq e with
+            rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl <;>
+            decide
+      · rcases hf_cases with rfl | hf_cases
+        · change
+            (crossComponentBridgeClosedWalkEmbeddingData.toPlanarBoundaryFaceBoundaryRunGeometry)
+              |>.SelectedBoundaryArcOnFace crossComponentBridgeFace3
+          refine ⟨[ccbI45], ?_, ?_⟩
+          · decide
+          · intro e
+            rcases crossComponentBridge_edge_eq e with
+              rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl <;>
+              decide
+        · rcases hf_cases with rfl | rfl
+          · change
+              (crossComponentBridgeClosedWalkEmbeddingData.toPlanarBoundaryFaceBoundaryRunGeometry)
+                |>.SelectedBoundaryArcOnFace crossComponentBridgeFace4
+            refine ⟨[ccbO20], ?_, ?_⟩
+            · decide
+            · intro e
+              rcases crossComponentBridge_edge_eq e with
+                rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl <;>
+                decide
+          · change
+              (crossComponentBridgeClosedWalkEmbeddingData.toPlanarBoundaryFaceBoundaryRunGeometry)
+                |>.SelectedBoundaryArcOnFace crossComponentBridgeFace5
+            refine ⟨[ccbI53], ?_, ?_⟩
+            · decide
+            · intro e
+              rcases crossComponentBridge_edge_eq e with
+                rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl <;>
+                decide
+
+def crossComponentBridgeOuterRoot :
+    PlanarBoundaryEdgeVertex crossComponentBridgeEmbedding :=
+  ⟨ccbO01, ccbO01_mem_selectedBoundarySupport⟩
+
+def crossComponentBridgeInnerRoot :
+    PlanarBoundaryEdgeVertex crossComponentBridgeEmbedding :=
+  ⟨ccbI34, ccbI34_mem_selectedBoundarySupport⟩
+
+def crossComponentBridgeBoundaryLabel
+    (e : PlanarBoundaryEdgeVertex crossComponentBridgeEmbedding) : Bool :=
+  if e.1 = ccbI34 ∨ e.1 = ccbI45 ∨ e.1 = ccbI53 then true else false
+
+theorem crossComponentBridge_boundaryEdge_eq
+    (e : PlanarBoundaryEdgeVertex crossComponentBridgeEmbedding) :
+    e = ⟨ccbO01, ccbO01_mem_selectedBoundarySupport⟩ ∨
+      e = ⟨ccbO12, ccbO12_mem_selectedBoundarySupport⟩ ∨
+      e = ⟨ccbO20, ccbO20_mem_selectedBoundarySupport⟩ ∨
+      e = ⟨ccbI34, ccbI34_mem_selectedBoundarySupport⟩ ∨
+      e = ⟨ccbI45, ccbI45_mem_selectedBoundarySupport⟩ ∨
+      e = ⟨ccbI53, ccbI53_mem_selectedBoundarySupport⟩ := by
+  rcases crossComponentBridge_edge_eq e.1 with
+    h01 | h12 | h20 | h34 | h45 | h53 | h03 | h14 | h25 | h04 | h15 | h23
+  · exact Or.inl (Subtype.ext h01)
+  · exact Or.inr <| Or.inl (Subtype.ext h12)
+  · exact Or.inr <| Or.inr <| Or.inl (Subtype.ext h20)
+  · exact Or.inr <| Or.inr <| Or.inr <| Or.inl (Subtype.ext h34)
+  · exact Or.inr <| Or.inr <| Or.inr <| Or.inr <| Or.inl (Subtype.ext h45)
+  · exact Or.inr <| Or.inr <| Or.inr <| Or.inr <| Or.inr (Subtype.ext h53)
+  · exact False.elim (ccbR03_not_mem_selectedBoundarySupport (by simpa [h03] using e.2))
+  · exact False.elim (ccbR14_not_mem_selectedBoundarySupport (by simpa [h14] using e.2))
+  · exact False.elim (ccbR25_not_mem_selectedBoundarySupport (by simpa [h25] using e.2))
+  · exact False.elim (ccbD04_not_mem_selectedBoundarySupport (by simpa [h04] using e.2))
+  · exact False.elim (ccbD15_not_mem_selectedBoundarySupport (by simpa [h15] using e.2))
+  · exact False.elim (ccbD23_not_mem_selectedBoundarySupport (by simpa [h23] using e.2))
+
+theorem crossComponentBridgeBoundaryAdj_preserves_label :
+    ∀ ⦃e f : PlanarBoundaryEdgeVertex crossComponentBridgeEmbedding⦄,
+      (planarBoundarySupportEndpointAdjGraph crossComponentBridgeEmbedding).Adj e f →
+        crossComponentBridgeBoundaryLabel e = crossComponentBridgeBoundaryLabel f := by
+  intro e f hadj
+  rcases crossComponentBridge_boundaryEdge_eq e with
+    rfl | rfl | rfl | rfl | rfl | rfl <;>
+    rcases crossComponentBridge_boundaryEdge_eq f with
+      rfl | rfl | rfl | rfl | rfl | rfl <;>
+      first
+      | rfl
+      | exact False.elim
+          (by
+            rcases hadj with ⟨_, v, hvE, hvF⟩
+            fin_cases v <;>
+              simp [ccbO01, ccbO12, ccbO20, ccbI34, ccbI45, ccbI53] at hvE hvF)
+
+theorem crossComponentBridgeOuterRoot_ne_innerRoot :
+    crossComponentBridgeOuterRoot ≠ crossComponentBridgeInnerRoot := by
+  intro h
+  have := congrArg Subtype.val h
+  simp [crossComponentBridgeOuterRoot, crossComponentBridgeInnerRoot, ccbO01, ccbI34] at this
+
+def crossComponentBridgeAnnulusBoundaryReachabilityData :
+    PlanarBoundaryAnnulusBoundaryReachabilityData crossComponentBridgeEmbedding where
+  outerRoot := crossComponentBridgeOuterRoot
+  innerRoot := crossComponentBridgeInnerRoot
+  hroots_ne := crossComponentBridgeOuterRoot_ne_innerRoot
+  hcoverRoots := by
+    intro e
+    rcases crossComponentBridge_boundaryEdge_eq e with rfl | rfl | rfl | rfl | rfl | rfl
+    · refine ⟨crossComponentBridgeOuterRoot,
+        by simp [crossComponentBridgeOuterRoot_ne_innerRoot], SimpleGraph.Reachable.refl _⟩
+    · refine ⟨crossComponentBridgeOuterRoot,
+        by simp [crossComponentBridgeOuterRoot_ne_innerRoot], ?_⟩
+      have hadj :
+          (planarBoundarySupportEndpointAdjGraph crossComponentBridgeEmbedding).Adj
+            ⟨ccbO12, ccbO12_mem_selectedBoundarySupport⟩ crossComponentBridgeOuterRoot := by
+        refine ⟨?_, 1, ?_, ?_⟩
+        · intro h
+          have := congrArg Subtype.val h
+          simp [crossComponentBridgeOuterRoot, ccbO12, ccbO01] at this
+        · simp [ccbO12]
+        · simp [crossComponentBridgeOuterRoot, ccbO01]
+      exact hadj.reachable
+    · refine ⟨crossComponentBridgeOuterRoot,
+        by simp [crossComponentBridgeOuterRoot_ne_innerRoot], ?_⟩
+      have hadj :
+          (planarBoundarySupportEndpointAdjGraph crossComponentBridgeEmbedding).Adj
+            ⟨ccbO20, ccbO20_mem_selectedBoundarySupport⟩ crossComponentBridgeOuterRoot := by
+        refine ⟨?_, 0, ?_, ?_⟩
+        · intro h
+          have := congrArg Subtype.val h
+          simp [crossComponentBridgeOuterRoot, ccbO20, ccbO01] at this
+        · simp [ccbO20]
+        · simp [crossComponentBridgeOuterRoot, ccbO01]
+      exact hadj.reachable
+    · refine ⟨crossComponentBridgeInnerRoot, by simp, SimpleGraph.Reachable.refl _⟩
+    · refine ⟨crossComponentBridgeInnerRoot, by simp, ?_⟩
+      have hadj :
+          (planarBoundarySupportEndpointAdjGraph crossComponentBridgeEmbedding).Adj
+            ⟨ccbI45, ccbI45_mem_selectedBoundarySupport⟩ crossComponentBridgeInnerRoot := by
+        refine ⟨?_, 4, ?_, ?_⟩
+        · intro h
+          have := congrArg Subtype.val h
+          simp [crossComponentBridgeInnerRoot, ccbI45, ccbI34] at this
+        · simp [ccbI45]
+        · simp [crossComponentBridgeInnerRoot, ccbI34]
+      exact hadj.reachable
+    · refine ⟨crossComponentBridgeInnerRoot, by simp, ?_⟩
+      have hadj :
+          (planarBoundarySupportEndpointAdjGraph crossComponentBridgeEmbedding).Adj
+            ⟨ccbI53, ccbI53_mem_selectedBoundarySupport⟩ crossComponentBridgeInnerRoot := by
+        refine ⟨?_, 3, ?_, ?_⟩
+        · intro h
+          have := congrArg Subtype.val h
+          simp [crossComponentBridgeInnerRoot, ccbI53, ccbI34] at this
+        · simp [ccbI53]
+        · simp [crossComponentBridgeInnerRoot, ccbI34]
+      exact hadj.reachable
+  hsepRoots := by
+    intro r s hr hs hreach
+    have hlabelEq :
+        crossComponentBridgeBoundaryLabel r = crossComponentBridgeBoundaryLabel s :=
+      eq_of_reachable_of_eq_on_adj
+        (planarBoundarySupportEndpointAdjGraph crossComponentBridgeEmbedding)
+        crossComponentBridgeBoundaryLabel
+        (by
+          intro u v huv
+          exact crossComponentBridgeBoundaryAdj_preserves_label huv)
+        hreach
+    have hOuterLabel : crossComponentBridgeBoundaryLabel crossComponentBridgeOuterRoot = false := by
+      decide
+    have hInnerLabel : crossComponentBridgeBoundaryLabel crossComponentBridgeInnerRoot = true := by
+      decide
+    have hr_cases :
+        r = crossComponentBridgeOuterRoot ∨ r = crossComponentBridgeInnerRoot := by
+      simpa [crossComponentBridgeOuterRoot_ne_innerRoot] using hr
+    have hs_cases :
+        s = crossComponentBridgeOuterRoot ∨ s = crossComponentBridgeInnerRoot := by
+      simpa [crossComponentBridgeOuterRoot_ne_innerRoot] using hs
+    rcases hr_cases with rfl | rfl <;> rcases hs_cases with rfl | rfl
+    · rfl
+    · rw [hOuterLabel, hInnerLabel] at hlabelEq
+      cases hlabelEq
+    · rw [hInnerLabel, hOuterLabel] at hlabelEq
+      cases hlabelEq
+    · rfl
+
+def crossComponentBridgeClosedWalkAnnulusBoundarySource :
+    PlanarBoundaryClosedWalkAnnulusBoundarySource crossComponentBridgeEmbedding :=
+  PlanarBoundaryClosedWalkAnnulusBoundarySource.ofFields
+    crossComponentBridgeAnnulusBoundaryReachabilityData
+    crossComponentBridgeClosedWalkEmbeddingData
+    crossComponentBridgeClosedWalkEmbeddingData_selectedBoundaryArcOnFace
+
+theorem exists_closedWalkSource_componentInducedBoundaryData_not_selectedBoundaryInduced_crossComponentBridgeGraph :
+    ∃ emb : PlaneEmbeddingWithBoundary crossComponentBridgeGraph,
+      ∃ _source : PlanarBoundaryClosedWalkAnnulusBoundarySource emb,
+        ∃ data : PlanarBoundaryAnnulusBoundaryData emb,
+          BoundaryEdgeSetInducedSubgraph data.outerAmbientBoundary ∧
+            BoundaryEdgeSetInducedSubgraph data.innerAmbientBoundary ∧
+              ¬ SelectedBoundaryInducedSubgraph emb := by
+  exact
+    ⟨crossComponentBridgeEmbedding, crossComponentBridgeClosedWalkAnnulusBoundarySource,
+      crossComponentBridgeBoundaryData, crossComponentBridgeOuterBoundary_induced,
+      crossComponentBridgeInnerBoundary_induced,
+      not_crossComponentBridgeEmbedding_selectedBoundaryInducedSubgraph⟩
+
+theorem crossComponentBridgeClosedWalkSource_refutes_componentInducedBoundaryData_to_selectedBoundaryInduced :
+    ¬ ∀ (G : SimpleGraph (Fin 6)) (emb : PlaneEmbeddingWithBoundary G),
+      PlanarBoundaryClosedWalkAnnulusBoundarySource emb →
+        ∀ data : PlanarBoundaryAnnulusBoundaryData emb,
+          BoundaryEdgeSetInducedSubgraph data.outerAmbientBoundary →
+            BoundaryEdgeSetInducedSubgraph data.innerAmbientBoundary →
+              SelectedBoundaryInducedSubgraph emb := by
+  intro h
+  exact not_crossComponentBridgeEmbedding_selectedBoundaryInducedSubgraph
+    (h crossComponentBridgeGraph crossComponentBridgeEmbedding
+      crossComponentBridgeClosedWalkAnnulusBoundarySource crossComponentBridgeBoundaryData
+      crossComponentBridgeOuterBoundary_induced crossComponentBridgeInnerBoundary_induced)
+
 /-- The honest `diamondWithTriangle` source model also admits a one-collar annulus geometry: all
 three ambient faces are peeled in a single collar, with the diamond pair using the shared
 interior edge as witness and the separate triangle using one inner-boundary edge.  This is the
