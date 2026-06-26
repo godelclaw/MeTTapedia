@@ -6665,6 +6665,39 @@ theorem twoBandAnnulus_not_all_six_interior_controls_boundaryZeroKirchhoff_contr
     ⟨control, hsubset, hcard, hnotControl⟩
   exact hnotControl (hall control hsubset hcard)
 
+/-- The two-band Kirchhoff threshold is pattern-sensitive, not cardinality-only: one six-edge
+interior control set closes the boundary-zero Kirchhoff target, while another six-edge interior
+control set does not. -/
+theorem twoBandAnnulus_exists_two_six_interior_controls_with_different_boundaryZeroKirchhoff_status :
+    ∃ good bad : Finset twoBandAnnulusGraph.edgeSet,
+      good ⊆ twoBandAnnulusInteriorEdges ∧
+      good.card = 6 ∧
+      (∀ ⦃z : twoBandAnnulusGraph.edgeSet → Color⦄,
+        z ∈ theorem49BoundaryZeroKirchhoffSubspace
+            twoBandAnnulusEmbedding twoBandAnnulusKirchhoffVertices →
+        (∀ e ∈ good, z e = 0) →
+        z = 0) ∧
+      bad ⊆ twoBandAnnulusInteriorEdges ∧
+      bad.card = 6 ∧
+        ¬ ∀ ⦃z : twoBandAnnulusGraph.edgeSet → Color⦄,
+          z ∈ theorem49BoundaryZeroKirchhoffSubspace
+              twoBandAnnulusEmbedding twoBandAnnulusKirchhoffVertices →
+          (∀ e ∈ bad, z e = 0) →
+          z = 0 := by
+  refine ⟨twoBandAnnulusMiddleOuterRadialKirchhoffControlEdges,
+    twoBandAnnulusNoncontrollingSixKirchhoffControlEdges, ?_, ?_, ?_, ?_, ?_, ?_⟩
+  · intro e he
+    simp [twoBandAnnulusMiddleOuterRadialKirchhoffControlEdges,
+      twoBandAnnulusInteriorEdges] at he ⊢
+    tauto
+  · decide
+  · intro z hz hcontrol
+    exact twoBandAnnulus_boundaryZeroKirchhoff_no_evader_of_middleOuterRadialControl
+      z hz hcontrol
+  · exact twoBandAnnulusNoncontrollingSixKirchhoffControlEdges_subset_interior
+  · exact twoBandAnnulusNoncontrollingSixKirchhoffControlEdges_card
+  · exact twoBandAnnulus_noncontrollingSix_not_boundaryZeroKirchhoff_control
+
 theorem twoBandAnnulusMiddleOuterRadialKirchhoffControl_scalarConstraintMap_ker_eq_bot :
     LinearMap.ker
       (theorem49BoundaryZeroKirchhoffScalarConstraintMap
