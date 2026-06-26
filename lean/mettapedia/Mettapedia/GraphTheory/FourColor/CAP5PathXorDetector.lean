@@ -4506,6 +4506,82 @@ theorem ofDecidableChecks_missingCheckerEvidence_or_histogram_and_forcedEdgeIndi
         CAP5ExceptionalAnnulusGeneratorReport.latentNode] using hmissing⟩
 
 /--
+No-missing-evidence consequence of the cardinality handoff.  If the finite CAP5 sweep has no
+latent with missing checker evidence, then the cardinality-gap branch supplies a nonzero
+selected-boundary-zero chain vanishing on every enumerated forced edge; equivalently, those
+enumerated forced edges cannot meet every nonzero selected-boundary-zero chain.
+-/
+theorem noMissingCheckerEvidence_refutes_forcedEdgeCoverage_of_emittedFinset_card_add_boundary_card_lt_of_finsetControl
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    [Fintype G.edgeSet]
+    (emb : PlaneEmbeddingWithBoundary G)
+    (colorings : Set (G.EdgeColoring Color))
+    (p0Inside p4Inside : Bool) (h : data.IsExceptional)
+    (side : V → Prop)
+    [∀ latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge,
+      Decidable ((CAP5ExceptionalAnnulusGeneratorReport.latentNode
+        boundaryEdge side latent).PortalCrosses)]
+    [∀ latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge,
+      Decidable ((CAP5ExceptionalAnnulusGeneratorReport.latentNode
+        boundaryEdge side latent).SideCycles)]
+    [∀ latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge,
+      Decidable ((CAP5ExceptionalAnnulusGeneratorReport.latentNode
+        boundaryEdge side latent).RealizedSeparator)]
+    (hcyclic : CyclicallyFiveEdgeConnected G)
+    (hportal_crosses :
+      ∀ edgeCandidate : CAP5ExceptionalAnnulusBoundaryEdgeSupportCandidate boundaryEdge,
+        data.RealizesExceptionalBoundarySupportOrientation
+            edgeCandidate.portalCandidate.orientation →
+        edgeCandidate.portalCandidate.sideCase =
+            CAP5ExceptionalAnnulusSideCase.ofPortalSides p0Inside p4Inside →
+        ∀ i : Fin 5, i ∈ edgeCandidate.portalCandidate.portalSet →
+          EdgeCrossesVertexSide G side (boundaryEdge i))
+    (hcycles : HasCycleOnSide G side ∧ HasCycleOnSide G (fun v => ¬ side v))
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (controlEdges : Finset G.edgeSet)
+    (hcard :
+      classifier.emittedFinset.card +
+        Fintype.card {e : G.edgeSet //
+          e ∈ selectedBoundarySupport emb.faceBoundary emb.faces emb.faces} <
+        Fintype.card G.edgeSet)
+    (hcontrol :
+      ∀ ⦃z : G.edgeSet → Color⦄,
+        z ∈ planarBoundaryZeroSubmodule emb →
+        (∀ e ∈ controlEdges, z e = 0) →
+          z = 0)
+    (hred :
+      ∀ e ∈ classifier.remainingControlEdges controlEdges,
+        Pi.single e red ∈ projectedColoringGeneratorSubspace emb colorings)
+    (hblue :
+      ∀ e ∈ classifier.remainingControlEdges controlEdges,
+        Pi.single e blue ∈ projectedColoringGeneratorSubspace emb colorings)
+    (hnoMissing :
+      ∀ latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge,
+        latent ∈ CAP5ExceptionalAnnulusGeneratorLatent.all boundaryEdge →
+          ¬ (CAP5ExceptionalAnnulusGeneratorReport.latentNode
+            boundaryEdge side latent).MissingCheckerEvidence) :
+    ¬ (∀ ⦃z : G.edgeSet → Color⦄,
+      z ∈ planarBoundaryZeroSubmodule emb →
+      z ≠ 0 →
+        ∃ e : G.edgeSet,
+          data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e ∧
+            z e ≠ 0) := by
+  intro hcoverage
+  have hreport :=
+    data.ofDecidableChecks_missingCheckerEvidence_or_histogram_and_forcedEdgeIndicatorPathXorDetectorPayload_and_extensionControlEdge_boundaryZeroChain_canonicalFamilyPairing_ne_zero_of_emittedFinset_card_add_boundary_card_lt_of_finsetControl
+      emb colorings p0Inside p4Inside h side hcyclic hportal_crosses hcycles
+      classifier controlEdges hcard hcontrol hred hblue
+  rcases hreport with hmissing | hcomplete
+  · rcases hmissing with ⟨latent, hmem, hmissing⟩
+    exact hnoMissing latent hmem hmissing
+  · rcases hcomplete with ⟨_, hpayloadAndWitness⟩
+    rcases hpayloadAndWitness with ⟨_, hwitness⟩
+    rcases hwitness with ⟨z, hzBoundary, hzNonzero, hzForcedZero, _⟩
+    rcases hcoverage hzBoundary hzNonzero with ⟨e, heForced, hze⟩
+    exact hze (hzForcedZero e heForced)
+
+/--
 Executable histogram-to-algebraic-handoff state for the CAP5 generator.  A decidable finite
 CAP5 sweep either identifies a latent whose primitive checker evidence is still missing, or else
 the complete cyclic-five histogram is `(0, 0, 16)` and the same run reaches the compact
