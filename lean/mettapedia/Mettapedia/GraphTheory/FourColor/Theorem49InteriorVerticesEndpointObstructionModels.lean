@@ -84,7 +84,9 @@ def sharedEndpointEmbedding : PlaneEmbeddingWithBoundary sharedEndpointGraph whe
       exact totalIncidenceCount_ei12
 
 def sharedFaceOne : {f // f ∈ sharedEndpointEmbedding.faces} :=
-  ⟨(1 : SharedFace), by simp [sharedEndpointEmbedding, sharedFaces]⟩
+  ⟨(1 : SharedFace), by
+    change (1 : SharedFace) ∈ sharedFaces
+    exact Finset.mem_univ _⟩
 
 theorem eb01_mem_selectedBoundarySupport :
     eb01 ∈ selectedBoundarySupport
@@ -703,9 +705,13 @@ theorem diamondSelectedArcClosedWalkEmbeddingData_selectedBoundaryArcOnFace :
         |>.SelectedBoundaryArcOnFace f := by
   intro f
   let f0 : AmbientFace diamondEmbedding.faces :=
-    ⟨(0 : DiamondFace), by simp [diamondEmbedding, diamondFaces]⟩
+    ⟨(0 : DiamondFace), by
+      change (0 : DiamondFace) ∈ diamondFaces
+      exact Finset.mem_univ _⟩
   let f1 : AmbientFace diamondEmbedding.faces :=
-    ⟨(1 : DiamondFace), by simp [diamondEmbedding, diamondFaces]⟩
+    ⟨(1 : DiamondFace), by
+      change (1 : DiamondFace) ∈ diamondFaces
+      exact Finset.mem_univ _⟩
   have hf_cases : f = f0 ∨ f = f1 := by
     rcases f with ⟨⟨n, hn⟩, hfmem⟩
     have hn01 : n = 0 ∨ n = 1 := by omega

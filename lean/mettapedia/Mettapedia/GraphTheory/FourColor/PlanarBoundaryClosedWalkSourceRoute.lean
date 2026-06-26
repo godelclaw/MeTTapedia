@@ -482,6 +482,150 @@ theorem
       theorem49BoundaryRootNonemptySynthesis_of_closedWalkAnnulusBoundarySource_and_canonicalWitnessChoice_direct
         source hchoice hCarrier C₀ hC₀⟩
 
+/-- Non-vacuous theorem-4.9 synthesis from canonical witness choice plus the finite no-chord
+carrier condition.  This replaces the older raw nonempty-carrier hypothesis by the source-facing
+endpoint condition that every interior face-incidence edge has an endpoint surviving
+selected-boundary purification. -/
+theorem
+    theorem49BoundaryRootNonemptySynthesis_of_closedWalkAnnulusBoundarySource_and_canonicalWitnessChoice_and_interiorEdgesNotSelectedBoundaryChords_direct
+    {G : SimpleGraph V}
+    [Fintype G.edgeSet] [FiniteDimensional F2 (G.edgeSet → Color)]
+    {emb : PlaneEmbeddingWithBoundary G}
+    (source : PlanarBoundaryClosedWalkAnnulusBoundarySource emb)
+    (hchoice :
+      Nonempty
+        (PlanarBoundaryCanonicalWitnessChoice
+          source.toPlanarBoundaryAnnulusBoundaryData))
+    (hChordFree : InteriorEdgesNotSelectedBoundaryChords emb)
+    (hInterior : (interiorEdgeSupport emb.faceBoundary emb.faces).Nonempty)
+    (C₀ : G.EdgeColoring Color) (hC₀ : IsTaitEdgeColoring G C₀) :
+    Theorem49BoundaryRootNonemptySynthesis emb C₀ :=
+  theorem49BoundaryRootNonemptySynthesis_of_closedWalkAnnulusBoundarySource_and_canonicalWitnessChoice_direct
+    source hchoice
+    (selectedBoundaryInteriorEdgeEndpointVertices_nonempty_of_interiorEdgesNotSelectedBoundaryChords_and_nonempty
+      hChordFree hInterior)
+    C₀ hC₀
+
+/-- Non-vacuous theorem-4.9 synthesis from canonical witness choice plus selected-boundary
+inducedness, the finite source-facing no-boundary-chord condition mined by the validation lab. -/
+theorem
+    theorem49BoundaryRootNonemptySynthesis_of_closedWalkAnnulusBoundarySource_and_canonicalWitnessChoice_and_selectedBoundaryInducedSubgraph_direct
+    {G : SimpleGraph V}
+    [Fintype G.edgeSet] [FiniteDimensional F2 (G.edgeSet → Color)]
+    {emb : PlaneEmbeddingWithBoundary G}
+    (source : PlanarBoundaryClosedWalkAnnulusBoundarySource emb)
+    (hchoice :
+      Nonempty
+        (PlanarBoundaryCanonicalWitnessChoice
+          source.toPlanarBoundaryAnnulusBoundaryData))
+    (hInduced : SelectedBoundaryInducedSubgraph emb)
+    (hInterior : (interiorEdgeSupport emb.faceBoundary emb.faces).Nonempty)
+    (C₀ : G.EdgeColoring Color) (hC₀ : IsTaitEdgeColoring G C₀) :
+    Theorem49BoundaryRootNonemptySynthesis emb C₀ :=
+  theorem49BoundaryRootNonemptySynthesis_of_closedWalkAnnulusBoundarySource_and_canonicalWitnessChoice_and_interiorEdgesNotSelectedBoundaryChords_direct
+    source hchoice
+    (interiorEdgesNotSelectedBoundaryChords_of_selectedBoundaryInducedSubgraph hInduced)
+    hInterior C₀ hC₀
+
+/-- Non-vacuous theorem-4.9 synthesis from canonical witness choice plus the exact finite
+boundary-split repair surfaced by the validation lab: each boundary component is induced, and no
+cross-component chord lies inside the split endpoint support. -/
+theorem
+    theorem49BoundaryRootNonemptySynthesis_of_closedWalkAnnulusBoundarySource_and_canonicalWitnessChoice_and_boundarySplitInducedCrossComponentChordFree_direct
+    {G : SimpleGraph V}
+    [Fintype G.edgeSet] [FiniteDimensional F2 (G.edgeSet → Color)]
+    {emb : PlaneEmbeddingWithBoundary G}
+    {outer inner : Finset G.edgeSet}
+    (source : PlanarBoundaryClosedWalkAnnulusBoundarySource emb)
+    (hchoice :
+      Nonempty
+        (PlanarBoundaryCanonicalWitnessChoice
+          source.toPlanarBoundaryAnnulusBoundaryData))
+    (hSelected :
+      selectedBoundarySupport emb.faceBoundary emb.faces emb.faces = outer ∪ inner)
+    (hOuter : BoundaryEdgeSetInducedSubgraph outer)
+    (hInner : BoundaryEdgeSetInducedSubgraph inner)
+    (hCross : BoundaryEdgeSetCrossComponentChordFree outer inner)
+    (hInterior : (interiorEdgeSupport emb.faceBoundary emb.faces).Nonempty)
+    (C₀ : G.EdgeColoring Color) (hC₀ : IsTaitEdgeColoring G C₀) :
+    Theorem49BoundaryRootNonemptySynthesis emb C₀ :=
+  theorem49BoundaryRootNonemptySynthesis_of_closedWalkAnnulusBoundarySource_and_canonicalWitnessChoice_and_interiorEdgesNotSelectedBoundaryChords_direct
+    source hchoice
+    (interiorEdgesNotSelectedBoundaryChords_of_selectedBoundarySupport_eq_union_of_induced_of_crossComponentChordFree
+      hSelected hOuter hInner hCross)
+    hInterior C₀ hC₀
+
+/-- Graph-level non-vacuous theorem-4.9 endpoint from an honest closed-walk source, canonical
+witness choice, and the finite no-chord carrier condition. -/
+theorem
+    exists_theorem49BoundaryRootNonemptySynthesis_of_exists_closedWalkAnnulusBoundarySource_and_canonicalWitnessChoice_and_interiorEdgesNotSelectedBoundaryChords_direct
+    {G : SimpleGraph V}
+    [Fintype G.edgeSet] [FiniteDimensional F2 (G.edgeSet → Color)]
+    (hG : ∃ emb : PlaneEmbeddingWithBoundary G,
+      ∃ source : PlanarBoundaryClosedWalkAnnulusBoundarySource emb,
+        Nonempty
+          (PlanarBoundaryCanonicalWitnessChoice
+            source.toPlanarBoundaryAnnulusBoundaryData) ∧
+          InteriorEdgesNotSelectedBoundaryChords emb ∧
+          (interiorEdgeSupport emb.faceBoundary emb.faces).Nonempty)
+    (C₀ : G.EdgeColoring Color) (hC₀ : IsTaitEdgeColoring G C₀) :
+    ∃ emb : PlaneEmbeddingWithBoundary G,
+      Theorem49BoundaryRootNonemptySynthesis emb C₀ := by
+  rcases hG with ⟨emb, source, hchoice, hChordFree, hInterior⟩
+  exact
+    ⟨emb,
+      theorem49BoundaryRootNonemptySynthesis_of_closedWalkAnnulusBoundarySource_and_canonicalWitnessChoice_and_interiorEdgesNotSelectedBoundaryChords_direct
+        source hchoice hChordFree hInterior C₀ hC₀⟩
+
+/-- Graph-level non-vacuous theorem-4.9 endpoint from an honest closed-walk source, canonical
+witness choice, and selected-boundary inducedness. -/
+theorem
+    exists_theorem49BoundaryRootNonemptySynthesis_of_exists_closedWalkAnnulusBoundarySource_and_canonicalWitnessChoice_and_selectedBoundaryInducedSubgraph_direct
+    {G : SimpleGraph V}
+    [Fintype G.edgeSet] [FiniteDimensional F2 (G.edgeSet → Color)]
+    (hG : ∃ emb : PlaneEmbeddingWithBoundary G,
+      ∃ source : PlanarBoundaryClosedWalkAnnulusBoundarySource emb,
+        Nonempty
+          (PlanarBoundaryCanonicalWitnessChoice
+            source.toPlanarBoundaryAnnulusBoundaryData) ∧
+          SelectedBoundaryInducedSubgraph emb ∧
+          (interiorEdgeSupport emb.faceBoundary emb.faces).Nonempty)
+    (C₀ : G.EdgeColoring Color) (hC₀ : IsTaitEdgeColoring G C₀) :
+    ∃ emb : PlaneEmbeddingWithBoundary G,
+      Theorem49BoundaryRootNonemptySynthesis emb C₀ := by
+  rcases hG with ⟨emb, source, hchoice, hInduced, hInterior⟩
+  exact
+    ⟨emb,
+      theorem49BoundaryRootNonemptySynthesis_of_closedWalkAnnulusBoundarySource_and_canonicalWitnessChoice_and_selectedBoundaryInducedSubgraph_direct
+        source hchoice hInduced hInterior C₀ hC₀⟩
+
+/-- Graph-level non-vacuous theorem-4.9 endpoint from an honest closed-walk source, canonical
+witness choice, and the exact induced-split plus cross-free boundary repair. -/
+theorem
+    exists_theorem49BoundaryRootNonemptySynthesis_of_exists_closedWalkAnnulusBoundarySource_and_canonicalWitnessChoice_and_boundarySplitInducedCrossComponentChordFree_direct
+    {G : SimpleGraph V}
+    [Fintype G.edgeSet] [FiniteDimensional F2 (G.edgeSet → Color)]
+    (hG : ∃ emb : PlaneEmbeddingWithBoundary G,
+      ∃ source : PlanarBoundaryClosedWalkAnnulusBoundarySource emb,
+      ∃ outer inner : Finset G.edgeSet,
+        Nonempty
+          (PlanarBoundaryCanonicalWitnessChoice
+            source.toPlanarBoundaryAnnulusBoundaryData) ∧
+          selectedBoundarySupport emb.faceBoundary emb.faces emb.faces = outer ∪ inner ∧
+          BoundaryEdgeSetInducedSubgraph outer ∧
+          BoundaryEdgeSetInducedSubgraph inner ∧
+          BoundaryEdgeSetCrossComponentChordFree outer inner ∧
+          (interiorEdgeSupport emb.faceBoundary emb.faces).Nonempty)
+    (C₀ : G.EdgeColoring Color) (hC₀ : IsTaitEdgeColoring G C₀) :
+    ∃ emb : PlaneEmbeddingWithBoundary G,
+      Theorem49BoundaryRootNonemptySynthesis emb C₀ := by
+  rcases hG with
+    ⟨emb, source, outer, inner, hchoice, hSelected, hOuter, hInner, hCross, hInterior⟩
+  exact
+    ⟨emb,
+      theorem49BoundaryRootNonemptySynthesis_of_closedWalkAnnulusBoundarySource_and_canonicalWitnessChoice_and_boundarySplitInducedCrossComponentChordFree_direct
+        source hchoice hSelected hOuter hInner hCross hInterior C₀ hC₀⟩
+
 /-- Canonical facewise witness choice on the honest source boundary split reaches the repaired
 previous-boundary witness surface through the direct canonical-choice repair. -/
 theorem
