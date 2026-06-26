@@ -3,6 +3,7 @@ import Mettapedia.Computability.PNP.ClockedKpolyActualGapClosure
 import Mettapedia.Computability.PNP.CruxKpolyBridgeCurrentStatus
 import Mettapedia.Computability.PNP.CruxKpolyPromotedPacket
 import Mettapedia.Computability.PNP.CruxSynthesisRegression
+import Mettapedia.Computability.PNP.KpolyFeatureRouteQuantaleBoundary
 import Mettapedia.Computability.PNP.KpolyPolynomialFunctorAgreementObstruction
 import Mettapedia.Computability.PNP.KpolySupportSurjectivityQuantaleObstruction
 import Mettapedia.Computability.PNP.Barriers.ProperSubsetLabCanaries
@@ -47,9 +48,9 @@ deriving Repr
 
 /-- Current source-map summary for `Mettapedia/Computability/PNP`. -/
 def currentPNPLaneSurveyCounts : PNPLaneSurveyCounts where
-  sourceFiles := 943
-  sourceLines := 124566
-  internalImportEdges := 2284
+  sourceFiles := 944
+  sourceLines := 124839
+  internalImportEdges := 2287
   regressionFiles := 294
   filesOverSevenHundredFiftyLines := 0
   zeroInternalImporterEntrypoints := 256
@@ -162,7 +163,7 @@ def currentPNPProofNodes : List PNPProofNode := [
     nextObligation := "Treat the promoted Kpoly bridge as a route refutation unless a new bridge supplies a stronger finite-cover theorem rather than product-bound or fielded-switching-only evidence."
   },
   { key := "pnp.kpoly.polynomial-functor-agreement", status := .blockedByCounterexample, truthValue := ⟨100, 99⟩, evidence := "polynomialFunctorSmallImageAgreement_obstruction_packet proves that a one-shape finite polynomial-container image and its two-code bit family do not force any strict pure-atom bad-code agreement bound.", nextObligation := "Do not derive Kpoly recovery or quantale weakness bounds from polynomial small-image evidence alone; require a separate support-disagreement or agreement-mass theorem." },
-  { key := "pnp.kpoly.support-surjectivity-weakness-boundary", status := .blockedByCounterexample, truthValue := ⟨100, 99⟩, evidence := "kpolySupportSurjectivityQuantale_obstruction_packet proves that below-surface observed support blocks the full-rule Kpoly bridge, while quantaleWeakness_supportResolution_exactBoundary_packet records that positive weakness-side advantage over an invariant base is exactly a supported resolving side-information package.", nextObligation := "A replacement route in this class must supply a support-surjective feature/query map and pay the exact-visible surface floor, or supply a supported resolving side-information package; finite observed traces alone are resolved as insufficient." },
+  { key := "pnp.kpoly.feature-route-quantale-boundary", status := .blockedByCounterexample, truthValue := ⟨100, 99⟩, evidence := "kpolyFeatureRouteQuantale_shortcutRemoval_boundary_packet proves that any arbitrary feature-map repair of the full-rule Kpoly route must pay the exact-visible surface-cardinality and Boolean-image floors, while feature-based weakness advantage must separate a positive-weight involution pair.", nextObligation := "A replacement route in this class must provide an injective/full-surface feature encoding and pay the full Boolean-image lower bound, or provide a feature that resolves supported involution pairs; finite polynomial image evidence alone is resolved as insufficient." },
   {
     key := "pnp.kpoly-promoted.barrier-clearance",
     status := .barrierBlocked,
@@ -746,5 +747,4 @@ theorem currentPNPBarrierSubsetFrontierLabCanaries_node :
       pnpBarrierSubsetNaturalProofAlgebrizationCanaryAudit.clearsGlobalPromotionGate =
         false := by
   exact pnpBarrierSubsetFrontierCanaries_guardrails
-
 end Mettapedia.Computability.PNP
