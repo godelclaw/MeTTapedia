@@ -3,9 +3,8 @@ import Mettapedia.Computability.PNP.ClockedKpolyActualGapClosure
 import Mettapedia.Computability.PNP.CruxKpolyBridgeCurrentStatus
 import Mettapedia.Computability.PNP.CruxKpolyPromotedPacket
 import Mettapedia.Computability.PNP.CruxSynthesisRegression
-import Mettapedia.Computability.PNP.KpolyFeatureRouteQuantaleBoundary
 import Mettapedia.Computability.PNP.KpolyPolynomialFunctorAgreementObstruction
-import Mettapedia.Computability.PNP.KpolySupportSurjectivityQuantaleObstruction
+import Mettapedia.Computability.PNP.KpolyQuantaleShortcutRemovalObstruction
 import Mettapedia.Computability.PNP.Barriers.ProperSubsetLabCanaries
 import Mettapedia.Computability.PNP.PNPv13AtomicBudgetLedgerAuditorCanaries
 import Mettapedia.Computability.PNP.PNPv13CDENFNormalizerCanaries
@@ -48,9 +47,9 @@ deriving Repr
 
 /-- Current source-map summary for `Mettapedia/Computability/PNP`. -/
 def currentPNPLaneSurveyCounts : PNPLaneSurveyCounts where
-  sourceFiles := 944
-  sourceLines := 124839
-  internalImportEdges := 2287
+  sourceFiles := 945
+  sourceLines := 125036
+  internalImportEdges := 2288
   regressionFiles := 294
   filesOverSevenHundredFiftyLines := 0
   zeroInternalImporterEntrypoints := 256
@@ -77,7 +76,7 @@ def currentPNPProofNodes : List PNPProofNode := [
     key := "pnp.map.current-lane",
     status := .surveyed,
     truthValue := ⟨100, 94⟩,
-    evidence := "The lane currently has 943 Lean files, 124566 lines, 2284 internal import edges, and no files over the split threshold.",
+    evidence := "The lane currently has 945 Lean files, 125036 lines, 2288 internal import edges, and no files over the split threshold.",
     nextObligation := "Keep broad regression files separate from the live entrypoint unless a checked theorem needs them."
   },
   {
@@ -163,7 +162,7 @@ def currentPNPProofNodes : List PNPProofNode := [
     nextObligation := "Treat the promoted Kpoly bridge as a route refutation unless a new bridge supplies a stronger finite-cover theorem rather than product-bound or fielded-switching-only evidence."
   },
   { key := "pnp.kpoly.polynomial-functor-agreement", status := .blockedByCounterexample, truthValue := ⟨100, 99⟩, evidence := "polynomialFunctorSmallImageAgreement_obstruction_packet proves that a one-shape finite polynomial-container image and its two-code bit family do not force any strict pure-atom bad-code agreement bound.", nextObligation := "Do not derive Kpoly recovery or quantale weakness bounds from polynomial small-image evidence alone; require a separate support-disagreement or agreement-mass theorem." },
-  { key := "pnp.kpoly.feature-route-quantale-boundary", status := .blockedByCounterexample, truthValue := ⟨100, 99⟩, evidence := "kpolyFeatureRouteQuantale_shortcutRemoval_boundary_packet proves that any arbitrary feature-map repair of the full-rule Kpoly route must pay the exact-visible surface-cardinality and Boolean-image floors, while feature-based weakness advantage must separate a positive-weight involution pair.", nextObligation := "A replacement route in this class must provide an injective/full-surface feature encoding and pay the full Boolean-image lower bound, or provide a feature that resolves supported involution pairs; finite polynomial image evidence alone is resolved as insufficient." },
+  { key := "pnp.kpoly.feature-route-quantale-boundary", status := .barrierBlocked, truthValue := ⟨100, 99⟩, evidence := "kpolyQuantaleShortcutRemoval_obstruction_packet proves that any shortcut-removed route in this class must pay the exact-visible feature floor and Boolean-image floor, make the support/query map surjective, and resolve a positive-weight weakness pair; below-surface feature space, non-surjective support, or invariant weakness feature blocks the route class.", nextObligation := "A replacement route in this class must provide all three obligations together before its Kpoly or weakness evidence counts as central progress." },
   {
     key := "pnp.kpoly-promoted.barrier-clearance",
     status := .barrierBlocked,
