@@ -7743,6 +7743,77 @@ theorem twoBandAnnulus_exists_two_six_interior_controls_with_different_omittedIn
       ((twoBandAnnulus_scalarConstraintMap_ker_eq_bot_iff_omittedInterior_columnMap_ker_eq_bot
         twoBandAnnulusNoncontrollingSixKirchhoffControlEdges).2 hbad)
 
+def twoBandAnnulusRadialBasisOmittedEdges
+    (outer0 outer1 outer2 : Bool) : Finset twoBandAnnulusGraph.edgeSet :=
+  {if outer0 then tbaR03 else tbaR36,
+    if outer1 then tbaR14 else tbaR47,
+    if outer2 then tbaR25 else tbaR58}
+
+def twoBandAnnulusRadialBasisKirchhoffControlEdges
+    (outer0 outer1 outer2 : Bool) : Finset twoBandAnnulusGraph.edgeSet :=
+  twoBandAnnulusInteriorEdges \
+    twoBandAnnulusRadialBasisOmittedEdges outer0 outer1 outer2
+
+theorem twoBandAnnulusRadialBasisOmittedEdges_subset_interior
+    (outer0 outer1 outer2 : Bool) :
+    twoBandAnnulusRadialBasisOmittedEdges outer0 outer1 outer2 ⊆
+      twoBandAnnulusInteriorEdges := by
+  cases outer0 <;> cases outer1 <;> cases outer2 <;>
+    decide
+
+theorem twoBandAnnulusRadialBasisOmittedEdges_card
+    (outer0 outer1 outer2 : Bool) :
+    (twoBandAnnulusRadialBasisOmittedEdges outer0 outer1 outer2).card = 3 := by
+  cases outer0 <;> cases outer1 <;> cases outer2 <;>
+    decide
+
+theorem twoBandAnnulusRadialBasisKirchhoffControlEdges_subset_interior
+    (outer0 outer1 outer2 : Bool) :
+    twoBandAnnulusRadialBasisKirchhoffControlEdges outer0 outer1 outer2 ⊆
+      twoBandAnnulusInteriorEdges :=
+  Finset.sdiff_subset
+
+theorem twoBandAnnulusRadialBasisKirchhoffControlEdges_card
+    (outer0 outer1 outer2 : Bool) :
+    (twoBandAnnulusRadialBasisKirchhoffControlEdges outer0 outer1 outer2).card = 6 := by
+  cases outer0 <;> cases outer1 <;> cases outer2 <;>
+    decide
+
+theorem twoBandAnnulusOmittedInteriorEdges_radialBasisKirchhoffControl_eq
+    (outer0 outer1 outer2 : Bool) :
+    twoBandAnnulusOmittedInteriorEdges
+        (twoBandAnnulusRadialBasisKirchhoffControlEdges outer0 outer1 outer2) =
+      twoBandAnnulusRadialBasisOmittedEdges outer0 outer1 outer2 := by
+  cases outer0 <;> cases outer1 <;> cases outer2 <;>
+    decide
+
+theorem twoBandAnnulusRadialBasisKirchhoffControl_omittedInteriorColumnMap_ker_eq_bot
+    (outer0 outer1 outer2 : Bool) :
+    LinearMap.ker
+      (twoBandAnnulusOmittedInteriorKirchhoffColumnMap
+        (twoBandAnnulusRadialBasisKirchhoffControlEdges outer0 outer1 outer2)) = ⊥ := by
+  cases outer0 <;> cases outer1 <;> cases outer2
+  all_goals
+    ext y
+    change
+      twoBandAnnulusOmittedInteriorKirchhoffColumnMap
+          (twoBandAnnulusRadialBasisKirchhoffControlEdges _ _ _) y = 0 ↔
+        y = 0
+    decide +revert
+
+theorem twoBandAnnulusRadialBasisKirchhoffControl_boundaryZeroKirchhoff_control
+    (outer0 outer1 outer2 : Bool) :
+    ∀ ⦃z : twoBandAnnulusGraph.edgeSet → Color⦄,
+      z ∈ theorem49BoundaryZeroKirchhoffSubspace
+          twoBandAnnulusEmbedding twoBandAnnulusKirchhoffVertices →
+      (∀ e ∈ twoBandAnnulusRadialBasisKirchhoffControlEdges
+          outer0 outer1 outer2, z e = 0) →
+      z = 0 :=
+  (twoBandAnnulus_boundaryZeroKirchhoff_control_iff_omittedInterior_columnMap_ker_eq_bot
+    (twoBandAnnulusRadialBasisKirchhoffControlEdges outer0 outer1 outer2)).2
+    (twoBandAnnulusRadialBasisKirchhoffControl_omittedInteriorColumnMap_ker_eq_bot
+      outer0 outer1 outer2)
+
 theorem twoBandAnnulusIndicator_mem_planarBoundaryZeroSubmodule_of_subset_interior
     (S : Finset twoBandAnnulusGraph.edgeSet)
     (hS : S ⊆ twoBandAnnulusInteriorEdges) :
@@ -14172,6 +14243,35 @@ theorem twoBandAnnulus_CAP5_boundaryZeroKirchhoff_forcedEdgeCoverage_of_emits_mi
       intro z hz hvanishEmitted
       exact twoBandAnnulus_boundaryZeroKirchhoff_no_evader_of_middleOuterRadialControl
         z hz (by
+          intro e heControl
+          exact hvanishEmitted e (hemits heControl)))
+
+/-- Positive Kirchhoff handoff for the lab-certified radial-basis family.  For each choice of one
+radial omitted from each of the three radial pairs, emitting the complementary six interior
+coordinates closes coverage of every nonzero boundary-zero Kirchhoff chain. -/
+theorem twoBandAnnulus_CAP5_boundaryZeroKirchhoff_forcedEdgeCoverage_of_emits_radialBasisControl
+    {boundaryEdge : Fin 5 → twoBandAnnulusGraph.edgeSet} {n : Nat}
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    (p0Inside p4Inside : Bool) (side : Fin 9 → Prop)
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (outer0 outer1 outer2 : Bool)
+    (hemits :
+      twoBandAnnulusRadialBasisKirchhoffControlEdges outer0 outer1 outer2 ⊆
+        classifier.emittedFinset) :
+    ∀ ⦃z : twoBandAnnulusGraph.edgeSet → Color⦄,
+      z ∈ theorem49BoundaryZeroKirchhoffSubspace
+          twoBandAnnulusEmbedding twoBandAnnulusKirchhoffVertices →
+      z ≠ 0 →
+        ∃ e : twoBandAnnulusGraph.edgeSet,
+          data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e ∧
+            z e ≠ 0 :=
+  (data.forcedEdgeKirchhoffCoverage_iff_enumeratedExceptionalAnnulusForcedEdgeClassifierKirchhoffControl
+    twoBandAnnulusEmbedding twoBandAnnulusKirchhoffVertices classifier).2
+    (by
+      intro z hz hvanishEmitted
+      exact twoBandAnnulusRadialBasisKirchhoffControl_boundaryZeroKirchhoff_control
+        outer0 outer1 outer2 hz (by
           intro e heControl
           exact hvanishEmitted e (hemits heControl)))
 
