@@ -15145,6 +15145,89 @@ theorem twoBandAnnulus_CAP5_boundaryZeroKirchhoff_forcedEdgeCoverage_iff_exists_
     (twoBandAnnulus_mem_fullRankInteriorControlComplements_iff _)
 
 set_option maxRecDepth 20000 in
+theorem twoBandAnnulus_CAP5_boundaryZeroKirchhoff_forcedEdgeCoverage_iff_exists_fullRankIncreasingOmittedIndexTriple_of_emittedInterior_card_le_six
+    {boundaryEdge : Fin 5 → twoBandAnnulusGraph.edgeSet} {n : Nat}
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    (p0Inside p4Inside : Bool) (side : Fin 9 → Prop)
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (hcardLe :
+      (classifier.emittedFinset.filter fun e =>
+        e ∈ interiorEdgeSupport
+          twoBandAnnulusEmbedding.faceBoundary
+          twoBandAnnulusEmbedding.faces).card ≤ 6) :
+    (∀ ⦃z : twoBandAnnulusGraph.edgeSet → Color⦄,
+      z ∈ theorem49BoundaryZeroKirchhoffSubspace
+          twoBandAnnulusEmbedding twoBandAnnulusKirchhoffVertices →
+      z ≠ 0 →
+        ∃ e : twoBandAnnulusGraph.edgeSet,
+          data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e ∧
+            z e ≠ 0) ↔
+      ∃ a b c : Fin 9,
+        ((a, b), c) ∈ twoBandAnnulusFullRankIncreasingOmittedIndexTriples ∧
+          (classifier.emittedFinset.filter fun e =>
+            e ∈ interiorEdgeSupport
+              twoBandAnnulusEmbedding.faceBoundary
+              twoBandAnnulusEmbedding.faces) =
+            twoBandAnnulusInteriorControlComplementByIndex a b c := by
+  constructor
+  · intro hcoverage
+    have hge :=
+      twoBandAnnulus_CAP5_boundaryZeroKirchhoff_forcedEdgeCoverage_emittedInterior_card_ge_six
+        p0Inside p4Inside side classifier hcoverage
+    have hcard :
+        (classifier.emittedFinset.filter fun e =>
+          e ∈ interiorEdgeSupport
+            twoBandAnnulusEmbedding.faceBoundary
+            twoBandAnnulusEmbedding.faces).card = 6 := by
+      omega
+    exact
+      (twoBandAnnulus_CAP5_boundaryZeroKirchhoff_forcedEdgeCoverage_iff_exists_fullRankIncreasingOmittedIndexTriple_of_emittedInterior_card_eq_six
+        p0Inside p4Inside side classifier hcard).1 hcoverage
+  · rintro ⟨a, b, c, hmem, heq⟩
+    exact
+      twoBandAnnulus_CAP5_boundaryZeroKirchhoff_forcedEdgeCoverage_of_emits_fullRankIncreasingOmittedIndexTriple
+        p0Inside p4Inside side classifier a b c hmem
+        (by
+          intro e heControl
+          have heFiltered :
+              e ∈ classifier.emittedFinset.filter fun x =>
+                x ∈ interiorEdgeSupport
+                  twoBandAnnulusEmbedding.faceBoundary
+                  twoBandAnnulusEmbedding.faces := by
+            simpa [heq] using heControl
+          exact (Finset.mem_filter.1 heFiltered).1)
+
+theorem twoBandAnnulus_CAP5_boundaryZeroKirchhoff_not_forcedEdgeCoverage_iff_not_exists_fullRankIncreasingOmittedIndexTriple_of_emittedInterior_card_le_six
+    {boundaryEdge : Fin 5 → twoBandAnnulusGraph.edgeSet} {n : Nat}
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    (p0Inside p4Inside : Bool) (side : Fin 9 → Prop)
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (hcardLe :
+      (classifier.emittedFinset.filter fun e =>
+        e ∈ interiorEdgeSupport
+          twoBandAnnulusEmbedding.faceBoundary
+          twoBandAnnulusEmbedding.faces).card ≤ 6) :
+    (¬ ∀ ⦃z : twoBandAnnulusGraph.edgeSet → Color⦄,
+      z ∈ theorem49BoundaryZeroKirchhoffSubspace
+          twoBandAnnulusEmbedding twoBandAnnulusKirchhoffVertices →
+      z ≠ 0 →
+        ∃ e : twoBandAnnulusGraph.edgeSet,
+          data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e ∧
+            z e ≠ 0) ↔
+      ¬ ∃ a b c : Fin 9,
+        ((a, b), c) ∈ twoBandAnnulusFullRankIncreasingOmittedIndexTriples ∧
+          (classifier.emittedFinset.filter fun e =>
+            e ∈ interiorEdgeSupport
+              twoBandAnnulusEmbedding.faceBoundary
+              twoBandAnnulusEmbedding.faces) =
+            twoBandAnnulusInteriorControlComplementByIndex a b c :=
+  not_congr
+    (twoBandAnnulus_CAP5_boundaryZeroKirchhoff_forcedEdgeCoverage_iff_exists_fullRankIncreasingOmittedIndexTriple_of_emittedInterior_card_le_six
+      p0Inside p4Inside side classifier hcardLe)
+
+set_option maxRecDepth 20000 in
 theorem twoBandAnnulus_CAP5_boundaryZeroKirchhoff_not_forcedEdgeCoverage_iff_emittedInterior_mem_nonFullRankInteriorControlComplements_of_emittedInterior_card_eq_six
     {boundaryEdge : Fin 5 → twoBandAnnulusGraph.edgeSet} {n : Nat}
     {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
