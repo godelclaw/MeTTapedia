@@ -10623,6 +10623,123 @@ theorem wheelWithInnerTriangle_CAP5_forcedEdgeCoverage_forces_wit01_wit02_wit03
                   using he))
         hcoverage
 
+/-- Classifier-facing exact form for the shared focus shell: exact CAP5 coverage emits every
+canonical shared-interior control edge. -/
+theorem sharedInteriorPair_CAP5_forcedEdgeCoverage_emits_interiorControlEdges
+    {boundaryEdge : Fin 5 → sharedInteriorPairGraph.edgeSet} {n : Nat}
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    (p0Inside p4Inside : Bool) (side : Fin 8 → Prop)
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (hcoverage :
+      ∀ ⦃z : sharedInteriorPairGraph.edgeSet → Color⦄,
+        z ∈ planarBoundaryZeroSubmodule sharedInteriorPairEmbedding →
+        z ≠ 0 →
+          ∃ e : sharedInteriorPairGraph.edgeSet,
+            data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e ∧
+              z e ≠ 0) :
+    sharedInteriorPairInteriorControlEdges ⊆ classifier.emittedFinset := by
+  have hforced :=
+    sharedInteriorPair_CAP5_forcedEdgeCoverage_forces_sip01_and_sip12
+      p0Inside p4Inside side hcoverage
+  intro e he
+  have he' : e ∈ ({sip01, sip12} : Finset sharedInteriorPairGraph.edgeSet) := by
+    simpa [sharedInteriorPairInteriorControlEdges] using he
+  rcases Finset.mem_insert.1 he' with rfl | heTail
+  · exact (classifier.emittedFinset_spec sip01).2 hforced.1
+  · have he12 : e = sip12 := by simpa using heTail
+    subst e
+    exact (classifier.emittedFinset_spec sip12).2 hforced.2
+
+/-- Runner-facing exact form for the shared focus shell: exact CAP5 coverage leaves no
+unprocessed canonical shared-interior control edge. -/
+theorem sharedInteriorPair_CAP5_forcedEdgeCoverage_remainingInteriorControlEdges_eq_empty
+    {boundaryEdge : Fin 5 → sharedInteriorPairGraph.edgeSet} {n : Nat}
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    (p0Inside p4Inside : Bool) (side : Fin 8 → Prop)
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (hcoverage :
+      ∀ ⦃z : sharedInteriorPairGraph.edgeSet → Color⦄,
+        z ∈ planarBoundaryZeroSubmodule sharedInteriorPairEmbedding →
+        z ≠ 0 →
+          ∃ e : sharedInteriorPairGraph.edgeSet,
+            data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e ∧
+              z e ≠ 0) :
+    classifier.remainingControlEdges sharedInteriorPairInteriorControlEdges = ∅ := by
+  have hsubset :
+      sharedInteriorPairInteriorControlEdges ⊆ classifier.emittedFinset :=
+    sharedInteriorPair_CAP5_forcedEdgeCoverage_emits_interiorControlEdges
+      p0Inside p4Inside side classifier hcoverage
+  ext e
+  constructor
+  · intro he
+    have he' :=
+      (classifier.mem_remainingControlEdges_iff sharedInteriorPairInteriorControlEdges e).1 he
+    exact False.elim (he'.2 (hsubset he'.1))
+  · intro he
+    simp at he
+
+/-- Classifier-facing exact form for the wheel focus shell: exact CAP5 coverage emits every
+canonical spoke control edge. -/
+theorem wheelWithInnerTriangle_CAP5_forcedEdgeCoverage_emits_interiorControlEdges
+    {boundaryEdge : Fin 5 → wheelWithInnerTriangleGraph.edgeSet} {n : Nat}
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    (p0Inside p4Inside : Bool) (side : Fin 7 → Prop)
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (hcoverage :
+      ∀ ⦃z : wheelWithInnerTriangleGraph.edgeSet → Color⦄,
+        z ∈ planarBoundaryZeroSubmodule wheelWithInnerTriangleEmbedding →
+        z ≠ 0 →
+          ∃ e : wheelWithInnerTriangleGraph.edgeSet,
+            data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e ∧
+              z e ≠ 0) :
+    wheelWithInnerTriangleInteriorControlEdges ⊆ classifier.emittedFinset := by
+  have hforced :=
+    wheelWithInnerTriangle_CAP5_forcedEdgeCoverage_forces_wit01_wit02_wit03
+      p0Inside p4Inside side hcoverage
+  intro e he
+  have he' :
+      e ∈ ({wit01, wit02, wit03} : Finset wheelWithInnerTriangleGraph.edgeSet) := by
+    simpa [wheelWithInnerTriangleInteriorControlEdges] using he
+  rcases Finset.mem_insert.1 he' with rfl | heTail
+  · exact (classifier.emittedFinset_spec wit01).2 hforced.1
+  · rcases Finset.mem_insert.1 heTail with rfl | heTail'
+    · exact (classifier.emittedFinset_spec wit02).2 hforced.2.1
+    · have he03 : e = wit03 := by simpa using heTail'
+      subst e
+      exact (classifier.emittedFinset_spec wit03).2 hforced.2.2
+
+/-- Runner-facing exact form for the wheel focus shell: exact CAP5 coverage leaves no
+unprocessed canonical spoke control edge. -/
+theorem wheelWithInnerTriangle_CAP5_forcedEdgeCoverage_remainingInteriorControlEdges_eq_empty
+    {boundaryEdge : Fin 5 → wheelWithInnerTriangleGraph.edgeSet} {n : Nat}
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    (p0Inside p4Inside : Bool) (side : Fin 7 → Prop)
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (hcoverage :
+      ∀ ⦃z : wheelWithInnerTriangleGraph.edgeSet → Color⦄,
+        z ∈ planarBoundaryZeroSubmodule wheelWithInnerTriangleEmbedding →
+        z ≠ 0 →
+          ∃ e : wheelWithInnerTriangleGraph.edgeSet,
+            data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e ∧
+              z e ≠ 0) :
+    classifier.remainingControlEdges wheelWithInnerTriangleInteriorControlEdges = ∅ := by
+  have hsubset :
+      wheelWithInnerTriangleInteriorControlEdges ⊆ classifier.emittedFinset :=
+    wheelWithInnerTriangle_CAP5_forcedEdgeCoverage_emits_interiorControlEdges
+      p0Inside p4Inside side classifier hcoverage
+  ext e
+  constructor
+  · intro he
+    have he' :=
+      (classifier.mem_remainingControlEdges_iff wheelWithInnerTriangleInteriorControlEdges e).1 he
+    exact False.elim (he'.2 (hsubset he'.1))
+  · intro he
+    simp at he
+
 end Theorem49BoundaryZeroForcedEdgeRegression
 
 end Mettapedia.GraphTheory.FourColor
