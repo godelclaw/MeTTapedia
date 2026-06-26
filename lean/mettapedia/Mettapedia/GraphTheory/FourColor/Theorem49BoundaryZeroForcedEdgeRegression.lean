@@ -12302,6 +12302,176 @@ theorem wheelWithInnerTriangle_CAP5_boundaryZeroKirchhoff_forcedEdgeCoverage_iff
       wheelWithInnerTriangle_CAP5_boundaryZeroKirchhoff_forcedEdgeCoverage_of_emits_two_spokes
         p0Inside p4Inside side classifier
 
+/-- Shell-specialized detector bound for the shared focus shell.  The generic Kirchhoff target
+dimension inequality reduces here to the lab minimum: Kirchhoff coverage must emit at least one
+edge. -/
+theorem sharedInteriorPair_CAP5_boundaryZeroKirchhoff_forcedEdgeCoverage_emittedFinset_card_ge_one
+    {boundaryEdge : Fin 5 → sharedInteriorPairGraph.edgeSet} {n : Nat}
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    (p0Inside p4Inside : Bool) (side : Fin 8 → Prop)
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (hcoverage :
+      ∀ ⦃z : sharedInteriorPairGraph.edgeSet → Color⦄,
+        z ∈ theorem49BoundaryZeroKirchhoffSubspace
+            sharedInteriorPairEmbedding ({(1 : Fin 8)} : Finset (Fin 8)) →
+        z ≠ 0 →
+          ∃ e : sharedInteriorPairGraph.edgeSet,
+            data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e ∧
+              z e ≠ 0) :
+    1 ≤ classifier.emittedFinset.card := by
+  have hge :=
+    data.edge_card_le_emittedFinset_card_add_boundary_card_add_vertex_card_of_forcedEdgeKirchhoffCoverage
+      sharedInteriorPairEmbedding ({(1 : Fin 8)} : Finset (Fin 8))
+      p0Inside p4Inside side classifier hcoverage
+  have hboundary :
+      Fintype.card {e : sharedInteriorPairGraph.edgeSet //
+        e ∈ selectedBoundarySupport sharedInteriorPairEmbedding.faceBoundary
+          sharedInteriorPairEmbedding.faces sharedInteriorPairEmbedding.faces} = 7 := by
+    rw [sharedInteriorPair_selectedBoundarySupport_eq]
+    decide
+  have hvertices : Fintype.card {v : Fin 8 // v ∈ ({(1 : Fin 8)} : Finset (Fin 8))} = 1 := by
+    decide
+  have hedge : Fintype.card sharedInteriorPairGraph.edgeSet = 9 := by
+    decide
+  rw [hboundary, hvertices, hedge] at hge
+  omega
+
+/-- Low-cardinality refutation for the shared Kirchhoff detector: an empty emitted CAP5
+classifier cannot cover every nonzero boundary-zero Kirchhoff chain. -/
+theorem sharedInteriorPair_CAP5_boundaryZeroKirchhoff_not_forcedEdgeCoverage_of_emittedFinset_card_eq_zero
+    {boundaryEdge : Fin 5 → sharedInteriorPairGraph.edgeSet} {n : Nat}
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    (p0Inside p4Inside : Bool) (side : Fin 8 → Prop)
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (hcard : classifier.emittedFinset.card = 0) :
+    ¬ ∀ ⦃z : sharedInteriorPairGraph.edgeSet → Color⦄,
+      z ∈ theorem49BoundaryZeroKirchhoffSubspace
+          sharedInteriorPairEmbedding ({(1 : Fin 8)} : Finset (Fin 8)) →
+      z ≠ 0 →
+        ∃ e : sharedInteriorPairGraph.edgeSet,
+          data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e ∧
+            z e ≠ 0 := by
+  intro hcoverage
+  have hge :=
+    sharedInteriorPair_CAP5_boundaryZeroKirchhoff_forcedEdgeCoverage_emittedFinset_card_ge_one
+      p0Inside p4Inside side classifier hcoverage
+  omega
+
+/-- Shell-specialized detector bound for the wheel focus shell.  Kirchhoff coverage on the
+centered wheel target must emit at least two spoke coordinates. -/
+theorem wheelWithInnerTriangle_CAP5_boundaryZeroKirchhoff_forcedEdgeCoverage_emittedFinset_card_ge_two
+    {boundaryEdge : Fin 5 → wheelWithInnerTriangleGraph.edgeSet} {n : Nat}
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    (p0Inside p4Inside : Bool) (side : Fin 7 → Prop)
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (hcoverage :
+      ∀ ⦃z : wheelWithInnerTriangleGraph.edgeSet → Color⦄,
+        z ∈ theorem49BoundaryZeroKirchhoffSubspace
+            wheelWithInnerTriangleEmbedding ({(0 : Fin 7)} : Finset (Fin 7)) →
+        z ≠ 0 →
+          ∃ e : wheelWithInnerTriangleGraph.edgeSet,
+            data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e ∧
+              z e ≠ 0) :
+    2 ≤ classifier.emittedFinset.card := by
+  have hge :=
+    data.edge_card_le_emittedFinset_card_add_boundary_card_add_vertex_card_of_forcedEdgeKirchhoffCoverage
+      wheelWithInnerTriangleEmbedding ({(0 : Fin 7)} : Finset (Fin 7))
+      p0Inside p4Inside side classifier hcoverage
+  have hboundary :
+      Fintype.card {e : wheelWithInnerTriangleGraph.edgeSet //
+        e ∈ selectedBoundarySupport wheelWithInnerTriangleEmbedding.faceBoundary
+          wheelWithInnerTriangleEmbedding.faces wheelWithInnerTriangleEmbedding.faces} = 6 := by
+    rw [wheelWithInnerTriangle_selectedBoundarySupport_eq]
+    decide
+  have hvertices : Fintype.card {v : Fin 7 // v ∈ ({(0 : Fin 7)} : Finset (Fin 7))} = 1 := by
+    decide
+  have hedge : Fintype.card wheelWithInnerTriangleGraph.edgeSet = 9 := by
+    decide
+  rw [hboundary, hvertices, hedge] at hge
+  omega
+
+/-- Low-cardinality refutation for the wheel Kirchhoff detector: one emitted edge is still
+insufficient to cover every nonzero boundary-zero Kirchhoff chain. -/
+theorem wheelWithInnerTriangle_CAP5_boundaryZeroKirchhoff_not_forcedEdgeCoverage_of_emittedFinset_card_le_one
+    {boundaryEdge : Fin 5 → wheelWithInnerTriangleGraph.edgeSet} {n : Nat}
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    (p0Inside p4Inside : Bool) (side : Fin 7 → Prop)
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (hcard : classifier.emittedFinset.card ≤ 1) :
+    ¬ ∀ ⦃z : wheelWithInnerTriangleGraph.edgeSet → Color⦄,
+      z ∈ theorem49BoundaryZeroKirchhoffSubspace
+          wheelWithInnerTriangleEmbedding ({(0 : Fin 7)} : Finset (Fin 7)) →
+      z ≠ 0 →
+        ∃ e : wheelWithInnerTriangleGraph.edgeSet,
+          data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e ∧
+            z e ≠ 0 := by
+  intro hcoverage
+  have hge :=
+    wheelWithInnerTriangle_CAP5_boundaryZeroKirchhoff_forcedEdgeCoverage_emittedFinset_card_ge_two
+      p0Inside p4Inside side classifier hcoverage
+  omega
+
+/-- Shell-specialized detector bound for the two-band stress shell.  Kirchhoff coverage on the
+three middle vertices must emit at least six coordinates. -/
+theorem twoBandAnnulus_CAP5_boundaryZeroKirchhoff_forcedEdgeCoverage_emittedFinset_card_ge_six
+    {boundaryEdge : Fin 5 → twoBandAnnulusGraph.edgeSet} {n : Nat}
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    (p0Inside p4Inside : Bool) (side : Fin 9 → Prop)
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (hcoverage :
+      ∀ ⦃z : twoBandAnnulusGraph.edgeSet → Color⦄,
+        z ∈ theorem49BoundaryZeroKirchhoffSubspace
+            twoBandAnnulusEmbedding twoBandAnnulusKirchhoffVertices →
+        z ≠ 0 →
+          ∃ e : twoBandAnnulusGraph.edgeSet,
+            data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e ∧
+              z e ≠ 0) :
+    6 ≤ classifier.emittedFinset.card := by
+  have hge :=
+    data.edge_card_le_emittedFinset_card_add_boundary_card_add_vertex_card_of_forcedEdgeKirchhoffCoverage
+      twoBandAnnulusEmbedding twoBandAnnulusKirchhoffVertices
+      p0Inside p4Inside side classifier hcoverage
+  have hboundary :
+      Fintype.card {e : twoBandAnnulusGraph.edgeSet //
+        e ∈ selectedBoundarySupport twoBandAnnulusEmbedding.faceBoundary
+          twoBandAnnulusEmbedding.faces twoBandAnnulusEmbedding.faces} = 6 := by
+    rw [twoBandAnnulus_selectedBoundarySupport_eq]
+    decide
+  have hvertices :
+      Fintype.card {v : Fin 9 // v ∈ twoBandAnnulusKirchhoffVertices} = 3 := by
+    decide
+  have hedge : Fintype.card twoBandAnnulusGraph.edgeSet = 15 := by
+    decide
+  rw [hboundary, hvertices, hedge] at hge
+  omega
+
+/-- Low-cardinality refutation for the two-band Kirchhoff detector: five emitted coordinates do
+not cover the boundary-zero Kirchhoff target. -/
+theorem twoBandAnnulus_CAP5_boundaryZeroKirchhoff_not_forcedEdgeCoverage_of_emittedFinset_card_le_five
+    {boundaryEdge : Fin 5 → twoBandAnnulusGraph.edgeSet} {n : Nat}
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    (p0Inside p4Inside : Bool) (side : Fin 9 → Prop)
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (hcard : classifier.emittedFinset.card ≤ 5) :
+    ¬ ∀ ⦃z : twoBandAnnulusGraph.edgeSet → Color⦄,
+      z ∈ theorem49BoundaryZeroKirchhoffSubspace
+          twoBandAnnulusEmbedding twoBandAnnulusKirchhoffVertices →
+      z ≠ 0 →
+        ∃ e : twoBandAnnulusGraph.edgeSet,
+          data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e ∧
+            z e ≠ 0 := by
+  intro hcoverage
+  have hge :=
+    twoBandAnnulus_CAP5_boundaryZeroKirchhoff_forcedEdgeCoverage_emittedFinset_card_ge_six
+      p0Inside p4Inside side classifier hcoverage
+  omega
+
 /-- Exact classifier-facing form of the wheel focus-shell F₂ verdict.  The CAP5 forced-edge
 predicate covers all nonzero selected-boundary-zero chains exactly when the classifier emits the
 three lab-certified spoke controls. -/
