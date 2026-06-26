@@ -7756,6 +7756,29 @@ theorem sharedInteriorPair_boundaryZero_control_card_ge_two
   rw [hboundary, hedge] at hLower
   omega
 
+/--
+Negative-control form for the shared-interior-pair shell.  Any one-edge control set leaves a
+nonzero selected-boundary-zero evader, so the boundary-zero detector genuinely needs both
+interior coordinates on this shell.
+-/
+theorem sharedInteriorPair_boundaryZero_has_evader_of_control_card_lt_two
+    (control : Finset sharedInteriorPairGraph.edgeSet) (hcard : control.card < 2) :
+    ∃ z : sharedInteriorPairGraph.edgeSet → Color,
+      z ∈ planarBoundaryZeroSubmodule sharedInteriorPairEmbedding ∧
+        (∀ e ∈ control, z e = 0) ∧ z ≠ 0 :=
+  sharedInteriorPair_planarBoundaryZero_has_evader_of_control_card_le_one
+    control (by omega)
+
+/-- Singleton-control specialization of the shared-interior-pair negative-control certificate. -/
+theorem sharedInteriorPair_boundaryZero_has_evader_of_singleton_control
+    (e : sharedInteriorPairGraph.edgeSet) :
+    ∃ z : sharedInteriorPairGraph.edgeSet → Color,
+      z ∈ planarBoundaryZeroSubmodule sharedInteriorPairEmbedding ∧ z e = 0 ∧ z ≠ 0 := by
+  rcases sharedInteriorPair_boundaryZero_has_evader_of_control_card_lt_two
+      ({e} : Finset sharedInteriorPairGraph.edgeSet) (by simp) with
+    ⟨z, hzBoundary, hvanish, hzNonzero⟩
+  exact ⟨z, hzBoundary, hvanish e (by simp), hzNonzero⟩
+
 theorem sharedInteriorPair_boundaryZeroKirchhoff_control_card_ge_one
     (control : Finset sharedInteriorPairGraph.edgeSet)
     (hcontrol :
@@ -7941,6 +7964,19 @@ theorem wheelWithInnerTriangle_boundaryZero_control_card_ge_three
   rw [hboundary, hedge] at hLower
   omega
 
+/--
+Negative-control form for the wheel-with-inner-triangle shell without Kirchhoff parity.  Any
+control set of size at most two leaves a nonzero selected-boundary-zero evader; all three spokes
+are needed for boundary-zero-only control.
+-/
+theorem wheelWithInnerTriangle_boundaryZero_has_evader_of_control_card_lt_three
+    (control : Finset wheelWithInnerTriangleGraph.edgeSet) (hcard : control.card < 3) :
+    ∃ z : wheelWithInnerTriangleGraph.edgeSet → Color,
+      z ∈ planarBoundaryZeroSubmodule wheelWithInnerTriangleEmbedding ∧
+        (∀ e ∈ control, z e = 0) ∧ z ≠ 0 :=
+  wheelWithInnerTriangle_planarBoundaryZero_has_evader_of_control_card_le_two
+    control (by omega)
+
 theorem wheelWithInnerTriangle_boundaryZeroKirchhoff_control_card_ge_two
     (control : Finset wheelWithInnerTriangleGraph.edgeSet)
     (hcontrol :
@@ -7968,6 +8004,49 @@ theorem wheelWithInnerTriangle_boundaryZeroKirchhoff_control_card_ge_two
     decide
   rw [hboundary, hvertices, hedge] at hLower
   omega
+
+/--
+Negative-control form for the wheel-with-inner-triangle shell with Kirchhoff parity at the
+center.  A single forced edge still leaves a nonzero boundary-zero/Kirchhoff evader, so the
+Kirchhoff repair lowers the necessary control size from three to two but does not make a
+one-edge forced route sufficient.
+-/
+theorem wheelWithInnerTriangle_boundaryZeroKirchhoff_has_evader_of_control_card_lt_two
+    (control : Finset wheelWithInnerTriangleGraph.edgeSet) (hcard : control.card < 2) :
+    ∃ z : wheelWithInnerTriangleGraph.edgeSet → Color,
+      z ∈ theorem49BoundaryZeroKirchhoffSubspace
+          wheelWithInnerTriangleEmbedding ({(0 : Fin 7)} : Finset (Fin 7)) ∧
+        (∀ e ∈ control, z e = 0) ∧ z ≠ 0 := by
+  classical
+  by_contra hnoEvader
+  have hcontrol :
+      ∀ ⦃z : wheelWithInnerTriangleGraph.edgeSet → Color⦄,
+        z ∈ theorem49BoundaryZeroKirchhoffSubspace
+            wheelWithInnerTriangleEmbedding ({(0 : Fin 7)} : Finset (Fin 7)) →
+        (∀ e ∈ control, z e = 0) →
+        z = 0 := by
+    intro z hz hvanish
+    by_contra hzNonzero
+    exact hnoEvader ⟨z, hz, hvanish, hzNonzero⟩
+  have hge := wheelWithInnerTriangle_boundaryZeroKirchhoff_control_card_ge_two
+    control hcontrol
+  omega
+
+/--
+Singleton-control specialization of the wheel-with-inner-triangle Kirchhoff negative-control
+certificate.  This is the finite obstruction to any corrected CAP5 lane that tries to make one
+forced spoke control the whole boundary-zero/Kirchhoff kernel.
+-/
+theorem wheelWithInnerTriangle_boundaryZeroKirchhoff_has_evader_of_singleton_control
+    (e : wheelWithInnerTriangleGraph.edgeSet) :
+    ∃ z : wheelWithInnerTriangleGraph.edgeSet → Color,
+      z ∈ theorem49BoundaryZeroKirchhoffSubspace
+          wheelWithInnerTriangleEmbedding ({(0 : Fin 7)} : Finset (Fin 7)) ∧
+        z e = 0 ∧ z ≠ 0 := by
+  rcases wheelWithInnerTriangle_boundaryZeroKirchhoff_has_evader_of_control_card_lt_two
+      ({e} : Finset wheelWithInnerTriangleGraph.edgeSet) (by simp) with
+    ⟨z, hzBoundary, hvanish, hzNonzero⟩
+  exact ⟨z, hzBoundary, hvanish e (by simp), hzNonzero⟩
 
 /-! ## Exact finite-control-size certificates -/
 
