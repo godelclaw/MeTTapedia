@@ -4610,6 +4610,34 @@ theorem forcedEdgeCoverage_forces_edge_of_boundaryZero_singletonSupport
   simpa [heq] using heForced
 
 /--
+Classifier-facing singleton-support form of forced-edge coverage.  The Boolean classifier
+emitted set is certified to be exactly the CAP5 enumerated forced-edge predicate, so the same
+singleton boundary-zero witness forces the target edge into `classifier.emittedFinset`.
+-/
+theorem forcedEdgeCoverage_forces_emittedFinset_mem_of_boundaryZero_singletonSupport
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    [Fintype G.edgeSet]
+    (emb : PlaneEmbeddingWithBoundary G)
+    (p0Inside p4Inside : Bool) (side : V → Prop)
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (target : G.edgeSet) (z : G.edgeSet → Color)
+    (hzBoundary : z ∈ planarBoundaryZeroSubmodule emb)
+    (hzTarget : z target ≠ 0)
+    (hzOnly : ∀ ⦃e : G.edgeSet⦄, z e ≠ 0 → e = target)
+    (hcoverage :
+      ∀ ⦃z : G.edgeSet → Color⦄,
+        z ∈ planarBoundaryZeroSubmodule emb →
+        z ≠ 0 →
+          ∃ e : G.edgeSet,
+            data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e ∧
+              z e ≠ 0) :
+    target ∈ classifier.emittedFinset := by
+  exact (classifier.emittedFinset_spec target).2
+    (data.forcedEdgeCoverage_forces_edge_of_boundaryZero_singletonSupport
+      emb p0Inside p4Inside side target z hzBoundary hzTarget hzOnly hcoverage)
+
+/--
 Lower-bound form of the no-missing-evidence cardinality handoff.  If the enumerated CAP5 forced
 edges meet every nonzero selected-boundary-zero chain, then the emitted forced-edge count plus
 the selected-boundary edge count must reach the whole edge count.
