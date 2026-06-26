@@ -11566,6 +11566,24 @@ theorem sharedInteriorPair_CAP5_classifierControl_of_forcedEdgeCoverage
   data.enumeratedExceptionalAnnulusForcedEdgeClassifierControl_of_forcedEdgeCoverage
     sharedInteriorPairEmbedding classifier hcoverage
 
+/-- Classifier-control form for the shared focus shell with the F₂ lab verdict discharged:
+emitting the two lab-certified shared-interior controls makes the classifier output control every
+selected-boundary-zero chain. -/
+theorem sharedInteriorPair_CAP5_classifierControl_of_emits_interiorControlEdges
+    {boundaryEdge : Fin 5 → sharedInteriorPairGraph.edgeSet} {n : Nat}
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    (p0Inside p4Inside : Bool) (side : Fin 8 → Prop)
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (hemits : sharedInteriorPairInteriorControlEdges ⊆ classifier.emittedFinset) :
+    ∀ ⦃z : sharedInteriorPairGraph.edgeSet → Color⦄,
+      z ∈ planarBoundaryZeroSubmodule sharedInteriorPairEmbedding →
+      (∀ e ∈ classifier.emittedFinset, z e = 0) →
+        z = 0 :=
+  data.enumeratedExceptionalAnnulusForcedEdgeClassifierControl_of_controlEdges_nonzeroCoverage_subset_emittedFinset
+    sharedInteriorPairEmbedding classifier sharedInteriorPairInteriorControlEdges
+    sharedInteriorPair_boundaryZero_declaredForcedEdges_nonzeroCoverage hemits
+
 /-- Boundary-root synthesis endpoint for the shared focus shell.  Exact CAP5 forced-edge coverage,
 together with projected red/blue witnesses on every emitted classifier edge, closes the Theorem
 4.9 boundary-root synthesis route. -/
@@ -11609,6 +11627,78 @@ theorem sharedInteriorPair_CAP5_theorem49BoundaryRootSynthesis_of_forcedEdgeCove
     sharedInteriorPairEmbedding C₀ colorings hsubset family p0Inside p4Inside side
     classifier hcoverage hwitnessRed hwitnessBlue
 
+/-- Boundary-root synthesis endpoint for the shared focus shell with the finite F₂ verdict
+discharged: once the classifier emits both lab-certified shared-interior controls, only red/blue
+single-coordinate witnesses on the classifier output remain. -/
+theorem sharedInteriorPair_CAP5_theorem49BoundaryRootSynthesis_of_emits_interiorControlEdges
+    {boundaryEdge : Fin 5 → sharedInteriorPairGraph.edgeSet} {n : Nat}
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    [FiniteDimensional F2 (sharedInteriorPairGraph.edgeSet → Color)]
+    (C₀ : sharedInteriorPairGraph.EdgeColoring Color)
+    (colorings : Set (sharedInteriorPairGraph.EdgeColoring Color))
+    (hsubset : colorings ⊆ sharedInteriorPairGraph.EdgeKempeClosure C₀)
+    {κ : Type*}
+    (family : κ → projectedColoringGeneratorSubspace sharedInteriorPairEmbedding colorings)
+    (p0Inside p4Inside : Bool) (side : Fin 8 → Prop)
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (hemits : sharedInteriorPairInteriorControlEdges ⊆ classifier.emittedFinset)
+    (hwitnessRed :
+      ∀ e : sharedInteriorPairGraph.edgeSet,
+        e ∈ classifier.emittedFinset →
+          ∃ i : κ,
+            ((family i :
+                projectedColoringGeneratorSubspace sharedInteriorPairEmbedding colorings) :
+                sharedInteriorPairGraph.edgeSet → Color) =
+              Pi.single e red)
+    (hwitnessBlue :
+      ∀ e : sharedInteriorPairGraph.edgeSet,
+        e ∈ classifier.emittedFinset →
+          ∃ i : κ,
+            ((family i :
+                projectedColoringGeneratorSubspace sharedInteriorPairEmbedding colorings) :
+                sharedInteriorPairGraph.edgeSet → Color) =
+              Pi.single e blue) :
+    Theorem49BoundaryRootSynthesis sharedInteriorPairEmbedding C₀ :=
+  data.theorem49BoundaryRootSynthesis_of_controlEdges_nonzeroCoverage_subset_emittedFinset
+    sharedInteriorPairEmbedding C₀ colorings hsubset family p0Inside p4Inside side
+    classifier sharedInteriorPairInteriorControlEdges
+    sharedInteriorPair_boundaryZero_declaredForcedEdges_nonzeroCoverage hemits
+    hwitnessRed hwitnessBlue
+
+/-- Concrete certificate-family endpoint for the shared focus shell.  If the CAP5 classifier
+emits exactly within the two lab-certified controls, the unique projected-bicolored certificate
+family supplies all red/blue witnesses needed by the emitted-control synthesis endpoint. -/
+theorem sharedInteriorPair_CAP5_theorem49BoundaryRootSynthesis_of_exact_interiorControlEdges_uniqueCertificates
+    {boundaryEdge : Fin 5 → sharedInteriorPairGraph.edgeSet} {n : Nat}
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    [FiniteDimensional F2 (sharedInteriorPairGraph.edgeSet → Color)]
+    (C₀ : sharedInteriorPairGraph.EdgeColoring Color)
+    (hsubset :
+      sharedInteriorPairProjectedGeneratorCertificateColorings ⊆
+        sharedInteriorPairGraph.EdgeKempeClosure C₀)
+    (p0Inside p4Inside : Bool) (side : Fin 8 → Prop)
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (hemits : sharedInteriorPairInteriorControlEdges ⊆ classifier.emittedFinset)
+    (honlyEmits : classifier.emittedFinset ⊆ sharedInteriorPairInteriorControlEdges) :
+    Theorem49BoundaryRootSynthesis sharedInteriorPairEmbedding C₀ :=
+  sharedInteriorPair_CAP5_theorem49BoundaryRootSynthesis_of_emits_interiorControlEdges
+    C₀ sharedInteriorPairProjectedGeneratorCertificateColorings hsubset
+    sharedInteriorPairUniqueCertificateRedBlueFamily p0Inside p4Inside side classifier hemits
+    (by
+      intro e he
+      exact (redBlueSingleCoordinateFamily_witnessRed sharedInteriorPairInteriorControlEdges
+        sharedInteriorPair_redBlueSingleCoordinateMemberships_of_uniqueCertificates.1
+        sharedInteriorPair_redBlueSingleCoordinateMemberships_of_uniqueCertificates.2)
+        e (honlyEmits he))
+    (by
+      intro e he
+      exact (redBlueSingleCoordinateFamily_witnessBlue sharedInteriorPairInteriorControlEdges
+        sharedInteriorPair_redBlueSingleCoordinateMemberships_of_uniqueCertificates.1
+        sharedInteriorPair_redBlueSingleCoordinateMemberships_of_uniqueCertificates.2)
+        e (honlyEmits he))
+
 /-- Classifier-control form for the wheel focus shell: exact CAP5 forced-edge coverage makes the
 emitted classifier output control every selected-boundary-zero chain. -/
 theorem wheelWithInnerTriangle_CAP5_classifierControl_of_forcedEdgeCoverage
@@ -11630,6 +11720,24 @@ theorem wheelWithInnerTriangle_CAP5_classifierControl_of_forcedEdgeCoverage
         z = 0 :=
   data.enumeratedExceptionalAnnulusForcedEdgeClassifierControl_of_forcedEdgeCoverage
     wheelWithInnerTriangleEmbedding classifier hcoverage
+
+/-- Classifier-control form for the wheel focus shell with the F₂ lab verdict discharged:
+emitting the three lab-certified spoke controls makes the classifier output control every
+selected-boundary-zero chain. -/
+theorem wheelWithInnerTriangle_CAP5_classifierControl_of_emits_interiorControlEdges
+    {boundaryEdge : Fin 5 → wheelWithInnerTriangleGraph.edgeSet} {n : Nat}
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    (p0Inside p4Inside : Bool) (side : Fin 7 → Prop)
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (hemits : wheelWithInnerTriangleInteriorControlEdges ⊆ classifier.emittedFinset) :
+    ∀ ⦃z : wheelWithInnerTriangleGraph.edgeSet → Color⦄,
+      z ∈ planarBoundaryZeroSubmodule wheelWithInnerTriangleEmbedding →
+      (∀ e ∈ classifier.emittedFinset, z e = 0) →
+        z = 0 :=
+  data.enumeratedExceptionalAnnulusForcedEdgeClassifierControl_of_controlEdges_nonzeroCoverage_subset_emittedFinset
+    wheelWithInnerTriangleEmbedding classifier wheelWithInnerTriangleInteriorControlEdges
+    wheelWithInnerTriangle_boundaryZero_declaredForcedEdges_nonzeroCoverage hemits
 
 /-- Boundary-root synthesis endpoint for the wheel focus shell.  Exact CAP5 forced-edge coverage,
 together with projected red/blue witnesses on every emitted classifier edge, closes the Theorem
@@ -11673,6 +11781,78 @@ theorem wheelWithInnerTriangle_CAP5_theorem49BoundaryRootSynthesis_of_forcedEdge
   data.theorem49BoundaryRootSynthesis_of_forcedEdgeCoverage
     wheelWithInnerTriangleEmbedding C₀ colorings hsubset family p0Inside p4Inside side
     classifier hcoverage hwitnessRed hwitnessBlue
+
+/-- Boundary-root synthesis endpoint for the wheel focus shell with the finite F₂ verdict
+discharged: once the classifier emits all three lab-certified spoke controls, only red/blue
+single-coordinate witnesses on the classifier output remain. -/
+theorem wheelWithInnerTriangle_CAP5_theorem49BoundaryRootSynthesis_of_emits_interiorControlEdges
+    {boundaryEdge : Fin 5 → wheelWithInnerTriangleGraph.edgeSet} {n : Nat}
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    [FiniteDimensional F2 (wheelWithInnerTriangleGraph.edgeSet → Color)]
+    (C₀ : wheelWithInnerTriangleGraph.EdgeColoring Color)
+    (colorings : Set (wheelWithInnerTriangleGraph.EdgeColoring Color))
+    (hsubset : colorings ⊆ wheelWithInnerTriangleGraph.EdgeKempeClosure C₀)
+    {κ : Type*}
+    (family : κ → projectedColoringGeneratorSubspace wheelWithInnerTriangleEmbedding colorings)
+    (p0Inside p4Inside : Bool) (side : Fin 7 → Prop)
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (hemits : wheelWithInnerTriangleInteriorControlEdges ⊆ classifier.emittedFinset)
+    (hwitnessRed :
+      ∀ e : wheelWithInnerTriangleGraph.edgeSet,
+        e ∈ classifier.emittedFinset →
+          ∃ i : κ,
+            ((family i :
+                projectedColoringGeneratorSubspace wheelWithInnerTriangleEmbedding colorings) :
+                wheelWithInnerTriangleGraph.edgeSet → Color) =
+              Pi.single e red)
+    (hwitnessBlue :
+      ∀ e : wheelWithInnerTriangleGraph.edgeSet,
+        e ∈ classifier.emittedFinset →
+          ∃ i : κ,
+            ((family i :
+                projectedColoringGeneratorSubspace wheelWithInnerTriangleEmbedding colorings) :
+                wheelWithInnerTriangleGraph.edgeSet → Color) =
+              Pi.single e blue) :
+    Theorem49BoundaryRootSynthesis wheelWithInnerTriangleEmbedding C₀ :=
+  data.theorem49BoundaryRootSynthesis_of_controlEdges_nonzeroCoverage_subset_emittedFinset
+    wheelWithInnerTriangleEmbedding C₀ colorings hsubset family p0Inside p4Inside side
+    classifier wheelWithInnerTriangleInteriorControlEdges
+    wheelWithInnerTriangle_boundaryZero_declaredForcedEdges_nonzeroCoverage hemits
+    hwitnessRed hwitnessBlue
+
+/-- Concrete certificate-family endpoint for the wheel focus shell.  If the CAP5 classifier emits
+exactly within the three lab-certified spokes, the unique projected-bicolored certificate family
+supplies all red/blue witnesses needed by the emitted-control synthesis endpoint. -/
+theorem wheelWithInnerTriangle_CAP5_theorem49BoundaryRootSynthesis_of_exact_interiorControlEdges_uniqueCertificates
+    {boundaryEdge : Fin 5 → wheelWithInnerTriangleGraph.edgeSet} {n : Nat}
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    [FiniteDimensional F2 (wheelWithInnerTriangleGraph.edgeSet → Color)]
+    (C₀ : wheelWithInnerTriangleGraph.EdgeColoring Color)
+    (hsubset :
+      wheelWithInnerTriangleProjectedGeneratorCertificateColorings ⊆
+        wheelWithInnerTriangleGraph.EdgeKempeClosure C₀)
+    (p0Inside p4Inside : Bool) (side : Fin 7 → Prop)
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (hemits : wheelWithInnerTriangleInteriorControlEdges ⊆ classifier.emittedFinset)
+    (honlyEmits : classifier.emittedFinset ⊆ wheelWithInnerTriangleInteriorControlEdges) :
+    Theorem49BoundaryRootSynthesis wheelWithInnerTriangleEmbedding C₀ :=
+  wheelWithInnerTriangle_CAP5_theorem49BoundaryRootSynthesis_of_emits_interiorControlEdges
+    C₀ wheelWithInnerTriangleProjectedGeneratorCertificateColorings hsubset
+    wheelWithInnerTriangleUniqueCertificateRedBlueFamily p0Inside p4Inside side classifier hemits
+    (by
+      intro e he
+      exact (redBlueSingleCoordinateFamily_witnessRed wheelWithInnerTriangleInteriorControlEdges
+        wheelWithInnerTriangle_redBlueSingleCoordinateMemberships_of_uniqueCertificates.1
+        wheelWithInnerTriangle_redBlueSingleCoordinateMemberships_of_uniqueCertificates.2)
+        e (honlyEmits he))
+    (by
+      intro e he
+      exact (redBlueSingleCoordinateFamily_witnessBlue wheelWithInnerTriangleInteriorControlEdges
+        wheelWithInnerTriangle_redBlueSingleCoordinateMemberships_of_uniqueCertificates.1
+        wheelWithInnerTriangle_redBlueSingleCoordinateMemberships_of_uniqueCertificates.2)
+        e (honlyEmits he))
 
 /-- Failed-synthesis diagnostic for the shared focus shell.  Once exact CAP5 forced-edge coverage
 holds, a failure of Theorem 4.9 synthesis must expose a forced edge missing a red or blue
