@@ -4564,6 +4564,83 @@ theorem theorem49BoundaryRootSynthesis_of_enumeratedExceptionalAnnulusForcedEdge
       intro e hedge
       exact hwitnessBlue e ((classifier.emittedFinset_spec e).2 hedge))
 
+/-- Closed-walk kernel-shell packaging of the Boolean classifier nonzero-witness certificate.
+This keeps the finite `F₂` checker output as a reusable pairing-kernel shell instead of using it
+only once to prove synthesis. -/
+def closedWalkNeighborhoodPairingKernelShell_of_enumeratedExceptionalAnnulusForcedEdgeClassifierNonzeroWitnesses
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    [Fintype G.edgeSet]
+    {emb : PlaneEmbeddingWithBoundary G}
+    (shell : ClosedWalkExactShell emb)
+    (colorings : Set (G.EdgeColoring Color))
+    (hsubset : colorings ⊆ G.EdgeKempeClosure shell.tait.coloring)
+    {κ : Type*}
+    (family : κ → projectedColoringGeneratorSubspace emb colorings)
+    (p0Inside p4Inside : Bool) (side : V → Prop)
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (hnonzero :
+      ∀ ⦃z : G.edgeSet → Color⦄,
+        z ∈ planarBoundaryZeroSubmodule emb →
+        z ≠ 0 →
+          ∃ e : G.edgeSet, e ∈ classifier.emittedFinset ∧ z e ≠ 0)
+    (hwitnessRed :
+      ∀ e : G.edgeSet,
+        e ∈ classifier.emittedFinset →
+          ∃ i : κ,
+            ((family i : projectedColoringGeneratorSubspace emb colorings) :
+                G.edgeSet → Color) =
+              Pi.single e red)
+    (hwitnessBlue :
+      ∀ e : G.edgeSet,
+        e ∈ classifier.emittedFinset →
+          ∃ i : κ,
+            ((family i : projectedColoringGeneratorSubspace emb colorings) :
+                G.edgeSet → Color) =
+              Pi.single e blue) :
+    ClosedWalkNeighborhoodPairingKernelShell emb :=
+  ClosedWalkNeighborhoodPairingKernelShell.of_controlEdgeNonzeroWitnesses
+    shell colorings hsubset family classifier.emittedFinset
+    hnonzero hwitnessRed hwitnessBlue
+
+/-- Successor-cycle kernel-shell packaging of the same Boolean classifier nonzero-witness
+certificate. -/
+def successorCycleNeighborhoodPairingKernelShell_of_enumeratedExceptionalAnnulusForcedEdgeClassifierNonzeroWitnesses
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    [Fintype G.edgeSet]
+    {emb : PlaneEmbeddingWithBoundary G}
+    (shell : SuccessorCycleExactShell emb)
+    (colorings : Set (G.EdgeColoring Color))
+    (hsubset : colorings ⊆ G.EdgeKempeClosure shell.tait.coloring)
+    {κ : Type*}
+    (family : κ → projectedColoringGeneratorSubspace emb colorings)
+    (p0Inside p4Inside : Bool) (side : V → Prop)
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (hnonzero :
+      ∀ ⦃z : G.edgeSet → Color⦄,
+        z ∈ planarBoundaryZeroSubmodule emb →
+        z ≠ 0 →
+          ∃ e : G.edgeSet, e ∈ classifier.emittedFinset ∧ z e ≠ 0)
+    (hwitnessRed :
+      ∀ e : G.edgeSet,
+        e ∈ classifier.emittedFinset →
+          ∃ i : κ,
+            ((family i : projectedColoringGeneratorSubspace emb colorings) :
+                G.edgeSet → Color) =
+              Pi.single e red)
+    (hwitnessBlue :
+      ∀ e : G.edgeSet,
+        e ∈ classifier.emittedFinset →
+          ∃ i : κ,
+            ((family i : projectedColoringGeneratorSubspace emb colorings) :
+                G.edgeSet → Color) =
+              Pi.single e blue) :
+    SuccessorCycleNeighborhoodPairingKernelShell emb :=
+  SuccessorCycleNeighborhoodPairingKernelShell.of_controlEdgeNonzeroWitnesses
+    shell colorings hsubset family classifier.emittedFinset
+    hnonzero hwitnessRed hwitnessBlue
+
 /-- Theorem 4.9 synthesis from the exact no-obstruction boundary.  Once the checker output has
 red/blue single-edge witnesses for every emitted edge, excluding the boundary-zero obstruction is
 precisely enough to enter the boundary-root synthesis route. -/
@@ -6515,6 +6592,104 @@ theorem theorem49BoundaryRootSynthesis_of_enumeratedExceptionalAnnulusForcedEdge
     (by
       intro e hedge
       exact hwitnessBlue e ((hcert e).2 hedge))
+
+/-- Closed-walk kernel-shell packaging of a concrete finite emitted-edge certificate.  The
+certificate identifies the finite list with the enumerated CAP5 forced-edge predicate, while the
+rank-style nonzero witness and red/blue probes build the reusable pairing-kernel shell. -/
+def closedWalkNeighborhoodPairingKernelShell_of_enumeratedExceptionalAnnulusForcedEdgeFinsetNonzeroWitnesses
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    [Fintype G.edgeSet]
+    {emb : PlaneEmbeddingWithBoundary G}
+    (shell : ClosedWalkExactShell emb)
+    (colorings : Set (G.EdgeColoring Color))
+    (hsubset : colorings ⊆ G.EdgeKempeClosure shell.tait.coloring)
+    {κ : Type*}
+    (family : κ → projectedColoringGeneratorSubspace emb colorings)
+    (p0Inside p4Inside : Bool) (side : V → Prop) (emitted : Finset G.edgeSet)
+    (hcert :
+      data.EnumeratedExceptionalAnnulusForcedEdgeFinset p0Inside p4Inside side emitted)
+    (hnonzero :
+      ∀ ⦃z : G.edgeSet → Color⦄,
+        z ∈ planarBoundaryZeroSubmodule emb →
+        z ≠ 0 →
+          ∃ e : G.edgeSet,
+            data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e ∧
+              z e ≠ 0)
+    (hwitnessRed :
+      ∀ e : G.edgeSet,
+        data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e →
+          ∃ i : κ,
+            ((family i : projectedColoringGeneratorSubspace emb colorings) :
+                G.edgeSet → Color) =
+              Pi.single e red)
+    (hwitnessBlue :
+      ∀ e : G.edgeSet,
+        data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e →
+          ∃ i : κ,
+            ((family i : projectedColoringGeneratorSubspace emb colorings) :
+                G.edgeSet → Color) =
+              Pi.single e blue) :
+    ClosedWalkNeighborhoodPairingKernelShell emb :=
+  ClosedWalkNeighborhoodPairingKernelShell.of_controlEdgeNonzeroWitnesses
+    shell colorings hsubset family emitted
+    (by
+      intro z hz hzNonzero
+      rcases hnonzero hz hzNonzero with ⟨e, hedge, hze⟩
+      exact ⟨e, (hcert e).2 hedge, hze⟩)
+    (by
+      intro e hemitted
+      exact hwitnessRed e ((hcert e).1 hemitted))
+    (by
+      intro e hemitted
+      exact hwitnessBlue e ((hcert e).1 hemitted))
+
+/-- Successor-cycle kernel-shell packaging of a concrete finite emitted-edge certificate. -/
+def successorCycleNeighborhoodPairingKernelShell_of_enumeratedExceptionalAnnulusForcedEdgeFinsetNonzeroWitnesses
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    [Fintype G.edgeSet]
+    {emb : PlaneEmbeddingWithBoundary G}
+    (shell : SuccessorCycleExactShell emb)
+    (colorings : Set (G.EdgeColoring Color))
+    (hsubset : colorings ⊆ G.EdgeKempeClosure shell.tait.coloring)
+    {κ : Type*}
+    (family : κ → projectedColoringGeneratorSubspace emb colorings)
+    (p0Inside p4Inside : Bool) (side : V → Prop) (emitted : Finset G.edgeSet)
+    (hcert :
+      data.EnumeratedExceptionalAnnulusForcedEdgeFinset p0Inside p4Inside side emitted)
+    (hnonzero :
+      ∀ ⦃z : G.edgeSet → Color⦄,
+        z ∈ planarBoundaryZeroSubmodule emb →
+        z ≠ 0 →
+          ∃ e : G.edgeSet,
+            data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e ∧
+              z e ≠ 0)
+    (hwitnessRed :
+      ∀ e : G.edgeSet,
+        data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e →
+          ∃ i : κ,
+            ((family i : projectedColoringGeneratorSubspace emb colorings) :
+                G.edgeSet → Color) =
+              Pi.single e red)
+    (hwitnessBlue :
+      ∀ e : G.edgeSet,
+        data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e →
+          ∃ i : κ,
+            ((family i : projectedColoringGeneratorSubspace emb colorings) :
+                G.edgeSet → Color) =
+              Pi.single e blue) :
+    SuccessorCycleNeighborhoodPairingKernelShell emb :=
+  SuccessorCycleNeighborhoodPairingKernelShell.of_controlEdgeNonzeroWitnesses
+    shell colorings hsubset family emitted
+    (by
+      intro z hz hzNonzero
+      rcases hnonzero hz hzNonzero with ⟨e, hedge, hze⟩
+      exact ⟨e, (hcert e).2 hedge, hze⟩)
+    (by
+      intro e hemitted
+      exact hwitnessRed e ((hcert e).1 hemitted))
+    (by
+      intro e hemitted
+      exact hwitnessBlue e ((hcert e).1 hemitted))
 
 end CAP5TransportedEdgeComponentCoverCore
 
