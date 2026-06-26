@@ -4582,6 +4582,79 @@ theorem noMissingCheckerEvidence_refutes_forcedEdgeCoverage_of_emittedFinset_car
     exact hze (hzForcedZero e heForced)
 
 /--
+Lower-bound form of the no-missing-evidence cardinality handoff.  If the enumerated CAP5 forced
+edges meet every nonzero selected-boundary-zero chain, then the emitted forced-edge count plus
+the selected-boundary edge count must reach the whole edge count.
+-/
+theorem forcedEdgeCoverage_emittedFinset_card_add_boundary_card_ge_of_noMissingCheckerEvidence_of_finsetControl
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    [Fintype G.edgeSet]
+    (emb : PlaneEmbeddingWithBoundary G)
+    (colorings : Set (G.EdgeColoring Color))
+    (p0Inside p4Inside : Bool) (h : data.IsExceptional)
+    (side : V → Prop)
+    [∀ latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge,
+      Decidable ((CAP5ExceptionalAnnulusGeneratorReport.latentNode
+        boundaryEdge side latent).PortalCrosses)]
+    [∀ latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge,
+      Decidable ((CAP5ExceptionalAnnulusGeneratorReport.latentNode
+        boundaryEdge side latent).SideCycles)]
+    [∀ latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge,
+      Decidable ((CAP5ExceptionalAnnulusGeneratorReport.latentNode
+        boundaryEdge side latent).RealizedSeparator)]
+    (hcyclic : CyclicallyFiveEdgeConnected G)
+    (hportal_crosses :
+      ∀ edgeCandidate : CAP5ExceptionalAnnulusBoundaryEdgeSupportCandidate boundaryEdge,
+        data.RealizesExceptionalBoundarySupportOrientation
+            edgeCandidate.portalCandidate.orientation →
+        edgeCandidate.portalCandidate.sideCase =
+            CAP5ExceptionalAnnulusSideCase.ofPortalSides p0Inside p4Inside →
+        ∀ i : Fin 5, i ∈ edgeCandidate.portalCandidate.portalSet →
+          EdgeCrossesVertexSide G side (boundaryEdge i))
+    (hcycles : HasCycleOnSide G side ∧ HasCycleOnSide G (fun v => ¬ side v))
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (controlEdges : Finset G.edgeSet)
+    (hcontrol :
+      ∀ ⦃z : G.edgeSet → Color⦄,
+        z ∈ planarBoundaryZeroSubmodule emb →
+        (∀ e ∈ controlEdges, z e = 0) →
+          z = 0)
+    (hred :
+      ∀ e ∈ classifier.remainingControlEdges controlEdges,
+        Pi.single e red ∈ projectedColoringGeneratorSubspace emb colorings)
+    (hblue :
+      ∀ e ∈ classifier.remainingControlEdges controlEdges,
+        Pi.single e blue ∈ projectedColoringGeneratorSubspace emb colorings)
+    (hnoMissing :
+      ∀ latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge,
+        latent ∈ CAP5ExceptionalAnnulusGeneratorLatent.all boundaryEdge →
+          ¬ (CAP5ExceptionalAnnulusGeneratorReport.latentNode
+            boundaryEdge side latent).MissingCheckerEvidence)
+    (hcoverage :
+      ∀ ⦃z : G.edgeSet → Color⦄,
+        z ∈ planarBoundaryZeroSubmodule emb →
+        z ≠ 0 →
+          ∃ e : G.edgeSet,
+            data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e ∧
+              z e ≠ 0) :
+    Fintype.card G.edgeSet ≤
+      classifier.emittedFinset.card +
+        Fintype.card {e : G.edgeSet //
+          e ∈ selectedBoundarySupport emb.faceBoundary emb.faces emb.faces} := by
+  by_contra hnot
+  have hcard :
+      classifier.emittedFinset.card +
+        Fintype.card {e : G.edgeSet //
+          e ∈ selectedBoundarySupport emb.faceBoundary emb.faces emb.faces} <
+        Fintype.card G.edgeSet :=
+    Nat.lt_of_not_ge hnot
+  exact
+    (data.noMissingCheckerEvidence_refutes_forcedEdgeCoverage_of_emittedFinset_card_add_boundary_card_lt_of_finsetControl
+      emb colorings p0Inside p4Inside h side hcyclic hportal_crosses hcycles
+      classifier controlEdges hcard hcontrol hred hblue hnoMissing) hcoverage
+
+/--
 Executable histogram-to-algebraic-handoff state for the CAP5 generator.  A decidable finite
 CAP5 sweep either identifies a latent whose primitive checker evidence is still missing, or else
 the complete cyclic-five histogram is `(0, 0, 16)` and the same run reaches the compact
