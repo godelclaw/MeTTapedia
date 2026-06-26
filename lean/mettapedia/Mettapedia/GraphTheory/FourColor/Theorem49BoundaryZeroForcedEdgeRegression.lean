@@ -5819,6 +5819,421 @@ theorem nonempty_closedWalkAnnulusBoundarySource_twoBandAnnulus :
       (PlanarBoundaryClosedWalkAnnulusBoundarySource twoBandAnnulusEmbedding) :=
   ⟨twoBandAnnulusClosedWalkAnnulusBoundarySource⟩
 
+noncomputable abbrev twoBandAnnulusSourceBoundaryData :
+    PlanarBoundaryAnnulusBoundaryData twoBandAnnulusEmbedding :=
+  twoBandAnnulusClosedWalkAnnulusBoundarySource.toPlanarBoundaryAnnulusBoundaryData
+
+noncomputable abbrev twoBandAnnulusReachabilityBoundaryData :
+    PlanarBoundaryAnnulusBoundaryData twoBandAnnulusEmbedding :=
+  twoBandAnnulusAnnulusBoundaryReachabilityData.toPlanarBoundaryAnnulusBoundaryData
+
+theorem twoBandAnnulus_uniqueReachableRoot_outerRoot :
+    uniqueReachableRoot
+        (planarBoundarySupportEndpointAdjGraph twoBandAnnulusEmbedding)
+        twoBandAnnulusAnnulusBoundaryReachabilityData.rootSet
+        twoBandAnnulusAnnulusBoundaryReachabilityData.hasUniqueReachableRoot
+        twoBandAnnulusOuterRoot =
+      twoBandAnnulusOuterRoot := by
+  apply
+    (twoBandAnnulusAnnulusBoundaryReachabilityData.hasUniqueReachableRoot
+      twoBandAnnulusOuterRoot).unique
+  · exact
+      ⟨uniqueReachableRoot_mem_roots
+          (planarBoundarySupportEndpointAdjGraph twoBandAnnulusEmbedding)
+          twoBandAnnulusAnnulusBoundaryReachabilityData.rootSet
+          twoBandAnnulusAnnulusBoundaryReachabilityData.hasUniqueReachableRoot
+          twoBandAnnulusOuterRoot,
+        reachable_uniqueReachableRoot
+          (planarBoundarySupportEndpointAdjGraph twoBandAnnulusEmbedding)
+          twoBandAnnulusAnnulusBoundaryReachabilityData.rootSet
+          twoBandAnnulusAnnulusBoundaryReachabilityData.hasUniqueReachableRoot
+          twoBandAnnulusOuterRoot⟩
+  · exact
+      ⟨by
+        simp [PlanarBoundaryAnnulusBoundaryReachabilityData.rootSet,
+          twoBandAnnulusAnnulusBoundaryReachabilityData,
+          twoBandAnnulusOuterRoot_ne_innerRoot],
+        SimpleGraph.Reachable.refl twoBandAnnulusOuterRoot⟩
+
+theorem twoBandAnnulus_uniqueReachableRoot_innerRoot :
+    uniqueReachableRoot
+        (planarBoundarySupportEndpointAdjGraph twoBandAnnulusEmbedding)
+        twoBandAnnulusAnnulusBoundaryReachabilityData.rootSet
+        twoBandAnnulusAnnulusBoundaryReachabilityData.hasUniqueReachableRoot
+        twoBandAnnulusInnerRoot =
+      twoBandAnnulusInnerRoot := by
+  apply
+    (twoBandAnnulusAnnulusBoundaryReachabilityData.hasUniqueReachableRoot
+      twoBandAnnulusInnerRoot).unique
+  · exact
+      ⟨uniqueReachableRoot_mem_roots
+          (planarBoundarySupportEndpointAdjGraph twoBandAnnulusEmbedding)
+          twoBandAnnulusAnnulusBoundaryReachabilityData.rootSet
+          twoBandAnnulusAnnulusBoundaryReachabilityData.hasUniqueReachableRoot
+          twoBandAnnulusInnerRoot,
+        reachable_uniqueReachableRoot
+          (planarBoundarySupportEndpointAdjGraph twoBandAnnulusEmbedding)
+          twoBandAnnulusAnnulusBoundaryReachabilityData.rootSet
+          twoBandAnnulusAnnulusBoundaryReachabilityData.hasUniqueReachableRoot
+          twoBandAnnulusInnerRoot⟩
+  · exact
+      ⟨by
+        simp [PlanarBoundaryAnnulusBoundaryReachabilityData.rootSet,
+          twoBandAnnulusAnnulusBoundaryReachabilityData],
+        SimpleGraph.Reachable.refl twoBandAnnulusInnerRoot⟩
+
+theorem twoBandAnnulus_uniqueReachableRoot_eq_outerRoot_of_reachable
+    {e : PlanarBoundaryEdgeVertex twoBandAnnulusEmbedding}
+    (hreach :
+      (planarBoundarySupportEndpointAdjGraph twoBandAnnulusEmbedding).Reachable
+        e twoBandAnnulusOuterRoot) :
+    uniqueReachableRoot
+        (planarBoundarySupportEndpointAdjGraph twoBandAnnulusEmbedding)
+        twoBandAnnulusAnnulusBoundaryReachabilityData.rootSet
+        twoBandAnnulusAnnulusBoundaryReachabilityData.hasUniqueReachableRoot e =
+      twoBandAnnulusOuterRoot := by
+  calc
+    uniqueReachableRoot
+        (planarBoundarySupportEndpointAdjGraph twoBandAnnulusEmbedding)
+        twoBandAnnulusAnnulusBoundaryReachabilityData.rootSet
+        twoBandAnnulusAnnulusBoundaryReachabilityData.hasUniqueReachableRoot e =
+      uniqueReachableRoot
+        (planarBoundarySupportEndpointAdjGraph twoBandAnnulusEmbedding)
+        twoBandAnnulusAnnulusBoundaryReachabilityData.rootSet
+        twoBandAnnulusAnnulusBoundaryReachabilityData.hasUniqueReachableRoot
+        twoBandAnnulusOuterRoot :=
+        uniqueReachableRoot_eq_of_reachable
+          (planarBoundarySupportEndpointAdjGraph twoBandAnnulusEmbedding)
+          twoBandAnnulusAnnulusBoundaryReachabilityData.rootSet
+          twoBandAnnulusAnnulusBoundaryReachabilityData.hasUniqueReachableRoot
+          hreach
+    _ = twoBandAnnulusOuterRoot := twoBandAnnulus_uniqueReachableRoot_outerRoot
+
+theorem twoBandAnnulus_uniqueReachableRoot_eq_innerRoot_of_reachable
+    {e : PlanarBoundaryEdgeVertex twoBandAnnulusEmbedding}
+    (hreach :
+      (planarBoundarySupportEndpointAdjGraph twoBandAnnulusEmbedding).Reachable
+        e twoBandAnnulusInnerRoot) :
+    uniqueReachableRoot
+        (planarBoundarySupportEndpointAdjGraph twoBandAnnulusEmbedding)
+        twoBandAnnulusAnnulusBoundaryReachabilityData.rootSet
+        twoBandAnnulusAnnulusBoundaryReachabilityData.hasUniqueReachableRoot e =
+      twoBandAnnulusInnerRoot := by
+  calc
+    uniqueReachableRoot
+        (planarBoundarySupportEndpointAdjGraph twoBandAnnulusEmbedding)
+        twoBandAnnulusAnnulusBoundaryReachabilityData.rootSet
+        twoBandAnnulusAnnulusBoundaryReachabilityData.hasUniqueReachableRoot e =
+      uniqueReachableRoot
+        (planarBoundarySupportEndpointAdjGraph twoBandAnnulusEmbedding)
+        twoBandAnnulusAnnulusBoundaryReachabilityData.rootSet
+        twoBandAnnulusAnnulusBoundaryReachabilityData.hasUniqueReachableRoot
+        twoBandAnnulusInnerRoot :=
+        uniqueReachableRoot_eq_of_reachable
+          (planarBoundarySupportEndpointAdjGraph twoBandAnnulusEmbedding)
+          twoBandAnnulusAnnulusBoundaryReachabilityData.rootSet
+          twoBandAnnulusAnnulusBoundaryReachabilityData.hasUniqueReachableRoot
+          hreach
+    _ = twoBandAnnulusInnerRoot := twoBandAnnulus_uniqueReachableRoot_innerRoot
+
+theorem tbaO01_mem_twoBandAnnulus_source_outerAmbientBoundary :
+    tbaO01 ∈ twoBandAnnulusSourceBoundaryData.outerAmbientBoundary := by
+  change tbaO01 ∈ twoBandAnnulusReachabilityBoundaryData.outerAmbientBoundary
+  exact
+    PlanarBoundaryAnnulusBoundaryReachabilityData.mem_outerAmbientBoundary_toPlanarBoundaryAnnulusBoundaryData
+        twoBandAnnulusAnnulusBoundaryReachabilityData
+        (e := twoBandAnnulusOuterRoot)
+        twoBandAnnulus_uniqueReachableRoot_outerRoot
+
+theorem tbaO12_mem_twoBandAnnulus_source_outerAmbientBoundary :
+    tbaO12 ∈ twoBandAnnulusSourceBoundaryData.outerAmbientBoundary := by
+  change tbaO12 ∈ twoBandAnnulusReachabilityBoundaryData.outerAmbientBoundary
+  exact
+    PlanarBoundaryAnnulusBoundaryReachabilityData.mem_outerAmbientBoundary_toPlanarBoundaryAnnulusBoundaryData
+        twoBandAnnulusAnnulusBoundaryReachabilityData
+        (e := ⟨tbaO12, tbaO12_mem_selectedBoundarySupport⟩)
+        (twoBandAnnulus_uniqueReachableRoot_eq_outerRoot_of_reachable
+          (twoBandAnnulusBoundaryAdj_tbaO01_tbaO12).symm.reachable)
+
+theorem tbaO20_mem_twoBandAnnulus_source_outerAmbientBoundary :
+    tbaO20 ∈ twoBandAnnulusSourceBoundaryData.outerAmbientBoundary := by
+  change tbaO20 ∈ twoBandAnnulusReachabilityBoundaryData.outerAmbientBoundary
+  exact
+    PlanarBoundaryAnnulusBoundaryReachabilityData.mem_outerAmbientBoundary_toPlanarBoundaryAnnulusBoundaryData
+        twoBandAnnulusAnnulusBoundaryReachabilityData
+        (e := ⟨tbaO20, tbaO20_mem_selectedBoundarySupport⟩)
+        (twoBandAnnulus_uniqueReachableRoot_eq_outerRoot_of_reachable
+          twoBandAnnulusBoundaryAdj_tbaO20_tbaO01.reachable)
+
+theorem tbaI67_mem_twoBandAnnulus_source_innerAmbientBoundary :
+    tbaI67 ∈ twoBandAnnulusSourceBoundaryData.innerAmbientBoundary := by
+  change tbaI67 ∈ twoBandAnnulusReachabilityBoundaryData.innerAmbientBoundary
+  exact
+    PlanarBoundaryAnnulusBoundaryReachabilityData.mem_innerAmbientBoundary_toPlanarBoundaryAnnulusBoundaryData
+        twoBandAnnulusAnnulusBoundaryReachabilityData
+        (e := twoBandAnnulusInnerRoot)
+        twoBandAnnulus_uniqueReachableRoot_innerRoot
+
+theorem tbaI78_mem_twoBandAnnulus_source_innerAmbientBoundary :
+    tbaI78 ∈ twoBandAnnulusSourceBoundaryData.innerAmbientBoundary := by
+  change tbaI78 ∈ twoBandAnnulusReachabilityBoundaryData.innerAmbientBoundary
+  exact
+    PlanarBoundaryAnnulusBoundaryReachabilityData.mem_innerAmbientBoundary_toPlanarBoundaryAnnulusBoundaryData
+        twoBandAnnulusAnnulusBoundaryReachabilityData
+        (e := ⟨tbaI78, tbaI78_mem_selectedBoundarySupport⟩)
+        (twoBandAnnulus_uniqueReachableRoot_eq_innerRoot_of_reachable
+          (twoBandAnnulusBoundaryAdj_tbaI67_tbaI78).symm.reachable)
+
+theorem tbaI86_mem_twoBandAnnulus_source_innerAmbientBoundary :
+    tbaI86 ∈ twoBandAnnulusSourceBoundaryData.innerAmbientBoundary := by
+  change tbaI86 ∈ twoBandAnnulusReachabilityBoundaryData.innerAmbientBoundary
+  exact
+    PlanarBoundaryAnnulusBoundaryReachabilityData.mem_innerAmbientBoundary_toPlanarBoundaryAnnulusBoundaryData
+        twoBandAnnulusAnnulusBoundaryReachabilityData
+        (e := ⟨tbaI86, tbaI86_mem_selectedBoundarySupport⟩)
+        (twoBandAnnulus_uniqueReachableRoot_eq_innerRoot_of_reachable
+          twoBandAnnulusBoundaryAdj_tbaI86_tbaI67.reachable)
+
+theorem twoBandAnnulus_source_outerAmbientBoundary_eq :
+    twoBandAnnulusSourceBoundaryData.outerAmbientBoundary =
+      twoBandAnnulusOuterBoundarySet := by
+  ext e
+  constructor
+  · intro he
+    have heSel :
+        e ∈ selectedBoundarySupport
+          twoBandAnnulusEmbedding.faceBoundary
+          twoBandAnnulusEmbedding.faces
+          twoBandAnnulusEmbedding.faces :=
+      twoBandAnnulusSourceBoundaryData.houterAmbientBoundarySubset he
+    rcases twoBandAnnulus_edge_eq e with
+      rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl |
+      rfl | rfl | rfl | rfl | rfl
+    · simp [twoBandAnnulusOuterBoundarySet]
+    · simp [twoBandAnnulusOuterBoundarySet]
+    · simp [twoBandAnnulusOuterBoundarySet]
+    · exfalso
+      exact
+        (Finset.disjoint_left.mp
+          twoBandAnnulusSourceBoundaryData.hambientBoundaryDisjoint)
+          he tbaI67_mem_twoBandAnnulus_source_innerAmbientBoundary
+    · exfalso
+      exact
+        (Finset.disjoint_left.mp
+          twoBandAnnulusSourceBoundaryData.hambientBoundaryDisjoint)
+          he tbaI78_mem_twoBandAnnulus_source_innerAmbientBoundary
+    · exfalso
+      exact
+        (Finset.disjoint_left.mp
+          twoBandAnnulusSourceBoundaryData.hambientBoundaryDisjoint)
+          he tbaI86_mem_twoBandAnnulus_source_innerAmbientBoundary
+    · have hnot : tbaR03 ∉ selectedBoundarySupport
+          twoBandAnnulusEmbedding.faceBoundary
+          twoBandAnnulusEmbedding.faces
+          twoBandAnnulusEmbedding.faces := by decide
+      exact False.elim (hnot heSel)
+    · have hnot : tbaR14 ∉ selectedBoundarySupport
+          twoBandAnnulusEmbedding.faceBoundary
+          twoBandAnnulusEmbedding.faces
+          twoBandAnnulusEmbedding.faces := by decide
+      exact False.elim (hnot heSel)
+    · have hnot : tbaR25 ∉ selectedBoundarySupport
+          twoBandAnnulusEmbedding.faceBoundary
+          twoBandAnnulusEmbedding.faces
+          twoBandAnnulusEmbedding.faces := by decide
+      exact False.elim (hnot heSel)
+    · have hnot : tbaR36 ∉ selectedBoundarySupport
+          twoBandAnnulusEmbedding.faceBoundary
+          twoBandAnnulusEmbedding.faces
+          twoBandAnnulusEmbedding.faces := by decide
+      exact False.elim (hnot heSel)
+    · have hnot : tbaR47 ∉ selectedBoundarySupport
+          twoBandAnnulusEmbedding.faceBoundary
+          twoBandAnnulusEmbedding.faces
+          twoBandAnnulusEmbedding.faces := by decide
+      exact False.elim (hnot heSel)
+    · have hnot : tbaR58 ∉ selectedBoundarySupport
+          twoBandAnnulusEmbedding.faceBoundary
+          twoBandAnnulusEmbedding.faces
+          twoBandAnnulusEmbedding.faces := by decide
+      exact False.elim (hnot heSel)
+    · have hnot : tbaM34 ∉ selectedBoundarySupport
+          twoBandAnnulusEmbedding.faceBoundary
+          twoBandAnnulusEmbedding.faces
+          twoBandAnnulusEmbedding.faces := by decide
+      exact False.elim (hnot heSel)
+    · have hnot : tbaM45 ∉ selectedBoundarySupport
+          twoBandAnnulusEmbedding.faceBoundary
+          twoBandAnnulusEmbedding.faces
+          twoBandAnnulusEmbedding.faces := by decide
+      exact False.elim (hnot heSel)
+    · have hnot : tbaM53 ∉ selectedBoundarySupport
+          twoBandAnnulusEmbedding.faceBoundary
+          twoBandAnnulusEmbedding.faces
+          twoBandAnnulusEmbedding.faces := by decide
+      exact False.elim (hnot heSel)
+  · intro he
+    simp [twoBandAnnulusOuterBoundarySet] at he
+    rcases he with rfl | rfl | rfl
+    · exact tbaO01_mem_twoBandAnnulus_source_outerAmbientBoundary
+    · exact tbaO12_mem_twoBandAnnulus_source_outerAmbientBoundary
+    · exact tbaO20_mem_twoBandAnnulus_source_outerAmbientBoundary
+
+theorem twoBandAnnulus_source_innerAmbientBoundary_eq :
+    twoBandAnnulusSourceBoundaryData.innerAmbientBoundary =
+      twoBandAnnulusInnerBoundarySet := by
+  ext e
+  constructor
+  · intro he
+    have heSel :
+        e ∈ selectedBoundarySupport
+          twoBandAnnulusEmbedding.faceBoundary
+          twoBandAnnulusEmbedding.faces
+          twoBandAnnulusEmbedding.faces :=
+      twoBandAnnulusSourceBoundaryData.hinnerAmbientBoundarySubset he
+    rcases twoBandAnnulus_edge_eq e with
+      rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl |
+      rfl | rfl | rfl | rfl | rfl
+    · exfalso
+      exact
+        (Finset.disjoint_left.mp
+          twoBandAnnulusSourceBoundaryData.hambientBoundaryDisjoint)
+          tbaO01_mem_twoBandAnnulus_source_outerAmbientBoundary he
+    · exfalso
+      exact
+        (Finset.disjoint_left.mp
+          twoBandAnnulusSourceBoundaryData.hambientBoundaryDisjoint)
+          tbaO12_mem_twoBandAnnulus_source_outerAmbientBoundary he
+    · exfalso
+      exact
+        (Finset.disjoint_left.mp
+          twoBandAnnulusSourceBoundaryData.hambientBoundaryDisjoint)
+          tbaO20_mem_twoBandAnnulus_source_outerAmbientBoundary he
+    · simp [twoBandAnnulusInnerBoundarySet]
+    · simp [twoBandAnnulusInnerBoundarySet]
+    · simp [twoBandAnnulusInnerBoundarySet]
+    · have hnot : tbaR03 ∉ selectedBoundarySupport
+          twoBandAnnulusEmbedding.faceBoundary
+          twoBandAnnulusEmbedding.faces
+          twoBandAnnulusEmbedding.faces := by decide
+      exact False.elim (hnot heSel)
+    · have hnot : tbaR14 ∉ selectedBoundarySupport
+          twoBandAnnulusEmbedding.faceBoundary
+          twoBandAnnulusEmbedding.faces
+          twoBandAnnulusEmbedding.faces := by decide
+      exact False.elim (hnot heSel)
+    · have hnot : tbaR25 ∉ selectedBoundarySupport
+          twoBandAnnulusEmbedding.faceBoundary
+          twoBandAnnulusEmbedding.faces
+          twoBandAnnulusEmbedding.faces := by decide
+      exact False.elim (hnot heSel)
+    · have hnot : tbaR36 ∉ selectedBoundarySupport
+          twoBandAnnulusEmbedding.faceBoundary
+          twoBandAnnulusEmbedding.faces
+          twoBandAnnulusEmbedding.faces := by decide
+      exact False.elim (hnot heSel)
+    · have hnot : tbaR47 ∉ selectedBoundarySupport
+          twoBandAnnulusEmbedding.faceBoundary
+          twoBandAnnulusEmbedding.faces
+          twoBandAnnulusEmbedding.faces := by decide
+      exact False.elim (hnot heSel)
+    · have hnot : tbaR58 ∉ selectedBoundarySupport
+          twoBandAnnulusEmbedding.faceBoundary
+          twoBandAnnulusEmbedding.faces
+          twoBandAnnulusEmbedding.faces := by decide
+      exact False.elim (hnot heSel)
+    · have hnot : tbaM34 ∉ selectedBoundarySupport
+          twoBandAnnulusEmbedding.faceBoundary
+          twoBandAnnulusEmbedding.faces
+          twoBandAnnulusEmbedding.faces := by decide
+      exact False.elim (hnot heSel)
+    · have hnot : tbaM45 ∉ selectedBoundarySupport
+          twoBandAnnulusEmbedding.faceBoundary
+          twoBandAnnulusEmbedding.faces
+          twoBandAnnulusEmbedding.faces := by decide
+      exact False.elim (hnot heSel)
+    · have hnot : tbaM53 ∉ selectedBoundarySupport
+          twoBandAnnulusEmbedding.faceBoundary
+          twoBandAnnulusEmbedding.faces
+          twoBandAnnulusEmbedding.faces := by decide
+      exact False.elim (hnot heSel)
+  · intro he
+    simp [twoBandAnnulusInnerBoundarySet] at he
+    rcases he with rfl | rfl | rfl
+    · exact tbaI67_mem_twoBandAnnulus_source_innerAmbientBoundary
+    · exact tbaI78_mem_twoBandAnnulus_source_innerAmbientBoundary
+    · exact tbaI86_mem_twoBandAnnulus_source_innerAmbientBoundary
+
+theorem twoBandAnnulus_source_outerAmbientBoundary_induced :
+    BoundaryEdgeSetInducedSubgraph
+      twoBandAnnulusSourceBoundaryData.outerAmbientBoundary := by
+  rw [twoBandAnnulus_source_outerAmbientBoundary_eq]
+  exact twoBandAnnulus_outerBoundaryEdgeSet_induced
+
+theorem twoBandAnnulus_source_innerAmbientBoundary_induced :
+    BoundaryEdgeSetInducedSubgraph
+      twoBandAnnulusSourceBoundaryData.innerAmbientBoundary := by
+  rw [twoBandAnnulus_source_innerAmbientBoundary_eq]
+  exact twoBandAnnulus_innerBoundaryEdgeSet_induced
+
+theorem twoBandAnnulus_source_outer_inner_crossComponentChordFree :
+    BoundaryEdgeSetCrossComponentChordFree
+      twoBandAnnulusSourceBoundaryData.outerAmbientBoundary
+      twoBandAnnulusSourceBoundaryData.innerAmbientBoundary := by
+  rw [twoBandAnnulus_source_outerAmbientBoundary_eq,
+    twoBandAnnulus_source_innerAmbientBoundary_eq]
+  exact twoBandAnnulus_outer_inner_crossComponentChordFree
+
+theorem twoBandAnnulus_sourceBoundaryData_selectedBoundaryInducedSubgraph :
+    SelectedBoundaryInducedSubgraph twoBandAnnulusEmbedding :=
+  PlanarBoundaryAnnulusBoundaryData.selectedBoundaryInducedSubgraph_of_inducedBoundaryComponents_of_crossComponentChordFree
+      twoBandAnnulusSourceBoundaryData
+      twoBandAnnulus_source_outerAmbientBoundary_induced
+      twoBandAnnulus_source_innerAmbientBoundary_induced
+      twoBandAnnulus_source_outer_inner_crossComponentChordFree
+
+theorem twoBandAnnulus_sourceBoundaryData_interiorEdgesNotSelectedBoundaryChords :
+    InteriorEdgesNotSelectedBoundaryChords twoBandAnnulusEmbedding :=
+  PlanarBoundaryAnnulusBoundaryData.interiorEdgesNotSelectedBoundaryChords_of_inducedBoundaryComponents_of_crossComponentChordFree
+      twoBandAnnulusSourceBoundaryData
+      twoBandAnnulus_source_outerAmbientBoundary_induced
+      twoBandAnnulus_source_innerAmbientBoundary_induced
+      twoBandAnnulus_source_outer_inner_crossComponentChordFree
+
+theorem selectedBoundaryInteriorEdgeEndpointVertices_nonempty_twoBandAnnulus_via_sourceBoundaryData :
+    (selectedBoundaryInteriorEdgeEndpointVertices twoBandAnnulusEmbedding).Nonempty :=
+  PlanarBoundaryAnnulusBoundaryData.selectedBoundaryInteriorEdgeEndpointVertices_nonempty_of_inducedBoundaryComponents_of_crossComponentChordFree_and_nonempty
+      twoBandAnnulusSourceBoundaryData
+      twoBandAnnulus_source_outerAmbientBoundary_induced
+      twoBandAnnulus_source_innerAmbientBoundary_induced
+      twoBandAnnulus_source_outer_inner_crossComponentChordFree
+      (by
+        refine ⟨tbaR03, ?_⟩
+        rw [twoBandAnnulus_interiorEdgeSupport_eq]
+        simp [twoBandAnnulusInteriorEdges])
+
+theorem twoBandAnnulus_sourceBoundaryData_repaired_positive_packet :
+    Nonempty
+        (PlanarBoundaryClosedWalkAnnulusBoundarySource twoBandAnnulusEmbedding) ∧
+      BoundaryEdgeSetInducedSubgraph
+          twoBandAnnulusSourceBoundaryData.outerAmbientBoundary ∧
+        BoundaryEdgeSetInducedSubgraph
+            twoBandAnnulusSourceBoundaryData.innerAmbientBoundary ∧
+          BoundaryEdgeSetCrossComponentChordFree
+              twoBandAnnulusSourceBoundaryData.outerAmbientBoundary
+              twoBandAnnulusSourceBoundaryData.innerAmbientBoundary ∧
+            SelectedBoundaryInducedSubgraph twoBandAnnulusEmbedding ∧
+              InteriorEdgesNotSelectedBoundaryChords twoBandAnnulusEmbedding ∧
+                (selectedBoundaryInteriorEdgeEndpointVertices
+                  twoBandAnnulusEmbedding).Nonempty :=
+  ⟨nonempty_closedWalkAnnulusBoundarySource_twoBandAnnulus,
+    twoBandAnnulus_source_outerAmbientBoundary_induced,
+    twoBandAnnulus_source_innerAmbientBoundary_induced,
+    twoBandAnnulus_source_outer_inner_crossComponentChordFree,
+    twoBandAnnulus_sourceBoundaryData_selectedBoundaryInducedSubgraph,
+    twoBandAnnulus_sourceBoundaryData_interiorEdgesNotSelectedBoundaryChords,
+    selectedBoundaryInteriorEdgeEndpointVertices_nonempty_twoBandAnnulus_via_sourceBoundaryData⟩
+
 theorem boundaryEdgeSetCyclicRun_outer_twoBandAnnulus :
     BoundaryEdgeSetCyclicRun twoBandAnnulusEmbedding
       twoBandAnnulusOuterBoundarySet := by
