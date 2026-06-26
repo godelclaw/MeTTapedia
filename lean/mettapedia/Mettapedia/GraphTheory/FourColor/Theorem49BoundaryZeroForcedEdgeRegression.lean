@@ -10507,6 +10507,122 @@ theorem wheelWithInnerTriangle_CAP5_emittedFinset_card_ge_three_of_forcedEdgeCov
   rw [hboundary, hedge] at hge
   omega
 
+private theorem edge_eq_of_indicatorChain_singleton_ne_zero
+    {E : Type*} [DecidableEq E] {γ : Color} {target e : E}
+    (he : indicatorChain γ ({target} : Finset E) e ≠ 0) :
+    e = target := by
+  by_contra hne
+  have hnotMem : e ∉ ({target} : Finset E) := by
+    intro hmem
+    exact hne (by simpa using hmem)
+  exact he (indicatorChain_apply_of_not_mem (γ := γ) hnotMem)
+
+/-- Exact forced-edge form of the shared focus-shell obstruction.  Any CAP5 coverage predicate
+for all nonzero selected-boundary-zero chains must enumerate both shared-interior controls. -/
+theorem sharedInteriorPair_CAP5_forcedEdgeCoverage_forces_sip01_and_sip12
+    {boundaryEdge : Fin 5 → sharedInteriorPairGraph.edgeSet} {n : Nat}
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    (p0Inside p4Inside : Bool) (side : Fin 8 → Prop)
+    (hcoverage :
+      ∀ ⦃z : sharedInteriorPairGraph.edgeSet → Color⦄,
+        z ∈ planarBoundaryZeroSubmodule sharedInteriorPairEmbedding →
+        z ≠ 0 →
+          ∃ e : sharedInteriorPairGraph.edgeSet,
+            data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e ∧
+              z e ≠ 0) :
+    data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side sip01 ∧
+      data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side sip12 := by
+  constructor
+  · exact
+      data.forcedEdgeCoverage_forces_edge_of_boundaryZero_singletonSupport
+        sharedInteriorPairEmbedding p0Inside p4Inside side sip01
+        sharedInteriorPairSip12OnlyEvader
+        sharedInteriorPairSip12OnlyEvader_mem_planarBoundaryZeroSubmodule
+        (by simp [sharedInteriorPairSip12OnlyEvader])
+        (by
+          intro e he
+          exact
+            edge_eq_of_indicatorChain_singleton_ne_zero
+              (γ := red) (target := sip01) (e := e)
+              (by simpa [sharedInteriorPairSip12OnlyEvader] using he))
+        hcoverage
+  · exact
+      data.forcedEdgeCoverage_forces_edge_of_boundaryZero_singletonSupport
+        sharedInteriorPairEmbedding p0Inside p4Inside side sip12
+        sharedInteriorPairSip01OnlyEvader
+        sharedInteriorPairSip01OnlyEvader_mem_planarBoundaryZeroSubmodule
+        (by simp [sharedInteriorPairSip01OnlyEvader])
+        (by
+          intro e he
+          exact
+            edge_eq_of_indicatorChain_singleton_ne_zero
+              (γ := red) (target := sip12) (e := e)
+              (by simpa [sharedInteriorPairSip01OnlyEvader] using he))
+        hcoverage
+
+/-- Exact forced-edge form of the wheel focus-shell obstruction.  Any CAP5 coverage predicate
+for all nonzero selected-boundary-zero chains must enumerate all three interior spokes. -/
+theorem wheelWithInnerTriangle_CAP5_forcedEdgeCoverage_forces_wit01_wit02_wit03
+    {boundaryEdge : Fin 5 → wheelWithInnerTriangleGraph.edgeSet} {n : Nat}
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    (p0Inside p4Inside : Bool) (side : Fin 7 → Prop)
+    (hcoverage :
+      ∀ ⦃z : wheelWithInnerTriangleGraph.edgeSet → Color⦄,
+        z ∈ planarBoundaryZeroSubmodule wheelWithInnerTriangleEmbedding →
+        z ≠ 0 →
+          ∃ e : wheelWithInnerTriangleGraph.edgeSet,
+            data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e ∧
+              z e ≠ 0) :
+    data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side wit01 ∧
+      data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side wit02 ∧
+        data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side wit03 := by
+  refine ⟨?_, ?_, ?_⟩
+  · exact
+      data.forcedEdgeCoverage_forces_edge_of_boundaryZero_singletonSupport
+        wheelWithInnerTriangleEmbedding p0Inside p4Inside side wit01
+        wheelWithInnerTriangleWit02Wit03OnlyBoundaryZeroEvader
+        wheelWithInnerTriangleWit02Wit03OnlyBoundaryZeroEvader_mem_planarBoundaryZeroSubmodule
+        (by simp [wheelWithInnerTriangleWit02Wit03OnlyBoundaryZeroEvader])
+        (by
+          intro e he
+          exact
+            edge_eq_of_indicatorChain_singleton_ne_zero
+              (γ := red) (target := wit01) (e := e)
+              (by
+                simpa [wheelWithInnerTriangleWit02Wit03OnlyBoundaryZeroEvader]
+                  using he))
+        hcoverage
+  · exact
+      data.forcedEdgeCoverage_forces_edge_of_boundaryZero_singletonSupport
+        wheelWithInnerTriangleEmbedding p0Inside p4Inside side wit02
+        wheelWithInnerTriangleWit01Wit03OnlyBoundaryZeroEvader
+        wheelWithInnerTriangleWit01Wit03OnlyBoundaryZeroEvader_mem_planarBoundaryZeroSubmodule
+        (by simp [wheelWithInnerTriangleWit01Wit03OnlyBoundaryZeroEvader])
+        (by
+          intro e he
+          exact
+            edge_eq_of_indicatorChain_singleton_ne_zero
+              (γ := red) (target := wit02) (e := e)
+              (by
+                simpa [wheelWithInnerTriangleWit01Wit03OnlyBoundaryZeroEvader]
+                  using he))
+        hcoverage
+  · exact
+      data.forcedEdgeCoverage_forces_edge_of_boundaryZero_singletonSupport
+        wheelWithInnerTriangleEmbedding p0Inside p4Inside side wit03
+        wheelWithInnerTriangleWit01Wit02OnlyBoundaryZeroEvader
+        wheelWithInnerTriangleWit01Wit02OnlyBoundaryZeroEvader_mem_planarBoundaryZeroSubmodule
+        (by simp [wheelWithInnerTriangleWit01Wit02OnlyBoundaryZeroEvader])
+        (by
+          intro e he
+          exact
+            edge_eq_of_indicatorChain_singleton_ne_zero
+              (γ := red) (target := wit03) (e := e)
+              (by
+                simpa [wheelWithInnerTriangleWit01Wit02OnlyBoundaryZeroEvader]
+                  using he))
+        hcoverage
+
 end Theorem49BoundaryZeroForcedEdgeRegression
 
 end Mettapedia.GraphTheory.FourColor
