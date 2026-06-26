@@ -11753,6 +11753,25 @@ private theorem edge_eq_of_indicatorChain_singleton_ne_zero
     exact hne (by simpa using hmem)
   exact he (indicatorChain_apply_of_not_mem (γ := γ) hnotMem)
 
+private theorem edge_mem_of_indicatorChain_pair_ne_zero
+    {E : Type*} [DecidableEq E] {γ : Color} {a b e : E}
+    (he : indicatorChain γ ({a, b} : Finset E) e ≠ 0) :
+    e = a ∨ e = b := by
+  by_contra hnot
+  have hneA : e ≠ a := by
+    intro heq
+    exact hnot (Or.inl heq)
+  have hneB : e ≠ b := by
+    intro heq
+    exact hnot (Or.inr heq)
+  have hnotMem : e ∉ ({a, b} : Finset E) := by
+    intro hmem
+    rcases Finset.mem_insert.1 hmem with heqA | htail
+    · exact hneA heqA
+    · have heqB : e = b := by simpa using htail
+      exact hneB heqB
+  exact he (indicatorChain_apply_of_not_mem (γ := γ) hnotMem)
+
 /-- Exact forced-edge form of the shared focus-shell obstruction.  Any CAP5 coverage predicate
 for all nonzero selected-boundary-zero chains must enumerate both shared-interior controls. -/
 theorem sharedInteriorPair_CAP5_forcedEdgeCoverage_forces_sip01_and_sip12
@@ -11859,6 +11878,100 @@ theorem wheelWithInnerTriangle_CAP5_forcedEdgeCoverage_forces_wit01_wit02_wit03
                   using he))
         hcoverage
 
+/-- Kirchhoff-repaired forced-edge form for the shared focus shell.  Coverage of all nonzero
+boundary-zero Kirchhoff chains must enumerate at least one of the two shared-interior controls. -/
+theorem sharedInteriorPair_CAP5_boundaryZeroKirchhoff_forcedEdgeCoverage_forces_some_interiorControlEdge
+    {boundaryEdge : Fin 5 → sharedInteriorPairGraph.edgeSet} {n : Nat}
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    (p0Inside p4Inside : Bool) (side : Fin 8 → Prop)
+    (hcoverage :
+      ∀ ⦃z : sharedInteriorPairGraph.edgeSet → Color⦄,
+        z ∈ theorem49BoundaryZeroKirchhoffSubspace
+            sharedInteriorPairEmbedding ({(1 : Fin 8)} : Finset (Fin 8)) →
+        z ≠ 0 →
+          ∃ e : sharedInteriorPairGraph.edgeSet,
+            data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e ∧
+              z e ≠ 0) :
+    data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side sip01 ∨
+      data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side sip12 := by
+  rcases sharedInteriorPair_emptyControl_has_boundaryZeroKirchhoff_evader with
+    ⟨hz, _, _, hzNonzero⟩
+  rcases hcoverage hz hzNonzero with ⟨e, heForced, hze⟩
+  have heSupport : e = sip01 ∨ e = sip12 :=
+    edge_mem_of_indicatorChain_pair_ne_zero
+      (γ := red) (a := sip01) (b := sip12) (e := e)
+      (by simpa [sharedInteriorPairNoForceKirchhoffEvader] using hze)
+  rcases heSupport with rfl | rfl
+  · exact Or.inl heForced
+  · exact Or.inr heForced
+
+/-- Kirchhoff-repaired forced-edge form for the wheel focus shell.  Coverage of all nonzero
+boundary-zero Kirchhoff chains must enumerate two of the three spoke controls. -/
+theorem wheelWithInnerTriangle_CAP5_boundaryZeroKirchhoff_forcedEdgeCoverage_forces_two_spokes
+    {boundaryEdge : Fin 5 → wheelWithInnerTriangleGraph.edgeSet} {n : Nat}
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    (p0Inside p4Inside : Bool) (side : Fin 7 → Prop)
+    (hcoverage :
+      ∀ ⦃z : wheelWithInnerTriangleGraph.edgeSet → Color⦄,
+        z ∈ theorem49BoundaryZeroKirchhoffSubspace
+            wheelWithInnerTriangleEmbedding ({(0 : Fin 7)} : Finset (Fin 7)) →
+        z ≠ 0 →
+          ∃ e : wheelWithInnerTriangleGraph.edgeSet,
+            data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e ∧
+              z e ≠ 0) :
+    (data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side wit01 ∧
+        data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side wit02) ∨
+      (data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side wit01 ∧
+        data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side wit03) ∨
+      (data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side wit02 ∧
+        data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side wit03) := by
+  have h23 :
+      data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side wit02 ∨
+        data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side wit03 := by
+    rcases wheelWithInnerTriangle_wit01_only_has_boundaryZeroKirchhoff_evader with
+      ⟨hz, _, _, _, hzNonzero⟩
+    rcases hcoverage hz hzNonzero with ⟨e, heForced, hze⟩
+    have heSupport : e = wit02 ∨ e = wit03 :=
+      edge_mem_of_indicatorChain_pair_ne_zero
+        (γ := red) (a := wit02) (b := wit03) (e := e)
+        (by simpa [wheelWithInnerTriangleWit01OnlyEvader] using hze)
+    rcases heSupport with rfl | rfl
+    · exact Or.inl heForced
+    · exact Or.inr heForced
+  have h13 :
+      data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side wit01 ∨
+        data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side wit03 := by
+    rcases wheelWithInnerTriangle_wit02_only_has_boundaryZeroKirchhoff_evader with
+      ⟨hz, _, _, _, hzNonzero⟩
+    rcases hcoverage hz hzNonzero with ⟨e, heForced, hze⟩
+    have heSupport : e = wit01 ∨ e = wit03 :=
+      edge_mem_of_indicatorChain_pair_ne_zero
+        (γ := red) (a := wit01) (b := wit03) (e := e)
+        (by simpa [wheelWithInnerTriangleWit02OnlyEvader] using hze)
+    rcases heSupport with rfl | rfl
+    · exact Or.inl heForced
+    · exact Or.inr heForced
+  have h12 :
+      data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side wit01 ∨
+        data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side wit02 := by
+    rcases wheelWithInnerTriangle_wit03_only_has_boundaryZeroKirchhoff_evader with
+      ⟨hz, _, _, _, hzNonzero⟩
+    rcases hcoverage hz hzNonzero with ⟨e, heForced, hze⟩
+    have heSupport : e = wit01 ∨ e = wit02 :=
+      edge_mem_of_indicatorChain_pair_ne_zero
+        (γ := red) (a := wit01) (b := wit02) (e := e)
+        (by simpa [wheelWithInnerTriangleWit03OnlyEvader] using hze)
+    rcases heSupport with rfl | rfl
+    · exact Or.inl heForced
+    · exact Or.inr heForced
+  rcases h23 with h2 | h3
+  · rcases h13 with h1 | h3'
+    · exact Or.inl ⟨h1, h2⟩
+    · exact Or.inr (Or.inr ⟨h2, h3'⟩)
+  · rcases h12 with h1 | h2
+    · exact Or.inr (Or.inl ⟨h1, h3⟩)
+    · exact Or.inr (Or.inr ⟨h2, h3⟩)
+
 /-- Classifier-facing exact form for the shared focus shell: exact CAP5 coverage emits every
 canonical shared-interior control edge. -/
 theorem sharedInteriorPair_CAP5_forcedEdgeCoverage_emits_interiorControlEdges
@@ -11906,6 +12019,82 @@ theorem sharedInteriorPair_CAP5_forcedEdgeCoverage_of_emits_interiorControlEdges
   data.forcedEdgeCoverage_of_controlEdges_subset_emittedFinset
     sharedInteriorPairEmbedding classifier sharedInteriorPairInteriorControlEdges
     sharedInteriorPair_boundaryZero_declaredForcedEdges_nonzeroCoverage hemits
+
+/-- Classifier-facing Kirchhoff-repaired exact form for the shared focus shell: coverage of all
+nonzero boundary-zero Kirchhoff chains is equivalent to emitting at least one shared control. -/
+theorem sharedInteriorPair_CAP5_boundaryZeroKirchhoff_forcedEdgeCoverage_emits_some_interiorControlEdge
+    {boundaryEdge : Fin 5 → sharedInteriorPairGraph.edgeSet} {n : Nat}
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    (p0Inside p4Inside : Bool) (side : Fin 8 → Prop)
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (hcoverage :
+      ∀ ⦃z : sharedInteriorPairGraph.edgeSet → Color⦄,
+        z ∈ theorem49BoundaryZeroKirchhoffSubspace
+            sharedInteriorPairEmbedding ({(1 : Fin 8)} : Finset (Fin 8)) →
+        z ≠ 0 →
+          ∃ e : sharedInteriorPairGraph.edgeSet,
+            data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e ∧
+              z e ≠ 0) :
+    sip01 ∈ classifier.emittedFinset ∨ sip12 ∈ classifier.emittedFinset := by
+  rcases
+      sharedInteriorPair_CAP5_boundaryZeroKirchhoff_forcedEdgeCoverage_forces_some_interiorControlEdge
+        p0Inside p4Inside side hcoverage with h01 | h12
+  · exact Or.inl ((classifier.emittedFinset_spec sip01).2 h01)
+  · exact Or.inr ((classifier.emittedFinset_spec sip12).2 h12)
+
+/-- Converse Kirchhoff handoff for the shared focus shell: emitting either shared control covers
+every nonzero boundary-zero Kirchhoff chain. -/
+theorem sharedInteriorPair_CAP5_boundaryZeroKirchhoff_forcedEdgeCoverage_of_emits_some_interiorControlEdge
+    {boundaryEdge : Fin 5 → sharedInteriorPairGraph.edgeSet} {n : Nat}
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    (p0Inside p4Inside : Bool) (side : Fin 8 → Prop)
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (hemits : sip01 ∈ classifier.emittedFinset ∨ sip12 ∈ classifier.emittedFinset) :
+    ∀ ⦃z : sharedInteriorPairGraph.edgeSet → Color⦄,
+      z ∈ theorem49BoundaryZeroKirchhoffSubspace
+          sharedInteriorPairEmbedding ({(1 : Fin 8)} : Finset (Fin 8)) →
+      z ≠ 0 →
+        ∃ e : sharedInteriorPairGraph.edgeSet,
+          data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e ∧
+            z e ≠ 0 := by
+  intro z hz hzNonzero
+  rcases hemits with h01 | h12
+  · refine ⟨sip01, (classifier.emittedFinset_spec sip01).1 h01, ?_⟩
+    intro hsip01
+    exact hzNonzero
+      (sharedInteriorPair_boundaryZeroKirchhoff_no_evader_of_vanishes_on_sip01
+        z hz hsip01)
+  · refine ⟨sip12, (classifier.emittedFinset_spec sip12).1 h12, ?_⟩
+    intro hsip12
+    exact hzNonzero
+      (sharedInteriorPair_boundaryZeroKirchhoff_no_evader_of_vanishes_on_sip12
+        z hz hsip12)
+
+/-- Exact Kirchhoff-repaired classifier form for the shared focus-shell F2 verdict.  CAP5 covers
+all nonzero boundary-zero Kirchhoff chains exactly when it emits at least one shared control. -/
+theorem sharedInteriorPair_CAP5_boundaryZeroKirchhoff_forcedEdgeCoverage_iff_emits_some_interiorControlEdge
+    {boundaryEdge : Fin 5 → sharedInteriorPairGraph.edgeSet} {n : Nat}
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    (p0Inside p4Inside : Bool) (side : Fin 8 → Prop)
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side) :
+    (∀ ⦃z : sharedInteriorPairGraph.edgeSet → Color⦄,
+      z ∈ theorem49BoundaryZeroKirchhoffSubspace
+          sharedInteriorPairEmbedding ({(1 : Fin 8)} : Finset (Fin 8)) →
+      z ≠ 0 →
+        ∃ e : sharedInteriorPairGraph.edgeSet,
+          data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e ∧
+            z e ≠ 0) ↔
+      sip01 ∈ classifier.emittedFinset ∨ sip12 ∈ classifier.emittedFinset := by
+  constructor
+  · exact
+      sharedInteriorPair_CAP5_boundaryZeroKirchhoff_forcedEdgeCoverage_emits_some_interiorControlEdge
+        p0Inside p4Inside side classifier
+  · exact
+      sharedInteriorPair_CAP5_boundaryZeroKirchhoff_forcedEdgeCoverage_of_emits_some_interiorControlEdge
+        p0Inside p4Inside side classifier
 
 /-- Exact classifier-facing form of the shared focus-shell F₂ verdict.  The CAP5 forced-edge
 predicate covers all nonzero selected-boundary-zero chains exactly when the classifier emits the
@@ -12008,6 +12197,110 @@ theorem wheelWithInnerTriangle_CAP5_forcedEdgeCoverage_of_emits_interiorControlE
   data.forcedEdgeCoverage_of_controlEdges_subset_emittedFinset
     wheelWithInnerTriangleEmbedding classifier wheelWithInnerTriangleInteriorControlEdges
     wheelWithInnerTriangle_boundaryZero_declaredForcedEdges_nonzeroCoverage hemits
+
+/-- Classifier-facing Kirchhoff-repaired exact form for the wheel focus shell: coverage of all
+nonzero boundary-zero Kirchhoff chains emits two of the three spoke controls. -/
+theorem wheelWithInnerTriangle_CAP5_boundaryZeroKirchhoff_forcedEdgeCoverage_emits_two_spokes
+    {boundaryEdge : Fin 5 → wheelWithInnerTriangleGraph.edgeSet} {n : Nat}
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    (p0Inside p4Inside : Bool) (side : Fin 7 → Prop)
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (hcoverage :
+      ∀ ⦃z : wheelWithInnerTriangleGraph.edgeSet → Color⦄,
+        z ∈ theorem49BoundaryZeroKirchhoffSubspace
+            wheelWithInnerTriangleEmbedding ({(0 : Fin 7)} : Finset (Fin 7)) →
+        z ≠ 0 →
+          ∃ e : wheelWithInnerTriangleGraph.edgeSet,
+            data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e ∧
+              z e ≠ 0) :
+    (wit01 ∈ classifier.emittedFinset ∧ wit02 ∈ classifier.emittedFinset) ∨
+      (wit01 ∈ classifier.emittedFinset ∧ wit03 ∈ classifier.emittedFinset) ∨
+      (wit02 ∈ classifier.emittedFinset ∧ wit03 ∈ classifier.emittedFinset) := by
+  have hforced :=
+    wheelWithInnerTriangle_CAP5_boundaryZeroKirchhoff_forcedEdgeCoverage_forces_two_spokes
+      p0Inside p4Inside side hcoverage
+  rcases hforced with h12 | hrest
+  · exact Or.inl
+      ⟨(classifier.emittedFinset_spec wit01).2 h12.1,
+        (classifier.emittedFinset_spec wit02).2 h12.2⟩
+  · rcases hrest with h13 | h23
+    · exact Or.inr (Or.inl
+        ⟨(classifier.emittedFinset_spec wit01).2 h13.1,
+          (classifier.emittedFinset_spec wit03).2 h13.2⟩)
+    · exact Or.inr (Or.inr
+        ⟨(classifier.emittedFinset_spec wit02).2 h23.1,
+          (classifier.emittedFinset_spec wit03).2 h23.2⟩)
+
+/-- Converse Kirchhoff handoff for the wheel focus shell: emitting any two spokes covers every
+nonzero boundary-zero Kirchhoff chain. -/
+theorem wheelWithInnerTriangle_CAP5_boundaryZeroKirchhoff_forcedEdgeCoverage_of_emits_two_spokes
+    {boundaryEdge : Fin 5 → wheelWithInnerTriangleGraph.edgeSet} {n : Nat}
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    (p0Inside p4Inside : Bool) (side : Fin 7 → Prop)
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (hemits :
+      (wit01 ∈ classifier.emittedFinset ∧ wit02 ∈ classifier.emittedFinset) ∨
+        (wit01 ∈ classifier.emittedFinset ∧ wit03 ∈ classifier.emittedFinset) ∨
+        (wit02 ∈ classifier.emittedFinset ∧ wit03 ∈ classifier.emittedFinset)) :
+    ∀ ⦃z : wheelWithInnerTriangleGraph.edgeSet → Color⦄,
+      z ∈ theorem49BoundaryZeroKirchhoffSubspace
+          wheelWithInnerTriangleEmbedding ({(0 : Fin 7)} : Finset (Fin 7)) →
+      z ≠ 0 →
+        ∃ e : wheelWithInnerTriangleGraph.edgeSet,
+          data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e ∧
+            z e ≠ 0 := by
+  intro z hz hzNonzero
+  rcases hemits with h12 | hrest
+  · by_cases h01 : z wit01 = 0
+    · refine ⟨wit02, (classifier.emittedFinset_spec wit02).1 h12.2, ?_⟩
+      intro h02
+      exact hzNonzero
+        (wheelWithInnerTriangle_boundaryZeroKirchhoff_no_evader_of_vanishes_on_wit01_wit02
+          z hz h01 h02)
+    · exact ⟨wit01, (classifier.emittedFinset_spec wit01).1 h12.1, h01⟩
+  · rcases hrest with h13 | h23
+    · by_cases h01 : z wit01 = 0
+      · refine ⟨wit03, (classifier.emittedFinset_spec wit03).1 h13.2, ?_⟩
+        intro h03
+        exact hzNonzero
+          (wheelWithInnerTriangle_boundaryZeroKirchhoff_no_evader_of_vanishes_on_wit01_wit03
+            z hz h01 h03)
+      · exact ⟨wit01, (classifier.emittedFinset_spec wit01).1 h13.1, h01⟩
+    · by_cases h02 : z wit02 = 0
+      · refine ⟨wit03, (classifier.emittedFinset_spec wit03).1 h23.2, ?_⟩
+        intro h03
+        exact hzNonzero
+          (wheelWithInnerTriangle_boundaryZeroKirchhoff_no_evader_of_vanishes_on_wit02_wit03
+            z hz h02 h03)
+      · exact ⟨wit02, (classifier.emittedFinset_spec wit02).1 h23.1, h02⟩
+
+/-- Exact Kirchhoff-repaired classifier form for the wheel focus-shell F2 verdict.  CAP5 covers
+all nonzero boundary-zero Kirchhoff chains exactly when it emits two spoke controls. -/
+theorem wheelWithInnerTriangle_CAP5_boundaryZeroKirchhoff_forcedEdgeCoverage_iff_emits_two_spokes
+    {boundaryEdge : Fin 5 → wheelWithInnerTriangleGraph.edgeSet} {n : Nat}
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    (p0Inside p4Inside : Bool) (side : Fin 7 → Prop)
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side) :
+    (∀ ⦃z : wheelWithInnerTriangleGraph.edgeSet → Color⦄,
+      z ∈ theorem49BoundaryZeroKirchhoffSubspace
+          wheelWithInnerTriangleEmbedding ({(0 : Fin 7)} : Finset (Fin 7)) →
+      z ≠ 0 →
+        ∃ e : wheelWithInnerTriangleGraph.edgeSet,
+          data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e ∧
+            z e ≠ 0) ↔
+      (wit01 ∈ classifier.emittedFinset ∧ wit02 ∈ classifier.emittedFinset) ∨
+        (wit01 ∈ classifier.emittedFinset ∧ wit03 ∈ classifier.emittedFinset) ∨
+        (wit02 ∈ classifier.emittedFinset ∧ wit03 ∈ classifier.emittedFinset) := by
+  constructor
+  · exact
+      wheelWithInnerTriangle_CAP5_boundaryZeroKirchhoff_forcedEdgeCoverage_emits_two_spokes
+        p0Inside p4Inside side classifier
+  · exact
+      wheelWithInnerTriangle_CAP5_boundaryZeroKirchhoff_forcedEdgeCoverage_of_emits_two_spokes
+        p0Inside p4Inside side classifier
 
 /-- Exact classifier-facing form of the wheel focus-shell F₂ verdict.  The CAP5 forced-edge
 predicate covers all nonzero selected-boundary-zero chains exactly when the classifier emits the
