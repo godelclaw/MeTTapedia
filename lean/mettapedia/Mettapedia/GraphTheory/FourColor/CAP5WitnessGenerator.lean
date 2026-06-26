@@ -4754,6 +4754,36 @@ theorem enumeratedExceptionalAnnulusForcedEdgeClassifierControl_of_forcedEdgeCov
         rcases hcoverage hzBoundary hzNonzero with ⟨e, hedge, hze⟩
         exact ⟨e, (classifier.emittedFinset_spec e).2 hedge, hze⟩)
 
+/--
+Finite-lab handoff for exact CAP5 coverage.  If a concrete control set meets every nonzero
+selected-boundary-zero chain and every control edge is emitted by the CAP5 classifier, then the
+enumerated CAP5 forced-edge predicate has the exact coverage property used by the synthesis
+theorems.
+-/
+theorem forcedEdgeCoverage_of_controlEdges_subset_emittedFinset
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    [Fintype G.edgeSet]
+    (emb : PlaneEmbeddingWithBoundary G)
+    {p0Inside p4Inside : Bool} {side : V → Prop}
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (controlEdges : Finset G.edgeSet)
+    (hcontrolCoverage :
+      ∀ ⦃z : G.edgeSet → Color⦄,
+        z ∈ planarBoundaryZeroSubmodule emb →
+        z ≠ 0 →
+          ∃ e : G.edgeSet, e ∈ controlEdges ∧ z e ≠ 0)
+    (hsubset : controlEdges ⊆ classifier.emittedFinset) :
+    ∀ ⦃z : G.edgeSet → Color⦄,
+      z ∈ planarBoundaryZeroSubmodule emb →
+      z ≠ 0 →
+        ∃ e : G.edgeSet,
+          data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e ∧
+            z e ≠ 0 := by
+  intro z hzBoundary hzNonzero
+  rcases hcontrolCoverage hzBoundary hzNonzero with ⟨e, heControl, hze⟩
+  exact ⟨e, (classifier.emittedFinset_spec e).1 (hsubset heControl), hze⟩
+
 /-- Synthesis endpoint for exact CAP5 forced-edge coverage.  If the enumerated forced-edge set
 covers every nonzero selected-boundary-zero chain, and the chosen projected generator family has
 red and blue single-coordinate witnesses on every emitted classifier edge, then the boundary-root
