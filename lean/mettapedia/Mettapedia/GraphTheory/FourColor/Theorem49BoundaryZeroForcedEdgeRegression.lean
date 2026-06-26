@@ -7043,6 +7043,69 @@ theorem twoBandAnnulus_boundaryZeroKirchhoff_minimalControl_profile :
       z hz hcontrol
   · exact twoBandAnnulus_boundaryZeroKirchhoff_has_evader_of_control_card_le_five
 
+theorem twoBandAnnulus_boundaryZeroKirchhoff_exactMinimumControlCard :
+    (∃ control : Finset twoBandAnnulusGraph.edgeSet,
+      control.card = 6 ∧
+        ∀ ⦃z : twoBandAnnulusGraph.edgeSet → Color⦄,
+          z ∈ theorem49BoundaryZeroKirchhoffSubspace
+              twoBandAnnulusEmbedding twoBandAnnulusKirchhoffVertices →
+          (∀ e ∈ control, z e = 0) →
+          z = 0) ∧
+    (∀ control : Finset twoBandAnnulusGraph.edgeSet,
+      (∀ ⦃z : twoBandAnnulusGraph.edgeSet → Color⦄,
+        z ∈ theorem49BoundaryZeroKirchhoffSubspace
+            twoBandAnnulusEmbedding twoBandAnnulusKirchhoffVertices →
+        (∀ e ∈ control, z e = 0) →
+        z = 0) →
+      6 ≤ control.card) := by
+  constructor
+  · refine ⟨twoBandAnnulusMiddleOuterRadialKirchhoffControlEdges, ?_, ?_⟩
+    · decide
+    · intro z hz hcontrol
+      exact twoBandAnnulus_boundaryZeroKirchhoff_no_evader_of_middleOuterRadialControl
+        z hz hcontrol
+  · intro control hcontrol
+    by_contra hnotLower
+    have hcard : control.card ≤ 5 := by omega
+    rcases twoBandAnnulus_boundaryZeroKirchhoff_has_evader_of_control_card_le_five
+        control hcard with
+      ⟨z, hz, hvanish, hzNonzero⟩
+    exact hzNonzero (hcontrol hz hvanish)
+
+theorem twoBandAnnulus_boundaryZeroKirchhoff_classifierControl_emittedFinset_card_ge_six
+    {boundaryEdge : Fin 5 → twoBandAnnulusGraph.edgeSet} {n : Nat}
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    {p0Inside p4Inside : Bool} {side : Fin 9 → Prop}
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (hcontrol :
+      ∀ ⦃z : twoBandAnnulusGraph.edgeSet → Color⦄,
+        z ∈ theorem49BoundaryZeroKirchhoffSubspace
+            twoBandAnnulusEmbedding twoBandAnnulusKirchhoffVertices →
+        (∀ e ∈ classifier.emittedFinset, z e = 0) →
+        z = 0) :
+    6 ≤ classifier.emittedFinset.card :=
+  twoBandAnnulus_boundaryZeroKirchhoff_exactMinimumControlCard.2
+    classifier.emittedFinset hcontrol
+
+theorem twoBandAnnulus_boundaryZeroKirchhoff_not_classifierControl_of_emittedFinset_card_le_five
+    {boundaryEdge : Fin 5 → twoBandAnnulusGraph.edgeSet} {n : Nat}
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    {p0Inside p4Inside : Bool} {side : Fin 9 → Prop}
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (hcard : classifier.emittedFinset.card ≤ 5) :
+    ¬ ∀ ⦃z : twoBandAnnulusGraph.edgeSet → Color⦄,
+      z ∈ theorem49BoundaryZeroKirchhoffSubspace
+          twoBandAnnulusEmbedding twoBandAnnulusKirchhoffVertices →
+      (∀ e ∈ classifier.emittedFinset, z e = 0) →
+      z = 0 := by
+  intro hcontrol
+  have hge :=
+    twoBandAnnulus_boundaryZeroKirchhoff_classifierControl_emittedFinset_card_ge_six
+      classifier hcontrol
+  omega
+
 /-! ## Generated one-band annulus counterexample shell -/
 
 def oneBandAnnulus3Graph : SimpleGraph (Fin 6) :=
