@@ -4,6 +4,7 @@ import Mettapedia.Computability.PNP.CruxKpolyBridgeCurrentStatus
 import Mettapedia.Computability.PNP.CruxKpolyPromotedPacket
 import Mettapedia.Computability.PNP.CruxSynthesisRegression
 import Mettapedia.Computability.PNP.KpolyPolynomialFunctorAgreementObstruction
+import Mettapedia.Computability.PNP.KpolySupportSurjectivityQuantaleObstruction
 import Mettapedia.Computability.PNP.Barriers.ProperSubsetLabCanaries
 import Mettapedia.Computability.PNP.PNPv13AtomicBudgetLedgerAuditorCanaries
 import Mettapedia.Computability.PNP.PNPv13CDENFNormalizerCanaries
@@ -12,7 +13,6 @@ import Mettapedia.Computability.PNP.PNPv13LockedCoreLabCanaries
 import Mettapedia.Computability.PNP.PNPv13SwitchedHistoryProductAuditorCanaries
 import Mettapedia.Computability.PNP.PNPv13TraceFactorizationCanaries
 import Mettapedia.Computability.PNP.SharedExactZABAffineDecisionListStructuralObstructionExactZAB
-
 /-!
 # PNP proof state
 
@@ -22,7 +22,6 @@ current formal support for the named node, not a claim about the Millennium
 problem itself.
 -/
 namespace Mettapedia.Computability.PNP
-
 /-- Coarse status tags for public proof-state bookkeeping. -/
 inductive PNPProofNodeStatus where
   | surveyed
@@ -48,9 +47,9 @@ deriving Repr
 
 /-- Current source-map summary for `Mettapedia/Computability/PNP`. -/
 def currentPNPLaneSurveyCounts : PNPLaneSurveyCounts where
-  sourceFiles := 942
-  sourceLines := 124328
-  internalImportEdges := 2279
+  sourceFiles := 943
+  sourceLines := 124566
+  internalImportEdges := 2284
   regressionFiles := 294
   filesOverSevenHundredFiftyLines := 0
   zeroInternalImporterEntrypoints := 256
@@ -77,7 +76,7 @@ def currentPNPProofNodes : List PNPProofNode := [
     key := "pnp.map.current-lane",
     status := .surveyed,
     truthValue := ⟨100, 94⟩,
-    evidence := "The lane currently has 942 Lean files, 124328 lines, 2279 internal import edges, and no files over the split threshold.",
+    evidence := "The lane currently has 943 Lean files, 124566 lines, 2284 internal import edges, and no files over the split threshold.",
     nextObligation := "Keep broad regression files separate from the live entrypoint unless a checked theorem needs them."
   },
   {
@@ -163,6 +162,7 @@ def currentPNPProofNodes : List PNPProofNode := [
     nextObligation := "Treat the promoted Kpoly bridge as a route refutation unless a new bridge supplies a stronger finite-cover theorem rather than product-bound or fielded-switching-only evidence."
   },
   { key := "pnp.kpoly.polynomial-functor-agreement", status := .blockedByCounterexample, truthValue := ⟨100, 99⟩, evidence := "polynomialFunctorSmallImageAgreement_obstruction_packet proves that a one-shape finite polynomial-container image and its two-code bit family do not force any strict pure-atom bad-code agreement bound.", nextObligation := "Do not derive Kpoly recovery or quantale weakness bounds from polynomial small-image evidence alone; require a separate support-disagreement or agreement-mass theorem." },
+  { key := "pnp.kpoly.support-surjectivity-weakness-boundary", status := .blockedByCounterexample, truthValue := ⟨100, 99⟩, evidence := "kpolySupportSurjectivityQuantale_obstruction_packet proves that below-surface observed support blocks the full-rule Kpoly bridge, while quantaleWeakness_supportResolution_exactBoundary_packet records that positive weakness-side advantage over an invariant base is exactly a supported resolving side-information package.", nextObligation := "A replacement route in this class must supply a support-surjective feature/query map and pay the exact-visible surface floor, or supply a supported resolving side-information package; finite observed traces alone are resolved as insufficient." },
   {
     key := "pnp.kpoly-promoted.barrier-clearance",
     status := .barrierBlocked,
