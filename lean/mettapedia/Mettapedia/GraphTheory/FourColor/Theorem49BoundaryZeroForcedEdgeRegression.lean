@@ -7289,6 +7289,460 @@ theorem twoBandAnnulusNoncontrollingSixKirchhoffControl_not_boundaryZeroKirchhof
       twoBandAnnulusEmbedding twoBandAnnulusKirchhoffVertices
       twoBandAnnulusNoncontrollingSixKirchhoffControlEdges).1 hcontrol)
 
+def twoBandAnnulusOmittedInteriorEdges
+    (control : Finset twoBandAnnulusGraph.edgeSet) :
+    Finset twoBandAnnulusGraph.edgeSet :=
+  twoBandAnnulusInteriorEdges \ control
+
+def twoBandAnnulusOmittedInteriorScalarExtension
+    (control : Finset twoBandAnnulusGraph.edgeSet)
+    (y : {e : twoBandAnnulusGraph.edgeSet //
+        e ∈ twoBandAnnulusOmittedInteriorEdges control} → F2) :
+    twoBandAnnulusGraph.edgeSet → F2 :=
+  fun e =>
+    if h : e ∈ twoBandAnnulusOmittedInteriorEdges control then y ⟨e, h⟩ else 0
+
+@[simp] theorem twoBandAnnulusOmittedInteriorScalarExtension_apply_mem
+    (control : Finset twoBandAnnulusGraph.edgeSet)
+    (y : {e : twoBandAnnulusGraph.edgeSet //
+        e ∈ twoBandAnnulusOmittedInteriorEdges control} → F2)
+    {e : twoBandAnnulusGraph.edgeSet}
+    (he : e ∈ twoBandAnnulusOmittedInteriorEdges control) :
+    twoBandAnnulusOmittedInteriorScalarExtension control y e = y ⟨e, he⟩ := by
+  simp [twoBandAnnulusOmittedInteriorScalarExtension, he]
+
+@[simp] theorem twoBandAnnulusOmittedInteriorScalarExtension_apply_not_mem
+    (control : Finset twoBandAnnulusGraph.edgeSet)
+    (y : {e : twoBandAnnulusGraph.edgeSet //
+        e ∈ twoBandAnnulusOmittedInteriorEdges control} → F2)
+    {e : twoBandAnnulusGraph.edgeSet}
+    (he : e ∉ twoBandAnnulusOmittedInteriorEdges control) :
+    twoBandAnnulusOmittedInteriorScalarExtension control y e = 0 := by
+  simp [twoBandAnnulusOmittedInteriorScalarExtension, he]
+
+def twoBandAnnulusOmittedInteriorKirchhoffColumnMap
+    (control : Finset twoBandAnnulusGraph.edgeSet) :
+    ({e : twoBandAnnulusGraph.edgeSet //
+        e ∈ twoBandAnnulusOmittedInteriorEdges control} → F2) →ₗ[F2]
+      (Fin 3 → F2) where
+  toFun y := fun i => match i with
+    | ⟨0, _⟩ =>
+        ∑ e ∈ ({tbaR03, tbaR36, tbaM34, tbaM53} :
+          Finset twoBandAnnulusGraph.edgeSet),
+          twoBandAnnulusOmittedInteriorScalarExtension control y e
+    | ⟨1, _⟩ =>
+        ∑ e ∈ ({tbaR14, tbaR47, tbaM34, tbaM45} :
+          Finset twoBandAnnulusGraph.edgeSet),
+          twoBandAnnulusOmittedInteriorScalarExtension control y e
+    | ⟨2, _⟩ =>
+        ∑ e ∈ ({tbaR25, tbaR58, tbaM45, tbaM53} :
+          Finset twoBandAnnulusGraph.edgeSet),
+          twoBandAnnulusOmittedInteriorScalarExtension control y e
+  map_add' y z := by
+    ext i
+    fin_cases i
+    · change
+        (∑ e ∈ ({tbaR03, tbaR36, tbaM34, tbaM53} :
+          Finset twoBandAnnulusGraph.edgeSet),
+          twoBandAnnulusOmittedInteriorScalarExtension control (y + z) e) =
+        (∑ e ∈ ({tbaR03, tbaR36, tbaM34, tbaM53} :
+          Finset twoBandAnnulusGraph.edgeSet),
+          twoBandAnnulusOmittedInteriorScalarExtension control y e) +
+        (∑ e ∈ ({tbaR03, tbaR36, tbaM34, tbaM53} :
+          Finset twoBandAnnulusGraph.edgeSet),
+          twoBandAnnulusOmittedInteriorScalarExtension control z e)
+      rw [← Finset.sum_add_distrib]
+      apply Finset.sum_congr rfl
+      intro e _he
+      by_cases heOmitted : e ∈ twoBandAnnulusOmittedInteriorEdges control <;>
+        simp [twoBandAnnulusOmittedInteriorScalarExtension, heOmitted]
+    · change
+        (∑ e ∈ ({tbaR14, tbaR47, tbaM34, tbaM45} :
+          Finset twoBandAnnulusGraph.edgeSet),
+          twoBandAnnulusOmittedInteriorScalarExtension control (y + z) e) =
+        (∑ e ∈ ({tbaR14, tbaR47, tbaM34, tbaM45} :
+          Finset twoBandAnnulusGraph.edgeSet),
+          twoBandAnnulusOmittedInteriorScalarExtension control y e) +
+        (∑ e ∈ ({tbaR14, tbaR47, tbaM34, tbaM45} :
+          Finset twoBandAnnulusGraph.edgeSet),
+          twoBandAnnulusOmittedInteriorScalarExtension control z e)
+      rw [← Finset.sum_add_distrib]
+      apply Finset.sum_congr rfl
+      intro e _he
+      by_cases heOmitted : e ∈ twoBandAnnulusOmittedInteriorEdges control <;>
+        simp [twoBandAnnulusOmittedInteriorScalarExtension, heOmitted]
+    · change
+        (∑ e ∈ ({tbaR25, tbaR58, tbaM45, tbaM53} :
+          Finset twoBandAnnulusGraph.edgeSet),
+          twoBandAnnulusOmittedInteriorScalarExtension control (y + z) e) =
+        (∑ e ∈ ({tbaR25, tbaR58, tbaM45, tbaM53} :
+          Finset twoBandAnnulusGraph.edgeSet),
+          twoBandAnnulusOmittedInteriorScalarExtension control y e) +
+        (∑ e ∈ ({tbaR25, tbaR58, tbaM45, tbaM53} :
+          Finset twoBandAnnulusGraph.edgeSet),
+          twoBandAnnulusOmittedInteriorScalarExtension control z e)
+      rw [← Finset.sum_add_distrib]
+      apply Finset.sum_congr rfl
+      intro e _he
+      by_cases heOmitted : e ∈ twoBandAnnulusOmittedInteriorEdges control <;>
+        simp [twoBandAnnulusOmittedInteriorScalarExtension, heOmitted]
+  map_smul' a y := by
+    ext i
+    fin_cases i
+    · change
+        (∑ e ∈ ({tbaR03, tbaR36, tbaM34, tbaM53} :
+          Finset twoBandAnnulusGraph.edgeSet),
+          twoBandAnnulusOmittedInteriorScalarExtension control (a • y) e) =
+        a * (∑ e ∈ ({tbaR03, tbaR36, tbaM34, tbaM53} :
+          Finset twoBandAnnulusGraph.edgeSet),
+          twoBandAnnulusOmittedInteriorScalarExtension control y e)
+      rw [Finset.mul_sum]
+      apply Finset.sum_congr rfl
+      intro e _he
+      by_cases heOmitted : e ∈ twoBandAnnulusOmittedInteriorEdges control <;>
+        simp [twoBandAnnulusOmittedInteriorScalarExtension, heOmitted,
+          smul_eq_mul]
+    · change
+        (∑ e ∈ ({tbaR14, tbaR47, tbaM34, tbaM45} :
+          Finset twoBandAnnulusGraph.edgeSet),
+          twoBandAnnulusOmittedInteriorScalarExtension control (a • y) e) =
+        a * (∑ e ∈ ({tbaR14, tbaR47, tbaM34, tbaM45} :
+          Finset twoBandAnnulusGraph.edgeSet),
+          twoBandAnnulusOmittedInteriorScalarExtension control y e)
+      rw [Finset.mul_sum]
+      apply Finset.sum_congr rfl
+      intro e _he
+      by_cases heOmitted : e ∈ twoBandAnnulusOmittedInteriorEdges control <;>
+        simp [twoBandAnnulusOmittedInteriorScalarExtension, heOmitted,
+          smul_eq_mul]
+    · change
+        (∑ e ∈ ({tbaR25, tbaR58, tbaM45, tbaM53} :
+          Finset twoBandAnnulusGraph.edgeSet),
+          twoBandAnnulusOmittedInteriorScalarExtension control (a • y) e) =
+        a * (∑ e ∈ ({tbaR25, tbaR58, tbaM45, tbaM53} :
+          Finset twoBandAnnulusGraph.edgeSet),
+          twoBandAnnulusOmittedInteriorScalarExtension control y e)
+      rw [Finset.mul_sum]
+      apply Finset.sum_congr rfl
+      intro e _he
+      by_cases heOmitted : e ∈ twoBandAnnulusOmittedInteriorEdges control <;>
+        simp [twoBandAnnulusOmittedInteriorScalarExtension, heOmitted,
+          smul_eq_mul]
+
+theorem twoBandAnnulusOmittedInteriorKirchhoffColumnMap_lift_mem_scalarKernel
+    (control : Finset twoBandAnnulusGraph.edgeSet)
+    {y : {e : twoBandAnnulusGraph.edgeSet //
+        e ∈ twoBandAnnulusOmittedInteriorEdges control} → F2}
+    (hyker : y ∈ LinearMap.ker
+      (twoBandAnnulusOmittedInteriorKirchhoffColumnMap control)) :
+    twoBandAnnulusOmittedInteriorScalarExtension control y ∈
+      LinearMap.ker
+        (theorem49BoundaryZeroKirchhoffScalarConstraintMap
+          twoBandAnnulusEmbedding twoBandAnnulusKirchhoffVertices control) := by
+  have hymap :
+      twoBandAnnulusOmittedInteriorKirchhoffColumnMap control y = 0 := by
+    simpa using hyker
+  change
+    theorem49BoundaryZeroKirchhoffScalarConstraintMap
+      twoBandAnnulusEmbedding twoBandAnnulusKirchhoffVertices control
+      (twoBandAnnulusOmittedInteriorScalarExtension control y) = 0
+  ext e
+  · rcases e with ⟨e, he⟩
+    change twoBandAnnulusOmittedInteriorScalarExtension control y e = 0
+    have hnot : e ∉ twoBandAnnulusOmittedInteriorEdges control := by
+      simp [twoBandAnnulusOmittedInteriorEdges, he]
+    exact twoBandAnnulusOmittedInteriorScalarExtension_apply_not_mem control y hnot
+  · rcases e with ⟨e, heBoundary⟩
+    change twoBandAnnulusOmittedInteriorScalarExtension control y e = 0
+    have hnot : e ∉ twoBandAnnulusOmittedInteriorEdges control := by
+      intro heOmitted
+      have heInterior :
+          e ∈ interiorEdgeSupport
+            twoBandAnnulusEmbedding.faceBoundary
+            twoBandAnnulusEmbedding.faces := by
+        rw [twoBandAnnulus_interiorEdgeSupport_eq]
+        exact (Finset.mem_sdiff.1 heOmitted).1
+      exact (Finset.disjoint_left.1
+        (selectedBoundarySupport_disjoint_interiorEdgeSupport
+          twoBandAnnulusEmbedding.faceBoundary
+          twoBandAnnulusEmbedding.faces)) heBoundary heInterior
+    exact twoBandAnnulusOmittedInteriorScalarExtension_apply_not_mem control y hnot
+  · rcases e with ⟨v, hv⟩
+    have hv_cases : v = (3 : Fin 9) ∨ v = (4 : Fin 9) ∨ v = (5 : Fin 9) := by
+      simpa [twoBandAnnulusKirchhoffVertices] using hv
+    rcases hv_cases with rfl | rfl | rfl
+    · have hrow := congrFun hymap (0 : Fin 3)
+      change scalarVertexKirchhoffSum twoBandAnnulusGraph
+          (twoBandAnnulusOmittedInteriorScalarExtension control y) (3 : Fin 9) = 0
+      simpa [twoBandAnnulusOmittedInteriorKirchhoffColumnMap,
+        scalarVertexKirchhoffSum, twoBandAnnulus_incidentEdgeFinset_three,
+        twoBandAnnulusOmittedInteriorScalarExtension] using hrow
+    · have hrow := congrFun hymap (1 : Fin 3)
+      change scalarVertexKirchhoffSum twoBandAnnulusGraph
+          (twoBandAnnulusOmittedInteriorScalarExtension control y) (4 : Fin 9) = 0
+      simpa [twoBandAnnulusOmittedInteriorKirchhoffColumnMap,
+        scalarVertexKirchhoffSum, twoBandAnnulus_incidentEdgeFinset_four,
+        twoBandAnnulusOmittedInteriorScalarExtension] using hrow
+    · have hrow := congrFun hymap (2 : Fin 3)
+      change scalarVertexKirchhoffSum twoBandAnnulusGraph
+          (twoBandAnnulusOmittedInteriorScalarExtension control y) (5 : Fin 9) = 0
+      simpa [twoBandAnnulusOmittedInteriorKirchhoffColumnMap,
+        scalarVertexKirchhoffSum, twoBandAnnulus_incidentEdgeFinset_five,
+        twoBandAnnulusOmittedInteriorScalarExtension] using hrow
+
+theorem twoBandAnnulusOmittedInteriorKirchhoffColumnMap_ker_eq_bot_of_scalarConstraintMap_ker_eq_bot
+    (control : Finset twoBandAnnulusGraph.edgeSet)
+    (hscalar : LinearMap.ker
+      (theorem49BoundaryZeroKirchhoffScalarConstraintMap
+        twoBandAnnulusEmbedding twoBandAnnulusKirchhoffVertices control) = ⊥) :
+    LinearMap.ker
+      (twoBandAnnulusOmittedInteriorKirchhoffColumnMap control) = ⊥ := by
+  ext y
+  constructor
+  · intro hyker
+    change y = 0
+    have hxker :=
+      twoBandAnnulusOmittedInteriorKirchhoffColumnMap_lift_mem_scalarKernel
+        control hyker
+    have hxbot :
+        twoBandAnnulusOmittedInteriorScalarExtension control y ∈
+          (⊥ : Submodule F2 (twoBandAnnulusGraph.edgeSet → F2)) := by
+      simpa [hscalar] using hxker
+    have hxzero : twoBandAnnulusOmittedInteriorScalarExtension control y = 0 := by
+      simpa using hxbot
+    funext e
+    have hcoord := congrFun hxzero e.1
+    simpa [twoBandAnnulusOmittedInteriorScalarExtension, e.2] using hcoord
+  · intro hybot
+    change twoBandAnnulusOmittedInteriorKirchhoffColumnMap control y = 0
+    have hyzero : y = 0 := by
+      simpa using hybot
+    simp [hyzero]
+
+theorem twoBandAnnulus_scalarKernel_restrictOmittedInterior_mem_columnKernel
+    (control : Finset twoBandAnnulusGraph.edgeSet)
+    {x : twoBandAnnulusGraph.edgeSet → F2}
+    (hxker : x ∈ LinearMap.ker
+      (theorem49BoundaryZeroKirchhoffScalarConstraintMap
+        twoBandAnnulusEmbedding twoBandAnnulusKirchhoffVertices control)) :
+    (fun e : {e : twoBandAnnulusGraph.edgeSet //
+        e ∈ twoBandAnnulusOmittedInteriorEdges control} => x e.1) ∈
+      LinearMap.ker
+        (twoBandAnnulusOmittedInteriorKirchhoffColumnMap control) := by
+  have hxmap :
+      theorem49BoundaryZeroKirchhoffScalarConstraintMap
+        twoBandAnnulusEmbedding twoBandAnnulusKirchhoffVertices control x = 0 := by
+    simpa using hxker
+  have hcontrol : ∀ e ∈ control, x e = 0 := by
+    intro e he
+    have hcoord := congrFun (congrArg Prod.fst hxmap) ⟨e, he⟩
+    simpa [theorem49BoundaryZeroKirchhoffScalarConstraintMap] using hcoord
+  have hkirchhoff :
+      ∀ v ∈ twoBandAnnulusKirchhoffVertices,
+        scalarVertexKirchhoffSum twoBandAnnulusGraph x v = 0 := by
+    intro v hv
+    have hcoord := congrFun (congrArg Prod.snd (congrArg Prod.snd hxmap)) ⟨v, hv⟩
+    simpa [theorem49BoundaryZeroKirchhoffScalarConstraintMap] using hcoord
+  let y : {e : twoBandAnnulusGraph.edgeSet //
+        e ∈ twoBandAnnulusOmittedInteriorEdges control} → F2 :=
+    fun e => x e.1
+  have hy_apply_of_interior :
+      ∀ e ∈ twoBandAnnulusInteriorEdges,
+        twoBandAnnulusOmittedInteriorScalarExtension control y e = x e := by
+    intro e heInterior
+    by_cases heControl : e ∈ control
+    · have hxzero := hcontrol e heControl
+      have heNotOmitted : e ∉ twoBandAnnulusOmittedInteriorEdges control := by
+        simp [twoBandAnnulusOmittedInteriorEdges, heControl]
+      simp [twoBandAnnulusOmittedInteriorScalarExtension, heNotOmitted, hxzero]
+    · have heOmitted : e ∈ twoBandAnnulusOmittedInteriorEdges control := by
+        simp [twoBandAnnulusOmittedInteriorEdges, heInterior, heControl]
+      simp [twoBandAnnulusOmittedInteriorScalarExtension, heOmitted, y]
+  change twoBandAnnulusOmittedInteriorKirchhoffColumnMap control y = 0
+  ext i
+  fin_cases i
+  · have hrow := hkirchhoff (3 : Fin 9) (by simp [twoBandAnnulusKirchhoffVertices])
+    change
+      (∑ e ∈ ({tbaR03, tbaR36, tbaM34, tbaM53} :
+        Finset twoBandAnnulusGraph.edgeSet),
+        twoBandAnnulusOmittedInteriorScalarExtension control y e) = 0
+    unfold scalarVertexKirchhoffSum at hrow
+    rw [twoBandAnnulus_incidentEdgeFinset_three] at hrow
+    have hsum :
+        (∑ e ∈ ({tbaR03, tbaR36, tbaM34, tbaM53} :
+          Finset twoBandAnnulusGraph.edgeSet),
+          twoBandAnnulusOmittedInteriorScalarExtension control y e) =
+        ∑ e ∈ ({tbaR03, tbaR36, tbaM34, tbaM53} :
+          Finset twoBandAnnulusGraph.edgeSet), x e := by
+      apply Finset.sum_congr rfl
+      intro e he
+      apply hy_apply_of_interior
+      simp [twoBandAnnulusInteriorEdges] at he ⊢
+      tauto
+    rw [hsum]
+    exact hrow
+  · have hrow := hkirchhoff (4 : Fin 9) (by simp [twoBandAnnulusKirchhoffVertices])
+    change
+      (∑ e ∈ ({tbaR14, tbaR47, tbaM34, tbaM45} :
+        Finset twoBandAnnulusGraph.edgeSet),
+        twoBandAnnulusOmittedInteriorScalarExtension control y e) = 0
+    unfold scalarVertexKirchhoffSum at hrow
+    rw [twoBandAnnulus_incidentEdgeFinset_four] at hrow
+    have hsum :
+        (∑ e ∈ ({tbaR14, tbaR47, tbaM34, tbaM45} :
+          Finset twoBandAnnulusGraph.edgeSet),
+          twoBandAnnulusOmittedInteriorScalarExtension control y e) =
+        ∑ e ∈ ({tbaR14, tbaR47, tbaM34, tbaM45} :
+          Finset twoBandAnnulusGraph.edgeSet), x e := by
+      apply Finset.sum_congr rfl
+      intro e he
+      apply hy_apply_of_interior
+      simp [twoBandAnnulusInteriorEdges] at he ⊢
+      tauto
+    rw [hsum]
+    exact hrow
+  · have hrow := hkirchhoff (5 : Fin 9) (by simp [twoBandAnnulusKirchhoffVertices])
+    change
+      (∑ e ∈ ({tbaR25, tbaR58, tbaM45, tbaM53} :
+        Finset twoBandAnnulusGraph.edgeSet),
+        twoBandAnnulusOmittedInteriorScalarExtension control y e) = 0
+    unfold scalarVertexKirchhoffSum at hrow
+    rw [twoBandAnnulus_incidentEdgeFinset_five] at hrow
+    have hsum :
+        (∑ e ∈ ({tbaR25, tbaR58, tbaM45, tbaM53} :
+          Finset twoBandAnnulusGraph.edgeSet),
+          twoBandAnnulusOmittedInteriorScalarExtension control y e) =
+        ∑ e ∈ ({tbaR25, tbaR58, tbaM45, tbaM53} :
+          Finset twoBandAnnulusGraph.edgeSet), x e := by
+      apply Finset.sum_congr rfl
+      intro e he
+      apply hy_apply_of_interior
+      simp [twoBandAnnulusInteriorEdges] at he ⊢
+      tauto
+    rw [hsum]
+    exact hrow
+
+theorem twoBandAnnulus_scalarConstraintMap_ker_eq_bot_of_omittedInterior_columnMap_ker_eq_bot
+    (control : Finset twoBandAnnulusGraph.edgeSet)
+    (hcolumn : LinearMap.ker
+      (twoBandAnnulusOmittedInteriorKirchhoffColumnMap control) = ⊥) :
+    LinearMap.ker
+      (theorem49BoundaryZeroKirchhoffScalarConstraintMap
+        twoBandAnnulusEmbedding twoBandAnnulusKirchhoffVertices control) = ⊥ := by
+  ext x
+  constructor
+  · intro hxker
+    change x = 0
+    have hxmap :
+        theorem49BoundaryZeroKirchhoffScalarConstraintMap
+          twoBandAnnulusEmbedding twoBandAnnulusKirchhoffVertices control x = 0 := by
+      simpa using hxker
+    have hcontrol : ∀ e ∈ control, x e = 0 := by
+      intro e he
+      have hcoord := congrFun (congrArg Prod.fst hxmap) ⟨e, he⟩
+      simpa [theorem49BoundaryZeroKirchhoffScalarConstraintMap] using hcoord
+    have hboundary :
+        ∀ e ∈ selectedBoundarySupport
+            twoBandAnnulusEmbedding.faceBoundary
+            twoBandAnnulusEmbedding.faces
+            twoBandAnnulusEmbedding.faces, x e = 0 := by
+      intro e he
+      have hcoord := congrFun (congrArg Prod.fst (congrArg Prod.snd hxmap)) ⟨e, he⟩
+      simpa [theorem49BoundaryZeroKirchhoffScalarConstraintMap] using hcoord
+    let y : {e : twoBandAnnulusGraph.edgeSet //
+          e ∈ twoBandAnnulusOmittedInteriorEdges control} → F2 :=
+      fun e => x e.1
+    have hyker :
+        y ∈ LinearMap.ker
+          (twoBandAnnulusOmittedInteriorKirchhoffColumnMap control) :=
+      twoBandAnnulus_scalarKernel_restrictOmittedInterior_mem_columnKernel
+        control hxker
+    have hybot : y ∈
+        (⊥ : Submodule F2 ({e : twoBandAnnulusGraph.edgeSet //
+          e ∈ twoBandAnnulusOmittedInteriorEdges control} → F2)) := by
+      simpa [hcolumn] using hyker
+    have hyzero : y = 0 := by
+      simpa using hybot
+    funext e
+    by_cases heControl : e ∈ control
+    · exact hcontrol e heControl
+    · by_cases heInteriorSupport :
+        e ∈ interiorEdgeSupport
+          twoBandAnnulusEmbedding.faceBoundary
+          twoBandAnnulusEmbedding.faces
+      · have heInterior : e ∈ twoBandAnnulusInteriorEdges := by
+          simpa [twoBandAnnulus_interiorEdgeSupport_eq] using heInteriorSupport
+        have heOmitted : e ∈ twoBandAnnulusOmittedInteriorEdges control := by
+          simp [twoBandAnnulusOmittedInteriorEdges, heInterior, heControl]
+        have hcoord := congrFun hyzero ⟨e, heOmitted⟩
+        simpa [y] using hcoord
+      · exact hboundary e
+          (twoBandAnnulus_mem_selectedBoundarySupport_of_not_mem_interiorEdgeSupport
+            heInteriorSupport)
+  · intro hxbot
+    change
+      theorem49BoundaryZeroKirchhoffScalarConstraintMap
+        twoBandAnnulusEmbedding twoBandAnnulusKirchhoffVertices control x = 0
+    have hxzero : x = 0 := by
+      simpa using hxbot
+    simp [hxzero]
+
+theorem twoBandAnnulus_scalarConstraintMap_ker_eq_bot_iff_omittedInterior_columnMap_ker_eq_bot
+    (control : Finset twoBandAnnulusGraph.edgeSet) :
+    LinearMap.ker
+      (theorem49BoundaryZeroKirchhoffScalarConstraintMap
+        twoBandAnnulusEmbedding twoBandAnnulusKirchhoffVertices control) = ⊥ ↔
+    LinearMap.ker
+      (twoBandAnnulusOmittedInteriorKirchhoffColumnMap control) = ⊥ :=
+  ⟨twoBandAnnulusOmittedInteriorKirchhoffColumnMap_ker_eq_bot_of_scalarConstraintMap_ker_eq_bot
+      control,
+    twoBandAnnulus_scalarConstraintMap_ker_eq_bot_of_omittedInterior_columnMap_ker_eq_bot
+      control⟩
+
+theorem twoBandAnnulus_boundaryZeroKirchhoff_control_iff_omittedInterior_columnMap_ker_eq_bot
+    (control : Finset twoBandAnnulusGraph.edgeSet) :
+    (∀ ⦃z : twoBandAnnulusGraph.edgeSet → Color⦄,
+      z ∈ theorem49BoundaryZeroKirchhoffSubspace
+          twoBandAnnulusEmbedding twoBandAnnulusKirchhoffVertices →
+      (∀ e ∈ control, z e = 0) →
+      z = 0) ↔
+    LinearMap.ker
+      (twoBandAnnulusOmittedInteriorKirchhoffColumnMap control) = ⊥ :=
+  (theorem49BoundaryZeroKirchhoffSubspace_control_iff_scalarConstraintMap_ker_eq_bot
+    twoBandAnnulusEmbedding twoBandAnnulusKirchhoffVertices control).trans
+    (twoBandAnnulus_scalarConstraintMap_ker_eq_bot_iff_omittedInterior_columnMap_ker_eq_bot
+      control)
+
+/-- Detector-level form of the two-band pattern sensitivity: among six-edge interior controls,
+one omitted-interior Kirchhoff row map has trivial kernel and another has a nontrivial kernel. -/
+theorem twoBandAnnulus_exists_two_six_interior_controls_with_different_omittedInteriorColumnKernel_status :
+    ∃ good bad : Finset twoBandAnnulusGraph.edgeSet,
+      good ⊆ twoBandAnnulusInteriorEdges ∧
+      good.card = 6 ∧
+      LinearMap.ker
+        (twoBandAnnulusOmittedInteriorKirchhoffColumnMap good) = ⊥ ∧
+      bad ⊆ twoBandAnnulusInteriorEdges ∧
+      bad.card = 6 ∧
+      LinearMap.ker
+        (twoBandAnnulusOmittedInteriorKirchhoffColumnMap bad) ≠ ⊥ := by
+  refine ⟨twoBandAnnulusMiddleOuterRadialKirchhoffControlEdges,
+    twoBandAnnulusNoncontrollingSixKirchhoffControlEdges, ?_, ?_, ?_, ?_, ?_, ?_⟩
+  · intro e he
+    simp [twoBandAnnulusMiddleOuterRadialKirchhoffControlEdges,
+      twoBandAnnulusInteriorEdges] at he ⊢
+    tauto
+  · decide
+  · exact
+      (twoBandAnnulus_scalarConstraintMap_ker_eq_bot_iff_omittedInterior_columnMap_ker_eq_bot
+        twoBandAnnulusMiddleOuterRadialKirchhoffControlEdges).1
+        twoBandAnnulusMiddleOuterRadialKirchhoffControl_scalarConstraintMap_ker_eq_bot_via_omittedTriple
+  · exact twoBandAnnulusNoncontrollingSixKirchhoffControlEdges_subset_interior
+  · exact twoBandAnnulusNoncontrollingSixKirchhoffControlEdges_card
+  · intro hbad
+    exact twoBandAnnulusNoncontrollingSixKirchhoffControl_scalarConstraintMap_ker_ne_bot_via_omittedTriple
+      ((twoBandAnnulus_scalarConstraintMap_ker_eq_bot_iff_omittedInterior_columnMap_ker_eq_bot
+        twoBandAnnulusNoncontrollingSixKirchhoffControlEdges).2 hbad)
+
 theorem twoBandAnnulusIndicator_mem_planarBoundaryZeroSubmodule_of_subset_interior
     (S : Finset twoBandAnnulusGraph.edgeSet)
     (hS : S ⊆ twoBandAnnulusInteriorEdges) :
