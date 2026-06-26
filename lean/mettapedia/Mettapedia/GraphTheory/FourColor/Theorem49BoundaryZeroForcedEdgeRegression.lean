@@ -6889,6 +6889,32 @@ theorem twoBandAnnulusFullRankIncreasingOmittedIndexTriples_card :
     twoBandAnnulusKirchhoffColumn
   decide
 
+theorem twoBandAnnulus_mem_fullRankIncreasingOmittedIndexTriples_iff
+    (a b c : Fin 9) :
+    (((a, b), c) ∈ twoBandAnnulusFullRankIncreasingOmittedIndexTriples ↔
+      a.val < b.val ∧ b.val < c.val ∧
+        twoBandAnnulusInteriorOmittedIndexTripleFullRank a b c) := by
+  unfold twoBandAnnulusFullRankIncreasingOmittedIndexTriples
+    twoBandAnnulusInteriorOmittedIndexTripleFullRank
+  simp [threeF2ColumnsFullRankBool_eq_true_iff]
+
+def twoBandAnnulusInteriorOmittedSetByIndex
+    (a b c : Fin 9) : Finset twoBandAnnulusGraph.edgeSet :=
+  {twoBandAnnulusInteriorEdgeByIndex a,
+    twoBandAnnulusInteriorEdgeByIndex b,
+    twoBandAnnulusInteriorEdgeByIndex c}
+
+def twoBandAnnulusInteriorControlComplementByIndex
+    (a b c : Fin 9) : Finset twoBandAnnulusGraph.edgeSet :=
+  twoBandAnnulusInteriorEdges \
+    twoBandAnnulusInteriorOmittedSetByIndex a b c
+
+theorem twoBandAnnulusInteriorControlComplementByIndex_subset_interior
+    (a b c : Fin 9) :
+    twoBandAnnulusInteriorControlComplementByIndex a b c ⊆
+      twoBandAnnulusInteriorEdges :=
+  Finset.sdiff_subset
+
 def twoBandAnnulusMiddleOuterRadialKirchhoffOmittedTriple :
     Fin 3 → twoBandAnnulusGraph.edgeSet
   | ⟨0, _⟩ => tbaR36
@@ -7407,6 +7433,15 @@ def twoBandAnnulusOmittedInteriorEdges
     Finset twoBandAnnulusGraph.edgeSet :=
   twoBandAnnulusInteriorEdges \ control
 
+set_option maxRecDepth 10000 in
+theorem twoBandAnnulusOmittedInteriorEdges_controlComplementByIndex_eq
+    (a b c : Fin 9) :
+    twoBandAnnulusOmittedInteriorEdges
+        (twoBandAnnulusInteriorControlComplementByIndex a b c) =
+      twoBandAnnulusInteriorOmittedSetByIndex a b c := by
+  fin_cases a <;> fin_cases b <;> fin_cases c <;>
+    decide
+
 def twoBandAnnulusOmittedInteriorScalarExtension
     (control : Finset twoBandAnnulusGraph.edgeSet)
     (y : {e : twoBandAnnulusGraph.edgeSet //
@@ -7825,6 +7860,57 @@ theorem twoBandAnnulus_boundaryZeroKirchhoff_control_iff_omittedInterior_columnM
     twoBandAnnulusEmbedding twoBandAnnulusKirchhoffVertices control).trans
     (twoBandAnnulus_scalarConstraintMap_ker_eq_bot_iff_omittedInterior_columnMap_ker_eq_bot
       control)
+
+set_option maxRecDepth 10000 in
+set_option maxHeartbeats 4000000 in
+theorem twoBandAnnulusInteriorControlComplementByIndex_omittedInteriorColumnMap_ker_eq_bot_of_fullRankBool
+    (a b c : Fin 9)
+    (hfullBool :
+      threeF2ColumnsFullRankBool
+        (twoBandAnnulusOmittedTripleColumns
+          (twoBandAnnulusInteriorOmittedTripleByIndex a b c)) = true) :
+    LinearMap.ker
+      (twoBandAnnulusOmittedInteriorKirchhoffColumnMap
+        (twoBandAnnulusInteriorControlComplementByIndex a b c)) = ⊥ := by
+  fin_cases a <;> fin_cases b <;> fin_cases c
+  all_goals
+    simp [twoBandAnnulusInteriorOmittedTripleByIndex,
+      twoBandAnnulusInteriorEdgeByIndex, twoBandAnnulusOmittedTripleColumns,
+      threeF2ColumnsFullRankBool] at hfullBool
+  all_goals
+    first
+    | contradiction
+    | (ext y
+       change twoBandAnnulusOmittedInteriorKirchhoffColumnMap _ y = 0 ↔ y = 0
+       decide +revert)
+
+theorem twoBandAnnulusInteriorControlComplementByIndex_omittedInteriorColumnMap_ker_eq_bot_of_fullRank
+    (a b c : Fin 9)
+    (hfull : twoBandAnnulusInteriorOmittedIndexTripleFullRank a b c) :
+    LinearMap.ker
+      (twoBandAnnulusOmittedInteriorKirchhoffColumnMap
+        (twoBandAnnulusInteriorControlComplementByIndex a b c)) = ⊥ := by
+  have hfullBool :
+      threeF2ColumnsFullRankBool
+        (twoBandAnnulusOmittedTripleColumns
+          (twoBandAnnulusInteriorOmittedTripleByIndex a b c)) = true :=
+    (threeF2ColumnsFullRankBool_eq_true_iff _).2 hfull
+  exact
+    twoBandAnnulusInteriorControlComplementByIndex_omittedInteriorColumnMap_ker_eq_bot_of_fullRankBool
+      a b c hfullBool
+
+theorem twoBandAnnulusInteriorControlComplementByIndex_boundaryZeroKirchhoff_control_of_fullRank
+    (a b c : Fin 9)
+    (hfull : twoBandAnnulusInteriorOmittedIndexTripleFullRank a b c) :
+    ∀ ⦃z : twoBandAnnulusGraph.edgeSet → Color⦄,
+      z ∈ theorem49BoundaryZeroKirchhoffSubspace
+          twoBandAnnulusEmbedding twoBandAnnulusKirchhoffVertices →
+      (∀ e ∈ twoBandAnnulusInteriorControlComplementByIndex a b c, z e = 0) →
+      z = 0 :=
+  (twoBandAnnulus_boundaryZeroKirchhoff_control_iff_omittedInterior_columnMap_ker_eq_bot
+    (twoBandAnnulusInteriorControlComplementByIndex a b c)).2
+    (twoBandAnnulusInteriorControlComplementByIndex_omittedInteriorColumnMap_ker_eq_bot_of_fullRank
+      a b c hfull)
 
 theorem twoBandAnnulus_boundaryZeroKirchhoff_control_iff_interiorFilter_control
     (emitted : Finset twoBandAnnulusGraph.edgeSet) :
@@ -14494,6 +14580,66 @@ theorem twoBandAnnulus_CAP5_boundaryZeroKirchhoff_forcedEdgeCoverage_of_emits_ra
         outer0 outer1 outer2 hz (by
           intro e heControl
           exact hvanishEmitted e (hemits heControl)))
+
+theorem twoBandAnnulus_CAP5_boundaryZeroKirchhoff_forcedEdgeCoverage_of_emits_fullRankInteriorControlComplementByIndex
+    {boundaryEdge : Fin 5 → twoBandAnnulusGraph.edgeSet} {n : Nat}
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    (p0Inside p4Inside : Bool) (side : Fin 9 → Prop)
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (a b c : Fin 9)
+    (hfull : twoBandAnnulusInteriorOmittedIndexTripleFullRank a b c)
+    (hemits :
+      twoBandAnnulusInteriorControlComplementByIndex a b c ⊆
+        classifier.emittedFinset) :
+    ∀ ⦃z : twoBandAnnulusGraph.edgeSet → Color⦄,
+      z ∈ theorem49BoundaryZeroKirchhoffSubspace
+          twoBandAnnulusEmbedding twoBandAnnulusKirchhoffVertices →
+      z ≠ 0 →
+        ∃ e : twoBandAnnulusGraph.edgeSet,
+          data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e ∧
+            z e ≠ 0 :=
+  (data.forcedEdgeKirchhoffCoverage_iff_enumeratedExceptionalAnnulusForcedEdgeClassifierKirchhoffControl
+    twoBandAnnulusEmbedding twoBandAnnulusKirchhoffVertices classifier).2
+    (by
+      intro z hz hvanishEmitted
+      exact
+        twoBandAnnulusInteriorControlComplementByIndex_boundaryZeroKirchhoff_control_of_fullRank
+          a b c hfull hz (by
+            intro e heControl
+            exact hvanishEmitted e (hemits heControl)))
+
+set_option maxRecDepth 10000 in
+theorem twoBandAnnulus_CAP5_boundaryZeroKirchhoff_forcedEdgeCoverage_of_emits_fullRankIncreasingOmittedIndexTriple
+    {boundaryEdge : Fin 5 → twoBandAnnulusGraph.edgeSet} {n : Nat}
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    (p0Inside p4Inside : Bool) (side : Fin 9 → Prop)
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (a b c : Fin 9)
+    (hmem :
+      ((a, b), c) ∈ twoBandAnnulusFullRankIncreasingOmittedIndexTriples)
+    (hemits :
+      twoBandAnnulusInteriorControlComplementByIndex a b c ⊆
+        classifier.emittedFinset) :
+    ∀ ⦃z : twoBandAnnulusGraph.edgeSet → Color⦄,
+      z ∈ theorem49BoundaryZeroKirchhoffSubspace
+          twoBandAnnulusEmbedding twoBandAnnulusKirchhoffVertices →
+      z ≠ 0 →
+        ∃ e : twoBandAnnulusGraph.edgeSet,
+          data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e ∧
+            z e ≠ 0 := by
+  have hparts :
+      a.val < b.val ∧ b.val < c.val ∧
+        twoBandAnnulusInteriorOmittedIndexTripleFullRank a b c :=
+    (twoBandAnnulus_mem_fullRankIncreasingOmittedIndexTriples_iff
+      a b c).1 hmem
+  have hfull :
+      twoBandAnnulusInteriorOmittedIndexTripleFullRank a b c :=
+    hparts.2.2
+  exact
+    twoBandAnnulus_CAP5_boundaryZeroKirchhoff_forcedEdgeCoverage_of_emits_fullRankInteriorControlComplementByIndex
+      p0Inside p4Inside side classifier a b c hfull hemits
 
 /-- Low-cardinality refutation for the two-band Kirchhoff detector: five emitted coordinates do
 not cover the boundary-zero Kirchhoff target. -/
