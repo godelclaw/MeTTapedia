@@ -11796,6 +11796,95 @@ theorem sharedInteriorPair_CAP5_theorem49BoundaryRootSynthesis_of_extensionFinse
       exact ⟨i, by simpa [sharedInteriorPairUniqueCertificateRedBlueFamily] using hi⟩)
     hwitnessExtraRed hwitnessExtraBlue
 
+/--
+Boundary-trimmed finite-checker endpoint for the shared focus shell.  Once CAP5 emits the two
+lab-certified controls, extra emitted edges on the selected boundary need no projected-generator
+certificates: every selected-boundary-zero chain is already zero there.
+-/
+theorem sharedInteriorPair_CAP5_theorem49BoundaryRootSynthesis_of_emits_interiorControlEdges_uniqueCertificates_boundaryTrimmed
+    {boundaryEdge : Fin 5 → sharedInteriorPairGraph.edgeSet} {n : Nat}
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    [FiniteDimensional F2 (sharedInteriorPairGraph.edgeSet → Color)]
+    (C₀ : sharedInteriorPairGraph.EdgeColoring Color)
+    (hsubset :
+      sharedInteriorPairProjectedGeneratorCertificateColorings ⊆
+        sharedInteriorPairGraph.EdgeKempeClosure C₀)
+    (p0Inside p4Inside : Bool) (side : Fin 8 → Prop)
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (hemits : sharedInteriorPairInteriorControlEdges ⊆ classifier.emittedFinset) :
+    Theorem49BoundaryRootSynthesis sharedInteriorPairEmbedding C₀ :=
+  theorem49BoundaryRootSynthesis_of_controlEdges_nonBoundaryWitnesses
+    sharedInteriorPairEmbedding C₀ sharedInteriorPairProjectedGeneratorCertificateColorings
+    hsubset sharedInteriorPairUniqueCertificateRedBlueFamily classifier.emittedFinset
+    (sharedInteriorPair_CAP5_classifierControl_of_emits_interiorControlEdges
+      p0Inside p4Inside side classifier hemits)
+    (by
+      intro e _heEmitted heNotBoundary
+      have heInteriorSupport :
+          e ∈ interiorEdgeSupport
+            sharedInteriorPairEmbedding.faceBoundary sharedInteriorPairEmbedding.faces := by
+        by_contra hnotInterior
+        exact heNotBoundary
+          (sharedInteriorPair_mem_selectedBoundarySupport_of_not_mem_interiorEdgeSupport
+            hnotInterior)
+      have heControl : e ∈ sharedInteriorPairInteriorControlEdges := by
+        simpa [sharedInteriorPairInteriorControlEdges, sharedInteriorPair_interiorEdgeSupport_eq]
+          using heInteriorSupport
+      rcases redBlueSingleCoordinateFamily_witnessRed sharedInteriorPairInteriorControlEdges
+          sharedInteriorPair_redBlueSingleCoordinateMemberships_of_uniqueCertificates.1
+          sharedInteriorPair_redBlueSingleCoordinateMemberships_of_uniqueCertificates.2
+          e heControl with
+        ⟨i, hi⟩
+      exact ⟨i, by simpa [sharedInteriorPairUniqueCertificateRedBlueFamily] using hi⟩)
+    (by
+      intro e _heEmitted heNotBoundary
+      have heInteriorSupport :
+          e ∈ interiorEdgeSupport
+            sharedInteriorPairEmbedding.faceBoundary sharedInteriorPairEmbedding.faces := by
+        by_contra hnotInterior
+        exact heNotBoundary
+          (sharedInteriorPair_mem_selectedBoundarySupport_of_not_mem_interiorEdgeSupport
+            hnotInterior)
+      have heControl : e ∈ sharedInteriorPairInteriorControlEdges := by
+        simpa [sharedInteriorPairInteriorControlEdges, sharedInteriorPair_interiorEdgeSupport_eq]
+          using heInteriorSupport
+      rcases redBlueSingleCoordinateFamily_witnessBlue sharedInteriorPairInteriorControlEdges
+          sharedInteriorPair_redBlueSingleCoordinateMemberships_of_uniqueCertificates.1
+          sharedInteriorPair_redBlueSingleCoordinateMemberships_of_uniqueCertificates.2
+          e heControl with
+        ⟨i, hi⟩
+      exact ⟨i, by simpa [sharedInteriorPairUniqueCertificateRedBlueFamily] using hi⟩)
+
+/--
+Boundary-trimmed fixed-point endpoint for the shared focus shell.  Empty extension bins make the
+two lab-certified controls emitted; any additional emitted edge is selected-boundary-only and
+therefore invisible to boundary-zero chains.
+-/
+theorem sharedInteriorPair_CAP5_theorem49BoundaryRootSynthesis_of_extensionFinsets_eq_empty_uniqueCertificates_boundaryTrimmed
+    {boundaryEdge : Fin 5 → sharedInteriorPairGraph.edgeSet} {n : Nat}
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    [FiniteDimensional F2 (sharedInteriorPairGraph.edgeSet → Color)]
+    (C₀ : sharedInteriorPairGraph.EdgeColoring Color)
+    (hsubset :
+      sharedInteriorPairProjectedGeneratorCertificateColorings ⊆
+        sharedInteriorPairGraph.EdgeKempeClosure C₀)
+    (p0Inside p4Inside : Bool) (side : Fin 8 → Prop)
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (hcrossingEmpty :
+      classifier.crossingExtensionFinset sharedInteriorPairInteriorControlEdges = ∅)
+    (hnoncrossingEmpty :
+      classifier.noncrossingExtensionFinset sharedInteriorPairInteriorControlEdges = ∅) :
+    Theorem49BoundaryRootSynthesis sharedInteriorPairEmbedding C₀ := by
+  have hemits : sharedInteriorPairInteriorControlEdges ⊆ classifier.emittedFinset :=
+    (classifier.controlEdges_subset_emittedFinset_iff_extensionFinsets_eq_empty
+      sharedInteriorPairInteriorControlEdges).2
+      ⟨hcrossingEmpty, hnoncrossingEmpty⟩
+  exact
+    sharedInteriorPair_CAP5_theorem49BoundaryRootSynthesis_of_emits_interiorControlEdges_uniqueCertificates_boundaryTrimmed
+      C₀ hsubset p0Inside p4Inside side classifier hemits
+
 /-- Failed finite-checker diagnostic for the shared focus shell.  Once the extension bins are
 empty for the two lab-certified controls, a failed unique-certificate synthesis run must expose
 an extra emitted classifier edge outside the certified control set. -/
@@ -12165,6 +12254,96 @@ theorem wheelWithInnerTriangle_CAP5_theorem49BoundaryRootSynthesis_of_extensionF
         ⟨i, hi⟩
       exact ⟨i, by simpa [wheelWithInnerTriangleUniqueCertificateRedBlueFamily] using hi⟩)
     hwitnessExtraRed hwitnessExtraBlue
+
+/--
+Boundary-trimmed finite-checker endpoint for the wheel focus shell.  Once CAP5 emits the three
+lab-certified spokes, extra emitted edges on the selected boundary need no projected-generator
+certificates: every selected-boundary-zero chain is already zero there.
+-/
+theorem wheelWithInnerTriangle_CAP5_theorem49BoundaryRootSynthesis_of_emits_interiorControlEdges_uniqueCertificates_boundaryTrimmed
+    {boundaryEdge : Fin 5 → wheelWithInnerTriangleGraph.edgeSet} {n : Nat}
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    [FiniteDimensional F2 (wheelWithInnerTriangleGraph.edgeSet → Color)]
+    (C₀ : wheelWithInnerTriangleGraph.EdgeColoring Color)
+    (hsubset :
+      wheelWithInnerTriangleProjectedGeneratorCertificateColorings ⊆
+        wheelWithInnerTriangleGraph.EdgeKempeClosure C₀)
+    (p0Inside p4Inside : Bool) (side : Fin 7 → Prop)
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (hemits : wheelWithInnerTriangleInteriorControlEdges ⊆ classifier.emittedFinset) :
+    Theorem49BoundaryRootSynthesis wheelWithInnerTriangleEmbedding C₀ :=
+  theorem49BoundaryRootSynthesis_of_controlEdges_nonBoundaryWitnesses
+    wheelWithInnerTriangleEmbedding C₀
+    wheelWithInnerTriangleProjectedGeneratorCertificateColorings hsubset
+    wheelWithInnerTriangleUniqueCertificateRedBlueFamily classifier.emittedFinset
+    (wheelWithInnerTriangle_CAP5_classifierControl_of_emits_interiorControlEdges
+      p0Inside p4Inside side classifier hemits)
+    (by
+      intro e _heEmitted heNotBoundary
+      have heInteriorSupport :
+          e ∈ interiorEdgeSupport
+            wheelWithInnerTriangleEmbedding.faceBoundary wheelWithInnerTriangleEmbedding.faces := by
+        by_contra hnotInterior
+        exact heNotBoundary
+          (wheelWithInnerTriangle_mem_selectedBoundarySupport_of_not_mem_interiorEdgeSupport
+            hnotInterior)
+      have heControl : e ∈ wheelWithInnerTriangleInteriorControlEdges := by
+        simpa [wheelWithInnerTriangleInteriorControlEdges,
+          wheelWithInnerTriangle_interiorEdgeSupport_eq] using heInteriorSupport
+      rcases redBlueSingleCoordinateFamily_witnessRed wheelWithInnerTriangleInteriorControlEdges
+          wheelWithInnerTriangle_redBlueSingleCoordinateMemberships_of_uniqueCertificates.1
+          wheelWithInnerTriangle_redBlueSingleCoordinateMemberships_of_uniqueCertificates.2
+          e heControl with
+        ⟨i, hi⟩
+      exact ⟨i, by simpa [wheelWithInnerTriangleUniqueCertificateRedBlueFamily] using hi⟩)
+    (by
+      intro e _heEmitted heNotBoundary
+      have heInteriorSupport :
+          e ∈ interiorEdgeSupport
+            wheelWithInnerTriangleEmbedding.faceBoundary wheelWithInnerTriangleEmbedding.faces := by
+        by_contra hnotInterior
+        exact heNotBoundary
+          (wheelWithInnerTriangle_mem_selectedBoundarySupport_of_not_mem_interiorEdgeSupport
+            hnotInterior)
+      have heControl : e ∈ wheelWithInnerTriangleInteriorControlEdges := by
+        simpa [wheelWithInnerTriangleInteriorControlEdges,
+          wheelWithInnerTriangle_interiorEdgeSupport_eq] using heInteriorSupport
+      rcases redBlueSingleCoordinateFamily_witnessBlue wheelWithInnerTriangleInteriorControlEdges
+          wheelWithInnerTriangle_redBlueSingleCoordinateMemberships_of_uniqueCertificates.1
+          wheelWithInnerTriangle_redBlueSingleCoordinateMemberships_of_uniqueCertificates.2
+          e heControl with
+        ⟨i, hi⟩
+      exact ⟨i, by simpa [wheelWithInnerTriangleUniqueCertificateRedBlueFamily] using hi⟩)
+
+/--
+Boundary-trimmed fixed-point endpoint for the wheel focus shell.  Empty extension bins make the
+three lab-certified spokes emitted; any additional emitted edge is selected-boundary-only and
+therefore invisible to boundary-zero chains.
+-/
+theorem wheelWithInnerTriangle_CAP5_theorem49BoundaryRootSynthesis_of_extensionFinsets_eq_empty_uniqueCertificates_boundaryTrimmed
+    {boundaryEdge : Fin 5 → wheelWithInnerTriangleGraph.edgeSet} {n : Nat}
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    [FiniteDimensional F2 (wheelWithInnerTriangleGraph.edgeSet → Color)]
+    (C₀ : wheelWithInnerTriangleGraph.EdgeColoring Color)
+    (hsubset :
+      wheelWithInnerTriangleProjectedGeneratorCertificateColorings ⊆
+        wheelWithInnerTriangleGraph.EdgeKempeClosure C₀)
+    (p0Inside p4Inside : Bool) (side : Fin 7 → Prop)
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (hcrossingEmpty :
+      classifier.crossingExtensionFinset wheelWithInnerTriangleInteriorControlEdges = ∅)
+    (hnoncrossingEmpty :
+      classifier.noncrossingExtensionFinset wheelWithInnerTriangleInteriorControlEdges = ∅) :
+    Theorem49BoundaryRootSynthesis wheelWithInnerTriangleEmbedding C₀ := by
+  have hemits : wheelWithInnerTriangleInteriorControlEdges ⊆ classifier.emittedFinset :=
+    (classifier.controlEdges_subset_emittedFinset_iff_extensionFinsets_eq_empty
+      wheelWithInnerTriangleInteriorControlEdges).2
+      ⟨hcrossingEmpty, hnoncrossingEmpty⟩
+  exact
+    wheelWithInnerTriangle_CAP5_theorem49BoundaryRootSynthesis_of_emits_interiorControlEdges_uniqueCertificates_boundaryTrimmed
+      C₀ hsubset p0Inside p4Inside side classifier hemits
 
 /-- Failed finite-checker diagnostic for the wheel focus shell.  Once the extension bins are
 empty for the three lab-certified spoke controls, a failed unique-certificate synthesis run must
