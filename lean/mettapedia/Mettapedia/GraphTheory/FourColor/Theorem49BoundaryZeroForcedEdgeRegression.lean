@@ -7618,6 +7618,31 @@ theorem sharedInteriorPair_selectedBoundarySupport_eq :
     rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl <;>
     decide
 
+theorem sharedInteriorPair_mem_selectedBoundarySupport_of_not_mem_interiorEdgeSupport
+    {e : sharedInteriorPairGraph.edgeSet}
+    (hnotInterior :
+      e ∉ interiorEdgeSupport
+        sharedInteriorPairEmbedding.faceBoundary sharedInteriorPairEmbedding.faces) :
+    e ∈ selectedBoundarySupport
+      sharedInteriorPairEmbedding.faceBoundary
+      sharedInteriorPairEmbedding.faces
+      sharedInteriorPairEmbedding.faces := by
+  have hnotInterior' :
+      e ∉ ({sip01, sip12} : Finset sharedInteriorPairGraph.edgeSet) := by
+    simpa [sharedInteriorPair_interiorEdgeSupport_eq] using hnotInterior
+  rw [sharedInteriorPair_selectedBoundarySupport_eq]
+  rcases sharedInteriorPair_edge_eq e with
+    rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl
+  · exact False.elim (hnotInterior' (by simp))
+  · exact False.elim (hnotInterior' (by simp))
+  · simp
+  · simp
+  · simp
+  · simp
+  · simp
+  · simp
+  · simp
+
 theorem sharedInteriorPairBoundaryZeroEmptyKirchhoffScalarConstraintSpace_finrank_lt_of_control_card_le_one
     (control : Finset sharedInteriorPairGraph.edgeSet) (hcard : control.card ≤ 1) :
     Module.finrank F2
@@ -7779,6 +7804,43 @@ theorem sharedInteriorPair_boundaryZero_has_evader_of_singleton_control
     ⟨z, hzBoundary, hvanish, hzNonzero⟩
   exact ⟨z, hzBoundary, hvanish e (by simp), hzNonzero⟩
 
+/--
+Interior-control lower bound for the shared-interior-pair shell.  Boundary controls are
+irrelevant for selected-boundary-zero chains, so any controlling set must contain both interior
+support edges.
+-/
+theorem sharedInteriorPair_boundaryZero_interiorControl_card_ge_two
+    (control : Finset sharedInteriorPairGraph.edgeSet)
+    (hcontrol :
+      ∀ ⦃z : sharedInteriorPairGraph.edgeSet → Color⦄,
+        z ∈ planarBoundaryZeroSubmodule sharedInteriorPairEmbedding →
+        (∀ e ∈ control, z e = 0) →
+        z = 0) :
+    2 ≤ (control.filter fun e =>
+      e ∈ interiorEdgeSupport
+        sharedInteriorPairEmbedding.faceBoundary sharedInteriorPairEmbedding.faces).card := by
+  by_contra hnot
+  have hlt :
+      (control.filter fun e =>
+        e ∈ interiorEdgeSupport
+          sharedInteriorPairEmbedding.faceBoundary sharedInteriorPairEmbedding.faces).card < 2 :=
+    Nat.lt_of_not_ge hnot
+  rcases sharedInteriorPair_boundaryZero_has_evader_of_control_card_lt_two
+      (control.filter fun e =>
+        e ∈ interiorEdgeSupport
+          sharedInteriorPairEmbedding.faceBoundary sharedInteriorPairEmbedding.faces) hlt with
+    ⟨z, hzBoundary, hvanishInterior, hzNonzero⟩
+  have hvanishControl : ∀ e ∈ control, z e = 0 := by
+    intro e heControl
+    by_cases heInterior :
+        e ∈ interiorEdgeSupport
+          sharedInteriorPairEmbedding.faceBoundary sharedInteriorPairEmbedding.faces
+    · exact hvanishInterior e (Finset.mem_filter.2 ⟨heControl, heInterior⟩)
+    · exact boundaryZero_of_mem_planarBoundaryZeroSubmodule hzBoundary e
+        (sharedInteriorPair_mem_selectedBoundarySupport_of_not_mem_interiorEdgeSupport
+          heInterior)
+  exact hzNonzero (hcontrol hzBoundary hvanishControl)
+
 theorem sharedInteriorPair_boundaryZeroKirchhoff_control_card_ge_one
     (control : Finset sharedInteriorPairGraph.edgeSet)
     (hcontrol :
@@ -7825,6 +7887,31 @@ theorem wheelWithInnerTriangle_selectedBoundarySupport_eq :
   rcases wheelWithInnerTriangle_edge_eq e with
     rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl <;>
     decide
+
+theorem wheelWithInnerTriangle_mem_selectedBoundarySupport_of_not_mem_interiorEdgeSupport
+    {e : wheelWithInnerTriangleGraph.edgeSet}
+    (hnotInterior :
+      e ∉ interiorEdgeSupport
+        wheelWithInnerTriangleEmbedding.faceBoundary wheelWithInnerTriangleEmbedding.faces) :
+    e ∈ selectedBoundarySupport
+      wheelWithInnerTriangleEmbedding.faceBoundary
+      wheelWithInnerTriangleEmbedding.faces
+      wheelWithInnerTriangleEmbedding.faces := by
+  have hnotInterior' :
+      e ∉ ({wit01, wit02, wit03} : Finset wheelWithInnerTriangleGraph.edgeSet) := by
+    simpa [wheelWithInnerTriangle_interiorEdgeSupport_eq] using hnotInterior
+  rw [wheelWithInnerTriangle_selectedBoundarySupport_eq]
+  rcases wheelWithInnerTriangle_edge_eq e with
+    rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl
+  · exact False.elim (hnotInterior' (by simp))
+  · exact False.elim (hnotInterior' (by simp))
+  · exact False.elim (hnotInterior' (by simp))
+  · simp
+  · simp
+  · simp
+  · simp
+  · simp
+  · simp
 
 theorem wheelWithInnerTriangleBoundaryZeroEmptyKirchhoffScalarConstraintSpace_finrank_lt_of_control_card_le_two
     (control : Finset wheelWithInnerTriangleGraph.edgeSet) (hcard : control.card ≤ 2) :
@@ -7977,6 +8064,45 @@ theorem wheelWithInnerTriangle_boundaryZero_has_evader_of_control_card_lt_three
   wheelWithInnerTriangle_planarBoundaryZero_has_evader_of_control_card_le_two
     control (by omega)
 
+/--
+Interior-control lower bound for the wheel-with-inner-triangle shell without Kirchhoff parity.
+Boundary controls are automatic under boundary-zero, so any controlling set must contain all
+three interior spokes.
+-/
+theorem wheelWithInnerTriangle_boundaryZero_interiorControl_card_ge_three
+    (control : Finset wheelWithInnerTriangleGraph.edgeSet)
+    (hcontrol :
+      ∀ ⦃z : wheelWithInnerTriangleGraph.edgeSet → Color⦄,
+        z ∈ planarBoundaryZeroSubmodule wheelWithInnerTriangleEmbedding →
+        (∀ e ∈ control, z e = 0) →
+        z = 0) :
+    3 ≤ (control.filter fun e =>
+      e ∈ interiorEdgeSupport
+        wheelWithInnerTriangleEmbedding.faceBoundary wheelWithInnerTriangleEmbedding.faces).card := by
+  by_contra hnot
+  have hlt :
+      (control.filter fun e =>
+        e ∈ interiorEdgeSupport
+          wheelWithInnerTriangleEmbedding.faceBoundary
+          wheelWithInnerTriangleEmbedding.faces).card < 3 :=
+    Nat.lt_of_not_ge hnot
+  rcases wheelWithInnerTriangle_boundaryZero_has_evader_of_control_card_lt_three
+      (control.filter fun e =>
+        e ∈ interiorEdgeSupport
+          wheelWithInnerTriangleEmbedding.faceBoundary
+          wheelWithInnerTriangleEmbedding.faces) hlt with
+    ⟨z, hzBoundary, hvanishInterior, hzNonzero⟩
+  have hvanishControl : ∀ e ∈ control, z e = 0 := by
+    intro e heControl
+    by_cases heInterior :
+        e ∈ interiorEdgeSupport
+          wheelWithInnerTriangleEmbedding.faceBoundary wheelWithInnerTriangleEmbedding.faces
+    · exact hvanishInterior e (Finset.mem_filter.2 ⟨heControl, heInterior⟩)
+    · exact boundaryZero_of_mem_planarBoundaryZeroSubmodule hzBoundary e
+        (wheelWithInnerTriangle_mem_selectedBoundarySupport_of_not_mem_interiorEdgeSupport
+          heInterior)
+  exact hzNonzero (hcontrol hzBoundary hvanishControl)
+
 theorem wheelWithInnerTriangle_boundaryZeroKirchhoff_control_card_ge_two
     (control : Finset wheelWithInnerTriangleGraph.edgeSet)
     (hcontrol :
@@ -8047,6 +8173,49 @@ theorem wheelWithInnerTriangle_boundaryZeroKirchhoff_has_evader_of_singleton_con
       ({e} : Finset wheelWithInnerTriangleGraph.edgeSet) (by simp) with
     ⟨z, hzBoundary, hvanish, hzNonzero⟩
   exact ⟨z, hzBoundary, hvanish e (by simp), hzNonzero⟩
+
+/--
+Interior-control lower bound for the Kirchhoff-repaired wheel shell.  Boundary controls still
+vanish automatically, and the center Kirchhoff equation reduces the needed interior controls to
+two, but one interior spoke remains insufficient.
+-/
+theorem wheelWithInnerTriangle_boundaryZeroKirchhoff_interiorControl_card_ge_two
+    (control : Finset wheelWithInnerTriangleGraph.edgeSet)
+    (hcontrol :
+      ∀ ⦃z : wheelWithInnerTriangleGraph.edgeSet → Color⦄,
+        z ∈ theorem49BoundaryZeroKirchhoffSubspace
+            wheelWithInnerTriangleEmbedding ({(0 : Fin 7)} : Finset (Fin 7)) →
+        (∀ e ∈ control, z e = 0) →
+        z = 0) :
+    2 ≤ (control.filter fun e =>
+      e ∈ interiorEdgeSupport
+        wheelWithInnerTriangleEmbedding.faceBoundary wheelWithInnerTriangleEmbedding.faces).card := by
+  by_contra hnot
+  have hlt :
+      (control.filter fun e =>
+        e ∈ interiorEdgeSupport
+          wheelWithInnerTriangleEmbedding.faceBoundary
+          wheelWithInnerTriangleEmbedding.faces).card < 2 :=
+    Nat.lt_of_not_ge hnot
+  rcases wheelWithInnerTriangle_boundaryZeroKirchhoff_has_evader_of_control_card_lt_two
+      (control.filter fun e =>
+        e ∈ interiorEdgeSupport
+          wheelWithInnerTriangleEmbedding.faceBoundary
+          wheelWithInnerTriangleEmbedding.faces) hlt with
+    ⟨z, hz, hvanishInterior, hzNonzero⟩
+  have hzBoundary : z ∈ planarBoundaryZeroSubmodule wheelWithInnerTriangleEmbedding :=
+    theorem49BoundaryZeroKirchhoffSubspace_le_planarBoundaryZeroSubmodule
+      wheelWithInnerTriangleEmbedding ({(0 : Fin 7)} : Finset (Fin 7)) hz
+  have hvanishControl : ∀ e ∈ control, z e = 0 := by
+    intro e heControl
+    by_cases heInterior :
+        e ∈ interiorEdgeSupport
+          wheelWithInnerTriangleEmbedding.faceBoundary wheelWithInnerTriangleEmbedding.faces
+    · exact hvanishInterior e (Finset.mem_filter.2 ⟨heControl, heInterior⟩)
+    · exact boundaryZero_of_mem_planarBoundaryZeroSubmodule hzBoundary e
+        (wheelWithInnerTriangle_mem_selectedBoundarySupport_of_not_mem_interiorEdgeSupport
+          heInterior)
+  exact hzNonzero (hcontrol hz hvanishControl)
 
 /-! ## Exact finite-control-size certificates -/
 
