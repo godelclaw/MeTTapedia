@@ -304,6 +304,61 @@ theorem redBlueSingleCoordinateMemberships_of_projectedFaceGeneratorEqualities
       single_mem_projectedColoringGeneratorSubspace_of_exists_projectedFaceGenerator_eq
         (emb := emb) (colorings := colorings) (hblue e he)
 
+/-- Red/blue control-set memberships extracted from unique projected-bicolored-edge
+certificates.  This is the membership form of the finite checker output consumed by the CAP5
+canonical red/blue worklist family. -/
+theorem redBlueSingleCoordinateMemberships_of_uniqueProjectedBicoloredCertificates
+    {G : SimpleGraph V} {emb : PlaneEmbeddingWithBoundary G}
+    {colorings : Set (G.EdgeColoring Color)}
+    (controlEdges : Finset G.edgeSet)
+    (hred :
+      ∀ e ∈ controlEdges,
+        ∃ C ∈ colorings, ∃ f : emb.Face, ∃ a b : Color,
+          ValidColorPair a b ∧
+            a + b = red ∧
+              e ∈ emb.faceBoundary f ∧
+                e ∉ selectedBoundarySupport emb.faceBoundary emb.faces emb.faces ∧
+                  (C e = a ∨ C e = b) ∧
+                    ∀ e' : G.edgeSet,
+                      e' ≠ e →
+                      e' ∉ selectedBoundarySupport emb.faceBoundary emb.faces emb.faces →
+                      e' ∈ emb.faceBoundary f →
+                        ¬ (C e' = a ∨ C e' = b))
+    (hblue :
+      ∀ e ∈ controlEdges,
+        ∃ C ∈ colorings, ∃ f : emb.Face, ∃ a b : Color,
+          ValidColorPair a b ∧
+            a + b = blue ∧
+              e ∈ emb.faceBoundary f ∧
+                e ∉ selectedBoundarySupport emb.faceBoundary emb.faces emb.faces ∧
+                  (C e = a ∨ C e = b) ∧
+                    ∀ e' : G.edgeSet,
+                      e' ≠ e →
+                      e' ∉ selectedBoundarySupport emb.faceBoundary emb.faces emb.faces →
+                      e' ∈ emb.faceBoundary f →
+                        ¬ (C e' = a ∨ C e' = b)) :
+    (∀ e ∈ controlEdges,
+        Pi.single e red ∈ projectedColoringGeneratorSubspace emb colorings) ∧
+      (∀ e ∈ controlEdges,
+        Pi.single e blue ∈ projectedColoringGeneratorSubspace emb colorings) := by
+  constructor
+  · intro e he
+    rcases hred e he with
+      ⟨C, hC, f, a, b, hab, hsum, hface, hnotBoundary, hcolor, hunique⟩
+    have hmem :
+        Pi.single e (a + b) ∈ projectedColoringGeneratorSubspace emb colorings :=
+      single_mem_projectedColoringGeneratorSubspace_of_unique_projected_bicolored
+        (emb := emb) (colorings := colorings) hC f hab hface hnotBoundary hcolor hunique
+    simpa [hsum] using hmem
+  · intro e he
+    rcases hblue e he with
+      ⟨C, hC, f, a, b, hab, hsum, hface, hnotBoundary, hcolor, hunique⟩
+    have hmem :
+        Pi.single e (a + b) ∈ projectedColoringGeneratorSubspace emb colorings :=
+      single_mem_projectedColoringGeneratorSubspace_of_unique_projected_bicolored
+        (emb := emb) (colorings := colorings) hC f hab hface hnotBoundary hcolor hunique
+    simpa [hsum] using hmem
+
 theorem projectedColoringGeneratorSubspace_le_planarBoundaryZeroSubmodule
     {G : SimpleGraph V} (emb : PlaneEmbeddingWithBoundary G)
     (colorings : Set (G.EdgeColoring Color)) :

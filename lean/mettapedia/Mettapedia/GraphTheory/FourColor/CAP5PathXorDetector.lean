@@ -4118,6 +4118,103 @@ theorem forcedEdgeIndicatorPathXorDetectorPayload_and_extensionControlEdge_bound
       hePredicateOutside, hze, hprogress, i, hpair⟩
 
 /--
+Unique-certificate form of the canonical-family cardinality handoff.  A finite checker can now
+feed unique projected-bicolored face certificates directly on the remaining-control worklist;
+the theorem extracts the red/blue single-coordinate memberships and then runs the path-xor
+handoff with the canonical red/blue family.
+-/
+theorem forcedEdgeIndicatorPathXorDetectorPayload_and_extensionControlEdge_boundaryZeroChain_canonicalFamilyPairing_ne_zero_of_uniqueProjectedBicoloredCertificates_of_emittedFinset_card_add_boundary_card_lt_of_finsetControl
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    [Fintype G.edgeSet]
+    (emb : PlaneEmbeddingWithBoundary G)
+    (colorings : Set (G.EdgeColoring Color))
+    (p0Inside p4Inside : Bool) (h : data.IsExceptional)
+    (side : V → Prop) (hcyclic : CyclicallyFiveEdgeConnected G)
+    (hportal_crosses :
+      ∀ edgeCandidate : CAP5ExceptionalAnnulusBoundaryEdgeSupportCandidate boundaryEdge,
+        data.RealizesExceptionalBoundarySupportOrientation
+            edgeCandidate.portalCandidate.orientation →
+        edgeCandidate.portalCandidate.sideCase =
+            CAP5ExceptionalAnnulusSideCase.ofPortalSides p0Inside p4Inside →
+        ∀ i : Fin 5, i ∈ edgeCandidate.portalCandidate.portalSet →
+          EdgeCrossesVertexSide G side (boundaryEdge i))
+    (hcycles : HasCycleOnSide G side ∧ HasCycleOnSide G (fun v => ¬ side v))
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (controlEdges : Finset G.edgeSet)
+    (hcard :
+      classifier.emittedFinset.card +
+        Fintype.card {e : G.edgeSet //
+          e ∈ selectedBoundarySupport emb.faceBoundary emb.faces emb.faces} <
+        Fintype.card G.edgeSet)
+    (hcontrol :
+      ∀ ⦃z : G.edgeSet → Color⦄,
+        z ∈ planarBoundaryZeroSubmodule emb →
+        (∀ e ∈ controlEdges, z e = 0) →
+          z = 0)
+    (hred :
+      ∀ e ∈ classifier.remainingControlEdges controlEdges,
+        ∃ C ∈ colorings, ∃ f : emb.Face, ∃ a b : Color,
+          ValidColorPair a b ∧
+            a + b = red ∧
+              e ∈ emb.faceBoundary f ∧
+                e ∉ selectedBoundarySupport emb.faceBoundary emb.faces emb.faces ∧
+                  (C e = a ∨ C e = b) ∧
+                    ∀ e' : G.edgeSet,
+                      e' ≠ e →
+                      e' ∉ selectedBoundarySupport emb.faceBoundary emb.faces emb.faces →
+                      e' ∈ emb.faceBoundary f →
+                        ¬ (C e' = a ∨ C e' = b))
+    (hblue :
+      ∀ e ∈ classifier.remainingControlEdges controlEdges,
+        ∃ C ∈ colorings, ∃ f : emb.Face, ∃ a b : Color,
+          ValidColorPair a b ∧
+            a + b = blue ∧
+              e ∈ emb.faceBoundary f ∧
+                e ∉ selectedBoundarySupport emb.faceBoundary emb.faces emb.faces ∧
+                  (C e = a ∨ C e = b) ∧
+                    ∀ e' : G.edgeSet,
+                      e' ≠ e →
+                      e' ∉ selectedBoundarySupport emb.faceBoundary emb.faces emb.faces →
+                      e' ∈ emb.faceBoundary f →
+                        ¬ (C e' = a ∨ C e' = b)) :
+    let hmembers :=
+      redBlueSingleCoordinateMemberships_of_uniqueProjectedBicoloredCertificates
+        (emb := emb) (colorings := colorings)
+        (classifier.remainingControlEdges controlEdges) hred hblue
+    data.ForcedEdgeIndicatorPathXorDetectorPayload p0Inside p4Inside side ∧
+      ∃ z : G.edgeSet → Color,
+        z ∈ planarBoundaryZeroSubmodule emb ∧
+          z ≠ 0 ∧
+            (∀ e : G.edgeSet,
+              data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e →
+                z e = 0) ∧
+              ∃ e : G.edgeSet,
+                (e ∈ classifier.crossingExtensionFinset controlEdges ∨
+                  e ∈ classifier.noncrossingExtensionFinset controlEdges) ∧
+                  e ∈ classifier.remainingControlEdges controlEdges ∧
+                    ¬ data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e ∧
+                      z e ≠ 0 ∧
+                        ((classifier.remainingControlEdges controlEdges).erase e).card <
+                          (classifier.remainingControlEdges controlEdges).card ∧
+                          ∃ i :
+                            ({e : G.edgeSet //
+                              e ∈ classifier.remainingControlEdges controlEdges} × Bool),
+                            chainDotBilinForm G.edgeSet
+                                (redBlueSingleCoordinateFamily
+                                  (classifier.remainingControlEdges controlEdges)
+                                  hmembers.1 hmembers.2 i :
+                                  G.edgeSet → Color) z ≠ 0 := by
+  let hmembers :=
+    redBlueSingleCoordinateMemberships_of_uniqueProjectedBicoloredCertificates
+      (emb := emb) (colorings := colorings)
+      (classifier.remainingControlEdges controlEdges) hred hblue
+  exact
+    data.forcedEdgeIndicatorPathXorDetectorPayload_and_extensionControlEdge_boundaryZeroChain_canonicalFamilyPairing_ne_zero_of_emittedFinset_card_add_boundary_card_lt_of_finsetControl
+      emb colorings p0Inside p4Inside h side hcyclic hportal_crosses hcycles
+      classifier controlEdges hcard hcontrol hmembers.1 hmembers.2
+
+/--
 Interior-support canonical-family cardinality handoff.  The finite control set is the canonical
 face-incidence interior support, while the generator family is built from membership certificates
 on the remaining interior-support worklist.
