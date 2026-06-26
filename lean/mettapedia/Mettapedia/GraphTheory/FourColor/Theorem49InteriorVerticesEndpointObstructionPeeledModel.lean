@@ -454,11 +454,13 @@ theorem selectedBoundaryInteriorEdgeEndpointVertices_strictly_refines_interiorEd
 
 def peeledEndpointTouchRootFace : AmbientFace peeledEndpointTouchEmbedding.faces :=
   ⟨(0 : PeeledEndpointTouchFace), by
-    simp [peeledEndpointTouchEmbedding, peeledEndpointTouchFaces]⟩
+    change (0 : PeeledEndpointTouchFace) ∈ peeledEndpointTouchFaces
+    exact Finset.mem_univ _⟩
 
 def peeledEndpointTouchPeelFace : AmbientFace peeledEndpointTouchEmbedding.faces :=
   ⟨(1 : PeeledEndpointTouchFace), by
-    simp [peeledEndpointTouchEmbedding, peeledEndpointTouchFaces]⟩
+    change (1 : PeeledEndpointTouchFace) ∈ peeledEndpointTouchFaces
+    exact Finset.mem_univ _⟩
 
 def peeledEndpointTouchRoots : Finset (AmbientFace peeledEndpointTouchEmbedding.faces) :=
   {peeledEndpointTouchRootFace}

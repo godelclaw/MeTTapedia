@@ -506,7 +506,8 @@ embedding is exactly the same one whose purified selected-boundary carrier is em
 theorem peeledEndpointTouch_attachedCertificate_emptyCarrier :
     selectedBoundaryInteriorEdgeEndpointVertices
         peeledEndpointTouchPlanarBoundaryAttachedRootedFacePeelCertificate.embedding = ∅ := by
-  simpa [peeledEndpointTouchPlanarBoundaryAttachedRootedFacePeelCertificate] using
+  simpa [peeledEndpointTouchPlanarBoundaryAttachedRootedFacePeelCertificate,
+    planarBoundaryAttachedRootedFacePeelCertificate_of_interiorDualBoundaryRootAdjDistancePeelData] using
     selectedBoundaryInteriorEdgeEndpointVertices_eq_empty_peeledEndpointTouch
 
 /-- So the graph-level attached-certificate surface also fails to force a nonempty purified
@@ -517,9 +518,11 @@ theorem
       (interiorEdgeEndpointSupport data.embedding).Nonempty ∧
         ¬ (selectedBoundaryInteriorEdgeEndpointVertices data.embedding).Nonempty := by
   refine ⟨peeledEndpointTouchPlanarBoundaryAttachedRootedFacePeelCertificate, ?_, ?_⟩
-  · simpa [peeledEndpointTouchPlanarBoundaryAttachedRootedFacePeelCertificate] using
+  · simpa [peeledEndpointTouchPlanarBoundaryAttachedRootedFacePeelCertificate,
+      planarBoundaryAttachedRootedFacePeelCertificate_of_interiorDualBoundaryRootAdjDistancePeelData] using
       interiorEdgeEndpointSupport_nonempty_peeledEndpointTouch
-  · simpa [peeledEndpointTouchPlanarBoundaryAttachedRootedFacePeelCertificate] using
+  · simpa [peeledEndpointTouchPlanarBoundaryAttachedRootedFacePeelCertificate,
+      planarBoundaryAttachedRootedFacePeelCertificate_of_interiorDualBoundaryRootAdjDistancePeelData] using
       not_selectedBoundaryInteriorEdgeEndpointVertices_nonempty_peeledEndpointTouch
 
 /-- Crux summary on the direct attached-certificate lane: the endpoint-touch graph already admits
@@ -532,7 +535,8 @@ theorem peeledEndpointTouch_attachedCertificateCarrierCruxObstructionSummary :
         selectedBoundaryInteriorEdgeEndpointVertices
             peeledEndpointTouchPlanarBoundaryAttachedRootedFacePeelCertificate.embedding = ∅ := by
   refine ⟨admitsPlanarBoundaryAttachedRootedFacePeelCertificate_peeledEndpointTouchGraph, ?_, ?_⟩
-  · simpa [peeledEndpointTouchPlanarBoundaryAttachedRootedFacePeelCertificate] using
+  · simpa [peeledEndpointTouchPlanarBoundaryAttachedRootedFacePeelCertificate,
+      planarBoundaryAttachedRootedFacePeelCertificate_of_interiorDualBoundaryRootAdjDistancePeelData] using
       interiorEdgeEndpointSupport_nonempty_peeledEndpointTouch
   · exact peeledEndpointTouch_attachedCertificate_emptyCarrier
 

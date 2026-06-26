@@ -210,7 +210,8 @@ theorem boundaryFreeIncidentFaceSelector_of_interiorDualBoundaryRootParentPeelDa
             emb.faceBoundary emb.faces data.hall g.2 f.2 hgf_ne heg heFace⟩
     have hfaceMem :
         e ∈ emb.faceBoundary (selector.faceOf e heInterior).1 := by
-      simpa [selector] using
+      simpa [selector,
+        boundaryFreeIncidentFaceSelector_of_interiorDualBoundaryRootParentPeelData] using
         parentPeelFaceOfInteriorEdge_edge_mem_faceBoundary data heInterior
     have hrootFaceOf :=
       rootedSharedInteriorEdge_boundaryFreeIncidentFaceSelector_of_interiorDualBoundaryRootParentPeelData_faceOf_eq
@@ -247,12 +248,14 @@ theorem boundaryFreeIncidentFaceSelector_of_interiorDualBoundaryRootParentPeelDa
           heInterior
     have hgfRootData :
         (data.toInteriorDualRootDistanceParentPeelData).parentFace g = some f := by
-      simpa [InteriorDualBoundaryRootParentPeelData.toInteriorDualRootDistanceParentPeelData]
+      simpa [InteriorDualBoundaryRootParentPeelData.toInteriorDualRootDistanceParentPeelData,
+        interiorDualRootDistanceParentPeelDataOfParentSharedEdgeFaceMembershipCover]
         using hgf
     have hlt :=
       (data.toInteriorDualRootDistanceParentPeelData).hdist hgfRootData
     refine Or.inr ⟨g, by simpa [selector] using hgSelector, by simpa [selector] using hselectedG, ?_⟩
-    simpa [InteriorDualBoundaryRootParentPeelData.toInteriorDualRootDistanceParentPeelData]
+    simpa [InteriorDualBoundaryRootParentPeelData.toInteriorDualRootDistanceParentPeelData,
+      interiorDualRootDistanceParentPeelDataOfParentSharedEdgeFaceMembershipCover]
       using hlt
 
 theorem BoundaryFreeIncidentFaceSelector.selectedWitnessEdge_injective_on_peelFaces
@@ -744,6 +747,7 @@ theorem parentWitnessOrientation_of_boundaryData_and_interiorDualBoundaryRootPar
           rootedSharedInteriorEdgeOfPairwiseUnique emb.faceBoundary emb.faces data.hunique
             rootFace data.fallbackEdge g by
         simpa [planarBoundaryAnnulusConstruction_of_boundaryData_and_interiorDualBoundaryRootParentPeelData,
+          BoundaryFreeIncidentFaceSelector.toPlanarBoundaryAnnulusConstruction,
           rootFace] using
           boundaryFreeIncidentFaceSelector_of_interiorDualBoundaryRootParentPeelData_selectedWitnessEdge_eq
             data hg]
@@ -931,7 +935,8 @@ noncomputable def BoundaryFreeIncidentFaceSelector.toPlanarBoundaryAnnulusConstr
         ¬ ((∃ e ∈ emb.faceBoundary f.1, e ∈ construction.outerAmbientBoundary) ∧
             (∃ e ∈ emb.faceBoundary f.1, e ∈ construction.innerAmbientBoundary)) := by
       intro f
-      simpa [construction] using hboundaryFaceSeparated f
+      simpa [construction, BoundaryFreeIncidentFaceSelector.toPlanarBoundaryAnnulusConstruction]
+        using hboundaryFaceSeparated f
     exact construction.outerBoundaryFaces_disjoint_innerBoundaryFaces_of_boundaryFaceSeparated
       hseparated
   · intro i hi
