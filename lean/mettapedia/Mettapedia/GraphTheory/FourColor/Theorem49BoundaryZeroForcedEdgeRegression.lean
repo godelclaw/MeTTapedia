@@ -14623,6 +14623,82 @@ theorem wheelWithInnerTriangle_emittedInterior_card_ge_two_iff
           decide
         omega
 
+/-- Cardinality form of the shared boundary-zero focus-shell detector threshold.  Emitting two
+shared interior controls is equivalent to emitting the whole shared interior-control set. -/
+theorem sharedInteriorPair_emittedInterior_card_ge_two_iff
+    (emitted : Finset sharedInteriorPairGraph.edgeSet) :
+    2 ≤ (emitted.filter fun e => e ∈ sharedInteriorPairInteriorControlEdges).card ↔
+      sharedInteriorPairInteriorControlEdges ⊆ emitted := by
+  classical
+  constructor
+  · intro hcard e heInterior
+    by_contra hnotEmitted
+    have hsubset :
+        (emitted.filter fun x => x ∈ sharedInteriorPairInteriorControlEdges) ⊆
+          sharedInteriorPairInteriorControlEdges.erase e := by
+      intro x hx
+      rcases Finset.mem_filter.1 hx with ⟨hxEmitted, hxInterior⟩
+      have hxne : x ≠ e := by
+        intro hxe
+        subst x
+        exact hnotEmitted hxEmitted
+      exact Finset.mem_erase.2 ⟨hxne, hxInterior⟩
+    have hle := Finset.card_le_card hsubset
+    have herase : (sharedInteriorPairInteriorControlEdges.erase e).card = 1 := by
+      have hcardInterior : sharedInteriorPairInteriorControlEdges.card = 2 := by
+        decide
+      rw [Finset.card_erase_of_mem heInterior, hcardInterior]
+    rw [herase] at hle
+    omega
+  · intro hsubset
+    have hsubsetFilter :
+        sharedInteriorPairInteriorControlEdges ⊆
+          emitted.filter fun e => e ∈ sharedInteriorPairInteriorControlEdges := by
+      intro e heInterior
+      exact Finset.mem_filter.2 ⟨hsubset heInterior, heInterior⟩
+    have hle := Finset.card_le_card hsubsetFilter
+    have hcardInterior : sharedInteriorPairInteriorControlEdges.card = 2 := by
+      decide
+    simpa [hcardInterior] using hle
+
+/-- Cardinality form of the wheel boundary-zero focus-shell detector threshold.  Emitting three
+spoke controls is equivalent to emitting the whole wheel interior-control set. -/
+theorem wheelWithInnerTriangle_emittedInterior_card_ge_three_iff
+    (emitted : Finset wheelWithInnerTriangleGraph.edgeSet) :
+    3 ≤ (emitted.filter fun e => e ∈ wheelWithInnerTriangleInteriorControlEdges).card ↔
+      wheelWithInnerTriangleInteriorControlEdges ⊆ emitted := by
+  classical
+  constructor
+  · intro hcard e heInterior
+    by_contra hnotEmitted
+    have hsubset :
+        (emitted.filter fun x => x ∈ wheelWithInnerTriangleInteriorControlEdges) ⊆
+          wheelWithInnerTriangleInteriorControlEdges.erase e := by
+      intro x hx
+      rcases Finset.mem_filter.1 hx with ⟨hxEmitted, hxInterior⟩
+      have hxne : x ≠ e := by
+        intro hxe
+        subst x
+        exact hnotEmitted hxEmitted
+      exact Finset.mem_erase.2 ⟨hxne, hxInterior⟩
+    have hle := Finset.card_le_card hsubset
+    have herase : (wheelWithInnerTriangleInteriorControlEdges.erase e).card = 2 := by
+      have hcardInterior : wheelWithInnerTriangleInteriorControlEdges.card = 3 := by
+        decide
+      rw [Finset.card_erase_of_mem heInterior, hcardInterior]
+    rw [herase] at hle
+    omega
+  · intro hsubset
+    have hsubsetFilter :
+        wheelWithInnerTriangleInteriorControlEdges ⊆
+          emitted.filter fun e => e ∈ wheelWithInnerTriangleInteriorControlEdges := by
+      intro e heInterior
+      exact Finset.mem_filter.2 ⟨hsubset heInterior, heInterior⟩
+    have hle := Finset.card_le_card hsubsetFilter
+    have hcardInterior : wheelWithInnerTriangleInteriorControlEdges.card = 3 := by
+      decide
+    simpa [hcardInterior] using hle
+
 /--
 Runner-facing exact Kirchhoff threshold for the shared focus shell.  CAP5 covers every nonzero
 boundary-zero Kirchhoff chain exactly when the emitted classifier has at least one emitted edge in
@@ -16336,6 +16412,196 @@ theorem wheelWithInnerTriangle_CAP5_forcedEdgeCoverage_iff_emits_interiorControl
       p0Inside p4Inside side classifier
   · exact wheelWithInnerTriangle_CAP5_forcedEdgeCoverage_of_emits_interiorControlEdges
       p0Inside p4Inside side classifier
+
+/-- Runner-facing exact shared-shell threshold: boundary-zero coverage is equivalent to emitting
+both lab-certified shared interior controls. -/
+theorem sharedInteriorPair_CAP5_forcedEdgeCoverage_iff_emittedInterior_card_ge_two
+    {boundaryEdge : Fin 5 → sharedInteriorPairGraph.edgeSet} {n : Nat}
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    (p0Inside p4Inside : Bool) (side : Fin 8 → Prop)
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side) :
+    (∀ ⦃z : sharedInteriorPairGraph.edgeSet → Color⦄,
+      z ∈ planarBoundaryZeroSubmodule sharedInteriorPairEmbedding →
+      z ≠ 0 →
+        ∃ e : sharedInteriorPairGraph.edgeSet,
+          data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e ∧
+            z e ≠ 0) ↔
+      2 ≤ (classifier.emittedFinset.filter fun e =>
+        e ∈ sharedInteriorPairInteriorControlEdges).card :=
+  (sharedInteriorPair_CAP5_forcedEdgeCoverage_iff_emits_interiorControlEdges
+    p0Inside p4Inside side classifier).trans
+    (sharedInteriorPair_emittedInterior_card_ge_two_iff classifier.emittedFinset).symm
+
+/-- Runner-facing exact wheel-shell threshold: boundary-zero coverage is equivalent to emitting all
+three lab-certified spoke controls. -/
+theorem wheelWithInnerTriangle_CAP5_forcedEdgeCoverage_iff_emittedInterior_card_ge_three
+    {boundaryEdge : Fin 5 → wheelWithInnerTriangleGraph.edgeSet} {n : Nat}
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    (p0Inside p4Inside : Bool) (side : Fin 7 → Prop)
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side) :
+    (∀ ⦃z : wheelWithInnerTriangleGraph.edgeSet → Color⦄,
+      z ∈ planarBoundaryZeroSubmodule wheelWithInnerTriangleEmbedding →
+      z ≠ 0 →
+        ∃ e : wheelWithInnerTriangleGraph.edgeSet,
+          data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e ∧
+            z e ≠ 0) ↔
+      3 ≤ (classifier.emittedFinset.filter fun e =>
+        e ∈ wheelWithInnerTriangleInteriorControlEdges).card :=
+  (wheelWithInnerTriangle_CAP5_forcedEdgeCoverage_iff_emits_interiorControlEdges
+    p0Inside p4Inside side classifier).trans
+    (wheelWithInnerTriangle_emittedInterior_card_ge_three_iff classifier.emittedFinset).symm
+
+/-- Exact shared-shell boundary-zero failure threshold: CAP5 fails to cover every nonzero
+boundary-zero chain exactly below the two-control lab minimum. -/
+theorem sharedInteriorPair_CAP5_not_forcedEdgeCoverage_iff_emittedInterior_card_lt_two
+    {boundaryEdge : Fin 5 → sharedInteriorPairGraph.edgeSet} {n : Nat}
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    (p0Inside p4Inside : Bool) (side : Fin 8 → Prop)
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side) :
+    (¬ ∀ ⦃z : sharedInteriorPairGraph.edgeSet → Color⦄,
+      z ∈ planarBoundaryZeroSubmodule sharedInteriorPairEmbedding →
+      z ≠ 0 →
+        ∃ e : sharedInteriorPairGraph.edgeSet,
+          data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e ∧
+            z e ≠ 0) ↔
+      (classifier.emittedFinset.filter fun e =>
+        e ∈ sharedInteriorPairInteriorControlEdges).card < 2 := by
+  constructor
+  · intro hnotCoverage
+    have hnotGe :
+        ¬ 2 ≤ (classifier.emittedFinset.filter fun e =>
+          e ∈ sharedInteriorPairInteriorControlEdges).card := by
+      intro hge
+      exact hnotCoverage
+        ((sharedInteriorPair_CAP5_forcedEdgeCoverage_iff_emittedInterior_card_ge_two
+          p0Inside p4Inside side classifier).2 hge)
+    exact Nat.lt_of_not_ge hnotGe
+  · intro hlt hcoverage
+    have hge :=
+      (sharedInteriorPair_CAP5_forcedEdgeCoverage_iff_emittedInterior_card_ge_two
+        p0Inside p4Inside side classifier).1 hcoverage
+    omega
+
+/-- Certificate-facing exact shared-shell boundary-zero criterion: an invisible nonzero
+boundary-zero chain exists exactly below the two-control lab minimum. -/
+theorem sharedInteriorPair_CAP5_exists_boundaryZeroChain_vanishingOnForcedEdges_iff_emittedInterior_card_lt_two
+    {boundaryEdge : Fin 5 → sharedInteriorPairGraph.edgeSet} {n : Nat}
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    (p0Inside p4Inside : Bool) (side : Fin 8 → Prop)
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side) :
+    (∃ z : sharedInteriorPairGraph.edgeSet → Color,
+      z ∈ planarBoundaryZeroSubmodule sharedInteriorPairEmbedding ∧
+        z ≠ 0 ∧
+          ∀ e : sharedInteriorPairGraph.edgeSet,
+            data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e →
+              z e = 0) ↔
+      (classifier.emittedFinset.filter fun e =>
+        e ∈ sharedInteriorPairInteriorControlEdges).card < 2 := by
+  constructor
+  · rintro ⟨z, hz, hzNonzero, hvanish⟩
+    have hnotCoverage :
+        ¬ ∀ ⦃z : sharedInteriorPairGraph.edgeSet → Color⦄,
+          z ∈ planarBoundaryZeroSubmodule sharedInteriorPairEmbedding →
+          z ≠ 0 →
+            ∃ e : sharedInteriorPairGraph.edgeSet,
+              data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e ∧
+                z e ≠ 0 := by
+      intro hcoverage
+      rcases hcoverage hz hzNonzero with ⟨e, heForced, hze⟩
+      exact hze (hvanish e heForced)
+    exact
+      (sharedInteriorPair_CAP5_not_forcedEdgeCoverage_iff_emittedInterior_card_lt_two
+        p0Inside p4Inside side classifier).1 hnotCoverage
+  · intro hlt
+    exact
+      data.exists_boundaryZeroChain_vanishingOnEnumeratedExceptionalAnnulusForcedEdges_of_not_classifierControl
+        sharedInteriorPairEmbedding p0Inside p4Inside side classifier
+        (by
+          intro hcontrol
+          exact
+            ((sharedInteriorPair_CAP5_not_forcedEdgeCoverage_iff_emittedInterior_card_lt_two
+              p0Inside p4Inside side classifier).2 hlt)
+              ((data.forcedEdgeCoverage_iff_enumeratedExceptionalAnnulusForcedEdgeClassifierControl
+                sharedInteriorPairEmbedding classifier).2 hcontrol))
+
+/-- Exact wheel-shell boundary-zero failure threshold: CAP5 fails to cover every nonzero
+boundary-zero chain exactly below the three-spoke lab minimum. -/
+theorem wheelWithInnerTriangle_CAP5_not_forcedEdgeCoverage_iff_emittedInterior_card_lt_three
+    {boundaryEdge : Fin 5 → wheelWithInnerTriangleGraph.edgeSet} {n : Nat}
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    (p0Inside p4Inside : Bool) (side : Fin 7 → Prop)
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side) :
+    (¬ ∀ ⦃z : wheelWithInnerTriangleGraph.edgeSet → Color⦄,
+      z ∈ planarBoundaryZeroSubmodule wheelWithInnerTriangleEmbedding →
+      z ≠ 0 →
+        ∃ e : wheelWithInnerTriangleGraph.edgeSet,
+          data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e ∧
+            z e ≠ 0) ↔
+      (classifier.emittedFinset.filter fun e =>
+        e ∈ wheelWithInnerTriangleInteriorControlEdges).card < 3 := by
+  constructor
+  · intro hnotCoverage
+    have hnotGe :
+        ¬ 3 ≤ (classifier.emittedFinset.filter fun e =>
+          e ∈ wheelWithInnerTriangleInteriorControlEdges).card := by
+      intro hge
+      exact hnotCoverage
+        ((wheelWithInnerTriangle_CAP5_forcedEdgeCoverage_iff_emittedInterior_card_ge_three
+          p0Inside p4Inside side classifier).2 hge)
+    exact Nat.lt_of_not_ge hnotGe
+  · intro hlt hcoverage
+    have hge :=
+      (wheelWithInnerTriangle_CAP5_forcedEdgeCoverage_iff_emittedInterior_card_ge_three
+        p0Inside p4Inside side classifier).1 hcoverage
+    omega
+
+/-- Certificate-facing exact wheel-shell boundary-zero criterion: an invisible nonzero
+boundary-zero chain exists exactly below the three-spoke lab minimum. -/
+theorem wheelWithInnerTriangle_CAP5_exists_boundaryZeroChain_vanishingOnForcedEdges_iff_emittedInterior_card_lt_three
+    {boundaryEdge : Fin 5 → wheelWithInnerTriangleGraph.edgeSet} {n : Nat}
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    (p0Inside p4Inside : Bool) (side : Fin 7 → Prop)
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side) :
+    (∃ z : wheelWithInnerTriangleGraph.edgeSet → Color,
+      z ∈ planarBoundaryZeroSubmodule wheelWithInnerTriangleEmbedding ∧
+        z ≠ 0 ∧
+          ∀ e : wheelWithInnerTriangleGraph.edgeSet,
+            data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e →
+              z e = 0) ↔
+      (classifier.emittedFinset.filter fun e =>
+        e ∈ wheelWithInnerTriangleInteriorControlEdges).card < 3 := by
+  constructor
+  · rintro ⟨z, hz, hzNonzero, hvanish⟩
+    have hnotCoverage :
+        ¬ ∀ ⦃z : wheelWithInnerTriangleGraph.edgeSet → Color⦄,
+          z ∈ planarBoundaryZeroSubmodule wheelWithInnerTriangleEmbedding →
+          z ≠ 0 →
+            ∃ e : wheelWithInnerTriangleGraph.edgeSet,
+              data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e ∧
+                z e ≠ 0 := by
+      intro hcoverage
+      rcases hcoverage hz hzNonzero with ⟨e, heForced, hze⟩
+      exact hze (hvanish e heForced)
+    exact
+      (wheelWithInnerTriangle_CAP5_not_forcedEdgeCoverage_iff_emittedInterior_card_lt_three
+        p0Inside p4Inside side classifier).1 hnotCoverage
+  · intro hlt
+    exact
+      data.exists_boundaryZeroChain_vanishingOnEnumeratedExceptionalAnnulusForcedEdges_of_not_classifierControl
+        wheelWithInnerTriangleEmbedding p0Inside p4Inside side classifier
+        (by
+          intro hcontrol
+          exact
+            ((wheelWithInnerTriangle_CAP5_not_forcedEdgeCoverage_iff_emittedInterior_card_lt_three
+              p0Inside p4Inside side classifier).2 hlt)
+              ((data.forcedEdgeCoverage_iff_enumeratedExceptionalAnnulusForcedEdgeClassifierControl
+                wheelWithInnerTriangleEmbedding classifier).2 hcontrol))
 
 /-- Runner-facing exact form for the wheel focus shell: exact CAP5 coverage leaves no
 unprocessed canonical spoke control edge. -/
