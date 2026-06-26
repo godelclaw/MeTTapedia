@@ -13744,6 +13744,26 @@ theorem sharedInteriorPair_CAP5_forcedEdgeCoverage_forces_indicatorPayload
     sharedInteriorPairEmbedding p0Inside p4Inside side
     sharedInteriorPairSip12OnlyEvader hzBoundary hzNonzero hcoverage
 
+/-- Negative detector form for the shared focus shell.  If the CAP5 generator emits no
+one-edge indicator path-xor payload, it cannot cover all nonzero selected-boundary-zero chains
+on this shell. -/
+theorem sharedInteriorPair_CAP5_not_forcedEdgeCoverage_of_no_indicatorPayload
+    {boundaryEdge : Fin 5 → sharedInteriorPairGraph.edgeSet} {n : Nat}
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    (p0Inside p4Inside : Bool) (side : Fin 8 → Prop)
+    (hnoPayload :
+      ¬ data.ForcedEdgeIndicatorPathXorDetectorPayload p0Inside p4Inside side) :
+    ¬ (∀ ⦃z : sharedInteriorPairGraph.edgeSet → Color⦄,
+        z ∈ planarBoundaryZeroSubmodule sharedInteriorPairEmbedding →
+        z ≠ 0 →
+          ∃ e : sharedInteriorPairGraph.edgeSet,
+            data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e ∧
+              z e ≠ 0) := by
+  intro hcoverage
+  exact hnoPayload
+    (sharedInteriorPair_CAP5_forcedEdgeCoverage_forces_indicatorPayload
+      p0Inside p4Inside side hcoverage)
+
 /-- Exact forced-edge form of the wheel focus-shell obstruction.  Any CAP5 coverage predicate
 for all nonzero selected-boundary-zero chains must enumerate all three interior spokes. -/
 theorem wheelWithInnerTriangle_CAP5_forcedEdgeCoverage_forces_wit01_wit02_wit03
@@ -13828,6 +13848,26 @@ theorem wheelWithInnerTriangle_CAP5_forcedEdgeCoverage_forces_indicatorPayload
     wheelWithInnerTriangleEmbedding p0Inside p4Inside side
     wheelWithInnerTriangleWit02Wit03OnlyBoundaryZeroEvader hzBoundary hzNonzero hcoverage
 
+/-- Negative detector form for the wheel focus shell.  If the CAP5 generator emits no one-edge
+indicator path-xor payload, it cannot cover all nonzero selected-boundary-zero chains on this
+shell. -/
+theorem wheelWithInnerTriangle_CAP5_not_forcedEdgeCoverage_of_no_indicatorPayload
+    {boundaryEdge : Fin 5 → wheelWithInnerTriangleGraph.edgeSet} {n : Nat}
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    (p0Inside p4Inside : Bool) (side : Fin 7 → Prop)
+    (hnoPayload :
+      ¬ data.ForcedEdgeIndicatorPathXorDetectorPayload p0Inside p4Inside side) :
+    ¬ (∀ ⦃z : wheelWithInnerTriangleGraph.edgeSet → Color⦄,
+        z ∈ planarBoundaryZeroSubmodule wheelWithInnerTriangleEmbedding →
+        z ≠ 0 →
+          ∃ e : wheelWithInnerTriangleGraph.edgeSet,
+            data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e ∧
+              z e ≠ 0) := by
+  intro hcoverage
+  exact hnoPayload
+    (wheelWithInnerTriangle_CAP5_forcedEdgeCoverage_forces_indicatorPayload
+      p0Inside p4Inside side hcoverage)
+
 /-- Kirchhoff-repaired forced-edge form for the shared focus shell.  Coverage of all nonzero
 boundary-zero Kirchhoff chains must enumerate at least one of the two shared-interior controls. -/
 theorem sharedInteriorPair_CAP5_boundaryZeroKirchhoff_forcedEdgeCoverage_forces_some_interiorControlEdge
@@ -13879,6 +13919,26 @@ theorem sharedInteriorPair_CAP5_boundaryZeroKirchhoff_forcedEdgeCoverage_forces_
       z ∈ theorem49BoundaryZeroKirchhoffSubspace
         sharedInteriorPairEmbedding ({(1 : Fin 8)} : Finset (Fin 8)))
     sharedInteriorPairNoForceKirchhoffEvader hzKirchhoff hzNonzero hcoverage
+
+/-- Negative detector form for the Kirchhoff-repaired shared focus shell.  With no one-edge
+indicator path-xor payload, CAP5 cannot cover all nonzero boundary-zero Kirchhoff chains. -/
+theorem sharedInteriorPair_CAP5_boundaryZeroKirchhoff_not_forcedEdgeCoverage_of_no_indicatorPayload
+    {boundaryEdge : Fin 5 → sharedInteriorPairGraph.edgeSet} {n : Nat}
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    (p0Inside p4Inside : Bool) (side : Fin 8 → Prop)
+    (hnoPayload :
+      ¬ data.ForcedEdgeIndicatorPathXorDetectorPayload p0Inside p4Inside side) :
+    ¬ (∀ ⦃z : sharedInteriorPairGraph.edgeSet → Color⦄,
+        z ∈ theorem49BoundaryZeroKirchhoffSubspace
+            sharedInteriorPairEmbedding ({(1 : Fin 8)} : Finset (Fin 8)) →
+        z ≠ 0 →
+          ∃ e : sharedInteriorPairGraph.edgeSet,
+            data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e ∧
+              z e ≠ 0) := by
+  intro hcoverage
+  exact hnoPayload
+    (sharedInteriorPair_CAP5_boundaryZeroKirchhoff_forcedEdgeCoverage_forces_indicatorPayload
+      p0Inside p4Inside side hcoverage)
 
 /-- Kirchhoff-repaired forced-edge form for the wheel focus shell.  Coverage of all nonzero
 boundary-zero Kirchhoff chains must enumerate two of the three spoke controls. -/
@@ -13971,6 +14031,26 @@ theorem wheelWithInnerTriangle_CAP5_boundaryZeroKirchhoff_forcedEdgeCoverage_for
       z ∈ theorem49BoundaryZeroKirchhoffSubspace
         wheelWithInnerTriangleEmbedding ({(0 : Fin 7)} : Finset (Fin 7)))
     wheelWithInnerTriangleWit01OnlyEvader hzKirchhoff hzNonzero hcoverage
+
+/-- Negative detector form for the Kirchhoff-repaired wheel focus shell.  With no one-edge
+indicator path-xor payload, CAP5 cannot cover all nonzero boundary-zero Kirchhoff chains. -/
+theorem wheelWithInnerTriangle_CAP5_boundaryZeroKirchhoff_not_forcedEdgeCoverage_of_no_indicatorPayload
+    {boundaryEdge : Fin 5 → wheelWithInnerTriangleGraph.edgeSet} {n : Nat}
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    (p0Inside p4Inside : Bool) (side : Fin 7 → Prop)
+    (hnoPayload :
+      ¬ data.ForcedEdgeIndicatorPathXorDetectorPayload p0Inside p4Inside side) :
+    ¬ (∀ ⦃z : wheelWithInnerTriangleGraph.edgeSet → Color⦄,
+        z ∈ theorem49BoundaryZeroKirchhoffSubspace
+            wheelWithInnerTriangleEmbedding ({(0 : Fin 7)} : Finset (Fin 7)) →
+        z ≠ 0 →
+          ∃ e : wheelWithInnerTriangleGraph.edgeSet,
+            data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e ∧
+              z e ≠ 0) := by
+  intro hcoverage
+  exact hnoPayload
+    (wheelWithInnerTriangle_CAP5_boundaryZeroKirchhoff_forcedEdgeCoverage_forces_indicatorPayload
+      p0Inside p4Inside side hcoverage)
 
 /-- Classifier-facing exact form for the shared focus shell: exact CAP5 coverage emits every
 canonical shared-interior control edge. -/

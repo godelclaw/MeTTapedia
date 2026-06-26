@@ -4860,6 +4860,53 @@ theorem forcedEdgeCoverage_forces_indicatorPayload_of_boundaryZeroChain
     z hzBoundary hzNonzero hcoverage
 
 /--
+Negative detector form for an arbitrary chain family.  Once the chain family has a nonzero
+member, exact forced-edge coverage would emit an indicator payload; absence of that payload
+therefore refutes the coverage predicate.
+-/
+theorem noIndicatorPayload_refutes_forcedEdgeCoverage_of_nonzero_chain
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    (p0Inside p4Inside : Bool) (side : V → Prop)
+    (chain : (G.edgeSet → Color) → Prop)
+    (hexists : ∃ z : G.edgeSet → Color, chain z ∧ z ≠ 0)
+    (hnoPayload :
+      ¬ data.ForcedEdgeIndicatorPathXorDetectorPayload p0Inside p4Inside side) :
+    ¬ (∀ ⦃z : G.edgeSet → Color⦄,
+        chain z →
+        z ≠ 0 →
+          ∃ e : G.edgeSet,
+            data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e ∧
+              z e ≠ 0) := by
+  intro hcoverage
+  rcases hexists with ⟨z, hzChain, hzNonzero⟩
+  exact hnoPayload
+    (data.forcedEdgeCoverage_forces_indicatorPayload_of_chain
+      p0Inside p4Inside side chain z hzChain hzNonzero hcoverage)
+
+/--
+Boundary-zero specialization of the negative detector.  A nonzero selected-boundary-zero chain
+plus absence of the one-edge indicator payload refutes exact CAP5 coverage of all nonzero
+selected-boundary-zero chains.
+-/
+theorem noIndicatorPayload_refutes_forcedEdgeCoverage_of_nonzero_boundaryZeroChain
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    (emb : PlaneEmbeddingWithBoundary G)
+    (p0Inside p4Inside : Bool) (side : V → Prop)
+    (hexists :
+      ∃ z : G.edgeSet → Color, z ∈ planarBoundaryZeroSubmodule emb ∧ z ≠ 0)
+    (hnoPayload :
+      ¬ data.ForcedEdgeIndicatorPathXorDetectorPayload p0Inside p4Inside side) :
+    ¬ (∀ ⦃z : G.edgeSet → Color⦄,
+        z ∈ planarBoundaryZeroSubmodule emb →
+        z ≠ 0 →
+          ∃ e : G.edgeSet,
+            data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e ∧
+              z e ≠ 0) := by
+  exact data.noIndicatorPayload_refutes_forcedEdgeCoverage_of_nonzero_chain
+    p0Inside p4Inside side (fun z => z ∈ planarBoundaryZeroSubmodule emb)
+    hexists hnoPayload
+
+/--
 Singleton-support form of forced-edge coverage.  If a nonzero selected-boundary-zero chain can
 only be nonzero at one target edge, then any CAP5 coverage predicate for all nonzero
 selected-boundary-zero chains must enumerate that target edge as forced.
