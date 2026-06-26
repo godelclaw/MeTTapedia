@@ -510,6 +510,44 @@ theorem theorem49BoundaryZeroKirchhoffSubspace_le_planarBoundaryZeroSubmodule
     theorem49BoundaryZeroKirchhoffSubspace emb vertices ≤ planarBoundaryZeroSubmodule emb :=
   inf_le_right
 
+theorem theorem49BoundaryZeroKirchhoffSubspace_control_of_planarBoundaryZeroSubmodule_control
+    {G : SimpleGraph V} [Fintype G.edgeSet]
+    (emb : PlaneEmbeddingWithBoundary G) (vertices : Finset V)
+    (control : Finset G.edgeSet)
+    (hcontrol :
+      ∀ ⦃z : G.edgeSet → Color⦄,
+        z ∈ planarBoundaryZeroSubmodule emb →
+        (∀ e ∈ control, z e = 0) →
+        z = 0) :
+    ∀ ⦃z : G.edgeSet → Color⦄,
+      z ∈ theorem49BoundaryZeroKirchhoffSubspace emb vertices →
+      (∀ e ∈ control, z e = 0) →
+      z = 0 := by
+  intro z hz hvanish
+  exact hcontrol
+    ((theorem49BoundaryZeroKirchhoffSubspace_le_planarBoundaryZeroSubmodule
+      emb vertices) hz)
+    hvanish
+
+theorem theorem49BoundaryZeroKirchhoffSubspace_nonzeroCoverage_of_planarBoundaryZeroSubmodule_nonzeroCoverage
+    {G : SimpleGraph V} [Fintype G.edgeSet]
+    (emb : PlaneEmbeddingWithBoundary G) (vertices : Finset V)
+    (control : Finset G.edgeSet)
+    (hcoverage :
+      ∀ ⦃z : G.edgeSet → Color⦄,
+        z ∈ planarBoundaryZeroSubmodule emb →
+        z ≠ 0 →
+        ∃ e : G.edgeSet, e ∈ control ∧ z e ≠ 0) :
+    ∀ ⦃z : G.edgeSet → Color⦄,
+      z ∈ theorem49BoundaryZeroKirchhoffSubspace emb vertices →
+      z ≠ 0 →
+      ∃ e : G.edgeSet, e ∈ control ∧ z e ≠ 0 := by
+  intro z hz hzNonzero
+  exact hcoverage
+    ((theorem49BoundaryZeroKirchhoffSubspace_le_planarBoundaryZeroSubmodule
+      emb vertices) hz)
+    hzNonzero
+
 theorem boundaryZero_of_mem_theorem49BoundaryZeroKirchhoffSubspace
     {G : SimpleGraph V} [Fintype G.edgeSet]
     {emb : PlaneEmbeddingWithBoundary G} {vertices : Finset V} {z : G.edgeSet → Color}

@@ -4603,6 +4603,46 @@ theorem theorem49BoundaryRootSynthesis_of_enumeratedExceptionalAnnulusForcedEdge
     emb C₀ colorings hsubset family p0Inside p4Inside side classifier.emittedFinset
     classifier.emittedFinset_spec hcontrol hwitnessRed hwitnessBlue
 
+theorem enumeratedExceptionalAnnulusForcedEdgeClassifierKirchhoffControl_of_boundaryZeroControl
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    [Fintype G.edgeSet]
+    {emb : PlaneEmbeddingWithBoundary G} {p0Inside p4Inside : Bool}
+    {side : V → Prop}
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (vertices : Finset V)
+    (hcontrol :
+      ∀ ⦃z : G.edgeSet → Color⦄,
+        z ∈ planarBoundaryZeroSubmodule emb →
+        (∀ e ∈ classifier.emittedFinset, z e = 0) →
+        z = 0) :
+    ∀ ⦃z : G.edgeSet → Color⦄,
+      z ∈ theorem49BoundaryZeroKirchhoffSubspace emb vertices →
+      (∀ e ∈ classifier.emittedFinset, z e = 0) →
+      z = 0 :=
+  theorem49BoundaryZeroKirchhoffSubspace_control_of_planarBoundaryZeroSubmodule_control
+    emb vertices classifier.emittedFinset hcontrol
+
+theorem enumeratedExceptionalAnnulusForcedEdgeClassifierKirchhoffCoverage_of_boundaryZeroCoverage
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    [Fintype G.edgeSet]
+    {emb : PlaneEmbeddingWithBoundary G} {p0Inside p4Inside : Bool}
+    {side : V → Prop}
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (vertices : Finset V)
+    (hcoverage :
+      ∀ ⦃z : G.edgeSet → Color⦄,
+        z ∈ planarBoundaryZeroSubmodule emb →
+        z ≠ 0 →
+        ∃ e : G.edgeSet, e ∈ classifier.emittedFinset ∧ z e ≠ 0) :
+    ∀ ⦃z : G.edgeSet → Color⦄,
+      z ∈ theorem49BoundaryZeroKirchhoffSubspace emb vertices →
+      z ≠ 0 →
+      ∃ e : G.edgeSet, e ∈ classifier.emittedFinset ∧ z e ≠ 0 :=
+  theorem49BoundaryZeroKirchhoffSubspace_nonzeroCoverage_of_planarBoundaryZeroSubmodule_nonzeroCoverage
+    emb vertices classifier.emittedFinset hcoverage
+
 /-- Subset fixed-point criterion for a Boolean CAP5 classifier.  If a finite checker has already
 proved control for a control set, and every edge in that control set is already emitted by the
 classifier, then the classifier itself controls the selected boundary-zero chains.  This is the
