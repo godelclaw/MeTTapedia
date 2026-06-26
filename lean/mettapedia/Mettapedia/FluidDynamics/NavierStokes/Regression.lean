@@ -1,0 +1,16 @@
+import Mettapedia.FluidDynamics.NavierStokes.ContinuationRegression
+import Mettapedia.FluidDynamics.NavierStokes.NavierStokesEnergyBKMBridgeRegression
+import Mettapedia.FluidDynamics.NavierStokes.NavierStokesFiniteModeBoundedEnergyRegression
+import Mettapedia.FluidDynamics.NavierStokes.Scaling.Regression
+
+/-!
+# Navier-Stokes regression aggregator
+
+This is a non-default regression target for the Navier-Stokes lane.  It combines
+the continuation regression umbrella with the energy/BKM and finite-mode
+bounded-energy regression surfaces while leaving the live entrypoint smaller.
+-/
+
+namespace Mettapedia.FluidDynamics.NavierStokes.Regression
+
+end Mettapedia.FluidDynamics.NavierStokes.Regression

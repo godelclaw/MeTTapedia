@@ -43,7 +43,7 @@ import Mettapedia.FluidDynamics.NavierStokes.WindowedColeHopfHeatScaledSeededCla
 /-!
 # Navier-Stokes live surface
 
-This module is a non-regression import target for the current godelclaw
+This module is a non-regression import target for the active
 Navier-Stokes route-audit work. It imports the named target/continuation
 surfaces plus the non-regression reverse-root modules found by the 2026-06-21
 import map.
