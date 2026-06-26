@@ -13734,6 +13734,71 @@ theorem twoBandAnnulus_CAP5_boundaryZeroKirchhoff_not_forcedEdgeCoverage_of_emit
       p0Inside p4Inside side classifier hcoverage
   omega
 
+/-- Pattern refutation for the two-band Kirchhoff detector.  Six emitted interior coordinates
+are not enough when they are the lab-refuted noncontrolling pattern; selected-boundary emissions
+vanish automatically for boundary-zero Kirchhoff chains. -/
+theorem twoBandAnnulus_CAP5_boundaryZeroKirchhoff_not_forcedEdgeCoverage_of_emittedInterior_subset_noncontrollingSix
+    {boundaryEdge : Fin 5 → twoBandAnnulusGraph.edgeSet} {n : Nat}
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    (p0Inside p4Inside : Bool) (side : Fin 9 → Prop)
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (hsubset :
+      (classifier.emittedFinset.filter fun e =>
+        e ∈ interiorEdgeSupport
+          twoBandAnnulusEmbedding.faceBoundary twoBandAnnulusEmbedding.faces) ⊆
+        twoBandAnnulusNoncontrollingSixKirchhoffControlEdges) :
+    ¬ ∀ ⦃z : twoBandAnnulusGraph.edgeSet → Color⦄,
+      z ∈ theorem49BoundaryZeroKirchhoffSubspace
+          twoBandAnnulusEmbedding twoBandAnnulusKirchhoffVertices →
+      z ≠ 0 →
+        ∃ e : twoBandAnnulusGraph.edgeSet,
+          data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e ∧
+            z e ≠ 0 := by
+  intro hcoverage
+  rcases twoBandAnnulus_tbaM34_only_has_boundaryZeroKirchhoff_evader with
+    ⟨hz, _hM34, _hR03, _hR58, _hM53, hzNonzero⟩
+  rcases hcoverage hz hzNonzero with ⟨e, hforced, hze⟩
+  have heEmitted : e ∈ classifier.emittedFinset :=
+    (classifier.emittedFinset_spec e).2 hforced
+  by_cases heInterior :
+      e ∈ interiorEdgeSupport
+        twoBandAnnulusEmbedding.faceBoundary twoBandAnnulusEmbedding.faces
+  · have heBad :
+        e ∈ twoBandAnnulusNoncontrollingSixKirchhoffControlEdges :=
+      hsubset (Finset.mem_filter.2 ⟨heEmitted, heInterior⟩)
+    exact hze
+      (twoBandAnnulusTbaM34OnlyKirchhoffEvader_vanishes_on_noncontrollingSix e heBad)
+  · exact hze
+      (boundaryZero_of_mem_theorem49BoundaryZeroKirchhoffSubspace hz e
+        (twoBandAnnulus_mem_selectedBoundarySupport_of_not_mem_interiorEdgeSupport
+          heInterior))
+
+/-- Exact wrong-six corollary: emitting precisely the noncontrolling six interior coordinates
+does not cover the two-band boundary-zero Kirchhoff target. -/
+theorem twoBandAnnulus_CAP5_boundaryZeroKirchhoff_not_forcedEdgeCoverage_of_emittedInterior_eq_noncontrollingSix
+    {boundaryEdge : Fin 5 → twoBandAnnulusGraph.edgeSet} {n : Nat}
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    (p0Inside p4Inside : Bool) (side : Fin 9 → Prop)
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (heq :
+      (classifier.emittedFinset.filter fun e =>
+        e ∈ interiorEdgeSupport
+          twoBandAnnulusEmbedding.faceBoundary twoBandAnnulusEmbedding.faces) =
+        twoBandAnnulusNoncontrollingSixKirchhoffControlEdges) :
+    ¬ ∀ ⦃z : twoBandAnnulusGraph.edgeSet → Color⦄,
+      z ∈ theorem49BoundaryZeroKirchhoffSubspace
+          twoBandAnnulusEmbedding twoBandAnnulusKirchhoffVertices →
+      z ≠ 0 →
+        ∃ e : twoBandAnnulusGraph.edgeSet,
+          data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e ∧
+            z e ≠ 0 :=
+  twoBandAnnulus_CAP5_boundaryZeroKirchhoff_not_forcedEdgeCoverage_of_emittedInterior_subset_noncontrollingSix
+    p0Inside p4Inside side classifier (by
+      intro e he
+      simpa [heq] using he)
+
 /-- Exact classifier-facing form of the wheel focus-shell F₂ verdict.  The CAP5 forced-edge
 predicate covers all nonzero selected-boundary-zero chains exactly when the classifier emits the
 three lab-certified spoke controls. -/
