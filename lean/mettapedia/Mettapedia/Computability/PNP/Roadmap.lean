@@ -24,6 +24,9 @@ structure PNPRoadmapEntry where
   proofNodeKey : String
   status : PNPProofNodeStatus
   truthValue : SimpleTruthValue
+  progressPercent : Nat
+  itvLowerPercent : Nat
+  itvUpperPercent : Nat
   obligation : String
 deriving Repr
 
@@ -33,32 +36,50 @@ def currentPNPRoadmap : List PNPRoadmapEntry :=
       proofNodeKey := "pnp.map.current-lane"
       status := .surveyed
       truthValue := ⟨100, 94⟩
+      progressPercent := 100
+      itvLowerPercent := 94
+      itvUpperPercent := 100
       obligation := "Keep the dependency map and split threshold current." },
     { stage := .liveRegressionSplit
       proofNodeKey := "pnp.map.current-lane"
       status := .checked
       truthValue := ⟨100, 93⟩
+      progressPercent := 100
+      itvLowerPercent := 93
+      itvUpperPercent := 100
       obligation := "Keep the live entrypoint separate from the regression aggregator." },
     { stage := .localLedgerAudit
       proofNodeKey := "pnp.v13.locked-core-identity-readout-family"
       status := .blockedByCounterexample
       truthValue := ⟨100, 99⟩
+      progressPercent := 100
+      itvLowerPercent := 99
+      itvUpperPercent := 100
       obligation := "Treat deterministic readout as refuted for the scaled identity-readout locked-core family unless a public-message invariant is supplied." },
     { stage := .localLedgerAudit
       proofNodeKey := "pnp.kpoly-promoted-packet"
       status := .ledgerCovered
       truthValue := ⟨100, 92⟩
+      progressPercent := 100
+      itvLowerPercent := 92
+      itvUpperPercent := 100
       obligation := "Treat local Kpoly coverage as local ledger evidence only." },
-    { stage := .localLedgerAudit, proofNodeKey := "pnp.kpoly.feature-route-quantale-boundary", status := .blockedByCounterexample, truthValue := ⟨100, 99⟩, obligation := "Treat polynomial feature-image evidence as resolved insufficient unless the route pays the full-rule feature-injectivity floor and separates supported weakness pairs." },
+    { stage := .localLedgerAudit, proofNodeKey := "pnp.kpoly.feature-route-quantale-boundary", status := .barrierBlocked, truthValue := ⟨100, 99⟩, progressPercent := 100, itvLowerPercent := 99, itvUpperPercent := 100, obligation := "Treat this shortcut-removed route class as blocked unless feature floor, support-surjectivity, and supported weakness-pair resolution all hold together." },
     { stage := .barrierObstruction
       proofNodeKey := "pnp.kpoly-promoted.all-barrier-obstructions"
       status := .barrierBlocked
       truthValue := ⟨100, 99⟩
+      progressPercent := 100
+      itvLowerPercent := 99
+      itvUpperPercent := 100
       obligation := "Do not promote the route while all three barrier escape layers are missing." },
     { stage := .replacementRoute
       proofNodeKey := "pnp.global-separation"
       status := .openBackground
       truthValue := ⟨0, 99⟩
+      progressPercent := 0
+      itvLowerPercent := 0
+      itvUpperPercent := 1
       obligation := "Start a replacement global route only after the barrier-world interfaces and escape witnesses are represented." } ]
 
 theorem currentPNPRoadmap_nonempty : currentPNPRoadmap ≠ [] := by
@@ -73,6 +94,9 @@ theorem currentPNPRoadmap_orders_local_ledger_before_global_promotion :
          proofNodeKey := "pnp.global-separation"
          status := .openBackground
          truthValue := ⟨0, 99⟩
+         progressPercent := 0
+         itvLowerPercent := 0
+         itvUpperPercent := 1
          obligation :=
           "Start a replacement global route only after the barrier-world interfaces and escape witnesses are represented." } :
         PNPRoadmapEntry) ∈ currentPNPRoadmap := by
