@@ -5697,6 +5697,107 @@ theorem missing_checker_ingredient_of_not_theorem49BoundaryRootSynthesis_of_forc
         ⟨z, hzBoundary, hzNonzero, hzForcedZero⟩)
 
 /--
+Exact-coverage active-branch frontier for the canonical-family CAP5 detector.  Under the
+active portal-side crossing hypotheses and the two side-cycle hypotheses, exact forced-edge
+coverage rules out every synthesis-failure branch except a portal-crossing checker gap for a
+latent that is not the active exceptional orientation with the active portal-side bits.
+-/
+theorem offBranch_missingPortalCrossingEvidence_of_not_theorem49BoundaryRootSynthesis_of_forcedEdgeCoverage_of_finsetControl
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    [Fintype G.edgeSet] [FiniteDimensional F2 (G.edgeSet → Color)]
+    (emb : PlaneEmbeddingWithBoundary G) (C₀ : G.EdgeColoring Color)
+    (colorings : Set (G.EdgeColoring Color))
+    (hsubset : colorings ⊆ G.EdgeKempeClosure C₀)
+    (p0Inside p4Inside : Bool) (h : data.IsExceptional)
+    (side : V → Prop)
+    [∀ latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge,
+      Decidable ((CAP5ExceptionalAnnulusGeneratorReport.latentNode
+        boundaryEdge side latent).PortalCrosses)]
+    [∀ latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge,
+      Decidable ((CAP5ExceptionalAnnulusGeneratorReport.latentNode
+        boundaryEdge side latent).SideCycles)]
+    [∀ latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge,
+      Decidable ((CAP5ExceptionalAnnulusGeneratorReport.latentNode
+        boundaryEdge side latent).RealizedSeparator)]
+    (hcyclic : CyclicallyFiveEdgeConnected G)
+    (hportal_crosses :
+      ∀ edgeCandidate : CAP5ExceptionalAnnulusBoundaryEdgeSupportCandidate boundaryEdge,
+        data.RealizesExceptionalBoundarySupportOrientation
+            edgeCandidate.portalCandidate.orientation →
+        edgeCandidate.portalCandidate.sideCase =
+            CAP5ExceptionalAnnulusSideCase.ofPortalSides p0Inside p4Inside →
+        ∀ i : Fin 5, i ∈ edgeCandidate.portalCandidate.portalSet →
+          EdgeCrossesVertexSide G side (boundaryEdge i))
+    (hcycles : HasCycleOnSide G side ∧ HasCycleOnSide G (fun v => ¬ side v))
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (controlEdges : Finset G.edgeSet)
+    (hcontrol :
+      ∀ ⦃z : G.edgeSet → Color⦄,
+        z ∈ planarBoundaryZeroSubmodule emb →
+        (∀ e ∈ controlEdges, z e = 0) →
+          z = 0)
+    (hredEmitted :
+      ∀ e ∈ classifier.emittedFinset,
+        Pi.single e red ∈ projectedColoringGeneratorSubspace emb colorings)
+    (hblueEmitted :
+      ∀ e ∈ classifier.emittedFinset,
+        Pi.single e blue ∈ projectedColoringGeneratorSubspace emb colorings)
+    (hredRemaining :
+      ∀ e ∈ classifier.remainingControlEdges controlEdges,
+        Pi.single e red ∈ projectedColoringGeneratorSubspace emb colorings)
+    (hblueRemaining :
+      ∀ e ∈ classifier.remainingControlEdges controlEdges,
+        Pi.single e blue ∈ projectedColoringGeneratorSubspace emb colorings)
+    (hcoverage :
+      ∀ ⦃z : G.edgeSet → Color⦄,
+        z ∈ planarBoundaryZeroSubmodule emb →
+        z ≠ 0 →
+          ∃ e : G.edgeSet,
+            data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e ∧
+              z e ≠ 0)
+    (hnotSynthesis : ¬ Theorem49BoundaryRootSynthesis emb C₀) :
+    ∃ latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge,
+      latent ∈ CAP5ExceptionalAnnulusGeneratorLatent.all boundaryEdge ∧
+        (CAP5ExceptionalAnnulusGeneratorReport.latentNode
+          boundaryEdge side latent).MissingPortalCrossingEvidence ∧
+          ¬ (data.RealizesExceptionalBoundarySupportOrientation latent.orientation ∧
+            latent.p0Inside = p0Inside ∧ latent.p4Inside = p4Inside) := by
+  rcases data.missing_checker_ingredient_of_not_theorem49BoundaryRootSynthesis_of_forcedEdgeCoverage_of_finsetControl
+      emb C₀ colorings hsubset p0Inside p4Inside h side hcyclic hportal_crosses hcycles
+      classifier controlEdges hcontrol hredEmitted hblueEmitted hredRemaining hblueRemaining
+      hcoverage hnotSynthesis with
+    hportal | hcycle
+  · rcases hportal with ⟨latent, hmem, hmissingPortal⟩
+    refine ⟨latent, hmem, hmissingPortal, ?_⟩
+    rintro ⟨horientation, hp0, hp4⟩
+    let node : CAP5ExceptionalAnnulusGeneratorNode boundaryEdge :=
+      { latent := latent, side := side }
+    have hnodePortal : node.PortalCrosses := by
+      intro i hi
+      have horientation' :
+          data.RealizesExceptionalBoundarySupportOrientation
+            node.candidate.portalCandidate.orientation := by
+        simpa [node] using horientation
+      have hsideCase :
+          node.candidate.portalCandidate.sideCase =
+            CAP5ExceptionalAnnulusSideCase.ofPortalSides p0Inside p4Inside := by
+        change CAP5ExceptionalAnnulusSideCase.ofPortalSides
+            node.latent.p0Inside node.latent.p4Inside =
+          CAP5ExceptionalAnnulusSideCase.ofPortalSides p0Inside p4Inside
+        rw [hp0, hp4]
+      exact hportal_crosses node.candidate horientation' hsideCase i hi
+    exact hmissingPortal (by
+      simpa [CAP5ExceptionalAnnulusGeneratorReport.latentNode, node] using hnodePortal)
+  · rcases hcycle with hselected | hcomplement
+    · rcases hselected with ⟨latent, _hmem, hmissingSelected⟩
+      exact False.elim (hmissingSelected (by
+        simpa [CAP5ExceptionalAnnulusGeneratorReport.latentNode] using hcycles.1))
+    · rcases hcomplement with ⟨latent, _hmem, hmissingComplement⟩
+      exact False.elim (hmissingComplement (by
+        simpa [CAP5ExceptionalAnnulusGeneratorReport.latentNode] using hcycles.2))
+
+/--
 Exact-coverage closed-frontier theorem for the canonical-family CAP5 detector.  If the finite
 checker has no missing primitive ingredient and the forced-edge detector meets every nonzero
 selected-boundary-zero chain, a failed synthesis run has no remaining branch.
