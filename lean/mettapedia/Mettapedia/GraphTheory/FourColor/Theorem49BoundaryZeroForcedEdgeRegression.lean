@@ -8785,6 +8785,230 @@ theorem sharedInteriorPair_theorem49BoundaryRootSynthesis_of_declaredForcedEdgeW
     sharedInteriorPair_boundaryZero_declaredForcedEdges_nonzeroCoverage
     hwitnessRed hwitnessBlue
 
+instance sharedInteriorPairGraph_lineGraph_adj_decidable :
+    DecidableRel sharedInteriorPairGraph.lineGraph.Adj := by
+  intro e f
+  rw [SimpleGraph.lineGraph_adj_iff_exists]
+  infer_instance
+
+def sharedInteriorPairCertificateColorA
+    (e : sharedInteriorPairGraph.edgeSet) : Color :=
+  if e = sip01 ∨ e = sip23 ∨ e = sip56 then red
+  else if e = sip12 ∨ e = sip40 ∨ e = sip67 then blue
+  else purple
+
+def sharedInteriorPairCertificateColorB
+    (e : sharedInteriorPairGraph.edgeSet) : Color :=
+  if e = sip12 ∨ e = sip40 ∨ e = sip56 then red
+  else if e = sip01 ∨ e = sip23 ∨ e = sip67 then blue
+  else purple
+
+theorem sharedInteriorPairCertificateColorA_ne_of_adj
+    {e f : sharedInteriorPairGraph.edgeSet}
+    (hadj : sharedInteriorPairGraph.lineGraph.Adj e f) :
+    sharedInteriorPairCertificateColorA e ≠ sharedInteriorPairCertificateColorA f := by
+  decide +revert
+
+theorem sharedInteriorPairCertificateColorB_ne_of_adj
+    {e f : sharedInteriorPairGraph.edgeSet}
+    (hadj : sharedInteriorPairGraph.lineGraph.Adj e f) :
+    sharedInteriorPairCertificateColorB e ≠ sharedInteriorPairCertificateColorB f := by
+  decide +revert
+
+def sharedInteriorPairCertificateColoringA :
+    sharedInteriorPairGraph.EdgeColoring Color :=
+  Coloring.mk sharedInteriorPairCertificateColorA (by
+    intro e f hadj
+    exact sharedInteriorPairCertificateColorA_ne_of_adj hadj)
+
+def sharedInteriorPairCertificateColoringB :
+    sharedInteriorPairGraph.EdgeColoring Color :=
+  Coloring.mk sharedInteriorPairCertificateColorB (by
+    intro e f hadj
+    exact sharedInteriorPairCertificateColorB_ne_of_adj hadj)
+
+@[simp] theorem sharedInteriorPairCertificateColoringA_apply
+    (e : sharedInteriorPairGraph.edgeSet) :
+    sharedInteriorPairCertificateColoringA e =
+      sharedInteriorPairCertificateColorA e := rfl
+
+@[simp] theorem sharedInteriorPairCertificateColoringB_apply
+    (e : sharedInteriorPairGraph.edgeSet) :
+    sharedInteriorPairCertificateColoringB e =
+      sharedInteriorPairCertificateColorB e := rfl
+
+def sharedInteriorPairProjectedGeneratorCertificateColorings :
+    Set (sharedInteriorPairGraph.EdgeColoring Color) :=
+  {C | C = sharedInteriorPairCertificateColoringA ∨
+      C = sharedInteriorPairCertificateColoringB}
+
+private theorem sharedInteriorPairCertificateColoringA_unique_sip01_redPurple :
+    ∀ e : sharedInteriorPairGraph.edgeSet,
+      e ≠ sip01 →
+      e ∉ selectedBoundarySupport
+        sharedInteriorPairEmbedding.faceBoundary
+        sharedInteriorPairEmbedding.faces
+        sharedInteriorPairEmbedding.faces →
+      e ∈ sharedInteriorPairEmbedding.faceBoundary (0 : Fin 3) →
+        ¬ (sharedInteriorPairCertificateColoringA e = red ∨
+          sharedInteriorPairCertificateColoringA e = purple) := by
+  intro e hne hnotBoundary hface
+  rw [sharedInteriorPair_selectedBoundarySupport_eq] at hnotBoundary
+  rcases sharedInteriorPair_edge_eq e with
+    rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl <;>
+    simp [sharedInteriorPairEmbedding, sharedInteriorPairFaceBoundary,
+      sharedInteriorPairCertificateColorA] at hne hnotBoundary hface ⊢;
+    decide
+
+private theorem sharedInteriorPairCertificateColoringA_unique_sip12_bluePurple :
+    ∀ e : sharedInteriorPairGraph.edgeSet,
+      e ≠ sip12 →
+      e ∉ selectedBoundarySupport
+        sharedInteriorPairEmbedding.faceBoundary
+        sharedInteriorPairEmbedding.faces
+        sharedInteriorPairEmbedding.faces →
+      e ∈ sharedInteriorPairEmbedding.faceBoundary (0 : Fin 3) →
+        ¬ (sharedInteriorPairCertificateColoringA e = blue ∨
+          sharedInteriorPairCertificateColoringA e = purple) := by
+  intro e hne hnotBoundary hface
+  rw [sharedInteriorPair_selectedBoundarySupport_eq] at hnotBoundary
+  rcases sharedInteriorPair_edge_eq e with
+    rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl <;>
+    simp [sharedInteriorPairEmbedding, sharedInteriorPairFaceBoundary,
+      sharedInteriorPairCertificateColorA] at hne hnotBoundary hface ⊢
+
+private theorem sharedInteriorPairCertificateColoringB_unique_sip01_bluePurple :
+    ∀ e : sharedInteriorPairGraph.edgeSet,
+      e ≠ sip01 →
+      e ∉ selectedBoundarySupport
+        sharedInteriorPairEmbedding.faceBoundary
+        sharedInteriorPairEmbedding.faces
+        sharedInteriorPairEmbedding.faces →
+      e ∈ sharedInteriorPairEmbedding.faceBoundary (0 : Fin 3) →
+        ¬ (sharedInteriorPairCertificateColoringB e = blue ∨
+          sharedInteriorPairCertificateColoringB e = purple) := by
+  intro e hne hnotBoundary hface
+  rw [sharedInteriorPair_selectedBoundarySupport_eq] at hnotBoundary
+  rcases sharedInteriorPair_edge_eq e with
+    rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl <;>
+    simp [sharedInteriorPairEmbedding, sharedInteriorPairFaceBoundary,
+      sharedInteriorPairCertificateColorB] at hne hnotBoundary hface ⊢
+
+private theorem sharedInteriorPairCertificateColoringB_unique_sip12_redPurple :
+    ∀ e : sharedInteriorPairGraph.edgeSet,
+      e ≠ sip12 →
+      e ∉ selectedBoundarySupport
+        sharedInteriorPairEmbedding.faceBoundary
+        sharedInteriorPairEmbedding.faces
+        sharedInteriorPairEmbedding.faces →
+      e ∈ sharedInteriorPairEmbedding.faceBoundary (0 : Fin 3) →
+        ¬ (sharedInteriorPairCertificateColoringB e = red ∨
+          sharedInteriorPairCertificateColoringB e = purple) := by
+  intro e hne hnotBoundary hface
+  rw [sharedInteriorPair_selectedBoundarySupport_eq] at hnotBoundary
+  rcases sharedInteriorPair_edge_eq e with
+    rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl <;>
+    simp [sharedInteriorPairEmbedding, sharedInteriorPairFaceBoundary,
+      sharedInteriorPairCertificateColorB] at hne hnotBoundary hface ⊢;
+    decide
+
+theorem sharedInteriorPair_uniqueProjectedBicoloredCertificates :
+    (∀ e ∈ sharedInteriorPairInteriorControlEdges,
+      ∃ C ∈ sharedInteriorPairProjectedGeneratorCertificateColorings,
+        ∃ f : sharedInteriorPairEmbedding.Face, ∃ a b : Color,
+          ValidColorPair a b ∧
+            a + b = red ∧
+              e ∈ sharedInteriorPairEmbedding.faceBoundary f ∧
+                e ∉ selectedBoundarySupport
+                  sharedInteriorPairEmbedding.faceBoundary
+                  sharedInteriorPairEmbedding.faces
+                  sharedInteriorPairEmbedding.faces ∧
+                  (C e = a ∨ C e = b) ∧
+                    ∀ e' : sharedInteriorPairGraph.edgeSet,
+                      e' ≠ e →
+                      e' ∉ selectedBoundarySupport
+                        sharedInteriorPairEmbedding.faceBoundary
+                        sharedInteriorPairEmbedding.faces
+                        sharedInteriorPairEmbedding.faces →
+                      e' ∈ sharedInteriorPairEmbedding.faceBoundary f →
+                        ¬ (C e' = a ∨ C e' = b)) ∧
+    (∀ e ∈ sharedInteriorPairInteriorControlEdges,
+      ∃ C ∈ sharedInteriorPairProjectedGeneratorCertificateColorings,
+        ∃ f : sharedInteriorPairEmbedding.Face, ∃ a b : Color,
+          ValidColorPair a b ∧
+            a + b = blue ∧
+              e ∈ sharedInteriorPairEmbedding.faceBoundary f ∧
+                e ∉ selectedBoundarySupport
+                  sharedInteriorPairEmbedding.faceBoundary
+                  sharedInteriorPairEmbedding.faces
+                  sharedInteriorPairEmbedding.faces ∧
+                  (C e = a ∨ C e = b) ∧
+                    ∀ e' : sharedInteriorPairGraph.edgeSet,
+                      e' ≠ e →
+                      e' ∉ selectedBoundarySupport
+                        sharedInteriorPairEmbedding.faceBoundary
+                        sharedInteriorPairEmbedding.faces
+                        sharedInteriorPairEmbedding.faces →
+                      e' ∈ sharedInteriorPairEmbedding.faceBoundary f →
+                        ¬ (C e' = a ∨ C e' = b)) := by
+  constructor
+  · intro e he
+    have heCases : e = sip01 ∨ e = sip12 := by
+      simpa [sharedInteriorPairInteriorControlEdges] using he
+    rcases heCases with rfl | rfl
+    · refine ⟨sharedInteriorPairCertificateColoringB, Or.inr rfl,
+        (0 : Fin 3), blue, purple, ?_, ?_, ?_, ?_, ?_, ?_⟩
+      · simp [ValidColorPair]
+      · simp
+      · decide
+      · exact sip01_not_mem_selectedBoundarySupport
+      · left
+        simp [sharedInteriorPairCertificateColorB]
+        decide
+      · exact sharedInteriorPairCertificateColoringB_unique_sip01_bluePurple
+    · refine ⟨sharedInteriorPairCertificateColoringA, Or.inl rfl,
+        (0 : Fin 3), blue, purple, ?_, ?_, ?_, ?_, ?_, ?_⟩
+      · simp [ValidColorPair]
+      · simp
+      · decide
+      · exact sip12_not_mem_selectedBoundarySupport
+      · left
+        simp [sharedInteriorPairCertificateColorA]
+        decide
+      · exact sharedInteriorPairCertificateColoringA_unique_sip12_bluePurple
+  · intro e he
+    have heCases : e = sip01 ∨ e = sip12 := by
+      simpa [sharedInteriorPairInteriorControlEdges] using he
+    rcases heCases with rfl | rfl
+    · refine ⟨sharedInteriorPairCertificateColoringA, Or.inl rfl,
+        (0 : Fin 3), red, purple, ?_, ?_, ?_, ?_, ?_, ?_⟩
+      · simp [ValidColorPair]
+      · simp
+      · decide
+      · exact sip01_not_mem_selectedBoundarySupport
+      · left
+        simp [sharedInteriorPairCertificateColorA]
+      · exact sharedInteriorPairCertificateColoringA_unique_sip01_redPurple
+    · refine ⟨sharedInteriorPairCertificateColoringB, Or.inr rfl,
+        (0 : Fin 3), red, purple, ?_, ?_, ?_, ?_, ?_, ?_⟩
+      · simp [ValidColorPair]
+      · simp
+      · decide
+      · exact sip12_not_mem_selectedBoundarySupport
+      · left
+        simp [sharedInteriorPairCertificateColorB]
+      · exact sharedInteriorPairCertificateColoringB_unique_sip12_redPurple
+
+theorem sharedInteriorPair_boundaryZeroProjectedColoringGeneratorDetector_of_uniqueCertificates :
+    BoundaryZeroProjectedColoringGeneratorDetector sharedInteriorPairEmbedding
+      sharedInteriorPairProjectedGeneratorCertificateColorings := by
+  exact
+    BoundaryZeroProjectedColoringGeneratorDetector.of_uniqueProjectedBicoloredCertificates
+      sharedInteriorPairInteriorControlEdges
+      sharedInteriorPair_boundaryZero_controlEdges_interiorEdges
+      sharedInteriorPair_uniqueProjectedBicoloredCertificates.1
+      sharedInteriorPair_uniqueProjectedBicoloredCertificates.2
+
 /-- Projected-face-generator certificate form of the shared-interior-pair focus verdict.  This
 is the direct active Lean consumer for finite-lab certificates saying that the red and blue
 single-coordinate probes on the declared forced edges are literal projected face generators. -/
