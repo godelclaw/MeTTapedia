@@ -840,6 +840,73 @@ theorem exists_boundaryZeroChain_extensionControlEdge_canonicalFamilyPairing_ne_
       hePredicateOutside, hze, hprogress, i, hpair⟩
 
 /--
+Residual-state version of the canonical CAP5 extension-signal handoff.  When the detector's
+extension edge has not already been recorded in an explicit processed set, the same edge gives a
+strict decrease of the explicit residual worklist.
+-/
+theorem exists_boundaryZeroChain_extensionControlEdge_canonicalFamilyPairing_ne_zero_and_residualProgress_of_extensionCoordinateSignalWithProgress
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    [Fintype G.edgeSet]
+    {emb : PlaneEmbeddingWithBoundary G}
+    {colorings : Set (G.EdgeColoring Color)}
+    {p0Inside p4Inside : Bool} {side : V → Prop}
+    {classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side}
+    {controlEdges processed : Finset G.edgeSet}
+    (hsignal :
+      data.ExtensionCoordinateSignalWithProgress emb p0Inside p4Inside side classifier
+        controlEdges)
+    (hred :
+      ∀ e ∈ classifier.remainingControlEdges controlEdges,
+        Pi.single e red ∈ projectedColoringGeneratorSubspace emb colorings)
+    (hblue :
+      ∀ e ∈ classifier.remainingControlEdges controlEdges,
+        Pi.single e blue ∈ projectedColoringGeneratorSubspace emb colorings)
+    (hnotProcessed :
+      ∀ e ∈ classifier.remainingControlEdges controlEdges, e ∉ processed) :
+    ∃ z : G.edgeSet → Color,
+      z ∈ planarBoundaryZeroSubmodule emb ∧
+        z ≠ 0 ∧
+          (∀ e : G.edgeSet,
+            data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e →
+              z e = 0) ∧
+            ∃ e : G.edgeSet,
+              (e ∈ classifier.crossingExtensionFinset controlEdges ∨
+                e ∈ classifier.noncrossingExtensionFinset controlEdges) ∧
+                e ∈ classifier.remainingControlEdges controlEdges ∧
+                  e ∈ classifier.residualRemainingControlEdges controlEdges processed ∧
+                    ¬ data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e ∧
+                      z e ≠ 0 ∧
+                        (classifier.residualRemainingControlEdges controlEdges
+                            (insert e processed)).card <
+                          (classifier.residualRemainingControlEdges controlEdges processed).card ∧
+                        ((classifier.remainingControlEdges controlEdges).erase e).card <
+                          (classifier.remainingControlEdges controlEdges).card ∧
+                          ∃ i :
+                            ({e : G.edgeSet //
+                              e ∈ classifier.remainingControlEdges controlEdges} × Bool),
+                            chainDotBilinForm G.edgeSet
+                                (redBlueSingleCoordinateFamily
+                                  (classifier.remainingControlEdges controlEdges) hred hblue i :
+                                  G.edgeSet → Color) z ≠ 0 := by
+  rcases data.exists_boundaryZeroChain_extensionControlEdge_canonicalFamilyPairing_ne_zero_of_extensionCoordinateSignalWithProgress
+      hsignal hred hblue with
+    ⟨z, hzBoundary, hzNonzero, hvanish, e, heExtension, heRemaining,
+      hePredicateOutside, hze, hprogress, i, hpair⟩
+  have heResidual :
+      e ∈ classifier.residualRemainingControlEdges controlEdges processed :=
+    classifier.mem_residualRemainingControlEdges_of_mem_remainingControlEdges_of_not_mem_processed
+      controlEdges processed heRemaining (hnotProcessed e heRemaining)
+  have hresidualProgress :
+      (classifier.residualRemainingControlEdges controlEdges (insert e processed)).card <
+        (classifier.residualRemainingControlEdges controlEdges processed).card :=
+    classifier.card_residualRemainingControlEdges_insert_lt_of_mem_remainingControlEdges_of_not_mem_processed
+      controlEdges processed heRemaining (hnotProcessed e heRemaining)
+  exact
+    ⟨z, hzBoundary, hzNonzero, hvanish, e, heExtension, heRemaining, heResidual,
+      hePredicateOutside, hze, hresidualProgress, hprogress, i, hpair⟩
+
+/--
 Per-latent complete-frontier bridge into the algebraic forced-edge predicate.  A single complete
 CAP5 checker row in a cyclically five-edge-connected graph emits an enumerated forced edge and a
 one-edge detector payload for that exact latent.  This is the local handoff from finite

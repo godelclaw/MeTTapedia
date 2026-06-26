@@ -3576,6 +3576,39 @@ theorem card_residualRemainingControlEdges_insert_lt_of_mem
   rw [classifier.residualRemainingControlEdges_insert_eq_erase controlEdges processed e]
   exact Finset.card_erase_lt_of_mem he
 
+/-- A remaining-control edge not yet recorded as processed lies in the explicit residual state. -/
+theorem mem_residualRemainingControlEdges_of_mem_remainingControlEdges_of_not_mem_processed
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    [Fintype G.edgeSet]
+    {p0Inside p4Inside : Bool} {side : V → Prop}
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (controlEdges processed : Finset G.edgeSet) {e : G.edgeSet}
+    (heRemaining : e ∈ classifier.remainingControlEdges controlEdges)
+    (heNotProcessed : e ∉ processed) :
+    e ∈ classifier.residualRemainingControlEdges controlEdges processed :=
+  (classifier.mem_residualRemainingControlEdges_iff controlEdges processed e).2
+    ⟨heRemaining, heNotProcessed⟩
+
+/--
+A remaining-control edge not yet processed gives a strict residual-state decrease when inserted
+into the processed set.
+-/
+theorem card_residualRemainingControlEdges_insert_lt_of_mem_remainingControlEdges_of_not_mem_processed
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    [Fintype G.edgeSet]
+    {p0Inside p4Inside : Bool} {side : V → Prop}
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (controlEdges processed : Finset G.edgeSet) {e : G.edgeSet}
+    (heRemaining : e ∈ classifier.remainingControlEdges controlEdges)
+    (heNotProcessed : e ∉ processed) :
+    (classifier.residualRemainingControlEdges controlEdges (insert e processed)).card <
+      (classifier.residualRemainingControlEdges controlEdges processed).card :=
+  classifier.card_residualRemainingControlEdges_insert_lt_of_mem controlEdges processed
+    (classifier.mem_residualRemainingControlEdges_of_mem_remainingControlEdges_of_not_mem_processed
+      controlEdges processed heRemaining heNotProcessed)
+
 /--
 The residual worklist is exhausted exactly when every original remaining-control edge has been
 recorded as processed.
