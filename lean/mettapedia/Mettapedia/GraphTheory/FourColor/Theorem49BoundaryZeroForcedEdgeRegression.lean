@@ -9213,6 +9213,225 @@ theorem sharedInteriorPair_theorem49BoundaryRootSynthesis_of_uniqueCertificates
     sharedInteriorPair_redBlueSingleCoordinateMemberships_of_uniqueCertificates.1
     sharedInteriorPair_redBlueSingleCoordinateMemberships_of_uniqueCertificates.2
 
+private def sharedInteriorPairOuterEdgeRegion (e : sharedInteriorPairGraph.edgeSet) : Bool :=
+  if e = sip56 ∨ e = sip67 ∨ e = sip75 then true else false
+
+private theorem sharedInteriorPairOuterEdgeRegion_eq_of_lineGraph_adj
+    {e f : sharedInteriorPairGraph.edgeSet}
+    (hadj : sharedInteriorPairGraph.lineGraph.Adj e f) :
+    sharedInteriorPairOuterEdgeRegion e = sharedInteriorPairOuterEdgeRegion f := by
+  decide +revert
+
+private theorem sharedInteriorPairOuterEdgeRegion_eq_of_bicoloredWalk
+    {a b : Color}
+    {C : sharedInteriorPairGraph.EdgeColoring Color}
+    {u v : ↥(C.bicoloredSet a b)}
+    (p : (C.bicoloredSubgraph a b).Walk u v) :
+    sharedInteriorPairOuterEdgeRegion u.1 = sharedInteriorPairOuterEdgeRegion v.1 := by
+  induction p with
+  | nil => rfl
+  | cons hadj p ih =>
+      exact (sharedInteriorPairOuterEdgeRegion_eq_of_lineGraph_adj (by simpa using hadj)).trans ih
+
+private theorem sharedInteriorPairOuterEdgeRegion_eq_of_bicoloredReachable
+    {a b : Color}
+    {C : sharedInteriorPairGraph.EdgeColoring Color}
+    {e f : sharedInteriorPairGraph.edgeSet}
+    {he : e ∈ C.bicoloredSet a b} {hf : f ∈ C.bicoloredSet a b}
+    (hreach : (C.bicoloredSubgraph a b).Reachable ⟨e, he⟩ ⟨f, hf⟩) :
+    sharedInteriorPairOuterEdgeRegion e = sharedInteriorPairOuterEdgeRegion f := by
+  refine hreach.elim ?_
+  intro p
+  exact sharedInteriorPairOuterEdgeRegion_eq_of_bicoloredWalk p
+
+private theorem sharedInteriorPair_not_mem_kempeComponentSet_of_ne_left_ne_right
+    {x y : Color}
+    {C : sharedInteriorPairGraph.EdgeColoring Color}
+    {K : (C.bicoloredSubgraph x y).ConnectedComponent}
+    {e : sharedInteriorPairGraph.edgeSet}
+    (hx : C e ≠ x) (hy : C e ≠ y) :
+    e ∉ C.kempeComponentSet x y K := by
+  intro hmem
+  rcases C.mem_bicoloredSet_of_mem_kempeComponentSet hmem with h | h
+  · exact hx h
+  · exact hy h
+
+private theorem sharedInteriorPair_not_mem_component_containing_sip01_of_outerRegion_true
+    {x y : Color}
+    {C : sharedInteriorPairGraph.EdgeColoring Color}
+    {K : (C.bicoloredSubgraph x y).ConnectedComponent}
+    {e : sharedInteriorPairGraph.edgeSet}
+    (h01 : sip01 ∈ C.kempeComponentSet x y K)
+    (hregion : sharedInteriorPairOuterEdgeRegion e = true) :
+    e ∉ C.kempeComponentSet x y K := by
+  intro hmem
+  rcases hmem with ⟨he', hec⟩
+  rcases h01 with ⟨h01', h01c⟩
+  have hcomp' :
+      (C.bicoloredSubgraph x y).connectedComponentMk ⟨e, he'⟩ =
+      (C.bicoloredSubgraph x y).connectedComponentMk ⟨sip01, h01'⟩ :=
+    hec.trans h01c.symm
+  have hreach : (C.bicoloredSubgraph x y).Reachable ⟨e, he'⟩ ⟨sip01, h01'⟩ :=
+    ConnectedComponent.eq.mp hcomp'
+  have hregion' := sharedInteriorPairOuterEdgeRegion_eq_of_bicoloredReachable hreach
+  have hsip01 : sharedInteriorPairOuterEdgeRegion sip01 = false := by decide
+  rw [hregion, hsip01] at hregion'
+  cases hregion'
+
+private theorem sharedInteriorPairCertificateColoringA_sip01_mem_bicoloredSet_red_blue :
+    sip01 ∈ sharedInteriorPairCertificateColoringA.bicoloredSet red blue := by
+  left
+  simp [sharedInteriorPairCertificateColorA]
+
+private noncomputable def sharedInteriorPairCertificateColoringA_redBlueComponent :
+    (sharedInteriorPairCertificateColoringA.bicoloredSubgraph red blue).ConnectedComponent :=
+  (sharedInteriorPairCertificateColoringA.bicoloredSubgraph red blue).connectedComponentMk
+    ⟨sip01, sharedInteriorPairCertificateColoringA_sip01_mem_bicoloredSet_red_blue⟩
+
+private theorem sip01_mem_sharedInteriorPairCertificateColoringA_redBlueComponent :
+    sip01 ∈ sharedInteriorPairCertificateColoringA.kempeComponentSet red blue
+      sharedInteriorPairCertificateColoringA_redBlueComponent := by
+  exact sharedInteriorPairCertificateColoringA.mem_kempeComponentSet_self
+    sharedInteriorPairCertificateColoringA_sip01_mem_bicoloredSet_red_blue
+
+private theorem sip12_mem_sharedInteriorPairCertificateColoringA_redBlueComponent :
+    sip12 ∈ sharedInteriorPairCertificateColoringA.kempeComponentSet red blue
+      sharedInteriorPairCertificateColoringA_redBlueComponent := by
+  exact sharedInteriorPairCertificateColoringA.mem_kempeComponentSet_of_adj
+    sip01_mem_sharedInteriorPairCertificateColoringA_redBlueComponent (by decide) (by
+      right
+      simp [sharedInteriorPairCertificateColorA]
+      decide)
+
+private theorem sip23_mem_sharedInteriorPairCertificateColoringA_redBlueComponent :
+    sip23 ∈ sharedInteriorPairCertificateColoringA.kempeComponentSet red blue
+      sharedInteriorPairCertificateColoringA_redBlueComponent := by
+  exact sharedInteriorPairCertificateColoringA.mem_kempeComponentSet_of_adj
+    sip12_mem_sharedInteriorPairCertificateColoringA_redBlueComponent (by decide) (by
+      left
+      simp [sharedInteriorPairCertificateColorA])
+
+private theorem sip40_mem_sharedInteriorPairCertificateColoringA_redBlueComponent :
+    sip40 ∈ sharedInteriorPairCertificateColoringA.kempeComponentSet red blue
+      sharedInteriorPairCertificateColoringA_redBlueComponent := by
+  exact sharedInteriorPairCertificateColoringA.mem_kempeComponentSet_of_adj
+    sip01_mem_sharedInteriorPairCertificateColoringA_redBlueComponent (by decide) (by
+      right
+      simp [sharedInteriorPairCertificateColorA]
+      decide)
+
+private theorem sip30_not_mem_sharedInteriorPairCertificateColoringA_redBlueComponent :
+    sip30 ∉ sharedInteriorPairCertificateColoringA.kempeComponentSet red blue
+      sharedInteriorPairCertificateColoringA_redBlueComponent := by
+  exact sharedInteriorPair_not_mem_kempeComponentSet_of_ne_left_ne_right
+    (C := sharedInteriorPairCertificateColoringA)
+    (K := sharedInteriorPairCertificateColoringA_redBlueComponent)
+    (e := sip30)
+    (by simp [sharedInteriorPairCertificateColorA]; decide)
+    (by simp [sharedInteriorPairCertificateColorA]; decide)
+
+private theorem sip24_not_mem_sharedInteriorPairCertificateColoringA_redBlueComponent :
+    sip24 ∉ sharedInteriorPairCertificateColoringA.kempeComponentSet red blue
+      sharedInteriorPairCertificateColoringA_redBlueComponent := by
+  exact sharedInteriorPair_not_mem_kempeComponentSet_of_ne_left_ne_right
+    (C := sharedInteriorPairCertificateColoringA)
+    (K := sharedInteriorPairCertificateColoringA_redBlueComponent)
+    (e := sip24)
+    (by simp [sharedInteriorPairCertificateColorA]; decide)
+    (by simp [sharedInteriorPairCertificateColorA]; decide)
+
+private theorem sip75_not_mem_sharedInteriorPairCertificateColoringA_redBlueComponent :
+    sip75 ∉ sharedInteriorPairCertificateColoringA.kempeComponentSet red blue
+      sharedInteriorPairCertificateColoringA_redBlueComponent := by
+  exact sharedInteriorPair_not_mem_kempeComponentSet_of_ne_left_ne_right
+    (C := sharedInteriorPairCertificateColoringA)
+    (K := sharedInteriorPairCertificateColoringA_redBlueComponent)
+    (e := sip75)
+    (by simp [sharedInteriorPairCertificateColorA]; decide)
+    (by simp [sharedInteriorPairCertificateColorA]; decide)
+
+private theorem sip56_not_mem_sharedInteriorPairCertificateColoringA_redBlueComponent :
+    sip56 ∉ sharedInteriorPairCertificateColoringA.kempeComponentSet red blue
+      sharedInteriorPairCertificateColoringA_redBlueComponent := by
+  exact sharedInteriorPair_not_mem_component_containing_sip01_of_outerRegion_true
+    sip01_mem_sharedInteriorPairCertificateColoringA_redBlueComponent (by decide)
+
+private theorem sip67_not_mem_sharedInteriorPairCertificateColoringA_redBlueComponent :
+    sip67 ∉ sharedInteriorPairCertificateColoringA.kempeComponentSet red blue
+      sharedInteriorPairCertificateColoringA_redBlueComponent := by
+  exact sharedInteriorPair_not_mem_component_containing_sip01_of_outerRegion_true
+    sip01_mem_sharedInteriorPairCertificateColoringA_redBlueComponent (by decide)
+
+private theorem sharedInteriorPairCertificateColoringA_swap_redBlueComponent_eq_B :
+    sharedInteriorPairCertificateColoringA.swapOnKempeComponent red blue
+        sharedInteriorPairCertificateColoringA_redBlueComponent =
+      sharedInteriorPairCertificateColoringB := by
+  apply DFunLike.ext
+  intro e
+  rcases sharedInteriorPair_edge_eq e with
+    rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl
+  · rw [Coloring.swapOnKempeComponent_apply_of_mem]
+    · simp [sharedInteriorPairCertificateColorA, sharedInteriorPairCertificateColorB]
+      decide
+    · exact sip01_mem_sharedInteriorPairCertificateColoringA_redBlueComponent
+  · rw [Coloring.swapOnKempeComponent_apply_of_mem]
+    · simp [sharedInteriorPairCertificateColorA, sharedInteriorPairCertificateColorB]
+      decide
+    · exact sip12_mem_sharedInteriorPairCertificateColoringA_redBlueComponent
+  · rw [Coloring.swapOnKempeComponent_apply_of_mem]
+    · simp [sharedInteriorPairCertificateColorA, sharedInteriorPairCertificateColorB]
+      decide
+    · exact sip23_mem_sharedInteriorPairCertificateColoringA_redBlueComponent
+  · rw [Coloring.swapOnKempeComponent_apply_of_not_mem]
+    · simp [sharedInteriorPairCertificateColorA, sharedInteriorPairCertificateColorB]
+      decide
+    · exact sip30_not_mem_sharedInteriorPairCertificateColoringA_redBlueComponent
+  · rw [Coloring.swapOnKempeComponent_apply_of_not_mem]
+    · simp [sharedInteriorPairCertificateColorA, sharedInteriorPairCertificateColorB]
+      decide
+    · exact sip24_not_mem_sharedInteriorPairCertificateColoringA_redBlueComponent
+  · rw [Coloring.swapOnKempeComponent_apply_of_mem]
+    · simp [sharedInteriorPairCertificateColorA, sharedInteriorPairCertificateColorB]
+      decide
+    · exact sip40_mem_sharedInteriorPairCertificateColoringA_redBlueComponent
+  · rw [Coloring.swapOnKempeComponent_apply_of_not_mem]
+    · simp [sharedInteriorPairCertificateColorA, sharedInteriorPairCertificateColorB]
+    · exact sip56_not_mem_sharedInteriorPairCertificateColoringA_redBlueComponent
+  · rw [Coloring.swapOnKempeComponent_apply_of_not_mem]
+    · simp [sharedInteriorPairCertificateColorA, sharedInteriorPairCertificateColorB]
+      decide
+    · exact sip67_not_mem_sharedInteriorPairCertificateColoringA_redBlueComponent
+  · rw [Coloring.swapOnKempeComponent_apply_of_not_mem]
+    · simp [sharedInteriorPairCertificateColorA, sharedInteriorPairCertificateColorB]
+      decide
+    · exact sip75_not_mem_sharedInteriorPairCertificateColoringA_redBlueComponent
+
+theorem sharedInteriorPairCertificateColoringB_mem_edgeKempeClosure_certificateColoringA :
+    sharedInteriorPairCertificateColoringB ∈
+      sharedInteriorPairGraph.EdgeKempeClosure sharedInteriorPairCertificateColoringA := by
+  rw [← sharedInteriorPairCertificateColoringA_swap_redBlueComponent_eq_B]
+  exact sharedInteriorPairGraph.mem_edgeKempeClosure_of_mem_of_step
+    (sharedInteriorPairGraph.mem_edgeKempeClosure_self sharedInteriorPairCertificateColoringA)
+    red blue sharedInteriorPairCertificateColoringA_redBlueComponent
+
+theorem sharedInteriorPairProjectedGeneratorCertificateColorings_subset_edgeKempeClosure_certificateColoringA :
+    sharedInteriorPairProjectedGeneratorCertificateColorings ⊆
+      sharedInteriorPairGraph.EdgeKempeClosure sharedInteriorPairCertificateColoringA := by
+  intro C hC
+  rcases hC with rfl | rfl
+  · exact sharedInteriorPairGraph.mem_edgeKempeClosure_self sharedInteriorPairCertificateColoringA
+  · exact sharedInteriorPairCertificateColoringB_mem_edgeKempeClosure_certificateColoringA
+
+/-- Boundary-root synthesis for the shared shell using certificate A as the root.  The second
+certificate is reached from A by one red/blue Kempe swap on the component through `sip01`. -/
+theorem sharedInteriorPair_theorem49BoundaryRootSynthesis_certificateColoringA
+    [FiniteDimensional F2 (sharedInteriorPairGraph.edgeSet → Color)] :
+    Theorem49BoundaryRootSynthesis sharedInteriorPairEmbedding
+      sharedInteriorPairCertificateColoringA :=
+  sharedInteriorPair_theorem49BoundaryRootSynthesis_of_uniqueCertificates
+    sharedInteriorPairCertificateColoringA
+    sharedInteriorPairProjectedGeneratorCertificateColorings_subset_edgeKempeClosure_certificateColoringA
+
 theorem sharedInteriorPair_boundaryZeroProjectedColoringGeneratorDetector_of_uniqueCertificates :
     BoundaryZeroProjectedColoringGeneratorDetector sharedInteriorPairEmbedding
       sharedInteriorPairProjectedGeneratorCertificateColorings := by
