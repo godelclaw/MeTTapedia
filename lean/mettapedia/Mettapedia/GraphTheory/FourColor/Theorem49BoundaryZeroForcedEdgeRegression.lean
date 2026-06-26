@@ -11390,6 +11390,76 @@ theorem wheelWithInnerTriangle_CAP5_forcedEdgeCoverage_remainingInteriorControlE
   · intro he
     simp at he
 
+/-- Path-xor cardinality branch obstruction for the shared focus shell.  Exact CAP5 coverage
+emits every canonical shared-interior control edge, so the emitted classifier cannot still be
+below the selected-boundary-zero dimension threshold. -/
+theorem sharedInteriorPair_CAP5_forcedEdgeCoverage_no_emittedFinset_card_add_boundary_card_lt
+    {boundaryEdge : Fin 5 → sharedInteriorPairGraph.edgeSet} {n : Nat}
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    (p0Inside p4Inside : Bool) (side : Fin 8 → Prop)
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (hcoverage :
+      ∀ ⦃z : sharedInteriorPairGraph.edgeSet → Color⦄,
+        z ∈ planarBoundaryZeroSubmodule sharedInteriorPairEmbedding →
+        z ≠ 0 →
+          ∃ e : sharedInteriorPairGraph.edgeSet,
+            data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e ∧
+              z e ≠ 0) :
+    ¬ (classifier.emittedFinset.card +
+        Fintype.card {e : sharedInteriorPairGraph.edgeSet //
+          e ∈ selectedBoundarySupport sharedInteriorPairEmbedding.faceBoundary
+            sharedInteriorPairEmbedding.faces sharedInteriorPairEmbedding.faces} <
+      Fintype.card sharedInteriorPairGraph.edgeSet) := by
+  intro hcard
+  have hnonempty :
+      (classifier.remainingControlEdges sharedInteriorPairInteriorControlEdges).Nonempty :=
+    data.remainingControlEdges_nonempty_of_emittedFinset_card_add_boundary_card_lt_of_finsetControl
+      sharedInteriorPairEmbedding p0Inside p4Inside side classifier
+      sharedInteriorPairInteriorControlEdges hcard
+      sharedInteriorPair_boundaryZero_controlEdges_interiorEdges
+  have hempty :
+      classifier.remainingControlEdges sharedInteriorPairInteriorControlEdges = ∅ :=
+    sharedInteriorPair_CAP5_forcedEdgeCoverage_remainingInteriorControlEdges_eq_empty
+      p0Inside p4Inside side classifier hcoverage
+  rw [hempty] at hnonempty
+  simp at hnonempty
+
+/-- Path-xor cardinality branch obstruction for the wheel focus shell.  Exact CAP5 coverage
+emits every canonical spoke control edge, so the emitted classifier cannot still be below the
+selected-boundary-zero dimension threshold. -/
+theorem wheelWithInnerTriangle_CAP5_forcedEdgeCoverage_no_emittedFinset_card_add_boundary_card_lt
+    {boundaryEdge : Fin 5 → wheelWithInnerTriangleGraph.edgeSet} {n : Nat}
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    (p0Inside p4Inside : Bool) (side : Fin 7 → Prop)
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (hcoverage :
+      ∀ ⦃z : wheelWithInnerTriangleGraph.edgeSet → Color⦄,
+        z ∈ planarBoundaryZeroSubmodule wheelWithInnerTriangleEmbedding →
+        z ≠ 0 →
+          ∃ e : wheelWithInnerTriangleGraph.edgeSet,
+            data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e ∧
+              z e ≠ 0) :
+    ¬ (classifier.emittedFinset.card +
+        Fintype.card {e : wheelWithInnerTriangleGraph.edgeSet //
+          e ∈ selectedBoundarySupport wheelWithInnerTriangleEmbedding.faceBoundary
+            wheelWithInnerTriangleEmbedding.faces wheelWithInnerTriangleEmbedding.faces} <
+      Fintype.card wheelWithInnerTriangleGraph.edgeSet) := by
+  intro hcard
+  have hnonempty :
+      (classifier.remainingControlEdges wheelWithInnerTriangleInteriorControlEdges).Nonempty :=
+    data.remainingControlEdges_nonempty_of_emittedFinset_card_add_boundary_card_lt_of_finsetControl
+      wheelWithInnerTriangleEmbedding p0Inside p4Inside side classifier
+      wheelWithInnerTriangleInteriorControlEdges hcard
+      wheelWithInnerTriangle_boundaryZero_controlEdges_interiorEdges
+  have hempty :
+      classifier.remainingControlEdges wheelWithInnerTriangleInteriorControlEdges = ∅ :=
+    wheelWithInnerTriangle_CAP5_forcedEdgeCoverage_remainingInteriorControlEdges_eq_empty
+      p0Inside p4Inside side classifier hcoverage
+  rw [hempty] at hnonempty
+  simp at hnonempty
+
 /-- Classifier-control form for the shared focus shell: exact CAP5 forced-edge coverage makes the
 emitted classifier output control every selected-boundary-zero chain. -/
 theorem sharedInteriorPair_CAP5_classifierControl_of_forcedEdgeCoverage
