@@ -1,6 +1,7 @@
 import Mettapedia.GraphTheory.FourColor.Theorem49TargetSubspace
 import Mettapedia.GraphTheory.FourColor.Theorem49BoundaryFreeSelectorConstruction
 import Mettapedia.GraphTheory.FourColor.PlanarBoundaryClosedWalkSource
+import Mettapedia.GraphTheory.FourColor.CAP5WitnessGenerator
 
 /-!
 Finite F2 boundary-zero regressions mined from the ignored CAP5 validation lab.
@@ -8216,6 +8217,75 @@ theorem wheelWithInnerTriangle_boundaryZeroKirchhoff_interiorControl_card_ge_two
         (wheelWithInnerTriangle_mem_selectedBoundarySupport_of_not_mem_interiorEdgeSupport
           heInterior)
   exact hzNonzero (hcontrol hz hvanishControl)
+
+/-! ## CAP5 classifier interior-control lower bounds -/
+
+/--
+Classifier-facing form of the shared-interior-pair lower bound.  Any CAP5 emitted-edge
+classifier that controls the selected-boundary-zero chains on this shell must emit both interior
+support edges; boundary emitted edges do not contribute to this count.
+-/
+theorem sharedInteriorPair_boundaryZero_classifierControl_emittedInterior_card_ge_two
+    {boundaryEdge : Fin 5 → sharedInteriorPairGraph.edgeSet} {n : Nat}
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    {p0Inside p4Inside : Bool} {side : Fin 8 → Prop}
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (hcontrol :
+      ∀ ⦃z : sharedInteriorPairGraph.edgeSet → Color⦄,
+        z ∈ planarBoundaryZeroSubmodule sharedInteriorPairEmbedding →
+        (∀ e ∈ classifier.emittedFinset, z e = 0) →
+        z = 0) :
+    2 ≤ (classifier.emittedFinset.filter fun e =>
+      e ∈ interiorEdgeSupport
+        sharedInteriorPairEmbedding.faceBoundary sharedInteriorPairEmbedding.faces).card :=
+  sharedInteriorPair_boundaryZero_interiorControl_card_ge_two
+    classifier.emittedFinset hcontrol
+
+/--
+Classifier-facing form of the wheel boundary-zero lower bound.  A CAP5 emitted-edge classifier
+that controls the selected-boundary-zero chains on the wheel-with-inner-triangle shell must emit
+all three interior spokes, not merely boundary edges.
+-/
+theorem wheelWithInnerTriangle_boundaryZero_classifierControl_emittedInterior_card_ge_three
+    {boundaryEdge : Fin 5 → wheelWithInnerTriangleGraph.edgeSet} {n : Nat}
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    {p0Inside p4Inside : Bool} {side : Fin 7 → Prop}
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (hcontrol :
+      ∀ ⦃z : wheelWithInnerTriangleGraph.edgeSet → Color⦄,
+        z ∈ planarBoundaryZeroSubmodule wheelWithInnerTriangleEmbedding →
+        (∀ e ∈ classifier.emittedFinset, z e = 0) →
+        z = 0) :
+    3 ≤ (classifier.emittedFinset.filter fun e =>
+      e ∈ interiorEdgeSupport
+        wheelWithInnerTriangleEmbedding.faceBoundary wheelWithInnerTriangleEmbedding.faces).card :=
+  wheelWithInnerTriangle_boundaryZero_interiorControl_card_ge_three
+    classifier.emittedFinset hcontrol
+
+/--
+Kirchhoff-repaired classifier-facing lower bound for the wheel-with-inner-triangle shell.  The
+center Kirchhoff constraint reduces the necessary interior controls from three to two, but a
+single emitted spoke still cannot control all boundary-zero Kirchhoff chains.
+-/
+theorem wheelWithInnerTriangle_boundaryZeroKirchhoff_classifierControl_emittedInterior_card_ge_two
+    {boundaryEdge : Fin 5 → wheelWithInnerTriangleGraph.edgeSet} {n : Nat}
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    {p0Inside p4Inside : Bool} {side : Fin 7 → Prop}
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (hcontrol :
+      ∀ ⦃z : wheelWithInnerTriangleGraph.edgeSet → Color⦄,
+        z ∈ theorem49BoundaryZeroKirchhoffSubspace
+            wheelWithInnerTriangleEmbedding ({(0 : Fin 7)} : Finset (Fin 7)) →
+        (∀ e ∈ classifier.emittedFinset, z e = 0) →
+        z = 0) :
+    2 ≤ (classifier.emittedFinset.filter fun e =>
+      e ∈ interiorEdgeSupport
+        wheelWithInnerTriangleEmbedding.faceBoundary wheelWithInnerTriangleEmbedding.faces).card :=
+  wheelWithInnerTriangle_boundaryZeroKirchhoff_interiorControl_card_ge_two
+    classifier.emittedFinset hcontrol
 
 /-! ## Exact finite-control-size certificates -/
 

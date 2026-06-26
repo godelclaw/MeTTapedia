@@ -1454,6 +1454,55 @@ theorem edge_card_le_emittedFinset_card_add_boundary_card_of_finsetControl_of_co
       emb p0Inside p4Inside side classifier controlEdges hcontrol hsubsetEdges)
 
 /--
+Empty-worklist cardinality invariant.  If every edge in a later finite control set has already
+been emitted by the classifier, then filtering the emitted set back to that control set contains
+at least all control coordinates.  This is the finite bookkeeping fact behind shell-level
+interior-control lower bounds for saturated CAP5 worklists.
+-/
+theorem controlEdges_card_le_emittedFinset_filter_controlEdges_card_of_remainingControlEdges_eq_empty
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    [Fintype G.edgeSet]
+    {p0Inside p4Inside : Bool} {side : V → Prop}
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (controlEdges : Finset G.edgeSet)
+    (hremainingEmpty : classifier.remainingControlEdges controlEdges = ∅) :
+    controlEdges.card ≤
+      (classifier.emittedFinset.filter fun e => e ∈ controlEdges).card := by
+  classical
+  have hsubsetEdges : controlEdges ⊆ classifier.emittedFinset := by
+    intro e heControl
+    by_contra heNotEmitted
+    have hmemRemaining : e ∈ classifier.remainingControlEdges controlEdges :=
+      (classifier.mem_remainingControlEdges_iff controlEdges e).2
+        ⟨heControl, heNotEmitted⟩
+    rw [hremainingEmpty] at hmemRemaining
+    simp at hmemRemaining
+  exact Finset.card_le_card (by
+    intro e heControl
+    exact Finset.mem_filter.2 ⟨hsubsetEdges heControl, heControl⟩)
+
+/--
+Interior-support specialization of the empty-worklist invariant.  A saturated CAP5 runner over
+the canonical interior support has emitted at least all interior-support coordinates when viewed
+through the emitted-set interior filter.
+-/
+theorem interiorEdgeSupport_card_le_emittedFinset_filter_interiorEdgeSupport_card_of_remainingInteriorEdgeSupportEdges_eq_empty
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    [Fintype G.edgeSet]
+    (emb : PlaneEmbeddingWithBoundary G)
+    {p0Inside p4Inside : Bool} {side : V → Prop}
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (hremainingEmpty :
+      classifier.remainingControlEdges (interiorEdgeSupport emb.faceBoundary emb.faces) = ∅) :
+    (interiorEdgeSupport emb.faceBoundary emb.faces).card ≤
+      (classifier.emittedFinset.filter fun e =>
+        e ∈ interiorEdgeSupport emb.faceBoundary emb.faces).card :=
+  controlEdges_card_le_emittedFinset_filter_controlEdges_card_of_remainingControlEdges_eq_empty
+    classifier (interiorEdgeSupport emb.faceBoundary emb.faces) hremainingEmpty
+
+/--
 No fixed point below the boundary-zero dimension threshold.  If a later finite worklist controls
 all selected boundary-zero chains while the emitted classifier is still too small, then that
 worklist contains an edge outside the emitted set.
