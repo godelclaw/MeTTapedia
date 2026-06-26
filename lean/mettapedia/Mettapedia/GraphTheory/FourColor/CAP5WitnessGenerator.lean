@@ -1886,6 +1886,37 @@ theorem missingCheckerEvidenceLatents_eq_nil_iff_no_missing_checker_ingredient
             hnil))
 
 /--
+Concrete primitive-frontier closure for a finite CAP5 checker run.  If every enumerated latent
+has portal-crossing evidence, and the ambient selected side has cycles on both sides, then none
+of the primitive missing-checker bins can be inhabited.
+-/
+theorem no_missing_checker_ingredient_of_allPortalCrosses_of_sideCycles
+    (boundaryEdge : Fin 5 → G.edgeSet) (side : V → Prop)
+    (hportal :
+      ∀ latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge,
+        (latentNode boundaryEdge side latent).PortalCrosses)
+    (hcycles : HasCycleOnSide G side ∧ HasCycleOnSide G (fun v => ¬ side v)) :
+    ¬ ((∃ latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge,
+      latent ∈ CAP5ExceptionalAnnulusGeneratorLatent.all boundaryEdge ∧
+        (latentNode boundaryEdge side latent).MissingPortalCrossingEvidence) ∨
+      (∃ latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge,
+        latent ∈ CAP5ExceptionalAnnulusGeneratorLatent.all boundaryEdge ∧
+          (latentNode boundaryEdge side latent).MissingSelectedSideCycleEvidence) ∨
+        (∃ latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge,
+          latent ∈ CAP5ExceptionalAnnulusGeneratorLatent.all boundaryEdge ∧
+            (latentNode boundaryEdge side latent).MissingComplementarySideCycleEvidence)) := by
+  rintro (hmissingPortal | hmissingCycle)
+  · rcases hmissingPortal with ⟨latent, _hmem, hmissing⟩
+    exact hmissing (hportal latent)
+  · rcases hmissingCycle with hmissingSelected | hmissingComplement
+    · rcases hmissingSelected with ⟨latent, _hmem, hmissing⟩
+      exact hmissing (by
+        simpa [latentNode] using hcycles.1)
+    · rcases hmissingComplement with ⟨latent, _hmem, hmissing⟩
+      exact hmissing (by
+        simpa [latentNode] using hcycles.2)
+
+/--
 In a cyclically five-edge-connected graph, the report's only obstruction to putting every
 enumerated latent in the forced-counterexample bin is genuinely partial checker evidence.  Thus a
 finite CAP5 run has a sharp diagnostic boundary: all sixteen latents are forced exactly when no
