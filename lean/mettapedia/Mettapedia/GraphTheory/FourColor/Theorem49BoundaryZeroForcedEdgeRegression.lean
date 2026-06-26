@@ -9196,6 +9196,23 @@ theorem sharedInteriorPair_redBlueSingleCoordinateMemberships_of_uniqueCertifica
     sharedInteriorPair_uniqueProjectedBicoloredCertificates.1
     sharedInteriorPair_uniqueProjectedBicoloredCertificates.2
 
+/-- Boundary-root synthesis from the explicit shared-interior-pair certificate family.  The
+finite F2 verdict supplies complete nonzero coverage on the two shared interior controls, and
+the unique projected-bicolored certificates supply both red and blue probes there. -/
+theorem sharedInteriorPair_theorem49BoundaryRootSynthesis_of_uniqueCertificates
+    [FiniteDimensional F2 (sharedInteriorPairGraph.edgeSet → Color)]
+    (C₀ : sharedInteriorPairGraph.EdgeColoring Color)
+    (hsubset :
+      sharedInteriorPairProjectedGeneratorCertificateColorings ⊆
+        sharedInteriorPairGraph.EdgeKempeClosure C₀) :
+    Theorem49BoundaryRootSynthesis sharedInteriorPairEmbedding C₀ :=
+  theorem49BoundaryRootSynthesis_of_redBlueSingleCoordinateMemberships
+    sharedInteriorPairEmbedding C₀ sharedInteriorPairProjectedGeneratorCertificateColorings
+    hsubset sharedInteriorPairInteriorControlEdges
+    sharedInteriorPair_boundaryZero_controlEdges_interiorEdges
+    sharedInteriorPair_redBlueSingleCoordinateMemberships_of_uniqueCertificates.1
+    sharedInteriorPair_redBlueSingleCoordinateMemberships_of_uniqueCertificates.2
+
 theorem sharedInteriorPair_boundaryZeroProjectedColoringGeneratorDetector_of_uniqueCertificates :
     BoundaryZeroProjectedColoringGeneratorDetector sharedInteriorPairEmbedding
       sharedInteriorPairProjectedGeneratorCertificateColorings := by
@@ -9707,6 +9724,24 @@ theorem wheelWithInnerTriangle_redBlueSingleCoordinateMemberships_of_uniqueCerti
     wheelWithInnerTriangleInteriorControlEdges
     wheelWithInnerTriangle_uniqueProjectedBicoloredCertificates.1
     wheelWithInnerTriangle_uniqueProjectedBicoloredCertificates.2
+
+/-- Boundary-root synthesis from the explicit wheel-with-inner-triangle certificate family.  The
+finite F2 verdict supplies complete nonzero coverage on the three spoke controls, and the unique
+projected-bicolored certificates supply both red and blue probes there. -/
+theorem wheelWithInnerTriangle_theorem49BoundaryRootSynthesis_of_uniqueCertificates
+    [FiniteDimensional F2 (wheelWithInnerTriangleGraph.edgeSet → Color)]
+    (C₀ : wheelWithInnerTriangleGraph.EdgeColoring Color)
+    (hsubset :
+      wheelWithInnerTriangleProjectedGeneratorCertificateColorings ⊆
+        wheelWithInnerTriangleGraph.EdgeKempeClosure C₀) :
+    Theorem49BoundaryRootSynthesis wheelWithInnerTriangleEmbedding C₀ :=
+  theorem49BoundaryRootSynthesis_of_redBlueSingleCoordinateMemberships
+    wheelWithInnerTriangleEmbedding C₀
+    wheelWithInnerTriangleProjectedGeneratorCertificateColorings hsubset
+    wheelWithInnerTriangleInteriorControlEdges
+    wheelWithInnerTriangle_boundaryZero_controlEdges_interiorEdges
+    wheelWithInnerTriangle_redBlueSingleCoordinateMemberships_of_uniqueCertificates.1
+    wheelWithInnerTriangle_redBlueSingleCoordinateMemberships_of_uniqueCertificates.2
 
 theorem wheelWithInnerTriangle_boundaryZeroProjectedColoringGeneratorDetector_of_uniqueCertificates :
     BoundaryZeroProjectedColoringGeneratorDetector wheelWithInnerTriangleEmbedding
