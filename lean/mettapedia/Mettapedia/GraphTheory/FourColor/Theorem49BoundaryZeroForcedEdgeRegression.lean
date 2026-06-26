@@ -6665,6 +6665,31 @@ theorem twoBandAnnulus_not_all_six_interior_controls_boundaryZeroKirchhoff_contr
     ⟨control, hsubset, hcard, hnotControl⟩
   exact hnotControl (hall control hsubset hcard)
 
+theorem twoBandAnnulusMiddleOuterRadialKirchhoffControl_scalarConstraintMap_ker_eq_bot :
+    LinearMap.ker
+      (theorem49BoundaryZeroKirchhoffScalarConstraintMap
+        twoBandAnnulusEmbedding twoBandAnnulusKirchhoffVertices
+        twoBandAnnulusMiddleOuterRadialKirchhoffControlEdges) = ⊥ := by
+  exact
+    (theorem49BoundaryZeroKirchhoffSubspace_control_iff_scalarConstraintMap_ker_eq_bot
+      twoBandAnnulusEmbedding twoBandAnnulusKirchhoffVertices
+      twoBandAnnulusMiddleOuterRadialKirchhoffControlEdges).1
+      (by
+        intro z hz hcontrol
+        exact twoBandAnnulus_boundaryZeroKirchhoff_no_evader_of_middleOuterRadialControl
+          z hz hcontrol)
+
+theorem twoBandAnnulusNoncontrollingSixKirchhoffControl_scalarConstraintMap_ker_ne_bot :
+    LinearMap.ker
+      (theorem49BoundaryZeroKirchhoffScalarConstraintMap
+        twoBandAnnulusEmbedding twoBandAnnulusKirchhoffVertices
+        twoBandAnnulusNoncontrollingSixKirchhoffControlEdges) ≠ ⊥ := by
+  intro hker
+  exact twoBandAnnulus_noncontrollingSix_not_boundaryZeroKirchhoff_control
+    ((theorem49BoundaryZeroKirchhoffSubspace_control_iff_scalarConstraintMap_ker_eq_bot
+      twoBandAnnulusEmbedding twoBandAnnulusKirchhoffVertices
+      twoBandAnnulusNoncontrollingSixKirchhoffControlEdges).2 hker)
+
 theorem twoBandAnnulusIndicator_mem_planarBoundaryZeroSubmodule_of_subset_interior
     (S : Finset twoBandAnnulusGraph.edgeSet)
     (hS : S ⊆ twoBandAnnulusInteriorEdges) :
