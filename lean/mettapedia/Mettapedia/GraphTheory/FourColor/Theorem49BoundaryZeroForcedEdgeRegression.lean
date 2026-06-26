@@ -7713,6 +7713,37 @@ theorem twoBandAnnulus_boundaryZeroKirchhoff_control_iff_omittedInterior_columnM
     (twoBandAnnulus_scalarConstraintMap_ker_eq_bot_iff_omittedInterior_columnMap_ker_eq_bot
       control)
 
+theorem twoBandAnnulus_boundaryZeroKirchhoff_control_iff_interiorFilter_control
+    (emitted : Finset twoBandAnnulusGraph.edgeSet) :
+    (∀ ⦃z : twoBandAnnulusGraph.edgeSet → Color⦄,
+      z ∈ theorem49BoundaryZeroKirchhoffSubspace
+          twoBandAnnulusEmbedding twoBandAnnulusKirchhoffVertices →
+      (∀ e ∈ emitted, z e = 0) →
+      z = 0) ↔
+    (∀ ⦃z : twoBandAnnulusGraph.edgeSet → Color⦄,
+      z ∈ theorem49BoundaryZeroKirchhoffSubspace
+          twoBandAnnulusEmbedding twoBandAnnulusKirchhoffVertices →
+      (∀ e ∈ emitted.filter fun e =>
+        e ∈ interiorEdgeSupport
+          twoBandAnnulusEmbedding.faceBoundary twoBandAnnulusEmbedding.faces,
+        z e = 0) →
+      z = 0) := by
+  constructor
+  · intro hcontrol z hz hvanishInterior
+    exact hcontrol hz (by
+      intro e heEmitted
+      by_cases heInterior :
+          e ∈ interiorEdgeSupport
+            twoBandAnnulusEmbedding.faceBoundary twoBandAnnulusEmbedding.faces
+      · exact hvanishInterior e (Finset.mem_filter.2 ⟨heEmitted, heInterior⟩)
+      · exact boundaryZero_of_mem_theorem49BoundaryZeroKirchhoffSubspace hz e
+          (twoBandAnnulus_mem_selectedBoundarySupport_of_not_mem_interiorEdgeSupport
+            heInterior))
+  · intro hcontrol z hz hvanishEmitted
+    exact hcontrol hz (by
+      intro e heInterior
+      exact hvanishEmitted e (Finset.mem_filter.1 heInterior).1)
+
 /-- Detector-level form of the two-band pattern sensitivity: among six-edge interior controls,
 one omitted-interior Kirchhoff row map has trivial kernel and another has a nontrivial kernel. -/
 theorem twoBandAnnulus_exists_two_six_interior_controls_with_different_omittedInteriorColumnKernel_status :
@@ -14218,6 +14249,82 @@ theorem twoBandAnnulus_CAP5_boundaryZeroKirchhoff_forcedEdgeCoverage_emittedInte
   by_contra hzNonzero
   rcases hcoverage hz hzNonzero with ⟨e, hforced, hze⟩
   exact hze (hvanishEmitted e ((classifier.emittedFinset_spec e).2 hforced))
+
+/-- Exact two-band Kirchhoff detector verdict.  CAP5 covers every nonzero boundary-zero
+Kirchhoff chain exactly when the emitted interior coordinates have a trivial omitted-interior
+Kirchhoff column kernel. -/
+theorem twoBandAnnulus_CAP5_boundaryZeroKirchhoff_forcedEdgeCoverage_iff_emittedInterior_omittedInteriorColumnMap_ker_eq_bot
+    {boundaryEdge : Fin 5 → twoBandAnnulusGraph.edgeSet} {n : Nat}
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    (p0Inside p4Inside : Bool) (side : Fin 9 → Prop)
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side) :
+    (∀ ⦃z : twoBandAnnulusGraph.edgeSet → Color⦄,
+      z ∈ theorem49BoundaryZeroKirchhoffSubspace
+          twoBandAnnulusEmbedding twoBandAnnulusKirchhoffVertices →
+      z ≠ 0 →
+        ∃ e : twoBandAnnulusGraph.edgeSet,
+          data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e ∧
+            z e ≠ 0) ↔
+      LinearMap.ker
+        (twoBandAnnulusOmittedInteriorKirchhoffColumnMap
+          (classifier.emittedFinset.filter fun e =>
+            e ∈ interiorEdgeSupport
+              twoBandAnnulusEmbedding.faceBoundary twoBandAnnulusEmbedding.faces)) = ⊥ :=
+  (data.forcedEdgeKirchhoffCoverage_iff_enumeratedExceptionalAnnulusForcedEdgeClassifierKirchhoffControl
+    twoBandAnnulusEmbedding twoBandAnnulusKirchhoffVertices classifier).trans
+    ((twoBandAnnulus_boundaryZeroKirchhoff_control_iff_interiorFilter_control
+      classifier.emittedFinset).trans
+      (twoBandAnnulus_boundaryZeroKirchhoff_control_iff_omittedInterior_columnMap_ker_eq_bot
+        (classifier.emittedFinset.filter fun e =>
+          e ∈ interiorEdgeSupport
+            twoBandAnnulusEmbedding.faceBoundary twoBandAnnulusEmbedding.faces)))
+
+theorem twoBandAnnulus_CAP5_boundaryZeroKirchhoff_forcedEdgeCoverage_of_emittedInterior_omittedInteriorColumnMap_ker_eq_bot
+    {boundaryEdge : Fin 5 → twoBandAnnulusGraph.edgeSet} {n : Nat}
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    (p0Inside p4Inside : Bool) (side : Fin 9 → Prop)
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (hker :
+      LinearMap.ker
+        (twoBandAnnulusOmittedInteriorKirchhoffColumnMap
+          (classifier.emittedFinset.filter fun e =>
+            e ∈ interiorEdgeSupport
+              twoBandAnnulusEmbedding.faceBoundary twoBandAnnulusEmbedding.faces)) = ⊥) :
+    ∀ ⦃z : twoBandAnnulusGraph.edgeSet → Color⦄,
+      z ∈ theorem49BoundaryZeroKirchhoffSubspace
+          twoBandAnnulusEmbedding twoBandAnnulusKirchhoffVertices →
+      z ≠ 0 →
+        ∃ e : twoBandAnnulusGraph.edgeSet,
+          data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e ∧
+            z e ≠ 0 :=
+  (twoBandAnnulus_CAP5_boundaryZeroKirchhoff_forcedEdgeCoverage_iff_emittedInterior_omittedInteriorColumnMap_ker_eq_bot
+    p0Inside p4Inside side classifier).2 hker
+
+theorem twoBandAnnulus_CAP5_boundaryZeroKirchhoff_not_forcedEdgeCoverage_of_emittedInterior_omittedInteriorColumnMap_ker_ne_bot
+    {boundaryEdge : Fin 5 → twoBandAnnulusGraph.edgeSet} {n : Nat}
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    (p0Inside p4Inside : Bool) (side : Fin 9 → Prop)
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (hker :
+      LinearMap.ker
+        (twoBandAnnulusOmittedInteriorKirchhoffColumnMap
+          (classifier.emittedFinset.filter fun e =>
+            e ∈ interiorEdgeSupport
+              twoBandAnnulusEmbedding.faceBoundary twoBandAnnulusEmbedding.faces)) ≠ ⊥) :
+    ¬ ∀ ⦃z : twoBandAnnulusGraph.edgeSet → Color⦄,
+      z ∈ theorem49BoundaryZeroKirchhoffSubspace
+          twoBandAnnulusEmbedding twoBandAnnulusKirchhoffVertices →
+      z ≠ 0 →
+        ∃ e : twoBandAnnulusGraph.edgeSet,
+          data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e ∧
+            z e ≠ 0 := by
+  intro hcoverage
+  exact hker
+    ((twoBandAnnulus_CAP5_boundaryZeroKirchhoff_forcedEdgeCoverage_iff_emittedInterior_omittedInteriorColumnMap_ker_eq_bot
+      p0Inside p4Inside side classifier).1 hcoverage)
 
 /-- Positive Kirchhoff handoff for one lab-certified two-band minimum control set.  Emitting the
 three middle chords and three outer radials closes coverage of every nonzero boundary-zero
