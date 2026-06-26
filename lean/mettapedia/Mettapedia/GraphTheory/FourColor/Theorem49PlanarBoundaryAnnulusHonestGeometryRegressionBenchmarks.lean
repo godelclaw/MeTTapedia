@@ -22,6 +22,194 @@ theorem false_of_four_pairwise_distinct_nonzero_colors
     rcases eq_red_or_eq_blue_or_eq_purple_of_ne_zero d hd with rfl | rfl | rfl <;>
     simp_all
 
+/--
+The validation-lab cross-component bridge benchmark: two selected boundary triangles are
+component-wise induced, but bridge chords join the outer and inner endpoint supports.  This is the
+finite obstruction that rules out the tempting geometric shortcut
+`component-wise induced boundary` implies `selected boundary induced`.
+-/
+def crossComponentBridgeGraph : SimpleGraph (Fin 6) :=
+  SimpleGraph.fromEdgeSet
+    ({s(0, 1), s(1, 2), s(2, 0), s(3, 4), s(4, 5), s(5, 3),
+        s(0, 3), s(1, 4), s(2, 5), s(0, 4), s(1, 5), s(2, 3)} :
+      Set (Sym2 (Fin 6)))
+
+def ccbO01 : crossComponentBridgeGraph.edgeSet := by
+  exact ⟨s(0, 1), by simp [crossComponentBridgeGraph]⟩
+
+def ccbO12 : crossComponentBridgeGraph.edgeSet := by
+  exact ⟨s(1, 2), by simp [crossComponentBridgeGraph]⟩
+
+def ccbO20 : crossComponentBridgeGraph.edgeSet := by
+  exact ⟨s(2, 0), by simp [crossComponentBridgeGraph]⟩
+
+def ccbI34 : crossComponentBridgeGraph.edgeSet := by
+  exact ⟨s(3, 4), by simp [crossComponentBridgeGraph]⟩
+
+def ccbI45 : crossComponentBridgeGraph.edgeSet := by
+  exact ⟨s(4, 5), by simp [crossComponentBridgeGraph]⟩
+
+def ccbI53 : crossComponentBridgeGraph.edgeSet := by
+  exact ⟨s(5, 3), by simp [crossComponentBridgeGraph]⟩
+
+def ccbR03 : crossComponentBridgeGraph.edgeSet := by
+  exact ⟨s(0, 3), by simp [crossComponentBridgeGraph]⟩
+
+def ccbR14 : crossComponentBridgeGraph.edgeSet := by
+  exact ⟨s(1, 4), by simp [crossComponentBridgeGraph]⟩
+
+def ccbR25 : crossComponentBridgeGraph.edgeSet := by
+  exact ⟨s(2, 5), by simp [crossComponentBridgeGraph]⟩
+
+def ccbD04 : crossComponentBridgeGraph.edgeSet := by
+  exact ⟨s(0, 4), by simp [crossComponentBridgeGraph]⟩
+
+def ccbD15 : crossComponentBridgeGraph.edgeSet := by
+  exact ⟨s(1, 5), by simp [crossComponentBridgeGraph]⟩
+
+def ccbD23 : crossComponentBridgeGraph.edgeSet := by
+  exact ⟨s(2, 3), by simp [crossComponentBridgeGraph]⟩
+
+theorem crossComponentBridge_edge_eq
+    (e : crossComponentBridgeGraph.edgeSet) :
+    e = ccbO01 ∨ e = ccbO12 ∨ e = ccbO20 ∨ e = ccbI34 ∨ e = ccbI45 ∨
+      e = ccbI53 ∨ e = ccbR03 ∨ e = ccbR14 ∨ e = ccbR25 ∨ e = ccbD04 ∨
+        e = ccbD15 ∨ e = ccbD23 := by
+  have h :
+      (e.1 = s(0, 1) ∨ e.1 = s(1, 2) ∨ e.1 = s(2, 0) ∨ e.1 = s(3, 4) ∨
+          e.1 = s(4, 5) ∨ e.1 = s(5, 3) ∨ e.1 = s(0, 3) ∨
+            e.1 = s(1, 4) ∨ e.1 = s(2, 5) ∨ e.1 = s(0, 4) ∨
+              e.1 = s(1, 5) ∨ e.1 = s(2, 3)) ∧
+        ¬ e.1.IsDiag := by
+    simpa [crossComponentBridgeGraph] using e.2
+  rcases h.1 with h01 | h12 | h20 | h34 | h45 | h53 | h03 | h14 | h25 | h04 | h15 | h23
+  · exact Or.inl (Subtype.ext h01)
+  · exact Or.inr (Or.inl (Subtype.ext h12))
+  · exact Or.inr (Or.inr (Or.inl (Subtype.ext h20)))
+  · exact Or.inr (Or.inr (Or.inr (Or.inl (Subtype.ext h34))))
+  · exact Or.inr (Or.inr (Or.inr (Or.inr (Or.inl (Subtype.ext h45)))))
+  · exact Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inl (Subtype.ext h53))))))
+  · exact Or.inr
+      (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inl (Subtype.ext h03)))))))
+  · exact Or.inr
+      (Or.inr
+        (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inl (Subtype.ext h14))))))))
+  · exact Or.inr
+      (Or.inr
+        (Or.inr
+          (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inl (Subtype.ext h25)))))))))
+  · exact Or.inr
+      (Or.inr
+        (Or.inr
+          (Or.inr
+            (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inl (Subtype.ext h04))))))))))
+  · exact Or.inr
+      (Or.inr
+        (Or.inr
+          (Or.inr
+            (Or.inr
+              (Or.inr
+                (Or.inr (Or.inr (Or.inr (Or.inr (Or.inl (Subtype.ext h15)))))))))))
+  · exact Or.inr
+      (Or.inr
+        (Or.inr
+          (Or.inr
+            (Or.inr
+              (Or.inr
+                (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Subtype.ext h23)))))))))))
+
+def crossComponentBridgeOuterBoundary : Finset crossComponentBridgeGraph.edgeSet :=
+  {ccbO01, ccbO12, ccbO20}
+
+def crossComponentBridgeInnerBoundary : Finset crossComponentBridgeGraph.edgeSet :=
+  {ccbI34, ccbI45, ccbI53}
+
+theorem crossComponentBridgeOuterBoundary_induced :
+    BoundaryEdgeSetInducedSubgraph crossComponentBridgeOuterBoundary := by
+  intro e hEndpoints
+  rcases crossComponentBridge_edge_eq e with
+    rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl <;>
+    simp [crossComponentBridgeOuterBoundary, boundaryEdgeSetEndpointSupport,
+      ccbO01, ccbO12, ccbO20, ccbI34, ccbI45, ccbI53, ccbR03, ccbR14, ccbR25,
+      ccbD04, ccbD15, ccbD23] at hEndpoints ⊢
+
+theorem crossComponentBridgeInnerBoundary_induced :
+    BoundaryEdgeSetInducedSubgraph crossComponentBridgeInnerBoundary := by
+  intro e hEndpoints
+  rcases crossComponentBridge_edge_eq e with
+    rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl <;>
+    simp [crossComponentBridgeInnerBoundary, boundaryEdgeSetEndpointSupport,
+      ccbO01, ccbO12, ccbO20, ccbI34, ccbI45, ccbI53, ccbR03, ccbR14, ccbR25,
+      ccbD04, ccbD15, ccbD23] at hEndpoints ⊢
+
+theorem ccbR03_endpoint_subset_boundary_union :
+    ∀ v : Fin 6, v ∈ (ccbR03 : Sym2 (Fin 6)) →
+      v ∈ boundaryEdgeSetEndpointSupport
+        (crossComponentBridgeOuterBoundary ∪ crossComponentBridgeInnerBoundary) := by
+  intro v hv
+  fin_cases v <;>
+    simp [crossComponentBridgeOuterBoundary, crossComponentBridgeInnerBoundary,
+      boundaryEdgeSetEndpointSupport, ccbO01, ccbO12, ccbO20, ccbI34, ccbI45,
+      ccbI53, ccbR03] at hv ⊢
+
+theorem ccbR03_has_outer_endpoint :
+    ∃ v : Fin 6,
+      v ∈ (ccbR03 : Sym2 (Fin 6)) ∧
+        v ∈ boundaryEdgeSetEndpointSupport crossComponentBridgeOuterBoundary := by
+  refine ⟨0, ?_, ?_⟩
+  · simp [ccbR03]
+  · simp [crossComponentBridgeOuterBoundary, boundaryEdgeSetEndpointSupport, ccbO01]
+
+theorem ccbR03_has_inner_endpoint :
+    ∃ v : Fin 6,
+      v ∈ (ccbR03 : Sym2 (Fin 6)) ∧
+        v ∈ boundaryEdgeSetEndpointSupport crossComponentBridgeInnerBoundary := by
+  refine ⟨3, ?_, ?_⟩
+  · simp [ccbR03]
+  · simp [crossComponentBridgeInnerBoundary, boundaryEdgeSetEndpointSupport, ccbI34]
+
+theorem ccbR03_not_mem_boundary_union :
+    ccbR03 ∉ crossComponentBridgeOuterBoundary ∪ crossComponentBridgeInnerBoundary := by
+  simp [crossComponentBridgeOuterBoundary, crossComponentBridgeInnerBoundary, ccbO01, ccbO12,
+    ccbO20, ccbI34, ccbI45, ccbI53, ccbR03]
+
+theorem not_crossComponentBridgeBoundary_crossComponentChordFree :
+    ¬ BoundaryEdgeSetCrossComponentChordFree
+      crossComponentBridgeOuterBoundary crossComponentBridgeInnerBoundary := by
+  intro hCross
+  exact ccbR03_not_mem_boundary_union
+    (hCross ccbR03 ccbR03_endpoint_subset_boundary_union ccbR03_has_outer_endpoint
+      ccbR03_has_inner_endpoint)
+
+theorem not_crossComponentBridgeBoundary_union_induced :
+    ¬ BoundaryEdgeSetInducedSubgraph
+      (crossComponentBridgeOuterBoundary ∪ crossComponentBridgeInnerBoundary) := by
+  exact
+    not_boundaryEdgeSetInducedSubgraph_of_edge_not_mem_of_endpoint_subset
+      ccbR03_not_mem_boundary_union ccbR03_endpoint_subset_boundary_union
+
+theorem crossComponentBridgeBoundary_refutes_componentInduced_to_crossComponentChordFree :
+    ¬ ∀ (G : SimpleGraph (Fin 6)) (outer inner : Finset G.edgeSet),
+      BoundaryEdgeSetInducedSubgraph outer →
+        BoundaryEdgeSetInducedSubgraph inner →
+          BoundaryEdgeSetCrossComponentChordFree outer inner := by
+  intro h
+  exact not_crossComponentBridgeBoundary_crossComponentChordFree
+    (h crossComponentBridgeGraph crossComponentBridgeOuterBoundary
+      crossComponentBridgeInnerBoundary crossComponentBridgeOuterBoundary_induced
+      crossComponentBridgeInnerBoundary_induced)
+
+theorem crossComponentBridgeBoundary_refutes_componentInduced_to_unionInduced :
+    ¬ ∀ (G : SimpleGraph (Fin 6)) (outer inner : Finset G.edgeSet),
+      BoundaryEdgeSetInducedSubgraph outer →
+        BoundaryEdgeSetInducedSubgraph inner →
+          BoundaryEdgeSetInducedSubgraph (outer ∪ inner) := by
+  intro h
+  exact not_crossComponentBridgeBoundary_union_induced
+    (h crossComponentBridgeGraph crossComponentBridgeOuterBoundary
+      crossComponentBridgeInnerBoundary crossComponentBridgeOuterBoundary_induced
+      crossComponentBridgeInnerBoundary_induced)
+
 /-- The honest `diamondWithTriangle` source model also admits a one-collar annulus geometry: all
 three ambient faces are peeled in a single collar, with the diamond pair using the shared
 interior edge as witness and the separate triangle using one inner-boundary edge.  This is the
