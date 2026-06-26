@@ -1,4 +1,6 @@
 import Mettapedia.QuantumTheory.YangMills.ClusteringRegression
+import Mettapedia.QuantumTheory.YangMills.ContinuumMeasureGateCanariesRegression
+import Mettapedia.QuantumTheory.YangMills.EuclideanCovarianceGateCanariesRegression
 import Mettapedia.QuantumTheory.YangMills.ExtractionObservableRegression
 import Mettapedia.QuantumTheory.YangMills.ExtractionOddCutoffRegression
 import Mettapedia.QuantumTheory.YangMills.ExtractionProjectionRegression
@@ -6,5 +8,8 @@ import Mettapedia.QuantumTheory.YangMills.ExtractionRemainderRegression
 import Mettapedia.QuantumTheory.YangMills.ExtractionStateRGCruxRegression
 import Mettapedia.QuantumTheory.YangMills.ExtractionStateRouteCollapseRegression
 import Mettapedia.QuantumTheory.YangMills.MassGapRegression
+import Mettapedia.QuantumTheory.YangMills.OSGateAuditRegression
+import Mettapedia.QuantumTheory.YangMills.ProofStateRegression
+import Mettapedia.QuantumTheory.YangMills.ReflectionPositivityGateCanariesRegression
 import Mettapedia.QuantumTheory.YangMills.RGBootstrapRegression
 import Mettapedia.QuantumTheory.YangMills.RGCruxRegression

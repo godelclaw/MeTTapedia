@@ -7,7 +7,7 @@ import Mathlib.Tactic.Ring
 /-!
 # Yang-Mills RG Bootstrap Audit
 
-Goertzel's Yang-Mills attempt advertises an extended-extraction RG contraction:
+The audited Yang-Mills route advertises an extended-extraction RG contraction:
 for block factor `b = 2` and extraction dimension `dmax = 16`, the irrelevant
 factor is `b^(3-dmax) = 2^-13`, and the claimed combinatorial constant is
 bounded by `2224`, giving a product below `1`.
