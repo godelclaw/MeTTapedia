@@ -1811,6 +1811,55 @@ theorem crossComponentBridgeAnnulus_component_induced_not_selectedBoundaryInduce
     crossComponentBridgeAnnulus_selectedBoundarySupport_eq,
     not_selectedBoundaryInducedSubgraph_crossComponentBridgeAnnulus⟩
 
+theorem ccbR03_mem_interiorEdgeSupport :
+    ccbR03 ∈ interiorEdgeSupport
+      crossComponentBridgeAnnulusEmbedding.faceBoundary
+      crossComponentBridgeAnnulusEmbedding.faces := by
+  rw [crossComponentBridgeAnnulus_interiorEdgeSupport_eq]
+  simp [crossComponentBridgeAnnulusInteriorEdges]
+
+theorem crossComponentBridgeAnnulus_vertex_incident_selectedBoundarySupport
+    (v : Fin 6) :
+    ∃ b ∈ selectedBoundarySupport
+        crossComponentBridgeAnnulusEmbedding.faceBoundary
+        crossComponentBridgeAnnulusEmbedding.faces
+        crossComponentBridgeAnnulusEmbedding.faces,
+      v ∈ (b : Sym2 (Fin 6)) := by
+  fin_cases v
+  · exact ⟨ccbO01, ccbO01_mem_selectedBoundarySupport, by decide⟩
+  · exact ⟨ccbO01, ccbO01_mem_selectedBoundarySupport, by decide⟩
+  · exact ⟨ccbO12, ccbO12_mem_selectedBoundarySupport, by decide⟩
+  · exact ⟨ccbI34, ccbI34_mem_selectedBoundarySupport, by decide⟩
+  · exact ⟨ccbI34, ccbI34_mem_selectedBoundarySupport, by decide⟩
+  · exact ⟨ccbI45, ccbI45_mem_selectedBoundarySupport, by decide⟩
+
+theorem selectedBoundaryInteriorEdgeEndpointVertices_eq_empty_crossComponentBridgeAnnulus :
+    selectedBoundaryInteriorEdgeEndpointVertices crossComponentBridgeAnnulusEmbedding = ∅ := by
+  ext v
+  constructor
+  · intro hv
+    exfalso
+    rcases (mem_selectedBoundaryInteriorEdgeEndpointVertices_iff
+        crossComponentBridgeAnnulusEmbedding).1 hv with ⟨_hvInterior, hAvoid⟩
+    rcases crossComponentBridgeAnnulus_vertex_incident_selectedBoundarySupport v with
+      ⟨b, hbBoundary, hvb⟩
+    exact hAvoid b hbBoundary hvb
+  · intro hv
+    simp at hv
+
+theorem not_interiorEdgesNotSelectedBoundaryChords_crossComponentBridgeAnnulus :
+    ¬ InteriorEdgesNotSelectedBoundaryChords crossComponentBridgeAnnulusEmbedding := by
+  intro hChordFree
+  rcases hChordFree ccbR03 ccbR03_mem_interiorEdgeSupport with
+    ⟨v, hvR03, hAvoid⟩
+  fin_cases v
+  · exact hAvoid ccbO01 ccbO01_mem_selectedBoundarySupport (by decide)
+  · simp [ccbR03] at hvR03
+  · simp [ccbR03] at hvR03
+  · exact hAvoid ccbI34 ccbI34_mem_selectedBoundarySupport (by decide)
+  · simp [ccbR03] at hvR03
+  · simp [ccbR03] at hvR03
+
 def ccbDart01 : crossComponentBridgeAnnulusGraph.Dart := ⟨((0 : Fin 6), 1), by
   simp [crossComponentBridgeAnnulusGraph]⟩
 
@@ -2443,6 +2492,34 @@ theorem
     crossComponentBridgeAnnulus_outerBoundaryEdgeSet_induced,
     crossComponentBridgeAnnulus_innerBoundaryEdgeSet_induced,
     not_crossComponentBridgeAnnulus_outer_inner_crossComponentChordFree⟩
+
+theorem
+    closedWalkAnnulusBoundarySource_boundaryCyclePair_and_componentInduced_does_not_imply_noChord_or_purifiedCarrier_crossComponentBridgeAnnulus :
+    Nonempty
+        (PlanarBoundaryClosedWalkAnnulusBoundarySource crossComponentBridgeAnnulusEmbedding) ∧
+      AnnulusBoundaryCyclePair crossComponentBridgeAnnulusEmbedding
+        crossComponentBridgeAnnulusOuterBoundarySet
+        crossComponentBridgeAnnulusInnerBoundarySet ∧
+        selectedBoundarySupport
+          crossComponentBridgeAnnulusEmbedding.faceBoundary
+          crossComponentBridgeAnnulusEmbedding.faces
+          crossComponentBridgeAnnulusEmbedding.faces =
+            crossComponentBridgeAnnulusOuterBoundarySet ∪
+              crossComponentBridgeAnnulusInnerBoundarySet ∧
+          BoundaryEdgeSetInducedSubgraph crossComponentBridgeAnnulusOuterBoundarySet ∧
+            BoundaryEdgeSetInducedSubgraph crossComponentBridgeAnnulusInnerBoundarySet ∧
+              ¬ InteriorEdgesNotSelectedBoundaryChords crossComponentBridgeAnnulusEmbedding ∧
+                selectedBoundaryInteriorEdgeEndpointVertices
+                  crossComponentBridgeAnnulusEmbedding = ∅ ∧
+                  ¬ SelectedBoundaryInducedSubgraph crossComponentBridgeAnnulusEmbedding :=
+  ⟨nonempty_closedWalkAnnulusBoundarySource_crossComponentBridgeAnnulus,
+    annulusBoundaryCyclePair_crossComponentBridgeAnnulus,
+    crossComponentBridgeAnnulus_selectedBoundarySupport_eq,
+    crossComponentBridgeAnnulus_outerBoundaryEdgeSet_induced,
+    crossComponentBridgeAnnulus_innerBoundaryEdgeSet_induced,
+    not_interiorEdgesNotSelectedBoundaryChords_crossComponentBridgeAnnulus,
+    selectedBoundaryInteriorEdgeEndpointVertices_eq_empty_crossComponentBridgeAnnulus,
+    not_selectedBoundaryInducedSubgraph_crossComponentBridgeAnnulus⟩
 
 /-! ## Boundary-shadow path counterexample shell -/
 
