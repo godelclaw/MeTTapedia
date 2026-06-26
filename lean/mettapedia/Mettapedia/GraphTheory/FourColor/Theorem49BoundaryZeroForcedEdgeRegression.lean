@@ -5322,6 +5322,23 @@ theorem twoBandAnnulus_interiorEdgeSupport_eq :
     rfl | rfl | rfl | rfl | rfl <;>
     decide
 
+theorem twoBandAnnulus_mem_selectedBoundarySupport_of_not_mem_interiorEdgeSupport
+    {e : twoBandAnnulusGraph.edgeSet}
+    (hnotInterior :
+      e ∉ interiorEdgeSupport
+        twoBandAnnulusEmbedding.faceBoundary twoBandAnnulusEmbedding.faces) :
+    e ∈ selectedBoundarySupport
+      twoBandAnnulusEmbedding.faceBoundary
+      twoBandAnnulusEmbedding.faces
+      twoBandAnnulusEmbedding.faces := by
+  have hnotInterior' : e ∉ twoBandAnnulusInteriorEdges := by
+    simpa [twoBandAnnulus_interiorEdgeSupport_eq] using hnotInterior
+  rw [twoBandAnnulus_selectedBoundarySupport_eq]
+  rcases twoBandAnnulus_edge_eq e with
+    rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl |
+    rfl | rfl | rfl | rfl | rfl <;>
+    simp [twoBandAnnulusInteriorEdges] at hnotInterior' ⊢
+
 theorem twoBandAnnulus_forcedEdges_no_boundaryFree_incident_face :
     ∀ e ∈ twoBandAnnulusInteriorEdges,
       ∀ f ∈ twoBandAnnulusEmbedding.faces,
@@ -7121,6 +7138,35 @@ theorem twoBandAnnulus_boundaryZero_classifierControl_emittedFinset_card_ge_nine
   twoBandAnnulus_boundaryZero_exactMinimumControlCard.2
     classifier.emittedFinset hcontrol
 
+theorem twoBandAnnulus_boundaryZero_classifierControl_emittedInterior_card_ge_nine
+    {boundaryEdge : Fin 5 → twoBandAnnulusGraph.edgeSet} {n : Nat}
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    {p0Inside p4Inside : Bool} {side : Fin 9 → Prop}
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (hcontrol :
+      ∀ ⦃z : twoBandAnnulusGraph.edgeSet → Color⦄,
+        z ∈ planarBoundaryZeroSubmodule twoBandAnnulusEmbedding →
+        (∀ e ∈ classifier.emittedFinset, z e = 0) →
+        z = 0) :
+    9 ≤ (classifier.emittedFinset.filter fun e =>
+      e ∈ interiorEdgeSupport
+        twoBandAnnulusEmbedding.faceBoundary twoBandAnnulusEmbedding.faces).card := by
+  refine twoBandAnnulus_boundaryZero_exactMinimumControlCard.2
+    (classifier.emittedFinset.filter fun e =>
+      e ∈ interiorEdgeSupport
+        twoBandAnnulusEmbedding.faceBoundary twoBandAnnulusEmbedding.faces) ?_
+  intro z hzBoundary hvanishInterior
+  exact hcontrol hzBoundary (by
+    intro e heEmitted
+    by_cases heInterior :
+        e ∈ interiorEdgeSupport
+          twoBandAnnulusEmbedding.faceBoundary twoBandAnnulusEmbedding.faces
+    · exact hvanishInterior e (Finset.mem_filter.2 ⟨heEmitted, heInterior⟩)
+    · exact boundaryZero_of_mem_planarBoundaryZeroSubmodule hzBoundary e
+        (twoBandAnnulus_mem_selectedBoundarySupport_of_not_mem_interiorEdgeSupport
+          heInterior))
+
 theorem twoBandAnnulus_boundaryZero_not_classifierControl_of_emittedFinset_card_le_eight
     {boundaryEdge : Fin 5 → twoBandAnnulusGraph.edgeSet} {n : Nat}
     {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
@@ -7195,6 +7241,39 @@ theorem twoBandAnnulus_boundaryZeroKirchhoff_classifierControl_emittedFinset_car
     6 ≤ classifier.emittedFinset.card :=
   twoBandAnnulus_boundaryZeroKirchhoff_exactMinimumControlCard.2
     classifier.emittedFinset hcontrol
+
+theorem twoBandAnnulus_boundaryZeroKirchhoff_classifierControl_emittedInterior_card_ge_six
+    {boundaryEdge : Fin 5 → twoBandAnnulusGraph.edgeSet} {n : Nat}
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    {p0Inside p4Inside : Bool} {side : Fin 9 → Prop}
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (hcontrol :
+      ∀ ⦃z : twoBandAnnulusGraph.edgeSet → Color⦄,
+        z ∈ theorem49BoundaryZeroKirchhoffSubspace
+            twoBandAnnulusEmbedding twoBandAnnulusKirchhoffVertices →
+        (∀ e ∈ classifier.emittedFinset, z e = 0) →
+        z = 0) :
+    6 ≤ (classifier.emittedFinset.filter fun e =>
+      e ∈ interiorEdgeSupport
+        twoBandAnnulusEmbedding.faceBoundary twoBandAnnulusEmbedding.faces).card := by
+  refine twoBandAnnulus_boundaryZeroKirchhoff_exactMinimumControlCard.2
+    (classifier.emittedFinset.filter fun e =>
+      e ∈ interiorEdgeSupport
+        twoBandAnnulusEmbedding.faceBoundary twoBandAnnulusEmbedding.faces) ?_
+  intro z hz hvanishInterior
+  have hzBoundary : z ∈ planarBoundaryZeroSubmodule twoBandAnnulusEmbedding :=
+    theorem49BoundaryZeroKirchhoffSubspace_le_planarBoundaryZeroSubmodule
+      twoBandAnnulusEmbedding twoBandAnnulusKirchhoffVertices hz
+  exact hcontrol hz (by
+    intro e heEmitted
+    by_cases heInterior :
+        e ∈ interiorEdgeSupport
+          twoBandAnnulusEmbedding.faceBoundary twoBandAnnulusEmbedding.faces
+    · exact hvanishInterior e (Finset.mem_filter.2 ⟨heEmitted, heInterior⟩)
+    · exact boundaryZero_of_mem_planarBoundaryZeroSubmodule hzBoundary e
+        (twoBandAnnulus_mem_selectedBoundarySupport_of_not_mem_interiorEdgeSupport
+          heInterior))
 
 theorem twoBandAnnulus_boundaryZeroKirchhoff_not_classifierControl_of_emittedFinset_card_le_five
     {boundaryEdge : Fin 5 → twoBandAnnulusGraph.edgeSet} {n : Nat}
@@ -12624,6 +12703,54 @@ theorem wheelWithInnerTriangle_CAP5_boundaryZeroKirchhoff_not_forcedEdgeCoverage
       p0Inside p4Inside side classifier hcoverage
   omega
 
+/-- Two-band boundary-zero detector bound with boundary emissions trimmed away.  Forced-edge
+coverage must emit all nine interior coordinates; selected-boundary emissions do not contribute
+to the lower bound. -/
+theorem twoBandAnnulus_CAP5_forcedEdgeCoverage_emittedInterior_card_ge_nine
+    {boundaryEdge : Fin 5 → twoBandAnnulusGraph.edgeSet} {n : Nat}
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    (p0Inside p4Inside : Bool) (side : Fin 9 → Prop)
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (hcoverage :
+      ∀ ⦃z : twoBandAnnulusGraph.edgeSet → Color⦄,
+        z ∈ planarBoundaryZeroSubmodule twoBandAnnulusEmbedding →
+        z ≠ 0 →
+          ∃ e : twoBandAnnulusGraph.edgeSet,
+            data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e ∧
+              z e ≠ 0) :
+    9 ≤ (classifier.emittedFinset.filter fun e =>
+      e ∈ interiorEdgeSupport
+        twoBandAnnulusEmbedding.faceBoundary twoBandAnnulusEmbedding.faces).card := by
+  exact
+    twoBandAnnulus_boundaryZero_classifierControl_emittedInterior_card_ge_nine
+      classifier
+      (data.enumeratedExceptionalAnnulusForcedEdgeClassifierControl_of_forcedEdgeCoverage
+        twoBandAnnulusEmbedding classifier hcoverage)
+
+/-- Low-interior-emission refutation for the two-band boundary-zero detector. -/
+theorem twoBandAnnulus_CAP5_not_forcedEdgeCoverage_of_emittedInterior_card_le_eight
+    {boundaryEdge : Fin 5 → twoBandAnnulusGraph.edgeSet} {n : Nat}
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    (p0Inside p4Inside : Bool) (side : Fin 9 → Prop)
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (hcard :
+      (classifier.emittedFinset.filter fun e =>
+        e ∈ interiorEdgeSupport
+          twoBandAnnulusEmbedding.faceBoundary twoBandAnnulusEmbedding.faces).card ≤ 8) :
+    ¬ ∀ ⦃z : twoBandAnnulusGraph.edgeSet → Color⦄,
+      z ∈ planarBoundaryZeroSubmodule twoBandAnnulusEmbedding →
+      z ≠ 0 →
+        ∃ e : twoBandAnnulusGraph.edgeSet,
+          data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e ∧
+            z e ≠ 0 := by
+  intro hcoverage
+  have hge :=
+    twoBandAnnulus_CAP5_forcedEdgeCoverage_emittedInterior_card_ge_nine
+      p0Inside p4Inside side classifier hcoverage
+  omega
+
 /-- Shell-specialized detector bound for the two-band stress shell.  Kirchhoff coverage on the
 three middle vertices must emit at least six coordinates. -/
 theorem twoBandAnnulus_CAP5_boundaryZeroKirchhoff_forcedEdgeCoverage_emittedFinset_card_ge_six
@@ -12659,6 +12786,34 @@ theorem twoBandAnnulus_CAP5_boundaryZeroKirchhoff_forcedEdgeCoverage_emittedFins
   rw [hboundary, hvertices, hedge] at hge
   omega
 
+/-- Two-band Kirchhoff detector bound with boundary emissions trimmed away.  Kirchhoff coverage
+must emit at least six interior coordinates; selected-boundary emissions vanish automatically for
+boundary-zero chains. -/
+theorem twoBandAnnulus_CAP5_boundaryZeroKirchhoff_forcedEdgeCoverage_emittedInterior_card_ge_six
+    {boundaryEdge : Fin 5 → twoBandAnnulusGraph.edgeSet} {n : Nat}
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    (p0Inside p4Inside : Bool) (side : Fin 9 → Prop)
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (hcoverage :
+      ∀ ⦃z : twoBandAnnulusGraph.edgeSet → Color⦄,
+        z ∈ theorem49BoundaryZeroKirchhoffSubspace
+            twoBandAnnulusEmbedding twoBandAnnulusKirchhoffVertices →
+        z ≠ 0 →
+          ∃ e : twoBandAnnulusGraph.edgeSet,
+            data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e ∧
+              z e ≠ 0) :
+    6 ≤ (classifier.emittedFinset.filter fun e =>
+      e ∈ interiorEdgeSupport
+        twoBandAnnulusEmbedding.faceBoundary twoBandAnnulusEmbedding.faces).card := by
+  refine
+    twoBandAnnulus_boundaryZeroKirchhoff_classifierControl_emittedInterior_card_ge_six
+      classifier ?_
+  intro z hz hvanishEmitted
+  by_contra hzNonzero
+  rcases hcoverage hz hzNonzero with ⟨e, hforced, hze⟩
+  exact hze (hvanishEmitted e ((classifier.emittedFinset_spec e).2 hforced))
+
 /-- Low-cardinality refutation for the two-band Kirchhoff detector: five emitted coordinates do
 not cover the boundary-zero Kirchhoff target. -/
 theorem twoBandAnnulus_CAP5_boundaryZeroKirchhoff_not_forcedEdgeCoverage_of_emittedFinset_card_le_five
@@ -12678,6 +12833,30 @@ theorem twoBandAnnulus_CAP5_boundaryZeroKirchhoff_not_forcedEdgeCoverage_of_emit
   intro hcoverage
   have hge :=
     twoBandAnnulus_CAP5_boundaryZeroKirchhoff_forcedEdgeCoverage_emittedFinset_card_ge_six
+      p0Inside p4Inside side classifier hcoverage
+  omega
+
+/-- Low-interior-emission refutation for the two-band Kirchhoff detector. -/
+theorem twoBandAnnulus_CAP5_boundaryZeroKirchhoff_not_forcedEdgeCoverage_of_emittedInterior_card_le_five
+    {boundaryEdge : Fin 5 → twoBandAnnulusGraph.edgeSet} {n : Nat}
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    (p0Inside p4Inside : Bool) (side : Fin 9 → Prop)
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (hcard :
+      (classifier.emittedFinset.filter fun e =>
+        e ∈ interiorEdgeSupport
+          twoBandAnnulusEmbedding.faceBoundary twoBandAnnulusEmbedding.faces).card ≤ 5) :
+    ¬ ∀ ⦃z : twoBandAnnulusGraph.edgeSet → Color⦄,
+      z ∈ theorem49BoundaryZeroKirchhoffSubspace
+          twoBandAnnulusEmbedding twoBandAnnulusKirchhoffVertices →
+      z ≠ 0 →
+        ∃ e : twoBandAnnulusGraph.edgeSet,
+          data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e ∧
+            z e ≠ 0 := by
+  intro hcoverage
+  have hge :=
+    twoBandAnnulus_CAP5_boundaryZeroKirchhoff_forcedEdgeCoverage_emittedInterior_card_ge_six
       p0Inside p4Inside side classifier hcoverage
   omega
 
