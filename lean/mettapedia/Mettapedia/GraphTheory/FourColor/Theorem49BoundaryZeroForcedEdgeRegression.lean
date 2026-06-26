@@ -7043,6 +7043,114 @@ theorem twoBandAnnulus_boundaryZeroKirchhoff_minimalControl_profile :
       z hz hcontrol
   · exact twoBandAnnulus_boundaryZeroKirchhoff_has_evader_of_control_card_le_five
 
+theorem twoBandAnnulus_boundaryZero_has_evader_of_control_card_le_eight
+    (control : Finset twoBandAnnulusGraph.edgeSet) (hcard : control.card ≤ 8) :
+    ∃ z : twoBandAnnulusGraph.edgeSet → Color,
+      z ∈ planarBoundaryZeroSubmodule twoBandAnnulusEmbedding ∧
+      (∀ e ∈ control, z e = 0) ∧ z ≠ 0 := by
+  refine exists_mem_planarBoundaryZeroSubmodule_of_control_card_add_boundary_card_lt
+    twoBandAnnulusEmbedding control ?_
+  have hboundary :
+      Fintype.card {e : twoBandAnnulusGraph.edgeSet //
+        e ∈ selectedBoundarySupport
+          twoBandAnnulusEmbedding.faceBoundary
+          twoBandAnnulusEmbedding.faces
+          twoBandAnnulusEmbedding.faces} = 6 := by
+    rw [twoBandAnnulus_selectedBoundarySupport_eq]
+    decide
+  have hedge : Fintype.card twoBandAnnulusGraph.edgeSet = 15 := by
+    decide
+  rw [hboundary, hedge]
+  omega
+
+theorem twoBandAnnulus_boundaryZero_minimalControl_profile :
+    (∀ ⦃z : twoBandAnnulusGraph.edgeSet → Color⦄,
+      z ∈ planarBoundaryZeroSubmodule twoBandAnnulusEmbedding →
+      (∀ e ∈ twoBandAnnulusInteriorEdges, z e = 0) →
+      z = 0) ∧
+    (∀ control : Finset twoBandAnnulusGraph.edgeSet,
+      control.card ≤ 8 →
+        ∃ z : twoBandAnnulusGraph.edgeSet → Color,
+          z ∈ planarBoundaryZeroSubmodule twoBandAnnulusEmbedding ∧
+          (∀ e ∈ control, z e = 0) ∧ z ≠ 0) := by
+  constructor
+  · intro z hzBoundary hcontrol
+    exact twoBandAnnulus_boundaryZero_no_evader_of_vanishes_on_interiorEdges
+      z hzBoundary hcontrol
+  · exact twoBandAnnulus_boundaryZero_has_evader_of_control_card_le_eight
+
+theorem twoBandAnnulus_boundaryZero_exactMinimumControlCard :
+    (∃ control : Finset twoBandAnnulusGraph.edgeSet,
+      control.card = 9 ∧
+        ∀ ⦃z : twoBandAnnulusGraph.edgeSet → Color⦄,
+          z ∈ planarBoundaryZeroSubmodule twoBandAnnulusEmbedding →
+          (∀ e ∈ control, z e = 0) →
+          z = 0) ∧
+    (∀ control : Finset twoBandAnnulusGraph.edgeSet,
+      (∀ ⦃z : twoBandAnnulusGraph.edgeSet → Color⦄,
+        z ∈ planarBoundaryZeroSubmodule twoBandAnnulusEmbedding →
+        (∀ e ∈ control, z e = 0) →
+        z = 0) →
+      9 ≤ control.card) := by
+  constructor
+  · refine ⟨twoBandAnnulusInteriorEdges, ?_, ?_⟩
+    · decide
+    · intro z hzBoundary hcontrol
+      exact twoBandAnnulus_boundaryZero_no_evader_of_vanishes_on_interiorEdges
+        z hzBoundary hcontrol
+  · intro control hcontrol
+    by_contra hnotLower
+    have hcard : control.card ≤ 8 := by omega
+    rcases twoBandAnnulus_boundaryZero_has_evader_of_control_card_le_eight
+        control hcard with
+      ⟨z, hzBoundary, hvanish, hzNonzero⟩
+    exact hzNonzero (hcontrol hzBoundary hvanish)
+
+theorem twoBandAnnulus_boundaryZero_classifierControl_emittedFinset_card_ge_nine
+    {boundaryEdge : Fin 5 → twoBandAnnulusGraph.edgeSet} {n : Nat}
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    {p0Inside p4Inside : Bool} {side : Fin 9 → Prop}
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (hcontrol :
+      ∀ ⦃z : twoBandAnnulusGraph.edgeSet → Color⦄,
+        z ∈ planarBoundaryZeroSubmodule twoBandAnnulusEmbedding →
+        (∀ e ∈ classifier.emittedFinset, z e = 0) →
+        z = 0) :
+    9 ≤ classifier.emittedFinset.card :=
+  twoBandAnnulus_boundaryZero_exactMinimumControlCard.2
+    classifier.emittedFinset hcontrol
+
+theorem twoBandAnnulus_boundaryZero_not_classifierControl_of_emittedFinset_card_le_eight
+    {boundaryEdge : Fin 5 → twoBandAnnulusGraph.edgeSet} {n : Nat}
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    {p0Inside p4Inside : Bool} {side : Fin 9 → Prop}
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (hcard : classifier.emittedFinset.card ≤ 8) :
+    ¬ ∀ ⦃z : twoBandAnnulusGraph.edgeSet → Color⦄,
+      z ∈ planarBoundaryZeroSubmodule twoBandAnnulusEmbedding →
+      (∀ e ∈ classifier.emittedFinset, z e = 0) →
+      z = 0 := by
+  intro hcontrol
+  have hge :=
+    twoBandAnnulus_boundaryZero_classifierControl_emittedFinset_card_ge_nine
+      classifier hcontrol
+  omega
+
+theorem twoBandAnnulus_middleOuterRadialKirchhoffControl_not_boundaryZeroControl :
+    ¬ ∀ ⦃z : twoBandAnnulusGraph.edgeSet → Color⦄,
+      z ∈ planarBoundaryZeroSubmodule twoBandAnnulusEmbedding →
+      (∀ e ∈ twoBandAnnulusMiddleOuterRadialKirchhoffControlEdges, z e = 0) →
+      z = 0 := by
+  intro hcontrol
+  have hge :=
+    twoBandAnnulus_boundaryZero_exactMinimumControlCard.2
+      twoBandAnnulusMiddleOuterRadialKirchhoffControlEdges hcontrol
+  have hcard : twoBandAnnulusMiddleOuterRadialKirchhoffControlEdges.card = 6 := by
+    decide
+  omega
+
 theorem twoBandAnnulus_boundaryZeroKirchhoff_exactMinimumControlCard :
     (∃ control : Finset twoBandAnnulusGraph.edgeSet,
       control.card = 6 ∧
