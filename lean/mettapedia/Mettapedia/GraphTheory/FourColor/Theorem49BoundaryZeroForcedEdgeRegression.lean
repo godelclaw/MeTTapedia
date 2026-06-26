@@ -11759,6 +11759,91 @@ theorem sharedInteriorPair_CAP5_exists_extra_emittedEdge_of_not_theorem49Boundar
       C₀ hsubset p0Inside p4Inside side classifier hcrossingEmpty hnoncrossingEmpty
       honlyEmits)
 
+/-- Certificate-facing failed finite-checker diagnostic for the shared focus shell.  Under empty
+extension bins, a failed unique-certificate synthesis run must expose an emitted edge outside the
+lab-certified controls that is missing a red or blue probe in the unique certificate family. -/
+theorem sharedInteriorPair_CAP5_exists_extra_emittedEdge_missing_red_or_blue_uniqueCertificateWitness_of_not_theorem49BoundaryRootSynthesis_of_extensionFinsets_eq_empty
+    {boundaryEdge : Fin 5 → sharedInteriorPairGraph.edgeSet} {n : Nat}
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    [FiniteDimensional F2 (sharedInteriorPairGraph.edgeSet → Color)]
+    (C₀ : sharedInteriorPairGraph.EdgeColoring Color)
+    (hsubset :
+      sharedInteriorPairProjectedGeneratorCertificateColorings ⊆
+        sharedInteriorPairGraph.EdgeKempeClosure C₀)
+    (p0Inside p4Inside : Bool) (side : Fin 8 → Prop)
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (hcrossingEmpty :
+      classifier.crossingExtensionFinset sharedInteriorPairInteriorControlEdges = ∅)
+    (hnoncrossingEmpty :
+      classifier.noncrossingExtensionFinset sharedInteriorPairInteriorControlEdges = ∅)
+    (hnotSynthesis : ¬ Theorem49BoundaryRootSynthesis sharedInteriorPairEmbedding C₀) :
+    (∃ e : sharedInteriorPairGraph.edgeSet,
+      e ∈ classifier.emittedFinset ∧ e ∉ sharedInteriorPairInteriorControlEdges ∧
+        ¬ ∃ i : ({e : sharedInteriorPairGraph.edgeSet //
+            e ∈ sharedInteriorPairInteriorControlEdges} × Bool),
+          ((sharedInteriorPairUniqueCertificateRedBlueFamily i :
+              projectedColoringGeneratorSubspace sharedInteriorPairEmbedding
+                sharedInteriorPairProjectedGeneratorCertificateColorings) :
+              sharedInteriorPairGraph.edgeSet → Color) =
+            Pi.single e red) ∨
+      ∃ e : sharedInteriorPairGraph.edgeSet,
+        e ∈ classifier.emittedFinset ∧ e ∉ sharedInteriorPairInteriorControlEdges ∧
+          ¬ ∃ i : ({e : sharedInteriorPairGraph.edgeSet //
+              e ∈ sharedInteriorPairInteriorControlEdges} × Bool),
+            ((sharedInteriorPairUniqueCertificateRedBlueFamily i :
+                projectedColoringGeneratorSubspace sharedInteriorPairEmbedding
+                  sharedInteriorPairProjectedGeneratorCertificateColorings) :
+                sharedInteriorPairGraph.edgeSet → Color) =
+              Pi.single e blue := by
+  classical
+  by_contra hnoGap
+  have hemits : sharedInteriorPairInteriorControlEdges ⊆ classifier.emittedFinset :=
+    (classifier.controlEdges_subset_emittedFinset_iff_extensionFinsets_eq_empty
+      sharedInteriorPairInteriorControlEdges).2
+      ⟨hcrossingEmpty, hnoncrossingEmpty⟩
+  have hred :
+      ∀ e : sharedInteriorPairGraph.edgeSet,
+        e ∈ classifier.emittedFinset →
+          ∃ i : ({e : sharedInteriorPairGraph.edgeSet //
+              e ∈ sharedInteriorPairInteriorControlEdges} × Bool),
+            ((sharedInteriorPairUniqueCertificateRedBlueFamily i :
+                projectedColoringGeneratorSubspace sharedInteriorPairEmbedding
+                  sharedInteriorPairProjectedGeneratorCertificateColorings) :
+                sharedInteriorPairGraph.edgeSet → Color) =
+              Pi.single e red := by
+    intro e he
+    by_cases heControl : e ∈ sharedInteriorPairInteriorControlEdges
+    · exact (redBlueSingleCoordinateFamily_witnessRed sharedInteriorPairInteriorControlEdges
+        sharedInteriorPair_redBlueSingleCoordinateMemberships_of_uniqueCertificates.1
+        sharedInteriorPair_redBlueSingleCoordinateMemberships_of_uniqueCertificates.2)
+        e heControl
+    · by_contra hmissing
+      exact hnoGap (Or.inl ⟨e, he, heControl, hmissing⟩)
+  have hblue :
+      ∀ e : sharedInteriorPairGraph.edgeSet,
+        e ∈ classifier.emittedFinset →
+          ∃ i : ({e : sharedInteriorPairGraph.edgeSet //
+              e ∈ sharedInteriorPairInteriorControlEdges} × Bool),
+            ((sharedInteriorPairUniqueCertificateRedBlueFamily i :
+                projectedColoringGeneratorSubspace sharedInteriorPairEmbedding
+                  sharedInteriorPairProjectedGeneratorCertificateColorings) :
+                sharedInteriorPairGraph.edgeSet → Color) =
+              Pi.single e blue := by
+    intro e he
+    by_cases heControl : e ∈ sharedInteriorPairInteriorControlEdges
+    · exact (redBlueSingleCoordinateFamily_witnessBlue sharedInteriorPairInteriorControlEdges
+        sharedInteriorPair_redBlueSingleCoordinateMemberships_of_uniqueCertificates.1
+        sharedInteriorPair_redBlueSingleCoordinateMemberships_of_uniqueCertificates.2)
+        e heControl
+    · by_contra hmissing
+      exact hnoGap (Or.inr ⟨e, he, heControl, hmissing⟩)
+  exact hnotSynthesis
+    (sharedInteriorPair_CAP5_theorem49BoundaryRootSynthesis_of_emits_interiorControlEdges
+      C₀ sharedInteriorPairProjectedGeneratorCertificateColorings hsubset
+      sharedInteriorPairUniqueCertificateRedBlueFamily p0Inside p4Inside side classifier
+      hemits hred hblue)
+
 /-- Classifier-control form for the wheel focus shell: exact CAP5 forced-edge coverage makes the
 emitted classifier output control every selected-boundary-zero chain. -/
 theorem wheelWithInnerTriangle_CAP5_classifierControl_of_forcedEdgeCoverage
@@ -11973,6 +12058,91 @@ theorem wheelWithInnerTriangle_CAP5_exists_extra_emittedEdge_of_not_theorem49Bou
     (wheelWithInnerTriangle_CAP5_theorem49BoundaryRootSynthesis_of_extensionFinsets_eq_empty_uniqueCertificates
       C₀ hsubset p0Inside p4Inside side classifier hcrossingEmpty hnoncrossingEmpty
       honlyEmits)
+
+/-- Certificate-facing failed finite-checker diagnostic for the wheel focus shell.  Under empty
+extension bins, a failed unique-certificate synthesis run must expose an emitted edge outside the
+lab-certified controls that is missing a red or blue probe in the unique certificate family. -/
+theorem wheelWithInnerTriangle_CAP5_exists_extra_emittedEdge_missing_red_or_blue_uniqueCertificateWitness_of_not_theorem49BoundaryRootSynthesis_of_extensionFinsets_eq_empty
+    {boundaryEdge : Fin 5 → wheelWithInnerTriangleGraph.edgeSet} {n : Nat}
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    [FiniteDimensional F2 (wheelWithInnerTriangleGraph.edgeSet → Color)]
+    (C₀ : wheelWithInnerTriangleGraph.EdgeColoring Color)
+    (hsubset :
+      wheelWithInnerTriangleProjectedGeneratorCertificateColorings ⊆
+        wheelWithInnerTriangleGraph.EdgeKempeClosure C₀)
+    (p0Inside p4Inside : Bool) (side : Fin 7 → Prop)
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (hcrossingEmpty :
+      classifier.crossingExtensionFinset wheelWithInnerTriangleInteriorControlEdges = ∅)
+    (hnoncrossingEmpty :
+      classifier.noncrossingExtensionFinset wheelWithInnerTriangleInteriorControlEdges = ∅)
+    (hnotSynthesis : ¬ Theorem49BoundaryRootSynthesis wheelWithInnerTriangleEmbedding C₀) :
+    (∃ e : wheelWithInnerTriangleGraph.edgeSet,
+      e ∈ classifier.emittedFinset ∧ e ∉ wheelWithInnerTriangleInteriorControlEdges ∧
+        ¬ ∃ i : ({e : wheelWithInnerTriangleGraph.edgeSet //
+            e ∈ wheelWithInnerTriangleInteriorControlEdges} × Bool),
+          ((wheelWithInnerTriangleUniqueCertificateRedBlueFamily i :
+              projectedColoringGeneratorSubspace wheelWithInnerTriangleEmbedding
+                wheelWithInnerTriangleProjectedGeneratorCertificateColorings) :
+              wheelWithInnerTriangleGraph.edgeSet → Color) =
+            Pi.single e red) ∨
+      ∃ e : wheelWithInnerTriangleGraph.edgeSet,
+        e ∈ classifier.emittedFinset ∧ e ∉ wheelWithInnerTriangleInteriorControlEdges ∧
+          ¬ ∃ i : ({e : wheelWithInnerTriangleGraph.edgeSet //
+              e ∈ wheelWithInnerTriangleInteriorControlEdges} × Bool),
+            ((wheelWithInnerTriangleUniqueCertificateRedBlueFamily i :
+                projectedColoringGeneratorSubspace wheelWithInnerTriangleEmbedding
+                  wheelWithInnerTriangleProjectedGeneratorCertificateColorings) :
+                wheelWithInnerTriangleGraph.edgeSet → Color) =
+              Pi.single e blue := by
+  classical
+  by_contra hnoGap
+  have hemits : wheelWithInnerTriangleInteriorControlEdges ⊆ classifier.emittedFinset :=
+    (classifier.controlEdges_subset_emittedFinset_iff_extensionFinsets_eq_empty
+      wheelWithInnerTriangleInteriorControlEdges).2
+      ⟨hcrossingEmpty, hnoncrossingEmpty⟩
+  have hred :
+      ∀ e : wheelWithInnerTriangleGraph.edgeSet,
+        e ∈ classifier.emittedFinset →
+          ∃ i : ({e : wheelWithInnerTriangleGraph.edgeSet //
+              e ∈ wheelWithInnerTriangleInteriorControlEdges} × Bool),
+            ((wheelWithInnerTriangleUniqueCertificateRedBlueFamily i :
+                projectedColoringGeneratorSubspace wheelWithInnerTriangleEmbedding
+                  wheelWithInnerTriangleProjectedGeneratorCertificateColorings) :
+                wheelWithInnerTriangleGraph.edgeSet → Color) =
+              Pi.single e red := by
+    intro e he
+    by_cases heControl : e ∈ wheelWithInnerTriangleInteriorControlEdges
+    · exact (redBlueSingleCoordinateFamily_witnessRed wheelWithInnerTriangleInteriorControlEdges
+        wheelWithInnerTriangle_redBlueSingleCoordinateMemberships_of_uniqueCertificates.1
+        wheelWithInnerTriangle_redBlueSingleCoordinateMemberships_of_uniqueCertificates.2)
+        e heControl
+    · by_contra hmissing
+      exact hnoGap (Or.inl ⟨e, he, heControl, hmissing⟩)
+  have hblue :
+      ∀ e : wheelWithInnerTriangleGraph.edgeSet,
+        e ∈ classifier.emittedFinset →
+          ∃ i : ({e : wheelWithInnerTriangleGraph.edgeSet //
+              e ∈ wheelWithInnerTriangleInteriorControlEdges} × Bool),
+            ((wheelWithInnerTriangleUniqueCertificateRedBlueFamily i :
+                projectedColoringGeneratorSubspace wheelWithInnerTriangleEmbedding
+                  wheelWithInnerTriangleProjectedGeneratorCertificateColorings) :
+                wheelWithInnerTriangleGraph.edgeSet → Color) =
+              Pi.single e blue := by
+    intro e he
+    by_cases heControl : e ∈ wheelWithInnerTriangleInteriorControlEdges
+    · exact (redBlueSingleCoordinateFamily_witnessBlue wheelWithInnerTriangleInteriorControlEdges
+        wheelWithInnerTriangle_redBlueSingleCoordinateMemberships_of_uniqueCertificates.1
+        wheelWithInnerTriangle_redBlueSingleCoordinateMemberships_of_uniqueCertificates.2)
+        e heControl
+    · by_contra hmissing
+      exact hnoGap (Or.inr ⟨e, he, heControl, hmissing⟩)
+  exact hnotSynthesis
+    (wheelWithInnerTriangle_CAP5_theorem49BoundaryRootSynthesis_of_emits_interiorControlEdges
+      C₀ wheelWithInnerTriangleProjectedGeneratorCertificateColorings hsubset
+      wheelWithInnerTriangleUniqueCertificateRedBlueFamily p0Inside p4Inside side classifier
+      hemits hred hblue)
 
 /-- Failed-synthesis diagnostic for the shared focus shell.  Once exact CAP5 forced-edge coverage
 holds, a failure of Theorem 4.9 synthesis must expose a forced edge missing a red or blue
