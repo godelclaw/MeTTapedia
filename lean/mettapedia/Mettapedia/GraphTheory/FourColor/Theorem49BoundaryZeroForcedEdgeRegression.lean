@@ -9990,6 +9990,334 @@ theorem wheelWithInnerTriangle_theorem49BoundaryRootSynthesis_of_uniqueCertifica
     wheelWithInnerTriangle_redBlueSingleCoordinateMemberships_of_uniqueCertificates.1
     wheelWithInnerTriangle_redBlueSingleCoordinateMemberships_of_uniqueCertificates.2
 
+private def wheelWithInnerTriangleOuterEdgeCluster
+    (e : wheelWithInnerTriangleGraph.edgeSet) : Bool :=
+  if e = wit45 ∨ e = wit56 ∨ e = wit64 then true else false
+
+private theorem wheelWithInnerTriangleOuterEdgeCluster_eq_of_lineGraph_adj
+    {e f : wheelWithInnerTriangleGraph.edgeSet}
+    (hadj : wheelWithInnerTriangleGraph.lineGraph.Adj e f) :
+    wheelWithInnerTriangleOuterEdgeCluster e = wheelWithInnerTriangleOuterEdgeCluster f := by
+  decide +revert
+
+private theorem wheelWithInnerTriangleOuterEdgeCluster_eq_of_bicoloredWalk
+    {a b : Color}
+    {C : wheelWithInnerTriangleGraph.EdgeColoring Color}
+    {u v : ↥(C.bicoloredSet a b)}
+    (p : (C.bicoloredSubgraph a b).Walk u v) :
+    wheelWithInnerTriangleOuterEdgeCluster u.1 = wheelWithInnerTriangleOuterEdgeCluster v.1 := by
+  induction p with
+  | nil => rfl
+  | cons hadj p ih =>
+      exact (wheelWithInnerTriangleOuterEdgeCluster_eq_of_lineGraph_adj
+        (by simpa using hadj)).trans ih
+
+private theorem wheelWithInnerTriangleOuterEdgeCluster_eq_of_bicoloredReachable
+    {a b : Color}
+    {C : wheelWithInnerTriangleGraph.EdgeColoring Color}
+    {e f : wheelWithInnerTriangleGraph.edgeSet}
+    {he : e ∈ C.bicoloredSet a b} {hf : f ∈ C.bicoloredSet a b}
+    (hreach : (C.bicoloredSubgraph a b).Reachable ⟨e, he⟩ ⟨f, hf⟩) :
+    wheelWithInnerTriangleOuterEdgeCluster e = wheelWithInnerTriangleOuterEdgeCluster f := by
+  refine hreach.elim ?_
+  intro p
+  exact wheelWithInnerTriangleOuterEdgeCluster_eq_of_bicoloredWalk p
+
+private theorem wheelWithInnerTriangle_not_mem_kempeComponentSet_of_ne_left_ne_right
+    {x y : Color}
+    {C : wheelWithInnerTriangleGraph.EdgeColoring Color}
+    {K : (C.bicoloredSubgraph x y).ConnectedComponent}
+    {e : wheelWithInnerTriangleGraph.edgeSet}
+    (hx : C e ≠ x) (hy : C e ≠ y) :
+    e ∉ C.kempeComponentSet x y K := by
+  intro hmem
+  rcases C.mem_bicoloredSet_of_mem_kempeComponentSet hmem with h | h
+  · exact hx h
+  · exact hy h
+
+private theorem wheelWithInnerTriangle_not_mem_component_of_outerCluster_ne
+    {x y : Color}
+    {C : wheelWithInnerTriangleGraph.EdgeColoring Color}
+    {K : (C.bicoloredSubgraph x y).ConnectedComponent}
+    {root e : wheelWithInnerTriangleGraph.edgeSet}
+    (hroot : root ∈ C.kempeComponentSet x y K)
+    (hrootCluster : wheelWithInnerTriangleOuterEdgeCluster root = false)
+    (hedgeCluster : wheelWithInnerTriangleOuterEdgeCluster e = true) :
+    e ∉ C.kempeComponentSet x y K := by
+  intro hmem
+  rcases hmem with ⟨he', hec⟩
+  rcases hroot with ⟨hroot', hrootc⟩
+  have hcomp' :
+      (C.bicoloredSubgraph x y).connectedComponentMk ⟨e, he'⟩ =
+      (C.bicoloredSubgraph x y).connectedComponentMk ⟨root, hroot'⟩ :=
+    hec.trans hrootc.symm
+  have hreach : (C.bicoloredSubgraph x y).Reachable ⟨e, he'⟩ ⟨root, hroot'⟩ :=
+    ConnectedComponent.eq.mp hcomp'
+  have hcluster := wheelWithInnerTriangleOuterEdgeCluster_eq_of_bicoloredReachable hreach
+  rw [hedgeCluster, hrootCluster] at hcluster
+  cases hcluster
+
+private theorem wheelWithInnerTriangleCertificateColoringA_wit01_mem_bicoloredSet_red_blue :
+    wit01 ∈ wheelWithInnerTriangleCertificateColoringA.bicoloredSet red blue := by
+  left
+  decide
+
+private noncomputable def wheelWithInnerTriangleCertificateColoringA_redBlueComponent :
+    (wheelWithInnerTriangleCertificateColoringA.bicoloredSubgraph red blue).ConnectedComponent :=
+  (wheelWithInnerTriangleCertificateColoringA.bicoloredSubgraph red blue).connectedComponentMk
+    ⟨wit01, wheelWithInnerTriangleCertificateColoringA_wit01_mem_bicoloredSet_red_blue⟩
+
+private theorem wit01_mem_wheelWithInnerTriangleCertificateColoringA_redBlueComponent :
+    wit01 ∈ wheelWithInnerTriangleCertificateColoringA.kempeComponentSet red blue
+      wheelWithInnerTriangleCertificateColoringA_redBlueComponent := by
+  exact wheelWithInnerTriangleCertificateColoringA.mem_kempeComponentSet_self
+    wheelWithInnerTriangleCertificateColoringA_wit01_mem_bicoloredSet_red_blue
+
+private theorem wit02_mem_wheelWithInnerTriangleCertificateColoringA_redBlueComponent :
+    wit02 ∈ wheelWithInnerTriangleCertificateColoringA.kempeComponentSet red blue
+      wheelWithInnerTriangleCertificateColoringA_redBlueComponent := by
+  exact wheelWithInnerTriangleCertificateColoringA.mem_kempeComponentSet_of_adj
+    wit01_mem_wheelWithInnerTriangleCertificateColoringA_redBlueComponent (by decide) (by
+      right
+      decide)
+
+private theorem wit23_mem_wheelWithInnerTriangleCertificateColoringA_redBlueComponent :
+    wit23 ∈ wheelWithInnerTriangleCertificateColoringA.kempeComponentSet red blue
+      wheelWithInnerTriangleCertificateColoringA_redBlueComponent := by
+  exact wheelWithInnerTriangleCertificateColoringA.mem_kempeComponentSet_of_adj
+    wit02_mem_wheelWithInnerTriangleCertificateColoringA_redBlueComponent (by decide) (by
+      left
+      decide)
+
+private theorem wit31_mem_wheelWithInnerTriangleCertificateColoringA_redBlueComponent :
+    wit31 ∈ wheelWithInnerTriangleCertificateColoringA.kempeComponentSet red blue
+      wheelWithInnerTriangleCertificateColoringA_redBlueComponent := by
+  exact wheelWithInnerTriangleCertificateColoringA.mem_kempeComponentSet_of_adj
+    wit01_mem_wheelWithInnerTriangleCertificateColoringA_redBlueComponent (by decide) (by
+      right
+      decide)
+
+private theorem wit03_not_mem_wheelWithInnerTriangleCertificateColoringA_redBlueComponent :
+    wit03 ∉ wheelWithInnerTriangleCertificateColoringA.kempeComponentSet red blue
+      wheelWithInnerTriangleCertificateColoringA_redBlueComponent := by
+  exact wheelWithInnerTriangle_not_mem_kempeComponentSet_of_ne_left_ne_right
+    (C := wheelWithInnerTriangleCertificateColoringA)
+    (K := wheelWithInnerTriangleCertificateColoringA_redBlueComponent)
+    (e := wit03) (by decide) (by decide)
+
+private theorem wit12_not_mem_wheelWithInnerTriangleCertificateColoringA_redBlueComponent :
+    wit12 ∉ wheelWithInnerTriangleCertificateColoringA.kempeComponentSet red blue
+      wheelWithInnerTriangleCertificateColoringA_redBlueComponent := by
+  exact wheelWithInnerTriangle_not_mem_kempeComponentSet_of_ne_left_ne_right
+    (C := wheelWithInnerTriangleCertificateColoringA)
+    (K := wheelWithInnerTriangleCertificateColoringA_redBlueComponent)
+    (e := wit12) (by decide) (by decide)
+
+private theorem wit64_not_mem_wheelWithInnerTriangleCertificateColoringA_redBlueComponent :
+    wit64 ∉ wheelWithInnerTriangleCertificateColoringA.kempeComponentSet red blue
+      wheelWithInnerTriangleCertificateColoringA_redBlueComponent := by
+  exact wheelWithInnerTriangle_not_mem_kempeComponentSet_of_ne_left_ne_right
+    (C := wheelWithInnerTriangleCertificateColoringA)
+    (K := wheelWithInnerTriangleCertificateColoringA_redBlueComponent)
+    (e := wit64) (by decide) (by decide)
+
+private theorem wit45_not_mem_wheelWithInnerTriangleCertificateColoringA_redBlueComponent :
+    wit45 ∉ wheelWithInnerTriangleCertificateColoringA.kempeComponentSet red blue
+      wheelWithInnerTriangleCertificateColoringA_redBlueComponent := by
+  exact wheelWithInnerTriangle_not_mem_component_of_outerCluster_ne
+    wit01_mem_wheelWithInnerTriangleCertificateColoringA_redBlueComponent (by decide) (by decide)
+
+private theorem wit56_not_mem_wheelWithInnerTriangleCertificateColoringA_redBlueComponent :
+    wit56 ∉ wheelWithInnerTriangleCertificateColoringA.kempeComponentSet red blue
+      wheelWithInnerTriangleCertificateColoringA_redBlueComponent := by
+  exact wheelWithInnerTriangle_not_mem_component_of_outerCluster_ne
+    wit01_mem_wheelWithInnerTriangleCertificateColoringA_redBlueComponent (by decide) (by decide)
+
+private theorem wheelWithInnerTriangleCertificateColoringA_swap_redBlueComponent_eq_B :
+    wheelWithInnerTriangleCertificateColoringA.swapOnKempeComponent red blue
+        wheelWithInnerTriangleCertificateColoringA_redBlueComponent =
+      wheelWithInnerTriangleCertificateColoringB := by
+  apply DFunLike.ext
+  intro e
+  rcases wheelWithInnerTriangle_edge_eq e with
+    rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl
+  · rw [Coloring.swapOnKempeComponent_apply_of_mem]
+    · decide
+    · exact wit01_mem_wheelWithInnerTriangleCertificateColoringA_redBlueComponent
+  · rw [Coloring.swapOnKempeComponent_apply_of_mem]
+    · decide
+    · exact wit02_mem_wheelWithInnerTriangleCertificateColoringA_redBlueComponent
+  · rw [Coloring.swapOnKempeComponent_apply_of_not_mem]
+    · decide
+    · exact wit03_not_mem_wheelWithInnerTriangleCertificateColoringA_redBlueComponent
+  · rw [Coloring.swapOnKempeComponent_apply_of_not_mem]
+    · decide
+    · exact wit12_not_mem_wheelWithInnerTriangleCertificateColoringA_redBlueComponent
+  · rw [Coloring.swapOnKempeComponent_apply_of_mem]
+    · decide
+    · exact wit23_mem_wheelWithInnerTriangleCertificateColoringA_redBlueComponent
+  · rw [Coloring.swapOnKempeComponent_apply_of_mem]
+    · decide
+    · exact wit31_mem_wheelWithInnerTriangleCertificateColoringA_redBlueComponent
+  · rw [Coloring.swapOnKempeComponent_apply_of_not_mem]
+    · decide
+    · exact wit45_not_mem_wheelWithInnerTriangleCertificateColoringA_redBlueComponent
+  · rw [Coloring.swapOnKempeComponent_apply_of_not_mem]
+    · decide
+    · exact wit56_not_mem_wheelWithInnerTriangleCertificateColoringA_redBlueComponent
+  · rw [Coloring.swapOnKempeComponent_apply_of_not_mem]
+    · decide
+    · exact wit64_not_mem_wheelWithInnerTriangleCertificateColoringA_redBlueComponent
+
+private theorem wheelWithInnerTriangleCertificateColoringA_wit02_mem_bicoloredSet_blue_purple :
+    wit02 ∈ wheelWithInnerTriangleCertificateColoringA.bicoloredSet blue purple := by
+  left
+  decide
+
+private noncomputable def wheelWithInnerTriangleCertificateColoringA_bluePurpleComponent :
+    (wheelWithInnerTriangleCertificateColoringA.bicoloredSubgraph blue purple).ConnectedComponent :=
+  (wheelWithInnerTriangleCertificateColoringA.bicoloredSubgraph blue purple).connectedComponentMk
+    ⟨wit02, wheelWithInnerTriangleCertificateColoringA_wit02_mem_bicoloredSet_blue_purple⟩
+
+private theorem wit02_mem_wheelWithInnerTriangleCertificateColoringA_bluePurpleComponent :
+    wit02 ∈ wheelWithInnerTriangleCertificateColoringA.kempeComponentSet blue purple
+      wheelWithInnerTriangleCertificateColoringA_bluePurpleComponent := by
+  exact wheelWithInnerTriangleCertificateColoringA.mem_kempeComponentSet_self
+    wheelWithInnerTriangleCertificateColoringA_wit02_mem_bicoloredSet_blue_purple
+
+private theorem wit03_mem_wheelWithInnerTriangleCertificateColoringA_bluePurpleComponent :
+    wit03 ∈ wheelWithInnerTriangleCertificateColoringA.kempeComponentSet blue purple
+      wheelWithInnerTriangleCertificateColoringA_bluePurpleComponent := by
+  exact wheelWithInnerTriangleCertificateColoringA.mem_kempeComponentSet_of_adj
+    wit02_mem_wheelWithInnerTriangleCertificateColoringA_bluePurpleComponent (by decide) (by
+      right
+      decide)
+
+private theorem wit12_mem_wheelWithInnerTriangleCertificateColoringA_bluePurpleComponent :
+    wit12 ∈ wheelWithInnerTriangleCertificateColoringA.kempeComponentSet blue purple
+      wheelWithInnerTriangleCertificateColoringA_bluePurpleComponent := by
+  exact wheelWithInnerTriangleCertificateColoringA.mem_kempeComponentSet_of_adj
+    wit02_mem_wheelWithInnerTriangleCertificateColoringA_bluePurpleComponent (by decide) (by
+      right
+      decide)
+
+private theorem wit31_mem_wheelWithInnerTriangleCertificateColoringA_bluePurpleComponent :
+    wit31 ∈ wheelWithInnerTriangleCertificateColoringA.kempeComponentSet blue purple
+      wheelWithInnerTriangleCertificateColoringA_bluePurpleComponent := by
+  exact wheelWithInnerTriangleCertificateColoringA.mem_kempeComponentSet_of_adj
+    wit03_mem_wheelWithInnerTriangleCertificateColoringA_bluePurpleComponent (by decide) (by
+      left
+      decide)
+
+private theorem wit01_not_mem_wheelWithInnerTriangleCertificateColoringA_bluePurpleComponent :
+    wit01 ∉ wheelWithInnerTriangleCertificateColoringA.kempeComponentSet blue purple
+      wheelWithInnerTriangleCertificateColoringA_bluePurpleComponent := by
+  exact wheelWithInnerTriangle_not_mem_kempeComponentSet_of_ne_left_ne_right
+    (C := wheelWithInnerTriangleCertificateColoringA)
+    (K := wheelWithInnerTriangleCertificateColoringA_bluePurpleComponent)
+    (e := wit01) (by decide) (by decide)
+
+private theorem wit23_not_mem_wheelWithInnerTriangleCertificateColoringA_bluePurpleComponent :
+    wit23 ∉ wheelWithInnerTriangleCertificateColoringA.kempeComponentSet blue purple
+      wheelWithInnerTriangleCertificateColoringA_bluePurpleComponent := by
+  exact wheelWithInnerTriangle_not_mem_kempeComponentSet_of_ne_left_ne_right
+    (C := wheelWithInnerTriangleCertificateColoringA)
+    (K := wheelWithInnerTriangleCertificateColoringA_bluePurpleComponent)
+    (e := wit23) (by decide) (by decide)
+
+private theorem wit45_not_mem_wheelWithInnerTriangleCertificateColoringA_bluePurpleComponent :
+    wit45 ∉ wheelWithInnerTriangleCertificateColoringA.kempeComponentSet blue purple
+      wheelWithInnerTriangleCertificateColoringA_bluePurpleComponent := by
+  exact wheelWithInnerTriangle_not_mem_kempeComponentSet_of_ne_left_ne_right
+    (C := wheelWithInnerTriangleCertificateColoringA)
+    (K := wheelWithInnerTriangleCertificateColoringA_bluePurpleComponent)
+    (e := wit45) (by decide) (by decide)
+
+private theorem wit56_not_mem_wheelWithInnerTriangleCertificateColoringA_bluePurpleComponent :
+    wit56 ∉ wheelWithInnerTriangleCertificateColoringA.kempeComponentSet blue purple
+      wheelWithInnerTriangleCertificateColoringA_bluePurpleComponent := by
+  exact wheelWithInnerTriangle_not_mem_component_of_outerCluster_ne
+    wit02_mem_wheelWithInnerTriangleCertificateColoringA_bluePurpleComponent (by decide) (by decide)
+
+private theorem wit64_not_mem_wheelWithInnerTriangleCertificateColoringA_bluePurpleComponent :
+    wit64 ∉ wheelWithInnerTriangleCertificateColoringA.kempeComponentSet blue purple
+      wheelWithInnerTriangleCertificateColoringA_bluePurpleComponent := by
+  exact wheelWithInnerTriangle_not_mem_component_of_outerCluster_ne
+    wit02_mem_wheelWithInnerTriangleCertificateColoringA_bluePurpleComponent (by decide) (by decide)
+
+private theorem wheelWithInnerTriangleCertificateColoringA_swap_bluePurpleComponent_eq_C :
+    wheelWithInnerTriangleCertificateColoringA.swapOnKempeComponent blue purple
+        wheelWithInnerTriangleCertificateColoringA_bluePurpleComponent =
+      wheelWithInnerTriangleCertificateColoringC := by
+  apply DFunLike.ext
+  intro e
+  rcases wheelWithInnerTriangle_edge_eq e with
+    rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl
+  · rw [Coloring.swapOnKempeComponent_apply_of_not_mem]
+    · decide
+    · exact wit01_not_mem_wheelWithInnerTriangleCertificateColoringA_bluePurpleComponent
+  · rw [Coloring.swapOnKempeComponent_apply_of_mem]
+    · decide
+    · exact wit02_mem_wheelWithInnerTriangleCertificateColoringA_bluePurpleComponent
+  · rw [Coloring.swapOnKempeComponent_apply_of_mem]
+    · decide
+    · exact wit03_mem_wheelWithInnerTriangleCertificateColoringA_bluePurpleComponent
+  · rw [Coloring.swapOnKempeComponent_apply_of_mem]
+    · decide
+    · exact wit12_mem_wheelWithInnerTriangleCertificateColoringA_bluePurpleComponent
+  · rw [Coloring.swapOnKempeComponent_apply_of_not_mem]
+    · decide
+    · exact wit23_not_mem_wheelWithInnerTriangleCertificateColoringA_bluePurpleComponent
+  · rw [Coloring.swapOnKempeComponent_apply_of_mem]
+    · decide
+    · exact wit31_mem_wheelWithInnerTriangleCertificateColoringA_bluePurpleComponent
+  · rw [Coloring.swapOnKempeComponent_apply_of_not_mem]
+    · decide
+    · exact wit45_not_mem_wheelWithInnerTriangleCertificateColoringA_bluePurpleComponent
+  · rw [Coloring.swapOnKempeComponent_apply_of_not_mem]
+    · decide
+    · exact wit56_not_mem_wheelWithInnerTriangleCertificateColoringA_bluePurpleComponent
+  · rw [Coloring.swapOnKempeComponent_apply_of_not_mem]
+    · decide
+    · exact wit64_not_mem_wheelWithInnerTriangleCertificateColoringA_bluePurpleComponent
+
+theorem wheelWithInnerTriangleCertificateColoringB_mem_edgeKempeClosure_certificateColoringA :
+    wheelWithInnerTriangleCertificateColoringB ∈
+      wheelWithInnerTriangleGraph.EdgeKempeClosure wheelWithInnerTriangleCertificateColoringA := by
+  rw [← wheelWithInnerTriangleCertificateColoringA_swap_redBlueComponent_eq_B]
+  exact wheelWithInnerTriangleGraph.mem_edgeKempeClosure_of_mem_of_step
+    (wheelWithInnerTriangleGraph.mem_edgeKempeClosure_self wheelWithInnerTriangleCertificateColoringA)
+    red blue wheelWithInnerTriangleCertificateColoringA_redBlueComponent
+
+theorem wheelWithInnerTriangleCertificateColoringC_mem_edgeKempeClosure_certificateColoringA :
+    wheelWithInnerTriangleCertificateColoringC ∈
+      wheelWithInnerTriangleGraph.EdgeKempeClosure wheelWithInnerTriangleCertificateColoringA := by
+  rw [← wheelWithInnerTriangleCertificateColoringA_swap_bluePurpleComponent_eq_C]
+  exact wheelWithInnerTriangleGraph.mem_edgeKempeClosure_of_mem_of_step
+    (wheelWithInnerTriangleGraph.mem_edgeKempeClosure_self wheelWithInnerTriangleCertificateColoringA)
+    blue purple wheelWithInnerTriangleCertificateColoringA_bluePurpleComponent
+
+theorem wheelWithInnerTriangleProjectedGeneratorCertificateColorings_subset_edgeKempeClosure_certificateColoringA :
+    wheelWithInnerTriangleProjectedGeneratorCertificateColorings ⊆
+      wheelWithInnerTriangleGraph.EdgeKempeClosure wheelWithInnerTriangleCertificateColoringA := by
+  intro C hC
+  rcases hC with rfl | hC
+  · exact wheelWithInnerTriangleGraph.mem_edgeKempeClosure_self
+      wheelWithInnerTriangleCertificateColoringA
+  · rcases hC with rfl | rfl
+    · exact wheelWithInnerTriangleCertificateColoringB_mem_edgeKempeClosure_certificateColoringA
+    · exact wheelWithInnerTriangleCertificateColoringC_mem_edgeKempeClosure_certificateColoringA
+
+/-- Boundary-root synthesis for the wheel focus shell using certificate A as the root.  The
+other two certificate colorings are reached from A by single Kempe swaps on the K₄ component. -/
+theorem wheelWithInnerTriangle_theorem49BoundaryRootSynthesis_certificateColoringA
+    [FiniteDimensional F2 (wheelWithInnerTriangleGraph.edgeSet → Color)] :
+    Theorem49BoundaryRootSynthesis wheelWithInnerTriangleEmbedding
+      wheelWithInnerTriangleCertificateColoringA :=
+  wheelWithInnerTriangle_theorem49BoundaryRootSynthesis_of_uniqueCertificates
+    wheelWithInnerTriangleCertificateColoringA
+    wheelWithInnerTriangleProjectedGeneratorCertificateColorings_subset_edgeKempeClosure_certificateColoringA
+
 theorem wheelWithInnerTriangle_boundaryZeroProjectedColoringGeneratorDetector_of_uniqueCertificates :
     BoundaryZeroProjectedColoringGeneratorDetector wheelWithInnerTriangleEmbedding
       wheelWithInnerTriangleProjectedGeneratorCertificateColorings := by
