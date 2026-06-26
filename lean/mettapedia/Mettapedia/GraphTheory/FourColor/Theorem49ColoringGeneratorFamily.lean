@@ -217,6 +217,37 @@ theorem single_mem_projectedColoringGeneratorSubspace_of_unique_projected_bicolo
     (boundaryZeroProjection_polarizedFaceGenerator_eq_single_of_unique_projected_bicolored
       (emb := emb) C f he₀Face he₀NotBoundary he₀Color hunique)
 
+/-- Equality-certificate form of the unique projected-bicolored-edge certificate.  This is the
+shape consumed by the finite coordinate detector: the checker may provide the unique
+non-boundary bicolored edge on a face, plus the color sum naming the requested coordinate
+value. -/
+theorem exists_projectedFaceGenerator_eq_single_of_unique_projected_bicolored
+    {G : SimpleGraph V} {emb : PlaneEmbeddingWithBoundary G}
+    {colorings : Set (G.EdgeColoring Color)}
+    {C : G.EdgeColoring Color} (hC : C ∈ colorings)
+    (f : emb.Face) {a b c : Color} (hab : ValidColorPair a b)
+    (hc : a + b = c) {e₀ : G.edgeSet}
+    (he₀Face : e₀ ∈ emb.faceBoundary f)
+    (he₀NotBoundary :
+      e₀ ∉ selectedBoundarySupport emb.faceBoundary emb.faces emb.faces)
+    (he₀Color : C e₀ = a ∨ C e₀ = b)
+    (hunique :
+      ∀ e : G.edgeSet,
+        e ≠ e₀ →
+        e ∉ selectedBoundarySupport emb.faceBoundary emb.faces emb.faces →
+        e ∈ emb.faceBoundary f →
+          ¬ (C e = a ∨ C e = b)) :
+    ∃ C ∈ colorings, ∃ f : emb.Face, ∃ a b : Color,
+      ValidColorPair a b ∧
+        boundaryZeroProjection
+            (selectedBoundarySupport emb.faceBoundary emb.faces emb.faces)
+            (polarizedFaceGenerator C a b (emb.faceBoundary f)) =
+          Pi.single e₀ c := by
+  refine ⟨C, hC, f, a, b, hab, ?_⟩
+  simpa [hc] using
+    boundaryZeroProjection_polarizedFaceGenerator_eq_single_of_unique_projected_bicolored
+      (emb := emb) C f he₀Face he₀NotBoundary he₀Color hunique
+
 /-- Existential certificate form of single-coordinate membership: the finite checker may provide
 any coloring, face, and valid color pair whose projected face generator is the requested probe. -/
 theorem single_mem_projectedColoringGeneratorSubspace_of_exists_projectedFaceGenerator_eq

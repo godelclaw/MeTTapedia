@@ -119,6 +119,64 @@ theorem BoundaryZeroProjectedColoringGeneratorDetector.of_projectedFaceGenerator
     BoundaryZeroProjectedColoringGeneratorDetector.of_redBlueSingleCoordinateMemberships
       controlEdges hcontrol hmembers.1 hmembers.2
 
+/-- Unique projected-bicolored-edge certificate form of the explicit projected coloring-family
+detector.  This is the direct shape exported by finite searches that identify one
+non-boundary face edge whose color lies in a valid pair, with every other non-boundary edge on
+that face outside the same color pair. -/
+theorem BoundaryZeroProjectedColoringGeneratorDetector.of_uniqueProjectedBicoloredCertificates
+    {G : SimpleGraph V} [Fintype G.edgeSet]
+    {emb : PlaneEmbeddingWithBoundary G}
+    {colorings : Set (G.EdgeColoring Color)}
+    (controlEdges : Finset G.edgeSet)
+    (hcontrol :
+      ∀ ⦃z : G.edgeSet → Color⦄,
+        z ∈ planarBoundaryZeroSubmodule emb →
+        (∀ e ∈ controlEdges, z e = 0) →
+          z = 0)
+    (hred :
+      ∀ e ∈ controlEdges,
+        ∃ C ∈ colorings, ∃ f : emb.Face, ∃ a b : Color,
+          ValidColorPair a b ∧
+            a + b = red ∧
+              e ∈ emb.faceBoundary f ∧
+                e ∉ selectedBoundarySupport emb.faceBoundary emb.faces emb.faces ∧
+                  (C e = a ∨ C e = b) ∧
+                    ∀ e' : G.edgeSet,
+                      e' ≠ e →
+                      e' ∉ selectedBoundarySupport emb.faceBoundary emb.faces emb.faces →
+                      e' ∈ emb.faceBoundary f →
+                        ¬ (C e' = a ∨ C e' = b))
+    (hblue :
+      ∀ e ∈ controlEdges,
+        ∃ C ∈ colorings, ∃ f : emb.Face, ∃ a b : Color,
+          ValidColorPair a b ∧
+            a + b = blue ∧
+              e ∈ emb.faceBoundary f ∧
+                e ∉ selectedBoundarySupport emb.faceBoundary emb.faces emb.faces ∧
+                  (C e = a ∨ C e = b) ∧
+                    ∀ e' : G.edgeSet,
+                      e' ≠ e →
+                      e' ∉ selectedBoundarySupport emb.faceBoundary emb.faces emb.faces →
+                      e' ∈ emb.faceBoundary f →
+                        ¬ (C e' = a ∨ C e' = b)) :
+    BoundaryZeroProjectedColoringGeneratorDetector emb colorings := by
+  apply BoundaryZeroProjectedColoringGeneratorDetector.of_projectedFaceGeneratorEqualities
+    controlEdges hcontrol
+  · intro e he
+    rcases hred e he with
+      ⟨C, hC, f, a, b, hab, hsum, hface, hnotBoundary, hcolor, hunique⟩
+    exact
+      exists_projectedFaceGenerator_eq_single_of_unique_projected_bicolored
+        (emb := emb) (colorings := colorings) (c := red)
+        hC f hab hsum hface hnotBoundary hcolor hunique
+  · intro e he
+    rcases hblue e he with
+      ⟨C, hC, f, a, b, hab, hsum, hface, hnotBoundary, hcolor, hunique⟩
+    exact
+      exists_projectedFaceGenerator_eq_single_of_unique_projected_bicolored
+        (emb := emb) (colorings := colorings) (c := blue)
+        hC f hab hsum hface hnotBoundary hcolor hunique
+
 /-- Route form of the same explicit coordinate certificate: once an explicit coloring family
 inside the chosen edge-Kempe closure has enough single-coordinate witnesses on a controlling edge
 set, the full theorem-4.9 synthesis package follows for the base coloring. -/
@@ -204,6 +262,51 @@ theorem theorem49BoundaryRootSynthesis_of_projectedFaceGeneratorEqualities
   theorem49BoundaryRootSynthesis_of_boundaryZeroProjectedColoringGeneratorDetector
     emb C₀ colorings hsubset
     (BoundaryZeroProjectedColoringGeneratorDetector.of_projectedFaceGeneratorEqualities
+      controlEdges hcontrol hred hblue)
+
+/-- Route form for unique projected-bicolored-edge finite certificates. -/
+theorem theorem49BoundaryRootSynthesis_of_uniqueProjectedBicoloredCertificates
+    {G : SimpleGraph V}
+    [Fintype G.edgeSet] [FiniteDimensional F2 (G.edgeSet → Color)]
+    (emb : PlaneEmbeddingWithBoundary G) (C₀ : G.EdgeColoring Color)
+    (colorings : Set (G.EdgeColoring Color))
+    (hsubset : colorings ⊆ G.EdgeKempeClosure C₀)
+    (controlEdges : Finset G.edgeSet)
+    (hcontrol :
+      ∀ ⦃z : G.edgeSet → Color⦄,
+        z ∈ planarBoundaryZeroSubmodule emb →
+        (∀ e ∈ controlEdges, z e = 0) →
+          z = 0)
+    (hred :
+      ∀ e ∈ controlEdges,
+        ∃ C ∈ colorings, ∃ f : emb.Face, ∃ a b : Color,
+          ValidColorPair a b ∧
+            a + b = red ∧
+              e ∈ emb.faceBoundary f ∧
+                e ∉ selectedBoundarySupport emb.faceBoundary emb.faces emb.faces ∧
+                  (C e = a ∨ C e = b) ∧
+                    ∀ e' : G.edgeSet,
+                      e' ≠ e →
+                      e' ∉ selectedBoundarySupport emb.faceBoundary emb.faces emb.faces →
+                      e' ∈ emb.faceBoundary f →
+                        ¬ (C e' = a ∨ C e' = b))
+    (hblue :
+      ∀ e ∈ controlEdges,
+        ∃ C ∈ colorings, ∃ f : emb.Face, ∃ a b : Color,
+          ValidColorPair a b ∧
+            a + b = blue ∧
+              e ∈ emb.faceBoundary f ∧
+                e ∉ selectedBoundarySupport emb.faceBoundary emb.faces emb.faces ∧
+                  (C e = a ∨ C e = b) ∧
+                    ∀ e' : G.edgeSet,
+                      e' ≠ e →
+                      e' ∉ selectedBoundarySupport emb.faceBoundary emb.faces emb.faces →
+                      e' ∈ emb.faceBoundary f →
+                        ¬ (C e' = a ∨ C e' = b)) :
+    Theorem49BoundaryRootSynthesis emb C₀ :=
+  theorem49BoundaryRootSynthesis_of_boundaryZeroProjectedColoringGeneratorDetector
+    emb C₀ colorings hsubset
+    (BoundaryZeroProjectedColoringGeneratorDetector.of_uniqueProjectedBicoloredCertificates
       controlEdges hcontrol hred hblue)
 
 end Mettapedia.GraphTheory.FourColor
