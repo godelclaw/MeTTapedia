@@ -3414,6 +3414,103 @@ theorem theorem49BoundaryRootSynthesis_or_forcedEdgeIndicatorPathXorDetectorPayl
         hePredicateOutside, hze, hprogress, i, hpair⟩
 
 /--
+Residual-state version of the runner-level canonical-family handoff.  The failure branch keeps
+the forced-bin detector payload, the canonical F2 pairing witness, the concrete extension edge,
+and the strict residual-worklist decrease obtained by recording that edge as processed.
+-/
+theorem theorem49BoundaryRootSynthesis_or_forcedEdgeIndicatorPathXorDetectorPayload_and_extensionControlEdge_boundaryZeroChain_canonicalFamilyPairing_ne_zero_and_residualProgress_of_finsetControl
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    [Fintype G.edgeSet] [FiniteDimensional F2 (G.edgeSet → Color)]
+    (emb : PlaneEmbeddingWithBoundary G) (C₀ : G.EdgeColoring Color)
+    (colorings : Set (G.EdgeColoring Color))
+    (hsubset : colorings ⊆ G.EdgeKempeClosure C₀)
+    (p0Inside p4Inside : Bool) (h : data.IsExceptional)
+    (side : V → Prop) (hcyclic : CyclicallyFiveEdgeConnected G)
+    (hportal_crosses :
+      ∀ edgeCandidate : CAP5ExceptionalAnnulusBoundaryEdgeSupportCandidate boundaryEdge,
+        data.RealizesExceptionalBoundarySupportOrientation
+            edgeCandidate.portalCandidate.orientation →
+        edgeCandidate.portalCandidate.sideCase =
+            CAP5ExceptionalAnnulusSideCase.ofPortalSides p0Inside p4Inside →
+        ∀ i : Fin 5, i ∈ edgeCandidate.portalCandidate.portalSet →
+          EdgeCrossesVertexSide G side (boundaryEdge i))
+    (hcycles : HasCycleOnSide G side ∧ HasCycleOnSide G (fun v => ¬ side v))
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (controlEdges processed : Finset G.edgeSet)
+    (hcontrol :
+      ∀ ⦃z : G.edgeSet → Color⦄,
+        z ∈ planarBoundaryZeroSubmodule emb →
+        (∀ e ∈ controlEdges, z e = 0) →
+          z = 0)
+    (hredEmitted :
+      ∀ e ∈ classifier.emittedFinset,
+        Pi.single e red ∈ projectedColoringGeneratorSubspace emb colorings)
+    (hblueEmitted :
+      ∀ e ∈ classifier.emittedFinset,
+        Pi.single e blue ∈ projectedColoringGeneratorSubspace emb colorings)
+    (hredRemaining :
+      ∀ e ∈ classifier.remainingControlEdges controlEdges,
+        Pi.single e red ∈ projectedColoringGeneratorSubspace emb colorings)
+    (hblueRemaining :
+      ∀ e ∈ classifier.remainingControlEdges controlEdges,
+        Pi.single e blue ∈ projectedColoringGeneratorSubspace emb colorings)
+    (hnotProcessed :
+      ∀ e ∈ classifier.remainingControlEdges controlEdges, e ∉ processed) :
+    Theorem49BoundaryRootSynthesis emb C₀ ∨
+      data.ForcedEdgeIndicatorPathXorDetectorPayload p0Inside p4Inside side ∧
+        ∃ z : G.edgeSet → Color,
+          z ∈ planarBoundaryZeroSubmodule emb ∧
+            z ≠ 0 ∧
+              (∀ e : G.edgeSet,
+                data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e →
+                  z e = 0) ∧
+                ∃ e : G.edgeSet,
+                  (e ∈ classifier.crossingExtensionFinset controlEdges ∨
+                    e ∈ classifier.noncrossingExtensionFinset controlEdges) ∧
+                    e ∈ classifier.remainingControlEdges controlEdges ∧
+                      e ∈ classifier.residualRemainingControlEdges controlEdges processed ∧
+                        ¬ data.EnumeratedExceptionalAnnulusForcedEdge
+                          p0Inside p4Inside side e ∧
+                          z e ≠ 0 ∧
+                            (classifier.residualRemainingControlEdges controlEdges
+                                (insert e processed)).card <
+                              (classifier.residualRemainingControlEdges controlEdges
+                                processed).card ∧
+                              ((classifier.remainingControlEdges controlEdges).erase e).card <
+                                (classifier.remainingControlEdges controlEdges).card ∧
+                                ∃ i :
+                                  ({e : G.edgeSet //
+                                    e ∈ classifier.remainingControlEdges controlEdges} × Bool),
+                                  chainDotBilinForm G.edgeSet
+                                      (redBlueSingleCoordinateFamily
+                                        (classifier.remainingControlEdges controlEdges)
+                                        hredRemaining hblueRemaining i :
+                                        G.edgeSet → Color) z ≠ 0 := by
+  rcases data.theorem49BoundaryRootSynthesis_or_forcedEdge_and_extensionCoordinateSignalWithProgress_of_finsetControl
+      emb C₀ colorings hsubset
+      (redBlueSingleCoordinateFamily classifier.emittedFinset hredEmitted hblueEmitted)
+      p0Inside p4Inside h side hcyclic hportal_crosses hcycles classifier
+      controlEdges hcontrol
+      (redBlueSingleCoordinateFamily_witnessRed classifier.emittedFinset hredEmitted
+        hblueEmitted)
+      (redBlueSingleCoordinateFamily_witnessBlue classifier.emittedFinset hredEmitted
+        hblueEmitted) with
+    hclosed | hnext
+  · exact Or.inl hclosed
+  · rcases hnext with ⟨hforced, hsignal⟩
+    rcases hforced with ⟨_forcedEdge, hedge⟩
+    rcases data.exists_boundaryZeroChain_extensionControlEdge_canonicalFamilyPairing_ne_zero_and_residualProgress_of_extensionCoordinateSignalWithProgress
+        hsignal hredRemaining hblueRemaining hnotProcessed with
+      ⟨z, hzBoundary, hzNonzero, hvanish, e, heExtension, heRemaining, heResidual,
+        hePredicateOutside, hze, hresidualProgress, hprogress, i, hpair⟩
+    exact Or.inr
+      ⟨data.forcedEdgeIndicatorPathXorDetectorPayload_of_enumeratedExceptionalAnnulusForcedEdge
+          hedge,
+        z, hzBoundary, hzNonzero, hvanish, e, heExtension, heRemaining, heResidual,
+        hePredicateOutside, hze, hresidualProgress, hprogress, i, hpair⟩
+
+/--
 Interior-support version of the runner-level canonical-family handoff.  The control set is the
 canonical face-incidence interior support, and both the emitted-edge and remaining-edge probes
 are the canonical red/blue single-coordinate families.
@@ -4430,6 +4527,129 @@ theorem ofDecidableChecks_missingCheckerEvidence_or_histogram_and_theorem49Bound
           emb C₀ colorings hsubset p0Inside p4Inside h side hcyclic hportal_crosses
           hcycles classifier controlEdges hcontrol hredEmitted hblueEmitted
           hredRemaining hblueRemaining⟩
+  · left
+    rcases (report.missingCheckerEvidenceLatents_ne_nil_iff_exists_missingCheckerEvidence).1
+        hmissingEmpty with
+      ⟨latent, hmem, hmissing⟩
+    exact ⟨latent, hmem, by
+      simpa [report, CAP5ExceptionalAnnulusGeneratorReport.node,
+        CAP5ExceptionalAnnulusGeneratorReport.latentNode] using hmissing⟩
+
+/--
+Executable histogram-to-canonical-family state with explicit residual progress.  Once the finite
+checker is complete, the failure branch carries the concrete extension edge into the residual
+worklist state and proves that recording it as processed strictly decreases that residual
+measure.
+-/
+theorem ofDecidableChecks_missingCheckerEvidence_or_histogram_and_theorem49BoundaryRootSynthesis_or_forcedEdgeIndicatorPathXorDetectorPayload_and_extensionControlEdge_boundaryZeroChain_canonicalFamilyPairing_ne_zero_and_residualProgress_of_finsetControl
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    [Fintype G.edgeSet] [FiniteDimensional F2 (G.edgeSet → Color)]
+    (emb : PlaneEmbeddingWithBoundary G) (C₀ : G.EdgeColoring Color)
+    (colorings : Set (G.EdgeColoring Color))
+    (hsubset : colorings ⊆ G.EdgeKempeClosure C₀)
+    (p0Inside p4Inside : Bool) (h : data.IsExceptional)
+    (side : V → Prop)
+    [∀ latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge,
+      Decidable ((CAP5ExceptionalAnnulusGeneratorReport.latentNode
+        boundaryEdge side latent).PortalCrosses)]
+    [∀ latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge,
+      Decidable ((CAP5ExceptionalAnnulusGeneratorReport.latentNode
+        boundaryEdge side latent).SideCycles)]
+    [∀ latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge,
+      Decidable ((CAP5ExceptionalAnnulusGeneratorReport.latentNode
+        boundaryEdge side latent).RealizedSeparator)]
+    (hcyclic : CyclicallyFiveEdgeConnected G)
+    (hportal_crosses :
+      ∀ edgeCandidate : CAP5ExceptionalAnnulusBoundaryEdgeSupportCandidate boundaryEdge,
+        data.RealizesExceptionalBoundarySupportOrientation
+            edgeCandidate.portalCandidate.orientation →
+        edgeCandidate.portalCandidate.sideCase =
+            CAP5ExceptionalAnnulusSideCase.ofPortalSides p0Inside p4Inside →
+        ∀ i : Fin 5, i ∈ edgeCandidate.portalCandidate.portalSet →
+          EdgeCrossesVertexSide G side (boundaryEdge i))
+    (hcycles : HasCycleOnSide G side ∧ HasCycleOnSide G (fun v => ¬ side v))
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (controlEdges processed : Finset G.edgeSet)
+    (hcontrol :
+      ∀ ⦃z : G.edgeSet → Color⦄,
+        z ∈ planarBoundaryZeroSubmodule emb →
+        (∀ e ∈ controlEdges, z e = 0) →
+          z = 0)
+    (hredEmitted :
+      ∀ e ∈ classifier.emittedFinset,
+        Pi.single e red ∈ projectedColoringGeneratorSubspace emb colorings)
+    (hblueEmitted :
+      ∀ e ∈ classifier.emittedFinset,
+        Pi.single e blue ∈ projectedColoringGeneratorSubspace emb colorings)
+    (hredRemaining :
+      ∀ e ∈ classifier.remainingControlEdges controlEdges,
+        Pi.single e red ∈ projectedColoringGeneratorSubspace emb colorings)
+    (hblueRemaining :
+      ∀ e ∈ classifier.remainingControlEdges controlEdges,
+        Pi.single e blue ∈ projectedColoringGeneratorSubspace emb colorings)
+    (hnotProcessed :
+      ∀ e ∈ classifier.remainingControlEdges controlEdges, e ∉ processed) :
+    (∃ latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge,
+      latent ∈ CAP5ExceptionalAnnulusGeneratorLatent.all boundaryEdge ∧
+        (CAP5ExceptionalAnnulusGeneratorReport.latentNode
+          boundaryEdge side latent).MissingCheckerEvidence) ∨
+      ((CAP5ExceptionalAnnulusGeneratorReport.ofDecidableChecks
+          boundaryEdge side).realizedSeparatorLatents.length = 0 ∧
+        (CAP5ExceptionalAnnulusGeneratorReport.ofDecidableChecks
+          boundaryEdge side).partialLatents.length = 0 ∧
+          (CAP5ExceptionalAnnulusGeneratorReport.ofDecidableChecks
+            boundaryEdge side).forcedCounterexampleLatents.length = 16) ∧
+        (Theorem49BoundaryRootSynthesis emb C₀ ∨
+          data.ForcedEdgeIndicatorPathXorDetectorPayload p0Inside p4Inside side ∧
+            ∃ z : G.edgeSet → Color,
+              z ∈ planarBoundaryZeroSubmodule emb ∧
+                z ≠ 0 ∧
+                  (∀ e : G.edgeSet,
+                    data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e →
+                      z e = 0) ∧
+                    ∃ e : G.edgeSet,
+                      (e ∈ classifier.crossingExtensionFinset controlEdges ∨
+                        e ∈ classifier.noncrossingExtensionFinset controlEdges) ∧
+                        e ∈ classifier.remainingControlEdges controlEdges ∧
+                          e ∈ classifier.residualRemainingControlEdges controlEdges
+                            processed ∧
+                            ¬ data.EnumeratedExceptionalAnnulusForcedEdge
+                              p0Inside p4Inside side e ∧
+                              z e ≠ 0 ∧
+                                (classifier.residualRemainingControlEdges controlEdges
+                                    (insert e processed)).card <
+                                  (classifier.residualRemainingControlEdges controlEdges
+                                    processed).card ∧
+                                  ((classifier.remainingControlEdges controlEdges).erase e).card <
+                                    (classifier.remainingControlEdges controlEdges).card ∧
+                                    ∃ i :
+                                      ({e : G.edgeSet //
+                                        e ∈ classifier.remainingControlEdges controlEdges} × Bool),
+                                      chainDotBilinForm G.edgeSet
+                                          (redBlueSingleCoordinateFamily
+                                            (classifier.remainingControlEdges controlEdges)
+                                            hredRemaining hblueRemaining i :
+                                            G.edgeSet → Color) z ≠ 0) := by
+  let report : CAP5ExceptionalAnnulusGeneratorReport boundaryEdge side :=
+    CAP5ExceptionalAnnulusGeneratorReport.ofDecidableChecks boundaryEdge side
+  by_cases hmissingEmpty : report.missingCheckerEvidenceLatents = []
+  · right
+    rcases report.all_checker_evidence_of_missingCheckerEvidenceLatents_eq_nil
+        hmissingEmpty with
+      ⟨hportal, hsideCycles⟩
+    have hhist :
+        report.realizedSeparatorLatents.length = 0 ∧
+          report.partialLatents.length = 0 ∧
+            report.forcedCounterexampleLatents.length = 16 :=
+      report.histogram_lengths_eq_of_complete_of_cyclicallyFiveEdgeConnected
+        hcyclic hportal hsideCycles
+    exact
+      ⟨by simpa [report] using hhist,
+        data.theorem49BoundaryRootSynthesis_or_forcedEdgeIndicatorPathXorDetectorPayload_and_extensionControlEdge_boundaryZeroChain_canonicalFamilyPairing_ne_zero_and_residualProgress_of_finsetControl
+          emb C₀ colorings hsubset p0Inside p4Inside h side hcyclic hportal_crosses
+          hcycles classifier controlEdges processed hcontrol hredEmitted hblueEmitted
+          hredRemaining hblueRemaining hnotProcessed⟩
   · left
     rcases (report.missingCheckerEvidenceLatents_ne_nil_iff_exists_missingCheckerEvidence).1
         hmissingEmpty with
