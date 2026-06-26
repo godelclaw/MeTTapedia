@@ -7020,6 +7020,173 @@ theorem twoBandAnnulusMiddleOuterRadialKirchhoffControl_scalarConstraintMap_ker_
       simpa using hxbot
     simp [hxzero]
 
+def twoBandAnnulusNoncontrollingSixOmittedTripleScalarExtension
+    (y : Fin 3 → F2) : twoBandAnnulusGraph.edgeSet → F2 :=
+  fun e =>
+    if e = tbaR03 then y (0 : Fin 3)
+    else if e = tbaR58 then y (1 : Fin 3)
+    else if e = tbaM53 then y (2 : Fin 3)
+    else 0
+
+theorem twoBandAnnulusNoncontrollingSixKirchhoffOmittedTriple_columnKernel_lift_mem_scalarKernel
+    {y : Fin 3 → F2}
+    (hyker : y ∈ LinearMap.ker
+      (twoBandAnnulusOmittedTripleKirchhoffColumnMap
+        twoBandAnnulusNoncontrollingSixKirchhoffOmittedTriple)) :
+    twoBandAnnulusNoncontrollingSixOmittedTripleScalarExtension y ∈
+      LinearMap.ker
+        (theorem49BoundaryZeroKirchhoffScalarConstraintMap
+          twoBandAnnulusEmbedding twoBandAnnulusKirchhoffVertices
+          twoBandAnnulusNoncontrollingSixKirchhoffControlEdges) := by
+  have hymap :
+      twoBandAnnulusOmittedTripleKirchhoffColumnMap
+        twoBandAnnulusNoncontrollingSixKirchhoffOmittedTriple y = 0 := by
+    simpa using hyker
+  change
+    theorem49BoundaryZeroKirchhoffScalarConstraintMap
+      twoBandAnnulusEmbedding twoBandAnnulusKirchhoffVertices
+      twoBandAnnulusNoncontrollingSixKirchhoffControlEdges
+      (twoBandAnnulusNoncontrollingSixOmittedTripleScalarExtension y) = 0
+  ext e
+  · rcases e with ⟨e, he⟩
+    change twoBandAnnulusNoncontrollingSixOmittedTripleScalarExtension y e = 0
+    have he_cases :
+        e = tbaM34 ∨ e = tbaM45 ∨ e = tbaR14 ∨
+          e = tbaR25 ∨ e = tbaR36 ∨ e = tbaR47 := by
+      simpa [twoBandAnnulusNoncontrollingSixKirchhoffControlEdges] using he
+    rcases he_cases with rfl | rfl | rfl | rfl | rfl | rfl <;>
+      clear hyker hymap <;> decide +revert
+  · rcases e with ⟨e, he⟩
+    change twoBandAnnulusNoncontrollingSixOmittedTripleScalarExtension y e = 0
+    rw [twoBandAnnulus_selectedBoundarySupport_eq] at he
+    have he_cases :
+        e = tbaO01 ∨ e = tbaO12 ∨ e = tbaO20 ∨
+          e = tbaI67 ∨ e = tbaI78 ∨ e = tbaI86 := by
+      simpa using he
+    rcases he_cases with rfl | rfl | rfl | rfl | rfl | rfl <;>
+      clear hyker hymap <;> decide +revert
+  · rcases e with ⟨v, hv⟩
+    have hv_cases : v = (3 : Fin 9) ∨ v = (4 : Fin 9) ∨ v = (5 : Fin 9) := by
+      simpa [twoBandAnnulusKirchhoffVertices] using hv
+    rcases hv_cases with rfl | rfl | rfl
+    · change scalarVertexKirchhoffSum twoBandAnnulusGraph
+          (twoBandAnnulusNoncontrollingSixOmittedTripleScalarExtension y) (3 : Fin 9) = 0
+      have hrow := congrFun hymap (0 : Fin 3)
+      change
+        (∑ j : Fin 3,
+          y j * twoBandAnnulusKirchhoffColumn
+            (twoBandAnnulusNoncontrollingSixKirchhoffOmittedTriple j) (0 : Fin 3)) = 0
+        at hrow
+      rw [Fin.sum_univ_three] at hrow
+      unfold scalarVertexKirchhoffSum
+      rw [twoBandAnnulus_incidentEdgeFinset_three]
+      rw [Finset.sum_insert]
+      · rw [Finset.sum_insert]
+        · rw [Finset.sum_insert]
+          · rw [Finset.sum_singleton]
+            clear hyker hymap
+            revert hrow
+            decide +revert
+          · decide
+        · decide
+      · decide
+    · change scalarVertexKirchhoffSum twoBandAnnulusGraph
+          (twoBandAnnulusNoncontrollingSixOmittedTripleScalarExtension y) (4 : Fin 9) = 0
+      have hrow := congrFun hymap (1 : Fin 3)
+      change
+        (∑ j : Fin 3,
+          y j * twoBandAnnulusKirchhoffColumn
+            (twoBandAnnulusNoncontrollingSixKirchhoffOmittedTriple j) (1 : Fin 3)) = 0
+        at hrow
+      rw [Fin.sum_univ_three] at hrow
+      unfold scalarVertexKirchhoffSum
+      rw [twoBandAnnulus_incidentEdgeFinset_four]
+      rw [Finset.sum_insert]
+      · rw [Finset.sum_insert]
+        · rw [Finset.sum_insert]
+          · rw [Finset.sum_singleton]
+            clear hyker hymap
+            revert hrow
+            decide +revert
+          · decide
+        · decide
+      · decide
+    · change scalarVertexKirchhoffSum twoBandAnnulusGraph
+          (twoBandAnnulusNoncontrollingSixOmittedTripleScalarExtension y) (5 : Fin 9) = 0
+      have hrow := congrFun hymap (2 : Fin 3)
+      change
+        (∑ j : Fin 3,
+          y j * twoBandAnnulusKirchhoffColumn
+            (twoBandAnnulusNoncontrollingSixKirchhoffOmittedTriple j) (2 : Fin 3)) = 0
+        at hrow
+      rw [Fin.sum_univ_three] at hrow
+      unfold scalarVertexKirchhoffSum
+      rw [twoBandAnnulus_incidentEdgeFinset_five]
+      rw [Finset.sum_insert]
+      · rw [Finset.sum_insert]
+        · rw [Finset.sum_insert]
+          · rw [Finset.sum_singleton]
+            clear hyker hymap
+            revert hrow
+            decide +revert
+          · decide
+        · decide
+      · decide
+
+theorem twoBandAnnulusNoncontrollingSixKirchhoffControl_scalarConstraintMap_ker_ne_bot_of_omittedTriple_columnMap_ker_ne_bot
+    (hcolumn : LinearMap.ker
+      (twoBandAnnulusOmittedTripleKirchhoffColumnMap
+        twoBandAnnulusNoncontrollingSixKirchhoffOmittedTriple) ≠ ⊥) :
+    LinearMap.ker
+      (theorem49BoundaryZeroKirchhoffScalarConstraintMap
+        twoBandAnnulusEmbedding twoBandAnnulusKirchhoffVertices
+        twoBandAnnulusNoncontrollingSixKirchhoffControlEdges) ≠ ⊥ := by
+  intro hscalar
+  apply hcolumn
+  ext y
+  constructor
+  · intro hyker
+    have hxker :=
+      twoBandAnnulusNoncontrollingSixKirchhoffOmittedTriple_columnKernel_lift_mem_scalarKernel
+        (y := y) hyker
+    have hxbot :
+        twoBandAnnulusNoncontrollingSixOmittedTripleScalarExtension y ∈
+          (⊥ : Submodule F2 (twoBandAnnulusGraph.edgeSet → F2)) := by
+      simpa [hscalar] using hxker
+    have hxzero : twoBandAnnulusNoncontrollingSixOmittedTripleScalarExtension y = 0 := by
+      simpa using hxbot
+    change y = 0
+    funext i
+    fin_cases i
+    · have hcoord := congrFun hxzero tbaR03
+      simpa [twoBandAnnulusNoncontrollingSixOmittedTripleScalarExtension] using hcoord
+    · have hcoord := congrFun hxzero tbaR58
+      have hne : tbaR58 ≠ tbaR03 := by
+        decide
+      simpa [twoBandAnnulusNoncontrollingSixOmittedTripleScalarExtension, hne] using hcoord
+    · have hcoord := congrFun hxzero tbaM53
+      have hneR03 : tbaM53 ≠ tbaR03 := by
+        decide
+      have hneR58 : tbaM53 ≠ tbaR58 := by
+        decide
+      simpa [twoBandAnnulusNoncontrollingSixOmittedTripleScalarExtension, hneR03, hneR58]
+        using hcoord
+  · intro hybot
+    change
+      twoBandAnnulusOmittedTripleKirchhoffColumnMap
+        twoBandAnnulusNoncontrollingSixKirchhoffOmittedTriple y = 0
+    have hyzero : y = 0 := by
+      simpa using hybot
+    simp [hyzero]
+
+theorem twoBandAnnulusNoncontrollingSixKirchhoffControl_scalarConstraintMap_ker_ne_bot_via_omittedTriple :
+    LinearMap.ker
+      (theorem49BoundaryZeroKirchhoffScalarConstraintMap
+        twoBandAnnulusEmbedding twoBandAnnulusKirchhoffVertices
+        twoBandAnnulusNoncontrollingSixKirchhoffControlEdges) ≠ ⊥ :=
+  twoBandAnnulusNoncontrollingSixKirchhoffControl_scalarConstraintMap_ker_ne_bot_of_omittedTriple_columnMap_ker_ne_bot
+    twoBandAnnulusNoncontrollingSixKirchhoffOmittedTriple_columnMap_ker_ne_bot
+
 theorem twoBandAnnulusIndicator_mem_planarBoundaryZeroSubmodule_of_subset_interior
     (S : Finset twoBandAnnulusGraph.edgeSet)
     (hS : S ⊆ twoBandAnnulusInteriorEdges) :
