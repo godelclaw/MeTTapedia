@@ -3,6 +3,7 @@ import Mettapedia.GraphTheory.FourColor.Theorem49InteriorVerticesAnnulusConstruc
 import Mettapedia.GraphTheory.FourColor.Theorem49SynthesisCore
 import Mettapedia.GraphTheory.FourColor.PlanarBoundaryAnnulusConstruction
 import Mettapedia.GraphTheory.FourColor.PlanarBoundaryClosedWalkSource
+import Mettapedia.GraphTheory.FourColor.PlanarBoundaryClosedWalkSourceCanonicalWitness
 import Mettapedia.GraphTheory.FacialCyclePlanarEmbeddingWithBoundary
 import Mettapedia.GraphTheory.OrderedPlanarEmbeddingWithBoundary
 import Mettapedia.GraphTheory.WalkPlanarEmbeddingWithBoundary
@@ -503,13 +504,16 @@ theorem diamondWithTriangleClosedWalkEmbeddingData_selectedBoundaryArcOnFace :
   intro f
   let f0 : AmbientFace diamondWithTriangleEmbedding.faces :=
     ⟨(0 : DiamondWithTriangleFace), by
-      simp [diamondWithTriangleEmbedding, diamondWithTriangleFaces]⟩
+      change (0 : DiamondWithTriangleFace) ∈ diamondWithTriangleFaces
+      exact Finset.mem_univ _⟩
   let f1 : AmbientFace diamondWithTriangleEmbedding.faces :=
     ⟨(1 : DiamondWithTriangleFace), by
-      simp [diamondWithTriangleEmbedding, diamondWithTriangleFaces]⟩
+      change (1 : DiamondWithTriangleFace) ∈ diamondWithTriangleFaces
+      exact Finset.mem_univ _⟩
   let f2 : AmbientFace diamondWithTriangleEmbedding.faces :=
     ⟨(2 : DiamondWithTriangleFace), by
-      simp [diamondWithTriangleEmbedding, diamondWithTriangleFaces]⟩
+      change (2 : DiamondWithTriangleFace) ∈ diamondWithTriangleFaces
+      exact Finset.mem_univ _⟩
   have hf_cases : f = f0 ∨ f = f1 ∨ f = f2 := by
     rcases f with ⟨⟨n, hn⟩, hfmem⟩
     have hn012 : n = 0 ∨ n = 1 ∨ n = 2 := by omega
@@ -765,6 +769,25 @@ theorem nonempty_closedWalkAnnulusBoundarySource_diamondWithTriangle :
     Nonempty (PlanarBoundaryClosedWalkAnnulusBoundarySource diamondWithTriangleEmbedding) :=
   ⟨diamondWithTriangleClosedWalkAnnulusBoundarySource⟩
 
+/-- Each face of the diamond-with-triangle source has at most one interior edge.  Thus this
+countermodel also satisfies the canonical source-witness choice hypothesis mined by the
+validation lab. -/
+theorem diamondWithTriangle_facewiseAtMostOneInteriorEdge :
+    ∀ f : AmbientFace diamondWithTriangleEmbedding.faces,
+      ((diamondWithTriangleEmbedding.faceBoundary f.1).filter
+        (· ∈ interiorEdgeSupport diamondWithTriangleEmbedding.faceBoundary
+          diamondWithTriangleEmbedding.faces)).card ≤ 1 := by
+  intro f
+  fin_cases f <;> decide
+
+theorem nonempty_planarBoundaryCanonicalWitnessChoice_diamondWithTriangle :
+    Nonempty
+      (PlanarBoundaryCanonicalWitnessChoice
+        diamondWithTriangleClosedWalkAnnulusBoundarySource.toPlanarBoundaryAnnulusBoundaryData) :=
+  (nonempty_planarBoundaryCanonicalWitnessChoice_iff_facewiseAtMostOneInteriorEdge_of_closedWalkAnnulusBoundarySource
+    diamondWithTriangleClosedWalkAnnulusBoundarySource).2
+    diamondWithTriangle_facewiseAtMostOneInteriorEdge
+
 /-- The full closed-walk annulus boundary-source package still does not imply the raw
 endpoint-support separation.  This model has two separated boundary components and honest facial
 closed walks with selected-boundary arcs, but the diamond component contains an interior edge
@@ -777,6 +800,413 @@ theorem closedWalkAnnulusBoundarySource_does_not_imply_endpointSupport_disjoint_
             diamondWithTriangleEmbedding.faces diamondWithTriangleEmbedding.faces)) :=
   ⟨nonempty_closedWalkAnnulusBoundarySource_diamondWithTriangle,
     not_endpointSupport_disjoint_diamondWithTriangle⟩
+
+def diamondWithTriangleOuterBoundaryCycleSet :
+    Finset diamondWithTriangleGraph.edgeSet :=
+  {dt02, dt23, dt13, dt01}
+
+def diamondWithTriangleInnerBoundaryCycleSet :
+    Finset diamondWithTriangleGraph.edgeSet :=
+  {dt45, dt56, dt64}
+
+theorem diamondWithTriangleBoundaryAdj_dt02_dt23 :
+    (planarBoundarySupportEndpointAdjGraph diamondWithTriangleEmbedding).Adj
+      ⟨dt02, dt02_mem_selectedBoundarySupport⟩
+      ⟨dt23, dt23_mem_selectedBoundarySupport⟩ := by
+  refine ⟨?_, 2, ?_, ?_⟩
+  · intro h
+    have := congrArg Subtype.val h
+    simp [dt02, dt23] at this
+  · simp [dt02]
+  · simp [dt23]
+
+theorem diamondWithTriangleBoundaryAdj_dt23_dt13 :
+    (planarBoundarySupportEndpointAdjGraph diamondWithTriangleEmbedding).Adj
+      ⟨dt23, dt23_mem_selectedBoundarySupport⟩
+      ⟨dt13, dt13_mem_selectedBoundarySupport⟩ := by
+  refine ⟨?_, 3, ?_, ?_⟩
+  · intro h
+    have := congrArg Subtype.val h
+    simp [dt23, dt13] at this
+  · simp [dt23]
+  · simp [dt13]
+
+theorem diamondWithTriangleBoundaryAdj_dt13_dt01 :
+    (planarBoundarySupportEndpointAdjGraph diamondWithTriangleEmbedding).Adj
+      ⟨dt13, dt13_mem_selectedBoundarySupport⟩
+      ⟨dt01, dt01_mem_selectedBoundarySupport⟩ := by
+  refine ⟨?_, 1, ?_, ?_⟩
+  · intro h
+    have := congrArg Subtype.val h
+    simp [dt13, dt01] at this
+  · simp [dt13]
+  · simp [dt01]
+
+theorem diamondWithTriangleBoundaryAdj_dt01_dt02 :
+    (planarBoundarySupportEndpointAdjGraph diamondWithTriangleEmbedding).Adj
+      ⟨dt01, dt01_mem_selectedBoundarySupport⟩
+      ⟨dt02, dt02_mem_selectedBoundarySupport⟩ := by
+  refine ⟨?_, 0, ?_, ?_⟩
+  · intro h
+    have := congrArg Subtype.val h
+    simp [dt01, dt02] at this
+  · simp [dt01]
+  · simp [dt02]
+
+theorem diamondWithTriangleBoundaryAdj_dt45_dt56 :
+    (planarBoundarySupportEndpointAdjGraph diamondWithTriangleEmbedding).Adj
+      ⟨dt45, dt45_mem_selectedBoundarySupport⟩
+      ⟨dt56, dt56_mem_selectedBoundarySupport⟩ := by
+  refine ⟨?_, 5, ?_, ?_⟩
+  · intro h
+    have := congrArg Subtype.val h
+    simp [dt45, dt56] at this
+  · simp [dt45]
+  · simp [dt56]
+
+theorem diamondWithTriangleBoundaryAdj_dt56_dt64 :
+    (planarBoundarySupportEndpointAdjGraph diamondWithTriangleEmbedding).Adj
+      ⟨dt56, dt56_mem_selectedBoundarySupport⟩
+      ⟨dt64, dt64_mem_selectedBoundarySupport⟩ := by
+  refine ⟨?_, 6, ?_, ?_⟩
+  · intro h
+    have := congrArg Subtype.val h
+    simp [dt56, dt64] at this
+  · simp [dt56]
+  · simp [dt64]
+
+theorem diamondWithTriangleBoundaryAdj_dt64_dt45 :
+    (planarBoundarySupportEndpointAdjGraph diamondWithTriangleEmbedding).Adj
+      ⟨dt64, dt64_mem_selectedBoundarySupport⟩
+      ⟨dt45, dt45_mem_selectedBoundarySupport⟩ := by
+  refine ⟨?_, 4, ?_, ?_⟩
+  · intro h
+    have := congrArg Subtype.val h
+    simp [dt64, dt45] at this
+  · simp [dt64]
+  · simp [dt45]
+
+theorem boundaryEdgeSetCyclicRun_outer_diamondWithTriangle :
+    BoundaryEdgeSetCyclicRun diamondWithTriangleEmbedding
+      diamondWithTriangleOuterBoundaryCycleSet := by
+  refine ⟨?_, ?_⟩
+  · intro e he
+    simp [diamondWithTriangleOuterBoundaryCycleSet] at he
+    rcases he with rfl | rfl | rfl | rfl
+    · exact dt02_mem_selectedBoundarySupport
+    · exact dt23_mem_selectedBoundarySupport
+    · exact dt13_mem_selectedBoundarySupport
+    · exact dt01_mem_selectedBoundarySupport
+  · refine ⟨[
+      ⟨dt02, dt02_mem_selectedBoundarySupport⟩,
+      ⟨dt23, dt23_mem_selectedBoundarySupport⟩,
+      ⟨dt13, dt13_mem_selectedBoundarySupport⟩,
+      ⟨dt01, dt01_mem_selectedBoundarySupport⟩], ?_, ?_, ?_, ?_⟩
+    · decide
+    · decide
+    · change List.IsChain (planarBoundarySupportEndpointAdjGraph diamondWithTriangleEmbedding).Adj
+        [⟨dt02, dt02_mem_selectedBoundarySupport⟩,
+          ⟨dt23, dt23_mem_selectedBoundarySupport⟩,
+          ⟨dt13, dt13_mem_selectedBoundarySupport⟩,
+          ⟨dt01, dt01_mem_selectedBoundarySupport⟩,
+          ⟨dt02, dt02_mem_selectedBoundarySupport⟩]
+      exact (List.isChain_cons_cons).2
+        ⟨diamondWithTriangleBoundaryAdj_dt02_dt23,
+          (List.isChain_cons_cons).2
+            ⟨diamondWithTriangleBoundaryAdj_dt23_dt13,
+              (List.isChain_cons_cons).2
+                ⟨diamondWithTriangleBoundaryAdj_dt13_dt01,
+                  (List.isChain_pair).2 diamondWithTriangleBoundaryAdj_dt01_dt02⟩⟩⟩
+    · intro x
+      rcases diamondWithTriangle_boundaryEdge_eq x with
+        rfl | rfl | rfl | rfl | rfl | rfl | rfl <;>
+        decide
+
+theorem boundaryEdgeSetCyclicRun_inner_diamondWithTriangle :
+    BoundaryEdgeSetCyclicRun diamondWithTriangleEmbedding
+      diamondWithTriangleInnerBoundaryCycleSet := by
+  refine ⟨?_, ?_⟩
+  · intro e he
+    simp [diamondWithTriangleInnerBoundaryCycleSet] at he
+    rcases he with rfl | rfl | rfl
+    · exact dt45_mem_selectedBoundarySupport
+    · exact dt56_mem_selectedBoundarySupport
+    · exact dt64_mem_selectedBoundarySupport
+  · refine ⟨[
+      ⟨dt45, dt45_mem_selectedBoundarySupport⟩,
+      ⟨dt56, dt56_mem_selectedBoundarySupport⟩,
+      ⟨dt64, dt64_mem_selectedBoundarySupport⟩], ?_, ?_, ?_, ?_⟩
+    · decide
+    · decide
+    · change List.IsChain (planarBoundarySupportEndpointAdjGraph diamondWithTriangleEmbedding).Adj
+        [⟨dt45, dt45_mem_selectedBoundarySupport⟩,
+          ⟨dt56, dt56_mem_selectedBoundarySupport⟩,
+          ⟨dt64, dt64_mem_selectedBoundarySupport⟩,
+          ⟨dt45, dt45_mem_selectedBoundarySupport⟩]
+      exact (List.isChain_cons_cons).2
+        ⟨diamondWithTriangleBoundaryAdj_dt45_dt56,
+          (List.isChain_cons_cons).2
+            ⟨diamondWithTriangleBoundaryAdj_dt56_dt64,
+              (List.isChain_pair).2 diamondWithTriangleBoundaryAdj_dt64_dt45⟩⟩
+    · intro x
+      rcases diamondWithTriangle_boundaryEdge_eq x with
+        rfl | rfl | rfl | rfl | rfl | rfl | rfl <;>
+        decide
+
+theorem outer_inner_boundaryCycleEndpointSupports_disjoint_diamondWithTriangle :
+    Disjoint
+      (boundaryEdgeSetEndpointSupport diamondWithTriangleOuterBoundaryCycleSet)
+      (boundaryEdgeSetEndpointSupport diamondWithTriangleInnerBoundaryCycleSet) := by
+  rw [Finset.disjoint_left]
+  intro v hvOuter hvInner
+  fin_cases v <;>
+    simp [boundaryEdgeSetEndpointSupport, diamondWithTriangleOuterBoundaryCycleSet,
+      diamondWithTriangleInnerBoundaryCycleSet, dt02, dt23, dt13, dt01,
+      dt45, dt56, dt64] at hvOuter hvInner
+
+theorem annulusBoundaryCyclePair_diamondWithTriangle :
+    AnnulusBoundaryCyclePair diamondWithTriangleEmbedding
+      diamondWithTriangleOuterBoundaryCycleSet diamondWithTriangleInnerBoundaryCycleSet :=
+  ⟨boundaryEdgeSetCyclicRun_outer_diamondWithTriangle,
+    boundaryEdgeSetCyclicRun_inner_diamondWithTriangle,
+    outer_inner_boundaryCycleEndpointSupports_disjoint_diamondWithTriangle⟩
+
+theorem eq_dt12_of_mem_interiorEdgeSupport_diamondWithTriangle
+    {e : diamondWithTriangleGraph.edgeSet}
+    (he : e ∈ interiorEdgeSupport diamondWithTriangleEmbedding.faceBoundary
+      diamondWithTriangleEmbedding.faces) :
+    e = dt12 := by
+  rcases diamondWithTriangle_edge_eq e with
+    rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl
+  · have hcount :=
+      (mem_interiorEdgeSupport_iff diamondWithTriangleEmbedding.faceBoundary
+        diamondWithTriangleEmbedding.faces).1 he |>.2
+    simp [diamondWithTriangleEmbedding, totalIncidenceCount_dt01] at hcount
+  · rfl
+  · have hcount :=
+      (mem_interiorEdgeSupport_iff diamondWithTriangleEmbedding.faceBoundary
+        diamondWithTriangleEmbedding.faces).1 he |>.2
+    simp [diamondWithTriangleEmbedding, totalIncidenceCount_dt02] at hcount
+  · have hcount :=
+      (mem_interiorEdgeSupport_iff diamondWithTriangleEmbedding.faceBoundary
+        diamondWithTriangleEmbedding.faces).1 he |>.2
+    simp [diamondWithTriangleEmbedding, totalIncidenceCount_dt13] at hcount
+  · have hcount :=
+      (mem_interiorEdgeSupport_iff diamondWithTriangleEmbedding.faceBoundary
+        diamondWithTriangleEmbedding.faces).1 he |>.2
+    simp [diamondWithTriangleEmbedding, totalIncidenceCount_dt23] at hcount
+  · have hcount :=
+      (mem_interiorEdgeSupport_iff diamondWithTriangleEmbedding.faceBoundary
+        diamondWithTriangleEmbedding.faces).1 he |>.2
+    simp [diamondWithTriangleEmbedding, totalIncidenceCount_dt45] at hcount
+  · have hcount :=
+      (mem_interiorEdgeSupport_iff diamondWithTriangleEmbedding.faceBoundary
+        diamondWithTriangleEmbedding.faces).1 he |>.2
+    simp [diamondWithTriangleEmbedding, totalIncidenceCount_dt56] at hcount
+  · have hcount :=
+      (mem_interiorEdgeSupport_iff diamondWithTriangleEmbedding.faceBoundary
+        diamondWithTriangleEmbedding.faces).1 he |>.2
+    simp [diamondWithTriangleEmbedding, totalIncidenceCount_dt64] at hcount
+
+theorem selectedBoundaryInteriorEdgeEndpointVertices_eq_empty_diamondWithTriangle :
+    selectedBoundaryInteriorEdgeEndpointVertices diamondWithTriangleEmbedding = ∅ := by
+  ext v
+  constructor
+  · intro hv
+    rcases (mem_selectedBoundaryInteriorEdgeEndpointVertices_iff
+        diamondWithTriangleEmbedding).1 hv with
+      ⟨hInterior, hAvoid⟩
+    rcases hInterior with ⟨e, heInterior, hvEdge⟩
+    have he : e = dt12 :=
+      eq_dt12_of_mem_interiorEdgeSupport_diamondWithTriangle heInterior
+    subst he
+    have hv_cases : v = (1 : Fin 7) ∨ v = (2 : Fin 7) := by
+      fin_cases v
+      · simp [dt12] at hvEdge
+      · exact Or.inl rfl
+      · exact Or.inr rfl
+      · simp [dt12] at hvEdge
+      · simp [dt12] at hvEdge
+      · simp [dt12] at hvEdge
+      · simp [dt12] at hvEdge
+    rcases hv_cases with rfl | rfl
+    · exact False.elim
+        (hAvoid dt01 dt01_mem_selectedBoundarySupport vertex_one_mem_dt01)
+    · have htwo : (2 : Fin 7) ∈ (dt02 : Sym2 (Fin 7)) := by
+        simp [dt02]
+      exact False.elim (hAvoid dt02 dt02_mem_selectedBoundarySupport htwo)
+  · intro hv
+    simp at hv
+
+theorem not_selectedBoundaryInteriorEdgeEndpointVertices_nonempty_diamondWithTriangle :
+    ¬ (selectedBoundaryInteriorEdgeEndpointVertices diamondWithTriangleEmbedding).Nonempty := by
+  rintro ⟨v, hv⟩
+  simp [selectedBoundaryInteriorEdgeEndpointVertices_eq_empty_diamondWithTriangle] at hv
+
+theorem not_interiorEdgesNotSelectedBoundaryChords_diamondWithTriangle :
+    ¬ InteriorEdgesNotSelectedBoundaryChords diamondWithTriangleEmbedding := by
+  intro hChordFree
+  rcases hChordFree dt12 dt12_mem_interiorEdgeSupport with ⟨v, hvEdge, hAvoid⟩
+  have hv_cases : v = (1 : Fin 7) ∨ v = (2 : Fin 7) := by
+    fin_cases v
+    · simp [dt12] at hvEdge
+    · exact Or.inl rfl
+    · exact Or.inr rfl
+    · simp [dt12] at hvEdge
+    · simp [dt12] at hvEdge
+    · simp [dt12] at hvEdge
+    · simp [dt12] at hvEdge
+  rcases hv_cases with rfl | rfl
+  · exact hAvoid dt01 dt01_mem_selectedBoundarySupport vertex_one_mem_dt01
+  · have htwo : (2 : Fin 7) ∈ (dt02 : Sym2 (Fin 7)) := by
+      simp [dt02]
+    exact hAvoid dt02 dt02_mem_selectedBoundarySupport htwo
+
+/-- The diamond-with-triangle model has honest closed-walk annulus source data and both
+distinguished boundary components are finite endpoint cycles with disjoint vertex supports.
+Nevertheless the purified selected-boundary carrier is empty.  Thus the boundary-cycle
+strengthening of the source packet still does not imply the nonempty carrier needed by the
+non-vacuous synthesis endpoint. -/
+theorem
+    closedWalkAnnulusBoundarySource_and_boundaryCyclePair_does_not_imply_nonempty_selectedBoundaryInteriorEdgeEndpointVertices_diamondWithTriangle :
+    Nonempty (PlanarBoundaryClosedWalkAnnulusBoundarySource diamondWithTriangleEmbedding) ∧
+      AnnulusBoundaryCyclePair diamondWithTriangleEmbedding
+        diamondWithTriangleOuterBoundaryCycleSet diamondWithTriangleInnerBoundaryCycleSet ∧
+        ¬ (selectedBoundaryInteriorEdgeEndpointVertices diamondWithTriangleEmbedding).Nonempty :=
+  ⟨nonempty_closedWalkAnnulusBoundarySource_diamondWithTriangle,
+    annulusBoundaryCyclePair_diamondWithTriangle,
+    not_selectedBoundaryInteriorEdgeEndpointVertices_nonempty_diamondWithTriangle⟩
+
+/-- Strengthening the same source packet by a canonical witness choice still does not force a
+nonempty selected-boundary-purified carrier.  This is the Lean regression for the validation-lab
+rejection of the closed-walk boundary-cycle plus witness-assignment route. -/
+theorem
+    closedWalkAnnulusBoundarySource_boundaryCyclePair_and_canonicalWitnessChoice_does_not_imply_nonempty_selectedBoundaryInteriorEdgeEndpointVertices_diamondWithTriangle :
+    Nonempty (PlanarBoundaryClosedWalkAnnulusBoundarySource diamondWithTriangleEmbedding) ∧
+      AnnulusBoundaryCyclePair diamondWithTriangleEmbedding
+        diamondWithTriangleOuterBoundaryCycleSet diamondWithTriangleInnerBoundaryCycleSet ∧
+        Nonempty
+          (PlanarBoundaryCanonicalWitnessChoice
+            diamondWithTriangleClosedWalkAnnulusBoundarySource.toPlanarBoundaryAnnulusBoundaryData) ∧
+          ¬ (selectedBoundaryInteriorEdgeEndpointVertices diamondWithTriangleEmbedding).Nonempty :=
+  ⟨nonempty_closedWalkAnnulusBoundarySource_diamondWithTriangle,
+    annulusBoundaryCyclePair_diamondWithTriangle,
+    nonempty_planarBoundaryCanonicalWitnessChoice_diamondWithTriangle,
+    not_selectedBoundaryInteriorEdgeEndpointVertices_nonempty_diamondWithTriangle⟩
+
+/-- The same boundary-cycle source packet still permits an interior edge whose two endpoints lie
+on the selected boundary.  Hence this concrete source strengthening does not derive the no-chord
+premise used by the surviving nonempty-carrier route. -/
+theorem
+    closedWalkAnnulusBoundarySource_and_boundaryCyclePair_does_not_imply_interiorEdgesNotSelectedBoundaryChords_diamondWithTriangle :
+    Nonempty (PlanarBoundaryClosedWalkAnnulusBoundarySource diamondWithTriangleEmbedding) ∧
+      AnnulusBoundaryCyclePair diamondWithTriangleEmbedding
+        diamondWithTriangleOuterBoundaryCycleSet diamondWithTriangleInnerBoundaryCycleSet ∧
+        ¬ InteriorEdgesNotSelectedBoundaryChords diamondWithTriangleEmbedding :=
+  ⟨nonempty_closedWalkAnnulusBoundarySource_diamondWithTriangle,
+    annulusBoundaryCyclePair_diamondWithTriangle,
+    not_interiorEdgesNotSelectedBoundaryChords_diamondWithTriangle⟩
+
+/-- The closed-walk boundary-cycle plus canonical witness-choice packet also still permits an
+interior selected-boundary chord. -/
+theorem
+    closedWalkAnnulusBoundarySource_boundaryCyclePair_and_canonicalWitnessChoice_does_not_imply_interiorEdgesNotSelectedBoundaryChords_diamondWithTriangle :
+    Nonempty (PlanarBoundaryClosedWalkAnnulusBoundarySource diamondWithTriangleEmbedding) ∧
+      AnnulusBoundaryCyclePair diamondWithTriangleEmbedding
+        diamondWithTriangleOuterBoundaryCycleSet diamondWithTriangleInnerBoundaryCycleSet ∧
+        Nonempty
+          (PlanarBoundaryCanonicalWitnessChoice
+            diamondWithTriangleClosedWalkAnnulusBoundarySource.toPlanarBoundaryAnnulusBoundaryData) ∧
+          ¬ InteriorEdgesNotSelectedBoundaryChords diamondWithTriangleEmbedding :=
+  ⟨nonempty_closedWalkAnnulusBoundarySource_diamondWithTriangle,
+    annulusBoundaryCyclePair_diamondWithTriangle,
+    nonempty_planarBoundaryCanonicalWitnessChoice_diamondWithTriangle,
+    not_interiorEdgesNotSelectedBoundaryChords_diamondWithTriangle⟩
+
+/-- The same boundary-cycle source packet also cannot derive selected-boundary inducedness.
+Selected-boundary inducedness would imply the no-chord premise, already refuted on this model. -/
+theorem not_selectedBoundaryInducedSubgraph_diamondWithTriangle :
+    ¬ SelectedBoundaryInducedSubgraph diamondWithTriangleEmbedding := by
+  intro hInduced
+  exact not_interiorEdgesNotSelectedBoundaryChords_diamondWithTriangle
+    (interiorEdgesNotSelectedBoundaryChords_of_selectedBoundaryInducedSubgraph hInduced)
+
+theorem
+    closedWalkAnnulusBoundarySource_and_boundaryCyclePair_does_not_imply_selectedBoundaryInducedSubgraph_diamondWithTriangle :
+    Nonempty (PlanarBoundaryClosedWalkAnnulusBoundarySource diamondWithTriangleEmbedding) ∧
+      AnnulusBoundaryCyclePair diamondWithTriangleEmbedding
+        diamondWithTriangleOuterBoundaryCycleSet diamondWithTriangleInnerBoundaryCycleSet ∧
+        ¬ SelectedBoundaryInducedSubgraph diamondWithTriangleEmbedding :=
+  ⟨nonempty_closedWalkAnnulusBoundarySource_diamondWithTriangle,
+    annulusBoundaryCyclePair_diamondWithTriangle,
+    not_selectedBoundaryInducedSubgraph_diamondWithTriangle⟩
+
+/-- The same canonical witness-choice strengthening also cannot derive selected-boundary
+inducedness. -/
+theorem
+    closedWalkAnnulusBoundarySource_boundaryCyclePair_and_canonicalWitnessChoice_does_not_imply_selectedBoundaryInducedSubgraph_diamondWithTriangle :
+    Nonempty (PlanarBoundaryClosedWalkAnnulusBoundarySource diamondWithTriangleEmbedding) ∧
+      AnnulusBoundaryCyclePair diamondWithTriangleEmbedding
+        diamondWithTriangleOuterBoundaryCycleSet diamondWithTriangleInnerBoundaryCycleSet ∧
+        Nonempty
+          (PlanarBoundaryCanonicalWitnessChoice
+            diamondWithTriangleClosedWalkAnnulusBoundarySource.toPlanarBoundaryAnnulusBoundaryData) ∧
+          ¬ SelectedBoundaryInducedSubgraph diamondWithTriangleEmbedding :=
+  ⟨nonempty_closedWalkAnnulusBoundarySource_diamondWithTriangle,
+    annulusBoundaryCyclePair_diamondWithTriangle,
+    nonempty_planarBoundaryCanonicalWitnessChoice_diamondWithTriangle,
+    not_selectedBoundaryInducedSubgraph_diamondWithTriangle⟩
+
+/-- Fixed-graph universal obstruction: even if an embedding of this graph carries closed-walk
+annulus source data and some cyclic outer/inner boundary edge pair, that source package still
+does not force a nonempty selected-boundary-purified carrier. -/
+theorem
+    not_forall_closedWalkAnnulusBoundarySource_and_exists_boundaryCyclePair_implies_nonempty_selectedBoundaryInteriorEdgeEndpointVertices_diamondWithTriangleGraph :
+    ¬ ∀ {emb : PlaneEmbeddingWithBoundary diamondWithTriangleGraph},
+      Nonempty (PlanarBoundaryClosedWalkAnnulusBoundarySource emb) →
+        (∃ outer inner : Finset diamondWithTriangleGraph.edgeSet,
+          AnnulusBoundaryCyclePair emb outer inner) →
+          (selectedBoundaryInteriorEdgeEndpointVertices emb).Nonempty := by
+  intro h
+  exact not_selectedBoundaryInteriorEdgeEndpointVertices_nonempty_diamondWithTriangle
+    (h nonempty_closedWalkAnnulusBoundarySource_diamondWithTriangle
+      ⟨diamondWithTriangleOuterBoundaryCycleSet,
+        diamondWithTriangleInnerBoundaryCycleSet,
+        annulusBoundaryCyclePair_diamondWithTriangle⟩)
+
+/-- Fixed-graph universal obstruction for the surviving no-chord repair premise: closed-walk
+annulus source data plus some cyclic outer/inner boundary edge pair still does not force
+`InteriorEdgesNotSelectedBoundaryChords`. -/
+theorem
+    not_forall_closedWalkAnnulusBoundarySource_and_exists_boundaryCyclePair_implies_interiorEdgesNotSelectedBoundaryChords_diamondWithTriangleGraph :
+    ¬ ∀ {emb : PlaneEmbeddingWithBoundary diamondWithTriangleGraph},
+      Nonempty (PlanarBoundaryClosedWalkAnnulusBoundarySource emb) →
+        (∃ outer inner : Finset diamondWithTriangleGraph.edgeSet,
+          AnnulusBoundaryCyclePair emb outer inner) →
+          InteriorEdgesNotSelectedBoundaryChords emb := by
+  intro h
+  exact not_interiorEdgesNotSelectedBoundaryChords_diamondWithTriangle
+    (h nonempty_closedWalkAnnulusBoundarySource_diamondWithTriangle
+      ⟨diamondWithTriangleOuterBoundaryCycleSet,
+        diamondWithTriangleInnerBoundaryCycleSet,
+        annulusBoundaryCyclePair_diamondWithTriangle⟩)
+
+/-- Fixed-graph universal obstruction for the selected-boundary inducedness repair premise:
+closed-walk annulus source data plus some cyclic outer/inner boundary edge pair still does not
+force the combined selected-boundary endpoint support to be induced. -/
+theorem
+    not_forall_closedWalkAnnulusBoundarySource_and_exists_boundaryCyclePair_implies_selectedBoundaryInducedSubgraph_diamondWithTriangleGraph :
+    ¬ ∀ {emb : PlaneEmbeddingWithBoundary diamondWithTriangleGraph},
+      Nonempty (PlanarBoundaryClosedWalkAnnulusBoundarySource emb) →
+        (∃ outer inner : Finset diamondWithTriangleGraph.edgeSet,
+          AnnulusBoundaryCyclePair emb outer inner) →
+          SelectedBoundaryInducedSubgraph emb := by
+  intro h
+  exact not_selectedBoundaryInducedSubgraph_diamondWithTriangle
+    (h nonempty_closedWalkAnnulusBoundarySource_diamondWithTriangle
+      ⟨diamondWithTriangleOuterBoundaryCycleSet,
+        diamondWithTriangleInnerBoundaryCycleSet,
+        annulusBoundaryCyclePair_diamondWithTriangle⟩)
 
 /-- The preceding boundary-source countermodel is deliberately not a countermodel to the peeled
 interior-dual annulus route.  In this embedding, covering the unique interior edge `dt12` would

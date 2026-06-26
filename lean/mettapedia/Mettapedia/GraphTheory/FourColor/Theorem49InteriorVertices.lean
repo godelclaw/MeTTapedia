@@ -112,6 +112,11 @@ theorem selectedBoundaryInteriorVertices_eq_self_iff_selectedBoundary_avoids_ver
 def edgeEndpointSupport {G : SimpleGraph V} (edges : Finset G.edgeSet) : Finset V :=
   edges.biUnion fun e => (e : Sym2 V).toFinset
 
+theorem edgeEndpointSupport_eq_boundaryEdgeSetEndpointSupport {G : SimpleGraph V}
+    (edges : Finset G.edgeSet) :
+    edgeEndpointSupport edges = boundaryEdgeSetEndpointSupport edges :=
+  rfl
+
 theorem mem_edgeEndpointSupport_iff {G : SimpleGraph V}
     (edges : Finset G.edgeSet) {v : V} :
     v ∈ edgeEndpointSupport edges ↔ ∃ e ∈ edges, v ∈ (e : Sym2 V) := by
@@ -239,6 +244,73 @@ def HasUnblockedInteriorEndpoint {G : SimpleGraph V}
       ∀ b ∈ selectedBoundarySupport emb.faceBoundary emb.faces emb.faces,
         v ∉ (b : Sym2 V)
 
+/-- Chord-free finite endpoint condition for the selected-boundary purification route: every
+interior face-incidence edge has at least one endpoint not incident to any selected-boundary edge.
+This is weaker than endpoint-support disjointness, since the other endpoint may still lie on the
+selected boundary. -/
+def InteriorEdgesNotSelectedBoundaryChords {G : SimpleGraph V}
+    (emb : PlaneEmbeddingWithBoundary G) : Prop :=
+  ∀ e ∈ interiorEdgeSupport emb.faceBoundary emb.faces,
+    ∃ v, v ∈ (e : Sym2 V) ∧
+      ∀ b ∈ selectedBoundarySupport emb.faceBoundary emb.faces emb.faces,
+        v ∉ (b : Sym2 V)
+
+/-- If the selected boundary support is induced by its endpoint set, then no interior edge can be a
+selected-boundary chord.  Otherwise an interior edge whose endpoints both lie on the selected
+boundary endpoint support would itself have to be selected, contradicting the selected/interior
+incidence-count split. -/
+theorem interiorEdgesNotSelectedBoundaryChords_of_selectedBoundaryInducedSubgraph
+    {G : SimpleGraph V} {emb : PlaneEmbeddingWithBoundary G}
+    (hInduced : SelectedBoundaryInducedSubgraph emb) :
+    InteriorEdgesNotSelectedBoundaryChords emb := by
+  intro e heInterior
+  have hDisjoint :=
+    selectedBoundarySupport_disjoint_interiorEdgeSupport
+      emb.faceBoundary emb.faces
+  have hNotAll :
+      ¬ ∀ v : V, v ∈ (e : Sym2 V) →
+        v ∈ boundaryEdgeSetEndpointSupport
+          (selectedBoundarySupport emb.faceBoundary emb.faces emb.faces) := by
+    intro hAll
+    have heBoundary :
+        e ∈ selectedBoundarySupport emb.faceBoundary emb.faces emb.faces :=
+      hInduced e hAll
+    exact (Finset.disjoint_left.mp hDisjoint) heBoundary heInterior
+  have hExists :
+      ∃ v : V, v ∈ (e : Sym2 V) ∧
+        v ∉ boundaryEdgeSetEndpointSupport
+          (selectedBoundarySupport emb.faceBoundary emb.faces emb.faces) := by
+    by_contra hNo
+    apply hNotAll
+    intro v hv
+    by_contra hvNot
+    exact hNo ⟨v, hv, hvNot⟩
+  rcases hExists with ⟨v, hvEdge, hvNotBoundaryEndpoint⟩
+  refine ⟨v, hvEdge, ?_⟩
+  intro b hbBoundary hvb
+  exact hvNotBoundaryEndpoint
+    ((mem_boundaryEdgeSetEndpointSupport_iff
+      (selectedBoundarySupport emb.faceBoundary emb.faces emb.faces)).2
+      ⟨b, hbBoundary, hvb⟩)
+
+/-- Component-wise induced boundary sets plus the missing cross-component no-chord condition
+give the no-selected-boundary-chord premise used by the purified carrier route.  This is the
+finite endpoint theorem corresponding to the validation-lab survivor
+`component_induced_and_cross_free_to_no_chord`. -/
+theorem
+    interiorEdgesNotSelectedBoundaryChords_of_selectedBoundarySupport_eq_union_of_induced_of_crossComponentChordFree
+    {G : SimpleGraph V} {emb : PlaneEmbeddingWithBoundary G}
+    {left right : Finset G.edgeSet}
+    (hSelected :
+      selectedBoundarySupport emb.faceBoundary emb.faces emb.faces = left ∪ right)
+    (hLeft : BoundaryEdgeSetInducedSubgraph left)
+    (hRight : BoundaryEdgeSetInducedSubgraph right)
+    (hCross : BoundaryEdgeSetCrossComponentChordFree left right) :
+    InteriorEdgesNotSelectedBoundaryChords emb :=
+  interiorEdgesNotSelectedBoundaryChords_of_selectedBoundaryInducedSubgraph
+    (selectedBoundaryInducedSubgraph_of_selectedBoundarySupport_eq_union_of_induced_of_crossComponentChordFree
+      hSelected hLeft hRight hCross)
+
 /-- Exact witness form for nonempty purified interior-edge endpoint carriers.  A carrier survives
 boundary erasure precisely when some endpoint of some interior face-incidence edge is not incident
 to any selected ambient-boundary edge. -/
@@ -275,6 +347,135 @@ theorem interiorEdgeSupport_nonempty_of_hasUnblockedInteriorEndpoint
     (interiorEdgeSupport emb.faceBoundary emb.faces).Nonempty := by
   rcases hEndpoint with ⟨e, heInterior, _v, _hv, _hAvoid⟩
   exact ⟨e, heInterior⟩
+
+/-- A chord-free interior support gives the local unblocked endpoint witness needed by the
+selected-boundary purification route, provided there is at least one interior face-incidence edge. -/
+theorem hasUnblockedInteriorEndpoint_of_interiorEdgesNotSelectedBoundaryChords_and_nonempty
+    {G : SimpleGraph V} {emb : PlaneEmbeddingWithBoundary G}
+    (hChordFree : InteriorEdgesNotSelectedBoundaryChords emb)
+    (hInterior : (interiorEdgeSupport emb.faceBoundary emb.faces).Nonempty) :
+    HasUnblockedInteriorEndpoint emb := by
+  rcases hInterior with ⟨e, heInterior⟩
+  rcases hChordFree e heInterior with ⟨v, hvEdge, hAvoid⟩
+  exact ⟨e, heInterior, v, hvEdge, hAvoid⟩
+
+/-- Chord-freeness is a strictly weaker useful replacement for full endpoint no-touch in the
+nonempty-carrier obligation: it allows interior edges to touch the selected boundary at one
+endpoint, but rules out interior chords whose endpoints are both erased by the selected boundary. -/
+theorem selectedBoundaryInteriorEdgeEndpointVertices_nonempty_of_interiorEdgesNotSelectedBoundaryChords_and_nonempty
+    {G : SimpleGraph V} {emb : PlaneEmbeddingWithBoundary G}
+    (hChordFree : InteriorEdgesNotSelectedBoundaryChords emb)
+    (hInterior : (interiorEdgeSupport emb.faceBoundary emb.faces).Nonempty) :
+    (selectedBoundaryInteriorEdgeEndpointVertices emb).Nonempty :=
+  (hasUnblockedInteriorEndpoint_iff_selectedBoundaryInteriorEdgeEndpointVertices_nonempty emb).1
+    (hasUnblockedInteriorEndpoint_of_interiorEdgesNotSelectedBoundaryChords_and_nonempty
+      hChordFree hInterior)
+
+/-- Selected-boundary inducedness gives the named unblocked endpoint witness as soon as there is a
+live interior face-incidence edge. -/
+theorem hasUnblockedInteriorEndpoint_of_selectedBoundaryInducedSubgraph_and_nonempty
+    {G : SimpleGraph V} {emb : PlaneEmbeddingWithBoundary G}
+    (hInduced : SelectedBoundaryInducedSubgraph emb)
+    (hInterior : (interiorEdgeSupport emb.faceBoundary emb.faces).Nonempty) :
+    HasUnblockedInteriorEndpoint emb :=
+  hasUnblockedInteriorEndpoint_of_interiorEdgesNotSelectedBoundaryChords_and_nonempty
+    (interiorEdgesNotSelectedBoundaryChords_of_selectedBoundaryInducedSubgraph hInduced)
+    hInterior
+
+/-- Selected-boundary inducedness gives a nonempty purified interior-edge endpoint carrier as soon
+as there is a live interior face-incidence edge. -/
+theorem selectedBoundaryInteriorEdgeEndpointVertices_nonempty_of_selectedBoundaryInducedSubgraph_and_nonempty
+    {G : SimpleGraph V} {emb : PlaneEmbeddingWithBoundary G}
+    (hInduced : SelectedBoundaryInducedSubgraph emb)
+    (hInterior : (interiorEdgeSupport emb.faceBoundary emb.faces).Nonempty) :
+    (selectedBoundaryInteriorEdgeEndpointVertices emb).Nonempty :=
+  selectedBoundaryInteriorEdgeEndpointVertices_nonempty_of_interiorEdgesNotSelectedBoundaryChords_and_nonempty
+    (interiorEdgesNotSelectedBoundaryChords_of_selectedBoundaryInducedSubgraph hInduced)
+    hInterior
+
+/-- Component-wise induced boundary sets plus cross-component chord-freeness give the named
+unblocked endpoint witness as soon as there is a live interior face-incidence edge. -/
+theorem
+    hasUnblockedInteriorEndpoint_of_selectedBoundarySupport_eq_union_of_induced_of_crossComponentChordFree_and_nonempty
+    {G : SimpleGraph V} {emb : PlaneEmbeddingWithBoundary G}
+    {left right : Finset G.edgeSet}
+    (hSelected :
+      selectedBoundarySupport emb.faceBoundary emb.faces emb.faces = left ∪ right)
+    (hLeft : BoundaryEdgeSetInducedSubgraph left)
+    (hRight : BoundaryEdgeSetInducedSubgraph right)
+    (hCross : BoundaryEdgeSetCrossComponentChordFree left right)
+    (hInterior : (interiorEdgeSupport emb.faceBoundary emb.faces).Nonempty) :
+    HasUnblockedInteriorEndpoint emb :=
+  hasUnblockedInteriorEndpoint_of_interiorEdgesNotSelectedBoundaryChords_and_nonempty
+    (interiorEdgesNotSelectedBoundaryChords_of_selectedBoundarySupport_eq_union_of_induced_of_crossComponentChordFree
+      hSelected hLeft hRight hCross)
+    hInterior
+
+/-- Component-wise induced boundary sets plus cross-component chord-freeness give a nonempty
+purified interior-edge endpoint carrier as soon as there is a live interior face-incidence edge. -/
+theorem
+    selectedBoundaryInteriorEdgeEndpointVertices_nonempty_of_selectedBoundarySupport_eq_union_of_induced_of_crossComponentChordFree_and_nonempty
+    {G : SimpleGraph V} {emb : PlaneEmbeddingWithBoundary G}
+    {left right : Finset G.edgeSet}
+    (hSelected :
+      selectedBoundarySupport emb.faceBoundary emb.faces emb.faces = left ∪ right)
+    (hLeft : BoundaryEdgeSetInducedSubgraph left)
+    (hRight : BoundaryEdgeSetInducedSubgraph right)
+    (hCross : BoundaryEdgeSetCrossComponentChordFree left right)
+    (hInterior : (interiorEdgeSupport emb.faceBoundary emb.faces).Nonempty) :
+    (selectedBoundaryInteriorEdgeEndpointVertices emb).Nonempty :=
+  selectedBoundaryInteriorEdgeEndpointVertices_nonempty_of_interiorEdgesNotSelectedBoundaryChords_and_nonempty
+    (interiorEdgesNotSelectedBoundaryChords_of_selectedBoundarySupport_eq_union_of_induced_of_crossComponentChordFree
+      hSelected hLeft hRight hCross)
+    hInterior
+
+/-- Graph-level form of the chord-free sufficient condition for a nonempty selected-boundary
+purified interior-edge endpoint carrier. -/
+theorem exists_selectedBoundaryInteriorEdgeEndpointVertices_nonempty_of_exists_interiorEdgesNotSelectedBoundaryChords_and_nonempty
+    {G : SimpleGraph V}
+    (h : ∃ emb : PlaneEmbeddingWithBoundary G,
+      InteriorEdgesNotSelectedBoundaryChords emb ∧
+        (interiorEdgeSupport emb.faceBoundary emb.faces).Nonempty) :
+    ∃ emb : PlaneEmbeddingWithBoundary G,
+      (selectedBoundaryInteriorEdgeEndpointVertices emb).Nonempty := by
+  rcases h with ⟨emb, hChordFree, hInterior⟩
+  exact ⟨emb,
+    selectedBoundaryInteriorEdgeEndpointVertices_nonempty_of_interiorEdgesNotSelectedBoundaryChords_and_nonempty
+      hChordFree hInterior⟩
+
+/-- Graph-level form of the selected-boundary-induced sufficient condition for a nonempty
+purified interior-edge endpoint carrier. -/
+theorem
+    exists_selectedBoundaryInteriorEdgeEndpointVertices_nonempty_of_exists_selectedBoundaryInducedSubgraph_and_nonempty
+    {G : SimpleGraph V}
+    (h : ∃ emb : PlaneEmbeddingWithBoundary G,
+      SelectedBoundaryInducedSubgraph emb ∧
+        (interiorEdgeSupport emb.faceBoundary emb.faces).Nonempty) :
+    ∃ emb : PlaneEmbeddingWithBoundary G,
+      (selectedBoundaryInteriorEdgeEndpointVertices emb).Nonempty := by
+  rcases h with ⟨emb, hInduced, hInterior⟩
+  exact ⟨emb,
+    selectedBoundaryInteriorEdgeEndpointVertices_nonempty_of_selectedBoundaryInducedSubgraph_and_nonempty
+      hInduced hInterior⟩
+
+/-- Graph-level form of the split-induced plus cross-component chord-free sufficient condition for
+a nonempty purified interior-edge endpoint carrier. -/
+theorem
+    exists_selectedBoundaryInteriorEdgeEndpointVertices_nonempty_of_exists_selectedBoundarySupport_eq_union_of_induced_of_crossComponentChordFree_and_nonempty
+    {G : SimpleGraph V}
+    (h : ∃ emb : PlaneEmbeddingWithBoundary G,
+      ∃ left right : Finset G.edgeSet,
+        selectedBoundarySupport emb.faceBoundary emb.faces emb.faces = left ∪ right ∧
+          BoundaryEdgeSetInducedSubgraph left ∧
+          BoundaryEdgeSetInducedSubgraph right ∧
+          BoundaryEdgeSetCrossComponentChordFree left right ∧
+          (interiorEdgeSupport emb.faceBoundary emb.faces).Nonempty) :
+    ∃ emb : PlaneEmbeddingWithBoundary G,
+      (selectedBoundaryInteriorEdgeEndpointVertices emb).Nonempty := by
+  rcases h with ⟨emb, left, right, hSelected, hLeft, hRight, hCross, hInterior⟩
+  exact ⟨emb,
+    selectedBoundaryInteriorEdgeEndpointVertices_nonempty_of_selectedBoundarySupport_eq_union_of_induced_of_crossComponentChordFree_and_nonempty
+      hSelected hLeft hRight hCross hInterior⟩
 
 /-- Endpoint-support disjointness turns any raw interior-edge endpoint into a local unblocked
 endpoint.  This is the bridge from the older endpoint-separation route surface to the named

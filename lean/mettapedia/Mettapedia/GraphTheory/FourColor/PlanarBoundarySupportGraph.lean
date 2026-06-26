@@ -27,6 +27,160 @@ def planarBoundarySupportEndpointAdjGraph {G : SimpleGraph V}
   ⟩
   loopless := ⟨fun e h => h.1 rfl⟩
 
+/-- The finite set of primal endpoints touched by a finite set of graph edges, kept at the
+boundary-support layer so cycle-style boundary predicates do not depend on interior-carrier
+theory. -/
+def boundaryEdgeSetEndpointSupport {G : SimpleGraph V} (edges : Finset G.edgeSet) : Finset V :=
+  edges.biUnion fun e => (e : Sym2 V).toFinset
+
+theorem mem_boundaryEdgeSetEndpointSupport_iff {G : SimpleGraph V}
+    (edges : Finset G.edgeSet) {v : V} :
+    v ∈ boundaryEdgeSetEndpointSupport edges ↔ ∃ e ∈ edges, v ∈ (e : Sym2 V) := by
+  classical
+  simp [boundaryEdgeSetEndpointSupport, Sym2.mem_toFinset]
+
+/-- A finite edge set is induced by its endpoint set when every graph edge whose endpoints both
+lie in that endpoint support is already a member of the edge set.  For a selected annulus boundary
+this is the finite no-boundary-chord condition suggested by the validation lab. -/
+def BoundaryEdgeSetInducedSubgraph {G : SimpleGraph V} (edges : Finset G.edgeSet) : Prop :=
+  ∀ e : G.edgeSet,
+    (∀ v : V, v ∈ (e : Sym2 V) → v ∈ boundaryEdgeSetEndpointSupport edges) →
+      e ∈ edges
+
+/-- The selected ambient boundary support is induced by its endpoint set: there are no graph
+edges outside the selected boundary whose two endpoints both lie on the selected boundary
+endpoint support. -/
+def SelectedBoundaryInducedSubgraph {G : SimpleGraph V}
+    (emb : PlaneEmbeddingWithBoundary G) : Prop :=
+  BoundaryEdgeSetInducedSubgraph
+    (selectedBoundarySupport emb.faceBoundary emb.faces emb.faces)
+
+theorem not_boundaryEdgeSetInducedSubgraph_of_edge_not_mem_of_endpoint_subset
+    {G : SimpleGraph V} {edges : Finset G.edgeSet} {e : G.edgeSet}
+    (heNot : e ∉ edges)
+    (hEndpoints :
+      ∀ v : V, v ∈ (e : Sym2 V) → v ∈ boundaryEdgeSetEndpointSupport edges) :
+    ¬ BoundaryEdgeSetInducedSubgraph edges := by
+  intro hInduced
+  exact heNot (hInduced e hEndpoints)
+
+theorem not_selectedBoundaryInducedSubgraph_of_edge_not_mem_of_endpoint_subset
+    {G : SimpleGraph V} {emb : PlaneEmbeddingWithBoundary G} {e : G.edgeSet}
+    (heNot :
+      e ∉ selectedBoundarySupport emb.faceBoundary emb.faces emb.faces)
+    (hEndpoints :
+      ∀ v : V, v ∈ (e : Sym2 V) →
+        v ∈ boundaryEdgeSetEndpointSupport
+          (selectedBoundarySupport emb.faceBoundary emb.faces emb.faces)) :
+    ¬ SelectedBoundaryInducedSubgraph emb :=
+  not_boundaryEdgeSetInducedSubgraph_of_edge_not_mem_of_endpoint_subset heNot hEndpoints
+
+theorem mem_boundaryEdgeSetEndpointSupport_union_iff {G : SimpleGraph V}
+    (left right : Finset G.edgeSet) {v : V} :
+    v ∈ boundaryEdgeSetEndpointSupport (left ∪ right) ↔
+      v ∈ boundaryEdgeSetEndpointSupport left ∨
+        v ∈ boundaryEdgeSetEndpointSupport right := by
+  constructor
+  · intro hv
+    rcases (mem_boundaryEdgeSetEndpointSupport_iff (left ∪ right)).1 hv with
+      ⟨e, heUnion, hve⟩
+    rcases Finset.mem_union.1 heUnion with heLeft | heRight
+    · exact Or.inl
+        ((mem_boundaryEdgeSetEndpointSupport_iff left).2 ⟨e, heLeft, hve⟩)
+    · exact Or.inr
+        ((mem_boundaryEdgeSetEndpointSupport_iff right).2 ⟨e, heRight, hve⟩)
+  · intro hv
+    rcases hv with hvLeft | hvRight
+    · rcases (mem_boundaryEdgeSetEndpointSupport_iff left).1 hvLeft with
+        ⟨e, heLeft, hve⟩
+      exact (mem_boundaryEdgeSetEndpointSupport_iff (left ∪ right)).2
+        ⟨e, Finset.mem_union_left right heLeft, hve⟩
+    · rcases (mem_boundaryEdgeSetEndpointSupport_iff right).1 hvRight with
+        ⟨e, heRight, hve⟩
+      exact (mem_boundaryEdgeSetEndpointSupport_iff (left ∪ right)).2
+        ⟨e, Finset.mem_union_right left heRight, hve⟩
+
+/-- No graph edge outside the split boundary crosses between the two endpoint supports while
+remaining entirely inside their union.  This is the finite cross-component chord condition that
+repairs the false component-wise inducedness shortcut. -/
+def BoundaryEdgeSetCrossComponentChordFree {G : SimpleGraph V}
+    (left right : Finset G.edgeSet) : Prop :=
+  ∀ e : G.edgeSet,
+    (∀ v : V, v ∈ (e : Sym2 V) →
+      v ∈ boundaryEdgeSetEndpointSupport (left ∪ right)) →
+    (∃ v : V, v ∈ (e : Sym2 V) ∧ v ∈ boundaryEdgeSetEndpointSupport left) →
+    (∃ v : V, v ∈ (e : Sym2 V) ∧ v ∈ boundaryEdgeSetEndpointSupport right) →
+      e ∈ left ∪ right
+
+theorem boundaryEdgeSetInducedSubgraph_union_of_induced_of_crossComponentChordFree
+    {G : SimpleGraph V} {left right : Finset G.edgeSet}
+    (hLeft : BoundaryEdgeSetInducedSubgraph left)
+    (hRight : BoundaryEdgeSetInducedSubgraph right)
+    (hCross : BoundaryEdgeSetCrossComponentChordFree left right) :
+    BoundaryEdgeSetInducedSubgraph (left ∪ right) := by
+  intro e hEndpoints
+  by_cases hAllLeft :
+      ∀ v : V, v ∈ (e : Sym2 V) → v ∈ boundaryEdgeSetEndpointSupport left
+  · exact Finset.mem_union_left right (hLeft e hAllLeft)
+  by_cases hAllRight :
+      ∀ v : V, v ∈ (e : Sym2 V) → v ∈ boundaryEdgeSetEndpointSupport right
+  · exact Finset.mem_union_right left (hRight e hAllRight)
+  have hSomeRight :
+      ∃ v : V, v ∈ (e : Sym2 V) ∧ v ∈ boundaryEdgeSetEndpointSupport right := by
+    by_contra hNoRight
+    apply hAllLeft
+    intro v hv
+    rcases (mem_boundaryEdgeSetEndpointSupport_union_iff left right).1
+        (hEndpoints v hv) with hLeftEndpoint | hRightEndpoint
+    · exact hLeftEndpoint
+    · exact False.elim (hNoRight ⟨v, hv, hRightEndpoint⟩)
+  have hSomeLeft :
+      ∃ v : V, v ∈ (e : Sym2 V) ∧ v ∈ boundaryEdgeSetEndpointSupport left := by
+    by_contra hNoLeft
+    apply hAllRight
+    intro v hv
+    rcases (mem_boundaryEdgeSetEndpointSupport_union_iff left right).1
+        (hEndpoints v hv) with hLeftEndpoint | hRightEndpoint
+    · exact False.elim (hNoLeft ⟨v, hv, hLeftEndpoint⟩)
+    · exact hRightEndpoint
+  exact hCross e hEndpoints hSomeLeft hSomeRight
+
+theorem selectedBoundaryInducedSubgraph_of_selectedBoundarySupport_eq_union_of_induced_of_crossComponentChordFree
+    {G : SimpleGraph V} {emb : PlaneEmbeddingWithBoundary G}
+    {left right : Finset G.edgeSet}
+    (hSelected :
+      selectedBoundarySupport emb.faceBoundary emb.faces emb.faces = left ∪ right)
+    (hLeft : BoundaryEdgeSetInducedSubgraph left)
+    (hRight : BoundaryEdgeSetInducedSubgraph right)
+    (hCross : BoundaryEdgeSetCrossComponentChordFree left right) :
+    SelectedBoundaryInducedSubgraph emb := by
+  rw [SelectedBoundaryInducedSubgraph, hSelected]
+  exact
+    boundaryEdgeSetInducedSubgraph_union_of_induced_of_crossComponentChordFree
+      hLeft hRight hCross
+
+/-- A finite selected-boundary edge set has a cyclic endpoint run when it can be listed without
+repetition so that consecutive boundary edges, including the final-to-initial pair, share a
+primal endpoint.  This is a lightweight finite boundary-cycle predicate for the current embedding
+API, not a replacement for a future topological Jordan-curve theorem. -/
+def BoundaryEdgeSetCyclicRun {G : SimpleGraph V}
+    (emb : PlaneEmbeddingWithBoundary G) (S : Finset G.edgeSet) : Prop :=
+  S ⊆ selectedBoundarySupport emb.faceBoundary emb.faces emb.faces ∧
+    ∃ run : List (PlanarBoundaryEdgeVertex emb),
+      run ≠ [] ∧
+        run.Nodup ∧
+          List.IsChain (planarBoundarySupportEndpointAdjGraph emb).Adj
+            (run ++ run.head?.toList) ∧
+            ∀ x : PlanarBoundaryEdgeVertex emb, x ∈ run ↔ x.1 ∈ S
+
+/-- Two finite annulus boundary edge sets are cycle-integral when each boundary set is a cyclic
+endpoint run and the two primal endpoint supports are disjoint. -/
+def AnnulusBoundaryCyclePair {G : SimpleGraph V}
+    (emb : PlaneEmbeddingWithBoundary G) (outer inner : Finset G.edgeSet) : Prop :=
+  BoundaryEdgeSetCyclicRun emb outer ∧
+    BoundaryEdgeSetCyclicRun emb inner ∧
+      Disjoint (boundaryEdgeSetEndpointSupport outer) (boundaryEdgeSetEndpointSupport inner)
+
 /-- Facewise boundary-component coherence in the root-free boundary graph: any two
 selected-boundary edges on the same ambient face are connected in the primal shared-endpoint
 boundary graph. -/
