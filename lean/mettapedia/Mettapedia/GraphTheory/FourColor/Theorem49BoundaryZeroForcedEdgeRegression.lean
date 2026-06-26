@@ -6634,6 +6634,19 @@ theorem twoBandAnnulus_noncontrollingSix_not_boundaryZeroKirchhoff_control :
     (hcontrol hz
       twoBandAnnulusTbaM34OnlyKirchhoffEvader_vanishes_on_noncontrollingSix)
 
+/-- The canonical noncontrolling six-edge pattern has a concrete boundary-zero Kirchhoff evader:
+the red chain supported on the omitted triple `{R03, R58, M53}`. -/
+theorem twoBandAnnulus_noncontrollingSix_exists_boundaryZeroKirchhoffChain_vanishingOnControl :
+    ∃ z : twoBandAnnulusGraph.edgeSet → Color,
+      z ∈ theorem49BoundaryZeroKirchhoffSubspace
+          twoBandAnnulusEmbedding twoBandAnnulusKirchhoffVertices ∧
+        z ≠ 0 ∧
+          ∀ e ∈ twoBandAnnulusNoncontrollingSixKirchhoffControlEdges, z e = 0 := by
+  rcases twoBandAnnulus_tbaM34_only_has_boundaryZeroKirchhoff_evader with
+    ⟨hz, _hM34, _hR03, _hR58, _hM53, hzNonzero⟩
+  exact ⟨twoBandAnnulusTbaM34OnlyKirchhoffEvader, hz, hzNonzero,
+    twoBandAnnulusTbaM34OnlyKirchhoffEvader_vanishes_on_noncontrollingSix⟩
+
 /-- Explicit refutation of the cardinality-only repair: some six-edge interior control set does
 not control the two-band boundary-zero Kirchhoff target. -/
 theorem twoBandAnnulus_exists_six_interior_control_not_boundaryZeroKirchhoff_control :
@@ -8318,6 +8331,22 @@ theorem twoBandAnnulus_not_boundaryZeroKirchhoff_control_iff_mem_nonFullRankInte
     exact
       twoBandAnnulus_not_boundaryZeroKirchhoff_control_of_mem_nonFullRankInteriorControlComplements
         hnonFull
+
+theorem twoBandAnnulusNoncontrollingSixKirchhoffControlEdges_mem_sixInteriorControls :
+    twoBandAnnulusNoncontrollingSixKirchhoffControlEdges ∈
+      twoBandAnnulusSixInteriorControls := by
+  rw [twoBandAnnulusSixInteriorControls]
+  exact Finset.mem_powersetCard.2
+    ⟨twoBandAnnulusNoncontrollingSixKirchhoffControlEdges_subset_interior,
+      twoBandAnnulusNoncontrollingSixKirchhoffControlEdges_card⟩
+
+set_option maxRecDepth 20000 in
+theorem twoBandAnnulusNoncontrollingSixKirchhoffControlEdges_mem_nonFullRankInteriorControlComplements :
+    twoBandAnnulusNoncontrollingSixKirchhoffControlEdges ∈
+      twoBandAnnulusNonFullRankInteriorControlComplements :=
+  (twoBandAnnulus_not_boundaryZeroKirchhoff_control_iff_mem_nonFullRankInteriorControlComplements_of_mem_sixInteriorControls
+    twoBandAnnulusNoncontrollingSixKirchhoffControlEdges_mem_sixInteriorControls).1
+    twoBandAnnulus_noncontrollingSix_not_boundaryZeroKirchhoff_control
 
 theorem twoBandAnnulus_boundaryZeroKirchhoff_control_iff_interiorFilter_control
     (emitted : Finset twoBandAnnulusGraph.edgeSet) :
@@ -15910,6 +15939,42 @@ theorem twoBandAnnulus_CAP5_boundaryZeroKirchhoff_not_forcedEdgeCoverage_of_emit
         (twoBandAnnulus_mem_selectedBoundarySupport_of_not_mem_interiorEdgeSupport
           heInterior))
 
+/-- Certificate-facing form of the noncontrolling-six refutation.  If the classifier emits only
+interior edges from the lab-refuted six-edge pattern, the named red omitted-triple chain is
+invisible to every enumerated forced edge. -/
+theorem twoBandAnnulus_CAP5_exists_boundaryZeroKirchhoffChain_vanishingOnForcedEdges_of_emittedInterior_subset_noncontrollingSix
+    {boundaryEdge : Fin 5 → twoBandAnnulusGraph.edgeSet} {n : Nat}
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    (p0Inside p4Inside : Bool) (side : Fin 9 → Prop)
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (hsubset :
+      (classifier.emittedFinset.filter fun e =>
+        e ∈ interiorEdgeSupport
+          twoBandAnnulusEmbedding.faceBoundary twoBandAnnulusEmbedding.faces) ⊆
+        twoBandAnnulusNoncontrollingSixKirchhoffControlEdges) :
+    ∃ z : twoBandAnnulusGraph.edgeSet → Color,
+      z ∈ theorem49BoundaryZeroKirchhoffSubspace
+          twoBandAnnulusEmbedding twoBandAnnulusKirchhoffVertices ∧
+        z ≠ 0 ∧
+          ∀ e : twoBandAnnulusGraph.edgeSet,
+            data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e →
+              z e = 0 := by
+  rcases twoBandAnnulus_tbaM34_only_has_boundaryZeroKirchhoff_evader with
+    ⟨hz, _hM34, _hR03, _hR58, _hM53, hzNonzero⟩
+  refine ⟨twoBandAnnulusTbaM34OnlyKirchhoffEvader, hz, hzNonzero, ?_⟩
+  intro e hforced
+  have heEmitted : e ∈ classifier.emittedFinset :=
+    (classifier.emittedFinset_spec e).2 hforced
+  by_cases heInterior :
+      e ∈ interiorEdgeSupport
+        twoBandAnnulusEmbedding.faceBoundary twoBandAnnulusEmbedding.faces
+  · exact twoBandAnnulusTbaM34OnlyKirchhoffEvader_vanishes_on_noncontrollingSix e
+      (hsubset (Finset.mem_filter.2 ⟨heEmitted, heInterior⟩))
+  · exact boundaryZero_of_mem_theorem49BoundaryZeroKirchhoffSubspace hz e
+      (twoBandAnnulus_mem_selectedBoundarySupport_of_not_mem_interiorEdgeSupport
+        heInterior)
+
 /-- Exact wrong-six corollary: emitting precisely the noncontrolling six interior coordinates
 does not cover the two-band boundary-zero Kirchhoff target. -/
 theorem twoBandAnnulus_CAP5_boundaryZeroKirchhoff_not_forcedEdgeCoverage_of_emittedInterior_eq_noncontrollingSix
@@ -15931,6 +15996,29 @@ theorem twoBandAnnulus_CAP5_boundaryZeroKirchhoff_not_forcedEdgeCoverage_of_emit
           data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e ∧
             z e ≠ 0 :=
   twoBandAnnulus_CAP5_boundaryZeroKirchhoff_not_forcedEdgeCoverage_of_emittedInterior_subset_noncontrollingSix
+    p0Inside p4Inside side classifier (by
+      intro e he
+      simpa [heq] using he)
+
+theorem twoBandAnnulus_CAP5_exists_boundaryZeroKirchhoffChain_vanishingOnForcedEdges_of_emittedInterior_eq_noncontrollingSix
+    {boundaryEdge : Fin 5 → twoBandAnnulusGraph.edgeSet} {n : Nat}
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    (p0Inside p4Inside : Bool) (side : Fin 9 → Prop)
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (heq :
+      (classifier.emittedFinset.filter fun e =>
+        e ∈ interiorEdgeSupport
+          twoBandAnnulusEmbedding.faceBoundary twoBandAnnulusEmbedding.faces) =
+        twoBandAnnulusNoncontrollingSixKirchhoffControlEdges) :
+    ∃ z : twoBandAnnulusGraph.edgeSet → Color,
+      z ∈ theorem49BoundaryZeroKirchhoffSubspace
+          twoBandAnnulusEmbedding twoBandAnnulusKirchhoffVertices ∧
+        z ≠ 0 ∧
+          ∀ e : twoBandAnnulusGraph.edgeSet,
+            data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e →
+              z e = 0 :=
+  twoBandAnnulus_CAP5_exists_boundaryZeroKirchhoffChain_vanishingOnForcedEdges_of_emittedInterior_subset_noncontrollingSix
     p0Inside p4Inside side classifier (by
       intro e he
       simpa [heq] using he)
