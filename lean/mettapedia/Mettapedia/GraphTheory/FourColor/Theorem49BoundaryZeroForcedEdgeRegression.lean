@@ -6593,6 +6593,78 @@ theorem twoBandAnnulus_tbaM34_only_has_boundaryZeroKirchhoff_evader :
   rw [hred] at hvalue
   exact red_ne_zero hvalue
 
+def twoBandAnnulusNoncontrollingSixKirchhoffControlEdges :
+    Finset twoBandAnnulusGraph.edgeSet :=
+  {tbaM34, tbaM45, tbaR14, tbaR25, tbaR36, tbaR47}
+
+theorem twoBandAnnulusNoncontrollingSixKirchhoffControlEdges_subset_interior :
+    twoBandAnnulusNoncontrollingSixKirchhoffControlEdges ⊆
+      twoBandAnnulusInteriorEdges := by
+  intro e he
+  simp [twoBandAnnulusNoncontrollingSixKirchhoffControlEdges,
+    twoBandAnnulusInteriorEdges] at he ⊢
+  tauto
+
+theorem twoBandAnnulusNoncontrollingSixKirchhoffControlEdges_card :
+    twoBandAnnulusNoncontrollingSixKirchhoffControlEdges.card = 6 := by
+  decide
+
+theorem twoBandAnnulusTbaM34OnlyKirchhoffEvader_vanishes_on_noncontrollingSix :
+    ∀ e ∈ twoBandAnnulusNoncontrollingSixKirchhoffControlEdges,
+      twoBandAnnulusTbaM34OnlyKirchhoffEvader e = 0 := by
+  intro e he
+  have he_cases :
+      e = tbaM34 ∨ e = tbaM45 ∨ e = tbaR14 ∨
+      e = tbaR25 ∨ e = tbaR36 ∨ e = tbaR47 := by
+    simpa [twoBandAnnulusNoncontrollingSixKirchhoffControlEdges] using he
+  rcases he_cases with rfl | rfl | rfl | rfl | rfl | rfl <;> decide
+
+/-- Cardinality alone is not the two-band Kirchhoff detector criterion: this six-edge interior
+set still leaves a nonzero boundary-zero Kirchhoff evader. -/
+theorem twoBandAnnulus_noncontrollingSix_not_boundaryZeroKirchhoff_control :
+    ¬ ∀ ⦃z : twoBandAnnulusGraph.edgeSet → Color⦄,
+      z ∈ theorem49BoundaryZeroKirchhoffSubspace
+          twoBandAnnulusEmbedding twoBandAnnulusKirchhoffVertices →
+      (∀ e ∈ twoBandAnnulusNoncontrollingSixKirchhoffControlEdges, z e = 0) →
+      z = 0 := by
+  intro hcontrol
+  rcases twoBandAnnulus_tbaM34_only_has_boundaryZeroKirchhoff_evader with
+    ⟨hz, _hM34, _hR03, _hR58, _hM53, hzNonzero⟩
+  exact hzNonzero
+    (hcontrol hz
+      twoBandAnnulusTbaM34OnlyKirchhoffEvader_vanishes_on_noncontrollingSix)
+
+/-- Explicit refutation of the cardinality-only repair: some six-edge interior control set does
+not control the two-band boundary-zero Kirchhoff target. -/
+theorem twoBandAnnulus_exists_six_interior_control_not_boundaryZeroKirchhoff_control :
+    ∃ control : Finset twoBandAnnulusGraph.edgeSet,
+      control ⊆ twoBandAnnulusInteriorEdges ∧
+      control.card = 6 ∧
+        ¬ ∀ ⦃z : twoBandAnnulusGraph.edgeSet → Color⦄,
+          z ∈ theorem49BoundaryZeroKirchhoffSubspace
+              twoBandAnnulusEmbedding twoBandAnnulusKirchhoffVertices →
+          (∀ e ∈ control, z e = 0) →
+          z = 0 := by
+  exact ⟨twoBandAnnulusNoncontrollingSixKirchhoffControlEdges,
+    twoBandAnnulusNoncontrollingSixKirchhoffControlEdges_subset_interior,
+    twoBandAnnulusNoncontrollingSixKirchhoffControlEdges_card,
+    twoBandAnnulus_noncontrollingSix_not_boundaryZeroKirchhoff_control⟩
+
+/-- Six interior coordinates are not, by themselves, sufficient for two-band Kirchhoff control. -/
+theorem twoBandAnnulus_not_all_six_interior_controls_boundaryZeroKirchhoff_control :
+    ¬ ∀ control : Finset twoBandAnnulusGraph.edgeSet,
+      control ⊆ twoBandAnnulusInteriorEdges →
+      control.card = 6 →
+        ∀ ⦃z : twoBandAnnulusGraph.edgeSet → Color⦄,
+          z ∈ theorem49BoundaryZeroKirchhoffSubspace
+              twoBandAnnulusEmbedding twoBandAnnulusKirchhoffVertices →
+          (∀ e ∈ control, z e = 0) →
+          z = 0 := by
+  intro hall
+  rcases twoBandAnnulus_exists_six_interior_control_not_boundaryZeroKirchhoff_control with
+    ⟨control, hsubset, hcard, hnotControl⟩
+  exact hnotControl (hall control hsubset hcard)
+
 theorem twoBandAnnulusIndicator_mem_planarBoundaryZeroSubmodule_of_subset_interior
     (S : Finset twoBandAnnulusGraph.edgeSet)
     (hS : S ⊆ twoBandAnnulusInteriorEdges) :
