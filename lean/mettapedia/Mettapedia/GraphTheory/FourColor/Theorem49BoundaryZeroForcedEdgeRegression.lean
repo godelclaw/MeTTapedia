@@ -9535,6 +9535,28 @@ theorem wheelWithInnerTriangle_boundaryZero_declaredForcedEdges_nonzeroCoverage 
     (wheelWithInnerTriangle_boundaryZero_controlEdges_interiorEdges hzBoundary hvanish)
 
 /--
+Two-band nonzero-coverage form of the lab verdict.  The nine interior edges meet every nonzero
+selected-boundary-zero chain.
+-/
+theorem twoBandAnnulus_boundaryZero_declaredForcedEdges_nonzeroCoverage :
+    ∀ ⦃z : twoBandAnnulusGraph.edgeSet → Color⦄,
+      z ∈ planarBoundaryZeroSubmodule twoBandAnnulusEmbedding →
+      z ≠ 0 →
+        ∃ e : twoBandAnnulusGraph.edgeSet,
+          e ∈ twoBandAnnulusInteriorEdges ∧ z e ≠ 0 := by
+  classical
+  intro z hzBoundary hzNonzero
+  by_contra hnone
+  have hvanish :
+      ∀ e ∈ twoBandAnnulusInteriorEdges, z e = 0 := by
+    intro e he
+    by_contra hze
+    exact hnone ⟨e, he, hze⟩
+  exact hzNonzero
+    (twoBandAnnulus_boundaryZero_no_evader_of_vanishes_on_interiorEdges
+      z hzBoundary hvanish)
+
+/--
 Combined finite F2 verdict for the two focus shells.  Declared forced edges catch every nonzero
 selected-boundary-zero chain on both shells, while any strictly smaller control set leaves a
 nonzero evader.  This is the Lean form of the lab's `synthesis_no_evader` answer for the declared
@@ -12750,6 +12772,168 @@ theorem twoBandAnnulus_CAP5_not_forcedEdgeCoverage_of_emittedInterior_card_le_ei
     twoBandAnnulus_CAP5_forcedEdgeCoverage_emittedInterior_card_ge_nine
       p0Inside p4Inside side classifier hcoverage
   omega
+
+/-- Cardinality form of the two-band boundary-zero detector threshold.  Since the interior
+support has exactly nine edges, reaching the lower bound is equivalent to emitting every
+two-band interior edge. -/
+theorem twoBandAnnulus_emittedInterior_card_ge_nine_iff
+    (emitted : Finset twoBandAnnulusGraph.edgeSet) :
+    9 ≤ (emitted.filter fun e =>
+        e ∈ interiorEdgeSupport
+          twoBandAnnulusEmbedding.faceBoundary twoBandAnnulusEmbedding.faces).card ↔
+      twoBandAnnulusInteriorEdges ⊆ emitted := by
+  classical
+  constructor
+  · intro hcard e heInterior
+    by_contra hnotEmitted
+    have hsubset :
+        (emitted.filter fun x =>
+          x ∈ interiorEdgeSupport
+            twoBandAnnulusEmbedding.faceBoundary twoBandAnnulusEmbedding.faces) ⊆
+          twoBandAnnulusInteriorEdges.erase e := by
+      intro x hx
+      rcases Finset.mem_filter.1 hx with ⟨hxEmitted, hxInteriorSupport⟩
+      have hxInterior : x ∈ twoBandAnnulusInteriorEdges := by
+        simpa [twoBandAnnulus_interiorEdgeSupport_eq] using hxInteriorSupport
+      have hxne : x ≠ e := by
+        intro hxe
+        subst x
+        exact hnotEmitted hxEmitted
+      exact Finset.mem_erase.2 ⟨hxne, hxInterior⟩
+    have hle :=
+      Finset.card_le_card hsubset
+    have herase : (twoBandAnnulusInteriorEdges.erase e).card = 8 := by
+      have hcardInterior : twoBandAnnulusInteriorEdges.card = 9 := by
+        decide
+      rw [Finset.card_erase_of_mem heInterior, hcardInterior]
+    rw [herase] at hle
+    omega
+  · intro hsubset
+    have hsubsetFilter :
+        twoBandAnnulusInteriorEdges ⊆
+          emitted.filter fun e =>
+            e ∈ interiorEdgeSupport
+              twoBandAnnulusEmbedding.faceBoundary twoBandAnnulusEmbedding.faces := by
+      intro e heInterior
+      exact Finset.mem_filter.2
+        ⟨hsubset heInterior,
+          by simpa [twoBandAnnulus_interiorEdgeSupport_eq] using heInterior⟩
+    have hle :=
+      Finset.card_le_card hsubsetFilter
+    have hcardInterior : twoBandAnnulusInteriorEdges.card = 9 := by
+      decide
+    simpa [hcardInterior] using hle
+
+/-- Exact classifier-facing form of the two-band F2 verdict.  Boundary-zero CAP5 coverage
+occurs exactly when the classifier emits all nine interior controls. -/
+theorem twoBandAnnulus_CAP5_forcedEdgeCoverage_emits_interiorEdges
+    {boundaryEdge : Fin 5 → twoBandAnnulusGraph.edgeSet} {n : Nat}
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    (p0Inside p4Inside : Bool) (side : Fin 9 → Prop)
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (hcoverage :
+      ∀ ⦃z : twoBandAnnulusGraph.edgeSet → Color⦄,
+        z ∈ planarBoundaryZeroSubmodule twoBandAnnulusEmbedding →
+        z ≠ 0 →
+          ∃ e : twoBandAnnulusGraph.edgeSet,
+            data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e ∧
+              z e ≠ 0) :
+    twoBandAnnulusInteriorEdges ⊆ classifier.emittedFinset :=
+  (twoBandAnnulus_emittedInterior_card_ge_nine_iff classifier.emittedFinset).1
+    (twoBandAnnulus_CAP5_forcedEdgeCoverage_emittedInterior_card_ge_nine
+      p0Inside p4Inside side classifier hcoverage)
+
+/-- Converse finite-lab handoff for the two-band shell: if the CAP5 classifier emits every
+interior edge, then its enumerated forced-edge predicate covers every nonzero boundary-zero
+chain. -/
+theorem twoBandAnnulus_CAP5_forcedEdgeCoverage_of_emits_interiorEdges
+    {boundaryEdge : Fin 5 → twoBandAnnulusGraph.edgeSet} {n : Nat}
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    (p0Inside p4Inside : Bool) (side : Fin 9 → Prop)
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (hemits : twoBandAnnulusInteriorEdges ⊆ classifier.emittedFinset) :
+    ∀ ⦃z : twoBandAnnulusGraph.edgeSet → Color⦄,
+      z ∈ planarBoundaryZeroSubmodule twoBandAnnulusEmbedding →
+      z ≠ 0 →
+        ∃ e : twoBandAnnulusGraph.edgeSet,
+          data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e ∧
+            z e ≠ 0 :=
+  data.forcedEdgeCoverage_of_controlEdges_subset_emittedFinset
+    twoBandAnnulusEmbedding classifier twoBandAnnulusInteriorEdges
+    twoBandAnnulus_boundaryZero_declaredForcedEdges_nonzeroCoverage hemits
+
+/-- Exact two-band boundary-zero F2 detector verdict.  CAP5 covers every nonzero boundary-zero
+chain exactly when all nine interior controls have been emitted. -/
+theorem twoBandAnnulus_CAP5_forcedEdgeCoverage_iff_emits_interiorEdges
+    {boundaryEdge : Fin 5 → twoBandAnnulusGraph.edgeSet} {n : Nat}
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    (p0Inside p4Inside : Bool) (side : Fin 9 → Prop)
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side) :
+    (∀ ⦃z : twoBandAnnulusGraph.edgeSet → Color⦄,
+      z ∈ planarBoundaryZeroSubmodule twoBandAnnulusEmbedding →
+      z ≠ 0 →
+        ∃ e : twoBandAnnulusGraph.edgeSet,
+          data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e ∧
+            z e ≠ 0) ↔
+      twoBandAnnulusInteriorEdges ⊆ classifier.emittedFinset := by
+  constructor
+  · exact twoBandAnnulus_CAP5_forcedEdgeCoverage_emits_interiorEdges
+      p0Inside p4Inside side classifier
+  · exact twoBandAnnulus_CAP5_forcedEdgeCoverage_of_emits_interiorEdges
+      p0Inside p4Inside side classifier
+
+/-- Runner-facing exact two-band threshold: boundary-zero coverage is equivalent to reaching
+the nine-edge emitted-interior count. -/
+theorem twoBandAnnulus_CAP5_forcedEdgeCoverage_iff_emittedInterior_card_ge_nine
+    {boundaryEdge : Fin 5 → twoBandAnnulusGraph.edgeSet} {n : Nat}
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    (p0Inside p4Inside : Bool) (side : Fin 9 → Prop)
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side) :
+    (∀ ⦃z : twoBandAnnulusGraph.edgeSet → Color⦄,
+      z ∈ planarBoundaryZeroSubmodule twoBandAnnulusEmbedding →
+      z ≠ 0 →
+        ∃ e : twoBandAnnulusGraph.edgeSet,
+          data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e ∧
+            z e ≠ 0) ↔
+      9 ≤ (classifier.emittedFinset.filter fun e =>
+        e ∈ interiorEdgeSupport
+          twoBandAnnulusEmbedding.faceBoundary twoBandAnnulusEmbedding.faces).card :=
+  (twoBandAnnulus_CAP5_forcedEdgeCoverage_iff_emits_interiorEdges
+    p0Inside p4Inside side classifier).trans
+    (twoBandAnnulus_emittedInterior_card_ge_nine_iff classifier.emittedFinset).symm
+
+/-- Runner-facing exact form for the two-band shell: exact boundary-zero CAP5 coverage leaves
+no unprocessed interior-support control edge. -/
+theorem twoBandAnnulus_CAP5_forcedEdgeCoverage_remainingInteriorEdges_eq_empty
+    {boundaryEdge : Fin 5 → twoBandAnnulusGraph.edgeSet} {n : Nat}
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    (p0Inside p4Inside : Bool) (side : Fin 9 → Prop)
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (hcoverage :
+      ∀ ⦃z : twoBandAnnulusGraph.edgeSet → Color⦄,
+        z ∈ planarBoundaryZeroSubmodule twoBandAnnulusEmbedding →
+        z ≠ 0 →
+          ∃ e : twoBandAnnulusGraph.edgeSet,
+            data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e ∧
+              z e ≠ 0) :
+    classifier.remainingControlEdges twoBandAnnulusInteriorEdges = ∅ := by
+  have hsubset :
+      twoBandAnnulusInteriorEdges ⊆ classifier.emittedFinset :=
+    twoBandAnnulus_CAP5_forcedEdgeCoverage_emits_interiorEdges
+      p0Inside p4Inside side classifier hcoverage
+  ext e
+  constructor
+  · intro he
+    have he' :=
+      (classifier.mem_remainingControlEdges_iff twoBandAnnulusInteriorEdges e).1 he
+    exact False.elim (he'.2 (hsubset he'.1))
+  · intro he
+    simp at he
 
 /-- Shell-specialized detector bound for the two-band stress shell.  Kirchhoff coverage on the
 three middle vertices must emit at least six coordinates. -/
