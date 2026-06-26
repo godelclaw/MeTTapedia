@@ -1714,6 +1714,34 @@ theorem edge_card_le_emittedFinset_card_add_boundary_card_add_vertex_card_of_cla
       emb vertices p0Inside p4Inside side classifier (Nat.lt_of_not_ge hnotLowerBound))
       hcontrol
 
+/-- Finite-coordinate version of predicate control for the boundary-zero Kirchhoff target.  A
+finite edge set controls the target exactly when every nonzero target chain is nonzero on at
+least one edge of that set. -/
+theorem theorem49BoundaryZeroKirchhoffSubspace_finsetControls_iff_forall_nonzero_exists_mem_nonzero
+    [Fintype G.edgeSet]
+    (emb : PlaneEmbeddingWithBoundary G) (vertices : Finset V)
+    (controlEdges : Finset G.edgeSet) :
+    (∀ ⦃z : G.edgeSet → Color⦄,
+      z ∈ theorem49BoundaryZeroKirchhoffSubspace emb vertices →
+      (∀ e ∈ controlEdges, z e = 0) →
+        z = 0) ↔
+    (∀ ⦃z : G.edgeSet → Color⦄,
+      z ∈ theorem49BoundaryZeroKirchhoffSubspace emb vertices →
+      z ≠ 0 →
+        ∃ e : G.edgeSet, e ∈ controlEdges ∧ z e ≠ 0) := by
+  constructor
+  · intro hcontrol z hz hzNonzero
+    by_contra hno
+    apply hzNonzero
+    apply hcontrol hz
+    intro e he
+    by_contra hze
+    exact hno ⟨e, he, hze⟩
+  · intro hwitness z hz hvanish
+    by_contra hzNonzero
+    rcases hwitness hz hzNonzero with ⟨e, he, hze⟩
+    exact hze (hvanish e he)
+
 /--
 Forced-edge coverage controls the boundary-zero Kirchhoff target.  This is the target-subspace
 version of the ordinary boundary-zero coverage handoff: every forced edge reported by CAP5 is
@@ -1741,6 +1769,37 @@ theorem enumeratedExceptionalAnnulusForcedEdgeClassifierKirchhoffControl_of_forc
   by_contra hzNonzero
   rcases hcoverage hz hzNonzero with ⟨e, heForced, hze⟩
   exact hze (hvanish e ((classifier.emittedFinset_spec e).2 heForced))
+
+/-- Exact generic CAP5 detector contract for the Kirchhoff target.  Coverage by the enumerated
+forced-edge predicate is equivalent to finite control of the boundary-zero Kirchhoff target by
+the classifier's emitted edge set. -/
+theorem forcedEdgeKirchhoffCoverage_iff_enumeratedExceptionalAnnulusForcedEdgeClassifierKirchhoffControl
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    [Fintype G.edgeSet]
+    (emb : PlaneEmbeddingWithBoundary G) (vertices : Finset V)
+    {p0Inside p4Inside : Bool} {side : V → Prop}
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side) :
+    (∀ ⦃z : G.edgeSet → Color⦄,
+      z ∈ theorem49BoundaryZeroKirchhoffSubspace emb vertices →
+      z ≠ 0 →
+        ∃ e : G.edgeSet,
+          data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e ∧
+            z e ≠ 0) ↔
+      (∀ ⦃z : G.edgeSet → Color⦄,
+        z ∈ theorem49BoundaryZeroKirchhoffSubspace emb vertices →
+        (∀ e ∈ classifier.emittedFinset, z e = 0) →
+          z = 0) := by
+  constructor
+  · exact
+      data.enumeratedExceptionalAnnulusForcedEdgeClassifierKirchhoffControl_of_forcedEdgeKirchhoffCoverage
+        emb vertices classifier
+  · intro hcontrol z hz hzNonzero
+    have hwitness :=
+      (theorem49BoundaryZeroKirchhoffSubspace_finsetControls_iff_forall_nonzero_exists_mem_nonzero
+        emb vertices classifier.emittedFinset).1 hcontrol
+    rcases hwitness hz hzNonzero with ⟨e, heEmitted, hze⟩
+    exact ⟨e, (classifier.emittedFinset_spec e).1 heEmitted, hze⟩
 
 /--
 Coverage lower bound for the Kirchhoff target.  If the enumerated CAP5 forced-edge predicate

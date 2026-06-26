@@ -12998,6 +12998,33 @@ theorem twoBandAnnulus_CAP5_boundaryZeroKirchhoff_forcedEdgeCoverage_emittedInte
   rcases hcoverage hz hzNonzero with ⟨e, hforced, hze⟩
   exact hze (hvanishEmitted e ((classifier.emittedFinset_spec e).2 hforced))
 
+/-- Positive Kirchhoff handoff for one lab-certified two-band minimum control set.  Emitting the
+three middle chords and three outer radials closes coverage of every nonzero boundary-zero
+Kirchhoff chain. -/
+theorem twoBandAnnulus_CAP5_boundaryZeroKirchhoff_forcedEdgeCoverage_of_emits_middleOuterRadialControl
+    {boundaryEdge : Fin 5 → twoBandAnnulusGraph.edgeSet} {n : Nat}
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    (p0Inside p4Inside : Bool) (side : Fin 9 → Prop)
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (hemits :
+      twoBandAnnulusMiddleOuterRadialKirchhoffControlEdges ⊆ classifier.emittedFinset) :
+    ∀ ⦃z : twoBandAnnulusGraph.edgeSet → Color⦄,
+      z ∈ theorem49BoundaryZeroKirchhoffSubspace
+          twoBandAnnulusEmbedding twoBandAnnulusKirchhoffVertices →
+      z ≠ 0 →
+        ∃ e : twoBandAnnulusGraph.edgeSet,
+          data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e ∧
+            z e ≠ 0 :=
+  (data.forcedEdgeKirchhoffCoverage_iff_enumeratedExceptionalAnnulusForcedEdgeClassifierKirchhoffControl
+    twoBandAnnulusEmbedding twoBandAnnulusKirchhoffVertices classifier).2
+    (by
+      intro z hz hvanishEmitted
+      exact twoBandAnnulus_boundaryZeroKirchhoff_no_evader_of_middleOuterRadialControl
+        z hz (by
+          intro e heControl
+          exact hvanishEmitted e (hemits heControl)))
+
 /-- Low-cardinality refutation for the two-band Kirchhoff detector: five emitted coordinates do
 not cover the boundary-zero Kirchhoff target. -/
 theorem twoBandAnnulus_CAP5_boundaryZeroKirchhoff_not_forcedEdgeCoverage_of_emittedFinset_card_le_five
