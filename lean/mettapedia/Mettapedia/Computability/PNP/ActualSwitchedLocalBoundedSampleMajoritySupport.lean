@@ -189,7 +189,7 @@ theorem exists_not_mem_map_fst_of_length_lt_card {U : Type v} [Fintype U] [Decid
     {sample : Sample U Bool} (hlen : sample.length < Fintype.card U) :
     ∃ u : U, u ∉ sample.map Prod.fst := by
   by_contra hnone
-  push_neg at hnone
+  push Not at hnone
   have huniv : (sample.map Prod.fst).toFinset = (Finset.univ : Finset U) := by
     exact Finset.eq_univ_iff_forall.mpr (by
       intro x

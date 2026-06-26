@@ -312,6 +312,11 @@ theorem momentumEquation_equalAmplitudeAntiProfileSchwartzVelocity_schwartzPress
   intro t x
   have hvel : twoModeSchwartzVelocity a a f (-f) = (0 : NSVelocityField) :=
     equalAmplitudeAntiProfileSchwartzVelocity_zero a f
+  change
+    timeVelocityDerivative (twoModeSchwartzVelocity a a f (-f)) t x +
+        spatialConvection (twoModeSchwartzVelocity a a f (-f)) t x +
+        spatialPressureGradient (0 : NSPressureField) t x =
+      (ν : ℝ) • spatialLaplacian (twoModeSchwartzVelocity a a f (-f)) t x
   simpa [hvel] using momentumEquation_zeroVelocityField_zeroPressure ν t x
 
 /-- Expanded pressure-slice residual closure for the equal-amplitude
@@ -414,9 +419,7 @@ theorem explicitClosure_oneOneAntiProfileSchwartzVelocity_schwartzPressureSlice_
             (twoModeSchwartzVelocity (fun _ : NSTime => 1) (fun _ : NSTime => 1) f (-f)) t x +
           spatialConvection
             (twoModeSchwartzVelocity (fun _ : NSTime => 1) (fun _ : NSTime => 1) f (-f)) t x +
-          spatialPressureGradient
-            (fun s : NSTime => fun y : NSSpace =>
-              (fun _ : NSTime => (0 : 𝓢(NSSpace, ℝ))) s y) t x =
+          spatialPressureGradient (0 : NSPressureField) t x =
         (ν : ℝ) • spatialLaplacian
           (twoModeSchwartzVelocity (fun _ : NSTime => 1) (fun _ : NSTime => 1) f (-f)) t x := by
     simpa [oneOneAntiProfileSchwartzVelocity_zero f] using
@@ -428,6 +431,13 @@ theorem explicitClosure_oneOneAntiProfileSchwartzVelocity_schwartzPressureSlice_
       (fun _ : NSTime => 1) (fun _ : NSTime => 1) f (-f) t x,
     spatialLaplacian_twoModeSchwartzVelocity
       (fun _ : NSTime => 1) (fun _ : NSTime => 1) f (-f) t x] at hmom
+  have hp :
+      (fun s : NSTime => fun y : NSSpace =>
+        (fun _ : NSTime => (0 : 𝓢(NSSpace, ℝ))) s y) =
+        (0 : NSPressureField) := by
+    funext s y
+    simp
+  rw [hp]
   simpa using hmom
 
 /-- There are nonzero Schwartz profiles and an explicit pressure field

@@ -1,0 +1,17 @@
+import Mettapedia.FluidDynamics.NavierStokes.Scaling.CriticalNormCanaries
+import Mettapedia.FluidDynamics.NavierStokes.Scaling.AveragedEquationCanaries
+import Mettapedia.FluidDynamics.NavierStokes.Scaling.AveragedMomentumCanaries
+import Mettapedia.FluidDynamics.NavierStokes.Scaling.ReynoldsStressClosureCanaries
+import Mettapedia.FluidDynamics.NavierStokes.Scaling.EnergyInequalityTransportCanaries
+import Mettapedia.FluidDynamics.NavierStokes.Scaling.CriticalScalingTransportCanaries
+import Mettapedia.FluidDynamics.NavierStokes.Scaling.RegularityPromotionCanaries
+import Mettapedia.FluidDynamics.NavierStokes.Scaling.ReynoldsStressObstruction
+import Mettapedia.FluidDynamics.NavierStokes.Scaling.EnergyInequalityObstruction
+import Mettapedia.FluidDynamics.NavierStokes.Scaling.CriticalScalingObstruction
+import Mettapedia.FluidDynamics.NavierStokes.Scaling.AveragedEquationObstruction
+
+/-!
+# Navier-Stokes scaling layer
+
+Themed entrypoint for the Navier-Stokes scaling and no-go interfaces.
+-/

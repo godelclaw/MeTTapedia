@@ -113,7 +113,7 @@ theorem exists_two_distinct_affineColumnPredict_true_of_one_lt
         · exact fun h => pairVec_ne_zeroVec hi01 h.symm
         · simp [affineColumnPredict, columnParity_zeroVec]
         · simp [affineColumnPredict, columnParity_all_true_pairVec, hall, hi01]
-  · push_neg at hall
+  · push Not at hall
     rcases hall with ⟨i, hi⟩
     cases hcoeff : coeff i with
     | false =>

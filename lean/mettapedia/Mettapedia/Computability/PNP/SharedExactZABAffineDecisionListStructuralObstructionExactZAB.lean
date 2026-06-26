@@ -46,7 +46,8 @@ theorem not_injective_exactZABAffineDecisionListSignature_id_of_one_lt
   rcases hsurj y with ⟨v, rfl⟩
   have huv : u = v := by
     apply hinj
-    simpa [g, exactZABAffineDecisionListSignature, exactZABAffineFeatureSummary] using hxy
+    simpa [g, bitVecZABVisibleData, exactZABVisibleData, exactABVisibleData,
+      exactZABAffineDecisionListSignature, exactZABAffineFeatureSummary] using hxy
   simp [huv]
 
 theorem fullExactVisibleRuleFamily_not_realizedBySharedExactZABAffineDecisionListFamily_id_of_one_lt

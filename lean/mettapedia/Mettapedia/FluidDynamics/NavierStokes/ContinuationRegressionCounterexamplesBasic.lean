@@ -33,7 +33,7 @@ def nonzeroConstantVelocity : NSSpace :=
 theorem nonzeroConstantVelocity_ne_zero :
     nonzeroConstantVelocity ≠ 0 := by
   intro h
-  simp [nonzeroConstantVelocity, EuclideanSpace.single_eq_zero_iff] at h
+  simp [nonzeroConstantVelocity] at h
 
 theorem constant_velocity_not_finiteInitialKineticEnergy_regression :
     ¬ finiteInitialKineticEnergy (constantInitialVelocity nonzeroConstantVelocity) := by

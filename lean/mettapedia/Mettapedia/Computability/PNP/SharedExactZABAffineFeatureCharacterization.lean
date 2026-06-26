@@ -46,7 +46,7 @@ theorem not_surjective_predict_of_all_exactVisibleSummaryInvariant
     ¬ Function.Surjective G.predict := by
   classical
   rw [Function.Injective] at hni
-  push_neg at hni
+  push Not at hni
   rcases hni with ⟨u, v, huv, hne⟩
   let rule : ExactVisibleRule Z k := fun x => if x = u then true else false
   intro hsurj

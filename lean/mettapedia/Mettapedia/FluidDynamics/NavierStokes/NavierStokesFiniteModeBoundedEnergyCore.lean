@@ -57,8 +57,8 @@ theorem smoothSpaceTimeVelocity_twoModeSchwartzVelocity
     f.smooth'.comp (contDiff_snd : ContDiff ℝ ∞ fun tx : NSSpacetime => tx.2)
   have hgSpace : ContDiff ℝ ∞ (fun tx : NSSpacetime => (g : NSSpace → NSSpace) tx.2) :=
     g.smooth'.comp (contDiff_snd : ContDiff ℝ ∞ fun tx : NSSpacetime => tx.2)
-  simpa [smoothSpaceTimeVelocity, spaceTimeVelocityMap, twoModeSchwartzVelocity] using
-    (haTime.smul hfSpace).add (hbTime.smul hgSpace)
+  change ContDiff ℝ ∞ (fun tx : NSSpacetime => a tx.1 • f tx.2 + b tx.1 • g tx.2)
+  exact (haTime.smul hfSpace).add (hbTime.smul hgSpace)
 
 /-- Smooth affine pressure coefficients and a smooth scalar amplitude on a
 Schwartz pressure profile give a smooth concrete space-time pressure field. -/
@@ -83,17 +83,21 @@ theorem hasDerivAt_deriv_of_contDiff {a : NSTime → ℝ}
 theorem finiteInitialKineticEnergy_twoModeSchwartzInitialVelocity
     (a0 b0 : ℝ) (f g : NSSchwartzInitialVelocity) :
     finiteInitialKineticEnergy (twoModeSchwartzInitialVelocity a0 b0 f g) := by
-  simpa [twoModeSchwartzInitialVelocity] using
+  change finiteInitialKineticEnergy
+    (((a0 • f + b0 • g : NSSchwartzInitialVelocity) : NSInitialVelocity))
+  exact
     finiteInitialKineticEnergy_of_schwartzInitialVelocity
-      ((a0 • f + b0 • g : NSSchwartzInitialVelocity))
+      (a0 • f + b0 • g : NSSchwartzInitialVelocity)
 
 /-- Two-mode Schwartz initial data are smooth on `ℝ^3`. -/
 theorem smoothInitialVelocityData_twoModeSchwartzInitialVelocity
     (a0 b0 : ℝ) (f g : NSSchwartzInitialVelocity) :
     smoothInitialVelocityData (twoModeSchwartzInitialVelocity a0 b0 f g) := by
-  simpa [twoModeSchwartzInitialVelocity] using
+  change smoothInitialVelocityData
+    (((a0 • f + b0 • g : NSSchwartzInitialVelocity) : NSInitialVelocity))
+  exact
     smoothInitialVelocityData_of_schwartzInitialVelocity
-      ((a0 • f + b0 • g : NSSchwartzInitialVelocity))
+      (a0 • f + b0 • g : NSSchwartzInitialVelocity)
 
 /-- The divergence of a two-mode Schwartz initial slice is the corresponding
 scalar combination of the profile divergences. -/
@@ -147,11 +151,13 @@ two-mode velocity built from the scalar derivatives. -/
 theorem timeVelocityDerivative_twoModeSchwartzVelocity_deriv
     {a b : NSTime → ℝ} (ha : ContDiff ℝ ∞ a) (hb : ContDiff ℝ ∞ b)
     (f g : NSSchwartzInitialVelocity) :
-    ∀ t x,
+  ∀ t x,
       timeVelocityDerivative (twoModeSchwartzVelocity a b f g) t x =
         deriv a t • f x + deriv b t • g x := by
   intro t x
-  simpa [twoModeSchwartzVelocity] using
+  change timeVelocityDerivative (fun s y => a s • f y + b s • g y) t x =
+    deriv a t • f x + deriv b t • g x
+  exact
     timeVelocityDerivative_add_scalar_smul
       a (deriv a) b (deriv b) (f : NSSpace → NSSpace) (g : NSSpace → NSSpace)
       (hasDerivAt_deriv_of_contDiff ha)
@@ -206,7 +212,19 @@ theorem spatialConvection_twoModeSchwartzVelocity
       DifferentiableAt ℝ
         (fun y : NSSpace => (timeIndependentVelocity (g : NSInitialVelocity)) t y) x := by
     simpa [timeIndependentVelocity] using g.differentiableAt
-  simpa [twoModeSchwartzVelocity, timeIndependentVelocity] using
+  change
+    spatialConvection
+        ((a t) • timeIndependentVelocity (f : NSInitialVelocity) +
+          (b t) • timeIndependentVelocity (g : NSInitialVelocity)) t x =
+      (a t ^ (2 : ℕ)) •
+          spatialConvection (timeIndependentVelocity (f : NSInitialVelocity)) t x +
+        (a t * b t) •
+          spatialFDeriv (timeIndependentVelocity (f : NSInitialVelocity)) t x (g x) +
+        (a t * b t) •
+          spatialFDeriv (timeIndependentVelocity (g : NSInitialVelocity)) t x (f x) +
+        (b t ^ (2 : ℕ)) •
+          spatialConvection (timeIndependentVelocity (g : NSInitialVelocity)) t x
+  exact
     spatialConvection_linearCombination (a t) (b t) hf hg
 
 /-- Expanded residual closure implies the pointwise Navier-Stokes momentum

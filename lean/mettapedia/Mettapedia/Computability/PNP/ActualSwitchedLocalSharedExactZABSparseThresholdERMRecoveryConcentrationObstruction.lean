@@ -214,7 +214,7 @@ theorem half_le_of_surjective_predict_of_exists_ne
                 (f := fun u : ExactVisiblePostSwitchSurface Z k => μ u)
                 (by
                   intro u
-                  exact zero_le (μ u)))
+                  exact zero_le))
       _ = 1 := pmf_sum_univ_eq_one μ
   have hsmall : μ x ≤ (2 : ℝ≥0∞)⁻¹ ∨ μ y ≤ (2 : ℝ≥0∞)⁻¹ := by
     by_contra hsmall
