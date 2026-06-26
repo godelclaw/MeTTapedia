@@ -68,7 +68,8 @@ theorem boundedKineticEnergy_twoModeSchwartzVelocity_of_abs_le
     (haBound : ∀ t, |a t| ≤ A)
     (hbBound : ∀ t, |b t| ≤ B) :
     boundedKineticEnergy (twoModeSchwartzVelocity a b f g) := by
-  simpa [twoModeSchwartzVelocity] using
+  change boundedKineticEnergy (fun s y => a s • f y + b s • g y)
+  exact
     boundedKineticEnergy_of_add_scalar_smul_schwartz_of_abs_le
       a b f g A B haBound hbBound
 
@@ -277,16 +278,28 @@ def ExplicitFiniteTimeRegularityWitness.of_twoModeSchwartzVelocity_affineAddScal
   ExplicitFiniteTimeRegularityWitness.of_add_scalar_smul_schwartz_of_abs_le_of_spatialDivergence_zero_affine_add_scalarSchwartzPressure
     (ν := ν) (T := T) (u₀ := u₀)
     a a' b b' f g A B c π ρ q
-    (by simpa [twoModeSchwartzVelocity] using hu)
-    (by simpa [affineAddScalarSchwartzPressure] using hp)
-    (by simpa [twoModeSchwartzVelocity] using hinit)
+    (by
+      change smoothSpaceTimeVelocity (twoModeSchwartzVelocity a b f g)
+      exact hu)
+    (by
+      change smoothSpaceTimePressure (affineAddScalarSchwartzPressure c π ρ q)
+      exact hp)
+    (by
+      change MatchesInitialVelocity u₀ (twoModeSchwartzVelocity a b f g)
+      exact hinit)
     hν haBound hbBound ha hb
     (by
       intro t x
-      simpa [twoModeSchwartzVelocity, affineAddScalarSchwartzPressure] using heq t x)
+      change
+        timeVelocityDerivative (twoModeSchwartzVelocity a b f g) t x +
+            spatialConvection (twoModeSchwartzVelocity a b f g) t x +
+            spatialPressureGradient (affineAddScalarSchwartzPressure c π ρ q) t x =
+          (ν : ℝ) • spatialLaplacian (twoModeSchwartzVelocity a b f g) t x
+      exact heq t x)
     (by
       intro t x
-      simpa [twoModeSchwartzVelocity] using hdiv t x)
+      change spatialDivergence (twoModeSchwartzVelocity a b f g) t x = 0
+      exact hdiv t x)
 
 /-- Finite-time witness constructor for the same two-mode Schwartz class that
 derives velocity and pressure smoothness from smooth coefficient curves.  The

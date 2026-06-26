@@ -318,9 +318,13 @@ theorem
       (hClause := hClause) hνpos hsmooth hdiv₀ hfinite
       hu hp hinit haBound hbBound ha hb heq hdiv
       (by
-        simpa [twoModeSchwartzVelocity] using
-          (uniformVorticityBoundUpTo_twoModeSchwartzVelocity_of_abs_le
-            a b f g A B T haBound hbBound))
+        change
+          uniformVorticityBoundUpTo (twoModeSchwartzVelocity a b f g) T
+            (A * schwartzInitialVelocityVorticityBound f +
+              B * schwartzInitialVelocityVorticityBound g)
+        exact
+          uniformVorticityBoundUpTo_twoModeSchwartzVelocity_of_abs_le
+            a b f g A B T haBound hbBound)
 
 /-- Target-level concrete repaired-BKM application for the bounded two-profile
 Schwartz velocity class with affine plus localized Schwartz pressure, with the
@@ -460,9 +464,13 @@ theorem
       (hClause := hClause) hνpos hsmooth hdiv₀ hfinite
       hu hp hinit haBound hbBound ha hb heq hdiv
       (by
-        simpa [twoModeSchwartzVelocity] using
-          (uniformVorticityBoundUpTo_twoModeSchwartzVelocity_of_abs_le
-            a b f g A B T haBound hbBound))
+        change
+          uniformVorticityBoundUpTo (twoModeSchwartzVelocity a b f g) T
+            (A * schwartzInitialVelocityVorticityBound f +
+              B * schwartzInitialVelocityVorticityBound g)
+        exact
+          uniformVorticityBoundUpTo_twoModeSchwartzVelocity_of_abs_le
+            a b f g A B T haBound hbBound)
       hT
 
 /-- Actual zero-data global regularity obtained through the corrected
@@ -533,6 +541,22 @@ theorem
   rw [finiteInitialKineticEnergy, initialKineticEnergyDensity_eq_of_matchesInitialVelocity hinit]
   exact hkin 0 le_rfl hT
 
+/-- If the initial datum already has infinite kinetic energy, no velocity field
+matching it at time `0` can satisfy the slab kinetic-integrability input used
+by the energy/BKM bridge. -/
+theorem
+    not_exists_energyBKMBridge_kineticIntegrabilityOnSlab_of_matchesInitialVelocity_of_not_finiteInitialKineticEnergy
+    {u₀ : NSInitialVelocity} {T : ℝ}
+    (hfinite : ¬ finiteInitialKineticEnergy u₀)
+    (hT : 0 ≤ T) :
+    ¬ ∃ u : NSVelocityField,
+      MatchesInitialVelocity u₀ u ∧
+        ∀ t, 0 ≤ t → t ≤ T → Integrable (kineticEnergyDensity u t) := by
+  rintro ⟨u, hinit, hkin⟩
+  exact
+    not_energyBKMBridge_kineticIntegrabilityOnSlab_of_matchesInitialVelocity_of_not_finiteInitialKineticEnergy
+      (u := u) (u₀ := u₀) hfinite hT hinit hkin
+
 /-- The kinetic-energy integrability input of the energy/BKM bridge rules out
 every field matching nonzero constant initial data, already at time `0`. -/
 theorem not_energyBKMBridge_kineticIntegrabilityOnSlab_of_matchesInitialVelocity_constantInitialVelocity
@@ -546,6 +570,21 @@ theorem not_energyBKMBridge_kineticIntegrabilityOnSlab_of_matchesInitialVelocity
       (u := u) (u₀ := constantInitialVelocity c)
       (not_finiteInitialKineticEnergy_constantInitialVelocity hc)
       hT hinit
+
+/-- No velocity field matching nonzero constant initial data can enter the slab
+kinetic-integrability input used by the energy/BKM bridge. -/
+theorem not_exists_energyBKMBridge_kineticIntegrabilityOnSlab_constantInitialVelocity
+    {c : NSSpace} {T : ℝ}
+    (hc : c ≠ 0)
+    (hT : 0 ≤ T) :
+    ¬ ∃ u : NSVelocityField,
+      MatchesInitialVelocity (constantInitialVelocity c) u ∧
+        ∀ t, 0 ≤ t → t ≤ T → Integrable (kineticEnergyDensity u t) := by
+  exact
+    not_exists_energyBKMBridge_kineticIntegrabilityOnSlab_of_matchesInitialVelocity_of_not_finiteInitialKineticEnergy
+      (u₀ := constantInitialVelocity c)
+      (not_finiteInitialKineticEnergy_constantInitialVelocity hc)
+      hT
 
 /-- A nonzero constant velocity field satisfies the corrected coordinate energy
 identity and has an explicit BKM envelope, but it cannot satisfy the kinetic
@@ -582,6 +621,21 @@ theorem not_energyBKMBridge_kineticIntegrabilityOnSlab_of_matchesInitialVelocity
       (u := u) (u₀ := heatShearInitialVelocity a k)
       (not_finiteInitialKineticEnergy_heatShearInitialVelocity ha hk)
       hT hinit
+
+/-- No velocity field matching nontrivial heat-shear initial data can enter the
+slab kinetic-integrability input used by the energy/BKM bridge. -/
+theorem not_exists_energyBKMBridge_kineticIntegrabilityOnSlab_heatShearInitialVelocity
+    {a k T : ℝ}
+    (ha : a ≠ 0) (hk : k ≠ 0)
+    (hT : 0 ≤ T) :
+    ¬ ∃ u : NSVelocityField,
+      MatchesInitialVelocity (heatShearInitialVelocity a k) u ∧
+        ∀ t, 0 ≤ t → t ≤ T → Integrable (kineticEnergyDensity u t) := by
+  exact
+    not_exists_energyBKMBridge_kineticIntegrabilityOnSlab_of_matchesInitialVelocity_of_not_finiteInitialKineticEnergy
+      (u₀ := heatShearInitialVelocity a k)
+      (not_finiteInitialKineticEnergy_heatShearInitialVelocity ha hk)
+      hT
 
 /-- A nontrivial heat-shear candidate can carry the sharper damped BKM
 envelope on a nonnegative-viscosity slab, but the same time-zero finite-energy
