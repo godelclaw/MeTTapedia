@@ -41,6 +41,23 @@ theorem current_pnp_kpoly_compression_bridge_promoted_packet_kpoly_bridge_covere
   exact
     kpolyCompressionBridge_covered_currentPNPKpolyCompressionBridgePromotedPacket
 
+theorem current_pnp_kpoly_compression_bridge_refutation_packet_regression :
+    (∀ {Z : Type*} [Fintype Z] {k s clock : ℕ} {Index : Type*}
+      {G : ExactVisibleSwitchedFamily Z k Index},
+        ClockedKpolyFiniteLearningPayload G s clock ↔
+          G.FinitePredictorCover (2 ^ s)) ∧
+      (∀ {Ω Z : Type*} [Fintype Ω] [Fintype Z] {k s clock : ℕ},
+        s < Fintype.card (ExactVisiblePostSwitchSurface Z k) →
+          ¬ ProductBoundOnlyClockedKpolyFiniteLearningBridge
+              Ω Z k s clock
+              ([] : List (FiniteEvent Ω)) ([] : List (V13FieldedStep Ω))) ∧
+      (∀ {Ω Z : Type*} [Fintype Ω] [Fintype Z] {k s clock : ℕ},
+        s < Fintype.card (ExactVisiblePostSwitchSurface Z k) →
+          ¬ FieldedSwitchingOnlyClockedKpolyFiniteLearningBridge
+              Ω Z k s clock
+              ([] : List (FiniteEvent Ω)) ([] : List (V13FieldedStep Ω))) := by
+  exact currentPNPKpolyCompressionBridgeCoverage_refutation_packet
+
 theorem current_pnp_kpoly_compression_bridge_promoted_packet_covers_current_gaps_regression :
     currentPNPKpolyCompressionBridgePromotedPacket.CoversList
       currentPNPUncoveredRepairClasses := by

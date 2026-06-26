@@ -8,8 +8,8 @@ import Mettapedia.Computability.PNP.TwoUniversalRhsIrrelevance
 /-!
 # PNP live surface
 
-This module is the non-regression import target for the current godelclaw PNP
-route-audit work.  It imports the semantic live crux bridge plus the
+This module is the non-regression import target for the current PNP route-audit
+work.  It imports the semantic live crux bridge plus the
 non-regression reverse-root modules from the 2026-06-21 import map that
 currently co-import with the bridge.
 
