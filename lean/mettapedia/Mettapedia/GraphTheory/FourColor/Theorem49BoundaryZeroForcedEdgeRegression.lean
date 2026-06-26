@@ -11727,6 +11727,75 @@ theorem sharedInteriorPair_CAP5_theorem49BoundaryRootSynthesis_of_extensionFinse
     sharedInteriorPair_CAP5_theorem49BoundaryRootSynthesis_of_exact_interiorControlEdges_uniqueCertificates
       C₀ hsubset p0Inside p4Inside side classifier hemits honlyEmits
 
+/--
+Finite-checker success endpoint for the shared focus shell with extra emissions.  Empty
+extension bins make the two lab-certified controls available; the canonical certificate family
+covers those controls, and the supplied extra family covers every emitted edge outside them.
+-/
+theorem sharedInteriorPair_CAP5_theorem49BoundaryRootSynthesis_of_extensionFinsets_eq_empty_uniqueCertificates_extraWitnesses
+    {boundaryEdge : Fin 5 → sharedInteriorPairGraph.edgeSet} {n : Nat}
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    [FiniteDimensional F2 (sharedInteriorPairGraph.edgeSet → Color)]
+    (C₀ : sharedInteriorPairGraph.EdgeColoring Color)
+    (hsubset :
+      sharedInteriorPairProjectedGeneratorCertificateColorings ⊆
+        sharedInteriorPairGraph.EdgeKempeClosure C₀)
+    {κextra : Type*}
+    (extraFamily :
+      κextra → projectedColoringGeneratorSubspace sharedInteriorPairEmbedding
+        sharedInteriorPairProjectedGeneratorCertificateColorings)
+    (p0Inside p4Inside : Bool) (side : Fin 8 → Prop)
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (hcrossingEmpty :
+      classifier.crossingExtensionFinset sharedInteriorPairInteriorControlEdges = ∅)
+    (hnoncrossingEmpty :
+      classifier.noncrossingExtensionFinset sharedInteriorPairInteriorControlEdges = ∅)
+    (hwitnessExtraRed :
+      ∀ e : sharedInteriorPairGraph.edgeSet,
+        e ∈ classifier.emittedFinset →
+          e ∉ sharedInteriorPairInteriorControlEdges →
+            ∃ i : κextra,
+              ((extraFamily i :
+                  projectedColoringGeneratorSubspace sharedInteriorPairEmbedding
+                    sharedInteriorPairProjectedGeneratorCertificateColorings) :
+                  sharedInteriorPairGraph.edgeSet → Color) =
+                Pi.single e red)
+    (hwitnessExtraBlue :
+      ∀ e : sharedInteriorPairGraph.edgeSet,
+        e ∈ classifier.emittedFinset →
+          e ∉ sharedInteriorPairInteriorControlEdges →
+            ∃ i : κextra,
+              ((extraFamily i :
+                  projectedColoringGeneratorSubspace sharedInteriorPairEmbedding
+                    sharedInteriorPairProjectedGeneratorCertificateColorings) :
+                  sharedInteriorPairGraph.edgeSet → Color) =
+                Pi.single e blue) :
+    Theorem49BoundaryRootSynthesis sharedInteriorPairEmbedding C₀ :=
+  data.theorem49BoundaryRootSynthesis_of_controlEdges_nonzeroCoverage_extensionFinsets_eq_empty_splitWitnesses
+    sharedInteriorPairEmbedding C₀ sharedInteriorPairProjectedGeneratorCertificateColorings
+    hsubset sharedInteriorPairUniqueCertificateRedBlueFamily extraFamily
+    p0Inside p4Inside side classifier sharedInteriorPairInteriorControlEdges
+    sharedInteriorPair_boundaryZero_declaredForcedEdges_nonzeroCoverage
+    hcrossingEmpty hnoncrossingEmpty
+    (by
+      intro e he
+      rcases redBlueSingleCoordinateFamily_witnessRed sharedInteriorPairInteriorControlEdges
+          sharedInteriorPair_redBlueSingleCoordinateMemberships_of_uniqueCertificates.1
+          sharedInteriorPair_redBlueSingleCoordinateMemberships_of_uniqueCertificates.2
+          e he with
+        ⟨i, hi⟩
+      exact ⟨i, by simpa [sharedInteriorPairUniqueCertificateRedBlueFamily] using hi⟩)
+    (by
+      intro e he
+      rcases redBlueSingleCoordinateFamily_witnessBlue sharedInteriorPairInteriorControlEdges
+          sharedInteriorPair_redBlueSingleCoordinateMemberships_of_uniqueCertificates.1
+          sharedInteriorPair_redBlueSingleCoordinateMemberships_of_uniqueCertificates.2
+          e he with
+        ⟨i, hi⟩
+      exact ⟨i, by simpa [sharedInteriorPairUniqueCertificateRedBlueFamily] using hi⟩)
+    hwitnessExtraRed hwitnessExtraBlue
+
 /-- Failed finite-checker diagnostic for the shared focus shell.  Once the extension bins are
 empty for the two lab-certified controls, a failed unique-certificate synthesis run must expose
 an extra emitted classifier edge outside the certified control set. -/
@@ -12026,6 +12095,76 @@ theorem wheelWithInnerTriangle_CAP5_theorem49BoundaryRootSynthesis_of_extensionF
   exact
     wheelWithInnerTriangle_CAP5_theorem49BoundaryRootSynthesis_of_exact_interiorControlEdges_uniqueCertificates
       C₀ hsubset p0Inside p4Inside side classifier hemits honlyEmits
+
+/--
+Finite-checker success endpoint for the wheel focus shell with extra emissions.  Empty extension
+bins make the three lab-certified spokes available; the canonical certificate family covers those
+spokes, and the supplied extra family covers every emitted edge outside them.
+-/
+theorem wheelWithInnerTriangle_CAP5_theorem49BoundaryRootSynthesis_of_extensionFinsets_eq_empty_uniqueCertificates_extraWitnesses
+    {boundaryEdge : Fin 5 → wheelWithInnerTriangleGraph.edgeSet} {n : Nat}
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    [FiniteDimensional F2 (wheelWithInnerTriangleGraph.edgeSet → Color)]
+    (C₀ : wheelWithInnerTriangleGraph.EdgeColoring Color)
+    (hsubset :
+      wheelWithInnerTriangleProjectedGeneratorCertificateColorings ⊆
+        wheelWithInnerTriangleGraph.EdgeKempeClosure C₀)
+    {κextra : Type*}
+    (extraFamily :
+      κextra → projectedColoringGeneratorSubspace wheelWithInnerTriangleEmbedding
+        wheelWithInnerTriangleProjectedGeneratorCertificateColorings)
+    (p0Inside p4Inside : Bool) (side : Fin 7 → Prop)
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (hcrossingEmpty :
+      classifier.crossingExtensionFinset wheelWithInnerTriangleInteriorControlEdges = ∅)
+    (hnoncrossingEmpty :
+      classifier.noncrossingExtensionFinset wheelWithInnerTriangleInteriorControlEdges = ∅)
+    (hwitnessExtraRed :
+      ∀ e : wheelWithInnerTriangleGraph.edgeSet,
+        e ∈ classifier.emittedFinset →
+          e ∉ wheelWithInnerTriangleInteriorControlEdges →
+            ∃ i : κextra,
+              ((extraFamily i :
+                  projectedColoringGeneratorSubspace wheelWithInnerTriangleEmbedding
+                    wheelWithInnerTriangleProjectedGeneratorCertificateColorings) :
+                  wheelWithInnerTriangleGraph.edgeSet → Color) =
+                Pi.single e red)
+    (hwitnessExtraBlue :
+      ∀ e : wheelWithInnerTriangleGraph.edgeSet,
+        e ∈ classifier.emittedFinset →
+          e ∉ wheelWithInnerTriangleInteriorControlEdges →
+            ∃ i : κextra,
+              ((extraFamily i :
+                  projectedColoringGeneratorSubspace wheelWithInnerTriangleEmbedding
+                    wheelWithInnerTriangleProjectedGeneratorCertificateColorings) :
+                  wheelWithInnerTriangleGraph.edgeSet → Color) =
+                Pi.single e blue) :
+    Theorem49BoundaryRootSynthesis wheelWithInnerTriangleEmbedding C₀ :=
+  data.theorem49BoundaryRootSynthesis_of_controlEdges_nonzeroCoverage_extensionFinsets_eq_empty_splitWitnesses
+    wheelWithInnerTriangleEmbedding C₀
+    wheelWithInnerTriangleProjectedGeneratorCertificateColorings hsubset
+    wheelWithInnerTriangleUniqueCertificateRedBlueFamily extraFamily
+    p0Inside p4Inside side classifier wheelWithInnerTriangleInteriorControlEdges
+    wheelWithInnerTriangle_boundaryZero_declaredForcedEdges_nonzeroCoverage
+    hcrossingEmpty hnoncrossingEmpty
+    (by
+      intro e he
+      rcases redBlueSingleCoordinateFamily_witnessRed wheelWithInnerTriangleInteriorControlEdges
+          wheelWithInnerTriangle_redBlueSingleCoordinateMemberships_of_uniqueCertificates.1
+          wheelWithInnerTriangle_redBlueSingleCoordinateMemberships_of_uniqueCertificates.2
+          e he with
+        ⟨i, hi⟩
+      exact ⟨i, by simpa [wheelWithInnerTriangleUniqueCertificateRedBlueFamily] using hi⟩)
+    (by
+      intro e he
+      rcases redBlueSingleCoordinateFamily_witnessBlue wheelWithInnerTriangleInteriorControlEdges
+          wheelWithInnerTriangle_redBlueSingleCoordinateMemberships_of_uniqueCertificates.1
+          wheelWithInnerTriangle_redBlueSingleCoordinateMemberships_of_uniqueCertificates.2
+          e he with
+        ⟨i, hi⟩
+      exact ⟨i, by simpa [wheelWithInnerTriangleUniqueCertificateRedBlueFamily] using hi⟩)
+    hwitnessExtraRed hwitnessExtraBlue
 
 /-- Failed finite-checker diagnostic for the wheel focus shell.  Once the extension bins are
 empty for the three lab-certified spoke controls, a failed unique-certificate synthesis run must

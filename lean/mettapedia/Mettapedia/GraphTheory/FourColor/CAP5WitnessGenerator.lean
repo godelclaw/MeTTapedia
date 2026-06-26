@@ -4900,6 +4900,146 @@ theorem theorem49BoundaryRootSynthesis_of_controlEdges_nonzeroCoverage_subset_em
       emb classifier controlEdges hcontrolCoverage hsubsetEdges)
     hwitnessRed hwitnessBlue
 
+/--
+Split-witness synthesis endpoint for finite CAP5 runs.  A lab-certified control set supplies
+the F2 coverage; the projected-generator family may then be assembled from one family covering
+the control edges and a second family covering any extra edge emitted by the classifier.
+-/
+theorem theorem49BoundaryRootSynthesis_of_controlEdges_nonzeroCoverage_subset_emittedFinset_splitWitnesses
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    [Fintype G.edgeSet] [FiniteDimensional F2 (G.edgeSet → Color)]
+    (emb : PlaneEmbeddingWithBoundary G) (C₀ : G.EdgeColoring Color)
+    (colorings : Set (G.EdgeColoring Color))
+    (hsubset : colorings ⊆ G.EdgeKempeClosure C₀)
+    {κcontrol κextra : Type*}
+    (controlFamily : κcontrol → projectedColoringGeneratorSubspace emb colorings)
+    (extraFamily : κextra → projectedColoringGeneratorSubspace emb colorings)
+    (p0Inside p4Inside : Bool) (side : V → Prop)
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (controlEdges : Finset G.edgeSet)
+    (hcontrolCoverage :
+      ∀ ⦃z : G.edgeSet → Color⦄,
+        z ∈ planarBoundaryZeroSubmodule emb →
+        z ≠ 0 →
+          ∃ e : G.edgeSet, e ∈ controlEdges ∧ z e ≠ 0)
+    (hsubsetEdges : controlEdges ⊆ classifier.emittedFinset)
+    (hwitnessControlRed :
+      ∀ e : G.edgeSet,
+        e ∈ controlEdges →
+          ∃ i : κcontrol,
+            ((controlFamily i : projectedColoringGeneratorSubspace emb colorings) :
+                G.edgeSet → Color) =
+              Pi.single e red)
+    (hwitnessControlBlue :
+      ∀ e : G.edgeSet,
+        e ∈ controlEdges →
+          ∃ i : κcontrol,
+            ((controlFamily i : projectedColoringGeneratorSubspace emb colorings) :
+                G.edgeSet → Color) =
+              Pi.single e blue)
+    (hwitnessExtraRed :
+      ∀ e : G.edgeSet,
+        e ∈ classifier.emittedFinset →
+          e ∉ controlEdges →
+            ∃ i : κextra,
+              ((extraFamily i : projectedColoringGeneratorSubspace emb colorings) :
+                  G.edgeSet → Color) =
+                Pi.single e red)
+    (hwitnessExtraBlue :
+      ∀ e : G.edgeSet,
+        e ∈ classifier.emittedFinset →
+          e ∉ controlEdges →
+            ∃ i : κextra,
+              ((extraFamily i : projectedColoringGeneratorSubspace emb colorings) :
+                  G.edgeSet → Color) =
+                Pi.single e blue) :
+    Theorem49BoundaryRootSynthesis emb C₀ := by
+  refine
+    data.theorem49BoundaryRootSynthesis_of_controlEdges_nonzeroCoverage_subset_emittedFinset
+      emb C₀ colorings hsubset
+      (fun i : κcontrol ⊕ κextra => Sum.elim controlFamily extraFamily i)
+      p0Inside p4Inside side classifier controlEdges hcontrolCoverage hsubsetEdges
+      ?_ ?_
+  · intro e he
+    by_cases heControl : e ∈ controlEdges
+    · rcases hwitnessControlRed e heControl with ⟨i, hi⟩
+      exact ⟨Sum.inl i, by simpa using hi⟩
+    · rcases hwitnessExtraRed e he heControl with ⟨i, hi⟩
+      exact ⟨Sum.inr i, by simpa using hi⟩
+  · intro e he
+    by_cases heControl : e ∈ controlEdges
+    · rcases hwitnessControlBlue e heControl with ⟨i, hi⟩
+      exact ⟨Sum.inl i, by simpa using hi⟩
+    · rcases hwitnessExtraBlue e he heControl with ⟨i, hi⟩
+      exact ⟨Sum.inr i, by simpa using hi⟩
+
+/--
+Split-witness fixed-point endpoint for finite CAP5 runs.  Empty extension bins make the
+lab-certified controls part of the emitted classifier output; synthesis then reduces to
+certificates for the controls plus certificates for any already-emitted extra edges.
+-/
+theorem theorem49BoundaryRootSynthesis_of_controlEdges_nonzeroCoverage_extensionFinsets_eq_empty_splitWitnesses
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    [Fintype G.edgeSet] [FiniteDimensional F2 (G.edgeSet → Color)]
+    (emb : PlaneEmbeddingWithBoundary G) (C₀ : G.EdgeColoring Color)
+    (colorings : Set (G.EdgeColoring Color))
+    (hsubset : colorings ⊆ G.EdgeKempeClosure C₀)
+    {κcontrol κextra : Type*}
+    (controlFamily : κcontrol → projectedColoringGeneratorSubspace emb colorings)
+    (extraFamily : κextra → projectedColoringGeneratorSubspace emb colorings)
+    (p0Inside p4Inside : Bool) (side : V → Prop)
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (controlEdges : Finset G.edgeSet)
+    (hcontrolCoverage :
+      ∀ ⦃z : G.edgeSet → Color⦄,
+        z ∈ planarBoundaryZeroSubmodule emb →
+        z ≠ 0 →
+          ∃ e : G.edgeSet, e ∈ controlEdges ∧ z e ≠ 0)
+    (hcrossingEmpty : classifier.crossingExtensionFinset controlEdges = ∅)
+    (hnoncrossingEmpty : classifier.noncrossingExtensionFinset controlEdges = ∅)
+    (hwitnessControlRed :
+      ∀ e : G.edgeSet,
+        e ∈ controlEdges →
+          ∃ i : κcontrol,
+            ((controlFamily i : projectedColoringGeneratorSubspace emb colorings) :
+                G.edgeSet → Color) =
+              Pi.single e red)
+    (hwitnessControlBlue :
+      ∀ e : G.edgeSet,
+        e ∈ controlEdges →
+          ∃ i : κcontrol,
+            ((controlFamily i : projectedColoringGeneratorSubspace emb colorings) :
+                G.edgeSet → Color) =
+              Pi.single e blue)
+    (hwitnessExtraRed :
+      ∀ e : G.edgeSet,
+        e ∈ classifier.emittedFinset →
+          e ∉ controlEdges →
+            ∃ i : κextra,
+              ((extraFamily i : projectedColoringGeneratorSubspace emb colorings) :
+                  G.edgeSet → Color) =
+                Pi.single e red)
+    (hwitnessExtraBlue :
+      ∀ e : G.edgeSet,
+        e ∈ classifier.emittedFinset →
+          e ∉ controlEdges →
+            ∃ i : κextra,
+              ((extraFamily i : projectedColoringGeneratorSubspace emb colorings) :
+                  G.edgeSet → Color) =
+                Pi.single e blue) :
+    Theorem49BoundaryRootSynthesis emb C₀ := by
+  have hsubsetEdges : controlEdges ⊆ classifier.emittedFinset :=
+    (classifier.controlEdges_subset_emittedFinset_iff_extensionFinsets_eq_empty
+      controlEdges).2
+      ⟨hcrossingEmpty, hnoncrossingEmpty⟩
+  exact
+    data.theorem49BoundaryRootSynthesis_of_controlEdges_nonzeroCoverage_subset_emittedFinset_splitWitnesses
+      emb C₀ colorings hsubset controlFamily extraFamily p0Inside p4Inside side
+      classifier controlEdges hcontrolCoverage hsubsetEdges hwitnessControlRed
+      hwitnessControlBlue hwitnessExtraRed hwitnessExtraBlue
+
 /-- A CAP5 emitted-edge obstruction is an explicit nonzero kernel witness for any red/blue
 single-coordinate family that only probes edges emitted by the CAP5 classifier.  Thus a failed
 finite control run returns the exact algebraic payload needed to diagnose why the coordinate
