@@ -6802,6 +6802,224 @@ theorem twoBandAnnulusNoncontrollingSixKirchhoffOmittedTriple_columnMap_ker_ne_b
     simpa using hxbot
   exact hxne hxzero
 
+def twoBandAnnulusOmittedTripleCoordinates
+    (omitted : Fin 3 → twoBandAnnulusGraph.edgeSet)
+    (x : twoBandAnnulusGraph.edgeSet → F2) : Fin 3 → F2 :=
+  fun i => x (omitted i)
+
+theorem twoBandAnnulusMiddleOuterRadialKirchhoffControl_scalarKernel_omittedTripleCoordinates_mem_columnKernel
+    {x : twoBandAnnulusGraph.edgeSet → F2}
+    (hxker : x ∈ LinearMap.ker
+      (theorem49BoundaryZeroKirchhoffScalarConstraintMap
+        twoBandAnnulusEmbedding twoBandAnnulusKirchhoffVertices
+        twoBandAnnulusMiddleOuterRadialKirchhoffControlEdges)) :
+    twoBandAnnulusOmittedTripleCoordinates
+        twoBandAnnulusMiddleOuterRadialKirchhoffOmittedTriple x ∈
+      LinearMap.ker
+        (twoBandAnnulusOmittedTripleKirchhoffColumnMap
+          twoBandAnnulusMiddleOuterRadialKirchhoffOmittedTriple) := by
+  have hxmap :
+      theorem49BoundaryZeroKirchhoffScalarConstraintMap
+        twoBandAnnulusEmbedding twoBandAnnulusKirchhoffVertices
+        twoBandAnnulusMiddleOuterRadialKirchhoffControlEdges x = 0 := by
+    simpa using hxker
+  have hcontrol :
+      ∀ e ∈ twoBandAnnulusMiddleOuterRadialKirchhoffControlEdges, x e = 0 := by
+    intro e he
+    have hcoord := congrFun (congrArg Prod.fst hxmap) ⟨e, he⟩
+    simpa [theorem49BoundaryZeroKirchhoffScalarConstraintMap] using hcoord
+  have hkirchhoff :
+      ∀ v ∈ twoBandAnnulusKirchhoffVertices,
+        scalarVertexKirchhoffSum twoBandAnnulusGraph x v = 0 := by
+    intro v hv
+    have hcoord := congrFun (congrArg Prod.snd (congrArg Prod.snd hxmap)) ⟨v, hv⟩
+    simpa [theorem49BoundaryZeroKirchhoffScalarConstraintMap] using hcoord
+  have hxR03 : x tbaR03 = 0 :=
+    hcontrol tbaR03 (by simp [twoBandAnnulusMiddleOuterRadialKirchhoffControlEdges])
+  have hxR14 : x tbaR14 = 0 :=
+    hcontrol tbaR14 (by simp [twoBandAnnulusMiddleOuterRadialKirchhoffControlEdges])
+  have hxR25 : x tbaR25 = 0 :=
+    hcontrol tbaR25 (by simp [twoBandAnnulusMiddleOuterRadialKirchhoffControlEdges])
+  have hxM34 : x tbaM34 = 0 :=
+    hcontrol tbaM34 (by simp [twoBandAnnulusMiddleOuterRadialKirchhoffControlEdges])
+  have hxM45 : x tbaM45 = 0 :=
+    hcontrol tbaM45 (by simp [twoBandAnnulusMiddleOuterRadialKirchhoffControlEdges])
+  have hxM53 : x tbaM53 = 0 :=
+    hcontrol tbaM53 (by simp [twoBandAnnulusMiddleOuterRadialKirchhoffControlEdges])
+  change
+    twoBandAnnulusOmittedTripleKirchhoffColumnMap
+        twoBandAnnulusMiddleOuterRadialKirchhoffOmittedTriple
+        (twoBandAnnulusOmittedTripleCoordinates
+          twoBandAnnulusMiddleOuterRadialKirchhoffOmittedTriple x) = 0
+  ext i
+  fin_cases i
+  · have hrow := hkirchhoff (3 : Fin 9) (by simp [twoBandAnnulusKirchhoffVertices])
+    have hxR36 : x tbaR36 = 0 := by
+      unfold scalarVertexKirchhoffSum at hrow
+      rw [twoBandAnnulus_incidentEdgeFinset_three] at hrow
+      rw [Finset.sum_insert] at hrow
+      · rw [Finset.sum_insert] at hrow
+        · rw [Finset.sum_insert] at hrow
+          · rw [Finset.sum_singleton] at hrow
+            simpa [hxR03, hxM34, hxM53] using hrow
+          · decide
+        · decide
+      · decide
+    have hR47 :
+        ¬ (tbaR47 = tbaR03 ∨ tbaR47 = tbaR36 ∨
+          tbaR47 = tbaM34 ∨ tbaR47 = tbaM53) := by
+      decide
+    have hR58 :
+        ¬ (tbaR58 = tbaR03 ∨ tbaR58 = tbaR36 ∨
+          tbaR58 = tbaM34 ∨ tbaR58 = tbaM53) := by
+      decide
+    change
+      (∑ j : Fin 3,
+        twoBandAnnulusOmittedTripleCoordinates
+            twoBandAnnulusMiddleOuterRadialKirchhoffOmittedTriple x j *
+          twoBandAnnulusKirchhoffColumn
+            (twoBandAnnulusMiddleOuterRadialKirchhoffOmittedTriple j) (0 : Fin 3)) = 0
+    rw [Fin.sum_univ_three]
+    simp [twoBandAnnulusOmittedTripleCoordinates, twoBandAnnulusKirchhoffColumn,
+      twoBandAnnulusMiddleOuterRadialKirchhoffOmittedTriple,
+      hR47, hR58, hxR36]
+  · have hrow := hkirchhoff (4 : Fin 9) (by simp [twoBandAnnulusKirchhoffVertices])
+    have hxR47 : x tbaR47 = 0 := by
+      unfold scalarVertexKirchhoffSum at hrow
+      rw [twoBandAnnulus_incidentEdgeFinset_four] at hrow
+      rw [Finset.sum_insert] at hrow
+      · rw [Finset.sum_insert] at hrow
+        · rw [Finset.sum_insert] at hrow
+          · rw [Finset.sum_singleton] at hrow
+            simpa [hxR14, hxM34, hxM45] using hrow
+          · decide
+        · decide
+      · decide
+    have hR36 :
+        ¬ (tbaR36 = tbaR14 ∨ tbaR36 = tbaR47 ∨
+          tbaR36 = tbaM34 ∨ tbaR36 = tbaM45) := by
+      decide
+    have hR58 :
+        ¬ (tbaR58 = tbaR14 ∨ tbaR58 = tbaR47 ∨
+          tbaR58 = tbaM34 ∨ tbaR58 = tbaM45) := by
+      decide
+    change
+      (∑ j : Fin 3,
+        twoBandAnnulusOmittedTripleCoordinates
+            twoBandAnnulusMiddleOuterRadialKirchhoffOmittedTriple x j *
+          twoBandAnnulusKirchhoffColumn
+            (twoBandAnnulusMiddleOuterRadialKirchhoffOmittedTriple j) (1 : Fin 3)) = 0
+    rw [Fin.sum_univ_three]
+    simp [twoBandAnnulusOmittedTripleCoordinates, twoBandAnnulusKirchhoffColumn,
+      twoBandAnnulusMiddleOuterRadialKirchhoffOmittedTriple,
+      hR36, hR58, hxR47]
+  · have hrow := hkirchhoff (5 : Fin 9) (by simp [twoBandAnnulusKirchhoffVertices])
+    have hxR58 : x tbaR58 = 0 := by
+      unfold scalarVertexKirchhoffSum at hrow
+      rw [twoBandAnnulus_incidentEdgeFinset_five] at hrow
+      rw [Finset.sum_insert] at hrow
+      · rw [Finset.sum_insert] at hrow
+        · rw [Finset.sum_insert] at hrow
+          · rw [Finset.sum_singleton] at hrow
+            simpa [hxR25, hxM45, hxM53] using hrow
+          · decide
+        · decide
+      · decide
+    have hR36 :
+        ¬ (tbaR36 = tbaR25 ∨ tbaR36 = tbaR58 ∨
+          tbaR36 = tbaM45 ∨ tbaR36 = tbaM53) := by
+      decide
+    have hR47 :
+        ¬ (tbaR47 = tbaR25 ∨ tbaR47 = tbaR58 ∨
+          tbaR47 = tbaM45 ∨ tbaR47 = tbaM53) := by
+      decide
+    change
+      (∑ j : Fin 3,
+        twoBandAnnulusOmittedTripleCoordinates
+            twoBandAnnulusMiddleOuterRadialKirchhoffOmittedTriple x j *
+          twoBandAnnulusKirchhoffColumn
+            (twoBandAnnulusMiddleOuterRadialKirchhoffOmittedTriple j) (2 : Fin 3)) = 0
+    rw [Fin.sum_univ_three]
+    simp [twoBandAnnulusOmittedTripleCoordinates, twoBandAnnulusKirchhoffColumn,
+      twoBandAnnulusMiddleOuterRadialKirchhoffOmittedTriple,
+      hR36, hR47, hxR58]
+
+theorem twoBandAnnulusMiddleOuterRadialKirchhoffControl_scalarConstraintMap_ker_eq_bot_of_omittedTriple_columnMap_ker_eq_bot
+    (hcolumn : LinearMap.ker
+      (twoBandAnnulusOmittedTripleKirchhoffColumnMap
+        twoBandAnnulusMiddleOuterRadialKirchhoffOmittedTriple) = ⊥) :
+    LinearMap.ker
+      (theorem49BoundaryZeroKirchhoffScalarConstraintMap
+        twoBandAnnulusEmbedding twoBandAnnulusKirchhoffVertices
+        twoBandAnnulusMiddleOuterRadialKirchhoffControlEdges) = ⊥ := by
+  ext x
+  constructor
+  · intro hxker
+    change x = 0
+    have hxmap :
+        theorem49BoundaryZeroKirchhoffScalarConstraintMap
+          twoBandAnnulusEmbedding twoBandAnnulusKirchhoffVertices
+          twoBandAnnulusMiddleOuterRadialKirchhoffControlEdges x = 0 := by
+      simpa using hxker
+    have hcontrol :
+        ∀ e ∈ twoBandAnnulusMiddleOuterRadialKirchhoffControlEdges, x e = 0 := by
+      intro e he
+      have hcoord := congrFun (congrArg Prod.fst hxmap) ⟨e, he⟩
+      simpa [theorem49BoundaryZeroKirchhoffScalarConstraintMap] using hcoord
+    have hboundary :
+        ∀ e ∈ selectedBoundarySupport
+            twoBandAnnulusEmbedding.faceBoundary
+            twoBandAnnulusEmbedding.faces
+            twoBandAnnulusEmbedding.faces, x e = 0 := by
+      intro e he
+      have hcoord := congrFun (congrArg Prod.fst (congrArg Prod.snd hxmap)) ⟨e, he⟩
+      simpa [theorem49BoundaryZeroKirchhoffScalarConstraintMap] using hcoord
+    have hyker :=
+      twoBandAnnulusMiddleOuterRadialKirchhoffControl_scalarKernel_omittedTripleCoordinates_mem_columnKernel
+        (x := x) hxker
+    have hybot :
+        twoBandAnnulusOmittedTripleCoordinates
+            twoBandAnnulusMiddleOuterRadialKirchhoffOmittedTriple x ∈
+          (⊥ : Submodule F2 (Fin 3 → F2)) := by
+      simpa [hcolumn] using hyker
+    have hyzero :
+        twoBandAnnulusOmittedTripleCoordinates
+            twoBandAnnulusMiddleOuterRadialKirchhoffOmittedTriple x = 0 := by
+      simpa using hybot
+    funext e
+    rcases twoBandAnnulus_edge_eq e with
+      rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl |
+      rfl | rfl | rfl | rfl | rfl
+    · exact hboundary tbaO01 (by simp [twoBandAnnulus_selectedBoundarySupport_eq])
+    · exact hboundary tbaO12 (by simp [twoBandAnnulus_selectedBoundarySupport_eq])
+    · exact hboundary tbaO20 (by simp [twoBandAnnulus_selectedBoundarySupport_eq])
+    · exact hboundary tbaI67 (by simp [twoBandAnnulus_selectedBoundarySupport_eq])
+    · exact hboundary tbaI78 (by simp [twoBandAnnulus_selectedBoundarySupport_eq])
+    · exact hboundary tbaI86 (by simp [twoBandAnnulus_selectedBoundarySupport_eq])
+    · exact hcontrol tbaR03 (by simp [twoBandAnnulusMiddleOuterRadialKirchhoffControlEdges])
+    · exact hcontrol tbaR14 (by simp [twoBandAnnulusMiddleOuterRadialKirchhoffControlEdges])
+    · exact hcontrol tbaR25 (by simp [twoBandAnnulusMiddleOuterRadialKirchhoffControlEdges])
+    · have hcoord := congrFun hyzero (0 : Fin 3)
+      simpa [twoBandAnnulusOmittedTripleCoordinates,
+        twoBandAnnulusMiddleOuterRadialKirchhoffOmittedTriple] using hcoord
+    · have hcoord := congrFun hyzero (1 : Fin 3)
+      simpa [twoBandAnnulusOmittedTripleCoordinates,
+        twoBandAnnulusMiddleOuterRadialKirchhoffOmittedTriple] using hcoord
+    · have hcoord := congrFun hyzero (2 : Fin 3)
+      simpa [twoBandAnnulusOmittedTripleCoordinates,
+        twoBandAnnulusMiddleOuterRadialKirchhoffOmittedTriple] using hcoord
+    · exact hcontrol tbaM34 (by simp [twoBandAnnulusMiddleOuterRadialKirchhoffControlEdges])
+    · exact hcontrol tbaM45 (by simp [twoBandAnnulusMiddleOuterRadialKirchhoffControlEdges])
+    · exact hcontrol tbaM53 (by simp [twoBandAnnulusMiddleOuterRadialKirchhoffControlEdges])
+  · intro hxbot
+    change
+      theorem49BoundaryZeroKirchhoffScalarConstraintMap
+        twoBandAnnulusEmbedding twoBandAnnulusKirchhoffVertices
+        twoBandAnnulusMiddleOuterRadialKirchhoffControlEdges x = 0
+    have hxzero : x = 0 := by
+      simpa using hxbot
+    simp [hxzero]
+
 theorem twoBandAnnulusIndicator_mem_planarBoundaryZeroSubmodule_of_subset_interior
     (S : Finset twoBandAnnulusGraph.edgeSet)
     (hS : S ⊆ twoBandAnnulusInteriorEdges) :
