@@ -8999,6 +8999,20 @@ theorem sharedInteriorPair_uniqueProjectedBicoloredCertificates :
         simp [sharedInteriorPairCertificateColorB]
       · exact sharedInteriorPairCertificateColoringB_unique_sip12_redPurple
 
+theorem sharedInteriorPair_redBlueSingleCoordinateMemberships_of_uniqueCertificates :
+    (∀ e ∈ sharedInteriorPairInteriorControlEdges,
+        Pi.single e red ∈
+          projectedColoringGeneratorSubspace sharedInteriorPairEmbedding
+            sharedInteriorPairProjectedGeneratorCertificateColorings) ∧
+      (∀ e ∈ sharedInteriorPairInteriorControlEdges,
+        Pi.single e blue ∈
+          projectedColoringGeneratorSubspace sharedInteriorPairEmbedding
+            sharedInteriorPairProjectedGeneratorCertificateColorings) :=
+  redBlueSingleCoordinateMemberships_of_uniqueProjectedBicoloredCertificates
+    sharedInteriorPairInteriorControlEdges
+    sharedInteriorPair_uniqueProjectedBicoloredCertificates.1
+    sharedInteriorPair_uniqueProjectedBicoloredCertificates.2
+
 theorem sharedInteriorPair_boundaryZeroProjectedColoringGeneratorDetector_of_uniqueCertificates :
     BoundaryZeroProjectedColoringGeneratorDetector sharedInteriorPairEmbedding
       sharedInteriorPairProjectedGeneratorCertificateColorings := by
@@ -9496,6 +9510,20 @@ theorem wheelWithInnerTriangle_uniqueProjectedBicoloredCertificates :
       · right
         simp
       · exact wheelWithInnerTriangleCertificateColoringA_unique_wit03_redPurple_face1
+
+theorem wheelWithInnerTriangle_redBlueSingleCoordinateMemberships_of_uniqueCertificates :
+    (∀ e ∈ wheelWithInnerTriangleInteriorControlEdges,
+        Pi.single e red ∈
+          projectedColoringGeneratorSubspace wheelWithInnerTriangleEmbedding
+            wheelWithInnerTriangleProjectedGeneratorCertificateColorings) ∧
+      (∀ e ∈ wheelWithInnerTriangleInteriorControlEdges,
+        Pi.single e blue ∈
+          projectedColoringGeneratorSubspace wheelWithInnerTriangleEmbedding
+            wheelWithInnerTriangleProjectedGeneratorCertificateColorings) :=
+  redBlueSingleCoordinateMemberships_of_uniqueProjectedBicoloredCertificates
+    wheelWithInnerTriangleInteriorControlEdges
+    wheelWithInnerTriangle_uniqueProjectedBicoloredCertificates.1
+    wheelWithInnerTriangle_uniqueProjectedBicoloredCertificates.2
 
 theorem wheelWithInnerTriangle_boundaryZeroProjectedColoringGeneratorDetector_of_uniqueCertificates :
     BoundaryZeroProjectedColoringGeneratorDetector wheelWithInnerTriangleEmbedding
