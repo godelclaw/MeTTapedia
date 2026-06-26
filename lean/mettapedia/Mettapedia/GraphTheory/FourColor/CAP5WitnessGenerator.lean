@@ -4784,6 +4784,34 @@ theorem forcedEdgeCoverage_of_controlEdges_subset_emittedFinset
   rcases hcontrolCoverage hzBoundary hzNonzero with ⟨e, heControl, hze⟩
   exact ⟨e, (classifier.emittedFinset_spec e).1 (hsubset heControl), hze⟩
 
+/--
+Classifier-control handoff for finite F₂ lab coverage.  A concrete control set that meets every
+nonzero selected-boundary-zero chain controls the classifier output as soon as all of its edges
+are emitted by the classifier.
+-/
+theorem enumeratedExceptionalAnnulusForcedEdgeClassifierControl_of_controlEdges_nonzeroCoverage_subset_emittedFinset
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    [Fintype G.edgeSet]
+    (emb : PlaneEmbeddingWithBoundary G)
+    {p0Inside p4Inside : Bool} {side : V → Prop}
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (controlEdges : Finset G.edgeSet)
+    (hcontrolCoverage :
+      ∀ ⦃z : G.edgeSet → Color⦄,
+        z ∈ planarBoundaryZeroSubmodule emb →
+        z ≠ 0 →
+          ∃ e : G.edgeSet, e ∈ controlEdges ∧ z e ≠ 0)
+    (hsubset : controlEdges ⊆ classifier.emittedFinset) :
+    ∀ ⦃z : G.edgeSet → Color⦄,
+      z ∈ planarBoundaryZeroSubmodule emb →
+      (∀ e ∈ classifier.emittedFinset, z e = 0) →
+        z = 0 :=
+  data.enumeratedExceptionalAnnulusForcedEdgeClassifierControl_of_forcedEdgeCoverage
+    emb classifier
+    (data.forcedEdgeCoverage_of_controlEdges_subset_emittedFinset
+      emb classifier controlEdges hcontrolCoverage hsubset)
+
 /-- Synthesis endpoint for exact CAP5 forced-edge coverage.  If the enumerated forced-edge set
 covers every nonzero selected-boundary-zero chain, and the chosen projected generator family has
 red and blue single-coordinate witnesses on every emitted classifier edge, then the boundary-root
@@ -4825,6 +4853,51 @@ theorem theorem49BoundaryRootSynthesis_of_forcedEdgeCoverage
     emb C₀ colorings hsubset family p0Inside p4Inside side classifier
     (data.enumeratedExceptionalAnnulusForcedEdgeClassifierControl_of_forcedEdgeCoverage
       emb classifier hcoverage)
+    hwitnessRed hwitnessBlue
+
+/--
+Synthesis endpoint from finite F₂ lab coverage and classifier emission.  This removes the
+abstract exact-coverage hypothesis from the Boolean-classifier route: a lab-certified control set
+that catches every nonzero selected-boundary-zero chain, and is wholly emitted by the classifier,
+is enough to feed the existing CAP5 synthesis theorem.
+-/
+theorem theorem49BoundaryRootSynthesis_of_controlEdges_nonzeroCoverage_subset_emittedFinset
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    [Fintype G.edgeSet] [FiniteDimensional F2 (G.edgeSet → Color)]
+    (emb : PlaneEmbeddingWithBoundary G) (C₀ : G.EdgeColoring Color)
+    (colorings : Set (G.EdgeColoring Color))
+    (hsubset : colorings ⊆ G.EdgeKempeClosure C₀)
+    {κ : Type*}
+    (family : κ → projectedColoringGeneratorSubspace emb colorings)
+    (p0Inside p4Inside : Bool) (side : V → Prop)
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (controlEdges : Finset G.edgeSet)
+    (hcontrolCoverage :
+      ∀ ⦃z : G.edgeSet → Color⦄,
+        z ∈ planarBoundaryZeroSubmodule emb →
+        z ≠ 0 →
+          ∃ e : G.edgeSet, e ∈ controlEdges ∧ z e ≠ 0)
+    (hsubsetEdges : controlEdges ⊆ classifier.emittedFinset)
+    (hwitnessRed :
+      ∀ e : G.edgeSet,
+        e ∈ classifier.emittedFinset →
+          ∃ i : κ,
+            ((family i : projectedColoringGeneratorSubspace emb colorings) :
+                G.edgeSet → Color) =
+              Pi.single e red)
+    (hwitnessBlue :
+      ∀ e : G.edgeSet,
+        e ∈ classifier.emittedFinset →
+          ∃ i : κ,
+            ((family i : projectedColoringGeneratorSubspace emb colorings) :
+                G.edgeSet → Color) =
+              Pi.single e blue) :
+    Theorem49BoundaryRootSynthesis emb C₀ :=
+  data.theorem49BoundaryRootSynthesis_of_forcedEdgeCoverage
+    emb C₀ colorings hsubset family p0Inside p4Inside side classifier
+    (data.forcedEdgeCoverage_of_controlEdges_subset_emittedFinset
+      emb classifier controlEdges hcontrolCoverage hsubsetEdges)
     hwitnessRed hwitnessBlue
 
 /-- A CAP5 emitted-edge obstruction is an explicit nonzero kernel witness for any red/blue
