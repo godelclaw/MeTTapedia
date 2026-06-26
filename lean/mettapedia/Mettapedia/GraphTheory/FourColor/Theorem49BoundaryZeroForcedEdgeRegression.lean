@@ -10228,6 +10228,116 @@ theorem wheelWithInnerTriangle_CAP5_ofDecidableChecks_missingCheckerEvidence_or_
       wheelWithInnerTriangle_boundaryZero_controlEdges_interiorEdges
       hred hblue
 
+/-- No-missing-evidence form of the shared focus-shell obstruction.  If CAP5 emits fewer than
+the two lab-required shared-interior controls, its enumerated forced edges do not cover all
+nonzero selected-boundary-zero chains. -/
+theorem sharedInteriorPair_CAP5_emittedFinset_card_lt_two_refutes_forcedEdgeCoverage_of_uniqueCertificates
+    {boundaryEdge : Fin 5 → sharedInteriorPairGraph.edgeSet} {n : Nat}
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    (p0Inside p4Inside : Bool) (h : data.IsExceptional)
+    (side : Fin 8 → Prop)
+    [∀ latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge,
+      Decidable ((CAP5ExceptionalAnnulusGeneratorReport.latentNode
+        boundaryEdge side latent).PortalCrosses)]
+    [∀ latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge,
+      Decidable ((CAP5ExceptionalAnnulusGeneratorReport.latentNode
+        boundaryEdge side latent).SideCycles)]
+    [∀ latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge,
+      Decidable ((CAP5ExceptionalAnnulusGeneratorReport.latentNode
+        boundaryEdge side latent).RealizedSeparator)]
+    (hcyclic : CyclicallyFiveEdgeConnected sharedInteriorPairGraph)
+    (hportal_crosses :
+      ∀ edgeCandidate : CAP5ExceptionalAnnulusBoundaryEdgeSupportCandidate boundaryEdge,
+        data.RealizesExceptionalBoundarySupportOrientation
+            edgeCandidate.portalCandidate.orientation →
+        edgeCandidate.portalCandidate.sideCase =
+            CAP5ExceptionalAnnulusSideCase.ofPortalSides p0Inside p4Inside →
+        ∀ i : Fin 5, i ∈ edgeCandidate.portalCandidate.portalSet →
+          EdgeCrossesVertexSide sharedInteriorPairGraph side (boundaryEdge i))
+    (hcycles : HasCycleOnSide sharedInteriorPairGraph side ∧
+      HasCycleOnSide sharedInteriorPairGraph (fun v => ¬ side v))
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (hcard : classifier.emittedFinset.card < 2)
+    (hnoMissing :
+      ∀ latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge,
+        latent ∈ CAP5ExceptionalAnnulusGeneratorLatent.all boundaryEdge →
+          ¬ (CAP5ExceptionalAnnulusGeneratorReport.latentNode
+            boundaryEdge side latent).MissingCheckerEvidence) :
+    ¬ (∀ ⦃z : sharedInteriorPairGraph.edgeSet → Color⦄,
+      z ∈ planarBoundaryZeroSubmodule sharedInteriorPairEmbedding →
+      z ≠ 0 →
+        ∃ e : sharedInteriorPairGraph.edgeSet,
+          data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e ∧
+            z e ≠ 0) := by
+  intro hcoverage
+  have hreport :=
+    sharedInteriorPair_CAP5_ofDecidableChecks_missingCheckerEvidence_or_histogram_and_forcedEdgeIndicatorPathXorDetectorPayload_and_extensionControlEdge_boundaryZeroChain_canonicalFamilyPairing_ne_zero_of_uniqueCertificates_of_emittedFinset_card_lt_two
+      p0Inside p4Inside h side hcyclic hportal_crosses hcycles classifier hcard
+  rcases hreport with hmissing | hcomplete
+  · rcases hmissing with ⟨latent, hmem, hmissing⟩
+    exact hnoMissing latent hmem hmissing
+  · rcases hcomplete with ⟨_, hpayloadAndWitness⟩
+    rcases hpayloadAndWitness with ⟨_, hwitness⟩
+    rcases hwitness with ⟨z, hzBoundary, hzNonzero, hzForcedZero, _⟩
+    rcases hcoverage hzBoundary hzNonzero with ⟨e, heForced, hze⟩
+    exact hze (hzForcedZero e heForced)
+
+/-- No-missing-evidence form of the wheel focus-shell obstruction.  If CAP5 emits fewer than
+the three lab-required spoke controls, its enumerated forced edges do not cover all nonzero
+selected-boundary-zero chains. -/
+theorem wheelWithInnerTriangle_CAP5_emittedFinset_card_lt_three_refutes_forcedEdgeCoverage_of_uniqueCertificates
+    {boundaryEdge : Fin 5 → wheelWithInnerTriangleGraph.edgeSet} {n : Nat}
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    (p0Inside p4Inside : Bool) (h : data.IsExceptional)
+    (side : Fin 7 → Prop)
+    [∀ latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge,
+      Decidable ((CAP5ExceptionalAnnulusGeneratorReport.latentNode
+        boundaryEdge side latent).PortalCrosses)]
+    [∀ latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge,
+      Decidable ((CAP5ExceptionalAnnulusGeneratorReport.latentNode
+        boundaryEdge side latent).SideCycles)]
+    [∀ latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge,
+      Decidable ((CAP5ExceptionalAnnulusGeneratorReport.latentNode
+        boundaryEdge side latent).RealizedSeparator)]
+    (hcyclic : CyclicallyFiveEdgeConnected wheelWithInnerTriangleGraph)
+    (hportal_crosses :
+      ∀ edgeCandidate : CAP5ExceptionalAnnulusBoundaryEdgeSupportCandidate boundaryEdge,
+        data.RealizesExceptionalBoundarySupportOrientation
+            edgeCandidate.portalCandidate.orientation →
+        edgeCandidate.portalCandidate.sideCase =
+            CAP5ExceptionalAnnulusSideCase.ofPortalSides p0Inside p4Inside →
+        ∀ i : Fin 5, i ∈ edgeCandidate.portalCandidate.portalSet →
+          EdgeCrossesVertexSide wheelWithInnerTriangleGraph side (boundaryEdge i))
+    (hcycles : HasCycleOnSide wheelWithInnerTriangleGraph side ∧
+      HasCycleOnSide wheelWithInnerTriangleGraph (fun v => ¬ side v))
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (hcard : classifier.emittedFinset.card < 3)
+    (hnoMissing :
+      ∀ latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge,
+        latent ∈ CAP5ExceptionalAnnulusGeneratorLatent.all boundaryEdge →
+          ¬ (CAP5ExceptionalAnnulusGeneratorReport.latentNode
+            boundaryEdge side latent).MissingCheckerEvidence) :
+    ¬ (∀ ⦃z : wheelWithInnerTriangleGraph.edgeSet → Color⦄,
+      z ∈ planarBoundaryZeroSubmodule wheelWithInnerTriangleEmbedding →
+      z ≠ 0 →
+        ∃ e : wheelWithInnerTriangleGraph.edgeSet,
+          data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e ∧
+            z e ≠ 0) := by
+  intro hcoverage
+  have hreport :=
+    wheelWithInnerTriangle_CAP5_ofDecidableChecks_missingCheckerEvidence_or_histogram_and_forcedEdgeIndicatorPathXorDetectorPayload_and_extensionControlEdge_boundaryZeroChain_canonicalFamilyPairing_ne_zero_of_uniqueCertificates_of_emittedFinset_card_lt_three
+      p0Inside p4Inside h side hcyclic hportal_crosses hcycles classifier hcard
+  rcases hreport with hmissing | hcomplete
+  · rcases hmissing with ⟨latent, hmem, hmissing⟩
+    exact hnoMissing latent hmem hmissing
+  · rcases hcomplete with ⟨_, hpayloadAndWitness⟩
+    rcases hpayloadAndWitness with ⟨_, hwitness⟩
+    rcases hwitness with ⟨z, hzBoundary, hzNonzero, hzForcedZero, _⟩
+    rcases hcoverage hzBoundary hzNonzero with ⟨e, heForced, hze⟩
+    exact hze (hzForcedZero e heForced)
+
 end Theorem49BoundaryZeroForcedEdgeRegression
 
 end Mettapedia.GraphTheory.FourColor
