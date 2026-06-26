@@ -679,40 +679,157 @@ theorem hchildren_peeledEndpointTouch :
   simp [peeledEndpointTouchEmbedding, peeledEndpointTouchFaceBoundary,
     peeledEndpointTouchPeelFace] at hempty
 
+def peeledEndpointTouchOuterBoundary : Finset peeledEndpointTouchGraph.edgeSet :=
+  {pet01}
+
+def peeledEndpointTouchInnerBoundary : Finset peeledEndpointTouchGraph.edgeSet :=
+  {pet23}
+
+theorem peeledEndpointTouch_selectedBoundarySupport_eq :
+    selectedBoundarySupport peeledEndpointTouchEmbedding.faceBoundary
+      peeledEndpointTouchEmbedding.faces peeledEndpointTouchEmbedding.faces =
+        peeledEndpointTouchOuterBoundary ∪ peeledEndpointTouchInnerBoundary := by
+  ext e
+  rcases peeledEndpointTouch_edge_eq e with rfl | rfl | rfl
+  · simp [peeledEndpointTouchOuterBoundary, peeledEndpointTouchInnerBoundary,
+      pet01_mem_selectedBoundarySupport]
+  · have h12ne01 : pet12 ≠ pet01 := by
+      intro h
+      have hval := congrArg Subtype.val h
+      simp [pet01, pet12] at hval
+    have h12ne23 : pet12 ≠ pet23 := by
+      intro h
+      have hval := congrArg Subtype.val h
+      simp [pet12, pet23] at hval
+    simp [peeledEndpointTouchOuterBoundary, peeledEndpointTouchInnerBoundary,
+      pet12_not_mem_selectedBoundarySupport, h12ne01, h12ne23]
+  · simp [peeledEndpointTouchOuterBoundary, peeledEndpointTouchInnerBoundary,
+      pet23_mem_selectedBoundarySupport]
+
+theorem peeledEndpointTouchOuterBoundary_induced :
+    BoundaryEdgeSetInducedSubgraph peeledEndpointTouchOuterBoundary := by
+  intro e hEndpoints
+  rcases peeledEndpointTouch_edge_eq e with rfl | rfl | rfl <;>
+    simp [peeledEndpointTouchOuterBoundary, boundaryEdgeSetEndpointSupport,
+      pet01, pet12, pet23] at hEndpoints ⊢
+
+theorem peeledEndpointTouchInnerBoundary_induced :
+    BoundaryEdgeSetInducedSubgraph peeledEndpointTouchInnerBoundary := by
+  intro e hEndpoints
+  rcases peeledEndpointTouch_edge_eq e with rfl | rfl | rfl <;>
+    simp [peeledEndpointTouchInnerBoundary, boundaryEdgeSetEndpointSupport,
+      pet01, pet12, pet23] at hEndpoints ⊢
+
+theorem pet12_endpoint_subset_peeledEndpointTouch_boundary_union :
+    ∀ v : Fin 4, v ∈ (pet12 : Sym2 (Fin 4)) →
+      v ∈ boundaryEdgeSetEndpointSupport
+        (peeledEndpointTouchOuterBoundary ∪ peeledEndpointTouchInnerBoundary) := by
+  intro v hv
+  fin_cases v <;>
+    simp [peeledEndpointTouchOuterBoundary, peeledEndpointTouchInnerBoundary,
+      boundaryEdgeSetEndpointSupport, pet01, pet12, pet23] at hv ⊢
+
+theorem pet12_has_peeledEndpointTouch_outer_endpoint :
+    ∃ v : Fin 4,
+      v ∈ (pet12 : Sym2 (Fin 4)) ∧
+        v ∈ boundaryEdgeSetEndpointSupport peeledEndpointTouchOuterBoundary := by
+  refine ⟨1, ?_, ?_⟩
+  · simp [pet12]
+  · simp [peeledEndpointTouchOuterBoundary, boundaryEdgeSetEndpointSupport, pet01]
+
+theorem pet12_has_peeledEndpointTouch_inner_endpoint :
+    ∃ v : Fin 4,
+      v ∈ (pet12 : Sym2 (Fin 4)) ∧
+        v ∈ boundaryEdgeSetEndpointSupport peeledEndpointTouchInnerBoundary := by
+  refine ⟨2, ?_, ?_⟩
+  · simp [pet12]
+  · simp [peeledEndpointTouchInnerBoundary, boundaryEdgeSetEndpointSupport, pet23]
+
+theorem pet12_not_mem_peeledEndpointTouch_boundary_union :
+    pet12 ∉ peeledEndpointTouchOuterBoundary ∪ peeledEndpointTouchInnerBoundary := by
+  simp [peeledEndpointTouchOuterBoundary, peeledEndpointTouchInnerBoundary, pet01, pet12, pet23]
+
+theorem not_peeledEndpointTouchBoundary_crossComponentChordFree :
+    ¬ BoundaryEdgeSetCrossComponentChordFree
+      peeledEndpointTouchOuterBoundary peeledEndpointTouchInnerBoundary := by
+  intro hCross
+  exact pet12_not_mem_peeledEndpointTouch_boundary_union
+    (hCross pet12 pet12_endpoint_subset_peeledEndpointTouch_boundary_union
+      pet12_has_peeledEndpointTouch_outer_endpoint
+      pet12_has_peeledEndpointTouch_inner_endpoint)
+
+theorem not_peeledEndpointTouchBoundary_union_induced :
+    ¬ BoundaryEdgeSetInducedSubgraph
+      (peeledEndpointTouchOuterBoundary ∪ peeledEndpointTouchInnerBoundary) := by
+  exact
+    not_boundaryEdgeSetInducedSubgraph_of_edge_not_mem_of_endpoint_subset
+      pet12_not_mem_peeledEndpointTouch_boundary_union
+      pet12_endpoint_subset_peeledEndpointTouch_boundary_union
+
+theorem not_peeledEndpointTouchEmbedding_selectedBoundaryInducedSubgraph :
+    ¬ SelectedBoundaryInducedSubgraph peeledEndpointTouchEmbedding := by
+  rw [SelectedBoundaryInducedSubgraph, peeledEndpointTouch_selectedBoundarySupport_eq]
+  exact not_peeledEndpointTouchBoundary_union_induced
+
+theorem peeledEndpointTouchBoundary_refutes_componentInduced_to_crossComponentChordFree :
+    ¬ ∀ (G : SimpleGraph (Fin 4)) (outer inner : Finset G.edgeSet),
+      BoundaryEdgeSetInducedSubgraph outer →
+        BoundaryEdgeSetInducedSubgraph inner →
+          BoundaryEdgeSetCrossComponentChordFree outer inner := by
+  intro h
+  exact not_peeledEndpointTouchBoundary_crossComponentChordFree
+    (h peeledEndpointTouchGraph peeledEndpointTouchOuterBoundary
+      peeledEndpointTouchInnerBoundary peeledEndpointTouchOuterBoundary_induced
+      peeledEndpointTouchInnerBoundary_induced)
+
 def peeledEndpointTouchBoundaryData :
     PlanarBoundaryAnnulusBoundaryData peeledEndpointTouchEmbedding where
-  outerAmbientBoundary := {pet01}
-  innerAmbientBoundary := {pet23}
-  houterAmbientBoundaryNonempty := by simp
-  hinnerAmbientBoundaryNonempty := by simp
+  outerAmbientBoundary := peeledEndpointTouchOuterBoundary
+  innerAmbientBoundary := peeledEndpointTouchInnerBoundary
+  houterAmbientBoundaryNonempty := by simp [peeledEndpointTouchOuterBoundary]
+  hinnerAmbientBoundaryNonempty := by simp [peeledEndpointTouchInnerBoundary]
   houterAmbientBoundarySubset := by
     intro e he
     have he' : e = pet01 := by
-      simpa using he
+      simpa [peeledEndpointTouchOuterBoundary] using he
     subst e
     exact pet01_mem_selectedBoundarySupport
   hinnerAmbientBoundarySubset := by
     intro e he
     have he' : e = pet23 := by
-      simpa using he
+      simpa [peeledEndpointTouchInnerBoundary] using he
     subst e
     exact pet23_mem_selectedBoundarySupport
   hambientBoundaryCover := by
     intro e he
     rcases peeledEndpointTouch_edge_eq e with rfl | rfl | rfl
-    · simp
+    · simp [peeledEndpointTouchOuterBoundary]
     · exact False.elim (pet12_not_mem_selectedBoundarySupport he)
-    · simp
+    · simp [peeledEndpointTouchInnerBoundary]
   hambientBoundaryDisjoint := by
     rw [Finset.disjoint_left]
     intro e he01 he23
     have h01 : e = pet01 := by
-      simpa using he01
+      simpa [peeledEndpointTouchOuterBoundary] using he01
     have h23 : e = pet23 := by
-      simpa using he23
+      simpa [peeledEndpointTouchInnerBoundary] using he23
     have hbad : pet01 = pet23 := h01.symm.trans h23
     have hval := congrArg Subtype.val hbad
     simp [pet01, pet23] at hval
+
+theorem peeledEndpointTouchEmbedding_refutes_componentInducedBoundaryData_to_selectedBoundaryInduced :
+    ¬ ∀ (G : SimpleGraph (Fin 4)) (emb : PlaneEmbeddingWithBoundary G),
+      ∀ data : PlanarBoundaryAnnulusBoundaryData emb,
+        BoundaryEdgeSetInducedSubgraph data.outerAmbientBoundary →
+          BoundaryEdgeSetInducedSubgraph data.innerAmbientBoundary →
+            SelectedBoundaryInducedSubgraph emb := by
+  intro h
+  exact not_peeledEndpointTouchEmbedding_selectedBoundaryInducedSubgraph
+    (h peeledEndpointTouchGraph peeledEndpointTouchEmbedding peeledEndpointTouchBoundaryData
+      (by
+        simpa [peeledEndpointTouchBoundaryData] using peeledEndpointTouchOuterBoundary_induced)
+      (by
+        simpa [peeledEndpointTouchBoundaryData] using peeledEndpointTouchInnerBoundary_induced))
 
 noncomputable def peeledEndpointTouchOuterBoundaryRootAdjDistancePeelData :
     PlanarBoundaryOuterBoundaryRootAdjDistancePeelData peeledEndpointTouchEmbedding :=
@@ -728,7 +845,8 @@ noncomputable def peeledEndpointTouchOuterBoundaryRootAdjDistancePeelData :
       have hr' : r = peeledEndpointTouchRootFace := by
         simpa [peeledEndpointTouchRoots] using hr
       subst r
-      exact ⟨pet01, by decide, by simp [peeledEndpointTouchBoundaryData]⟩)
+      exact ⟨pet01, by decide, by
+        simp [peeledEndpointTouchBoundaryData, peeledEndpointTouchOuterBoundary]⟩)
     hcover_peeledEndpointTouch
     hchildren_peeledEndpointTouch
     hall_peeledEndpointTouch
