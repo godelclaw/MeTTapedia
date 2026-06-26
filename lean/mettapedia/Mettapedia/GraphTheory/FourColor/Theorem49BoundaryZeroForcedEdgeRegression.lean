@@ -11301,6 +11301,48 @@ theorem sharedInteriorPair_CAP5_forcedEdgeCoverage_emits_interiorControlEdges
     subst e
     exact (classifier.emittedFinset_spec sip12).2 hforced.2
 
+/-- Converse finite-lab handoff for the shared focus shell: if the CAP5 classifier emits both
+lab-certified shared-interior controls, then its enumerated forced-edge predicate covers every
+nonzero selected-boundary-zero chain. -/
+theorem sharedInteriorPair_CAP5_forcedEdgeCoverage_of_emits_interiorControlEdges
+    {boundaryEdge : Fin 5 → sharedInteriorPairGraph.edgeSet} {n : Nat}
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    (p0Inside p4Inside : Bool) (side : Fin 8 → Prop)
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (hemits : sharedInteriorPairInteriorControlEdges ⊆ classifier.emittedFinset) :
+    ∀ ⦃z : sharedInteriorPairGraph.edgeSet → Color⦄,
+      z ∈ planarBoundaryZeroSubmodule sharedInteriorPairEmbedding →
+      z ≠ 0 →
+        ∃ e : sharedInteriorPairGraph.edgeSet,
+          data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e ∧
+            z e ≠ 0 :=
+  data.forcedEdgeCoverage_of_controlEdges_subset_emittedFinset
+    sharedInteriorPairEmbedding classifier sharedInteriorPairInteriorControlEdges
+    sharedInteriorPair_boundaryZero_declaredForcedEdges_nonzeroCoverage hemits
+
+/-- Exact classifier-facing form of the shared focus-shell F₂ verdict.  The CAP5 forced-edge
+predicate covers all nonzero selected-boundary-zero chains exactly when the classifier emits the
+two lab-certified shared-interior controls. -/
+theorem sharedInteriorPair_CAP5_forcedEdgeCoverage_iff_emits_interiorControlEdges
+    {boundaryEdge : Fin 5 → sharedInteriorPairGraph.edgeSet} {n : Nat}
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    (p0Inside p4Inside : Bool) (side : Fin 8 → Prop)
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side) :
+    (∀ ⦃z : sharedInteriorPairGraph.edgeSet → Color⦄,
+      z ∈ planarBoundaryZeroSubmodule sharedInteriorPairEmbedding →
+      z ≠ 0 →
+        ∃ e : sharedInteriorPairGraph.edgeSet,
+          data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e ∧
+            z e ≠ 0) ↔
+      sharedInteriorPairInteriorControlEdges ⊆ classifier.emittedFinset := by
+  constructor
+  · exact sharedInteriorPair_CAP5_forcedEdgeCoverage_emits_interiorControlEdges
+      p0Inside p4Inside side classifier
+  · exact sharedInteriorPair_CAP5_forcedEdgeCoverage_of_emits_interiorControlEdges
+      p0Inside p4Inside side classifier
+
 /-- Runner-facing exact form for the shared focus shell: exact CAP5 coverage leaves no
 unprocessed canonical shared-interior control edge. -/
 theorem sharedInteriorPair_CAP5_forcedEdgeCoverage_remainingInteriorControlEdges_eq_empty
@@ -11360,6 +11402,48 @@ theorem wheelWithInnerTriangle_CAP5_forcedEdgeCoverage_emits_interiorControlEdge
     · have he03 : e = wit03 := by simpa using heTail'
       subst e
       exact (classifier.emittedFinset_spec wit03).2 hforced.2.2
+
+/-- Converse finite-lab handoff for the wheel focus shell: if the CAP5 classifier emits the
+three lab-certified spoke controls, then its enumerated forced-edge predicate covers every
+nonzero selected-boundary-zero chain. -/
+theorem wheelWithInnerTriangle_CAP5_forcedEdgeCoverage_of_emits_interiorControlEdges
+    {boundaryEdge : Fin 5 → wheelWithInnerTriangleGraph.edgeSet} {n : Nat}
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    (p0Inside p4Inside : Bool) (side : Fin 7 → Prop)
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (hemits : wheelWithInnerTriangleInteriorControlEdges ⊆ classifier.emittedFinset) :
+    ∀ ⦃z : wheelWithInnerTriangleGraph.edgeSet → Color⦄,
+      z ∈ planarBoundaryZeroSubmodule wheelWithInnerTriangleEmbedding →
+      z ≠ 0 →
+        ∃ e : wheelWithInnerTriangleGraph.edgeSet,
+          data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e ∧
+            z e ≠ 0 :=
+  data.forcedEdgeCoverage_of_controlEdges_subset_emittedFinset
+    wheelWithInnerTriangleEmbedding classifier wheelWithInnerTriangleInteriorControlEdges
+    wheelWithInnerTriangle_boundaryZero_declaredForcedEdges_nonzeroCoverage hemits
+
+/-- Exact classifier-facing form of the wheel focus-shell F₂ verdict.  The CAP5 forced-edge
+predicate covers all nonzero selected-boundary-zero chains exactly when the classifier emits the
+three lab-certified spoke controls. -/
+theorem wheelWithInnerTriangle_CAP5_forcedEdgeCoverage_iff_emits_interiorControlEdges
+    {boundaryEdge : Fin 5 → wheelWithInnerTriangleGraph.edgeSet} {n : Nat}
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    (p0Inside p4Inside : Bool) (side : Fin 7 → Prop)
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side) :
+    (∀ ⦃z : wheelWithInnerTriangleGraph.edgeSet → Color⦄,
+      z ∈ planarBoundaryZeroSubmodule wheelWithInnerTriangleEmbedding →
+      z ≠ 0 →
+        ∃ e : wheelWithInnerTriangleGraph.edgeSet,
+          data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e ∧
+            z e ≠ 0) ↔
+      wheelWithInnerTriangleInteriorControlEdges ⊆ classifier.emittedFinset := by
+  constructor
+  · exact wheelWithInnerTriangle_CAP5_forcedEdgeCoverage_emits_interiorControlEdges
+      p0Inside p4Inside side classifier
+  · exact wheelWithInnerTriangle_CAP5_forcedEdgeCoverage_of_emits_interiorControlEdges
+      p0Inside p4Inside side classifier
 
 /-- Runner-facing exact form for the wheel focus shell: exact CAP5 coverage leaves no
 unprocessed canonical spoke control edge. -/
