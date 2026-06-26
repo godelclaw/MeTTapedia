@@ -8138,6 +8138,22 @@ theorem twoBandAnnulusInteriorControlComplementByIndex_not_boundaryZeroKirchhoff
       ((twoBandAnnulus_boundaryZeroKirchhoff_control_iff_omittedInterior_columnMap_ker_eq_bot
         (twoBandAnnulusInteriorControlComplementByIndex a b c)).1 hcontrol)
 
+theorem twoBandAnnulusInteriorControlComplementByIndex_exists_boundaryZeroKirchhoffChain_vanishingOnControl_of_not_fullRank
+    (a b c : Fin 9)
+    (hinc : a.val < b.val ∧ b.val < c.val)
+    (hnotFull : ¬ twoBandAnnulusInteriorOmittedIndexTripleFullRank a b c) :
+    ∃ z : twoBandAnnulusGraph.edgeSet → Color,
+      z ∈ theorem49BoundaryZeroKirchhoffSubspace
+          twoBandAnnulusEmbedding twoBandAnnulusKirchhoffVertices ∧
+        z ≠ 0 ∧
+          ∀ e ∈ twoBandAnnulusInteriorControlComplementByIndex a b c, z e = 0 := by
+  exact
+    (CAP5TransportedEdgeComponentCoverCore.not_theorem49BoundaryZeroKirchhoffSubspace_finsetControls_iff_exists_nonzero_vanishes_on_finset
+      twoBandAnnulusEmbedding twoBandAnnulusKirchhoffVertices
+      (twoBandAnnulusInteriorControlComplementByIndex a b c)).1
+      (twoBandAnnulusInteriorControlComplementByIndex_not_boundaryZeroKirchhoff_control_of_not_fullRank
+        a b c hinc hnotFull)
+
 set_option maxRecDepth 10000 in
 theorem twoBandAnnulusInteriorControlComplementByIndex_not_boundaryZeroKirchhoff_control_of_nonFullRankIncreasingOmittedIndexTriple
     (a b c : Fin 9)
@@ -8160,6 +8176,25 @@ theorem twoBandAnnulusInteriorControlComplementByIndex_not_boundaryZeroKirchhoff
   exact
     twoBandAnnulusInteriorControlComplementByIndex_not_boundaryZeroKirchhoff_control_of_not_fullRank
       a b c hinc hnotFull
+
+set_option maxRecDepth 10000 in
+theorem twoBandAnnulusInteriorControlComplementByIndex_exists_boundaryZeroKirchhoffChain_vanishingOnControl_of_nonFullRankIncreasingOmittedIndexTriple
+    (a b c : Fin 9)
+    (hmem :
+      ((a, b), c) ∈ twoBandAnnulusNonFullRankIncreasingOmittedIndexTriples) :
+    ∃ z : twoBandAnnulusGraph.edgeSet → Color,
+      z ∈ theorem49BoundaryZeroKirchhoffSubspace
+          twoBandAnnulusEmbedding twoBandAnnulusKirchhoffVertices ∧
+        z ≠ 0 ∧
+          ∀ e ∈ twoBandAnnulusInteriorControlComplementByIndex a b c, z e = 0 := by
+  have hparts :
+      a.val < b.val ∧ b.val < c.val ∧
+        ¬ twoBandAnnulusInteriorOmittedIndexTripleFullRank a b c :=
+    (twoBandAnnulus_mem_nonFullRankIncreasingOmittedIndexTriples_iff
+      a b c).1 hmem
+  exact
+    twoBandAnnulusInteriorControlComplementByIndex_exists_boundaryZeroKirchhoffChain_vanishingOnControl_of_not_fullRank
+      a b c ⟨hparts.1, hparts.2.1⟩ hparts.2.2
 
 set_option maxRecDepth 20000 in
 theorem twoBandAnnulus_boundaryZeroKirchhoff_control_of_mem_fullRankInteriorControlComplements
@@ -8196,6 +8231,22 @@ theorem twoBandAnnulus_not_boundaryZeroKirchhoff_control_of_mem_nonFullRankInter
     ⟨a, b, c, htriple, rfl⟩
   exact
     twoBandAnnulusInteriorControlComplementByIndex_not_boundaryZeroKirchhoff_control_of_nonFullRankIncreasingOmittedIndexTriple
+      a b c htriple
+
+set_option maxRecDepth 20000 in
+theorem twoBandAnnulus_exists_boundaryZeroKirchhoffChain_vanishingOnControl_of_mem_nonFullRankInteriorControlComplements
+    {control : Finset twoBandAnnulusGraph.edgeSet}
+    (hmem : control ∈ twoBandAnnulusNonFullRankInteriorControlComplements) :
+    ∃ z : twoBandAnnulusGraph.edgeSet → Color,
+      z ∈ theorem49BoundaryZeroKirchhoffSubspace
+          twoBandAnnulusEmbedding twoBandAnnulusKirchhoffVertices ∧
+        z ≠ 0 ∧
+          ∀ e ∈ control, z e = 0 := by
+  rcases (twoBandAnnulus_mem_nonFullRankInteriorControlComplements_iff
+      control).1 hmem with
+    ⟨a, b, c, htriple, rfl⟩
+  exact
+    twoBandAnnulusInteriorControlComplementByIndex_exists_boundaryZeroKirchhoffChain_vanishingOnControl_of_nonFullRankIncreasingOmittedIndexTriple
       a b c htriple
 
 set_option maxRecDepth 20000 in
@@ -15212,6 +15263,46 @@ theorem twoBandAnnulus_CAP5_boundaryZeroKirchhoff_not_forcedEdgeCoverage_of_emit
                   (twoBandAnnulus_mem_selectedBoundarySupport_of_not_mem_interiorEdgeSupport
                     heInterior)))
 
+theorem twoBandAnnulus_CAP5_exists_boundaryZeroKirchhoffChain_vanishingOnForcedEdges_of_emittedInterior_subset_nonFullRankInteriorControlComplementByIndex
+    {boundaryEdge : Fin 5 → twoBandAnnulusGraph.edgeSet} {n : Nat}
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    (p0Inside p4Inside : Bool) (side : Fin 9 → Prop)
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (a b c : Fin 9)
+    (hinc : a.val < b.val ∧ b.val < c.val)
+    (hnotFull : ¬ twoBandAnnulusInteriorOmittedIndexTripleFullRank a b c)
+    (hsubset :
+      (classifier.emittedFinset.filter fun e =>
+        e ∈ interiorEdgeSupport
+          twoBandAnnulusEmbedding.faceBoundary twoBandAnnulusEmbedding.faces) ⊆
+        twoBandAnnulusInteriorControlComplementByIndex a b c) :
+    ∃ z : twoBandAnnulusGraph.edgeSet → Color,
+      z ∈ theorem49BoundaryZeroKirchhoffSubspace
+          twoBandAnnulusEmbedding twoBandAnnulusKirchhoffVertices ∧
+        z ≠ 0 ∧
+          ∀ e : twoBandAnnulusGraph.edgeSet,
+            data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e →
+              z e = 0 := by
+  rcases
+      twoBandAnnulusInteriorControlComplementByIndex_exists_boundaryZeroKirchhoffChain_vanishingOnControl_of_not_fullRank
+        a b c hinc hnotFull with
+    ⟨z, hz, hzNonzero, hvanishControl⟩
+  exact ⟨z, hz, hzNonzero, by
+    intro e hforced
+    have heEmitted : e ∈ classifier.emittedFinset :=
+      (classifier.emittedFinset_spec e).2 hforced
+    by_cases heInterior :
+        e ∈ interiorEdgeSupport
+          twoBandAnnulusEmbedding.faceBoundary
+          twoBandAnnulusEmbedding.faces
+    · exact hvanishControl e
+        (hsubset (Finset.mem_filter.2 ⟨heEmitted, heInterior⟩))
+    · exact boundaryZero_of_mem_theorem49BoundaryZeroKirchhoffSubspace
+        hz e
+        (twoBandAnnulus_mem_selectedBoundarySupport_of_not_mem_interiorEdgeSupport
+          heInterior)⟩
+
 set_option maxRecDepth 10000 in
 theorem twoBandAnnulus_CAP5_boundaryZeroKirchhoff_not_forcedEdgeCoverage_of_emittedInterior_subset_nonFullRankIncreasingOmittedIndexTriple
     {boundaryEdge : Fin 5 → twoBandAnnulusGraph.edgeSet} {n : Nat}
@@ -15241,6 +15332,38 @@ theorem twoBandAnnulus_CAP5_boundaryZeroKirchhoff_not_forcedEdgeCoverage_of_emit
       a b c).1 hmem
   exact
     twoBandAnnulus_CAP5_boundaryZeroKirchhoff_not_forcedEdgeCoverage_of_emittedInterior_subset_nonFullRankInteriorControlComplementByIndex
+      p0Inside p4Inside side classifier a b c
+      ⟨hparts.1, hparts.2.1⟩ hparts.2.2 hsubset
+
+set_option maxRecDepth 10000 in
+theorem twoBandAnnulus_CAP5_exists_boundaryZeroKirchhoffChain_vanishingOnForcedEdges_of_emittedInterior_subset_nonFullRankIncreasingOmittedIndexTriple
+    {boundaryEdge : Fin 5 → twoBandAnnulusGraph.edgeSet} {n : Nat}
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    (p0Inside p4Inside : Bool) (side : Fin 9 → Prop)
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (a b c : Fin 9)
+    (hmem :
+      ((a, b), c) ∈ twoBandAnnulusNonFullRankIncreasingOmittedIndexTriples)
+    (hsubset :
+      (classifier.emittedFinset.filter fun e =>
+        e ∈ interiorEdgeSupport
+          twoBandAnnulusEmbedding.faceBoundary twoBandAnnulusEmbedding.faces) ⊆
+        twoBandAnnulusInteriorControlComplementByIndex a b c) :
+    ∃ z : twoBandAnnulusGraph.edgeSet → Color,
+      z ∈ theorem49BoundaryZeroKirchhoffSubspace
+          twoBandAnnulusEmbedding twoBandAnnulusKirchhoffVertices ∧
+        z ≠ 0 ∧
+          ∀ e : twoBandAnnulusGraph.edgeSet,
+            data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e →
+              z e = 0 := by
+  have hparts :
+      a.val < b.val ∧ b.val < c.val ∧
+        ¬ twoBandAnnulusInteriorOmittedIndexTripleFullRank a b c :=
+    (twoBandAnnulus_mem_nonFullRankIncreasingOmittedIndexTriples_iff
+      a b c).1 hmem
+  exact
+    twoBandAnnulus_CAP5_exists_boundaryZeroKirchhoffChain_vanishingOnForcedEdges_of_emittedInterior_subset_nonFullRankInteriorControlComplementByIndex
       p0Inside p4Inside side classifier a b c
       ⟨hparts.1, hparts.2.1⟩ hparts.2.2 hsubset
 
