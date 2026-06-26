@@ -49,7 +49,7 @@ def currentPNPRoadmap : List PNPRoadmapEntry :=
       status := .ledgerCovered
       truthValue := ⟨100, 92⟩
       obligation := "Treat local Kpoly coverage as local ledger evidence only." },
-    { stage := .localLedgerAudit, proofNodeKey := "pnp.kpoly.support-surjectivity-weakness-boundary", status := .blockedByCounterexample, truthValue := ⟨100, 99⟩, obligation := "Treat observed-support polynomial images as resolved insufficient unless the route supplies support-surjective feature/query coverage or a supported resolving side-information package." },
+    { stage := .localLedgerAudit, proofNodeKey := "pnp.kpoly.feature-route-quantale-boundary", status := .blockedByCounterexample, truthValue := ⟨100, 99⟩, obligation := "Treat polynomial feature-image evidence as resolved insufficient unless the route pays the full-rule feature-injectivity floor and separates supported weakness pairs." },
     { stage := .barrierObstruction
       proofNodeKey := "pnp.kpoly-promoted.all-barrier-obstructions"
       status := .barrierBlocked
