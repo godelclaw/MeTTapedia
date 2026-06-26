@@ -12302,6 +12302,215 @@ theorem wheelWithInnerTriangle_CAP5_boundaryZeroKirchhoff_forcedEdgeCoverage_iff
       wheelWithInnerTriangle_CAP5_boundaryZeroKirchhoff_forcedEdgeCoverage_of_emits_two_spokes
         p0Inside p4Inside side classifier
 
+/-- Cardinality form of the shared Kirchhoff-repaired focus-shell detector threshold. -/
+theorem sharedInteriorPair_emittedInterior_card_ge_one_iff
+    (emitted : Finset sharedInteriorPairGraph.edgeSet) :
+    1 ≤ (emitted.filter fun e => e ∈ sharedInteriorPairInteriorControlEdges).card ↔
+      sip01 ∈ emitted ∨ sip12 ∈ emitted := by
+  classical
+  constructor
+  · intro hcard
+    have hnonempty :
+        (emitted.filter fun e => e ∈ sharedInteriorPairInteriorControlEdges).Nonempty :=
+      Finset.card_pos.1 (by omega)
+    rcases hnonempty with ⟨e, he⟩
+    rcases Finset.mem_filter.1 he with ⟨heEmitted, heControl⟩
+    have hcases : e = sip01 ∨ e = sip12 := by
+      simpa [sharedInteriorPairInteriorControlEdges] using heControl
+    rcases hcases with rfl | rfl
+    · exact Or.inl heEmitted
+    · exact Or.inr heEmitted
+  · intro hemits
+    rcases hemits with h01 | h12
+    · have hmem :
+          sip01 ∈ emitted.filter fun e => e ∈ sharedInteriorPairInteriorControlEdges :=
+        Finset.mem_filter.2 ⟨h01, by simp [sharedInteriorPairInteriorControlEdges]⟩
+      have hpos :
+          0 < (emitted.filter fun e => e ∈ sharedInteriorPairInteriorControlEdges).card :=
+        Finset.card_pos.2 ⟨sip01, hmem⟩
+      omega
+    · have hmem :
+          sip12 ∈ emitted.filter fun e => e ∈ sharedInteriorPairInteriorControlEdges :=
+        Finset.mem_filter.2 ⟨h12, by simp [sharedInteriorPairInteriorControlEdges]⟩
+      have hpos :
+          0 < (emitted.filter fun e => e ∈ sharedInteriorPairInteriorControlEdges).card :=
+        Finset.card_pos.2 ⟨sip12, hmem⟩
+      omega
+
+/-- Cardinality form of the wheel Kirchhoff-repaired focus-shell detector threshold. -/
+theorem wheelWithInnerTriangle_emittedInterior_card_ge_two_iff
+    (emitted : Finset wheelWithInnerTriangleGraph.edgeSet) :
+    2 ≤ (emitted.filter fun e => e ∈ wheelWithInnerTriangleInteriorControlEdges).card ↔
+      (wit01 ∈ emitted ∧ wit02 ∈ emitted) ∨
+        (wit01 ∈ emitted ∧ wit03 ∈ emitted) ∨
+        (wit02 ∈ emitted ∧ wit03 ∈ emitted) := by
+  classical
+  constructor
+  · intro hcard
+    by_cases h01 : wit01 ∈ emitted
+    · by_cases h02 : wit02 ∈ emitted
+      · exact Or.inl ⟨h01, h02⟩
+      · by_cases h03 : wit03 ∈ emitted
+        · exact Or.inr (Or.inl ⟨h01, h03⟩)
+        · have hle :
+              (emitted.filter fun e => e ∈ wheelWithInnerTriangleInteriorControlEdges).card ≤ 1 := by
+            have hsubset :
+                (emitted.filter fun e =>
+                  e ∈ wheelWithInnerTriangleInteriorControlEdges) ⊆
+                  ({wit01} : Finset wheelWithInnerTriangleGraph.edgeSet) := by
+              intro e he
+              rcases Finset.mem_filter.1 he with ⟨heEmitted, heControl⟩
+              have hcases : e = wit01 ∨ e = wit02 ∨ e = wit03 := by
+                simpa [wheelWithInnerTriangleInteriorControlEdges] using heControl
+              rcases hcases with rfl | rfl | rfl
+              · simp
+              · exact False.elim (h02 heEmitted)
+              · exact False.elim (h03 heEmitted)
+            simpa using Finset.card_le_card hsubset
+          omega
+    · by_cases h02 : wit02 ∈ emitted
+      · by_cases h03 : wit03 ∈ emitted
+        · exact Or.inr (Or.inr ⟨h02, h03⟩)
+        · have hle :
+              (emitted.filter fun e => e ∈ wheelWithInnerTriangleInteriorControlEdges).card ≤ 1 := by
+            have hsubset :
+                (emitted.filter fun e =>
+                  e ∈ wheelWithInnerTriangleInteriorControlEdges) ⊆
+                  ({wit02} : Finset wheelWithInnerTriangleGraph.edgeSet) := by
+              intro e he
+              rcases Finset.mem_filter.1 he with ⟨heEmitted, heControl⟩
+              have hcases : e = wit01 ∨ e = wit02 ∨ e = wit03 := by
+                simpa [wheelWithInnerTriangleInteriorControlEdges] using heControl
+              rcases hcases with rfl | rfl | rfl
+              · exact False.elim (h01 heEmitted)
+              · simp
+              · exact False.elim (h03 heEmitted)
+            simpa using Finset.card_le_card hsubset
+          omega
+      · by_cases h03 : wit03 ∈ emitted
+        · have hle :
+              (emitted.filter fun e => e ∈ wheelWithInnerTriangleInteriorControlEdges).card ≤ 1 := by
+            have hsubset :
+                (emitted.filter fun e =>
+                  e ∈ wheelWithInnerTriangleInteriorControlEdges) ⊆
+                  ({wit03} : Finset wheelWithInnerTriangleGraph.edgeSet) := by
+              intro e he
+              rcases Finset.mem_filter.1 he with ⟨heEmitted, heControl⟩
+              have hcases : e = wit01 ∨ e = wit02 ∨ e = wit03 := by
+                simpa [wheelWithInnerTriangleInteriorControlEdges] using heControl
+              rcases hcases with rfl | rfl | rfl
+              · exact False.elim (h01 heEmitted)
+              · exact False.elim (h02 heEmitted)
+              · simp
+            simpa using Finset.card_le_card hsubset
+          omega
+        · have hle :
+              (emitted.filter fun e => e ∈ wheelWithInnerTriangleInteriorControlEdges).card ≤ 0 := by
+            have hsubset :
+                (emitted.filter fun e =>
+                  e ∈ wheelWithInnerTriangleInteriorControlEdges) ⊆
+                  (∅ : Finset wheelWithInnerTriangleGraph.edgeSet) := by
+              intro e he
+              rcases Finset.mem_filter.1 he with ⟨heEmitted, heControl⟩
+              have hcases : e = wit01 ∨ e = wit02 ∨ e = wit03 := by
+                simpa [wheelWithInnerTriangleInteriorControlEdges] using heControl
+              rcases hcases with rfl | rfl | rfl
+              · exact False.elim (h01 heEmitted)
+              · exact False.elim (h02 heEmitted)
+              · exact False.elim (h03 heEmitted)
+            simpa using Finset.card_le_card hsubset
+          omega
+  · intro hemits
+    rcases hemits with h12 | hrest
+    · have hsubset :
+          ({wit01, wit02} : Finset wheelWithInnerTriangleGraph.edgeSet) ⊆
+            emitted.filter fun e => e ∈ wheelWithInnerTriangleInteriorControlEdges := by
+        intro e he
+        have hcases : e = wit01 ∨ e = wit02 := by
+          simpa using he
+        rcases hcases with rfl | rfl
+        · exact Finset.mem_filter.2 ⟨h12.1, by simp [wheelWithInnerTriangleInteriorControlEdges]⟩
+        · exact Finset.mem_filter.2 ⟨h12.2, by simp [wheelWithInnerTriangleInteriorControlEdges]⟩
+      have hle := Finset.card_le_card hsubset
+      have hcard : ({wit01, wit02} : Finset wheelWithInnerTriangleGraph.edgeSet).card = 2 := by
+        decide
+      omega
+    · rcases hrest with h13 | h23
+      · have hsubset :
+            ({wit01, wit03} : Finset wheelWithInnerTriangleGraph.edgeSet) ⊆
+              emitted.filter fun e => e ∈ wheelWithInnerTriangleInteriorControlEdges := by
+          intro e he
+          have hcases : e = wit01 ∨ e = wit03 := by
+            simpa using he
+          rcases hcases with rfl | rfl
+          · exact Finset.mem_filter.2 ⟨h13.1, by simp [wheelWithInnerTriangleInteriorControlEdges]⟩
+          · exact Finset.mem_filter.2 ⟨h13.2, by simp [wheelWithInnerTriangleInteriorControlEdges]⟩
+        have hle := Finset.card_le_card hsubset
+        have hcard : ({wit01, wit03} : Finset wheelWithInnerTriangleGraph.edgeSet).card = 2 := by
+          decide
+        omega
+      · have hsubset :
+            ({wit02, wit03} : Finset wheelWithInnerTriangleGraph.edgeSet) ⊆
+              emitted.filter fun e => e ∈ wheelWithInnerTriangleInteriorControlEdges := by
+          intro e he
+          have hcases : e = wit02 ∨ e = wit03 := by
+            simpa using he
+          rcases hcases with rfl | rfl
+          · exact Finset.mem_filter.2 ⟨h23.1, by simp [wheelWithInnerTriangleInteriorControlEdges]⟩
+          · exact Finset.mem_filter.2 ⟨h23.2, by simp [wheelWithInnerTriangleInteriorControlEdges]⟩
+        have hle := Finset.card_le_card hsubset
+        have hcard : ({wit02, wit03} : Finset wheelWithInnerTriangleGraph.edgeSet).card = 2 := by
+          decide
+        omega
+
+/--
+Runner-facing exact Kirchhoff threshold for the shared focus shell.  CAP5 covers every nonzero
+boundary-zero Kirchhoff chain exactly when the emitted classifier has at least one emitted edge in
+the two lab-certified shared-interior controls.
+-/
+theorem sharedInteriorPair_CAP5_boundaryZeroKirchhoff_forcedEdgeCoverage_iff_emittedInterior_card_ge_one
+    {boundaryEdge : Fin 5 → sharedInteriorPairGraph.edgeSet} {n : Nat}
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    (p0Inside p4Inside : Bool) (side : Fin 8 → Prop)
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side) :
+    (∀ ⦃z : sharedInteriorPairGraph.edgeSet → Color⦄,
+      z ∈ theorem49BoundaryZeroKirchhoffSubspace
+          sharedInteriorPairEmbedding ({(1 : Fin 8)} : Finset (Fin 8)) →
+      z ≠ 0 →
+        ∃ e : sharedInteriorPairGraph.edgeSet,
+          data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e ∧
+            z e ≠ 0) ↔
+      1 ≤ (classifier.emittedFinset.filter fun e =>
+        e ∈ sharedInteriorPairInteriorControlEdges).card :=
+  (sharedInteriorPair_CAP5_boundaryZeroKirchhoff_forcedEdgeCoverage_iff_emits_some_interiorControlEdge
+    p0Inside p4Inside side classifier).trans
+    (sharedInteriorPair_emittedInterior_card_ge_one_iff classifier.emittedFinset).symm
+
+/--
+Runner-facing exact Kirchhoff threshold for the wheel focus shell.  CAP5 covers every nonzero
+boundary-zero Kirchhoff chain exactly when the emitted classifier has at least two emitted edges
+among the three lab-certified spokes.
+-/
+theorem wheelWithInnerTriangle_CAP5_boundaryZeroKirchhoff_forcedEdgeCoverage_iff_emittedInterior_card_ge_two
+    {boundaryEdge : Fin 5 → wheelWithInnerTriangleGraph.edgeSet} {n : Nat}
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    (p0Inside p4Inside : Bool) (side : Fin 7 → Prop)
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side) :
+    (∀ ⦃z : wheelWithInnerTriangleGraph.edgeSet → Color⦄,
+      z ∈ theorem49BoundaryZeroKirchhoffSubspace
+          wheelWithInnerTriangleEmbedding ({(0 : Fin 7)} : Finset (Fin 7)) →
+      z ≠ 0 →
+        ∃ e : wheelWithInnerTriangleGraph.edgeSet,
+          data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e ∧
+            z e ≠ 0) ↔
+      2 ≤ (classifier.emittedFinset.filter fun e =>
+        e ∈ wheelWithInnerTriangleInteriorControlEdges).card :=
+  (wheelWithInnerTriangle_CAP5_boundaryZeroKirchhoff_forcedEdgeCoverage_iff_emits_two_spokes
+    p0Inside p4Inside side classifier).trans
+    (wheelWithInnerTriangle_emittedInterior_card_ge_two_iff classifier.emittedFinset).symm
+
 /-- Shell-specialized detector bound for the shared focus shell.  The generic Kirchhoff target
 dimension inequality reduces here to the lab minimum: Kirchhoff coverage must emit at least one
 edge. -/
