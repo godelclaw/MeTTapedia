@@ -7233,6 +7233,29 @@ theorem twoBandAnnulusNoncontrollingSixKirchhoffControl_exists_scalarKernel_evad
     ⟨x, hxker, hxne⟩
   exact ⟨x, by simpa using hxker, hxne⟩
 
+theorem twoBandAnnulusMiddleOuterRadialKirchhoffControl_boundaryZeroKirchhoff_control_via_omittedTriple :
+    ∀ ⦃z : twoBandAnnulusGraph.edgeSet → Color⦄,
+      z ∈ theorem49BoundaryZeroKirchhoffSubspace
+          twoBandAnnulusEmbedding twoBandAnnulusKirchhoffVertices →
+      (∀ e ∈ twoBandAnnulusMiddleOuterRadialKirchhoffControlEdges, z e = 0) →
+      z = 0 :=
+  (theorem49BoundaryZeroKirchhoffSubspace_control_iff_scalarConstraintMap_ker_eq_bot
+    twoBandAnnulusEmbedding twoBandAnnulusKirchhoffVertices
+    twoBandAnnulusMiddleOuterRadialKirchhoffControlEdges).2
+    twoBandAnnulusMiddleOuterRadialKirchhoffControl_scalarConstraintMap_ker_eq_bot_via_omittedTriple
+
+theorem twoBandAnnulusNoncontrollingSixKirchhoffControl_not_boundaryZeroKirchhoff_control_via_omittedTriple :
+    ¬ ∀ ⦃z : twoBandAnnulusGraph.edgeSet → Color⦄,
+      z ∈ theorem49BoundaryZeroKirchhoffSubspace
+          twoBandAnnulusEmbedding twoBandAnnulusKirchhoffVertices →
+      (∀ e ∈ twoBandAnnulusNoncontrollingSixKirchhoffControlEdges, z e = 0) →
+      z = 0 := by
+  intro hcontrol
+  exact twoBandAnnulusNoncontrollingSixKirchhoffControl_scalarConstraintMap_ker_ne_bot_via_omittedTriple
+    ((theorem49BoundaryZeroKirchhoffSubspace_control_iff_scalarConstraintMap_ker_eq_bot
+      twoBandAnnulusEmbedding twoBandAnnulusKirchhoffVertices
+      twoBandAnnulusNoncontrollingSixKirchhoffControlEdges).1 hcontrol)
+
 theorem twoBandAnnulusIndicator_mem_planarBoundaryZeroSubmodule_of_subset_interior
     (S : Finset twoBandAnnulusGraph.edgeSet)
     (hS : S ⊆ twoBandAnnulusInteriorEdges) :
