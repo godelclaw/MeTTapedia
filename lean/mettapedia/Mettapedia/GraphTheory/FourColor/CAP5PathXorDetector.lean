@@ -1742,6 +1742,31 @@ theorem theorem49BoundaryZeroKirchhoffSubspace_finsetControls_iff_forall_nonzero
     rcases hwitness hz hzNonzero with ⟨e, he, hze⟩
     exact hze (hvanish e he)
 
+/-- Failure certificate for a finite Kirchhoff-target control check.  If vanishing on the finite
+control set does not force a boundary-zero Kirchhoff chain to vanish, then there is a concrete
+nonzero target chain invisible on all controlling coordinates. -/
+theorem not_theorem49BoundaryZeroKirchhoffSubspace_finsetControls_iff_exists_nonzero_vanishes_on_finset
+    [Fintype G.edgeSet]
+    (emb : PlaneEmbeddingWithBoundary G) (vertices : Finset V)
+    (controlEdges : Finset G.edgeSet) :
+    (¬ ∀ ⦃z : G.edgeSet → Color⦄,
+      z ∈ theorem49BoundaryZeroKirchhoffSubspace emb vertices →
+      (∀ e ∈ controlEdges, z e = 0) →
+        z = 0) ↔
+    ∃ z : G.edgeSet → Color,
+      z ∈ theorem49BoundaryZeroKirchhoffSubspace emb vertices ∧
+        z ≠ 0 ∧
+          ∀ e ∈ controlEdges, z e = 0 := by
+  constructor
+  · intro hnot
+    by_contra hno
+    apply hnot
+    intro z hz hvanish
+    by_contra hzNonzero
+    exact hno ⟨z, hz, hzNonzero, hvanish⟩
+  · rintro ⟨z, hz, hzNonzero, hvanish⟩ hcontrol
+    exact hzNonzero (hcontrol hz hvanish)
+
 /--
 Forced-edge coverage controls the boundary-zero Kirchhoff target.  This is the target-subspace
 version of the ordinary boundary-zero coverage handoff: every forced edge reported by CAP5 is
@@ -1861,6 +1886,35 @@ theorem edge_card_le_emittedFinset_card_add_boundary_card_add_vertex_card_of_fin
       exact hcontrol hz (by
         intro e heControl
         exact hvanishEmitted e (hsubsetEdges heControl)))
+
+/-- Kirchhoff-target falsification payload for the emitted CAP5 forced-edge predicate.  If the
+classifier output does not control the chosen boundary-zero Kirchhoff target, then there is a
+concrete nonzero target chain invisible to every enumerated forced edge. -/
+theorem exists_boundaryZeroKirchhoffChain_vanishingOnEnumeratedExceptionalAnnulusForcedEdges_of_not_classifierKirchhoffControl
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    [Fintype G.edgeSet]
+    (emb : PlaneEmbeddingWithBoundary G) (vertices : Finset V)
+    (p0Inside p4Inside : Bool) (side : V → Prop)
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (hnotControl :
+      ¬ ∀ ⦃z : G.edgeSet → Color⦄,
+        z ∈ theorem49BoundaryZeroKirchhoffSubspace emb vertices →
+        (∀ e ∈ classifier.emittedFinset, z e = 0) →
+          z = 0) :
+    ∃ z : G.edgeSet → Color,
+      z ∈ theorem49BoundaryZeroKirchhoffSubspace emb vertices ∧
+        z ≠ 0 ∧
+          ∀ e : G.edgeSet,
+            data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e →
+              z e = 0 := by
+  rcases
+      (not_theorem49BoundaryZeroKirchhoffSubspace_finsetControls_iff_exists_nonzero_vanishes_on_finset
+        emb vertices classifier.emittedFinset).1 hnotControl with
+    ⟨z, hz, hzNonzero, hvanish⟩
+  exact ⟨z, hz, hzNonzero, by
+    intro e hedge
+    exact hvanish e ((classifier.emittedFinset_spec e).2 hedge)⟩
 
 /--
 Fixed-point lower bound for an implementation worklist.  If a finite control set controls all
