@@ -6690,6 +6690,118 @@ theorem twoBandAnnulusNoncontrollingSixKirchhoffControl_scalarConstraintMap_ker_
       twoBandAnnulusEmbedding twoBandAnnulusKirchhoffVertices
       twoBandAnnulusNoncontrollingSixKirchhoffControlEdges).2 hker)
 
+def twoBandAnnulusKirchhoffColumn
+    (e : twoBandAnnulusGraph.edgeSet) : Fin 3 → F2 :=
+  fun i => match i with
+    | ⟨0, _⟩ =>
+        if e = tbaR03 ∨ e = tbaR36 ∨ e = tbaM34 ∨ e = tbaM53 then 1 else 0
+    | ⟨1, _⟩ =>
+        if e = tbaR14 ∨ e = tbaR47 ∨ e = tbaM34 ∨ e = tbaM45 then 1 else 0
+    | ⟨2, _⟩ =>
+        if e = tbaR25 ∨ e = tbaR58 ∨ e = tbaM45 ∨ e = tbaM53 then 1 else 0
+
+theorem twoBandAnnulusKirchhoffColumn_eq_incidentIndicator
+    (e : twoBandAnnulusGraph.edgeSet) :
+    twoBandAnnulusKirchhoffColumn e =
+      fun i => match i with
+        | ⟨0, _⟩ =>
+            if e ∈ incidentEdgeFinset twoBandAnnulusGraph (3 : Fin 9) then 1 else 0
+        | ⟨1, _⟩ =>
+            if e ∈ incidentEdgeFinset twoBandAnnulusGraph (4 : Fin 9) then 1 else 0
+        | ⟨2, _⟩ =>
+            if e ∈ incidentEdgeFinset twoBandAnnulusGraph (5 : Fin 9) then 1 else 0 := by
+  funext i
+  fin_cases i <;>
+    simp [twoBandAnnulusKirchhoffColumn,
+      twoBandAnnulus_incidentEdgeFinset_three,
+      twoBandAnnulus_incidentEdgeFinset_four,
+      twoBandAnnulus_incidentEdgeFinset_five]
+
+def twoBandAnnulusOmittedTripleKirchhoffColumnMap
+    (omitted : Fin 3 → twoBandAnnulusGraph.edgeSet) :
+    (Fin 3 → F2) →ₗ[F2] (Fin 3 → F2) where
+  toFun x := fun i => ∑ j : Fin 3,
+    x j * twoBandAnnulusKirchhoffColumn (omitted j) i
+  map_add' x y := by
+    ext i
+    simp only [Pi.add_apply]
+    rw [← Finset.sum_add_distrib]
+    apply Finset.sum_congr rfl
+    intro j _hj
+    ring
+  map_smul' a x := by
+    ext i
+    simp only [Pi.smul_apply, smul_eq_mul, RingHom.id_apply]
+    calc
+      ∑ j : Fin 3, a * x j * twoBandAnnulusKirchhoffColumn (omitted j) i =
+          ∑ j : Fin 3,
+            a * (x j * twoBandAnnulusKirchhoffColumn (omitted j) i) := by
+            apply Finset.sum_congr rfl
+            intro j _hj
+            ring
+      _ = a * ∑ j : Fin 3,
+          x j * twoBandAnnulusKirchhoffColumn (omitted j) i := by
+            rw [Finset.mul_sum]
+
+def twoBandAnnulusMiddleOuterRadialKirchhoffOmittedTriple :
+    Fin 3 → twoBandAnnulusGraph.edgeSet
+  | ⟨0, _⟩ => tbaR36
+  | ⟨1, _⟩ => tbaR47
+  | ⟨2, _⟩ => tbaR58
+
+def twoBandAnnulusNoncontrollingSixKirchhoffOmittedTriple :
+    Fin 3 → twoBandAnnulusGraph.edgeSet
+  | ⟨0, _⟩ => tbaR03
+  | ⟨1, _⟩ => tbaR58
+  | ⟨2, _⟩ => tbaM53
+
+theorem twoBandAnnulusMiddleOuterRadialKirchhoffControl_omittedInteriorEdges_eq :
+    twoBandAnnulusInteriorEdges \ twoBandAnnulusMiddleOuterRadialKirchhoffControlEdges =
+      ({tbaR36, tbaR47, tbaR58} : Finset twoBandAnnulusGraph.edgeSet) := by
+  decide
+
+theorem twoBandAnnulusNoncontrollingSixKirchhoffControl_omittedInteriorEdges_eq :
+    twoBandAnnulusInteriorEdges \ twoBandAnnulusNoncontrollingSixKirchhoffControlEdges =
+      ({tbaR03, tbaR58, tbaM53} : Finset twoBandAnnulusGraph.edgeSet) := by
+  decide
+
+theorem twoBandAnnulusMiddleOuterRadialKirchhoffOmittedTriple_columnMap_ker_eq_bot :
+    LinearMap.ker
+      (twoBandAnnulusOmittedTripleKirchhoffColumnMap
+        twoBandAnnulusMiddleOuterRadialKirchhoffOmittedTriple) = ⊥ := by
+  ext x
+  change
+    twoBandAnnulusOmittedTripleKirchhoffColumnMap
+        twoBandAnnulusMiddleOuterRadialKirchhoffOmittedTriple x = 0 ↔
+      x = 0
+  unfold twoBandAnnulusOmittedTripleKirchhoffColumnMap
+  decide +revert
+
+theorem twoBandAnnulusNoncontrollingSixKirchhoffOmittedTriple_columnMap_ker_ne_bot :
+    LinearMap.ker
+      (twoBandAnnulusOmittedTripleKirchhoffColumnMap
+        twoBandAnnulusNoncontrollingSixKirchhoffOmittedTriple) ≠ ⊥ := by
+  let x : Fin 3 → F2 := fun _ => 1
+  have hxker :
+      x ∈ LinearMap.ker
+        (twoBandAnnulusOmittedTripleKirchhoffColumnMap
+          twoBandAnnulusNoncontrollingSixKirchhoffOmittedTriple) := by
+    change
+      twoBandAnnulusOmittedTripleKirchhoffColumnMap
+          twoBandAnnulusNoncontrollingSixKirchhoffOmittedTriple x = 0
+    unfold twoBandAnnulusOmittedTripleKirchhoffColumnMap
+    decide
+  have hxne : x ≠ 0 := by
+    intro hxzero
+    have hcoord := congrFun hxzero (0 : Fin 3)
+    simp [x] at hcoord
+  intro hker
+  have hxbot : x ∈ (⊥ : Submodule F2 (Fin 3 → F2)) := by
+    simpa [hker] using hxker
+  have hxzero : x = 0 := by
+    simpa using hxbot
+  exact hxne hxzero
+
 theorem twoBandAnnulusIndicator_mem_planarBoundaryZeroSubmodule_of_subset_interior
     (S : Finset twoBandAnnulusGraph.edgeSet)
     (hS : S ⊆ twoBandAnnulusInteriorEdges) :
