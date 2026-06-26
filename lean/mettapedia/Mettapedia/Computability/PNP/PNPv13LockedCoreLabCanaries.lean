@@ -1,4 +1,5 @@
 import Mettapedia.Computability.PNP.PNPv13AppendixDLockedCore
+import Mettapedia.Computability.PNP.PNPv13AppendixDIdentityReadoutFamily
 
 /-!
 # PNP v13 locked-core lab canaries
@@ -241,5 +242,17 @@ theorem lockedCorePublicMessageInvariant_lab_guardrails :
   exact
     ⟨rigidAppendixDLockedCore_publicMessageInvariant_canary,
       ambiguousAppendixDLockedCore_noPublicMessageInvariant_canary⟩
+
+/-- Scaled lab refutation: every positive finite identity-readout dimension is
+satisfiable and read-deterministic, but has no public-message invariant and no
+D.8 locked-message rigidity. -/
+theorem lockedCoreIdentityReadoutFamily_lab_refutation (n : Nat) :
+    (identityReadoutAppendixDLockedCoreFinSucc n).LockSatisfiable ∧
+      (identityReadoutAppendixDLockedCoreFinSucc n).ReadDeterministic ∧
+      (∀ publicMessage : Unit → Fin (n + 1) → Bool,
+        ¬ (identityReadoutAppendixDLockedCoreFinSucc n).PublicMessageInvariant
+          publicMessage) ∧
+      ¬ (identityReadoutAppendixDLockedCoreFinSucc n).LockedMessageRigidity := by
+  exact identityReadoutAppendixDLockedCoreFinSucc_refutation_packet n
 
 end Mettapedia.Computability.PNP

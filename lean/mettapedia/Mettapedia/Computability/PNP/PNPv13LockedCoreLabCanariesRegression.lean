@@ -79,4 +79,13 @@ theorem locked_core_public_message_invariant_guardrails_regression :
       ¬ ambiguousAppendixDLockedCore.LockedMessageRigidity := by
   exact lockedCorePublicMessageInvariant_lab_guardrails
 
+theorem locked_core_identity_readout_family_refutation_regression (n : Nat) :
+    (identityReadoutAppendixDLockedCoreFinSucc n).LockSatisfiable ∧
+      (identityReadoutAppendixDLockedCoreFinSucc n).ReadDeterministic ∧
+      (∀ publicMessage : Unit → Fin (n + 1) → Bool,
+        ¬ (identityReadoutAppendixDLockedCoreFinSucc n).PublicMessageInvariant
+          publicMessage) ∧
+      ¬ (identityReadoutAppendixDLockedCoreFinSucc n).LockedMessageRigidity := by
+  exact lockedCoreIdentityReadoutFamily_lab_refutation n
+
 end Mettapedia.Computability.PNP.PNPv13LockedCoreLabCanariesRegression
