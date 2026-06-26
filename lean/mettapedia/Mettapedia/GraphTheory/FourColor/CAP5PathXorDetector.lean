@@ -4812,6 +4812,54 @@ theorem noMissingCheckerEvidence_refutes_forcedEdgeCoverage_of_emittedFinset_car
         ⟨z, hzBoundary, hzNonzero, hzForcedZero⟩
 
 /--
+Detector-payload form of exact forced-edge coverage for an arbitrary chain family.  A concrete
+nonzero chain hit by the CAP5 coverage predicate yields the named one-edge indicator path-xor
+payload from the enumerated forced edge that hits it.
+-/
+theorem forcedEdgeCoverage_forces_indicatorPayload_of_chain
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    (p0Inside p4Inside : Bool) (side : V → Prop)
+    (chain : (G.edgeSet → Color) → Prop)
+    (z : G.edgeSet → Color)
+    (hzChain : chain z)
+    (hzNonzero : z ≠ 0)
+    (hcoverage :
+      ∀ ⦃z : G.edgeSet → Color⦄,
+        chain z →
+        z ≠ 0 →
+          ∃ e : G.edgeSet,
+            data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e ∧
+              z e ≠ 0) :
+    data.ForcedEdgeIndicatorPathXorDetectorPayload p0Inside p4Inside side := by
+  rcases hcoverage hzChain hzNonzero with ⟨e, heForced, _⟩
+  exact data.forcedEdgeIndicatorPathXorDetectorPayload_of_enumeratedExceptionalAnnulusForcedEdge
+    heForced
+
+/--
+Detector-payload form of exact forced-edge coverage.  A concrete nonzero selected-boundary-zero
+chain hit by the CAP5 coverage predicate yields the named one-edge indicator path-xor payload
+from the enumerated forced edge that hits it.
+-/
+theorem forcedEdgeCoverage_forces_indicatorPayload_of_boundaryZeroChain
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    (emb : PlaneEmbeddingWithBoundary G)
+    (p0Inside p4Inside : Bool) (side : V → Prop)
+    (z : G.edgeSet → Color)
+    (hzBoundary : z ∈ planarBoundaryZeroSubmodule emb)
+    (hzNonzero : z ≠ 0)
+    (hcoverage :
+      ∀ ⦃z : G.edgeSet → Color⦄,
+        z ∈ planarBoundaryZeroSubmodule emb →
+        z ≠ 0 →
+          ∃ e : G.edgeSet,
+            data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e ∧
+              z e ≠ 0) :
+    data.ForcedEdgeIndicatorPathXorDetectorPayload p0Inside p4Inside side := by
+  exact data.forcedEdgeCoverage_forces_indicatorPayload_of_chain
+    p0Inside p4Inside side (fun z => z ∈ planarBoundaryZeroSubmodule emb)
+    z hzBoundary hzNonzero hcoverage
+
+/--
 Singleton-support form of forced-edge coverage.  If a nonzero selected-boundary-zero chain can
 only be nonzero at one target edge, then any CAP5 coverage predicate for all nonzero
 selected-boundary-zero chains must enumerate that target edge as forced.
@@ -4838,6 +4886,31 @@ theorem forcedEdgeCoverage_forces_edge_of_boundaryZero_singletonSupport
   rcases hcoverage hzBoundary hzNonzero with ⟨e, heForced, hze⟩
   have heq : e = target := hzOnly hze
   simpa [heq] using heForced
+
+/--
+Singleton-support detector-payload form of forced-edge coverage.  This packages the common
+finite-lab pattern where a singleton-support boundary-zero witness forces its target edge and
+therefore emits the one-edge indicator path-xor detector payload.
+-/
+theorem forcedEdgeCoverage_forces_indicatorPayload_of_boundaryZero_singletonSupport
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    (emb : PlaneEmbeddingWithBoundary G)
+    (p0Inside p4Inside : Bool) (side : V → Prop)
+    (target : G.edgeSet) (z : G.edgeSet → Color)
+    (hzBoundary : z ∈ planarBoundaryZeroSubmodule emb)
+    (hzTarget : z target ≠ 0)
+    (hzOnly : ∀ ⦃e : G.edgeSet⦄, z e ≠ 0 → e = target)
+    (hcoverage :
+      ∀ ⦃z : G.edgeSet → Color⦄,
+        z ∈ planarBoundaryZeroSubmodule emb →
+        z ≠ 0 →
+          ∃ e : G.edgeSet,
+            data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e ∧
+              z e ≠ 0) :
+    data.ForcedEdgeIndicatorPathXorDetectorPayload p0Inside p4Inside side := by
+  exact data.forcedEdgeIndicatorPathXorDetectorPayload_of_enumeratedExceptionalAnnulusForcedEdge
+    (data.forcedEdgeCoverage_forces_edge_of_boundaryZero_singletonSupport
+      emb p0Inside p4Inside side target z hzBoundary hzTarget hzOnly hcoverage)
 
 /--
 Classifier-facing singleton-support form of forced-edge coverage.  The Boolean classifier
