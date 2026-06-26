@@ -3516,6 +3516,195 @@ theorem card_erase_remainingControlEdges_lt_of_mem
       (classifier.remainingControlEdges controlEdges).card :=
   (classifier.remainingControlEdges controlEdges).card_erase_lt_of_mem he
 
+/--
+Explicit residual state for finite CAP5 worklist runs.  The Boolean classifier itself is
+immutable--its emitted set is fixed by `accept_spec`--so iteration is represented by a separate
+finite set of already processed remaining-control edges.
+-/
+def residualRemainingControlEdges
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    [Fintype G.edgeSet]
+    {p0Inside p4Inside : Bool} {side : V → Prop}
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (controlEdges processed : Finset G.edgeSet) :
+    Finset G.edgeSet :=
+  classifier.remainingControlEdges controlEdges \ processed
+
+/-- Membership in the explicit residual CAP5 worklist. -/
+theorem mem_residualRemainingControlEdges_iff
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    [Fintype G.edgeSet]
+    {p0Inside p4Inside : Bool} {side : V → Prop}
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (controlEdges processed : Finset G.edgeSet) (e : G.edgeSet) :
+    e ∈ classifier.residualRemainingControlEdges controlEdges processed ↔
+      e ∈ classifier.remainingControlEdges controlEdges ∧ e ∉ processed := by
+  simp [residualRemainingControlEdges]
+
+/--
+Processing a residual edge is implemented by inserting it into the processed set; this is exactly
+the same residual worklist as erasing that edge from the current residual state.
+-/
+theorem residualRemainingControlEdges_insert_eq_erase
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    [Fintype G.edgeSet]
+    {p0Inside p4Inside : Bool} {side : V → Prop}
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (controlEdges processed : Finset G.edgeSet) (e : G.edgeSet) :
+    classifier.residualRemainingControlEdges controlEdges (insert e processed) =
+      (classifier.residualRemainingControlEdges controlEdges processed).erase e := by
+  ext f
+  by_cases hfe : f = e
+  · subst hfe
+    simp [residualRemainingControlEdges]
+  · simp [residualRemainingControlEdges, hfe]
+
+/-- Processing any residual edge strictly decreases the explicit residual worklist measure. -/
+theorem card_residualRemainingControlEdges_insert_lt_of_mem
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    [Fintype G.edgeSet]
+    {p0Inside p4Inside : Bool} {side : V → Prop}
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (controlEdges processed : Finset G.edgeSet) {e : G.edgeSet}
+    (he : e ∈ classifier.residualRemainingControlEdges controlEdges processed) :
+    (classifier.residualRemainingControlEdges controlEdges (insert e processed)).card <
+      (classifier.residualRemainingControlEdges controlEdges processed).card := by
+  rw [classifier.residualRemainingControlEdges_insert_eq_erase controlEdges processed e]
+  exact Finset.card_erase_lt_of_mem he
+
+/--
+The residual worklist is exhausted exactly when every original remaining-control edge has been
+recorded as processed.
+-/
+theorem residualRemainingControlEdges_eq_empty_iff_remainingControlEdges_subset_processed
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    [Fintype G.edgeSet]
+    {p0Inside p4Inside : Bool} {side : V → Prop}
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (controlEdges processed : Finset G.edgeSet) :
+    classifier.residualRemainingControlEdges controlEdges processed = ∅ ↔
+      classifier.remainingControlEdges controlEdges ⊆ processed := by
+  constructor
+  · intro h e heRemaining
+    by_contra heNotProcessed
+    have hmem : e ∈ classifier.residualRemainingControlEdges controlEdges processed := by
+      simp [residualRemainingControlEdges, heRemaining, heNotProcessed]
+    rw [h] at hmem
+    simp at hmem
+  · intro hsubset
+    ext e
+    constructor
+    · intro he
+      have he' :
+          e ∈ classifier.remainingControlEdges controlEdges ∧ e ∉ processed := by
+        simpa [residualRemainingControlEdges] using he
+      exact False.elim (he'.2 (hsubset he'.1))
+    · intro he
+      simp at he
+
+/-- Canonical finite trace listing the remaining-control worklist. -/
+noncomputable def remainingControlEdgeTrace
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    [Fintype G.edgeSet]
+    {p0Inside p4Inside : Bool} {side : V → Prop}
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (controlEdges : Finset G.edgeSet) :
+    List G.edgeSet :=
+  (classifier.remainingControlEdges controlEdges).toList
+
+/-- Membership in the canonical remaining-control trace is exactly worklist membership. -/
+theorem mem_remainingControlEdgeTrace_iff
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    [Fintype G.edgeSet]
+    {p0Inside p4Inside : Bool} {side : V → Prop}
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (controlEdges : Finset G.edgeSet) (e : G.edgeSet) :
+    e ∈ classifier.remainingControlEdgeTrace controlEdges ↔
+      e ∈ classifier.remainingControlEdges controlEdges := by
+  simp [remainingControlEdgeTrace]
+
+/-- The canonical remaining-control trace contains no duplicate edges. -/
+theorem remainingControlEdgeTrace_nodup
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    [Fintype G.edgeSet]
+    {p0Inside p4Inside : Bool} {side : V → Prop}
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (controlEdges : Finset G.edgeSet) :
+    (classifier.remainingControlEdgeTrace controlEdges).Nodup :=
+  Finset.nodup_toList (classifier.remainingControlEdges controlEdges)
+
+/-- The trace length is the named remaining-control measure. -/
+theorem length_remainingControlEdgeTrace_eq_card_remainingControlEdges
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    [Fintype G.edgeSet]
+    {p0Inside p4Inside : Bool} {side : V → Prop}
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (controlEdges : Finset G.edgeSet) :
+    (classifier.remainingControlEdgeTrace controlEdges).length =
+      (classifier.remainingControlEdges controlEdges).card :=
+  Finset.length_toList (classifier.remainingControlEdges controlEdges)
+
+/-- The canonical trace's finite set is exactly the remaining-control worklist. -/
+theorem remainingControlEdgeTrace_toFinset_eq_remainingControlEdges
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    [Fintype G.edgeSet]
+    {p0Inside p4Inside : Bool} {side : V → Prop}
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (controlEdges : Finset G.edgeSet) :
+    (classifier.remainingControlEdgeTrace controlEdges).toFinset =
+      classifier.remainingControlEdges controlEdges := by
+  ext e
+  simp [remainingControlEdgeTrace]
+
+/-- Processing every edge in the canonical trace exhausts the explicit residual worklist. -/
+theorem residualRemainingControlEdges_remainingControlEdgeTrace_toFinset_eq_empty
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    [Fintype G.edgeSet]
+    {p0Inside p4Inside : Bool} {side : V → Prop}
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (controlEdges : Finset G.edgeSet) :
+    classifier.residualRemainingControlEdges controlEdges
+        (classifier.remainingControlEdgeTrace controlEdges).toFinset = ∅ := by
+  rw [classifier.remainingControlEdgeTrace_toFinset_eq_remainingControlEdges controlEdges]
+  ext e
+  simp [residualRemainingControlEdges]
+
+/--
+Packaged finite iteration certificate for the CAP5 remaining-control worklist: the trace has no
+duplicates, lists exactly the remaining edges, has length equal to the worklist measure, and
+exhausts the explicit residual state when all trace entries are processed.
+-/
+theorem exists_remainingControlEdgeTrace_certificate
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    [Fintype G.edgeSet]
+    {p0Inside p4Inside : Bool} {side : V → Prop}
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (controlEdges : Finset G.edgeSet) :
+    ∃ trace : List G.edgeSet,
+      trace.Nodup ∧
+        (∀ e : G.edgeSet, e ∈ trace ↔ e ∈ classifier.remainingControlEdges controlEdges) ∧
+          trace.length = (classifier.remainingControlEdges controlEdges).card ∧
+            classifier.residualRemainingControlEdges controlEdges trace.toFinset = ∅ := by
+  refine ⟨classifier.remainingControlEdgeTrace controlEdges, ?_, ?_, ?_, ?_⟩
+  · exact classifier.remainingControlEdgeTrace_nodup controlEdges
+  · exact classifier.mem_remainingControlEdgeTrace_iff controlEdges
+  · exact classifier.length_remainingControlEdgeTrace_eq_card_remainingControlEdges controlEdges
+  · exact
+      classifier.residualRemainingControlEdges_remainingControlEdgeTrace_toFinset_eq_empty
+        controlEdges
+
 /-- New control edges outside a Boolean checker output that cross the proposed side.  This is the
 finite geometric bin for a generator extension run. -/
 noncomputable def crossingExtensionFinset
