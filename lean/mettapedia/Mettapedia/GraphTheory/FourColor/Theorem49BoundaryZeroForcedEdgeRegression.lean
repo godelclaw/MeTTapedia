@@ -8722,6 +8722,127 @@ theorem focusF2BoundaryZero_declaredForcedEdges_nonzeroCoverage_and_minimality :
     exact wheelWithInnerTriangle_boundaryZero_has_evader_of_control_card_lt_three
       control (by simpa [wheelWithInnerTriangleInteriorControlEdges] using hcard)
 
+/-! ## Focus F2 verdicts as shell and synthesis producers -/
+
+/--
+Closed-walk shell producer for the shared-interior-pair focus verdict.  Once a concrete generator
+family supplies red and blue probes on the declared forced edges, the finite nonzero-coverage
+certificate is exactly a pairing-kernel shell.
+-/
+noncomputable def sharedInteriorPair_closedWalkNeighborhoodPairingKernelShell_of_declaredForcedEdgeWitnesses
+    (shell : ClosedWalkExactShell sharedInteriorPairEmbedding)
+    (colorings : Set (sharedInteriorPairGraph.EdgeColoring Color))
+    (hsubset : colorings ⊆ sharedInteriorPairGraph.EdgeKempeClosure shell.tait.coloring)
+    {κ : Type*}
+    (family : κ → projectedColoringGeneratorSubspace sharedInteriorPairEmbedding colorings)
+    (hwitnessRed :
+      ∀ e ∈ sharedInteriorPairInteriorControlEdges,
+        ∃ i : κ,
+          ((family i :
+              projectedColoringGeneratorSubspace sharedInteriorPairEmbedding colorings) :
+              sharedInteriorPairGraph.edgeSet → Color) =
+            Pi.single e red)
+    (hwitnessBlue :
+      ∀ e ∈ sharedInteriorPairInteriorControlEdges,
+        ∃ i : κ,
+          ((family i :
+              projectedColoringGeneratorSubspace sharedInteriorPairEmbedding colorings) :
+              sharedInteriorPairGraph.edgeSet → Color) =
+            Pi.single e blue) :
+    ClosedWalkNeighborhoodPairingKernelShell sharedInteriorPairEmbedding :=
+  ClosedWalkNeighborhoodPairingKernelShell.of_controlEdgeNonzeroWitnesses
+    shell colorings hsubset family sharedInteriorPairInteriorControlEdges
+    sharedInteriorPair_boundaryZero_declaredForcedEdges_nonzeroCoverage
+    hwitnessRed hwitnessBlue
+
+/-- Boundary-root synthesis form of the shared-interior-pair focus F₂ verdict. -/
+theorem sharedInteriorPair_theorem49BoundaryRootSynthesis_of_declaredForcedEdgeWitnesses
+    [FiniteDimensional F2 (sharedInteriorPairGraph.edgeSet → Color)]
+    (C₀ : sharedInteriorPairGraph.EdgeColoring Color)
+    (colorings : Set (sharedInteriorPairGraph.EdgeColoring Color))
+    (hsubset : colorings ⊆ sharedInteriorPairGraph.EdgeKempeClosure C₀)
+    {κ : Type*}
+    (family : κ → projectedColoringGeneratorSubspace sharedInteriorPairEmbedding colorings)
+    (hwitnessRed :
+      ∀ e ∈ sharedInteriorPairInteriorControlEdges,
+        ∃ i : κ,
+          ((family i :
+              projectedColoringGeneratorSubspace sharedInteriorPairEmbedding colorings) :
+              sharedInteriorPairGraph.edgeSet → Color) =
+            Pi.single e red)
+    (hwitnessBlue :
+      ∀ e ∈ sharedInteriorPairInteriorControlEdges,
+        ∃ i : κ,
+          ((family i :
+              projectedColoringGeneratorSubspace sharedInteriorPairEmbedding colorings) :
+              sharedInteriorPairGraph.edgeSet → Color) =
+            Pi.single e blue) :
+    Theorem49BoundaryRootSynthesis sharedInteriorPairEmbedding C₀ :=
+  theorem49BoundaryRootSynthesis_of_controlEdgeNonzeroWitnesses
+    sharedInteriorPairEmbedding C₀ colorings hsubset family
+    sharedInteriorPairInteriorControlEdges
+    sharedInteriorPair_boundaryZero_declaredForcedEdges_nonzeroCoverage
+    hwitnessRed hwitnessBlue
+
+/--
+Closed-walk shell producer for the wheel-with-inner-triangle focus verdict.  The three declared
+spokes are a complete finite nonzero-coverage set for selected-boundary-zero chains.
+-/
+noncomputable def wheelWithInnerTriangle_closedWalkNeighborhoodPairingKernelShell_of_declaredForcedEdgeWitnesses
+    (shell : ClosedWalkExactShell wheelWithInnerTriangleEmbedding)
+    (colorings : Set (wheelWithInnerTriangleGraph.EdgeColoring Color))
+    (hsubset : colorings ⊆ wheelWithInnerTriangleGraph.EdgeKempeClosure shell.tait.coloring)
+    {κ : Type*}
+    (family : κ → projectedColoringGeneratorSubspace wheelWithInnerTriangleEmbedding colorings)
+    (hwitnessRed :
+      ∀ e ∈ wheelWithInnerTriangleInteriorControlEdges,
+        ∃ i : κ,
+          ((family i :
+              projectedColoringGeneratorSubspace wheelWithInnerTriangleEmbedding colorings) :
+              wheelWithInnerTriangleGraph.edgeSet → Color) =
+            Pi.single e red)
+    (hwitnessBlue :
+      ∀ e ∈ wheelWithInnerTriangleInteriorControlEdges,
+        ∃ i : κ,
+          ((family i :
+              projectedColoringGeneratorSubspace wheelWithInnerTriangleEmbedding colorings) :
+              wheelWithInnerTriangleGraph.edgeSet → Color) =
+            Pi.single e blue) :
+    ClosedWalkNeighborhoodPairingKernelShell wheelWithInnerTriangleEmbedding :=
+  ClosedWalkNeighborhoodPairingKernelShell.of_controlEdgeNonzeroWitnesses
+    shell colorings hsubset family wheelWithInnerTriangleInteriorControlEdges
+    wheelWithInnerTriangle_boundaryZero_declaredForcedEdges_nonzeroCoverage
+    hwitnessRed hwitnessBlue
+
+/-- Boundary-root synthesis form of the wheel-with-inner-triangle focus F₂ verdict. -/
+theorem wheelWithInnerTriangle_theorem49BoundaryRootSynthesis_of_declaredForcedEdgeWitnesses
+    [FiniteDimensional F2 (wheelWithInnerTriangleGraph.edgeSet → Color)]
+    (C₀ : wheelWithInnerTriangleGraph.EdgeColoring Color)
+    (colorings : Set (wheelWithInnerTriangleGraph.EdgeColoring Color))
+    (hsubset : colorings ⊆ wheelWithInnerTriangleGraph.EdgeKempeClosure C₀)
+    {κ : Type*}
+    (family : κ → projectedColoringGeneratorSubspace wheelWithInnerTriangleEmbedding colorings)
+    (hwitnessRed :
+      ∀ e ∈ wheelWithInnerTriangleInteriorControlEdges,
+        ∃ i : κ,
+          ((family i :
+              projectedColoringGeneratorSubspace wheelWithInnerTriangleEmbedding colorings) :
+              wheelWithInnerTriangleGraph.edgeSet → Color) =
+            Pi.single e red)
+    (hwitnessBlue :
+      ∀ e ∈ wheelWithInnerTriangleInteriorControlEdges,
+        ∃ i : κ,
+          ((family i :
+              projectedColoringGeneratorSubspace wheelWithInnerTriangleEmbedding colorings) :
+              wheelWithInnerTriangleGraph.edgeSet → Color) =
+            Pi.single e blue) :
+    Theorem49BoundaryRootSynthesis wheelWithInnerTriangleEmbedding C₀ :=
+  theorem49BoundaryRootSynthesis_of_controlEdgeNonzeroWitnesses
+    wheelWithInnerTriangleEmbedding C₀ colorings hsubset family
+    wheelWithInnerTriangleInteriorControlEdges
+    wheelWithInnerTriangle_boundaryZero_declaredForcedEdges_nonzeroCoverage
+    hwitnessRed hwitnessBlue
+
 end Theorem49BoundaryZeroForcedEdgeRegression
 
 end Mettapedia.GraphTheory.FourColor
