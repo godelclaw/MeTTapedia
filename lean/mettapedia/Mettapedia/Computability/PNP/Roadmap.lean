@@ -49,6 +49,7 @@ def currentPNPRoadmap : List PNPRoadmapEntry :=
       status := .ledgerCovered
       truthValue := ⟨100, 92⟩
       obligation := "Treat local Kpoly coverage as local ledger evidence only." },
+    { stage := .localLedgerAudit, proofNodeKey := "pnp.kpoly.polynomial-functor-agreement", status := .blockedByCounterexample, truthValue := ⟨100, 99⟩, obligation := "Do not treat polynomial small-image structure as a recovery or weakness bound without a separate bad-code agreement theorem." },
     { stage := .barrierObstruction
       proofNodeKey := "pnp.kpoly-promoted.all-barrier-obstructions"
       status := .barrierBlocked

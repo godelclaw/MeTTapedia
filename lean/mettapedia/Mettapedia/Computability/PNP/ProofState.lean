@@ -3,6 +3,7 @@ import Mettapedia.Computability.PNP.ClockedKpolyActualGapClosure
 import Mettapedia.Computability.PNP.CruxKpolyBridgeCurrentStatus
 import Mettapedia.Computability.PNP.CruxKpolyPromotedPacket
 import Mettapedia.Computability.PNP.CruxSynthesisRegression
+import Mettapedia.Computability.PNP.KpolyPolynomialFunctorAgreementObstruction
 import Mettapedia.Computability.PNP.Barriers.ProperSubsetLabCanaries
 import Mettapedia.Computability.PNP.PNPv13AtomicBudgetLedgerAuditorCanaries
 import Mettapedia.Computability.PNP.PNPv13CDENFNormalizerCanaries
@@ -20,7 +21,6 @@ The entries below are bookkeeping data: `truthValue.supportPercent` means
 current formal support for the named node, not a claim about the Millennium
 problem itself.
 -/
-
 namespace Mettapedia.Computability.PNP
 
 /-- Coarse status tags for public proof-state bookkeeping. -/
@@ -48,9 +48,9 @@ deriving Repr
 
 /-- Current source-map summary for `Mettapedia/Computability/PNP`. -/
 def currentPNPLaneSurveyCounts : PNPLaneSurveyCounts where
-  sourceFiles := 941
-  sourceLines := 124143
-  internalImportEdges := 2276
+  sourceFiles := 942
+  sourceLines := 124328
+  internalImportEdges := 2279
   regressionFiles := 294
   filesOverSevenHundredFiftyLines := 0
   zeroInternalImporterEntrypoints := 256
@@ -77,7 +77,7 @@ def currentPNPProofNodes : List PNPProofNode := [
     key := "pnp.map.current-lane",
     status := .surveyed,
     truthValue := ⟨100, 94⟩,
-    evidence := "The lane currently has 941 Lean files, 124143 lines, 2276 internal import edges, and no files over the split threshold.",
+    evidence := "The lane currently has 942 Lean files, 124328 lines, 2279 internal import edges, and no files over the split threshold.",
     nextObligation := "Keep broad regression files separate from the live entrypoint unless a checked theorem needs them."
   },
   {
@@ -162,6 +162,7 @@ def currentPNPProofNodes : List PNPProofNode := [
     evidence := "currentPNPKpolyCompressionBridgeCoverage_refutation_packet records that clocked Kpoly payload is exactly finite predictor-image cover, while empty product-bound-only and fielded-switching bridge schemas are refuted below the exact-visible surface threshold.",
     nextObligation := "Treat the promoted Kpoly bridge as a route refutation unless a new bridge supplies a stronger finite-cover theorem rather than product-bound or fielded-switching-only evidence."
   },
+  { key := "pnp.kpoly.polynomial-functor-agreement", status := .blockedByCounterexample, truthValue := ⟨100, 99⟩, evidence := "polynomialFunctorSmallImageAgreement_obstruction_packet proves that a one-shape finite polynomial-container image and its two-code bit family do not force any strict pure-atom bad-code agreement bound.", nextObligation := "Do not derive Kpoly recovery or quantale weakness bounds from polynomial small-image evidence alone; require a separate support-disagreement or agreement-mass theorem." },
   {
     key := "pnp.kpoly-promoted.barrier-clearance",
     status := .barrierBlocked,
@@ -331,7 +332,6 @@ def currentPNPProofNodes : List PNPProofNode := [
     nextObligation := "Start a different global-route shape only if it clears the barrier verdicts, challenge-world interfaces, and positive escape witnesses before any separation endpoint is advertised."
   }
 ]
-
 theorem currentPNPStrongestHonestStatus_local_gap_marker :
     currentPNPLocalCruxPacket.covers .clockedFiniteUniformKernel ∧
       ¬ currentPNPLocalCruxPacket.covers .kpolyCompressionBridge ∧
