@@ -10870,6 +10870,84 @@ theorem wheelWithInnerTriangle_CAP5_theorem49BoundaryRootSynthesis_of_forcedEdge
     wheelWithInnerTriangleEmbedding C₀ colorings hsubset family p0Inside p4Inside side
     classifier hcoverage hwitnessRed hwitnessBlue
 
+/-- Failed-synthesis diagnostic for the shared focus shell.  Once exact CAP5 forced-edge coverage
+holds, a failure of Theorem 4.9 synthesis must expose a forced edge missing a red or blue
+single-coordinate projected-generator witness. -/
+theorem sharedInteriorPair_CAP5_exists_forcedEdge_missing_red_or_blue_singleCoordinateWitness
+    {boundaryEdge : Fin 5 → sharedInteriorPairGraph.edgeSet} {n : Nat}
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    [FiniteDimensional F2 (sharedInteriorPairGraph.edgeSet → Color)]
+    (C₀ : sharedInteriorPairGraph.EdgeColoring Color)
+    (colorings : Set (sharedInteriorPairGraph.EdgeColoring Color))
+    (hsubset : colorings ⊆ sharedInteriorPairGraph.EdgeKempeClosure C₀)
+    {κ : Type*}
+    (family : κ → projectedColoringGeneratorSubspace sharedInteriorPairEmbedding colorings)
+    (p0Inside p4Inside : Bool) (side : Fin 8 → Prop)
+    (hcoverage :
+      ∀ ⦃z : sharedInteriorPairGraph.edgeSet → Color⦄,
+        z ∈ planarBoundaryZeroSubmodule sharedInteriorPairEmbedding →
+        z ≠ 0 →
+          ∃ e : sharedInteriorPairGraph.edgeSet,
+            data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e ∧
+              z e ≠ 0)
+    (hnotSynthesis : ¬ Theorem49BoundaryRootSynthesis sharedInteriorPairEmbedding C₀) :
+    (∃ e : sharedInteriorPairGraph.edgeSet,
+      data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e ∧
+        ¬ ∃ i : κ,
+          ((family i :
+              projectedColoringGeneratorSubspace sharedInteriorPairEmbedding colorings) :
+              sharedInteriorPairGraph.edgeSet → Color) =
+            Pi.single e red) ∨
+      ∃ e : sharedInteriorPairGraph.edgeSet,
+        data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e ∧
+          ¬ ∃ i : κ,
+            ((family i :
+                projectedColoringGeneratorSubspace sharedInteriorPairEmbedding colorings) :
+                sharedInteriorPairGraph.edgeSet → Color) =
+              Pi.single e blue :=
+  data.exists_forcedEdge_missing_red_or_blue_singleCoordinateWitness_of_forcedEdgeCoverage_of_not_theorem49BoundaryRootSynthesis
+    sharedInteriorPairEmbedding C₀ colorings hsubset family p0Inside p4Inside side
+    hcoverage hnotSynthesis
+
+/-- Failed-synthesis diagnostic for the wheel focus shell.  Once exact CAP5 forced-edge coverage
+holds, a failure of Theorem 4.9 synthesis must expose a forced edge missing a red or blue
+single-coordinate projected-generator witness. -/
+theorem wheelWithInnerTriangle_CAP5_exists_forcedEdge_missing_red_or_blue_singleCoordinateWitness
+    {boundaryEdge : Fin 5 → wheelWithInnerTriangleGraph.edgeSet} {n : Nat}
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    [FiniteDimensional F2 (wheelWithInnerTriangleGraph.edgeSet → Color)]
+    (C₀ : wheelWithInnerTriangleGraph.EdgeColoring Color)
+    (colorings : Set (wheelWithInnerTriangleGraph.EdgeColoring Color))
+    (hsubset : colorings ⊆ wheelWithInnerTriangleGraph.EdgeKempeClosure C₀)
+    {κ : Type*}
+    (family : κ → projectedColoringGeneratorSubspace wheelWithInnerTriangleEmbedding colorings)
+    (p0Inside p4Inside : Bool) (side : Fin 7 → Prop)
+    (hcoverage :
+      ∀ ⦃z : wheelWithInnerTriangleGraph.edgeSet → Color⦄,
+        z ∈ planarBoundaryZeroSubmodule wheelWithInnerTriangleEmbedding →
+        z ≠ 0 →
+          ∃ e : wheelWithInnerTriangleGraph.edgeSet,
+            data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e ∧
+              z e ≠ 0)
+    (hnotSynthesis : ¬ Theorem49BoundaryRootSynthesis wheelWithInnerTriangleEmbedding C₀) :
+    (∃ e : wheelWithInnerTriangleGraph.edgeSet,
+      data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e ∧
+        ¬ ∃ i : κ,
+          ((family i :
+              projectedColoringGeneratorSubspace wheelWithInnerTriangleEmbedding colorings) :
+              wheelWithInnerTriangleGraph.edgeSet → Color) =
+            Pi.single e red) ∨
+      ∃ e : wheelWithInnerTriangleGraph.edgeSet,
+        data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e ∧
+          ¬ ∃ i : κ,
+            ((family i :
+                projectedColoringGeneratorSubspace wheelWithInnerTriangleEmbedding colorings) :
+                wheelWithInnerTriangleGraph.edgeSet → Color) =
+              Pi.single e blue :=
+  data.exists_forcedEdge_missing_red_or_blue_singleCoordinateWitness_of_forcedEdgeCoverage_of_not_theorem49BoundaryRootSynthesis
+    wheelWithInnerTriangleEmbedding C₀ colorings hsubset family p0Inside p4Inside side
+    hcoverage hnotSynthesis
+
 end Theorem49BoundaryZeroForcedEdgeRegression
 
 end Mettapedia.GraphTheory.FourColor
