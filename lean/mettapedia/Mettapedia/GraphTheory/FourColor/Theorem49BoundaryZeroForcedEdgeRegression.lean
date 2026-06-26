@@ -8647,6 +8647,40 @@ theorem sharedInteriorPair_boundaryZeroKirchhoff_minimalControl_profile :
     exact sharedInteriorPair_boundaryZeroKirchhoff_no_evader_of_vanishes_on_sip12
       z hz hsip12
 
+/-- Combined lab-to-Lean packet for the shared-interior-pair focus shell.  The shell satisfies
+the selected-boundary induced/chord-free carrier condition, and its boundary-zero detector has
+the exact minimal-control behavior computed by the F2 lab. -/
+theorem sharedInteriorPair_selectedBoundaryInduced_carrier_and_F2MinimalControl_profile :
+    SelectedBoundaryInducedSubgraph sharedInteriorPairEmbedding ∧
+      InteriorEdgesNotSelectedBoundaryChords sharedInteriorPairEmbedding ∧
+      (selectedBoundaryInteriorEdgeEndpointVertices sharedInteriorPairEmbedding).Nonempty ∧
+      ((∀ ⦃z : sharedInteriorPairGraph.edgeSet → Color⦄,
+        z ∈ planarBoundaryZeroSubmodule sharedInteriorPairEmbedding →
+        z sip01 = 0 → z sip12 = 0 → z = 0) ∧
+      (∃ z : sharedInteriorPairGraph.edgeSet → Color,
+        z ∈ planarBoundaryZeroSubmodule sharedInteriorPairEmbedding ∧
+        z sip01 = 0 ∧ z sip12 ≠ 0) ∧
+      (∃ z : sharedInteriorPairGraph.edgeSet → Color,
+        z ∈ planarBoundaryZeroSubmodule sharedInteriorPairEmbedding ∧
+        z sip12 = 0 ∧ z sip01 ≠ 0)) ∧
+      ((∃ z : sharedInteriorPairGraph.edgeSet → Color,
+        z ∈ theorem49BoundaryZeroKirchhoffSubspace
+            sharedInteriorPairEmbedding ({(1 : Fin 8)} : Finset (Fin 8)) ∧
+        z ≠ 0) ∧
+      (∀ ⦃z : sharedInteriorPairGraph.edgeSet → Color⦄,
+        z ∈ theorem49BoundaryZeroKirchhoffSubspace
+            sharedInteriorPairEmbedding ({(1 : Fin 8)} : Finset (Fin 8)) →
+        z sip01 = 0 → z = 0) ∧
+      (∀ ⦃z : sharedInteriorPairGraph.edgeSet → Color⦄,
+        z ∈ theorem49BoundaryZeroKirchhoffSubspace
+            sharedInteriorPairEmbedding ({(1 : Fin 8)} : Finset (Fin 8)) →
+        z sip12 = 0 → z = 0)) :=
+  ⟨sharedInteriorPair_selectedBoundaryInducedSubgraph,
+    sharedInteriorPair_interiorEdgesNotSelectedBoundaryChords,
+    selectedBoundaryInteriorEdgeEndpointVertices_nonempty_sharedInteriorPair_via_selectedBoundaryInducedSubgraph,
+    sharedInteriorPair_boundaryZero_minimalControl_profile,
+    sharedInteriorPair_boundaryZeroKirchhoff_minimalControl_profile⟩
+
 /-- Lab-confirmed boundary-zero-only profile for the wheel-with-inner-triangle shell: all three
 interior spokes force zero, while any pair still leaves the third spoke as a nonzero evader. -/
 theorem wheelWithInnerTriangle_boundaryZero_minimalControl_profile :
@@ -8740,6 +8774,55 @@ theorem wheelWithInnerTriangle_boundaryZeroKirchhoff_minimalControl_profile :
     intro hzero
     have h := congrFun hzero wit01
     simp [wheelWithInnerTriangleWit03OnlyEvader] at h
+
+/-- Combined lab-to-Lean packet for the wheel-with-inner-triangle focus shell.  The shell
+satisfies the selected-boundary induced/chord-free carrier condition, and its boundary-zero
+detector has the exact minimal-control behavior computed by the F2 lab. -/
+theorem wheelWithInnerTriangle_selectedBoundaryInduced_carrier_and_F2MinimalControl_profile :
+    SelectedBoundaryInducedSubgraph wheelWithInnerTriangleEmbedding ∧
+      InteriorEdgesNotSelectedBoundaryChords wheelWithInnerTriangleEmbedding ∧
+      (selectedBoundaryInteriorEdgeEndpointVertices wheelWithInnerTriangleEmbedding).Nonempty ∧
+      ((∀ ⦃z : wheelWithInnerTriangleGraph.edgeSet → Color⦄,
+        z ∈ planarBoundaryZeroSubmodule wheelWithInnerTriangleEmbedding →
+        z wit01 = 0 → z wit02 = 0 → z wit03 = 0 → z = 0) ∧
+      (∃ z : wheelWithInnerTriangleGraph.edgeSet → Color,
+        z ∈ planarBoundaryZeroSubmodule wheelWithInnerTriangleEmbedding ∧
+        z wit01 = 0 ∧ z wit02 = 0 ∧ z wit03 ≠ 0) ∧
+      (∃ z : wheelWithInnerTriangleGraph.edgeSet → Color,
+        z ∈ planarBoundaryZeroSubmodule wheelWithInnerTriangleEmbedding ∧
+        z wit01 = 0 ∧ z wit03 = 0 ∧ z wit02 ≠ 0) ∧
+      (∃ z : wheelWithInnerTriangleGraph.edgeSet → Color,
+        z ∈ planarBoundaryZeroSubmodule wheelWithInnerTriangleEmbedding ∧
+        z wit02 = 0 ∧ z wit03 = 0 ∧ z wit01 ≠ 0)) ∧
+      ((∀ ⦃z : wheelWithInnerTriangleGraph.edgeSet → Color⦄,
+        z ∈ theorem49BoundaryZeroKirchhoffSubspace
+            wheelWithInnerTriangleEmbedding ({(0 : Fin 7)} : Finset (Fin 7)) →
+        z wit01 = 0 → z wit02 = 0 → z = 0) ∧
+      (∀ ⦃z : wheelWithInnerTriangleGraph.edgeSet → Color⦄,
+        z ∈ theorem49BoundaryZeroKirchhoffSubspace
+            wheelWithInnerTriangleEmbedding ({(0 : Fin 7)} : Finset (Fin 7)) →
+        z wit01 = 0 → z wit03 = 0 → z = 0) ∧
+      (∀ ⦃z : wheelWithInnerTriangleGraph.edgeSet → Color⦄,
+        z ∈ theorem49BoundaryZeroKirchhoffSubspace
+            wheelWithInnerTriangleEmbedding ({(0 : Fin 7)} : Finset (Fin 7)) →
+        z wit02 = 0 → z wit03 = 0 → z = 0) ∧
+      (∃ z : wheelWithInnerTriangleGraph.edgeSet → Color,
+        z ∈ theorem49BoundaryZeroKirchhoffSubspace
+            wheelWithInnerTriangleEmbedding ({(0 : Fin 7)} : Finset (Fin 7)) ∧
+        z wit01 = 0 ∧ z ≠ 0) ∧
+      (∃ z : wheelWithInnerTriangleGraph.edgeSet → Color,
+        z ∈ theorem49BoundaryZeroKirchhoffSubspace
+            wheelWithInnerTriangleEmbedding ({(0 : Fin 7)} : Finset (Fin 7)) ∧
+        z wit02 = 0 ∧ z ≠ 0) ∧
+      (∃ z : wheelWithInnerTriangleGraph.edgeSet → Color,
+        z ∈ theorem49BoundaryZeroKirchhoffSubspace
+            wheelWithInnerTriangleEmbedding ({(0 : Fin 7)} : Finset (Fin 7)) ∧
+        z wit03 = 0 ∧ z ≠ 0)) :=
+  ⟨wheelWithInnerTriangle_selectedBoundaryInducedSubgraph,
+    wheelWithInnerTriangle_interiorEdgesNotSelectedBoundaryChords,
+    selectedBoundaryInteriorEdgeEndpointVertices_nonempty_wheelWithInnerTriangle_via_selectedBoundaryInducedSubgraph,
+    wheelWithInnerTriangle_boundaryZero_minimalControl_profile,
+    wheelWithInnerTriangle_boundaryZeroKirchhoff_minimalControl_profile⟩
 
 /-! ## Focus F2 nonzero-coverage verdicts -/
 
