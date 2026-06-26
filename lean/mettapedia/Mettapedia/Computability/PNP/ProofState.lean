@@ -48,9 +48,9 @@ deriving Repr
 
 /-- Current source-map summary for `Mettapedia/Computability/PNP`. -/
 def currentPNPLaneSurveyCounts : PNPLaneSurveyCounts where
-  sourceFiles := 940
-  sourceLines := 123947
-  internalImportEdges := 2274
+  sourceFiles := 941
+  sourceLines := 124143
+  internalImportEdges := 2276
   regressionFiles := 294
   filesOverSevenHundredFiftyLines := 0
   zeroInternalImporterEntrypoints := 256
@@ -77,7 +77,7 @@ def currentPNPProofNodes : List PNPProofNode := [
     key := "pnp.map.current-lane",
     status := .surveyed,
     truthValue := ⟨100, 94⟩,
-    evidence := "The lane currently has 940 Lean files, 123777 lines, 2274 internal import edges, and no files over the split threshold.",
+    evidence := "The lane currently has 941 Lean files, 124143 lines, 2276 internal import edges, and no files over the split threshold.",
     nextObligation := "Keep broad regression files separate from the live entrypoint unless a checked theorem needs them."
   },
   {
@@ -104,9 +104,14 @@ def currentPNPProofNodes : List PNPProofNode := [
   {
     key := "pnp.v13.locked-core-public-message-invariant",
     status := .blockedByCounterexample,
-    truthValue := ⟨100, 98⟩,
+    truthValue := ⟨100, 99⟩,
     evidence := "lockedCorePublicMessageInvariant_bool_guardrails records the finite lab gate: a public-message invariant clears the rigid canary, while deterministic readout with a cross-completion ambiguity blocks the gate and refutes the invariant.",
     nextObligation := "Treat public-message invariance, or an equivalent cross-completion theorem, as a real missing hypothesis before promoting the locked-core readout route."
+  },
+  { key := "pnp.v13.locked-core-identity-readout-family",
+    status := .blockedByCounterexample, truthValue := ⟨100, 99⟩,
+    evidence := "lockedCoreIdentityReadoutFamily_lab_refutation proves that every positive finite identity-readout locked-core dimension is satisfiable and read-deterministic, while every public-message invariant and D.8 locked-message rigidity fail.",
+    nextObligation := "Do not try to derive Appendix D.8 from local satisfiability plus deterministic readout; a replacement route must supply a public-message invariant or a stronger cross-completion theorem."
   },
   {
     key := "pnp.v13.cd-enf-normalizer-canaries",
@@ -377,6 +382,14 @@ theorem currentPNPv13LockedCorePublicMessageInvariant_node :
       lockedCoreAmbiguousDeterministicReadoutAudit.blocksPublicMessageInvariant =
         true := by
   exact lockedCorePublicMessageInvariant_bool_guardrails
+
+theorem currentPNPv13LockedCoreIdentityReadoutFamily_node (n : Nat) :
+    (identityReadoutAppendixDLockedCoreFinSucc n).LockSatisfiable ∧
+      (identityReadoutAppendixDLockedCoreFinSucc n).ReadDeterministic ∧
+      (∀ publicMessage : Unit → Fin (n + 1) → Bool, ¬
+        (identityReadoutAppendixDLockedCoreFinSucc n).PublicMessageInvariant publicMessage) ∧
+      ¬ (identityReadoutAppendixDLockedCoreFinSucc n).LockedMessageRigidity := by
+  exact lockedCoreIdentityReadoutFamily_lab_refutation n
 
 theorem currentPNPv13CDENFNormalizerCanaries_node :
     CDENFAllTargetRelevantLeavesInAllowedClasses cdenfPositiveCanaryLeaves ∧
