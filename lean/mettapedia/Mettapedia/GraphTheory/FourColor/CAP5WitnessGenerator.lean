@@ -4794,6 +4794,36 @@ theorem enumeratedExceptionalAnnulusForcedEdgeClassifierControl_of_forcedEdgeCov
         rcases hcoverage hzBoundary hzNonzero with ⟨e, hedge, hze⟩
         exact ⟨e, (classifier.emittedFinset_spec e).2 hedge, hze⟩)
 
+/-- Exact generic CAP5 detector contract.  For a Boolean exceptional-annulus classifier,
+coverage by the enumerated forced-edge predicate is equivalent to finite control by the
+classifier's emitted edge set. -/
+theorem forcedEdgeCoverage_iff_enumeratedExceptionalAnnulusForcedEdgeClassifierControl
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    [Fintype G.edgeSet]
+    (emb : PlaneEmbeddingWithBoundary G)
+    {p0Inside p4Inside : Bool} {side : V → Prop}
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side) :
+    (∀ ⦃z : G.edgeSet → Color⦄,
+      z ∈ planarBoundaryZeroSubmodule emb →
+      z ≠ 0 →
+        ∃ e : G.edgeSet,
+          data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e ∧
+            z e ≠ 0) ↔
+      (∀ ⦃z : G.edgeSet → Color⦄,
+        z ∈ planarBoundaryZeroSubmodule emb →
+        (∀ e ∈ classifier.emittedFinset, z e = 0) →
+          z = 0) := by
+  constructor
+  · exact data.enumeratedExceptionalAnnulusForcedEdgeClassifierControl_of_forcedEdgeCoverage
+      emb classifier
+  · intro hcontrol z hzBoundary hzNonzero
+    have hwitness :=
+      (data.enumeratedExceptionalAnnulusForcedEdgeClassifierControl_iff_forall_nonzero_exists_mem_nonzero
+        (emb := emb) classifier).1 hcontrol
+    rcases hwitness hzBoundary hzNonzero with ⟨e, heEmitted, hze⟩
+    exact ⟨e, (classifier.emittedFinset_spec e).1 heEmitted, hze⟩
+
 /--
 Finite-lab handoff for exact CAP5 coverage.  If a concrete control set meets every nonzero
 selected-boundary-zero chain and every control edge is emitted by the CAP5 classifier, then the
