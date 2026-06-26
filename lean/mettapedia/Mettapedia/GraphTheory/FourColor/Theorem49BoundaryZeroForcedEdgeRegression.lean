@@ -7020,6 +7020,14 @@ theorem twoBandAnnulusMiddleOuterRadialKirchhoffControl_scalarConstraintMap_ker_
       simpa using hxbot
     simp [hxzero]
 
+theorem twoBandAnnulusMiddleOuterRadialKirchhoffControl_scalarConstraintMap_ker_eq_bot_via_omittedTriple :
+    LinearMap.ker
+      (theorem49BoundaryZeroKirchhoffScalarConstraintMap
+        twoBandAnnulusEmbedding twoBandAnnulusKirchhoffVertices
+        twoBandAnnulusMiddleOuterRadialKirchhoffControlEdges) = ⊥ :=
+  twoBandAnnulusMiddleOuterRadialKirchhoffControl_scalarConstraintMap_ker_eq_bot_of_omittedTriple_columnMap_ker_eq_bot
+    twoBandAnnulusMiddleOuterRadialKirchhoffOmittedTriple_columnMap_ker_eq_bot
+
 def twoBandAnnulusNoncontrollingSixOmittedTripleScalarExtension
     (y : Fin 3 → F2) : twoBandAnnulusGraph.edgeSet → F2 :=
   fun e =>
@@ -7186,6 +7194,44 @@ theorem twoBandAnnulusNoncontrollingSixKirchhoffControl_scalarConstraintMap_ker_
         twoBandAnnulusNoncontrollingSixKirchhoffControlEdges) ≠ ⊥ :=
   twoBandAnnulusNoncontrollingSixKirchhoffControl_scalarConstraintMap_ker_ne_bot_of_omittedTriple_columnMap_ker_ne_bot
     twoBandAnnulusNoncontrollingSixKirchhoffOmittedTriple_columnMap_ker_ne_bot
+
+theorem twoBandAnnulusMiddleOuterRadialKirchhoffOmittedTriple_no_columnKernel_evader :
+    ∀ y : Fin 3 → F2,
+      twoBandAnnulusOmittedTripleKirchhoffColumnMap
+          twoBandAnnulusMiddleOuterRadialKirchhoffOmittedTriple y = 0 →
+      y = 0 :=
+  LinearMap.ker_eq_bot'.mp
+    twoBandAnnulusMiddleOuterRadialKirchhoffOmittedTriple_columnMap_ker_eq_bot
+
+theorem twoBandAnnulusMiddleOuterRadialKirchhoffControl_no_scalarKernel_evader_via_omittedTriple :
+    ∀ x : twoBandAnnulusGraph.edgeSet → F2,
+      theorem49BoundaryZeroKirchhoffScalarConstraintMap
+          twoBandAnnulusEmbedding twoBandAnnulusKirchhoffVertices
+          twoBandAnnulusMiddleOuterRadialKirchhoffControlEdges x = 0 →
+      x = 0 :=
+  LinearMap.ker_eq_bot'.mp
+    twoBandAnnulusMiddleOuterRadialKirchhoffControl_scalarConstraintMap_ker_eq_bot_via_omittedTriple
+
+theorem twoBandAnnulusNoncontrollingSixKirchhoffOmittedTriple_exists_columnKernel_evader :
+    ∃ y : Fin 3 → F2,
+      twoBandAnnulusOmittedTripleKirchhoffColumnMap
+          twoBandAnnulusNoncontrollingSixKirchhoffOmittedTriple y = 0 ∧
+      y ≠ 0 := by
+  rcases (Submodule.ne_bot_iff _).mp
+      twoBandAnnulusNoncontrollingSixKirchhoffOmittedTriple_columnMap_ker_ne_bot with
+    ⟨y, hyker, hyne⟩
+  exact ⟨y, by simpa using hyker, hyne⟩
+
+theorem twoBandAnnulusNoncontrollingSixKirchhoffControl_exists_scalarKernel_evader_via_omittedTriple :
+    ∃ x : twoBandAnnulusGraph.edgeSet → F2,
+      theorem49BoundaryZeroKirchhoffScalarConstraintMap
+          twoBandAnnulusEmbedding twoBandAnnulusKirchhoffVertices
+          twoBandAnnulusNoncontrollingSixKirchhoffControlEdges x = 0 ∧
+      x ≠ 0 := by
+  rcases (Submodule.ne_bot_iff _).mp
+      twoBandAnnulusNoncontrollingSixKirchhoffControl_scalarConstraintMap_ker_ne_bot_via_omittedTriple with
+    ⟨x, hxker, hxne⟩
+  exact ⟨x, by simpa using hxker, hxne⟩
 
 theorem twoBandAnnulusIndicator_mem_planarBoundaryZeroSubmodule_of_subset_interior
     (S : Finset twoBandAnnulusGraph.edgeSet)
