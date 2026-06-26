@@ -4506,6 +4506,32 @@ theorem ofDecidableChecks_missingCheckerEvidence_or_histogram_and_forcedEdgeIndi
         CAP5ExceptionalAnnulusGeneratorReport.latentNode] using hmissing⟩
 
 /--
+Exact forced-edge coverage refutes an evading boundary-zero chain.  This is the algebraic core
+behind the CAP5 path-xor obstruction: a nonzero selected-boundary-zero chain cannot both vanish
+on every enumerated forced edge and be hit by an enumerated forced edge.
+-/
+theorem forcedEdgeCoverage_refutes_boundaryZeroChain_vanishing_on_forcedEdges
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    (emb : PlaneEmbeddingWithBoundary G)
+    (p0Inside p4Inside : Bool) (side : V → Prop)
+    (hcoverage :
+      ∀ ⦃z : G.edgeSet → Color⦄,
+        z ∈ planarBoundaryZeroSubmodule emb →
+        z ≠ 0 →
+          ∃ e : G.edgeSet,
+            data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e ∧
+              z e ≠ 0) :
+    ¬ ∃ z : G.edgeSet → Color,
+      z ∈ planarBoundaryZeroSubmodule emb ∧
+        z ≠ 0 ∧
+          ∀ e : G.edgeSet,
+            data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e →
+              z e = 0 := by
+  rintro ⟨z, hzBoundary, hzNonzero, hzForcedZero⟩
+  rcases hcoverage hzBoundary hzNonzero with ⟨e, heForced, hze⟩
+  exact hze (hzForcedZero e heForced)
+
+/--
 No-missing-evidence consequence of the cardinality handoff.  If the finite CAP5 sweep has no
 latent with missing checker evidence, then the cardinality-gap branch supplies a nonzero
 selected-boundary-zero chain vanishing on every enumerated forced edge; equivalently, those
@@ -4578,8 +4604,10 @@ theorem noMissingCheckerEvidence_refutes_forcedEdgeCoverage_of_emittedFinset_car
   · rcases hcomplete with ⟨_, hpayloadAndWitness⟩
     rcases hpayloadAndWitness with ⟨_, hwitness⟩
     rcases hwitness with ⟨z, hzBoundary, hzNonzero, hzForcedZero, _⟩
-    rcases hcoverage hzBoundary hzNonzero with ⟨e, heForced, hze⟩
-    exact hze (hzForcedZero e heForced)
+    exact
+      (data.forcedEdgeCoverage_refutes_boundaryZeroChain_vanishing_on_forcedEdges
+        emb p0Inside p4Inside side hcoverage)
+        ⟨z, hzBoundary, hzNonzero, hzForcedZero⟩
 
 /--
 Singleton-support form of forced-edge coverage.  If a nonzero selected-boundary-zero chain can
