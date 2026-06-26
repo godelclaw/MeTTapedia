@@ -434,15 +434,18 @@ theorem sip12_not_mem_selectedBoundarySupport :
 
 def sipFace0 : AmbientFace sharedInteriorPairAnnulusEmbedding.faces :=
   ⟨(0 : SharedInteriorPairFace), by
-    simp [sharedInteriorPairAnnulusEmbedding, sharedInteriorPairFaces]⟩
+    change (0 : SharedInteriorPairFace) ∈ Finset.univ
+    exact Finset.mem_univ _⟩
 
 def sipFace1 : AmbientFace sharedInteriorPairAnnulusEmbedding.faces :=
   ⟨(1 : SharedInteriorPairFace), by
-    simp [sharedInteriorPairAnnulusEmbedding, sharedInteriorPairFaces]⟩
+    change (1 : SharedInteriorPairFace) ∈ Finset.univ
+    exact Finset.mem_univ _⟩
 
 def sipFace2 : AmbientFace sharedInteriorPairAnnulusEmbedding.faces :=
   ⟨(2 : SharedInteriorPairFace), by
-    simp [sharedInteriorPairAnnulusEmbedding, sharedInteriorPairFaces]⟩
+    change (2 : SharedInteriorPairFace) ∈ Finset.univ
+    exact Finset.mem_univ _⟩
 
 theorem sipFace_cases
     (f : AmbientFace sharedInteriorPairAnnulusEmbedding.faces) :
@@ -466,19 +469,75 @@ theorem sip01_mem_faceBoundary_iff
     (f : AmbientFace sharedInteriorPairAnnulusEmbedding.faces) :
     sip01 ∈ sharedInteriorPairAnnulusEmbedding.faceBoundary f.1 ↔
       f = sipFace0 ∨ f = sipFace1 := by
-  rcases sipFace_cases f with rfl | rfl | rfl <;>
-    simp [sharedInteriorPairAnnulusEmbedding, sharedInteriorPairFaceBoundary,
-      sipFace0, sipFace1, sipFace2, sip01, sip12, sip23, sip30, sip24, sip40,
-      sip56, sip67, sip75, sharedInteriorPairAnnulusGraph]
+  rcases sipFace_cases f with rfl | rfl | rfl
+  · constructor
+    · intro _
+      exact Or.inl rfl
+    · intro _
+      simp [sharedInteriorPairAnnulusEmbedding, sharedInteriorPairFaceBoundary, sipFace0]
+  · constructor
+    · intro _
+      exact Or.inr rfl
+    · intro _
+      simp [sharedInteriorPairAnnulusEmbedding, sharedInteriorPairFaceBoundary, sipFace1]
+  · constructor
+    · intro hmem
+      have hnot :
+          sip01 ∉ ({sip56, sip67, sip75} :
+            Finset sharedInteriorPairAnnulusGraph.edgeSet) := by decide
+      exact False.elim
+        (hnot (by
+          simpa [sharedInteriorPairAnnulusEmbedding, sharedInteriorPairFaceBoundary,
+            sipFace2] using hmem))
+    · intro hEq
+      rcases hEq with h0 | h1
+      · have hval : (2 : ℕ) = 0 := by
+          simpa [sipFace0, sipFace2] using
+            congrArg
+              (fun f : AmbientFace sharedInteriorPairAnnulusEmbedding.faces => f.1.1) h0
+        omega
+      · have hval : (2 : ℕ) = 1 := by
+          simpa [sipFace1, sipFace2] using
+            congrArg
+              (fun f : AmbientFace sharedInteriorPairAnnulusEmbedding.faces => f.1.1) h1
+        omega
 
 theorem sip12_mem_faceBoundary_iff
     (f : AmbientFace sharedInteriorPairAnnulusEmbedding.faces) :
     sip12 ∈ sharedInteriorPairAnnulusEmbedding.faceBoundary f.1 ↔
       f = sipFace0 ∨ f = sipFace1 := by
-  rcases sipFace_cases f with rfl | rfl | rfl <;>
-    simp [sharedInteriorPairAnnulusEmbedding, sharedInteriorPairFaceBoundary,
-      sipFace0, sipFace1, sipFace2, sip01, sip12, sip23, sip30, sip24, sip40,
-      sip56, sip67, sip75, sharedInteriorPairAnnulusGraph]
+  rcases sipFace_cases f with rfl | rfl | rfl
+  · constructor
+    · intro _
+      exact Or.inl rfl
+    · intro _
+      simp [sharedInteriorPairAnnulusEmbedding, sharedInteriorPairFaceBoundary, sipFace0]
+  · constructor
+    · intro _
+      exact Or.inr rfl
+    · intro _
+      simp [sharedInteriorPairAnnulusEmbedding, sharedInteriorPairFaceBoundary, sipFace1]
+  · constructor
+    · intro hmem
+      have hnot :
+          sip12 ∉ ({sip56, sip67, sip75} :
+            Finset sharedInteriorPairAnnulusGraph.edgeSet) := by decide
+      exact False.elim
+        (hnot (by
+          simpa [sharedInteriorPairAnnulusEmbedding, sharedInteriorPairFaceBoundary,
+            sipFace2] using hmem))
+    · intro hEq
+      rcases hEq with h0 | h1
+      · have hval : (2 : ℕ) = 0 := by
+          simpa [sipFace0, sipFace2] using
+            congrArg
+              (fun f : AmbientFace sharedInteriorPairAnnulusEmbedding.faces => f.1.1) h0
+        omega
+      · have hval : (2 : ℕ) = 1 := by
+          simpa [sipFace1, sipFace2] using
+            congrArg
+              (fun f : AmbientFace sharedInteriorPairAnnulusEmbedding.faces => f.1.1) h1
+        omega
 
 theorem sip12_mem_faceBoundary_of_sip01_mem
     {f : AmbientFace sharedInteriorPairAnnulusEmbedding.faces}
@@ -1266,7 +1325,10 @@ theorem sip23_mem_sharedInteriorPairOuterAmbientBoundary :
     sip23 ∈ sharedInteriorPairBoundaryData.outerAmbientBoundary := by
   exact
     by
-      simpa [sharedInteriorPairBoundaryData, sipOuterRoot] using
+      simpa [sharedInteriorPairBoundaryData, sharedInteriorPairClosedWalkAnnulusBoundarySource,
+        PlanarBoundaryClosedWalkAnnulusBoundarySource.ofFields,
+        PlanarBoundaryClosedWalkAnnulusBoundarySource.toPlanarBoundaryAnnulusBoundaryData,
+        sipOuterRoot] using
         PlanarBoundaryAnnulusBoundaryReachabilityData.mem_outerAmbientBoundary_toPlanarBoundaryAnnulusBoundaryData
           (data := sharedInteriorPairAnnulusBoundaryReachabilityData)
           (e := sipOuterRoot) sipOuterRoot_uniqueReachableRoot_eq
@@ -1275,7 +1337,9 @@ theorem sip24_mem_sharedInteriorPairOuterAmbientBoundary :
     sip24 ∈ sharedInteriorPairBoundaryData.outerAmbientBoundary := by
   exact
     by
-      simpa [sharedInteriorPairBoundaryData] using
+      simpa [sharedInteriorPairBoundaryData, sharedInteriorPairClosedWalkAnnulusBoundarySource,
+        PlanarBoundaryClosedWalkAnnulusBoundarySource.ofFields,
+        PlanarBoundaryClosedWalkAnnulusBoundarySource.toPlanarBoundaryAnnulusBoundaryData] using
         PlanarBoundaryAnnulusBoundaryReachabilityData.mem_outerAmbientBoundary_toPlanarBoundaryAnnulusBoundaryData
           (data := sharedInteriorPairAnnulusBoundaryReachabilityData)
           (e := ⟨sip24, sip24_mem_selectedBoundarySupport⟩)
@@ -1285,7 +1349,10 @@ theorem sip56_mem_sharedInteriorPairInnerAmbientBoundary :
     sip56 ∈ sharedInteriorPairBoundaryData.innerAmbientBoundary := by
   exact
     by
-      simpa [sharedInteriorPairBoundaryData, sipInnerRoot] using
+      simpa [sharedInteriorPairBoundaryData, sharedInteriorPairClosedWalkAnnulusBoundarySource,
+        PlanarBoundaryClosedWalkAnnulusBoundarySource.ofFields,
+        PlanarBoundaryClosedWalkAnnulusBoundarySource.toPlanarBoundaryAnnulusBoundaryData,
+        sipInnerRoot] using
         PlanarBoundaryAnnulusBoundaryReachabilityData.mem_innerAmbientBoundary_toPlanarBoundaryAnnulusBoundaryData
           (data := sharedInteriorPairAnnulusBoundaryReachabilityData)
           (e := sipInnerRoot) sipInnerRoot_uniqueReachableRoot_eq
@@ -1294,7 +1361,9 @@ theorem sip67_mem_sharedInteriorPairInnerAmbientBoundary :
     sip67 ∈ sharedInteriorPairBoundaryData.innerAmbientBoundary := by
   exact
     by
-      simpa [sharedInteriorPairBoundaryData] using
+      simpa [sharedInteriorPairBoundaryData, sharedInteriorPairClosedWalkAnnulusBoundarySource,
+        PlanarBoundaryClosedWalkAnnulusBoundarySource.ofFields,
+        PlanarBoundaryClosedWalkAnnulusBoundarySource.toPlanarBoundaryAnnulusBoundaryData] using
         PlanarBoundaryAnnulusBoundaryReachabilityData.mem_innerAmbientBoundary_toPlanarBoundaryAnnulusBoundaryData
           (data := sharedInteriorPairAnnulusBoundaryReachabilityData)
           (e := ⟨sip67, sip67_mem_selectedBoundarySupport⟩)
@@ -1304,7 +1373,9 @@ theorem sip75_mem_sharedInteriorPairInnerAmbientBoundary :
     sip75 ∈ sharedInteriorPairBoundaryData.innerAmbientBoundary := by
   exact
     by
-      simpa [sharedInteriorPairBoundaryData] using
+      simpa [sharedInteriorPairBoundaryData, sharedInteriorPairClosedWalkAnnulusBoundarySource,
+        PlanarBoundaryClosedWalkAnnulusBoundarySource.ofFields,
+        PlanarBoundaryClosedWalkAnnulusBoundarySource.toPlanarBoundaryAnnulusBoundaryData] using
         PlanarBoundaryAnnulusBoundaryReachabilityData.mem_innerAmbientBoundary_toPlanarBoundaryAnnulusBoundaryData
           (data := sharedInteriorPairAnnulusBoundaryReachabilityData)
           (e := ⟨sip75, sip75_mem_selectedBoundarySupport⟩)
@@ -1632,7 +1703,9 @@ theorem
   have hcollarNonempty :
       (data.collarFaces j).Nonempty := by
     let decomp := data.toPlanarBoundaryAnnulusDecomposition
-    simpa [j, decomp] using decomp.collarFaces_nonempty j
+    simpa [j, decomp,
+      PlanarBoundaryAnnulusCurrentBoundaryData.toPlanarBoundaryAnnulusDecomposition] using
+      decomp.collarFaces_nonempty j
   have hsip23NotInner : sip23 ∉ data.innerAmbientBoundary := by
     intro hsip23Inner
     exact
@@ -1760,8 +1833,10 @@ theorem
   exact
     not_exists_twoCollar_planarBoundaryAnnulusCurrentBoundaryData_with_sharedInteriorPairBoundaryData
       ⟨data.toPlanarBoundaryAnnulusDecomposition.toPlanarBoundaryAnnulusCurrentBoundaryData, by
-          simpa using hnum, by
-          simpa using hboundary⟩
+          simpa [PlanarBoundaryAnnulusDecomposition.toPlanarBoundaryAnnulusCurrentBoundaryData]
+            using hnum, by
+          simpa [PlanarBoundaryAnnulusDecomposition.toPlanarBoundaryAnnulusCurrentBoundaryData]
+            using hboundary⟩
 
 theorem
     closedWalkAnnulusBoundarySource_without_twoCollarAnnulusCollarGeometry_with_sharedInteriorPairBoundaryData :
@@ -1804,7 +1879,7 @@ theorem
       simpa [hnum] using k.isLt
     intro hjk
     have hkgt : 2 < k.1 := by
-      simpa [jLast] using hjk
+      simpa [Fin.lt_def, jLast] using hjk
     omega
   have hlaterLastEmpty : laterLayerFaces data.collarFaces jLast = ∅ := by
     exact laterLayerFaces_eq_empty_of_forall_not_lt data.collarFaces jLast hnoLaterLast
@@ -1823,7 +1898,9 @@ theorem
   have hlastNonempty :
       (data.collarFaces jLast).Nonempty := by
     let decomp := data.toPlanarBoundaryAnnulusDecomposition
-    simpa [jLast, decomp] using decomp.collarFaces_nonempty jLast
+    simpa [jLast, decomp,
+      PlanarBoundaryAnnulusCurrentBoundaryData.toPlanarBoundaryAnnulusDecomposition] using
+      decomp.collarFaces_nonempty jLast
   have hsip23NotInner : sip23 ∉ data.innerAmbientBoundary := by
     intro hsip23Inner
     exact
@@ -1915,7 +1992,9 @@ theorem
   have hmidNonempty :
       (data.collarFaces jMid).Nonempty := by
     let decomp := data.toPlanarBoundaryAnnulusDecomposition
-    simpa [jMid, decomp] using decomp.collarFaces_nonempty jMid
+    simpa [jMid, decomp,
+      PlanarBoundaryAnnulusCurrentBoundaryData.toPlanarBoundaryAnnulusDecomposition] using
+      decomp.collarFaces_nonempty jMid
   have hjMidNeLast : jMid ≠ jLast := by
     intro h
     have hval := congrArg (fun x : Fin data.numCollars => x.1) h
@@ -2034,14 +2113,14 @@ theorem
     (data : PlanarBoundaryAnnulusCurrentBoundaryData sharedInteriorPairAnnulusEmbedding) :
     data.numCollars ≤ 3 := by
   have hle := data.numCollars_le_card_faces
-  simpa [card_ambientFace_sharedInteriorPairAnnulusEmbedding] using hle
+  simpa [sharedInteriorPairAnnulusEmbedding, sharedInteriorPairFaces] using hle
 
 theorem
     numCollars_le_three_of_planarBoundaryAnnulusCollarGeometry_sharedInteriorPair
     (data : PlanarBoundaryAnnulusCollarGeometry sharedInteriorPairAnnulusEmbedding) :
     data.numCollars ≤ 3 := by
   have hle := data.numCollars_le_card_faces
-  simpa [card_ambientFace_sharedInteriorPairAnnulusEmbedding] using hle
+  simpa [sharedInteriorPairAnnulusEmbedding, sharedInteriorPairFaces] using hle
 
 theorem terminal_collarFaces_eq_singleton_sipFace2
     (data : PlanarBoundaryAnnulusCollarGeometry sharedInteriorPairAnnulusEmbedding)
@@ -2128,7 +2207,7 @@ theorem
       simpa [hnum] using k.isLt
     intro hjk
     have hkgt : 1 < k.1 := by
-      simpa [jLast] using hjk
+      simpa [Fin.lt_def, jLast] using hjk
     omega
   have hlaterLastEmpty : laterLayerFaces data.collarFaces jLast = ∅ := by
     exact laterLayerFaces_eq_empty_of_forall_not_lt data.collarFaces jLast hnoLaterLast
@@ -2181,7 +2260,7 @@ theorem
       simpa [hnum] using k.isLt
     intro hjk
     have hkgt : 2 < k.1 := by
-      simpa [jLast] using hjk
+      simpa [Fin.lt_def, jLast] using hjk
     omega
   have hlaterLastEmpty : laterLayerFaces data.collarFaces jLast = ∅ := by
     exact laterLayerFaces_eq_empty_of_forall_not_lt data.collarFaces jLast hnoLaterLast
