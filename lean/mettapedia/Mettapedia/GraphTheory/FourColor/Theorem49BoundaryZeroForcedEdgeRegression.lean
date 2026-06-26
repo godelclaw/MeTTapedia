@@ -2,6 +2,7 @@ import Mettapedia.GraphTheory.FourColor.Theorem49TargetSubspace
 import Mettapedia.GraphTheory.FourColor.Theorem49BoundaryFreeSelectorConstruction
 import Mettapedia.GraphTheory.FourColor.PlanarBoundaryClosedWalkSource
 import Mettapedia.GraphTheory.FourColor.CAP5WitnessGenerator
+import Mettapedia.GraphTheory.FourColor.CAP5PathXorDetector
 import Mettapedia.GraphTheory.FourColor.Theorem49ColoringGeneratorCoordinateDetector
 
 /-!
@@ -9606,6 +9607,231 @@ theorem wheelWithInnerTriangle_theorem49BoundaryRootSynthesis_of_projectedFaceGe
     wheelWithInnerTriangleInteriorControlEdges
     wheelWithInnerTriangle_boundaryZero_controlEdges_interiorEdges
     hred hblue
+
+theorem sharedInteriorPair_remainingRedSingleCoordinateMembership_of_uniqueCertificates
+    {boundaryEdge : Fin 5 → sharedInteriorPairGraph.edgeSet} {n : Nat}
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    {p0Inside p4Inside : Bool} {side : Fin 8 → Prop}
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side) :
+    ∀ e ∈ classifier.remainingControlEdges sharedInteriorPairInteriorControlEdges,
+      Pi.single e red ∈
+        projectedColoringGeneratorSubspace sharedInteriorPairEmbedding
+          sharedInteriorPairProjectedGeneratorCertificateColorings := by
+  intro e he
+  exact sharedInteriorPair_redBlueSingleCoordinateMemberships_of_uniqueCertificates.1 e
+    ((classifier.mem_remainingControlEdges_iff sharedInteriorPairInteriorControlEdges e).1 he).1
+
+theorem sharedInteriorPair_remainingBlueSingleCoordinateMembership_of_uniqueCertificates
+    {boundaryEdge : Fin 5 → sharedInteriorPairGraph.edgeSet} {n : Nat}
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    {p0Inside p4Inside : Bool} {side : Fin 8 → Prop}
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side) :
+    ∀ e ∈ classifier.remainingControlEdges sharedInteriorPairInteriorControlEdges,
+      Pi.single e blue ∈
+        projectedColoringGeneratorSubspace sharedInteriorPairEmbedding
+          sharedInteriorPairProjectedGeneratorCertificateColorings := by
+  intro e he
+  exact sharedInteriorPair_redBlueSingleCoordinateMemberships_of_uniqueCertificates.2 e
+    ((classifier.mem_remainingControlEdges_iff sharedInteriorPairInteriorControlEdges e).1 he).1
+
+theorem wheelWithInnerTriangle_remainingRedSingleCoordinateMembership_of_uniqueCertificates
+    {boundaryEdge : Fin 5 → wheelWithInnerTriangleGraph.edgeSet} {n : Nat}
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    {p0Inside p4Inside : Bool} {side : Fin 7 → Prop}
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side) :
+    ∀ e ∈ classifier.remainingControlEdges wheelWithInnerTriangleInteriorControlEdges,
+      Pi.single e red ∈
+        projectedColoringGeneratorSubspace wheelWithInnerTriangleEmbedding
+          wheelWithInnerTriangleProjectedGeneratorCertificateColorings := by
+  intro e he
+  exact wheelWithInnerTriangle_redBlueSingleCoordinateMemberships_of_uniqueCertificates.1 e
+    ((classifier.mem_remainingControlEdges_iff wheelWithInnerTriangleInteriorControlEdges e).1 he).1
+
+theorem wheelWithInnerTriangle_remainingBlueSingleCoordinateMembership_of_uniqueCertificates
+    {boundaryEdge : Fin 5 → wheelWithInnerTriangleGraph.edgeSet} {n : Nat}
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    {p0Inside p4Inside : Bool} {side : Fin 7 → Prop}
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side) :
+    ∀ e ∈ classifier.remainingControlEdges wheelWithInnerTriangleInteriorControlEdges,
+      Pi.single e blue ∈
+        projectedColoringGeneratorSubspace wheelWithInnerTriangleEmbedding
+          wheelWithInnerTriangleProjectedGeneratorCertificateColorings := by
+  intro e he
+  exact wheelWithInnerTriangle_redBlueSingleCoordinateMemberships_of_uniqueCertificates.2 e
+    ((classifier.mem_remainingControlEdges_iff wheelWithInnerTriangleInteriorControlEdges e).1 he).1
+
+theorem sharedInteriorPair_CAP5_forcedEdgeIndicatorPathXorDetectorPayload_and_extensionControlEdge_boundaryZeroChain_canonicalFamilyPairing_ne_zero_of_uniqueCertificates_of_emittedFinset_card_lt_two
+    {boundaryEdge : Fin 5 → sharedInteriorPairGraph.edgeSet} {n : Nat}
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    (p0Inside p4Inside : Bool) (h : data.IsExceptional)
+    (side : Fin 8 → Prop) (hcyclic : CyclicallyFiveEdgeConnected sharedInteriorPairGraph)
+    (hportal_crosses :
+      ∀ edgeCandidate : CAP5ExceptionalAnnulusBoundaryEdgeSupportCandidate boundaryEdge,
+        data.RealizesExceptionalBoundarySupportOrientation
+            edgeCandidate.portalCandidate.orientation →
+        edgeCandidate.portalCandidate.sideCase =
+            CAP5ExceptionalAnnulusSideCase.ofPortalSides p0Inside p4Inside →
+        ∀ i : Fin 5, i ∈ edgeCandidate.portalCandidate.portalSet →
+          EdgeCrossesVertexSide sharedInteriorPairGraph side (boundaryEdge i))
+    (hcycles : HasCycleOnSide sharedInteriorPairGraph side ∧
+      HasCycleOnSide sharedInteriorPairGraph (fun v => ¬ side v))
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (hcard : classifier.emittedFinset.card < 2) :
+    let hred :=
+      sharedInteriorPair_remainingRedSingleCoordinateMembership_of_uniqueCertificates
+        classifier
+    let hblue :=
+      sharedInteriorPair_remainingBlueSingleCoordinateMembership_of_uniqueCertificates
+        classifier
+    data.ForcedEdgeIndicatorPathXorDetectorPayload p0Inside p4Inside side ∧
+      ∃ z : sharedInteriorPairGraph.edgeSet → Color,
+        z ∈ planarBoundaryZeroSubmodule sharedInteriorPairEmbedding ∧
+          z ≠ 0 ∧
+            (∀ e : sharedInteriorPairGraph.edgeSet,
+              data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e →
+                z e = 0) ∧
+              ∃ e : sharedInteriorPairGraph.edgeSet,
+                (e ∈ classifier.crossingExtensionFinset sharedInteriorPairInteriorControlEdges ∨
+                  e ∈ classifier.noncrossingExtensionFinset
+                    sharedInteriorPairInteriorControlEdges) ∧
+                  e ∈ classifier.remainingControlEdges sharedInteriorPairInteriorControlEdges ∧
+                    ¬ data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e ∧
+                      z e ≠ 0 ∧
+                        ((classifier.remainingControlEdges
+                            sharedInteriorPairInteriorControlEdges).erase e).card <
+                          (classifier.remainingControlEdges
+                            sharedInteriorPairInteriorControlEdges).card ∧
+                          ∃ i :
+                            ({e : sharedInteriorPairGraph.edgeSet //
+                              e ∈ classifier.remainingControlEdges
+                                sharedInteriorPairInteriorControlEdges} × Bool),
+                            chainDotBilinForm sharedInteriorPairGraph.edgeSet
+                                (redBlueSingleCoordinateFamily
+                                  (classifier.remainingControlEdges
+                                    sharedInteriorPairInteriorControlEdges)
+                                  hred hblue i :
+                                  sharedInteriorPairGraph.edgeSet → Color) z ≠ 0 := by
+  have hcard' :
+      classifier.emittedFinset.card +
+          Fintype.card {e : sharedInteriorPairGraph.edgeSet //
+            e ∈ selectedBoundarySupport sharedInteriorPairEmbedding.faceBoundary
+              sharedInteriorPairEmbedding.faces sharedInteriorPairEmbedding.faces} <
+        Fintype.card sharedInteriorPairGraph.edgeSet := by
+    have hboundary :
+        Fintype.card {e : sharedInteriorPairGraph.edgeSet //
+          e ∈ selectedBoundarySupport sharedInteriorPairEmbedding.faceBoundary
+            sharedInteriorPairEmbedding.faces sharedInteriorPairEmbedding.faces} = 7 := by
+      rw [sharedInteriorPair_selectedBoundarySupport_eq]
+      decide
+    have hedge : Fintype.card sharedInteriorPairGraph.edgeSet = 9 := by
+      decide
+    rw [hboundary, hedge]
+    omega
+  let hred :=
+    sharedInteriorPair_remainingRedSingleCoordinateMembership_of_uniqueCertificates
+      classifier
+  let hblue :=
+    sharedInteriorPair_remainingBlueSingleCoordinateMembership_of_uniqueCertificates
+      classifier
+  exact
+    data.forcedEdgeIndicatorPathXorDetectorPayload_and_extensionControlEdge_boundaryZeroChain_canonicalFamilyPairing_ne_zero_of_emittedFinset_card_add_boundary_card_lt_of_finsetControl
+      sharedInteriorPairEmbedding sharedInteriorPairProjectedGeneratorCertificateColorings
+      p0Inside p4Inside h side hcyclic hportal_crosses hcycles classifier
+      sharedInteriorPairInteriorControlEdges hcard'
+      sharedInteriorPair_boundaryZero_controlEdges_interiorEdges
+      hred hblue
+
+theorem wheelWithInnerTriangle_CAP5_forcedEdgeIndicatorPathXorDetectorPayload_and_extensionControlEdge_boundaryZeroChain_canonicalFamilyPairing_ne_zero_of_uniqueCertificates_of_emittedFinset_card_lt_three
+    {boundaryEdge : Fin 5 → wheelWithInnerTriangleGraph.edgeSet} {n : Nat}
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    (p0Inside p4Inside : Bool) (h : data.IsExceptional)
+    (side : Fin 7 → Prop) (hcyclic : CyclicallyFiveEdgeConnected wheelWithInnerTriangleGraph)
+    (hportal_crosses :
+      ∀ edgeCandidate : CAP5ExceptionalAnnulusBoundaryEdgeSupportCandidate boundaryEdge,
+        data.RealizesExceptionalBoundarySupportOrientation
+            edgeCandidate.portalCandidate.orientation →
+        edgeCandidate.portalCandidate.sideCase =
+            CAP5ExceptionalAnnulusSideCase.ofPortalSides p0Inside p4Inside →
+        ∀ i : Fin 5, i ∈ edgeCandidate.portalCandidate.portalSet →
+          EdgeCrossesVertexSide wheelWithInnerTriangleGraph side (boundaryEdge i))
+    (hcycles : HasCycleOnSide wheelWithInnerTriangleGraph side ∧
+      HasCycleOnSide wheelWithInnerTriangleGraph (fun v => ¬ side v))
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (hcard : classifier.emittedFinset.card < 3) :
+    let hred :=
+      wheelWithInnerTriangle_remainingRedSingleCoordinateMembership_of_uniqueCertificates
+        classifier
+    let hblue :=
+      wheelWithInnerTriangle_remainingBlueSingleCoordinateMembership_of_uniqueCertificates
+        classifier
+    data.ForcedEdgeIndicatorPathXorDetectorPayload p0Inside p4Inside side ∧
+      ∃ z : wheelWithInnerTriangleGraph.edgeSet → Color,
+        z ∈ planarBoundaryZeroSubmodule wheelWithInnerTriangleEmbedding ∧
+          z ≠ 0 ∧
+            (∀ e : wheelWithInnerTriangleGraph.edgeSet,
+              data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e →
+                z e = 0) ∧
+              ∃ e : wheelWithInnerTriangleGraph.edgeSet,
+                (e ∈ classifier.crossingExtensionFinset
+                    wheelWithInnerTriangleInteriorControlEdges ∨
+                  e ∈ classifier.noncrossingExtensionFinset
+                    wheelWithInnerTriangleInteriorControlEdges) ∧
+                  e ∈ classifier.remainingControlEdges
+                    wheelWithInnerTriangleInteriorControlEdges ∧
+                    ¬ data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e ∧
+                      z e ≠ 0 ∧
+                        ((classifier.remainingControlEdges
+                            wheelWithInnerTriangleInteriorControlEdges).erase e).card <
+                          (classifier.remainingControlEdges
+                            wheelWithInnerTriangleInteriorControlEdges).card ∧
+                          ∃ i :
+                            ({e : wheelWithInnerTriangleGraph.edgeSet //
+                              e ∈ classifier.remainingControlEdges
+                                wheelWithInnerTriangleInteriorControlEdges} × Bool),
+                            chainDotBilinForm wheelWithInnerTriangleGraph.edgeSet
+                                (redBlueSingleCoordinateFamily
+                                  (classifier.remainingControlEdges
+                                    wheelWithInnerTriangleInteriorControlEdges)
+                                  hred hblue i :
+                                  wheelWithInnerTriangleGraph.edgeSet → Color) z ≠ 0 := by
+  have hcard' :
+      classifier.emittedFinset.card +
+          Fintype.card {e : wheelWithInnerTriangleGraph.edgeSet //
+            e ∈ selectedBoundarySupport wheelWithInnerTriangleEmbedding.faceBoundary
+              wheelWithInnerTriangleEmbedding.faces
+              wheelWithInnerTriangleEmbedding.faces} <
+        Fintype.card wheelWithInnerTriangleGraph.edgeSet := by
+    have hboundary :
+        Fintype.card {e : wheelWithInnerTriangleGraph.edgeSet //
+          e ∈ selectedBoundarySupport wheelWithInnerTriangleEmbedding.faceBoundary
+            wheelWithInnerTriangleEmbedding.faces
+            wheelWithInnerTriangleEmbedding.faces} = 6 := by
+      rw [wheelWithInnerTriangle_selectedBoundarySupport_eq]
+      decide
+    have hedge : Fintype.card wheelWithInnerTriangleGraph.edgeSet = 9 := by
+      decide
+    rw [hboundary, hedge]
+    omega
+  let hred :=
+    wheelWithInnerTriangle_remainingRedSingleCoordinateMembership_of_uniqueCertificates
+      classifier
+  let hblue :=
+    wheelWithInnerTriangle_remainingBlueSingleCoordinateMembership_of_uniqueCertificates
+      classifier
+  exact
+    data.forcedEdgeIndicatorPathXorDetectorPayload_and_extensionControlEdge_boundaryZeroChain_canonicalFamilyPairing_ne_zero_of_emittedFinset_card_add_boundary_card_lt_of_finsetControl
+      wheelWithInnerTriangleEmbedding
+      wheelWithInnerTriangleProjectedGeneratorCertificateColorings
+      p0Inside p4Inside h side hcyclic hportal_crosses hcycles classifier
+      wheelWithInnerTriangleInteriorControlEdges hcard'
+      wheelWithInnerTriangle_boundaryZero_controlEdges_interiorEdges
+      hred hblue
 
 end Theorem49BoundaryZeroForcedEdgeRegression
 
