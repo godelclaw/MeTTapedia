@@ -4275,6 +4275,47 @@ theorem positiveTwoCollarToy_interiorEdgeSupport_eq :
     rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl <;>
     decide
 
+/-- Concrete regression for the validation-lab odd-cycle obstruction on the positive
+two-collar toy.  The three interior path edges form a triangle, so no fixed CAP5 side can
+enumerate all of them as exceptional forced edges. -/
+theorem positiveTwoCollarToy_not_interiorEdgeSupport_subset_enumeratedForcedEdges_of_path_triangle
+    {boundaryEdge : Fin 5 → positiveTwoCollarToyGraph.edgeSet} {n : Nat}
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    (p0Inside p4Inside : Bool) (side : Fin 9 → Prop) :
+    ¬ (∀ e : positiveTwoCollarToyGraph.edgeSet,
+      e ∈ interiorEdgeSupport
+          positiveTwoCollarToyEmbedding.faceBoundary
+          positiveTwoCollarToyEmbedding.faces →
+        data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e) :=
+  CAP5TransportedEdgeComponentCoverCore.not_interiorEdgeSupport_subset_enumeratedForcedEdges_of_interiorEdgeSupport_triangle
+      positiveTwoCollarToyEmbedding p0Inside p4Inside side
+      (a := (3 : Fin 9)) (b := (4 : Fin 9)) (c := (5 : Fin 9))
+      (eab := ptcP34) (ebc := ptcP45) (eac := ptcP53)
+      rfl rfl (by simp [ptcP53])
+      ptcP34_mem_interiorEdgeSupport
+      ptcP45_mem_interiorEdgeSupport
+      ptcP53_mem_interiorEdgeSupport
+
+/-- Worklist-facing form of the positive two-collar odd-cycle regression: any CAP5 forced-edge
+enumeration misses at least one interior path edge. -/
+theorem positiveTwoCollarToy_exists_interiorEdgeSupportEdge_not_enumeratedForcedEdge_of_path_triangle
+    {boundaryEdge : Fin 5 → positiveTwoCollarToyGraph.edgeSet} {n : Nat}
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    (p0Inside p4Inside : Bool) (side : Fin 9 → Prop) :
+    ∃ e : positiveTwoCollarToyGraph.edgeSet,
+      e ∈ interiorEdgeSupport
+          positiveTwoCollarToyEmbedding.faceBoundary
+          positiveTwoCollarToyEmbedding.faces ∧
+        ¬ data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e :=
+  CAP5TransportedEdgeComponentCoverCore.exists_interiorEdgeSupportEdge_not_enumeratedForcedEdge_of_interiorEdgeSupport_triangle
+      positiveTwoCollarToyEmbedding p0Inside p4Inside side
+      (a := (3 : Fin 9)) (b := (4 : Fin 9)) (c := (5 : Fin 9))
+      (eab := ptcP34) (ebc := ptcP45) (eac := ptcP53)
+      rfl rfl (by simp [ptcP53])
+      ptcP34_mem_interiorEdgeSupport
+      ptcP45_mem_interiorEdgeSupport
+      ptcP53_mem_interiorEdgeSupport
+
 def ptcFace0 : AmbientFace positiveTwoCollarToyEmbedding.faces :=
   ⟨(0 : PositiveTwoCollarToyFace), by decide⟩
 
@@ -5321,6 +5362,47 @@ theorem twoBandAnnulus_interiorEdgeSupport_eq :
     rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl |
     rfl | rfl | rfl | rfl | rfl <;>
     decide
+
+/-- Concrete regression for the validation-lab odd-cycle obstruction on the two-band annulus.
+The middle three interior edges form a triangle, so all-interior CAP5 forced-edge enumeration is
+impossible for any fixed side. -/
+theorem twoBandAnnulus_not_interiorEdgeSupport_subset_enumeratedForcedEdges_of_middle_triangle
+    {boundaryEdge : Fin 5 → twoBandAnnulusGraph.edgeSet} {n : Nat}
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    (p0Inside p4Inside : Bool) (side : Fin 9 → Prop) :
+    ¬ (∀ e : twoBandAnnulusGraph.edgeSet,
+      e ∈ interiorEdgeSupport
+          twoBandAnnulusEmbedding.faceBoundary
+          twoBandAnnulusEmbedding.faces →
+        data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e) :=
+  CAP5TransportedEdgeComponentCoverCore.not_interiorEdgeSupport_subset_enumeratedForcedEdges_of_interiorEdgeSupport_triangle
+      twoBandAnnulusEmbedding p0Inside p4Inside side
+      (a := (3 : Fin 9)) (b := (4 : Fin 9)) (c := (5 : Fin 9))
+      (eab := tbaM34) (ebc := tbaM45) (eac := tbaM53)
+      rfl rfl (by simp [tbaM53])
+      (by rw [twoBandAnnulus_interiorEdgeSupport_eq]; simp [twoBandAnnulusInteriorEdges])
+      (by rw [twoBandAnnulus_interiorEdgeSupport_eq]; simp [twoBandAnnulusInteriorEdges])
+      (by rw [twoBandAnnulus_interiorEdgeSupport_eq]; simp [twoBandAnnulusInteriorEdges])
+
+/-- Worklist-facing form of the two-band odd-cycle regression: the CAP5 forced-edge enumeration
+must leave at least one interior-support edge outside the enumerated forced-edge predicate. -/
+theorem twoBandAnnulus_exists_interiorEdgeSupportEdge_not_enumeratedForcedEdge_of_middle_triangle
+    {boundaryEdge : Fin 5 → twoBandAnnulusGraph.edgeSet} {n : Nat}
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    (p0Inside p4Inside : Bool) (side : Fin 9 → Prop) :
+    ∃ e : twoBandAnnulusGraph.edgeSet,
+      e ∈ interiorEdgeSupport
+          twoBandAnnulusEmbedding.faceBoundary
+          twoBandAnnulusEmbedding.faces ∧
+        ¬ data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e :=
+  CAP5TransportedEdgeComponentCoverCore.exists_interiorEdgeSupportEdge_not_enumeratedForcedEdge_of_interiorEdgeSupport_triangle
+      twoBandAnnulusEmbedding p0Inside p4Inside side
+      (a := (3 : Fin 9)) (b := (4 : Fin 9)) (c := (5 : Fin 9))
+      (eab := tbaM34) (ebc := tbaM45) (eac := tbaM53)
+      rfl rfl (by simp [tbaM53])
+      (by rw [twoBandAnnulus_interiorEdgeSupport_eq]; simp [twoBandAnnulusInteriorEdges])
+      (by rw [twoBandAnnulus_interiorEdgeSupport_eq]; simp [twoBandAnnulusInteriorEdges])
+      (by rw [twoBandAnnulus_interiorEdgeSupport_eq]; simp [twoBandAnnulusInteriorEdges])
 
 theorem twoBandAnnulus_mem_selectedBoundarySupport_of_not_mem_interiorEdgeSupport
     {e : twoBandAnnulusGraph.edgeSet}
