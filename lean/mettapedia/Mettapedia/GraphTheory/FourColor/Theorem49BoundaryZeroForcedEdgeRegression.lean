@@ -15248,6 +15248,174 @@ theorem wheelWithInnerTriangle_boundaryZero_classifierRemainingControlEdgeTrace_
     exact ⟨i, by simpa [wheelWithInnerTriangleUniqueCertificateRedBlueFamily] using hi⟩
 
 /--
+Trace-residual path-xor handoff for the shared focus shell using the canonical unique certificate
+family directly.  Below the two-control F2 threshold, the detector exposes a traced residual
+extension edge whose boundary-zero chain pairs nontrivially with one of the unique certificates.
+-/
+theorem sharedInteriorPair_CAP5_forcedEdgeIndicatorPathXorDetectorPayload_and_extensionControlTraceEdge_boundaryZeroChain_uniqueCertificateFamilyPairing_ne_zero_and_residualProgress_of_emittedFinset_card_lt_two
+    {boundaryEdge : Fin 5 → sharedInteriorPairGraph.edgeSet} {n : Nat}
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    (p0Inside p4Inside : Bool) (h : data.IsExceptional)
+    (side : Fin 8 → Prop) (hcyclic : CyclicallyFiveEdgeConnected sharedInteriorPairGraph)
+    (hportal_crosses :
+      ∀ edgeCandidate : CAP5ExceptionalAnnulusBoundaryEdgeSupportCandidate boundaryEdge,
+        data.RealizesExceptionalBoundarySupportOrientation
+            edgeCandidate.portalCandidate.orientation →
+        edgeCandidate.portalCandidate.sideCase =
+            CAP5ExceptionalAnnulusSideCase.ofPortalSides p0Inside p4Inside →
+        ∀ i : Fin 5, i ∈ edgeCandidate.portalCandidate.portalSet →
+          EdgeCrossesVertexSide sharedInteriorPairGraph side (boundaryEdge i))
+    (hcycles : HasCycleOnSide sharedInteriorPairGraph side ∧
+      HasCycleOnSide sharedInteriorPairGraph (fun v => ¬ side v))
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (processed : Finset sharedInteriorPairGraph.edgeSet)
+    (hcard : classifier.emittedFinset.card < 2)
+    (hnotProcessed :
+      ∀ e ∈ classifier.remainingControlEdges sharedInteriorPairInteriorControlEdges,
+        e ∉ processed) :
+    data.ForcedEdgeIndicatorPathXorDetectorPayload p0Inside p4Inside side ∧
+      ∃ z : sharedInteriorPairGraph.edgeSet → Color,
+        z ∈ planarBoundaryZeroSubmodule sharedInteriorPairEmbedding ∧
+          z ≠ 0 ∧
+            (∀ e : sharedInteriorPairGraph.edgeSet,
+              data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e →
+                z e = 0) ∧
+              ∃ e : sharedInteriorPairGraph.edgeSet,
+                (e ∈ classifier.crossingExtensionFinset sharedInteriorPairInteriorControlEdges ∨
+                  e ∈ classifier.noncrossingExtensionFinset
+                    sharedInteriorPairInteriorControlEdges) ∧
+                  e ∈ classifier.remainingControlEdges sharedInteriorPairInteriorControlEdges ∧
+                    e ∈ classifier.remainingControlEdgeTrace
+                      sharedInteriorPairInteriorControlEdges ∧
+                      e ∈ classifier.residualRemainingControlEdges
+                        sharedInteriorPairInteriorControlEdges processed ∧
+                        ¬ data.EnumeratedExceptionalAnnulusForcedEdge
+                          p0Inside p4Inside side e ∧
+                          z e ≠ 0 ∧
+                            (classifier.residualRemainingControlEdges
+                                sharedInteriorPairInteriorControlEdges
+                                (insert e processed)).card <
+                              (classifier.residualRemainingControlEdges
+                                sharedInteriorPairInteriorControlEdges processed).card ∧
+                            ((classifier.remainingControlEdges
+                                sharedInteriorPairInteriorControlEdges).erase e).card <
+                              (classifier.remainingControlEdges
+                                sharedInteriorPairInteriorControlEdges).card ∧
+                              ∃ i : ({e : sharedInteriorPairGraph.edgeSet //
+                                  e ∈ sharedInteriorPairInteriorControlEdges} × Bool),
+                                chainDotBilinForm sharedInteriorPairGraph.edgeSet
+                                  (sharedInteriorPairUniqueCertificateRedBlueFamily i :
+                                    sharedInteriorPairGraph.edgeSet → Color) z ≠ 0 := by
+  rcases
+      sharedInteriorPair_CAP5_forcedEdgeIndicatorPathXorDetectorPayload_and_extensionCoordinateSignalWithProgress_of_emittedFinset_card_lt_two
+        p0Inside p4Inside h side hcyclic hportal_crosses hcycles classifier hcard with
+    ⟨hpayload, hsignal⟩
+  have hresidualSignal :
+      data.ExtensionCoordinateSignalWithResidualProgress sharedInteriorPairEmbedding
+        p0Inside p4Inside side classifier sharedInteriorPairInteriorControlEdges processed :=
+    data.extensionCoordinateSignalWithResidualProgress_of_extensionCoordinateSignalWithProgress
+      hsignal hnotProcessed
+  rcases
+      data.exists_boundaryZeroChain_extensionControlTraceEdge_familyPairing_ne_zero_and_residualProgress_of_extensionCoordinateSignalWithResidualProgress
+        sharedInteriorPairUniqueCertificateRedBlueFamily hresidualSignal
+        (sharedInteriorPair_boundaryZero_classifierRemainingControlEdgeTrace_uniqueCertificateWitnesses
+          p0Inside p4Inside side classifier).1
+        (sharedInteriorPair_boundaryZero_classifierRemainingControlEdgeTrace_uniqueCertificateWitnesses
+          p0Inside p4Inside side classifier).2 with
+    ⟨z, hzBoundary, hzNonzero, hvanish, e, heExtension, heRemaining, heTrace,
+      heResidual, hePredicateOutside, hze, hresidualProgress, hprogress, i, hpair⟩
+  exact
+    ⟨hpayload, z, hzBoundary, hzNonzero, hvanish, e, heExtension, heRemaining,
+      heTrace, heResidual, hePredicateOutside, hze, hresidualProgress, hprogress, i,
+      hpair⟩
+
+/--
+Trace-residual path-xor handoff for the wheel focus shell using the canonical unique certificate
+family directly.  Below the three-spoke F2 threshold, the detector exposes a traced residual
+extension edge whose boundary-zero chain pairs nontrivially with one of the unique certificates.
+-/
+theorem wheelWithInnerTriangle_CAP5_forcedEdgeIndicatorPathXorDetectorPayload_and_extensionControlTraceEdge_boundaryZeroChain_uniqueCertificateFamilyPairing_ne_zero_and_residualProgress_of_emittedFinset_card_lt_three
+    {boundaryEdge : Fin 5 → wheelWithInnerTriangleGraph.edgeSet} {n : Nat}
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    (p0Inside p4Inside : Bool) (h : data.IsExceptional)
+    (side : Fin 7 → Prop) (hcyclic : CyclicallyFiveEdgeConnected wheelWithInnerTriangleGraph)
+    (hportal_crosses :
+      ∀ edgeCandidate : CAP5ExceptionalAnnulusBoundaryEdgeSupportCandidate boundaryEdge,
+        data.RealizesExceptionalBoundarySupportOrientation
+            edgeCandidate.portalCandidate.orientation →
+        edgeCandidate.portalCandidate.sideCase =
+            CAP5ExceptionalAnnulusSideCase.ofPortalSides p0Inside p4Inside →
+        ∀ i : Fin 5, i ∈ edgeCandidate.portalCandidate.portalSet →
+          EdgeCrossesVertexSide wheelWithInnerTriangleGraph side (boundaryEdge i))
+    (hcycles : HasCycleOnSide wheelWithInnerTriangleGraph side ∧
+      HasCycleOnSide wheelWithInnerTriangleGraph (fun v => ¬ side v))
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (processed : Finset wheelWithInnerTriangleGraph.edgeSet)
+    (hcard : classifier.emittedFinset.card < 3)
+    (hnotProcessed :
+      ∀ e ∈ classifier.remainingControlEdges wheelWithInnerTriangleInteriorControlEdges,
+        e ∉ processed) :
+    data.ForcedEdgeIndicatorPathXorDetectorPayload p0Inside p4Inside side ∧
+      ∃ z : wheelWithInnerTriangleGraph.edgeSet → Color,
+        z ∈ planarBoundaryZeroSubmodule wheelWithInnerTriangleEmbedding ∧
+          z ≠ 0 ∧
+            (∀ e : wheelWithInnerTriangleGraph.edgeSet,
+              data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e →
+                z e = 0) ∧
+              ∃ e : wheelWithInnerTriangleGraph.edgeSet,
+                (e ∈ classifier.crossingExtensionFinset
+                    wheelWithInnerTriangleInteriorControlEdges ∨
+                  e ∈ classifier.noncrossingExtensionFinset
+                    wheelWithInnerTriangleInteriorControlEdges) ∧
+                  e ∈ classifier.remainingControlEdges
+                    wheelWithInnerTriangleInteriorControlEdges ∧
+                    e ∈ classifier.remainingControlEdgeTrace
+                      wheelWithInnerTriangleInteriorControlEdges ∧
+                      e ∈ classifier.residualRemainingControlEdges
+                        wheelWithInnerTriangleInteriorControlEdges processed ∧
+                        ¬ data.EnumeratedExceptionalAnnulusForcedEdge
+                          p0Inside p4Inside side e ∧
+                          z e ≠ 0 ∧
+                            (classifier.residualRemainingControlEdges
+                                wheelWithInnerTriangleInteriorControlEdges
+                                (insert e processed)).card <
+                              (classifier.residualRemainingControlEdges
+                                wheelWithInnerTriangleInteriorControlEdges processed).card ∧
+                            ((classifier.remainingControlEdges
+                                wheelWithInnerTriangleInteriorControlEdges).erase e).card <
+                              (classifier.remainingControlEdges
+                                wheelWithInnerTriangleInteriorControlEdges).card ∧
+                              ∃ i : ({e : wheelWithInnerTriangleGraph.edgeSet //
+                                  e ∈ wheelWithInnerTriangleInteriorControlEdges} × Bool),
+                                chainDotBilinForm wheelWithInnerTriangleGraph.edgeSet
+                                  (wheelWithInnerTriangleUniqueCertificateRedBlueFamily i :
+                                    wheelWithInnerTriangleGraph.edgeSet → Color) z ≠ 0 := by
+  rcases
+      wheelWithInnerTriangle_CAP5_forcedEdgeIndicatorPathXorDetectorPayload_and_extensionCoordinateSignalWithProgress_of_emittedFinset_card_lt_three
+        p0Inside p4Inside h side hcyclic hportal_crosses hcycles classifier hcard with
+    ⟨hpayload, hsignal⟩
+  have hresidualSignal :
+      data.ExtensionCoordinateSignalWithResidualProgress wheelWithInnerTriangleEmbedding
+        p0Inside p4Inside side classifier wheelWithInnerTriangleInteriorControlEdges processed :=
+    data.extensionCoordinateSignalWithResidualProgress_of_extensionCoordinateSignalWithProgress
+      hsignal hnotProcessed
+  rcases
+      data.exists_boundaryZeroChain_extensionControlTraceEdge_familyPairing_ne_zero_and_residualProgress_of_extensionCoordinateSignalWithResidualProgress
+        wheelWithInnerTriangleUniqueCertificateRedBlueFamily hresidualSignal
+        (wheelWithInnerTriangle_boundaryZero_classifierRemainingControlEdgeTrace_uniqueCertificateWitnesses
+          p0Inside p4Inside side classifier).1
+        (wheelWithInnerTriangle_boundaryZero_classifierRemainingControlEdgeTrace_uniqueCertificateWitnesses
+          p0Inside p4Inside side classifier).2 with
+    ⟨z, hzBoundary, hzNonzero, hvanish, e, heExtension, heRemaining, heTrace,
+      heResidual, hePredicateOutside, hze, hresidualProgress, hprogress, i, hpair⟩
+  exact
+    ⟨hpayload, z, hzBoundary, hzNonzero, hvanish, e, heExtension, heRemaining,
+      heTrace, heResidual, hePredicateOutside, hze, hresidualProgress, hprogress, i,
+      hpair⟩
+
+/--
 Runner-facing exact Kirchhoff threshold for the shared focus shell.  CAP5 covers every nonzero
 boundary-zero Kirchhoff chain exactly when the emitted classifier has at least one emitted edge in
 the two lab-certified shared-interior controls.
