@@ -6111,6 +6111,56 @@ theorem interiorEdgeSupport_subset_sideCrossing_of_interiorEdgeSupport_subset_en
   exact data.enumeratedExceptionalAnnulusForcedEdge_crosses
     (hInteriorForced e heInterior)
 
+/-- Odd closed-walk obstruction for the enumerated CAP5 forced-edge predicate.  A fixed side
+cannot force every edge traversed by an odd closed walk, because enumerated forced edges all
+cross that same side. -/
+theorem not_forall_enumeratedExceptionalAnnulusForcedEdge_of_closed_walk_odd_length
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    (p0Inside p4Inside : Bool) (side : V → Prop) {u : V}
+    (p : G.Walk u u) (hodd : Odd p.length) :
+    ¬ (∀ e : G.edgeSet, (e : Sym2 V) ∈ p.edges →
+      data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e) := by
+  intro hforced
+  exact not_forall_edgeCrossesVertexSide_of_closed_walk_odd_length p hodd
+    (fun e he => data.enumeratedExceptionalAnnulusForcedEdge_crosses (hforced e he))
+
+/-- Witness form of the odd closed-walk obstruction: at least one traversed edge of an odd
+closed walk is absent from the enumerated CAP5 forced-edge predicate. -/
+theorem exists_walkEdge_not_enumeratedExceptionalAnnulusForcedEdge_of_closed_walk_odd_length
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    (p0Inside p4Inside : Bool) (side : V → Prop) {u : V}
+    (p : G.Walk u u) (hodd : Odd p.length) :
+    ∃ e : G.edgeSet,
+      (e : Sym2 V) ∈ p.edges ∧
+        ¬ data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e := by
+  classical
+  by_contra hnoGap
+  exact data.not_forall_enumeratedExceptionalAnnulusForcedEdge_of_closed_walk_odd_length
+    p0Inside p4Inside side p hodd
+    (by
+      intro e he
+      by_contra hnotForced
+      exact hnoGap ⟨e, he, hnotForced⟩)
+
+/-- Worklist-facing odd closed-walk obstruction.  If all traversed edges of an odd closed walk
+lie in the ambient interior support, the CAP5 forced-edge enumeration must miss some
+interior-support edge. -/
+theorem exists_interiorEdgeSupportEdge_not_enumeratedForcedEdge_of_closed_walk_odd_length
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    (emb : PlaneEmbeddingWithBoundary G)
+    (p0Inside p4Inside : Bool) (side : V → Prop) {u : V}
+    (p : G.Walk u u) (hodd : Odd p.length)
+    (hInterior :
+      ∀ e : G.edgeSet, (e : Sym2 V) ∈ p.edges →
+        e ∈ interiorEdgeSupport emb.faceBoundary emb.faces) :
+    ∃ e : G.edgeSet,
+      e ∈ interiorEdgeSupport emb.faceBoundary emb.faces ∧
+        ¬ data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e := by
+  rcases data.exists_walkEdge_not_enumeratedExceptionalAnnulusForcedEdge_of_closed_walk_odd_length
+      p0Inside p4Inside side p hodd with
+    ⟨e, heWalk, hnotForced⟩
+  exact ⟨e, hInterior e heWalk, hnotForced⟩
+
 /-- A triangle inside the ambient interior support obstructs the all-interior side-crossing
 premise.  This is the Lean form of the validation-lab odd-cycle obstruction: one fixed side
 cannot cross all three edges of an interior triangle. -/

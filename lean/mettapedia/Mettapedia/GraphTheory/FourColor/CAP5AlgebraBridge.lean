@@ -73,6 +73,22 @@ theorem CAP5TransportedEdgeComponentCoverCore.not_three_exceptionalAnnulusCrossi
       data.exceptionalAnnulusCrossingOutsideEdge_crosses hbc,
       data.exceptionalAnnulusCrossingOutsideEdge_crosses hac⟩
 
+/-- Odd closed-walk obstruction for the normal-form outside-crossing CAP5 predicate.  If every
+edge traversed by an odd closed walk were in the predicate, all of those edges would cross the
+same vertex side, contradicting parity. -/
+theorem CAP5TransportedEdgeComponentCoverCore.not_forall_exceptionalAnnulusCrossingOutsideEdge_of_closed_walk_odd_length
+    {G : SimpleGraph V}
+    {boundaryEdge : Fin 5 → G.edgeSet} {n : Nat}
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    {p0Inside p4Inside : Bool} {side : V → Prop} {u : V}
+    (p : G.Walk u u) (hodd : Odd p.length) :
+    ¬ (∀ e : G.edgeSet, (e : Sym2 V) ∈ p.edges →
+      data.ExceptionalAnnulusCrossingOutsideEdge p0Inside p4Inside side e) := by
+  intro hcrossingOutside
+  exact not_forall_edgeCrossesVertexSide_of_closed_walk_odd_length p hodd
+    (fun e he => data.exceptionalAnnulusCrossingOutsideEdge_crosses
+      (hcrossingOutside e he))
+
 /-- The exceptional CAP5 one-edge counterexample predicate always emits a genuine
 side-crossing edge.  This keeps the algebraic lane connected to the raw cyclic-cut checker
 instead of treating the emitted edge as an opaque witness. -/
