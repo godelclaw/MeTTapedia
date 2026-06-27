@@ -2588,6 +2588,46 @@ theorem extensionCoordinateSignalWithProgress_of_not_classifierControl_of_finset
           controlEdges heBin⟩
 
 /--
+Residual finite-control coordinate signal.  If the current explicit residual worklist controls the
+selected boundary-zero chains while the emitted classifier does not, then the next coordinate
+signal can be emitted directly over that residual worklist; the needed freshness hypothesis is
+supplied by the residual-worklist algebra.
+-/
+theorem extensionCoordinateSignalWithResidualProgress_of_not_classifierControl_of_residualFinsetControl
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    [Fintype G.edgeSet]
+    (emb : PlaneEmbeddingWithBoundary G)
+    (p0Inside p4Inside : Bool) (side : V → Prop)
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (controlEdges processed : Finset G.edgeSet)
+    (hnotControl :
+      ¬ ∀ ⦃z : G.edgeSet → Color⦄,
+        z ∈ planarBoundaryZeroSubmodule emb →
+        (∀ e ∈ classifier.emittedFinset, z e = 0) →
+          z = 0)
+    (hresidualControl :
+      ∀ ⦃z : G.edgeSet → Color⦄,
+        z ∈ planarBoundaryZeroSubmodule emb →
+        (∀ e ∈ classifier.residualRemainingControlEdges controlEdges processed, z e = 0) →
+          z = 0) :
+    data.ExtensionCoordinateSignalWithResidualProgress emb p0Inside p4Inside side classifier
+      (classifier.residualRemainingControlEdges controlEdges processed) processed := by
+  have hsignal :
+      data.ExtensionCoordinateSignalWithProgress emb p0Inside p4Inside side classifier
+        (classifier.residualRemainingControlEdges controlEdges processed) :=
+    data.extensionCoordinateSignalWithProgress_of_not_classifierControl_of_finsetControl
+      emb p0Inside p4Inside side classifier
+      (classifier.residualRemainingControlEdges controlEdges processed) hnotControl
+      hresidualControl
+  exact
+    data.extensionCoordinateSignalWithResidualProgress_of_extensionCoordinateSignalWithProgress
+      hsignal
+      (fun e he =>
+        classifier.not_mem_processed_of_mem_remainingControlEdges_residualRemainingControlEdges
+          controlEdges processed he)
+
+/--
 Cardinality-driven named-payload form of the CAP5 extension coordinate signal.  The emitted
 classifier controls do not need a separate non-control hypothesis when their coordinate count plus
 the selected boundary-zero coordinate count is strictly smaller than the edge-chain space.
