@@ -4787,6 +4787,48 @@ theorem forcedEdgeCoverage_refutes_boundaryZeroChain_vanishing_on_forcedEdges
   rcases hcoverage hzBoundary hzNonzero with ⟨e, heForced, hze⟩
   exact hze (hzForcedZero e heForced)
 
+/-- Exact forced-edge coverage follows as soon as the enumerated CAP5 forced edges contain every
+ambient interior-support edge.  This is the detector-facing form of the finite all-interior-edge
+control survivor. -/
+theorem forcedEdgeCoverage_of_interiorEdgeSupport_subset_enumeratedForcedEdges
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    (emb : PlaneEmbeddingWithBoundary G)
+    (p0Inside p4Inside : Bool) (side : V → Prop)
+    (hInteriorForced :
+      ∀ e : G.edgeSet,
+        e ∈ interiorEdgeSupport emb.faceBoundary emb.faces →
+          data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e) :
+    ∀ ⦃z : G.edgeSet → Color⦄,
+      z ∈ planarBoundaryZeroSubmodule emb →
+      z ≠ 0 →
+        ∃ e : G.edgeSet,
+          data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e ∧
+            z e ≠ 0 :=
+  planarBoundaryZeroSubmodule_nonzeroCoverage_of_interiorEdgeSupport_subset
+    emb hInteriorForced
+
+/-- Consequently, no nonzero selected-boundary-zero chain can vanish on all enumerated CAP5 forced
+edges when those forced edges include the ambient interior support. -/
+theorem refutes_boundaryZeroChain_vanishing_on_forcedEdges_of_interiorEdgeSupport_subset_enumeratedForcedEdges
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    (emb : PlaneEmbeddingWithBoundary G)
+    (p0Inside p4Inside : Bool) (side : V → Prop)
+    (hInteriorForced :
+      ∀ e : G.edgeSet,
+        e ∈ interiorEdgeSupport emb.faceBoundary emb.faces →
+          data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e) :
+    ¬ ∃ z : G.edgeSet → Color,
+      z ∈ planarBoundaryZeroSubmodule emb ∧
+        z ≠ 0 ∧
+          ∀ e : G.edgeSet,
+            data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e →
+              z e = 0 := by
+  exact
+    data.forcedEdgeCoverage_refutes_boundaryZeroChain_vanishing_on_forcedEdges
+      emb p0Inside p4Inside side
+      (data.forcedEdgeCoverage_of_interiorEdgeSupport_subset_enumeratedForcedEdges
+        emb p0Inside p4Inside side hInteriorForced)
+
 /--
 Failure of exact forced-edge coverage produces the evading chain explicitly: a nonzero
 selected-boundary-zero chain that vanishes on every enumerated CAP5 forced edge.  This is the
