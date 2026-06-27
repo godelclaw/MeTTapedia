@@ -6111,6 +6111,71 @@ theorem interiorEdgeSupport_subset_sideCrossing_of_interiorEdgeSupport_subset_en
   exact data.enumeratedExceptionalAnnulusForcedEdge_crosses
     (hInteriorForced e heInterior)
 
+/-- A triangle inside the ambient interior support obstructs the all-interior side-crossing
+premise.  This is the Lean form of the validation-lab odd-cycle obstruction: one fixed side
+cannot cross all three edges of an interior triangle. -/
+theorem not_interiorEdgeSupport_subset_sideCrossing_of_interiorEdgeSupport_triangle
+    (emb : PlaneEmbeddingWithBoundary G) (side : V → Prop)
+    {a b c : V} {eab ebc eac : G.edgeSet}
+    (heab_pair : (eab : Sym2 V) = s(a, b))
+    (hebc_pair : (ebc : Sym2 V) = s(b, c))
+    (heac_pair : (eac : Sym2 V) = s(a, c))
+    (heabInterior : eab ∈ interiorEdgeSupport emb.faceBoundary emb.faces)
+    (hebcInterior : ebc ∈ interiorEdgeSupport emb.faceBoundary emb.faces)
+    (heacInterior : eac ∈ interiorEdgeSupport emb.faceBoundary emb.faces) :
+    ¬ (∀ e : G.edgeSet,
+      e ∈ interiorEdgeSupport emb.faceBoundary emb.faces →
+        EdgeCrossesVertexSide G side e) := by
+  intro hcrossAll
+  exact not_three_edgeCrossesVertexSide_triangle heab_pair hebc_pair heac_pair
+    ⟨hcrossAll eab heabInterior, hcrossAll ebc hebcInterior,
+      hcrossAll eac heacInterior⟩
+
+/-- A triangle inside the ambient interior support obstructs all-interior coverage by the
+normal-form CAP5 outside-crossing predicate. -/
+theorem not_interiorEdgeSupport_subset_exceptionalAnnulusCrossingOutsideEdge_of_interiorEdgeSupport_triangle
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    (emb : PlaneEmbeddingWithBoundary G)
+    (p0Inside p4Inside : Bool) (side : V → Prop)
+    {a b c : V} {eab ebc eac : G.edgeSet}
+    (heab_pair : (eab : Sym2 V) = s(a, b))
+    (hebc_pair : (ebc : Sym2 V) = s(b, c))
+    (heac_pair : (eac : Sym2 V) = s(a, c))
+    (heabInterior : eab ∈ interiorEdgeSupport emb.faceBoundary emb.faces)
+    (hebcInterior : ebc ∈ interiorEdgeSupport emb.faceBoundary emb.faces)
+    (heacInterior : eac ∈ interiorEdgeSupport emb.faceBoundary emb.faces) :
+    ¬ (∀ e : G.edgeSet,
+      e ∈ interiorEdgeSupport emb.faceBoundary emb.faces →
+        data.ExceptionalAnnulusCrossingOutsideEdge p0Inside p4Inside side e) := by
+  intro hcrossingOutsideAll
+  exact data.not_three_exceptionalAnnulusCrossingOutsideEdge_triangle
+    heab_pair hebc_pair heac_pair
+    ⟨hcrossingOutsideAll eab heabInterior, hcrossingOutsideAll ebc hebcInterior,
+      hcrossingOutsideAll eac heacInterior⟩
+
+/-- A triangle inside the ambient interior support obstructs the all-interior enumerated
+forced-edge premise: if every interior-support edge were enumerated, all three triangle edges
+would have to cross the same side. -/
+theorem not_interiorEdgeSupport_subset_enumeratedForcedEdges_of_interiorEdgeSupport_triangle
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    (emb : PlaneEmbeddingWithBoundary G)
+    (p0Inside p4Inside : Bool) (side : V → Prop)
+    {a b c : V} {eab ebc eac : G.edgeSet}
+    (heab_pair : (eab : Sym2 V) = s(a, b))
+    (hebc_pair : (ebc : Sym2 V) = s(b, c))
+    (heac_pair : (eac : Sym2 V) = s(a, c))
+    (heabInterior : eab ∈ interiorEdgeSupport emb.faceBoundary emb.faces)
+    (hebcInterior : ebc ∈ interiorEdgeSupport emb.faceBoundary emb.faces)
+    (heacInterior : eac ∈ interiorEdgeSupport emb.faceBoundary emb.faces) :
+    ¬ (∀ e : G.edgeSet,
+      e ∈ interiorEdgeSupport emb.faceBoundary emb.faces →
+        data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e) := by
+  intro hInteriorForced
+  exact not_interiorEdgeSupport_subset_sideCrossing_of_interiorEdgeSupport_triangle
+    emb side heab_pair hebc_pair heac_pair heabInterior hebcInterior heacInterior
+    (data.interiorEdgeSupport_subset_sideCrossing_of_interiorEdgeSupport_subset_enumeratedForcedEdges
+      emb p0Inside p4Inside side hInteriorForced)
+
 /-- A non-crossing ambient interior-support edge is a concrete obstruction to all-interior
 enumerated forced-edge coverage. -/
 theorem exists_interiorEdgeSupportEdge_not_enumeratedForcedEdge_of_exists_interiorEdgeSupportEdge_not_sideCrossing
@@ -6148,6 +6213,32 @@ theorem exists_interiorEdgeSupportEdge_not_enumeratedForcedEdge_of_exists_interi
   exact hnotCrossingOutside
     (data.enumeratedExceptionalAnnulusForcedEdge_to_exceptionalAnnulusCrossingOutsideEdge
       heForced)
+
+/-- Worklist-facing triangle obstruction.  If the ambient interior support contains a triangle,
+the CAP5 forced-edge enumeration must miss at least one of the ambient interior-support edges. -/
+theorem exists_interiorEdgeSupportEdge_not_enumeratedForcedEdge_of_interiorEdgeSupport_triangle
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    (emb : PlaneEmbeddingWithBoundary G)
+    (p0Inside p4Inside : Bool) (side : V → Prop)
+    {a b c : V} {eab ebc eac : G.edgeSet}
+    (heab_pair : (eab : Sym2 V) = s(a, b))
+    (hebc_pair : (ebc : Sym2 V) = s(b, c))
+    (heac_pair : (eac : Sym2 V) = s(a, c))
+    (heabInterior : eab ∈ interiorEdgeSupport emb.faceBoundary emb.faces)
+    (hebcInterior : ebc ∈ interiorEdgeSupport emb.faceBoundary emb.faces)
+    (heacInterior : eac ∈ interiorEdgeSupport emb.faceBoundary emb.faces) :
+    ∃ e : G.edgeSet,
+      e ∈ interiorEdgeSupport emb.faceBoundary emb.faces ∧
+        ¬ data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e := by
+  by_contra hnoGap
+  exact
+    not_interiorEdgeSupport_subset_enumeratedForcedEdges_of_interiorEdgeSupport_triangle
+      emb p0Inside p4Inside side heab_pair hebc_pair heac_pair
+      heabInterior hebcInterior heacInterior
+      (by
+        intro e heInterior
+        by_contra hnotForced
+        exact hnoGap ⟨e, heInterior, hnotForced⟩)
 
 /-- Consequently, no nonzero selected-boundary-zero chain can vanish on all enumerated CAP5 forced
 edges when those forced edges include the ambient interior support. -/
