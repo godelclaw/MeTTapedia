@@ -2300,6 +2300,52 @@ theorem extensionCoordinateSignal_of_not_classifierControl_of_finsetControl
     emb p0Inside p4Inside side classifier controlEdges hnotControl hcontrol
 
 /--
+Worklist-progress form of the failed finite-control coordinate signal.  A failed classifier
+control check against a later finite control set returns a crossing or noncrossing extension
+coordinate, and membership in either extension bin already proves strict decrease after erasing
+that edge from `remainingControlEdges`.
+-/
+theorem extensionCoordinateSignalWithProgress_of_not_classifierControl_of_finsetControl
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    [Fintype G.edgeSet]
+    (emb : PlaneEmbeddingWithBoundary G)
+    (p0Inside p4Inside : Bool) (side : V → Prop)
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (controlEdges : Finset G.edgeSet)
+    (hnotControl :
+      ¬ ∀ ⦃z : G.edgeSet → Color⦄,
+        z ∈ planarBoundaryZeroSubmodule emb →
+        (∀ e ∈ classifier.emittedFinset, z e = 0) →
+          z = 0)
+    (hcontrol :
+      ∀ ⦃z : G.edgeSet → Color⦄,
+        z ∈ planarBoundaryZeroSubmodule emb →
+        (∀ e ∈ controlEdges, z e = 0) →
+          z = 0) :
+    data.ExtensionCoordinateSignalWithProgress emb p0Inside p4Inside side classifier
+      controlEdges := by
+  rcases data.extensionCoordinateSignal_of_not_classifierControl_of_finsetControl
+      emb p0Inside p4Inside side classifier controlEdges hnotControl hcontrol with
+    hcrossing | hnoncrossing
+  · rcases hcrossing with
+      ⟨z, hzBoundary, hzNonzero, hvanish, u, v, e, p, heBin, hePredicateOutside,
+        hze, hcross, hsideu, hsidev, hpEdges, havoid, hcoordinate⟩
+    exact Or.inl
+      ⟨z, hzBoundary, hzNonzero, hvanish, u, v, e, p, heBin, hePredicateOutside,
+        hze, hcross, hsideu, hsidev, hpEdges, havoid, hcoordinate,
+        classifier.card_erase_remainingControlEdges_lt_of_mem_crossingExtensionFinset
+          controlEdges heBin⟩
+  · rcases hnoncrossing with
+      ⟨z, hzBoundary, hzNonzero, hvanish, e, heBin, hePredicateOutside, hze,
+        hnotCross, hcoordinate⟩
+    exact Or.inr
+      ⟨z, hzBoundary, hzNonzero, hvanish, e, heBin, hePredicateOutside, hze,
+        hnotCross, hcoordinate,
+        classifier.card_erase_remainingControlEdges_lt_of_mem_noncrossingExtensionFinset
+          controlEdges heBin⟩
+
+/--
 Cardinality-driven named-payload form of the CAP5 extension coordinate signal.  The emitted
 classifier controls do not need a separate non-control hypothesis when their coordinate count plus
 the selected boundary-zero coordinate count is strictly smaller than the edge-chain space.
