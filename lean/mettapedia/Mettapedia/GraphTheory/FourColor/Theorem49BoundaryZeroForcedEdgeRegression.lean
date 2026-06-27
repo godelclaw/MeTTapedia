@@ -14943,6 +14943,40 @@ theorem sharedInteriorPair_boundaryZero_exists_dynamicResidualEdge_of_not_interi
       finset_card_sdiff_insert_lt_of_mem_of_not_mem heControl heNotEmitted⟩
 
 /--
+Finite dynamic residual trace for the shared focus shell.  Folding this trace into any current
+emitted set exhausts the missing shared interior controls and yields selected-boundary-zero
+control at the terminal emitted set.
+-/
+theorem sharedInteriorPair_boundaryZero_exists_dynamicResidualTrace_terminalControl
+    (emitted : Finset sharedInteriorPairGraph.edgeSet) :
+    ∃ trace : List sharedInteriorPairGraph.edgeSet,
+      trace.Nodup ∧
+        (∀ e : sharedInteriorPairGraph.edgeSet,
+          e ∈ trace ↔ e ∈ sharedInteriorPairInteriorControlEdges ∧ e ∉ emitted) ∧
+          trace.length = (sharedInteriorPairInteriorControlEdges \ emitted).card ∧
+            sharedInteriorPairInteriorControlEdges \
+                (trace.foldl (fun acc e => insert e acc) emitted) = ∅ ∧
+              (∀ ⦃z : sharedInteriorPairGraph.edgeSet → Color⦄,
+                z ∈ planarBoundaryZeroSubmodule sharedInteriorPairEmbedding →
+                (∀ e ∈ trace.foldl (fun acc e => insert e acc) emitted, z e = 0) →
+                  z = 0) := by
+  refine
+    ⟨dynamicResidualControlEdgeTrace sharedInteriorPairInteriorControlEdges emitted,
+      dynamicResidualControlEdgeTrace_nodup sharedInteriorPairInteriorControlEdges emitted,
+      mem_dynamicResidualControlEdgeTrace_iff sharedInteriorPairInteriorControlEdges emitted,
+      length_dynamicResidualControlEdgeTrace_eq_card_sdiff
+        sharedInteriorPairInteriorControlEdges emitted,
+      dynamicResidualControlEdgeTrace_foldl_insert_sdiff_eq_empty
+        sharedInteriorPairInteriorControlEdges emitted,
+      ?_⟩
+  exact
+    (sharedInteriorPair_boundaryZero_dynamicControl_iff_interiorControlEdges_subset
+      ((dynamicResidualControlEdgeTrace sharedInteriorPairInteriorControlEdges emitted).foldl
+        (fun acc e => insert e acc) emitted)).2
+      (control_subset_foldl_insert_dynamicResidualControlEdgeTrace
+        sharedInteriorPairInteriorControlEdges emitted)
+
+/--
 Dynamic residual step for the wheel focus shell.  If the current emitted/control set has not
 yet accumulated all three spoke controls, there is a selected-boundary-zero evader that vanishes
 on the current emitted set and is nonzero on a not-yet-emitted spoke; inserting that spoke
@@ -14994,6 +15028,40 @@ theorem wheelWithInnerTriangle_boundaryZero_exists_dynamicResidualEdge_of_not_in
   exact
     ⟨z, hzBoundary, hzNonzero, hvanishEmitted, e, heControl, heNotEmitted, hze,
       finset_card_sdiff_insert_lt_of_mem_of_not_mem heControl heNotEmitted⟩
+
+/--
+Finite dynamic residual trace for the wheel focus shell.  Folding this trace into any current
+emitted set exhausts the missing spoke controls and yields selected-boundary-zero control at the
+terminal emitted set.
+-/
+theorem wheelWithInnerTriangle_boundaryZero_exists_dynamicResidualTrace_terminalControl
+    (emitted : Finset wheelWithInnerTriangleGraph.edgeSet) :
+    ∃ trace : List wheelWithInnerTriangleGraph.edgeSet,
+      trace.Nodup ∧
+        (∀ e : wheelWithInnerTriangleGraph.edgeSet,
+          e ∈ trace ↔ e ∈ wheelWithInnerTriangleInteriorControlEdges ∧ e ∉ emitted) ∧
+          trace.length = (wheelWithInnerTriangleInteriorControlEdges \ emitted).card ∧
+            wheelWithInnerTriangleInteriorControlEdges \
+                (trace.foldl (fun acc e => insert e acc) emitted) = ∅ ∧
+              (∀ ⦃z : wheelWithInnerTriangleGraph.edgeSet → Color⦄,
+                z ∈ planarBoundaryZeroSubmodule wheelWithInnerTriangleEmbedding →
+                (∀ e ∈ trace.foldl (fun acc e => insert e acc) emitted, z e = 0) →
+                  z = 0) := by
+  refine
+    ⟨dynamicResidualControlEdgeTrace wheelWithInnerTriangleInteriorControlEdges emitted,
+      dynamicResidualControlEdgeTrace_nodup wheelWithInnerTriangleInteriorControlEdges emitted,
+      mem_dynamicResidualControlEdgeTrace_iff wheelWithInnerTriangleInteriorControlEdges emitted,
+      length_dynamicResidualControlEdgeTrace_eq_card_sdiff
+        wheelWithInnerTriangleInteriorControlEdges emitted,
+      dynamicResidualControlEdgeTrace_foldl_insert_sdiff_eq_empty
+        wheelWithInnerTriangleInteriorControlEdges emitted,
+      ?_⟩
+  exact
+    (wheelWithInnerTriangle_boundaryZero_dynamicControl_iff_interiorControlEdges_subset
+      ((dynamicResidualControlEdgeTrace wheelWithInnerTriangleInteriorControlEdges emitted).foldl
+        (fun acc e => insert e acc) emitted)).2
+      (control_subset_foldl_insert_dynamicResidualControlEdgeTrace
+        wheelWithInnerTriangleInteriorControlEdges emitted)
 
 /--
 Runner-facing exact Kirchhoff threshold for the shared focus shell.  CAP5 covers every nonzero

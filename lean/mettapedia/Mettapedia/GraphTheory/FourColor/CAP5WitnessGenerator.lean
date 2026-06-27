@@ -25,6 +25,79 @@ theorem finset_card_sdiff_insert_lt_of_mem_of_not_mem
   rw [finset_sdiff_insert_eq_erase_sdiff control emitted e]
   exact Finset.card_erase_lt_of_mem (by simpa using ⟨heControl, heNotEmitted⟩)
 
+/-- Folding edge insertions into a finite emitted set is finite-set union with the trace support. -/
+theorem foldl_insert_eq_union_toFinset
+    {α : Type*} [DecidableEq α] (seed : Finset α) (trace : List α) :
+    trace.foldl (fun acc e => insert e acc) seed = seed ∪ trace.toFinset := by
+  induction trace generalizing seed with
+  | nil => simp
+  | cons e rest ih =>
+      rw [List.foldl_cons, ih]
+      ext x
+      simp
+
+/-- Canonical finite trace of the dynamic residual difference `control \ emitted`. -/
+noncomputable def dynamicResidualControlEdgeTrace
+    {α : Type*} [DecidableEq α] (control emitted : Finset α) : List α :=
+  (control \ emitted).toList
+
+/-- Membership in the dynamic residual trace is exactly control membership plus freshness. -/
+theorem mem_dynamicResidualControlEdgeTrace_iff
+    {α : Type*} [DecidableEq α] (control emitted : Finset α) (e : α) :
+    e ∈ dynamicResidualControlEdgeTrace control emitted ↔ e ∈ control ∧ e ∉ emitted := by
+  simp [dynamicResidualControlEdgeTrace]
+
+/-- The dynamic residual trace has no duplicate edge insertions. -/
+theorem dynamicResidualControlEdgeTrace_nodup
+    {α : Type*} [DecidableEq α] (control emitted : Finset α) :
+    (dynamicResidualControlEdgeTrace control emitted).Nodup :=
+  Finset.nodup_toList (control \ emitted)
+
+/-- The dynamic residual trace length is the current residual-cardinality measure. -/
+theorem length_dynamicResidualControlEdgeTrace_eq_card_sdiff
+    {α : Type*} [DecidableEq α] (control emitted : Finset α) :
+    (dynamicResidualControlEdgeTrace control emitted).length = (control \ emitted).card :=
+  Finset.length_toList (control \ emitted)
+
+/-- The trace support is the dynamic residual difference. -/
+theorem dynamicResidualControlEdgeTrace_toFinset_eq
+    {α : Type*} [DecidableEq α] (control emitted : Finset α) :
+    (dynamicResidualControlEdgeTrace control emitted).toFinset = control \ emitted := by
+  simp [dynamicResidualControlEdgeTrace]
+
+/-- Folding the dynamic residual trace into `emitted` adds exactly the residual difference. -/
+theorem foldl_insert_dynamicResidualControlEdgeTrace_eq_union_sdiff
+    {α : Type*} [DecidableEq α] (control emitted : Finset α) :
+    (dynamicResidualControlEdgeTrace control emitted).foldl
+        (fun acc e => insert e acc) emitted =
+      emitted ∪ (control \ emitted) := by
+  rw [foldl_insert_eq_union_toFinset, dynamicResidualControlEdgeTrace_toFinset_eq]
+
+/-- After folding the dynamic residual trace, every control edge is emitted. -/
+theorem control_subset_foldl_insert_dynamicResidualControlEdgeTrace
+    {α : Type*} [DecidableEq α] (control emitted : Finset α) :
+    control ⊆ (dynamicResidualControlEdgeTrace control emitted).foldl
+      (fun acc e => insert e acc) emitted := by
+  intro e heControl
+  rw [foldl_insert_dynamicResidualControlEdgeTrace_eq_union_sdiff]
+  by_cases heEmitted : e ∈ emitted
+  · exact Finset.mem_union.2 (Or.inl heEmitted)
+  · exact Finset.mem_union.2 (Or.inr (Finset.mem_sdiff.2 ⟨heControl, heEmitted⟩))
+
+/-- Folding the full dynamic residual trace exhausts the residual control difference. -/
+theorem dynamicResidualControlEdgeTrace_foldl_insert_sdiff_eq_empty
+    {α : Type*} [DecidableEq α] (control emitted : Finset α) :
+    control \ ((dynamicResidualControlEdgeTrace control emitted).foldl
+      (fun acc e => insert e acc) emitted) = ∅ := by
+  ext e
+  constructor
+  · intro he
+    rcases Finset.mem_sdiff.1 he with ⟨heControl, heNotFinal⟩
+    exact False.elim (heNotFinal
+      (control_subset_foldl_insert_dynamicResidualControlEdgeTrace control emitted heControl))
+  · intro he
+    simp at he
+
 /-- Public-facing status names for a finite CAP5 separator-generator run.
 The `partial` status records missing checker evidence, not a third mathematical
 case: once portal crossings and two side cycles are certified, the generic graph
