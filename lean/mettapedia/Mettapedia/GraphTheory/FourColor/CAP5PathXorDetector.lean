@@ -744,6 +744,25 @@ theorem processedControl_of_subset_emittedFinset
   exact hvanishEmitted e (hprocessedSubset heProcessed)
 
 /--
+Finite scheduler subset update.  If every currently processed edge is already emitted by the
+immutable classifier, then after selecting a residual edge `e`, the updated processed set is a
+subset of the one-edge emitted/control update.
+-/
+theorem processedSubset_insert_emittedFinset
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    [Fintype G.edgeSet]
+    {p0Inside p4Inside : Bool} {side : V → Prop}
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    {processed : Finset G.edgeSet} {e : G.edgeSet}
+    (hprocessedSubset : processed ⊆ classifier.emittedFinset) :
+    insert e processed ⊆ insert e classifier.emittedFinset := by
+  intro f hf
+  rcases Finset.mem_insert.1 hf with hfe | hfProcessed
+  · exact Finset.mem_insert.2 (Or.inl hfe)
+  · exact Finset.mem_insert_of_mem (hprocessedSubset hfProcessed)
+
+/--
 Processed-control insertion decomposes into the old processed-control invariant plus a genuine
 edge-control proof for the inserted edge.  This is the scheduler invariant that must be supplied
 by a real classifier/control update before recording a residual edge as processed.
@@ -1056,6 +1075,52 @@ theorem exists_residualEdge_not_edgeControl_and_processedControl_insert_of_inser
         data.processedControl_insert_of_processedControl_of_insert_emittedFinset
           classifier hprocessedControl,
         hresidualProgress⟩
+
+/--
+Concrete finite-state scheduler transition for a residual signal.  From the finite invariant
+`processed ⊆ classifier.emittedFinset`, the selected residual edge both preserves the subset
+invariant after the one-edge emitted/control update and supplies the processed-control update
+needed for the next residual state.
+-/
+theorem exists_residualEdge_not_edgeControl_and_processedSubset_insert_and_processedControl_insert_of_insert_emittedFinset_and_residualProgress_of_extensionCoordinateSignalWithResidualProgress
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    [Fintype G.edgeSet]
+    {emb : PlaneEmbeddingWithBoundary G}
+    {p0Inside p4Inside : Bool} {side : V → Prop}
+    {classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side}
+    {controlEdges processed : Finset G.edgeSet}
+    (hsignal :
+      data.ExtensionCoordinateSignalWithResidualProgress emb p0Inside p4Inside side
+        classifier controlEdges processed)
+    (hprocessedSubset : processed ⊆ classifier.emittedFinset) :
+    ∃ e : G.edgeSet,
+      e ∈ classifier.residualRemainingControlEdges controlEdges processed ∧
+        ¬ (∀ ⦃z : G.edgeSet → Color⦄,
+          z ∈ planarBoundaryZeroSubmodule emb →
+          (∀ f ∈ classifier.emittedFinset, z f = 0) →
+            z e = 0) ∧
+          insert e processed ⊆ insert e classifier.emittedFinset ∧
+            (∀ ⦃z : G.edgeSet → Color⦄,
+              z ∈ planarBoundaryZeroSubmodule emb →
+              (∀ f ∈ insert e classifier.emittedFinset, z f = 0) →
+                ∀ f ∈ insert e processed, z f = 0) ∧
+              (classifier.residualRemainingControlEdges controlEdges (insert e processed)).card <
+                (classifier.residualRemainingControlEdges controlEdges processed).card := by
+  have hprocessedControl :
+      ∀ ⦃z : G.edgeSet → Color⦄,
+        z ∈ planarBoundaryZeroSubmodule emb →
+        (∀ f ∈ classifier.emittedFinset, z f = 0) →
+          ∀ f ∈ processed, z f = 0 :=
+    data.processedControl_of_subset_emittedFinset (emb := emb) classifier hprocessedSubset
+  rcases
+      data.exists_residualEdge_not_edgeControl_and_processedControl_insert_of_insert_emittedFinset_and_residualProgress_of_extensionCoordinateSignalWithResidualProgress
+        hsignal hprocessedControl with
+    ⟨e, heResidual, hnotEdgeControl, hprocessedInsert, hresidualProgress⟩
+  exact
+    ⟨e, heResidual, hnotEdgeControl,
+      data.processedSubset_insert_emittedFinset classifier hprocessedSubset,
+      hprocessedInsert, hresidualProgress⟩
 
 /--
 Negative processed-edge zero invariant for residual iteration.  A residual signal exposes a
