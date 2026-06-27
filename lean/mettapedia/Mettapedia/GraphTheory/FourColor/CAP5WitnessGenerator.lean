@@ -3727,6 +3727,21 @@ theorem mem_remainingControlEdges_iff
       e ∈ controlEdges ∧ e ∉ classifier.emittedFinset := by
   simp [remainingControlEdges]
 
+/--
+The immutable classifier worklist is the dynamic residual difference between the desired control
+edges and the classifier's current emitted set.
+-/
+theorem remainingControlEdges_eq_sdiff
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    [Fintype G.edgeSet]
+    {p0Inside p4Inside : Bool} {side : V → Prop}
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (controlEdges : Finset G.edgeSet) :
+    classifier.remainingControlEdges controlEdges = controlEdges \ classifier.emittedFinset := by
+  ext e
+  simp [remainingControlEdges]
+
 /-- Erasing any chosen remaining control edge strictly decreases the finite generator worklist. -/
 theorem card_erase_remainingControlEdges_lt_of_mem
     {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
@@ -3965,6 +3980,35 @@ theorem mem_remainingControlEdgeTrace_iff
       e ∈ classifier.remainingControlEdges controlEdges := by
   simp [remainingControlEdgeTrace]
 
+/-- The classifier trace is the dynamic residual trace seeded by `classifier.emittedFinset`. -/
+theorem remainingControlEdgeTrace_eq_dynamicResidualControlEdgeTrace
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    [Fintype G.edgeSet]
+    {p0Inside p4Inside : Bool} {side : V → Prop}
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (controlEdges : Finset G.edgeSet) :
+    classifier.remainingControlEdgeTrace controlEdges =
+      dynamicResidualControlEdgeTrace controlEdges classifier.emittedFinset := by
+  unfold remainingControlEdgeTrace dynamicResidualControlEdgeTrace
+  rw [classifier.remainingControlEdges_eq_sdiff controlEdges]
+
+/--
+Membership in the classifier trace is exactly membership in the target control set plus freshness
+for the immutable emitted set.
+-/
+theorem mem_remainingControlEdgeTrace_iff_mem_controlEdges_and_not_mem_emittedFinset
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    [Fintype G.edgeSet]
+    {p0Inside p4Inside : Bool} {side : V → Prop}
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (controlEdges : Finset G.edgeSet) (e : G.edgeSet) :
+    e ∈ classifier.remainingControlEdgeTrace controlEdges ↔
+      e ∈ controlEdges ∧ e ∉ classifier.emittedFinset := by
+  rw [classifier.mem_remainingControlEdgeTrace_iff controlEdges e]
+  exact classifier.mem_remainingControlEdges_iff controlEdges e
+
 /-- The canonical remaining-control trace contains no duplicate edges. -/
 theorem remainingControlEdgeTrace_nodup
     {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
@@ -3988,6 +4032,20 @@ theorem length_remainingControlEdgeTrace_eq_card_remainingControlEdges
       (classifier.remainingControlEdges controlEdges).card :=
   Finset.length_toList (classifier.remainingControlEdges controlEdges)
 
+/-- The classifier trace length is the dynamic residual-cardinality measure. -/
+theorem length_remainingControlEdgeTrace_eq_card_sdiff
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    [Fintype G.edgeSet]
+    {p0Inside p4Inside : Bool} {side : V → Prop}
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (controlEdges : Finset G.edgeSet) :
+    (classifier.remainingControlEdgeTrace controlEdges).length =
+      (controlEdges \ classifier.emittedFinset).card := by
+  rw [classifier.remainingControlEdgeTrace_eq_dynamicResidualControlEdgeTrace controlEdges]
+  exact length_dynamicResidualControlEdgeTrace_eq_card_sdiff
+    controlEdges classifier.emittedFinset
+
 /-- The canonical trace's finite set is exactly the remaining-control worklist. -/
 theorem remainingControlEdgeTrace_toFinset_eq_remainingControlEdges
     {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
@@ -4000,6 +4058,62 @@ theorem remainingControlEdgeTrace_toFinset_eq_remainingControlEdges
       classifier.remainingControlEdges controlEdges := by
   ext e
   simp [remainingControlEdgeTrace]
+
+/-- The classifier trace's finite set is exactly the dynamic residual difference. -/
+theorem remainingControlEdgeTrace_toFinset_eq_sdiff
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    [Fintype G.edgeSet]
+    {p0Inside p4Inside : Bool} {side : V → Prop}
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (controlEdges : Finset G.edgeSet) :
+    (classifier.remainingControlEdgeTrace controlEdges).toFinset =
+      controlEdges \ classifier.emittedFinset := by
+  rw [classifier.remainingControlEdgeTrace_toFinset_eq_remainingControlEdges controlEdges,
+    classifier.remainingControlEdges_eq_sdiff controlEdges]
+
+/-- Folding the classifier trace into `emittedFinset` adds exactly the remaining-control worklist. -/
+theorem foldl_insert_remainingControlEdgeTrace_eq_union_sdiff
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    [Fintype G.edgeSet]
+    {p0Inside p4Inside : Bool} {side : V → Prop}
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (controlEdges : Finset G.edgeSet) :
+    (classifier.remainingControlEdgeTrace controlEdges).foldl
+        (fun acc e => insert e acc) classifier.emittedFinset =
+      classifier.emittedFinset ∪ (controlEdges \ classifier.emittedFinset) := by
+  rw [classifier.remainingControlEdgeTrace_eq_dynamicResidualControlEdgeTrace controlEdges]
+  exact foldl_insert_dynamicResidualControlEdgeTrace_eq_union_sdiff
+    controlEdges classifier.emittedFinset
+
+/-- After folding the classifier trace, every target control edge is in the terminal emitted set. -/
+theorem controlEdges_subset_foldl_insert_remainingControlEdgeTrace
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    [Fintype G.edgeSet]
+    {p0Inside p4Inside : Bool} {side : V → Prop}
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (controlEdges : Finset G.edgeSet) :
+    controlEdges ⊆ (classifier.remainingControlEdgeTrace controlEdges).foldl
+      (fun acc e => insert e acc) classifier.emittedFinset := by
+  rw [classifier.remainingControlEdgeTrace_eq_dynamicResidualControlEdgeTrace controlEdges]
+  exact control_subset_foldl_insert_dynamicResidualControlEdgeTrace
+    controlEdges classifier.emittedFinset
+
+/-- Folding the classifier trace into `emittedFinset` exhausts the dynamic residual difference. -/
+theorem remainingControlEdgeTrace_foldl_insert_sdiff_eq_empty
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    [Fintype G.edgeSet]
+    {p0Inside p4Inside : Bool} {side : V → Prop}
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (controlEdges : Finset G.edgeSet) :
+    controlEdges \ ((classifier.remainingControlEdgeTrace controlEdges).foldl
+      (fun acc e => insert e acc) classifier.emittedFinset) = ∅ := by
+  rw [classifier.remainingControlEdgeTrace_eq_dynamicResidualControlEdgeTrace controlEdges]
+  exact dynamicResidualControlEdgeTrace_foldl_insert_sdiff_eq_empty
+    controlEdges classifier.emittedFinset
 
 /-- Processing every edge in the canonical trace exhausts the explicit residual worklist. -/
 theorem residualRemainingControlEdges_remainingControlEdgeTrace_toFinset_eq_empty
