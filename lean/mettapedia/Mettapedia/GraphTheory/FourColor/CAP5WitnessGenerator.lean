@@ -3079,6 +3079,17 @@ theorem enumeratedExceptionalAnnulusForcedEdge_to_exceptionalAnnulusOneEdgeCount
       horientation (by simpa [node] using hforced)
   simpa [node, hp0, hp4] using hedge
 
+/-- Every edge emitted by the enumerated finite generator lies in the broader normal-form
+outside-crossing predicate consumed by the algebraic CAP5 lane. -/
+theorem enumeratedExceptionalAnnulusForcedEdge_to_exceptionalAnnulusCrossingOutsideEdge
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    {p0Inside p4Inside : Bool} {side : V → Prop} {e : G.edgeSet}
+    (h :
+      data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e) :
+    data.ExceptionalAnnulusCrossingOutsideEdge p0Inside p4Inside side e :=
+  (data.exceptionalAnnulusOneEdgeCounterexampleEdge_iff_crossingOutsideEdge).1
+    (data.enumeratedExceptionalAnnulusForcedEdge_to_exceptionalAnnulusOneEdgeCounterexampleEdge h)
+
 /-- A forced latent emitted by a certified finite report gives an enumerated forced edge once the
 component-cover data realizes that latent's orientation.  This is the report-output bridge into
 the algebraic checker predicate. -/

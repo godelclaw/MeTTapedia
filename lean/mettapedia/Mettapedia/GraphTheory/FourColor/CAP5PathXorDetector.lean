@@ -6036,6 +6036,63 @@ theorem forcedEdgeCoverage_of_interiorEdgeSupport_subset_enumeratedForcedEdges
   planarBoundaryZeroSubmodule_nonzeroCoverage_of_interiorEdgeSupport_subset
     emb hInteriorForced
 
+/-- The all-interior enumerated forced-edge premise also supplies the broader normal-form
+outside-crossing predicate used by the algebraic CAP5 lane. -/
+theorem interiorEdgeSupport_subset_exceptionalAnnulusCrossingOutsideEdge_of_interiorEdgeSupport_subset_enumeratedForcedEdges
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    (emb : PlaneEmbeddingWithBoundary G)
+    (p0Inside p4Inside : Bool) (side : V → Prop)
+    (hInteriorForced :
+      ∀ e : G.edgeSet,
+        e ∈ interiorEdgeSupport emb.faceBoundary emb.faces →
+          data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e) :
+    ∀ e : G.edgeSet,
+      e ∈ interiorEdgeSupport emb.faceBoundary emb.faces →
+        data.ExceptionalAnnulusCrossingOutsideEdge p0Inside p4Inside side e := by
+  intro e heInterior
+  exact data.enumeratedExceptionalAnnulusForcedEdge_to_exceptionalAnnulusCrossingOutsideEdge
+    (hInteriorForced e heInterior)
+
+/-- The broader outside-crossing CAP5 predicate controls all selected-boundary-zero chains as
+soon as it contains the ambient interior support. -/
+theorem exceptionalAnnulusCrossingOutsideEdgeCoverage_of_interiorEdgeSupport_subset_exceptionalAnnulusCrossingOutsideEdge
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    (emb : PlaneEmbeddingWithBoundary G)
+    (p0Inside p4Inside : Bool) (side : V → Prop)
+    (hInteriorCrossingOutside :
+      ∀ e : G.edgeSet,
+        e ∈ interiorEdgeSupport emb.faceBoundary emb.faces →
+          data.ExceptionalAnnulusCrossingOutsideEdge p0Inside p4Inside side e) :
+    ∀ ⦃z : G.edgeSet → Color⦄,
+      z ∈ planarBoundaryZeroSubmodule emb →
+      z ≠ 0 →
+        ∃ e : G.edgeSet,
+          data.ExceptionalAnnulusCrossingOutsideEdge p0Inside p4Inside side e ∧
+            z e ≠ 0 :=
+  planarBoundaryZeroSubmodule_nonzeroCoverage_of_interiorEdgeSupport_subset
+    emb hInteriorCrossingOutside
+
+/-- Consequently, all-interior enumerated forced-edge coverage is strong enough to discharge the
+nonzero-witness obligation for the broader outside-crossing CAP5 algebraic predicate. -/
+theorem exceptionalAnnulusCrossingOutsideEdgeCoverage_of_interiorEdgeSupport_subset_enumeratedForcedEdges
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    (emb : PlaneEmbeddingWithBoundary G)
+    (p0Inside p4Inside : Bool) (side : V → Prop)
+    (hInteriorForced :
+      ∀ e : G.edgeSet,
+        e ∈ interiorEdgeSupport emb.faceBoundary emb.faces →
+          data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e) :
+    ∀ ⦃z : G.edgeSet → Color⦄,
+      z ∈ planarBoundaryZeroSubmodule emb →
+      z ≠ 0 →
+        ∃ e : G.edgeSet,
+          data.ExceptionalAnnulusCrossingOutsideEdge p0Inside p4Inside side e ∧
+            z e ≠ 0 :=
+  data.exceptionalAnnulusCrossingOutsideEdgeCoverage_of_interiorEdgeSupport_subset_exceptionalAnnulusCrossingOutsideEdge
+    emb p0Inside p4Inside side
+    (data.interiorEdgeSupport_subset_exceptionalAnnulusCrossingOutsideEdge_of_interiorEdgeSupport_subset_enumeratedForcedEdges
+      emb p0Inside p4Inside side hInteriorForced)
+
 /-- All-interior enumerated forced-edge coverage can hold only on sides crossing every ambient
 interior-support edge.  This isolates the geometric side condition hidden in the finite
 forced-edge worklist. -/
@@ -6071,6 +6128,26 @@ theorem exists_interiorEdgeSupportEdge_not_enumeratedForcedEdge_of_exists_interi
   refine ⟨e, heInterior, ?_⟩
   intro heForced
   exact hnotCross (data.enumeratedExceptionalAnnulusForcedEdge_crosses heForced)
+
+/-- If an ambient interior-support edge is not even in the broader outside-crossing CAP5
+predicate, it cannot be enumerated by the finite forced-edge generator. -/
+theorem exists_interiorEdgeSupportEdge_not_enumeratedForcedEdge_of_exists_interiorEdgeSupportEdge_not_exceptionalAnnulusCrossingOutsideEdge
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    (emb : PlaneEmbeddingWithBoundary G)
+    (p0Inside p4Inside : Bool) (side : V → Prop)
+    (hNotCrossingOutside :
+      ∃ e : G.edgeSet,
+        e ∈ interiorEdgeSupport emb.faceBoundary emb.faces ∧
+          ¬ data.ExceptionalAnnulusCrossingOutsideEdge p0Inside p4Inside side e) :
+    ∃ e : G.edgeSet,
+      e ∈ interiorEdgeSupport emb.faceBoundary emb.faces ∧
+        ¬ data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e := by
+  rcases hNotCrossingOutside with ⟨e, heInterior, hnotCrossingOutside⟩
+  refine ⟨e, heInterior, ?_⟩
+  intro heForced
+  exact hnotCrossingOutside
+    (data.enumeratedExceptionalAnnulusForcedEdge_to_exceptionalAnnulusCrossingOutsideEdge
+      heForced)
 
 /-- Consequently, no nonzero selected-boundary-zero chain can vanish on all enumerated CAP5 forced
 edges when those forced edges include the ambient interior support. -/
