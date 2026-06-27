@@ -6036,6 +6036,42 @@ theorem forcedEdgeCoverage_of_interiorEdgeSupport_subset_enumeratedForcedEdges
   planarBoundaryZeroSubmodule_nonzeroCoverage_of_interiorEdgeSupport_subset
     emb hInteriorForced
 
+/-- All-interior enumerated forced-edge coverage can hold only on sides crossing every ambient
+interior-support edge.  This isolates the geometric side condition hidden in the finite
+forced-edge worklist. -/
+theorem interiorEdgeSupport_subset_sideCrossing_of_interiorEdgeSupport_subset_enumeratedForcedEdges
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    (emb : PlaneEmbeddingWithBoundary G)
+    (p0Inside p4Inside : Bool) (side : V → Prop)
+    (hInteriorForced :
+      ∀ e : G.edgeSet,
+        e ∈ interiorEdgeSupport emb.faceBoundary emb.faces →
+          data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e) :
+    ∀ e : G.edgeSet,
+      e ∈ interiorEdgeSupport emb.faceBoundary emb.faces →
+        EdgeCrossesVertexSide G side e := by
+  intro e heInterior
+  exact data.enumeratedExceptionalAnnulusForcedEdge_crosses
+    (hInteriorForced e heInterior)
+
+/-- A non-crossing ambient interior-support edge is a concrete obstruction to all-interior
+enumerated forced-edge coverage. -/
+theorem exists_interiorEdgeSupportEdge_not_enumeratedForcedEdge_of_exists_interiorEdgeSupportEdge_not_sideCrossing
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    (emb : PlaneEmbeddingWithBoundary G)
+    (p0Inside p4Inside : Bool) (side : V → Prop)
+    (hNoncrossing :
+      ∃ e : G.edgeSet,
+        e ∈ interiorEdgeSupport emb.faceBoundary emb.faces ∧
+          ¬ EdgeCrossesVertexSide G side e) :
+    ∃ e : G.edgeSet,
+      e ∈ interiorEdgeSupport emb.faceBoundary emb.faces ∧
+        ¬ data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e := by
+  rcases hNoncrossing with ⟨e, heInterior, hnotCross⟩
+  refine ⟨e, heInterior, ?_⟩
+  intro heForced
+  exact hnotCross (data.enumeratedExceptionalAnnulusForcedEdge_crosses heForced)
+
 /-- Consequently, no nonzero selected-boundary-zero chain can vanish on all enumerated CAP5 forced
 edges when those forced edges include the ambient interior support. -/
 theorem refutes_boundaryZeroChain_vanishing_on_forcedEdges_of_interiorEdgeSupport_subset_enumeratedForcedEdges
