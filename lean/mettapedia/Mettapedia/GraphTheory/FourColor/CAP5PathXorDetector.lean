@@ -984,6 +984,80 @@ theorem exists_residualEdge_not_edgeControl_and_processedControl_insert_of_inser
         classifier hprocessedControl⟩
 
 /--
+Scheduler transition for a residual signal.  The same selected residual edge witnesses immutable
+classifier edge-control failure, supports the one-edge emitted/control update needed to mark it
+processed, and strictly decreases the explicit residual worklist after insertion.
+-/
+theorem exists_residualEdge_not_edgeControl_and_processedControl_insert_of_insert_emittedFinset_and_residualProgress_of_extensionCoordinateSignalWithResidualProgress
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    [Fintype G.edgeSet]
+    {emb : PlaneEmbeddingWithBoundary G}
+    {p0Inside p4Inside : Bool} {side : V → Prop}
+    {classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side}
+    {controlEdges processed : Finset G.edgeSet}
+    (hsignal :
+      data.ExtensionCoordinateSignalWithResidualProgress emb p0Inside p4Inside side
+        classifier controlEdges processed)
+    (hprocessedControl :
+      ∀ ⦃z : G.edgeSet → Color⦄,
+        z ∈ planarBoundaryZeroSubmodule emb →
+        (∀ f ∈ classifier.emittedFinset, z f = 0) →
+          ∀ f ∈ processed, z f = 0) :
+    ∃ e : G.edgeSet,
+      e ∈ classifier.residualRemainingControlEdges controlEdges processed ∧
+        ¬ (∀ ⦃z : G.edgeSet → Color⦄,
+          z ∈ planarBoundaryZeroSubmodule emb →
+          (∀ f ∈ classifier.emittedFinset, z f = 0) →
+            z e = 0) ∧
+          (∀ ⦃z : G.edgeSet → Color⦄,
+            z ∈ planarBoundaryZeroSubmodule emb →
+            (∀ f ∈ insert e classifier.emittedFinset, z f = 0) →
+              ∀ f ∈ insert e processed, z f = 0) ∧
+            (classifier.residualRemainingControlEdges controlEdges (insert e processed)).card <
+              (classifier.residualRemainingControlEdges controlEdges processed).card := by
+  rcases hsignal with hcrossing | hnoncrossing
+  · rcases hcrossing with
+      ⟨z, hzBoundary, _hzNonzero, hvanishForced, _u, _v, e, _p, _heBin,
+        _heRemaining, heResidual, _hePredicateOutside, hze, _hcross, _hsideu,
+        _hsidev, _hpEdges, _havoid, _hcoordinate, hresidualProgress,
+        _hprogress⟩
+    have hnotEdgeControl :
+        ¬ (∀ ⦃z : G.edgeSet → Color⦄,
+          z ∈ planarBoundaryZeroSubmodule emb →
+          (∀ f ∈ classifier.emittedFinset, z f = 0) →
+            z e = 0) := by
+      intro hedgeControl
+      have hvanishEmitted : ∀ f ∈ classifier.emittedFinset, z f = 0 := by
+        intro f hf
+        exact hvanishForced f ((classifier.emittedFinset_spec f).1 hf)
+      exact hze (hedgeControl hzBoundary hvanishEmitted)
+    exact
+      ⟨e, heResidual, hnotEdgeControl,
+        data.processedControl_insert_of_processedControl_of_insert_emittedFinset
+          classifier hprocessedControl,
+        hresidualProgress⟩
+  · rcases hnoncrossing with
+      ⟨z, hzBoundary, _hzNonzero, hvanishForced, e, _heBin, _heRemaining,
+        heResidual, _hePredicateOutside, hze, _hnotCross, _hcoordinate,
+        hresidualProgress, _hprogress⟩
+    have hnotEdgeControl :
+        ¬ (∀ ⦃z : G.edgeSet → Color⦄,
+          z ∈ planarBoundaryZeroSubmodule emb →
+          (∀ f ∈ classifier.emittedFinset, z f = 0) →
+            z e = 0) := by
+      intro hedgeControl
+      have hvanishEmitted : ∀ f ∈ classifier.emittedFinset, z f = 0 := by
+        intro f hf
+        exact hvanishForced f ((classifier.emittedFinset_spec f).1 hf)
+      exact hze (hedgeControl hzBoundary hvanishEmitted)
+    exact
+      ⟨e, heResidual, hnotEdgeControl,
+        data.processedControl_insert_of_processedControl_of_insert_emittedFinset
+          classifier hprocessedControl,
+        hresidualProgress⟩
+
+/--
 Negative processed-edge zero invariant for residual iteration.  A residual signal exposes a
 boundary-zero chain that vanishes on the immutable classifier output but is nonzero on the chosen
 residual edge.  Therefore the same classifier cannot justify marking that edge as processed
