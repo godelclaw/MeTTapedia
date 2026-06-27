@@ -49,6 +49,26 @@ theorem foldl_insert_subset_foldl_insert_of_subset
   · exact Finset.mem_union.2 (Or.inl (hsubset heSeed))
   · exact Finset.mem_union.2 (Or.inr heTrace)
 
+/--
+Predicate transport for two runs of the same finite insertion trace.  To prove a predicate on the
+trace folded into `target`, it is enough to prove it on the target seed and on the same trace
+folded into any auxiliary processed state.
+-/
+theorem forall_mem_foldl_insert_of_forall_mem_seed_and_forall_mem_foldl_insert
+    {α : Type*} [DecidableEq α] {target processed : Finset α} (trace : List α)
+    {P : α → Prop}
+    (htarget : ∀ e ∈ target, P e)
+    (hprocessedTrace :
+      ∀ e ∈ trace.foldl (fun acc f => insert f acc) processed, P e) :
+    ∀ e ∈ trace.foldl (fun acc f => insert f acc) target, P e := by
+  intro e he
+  rw [foldl_insert_eq_union_toFinset target trace] at he
+  rcases Finset.mem_union.1 he with heTarget | heTrace
+  · exact htarget e heTarget
+  · exact hprocessedTrace e (by
+      rw [foldl_insert_eq_union_toFinset processed trace]
+      exact Finset.mem_union.2 (Or.inr heTrace))
+
 /-- Canonical finite trace of the dynamic residual difference `control \ emitted`. -/
 noncomputable def dynamicResidualControlEdgeTrace
     {α : Type*} [DecidableEq α] (control emitted : Finset α) : List α :=
