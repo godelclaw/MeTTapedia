@@ -14977,6 +14977,48 @@ theorem sharedInteriorPair_boundaryZero_exists_dynamicResidualTrace_terminalCont
         sharedInteriorPairInteriorControlEdges emitted)
 
 /--
+Classifier-trace terminal certificate for the shared focus shell.  The immutable classifier trace is
+the dynamic residual trace from `classifier.emittedFinset`; folding it into that emitted set
+exhausts the missing shared interior controls and gives selected-boundary-zero control.
+-/
+theorem sharedInteriorPair_boundaryZero_classifierRemainingControlEdgeTrace_terminalCertificate
+    {boundaryEdge : Fin 5 → sharedInteriorPairGraph.edgeSet} {n : Nat}
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    (p0Inside p4Inside : Bool) (side : Fin 8 → Prop)
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side) :
+    (classifier.remainingControlEdgeTrace sharedInteriorPairInteriorControlEdges).Nodup ∧
+      (∀ e : sharedInteriorPairGraph.edgeSet,
+        e ∈ classifier.remainingControlEdgeTrace sharedInteriorPairInteriorControlEdges ↔
+          e ∈ sharedInteriorPairInteriorControlEdges ∧ e ∉ classifier.emittedFinset) ∧
+        (classifier.remainingControlEdgeTrace sharedInteriorPairInteriorControlEdges).length =
+          (sharedInteriorPairInteriorControlEdges \ classifier.emittedFinset).card ∧
+          sharedInteriorPairInteriorControlEdges \
+              ((classifier.remainingControlEdgeTrace sharedInteriorPairInteriorControlEdges).foldl
+                (fun acc e => insert e acc) classifier.emittedFinset) = ∅ ∧
+            (∀ ⦃z : sharedInteriorPairGraph.edgeSet → Color⦄,
+              z ∈ planarBoundaryZeroSubmodule sharedInteriorPairEmbedding →
+              (∀ e ∈
+                (classifier.remainingControlEdgeTrace sharedInteriorPairInteriorControlEdges).foldl
+                  (fun acc e => insert e acc) classifier.emittedFinset, z e = 0) →
+                z = 0) := by
+  refine
+    ⟨classifier.remainingControlEdgeTrace_nodup sharedInteriorPairInteriorControlEdges,
+      classifier.mem_remainingControlEdgeTrace_iff_mem_controlEdges_and_not_mem_emittedFinset
+        sharedInteriorPairInteriorControlEdges,
+      classifier.length_remainingControlEdgeTrace_eq_card_sdiff
+        sharedInteriorPairInteriorControlEdges,
+      classifier.remainingControlEdgeTrace_foldl_insert_sdiff_eq_empty
+        sharedInteriorPairInteriorControlEdges,
+      ?_⟩
+  exact
+    (sharedInteriorPair_boundaryZero_dynamicControl_iff_interiorControlEdges_subset
+      ((classifier.remainingControlEdgeTrace sharedInteriorPairInteriorControlEdges).foldl
+        (fun acc e => insert e acc) classifier.emittedFinset)).2
+      (classifier.controlEdges_subset_foldl_insert_remainingControlEdgeTrace
+        sharedInteriorPairInteriorControlEdges)
+
+/--
 Dynamic residual step for the wheel focus shell.  If the current emitted/control set has not
 yet accumulated all three spoke controls, there is a selected-boundary-zero evader that vanishes
 on the current emitted set and is nonzero on a not-yet-emitted spoke; inserting that spoke
@@ -15062,6 +15104,48 @@ theorem wheelWithInnerTriangle_boundaryZero_exists_dynamicResidualTrace_terminal
         (fun acc e => insert e acc) emitted)).2
       (control_subset_foldl_insert_dynamicResidualControlEdgeTrace
         wheelWithInnerTriangleInteriorControlEdges emitted)
+
+/--
+Classifier-trace terminal certificate for the wheel focus shell.  The immutable classifier trace is
+the dynamic residual trace from `classifier.emittedFinset`; folding it into that emitted set
+exhausts the missing spoke controls and gives selected-boundary-zero control.
+-/
+theorem wheelWithInnerTriangle_boundaryZero_classifierRemainingControlEdgeTrace_terminalCertificate
+    {boundaryEdge : Fin 5 → wheelWithInnerTriangleGraph.edgeSet} {n : Nat}
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    (p0Inside p4Inside : Bool) (side : Fin 7 → Prop)
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side) :
+    (classifier.remainingControlEdgeTrace wheelWithInnerTriangleInteriorControlEdges).Nodup ∧
+      (∀ e : wheelWithInnerTriangleGraph.edgeSet,
+        e ∈ classifier.remainingControlEdgeTrace wheelWithInnerTriangleInteriorControlEdges ↔
+          e ∈ wheelWithInnerTriangleInteriorControlEdges ∧ e ∉ classifier.emittedFinset) ∧
+        (classifier.remainingControlEdgeTrace wheelWithInnerTriangleInteriorControlEdges).length =
+          (wheelWithInnerTriangleInteriorControlEdges \ classifier.emittedFinset).card ∧
+          wheelWithInnerTriangleInteriorControlEdges \
+              ((classifier.remainingControlEdgeTrace wheelWithInnerTriangleInteriorControlEdges).foldl
+                (fun acc e => insert e acc) classifier.emittedFinset) = ∅ ∧
+            (∀ ⦃z : wheelWithInnerTriangleGraph.edgeSet → Color⦄,
+              z ∈ planarBoundaryZeroSubmodule wheelWithInnerTriangleEmbedding →
+              (∀ e ∈
+                (classifier.remainingControlEdgeTrace wheelWithInnerTriangleInteriorControlEdges).foldl
+                  (fun acc e => insert e acc) classifier.emittedFinset, z e = 0) →
+                z = 0) := by
+  refine
+    ⟨classifier.remainingControlEdgeTrace_nodup wheelWithInnerTriangleInteriorControlEdges,
+      classifier.mem_remainingControlEdgeTrace_iff_mem_controlEdges_and_not_mem_emittedFinset
+        wheelWithInnerTriangleInteriorControlEdges,
+      classifier.length_remainingControlEdgeTrace_eq_card_sdiff
+        wheelWithInnerTriangleInteriorControlEdges,
+      classifier.remainingControlEdgeTrace_foldl_insert_sdiff_eq_empty
+        wheelWithInnerTriangleInteriorControlEdges,
+      ?_⟩
+  exact
+    (wheelWithInnerTriangle_boundaryZero_dynamicControl_iff_interiorControlEdges_subset
+      ((classifier.remainingControlEdgeTrace wheelWithInnerTriangleInteriorControlEdges).foldl
+        (fun acc e => insert e acc) classifier.emittedFinset)).2
+      (classifier.controlEdges_subset_foldl_insert_remainingControlEdgeTrace
+        wheelWithInnerTriangleInteriorControlEdges)
 
 /--
 Runner-facing exact Kirchhoff threshold for the shared focus shell.  CAP5 covers every nonzero
