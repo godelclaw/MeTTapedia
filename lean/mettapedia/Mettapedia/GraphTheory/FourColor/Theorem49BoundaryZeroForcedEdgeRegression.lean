@@ -19104,6 +19104,84 @@ theorem wheelWithInnerTriangle_CAP5_theorem49BoundaryRootSynthesis_or_residualEd
         hsignal hprocessedControl)
 
 /--
+Scheduler transition for the shared focus shell from concrete processed-edge evidence.  If every
+processed shared-control edge is already emitted by the immutable classifier, the processed-control
+invariant needed to select and insert the next residual edge follows automatically.
+-/
+theorem sharedInteriorPair_CAP5_theorem49BoundaryRootSynthesis_or_residualEdge_schedulerTransition_of_processed_subset_emittedFinset_uniqueCertificates_boundaryTrimmed
+    {boundaryEdge : Fin 5 → sharedInteriorPairGraph.edgeSet} {n : Nat}
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    [FiniteDimensional F2 (sharedInteriorPairGraph.edgeSet → Color)]
+    (C₀ : sharedInteriorPairGraph.EdgeColoring Color)
+    (hsubset :
+      sharedInteriorPairProjectedGeneratorCertificateColorings ⊆
+        sharedInteriorPairGraph.EdgeKempeClosure C₀)
+    (p0Inside p4Inside : Bool) (side : Fin 8 → Prop)
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (processed : Finset sharedInteriorPairGraph.edgeSet)
+    (hprocessedSubset : processed ⊆ classifier.emittedFinset) :
+    Theorem49BoundaryRootSynthesis sharedInteriorPairEmbedding C₀ ∨
+      ∃ e : sharedInteriorPairGraph.edgeSet,
+        e ∈ classifier.residualRemainingControlEdges sharedInteriorPairInteriorControlEdges
+            processed ∧
+          ¬ (∀ ⦃z : sharedInteriorPairGraph.edgeSet → Color⦄,
+            z ∈ planarBoundaryZeroSubmodule sharedInteriorPairEmbedding →
+            (∀ f ∈ classifier.emittedFinset, z f = 0) →
+              z e = 0) ∧
+            (∀ ⦃z : sharedInteriorPairGraph.edgeSet → Color⦄,
+              z ∈ planarBoundaryZeroSubmodule sharedInteriorPairEmbedding →
+              (∀ f ∈ insert e classifier.emittedFinset, z f = 0) →
+                ∀ f ∈ insert e processed, z f = 0) ∧
+              (classifier.residualRemainingControlEdges sharedInteriorPairInteriorControlEdges
+                  (insert e processed)).card <
+                (classifier.residualRemainingControlEdges sharedInteriorPairInteriorControlEdges
+                  processed).card :=
+  sharedInteriorPair_CAP5_theorem49BoundaryRootSynthesis_or_residualEdge_schedulerTransition_of_processedControl_uniqueCertificates_boundaryTrimmed
+    C₀ hsubset p0Inside p4Inside side classifier processed
+    (data.processedControl_of_subset_emittedFinset
+      (emb := sharedInteriorPairEmbedding) classifier hprocessedSubset)
+
+/--
+Scheduler transition for the wheel focus shell from concrete processed-edge evidence.  If every
+processed spoke is already emitted by the immutable classifier, the processed-control invariant
+needed to select and insert the next residual spoke follows automatically.
+-/
+theorem wheelWithInnerTriangle_CAP5_theorem49BoundaryRootSynthesis_or_residualEdge_schedulerTransition_of_processed_subset_emittedFinset_uniqueCertificates_boundaryTrimmed
+    {boundaryEdge : Fin 5 → wheelWithInnerTriangleGraph.edgeSet} {n : Nat}
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    [FiniteDimensional F2 (wheelWithInnerTriangleGraph.edgeSet → Color)]
+    (C₀ : wheelWithInnerTriangleGraph.EdgeColoring Color)
+    (hsubset :
+      wheelWithInnerTriangleProjectedGeneratorCertificateColorings ⊆
+        wheelWithInnerTriangleGraph.EdgeKempeClosure C₀)
+    (p0Inside p4Inside : Bool) (side : Fin 7 → Prop)
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (processed : Finset wheelWithInnerTriangleGraph.edgeSet)
+    (hprocessedSubset : processed ⊆ classifier.emittedFinset) :
+    Theorem49BoundaryRootSynthesis wheelWithInnerTriangleEmbedding C₀ ∨
+      ∃ e : wheelWithInnerTriangleGraph.edgeSet,
+        e ∈ classifier.residualRemainingControlEdges wheelWithInnerTriangleInteriorControlEdges
+            processed ∧
+          ¬ (∀ ⦃z : wheelWithInnerTriangleGraph.edgeSet → Color⦄,
+            z ∈ planarBoundaryZeroSubmodule wheelWithInnerTriangleEmbedding →
+            (∀ f ∈ classifier.emittedFinset, z f = 0) →
+              z e = 0) ∧
+            (∀ ⦃z : wheelWithInnerTriangleGraph.edgeSet → Color⦄,
+              z ∈ planarBoundaryZeroSubmodule wheelWithInnerTriangleEmbedding →
+              (∀ f ∈ insert e classifier.emittedFinset, z f = 0) →
+                ∀ f ∈ insert e processed, z f = 0) ∧
+              (classifier.residualRemainingControlEdges wheelWithInnerTriangleInteriorControlEdges
+                  (insert e processed)).card <
+                (classifier.residualRemainingControlEdges wheelWithInnerTriangleInteriorControlEdges
+                  processed).card :=
+  wheelWithInnerTriangle_CAP5_theorem49BoundaryRootSynthesis_or_residualEdge_schedulerTransition_of_processedControl_uniqueCertificates_boundaryTrimmed
+    C₀ hsubset p0Inside p4Inside side classifier processed
+    (data.processedControl_of_subset_emittedFinset
+      (emb := wheelWithInnerTriangleEmbedding) classifier hprocessedSubset)
+
+/--
 Closed boundary-trimmed residual coordinate-signal verdict for the shared focus shell: either
 synthesis closes, or the next CAP5 crossing/noncrossing coordinate signal strictly decreases the
 explicit residual worklist.
