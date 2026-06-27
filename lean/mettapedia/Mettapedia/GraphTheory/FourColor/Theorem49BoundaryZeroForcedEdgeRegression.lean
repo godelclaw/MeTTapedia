@@ -15019,6 +15019,56 @@ theorem sharedInteriorPair_boundaryZero_classifierRemainingControlEdgeTrace_term
         sharedInteriorPairInteriorControlEdges)
 
 /--
+Every shared-shell edge left in the classifier residual trace is one of the lab-certified shared
+controls, so the unique certificate family supplies both red and blue single-coordinate probes.
+-/
+theorem sharedInteriorPair_boundaryZero_classifierRemainingControlEdgeTrace_uniqueCertificateWitnesses
+    {boundaryEdge : Fin 5 → sharedInteriorPairGraph.edgeSet} {n : Nat}
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    (p0Inside p4Inside : Bool) (side : Fin 8 → Prop)
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side) :
+    (∀ e : sharedInteriorPairGraph.edgeSet,
+      e ∈ classifier.remainingControlEdgeTrace sharedInteriorPairInteriorControlEdges →
+        ∃ i : ({e : sharedInteriorPairGraph.edgeSet //
+            e ∈ sharedInteriorPairInteriorControlEdges} × Bool),
+          ((sharedInteriorPairUniqueCertificateRedBlueFamily i :
+              projectedColoringGeneratorSubspace sharedInteriorPairEmbedding
+                sharedInteriorPairProjectedGeneratorCertificateColorings) :
+              sharedInteriorPairGraph.edgeSet → Color) =
+            Pi.single e red) ∧
+      (∀ e : sharedInteriorPairGraph.edgeSet,
+        e ∈ classifier.remainingControlEdgeTrace sharedInteriorPairInteriorControlEdges →
+          ∃ i : ({e : sharedInteriorPairGraph.edgeSet //
+              e ∈ sharedInteriorPairInteriorControlEdges} × Bool),
+            ((sharedInteriorPairUniqueCertificateRedBlueFamily i :
+                projectedColoringGeneratorSubspace sharedInteriorPairEmbedding
+                  sharedInteriorPairProjectedGeneratorCertificateColorings) :
+                sharedInteriorPairGraph.edgeSet → Color) =
+              Pi.single e blue) := by
+  constructor
+  · intro e heTrace
+    have heControl : e ∈ sharedInteriorPairInteriorControlEdges :=
+      ((classifier.mem_remainingControlEdgeTrace_iff_mem_controlEdges_and_not_mem_emittedFinset
+        sharedInteriorPairInteriorControlEdges e).1 heTrace).1
+    rcases redBlueSingleCoordinateFamily_witnessRed sharedInteriorPairInteriorControlEdges
+        sharedInteriorPair_redBlueSingleCoordinateMemberships_of_uniqueCertificates.1
+        sharedInteriorPair_redBlueSingleCoordinateMemberships_of_uniqueCertificates.2 e
+        heControl with
+      ⟨i, hi⟩
+    exact ⟨i, by simpa [sharedInteriorPairUniqueCertificateRedBlueFamily] using hi⟩
+  · intro e heTrace
+    have heControl : e ∈ sharedInteriorPairInteriorControlEdges :=
+      ((classifier.mem_remainingControlEdgeTrace_iff_mem_controlEdges_and_not_mem_emittedFinset
+        sharedInteriorPairInteriorControlEdges e).1 heTrace).1
+    rcases redBlueSingleCoordinateFamily_witnessBlue sharedInteriorPairInteriorControlEdges
+        sharedInteriorPair_redBlueSingleCoordinateMemberships_of_uniqueCertificates.1
+        sharedInteriorPair_redBlueSingleCoordinateMemberships_of_uniqueCertificates.2 e
+        heControl with
+      ⟨i, hi⟩
+    exact ⟨i, by simpa [sharedInteriorPairUniqueCertificateRedBlueFamily] using hi⟩
+
+/--
 Dynamic residual step for the wheel focus shell.  If the current emitted/control set has not
 yet accumulated all three spoke controls, there is a selected-boundary-zero evader that vanishes
 on the current emitted set and is nonzero on a not-yet-emitted spoke; inserting that spoke
@@ -15146,6 +15196,56 @@ theorem wheelWithInnerTriangle_boundaryZero_classifierRemainingControlEdgeTrace_
         (fun acc e => insert e acc) classifier.emittedFinset)).2
       (classifier.controlEdges_subset_foldl_insert_remainingControlEdgeTrace
         wheelWithInnerTriangleInteriorControlEdges)
+
+/--
+Every wheel-shell edge left in the classifier residual trace is one of the lab-certified spoke
+controls, so the unique certificate family supplies both red and blue single-coordinate probes.
+-/
+theorem wheelWithInnerTriangle_boundaryZero_classifierRemainingControlEdgeTrace_uniqueCertificateWitnesses
+    {boundaryEdge : Fin 5 → wheelWithInnerTriangleGraph.edgeSet} {n : Nat}
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    (p0Inside p4Inside : Bool) (side : Fin 7 → Prop)
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side) :
+    (∀ e : wheelWithInnerTriangleGraph.edgeSet,
+      e ∈ classifier.remainingControlEdgeTrace wheelWithInnerTriangleInteriorControlEdges →
+        ∃ i : ({e : wheelWithInnerTriangleGraph.edgeSet //
+            e ∈ wheelWithInnerTriangleInteriorControlEdges} × Bool),
+          ((wheelWithInnerTriangleUniqueCertificateRedBlueFamily i :
+              projectedColoringGeneratorSubspace wheelWithInnerTriangleEmbedding
+                wheelWithInnerTriangleProjectedGeneratorCertificateColorings) :
+              wheelWithInnerTriangleGraph.edgeSet → Color) =
+            Pi.single e red) ∧
+      (∀ e : wheelWithInnerTriangleGraph.edgeSet,
+        e ∈ classifier.remainingControlEdgeTrace wheelWithInnerTriangleInteriorControlEdges →
+          ∃ i : ({e : wheelWithInnerTriangleGraph.edgeSet //
+              e ∈ wheelWithInnerTriangleInteriorControlEdges} × Bool),
+            ((wheelWithInnerTriangleUniqueCertificateRedBlueFamily i :
+                projectedColoringGeneratorSubspace wheelWithInnerTriangleEmbedding
+                  wheelWithInnerTriangleProjectedGeneratorCertificateColorings) :
+                wheelWithInnerTriangleGraph.edgeSet → Color) =
+              Pi.single e blue) := by
+  constructor
+  · intro e heTrace
+    have heControl : e ∈ wheelWithInnerTriangleInteriorControlEdges :=
+      ((classifier.mem_remainingControlEdgeTrace_iff_mem_controlEdges_and_not_mem_emittedFinset
+        wheelWithInnerTriangleInteriorControlEdges e).1 heTrace).1
+    rcases redBlueSingleCoordinateFamily_witnessRed wheelWithInnerTriangleInteriorControlEdges
+        wheelWithInnerTriangle_redBlueSingleCoordinateMemberships_of_uniqueCertificates.1
+        wheelWithInnerTriangle_redBlueSingleCoordinateMemberships_of_uniqueCertificates.2 e
+        heControl with
+      ⟨i, hi⟩
+    exact ⟨i, by simpa [wheelWithInnerTriangleUniqueCertificateRedBlueFamily] using hi⟩
+  · intro e heTrace
+    have heControl : e ∈ wheelWithInnerTriangleInteriorControlEdges :=
+      ((classifier.mem_remainingControlEdgeTrace_iff_mem_controlEdges_and_not_mem_emittedFinset
+        wheelWithInnerTriangleInteriorControlEdges e).1 heTrace).1
+    rcases redBlueSingleCoordinateFamily_witnessBlue wheelWithInnerTriangleInteriorControlEdges
+        wheelWithInnerTriangle_redBlueSingleCoordinateMemberships_of_uniqueCertificates.1
+        wheelWithInnerTriangle_redBlueSingleCoordinateMemberships_of_uniqueCertificates.2 e
+        heControl with
+      ⟨i, hi⟩
+    exact ⟨i, by simpa [wheelWithInnerTriangleUniqueCertificateRedBlueFamily] using hi⟩
 
 /--
 Runner-facing exact Kirchhoff threshold for the shared focus shell.  CAP5 covers every nonzero
