@@ -17140,6 +17140,67 @@ theorem sharedInteriorPair_CAP5_theorem49BoundaryRootSynthesis_or_boundaryZeroEv
         C₀ hsubset p0Inside p4Inside side classifier hclosed)
 
 /--
+Exact-forced-coverage closure for the shared focus shell.  With the boundary-trimmed
+unique-certificate route, coverage of every nonzero selected-boundary-zero chain by an
+enumerated forced edge already closes synthesis; no extra emitted-edge red/blue witness
+hypothesis remains.
+-/
+theorem sharedInteriorPair_CAP5_theorem49BoundaryRootSynthesis_of_forcedEdgeCoverage_uniqueCertificates_boundaryTrimmed
+    {boundaryEdge : Fin 5 → sharedInteriorPairGraph.edgeSet} {n : Nat}
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    [FiniteDimensional F2 (sharedInteriorPairGraph.edgeSet → Color)]
+    (C₀ : sharedInteriorPairGraph.EdgeColoring Color)
+    (hsubset :
+      sharedInteriorPairProjectedGeneratorCertificateColorings ⊆
+        sharedInteriorPairGraph.EdgeKempeClosure C₀)
+    (p0Inside p4Inside : Bool) (side : Fin 8 → Prop)
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (hcoverage :
+      ∀ ⦃z : sharedInteriorPairGraph.edgeSet → Color⦄,
+        z ∈ planarBoundaryZeroSubmodule sharedInteriorPairEmbedding →
+        z ≠ 0 →
+          ∃ e : sharedInteriorPairGraph.edgeSet,
+            data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e ∧
+              z e ≠ 0) :
+    Theorem49BoundaryRootSynthesis sharedInteriorPairEmbedding C₀ := by
+  by_contra hnotSynthesis
+  rcases
+      sharedInteriorPair_CAP5_exists_boundaryZeroChain_vanishingOnForcedEdges_of_not_theorem49BoundaryRootSynthesis_uniqueCertificates_boundaryTrimmed
+        C₀ hsubset p0Inside p4Inside side classifier hnotSynthesis with
+    ⟨z, hzBoundary, hzNonzero, hzForcedZero⟩
+  rcases hcoverage hzBoundary hzNonzero with ⟨e, heForced, hze⟩
+  exact hze (hzForcedZero e heForced)
+
+/--
+Coverage-refutation form of the shared focus-shell endpoint.  A failed boundary-trimmed
+unique-certificate synthesis run necessarily leaves a nonzero selected-boundary-zero evader, so
+the enumerated forced edges cannot have exact coverage.
+-/
+theorem sharedInteriorPair_CAP5_not_forcedEdgeCoverage_of_not_theorem49BoundaryRootSynthesis_uniqueCertificates_boundaryTrimmed
+    {boundaryEdge : Fin 5 → sharedInteriorPairGraph.edgeSet} {n : Nat}
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    [FiniteDimensional F2 (sharedInteriorPairGraph.edgeSet → Color)]
+    (C₀ : sharedInteriorPairGraph.EdgeColoring Color)
+    (hsubset :
+      sharedInteriorPairProjectedGeneratorCertificateColorings ⊆
+        sharedInteriorPairGraph.EdgeKempeClosure C₀)
+    (p0Inside p4Inside : Bool) (side : Fin 8 → Prop)
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (hnotSynthesis : ¬ Theorem49BoundaryRootSynthesis sharedInteriorPairEmbedding C₀) :
+    ¬ (∀ ⦃z : sharedInteriorPairGraph.edgeSet → Color⦄,
+      z ∈ planarBoundaryZeroSubmodule sharedInteriorPairEmbedding →
+      z ≠ 0 →
+        ∃ e : sharedInteriorPairGraph.edgeSet,
+          data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e ∧
+            z e ≠ 0) := by
+  intro hcoverage
+  exact hnotSynthesis
+    (sharedInteriorPair_CAP5_theorem49BoundaryRootSynthesis_of_forcedEdgeCoverage_uniqueCertificates_boundaryTrimmed
+      C₀ hsubset p0Inside p4Inside side classifier hcoverage)
+
+/--
 Boundary-trimmed fixed-point kernel endpoint for the shared focus shell.  Empty extension bins
 make the two lab-certified controls emitted, and the canonical certificate family already has a
 trivial selected-boundary-zero pairing kernel.
@@ -17747,6 +17808,67 @@ theorem wheelWithInnerTriangle_CAP5_theorem49BoundaryRootSynthesis_or_boundaryZe
   · exact Or.inr
       (wheelWithInnerTriangle_CAP5_exists_boundaryZeroChain_vanishingOnForcedEdges_of_not_theorem49BoundaryRootSynthesis_uniqueCertificates_boundaryTrimmed
         C₀ hsubset p0Inside p4Inside side classifier hclosed)
+
+/--
+Exact-forced-coverage closure for the wheel focus shell.  With the boundary-trimmed
+unique-certificate route, coverage of every nonzero selected-boundary-zero chain by an
+enumerated forced edge already closes synthesis; no extra emitted-edge red/blue witness
+hypothesis remains.
+-/
+theorem wheelWithInnerTriangle_CAP5_theorem49BoundaryRootSynthesis_of_forcedEdgeCoverage_uniqueCertificates_boundaryTrimmed
+    {boundaryEdge : Fin 5 → wheelWithInnerTriangleGraph.edgeSet} {n : Nat}
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    [FiniteDimensional F2 (wheelWithInnerTriangleGraph.edgeSet → Color)]
+    (C₀ : wheelWithInnerTriangleGraph.EdgeColoring Color)
+    (hsubset :
+      wheelWithInnerTriangleProjectedGeneratorCertificateColorings ⊆
+        wheelWithInnerTriangleGraph.EdgeKempeClosure C₀)
+    (p0Inside p4Inside : Bool) (side : Fin 7 → Prop)
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (hcoverage :
+      ∀ ⦃z : wheelWithInnerTriangleGraph.edgeSet → Color⦄,
+        z ∈ planarBoundaryZeroSubmodule wheelWithInnerTriangleEmbedding →
+        z ≠ 0 →
+          ∃ e : wheelWithInnerTriangleGraph.edgeSet,
+            data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e ∧
+              z e ≠ 0) :
+    Theorem49BoundaryRootSynthesis wheelWithInnerTriangleEmbedding C₀ := by
+  by_contra hnotSynthesis
+  rcases
+      wheelWithInnerTriangle_CAP5_exists_boundaryZeroChain_vanishingOnForcedEdges_of_not_theorem49BoundaryRootSynthesis_uniqueCertificates_boundaryTrimmed
+        C₀ hsubset p0Inside p4Inside side classifier hnotSynthesis with
+    ⟨z, hzBoundary, hzNonzero, hzForcedZero⟩
+  rcases hcoverage hzBoundary hzNonzero with ⟨e, heForced, hze⟩
+  exact hze (hzForcedZero e heForced)
+
+/--
+Coverage-refutation form of the wheel focus-shell endpoint.  A failed boundary-trimmed
+unique-certificate synthesis run necessarily leaves a nonzero selected-boundary-zero evader, so
+the enumerated forced edges cannot have exact coverage.
+-/
+theorem wheelWithInnerTriangle_CAP5_not_forcedEdgeCoverage_of_not_theorem49BoundaryRootSynthesis_uniqueCertificates_boundaryTrimmed
+    {boundaryEdge : Fin 5 → wheelWithInnerTriangleGraph.edgeSet} {n : Nat}
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    [FiniteDimensional F2 (wheelWithInnerTriangleGraph.edgeSet → Color)]
+    (C₀ : wheelWithInnerTriangleGraph.EdgeColoring Color)
+    (hsubset :
+      wheelWithInnerTriangleProjectedGeneratorCertificateColorings ⊆
+        wheelWithInnerTriangleGraph.EdgeKempeClosure C₀)
+    (p0Inside p4Inside : Bool) (side : Fin 7 → Prop)
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (hnotSynthesis : ¬ Theorem49BoundaryRootSynthesis wheelWithInnerTriangleEmbedding C₀) :
+    ¬ (∀ ⦃z : wheelWithInnerTriangleGraph.edgeSet → Color⦄,
+      z ∈ planarBoundaryZeroSubmodule wheelWithInnerTriangleEmbedding →
+      z ≠ 0 →
+        ∃ e : wheelWithInnerTriangleGraph.edgeSet,
+          data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e ∧
+            z e ≠ 0) := by
+  intro hcoverage
+  exact hnotSynthesis
+    (wheelWithInnerTriangle_CAP5_theorem49BoundaryRootSynthesis_of_forcedEdgeCoverage_uniqueCertificates_boundaryTrimmed
+      C₀ hsubset p0Inside p4Inside side classifier hcoverage)
 
 /--
 Boundary-trimmed fixed-point kernel endpoint for the wheel focus shell.  Empty extension bins
