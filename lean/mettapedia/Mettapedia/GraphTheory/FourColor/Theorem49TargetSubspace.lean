@@ -271,6 +271,42 @@ theorem eq_zero_of_mem_planarBoundaryZeroSubmodule_of_interiorEdgeSupport
   · exact Or.inr hboundary
   · exact Or.inl hinterior
 
+/-- Every nonzero selected-boundary-zero chain is detected by some ambient interior edge. -/
+theorem planarBoundaryZeroSubmodule_interiorEdgeSupport_nonzeroCoverage
+    {G : SimpleGraph V} (emb : PlaneEmbeddingWithBoundary G) :
+    ∀ ⦃z : G.edgeSet → Color⦄,
+      z ∈ planarBoundaryZeroSubmodule emb →
+      z ≠ 0 →
+        ∃ e : G.edgeSet,
+          e ∈ interiorEdgeSupport emb.faceBoundary emb.faces ∧ z e ≠ 0 := by
+  intro z hzBoundary hzNonzero
+  by_contra hnoInteriorHit
+  have hzeroInterior :
+      ∀ e ∈ interiorEdgeSupport emb.faceBoundary emb.faces, z e = 0 := by
+    intro e heInterior
+    by_contra hze
+    exact hnoInteriorHit ⟨e, heInterior, hze⟩
+  exact hzNonzero
+    (eq_zero_of_mem_planarBoundaryZeroSubmodule_of_interiorEdgeSupport
+      z hzBoundary hzeroInterior)
+
+/-- Any edge predicate containing the full ambient interior-edge support detects every nonzero
+selected-boundary-zero chain. -/
+theorem planarBoundaryZeroSubmodule_nonzeroCoverage_of_interiorEdgeSupport_subset
+    {G : SimpleGraph V} (emb : PlaneEmbeddingWithBoundary G)
+    {P : G.edgeSet → Prop}
+    (hInteriorSubset : ∀ e : G.edgeSet,
+      e ∈ interiorEdgeSupport emb.faceBoundary emb.faces → P e) :
+    ∀ ⦃z : G.edgeSet → Color⦄,
+      z ∈ planarBoundaryZeroSubmodule emb →
+      z ≠ 0 →
+        ∃ e : G.edgeSet, P e ∧ z e ≠ 0 := by
+  intro z hzBoundary hzNonzero
+  rcases planarBoundaryZeroSubmodule_interiorEdgeSupport_nonzeroCoverage
+      emb hzBoundary hzNonzero with
+    ⟨e, heInterior, hze⟩
+  exact ⟨e, hInteriorSubset e heInterior, hze⟩
+
 /-- The concrete v23-shaped target side available from the current interfaces: Kirchhoff at an
 explicit vertex set and zero on the selected boundary edges.  Instantiating `vertices` with the
 interior vertices is the next upstream data obligation. -/
@@ -663,6 +699,36 @@ theorem theorem49BoundaryZeroKirchhoffSubspace_nonzeroCoverage_of_planarBoundary
     ((theorem49BoundaryZeroKirchhoffSubspace_le_planarBoundaryZeroSubmodule
       emb vertices) hz)
     hzNonzero
+
+theorem theorem49BoundaryZeroKirchhoffSubspace_interiorEdgeSupport_nonzeroCoverage
+    {G : SimpleGraph V} [Fintype G.edgeSet]
+    (emb : PlaneEmbeddingWithBoundary G) (vertices : Finset V) :
+    ∀ ⦃z : G.edgeSet → Color⦄,
+      z ∈ theorem49BoundaryZeroKirchhoffSubspace emb vertices →
+      z ≠ 0 →
+        ∃ e : G.edgeSet,
+          e ∈ interiorEdgeSupport emb.faceBoundary emb.faces ∧ z e ≠ 0 :=
+  theorem49BoundaryZeroKirchhoffSubspace_nonzeroCoverage_of_planarBoundaryZeroSubmodule_nonzeroCoverage
+    emb vertices (interiorEdgeSupport emb.faceBoundary emb.faces)
+    (planarBoundaryZeroSubmodule_interiorEdgeSupport_nonzeroCoverage emb)
+
+theorem theorem49BoundaryZeroKirchhoffSubspace_nonzeroCoverage_of_interiorEdgeSupport_subset
+    {G : SimpleGraph V} [Fintype G.edgeSet]
+    (emb : PlaneEmbeddingWithBoundary G) (vertices : Finset V)
+    {P : G.edgeSet → Prop}
+    (hInteriorSubset : ∀ e : G.edgeSet,
+      e ∈ interiorEdgeSupport emb.faceBoundary emb.faces → P e) :
+    ∀ ⦃z : G.edgeSet → Color⦄,
+      z ∈ theorem49BoundaryZeroKirchhoffSubspace emb vertices →
+      z ≠ 0 →
+        ∃ e : G.edgeSet, P e ∧ z e ≠ 0 := by
+  intro z hz hzNonzero
+  exact
+    planarBoundaryZeroSubmodule_nonzeroCoverage_of_interiorEdgeSupport_subset
+      emb hInteriorSubset
+      ((theorem49BoundaryZeroKirchhoffSubspace_le_planarBoundaryZeroSubmodule
+        emb vertices) hz)
+      hzNonzero
 
 theorem boundaryZero_of_mem_theorem49BoundaryZeroKirchhoffSubspace
     {G : SimpleGraph V} [Fintype G.edgeSet]
