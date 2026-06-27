@@ -18184,6 +18184,125 @@ theorem wheelWithInnerTriangle_CAP5_theorem49BoundaryRootSynthesis_or_extensionC
         C₀ hsubset p0Inside p4Inside side classifier hclosed)
 
 /--
+Boundary-trimmed residual coordinate-signal form for the shared focus shell.  If every remaining
+shared-interior control edge is still outside the explicit processed set, failed synthesis gives a
+scheduler-facing CAP5 signal whose witness edge strictly decreases the residual worklist.
+-/
+theorem sharedInteriorPair_CAP5_extensionCoordinateSignalWithResidualProgress_of_not_theorem49BoundaryRootSynthesis_uniqueCertificates_boundaryTrimmed
+    {boundaryEdge : Fin 5 → sharedInteriorPairGraph.edgeSet} {n : Nat}
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    [FiniteDimensional F2 (sharedInteriorPairGraph.edgeSet → Color)]
+    (C₀ : sharedInteriorPairGraph.EdgeColoring Color)
+    (hsubset :
+      sharedInteriorPairProjectedGeneratorCertificateColorings ⊆
+        sharedInteriorPairGraph.EdgeKempeClosure C₀)
+    (p0Inside p4Inside : Bool) (side : Fin 8 → Prop)
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (processed : Finset sharedInteriorPairGraph.edgeSet)
+    (hnotProcessed :
+      ∀ e ∈ classifier.remainingControlEdges sharedInteriorPairInteriorControlEdges,
+        e ∉ processed)
+    (hnotSynthesis : ¬ Theorem49BoundaryRootSynthesis sharedInteriorPairEmbedding C₀) :
+    data.ExtensionCoordinateSignalWithResidualProgress sharedInteriorPairEmbedding
+      p0Inside p4Inside side classifier sharedInteriorPairInteriorControlEdges processed := by
+  exact
+    data.extensionCoordinateSignalWithResidualProgress_of_extensionCoordinateSignalWithProgress
+      (sharedInteriorPair_CAP5_extensionCoordinateSignalWithProgress_of_not_theorem49BoundaryRootSynthesis_uniqueCertificates_boundaryTrimmed
+        C₀ hsubset p0Inside p4Inside side classifier hnotSynthesis)
+      hnotProcessed
+
+/--
+Boundary-trimmed residual coordinate-signal form for the wheel focus shell.  If every remaining
+spoke control edge is still outside the explicit processed set, failed synthesis gives a
+scheduler-facing CAP5 signal whose witness edge strictly decreases the residual worklist.
+-/
+theorem wheelWithInnerTriangle_CAP5_extensionCoordinateSignalWithResidualProgress_of_not_theorem49BoundaryRootSynthesis_uniqueCertificates_boundaryTrimmed
+    {boundaryEdge : Fin 5 → wheelWithInnerTriangleGraph.edgeSet} {n : Nat}
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    [FiniteDimensional F2 (wheelWithInnerTriangleGraph.edgeSet → Color)]
+    (C₀ : wheelWithInnerTriangleGraph.EdgeColoring Color)
+    (hsubset :
+      wheelWithInnerTriangleProjectedGeneratorCertificateColorings ⊆
+        wheelWithInnerTriangleGraph.EdgeKempeClosure C₀)
+    (p0Inside p4Inside : Bool) (side : Fin 7 → Prop)
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (processed : Finset wheelWithInnerTriangleGraph.edgeSet)
+    (hnotProcessed :
+      ∀ e ∈ classifier.remainingControlEdges wheelWithInnerTriangleInteriorControlEdges,
+        e ∉ processed)
+    (hnotSynthesis : ¬ Theorem49BoundaryRootSynthesis wheelWithInnerTriangleEmbedding C₀) :
+    data.ExtensionCoordinateSignalWithResidualProgress wheelWithInnerTriangleEmbedding
+      p0Inside p4Inside side classifier wheelWithInnerTriangleInteriorControlEdges
+      processed := by
+  exact
+    data.extensionCoordinateSignalWithResidualProgress_of_extensionCoordinateSignalWithProgress
+      (wheelWithInnerTriangle_CAP5_extensionCoordinateSignalWithProgress_of_not_theorem49BoundaryRootSynthesis_uniqueCertificates_boundaryTrimmed
+        C₀ hsubset p0Inside p4Inside side classifier hnotSynthesis)
+      hnotProcessed
+
+/--
+Closed boundary-trimmed residual coordinate-signal verdict for the shared focus shell: either
+synthesis closes, or the next CAP5 crossing/noncrossing coordinate signal strictly decreases the
+explicit residual worklist.
+-/
+theorem sharedInteriorPair_CAP5_theorem49BoundaryRootSynthesis_or_extensionCoordinateSignalWithResidualProgress_uniqueCertificates_boundaryTrimmed
+    {boundaryEdge : Fin 5 → sharedInteriorPairGraph.edgeSet} {n : Nat}
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    [FiniteDimensional F2 (sharedInteriorPairGraph.edgeSet → Color)]
+    (C₀ : sharedInteriorPairGraph.EdgeColoring Color)
+    (hsubset :
+      sharedInteriorPairProjectedGeneratorCertificateColorings ⊆
+        sharedInteriorPairGraph.EdgeKempeClosure C₀)
+    (p0Inside p4Inside : Bool) (side : Fin 8 → Prop)
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (processed : Finset sharedInteriorPairGraph.edgeSet)
+    (hnotProcessed :
+      ∀ e ∈ classifier.remainingControlEdges sharedInteriorPairInteriorControlEdges,
+        e ∉ processed) :
+    Theorem49BoundaryRootSynthesis sharedInteriorPairEmbedding C₀ ∨
+      data.ExtensionCoordinateSignalWithResidualProgress sharedInteriorPairEmbedding
+        p0Inside p4Inside side classifier sharedInteriorPairInteriorControlEdges
+        processed := by
+  by_cases hclosed : Theorem49BoundaryRootSynthesis sharedInteriorPairEmbedding C₀
+  · exact Or.inl hclosed
+  · exact Or.inr
+      (sharedInteriorPair_CAP5_extensionCoordinateSignalWithResidualProgress_of_not_theorem49BoundaryRootSynthesis_uniqueCertificates_boundaryTrimmed
+        C₀ hsubset p0Inside p4Inside side classifier processed hnotProcessed hclosed)
+
+/--
+Closed boundary-trimmed residual coordinate-signal verdict for the wheel focus shell: either
+synthesis closes, or the next CAP5 crossing/noncrossing coordinate signal strictly decreases the
+explicit residual worklist.
+-/
+theorem wheelWithInnerTriangle_CAP5_theorem49BoundaryRootSynthesis_or_extensionCoordinateSignalWithResidualProgress_uniqueCertificates_boundaryTrimmed
+    {boundaryEdge : Fin 5 → wheelWithInnerTriangleGraph.edgeSet} {n : Nat}
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    [FiniteDimensional F2 (wheelWithInnerTriangleGraph.edgeSet → Color)]
+    (C₀ : wheelWithInnerTriangleGraph.EdgeColoring Color)
+    (hsubset :
+      wheelWithInnerTriangleProjectedGeneratorCertificateColorings ⊆
+        wheelWithInnerTriangleGraph.EdgeKempeClosure C₀)
+    (p0Inside p4Inside : Bool) (side : Fin 7 → Prop)
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (processed : Finset wheelWithInnerTriangleGraph.edgeSet)
+    (hnotProcessed :
+      ∀ e ∈ classifier.remainingControlEdges wheelWithInnerTriangleInteriorControlEdges,
+        e ∉ processed) :
+    Theorem49BoundaryRootSynthesis wheelWithInnerTriangleEmbedding C₀ ∨
+      data.ExtensionCoordinateSignalWithResidualProgress wheelWithInnerTriangleEmbedding
+        p0Inside p4Inside side classifier wheelWithInnerTriangleInteriorControlEdges
+        processed := by
+  by_cases hclosed : Theorem49BoundaryRootSynthesis wheelWithInnerTriangleEmbedding C₀
+  · exact Or.inl hclosed
+  · exact Or.inr
+      (wheelWithInnerTriangle_CAP5_extensionCoordinateSignalWithResidualProgress_of_not_theorem49BoundaryRootSynthesis_uniqueCertificates_boundaryTrimmed
+        C₀ hsubset p0Inside p4Inside side classifier processed hnotProcessed hclosed)
+
+/--
 Boundary-trimmed progress form for the shared focus shell.  Once the unique certificate family
 is available, failed synthesis cannot leave the CAP5 worklist at a fixed point: a concrete
 shared-interior control edge remains, and erasing it strictly decreases the remaining-control

@@ -543,6 +543,67 @@ def ExtensionCoordinateSignalWithProgress
                       ((classifier.remainingControlEdges controlEdges).erase e).card <
                         (classifier.remainingControlEdges controlEdges).card
 
+/--
+Named payload for a CAP5 extension signal whose witness edge is also available in an explicit
+residual worklist state.  This is the scheduler-facing version of
+`ExtensionCoordinateSignalWithProgress`: it records that processing the same crossing or
+noncrossing extension edge strictly decreases the residual measure.
+-/
+def ExtensionCoordinateSignalWithResidualProgress
+    (data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n)
+    [Fintype G.edgeSet]
+    (emb : PlaneEmbeddingWithBoundary G)
+    (p0Inside p4Inside : Bool) (side : V → Prop)
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (controlEdges processed : Finset G.edgeSet) : Prop :=
+  (∃ z : G.edgeSet → Color,
+    z ∈ planarBoundaryZeroSubmodule emb ∧
+      z ≠ 0 ∧
+        (∀ e : G.edgeSet,
+          data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e →
+            z e = 0) ∧
+          ∃ u v : V, ∃ e : G.edgeSet, ∃ p : G.Walk u v,
+            e ∈ classifier.crossingExtensionFinset controlEdges ∧
+              e ∈ classifier.remainingControlEdges controlEdges ∧
+                e ∈ classifier.residualRemainingControlEdges controlEdges processed ∧
+                  ¬ data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e ∧
+                    z e ≠ 0 ∧
+                      EdgeCrossesVertexSide G side e ∧
+                        side u ∧ ¬ side v ∧
+                          p.edges = [(e : Sym2 V)] ∧
+                            (∀ f : G.edgeSet, f ∈ classifier.emittedFinset →
+                              (f : Sym2 V) ∉ p.edges) ∧
+                              (Curriculum.pathXor (edgeColorFirstCoordinateWeight z)
+                                  p.edges ≠ 0 ∨
+                                Curriculum.pathXor (edgeColorSecondCoordinateWeight z)
+                                  p.edges ≠ 0) ∧
+                                (classifier.residualRemainingControlEdges controlEdges
+                                    (insert e processed)).card <
+                                  (classifier.residualRemainingControlEdges controlEdges
+                                    processed).card ∧
+                                  ((classifier.remainingControlEdges controlEdges).erase e).card <
+                                    (classifier.remainingControlEdges controlEdges).card) ∨
+    ∃ z : G.edgeSet → Color,
+      z ∈ planarBoundaryZeroSubmodule emb ∧
+        z ≠ 0 ∧
+          (∀ e : G.edgeSet,
+            data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e →
+              z e = 0) ∧
+            ∃ e : G.edgeSet,
+              e ∈ classifier.noncrossingExtensionFinset controlEdges ∧
+                e ∈ classifier.remainingControlEdges controlEdges ∧
+                  e ∈ classifier.residualRemainingControlEdges controlEdges processed ∧
+                    ¬ data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e ∧
+                      z e ≠ 0 ∧ ¬ EdgeCrossesVertexSide G side e ∧
+                        ((z e).1 ≠ 0 ∨ (z e).2 ≠ 0) ∧
+                          (classifier.residualRemainingControlEdges controlEdges
+                              (insert e processed)).card <
+                            (classifier.residualRemainingControlEdges controlEdges
+                              processed).card ∧
+                            ((classifier.remainingControlEdges controlEdges).erase e).card <
+                              (classifier.remainingControlEdges controlEdges).card
+
 /-- Forget the finite worklist decrease from a CAP5 extension signal. -/
 theorem extensionCoordinateSignal_of_extensionCoordinateSignalWithProgress
     {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
@@ -569,6 +630,97 @@ theorem extensionCoordinateSignal_of_extensionCoordinateSignalWithProgress
     exact Or.inr
       ⟨z, hzBoundary, hzNonzero, hvanish, e, heBin, hePredicateOutside, hze,
         hnotCross, hcoordinate⟩
+
+/-- Forget the residual-state data from a scheduler-facing CAP5 extension signal. -/
+theorem extensionCoordinateSignalWithProgress_of_extensionCoordinateSignalWithResidualProgress
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    [Fintype G.edgeSet]
+    {emb : PlaneEmbeddingWithBoundary G}
+    {p0Inside p4Inside : Bool} {side : V → Prop}
+    {classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side}
+    {controlEdges processed : Finset G.edgeSet}
+    (hsignal :
+      data.ExtensionCoordinateSignalWithResidualProgress emb p0Inside p4Inside side
+        classifier controlEdges processed) :
+    data.ExtensionCoordinateSignalWithProgress emb p0Inside p4Inside side classifier
+      controlEdges := by
+  rcases hsignal with hcrossing | hnoncrossing
+  · rcases hcrossing with
+      ⟨z, hzBoundary, hzNonzero, hvanish, u, v, e, p, heBin, _heRemaining,
+        _heResidual, hePredicateOutside, hze, hcross, hsideu, hsidev, hpEdges,
+        havoid, hcoordinate, _hresidualProgress, hprogress⟩
+    exact Or.inl
+      ⟨z, hzBoundary, hzNonzero, hvanish, u, v, e, p, heBin, hePredicateOutside,
+        hze, hcross, hsideu, hsidev, hpEdges, havoid, hcoordinate, hprogress⟩
+  · rcases hnoncrossing with
+      ⟨z, hzBoundary, hzNonzero, hvanish, e, heBin, _heRemaining, _heResidual,
+        hePredicateOutside, hze, hnotCross, hcoordinate, _hresidualProgress,
+        hprogress⟩
+    exact Or.inr
+      ⟨z, hzBoundary, hzNonzero, hvanish, e, heBin, hePredicateOutside, hze,
+        hnotCross, hcoordinate, hprogress⟩
+
+/--
+Promote an ordinary worklist-progress extension signal to a residual-state signal whenever every
+remaining control edge is still unprocessed.
+-/
+theorem extensionCoordinateSignalWithResidualProgress_of_extensionCoordinateSignalWithProgress
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    [Fintype G.edgeSet]
+    {emb : PlaneEmbeddingWithBoundary G}
+    {p0Inside p4Inside : Bool} {side : V → Prop}
+    {classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side}
+    {controlEdges processed : Finset G.edgeSet}
+    (hsignal :
+      data.ExtensionCoordinateSignalWithProgress emb p0Inside p4Inside side classifier
+        controlEdges)
+    (hnotProcessed :
+      ∀ e ∈ classifier.remainingControlEdges controlEdges, e ∉ processed) :
+    data.ExtensionCoordinateSignalWithResidualProgress emb p0Inside p4Inside side
+      classifier controlEdges processed := by
+  rcases hsignal with hcrossing | hnoncrossing
+  · rcases hcrossing with
+      ⟨z, hzBoundary, hzNonzero, hvanish, u, v, e, p, heBin, hePredicateOutside,
+        hze, hcross, hsideu, hsidev, hpEdges, havoid, hcoordinate, hprogress⟩
+    have heRemaining : e ∈ classifier.remainingControlEdges controlEdges := by
+      rw [← classifier.crossingExtensionFinset_union_noncrossingExtensionFinset_eq_remainingControlEdges
+        controlEdges]
+      exact Finset.mem_union.2 (Or.inl heBin)
+    have heResidual :
+        e ∈ classifier.residualRemainingControlEdges controlEdges processed :=
+      classifier.mem_residualRemainingControlEdges_of_mem_remainingControlEdges_of_not_mem_processed
+        controlEdges processed heRemaining (hnotProcessed e heRemaining)
+    have hresidualProgress :
+        (classifier.residualRemainingControlEdges controlEdges (insert e processed)).card <
+          (classifier.residualRemainingControlEdges controlEdges processed).card :=
+      classifier.card_residualRemainingControlEdges_insert_lt_of_mem_remainingControlEdges_of_not_mem_processed
+        controlEdges processed heRemaining (hnotProcessed e heRemaining)
+    exact Or.inl
+      ⟨z, hzBoundary, hzNonzero, hvanish, u, v, e, p, heBin, heRemaining,
+        heResidual, hePredicateOutside, hze, hcross, hsideu, hsidev, hpEdges,
+        havoid, hcoordinate, hresidualProgress, hprogress⟩
+  · rcases hnoncrossing with
+      ⟨z, hzBoundary, hzNonzero, hvanish, e, heBin, hePredicateOutside, hze,
+        hnotCross, hcoordinate, hprogress⟩
+    have heRemaining : e ∈ classifier.remainingControlEdges controlEdges := by
+      rw [← classifier.crossingExtensionFinset_union_noncrossingExtensionFinset_eq_remainingControlEdges
+        controlEdges]
+      exact Finset.mem_union.2 (Or.inr heBin)
+    have heResidual :
+        e ∈ classifier.residualRemainingControlEdges controlEdges processed :=
+      classifier.mem_residualRemainingControlEdges_of_mem_remainingControlEdges_of_not_mem_processed
+        controlEdges processed heRemaining (hnotProcessed e heRemaining)
+    have hresidualProgress :
+        (classifier.residualRemainingControlEdges controlEdges (insert e processed)).card <
+          (classifier.residualRemainingControlEdges controlEdges processed).card :=
+      classifier.card_residualRemainingControlEdges_insert_lt_of_mem_remainingControlEdges_of_not_mem_processed
+        controlEdges processed heRemaining (hnotProcessed e heRemaining)
+    exact Or.inr
+      ⟨z, hzBoundary, hzNonzero, hvanish, e, heBin, heRemaining, heResidual,
+        hePredicateOutside, hze, hnotCross, hcoordinate, hresidualProgress,
+        hprogress⟩
 
 /--
 A named CAP5 extension signal is already an algebraic detector handoff.  If the generator
