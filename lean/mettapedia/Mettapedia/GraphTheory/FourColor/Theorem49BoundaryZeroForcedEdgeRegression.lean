@@ -17084,6 +17084,62 @@ theorem sharedInteriorPair_CAP5_emittedInterior_card_lt_two_of_not_theorem49Boun
         C₀ hsubset p0Inside p4Inside side classifier hcard))
 
 /--
+Obstruction form of the shared focus-shell fixed-point endpoint.  Once the
+unique-certificate route is available, failed synthesis forces the exact finite F₂ obstruction:
+a nonzero selected-boundary-zero chain invisible to every enumerated forced edge.
+-/
+theorem sharedInteriorPair_CAP5_exists_boundaryZeroChain_vanishingOnForcedEdges_of_not_theorem49BoundaryRootSynthesis_uniqueCertificates_boundaryTrimmed
+    {boundaryEdge : Fin 5 → sharedInteriorPairGraph.edgeSet} {n : Nat}
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    [FiniteDimensional F2 (sharedInteriorPairGraph.edgeSet → Color)]
+    (C₀ : sharedInteriorPairGraph.EdgeColoring Color)
+    (hsubset :
+      sharedInteriorPairProjectedGeneratorCertificateColorings ⊆
+        sharedInteriorPairGraph.EdgeKempeClosure C₀)
+    (p0Inside p4Inside : Bool) (side : Fin 8 → Prop)
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (hnotSynthesis : ¬ Theorem49BoundaryRootSynthesis sharedInteriorPairEmbedding C₀) :
+    ∃ z : sharedInteriorPairGraph.edgeSet → Color,
+      z ∈ planarBoundaryZeroSubmodule sharedInteriorPairEmbedding ∧
+        z ≠ 0 ∧
+          ∀ e : sharedInteriorPairGraph.edgeSet,
+            data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e →
+              z e = 0 :=
+  (sharedInteriorPair_CAP5_exists_boundaryZeroChain_vanishingOnForcedEdges_iff_emittedInterior_card_lt_two
+    p0Inside p4Inside side classifier).2
+    (sharedInteriorPair_CAP5_emittedInterior_card_lt_two_of_not_theorem49BoundaryRootSynthesis_uniqueCertificates_boundaryTrimmed
+      C₀ hsubset p0Inside p4Inside side classifier hnotSynthesis)
+
+/--
+Closed dichotomy for the shared focus shell after the finite F₂ threshold is codified:
+boundary-root synthesis closes, or the classifier leaves a concrete nonzero boundary-zero evader.
+-/
+theorem sharedInteriorPair_CAP5_theorem49BoundaryRootSynthesis_or_boundaryZeroEvader_uniqueCertificates_boundaryTrimmed
+    {boundaryEdge : Fin 5 → sharedInteriorPairGraph.edgeSet} {n : Nat}
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    [FiniteDimensional F2 (sharedInteriorPairGraph.edgeSet → Color)]
+    (C₀ : sharedInteriorPairGraph.EdgeColoring Color)
+    (hsubset :
+      sharedInteriorPairProjectedGeneratorCertificateColorings ⊆
+        sharedInteriorPairGraph.EdgeKempeClosure C₀)
+    (p0Inside p4Inside : Bool) (side : Fin 8 → Prop)
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side) :
+    Theorem49BoundaryRootSynthesis sharedInteriorPairEmbedding C₀ ∨
+      ∃ z : sharedInteriorPairGraph.edgeSet → Color,
+        z ∈ planarBoundaryZeroSubmodule sharedInteriorPairEmbedding ∧
+          z ≠ 0 ∧
+            ∀ e : sharedInteriorPairGraph.edgeSet,
+              data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e →
+                z e = 0 := by
+  by_cases hclosed : Theorem49BoundaryRootSynthesis sharedInteriorPairEmbedding C₀
+  · exact Or.inl hclosed
+  · exact Or.inr
+      (sharedInteriorPair_CAP5_exists_boundaryZeroChain_vanishingOnForcedEdges_of_not_theorem49BoundaryRootSynthesis_uniqueCertificates_boundaryTrimmed
+        C₀ hsubset p0Inside p4Inside side classifier hclosed)
+
+/--
 Boundary-trimmed fixed-point kernel endpoint for the shared focus shell.  Empty extension bins
 make the two lab-certified controls emitted, and the canonical certificate family already has a
 trivial selected-boundary-zero pairing kernel.
@@ -17635,6 +17691,62 @@ theorem wheelWithInnerTriangle_CAP5_emittedInterior_card_lt_three_of_not_theorem
     exact hnotSynthesis
       (wheelWithInnerTriangle_CAP5_theorem49BoundaryRootSynthesis_of_emittedInterior_card_ge_three_uniqueCertificates_boundaryTrimmed
         C₀ hsubset p0Inside p4Inside side classifier hcard))
+
+/--
+Obstruction form of the wheel focus-shell fixed-point endpoint.  Once the
+unique-certificate route is available, failed synthesis forces the exact finite F₂ obstruction:
+a nonzero selected-boundary-zero chain invisible to every enumerated forced edge.
+-/
+theorem wheelWithInnerTriangle_CAP5_exists_boundaryZeroChain_vanishingOnForcedEdges_of_not_theorem49BoundaryRootSynthesis_uniqueCertificates_boundaryTrimmed
+    {boundaryEdge : Fin 5 → wheelWithInnerTriangleGraph.edgeSet} {n : Nat}
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    [FiniteDimensional F2 (wheelWithInnerTriangleGraph.edgeSet → Color)]
+    (C₀ : wheelWithInnerTriangleGraph.EdgeColoring Color)
+    (hsubset :
+      wheelWithInnerTriangleProjectedGeneratorCertificateColorings ⊆
+        wheelWithInnerTriangleGraph.EdgeKempeClosure C₀)
+    (p0Inside p4Inside : Bool) (side : Fin 7 → Prop)
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (hnotSynthesis : ¬ Theorem49BoundaryRootSynthesis wheelWithInnerTriangleEmbedding C₀) :
+    ∃ z : wheelWithInnerTriangleGraph.edgeSet → Color,
+      z ∈ planarBoundaryZeroSubmodule wheelWithInnerTriangleEmbedding ∧
+        z ≠ 0 ∧
+          ∀ e : wheelWithInnerTriangleGraph.edgeSet,
+            data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e →
+              z e = 0 :=
+  (wheelWithInnerTriangle_CAP5_exists_boundaryZeroChain_vanishingOnForcedEdges_iff_emittedInterior_card_lt_three
+    p0Inside p4Inside side classifier).2
+    (wheelWithInnerTriangle_CAP5_emittedInterior_card_lt_three_of_not_theorem49BoundaryRootSynthesis_uniqueCertificates_boundaryTrimmed
+      C₀ hsubset p0Inside p4Inside side classifier hnotSynthesis)
+
+/--
+Closed dichotomy for the wheel focus shell after the finite F₂ threshold is codified:
+boundary-root synthesis closes, or the classifier leaves a concrete nonzero boundary-zero evader.
+-/
+theorem wheelWithInnerTriangle_CAP5_theorem49BoundaryRootSynthesis_or_boundaryZeroEvader_uniqueCertificates_boundaryTrimmed
+    {boundaryEdge : Fin 5 → wheelWithInnerTriangleGraph.edgeSet} {n : Nat}
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    [FiniteDimensional F2 (wheelWithInnerTriangleGraph.edgeSet → Color)]
+    (C₀ : wheelWithInnerTriangleGraph.EdgeColoring Color)
+    (hsubset :
+      wheelWithInnerTriangleProjectedGeneratorCertificateColorings ⊆
+        wheelWithInnerTriangleGraph.EdgeKempeClosure C₀)
+    (p0Inside p4Inside : Bool) (side : Fin 7 → Prop)
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side) :
+    Theorem49BoundaryRootSynthesis wheelWithInnerTriangleEmbedding C₀ ∨
+      ∃ z : wheelWithInnerTriangleGraph.edgeSet → Color,
+        z ∈ planarBoundaryZeroSubmodule wheelWithInnerTriangleEmbedding ∧
+          z ≠ 0 ∧
+            ∀ e : wheelWithInnerTriangleGraph.edgeSet,
+              data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e →
+                z e = 0 := by
+  by_cases hclosed : Theorem49BoundaryRootSynthesis wheelWithInnerTriangleEmbedding C₀
+  · exact Or.inl hclosed
+  · exact Or.inr
+      (wheelWithInnerTriangle_CAP5_exists_boundaryZeroChain_vanishingOnForcedEdges_of_not_theorem49BoundaryRootSynthesis_uniqueCertificates_boundaryTrimmed
+        C₀ hsubset p0Inside p4Inside side classifier hclosed)
 
 /--
 Boundary-trimmed fixed-point kernel endpoint for the wheel focus shell.  Empty extension bins
