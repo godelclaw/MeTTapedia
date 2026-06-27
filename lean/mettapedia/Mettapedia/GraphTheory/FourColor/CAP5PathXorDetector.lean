@@ -723,6 +723,77 @@ theorem extensionCoordinateSignalWithResidualProgress_of_extensionCoordinateSign
         hprogress⟩
 
 /--
+Positive processed-edge zero invariant for an immutable Boolean classifier.  If every processed
+edge has already been emitted by the classifier, then emitted-edge vanishing immediately forces
+all processed edges to vanish.
+-/
+theorem processedControl_of_subset_emittedFinset
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    [Fintype G.edgeSet]
+    {emb : PlaneEmbeddingWithBoundary G}
+    {p0Inside p4Inside : Bool} {side : V → Prop}
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    {processed : Finset G.edgeSet}
+    (hprocessedSubset : processed ⊆ classifier.emittedFinset) :
+    ∀ ⦃z : G.edgeSet → Color⦄,
+      z ∈ planarBoundaryZeroSubmodule emb →
+      (∀ e ∈ classifier.emittedFinset, z e = 0) →
+        ∀ e ∈ processed, z e = 0 := by
+  intro z _hzBoundary hvanishEmitted e heProcessed
+  exact hvanishEmitted e (hprocessedSubset heProcessed)
+
+/--
+Negative processed-edge zero invariant for residual iteration.  A residual signal exposes a
+boundary-zero chain that vanishes on the immutable classifier output but is nonzero on the chosen
+residual edge.  Therefore the same classifier cannot justify marking that edge as processed
+without adding new emitted/control information.
+-/
+theorem exists_residualEdge_not_processedControl_insert_of_extensionCoordinateSignalWithResidualProgress
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    [Fintype G.edgeSet]
+    {emb : PlaneEmbeddingWithBoundary G}
+    {p0Inside p4Inside : Bool} {side : V → Prop}
+    {classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side}
+    {controlEdges processed : Finset G.edgeSet}
+    (hsignal :
+      data.ExtensionCoordinateSignalWithResidualProgress emb p0Inside p4Inside side
+        classifier controlEdges processed) :
+    ∃ e : G.edgeSet,
+      e ∈ classifier.residualRemainingControlEdges controlEdges processed ∧
+        ¬ (∀ ⦃z : G.edgeSet → Color⦄,
+          z ∈ planarBoundaryZeroSubmodule emb →
+          (∀ f ∈ classifier.emittedFinset, z f = 0) →
+            ∀ f ∈ insert e processed, z f = 0) := by
+  rcases hsignal with hcrossing | hnoncrossing
+  · rcases hcrossing with
+      ⟨z, hzBoundary, _hzNonzero, hvanishForced, _u, _v, e, _p, _heBin,
+        _heRemaining, heResidual, _hePredicateOutside, hze, _hcross, _hsideu,
+        _hsidev, _hpEdges, _havoid, _hcoordinate, _hresidualProgress,
+        _hprogress⟩
+    refine ⟨e, heResidual, ?_⟩
+    intro hprocessedControl
+    have hvanishEmitted : ∀ f ∈ classifier.emittedFinset, z f = 0 := by
+      intro f hf
+      exact hvanishForced f ((classifier.emittedFinset_spec f).1 hf)
+    exact hze
+      (hprocessedControl hzBoundary hvanishEmitted e
+        (Finset.mem_insert_self e processed))
+  · rcases hnoncrossing with
+      ⟨z, hzBoundary, _hzNonzero, hvanishForced, e, _heBin, _heRemaining,
+        heResidual, _hePredicateOutside, hze, _hnotCross, _hcoordinate,
+        _hresidualProgress, _hprogress⟩
+    refine ⟨e, heResidual, ?_⟩
+    intro hprocessedControl
+    have hvanishEmitted : ∀ f ∈ classifier.emittedFinset, z f = 0 := by
+      intro f hf
+      exact hvanishForced f ((classifier.emittedFinset_spec f).1 hf)
+    exact hze
+      (hprocessedControl hzBoundary hvanishEmitted e
+        (Finset.mem_insert_self e processed))
+
+/--
 A named CAP5 extension signal is already an algebraic detector handoff.  If the generator
 family contains red and blue single-coordinate probes for every candidate extension edge, the
 obstructing boundary-zero chain exposed by the signal has a nonzero family pairing.
@@ -2694,6 +2765,46 @@ theorem extensionCoordinateSignalWithResidualProgress_of_not_classifierControl_o
         classifier.card_residualRemainingControlEdges_insert_lt_of_mem controlEdges
           processed heResidual,
         classifier.card_erase_remainingControlEdges_lt_of_mem controlEdges heRemaining⟩
+
+/--
+Failed-classifier form of the immutable-processed obstruction.  The residual signal produced from
+`hnotControl`, a later finite control proof, and the current processed-edge zero invariant names
+an edge whose insertion into the same classifier's processed set would make that zero invariant
+false.  A scheduler must therefore pair the insertion with new emitted/control information.
+-/
+theorem exists_residualEdge_not_processedControl_insert_of_not_classifierControl_of_finsetControl_of_processedControl
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    [Fintype G.edgeSet]
+    (emb : PlaneEmbeddingWithBoundary G)
+    (p0Inside p4Inside : Bool) (side : V → Prop)
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (controlEdges processed : Finset G.edgeSet)
+    (hnotControl :
+      ¬ ∀ ⦃z : G.edgeSet → Color⦄,
+        z ∈ planarBoundaryZeroSubmodule emb →
+        (∀ e ∈ classifier.emittedFinset, z e = 0) →
+          z = 0)
+    (hcontrol :
+      ∀ ⦃z : G.edgeSet → Color⦄,
+        z ∈ planarBoundaryZeroSubmodule emb →
+        (∀ e ∈ controlEdges, z e = 0) →
+          z = 0)
+    (hprocessedControl :
+      ∀ ⦃z : G.edgeSet → Color⦄,
+        z ∈ planarBoundaryZeroSubmodule emb →
+        (∀ e ∈ classifier.emittedFinset, z e = 0) →
+          ∀ e ∈ processed, z e = 0) :
+    ∃ e : G.edgeSet,
+      e ∈ classifier.residualRemainingControlEdges controlEdges processed ∧
+        ¬ (∀ ⦃z : G.edgeSet → Color⦄,
+          z ∈ planarBoundaryZeroSubmodule emb →
+          (∀ f ∈ classifier.emittedFinset, z f = 0) →
+            ∀ f ∈ insert e processed, z f = 0) :=
+  data.exists_residualEdge_not_processedControl_insert_of_extensionCoordinateSignalWithResidualProgress
+    (data.extensionCoordinateSignalWithResidualProgress_of_not_classifierControl_of_finsetControl_of_processedControl
+      emb p0Inside p4Inside side classifier controlEdges processed hnotControl hcontrol
+      hprocessedControl)
 
 /--
 Cardinality-driven named-payload form of the CAP5 extension coordinate signal.  The emitted
