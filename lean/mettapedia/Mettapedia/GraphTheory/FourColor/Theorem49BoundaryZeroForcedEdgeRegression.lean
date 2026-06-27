@@ -18290,6 +18290,35 @@ theorem sharedInteriorPair_CAP5_theorem49BoundaryRootSynthesis_of_forcedEdgeCove
   exact hze (hzForcedZero e heForced)
 
 /--
+No-evader closure for the shared focus shell.  In the boundary-trimmed unique-certificate route,
+the finite `F₂` verdict that no nonzero selected-boundary-zero chain vanishes on every
+enumerated forced edge is already enough to close synthesis.
+-/
+theorem sharedInteriorPair_CAP5_theorem49BoundaryRootSynthesis_of_no_boundaryZeroChain_vanishingOnForcedEdges_uniqueCertificates_boundaryTrimmed
+    {boundaryEdge : Fin 5 → sharedInteriorPairGraph.edgeSet} {n : Nat}
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    [FiniteDimensional F2 (sharedInteriorPairGraph.edgeSet → Color)]
+    (C₀ : sharedInteriorPairGraph.EdgeColoring Color)
+    (hsubset :
+      sharedInteriorPairProjectedGeneratorCertificateColorings ⊆
+        sharedInteriorPairGraph.EdgeKempeClosure C₀)
+    (p0Inside p4Inside : Bool) (side : Fin 8 → Prop)
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (hnoEvader :
+      ¬ ∃ z : sharedInteriorPairGraph.edgeSet → Color,
+        z ∈ planarBoundaryZeroSubmodule sharedInteriorPairEmbedding ∧
+          z ≠ 0 ∧
+            ∀ e : sharedInteriorPairGraph.edgeSet,
+              data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e →
+                z e = 0) :
+    Theorem49BoundaryRootSynthesis sharedInteriorPairEmbedding C₀ :=
+  sharedInteriorPair_CAP5_theorem49BoundaryRootSynthesis_of_forcedEdgeCoverage_uniqueCertificates_boundaryTrimmed
+    C₀ hsubset p0Inside p4Inside side classifier
+    ((data.forcedEdgeCoverage_iff_no_boundaryZeroChain_vanishing_on_forcedEdges
+      sharedInteriorPairEmbedding p0Inside p4Inside side).2 hnoEvader)
+
+/--
 Coverage-refutation form of the shared focus-shell endpoint.  A failed boundary-trimmed
 unique-certificate synthesis run necessarily leaves a nonzero selected-boundary-zero evader, so
 the enumerated forced edges cannot have exact coverage.
@@ -18958,6 +18987,35 @@ theorem wheelWithInnerTriangle_CAP5_theorem49BoundaryRootSynthesis_of_forcedEdge
     ⟨z, hzBoundary, hzNonzero, hzForcedZero⟩
   rcases hcoverage hzBoundary hzNonzero with ⟨e, heForced, hze⟩
   exact hze (hzForcedZero e heForced)
+
+/--
+No-evader closure for the wheel focus shell.  In the boundary-trimmed unique-certificate route,
+the finite `F₂` verdict that no nonzero selected-boundary-zero chain vanishes on every
+enumerated forced edge is already enough to close synthesis.
+-/
+theorem wheelWithInnerTriangle_CAP5_theorem49BoundaryRootSynthesis_of_no_boundaryZeroChain_vanishingOnForcedEdges_uniqueCertificates_boundaryTrimmed
+    {boundaryEdge : Fin 5 → wheelWithInnerTriangleGraph.edgeSet} {n : Nat}
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    [FiniteDimensional F2 (wheelWithInnerTriangleGraph.edgeSet → Color)]
+    (C₀ : wheelWithInnerTriangleGraph.EdgeColoring Color)
+    (hsubset :
+      wheelWithInnerTriangleProjectedGeneratorCertificateColorings ⊆
+        wheelWithInnerTriangleGraph.EdgeKempeClosure C₀)
+    (p0Inside p4Inside : Bool) (side : Fin 7 → Prop)
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (hnoEvader :
+      ¬ ∃ z : wheelWithInnerTriangleGraph.edgeSet → Color,
+        z ∈ planarBoundaryZeroSubmodule wheelWithInnerTriangleEmbedding ∧
+          z ≠ 0 ∧
+            ∀ e : wheelWithInnerTriangleGraph.edgeSet,
+              data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e →
+                z e = 0) :
+    Theorem49BoundaryRootSynthesis wheelWithInnerTriangleEmbedding C₀ :=
+  wheelWithInnerTriangle_CAP5_theorem49BoundaryRootSynthesis_of_forcedEdgeCoverage_uniqueCertificates_boundaryTrimmed
+    C₀ hsubset p0Inside p4Inside side classifier
+    ((data.forcedEdgeCoverage_iff_no_boundaryZeroChain_vanishing_on_forcedEdges
+      wheelWithInnerTriangleEmbedding p0Inside p4Inside side).2 hnoEvader)
 
 /--
 Coverage-refutation form of the wheel focus-shell endpoint.  A failed boundary-trimmed
