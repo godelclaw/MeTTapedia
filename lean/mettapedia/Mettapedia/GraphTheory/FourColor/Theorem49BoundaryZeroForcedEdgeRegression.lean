@@ -15290,6 +15290,130 @@ theorem wheelWithInnerTriangle_boundaryZero_classifierRemainingControlEdgeTrace_
       hterminalControl⟩
 
 /--
+Shared focus-shell terminal no-evader transport.  If a selected-boundary-zero chain vanishes on
+all enumerated CAP5 forced edges and on the full processed runner trace, the existing terminal
+trace certificate forces the chain itself to be zero.
+-/
+theorem sharedInteriorPair_boundaryZero_eq_zero_of_forcedEdges_vanish_and_classifierRemainingControlEdgeTrace_processedFold_vanish
+    {boundaryEdge : Fin 5 → sharedInteriorPairGraph.edgeSet} {n : Nat}
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    (p0Inside p4Inside : Bool) (side : Fin 8 → Prop)
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (processed : Finset sharedInteriorPairGraph.edgeSet)
+    {z : sharedInteriorPairGraph.edgeSet → Color}
+    (hzBoundary : z ∈ planarBoundaryZeroSubmodule sharedInteriorPairEmbedding)
+    (hvanishForced :
+      ∀ e : sharedInteriorPairGraph.edgeSet,
+        data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e →
+          z e = 0)
+    (hvanishProcessedTrace :
+      ∀ e ∈
+        (classifier.remainingControlEdgeTrace sharedInteriorPairInteriorControlEdges).foldl
+          (fun acc f => insert f acc) processed, z e = 0) :
+    z = 0 := by
+  rcases
+      sharedInteriorPair_boundaryZero_classifierRemainingControlEdgeTrace_terminalCertificate
+        p0Inside p4Inside side classifier with
+    ⟨_hnodup, _hmem, _hlength, _hexhausted, hterminalControl⟩
+  exact hterminalControl hzBoundary
+    (forall_mem_foldl_insert_of_forall_mem_seed_and_forall_mem_foldl_insert
+      (classifier.remainingControlEdgeTrace sharedInteriorPairInteriorControlEdges)
+      (by
+        intro e heEmitted
+        exact hvanishForced e ((classifier.emittedFinset_spec e).1 heEmitted))
+      hvanishProcessedTrace)
+
+/--
+Shared focus-shell runner refutation form: after the full remaining-control trace has been
+processed, no nonzero selected-boundary-zero chain can evade both the enumerated forced edges and
+the runner trace fold.
+-/
+theorem sharedInteriorPair_boundaryZero_no_forcedEdgeEvader_after_classifierRemainingControlEdgeTrace_processedFold
+    {boundaryEdge : Fin 5 → sharedInteriorPairGraph.edgeSet} {n : Nat}
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    (p0Inside p4Inside : Bool) (side : Fin 8 → Prop)
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (processed : Finset sharedInteriorPairGraph.edgeSet) :
+    ¬ ∃ z : sharedInteriorPairGraph.edgeSet → Color,
+      z ∈ planarBoundaryZeroSubmodule sharedInteriorPairEmbedding ∧
+        z ≠ 0 ∧
+          (∀ e : sharedInteriorPairGraph.edgeSet,
+            data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e →
+              z e = 0) ∧
+            ∀ e ∈
+              (classifier.remainingControlEdgeTrace sharedInteriorPairInteriorControlEdges).foldl
+                (fun acc f => insert f acc) processed, z e = 0 := by
+  rintro ⟨z, hzBoundary, hzNonzero, hvanishForced, hvanishProcessedTrace⟩
+  exact hzNonzero
+    (sharedInteriorPair_boundaryZero_eq_zero_of_forcedEdges_vanish_and_classifierRemainingControlEdgeTrace_processedFold_vanish
+      p0Inside p4Inside side classifier processed hzBoundary hvanishForced
+      hvanishProcessedTrace)
+
+/--
+Wheel focus-shell terminal no-evader transport.  If a selected-boundary-zero chain vanishes on all
+enumerated CAP5 forced edges and on the full processed runner trace, the existing terminal trace
+certificate forces the chain itself to be zero.
+-/
+theorem wheelWithInnerTriangle_boundaryZero_eq_zero_of_forcedEdges_vanish_and_classifierRemainingControlEdgeTrace_processedFold_vanish
+    {boundaryEdge : Fin 5 → wheelWithInnerTriangleGraph.edgeSet} {n : Nat}
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    (p0Inside p4Inside : Bool) (side : Fin 7 → Prop)
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (processed : Finset wheelWithInnerTriangleGraph.edgeSet)
+    {z : wheelWithInnerTriangleGraph.edgeSet → Color}
+    (hzBoundary : z ∈ planarBoundaryZeroSubmodule wheelWithInnerTriangleEmbedding)
+    (hvanishForced :
+      ∀ e : wheelWithInnerTriangleGraph.edgeSet,
+        data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e →
+          z e = 0)
+    (hvanishProcessedTrace :
+      ∀ e ∈
+        (classifier.remainingControlEdgeTrace wheelWithInnerTriangleInteriorControlEdges).foldl
+          (fun acc f => insert f acc) processed, z e = 0) :
+    z = 0 := by
+  rcases
+      wheelWithInnerTriangle_boundaryZero_classifierRemainingControlEdgeTrace_terminalCertificate
+        p0Inside p4Inside side classifier with
+    ⟨_hnodup, _hmem, _hlength, _hexhausted, hterminalControl⟩
+  exact hterminalControl hzBoundary
+    (forall_mem_foldl_insert_of_forall_mem_seed_and_forall_mem_foldl_insert
+      (classifier.remainingControlEdgeTrace wheelWithInnerTriangleInteriorControlEdges)
+      (by
+        intro e heEmitted
+        exact hvanishForced e ((classifier.emittedFinset_spec e).1 heEmitted))
+      hvanishProcessedTrace)
+
+/--
+Wheel focus-shell runner refutation form: after the full remaining-control trace has been
+processed, no nonzero selected-boundary-zero chain can evade both the enumerated forced edges and
+the runner trace fold.
+-/
+theorem wheelWithInnerTriangle_boundaryZero_no_forcedEdgeEvader_after_classifierRemainingControlEdgeTrace_processedFold
+    {boundaryEdge : Fin 5 → wheelWithInnerTriangleGraph.edgeSet} {n : Nat}
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    (p0Inside p4Inside : Bool) (side : Fin 7 → Prop)
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (processed : Finset wheelWithInnerTriangleGraph.edgeSet) :
+    ¬ ∃ z : wheelWithInnerTriangleGraph.edgeSet → Color,
+      z ∈ planarBoundaryZeroSubmodule wheelWithInnerTriangleEmbedding ∧
+        z ≠ 0 ∧
+          (∀ e : wheelWithInnerTriangleGraph.edgeSet,
+            data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e →
+              z e = 0) ∧
+            ∀ e ∈
+              (classifier.remainingControlEdgeTrace wheelWithInnerTriangleInteriorControlEdges).foldl
+                (fun acc f => insert f acc) processed, z e = 0 := by
+  rintro ⟨z, hzBoundary, hzNonzero, hvanishForced, hvanishProcessedTrace⟩
+  exact hzNonzero
+    (wheelWithInnerTriangle_boundaryZero_eq_zero_of_forcedEdges_vanish_and_classifierRemainingControlEdgeTrace_processedFold_vanish
+      p0Inside p4Inside side classifier processed hzBoundary hvanishForced
+      hvanishProcessedTrace)
+
+/--
 Every wheel-shell edge left in the classifier residual trace is one of the lab-certified spoke
 controls, so the unique certificate family supplies both red and blue single-coordinate probes.
 -/
