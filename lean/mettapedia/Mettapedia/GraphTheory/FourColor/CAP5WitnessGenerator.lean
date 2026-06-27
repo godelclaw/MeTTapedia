@@ -36,6 +36,19 @@ theorem foldl_insert_eq_union_toFinset
       ext x
       simp
 
+/-- Folding the same insertion trace preserves finite-set inclusion of the initial state. -/
+theorem foldl_insert_subset_foldl_insert_of_subset
+    {α : Type*} [DecidableEq α] {seed target : Finset α} (trace : List α)
+    (hsubset : seed ⊆ target) :
+    trace.foldl (fun acc e => insert e acc) seed ⊆
+      trace.foldl (fun acc e => insert e acc) target := by
+  rw [foldl_insert_eq_union_toFinset seed trace,
+    foldl_insert_eq_union_toFinset target trace]
+  intro e he
+  rcases Finset.mem_union.1 he with heSeed | heTrace
+  · exact Finset.mem_union.2 (Or.inl (hsubset heSeed))
+  · exact Finset.mem_union.2 (Or.inr heTrace)
+
 /-- Canonical finite trace of the dynamic residual difference `control \ emitted`. -/
 noncomputable def dynamicResidualControlEdgeTrace
     {α : Type*} [DecidableEq α] (control emitted : Finset α) : List α :=
@@ -4128,6 +4141,52 @@ theorem residualRemainingControlEdges_remainingControlEdgeTrace_toFinset_eq_empt
   rw [classifier.remainingControlEdgeTrace_toFinset_eq_remainingControlEdges controlEdges]
   ext e
   simp [residualRemainingControlEdges]
+
+/--
+Folding the immutable remaining-control trace into any processed state exhausts the explicit
+residual worklist, because the trace contains the full remaining-control support.
+-/
+theorem residualRemainingControlEdges_foldl_insert_remainingControlEdgeTrace_eq_empty
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    [Fintype G.edgeSet]
+    {p0Inside p4Inside : Bool} {side : V → Prop}
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (controlEdges processed : Finset G.edgeSet) :
+    classifier.residualRemainingControlEdges controlEdges
+        ((classifier.remainingControlEdgeTrace controlEdges).foldl
+          (fun acc e => insert e acc) processed) =
+      ∅ := by
+  rw [foldl_insert_eq_union_toFinset processed
+    (classifier.remainingControlEdgeTrace controlEdges)]
+  rw [classifier.remainingControlEdgeTrace_toFinset_eq_remainingControlEdges controlEdges]
+  ext e
+  constructor
+  · intro he
+    dsimp [residualRemainingControlEdges] at he
+    rcases Finset.mem_sdiff.1 he with ⟨heRemaining, heNotFinal⟩
+    exact False.elim (heNotFinal (Finset.mem_union.2 (Or.inr heRemaining)))
+  · intro he
+    simp at he
+
+/--
+If the current processed state is included in the immutable classifier output, then folding the
+same remaining-control trace keeps it included in the canonical terminal emitted state.
+-/
+theorem foldl_insert_remainingControlEdgeTrace_subset_foldl_insert_emittedFinset
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    [Fintype G.edgeSet]
+    {p0Inside p4Inside : Bool} {side : V → Prop}
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (controlEdges : Finset G.edgeSet) {processed : Finset G.edgeSet}
+    (hprocessedSubset : processed ⊆ classifier.emittedFinset) :
+    (classifier.remainingControlEdgeTrace controlEdges).foldl
+        (fun acc e => insert e acc) processed ⊆
+      (classifier.remainingControlEdgeTrace controlEdges).foldl
+        (fun acc e => insert e acc) classifier.emittedFinset :=
+  foldl_insert_subset_foldl_insert_of_subset
+    (classifier.remainingControlEdgeTrace controlEdges) hprocessedSubset
 
 /-- The canonical trace of a residual worklist lists exactly the current residual edges. -/
 theorem remainingControlEdgeTrace_residualRemainingControlEdges_toFinset_eq
