@@ -16702,6 +16702,55 @@ theorem wheelWithInnerTriangle_CAP5_forcedEdgeCoverage_no_emittedFinset_card_add
   rw [hempty] at hnonempty
   simp at hnonempty
 
+/-- Shared focus-shell worklist form of coverage failure.  If CAP5 has not covered every nonzero
+selected-boundary-zero chain, then a canonical shared-interior control edge remains unprocessed
+and erasing it strictly decreases the remaining worklist. -/
+theorem sharedInteriorPair_CAP5_exists_remainingInteriorControlEdge_with_card_erase_lt_of_not_forcedEdgeCoverage
+    {boundaryEdge : Fin 5 → sharedInteriorPairGraph.edgeSet} {n : Nat}
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    (p0Inside p4Inside : Bool) (side : Fin 8 → Prop)
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (hnotCoverage :
+      ¬ (∀ ⦃z : sharedInteriorPairGraph.edgeSet → Color⦄,
+        z ∈ planarBoundaryZeroSubmodule sharedInteriorPairEmbedding →
+        z ≠ 0 →
+          ∃ e : sharedInteriorPairGraph.edgeSet,
+            data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e ∧
+              z e ≠ 0)) :
+    ∃ e : sharedInteriorPairGraph.edgeSet,
+      e ∈ classifier.remainingControlEdges sharedInteriorPairInteriorControlEdges ∧
+        ((classifier.remainingControlEdges sharedInteriorPairInteriorControlEdges).erase e).card <
+          (classifier.remainingControlEdges sharedInteriorPairInteriorControlEdges).card := by
+  simpa [sharedInteriorPairInteriorControlEdges, sharedInteriorPair_interiorEdgeSupport_eq] using
+    (data.exists_remainingInteriorEdgeSupportEdge_with_card_erase_lt_of_not_forcedEdgeCoverage
+      sharedInteriorPairEmbedding p0Inside p4Inside side classifier hnotCoverage)
+
+/-- Wheel focus-shell worklist form of coverage failure.  If CAP5 has not covered every nonzero
+selected-boundary-zero chain, then a canonical spoke control edge remains unprocessed and erasing
+it strictly decreases the remaining worklist. -/
+theorem wheelWithInnerTriangle_CAP5_exists_remainingInteriorControlEdge_with_card_erase_lt_of_not_forcedEdgeCoverage
+    {boundaryEdge : Fin 5 → wheelWithInnerTriangleGraph.edgeSet} {n : Nat}
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    (p0Inside p4Inside : Bool) (side : Fin 7 → Prop)
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (hnotCoverage :
+      ¬ (∀ ⦃z : wheelWithInnerTriangleGraph.edgeSet → Color⦄,
+        z ∈ planarBoundaryZeroSubmodule wheelWithInnerTriangleEmbedding →
+        z ≠ 0 →
+          ∃ e : wheelWithInnerTriangleGraph.edgeSet,
+            data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e ∧
+              z e ≠ 0)) :
+    ∃ e : wheelWithInnerTriangleGraph.edgeSet,
+      e ∈ classifier.remainingControlEdges wheelWithInnerTriangleInteriorControlEdges ∧
+        ((classifier.remainingControlEdges wheelWithInnerTriangleInteriorControlEdges).erase e).card <
+          (classifier.remainingControlEdges wheelWithInnerTriangleInteriorControlEdges).card := by
+  simpa [wheelWithInnerTriangleInteriorControlEdges,
+      wheelWithInnerTriangle_interiorEdgeSupport_eq] using
+    (data.exists_remainingInteriorEdgeSupportEdge_with_card_erase_lt_of_not_forcedEdgeCoverage
+      wheelWithInnerTriangleEmbedding p0Inside p4Inside side classifier hnotCoverage)
+
 /-- Classifier-control form for the shared focus shell: exact CAP5 forced-edge coverage makes the
 emitted classifier output control every selected-boundary-zero chain. -/
 theorem sharedInteriorPair_CAP5_classifierControl_of_forcedEdgeCoverage
@@ -18317,6 +18366,114 @@ theorem wheelWithInnerTriangle_CAP5_theorem49BoundaryRootSynthesis_or_forcedEdge
     exact Or.inr (Or.inr
       ((wheelWithInnerTriangle_CAP5_exists_boundaryZeroChain_vanishingOnForcedEdges_iff_emittedInterior_card_lt_three
         p0Inside p4Inside side classifier).2 hlt))
+
+/--
+Total detector verdict for the shared focus shell with a runner-facing frontier branch.  Without
+assuming forced-edge coverage, the finite F₂ threshold gives either synthesis, a missing red/blue
+single-coordinate witness for an emitted forced edge, or a concrete remaining shared-interior
+control edge whose erasure strictly decreases the CAP5 worklist.
+-/
+theorem sharedInteriorPair_CAP5_theorem49BoundaryRootSynthesis_or_forcedEdge_missing_red_or_blue_singleCoordinateWitness_or_remainingInteriorControlEdge
+    {boundaryEdge : Fin 5 → sharedInteriorPairGraph.edgeSet} {n : Nat}
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    [FiniteDimensional F2 (sharedInteriorPairGraph.edgeSet → Color)]
+    (C₀ : sharedInteriorPairGraph.EdgeColoring Color)
+    (colorings : Set (sharedInteriorPairGraph.EdgeColoring Color))
+    (hsubset : colorings ⊆ sharedInteriorPairGraph.EdgeKempeClosure C₀)
+    {κ : Type*}
+    (family : κ → projectedColoringGeneratorSubspace sharedInteriorPairEmbedding colorings)
+    (p0Inside p4Inside : Bool) (side : Fin 8 → Prop)
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side) :
+    Theorem49BoundaryRootSynthesis sharedInteriorPairEmbedding C₀ ∨
+      (((∃ e : sharedInteriorPairGraph.edgeSet,
+          data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e ∧
+            ¬ ∃ i : κ,
+              ((family i :
+                  projectedColoringGeneratorSubspace sharedInteriorPairEmbedding colorings) :
+                  sharedInteriorPairGraph.edgeSet → Color) =
+                Pi.single e red) ∨
+        ∃ e : sharedInteriorPairGraph.edgeSet,
+          data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e ∧
+            ¬ ∃ i : κ,
+              ((family i :
+                  projectedColoringGeneratorSubspace sharedInteriorPairEmbedding colorings) :
+                  sharedInteriorPairGraph.edgeSet → Color) =
+                Pi.single e blue) ∨
+        ∃ e : sharedInteriorPairGraph.edgeSet,
+          e ∈ classifier.remainingControlEdges sharedInteriorPairInteriorControlEdges ∧
+            ((classifier.remainingControlEdges sharedInteriorPairInteriorControlEdges).erase e).card <
+              (classifier.remainingControlEdges sharedInteriorPairInteriorControlEdges).card) := by
+  by_cases hcoverage :
+      ∀ ⦃z : sharedInteriorPairGraph.edgeSet → Color⦄,
+        z ∈ planarBoundaryZeroSubmodule sharedInteriorPairEmbedding →
+        z ≠ 0 →
+          ∃ e : sharedInteriorPairGraph.edgeSet,
+            data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e ∧
+              z e ≠ 0
+  · rcases
+      sharedInteriorPair_CAP5_theorem49BoundaryRootSynthesis_or_forcedEdge_missing_red_or_blue_singleCoordinateWitness
+        C₀ colorings hsubset family p0Inside p4Inside side hcoverage with
+      hsynthed | hmissing
+    · exact Or.inl hsynthed
+    · exact Or.inr (Or.inl hmissing)
+  · exact Or.inr (Or.inr
+      (sharedInteriorPair_CAP5_exists_remainingInteriorControlEdge_with_card_erase_lt_of_not_forcedEdgeCoverage
+        p0Inside p4Inside side classifier hcoverage))
+
+/--
+Total detector verdict for the wheel focus shell with a runner-facing frontier branch.  Without
+assuming forced-edge coverage, the finite F₂ threshold gives either synthesis, a missing red/blue
+single-coordinate witness for an emitted forced edge, or a concrete remaining spoke control edge
+whose erasure strictly decreases the CAP5 worklist.
+-/
+theorem wheelWithInnerTriangle_CAP5_theorem49BoundaryRootSynthesis_or_forcedEdge_missing_red_or_blue_singleCoordinateWitness_or_remainingInteriorControlEdge
+    {boundaryEdge : Fin 5 → wheelWithInnerTriangleGraph.edgeSet} {n : Nat}
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    [FiniteDimensional F2 (wheelWithInnerTriangleGraph.edgeSet → Color)]
+    (C₀ : wheelWithInnerTriangleGraph.EdgeColoring Color)
+    (colorings : Set (wheelWithInnerTriangleGraph.EdgeColoring Color))
+    (hsubset : colorings ⊆ wheelWithInnerTriangleGraph.EdgeKempeClosure C₀)
+    {κ : Type*}
+    (family : κ → projectedColoringGeneratorSubspace wheelWithInnerTriangleEmbedding colorings)
+    (p0Inside p4Inside : Bool) (side : Fin 7 → Prop)
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side) :
+    Theorem49BoundaryRootSynthesis wheelWithInnerTriangleEmbedding C₀ ∨
+      (((∃ e : wheelWithInnerTriangleGraph.edgeSet,
+          data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e ∧
+            ¬ ∃ i : κ,
+              ((family i :
+                  projectedColoringGeneratorSubspace wheelWithInnerTriangleEmbedding colorings) :
+                  wheelWithInnerTriangleGraph.edgeSet → Color) =
+                Pi.single e red) ∨
+        ∃ e : wheelWithInnerTriangleGraph.edgeSet,
+          data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e ∧
+            ¬ ∃ i : κ,
+              ((family i :
+                  projectedColoringGeneratorSubspace wheelWithInnerTriangleEmbedding colorings) :
+                  wheelWithInnerTriangleGraph.edgeSet → Color) =
+                Pi.single e blue) ∨
+        ∃ e : wheelWithInnerTriangleGraph.edgeSet,
+          e ∈ classifier.remainingControlEdges wheelWithInnerTriangleInteriorControlEdges ∧
+            ((classifier.remainingControlEdges wheelWithInnerTriangleInteriorControlEdges).erase e).card <
+              (classifier.remainingControlEdges wheelWithInnerTriangleInteriorControlEdges).card) := by
+  by_cases hcoverage :
+      ∀ ⦃z : wheelWithInnerTriangleGraph.edgeSet → Color⦄,
+        z ∈ planarBoundaryZeroSubmodule wheelWithInnerTriangleEmbedding →
+        z ≠ 0 →
+          ∃ e : wheelWithInnerTriangleGraph.edgeSet,
+            data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e ∧
+              z e ≠ 0
+  · rcases
+      wheelWithInnerTriangle_CAP5_theorem49BoundaryRootSynthesis_or_forcedEdge_missing_red_or_blue_singleCoordinateWitness
+        C₀ colorings hsubset family p0Inside p4Inside side hcoverage with
+      hsynthed | hmissing
+    · exact Or.inl hsynthed
+    · exact Or.inr (Or.inl hmissing)
+  · exact Or.inr (Or.inr
+      (wheelWithInnerTriangle_CAP5_exists_remainingInteriorControlEdge_with_card_erase_lt_of_not_forcedEdgeCoverage
+        p0Inside p4Inside side classifier hcoverage))
 
 end Theorem49BoundaryZeroForcedEdgeRegression
 
