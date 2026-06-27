@@ -14834,6 +14834,168 @@ theorem wheelWithInnerTriangle_emittedInterior_card_ge_three_iff
     simpa [hcardInterior] using hle
 
 /--
+Dynamic emitted-control criterion for the shared focus shell.  An arbitrary emitted/control set
+annihilates all selected-boundary-zero chains exactly when it contains both lab-certified shared
+interior controls.
+-/
+theorem sharedInteriorPair_boundaryZero_dynamicControl_iff_interiorControlEdges_subset
+    (emitted : Finset sharedInteriorPairGraph.edgeSet) :
+    (∀ ⦃z : sharedInteriorPairGraph.edgeSet → Color⦄,
+      z ∈ planarBoundaryZeroSubmodule sharedInteriorPairEmbedding →
+      (∀ e ∈ emitted, z e = 0) →
+        z = 0) ↔
+      sharedInteriorPairInteriorControlEdges ⊆ emitted := by
+  constructor
+  · intro hcontrol
+    have hge :=
+      sharedInteriorPair_boundaryZero_interiorControl_card_ge_two emitted hcontrol
+    have hge' :
+        2 ≤ (emitted.filter fun e =>
+          e ∈ sharedInteriorPairInteriorControlEdges).card := by
+      simpa [sharedInteriorPair_interiorEdgeSupport_eq,
+        sharedInteriorPairInteriorControlEdges] using hge
+    exact (sharedInteriorPair_emittedInterior_card_ge_two_iff emitted).1 hge'
+  · intro hsubset z hzBoundary hvanish
+    exact sharedInteriorPair_boundaryZero_controlEdges_interiorEdges hzBoundary
+      (by
+        intro e he
+        exact hvanish e (hsubset he))
+
+/--
+Dynamic emitted-control criterion for the wheel focus shell.  An arbitrary emitted/control set
+annihilates all selected-boundary-zero chains exactly when it contains all three lab-certified
+spoke controls.
+-/
+theorem wheelWithInnerTriangle_boundaryZero_dynamicControl_iff_interiorControlEdges_subset
+    (emitted : Finset wheelWithInnerTriangleGraph.edgeSet) :
+    (∀ ⦃z : wheelWithInnerTriangleGraph.edgeSet → Color⦄,
+      z ∈ planarBoundaryZeroSubmodule wheelWithInnerTriangleEmbedding →
+      (∀ e ∈ emitted, z e = 0) →
+        z = 0) ↔
+      wheelWithInnerTriangleInteriorControlEdges ⊆ emitted := by
+  constructor
+  · intro hcontrol
+    have hge :=
+      wheelWithInnerTriangle_boundaryZero_interiorControl_card_ge_three emitted hcontrol
+    have hge' :
+        3 ≤ (emitted.filter fun e =>
+          e ∈ wheelWithInnerTriangleInteriorControlEdges).card := by
+      simpa [wheelWithInnerTriangle_interiorEdgeSupport_eq,
+        wheelWithInnerTriangleInteriorControlEdges] using hge
+    exact (wheelWithInnerTriangle_emittedInterior_card_ge_three_iff emitted).1 hge'
+  · intro hsubset z hzBoundary hvanish
+    exact wheelWithInnerTriangle_boundaryZero_controlEdges_interiorEdges hzBoundary
+      (by
+        intro e he
+        exact hvanish e (hsubset he))
+
+/--
+Dynamic residual step for the shared focus shell.  If the current emitted/control set has not
+yet accumulated both shared interior controls, there is a selected-boundary-zero evader that
+vanishes on the current emitted set and is nonzero on a not-yet-emitted shared interior edge;
+inserting that edge strictly decreases the dynamic residual difference.
+-/
+theorem sharedInteriorPair_boundaryZero_exists_dynamicResidualEdge_of_not_interiorControlEdges_subset
+    (emitted : Finset sharedInteriorPairGraph.edgeSet)
+    (hnotSubset : ¬ sharedInteriorPairInteriorControlEdges ⊆ emitted) :
+    ∃ z : sharedInteriorPairGraph.edgeSet → Color,
+      z ∈ planarBoundaryZeroSubmodule sharedInteriorPairEmbedding ∧
+        z ≠ 0 ∧
+          (∀ f ∈ emitted, z f = 0) ∧
+            ∃ e : sharedInteriorPairGraph.edgeSet,
+              e ∈ sharedInteriorPairInteriorControlEdges ∧
+                e ∉ emitted ∧ z e ≠ 0 ∧
+                  (sharedInteriorPairInteriorControlEdges \ insert e emitted).card <
+                    (sharedInteriorPairInteriorControlEdges \ emitted).card := by
+  have hnotGe :
+      ¬ 2 ≤ (emitted.filter fun e =>
+        e ∈ sharedInteriorPairInteriorControlEdges).card := by
+    intro hge
+    exact hnotSubset
+      ((sharedInteriorPair_emittedInterior_card_ge_two_iff emitted).1 hge)
+  have hlt :
+      (emitted.filter fun e =>
+        e ∈ sharedInteriorPairInteriorControlEdges).card < 2 :=
+    Nat.lt_of_not_ge hnotGe
+  rcases sharedInteriorPair_boundaryZero_has_evader_of_control_card_lt_two
+      (emitted.filter fun e => e ∈ sharedInteriorPairInteriorControlEdges) hlt with
+    ⟨z, hzBoundary, hvanishInterior, hzNonzero⟩
+  have hvanishEmitted : ∀ f ∈ emitted, z f = 0 := by
+    intro f hfEmitted
+    by_cases hfInterior :
+        f ∈ interiorEdgeSupport
+          sharedInteriorPairEmbedding.faceBoundary sharedInteriorPairEmbedding.faces
+    · have hfControl : f ∈ sharedInteriorPairInteriorControlEdges := by
+        simpa [sharedInteriorPair_interiorEdgeSupport_eq,
+          sharedInteriorPairInteriorControlEdges] using hfInterior
+      exact hvanishInterior f (Finset.mem_filter.2 ⟨hfEmitted, hfControl⟩)
+    · exact boundaryZero_of_mem_planarBoundaryZeroSubmodule hzBoundary f
+        (sharedInteriorPair_mem_selectedBoundarySupport_of_not_mem_interiorEdgeSupport
+          hfInterior)
+  rcases sharedInteriorPair_boundaryZero_declaredForcedEdges_nonzeroCoverage
+      hzBoundary hzNonzero with
+    ⟨e, heControl, hze⟩
+  have heNotEmitted : e ∉ emitted := by
+    intro heEmitted
+    exact hze (hvanishEmitted e heEmitted)
+  exact
+    ⟨z, hzBoundary, hzNonzero, hvanishEmitted, e, heControl, heNotEmitted, hze,
+      finset_card_sdiff_insert_lt_of_mem_of_not_mem heControl heNotEmitted⟩
+
+/--
+Dynamic residual step for the wheel focus shell.  If the current emitted/control set has not
+yet accumulated all three spoke controls, there is a selected-boundary-zero evader that vanishes
+on the current emitted set and is nonzero on a not-yet-emitted spoke; inserting that spoke
+strictly decreases the dynamic residual difference.
+-/
+theorem wheelWithInnerTriangle_boundaryZero_exists_dynamicResidualEdge_of_not_interiorControlEdges_subset
+    (emitted : Finset wheelWithInnerTriangleGraph.edgeSet)
+    (hnotSubset : ¬ wheelWithInnerTriangleInteriorControlEdges ⊆ emitted) :
+    ∃ z : wheelWithInnerTriangleGraph.edgeSet → Color,
+      z ∈ planarBoundaryZeroSubmodule wheelWithInnerTriangleEmbedding ∧
+        z ≠ 0 ∧
+          (∀ f ∈ emitted, z f = 0) ∧
+            ∃ e : wheelWithInnerTriangleGraph.edgeSet,
+              e ∈ wheelWithInnerTriangleInteriorControlEdges ∧
+                e ∉ emitted ∧ z e ≠ 0 ∧
+                  (wheelWithInnerTriangleInteriorControlEdges \ insert e emitted).card <
+                    (wheelWithInnerTriangleInteriorControlEdges \ emitted).card := by
+  have hnotGe :
+      ¬ 3 ≤ (emitted.filter fun e =>
+        e ∈ wheelWithInnerTriangleInteriorControlEdges).card := by
+    intro hge
+    exact hnotSubset
+      ((wheelWithInnerTriangle_emittedInterior_card_ge_three_iff emitted).1 hge)
+  have hlt :
+      (emitted.filter fun e =>
+        e ∈ wheelWithInnerTriangleInteriorControlEdges).card < 3 :=
+    Nat.lt_of_not_ge hnotGe
+  rcases wheelWithInnerTriangle_boundaryZero_has_evader_of_control_card_lt_three
+      (emitted.filter fun e => e ∈ wheelWithInnerTriangleInteriorControlEdges) hlt with
+    ⟨z, hzBoundary, hvanishInterior, hzNonzero⟩
+  have hvanishEmitted : ∀ f ∈ emitted, z f = 0 := by
+    intro f hfEmitted
+    by_cases hfInterior :
+        f ∈ interiorEdgeSupport
+          wheelWithInnerTriangleEmbedding.faceBoundary wheelWithInnerTriangleEmbedding.faces
+    · have hfControl : f ∈ wheelWithInnerTriangleInteriorControlEdges := by
+        simpa [wheelWithInnerTriangle_interiorEdgeSupport_eq,
+          wheelWithInnerTriangleInteriorControlEdges] using hfInterior
+      exact hvanishInterior f (Finset.mem_filter.2 ⟨hfEmitted, hfControl⟩)
+    · exact boundaryZero_of_mem_planarBoundaryZeroSubmodule hzBoundary f
+        (wheelWithInnerTriangle_mem_selectedBoundarySupport_of_not_mem_interiorEdgeSupport
+          hfInterior)
+  rcases wheelWithInnerTriangle_boundaryZero_declaredForcedEdges_nonzeroCoverage
+      hzBoundary hzNonzero with
+    ⟨e, heControl, hze⟩
+  have heNotEmitted : e ∉ emitted := by
+    intro heEmitted
+    exact hze (hvanishEmitted e heEmitted)
+  exact
+    ⟨z, hzBoundary, hzNonzero, hvanishEmitted, e, heControl, heNotEmitted, hze,
+      finset_card_sdiff_insert_lt_of_mem_of_not_mem heControl heNotEmitted⟩
+
+/--
 Runner-facing exact Kirchhoff threshold for the shared focus shell.  CAP5 covers every nonzero
 boundary-zero Kirchhoff chain exactly when the emitted classifier has at least one emitted edge in
 the two lab-certified shared-interior controls.
