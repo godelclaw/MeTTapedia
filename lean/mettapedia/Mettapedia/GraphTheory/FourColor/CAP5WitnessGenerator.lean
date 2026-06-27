@@ -4,6 +4,27 @@ namespace Mettapedia.GraphTheory.FourColor
 
 variable {V : Type*} [DecidableEq V]
 
+/-- Inserting a fresh emitted/control edge erases it from the finite residual difference. -/
+theorem finset_sdiff_insert_eq_erase_sdiff
+    {α : Type*} [DecidableEq α] (control emitted : Finset α) (e : α) :
+    control \ insert e emitted = (control \ emitted).erase e := by
+  ext f
+  by_cases hfe : f = e
+  · subst f
+    simp
+  · simp [hfe]
+
+/--
+If an edge is in the control worklist and not yet emitted, inserting it into the emitted set
+strictly decreases the finite residual difference `control \ emitted`.
+-/
+theorem finset_card_sdiff_insert_lt_of_mem_of_not_mem
+    {α : Type*} [DecidableEq α] {control emitted : Finset α} {e : α}
+    (heControl : e ∈ control) (heNotEmitted : e ∉ emitted) :
+    (control \ insert e emitted).card < (control \ emitted).card := by
+  rw [finset_sdiff_insert_eq_erase_sdiff control emitted e]
+  exact Finset.card_erase_lt_of_mem (by simpa using ⟨heControl, heNotEmitted⟩)
+
 /-- Public-facing status names for a finite CAP5 separator-generator run.
 The `partial` status records missing checker evidence, not a third mathematical
 case: once portal crossings and two side cycles are certified, the generic graph
