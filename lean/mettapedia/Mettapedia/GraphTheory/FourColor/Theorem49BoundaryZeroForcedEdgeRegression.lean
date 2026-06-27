@@ -18054,6 +18054,136 @@ theorem wheelWithInnerTriangle_CAP5_not_forcedEdgeCoverage_of_not_theorem49Bound
       C₀ hsubset p0Inside p4Inside side classifier hcoverage)
 
 /--
+Boundary-trimmed coordinate-signal form for the shared focus shell.  A failed
+unique-certificate synthesis run gives a nonzero selected-boundary-zero evader; against the
+lab-certified shared controls this is exactly a CAP5 crossing/noncrossing extension coordinate
+signal with strict remaining-worklist progress.
+-/
+theorem sharedInteriorPair_CAP5_extensionCoordinateSignalWithProgress_of_not_theorem49BoundaryRootSynthesis_uniqueCertificates_boundaryTrimmed
+    {boundaryEdge : Fin 5 → sharedInteriorPairGraph.edgeSet} {n : Nat}
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    [FiniteDimensional F2 (sharedInteriorPairGraph.edgeSet → Color)]
+    (C₀ : sharedInteriorPairGraph.EdgeColoring Color)
+    (hsubset :
+      sharedInteriorPairProjectedGeneratorCertificateColorings ⊆
+        sharedInteriorPairGraph.EdgeKempeClosure C₀)
+    (p0Inside p4Inside : Bool) (side : Fin 8 → Prop)
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (hnotSynthesis : ¬ Theorem49BoundaryRootSynthesis sharedInteriorPairEmbedding C₀) :
+    data.ExtensionCoordinateSignalWithProgress sharedInteriorPairEmbedding p0Inside p4Inside
+      side classifier sharedInteriorPairInteriorControlEdges := by
+  rcases
+      sharedInteriorPair_CAP5_exists_boundaryZeroChain_vanishingOnForcedEdges_of_not_theorem49BoundaryRootSynthesis_uniqueCertificates_boundaryTrimmed
+        C₀ hsubset p0Inside p4Inside side classifier hnotSynthesis with
+    ⟨z, hzBoundary, hzNonzero, hzForcedZero⟩
+  have hnotControl :
+      ¬ ∀ ⦃z : sharedInteriorPairGraph.edgeSet → Color⦄,
+        z ∈ planarBoundaryZeroSubmodule sharedInteriorPairEmbedding →
+        (∀ e ∈ classifier.emittedFinset, z e = 0) →
+          z = 0 := by
+    intro hcontrol
+    exact
+      ((data.enumeratedExceptionalAnnulusForcedEdgeClassifierControl_iff_no_boundaryZeroChainObstruction
+        (emb := sharedInteriorPairEmbedding) classifier).1 hcontrol)
+        ⟨z, hzBoundary, hzNonzero, hzForcedZero⟩
+  exact
+    data.extensionCoordinateSignalWithProgress_of_not_classifierControl_of_finsetControl
+      sharedInteriorPairEmbedding p0Inside p4Inside side classifier
+      sharedInteriorPairInteriorControlEdges hnotControl
+      sharedInteriorPair_boundaryZero_controlEdges_interiorEdges
+
+/--
+Boundary-trimmed coordinate-signal form for the wheel focus shell.  A failed
+unique-certificate synthesis run gives a nonzero selected-boundary-zero evader; against the
+three lab-certified spoke controls this is a CAP5 crossing/noncrossing extension coordinate
+signal with strict remaining-worklist progress.
+-/
+theorem wheelWithInnerTriangle_CAP5_extensionCoordinateSignalWithProgress_of_not_theorem49BoundaryRootSynthesis_uniqueCertificates_boundaryTrimmed
+    {boundaryEdge : Fin 5 → wheelWithInnerTriangleGraph.edgeSet} {n : Nat}
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    [FiniteDimensional F2 (wheelWithInnerTriangleGraph.edgeSet → Color)]
+    (C₀ : wheelWithInnerTriangleGraph.EdgeColoring Color)
+    (hsubset :
+      wheelWithInnerTriangleProjectedGeneratorCertificateColorings ⊆
+        wheelWithInnerTriangleGraph.EdgeKempeClosure C₀)
+    (p0Inside p4Inside : Bool) (side : Fin 7 → Prop)
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (hnotSynthesis : ¬ Theorem49BoundaryRootSynthesis wheelWithInnerTriangleEmbedding C₀) :
+    data.ExtensionCoordinateSignalWithProgress wheelWithInnerTriangleEmbedding p0Inside
+      p4Inside side classifier wheelWithInnerTriangleInteriorControlEdges := by
+  rcases
+      wheelWithInnerTriangle_CAP5_exists_boundaryZeroChain_vanishingOnForcedEdges_of_not_theorem49BoundaryRootSynthesis_uniqueCertificates_boundaryTrimmed
+        C₀ hsubset p0Inside p4Inside side classifier hnotSynthesis with
+    ⟨z, hzBoundary, hzNonzero, hzForcedZero⟩
+  have hnotControl :
+      ¬ ∀ ⦃z : wheelWithInnerTriangleGraph.edgeSet → Color⦄,
+        z ∈ planarBoundaryZeroSubmodule wheelWithInnerTriangleEmbedding →
+        (∀ e ∈ classifier.emittedFinset, z e = 0) →
+          z = 0 := by
+    intro hcontrol
+    exact
+      ((data.enumeratedExceptionalAnnulusForcedEdgeClassifierControl_iff_no_boundaryZeroChainObstruction
+        (emb := wheelWithInnerTriangleEmbedding) classifier).1 hcontrol)
+        ⟨z, hzBoundary, hzNonzero, hzForcedZero⟩
+  exact
+    data.extensionCoordinateSignalWithProgress_of_not_classifierControl_of_finsetControl
+      wheelWithInnerTriangleEmbedding p0Inside p4Inside side classifier
+      wheelWithInnerTriangleInteriorControlEdges hnotControl
+      wheelWithInnerTriangle_boundaryZero_controlEdges_interiorEdges
+
+/--
+Closed boundary-trimmed coordinate-signal verdict for the shared focus shell: either synthesis
+closes, or the next CAP5 crossing/noncrossing coordinate signal is available with strict
+remaining-worklist progress.
+-/
+theorem sharedInteriorPair_CAP5_theorem49BoundaryRootSynthesis_or_extensionCoordinateSignalWithProgress_uniqueCertificates_boundaryTrimmed
+    {boundaryEdge : Fin 5 → sharedInteriorPairGraph.edgeSet} {n : Nat}
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    [FiniteDimensional F2 (sharedInteriorPairGraph.edgeSet → Color)]
+    (C₀ : sharedInteriorPairGraph.EdgeColoring Color)
+    (hsubset :
+      sharedInteriorPairProjectedGeneratorCertificateColorings ⊆
+        sharedInteriorPairGraph.EdgeKempeClosure C₀)
+    (p0Inside p4Inside : Bool) (side : Fin 8 → Prop)
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side) :
+    Theorem49BoundaryRootSynthesis sharedInteriorPairEmbedding C₀ ∨
+      data.ExtensionCoordinateSignalWithProgress sharedInteriorPairEmbedding p0Inside p4Inside
+        side classifier sharedInteriorPairInteriorControlEdges := by
+  by_cases hclosed : Theorem49BoundaryRootSynthesis sharedInteriorPairEmbedding C₀
+  · exact Or.inl hclosed
+  · exact Or.inr
+      (sharedInteriorPair_CAP5_extensionCoordinateSignalWithProgress_of_not_theorem49BoundaryRootSynthesis_uniqueCertificates_boundaryTrimmed
+        C₀ hsubset p0Inside p4Inside side classifier hclosed)
+
+/--
+Closed boundary-trimmed coordinate-signal verdict for the wheel focus shell: either synthesis
+closes, or the next CAP5 crossing/noncrossing coordinate signal is available with strict
+remaining-worklist progress.
+-/
+theorem wheelWithInnerTriangle_CAP5_theorem49BoundaryRootSynthesis_or_extensionCoordinateSignalWithProgress_uniqueCertificates_boundaryTrimmed
+    {boundaryEdge : Fin 5 → wheelWithInnerTriangleGraph.edgeSet} {n : Nat}
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    [FiniteDimensional F2 (wheelWithInnerTriangleGraph.edgeSet → Color)]
+    (C₀ : wheelWithInnerTriangleGraph.EdgeColoring Color)
+    (hsubset :
+      wheelWithInnerTriangleProjectedGeneratorCertificateColorings ⊆
+        wheelWithInnerTriangleGraph.EdgeKempeClosure C₀)
+    (p0Inside p4Inside : Bool) (side : Fin 7 → Prop)
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side) :
+    Theorem49BoundaryRootSynthesis wheelWithInnerTriangleEmbedding C₀ ∨
+      data.ExtensionCoordinateSignalWithProgress wheelWithInnerTriangleEmbedding p0Inside
+        p4Inside side classifier wheelWithInnerTriangleInteriorControlEdges := by
+  by_cases hclosed : Theorem49BoundaryRootSynthesis wheelWithInnerTriangleEmbedding C₀
+  · exact Or.inl hclosed
+  · exact Or.inr
+      (wheelWithInnerTriangle_CAP5_extensionCoordinateSignalWithProgress_of_not_theorem49BoundaryRootSynthesis_uniqueCertificates_boundaryTrimmed
+        C₀ hsubset p0Inside p4Inside side classifier hclosed)
+
+/--
 Boundary-trimmed progress form for the shared focus shell.  Once the unique certificate family
 is available, failed synthesis cannot leave the CAP5 worklist at a fixed point: a concrete
 shared-interior control edge remains, and erasing it strictly decreases the remaining-control
