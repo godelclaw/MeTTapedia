@@ -1,3 +1,4 @@
+import Mathlib.Algebra.Ring.Parity
 import Mathlib.Combinatorics.SimpleGraph.Paths
 
 namespace Mettapedia.GraphTheory.FourColor
@@ -57,6 +58,129 @@ theorem not_edgeCrossesVertexSide_iff_forall_side_iff
   · intro hpreserve hcross
     rcases hcross with ⟨u, v, hu, hv, hsu, hsv⟩
     exact hsv ((hpreserve u v hu hv).1 hsu)
+
+/-- If an edge with endpoints `a,b` crosses a vertex side, those two endpoints cannot lie on the
+same side. -/
+theorem not_side_iff_of_edgeCrossesVertexSide_of_sym2_eq
+    {G : SimpleGraph V} {side : V → Prop} {a b : V} {e : G.edgeSet}
+    (he_pair : (e : Sym2 V) = s(a, b))
+    (hcross : EdgeCrossesVertexSide G side e) :
+    ¬ (side a ↔ side b) := by
+  intro hsame
+  have hnotCross : ¬ EdgeCrossesVertexSide G side e := by
+    rw [not_edgeCrossesVertexSide_iff_forall_side_iff]
+    intro u v hu hv
+    rw [he_pair] at hu hv
+    rw [Sym2.mem_iff] at hu hv
+    rcases hu with rfl | rfl <;> rcases hv with rfl | rfl
+    · exact Iff.rfl
+    · exact hsame
+    · exact hsame.symm
+    · exact Iff.rfl
+  exact hnotCross hcross
+
+/-- Triangle parity obstruction for vertex-side crossings.  No single side predicate can cross all
+three edges of a triangle, since that would require three pairwise opposite truth values. -/
+theorem not_three_edgeCrossesVertexSide_triangle
+    {G : SimpleGraph V} {side : V → Prop} {a b c : V}
+    {eab ebc eac : G.edgeSet}
+    (heab_pair : (eab : Sym2 V) = s(a, b))
+    (hebc_pair : (ebc : Sym2 V) = s(b, c))
+    (heac_pair : (eac : Sym2 V) = s(a, c)) :
+    ¬ (EdgeCrossesVertexSide G side eab ∧
+        EdgeCrossesVertexSide G side ebc ∧
+          EdgeCrossesVertexSide G side eac) := by
+  classical
+  rintro ⟨habCross, hbcCross, hacCross⟩
+  have hnotab : ¬ (side a ↔ side b) :=
+    not_side_iff_of_edgeCrossesVertexSide_of_sym2_eq heab_pair habCross
+  have hnotbc : ¬ (side b ↔ side c) :=
+    not_side_iff_of_edgeCrossesVertexSide_of_sym2_eq hebc_pair hbcCross
+  have hnotac : ¬ (side a ↔ side c) :=
+    not_side_iff_of_edgeCrossesVertexSide_of_sym2_eq heac_pair hacCross
+  by_cases ha : side a <;> by_cases hb : side b <;> by_cases hc : side c <;>
+    simp [ha, hb, hc] at hnotab hnotbc hnotac
+
+/-- If every edge of a walk crosses a fixed vertex-side predicate, then the endpoint sides are
+equal for even-length walks and opposite for odd-length walks. -/
+theorem walk_all_edges_cross_side_relation
+    {G : SimpleGraph V} {side : V → Prop} {u v : V}
+    (p : G.Walk u v)
+    (hcross : ∀ e : G.edgeSet, (e : Sym2 V) ∈ p.edges →
+      EdgeCrossesVertexSide G side e) :
+    (Even p.length → (side u ↔ side v)) ∧
+      (Odd p.length → ¬ (side u ↔ side v)) := by
+  induction p with
+  | nil =>
+      constructor
+      · intro _
+        exact Iff.rfl
+      · intro hodd
+        simp at hodd
+  | @cons u' v' w' hadj p ih =>
+      let first : G.edgeSet := ⟨s(u', v'), hadj⟩
+      have hfirstCross : EdgeCrossesVertexSide G side first := by
+        exact hcross first (by simp [Walk.edges_cons, first])
+      have hfirstNot : ¬ (side u' ↔ side v') :=
+        not_side_iff_of_edgeCrossesVertexSide_of_sym2_eq (G := G) (side := side)
+          (a := u') (b := v') (e := first) rfl hfirstCross
+      have htailCross :
+          ∀ e : G.edgeSet, (e : Sym2 V) ∈ p.edges →
+            EdgeCrossesVertexSide G side e := by
+        intro e he
+        exact hcross e (by simp [Walk.edges_cons, he])
+      rcases ih htailCross with ⟨hEvenTail, hOddTail⟩
+      constructor
+      · intro heven
+        have hoddTail : Odd p.length := by
+          have hnotEvenTail : ¬ Even p.length := by
+            have hevenCons : Even (p.length + 1) := by
+              simpa [Walk.length_cons] using heven
+            exact Nat.even_add_one.mp hevenCons
+          exact Nat.not_even_iff_odd.mp hnotEvenTail
+        have htailNot : ¬ (side v' ↔ side w') := hOddTail hoddTail
+        by_cases hu : side u' <;> by_cases hv : side v' <;> by_cases hw : side w' <;>
+          simp [hu, hv, hw] at hfirstNot htailNot ⊢
+      · intro hodd
+        have hevenTail : Even p.length := by
+          have hnotOddTail : ¬ Odd p.length := by
+            have hoddCons : Odd (p.length + 1) := by
+              simpa [Walk.length_cons] using hodd
+            exact Nat.odd_add_one.mp hoddCons
+          exact Nat.not_odd_iff_even.mp hnotOddTail
+        have htailSame : side v' ↔ side w' := hEvenTail hevenTail
+        by_cases hu : side u' <;> by_cases hv : side v' <;> by_cases hw : side w' <;>
+          simp [hu, hv, hw] at hfirstNot htailSame ⊢
+
+/-- Even-length all-crossing walks have endpoints on the same side. -/
+theorem side_iff_of_walk_all_edges_cross_even
+    {G : SimpleGraph V} {side : V → Prop} {u v : V}
+    (p : G.Walk u v)
+    (hcross : ∀ e : G.edgeSet, (e : Sym2 V) ∈ p.edges →
+      EdgeCrossesVertexSide G side e)
+    (heven : Even p.length) :
+    side u ↔ side v :=
+  (walk_all_edges_cross_side_relation p hcross).1 heven
+
+/-- Odd-length all-crossing walks have endpoints on opposite sides. -/
+theorem not_side_iff_of_walk_all_edges_cross_odd
+    {G : SimpleGraph V} {side : V → Prop} {u v : V}
+    (p : G.Walk u v)
+    (hcross : ∀ e : G.edgeSet, (e : Sym2 V) ∈ p.edges →
+      EdgeCrossesVertexSide G side e)
+    (hodd : Odd p.length) :
+    ¬ (side u ↔ side v) :=
+  (walk_all_edges_cross_side_relation p hcross).2 hodd
+
+/-- Odd closed-walk obstruction for vertex-side cuts.  No fixed side predicate can cross every
+edge traversed by an odd closed walk. -/
+theorem not_forall_edgeCrossesVertexSide_of_closed_walk_odd_length
+    {G : SimpleGraph V} {side : V → Prop} {u : V}
+    (p : G.Walk u u) (hodd : Odd p.length) :
+    ¬ (∀ e : G.edgeSet, (e : Sym2 V) ∈ p.edges →
+      EdgeCrossesVertexSide G side e) := by
+  intro hcross
+  exact (not_side_iff_of_walk_all_edges_cross_odd p hcross hodd) Iff.rfl
 
 /-- An unordered pair with two distinct listed members is exactly the unordered pair of those
 members. -/

@@ -311,6 +311,21 @@ theorem
     (selectedBoundaryInducedSubgraph_of_selectedBoundarySupport_eq_union_of_induced_of_crossComponentChordFree
       hSelected hLeft hRight hCross)
 
+/-- Annulus-boundary-data form of the finite repaired no-selected-boundary-chord theorem. -/
+theorem
+    PlanarBoundaryAnnulusBoundaryData.interiorEdgesNotSelectedBoundaryChords_of_inducedBoundaryComponents_of_crossComponentChordFree
+    {G : SimpleGraph V} {emb : PlaneEmbeddingWithBoundary G}
+    (data : PlanarBoundaryAnnulusBoundaryData emb)
+    (hOuter : BoundaryEdgeSetInducedSubgraph data.outerAmbientBoundary)
+    (hInner : BoundaryEdgeSetInducedSubgraph data.innerAmbientBoundary)
+    (hCross :
+      BoundaryEdgeSetCrossComponentChordFree
+        data.outerAmbientBoundary data.innerAmbientBoundary) :
+    InteriorEdgesNotSelectedBoundaryChords emb :=
+  interiorEdgesNotSelectedBoundaryChords_of_selectedBoundaryInducedSubgraph
+    (data.selectedBoundaryInducedSubgraph_of_inducedBoundaryComponents_of_crossComponentChordFree
+      hOuter hInner hCross)
+
 /-- Exact witness form for nonempty purified interior-edge endpoint carriers.  A carrier survives
 boundary erasure precisely when some endpoint of some interior face-incidence edge is not incident
 to any selected ambient-boundary edge. -/
@@ -411,6 +426,23 @@ theorem
       hSelected hLeft hRight hCross)
     hInterior
 
+/-- Annulus-boundary-data form of the repaired unblocked-endpoint theorem. -/
+theorem
+    PlanarBoundaryAnnulusBoundaryData.hasUnblockedInteriorEndpoint_of_inducedBoundaryComponents_of_crossComponentChordFree_and_nonempty
+    {G : SimpleGraph V} {emb : PlaneEmbeddingWithBoundary G}
+    (data : PlanarBoundaryAnnulusBoundaryData emb)
+    (hOuter : BoundaryEdgeSetInducedSubgraph data.outerAmbientBoundary)
+    (hInner : BoundaryEdgeSetInducedSubgraph data.innerAmbientBoundary)
+    (hCross :
+      BoundaryEdgeSetCrossComponentChordFree
+        data.outerAmbientBoundary data.innerAmbientBoundary)
+    (hInterior : (interiorEdgeSupport emb.faceBoundary emb.faces).Nonempty) :
+    HasUnblockedInteriorEndpoint emb :=
+  hasUnblockedInteriorEndpoint_of_interiorEdgesNotSelectedBoundaryChords_and_nonempty
+    (data.interiorEdgesNotSelectedBoundaryChords_of_inducedBoundaryComponents_of_crossComponentChordFree
+      hOuter hInner hCross)
+    hInterior
+
 /-- Component-wise induced boundary sets plus cross-component chord-freeness give a nonempty
 purified interior-edge endpoint carrier as soon as there is a live interior face-incidence edge. -/
 theorem
@@ -427,6 +459,23 @@ theorem
   selectedBoundaryInteriorEdgeEndpointVertices_nonempty_of_interiorEdgesNotSelectedBoundaryChords_and_nonempty
     (interiorEdgesNotSelectedBoundaryChords_of_selectedBoundarySupport_eq_union_of_induced_of_crossComponentChordFree
       hSelected hLeft hRight hCross)
+    hInterior
+
+/-- Annulus-boundary-data form of the repaired purified-carrier nonemptiness theorem. -/
+theorem
+    PlanarBoundaryAnnulusBoundaryData.selectedBoundaryInteriorEdgeEndpointVertices_nonempty_of_inducedBoundaryComponents_of_crossComponentChordFree_and_nonempty
+    {G : SimpleGraph V} {emb : PlaneEmbeddingWithBoundary G}
+    (data : PlanarBoundaryAnnulusBoundaryData emb)
+    (hOuter : BoundaryEdgeSetInducedSubgraph data.outerAmbientBoundary)
+    (hInner : BoundaryEdgeSetInducedSubgraph data.innerAmbientBoundary)
+    (hCross :
+      BoundaryEdgeSetCrossComponentChordFree
+        data.outerAmbientBoundary data.innerAmbientBoundary)
+    (hInterior : (interiorEdgeSupport emb.faceBoundary emb.faces).Nonempty) :
+    (selectedBoundaryInteriorEdgeEndpointVertices emb).Nonempty :=
+  selectedBoundaryInteriorEdgeEndpointVertices_nonempty_of_interiorEdgesNotSelectedBoundaryChords_and_nonempty
+    (data.interiorEdgesNotSelectedBoundaryChords_of_inducedBoundaryComponents_of_crossComponentChordFree
+      hOuter hInner hCross)
     hInterior
 
 /-- Graph-level form of the chord-free sufficient condition for a nonempty selected-boundary
@@ -476,6 +525,26 @@ theorem
   exact ⟨emb,
     selectedBoundaryInteriorEdgeEndpointVertices_nonempty_of_selectedBoundarySupport_eq_union_of_induced_of_crossComponentChordFree_and_nonempty
       hSelected hLeft hRight hCross hInterior⟩
+
+/-- Graph-level annulus-data form of the repaired sufficient condition for a nonempty purified
+interior-edge endpoint carrier. -/
+theorem
+    exists_selectedBoundaryInteriorEdgeEndpointVertices_nonempty_of_exists_annulusBoundaryData_inducedBoundaryComponents_of_crossComponentChordFree_and_nonempty
+    {G : SimpleGraph V}
+    (h : ∃ emb : PlaneEmbeddingWithBoundary G,
+      ∃ data : PlanarBoundaryAnnulusBoundaryData emb,
+        BoundaryEdgeSetInducedSubgraph data.outerAmbientBoundary ∧
+          BoundaryEdgeSetInducedSubgraph data.innerAmbientBoundary ∧
+            BoundaryEdgeSetCrossComponentChordFree
+              data.outerAmbientBoundary data.innerAmbientBoundary ∧
+              (interiorEdgeSupport emb.faceBoundary emb.faces).Nonempty) :
+    ∃ emb : PlaneEmbeddingWithBoundary G,
+      (selectedBoundaryInteriorEdgeEndpointVertices emb).Nonempty := by
+  rcases h with ⟨emb, data, hOuter, hInner, hCross, hInterior⟩
+  exact
+    ⟨emb,
+      data.selectedBoundaryInteriorEdgeEndpointVertices_nonempty_of_inducedBoundaryComponents_of_crossComponentChordFree_and_nonempty
+        hOuter hInner hCross hInterior⟩
 
 /-- Endpoint-support disjointness turns any raw interior-edge endpoint into a local unblocked
 endpoint.  This is the bridge from the older endpoint-separation route surface to the named

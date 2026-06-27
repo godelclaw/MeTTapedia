@@ -152,15 +152,18 @@ def wheelWithInnerTriangleEmbedding :
 
 def wheelFace0 : AmbientFace wheelWithInnerTriangleEmbedding.faces :=
   ⟨(0 : WheelWithInnerTriangleFace), by
-    simp [wheelWithInnerTriangleEmbedding, wheelWithInnerTriangleFaces]⟩
+    change (0 : WheelWithInnerTriangleFace) ∈ Finset.univ
+    exact Finset.mem_univ _⟩
 
 def wheelFace1 : AmbientFace wheelWithInnerTriangleEmbedding.faces :=
   ⟨(1 : WheelWithInnerTriangleFace), by
-    simp [wheelWithInnerTriangleEmbedding, wheelWithInnerTriangleFaces]⟩
+    change (1 : WheelWithInnerTriangleFace) ∈ Finset.univ
+    exact Finset.mem_univ _⟩
 
 def wheelFace2 : AmbientFace wheelWithInnerTriangleEmbedding.faces :=
   ⟨(2 : WheelWithInnerTriangleFace), by
-    simp [wheelWithInnerTriangleEmbedding, wheelWithInnerTriangleFaces]⟩
+    change (2 : WheelWithInnerTriangleFace) ∈ Finset.univ
+    exact Finset.mem_univ _⟩
 
 theorem wit01_ne_wit02 : wit01 ≠ wit02 := by
   decide
@@ -177,10 +180,59 @@ theorem wit01_mem_faceBoundary_iff
       f = wheelFace0 ∨ f = wheelFace2 := by
   rcases f with ⟨⟨n, hn⟩, hf⟩
   have hn_cases : n = 0 ∨ n = 1 ∨ n = 2 ∨ n = 3 := by omega
-  rcases hn_cases with rfl | rfl | rfl | rfl <;>
-    simp [wheelFace0, wheelFace2, wheelWithInnerTriangleEmbedding,
-      wheelWithInnerTriangleFaceBoundary] <;>
-    decide
+  rcases hn_cases with rfl | rfl | rfl | rfl
+  · constructor
+    · intro _
+      exact Or.inl (Subtype.ext (Fin.ext rfl))
+    · intro _
+      simp [wheelWithInnerTriangleEmbedding, wheelWithInnerTriangleFaceBoundary]
+  · constructor
+    · intro hmem
+      have hnot :
+          wit01 ∉ ({wit02, wit03, wit23} :
+            Finset wheelWithInnerTriangleGraph.edgeSet) := by decide
+      exact False.elim
+        (hnot (by
+          simpa [wheelWithInnerTriangleEmbedding, wheelWithInnerTriangleFaceBoundary]
+            using hmem))
+    · intro hEq
+      rcases hEq with h0 | h2
+      · have hval : (1 : ℕ) = 0 := by
+          simpa [wheelFace0] using
+            congrArg
+              (fun f : AmbientFace wheelWithInnerTriangleEmbedding.faces => f.1.1) h0
+        omega
+      · have hval : (1 : ℕ) = 2 := by
+          simpa [wheelFace2] using
+            congrArg
+              (fun f : AmbientFace wheelWithInnerTriangleEmbedding.faces => f.1.1) h2
+        omega
+  · constructor
+    · intro _
+      exact Or.inr (Subtype.ext (Fin.ext rfl))
+    · intro _
+      simp [wheelWithInnerTriangleEmbedding, wheelWithInnerTriangleFaceBoundary]
+  · constructor
+    · intro hmem
+      have hnot :
+          wit01 ∉ ({wit45, wit56, wit64} :
+            Finset wheelWithInnerTriangleGraph.edgeSet) := by decide
+      exact False.elim
+        (hnot (by
+          simpa [wheelWithInnerTriangleEmbedding, wheelWithInnerTriangleFaceBoundary]
+            using hmem))
+    · intro hEq
+      rcases hEq with h0 | h2
+      · have hval : (3 : ℕ) = 0 := by
+          simpa [wheelFace0] using
+            congrArg
+              (fun f : AmbientFace wheelWithInnerTriangleEmbedding.faces => f.1.1) h0
+        omega
+      · have hval : (3 : ℕ) = 2 := by
+          simpa [wheelFace2] using
+            congrArg
+              (fun f : AmbientFace wheelWithInnerTriangleEmbedding.faces => f.1.1) h2
+        omega
 
 theorem wit02_mem_faceBoundary_iff
     (f : AmbientFace wheelWithInnerTriangleEmbedding.faces) :
@@ -188,10 +240,59 @@ theorem wit02_mem_faceBoundary_iff
       f = wheelFace0 ∨ f = wheelFace1 := by
   rcases f with ⟨⟨n, hn⟩, hf⟩
   have hn_cases : n = 0 ∨ n = 1 ∨ n = 2 ∨ n = 3 := by omega
-  rcases hn_cases with rfl | rfl | rfl | rfl <;>
-    simp [wheelFace0, wheelFace1, wheelWithInnerTriangleEmbedding,
-      wheelWithInnerTriangleFaceBoundary] <;>
-    decide
+  rcases hn_cases with rfl | rfl | rfl | rfl
+  · constructor
+    · intro _
+      exact Or.inl (Subtype.ext (Fin.ext rfl))
+    · intro _
+      simp [wheelWithInnerTriangleEmbedding, wheelWithInnerTriangleFaceBoundary]
+  · constructor
+    · intro _
+      exact Or.inr (Subtype.ext (Fin.ext rfl))
+    · intro _
+      simp [wheelWithInnerTriangleEmbedding, wheelWithInnerTriangleFaceBoundary]
+  · constructor
+    · intro hmem
+      have hnot :
+          wit02 ∉ ({wit03, wit01, wit31} :
+            Finset wheelWithInnerTriangleGraph.edgeSet) := by decide
+      exact False.elim
+        (hnot (by
+          simpa [wheelWithInnerTriangleEmbedding, wheelWithInnerTriangleFaceBoundary]
+            using hmem))
+    · intro hEq
+      rcases hEq with h0 | h1
+      · have hval : (2 : ℕ) = 0 := by
+          simpa [wheelFace0] using
+            congrArg
+              (fun f : AmbientFace wheelWithInnerTriangleEmbedding.faces => f.1.1) h0
+        omega
+      · have hval : (2 : ℕ) = 1 := by
+          simpa [wheelFace1] using
+            congrArg
+              (fun f : AmbientFace wheelWithInnerTriangleEmbedding.faces => f.1.1) h1
+        omega
+  · constructor
+    · intro hmem
+      have hnot :
+          wit02 ∉ ({wit45, wit56, wit64} :
+            Finset wheelWithInnerTriangleGraph.edgeSet) := by decide
+      exact False.elim
+        (hnot (by
+          simpa [wheelWithInnerTriangleEmbedding, wheelWithInnerTriangleFaceBoundary]
+            using hmem))
+    · intro hEq
+      rcases hEq with h0 | h1
+      · have hval : (3 : ℕ) = 0 := by
+          simpa [wheelFace0] using
+            congrArg
+              (fun f : AmbientFace wheelWithInnerTriangleEmbedding.faces => f.1.1) h0
+        omega
+      · have hval : (3 : ℕ) = 1 := by
+          simpa [wheelFace1] using
+            congrArg
+              (fun f : AmbientFace wheelWithInnerTriangleEmbedding.faces => f.1.1) h1
+        omega
 
 theorem wit03_mem_faceBoundary_iff
     (f : AmbientFace wheelWithInnerTriangleEmbedding.faces) :
@@ -199,10 +300,59 @@ theorem wit03_mem_faceBoundary_iff
       f = wheelFace1 ∨ f = wheelFace2 := by
   rcases f with ⟨⟨n, hn⟩, hf⟩
   have hn_cases : n = 0 ∨ n = 1 ∨ n = 2 ∨ n = 3 := by omega
-  rcases hn_cases with rfl | rfl | rfl | rfl <;>
-    simp [wheelFace1, wheelFace2, wheelWithInnerTriangleEmbedding,
-      wheelWithInnerTriangleFaceBoundary] <;>
-    decide
+  rcases hn_cases with rfl | rfl | rfl | rfl
+  · constructor
+    · intro hmem
+      have hnot :
+          wit03 ∉ ({wit01, wit02, wit12} :
+            Finset wheelWithInnerTriangleGraph.edgeSet) := by decide
+      exact False.elim
+        (hnot (by
+          simpa [wheelWithInnerTriangleEmbedding, wheelWithInnerTriangleFaceBoundary]
+            using hmem))
+    · intro hEq
+      rcases hEq with h1 | h2
+      · have hval : (0 : ℕ) = 1 := by
+          simpa [wheelFace1] using
+            congrArg
+              (fun f : AmbientFace wheelWithInnerTriangleEmbedding.faces => f.1.1) h1
+        omega
+      · have hval : (0 : ℕ) = 2 := by
+          simpa [wheelFace2] using
+            congrArg
+              (fun f : AmbientFace wheelWithInnerTriangleEmbedding.faces => f.1.1) h2
+        omega
+  · constructor
+    · intro _
+      exact Or.inl (Subtype.ext (Fin.ext rfl))
+    · intro _
+      simp [wheelWithInnerTriangleEmbedding, wheelWithInnerTriangleFaceBoundary]
+  · constructor
+    · intro _
+      exact Or.inr (Subtype.ext (Fin.ext rfl))
+    · intro _
+      simp [wheelWithInnerTriangleEmbedding, wheelWithInnerTriangleFaceBoundary]
+  · constructor
+    · intro hmem
+      have hnot :
+          wit03 ∉ ({wit45, wit56, wit64} :
+            Finset wheelWithInnerTriangleGraph.edgeSet) := by decide
+      exact False.elim
+        (hnot (by
+          simpa [wheelWithInnerTriangleEmbedding, wheelWithInnerTriangleFaceBoundary]
+            using hmem))
+    · intro hEq
+      rcases hEq with h1 | h2
+      · have hval : (3 : ℕ) = 1 := by
+          simpa [wheelFace1] using
+            congrArg
+              (fun f : AmbientFace wheelWithInnerTriangleEmbedding.faces => f.1.1) h1
+        omega
+      · have hval : (3 : ℕ) = 2 := by
+          simpa [wheelFace2] using
+            congrArg
+              (fun f : AmbientFace wheelWithInnerTriangleEmbedding.faces => f.1.1) h2
+        omega
 
 theorem wit01_mem_interiorEdgeSupport :
     wit01 ∈ interiorEdgeSupport
@@ -252,7 +402,9 @@ theorem exists_two_distinct_interior_edges_on_wheelWithInnerTriangle_boundary :
               wheelWithInnerTriangleEmbedding.faces := by
   exact
     ⟨⟨(0 : WheelWithInnerTriangleFace),
-        by simp [wheelWithInnerTriangleEmbedding, wheelWithInnerTriangleFaces]⟩,
+        by
+          change (0 : WheelWithInnerTriangleFace) ∈ Finset.univ
+          exact Finset.mem_univ _⟩,
       exists_two_distinct_interior_edges_on_wheelFace0_boundary⟩
 
 theorem not_nonempty_planarBoundaryCanonicalWitnessChoice_wheelWithInnerTriangle
@@ -287,7 +439,9 @@ theorem not_wheelWithInnerTriangle_atMostOneInteriorEdgePerFace :
   intro hAtMost
   have h0 := hAtMost
     ⟨(0 : WheelWithInnerTriangleFace),
-      by simp [wheelWithInnerTriangleEmbedding, wheelWithInnerTriangleFaces]⟩
+      by
+        change (0 : WheelWithInnerTriangleFace) ∈ Finset.univ
+        exact Finset.mem_univ _⟩
   rw [wheelWithInnerTriangle_face0_interiorEdgeFilter_card] at h0
   omega
 
@@ -894,7 +1048,8 @@ theorem wheelWithInnerTriangle_boundaryEdge_eq
 
 def wheelFace3 : AmbientFace wheelWithInnerTriangleEmbedding.faces :=
   ⟨(3 : WheelWithInnerTriangleFace), by
-    simp [wheelWithInnerTriangleEmbedding, wheelWithInnerTriangleFaces]⟩
+    change (3 : WheelWithInnerTriangleFace) ∈ Finset.univ
+    exact Finset.mem_univ _⟩
 
 theorem wheelWithInnerTriangleFace_cases
     (f : AmbientFace wheelWithInnerTriangleEmbedding.faces) :

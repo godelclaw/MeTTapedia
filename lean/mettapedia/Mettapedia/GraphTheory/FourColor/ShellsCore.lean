@@ -73,6 +73,135 @@ structure SuccessorCycleExactShell (emb : PlaneEmbeddingWithBoundary G) where
   tait : TaitV23Data G
   endpoint : HasUnblockedInteriorEndpoint emb
 
+namespace ClosedWalkExactShell
+
+/-- Build the exact shell from the finite no-selected-boundary-chord repair. -/
+def ofInteriorEdgesNotSelectedBoundaryChords
+    {emb : PlaneEmbeddingWithBoundary G}
+    (source : PlanarBoundaryClosedWalkAnnulusBoundarySource emb)
+    (oneCollar : ExactOneCollarOn emb source.toPlanarBoundaryAnnulusBoundaryData)
+    (tait : TaitV23Data G)
+    (hChordFree : InteriorEdgesNotSelectedBoundaryChords emb)
+    (hInterior : (interiorEdgeSupport emb.faceBoundary emb.faces).Nonempty) :
+    ClosedWalkExactShell emb where
+  source := source
+  oneCollar := oneCollar
+  tait := tait
+  endpoint :=
+    hasUnblockedInteriorEndpoint_of_interiorEdgesNotSelectedBoundaryChords_and_nonempty
+      hChordFree hInterior
+
+/-- Build the exact shell from selected-boundary inducedness, the endpoint repair that survives
+the validation-lab stress suite. -/
+def ofSelectedBoundaryInducedSubgraph
+    {emb : PlaneEmbeddingWithBoundary G}
+    (source : PlanarBoundaryClosedWalkAnnulusBoundarySource emb)
+    (oneCollar : ExactOneCollarOn emb source.toPlanarBoundaryAnnulusBoundaryData)
+    (tait : TaitV23Data G)
+    (hInduced : SelectedBoundaryInducedSubgraph emb)
+    (hInterior : (interiorEdgeSupport emb.faceBoundary emb.faces).Nonempty) :
+    ClosedWalkExactShell emb where
+  source := source
+  oneCollar := oneCollar
+  tait := tait
+  endpoint :=
+    hasUnblockedInteriorEndpoint_of_selectedBoundaryInducedSubgraph_and_nonempty
+      hInduced hInterior
+
+/-- Build the exact shell from the split-boundary finite repair: each component boundary is
+induced and the two endpoint supports are cross-component chord-free. -/
+def ofBoundarySplitInducedCrossComponentChordFree
+    {emb : PlaneEmbeddingWithBoundary G} {outer inner : Finset G.edgeSet}
+    (source : PlanarBoundaryClosedWalkAnnulusBoundarySource emb)
+    (oneCollar : ExactOneCollarOn emb source.toPlanarBoundaryAnnulusBoundaryData)
+    (tait : TaitV23Data G)
+    (hSelected :
+      selectedBoundarySupport emb.faceBoundary emb.faces emb.faces = outer ∪ inner)
+    (hOuter : BoundaryEdgeSetInducedSubgraph outer)
+    (hInner : BoundaryEdgeSetInducedSubgraph inner)
+    (hCross : BoundaryEdgeSetCrossComponentChordFree outer inner)
+    (hInterior : (interiorEdgeSupport emb.faceBoundary emb.faces).Nonempty) :
+    ClosedWalkExactShell emb where
+  source := source
+  oneCollar := oneCollar
+  tait := tait
+  endpoint :=
+    hasUnblockedInteriorEndpoint_of_selectedBoundarySupport_eq_union_of_induced_of_crossComponentChordFree_and_nonempty
+      hSelected hOuter hInner hCross hInterior
+
+end ClosedWalkExactShell
+
+namespace SuccessorCycleExactShell
+
+/-- Build the successor-cycle exact shell from the finite no-selected-boundary-chord repair. -/
+def ofInteriorEdgesNotSelectedBoundaryChords
+    {emb : PlaneEmbeddingWithBoundary G}
+    (boundaryReachability : PlanarBoundaryAnnulusBoundaryReachabilityData emb)
+    (dartCycles : PlanarBoundaryDartSuccessorCycleEmbeddingData emb)
+    (selectedBoundaryArc : SuccessorCycleSelectedBoundaryArcData dartCycles)
+    (oneCollar : ExactOneCollarOn emb
+      boundaryReachability.toPlanarBoundaryAnnulusBoundaryData)
+    (tait : TaitV23Data G)
+    (hChordFree : InteriorEdgesNotSelectedBoundaryChords emb)
+    (hInterior : (interiorEdgeSupport emb.faceBoundary emb.faces).Nonempty) :
+    SuccessorCycleExactShell emb where
+  boundaryReachability := boundaryReachability
+  dartCycles := dartCycles
+  selectedBoundaryArc := selectedBoundaryArc
+  oneCollar := oneCollar
+  tait := tait
+  endpoint :=
+    hasUnblockedInteriorEndpoint_of_interiorEdgesNotSelectedBoundaryChords_and_nonempty
+      hChordFree hInterior
+
+/-- Build the successor-cycle exact shell from selected-boundary inducedness. -/
+def ofSelectedBoundaryInducedSubgraph
+    {emb : PlaneEmbeddingWithBoundary G}
+    (boundaryReachability : PlanarBoundaryAnnulusBoundaryReachabilityData emb)
+    (dartCycles : PlanarBoundaryDartSuccessorCycleEmbeddingData emb)
+    (selectedBoundaryArc : SuccessorCycleSelectedBoundaryArcData dartCycles)
+    (oneCollar : ExactOneCollarOn emb
+      boundaryReachability.toPlanarBoundaryAnnulusBoundaryData)
+    (tait : TaitV23Data G)
+    (hInduced : SelectedBoundaryInducedSubgraph emb)
+    (hInterior : (interiorEdgeSupport emb.faceBoundary emb.faces).Nonempty) :
+    SuccessorCycleExactShell emb where
+  boundaryReachability := boundaryReachability
+  dartCycles := dartCycles
+  selectedBoundaryArc := selectedBoundaryArc
+  oneCollar := oneCollar
+  tait := tait
+  endpoint :=
+    hasUnblockedInteriorEndpoint_of_selectedBoundaryInducedSubgraph_and_nonempty
+      hInduced hInterior
+
+/-- Build the successor-cycle exact shell from the split-boundary finite repair. -/
+def ofBoundarySplitInducedCrossComponentChordFree
+    {emb : PlaneEmbeddingWithBoundary G} {outer inner : Finset G.edgeSet}
+    (boundaryReachability : PlanarBoundaryAnnulusBoundaryReachabilityData emb)
+    (dartCycles : PlanarBoundaryDartSuccessorCycleEmbeddingData emb)
+    (selectedBoundaryArc : SuccessorCycleSelectedBoundaryArcData dartCycles)
+    (oneCollar : ExactOneCollarOn emb
+      boundaryReachability.toPlanarBoundaryAnnulusBoundaryData)
+    (tait : TaitV23Data G)
+    (hSelected :
+      selectedBoundarySupport emb.faceBoundary emb.faces emb.faces = outer ∪ inner)
+    (hOuter : BoundaryEdgeSetInducedSubgraph outer)
+    (hInner : BoundaryEdgeSetInducedSubgraph inner)
+    (hCross : BoundaryEdgeSetCrossComponentChordFree outer inner)
+    (hInterior : (interiorEdgeSupport emb.faceBoundary emb.faces).Nonempty) :
+    SuccessorCycleExactShell emb where
+  boundaryReachability := boundaryReachability
+  dartCycles := dartCycles
+  selectedBoundaryArc := selectedBoundaryArc
+  oneCollar := oneCollar
+  tait := tait
+  endpoint :=
+    hasUnblockedInteriorEndpoint_of_selectedBoundarySupport_eq_union_of_induced_of_crossComponentChordFree_and_nonempty
+      hSelected hOuter hInner hCross hInterior
+
+end SuccessorCycleExactShell
+
 /-- Lower the successor-cycle shell to the honest closed-walk shell.  The
 boundary split of the lowered source is definitionally the reachability
 split, so the exact one-collar data transports unchanged. -/

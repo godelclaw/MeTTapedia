@@ -891,6 +891,309 @@ theorem theorem49BoundaryRootSynthesis_of_edgePredicateNonzeroWitnesses
     (familyPairing_separates_of_edgePredicateNonzeroWitnesses
       family P hnonzero hwitnessRed hwitnessBlue)
 
+/-- Finite-control witness form of the same route.  This is the certificate shape returned by
+the `F₂` rank check: every nonzero selected-boundary-zero chain is nonzero on at least one
+listed control edge, and the family contains red/blue probes on each listed edge. -/
+theorem theorem49BoundaryRootSynthesis_of_controlEdgeNonzeroWitnesses
+    {G : SimpleGraph V}
+    [Fintype G.edgeSet] [FiniteDimensional F2 (G.edgeSet → Color)]
+    (emb : PlaneEmbeddingWithBoundary G) (C₀ : G.EdgeColoring Color)
+    (colorings : Set (G.EdgeColoring Color))
+    (hsubset : colorings ⊆ G.EdgeKempeClosure C₀)
+    {κ : Type*}
+    (family : κ → projectedColoringGeneratorSubspace emb colorings)
+    (controlEdges : Finset G.edgeSet)
+    (hnonzero :
+      ∀ ⦃z : G.edgeSet → Color⦄,
+        z ∈ planarBoundaryZeroSubmodule emb →
+        z ≠ 0 →
+          ∃ e : G.edgeSet, e ∈ controlEdges ∧ z e ≠ 0)
+    (hwitnessRed :
+      ∀ e ∈ controlEdges,
+        ∃ i : κ,
+          ((family i : projectedColoringGeneratorSubspace emb colorings) : G.edgeSet → Color) =
+            Pi.single e red)
+    (hwitnessBlue :
+      ∀ e ∈ controlEdges,
+        ∃ i : κ,
+          ((family i : projectedColoringGeneratorSubspace emb colorings) : G.edgeSet → Color) =
+            Pi.single e blue) :
+    Theorem49BoundaryRootSynthesis emb C₀ :=
+  theorem49BoundaryRootSynthesis_of_edgePredicateNonzeroWitnesses
+    emb C₀ colorings hsubset family (fun e => e ∈ controlEdges)
+    hnonzero hwitnessRed hwitnessBlue
+
+/--
+Boundary-trimmed nonzero-coverage form of finite control.  If a finite control set determines
+every selected-boundary-zero chain, then every nonzero chain has a nonzero coordinate on a
+controlling edge outside the selected-boundary support; selected-boundary coordinates are already
+zero by definition of the boundary-zero submodule.
+-/
+theorem exists_nonboundary_controlEdge_nonzero_of_controlEdges
+    {G : SimpleGraph V} [Fintype G.edgeSet]
+    (emb : PlaneEmbeddingWithBoundary G)
+    (controlEdges : Finset G.edgeSet)
+    (hcontrol :
+      ∀ ⦃z : G.edgeSet → Color⦄,
+        z ∈ planarBoundaryZeroSubmodule emb →
+        (∀ e ∈ controlEdges, z e = 0) →
+          z = 0) :
+    ∀ ⦃z : G.edgeSet → Color⦄,
+      z ∈ planarBoundaryZeroSubmodule emb →
+      z ≠ 0 →
+        ∃ e : G.edgeSet,
+          (e ∈ controlEdges ∧
+            e ∉ selectedBoundarySupport emb.faceBoundary emb.faces emb.faces) ∧
+            z e ≠ 0 := by
+  intro z hzBoundary hzNonzero
+  rcases (finsetControls_iff_forall_nonzero_exists_mem_nonzero
+      (G := G) (emb := emb) controlEdges).1 hcontrol hzBoundary hzNonzero with
+    ⟨e, heControl, hze⟩
+  have heNotBoundary :
+      e ∉ selectedBoundarySupport emb.faceBoundary emb.faces emb.faces := by
+    intro heBoundary
+    exact hze (boundaryZero_of_mem_planarBoundaryZeroSubmodule hzBoundary e heBoundary)
+  exact ⟨e, ⟨heControl, heNotBoundary⟩, hze⟩
+
+/--
+Boundary-trimmed finite-control kernel route.  A finite control set may contain
+selected-boundary coordinates, but the pairing-kernel certificate only needs red/blue probes on
+the non-boundary controlling edges.
+-/
+theorem ker_planarBoundaryZeroFamilyPairingMap_eq_bot_of_controlEdges_nonBoundaryWitnesses
+    {G : SimpleGraph V} [Fintype G.edgeSet]
+    {emb : PlaneEmbeddingWithBoundary G}
+    {colorings : Set (G.EdgeColoring Color)}
+    {κ : Type*}
+    (family : κ → projectedColoringGeneratorSubspace emb colorings)
+    (controlEdges : Finset G.edgeSet)
+    (hcontrol :
+      ∀ ⦃z : G.edgeSet → Color⦄,
+        z ∈ planarBoundaryZeroSubmodule emb →
+        (∀ e ∈ controlEdges, z e = 0) →
+          z = 0)
+    (hwitnessRed :
+      ∀ e : G.edgeSet,
+        e ∈ controlEdges →
+          e ∉ selectedBoundarySupport emb.faceBoundary emb.faces emb.faces →
+            ∃ i : κ,
+              ((family i : projectedColoringGeneratorSubspace emb colorings) :
+                  G.edgeSet → Color) =
+                Pi.single e red)
+    (hwitnessBlue :
+      ∀ e : G.edgeSet,
+        e ∈ controlEdges →
+          e ∉ selectedBoundarySupport emb.faceBoundary emb.faces emb.faces →
+            ∃ i : κ,
+              ((family i : projectedColoringGeneratorSubspace emb colorings) :
+                  G.edgeSet → Color) =
+                Pi.single e blue) :
+    LinearMap.ker (planarBoundaryZeroFamilyPairingMap family) = ⊥ :=
+  ker_planarBoundaryZeroFamilyPairingMap_eq_bot_of_edgePredicateNonzeroWitnesses
+    family
+    (fun e => e ∈ controlEdges ∧
+      e ∉ selectedBoundarySupport emb.faceBoundary emb.faces emb.faces)
+    (exists_nonboundary_controlEdge_nonzero_of_controlEdges emb controlEdges hcontrol)
+    (by
+      intro e he
+      exact hwitnessRed e he.1 he.2)
+    (by
+      intro e he
+      exact hwitnessBlue e he.1 he.2)
+
+/--
+Boundary-trimmed finite-control synthesis route.  A finite edge set may contain selected-boundary
+coordinates, but selected-boundary-zero chains vanish on those coordinates automatically.  Thus
+the projected-generator witnesses are needed only for controlling edges outside the selected
+boundary support.
+-/
+theorem theorem49BoundaryRootSynthesis_of_controlEdges_nonBoundaryWitnesses
+    {G : SimpleGraph V}
+    [Fintype G.edgeSet] [FiniteDimensional F2 (G.edgeSet → Color)]
+    (emb : PlaneEmbeddingWithBoundary G) (C₀ : G.EdgeColoring Color)
+    (colorings : Set (G.EdgeColoring Color))
+    (hsubset : colorings ⊆ G.EdgeKempeClosure C₀)
+    {κ : Type*}
+    (family : κ → projectedColoringGeneratorSubspace emb colorings)
+    (controlEdges : Finset G.edgeSet)
+    (hcontrol :
+      ∀ ⦃z : G.edgeSet → Color⦄,
+        z ∈ planarBoundaryZeroSubmodule emb →
+        (∀ e ∈ controlEdges, z e = 0) →
+          z = 0)
+    (hwitnessRed :
+      ∀ e : G.edgeSet,
+        e ∈ controlEdges →
+          e ∉ selectedBoundarySupport emb.faceBoundary emb.faces emb.faces →
+            ∃ i : κ,
+              ((family i : projectedColoringGeneratorSubspace emb colorings) :
+                  G.edgeSet → Color) =
+                Pi.single e red)
+    (hwitnessBlue :
+      ∀ e : G.edgeSet,
+        e ∈ controlEdges →
+          e ∉ selectedBoundarySupport emb.faceBoundary emb.faces emb.faces →
+            ∃ i : κ,
+              ((family i : projectedColoringGeneratorSubspace emb colorings) :
+                  G.edgeSet → Color) =
+                Pi.single e blue) :
+    Theorem49BoundaryRootSynthesis emb C₀ :=
+  theorem49BoundaryRootSynthesis_of_familyPairingKerEqBot
+    emb C₀ colorings hsubset family
+    (ker_planarBoundaryZeroFamilyPairingMap_eq_bot_of_controlEdges_nonBoundaryWitnesses
+      family controlEdges hcontrol hwitnessRed hwitnessBlue)
+
+/--
+Canonical finite red/blue single-coordinate family generated by membership certificates.  Its
+index type is exactly a controlling edge together with the red/blue choice, so the witness
+obligations used by the F₂ producer lane are recovered by evaluating the family at that index.
+-/
+def redBlueSingleCoordinateFamily
+    {G : SimpleGraph V} [Fintype G.edgeSet]
+    {emb : PlaneEmbeddingWithBoundary G}
+    {colorings : Set (G.EdgeColoring Color)}
+    (controlEdges : Finset G.edgeSet)
+    (hred :
+      ∀ e ∈ controlEdges,
+        Pi.single e red ∈ projectedColoringGeneratorSubspace emb colorings)
+    (hblue :
+      ∀ e ∈ controlEdges,
+        Pi.single e blue ∈ projectedColoringGeneratorSubspace emb colorings) :
+    ({e : G.edgeSet // e ∈ controlEdges} × Bool) →
+      projectedColoringGeneratorSubspace emb colorings :=
+  fun i =>
+    if i.2 then
+      ⟨Pi.single i.1.1 red, hred i.1.1 i.1.2⟩
+    else
+      ⟨Pi.single i.1.1 blue, hblue i.1.1 i.1.2⟩
+
+/-- The canonical finite red/blue family contains the red probe on every controlling edge. -/
+theorem redBlueSingleCoordinateFamily_witnessRed
+    {G : SimpleGraph V} [Fintype G.edgeSet]
+    {emb : PlaneEmbeddingWithBoundary G}
+    {colorings : Set (G.EdgeColoring Color)}
+    (controlEdges : Finset G.edgeSet)
+    (hred :
+      ∀ e ∈ controlEdges,
+        Pi.single e red ∈ projectedColoringGeneratorSubspace emb colorings)
+    (hblue :
+      ∀ e ∈ controlEdges,
+        Pi.single e blue ∈ projectedColoringGeneratorSubspace emb colorings) :
+    ∀ e ∈ controlEdges,
+      ∃ i : ({e : G.edgeSet // e ∈ controlEdges} × Bool),
+        ((redBlueSingleCoordinateFamily controlEdges hred hblue i :
+            projectedColoringGeneratorSubspace emb colorings) : G.edgeSet → Color) =
+          Pi.single e red := by
+  intro e he
+  exact ⟨(⟨e, he⟩, true), by simp [redBlueSingleCoordinateFamily]⟩
+
+/-- The canonical finite red/blue family contains the blue probe on every controlling edge. -/
+theorem redBlueSingleCoordinateFamily_witnessBlue
+    {G : SimpleGraph V} [Fintype G.edgeSet]
+    {emb : PlaneEmbeddingWithBoundary G}
+    {colorings : Set (G.EdgeColoring Color)}
+    (controlEdges : Finset G.edgeSet)
+    (hred :
+      ∀ e ∈ controlEdges,
+        Pi.single e red ∈ projectedColoringGeneratorSubspace emb colorings)
+    (hblue :
+      ∀ e ∈ controlEdges,
+        Pi.single e blue ∈ projectedColoringGeneratorSubspace emb colorings) :
+    ∀ e ∈ controlEdges,
+      ∃ i : ({e : G.edgeSet // e ∈ controlEdges} × Bool),
+        ((redBlueSingleCoordinateFamily controlEdges hred hblue i :
+            projectedColoringGeneratorSubspace emb colorings) : G.edgeSet → Color) =
+          Pi.single e blue := by
+  intro e he
+  exact ⟨(⟨e, he⟩, false), by simp [redBlueSingleCoordinateFamily]⟩
+
+/--
+Witness package for the canonical finite red/blue family.  This discharges the common
+producer-side obligation of red/blue witnesses from the simpler finite certificate that the
+required single-coordinate probes lie in the projected generator subspace.
+-/
+theorem redBlueSingleCoordinateFamily_witnesses_of_memberships
+    {G : SimpleGraph V} [Fintype G.edgeSet]
+    {emb : PlaneEmbeddingWithBoundary G}
+    {colorings : Set (G.EdgeColoring Color)}
+    (controlEdges : Finset G.edgeSet)
+    (hred :
+      ∀ e ∈ controlEdges,
+        Pi.single e red ∈ projectedColoringGeneratorSubspace emb colorings)
+    (hblue :
+      ∀ e ∈ controlEdges,
+        Pi.single e blue ∈ projectedColoringGeneratorSubspace emb colorings) :
+    (∀ e ∈ controlEdges,
+      ∃ i : ({e : G.edgeSet // e ∈ controlEdges} × Bool),
+        ((redBlueSingleCoordinateFamily controlEdges hred hblue i :
+            projectedColoringGeneratorSubspace emb colorings) : G.edgeSet → Color) =
+          Pi.single e red) ∧
+      (∀ e ∈ controlEdges,
+        ∃ i : ({e : G.edgeSet // e ∈ controlEdges} × Bool),
+          ((redBlueSingleCoordinateFamily controlEdges hred hblue i :
+              projectedColoringGeneratorSubspace emb colorings) : G.edgeSet → Color) =
+            Pi.single e blue) :=
+  ⟨redBlueSingleCoordinateFamily_witnessRed controlEdges hred hblue,
+    redBlueSingleCoordinateFamily_witnessBlue controlEdges hred hblue⟩
+
+/--
+Edge-local detector for the canonical finite red/blue family.  Once the red and blue
+single-coordinate probes on the finite control set are known to lie in the projected generator
+subspace, any boundary-zero chain that is nonzero on a listed edge has a nonzero pairing with
+one member of the canonical family.
+-/
+theorem exists_familyPairing_ne_zero_of_redBlueSingleCoordinateMembership
+    {G : SimpleGraph V} [Fintype G.edgeSet]
+    {emb : PlaneEmbeddingWithBoundary G}
+    {colorings : Set (G.EdgeColoring Color)}
+    (controlEdges : Finset G.edgeSet)
+    (hred :
+      ∀ e ∈ controlEdges,
+        Pi.single e red ∈ projectedColoringGeneratorSubspace emb colorings)
+    (hblue :
+      ∀ e ∈ controlEdges,
+        Pi.single e blue ∈ projectedColoringGeneratorSubspace emb colorings)
+    {e : G.edgeSet} (he : e ∈ controlEdges)
+    {z : G.edgeSet → Color} (hz : z e ≠ 0) :
+    ∃ i : ({e : G.edgeSet // e ∈ controlEdges} × Bool),
+      chainDotBilinForm G.edgeSet
+          (redBlueSingleCoordinateFamily controlEdges hred hblue i : G.edgeSet → Color) z ≠
+        0 :=
+  exists_familyPairing_ne_zero_of_redBlueSingleCoordinateWitness
+    (redBlueSingleCoordinateFamily controlEdges hred hblue) e hz
+    ((redBlueSingleCoordinateFamily_witnessRed controlEdges hred hblue) e he)
+    ((redBlueSingleCoordinateFamily_witnessBlue controlEdges hred hblue) e he)
+
+/--
+Theorem 4.9 synthesis directly from finite red/blue single-coordinate membership certificates.
+This removes the arbitrary-family handoff from the control-edge nonzero route: the canonical
+red/blue family is built from the membership proofs.
+-/
+theorem theorem49BoundaryRootSynthesis_of_controlEdgeNonzeroMemberships
+    {G : SimpleGraph V}
+    [Fintype G.edgeSet] [FiniteDimensional F2 (G.edgeSet → Color)]
+    (emb : PlaneEmbeddingWithBoundary G) (C₀ : G.EdgeColoring Color)
+    (colorings : Set (G.EdgeColoring Color))
+    (hsubset : colorings ⊆ G.EdgeKempeClosure C₀)
+    (controlEdges : Finset G.edgeSet)
+    (hnonzero :
+      ∀ ⦃z : G.edgeSet → Color⦄,
+        z ∈ planarBoundaryZeroSubmodule emb →
+        z ≠ 0 →
+          ∃ e : G.edgeSet, e ∈ controlEdges ∧ z e ≠ 0)
+    (hred :
+      ∀ e ∈ controlEdges,
+        Pi.single e red ∈ projectedColoringGeneratorSubspace emb colorings)
+    (hblue :
+      ∀ e ∈ controlEdges,
+        Pi.single e blue ∈ projectedColoringGeneratorSubspace emb colorings) :
+    Theorem49BoundaryRootSynthesis emb C₀ :=
+  theorem49BoundaryRootSynthesis_of_controlEdgeNonzeroWitnesses
+    emb C₀ colorings hsubset
+    (redBlueSingleCoordinateFamily controlEdges hred hblue) controlEdges hnonzero
+    (redBlueSingleCoordinateFamily_witnessRed controlEdges hred hblue)
+    (redBlueSingleCoordinateFamily_witnessBlue controlEdges hred hblue)
+
 /-- Route form of the same producer-side certificate: explicit coordinate witnesses for a chosen
 family already give the full theorem-4.9 synthesis package for the base coloring. -/
 theorem theorem49BoundaryRootSynthesis_of_singleCoordinateFamilyWitnesses
@@ -952,6 +1255,104 @@ def ClosedWalkNeighborhoodPairingKernelShell.of_singleCoordinateWitnesses
     ker_planarBoundaryZeroFamilyPairingMap_eq_bot_of_singleCoordinateWitnesses
       family controlEdges hcontrol hwitness
 
+/-- Bundle witness-form predicate control directly as a closed-walk family-kernel shell.  This
+matches the finite checker output before converting it to a vanishing-implies-zero control
+statement. -/
+def ClosedWalkNeighborhoodPairingKernelShell.of_edgePredicateNonzeroWitnesses
+    {G : SimpleGraph V} [Fintype G.edgeSet]
+    {emb : PlaneEmbeddingWithBoundary G}
+    (shell : ClosedWalkExactShell emb)
+    (colorings : Set (G.EdgeColoring Color))
+    (hsubset : colorings ⊆ G.EdgeKempeClosure shell.tait.coloring)
+    {κ : Type*}
+    (family : κ → projectedColoringGeneratorSubspace emb colorings)
+    (P : G.edgeSet → Prop)
+    (hnonzero :
+      ∀ ⦃z : G.edgeSet → Color⦄,
+        z ∈ planarBoundaryZeroSubmodule emb →
+        z ≠ 0 →
+          ∃ e : G.edgeSet, P e ∧ z e ≠ 0)
+    (hwitnessRed :
+      ∀ e : G.edgeSet, P e →
+        ∃ i : κ,
+          ((family i : projectedColoringGeneratorSubspace emb colorings) : G.edgeSet → Color) =
+            Pi.single e red)
+    (hwitnessBlue :
+      ∀ e : G.edgeSet, P e →
+        ∃ i : κ,
+          ((family i : projectedColoringGeneratorSubspace emb colorings) : G.edgeSet → Color) =
+            Pi.single e blue) :
+    ClosedWalkNeighborhoodPairingKernelShell emb where
+  exactShell := shell
+  colorings := colorings
+  subset_closure := hsubset
+  κ := κ
+  family := family
+  pairingKernel_eq_bot :=
+    ker_planarBoundaryZeroFamilyPairingMap_eq_bot_of_edgePredicateNonzeroWitnesses
+      family P hnonzero hwitnessRed hwitnessBlue
+
+/-- Closed-walk shell producer from a concrete finite control set in the nonzero-witness form
+emitted by the validation lab. -/
+def ClosedWalkNeighborhoodPairingKernelShell.of_controlEdgeNonzeroWitnesses
+    {G : SimpleGraph V} [Fintype G.edgeSet]
+    {emb : PlaneEmbeddingWithBoundary G}
+    (shell : ClosedWalkExactShell emb)
+    (colorings : Set (G.EdgeColoring Color))
+    (hsubset : colorings ⊆ G.EdgeKempeClosure shell.tait.coloring)
+    {κ : Type*}
+    (family : κ → projectedColoringGeneratorSubspace emb colorings)
+    (controlEdges : Finset G.edgeSet)
+    (hnonzero :
+      ∀ ⦃z : G.edgeSet → Color⦄,
+        z ∈ planarBoundaryZeroSubmodule emb →
+        z ≠ 0 →
+          ∃ e : G.edgeSet, e ∈ controlEdges ∧ z e ≠ 0)
+    (hwitnessRed :
+      ∀ e ∈ controlEdges,
+        ∃ i : κ,
+          ((family i : projectedColoringGeneratorSubspace emb colorings) : G.edgeSet → Color) =
+            Pi.single e red)
+    (hwitnessBlue :
+      ∀ e ∈ controlEdges,
+        ∃ i : κ,
+          ((family i : projectedColoringGeneratorSubspace emb colorings) : G.edgeSet → Color) =
+            Pi.single e blue) :
+    ClosedWalkNeighborhoodPairingKernelShell emb :=
+  ClosedWalkNeighborhoodPairingKernelShell.of_edgePredicateNonzeroWitnesses
+    shell colorings hsubset family (fun e => e ∈ controlEdges)
+    hnonzero hwitnessRed hwitnessBlue
+
+/--
+Closed-walk shell producer directly from finite red/blue single-coordinate membership
+certificates.  The shell's family is the canonical finite red/blue family indexed by controlling
+edges, so no external family witness packet is needed.
+-/
+def ClosedWalkNeighborhoodPairingKernelShell.of_controlEdgeNonzeroMemberships
+    {G : SimpleGraph V} [Fintype G.edgeSet]
+    {emb : PlaneEmbeddingWithBoundary G}
+    (shell : ClosedWalkExactShell emb)
+    (colorings : Set (G.EdgeColoring Color))
+    (hsubset : colorings ⊆ G.EdgeKempeClosure shell.tait.coloring)
+    (controlEdges : Finset G.edgeSet)
+    (hnonzero :
+      ∀ ⦃z : G.edgeSet → Color⦄,
+        z ∈ planarBoundaryZeroSubmodule emb →
+        z ≠ 0 →
+          ∃ e : G.edgeSet, e ∈ controlEdges ∧ z e ≠ 0)
+    (hred :
+      ∀ e ∈ controlEdges,
+        Pi.single e red ∈ projectedColoringGeneratorSubspace emb colorings)
+    (hblue :
+      ∀ e ∈ controlEdges,
+        Pi.single e blue ∈ projectedColoringGeneratorSubspace emb colorings) :
+    ClosedWalkNeighborhoodPairingKernelShell emb :=
+  ClosedWalkNeighborhoodPairingKernelShell.of_controlEdgeNonzeroWitnesses
+    shell colorings hsubset
+    (redBlueSingleCoordinateFamily controlEdges hred hblue) controlEdges hnonzero
+    (redBlueSingleCoordinateFamily_witnessRed controlEdges hred hblue)
+    (redBlueSingleCoordinateFamily_witnessBlue controlEdges hred hblue)
+
 /-- Successor-cycle version of the same shell-facing producer. -/
 def SuccessorCycleNeighborhoodPairingKernelShell.of_singleCoordinateWitnesses
     {G : SimpleGraph V} [Fintype G.edgeSet]
@@ -983,5 +1384,99 @@ def SuccessorCycleNeighborhoodPairingKernelShell.of_singleCoordinateWitnesses
   pairingKernel_eq_bot :=
     ker_planarBoundaryZeroFamilyPairingMap_eq_bot_of_singleCoordinateWitnesses
       family controlEdges hcontrol hwitness
+
+/-- Successor-cycle shell producer from witness-form predicate control. -/
+def SuccessorCycleNeighborhoodPairingKernelShell.of_edgePredicateNonzeroWitnesses
+    {G : SimpleGraph V} [Fintype G.edgeSet]
+    {emb : PlaneEmbeddingWithBoundary G}
+    (shell : SuccessorCycleExactShell emb)
+    (colorings : Set (G.EdgeColoring Color))
+    (hsubset : colorings ⊆ G.EdgeKempeClosure shell.tait.coloring)
+    {κ : Type*}
+    (family : κ → projectedColoringGeneratorSubspace emb colorings)
+    (P : G.edgeSet → Prop)
+    (hnonzero :
+      ∀ ⦃z : G.edgeSet → Color⦄,
+        z ∈ planarBoundaryZeroSubmodule emb →
+        z ≠ 0 →
+          ∃ e : G.edgeSet, P e ∧ z e ≠ 0)
+    (hwitnessRed :
+      ∀ e : G.edgeSet, P e →
+        ∃ i : κ,
+          ((family i : projectedColoringGeneratorSubspace emb colorings) : G.edgeSet → Color) =
+            Pi.single e red)
+    (hwitnessBlue :
+      ∀ e : G.edgeSet, P e →
+        ∃ i : κ,
+          ((family i : projectedColoringGeneratorSubspace emb colorings) : G.edgeSet → Color) =
+            Pi.single e blue) :
+    SuccessorCycleNeighborhoodPairingKernelShell emb where
+  exactShell := shell
+  colorings := colorings
+  subset_closure := hsubset
+  κ := κ
+  family := family
+  pairingKernel_eq_bot :=
+    ker_planarBoundaryZeroFamilyPairingMap_eq_bot_of_edgePredicateNonzeroWitnesses
+      family P hnonzero hwitnessRed hwitnessBlue
+
+/-- Successor-cycle shell producer from a concrete finite control set in nonzero-witness form. -/
+def SuccessorCycleNeighborhoodPairingKernelShell.of_controlEdgeNonzeroWitnesses
+    {G : SimpleGraph V} [Fintype G.edgeSet]
+    {emb : PlaneEmbeddingWithBoundary G}
+    (shell : SuccessorCycleExactShell emb)
+    (colorings : Set (G.EdgeColoring Color))
+    (hsubset : colorings ⊆ G.EdgeKempeClosure shell.tait.coloring)
+    {κ : Type*}
+    (family : κ → projectedColoringGeneratorSubspace emb colorings)
+    (controlEdges : Finset G.edgeSet)
+    (hnonzero :
+      ∀ ⦃z : G.edgeSet → Color⦄,
+        z ∈ planarBoundaryZeroSubmodule emb →
+        z ≠ 0 →
+          ∃ e : G.edgeSet, e ∈ controlEdges ∧ z e ≠ 0)
+    (hwitnessRed :
+      ∀ e ∈ controlEdges,
+        ∃ i : κ,
+          ((family i : projectedColoringGeneratorSubspace emb colorings) : G.edgeSet → Color) =
+            Pi.single e red)
+    (hwitnessBlue :
+      ∀ e ∈ controlEdges,
+        ∃ i : κ,
+          ((family i : projectedColoringGeneratorSubspace emb colorings) : G.edgeSet → Color) =
+            Pi.single e blue) :
+    SuccessorCycleNeighborhoodPairingKernelShell emb :=
+  SuccessorCycleNeighborhoodPairingKernelShell.of_edgePredicateNonzeroWitnesses
+    shell colorings hsubset family (fun e => e ∈ controlEdges)
+    hnonzero hwitnessRed hwitnessBlue
+
+/--
+Successor-cycle shell producer directly from finite red/blue single-coordinate membership
+certificates, using the canonical finite red/blue family.
+-/
+def SuccessorCycleNeighborhoodPairingKernelShell.of_controlEdgeNonzeroMemberships
+    {G : SimpleGraph V} [Fintype G.edgeSet]
+    {emb : PlaneEmbeddingWithBoundary G}
+    (shell : SuccessorCycleExactShell emb)
+    (colorings : Set (G.EdgeColoring Color))
+    (hsubset : colorings ⊆ G.EdgeKempeClosure shell.tait.coloring)
+    (controlEdges : Finset G.edgeSet)
+    (hnonzero :
+      ∀ ⦃z : G.edgeSet → Color⦄,
+        z ∈ planarBoundaryZeroSubmodule emb →
+        z ≠ 0 →
+          ∃ e : G.edgeSet, e ∈ controlEdges ∧ z e ≠ 0)
+    (hred :
+      ∀ e ∈ controlEdges,
+        Pi.single e red ∈ projectedColoringGeneratorSubspace emb colorings)
+    (hblue :
+      ∀ e ∈ controlEdges,
+        Pi.single e blue ∈ projectedColoringGeneratorSubspace emb colorings) :
+    SuccessorCycleNeighborhoodPairingKernelShell emb :=
+  SuccessorCycleNeighborhoodPairingKernelShell.of_controlEdgeNonzeroWitnesses
+    shell colorings hsubset
+    (redBlueSingleCoordinateFamily controlEdges hred hblue) controlEdges hnonzero
+    (redBlueSingleCoordinateFamily_witnessRed controlEdges hred hblue)
+    (redBlueSingleCoordinateFamily_witnessBlue controlEdges hred hblue)
 
 end Mettapedia.GraphTheory.FourColor

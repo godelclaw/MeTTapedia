@@ -42,6 +42,53 @@ def CAP5TransportedEdgeComponentCoverCore.ExceptionalAnnulusCrossingOutsideEdge
         e ∉ edgeCandidate.edgeSupport ∧
           EdgeCrossesVertexSide G side e
 
+/-- The normal-form outside-crossing predicate always emits a genuine side-crossing edge. -/
+theorem CAP5TransportedEdgeComponentCoverCore.exceptionalAnnulusCrossingOutsideEdge_crosses
+    {G : SimpleGraph V}
+    {boundaryEdge : Fin 5 → G.edgeSet} {n : Nat}
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    {p0Inside p4Inside : Bool} {side : V → Prop} {e : G.edgeSet}
+    (h : data.ExceptionalAnnulusCrossingOutsideEdge p0Inside p4Inside side e) :
+    EdgeCrossesVertexSide G side e := by
+  rcases h with ⟨_edgeCandidate, _horientation, _hsideCase, _heOutside, hcross⟩
+  exact hcross
+
+/-- Triangle obstruction for the normal-form outside-crossing predicate.  A fixed side cannot
+put all three edges of a triangle into the outside-crossing CAP5 edge predicate. -/
+theorem CAP5TransportedEdgeComponentCoverCore.not_three_exceptionalAnnulusCrossingOutsideEdge_triangle
+    {G : SimpleGraph V}
+    {boundaryEdge : Fin 5 → G.edgeSet} {n : Nat}
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    {p0Inside p4Inside : Bool} {side : V → Prop} {a b c : V}
+    {eab ebc eac : G.edgeSet}
+    (heab_pair : (eab : Sym2 V) = s(a, b))
+    (hebc_pair : (ebc : Sym2 V) = s(b, c))
+    (heac_pair : (eac : Sym2 V) = s(a, c)) :
+    ¬ (data.ExceptionalAnnulusCrossingOutsideEdge p0Inside p4Inside side eab ∧
+        data.ExceptionalAnnulusCrossingOutsideEdge p0Inside p4Inside side ebc ∧
+          data.ExceptionalAnnulusCrossingOutsideEdge p0Inside p4Inside side eac) := by
+  rintro ⟨hab, hbc, hac⟩
+  exact not_three_edgeCrossesVertexSide_triangle heab_pair hebc_pair heac_pair
+    ⟨data.exceptionalAnnulusCrossingOutsideEdge_crosses hab,
+      data.exceptionalAnnulusCrossingOutsideEdge_crosses hbc,
+      data.exceptionalAnnulusCrossingOutsideEdge_crosses hac⟩
+
+/-- Odd closed-walk obstruction for the normal-form outside-crossing CAP5 predicate.  If every
+edge traversed by an odd closed walk were in the predicate, all of those edges would cross the
+same vertex side, contradicting parity. -/
+theorem CAP5TransportedEdgeComponentCoverCore.not_forall_exceptionalAnnulusCrossingOutsideEdge_of_closed_walk_odd_length
+    {G : SimpleGraph V}
+    {boundaryEdge : Fin 5 → G.edgeSet} {n : Nat}
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    {p0Inside p4Inside : Bool} {side : V → Prop} {u : V}
+    (p : G.Walk u u) (hodd : Odd p.length) :
+    ¬ (∀ e : G.edgeSet, (e : Sym2 V) ∈ p.edges →
+      data.ExceptionalAnnulusCrossingOutsideEdge p0Inside p4Inside side e) := by
+  intro hcrossingOutside
+  exact not_forall_edgeCrossesVertexSide_of_closed_walk_odd_length p hodd
+    (fun e he => data.exceptionalAnnulusCrossingOutsideEdge_crosses
+      (hcrossingOutside e he))
+
 /-- The exceptional CAP5 one-edge counterexample predicate always emits a genuine
 side-crossing edge.  This keeps the algebraic lane connected to the raw cyclic-cut checker
 instead of treating the emitted edge as an opaque witness. -/

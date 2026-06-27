@@ -122,6 +122,38 @@ theorem
       hSelected hOuter hInner hCross)
     hInterior C0 hC0
 
+/-- Projected same-embedding theorem-4.9 endpoint from the repaired finite boundary split carried
+directly by the source's annulus boundary data. -/
+theorem
+    theorem49BoundaryRootNonemptyProjectedSynthesis_of_closedWalkAnnulusBoundarySource_and_canonicalWitnessChoice_and_sourceBoundaryDataInducedCrossComponentChordFree_direct
+    {G : SimpleGraph V}
+    [Fintype G.edgeSet] [FiniteDimensional F2 (G.edgeSet → Color)]
+    {emb : PlaneEmbeddingWithBoundary G}
+    (source : PlanarBoundaryClosedWalkAnnulusBoundarySource emb)
+    (hchoice :
+      Nonempty
+        (PlanarBoundaryCanonicalWitnessChoice
+          source.toPlanarBoundaryAnnulusBoundaryData))
+    (hOuter :
+      BoundaryEdgeSetInducedSubgraph
+        source.toPlanarBoundaryAnnulusBoundaryData.outerAmbientBoundary)
+    (hInner :
+      BoundaryEdgeSetInducedSubgraph
+        source.toPlanarBoundaryAnnulusBoundaryData.innerAmbientBoundary)
+    (hCross :
+      BoundaryEdgeSetCrossComponentChordFree
+        source.toPlanarBoundaryAnnulusBoundaryData.outerAmbientBoundary
+        source.toPlanarBoundaryAnnulusBoundaryData.innerAmbientBoundary)
+    (hInterior : (interiorEdgeSupport emb.faceBoundary emb.faces).Nonempty)
+    (C0 : G.EdgeColoring Color) (hC0 : IsTaitEdgeColoring G C0) :
+    Theorem49BoundaryRootNonemptyProjectedSynthesis emb C0 :=
+  theorem49BoundaryRootNonemptyProjectedSynthesis_of_closedWalkAnnulusBoundarySource_and_canonicalWitnessChoice_and_interiorEdgesNotSelectedBoundaryChords_direct
+    source hchoice
+    (source.toPlanarBoundaryAnnulusBoundaryData
+      |>.interiorEdgesNotSelectedBoundaryChords_of_inducedBoundaryComponents_of_crossComponentChordFree
+        hOuter hInner hCross)
+    hInterior C0 hC0
+
 /-- Graph-level projected non-vacuous theorem-4.9 endpoint from an honest closed-walk source,
 canonical witness choice, and the finite no-chord carrier condition. -/
 theorem
