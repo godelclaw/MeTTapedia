@@ -69,6 +69,34 @@ theorem forall_mem_foldl_insert_of_forall_mem_seed_and_forall_mem_foldl_insert
       rw [foldl_insert_eq_union_toFinset processed trace]
       exact Finset.mem_union.2 (Or.inr heTrace))
 
+/--
+Terminal trace coverage from finite control.  If the trace folded into the seed controls a
+function, and an auxiliary processed state is already included in that seed, then any nonzero
+function vanishing on the seed must be nonzero on some trace entry.
+-/
+theorem exists_mem_trace_nonzero_of_terminalControl_of_seed_vanishes_of_processed_subset
+    {α β : Type*} [DecidableEq α] [Zero β] {seed processed : Finset α}
+    (trace : List α) (z : α → β)
+    (hprocessedSubset : processed ⊆ seed)
+    (hzNonzero : z ≠ 0)
+    (hseed : ∀ e ∈ seed, z e = 0)
+    (hterminalControl :
+      (∀ e ∈ trace.foldl (fun acc f => insert f acc) seed, z e = 0) → z = 0) :
+    ∃ e : α, e ∈ trace ∧ z e ≠ 0 := by
+  by_contra hnoTraceHit
+  have hvanishProcessedTrace :
+      ∀ e ∈ trace.foldl (fun acc f => insert f acc) processed, z e = 0 := by
+    intro e he
+    rw [foldl_insert_eq_union_toFinset processed trace] at he
+    rcases Finset.mem_union.1 he with heProcessed | heTrace
+    · exact hseed e (hprocessedSubset heProcessed)
+    · by_contra hze
+      exact hnoTraceHit ⟨e, by simpa using heTrace, hze⟩
+  exact hzNonzero
+    (hterminalControl
+      (forall_mem_foldl_insert_of_forall_mem_seed_and_forall_mem_foldl_insert
+        trace hseed hvanishProcessedTrace))
+
 /-- Canonical finite trace of the dynamic residual difference `control \ emitted`. -/
 noncomputable def dynamicResidualControlEdgeTrace
     {α : Type*} [DecidableEq α] (control emitted : Finset α) : List α :=

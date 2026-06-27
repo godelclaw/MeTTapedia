@@ -15375,23 +15375,19 @@ theorem sharedInteriorPair_boundaryZero_exists_classifierRemainingControlEdgeTra
     ∃ e : sharedInteriorPairGraph.edgeSet,
       e ∈ classifier.remainingControlEdgeTrace sharedInteriorPairInteriorControlEdges ∧
         z e ≠ 0 := by
-  by_contra hnoTraceHit
-  have hvanishProcessedTrace :
-      ∀ e ∈
-        (classifier.remainingControlEdgeTrace sharedInteriorPairInteriorControlEdges).foldl
-          (fun acc f => insert f acc) processed, z e = 0 := by
-    intro e he
-    rw [foldl_insert_eq_union_toFinset processed
-      (classifier.remainingControlEdgeTrace sharedInteriorPairInteriorControlEdges)] at he
-    rcases Finset.mem_union.1 he with heProcessed | heTrace
-    · exact hvanishForced e
-        ((classifier.emittedFinset_spec e).1 (hprocessedSubset heProcessed))
-    · by_contra hze
-      exact hnoTraceHit ⟨e, by simpa using heTrace, hze⟩
-  exact hzNonzero
-    (sharedInteriorPair_boundaryZero_eq_zero_of_forcedEdges_vanish_and_classifierRemainingControlEdgeTrace_processedFold_vanish
-      p0Inside p4Inside side classifier processed hzBoundary hvanishForced
-      hvanishProcessedTrace)
+  exact
+    exists_mem_trace_nonzero_of_terminalControl_of_seed_vanishes_of_processed_subset
+      (classifier.remainingControlEdgeTrace sharedInteriorPairInteriorControlEdges) z
+      hprocessedSubset hzNonzero
+      (by
+        intro e heEmitted
+        exact hvanishForced e ((classifier.emittedFinset_spec e).1 heEmitted))
+      (by
+        intro hterminalVanish
+        exact
+          sharedInteriorPair_boundaryZero_eq_zero_of_forcedEdges_vanish_and_classifierRemainingControlEdgeTrace_processedFold_vanish
+            p0Inside p4Inside side classifier classifier.emittedFinset hzBoundary
+            hvanishForced hterminalVanish)
 
 /--
 Wheel focus-shell terminal no-evader transport.  If a selected-boundary-zero chain vanishes on all
@@ -15479,23 +15475,19 @@ theorem wheelWithInnerTriangle_boundaryZero_exists_classifierRemainingControlEdg
     ∃ e : wheelWithInnerTriangleGraph.edgeSet,
       e ∈ classifier.remainingControlEdgeTrace wheelWithInnerTriangleInteriorControlEdges ∧
         z e ≠ 0 := by
-  by_contra hnoTraceHit
-  have hvanishProcessedTrace :
-      ∀ e ∈
-        (classifier.remainingControlEdgeTrace wheelWithInnerTriangleInteriorControlEdges).foldl
-          (fun acc f => insert f acc) processed, z e = 0 := by
-    intro e he
-    rw [foldl_insert_eq_union_toFinset processed
-      (classifier.remainingControlEdgeTrace wheelWithInnerTriangleInteriorControlEdges)] at he
-    rcases Finset.mem_union.1 he with heProcessed | heTrace
-    · exact hvanishForced e
-        ((classifier.emittedFinset_spec e).1 (hprocessedSubset heProcessed))
-    · by_contra hze
-      exact hnoTraceHit ⟨e, by simpa using heTrace, hze⟩
-  exact hzNonzero
-    (wheelWithInnerTriangle_boundaryZero_eq_zero_of_forcedEdges_vanish_and_classifierRemainingControlEdgeTrace_processedFold_vanish
-      p0Inside p4Inside side classifier processed hzBoundary hvanishForced
-      hvanishProcessedTrace)
+  exact
+    exists_mem_trace_nonzero_of_terminalControl_of_seed_vanishes_of_processed_subset
+      (classifier.remainingControlEdgeTrace wheelWithInnerTriangleInteriorControlEdges) z
+      hprocessedSubset hzNonzero
+      (by
+        intro e heEmitted
+        exact hvanishForced e ((classifier.emittedFinset_spec e).1 heEmitted))
+      (by
+        intro hterminalVanish
+        exact
+          wheelWithInnerTriangle_boundaryZero_eq_zero_of_forcedEdges_vanish_and_classifierRemainingControlEdgeTrace_processedFold_vanish
+            p0Inside p4Inside side classifier classifier.emittedFinset hzBoundary
+            hvanishForced hterminalVanish)
 
 /--
 Every wheel-shell edge left in the classifier residual trace is one of the lab-certified spoke
