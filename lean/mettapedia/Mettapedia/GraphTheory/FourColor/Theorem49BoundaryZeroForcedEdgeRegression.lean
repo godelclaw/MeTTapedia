@@ -19361,6 +19361,146 @@ theorem wheelWithInnerTriangle_CAP5_theorem49BoundaryRootSynthesis_or_forcedEdge
         hpair⟩
 
 /--
+Shared focus-shell detector verdict from concrete processed-edge evidence.  If every processed
+shared-control edge is already emitted by the immutable classifier, the processed-control zero
+invariant required by the residual detector follows automatically.
+-/
+theorem sharedInteriorPair_CAP5_theorem49BoundaryRootSynthesis_or_forcedEdgeIndicatorPathXorDetectorPayload_and_extensionControlTraceEdge_boundaryZeroChain_uniqueCertificateFamilyPairing_ne_zero_and_residualProgress_of_processed_subset_emittedFinset_uniqueCertificates_boundaryTrimmed
+    {boundaryEdge : Fin 5 → sharedInteriorPairGraph.edgeSet} {n : Nat}
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    [FiniteDimensional F2 (sharedInteriorPairGraph.edgeSet → Color)]
+    (C₀ : sharedInteriorPairGraph.EdgeColoring Color)
+    (hsubset :
+      sharedInteriorPairProjectedGeneratorCertificateColorings ⊆
+        sharedInteriorPairGraph.EdgeKempeClosure C₀)
+    (p0Inside p4Inside : Bool) (h : data.IsExceptional)
+    (side : Fin 8 → Prop) (hcyclic : CyclicallyFiveEdgeConnected sharedInteriorPairGraph)
+    (hportal_crosses :
+      ∀ edgeCandidate : CAP5ExceptionalAnnulusBoundaryEdgeSupportCandidate boundaryEdge,
+        data.RealizesExceptionalBoundarySupportOrientation
+            edgeCandidate.portalCandidate.orientation →
+        edgeCandidate.portalCandidate.sideCase =
+            CAP5ExceptionalAnnulusSideCase.ofPortalSides p0Inside p4Inside →
+        ∀ i : Fin 5, i ∈ edgeCandidate.portalCandidate.portalSet →
+          EdgeCrossesVertexSide sharedInteriorPairGraph side (boundaryEdge i))
+    (hcycles : HasCycleOnSide sharedInteriorPairGraph side ∧
+      HasCycleOnSide sharedInteriorPairGraph (fun v => ¬ side v))
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (processed : Finset sharedInteriorPairGraph.edgeSet)
+    (hprocessedSubset : processed ⊆ classifier.emittedFinset) :
+    Theorem49BoundaryRootSynthesis sharedInteriorPairEmbedding C₀ ∨
+      data.ForcedEdgeIndicatorPathXorDetectorPayload p0Inside p4Inside side ∧
+        ∃ z : sharedInteriorPairGraph.edgeSet → Color,
+          z ∈ planarBoundaryZeroSubmodule sharedInteriorPairEmbedding ∧
+            z ≠ 0 ∧
+              (∀ e : sharedInteriorPairGraph.edgeSet,
+                data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e →
+                  z e = 0) ∧
+                ∃ e : sharedInteriorPairGraph.edgeSet,
+                  (e ∈ classifier.crossingExtensionFinset sharedInteriorPairInteriorControlEdges ∨
+                    e ∈ classifier.noncrossingExtensionFinset
+                      sharedInteriorPairInteriorControlEdges) ∧
+                    e ∈ classifier.remainingControlEdges sharedInteriorPairInteriorControlEdges ∧
+                      e ∈ classifier.remainingControlEdgeTrace
+                        sharedInteriorPairInteriorControlEdges ∧
+                        e ∈ classifier.residualRemainingControlEdges
+                          sharedInteriorPairInteriorControlEdges processed ∧
+                          ¬ data.EnumeratedExceptionalAnnulusForcedEdge
+                            p0Inside p4Inside side e ∧
+                            z e ≠ 0 ∧
+                              (classifier.residualRemainingControlEdges
+                                  sharedInteriorPairInteriorControlEdges
+                                  (insert e processed)).card <
+                                (classifier.residualRemainingControlEdges
+                                  sharedInteriorPairInteriorControlEdges processed).card ∧
+                              ((classifier.remainingControlEdges
+                                  sharedInteriorPairInteriorControlEdges).erase e).card <
+                                (classifier.remainingControlEdges
+                                  sharedInteriorPairInteriorControlEdges).card ∧
+                                ∃ i : ({e : sharedInteriorPairGraph.edgeSet //
+                                    e ∈ sharedInteriorPairInteriorControlEdges} × Bool),
+                                  chainDotBilinForm sharedInteriorPairGraph.edgeSet
+                                    (sharedInteriorPairUniqueCertificateRedBlueFamily i :
+                                      sharedInteriorPairGraph.edgeSet → Color) z ≠ 0 :=
+  sharedInteriorPair_CAP5_theorem49BoundaryRootSynthesis_or_forcedEdgeIndicatorPathXorDetectorPayload_and_extensionControlTraceEdge_boundaryZeroChain_uniqueCertificateFamilyPairing_ne_zero_and_residualProgress_of_processedControl_uniqueCertificates_boundaryTrimmed
+    C₀ hsubset p0Inside p4Inside h side hcyclic hportal_crosses hcycles classifier
+    processed
+    (data.processedControl_of_subset_emittedFinset
+      (emb := sharedInteriorPairEmbedding) classifier hprocessedSubset)
+
+/--
+Wheel focus-shell detector verdict from concrete processed-edge evidence.  If every processed spoke
+is already emitted by the immutable classifier, the processed-control zero invariant required by
+the residual detector follows automatically.
+-/
+theorem wheelWithInnerTriangle_CAP5_theorem49BoundaryRootSynthesis_or_forcedEdgeIndicatorPathXorDetectorPayload_and_extensionControlTraceEdge_boundaryZeroChain_uniqueCertificateFamilyPairing_ne_zero_and_residualProgress_of_processed_subset_emittedFinset_uniqueCertificates_boundaryTrimmed
+    {boundaryEdge : Fin 5 → wheelWithInnerTriangleGraph.edgeSet} {n : Nat}
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    [FiniteDimensional F2 (wheelWithInnerTriangleGraph.edgeSet → Color)]
+    (C₀ : wheelWithInnerTriangleGraph.EdgeColoring Color)
+    (hsubset :
+      wheelWithInnerTriangleProjectedGeneratorCertificateColorings ⊆
+        wheelWithInnerTriangleGraph.EdgeKempeClosure C₀)
+    (p0Inside p4Inside : Bool) (h : data.IsExceptional)
+    (side : Fin 7 → Prop) (hcyclic : CyclicallyFiveEdgeConnected wheelWithInnerTriangleGraph)
+    (hportal_crosses :
+      ∀ edgeCandidate : CAP5ExceptionalAnnulusBoundaryEdgeSupportCandidate boundaryEdge,
+        data.RealizesExceptionalBoundarySupportOrientation
+            edgeCandidate.portalCandidate.orientation →
+        edgeCandidate.portalCandidate.sideCase =
+            CAP5ExceptionalAnnulusSideCase.ofPortalSides p0Inside p4Inside →
+        ∀ i : Fin 5, i ∈ edgeCandidate.portalCandidate.portalSet →
+          EdgeCrossesVertexSide wheelWithInnerTriangleGraph side (boundaryEdge i))
+    (hcycles : HasCycleOnSide wheelWithInnerTriangleGraph side ∧
+      HasCycleOnSide wheelWithInnerTriangleGraph (fun v => ¬ side v))
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (processed : Finset wheelWithInnerTriangleGraph.edgeSet)
+    (hprocessedSubset : processed ⊆ classifier.emittedFinset) :
+    Theorem49BoundaryRootSynthesis wheelWithInnerTriangleEmbedding C₀ ∨
+      data.ForcedEdgeIndicatorPathXorDetectorPayload p0Inside p4Inside side ∧
+        ∃ z : wheelWithInnerTriangleGraph.edgeSet → Color,
+          z ∈ planarBoundaryZeroSubmodule wheelWithInnerTriangleEmbedding ∧
+            z ≠ 0 ∧
+              (∀ e : wheelWithInnerTriangleGraph.edgeSet,
+                data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e →
+                  z e = 0) ∧
+                ∃ e : wheelWithInnerTriangleGraph.edgeSet,
+                  (e ∈ classifier.crossingExtensionFinset
+                      wheelWithInnerTriangleInteriorControlEdges ∨
+                    e ∈ classifier.noncrossingExtensionFinset
+                      wheelWithInnerTriangleInteriorControlEdges) ∧
+                    e ∈ classifier.remainingControlEdges
+                      wheelWithInnerTriangleInteriorControlEdges ∧
+                      e ∈ classifier.remainingControlEdgeTrace
+                        wheelWithInnerTriangleInteriorControlEdges ∧
+                        e ∈ classifier.residualRemainingControlEdges
+                          wheelWithInnerTriangleInteriorControlEdges processed ∧
+                          ¬ data.EnumeratedExceptionalAnnulusForcedEdge
+                            p0Inside p4Inside side e ∧
+                            z e ≠ 0 ∧
+                              (classifier.residualRemainingControlEdges
+                                  wheelWithInnerTriangleInteriorControlEdges
+                                  (insert e processed)).card <
+                                (classifier.residualRemainingControlEdges
+                                  wheelWithInnerTriangleInteriorControlEdges processed).card ∧
+                              ((classifier.remainingControlEdges
+                                  wheelWithInnerTriangleInteriorControlEdges).erase e).card <
+                                (classifier.remainingControlEdges
+                                  wheelWithInnerTriangleInteriorControlEdges).card ∧
+                                ∃ i : ({e : wheelWithInnerTriangleGraph.edgeSet //
+                                    e ∈ wheelWithInnerTriangleInteriorControlEdges} × Bool),
+                                  chainDotBilinForm wheelWithInnerTriangleGraph.edgeSet
+                                    (wheelWithInnerTriangleUniqueCertificateRedBlueFamily i :
+                                      wheelWithInnerTriangleGraph.edgeSet → Color) z ≠ 0 :=
+  wheelWithInnerTriangle_CAP5_theorem49BoundaryRootSynthesis_or_forcedEdgeIndicatorPathXorDetectorPayload_and_extensionControlTraceEdge_boundaryZeroChain_uniqueCertificateFamilyPairing_ne_zero_and_residualProgress_of_processedControl_uniqueCertificates_boundaryTrimmed
+    C₀ hsubset p0Inside p4Inside h side hcyclic hportal_crosses hcycles classifier
+    processed
+    (data.processedControl_of_subset_emittedFinset
+      (emb := wheelWithInnerTriangleEmbedding) classifier hprocessedSubset)
+
+/--
 Boundary-trimmed progress form for the shared focus shell.  Once the unique certificate family
 is available, failed synthesis cannot leave the CAP5 worklist at a fixed point: a concrete
 shared-interior control edge remains, and erasing it strictly decreases the remaining-control
