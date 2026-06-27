@@ -159,6 +159,39 @@ theorem selectedBoundaryInducedSubgraph_of_selectedBoundarySupport_eq_union_of_i
     boundaryEdgeSetInducedSubgraph_union_of_induced_of_crossComponentChordFree
       hLeft hRight hCross
 
+/-- Annulus-boundary-data form of the repaired selected-boundary inducedness theorem.  The
+annulus data already carries the equality between the selected boundary support and the outer/inner
+boundary split, so downstream routes only need the two component inducedness proofs and the
+cross-component chord-free repair. -/
+theorem
+    PlanarBoundaryAnnulusBoundaryData.selectedBoundaryInducedSubgraph_of_inducedBoundaryComponents_of_crossComponentChordFree
+    {G : SimpleGraph V} {emb : PlaneEmbeddingWithBoundary G}
+    (data : PlanarBoundaryAnnulusBoundaryData emb)
+    (hOuter : BoundaryEdgeSetInducedSubgraph data.outerAmbientBoundary)
+    (hInner : BoundaryEdgeSetInducedSubgraph data.innerAmbientBoundary)
+    (hCross :
+      BoundaryEdgeSetCrossComponentChordFree
+        data.outerAmbientBoundary data.innerAmbientBoundary) :
+    SelectedBoundaryInducedSubgraph emb :=
+  selectedBoundaryInducedSubgraph_of_selectedBoundarySupport_eq_union_of_induced_of_crossComponentChordFree
+    data.ambientBoundary_eq hOuter hInner hCross
+
+/-- Graph-level annulus-data version of the finite boundary repair. -/
+theorem exists_selectedBoundaryInducedSubgraph_of_exists_annulusBoundaryData_inducedBoundaryComponents_of_crossComponentChordFree
+    {G : SimpleGraph V}
+    (hG : ∃ emb : PlaneEmbeddingWithBoundary G,
+      ∃ data : PlanarBoundaryAnnulusBoundaryData emb,
+        BoundaryEdgeSetInducedSubgraph data.outerAmbientBoundary ∧
+          BoundaryEdgeSetInducedSubgraph data.innerAmbientBoundary ∧
+            BoundaryEdgeSetCrossComponentChordFree
+              data.outerAmbientBoundary data.innerAmbientBoundary) :
+    ∃ emb : PlaneEmbeddingWithBoundary G, SelectedBoundaryInducedSubgraph emb := by
+  rcases hG with ⟨emb, data, hOuter, hInner, hCross⟩
+  exact
+    ⟨emb,
+      data.selectedBoundaryInducedSubgraph_of_inducedBoundaryComponents_of_crossComponentChordFree
+        hOuter hInner hCross⟩
+
 /-- A finite selected-boundary edge set has a cyclic endpoint run when it can be listed without
 repetition so that consecutive boundary edges, including the final-to-initial pair, share a
 primal endpoint.  This is a lightweight finite boundary-cycle predicate for the current embedding

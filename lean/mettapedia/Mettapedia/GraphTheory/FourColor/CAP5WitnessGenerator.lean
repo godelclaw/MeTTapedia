@@ -4,6 +4,161 @@ namespace Mettapedia.GraphTheory.FourColor
 
 variable {V : Type*} [DecidableEq V]
 
+/-- Inserting a fresh emitted/control edge erases it from the finite residual difference. -/
+theorem finset_sdiff_insert_eq_erase_sdiff
+    {α : Type*} [DecidableEq α] (control emitted : Finset α) (e : α) :
+    control \ insert e emitted = (control \ emitted).erase e := by
+  ext f
+  by_cases hfe : f = e
+  · subst f
+    simp
+  · simp [hfe]
+
+/--
+If an edge is in the control worklist and not yet emitted, inserting it into the emitted set
+strictly decreases the finite residual difference `control \ emitted`.
+-/
+theorem finset_card_sdiff_insert_lt_of_mem_of_not_mem
+    {α : Type*} [DecidableEq α] {control emitted : Finset α} {e : α}
+    (heControl : e ∈ control) (heNotEmitted : e ∉ emitted) :
+    (control \ insert e emitted).card < (control \ emitted).card := by
+  rw [finset_sdiff_insert_eq_erase_sdiff control emitted e]
+  exact Finset.card_erase_lt_of_mem (by simpa using ⟨heControl, heNotEmitted⟩)
+
+/-- Folding edge insertions into a finite emitted set is finite-set union with the trace support. -/
+theorem foldl_insert_eq_union_toFinset
+    {α : Type*} [DecidableEq α] (seed : Finset α) (trace : List α) :
+    trace.foldl (fun acc e => insert e acc) seed = seed ∪ trace.toFinset := by
+  induction trace generalizing seed with
+  | nil => simp
+  | cons e rest ih =>
+      rw [List.foldl_cons, ih]
+      ext x
+      simp
+
+/-- Folding the same insertion trace preserves finite-set inclusion of the initial state. -/
+theorem foldl_insert_subset_foldl_insert_of_subset
+    {α : Type*} [DecidableEq α] {seed target : Finset α} (trace : List α)
+    (hsubset : seed ⊆ target) :
+    trace.foldl (fun acc e => insert e acc) seed ⊆
+      trace.foldl (fun acc e => insert e acc) target := by
+  rw [foldl_insert_eq_union_toFinset seed trace,
+    foldl_insert_eq_union_toFinset target trace]
+  intro e he
+  rcases Finset.mem_union.1 he with heSeed | heTrace
+  · exact Finset.mem_union.2 (Or.inl (hsubset heSeed))
+  · exact Finset.mem_union.2 (Or.inr heTrace)
+
+/--
+Predicate transport for two runs of the same finite insertion trace.  To prove a predicate on the
+trace folded into `target`, it is enough to prove it on the target seed and on the same trace
+folded into any auxiliary processed state.
+-/
+theorem forall_mem_foldl_insert_of_forall_mem_seed_and_forall_mem_foldl_insert
+    {α : Type*} [DecidableEq α] {target processed : Finset α} (trace : List α)
+    {P : α → Prop}
+    (htarget : ∀ e ∈ target, P e)
+    (hprocessedTrace :
+      ∀ e ∈ trace.foldl (fun acc f => insert f acc) processed, P e) :
+    ∀ e ∈ trace.foldl (fun acc f => insert f acc) target, P e := by
+  intro e he
+  rw [foldl_insert_eq_union_toFinset target trace] at he
+  rcases Finset.mem_union.1 he with heTarget | heTrace
+  · exact htarget e heTarget
+  · exact hprocessedTrace e (by
+      rw [foldl_insert_eq_union_toFinset processed trace]
+      exact Finset.mem_union.2 (Or.inr heTrace))
+
+/--
+Terminal trace coverage from finite control.  If the trace folded into the seed controls a
+function, and an auxiliary processed state is already included in that seed, then any nonzero
+function vanishing on the seed must be nonzero on some trace entry.
+-/
+theorem exists_mem_trace_nonzero_of_terminalControl_of_seed_vanishes_of_processed_subset
+    {α β : Type*} [DecidableEq α] [Zero β] {seed processed : Finset α}
+    (trace : List α) (z : α → β)
+    (hprocessedSubset : processed ⊆ seed)
+    (hzNonzero : z ≠ 0)
+    (hseed : ∀ e ∈ seed, z e = 0)
+    (hterminalControl :
+      (∀ e ∈ trace.foldl (fun acc f => insert f acc) seed, z e = 0) → z = 0) :
+    ∃ e : α, e ∈ trace ∧ z e ≠ 0 := by
+  by_contra hnoTraceHit
+  have hvanishProcessedTrace :
+      ∀ e ∈ trace.foldl (fun acc f => insert f acc) processed, z e = 0 := by
+    intro e he
+    rw [foldl_insert_eq_union_toFinset processed trace] at he
+    rcases Finset.mem_union.1 he with heProcessed | heTrace
+    · exact hseed e (hprocessedSubset heProcessed)
+    · by_contra hze
+      exact hnoTraceHit ⟨e, by simpa using heTrace, hze⟩
+  exact hzNonzero
+    (hterminalControl
+      (forall_mem_foldl_insert_of_forall_mem_seed_and_forall_mem_foldl_insert
+        trace hseed hvanishProcessedTrace))
+
+/-- Canonical finite trace of the dynamic residual difference `control \ emitted`. -/
+noncomputable def dynamicResidualControlEdgeTrace
+    {α : Type*} [DecidableEq α] (control emitted : Finset α) : List α :=
+  (control \ emitted).toList
+
+/-- Membership in the dynamic residual trace is exactly control membership plus freshness. -/
+theorem mem_dynamicResidualControlEdgeTrace_iff
+    {α : Type*} [DecidableEq α] (control emitted : Finset α) (e : α) :
+    e ∈ dynamicResidualControlEdgeTrace control emitted ↔ e ∈ control ∧ e ∉ emitted := by
+  simp [dynamicResidualControlEdgeTrace]
+
+/-- The dynamic residual trace has no duplicate edge insertions. -/
+theorem dynamicResidualControlEdgeTrace_nodup
+    {α : Type*} [DecidableEq α] (control emitted : Finset α) :
+    (dynamicResidualControlEdgeTrace control emitted).Nodup :=
+  Finset.nodup_toList (control \ emitted)
+
+/-- The dynamic residual trace length is the current residual-cardinality measure. -/
+theorem length_dynamicResidualControlEdgeTrace_eq_card_sdiff
+    {α : Type*} [DecidableEq α] (control emitted : Finset α) :
+    (dynamicResidualControlEdgeTrace control emitted).length = (control \ emitted).card :=
+  Finset.length_toList (control \ emitted)
+
+/-- The trace support is the dynamic residual difference. -/
+theorem dynamicResidualControlEdgeTrace_toFinset_eq
+    {α : Type*} [DecidableEq α] (control emitted : Finset α) :
+    (dynamicResidualControlEdgeTrace control emitted).toFinset = control \ emitted := by
+  simp [dynamicResidualControlEdgeTrace]
+
+/-- Folding the dynamic residual trace into `emitted` adds exactly the residual difference. -/
+theorem foldl_insert_dynamicResidualControlEdgeTrace_eq_union_sdiff
+    {α : Type*} [DecidableEq α] (control emitted : Finset α) :
+    (dynamicResidualControlEdgeTrace control emitted).foldl
+        (fun acc e => insert e acc) emitted =
+      emitted ∪ (control \ emitted) := by
+  rw [foldl_insert_eq_union_toFinset, dynamicResidualControlEdgeTrace_toFinset_eq]
+
+/-- After folding the dynamic residual trace, every control edge is emitted. -/
+theorem control_subset_foldl_insert_dynamicResidualControlEdgeTrace
+    {α : Type*} [DecidableEq α] (control emitted : Finset α) :
+    control ⊆ (dynamicResidualControlEdgeTrace control emitted).foldl
+      (fun acc e => insert e acc) emitted := by
+  intro e heControl
+  rw [foldl_insert_dynamicResidualControlEdgeTrace_eq_union_sdiff]
+  by_cases heEmitted : e ∈ emitted
+  · exact Finset.mem_union.2 (Or.inl heEmitted)
+  · exact Finset.mem_union.2 (Or.inr (Finset.mem_sdiff.2 ⟨heControl, heEmitted⟩))
+
+/-- Folding the full dynamic residual trace exhausts the residual control difference. -/
+theorem dynamicResidualControlEdgeTrace_foldl_insert_sdiff_eq_empty
+    {α : Type*} [DecidableEq α] (control emitted : Finset α) :
+    control \ ((dynamicResidualControlEdgeTrace control emitted).foldl
+      (fun acc e => insert e acc) emitted) = ∅ := by
+  ext e
+  constructor
+  · intro he
+    rcases Finset.mem_sdiff.1 he with ⟨heControl, heNotFinal⟩
+    exact False.elim (heNotFinal
+      (control_subset_foldl_insert_dynamicResidualControlEdgeTrace control emitted heControl))
+  · intro he
+    simp at he
+
 /-- Public-facing status names for a finite CAP5 separator-generator run.
 The `partial` status records missing checker evidence, not a third mathematical
 case: once portal crossings and two side cycles are certified, the generic graph
@@ -1886,6 +2041,37 @@ theorem missingCheckerEvidenceLatents_eq_nil_iff_no_missing_checker_ingredient
             hnil))
 
 /--
+Concrete primitive-frontier closure for a finite CAP5 checker run.  If every enumerated latent
+has portal-crossing evidence, and the ambient selected side has cycles on both sides, then none
+of the primitive missing-checker bins can be inhabited.
+-/
+theorem no_missing_checker_ingredient_of_allPortalCrosses_of_sideCycles
+    (boundaryEdge : Fin 5 → G.edgeSet) (side : V → Prop)
+    (hportal :
+      ∀ latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge,
+        (latentNode boundaryEdge side latent).PortalCrosses)
+    (hcycles : HasCycleOnSide G side ∧ HasCycleOnSide G (fun v => ¬ side v)) :
+    ¬ ((∃ latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge,
+      latent ∈ CAP5ExceptionalAnnulusGeneratorLatent.all boundaryEdge ∧
+        (latentNode boundaryEdge side latent).MissingPortalCrossingEvidence) ∨
+      (∃ latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge,
+        latent ∈ CAP5ExceptionalAnnulusGeneratorLatent.all boundaryEdge ∧
+          (latentNode boundaryEdge side latent).MissingSelectedSideCycleEvidence) ∨
+        (∃ latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge,
+          latent ∈ CAP5ExceptionalAnnulusGeneratorLatent.all boundaryEdge ∧
+            (latentNode boundaryEdge side latent).MissingComplementarySideCycleEvidence)) := by
+  rintro (hmissingPortal | hmissingCycle)
+  · rcases hmissingPortal with ⟨latent, _hmem, hmissing⟩
+    exact hmissing (hportal latent)
+  · rcases hmissingCycle with hmissingSelected | hmissingComplement
+    · rcases hmissingSelected with ⟨latent, _hmem, hmissing⟩
+      exact hmissing (by
+        simpa [latentNode] using hcycles.1)
+    · rcases hmissingComplement with ⟨latent, _hmem, hmissing⟩
+      exact hmissing (by
+        simpa [latentNode] using hcycles.2)
+
+/--
 In a cyclically five-edge-connected graph, the report's only obstruction to putting every
 enumerated latent in the forced-counterexample bin is genuinely partial checker evidence.  Thus a
 finite CAP5 run has a sharp diagnostic boundary: all sixteen latents are forced exactly when no
@@ -2893,6 +3079,17 @@ theorem enumeratedExceptionalAnnulusForcedEdge_to_exceptionalAnnulusOneEdgeCount
       horientation (by simpa [node] using hforced)
   simpa [node, hp0, hp4] using hedge
 
+/-- Every edge emitted by the enumerated finite generator lies in the broader normal-form
+outside-crossing predicate consumed by the algebraic CAP5 lane. -/
+theorem enumeratedExceptionalAnnulusForcedEdge_to_exceptionalAnnulusCrossingOutsideEdge
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    {p0Inside p4Inside : Bool} {side : V → Prop} {e : G.edgeSet}
+    (h :
+      data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e) :
+    data.ExceptionalAnnulusCrossingOutsideEdge p0Inside p4Inside side e :=
+  (data.exceptionalAnnulusOneEdgeCounterexampleEdge_iff_crossingOutsideEdge).1
+    (data.enumeratedExceptionalAnnulusForcedEdge_to_exceptionalAnnulusOneEdgeCounterexampleEdge h)
+
 /-- A forced latent emitted by a certified finite report gives an enumerated forced edge once the
 component-cover data realizes that latent's orientation.  This is the report-output bridge into
 the algebraic checker predicate. -/
@@ -3424,6 +3621,105 @@ theorem theorem49BoundaryRootSynthesis_of_enumeratedExceptionalAnnulusForcedEdge
     (data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side)
     hnonzero hwitnessRed hwitnessBlue
 
+/-- Contrapositive diagnostic for the direct CAP5 forced-edge route.  If the enumerated forced
+edges cover every nonzero selected-boundary-zero chain but Theorem 4.9 synthesis still fails,
+then the missing ingredient is explicit: some enumerated forced edge lacks a red or blue
+single-coordinate projected-generator witness. -/
+theorem exists_forcedEdge_missing_red_or_blue_singleCoordinateWitness_of_forcedEdgeCoverage_of_not_theorem49BoundaryRootSynthesis
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    [Fintype G.edgeSet] [FiniteDimensional F2 (G.edgeSet → Color)]
+    (emb : PlaneEmbeddingWithBoundary G) (C₀ : G.EdgeColoring Color)
+    (colorings : Set (G.EdgeColoring Color))
+    (hsubset : colorings ⊆ G.EdgeKempeClosure C₀)
+    {κ : Type*}
+    (family : κ → projectedColoringGeneratorSubspace emb colorings)
+    (p0Inside p4Inside : Bool) (side : V → Prop)
+    (hcoverage :
+      ∀ ⦃z : G.edgeSet → Color⦄,
+        z ∈ planarBoundaryZeroSubmodule emb →
+        z ≠ 0 →
+          ∃ e : G.edgeSet,
+            data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e ∧
+              z e ≠ 0)
+    (hnotSynthesis : ¬ Theorem49BoundaryRootSynthesis emb C₀) :
+    (∃ e : G.edgeSet,
+      data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e ∧
+        ¬ ∃ i : κ,
+          ((family i : projectedColoringGeneratorSubspace emb colorings) :
+              G.edgeSet → Color) =
+            Pi.single e red) ∨
+      ∃ e : G.edgeSet,
+        data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e ∧
+          ¬ ∃ i : κ,
+            ((family i : projectedColoringGeneratorSubspace emb colorings) :
+                G.edgeSet → Color) =
+              Pi.single e blue := by
+  classical
+  by_contra hnoGap
+  have hred :
+      ∀ e : G.edgeSet,
+        data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e →
+          ∃ i : κ,
+            ((family i : projectedColoringGeneratorSubspace emb colorings) :
+                G.edgeSet → Color) =
+              Pi.single e red := by
+    intro e hedge
+    by_contra hmissing
+    exact hnoGap (Or.inl ⟨e, hedge, hmissing⟩)
+  have hblue :
+      ∀ e : G.edgeSet,
+        data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e →
+          ∃ i : κ,
+            ((family i : projectedColoringGeneratorSubspace emb colorings) :
+                G.edgeSet → Color) =
+              Pi.single e blue := by
+    intro e hedge
+    by_contra hmissing
+    exact hnoGap (Or.inr ⟨e, hedge, hmissing⟩)
+  exact hnotSynthesis
+    (data.theorem49BoundaryRootSynthesis_of_enumeratedExceptionalAnnulusForcedEdgeNonzeroWitnesses
+      emb C₀ colorings hsubset family p0Inside p4Inside side hcoverage hred hblue)
+
+/-- Exact CAP5 coverage dichotomy for the direct forced-edge route.  Once the enumerated forced
+edges cover all nonzero selected-boundary-zero chains, either Theorem 4.9 synthesis follows or the
+remaining obstruction is a named forced edge missing a red or blue projected single-coordinate
+witness. -/
+theorem theorem49BoundaryRootSynthesis_or_forcedEdge_missing_red_or_blue_singleCoordinateWitness_of_forcedEdgeCoverage
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    [Fintype G.edgeSet] [FiniteDimensional F2 (G.edgeSet → Color)]
+    (emb : PlaneEmbeddingWithBoundary G) (C₀ : G.EdgeColoring Color)
+    (colorings : Set (G.EdgeColoring Color))
+    (hsubset : colorings ⊆ G.EdgeKempeClosure C₀)
+    {κ : Type*}
+    (family : κ → projectedColoringGeneratorSubspace emb colorings)
+    (p0Inside p4Inside : Bool) (side : V → Prop)
+    (hcoverage :
+      ∀ ⦃z : G.edgeSet → Color⦄,
+        z ∈ planarBoundaryZeroSubmodule emb →
+        z ≠ 0 →
+          ∃ e : G.edgeSet,
+            data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e ∧
+              z e ≠ 0) :
+    Theorem49BoundaryRootSynthesis emb C₀ ∨
+      (∃ e : G.edgeSet,
+        data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e ∧
+          ¬ ∃ i : κ,
+            ((family i : projectedColoringGeneratorSubspace emb colorings) :
+                G.edgeSet → Color) =
+              Pi.single e red) ∨
+        ∃ e : G.edgeSet,
+          data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e ∧
+            ¬ ∃ i : κ,
+              ((family i : projectedColoringGeneratorSubspace emb colorings) :
+                  G.edgeSet → Color) =
+                Pi.single e blue := by
+  classical
+  by_cases hclosed : Theorem49BoundaryRootSynthesis emb C₀
+  · exact Or.inl hclosed
+  · exact Or.inr
+      (data.exists_forcedEdge_missing_red_or_blue_singleCoordinateWitness_of_forcedEdgeCoverage_of_not_theorem49BoundaryRootSynthesis
+        emb C₀ colorings hsubset family p0Inside p4Inside side hcoverage hclosed)
+
 /-- Finite checker certificate for the edges emitted by the exceptional CAP5 generator.  A
 checker can provide a concrete `Finset` of emitted edges; this proposition states that the finite
 list is extensionally equal to the Lean predicate generated by the 16 CAP5 latents. -/
@@ -3503,6 +3799,21 @@ theorem mem_remainingControlEdges_iff
       e ∈ controlEdges ∧ e ∉ classifier.emittedFinset := by
   simp [remainingControlEdges]
 
+/--
+The immutable classifier worklist is the dynamic residual difference between the desired control
+edges and the classifier's current emitted set.
+-/
+theorem remainingControlEdges_eq_sdiff
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    [Fintype G.edgeSet]
+    {p0Inside p4Inside : Bool} {side : V → Prop}
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (controlEdges : Finset G.edgeSet) :
+    classifier.remainingControlEdges controlEdges = controlEdges \ classifier.emittedFinset := by
+  ext e
+  simp [remainingControlEdges]
+
 /-- Erasing any chosen remaining control edge strictly decreases the finite generator worklist. -/
 theorem card_erase_remainingControlEdges_lt_of_mem
     {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
@@ -3515,6 +3826,507 @@ theorem card_erase_remainingControlEdges_lt_of_mem
     ((classifier.remainingControlEdges controlEdges).erase e).card <
       (classifier.remainingControlEdges controlEdges).card :=
   (classifier.remainingControlEdges controlEdges).card_erase_lt_of_mem he
+
+/--
+Explicit residual state for finite CAP5 worklist runs.  The Boolean classifier itself is
+immutable--its emitted set is fixed by `accept_spec`--so iteration is represented by a separate
+finite set of already processed remaining-control edges.
+-/
+def residualRemainingControlEdges
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    [Fintype G.edgeSet]
+    {p0Inside p4Inside : Bool} {side : V → Prop}
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (controlEdges processed : Finset G.edgeSet) :
+    Finset G.edgeSet :=
+  classifier.remainingControlEdges controlEdges \ processed
+
+/-- Membership in the explicit residual CAP5 worklist. -/
+theorem mem_residualRemainingControlEdges_iff
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    [Fintype G.edgeSet]
+    {p0Inside p4Inside : Bool} {side : V → Prop}
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (controlEdges processed : Finset G.edgeSet) (e : G.edgeSet) :
+    e ∈ classifier.residualRemainingControlEdges controlEdges processed ↔
+      e ∈ classifier.remainingControlEdges controlEdges ∧ e ∉ processed := by
+  simp [residualRemainingControlEdges]
+
+/--
+Processing a residual edge is implemented by inserting it into the processed set; this is exactly
+the same residual worklist as erasing that edge from the current residual state.
+-/
+theorem residualRemainingControlEdges_insert_eq_erase
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    [Fintype G.edgeSet]
+    {p0Inside p4Inside : Bool} {side : V → Prop}
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (controlEdges processed : Finset G.edgeSet) (e : G.edgeSet) :
+    classifier.residualRemainingControlEdges controlEdges (insert e processed) =
+      (classifier.residualRemainingControlEdges controlEdges processed).erase e := by
+  ext f
+  by_cases hfe : f = e
+  · subst hfe
+    simp [residualRemainingControlEdges]
+  · simp [residualRemainingControlEdges, hfe]
+
+/-- Processing any residual edge strictly decreases the explicit residual worklist measure. -/
+theorem card_residualRemainingControlEdges_insert_lt_of_mem
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    [Fintype G.edgeSet]
+    {p0Inside p4Inside : Bool} {side : V → Prop}
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (controlEdges processed : Finset G.edgeSet) {e : G.edgeSet}
+    (he : e ∈ classifier.residualRemainingControlEdges controlEdges processed) :
+    (classifier.residualRemainingControlEdges controlEdges (insert e processed)).card <
+      (classifier.residualRemainingControlEdges controlEdges processed).card := by
+  rw [classifier.residualRemainingControlEdges_insert_eq_erase controlEdges processed e]
+  exact Finset.card_erase_lt_of_mem he
+
+/-- A remaining-control edge not yet recorded as processed lies in the explicit residual state. -/
+theorem mem_residualRemainingControlEdges_of_mem_remainingControlEdges_of_not_mem_processed
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    [Fintype G.edgeSet]
+    {p0Inside p4Inside : Bool} {side : V → Prop}
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (controlEdges processed : Finset G.edgeSet) {e : G.edgeSet}
+    (heRemaining : e ∈ classifier.remainingControlEdges controlEdges)
+    (heNotProcessed : e ∉ processed) :
+    e ∈ classifier.residualRemainingControlEdges controlEdges processed :=
+  (classifier.mem_residualRemainingControlEdges_iff controlEdges processed e).2
+    ⟨heRemaining, heNotProcessed⟩
+
+/--
+A remaining-control edge not yet processed gives a strict residual-state decrease when inserted
+into the processed set.
+-/
+theorem card_residualRemainingControlEdges_insert_lt_of_mem_remainingControlEdges_of_not_mem_processed
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    [Fintype G.edgeSet]
+    {p0Inside p4Inside : Bool} {side : V → Prop}
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (controlEdges processed : Finset G.edgeSet) {e : G.edgeSet}
+    (heRemaining : e ∈ classifier.remainingControlEdges controlEdges)
+    (heNotProcessed : e ∉ processed) :
+    (classifier.residualRemainingControlEdges controlEdges (insert e processed)).card <
+      (classifier.residualRemainingControlEdges controlEdges processed).card :=
+  classifier.card_residualRemainingControlEdges_insert_lt_of_mem controlEdges processed
+    (classifier.mem_residualRemainingControlEdges_of_mem_remainingControlEdges_of_not_mem_processed
+      controlEdges processed heRemaining heNotProcessed)
+
+/--
+The residual worklist is exhausted exactly when every original remaining-control edge has been
+recorded as processed.
+-/
+theorem residualRemainingControlEdges_eq_empty_iff_remainingControlEdges_subset_processed
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    [Fintype G.edgeSet]
+    {p0Inside p4Inside : Bool} {side : V → Prop}
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (controlEdges processed : Finset G.edgeSet) :
+    classifier.residualRemainingControlEdges controlEdges processed = ∅ ↔
+      classifier.remainingControlEdges controlEdges ⊆ processed := by
+  constructor
+  · intro h e heRemaining
+    by_contra heNotProcessed
+    have hmem : e ∈ classifier.residualRemainingControlEdges controlEdges processed := by
+      simp [residualRemainingControlEdges, heRemaining, heNotProcessed]
+    rw [h] at hmem
+    simp at hmem
+  · intro hsubset
+    ext e
+    constructor
+    · intro he
+      have he' :
+          e ∈ classifier.remainingControlEdges controlEdges ∧ e ∉ processed := by
+        simpa [residualRemainingControlEdges] using he
+      exact False.elim (he'.2 (hsubset he'.1))
+    · intro he
+      simp at he
+
+/--
+Any finite set already contained in the remaining-control worklist is unchanged by applying
+`remainingControlEdges` again.
+-/
+theorem remainingControlEdges_eq_self_of_subset_remainingControlEdges
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    [Fintype G.edgeSet]
+    {p0Inside p4Inside : Bool} {side : V → Prop}
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (controlEdges residual : Finset G.edgeSet)
+    (hsubset : residual ⊆ classifier.remainingControlEdges controlEdges) :
+    classifier.remainingControlEdges residual = residual := by
+  ext e
+  constructor
+  · intro he
+    exact (classifier.mem_remainingControlEdges_iff residual e).1 he |>.1
+  · intro heResidual
+    exact (classifier.mem_remainingControlEdges_iff residual e).2
+      ⟨heResidual,
+        (classifier.mem_remainingControlEdges_iff controlEdges e).1
+          (hsubset heResidual) |>.2⟩
+
+/-- A residual worklist is a sub-worklist of the original remaining-control worklist. -/
+theorem residualRemainingControlEdges_subset_remainingControlEdges
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    [Fintype G.edgeSet]
+    {p0Inside p4Inside : Bool} {side : V → Prop}
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (controlEdges processed : Finset G.edgeSet) :
+    classifier.residualRemainingControlEdges controlEdges processed ⊆
+      classifier.remainingControlEdges controlEdges := by
+  intro e he
+  exact (classifier.mem_residualRemainingControlEdges_iff controlEdges processed e).1 he |>.1
+
+/--
+The remaining-control operator fixes the current residual worklist.  This is the algebraic
+freshness bridge needed by iterative runners: if the next finite-control set is the residual set,
+then every member of its `remainingControlEdges` view is still outside the processed set.
+-/
+theorem remainingControlEdges_residualRemainingControlEdges_eq
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    [Fintype G.edgeSet]
+    {p0Inside p4Inside : Bool} {side : V → Prop}
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (controlEdges processed : Finset G.edgeSet) :
+    classifier.remainingControlEdges
+        (classifier.residualRemainingControlEdges controlEdges processed) =
+      classifier.residualRemainingControlEdges controlEdges processed :=
+  classifier.remainingControlEdges_eq_self_of_subset_remainingControlEdges controlEdges
+    (classifier.residualRemainingControlEdges controlEdges processed)
+    (classifier.residualRemainingControlEdges_subset_remainingControlEdges controlEdges processed)
+
+/--
+Every edge in the `remainingControlEdges` view of a residual worklist is fresh for the processed
+set.
+-/
+theorem not_mem_processed_of_mem_remainingControlEdges_residualRemainingControlEdges
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    [Fintype G.edgeSet]
+    {p0Inside p4Inside : Bool} {side : V → Prop}
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (controlEdges processed : Finset G.edgeSet) {e : G.edgeSet}
+    (he :
+      e ∈ classifier.remainingControlEdges
+        (classifier.residualRemainingControlEdges controlEdges processed)) :
+    e ∉ processed := by
+  have heResidual :
+      e ∈ classifier.residualRemainingControlEdges controlEdges processed := by
+    simpa [classifier.remainingControlEdges_residualRemainingControlEdges_eq
+      controlEdges processed] using he
+  exact
+    (classifier.mem_residualRemainingControlEdges_iff controlEdges processed e).1
+      heResidual |>.2
+
+/-- Canonical finite trace listing the remaining-control worklist. -/
+noncomputable def remainingControlEdgeTrace
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    [Fintype G.edgeSet]
+    {p0Inside p4Inside : Bool} {side : V → Prop}
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (controlEdges : Finset G.edgeSet) :
+    List G.edgeSet :=
+  (classifier.remainingControlEdges controlEdges).toList
+
+/-- Membership in the canonical remaining-control trace is exactly worklist membership. -/
+theorem mem_remainingControlEdgeTrace_iff
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    [Fintype G.edgeSet]
+    {p0Inside p4Inside : Bool} {side : V → Prop}
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (controlEdges : Finset G.edgeSet) (e : G.edgeSet) :
+    e ∈ classifier.remainingControlEdgeTrace controlEdges ↔
+      e ∈ classifier.remainingControlEdges controlEdges := by
+  simp [remainingControlEdgeTrace]
+
+/-- The classifier trace is the dynamic residual trace seeded by `classifier.emittedFinset`. -/
+theorem remainingControlEdgeTrace_eq_dynamicResidualControlEdgeTrace
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    [Fintype G.edgeSet]
+    {p0Inside p4Inside : Bool} {side : V → Prop}
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (controlEdges : Finset G.edgeSet) :
+    classifier.remainingControlEdgeTrace controlEdges =
+      dynamicResidualControlEdgeTrace controlEdges classifier.emittedFinset := by
+  unfold remainingControlEdgeTrace dynamicResidualControlEdgeTrace
+  rw [classifier.remainingControlEdges_eq_sdiff controlEdges]
+
+/--
+Membership in the classifier trace is exactly membership in the target control set plus freshness
+for the immutable emitted set.
+-/
+theorem mem_remainingControlEdgeTrace_iff_mem_controlEdges_and_not_mem_emittedFinset
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    [Fintype G.edgeSet]
+    {p0Inside p4Inside : Bool} {side : V → Prop}
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (controlEdges : Finset G.edgeSet) (e : G.edgeSet) :
+    e ∈ classifier.remainingControlEdgeTrace controlEdges ↔
+      e ∈ controlEdges ∧ e ∉ classifier.emittedFinset := by
+  rw [classifier.mem_remainingControlEdgeTrace_iff controlEdges e]
+  exact classifier.mem_remainingControlEdges_iff controlEdges e
+
+/-- The canonical remaining-control trace contains no duplicate edges. -/
+theorem remainingControlEdgeTrace_nodup
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    [Fintype G.edgeSet]
+    {p0Inside p4Inside : Bool} {side : V → Prop}
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (controlEdges : Finset G.edgeSet) :
+    (classifier.remainingControlEdgeTrace controlEdges).Nodup :=
+  Finset.nodup_toList (classifier.remainingControlEdges controlEdges)
+
+/-- The trace length is the named remaining-control measure. -/
+theorem length_remainingControlEdgeTrace_eq_card_remainingControlEdges
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    [Fintype G.edgeSet]
+    {p0Inside p4Inside : Bool} {side : V → Prop}
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (controlEdges : Finset G.edgeSet) :
+    (classifier.remainingControlEdgeTrace controlEdges).length =
+      (classifier.remainingControlEdges controlEdges).card :=
+  Finset.length_toList (classifier.remainingControlEdges controlEdges)
+
+/-- The classifier trace length is the dynamic residual-cardinality measure. -/
+theorem length_remainingControlEdgeTrace_eq_card_sdiff
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    [Fintype G.edgeSet]
+    {p0Inside p4Inside : Bool} {side : V → Prop}
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (controlEdges : Finset G.edgeSet) :
+    (classifier.remainingControlEdgeTrace controlEdges).length =
+      (controlEdges \ classifier.emittedFinset).card := by
+  rw [classifier.remainingControlEdgeTrace_eq_dynamicResidualControlEdgeTrace controlEdges]
+  exact length_dynamicResidualControlEdgeTrace_eq_card_sdiff
+    controlEdges classifier.emittedFinset
+
+/-- The canonical trace's finite set is exactly the remaining-control worklist. -/
+theorem remainingControlEdgeTrace_toFinset_eq_remainingControlEdges
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    [Fintype G.edgeSet]
+    {p0Inside p4Inside : Bool} {side : V → Prop}
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (controlEdges : Finset G.edgeSet) :
+    (classifier.remainingControlEdgeTrace controlEdges).toFinset =
+      classifier.remainingControlEdges controlEdges := by
+  ext e
+  simp [remainingControlEdgeTrace]
+
+/-- The classifier trace's finite set is exactly the dynamic residual difference. -/
+theorem remainingControlEdgeTrace_toFinset_eq_sdiff
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    [Fintype G.edgeSet]
+    {p0Inside p4Inside : Bool} {side : V → Prop}
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (controlEdges : Finset G.edgeSet) :
+    (classifier.remainingControlEdgeTrace controlEdges).toFinset =
+      controlEdges \ classifier.emittedFinset := by
+  rw [classifier.remainingControlEdgeTrace_toFinset_eq_remainingControlEdges controlEdges,
+    classifier.remainingControlEdges_eq_sdiff controlEdges]
+
+/-- Folding the classifier trace into `emittedFinset` adds exactly the remaining-control worklist. -/
+theorem foldl_insert_remainingControlEdgeTrace_eq_union_sdiff
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    [Fintype G.edgeSet]
+    {p0Inside p4Inside : Bool} {side : V → Prop}
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (controlEdges : Finset G.edgeSet) :
+    (classifier.remainingControlEdgeTrace controlEdges).foldl
+        (fun acc e => insert e acc) classifier.emittedFinset =
+      classifier.emittedFinset ∪ (controlEdges \ classifier.emittedFinset) := by
+  rw [classifier.remainingControlEdgeTrace_eq_dynamicResidualControlEdgeTrace controlEdges]
+  exact foldl_insert_dynamicResidualControlEdgeTrace_eq_union_sdiff
+    controlEdges classifier.emittedFinset
+
+/-- After folding the classifier trace, every target control edge is in the terminal emitted set. -/
+theorem controlEdges_subset_foldl_insert_remainingControlEdgeTrace
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    [Fintype G.edgeSet]
+    {p0Inside p4Inside : Bool} {side : V → Prop}
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (controlEdges : Finset G.edgeSet) :
+    controlEdges ⊆ (classifier.remainingControlEdgeTrace controlEdges).foldl
+      (fun acc e => insert e acc) classifier.emittedFinset := by
+  rw [classifier.remainingControlEdgeTrace_eq_dynamicResidualControlEdgeTrace controlEdges]
+  exact control_subset_foldl_insert_dynamicResidualControlEdgeTrace
+    controlEdges classifier.emittedFinset
+
+/-- Folding the classifier trace into `emittedFinset` exhausts the dynamic residual difference. -/
+theorem remainingControlEdgeTrace_foldl_insert_sdiff_eq_empty
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    [Fintype G.edgeSet]
+    {p0Inside p4Inside : Bool} {side : V → Prop}
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (controlEdges : Finset G.edgeSet) :
+    controlEdges \ ((classifier.remainingControlEdgeTrace controlEdges).foldl
+      (fun acc e => insert e acc) classifier.emittedFinset) = ∅ := by
+  rw [classifier.remainingControlEdgeTrace_eq_dynamicResidualControlEdgeTrace controlEdges]
+  exact dynamicResidualControlEdgeTrace_foldl_insert_sdiff_eq_empty
+    controlEdges classifier.emittedFinset
+
+/-- Processing every edge in the canonical trace exhausts the explicit residual worklist. -/
+theorem residualRemainingControlEdges_remainingControlEdgeTrace_toFinset_eq_empty
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    [Fintype G.edgeSet]
+    {p0Inside p4Inside : Bool} {side : V → Prop}
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (controlEdges : Finset G.edgeSet) :
+    classifier.residualRemainingControlEdges controlEdges
+        (classifier.remainingControlEdgeTrace controlEdges).toFinset = ∅ := by
+  rw [classifier.remainingControlEdgeTrace_toFinset_eq_remainingControlEdges controlEdges]
+  ext e
+  simp [residualRemainingControlEdges]
+
+/--
+Folding the immutable remaining-control trace into any processed state exhausts the explicit
+residual worklist, because the trace contains the full remaining-control support.
+-/
+theorem residualRemainingControlEdges_foldl_insert_remainingControlEdgeTrace_eq_empty
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    [Fintype G.edgeSet]
+    {p0Inside p4Inside : Bool} {side : V → Prop}
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (controlEdges processed : Finset G.edgeSet) :
+    classifier.residualRemainingControlEdges controlEdges
+        ((classifier.remainingControlEdgeTrace controlEdges).foldl
+          (fun acc e => insert e acc) processed) =
+      ∅ := by
+  rw [foldl_insert_eq_union_toFinset processed
+    (classifier.remainingControlEdgeTrace controlEdges)]
+  rw [classifier.remainingControlEdgeTrace_toFinset_eq_remainingControlEdges controlEdges]
+  ext e
+  constructor
+  · intro he
+    dsimp [residualRemainingControlEdges] at he
+    rcases Finset.mem_sdiff.1 he with ⟨heRemaining, heNotFinal⟩
+    exact False.elim (heNotFinal (Finset.mem_union.2 (Or.inr heRemaining)))
+  · intro he
+    simp at he
+
+/--
+If the current processed state is included in the immutable classifier output, then folding the
+same remaining-control trace keeps it included in the canonical terminal emitted state.
+-/
+theorem foldl_insert_remainingControlEdgeTrace_subset_foldl_insert_emittedFinset
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    [Fintype G.edgeSet]
+    {p0Inside p4Inside : Bool} {side : V → Prop}
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (controlEdges : Finset G.edgeSet) {processed : Finset G.edgeSet}
+    (hprocessedSubset : processed ⊆ classifier.emittedFinset) :
+    (classifier.remainingControlEdgeTrace controlEdges).foldl
+        (fun acc e => insert e acc) processed ⊆
+      (classifier.remainingControlEdgeTrace controlEdges).foldl
+        (fun acc e => insert e acc) classifier.emittedFinset :=
+  foldl_insert_subset_foldl_insert_of_subset
+    (classifier.remainingControlEdgeTrace controlEdges) hprocessedSubset
+
+/-- The canonical trace of a residual worklist lists exactly the current residual edges. -/
+theorem remainingControlEdgeTrace_residualRemainingControlEdges_toFinset_eq
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    [Fintype G.edgeSet]
+    {p0Inside p4Inside : Bool} {side : V → Prop}
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (controlEdges processed : Finset G.edgeSet) :
+    (classifier.remainingControlEdgeTrace
+        (classifier.residualRemainingControlEdges controlEdges processed)).toFinset =
+      classifier.residualRemainingControlEdges controlEdges processed := by
+  rw [classifier.remainingControlEdgeTrace_toFinset_eq_remainingControlEdges]
+  exact classifier.remainingControlEdges_residualRemainingControlEdges_eq controlEdges processed
+
+/--
+Processing the canonical trace of the current residual worklist exhausts the residual state over
+the original worklist.
+-/
+theorem residualRemainingControlEdges_union_residualTrace_toFinset_eq_empty
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    [Fintype G.edgeSet]
+    {p0Inside p4Inside : Bool} {side : V → Prop}
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (controlEdges processed : Finset G.edgeSet) :
+    classifier.residualRemainingControlEdges controlEdges
+        (processed ∪
+          (classifier.remainingControlEdgeTrace
+            (classifier.residualRemainingControlEdges controlEdges processed)).toFinset) =
+      ∅ := by
+  rw [classifier.remainingControlEdgeTrace_residualRemainingControlEdges_toFinset_eq
+    controlEdges processed]
+  ext e
+  constructor
+  · intro he
+    have heRemaining :
+        e ∈ classifier.remainingControlEdges controlEdges :=
+      (classifier.mem_residualRemainingControlEdges_iff controlEdges
+        (processed ∪ classifier.residualRemainingControlEdges controlEdges processed)
+        e).1 he |>.1
+    have heNotProcessed :
+        e ∉ processed ∪ classifier.residualRemainingControlEdges controlEdges processed :=
+      (classifier.mem_residualRemainingControlEdges_iff controlEdges
+        (processed ∪ classifier.residualRemainingControlEdges controlEdges processed)
+        e).1 he |>.2
+    have heFresh : e ∉ processed := by
+      intro hp
+      exact heNotProcessed (Finset.mem_union.2 (Or.inl hp))
+    have heResidual :
+        e ∈ classifier.residualRemainingControlEdges controlEdges processed :=
+      (classifier.mem_residualRemainingControlEdges_iff controlEdges processed e).2
+        ⟨heRemaining, heFresh⟩
+    exact False.elim (heNotProcessed (Finset.mem_union.2 (Or.inr heResidual)))
+  · intro he
+    simp at he
+
+/--
+Packaged finite iteration certificate for the CAP5 remaining-control worklist: the trace has no
+duplicates, lists exactly the remaining edges, has length equal to the worklist measure, and
+exhausts the explicit residual state when all trace entries are processed.
+-/
+theorem exists_remainingControlEdgeTrace_certificate
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    [Fintype G.edgeSet]
+    {p0Inside p4Inside : Bool} {side : V → Prop}
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (controlEdges : Finset G.edgeSet) :
+    ∃ trace : List G.edgeSet,
+      trace.Nodup ∧
+        (∀ e : G.edgeSet, e ∈ trace ↔ e ∈ classifier.remainingControlEdges controlEdges) ∧
+          trace.length = (classifier.remainingControlEdges controlEdges).card ∧
+            classifier.residualRemainingControlEdges controlEdges trace.toFinset = ∅ := by
+  refine ⟨classifier.remainingControlEdgeTrace controlEdges, ?_, ?_, ?_, ?_⟩
+  · exact classifier.remainingControlEdgeTrace_nodup controlEdges
+  · exact classifier.mem_remainingControlEdgeTrace_iff controlEdges
+  · exact classifier.length_remainingControlEdgeTrace_eq_card_remainingControlEdges controlEdges
+  · exact
+      classifier.residualRemainingControlEdges_remainingControlEdgeTrace_toFinset_eq_empty
+        controlEdges
 
 /-- New control edges outside a Boolean checker output that cross the proposed side.  This is the
 finite geometric bin for a generator extension run. -/
@@ -4251,6 +5063,46 @@ theorem theorem49BoundaryRootSynthesis_of_enumeratedExceptionalAnnulusForcedEdge
     emb C₀ colorings hsubset family p0Inside p4Inside side classifier.emittedFinset
     classifier.emittedFinset_spec hcontrol hwitnessRed hwitnessBlue
 
+theorem enumeratedExceptionalAnnulusForcedEdgeClassifierKirchhoffControl_of_boundaryZeroControl
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    [Fintype G.edgeSet]
+    {emb : PlaneEmbeddingWithBoundary G} {p0Inside p4Inside : Bool}
+    {side : V → Prop}
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (vertices : Finset V)
+    (hcontrol :
+      ∀ ⦃z : G.edgeSet → Color⦄,
+        z ∈ planarBoundaryZeroSubmodule emb →
+        (∀ e ∈ classifier.emittedFinset, z e = 0) →
+        z = 0) :
+    ∀ ⦃z : G.edgeSet → Color⦄,
+      z ∈ theorem49BoundaryZeroKirchhoffSubspace emb vertices →
+      (∀ e ∈ classifier.emittedFinset, z e = 0) →
+      z = 0 :=
+  theorem49BoundaryZeroKirchhoffSubspace_control_of_planarBoundaryZeroSubmodule_control
+    emb vertices classifier.emittedFinset hcontrol
+
+theorem enumeratedExceptionalAnnulusForcedEdgeClassifierKirchhoffCoverage_of_boundaryZeroCoverage
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    [Fintype G.edgeSet]
+    {emb : PlaneEmbeddingWithBoundary G} {p0Inside p4Inside : Bool}
+    {side : V → Prop}
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (vertices : Finset V)
+    (hcoverage :
+      ∀ ⦃z : G.edgeSet → Color⦄,
+        z ∈ planarBoundaryZeroSubmodule emb →
+        z ≠ 0 →
+        ∃ e : G.edgeSet, e ∈ classifier.emittedFinset ∧ z e ≠ 0) :
+    ∀ ⦃z : G.edgeSet → Color⦄,
+      z ∈ theorem49BoundaryZeroKirchhoffSubspace emb vertices →
+      z ≠ 0 →
+      ∃ e : G.edgeSet, e ∈ classifier.emittedFinset ∧ z e ≠ 0 :=
+  theorem49BoundaryZeroKirchhoffSubspace_nonzeroCoverage_of_planarBoundaryZeroSubmodule_nonzeroCoverage
+    emb vertices classifier.emittedFinset hcoverage
+
 /-- Subset fixed-point criterion for a Boolean CAP5 classifier.  If a finite checker has already
 proved control for a control set, and every edge in that control set is already emitted by the
 classifier, then the classifier itself controls the selected boundary-zero chains.  This is the
@@ -4372,6 +5224,351 @@ theorem enumeratedExceptionalAnnulusForcedEdgeClassifierControl_iff_no_boundaryZ
     exact hcontrol hzBoundary (by
       intro e hedge
       exact hvanish e ((classifier.emittedFinset_spec e).2 hedge))
+
+/-- Coverage by the enumerated CAP5 forced-edge predicate is exactly the positive finite-control
+condition for the Boolean classifier output.  This is the generic handoff from an F2 lab
+coverage certificate to the Lean classifier-control API. -/
+theorem enumeratedExceptionalAnnulusForcedEdgeClassifierControl_of_forcedEdgeCoverage
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    [Fintype G.edgeSet]
+    (emb : PlaneEmbeddingWithBoundary G)
+    {p0Inside p4Inside : Bool} {side : V → Prop}
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (hcoverage :
+      ∀ ⦃z : G.edgeSet → Color⦄,
+        z ∈ planarBoundaryZeroSubmodule emb →
+        z ≠ 0 →
+          ∃ e : G.edgeSet,
+            data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e ∧
+              z e ≠ 0) :
+    ∀ ⦃z : G.edgeSet → Color⦄,
+      z ∈ planarBoundaryZeroSubmodule emb →
+      (∀ e ∈ classifier.emittedFinset, z e = 0) →
+        z = 0 := by
+  exact
+    (data.enumeratedExceptionalAnnulusForcedEdgeClassifierControl_iff_forall_nonzero_exists_mem_nonzero
+      classifier).2
+      (by
+        intro z hzBoundary hzNonzero
+        rcases hcoverage hzBoundary hzNonzero with ⟨e, hedge, hze⟩
+        exact ⟨e, (classifier.emittedFinset_spec e).2 hedge, hze⟩)
+
+/-- Exact generic CAP5 detector contract.  For a Boolean exceptional-annulus classifier,
+coverage by the enumerated forced-edge predicate is equivalent to finite control by the
+classifier's emitted edge set. -/
+theorem forcedEdgeCoverage_iff_enumeratedExceptionalAnnulusForcedEdgeClassifierControl
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    [Fintype G.edgeSet]
+    (emb : PlaneEmbeddingWithBoundary G)
+    {p0Inside p4Inside : Bool} {side : V → Prop}
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side) :
+    (∀ ⦃z : G.edgeSet → Color⦄,
+      z ∈ planarBoundaryZeroSubmodule emb →
+      z ≠ 0 →
+        ∃ e : G.edgeSet,
+          data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e ∧
+            z e ≠ 0) ↔
+      (∀ ⦃z : G.edgeSet → Color⦄,
+        z ∈ planarBoundaryZeroSubmodule emb →
+        (∀ e ∈ classifier.emittedFinset, z e = 0) →
+          z = 0) := by
+  constructor
+  · exact data.enumeratedExceptionalAnnulusForcedEdgeClassifierControl_of_forcedEdgeCoverage
+      emb classifier
+  · intro hcontrol z hzBoundary hzNonzero
+    have hwitness :=
+      (data.enumeratedExceptionalAnnulusForcedEdgeClassifierControl_iff_forall_nonzero_exists_mem_nonzero
+        (emb := emb) classifier).1 hcontrol
+    rcases hwitness hzBoundary hzNonzero with ⟨e, heEmitted, hze⟩
+    exact ⟨e, (classifier.emittedFinset_spec e).1 heEmitted, hze⟩
+
+/--
+Finite-lab handoff for exact CAP5 coverage.  If a concrete control set meets every nonzero
+selected-boundary-zero chain and every control edge is emitted by the CAP5 classifier, then the
+enumerated CAP5 forced-edge predicate has the exact coverage property used by the synthesis
+theorems.
+-/
+theorem forcedEdgeCoverage_of_controlEdges_subset_emittedFinset
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    [Fintype G.edgeSet]
+    (emb : PlaneEmbeddingWithBoundary G)
+    {p0Inside p4Inside : Bool} {side : V → Prop}
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (controlEdges : Finset G.edgeSet)
+    (hcontrolCoverage :
+      ∀ ⦃z : G.edgeSet → Color⦄,
+        z ∈ planarBoundaryZeroSubmodule emb →
+        z ≠ 0 →
+          ∃ e : G.edgeSet, e ∈ controlEdges ∧ z e ≠ 0)
+    (hsubset : controlEdges ⊆ classifier.emittedFinset) :
+    ∀ ⦃z : G.edgeSet → Color⦄,
+      z ∈ planarBoundaryZeroSubmodule emb →
+      z ≠ 0 →
+        ∃ e : G.edgeSet,
+          data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e ∧
+            z e ≠ 0 := by
+  intro z hzBoundary hzNonzero
+  rcases hcontrolCoverage hzBoundary hzNonzero with ⟨e, heControl, hze⟩
+  exact ⟨e, (classifier.emittedFinset_spec e).1 (hsubset heControl), hze⟩
+
+/--
+Classifier-control handoff for finite F₂ lab coverage.  A concrete control set that meets every
+nonzero selected-boundary-zero chain controls the classifier output as soon as all of its edges
+are emitted by the classifier.
+-/
+theorem enumeratedExceptionalAnnulusForcedEdgeClassifierControl_of_controlEdges_nonzeroCoverage_subset_emittedFinset
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    [Fintype G.edgeSet]
+    (emb : PlaneEmbeddingWithBoundary G)
+    {p0Inside p4Inside : Bool} {side : V → Prop}
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (controlEdges : Finset G.edgeSet)
+    (hcontrolCoverage :
+      ∀ ⦃z : G.edgeSet → Color⦄,
+        z ∈ planarBoundaryZeroSubmodule emb →
+        z ≠ 0 →
+          ∃ e : G.edgeSet, e ∈ controlEdges ∧ z e ≠ 0)
+    (hsubset : controlEdges ⊆ classifier.emittedFinset) :
+    ∀ ⦃z : G.edgeSet → Color⦄,
+      z ∈ planarBoundaryZeroSubmodule emb →
+      (∀ e ∈ classifier.emittedFinset, z e = 0) →
+        z = 0 :=
+  data.enumeratedExceptionalAnnulusForcedEdgeClassifierControl_of_forcedEdgeCoverage
+    emb classifier
+    (data.forcedEdgeCoverage_of_controlEdges_subset_emittedFinset
+      emb classifier controlEdges hcontrolCoverage hsubset)
+
+/-- Synthesis endpoint for exact CAP5 forced-edge coverage.  If the enumerated forced-edge set
+covers every nonzero selected-boundary-zero chain, and the chosen projected generator family has
+red and blue single-coordinate witnesses on every emitted classifier edge, then the boundary-root
+synthesis follows. -/
+theorem theorem49BoundaryRootSynthesis_of_forcedEdgeCoverage
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    [Fintype G.edgeSet] [FiniteDimensional F2 (G.edgeSet → Color)]
+    (emb : PlaneEmbeddingWithBoundary G) (C₀ : G.EdgeColoring Color)
+    (colorings : Set (G.EdgeColoring Color))
+    (hsubset : colorings ⊆ G.EdgeKempeClosure C₀)
+    {κ : Type*}
+    (family : κ → projectedColoringGeneratorSubspace emb colorings)
+    (p0Inside p4Inside : Bool) (side : V → Prop)
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (hcoverage :
+      ∀ ⦃z : G.edgeSet → Color⦄,
+        z ∈ planarBoundaryZeroSubmodule emb →
+        z ≠ 0 →
+          ∃ e : G.edgeSet,
+            data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e ∧
+              z e ≠ 0)
+    (hwitnessRed :
+      ∀ e : G.edgeSet,
+        e ∈ classifier.emittedFinset →
+          ∃ i : κ,
+            ((family i : projectedColoringGeneratorSubspace emb colorings) :
+                G.edgeSet → Color) =
+              Pi.single e red)
+    (hwitnessBlue :
+      ∀ e : G.edgeSet,
+        e ∈ classifier.emittedFinset →
+          ∃ i : κ,
+            ((family i : projectedColoringGeneratorSubspace emb colorings) :
+                G.edgeSet → Color) =
+              Pi.single e blue) :
+    Theorem49BoundaryRootSynthesis emb C₀ :=
+  data.theorem49BoundaryRootSynthesis_of_enumeratedExceptionalAnnulusForcedEdgeClassifierControl
+    emb C₀ colorings hsubset family p0Inside p4Inside side classifier
+    (data.enumeratedExceptionalAnnulusForcedEdgeClassifierControl_of_forcedEdgeCoverage
+      emb classifier hcoverage)
+    hwitnessRed hwitnessBlue
+
+/--
+Synthesis endpoint from finite F₂ lab coverage and classifier emission.  This removes the
+abstract exact-coverage hypothesis from the Boolean-classifier route: a lab-certified control set
+that catches every nonzero selected-boundary-zero chain, and is wholly emitted by the classifier,
+is enough to feed the existing CAP5 synthesis theorem.
+-/
+theorem theorem49BoundaryRootSynthesis_of_controlEdges_nonzeroCoverage_subset_emittedFinset
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    [Fintype G.edgeSet] [FiniteDimensional F2 (G.edgeSet → Color)]
+    (emb : PlaneEmbeddingWithBoundary G) (C₀ : G.EdgeColoring Color)
+    (colorings : Set (G.EdgeColoring Color))
+    (hsubset : colorings ⊆ G.EdgeKempeClosure C₀)
+    {κ : Type*}
+    (family : κ → projectedColoringGeneratorSubspace emb colorings)
+    (p0Inside p4Inside : Bool) (side : V → Prop)
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (controlEdges : Finset G.edgeSet)
+    (hcontrolCoverage :
+      ∀ ⦃z : G.edgeSet → Color⦄,
+        z ∈ planarBoundaryZeroSubmodule emb →
+        z ≠ 0 →
+          ∃ e : G.edgeSet, e ∈ controlEdges ∧ z e ≠ 0)
+    (hsubsetEdges : controlEdges ⊆ classifier.emittedFinset)
+    (hwitnessRed :
+      ∀ e : G.edgeSet,
+        e ∈ classifier.emittedFinset →
+          ∃ i : κ,
+            ((family i : projectedColoringGeneratorSubspace emb colorings) :
+                G.edgeSet → Color) =
+              Pi.single e red)
+    (hwitnessBlue :
+      ∀ e : G.edgeSet,
+        e ∈ classifier.emittedFinset →
+          ∃ i : κ,
+            ((family i : projectedColoringGeneratorSubspace emb colorings) :
+                G.edgeSet → Color) =
+              Pi.single e blue) :
+    Theorem49BoundaryRootSynthesis emb C₀ :=
+  data.theorem49BoundaryRootSynthesis_of_forcedEdgeCoverage
+    emb C₀ colorings hsubset family p0Inside p4Inside side classifier
+    (data.forcedEdgeCoverage_of_controlEdges_subset_emittedFinset
+      emb classifier controlEdges hcontrolCoverage hsubsetEdges)
+    hwitnessRed hwitnessBlue
+
+/--
+Split-witness synthesis endpoint for finite CAP5 runs.  A lab-certified control set supplies
+the F2 coverage; the projected-generator family may then be assembled from one family covering
+the control edges and a second family covering any extra edge emitted by the classifier.
+-/
+theorem theorem49BoundaryRootSynthesis_of_controlEdges_nonzeroCoverage_subset_emittedFinset_splitWitnesses
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    [Fintype G.edgeSet] [FiniteDimensional F2 (G.edgeSet → Color)]
+    (emb : PlaneEmbeddingWithBoundary G) (C₀ : G.EdgeColoring Color)
+    (colorings : Set (G.EdgeColoring Color))
+    (hsubset : colorings ⊆ G.EdgeKempeClosure C₀)
+    {κcontrol κextra : Type*}
+    (controlFamily : κcontrol → projectedColoringGeneratorSubspace emb colorings)
+    (extraFamily : κextra → projectedColoringGeneratorSubspace emb colorings)
+    (p0Inside p4Inside : Bool) (side : V → Prop)
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (controlEdges : Finset G.edgeSet)
+    (hcontrolCoverage :
+      ∀ ⦃z : G.edgeSet → Color⦄,
+        z ∈ planarBoundaryZeroSubmodule emb →
+        z ≠ 0 →
+          ∃ e : G.edgeSet, e ∈ controlEdges ∧ z e ≠ 0)
+    (hsubsetEdges : controlEdges ⊆ classifier.emittedFinset)
+    (hwitnessControlRed :
+      ∀ e : G.edgeSet,
+        e ∈ controlEdges →
+          ∃ i : κcontrol,
+            ((controlFamily i : projectedColoringGeneratorSubspace emb colorings) :
+                G.edgeSet → Color) =
+              Pi.single e red)
+    (hwitnessControlBlue :
+      ∀ e : G.edgeSet,
+        e ∈ controlEdges →
+          ∃ i : κcontrol,
+            ((controlFamily i : projectedColoringGeneratorSubspace emb colorings) :
+                G.edgeSet → Color) =
+              Pi.single e blue)
+    (hwitnessExtraRed :
+      ∀ e : G.edgeSet,
+        e ∈ classifier.emittedFinset →
+          e ∉ controlEdges →
+            ∃ i : κextra,
+              ((extraFamily i : projectedColoringGeneratorSubspace emb colorings) :
+                  G.edgeSet → Color) =
+                Pi.single e red)
+    (hwitnessExtraBlue :
+      ∀ e : G.edgeSet,
+        e ∈ classifier.emittedFinset →
+          e ∉ controlEdges →
+            ∃ i : κextra,
+              ((extraFamily i : projectedColoringGeneratorSubspace emb colorings) :
+                  G.edgeSet → Color) =
+                Pi.single e blue) :
+    Theorem49BoundaryRootSynthesis emb C₀ := by
+  refine
+    data.theorem49BoundaryRootSynthesis_of_controlEdges_nonzeroCoverage_subset_emittedFinset
+      emb C₀ colorings hsubset
+      (fun i : κcontrol ⊕ κextra => Sum.elim controlFamily extraFamily i)
+      p0Inside p4Inside side classifier controlEdges hcontrolCoverage hsubsetEdges
+      ?_ ?_
+  · intro e he
+    by_cases heControl : e ∈ controlEdges
+    · rcases hwitnessControlRed e heControl with ⟨i, hi⟩
+      exact ⟨Sum.inl i, by simpa using hi⟩
+    · rcases hwitnessExtraRed e he heControl with ⟨i, hi⟩
+      exact ⟨Sum.inr i, by simpa using hi⟩
+  · intro e he
+    by_cases heControl : e ∈ controlEdges
+    · rcases hwitnessControlBlue e heControl with ⟨i, hi⟩
+      exact ⟨Sum.inl i, by simpa using hi⟩
+    · rcases hwitnessExtraBlue e he heControl with ⟨i, hi⟩
+      exact ⟨Sum.inr i, by simpa using hi⟩
+
+/--
+Split-witness fixed-point endpoint for finite CAP5 runs.  Empty extension bins make the
+lab-certified controls part of the emitted classifier output; synthesis then reduces to
+certificates for the controls plus certificates for any already-emitted extra edges.
+-/
+theorem theorem49BoundaryRootSynthesis_of_controlEdges_nonzeroCoverage_extensionFinsets_eq_empty_splitWitnesses
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    [Fintype G.edgeSet] [FiniteDimensional F2 (G.edgeSet → Color)]
+    (emb : PlaneEmbeddingWithBoundary G) (C₀ : G.EdgeColoring Color)
+    (colorings : Set (G.EdgeColoring Color))
+    (hsubset : colorings ⊆ G.EdgeKempeClosure C₀)
+    {κcontrol κextra : Type*}
+    (controlFamily : κcontrol → projectedColoringGeneratorSubspace emb colorings)
+    (extraFamily : κextra → projectedColoringGeneratorSubspace emb colorings)
+    (p0Inside p4Inside : Bool) (side : V → Prop)
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (controlEdges : Finset G.edgeSet)
+    (hcontrolCoverage :
+      ∀ ⦃z : G.edgeSet → Color⦄,
+        z ∈ planarBoundaryZeroSubmodule emb →
+        z ≠ 0 →
+          ∃ e : G.edgeSet, e ∈ controlEdges ∧ z e ≠ 0)
+    (hcrossingEmpty : classifier.crossingExtensionFinset controlEdges = ∅)
+    (hnoncrossingEmpty : classifier.noncrossingExtensionFinset controlEdges = ∅)
+    (hwitnessControlRed :
+      ∀ e : G.edgeSet,
+        e ∈ controlEdges →
+          ∃ i : κcontrol,
+            ((controlFamily i : projectedColoringGeneratorSubspace emb colorings) :
+                G.edgeSet → Color) =
+              Pi.single e red)
+    (hwitnessControlBlue :
+      ∀ e : G.edgeSet,
+        e ∈ controlEdges →
+          ∃ i : κcontrol,
+            ((controlFamily i : projectedColoringGeneratorSubspace emb colorings) :
+                G.edgeSet → Color) =
+              Pi.single e blue)
+    (hwitnessExtraRed :
+      ∀ e : G.edgeSet,
+        e ∈ classifier.emittedFinset →
+          e ∉ controlEdges →
+            ∃ i : κextra,
+              ((extraFamily i : projectedColoringGeneratorSubspace emb colorings) :
+                  G.edgeSet → Color) =
+                Pi.single e red)
+    (hwitnessExtraBlue :
+      ∀ e : G.edgeSet,
+        e ∈ classifier.emittedFinset →
+          e ∉ controlEdges →
+            ∃ i : κextra,
+              ((extraFamily i : projectedColoringGeneratorSubspace emb colorings) :
+                  G.edgeSet → Color) =
+                Pi.single e blue) :
+    Theorem49BoundaryRootSynthesis emb C₀ := by
+  have hsubsetEdges : controlEdges ⊆ classifier.emittedFinset :=
+    (classifier.controlEdges_subset_emittedFinset_iff_extensionFinsets_eq_empty
+      controlEdges).2
+      ⟨hcrossingEmpty, hnoncrossingEmpty⟩
+  exact
+    data.theorem49BoundaryRootSynthesis_of_controlEdges_nonzeroCoverage_subset_emittedFinset_splitWitnesses
+      emb C₀ colorings hsubset controlFamily extraFamily p0Inside p4Inside side
+      classifier controlEdges hcontrolCoverage hsubsetEdges hwitnessControlRed
+      hwitnessControlBlue hwitnessExtraRed hwitnessExtraBlue
 
 /-- A CAP5 emitted-edge obstruction is an explicit nonzero kernel witness for any red/blue
 single-coordinate family that only probes edges emitted by the CAP5 classifier.  Thus a failed
@@ -4564,6 +5761,83 @@ theorem theorem49BoundaryRootSynthesis_of_enumeratedExceptionalAnnulusForcedEdge
       intro e hedge
       exact hwitnessBlue e ((classifier.emittedFinset_spec e).2 hedge))
 
+/-- Closed-walk kernel-shell packaging of the Boolean classifier nonzero-witness certificate.
+This keeps the finite `F₂` checker output as a reusable pairing-kernel shell instead of using it
+only once to prove synthesis. -/
+def closedWalkNeighborhoodPairingKernelShell_of_enumeratedExceptionalAnnulusForcedEdgeClassifierNonzeroWitnesses
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    [Fintype G.edgeSet]
+    {emb : PlaneEmbeddingWithBoundary G}
+    (shell : ClosedWalkExactShell emb)
+    (colorings : Set (G.EdgeColoring Color))
+    (hsubset : colorings ⊆ G.EdgeKempeClosure shell.tait.coloring)
+    {κ : Type*}
+    (family : κ → projectedColoringGeneratorSubspace emb colorings)
+    (p0Inside p4Inside : Bool) (side : V → Prop)
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (hnonzero :
+      ∀ ⦃z : G.edgeSet → Color⦄,
+        z ∈ planarBoundaryZeroSubmodule emb →
+        z ≠ 0 →
+          ∃ e : G.edgeSet, e ∈ classifier.emittedFinset ∧ z e ≠ 0)
+    (hwitnessRed :
+      ∀ e : G.edgeSet,
+        e ∈ classifier.emittedFinset →
+          ∃ i : κ,
+            ((family i : projectedColoringGeneratorSubspace emb colorings) :
+                G.edgeSet → Color) =
+              Pi.single e red)
+    (hwitnessBlue :
+      ∀ e : G.edgeSet,
+        e ∈ classifier.emittedFinset →
+          ∃ i : κ,
+            ((family i : projectedColoringGeneratorSubspace emb colorings) :
+                G.edgeSet → Color) =
+              Pi.single e blue) :
+    ClosedWalkNeighborhoodPairingKernelShell emb :=
+  ClosedWalkNeighborhoodPairingKernelShell.of_controlEdgeNonzeroWitnesses
+    shell colorings hsubset family classifier.emittedFinset
+    hnonzero hwitnessRed hwitnessBlue
+
+/-- Successor-cycle kernel-shell packaging of the same Boolean classifier nonzero-witness
+certificate. -/
+def successorCycleNeighborhoodPairingKernelShell_of_enumeratedExceptionalAnnulusForcedEdgeClassifierNonzeroWitnesses
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    [Fintype G.edgeSet]
+    {emb : PlaneEmbeddingWithBoundary G}
+    (shell : SuccessorCycleExactShell emb)
+    (colorings : Set (G.EdgeColoring Color))
+    (hsubset : colorings ⊆ G.EdgeKempeClosure shell.tait.coloring)
+    {κ : Type*}
+    (family : κ → projectedColoringGeneratorSubspace emb colorings)
+    (p0Inside p4Inside : Bool) (side : V → Prop)
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (hnonzero :
+      ∀ ⦃z : G.edgeSet → Color⦄,
+        z ∈ planarBoundaryZeroSubmodule emb →
+        z ≠ 0 →
+          ∃ e : G.edgeSet, e ∈ classifier.emittedFinset ∧ z e ≠ 0)
+    (hwitnessRed :
+      ∀ e : G.edgeSet,
+        e ∈ classifier.emittedFinset →
+          ∃ i : κ,
+            ((family i : projectedColoringGeneratorSubspace emb colorings) :
+                G.edgeSet → Color) =
+              Pi.single e red)
+    (hwitnessBlue :
+      ∀ e : G.edgeSet,
+        e ∈ classifier.emittedFinset →
+          ∃ i : κ,
+            ((family i : projectedColoringGeneratorSubspace emb colorings) :
+                G.edgeSet → Color) =
+              Pi.single e blue) :
+    SuccessorCycleNeighborhoodPairingKernelShell emb :=
+  SuccessorCycleNeighborhoodPairingKernelShell.of_controlEdgeNonzeroWitnesses
+    shell colorings hsubset family classifier.emittedFinset
+    hnonzero hwitnessRed hwitnessBlue
+
 /-- Theorem 4.9 synthesis from the exact no-obstruction boundary.  Once the checker output has
 red/blue single-edge witnesses for every emitted edge, excluding the boundary-zero obstruction is
 precisely enough to enter the boundary-root synthesis route. -/
@@ -4725,6 +5999,61 @@ theorem exists_boundaryZeroChain_and_newControlEdge_nonzero_of_not_classifierCon
     exact hvanishEmitted e ((classifier.emittedFinset_spec e).2 hedge),
     hnew⟩
 
+/--
+Residual finite-control witness for a failed Boolean CAP5 classifier.  If the later control set
+controls selected-boundary-zero chains and the already processed edges are known zero whenever the
+emitted classifier edges are zero, then the next nonzero control edge can be chosen from the
+explicit residual worklist.
+-/
+theorem exists_boundaryZeroChain_and_newResidualControlEdge_nonzero_of_not_classifierControl_of_finsetControl_of_processedControl
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    [Fintype G.edgeSet]
+    (emb : PlaneEmbeddingWithBoundary G)
+    (p0Inside p4Inside : Bool) (side : V → Prop)
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (controlEdges processed : Finset G.edgeSet)
+    (hnotControl :
+      ¬ ∀ ⦃z : G.edgeSet → Color⦄,
+        z ∈ planarBoundaryZeroSubmodule emb →
+        (∀ e ∈ classifier.emittedFinset, z e = 0) →
+          z = 0)
+    (hcontrol :
+      ∀ ⦃z : G.edgeSet → Color⦄,
+        z ∈ planarBoundaryZeroSubmodule emb →
+        (∀ e ∈ controlEdges, z e = 0) →
+          z = 0)
+    (hprocessedControl :
+      ∀ ⦃z : G.edgeSet → Color⦄,
+        z ∈ planarBoundaryZeroSubmodule emb →
+        (∀ e ∈ classifier.emittedFinset, z e = 0) →
+          ∀ e ∈ processed, z e = 0) :
+    ∃ z : G.edgeSet → Color,
+      z ∈ planarBoundaryZeroSubmodule emb ∧
+        z ≠ 0 ∧
+          (∀ e : G.edgeSet,
+            data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e →
+              z e = 0) ∧
+            ∃ e : G.edgeSet,
+              e ∈ classifier.residualRemainingControlEdges controlEdges processed ∧
+                z e ≠ 0 := by
+  rcases exists_obstruction_and_newControlEdge_nonzero_of_not_finsetControls_of_finsetControls
+      classifier.emittedFinset controlEdges hnotControl hcontrol with
+    ⟨z, hzBoundary, hzNonzero, hvanishEmitted, e, heControl, heOutside, hze⟩
+  have heRemaining : e ∈ classifier.remainingControlEdges controlEdges :=
+    (classifier.mem_remainingControlEdges_iff controlEdges e).2 ⟨heControl, heOutside⟩
+  have heNotProcessed : e ∉ processed := by
+    intro heProcessed
+    exact hze (hprocessedControl hzBoundary hvanishEmitted e heProcessed)
+  exact
+    ⟨z, hzBoundary, hzNonzero, by
+      intro e hedge
+      exact hvanishEmitted e ((classifier.emittedFinset_spec e).2 hedge),
+      e,
+      (classifier.mem_residualRemainingControlEdges_iff controlEdges processed e).2
+        ⟨heRemaining, heNotProcessed⟩,
+      hze⟩
+
 /-- Geometric/algebraic binning for a failed Boolean CAP5 classifier after a successful later
 finite-control extension.  The new nonzero control edge returned by the algebraic obstruction is
 either a side-crossing one-edge probe outside the classifier output, or a noncrossing coordinate
@@ -4797,6 +6126,98 @@ theorem exists_boundaryZeroChain_and_newControlEdge_crossing_or_noncrossing_of_n
     exact heOutside (by simpa [hfe] using hf)
   · exact Or.inr ⟨z, hzBoundary, hzNonzero, hvanish, e,
       heControl, heOutside, hePredicateOutside, hze, hcross⟩
+
+/--
+Residual geometric/algebraic binning for a failed Boolean CAP5 classifier after a successful
+later finite-control extension.  The processed-edge zero invariant ensures that the returned
+crossing or noncrossing extension coordinate lies in the explicit residual worklist.
+-/
+theorem exists_boundaryZeroChain_and_residualExtensionFinsetWitness_crossing_or_noncrossing_of_not_classifierControl_of_finsetControl_of_processedControl
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    [Fintype G.edgeSet]
+    (emb : PlaneEmbeddingWithBoundary G)
+    (p0Inside p4Inside : Bool) (side : V → Prop)
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (controlEdges processed : Finset G.edgeSet)
+    (hnotControl :
+      ¬ ∀ ⦃z : G.edgeSet → Color⦄,
+        z ∈ planarBoundaryZeroSubmodule emb →
+        (∀ e ∈ classifier.emittedFinset, z e = 0) →
+          z = 0)
+    (hcontrol :
+      ∀ ⦃z : G.edgeSet → Color⦄,
+        z ∈ planarBoundaryZeroSubmodule emb →
+        (∀ e ∈ controlEdges, z e = 0) →
+          z = 0)
+    (hprocessedControl :
+      ∀ ⦃z : G.edgeSet → Color⦄,
+        z ∈ planarBoundaryZeroSubmodule emb →
+        (∀ e ∈ classifier.emittedFinset, z e = 0) →
+          ∀ e ∈ processed, z e = 0) :
+    (∃ z : G.edgeSet → Color,
+      z ∈ planarBoundaryZeroSubmodule emb ∧
+        z ≠ 0 ∧
+          (∀ e : G.edgeSet,
+            data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e →
+              z e = 0) ∧
+            ∃ u v : V, ∃ e : G.edgeSet, ∃ p : G.Walk u v,
+              e ∈ classifier.crossingExtensionFinset controlEdges ∧
+                e ∈ classifier.residualRemainingControlEdges controlEdges processed ∧
+                  ¬ data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e ∧
+                    z e ≠ 0 ∧
+                      EdgeCrossesVertexSide G side e ∧
+                        side u ∧ ¬ side v ∧
+                          p.edges = [(e : Sym2 V)] ∧
+                            ∀ f : G.edgeSet, f ∈ classifier.emittedFinset →
+                              (f : Sym2 V) ∉ p.edges) ∨
+      ∃ z : G.edgeSet → Color,
+        z ∈ planarBoundaryZeroSubmodule emb ∧
+          z ≠ 0 ∧
+            (∀ e : G.edgeSet,
+              data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e →
+                z e = 0) ∧
+              ∃ e : G.edgeSet,
+                e ∈ classifier.noncrossingExtensionFinset controlEdges ∧
+                  e ∈ classifier.residualRemainingControlEdges controlEdges processed ∧
+                    ¬ data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e ∧
+                      z e ≠ 0 ∧ ¬ EdgeCrossesVertexSide G side e := by
+  classical
+  rcases data.exists_boundaryZeroChain_and_newResidualControlEdge_nonzero_of_not_classifierControl_of_finsetControl_of_processedControl
+      emb p0Inside p4Inside side classifier controlEdges processed hnotControl hcontrol
+      hprocessedControl with
+    ⟨z, hzBoundary, hzNonzero, hvanish, e, heResidual, hze⟩
+  have heRemaining : e ∈ classifier.remainingControlEdges controlEdges :=
+    (classifier.mem_residualRemainingControlEdges_iff controlEdges processed e).1
+      heResidual |>.1
+  have heControlOutside : e ∈ controlEdges ∧ e ∉ classifier.emittedFinset :=
+    (classifier.mem_remainingControlEdges_iff controlEdges e).1 heRemaining
+  have hePredicateOutside :
+      ¬ data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e := by
+    intro hedge
+    exact heControlOutside.2 ((classifier.emittedFinset_spec e).2 hedge)
+  by_cases hcross : EdgeCrossesVertexSide G side e
+  · rcases hcross with ⟨u, v, hu, hv, hsu, hsv⟩
+    rcases exists_walk_edges_eq_singleton_of_edge_endpoint_sides
+        (G := G) (side := side) hu hv hsu hsv with
+      ⟨p, hpEdges⟩
+    refine Or.inl
+      ⟨z, hzBoundary, hzNonzero, hvanish, u, v, e, p,
+        (classifier.mem_crossingExtensionFinset_iff controlEdges e).2
+          ⟨heControlOutside.1, heControlOutside.2, ?_⟩,
+        heResidual, hePredicateOutside, hze, ?_, hsu, hsv, hpEdges, ?_⟩
+    · exact ⟨u, v, hu, hv, hsu, hsv⟩
+    · exact ⟨u, v, hu, hv, hsu, hsv⟩
+    · intro f hf hmem
+      have hsym : (f : Sym2 V) = (e : Sym2 V) := by
+        simpa [hpEdges] using hmem
+      have hfe : f = e := Subtype.ext hsym
+      exact heControlOutside.2 (by simpa [hfe] using hf)
+  · exact Or.inr
+      ⟨z, hzBoundary, hzNonzero, hvanish, e,
+        (classifier.mem_noncrossingExtensionFinset_iff controlEdges e).2
+          ⟨heControlOutside.1, heControlOutside.2, hcross⟩,
+        heResidual, hePredicateOutside, hze, hcross⟩
 
 /-- Finite-bin witness form of the failed Boolean CAP5 classifier extension.  This is the
 consumer-facing version of the crossing/noncrossing split: the returned nonzero obstruction
@@ -6515,6 +7936,104 @@ theorem theorem49BoundaryRootSynthesis_of_enumeratedExceptionalAnnulusForcedEdge
     (by
       intro e hedge
       exact hwitnessBlue e ((hcert e).2 hedge))
+
+/-- Closed-walk kernel-shell packaging of a concrete finite emitted-edge certificate.  The
+certificate identifies the finite list with the enumerated CAP5 forced-edge predicate, while the
+rank-style nonzero witness and red/blue probes build the reusable pairing-kernel shell. -/
+def closedWalkNeighborhoodPairingKernelShell_of_enumeratedExceptionalAnnulusForcedEdgeFinsetNonzeroWitnesses
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    [Fintype G.edgeSet]
+    {emb : PlaneEmbeddingWithBoundary G}
+    (shell : ClosedWalkExactShell emb)
+    (colorings : Set (G.EdgeColoring Color))
+    (hsubset : colorings ⊆ G.EdgeKempeClosure shell.tait.coloring)
+    {κ : Type*}
+    (family : κ → projectedColoringGeneratorSubspace emb colorings)
+    (p0Inside p4Inside : Bool) (side : V → Prop) (emitted : Finset G.edgeSet)
+    (hcert :
+      data.EnumeratedExceptionalAnnulusForcedEdgeFinset p0Inside p4Inside side emitted)
+    (hnonzero :
+      ∀ ⦃z : G.edgeSet → Color⦄,
+        z ∈ planarBoundaryZeroSubmodule emb →
+        z ≠ 0 →
+          ∃ e : G.edgeSet,
+            data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e ∧
+              z e ≠ 0)
+    (hwitnessRed :
+      ∀ e : G.edgeSet,
+        data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e →
+          ∃ i : κ,
+            ((family i : projectedColoringGeneratorSubspace emb colorings) :
+                G.edgeSet → Color) =
+              Pi.single e red)
+    (hwitnessBlue :
+      ∀ e : G.edgeSet,
+        data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e →
+          ∃ i : κ,
+            ((family i : projectedColoringGeneratorSubspace emb colorings) :
+                G.edgeSet → Color) =
+              Pi.single e blue) :
+    ClosedWalkNeighborhoodPairingKernelShell emb :=
+  ClosedWalkNeighborhoodPairingKernelShell.of_controlEdgeNonzeroWitnesses
+    shell colorings hsubset family emitted
+    (by
+      intro z hz hzNonzero
+      rcases hnonzero hz hzNonzero with ⟨e, hedge, hze⟩
+      exact ⟨e, (hcert e).2 hedge, hze⟩)
+    (by
+      intro e hemitted
+      exact hwitnessRed e ((hcert e).1 hemitted))
+    (by
+      intro e hemitted
+      exact hwitnessBlue e ((hcert e).1 hemitted))
+
+/-- Successor-cycle kernel-shell packaging of a concrete finite emitted-edge certificate. -/
+def successorCycleNeighborhoodPairingKernelShell_of_enumeratedExceptionalAnnulusForcedEdgeFinsetNonzeroWitnesses
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    [Fintype G.edgeSet]
+    {emb : PlaneEmbeddingWithBoundary G}
+    (shell : SuccessorCycleExactShell emb)
+    (colorings : Set (G.EdgeColoring Color))
+    (hsubset : colorings ⊆ G.EdgeKempeClosure shell.tait.coloring)
+    {κ : Type*}
+    (family : κ → projectedColoringGeneratorSubspace emb colorings)
+    (p0Inside p4Inside : Bool) (side : V → Prop) (emitted : Finset G.edgeSet)
+    (hcert :
+      data.EnumeratedExceptionalAnnulusForcedEdgeFinset p0Inside p4Inside side emitted)
+    (hnonzero :
+      ∀ ⦃z : G.edgeSet → Color⦄,
+        z ∈ planarBoundaryZeroSubmodule emb →
+        z ≠ 0 →
+          ∃ e : G.edgeSet,
+            data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e ∧
+              z e ≠ 0)
+    (hwitnessRed :
+      ∀ e : G.edgeSet,
+        data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e →
+          ∃ i : κ,
+            ((family i : projectedColoringGeneratorSubspace emb colorings) :
+                G.edgeSet → Color) =
+              Pi.single e red)
+    (hwitnessBlue :
+      ∀ e : G.edgeSet,
+        data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e →
+          ∃ i : κ,
+            ((family i : projectedColoringGeneratorSubspace emb colorings) :
+                G.edgeSet → Color) =
+              Pi.single e blue) :
+    SuccessorCycleNeighborhoodPairingKernelShell emb :=
+  SuccessorCycleNeighborhoodPairingKernelShell.of_controlEdgeNonzeroWitnesses
+    shell colorings hsubset family emitted
+    (by
+      intro z hz hzNonzero
+      rcases hnonzero hz hzNonzero with ⟨e, hedge, hze⟩
+      exact ⟨e, (hcert e).2 hedge, hze⟩)
+    (by
+      intro e hemitted
+      exact hwitnessRed e ((hcert e).1 hemitted))
+    (by
+      intro e hemitted
+      exact hwitnessBlue e ((hcert e).1 hemitted))
 
 end CAP5TransportedEdgeComponentCoverCore
 

@@ -19,6 +19,28 @@ def scalarVertexKirchhoffSum (G : SimpleGraph V) [Fintype G.edgeSet]
     (x : G.edgeSet → F2) (v : V) : F2 :=
   Finset.sum (incidentEdgeFinset G v) fun e => x e
 
+theorem scalarVertexKirchhoffSum_fst
+    (G : SimpleGraph V) [Fintype G.edgeSet] (z : G.edgeSet → Color) (v : V) :
+    scalarVertexKirchhoffSum G (fun e => (z e).1) v =
+      (vertexKirchhoffSum G z v).1 := by
+  unfold scalarVertexKirchhoffSum vertexKirchhoffSum
+  induction incidentEdgeFinset G v using Finset.induction_on with
+  | empty => simp
+  | insert e edges heNot ih =>
+      rw [Finset.sum_insert heNot, Finset.sum_insert heNot, ih]
+      rfl
+
+theorem scalarVertexKirchhoffSum_snd
+    (G : SimpleGraph V) [Fintype G.edgeSet] (z : G.edgeSet → Color) (v : V) :
+    scalarVertexKirchhoffSum G (fun e => (z e).2) v =
+      (vertexKirchhoffSum G z v).2 := by
+  unfold scalarVertexKirchhoffSum vertexKirchhoffSum
+  induction incidentEdgeFinset G v using Finset.induction_on with
+  | empty => simp
+  | insert e edges heNot ih =>
+      rw [Finset.sum_insert heNot, Finset.sum_insert heNot, ih]
+      rfl
+
 /-- Chains satisfying the Kirchhoff condition at the selected vertices.  The v23 proof applies
 this to the interior vertices of the annular triangulation; that vertex set is not yet part of
 `PlaneEmbeddingWithBoundary`, so it is explicit here. -/
@@ -249,6 +271,42 @@ theorem eq_zero_of_mem_planarBoundaryZeroSubmodule_of_interiorEdgeSupport
   · exact Or.inr hboundary
   · exact Or.inl hinterior
 
+/-- Every nonzero selected-boundary-zero chain is detected by some ambient interior edge. -/
+theorem planarBoundaryZeroSubmodule_interiorEdgeSupport_nonzeroCoverage
+    {G : SimpleGraph V} (emb : PlaneEmbeddingWithBoundary G) :
+    ∀ ⦃z : G.edgeSet → Color⦄,
+      z ∈ planarBoundaryZeroSubmodule emb →
+      z ≠ 0 →
+        ∃ e : G.edgeSet,
+          e ∈ interiorEdgeSupport emb.faceBoundary emb.faces ∧ z e ≠ 0 := by
+  intro z hzBoundary hzNonzero
+  by_contra hnoInteriorHit
+  have hzeroInterior :
+      ∀ e ∈ interiorEdgeSupport emb.faceBoundary emb.faces, z e = 0 := by
+    intro e heInterior
+    by_contra hze
+    exact hnoInteriorHit ⟨e, heInterior, hze⟩
+  exact hzNonzero
+    (eq_zero_of_mem_planarBoundaryZeroSubmodule_of_interiorEdgeSupport
+      z hzBoundary hzeroInterior)
+
+/-- Any edge predicate containing the full ambient interior-edge support detects every nonzero
+selected-boundary-zero chain. -/
+theorem planarBoundaryZeroSubmodule_nonzeroCoverage_of_interiorEdgeSupport_subset
+    {G : SimpleGraph V} (emb : PlaneEmbeddingWithBoundary G)
+    {P : G.edgeSet → Prop}
+    (hInteriorSubset : ∀ e : G.edgeSet,
+      e ∈ interiorEdgeSupport emb.faceBoundary emb.faces → P e) :
+    ∀ ⦃z : G.edgeSet → Color⦄,
+      z ∈ planarBoundaryZeroSubmodule emb →
+      z ≠ 0 →
+        ∃ e : G.edgeSet, P e ∧ z e ≠ 0 := by
+  intro z hzBoundary hzNonzero
+  rcases planarBoundaryZeroSubmodule_interiorEdgeSupport_nonzeroCoverage
+      emb hzBoundary hzNonzero with
+    ⟨e, heInterior, hze⟩
+  exact ⟨e, hInteriorSubset e heInterior, hze⟩
+
 /-- The concrete v23-shaped target side available from the current interfaces: Kirchhoff at an
 explicit vertex set and zero on the selected boundary edges.  Instantiating `vertices` with the
 interior vertices is the next upstream data obligation. -/
@@ -340,6 +398,100 @@ noncomputable def theorem49BoundaryZeroKirchhoffScalarConstraintMap
       simp only [Pi.smul_apply]
       rw [← Finset.smul_sum]
       rfl
+
+/-- The finite scalar rank check is exactly the color-valued control check for the
+boundary-zero Kirchhoff target.  This is the Lean bridge used by the executable `F₂` lab:
+trivial kernel of the scalar coordinate constraint map is neither weaker nor stronger than
+vanishing of every color chain on the same finite controls. -/
+theorem theorem49BoundaryZeroKirchhoffSubspace_control_iff_scalarConstraintMap_ker_eq_bot
+    {G : SimpleGraph V} [Fintype G.edgeSet]
+    (emb : PlaneEmbeddingWithBoundary G) (vertices : Finset V)
+    (control : Finset G.edgeSet) :
+    (∀ ⦃z : G.edgeSet → Color⦄,
+      z ∈ theorem49BoundaryZeroKirchhoffSubspace emb vertices →
+      (∀ e ∈ control, z e = 0) →
+      z = 0) ↔
+    LinearMap.ker
+      (theorem49BoundaryZeroKirchhoffScalarConstraintMap emb vertices control) = ⊥ := by
+  constructor
+  · intro hcontrol
+    ext x
+    constructor
+    · intro hxker
+      change x = 0
+      by_contra hxne
+      have hxmap :
+          theorem49BoundaryZeroKirchhoffScalarConstraintMap emb vertices control x = 0 := by
+        simpa using hxker
+      have hcontrolScalar : ∀ e ∈ control, x e = 0 := by
+        intro e he
+        have hcoord := congrFun (congrArg Prod.fst hxmap) ⟨e, he⟩
+        simpa [theorem49BoundaryZeroKirchhoffScalarConstraintMap] using hcoord
+      have hboundary :
+          ∀ e ∈ selectedBoundarySupport emb.faceBoundary emb.faces emb.faces, x e = 0 := by
+        intro e he
+        have hcoord := congrFun (congrArg Prod.fst (congrArg Prod.snd hxmap)) ⟨e, he⟩
+        simpa [theorem49BoundaryZeroKirchhoffScalarConstraintMap] using hcoord
+      have hkirchhoff : ∀ v ∈ vertices, scalarVertexKirchhoffSum G x v = 0 := by
+        intro v hv
+        have hcoord := congrFun (congrArg Prod.snd (congrArg Prod.snd hxmap)) ⟨v, hv⟩
+        simpa [theorem49BoundaryZeroKirchhoffScalarConstraintMap] using hcoord
+      have hz :
+          redScalarColorChain x ∈ theorem49BoundaryZeroKirchhoffSubspace emb vertices :=
+        redScalarColorChain_mem_theorem49BoundaryZeroKirchhoffSubspace
+          hkirchhoff hboundary
+      have hvanish : ∀ e ∈ control, redScalarColorChain x e = 0 := by
+        intro e he
+        exact redScalarColorChain_apply_eq_zero_of_scalar_eq_zero (hcontrolScalar e he)
+      exact (redScalarColorChain_ne_zero_of_ne_zero hxne) (hcontrol hz hvanish)
+    · intro hxbot
+      change theorem49BoundaryZeroKirchhoffScalarConstraintMap emb vertices control x = 0
+      have hxzero : x = 0 := by
+        simpa using hxbot
+      simp [hxzero]
+  · intro hker z hz hvanish
+    let x₁ : G.edgeSet → F2 := fun e => (z e).1
+    let x₂ : G.edgeSet → F2 := fun e => (z e).2
+    have hx₁ker :
+        x₁ ∈ LinearMap.ker
+          (theorem49BoundaryZeroKirchhoffScalarConstraintMap emb vertices control) := by
+      change theorem49BoundaryZeroKirchhoffScalarConstraintMap emb vertices control x₁ = 0
+      ext e
+      · have hcoord := congrArg Prod.fst (hvanish e.1 e.2)
+        simpa [x₁, theorem49BoundaryZeroKirchhoffScalarConstraintMap] using hcoord
+      · have hboundary := boundaryZero_of_mem_planarBoundaryZeroSubmodule hz.2 e.1 e.2
+        have hcoord := congrArg Prod.fst hboundary
+        simpa [x₁, theorem49BoundaryZeroKirchhoffScalarConstraintMap] using hcoord
+      · have hkirchhoff := hz.1 e.1 e.2
+        have hcoord := congrArg Prod.fst hkirchhoff
+        simpa [x₁, theorem49BoundaryZeroKirchhoffScalarConstraintMap,
+          scalarVertexKirchhoffSum_fst] using hcoord
+    have hx₂ker :
+        x₂ ∈ LinearMap.ker
+          (theorem49BoundaryZeroKirchhoffScalarConstraintMap emb vertices control) := by
+      change theorem49BoundaryZeroKirchhoffScalarConstraintMap emb vertices control x₂ = 0
+      ext e
+      · have hcoord := congrArg Prod.snd (hvanish e.1 e.2)
+        simpa [x₂, theorem49BoundaryZeroKirchhoffScalarConstraintMap] using hcoord
+      · have hboundary := boundaryZero_of_mem_planarBoundaryZeroSubmodule hz.2 e.1 e.2
+        have hcoord := congrArg Prod.snd hboundary
+        simpa [x₂, theorem49BoundaryZeroKirchhoffScalarConstraintMap] using hcoord
+      · have hkirchhoff := hz.1 e.1 e.2
+        have hcoord := congrArg Prod.snd hkirchhoff
+        simpa [x₂, theorem49BoundaryZeroKirchhoffScalarConstraintMap,
+          scalarVertexKirchhoffSum_snd] using hcoord
+    have hx₁zero : x₁ = 0 := by
+      have hx₁bot : x₁ ∈ (⊥ : Submodule F2 (G.edgeSet → F2)) := by
+        simpa [hker] using hx₁ker
+      simpa using hx₁bot
+    have hx₂zero : x₂ = 0 := by
+      have hx₂bot : x₂ ∈ (⊥ : Submodule F2 (G.edgeSet → F2)) := by
+        simpa [hker] using hx₂ker
+      simpa using hx₂bot
+    funext e
+    ext
+    · exact congrFun hx₁zero e
+    · exact congrFun hx₂zero e
 
 theorem exists_redScalarColorChain_mem_theorem49BoundaryZeroKirchhoffSubspace_of_constraintMap_finrank_lt
     {G : SimpleGraph V} [Fintype G.edgeSet]
@@ -509,6 +661,74 @@ theorem theorem49BoundaryZeroKirchhoffSubspace_le_planarBoundaryZeroSubmodule
     (emb : PlaneEmbeddingWithBoundary G) (vertices : Finset V) :
     theorem49BoundaryZeroKirchhoffSubspace emb vertices ≤ planarBoundaryZeroSubmodule emb :=
   inf_le_right
+
+theorem theorem49BoundaryZeroKirchhoffSubspace_control_of_planarBoundaryZeroSubmodule_control
+    {G : SimpleGraph V} [Fintype G.edgeSet]
+    (emb : PlaneEmbeddingWithBoundary G) (vertices : Finset V)
+    (control : Finset G.edgeSet)
+    (hcontrol :
+      ∀ ⦃z : G.edgeSet → Color⦄,
+        z ∈ planarBoundaryZeroSubmodule emb →
+        (∀ e ∈ control, z e = 0) →
+        z = 0) :
+    ∀ ⦃z : G.edgeSet → Color⦄,
+      z ∈ theorem49BoundaryZeroKirchhoffSubspace emb vertices →
+      (∀ e ∈ control, z e = 0) →
+      z = 0 := by
+  intro z hz hvanish
+  exact hcontrol
+    ((theorem49BoundaryZeroKirchhoffSubspace_le_planarBoundaryZeroSubmodule
+      emb vertices) hz)
+    hvanish
+
+theorem theorem49BoundaryZeroKirchhoffSubspace_nonzeroCoverage_of_planarBoundaryZeroSubmodule_nonzeroCoverage
+    {G : SimpleGraph V} [Fintype G.edgeSet]
+    (emb : PlaneEmbeddingWithBoundary G) (vertices : Finset V)
+    (control : Finset G.edgeSet)
+    (hcoverage :
+      ∀ ⦃z : G.edgeSet → Color⦄,
+        z ∈ planarBoundaryZeroSubmodule emb →
+        z ≠ 0 →
+        ∃ e : G.edgeSet, e ∈ control ∧ z e ≠ 0) :
+    ∀ ⦃z : G.edgeSet → Color⦄,
+      z ∈ theorem49BoundaryZeroKirchhoffSubspace emb vertices →
+      z ≠ 0 →
+      ∃ e : G.edgeSet, e ∈ control ∧ z e ≠ 0 := by
+  intro z hz hzNonzero
+  exact hcoverage
+    ((theorem49BoundaryZeroKirchhoffSubspace_le_planarBoundaryZeroSubmodule
+      emb vertices) hz)
+    hzNonzero
+
+theorem theorem49BoundaryZeroKirchhoffSubspace_interiorEdgeSupport_nonzeroCoverage
+    {G : SimpleGraph V} [Fintype G.edgeSet]
+    (emb : PlaneEmbeddingWithBoundary G) (vertices : Finset V) :
+    ∀ ⦃z : G.edgeSet → Color⦄,
+      z ∈ theorem49BoundaryZeroKirchhoffSubspace emb vertices →
+      z ≠ 0 →
+        ∃ e : G.edgeSet,
+          e ∈ interiorEdgeSupport emb.faceBoundary emb.faces ∧ z e ≠ 0 :=
+  theorem49BoundaryZeroKirchhoffSubspace_nonzeroCoverage_of_planarBoundaryZeroSubmodule_nonzeroCoverage
+    emb vertices (interiorEdgeSupport emb.faceBoundary emb.faces)
+    (planarBoundaryZeroSubmodule_interiorEdgeSupport_nonzeroCoverage emb)
+
+theorem theorem49BoundaryZeroKirchhoffSubspace_nonzeroCoverage_of_interiorEdgeSupport_subset
+    {G : SimpleGraph V} [Fintype G.edgeSet]
+    (emb : PlaneEmbeddingWithBoundary G) (vertices : Finset V)
+    {P : G.edgeSet → Prop}
+    (hInteriorSubset : ∀ e : G.edgeSet,
+      e ∈ interiorEdgeSupport emb.faceBoundary emb.faces → P e) :
+    ∀ ⦃z : G.edgeSet → Color⦄,
+      z ∈ theorem49BoundaryZeroKirchhoffSubspace emb vertices →
+      z ≠ 0 →
+        ∃ e : G.edgeSet, P e ∧ z e ≠ 0 := by
+  intro z hz hzNonzero
+  exact
+    planarBoundaryZeroSubmodule_nonzeroCoverage_of_interiorEdgeSupport_subset
+      emb hInteriorSubset
+      ((theorem49BoundaryZeroKirchhoffSubspace_le_planarBoundaryZeroSubmodule
+        emb vertices) hz)
+      hzNonzero
 
 theorem boundaryZero_of_mem_theorem49BoundaryZeroKirchhoffSubspace
     {G : SimpleGraph V} [Fintype G.edgeSet]
