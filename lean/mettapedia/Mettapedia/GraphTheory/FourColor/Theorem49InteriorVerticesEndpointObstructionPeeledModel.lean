@@ -208,6 +208,11 @@ theorem pet12_mem_interiorEdgeSupport :
         exact Finset.mem_univ _, by decide⟩,
     totalIncidenceCount_pet12⟩
 
+theorem peeledEndpointTouch_interiorEdgeSupport_nonempty :
+    (interiorEdgeSupport peeledEndpointTouchEmbedding.faceBoundary
+      peeledEndpointTouchEmbedding.faces).Nonempty :=
+  ⟨pet12, pet12_mem_interiorEdgeSupport⟩
+
 theorem pet12_not_mem_selectedBoundarySupport :
     pet12 ∉ selectedBoundarySupport
       peeledEndpointTouchEmbedding.faceBoundary peeledEndpointTouchEmbedding.faces
@@ -771,6 +776,20 @@ theorem not_peeledEndpointTouchEmbedding_selectedBoundaryInducedSubgraph :
   rw [SelectedBoundaryInducedSubgraph, peeledEndpointTouch_selectedBoundarySupport_eq]
   exact not_peeledEndpointTouchBoundary_union_induced
 
+theorem not_interiorEdgesNotSelectedBoundaryChords_peeledEndpointTouch :
+    ¬ InteriorEdgesNotSelectedBoundaryChords peeledEndpointTouchEmbedding := by
+  intro hChordFree
+  rcases hChordFree pet12 pet12_mem_interiorEdgeSupport with ⟨v, hvEdge, hAvoid⟩
+  have hv_cases : v = (1 : Fin 4) ∨ v = (2 : Fin 4) := by
+    fin_cases v
+    · simp [pet12] at hvEdge
+    · exact Or.inl rfl
+    · exact Or.inr rfl
+    · simp [pet12] at hvEdge
+  rcases hv_cases with rfl | rfl
+  · exact hAvoid pet01 pet01_mem_selectedBoundarySupport vertex_one_mem_pet01
+  · exact hAvoid pet23 pet23_mem_selectedBoundarySupport vertex_two_mem_pet23
+
 theorem peeledEndpointTouchBoundary_refutes_componentInduced_to_crossComponentChordFree :
     ¬ ∀ (G : SimpleGraph (Fin 4)) (outer inner : Finset G.edgeSet),
       BoundaryEdgeSetInducedSubgraph outer →
@@ -830,6 +849,57 @@ theorem peeledEndpointTouchEmbedding_refutes_componentInducedBoundaryData_to_sel
         simpa [peeledEndpointTouchBoundaryData] using peeledEndpointTouchOuterBoundary_induced)
       (by
         simpa [peeledEndpointTouchBoundaryData] using peeledEndpointTouchInnerBoundary_induced))
+
+theorem peeledEndpointTouchBoundaryData_componentInduced_noChordCarrierObstruction :
+    BoundaryEdgeSetInducedSubgraph
+        peeledEndpointTouchBoundaryData.outerAmbientBoundary ∧
+      BoundaryEdgeSetInducedSubgraph
+        peeledEndpointTouchBoundaryData.innerAmbientBoundary ∧
+        (interiorEdgeSupport peeledEndpointTouchEmbedding.faceBoundary
+          peeledEndpointTouchEmbedding.faces).Nonempty ∧
+          ¬ InteriorEdgesNotSelectedBoundaryChords peeledEndpointTouchEmbedding ∧
+            ¬ (selectedBoundaryInteriorEdgeEndpointVertices
+              peeledEndpointTouchEmbedding).Nonempty := by
+  refine ⟨?_, ?_, peeledEndpointTouch_interiorEdgeSupport_nonempty,
+    not_interiorEdgesNotSelectedBoundaryChords_peeledEndpointTouch, ?_⟩
+  · simpa [peeledEndpointTouchBoundaryData] using peeledEndpointTouchOuterBoundary_induced
+  · simpa [peeledEndpointTouchBoundaryData] using peeledEndpointTouchInnerBoundary_induced
+  · rintro ⟨v, hv⟩
+    simp [selectedBoundaryInteriorEdgeEndpointVertices_eq_empty_peeledEndpointTouch] at hv
+
+theorem peeledEndpointTouchEmbedding_refutes_componentInducedBoundaryData_to_interiorEdgesNotSelectedBoundaryChords :
+    ¬ ∀ (G : SimpleGraph (Fin 4)) (emb : PlaneEmbeddingWithBoundary G),
+      ∀ data : PlanarBoundaryAnnulusBoundaryData emb,
+        BoundaryEdgeSetInducedSubgraph data.outerAmbientBoundary →
+          BoundaryEdgeSetInducedSubgraph data.innerAmbientBoundary →
+            InteriorEdgesNotSelectedBoundaryChords emb := by
+  intro h
+  exact not_interiorEdgesNotSelectedBoundaryChords_peeledEndpointTouch
+    (h peeledEndpointTouchGraph peeledEndpointTouchEmbedding peeledEndpointTouchBoundaryData
+      (by
+        simpa [peeledEndpointTouchBoundaryData] using peeledEndpointTouchOuterBoundary_induced)
+      (by
+        simpa [peeledEndpointTouchBoundaryData] using peeledEndpointTouchInnerBoundary_induced))
+
+theorem
+    peeledEndpointTouchEmbedding_refutes_componentInducedBoundaryData_and_interiorSupportNonempty_to_nonempty_selectedBoundaryInteriorEdgeEndpointVertices :
+    ¬ ∀ (G : SimpleGraph (Fin 4)) (emb : PlaneEmbeddingWithBoundary G),
+      ∀ data : PlanarBoundaryAnnulusBoundaryData emb,
+        BoundaryEdgeSetInducedSubgraph data.outerAmbientBoundary →
+          BoundaryEdgeSetInducedSubgraph data.innerAmbientBoundary →
+            (interiorEdgeSupport emb.faceBoundary emb.faces).Nonempty →
+              (selectedBoundaryInteriorEdgeEndpointVertices emb).Nonempty := by
+  intro h
+  have hCarrier :
+      (selectedBoundaryInteriorEdgeEndpointVertices peeledEndpointTouchEmbedding).Nonempty :=
+    h peeledEndpointTouchGraph peeledEndpointTouchEmbedding peeledEndpointTouchBoundaryData
+      (by
+        simpa [peeledEndpointTouchBoundaryData] using peeledEndpointTouchOuterBoundary_induced)
+      (by
+        simpa [peeledEndpointTouchBoundaryData] using peeledEndpointTouchInnerBoundary_induced)
+      peeledEndpointTouch_interiorEdgeSupport_nonempty
+  rcases hCarrier with ⟨v, hv⟩
+  simp [selectedBoundaryInteriorEdgeEndpointVertices_eq_empty_peeledEndpointTouch] at hv
 
 noncomputable def peeledEndpointTouchOuterBoundaryRootAdjDistancePeelData :
     PlanarBoundaryOuterBoundaryRootAdjDistancePeelData peeledEndpointTouchEmbedding :=
