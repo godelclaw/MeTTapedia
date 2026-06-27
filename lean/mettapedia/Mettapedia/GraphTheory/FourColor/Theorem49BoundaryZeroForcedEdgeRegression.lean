@@ -17035,6 +17035,55 @@ theorem sharedInteriorPair_CAP5_theorem49BoundaryRootSynthesis_of_emits_interior
       p0Inside p4Inside side classifier hemits)
 
 /--
+Lab-threshold form of the boundary-trimmed fixed-point endpoint for the shared focus shell.
+The finite F₂ minimum is exactly two emitted shared-interior controls, so the cardinality
+threshold is enough to close the unique-certificate synthesis route.
+-/
+theorem sharedInteriorPair_CAP5_theorem49BoundaryRootSynthesis_of_emittedInterior_card_ge_two_uniqueCertificates_boundaryTrimmed
+    {boundaryEdge : Fin 5 → sharedInteriorPairGraph.edgeSet} {n : Nat}
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    [FiniteDimensional F2 (sharedInteriorPairGraph.edgeSet → Color)]
+    (C₀ : sharedInteriorPairGraph.EdgeColoring Color)
+    (hsubset :
+      sharedInteriorPairProjectedGeneratorCertificateColorings ⊆
+        sharedInteriorPairGraph.EdgeKempeClosure C₀)
+    (p0Inside p4Inside : Bool) (side : Fin 8 → Prop)
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (hcard :
+      2 ≤ (classifier.emittedFinset.filter fun e =>
+        e ∈ sharedInteriorPairInteriorControlEdges).card) :
+    Theorem49BoundaryRootSynthesis sharedInteriorPairEmbedding C₀ :=
+  sharedInteriorPair_CAP5_theorem49BoundaryRootSynthesis_of_emits_interiorControlEdges_uniqueCertificates_boundaryTrimmed
+    C₀ hsubset p0Inside p4Inside side classifier
+    ((sharedInteriorPair_emittedInterior_card_ge_two_iff classifier.emittedFinset).1 hcard)
+
+/--
+Contrapositive diagnostic for the shared focus shell.  If the boundary-trimmed
+unique-certificate route does not close, the classifier must be below the exact two-control
+boundary-zero threshold found by the finite F₂ lab.
+-/
+theorem sharedInteriorPair_CAP5_emittedInterior_card_lt_two_of_not_theorem49BoundaryRootSynthesis_uniqueCertificates_boundaryTrimmed
+    {boundaryEdge : Fin 5 → sharedInteriorPairGraph.edgeSet} {n : Nat}
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    [FiniteDimensional F2 (sharedInteriorPairGraph.edgeSet → Color)]
+    (C₀ : sharedInteriorPairGraph.EdgeColoring Color)
+    (hsubset :
+      sharedInteriorPairProjectedGeneratorCertificateColorings ⊆
+        sharedInteriorPairGraph.EdgeKempeClosure C₀)
+    (p0Inside p4Inside : Bool) (side : Fin 8 → Prop)
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (hnotSynthesis : ¬ Theorem49BoundaryRootSynthesis sharedInteriorPairEmbedding C₀) :
+    (classifier.emittedFinset.filter fun e =>
+      e ∈ sharedInteriorPairInteriorControlEdges).card < 2 :=
+  Nat.lt_of_not_ge (by
+    intro hcard
+    exact hnotSynthesis
+      (sharedInteriorPair_CAP5_theorem49BoundaryRootSynthesis_of_emittedInterior_card_ge_two_uniqueCertificates_boundaryTrimmed
+        C₀ hsubset p0Inside p4Inside side classifier hcard))
+
+/--
 Boundary-trimmed fixed-point kernel endpoint for the shared focus shell.  Empty extension bins
 make the two lab-certified controls emitted, and the canonical certificate family already has a
 trivial selected-boundary-zero pairing kernel.
@@ -17537,6 +17586,55 @@ theorem wheelWithInnerTriangle_CAP5_theorem49BoundaryRootSynthesis_of_emits_inte
     wheelWithInnerTriangleUniqueCertificateRedBlueFamily
     (wheelWithInnerTriangle_CAP5_ker_planarBoundaryZeroFamilyPairingMap_uniqueCertificates_of_emits_interiorControlEdges_boundaryTrimmed
       p0Inside p4Inside side classifier hemits)
+
+/--
+Lab-threshold form of the boundary-trimmed fixed-point endpoint for the wheel focus shell.
+The boundary-zero F₂ minimum is exactly the three emitted spokes, so the cardinality threshold
+is enough to close the unique-certificate synthesis route.
+-/
+theorem wheelWithInnerTriangle_CAP5_theorem49BoundaryRootSynthesis_of_emittedInterior_card_ge_three_uniqueCertificates_boundaryTrimmed
+    {boundaryEdge : Fin 5 → wheelWithInnerTriangleGraph.edgeSet} {n : Nat}
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    [FiniteDimensional F2 (wheelWithInnerTriangleGraph.edgeSet → Color)]
+    (C₀ : wheelWithInnerTriangleGraph.EdgeColoring Color)
+    (hsubset :
+      wheelWithInnerTriangleProjectedGeneratorCertificateColorings ⊆
+        wheelWithInnerTriangleGraph.EdgeKempeClosure C₀)
+    (p0Inside p4Inside : Bool) (side : Fin 7 → Prop)
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (hcard :
+      3 ≤ (classifier.emittedFinset.filter fun e =>
+        e ∈ wheelWithInnerTriangleInteriorControlEdges).card) :
+    Theorem49BoundaryRootSynthesis wheelWithInnerTriangleEmbedding C₀ :=
+  wheelWithInnerTriangle_CAP5_theorem49BoundaryRootSynthesis_of_emits_interiorControlEdges_uniqueCertificates_boundaryTrimmed
+    C₀ hsubset p0Inside p4Inside side classifier
+    ((wheelWithInnerTriangle_emittedInterior_card_ge_three_iff classifier.emittedFinset).1 hcard)
+
+/--
+Contrapositive diagnostic for the wheel focus shell.  If the boundary-trimmed
+unique-certificate route does not close, the classifier must be below the exact three-spoke
+boundary-zero threshold found by the finite F₂ lab.
+-/
+theorem wheelWithInnerTriangle_CAP5_emittedInterior_card_lt_three_of_not_theorem49BoundaryRootSynthesis_uniqueCertificates_boundaryTrimmed
+    {boundaryEdge : Fin 5 → wheelWithInnerTriangleGraph.edgeSet} {n : Nat}
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    [FiniteDimensional F2 (wheelWithInnerTriangleGraph.edgeSet → Color)]
+    (C₀ : wheelWithInnerTriangleGraph.EdgeColoring Color)
+    (hsubset :
+      wheelWithInnerTriangleProjectedGeneratorCertificateColorings ⊆
+        wheelWithInnerTriangleGraph.EdgeKempeClosure C₀)
+    (p0Inside p4Inside : Bool) (side : Fin 7 → Prop)
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (hnotSynthesis : ¬ Theorem49BoundaryRootSynthesis wheelWithInnerTriangleEmbedding C₀) :
+    (classifier.emittedFinset.filter fun e =>
+      e ∈ wheelWithInnerTriangleInteriorControlEdges).card < 3 :=
+  Nat.lt_of_not_ge (by
+    intro hcard
+    exact hnotSynthesis
+      (wheelWithInnerTriangle_CAP5_theorem49BoundaryRootSynthesis_of_emittedInterior_card_ge_three_uniqueCertificates_boundaryTrimmed
+        C₀ hsubset p0Inside p4Inside side classifier hcard))
 
 /--
 Boundary-trimmed fixed-point kernel endpoint for the wheel focus shell.  Empty extension bins
