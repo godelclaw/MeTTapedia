@@ -2628,6 +2628,74 @@ theorem extensionCoordinateSignalWithResidualProgress_of_not_classifierControl_o
           controlEdges processed he)
 
 /--
+Residual coordinate signal from an original finite-control proof plus a processed-edge zero
+invariant.  This is the iteration-facing form: the later control set may still be the original
+finite worklist, but the obstruction edge is forced into the explicit residual worklist because
+processed edges are already controlled whenever the emitted classifier edges are zero.
+-/
+theorem extensionCoordinateSignalWithResidualProgress_of_not_classifierControl_of_finsetControl_of_processedControl
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    [Fintype G.edgeSet]
+    (emb : PlaneEmbeddingWithBoundary G)
+    (p0Inside p4Inside : Bool) (side : V → Prop)
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (controlEdges processed : Finset G.edgeSet)
+    (hnotControl :
+      ¬ ∀ ⦃z : G.edgeSet → Color⦄,
+        z ∈ planarBoundaryZeroSubmodule emb →
+        (∀ e ∈ classifier.emittedFinset, z e = 0) →
+          z = 0)
+    (hcontrol :
+      ∀ ⦃z : G.edgeSet → Color⦄,
+        z ∈ planarBoundaryZeroSubmodule emb →
+        (∀ e ∈ controlEdges, z e = 0) →
+          z = 0)
+    (hprocessedControl :
+      ∀ ⦃z : G.edgeSet → Color⦄,
+        z ∈ planarBoundaryZeroSubmodule emb →
+        (∀ e ∈ classifier.emittedFinset, z e = 0) →
+          ∀ e ∈ processed, z e = 0) :
+    data.ExtensionCoordinateSignalWithResidualProgress emb p0Inside p4Inside side classifier
+      controlEdges processed := by
+  rcases data.exists_boundaryZeroChain_and_residualExtensionFinsetWitness_crossing_or_noncrossing_of_not_classifierControl_of_finsetControl_of_processedControl
+      emb p0Inside p4Inside side classifier controlEdges processed hnotControl hcontrol
+      hprocessedControl with
+    hcrossing | hnoncrossing
+  · rcases hcrossing with
+      ⟨z, hzBoundary, hzNonzero, hvanish, u, v, e, p, heBin, heResidual,
+        hePredicateOutside, hze, hcross, hsideu, hsidev, hpEdges, havoid⟩
+    have heRemaining : e ∈ classifier.remainingControlEdges controlEdges :=
+      (classifier.mem_residualRemainingControlEdges_iff controlEdges processed e).1
+        heResidual |>.1
+    have hcoordinate :
+        Curriculum.pathXor (edgeColorFirstCoordinateWeight z) p.edges ≠ 0 ∨
+          Curriculum.pathXor (edgeColorSecondCoordinateWeight z) p.edges ≠ 0 :=
+      edgeColorCoordinatePathXor_ne_zero_of_walk_edges_singleton_of_color_ne_zero
+        z hpEdges hze
+    exact Or.inl
+      ⟨z, hzBoundary, hzNonzero, hvanish, u, v, e, p, heBin, heRemaining,
+        heResidual, hePredicateOutside, hze, hcross, hsideu, hsidev, hpEdges,
+        havoid, hcoordinate,
+        classifier.card_residualRemainingControlEdges_insert_lt_of_mem controlEdges
+          processed heResidual,
+        classifier.card_erase_remainingControlEdges_lt_of_mem controlEdges heRemaining⟩
+  · rcases hnoncrossing with
+      ⟨z, hzBoundary, hzNonzero, hvanish, e, heBin, heResidual,
+        hePredicateOutside, hze, hnotCross⟩
+    have heRemaining : e ∈ classifier.remainingControlEdges controlEdges :=
+      (classifier.mem_residualRemainingControlEdges_iff controlEdges processed e).1
+        heResidual |>.1
+    have hcoordinate : (z e).1 ≠ 0 ∨ (z e).2 ≠ 0 :=
+      (color_ne_zero_iff_fst_or_snd_ne_zero (z e)).1 hze
+    exact Or.inr
+      ⟨z, hzBoundary, hzNonzero, hvanish, e, heBin, heRemaining, heResidual,
+        hePredicateOutside, hze, hnotCross, hcoordinate,
+        classifier.card_residualRemainingControlEdges_insert_lt_of_mem controlEdges
+          processed heResidual,
+        classifier.card_erase_remainingControlEdges_lt_of_mem controlEdges heRemaining⟩
+
+/--
 Cardinality-driven named-payload form of the CAP5 extension coordinate signal.  The emitted
 classifier controls do not need a separate non-control hypothesis when their coordinate count plus
 the selected boundary-zero coordinate count is strictly smaller than the edge-chain space.
