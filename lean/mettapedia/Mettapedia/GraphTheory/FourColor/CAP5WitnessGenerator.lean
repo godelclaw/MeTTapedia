@@ -5673,6 +5673,61 @@ theorem exists_boundaryZeroChain_and_newControlEdge_nonzero_of_not_classifierCon
     exact hvanishEmitted e ((classifier.emittedFinset_spec e).2 hedge),
     hnew⟩
 
+/--
+Residual finite-control witness for a failed Boolean CAP5 classifier.  If the later control set
+controls selected-boundary-zero chains and the already processed edges are known zero whenever the
+emitted classifier edges are zero, then the next nonzero control edge can be chosen from the
+explicit residual worklist.
+-/
+theorem exists_boundaryZeroChain_and_newResidualControlEdge_nonzero_of_not_classifierControl_of_finsetControl_of_processedControl
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    [Fintype G.edgeSet]
+    (emb : PlaneEmbeddingWithBoundary G)
+    (p0Inside p4Inside : Bool) (side : V → Prop)
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (controlEdges processed : Finset G.edgeSet)
+    (hnotControl :
+      ¬ ∀ ⦃z : G.edgeSet → Color⦄,
+        z ∈ planarBoundaryZeroSubmodule emb →
+        (∀ e ∈ classifier.emittedFinset, z e = 0) →
+          z = 0)
+    (hcontrol :
+      ∀ ⦃z : G.edgeSet → Color⦄,
+        z ∈ planarBoundaryZeroSubmodule emb →
+        (∀ e ∈ controlEdges, z e = 0) →
+          z = 0)
+    (hprocessedControl :
+      ∀ ⦃z : G.edgeSet → Color⦄,
+        z ∈ planarBoundaryZeroSubmodule emb →
+        (∀ e ∈ classifier.emittedFinset, z e = 0) →
+          ∀ e ∈ processed, z e = 0) :
+    ∃ z : G.edgeSet → Color,
+      z ∈ planarBoundaryZeroSubmodule emb ∧
+        z ≠ 0 ∧
+          (∀ e : G.edgeSet,
+            data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e →
+              z e = 0) ∧
+            ∃ e : G.edgeSet,
+              e ∈ classifier.residualRemainingControlEdges controlEdges processed ∧
+                z e ≠ 0 := by
+  rcases exists_obstruction_and_newControlEdge_nonzero_of_not_finsetControls_of_finsetControls
+      classifier.emittedFinset controlEdges hnotControl hcontrol with
+    ⟨z, hzBoundary, hzNonzero, hvanishEmitted, e, heControl, heOutside, hze⟩
+  have heRemaining : e ∈ classifier.remainingControlEdges controlEdges :=
+    (classifier.mem_remainingControlEdges_iff controlEdges e).2 ⟨heControl, heOutside⟩
+  have heNotProcessed : e ∉ processed := by
+    intro heProcessed
+    exact hze (hprocessedControl hzBoundary hvanishEmitted e heProcessed)
+  exact
+    ⟨z, hzBoundary, hzNonzero, by
+      intro e hedge
+      exact hvanishEmitted e ((classifier.emittedFinset_spec e).2 hedge),
+      e,
+      (classifier.mem_residualRemainingControlEdges_iff controlEdges processed e).2
+        ⟨heRemaining, heNotProcessed⟩,
+      hze⟩
+
 /-- Geometric/algebraic binning for a failed Boolean CAP5 classifier after a successful later
 finite-control extension.  The new nonzero control edge returned by the algebraic obstruction is
 either a side-crossing one-edge probe outside the classifier output, or a noncrossing coordinate
@@ -5745,6 +5800,98 @@ theorem exists_boundaryZeroChain_and_newControlEdge_crossing_or_noncrossing_of_n
     exact heOutside (by simpa [hfe] using hf)
   · exact Or.inr ⟨z, hzBoundary, hzNonzero, hvanish, e,
       heControl, heOutside, hePredicateOutside, hze, hcross⟩
+
+/--
+Residual geometric/algebraic binning for a failed Boolean CAP5 classifier after a successful
+later finite-control extension.  The processed-edge zero invariant ensures that the returned
+crossing or noncrossing extension coordinate lies in the explicit residual worklist.
+-/
+theorem exists_boundaryZeroChain_and_residualExtensionFinsetWitness_crossing_or_noncrossing_of_not_classifierControl_of_finsetControl_of_processedControl
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    [Fintype G.edgeSet]
+    (emb : PlaneEmbeddingWithBoundary G)
+    (p0Inside p4Inside : Bool) (side : V → Prop)
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (controlEdges processed : Finset G.edgeSet)
+    (hnotControl :
+      ¬ ∀ ⦃z : G.edgeSet → Color⦄,
+        z ∈ planarBoundaryZeroSubmodule emb →
+        (∀ e ∈ classifier.emittedFinset, z e = 0) →
+          z = 0)
+    (hcontrol :
+      ∀ ⦃z : G.edgeSet → Color⦄,
+        z ∈ planarBoundaryZeroSubmodule emb →
+        (∀ e ∈ controlEdges, z e = 0) →
+          z = 0)
+    (hprocessedControl :
+      ∀ ⦃z : G.edgeSet → Color⦄,
+        z ∈ planarBoundaryZeroSubmodule emb →
+        (∀ e ∈ classifier.emittedFinset, z e = 0) →
+          ∀ e ∈ processed, z e = 0) :
+    (∃ z : G.edgeSet → Color,
+      z ∈ planarBoundaryZeroSubmodule emb ∧
+        z ≠ 0 ∧
+          (∀ e : G.edgeSet,
+            data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e →
+              z e = 0) ∧
+            ∃ u v : V, ∃ e : G.edgeSet, ∃ p : G.Walk u v,
+              e ∈ classifier.crossingExtensionFinset controlEdges ∧
+                e ∈ classifier.residualRemainingControlEdges controlEdges processed ∧
+                  ¬ data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e ∧
+                    z e ≠ 0 ∧
+                      EdgeCrossesVertexSide G side e ∧
+                        side u ∧ ¬ side v ∧
+                          p.edges = [(e : Sym2 V)] ∧
+                            ∀ f : G.edgeSet, f ∈ classifier.emittedFinset →
+                              (f : Sym2 V) ∉ p.edges) ∨
+      ∃ z : G.edgeSet → Color,
+        z ∈ planarBoundaryZeroSubmodule emb ∧
+          z ≠ 0 ∧
+            (∀ e : G.edgeSet,
+              data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e →
+                z e = 0) ∧
+              ∃ e : G.edgeSet,
+                e ∈ classifier.noncrossingExtensionFinset controlEdges ∧
+                  e ∈ classifier.residualRemainingControlEdges controlEdges processed ∧
+                    ¬ data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e ∧
+                      z e ≠ 0 ∧ ¬ EdgeCrossesVertexSide G side e := by
+  classical
+  rcases data.exists_boundaryZeroChain_and_newResidualControlEdge_nonzero_of_not_classifierControl_of_finsetControl_of_processedControl
+      emb p0Inside p4Inside side classifier controlEdges processed hnotControl hcontrol
+      hprocessedControl with
+    ⟨z, hzBoundary, hzNonzero, hvanish, e, heResidual, hze⟩
+  have heRemaining : e ∈ classifier.remainingControlEdges controlEdges :=
+    (classifier.mem_residualRemainingControlEdges_iff controlEdges processed e).1
+      heResidual |>.1
+  have heControlOutside : e ∈ controlEdges ∧ e ∉ classifier.emittedFinset :=
+    (classifier.mem_remainingControlEdges_iff controlEdges e).1 heRemaining
+  have hePredicateOutside :
+      ¬ data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e := by
+    intro hedge
+    exact heControlOutside.2 ((classifier.emittedFinset_spec e).2 hedge)
+  by_cases hcross : EdgeCrossesVertexSide G side e
+  · rcases hcross with ⟨u, v, hu, hv, hsu, hsv⟩
+    rcases exists_walk_edges_eq_singleton_of_edge_endpoint_sides
+        (G := G) (side := side) hu hv hsu hsv with
+      ⟨p, hpEdges⟩
+    refine Or.inl
+      ⟨z, hzBoundary, hzNonzero, hvanish, u, v, e, p,
+        (classifier.mem_crossingExtensionFinset_iff controlEdges e).2
+          ⟨heControlOutside.1, heControlOutside.2, ?_⟩,
+        heResidual, hePredicateOutside, hze, ?_, hsu, hsv, hpEdges, ?_⟩
+    · exact ⟨u, v, hu, hv, hsu, hsv⟩
+    · exact ⟨u, v, hu, hv, hsu, hsv⟩
+    · intro f hf hmem
+      have hsym : (f : Sym2 V) = (e : Sym2 V) := by
+        simpa [hpEdges] using hmem
+      have hfe : f = e := Subtype.ext hsym
+      exact heControlOutside.2 (by simpa [hfe] using hf)
+  · exact Or.inr
+      ⟨z, hzBoundary, hzNonzero, hvanish, e,
+        (classifier.mem_noncrossingExtensionFinset_iff controlEdges e).2
+          ⟨heControlOutside.1, heControlOutside.2, hcross⟩,
+        heResidual, hePredicateOutside, hze, hcross⟩
 
 /-- Finite-bin witness form of the failed Boolean CAP5 classifier extension.  This is the
 consumer-facing version of the crossing/noncrossing split: the returned nonzero obstruction
