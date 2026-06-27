@@ -13070,6 +13070,140 @@ theorem wheelWithInnerTriangle_remainingBlueSingleCoordinateMembership_of_unique
   exact wheelWithInnerTriangle_redBlueSingleCoordinateMemberships_of_uniqueCertificates.2 e
     ((classifier.mem_remainingControlEdges_iff wheelWithInnerTriangleInteriorControlEdges e).1 he).1
 
+/--
+Cardinality handoff for the shared focus shell.  Below the two-control F2 lab threshold, the
+emitted classifier plus the seven selected-boundary edges is still short of all nine edges.
+-/
+theorem sharedInteriorPair_CAP5_emittedFinset_card_add_boundary_card_lt_of_card_lt_two
+    {boundaryEdge : Fin 5 → sharedInteriorPairGraph.edgeSet} {n : Nat}
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    {p0Inside p4Inside : Bool} {side : Fin 8 → Prop}
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (hcard : classifier.emittedFinset.card < 2) :
+    classifier.emittedFinset.card +
+        Fintype.card {e : sharedInteriorPairGraph.edgeSet //
+          e ∈ selectedBoundarySupport sharedInteriorPairEmbedding.faceBoundary
+            sharedInteriorPairEmbedding.faces sharedInteriorPairEmbedding.faces} <
+      Fintype.card sharedInteriorPairGraph.edgeSet := by
+  have hboundary :
+      Fintype.card {e : sharedInteriorPairGraph.edgeSet //
+        e ∈ selectedBoundarySupport sharedInteriorPairEmbedding.faceBoundary
+          sharedInteriorPairEmbedding.faces sharedInteriorPairEmbedding.faces} = 7 := by
+    rw [sharedInteriorPair_selectedBoundarySupport_eq]
+    decide
+  have hedge : Fintype.card sharedInteriorPairGraph.edgeSet = 9 := by
+    decide
+  rw [hboundary, hedge]
+  omega
+
+/--
+Cardinality handoff for the wheel focus shell.  Below the three-spoke F2 lab threshold, the
+emitted classifier plus the six selected-boundary edges is still short of all nine edges.
+-/
+theorem wheelWithInnerTriangle_CAP5_emittedFinset_card_add_boundary_card_lt_of_card_lt_three
+    {boundaryEdge : Fin 5 → wheelWithInnerTriangleGraph.edgeSet} {n : Nat}
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    {p0Inside p4Inside : Bool} {side : Fin 7 → Prop}
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (hcard : classifier.emittedFinset.card < 3) :
+    classifier.emittedFinset.card +
+        Fintype.card {e : wheelWithInnerTriangleGraph.edgeSet //
+          e ∈ selectedBoundarySupport wheelWithInnerTriangleEmbedding.faceBoundary
+            wheelWithInnerTriangleEmbedding.faces wheelWithInnerTriangleEmbedding.faces} <
+      Fintype.card wheelWithInnerTriangleGraph.edgeSet := by
+  have hboundary :
+      Fintype.card {e : wheelWithInnerTriangleGraph.edgeSet //
+        e ∈ selectedBoundarySupport wheelWithInnerTriangleEmbedding.faceBoundary
+          wheelWithInnerTriangleEmbedding.faces wheelWithInnerTriangleEmbedding.faces} = 6 := by
+    rw [wheelWithInnerTriangle_selectedBoundarySupport_eq]
+    decide
+  have hedge : Fintype.card wheelWithInnerTriangleGraph.edgeSet = 9 := by
+    decide
+  rw [hboundary, hedge]
+  omega
+
+/--
+Compact finite-runner signal for the shared focus shell.  If CAP5 has emitted fewer than the
+two lab-certified shared controls, the cyclic exceptional step emits the one-edge forced-bin
+payload and a crossing/noncrossing extension coordinate signal with strict worklist progress.
+-/
+theorem sharedInteriorPair_CAP5_forcedEdgeIndicatorPathXorDetectorPayload_and_extensionCoordinateSignalWithProgress_of_emittedFinset_card_lt_two
+    {boundaryEdge : Fin 5 → sharedInteriorPairGraph.edgeSet} {n : Nat}
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    (p0Inside p4Inside : Bool) (h : data.IsExceptional)
+    (side : Fin 8 → Prop) (hcyclic : CyclicallyFiveEdgeConnected sharedInteriorPairGraph)
+    (hportal_crosses :
+      ∀ edgeCandidate : CAP5ExceptionalAnnulusBoundaryEdgeSupportCandidate boundaryEdge,
+        data.RealizesExceptionalBoundarySupportOrientation
+            edgeCandidate.portalCandidate.orientation →
+        edgeCandidate.portalCandidate.sideCase =
+            CAP5ExceptionalAnnulusSideCase.ofPortalSides p0Inside p4Inside →
+        ∀ i : Fin 5, i ∈ edgeCandidate.portalCandidate.portalSet →
+          EdgeCrossesVertexSide sharedInteriorPairGraph side (boundaryEdge i))
+    (hcycles : HasCycleOnSide sharedInteriorPairGraph side ∧
+      HasCycleOnSide sharedInteriorPairGraph (fun v => ¬ side v))
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (hcard : classifier.emittedFinset.card < 2) :
+    data.ForcedEdgeIndicatorPathXorDetectorPayload p0Inside p4Inside side ∧
+      data.ExtensionCoordinateSignalWithProgress sharedInteriorPairEmbedding
+        p0Inside p4Inside side classifier sharedInteriorPairInteriorControlEdges := by
+  rcases
+      data.forcedEdge_and_extensionCoordinateSignalWithProgress_of_emittedFinset_card_add_boundary_card_lt_of_finsetControl
+        sharedInteriorPairEmbedding p0Inside p4Inside h side hcyclic hportal_crosses
+        hcycles classifier sharedInteriorPairInteriorControlEdges
+        (sharedInteriorPair_CAP5_emittedFinset_card_add_boundary_card_lt_of_card_lt_two
+          classifier hcard)
+        sharedInteriorPair_boundaryZero_controlEdges_interiorEdges with
+    ⟨hforced, hsignal⟩
+  rcases hforced with ⟨e, heForced⟩
+  exact
+    ⟨data.forcedEdgeIndicatorPathXorDetectorPayload_of_enumeratedExceptionalAnnulusForcedEdge
+        heForced,
+      hsignal⟩
+
+/--
+Compact finite-runner signal for the wheel focus shell.  If CAP5 has emitted fewer than the
+three lab-certified spokes, the cyclic exceptional step emits the one-edge forced-bin payload
+and a crossing/noncrossing extension coordinate signal with strict worklist progress.
+-/
+theorem wheelWithInnerTriangle_CAP5_forcedEdgeIndicatorPathXorDetectorPayload_and_extensionCoordinateSignalWithProgress_of_emittedFinset_card_lt_three
+    {boundaryEdge : Fin 5 → wheelWithInnerTriangleGraph.edgeSet} {n : Nat}
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    (p0Inside p4Inside : Bool) (h : data.IsExceptional)
+    (side : Fin 7 → Prop) (hcyclic : CyclicallyFiveEdgeConnected wheelWithInnerTriangleGraph)
+    (hportal_crosses :
+      ∀ edgeCandidate : CAP5ExceptionalAnnulusBoundaryEdgeSupportCandidate boundaryEdge,
+        data.RealizesExceptionalBoundarySupportOrientation
+            edgeCandidate.portalCandidate.orientation →
+        edgeCandidate.portalCandidate.sideCase =
+            CAP5ExceptionalAnnulusSideCase.ofPortalSides p0Inside p4Inside →
+        ∀ i : Fin 5, i ∈ edgeCandidate.portalCandidate.portalSet →
+          EdgeCrossesVertexSide wheelWithInnerTriangleGraph side (boundaryEdge i))
+    (hcycles : HasCycleOnSide wheelWithInnerTriangleGraph side ∧
+      HasCycleOnSide wheelWithInnerTriangleGraph (fun v => ¬ side v))
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (hcard : classifier.emittedFinset.card < 3) :
+    data.ForcedEdgeIndicatorPathXorDetectorPayload p0Inside p4Inside side ∧
+      data.ExtensionCoordinateSignalWithProgress wheelWithInnerTriangleEmbedding
+        p0Inside p4Inside side classifier wheelWithInnerTriangleInteriorControlEdges := by
+  rcases
+      data.forcedEdge_and_extensionCoordinateSignalWithProgress_of_emittedFinset_card_add_boundary_card_lt_of_finsetControl
+        wheelWithInnerTriangleEmbedding p0Inside p4Inside h side hcyclic hportal_crosses
+        hcycles classifier wheelWithInnerTriangleInteriorControlEdges
+        (wheelWithInnerTriangle_CAP5_emittedFinset_card_add_boundary_card_lt_of_card_lt_three
+          classifier hcard)
+        wheelWithInnerTriangle_boundaryZero_controlEdges_interiorEdges with
+    ⟨hforced, hsignal⟩
+  rcases hforced with ⟨e, heForced⟩
+  exact
+    ⟨data.forcedEdgeIndicatorPathXorDetectorPayload_of_enumeratedExceptionalAnnulusForcedEdge
+        heForced,
+      hsignal⟩
+
 theorem sharedInteriorPair_CAP5_forcedEdgeIndicatorPathXorDetectorPayload_and_extensionControlEdge_boundaryZeroChain_canonicalFamilyPairing_ne_zero_of_uniqueCertificates_of_emittedFinset_card_lt_two
     {boundaryEdge : Fin 5 → sharedInteriorPairGraph.edgeSet} {n : Nat}
     {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
