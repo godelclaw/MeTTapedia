@@ -3770,6 +3770,84 @@ theorem residualRemainingControlEdges_eq_empty_iff_remainingControlEdges_subset_
     · intro he
       simp at he
 
+/--
+Any finite set already contained in the remaining-control worklist is unchanged by applying
+`remainingControlEdges` again.
+-/
+theorem remainingControlEdges_eq_self_of_subset_remainingControlEdges
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    [Fintype G.edgeSet]
+    {p0Inside p4Inside : Bool} {side : V → Prop}
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (controlEdges residual : Finset G.edgeSet)
+    (hsubset : residual ⊆ classifier.remainingControlEdges controlEdges) :
+    classifier.remainingControlEdges residual = residual := by
+  ext e
+  constructor
+  · intro he
+    exact (classifier.mem_remainingControlEdges_iff residual e).1 he |>.1
+  · intro heResidual
+    exact (classifier.mem_remainingControlEdges_iff residual e).2
+      ⟨heResidual,
+        (classifier.mem_remainingControlEdges_iff controlEdges e).1
+          (hsubset heResidual) |>.2⟩
+
+/-- A residual worklist is a sub-worklist of the original remaining-control worklist. -/
+theorem residualRemainingControlEdges_subset_remainingControlEdges
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    [Fintype G.edgeSet]
+    {p0Inside p4Inside : Bool} {side : V → Prop}
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (controlEdges processed : Finset G.edgeSet) :
+    classifier.residualRemainingControlEdges controlEdges processed ⊆
+      classifier.remainingControlEdges controlEdges := by
+  intro e he
+  exact (classifier.mem_residualRemainingControlEdges_iff controlEdges processed e).1 he |>.1
+
+/--
+The remaining-control operator fixes the current residual worklist.  This is the algebraic
+freshness bridge needed by iterative runners: if the next finite-control set is the residual set,
+then every member of its `remainingControlEdges` view is still outside the processed set.
+-/
+theorem remainingControlEdges_residualRemainingControlEdges_eq
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    [Fintype G.edgeSet]
+    {p0Inside p4Inside : Bool} {side : V → Prop}
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (controlEdges processed : Finset G.edgeSet) :
+    classifier.remainingControlEdges
+        (classifier.residualRemainingControlEdges controlEdges processed) =
+      classifier.residualRemainingControlEdges controlEdges processed :=
+  classifier.remainingControlEdges_eq_self_of_subset_remainingControlEdges controlEdges
+    (classifier.residualRemainingControlEdges controlEdges processed)
+    (classifier.residualRemainingControlEdges_subset_remainingControlEdges controlEdges processed)
+
+/--
+Every edge in the `remainingControlEdges` view of a residual worklist is fresh for the processed
+set.
+-/
+theorem not_mem_processed_of_mem_remainingControlEdges_residualRemainingControlEdges
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    [Fintype G.edgeSet]
+    {p0Inside p4Inside : Bool} {side : V → Prop}
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (controlEdges processed : Finset G.edgeSet) {e : G.edgeSet}
+    (he :
+      e ∈ classifier.remainingControlEdges
+        (classifier.residualRemainingControlEdges controlEdges processed)) :
+    e ∉ processed := by
+  have heResidual :
+      e ∈ classifier.residualRemainingControlEdges controlEdges processed := by
+    simpa [classifier.remainingControlEdges_residualRemainingControlEdges_eq
+      controlEdges processed] using he
+  exact
+    (classifier.mem_residualRemainingControlEdges_iff controlEdges processed e).1
+      heResidual |>.2
+
 /-- Canonical finite trace listing the remaining-control worklist. -/
 noncomputable def remainingControlEdgeTrace
     {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
@@ -3842,6 +3920,62 @@ theorem residualRemainingControlEdges_remainingControlEdgeTrace_toFinset_eq_empt
   rw [classifier.remainingControlEdgeTrace_toFinset_eq_remainingControlEdges controlEdges]
   ext e
   simp [residualRemainingControlEdges]
+
+/-- The canonical trace of a residual worklist lists exactly the current residual edges. -/
+theorem remainingControlEdgeTrace_residualRemainingControlEdges_toFinset_eq
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    [Fintype G.edgeSet]
+    {p0Inside p4Inside : Bool} {side : V → Prop}
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (controlEdges processed : Finset G.edgeSet) :
+    (classifier.remainingControlEdgeTrace
+        (classifier.residualRemainingControlEdges controlEdges processed)).toFinset =
+      classifier.residualRemainingControlEdges controlEdges processed := by
+  rw [classifier.remainingControlEdgeTrace_toFinset_eq_remainingControlEdges]
+  exact classifier.remainingControlEdges_residualRemainingControlEdges_eq controlEdges processed
+
+/--
+Processing the canonical trace of the current residual worklist exhausts the residual state over
+the original worklist.
+-/
+theorem residualRemainingControlEdges_union_residualTrace_toFinset_eq_empty
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    [Fintype G.edgeSet]
+    {p0Inside p4Inside : Bool} {side : V → Prop}
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (controlEdges processed : Finset G.edgeSet) :
+    classifier.residualRemainingControlEdges controlEdges
+        (processed ∪
+          (classifier.remainingControlEdgeTrace
+            (classifier.residualRemainingControlEdges controlEdges processed)).toFinset) =
+      ∅ := by
+  rw [classifier.remainingControlEdgeTrace_residualRemainingControlEdges_toFinset_eq
+    controlEdges processed]
+  ext e
+  constructor
+  · intro he
+    have heRemaining :
+        e ∈ classifier.remainingControlEdges controlEdges :=
+      (classifier.mem_residualRemainingControlEdges_iff controlEdges
+        (processed ∪ classifier.residualRemainingControlEdges controlEdges processed)
+        e).1 he |>.1
+    have heNotProcessed :
+        e ∉ processed ∪ classifier.residualRemainingControlEdges controlEdges processed :=
+      (classifier.mem_residualRemainingControlEdges_iff controlEdges
+        (processed ∪ classifier.residualRemainingControlEdges controlEdges processed)
+        e).1 he |>.2
+    have heFresh : e ∉ processed := by
+      intro hp
+      exact heNotProcessed (Finset.mem_union.2 (Or.inl hp))
+    have heResidual :
+        e ∈ classifier.residualRemainingControlEdges controlEdges processed :=
+      (classifier.mem_residualRemainingControlEdges_iff controlEdges processed e).2
+        ⟨heRemaining, heFresh⟩
+    exact False.elim (heNotProcessed (Finset.mem_union.2 (Or.inr heResidual)))
+  · intro he
+    simp at he
 
 /--
 Packaged finite iteration certificate for the CAP5 remaining-control worklist: the trace has no
