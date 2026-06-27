@@ -58,6 +58,48 @@ theorem not_edgeCrossesVertexSide_iff_forall_side_iff
     rcases hcross with ⟨u, v, hu, hv, hsu, hsv⟩
     exact hsv ((hpreserve u v hu hv).1 hsu)
 
+/-- If an edge with endpoints `a,b` crosses a vertex side, those two endpoints cannot lie on the
+same side. -/
+theorem not_side_iff_of_edgeCrossesVertexSide_of_sym2_eq
+    {G : SimpleGraph V} {side : V → Prop} {a b : V} {e : G.edgeSet}
+    (he_pair : (e : Sym2 V) = s(a, b))
+    (hcross : EdgeCrossesVertexSide G side e) :
+    ¬ (side a ↔ side b) := by
+  intro hsame
+  have hnotCross : ¬ EdgeCrossesVertexSide G side e := by
+    rw [not_edgeCrossesVertexSide_iff_forall_side_iff]
+    intro u v hu hv
+    rw [he_pair] at hu hv
+    rw [Sym2.mem_iff] at hu hv
+    rcases hu with rfl | rfl <;> rcases hv with rfl | rfl
+    · exact Iff.rfl
+    · exact hsame
+    · exact hsame.symm
+    · exact Iff.rfl
+  exact hnotCross hcross
+
+/-- Triangle parity obstruction for vertex-side crossings.  No single side predicate can cross all
+three edges of a triangle, since that would require three pairwise opposite truth values. -/
+theorem not_three_edgeCrossesVertexSide_triangle
+    {G : SimpleGraph V} {side : V → Prop} {a b c : V}
+    {eab ebc eac : G.edgeSet}
+    (heab_pair : (eab : Sym2 V) = s(a, b))
+    (hebc_pair : (ebc : Sym2 V) = s(b, c))
+    (heac_pair : (eac : Sym2 V) = s(a, c)) :
+    ¬ (EdgeCrossesVertexSide G side eab ∧
+        EdgeCrossesVertexSide G side ebc ∧
+          EdgeCrossesVertexSide G side eac) := by
+  classical
+  rintro ⟨habCross, hbcCross, hacCross⟩
+  have hnotab : ¬ (side a ↔ side b) :=
+    not_side_iff_of_edgeCrossesVertexSide_of_sym2_eq heab_pair habCross
+  have hnotbc : ¬ (side b ↔ side c) :=
+    not_side_iff_of_edgeCrossesVertexSide_of_sym2_eq hebc_pair hbcCross
+  have hnotac : ¬ (side a ↔ side c) :=
+    not_side_iff_of_edgeCrossesVertexSide_of_sym2_eq heac_pair hacCross
+  by_cases ha : side a <;> by_cases hb : side b <;> by_cases hc : side c <;>
+    simp [ha, hb, hc] at hnotab hnotbc hnotac
+
 /-- An unordered pair with two distinct listed members is exactly the unordered pair of those
 members. -/
 theorem sym2_eq_mk_of_mem_of_mem_of_ne
