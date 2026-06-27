@@ -6090,6 +6090,64 @@ theorem exists_boundaryZeroChain_vanishing_on_forcedEdges_of_not_forcedEdgeCover
       exact hnoHit ⟨e, heForced, hze⟩⟩)
 
 /--
+Exact forced-edge coverage is equivalent to the absence of a nonzero selected-boundary-zero
+chain that vanishes on every enumerated forced edge.
+-/
+theorem forcedEdgeCoverage_iff_no_boundaryZeroChain_vanishing_on_forcedEdges
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    (emb : PlaneEmbeddingWithBoundary G)
+    (p0Inside p4Inside : Bool) (side : V → Prop) :
+    (∀ ⦃z : G.edgeSet → Color⦄,
+      z ∈ planarBoundaryZeroSubmodule emb →
+      z ≠ 0 →
+        ∃ e : G.edgeSet,
+          data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e ∧
+            z e ≠ 0) ↔
+      ¬ ∃ z : G.edgeSet → Color,
+        z ∈ planarBoundaryZeroSubmodule emb ∧
+          z ≠ 0 ∧
+            ∀ e : G.edgeSet,
+              data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e →
+                z e = 0 := by
+  constructor
+  · intro hcoverage
+    exact
+      data.forcedEdgeCoverage_refutes_boundaryZeroChain_vanishing_on_forcedEdges
+        emb p0Inside p4Inside side hcoverage
+  · intro hnoEvader z hzBoundary hzNonzero
+    by_contra hnoHit
+    exact hnoEvader ⟨z, hzBoundary, hzNonzero, by
+      intro e heForced
+      by_contra hze
+      exact hnoHit ⟨e, heForced, hze⟩⟩
+
+/-- Negating exact forced-edge coverage is equivalent to the existence of an evading nonzero
+selected-boundary-zero chain. -/
+theorem not_forcedEdgeCoverage_iff_exists_boundaryZeroChain_vanishing_on_forcedEdges
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    (emb : PlaneEmbeddingWithBoundary G)
+    (p0Inside p4Inside : Bool) (side : V → Prop) :
+    (¬ ∀ ⦃z : G.edgeSet → Color⦄,
+      z ∈ planarBoundaryZeroSubmodule emb →
+      z ≠ 0 →
+        ∃ e : G.edgeSet,
+          data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e ∧
+            z e ≠ 0) ↔
+      ∃ z : G.edgeSet → Color,
+        z ∈ planarBoundaryZeroSubmodule emb ∧
+          z ≠ 0 ∧
+            ∀ e : G.edgeSet,
+              data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e →
+                z e = 0 := by
+  constructor
+  · exact data.exists_boundaryZeroChain_vanishing_on_forcedEdges_of_not_forcedEdgeCoverage
+      emb p0Inside p4Inside side
+  · intro hevader hcoverage
+    exact
+      (data.forcedEdgeCoverage_refutes_boundaryZeroChain_vanishing_on_forcedEdges
+        emb p0Inside p4Inside side hcoverage) hevader
+
+/--
 Failure of exact forced-edge coverage also has a geometric finite-worklist face: at least one
 ambient interior-support edge is not enumerated by the CAP5 forced-edge predicate.  Otherwise the
 all-interior-support survivor would supply exact coverage.

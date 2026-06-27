@@ -17536,6 +17536,36 @@ theorem sharedInteriorPair_CAP5_exists_boundaryZeroChain_vanishingOnForcedEdges_
               ((data.forcedEdgeCoverage_iff_enumeratedExceptionalAnnulusForcedEdgeClassifierControl
                 sharedInteriorPairEmbedding classifier).2 hcontrol))
 
+/-- Direct no-evader threshold for the shared focus shell: once the classifier has emitted both
+lab-certified shared controls, no nonzero selected-boundary-zero chain can vanish on every
+enumerated CAP5 forced edge, and below that threshold such a chain exists. -/
+theorem sharedInteriorPair_CAP5_no_boundaryZeroChain_vanishingOnForcedEdges_iff_emittedInterior_card_ge_two
+    {boundaryEdge : Fin 5 → sharedInteriorPairGraph.edgeSet} {n : Nat}
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    (p0Inside p4Inside : Bool) (side : Fin 8 → Prop)
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side) :
+    (¬ ∃ z : sharedInteriorPairGraph.edgeSet → Color,
+      z ∈ planarBoundaryZeroSubmodule sharedInteriorPairEmbedding ∧
+        z ≠ 0 ∧
+          ∀ e : sharedInteriorPairGraph.edgeSet,
+            data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e →
+              z e = 0) ↔
+      2 ≤ (classifier.emittedFinset.filter fun e =>
+        e ∈ sharedInteriorPairInteriorControlEdges).card := by
+  constructor
+  · intro hnoEvader
+    exact Nat.le_of_not_gt (by
+      intro hlt
+      exact hnoEvader
+        ((sharedInteriorPair_CAP5_exists_boundaryZeroChain_vanishingOnForcedEdges_iff_emittedInterior_card_lt_two
+          p0Inside p4Inside side classifier).2 hlt))
+  · intro hge hevader
+    have hlt :=
+      (sharedInteriorPair_CAP5_exists_boundaryZeroChain_vanishingOnForcedEdges_iff_emittedInterior_card_lt_two
+        p0Inside p4Inside side classifier).1 hevader
+    exact (not_lt_of_ge hge) hlt
+
 /-- Exact wheel-shell boundary-zero failure threshold: CAP5 fails to cover every nonzero
 boundary-zero chain exactly below the three-spoke lab minimum. -/
 theorem wheelWithInnerTriangle_CAP5_not_forcedEdgeCoverage_iff_emittedInterior_card_lt_three
@@ -17610,6 +17640,36 @@ theorem wheelWithInnerTriangle_CAP5_exists_boundaryZeroChain_vanishingOnForcedEd
               p0Inside p4Inside side classifier).2 hlt)
               ((data.forcedEdgeCoverage_iff_enumeratedExceptionalAnnulusForcedEdgeClassifierControl
                 wheelWithInnerTriangleEmbedding classifier).2 hcontrol))
+
+/-- Direct no-evader threshold for the wheel focus shell: once the classifier has emitted all
+three lab-certified spoke controls, no nonzero selected-boundary-zero chain can vanish on every
+enumerated CAP5 forced edge, and below that threshold such a chain exists. -/
+theorem wheelWithInnerTriangle_CAP5_no_boundaryZeroChain_vanishingOnForcedEdges_iff_emittedInterior_card_ge_three
+    {boundaryEdge : Fin 5 → wheelWithInnerTriangleGraph.edgeSet} {n : Nat}
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    (p0Inside p4Inside : Bool) (side : Fin 7 → Prop)
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side) :
+    (¬ ∃ z : wheelWithInnerTriangleGraph.edgeSet → Color,
+      z ∈ planarBoundaryZeroSubmodule wheelWithInnerTriangleEmbedding ∧
+        z ≠ 0 ∧
+          ∀ e : wheelWithInnerTriangleGraph.edgeSet,
+            data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e →
+              z e = 0) ↔
+      3 ≤ (classifier.emittedFinset.filter fun e =>
+        e ∈ wheelWithInnerTriangleInteriorControlEdges).card := by
+  constructor
+  · intro hnoEvader
+    exact Nat.le_of_not_gt (by
+      intro hlt
+      exact hnoEvader
+        ((wheelWithInnerTriangle_CAP5_exists_boundaryZeroChain_vanishingOnForcedEdges_iff_emittedInterior_card_lt_three
+          p0Inside p4Inside side classifier).2 hlt))
+  · intro hge hevader
+    have hlt :=
+      (wheelWithInnerTriangle_CAP5_exists_boundaryZeroChain_vanishingOnForcedEdges_iff_emittedInterior_card_lt_three
+        p0Inside p4Inside side classifier).1 hevader
+    exact (not_lt_of_ge hge) hlt
 
 /-- Runner-facing exact form for the wheel focus shell: exact CAP5 coverage leaves no
 unprocessed canonical spoke control edge. -/
