@@ -17920,6 +17920,111 @@ theorem wheelWithInnerTriangle_CAP5_not_forcedEdgeCoverage_of_not_theorem49Bound
       C₀ hsubset p0Inside p4Inside side classifier hcoverage)
 
 /--
+Boundary-trimmed progress form for the shared focus shell.  Once the unique certificate family
+is available, failed synthesis cannot leave the CAP5 worklist at a fixed point: a concrete
+shared-interior control edge remains, and erasing it strictly decreases the remaining-control
+measure.
+-/
+theorem sharedInteriorPair_CAP5_exists_remainingInteriorControlEdge_with_card_erase_lt_of_not_theorem49BoundaryRootSynthesis_uniqueCertificates_boundaryTrimmed
+    {boundaryEdge : Fin 5 → sharedInteriorPairGraph.edgeSet} {n : Nat}
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    [FiniteDimensional F2 (sharedInteriorPairGraph.edgeSet → Color)]
+    (C₀ : sharedInteriorPairGraph.EdgeColoring Color)
+    (hsubset :
+      sharedInteriorPairProjectedGeneratorCertificateColorings ⊆
+        sharedInteriorPairGraph.EdgeKempeClosure C₀)
+    (p0Inside p4Inside : Bool) (side : Fin 8 → Prop)
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (hnotSynthesis : ¬ Theorem49BoundaryRootSynthesis sharedInteriorPairEmbedding C₀) :
+    ∃ e : sharedInteriorPairGraph.edgeSet,
+      e ∈ classifier.remainingControlEdges sharedInteriorPairInteriorControlEdges ∧
+        ((classifier.remainingControlEdges sharedInteriorPairInteriorControlEdges).erase e).card <
+          (classifier.remainingControlEdges sharedInteriorPairInteriorControlEdges).card :=
+  sharedInteriorPair_CAP5_exists_remainingInteriorControlEdge_with_card_erase_lt_of_not_forcedEdgeCoverage
+    p0Inside p4Inside side classifier
+    (sharedInteriorPair_CAP5_not_forcedEdgeCoverage_of_not_theorem49BoundaryRootSynthesis_uniqueCertificates_boundaryTrimmed
+      C₀ hsubset p0Inside p4Inside side classifier hnotSynthesis)
+
+/--
+Boundary-trimmed progress form for the wheel focus shell.  Once the unique certificate family is
+available, failed synthesis leaves a concrete spoke control edge in the remaining CAP5 worklist,
+with strict erase-cardinality progress.
+-/
+theorem wheelWithInnerTriangle_CAP5_exists_remainingInteriorControlEdge_with_card_erase_lt_of_not_theorem49BoundaryRootSynthesis_uniqueCertificates_boundaryTrimmed
+    {boundaryEdge : Fin 5 → wheelWithInnerTriangleGraph.edgeSet} {n : Nat}
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    [FiniteDimensional F2 (wheelWithInnerTriangleGraph.edgeSet → Color)]
+    (C₀ : wheelWithInnerTriangleGraph.EdgeColoring Color)
+    (hsubset :
+      wheelWithInnerTriangleProjectedGeneratorCertificateColorings ⊆
+        wheelWithInnerTriangleGraph.EdgeKempeClosure C₀)
+    (p0Inside p4Inside : Bool) (side : Fin 7 → Prop)
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (hnotSynthesis : ¬ Theorem49BoundaryRootSynthesis wheelWithInnerTriangleEmbedding C₀) :
+    ∃ e : wheelWithInnerTriangleGraph.edgeSet,
+      e ∈ classifier.remainingControlEdges wheelWithInnerTriangleInteriorControlEdges ∧
+        ((classifier.remainingControlEdges wheelWithInnerTriangleInteriorControlEdges).erase e).card <
+          (classifier.remainingControlEdges wheelWithInnerTriangleInteriorControlEdges).card :=
+  wheelWithInnerTriangle_CAP5_exists_remainingInteriorControlEdge_with_card_erase_lt_of_not_forcedEdgeCoverage
+    p0Inside p4Inside side classifier
+    (wheelWithInnerTriangle_CAP5_not_forcedEdgeCoverage_of_not_theorem49BoundaryRootSynthesis_uniqueCertificates_boundaryTrimmed
+      C₀ hsubset p0Inside p4Inside side classifier hnotSynthesis)
+
+/--
+Closed boundary-trimmed progress verdict for the shared focus shell: either the unique-certificate
+synthesis route closes, or the CAP5 detector names the next remaining shared-interior edge.
+-/
+theorem sharedInteriorPair_CAP5_theorem49BoundaryRootSynthesis_or_remainingInteriorControlEdge_uniqueCertificates_boundaryTrimmed
+    {boundaryEdge : Fin 5 → sharedInteriorPairGraph.edgeSet} {n : Nat}
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    [FiniteDimensional F2 (sharedInteriorPairGraph.edgeSet → Color)]
+    (C₀ : sharedInteriorPairGraph.EdgeColoring Color)
+    (hsubset :
+      sharedInteriorPairProjectedGeneratorCertificateColorings ⊆
+        sharedInteriorPairGraph.EdgeKempeClosure C₀)
+    (p0Inside p4Inside : Bool) (side : Fin 8 → Prop)
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side) :
+    Theorem49BoundaryRootSynthesis sharedInteriorPairEmbedding C₀ ∨
+      ∃ e : sharedInteriorPairGraph.edgeSet,
+        e ∈ classifier.remainingControlEdges sharedInteriorPairInteriorControlEdges ∧
+          ((classifier.remainingControlEdges sharedInteriorPairInteriorControlEdges).erase e).card <
+            (classifier.remainingControlEdges sharedInteriorPairInteriorControlEdges).card := by
+  by_cases hclosed : Theorem49BoundaryRootSynthesis sharedInteriorPairEmbedding C₀
+  · exact Or.inl hclosed
+  · exact Or.inr
+      (sharedInteriorPair_CAP5_exists_remainingInteriorControlEdge_with_card_erase_lt_of_not_theorem49BoundaryRootSynthesis_uniqueCertificates_boundaryTrimmed
+        C₀ hsubset p0Inside p4Inside side classifier hclosed)
+
+/--
+Closed boundary-trimmed progress verdict for the wheel focus shell: either the unique-certificate
+synthesis route closes, or the CAP5 detector names the next remaining spoke control edge.
+-/
+theorem wheelWithInnerTriangle_CAP5_theorem49BoundaryRootSynthesis_or_remainingInteriorControlEdge_uniqueCertificates_boundaryTrimmed
+    {boundaryEdge : Fin 5 → wheelWithInnerTriangleGraph.edgeSet} {n : Nat}
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    [FiniteDimensional F2 (wheelWithInnerTriangleGraph.edgeSet → Color)]
+    (C₀ : wheelWithInnerTriangleGraph.EdgeColoring Color)
+    (hsubset :
+      wheelWithInnerTriangleProjectedGeneratorCertificateColorings ⊆
+        wheelWithInnerTriangleGraph.EdgeKempeClosure C₀)
+    (p0Inside p4Inside : Bool) (side : Fin 7 → Prop)
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side) :
+    Theorem49BoundaryRootSynthesis wheelWithInnerTriangleEmbedding C₀ ∨
+      ∃ e : wheelWithInnerTriangleGraph.edgeSet,
+        e ∈ classifier.remainingControlEdges wheelWithInnerTriangleInteriorControlEdges ∧
+          ((classifier.remainingControlEdges wheelWithInnerTriangleInteriorControlEdges).erase e).card <
+            (classifier.remainingControlEdges wheelWithInnerTriangleInteriorControlEdges).card := by
+  by_cases hclosed : Theorem49BoundaryRootSynthesis wheelWithInnerTriangleEmbedding C₀
+  · exact Or.inl hclosed
+  · exact Or.inr
+      (wheelWithInnerTriangle_CAP5_exists_remainingInteriorControlEdge_with_card_erase_lt_of_not_theorem49BoundaryRootSynthesis_uniqueCertificates_boundaryTrimmed
+        C₀ hsubset p0Inside p4Inside side classifier hclosed)
+
+/--
 Boundary-trimmed fixed-point kernel endpoint for the wheel focus shell.  Empty extension bins
 make the three lab-certified spokes emitted, and the canonical certificate family already has a
 trivial selected-boundary-zero pairing kernel.
