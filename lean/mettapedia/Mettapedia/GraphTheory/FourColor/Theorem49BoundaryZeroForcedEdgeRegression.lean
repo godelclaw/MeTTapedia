@@ -15198,6 +15198,98 @@ theorem wheelWithInnerTriangle_boundaryZero_classifierRemainingControlEdgeTrace_
         wheelWithInnerTriangleInteriorControlEdges)
 
 /--
+Runner-facing terminal certificate for the shared focus shell.  Starting from any finite processed
+state included in the immutable classifier output, the canonical remaining-control trace preserves
+the processed-subset invariant, exhausts the explicit residual worklist, and reaches the same
+terminal emitted/control state used by the selected-boundary-zero control certificate.
+-/
+theorem sharedInteriorPair_boundaryZero_classifierRemainingControlEdgeTrace_schedulerRunner_terminalCertificate
+    {boundaryEdge : Fin 5 → sharedInteriorPairGraph.edgeSet} {n : Nat}
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    (p0Inside p4Inside : Bool) (side : Fin 8 → Prop)
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (processed : Finset sharedInteriorPairGraph.edgeSet)
+    (hprocessedSubset : processed ⊆ classifier.emittedFinset) :
+    (classifier.remainingControlEdgeTrace sharedInteriorPairInteriorControlEdges).Nodup ∧
+      (∀ e : sharedInteriorPairGraph.edgeSet,
+        e ∈ classifier.remainingControlEdgeTrace sharedInteriorPairInteriorControlEdges ↔
+          e ∈ sharedInteriorPairInteriorControlEdges ∧ e ∉ classifier.emittedFinset) ∧
+        (classifier.remainingControlEdgeTrace sharedInteriorPairInteriorControlEdges).length =
+          (sharedInteriorPairInteriorControlEdges \ classifier.emittedFinset).card ∧
+          ((classifier.remainingControlEdgeTrace sharedInteriorPairInteriorControlEdges).foldl
+              (fun acc e => insert e acc) processed ⊆
+            (classifier.remainingControlEdgeTrace sharedInteriorPairInteriorControlEdges).foldl
+              (fun acc e => insert e acc) classifier.emittedFinset) ∧
+            classifier.residualRemainingControlEdges sharedInteriorPairInteriorControlEdges
+                ((classifier.remainingControlEdgeTrace sharedInteriorPairInteriorControlEdges).foldl
+                  (fun acc e => insert e acc) processed) =
+              ∅ ∧
+              (∀ ⦃z : sharedInteriorPairGraph.edgeSet → Color⦄,
+                z ∈ planarBoundaryZeroSubmodule sharedInteriorPairEmbedding →
+                (∀ e ∈
+                  (classifier.remainingControlEdgeTrace sharedInteriorPairInteriorControlEdges).foldl
+                    (fun acc e => insert e acc) classifier.emittedFinset, z e = 0) →
+                  z = 0) := by
+  rcases
+      sharedInteriorPair_boundaryZero_classifierRemainingControlEdgeTrace_terminalCertificate
+        p0Inside p4Inside side classifier with
+    ⟨hnodup, hmem, hlength, _hcontrolExhausted, hterminalControl⟩
+  exact
+    ⟨hnodup, hmem, hlength,
+      classifier.foldl_insert_remainingControlEdgeTrace_subset_foldl_insert_emittedFinset
+        sharedInteriorPairInteriorControlEdges hprocessedSubset,
+      classifier.residualRemainingControlEdges_foldl_insert_remainingControlEdgeTrace_eq_empty
+        sharedInteriorPairInteriorControlEdges processed,
+      hterminalControl⟩
+
+/--
+Runner-facing terminal certificate for the wheel focus shell.  Starting from any finite processed
+state included in the immutable classifier output, the canonical remaining-control trace preserves
+the processed-subset invariant, exhausts the explicit residual worklist, and reaches the same
+terminal emitted/control state used by the selected-boundary-zero control certificate.
+-/
+theorem wheelWithInnerTriangle_boundaryZero_classifierRemainingControlEdgeTrace_schedulerRunner_terminalCertificate
+    {boundaryEdge : Fin 5 → wheelWithInnerTriangleGraph.edgeSet} {n : Nat}
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    (p0Inside p4Inside : Bool) (side : Fin 7 → Prop)
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (processed : Finset wheelWithInnerTriangleGraph.edgeSet)
+    (hprocessedSubset : processed ⊆ classifier.emittedFinset) :
+    (classifier.remainingControlEdgeTrace wheelWithInnerTriangleInteriorControlEdges).Nodup ∧
+      (∀ e : wheelWithInnerTriangleGraph.edgeSet,
+        e ∈ classifier.remainingControlEdgeTrace wheelWithInnerTriangleInteriorControlEdges ↔
+          e ∈ wheelWithInnerTriangleInteriorControlEdges ∧ e ∉ classifier.emittedFinset) ∧
+        (classifier.remainingControlEdgeTrace wheelWithInnerTriangleInteriorControlEdges).length =
+          (wheelWithInnerTriangleInteriorControlEdges \ classifier.emittedFinset).card ∧
+          ((classifier.remainingControlEdgeTrace wheelWithInnerTriangleInteriorControlEdges).foldl
+              (fun acc e => insert e acc) processed ⊆
+            (classifier.remainingControlEdgeTrace wheelWithInnerTriangleInteriorControlEdges).foldl
+              (fun acc e => insert e acc) classifier.emittedFinset) ∧
+            classifier.residualRemainingControlEdges wheelWithInnerTriangleInteriorControlEdges
+                ((classifier.remainingControlEdgeTrace wheelWithInnerTriangleInteriorControlEdges).foldl
+                  (fun acc e => insert e acc) processed) =
+              ∅ ∧
+              (∀ ⦃z : wheelWithInnerTriangleGraph.edgeSet → Color⦄,
+                z ∈ planarBoundaryZeroSubmodule wheelWithInnerTriangleEmbedding →
+                (∀ e ∈
+                  (classifier.remainingControlEdgeTrace wheelWithInnerTriangleInteriorControlEdges).foldl
+                    (fun acc e => insert e acc) classifier.emittedFinset, z e = 0) →
+                  z = 0) := by
+  rcases
+      wheelWithInnerTriangle_boundaryZero_classifierRemainingControlEdgeTrace_terminalCertificate
+        p0Inside p4Inside side classifier with
+    ⟨hnodup, hmem, hlength, _hcontrolExhausted, hterminalControl⟩
+  exact
+    ⟨hnodup, hmem, hlength,
+      classifier.foldl_insert_remainingControlEdgeTrace_subset_foldl_insert_emittedFinset
+        wheelWithInnerTriangleInteriorControlEdges hprocessedSubset,
+      classifier.residualRemainingControlEdges_foldl_insert_remainingControlEdgeTrace_eq_empty
+        wheelWithInnerTriangleInteriorControlEdges processed,
+      hterminalControl⟩
+
+/--
 Every wheel-shell edge left in the classifier residual trace is one of the lab-certified spoke
 controls, so the unique certificate family supplies both red and blue single-coordinate probes.
 -/
