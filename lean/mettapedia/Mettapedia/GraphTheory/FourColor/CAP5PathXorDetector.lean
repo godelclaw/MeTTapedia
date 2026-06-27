@@ -1534,6 +1534,89 @@ theorem exists_boundaryZeroChain_extensionControlTraceEdge_canonicalFamilyPairin
         heResidual, hePredicateOutside, hze, hresidualProgress, hprogress, i, hpair⟩
 
 /--
+Trace-indexed residual-state handoff for an arbitrary finite generator family.  If the family
+supplies red and blue single-coordinate probes for every edge in the classifier's canonical
+remaining-control trace, a residual extension signal exposes a traced edge with a nonzero family
+pairing and strict residual-worklist progress.
+-/
+theorem exists_boundaryZeroChain_extensionControlTraceEdge_familyPairing_ne_zero_and_residualProgress_of_extensionCoordinateSignalWithResidualProgress
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    [Fintype G.edgeSet]
+    {emb : PlaneEmbeddingWithBoundary G}
+    {colorings : Set (G.EdgeColoring Color)}
+    {κ : Type*}
+    (family : κ → projectedColoringGeneratorSubspace emb colorings)
+    {p0Inside p4Inside : Bool} {side : V → Prop}
+    {classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side}
+    {controlEdges processed : Finset G.edgeSet}
+    (hsignal :
+      data.ExtensionCoordinateSignalWithResidualProgress emb p0Inside p4Inside side
+        classifier controlEdges processed)
+    (hwitnessRed :
+      ∀ e : G.edgeSet,
+        e ∈ classifier.remainingControlEdgeTrace controlEdges →
+          ∃ i : κ,
+            ((family i : projectedColoringGeneratorSubspace emb colorings) :
+                G.edgeSet → Color) =
+              Pi.single e red)
+    (hwitnessBlue :
+      ∀ e : G.edgeSet,
+        e ∈ classifier.remainingControlEdgeTrace controlEdges →
+          ∃ i : κ,
+            ((family i : projectedColoringGeneratorSubspace emb colorings) :
+                G.edgeSet → Color) =
+              Pi.single e blue) :
+    ∃ z : G.edgeSet → Color,
+      z ∈ planarBoundaryZeroSubmodule emb ∧
+        z ≠ 0 ∧
+          (∀ e : G.edgeSet,
+            data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e →
+              z e = 0) ∧
+            ∃ e : G.edgeSet,
+              (e ∈ classifier.crossingExtensionFinset controlEdges ∨
+                e ∈ classifier.noncrossingExtensionFinset controlEdges) ∧
+                e ∈ classifier.remainingControlEdges controlEdges ∧
+                  e ∈ classifier.remainingControlEdgeTrace controlEdges ∧
+                    e ∈ classifier.residualRemainingControlEdges controlEdges processed ∧
+                      ¬ data.EnumeratedExceptionalAnnulusForcedEdge
+                        p0Inside p4Inside side e ∧
+                        z e ≠ 0 ∧
+                          (classifier.residualRemainingControlEdges controlEdges
+                              (insert e processed)).card <
+                            (classifier.residualRemainingControlEdges controlEdges
+                              processed).card ∧
+                          ((classifier.remainingControlEdges controlEdges).erase e).card <
+                            (classifier.remainingControlEdges controlEdges).card ∧
+                            ∃ i : κ,
+                              chainDotBilinForm G.edgeSet (family i : G.edgeSet → Color) z ≠ 0 := by
+  rcases hsignal with hcrossing | hnoncrossing
+  · rcases hcrossing with
+      ⟨z, hzBoundary, hzNonzero, hvanish, _u, _v, e, _p, heBin, heRemaining,
+        heResidual, hePredicateOutside, hze, _hcross, _hsideu, _hsidev, _hpEdges,
+        _havoid, _hcoordinate, hresidualProgress, hprogress⟩
+    have heTrace : e ∈ classifier.remainingControlEdgeTrace controlEdges :=
+      (classifier.mem_remainingControlEdgeTrace_iff controlEdges e).2 heRemaining
+    rcases exists_familyPairing_ne_zero_of_redBlueSingleCoordinateWitness family e hze
+        (hwitnessRed e heTrace) (hwitnessBlue e heTrace) with
+      ⟨i, hpair⟩
+    exact
+      ⟨z, hzBoundary, hzNonzero, hvanish, e, Or.inl heBin, heRemaining, heTrace,
+        heResidual, hePredicateOutside, hze, hresidualProgress, hprogress, i, hpair⟩
+  · rcases hnoncrossing with
+      ⟨z, hzBoundary, hzNonzero, hvanish, e, heBin, heRemaining, heResidual,
+        hePredicateOutside, hze, _hnotCross, _hcoordinate, hresidualProgress,
+        hprogress⟩
+    have heTrace : e ∈ classifier.remainingControlEdgeTrace controlEdges :=
+      (classifier.mem_remainingControlEdgeTrace_iff controlEdges e).2 heRemaining
+    rcases exists_familyPairing_ne_zero_of_redBlueSingleCoordinateWitness family e hze
+        (hwitnessRed e heTrace) (hwitnessBlue e heTrace) with
+      ⟨i, hpair⟩
+    exact
+      ⟨z, hzBoundary, hzNonzero, hvanish, e, Or.inr heBin, heRemaining, heTrace,
+        heResidual, hePredicateOutside, hze, hresidualProgress, hprogress, i, hpair⟩
+
+/--
 Per-latent complete-frontier bridge into the algebraic forced-edge predicate.  A single complete
 CAP5 checker row in a cyclically five-edge-connected graph emits an enumerated forced edge and a
 one-edge detector payload for that exact latent.  This is the local handoff from finite
