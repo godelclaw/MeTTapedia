@@ -10,7 +10,7 @@ claimed here; the target is a decided state for the Goertzel theorem-4.9 route.
 | Fork | State | PLN STV | ITV | Progress |
 |---|---|---:|---:|---:|
 | Geometric CAP5/Jordan repair | The old packet-refutation lane has been consolidated for the source-bound canonical/one-collar part: every closed-walk exact shell structurally blocks the canonical witness choice and every one-collar collar/previous-boundary witness repair by the same two-interior-edge face obstruction. The side-cut lane has two structural obstructions now: any finite support containing an odd closed walk cannot be realized by a single vertex-side cyclic separator, and any CAP5/Jordan exceptional candidate realized as cyclic-cut data produces a forbidden cyclic edge cut of size at most four in a cyclically five-edge-connected graph. The generated residual surface is now classified too: under cyclic five-edge-connectivity every generated node is either missing primitive checker evidence or emits a concrete outside-crossing edge outside candidate support; at report level, all 16 latents are forced exactly when the missing-evidence frontier is empty, and failure returns a concrete missing-evidence latent. Still missing the theorem that exact CAP5/Jordan shell data eliminates that primitive missing-evidence branch or reduces it to the odd-walk obstruction, the realized small-cut obstruction, or the one-collar face contradiction. | `<0.60,0.72>` | `[0.43,0.71]` | 82% |
-| Algebraic F2 cancellation oracle | Lab finds no top-level all-interior evader on 65 records, no declared-forced evader on the 36 forcing records, and no all-interior vertex-Kirchhoff failure on all 65 records; the vertex-failure crux survives on the 36 forcing records. Lean now proves the route-facing classifier-control iff/no-evader contract, including the full selected-boundary-zero version: emitted CAP5 coordinates control every selected-boundary-zero chain iff no nonzero selected-boundary-zero chain evades all enumerated forced edges. The completed-checker no-evader handoff now also returns full boundary-zero classifier control together with theorem-4.9 synthesis. The executable report bridge now consumes the generator verdict `forcedCounterexampleLatents = all`: under cyclic five-edge-connectivity that verdict closes the primitive missing-evidence frontier, so the report-forced-all branch feeds directly into full boundary-zero no-evader control, the empty-worklist subset certificate, and the target-controlled synthesis-or-genuine-evader fork. Lean also proves the target-dimension fork theorem below-bound classifier implies genuine target evader, the target-control/off-target bridge, the vertex-Kirchhoff failure bridge, the row-span/subset certificate bridge, and the exact binary fork theorem. The empty canonical interior-support worklist proves the exact row-span/subset certificate itself and rules out the concrete vertex-Kirchhoff evader branch. The target-controlled executable fork packages success as synthesis plus target coverage and failure as a genuine theorem-4.9 boundary-vertex Kirchhoff evader together with a decreasing remaining worklist edge. The all-interior/empty-worklist success side proves there is no odd closed walk in ambient interior support, while odd-worklist witnesses do not block synthesis once the concrete evader is excluded. The remaining burden is to derive the no-evader/subset side from exact CAP5 data, or formalize the genuine vertex-Kirchhoff evader produced by failure. | `<0.56,0.79>` | `[0.44,0.65]` | 80% |
+| Algebraic F2 cancellation oracle | Lab finds no top-level all-interior evader on 65 records, no declared-forced evader on the 36 forcing records, and no all-interior vertex-Kirchhoff failure on all 65 records; the vertex-failure crux survives on the 36 forcing records. Lean now proves the route-facing classifier-control iff/no-evader contract, including the full selected-boundary-zero version: emitted CAP5 coordinates control every selected-boundary-zero chain iff no nonzero selected-boundary-zero chain evades all enumerated forced edges. The completed-checker no-evader handoff now also returns full boundary-zero classifier control together with theorem-4.9 synthesis. The executable report bridge now consumes the generator verdict `forcedCounterexampleLatents = all`: under cyclic five-edge-connectivity that verdict closes the primitive missing-evidence frontier, so the report-forced-all branch feeds directly into full boundary-zero no-evader control, the empty-worklist subset certificate, and the target-controlled synthesis-or-genuine-evader fork. The same report-forced-all interface is now split into its two decision halves: target control plus absence of the concrete theorem-4.9 boundary-vertex Kirchhoff evader yields synthesis and target coverage, while target control plus failed synthesis returns that genuine evader and a decreasing remaining-worklist edge. Lean also proves the target-dimension fork theorem below-bound classifier implies genuine target evader, the target-control/off-target bridge, the vertex-Kirchhoff failure bridge, the row-span/subset certificate bridge, and the exact binary fork theorem. The empty canonical interior-support worklist proves the exact row-span/subset certificate itself and rules out the concrete vertex-Kirchhoff evader branch. The all-interior/empty-worklist success side proves there is no odd closed walk in ambient interior support, while odd-worklist witnesses do not block synthesis once the concrete evader is excluded. The remaining burden is still to derive the no-evader/subset side from exact CAP5 data, or formalize the genuine vertex-Kirchhoff evader produced by failure. | `<0.57,0.80>` | `[0.46,0.66]` | 81% |
 
 ## Latest Move-1 Evidence
 
@@ -328,6 +328,34 @@ claimed here; the target is a decided state for the Goertzel theorem-4.9 route.
   branch feeds directly into the full selected-boundary-zero no-evader closure,
   the empty-worklist subset-certificate closure, or the target-controlled
   synthesis-versus-genuine-vertex-Kirchhoff-evader fork.
+- Forced-all evader-fork lab rerun archived locally as
+  `fourcolor-move2-forcedall-evaderfork-lab-20260629.json`; stderr is empty,
+  and the run contains 65 benchmark signatures, 65 projected-generator
+  certificate files, and 80 rejected counterexample exports.  The
+  all-interior no-evader and vertex-Kirchhoff-failure-absent signatures are
+  true on all 65 records; the declared-forced variants are true on the 36
+  forcing records.
+- Forced-all evader-fork focused detector build archived locally as
+  `fourcolor-move2-forcedall-evaderfork-focused-build-20260629.log`.
+- Axiom audit archived locally as
+  `fourcolor-move2-forcedall-evaderfork-axiom-audit-20260629.log`; the two new
+  theorem constants depend only on
+  `[propext, Classical.choice, Quot.sound]`.
+- Strict diff/proof-marker/leak scans archived locally as
+  `fourcolor-move2-forcedall-evaderfork-strict-scans-20260629.log`.
+- Full `lake -f lakefile.lean build Mettapedia` archived locally as
+  `fourcolor-move2-forcedall-evaderfork-full-build-20260629.log` with 5900
+  jobs.
+- New forced-all fork-half theorem surface:
+  `CAP5TransportedEdgeComponentCoverCore.targetControlledSynthesis_of_noEvader_of_forcedAllLatents`
+  and
+  `CAP5TransportedEdgeComponentCoverCore.targetControlledEvader_of_notSynthesis_of_forcedAllLatents`.
+  These remove the last ambiguity in the report-forced-all target-controlled
+  interface: under target classifier control, absence of the concrete
+  theorem-4.9 boundary-vertex Kirchhoff evader proves synthesis plus target
+  coverage, while failed synthesis proves the evader exists and carries a
+  decreasing remaining-worklist edge.  This is an interface decision, not yet
+  the exact-shell proof of the no-evader/subset side.
 
 ## Remaining Completion Requirements
 
