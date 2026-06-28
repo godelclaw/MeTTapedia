@@ -2,6 +2,7 @@ import Mettapedia.FluidDynamics.NavierStokes.NavierStokesEnergyBKMBridge
 import Mettapedia.FluidDynamics.NavierStokes.FeffermanCompatibilityFrontier
 import Mettapedia.FluidDynamics.NavierStokes.NavierStokesDEGroundedCanary
 import Mettapedia.FluidDynamics.NavierStokes.NavierStokesEnergySchwartzSolutionObstruction
+import Mettapedia.FluidDynamics.NavierStokes.NavierStokesSchwartzLocalizedStreamFunction
 import Mettapedia.FluidDynamics.NavierStokes.NavierStokesSchwartzSymmetricShearObstruction
 import Mettapedia.FluidDynamics.NavierStokes.Scaling.CriticalNormCanaries
 import Mettapedia.FluidDynamics.NavierStokes.Scaling.AveragedEquationCanaries
@@ -59,10 +60,10 @@ deriving Repr
 
 /-- Current dependency-map counts for `FluidDynamics/NavierStokes`. -/
 def currentNavierLaneSurvey : NavierLaneSurvey where
-  sourceFiles := 495
-  sourceLines := 109314
-  internalImportEdges := 1260
-  regressionFiles := 138
+  sourceFiles := 497
+  sourceLines := 109627
+  internalImportEdges := 1265
+  regressionFiles := 139
   filesOverThousandLines := 0
   filesOverSevenHundredFiftyLines := 1
   leavesWithoutInternalImports := 2
@@ -173,14 +174,23 @@ def navierNonzeroSchwartzSymmetricShearObstructionNode : NavierProofNode where
   evidence := "finiteModeSymmetricShear_exact_nonzero_and_not_schwartzSlice proves that for every nonzero amplitude the symmetric off-diagonal finite-mode shear is nonzero, divergence-free, and pressure-closed by affine-quadratic pressure, while not_exists_schwartzInitialVelocity_eq_finiteModeSymmetricShearPolynomialMode_of_alpha_ne_zero excludes its time-one linear-growth slice from the Schwartz initial-velocity lane. PLN STV <s=.88,c=.88>, ITV [.7744,.8944], PROGRESS 53%."
   blocker := "This closes the next non-line-invariant finite-mode shortcut. The remaining positive canary must use localized non-polynomial Schwartz profiles, or prove a stronger obstruction for every explicit pressure-slice closure route."
 
+/-- A localized stream-function construction supplies nonzero divergence-free
+Schwartz initial data for the next pressure-closure search. -/
+def navierNonzeroSchwartzLocalizedStreamSeedNode : NavierProofNode where
+  id := "navier.energy.nonzero-schwartz-localized-stream-seed"
+  status := .checked
+  truthValue := ⟨72, 88⟩
+  evidence := "initialSpatialDivergence_streamFunctionVelocity proves that every scalar Schwartz stream function phi gives divergence-free Schwartz initial velocity (partial_1 phi, -partial_0 phi, 0), and nsLocalizedStreamDivergenceFreeInitialVelocity_nonzero proves the compactly supported x_1*bump stream function gives a concrete nonzero inhabited S_sigma datum. PLN STV <s=.72,c=.88>, ITV [.6336,.7536], PROGRESS 58%."
+  blocker := "This closes the nonzero divergence-free Schwartz seed gap only. The open canary still requires an exact smooth velocity evolution and Schwartz pressure slices satisfying the Navier-Stokes momentum equation."
+
 /-- The explicit nonzero slice-Schwartz canary remains open until the
 finite-mode closure hypotheses are inhabited by concrete profiles. -/
 def navierNonzeroSchwartzCanaryNode : NavierProofNode where
   id := "navier.energy.nonzero-schwartz-canary"
   status := .openGoal
-  truthValue := ⟨45, 85⟩
-  evidence := "The checked nonzero kernel removes the old zero-flow loophole from the energy-identity surface, the checked line-invariant obstruction proves every nonzero slice-Schwartz concrete solution must have a slice that breaks invariance along each nonzero direction, and the checked symmetric-shear obstruction proves a nonzero pressure-closed finite-mode shortcut still fails Schwartz decay. No unconditional nonzero exact slice-Schwartz solution inhabitant is committed yet. PLN STV <s=.45,c=.85>, ITV [.3825,.5325], PROGRESS 53%."
-  blocker := "Close or refute the pressure-slice closure for explicit localized non-polynomial nonzero Schwartz profiles; do not count a conditional constructor or algebraic finite-mode boundary case as the requested positive canary."
+  truthValue := ⟨55, 86⟩
+  evidence := "The checked nonzero kernel removes the old zero-flow loophole from the energy-identity surface; the line-invariant and symmetric-shear obstructions remove two shortcut classes; and the localized stream-function seed gives a concrete nonzero divergence-free Schwartz datum. No unconditional nonzero exact slice-Schwartz solution inhabitant is committed yet. PLN STV <s=.55,c=.86>, ITV [.473,.613], PROGRESS 58%."
+  blocker := "Close or refute the pressure-slice closure and time evolution for the explicit localized stream-function seed or a comparable non-polynomial Schwartz profile; do not count a conditional constructor, seed-only datum, or algebraic finite-mode boundary case as the requested positive canary."
 
 /-- Supercritical scaling remains a route obstacle, not a closed theorem here. -/
 def navierSupercriticalScalingNode : NavierProofNode where
@@ -315,6 +325,7 @@ def currentNavierProofNodes : List NavierProofNode :=
   , navierNonzeroSchwartzEnergyKernelNode
   , navierNonzeroSchwartzLineInvariantObstructionNode
   , navierNonzeroSchwartzSymmetricShearObstructionNode
+  , navierNonzeroSchwartzLocalizedStreamSeedNode
   , navierNonzeroSchwartzCanaryNode
   , navierSupercriticalScalingNode
   , navierCriticalNormCanariesNode
@@ -370,6 +381,10 @@ theorem navierNonzeroSchwartzLineInvariantObstructionNode_checked :
 
 theorem navierNonzeroSchwartzSymmetricShearObstructionNode_checked :
     navierNonzeroSchwartzSymmetricShearObstructionNode.status = .checked := by
+  rfl
+
+theorem navierNonzeroSchwartzLocalizedStreamSeedNode_checked :
+    navierNonzeroSchwartzLocalizedStreamSeedNode.status = .checked := by
   rfl
 
 theorem navierNonzeroSchwartzCanaryNode_open :
@@ -479,6 +494,19 @@ theorem currentNavierNonzeroSchwartzSymmetricShearObstruction_node
   exact
     ⟨finiteModeSymmetricShear_exact_nonzero_and_not_schwartzSlice ν ε hα,
       navierNonzeroSchwartzSymmetricShearObstructionNode_checked,
+      navierNonzeroSchwartzCanaryNode_open⟩
+
+theorem currentNavierNonzeroSchwartzLocalizedStreamSeed_node :
+    (∀ φ : NSSchwartzScalar, ∀ x : NSSpace,
+      initialSpatialDivergence (streamFunctionVelocity φ : NSInitialVelocity) x = 0) ∧
+      (∃ u₀ : NSSchwartzDivergenceFreeInitialVelocity, ∃ x : NSSpace, u₀.1 x ≠ 0) ∧
+      navierNonzeroSchwartzLocalizedStreamSeedNode.status = .checked ∧
+      navierNonzeroSchwartzCanaryNode.status = .openGoal := by
+  exact
+    ⟨initialSpatialDivergence_streamFunctionVelocity,
+      ⟨nsLocalizedStreamDivergenceFreeInitialVelocity,
+        nsLocalizedStreamDivergenceFreeInitialVelocity_nonzero⟩,
+      navierNonzeroSchwartzLocalizedStreamSeedNode_checked,
       navierNonzeroSchwartzCanaryNode_open⟩
 
 theorem navierCriticalNormCanariesNode_uncleared :
