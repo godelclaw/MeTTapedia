@@ -1,6 +1,7 @@
 import Mettapedia.FluidDynamics.NavierStokes.NavierStokesEnergyBKMBridge
 import Mettapedia.FluidDynamics.NavierStokes.FeffermanCompatibilityFrontier
 import Mettapedia.FluidDynamics.NavierStokes.NavierStokesDEGroundedCanary
+import Mettapedia.FluidDynamics.NavierStokes.NavierStokesEnergySchwartzSolutionKernel
 import Mettapedia.FluidDynamics.NavierStokes.NavierStokesEnergySchwartzSolutionObstruction
 import Mettapedia.FluidDynamics.NavierStokes.NavierStokesSchwartzAntiProfileCanaryObstruction
 import Mettapedia.FluidDynamics.NavierStokes.NavierStokesSchwartzLocalizedStreamFunction
@@ -263,14 +264,23 @@ def navierNonzeroSchwartzFiniteModeResidualCurlBoundaryNode : NavierProofNode wh
   evidence := "SchwartzMomentumClosureKernel and SchwartzConcreteSolutionKernel factor the momentum equation, divergence, pressure-residual equality, and residual-curl-zero condition out of any slice-Schwartz concrete solution. oneOneTwoModeSchwartzVelocity_lapSum_residualVorticity_zero_of_schwartzConcreteSolution and the not_exists_* residual-vorticity theorems specialize this to the constant-amplitude two-mode generator: once the inviscid convection closure is supplied, the viscous Laplacian residual must be curl-free everywhere or no pressure slices can make the velocity inhabit the ordinary or nonzero slice-Schwartz concrete interface. PLN STV <s=.89,c=.90>, ITV [.801,.901], PROGRESS 72%."
   blocker := "This turns the two-mode pressure-closure search into a concrete curl-free residual obligation. It still does not provide explicit nonzero profiles satisfying the inviscid closure, curl-free viscous residual, and pressure-slice equation."
 
+/-- Stationary inviscid one-profile data now have a direct nonzero
+slice-Schwartz constructor once the pressure closure is supplied. -/
+def navierNonzeroSchwartzStationaryInviscidConstructorNode : NavierProofNode where
+  id := "navier.energy.nonzero-schwartz-stationary-inviscid-constructor"
+  status := .checked
+  truthValue := ⟨76, 88⟩
+  evidence := "stationaryInviscidSchwartzPressureSlice_nonzeroSchwartzConcreteSolution and stationaryInviscidSchwartzPressureSlice_nonzero_concreteSolutionKernel prove that any nonzero divergence-free Schwartz initial velocity with a Schwartz pressure slice satisfying the stationary inviscid pointwise closure inhabits NonzeroSchwartzConcreteNavierStokesSolution at viscosity 0 and carries SchwartzConcreteSolutionKernel. PLN STV <s=.76,c=.88>, ITV [.6688,.7888], PROGRESS 73%."
+  blocker := "This exposes the exact stationary localized Euler-style pressure-closure seam. It is still conditional on an explicit closure witness and works at viscosity 0, so it does not satisfy the positive-viscosity nonzero canary obligation."
+
 /-- The explicit nonzero slice-Schwartz canary remains open until the
 finite-mode closure hypotheses are inhabited by concrete profiles. -/
 def navierNonzeroSchwartzCanaryNode : NavierProofNode where
   id := "navier.energy.nonzero-schwartz-canary"
   status := .openGoal
   truthValue := ⟨67, 86⟩
-  evidence := "The checked nonzero kernel removes the old zero-flow loophole from the energy-identity surface; the line-invariant, exact heat-shear boundary, rank-one zero-convection, symmetric-shear, anti-profile cancellation, exact anti-profile amplitude-boundary, positive-viscosity stationary, strict-dissipation-kernel, flat-energy zero-rigidity, generic pressure-residual-curl, and finite-mode residual-curl gates remove or constrain eleven shortcut classes at stronger interfaces; and the localized stream-function seed gives a concrete nonzero divergence-free Schwartz datum. No unconditional nonzero exact slice-Schwartz solution inhabitant is committed yet. PLN STV <s=.67,c=.86>, ITV [.5762,.7162], PROGRESS 72%."
-  blocker := "Close or refute the pressure-slice closure and time evolution for the explicit localized stream-function seed or a comparable non-polynomial Schwartz profile; do not count a conditional constructor, seed-only datum, classical heat-shear exact solution that fails Schwartz decay, rank-one zero-convection obstruction, profile-level nonzero anti-profile cancellation, an amplitude-boundary guardrail, a positive-viscosity stationary obstruction, a strict-dissipation theorem conditional on the nonzero interface, a flat-energy zero-rigidity obstruction, a residual-curl pressure-closure rejection, a finite-mode residual-curl boundary, or algebraic finite-mode boundary case as the requested positive canary."
+  evidence := "The checked nonzero kernel removes the old zero-flow loophole from the energy-identity surface; the line-invariant, exact heat-shear boundary, rank-one zero-convection, symmetric-shear, anti-profile cancellation, exact anti-profile amplitude-boundary, positive-viscosity stationary, strict-dissipation-kernel, flat-energy zero-rigidity, generic pressure-residual-curl, finite-mode residual-curl, and stationary-inviscid constructor gates remove, constrain, or expose twelve shortcut classes at stronger interfaces; and the localized stream-function seed gives a concrete nonzero divergence-free Schwartz datum. No unconditional positive-viscosity nonzero exact slice-Schwartz solution inhabitant is committed yet. PLN STV <s=.67,c=.86>, ITV [.5762,.7162], PROGRESS 72%."
+  blocker := "Close or refute the pressure-slice closure and time evolution for the explicit localized stream-function seed or a comparable non-polynomial Schwartz profile; do not count a conditional constructor, seed-only datum, classical heat-shear exact solution that fails Schwartz decay, rank-one zero-convection obstruction, profile-level nonzero anti-profile cancellation, an amplitude-boundary guardrail, a positive-viscosity stationary obstruction, a strict-dissipation theorem conditional on the nonzero interface, a flat-energy zero-rigidity obstruction, a residual-curl pressure-closure rejection, a finite-mode residual-curl boundary, a stationary inviscid closure constructor, or algebraic finite-mode boundary case as the requested positive canary."
 
 /-- Supercritical scaling remains a route obstacle, not a closed theorem here. -/
 def navierSupercriticalScalingNode : NavierProofNode where
@@ -415,6 +425,7 @@ def currentNavierProofNodes : List NavierProofNode :=
   , navierNonzeroSchwartzNoFlatEnergyObstructionNode
   , navierSchwartzPressureResidualCurlGateNode
   , navierNonzeroSchwartzFiniteModeResidualCurlBoundaryNode
+  , navierNonzeroSchwartzStationaryInviscidConstructorNode
   , navierNonzeroSchwartzCanaryNode
   , navierSupercriticalScalingNode
   , navierCriticalNormCanariesNode
@@ -510,6 +521,10 @@ theorem navierSchwartzPressureResidualCurlGateNode_checked :
 
 theorem navierNonzeroSchwartzFiniteModeResidualCurlBoundaryNode_checked :
     navierNonzeroSchwartzFiniteModeResidualCurlBoundaryNode.status = .checked := by
+  rfl
+
+theorem navierNonzeroSchwartzStationaryInviscidConstructorNode_checked :
+    navierNonzeroSchwartzStationaryInviscidConstructorNode.status = .checked := by
   rfl
 
 theorem navierNonzeroSchwartzCanaryNode_open :
@@ -888,6 +903,31 @@ theorem currentNavierNonzeroSchwartzFiniteModeResidualCurlBoundary_node
         not_exists_nonzeroSchwartzConcreteSolution_oneOneTwoModeSchwartzVelocity_of_inviscidClosure_residualVorticity_ne_zero
           f g hclosure hcurl,
       navierNonzeroSchwartzFiniteModeResidualCurlBoundaryNode_checked,
+      navierNonzeroSchwartzCanaryNode_open⟩
+
+theorem currentNavierNonzeroSchwartzStationaryInviscidConstructor_node
+    (u₀ : NSSchwartzDivergenceFreeInitialVelocity)
+    (q : 𝓢(NSSpace, ℝ))
+    (hnonzero : ∃ x : NSSpace, u₀.1 x ≠ 0)
+    (hstationary : ∀ t x,
+      spatialConvection (timeIndependentVelocity (u₀.1 : NSInitialVelocity)) t x +
+          spatialPressureGradient (fun _ : NSTime => fun y : NSSpace => q y) t x =
+        0) :
+    (∃ S : NonzeroSchwartzConcreteNavierStokesSolution 0,
+      S.velocity = timeIndependentVelocity (u₀.1 : NSInitialVelocity) ∧
+        S.pressure = (fun _ : NSTime => fun y : NSSpace => q y) ∧
+        SchwartzConcreteSolutionKernel 0 S.velocity S.pressure) ∧
+      (∃ t x, timeIndependentVelocity (u₀.1 : NSInitialVelocity) t x ≠ 0) ∧
+      navierNonzeroSchwartzStationaryInviscidConstructorNode.status = .checked ∧
+      navierNonzeroSchwartzCanaryNode.status = .openGoal := by
+  let S :=
+    stationaryInviscidSchwartzPressureSlice_nonzeroSchwartzConcreteSolution
+      u₀ q hnonzero hstationary
+  exact
+    ⟨⟨S, rfl, rfl, S.concreteSolutionKernel⟩,
+      (stationaryInviscidSchwartzPressureSlice_nonzero_concreteSolutionKernel
+        u₀ q hnonzero hstationary).1,
+      navierNonzeroSchwartzStationaryInviscidConstructorNode_checked,
       navierNonzeroSchwartzCanaryNode_open⟩
 
 theorem navierCriticalNormCanariesNode_uncleared :

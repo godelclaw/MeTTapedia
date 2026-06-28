@@ -1,5 +1,6 @@
 import Mettapedia.FluidDynamics.NavierStokes.NavierStokesEnergySchwartzSolution
 import Mettapedia.FluidDynamics.NavierStokes.NavierStokesFiniteModeBoundedEnergyGlobal
+import Mettapedia.FluidDynamics.NavierStokes.NavierStokesSchwartzDivergenceFreeData
 import Mettapedia.FluidDynamics.NavierStokes.VectorCalculusR3PressureObstructions
 
 /-!
@@ -299,6 +300,107 @@ theorem
     twoModeSchwartzPressureSlice_nonzeroSchwartzConcreteSolution_of_momentumEquation
       ha hb f g A B q hp haBound hbBound hfDiv hgDiv hnonzero heq
   exact S.nonzero_and_energyIdentityKernel
+
+/-- One-profile stationary inviscid constructor.  A nonzero divergence-free
+Schwartz initial velocity, together with a Schwartz pressure slice whose
+spatial gradient balances the stationary convection term, gives a nonzero
+slice-Schwartz concrete solution at viscosity `0`.
+
+This is the exact surface needed for stationary localized Euler-style canary
+searches.  The pressure-closure equation is still explicit; the constructor
+does not hide it or claim positive-viscosity Navier-Stokes regularity. -/
+def stationaryInviscidSchwartzPressureSlice_nonzeroSchwartzConcreteSolution
+    (u₀ : NSSchwartzDivergenceFreeInitialVelocity)
+    (q : 𝓢(NSSpace, ℝ))
+    (hnonzero : ∃ x : NSSpace, u₀.1 x ≠ 0)
+    (hstationary : ∀ t x,
+      spatialConvection (timeIndependentVelocity (u₀.1 : NSInitialVelocity)) t x +
+          spatialPressureGradient (fun _ : NSTime => fun y : NSSpace => q y) t x =
+        0) :
+    NonzeroSchwartzConcreteNavierStokesSolution 0 where
+  toSchwartzConcreteNavierStokesSolution := {
+    velocity := timeIndependentVelocity (u₀.1 : NSInitialVelocity)
+    pressure := fun _ : NSTime => fun y : NSSpace => q y
+    smooth_velocity :=
+      smoothSpaceTimeVelocity_timeIndependentVelocity
+        (smoothInitialVelocityData_of_schwartzDivergenceFreeInitialVelocity u₀)
+    smooth_pressure := by
+      simpa using
+        smoothSpaceTimePressure_scalar_smul_schwartzPressure
+          (ρ := fun _ : NSTime => (1 : ℝ)) contDiff_const q
+    momentum_equation :=
+      satisfiesMomentumEquation_mkFullyConcreteNavierStokesSurface_iff.mpr
+        (by
+          intro t x
+          rw [timeVelocityDerivative_timeIndependentVelocity]
+          simpa using hstationary t x)
+    incompressible :=
+      isIncompressible_mkFullyConcreteNavierStokesSurface_iff.mpr
+        (by
+          intro t x
+          rw [spatialDivergence_timeIndependentVelocity]
+          exact u₀.2 x)
+    bounded_energy := by
+      have hbounded :
+          boundedKineticEnergy
+            (fun s : NSTime => fun y : NSSpace =>
+              (fun _ : NSTime => (1 : ℝ)) s • u₀.1 y +
+                (fun _ : NSTime => (0 : ℝ)) s • (0 : NSSchwartzInitialVelocity) y) :=
+        boundedKineticEnergy_of_add_scalar_smul_schwartz_of_abs_le
+          (fun _ : NSTime => (1 : ℝ)) (fun _ : NSTime => (0 : ℝ))
+          u₀.1 (0 : NSSchwartzInitialVelocity) 1 0
+          (by intro t; simp)
+          (by intro t; simp)
+      change
+        boundedKineticEnergy
+          (fun _ : NSTime => fun y : NSSpace => (u₀.1 : NSInitialVelocity) y)
+      simpa using hbounded
+    velocitySlice := fun _ : NSTime => u₀.1
+    velocitySlice_eq := by
+      intro t x
+      rfl
+    pressureSlice := fun _ : NSTime => q
+    pressureSlice_eq := by
+      intro t x
+      rfl
+    energy_derivative := by
+      have hderiv :
+          EnergyDerivativeFormula
+            (fun s : NSTime => fun y : NSSpace =>
+              (fun _ : NSTime => (1 : ℝ)) s • u₀.1 y +
+                (fun _ : NSTime => (0 : ℝ)) s • (0 : NSSchwartzInitialVelocity) y) :=
+        EnergyDerivativeFormula_of_add_scalar_smul_schwartz
+          (fun _ : NSTime => (1 : ℝ)) (fun _ : NSTime => (0 : ℝ))
+          (fun _ : NSTime => (0 : ℝ)) (fun _ : NSTime => (0 : ℝ))
+          u₀.1 (0 : NSSchwartzInitialVelocity)
+          (by intro t; simpa using hasDerivAt_const t (1 : ℝ))
+          (by intro t; simpa using hasDerivAt_const t (0 : ℝ))
+      change
+        EnergyDerivativeFormula
+          (fun _ : NSTime => fun y : NSSpace => (u₀.1 : NSInitialVelocity) y)
+      simpa using hderiv
+  }
+  nonzero_velocity := by
+    rcases hnonzero with ⟨x, hx⟩
+    exact ⟨0, x, by simpa [timeIndependentVelocity] using hx⟩
+
+/-- Kernel packet for the stationary inviscid one-profile constructor. -/
+theorem stationaryInviscidSchwartzPressureSlice_nonzero_concreteSolutionKernel
+    (u₀ : NSSchwartzDivergenceFreeInitialVelocity)
+    (q : 𝓢(NSSpace, ℝ))
+    (hnonzero : ∃ x : NSSpace, u₀.1 x ≠ 0)
+    (hstationary : ∀ t x,
+      spatialConvection (timeIndependentVelocity (u₀.1 : NSInitialVelocity)) t x +
+          spatialPressureGradient (fun _ : NSTime => fun y : NSSpace => q y) t x =
+        0) :
+    (∃ t x, timeIndependentVelocity (u₀.1 : NSInitialVelocity) t x ≠ 0) ∧
+      SchwartzConcreteSolutionKernel 0
+        (timeIndependentVelocity (u₀.1 : NSInitialVelocity))
+        (fun _ : NSTime => fun y : NSSpace => q y) := by
+  let S :=
+    stationaryInviscidSchwartzPressureSlice_nonzeroSchwartzConcreteSolution
+      u₀ q hnonzero hstationary
+  exact S.nonzero_and_concreteSolutionKernel
 
 end NavierStokes
 end FluidDynamics

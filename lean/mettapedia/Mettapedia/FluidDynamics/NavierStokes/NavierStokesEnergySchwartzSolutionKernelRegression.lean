@@ -34,6 +34,22 @@ theorem nonzero_schwartz_solution_concrete_kernel_regression
       SchwartzConcreteSolutionKernel ν S.velocity S.pressure := by
   exact S.nonzero_and_concreteSolutionKernel
 
+theorem stationary_inviscid_schwartz_pressure_slice_kernel_regression
+    (u₀ : NSSchwartzDivergenceFreeInitialVelocity)
+    (q : 𝓢(NSSpace, ℝ))
+    (hnonzero : ∃ x : NSSpace, u₀.1 x ≠ 0)
+    (hstationary : ∀ t x,
+      spatialConvection (timeIndependentVelocity (u₀.1 : NSInitialVelocity)) t x +
+          spatialPressureGradient (fun _ : NSTime => fun y : NSSpace => q y) t x =
+        0) :
+    (∃ t x, timeIndependentVelocity (u₀.1 : NSInitialVelocity) t x ≠ 0) ∧
+      SchwartzConcreteSolutionKernel 0
+        (timeIndependentVelocity (u₀.1 : NSInitialVelocity))
+        (fun _ : NSTime => fun y : NSSpace => q y) := by
+  exact
+    stationaryInviscidSchwartzPressureSlice_nonzero_concreteSolutionKernel
+      u₀ q hnonzero hstationary
+
 theorem twoMode_nonzero_schwartz_pressure_slice_kernel_regression
     {a b : NSTime → ℝ} (ha : ContDiff ℝ ∞ a) (hb : ContDiff ℝ ∞ b)
     (f g : NSSchwartzInitialVelocity) (A B : ℝ)
