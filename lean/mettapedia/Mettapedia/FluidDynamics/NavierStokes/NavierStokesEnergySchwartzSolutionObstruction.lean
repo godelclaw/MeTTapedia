@@ -132,6 +132,48 @@ theorem coordinateEnergyDissipationRate_pos_of_velocity_ne_zero
   simpa [coordinateEnergyDissipationRate] using
     mul_pos hν (S.coordinateEnstrophyAt_pos_of_velocity_ne_zero hne)
 
+/-- Zero normalized-energy derivative at every time is rigid at positive
+viscosity: an ordinary slice-Schwartz concrete solution satisfying this
+energy-flat condition has identically zero velocity. -/
+theorem velocity_eq_zero_of_forall_normalizedKineticEnergy_hasDerivAt_zero_of_pos_viscosity
+    (hν : 0 < ν)
+    (hzero : ∀ t : NSTime, HasDerivAt (normalizedKineticEnergy S.velocity) 0 t) :
+    ∀ t x, S.velocity t x = 0 := by
+  intro t x
+  have hidentity := S.coordinateEnergyDissipationIdentity t
+  have hsame :
+      0 = -(coordinateEnergyDissipationRate S.velocity ν t) :=
+    (hzero t).unique hidentity
+  have hrate : coordinateEnergyDissipationRate S.velocity ν t = 0 := by
+    have hneg :
+        -(coordinateEnergyDissipationRate S.velocity ν t) = 0 :=
+      hsame.symm
+    exact neg_eq_zero.mp hneg
+  have hmul : ν * coordinateEnstrophyAt S.velocity t = 0 := by
+    simpa [coordinateEnergyDissipationRate] using hrate
+  have henst : coordinateEnstrophyAt S.velocity t = 0 := by
+    rcases mul_eq_zero.mp hmul with hνzero | henst
+    · exact (ne_of_gt hν hνzero).elim
+    · exact henst
+  exact S.velocity_eq_zero_of_coordinateEnstrophyAt_eq_zero henst x
+
+/-- Constant normalized kinetic energy is also rigid at positive viscosity:
+inside the slice-Schwartz concrete solution interface it forces zero
+velocity. -/
+theorem velocity_eq_zero_of_exists_const_normalizedKineticEnergy_of_pos_viscosity
+    (hν : 0 < ν)
+    (hconst :
+      ∃ E : ℝ, normalizedKineticEnergy S.velocity = fun _ : NSTime => E) :
+    ∀ t x, S.velocity t x = 0 := by
+  rcases hconst with ⟨E, hconst⟩
+  exact
+    S.velocity_eq_zero_of_forall_normalizedKineticEnergy_hasDerivAt_zero_of_pos_viscosity
+      hν
+      (by
+        intro t
+        rw [hconst]
+        exact hasDerivAt_const t E)
+
 /-- A time-independent velocity in the slice-Schwartz concrete solution
 interface has zero corrected coordinate dissipation at every time.  This is a
 stationary-energy gate: the exact energy identity and constant kinetic energy

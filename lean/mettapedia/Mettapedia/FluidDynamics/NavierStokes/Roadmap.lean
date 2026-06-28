@@ -118,13 +118,13 @@ def currentNavierRoadmap : List NavierRoadmapEntry :=
     { stage := .nonzeroEnergyKernel
       proofNodeId := "navier.energy.nonzero-schwartz-no-flat-energy-obstruction"
       status := .checked
-      truthValue := ⟨89, 90⟩
-      obligation := "Use the checked no-flat-energy obstruction to reject positive-viscosity nonzero canaries with everywhere-zero normalized-energy derivative or constant normalized kinetic energy; future positive canaries must genuinely dissipate." },
+      truthValue := ⟨90, 90⟩
+      obligation := "Use the checked flat-energy zero-rigidity theorem to reject positive-viscosity canaries with everywhere-zero normalized-energy derivative or constant normalized kinetic energy; future positive canaries must genuinely dissipate." },
     { stage := .nonzeroEnergyKernel
       proofNodeId := "navier.energy.nonzero-schwartz-canary"
       status := .openGoal
-      truthValue := ⟨63, 86⟩
-      obligation := "Produce or refute an exact smooth evolution and Schwartz pressure slices for the localized stream-function seed or a comparable non-polynomial Schwartz profile; seed-only data, conditional constructors, rank-one zero-convection obstructions, profile-level nonzero anti-profile cancellation, amplitude-boundary guardrails, positive-viscosity stationary obstructions, strict-dissipation theorems conditional on the nonzero interface, energy-flat obstructions, and algebraic finite-mode boundary cases do not count." },
+      truthValue := ⟨64, 86⟩
+      obligation := "Produce or refute an exact smooth evolution and Schwartz pressure slices for the localized stream-function seed or a comparable non-polynomial Schwartz profile; seed-only data, conditional constructors, rank-one zero-convection obstructions, profile-level nonzero anti-profile cancellation, amplitude-boundary guardrails, positive-viscosity stationary obstructions, strict-dissipation theorems conditional on the nonzero interface, flat-energy zero-rigidity obstructions, and algebraic finite-mode boundary cases do not count." },
     { stage := .scalingGate
       proofNodeId := "navier.regularity-promotion-gate"
       status := .scalingUncleared
@@ -164,9 +164,9 @@ theorem currentNavierRoadmap_records_nonzero_schwartz_kernel_and_open_canary :
       ({ stage := NavierRoadmapStage.nonzeroEnergyKernel
          proofNodeId := "navier.energy.nonzero-schwartz-canary"
          status := .openGoal
-         truthValue := ⟨63, 86⟩
+         truthValue := ⟨64, 86⟩
          obligation :=
-          "Produce or refute an exact smooth evolution and Schwartz pressure slices for the localized stream-function seed or a comparable non-polynomial Schwartz profile; seed-only data, conditional constructors, rank-one zero-convection obstructions, profile-level nonzero anti-profile cancellation, amplitude-boundary guardrails, positive-viscosity stationary obstructions, strict-dissipation theorems conditional on the nonzero interface, energy-flat obstructions, and algebraic finite-mode boundary cases do not count." } :
+          "Produce or refute an exact smooth evolution and Schwartz pressure slices for the localized stream-function seed or a comparable non-polynomial Schwartz profile; seed-only data, conditional constructors, rank-one zero-convection obstructions, profile-level nonzero anti-profile cancellation, amplitude-boundary guardrails, positive-viscosity stationary obstructions, strict-dissipation theorems conditional on the nonzero interface, flat-energy zero-rigidity obstructions, and algebraic finite-mode boundary cases do not count." } :
         NavierRoadmapEntry) ∈ currentNavierRoadmap ∧
       ({ stage := NavierRoadmapStage.nonzeroEnergyKernel
          proofNodeId := "navier.energy.nonzero-schwartz-rank-one-shear-obstruction"
@@ -220,9 +220,9 @@ theorem currentNavierRoadmap_records_nonzero_schwartz_kernel_and_open_canary :
       ({ stage := NavierRoadmapStage.nonzeroEnergyKernel
          proofNodeId := "navier.energy.nonzero-schwartz-no-flat-energy-obstruction"
          status := .checked
-         truthValue := ⟨89, 90⟩
+         truthValue := ⟨90, 90⟩
          obligation :=
-          "Use the checked no-flat-energy obstruction to reject positive-viscosity nonzero canaries with everywhere-zero normalized-energy derivative or constant normalized kinetic energy; future positive canaries must genuinely dissipate." } :
+          "Use the checked flat-energy zero-rigidity theorem to reject positive-viscosity canaries with everywhere-zero normalized-energy derivative or constant normalized kinetic energy; future positive canaries must genuinely dissipate." } :
         NavierRoadmapEntry) ∈ currentNavierRoadmap ∧
       navierNonzeroSchwartzEnergyKernelNode.status = .checked ∧
       navierNonzeroSchwartzLineInvariantObstructionNode.status = .checked ∧

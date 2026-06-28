@@ -233,18 +233,18 @@ def navierNonzeroSchwartzStrictDissipationKernelNode : NavierProofNode where
 def navierNonzeroSchwartzNoFlatEnergyObstructionNode : NavierProofNode where
   id := "navier.energy.nonzero-schwartz-no-flat-energy-obstruction"
   status := .checked
-  truthValue := ⟨89, 90⟩
-  evidence := "not_forall_normalizedKineticEnergy_hasDerivAt_zero_of_pos_viscosity and not_exists_const_normalizedKineticEnergy_of_pos_viscosity prove that any positive-viscosity nonzero slice-Schwartz solution must have a dissipative time; no such solution can have zero normalized-energy derivative at every time or constant normalized kinetic energy. PLN STV <s=.89,c=.90>, ITV [.801,.901], PROGRESS 68%."
-  blocker := "This rules out energy-flat and constant-energy positive-viscosity shortcut canaries, but it is still conditional on the nonzero interface for the witness-side theorem and does not provide an explicit pressure-slice momentum closure."
+  truthValue := ⟨90, 90⟩
+  evidence := "velocity_eq_zero_of_forall_normalizedKineticEnergy_hasDerivAt_zero_of_pos_viscosity and velocity_eq_zero_of_exists_const_normalizedKineticEnergy_of_pos_viscosity prove ordinary-interface zero-rigidity: at positive viscosity, zero normalized-energy derivative at every time, or constant normalized kinetic energy, forces the velocity to vanish pointwise. The nonzero-subtype no-flat-energy theorems follow as canary obstructions. PLN STV <s=.90,c=.90>, ITV [.810,.910], PROGRESS 69%."
+  blocker := "This rules out flat-energy and constant-energy positive-viscosity shortcut canaries at the ordinary solution-interface level, but it does not provide an explicit pressure-slice momentum closure."
 
 /-- The explicit nonzero slice-Schwartz canary remains open until the
 finite-mode closure hypotheses are inhabited by concrete profiles. -/
 def navierNonzeroSchwartzCanaryNode : NavierProofNode where
   id := "navier.energy.nonzero-schwartz-canary"
   status := .openGoal
-  truthValue := ⟨63, 86⟩
-  evidence := "The checked nonzero kernel removes the old zero-flow loophole from the energy-identity surface; the line-invariant, rank-one zero-convection, symmetric-shear, anti-profile cancellation, exact anti-profile amplitude-boundary, positive-viscosity stationary, strict-dissipation-kernel, and no-flat-energy results remove or constrain eight shortcut classes; and the localized stream-function seed gives a concrete nonzero divergence-free Schwartz datum. No unconditional nonzero exact slice-Schwartz solution inhabitant is committed yet. PLN STV <s=.63,c=.86>, ITV [.5418,.6818], PROGRESS 68%."
-  blocker := "Close or refute the pressure-slice closure and time evolution for the explicit localized stream-function seed or a comparable non-polynomial Schwartz profile; do not count a conditional constructor, seed-only datum, rank-one zero-convection obstruction, profile-level nonzero anti-profile cancellation, an amplitude-boundary guardrail, a positive-viscosity stationary obstruction, a strict-dissipation theorem conditional on the nonzero interface, an energy-flat obstruction, or algebraic finite-mode boundary case as the requested positive canary."
+  truthValue := ⟨64, 86⟩
+  evidence := "The checked nonzero kernel removes the old zero-flow loophole from the energy-identity surface; the line-invariant, rank-one zero-convection, symmetric-shear, anti-profile cancellation, exact anti-profile amplitude-boundary, positive-viscosity stationary, strict-dissipation-kernel, and flat-energy zero-rigidity results remove or constrain eight shortcut classes at stronger interfaces; and the localized stream-function seed gives a concrete nonzero divergence-free Schwartz datum. No unconditional nonzero exact slice-Schwartz solution inhabitant is committed yet. PLN STV <s=.64,c=.86>, ITV [.5504,.6904], PROGRESS 69%."
+  blocker := "Close or refute the pressure-slice closure and time evolution for the explicit localized stream-function seed or a comparable non-polynomial Schwartz profile; do not count a conditional constructor, seed-only datum, rank-one zero-convection obstruction, profile-level nonzero anti-profile cancellation, an amplitude-boundary guardrail, a positive-viscosity stationary obstruction, a strict-dissipation theorem conditional on the nonzero interface, a flat-energy zero-rigidity obstruction, or algebraic finite-mode boundary case as the requested positive canary."
 
 /-- Supercritical scaling remains a route obstacle, not a closed theorem here. -/
 def navierSupercriticalScalingNode : NavierProofNode where
@@ -704,14 +704,26 @@ theorem currentNavierNonzeroSchwartzStrictDissipationKernel_node
 
 theorem currentNavierNonzeroSchwartzNoFlatEnergyObstruction_node
     {ν : ℝ} (hν : 0 < ν) :
-    (¬ ∃ S : NonzeroSchwartzConcreteNavierStokesSolution ν,
+    (∀ S : SchwartzConcreteNavierStokesSolution ν,
+      (∀ t : NSTime, HasDerivAt (normalizedKineticEnergy S.velocity) 0 t) →
+        ∀ t x, S.velocity t x = 0) ∧
+      (∀ S : SchwartzConcreteNavierStokesSolution ν,
+        (∃ E : ℝ, normalizedKineticEnergy S.velocity = fun _ : NSTime => E) →
+          ∀ t x, S.velocity t x = 0) ∧
+      (¬ ∃ S : NonzeroSchwartzConcreteNavierStokesSolution ν,
       ∀ t : NSTime, HasDerivAt (normalizedKineticEnergy S.velocity) 0 t) ∧
       (¬ ∃ S : NonzeroSchwartzConcreteNavierStokesSolution ν,
         ∃ E : ℝ, normalizedKineticEnergy S.velocity = fun _ : NSTime => E) ∧
       navierNonzeroSchwartzNoFlatEnergyObstructionNode.status = .checked ∧
       navierNonzeroSchwartzCanaryNode.status = .openGoal := by
   exact
-    ⟨not_exists_nonzeroSchwartzConcreteSolution_forall_normalizedKineticEnergy_hasDerivAt_zero
+    ⟨fun S hzero =>
+        S.velocity_eq_zero_of_forall_normalizedKineticEnergy_hasDerivAt_zero_of_pos_viscosity
+          hν hzero,
+      fun S hconst =>
+        S.velocity_eq_zero_of_exists_const_normalizedKineticEnergy_of_pos_viscosity
+          hν hconst,
+      not_exists_nonzeroSchwartzConcreteSolution_forall_normalizedKineticEnergy_hasDerivAt_zero
         hν,
       not_exists_nonzeroSchwartzConcreteSolution_const_normalizedKineticEnergy_of_pos_viscosity
         hν,

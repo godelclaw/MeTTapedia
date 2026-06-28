@@ -55,6 +55,23 @@ theorem nonzero_velocity_schwartz_slice_dissipation_pos_regression
     0 < coordinateEnergyDissipationRate S.velocity ν t := by
   exact S.coordinateEnergyDissipationRate_pos_of_velocity_ne_zero hν hne
 
+theorem schwartz_solution_zero_of_forall_energy_derivative_zero_regression
+    {ν : ℝ} (hν : 0 < ν) (S : SchwartzConcreteNavierStokesSolution ν)
+    (hzero : ∀ t : NSTime, HasDerivAt (normalizedKineticEnergy S.velocity) 0 t) :
+    ∀ t x, S.velocity t x = 0 := by
+  exact
+    S.velocity_eq_zero_of_forall_normalizedKineticEnergy_hasDerivAt_zero_of_pos_viscosity
+      hν hzero
+
+theorem schwartz_solution_zero_of_const_energy_regression
+    {ν : ℝ} (hν : 0 < ν) (S : SchwartzConcreteNavierStokesSolution ν)
+    (hconst :
+      ∃ E : ℝ, normalizedKineticEnergy S.velocity = fun _ : NSTime => E) :
+    ∀ t x, S.velocity t x = 0 := by
+  exact
+    S.velocity_eq_zero_of_exists_const_normalizedKineticEnergy_of_pos_viscosity
+      hν hconst
+
 theorem stationary_schwartz_solution_dissipation_zero_regression
     {ν : ℝ} (S : SchwartzConcreteNavierStokesSolution ν)
     {u₀ : NSInitialVelocity}
