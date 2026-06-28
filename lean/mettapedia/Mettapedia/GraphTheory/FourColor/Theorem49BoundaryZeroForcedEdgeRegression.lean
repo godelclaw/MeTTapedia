@@ -1732,7 +1732,6 @@ theorem not_crossComponentBridgeAnnulus_outer_inner_crossComponentChordFree :
     ¬ BoundaryEdgeSetCrossComponentChordFree
       crossComponentBridgeAnnulusOuterBoundarySet
       crossComponentBridgeAnnulusInnerBoundarySet := by
-  intro hCross
   have hEndpoints :
       ∀ v : Fin 6, v ∈ (ccbR03 : Sym2 (Fin 6)) →
         v ∈ boundaryEdgeSetEndpointSupport
@@ -1771,18 +1770,16 @@ theorem not_crossComponentBridgeAnnulus_outer_inner_crossComponentChordFree :
           crossComponentBridgeAnnulusInnerBoundarySet :=
     ⟨3, by decide,
       (mem_boundaryEdgeSetEndpointSupport_iff
-        crossComponentBridgeAnnulusInnerBoundarySet).2
+          crossComponentBridgeAnnulusInnerBoundarySet).2
         ⟨ccbI34, by simp [crossComponentBridgeAnnulusInnerBoundarySet],
           by decide⟩⟩
-  have hR03Union :
-      ccbR03 ∈ crossComponentBridgeAnnulusOuterBoundarySet ∪
-        crossComponentBridgeAnnulusInnerBoundarySet :=
-    hCross ccbR03 hEndpoints hLeft hRight
   have hR03NotUnion :
       ccbR03 ∉ crossComponentBridgeAnnulusOuterBoundarySet ∪
         crossComponentBridgeAnnulusInnerBoundarySet := by
     decide
-  exact hR03NotUnion hR03Union
+  exact
+    not_boundaryEdgeSetCrossComponentChordFree_of_edge_not_mem_of_endpoint_supports
+      hR03NotUnion hEndpoints hLeft hRight
 
 theorem crossComponentBridgeAnnulus_component_induced_not_crossComponentChordFree :
     BoundaryEdgeSetInducedSubgraph
@@ -2476,6 +2473,20 @@ theorem annulusBoundaryCyclePair_crossComponentBridgeAnnulus :
   ⟨boundaryEdgeSetCyclicRun_outer_crossComponentBridgeAnnulus,
     boundaryEdgeSetCyclicRun_inner_crossComponentBridgeAnnulus,
     outer_inner_boundaryCycleEndpointSupports_disjoint_crossComponentBridgeAnnulus⟩
+
+theorem
+    closedWalkAnnulusBoundarySource_boundaryCyclePair_does_not_imply_crossComponentChordFree_crossComponentBridgeAnnulus :
+    Nonempty
+        (PlanarBoundaryClosedWalkAnnulusBoundarySource crossComponentBridgeAnnulusEmbedding) ∧
+      AnnulusBoundaryCyclePair crossComponentBridgeAnnulusEmbedding
+        crossComponentBridgeAnnulusOuterBoundarySet
+        crossComponentBridgeAnnulusInnerBoundarySet ∧
+        ¬ BoundaryEdgeSetCrossComponentChordFree
+          crossComponentBridgeAnnulusOuterBoundarySet
+          crossComponentBridgeAnnulusInnerBoundarySet :=
+  ⟨nonempty_closedWalkAnnulusBoundarySource_crossComponentBridgeAnnulus,
+    annulusBoundaryCyclePair_crossComponentBridgeAnnulus,
+    not_crossComponentBridgeAnnulus_outer_inner_crossComponentChordFree⟩
 
 theorem
     closedWalkAnnulusBoundarySource_boundaryCyclePair_and_componentInduced_does_not_imply_crossComponentChordFree_crossComponentBridgeAnnulus :
