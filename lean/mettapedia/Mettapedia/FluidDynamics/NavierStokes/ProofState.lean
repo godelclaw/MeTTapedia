@@ -1,6 +1,7 @@
 import Mettapedia.FluidDynamics.NavierStokes.NavierStokesEnergyBKMBridge
 import Mettapedia.FluidDynamics.NavierStokes.FeffermanCompatibilityFrontier
 import Mettapedia.FluidDynamics.NavierStokes.NavierStokesDEGroundedCanary
+import Mettapedia.FluidDynamics.NavierStokes.NavierStokesEnergySchwartzSolution
 import Mettapedia.FluidDynamics.NavierStokes.Scaling.CriticalNormCanaries
 import Mettapedia.FluidDynamics.NavierStokes.Scaling.AveragedEquationCanaries
 import Mettapedia.FluidDynamics.NavierStokes.Scaling.AveragedMomentumCanaries
@@ -29,6 +30,9 @@ namespace Mettapedia
 namespace FluidDynamics
 namespace NavierStokes
 
+open MeasureTheory
+open scoped ContDiff Laplacian RealInnerProductSpace LineDeriv SchwartzMap
+
 /-- Coarse status tags for central Navier-Stokes route nodes. -/
 inductive NavierProofStatus where
   | surveyed
@@ -53,9 +57,9 @@ deriving Repr
 
 /-- Current dependency-map counts for `FluidDynamics/NavierStokes`. -/
 def currentNavierLaneSurvey : NavierLaneSurvey where
-  sourceFiles := 487
-  sourceLines := 107895
-  internalImportEdges := 1242
+  sourceFiles := 489
+  sourceLines := 108301
+  internalImportEdges := 1247
   regressionFiles := 133
   filesOverThousandLines := 0
   filesOverSevenHundredFiftyLines := 0
@@ -131,6 +135,14 @@ def navierDEGroundedZeroCanaryNode : NavierProofNode where
   truthValue := ⟨100, 98⟩
   evidence := "concreteNSZeroCanary_and_scaling_packet proves a fully concrete zero velocity/pressure witness for mkFullyConcreteNavierStokesSurface, its guarded coordinate energy identity, uniform momentum scaling exponent 3, L2 supercritical power exponent -1, L3 critical exponent 0, and L4 subcritical exponent 1."
   blocker := "This canary proves the theorem surface is non-vacuous; it is not a global regularity theorem for arbitrary finite-energy data."
+
+/-- A general slice-Schwartz solution now carries the real energy identity. -/
+def navierSchwartzEnergyIdentityNode : NavierProofNode where
+  id := "navier.energy.schwartz-solution-identity"
+  status := .checked
+  truthValue := ⟨78, 84⟩
+  evidence := "coordinateEnergyDissipationIdentity_of_schwartzConcreteSolution proves, for arbitrary energy-admissible slice-Schwartz velocity/pressure fields satisfying SatisfiesMomentumEquation and IsIncompressible on mkFullyConcreteNavierStokesSurface, the pressure-work cancellation, convection-work cancellation, coordinate viscous Laplacian identity, and d/dt normalized kinetic energy = -coordinateEnergyDissipationRate. PLN STV <s=.78,c=.84>, ITV [.6552,.8152], PROGRESS 34%."
+  blocker := "This decides the Schwartz-solution energy identity subnode, not global regularity. Extending it to every smooth finite-energy solution still requires closing the derivative-under-the-integral and decay/approximation seam beyond the slice-Schwartz energy-admissible class."
 
 /-- Supercritical scaling remains a route obstacle, not a closed theorem here. -/
 def navierSupercriticalScalingNode : NavierProofNode where
@@ -261,6 +273,7 @@ def currentNavierProofNodes : List NavierProofNode :=
   , navierEnergyBKMHeatShearNode
   , navierFeffermanLiftNode
   , navierDEGroundedZeroCanaryNode
+  , navierSchwartzEnergyIdentityNode
   , navierSupercriticalScalingNode
   , navierCriticalNormCanariesNode
   , navierAveragedEquationFrontierNode
@@ -301,6 +314,10 @@ theorem navierDEGroundedZeroCanaryNode_checked :
     navierDEGroundedZeroCanaryNode.status = .checked := by
   rfl
 
+theorem navierSchwartzEnergyIdentityNode_checked :
+    navierSchwartzEnergyIdentityNode.status = .checked := by
+  rfl
+
 theorem currentNavierDEGroundedZeroCanary_node :
     NavierStokesGlobalRegularityClause
         mkFullyConcreteNavierStokesSurface
@@ -317,6 +334,22 @@ theorem currentNavierDEGroundedZeroCanary_node :
       concreteNSZeroCanary_and_scaling_packet.2.2.2.1,
       concreteNSZeroCanary_and_scaling_packet.2.2.2.2,
       navierDEGroundedZeroCanaryNode_checked⟩
+
+theorem currentNavierSchwartzEnergyIdentity_node
+    {ν : ℝ} (S : SchwartzConcreteNavierStokesSolution ν) :
+    (∀ t, ∫ x, pressureEnergyPairing S.velocity S.pressure t x ∂volume = 0) ∧
+      (∀ t, ∫ x, convectionEnergyPairing S.velocity t x ∂volume = 0) ∧
+      CoordinateViscousEnergyPairingFormula S.velocity ∧
+      (∀ t,
+        HasDerivAt (normalizedKineticEnergy S.velocity)
+          (-(coordinateEnergyDissipationRate S.velocity ν t)) t) ∧
+      navierSchwartzEnergyIdentityNode.status = .checked := by
+  exact
+    ⟨S.pressureEnergyCancellation,
+      S.convectionEnergyCancellation,
+      S.coordinateViscousEnergyPairingFormula,
+      S.coordinateEnergyDissipationIdentity,
+      navierSchwartzEnergyIdentityNode_checked⟩
 
 theorem navierCriticalNormCanariesNode_uncleared :
     navierCriticalNormCanariesNode.status = .scalingUncleared := by
