@@ -366,6 +366,18 @@ prove that exact CAP5 shell data supplies the no-evader/subset certificate,
 but it removes the raw `missingCheckerEvidenceLatents = []` premise from the
 route-facing F2 checkpoint.
 
+The report-forced-all target-controlled interface is now split into its two
+actual fork halves.  Lean proves
+`targetControlledSynthesis_of_noEvader_of_forcedAllLatents` and
+`targetControlledEvader_of_notSynthesis_of_forcedAllLatents`: once
+`forcedCounterexampleLatents = all` closes the primitive missing-evidence
+frontier, target classifier control plus absence of the concrete theorem-4.9
+boundary-vertex Kirchhoff evader yields synthesis and target coverage; if
+synthesis still fails, Lean returns exactly that genuine evader together with
+a decreasing remaining-worklist edge.  This removes an interface ambiguity in
+the executable report path, but it does not by itself prove that exact
+CAP5/Jordan shell data supplies the no-evader/subset side.
+
 On the geometric fork, the source-bound one-collar repair treadmill has now
 been consolidated into a shell-level obstruction.  In
 `FrontierGeometric.lean`, the theorems
@@ -464,9 +476,13 @@ longer acceptable progress.
    `forcedCounterexampleLatents = all` directly in place of the raw empty
    missing-evidence premise, and feeds that report verdict into full
    boundary-zero no-evader control, empty-worklist subset success, or the
-   target-controlled synthesis-or-evader fork.  The remaining crux is whether
-   exact shell/CAP5 data proves the no-evader/subset certificate uniformly, or
-   whether a genuine vertex-Kirchhoff failure evader exists.
+   target-controlled synthesis-or-evader fork.  That report-forced-all fork is
+   now split into its no-evader and failed-synthesis halves: absence of the
+   concrete vertex-Kirchhoff evader closes synthesis, while failed synthesis
+   produces the evader and a decreasing remaining-worklist edge.  The remaining
+   crux is whether exact shell/CAP5 data proves the no-evader/subset
+   certificate uniformly, or whether a genuine vertex-Kirchhoff failure evader
+   exists.
 
 The historical trichotomy below remains useful background:
 
