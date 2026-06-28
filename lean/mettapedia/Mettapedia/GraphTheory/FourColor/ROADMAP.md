@@ -196,15 +196,28 @@ nonempty forcing interior edges.  The exported projected-generator bundle
 contains 65 certificate files and 80 rejected counterexample files; the two
 algebraic-F2 cruxes still survive with support 36 and purified support 18.
 In Lean,
+`enumeratedExceptionalAnnulusForcedEdgeClassifierBoundaryZeroControl_iff_no_boundaryZeroEvader`,
 `enumeratedExceptionalAnnulusForcedEdgeClassifierKirchhoffControl_iff_no_kirchhoffEvader`
 and
 `theorem49BoundaryTargetClassifierControl_iff_no_targetEvader` say that the
-emitted CAP5 classifier coordinates control the boundary-zero Kirchhoff target,
-and the theorem-4.9 target `W0(H)`, exactly when no nonzero target chain evades
+emitted CAP5 classifier coordinates control the full selected-boundary-zero
+carrier, any chosen boundary-zero Kirchhoff target, and the theorem-4.9 target
+`W0(H)`, exactly when no nonzero chain in the corresponding carrier evades
 every enumerated CAP5 forced edge.  This does not decide the exact shell, but
 it removes the algebraic ambiguity in the oracle statement: the remaining
 Move-2 fork is now to prove that exact CAP5 data supplies the no-evader side,
 or to exhibit the evader.
+
+The no-evader direction now lands on the full boundary-zero classifier-control
+surface, not only the theorem-4.9 target.  Lean proves
+`theorem49BoundaryRootSynthesis_and_boundaryZeroClassifierControl_of_no_boundaryZeroEvader_of_no_missing_finsetControl`
+and the executable interior-support specialization
+`theorem49BoundaryRootSynthesis_and_boundaryZeroClassifierControl_of_no_boundaryZeroEvader_of_missingCheckerEvidenceLatents_eq_nil_of_interiorEdgeSupportControl`:
+a closed CAP5 checker plus absence of a nonzero selected-boundary-zero evader
+yields theorem-4.9 synthesis and proves that the emitted CAP5 coordinates
+control the whole selected-boundary-zero subspace.  The remaining problem is
+therefore not this direction of the oracle; it is deriving the no-evader
+verdict from uniform exact-shell data, or producing the genuine evader.
 
 The next target-level corollary turns finite dimension into an explicit fork
 test for exact CAP5 data.  In Lean,
@@ -379,16 +392,19 @@ longer acceptable progress.
    reduces to the face obstruction, and then carry the theorem through
    repair-removal.
 2. **Algebraic fork**: resolve the F2 cancellation oracle.  The current
-   machine-checked statement is sharper than a one-way handoff: classifier
-   control of the theorem-4.9 target is equivalent to absence of a nonzero
-   enumerated-forced-edge evader; underdimensioned classifiers produce a
-   genuine target evader; full no-evader plus the closed finite checker
-   implies theorem-4.9 synthesis and target coverage; and target classifier
-   control reduces the remaining failure branch to a forced-edge-vanishing
-   selected-boundary-zero evader with a concrete theorem-4.9 boundary-vertex
-   Kirchhoff failure, plus a decreasing worklist edge; and the row-span/subset
-   bridge says the exact remaining certificate is that every forced-vanishing
-   boundary-zero chain lies in the theorem-4.9 target.  The empty-worklist shell
+   machine-checked statement is sharper than a one-way handoff: full
+   selected-boundary-zero classifier control is equivalent to absence of a
+   nonzero selected-boundary-zero evader, and the closed finite checker plus
+   that no-evader verdict gives both theorem-4.9 synthesis and full
+   boundary-zero classifier control; classifier control of the theorem-4.9
+   target is also equivalent to absence of a nonzero target evader;
+   underdimensioned classifiers produce a genuine target evader; target
+   classifier control reduces the remaining failure branch to a
+   forced-edge-vanishing selected-boundary-zero evader with a concrete
+   theorem-4.9 boundary-vertex Kirchhoff failure, plus a decreasing worklist
+   edge; and the row-span/subset bridge says the exact remaining certificate is
+   that every forced-vanishing boundary-zero chain lies in the theorem-4.9
+   target.  The empty-worklist shell
    now proves that exact subset certificate and eliminates the concrete
    vertex-Kirchhoff evader branch there, while odd-interior supports refute
    that empty-worklist proof path.  The all-interior/empty-worklist success
