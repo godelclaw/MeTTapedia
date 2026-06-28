@@ -253,6 +253,33 @@ theorem nonzero_schwartz_solution_exists_dissipation_pos_regression
     ∃ t : NSTime, 0 < coordinateEnergyDissipationRate S.velocity ν t := by
   exact S.exists_coordinateEnergyDissipationRate_pos_of_pos_viscosity hν
 
+theorem schwartz_solution_dissipation_pos_of_nonzero_slice_regression
+    {ν : ℝ} (hν : 0 < ν) (S : SchwartzConcreteNavierStokesSolution ν)
+    {t : NSTime}
+    (hne : ∃ x : NSSpace, S.velocity t x ≠ 0) :
+    0 < coordinateEnergyDissipationRate S.velocity ν t := by
+  exact S.coordinateEnergyDissipationRate_pos_of_exists_velocity_ne_zero hν hne
+
+theorem schwartz_solution_energy_derivative_lt_zero_of_nonzero_slice_regression
+    {ν : ℝ} (hν : 0 < ν) (S : SchwartzConcreteNavierStokesSolution ν)
+    {t d : ℝ}
+    (hne : ∃ x : NSSpace, S.velocity t x ≠ 0)
+    (hderiv : HasDerivAt (normalizedKineticEnergy S.velocity) d t) :
+    d < 0 := by
+  exact
+    S.normalizedKineticEnergy_derivative_lt_zero_of_exists_velocity_ne_zero
+      hν hne hderiv
+
+theorem nonzero_schwartz_solution_energy_derivative_lt_zero_of_nonzero_slice_regression
+    {ν : ℝ} (hν : 0 < ν) (S : NonzeroSchwartzConcreteNavierStokesSolution ν)
+    {t d : ℝ}
+    (hne : ∃ x : NSSpace, S.velocity t x ≠ 0)
+    (hderiv : HasDerivAt (normalizedKineticEnergy S.velocity) d t) :
+    d < 0 := by
+  exact
+    S.normalizedKineticEnergy_derivative_lt_zero_of_exists_velocity_ne_zero
+      hν hne hderiv
+
 theorem nonzero_schwartz_solution_exists_strict_energy_identity_regression
     {ν : ℝ} (hν : 0 < ν) (S : NonzeroSchwartzConcreteNavierStokesSolution ν) :
     ∃ t : NSTime,
@@ -340,6 +367,17 @@ theorem not_exists_nonzero_schwartz_solution_nonzero_local_max_regression
           IsLocalMax (normalizedKineticEnergy S.velocity) t := by
   exact
     not_exists_nonzeroSchwartzConcreteSolution_nonzero_localMax_energy_of_pos_viscosity
+      hν
+
+theorem not_exists_nonzero_schwartz_solution_nonzero_nonneg_energy_derivative_regression
+    {ν : ℝ} (hν : 0 < ν) :
+    ¬ ∃ S : NonzeroSchwartzConcreteNavierStokesSolution ν,
+      ∃ t x d,
+        S.velocity t x ≠ 0 ∧
+          HasDerivAt (normalizedKineticEnergy S.velocity) d t ∧
+            0 ≤ d := by
+  exact
+    not_exists_nonzeroSchwartzConcreteSolution_nonzero_nonneg_energy_derivative_of_pos_viscosity
       hν
 
 theorem not_exists_nonzero_stationary_schwartz_solution_of_dissipation_ne_regression
