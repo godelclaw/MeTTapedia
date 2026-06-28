@@ -133,6 +133,33 @@ theorem coordinateEnergyDissipationRate_pos_of_velocity_ne_zero
   simpa [coordinateEnergyDissipationRate] using
     mul_pos hν (S.coordinateEnstrophyAt_pos_of_velocity_ne_zero hne)
 
+/-- At positive viscosity, any nonzero value on a time slice makes the
+corrected energy-dissipation rate strictly positive on that whole slice. -/
+theorem coordinateEnergyDissipationRate_pos_of_exists_velocity_ne_zero
+    (hν : 0 < ν) {t : NSTime}
+    (hne : ∃ x : NSSpace, S.velocity t x ≠ 0) :
+    0 < coordinateEnergyDissipationRate S.velocity ν t := by
+  rcases hne with ⟨x, hx⟩
+  exact S.coordinateEnergyDissipationRate_pos_of_velocity_ne_zero hν hx
+
+/-- At positive viscosity, if a velocity slice is nonzero, then every
+derivative witness for normalized kinetic energy at that time is strictly
+negative. -/
+theorem normalizedKineticEnergy_derivative_lt_zero_of_exists_velocity_ne_zero
+    (hν : 0 < ν) {t d : ℝ}
+    (hne : ∃ x : NSSpace, S.velocity t x ≠ 0)
+    (hderiv : HasDerivAt (normalizedKineticEnergy S.velocity) d t) :
+    d < 0 := by
+  have hrate :
+      0 < coordinateEnergyDissipationRate S.velocity ν t :=
+    S.coordinateEnergyDissipationRate_pos_of_exists_velocity_ne_zero hν hne
+  have hidentity := S.coordinateEnergyDissipationIdentity t
+  have hd :
+      d = -(coordinateEnergyDissipationRate S.velocity ν t) :=
+    hderiv.unique hidentity
+  rw [hd]
+  exact neg_neg_of_pos hrate
+
 /-- Zero normalized-energy derivative at every time is rigid at positive
 viscosity: an ordinary slice-Schwartz concrete solution satisfying this
 energy-flat condition has identically zero velocity. -/
@@ -345,6 +372,17 @@ theorem exists_coordinateEnergyDissipationRate_pos_of_pos_viscosity
   exact ⟨t,
     SchwartzConcreteNavierStokesSolution.coordinateEnergyDissipationRate_pos_of_velocity_ne_zero
       S.toSchwartzConcreteNavierStokesSolution hν hne⟩
+
+/-- Nonzero-interface version of the pointwise strict derivative gate.  At a
+time slice with a nonzero velocity value, normalized kinetic energy has only
+strictly negative derivative witnesses. -/
+theorem normalizedKineticEnergy_derivative_lt_zero_of_exists_velocity_ne_zero
+    (hν : 0 < ν) {t d : ℝ}
+    (hne : ∃ x : NSSpace, S.velocity t x ≠ 0)
+    (hderiv : HasDerivAt (normalizedKineticEnergy S.velocity) d t) :
+    d < 0 :=
+  SchwartzConcreteNavierStokesSolution.normalizedKineticEnergy_derivative_lt_zero_of_exists_velocity_ne_zero
+    S.toSchwartzConcreteNavierStokesSolution hν hne hderiv
 
 /-- Strict nonzero energy-identity kernel: at positive viscosity, any nonzero
 slice-Schwartz solution has a witness time where the exact coordinate energy
@@ -752,6 +790,23 @@ theorem not_exists_nonzeroSchwartzConcreteSolution_nonzero_localMax_energy_of_po
   rintro ⟨S, t, x, hne, hmax⟩
   exact S.not_isLocalMax_normalizedKineticEnergy_at_nonzero_of_pos_viscosity
     hν hne hmax
+
+/-- No positive-viscosity nonzero slice-Schwartz solution can have a nonzero
+velocity witness at a time where normalized kinetic energy has a nonnegative
+derivative witness. -/
+theorem not_exists_nonzeroSchwartzConcreteSolution_nonzero_nonneg_energy_derivative_of_pos_viscosity
+    {ν : ℝ} (hν : 0 < ν) :
+    ¬ ∃ S : NonzeroSchwartzConcreteNavierStokesSolution ν,
+      ∃ t x d,
+        S.velocity t x ≠ 0 ∧
+          HasDerivAt (normalizedKineticEnergy S.velocity) d t ∧
+            0 ≤ d := by
+  rintro ⟨S, t, x, d, hne, hderiv, hnonneg⟩
+  have hlt :
+      d < 0 :=
+    S.normalizedKineticEnergy_derivative_lt_zero_of_exists_velocity_ne_zero
+      hν ⟨x, hne⟩ hderiv
+  exact not_lt_of_ge hnonneg hlt
 
 end NavierStokes
 end FluidDynamics
