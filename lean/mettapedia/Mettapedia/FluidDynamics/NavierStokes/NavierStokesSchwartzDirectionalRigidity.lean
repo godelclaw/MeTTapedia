@@ -127,6 +127,24 @@ theorem schwartzMap_eq_zero_of_fderiv_eq_zero_along
       (translationInvariantAlong_of_fderiv_eq_zero_along (f := (f : NSSpace → F))
         hdiff hzero')
 
+/-- A constant-valued Schwartz profile has zero constant value.  This is a
+small reusable form of the directional rigidity obstruction for derivatives:
+if a directional derivative is a nonzero constant, it cannot come from a
+Schwartz profile. -/
+theorem schwartzMap_constant_value_eq_zero
+    {F : Type*} [NormedAddCommGroup F] [NormedSpace ℝ F]
+    (f : 𝓢(NSSpace, F)) {v : NSSpace} (hv : v ≠ 0) {c : F}
+    (hconst : ∀ x : NSSpace, f x = c) :
+    c = 0 := by
+  have hinv : TranslationInvariantAlong v (f : NSSpace → F) := by
+    intro x s
+    rw [hconst (x + s • v), hconst x]
+  have hfzero : f = 0 :=
+    schwartzMap_eq_zero_of_translationInvariantAlong f hv hinv
+  have hzeroAt0 :=
+    congrArg (fun g : 𝓢(NSSpace, F) => g (0 : NSSpace)) hfzero
+  simpa [hconst (0 : NSSpace)] using hzeroAt0
+
 /-- Concrete initial-velocity specialization of
 `schwartzMap_eq_zero_of_translationInvariantAlong`. -/
 theorem schwartzInitialVelocity_eq_zero_of_translationInvariantAlong

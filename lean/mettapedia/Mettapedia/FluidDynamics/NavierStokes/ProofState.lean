@@ -2,6 +2,7 @@ import Mettapedia.FluidDynamics.NavierStokes.NavierStokesEnergyBKMBridge
 import Mettapedia.FluidDynamics.NavierStokes.FeffermanCompatibilityFrontier
 import Mettapedia.FluidDynamics.NavierStokes.NavierStokesDEGroundedCanary
 import Mettapedia.FluidDynamics.NavierStokes.NavierStokesEnergySchwartzSolutionObstruction
+import Mettapedia.FluidDynamics.NavierStokes.NavierStokesSchwartzSymmetricShearObstruction
 import Mettapedia.FluidDynamics.NavierStokes.Scaling.CriticalNormCanaries
 import Mettapedia.FluidDynamics.NavierStokes.Scaling.AveragedEquationCanaries
 import Mettapedia.FluidDynamics.NavierStokes.Scaling.AveragedMomentumCanaries
@@ -31,6 +32,7 @@ namespace FluidDynamics
 namespace NavierStokes
 
 open MeasureTheory
+open Set
 open scoped ContDiff Laplacian RealInnerProductSpace LineDeriv SchwartzMap
 
 /-- Coarse status tags for central Navier-Stokes route nodes. -/
@@ -57,11 +59,11 @@ deriving Repr
 
 /-- Current dependency-map counts for `FluidDynamics/NavierStokes`. -/
 def currentNavierLaneSurvey : NavierLaneSurvey where
-  sourceFiles := 493
-  sourceLines := 108861
-  internalImportEdges := 1255
-  regressionFiles := 137
-  filesOverThousandLines := 1
+  sourceFiles := 495
+  sourceLines := 109314
+  internalImportEdges := 1260
+  regressionFiles := 138
+  filesOverThousandLines := 0
   filesOverSevenHundredFiftyLines := 1
   leavesWithoutInternalImports := 2
 
@@ -162,14 +164,23 @@ def navierNonzeroSchwartzLineInvariantObstructionNode : NavierProofNode where
   evidence := "velocity_eq_zero_of_velocitySlice_translationInvariantAlong, not_exists_nonzeroSchwartzConcreteSolution_all_velocitySlices_translationInvariantAlong, and every_nonzeroSchwartzConcreteSolution_has_non_lineInvariant_slice prove that any slice invariant along a nonzero direction is zero, so no nonzero slice-Schwartz concrete solution can keep all velocity slices line-invariant. PLN STV <s=.85,c=.90>, ITV [.765,.865], PROGRESS 48%."
   blocker := "This rules out the line-invariant shear shortcut class. The remaining positive canary must use genuinely non-line-invariant Schwartz profiles and close the pressure-slice momentum equation."
 
+/-- Symmetric finite-mode shear is a nonzero pressure-closed algebraic canary,
+but it is excluded from the slice-Schwartz lane. -/
+def navierNonzeroSchwartzSymmetricShearObstructionNode : NavierProofNode where
+  id := "navier.energy.nonzero-schwartz-symmetric-shear-obstruction"
+  status := .checked
+  truthValue := ⟨88, 88⟩
+  evidence := "finiteModeSymmetricShear_exact_nonzero_and_not_schwartzSlice proves that for every nonzero amplitude the symmetric off-diagonal finite-mode shear is nonzero, divergence-free, and pressure-closed by affine-quadratic pressure, while not_exists_schwartzInitialVelocity_eq_finiteModeSymmetricShearPolynomialMode_of_alpha_ne_zero excludes its time-one linear-growth slice from the Schwartz initial-velocity lane. PLN STV <s=.88,c=.88>, ITV [.7744,.8944], PROGRESS 53%."
+  blocker := "This closes the next non-line-invariant finite-mode shortcut. The remaining positive canary must use localized non-polynomial Schwartz profiles, or prove a stronger obstruction for every explicit pressure-slice closure route."
+
 /-- The explicit nonzero slice-Schwartz canary remains open until the
 finite-mode closure hypotheses are inhabited by concrete profiles. -/
 def navierNonzeroSchwartzCanaryNode : NavierProofNode where
   id := "navier.energy.nonzero-schwartz-canary"
   status := .openGoal
-  truthValue := ⟨42, 84⟩
-  evidence := "The checked nonzero kernel removes the old zero-flow loophole from the energy-identity surface, and the checked line-invariant obstruction proves every nonzero slice-Schwartz concrete solution must have a slice that breaks invariance along each nonzero direction. No unconditional nonzero exact slice-Schwartz solution inhabitant is committed yet. PLN STV <s=.42,c=.84>, ITV [.3528,.5128], PROGRESS 48%."
-  blocker := "Close or refute the finite-mode pressure-slice closure for explicit non-line-invariant nonzero profiles; do not count a conditional constructor as the requested positive canary."
+  truthValue := ⟨45, 85⟩
+  evidence := "The checked nonzero kernel removes the old zero-flow loophole from the energy-identity surface, the checked line-invariant obstruction proves every nonzero slice-Schwartz concrete solution must have a slice that breaks invariance along each nonzero direction, and the checked symmetric-shear obstruction proves a nonzero pressure-closed finite-mode shortcut still fails Schwartz decay. No unconditional nonzero exact slice-Schwartz solution inhabitant is committed yet. PLN STV <s=.45,c=.85>, ITV [.3825,.5325], PROGRESS 53%."
+  blocker := "Close or refute the pressure-slice closure for explicit localized non-polynomial nonzero Schwartz profiles; do not count a conditional constructor or algebraic finite-mode boundary case as the requested positive canary."
 
 /-- Supercritical scaling remains a route obstacle, not a closed theorem here. -/
 def navierSupercriticalScalingNode : NavierProofNode where
@@ -303,6 +314,7 @@ def currentNavierProofNodes : List NavierProofNode :=
   , navierSchwartzEnergyIdentityNode
   , navierNonzeroSchwartzEnergyKernelNode
   , navierNonzeroSchwartzLineInvariantObstructionNode
+  , navierNonzeroSchwartzSymmetricShearObstructionNode
   , navierNonzeroSchwartzCanaryNode
   , navierSupercriticalScalingNode
   , navierCriticalNormCanariesNode
@@ -354,6 +366,10 @@ theorem navierNonzeroSchwartzEnergyKernelNode_checked :
 
 theorem navierNonzeroSchwartzLineInvariantObstructionNode_checked :
     navierNonzeroSchwartzLineInvariantObstructionNode.status = .checked := by
+  rfl
+
+theorem navierNonzeroSchwartzSymmetricShearObstructionNode_checked :
+    navierNonzeroSchwartzSymmetricShearObstructionNode.status = .checked := by
   rfl
 
 theorem navierNonzeroSchwartzCanaryNode_open :
@@ -419,6 +435,50 @@ theorem currentNavierNonzeroSchwartzLineInvariantObstruction_node
     ⟨not_exists_nonzeroSchwartzConcreteSolution_all_velocitySlices_translationInvariantAlong hv,
       fun S => every_nonzeroSchwartzConcreteSolution_has_non_lineInvariant_slice S hv,
       navierNonzeroSchwartzLineInvariantObstructionNode_checked,
+      navierNonzeroSchwartzCanaryNode_open⟩
+
+theorem currentNavierNonzeroSchwartzSymmetricShearObstruction_node
+    (ν ε : ℝ) {α : ℝ} (hα : α ≠ 0) :
+    ((∃ b : ℝ → FiniteModeState FiniteModeAffineQuadraticPressureIndex,
+      ∃ u : NSVelocityField, ∃ p : NSPressureField,
+      u = finiteModeReconstructedVelocity
+        (fun i y =>
+          finiteModePolynomialVectorFieldEval
+            (finiteModeSymmetricShearPolynomialMode α i) y)
+        finiteModeIdentityCoefficientCurve ∧
+        p = finiteModeReconstructedPressure finiteModeAffineQuadraticPressureMode b ∧
+          finiteModeReconstructedMomentumResidualZeroOn
+            (Ioo (-ε) ε) ν
+              (fun i y =>
+                finiteModePolynomialVectorFieldEval
+                  (finiteModeSymmetricShearPolynomialMode α i) y)
+              finiteModeAffineQuadraticPressureMode
+              finiteModeUnitForcingCoefficients finiteModeIdentityCoefficientCurve b ∧
+          (∀ t ∈ Ioo (-ε) ε, ∀ x : NSSpace,
+            timeVelocityDerivative u t x +
+                spatialConvection u t x +
+                  spatialPressureGradient p t x =
+              ν • spatialLaplacian u t x) ∧
+          ∀ t x, spatialDivergence u t x = 0) ∧
+      (∃ t x,
+        finiteModeReconstructedVelocity
+            (fun i y =>
+              finiteModePolynomialVectorFieldEval
+                (finiteModeSymmetricShearPolynomialMode α i) y)
+            finiteModeIdentityCoefficientCurve t x ≠ 0) ∧
+      ¬ ∃ u₀ : NSSchwartzInitialVelocity,
+        (u₀ : NSInitialVelocity) =
+          fun x : NSSpace =>
+            finiteModeReconstructedVelocity
+              (fun i y =>
+                finiteModePolynomialVectorFieldEval
+                  (finiteModeSymmetricShearPolynomialMode α i) y)
+              finiteModeIdentityCoefficientCurve 1 x) ∧
+      navierNonzeroSchwartzSymmetricShearObstructionNode.status = .checked ∧
+      navierNonzeroSchwartzCanaryNode.status = .openGoal := by
+  exact
+    ⟨finiteModeSymmetricShear_exact_nonzero_and_not_schwartzSlice ν ε hα,
+      navierNonzeroSchwartzSymmetricShearObstructionNode_checked,
       navierNonzeroSchwartzCanaryNode_open⟩
 
 theorem navierCriticalNormCanariesNode_uncleared :
