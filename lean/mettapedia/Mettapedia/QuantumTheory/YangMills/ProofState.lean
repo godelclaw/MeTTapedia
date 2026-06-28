@@ -267,9 +267,9 @@ deriving Repr
 
 /-- Current dependency-map counts for `QuantumTheory/YangMills`. -/
 def currentYangMillsLaneSurvey : YangMillsLaneSurvey where
-  sourceFiles := 37
-  sourceLines := 6848
-  regressionFiles := 17
+  sourceFiles := 40
+  sourceLines := 7468
+  regressionFiles := 18
   filesOverThousandLines := 0
   filesOverSevenHundredFiftyLines := 0
 
