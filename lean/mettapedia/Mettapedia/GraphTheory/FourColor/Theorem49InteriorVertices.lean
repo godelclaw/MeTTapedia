@@ -255,6 +255,28 @@ def InteriorEdgesNotSelectedBoundaryChords {G : SimpleGraph V}
       ∀ b ∈ selectedBoundarySupport emb.faceBoundary emb.faces emb.faces,
         v ∉ (b : Sym2 V)
 
+/-- The no-selected-boundary-chord condition is exactly the edgewise statement that every
+interior face-incidence edge contributes an endpoint to the selected-boundary-purified carrier. -/
+theorem
+    interiorEdgesNotSelectedBoundaryChords_iff_forall_interiorEdge_exists_endpoint_mem_selectedBoundaryInteriorEdgeEndpointVertices
+    {G : SimpleGraph V} {emb : PlaneEmbeddingWithBoundary G} :
+    InteriorEdgesNotSelectedBoundaryChords emb ↔
+      ∀ e ∈ interiorEdgeSupport emb.faceBoundary emb.faces,
+        ∃ v, v ∈ (e : Sym2 V) ∧
+          v ∈ selectedBoundaryInteriorEdgeEndpointVertices emb := by
+  constructor
+  · intro hChordFree e heInterior
+    rcases hChordFree e heInterior with ⟨v, hvEdge, hAvoid⟩
+    exact
+      ⟨v, hvEdge,
+        (mem_selectedBoundaryInteriorEdgeEndpointVertices_iff emb).2
+          ⟨⟨e, heInterior, hvEdge⟩, hAvoid⟩⟩
+  · intro hCarrier e heInterior
+    rcases hCarrier e heInterior with ⟨v, hvEdge, hvCarrier⟩
+    exact
+      ⟨v, hvEdge,
+        (mem_selectedBoundaryInteriorEdgeEndpointVertices_iff emb).1 hvCarrier |>.2⟩
+
 /-- If the selected boundary support is induced by its endpoint set, then no interior edge can be a
 selected-boundary chord.  Otherwise an interior edge whose endpoints both lie on the selected
 boundary endpoint support would itself have to be selected, contradicting the selected/interior
