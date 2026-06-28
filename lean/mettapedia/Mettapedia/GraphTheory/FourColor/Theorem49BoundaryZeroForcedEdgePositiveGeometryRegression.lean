@@ -15,6 +15,15 @@ namespace Theorem49BoundaryZeroForcedEdgePositiveGeometryRegression
 
 open Theorem49BoundaryZeroForcedEdgeRegression
 
+/-- The two-band annulus has no boundary-aware well-founded parent witness-cover data on the
+same embedding.  Such data canonically lowers to height-ordered witness-cover data, already
+refuted by the cardinality obstruction in the boundary-zero regression file. -/
+theorem not_nonempty_planarBoundaryWellFoundedFacePeelWitnessData_twoBandAnnulus :
+    ¬ Nonempty (PlanarBoundaryWellFoundedFacePeelWitnessData twoBandAnnulusEmbedding) := by
+  rintro ⟨data⟩
+  exact not_nonempty_planarBoundaryHeightOrderedFacePeelWitnessData_twoBandAnnulus
+    ⟨data.toPlanarBoundaryHeightOrderedFacePeelWitnessData⟩
+
 /-- The two-band annulus has no height-ordered replacement-positive geometry on the same
 embedding. -/
 theorem not_theorem49HeightOrderedPositiveProjectedGeometryOn_twoBandAnnulus :
@@ -34,7 +43,8 @@ theorem not_theorem49CollarLayerPositiveProjectedGeometryOn_twoBandAnnulus :
 
 /-- Route-facing repaired-geometry counterexample packet: the two-band annulus has the repaired
 closed-walk and selected-boundary geometry used by the surviving finite route packets, but it
-still carries neither current direct replacement-positive geometry surface. -/
+still carries no well-founded parent witness-cover data and neither current direct
+replacement-positive geometry surface. -/
 theorem
     twoBandAnnulus_repairedBoundaryGeometry_counterexample_to_replacementPositiveGeometry :
     Nonempty (PlanarBoundaryAnnulusBoundaryReachabilityData twoBandAnnulusEmbedding) ∧
@@ -58,10 +68,13 @@ theorem
                       (selectedBoundaryInteriorEdgeEndpointVertices
                         twoBandAnnulusEmbedding).Nonempty ∧
                         twoBandAnnulusInteriorEdges.Nonempty ∧
-                          ¬ Theorem49HeightOrderedPositiveProjectedGeometryOn
-                            twoBandAnnulusEmbedding ∧
-                            ¬ Theorem49CollarLayerPositiveProjectedGeometryOn
-                              twoBandAnnulusEmbedding := by
+                          ¬ Nonempty
+                            (PlanarBoundaryWellFoundedFacePeelWitnessData
+                              twoBandAnnulusEmbedding) ∧
+                            ¬ Theorem49HeightOrderedPositiveProjectedGeometryOn
+                              twoBandAnnulusEmbedding ∧
+                              ¬ Theorem49CollarLayerPositiveProjectedGeometryOn
+                                twoBandAnnulusEmbedding := by
   rcases
     twoBandAnnulus_repairedBoundaryGeometry_counterexample_to_heightOrderedFacePeelWitnessData
     with
@@ -79,6 +92,7 @@ theorem
       hNoChord,
       hCarrier,
       hInterior,
+      not_nonempty_planarBoundaryWellFoundedFacePeelWitnessData_twoBandAnnulus,
       not_theorem49HeightOrderedPositiveProjectedGeometryOn_twoBandAnnulus,
       not_theorem49CollarLayerPositiveProjectedGeometryOn_twoBandAnnulus⟩
 
