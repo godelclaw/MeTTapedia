@@ -23,6 +23,17 @@ theorem nonzero_schwartz_solution_kernel_regression
       SchwartzEnergyIdentityKernel ν S.velocity S.pressure := by
   exact S.nonzero_and_energyIdentityKernel
 
+theorem schwartz_solution_momentum_closure_kernel_regression
+    {ν : ℝ} (S : SchwartzConcreteNavierStokesSolution ν) :
+    SchwartzMomentumClosureKernel ν S.velocity S.pressure := by
+  exact S.momentumClosureKernel
+
+theorem nonzero_schwartz_solution_concrete_kernel_regression
+    {ν : ℝ} (S : NonzeroSchwartzConcreteNavierStokesSolution ν) :
+    (∃ t x, S.velocity t x ≠ 0) ∧
+      SchwartzConcreteSolutionKernel ν S.velocity S.pressure := by
+  exact S.nonzero_and_concreteSolutionKernel
+
 theorem twoMode_nonzero_schwartz_pressure_slice_kernel_regression
     {a b : NSTime → ℝ} (ha : ContDiff ℝ ∞ a) (hb : ContDiff ℝ ∞ b)
     (f g : NSSchwartzInitialVelocity) (A B : ℝ)

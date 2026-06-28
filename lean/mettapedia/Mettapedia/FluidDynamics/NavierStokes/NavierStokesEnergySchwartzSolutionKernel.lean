@@ -1,14 +1,16 @@
 import Mettapedia.FluidDynamics.NavierStokes.NavierStokesEnergySchwartzSolution
 import Mettapedia.FluidDynamics.NavierStokes.NavierStokesFiniteModeBoundedEnergyGlobal
+import Mettapedia.FluidDynamics.NavierStokes.VectorCalculusR3PressureObstructions
 
 /-!
 # Slice-Schwartz Energy Kernel and Nonzero Finite-Mode Surface
 
 This module factors the cancellation and dissipation conclusions of the
-slice-Schwartz concrete energy identity into a reusable kernel. It also exposes
-the strongest current finite-mode constructor: a bounded nonzero two-profile
-Schwartz ansatz with a genuine pointwise pressure-slice momentum closure
-inhabits the nonzero slice-Schwartz solution interface.
+slice-Schwartz concrete energy identity into a reusable kernel. It also factors
+the exact momentum-closure consequences that every candidate must satisfy.  The
+strongest current finite-mode constructor remains explicit: a bounded nonzero
+two-profile Schwartz ansatz with a genuine pointwise pressure-slice momentum
+closure inhabits the nonzero slice-Schwartz solution interface.
 -/
 
 set_option autoImplicit false
@@ -41,6 +43,31 @@ structure SchwartzEnergyIdentityKernel
         HasDerivAt (normalizedKineticEnergy u)
           (-(coordinateEnergyDissipationRate u ν t)) t
 
+/-- Reusable momentum-closure kernel extracted from a concrete slice-Schwartz
+Navier-Stokes solution.  It records the literal PDE, incompressibility, and the
+pressure-residual compatibility condition that later candidate generators must
+pass before searching for pressure slices. -/
+structure SchwartzMomentumClosureKernel
+    (ν : ℝ) (u : NSVelocityField) (p : NSPressureField) where
+  smoothPressure : smoothSpaceTimePressure p
+  momentumEquation :
+    ∀ t x,
+      timeVelocityDerivative u t x + spatialConvection u t x +
+          spatialPressureGradient p t x =
+        ν • spatialLaplacian u t x
+  incompressible : ∀ t x, spatialDivergence u t x = 0
+  pressureResidual_eq_gradient :
+    pressureGradientVelocityField p = momentumPressureResidual ν u
+  pressureResidual_vorticity_zero :
+    ∀ t x, spatialVorticity (momentumPressureResidual ν u) t x = 0
+
+/-- Combined reusable kernel for the slice-Schwartz concrete solution
+interface: energy identity plus pressure/momentum closure. -/
+structure SchwartzConcreteSolutionKernel
+    (ν : ℝ) (u : NSVelocityField) (p : NSPressureField) where
+  energy : SchwartzEnergyIdentityKernel ν u p
+  momentum : SchwartzMomentumClosureKernel ν u p
+
 namespace SchwartzConcreteNavierStokesSolution
 
 variable {ν : ℝ} (S : SchwartzConcreteNavierStokesSolution ν)
@@ -53,6 +80,26 @@ def energyIdentityKernel :
   viscousFormula := S.coordinateViscousEnergyPairingFormula
   coordinateIdentity := S.coordinateEnergyDissipationIdentity
   meaningfulIdentity := S.meaningfulCoordinateEnergyDissipationIdentity
+
+/-- The reusable momentum-closure kernel carried by any slice-Schwartz
+concrete solution. -/
+def momentumClosureKernel :
+    SchwartzMomentumClosureKernel ν S.velocity S.pressure where
+  smoothPressure := S.smooth_pressure
+  momentumEquation := S.momentumEquation_explicit
+  incompressible := S.spatialDivergence_zero
+  pressureResidual_eq_gradient :=
+    pressureGradientVelocityField_eq_momentumPressureResidual_of_momentumEquation
+      S.momentumEquation_explicit
+  pressureResidual_vorticity_zero :=
+    spatialVorticity_momentumPressureResidual_of_momentumEquation
+      S.smooth_pressure S.momentumEquation_explicit
+
+/-- The full reusable kernel carried by any slice-Schwartz concrete solution. -/
+def concreteSolutionKernel :
+    SchwartzConcreteSolutionKernel ν S.velocity S.pressure where
+  energy := S.energyIdentityKernel
+  momentum := S.momentumClosureKernel
 
 end SchwartzConcreteNavierStokesSolution
 
@@ -70,12 +117,29 @@ def energyIdentityKernel :
     SchwartzEnergyIdentityKernel ν S.velocity S.pressure :=
   S.toSchwartzConcreteNavierStokesSolution.energyIdentityKernel
 
+/-- Nonzero solutions inherit the same reusable momentum-closure kernel. -/
+def momentumClosureKernel :
+    SchwartzMomentumClosureKernel ν S.velocity S.pressure :=
+  S.toSchwartzConcreteNavierStokesSolution.momentumClosureKernel
+
+/-- Nonzero solutions inherit the combined reusable solution kernel. -/
+def concreteSolutionKernel :
+    SchwartzConcreteSolutionKernel ν S.velocity S.pressure :=
+  S.toSchwartzConcreteNavierStokesSolution.concreteSolutionKernel
+
 /-- Compact nonzero packet: a witness of nonzero velocity plus the full energy
 kernel. -/
 theorem nonzero_and_energyIdentityKernel :
     (∃ t x, S.velocity t x ≠ 0) ∧
       SchwartzEnergyIdentityKernel ν S.velocity S.pressure :=
   ⟨S.nonzero_velocity, S.energyIdentityKernel⟩
+
+/-- Compact nonzero packet with both the energy identity and the momentum
+closure kernels. -/
+theorem nonzero_and_concreteSolutionKernel :
+    (∃ t x, S.velocity t x ≠ 0) ∧
+      SchwartzConcreteSolutionKernel ν S.velocity S.pressure :=
+  ⟨S.nonzero_velocity, S.concreteSolutionKernel⟩
 
 end NonzeroSchwartzConcreteNavierStokesSolution
 
