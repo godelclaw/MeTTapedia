@@ -5480,6 +5480,393 @@ theorem positiveTwoCollarToy_CAP5_exists_boundaryZeroKirchhoffChain_vanishingOnF
       positiveTwoCollarToy_CAP5_exists_boundaryZeroKirchhoffChain_vanishingOnForcedEdges_of_emittedInterior_card_lt_one
         p0Inside p4Inside side classifier
 
+theorem positiveTwoCollarToy_boundaryZero_controlEdges_interiorEdges :
+    ∀ ⦃z : positiveTwoCollarToyGraph.edgeSet → Color⦄,
+      z ∈ planarBoundaryZeroSubmodule positiveTwoCollarToyEmbedding →
+      (∀ e ∈ positiveTwoCollarToyInteriorControlEdges, z e = 0) →
+        z = 0 := by
+  intro z hzBoundary hcontrol
+  exact positiveTwoCollarToy_boundaryZero_no_evader_of_vanishes_on_pathEdges
+    z hzBoundary (by
+      simpa [positiveTwoCollarToyInteriorControlEdges] using hcontrol)
+
+theorem positiveTwoCollarToy_boundaryZero_dynamicControl_iff_interiorControlEdges_subset
+    (emitted : Finset positiveTwoCollarToyGraph.edgeSet) :
+    (∀ ⦃z : positiveTwoCollarToyGraph.edgeSet → Color⦄,
+      z ∈ planarBoundaryZeroSubmodule positiveTwoCollarToyEmbedding →
+      (∀ e ∈ emitted, z e = 0) →
+        z = 0) ↔
+      positiveTwoCollarToyInteriorControlEdges ⊆ emitted := by
+  constructor
+  · intro hcontrol
+    have hge :=
+      positiveTwoCollarToy_boundaryZero_interiorControl_card_ge_three emitted hcontrol
+    have hge' :
+        3 ≤ (emitted.filter fun e =>
+          e ∈ positiveTwoCollarToyInteriorControlEdges).card := by
+      simpa [positiveTwoCollarToy_interiorEdgeSupport_eq,
+        positiveTwoCollarToyInteriorControlEdges] using hge
+    exact (positiveTwoCollarToy_emittedInterior_card_ge_three_iff emitted).1 hge'
+  · intro hsubset z hzBoundary hvanish
+    exact positiveTwoCollarToy_boundaryZero_controlEdges_interiorEdges hzBoundary
+      (by
+        intro e he
+        exact hvanish e (hsubset he))
+
+theorem positiveTwoCollarToy_boundaryZero_exists_dynamicResidualEdge_of_not_interiorControlEdges_subset
+    (emitted : Finset positiveTwoCollarToyGraph.edgeSet)
+    (hnotSubset : ¬ positiveTwoCollarToyInteriorControlEdges ⊆ emitted) :
+    ∃ z : positiveTwoCollarToyGraph.edgeSet → Color,
+      z ∈ planarBoundaryZeroSubmodule positiveTwoCollarToyEmbedding ∧
+        z ≠ 0 ∧
+          (∀ f ∈ emitted, z f = 0) ∧
+            ∃ e : positiveTwoCollarToyGraph.edgeSet,
+              e ∈ positiveTwoCollarToyInteriorControlEdges ∧
+                e ∉ emitted ∧ z e ≠ 0 ∧
+                  (positiveTwoCollarToyInteriorControlEdges \ insert e emitted).card <
+                    (positiveTwoCollarToyInteriorControlEdges \ emitted).card := by
+  have hnotGe :
+      ¬ 3 ≤ (emitted.filter fun e =>
+        e ∈ positiveTwoCollarToyInteriorControlEdges).card := by
+    intro hge
+    exact hnotSubset
+      ((positiveTwoCollarToy_emittedInterior_card_ge_three_iff emitted).1 hge)
+  have hlt :
+      (emitted.filter fun e =>
+        e ∈ positiveTwoCollarToyInteriorControlEdges).card < 3 :=
+    Nat.lt_of_not_ge hnotGe
+  rcases positiveTwoCollarToy_boundaryZero_has_evader_of_control_card_le_two
+      (emitted.filter fun e => e ∈ positiveTwoCollarToyInteriorControlEdges)
+      (by omega) with
+    ⟨z, hzBoundary, hvanishInterior, hzNonzero⟩
+  have hvanishEmitted : ∀ f ∈ emitted, z f = 0 := by
+    intro f hfEmitted
+    by_cases hfInterior :
+        f ∈ interiorEdgeSupport
+          positiveTwoCollarToyEmbedding.faceBoundary positiveTwoCollarToyEmbedding.faces
+    · have hfControl : f ∈ positiveTwoCollarToyInteriorControlEdges := by
+        simpa [positiveTwoCollarToy_interiorEdgeSupport_eq,
+          positiveTwoCollarToyInteriorControlEdges] using hfInterior
+      exact hvanishInterior f (Finset.mem_filter.2 ⟨hfEmitted, hfControl⟩)
+    · exact boundaryZero_of_mem_planarBoundaryZeroSubmodule hzBoundary f
+        (positiveTwoCollarToy_mem_selectedBoundarySupport_of_not_mem_interiorEdgeSupport
+          hfInterior)
+  rcases positiveTwoCollarToy_boundaryZero_declaredForcedEdges_nonzeroCoverage
+      hzBoundary hzNonzero with
+    ⟨e, heControl, hze⟩
+  have heNotEmitted : e ∉ emitted := by
+    intro heEmitted
+    exact hze (hvanishEmitted e heEmitted)
+  exact
+    ⟨z, hzBoundary, hzNonzero, hvanishEmitted, e, heControl, heNotEmitted, hze,
+      finset_card_sdiff_insert_lt_of_mem_of_not_mem heControl heNotEmitted⟩
+
+theorem positiveTwoCollarToy_boundaryZero_exists_dynamicResidualTrace_terminalControl
+    (emitted : Finset positiveTwoCollarToyGraph.edgeSet) :
+    ∃ trace : List positiveTwoCollarToyGraph.edgeSet,
+      trace.Nodup ∧
+        (∀ e : positiveTwoCollarToyGraph.edgeSet,
+          e ∈ trace ↔ e ∈ positiveTwoCollarToyInteriorControlEdges ∧ e ∉ emitted) ∧
+          trace.length = (positiveTwoCollarToyInteriorControlEdges \ emitted).card ∧
+            positiveTwoCollarToyInteriorControlEdges \
+                (trace.foldl (fun acc e => insert e acc) emitted) = ∅ ∧
+              (∀ ⦃z : positiveTwoCollarToyGraph.edgeSet → Color⦄,
+                z ∈ planarBoundaryZeroSubmodule positiveTwoCollarToyEmbedding →
+                (∀ e ∈ trace.foldl (fun acc e => insert e acc) emitted, z e = 0) →
+                  z = 0) := by
+  refine
+    ⟨dynamicResidualControlEdgeTrace positiveTwoCollarToyInteriorControlEdges emitted,
+      dynamicResidualControlEdgeTrace_nodup positiveTwoCollarToyInteriorControlEdges emitted,
+      mem_dynamicResidualControlEdgeTrace_iff positiveTwoCollarToyInteriorControlEdges emitted,
+      length_dynamicResidualControlEdgeTrace_eq_card_sdiff
+        positiveTwoCollarToyInteriorControlEdges emitted,
+      dynamicResidualControlEdgeTrace_foldl_insert_sdiff_eq_empty
+        positiveTwoCollarToyInteriorControlEdges emitted,
+      ?_⟩
+  exact
+    (positiveTwoCollarToy_boundaryZero_dynamicControl_iff_interiorControlEdges_subset
+      ((dynamicResidualControlEdgeTrace positiveTwoCollarToyInteriorControlEdges emitted).foldl
+        (fun acc e => insert e acc) emitted)).2
+      (control_subset_foldl_insert_dynamicResidualControlEdgeTrace
+        positiveTwoCollarToyInteriorControlEdges emitted)
+
+theorem positiveTwoCollarToy_boundaryZero_classifierRemainingControlEdgeTrace_terminalCertificate
+    {boundaryEdge : Fin 5 → positiveTwoCollarToyGraph.edgeSet} {n : Nat}
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    (p0Inside p4Inside : Bool) (side : Fin 9 → Prop)
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side) :
+    (classifier.remainingControlEdgeTrace positiveTwoCollarToyInteriorControlEdges).Nodup ∧
+      (∀ e : positiveTwoCollarToyGraph.edgeSet,
+        e ∈ classifier.remainingControlEdgeTrace positiveTwoCollarToyInteriorControlEdges ↔
+          e ∈ positiveTwoCollarToyInteriorControlEdges ∧ e ∉ classifier.emittedFinset) ∧
+        (classifier.remainingControlEdgeTrace positiveTwoCollarToyInteriorControlEdges).length =
+          (positiveTwoCollarToyInteriorControlEdges \ classifier.emittedFinset).card ∧
+          positiveTwoCollarToyInteriorControlEdges \
+              ((classifier.remainingControlEdgeTrace positiveTwoCollarToyInteriorControlEdges).foldl
+                (fun acc e => insert e acc) classifier.emittedFinset) = ∅ ∧
+            (∀ ⦃z : positiveTwoCollarToyGraph.edgeSet → Color⦄,
+              z ∈ planarBoundaryZeroSubmodule positiveTwoCollarToyEmbedding →
+              (∀ e ∈
+                (classifier.remainingControlEdgeTrace positiveTwoCollarToyInteriorControlEdges).foldl
+                  (fun acc e => insert e acc) classifier.emittedFinset, z e = 0) →
+                z = 0) := by
+  refine
+    ⟨classifier.remainingControlEdgeTrace_nodup positiveTwoCollarToyInteriorControlEdges,
+      classifier.mem_remainingControlEdgeTrace_iff_mem_controlEdges_and_not_mem_emittedFinset
+        positiveTwoCollarToyInteriorControlEdges,
+      classifier.length_remainingControlEdgeTrace_eq_card_sdiff
+        positiveTwoCollarToyInteriorControlEdges,
+      classifier.remainingControlEdgeTrace_foldl_insert_sdiff_eq_empty
+        positiveTwoCollarToyInteriorControlEdges,
+      ?_⟩
+  exact
+    (positiveTwoCollarToy_boundaryZero_dynamicControl_iff_interiorControlEdges_subset
+      ((classifier.remainingControlEdgeTrace positiveTwoCollarToyInteriorControlEdges).foldl
+        (fun acc e => insert e acc) classifier.emittedFinset)).2
+      (classifier.controlEdges_subset_foldl_insert_remainingControlEdgeTrace
+        positiveTwoCollarToyInteriorControlEdges)
+
+theorem positiveTwoCollarToy_boundaryZero_classifierRemainingControlEdgeTrace_schedulerRunner_terminalCertificate
+    {boundaryEdge : Fin 5 → positiveTwoCollarToyGraph.edgeSet} {n : Nat}
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    (p0Inside p4Inside : Bool) (side : Fin 9 → Prop)
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (processed : Finset positiveTwoCollarToyGraph.edgeSet)
+    (hprocessedSubset : processed ⊆ classifier.emittedFinset) :
+    (classifier.remainingControlEdgeTrace positiveTwoCollarToyInteriorControlEdges).Nodup ∧
+      (∀ e : positiveTwoCollarToyGraph.edgeSet,
+        e ∈ classifier.remainingControlEdgeTrace positiveTwoCollarToyInteriorControlEdges ↔
+          e ∈ positiveTwoCollarToyInteriorControlEdges ∧ e ∉ classifier.emittedFinset) ∧
+        (classifier.remainingControlEdgeTrace positiveTwoCollarToyInteriorControlEdges).length =
+          (positiveTwoCollarToyInteriorControlEdges \ classifier.emittedFinset).card ∧
+          ((classifier.remainingControlEdgeTrace positiveTwoCollarToyInteriorControlEdges).foldl
+              (fun acc e => insert e acc) processed ⊆
+            (classifier.remainingControlEdgeTrace positiveTwoCollarToyInteriorControlEdges).foldl
+              (fun acc e => insert e acc) classifier.emittedFinset) ∧
+            classifier.residualRemainingControlEdges positiveTwoCollarToyInteriorControlEdges
+                ((classifier.remainingControlEdgeTrace positiveTwoCollarToyInteriorControlEdges).foldl
+                  (fun acc e => insert e acc) processed) =
+              ∅ ∧
+              (∀ ⦃z : positiveTwoCollarToyGraph.edgeSet → Color⦄,
+                z ∈ planarBoundaryZeroSubmodule positiveTwoCollarToyEmbedding →
+                (∀ e ∈
+                  (classifier.remainingControlEdgeTrace positiveTwoCollarToyInteriorControlEdges).foldl
+                    (fun acc e => insert e acc) classifier.emittedFinset, z e = 0) →
+                  z = 0) := by
+  rcases
+      positiveTwoCollarToy_boundaryZero_classifierRemainingControlEdgeTrace_terminalCertificate
+        p0Inside p4Inside side classifier with
+    ⟨hnodup, hmem, hlength, _hcontrolExhausted, hterminalControl⟩
+  exact
+    ⟨hnodup, hmem, hlength,
+      classifier.foldl_insert_remainingControlEdgeTrace_subset_foldl_insert_emittedFinset
+        positiveTwoCollarToyInteriorControlEdges hprocessedSubset,
+      classifier.residualRemainingControlEdges_foldl_insert_remainingControlEdgeTrace_eq_empty
+        positiveTwoCollarToyInteriorControlEdges processed,
+      hterminalControl⟩
+
+theorem positiveTwoCollarToy_boundaryZero_eq_zero_of_forcedEdges_vanish_and_classifierRemainingControlEdgeTrace_processedFold_vanish
+    {boundaryEdge : Fin 5 → positiveTwoCollarToyGraph.edgeSet} {n : Nat}
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    (p0Inside p4Inside : Bool) (side : Fin 9 → Prop)
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (processed : Finset positiveTwoCollarToyGraph.edgeSet)
+    {z : positiveTwoCollarToyGraph.edgeSet → Color}
+    (hzBoundary : z ∈ planarBoundaryZeroSubmodule positiveTwoCollarToyEmbedding)
+    (hvanishForced :
+      ∀ e : positiveTwoCollarToyGraph.edgeSet,
+        data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e →
+          z e = 0)
+    (hvanishProcessedTrace :
+      ∀ e ∈
+        (classifier.remainingControlEdgeTrace positiveTwoCollarToyInteriorControlEdges).foldl
+          (fun acc f => insert f acc) processed, z e = 0) :
+    z = 0 := by
+  rcases
+      positiveTwoCollarToy_boundaryZero_classifierRemainingControlEdgeTrace_terminalCertificate
+        p0Inside p4Inside side classifier with
+    ⟨_hnodup, _hmem, _hlength, _hexhausted, hterminalControl⟩
+  exact hterminalControl hzBoundary
+    (forall_mem_foldl_insert_of_forall_mem_seed_and_forall_mem_foldl_insert
+      (classifier.remainingControlEdgeTrace positiveTwoCollarToyInteriorControlEdges)
+      (by
+        intro e heEmitted
+        exact hvanishForced e ((classifier.emittedFinset_spec e).1 heEmitted))
+      hvanishProcessedTrace)
+
+theorem positiveTwoCollarToy_boundaryZero_no_forcedEdgeEvader_after_classifierRemainingControlEdgeTrace_processedFold
+    {boundaryEdge : Fin 5 → positiveTwoCollarToyGraph.edgeSet} {n : Nat}
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    (p0Inside p4Inside : Bool) (side : Fin 9 → Prop)
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (processed : Finset positiveTwoCollarToyGraph.edgeSet) :
+    ¬ ∃ z : positiveTwoCollarToyGraph.edgeSet → Color,
+      z ∈ planarBoundaryZeroSubmodule positiveTwoCollarToyEmbedding ∧
+        z ≠ 0 ∧
+          (∀ e : positiveTwoCollarToyGraph.edgeSet,
+            data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e →
+              z e = 0) ∧
+            ∀ e ∈
+              (classifier.remainingControlEdgeTrace positiveTwoCollarToyInteriorControlEdges).foldl
+                (fun acc f => insert f acc) processed, z e = 0 := by
+  rintro ⟨z, hzBoundary, hzNonzero, hvanishForced, hvanishProcessedTrace⟩
+  exact hzNonzero
+    (positiveTwoCollarToy_boundaryZero_eq_zero_of_forcedEdges_vanish_and_classifierRemainingControlEdgeTrace_processedFold_vanish
+      p0Inside p4Inside side classifier processed hzBoundary hvanishForced
+      hvanishProcessedTrace)
+
+theorem positiveTwoCollarToy_boundaryZero_exists_classifierRemainingControlEdgeTrace_nonzero_of_forcedEdges_vanish_of_processed_subset_emittedFinset
+    {boundaryEdge : Fin 5 → positiveTwoCollarToyGraph.edgeSet} {n : Nat}
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    (p0Inside p4Inside : Bool) (side : Fin 9 → Prop)
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (processed : Finset positiveTwoCollarToyGraph.edgeSet)
+    (hprocessedSubset : processed ⊆ classifier.emittedFinset)
+    {z : positiveTwoCollarToyGraph.edgeSet → Color}
+    (hzBoundary : z ∈ planarBoundaryZeroSubmodule positiveTwoCollarToyEmbedding)
+    (hzNonzero : z ≠ 0)
+    (hvanishForced :
+      ∀ e : positiveTwoCollarToyGraph.edgeSet,
+        data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e →
+          z e = 0) :
+    ∃ e : positiveTwoCollarToyGraph.edgeSet,
+      e ∈ classifier.remainingControlEdgeTrace positiveTwoCollarToyInteriorControlEdges ∧
+        z e ≠ 0 := by
+  exact
+    exists_mem_trace_nonzero_of_terminalControl_of_seed_vanishes_of_processed_subset
+      (classifier.remainingControlEdgeTrace positiveTwoCollarToyInteriorControlEdges) z
+      hprocessedSubset hzNonzero
+      (by
+        intro e heEmitted
+        exact hvanishForced e ((classifier.emittedFinset_spec e).1 heEmitted))
+      (by
+        intro hterminalVanish
+        exact
+          positiveTwoCollarToy_boundaryZero_eq_zero_of_forcedEdges_vanish_and_classifierRemainingControlEdgeTrace_processedFold_vanish
+            p0Inside p4Inside side classifier classifier.emittedFinset hzBoundary
+            hvanishForced hterminalVanish)
+
+theorem positiveTwoCollarToy_CAP5_forcedEdgeCoverage_remainingInteriorControlEdges_eq_empty
+    {boundaryEdge : Fin 5 → positiveTwoCollarToyGraph.edgeSet} {n : Nat}
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    (p0Inside p4Inside : Bool) (side : Fin 9 → Prop)
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (hcoverage :
+      ∀ ⦃z : positiveTwoCollarToyGraph.edgeSet → Color⦄,
+        z ∈ planarBoundaryZeroSubmodule positiveTwoCollarToyEmbedding →
+        z ≠ 0 →
+          ∃ e : positiveTwoCollarToyGraph.edgeSet,
+            data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e ∧
+              z e ≠ 0) :
+    classifier.remainingControlEdges positiveTwoCollarToyInteriorControlEdges = ∅ := by
+  have hsubset :=
+    positiveTwoCollarToy_CAP5_forcedEdgeCoverage_emits_interiorControlEdges
+      p0Inside p4Inside side classifier hcoverage
+  ext e
+  constructor
+  · intro heRemaining
+    rcases
+        (classifier.mem_remainingControlEdges_iff
+          positiveTwoCollarToyInteriorControlEdges e).1 heRemaining with
+      ⟨heControl, heNotEmitted⟩
+    exact False.elim (heNotEmitted (hsubset heControl))
+  · intro heEmpty
+    simp at heEmpty
+
+theorem positiveTwoCollarToy_CAP5_exists_remainingInteriorControlEdge_with_card_erase_lt_of_not_forcedEdgeCoverage
+    {boundaryEdge : Fin 5 → positiveTwoCollarToyGraph.edgeSet} {n : Nat}
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    (p0Inside p4Inside : Bool) (side : Fin 9 → Prop)
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (hnotCoverage :
+      ¬ (∀ ⦃z : positiveTwoCollarToyGraph.edgeSet → Color⦄,
+        z ∈ planarBoundaryZeroSubmodule positiveTwoCollarToyEmbedding →
+        z ≠ 0 →
+          ∃ e : positiveTwoCollarToyGraph.edgeSet,
+            data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e ∧
+              z e ≠ 0)) :
+    ∃ e : positiveTwoCollarToyGraph.edgeSet,
+      e ∈ classifier.remainingControlEdges positiveTwoCollarToyInteriorControlEdges ∧
+        ((classifier.remainingControlEdges positiveTwoCollarToyInteriorControlEdges).erase e).card <
+          (classifier.remainingControlEdges positiveTwoCollarToyInteriorControlEdges).card := by
+  simpa [positiveTwoCollarToyInteriorControlEdges, positiveTwoCollarToy_interiorEdgeSupport_eq] using
+    (data.exists_remainingInteriorEdgeSupportEdge_with_card_erase_lt_of_not_forcedEdgeCoverage
+      positiveTwoCollarToyEmbedding p0Inside p4Inside side classifier hnotCoverage)
+
+theorem positiveTwoCollarToy_CAP5_extensionCoordinateSignalWithProgress_of_not_forcedEdgeCoverage
+    {boundaryEdge : Fin 5 → positiveTwoCollarToyGraph.edgeSet} {n : Nat}
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    (p0Inside p4Inside : Bool) (side : Fin 9 → Prop)
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (hnotCoverage :
+      ¬ (∀ ⦃z : positiveTwoCollarToyGraph.edgeSet → Color⦄,
+        z ∈ planarBoundaryZeroSubmodule positiveTwoCollarToyEmbedding →
+        z ≠ 0 →
+          ∃ e : positiveTwoCollarToyGraph.edgeSet,
+            data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e ∧
+              z e ≠ 0)) :
+    data.ExtensionCoordinateSignalWithProgress positiveTwoCollarToyEmbedding
+      p0Inside p4Inside side classifier positiveTwoCollarToyInteriorControlEdges := by
+  have hnotControl :
+      ¬ ∀ ⦃z : positiveTwoCollarToyGraph.edgeSet → Color⦄,
+        z ∈ planarBoundaryZeroSubmodule positiveTwoCollarToyEmbedding →
+        (∀ e ∈ classifier.emittedFinset, z e = 0) →
+          z = 0 := by
+    intro hcontrol
+    exact hnotCoverage
+      ((data.forcedEdgeCoverage_iff_enumeratedExceptionalAnnulusForcedEdgeClassifierControl
+        positiveTwoCollarToyEmbedding classifier).2 hcontrol)
+  exact
+    data.extensionCoordinateSignalWithProgress_of_not_classifierControl_of_finsetControl
+      positiveTwoCollarToyEmbedding p0Inside p4Inside side classifier
+      positiveTwoCollarToyInteriorControlEdges hnotControl
+      positiveTwoCollarToy_boundaryZero_controlEdges_interiorEdges
+
+theorem positiveTwoCollarToy_CAP5_extensionCoordinateSignalWithResidualProgress_of_not_forcedEdgeCoverage_of_processedControl
+    {boundaryEdge : Fin 5 → positiveTwoCollarToyGraph.edgeSet} {n : Nat}
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    (p0Inside p4Inside : Bool) (side : Fin 9 → Prop)
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (processed : Finset positiveTwoCollarToyGraph.edgeSet)
+    (hprocessedControl :
+      ∀ ⦃z : positiveTwoCollarToyGraph.edgeSet → Color⦄,
+        z ∈ planarBoundaryZeroSubmodule positiveTwoCollarToyEmbedding →
+        (∀ e ∈ classifier.emittedFinset, z e = 0) →
+          ∀ e ∈ processed, z e = 0)
+    (hnotCoverage :
+      ¬ (∀ ⦃z : positiveTwoCollarToyGraph.edgeSet → Color⦄,
+        z ∈ planarBoundaryZeroSubmodule positiveTwoCollarToyEmbedding →
+        z ≠ 0 →
+          ∃ e : positiveTwoCollarToyGraph.edgeSet,
+            data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e ∧
+              z e ≠ 0)) :
+    data.ExtensionCoordinateSignalWithResidualProgress positiveTwoCollarToyEmbedding
+      p0Inside p4Inside side classifier positiveTwoCollarToyInteriorControlEdges
+        processed := by
+  have hnotControl :
+      ¬ ∀ ⦃z : positiveTwoCollarToyGraph.edgeSet → Color⦄,
+        z ∈ planarBoundaryZeroSubmodule positiveTwoCollarToyEmbedding →
+        (∀ e ∈ classifier.emittedFinset, z e = 0) →
+          z = 0 := by
+    intro hcontrol
+    exact hnotCoverage
+      ((data.forcedEdgeCoverage_iff_enumeratedExceptionalAnnulusForcedEdgeClassifierControl
+        positiveTwoCollarToyEmbedding classifier).2 hcontrol)
+  exact
+    data.extensionCoordinateSignalWithResidualProgress_of_not_classifierControl_of_finsetControl_of_processedControl
+      positiveTwoCollarToyEmbedding p0Inside p4Inside side classifier
+      positiveTwoCollarToyInteriorControlEdges processed hnotControl
+      positiveTwoCollarToy_boundaryZero_controlEdges_interiorEdges hprocessedControl
+
 /-! ## Two-band annulus stress shell -/
 
 def twoBandAnnulusGraph : SimpleGraph (Fin 9) :=
