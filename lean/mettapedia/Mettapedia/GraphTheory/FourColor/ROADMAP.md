@@ -391,6 +391,17 @@ nonzero canonical red/blue family pairing.  This does not prove the exact-shell
 no-evader/subset side, but it makes the alternative branch computational rather
 than only existential.
 
+The forced-all branch now also exposes the pure no-target F2 evader fork.  Lean
+proves
+`boundaryZeroEvader_and_remainingInteriorEdgeSupportEdge_with_card_erase_lt_of_notSynthesis_of_forcedAllLatents`
+and
+`theorem49BoundaryRootSynthesis_or_boundaryZeroEvader_and_remainingInteriorEdgeSupportEdge_with_card_erase_lt_of_forcedAllLatents`:
+once the report forces all latents, failed theorem-4.9 synthesis is already a
+genuine selected-boundary-zero evader for the enumerated CAP5 forced edges,
+together with a decreasing remaining interior-support worklist edge.  The
+target-controlled and canonical path-xor payload branches are therefore
+refinements of this basic evader branch, not separate failure modes.
+
 On the geometric fork, the source-bound one-collar repair treadmill has now
 been consolidated into a shell-level obstruction.  In
 `FrontierGeometric.lean`, the theorems
@@ -496,9 +507,11 @@ longer acceptable progress.
    forced-all failure side now also exposes the canonical path-xor payload
    evader: a boundary-zero chain, non-forced remaining interior edge, strict
    worklist decrease, and nonzero canonical red/blue family pairing.  The
-   remaining crux is whether exact shell/CAP5 data proves the no-evader/subset
-   certificate uniformly, or whether this genuine vertex-Kirchhoff/path-xor
-   evader branch exists.
+   pure no-target theorem underneath those refinements says failed synthesis
+   already produces a genuine selected-boundary-zero evader for the enumerated
+   forced edges.  The remaining crux is whether exact shell/CAP5 data proves
+   the no-evader/subset certificate uniformly, or whether this genuine
+   boundary-zero/vertex-Kirchhoff/path-xor evader branch exists.
 
 The historical trichotomy below remains useful background:
 
