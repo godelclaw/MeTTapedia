@@ -3,6 +3,7 @@ import Mettapedia.FluidDynamics.NavierStokes.FeffermanCompatibilityFrontier
 import Mettapedia.FluidDynamics.NavierStokes.NavierStokesDEGroundedCanary
 import Mettapedia.FluidDynamics.NavierStokes.NavierStokesEnergySchwartzSolutionObstruction
 import Mettapedia.FluidDynamics.NavierStokes.NavierStokesSchwartzLocalizedStreamFunction
+import Mettapedia.FluidDynamics.NavierStokes.NavierStokesSchwartzRankOneShearObstruction
 import Mettapedia.FluidDynamics.NavierStokes.NavierStokesSchwartzSymmetricShearObstruction
 import Mettapedia.FluidDynamics.NavierStokes.Scaling.CriticalNormCanaries
 import Mettapedia.FluidDynamics.NavierStokes.Scaling.AveragedEquationCanaries
@@ -60,10 +61,10 @@ deriving Repr
 
 /-- Current dependency-map counts for `FluidDynamics/NavierStokes`. -/
 def currentNavierLaneSurvey : NavierLaneSurvey where
-  sourceFiles := 497
-  sourceLines := 109627
-  internalImportEdges := 1265
-  regressionFiles := 139
+  sourceFiles := 499
+  sourceLines := 109908
+  internalImportEdges := 1272
+  regressionFiles := 140
   filesOverThousandLines := 0
   filesOverSevenHundredFiftyLines := 1
   leavesWithoutInternalImports := 2
@@ -165,6 +166,15 @@ def navierNonzeroSchwartzLineInvariantObstructionNode : NavierProofNode where
   evidence := "velocity_eq_zero_of_velocitySlice_translationInvariantAlong, not_exists_nonzeroSchwartzConcreteSolution_all_velocitySlices_translationInvariantAlong, and every_nonzeroSchwartzConcreteSolution_has_non_lineInvariant_slice prove that any slice invariant along a nonzero direction is zero, so no nonzero slice-Schwartz concrete solution can keep all velocity slices line-invariant. PLN STV <s=.85,c=.90>, ITV [.765,.865], PROGRESS 48%."
   blocker := "This rules out the line-invariant shear shortcut class. The remaining positive canary must use genuinely non-line-invariant Schwartz profiles and close the pressure-slice momentum equation."
 
+/-- Rank-one fixed-direction Schwartz profiles cannot use zero convection as a
+nonzero exact-solution shortcut. -/
+def navierNonzeroSchwartzRankOneShearObstructionNode : NavierProofNode where
+  id := "navier.energy.nonzero-schwartz-rank-one-shear-obstruction"
+  status := .checked
+  truthValue := ⟨82, 89⟩
+  evidence := "spatialConvection_timeIndependent_rankOneSchwartzVelocity, rankOneSchwartzVelocity_eq_zero_of_spatialConvection_zero_at, and not_exists_nonzero_rankOneSchwartzVelocity_with_zero_spatialConvection prove that a fixed-direction profile u(x)=phi(x)v with nonzero v has zero pointwise convection only when the Schwartz scalar phi, hence u, is zero. PLN STV <s=.82,c=.89>, ITV [.7298,.8398], PROGRESS 61%."
+  blocker := "This blocks the rank-one zero-convection Stokes-flow shortcut. The remaining positive canary must close a genuinely non-rank-one pressure-slice momentum equation or prove a broader obstruction."
+
 /-- Symmetric finite-mode shear is a nonzero pressure-closed algebraic canary,
 but it is excluded from the slice-Schwartz lane. -/
 def navierNonzeroSchwartzSymmetricShearObstructionNode : NavierProofNode where
@@ -188,9 +198,9 @@ finite-mode closure hypotheses are inhabited by concrete profiles. -/
 def navierNonzeroSchwartzCanaryNode : NavierProofNode where
   id := "navier.energy.nonzero-schwartz-canary"
   status := .openGoal
-  truthValue := ⟨55, 86⟩
-  evidence := "The checked nonzero kernel removes the old zero-flow loophole from the energy-identity surface; the line-invariant and symmetric-shear obstructions remove two shortcut classes; and the localized stream-function seed gives a concrete nonzero divergence-free Schwartz datum. No unconditional nonzero exact slice-Schwartz solution inhabitant is committed yet. PLN STV <s=.55,c=.86>, ITV [.473,.613], PROGRESS 58%."
-  blocker := "Close or refute the pressure-slice closure and time evolution for the explicit localized stream-function seed or a comparable non-polynomial Schwartz profile; do not count a conditional constructor, seed-only datum, or algebraic finite-mode boundary case as the requested positive canary."
+  truthValue := ⟨57, 86⟩
+  evidence := "The checked nonzero kernel removes the old zero-flow loophole from the energy-identity surface; the line-invariant, rank-one zero-convection, and symmetric-shear obstructions remove three shortcut classes; and the localized stream-function seed gives a concrete nonzero divergence-free Schwartz datum. No unconditional nonzero exact slice-Schwartz solution inhabitant is committed yet. PLN STV <s=.57,c=.86>, ITV [.4902,.6302], PROGRESS 61%."
+  blocker := "Close or refute the pressure-slice closure and time evolution for the explicit localized stream-function seed or a comparable non-polynomial Schwartz profile; do not count a conditional constructor, seed-only datum, rank-one zero-convection obstruction, or algebraic finite-mode boundary case as the requested positive canary."
 
 /-- Supercritical scaling remains a route obstacle, not a closed theorem here. -/
 def navierSupercriticalScalingNode : NavierProofNode where
@@ -324,6 +334,7 @@ def currentNavierProofNodes : List NavierProofNode :=
   , navierSchwartzEnergyIdentityNode
   , navierNonzeroSchwartzEnergyKernelNode
   , navierNonzeroSchwartzLineInvariantObstructionNode
+  , navierNonzeroSchwartzRankOneShearObstructionNode
   , navierNonzeroSchwartzSymmetricShearObstructionNode
   , navierNonzeroSchwartzLocalizedStreamSeedNode
   , navierNonzeroSchwartzCanaryNode
@@ -377,6 +388,10 @@ theorem navierNonzeroSchwartzEnergyKernelNode_checked :
 
 theorem navierNonzeroSchwartzLineInvariantObstructionNode_checked :
     navierNonzeroSchwartzLineInvariantObstructionNode.status = .checked := by
+  rfl
+
+theorem navierNonzeroSchwartzRankOneShearObstructionNode_checked :
+    navierNonzeroSchwartzRankOneShearObstructionNode.status = .checked := by
   rfl
 
 theorem navierNonzeroSchwartzSymmetricShearObstructionNode_checked :
@@ -450,6 +465,21 @@ theorem currentNavierNonzeroSchwartzLineInvariantObstruction_node
     ⟨not_exists_nonzeroSchwartzConcreteSolution_all_velocitySlices_translationInvariantAlong hv,
       fun S => every_nonzeroSchwartzConcreteSolution_has_non_lineInvariant_slice S hv,
       navierNonzeroSchwartzLineInvariantObstructionNode_checked,
+      navierNonzeroSchwartzCanaryNode_open⟩
+
+theorem currentNavierNonzeroSchwartzRankOneShearObstruction_node
+    {v : NSSpace} (hv : v ≠ 0) {t : NSTime} :
+    (¬ ∃ φ : NSSchwartzScalar,
+      (rankOneSchwartzVelocity φ v : NSInitialVelocity) ≠ 0 ∧
+        ∀ x : NSSpace,
+          spatialConvection
+              (timeIndependentVelocity (rankOneSchwartzVelocity φ v : NSInitialVelocity))
+              t x = 0) ∧
+      navierNonzeroSchwartzRankOneShearObstructionNode.status = .checked ∧
+      navierNonzeroSchwartzCanaryNode.status = .openGoal := by
+  exact
+    ⟨not_exists_nonzero_rankOneSchwartzVelocity_with_zero_spatialConvection hv,
+      navierNonzeroSchwartzRankOneShearObstructionNode_checked,
       navierNonzeroSchwartzCanaryNode_open⟩
 
 theorem currentNavierNonzeroSchwartzSymmetricShearObstruction_node
