@@ -10,7 +10,7 @@ claimed here; the target is a decided state for the Goertzel theorem-4.9 route.
 | Fork | State | PLN STV | ITV | Progress |
 |---|---|---:|---:|---:|
 | Geometric CAP5/Jordan repair | Multiple repairs are refuted; still missing the single structural obstruction theorem that retires the fork. | `<0.42,0.60>` | `[0.25,0.65]` | 62% |
-| Algebraic F2 cancellation oracle | Lab finds no top-level all-interior evader on 65 records and no declared-forced evader on the 36 forcing records; Lean now proves the route-facing classifier-control iff/no-evader contract, the target-dimension fork theorem below-bound classifier implies genuine target evader, the full no-evader + closed-checker synthesis handoff, the all-interior success-or-remaining-edge frontier, the executable empty-worklist certificate, the closed-report failure branch as a genuine F2 evader plus a remaining worklist edge, the target-control bridge reducing any remaining closed-checker failure to an off-target boundary-zero evader, and the vertex-Kirchhoff failure bridge making that evader concrete at a theorem-4.9 boundary vertex. Uniform exclusion of that vertex-Kirchhoff failure evader from exact shell data is not yet proved. | `<0.43,0.69>` | `[0.30,0.61]` | 67% |
+| Algebraic F2 cancellation oracle | Lab finds no top-level all-interior evader on 65 records, no declared-forced evader on the 36 forcing records, and no all-interior vertex-Kirchhoff failure on all 65 records; the new vertex-failure crux survives on the 36 forcing records. Lean now proves the route-facing classifier-control iff/no-evader contract, the target-dimension fork theorem below-bound classifier implies genuine target evader, the full no-evader + closed-checker synthesis handoff, the all-interior success-or-remaining-edge frontier, the executable empty-worklist certificate, the closed-report failure branch as a genuine F2 evader plus a remaining worklist edge, the target-control bridge reducing any remaining closed-checker failure to an off-target boundary-zero evader, the vertex-Kirchhoff failure bridge making that evader concrete at a theorem-4.9 boundary vertex, and the row-span/subset certificate bridge for excluding or exposing that failure. Uniform formalization of the exact shell subset certificate is not yet proved. | `<0.44,0.70>` | `[0.31,0.60]` | 68% |
 
 ## Latest Move-2 Evidence
 
@@ -94,14 +94,33 @@ claimed here; the target is a decided state for the Goertzel theorem-4.9 route.
   a theorem-4.9 boundary vertex: under target classifier control, a failed
   closed checker exposes a forced-edge-vanishing boundary-zero chain with
   nonzero `vertexKirchhoffSum` at that vertex and the decreasing worklist edge.
+- Vertex-failure lab rerun archived locally as
+  `fourcolor-move2-subset-certificate-lab-20260628.json`; exported 65
+  projected-generator certificate files and 80 rejected counterexample files.
+  The new
+  `f2_all_interior_boundary_zero_kirchhoff_failure_absent` signature is true
+  on all 65 records; the crux packet
+  `forcing_edges_to_f2_all_interior_boundary_zero_kirchhoff_failure_absent`
+  survives with support 36 and purified support 18.  The focus rows still
+  expose smaller-control failure witnesses, e.g. single-spoke/single-shared
+  controls produce a nonzero theorem-4.9 boundary-vertex Kirchhoff image.
+- Row-span/subset certificate theorem surface:
+  `CAP5TransportedEdgeComponentCoverCore.no_boundaryZeroEvader_with_theorem49BoundaryVertexKirchhoffFailure_of_forced_vanishing_boundaryZero_subset_theorem49BoundaryTarget`,
+  `CAP5TransportedEdgeComponentCoverCore.boundaryZeroEvader_with_theorem49BoundaryVertexKirchhoffFailure_of_not_forced_vanishing_boundaryZero_subset_theorem49BoundaryTarget`,
+  and
+  `CAP5TransportedEdgeComponentCoverCore.theorem49BoundaryRootSynthesis_and_boundaryTargetCoverage_of_theorem49BoundaryTargetClassifierControl_of_forced_vanishing_boundaryZero_subset_theorem49BoundaryTarget_of_no_missing_finsetControl`.
+  These make the remaining exact-shell proof obligation a row-span/subset
+  certificate: every boundary-zero chain vanishing on the enumerated forced
+  edges must lie in the theorem-4.9 boundary target; failure of that certificate
+  is already a genuine vertex-Kirchhoff evader.
 
 ## Remaining Completion Requirements
 
 - Move 1: prove a single fundamental obstruction for the repaired
   CAP5/Jordan geometric class, not another isolated repair-packet failure.
-- Move 2: either prove that exact shell/CAP5 data excludes the concrete
-  vertex-Kirchhoff failure evader left after target classifier control, or
-  exhibit and formalize a genuine evader.
+- Move 2: either formalize the exact shell row-span/subset certificate that
+  excludes the concrete vertex-Kirchhoff failure evader left after target
+  classifier control, or exhibit and formalize a genuine evader.
 - Before any public checkpoint: strict proof-marker scan, trusted-constant audit for new
   theorems, validation lab rerun, full `lake -f lakefile.lean build
   Mettapedia`, and push only to `origin/fourcolor/cont-20260626`.

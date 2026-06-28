@@ -8786,6 +8786,83 @@ theorem exists_theorem49BoundaryVertex_vertexKirchhoffSum_ne_zero_of_boundaryZer
     exact hnoVertex ⟨v, hv, hkirchhoff⟩)
 
 /--
+Row-span/subset form of the concrete vertex-failure oracle.  If every selected-boundary-zero
+chain that vanishes on the enumerated forced edges already lies in the theorem-4.9 target, then
+there is no remaining forced-edge-vanishing chain with a nonzero theorem-4.9 boundary-vertex
+Kirchhoff sum.
+-/
+theorem no_boundaryZeroEvader_with_theorem49BoundaryVertexKirchhoffFailure_of_forced_vanishing_boundaryZero_subset_theorem49BoundaryTarget
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    [Fintype G.edgeSet]
+    (emb : PlaneEmbeddingWithBoundary G)
+    (p0Inside p4Inside : Bool) (side : V → Prop)
+    (hsubsetTarget :
+      ∀ ⦃z : G.edgeSet → Color⦄,
+        z ∈ planarBoundaryZeroSubmodule emb →
+        (∀ e : G.edgeSet,
+          data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e →
+            z e = 0) →
+          z ∈ Theorem49BoundaryTarget emb) :
+    ¬ ∃ z : G.edgeSet → Color,
+      z ∈ planarBoundaryZeroSubmodule emb ∧
+        z ≠ 0 ∧
+          (∀ e : G.edgeSet,
+            data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e →
+              z e = 0) ∧
+            ∃ v : V,
+              v ∈ Theorem49BoundaryVertices emb ∧
+                vertexKirchhoffSum G z v ≠ 0 := by
+  rintro ⟨z, hzBoundary, _hzNonzero, hzForcedZero, v, hv, hvNonzero⟩
+  have hzTarget : z ∈ Theorem49BoundaryTarget emb :=
+    hsubsetTarget hzBoundary hzForcedZero
+  have hzKirchhoff :
+      z ∈ theorem49BoundaryZeroKirchhoffSubspace emb
+        (Theorem49BoundaryVertices emb) := by
+    simpa [Theorem49BoundaryTarget, Theorem49BoundaryVertices] using hzTarget
+  exact hvNonzero (hzKirchhoff.1 v hv)
+
+/--
+Converse row-span/subset frontier.  Failure of the subset certificate is already a genuine
+forced-edge-vanishing selected-boundary-zero evader with a concrete nonzero theorem-4.9
+boundary-vertex Kirchhoff sum.
+-/
+theorem boundaryZeroEvader_with_theorem49BoundaryVertexKirchhoffFailure_of_not_forced_vanishing_boundaryZero_subset_theorem49BoundaryTarget
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    [Fintype G.edgeSet]
+    (emb : PlaneEmbeddingWithBoundary G)
+    (p0Inside p4Inside : Bool) (side : V → Prop)
+    (hnotSubset :
+      ¬ ∀ ⦃z : G.edgeSet → Color⦄,
+        z ∈ planarBoundaryZeroSubmodule emb →
+        (∀ e : G.edgeSet,
+          data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e →
+            z e = 0) →
+          z ∈ Theorem49BoundaryTarget emb) :
+    ∃ z : G.edgeSet → Color,
+      z ∈ planarBoundaryZeroSubmodule emb ∧
+        z ≠ 0 ∧
+          (∀ e : G.edgeSet,
+            data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e →
+              z e = 0) ∧
+            ∃ v : V,
+              v ∈ Theorem49BoundaryVertices emb ∧
+                vertexKirchhoffSum G z v ≠ 0 := by
+  classical
+  push Not at hnotSubset
+  rcases hnotSubset with ⟨z, hzBoundary, hzForcedZero, hzOffTarget⟩
+  have hzNonzero : z ≠ 0 := by
+    intro hzero
+    apply hzOffTarget
+    rw [hzero]
+    change (0 : G.edgeSet → Color) ∈ theorem49BoundaryZeroKirchhoffSubspace emb
+      (Theorem49BoundaryVertices emb)
+    exact Submodule.zero_mem _
+  exact
+    ⟨z, hzBoundary, hzNonzero, hzForcedZero,
+      exists_theorem49BoundaryVertex_vertexKirchhoffSum_ne_zero_of_boundaryZero_of_not_theorem49BoundaryTarget
+        emb hzBoundary hzOffTarget⟩
+
+/--
 Kirchhoff-failure closure theorem for the current Move-2 fork.  Target classifier control leaves
 only one possible selected-boundary-zero failure mode: a chain vanishing on all enumerated forced
 edges whose Kirchhoff sum is nonzero at a theorem-4.9 boundary vertex.  Excluding that concrete
@@ -8883,6 +8960,99 @@ theorem theorem49BoundaryRootSynthesis_and_boundaryTargetCoverage_of_theorem49Bo
     ⟨z, hzBoundary, hzNonzero, hzForcedZero,
       exists_theorem49BoundaryVertex_vertexKirchhoffSum_ne_zero_of_boundaryZero_of_not_theorem49BoundaryTarget
         emb hzBoundary hzOffTarget⟩
+
+/--
+Subset-certificate closure theorem for the current Move-2 oracle.  This is the Lean landing
+point for the finite F2 row-span test: once target classifier control is known, it is enough to
+prove that every boundary-zero chain vanishing on the enumerated forced edges is already in the
+theorem-4.9 boundary target.
+-/
+theorem theorem49BoundaryRootSynthesis_and_boundaryTargetCoverage_of_theorem49BoundaryTargetClassifierControl_of_forced_vanishing_boundaryZero_subset_theorem49BoundaryTarget_of_no_missing_finsetControl
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    [Fintype G.edgeSet] [FiniteDimensional F2 (G.edgeSet → Color)]
+    (emb : PlaneEmbeddingWithBoundary G) (C₀ : G.EdgeColoring Color)
+    (colorings : Set (G.EdgeColoring Color))
+    (hsubset : colorings ⊆ G.EdgeKempeClosure C₀)
+    (p0Inside p4Inside : Bool) (h : data.IsExceptional)
+    (side : V → Prop)
+    [∀ latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge,
+      Decidable ((CAP5ExceptionalAnnulusGeneratorReport.latentNode
+        boundaryEdge side latent).PortalCrosses)]
+    [∀ latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge,
+      Decidable ((CAP5ExceptionalAnnulusGeneratorReport.latentNode
+        boundaryEdge side latent).SideCycles)]
+    [∀ latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge,
+      Decidable ((CAP5ExceptionalAnnulusGeneratorReport.latentNode
+        boundaryEdge side latent).RealizedSeparator)]
+    (hcyclic : CyclicallyFiveEdgeConnected G)
+    (hportal_crosses :
+      ∀ edgeCandidate : CAP5ExceptionalAnnulusBoundaryEdgeSupportCandidate boundaryEdge,
+        data.RealizesExceptionalBoundarySupportOrientation
+            edgeCandidate.portalCandidate.orientation →
+        edgeCandidate.portalCandidate.sideCase =
+            CAP5ExceptionalAnnulusSideCase.ofPortalSides p0Inside p4Inside →
+        ∀ i : Fin 5, i ∈ edgeCandidate.portalCandidate.portalSet →
+          EdgeCrossesVertexSide G side (boundaryEdge i))
+    (hcycles : HasCycleOnSide G side ∧ HasCycleOnSide G (fun v => ¬ side v))
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (controlEdges : Finset G.edgeSet)
+    (hcontrol :
+      ∀ ⦃z : G.edgeSet → Color⦄,
+        z ∈ planarBoundaryZeroSubmodule emb →
+        (∀ e ∈ controlEdges, z e = 0) →
+          z = 0)
+    (hredEmitted :
+      ∀ e ∈ classifier.emittedFinset,
+        Pi.single e red ∈ projectedColoringGeneratorSubspace emb colorings)
+    (hblueEmitted :
+      ∀ e ∈ classifier.emittedFinset,
+        Pi.single e blue ∈ projectedColoringGeneratorSubspace emb colorings)
+    (hredRemaining :
+      ∀ e ∈ classifier.remainingControlEdges controlEdges,
+        Pi.single e red ∈ projectedColoringGeneratorSubspace emb colorings)
+    (hblueRemaining :
+      ∀ e ∈ classifier.remainingControlEdges controlEdges,
+        Pi.single e blue ∈ projectedColoringGeneratorSubspace emb colorings)
+    (hcontrolTarget :
+      ∀ ⦃z : G.edgeSet → Color⦄,
+        z ∈ Theorem49BoundaryTarget emb →
+        (∀ e ∈ classifier.emittedFinset, z e = 0) →
+          z = 0)
+    (hsubsetTarget :
+      ∀ ⦃z : G.edgeSet → Color⦄,
+        z ∈ planarBoundaryZeroSubmodule emb →
+        (∀ e : G.edgeSet,
+          data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e →
+            z e = 0) →
+          z ∈ Theorem49BoundaryTarget emb)
+    (hnoMissing :
+      ¬ ((∃ latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge,
+        latent ∈ CAP5ExceptionalAnnulusGeneratorLatent.all boundaryEdge ∧
+          (CAP5ExceptionalAnnulusGeneratorReport.latentNode
+            boundaryEdge side latent).MissingPortalCrossingEvidence) ∨
+        (∃ latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge,
+          latent ∈ CAP5ExceptionalAnnulusGeneratorLatent.all boundaryEdge ∧
+            (CAP5ExceptionalAnnulusGeneratorReport.latentNode
+              boundaryEdge side latent).MissingSelectedSideCycleEvidence) ∨
+          (∃ latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge,
+            latent ∈ CAP5ExceptionalAnnulusGeneratorLatent.all boundaryEdge ∧
+              (CAP5ExceptionalAnnulusGeneratorReport.latentNode
+                boundaryEdge side latent).MissingComplementarySideCycleEvidence))) :
+    Theorem49BoundaryRootSynthesis emb C₀ ∧
+      (∀ ⦃z : G.edgeSet → Color⦄,
+        z ∈ Theorem49BoundaryTarget emb →
+        z ≠ 0 →
+          ∃ e : G.edgeSet,
+            data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e ∧
+              z e ≠ 0) :=
+  data.theorem49BoundaryRootSynthesis_and_boundaryTargetCoverage_of_theorem49BoundaryTargetClassifierControl_of_no_boundaryZeroEvader_with_theorem49BoundaryVertexKirchhoffFailure_of_no_missing_finsetControl
+    emb C₀ colorings hsubset p0Inside p4Inside h side hcyclic hportal_crosses
+    hcycles classifier controlEdges hcontrol hredEmitted hblueEmitted hredRemaining
+    hblueRemaining hcontrolTarget
+    (data.no_boundaryZeroEvader_with_theorem49BoundaryVertexKirchhoffFailure_of_forced_vanishing_boundaryZero_subset_theorem49BoundaryTarget
+      emb p0Inside p4Inside side hsubsetTarget)
+    hnoMissing
 
 /--
 Concrete-checker closed-frontier theorem for the canonical-family CAP5 detector.  Exact

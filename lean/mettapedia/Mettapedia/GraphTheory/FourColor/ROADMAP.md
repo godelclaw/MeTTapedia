@@ -241,6 +241,22 @@ failure fork: exact shell data must either rule out forced-edge-vanishing
 boundary-zero chains with a nonzero theorem-4.9 boundary-vertex Kirchhoff sum,
 or exhibit one.
 
+The vertex-failure fork now has the same lab-to-Lean interface as the target
+oracle.  The finite F2 lab reports the additive signature
+`f2_all_interior_boundary_zero_kirchhoff_failure_absent`: on the 65-record
+2026-06-28 rerun it is true for every all-interior control set, and the crux
+packet
+`forcing_edges_to_f2_all_interior_boundary_zero_kirchhoff_failure_absent`
+survives on the 36 records with nonempty forcing interior edges.  In Lean,
+`no_boundaryZeroEvader_with_theorem49BoundaryVertexKirchhoffFailure_of_forced_vanishing_boundaryZero_subset_theorem49BoundaryTarget`
+turns the row-span/subset certificate into the no-failure hypothesis, while
+`boundaryZeroEvader_with_theorem49BoundaryVertexKirchhoffFailure_of_not_forced_vanishing_boundaryZero_subset_theorem49BoundaryTarget`
+turns failure of that certificate into a genuine evader.  The route-facing
+closure theorem
+`theorem49BoundaryRootSynthesis_and_boundaryTargetCoverage_of_theorem49BoundaryTargetClassifierControl_of_forced_vanishing_boundaryZero_subset_theorem49BoundaryTarget_of_no_missing_finsetControl`
+therefore makes the remaining algebraic obligation precise: prove the exact
+shell subset certificate, or formalize the evader produced by its failure.
+
 ## The open problem
 
 Exactly two route forks are live; isolated repair-packet refutations are no
@@ -259,9 +275,11 @@ longer acceptable progress.
    implies theorem-4.9 synthesis and target coverage; and target classifier
    control reduces the remaining failure branch to a forced-edge-vanishing
    selected-boundary-zero evader with a concrete theorem-4.9 boundary-vertex
-   Kirchhoff failure, plus a decreasing worklist edge.  The remaining crux is
-   whether exact shell/CAP5 data always excludes that vertex-Kirchhoff failure
-   evader, or whether a genuine one exists.
+   Kirchhoff failure, plus a decreasing worklist edge; and the row-span/subset
+   bridge says the exact remaining certificate is that every forced-vanishing
+   boundary-zero chain lies in the theorem-4.9 target.  The remaining crux is
+   whether exact shell/CAP5 data proves that subset certificate uniformly, or
+   whether a genuine vertex-Kirchhoff failure evader exists.
 
 The historical trichotomy below remains useful background:
 
