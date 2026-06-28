@@ -121,10 +121,15 @@ def currentNavierRoadmap : List NavierRoadmapEntry :=
       truthValue := ⟨90, 90⟩
       obligation := "Use the checked flat-energy zero-rigidity theorem to reject positive-viscosity canaries with everywhere-zero normalized-energy derivative or constant normalized kinetic energy; future positive canaries must genuinely dissipate." },
     { stage := .nonzeroEnergyKernel
+      proofNodeId := "navier.energy.schwartz-pressure-residual-curl-gate"
+      status := .checked
+      truthValue := ⟨87, 89⟩
+      obligation := "Use the checked pressure-residual curl gate to reject any candidate velocity whose residual νΔu - ∂tu - (u.grad)u has nonzero spatial vorticity; future positive canaries must prove the residual is curl-free before searching for pressure slices." },
+    { stage := .nonzeroEnergyKernel
       proofNodeId := "navier.energy.nonzero-schwartz-canary"
       status := .openGoal
-      truthValue := ⟨64, 86⟩
-      obligation := "Produce or refute an exact smooth evolution and Schwartz pressure slices for the localized stream-function seed or a comparable non-polynomial Schwartz profile; seed-only data, conditional constructors, rank-one zero-convection obstructions, profile-level nonzero anti-profile cancellation, amplitude-boundary guardrails, positive-viscosity stationary obstructions, strict-dissipation theorems conditional on the nonzero interface, flat-energy zero-rigidity obstructions, and algebraic finite-mode boundary cases do not count." },
+      truthValue := ⟨65, 86⟩
+      obligation := "Produce or refute an exact smooth evolution and Schwartz pressure slices for the localized stream-function seed or a comparable non-polynomial Schwartz profile; seed-only data, conditional constructors, rank-one zero-convection obstructions, profile-level nonzero anti-profile cancellation, amplitude-boundary guardrails, positive-viscosity stationary obstructions, strict-dissipation theorems conditional on the nonzero interface, flat-energy zero-rigidity obstructions, residual-curl pressure-closure rejections, and algebraic finite-mode boundary cases do not count." },
     { stage := .scalingGate
       proofNodeId := "navier.regularity-promotion-gate"
       status := .scalingUncleared
@@ -164,9 +169,9 @@ theorem currentNavierRoadmap_records_nonzero_schwartz_kernel_and_open_canary :
       ({ stage := NavierRoadmapStage.nonzeroEnergyKernel
          proofNodeId := "navier.energy.nonzero-schwartz-canary"
          status := .openGoal
-         truthValue := ⟨64, 86⟩
+         truthValue := ⟨65, 86⟩
          obligation :=
-          "Produce or refute an exact smooth evolution and Schwartz pressure slices for the localized stream-function seed or a comparable non-polynomial Schwartz profile; seed-only data, conditional constructors, rank-one zero-convection obstructions, profile-level nonzero anti-profile cancellation, amplitude-boundary guardrails, positive-viscosity stationary obstructions, strict-dissipation theorems conditional on the nonzero interface, flat-energy zero-rigidity obstructions, and algebraic finite-mode boundary cases do not count." } :
+          "Produce or refute an exact smooth evolution and Schwartz pressure slices for the localized stream-function seed or a comparable non-polynomial Schwartz profile; seed-only data, conditional constructors, rank-one zero-convection obstructions, profile-level nonzero anti-profile cancellation, amplitude-boundary guardrails, positive-viscosity stationary obstructions, strict-dissipation theorems conditional on the nonzero interface, flat-energy zero-rigidity obstructions, residual-curl pressure-closure rejections, and algebraic finite-mode boundary cases do not count." } :
         NavierRoadmapEntry) ∈ currentNavierRoadmap ∧
       ({ stage := NavierRoadmapStage.nonzeroEnergyKernel
          proofNodeId := "navier.energy.nonzero-schwartz-rank-one-shear-obstruction"
@@ -224,6 +229,13 @@ theorem currentNavierRoadmap_records_nonzero_schwartz_kernel_and_open_canary :
          obligation :=
           "Use the checked flat-energy zero-rigidity theorem to reject positive-viscosity canaries with everywhere-zero normalized-energy derivative or constant normalized kinetic energy; future positive canaries must genuinely dissipate." } :
         NavierRoadmapEntry) ∈ currentNavierRoadmap ∧
+      ({ stage := NavierRoadmapStage.nonzeroEnergyKernel
+         proofNodeId := "navier.energy.schwartz-pressure-residual-curl-gate"
+         status := .checked
+         truthValue := ⟨87, 89⟩
+         obligation :=
+          "Use the checked pressure-residual curl gate to reject any candidate velocity whose residual νΔu - ∂tu - (u.grad)u has nonzero spatial vorticity; future positive canaries must prove the residual is curl-free before searching for pressure slices." } :
+        NavierRoadmapEntry) ∈ currentNavierRoadmap ∧
       navierNonzeroSchwartzEnergyKernelNode.status = .checked ∧
       navierNonzeroSchwartzLineInvariantObstructionNode.status = .checked ∧
       navierNonzeroSchwartzRankOneShearObstructionNode.status = .checked ∧
@@ -234,8 +246,10 @@ theorem currentNavierRoadmap_records_nonzero_schwartz_kernel_and_open_canary :
       navierNonzeroSchwartzStationaryDissipationGateNode.status = .checked ∧
       navierNonzeroSchwartzStrictDissipationKernelNode.status = .checked ∧
       navierNonzeroSchwartzNoFlatEnergyObstructionNode.status = .checked ∧
+      navierSchwartzPressureResidualCurlGateNode.status = .checked ∧
       navierNonzeroSchwartzCanaryNode.status = .openGoal := by
   exact ⟨by simp [currentNavierRoadmap],
+    by simp [currentNavierRoadmap],
     by simp [currentNavierRoadmap],
     by simp [currentNavierRoadmap],
     by simp [currentNavierRoadmap],
@@ -256,6 +270,7 @@ theorem currentNavierRoadmap_records_nonzero_schwartz_kernel_and_open_canary :
     navierNonzeroSchwartzStationaryDissipationGateNode_checked,
     navierNonzeroSchwartzStrictDissipationKernelNode_checked,
     navierNonzeroSchwartzNoFlatEnergyObstructionNode_checked,
+    navierSchwartzPressureResidualCurlGateNode_checked,
     navierNonzeroSchwartzCanaryNode_open⟩
 
 /-- The current roadmap pins the averaged-equation obstruction before any

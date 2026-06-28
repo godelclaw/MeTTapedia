@@ -174,6 +174,16 @@ theorem velocity_eq_zero_of_exists_const_normalizedKineticEnergy_of_pos_viscosit
         rw [hconst]
         exact hasDerivAt_const t E)
 
+/-- Pressure-closure curl gate for the ordinary slice-Schwartz concrete
+solution interface: the residual vector field that the pressure gradient must
+equal has zero spatial vorticity everywhere. -/
+theorem momentumPressureResidual_spatialVorticity_zero :
+    ∀ t x, spatialVorticity (momentumPressureResidual ν S.velocity) t x = 0 := by
+  intro t x
+  exact
+    spatialVorticity_momentumPressureResidual_of_momentumEquation
+      S.smooth_pressure S.momentumEquation_explicit t x
+
 /-- A time-independent velocity in the slice-Schwartz concrete solution
 interface has zero corrected coordinate dissipation at every time.  This is a
 stationary-energy gate: the exact energy identity and constant kinetic energy
@@ -353,6 +363,39 @@ theorem every_nonzeroSchwartzConcreteSolution_has_non_lineInvariant_slice
     ∃ t : NSTime,
       ¬ TranslationInvariantAlong v (fun x : NSSpace => S.velocitySlice t x) :=
   S.exists_velocitySlice_not_translationInvariantAlong hv
+
+/-- Residual-curl pressure-closure obstruction for the ordinary
+slice-Schwartz solution interface.  If the vector field
+`ν Δu - ∂ₜu - (u · ∇)u` has nonzero spatial vorticity anywhere, it cannot be
+the pressure gradient of a smooth pressure in a concrete solution. -/
+theorem not_exists_schwartzConcreteSolution_velocity_of_momentumPressureResidual_vorticity_ne_zero
+    {ν : ℝ} {u : NSVelocityField}
+    (hcurl :
+      ∃ t : NSTime, ∃ x : NSSpace,
+        spatialVorticity (momentumPressureResidual ν u) t x ≠ 0) :
+    ¬ ∃ S : SchwartzConcreteNavierStokesSolution ν, S.velocity = u := by
+  rintro ⟨S, hvelocity⟩
+  rcases hcurl with ⟨t, x, hne⟩
+  have hzero :
+      spatialVorticity (momentumPressureResidual ν S.velocity) t x = 0 :=
+    S.momentumPressureResidual_spatialVorticity_zero t x
+  have hzero_u :
+      spatialVorticity (momentumPressureResidual ν u) t x = 0 := by
+    simpa [← hvelocity] using hzero
+  exact hne hzero_u
+
+/-- Nonzero refinement of the same residual-curl pressure-closure obstruction. -/
+theorem not_exists_nonzeroSchwartzConcreteSolution_velocity_of_momentumPressureResidual_vorticity_ne_zero
+    {ν : ℝ} {u : NSVelocityField}
+    (hcurl :
+      ∃ t : NSTime, ∃ x : NSSpace,
+        spatialVorticity (momentumPressureResidual ν u) t x ≠ 0) :
+    ¬ ∃ S : NonzeroSchwartzConcreteNavierStokesSolution ν, S.velocity = u := by
+  rintro ⟨S, hvelocity⟩
+  exact
+    not_exists_schwartzConcreteSolution_velocity_of_momentumPressureResidual_vorticity_ne_zero
+      hcurl
+      ⟨S.toSchwartzConcreteNavierStokesSolution, hvelocity⟩
 
 /-- Contrapositive stationary gate for nonzero slice-Schwartz solutions:
 nonzero corrected dissipation rules out a time-independent velocity
