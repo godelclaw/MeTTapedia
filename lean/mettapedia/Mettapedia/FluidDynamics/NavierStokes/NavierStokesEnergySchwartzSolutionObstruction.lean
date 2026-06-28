@@ -265,6 +265,32 @@ theorem exists_strict_coordinateEnergyDissipationIdentity_of_pos_viscosity
   rcases S.exists_coordinateEnergyDissipationRate_pos_of_pos_viscosity hν with ⟨t, hpos⟩
   exact ⟨t, hpos, S.coordinateEnergyDissipationIdentity t, neg_neg_of_pos hpos⟩
 
+/-- Positive-viscosity nonzero slice-Schwartz solutions cannot have zero
+kinetic-energy derivative at every time.  Any exact nonzero canary in this
+interface must therefore exhibit a genuinely dissipative time. -/
+theorem not_forall_normalizedKineticEnergy_hasDerivAt_zero_of_pos_viscosity
+    (hν : 0 < ν) :
+    ¬ ∀ t : NSTime, HasDerivAt (normalizedKineticEnergy S.velocity) 0 t := by
+  intro hzero
+  rcases S.exists_strict_coordinateEnergyDissipationIdentity_of_pos_viscosity hν with
+    ⟨t, _hpos, hidentity, hneg⟩
+  have hsame :
+      0 = -(coordinateEnergyDissipationRate S.velocity ν t) :=
+    (hzero t).unique hidentity
+  exact (ne_of_lt hneg) hsame.symm
+
+/-- Constant normalized kinetic energy is impossible for positive-viscosity
+nonzero slice-Schwartz solutions. -/
+theorem not_exists_const_normalizedKineticEnergy_of_pos_viscosity
+    (hν : 0 < ν) :
+    ¬ ∃ E : ℝ, normalizedKineticEnergy S.velocity = fun _ : NSTime => E := by
+  rintro ⟨E, hconst⟩
+  exact S.not_forall_normalizedKineticEnergy_hasDerivAt_zero_of_pos_viscosity hν
+    (by
+      intro t
+      rw [hconst]
+      exact hasDerivAt_const t E)
+
 end NonzeroSchwartzConcreteNavierStokesSolution
 
 /-- No nonzero slice-Schwartz concrete solution can keep all velocity slices
@@ -315,6 +341,24 @@ theorem not_exists_nonzeroSchwartzConcreteSolution_velocity_timeIndependent_of_p
     NonzeroSchwartzConcreteNavierStokesSolution.velocity_eq_zero_of_velocity_timeIndependent_of_pos_viscosity
       S hν hvelocity t x
   exact hne hzero
+
+/-- No positive-viscosity nonzero slice-Schwartz concrete solution can have
+zero normalized kinetic-energy derivative at every time. -/
+theorem not_exists_nonzeroSchwartzConcreteSolution_forall_normalizedKineticEnergy_hasDerivAt_zero
+    {ν : ℝ} (hν : 0 < ν) :
+    ¬ ∃ S : NonzeroSchwartzConcreteNavierStokesSolution ν,
+      ∀ t : NSTime, HasDerivAt (normalizedKineticEnergy S.velocity) 0 t := by
+  rintro ⟨S, hzero⟩
+  exact S.not_forall_normalizedKineticEnergy_hasDerivAt_zero_of_pos_viscosity hν hzero
+
+/-- Constant normalized kinetic energy is impossible for positive-viscosity
+nonzero slice-Schwartz concrete solutions. -/
+theorem not_exists_nonzeroSchwartzConcreteSolution_const_normalizedKineticEnergy_of_pos_viscosity
+    {ν : ℝ} (hν : 0 < ν) :
+    ¬ ∃ S : NonzeroSchwartzConcreteNavierStokesSolution ν,
+      ∃ E : ℝ, normalizedKineticEnergy S.velocity = fun _ : NSTime => E := by
+  rintro ⟨S, hconst⟩
+  exact S.not_exists_const_normalizedKineticEnergy_of_pos_viscosity hν hconst
 
 end NavierStokes
 end FluidDynamics

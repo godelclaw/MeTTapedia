@@ -105,6 +105,32 @@ theorem nonzero_schwartz_solution_exists_strict_energy_identity_regression
         -(coordinateEnergyDissipationRate S.velocity ν t) < 0 := by
   exact S.exists_strict_coordinateEnergyDissipationIdentity_of_pos_viscosity hν
 
+theorem nonzero_schwartz_solution_not_forall_energy_derivative_zero_regression
+    {ν : ℝ} (hν : 0 < ν) (S : NonzeroSchwartzConcreteNavierStokesSolution ν) :
+    ¬ ∀ t : NSTime, HasDerivAt (normalizedKineticEnergy S.velocity) 0 t := by
+  exact S.not_forall_normalizedKineticEnergy_hasDerivAt_zero_of_pos_viscosity hν
+
+theorem nonzero_schwartz_solution_not_const_energy_regression
+    {ν : ℝ} (hν : 0 < ν) (S : NonzeroSchwartzConcreteNavierStokesSolution ν) :
+    ¬ ∃ E : ℝ, normalizedKineticEnergy S.velocity = fun _ : NSTime => E := by
+  exact S.not_exists_const_normalizedKineticEnergy_of_pos_viscosity hν
+
+theorem not_exists_nonzero_schwartz_solution_forall_energy_derivative_zero_regression
+    {ν : ℝ} (hν : 0 < ν) :
+    ¬ ∃ S : NonzeroSchwartzConcreteNavierStokesSolution ν,
+      ∀ t : NSTime, HasDerivAt (normalizedKineticEnergy S.velocity) 0 t := by
+  exact
+    not_exists_nonzeroSchwartzConcreteSolution_forall_normalizedKineticEnergy_hasDerivAt_zero
+      hν
+
+theorem not_exists_nonzero_schwartz_solution_const_energy_regression
+    {ν : ℝ} (hν : 0 < ν) :
+    ¬ ∃ S : NonzeroSchwartzConcreteNavierStokesSolution ν,
+      ∃ E : ℝ, normalizedKineticEnergy S.velocity = fun _ : NSTime => E := by
+  exact
+    not_exists_nonzeroSchwartzConcreteSolution_const_normalizedKineticEnergy_of_pos_viscosity
+      hν
+
 theorem not_exists_nonzero_stationary_schwartz_solution_of_dissipation_ne_regression
     {ν : ℝ} {u₀ : NSInitialVelocity}
     (hdiss :

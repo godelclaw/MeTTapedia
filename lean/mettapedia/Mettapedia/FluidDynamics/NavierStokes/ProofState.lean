@@ -229,14 +229,22 @@ def navierNonzeroSchwartzStrictDissipationKernelNode : NavierProofNode where
   evidence := "coordinateEnstrophyAt_pos_of_velocity_ne_zero and coordinateEnergyDissipationRate_pos_of_velocity_ne_zero prove that any nonzero Schwartz velocity slice has positive corrected enstrophy and, at positive viscosity, positive corrected dissipation; exists_strict_coordinateEnergyDissipationIdentity_of_pos_viscosity packages this with the exact energy identity, giving a witness time where d/dt normalized kinetic energy is strictly negative. PLN STV <s=.88,c=.90>, ITV [.792,.892], PROGRESS 67%."
   blocker := "This makes the nonzero energy identity strictly nontrivial for any positive-viscosity inhabitant, but it still assumes the nonzero slice-Schwartz concrete solution interface is inhabited. The remaining canary obligation is an explicit time-dependent inhabitant or a broader pressure-closure obstruction."
 
+/-- Positive-viscosity nonzero canaries cannot be energy-flat. -/
+def navierNonzeroSchwartzNoFlatEnergyObstructionNode : NavierProofNode where
+  id := "navier.energy.nonzero-schwartz-no-flat-energy-obstruction"
+  status := .checked
+  truthValue := ⟨89, 90⟩
+  evidence := "not_forall_normalizedKineticEnergy_hasDerivAt_zero_of_pos_viscosity and not_exists_const_normalizedKineticEnergy_of_pos_viscosity prove that any positive-viscosity nonzero slice-Schwartz solution must have a dissipative time; no such solution can have zero normalized-energy derivative at every time or constant normalized kinetic energy. PLN STV <s=.89,c=.90>, ITV [.801,.901], PROGRESS 68%."
+  blocker := "This rules out energy-flat and constant-energy positive-viscosity shortcut canaries, but it is still conditional on the nonzero interface for the witness-side theorem and does not provide an explicit pressure-slice momentum closure."
+
 /-- The explicit nonzero slice-Schwartz canary remains open until the
 finite-mode closure hypotheses are inhabited by concrete profiles. -/
 def navierNonzeroSchwartzCanaryNode : NavierProofNode where
   id := "navier.energy.nonzero-schwartz-canary"
   status := .openGoal
-  truthValue := ⟨62, 86⟩
-  evidence := "The checked nonzero kernel removes the old zero-flow loophole from the energy-identity surface; the line-invariant, rank-one zero-convection, symmetric-shear, anti-profile cancellation, exact anti-profile amplitude-boundary, positive-viscosity stationary, and strict-dissipation-kernel results remove or constrain seven shortcut classes; and the localized stream-function seed gives a concrete nonzero divergence-free Schwartz datum. No unconditional nonzero exact slice-Schwartz solution inhabitant is committed yet. PLN STV <s=.62,c=.86>, ITV [.5332,.6732], PROGRESS 67%."
-  blocker := "Close or refute the pressure-slice closure and time evolution for the explicit localized stream-function seed or a comparable non-polynomial Schwartz profile; do not count a conditional constructor, seed-only datum, rank-one zero-convection obstruction, profile-level nonzero anti-profile cancellation, an amplitude-boundary guardrail, a positive-viscosity stationary obstruction, a strict-dissipation theorem conditional on the nonzero interface, or algebraic finite-mode boundary case as the requested positive canary."
+  truthValue := ⟨63, 86⟩
+  evidence := "The checked nonzero kernel removes the old zero-flow loophole from the energy-identity surface; the line-invariant, rank-one zero-convection, symmetric-shear, anti-profile cancellation, exact anti-profile amplitude-boundary, positive-viscosity stationary, strict-dissipation-kernel, and no-flat-energy results remove or constrain eight shortcut classes; and the localized stream-function seed gives a concrete nonzero divergence-free Schwartz datum. No unconditional nonzero exact slice-Schwartz solution inhabitant is committed yet. PLN STV <s=.63,c=.86>, ITV [.5418,.6818], PROGRESS 68%."
+  blocker := "Close or refute the pressure-slice closure and time evolution for the explicit localized stream-function seed or a comparable non-polynomial Schwartz profile; do not count a conditional constructor, seed-only datum, rank-one zero-convection obstruction, profile-level nonzero anti-profile cancellation, an amplitude-boundary guardrail, a positive-viscosity stationary obstruction, a strict-dissipation theorem conditional on the nonzero interface, an energy-flat obstruction, or algebraic finite-mode boundary case as the requested positive canary."
 
 /-- Supercritical scaling remains a route obstacle, not a closed theorem here. -/
 def navierSupercriticalScalingNode : NavierProofNode where
@@ -377,6 +385,7 @@ def currentNavierProofNodes : List NavierProofNode :=
   , navierNonzeroSchwartzAntiProfileAmplitudeBoundaryNode
   , navierNonzeroSchwartzStationaryDissipationGateNode
   , navierNonzeroSchwartzStrictDissipationKernelNode
+  , navierNonzeroSchwartzNoFlatEnergyObstructionNode
   , navierNonzeroSchwartzCanaryNode
   , navierSupercriticalScalingNode
   , navierCriticalNormCanariesNode
@@ -456,6 +465,10 @@ theorem navierNonzeroSchwartzStationaryDissipationGateNode_checked :
 
 theorem navierNonzeroSchwartzStrictDissipationKernelNode_checked :
     navierNonzeroSchwartzStrictDissipationKernelNode.status = .checked := by
+  rfl
+
+theorem navierNonzeroSchwartzNoFlatEnergyObstructionNode_checked :
+    navierNonzeroSchwartzNoFlatEnergyObstructionNode.status = .checked := by
   rfl
 
 theorem navierNonzeroSchwartzCanaryNode_open :
@@ -687,6 +700,22 @@ theorem currentNavierNonzeroSchwartzStrictDissipationKernel_node
     ⟨S.exists_coordinateEnergyDissipationRate_pos_of_pos_viscosity hν,
       S.exists_strict_coordinateEnergyDissipationIdentity_of_pos_viscosity hν,
       navierNonzeroSchwartzStrictDissipationKernelNode_checked,
+      navierNonzeroSchwartzCanaryNode_open⟩
+
+theorem currentNavierNonzeroSchwartzNoFlatEnergyObstruction_node
+    {ν : ℝ} (hν : 0 < ν) :
+    (¬ ∃ S : NonzeroSchwartzConcreteNavierStokesSolution ν,
+      ∀ t : NSTime, HasDerivAt (normalizedKineticEnergy S.velocity) 0 t) ∧
+      (¬ ∃ S : NonzeroSchwartzConcreteNavierStokesSolution ν,
+        ∃ E : ℝ, normalizedKineticEnergy S.velocity = fun _ : NSTime => E) ∧
+      navierNonzeroSchwartzNoFlatEnergyObstructionNode.status = .checked ∧
+      navierNonzeroSchwartzCanaryNode.status = .openGoal := by
+  exact
+    ⟨not_exists_nonzeroSchwartzConcreteSolution_forall_normalizedKineticEnergy_hasDerivAt_zero
+        hν,
+      not_exists_nonzeroSchwartzConcreteSolution_const_normalizedKineticEnergy_of_pos_viscosity
+        hν,
+      navierNonzeroSchwartzNoFlatEnergyObstructionNode_checked,
       navierNonzeroSchwartzCanaryNode_open⟩
 
 theorem navierCriticalNormCanariesNode_uncleared :
