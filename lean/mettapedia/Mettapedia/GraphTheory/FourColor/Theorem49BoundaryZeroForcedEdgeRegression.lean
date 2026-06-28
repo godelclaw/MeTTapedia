@@ -8304,6 +8304,55 @@ theorem not_nonempty_planarBoundaryHeightOrderedFacePeelWitnessData_twoBandAnnul
   have hle : (9 : ℕ) ≤ 6 := le_trans hcardLower hcardUpper
   norm_num at hle
 
+/-- Strong repaired-geometry counterexample packet for the height-ordered witness-cover route.
+The two-band annulus has the closed-walk source, two-sided boundary roots, integral boundary
+cycles, component-induced and cross-component-chord-free boundary supports, selected-boundary
+inducedness, chord-free interior support, nonempty purified carrier, and nonempty interior
+support.  Even with that repaired packet, there is no height-ordered face-peel witness data on
+the same embedding. -/
+theorem
+    twoBandAnnulus_repairedBoundaryGeometry_counterexample_to_heightOrderedFacePeelWitnessData :
+    Nonempty (PlanarBoundaryAnnulusBoundaryReachabilityData twoBandAnnulusEmbedding) ∧
+      Nonempty
+          (PlanarBoundaryClosedWalkAnnulusBoundarySource twoBandAnnulusEmbedding) ∧
+        AnnulusBoundaryCyclePair twoBandAnnulusEmbedding
+            twoBandAnnulusOuterBoundarySet
+            twoBandAnnulusInnerBoundarySet ∧
+          selectedBoundarySupport
+              twoBandAnnulusEmbedding.faceBoundary
+              twoBandAnnulusEmbedding.faces
+              twoBandAnnulusEmbedding.faces =
+            twoBandAnnulusOuterBoundarySet ∪ twoBandAnnulusInnerBoundarySet ∧
+            BoundaryEdgeSetInducedSubgraph twoBandAnnulusOuterBoundarySet ∧
+              BoundaryEdgeSetInducedSubgraph twoBandAnnulusInnerBoundarySet ∧
+                BoundaryEdgeSetCrossComponentChordFree
+                  twoBandAnnulusOuterBoundarySet
+                  twoBandAnnulusInnerBoundarySet ∧
+                  SelectedBoundaryInducedSubgraph twoBandAnnulusEmbedding ∧
+                    InteriorEdgesNotSelectedBoundaryChords twoBandAnnulusEmbedding ∧
+                      (selectedBoundaryInteriorEdgeEndpointVertices
+                        twoBandAnnulusEmbedding).Nonempty ∧
+                        twoBandAnnulusInteriorEdges.Nonempty ∧
+                          ¬ Nonempty
+                            (PlanarBoundaryHeightOrderedFacePeelWitnessData
+                              twoBandAnnulusEmbedding) := by
+  rcases twoBandAnnulus_boundaryCyclePair_componentInduced_crossComponentChordFree_positive_packet with
+    ⟨hsource, hcycles, hsupport, houterInduced, hinnerInduced, hcrossFree,
+      hselectedInduced, hnoChord, hcarrier⟩
+  exact
+    ⟨⟨twoBandAnnulusAnnulusBoundaryReachabilityData⟩,
+      hsource,
+      hcycles,
+      hsupport,
+      houterInduced,
+      hinnerInduced,
+      hcrossFree,
+      hselectedInduced,
+      hnoChord,
+      hcarrier,
+      ⟨tbaR03, by simp [twoBandAnnulusInteriorEdges]⟩,
+      not_nonempty_planarBoundaryHeightOrderedFacePeelWitnessData_twoBandAnnulus⟩
+
 theorem twoBandAnnulus_boundaryZero_no_evader_of_vanishes_on_interiorEdges
     (z : twoBandAnnulusGraph.edgeSet → Color)
     (hzBoundary : z ∈ planarBoundaryZeroSubmodule twoBandAnnulusEmbedding)
