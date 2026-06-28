@@ -243,6 +243,23 @@ theorem velocity_eq_zero_of_isLocalMax_normalizedKineticEnergy_of_pos_viscosity
     · exact henst
   exact S.velocity_eq_zero_of_coordinateEnstrophyAt_eq_zero henst
 
+/-- At positive viscosity, a locally constant normalized-energy neighborhood
+can occur only on a zero velocity slice.  This packages the local-extremum
+obstruction in the form needed to reject plateau/recurrent canary shortcuts. -/
+theorem velocity_eq_zero_of_eventually_eq_normalizedKineticEnergy_of_pos_viscosity
+    (hν : 0 < ν) {t : NSTime}
+    (hplateau : ∀ᶠ s in nhds t,
+      normalizedKineticEnergy S.velocity s =
+        normalizedKineticEnergy S.velocity t) :
+    ∀ x, S.velocity t x = 0 := by
+  have hmin : IsLocalMin (normalizedKineticEnergy S.velocity) t := by
+    exact hplateau.mono (by
+      intro s hs
+      exact le_of_eq hs.symm)
+  exact
+    S.velocity_eq_zero_of_isLocalMin_normalizedKineticEnergy_of_pos_viscosity
+      hν hmin
+
 /-- Pressure-closure curl gate for the ordinary slice-Schwartz concrete
 solution interface: the residual vector field that the pressure gradient must
 equal has zero spatial vorticity everywhere. -/
@@ -445,6 +462,20 @@ theorem not_isLocalMax_normalizedKineticEnergy_at_nonzero_of_pos_viscosity
   have hzero :=
     SchwartzConcreteNavierStokesSolution.velocity_eq_zero_of_isLocalMax_normalizedKineticEnergy_of_pos_viscosity
       S.toSchwartzConcreteNavierStokesSolution hν hmax x
+  exact hne hzero
+
+/-- At a nonzero witness of a positive-viscosity nonzero solution, normalized
+kinetic energy cannot be locally constant. -/
+theorem not_eventually_eq_normalizedKineticEnergy_at_nonzero_of_pos_viscosity
+    (hν : 0 < ν) {t : NSTime} {x : NSSpace}
+    (hne : S.velocity t x ≠ 0) :
+    ¬ ∀ᶠ s in nhds t,
+      normalizedKineticEnergy S.velocity s =
+        normalizedKineticEnergy S.velocity t := by
+  intro hplateau
+  have hzero :=
+    SchwartzConcreteNavierStokesSolution.velocity_eq_zero_of_eventually_eq_normalizedKineticEnergy_of_pos_viscosity
+      S.toSchwartzConcreteNavierStokesSolution hν hplateau x
   exact hne hzero
 
 end NonzeroSchwartzConcreteNavierStokesSolution
@@ -807,6 +838,20 @@ theorem not_exists_nonzeroSchwartzConcreteSolution_nonzero_nonneg_energy_derivat
     S.normalizedKineticEnergy_derivative_lt_zero_of_exists_velocity_ne_zero
       hν ⟨x, hne⟩ hderiv
   exact not_lt_of_ge hnonneg hlt
+
+/-- No positive-viscosity nonzero slice-Schwartz solution can present a
+nonzero witness time at which normalized kinetic energy is locally constant. -/
+theorem not_exists_nonzeroSchwartzConcreteSolution_nonzero_energy_plateau_of_pos_viscosity
+    {ν : ℝ} (hν : 0 < ν) :
+    ¬ ∃ S : NonzeroSchwartzConcreteNavierStokesSolution ν,
+      ∃ t x,
+        S.velocity t x ≠ 0 ∧
+          (∀ᶠ s in nhds t,
+            normalizedKineticEnergy S.velocity s =
+              normalizedKineticEnergy S.velocity t) := by
+  rintro ⟨S, t, x, hne, hplateau⟩
+  exact S.not_eventually_eq_normalizedKineticEnergy_at_nonzero_of_pos_viscosity
+    hν hne hplateau
 
 end NavierStokes
 end FluidDynamics
