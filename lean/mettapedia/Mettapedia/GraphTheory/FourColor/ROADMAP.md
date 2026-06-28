@@ -228,6 +228,19 @@ evader together with the decreasing interior-support worklist edge.  The
 remaining algebraic fork is now explicit: prove exact CAP5 data excludes these
 off-target evaders, or formalize one.
 
+That off-target branch is now concrete rather than merely complementary.  Lean
+proves
+`CAP5TransportedEdgeComponentCoverCore.exists_theorem49BoundaryVertex_vertexKirchhoffSum_ne_zero_of_boundaryZero_of_not_theorem49BoundaryTarget`:
+any selected-boundary-zero chain outside `W0(H)` fails a Kirchhoff equation at
+some theorem-4.9 boundary vertex.  The route-facing versions
+`theorem49BoundaryRootSynthesis_and_boundaryTargetCoverage_of_theorem49BoundaryTargetClassifierControl_of_no_boundaryZeroEvader_with_theorem49BoundaryVertexKirchhoffFailure_of_no_missing_finsetControl`
+and
+`boundaryZeroEvader_with_theorem49BoundaryVertexKirchhoffFailure_and_remainingInteriorEdgeSupportEdge_with_card_erase_lt_of_missingCheckerEvidenceLatents_eq_nil_of_not_theorem49BoundaryRootSynthesis_of_theorem49BoundaryTargetClassifierControl_of_interiorEdgeSupportControl`
+therefore replace the abstract off-target fork by a concrete vertex-Kirchhoff
+failure fork: exact shell data must either rule out forced-edge-vanishing
+boundary-zero chains with a nonzero theorem-4.9 boundary-vertex Kirchhoff sum,
+or exhibit one.
+
 ## The open problem
 
 Exactly two route forks are live; isolated repair-packet refutations are no
@@ -244,10 +257,11 @@ longer acceptable progress.
    enumerated-forced-edge evader; underdimensioned classifiers produce a
    genuine target evader; full no-evader plus the closed finite checker
    implies theorem-4.9 synthesis and target coverage; and target classifier
-   control reduces the remaining failure branch to an off-target
-   selected-boundary-zero evader plus a decreasing worklist edge.  The
-   remaining crux is whether exact shell/CAP5 data always excludes that
-   off-target evader, or whether a genuine one exists.
+   control reduces the remaining failure branch to a forced-edge-vanishing
+   selected-boundary-zero evader with a concrete theorem-4.9 boundary-vertex
+   Kirchhoff failure, plus a decreasing worklist edge.  The remaining crux is
+   whether exact shell/CAP5 data always excludes that vertex-Kirchhoff failure
+   evader, or whether a genuine one exists.
 
 The historical trichotomy below remains useful background:
 
