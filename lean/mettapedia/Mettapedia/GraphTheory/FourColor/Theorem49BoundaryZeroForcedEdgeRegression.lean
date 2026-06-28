@@ -8123,6 +8123,82 @@ theorem twoBandAnnulus_boundaryCyclePair_componentInduced_crossComponentChordFre
     twoBandAnnulus_interiorEdgesNotSelectedBoundaryChords,
     selectedBoundaryInteriorEdgeEndpointVertices_nonempty_twoBandAnnulus⟩
 
+def twoBandAnnulusMiddleTriangleEdges : Finset twoBandAnnulusGraph.edgeSet :=
+  {tbaM34, tbaM45, tbaM53}
+
+theorem twoBandAnnulusMiddleTriangleEdges_subset_interior :
+    twoBandAnnulusMiddleTriangleEdges ⊆ twoBandAnnulusInteriorEdges := by
+  intro e he
+  simp [twoBandAnnulusMiddleTriangleEdges] at he
+  rcases he with rfl | rfl | rfl <;>
+    simp [twoBandAnnulusInteriorEdges]
+
+/-- The two-band annulus middle layer contains a concrete odd-cycle obstruction to the side-cut
+route: no vertex-side predicate can cross all three middle-triangle edges. -/
+theorem twoBandAnnulus_no_side_cut_crosses_middleTriangleEdges
+    (side : Fin 9 → Prop) :
+    ¬ ∀ e : twoBandAnnulusGraph.edgeSet,
+      e ∈ twoBandAnnulusMiddleTriangleEdges →
+        EdgeCrossesVertexSide twoBandAnnulusGraph side e := by
+  exact
+    not_forall_edgeCrossesVertexSide_of_triangle_subset
+      (G := twoBandAnnulusGraph) (side := side)
+      (a := (3 : Fin 9)) (b := (4 : Fin 9)) (c := (5 : Fin 9))
+      (eab := tbaM34) (ebc := tbaM45) (eac := tbaM53)
+      (edges := twoBandAnnulusMiddleTriangleEdges)
+      (by decide) (by decide) (by decide)
+      (by simp [twoBandAnnulusMiddleTriangleEdges])
+      (by simp [twoBandAnnulusMiddleTriangleEdges])
+      (by simp [twoBandAnnulusMiddleTriangleEdges])
+
+/-- Consequently, no side-cut can cross every interior edge of the two-band annulus.  This is the
+Lean regression for the validation lab's `generated-two-band-annulus-3`
+`odd_cycle_obstruction` against the all-interior side-cut packet. -/
+theorem twoBandAnnulus_no_side_cut_crosses_all_interiorEdges
+    (side : Fin 9 → Prop) :
+    ¬ ∀ e : twoBandAnnulusGraph.edgeSet,
+      e ∈ twoBandAnnulusInteriorEdges →
+        EdgeCrossesVertexSide twoBandAnnulusGraph side e := by
+  intro hcross
+  exact twoBandAnnulus_no_side_cut_crosses_middleTriangleEdges side
+    (fun e he => hcross e (twoBandAnnulusMiddleTriangleEdges_subset_interior he))
+
+theorem not_exists_twoBandAnnulus_side_cut_crosses_all_interiorEdges :
+    ¬ ∃ side : Fin 9 → Prop,
+      ∀ e : twoBandAnnulusGraph.edgeSet,
+        e ∈ twoBandAnnulusInteriorEdges →
+          EdgeCrossesVertexSide twoBandAnnulusGraph side e := by
+  rintro ⟨side, hcross⟩
+  exact twoBandAnnulus_no_side_cut_crosses_all_interiorEdges side hcross
+
+/-- Counterexample packet for the outside-crossing crux: the two-band annulus has the closed-walk
+annulus source and integral boundary cycles, but there is no vertex-side cut crossing all interior
+edges. -/
+theorem twoBandAnnulus_closedWalkBoundaryCycles_counterexample_to_allInterior_sideCut :
+    Nonempty
+        (PlanarBoundaryClosedWalkAnnulusBoundarySource twoBandAnnulusEmbedding) ∧
+      AnnulusBoundaryCyclePair twoBandAnnulusEmbedding
+          twoBandAnnulusOuterBoundarySet
+          twoBandAnnulusInnerBoundarySet ∧
+        ¬ ∃ side : Fin 9 → Prop,
+          ∀ e : twoBandAnnulusGraph.edgeSet,
+            e ∈ twoBandAnnulusInteriorEdges →
+              EdgeCrossesVertexSide twoBandAnnulusGraph side e :=
+  ⟨nonempty_closedWalkAnnulusBoundarySource_twoBandAnnulus,
+    annulusBoundaryCyclePair_twoBandAnnulus,
+    not_exists_twoBandAnnulus_side_cut_crosses_all_interiorEdges⟩
+
+/-- Counterexample packet for the declared-forced side-cut route on the same generated two-band
+shape: the declared interior/forcing support is nonempty, but no side predicate crosses all of it. -/
+theorem twoBandAnnulus_forcingInteriorEdges_nonempty_counterexample_to_declaredForced_sideCut :
+    twoBandAnnulusInteriorEdges.Nonempty ∧
+      ¬ ∃ side : Fin 9 → Prop,
+        ∀ e : twoBandAnnulusGraph.edgeSet,
+          e ∈ twoBandAnnulusInteriorEdges →
+            EdgeCrossesVertexSide twoBandAnnulusGraph side e :=
+  ⟨⟨tbaR03, by simp [twoBandAnnulusInteriorEdges]⟩,
+    not_exists_twoBandAnnulus_side_cut_crosses_all_interiorEdges⟩
+
 theorem not_nonempty_planarBoundaryHeightOrderedFacePeelWitnessData_twoBandAnnulus :
     ¬ Nonempty
         (PlanarBoundaryHeightOrderedFacePeelWitnessData
