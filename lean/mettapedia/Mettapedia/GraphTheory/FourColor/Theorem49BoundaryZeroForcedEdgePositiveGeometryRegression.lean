@@ -96,6 +96,81 @@ theorem
       not_theorem49HeightOrderedPositiveProjectedGeometryOn_twoBandAnnulus,
       not_theorem49CollarLayerPositiveProjectedGeometryOn_twoBandAnnulus⟩
 
+/-- Strong route-facing repaired-geometry counterexample packet.  The same two-band annulus has
+the repaired closed-walk, selected-boundary, chord-free, carrier, and nonempty interior-support
+geometry, but it simultaneously refutes both current replacement-positive geometry surfaces and
+the outside-crossing side-cut repair. -/
+theorem
+    twoBandAnnulus_repairedBoundaryGeometry_counterexample_to_positiveGeometry_and_sideCut :
+    Nonempty (PlanarBoundaryAnnulusBoundaryReachabilityData twoBandAnnulusEmbedding) ∧
+      Nonempty
+          (PlanarBoundaryClosedWalkAnnulusBoundarySource twoBandAnnulusEmbedding) ∧
+        AnnulusBoundaryCyclePair twoBandAnnulusEmbedding
+            twoBandAnnulusOuterBoundarySet
+            twoBandAnnulusInnerBoundarySet ∧
+          selectedBoundarySupport
+              twoBandAnnulusEmbedding.faceBoundary
+              twoBandAnnulusEmbedding.faces
+              twoBandAnnulusEmbedding.faces =
+            twoBandAnnulusOuterBoundarySet ∪ twoBandAnnulusInnerBoundarySet ∧
+            BoundaryEdgeSetInducedSubgraph twoBandAnnulusOuterBoundarySet ∧
+              BoundaryEdgeSetInducedSubgraph twoBandAnnulusInnerBoundarySet ∧
+                BoundaryEdgeSetCrossComponentChordFree
+                  twoBandAnnulusOuterBoundarySet
+                  twoBandAnnulusInnerBoundarySet ∧
+                  SelectedBoundaryInducedSubgraph twoBandAnnulusEmbedding ∧
+                    InteriorEdgesNotSelectedBoundaryChords twoBandAnnulusEmbedding ∧
+                      (selectedBoundaryInteriorEdgeEndpointVertices
+                        twoBandAnnulusEmbedding).Nonempty ∧
+                        twoBandAnnulusInteriorEdges.Nonempty ∧
+                          ¬ Nonempty
+                            (PlanarBoundaryWellFoundedFacePeelWitnessData
+                              twoBandAnnulusEmbedding) ∧
+                            ¬ Theorem49HeightOrderedPositiveProjectedGeometryOn
+                              twoBandAnnulusEmbedding ∧
+                              ¬ Theorem49CollarLayerPositiveProjectedGeometryOn
+                                twoBandAnnulusEmbedding ∧
+                                (¬ ∃ side : Fin 9 → Prop,
+                                  ∀ e : twoBandAnnulusGraph.edgeSet,
+                                    e ∈ interiorEdgeSupport
+                                        twoBandAnnulusEmbedding.faceBoundary
+                                        twoBandAnnulusEmbedding.faces →
+                                      EdgeCrossesVertexSide twoBandAnnulusGraph side e) ∧
+                                  ¬ ∃ side : Fin 9 → Prop,
+                                    ∀ e : twoBandAnnulusGraph.edgeSet,
+                                      e ∈ twoBandAnnulusInteriorEdges →
+                                        EdgeCrossesVertexSide
+                                          twoBandAnnulusGraph side e := by
+  rcases
+    twoBandAnnulus_repairedBoundaryGeometry_counterexample_to_replacementPositiveGeometry
+    with
+    ⟨hReach, hSource, hCycles, hSupport, hOuterInduced, hInnerInduced, hCrossFree,
+      hSelectedInduced, hNoChord, hCarrier, hInterior, hNoWellFounded, hNoHeight,
+      hNoCollar⟩
+  rcases
+    twoBandAnnulus_repairedBoundaryGeometry_counterexample_to_sideCut_packets
+    with
+    ⟨_hReachSide, _hSourceSide, _hCyclesSide, _hSupportSide, _hOuterInducedSide,
+      _hInnerInducedSide, _hCrossFreeSide, _hSelectedInducedSide, _hNoChordSide,
+      _hCarrierSide, _hInteriorSide, hNoSupportSideCut, hNoInteriorSideCut⟩
+  exact
+    ⟨hReach,
+      hSource,
+      hCycles,
+      hSupport,
+      hOuterInduced,
+      hInnerInduced,
+      hCrossFree,
+      hSelectedInduced,
+      hNoChord,
+      hCarrier,
+      hInterior,
+      hNoWellFounded,
+      hNoHeight,
+      hNoCollar,
+      hNoSupportSideCut,
+      hNoInteriorSideCut⟩
+
 end Theorem49BoundaryZeroForcedEdgePositiveGeometryRegression
 
 end Mettapedia.GraphTheory.FourColor
