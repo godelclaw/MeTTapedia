@@ -1,5 +1,6 @@
 import Mettapedia.FluidDynamics.NavierStokes.NavierStokesEnergyBKMBridge
 import Mettapedia.FluidDynamics.NavierStokes.FeffermanCompatibilityFrontier
+import Mettapedia.FluidDynamics.NavierStokes.NavierStokesDEGroundedCanary
 import Mettapedia.FluidDynamics.NavierStokes.Scaling.CriticalNormCanaries
 import Mettapedia.FluidDynamics.NavierStokes.Scaling.AveragedEquationCanaries
 import Mettapedia.FluidDynamics.NavierStokes.Scaling.AveragedMomentumCanaries
@@ -35,6 +36,7 @@ inductive NavierProofStatus where
   | refuted
   | needsBackground
   | scalingUncleared
+  | retiredPlaceholder
   | openGoal
 deriving DecidableEq, Repr
 
@@ -51,9 +53,9 @@ deriving Repr
 
 /-- Current dependency-map counts for `FluidDynamics/NavierStokes`. -/
 def currentNavierLaneSurvey : NavierLaneSurvey where
-  sourceFiles := 485
-  sourceLines := 107588
-  internalImportEdges := 1237
+  sourceFiles := 487
+  sourceLines := 107895
+  internalImportEdges := 1242
   regressionFiles := 133
   filesOverThousandLines := 0
   filesOverSevenHundredFiftyLines := 0
@@ -117,12 +119,20 @@ def navierEnergyBKMHeatShearNode : NavierProofNode where
 /-- The Fefferman-style backward route still needs a real lift from vorticity tendrils. -/
 def navierFeffermanLiftNode : NavierProofNode where
   id := "navier.fefferman-lift"
-  status := .needsBackground
-  truthValue := ⟨35, 88⟩
-  evidence := "FeffermanLiftObligations lists velocity, pressure, PDE, incompressibility, initial data, energy, and compatibility."
-  blocker := "Uniform vorticity control alone does not construct the full global output witness."
+  status := .retiredPlaceholder
+  truthValue := ⟨100, 99⟩
+  evidence := "The audited FeffermanGlobalRegularityClause family is parameterized by FeffermanPredicateKit rather than the concrete R^3 PDE; one seeded model instantiates SmoothVelocity and MomentumEquation as True. These predicate-kit route nodes are retained only as missing-lift checklists and establish nothing about the real Navier-Stokes equation."
+  blocker := "Do not count any FeffermanPredicateKit global-regularity clause as PDE progress unless it is replaced by a witness for mkFullyConcreteNavierStokesSurface."
 
-/-- Supercritical scaling remains a route hazard, not a closed theorem here. -/
+/-- The actual `ℝ × ℝ^3` equation surface has a committed positive canary. -/
+def navierDEGroundedZeroCanaryNode : NavierProofNode where
+  id := "navier.de-grounded-zero-canary"
+  status := .checked
+  truthValue := ⟨100, 98⟩
+  evidence := "concreteNSZeroCanary_and_scaling_packet proves a fully concrete zero velocity/pressure witness for mkFullyConcreteNavierStokesSurface, its guarded coordinate energy identity, uniform momentum scaling exponent 3, L2 supercritical power exponent -1, L3 critical exponent 0, and L4 subcritical exponent 1."
+  blocker := "This canary proves the theorem surface is non-vacuous; it is not a global regularity theorem for arbitrary finite-energy data."
+
+/-- Supercritical scaling remains a route obstacle, not a closed theorem here. -/
 def navierSupercriticalScalingNode : NavierProofNode where
   id := "navier.supercritical-scaling"
   status := .scalingUncleared
@@ -250,6 +260,7 @@ def currentNavierProofNodes : List NavierProofNode :=
   , navierEnergyBKMConstantVelocityNode
   , navierEnergyBKMHeatShearNode
   , navierFeffermanLiftNode
+  , navierDEGroundedZeroCanaryNode
   , navierSupercriticalScalingNode
   , navierCriticalNormCanariesNode
   , navierAveragedEquationFrontierNode
@@ -281,6 +292,31 @@ theorem navierEnergyBKMHeatShearNode_refuted :
 theorem navierSupercriticalScalingNode_uncleared :
     navierSupercriticalScalingNode.status = .scalingUncleared := by
   rfl
+
+theorem navierFeffermanLiftNode_retiredPlaceholder :
+    navierFeffermanLiftNode.status = .retiredPlaceholder := by
+  rfl
+
+theorem navierDEGroundedZeroCanaryNode_checked :
+    navierDEGroundedZeroCanaryNode.status = .checked := by
+  rfl
+
+theorem currentNavierDEGroundedZeroCanary_node :
+    NavierStokesGlobalRegularityClause
+        mkFullyConcreteNavierStokesSurface
+        concreteNSZeroProblemData ∧
+      (∀ term : ConcreteNSMomentumTerm, term.scalingExponent = 3) ∧
+      velocityLpPowerScalingExponent 2 = -1 ∧
+      velocityLpPowerScalingExponent 3 = 0 ∧
+      velocityLpPowerScalingExponent 4 = 1 ∧
+      navierDEGroundedZeroCanaryNode.status = .checked := by
+  exact
+    ⟨concreteNSZeroCanary_and_scaling_packet.1,
+      concreteNSZeroCanary_and_scaling_packet.2.1,
+      concreteNSZeroCanary_and_scaling_packet.2.2.1,
+      concreteNSZeroCanary_and_scaling_packet.2.2.2.1,
+      concreteNSZeroCanary_and_scaling_packet.2.2.2.2,
+      navierDEGroundedZeroCanaryNode_checked⟩
 
 theorem navierCriticalNormCanariesNode_uncleared :
     navierCriticalNormCanariesNode.status = .scalingUncleared := by
