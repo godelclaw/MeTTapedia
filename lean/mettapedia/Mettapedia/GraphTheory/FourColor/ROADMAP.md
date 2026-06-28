@@ -402,6 +402,16 @@ together with a decreasing remaining interior-support worklist edge.  The
 target-controlled and canonical path-xor payload branches are therefore
 refinements of this basic evader branch, not separate failure modes.
 
+The forced-all F2 oracle is now packaged as the route-facing decision itself.
+Lean proves
+`theorem49Synthesis_and_boundaryZeroControl_or_boundaryZeroEvader_of_forcedAllLatents`:
+once the report forces all latents, either the no-evader verdict closes
+theorem-4.9 synthesis plus full selected-boundary-zero classifier control, or
+there is an actual nonzero selected-boundary-zero evader for the enumerated
+forced edges.  This is the correct fork surface for the remaining lab-to-Lean
+work: exact CAP5/Jordan shell data must now supply the no-evader/subset side,
+or the explicit evader side is the obstruction to formalize.
+
 On the geometric fork, the source-bound one-collar repair treadmill has now
 been consolidated into a shell-level obstruction.  In
 `FrontierGeometric.lean`, the theorems
