@@ -81,6 +81,11 @@ def currentNavierRoadmap : List NavierRoadmapEntry :=
       truthValue := ⟨85, 90⟩
       obligation := "Use the checked line-invariant obstruction to rule out shear shortcuts; future nonzero canaries must break line invariance and close the pressure-slice momentum equation." },
     { stage := .nonzeroEnergyKernel
+      proofNodeId := "navier.energy.nonzero-schwartz-rank-one-shear-obstruction"
+      status := .checked
+      truthValue := ⟨82, 89⟩
+      obligation := "Use the checked rank-one zero-convection obstruction to rule out fixed-direction Schwartz Stokes-flow shortcuts; future nonzero canaries must close a genuinely non-rank-one pressure-slice equation." },
+    { stage := .nonzeroEnergyKernel
       proofNodeId := "navier.energy.nonzero-schwartz-symmetric-shear-obstruction"
       status := .checked
       truthValue := ⟨88, 88⟩
@@ -93,8 +98,8 @@ def currentNavierRoadmap : List NavierRoadmapEntry :=
     { stage := .nonzeroEnergyKernel
       proofNodeId := "navier.energy.nonzero-schwartz-canary"
       status := .openGoal
-      truthValue := ⟨55, 86⟩
-      obligation := "Produce or refute an exact smooth evolution and Schwartz pressure slices for the localized stream-function seed or a comparable non-polynomial Schwartz profile; seed-only data, conditional constructors, and algebraic finite-mode boundary cases do not count." },
+      truthValue := ⟨57, 86⟩
+      obligation := "Produce or refute an exact smooth evolution and Schwartz pressure slices for the localized stream-function seed or a comparable non-polynomial Schwartz profile; seed-only data, conditional constructors, rank-one zero-convection obstructions, and algebraic finite-mode boundary cases do not count." },
     { stage := .scalingGate
       proofNodeId := "navier.regularity-promotion-gate"
       status := .scalingUncleared
@@ -134,9 +139,16 @@ theorem currentNavierRoadmap_records_nonzero_schwartz_kernel_and_open_canary :
       ({ stage := NavierRoadmapStage.nonzeroEnergyKernel
          proofNodeId := "navier.energy.nonzero-schwartz-canary"
          status := .openGoal
-         truthValue := ⟨55, 86⟩
+         truthValue := ⟨57, 86⟩
          obligation :=
-          "Produce or refute an exact smooth evolution and Schwartz pressure slices for the localized stream-function seed or a comparable non-polynomial Schwartz profile; seed-only data, conditional constructors, and algebraic finite-mode boundary cases do not count." } :
+          "Produce or refute an exact smooth evolution and Schwartz pressure slices for the localized stream-function seed or a comparable non-polynomial Schwartz profile; seed-only data, conditional constructors, rank-one zero-convection obstructions, and algebraic finite-mode boundary cases do not count." } :
+        NavierRoadmapEntry) ∈ currentNavierRoadmap ∧
+      ({ stage := NavierRoadmapStage.nonzeroEnergyKernel
+         proofNodeId := "navier.energy.nonzero-schwartz-rank-one-shear-obstruction"
+         status := .checked
+         truthValue := ⟨82, 89⟩
+         obligation :=
+          "Use the checked rank-one zero-convection obstruction to rule out fixed-direction Schwartz Stokes-flow shortcuts; future nonzero canaries must close a genuinely non-rank-one pressure-slice equation." } :
         NavierRoadmapEntry) ∈ currentNavierRoadmap ∧
       ({ stage := NavierRoadmapStage.nonzeroEnergyKernel
          proofNodeId := "navier.energy.nonzero-schwartz-symmetric-shear-obstruction"
@@ -154,6 +166,7 @@ theorem currentNavierRoadmap_records_nonzero_schwartz_kernel_and_open_canary :
         NavierRoadmapEntry) ∈ currentNavierRoadmap ∧
       navierNonzeroSchwartzEnergyKernelNode.status = .checked ∧
       navierNonzeroSchwartzLineInvariantObstructionNode.status = .checked ∧
+      navierNonzeroSchwartzRankOneShearObstructionNode.status = .checked ∧
       navierNonzeroSchwartzSymmetricShearObstructionNode.status = .checked ∧
       navierNonzeroSchwartzLocalizedStreamSeedNode.status = .checked ∧
       navierNonzeroSchwartzCanaryNode.status = .openGoal := by
@@ -162,8 +175,10 @@ theorem currentNavierRoadmap_records_nonzero_schwartz_kernel_and_open_canary :
     by simp [currentNavierRoadmap],
     by simp [currentNavierRoadmap],
     by simp [currentNavierRoadmap],
+    by simp [currentNavierRoadmap],
     navierNonzeroSchwartzEnergyKernelNode_checked,
     navierNonzeroSchwartzLineInvariantObstructionNode_checked,
+    navierNonzeroSchwartzRankOneShearObstructionNode_checked,
     navierNonzeroSchwartzSymmetricShearObstructionNode_checked,
     navierNonzeroSchwartzLocalizedStreamSeedNode_checked,
     navierNonzeroSchwartzCanaryNode_open⟩
