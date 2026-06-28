@@ -18231,6 +18231,113 @@ theorem twoBandAnnulus_CAP5_forcedEdgeCoverage_iff_emittedInterior_card_ge_nine
     p0Inside p4Inside side classifier).trans
     (twoBandAnnulus_emittedInterior_card_ge_nine_iff classifier.emittedFinset).symm
 
+/-- Exact negative threshold for the two-band boundary-zero detector.  CAP5 fails to cover every
+nonzero boundary-zero chain exactly below the nine-interior-edge emission threshold. -/
+theorem twoBandAnnulus_CAP5_not_forcedEdgeCoverage_iff_emittedInterior_card_lt_nine
+    {boundaryEdge : Fin 5 → twoBandAnnulusGraph.edgeSet} {n : Nat}
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    (p0Inside p4Inside : Bool) (side : Fin 9 → Prop)
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side) :
+    (¬ ∀ ⦃z : twoBandAnnulusGraph.edgeSet → Color⦄,
+      z ∈ planarBoundaryZeroSubmodule twoBandAnnulusEmbedding →
+      z ≠ 0 →
+        ∃ e : twoBandAnnulusGraph.edgeSet,
+          data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e ∧
+            z e ≠ 0) ↔
+      (classifier.emittedFinset.filter fun e =>
+        e ∈ interiorEdgeSupport
+          twoBandAnnulusEmbedding.faceBoundary twoBandAnnulusEmbedding.faces).card < 9 := by
+  constructor
+  · intro hnotCoverage
+    have hnotGe :
+        ¬ 9 ≤ (classifier.emittedFinset.filter fun e =>
+          e ∈ interiorEdgeSupport
+            twoBandAnnulusEmbedding.faceBoundary twoBandAnnulusEmbedding.faces).card := by
+      intro hge
+      exact hnotCoverage
+        ((twoBandAnnulus_CAP5_forcedEdgeCoverage_iff_emittedInterior_card_ge_nine
+          p0Inside p4Inside side classifier).2 hge)
+    exact Nat.lt_of_not_ge hnotGe
+  · intro hlt hcoverage
+    have hge :=
+      (twoBandAnnulus_CAP5_forcedEdgeCoverage_iff_emittedInterior_card_ge_nine
+        p0Inside p4Inside side classifier).1 hcoverage
+    exact (not_lt_of_ge hge) hlt
+
+/-- Certificate-facing exact two-band boundary-zero criterion: an invisible nonzero
+boundary-zero chain exists exactly below the nine-interior-edge threshold. -/
+theorem twoBandAnnulus_CAP5_exists_boundaryZeroChain_vanishingOnForcedEdges_iff_emittedInterior_card_lt_nine
+    {boundaryEdge : Fin 5 → twoBandAnnulusGraph.edgeSet} {n : Nat}
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    (p0Inside p4Inside : Bool) (side : Fin 9 → Prop)
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side) :
+    (∃ z : twoBandAnnulusGraph.edgeSet → Color,
+      z ∈ planarBoundaryZeroSubmodule twoBandAnnulusEmbedding ∧
+        z ≠ 0 ∧
+          ∀ e : twoBandAnnulusGraph.edgeSet,
+            data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e →
+              z e = 0) ↔
+      (classifier.emittedFinset.filter fun e =>
+        e ∈ interiorEdgeSupport
+          twoBandAnnulusEmbedding.faceBoundary twoBandAnnulusEmbedding.faces).card < 9 := by
+  constructor
+  · rintro ⟨z, hz, hzNonzero, hvanish⟩
+    have hnotCoverage :
+        ¬ ∀ ⦃z : twoBandAnnulusGraph.edgeSet → Color⦄,
+          z ∈ planarBoundaryZeroSubmodule twoBandAnnulusEmbedding →
+          z ≠ 0 →
+            ∃ e : twoBandAnnulusGraph.edgeSet,
+              data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e ∧
+                z e ≠ 0 := by
+      intro hcoverage
+      rcases hcoverage hz hzNonzero with ⟨e, heForced, hze⟩
+      exact hze (hvanish e heForced)
+    exact
+      (twoBandAnnulus_CAP5_not_forcedEdgeCoverage_iff_emittedInterior_card_lt_nine
+        p0Inside p4Inside side classifier).1 hnotCoverage
+  · intro hlt
+    exact
+      data.exists_boundaryZeroChain_vanishingOnEnumeratedExceptionalAnnulusForcedEdges_of_not_classifierControl
+        twoBandAnnulusEmbedding p0Inside p4Inside side classifier
+        (by
+          intro hcontrol
+          exact
+            ((twoBandAnnulus_CAP5_not_forcedEdgeCoverage_iff_emittedInterior_card_lt_nine
+              p0Inside p4Inside side classifier).2 hlt)
+              ((data.forcedEdgeCoverage_iff_enumeratedExceptionalAnnulusForcedEdgeClassifierControl
+                twoBandAnnulusEmbedding classifier).2 hcontrol))
+
+/-- No-evader form of the two-band boundary-zero detector threshold. -/
+theorem twoBandAnnulus_CAP5_no_boundaryZeroChain_vanishingOnForcedEdges_iff_emittedInterior_card_ge_nine
+    {boundaryEdge : Fin 5 → twoBandAnnulusGraph.edgeSet} {n : Nat}
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    (p0Inside p4Inside : Bool) (side : Fin 9 → Prop)
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side) :
+    (¬ ∃ z : twoBandAnnulusGraph.edgeSet → Color,
+      z ∈ planarBoundaryZeroSubmodule twoBandAnnulusEmbedding ∧
+        z ≠ 0 ∧
+          ∀ e : twoBandAnnulusGraph.edgeSet,
+            data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e →
+              z e = 0) ↔
+      9 ≤ (classifier.emittedFinset.filter fun e =>
+        e ∈ interiorEdgeSupport
+          twoBandAnnulusEmbedding.faceBoundary twoBandAnnulusEmbedding.faces).card := by
+  constructor
+  · intro hnoEvader
+    exact Nat.le_of_not_gt (by
+      intro hlt
+      exact hnoEvader
+        ((twoBandAnnulus_CAP5_exists_boundaryZeroChain_vanishingOnForcedEdges_iff_emittedInterior_card_lt_nine
+          p0Inside p4Inside side classifier).2 hlt))
+  · intro hge hevader
+    have hlt :=
+      (twoBandAnnulus_CAP5_exists_boundaryZeroChain_vanishingOnForcedEdges_iff_emittedInterior_card_lt_nine
+        p0Inside p4Inside side classifier).1 hevader
+    exact (not_lt_of_ge hge) hlt
+
 /-- Runner-facing exact form for the two-band shell: exact boundary-zero CAP5 coverage leaves
 no unprocessed interior-support control edge. -/
 theorem twoBandAnnulus_CAP5_forcedEdgeCoverage_remainingInteriorEdges_eq_empty
