@@ -1,6 +1,6 @@
 # FourColor: goal, status, and how to approach it
 
-*Last restructured: 2026-06-10.  This file replaces the 3,577-line
+*Last restructured: 2026-06-10.  Last proof-state update: 2026-06-28.  This file replaces the 3,577-line
 `Theorem49NextHardProblemSummary.lean` prose (now in `Legacy/`) as the
 entry point.*
 
@@ -130,9 +130,40 @@ neighborhood: for the shared explicit benchmark coloring, the detector already
 follows from a two-color witness subfamily consisting only of the base coloring
 and one inner red/blue Kempe neighbor.
 
+Update 2026-06-28: the live continuation branch now treats the old geometric
+repair sequence as a fork to decide, not a place to bank more isolated packets.
+The validation lab run archived locally as
+`fourcolor-move2-f2-oracle-validation-lab-20260628.log`
+found no top-level all-interior or declared/forcing-control F2 evader across
+65 records, and the crux report still rejects the outside-crossing geometric
+route on generated two-band annuli.  In Lean,
+`CAP5PathXorDetector.lean` now exposes the target-level no-evader contract
+`forcedEdgeBoundaryTargetCoverage_iff_no_targetEvader` and the Move-2 handoff
+`theorem49BoundaryRootSynthesis_and_boundaryTargetCoverage_of_no_evader_of_no_missing_finsetControl`:
+a completed CAP5 finite checker with no selected-boundary-zero evader closes
+`Theorem49BoundaryRootSynthesis` and also proves forced-edge coverage of the
+actual theorem-4.9 target `W0(H)`.  This advances the algebraic fork but does
+not decide it uniformly; the remaining work is to derive the full no-evader
+verdict from exact shell data or exhibit a genuine evader outside the current
+finite sample.
+
 ## The open problem
 
-Exactly one cluster of questions is live, now best stated as a trichotomy:
+Exactly two route forks are live; isolated repair-packet refutations are no
+longer acceptable progress.
+
+1. **Geometric fork**: consolidate the repaired CAP5/Jordan failures into a
+   single structural obstruction theorem.  Current evidence says the
+   side-cut/outside-crossing and canonical-witness repairs fail on the same
+   two-band family, but the formal result is not yet a single "no repair of
+   this class realizes the needed cyclic separator" theorem.
+2. **Algebraic fork**: resolve the F2 cancellation oracle.  The current
+   machine-checked direction is: full forced-edge no-evader plus closed finite
+   checker implies theorem-4.9 synthesis and target coverage.  The remaining
+   crux is whether exact shell/CAP5 data always supplies that no-evader
+   verdict, or whether a genuine evader exists.
+
+The historical trichotomy below remains useful background:
 
 1. **Repair**: find same-embedding geometric hypotheses that (a) are
    natural for the manuscript's induction, (b) are *not* satisfied by the
@@ -205,7 +236,7 @@ benchmarks already discharged in Lean.
 - New benchmark counterexamples get their own file with the benchmark's facts
   proved once; obstruction theorems combine benchmark facts with shell
   definitions.
-- Keep the tree sorry-free and axiom-free (it currently is).
+- Keep the tree without proof placeholders or extra trusted constants.
 
 ## Build targets
 
