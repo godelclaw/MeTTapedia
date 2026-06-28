@@ -5867,6 +5867,514 @@ theorem positiveTwoCollarToy_CAP5_extensionCoordinateSignalWithResidualProgress_
       positiveTwoCollarToyInteriorControlEdges processed hnotControl
       positiveTwoCollarToy_boundaryZero_controlEdges_interiorEdges hprocessedControl
 
+instance positiveTwoCollarToyGraph_lineGraph_adj_decidable :
+    DecidableRel positiveTwoCollarToyGraph.lineGraph.Adj := by
+  intro e f
+  rw [SimpleGraph.lineGraph_adj_iff_exists]
+  infer_instance
+
+def positiveTwoCollarToyCertificateColorA
+    (e : positiveTwoCollarToyGraph.edgeSet) : Color :=
+  if e = ptcO01 ∨ e = ptcI67 ∨ e = ptcP34 then red
+  else if e = ptcO12 ∨ e = ptcI78 ∨ e = ptcP45 then blue
+  else purple
+
+def positiveTwoCollarToyCertificateColorB
+    (e : positiveTwoCollarToyGraph.edgeSet) : Color :=
+  if e = ptcO01 ∨ e = ptcI67 ∨ e = ptcP45 then red
+  else if e = ptcO12 ∨ e = ptcI78 ∨ e = ptcP34 then blue
+  else purple
+
+def positiveTwoCollarToyCertificateColorC
+    (e : positiveTwoCollarToyGraph.edgeSet) : Color :=
+  if e = ptcO01 ∨ e = ptcI67 ∨ e = ptcP34 then red
+  else if e = ptcO12 ∨ e = ptcI78 ∨ e = ptcP53 then blue
+  else purple
+
+theorem positiveTwoCollarToyCertificateColorA_ne_of_adj
+    {e f : positiveTwoCollarToyGraph.edgeSet}
+    (hadj : positiveTwoCollarToyGraph.lineGraph.Adj e f) :
+    positiveTwoCollarToyCertificateColorA e ≠
+      positiveTwoCollarToyCertificateColorA f := by
+  decide +revert
+
+theorem positiveTwoCollarToyCertificateColorB_ne_of_adj
+    {e f : positiveTwoCollarToyGraph.edgeSet}
+    (hadj : positiveTwoCollarToyGraph.lineGraph.Adj e f) :
+    positiveTwoCollarToyCertificateColorB e ≠
+      positiveTwoCollarToyCertificateColorB f := by
+  decide +revert
+
+theorem positiveTwoCollarToyCertificateColorC_ne_of_adj
+    {e f : positiveTwoCollarToyGraph.edgeSet}
+    (hadj : positiveTwoCollarToyGraph.lineGraph.Adj e f) :
+    positiveTwoCollarToyCertificateColorC e ≠
+      positiveTwoCollarToyCertificateColorC f := by
+  decide +revert
+
+def positiveTwoCollarToyCertificateColoringA :
+    positiveTwoCollarToyGraph.EdgeColoring Color :=
+  Coloring.mk positiveTwoCollarToyCertificateColorA (by
+    intro e f hadj
+    exact positiveTwoCollarToyCertificateColorA_ne_of_adj hadj)
+
+def positiveTwoCollarToyCertificateColoringB :
+    positiveTwoCollarToyGraph.EdgeColoring Color :=
+  Coloring.mk positiveTwoCollarToyCertificateColorB (by
+    intro e f hadj
+    exact positiveTwoCollarToyCertificateColorB_ne_of_adj hadj)
+
+def positiveTwoCollarToyCertificateColoringC :
+    positiveTwoCollarToyGraph.EdgeColoring Color :=
+  Coloring.mk positiveTwoCollarToyCertificateColorC (by
+    intro e f hadj
+    exact positiveTwoCollarToyCertificateColorC_ne_of_adj hadj)
+
+@[simp] theorem positiveTwoCollarToyCertificateColoringA_apply
+    (e : positiveTwoCollarToyGraph.edgeSet) :
+    positiveTwoCollarToyCertificateColoringA e =
+      positiveTwoCollarToyCertificateColorA e := rfl
+
+@[simp] theorem positiveTwoCollarToyCertificateColoringB_apply
+    (e : positiveTwoCollarToyGraph.edgeSet) :
+    positiveTwoCollarToyCertificateColoringB e =
+      positiveTwoCollarToyCertificateColorB e := rfl
+
+@[simp] theorem positiveTwoCollarToyCertificateColoringC_apply
+    (e : positiveTwoCollarToyGraph.edgeSet) :
+    positiveTwoCollarToyCertificateColoringC e =
+      positiveTwoCollarToyCertificateColorC e := rfl
+
+def positiveTwoCollarToyProjectedGeneratorCertificateColorings :
+    Set (positiveTwoCollarToyGraph.EdgeColoring Color) :=
+  {C | C = positiveTwoCollarToyCertificateColoringA ∨
+      C = positiveTwoCollarToyCertificateColoringB ∨
+        C = positiveTwoCollarToyCertificateColoringC}
+
+private theorem positiveTwoCollarToyCertificateColoringB_unique_ptcP34_bluePurple_face2 :
+    ∀ e : positiveTwoCollarToyGraph.edgeSet,
+      e ≠ ptcP34 →
+      e ∉ selectedBoundarySupport
+        positiveTwoCollarToyEmbedding.faceBoundary
+        positiveTwoCollarToyEmbedding.faces
+        positiveTwoCollarToyEmbedding.faces →
+      e ∈ positiveTwoCollarToyEmbedding.faceBoundary (2 : Fin 6) →
+        ¬ (positiveTwoCollarToyCertificateColoringB e = blue ∨
+          positiveTwoCollarToyCertificateColoringB e = purple) := by
+  intro e hne _hnotBoundary hface
+  have hfaceCases : e = ptcP34 := by
+    simpa [positiveTwoCollarToyEmbedding, positiveTwoCollarToyFaceBoundary]
+      using hface
+  subst e
+  exact False.elim (hne rfl)
+
+private theorem positiveTwoCollarToyCertificateColoringA_unique_ptcP45_bluePurple_face3 :
+    ∀ e : positiveTwoCollarToyGraph.edgeSet,
+      e ≠ ptcP45 →
+      e ∉ selectedBoundarySupport
+        positiveTwoCollarToyEmbedding.faceBoundary
+        positiveTwoCollarToyEmbedding.faces
+        positiveTwoCollarToyEmbedding.faces →
+      e ∈ positiveTwoCollarToyEmbedding.faceBoundary (3 : Fin 6) →
+        ¬ (positiveTwoCollarToyCertificateColoringA e = blue ∨
+          positiveTwoCollarToyCertificateColoringA e = purple) := by
+  intro e hne _hnotBoundary hface
+  have hfaceCases : e = ptcP34 ∨ e = ptcP45 := by
+    simpa [positiveTwoCollarToyEmbedding, positiveTwoCollarToyFaceBoundary]
+      using hface
+  rcases hfaceCases with rfl | rfl
+  · decide
+  · exact False.elim (hne rfl)
+
+private theorem positiveTwoCollarToyCertificateColoringA_unique_ptcP53_bluePurple_face5 :
+    ∀ e : positiveTwoCollarToyGraph.edgeSet,
+      e ≠ ptcP53 →
+      e ∉ selectedBoundarySupport
+        positiveTwoCollarToyEmbedding.faceBoundary
+        positiveTwoCollarToyEmbedding.faces
+        positiveTwoCollarToyEmbedding.faces →
+      e ∈ positiveTwoCollarToyEmbedding.faceBoundary (5 : Fin 6) →
+        ¬ (positiveTwoCollarToyCertificateColoringA e = blue ∨
+          positiveTwoCollarToyCertificateColoringA e = purple) := by
+  intro e hne _hnotBoundary hface
+  have hfaceCases : e = ptcP53 := by
+    simpa [positiveTwoCollarToyEmbedding, positiveTwoCollarToyFaceBoundary]
+      using hface
+  subst e
+  exact False.elim (hne rfl)
+
+private theorem positiveTwoCollarToyCertificateColoringA_unique_ptcP34_redPurple_face2 :
+    ∀ e : positiveTwoCollarToyGraph.edgeSet,
+      e ≠ ptcP34 →
+      e ∉ selectedBoundarySupport
+        positiveTwoCollarToyEmbedding.faceBoundary
+        positiveTwoCollarToyEmbedding.faces
+        positiveTwoCollarToyEmbedding.faces →
+      e ∈ positiveTwoCollarToyEmbedding.faceBoundary (2 : Fin 6) →
+        ¬ (positiveTwoCollarToyCertificateColoringA e = red ∨
+          positiveTwoCollarToyCertificateColoringA e = purple) := by
+  intro e hne _hnotBoundary hface
+  have hfaceCases : e = ptcP34 := by
+    simpa [positiveTwoCollarToyEmbedding, positiveTwoCollarToyFaceBoundary]
+      using hface
+  subst e
+  exact False.elim (hne rfl)
+
+private theorem positiveTwoCollarToyCertificateColoringC_unique_ptcP45_redPurple_face4 :
+    ∀ e : positiveTwoCollarToyGraph.edgeSet,
+      e ≠ ptcP45 →
+      e ∉ selectedBoundarySupport
+        positiveTwoCollarToyEmbedding.faceBoundary
+        positiveTwoCollarToyEmbedding.faces
+        positiveTwoCollarToyEmbedding.faces →
+      e ∈ positiveTwoCollarToyEmbedding.faceBoundary (4 : Fin 6) →
+        ¬ (positiveTwoCollarToyCertificateColoringC e = red ∨
+          positiveTwoCollarToyCertificateColoringC e = purple) := by
+  intro e hne _hnotBoundary hface
+  have hfaceCases : e = ptcP45 ∨ e = ptcP53 := by
+    simpa [positiveTwoCollarToyEmbedding, positiveTwoCollarToyFaceBoundary]
+      using hface
+  rcases hfaceCases with rfl | rfl
+  · exact False.elim (hne rfl)
+  · decide
+
+private theorem positiveTwoCollarToyCertificateColoringA_unique_ptcP53_redPurple_face4 :
+    ∀ e : positiveTwoCollarToyGraph.edgeSet,
+      e ≠ ptcP53 →
+      e ∉ selectedBoundarySupport
+        positiveTwoCollarToyEmbedding.faceBoundary
+        positiveTwoCollarToyEmbedding.faces
+        positiveTwoCollarToyEmbedding.faces →
+      e ∈ positiveTwoCollarToyEmbedding.faceBoundary (4 : Fin 6) →
+        ¬ (positiveTwoCollarToyCertificateColoringA e = red ∨
+          positiveTwoCollarToyCertificateColoringA e = purple) := by
+  intro e hne _hnotBoundary hface
+  have hfaceCases : e = ptcP45 ∨ e = ptcP53 := by
+    simpa [positiveTwoCollarToyEmbedding, positiveTwoCollarToyFaceBoundary]
+      using hface
+  rcases hfaceCases with rfl | rfl
+  · decide
+  · exact False.elim (hne rfl)
+
+theorem positiveTwoCollarToy_uniqueProjectedBicoloredCertificates :
+    (∀ e ∈ positiveTwoCollarToyInteriorControlEdges,
+      ∃ C ∈ positiveTwoCollarToyProjectedGeneratorCertificateColorings,
+        ∃ f : positiveTwoCollarToyEmbedding.Face, ∃ a b : Color,
+          ValidColorPair a b ∧
+            a + b = red ∧
+              e ∈ positiveTwoCollarToyEmbedding.faceBoundary f ∧
+                e ∉ selectedBoundarySupport
+                  positiveTwoCollarToyEmbedding.faceBoundary
+                  positiveTwoCollarToyEmbedding.faces
+                  positiveTwoCollarToyEmbedding.faces ∧
+                  (C e = a ∨ C e = b) ∧
+                    ∀ e' : positiveTwoCollarToyGraph.edgeSet,
+                      e' ≠ e →
+                      e' ∉ selectedBoundarySupport
+                        positiveTwoCollarToyEmbedding.faceBoundary
+                        positiveTwoCollarToyEmbedding.faces
+                        positiveTwoCollarToyEmbedding.faces →
+                      e' ∈ positiveTwoCollarToyEmbedding.faceBoundary f →
+                        ¬ (C e' = a ∨ C e' = b)) ∧
+    (∀ e ∈ positiveTwoCollarToyInteriorControlEdges,
+      ∃ C ∈ positiveTwoCollarToyProjectedGeneratorCertificateColorings,
+        ∃ f : positiveTwoCollarToyEmbedding.Face, ∃ a b : Color,
+          ValidColorPair a b ∧
+            a + b = blue ∧
+              e ∈ positiveTwoCollarToyEmbedding.faceBoundary f ∧
+                e ∉ selectedBoundarySupport
+                  positiveTwoCollarToyEmbedding.faceBoundary
+                  positiveTwoCollarToyEmbedding.faces
+                  positiveTwoCollarToyEmbedding.faces ∧
+                  (C e = a ∨ C e = b) ∧
+                    ∀ e' : positiveTwoCollarToyGraph.edgeSet,
+                      e' ≠ e →
+                      e' ∉ selectedBoundarySupport
+                        positiveTwoCollarToyEmbedding.faceBoundary
+                        positiveTwoCollarToyEmbedding.faces
+                        positiveTwoCollarToyEmbedding.faces →
+                      e' ∈ positiveTwoCollarToyEmbedding.faceBoundary f →
+                        ¬ (C e' = a ∨ C e' = b)) := by
+  constructor
+  · intro e he
+    have heCases : e = ptcP34 ∨ e = ptcP45 ∨ e = ptcP53 := by
+      simpa [positiveTwoCollarToyInteriorControlEdges] using he
+    rcases heCases with rfl | rfl | rfl
+    · refine ⟨positiveTwoCollarToyCertificateColoringB, Or.inr (Or.inl rfl),
+        (2 : Fin 6), blue, purple, ?_, ?_, ?_, ?_, ?_, ?_⟩
+      · simp [ValidColorPair]
+      · simp
+      · decide
+      · exact ptcP34_not_mem_selectedBoundarySupport
+      · left
+        simp [positiveTwoCollarToyCertificateColorB]
+        decide
+      · exact positiveTwoCollarToyCertificateColoringB_unique_ptcP34_bluePurple_face2
+    · refine ⟨positiveTwoCollarToyCertificateColoringA, Or.inl rfl,
+        (3 : Fin 6), blue, purple, ?_, ?_, ?_, ?_, ?_, ?_⟩
+      · simp [ValidColorPair]
+      · simp
+      · decide
+      · exact ptcP45_not_mem_selectedBoundarySupport
+      · left
+        simp [positiveTwoCollarToyCertificateColorA]
+        decide
+      · exact positiveTwoCollarToyCertificateColoringA_unique_ptcP45_bluePurple_face3
+    · refine ⟨positiveTwoCollarToyCertificateColoringA, Or.inl rfl,
+        (5 : Fin 6), blue, purple, ?_, ?_, ?_, ?_, ?_, ?_⟩
+      · simp [ValidColorPair]
+      · simp
+      · decide
+      · exact ptcP53_not_mem_selectedBoundarySupport
+      · right
+        decide
+      · exact positiveTwoCollarToyCertificateColoringA_unique_ptcP53_bluePurple_face5
+  · intro e he
+    have heCases : e = ptcP34 ∨ e = ptcP45 ∨ e = ptcP53 := by
+      simpa [positiveTwoCollarToyInteriorControlEdges] using he
+    rcases heCases with rfl | rfl | rfl
+    · refine ⟨positiveTwoCollarToyCertificateColoringA, Or.inl rfl,
+        (2 : Fin 6), red, purple, ?_, ?_, ?_, ?_, ?_, ?_⟩
+      · simp [ValidColorPair]
+      · simp
+      · decide
+      · exact ptcP34_not_mem_selectedBoundarySupport
+      · left
+        simp [positiveTwoCollarToyCertificateColorA]
+      · exact positiveTwoCollarToyCertificateColoringA_unique_ptcP34_redPurple_face2
+    · refine ⟨positiveTwoCollarToyCertificateColoringC, Or.inr (Or.inr rfl),
+        (4 : Fin 6), red, purple, ?_, ?_, ?_, ?_, ?_, ?_⟩
+      · simp [ValidColorPair]
+      · simp
+      · decide
+      · exact ptcP45_not_mem_selectedBoundarySupport
+      · right
+        decide
+      · exact positiveTwoCollarToyCertificateColoringC_unique_ptcP45_redPurple_face4
+    · refine ⟨positiveTwoCollarToyCertificateColoringA, Or.inl rfl,
+        (4 : Fin 6), red, purple, ?_, ?_, ?_, ?_, ?_, ?_⟩
+      · simp [ValidColorPair]
+      · simp
+      · decide
+      · exact ptcP53_not_mem_selectedBoundarySupport
+      · right
+        decide
+      · exact positiveTwoCollarToyCertificateColoringA_unique_ptcP53_redPurple_face4
+
+theorem positiveTwoCollarToy_redBlueSingleCoordinateMemberships_of_uniqueCertificates :
+    (∀ e ∈ positiveTwoCollarToyInteriorControlEdges,
+        Pi.single e red ∈
+          projectedColoringGeneratorSubspace positiveTwoCollarToyEmbedding
+            positiveTwoCollarToyProjectedGeneratorCertificateColorings) ∧
+      (∀ e ∈ positiveTwoCollarToyInteriorControlEdges,
+        Pi.single e blue ∈
+          projectedColoringGeneratorSubspace positiveTwoCollarToyEmbedding
+            positiveTwoCollarToyProjectedGeneratorCertificateColorings) :=
+  redBlueSingleCoordinateMemberships_of_uniqueProjectedBicoloredCertificates
+    positiveTwoCollarToyInteriorControlEdges
+    positiveTwoCollarToy_uniqueProjectedBicoloredCertificates.1
+    positiveTwoCollarToy_uniqueProjectedBicoloredCertificates.2
+
+theorem positiveTwoCollarToy_boundaryZeroProjectedColoringGeneratorDetector_of_uniqueCertificates :
+    BoundaryZeroProjectedColoringGeneratorDetector positiveTwoCollarToyEmbedding
+      positiveTwoCollarToyProjectedGeneratorCertificateColorings := by
+  exact
+    BoundaryZeroProjectedColoringGeneratorDetector.of_uniqueProjectedBicoloredCertificates
+      positiveTwoCollarToyInteriorControlEdges
+      positiveTwoCollarToy_boundaryZero_controlEdges_interiorEdges
+      positiveTwoCollarToy_uniqueProjectedBicoloredCertificates.1
+      positiveTwoCollarToy_uniqueProjectedBicoloredCertificates.2
+
+noncomputable def positiveTwoCollarToyUniqueCertificateRedBlueFamily :
+    ({e : positiveTwoCollarToyGraph.edgeSet //
+        e ∈ positiveTwoCollarToyInteriorControlEdges} × Bool) →
+      projectedColoringGeneratorSubspace positiveTwoCollarToyEmbedding
+        positiveTwoCollarToyProjectedGeneratorCertificateColorings :=
+  redBlueSingleCoordinateFamily positiveTwoCollarToyInteriorControlEdges
+    positiveTwoCollarToy_redBlueSingleCoordinateMemberships_of_uniqueCertificates.1
+    positiveTwoCollarToy_redBlueSingleCoordinateMemberships_of_uniqueCertificates.2
+
+theorem positiveTwoCollarToy_ker_planarBoundaryZeroFamilyPairingMap_uniqueCertificateRedBlueFamily_eq_bot :
+    LinearMap.ker
+        (planarBoundaryZeroFamilyPairingMap
+          positiveTwoCollarToyUniqueCertificateRedBlueFamily) = ⊥ :=
+  ker_planarBoundaryZeroFamilyPairingMap_eq_bot_of_edgePredicateNonzeroWitnesses
+    positiveTwoCollarToyUniqueCertificateRedBlueFamily
+    (fun e => e ∈ positiveTwoCollarToyInteriorControlEdges)
+    positiveTwoCollarToy_boundaryZero_declaredForcedEdges_nonzeroCoverage
+    (redBlueSingleCoordinateFamily_witnessRed positiveTwoCollarToyInteriorControlEdges
+      positiveTwoCollarToy_redBlueSingleCoordinateMemberships_of_uniqueCertificates.1
+      positiveTwoCollarToy_redBlueSingleCoordinateMemberships_of_uniqueCertificates.2)
+    (redBlueSingleCoordinateFamily_witnessBlue positiveTwoCollarToyInteriorControlEdges
+      positiveTwoCollarToy_redBlueSingleCoordinateMemberships_of_uniqueCertificates.1
+      positiveTwoCollarToy_redBlueSingleCoordinateMemberships_of_uniqueCertificates.2)
+
+theorem positiveTwoCollarToy_boundaryZero_classifierRemainingControlEdgeTrace_uniqueCertificateWitnesses
+    {boundaryEdge : Fin 5 → positiveTwoCollarToyGraph.edgeSet} {n : Nat}
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    (p0Inside p4Inside : Bool) (side : Fin 9 → Prop)
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side) :
+    (∀ e : positiveTwoCollarToyGraph.edgeSet,
+      e ∈ classifier.remainingControlEdgeTrace positiveTwoCollarToyInteriorControlEdges →
+        ∃ i : ({e : positiveTwoCollarToyGraph.edgeSet //
+            e ∈ positiveTwoCollarToyInteriorControlEdges} × Bool),
+          ((positiveTwoCollarToyUniqueCertificateRedBlueFamily i :
+              projectedColoringGeneratorSubspace positiveTwoCollarToyEmbedding
+                positiveTwoCollarToyProjectedGeneratorCertificateColorings) :
+              positiveTwoCollarToyGraph.edgeSet → Color) =
+            Pi.single e red) ∧
+      (∀ e : positiveTwoCollarToyGraph.edgeSet,
+        e ∈ classifier.remainingControlEdgeTrace positiveTwoCollarToyInteriorControlEdges →
+          ∃ i : ({e : positiveTwoCollarToyGraph.edgeSet //
+              e ∈ positiveTwoCollarToyInteriorControlEdges} × Bool),
+            ((positiveTwoCollarToyUniqueCertificateRedBlueFamily i :
+                projectedColoringGeneratorSubspace positiveTwoCollarToyEmbedding
+                  positiveTwoCollarToyProjectedGeneratorCertificateColorings) :
+                positiveTwoCollarToyGraph.edgeSet → Color) =
+              Pi.single e blue) := by
+  constructor
+  · intro e heTrace
+    have heControl : e ∈ positiveTwoCollarToyInteriorControlEdges :=
+      ((classifier.mem_remainingControlEdgeTrace_iff_mem_controlEdges_and_not_mem_emittedFinset
+        positiveTwoCollarToyInteriorControlEdges e).1 heTrace).1
+    rcases redBlueSingleCoordinateFamily_witnessRed positiveTwoCollarToyInteriorControlEdges
+        positiveTwoCollarToy_redBlueSingleCoordinateMemberships_of_uniqueCertificates.1
+        positiveTwoCollarToy_redBlueSingleCoordinateMemberships_of_uniqueCertificates.2 e
+        heControl with
+      ⟨i, hi⟩
+    exact ⟨i, by simpa [positiveTwoCollarToyUniqueCertificateRedBlueFamily] using hi⟩
+  · intro e heTrace
+    have heControl : e ∈ positiveTwoCollarToyInteriorControlEdges :=
+      ((classifier.mem_remainingControlEdgeTrace_iff_mem_controlEdges_and_not_mem_emittedFinset
+        positiveTwoCollarToyInteriorControlEdges e).1 heTrace).1
+    rcases redBlueSingleCoordinateFamily_witnessBlue positiveTwoCollarToyInteriorControlEdges
+        positiveTwoCollarToy_redBlueSingleCoordinateMemberships_of_uniqueCertificates.1
+        positiveTwoCollarToy_redBlueSingleCoordinateMemberships_of_uniqueCertificates.2 e
+        heControl with
+      ⟨i, hi⟩
+    exact ⟨i, by simpa [positiveTwoCollarToyUniqueCertificateRedBlueFamily] using hi⟩
+
+theorem positiveTwoCollarToy_CAP5_extensionControlTraceEdge_boundaryZeroChain_uniqueCertificateFamilyPairing_ne_zero_and_residualProgress_of_not_forcedEdgeCoverage_of_processedControl
+    {boundaryEdge : Fin 5 → positiveTwoCollarToyGraph.edgeSet} {n : Nat}
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    (p0Inside p4Inside : Bool) (side : Fin 9 → Prop)
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (processed : Finset positiveTwoCollarToyGraph.edgeSet)
+    (hprocessedControl :
+      ∀ ⦃z : positiveTwoCollarToyGraph.edgeSet → Color⦄,
+        z ∈ planarBoundaryZeroSubmodule positiveTwoCollarToyEmbedding →
+        (∀ e ∈ classifier.emittedFinset, z e = 0) →
+          ∀ e ∈ processed, z e = 0)
+    (hnotCoverage :
+      ¬ (∀ ⦃z : positiveTwoCollarToyGraph.edgeSet → Color⦄,
+        z ∈ planarBoundaryZeroSubmodule positiveTwoCollarToyEmbedding →
+        z ≠ 0 →
+          ∃ e : positiveTwoCollarToyGraph.edgeSet,
+            data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e ∧
+              z e ≠ 0)) :
+    ∃ z : positiveTwoCollarToyGraph.edgeSet → Color,
+      z ∈ planarBoundaryZeroSubmodule positiveTwoCollarToyEmbedding ∧
+        z ≠ 0 ∧
+          (∀ e : positiveTwoCollarToyGraph.edgeSet,
+            data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e →
+              z e = 0) ∧
+            ∃ e : positiveTwoCollarToyGraph.edgeSet,
+              (e ∈ classifier.crossingExtensionFinset positiveTwoCollarToyInteriorControlEdges ∨
+                e ∈ classifier.noncrossingExtensionFinset
+                  positiveTwoCollarToyInteriorControlEdges) ∧
+                e ∈ classifier.remainingControlEdges positiveTwoCollarToyInteriorControlEdges ∧
+                  e ∈ classifier.remainingControlEdgeTrace
+                    positiveTwoCollarToyInteriorControlEdges ∧
+                    e ∈ classifier.residualRemainingControlEdges
+                      positiveTwoCollarToyInteriorControlEdges processed ∧
+                      ¬ data.EnumeratedExceptionalAnnulusForcedEdge
+                        p0Inside p4Inside side e ∧
+                        z e ≠ 0 ∧
+                          (classifier.residualRemainingControlEdges
+                              positiveTwoCollarToyInteriorControlEdges
+                              (insert e processed)).card <
+                            (classifier.residualRemainingControlEdges
+                              positiveTwoCollarToyInteriorControlEdges processed).card ∧
+                          ((classifier.remainingControlEdges
+                              positiveTwoCollarToyInteriorControlEdges).erase e).card <
+                            (classifier.remainingControlEdges
+                              positiveTwoCollarToyInteriorControlEdges).card ∧
+                            ∃ i : ({e : positiveTwoCollarToyGraph.edgeSet //
+                                e ∈ positiveTwoCollarToyInteriorControlEdges} × Bool),
+                              chainDotBilinForm positiveTwoCollarToyGraph.edgeSet
+                                (positiveTwoCollarToyUniqueCertificateRedBlueFamily i :
+                                  positiveTwoCollarToyGraph.edgeSet → Color) z ≠ 0 := by
+  have hsignal :
+      data.ExtensionCoordinateSignalWithResidualProgress positiveTwoCollarToyEmbedding
+        p0Inside p4Inside side classifier positiveTwoCollarToyInteriorControlEdges
+          processed :=
+    positiveTwoCollarToy_CAP5_extensionCoordinateSignalWithResidualProgress_of_not_forcedEdgeCoverage_of_processedControl
+      p0Inside p4Inside side classifier processed hprocessedControl hnotCoverage
+  exact
+    data.exists_boundaryZeroChain_extensionControlTraceEdge_familyPairing_ne_zero_and_residualProgress_of_extensionCoordinateSignalWithResidualProgress
+      positiveTwoCollarToyUniqueCertificateRedBlueFamily hsignal
+      (positiveTwoCollarToy_boundaryZero_classifierRemainingControlEdgeTrace_uniqueCertificateWitnesses
+        p0Inside p4Inside side classifier).1
+      (positiveTwoCollarToy_boundaryZero_classifierRemainingControlEdgeTrace_uniqueCertificateWitnesses
+        p0Inside p4Inside side classifier).2
+
+theorem positiveTwoCollarToy_CAP5_extensionControlTraceEdge_boundaryZeroChain_uniqueCertificateFamilyPairing_ne_zero_and_residualProgress_of_not_forcedEdgeCoverage_of_processed_subset_emittedFinset
+    {boundaryEdge : Fin 5 → positiveTwoCollarToyGraph.edgeSet} {n : Nat}
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    (p0Inside p4Inside : Bool) (side : Fin 9 → Prop)
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (processed : Finset positiveTwoCollarToyGraph.edgeSet)
+    (hprocessedSubset : processed ⊆ classifier.emittedFinset)
+    (hnotCoverage :
+      ¬ (∀ ⦃z : positiveTwoCollarToyGraph.edgeSet → Color⦄,
+        z ∈ planarBoundaryZeroSubmodule positiveTwoCollarToyEmbedding →
+        z ≠ 0 →
+          ∃ e : positiveTwoCollarToyGraph.edgeSet,
+            data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e ∧
+              z e ≠ 0)) :
+    ∃ z : positiveTwoCollarToyGraph.edgeSet → Color,
+      z ∈ planarBoundaryZeroSubmodule positiveTwoCollarToyEmbedding ∧
+        z ≠ 0 ∧
+          (∀ e : positiveTwoCollarToyGraph.edgeSet,
+            data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e →
+              z e = 0) ∧
+            ∃ e : positiveTwoCollarToyGraph.edgeSet,
+              (e ∈ classifier.crossingExtensionFinset positiveTwoCollarToyInteriorControlEdges ∨
+                e ∈ classifier.noncrossingExtensionFinset
+                  positiveTwoCollarToyInteriorControlEdges) ∧
+                e ∈ classifier.remainingControlEdges positiveTwoCollarToyInteriorControlEdges ∧
+                  e ∈ classifier.remainingControlEdgeTrace
+                    positiveTwoCollarToyInteriorControlEdges ∧
+                    e ∈ classifier.residualRemainingControlEdges
+                      positiveTwoCollarToyInteriorControlEdges processed ∧
+                      ¬ data.EnumeratedExceptionalAnnulusForcedEdge
+                        p0Inside p4Inside side e ∧
+                        z e ≠ 0 ∧
+                          (classifier.residualRemainingControlEdges
+                              positiveTwoCollarToyInteriorControlEdges
+                              (insert e processed)).card <
+                            (classifier.residualRemainingControlEdges
+                              positiveTwoCollarToyInteriorControlEdges processed).card ∧
+                          ((classifier.remainingControlEdges
+                              positiveTwoCollarToyInteriorControlEdges).erase e).card <
+                            (classifier.remainingControlEdges
+                              positiveTwoCollarToyInteriorControlEdges).card ∧
+                            ∃ i : ({e : positiveTwoCollarToyGraph.edgeSet //
+                                e ∈ positiveTwoCollarToyInteriorControlEdges} × Bool),
+                              chainDotBilinForm positiveTwoCollarToyGraph.edgeSet
+                                (positiveTwoCollarToyUniqueCertificateRedBlueFamily i :
+                                  positiveTwoCollarToyGraph.edgeSet → Color) z ≠ 0 := by
+  exact
+    positiveTwoCollarToy_CAP5_extensionControlTraceEdge_boundaryZeroChain_uniqueCertificateFamilyPairing_ne_zero_and_residualProgress_of_not_forcedEdgeCoverage_of_processedControl
+      p0Inside p4Inside side classifier processed
+      (by
+        intro z _hzBoundary hvanishEmitted e heProcessed
+        exact hvanishEmitted e (hprocessedSubset heProcessed))
+      hnotCoverage
+
 /-! ## Two-band annulus stress shell -/
 
 def twoBandAnnulusGraph : SimpleGraph (Fin 9) :=
