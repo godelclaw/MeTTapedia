@@ -1,4 +1,5 @@
 import Mettapedia.GraphTheory.FourColor.ShellsCore
+import Mettapedia.GraphTheory.FourColor.CAP5AlgebraBridge
 import Mettapedia.GraphTheory.FourColor.Theorem49ClosedWalkShellSynthesis
 import Mettapedia.GraphTheory.FourColor.Theorem49DetectorStrength
 import Mettapedia.GraphTheory.FourColor.Theorem49AtMostOneNonemptyCarrierImpossibility
@@ -13,7 +14,24 @@ necessity facts for the v23 frontier.  Algebraic cancellation shells live in
 
 namespace Mettapedia.GraphTheory.FourColor
 
-variable {V : Type*} [DecidableEq V] {G : SimpleGraph V}
+variable {V : Type*} {G : SimpleGraph V}
+
+/--
+Any proposed side-cut support containing an odd closed walk fails before any planar/Jordan
+repair data is considered: one vertex-side predicate cannot make every edge in that support
+cross the cut.  This packages the two-band triangle obstruction as an arbitrary odd-cycle
+separator obstruction, not as a benchmark-specific packet refutation.
+-/
+theorem not_exists_sideCut_crosses_closed_odd_walk_subset
+    {u : V} (p : G.Walk u u) (hodd : Odd p.length) {edgeCut : Finset G.edgeSet}
+    (hsubset : ∀ e : G.edgeSet, (e : Sym2 V) ∈ p.edges → e ∈ edgeCut) :
+    ¬ ∃ side : V → Prop,
+      ∀ e : G.edgeSet, e ∈ edgeCut → EdgeCrossesVertexSide G side e := by
+  rintro ⟨side, hcross⟩
+  exact not_forall_edgeCrossesVertexSide_of_closed_walk_odd_length_subset
+    (G := G) (side := side) p hodd hsubset hcross
+
+variable [DecidableEq V]
 
 /-! ## Geometric lane: what suffices for the synthesis endpoint -/
 
@@ -131,5 +149,76 @@ theorem not_exists_oneCollarAnnulusPreviousBoundaryWitnessGeometry_of_closedWalk
   exact
     not_exists_oneCollarAnnulusCollarGeometry_of_closedWalkExactShell shell
       ⟨data.toPlanarBoundaryAnnulusCollarGeometry, hnum⟩
+
+/--
+Route-facing CAP5 normal form of the odd side-cut obstruction.  If a finite support contains an
+odd closed walk, it cannot be wholly accepted by the exceptional annulus outside-crossing
+predicate for any selected side.
+-/
+theorem not_exists_exceptionalAnnulusCrossingOutsideEdge_of_closed_odd_walk_subset
+    {boundaryEdge : Fin 5 → G.edgeSet} {n : Nat}
+    (data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n)
+    (p0Inside p4Inside : Bool)
+    {u : V} (p : G.Walk u u) (hodd : Odd p.length) {edgeCut : Finset G.edgeSet}
+    (hsubset : ∀ e : G.edgeSet, (e : Sym2 V) ∈ p.edges → e ∈ edgeCut) :
+    ¬ ∃ side : V → Prop,
+      ∀ e : G.edgeSet, e ∈ edgeCut →
+        data.ExceptionalAnnulusCrossingOutsideEdge p0Inside p4Inside side e := by
+  rintro ⟨side, houtside⟩
+  exact data.not_forall_exceptionalAnnulusCrossingOutsideEdge_of_closed_walk_odd_length_subset
+    (p0Inside := p0Inside) (p4Inside := p4Inside) (side := side) p hodd hsubset
+    houtside
+
+/--
+Consolidated geometric fork obstruction for the currently live repair class.  A closed-walk
+exact shell rules out the source-bound canonical/one-collar repairs by the shared two-interior
+edge face obstruction; if the proposed side-cut support also contains an odd closed walk, the
+same repair packet cannot realize a cyclic separator either.
+-/
+theorem closedWalkExactShell_oneCollar_and_oddSideCut_obstruction
+    {emb : PlaneEmbeddingWithBoundary G} (shell : ClosedWalkExactShell emb)
+    {u : V} (p : G.Walk u u) (hodd : Odd p.length) {edgeCut : Finset G.edgeSet}
+    (hsubset : ∀ e : G.edgeSet, (e : Sym2 V) ∈ p.edges → e ∈ edgeCut) :
+    (¬ Nonempty
+      (PlanarBoundaryCanonicalWitnessChoice
+        shell.source.toPlanarBoundaryAnnulusBoundaryData)) ∧
+      (¬ ∃ data : PlanarBoundaryAnnulusCollarGeometry emb, data.numCollars = 1) ∧
+        (¬ ∃ data : PlanarBoundaryAnnulusPreviousBoundaryWitnessGeometry emb,
+          data.numCollars = 1) ∧
+          (¬ ∃ side : V → Prop,
+            ∀ e : G.edgeSet, e ∈ edgeCut → EdgeCrossesVertexSide G side e) := by
+  exact
+    ⟨not_nonempty_planarBoundaryCanonicalWitnessChoice_of_closedWalkExactShell shell,
+      not_exists_oneCollarAnnulusCollarGeometry_of_closedWalkExactShell shell,
+      not_exists_oneCollarAnnulusPreviousBoundaryWitnessGeometry_of_closedWalkExactShell shell,
+      not_exists_sideCut_crosses_closed_odd_walk_subset p hodd hsubset⟩
+
+/--
+CAP5-specific consolidated form: the source-bound one-collar repair is impossible on a
+closed-walk exact shell, and an odd-walk side-cut support cannot be repaired by the exceptional
+annulus outside-crossing normal form.
+-/
+theorem closedWalkExactShell_oneCollar_and_CAP5OddSideCut_obstruction
+    {emb : PlaneEmbeddingWithBoundary G} (shell : ClosedWalkExactShell emb)
+    {boundaryEdge : Fin 5 → G.edgeSet} {n : Nat}
+    (data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n)
+    (p0Inside p4Inside : Bool)
+    {u : V} (p : G.Walk u u) (hodd : Odd p.length) {edgeCut : Finset G.edgeSet}
+    (hsubset : ∀ e : G.edgeSet, (e : Sym2 V) ∈ p.edges → e ∈ edgeCut) :
+    (¬ Nonempty
+      (PlanarBoundaryCanonicalWitnessChoice
+        shell.source.toPlanarBoundaryAnnulusBoundaryData)) ∧
+      (¬ ∃ collar : PlanarBoundaryAnnulusCollarGeometry emb, collar.numCollars = 1) ∧
+        (¬ ∃ previous : PlanarBoundaryAnnulusPreviousBoundaryWitnessGeometry emb,
+          previous.numCollars = 1) ∧
+          (¬ ∃ side : V → Prop,
+            ∀ e : G.edgeSet, e ∈ edgeCut →
+              data.ExceptionalAnnulusCrossingOutsideEdge p0Inside p4Inside side e) := by
+  exact
+    ⟨not_nonempty_planarBoundaryCanonicalWitnessChoice_of_closedWalkExactShell shell,
+      not_exists_oneCollarAnnulusCollarGeometry_of_closedWalkExactShell shell,
+      not_exists_oneCollarAnnulusPreviousBoundaryWitnessGeometry_of_closedWalkExactShell shell,
+      not_exists_exceptionalAnnulusCrossingOutsideEdge_of_closed_odd_walk_subset data
+        p0Inside p4Inside p hodd hsubset⟩
 
 end Mettapedia.GraphTheory.FourColor
