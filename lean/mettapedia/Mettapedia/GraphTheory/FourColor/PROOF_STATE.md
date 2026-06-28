@@ -10,7 +10,7 @@ claimed here; the target is a decided state for the Goertzel theorem-4.9 route.
 | Fork | State | PLN STV | ITV | Progress |
 |---|---|---:|---:|---:|
 | Geometric CAP5/Jordan repair | Multiple repairs are refuted; still missing the single structural obstruction theorem that retires the fork. | `<0.42,0.60>` | `[0.25,0.65]` | 62% |
-| Algebraic F2 cancellation oracle | Lab finds no top-level all-interior/declared forced-edge evader on 65 records; Lean now proves full no-evader + closed checker gives synthesis and target coverage, promotes the all-interior survivor to a success-or-remaining-edge frontier, and exposes an executable empty-worklist certificate. Uniform no-evader from exact shell data is not yet proved. | `<0.37,0.65>` | `[0.24,0.59]` | 61% |
+| Algebraic F2 cancellation oracle | Lab finds no top-level all-interior/declared forced-edge evader on 65 records; Lean now proves full no-evader + closed checker gives synthesis and target coverage, promotes the all-interior survivor to a success-or-remaining-edge frontier, exposes an executable empty-worklist certificate, and makes the closed-report failure branch a genuine F2 evader plus a remaining worklist edge. Uniform no-evader from exact shell data is not yet proved. | `<0.38,0.66>` | `[0.25,0.59]` | 62% |
 
 ## Latest Move-2 Evidence
 
@@ -43,6 +43,16 @@ claimed here; the target is a decided state for the Goertzel theorem-4.9 route.
   `CAP5TransportedEdgeComponentCoverCore.remainingInteriorSupportEmpty_report_synthesis_and_targetCoverage`.
   An empty canonical interior-support worklist plus the closed primitive
   checker report now directly yields synthesis and target coverage.
+- Closed-report failure-frontier focused build archived locally as
+  `fourcolor-move2-evader-frontier-focused-build-20260628.log`.
+- New Lean frontier:
+  `CAP5TransportedEdgeComponentCoverCore.boundaryZeroEvader_and_remainingInteriorEdgeSupportEdge_with_card_erase_lt_of_missingCheckerEvidenceLatents_eq_nil_of_not_theorem49BoundaryRootSynthesis_of_interiorEdgeSupportControl`
+  and
+  `CAP5TransportedEdgeComponentCoverCore.theorem49BoundaryRootSynthesis_or_boundaryZeroEvader_and_remainingInteriorEdgeSupportEdge_with_card_erase_lt_of_missingCheckerEvidenceLatents_eq_nil_of_interiorEdgeSupportControl`.
+  With an empty executable checker report, failed synthesis now carries both a
+  genuine selected-boundary-zero evader for the enumerated forced edges and a
+  concrete remaining interior-support edge whose erasure decreases the finite
+  worklist.
 
 ## Remaining Completion Requirements
 
