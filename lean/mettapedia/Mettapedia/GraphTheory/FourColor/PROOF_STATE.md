@@ -10,7 +10,7 @@ claimed here; the target is a decided state for the Goertzel theorem-4.9 route.
 | Fork | State | PLN STV | ITV | Progress |
 |---|---|---:|---:|---:|
 | Geometric CAP5/Jordan repair | Multiple repairs are refuted; still missing the single structural obstruction theorem that retires the fork. | `<0.42,0.60>` | `[0.25,0.65]` | 62% |
-| Algebraic F2 cancellation oracle | Lab finds no top-level all-interior evader on 65 records and no declared-forced evader on the 36 forcing records; Lean now proves the route-facing classifier-control iff/no-evader contract, the target-dimension fork theorem below-bound classifier implies genuine target evader, the full no-evader + closed-checker synthesis handoff, the all-interior success-or-remaining-edge frontier, the executable empty-worklist certificate, the closed-report failure branch as a genuine F2 evader plus a remaining worklist edge, and the target-control bridge reducing any remaining closed-checker failure to an off-target boundary-zero evader. Uniform exclusion of that off-target evader from exact shell data is not yet proved. | `<0.42,0.69>` | `[0.29,0.60]` | 66% |
+| Algebraic F2 cancellation oracle | Lab finds no top-level all-interior evader on 65 records and no declared-forced evader on the 36 forcing records; Lean now proves the route-facing classifier-control iff/no-evader contract, the target-dimension fork theorem below-bound classifier implies genuine target evader, the full no-evader + closed-checker synthesis handoff, the all-interior success-or-remaining-edge frontier, the executable empty-worklist certificate, the closed-report failure branch as a genuine F2 evader plus a remaining worklist edge, the target-control bridge reducing any remaining closed-checker failure to an off-target boundary-zero evader, and the vertex-Kirchhoff failure bridge making that evader concrete at a theorem-4.9 boundary vertex. Uniform exclusion of that vertex-Kirchhoff failure evader from exact shell data is not yet proved. | `<0.43,0.69>` | `[0.30,0.61]` | 67% |
 
 ## Latest Move-2 Evidence
 
@@ -85,14 +85,23 @@ claimed here; the target is a decided state for the Goertzel theorem-4.9 route.
   off-target boundary-zero evaders are excluded, and conversely any failed
   closed checker under target control exposes exactly such an off-target
   evader plus the decreasing interior-support worklist edge.
+- Vertex-Kirchhoff failure theorem surface:
+  `CAP5TransportedEdgeComponentCoverCore.exists_theorem49BoundaryVertex_vertexKirchhoffSum_ne_zero_of_boundaryZero_of_not_theorem49BoundaryTarget`,
+  `CAP5TransportedEdgeComponentCoverCore.theorem49BoundaryRootSynthesis_and_boundaryTargetCoverage_of_theorem49BoundaryTargetClassifierControl_of_no_boundaryZeroEvader_with_theorem49BoundaryVertexKirchhoffFailure_of_no_missing_finsetControl`,
+  and
+  `CAP5TransportedEdgeComponentCoverCore.boundaryZeroEvader_with_theorem49BoundaryVertexKirchhoffFailure_and_remainingInteriorEdgeSupportEdge_with_card_erase_lt_of_missingCheckerEvidenceLatents_eq_nil_of_not_theorem49BoundaryRootSynthesis_of_theorem49BoundaryTargetClassifierControl_of_interiorEdgeSupportControl`.
+  These refine the off-target branch to a concrete failed Kirchhoff equation at
+  a theorem-4.9 boundary vertex: under target classifier control, a failed
+  closed checker exposes a forced-edge-vanishing boundary-zero chain with
+  nonzero `vertexKirchhoffSum` at that vertex and the decreasing worklist edge.
 
 ## Remaining Completion Requirements
 
 - Move 1: prove a single fundamental obstruction for the repaired
   CAP5/Jordan geometric class, not another isolated repair-packet failure.
-- Move 2: either prove that exact shell/CAP5 data excludes the off-target
-  boundary-zero evader left after target classifier control, or exhibit and
-  formalize a genuine evader.
+- Move 2: either prove that exact shell/CAP5 data excludes the concrete
+  vertex-Kirchhoff failure evader left after target classifier control, or
+  exhibit and formalize a genuine evader.
 - Before any public checkpoint: strict proof-marker scan, trusted-constant audit for new
   theorems, validation lab rerun, full `lake -f lakefile.lean build
   Mettapedia`, and push only to `origin/fourcolor/cont-20260626`.
