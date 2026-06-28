@@ -501,6 +501,121 @@ theorem heatShearVelocityField_exact_nonzero_and_not_schwartzConcreteSolution
       not_exists_nonzeroSchwartzConcreteSolution_velocity_heatShearVelocityField
         ha hk⟩
 
+/-- Local residual identity for the constant-amplitude two-mode branch.  Under
+the inviscid convection closure, the pressure residual is exactly the viscous
+Laplacian residual that a pressure gradient would have to supply. -/
+theorem
+    momentumPressureResidual_oneOneTwoModeSchwartzVelocity_of_inviscidClosure_forSchwartzKernel
+    {ν : ℝ} (f g : NSSchwartzInitialVelocity)
+    (hclosure : ∀ t x,
+          spatialConvection (timeIndependentVelocity (f : NSInitialVelocity)) t x +
+            spatialFDeriv (timeIndependentVelocity (f : NSInitialVelocity)) t x (g x) +
+            spatialFDeriv (timeIndependentVelocity (g : NSInitialVelocity)) t x (f x) +
+            spatialConvection (timeIndependentVelocity (g : NSInitialVelocity)) t x =
+        0) :
+    momentumPressureResidual ν
+        (twoModeSchwartzVelocity (fun _ : NSTime => 1) (fun _ : NSTime => 1) f g) =
+      (fun t x =>
+        (ν : ℝ) •
+          (spatialLaplacian (timeIndependentVelocity (f : NSInitialVelocity)) t x +
+            spatialLaplacian (timeIndependentVelocity (g : NSInitialVelocity)) t x)) := by
+  funext t x
+  unfold momentumPressureResidual
+  rw [timeVelocityDerivative_twoModeSchwartzVelocity_deriv
+      (a := fun _ : NSTime => 1) (b := fun _ : NSTime => 1)
+      contDiff_const contDiff_const f g t x,
+    spatialConvection_twoModeSchwartzVelocity
+      (fun _ : NSTime => 1) (fun _ : NSTime => 1) f g t x,
+    spatialLaplacian_twoModeSchwartzVelocity
+      (fun _ : NSTime => 1) (fun _ : NSTime => 1) f g t x]
+  simp [hclosure t x]
+
+/-- Direct slice-Schwartz interface form of the one-one two-mode residual-curl
+gate.  Once the constant-amplitude two-mode branch is inviscidly closed, any
+actual concrete solution with that velocity forces the viscous Laplacian
+residual to be curl-free everywhere. -/
+theorem
+    oneOneTwoModeSchwartzVelocity_lapSum_residualVorticity_zero_of_schwartzConcreteSolution
+    {ν : ℝ} (S : SchwartzConcreteNavierStokesSolution ν)
+    (f g : NSSchwartzInitialVelocity)
+    (hvelocity :
+      S.velocity =
+        twoModeSchwartzVelocity (fun _ : NSTime => 1) (fun _ : NSTime => 1) f g)
+    (hclosure : ∀ t x,
+          spatialConvection (timeIndependentVelocity (f : NSInitialVelocity)) t x +
+            spatialFDeriv (timeIndependentVelocity (f : NSInitialVelocity)) t x (g x) +
+            spatialFDeriv (timeIndependentVelocity (g : NSInitialVelocity)) t x (f x) +
+            spatialConvection (timeIndependentVelocity (g : NSInitialVelocity)) t x =
+        0) :
+    ∀ t x,
+      spatialVorticity
+        (fun s y =>
+          (ν : ℝ) •
+            (spatialLaplacian (timeIndependentVelocity (f : NSInitialVelocity)) s y +
+              spatialLaplacian (timeIndependentVelocity (g : NSInitialVelocity)) s y)) t x =
+        0 := by
+  intro t x
+  have hzero :=
+    S.momentumClosureKernel.pressureResidual_vorticity_zero t x
+  simpa [hvelocity,
+    momentumPressureResidual_oneOneTwoModeSchwartzVelocity_of_inviscidClosure_forSchwartzKernel
+      (ν := ν) f g hclosure] using hzero
+
+/-- Pressure-agnostic no-go for the exact slice-Schwartz interface on the
+constant-amplitude two-mode branch: if the inviscidly closed branch has a
+viscous Laplacian residual with nonzero curl anywhere, no pressure slices can
+make it a concrete solution. -/
+theorem
+    not_exists_schwartzConcreteSolution_oneOneTwoModeSchwartzVelocity_of_inviscidClosure_residualVorticity_ne_zero
+    {ν : ℝ} (f g : NSSchwartzInitialVelocity)
+    (hclosure : ∀ t x,
+          spatialConvection (timeIndependentVelocity (f : NSInitialVelocity)) t x +
+            spatialFDeriv (timeIndependentVelocity (f : NSInitialVelocity)) t x (g x) +
+            spatialFDeriv (timeIndependentVelocity (g : NSInitialVelocity)) t x (f x) +
+            spatialConvection (timeIndependentVelocity (g : NSInitialVelocity)) t x =
+        0)
+    (hcurl : ∃ t x,
+      spatialVorticity
+        (fun s y =>
+          (ν : ℝ) •
+            (spatialLaplacian (timeIndependentVelocity (f : NSInitialVelocity)) s y +
+              spatialLaplacian (timeIndependentVelocity (g : NSInitialVelocity)) s y)) t x ≠
+        0) :
+    ¬ ∃ S : SchwartzConcreteNavierStokesSolution ν,
+      S.velocity =
+        twoModeSchwartzVelocity (fun _ : NSTime => 1) (fun _ : NSTime => 1) f g := by
+  rintro ⟨S, hvelocity⟩
+  rcases hcurl with ⟨t, x, hne⟩
+  exact hne
+    (oneOneTwoModeSchwartzVelocity_lapSum_residualVorticity_zero_of_schwartzConcreteSolution
+      S f g hvelocity hclosure t x)
+
+/-- Nonzero-interface version of the one-one two-mode residual-curl no-go. -/
+theorem
+    not_exists_nonzeroSchwartzConcreteSolution_oneOneTwoModeSchwartzVelocity_of_inviscidClosure_residualVorticity_ne_zero
+    {ν : ℝ} (f g : NSSchwartzInitialVelocity)
+    (hclosure : ∀ t x,
+          spatialConvection (timeIndependentVelocity (f : NSInitialVelocity)) t x +
+            spatialFDeriv (timeIndependentVelocity (f : NSInitialVelocity)) t x (g x) +
+            spatialFDeriv (timeIndependentVelocity (g : NSInitialVelocity)) t x (f x) +
+            spatialConvection (timeIndependentVelocity (g : NSInitialVelocity)) t x =
+        0)
+    (hcurl : ∃ t x,
+      spatialVorticity
+        (fun s y =>
+          (ν : ℝ) •
+            (spatialLaplacian (timeIndependentVelocity (f : NSInitialVelocity)) s y +
+              spatialLaplacian (timeIndependentVelocity (g : NSInitialVelocity)) s y)) t x ≠
+        0) :
+    ¬ ∃ S : NonzeroSchwartzConcreteNavierStokesSolution ν,
+      S.velocity =
+        twoModeSchwartzVelocity (fun _ : NSTime => 1) (fun _ : NSTime => 1) f g := by
+  rintro ⟨S, hvelocity⟩
+  exact
+    not_exists_schwartzConcreteSolution_oneOneTwoModeSchwartzVelocity_of_inviscidClosure_residualVorticity_ne_zero
+      f g hclosure hcurl
+      ⟨S.toSchwartzConcreteNavierStokesSolution, hvelocity⟩
+
 /-- Contrapositive stationary gate for nonzero slice-Schwartz solutions:
 nonzero corrected dissipation rules out a time-independent velocity
 representation. -/

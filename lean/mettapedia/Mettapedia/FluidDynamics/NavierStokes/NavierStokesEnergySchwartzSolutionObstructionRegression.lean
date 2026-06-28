@@ -145,6 +145,73 @@ theorem heat_shear_wrong_viscosity_not_nonzero_schwartz_solution_velocity_regres
     not_exists_nonzeroSchwartzConcreteSolution_velocity_heatShearVelocityField_wrongViscosity
       hμν ha hk
 
+theorem oneOne_twoMode_schwartz_solution_lapSum_residual_curl_zero_regression
+    {ν : ℝ} (S : SchwartzConcreteNavierStokesSolution ν)
+    (f g : NSSchwartzInitialVelocity)
+    (hvelocity :
+      S.velocity =
+        twoModeSchwartzVelocity (fun _ : NSTime => 1) (fun _ : NSTime => 1) f g)
+    (hclosure : ∀ t x,
+          spatialConvection (timeIndependentVelocity (f : NSInitialVelocity)) t x +
+            spatialFDeriv (timeIndependentVelocity (f : NSInitialVelocity)) t x (g x) +
+            spatialFDeriv (timeIndependentVelocity (g : NSInitialVelocity)) t x (f x) +
+            spatialConvection (timeIndependentVelocity (g : NSInitialVelocity)) t x =
+        0) :
+    ∀ t x,
+      spatialVorticity
+        (fun s y =>
+          (ν : ℝ) •
+            (spatialLaplacian (timeIndependentVelocity (f : NSInitialVelocity)) s y +
+              spatialLaplacian (timeIndependentVelocity (g : NSInitialVelocity)) s y)) t x =
+        0 := by
+  exact
+    oneOneTwoModeSchwartzVelocity_lapSum_residualVorticity_zero_of_schwartzConcreteSolution
+      S f g hvelocity hclosure
+
+theorem oneOne_twoMode_residual_curl_not_schwartz_solution_regression
+    {ν : ℝ} (f g : NSSchwartzInitialVelocity)
+    (hclosure : ∀ t x,
+          spatialConvection (timeIndependentVelocity (f : NSInitialVelocity)) t x +
+            spatialFDeriv (timeIndependentVelocity (f : NSInitialVelocity)) t x (g x) +
+            spatialFDeriv (timeIndependentVelocity (g : NSInitialVelocity)) t x (f x) +
+            spatialConvection (timeIndependentVelocity (g : NSInitialVelocity)) t x =
+        0)
+    (hcurl : ∃ t x,
+      spatialVorticity
+        (fun s y =>
+          (ν : ℝ) •
+            (spatialLaplacian (timeIndependentVelocity (f : NSInitialVelocity)) s y +
+              spatialLaplacian (timeIndependentVelocity (g : NSInitialVelocity)) s y)) t x ≠
+        0) :
+    ¬ ∃ S : SchwartzConcreteNavierStokesSolution ν,
+      S.velocity =
+        twoModeSchwartzVelocity (fun _ : NSTime => 1) (fun _ : NSTime => 1) f g := by
+  exact
+    not_exists_schwartzConcreteSolution_oneOneTwoModeSchwartzVelocity_of_inviscidClosure_residualVorticity_ne_zero
+      f g hclosure hcurl
+
+theorem oneOne_twoMode_residual_curl_not_nonzero_schwartz_solution_regression
+    {ν : ℝ} (f g : NSSchwartzInitialVelocity)
+    (hclosure : ∀ t x,
+          spatialConvection (timeIndependentVelocity (f : NSInitialVelocity)) t x +
+            spatialFDeriv (timeIndependentVelocity (f : NSInitialVelocity)) t x (g x) +
+            spatialFDeriv (timeIndependentVelocity (g : NSInitialVelocity)) t x (f x) +
+            spatialConvection (timeIndependentVelocity (g : NSInitialVelocity)) t x =
+        0)
+    (hcurl : ∃ t x,
+      spatialVorticity
+        (fun s y =>
+          (ν : ℝ) •
+            (spatialLaplacian (timeIndependentVelocity (f : NSInitialVelocity)) s y +
+              spatialLaplacian (timeIndependentVelocity (g : NSInitialVelocity)) s y)) t x ≠
+        0) :
+    ¬ ∃ S : NonzeroSchwartzConcreteNavierStokesSolution ν,
+      S.velocity =
+        twoModeSchwartzVelocity (fun _ : NSTime => 1) (fun _ : NSTime => 1) f g := by
+  exact
+    not_exists_nonzeroSchwartzConcreteSolution_oneOneTwoModeSchwartzVelocity_of_inviscidClosure_residualVorticity_ne_zero
+      f g hclosure hcurl
+
 theorem stationary_schwartz_solution_dissipation_zero_regression
     {ν : ℝ} (S : SchwartzConcreteNavierStokesSolution ν)
     {u₀ : NSInitialVelocity}
