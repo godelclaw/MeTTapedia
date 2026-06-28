@@ -23,6 +23,7 @@ inductive NavierRoadmapStage where
   | placeholderRetirement
   | deGroundedSurface
   | energyIdentity
+  | nonzeroEnergyKernel
   | scalingGate
   | averagedEquationGate
   | replacementRoute
@@ -69,6 +70,16 @@ def currentNavierRoadmap : List NavierRoadmapEntry :=
       status := .checked
       truthValue := ⟨78, 84⟩
       obligation := "Use the checked slice-Schwartz solution energy identity as the PDE-grounded energy subnode; next extend derivative-under-integral and decay hypotheses beyond the current energy-admissible class." },
+    { stage := .nonzeroEnergyKernel
+      proofNodeId := "navier.energy.nonzero-schwartz-kernel"
+      status := .checked
+      truthValue := ⟨73, 86⟩
+      obligation := "Use the checked nonzero-preserving kernel for finite-mode generator work, but keep the explicit inhabited nonzero pressure-slice closure as the open canary obligation." },
+    { stage := .nonzeroEnergyKernel
+      proofNodeId := "navier.energy.nonzero-schwartz-canary"
+      status := .openGoal
+      truthValue := ⟨39, 82⟩
+      obligation := "Produce or refute an explicit nonzero divergence-free Schwartz profile pair with Schwartz pressure slices satisfying the expanded closure; conditional constructors alone do not count." },
     { stage := .scalingGate
       proofNodeId := "navier.regularity-promotion-gate"
       status := .scalingUncleared
@@ -87,6 +98,30 @@ def currentNavierRoadmap : List NavierRoadmapEntry :=
 
 theorem currentNavierRoadmap_nonempty : currentNavierRoadmap ≠ [] := by
   simp [currentNavierRoadmap]
+
+/-- The roadmap records the checked nonzero-preserving kernel and keeps the
+explicit nonzero canary open. -/
+theorem currentNavierRoadmap_records_nonzero_schwartz_kernel_and_open_canary :
+    ({ stage := NavierRoadmapStage.nonzeroEnergyKernel
+       proofNodeId := "navier.energy.nonzero-schwartz-kernel"
+       status := .checked
+       truthValue := ⟨73, 86⟩
+       obligation :=
+        "Use the checked nonzero-preserving kernel for finite-mode generator work, but keep the explicit inhabited nonzero pressure-slice closure as the open canary obligation." } :
+      NavierRoadmapEntry) ∈ currentNavierRoadmap ∧
+      ({ stage := NavierRoadmapStage.nonzeroEnergyKernel
+         proofNodeId := "navier.energy.nonzero-schwartz-canary"
+         status := .openGoal
+         truthValue := ⟨39, 82⟩
+         obligation :=
+          "Produce or refute an explicit nonzero divergence-free Schwartz profile pair with Schwartz pressure slices satisfying the expanded closure; conditional constructors alone do not count." } :
+        NavierRoadmapEntry) ∈ currentNavierRoadmap ∧
+      navierNonzeroSchwartzEnergyKernelNode.status = .checked ∧
+      navierNonzeroSchwartzCanaryNode.status = .openGoal := by
+  exact ⟨by simp [currentNavierRoadmap],
+    by simp [currentNavierRoadmap],
+    navierNonzeroSchwartzEnergyKernelNode_checked,
+    navierNonzeroSchwartzCanaryNode_open⟩
 
 /-- The current roadmap pins the averaged-equation obstruction before any
 replacement global-regularity route. -/

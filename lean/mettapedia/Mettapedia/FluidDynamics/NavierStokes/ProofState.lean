@@ -1,7 +1,7 @@
 import Mettapedia.FluidDynamics.NavierStokes.NavierStokesEnergyBKMBridge
 import Mettapedia.FluidDynamics.NavierStokes.FeffermanCompatibilityFrontier
 import Mettapedia.FluidDynamics.NavierStokes.NavierStokesDEGroundedCanary
-import Mettapedia.FluidDynamics.NavierStokes.NavierStokesEnergySchwartzSolution
+import Mettapedia.FluidDynamics.NavierStokes.NavierStokesEnergySchwartzSolutionKernel
 import Mettapedia.FluidDynamics.NavierStokes.Scaling.CriticalNormCanaries
 import Mettapedia.FluidDynamics.NavierStokes.Scaling.AveragedEquationCanaries
 import Mettapedia.FluidDynamics.NavierStokes.Scaling.AveragedMomentumCanaries
@@ -57,10 +57,10 @@ deriving Repr
 
 /-- Current dependency-map counts for `FluidDynamics/NavierStokes`. -/
 def currentNavierLaneSurvey : NavierLaneSurvey where
-  sourceFiles := 489
-  sourceLines := 108301
-  internalImportEdges := 1247
-  regressionFiles := 133
+  sourceFiles := 491
+  sourceLines := 108596
+  internalImportEdges := 1251
+  regressionFiles := 136
   filesOverThousandLines := 0
   filesOverSevenHundredFiftyLines := 0
   leavesWithoutInternalImports := 2
@@ -143,6 +143,24 @@ def navierSchwartzEnergyIdentityNode : NavierProofNode where
   truthValue := ⟨78, 84⟩
   evidence := "coordinateEnergyDissipationIdentity_of_schwartzConcreteSolution proves, for arbitrary energy-admissible slice-Schwartz velocity/pressure fields satisfying SatisfiesMomentumEquation and IsIncompressible on mkFullyConcreteNavierStokesSurface, the pressure-work cancellation, convection-work cancellation, coordinate viscous Laplacian identity, and d/dt normalized kinetic energy = -coordinateEnergyDissipationRate. PLN STV <s=.78,c=.84>, ITV [.6552,.8152], PROGRESS 34%."
   blocker := "This decides the Schwartz-solution energy identity subnode, not global regularity. Extending it to every smooth finite-energy solution still requires closing the derivative-under-the-integral and decay/approximation seam beyond the slice-Schwartz energy-admissible class."
+
+/-- The nonzero slice-Schwartz kernel is checked, but it is not yet an
+unconditional positive canary. -/
+def navierNonzeroSchwartzEnergyKernelNode : NavierProofNode where
+  id := "navier.energy.nonzero-schwartz-kernel"
+  status := .checked
+  truthValue := ⟨73, 86⟩
+  evidence := "SchwartzEnergyIdentityKernel, NonzeroSchwartzConcreteNavierStokesSolution.energyIdentityKernel, twoModeSchwartzPressureSlice_nonzeroSchwartzConcreteSolution_of_momentumEquation, and twoModeSchwartzPressureSlice_nonzero_energyIdentityKernel_of_momentumEquation package the pressure and convection cancellations, viscous formula, meaningful identity, and nonzero witness for any bounded divergence-free two-mode Schwartz ansatz with Schwartz pressure slices satisfying the literal pointwise momentum equation. PLN STV <s=.73,c=.86>, ITV [.6278,.7678], PROGRESS 40%."
+  blocker := "This is nonzero-preserving and PDE-grounded but still conditional on an inhabited pressure-slice momentum closure. The remaining canary obligation is an explicit nonzero divergence-free Schwartz profile pair and Schwartz pressure slices satisfying that closure."
+
+/-- The explicit nonzero slice-Schwartz canary remains open until the
+finite-mode closure hypotheses are inhabited by concrete profiles. -/
+def navierNonzeroSchwartzCanaryNode : NavierProofNode where
+  id := "navier.energy.nonzero-schwartz-canary"
+  status := .openGoal
+  truthValue := ⟨39, 82⟩
+  evidence := "The checked nonzero kernel removes the old zero-flow loophole from the energy-identity surface, while existing Schwartz rigidity blocks the naive whole-space pure-shear shortcut. No unconditional nonzero exact slice-Schwartz solution inhabitant is committed yet. PLN STV <s=.39,c=.82>, ITV [.3198,.4998], PROGRESS 43%."
+  blocker := "Close or refute the finite-mode pressure-slice closure for explicit nonzero profiles; do not count a conditional constructor as the requested positive canary."
 
 /-- Supercritical scaling remains a route obstacle, not a closed theorem here. -/
 def navierSupercriticalScalingNode : NavierProofNode where
@@ -274,6 +292,8 @@ def currentNavierProofNodes : List NavierProofNode :=
   , navierFeffermanLiftNode
   , navierDEGroundedZeroCanaryNode
   , navierSchwartzEnergyIdentityNode
+  , navierNonzeroSchwartzEnergyKernelNode
+  , navierNonzeroSchwartzCanaryNode
   , navierSupercriticalScalingNode
   , navierCriticalNormCanariesNode
   , navierAveragedEquationFrontierNode
@@ -318,6 +338,14 @@ theorem navierSchwartzEnergyIdentityNode_checked :
     navierSchwartzEnergyIdentityNode.status = .checked := by
   rfl
 
+theorem navierNonzeroSchwartzEnergyKernelNode_checked :
+    navierNonzeroSchwartzEnergyKernelNode.status = .checked := by
+  rfl
+
+theorem navierNonzeroSchwartzCanaryNode_open :
+    navierNonzeroSchwartzCanaryNode.status = .openGoal := by
+  rfl
+
 theorem currentNavierDEGroundedZeroCanary_node :
     NavierStokesGlobalRegularityClause
         mkFullyConcreteNavierStokesSurface
@@ -350,6 +378,18 @@ theorem currentNavierSchwartzEnergyIdentity_node
       S.coordinateViscousEnergyPairingFormula,
       S.coordinateEnergyDissipationIdentity,
       navierSchwartzEnergyIdentityNode_checked⟩
+
+theorem currentNavierNonzeroSchwartzEnergyKernel_node
+    {ν : ℝ} (S : NonzeroSchwartzConcreteNavierStokesSolution ν) :
+    (∃ t x, S.velocity t x ≠ 0) ∧
+      SchwartzEnergyIdentityKernel ν S.velocity S.pressure ∧
+      navierNonzeroSchwartzEnergyKernelNode.status = .checked ∧
+      navierNonzeroSchwartzCanaryNode.status = .openGoal := by
+  exact
+    ⟨S.nonzero_velocity,
+      S.energyIdentityKernel,
+      navierNonzeroSchwartzEnergyKernelNode_checked,
+      navierNonzeroSchwartzCanaryNode_open⟩
 
 theorem navierCriticalNormCanariesNode_uncleared :
     navierCriticalNormCanariesNode.status = .scalingUncleared := by
