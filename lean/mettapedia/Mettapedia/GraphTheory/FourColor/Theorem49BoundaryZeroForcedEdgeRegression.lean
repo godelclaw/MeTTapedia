@@ -8386,6 +8386,30 @@ theorem twoBandAnnulus_incidentEdgeFinset_five :
     rfl | rfl | rfl | rfl | rfl <;>
     decide
 
+/-- The two-band regression shell has a degree-four middle vertex, so it cannot carry a proper
+Tait edge-coloring with nonzero `F₂²` colors.  This is the Lean form of the validation lab's
+max-15 `NO_TAIT_COLORING` projected-generator status for the two-band shell. -/
+theorem not_exists_taitEdgeColoring_twoBandAnnulusGraph :
+    ¬ ∃ C : twoBandAnnulusGraph.EdgeColoring Color,
+      IsTaitEdgeColoring twoBandAnnulusGraph C := by
+  refine
+    not_exists_taitEdgeColoring_of_four_pairwise_adjacent_edges
+      (G := twoBandAnnulusGraph)
+      (e₁ := tbaR03) (e₂ := tbaR36) (e₃ := tbaM34) (e₄ := tbaM53)
+      ?_ ?_ ?_ ?_ ?_ ?_
+  · exact lineGraph_adj_of_edgeSet_common_vertex
+      (v := (3 : Fin 9)) (by decide) (by simp [tbaR03]) (by simp [tbaR36])
+  · exact lineGraph_adj_of_edgeSet_common_vertex
+      (v := (3 : Fin 9)) (by decide) (by simp [tbaR03]) (by simp [tbaM34])
+  · exact lineGraph_adj_of_edgeSet_common_vertex
+      (v := (3 : Fin 9)) (by decide) (by simp [tbaR03]) (by simp [tbaM53])
+  · exact lineGraph_adj_of_edgeSet_common_vertex
+      (v := (3 : Fin 9)) (by decide) (by simp [tbaR36]) (by simp [tbaM34])
+  · exact lineGraph_adj_of_edgeSet_common_vertex
+      (v := (3 : Fin 9)) (by decide) (by simp [tbaR36]) (by simp [tbaM53])
+  · exact lineGraph_adj_of_edgeSet_common_vertex
+      (v := (3 : Fin 9)) (by decide) (by simp [tbaM34]) (by simp [tbaM53])
+
 theorem twoBandAnnulus_boundaryZeroKirchhoff_no_evader_of_vanishes_on_interiorEdges
     (z : twoBandAnnulusGraph.edgeSet → Color)
     (hz : z ∈ theorem49BoundaryZeroKirchhoffSubspace
