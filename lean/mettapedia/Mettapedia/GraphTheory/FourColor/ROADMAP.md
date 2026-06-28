@@ -174,6 +174,18 @@ coverage of `W0(H)`.  The remaining algebraic burden is now sharper: prove the
 exact CAP5 shell reaches this empty worklist uniformly, or formalize the
 remaining worklist edge as the genuine obstruction/evader source.
 
+Subsequently on 2026-06-28: the closed executable report failure branch was
+made route-facing.  In Lean,
+`boundaryZeroEvader_and_remainingInteriorEdgeSupportEdge_with_card_erase_lt_of_missingCheckerEvidenceLatents_eq_nil_of_not_theorem49BoundaryRootSynthesis_of_interiorEdgeSupportControl`
+and
+`theorem49BoundaryRootSynthesis_or_boundaryZeroEvader_and_remainingInteriorEdgeSupportEdge_with_card_erase_lt_of_missingCheckerEvidenceLatents_eq_nil_of_interiorEdgeSupportControl`
+say that, once the primitive checker report is empty, a failed synthesis run
+does not merely leave an abstract gap: it carries a genuine
+selected-boundary-zero evader for the enumerated forced edges and a concrete
+remaining interior-support edge with a decreasing worklist measure.  This
+sharpens the algebraic fork to synthesis versus evader-plus-next-edge; it still
+does not prove the exact CAP5 shell uniformly chooses the synthesis side.
+
 ## The open problem
 
 Exactly two route forks are live; isolated repair-packet refutations are no
