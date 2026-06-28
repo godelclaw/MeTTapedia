@@ -217,6 +217,17 @@ says any no-evader classifier must pay that lower bound.  This does not prove
 exact shell no-evader, but it makes the finite F2 fork executable: exact shell
 data must either meet the target dimension budget or produce the evader branch.
 
+The latest Move-2 bridge separates the target oracle from the remaining
+boundary-zero obstruction.  In Lean,
+`theorem49BoundaryRootSynthesis_and_boundaryTargetCoverage_of_theorem49BoundaryTargetClassifierControl_of_no_offTargetBoundaryZeroEvader_of_no_missing_finsetControl`
+says target classifier control closes the completed CAP5 checker exactly when
+there is no off-target selected-boundary-zero evader.  Conversely,
+`offTargetBoundaryZeroEvader_and_remainingInteriorEdgeSupportEdge_with_card_erase_lt_of_missingCheckerEvidenceLatents_eq_nil_of_not_theorem49BoundaryRootSynthesis_of_theorem49BoundaryTargetClassifierControl_of_interiorEdgeSupportControl`
+says a closed-checker failure under target control produces such an off-target
+evader together with the decreasing interior-support worklist edge.  The
+remaining algebraic fork is now explicit: prove exact CAP5 data excludes these
+off-target evaders, or formalize one.
+
 ## The open problem
 
 Exactly two route forks are live; isolated repair-packet refutations are no
@@ -231,10 +242,12 @@ longer acceptable progress.
    machine-checked statement is sharper than a one-way handoff: classifier
    control of the theorem-4.9 target is equivalent to absence of a nonzero
    enumerated-forced-edge evader; underdimensioned classifiers produce a
-   genuine target evader; and full no-evader plus the closed finite checker
-   implies theorem-4.9 synthesis and target coverage.  The remaining crux is
-   whether exact shell/CAP5 data always supplies that no-evader verdict by
-   meeting the target dimension budget, or whether a genuine evader exists.
+   genuine target evader; full no-evader plus the closed finite checker
+   implies theorem-4.9 synthesis and target coverage; and target classifier
+   control reduces the remaining failure branch to an off-target
+   selected-boundary-zero evader plus a decreasing worklist edge.  The
+   remaining crux is whether exact shell/CAP5 data always excludes that
+   off-target evader, or whether a genuine one exists.
 
 The historical trichotomy below remains useful background:
 
