@@ -310,6 +310,22 @@ empty-worklist subset proof on odd-interior supports; it must either prove the
 target-controlled synthesis side by other exact CAP5 data or expose the
 vertex-Kirchhoff evader branch.
 
+The success side now excludes the odd-interior obstruction internally.  Lean
+proves
+`not_exists_closed_odd_walk_in_interiorSupport_of_interiorEdgeSupport_subset_enumeratedForcedEdges`:
+if every ambient interior-support edge is enumerated as forced by one CAP5 side,
+then no odd closed walk lies in ambient interior support.  The route-facing
+wrappers
+`interiorSupportForced_synthesis_and_boundaryTargetCoverage_and_no_closed_odd_walk`
+and
+`remainingInteriorSupportEmpty_synthesis_and_targetCoverage_and_no_closed_odd_walk`
+therefore say that the all-interior/empty-worklist subset branch both closes
+theorem-4.9 synthesis with target coverage and certifies that the
+odd-interior-worklist obstruction is absent.  The remaining exact-shell work is
+not to reconcile those branches; it is to prove exact CAP5 data reaches this
+success branch, or to instantiate the already formalized vertex-Kirchhoff
+evader branch.
+
 On the geometric fork, the source-bound one-collar repair treadmill has now
 been consolidated into a shell-level obstruction.  In
 `FrontierGeometric.lean`, the theorems
@@ -364,12 +380,14 @@ longer acceptable progress.
    boundary-zero chain lies in the theorem-4.9 target.  The empty-worklist shell
    now proves that exact subset certificate and eliminates the concrete
    vertex-Kirchhoff evader branch there, while odd-interior supports refute
-   that empty-worklist proof path.  The target-controlled executable theorem
-   now packages the uniform route as synthesis/target coverage or a genuine
-   vertex-Kirchhoff evader plus a decreasing worklist edge.  The remaining
-   crux is whether exact shell/CAP5 data proves that subset certificate
-   uniformly while excluding the odd-interior-worklist obstruction, or whether
-   a genuine vertex-Kirchhoff failure evader exists.
+   that empty-worklist proof path.  The all-interior/empty-worklist success
+   side now also certifies that no odd interior closed walk exists, so the
+   subset/no-evader branch explicitly excludes the odd-worklist obstruction.
+   The target-controlled executable theorem packages the uniform route as
+   synthesis/target coverage or a genuine vertex-Kirchhoff evader plus a
+   decreasing worklist edge.  The remaining crux is whether exact shell/CAP5
+   data proves that subset certificate uniformly, or whether a genuine
+   vertex-Kirchhoff failure evader exists.
 
 The historical trichotomy below remains useful background:
 
