@@ -111,10 +111,15 @@ def currentNavierRoadmap : List NavierRoadmapEntry :=
       truthValue := ⟨89, 91⟩
       obligation := "Use the checked positive-viscosity stationary obstruction to reject time-independent nonzero slice-Schwartz canaries; future nonzero canaries must be genuinely time-dependent and close the pressure-slice momentum equation." },
     { stage := .nonzeroEnergyKernel
+      proofNodeId := "navier.energy.nonzero-schwartz-strict-dissipation-kernel"
+      status := .checked
+      truthValue := ⟨88, 90⟩
+      obligation := "Use the checked strict-dissipation kernel to ensure any positive-viscosity nonzero inhabitant has a witness time with positive corrected dissipation and strictly negative energy derivative; still require an explicit inhabitant or broader pressure-closure obstruction." },
+    { stage := .nonzeroEnergyKernel
       proofNodeId := "navier.energy.nonzero-schwartz-canary"
       status := .openGoal
-      truthValue := ⟨61, 86⟩
-      obligation := "Produce or refute an exact smooth evolution and Schwartz pressure slices for the localized stream-function seed or a comparable non-polynomial Schwartz profile; seed-only data, conditional constructors, rank-one zero-convection obstructions, profile-level nonzero anti-profile cancellation, amplitude-boundary guardrails, positive-viscosity stationary obstructions, and algebraic finite-mode boundary cases do not count." },
+      truthValue := ⟨62, 86⟩
+      obligation := "Produce or refute an exact smooth evolution and Schwartz pressure slices for the localized stream-function seed or a comparable non-polynomial Schwartz profile; seed-only data, conditional constructors, rank-one zero-convection obstructions, profile-level nonzero anti-profile cancellation, amplitude-boundary guardrails, positive-viscosity stationary obstructions, strict-dissipation theorems conditional on the nonzero interface, and algebraic finite-mode boundary cases do not count." },
     { stage := .scalingGate
       proofNodeId := "navier.regularity-promotion-gate"
       status := .scalingUncleared
@@ -154,9 +159,9 @@ theorem currentNavierRoadmap_records_nonzero_schwartz_kernel_and_open_canary :
       ({ stage := NavierRoadmapStage.nonzeroEnergyKernel
          proofNodeId := "navier.energy.nonzero-schwartz-canary"
          status := .openGoal
-         truthValue := ⟨61, 86⟩
+         truthValue := ⟨62, 86⟩
          obligation :=
-          "Produce or refute an exact smooth evolution and Schwartz pressure slices for the localized stream-function seed or a comparable non-polynomial Schwartz profile; seed-only data, conditional constructors, rank-one zero-convection obstructions, profile-level nonzero anti-profile cancellation, amplitude-boundary guardrails, positive-viscosity stationary obstructions, and algebraic finite-mode boundary cases do not count." } :
+          "Produce or refute an exact smooth evolution and Schwartz pressure slices for the localized stream-function seed or a comparable non-polynomial Schwartz profile; seed-only data, conditional constructors, rank-one zero-convection obstructions, profile-level nonzero anti-profile cancellation, amplitude-boundary guardrails, positive-viscosity stationary obstructions, strict-dissipation theorems conditional on the nonzero interface, and algebraic finite-mode boundary cases do not count." } :
         NavierRoadmapEntry) ∈ currentNavierRoadmap ∧
       ({ stage := NavierRoadmapStage.nonzeroEnergyKernel
          proofNodeId := "navier.energy.nonzero-schwartz-rank-one-shear-obstruction"
@@ -200,6 +205,13 @@ theorem currentNavierRoadmap_records_nonzero_schwartz_kernel_and_open_canary :
          obligation :=
           "Use the checked positive-viscosity stationary obstruction to reject time-independent nonzero slice-Schwartz canaries; future nonzero canaries must be genuinely time-dependent and close the pressure-slice momentum equation." } :
         NavierRoadmapEntry) ∈ currentNavierRoadmap ∧
+      ({ stage := NavierRoadmapStage.nonzeroEnergyKernel
+         proofNodeId := "navier.energy.nonzero-schwartz-strict-dissipation-kernel"
+         status := .checked
+         truthValue := ⟨88, 90⟩
+         obligation :=
+          "Use the checked strict-dissipation kernel to ensure any positive-viscosity nonzero inhabitant has a witness time with positive corrected dissipation and strictly negative energy derivative; still require an explicit inhabitant or broader pressure-closure obstruction." } :
+        NavierRoadmapEntry) ∈ currentNavierRoadmap ∧
       navierNonzeroSchwartzEnergyKernelNode.status = .checked ∧
       navierNonzeroSchwartzLineInvariantObstructionNode.status = .checked ∧
       navierNonzeroSchwartzRankOneShearObstructionNode.status = .checked ∧
@@ -208,8 +220,10 @@ theorem currentNavierRoadmap_records_nonzero_schwartz_kernel_and_open_canary :
       navierNonzeroSchwartzAntiProfileCanaryObstructionNode.status = .checked ∧
       navierNonzeroSchwartzAntiProfileAmplitudeBoundaryNode.status = .checked ∧
       navierNonzeroSchwartzStationaryDissipationGateNode.status = .checked ∧
+      navierNonzeroSchwartzStrictDissipationKernelNode.status = .checked ∧
       navierNonzeroSchwartzCanaryNode.status = .openGoal := by
   exact ⟨by simp [currentNavierRoadmap],
+    by simp [currentNavierRoadmap],
     by simp [currentNavierRoadmap],
     by simp [currentNavierRoadmap],
     by simp [currentNavierRoadmap],
@@ -226,6 +240,7 @@ theorem currentNavierRoadmap_records_nonzero_schwartz_kernel_and_open_canary :
     navierNonzeroSchwartzAntiProfileCanaryObstructionNode_checked,
     navierNonzeroSchwartzAntiProfileAmplitudeBoundaryNode_checked,
     navierNonzeroSchwartzStationaryDissipationGateNode_checked,
+    navierNonzeroSchwartzStrictDissipationKernelNode_checked,
     navierNonzeroSchwartzCanaryNode_open⟩
 
 /-- The current roadmap pins the averaged-equation obstruction before any

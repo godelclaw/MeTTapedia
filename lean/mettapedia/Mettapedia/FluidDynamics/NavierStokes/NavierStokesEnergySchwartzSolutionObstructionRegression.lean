@@ -43,6 +43,18 @@ theorem zero_coordinate_enstrophy_schwartz_slice_zero_regression
     ∀ x, S.velocity t x = 0 := by
   exact S.velocity_eq_zero_of_coordinateEnstrophyAt_eq_zero henst
 
+theorem nonzero_velocity_schwartz_slice_enstrophy_pos_regression
+    {ν : ℝ} (S : SchwartzConcreteNavierStokesSolution ν)
+    {t : NSTime} {x : NSSpace} (hne : S.velocity t x ≠ 0) :
+    0 < coordinateEnstrophyAt S.velocity t := by
+  exact S.coordinateEnstrophyAt_pos_of_velocity_ne_zero hne
+
+theorem nonzero_velocity_schwartz_slice_dissipation_pos_regression
+    {ν : ℝ} (hν : 0 < ν) (S : SchwartzConcreteNavierStokesSolution ν)
+    {t : NSTime} {x : NSSpace} (hne : S.velocity t x ≠ 0) :
+    0 < coordinateEnergyDissipationRate S.velocity ν t := by
+  exact S.coordinateEnergyDissipationRate_pos_of_velocity_ne_zero hν hne
+
 theorem stationary_schwartz_solution_dissipation_zero_regression
     {ν : ℝ} (S : SchwartzConcreteNavierStokesSolution ν)
     {u₀ : NSInitialVelocity}
@@ -78,6 +90,20 @@ theorem stationary_nonzero_schwartz_solution_zero_of_pos_viscosity_regression
   exact
     S.velocity_eq_zero_of_velocity_timeIndependent_of_pos_viscosity
       hν hvelocity
+
+theorem nonzero_schwartz_solution_exists_dissipation_pos_regression
+    {ν : ℝ} (hν : 0 < ν) (S : NonzeroSchwartzConcreteNavierStokesSolution ν) :
+    ∃ t : NSTime, 0 < coordinateEnergyDissipationRate S.velocity ν t := by
+  exact S.exists_coordinateEnergyDissipationRate_pos_of_pos_viscosity hν
+
+theorem nonzero_schwartz_solution_exists_strict_energy_identity_regression
+    {ν : ℝ} (hν : 0 < ν) (S : NonzeroSchwartzConcreteNavierStokesSolution ν) :
+    ∃ t : NSTime,
+      0 < coordinateEnergyDissipationRate S.velocity ν t ∧
+        HasDerivAt (normalizedKineticEnergy S.velocity)
+          (-(coordinateEnergyDissipationRate S.velocity ν t)) t ∧
+        -(coordinateEnergyDissipationRate S.velocity ν t) < 0 := by
+  exact S.exists_strict_coordinateEnergyDissipationIdentity_of_pos_viscosity hν
 
 theorem not_exists_nonzero_stationary_schwartz_solution_of_dissipation_ne_regression
     {ν : ℝ} {u₀ : NSInitialVelocity}

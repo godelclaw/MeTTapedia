@@ -111,6 +111,27 @@ theorem velocity_eq_zero_of_coordinateEnstrophyAt_eq_zero
     simpa using congrArg (fun F : 𝓢(NSSpace, NSSpace) => F x) hfzero
   simpa [f, hslice_x] using S.velocitySlice_eq t x
 
+/-- Any nonzero value in a Schwartz velocity slice forces strictly positive
+corrected coordinate enstrophy on that time slice. -/
+theorem coordinateEnstrophyAt_pos_of_velocity_ne_zero
+    {t : NSTime} {x : NSSpace} (hne : S.velocity t x ≠ 0) :
+    0 < coordinateEnstrophyAt S.velocity t := by
+  have hnonneg : 0 ≤ coordinateEnstrophyAt S.velocity t :=
+    coordinateEnstrophyAt_nonneg S.velocity t
+  have hne_enst : coordinateEnstrophyAt S.velocity t ≠ 0 := by
+    intro hzero
+    have hvelzero := S.velocity_eq_zero_of_coordinateEnstrophyAt_eq_zero hzero x
+    exact hne hvelzero
+  exact lt_of_le_of_ne hnonneg (Ne.symm hne_enst)
+
+/-- At positive viscosity, any nonzero value in a Schwartz velocity slice makes
+the corrected energy-dissipation rate strictly positive at that time. -/
+theorem coordinateEnergyDissipationRate_pos_of_velocity_ne_zero
+    (hν : 0 < ν) {t : NSTime} {x : NSSpace} (hne : S.velocity t x ≠ 0) :
+    0 < coordinateEnergyDissipationRate S.velocity ν t := by
+  simpa [coordinateEnergyDissipationRate] using
+    mul_pos hν (S.coordinateEnstrophyAt_pos_of_velocity_ne_zero hne)
+
 /-- A time-independent velocity in the slice-Schwartz concrete solution
 interface has zero corrected coordinate dissipation at every time.  This is a
 stationary-energy gate: the exact energy identity and constant kinetic energy
@@ -220,6 +241,29 @@ theorem velocity_eq_zero_of_velocity_timeIndependent_of_pos_viscosity
     ∀ t x, S.velocity t x = 0 :=
   SchwartzConcreteNavierStokesSolution.velocity_eq_zero_of_velocity_timeIndependent_of_pos_viscosity
     S.toSchwartzConcreteNavierStokesSolution hν hvelocity
+
+/-- Every nonzero positive-viscosity slice-Schwartz solution has a time with
+strictly positive corrected coordinate dissipation. -/
+theorem exists_coordinateEnergyDissipationRate_pos_of_pos_viscosity
+    (hν : 0 < ν) :
+    ∃ t : NSTime, 0 < coordinateEnergyDissipationRate S.velocity ν t := by
+  rcases S.nonzero_velocity with ⟨t, x, hne⟩
+  exact ⟨t,
+    SchwartzConcreteNavierStokesSolution.coordinateEnergyDissipationRate_pos_of_velocity_ne_zero
+      S.toSchwartzConcreteNavierStokesSolution hν hne⟩
+
+/-- Strict nonzero energy-identity kernel: at positive viscosity, any nonzero
+slice-Schwartz solution has a witness time where the exact coordinate energy
+identity carries a strictly negative derivative. -/
+theorem exists_strict_coordinateEnergyDissipationIdentity_of_pos_viscosity
+    (hν : 0 < ν) :
+    ∃ t : NSTime,
+      0 < coordinateEnergyDissipationRate S.velocity ν t ∧
+        HasDerivAt (normalizedKineticEnergy S.velocity)
+          (-(coordinateEnergyDissipationRate S.velocity ν t)) t ∧
+        -(coordinateEnergyDissipationRate S.velocity ν t) < 0 := by
+  rcases S.exists_coordinateEnergyDissipationRate_pos_of_pos_viscosity hν with ⟨t, hpos⟩
+  exact ⟨t, hpos, S.coordinateEnergyDissipationIdentity t, neg_neg_of_pos hpos⟩
 
 end NonzeroSchwartzConcreteNavierStokesSolution
 
