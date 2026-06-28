@@ -38,6 +38,30 @@ structure PlanarBoundaryWellFoundedFacePeelWitnessData {G : SimpleGraph V}
     e ∈ selectedBoundarySupport emb.faceBoundary emb.faces emb.faces ∨
       ∃ g ∈ peelFaces, parentFace g = some f ∧ witnessEdge g = e
 
+/-- A well-founded parent witness-cover can cover no more distinct interior edges than it has
+peeled faces.  Multiple peeled faces may choose the same witness edge, so this is only a necessary
+cardinality condition. -/
+theorem PlanarBoundaryWellFoundedFacePeelWitnessData.interiorEdgeSupport_card_le_peelFaces_card
+    {G : SimpleGraph V} {emb : PlaneEmbeddingWithBoundary G}
+    (data : PlanarBoundaryWellFoundedFacePeelWitnessData emb) :
+    (interiorEdgeSupport emb.faceBoundary emb.faces).card ≤ data.peelFaces.card := by
+  calc
+    (interiorEdgeSupport emb.faceBoundary emb.faces).card ≤
+        (data.peelFaces.image data.witnessEdge).card :=
+      Finset.card_le_card data.hcover
+    _ ≤ data.peelFaces.card :=
+      Finset.card_image_le
+
+/-- Ambient-face form of the same necessary cardinality condition for well-founded parent
+witness-cover data. -/
+theorem PlanarBoundaryWellFoundedFacePeelWitnessData.interiorEdgeSupport_card_le_ambientFace_card
+    {G : SimpleGraph V} {emb : PlaneEmbeddingWithBoundary G}
+    (data : PlanarBoundaryWellFoundedFacePeelWitnessData emb) :
+    (interiorEdgeSupport emb.faceBoundary emb.faces).card ≤
+      (Finset.univ : Finset (AmbientFace emb.faces)).card :=
+  le_trans data.interiorEdgeSupport_card_le_peelFaces_card
+    (Finset.card_le_card (by intro f _hf; simp))
+
 /-- In a well-founded witness-cover package, a non-boundary remainder edge whose value is the
 witness edge of a peeled face identifies that peeled face as a child, provided the witness choice
 is injective on peeled faces.  This extracts the real dependency relation hidden in `hchildren`. -/
@@ -319,6 +343,30 @@ structure PlanarBoundaryHeightOrderedFacePeelWitnessData {G : SimpleGraph V}
   hrest : ∀ f ∈ peelFaces, ∀ e ∈ (emb.faceBoundary f.1).erase (witnessEdge f),
     e ∈ selectedBoundarySupport emb.faceBoundary emb.faces emb.faces ∨
       ∃ g ∈ peelFaces, witnessEdge g = e ∧ height f < height g
+
+/-- A height-ordered witness-cover can cover no more distinct interior edges than it has peeled
+faces.  This is the basic finite obstruction behind dense two-band shells: each peeled face names
+only one witness edge. -/
+theorem PlanarBoundaryHeightOrderedFacePeelWitnessData.interiorEdgeSupport_card_le_peelFaces_card
+    {G : SimpleGraph V} {emb : PlaneEmbeddingWithBoundary G}
+    (data : PlanarBoundaryHeightOrderedFacePeelWitnessData emb) :
+    (interiorEdgeSupport emb.faceBoundary emb.faces).card ≤ data.peelFaces.card := by
+  calc
+    (interiorEdgeSupport emb.faceBoundary emb.faces).card ≤
+        (data.peelFaces.image data.witnessEdge).card :=
+      Finset.card_le_card data.hcover
+    _ ≤ data.peelFaces.card :=
+      Finset.card_image_le
+
+/-- Ambient-face form of the necessary cardinality condition for height-ordered witness-cover
+data. -/
+theorem PlanarBoundaryHeightOrderedFacePeelWitnessData.interiorEdgeSupport_card_le_ambientFace_card
+    {G : SimpleGraph V} {emb : PlaneEmbeddingWithBoundary G}
+    (data : PlanarBoundaryHeightOrderedFacePeelWitnessData emb) :
+    (interiorEdgeSupport emb.faceBoundary emb.faces).card ≤
+      (Finset.univ : Finset (AmbientFace emb.faces)).card :=
+  le_trans data.interiorEdgeSupport_card_le_peelFaces_card
+    (Finset.card_le_card (by intro f _hf; simp))
 
 /-- Any covered interior edge makes the finite peeled-face set nonempty. -/
 theorem PlanarBoundaryHeightOrderedFacePeelWitnessData.peelFaces_nonempty_of_mem_interiorEdgeSupport

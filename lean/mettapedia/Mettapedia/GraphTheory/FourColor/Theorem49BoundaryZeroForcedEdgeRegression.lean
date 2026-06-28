@@ -8283,25 +8283,18 @@ theorem not_nonempty_planarBoundaryHeightOrderedFacePeelWitnessData_twoBandAnnul
         (PlanarBoundaryHeightOrderedFacePeelWitnessData
           twoBandAnnulusEmbedding) := by
   rintro ⟨data⟩
-  have hcoverInterior :
-      twoBandAnnulusInteriorEdges ⊆ data.peelFaces.image data.witnessEdge := by
-    intro e he
-    exact data.hcover (by simpa [twoBandAnnulus_interiorEdgeSupport_eq] using he)
-  have hcardLower : 9 ≤ (data.peelFaces.image data.witnessEdge).card := by
-    have hcardInterior : twoBandAnnulusInteriorEdges.card = 9 := by
-      decide
-    calc
-      9 = twoBandAnnulusInteriorEdges.card := hcardInterior.symm
-      _ ≤ (data.peelFaces.image data.witnessEdge).card :=
-        Finset.card_le_card hcoverInterior
-  have hcardUpper : (data.peelFaces.image data.witnessEdge).card ≤ 6 := by
-    calc
-      (data.peelFaces.image data.witnessEdge).card ≤ data.peelFaces.card :=
-        Finset.card_image_le
-      _ ≤ (Finset.univ : Finset (AmbientFace twoBandAnnulusEmbedding.faces)).card :=
-        Finset.card_le_card (by intro f _hf; simp)
-      _ = 6 := by decide
-  have hle : (9 : ℕ) ≤ 6 := le_trans hcardLower hcardUpper
+  have hcardInterior :
+      (interiorEdgeSupport
+        twoBandAnnulusEmbedding.faceBoundary
+        twoBandAnnulusEmbedding.faces).card = 9 := by
+    rw [twoBandAnnulus_interiorEdgeSupport_eq]
+    decide
+  have hcardFaces :
+      twoBandAnnulusEmbedding.faces.card = 6 := by
+    decide
+  have hle : (9 : ℕ) ≤ 6 := by
+    simpa [hcardInterior, hcardFaces] using
+      data.interiorEdgeSupport_card_le_ambientFace_card
   norm_num at hle
 
 /-- Strong repaired-geometry counterexample packet for the height-ordered witness-cover route.
