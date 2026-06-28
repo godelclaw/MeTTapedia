@@ -147,6 +147,21 @@ not decide it uniformly; the remaining work is to derive the full no-evader
 verdict from exact shell data or exhibit a genuine evader outside the current
 finite sample.
 
+Later on 2026-06-28: the all-interior Move-2 survivor is now route-facing in
+Lean rather than only a lab observation.  The rerun archived locally as
+`fourcolor-move2-interior-frontier-validation-lab-20260628.log` again saw
+65 records and the algebraic-F2 implication
+`forcing_interior_edges_nonempty => f2_all_interior_boundary_zero_only_no_evader`
+survived with support 36 and purified support 18.  The new CAP5 detector
+theorems `interiorSupportForced_synthesis_and_boundaryTargetCoverage` and
+`interiorSupportForced_or_remainingEdge` say: if the closed primitive checker
+has enumerated every ambient interior-support edge as forced, then theorem-4.9
+synthesis and forced-edge coverage of `W0(H)` both follow; otherwise the
+canonical interior-support worklist exposes a concrete remaining edge with a
+strictly smaller erasure measure.  This converts the surviving F2 lane into a
+success-or-next-edge frontier, but still leaves the uniform enumeration
+problem open.
+
 ## The open problem
 
 Exactly two route forks are live; isolated repair-packet refutations are no
