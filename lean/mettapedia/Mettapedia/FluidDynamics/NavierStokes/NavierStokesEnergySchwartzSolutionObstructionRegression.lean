@@ -72,6 +72,39 @@ theorem schwartz_solution_zero_of_const_energy_regression
     S.velocity_eq_zero_of_exists_const_normalizedKineticEnergy_of_pos_viscosity
       hν hconst
 
+theorem schwartz_solution_momentum_pressure_residual_vorticity_zero_regression
+    {ν : ℝ} (S : SchwartzConcreteNavierStokesSolution ν) :
+    ∀ t x, spatialVorticity (momentumPressureResidual ν S.velocity) t x = 0 := by
+  exact S.momentumPressureResidual_spatialVorticity_zero
+
+theorem not_exists_schwartz_solution_velocity_of_residual_curl_regression
+    {ν : ℝ} {u : NSVelocityField}
+    (hcurl :
+      ∃ t : NSTime, ∃ x : NSSpace,
+        spatialVorticity (momentumPressureResidual ν u) t x ≠ 0) :
+    ¬ ∃ S : SchwartzConcreteNavierStokesSolution ν, S.velocity = u := by
+  exact
+    not_exists_schwartzConcreteSolution_velocity_of_momentumPressureResidual_vorticity_ne_zero
+      hcurl
+
+theorem not_exists_nonzero_schwartz_solution_velocity_of_residual_curl_regression
+    {ν : ℝ} {u : NSVelocityField}
+    (hcurl :
+      ∃ t : NSTime, ∃ x : NSSpace,
+        spatialVorticity (momentumPressureResidual ν u) t x ≠ 0) :
+    ¬ ∃ S : NonzeroSchwartzConcreteNavierStokesSolution ν, S.velocity = u := by
+  exact
+    not_exists_nonzeroSchwartzConcreteSolution_velocity_of_momentumPressureResidual_vorticity_ne_zero
+      hcurl
+
+theorem undamped_unit_heat_shear_not_schwartz_solution_velocity_regression :
+    ¬ ∃ S : SchwartzConcreteNavierStokesSolution 1,
+      S.velocity = heatShearVelocityField 0 1 1 := by
+  exact
+    not_exists_schwartzConcreteSolution_velocity_of_momentumPressureResidual_vorticity_ne_zero
+      ⟨0, 0,
+        spatialVorticity_momentumPressureResidual_undampedUnitHeatShearVelocityField_origin_ne_zero⟩
+
 theorem stationary_schwartz_solution_dissipation_zero_regression
     {ν : ℝ} (S : SchwartzConcreteNavierStokesSolution ν)
     {u₀ : NSInitialVelocity}
