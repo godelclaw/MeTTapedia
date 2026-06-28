@@ -64,7 +64,7 @@ def currentPNPRoadmap : List PNPRoadmapEntry :=
       itvLowerPercent := 92
       itvUpperPercent := 100
       obligation := "Treat local Kpoly coverage as local ledger evidence only." },
-    { stage := .localLedgerAudit, proofNodeKey := "pnp.kpoly.feature-route-quantale-boundary", status := .barrierBlocked, truthValue := ⟨100, 99⟩, progressPercent := 100, itvLowerPercent := 99, itvUpperPercent := 100, obligation := "Treat this shortcut-removed route class as blocked unless feature floor, support-surjectivity, and supported weakness-pair resolution all hold together." },
+    { stage := .localLedgerAudit, proofNodeKey := "pnp.kpoly.feature-route-quantale-boundary", status := .checked, truthValue := ⟨100, 99⟩, progressPercent := 100, itvLowerPercent := 99, itvUpperPercent := 100, obligation := "Treat the shortcut-removal packet as a non-vacuous necessary-condition boundary: the committed singleton/Bool canary inhabits all four obligations, while scaled or global routes still need the same obligations plus separate barrier-world evidence." },
     { stage := .barrierObstruction
       proofNodeKey := "pnp.kpoly-promoted.all-barrier-obstructions"
       status := .barrierBlocked
