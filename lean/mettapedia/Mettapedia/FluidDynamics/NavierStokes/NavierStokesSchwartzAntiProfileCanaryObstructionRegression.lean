@@ -21,6 +21,36 @@ theorem localized_stream_antiprofile_velocity_zero_regression :
       (0 : NSVelocityField) := by
   exact localizedStreamAntiProfile_velocity_zero
 
+theorem antiprofile_velocity_nonzero_iff_amplitudes_differ_regression
+    (a b : NSTime → ℝ) :
+    (∃ t x,
+      twoModeSchwartzVelocity a b
+          nsLocalizedStreamDivergenceFreeInitialVelocity.1 nsLocalizedStreamAntiProfile t x ≠
+        0) ↔
+      ∃ t, a t ≠ b t := by
+  exact localizedStreamAntiProfile_velocity_nonzero_iff_exists_amplitude_ne a b
+
+theorem equal_amplitude_antiprofile_excluded_from_nonzero_solution_regression
+    {ν : ℝ} (a : NSTime → ℝ) :
+    ¬ ∃ S : NonzeroSchwartzConcreteNavierStokesSolution ν,
+      S.velocity =
+        twoModeSchwartzVelocity a a
+          nsLocalizedStreamDivergenceFreeInitialVelocity.1 nsLocalizedStreamAntiProfile := by
+  simpa [nsLocalizedStreamAntiProfile] using
+    not_exists_nonzeroSchwartzConcreteSolution_equalAmplitudeAntiProfileVelocity
+      (ν := ν) a nsLocalizedStreamDivergenceFreeInitialVelocity.1
+
+theorem localized_stream_antiprofile_nonzero_solution_forces_amplitude_ne_regression
+    {ν : ℝ} (S : NonzeroSchwartzConcreteNavierStokesSolution ν)
+    (a b : NSTime → ℝ)
+    (hS : S.velocity =
+      twoModeSchwartzVelocity a b
+        nsLocalizedStreamDivergenceFreeInitialVelocity.1 nsLocalizedStreamAntiProfile) :
+    ∃ t, a t ≠ b t := by
+  exact
+    nonzeroSchwartzConcreteSolution_localizedStreamAntiProfileVelocity_forces_amplitude_ne
+      S a b hS
+
 theorem localized_stream_antiprofile_closure_packet_regression
     (ν : ℝ) :
     (∃ x : NSSpace, nsLocalizedStreamDivergenceFreeInitialVelocity.1 x ≠ 0) ∧
