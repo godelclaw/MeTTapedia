@@ -350,6 +350,22 @@ empty-worklist proof path; it is not itself the surviving algebraic failure
 mode.  The exact shell must now supply the no-evader/subset certificate by
 other CAP5 data or produce the genuine vertex-Kirchhoff evader.
 
+The executable CAP5 report now feeds directly into that algebraic fork.  Lean
+proves
+`theorem49Synthesis_and_boundaryZeroControl_of_noEvader_of_forcedAllLatents`,
+`remainingInteriorEmpty_synthesis_and_targetCoverage_of_forcedAllLatents`, and
+`targetControlledSynthesis_or_evader_of_forcedAllLatents`: under cyclic
+five-edge-connectivity, the report verdict
+`forcedCounterexampleLatents = all` closes the primitive missing-evidence
+frontier and drives the existing F2 endpoints.  With a no-evader verdict it
+yields theorem-4.9 synthesis plus full boundary-zero classifier control; with
+an empty canonical interior-support worklist it yields the subset-certificate
+success side; under target classifier control it returns the exact
+synthesis-versus-genuine-vertex-Kirchhoff-evader fork.  This still does not
+prove that exact CAP5 shell data supplies the no-evader/subset certificate,
+but it removes the raw `missingCheckerEvidenceLatents = []` premise from the
+route-facing F2 checkpoint.
+
 On the geometric fork, the source-bound one-collar repair treadmill has now
 been consolidated into a shell-level obstruction.  In
 `FrontierGeometric.lean`, the theorems
@@ -444,9 +460,13 @@ longer acceptable progress.
    vertex-Kirchhoff evader is excluded.  The target-controlled executable
    theorem packages the uniform route as synthesis/target coverage or a
    genuine vertex-Kirchhoff evader plus a decreasing worklist edge.  The
-   remaining crux is whether exact shell/CAP5 data proves that subset
-   certificate uniformly, or whether a genuine vertex-Kirchhoff failure
-   evader exists.
+   generator report bridge now lets the route consume
+   `forcedCounterexampleLatents = all` directly in place of the raw empty
+   missing-evidence premise, and feeds that report verdict into full
+   boundary-zero no-evader control, empty-worklist subset success, or the
+   target-controlled synthesis-or-evader fork.  The remaining crux is whether
+   exact shell/CAP5 data proves the no-evader/subset certificate uniformly, or
+   whether a genuine vertex-Kirchhoff failure evader exists.
 
 The historical trichotomy below remains useful background:
 
