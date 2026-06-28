@@ -10,7 +10,7 @@ claimed here; the target is a decided state for the Goertzel theorem-4.9 route.
 | Fork | State | PLN STV | ITV | Progress |
 |---|---|---:|---:|---:|
 | Geometric CAP5/Jordan repair | Multiple repairs are refuted; still missing the single structural obstruction theorem that retires the fork. | `<0.42,0.60>` | `[0.25,0.65]` | 62% |
-| Algebraic F2 cancellation oracle | Lab finds no top-level all-interior evader on 65 records and no declared-forced evader on the 36 forcing records; Lean now proves the route-facing classifier-control iff/no-evader contract, the target-dimension fork theorem below-bound classifier implies genuine target evader, the full no-evader + closed-checker synthesis handoff, the all-interior success-or-remaining-edge frontier, the executable empty-worklist certificate, and the closed-report failure branch as a genuine F2 evader plus a remaining worklist edge. Uniform no-evader from exact shell data is not yet proved. | `<0.41,0.68>` | `[0.28,0.61]` | 65% |
+| Algebraic F2 cancellation oracle | Lab finds no top-level all-interior evader on 65 records and no declared-forced evader on the 36 forcing records; Lean now proves the route-facing classifier-control iff/no-evader contract, the target-dimension fork theorem below-bound classifier implies genuine target evader, the full no-evader + closed-checker synthesis handoff, the all-interior success-or-remaining-edge frontier, the executable empty-worklist certificate, the closed-report failure branch as a genuine F2 evader plus a remaining worklist edge, and the target-control bridge reducing any remaining closed-checker failure to an off-target boundary-zero evader. Uniform exclusion of that off-target evader from exact shell data is not yet proved. | `<0.42,0.69>` | `[0.29,0.60]` | 66% |
 
 ## Latest Move-2 Evidence
 
@@ -77,13 +77,21 @@ claimed here; the target is a decided state for the Goertzel theorem-4.9 route.
   These prove that an underdimensioned classifier produces a genuine nonzero
   `W0(H)` evader, while any no-evader CAP5 classifier must meet the
   boundary-zero plus theorem-4.9 Kirchhoff target dimension lower bound.
+- Off-target bridge theorem surface:
+  `CAP5TransportedEdgeComponentCoverCore.theorem49BoundaryRootSynthesis_and_boundaryTargetCoverage_of_theorem49BoundaryTargetClassifierControl_of_no_offTargetBoundaryZeroEvader_of_no_missing_finsetControl`
+  and
+  `CAP5TransportedEdgeComponentCoverCore.offTargetBoundaryZeroEvader_and_remainingInteriorEdgeSupportEdge_with_card_erase_lt_of_missingCheckerEvidenceLatents_eq_nil_of_not_theorem49BoundaryRootSynthesis_of_theorem49BoundaryTargetClassifierControl_of_interiorEdgeSupportControl`.
+  These prove that target classifier control closes the completed checker once
+  off-target boundary-zero evaders are excluded, and conversely any failed
+  closed checker under target control exposes exactly such an off-target
+  evader plus the decreasing interior-support worklist edge.
 
 ## Remaining Completion Requirements
 
 - Move 1: prove a single fundamental obstruction for the repaired
   CAP5/Jordan geometric class, not another isolated repair-packet failure.
-- Move 2: either prove that the exact shell/CAP5 classifier always supplies
-  the now-equivalent target-control/no-evader verdict, or exhibit and
+- Move 2: either prove that exact shell/CAP5 data excludes the off-target
+  boundary-zero evader left after target classifier control, or exhibit and
   formalize a genuine evader.
 - Before any public checkpoint: strict proof-marker scan, trusted-constant audit for new
   theorems, validation lab rerun, full `lake -f lakefile.lean build
