@@ -206,6 +206,17 @@ it removes the algebraic ambiguity in the oracle statement: the remaining
 Move-2 fork is now to prove that exact CAP5 data supplies the no-evader side,
 or to exhibit the evader.
 
+The next target-level corollary turns finite dimension into an explicit fork
+test for exact CAP5 data.  In Lean,
+`exists_theorem49BoundaryTargetEvader_of_emittedFinset_card_add_boundary_card_add_theorem49BoundaryVertices_card_lt`
+says that a CAP5 classifier below the boundary-zero plus theorem-4.9 Kirchhoff
+target dimension bound yields a genuine nonzero `W0(H)` evader for the
+enumerated forced edges.  Conversely,
+`edge_card_le_emittedFinset_card_add_boundary_card_add_theorem49BoundaryVertices_card_of_no_targetEvader`
+says any no-evader classifier must pay that lower bound.  This does not prove
+exact shell no-evader, but it makes the finite F2 fork executable: exact shell
+data must either meet the target dimension budget or produce the evader branch.
+
 ## The open problem
 
 Exactly two route forks are live; isolated repair-packet refutations are no
@@ -219,10 +230,11 @@ longer acceptable progress.
 2. **Algebraic fork**: resolve the F2 cancellation oracle.  The current
    machine-checked statement is sharper than a one-way handoff: classifier
    control of the theorem-4.9 target is equivalent to absence of a nonzero
-   enumerated-forced-edge evader, and full no-evader plus the closed finite
-   checker implies theorem-4.9 synthesis and target coverage.  The remaining
-   crux is whether exact shell/CAP5 data always supplies that no-evader
-   verdict, or whether a genuine evader exists.
+   enumerated-forced-edge evader; underdimensioned classifiers produce a
+   genuine target evader; and full no-evader plus the closed finite checker
+   implies theorem-4.9 synthesis and target coverage.  The remaining crux is
+   whether exact shell/CAP5 data always supplies that no-evader verdict by
+   meeting the target dimension budget, or whether a genuine evader exists.
 
 The historical trichotomy below remains useful background:
 

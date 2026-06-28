@@ -10,7 +10,7 @@ claimed here; the target is a decided state for the Goertzel theorem-4.9 route.
 | Fork | State | PLN STV | ITV | Progress |
 |---|---|---:|---:|---:|
 | Geometric CAP5/Jordan repair | Multiple repairs are refuted; still missing the single structural obstruction theorem that retires the fork. | `<0.42,0.60>` | `[0.25,0.65]` | 62% |
-| Algebraic F2 cancellation oracle | Lab finds no top-level all-interior evader on 65 records and no declared-forced evader on the 36 forcing records; Lean now proves the route-facing classifier-control iff/no-evader contract, the full no-evader + closed-checker synthesis handoff, the all-interior success-or-remaining-edge frontier, the executable empty-worklist certificate, and the closed-report failure branch as a genuine F2 evader plus a remaining worklist edge. Uniform no-evader from exact shell data is not yet proved. | `<0.40,0.67>` | `[0.27,0.60]` | 64% |
+| Algebraic F2 cancellation oracle | Lab finds no top-level all-interior evader on 65 records and no declared-forced evader on the 36 forcing records; Lean now proves the route-facing classifier-control iff/no-evader contract, the target-dimension fork theorem below-bound classifier implies genuine target evader, the full no-evader + closed-checker synthesis handoff, the all-interior success-or-remaining-edge frontier, the executable empty-worklist certificate, and the closed-report failure branch as a genuine F2 evader plus a remaining worklist edge. Uniform no-evader from exact shell data is not yet proved. | `<0.41,0.68>` | `[0.28,0.61]` | 65% |
 
 ## Latest Move-2 Evidence
 
@@ -70,6 +70,13 @@ claimed here; the target is a decided state for the Goertzel theorem-4.9 route.
   These prove that the emitted classifier coordinates control the theorem-4.9
   boundary target exactly when no nonzero target chain evades every enumerated
   CAP5 forced edge.
+- Target-dimension fork theorem surface:
+  `CAP5TransportedEdgeComponentCoverCore.exists_theorem49BoundaryTargetEvader_of_emittedFinset_card_add_boundary_card_add_theorem49BoundaryVertices_card_lt`
+  and
+  `CAP5TransportedEdgeComponentCoverCore.edge_card_le_emittedFinset_card_add_boundary_card_add_theorem49BoundaryVertices_card_of_no_targetEvader`.
+  These prove that an underdimensioned classifier produces a genuine nonzero
+  `W0(H)` evader, while any no-evader CAP5 classifier must meet the
+  boundary-zero plus theorem-4.9 Kirchhoff target dimension lower bound.
 
 ## Remaining Completion Requirements
 
