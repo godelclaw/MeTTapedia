@@ -13789,6 +13789,23 @@ theorem sharedInteriorPair_ker_planarBoundaryZeroFamilyPairingMap_uniqueCertific
       sharedInteriorPair_redBlueSingleCoordinateMemberships_of_uniqueCertificates.1
       sharedInteriorPair_redBlueSingleCoordinateMemberships_of_uniqueCertificates.2)
 
+/-- Exact failure-side form of the shared focus-shell F₂ verdict: the canonical certificate
+family has a nontrivial pairing kernel iff there is a nonzero selected-boundary-zero chain
+vanishing on both lab-certified interior controls. -/
+theorem sharedInteriorPair_ker_planarBoundaryZeroFamilyPairingMap_uniqueCertificateRedBlueFamily_ne_bot_iff_boundaryZeroEvader_vanishes_on_interiorControlEdges :
+    LinearMap.ker
+        (planarBoundaryZeroFamilyPairingMap
+          sharedInteriorPairUniqueCertificateRedBlueFamily) ≠ ⊥ ↔
+      ∃ z : sharedInteriorPairGraph.edgeSet → Color,
+        z ∈ planarBoundaryZeroSubmodule sharedInteriorPairEmbedding ∧
+          z ≠ 0 ∧
+            ∀ e ∈ sharedInteriorPairInteriorControlEdges, z e = 0 := by
+  simpa [sharedInteriorPairUniqueCertificateRedBlueFamily] using
+    (not_ker_planarBoundaryZeroFamilyPairingMap_redBlueSingleCoordinateFamily_eq_bot_iff_exists_nonzero_vanishes_on_controlEdges
+      sharedInteriorPairInteriorControlEdges
+      sharedInteriorPair_redBlueSingleCoordinateMemberships_of_uniqueCertificates.1
+      sharedInteriorPair_redBlueSingleCoordinateMemberships_of_uniqueCertificates.2)
+
 /-- Projected-face-generator certificate form of the shared-interior-pair focus verdict.  This
 is the direct active Lean consumer for finite-lab certificates saying that the red and blue
 single-coordinate probes on the declared forced edges are literal projected face generators. -/
@@ -14673,6 +14690,23 @@ theorem wheelWithInnerTriangle_ker_planarBoundaryZeroFamilyPairingMap_uniqueCert
       wheelWithInnerTriangle_redBlueSingleCoordinateMemberships_of_uniqueCertificates.1
       wheelWithInnerTriangle_redBlueSingleCoordinateMemberships_of_uniqueCertificates.2)
     (redBlueSingleCoordinateFamily_witnessBlue wheelWithInnerTriangleInteriorControlEdges
+      wheelWithInnerTriangle_redBlueSingleCoordinateMemberships_of_uniqueCertificates.1
+      wheelWithInnerTriangle_redBlueSingleCoordinateMemberships_of_uniqueCertificates.2)
+
+/-- Exact failure-side form of the wheel focus-shell F₂ verdict: the canonical certificate
+family has a nontrivial pairing kernel iff there is a nonzero selected-boundary-zero chain
+vanishing on all three lab-certified spoke controls. -/
+theorem wheelWithInnerTriangle_ker_planarBoundaryZeroFamilyPairingMap_uniqueCertificateRedBlueFamily_ne_bot_iff_boundaryZeroEvader_vanishes_on_interiorControlEdges :
+    LinearMap.ker
+        (planarBoundaryZeroFamilyPairingMap
+          wheelWithInnerTriangleUniqueCertificateRedBlueFamily) ≠ ⊥ ↔
+      ∃ z : wheelWithInnerTriangleGraph.edgeSet → Color,
+        z ∈ planarBoundaryZeroSubmodule wheelWithInnerTriangleEmbedding ∧
+          z ≠ 0 ∧
+            ∀ e ∈ wheelWithInnerTriangleInteriorControlEdges, z e = 0 := by
+  simpa [wheelWithInnerTriangleUniqueCertificateRedBlueFamily] using
+    (not_ker_planarBoundaryZeroFamilyPairingMap_redBlueSingleCoordinateFamily_eq_bot_iff_exists_nonzero_vanishes_on_controlEdges
+      wheelWithInnerTriangleInteriorControlEdges
       wheelWithInnerTriangle_redBlueSingleCoordinateMemberships_of_uniqueCertificates.1
       wheelWithInnerTriangle_redBlueSingleCoordinateMemberships_of_uniqueCertificates.2)
 

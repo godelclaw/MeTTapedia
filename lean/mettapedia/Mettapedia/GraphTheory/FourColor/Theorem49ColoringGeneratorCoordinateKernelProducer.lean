@@ -1241,6 +1241,81 @@ theorem ker_planarBoundaryZeroFamilyPairingMap_redBlueSingleCoordinateFamily_eq_
         (redBlueSingleCoordinateFamily_witnessRed controlEdges hred hblue)
         (redBlueSingleCoordinateFamily_witnessBlue controlEdges hred hblue)
 
+/-- Failure-side form of the exact finite-control boundary for the canonical red/blue family.
+The family has a nontrivial selected-boundary-zero pairing kernel exactly when the finite control
+set misses a nonzero selected-boundary-zero chain.  This is the Lean form of the validation lab's
+`obstruction_witness` branch. -/
+theorem not_ker_planarBoundaryZeroFamilyPairingMap_redBlueSingleCoordinateFamily_eq_bot_iff_exists_nonzero_vanishes_on_controlEdges
+    {G : SimpleGraph V} [Fintype G.edgeSet]
+    {emb : PlaneEmbeddingWithBoundary G}
+    {colorings : Set (G.EdgeColoring Color)}
+    (controlEdges : Finset G.edgeSet)
+    (hred :
+      ∀ e ∈ controlEdges,
+        Pi.single e red ∈ projectedColoringGeneratorSubspace emb colorings)
+    (hblue :
+      ∀ e ∈ controlEdges,
+        Pi.single e blue ∈ projectedColoringGeneratorSubspace emb colorings) :
+    LinearMap.ker
+        (planarBoundaryZeroFamilyPairingMap
+          (redBlueSingleCoordinateFamily controlEdges hred hblue)) ≠ ⊥ ↔
+      ∃ z : G.edgeSet → Color,
+        z ∈ planarBoundaryZeroSubmodule emb ∧
+          z ≠ 0 ∧
+            ∀ e ∈ controlEdges, z e = 0 := by
+  have hkerIff :=
+    ker_planarBoundaryZeroFamilyPairingMap_redBlueSingleCoordinateFamily_eq_bot_iff_controlEdges
+      controlEdges hred hblue
+  constructor
+  · intro hker
+    have hnotControl :
+        ¬ ∀ ⦃z : G.edgeSet → Color⦄,
+          z ∈ planarBoundaryZeroSubmodule emb →
+          (∀ e ∈ controlEdges, z e = 0) →
+            z = 0 := by
+      intro hcontrol
+      exact hker (hkerIff.2 hcontrol)
+    exact
+      (not_finsetControls_iff_exists_nonzero_vanishes_on_finset
+        (G := G) (emb := emb) controlEdges).1 hnotControl
+  · intro hobs hker
+    have hcontrol := hkerIff.1 hker
+    exact
+      ((not_finsetControls_iff_exists_nonzero_vanishes_on_finset
+        (G := G) (emb := emb) controlEdges).2 hobs) hcontrol
+
+/-- Success-side complement of the exact finite-control boundary for the canonical red/blue
+family.  A successful red/blue rank certificate is exactly the absence of a nonzero
+selected-boundary-zero chain invisible on the declared control set. -/
+theorem ker_planarBoundaryZeroFamilyPairingMap_redBlueSingleCoordinateFamily_eq_bot_iff_no_nonzero_vanishes_on_controlEdges
+    {G : SimpleGraph V} [Fintype G.edgeSet]
+    {emb : PlaneEmbeddingWithBoundary G}
+    {colorings : Set (G.EdgeColoring Color)}
+    (controlEdges : Finset G.edgeSet)
+    (hred :
+      ∀ e ∈ controlEdges,
+        Pi.single e red ∈ projectedColoringGeneratorSubspace emb colorings)
+    (hblue :
+      ∀ e ∈ controlEdges,
+        Pi.single e blue ∈ projectedColoringGeneratorSubspace emb colorings) :
+    LinearMap.ker
+        (planarBoundaryZeroFamilyPairingMap
+          (redBlueSingleCoordinateFamily controlEdges hred hblue)) = ⊥ ↔
+      ¬ ∃ z : G.edgeSet → Color,
+        z ∈ planarBoundaryZeroSubmodule emb ∧
+          z ≠ 0 ∧
+            ∀ e ∈ controlEdges, z e = 0 := by
+  constructor
+  · intro hker hobs
+    exact
+      ((not_ker_planarBoundaryZeroFamilyPairingMap_redBlueSingleCoordinateFamily_eq_bot_iff_exists_nonzero_vanishes_on_controlEdges
+        controlEdges hred hblue).2 hobs) hker
+  · intro hno
+    by_contra hker
+    exact hno
+      ((not_ker_planarBoundaryZeroFamilyPairingMap_redBlueSingleCoordinateFamily_eq_bot_iff_exists_nonzero_vanishes_on_controlEdges
+        controlEdges hred hblue).1 hker)
+
 /--
 Edge-local detector for the canonical finite red/blue family.  Once the red and blue
 single-coordinate probes on the finite control set are known to lie in the projected generator
