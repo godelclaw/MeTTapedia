@@ -1,4 +1,5 @@
 import Mettapedia.Computability.PNP.CruxSynthesisRegression
+import Mettapedia.Computability.PNP.KpolyQuantaleShortcutRemovalCanaryRegression
 import Mettapedia.Computability.PNP.PNPv13AtomicBudgetLedgerAuditorCanariesRegression
 import Mettapedia.Computability.PNP.PNPv13CDENFNormalizerCanariesRegression
 import Mettapedia.Computability.PNP.PNPv13FiniteGibbsDobrushinCanariesRegression
