@@ -2669,6 +2669,79 @@ theorem forcedEdgeBoundaryTargetCoverage_iff_no_targetEvader
     emb (Theorem49BoundaryVertices emb) p0Inside p4Inside side
 
 /--
+Exact classifier-control no-evader contract for the boundary-zero Kirchhoff target.  The CAP5
+classifier controls the target subspace precisely when no nonzero target chain can vanish on
+every enumerated forced edge.
+-/
+theorem enumeratedExceptionalAnnulusForcedEdgeClassifierKirchhoffControl_iff_no_kirchhoffEvader
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    [Fintype G.edgeSet]
+    (emb : PlaneEmbeddingWithBoundary G) (vertices : Finset V)
+    (p0Inside p4Inside : Bool) (side : V → Prop)
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side) :
+    (∀ ⦃z : G.edgeSet → Color⦄,
+      z ∈ theorem49BoundaryZeroKirchhoffSubspace emb vertices →
+      (∀ e ∈ classifier.emittedFinset, z e = 0) →
+        z = 0) ↔
+      ¬ ∃ z : G.edgeSet → Color,
+        z ∈ theorem49BoundaryZeroKirchhoffSubspace emb vertices ∧
+          z ≠ 0 ∧
+            ∀ e : G.edgeSet,
+              data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e →
+                z e = 0 := by
+  constructor
+  · intro hcontrol
+    exact
+      (data.forcedEdgeKirchhoffCoverage_iff_no_kirchhoffEvader
+        emb vertices p0Inside p4Inside side).1
+        ((data.forcedEdgeKirchhoffCoverage_iff_enumeratedExceptionalAnnulusForcedEdgeClassifierKirchhoffControl
+          emb vertices classifier).2 hcontrol)
+  · intro hnoEvader
+    exact
+      (data.forcedEdgeKirchhoffCoverage_iff_enumeratedExceptionalAnnulusForcedEdgeClassifierKirchhoffControl
+        emb vertices classifier).1
+        ((data.forcedEdgeKirchhoffCoverage_iff_no_kirchhoffEvader
+          emb vertices p0Inside p4Inside side).2 hnoEvader)
+
+/--
+Route-facing no-evader contract for the theorem-4.9 carrier `W0(H)`.  The emitted CAP5
+classifier coordinates control the boundary-root target exactly when no nonzero target chain
+evades every enumerated forced edge.
+-/
+theorem theorem49BoundaryTargetClassifierControl_iff_no_targetEvader
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    [Fintype G.edgeSet]
+    (emb : PlaneEmbeddingWithBoundary G)
+    (p0Inside p4Inside : Bool) (side : V → Prop)
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side) :
+    (∀ ⦃z : G.edgeSet → Color⦄,
+      z ∈ Theorem49BoundaryTarget emb →
+      (∀ e ∈ classifier.emittedFinset, z e = 0) →
+        z = 0) ↔
+      ¬ ∃ z : G.edgeSet → Color,
+        z ∈ Theorem49BoundaryTarget emb ∧
+          z ≠ 0 ∧
+            ∀ e : G.edgeSet,
+              data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e →
+                z e = 0 := by
+  change
+    (∀ ⦃z : G.edgeSet → Color⦄,
+      z ∈ theorem49BoundaryZeroKirchhoffSubspace emb (Theorem49BoundaryVertices emb) →
+      (∀ e ∈ classifier.emittedFinset, z e = 0) →
+        z = 0) ↔
+      ¬ ∃ z : G.edgeSet → Color,
+        z ∈ theorem49BoundaryZeroKirchhoffSubspace emb (Theorem49BoundaryVertices emb) ∧
+          z ≠ 0 ∧
+            ∀ e : G.edgeSet,
+              data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e →
+                z e = 0
+  exact
+    data.enumeratedExceptionalAnnulusForcedEdgeClassifierKirchhoffControl_iff_no_kirchhoffEvader
+      emb (Theorem49BoundaryVertices emb) p0Inside p4Inside side classifier
+
+/--
 Coverage lower bound for the Kirchhoff target.  If the enumerated CAP5 forced-edge predicate
 meets every nonzero boundary-zero Kirchhoff chain, then the emitted classifier must satisfy the
 target-space dimension inequality.

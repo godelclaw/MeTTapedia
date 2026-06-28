@@ -186,6 +186,26 @@ remaining interior-support edge with a decreasing worklist measure.  This
 sharpens the algebraic fork to synthesis versus evader-plus-next-edge; it still
 does not prove the exact CAP5 shell uniformly chooses the synthesis side.
 
+After the fork-decision reset on 2026-06-28: the classifier/no-evader oracle is
+now expressed as an exact Lean equivalence rather than only a sufficient
+handoff.  The lab artifact
+`fourcolor-move2-classifier-noevader-lab-20260628.json` records 65 benchmark
+signatures: both all-interior F2 no-evader flags are true on all 65 records,
+and both declared-forced no-evader flags are true on the 36 records with
+nonempty forcing interior edges.  The exported projected-generator bundle
+contains 65 certificate files and 80 rejected counterexample files; the two
+algebraic-F2 cruxes still survive with support 36 and purified support 18.
+In Lean,
+`enumeratedExceptionalAnnulusForcedEdgeClassifierKirchhoffControl_iff_no_kirchhoffEvader`
+and
+`theorem49BoundaryTargetClassifierControl_iff_no_targetEvader` say that the
+emitted CAP5 classifier coordinates control the boundary-zero Kirchhoff target,
+and the theorem-4.9 target `W0(H)`, exactly when no nonzero target chain evades
+every enumerated CAP5 forced edge.  This does not decide the exact shell, but
+it removes the algebraic ambiguity in the oracle statement: the remaining
+Move-2 fork is now to prove that exact CAP5 data supplies the no-evader side,
+or to exhibit the evader.
+
 ## The open problem
 
 Exactly two route forks are live; isolated repair-packet refutations are no
@@ -197,7 +217,9 @@ longer acceptable progress.
    two-band family, but the formal result is not yet a single "no repair of
    this class realizes the needed cyclic separator" theorem.
 2. **Algebraic fork**: resolve the F2 cancellation oracle.  The current
-   machine-checked direction is: full forced-edge no-evader plus closed finite
+   machine-checked statement is sharper than a one-way handoff: classifier
+   control of the theorem-4.9 target is equivalent to absence of a nonzero
+   enumerated-forced-edge evader, and full no-evader plus the closed finite
    checker implies theorem-4.9 synthesis and target coverage.  The remaining
    crux is whether exact shell/CAP5 data always supplies that no-evader
    verdict, or whether a genuine evader exists.
