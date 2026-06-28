@@ -136,10 +136,15 @@ def currentNavierRoadmap : List NavierRoadmapEntry :=
       truthValue := ⟨89, 90⟩
       obligation := "Use the checked finite-mode residual-curl boundary to require the constant-amplitude two-mode generator's viscous Laplacian residual to be curl-free before treating its pressure-slice closure as a canary candidate." },
     { stage := .nonzeroEnergyKernel
+      proofNodeId := "navier.energy.nonzero-schwartz-stationary-inviscid-constructor"
+      status := .checked
+      truthValue := ⟨76, 88⟩
+      obligation := "Use the checked stationary inviscid constructor as the exact one-profile closure surface for localized Euler-style searches, while keeping the positive-viscosity nonzero canary open." },
+    { stage := .nonzeroEnergyKernel
       proofNodeId := "navier.energy.nonzero-schwartz-canary"
       status := .openGoal
       truthValue := ⟨67, 86⟩
-      obligation := "Produce or refute an exact smooth evolution and Schwartz pressure slices for the localized stream-function seed or a comparable non-polynomial Schwartz profile; seed-only data, conditional constructors, classical heat-shear exact solutions that fail Schwartz decay, rank-one zero-convection obstructions, profile-level nonzero anti-profile cancellation, amplitude-boundary guardrails, positive-viscosity stationary obstructions, strict-dissipation theorems conditional on the nonzero interface, flat-energy zero-rigidity obstructions, residual-curl pressure-closure rejections, finite-mode residual-curl boundaries, and algebraic finite-mode boundary cases do not count." },
+      obligation := "Produce or refute an exact smooth evolution and Schwartz pressure slices for the localized stream-function seed or a comparable non-polynomial Schwartz profile; seed-only data, conditional constructors, classical heat-shear exact solutions that fail Schwartz decay, rank-one zero-convection obstructions, profile-level nonzero anti-profile cancellation, amplitude-boundary guardrails, positive-viscosity stationary obstructions, strict-dissipation theorems conditional on the nonzero interface, flat-energy zero-rigidity obstructions, residual-curl pressure-closure rejections, finite-mode residual-curl boundaries, stationary inviscid closure constructors, and algebraic finite-mode boundary cases do not count." },
     { stage := .scalingGate
       proofNodeId := "navier.regularity-promotion-gate"
       status := .scalingUncleared
@@ -188,7 +193,7 @@ theorem currentNavierRoadmap_records_nonzero_schwartz_kernel_and_open_canary :
          status := .openGoal
          truthValue := ⟨67, 86⟩
          obligation :=
-          "Produce or refute an exact smooth evolution and Schwartz pressure slices for the localized stream-function seed or a comparable non-polynomial Schwartz profile; seed-only data, conditional constructors, classical heat-shear exact solutions that fail Schwartz decay, rank-one zero-convection obstructions, profile-level nonzero anti-profile cancellation, amplitude-boundary guardrails, positive-viscosity stationary obstructions, strict-dissipation theorems conditional on the nonzero interface, flat-energy zero-rigidity obstructions, residual-curl pressure-closure rejections, finite-mode residual-curl boundaries, and algebraic finite-mode boundary cases do not count." } :
+          "Produce or refute an exact smooth evolution and Schwartz pressure slices for the localized stream-function seed or a comparable non-polynomial Schwartz profile; seed-only data, conditional constructors, classical heat-shear exact solutions that fail Schwartz decay, rank-one zero-convection obstructions, profile-level nonzero anti-profile cancellation, amplitude-boundary guardrails, positive-viscosity stationary obstructions, strict-dissipation theorems conditional on the nonzero interface, flat-energy zero-rigidity obstructions, residual-curl pressure-closure rejections, finite-mode residual-curl boundaries, stationary inviscid closure constructors, and algebraic finite-mode boundary cases do not count." } :
         NavierRoadmapEntry) ∈ currentNavierRoadmap ∧
       ({ stage := NavierRoadmapStage.nonzeroEnergyKernel
          proofNodeId := "navier.energy.nonzero-schwartz-rank-one-shear-obstruction"
@@ -260,6 +265,13 @@ theorem currentNavierRoadmap_records_nonzero_schwartz_kernel_and_open_canary :
          obligation :=
           "Use the checked finite-mode residual-curl boundary to require the constant-amplitude two-mode generator's viscous Laplacian residual to be curl-free before treating its pressure-slice closure as a canary candidate." } :
         NavierRoadmapEntry) ∈ currentNavierRoadmap ∧
+      ({ stage := NavierRoadmapStage.nonzeroEnergyKernel
+         proofNodeId := "navier.energy.nonzero-schwartz-stationary-inviscid-constructor"
+         status := .checked
+         truthValue := ⟨76, 88⟩
+         obligation :=
+          "Use the checked stationary inviscid constructor as the exact one-profile closure surface for localized Euler-style searches, while keeping the positive-viscosity nonzero canary open." } :
+        NavierRoadmapEntry) ∈ currentNavierRoadmap ∧
       navierNonzeroSchwartzEnergyKernelNode.status = .checked ∧
       navierNonzeroSchwartzLineInvariantObstructionNode.status = .checked ∧
       navierNonzeroSchwartzHeatShearBoundaryNode.status = .checked ∧
@@ -273,8 +285,10 @@ theorem currentNavierRoadmap_records_nonzero_schwartz_kernel_and_open_canary :
       navierNonzeroSchwartzNoFlatEnergyObstructionNode.status = .checked ∧
       navierSchwartzPressureResidualCurlGateNode.status = .checked ∧
       navierNonzeroSchwartzFiniteModeResidualCurlBoundaryNode.status = .checked ∧
+      navierNonzeroSchwartzStationaryInviscidConstructorNode.status = .checked ∧
       navierNonzeroSchwartzCanaryNode.status = .openGoal := by
   exact ⟨by simp [currentNavierRoadmap],
+    by simp [currentNavierRoadmap],
     by simp [currentNavierRoadmap],
     by simp [currentNavierRoadmap],
     by simp [currentNavierRoadmap],
@@ -301,6 +315,7 @@ theorem currentNavierRoadmap_records_nonzero_schwartz_kernel_and_open_canary :
     navierNonzeroSchwartzNoFlatEnergyObstructionNode_checked,
     navierSchwartzPressureResidualCurlGateNode_checked,
     navierNonzeroSchwartzFiniteModeResidualCurlBoundaryNode_checked,
+    navierNonzeroSchwartzStationaryInviscidConstructorNode_checked,
     navierNonzeroSchwartzCanaryNode_open⟩
 
 /-- The current roadmap pins the averaged-equation obstruction before any
