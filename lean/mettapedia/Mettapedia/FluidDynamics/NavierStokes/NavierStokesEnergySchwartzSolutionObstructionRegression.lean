@@ -37,6 +37,35 @@ theorem nonzero_schwartz_solution_has_non_lineInvariant_slice_regression
       ¬ TranslationInvariantAlong v (fun x : NSSpace => S.velocitySlice t x) := by
   exact every_nonzeroSchwartzConcreteSolution_has_non_lineInvariant_slice S hv
 
+theorem stationary_schwartz_solution_dissipation_zero_regression
+    {ν : ℝ} (S : SchwartzConcreteNavierStokesSolution ν)
+    {u₀ : NSInitialVelocity}
+    (hvelocity : S.velocity = timeIndependentVelocity u₀) (t : NSTime) :
+    coordinateEnergyDissipationRate S.velocity ν t = 0 := by
+  exact
+    S.coordinateEnergyDissipationRate_eq_zero_of_velocity_timeIndependent
+      hvelocity t
+
+theorem stationary_nonzero_schwartz_solution_dissipation_zero_regression
+    {ν : ℝ} (S : NonzeroSchwartzConcreteNavierStokesSolution ν)
+    {u₀ : NSInitialVelocity}
+    (hvelocity : S.velocity = timeIndependentVelocity u₀) (t : NSTime) :
+    coordinateEnergyDissipationRate S.velocity ν t = 0 := by
+  exact
+    S.coordinateEnergyDissipationRate_eq_zero_of_velocity_timeIndependent
+      hvelocity t
+
+theorem not_exists_nonzero_stationary_schwartz_solution_of_dissipation_ne_regression
+    {ν : ℝ} {u₀ : NSInitialVelocity}
+    (hdiss :
+      ∃ t : NSTime,
+        coordinateEnergyDissipationRate (timeIndependentVelocity u₀) ν t ≠ 0) :
+    ¬ ∃ S : NonzeroSchwartzConcreteNavierStokesSolution ν,
+      S.velocity = timeIndependentVelocity u₀ := by
+  exact
+    not_exists_nonzeroSchwartzConcreteSolution_velocity_timeIndependent_of_coordinateEnergyDissipationRate_ne_zero
+      hdiss
+
 end Regression
 
 end NavierStokes

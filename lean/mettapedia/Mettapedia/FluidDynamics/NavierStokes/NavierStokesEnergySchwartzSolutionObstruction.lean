@@ -38,6 +38,49 @@ theorem velocity_eq_zero_of_velocitySlice_translationInvariantAlong
     simpa using congrArg (fun f : 𝓢(NSSpace, NSSpace) => f x) hslice_zero
   simpa [hslice_x] using S.velocitySlice_eq t x
 
+/-- A time-independent velocity in the slice-Schwartz concrete solution
+interface has zero corrected coordinate dissipation at every time.  This is a
+stationary-energy gate: the exact energy identity and constant kinetic energy
+leave no room for positive dissipation. -/
+theorem coordinateEnergyDissipationRate_eq_zero_of_velocity_timeIndependent
+    {u₀ : NSInitialVelocity}
+    (hvelocity : S.velocity = timeIndependentVelocity u₀) (t : NSTime) :
+    coordinateEnergyDissipationRate S.velocity ν t = 0 := by
+  have hconst :
+      normalizedKineticEnergy (timeIndependentVelocity u₀) =
+        fun _ : NSTime => normalizedKineticEnergy (timeIndependentVelocity u₀) t := by
+    funext s
+    simp [normalizedKineticEnergy, kineticEnergyAt_timeIndependentVelocity]
+  have hzeroDeriv :
+      HasDerivAt (normalizedKineticEnergy S.velocity) 0 t := by
+    rw [hvelocity, hconst]
+    simpa using
+      (hasDerivAt_const t (normalizedKineticEnergy (timeIndependentVelocity u₀) t))
+  have hidentity := S.coordinateEnergyDissipationIdentity t
+  have hsame :
+      0 = -(coordinateEnergyDissipationRate S.velocity ν t) :=
+    hzeroDeriv.unique hidentity
+  have hneg :
+      -(coordinateEnergyDissipationRate S.velocity ν t) = 0 := by
+    exact hsame.symm
+  exact neg_eq_zero.mp hneg
+
+/-- Contrapositive stationary gate for the ordinary slice-Schwartz solution
+interface: a time-independent candidate with nonzero corrected dissipation at
+some time cannot inhabit the concrete solution interface. -/
+theorem not_exists_velocity_timeIndependent_of_coordinateEnergyDissipationRate_ne_zero
+    {u₀ : NSInitialVelocity}
+    (hdiss :
+      ∃ t : NSTime,
+        coordinateEnergyDissipationRate (timeIndependentVelocity u₀) ν t ≠ 0) :
+    ¬ ∃ S : SchwartzConcreteNavierStokesSolution ν,
+      S.velocity = timeIndependentVelocity u₀ := by
+  rintro ⟨S, hvelocity⟩
+  rcases hdiss with ⟨t, ht⟩
+  have hzero :=
+    S.coordinateEnergyDissipationRate_eq_zero_of_velocity_timeIndependent hvelocity t
+  exact ht (by simpa [hvelocity] using hzero)
+
 end SchwartzConcreteNavierStokesSolution
 
 namespace NonzeroSchwartzConcreteNavierStokesSolution
@@ -70,6 +113,15 @@ theorem exists_velocitySlice_not_translationInvariantAlong
     by_contra ht
     exact hnone ⟨t, ht⟩)
 
+/-- Nonzero solutions inherit the stationary-energy gate from the underlying
+slice-Schwartz solution. -/
+theorem coordinateEnergyDissipationRate_eq_zero_of_velocity_timeIndependent
+    {u₀ : NSInitialVelocity}
+    (hvelocity : S.velocity = timeIndependentVelocity u₀) (t : NSTime) :
+    coordinateEnergyDissipationRate S.velocity ν t = 0 :=
+  SchwartzConcreteNavierStokesSolution.coordinateEnergyDissipationRate_eq_zero_of_velocity_timeIndependent
+    S.toSchwartzConcreteNavierStokesSolution hvelocity t
+
 end NonzeroSchwartzConcreteNavierStokesSolution
 
 /-- No nonzero slice-Schwartz concrete solution can keep all velocity slices
@@ -90,6 +142,22 @@ theorem every_nonzeroSchwartzConcreteSolution_has_non_lineInvariant_slice
     ∃ t : NSTime,
       ¬ TranslationInvariantAlong v (fun x : NSSpace => S.velocitySlice t x) :=
   S.exists_velocitySlice_not_translationInvariantAlong hv
+
+/-- Contrapositive stationary gate for nonzero slice-Schwartz solutions:
+nonzero corrected dissipation rules out a time-independent velocity
+representation. -/
+theorem not_exists_nonzeroSchwartzConcreteSolution_velocity_timeIndependent_of_coordinateEnergyDissipationRate_ne_zero
+    {ν : ℝ} {u₀ : NSInitialVelocity}
+    (hdiss :
+      ∃ t : NSTime,
+        coordinateEnergyDissipationRate (timeIndependentVelocity u₀) ν t ≠ 0) :
+    ¬ ∃ S : NonzeroSchwartzConcreteNavierStokesSolution ν,
+      S.velocity = timeIndependentVelocity u₀ := by
+  rintro ⟨S, hvelocity⟩
+  exact
+    (SchwartzConcreteNavierStokesSolution.not_exists_velocity_timeIndependent_of_coordinateEnergyDissipationRate_ne_zero
+      (ν := ν) hdiss)
+      ⟨S.toSchwartzConcreteNavierStokesSolution, hvelocity⟩
 
 end NavierStokes
 end FluidDynamics
