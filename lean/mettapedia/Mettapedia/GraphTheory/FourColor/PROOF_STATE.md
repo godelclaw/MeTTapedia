@@ -9,7 +9,7 @@ claimed here; the target is a decided state for the Goertzel theorem-4.9 route.
 
 | Fork | State | PLN STV | ITV | Progress |
 |---|---|---:|---:|---:|
-| Geometric CAP5/Jordan repair | The old packet-refutation lane has been consolidated for the source-bound canonical/one-collar part: every closed-walk exact shell structurally blocks the canonical witness choice and every one-collar collar/previous-boundary witness repair by the same two-interior-edge face obstruction. Still missing the side-cut/repair-removal theorem that retires the whole CAP5/Jordan repair class. | `<0.47,0.64>` | `[0.30,0.66]` | 68% |
+| Geometric CAP5/Jordan repair | The old packet-refutation lane has been consolidated for the source-bound canonical/one-collar part: every closed-walk exact shell structurally blocks the canonical witness choice and every one-collar collar/previous-boundary witness repair by the same two-interior-edge face obstruction. The side-cut lane now has a route-facing obstruction too: any finite support containing an odd closed walk cannot be realized by a single vertex-side cyclic separator, and the CAP5 exceptional outside-crossing normal form inherits that obstruction. Still missing the repair-removal theorem and the proof that the residual side-cut surface must expose such an odd-walk support or reduce to the one-collar face contradiction. | `<0.51,0.66>` | `[0.33,0.68]` | 72% |
 | Algebraic F2 cancellation oracle | Lab finds no top-level all-interior evader on 65 records, no declared-forced evader on the 36 forcing records, and no all-interior vertex-Kirchhoff failure on all 65 records; the vertex-failure crux survives on the 36 forcing records. Lean now proves the route-facing classifier-control iff/no-evader contract, the target-dimension fork theorem below-bound classifier implies genuine target evader, the full no-evader + closed-checker synthesis handoff, the all-interior success-or-remaining-edge frontier, the executable empty-worklist certificate, the closed-report failure branch as a genuine F2 evader plus a remaining worklist edge, the target-control bridge reducing any remaining closed-checker failure to an off-target boundary-zero evader, the vertex-Kirchhoff failure bridge making that evader concrete at a theorem-4.9 boundary vertex, the row-span/subset certificate bridge for excluding or exposing that failure, and the exact binary fork theorem. New: the empty canonical interior-support worklist now proves the exact row-span/subset certificate itself and rules out the concrete vertex-Kirchhoff evader branch. The remaining uniform burden is to prove the exact CAP5 shell reaches this empty-worklist/subset side, or formalize the genuine evader produced by failure. | `<0.47,0.72>` | `[0.34,0.62]` | 72% |
 
 ## Latest Move-1 Evidence
@@ -28,9 +28,30 @@ claimed here; the target is a decided state for the Goertzel theorem-4.9 route.
   on that face.  This retires the source-bound canonical and one-collar
   positive-collar repair packet family as one structural theorem family,
   rather than as isolated benchmark failures.
-- Remaining Move-1 burden: extend this obstruction across the side-cut/cyclic
-  separator and repair-removal surfaces, or prove that those surfaces reduce
-  to the same two-interior-edge face contradiction.
+- Side-cut focused build archived locally as
+  `fourcolor-move1-odd-sidecut-frontier-focused-build-20260628.log`.
+- Validation lab JSON archived locally as
+  `fourcolor-move1-odd-sidecut-lab-20260628.json`; the rerun contains 65
+  benchmark signatures, 65 projected-generator certificate reports, and 80
+  rejected counterexample exports, with empty stderr.
+- Axiom audit archived locally as
+  `fourcolor-move1-odd-sidecut-axiom-audit-20260628.log`; the new theorem
+  constants depend only on `[propext, Classical.choice, Quot.sound]`.
+- Full `lake -f lakefile.lean build Mettapedia` archived locally as
+  `fourcolor-move1-odd-sidecut-full-build-20260628.log` with 5900 jobs.
+- New side-cut theorem surface:
+  `not_exists_sideCut_crosses_closed_odd_walk_subset`,
+  `not_exists_exceptionalAnnulusCrossingOutsideEdge_of_closed_odd_walk_subset`,
+  `closedWalkExactShell_oneCollar_and_oddSideCut_obstruction`, and
+  `closedWalkExactShell_oneCollar_and_CAP5OddSideCut_obstruction`.
+  These package the two-band triangle failure as a general odd-closed-walk
+  cyclic-separator obstruction: no single side predicate can make every edge
+  in a finite support cross if that support contains an odd closed walk, and
+  the CAP5 outside-crossing normal form cannot repair that.
+- Remaining Move-1 burden: prove the residual side-cut/cyclic-separator
+  surface always contains such an odd-walk support or reduces to the
+  two-interior-edge face contradiction, and push the resulting obstruction
+  through repair-removal.
 
 ## Latest Move-2 Evidence
 
@@ -154,9 +175,9 @@ claimed here; the target is a decided state for the Goertzel theorem-4.9 route.
 ## Remaining Completion Requirements
 
 - Move 1: prove a single fundamental obstruction for the repaired
-  CAP5/Jordan geometric class, extending the new closed-walk exact-shell
-  one-collar obstruction across side-cut/cyclic separator and repair-removal
-  surfaces.
+  CAP5/Jordan geometric class, extending the closed-walk exact-shell
+  one-collar obstruction and the odd-walk side-cut obstruction across the
+  remaining repair-removal surface.
 - Move 2: extend the empty-worklist exact subset certificate to the uniform
   CAP5 shell, or exhibit and formalize the genuine vertex-Kirchhoff evader
   produced by failure of that certificate.

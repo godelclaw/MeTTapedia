@@ -292,9 +292,18 @@ and all one-collar collar/previous-boundary witness geometries for the same
 reason: the shell's unblocked endpoint already forces a face with two distinct
 interior-support edges.  This is no longer a single failing packet; it is a
 uniform obstruction for the canonical/one-collar positive-collar repair class.
-The remaining geometric work is to push that obstruction through the
-side-cut/cyclic-separator and repair-removal formulations, or prove those
-formulations reduce to the same contradiction.
+The side-cut part now has the same structural treatment for the odd-walk
+separator class: `not_exists_sideCut_crosses_closed_odd_walk_subset` and
+`not_exists_exceptionalAnnulusCrossingOutsideEdge_of_closed_odd_walk_subset`
+say that any finite side-cut support containing an odd closed walk cannot be
+realized by a single vertex-side predicate, nor by the CAP5 exceptional
+outside-crossing normal form.  The consolidated wrappers
+`closedWalkExactShell_oneCollar_and_oddSideCut_obstruction` and
+`closedWalkExactShell_oneCollar_and_CAP5OddSideCut_obstruction` package this
+with the shell-wide one-collar obstruction.  The remaining geometric work is
+to prove that the residual side-cut/cyclic-separator surface always exposes
+such an odd-walk support or reduces to the two-interior-edge face
+contradiction, and then push the result through repair-removal.
 
 ## The open problem
 
@@ -305,10 +314,14 @@ longer acceptable progress.
    single structural obstruction theorem.  The source-bound
    canonical/one-collar part is now shell-wide: closed-walk exact shells force
    the same two-interior-edge face obstruction against canonical witness
-   choice, one-collar collar geometry, and one-collar previous-boundary witness
-   geometry.  The remaining Move-1 gap is the side-cut/cyclic-separator and
-   repair-removal layer: prove it reduces to this obstruction, or state the
-   residual repair class precisely enough to refute it directly.
+   choice, one-collar collar geometry, and one-collar previous-boundary
+   witness geometry.  The side-cut part is now structural for supports
+   containing an odd closed walk: those supports cannot realize a cyclic
+   separator by a single vertex side, including in the CAP5 outside-crossing
+   normal form.  The remaining Move-1 gap is to prove the residual
+   side-cut/cyclic-separator layer necessarily has that odd-walk support or
+   reduces to the face obstruction, and then carry the theorem through
+   repair-removal.
 2. **Algebraic fork**: resolve the F2 cancellation oracle.  The current
    machine-checked statement is sharper than a one-way handoff: classifier
    control of the theorem-4.9 target is equivalent to absence of a nonzero
