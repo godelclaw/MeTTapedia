@@ -1,4 +1,5 @@
 import Mettapedia.FluidDynamics.NavierStokes.ContinuationRegression
+import Mettapedia.FluidDynamics.NavierStokes.NavierStokesDEGroundedCanaryRegression
 import Mettapedia.FluidDynamics.NavierStokes.NavierStokesEnergyBKMBridgeRegression
 import Mettapedia.FluidDynamics.NavierStokes.NavierStokesFiniteModeBoundedEnergyRegression
 import Mettapedia.FluidDynamics.NavierStokes.Scaling.Regression

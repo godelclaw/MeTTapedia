@@ -20,6 +20,8 @@ inductive NavierRoadmapStage where
   | sourceMap
   | liveRegressionSplit
   | finiteEnergyRepair
+  | placeholderRetirement
+  | deGroundedSurface
   | scalingGate
   | averagedEquationGate
   | replacementRoute
@@ -51,6 +53,16 @@ def currentNavierRoadmap : List NavierRoadmapEntry :=
       status := .checked
       truthValue := ⟨100, 91⟩
       obligation := "Preserve finite initial energy as an explicit target input." },
+    { stage := .placeholderRetirement
+      proofNodeId := "navier.fefferman-lift"
+      status := .retiredPlaceholder
+      truthValue := ⟨100, 99⟩
+      obligation := "Treat the audited FeffermanPredicateKit global-clause family as missing-lift checklists only; they establish nothing about the concrete R^3 PDE." },
+    { stage := .deGroundedSurface
+      proofNodeId := "navier.de-grounded-zero-canary"
+      status := .checked
+      truthValue := ⟨100, 98⟩
+      obligation := "Use the concrete zero-solution canary and scaling arithmetic as the baseline for future PDE-grounded route work." },
     { stage := .scalingGate
       proofNodeId := "navier.regularity-promotion-gate"
       status := .scalingUncleared
