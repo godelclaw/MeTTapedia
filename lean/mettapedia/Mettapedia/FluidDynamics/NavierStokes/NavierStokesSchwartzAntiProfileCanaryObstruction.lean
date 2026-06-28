@@ -37,6 +37,75 @@ theorem velocity_ne_zero {ν : ℝ} (S : NonzeroSchwartzConcreteNavierStokesSolu
 
 end NonzeroSchwartzConcreteNavierStokesSolution
 
+/-- Any reconstructed velocity field that is identically zero is excluded from
+the nonzero slice-Schwartz concrete solution interface. -/
+theorem not_exists_nonzeroSchwartzConcreteSolution_of_velocity_eq_zero
+    {ν : ℝ} {u : NSVelocityField} (hzero : u = 0) :
+    ¬ ∃ S : NonzeroSchwartzConcreteNavierStokesSolution ν, S.velocity = u := by
+  rintro ⟨S, hS⟩
+  exact S.velocity_ne_zero (by rw [hS, hzero])
+
+/-- Equal-amplitude anti-profile two-mode velocities can never be the velocity
+field of a nonzero slice-Schwartz concrete solution. -/
+theorem not_exists_nonzeroSchwartzConcreteSolution_equalAmplitudeAntiProfileVelocity
+    {ν : ℝ} (a : NSTime → ℝ) (f : NSSchwartzInitialVelocity) :
+    ¬ ∃ S : NonzeroSchwartzConcreteNavierStokesSolution ν,
+      S.velocity = twoModeSchwartzVelocity a a f (-f) := by
+  exact
+    not_exists_nonzeroSchwartzConcreteSolution_of_velocity_eq_zero
+      (equalAmplitudeAntiProfileSchwartzVelocity_zero a f)
+
+/-- More generally, any pointwise equal anti-profile amplitudes reconstruct the
+zero velocity field and are excluded from the nonzero interface. -/
+theorem not_exists_nonzeroSchwartzConcreteSolution_antiProfileVelocity_of_forall_amplitude_eq
+    {ν : ℝ} (a b : NSTime → ℝ) (f : NSSchwartzInitialVelocity)
+    (hab : ∀ t, a t = b t) :
+    ¬ ∃ S : NonzeroSchwartzConcreteNavierStokesSolution ν,
+      S.velocity = twoModeSchwartzVelocity a b f (-f) := by
+  have hzero : twoModeSchwartzVelocity a b f (-f) = (0 : NSVelocityField) := by
+    funext t x
+    simp [twoModeSchwartzVelocity, hab t]
+  exact not_exists_nonzeroSchwartzConcreteSolution_of_velocity_eq_zero hzero
+
+/-- Exact nonzero boundary for the anti-profile two-mode family: for a nonzero
+profile, the reconstructed velocity is nonzero exactly when the two scalar
+amplitudes differ at some time. -/
+theorem antiProfileSchwartzVelocity_nonzero_iff_exists_amplitude_ne
+    (a b : NSTime → ℝ) (f : NSSchwartzInitialVelocity)
+    (hf : ∃ x : NSSpace, f x ≠ 0) :
+    (∃ t x, twoModeSchwartzVelocity a b f (-f) t x ≠ 0) ↔
+      ∃ t, a t ≠ b t := by
+  constructor
+  · intro hnonzero
+    by_contra hnone
+    have hab : ∀ t, a t = b t := by
+      intro t
+      by_contra ht
+      exact hnone ⟨t, ht⟩
+    have hzero :=
+      (antiProfileSchwartzVelocity_eq_zero_iff_equalAmplitude a b f hf).mpr hab
+    rcases hnonzero with ⟨t, x, htx⟩
+    exact htx (by
+      have hpoint := congrFun (congrFun hzero t) x
+      simpa using hpoint)
+  · intro hab
+    exact exists_antiProfileSchwartzVelocity_ne_zero_of_exists_amplitude_ne a b f hf hab
+
+/-- Any nonzero slice-Schwartz concrete solution represented by a nonzero
+anti-profile family must lie on the unequal-amplitude side of the boundary. -/
+theorem nonzeroSchwartzConcreteSolution_antiProfileVelocity_forces_amplitude_ne
+    {ν : ℝ} (S : NonzeroSchwartzConcreteNavierStokesSolution ν)
+    (a b : NSTime → ℝ) (f : NSSchwartzInitialVelocity)
+    (hf : ∃ x : NSSpace, f x ≠ 0)
+    (hS : S.velocity = twoModeSchwartzVelocity a b f (-f)) :
+    ∃ t, a t ≠ b t := by
+  have hnonzero :
+      ∃ t x, twoModeSchwartzVelocity a b f (-f) t x ≠ 0 := by
+    rcases S.nonzero_velocity with ⟨t, x, htx⟩
+    exact ⟨t, x, by
+      simpa [hS] using htx⟩
+  exact (antiProfileSchwartzVelocity_nonzero_iff_exists_amplitude_ne a b f hf).mp hnonzero
+
 /-- The anti-profile of the localized divergence-free stream seed. -/
 def nsLocalizedStreamAntiProfile : NSSchwartzInitialVelocity :=
   -nsLocalizedStreamDivergenceFreeInitialVelocity.1
@@ -61,6 +130,35 @@ theorem initialSpatialDivergence_nsLocalizedStreamAntiProfile
     initialSpatialDivergence_const_smul (-1 : ℝ)
       (nsLocalizedStreamDivergenceFreeInitialVelocity.1 : NSInitialVelocity) x
   simpa [nsLocalizedStreamDivergenceFreeInitialVelocity.2 x] using h
+
+/-- The localized stream/anti-stream family has a nonzero reconstructed
+velocity exactly on the unequal-amplitude side. -/
+theorem localizedStreamAntiProfile_velocity_nonzero_iff_exists_amplitude_ne
+    (a b : NSTime → ℝ) :
+    (∃ t x,
+      twoModeSchwartzVelocity a b
+          nsLocalizedStreamDivergenceFreeInitialVelocity.1 nsLocalizedStreamAntiProfile t x ≠
+        0) ↔
+      ∃ t, a t ≠ b t := by
+  simpa [nsLocalizedStreamAntiProfile] using
+    antiProfileSchwartzVelocity_nonzero_iff_exists_amplitude_ne
+      a b nsLocalizedStreamDivergenceFreeInitialVelocity.1
+      nsLocalizedStreamDivergenceFreeInitialVelocity_nonzero
+
+/-- Any nonzero solution represented by localized stream/anti-stream profiles
+must use unequal scalar amplitudes somewhere. -/
+theorem nonzeroSchwartzConcreteSolution_localizedStreamAntiProfileVelocity_forces_amplitude_ne
+    {ν : ℝ} (S : NonzeroSchwartzConcreteNavierStokesSolution ν)
+    (a b : NSTime → ℝ)
+    (hS : S.velocity =
+      twoModeSchwartzVelocity a b
+        nsLocalizedStreamDivergenceFreeInitialVelocity.1 nsLocalizedStreamAntiProfile) :
+    ∃ t, a t ≠ b t := by
+  simpa [nsLocalizedStreamAntiProfile] using
+    nonzeroSchwartzConcreteSolution_antiProfileVelocity_forces_amplitude_ne
+      S a b nsLocalizedStreamDivergenceFreeInitialVelocity.1
+      nsLocalizedStreamDivergenceFreeInitialVelocity_nonzero
+      (by simpa [nsLocalizedStreamAntiProfile] using hS)
 
 /-- Equal-amplitude localized stream/anti-stream profiles reconstruct the zero
 space-time velocity field. -/

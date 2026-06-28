@@ -63,11 +63,11 @@ deriving Repr
 /-- Current dependency-map counts for `FluidDynamics/NavierStokes`. -/
 def currentNavierLaneSurvey : NavierLaneSurvey where
   sourceFiles := 501
-  sourceLines := 110169
+  sourceLines := 110362
   internalImportEdges := 1277
   regressionFiles := 141
-  filesOverThousandLines := 1
-  filesOverSevenHundredFiftyLines := 2
+  filesOverThousandLines := 0
+  filesOverSevenHundredFiftyLines := 1
   leavesWithoutInternalImports := 2
 
 /-- Simple PLN-style truth bookkeeping: support and confidence percentages. -/
@@ -203,14 +203,23 @@ def navierNonzeroSchwartzAntiProfileCanaryObstructionNode : NavierProofNode wher
   evidence := "localizedStreamAntiProfile_nonzeroProfiles_divergenceFree_closure_but_zeroVelocity proves that the localized stream seed and its anti-profile are nonzero divergence-free Schwartz profiles with a zero-pressure pressure-slice residual closure, while their reconstructed equal-amplitude two-mode velocity is identically zero; not_exists_nonzeroSchwartzConcreteSolution_localizedStreamAntiProfileVelocity proves this cancelled velocity cannot inhabit the nonzero slice-Schwartz concrete solution interface. PLN STV <s=.84,c=.90>, ITV [.756,.856], PROGRESS 63%."
   blocker := "This closes a profile-level nonzero false positive. The remaining canary must prove nonzero reconstructed velocity together with exact smooth evolution, divergence, bounded energy, and Schwartz pressure slices."
 
+/-- The full anti-profile amplitude boundary is now a reusable generator
+guardrail. -/
+def navierNonzeroSchwartzAntiProfileAmplitudeBoundaryNode : NavierProofNode where
+  id := "navier.energy.nonzero-schwartz-antiprofile-amplitude-boundary"
+  status := .checked
+  truthValue := ⟨87, 91⟩
+  evidence := "antiProfileSchwartzVelocity_nonzero_iff_exists_amplitude_ne proves that, for any nonzero Schwartz profile f, the anti-profile reconstruction a(t)f + b(t)(-f) is nonzero exactly when the scalar amplitudes differ somewhere; localizedStreamAntiProfile_velocity_nonzero_iff_exists_amplitude_ne specializes this to the localized stream seed, not_exists_nonzeroSchwartzConcreteSolution_equalAmplitudeAntiProfileVelocity excludes the equal-amplitude boundary from the nonzero interface, and nonzeroSchwartzConcreteSolution_localizedStreamAntiProfileVelocity_forces_amplitude_ne gives the necessary unequal-amplitude condition for any nonzero solution using that reconstruction. PLN STV <s=.87,c=.91>, ITV [.7917,.8817], PROGRESS 64%."
+  blocker := "This gives the exact anti-profile nonzero boundary, not a pressure-slice momentum closure. The remaining canary must still prove that an unequal-amplitude localized stream/anti-stream or another non-polynomial Schwartz profile satisfies the full Navier-Stokes equation with Schwartz pressure slices."
+
 /-- The explicit nonzero slice-Schwartz canary remains open until the
 finite-mode closure hypotheses are inhabited by concrete profiles. -/
 def navierNonzeroSchwartzCanaryNode : NavierProofNode where
   id := "navier.energy.nonzero-schwartz-canary"
   status := .openGoal
-  truthValue := ⟨58, 86⟩
-  evidence := "The checked nonzero kernel removes the old zero-flow loophole from the energy-identity surface; the line-invariant, rank-one zero-convection, symmetric-shear, and anti-profile cancellation obstructions remove four shortcut classes; and the localized stream-function seed gives a concrete nonzero divergence-free Schwartz datum. No unconditional nonzero exact slice-Schwartz solution inhabitant is committed yet. PLN STV <s=.58,c=.86>, ITV [.4988,.6388], PROGRESS 63%."
-  blocker := "Close or refute the pressure-slice closure and time evolution for the explicit localized stream-function seed or a comparable non-polynomial Schwartz profile; do not count a conditional constructor, seed-only datum, rank-one zero-convection obstruction, profile-level nonzero anti-profile cancellation, or algebraic finite-mode boundary case as the requested positive canary."
+  truthValue := ⟨59, 86⟩
+  evidence := "The checked nonzero kernel removes the old zero-flow loophole from the energy-identity surface; the line-invariant, rank-one zero-convection, symmetric-shear, anti-profile cancellation, and exact anti-profile amplitude-boundary obstructions remove five shortcut classes; and the localized stream-function seed gives a concrete nonzero divergence-free Schwartz datum. No unconditional nonzero exact slice-Schwartz solution inhabitant is committed yet. PLN STV <s=.59,c=.86>, ITV [.5074,.6474], PROGRESS 64%."
+  blocker := "Close or refute the pressure-slice closure and time evolution for the explicit localized stream-function seed or a comparable non-polynomial Schwartz profile; do not count a conditional constructor, seed-only datum, rank-one zero-convection obstruction, profile-level nonzero anti-profile cancellation, an amplitude-boundary guardrail, or algebraic finite-mode boundary case as the requested positive canary."
 
 /-- Supercritical scaling remains a route obstacle, not a closed theorem here. -/
 def navierSupercriticalScalingNode : NavierProofNode where
@@ -348,6 +357,7 @@ def currentNavierProofNodes : List NavierProofNode :=
   , navierNonzeroSchwartzSymmetricShearObstructionNode
   , navierNonzeroSchwartzLocalizedStreamSeedNode
   , navierNonzeroSchwartzAntiProfileCanaryObstructionNode
+  , navierNonzeroSchwartzAntiProfileAmplitudeBoundaryNode
   , navierNonzeroSchwartzCanaryNode
   , navierSupercriticalScalingNode
   , navierCriticalNormCanariesNode
@@ -415,6 +425,10 @@ theorem navierNonzeroSchwartzLocalizedStreamSeedNode_checked :
 
 theorem navierNonzeroSchwartzAntiProfileCanaryObstructionNode_checked :
     navierNonzeroSchwartzAntiProfileCanaryObstructionNode.status = .checked := by
+  rfl
+
+theorem navierNonzeroSchwartzAntiProfileAmplitudeBoundaryNode_checked :
+    navierNonzeroSchwartzAntiProfileAmplitudeBoundaryNode.status = .checked := by
   rfl
 
 theorem navierNonzeroSchwartzCanaryNode_open :
@@ -567,6 +581,38 @@ theorem currentNavierNonzeroSchwartzAntiProfileCanaryObstruction_node
     ⟨localizedStreamAntiProfile_nonzeroProfiles_divergenceFree_closure_but_zeroVelocity ν,
       not_exists_nonzeroSchwartzConcreteSolution_localizedStreamAntiProfileVelocity,
       navierNonzeroSchwartzAntiProfileCanaryObstructionNode_checked,
+      navierNonzeroSchwartzCanaryNode_open⟩
+
+theorem currentNavierNonzeroSchwartzAntiProfileAmplitudeBoundary_node :
+    (∀ a b : NSTime → ℝ,
+      ((∃ t x,
+        twoModeSchwartzVelocity a b
+            nsLocalizedStreamDivergenceFreeInitialVelocity.1 nsLocalizedStreamAntiProfile
+            t x ≠ 0) ↔
+        ∃ t, a t ≠ b t)) ∧
+      (∀ (ν : ℝ) (a : NSTime → ℝ),
+        ¬ ∃ S : NonzeroSchwartzConcreteNavierStokesSolution ν,
+          S.velocity =
+            twoModeSchwartzVelocity a a
+              nsLocalizedStreamDivergenceFreeInitialVelocity.1 nsLocalizedStreamAntiProfile) ∧
+      (∀ {ν : ℝ} (S : NonzeroSchwartzConcreteNavierStokesSolution ν)
+        (a b : NSTime → ℝ),
+        S.velocity =
+            twoModeSchwartzVelocity a b
+              nsLocalizedStreamDivergenceFreeInitialVelocity.1 nsLocalizedStreamAntiProfile →
+          ∃ t, a t ≠ b t) ∧
+      navierNonzeroSchwartzAntiProfileAmplitudeBoundaryNode.status = .checked ∧
+      navierNonzeroSchwartzCanaryNode.status = .openGoal := by
+  exact
+    ⟨localizedStreamAntiProfile_velocity_nonzero_iff_exists_amplitude_ne,
+      fun ν a => by
+        simpa [nsLocalizedStreamAntiProfile] using
+          not_exists_nonzeroSchwartzConcreteSolution_equalAmplitudeAntiProfileVelocity
+            (ν := ν) a nsLocalizedStreamDivergenceFreeInitialVelocity.1,
+      fun S a b hS =>
+        nonzeroSchwartzConcreteSolution_localizedStreamAntiProfileVelocity_forces_amplitude_ne
+          S a b hS,
+      navierNonzeroSchwartzAntiProfileAmplitudeBoundaryNode_checked,
       navierNonzeroSchwartzCanaryNode_open⟩
 
 theorem navierCriticalNormCanariesNode_uncleared :
