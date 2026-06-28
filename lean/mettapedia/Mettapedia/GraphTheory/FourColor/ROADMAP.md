@@ -281,6 +281,20 @@ The remaining fork decision is narrower: prove exact CAP5 data reaches this
 empty-worklist/subset side uniformly, or formalize the evader exposed when it
 does not.
 
+The empty-worklist path now has a structural obstruction rather than just an
+implementation gap.  Lean proves
+`exists_remainingInteriorSupportEdge_with_card_erase_lt_of_closed_walk_odd_length_in_interiorSupport`
+and
+`not_remainingInteriorSupportEmpty_of_closed_walk_odd_length_in_interiorSupport`:
+if an odd closed walk is entirely supported by ambient interior-support edges,
+then any Boolean CAP5 forced-edge classifier leaves a concrete remaining
+interior-support edge, with a strict erasure decrease of the canonical
+worklist.  Therefore the all-interior empty-worklist proof path cannot be
+uniform over odd-interior-walk supports.  Exact CAP5 data must either exclude
+that structure while reaching the subset certificate, or the surviving branch
+has to be pushed into the genuine vertex-Kirchhoff evader theorem already
+formalized above.
+
 On the geometric fork, the source-bound one-collar repair treadmill has now
 been consolidated into a shell-level obstruction.  In
 `FrontierGeometric.lean`, the theorems
@@ -337,8 +351,8 @@ longer acceptable progress.
    vertex-Kirchhoff evader branch there.  The exact binary theorem packages the
    uniform route as synthesis/target coverage or a genuine evader.  The
    remaining crux is whether exact shell/CAP5 data proves that subset
-   certificate uniformly, or whether a genuine vertex-Kirchhoff failure evader
-   exists.
+   certificate uniformly while excluding the odd-interior-worklist obstruction,
+   or whether a genuine vertex-Kirchhoff failure evader exists.
 
 The historical trichotomy below remains useful background:
 

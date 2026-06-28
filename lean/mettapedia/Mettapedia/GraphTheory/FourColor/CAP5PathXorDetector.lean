@@ -6382,6 +6382,69 @@ theorem exists_interiorEdgeSupportEdge_not_enumeratedForcedEdge_of_closed_walk_o
     ⟨e, heWalk, hnotForced⟩
   exact ⟨e, hInterior e heWalk, hnotForced⟩
 
+/--
+Canonical-worklist form of the odd closed-walk obstruction.  If an odd closed walk is entirely
+supported inside the ambient interior support, the Boolean CAP5 forced-edge classifier cannot
+have exhausted the canonical interior-support worklist: one traversed interior edge remains
+unemitted, and erasing it strictly decreases the finite worklist measure.
+-/
+theorem exists_remainingInteriorSupportEdge_with_card_erase_lt_of_closed_walk_odd_length_in_interiorSupport
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    [Fintype G.edgeSet]
+    (emb : PlaneEmbeddingWithBoundary G)
+    (p0Inside p4Inside : Bool) (side : V → Prop)
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    {u : V} (p : G.Walk u u) (hodd : Odd p.length)
+    (hInterior :
+      ∀ e : G.edgeSet, (e : Sym2 V) ∈ p.edges →
+        e ∈ interiorEdgeSupport emb.faceBoundary emb.faces) :
+    ∃ e : G.edgeSet,
+      e ∈ classifier.remainingControlEdges
+          (interiorEdgeSupport emb.faceBoundary emb.faces) ∧
+        ((classifier.remainingControlEdges
+            (interiorEdgeSupport emb.faceBoundary emb.faces)).erase e).card <
+          (classifier.remainingControlEdges
+            (interiorEdgeSupport emb.faceBoundary emb.faces)).card := by
+  rcases data.exists_interiorEdgeSupportEdge_not_enumeratedForcedEdge_of_closed_walk_odd_length
+      emb p0Inside p4Inside side p hodd hInterior with
+    ⟨e, heInterior, hnotForced⟩
+  have heRemaining :
+      e ∈ classifier.remainingControlEdges
+          (interiorEdgeSupport emb.faceBoundary emb.faces) := by
+    refine
+      (classifier.mem_remainingControlEdges_iff
+        (interiorEdgeSupport emb.faceBoundary emb.faces) e).2 ⟨heInterior, ?_⟩
+    intro heEmitted
+    exact hnotForced ((classifier.emittedFinset_spec e).1 heEmitted)
+  exact ⟨e, heRemaining,
+    classifier.card_erase_remainingControlEdges_lt_of_mem
+      (interiorEdgeSupport emb.faceBoundary emb.faces) heRemaining⟩
+
+/--
+Consequently, an odd closed walk in the ambient interior support refutes the executable
+empty-worklist side of the exact F2 fork for that classifier.
+-/
+theorem not_remainingInteriorSupportEmpty_of_closed_walk_odd_length_in_interiorSupport
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    [Fintype G.edgeSet]
+    (emb : PlaneEmbeddingWithBoundary G)
+    (p0Inside p4Inside : Bool) (side : V → Prop)
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    {u : V} (p : G.Walk u u) (hodd : Odd p.length)
+    (hInterior :
+      ∀ e : G.edgeSet, (e : Sym2 V) ∈ p.edges →
+        e ∈ interiorEdgeSupport emb.faceBoundary emb.faces) :
+    classifier.remainingControlEdges (interiorEdgeSupport emb.faceBoundary emb.faces) ≠ ∅ := by
+  intro hEmpty
+  rcases
+      data.exists_remainingInteriorSupportEdge_with_card_erase_lt_of_closed_walk_odd_length_in_interiorSupport
+        emb p0Inside p4Inside side classifier p hodd hInterior with
+    ⟨e, heRemaining, _hdecrease⟩
+  rw [hEmpty] at heRemaining
+  simp at heRemaining
+
 /-- A triangle inside the ambient interior support obstructs the all-interior side-crossing
 premise.  This is the Lean form of the validation-lab odd-cycle obstruction: one fixed side
 cannot cross all three edges of an interior triangle. -/

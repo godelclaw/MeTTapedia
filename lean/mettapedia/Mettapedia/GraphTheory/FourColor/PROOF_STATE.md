@@ -10,7 +10,7 @@ claimed here; the target is a decided state for the Goertzel theorem-4.9 route.
 | Fork | State | PLN STV | ITV | Progress |
 |---|---|---:|---:|---:|
 | Geometric CAP5/Jordan repair | The old packet-refutation lane has been consolidated for the source-bound canonical/one-collar part: every closed-walk exact shell structurally blocks the canonical witness choice and every one-collar collar/previous-boundary witness repair by the same two-interior-edge face obstruction. The side-cut lane now has a route-facing obstruction too: any finite support containing an odd closed walk cannot be realized by a single vertex-side cyclic separator, and the CAP5 exceptional outside-crossing normal form inherits that obstruction. Still missing the repair-removal theorem and the proof that the residual side-cut surface must expose such an odd-walk support or reduce to the one-collar face contradiction. | `<0.51,0.66>` | `[0.33,0.68]` | 72% |
-| Algebraic F2 cancellation oracle | Lab finds no top-level all-interior evader on 65 records, no declared-forced evader on the 36 forcing records, and no all-interior vertex-Kirchhoff failure on all 65 records; the vertex-failure crux survives on the 36 forcing records. Lean now proves the route-facing classifier-control iff/no-evader contract, the target-dimension fork theorem below-bound classifier implies genuine target evader, the full no-evader + closed-checker synthesis handoff, the all-interior success-or-remaining-edge frontier, the executable empty-worklist certificate, the closed-report failure branch as a genuine F2 evader plus a remaining worklist edge, the target-control bridge reducing any remaining closed-checker failure to an off-target boundary-zero evader, the vertex-Kirchhoff failure bridge making that evader concrete at a theorem-4.9 boundary vertex, the row-span/subset certificate bridge for excluding or exposing that failure, and the exact binary fork theorem. New: the empty canonical interior-support worklist now proves the exact row-span/subset certificate itself and rules out the concrete vertex-Kirchhoff evader branch. The remaining uniform burden is to prove the exact CAP5 shell reaches this empty-worklist/subset side, or formalize the genuine evader produced by failure. | `<0.47,0.72>` | `[0.34,0.62]` | 72% |
+| Algebraic F2 cancellation oracle | Lab finds no top-level all-interior evader on 65 records, no declared-forced evader on the 36 forcing records, and no all-interior vertex-Kirchhoff failure on all 65 records; the vertex-failure crux survives on the 36 forcing records. Lean now proves the route-facing classifier-control iff/no-evader contract, the target-dimension fork theorem below-bound classifier implies genuine target evader, the full no-evader + closed-checker synthesis handoff, the all-interior success-or-remaining-edge frontier, the executable empty-worklist certificate, the closed-report failure branch as a genuine F2 evader plus a remaining worklist edge, the target-control bridge reducing any remaining closed-checker failure to an off-target boundary-zero evader, the vertex-Kirchhoff failure bridge making that evader concrete at a theorem-4.9 boundary vertex, the row-span/subset certificate bridge for excluding or exposing that failure, and the exact binary fork theorem. The empty canonical interior-support worklist proves the exact row-span/subset certificate itself and rules out the concrete vertex-Kirchhoff evader branch. New: an odd closed walk entirely inside the ambient interior support forces a nonempty remaining interior-support worklist, with a concrete edge whose erasure decreases the finite worklist. Thus the empty-worklist proof path is not uniform over odd-interior-walk supports; the remaining burden is to prove exact CAP5 data excludes that obstruction while reaching the subset side, or formalize the genuine vertex-Kirchhoff evader produced by failure. | `<0.49,0.74>` | `[0.35,0.64]` | 74% |
 
 ## Latest Move-1 Evidence
 
@@ -171,6 +171,16 @@ claimed here; the target is a decided state for the Goertzel theorem-4.9 route.
   These prove the exact subset certificate on the executable empty-worklist
   shell and collapse the binary F2 fork to synthesis plus target coverage under
   target classifier control and a closed checker.
+- Odd-worklist focused build archived locally as
+  `fourcolor-move2-odd-worklist-focused-build-20260628.log`.
+- Odd-interior worklist theorem surface:
+  `CAP5TransportedEdgeComponentCoverCore.exists_remainingInteriorSupportEdge_with_card_erase_lt_of_closed_walk_odd_length_in_interiorSupport`
+  and
+  `CAP5TransportedEdgeComponentCoverCore.not_remainingInteriorSupportEmpty_of_closed_walk_odd_length_in_interiorSupport`.
+  These prove that an odd closed walk supported by ambient interior-support
+  edges refutes the executable empty-worklist branch for any Boolean CAP5
+  forced-edge classifier: some interior-support edge remains unemitted, and
+  erasing it strictly decreases the canonical worklist.
 
 ## Remaining Completion Requirements
 
@@ -179,8 +189,9 @@ claimed here; the target is a decided state for the Goertzel theorem-4.9 route.
   one-collar obstruction and the odd-walk side-cut obstruction across the
   remaining repair-removal surface.
 - Move 2: extend the empty-worklist exact subset certificate to the uniform
-  CAP5 shell, or exhibit and formalize the genuine vertex-Kirchhoff evader
-  produced by failure of that certificate.
+  CAP5 shell while excluding the odd-interior-worklist obstruction, or exhibit
+  and formalize the genuine vertex-Kirchhoff evader produced by failure of
+  that certificate.
 - Before any public checkpoint: strict proof-marker scan, trusted-constant audit for new
   theorems, validation lab rerun, full `lake -f lakefile.lean build
   Mettapedia`, and push only to `origin/fourcolor/cont-20260626`.
