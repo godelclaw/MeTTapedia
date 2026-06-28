@@ -272,6 +272,40 @@ theorem nonzero_schwartz_solution_not_const_energy_regression
     ¬ ∃ E : ℝ, normalizedKineticEnergy S.velocity = fun _ : NSTime => E := by
   exact S.not_exists_const_normalizedKineticEnergy_of_pos_viscosity hν
 
+theorem schwartz_solution_local_min_energy_slice_zero_regression
+    {ν : ℝ} (hν : 0 < ν) (S : SchwartzConcreteNavierStokesSolution ν)
+    {t : NSTime}
+    (hmin : IsLocalMin (normalizedKineticEnergy S.velocity) t) :
+    ∀ x, S.velocity t x = 0 := by
+  exact
+    S.velocity_eq_zero_of_isLocalMin_normalizedKineticEnergy_of_pos_viscosity
+      hν hmin
+
+theorem schwartz_solution_local_max_energy_slice_zero_regression
+    {ν : ℝ} (hν : 0 < ν) (S : SchwartzConcreteNavierStokesSolution ν)
+    {t : NSTime}
+    (hmax : IsLocalMax (normalizedKineticEnergy S.velocity) t) :
+    ∀ x, S.velocity t x = 0 := by
+  exact
+    S.velocity_eq_zero_of_isLocalMax_normalizedKineticEnergy_of_pos_viscosity
+      hν hmax
+
+theorem nonzero_schwartz_solution_not_local_min_at_nonzero_regression
+    {ν : ℝ} (hν : 0 < ν) (S : NonzeroSchwartzConcreteNavierStokesSolution ν)
+    {t : NSTime} {x : NSSpace}
+    (hne : S.velocity t x ≠ 0) :
+    ¬ IsLocalMin (normalizedKineticEnergy S.velocity) t := by
+  exact S.not_isLocalMin_normalizedKineticEnergy_at_nonzero_of_pos_viscosity
+    hν hne
+
+theorem nonzero_schwartz_solution_not_local_max_at_nonzero_regression
+    {ν : ℝ} (hν : 0 < ν) (S : NonzeroSchwartzConcreteNavierStokesSolution ν)
+    {t : NSTime} {x : NSSpace}
+    (hne : S.velocity t x ≠ 0) :
+    ¬ IsLocalMax (normalizedKineticEnergy S.velocity) t := by
+  exact S.not_isLocalMax_normalizedKineticEnergy_at_nonzero_of_pos_viscosity
+    hν hne
+
 theorem not_exists_nonzero_schwartz_solution_forall_energy_derivative_zero_regression
     {ν : ℝ} (hν : 0 < ν) :
     ¬ ∃ S : NonzeroSchwartzConcreteNavierStokesSolution ν,
@@ -286,6 +320,26 @@ theorem not_exists_nonzero_schwartz_solution_const_energy_regression
       ∃ E : ℝ, normalizedKineticEnergy S.velocity = fun _ : NSTime => E := by
   exact
     not_exists_nonzeroSchwartzConcreteSolution_const_normalizedKineticEnergy_of_pos_viscosity
+      hν
+
+theorem not_exists_nonzero_schwartz_solution_nonzero_local_min_regression
+    {ν : ℝ} (hν : 0 < ν) :
+    ¬ ∃ S : NonzeroSchwartzConcreteNavierStokesSolution ν,
+      ∃ t x,
+        S.velocity t x ≠ 0 ∧
+          IsLocalMin (normalizedKineticEnergy S.velocity) t := by
+  exact
+    not_exists_nonzeroSchwartzConcreteSolution_nonzero_localMin_energy_of_pos_viscosity
+      hν
+
+theorem not_exists_nonzero_schwartz_solution_nonzero_local_max_regression
+    {ν : ℝ} (hν : 0 < ν) :
+    ¬ ∃ S : NonzeroSchwartzConcreteNavierStokesSolution ν,
+      ∃ t x,
+        S.velocity t x ≠ 0 ∧
+          IsLocalMax (normalizedKineticEnergy S.velocity) t := by
+  exact
+    not_exists_nonzeroSchwartzConcreteSolution_nonzero_localMax_energy_of_pos_viscosity
       hν
 
 theorem not_exists_nonzero_stationary_schwartz_solution_of_dissipation_ne_regression
