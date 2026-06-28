@@ -21,7 +21,31 @@ namespace FluidDynamics
 namespace NavierStokes
 
 open MeasureTheory
-open scoped ContDiff Laplacian RealInnerProductSpace LineDeriv SchwartzMap
+open scoped ContDiff Laplacian RealInnerProductSpace LineDeriv SchwartzMap Topology
+
+/-- Calculus helper used by the energy gates: a negative derivative forces an
+immediate strict decrease on the right. -/
+theorem eventually_right_lt_of_hasDerivAt_lt_zero
+    {f : ℝ → ℝ} {t d : ℝ}
+    (hderiv : HasDerivAt f d t) (hd : d < 0) :
+    ∀ᶠ s in 𝓝[>] t, f s < f t := by
+  let g : ℝ → ℝ := fun s => f s - f t
+  have hgderiv : HasDerivAt g d t := by
+    simpa [g] using hderiv.sub_const (f t)
+  have hslope_neg_ne : ∀ᶠ s in 𝓝[≠] t, slope g t s < 0 := by
+    exact hgderiv.tendsto_slope.eventually (eventually_lt_nhds hd)
+  filter_upwards [nhdsGT_le_nhdsNE t hslope_neg_ne, self_mem_nhdsWithin] with s hslope_neg hgt
+  have hden : 0 < s - t := sub_pos.mpr hgt
+  have hquot : (g s - g t) / (s - t) < 0 := by
+    simpa [slope_def_field] using hslope_neg
+  have hnum : g s - g t < 0 := by
+    have hmul : ((g s - g t) / (s - t)) * (s - t) < 0 * (s - t) :=
+      mul_lt_mul_of_pos_right hquot hden
+    rwa [div_mul_cancel₀, zero_mul] at hmul
+    exact ne_of_gt hden
+  have hg : g s < 0 := by
+    simpa [g] using hnum
+  simpa [g, sub_lt_iff_lt_add] using hg
 
 namespace SchwartzConcreteNavierStokesSolution
 
@@ -159,6 +183,21 @@ theorem normalizedKineticEnergy_derivative_lt_zero_of_exists_velocity_ne_zero
     hderiv.unique hidentity
   rw [hd]
   exact neg_neg_of_pos hrate
+
+/-- At positive viscosity, if a velocity slice is nonzero at time `t`, then
+normalized kinetic energy is eventually strictly lower on the right of `t`. -/
+theorem normalizedKineticEnergy_eventually_right_lt_of_exists_velocity_ne_zero
+    (hν : 0 < ν) {t : NSTime}
+    (hne : ∃ x : NSSpace, S.velocity t x ≠ 0) :
+    ∀ᶠ s in 𝓝[>] t,
+      normalizedKineticEnergy S.velocity s <
+        normalizedKineticEnergy S.velocity t := by
+  have hidentity := S.coordinateEnergyDissipationIdentity t
+  have hlt :
+      -(coordinateEnergyDissipationRate S.velocity ν t) < 0 :=
+    S.normalizedKineticEnergy_derivative_lt_zero_of_exists_velocity_ne_zero
+      hν hne hidentity
+  exact eventually_right_lt_of_hasDerivAt_lt_zero hidentity hlt
 
 /-- Zero normalized-energy derivative at every time is rigid at positive
 viscosity: an ordinary slice-Schwartz concrete solution satisfying this
@@ -477,6 +516,27 @@ theorem not_eventually_eq_normalizedKineticEnergy_at_nonzero_of_pos_viscosity
     SchwartzConcreteNavierStokesSolution.velocity_eq_zero_of_eventually_eq_normalizedKineticEnergy_of_pos_viscosity
       S.toSchwartzConcreteNavierStokesSolution hν hplateau x
   exact hne hzero
+
+/-- At a nonzero witness of a positive-viscosity nonzero solution, normalized
+kinetic energy cannot be eventually nondecreasing to the right. -/
+theorem not_eventually_right_normalizedKineticEnergy_nondecreasing_at_nonzero_of_pos_viscosity
+    (hν : 0 < ν) {t : NSTime} {x : NSSpace}
+    (hne : S.velocity t x ≠ 0) :
+    ¬ ∀ᶠ s in 𝓝[>] t,
+      normalizedKineticEnergy S.velocity t ≤
+        normalizedKineticEnergy S.velocity s := by
+  intro hnondec
+  have hdrop :
+      ∀ᶠ s in 𝓝[>] t,
+        normalizedKineticEnergy S.velocity s <
+          normalizedKineticEnergy S.velocity t :=
+    SchwartzConcreteNavierStokesSolution.normalizedKineticEnergy_eventually_right_lt_of_exists_velocity_ne_zero
+      S.toSchwartzConcreteNavierStokesSolution hν ⟨x, hne⟩
+  have hfalse : ∀ᶠ s in 𝓝[>] t, False := by
+    filter_upwards [hdrop, hnondec] with s hlt hle
+    exact not_lt_of_ge hle hlt
+  exact (by infer_instance : (𝓝[>] t).NeBot).ne
+    (Filter.eventually_false_iff_eq_bot.mp hfalse)
 
 end NonzeroSchwartzConcreteNavierStokesSolution
 
@@ -852,6 +912,23 @@ theorem not_exists_nonzeroSchwartzConcreteSolution_nonzero_energy_plateau_of_pos
   rintro ⟨S, t, x, hne, hplateau⟩
   exact S.not_eventually_eq_normalizedKineticEnergy_at_nonzero_of_pos_viscosity
     hν hne hplateau
+
+/-- No positive-viscosity nonzero slice-Schwartz solution can present a
+nonzero witness time at which normalized kinetic energy is eventually
+nondecreasing to the right. -/
+theorem
+    not_exists_nonzeroSchwartzConcreteSolution_nonzero_eventually_right_energy_nondecreasing_of_pos_viscosity
+    {ν : ℝ} (hν : 0 < ν) :
+    ¬ ∃ S : NonzeroSchwartzConcreteNavierStokesSolution ν,
+      ∃ t x,
+        S.velocity t x ≠ 0 ∧
+          (∀ᶠ s in 𝓝[>] t,
+            normalizedKineticEnergy S.velocity t ≤
+              normalizedKineticEnergy S.velocity s) := by
+  rintro ⟨S, t, x, hne, hnondec⟩
+  exact
+    S.not_eventually_right_normalizedKineticEnergy_nondecreasing_at_nonzero_of_pos_viscosity
+      hν hne hnondec
 
 end NavierStokes
 end FluidDynamics

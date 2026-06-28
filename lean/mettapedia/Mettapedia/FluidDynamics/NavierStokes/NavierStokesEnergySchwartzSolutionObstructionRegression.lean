@@ -12,7 +12,7 @@ namespace Mettapedia
 namespace FluidDynamics
 namespace NavierStokes
 
-open scoped ContDiff Laplacian RealInnerProductSpace LineDeriv SchwartzMap
+open scoped ContDiff Laplacian RealInnerProductSpace LineDeriv SchwartzMap Topology
 
 namespace Regression
 
@@ -280,6 +280,17 @@ theorem nonzero_schwartz_solution_energy_derivative_lt_zero_of_nonzero_slice_reg
     S.normalizedKineticEnergy_derivative_lt_zero_of_exists_velocity_ne_zero
       hν hne hderiv
 
+theorem schwartz_solution_energy_eventually_right_lt_of_nonzero_slice_regression
+    {ν : ℝ} (hν : 0 < ν) (S : SchwartzConcreteNavierStokesSolution ν)
+    {t : NSTime}
+    (hne : ∃ x : NSSpace, S.velocity t x ≠ 0) :
+    ∀ᶠ s in 𝓝[>] t,
+      normalizedKineticEnergy S.velocity s <
+        normalizedKineticEnergy S.velocity t := by
+  exact
+    S.normalizedKineticEnergy_eventually_right_lt_of_exists_velocity_ne_zero
+      hν hne
+
 theorem nonzero_schwartz_solution_exists_strict_energy_identity_regression
     {ν : ℝ} (hν : 0 < ν) (S : NonzeroSchwartzConcreteNavierStokesSolution ν) :
     ∃ t : NSTime,
@@ -355,6 +366,17 @@ theorem nonzero_schwartz_solution_not_energy_plateau_at_nonzero_regression
     S.not_eventually_eq_normalizedKineticEnergy_at_nonzero_of_pos_viscosity
       hν hne
 
+theorem nonzero_schwartz_solution_not_eventually_right_energy_nondecreasing_at_nonzero_regression
+    {ν : ℝ} (hν : 0 < ν) (S : NonzeroSchwartzConcreteNavierStokesSolution ν)
+    {t : NSTime} {x : NSSpace}
+    (hne : S.velocity t x ≠ 0) :
+    ¬ ∀ᶠ s in 𝓝[>] t,
+      normalizedKineticEnergy S.velocity t ≤
+        normalizedKineticEnergy S.velocity s := by
+  exact
+    S.not_eventually_right_normalizedKineticEnergy_nondecreasing_at_nonzero_of_pos_viscosity
+      hν hne
+
 theorem not_exists_nonzero_schwartz_solution_forall_energy_derivative_zero_regression
     {ν : ℝ} (hν : 0 < ν) :
     ¬ ∃ S : NonzeroSchwartzConcreteNavierStokesSolution ν,
@@ -412,6 +434,18 @@ theorem not_exists_nonzero_schwartz_solution_nonzero_energy_plateau_regression
               normalizedKineticEnergy S.velocity t) := by
   exact
     not_exists_nonzeroSchwartzConcreteSolution_nonzero_energy_plateau_of_pos_viscosity
+      hν
+
+theorem not_exists_nonzero_schwartz_solution_nonzero_eventually_right_energy_nondecreasing_regression
+    {ν : ℝ} (hν : 0 < ν) :
+    ¬ ∃ S : NonzeroSchwartzConcreteNavierStokesSolution ν,
+      ∃ t x,
+        S.velocity t x ≠ 0 ∧
+          (∀ᶠ s in 𝓝[>] t,
+            normalizedKineticEnergy S.velocity t ≤
+              normalizedKineticEnergy S.velocity s) := by
+  exact
+    not_exists_nonzeroSchwartzConcreteSolution_nonzero_eventually_right_energy_nondecreasing_of_pos_viscosity
       hν
 
 theorem not_exists_nonzero_stationary_schwartz_solution_of_dissipation_ne_regression
