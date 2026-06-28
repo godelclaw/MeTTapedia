@@ -583,6 +583,55 @@ theorem
       hOuter hInner hCross)
     hInterior
 
+/-- Multi-collar annulus-decomposition form of the lab survivor
+`closed_walk_source_lite_boundary_cycles_and_no_chord_to_purified_carrier`: once an honest
+annulus decomposition has a genuine intermediate boundary cycle, the no-selected-boundary-chord
+condition is no longer vacuous and gives a nonempty purified endpoint carrier. -/
+theorem
+    PlanarBoundaryAnnulusDecomposition.selectedBoundaryInteriorEdgeEndpointVertices_nonempty_of_interiorEdgesNotSelectedBoundaryChords_and_one_lt_numCollars
+    {G : SimpleGraph V} {emb : PlaneEmbeddingWithBoundary G}
+    (data : PlanarBoundaryAnnulusDecomposition emb)
+    (hChordFree : InteriorEdgesNotSelectedBoundaryChords emb)
+    (hnum : 1 < data.numCollars) :
+    (selectedBoundaryInteriorEdgeEndpointVertices emb).Nonempty :=
+  selectedBoundaryInteriorEdgeEndpointVertices_nonempty_of_interiorEdgesNotSelectedBoundaryChords_and_nonempty
+    hChordFree
+    (data.interiorEdgeSupport_nonempty_of_one_lt_numCollars hnum)
+
+/-- Multi-collar annulus-decomposition form of the selected-boundary-induced survivor: induced
+selected boundary support gives the chord-free premise, while the first intermediate boundary
+cycle supplies the live interior edge. -/
+theorem
+    PlanarBoundaryAnnulusDecomposition.selectedBoundaryInteriorEdgeEndpointVertices_nonempty_of_selectedBoundaryInducedSubgraph_and_one_lt_numCollars
+    {G : SimpleGraph V} {emb : PlaneEmbeddingWithBoundary G}
+    (data : PlanarBoundaryAnnulusDecomposition emb)
+    (hInduced : SelectedBoundaryInducedSubgraph emb)
+    (hnum : 1 < data.numCollars) :
+    (selectedBoundaryInteriorEdgeEndpointVertices emb).Nonempty :=
+  data.selectedBoundaryInteriorEdgeEndpointVertices_nonempty_of_interiorEdgesNotSelectedBoundaryChords_and_one_lt_numCollars
+    (interiorEdgesNotSelectedBoundaryChords_of_selectedBoundaryInducedSubgraph hInduced)
+    hnum
+
+/-- Multi-collar annulus-decomposition form of the split-boundary repaired survivor: induced
+outer/inner boundary components plus cross-component chord-freeness give the chord-free premise,
+and the decomposition's first intermediate boundary cycle supplies the live interior edge. -/
+theorem
+    PlanarBoundaryAnnulusDecomposition.selectedBoundaryInteriorEdgeEndpointVertices_nonempty_of_inducedBoundaryComponents_of_crossComponentChordFree_and_one_lt_numCollars
+    {G : SimpleGraph V} {emb : PlaneEmbeddingWithBoundary G}
+    (data : PlanarBoundaryAnnulusDecomposition emb)
+    (hOuter : BoundaryEdgeSetInducedSubgraph data.outerAmbientBoundary)
+    (hInner : BoundaryEdgeSetInducedSubgraph data.innerAmbientBoundary)
+    (hCross :
+      BoundaryEdgeSetCrossComponentChordFree
+        data.outerAmbientBoundary data.innerAmbientBoundary)
+    (hnum : 1 < data.numCollars) :
+    (selectedBoundaryInteriorEdgeEndpointVertices emb).Nonempty :=
+  data.selectedBoundaryInteriorEdgeEndpointVertices_nonempty_of_interiorEdgesNotSelectedBoundaryChords_and_one_lt_numCollars
+    (data.toPlanarBoundaryAnnulusBoundaryData
+      |>.interiorEdgesNotSelectedBoundaryChords_of_inducedBoundaryComponents_of_crossComponentChordFree
+        hOuter hInner hCross)
+    hnum
+
 /-- Graph-level form of the chord-free sufficient condition for a nonempty selected-boundary
 purified interior-edge endpoint carrier. -/
 theorem exists_selectedBoundaryInteriorEdgeEndpointVertices_nonempty_of_exists_interiorEdgesNotSelectedBoundaryChords_and_nonempty
