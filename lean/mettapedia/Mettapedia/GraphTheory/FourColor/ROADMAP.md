@@ -256,6 +256,15 @@ closure theorem
 `theorem49BoundaryRootSynthesis_and_boundaryTargetCoverage_of_theorem49BoundaryTargetClassifierControl_of_forced_vanishing_boundaryZero_subset_theorem49BoundaryTarget_of_no_missing_finsetControl`
 therefore makes the remaining algebraic obligation precise: prove the exact
 shell subset certificate, or formalize the evader produced by its failure.
+Lean now also records the equivalence
+`forced_vanishing_boundaryZero_subset_theorem49BoundaryTarget_iff_no_boundaryZeroEvader_with_theorem49BoundaryVertexKirchhoffFailure`
+and the route-facing binary theorem
+`theorem49BoundaryRootSynthesis_and_boundaryTargetCoverage_or_boundaryZeroEvader_with_theorem49BoundaryVertexKirchhoffFailure_of_theorem49BoundaryTargetClassifierControl_of_no_missing_finsetControl`:
+under target classifier control and a closed checker, the subset certificate
+closes synthesis/target coverage, while failure of the certificate is already
+the genuine vertex-Kirchhoff evader.  The next mathematical step is therefore
+not another interface theorem; it is the exact shell subset certificate itself,
+or a formalized counterexample to it.
 
 ## The open problem
 
@@ -277,9 +286,11 @@ longer acceptable progress.
    selected-boundary-zero evader with a concrete theorem-4.9 boundary-vertex
    Kirchhoff failure, plus a decreasing worklist edge; and the row-span/subset
    bridge says the exact remaining certificate is that every forced-vanishing
-   boundary-zero chain lies in the theorem-4.9 target.  The remaining crux is
-   whether exact shell/CAP5 data proves that subset certificate uniformly, or
-   whether a genuine vertex-Kirchhoff failure evader exists.
+   boundary-zero chain lies in the theorem-4.9 target.  The exact binary theorem
+   now packages this as synthesis/target coverage or a genuine evader.  The
+   remaining crux is whether exact shell/CAP5 data proves that subset
+   certificate uniformly, or whether a genuine vertex-Kirchhoff failure evader
+   exists.
 
 The historical trichotomy below remains useful background:
 
