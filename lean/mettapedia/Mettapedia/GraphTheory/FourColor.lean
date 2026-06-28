@@ -5,5 +5,6 @@ import Mettapedia.GraphTheory.FourColor.CAP5Reducibility
 import Mettapedia.GraphTheory.FourColor.CAP5WitnessGenerator
 import Mettapedia.GraphTheory.FourColor.CAP5PathXorDetector
 import Mettapedia.GraphTheory.FourColor.Theorem49BoundaryZeroForcedEdgeRegression
+import Mettapedia.GraphTheory.FourColor.Theorem49BoundaryZeroForcedEdgeCanonicalWitnessRegression
 import Mettapedia.GraphTheory.FourColor.CDLFlow
 import Mettapedia.GraphTheory.FourColor.Goal
