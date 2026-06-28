@@ -2742,6 +2742,87 @@ theorem theorem49BoundaryTargetClassifierControl_iff_no_targetEvader
       emb (Theorem49BoundaryVertices emb) p0Inside p4Inside side classifier
 
 /--
+Target-level dimension fork.  If the emitted CAP5 classifier is too small to meet the
+boundary-zero plus theorem-4.9 Kirchhoff target dimension bound, the algebraic failure is a
+genuine nonzero `W0(H)` evader for the enumerated forced edges.
+-/
+theorem exists_theorem49BoundaryTargetEvader_of_emittedFinset_card_add_boundary_card_add_theorem49BoundaryVertices_card_lt
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    [Fintype G.edgeSet]
+    (emb : PlaneEmbeddingWithBoundary G)
+    (p0Inside p4Inside : Bool) (side : V → Prop)
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (hcard :
+      classifier.emittedFinset.card +
+          Fintype.card {e : G.edgeSet //
+            e ∈ selectedBoundarySupport emb.faceBoundary emb.faces emb.faces} +
+        Fintype.card {v : V // v ∈ Theorem49BoundaryVertices emb} <
+        Fintype.card G.edgeSet) :
+    ∃ z : G.edgeSet → Color,
+      z ∈ Theorem49BoundaryTarget emb ∧
+        z ≠ 0 ∧
+          ∀ e : G.edgeSet,
+            data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e →
+              z e = 0 := by
+  by_contra hnoEvader
+  have hcontrolTarget :
+      ∀ ⦃z : G.edgeSet → Color⦄,
+        z ∈ Theorem49BoundaryTarget emb →
+        (∀ e ∈ classifier.emittedFinset, z e = 0) →
+          z = 0 :=
+    (data.theorem49BoundaryTargetClassifierControl_iff_no_targetEvader
+      emb p0Inside p4Inside side classifier).2 hnoEvader
+  exact
+    (data.not_classifierKirchhoffControl_of_emittedFinset_card_add_boundary_card_add_vertex_card_lt
+      emb (Theorem49BoundaryVertices emb) p0Inside p4Inside side classifier hcard)
+      (by
+        intro z hz hvanish
+        exact hcontrolTarget
+          (by simpa [Theorem49BoundaryTarget, Theorem49BoundaryVertices] using hz)
+          hvanish)
+
+/--
+No-evader dimension lower bound for the theorem-4.9 target.  Any CAP5 classifier with no
+nonzero `W0(H)` evader must emit enough coordinates to meet the boundary-zero plus target
+Kirchhoff dimension bound.
+-/
+theorem edge_card_le_emittedFinset_card_add_boundary_card_add_theorem49BoundaryVertices_card_of_no_targetEvader
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    [Fintype G.edgeSet]
+    (emb : PlaneEmbeddingWithBoundary G)
+    (p0Inside p4Inside : Bool) (side : V → Prop)
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (hnoEvader :
+      ¬ ∃ z : G.edgeSet → Color,
+        z ∈ Theorem49BoundaryTarget emb ∧
+          z ≠ 0 ∧
+            ∀ e : G.edgeSet,
+              data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e →
+                z e = 0) :
+    Fintype.card G.edgeSet ≤
+      classifier.emittedFinset.card +
+          Fintype.card {e : G.edgeSet //
+            e ∈ selectedBoundarySupport emb.faceBoundary emb.faces emb.faces} +
+        Fintype.card {v : V // v ∈ Theorem49BoundaryVertices emb} := by
+  have hcontrolTarget :
+      ∀ ⦃z : G.edgeSet → Color⦄,
+        z ∈ Theorem49BoundaryTarget emb →
+        (∀ e ∈ classifier.emittedFinset, z e = 0) →
+          z = 0 :=
+    (data.theorem49BoundaryTargetClassifierControl_iff_no_targetEvader
+      emb p0Inside p4Inside side classifier).2 hnoEvader
+  exact
+    data.edge_card_le_emittedFinset_card_add_boundary_card_add_vertex_card_of_classifierKirchhoffControl
+      emb (Theorem49BoundaryVertices emb) p0Inside p4Inside side classifier
+      (by
+        intro z hz hvanish
+        exact hcontrolTarget
+          (by simpa [Theorem49BoundaryTarget, Theorem49BoundaryVertices] using hz)
+          hvanish)
+
+/--
 Coverage lower bound for the Kirchhoff target.  If the enumerated CAP5 forced-edge predicate
 meets every nonzero boundary-zero Kirchhoff chain, then the emitted classifier must satisfy the
 target-space dimension inequality.
