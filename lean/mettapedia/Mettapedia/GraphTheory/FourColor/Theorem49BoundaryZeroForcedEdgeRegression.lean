@@ -4712,6 +4712,160 @@ theorem positiveTwoCollarToy_boundaryZeroKirchhoff_no_evader_of_vanishes_on_ptcP
   exact positiveTwoCollarToy_boundaryZeroKirchhoff_no_evader_of_pathEdge_values
     z hz hptcP34 hptcP45 hptcP53
 
+theorem positiveTwoCollarToy_selectedBoundarySupport_eq :
+    selectedBoundarySupport
+        positiveTwoCollarToyEmbedding.faceBoundary
+        positiveTwoCollarToyEmbedding.faces
+        positiveTwoCollarToyEmbedding.faces =
+      ({ptcO01, ptcO12, ptcO20, ptcI67, ptcI78, ptcI86} :
+        Finset positiveTwoCollarToyGraph.edgeSet) := by
+  ext e
+  rcases positiveTwoCollarToy_edge_eq e with
+    rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl <;>
+    decide
+
+theorem positiveTwoCollarToy_boundaryZero_has_evader_of_control_card_le_two
+    (control : Finset positiveTwoCollarToyGraph.edgeSet) (hcard : control.card ≤ 2) :
+    ∃ z : positiveTwoCollarToyGraph.edgeSet → Color,
+      z ∈ planarBoundaryZeroSubmodule positiveTwoCollarToyEmbedding ∧
+      (∀ e ∈ control, z e = 0) ∧ z ≠ 0 := by
+  refine exists_mem_planarBoundaryZeroSubmodule_of_control_card_add_boundary_card_lt
+    positiveTwoCollarToyEmbedding control ?_
+  have hboundary :
+      Fintype.card {e : positiveTwoCollarToyGraph.edgeSet //
+        e ∈ selectedBoundarySupport
+          positiveTwoCollarToyEmbedding.faceBoundary
+          positiveTwoCollarToyEmbedding.faces
+          positiveTwoCollarToyEmbedding.faces} = 6 := by
+    rw [positiveTwoCollarToy_selectedBoundarySupport_eq]
+    decide
+  have hedge : Fintype.card positiveTwoCollarToyGraph.edgeSet = 9 := by
+    decide
+  rw [hboundary, hedge]
+  omega
+
+theorem positiveTwoCollarToy_boundaryZero_exactMinimumControlCard :
+    (∃ control : Finset positiveTwoCollarToyGraph.edgeSet,
+      control.card = 3 ∧
+        ∀ ⦃z : positiveTwoCollarToyGraph.edgeSet → Color⦄,
+          z ∈ planarBoundaryZeroSubmodule positiveTwoCollarToyEmbedding →
+          (∀ e ∈ control, z e = 0) →
+          z = 0) ∧
+    (∀ control : Finset positiveTwoCollarToyGraph.edgeSet,
+      (∀ ⦃z : positiveTwoCollarToyGraph.edgeSet → Color⦄,
+        z ∈ planarBoundaryZeroSubmodule positiveTwoCollarToyEmbedding →
+        (∀ e ∈ control, z e = 0) →
+        z = 0) →
+      3 ≤ control.card) := by
+  constructor
+  · refine ⟨({ptcP34, ptcP45, ptcP53} : Finset positiveTwoCollarToyGraph.edgeSet),
+      by decide, ?_⟩
+    intro z hzBoundary hcontrol
+    exact positiveTwoCollarToy_boundaryZero_no_evader_of_vanishes_on_pathEdges
+      z hzBoundary hcontrol
+  · intro control hcontrol
+    by_contra hnot
+    have hle : control.card ≤ 2 := by omega
+    rcases positiveTwoCollarToy_boundaryZero_has_evader_of_control_card_le_two
+        control hle with
+      ⟨z, hzBoundary, hvanish, hzNonzero⟩
+    exact hzNonzero (hcontrol hzBoundary hvanish)
+
+def positiveTwoCollarToyNoForceKirchhoffEvader :
+    positiveTwoCollarToyGraph.edgeSet → Color :=
+  indicatorChain red
+    ({ptcP34, ptcP45, ptcP53} : Finset positiveTwoCollarToyGraph.edgeSet)
+
+theorem positiveTwoCollarToyNoForceKirchhoffEvader_mem_planarBoundaryZeroSubmodule :
+    positiveTwoCollarToyNoForceKirchhoffEvader ∈
+      planarBoundaryZeroSubmodule positiveTwoCollarToyEmbedding := by
+  intro e he
+  rcases positiveTwoCollarToy_edge_eq e with
+    rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl
+  · decide
+  · decide
+  · decide
+  · decide
+  · decide
+  · decide
+  · exact False.elim (ptcP34_not_mem_selectedBoundarySupport he)
+  · exact False.elim (ptcP45_not_mem_selectedBoundarySupport he)
+  · exact False.elim (ptcP53_not_mem_selectedBoundarySupport he)
+
+theorem positiveTwoCollarToyNoForceKirchhoffEvader_mem_kirchhoffSubmodule :
+    positiveTwoCollarToyNoForceKirchhoffEvader ∈
+      kirchhoffSubmodule positiveTwoCollarToyGraph positiveTwoCollarToyKirchhoffVertices := by
+  intro v hv
+  have hv_cases : v = (3 : Fin 9) ∨ v = 4 ∨ v = 5 := by
+    simpa [positiveTwoCollarToyKirchhoffVertices] using hv
+  rcases hv_cases with rfl | rfl | rfl
+  · rw [positiveTwoCollarToy_vertexKirchhoffSum_three]
+    simp [positiveTwoCollarToyNoForceKirchhoffEvader]
+  · rw [positiveTwoCollarToy_vertexKirchhoffSum_four]
+    simp [positiveTwoCollarToyNoForceKirchhoffEvader]
+  · rw [positiveTwoCollarToy_vertexKirchhoffSum_five]
+    simp [positiveTwoCollarToyNoForceKirchhoffEvader]
+
+theorem positiveTwoCollarToy_emptyControl_has_boundaryZeroKirchhoff_evader :
+    positiveTwoCollarToyNoForceKirchhoffEvader ∈
+        theorem49BoundaryZeroKirchhoffSubspace
+          positiveTwoCollarToyEmbedding positiveTwoCollarToyKirchhoffVertices ∧
+      positiveTwoCollarToyNoForceKirchhoffEvader ptcP34 = red ∧
+      positiveTwoCollarToyNoForceKirchhoffEvader ptcP45 = red ∧
+      positiveTwoCollarToyNoForceKirchhoffEvader ptcP53 = red ∧
+      positiveTwoCollarToyNoForceKirchhoffEvader ≠ 0 := by
+  refine ⟨⟨positiveTwoCollarToyNoForceKirchhoffEvader_mem_kirchhoffSubmodule,
+    positiveTwoCollarToyNoForceKirchhoffEvader_mem_planarBoundaryZeroSubmodule⟩,
+    by simp [positiveTwoCollarToyNoForceKirchhoffEvader],
+    by simp [positiveTwoCollarToyNoForceKirchhoffEvader],
+    by simp [positiveTwoCollarToyNoForceKirchhoffEvader], ?_⟩
+  intro hzero
+  have h := congrFun hzero ptcP34
+  simp [positiveTwoCollarToyNoForceKirchhoffEvader] at h
+
+theorem positiveTwoCollarToy_boundaryZeroKirchhoff_has_evader_of_control_card_lt_one
+    (control : Finset positiveTwoCollarToyGraph.edgeSet) (hcard : control.card < 1) :
+    ∃ z : positiveTwoCollarToyGraph.edgeSet → Color,
+      z ∈ theorem49BoundaryZeroKirchhoffSubspace
+          positiveTwoCollarToyEmbedding positiveTwoCollarToyKirchhoffVertices ∧
+      (∀ e ∈ control, z e = 0) ∧ z ≠ 0 := by
+  have hcardZero : control.card = 0 := by omega
+  have hcontrolEmpty : control = ∅ := Finset.card_eq_zero.1 hcardZero
+  refine ⟨positiveTwoCollarToyNoForceKirchhoffEvader,
+    positiveTwoCollarToy_emptyControl_has_boundaryZeroKirchhoff_evader.1,
+    ?_, positiveTwoCollarToy_emptyControl_has_boundaryZeroKirchhoff_evader.2.2.2.2⟩
+  intro e he
+  rw [hcontrolEmpty] at he
+  simp at he
+
+theorem positiveTwoCollarToy_boundaryZeroKirchhoff_exactMinimumControlCard :
+    (∃ control : Finset positiveTwoCollarToyGraph.edgeSet,
+      control.card = 1 ∧
+        ∀ ⦃z : positiveTwoCollarToyGraph.edgeSet → Color⦄,
+          z ∈ theorem49BoundaryZeroKirchhoffSubspace
+              positiveTwoCollarToyEmbedding positiveTwoCollarToyKirchhoffVertices →
+          (∀ e ∈ control, z e = 0) →
+          z = 0) ∧
+    (∀ control : Finset positiveTwoCollarToyGraph.edgeSet,
+      (∀ ⦃z : positiveTwoCollarToyGraph.edgeSet → Color⦄,
+        z ∈ theorem49BoundaryZeroKirchhoffSubspace
+            positiveTwoCollarToyEmbedding positiveTwoCollarToyKirchhoffVertices →
+        (∀ e ∈ control, z e = 0) →
+        z = 0) →
+      1 ≤ control.card) := by
+  constructor
+  · refine ⟨({ptcP34} : Finset positiveTwoCollarToyGraph.edgeSet), by decide, ?_⟩
+    intro z hz hcontrol
+    exact positiveTwoCollarToy_boundaryZeroKirchhoff_no_evader_of_vanishes_on_ptcP34
+      z hz (hcontrol ptcP34 (by simp))
+  · intro control hcontrol
+    by_contra hnot
+    have hlt : control.card < 1 := Nat.lt_of_not_ge hnot
+    rcases positiveTwoCollarToy_boundaryZeroKirchhoff_has_evader_of_control_card_lt_one
+        control hlt with
+      ⟨z, hz, hvanish, hzNonzero⟩
+    exact hzNonzero (hcontrol hz hvanish)
+
 /-! ## Two-band annulus stress shell -/
 
 def twoBandAnnulusGraph : SimpleGraph (Fin 9) :=
