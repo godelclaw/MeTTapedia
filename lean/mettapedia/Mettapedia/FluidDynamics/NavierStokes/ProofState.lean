@@ -216,18 +216,18 @@ def navierNonzeroSchwartzAntiProfileAmplitudeBoundaryNode : NavierProofNode wher
 def navierNonzeroSchwartzStationaryDissipationGateNode : NavierProofNode where
   id := "navier.energy.nonzero-schwartz-stationary-dissipation-gate"
   status := .checked
-  truthValue := ⟨86, 90⟩
-  evidence := "coordinateEnergyDissipationRate_eq_zero_of_velocity_timeIndependent proves that any slice-Schwartz concrete Navier-Stokes solution whose velocity is time-independent has zero corrected coordinate dissipation at every time; not_exists_nonzeroSchwartzConcreteSolution_velocity_timeIndependent_of_coordinateEnergyDissipationRate_ne_zero gives the nonzero-interface contrapositive. PLN STV <s=.86,c=.90>, ITV [.774,.874], PROGRESS 65%."
-  blocker := "This rules out stationary nonzero canaries with nonzero corrected dissipation. The remaining positive canary must either be nonstationary or prove an exact stationary Schwartz solution whose corrected dissipation vanishes."
+  truthValue := ⟨89, 91⟩
+  evidence := "velocity_eq_zero_of_coordinateEnstrophyAt_eq_zero proves that zero corrected coordinate enstrophy on a Schwartz velocity slice forces the slice to vanish; coordinateEnergyDissipationRate_eq_zero_of_velocity_timeIndependent and velocity_eq_zero_of_velocity_timeIndependent_of_pos_viscosity then prove every positive-viscosity time-independent slice-Schwartz concrete solution is identically zero; not_exists_nonzeroSchwartzConcreteSolution_velocity_timeIndependent_of_pos_viscosity gives the nonzero-interface obstruction. PLN STV <s=.89,c=.91>, ITV [.8099,.8999], PROGRESS 66%."
+  blocker := "This rules out positive-viscosity stationary nonzero slice-Schwartz canaries. The remaining positive canary must be genuinely time-dependent and close the full pressure-slice momentum equation."
 
 /-- The explicit nonzero slice-Schwartz canary remains open until the
 finite-mode closure hypotheses are inhabited by concrete profiles. -/
 def navierNonzeroSchwartzCanaryNode : NavierProofNode where
   id := "navier.energy.nonzero-schwartz-canary"
   status := .openGoal
-  truthValue := ⟨60, 86⟩
-  evidence := "The checked nonzero kernel removes the old zero-flow loophole from the energy-identity surface; the line-invariant, rank-one zero-convection, symmetric-shear, anti-profile cancellation, exact anti-profile amplitude-boundary, and stationary dissipation-gate obstructions remove six shortcut classes; and the localized stream-function seed gives a concrete nonzero divergence-free Schwartz datum. No unconditional nonzero exact slice-Schwartz solution inhabitant is committed yet. PLN STV <s=.60,c=.86>, ITV [.516,.656], PROGRESS 65%."
-  blocker := "Close or refute the pressure-slice closure and time evolution for the explicit localized stream-function seed or a comparable non-polynomial Schwartz profile; do not count a conditional constructor, seed-only datum, rank-one zero-convection obstruction, profile-level nonzero anti-profile cancellation, an amplitude-boundary guardrail, a stationary dissipation gate, or algebraic finite-mode boundary case as the requested positive canary."
+  truthValue := ⟨61, 86⟩
+  evidence := "The checked nonzero kernel removes the old zero-flow loophole from the energy-identity surface; the line-invariant, rank-one zero-convection, symmetric-shear, anti-profile cancellation, exact anti-profile amplitude-boundary, and positive-viscosity stationary obstructions remove six shortcut classes; and the localized stream-function seed gives a concrete nonzero divergence-free Schwartz datum. No unconditional nonzero exact slice-Schwartz solution inhabitant is committed yet. PLN STV <s=.61,c=.86>, ITV [.5246,.6646], PROGRESS 66%."
+  blocker := "Close or refute the pressure-slice closure and time evolution for the explicit localized stream-function seed or a comparable non-polynomial Schwartz profile; do not count a conditional constructor, seed-only datum, rank-one zero-convection obstruction, profile-level nonzero anti-profile cancellation, an amplitude-boundary guardrail, a positive-viscosity stationary obstruction, or algebraic finite-mode boundary case as the requested positive canary."
 
 /-- Supercritical scaling remains a route obstacle, not a closed theorem here. -/
 def navierSupercriticalScalingNode : NavierProofNode where
@@ -630,9 +630,15 @@ theorem currentNavierNonzeroSchwartzAntiProfileAmplitudeBoundary_node :
 
 theorem currentNavierNonzeroSchwartzStationaryDissipationGate_node
     {ν : ℝ} {u₀ : NSInitialVelocity} :
-    (∀ S : SchwartzConcreteNavierStokesSolution ν,
+    (∀ S : SchwartzConcreteNavierStokesSolution ν, ∀ t : NSTime,
+      coordinateEnstrophyAt S.velocity t = 0 →
+        ∀ x : NSSpace, S.velocity t x = 0) ∧
+      (∀ S : SchwartzConcreteNavierStokesSolution ν,
       S.velocity = timeIndependentVelocity u₀ →
         ∀ t : NSTime, coordinateEnergyDissipationRate S.velocity ν t = 0) ∧
+      (∀ _hν : 0 < ν,
+        ¬ ∃ S : NonzeroSchwartzConcreteNavierStokesSolution ν,
+          S.velocity = timeIndependentVelocity u₀) ∧
       ((∃ t : NSTime,
         coordinateEnergyDissipationRate (timeIndependentVelocity u₀) ν t ≠ 0) →
         ¬ ∃ S : NonzeroSchwartzConcreteNavierStokesSolution ν,
@@ -640,8 +646,13 @@ theorem currentNavierNonzeroSchwartzStationaryDissipationGate_node
       navierNonzeroSchwartzStationaryDissipationGateNode.status = .checked ∧
       navierNonzeroSchwartzCanaryNode.status = .openGoal := by
   exact
-    ⟨fun S hvelocity t =>
+    ⟨fun S t henst =>
+        S.velocity_eq_zero_of_coordinateEnstrophyAt_eq_zero henst,
+      fun S hvelocity t =>
         S.coordinateEnergyDissipationRate_eq_zero_of_velocity_timeIndependent hvelocity t,
+      fun hν =>
+        not_exists_nonzeroSchwartzConcreteSolution_velocity_timeIndependent_of_pos_viscosity
+          hν,
       fun hdiss =>
         not_exists_nonzeroSchwartzConcreteSolution_velocity_timeIndependent_of_coordinateEnergyDissipationRate_ne_zero
           hdiss,

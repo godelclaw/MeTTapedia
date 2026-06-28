@@ -37,6 +37,12 @@ theorem nonzero_schwartz_solution_has_non_lineInvariant_slice_regression
       ¬ TranslationInvariantAlong v (fun x : NSSpace => S.velocitySlice t x) := by
   exact every_nonzeroSchwartzConcreteSolution_has_non_lineInvariant_slice S hv
 
+theorem zero_coordinate_enstrophy_schwartz_slice_zero_regression
+    {ν : ℝ} (S : SchwartzConcreteNavierStokesSolution ν)
+    {t : NSTime} (henst : coordinateEnstrophyAt S.velocity t = 0) :
+    ∀ x, S.velocity t x = 0 := by
+  exact S.velocity_eq_zero_of_coordinateEnstrophyAt_eq_zero henst
+
 theorem stationary_schwartz_solution_dissipation_zero_regression
     {ν : ℝ} (S : SchwartzConcreteNavierStokesSolution ν)
     {u₀ : NSInitialVelocity}
@@ -55,6 +61,24 @@ theorem stationary_nonzero_schwartz_solution_dissipation_zero_regression
     S.coordinateEnergyDissipationRate_eq_zero_of_velocity_timeIndependent
       hvelocity t
 
+theorem stationary_schwartz_solution_zero_of_pos_viscosity_regression
+    {ν : ℝ} (hν : 0 < ν) (S : SchwartzConcreteNavierStokesSolution ν)
+    {u₀ : NSInitialVelocity}
+    (hvelocity : S.velocity = timeIndependentVelocity u₀) :
+    ∀ t x, S.velocity t x = 0 := by
+  exact
+    S.velocity_eq_zero_of_velocity_timeIndependent_of_pos_viscosity
+      hν hvelocity
+
+theorem stationary_nonzero_schwartz_solution_zero_of_pos_viscosity_regression
+    {ν : ℝ} (hν : 0 < ν) (S : NonzeroSchwartzConcreteNavierStokesSolution ν)
+    {u₀ : NSInitialVelocity}
+    (hvelocity : S.velocity = timeIndependentVelocity u₀) :
+    ∀ t x, S.velocity t x = 0 := by
+  exact
+    S.velocity_eq_zero_of_velocity_timeIndependent_of_pos_viscosity
+      hν hvelocity
+
 theorem not_exists_nonzero_stationary_schwartz_solution_of_dissipation_ne_regression
     {ν : ℝ} {u₀ : NSInitialVelocity}
     (hdiss :
@@ -65,6 +89,14 @@ theorem not_exists_nonzero_stationary_schwartz_solution_of_dissipation_ne_regres
   exact
     not_exists_nonzeroSchwartzConcreteSolution_velocity_timeIndependent_of_coordinateEnergyDissipationRate_ne_zero
       hdiss
+
+theorem not_exists_nonzero_stationary_schwartz_solution_of_pos_viscosity_regression
+    {ν : ℝ} (hν : 0 < ν) {u₀ : NSInitialVelocity} :
+    ¬ ∃ S : NonzeroSchwartzConcreteNavierStokesSolution ν,
+      S.velocity = timeIndependentVelocity u₀ := by
+  exact
+    not_exists_nonzeroSchwartzConcreteSolution_velocity_timeIndependent_of_pos_viscosity
+      hν
 
 end Regression
 
