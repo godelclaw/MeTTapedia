@@ -1,6 +1,6 @@
 # FourColor: goal, status, and how to approach it
 
-*Last restructured: 2026-06-10.  Last proof-state update: 2026-06-28.  This file replaces the 3,577-line
+*Last restructured: 2026-06-10.  Last proof-state update: 2026-06-29.  This file replaces the 3,577-line
 `Theorem49NextHardProblemSummary.lean` prose (now in `Legacy/`) as the
 entry point.*
 
@@ -369,10 +369,19 @@ realized by a single vertex-side predicate, nor by the CAP5 exceptional
 outside-crossing normal form.  The consolidated wrappers
 `closedWalkExactShell_oneCollar_and_oddSideCut_obstruction` and
 `closedWalkExactShell_oneCollar_and_CAP5OddSideCut_obstruction` package this
-with the shell-wide one-collar obstruction.  The remaining geometric work is
+with the shell-wide one-collar obstruction.  The repair-removal side is now
+exposed at the graph-facing cyclic-cut interface as well:
+`CAP5ExceptionalCyclicSeparatorRepairRealization`,
+`not_CAP5ExceptionalCyclicSeparatorRepairRealization_of_cyclicallyFiveEdgeConnected`,
+and
+`closedWalkExactShell_oneCollar_and_CAP5CyclicSeparatorRepair_obstruction`
+say that realizing even one compatible exceptional CAP5/Jordan candidate as
+cyclic-cut data produces a cyclic edge cut of size at most four, impossible in
+a cyclically five-edge-connected graph; the wrapper packages this with the
+exact-shell one-collar/canonical obstruction.  The remaining geometric work is
 to prove that the residual side-cut/cyclic-separator surface always exposes
-such an odd-walk support or reduces to the two-interior-edge face
-contradiction, and then push the result through repair-removal.
+the odd-walk obstruction or this realized small-cut obstruction, or reduces to
+the two-interior-edge face contradiction.
 
 ## The open problem
 
@@ -387,10 +396,13 @@ longer acceptable progress.
    witness geometry.  The side-cut part is now structural for supports
    containing an odd closed walk: those supports cannot realize a cyclic
    separator by a single vertex side, including in the CAP5 outside-crossing
-   normal form.  The remaining Move-1 gap is to prove the residual
-   side-cut/cyclic-separator layer necessarily has that odd-walk support or
-   reduces to the face obstruction, and then carry the theorem through
-   repair-removal.
+   normal form.  The repair-removal surface now also has the fundamental
+   small-cut obstruction: any compatible exceptional CAP5/Jordan candidate
+   realized as cyclic-cut data is a forbidden cyclic edge cut of size at most
+   four under cyclic five-edge-connectivity.  The remaining Move-1 gap is to
+   prove the residual side-cut/cyclic-separator layer necessarily enters the
+   odd-walk obstruction or this realized small-cut obstruction, or reduces to
+   the face obstruction.
 2. **Algebraic fork**: resolve the F2 cancellation oracle.  The current
    machine-checked statement is sharper than a one-way handoff: full
    selected-boundary-zero classifier control is equivalent to absence of a

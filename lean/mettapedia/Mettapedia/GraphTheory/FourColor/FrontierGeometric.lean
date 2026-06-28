@@ -170,6 +170,39 @@ theorem not_exists_exceptionalAnnulusCrossingOutsideEdge_of_closed_odd_walk_subs
     houtside
 
 /--
+The CAP5/Jordan repair-removal surface for the exceptional annulus branch: at least one
+compatible transported CAP5 boundary-edge candidate has been realized as actual cyclic-cut data
+in the ambient graph.  This is the topological endpoint the geometric repair must supply before
+the algebraic CAP5 lane can consume the exceptional branch.
+-/
+def CAP5ExceptionalCyclicSeparatorRepairRealization
+    [DecidableEq G.edgeSet]
+    {boundaryEdge : Fin 5 → G.edgeSet} {n : Nat}
+    (data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n)
+    (p0Inside p4Inside : Bool) : Prop :=
+  data.HasSomeExceptionalAnnulusCyclicCutRealizationData (G := G) p0Inside p4Inside
+
+omit [DecidableEq V] in
+/--
+Fundamental obstruction to the realized exceptional-annulus repair surface.  Once the CAP5/Jordan
+repair-removal step realizes even one compatible exceptional candidate as cyclic-cut data, it has
+produced a cyclic edge cut of size at most four.  In a cyclically five-edge-connected graph this is
+impossible, independently of which CAP5 orientation or side case was selected.
+-/
+theorem not_CAP5ExceptionalCyclicSeparatorRepairRealization_of_cyclicallyFiveEdgeConnected
+    [DecidableEq G.edgeSet]
+    {boundaryEdge : Fin 5 → G.edgeSet} {n : Nat}
+    (data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n)
+    (p0Inside p4Inside : Bool)
+    (hcyclic : CyclicallyFiveEdgeConnected G) :
+    ¬ CAP5ExceptionalCyclicSeparatorRepairRealization (G := G)
+      data p0Inside p4Inside := by
+  intro hrealization
+  exact hcyclic.noCyclicEdgeCutOfSizeAtMostFour
+    (data.hasCyclicEdgeCutOfSizeAtMostFour_of_someExceptionalAnnulusCyclicCutRealizationData
+      p0Inside p4Inside hrealization)
+
+/--
 Consolidated geometric fork obstruction for the currently live repair class.  A closed-walk
 exact shell rules out the source-bound canonical/one-collar repairs by the shared two-interior
 edge face obstruction; if the proposed side-cut support also contains an odd closed walk, the
@@ -220,5 +253,35 @@ theorem closedWalkExactShell_oneCollar_and_CAP5OddSideCut_obstruction
       not_exists_oneCollarAnnulusPreviousBoundaryWitnessGeometry_of_closedWalkExactShell shell,
       not_exists_exceptionalAnnulusCrossingOutsideEdge_of_closed_odd_walk_subset data
         p0Inside p4Inside p hodd hsubset⟩
+
+/--
+Repair-removal form of the consolidated geometric obstruction.  A closed-walk exact shell blocks
+the source-bound one-collar/canonical repairs by the two-interior-edge face obstruction, while
+cyclic five-edge-connectivity blocks the CAP5/Jordan exceptional cyclic-separator realization
+itself: any compatible realized candidate would be a forbidden cyclic edge cut of size at most
+four.  This moves the side-cut lane from packet refutations to the structural small-cut
+obstruction consumed by the CAP5 repair-removal interface.
+-/
+theorem closedWalkExactShell_oneCollar_and_CAP5CyclicSeparatorRepair_obstruction
+    [DecidableEq G.edgeSet]
+    {emb : PlaneEmbeddingWithBoundary G} (shell : ClosedWalkExactShell emb)
+    {boundaryEdge : Fin 5 → G.edgeSet} {n : Nat}
+    (data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n)
+    (p0Inside p4Inside : Bool)
+    (hcyclic : CyclicallyFiveEdgeConnected G) :
+    (¬ Nonempty
+      (PlanarBoundaryCanonicalWitnessChoice
+        shell.source.toPlanarBoundaryAnnulusBoundaryData)) ∧
+      (¬ ∃ collar : PlanarBoundaryAnnulusCollarGeometry emb, collar.numCollars = 1) ∧
+        (¬ ∃ previous : PlanarBoundaryAnnulusPreviousBoundaryWitnessGeometry emb,
+          previous.numCollars = 1) ∧
+          (¬ CAP5ExceptionalCyclicSeparatorRepairRealization (G := G)
+            data p0Inside p4Inside) := by
+  exact
+    ⟨not_nonempty_planarBoundaryCanonicalWitnessChoice_of_closedWalkExactShell shell,
+      not_exists_oneCollarAnnulusCollarGeometry_of_closedWalkExactShell shell,
+      not_exists_oneCollarAnnulusPreviousBoundaryWitnessGeometry_of_closedWalkExactShell shell,
+      not_CAP5ExceptionalCyclicSeparatorRepairRealization_of_cyclicallyFiveEdgeConnected
+        data p0Inside p4Inside hcyclic⟩
 
 end Mettapedia.GraphTheory.FourColor
