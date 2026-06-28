@@ -101,6 +101,21 @@ theorem not_three_edgeCrossesVertexSide_triangle
   by_cases ha : side a <;> by_cases hb : side b <;> by_cases hc : side c <;>
     simp [ha, hb, hc] at hnotab hnotbc hnotac
 
+/-- Finset form of the triangle parity obstruction.  If a proposed side-cut support contains
+the three edges of a triangle, then no single vertex-side predicate can make every listed edge
+cross the side.  This is the finite-checker shape used to reject odd-cycle side-cut packets. -/
+theorem not_forall_edgeCrossesVertexSide_of_triangle_subset
+    {G : SimpleGraph V} {side : V → Prop} {a b c : V}
+    {eab ebc eac : G.edgeSet} {edges : Finset G.edgeSet}
+    (heab_pair : (eab : Sym2 V) = s(a, b))
+    (hebc_pair : (ebc : Sym2 V) = s(b, c))
+    (heac_pair : (eac : Sym2 V) = s(a, c))
+    (heab_mem : eab ∈ edges) (hebc_mem : ebc ∈ edges) (heac_mem : eac ∈ edges) :
+    ¬ ∀ e : G.edgeSet, e ∈ edges → EdgeCrossesVertexSide G side e := by
+  intro hcross
+  exact not_three_edgeCrossesVertexSide_triangle heab_pair hebc_pair heac_pair
+    ⟨hcross eab heab_mem, hcross ebc hebc_mem, hcross eac heac_mem⟩
+
 /-- If every edge of a walk crosses a fixed vertex-side predicate, then the endpoint sides are
 equal for even-length walks and opposite for odd-length walks. -/
 theorem walk_all_edges_cross_side_relation
