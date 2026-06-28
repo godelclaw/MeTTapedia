@@ -255,6 +255,63 @@ def InteriorEdgesNotSelectedBoundaryChords {G : SimpleGraph V}
       ∀ b ∈ selectedBoundarySupport emb.faceBoundary emb.faces emb.faces,
         v ∉ (b : Sym2 V)
 
+/-- Edgewise endpoint no-touch condition for the selected-boundary purification route: no
+interior face-incidence edge shares any endpoint with any selected-boundary edge.  This is the
+finite edge-pair form used by the validation lab; it is stronger than
+`InteriorEdgesNotSelectedBoundaryChords`, which only asks for one surviving endpoint on each
+interior edge. -/
+def InteriorEdgesEndpointNoTouchSelectedBoundarySupport {G : SimpleGraph V}
+    (emb : PlaneEmbeddingWithBoundary G) : Prop :=
+  ∀ e ∈ interiorEdgeSupport emb.faceBoundary emb.faces,
+    ∀ b ∈ selectedBoundarySupport emb.faceBoundary emb.faces emb.faces,
+      ∀ v, v ∈ (e : Sym2 V) → v ∉ (b : Sym2 V)
+
+/-- The lab's edgewise endpoint no-touch predicate is exactly endpoint-support disjointness
+between the raw interior-edge endpoint carrier and the selected-boundary endpoint carrier. -/
+theorem
+    interiorEdgesEndpointNoTouchSelectedBoundarySupport_iff_endpointSupport_disjoint
+    {G : SimpleGraph V} {emb : PlaneEmbeddingWithBoundary G} :
+    InteriorEdgesEndpointNoTouchSelectedBoundarySupport emb ↔
+      Disjoint (interiorEdgeEndpointSupport emb)
+        (edgeEndpointSupport
+          (selectedBoundarySupport emb.faceBoundary emb.faces emb.faces)) := by
+  constructor
+  · intro hNoTouch
+    rw [Finset.disjoint_left]
+    intro v hvInterior hvBoundary
+    rcases (mem_interiorEdgeEndpointSupport_iff emb).1 hvInterior with
+      ⟨e, heInterior, hvEdge⟩
+    rcases (mem_edgeEndpointSupport_iff
+        (selectedBoundarySupport emb.faceBoundary emb.faces emb.faces)).1 hvBoundary with
+      ⟨b, hbBoundary, hvBoundaryEdge⟩
+    exact hNoTouch e heInterior b hbBoundary v hvEdge hvBoundaryEdge
+  · intro hDisjoint e heInterior b hbBoundary v hvInterior hvBoundary
+    have hvInteriorSupport : v ∈ interiorEdgeEndpointSupport emb :=
+      (mem_interiorEdgeEndpointSupport_iff emb).2
+        ⟨e, heInterior, hvInterior⟩
+    have hvBoundarySupport : v ∈ edgeEndpointSupport
+        (selectedBoundarySupport emb.faceBoundary emb.faces emb.faces) :=
+      (mem_edgeEndpointSupport_iff
+        (selectedBoundarySupport emb.faceBoundary emb.faces emb.faces)).2
+        ⟨b, hbBoundary, hvBoundary⟩
+    exact (Finset.disjoint_left.mp hDisjoint) hvInteriorSupport hvBoundarySupport
+
+/-- Endpoint no-touch is a direct sufficient condition for the weaker no-selected-boundary-chord
+condition. -/
+theorem interiorEdgesNotSelectedBoundaryChords_of_interiorEdgesEndpointNoTouchSelectedBoundarySupport
+    {G : SimpleGraph V} {emb : PlaneEmbeddingWithBoundary G}
+    (hNoTouch : InteriorEdgesEndpointNoTouchSelectedBoundarySupport emb) :
+    InteriorEdgesNotSelectedBoundaryChords emb := by
+  intro e heInterior
+  rcases Sym2.mk_surjective (e : Sym2 V) with ⟨⟨u, v⟩, huv⟩
+  refine ⟨u, ?_, ?_⟩
+  · rw [← huv]
+    exact Sym2.mem_mk_left u v
+  · intro b hbBoundary hub
+    exact hNoTouch e heInterior b hbBoundary u (by
+      rw [← huv]
+      exact Sym2.mem_mk_left u v) hub
+
 /-- The no-selected-boundary-chord condition is exactly the edgewise statement that every
 interior face-incidence edge contributes an endpoint to the selected-boundary-purified carrier. -/
 theorem
@@ -407,6 +464,32 @@ theorem selectedBoundaryInteriorEdgeEndpointVertices_nonempty_of_interiorEdgesNo
   (hasUnblockedInteriorEndpoint_iff_selectedBoundaryInteriorEdgeEndpointVertices_nonempty emb).1
     (hasUnblockedInteriorEndpoint_of_interiorEdgesNotSelectedBoundaryChords_and_nonempty
       hChordFree hInterior)
+
+/-- Endpoint no-touch gives the named unblocked endpoint witness as soon as there is a live
+interior face-incidence edge. -/
+theorem
+    hasUnblockedInteriorEndpoint_of_interiorEdgesEndpointNoTouchSelectedBoundarySupport_and_nonempty
+    {G : SimpleGraph V} {emb : PlaneEmbeddingWithBoundary G}
+    (hNoTouch : InteriorEdgesEndpointNoTouchSelectedBoundarySupport emb)
+    (hInterior : (interiorEdgeSupport emb.faceBoundary emb.faces).Nonempty) :
+    HasUnblockedInteriorEndpoint emb :=
+  hasUnblockedInteriorEndpoint_of_interiorEdgesNotSelectedBoundaryChords_and_nonempty
+    (interiorEdgesNotSelectedBoundaryChords_of_interiorEdgesEndpointNoTouchSelectedBoundarySupport
+      hNoTouch)
+    hInterior
+
+/-- Endpoint no-touch gives a nonempty selected-boundary-purified interior-edge endpoint carrier
+as soon as there is a live interior face-incidence edge. -/
+theorem
+    selectedBoundaryInteriorEdgeEndpointVertices_nonempty_of_interiorEdgesEndpointNoTouchSelectedBoundarySupport_and_nonempty
+    {G : SimpleGraph V} {emb : PlaneEmbeddingWithBoundary G}
+    (hNoTouch : InteriorEdgesEndpointNoTouchSelectedBoundarySupport emb)
+    (hInterior : (interiorEdgeSupport emb.faceBoundary emb.faces).Nonempty) :
+    (selectedBoundaryInteriorEdgeEndpointVertices emb).Nonempty :=
+  selectedBoundaryInteriorEdgeEndpointVertices_nonempty_of_interiorEdgesNotSelectedBoundaryChords_and_nonempty
+    (interiorEdgesNotSelectedBoundaryChords_of_interiorEdgesEndpointNoTouchSelectedBoundarySupport
+      hNoTouch)
+    hInterior
 
 /-- Selected-boundary inducedness gives the named unblocked endpoint witness as soon as there is a
 live interior face-incidence edge. -/
