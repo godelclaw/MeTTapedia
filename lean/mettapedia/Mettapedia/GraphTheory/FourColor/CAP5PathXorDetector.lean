@@ -9600,6 +9600,151 @@ theorem interiorSupportForced_or_remainingEdge
         (interiorEdgeSupport emb.faceBoundary emb.faces) heRemaining⟩
 
 /--
+Closed-worklist certificate for the all-interior F2 frontier.  If the primitive checker frontier
+is closed and the canonical interior-support worklist is empty, the CAP5 runner has reached the
+all-interior no-evader branch, so synthesis and target coverage both follow.
+-/
+theorem remainingInteriorSupportEmpty_synthesis_and_targetCoverage
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    [Fintype G.edgeSet] [FiniteDimensional F2 (G.edgeSet → Color)]
+    (emb : PlaneEmbeddingWithBoundary G) (C₀ : G.EdgeColoring Color)
+    (colorings : Set (G.EdgeColoring Color))
+    (hsubset : colorings ⊆ G.EdgeKempeClosure C₀)
+    (p0Inside p4Inside : Bool) (h : data.IsExceptional)
+    (side : V → Prop)
+    [∀ latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge,
+      Decidable ((CAP5ExceptionalAnnulusGeneratorReport.latentNode
+        boundaryEdge side latent).PortalCrosses)]
+    [∀ latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge,
+      Decidable ((CAP5ExceptionalAnnulusGeneratorReport.latentNode
+        boundaryEdge side latent).SideCycles)]
+    [∀ latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge,
+      Decidable ((CAP5ExceptionalAnnulusGeneratorReport.latentNode
+        boundaryEdge side latent).RealizedSeparator)]
+    (hcyclic : CyclicallyFiveEdgeConnected G)
+    (hportal_crosses :
+      ∀ edgeCandidate : CAP5ExceptionalAnnulusBoundaryEdgeSupportCandidate boundaryEdge,
+        data.RealizesExceptionalBoundarySupportOrientation
+            edgeCandidate.portalCandidate.orientation →
+        edgeCandidate.portalCandidate.sideCase =
+            CAP5ExceptionalAnnulusSideCase.ofPortalSides p0Inside p4Inside →
+        ∀ i : Fin 5, i ∈ edgeCandidate.portalCandidate.portalSet →
+          EdgeCrossesVertexSide G side (boundaryEdge i))
+    (hcycles : HasCycleOnSide G side ∧ HasCycleOnSide G (fun v => ¬ side v))
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (hredEmitted :
+      ∀ e ∈ classifier.emittedFinset,
+        Pi.single e red ∈ projectedColoringGeneratorSubspace emb colorings)
+    (hblueEmitted :
+      ∀ e ∈ classifier.emittedFinset,
+        Pi.single e blue ∈ projectedColoringGeneratorSubspace emb colorings)
+    (hredRemaining :
+      ∀ e ∈ classifier.remainingControlEdges
+          (interiorEdgeSupport emb.faceBoundary emb.faces),
+        Pi.single e red ∈ projectedColoringGeneratorSubspace emb colorings)
+    (hblueRemaining :
+      ∀ e ∈ classifier.remainingControlEdges
+          (interiorEdgeSupport emb.faceBoundary emb.faces),
+        Pi.single e blue ∈ projectedColoringGeneratorSubspace emb colorings)
+    (hremainingEmpty :
+      classifier.remainingControlEdges (interiorEdgeSupport emb.faceBoundary emb.faces) = ∅)
+    (hnoMissing :
+      ¬ ((∃ latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge,
+        latent ∈ CAP5ExceptionalAnnulusGeneratorLatent.all boundaryEdge ∧
+          (CAP5ExceptionalAnnulusGeneratorReport.latentNode
+            boundaryEdge side latent).MissingPortalCrossingEvidence) ∨
+        (∃ latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge,
+          latent ∈ CAP5ExceptionalAnnulusGeneratorLatent.all boundaryEdge ∧
+            (CAP5ExceptionalAnnulusGeneratorReport.latentNode
+              boundaryEdge side latent).MissingSelectedSideCycleEvidence) ∨
+          (∃ latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge,
+            latent ∈ CAP5ExceptionalAnnulusGeneratorLatent.all boundaryEdge ∧
+              (CAP5ExceptionalAnnulusGeneratorReport.latentNode
+                boundaryEdge side latent).MissingComplementarySideCycleEvidence))) :
+    Theorem49BoundaryRootSynthesis emb C₀ ∧
+      (∀ ⦃z : G.edgeSet → Color⦄,
+        z ∈ Theorem49BoundaryTarget emb →
+        z ≠ 0 →
+          ∃ e : G.edgeSet,
+            data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e ∧
+              z e ≠ 0) := by
+  rcases data.interiorSupportForced_or_remainingEdge
+      emb C₀ colorings hsubset p0Inside p4Inside h side hcyclic hportal_crosses
+      hcycles classifier hredEmitted hblueEmitted hredRemaining hblueRemaining
+      hnoMissing with hdone | hremaining
+  · exact hdone
+  · rcases hremaining with ⟨e, heRemaining, _⟩
+    rw [hremainingEmpty] at heRemaining
+    simp at heRemaining
+
+/--
+Executable closed-worklist certificate.  The decidable CAP5 report having no missing evidence,
+together with an empty canonical interior-support worklist, is enough to close synthesis and
+target coverage.
+-/
+theorem remainingInteriorSupportEmpty_report_synthesis_and_targetCoverage
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    [Fintype G.edgeSet] [FiniteDimensional F2 (G.edgeSet → Color)]
+    (emb : PlaneEmbeddingWithBoundary G) (C₀ : G.EdgeColoring Color)
+    (colorings : Set (G.EdgeColoring Color))
+    (hsubset : colorings ⊆ G.EdgeKempeClosure C₀)
+    (p0Inside p4Inside : Bool) (h : data.IsExceptional)
+    (side : V → Prop)
+    [∀ latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge,
+      Decidable ((CAP5ExceptionalAnnulusGeneratorReport.latentNode
+        boundaryEdge side latent).PortalCrosses)]
+    [∀ latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge,
+      Decidable ((CAP5ExceptionalAnnulusGeneratorReport.latentNode
+        boundaryEdge side latent).SideCycles)]
+    [∀ latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge,
+      Decidable ((CAP5ExceptionalAnnulusGeneratorReport.latentNode
+        boundaryEdge side latent).RealizedSeparator)]
+    (hcyclic : CyclicallyFiveEdgeConnected G)
+    (hportal_crosses :
+      ∀ edgeCandidate : CAP5ExceptionalAnnulusBoundaryEdgeSupportCandidate boundaryEdge,
+        data.RealizesExceptionalBoundarySupportOrientation
+            edgeCandidate.portalCandidate.orientation →
+        edgeCandidate.portalCandidate.sideCase =
+            CAP5ExceptionalAnnulusSideCase.ofPortalSides p0Inside p4Inside →
+        ∀ i : Fin 5, i ∈ edgeCandidate.portalCandidate.portalSet →
+          EdgeCrossesVertexSide G side (boundaryEdge i))
+    (hcycles : HasCycleOnSide G side ∧ HasCycleOnSide G (fun v => ¬ side v))
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (hredEmitted :
+      ∀ e ∈ classifier.emittedFinset,
+        Pi.single e red ∈ projectedColoringGeneratorSubspace emb colorings)
+    (hblueEmitted :
+      ∀ e ∈ classifier.emittedFinset,
+        Pi.single e blue ∈ projectedColoringGeneratorSubspace emb colorings)
+    (hredRemaining :
+      ∀ e ∈ classifier.remainingControlEdges
+          (interiorEdgeSupport emb.faceBoundary emb.faces),
+        Pi.single e red ∈ projectedColoringGeneratorSubspace emb colorings)
+    (hblueRemaining :
+      ∀ e ∈ classifier.remainingControlEdges
+          (interiorEdgeSupport emb.faceBoundary emb.faces),
+        Pi.single e blue ∈ projectedColoringGeneratorSubspace emb colorings)
+    (hremainingEmpty :
+      classifier.remainingControlEdges (interiorEdgeSupport emb.faceBoundary emb.faces) = ∅)
+    (hmissingEmpty :
+      (CAP5ExceptionalAnnulusGeneratorReport.ofDecidableChecks
+        boundaryEdge side).missingCheckerEvidenceLatents = []) :
+    Theorem49BoundaryRootSynthesis emb C₀ ∧
+      (∀ ⦃z : G.edgeSet → Color⦄,
+        z ∈ Theorem49BoundaryTarget emb →
+        z ≠ 0 →
+          ∃ e : G.edgeSet,
+            data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e ∧
+              z e ≠ 0) :=
+  data.remainingInteriorSupportEmpty_synthesis_and_targetCoverage
+    emb C₀ colorings hsubset p0Inside p4Inside h side hcyclic hportal_crosses hcycles
+    classifier hredEmitted hblueEmitted hredRemaining hblueRemaining hremainingEmpty
+    ((CAP5ExceptionalAnnulusGeneratorReport.ofDecidableChecks_missingCheckerEvidenceLatents_eq_nil_iff_no_missing_checker_ingredient
+      boundaryEdge side).1 hmissingEmpty)
+
+/--
 Interior-support concrete-checker closed-frontier theorem.  With the canonical interior-support
 control set, exact forced-edge coverage closes synthesis once every enumerated latent has
 portal-crossing evidence and the ambient side has cycles on both sides.

@@ -10,7 +10,7 @@ claimed here; the target is a decided state for the Goertzel theorem-4.9 route.
 | Fork | State | PLN STV | ITV | Progress |
 |---|---|---:|---:|---:|
 | Geometric CAP5/Jordan repair | Multiple repairs are refuted; still missing the single structural obstruction theorem that retires the fork. | `<0.42,0.60>` | `[0.25,0.65]` | 62% |
-| Algebraic F2 cancellation oracle | Lab finds no top-level all-interior/declared forced-edge evader on 65 records; Lean now proves full no-evader + closed checker gives synthesis and target coverage, and the all-interior survivor is promoted to a success-or-remaining-edge frontier. Uniform no-evader from exact shell data is not yet proved. | `<0.36,0.65>` | `[0.23,0.59]` | 60% |
+| Algebraic F2 cancellation oracle | Lab finds no top-level all-interior/declared forced-edge evader on 65 records; Lean now proves full no-evader + closed checker gives synthesis and target coverage, promotes the all-interior survivor to a success-or-remaining-edge frontier, and exposes an executable empty-worklist certificate. Uniform no-evader from exact shell data is not yet proved. | `<0.37,0.65>` | `[0.24,0.59]` | 61% |
 
 ## Latest Move-2 Evidence
 
@@ -35,6 +35,14 @@ claimed here; the target is a decided state for the Goertzel theorem-4.9 route.
   If the closed primitive checker enumerates every ambient interior-support
   edge as forced, synthesis and target coverage follow; otherwise the
   canonical worklist exposes a concrete remaining interior-support edge.
+- Empty-worklist lab rerun archived locally as
+  `fourcolor-move2-empty-worklist-validation-lab-20260628.log`.
+- Executable certificate theorem surface:
+  `CAP5TransportedEdgeComponentCoverCore.remainingInteriorSupportEmpty_synthesis_and_targetCoverage`
+  and
+  `CAP5TransportedEdgeComponentCoverCore.remainingInteriorSupportEmpty_report_synthesis_and_targetCoverage`.
+  An empty canonical interior-support worklist plus the closed primitive
+  checker report now directly yields synthesis and target coverage.
 
 ## Remaining Completion Requirements
 
