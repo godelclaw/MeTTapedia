@@ -253,13 +253,16 @@ theorem diamondWithTriangleDartSuccessorCycleGeometry_selectedBoundaryArcOnFace 
   intro f
   let f0 : AmbientFace diamondWithTriangleEmbedding.faces :=
     ⟨(0 : DiamondWithTriangleFace), by
-      simp [diamondWithTriangleEmbedding, diamondWithTriangleFaces]⟩
+      change (0 : DiamondWithTriangleFace) ∈ diamondWithTriangleFaces
+      exact Finset.mem_univ _⟩
   let f1 : AmbientFace diamondWithTriangleEmbedding.faces :=
     ⟨(1 : DiamondWithTriangleFace), by
-      simp [diamondWithTriangleEmbedding, diamondWithTriangleFaces]⟩
+      change (1 : DiamondWithTriangleFace) ∈ diamondWithTriangleFaces
+      exact Finset.mem_univ _⟩
   let f2 : AmbientFace diamondWithTriangleEmbedding.faces :=
     ⟨(2 : DiamondWithTriangleFace), by
-      simp [diamondWithTriangleEmbedding, diamondWithTriangleFaces]⟩
+      change (2 : DiamondWithTriangleFace) ∈ diamondWithTriangleFaces
+      exact Finset.mem_univ _⟩
   have hf_cases : f = f0 ∨ f = f1 ∨ f = f2 := by
     rcases f with ⟨⟨n, hn⟩, hfmem⟩
     have hn012 : n = 0 ∨ n = 1 ∨ n = 2 := by omega
@@ -322,8 +325,8 @@ theorem successor_cycle_at_most_one_and_empty_carrier_independent :
       diamondWithTriangleDartSuccessorCycleGeometry,
       diamondWithTriangleDartSuccessorCycleGeometry_selectedBoundaryArcOnFace,
       diamondWithTriangle_atMostOneInteriorEdgePerFace,
-      selectedBoundaryInteriorEdgeEndpointVertices_eq_empty_diamondWithTriangle,
-      not_selectedBoundaryInteriorEdgeEndpointVertices_nonempty_diamondWithTriangle⟩
+      Mettapedia.GraphTheory.FourColor.Theorem49InteriorVerticesEndpointObstruction.selectedBoundaryInteriorEdgeEndpointVertices_eq_empty_diamondWithTriangle,
+      Mettapedia.GraphTheory.FourColor.Theorem49InteriorVerticesEndpointObstruction.not_selectedBoundaryInteriorEdgeEndpointVertices_nonempty_diamondWithTriangle⟩
 
 /-- The diamond benchmark concretely inhabits the live successor-cycle source shell together
 with the facewise at-most-one local criterion.  This packages the exact hypothesis surface used
@@ -460,7 +463,9 @@ theorem
       diamondWithTriangleDartSuccessorCycleGeometry_selectedBoundaryArcOnFace,
       diamondWithTriangleFallbackEdge, diamondWithTriangleFallbackEdge_mem,
       diamondWithTriangle_atMostOneInteriorEdgePerFace, by
-        simpa [diamondWithTriangleClosedWalkAnnulusBoundarySource] using
+        simpa [diamondWithTriangleClosedWalkAnnulusBoundarySource,
+          PlanarBoundaryClosedWalkAnnulusBoundarySource.toPlanarBoundaryAnnulusBoundaryData,
+          PlanarBoundaryClosedWalkAnnulusBoundarySource.ofFields] using
           diamondWithTriangle_nonInteriorOnAmbient⟩
 
 /-- The same explicit diamond benchmark also carries the honest closed-walk source plus the
@@ -781,7 +786,7 @@ theorem
         (selectedBoundaryInteriorEdgeEndpointVertices emb).Nonempty := by
   intro h
   exact
-    not_selectedBoundaryInteriorEdgeEndpointVertices_nonempty_diamondWithTriangle
+    Mettapedia.GraphTheory.FourColor.Theorem49InteriorVerticesEndpointObstruction.not_selectedBoundaryInteriorEdgeEndpointVertices_nonempty_diamondWithTriangle
       (h diamondWithTriangleGraph diamondWithTriangleEmbedding
         diamondWithTriangleClosedWalkAnnulusBoundarySource.boundaryReachability
         diamondWithTriangleDartSuccessorCycleGeometry

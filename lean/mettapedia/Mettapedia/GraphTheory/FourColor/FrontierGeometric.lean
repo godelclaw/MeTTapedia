@@ -87,4 +87,49 @@ theorem exists_two_distinct_interiorEdges_of_closedWalkExactShell
   exists_two_distinct_interior_edges_on_faceBoundary_of_closedWalkAnnulusBoundarySource_and_hasUnblockedInteriorEndpoint
     shell.source shell.endpoint
 
+/--
+Closed-walk exact shells structurally block the source-bound canonical one-collar witness
+choice.  This is not a benchmark packet: the endpoint witness in the shell already forces a
+face with two distinct interior-support edges, while a canonical one-collar witness choice can
+own at most one such edge on that face.
+-/
+theorem not_nonempty_planarBoundaryCanonicalWitnessChoice_of_closedWalkExactShell
+    {emb : PlaneEmbeddingWithBoundary G} (shell : ClosedWalkExactShell emb) :
+    ¬ Nonempty
+      (PlanarBoundaryCanonicalWitnessChoice
+        shell.source.toPlanarBoundaryAnnulusBoundaryData) := by
+  rcases exists_two_distinct_interiorEdges_of_closedWalkExactShell shell with
+    ⟨f, e₁, he₁Face, he₁Interior, e₂, he₂Face, he₂Interior, hne⟩
+  exact
+    not_nonempty_planarBoundaryCanonicalWitnessChoice_of_exists_two_distinct_interior_edges_on_faceBoundary_of_closedWalkAnnulusBoundarySource
+      shell.source
+      ⟨f, e₁, he₁Face, e₂, he₂Face, hne, he₁Interior, he₂Interior⟩
+
+/--
+The same obstruction blocks every one-collar annulus collar-geometry repair on the shell's
+embedding, independently of which one-collar decomposition is proposed.
+-/
+theorem not_exists_oneCollarAnnulusCollarGeometry_of_closedWalkExactShell
+    {emb : PlaneEmbeddingWithBoundary G} (shell : ClosedWalkExactShell emb) :
+    ¬ ∃ data : PlanarBoundaryAnnulusCollarGeometry emb, data.numCollars = 1 := by
+  rcases exists_two_distinct_interiorEdges_of_closedWalkExactShell shell with
+    ⟨f, e₁, he₁Face, he₁Interior, e₂, he₂Face, he₂Interior, hne⟩
+  exact
+    not_exists_planarBoundaryAnnulusCollarGeometry_of_numCollars_eq_one_and_exists_two_distinct_interior_edges_on_faceBoundary
+      ⟨f, e₁, he₁Face, e₂, he₂Face, hne, he₁Interior, he₂Interior⟩
+
+/--
+Consequently, the previous-boundary witness repair cannot be salvaged by asking for a
+one-collar positive-collar geometry: that surface extends the same one-collar collar geometry
+already ruled out above.
+-/
+theorem not_exists_oneCollarAnnulusPreviousBoundaryWitnessGeometry_of_closedWalkExactShell
+    {emb : PlaneEmbeddingWithBoundary G} (shell : ClosedWalkExactShell emb) :
+    ¬ ∃ data : PlanarBoundaryAnnulusPreviousBoundaryWitnessGeometry emb,
+      data.numCollars = 1 := by
+  rintro ⟨data, hnum⟩
+  exact
+    not_exists_oneCollarAnnulusCollarGeometry_of_closedWalkExactShell shell
+      ⟨data.toPlanarBoundaryAnnulusCollarGeometry, hnum⟩
+
 end Mettapedia.GraphTheory.FourColor
