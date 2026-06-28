@@ -175,6 +175,47 @@ theorem velocity_eq_zero_of_exists_const_normalizedKineticEnergy_of_pos_viscosit
         rw [hconst]
         exact hasDerivAt_const t E)
 
+/-- At positive viscosity, a local minimum of normalized kinetic energy can
+occur only on a zero velocity slice.  This rules out local-minimum energy
+shortcuts for any nonzero positive-viscosity canary. -/
+theorem velocity_eq_zero_of_isLocalMin_normalizedKineticEnergy_of_pos_viscosity
+    (hν : 0 < ν) {t : NSTime}
+    (hmin : IsLocalMin (normalizedKineticEnergy S.velocity) t) :
+    ∀ x, S.velocity t x = 0 := by
+  have hidentity := S.coordinateEnergyDissipationIdentity t
+  have hneg :
+      -(coordinateEnergyDissipationRate S.velocity ν t) = 0 :=
+    hmin.hasDerivAt_eq_zero hidentity
+  have hrate : coordinateEnergyDissipationRate S.velocity ν t = 0 :=
+    neg_eq_zero.mp hneg
+  have hmul : ν * coordinateEnstrophyAt S.velocity t = 0 := by
+    simpa [coordinateEnergyDissipationRate] using hrate
+  have henst : coordinateEnstrophyAt S.velocity t = 0 := by
+    rcases mul_eq_zero.mp hmul with hνzero | henst
+    · exact (ne_of_gt hν hνzero).elim
+    · exact henst
+  exact S.velocity_eq_zero_of_coordinateEnstrophyAt_eq_zero henst
+
+/-- At positive viscosity, a local maximum of normalized kinetic energy can
+occur only on a zero velocity slice. -/
+theorem velocity_eq_zero_of_isLocalMax_normalizedKineticEnergy_of_pos_viscosity
+    (hν : 0 < ν) {t : NSTime}
+    (hmax : IsLocalMax (normalizedKineticEnergy S.velocity) t) :
+    ∀ x, S.velocity t x = 0 := by
+  have hidentity := S.coordinateEnergyDissipationIdentity t
+  have hneg :
+      -(coordinateEnergyDissipationRate S.velocity ν t) = 0 :=
+    hmax.hasDerivAt_eq_zero hidentity
+  have hrate : coordinateEnergyDissipationRate S.velocity ν t = 0 :=
+    neg_eq_zero.mp hneg
+  have hmul : ν * coordinateEnstrophyAt S.velocity t = 0 := by
+    simpa [coordinateEnergyDissipationRate] using hrate
+  have henst : coordinateEnstrophyAt S.velocity t = 0 := by
+    rcases mul_eq_zero.mp hmul with hνzero | henst
+    · exact (ne_of_gt hν hνzero).elim
+    · exact henst
+  exact S.velocity_eq_zero_of_coordinateEnstrophyAt_eq_zero henst
+
 /-- Pressure-closure curl gate for the ordinary slice-Schwartz concrete
 solution interface: the residual vector field that the pressure gradient must
 equal has zero spatial vorticity everywhere. -/
@@ -343,6 +384,30 @@ theorem not_exists_const_normalizedKineticEnergy_of_pos_viscosity
       intro t
       rw [hconst]
       exact hasDerivAt_const t E)
+
+/-- At any nonzero spacetime witness of a positive-viscosity solution, the
+normalized kinetic energy cannot have a local minimum. -/
+theorem not_isLocalMin_normalizedKineticEnergy_at_nonzero_of_pos_viscosity
+    (hν : 0 < ν) {t : NSTime} {x : NSSpace}
+    (hne : S.velocity t x ≠ 0) :
+    ¬ IsLocalMin (normalizedKineticEnergy S.velocity) t := by
+  intro hmin
+  have hzero :=
+    SchwartzConcreteNavierStokesSolution.velocity_eq_zero_of_isLocalMin_normalizedKineticEnergy_of_pos_viscosity
+      S.toSchwartzConcreteNavierStokesSolution hν hmin x
+  exact hne hzero
+
+/-- At any nonzero spacetime witness of a positive-viscosity solution, the
+normalized kinetic energy cannot have a local maximum. -/
+theorem not_isLocalMax_normalizedKineticEnergy_at_nonzero_of_pos_viscosity
+    (hν : 0 < ν) {t : NSTime} {x : NSSpace}
+    (hne : S.velocity t x ≠ 0) :
+    ¬ IsLocalMax (normalizedKineticEnergy S.velocity) t := by
+  intro hmax
+  have hzero :=
+    SchwartzConcreteNavierStokesSolution.velocity_eq_zero_of_isLocalMax_normalizedKineticEnergy_of_pos_viscosity
+      S.toSchwartzConcreteNavierStokesSolution hν hmax x
+  exact hne hzero
 
 end NonzeroSchwartzConcreteNavierStokesSolution
 
@@ -663,6 +728,30 @@ theorem not_exists_nonzeroSchwartzConcreteSolution_const_normalizedKineticEnergy
       ∃ E : ℝ, normalizedKineticEnergy S.velocity = fun _ : NSTime => E := by
   rintro ⟨S, hconst⟩
   exact S.not_exists_const_normalizedKineticEnergy_of_pos_viscosity hν hconst
+
+/-- No positive-viscosity nonzero slice-Schwartz solution can present a
+nonzero witness time where normalized kinetic energy has a local minimum. -/
+theorem not_exists_nonzeroSchwartzConcreteSolution_nonzero_localMin_energy_of_pos_viscosity
+    {ν : ℝ} (hν : 0 < ν) :
+    ¬ ∃ S : NonzeroSchwartzConcreteNavierStokesSolution ν,
+      ∃ t x,
+        S.velocity t x ≠ 0 ∧
+          IsLocalMin (normalizedKineticEnergy S.velocity) t := by
+  rintro ⟨S, t, x, hne, hmin⟩
+  exact S.not_isLocalMin_normalizedKineticEnergy_at_nonzero_of_pos_viscosity
+    hν hne hmin
+
+/-- No positive-viscosity nonzero slice-Schwartz solution can present a
+nonzero witness time where normalized kinetic energy has a local maximum. -/
+theorem not_exists_nonzeroSchwartzConcreteSolution_nonzero_localMax_energy_of_pos_viscosity
+    {ν : ℝ} (hν : 0 < ν) :
+    ¬ ∃ S : NonzeroSchwartzConcreteNavierStokesSolution ν,
+      ∃ t x,
+        S.velocity t x ≠ 0 ∧
+          IsLocalMax (normalizedKineticEnergy S.velocity) t := by
+  rintro ⟨S, t, x, hne, hmax⟩
+  exact S.not_isLocalMax_normalizedKineticEnergy_at_nonzero_of_pos_viscosity
+    hν hne hmax
 
 end NavierStokes
 end FluidDynamics
