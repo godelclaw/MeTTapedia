@@ -536,12 +536,17 @@ longer acceptable progress.
    produces the evader and a decreasing remaining-worklist edge.  The same
    forced-all failure side now also exposes the canonical path-xor payload
    evader: a boundary-zero chain, non-forced remaining interior edge, strict
-   worklist decrease, and nonzero canonical red/blue family pairing.  The
-   pure no-target theorem underneath those refinements says failed synthesis
-   already produces a genuine selected-boundary-zero evader for the enumerated
-   forced edges.  The remaining crux is whether exact shell/CAP5 data proves
-   the no-evader/subset certificate uniformly, or whether this genuine
-   boundary-zero/vertex-Kirchhoff/path-xor evader branch exists.
+   worklist decrease, and nonzero canonical red/blue family pairing.  The new
+   residual scheduler wrapper records the same failure inside an explicit
+   processed-state trace: complete checker histogram, forced-bin detector,
+   selected-boundary-zero evader, traced remaining interior-support edge,
+   residual-worklist membership, and strict residual decrease after inserting
+   that edge into the processed set.  The pure no-target theorem underneath
+   those refinements says failed synthesis already produces a genuine
+   selected-boundary-zero evader for the enumerated forced edges.  The
+   remaining crux is whether exact shell/CAP5 data proves the no-evader/subset
+   certificate uniformly, or whether this genuine
+   boundary-zero/vertex-Kirchhoff/path-xor residual-scheduler branch exists.
 
 The historical trichotomy below remains useful background:
 
