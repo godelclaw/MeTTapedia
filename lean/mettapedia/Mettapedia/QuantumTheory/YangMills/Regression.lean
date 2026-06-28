@@ -14,3 +14,4 @@ import Mettapedia.QuantumTheory.YangMills.ReflectionPositivityGateCanariesRegres
 import Mettapedia.QuantumTheory.YangMills.RGBootstrapRegression
 import Mettapedia.QuantumTheory.YangMills.RGCruxRegression
 import Mettapedia.QuantumTheory.YangMills.Z2StrongCouplingGapRegression
+import Mettapedia.QuantumTheory.YangMills.Z3StrongCouplingGapRegression

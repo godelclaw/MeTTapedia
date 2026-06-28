@@ -13,8 +13,10 @@ import Mettapedia.QuantumTheory.YangMills.MassGap
 import Mettapedia.QuantumTheory.YangMills.OSGateAudit
 import Mettapedia.QuantumTheory.YangMills.ProofState
 import Mettapedia.QuantumTheory.YangMills.ProofStateZ2StrongCoupling
+import Mettapedia.QuantumTheory.YangMills.ProofStateZ3StrongCoupling
 import Mettapedia.QuantumTheory.YangMills.ReflectionPositivityGateCanaries
 import Mettapedia.QuantumTheory.YangMills.RGBootstrap
 import Mettapedia.QuantumTheory.YangMills.RGCrux
 import Mettapedia.QuantumTheory.YangMills.Roadmap
 import Mettapedia.QuantumTheory.YangMills.Z2StrongCouplingGap
+import Mettapedia.QuantumTheory.YangMills.Z3StrongCouplingGap
