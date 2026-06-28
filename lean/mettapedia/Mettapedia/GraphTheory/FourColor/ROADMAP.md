@@ -162,6 +162,18 @@ strictly smaller erasure measure.  This converts the surviving F2 lane into a
 success-or-next-edge frontier, but still leaves the uniform enumeration
 problem open.
 
+Later still on 2026-06-28: the same all-interior lane now has an executable
+closed-worklist certificate.  The rerun archived locally as
+`fourcolor-move2-empty-worklist-validation-lab-20260628.log` again confirmed
+the finite F2 all-interior survivor on 65 records.  In Lean,
+`remainingInteriorSupportEmpty_synthesis_and_targetCoverage` and
+`remainingInteriorSupportEmpty_report_synthesis_and_targetCoverage` say that
+an empty canonical interior-support worklist, together with the closed
+primitive checker report, directly yields theorem-4.9 synthesis and forced-edge
+coverage of `W0(H)`.  The remaining algebraic burden is now sharper: prove the
+exact CAP5 shell reaches this empty worklist uniformly, or formalize the
+remaining worklist edge as the genuine obstruction/evader source.
+
 ## The open problem
 
 Exactly two route forks are live; isolated repair-packet refutations are no
