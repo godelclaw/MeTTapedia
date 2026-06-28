@@ -412,6 +412,17 @@ forced edges.  This is the correct fork surface for the remaining lab-to-Lean
 work: exact CAP5/Jordan shell data must now supply the no-evader/subset side,
 or the explicit evader side is the obstruction to formalize.
 
+The empty-worklist side of that fork now carries the actual no-evader verdict.
+Lean proves
+`remainingInteriorEmpty_noEvader_and_synthesis_and_boundaryZeroControl_of_forcedAllLatents`:
+if the forced-all report has no remaining canonical interior-support worklist,
+then every interior-support coordinate is already emitted as a forced edge, no
+nonzero selected-boundary-zero chain can vanish on all forced edges, and
+theorem-4.9 synthesis follows with full selected-boundary-zero classifier
+control.  Thus the remaining exact-shell task is not to reinterpret the
+empty-worklist certificate; it is to prove uniform CAP5/Jordan data reaches it
+or to formalize the evader/worklist branch.
+
 On the geometric fork, the source-bound one-collar repair treadmill has now
 been consolidated into a shell-level obstruction.  In
 `FrontierGeometric.lean`, the theorems
