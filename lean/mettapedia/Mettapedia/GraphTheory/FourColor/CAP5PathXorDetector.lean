@@ -11979,6 +11979,117 @@ theorem theorem49BoundaryRootSynthesis_and_boundaryTargetCoverage_or_boundaryZer
   · exact ⟨Or.inr hfailure.1, hfailure.2⟩
 
 /--
+Odd-interior no-evader closure.  An odd closed walk can force a nonempty canonical
+interior-support worklist, but it does not by itself obstruct the no-evader side of the
+target-controlled F2 fork: if the concrete theorem-4.9 boundary-vertex Kirchhoff evader is
+absent, the closed checker still yields synthesis and target coverage while the odd walk
+supplies the decreasing worklist witness.
+-/
+theorem theorem49BoundaryRootSynthesis_and_boundaryTargetCoverage_and_remainingInteriorSupportEdge_with_card_erase_lt_of_closed_walk_odd_length_in_interiorSupport_of_theorem49BoundaryTargetClassifierControl_of_no_boundaryZeroEvader_with_theorem49BoundaryVertexKirchhoffFailure
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    [Fintype G.edgeSet] [FiniteDimensional F2 (G.edgeSet → Color)]
+    (emb : PlaneEmbeddingWithBoundary G) (C₀ : G.EdgeColoring Color)
+    (colorings : Set (G.EdgeColoring Color))
+    (hsubset : colorings ⊆ G.EdgeKempeClosure C₀)
+    (p0Inside p4Inside : Bool) (h : data.IsExceptional)
+    (side : V → Prop)
+    [∀ latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge,
+      Decidable ((CAP5ExceptionalAnnulusGeneratorReport.latentNode
+        boundaryEdge side latent).PortalCrosses)]
+    [∀ latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge,
+      Decidable ((CAP5ExceptionalAnnulusGeneratorReport.latentNode
+        boundaryEdge side latent).SideCycles)]
+    [∀ latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge,
+      Decidable ((CAP5ExceptionalAnnulusGeneratorReport.latentNode
+        boundaryEdge side latent).RealizedSeparator)]
+    (hcyclic : CyclicallyFiveEdgeConnected G)
+    (hportal_crosses :
+      ∀ edgeCandidate : CAP5ExceptionalAnnulusBoundaryEdgeSupportCandidate boundaryEdge,
+        data.RealizesExceptionalBoundarySupportOrientation
+            edgeCandidate.portalCandidate.orientation →
+        edgeCandidate.portalCandidate.sideCase =
+            CAP5ExceptionalAnnulusSideCase.ofPortalSides p0Inside p4Inside →
+        ∀ i : Fin 5, i ∈ edgeCandidate.portalCandidate.portalSet →
+          EdgeCrossesVertexSide G side (boundaryEdge i))
+    (hcycles : HasCycleOnSide G side ∧ HasCycleOnSide G (fun v => ¬ side v))
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (hredEmitted :
+      ∀ e ∈ classifier.emittedFinset,
+        Pi.single e red ∈ projectedColoringGeneratorSubspace emb colorings)
+    (hblueEmitted :
+      ∀ e ∈ classifier.emittedFinset,
+        Pi.single e blue ∈ projectedColoringGeneratorSubspace emb colorings)
+    (hredRemaining :
+      ∀ e ∈ classifier.remainingControlEdges
+          (interiorEdgeSupport emb.faceBoundary emb.faces),
+        Pi.single e red ∈ projectedColoringGeneratorSubspace emb colorings)
+    (hblueRemaining :
+      ∀ e ∈ classifier.remainingControlEdges
+          (interiorEdgeSupport emb.faceBoundary emb.faces),
+        Pi.single e blue ∈ projectedColoringGeneratorSubspace emb colorings)
+    (hcontrolTarget :
+      ∀ ⦃z : G.edgeSet → Color⦄,
+        z ∈ Theorem49BoundaryTarget emb →
+        (∀ e ∈ classifier.emittedFinset, z e = 0) →
+          z = 0)
+    (hnoKirchhoffFailureEvader :
+      ¬ ∃ z : G.edgeSet → Color,
+        z ∈ planarBoundaryZeroSubmodule emb ∧
+          z ≠ 0 ∧
+            (∀ e : G.edgeSet,
+              data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e →
+                z e = 0) ∧
+              ∃ v : V,
+                v ∈ Theorem49BoundaryVertices emb ∧
+                  vertexKirchhoffSum G z v ≠ 0)
+    (hmissingEmpty :
+      (CAP5ExceptionalAnnulusGeneratorReport.ofDecidableChecks
+        boundaryEdge side).missingCheckerEvidenceLatents = [])
+    {u : V} (p : G.Walk u u) (hodd : Odd p.length)
+    (hInterior :
+      ∀ e : G.edgeSet, (e : Sym2 V) ∈ p.edges →
+        e ∈ interiorEdgeSupport emb.faceBoundary emb.faces) :
+    (Theorem49BoundaryRootSynthesis emb C₀ ∧
+      (∀ ⦃z : G.edgeSet → Color⦄,
+        z ∈ Theorem49BoundaryTarget emb →
+        z ≠ 0 →
+          ∃ e : G.edgeSet,
+            data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e ∧
+              z e ≠ 0)) ∧
+      ∃ e : G.edgeSet,
+        e ∈ classifier.remainingControlEdges
+            (interiorEdgeSupport emb.faceBoundary emb.faces) ∧
+          ((classifier.remainingControlEdges
+              (interiorEdgeSupport emb.faceBoundary emb.faces)).erase e).card <
+            (classifier.remainingControlEdges
+              (interiorEdgeSupport emb.faceBoundary emb.faces)).card := by
+  have hdone :
+      Theorem49BoundaryRootSynthesis emb C₀ ∧
+        (∀ ⦃z : G.edgeSet → Color⦄,
+          z ∈ Theorem49BoundaryTarget emb →
+          z ≠ 0 →
+            ∃ e : G.edgeSet,
+              data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e ∧
+                z e ≠ 0) := by
+    refine
+      data.theorem49BoundaryRootSynthesis_and_boundaryTargetCoverage_of_theorem49BoundaryTargetClassifierControl_of_no_boundaryZeroEvader_with_theorem49BoundaryVertexKirchhoffFailure_of_no_missing_finsetControl
+        emb C₀ colorings hsubset p0Inside p4Inside h side hcyclic hportal_crosses
+        hcycles classifier (interiorEdgeSupport emb.faceBoundary emb.faces) ?_
+        hredEmitted hblueEmitted hredRemaining hblueRemaining hcontrolTarget
+        hnoKirchhoffFailureEvader
+        ((CAP5ExceptionalAnnulusGeneratorReport.ofDecidableChecks_missingCheckerEvidenceLatents_eq_nil_iff_no_missing_checker_ingredient
+          boundaryEdge side).1 hmissingEmpty)
+    intro z hzBoundary hcontrol
+    exact
+      eq_zero_of_mem_planarBoundaryZeroSubmodule_of_interiorEdgeSupport
+        z hzBoundary hcontrol
+  exact
+    ⟨hdone,
+      data.exists_remainingInteriorSupportEdge_with_card_erase_lt_of_closed_walk_odd_length_in_interiorSupport
+        emb p0Inside p4Inside side classifier p hodd hInterior⟩
+
+/--
 Executable closed-report synthesis-or-evader frontier.  For the canonical interior-support
 runner, an empty primitive checker report leaves exactly the algebraic F2 fork: either
 Theorem 4.9 synthesis closes, or there is a genuine selected-boundary-zero evader together with
