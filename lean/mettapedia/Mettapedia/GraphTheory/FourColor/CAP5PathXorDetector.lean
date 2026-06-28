@@ -8907,6 +8907,145 @@ theorem forced_vanishing_boundaryZero_subset_theorem49BoundaryTarget_iff_no_boun
           emb hzBoundary hzOffTarget⟩
 
 /--
+Empty-worklist extraction for the exact F2 fork.  Once the canonical interior-support
+worklist is empty, every ambient interior-support edge is already enumerated as a CAP5
+forced edge.
+-/
+theorem interiorEdgeSupport_subset_enumeratedForcedEdges_of_remainingInteriorSupportEmpty
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    [Fintype G.edgeSet]
+    (emb : PlaneEmbeddingWithBoundary G)
+    (p0Inside p4Inside : Bool) (side : V → Prop)
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (hremainingEmpty :
+      classifier.remainingControlEdges (interiorEdgeSupport emb.faceBoundary emb.faces) = ∅) :
+    ∀ e : G.edgeSet,
+      e ∈ interiorEdgeSupport emb.faceBoundary emb.faces →
+        data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e := by
+  intro e heInterior
+  by_contra hnotForced
+  have heRemaining :
+      e ∈ classifier.remainingControlEdges
+          (interiorEdgeSupport emb.faceBoundary emb.faces) := by
+    refine
+      (classifier.mem_remainingControlEdges_iff
+        (interiorEdgeSupport emb.faceBoundary emb.faces) e).2 ⟨heInterior, ?_⟩
+    intro heEmitted
+    exact hnotForced ((classifier.emittedFinset_spec e).1 heEmitted)
+  rw [hremainingEmpty] at heRemaining
+  simp at heRemaining
+
+/--
+Forced-edge coverage supplies the exact row-span/subset certificate for the current Move-2
+fork: any selected-boundary-zero chain vanishing on all enumerated forced edges is forced to be
+zero, hence lies in the theorem-4.9 boundary target.
+-/
+theorem forced_vanishing_boundaryZero_subset_theorem49BoundaryTarget_of_forcedEdgeCoverage
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    [Fintype G.edgeSet]
+    (emb : PlaneEmbeddingWithBoundary G)
+    (p0Inside p4Inside : Bool) (side : V → Prop)
+    (hcoverage :
+      ∀ ⦃z : G.edgeSet → Color⦄,
+        z ∈ planarBoundaryZeroSubmodule emb →
+        z ≠ 0 →
+          ∃ e : G.edgeSet,
+            data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e ∧
+              z e ≠ 0) :
+    ∀ ⦃z : G.edgeSet → Color⦄,
+      z ∈ planarBoundaryZeroSubmodule emb →
+      (∀ e : G.edgeSet,
+        data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e →
+          z e = 0) →
+        z ∈ Theorem49BoundaryTarget emb := by
+  intro z hzBoundary hzForcedZero
+  by_cases hzZero : z = 0
+  · rw [hzZero]
+    change (0 : G.edgeSet → Color) ∈ theorem49BoundaryZeroKirchhoffSubspace emb
+      (Theorem49BoundaryVertices emb)
+    exact Submodule.zero_mem _
+  · rcases hcoverage hzBoundary hzZero with ⟨e, heForced, hze⟩
+    exact False.elim (hze (hzForcedZero e heForced))
+
+/--
+All-interior forced-edge coverage proves the exact row-span/subset certificate, not merely the
+older no-evader handoff.  This is the Lean form of the finite F2 all-interior survivor for the
+current subset-certificate fork.
+-/
+theorem forced_vanishing_boundaryZero_subset_theorem49BoundaryTarget_of_interiorEdgeSupport_subset_enumeratedForcedEdges
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    [Fintype G.edgeSet]
+    (emb : PlaneEmbeddingWithBoundary G)
+    (p0Inside p4Inside : Bool) (side : V → Prop)
+    (hInteriorForced :
+      ∀ e : G.edgeSet,
+        e ∈ interiorEdgeSupport emb.faceBoundary emb.faces →
+          data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e) :
+    ∀ ⦃z : G.edgeSet → Color⦄,
+      z ∈ planarBoundaryZeroSubmodule emb →
+      (∀ e : G.edgeSet,
+        data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e →
+          z e = 0) →
+        z ∈ Theorem49BoundaryTarget emb :=
+  data.forced_vanishing_boundaryZero_subset_theorem49BoundaryTarget_of_forcedEdgeCoverage
+    emb p0Inside p4Inside side
+    (data.forcedEdgeCoverage_of_interiorEdgeSupport_subset_enumeratedForcedEdges
+      emb p0Inside p4Inside side hInteriorForced)
+
+/--
+Executable empty-worklist certificate for the exact subset fork.  If the canonical
+interior-support worklist is empty, the subset certificate needed by the binary F2 theorem is
+already proved.
+-/
+theorem forced_vanishing_boundaryZero_subset_theorem49BoundaryTarget_of_remainingInteriorSupportEmpty
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    [Fintype G.edgeSet]
+    (emb : PlaneEmbeddingWithBoundary G)
+    (p0Inside p4Inside : Bool) (side : V → Prop)
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (hremainingEmpty :
+      classifier.remainingControlEdges (interiorEdgeSupport emb.faceBoundary emb.faces) = ∅) :
+    ∀ ⦃z : G.edgeSet → Color⦄,
+      z ∈ planarBoundaryZeroSubmodule emb →
+      (∀ e : G.edgeSet,
+        data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e →
+          z e = 0) →
+        z ∈ Theorem49BoundaryTarget emb :=
+  data.forced_vanishing_boundaryZero_subset_theorem49BoundaryTarget_of_interiorEdgeSupport_subset_enumeratedForcedEdges
+    emb p0Inside p4Inside side
+    (data.interiorEdgeSupport_subset_enumeratedForcedEdges_of_remainingInteriorSupportEmpty
+      emb p0Inside p4Inside side classifier hremainingEmpty)
+
+/--
+Empty canonical worklist rules out the concrete vertex-Kirchhoff evader branch of the current
+exact F2 fork.
+-/
+theorem no_boundaryZeroEvader_with_theorem49BoundaryVertexKirchhoffFailure_of_remainingInteriorSupportEmpty
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    [Fintype G.edgeSet]
+    (emb : PlaneEmbeddingWithBoundary G)
+    (p0Inside p4Inside : Bool) (side : V → Prop)
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (hremainingEmpty :
+      classifier.remainingControlEdges (interiorEdgeSupport emb.faceBoundary emb.faces) = ∅) :
+    ¬ ∃ z : G.edgeSet → Color,
+      z ∈ planarBoundaryZeroSubmodule emb ∧
+        z ≠ 0 ∧
+          (∀ e : G.edgeSet,
+            data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e →
+              z e = 0) ∧
+            ∃ v : V,
+              v ∈ Theorem49BoundaryVertices emb ∧
+                vertexKirchhoffSum G z v ≠ 0 :=
+  data.no_boundaryZeroEvader_with_theorem49BoundaryVertexKirchhoffFailure_of_forced_vanishing_boundaryZero_subset_theorem49BoundaryTarget
+    emb p0Inside p4Inside side
+    (data.forced_vanishing_boundaryZero_subset_theorem49BoundaryTarget_of_remainingInteriorSupportEmpty
+      emb p0Inside p4Inside side classifier hremainingEmpty)
+
+/--
 Kirchhoff-failure closure theorem for the current Move-2 fork.  Target classifier control leaves
 only one possible selected-boundary-zero failure mode: a chain vanishing on all enumerated forced
 edges whose Kirchhoff sum is nonzero at a theorem-4.9 boundary vertex.  Excluding that concrete
@@ -9096,6 +9235,94 @@ theorem theorem49BoundaryRootSynthesis_and_boundaryTargetCoverage_of_theorem49Bo
     hblueRemaining hcontrolTarget
     (data.no_boundaryZeroEvader_with_theorem49BoundaryVertexKirchhoffFailure_of_forced_vanishing_boundaryZero_subset_theorem49BoundaryTarget
       emb p0Inside p4Inside side hsubsetTarget)
+    hnoMissing
+
+/--
+Empty-worklist specialization of the exact subset-certificate closure.  Under target classifier
+control and a closed checker, an empty canonical interior-support worklist collapses the binary
+F2 fork to synthesis plus target coverage: the vertex-Kirchhoff evader branch has already been
+ruled out by the subset certificate above.
+-/
+theorem theorem49BoundaryRootSynthesis_and_boundaryTargetCoverage_of_theorem49BoundaryTargetClassifierControl_of_remainingInteriorSupportEmpty_of_no_missing_finsetControl
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    [Fintype G.edgeSet] [FiniteDimensional F2 (G.edgeSet → Color)]
+    (emb : PlaneEmbeddingWithBoundary G) (C₀ : G.EdgeColoring Color)
+    (colorings : Set (G.EdgeColoring Color))
+    (hsubset : colorings ⊆ G.EdgeKempeClosure C₀)
+    (p0Inside p4Inside : Bool) (h : data.IsExceptional)
+    (side : V → Prop)
+    [∀ latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge,
+      Decidable ((CAP5ExceptionalAnnulusGeneratorReport.latentNode
+        boundaryEdge side latent).PortalCrosses)]
+    [∀ latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge,
+      Decidable ((CAP5ExceptionalAnnulusGeneratorReport.latentNode
+        boundaryEdge side latent).SideCycles)]
+    [∀ latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge,
+      Decidable ((CAP5ExceptionalAnnulusGeneratorReport.latentNode
+        boundaryEdge side latent).RealizedSeparator)]
+    (hcyclic : CyclicallyFiveEdgeConnected G)
+    (hportal_crosses :
+      ∀ edgeCandidate : CAP5ExceptionalAnnulusBoundaryEdgeSupportCandidate boundaryEdge,
+        data.RealizesExceptionalBoundarySupportOrientation
+            edgeCandidate.portalCandidate.orientation →
+        edgeCandidate.portalCandidate.sideCase =
+            CAP5ExceptionalAnnulusSideCase.ofPortalSides p0Inside p4Inside →
+        ∀ i : Fin 5, i ∈ edgeCandidate.portalCandidate.portalSet →
+          EdgeCrossesVertexSide G side (boundaryEdge i))
+    (hcycles : HasCycleOnSide G side ∧ HasCycleOnSide G (fun v => ¬ side v))
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (controlEdges : Finset G.edgeSet)
+    (hcontrol :
+      ∀ ⦃z : G.edgeSet → Color⦄,
+        z ∈ planarBoundaryZeroSubmodule emb →
+        (∀ e ∈ controlEdges, z e = 0) →
+          z = 0)
+    (hredEmitted :
+      ∀ e ∈ classifier.emittedFinset,
+        Pi.single e red ∈ projectedColoringGeneratorSubspace emb colorings)
+    (hblueEmitted :
+      ∀ e ∈ classifier.emittedFinset,
+        Pi.single e blue ∈ projectedColoringGeneratorSubspace emb colorings)
+    (hredRemaining :
+      ∀ e ∈ classifier.remainingControlEdges controlEdges,
+        Pi.single e red ∈ projectedColoringGeneratorSubspace emb colorings)
+    (hblueRemaining :
+      ∀ e ∈ classifier.remainingControlEdges controlEdges,
+        Pi.single e blue ∈ projectedColoringGeneratorSubspace emb colorings)
+    (hcontrolTarget :
+      ∀ ⦃z : G.edgeSet → Color⦄,
+        z ∈ Theorem49BoundaryTarget emb →
+        (∀ e ∈ classifier.emittedFinset, z e = 0) →
+          z = 0)
+    (hremainingEmpty :
+      classifier.remainingControlEdges (interiorEdgeSupport emb.faceBoundary emb.faces) = ∅)
+    (hnoMissing :
+      ¬ ((∃ latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge,
+        latent ∈ CAP5ExceptionalAnnulusGeneratorLatent.all boundaryEdge ∧
+          (CAP5ExceptionalAnnulusGeneratorReport.latentNode
+            boundaryEdge side latent).MissingPortalCrossingEvidence) ∨
+        (∃ latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge,
+          latent ∈ CAP5ExceptionalAnnulusGeneratorLatent.all boundaryEdge ∧
+            (CAP5ExceptionalAnnulusGeneratorReport.latentNode
+              boundaryEdge side latent).MissingSelectedSideCycleEvidence) ∨
+          (∃ latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge,
+            latent ∈ CAP5ExceptionalAnnulusGeneratorLatent.all boundaryEdge ∧
+              (CAP5ExceptionalAnnulusGeneratorReport.latentNode
+                boundaryEdge side latent).MissingComplementarySideCycleEvidence))) :
+    Theorem49BoundaryRootSynthesis emb C₀ ∧
+      (∀ ⦃z : G.edgeSet → Color⦄,
+        z ∈ Theorem49BoundaryTarget emb →
+        z ≠ 0 →
+          ∃ e : G.edgeSet,
+            data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e ∧
+              z e ≠ 0) :=
+  data.theorem49BoundaryRootSynthesis_and_boundaryTargetCoverage_of_theorem49BoundaryTargetClassifierControl_of_forced_vanishing_boundaryZero_subset_theorem49BoundaryTarget_of_no_missing_finsetControl
+    emb C₀ colorings hsubset p0Inside p4Inside h side hcyclic hportal_crosses
+    hcycles classifier controlEdges hcontrol hredEmitted hblueEmitted hredRemaining
+    hblueRemaining hcontrolTarget
+    (data.forced_vanishing_boundaryZero_subset_theorem49BoundaryTarget_of_remainingInteriorSupportEmpty
+      emb p0Inside p4Inside side classifier hremainingEmpty)
     hnoMissing
 
 /--
