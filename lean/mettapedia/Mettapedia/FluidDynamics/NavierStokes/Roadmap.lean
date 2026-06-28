@@ -22,6 +22,7 @@ inductive NavierRoadmapStage where
   | finiteEnergyRepair
   | placeholderRetirement
   | deGroundedSurface
+  | energyIdentity
   | scalingGate
   | averagedEquationGate
   | replacementRoute
@@ -63,6 +64,11 @@ def currentNavierRoadmap : List NavierRoadmapEntry :=
       status := .checked
       truthValue := ⟨100, 98⟩
       obligation := "Use the concrete zero-solution canary and scaling arithmetic as the baseline for future PDE-grounded route work." },
+    { stage := .energyIdentity
+      proofNodeId := "navier.energy.schwartz-solution-identity"
+      status := .checked
+      truthValue := ⟨78, 84⟩
+      obligation := "Use the checked slice-Schwartz solution energy identity as the PDE-grounded energy subnode; next extend derivative-under-integral and decay hypotheses beyond the current energy-admissible class." },
     { stage := .scalingGate
       proofNodeId := "navier.regularity-promotion-gate"
       status := .scalingUncleared
