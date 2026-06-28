@@ -266,6 +266,21 @@ the genuine vertex-Kirchhoff evader.  The next mathematical step is therefore
 not another interface theorem; it is the exact shell subset certificate itself,
 or a formalized counterexample to it.
 
+The exact subset certificate is now proved on the executable empty-worklist
+shell.  Lean has
+`interiorEdgeSupport_subset_enumeratedForcedEdges_of_remainingInteriorSupportEmpty`,
+`forced_vanishing_boundaryZero_subset_theorem49BoundaryTarget_of_interiorEdgeSupport_subset_enumeratedForcedEdges`,
+`forced_vanishing_boundaryZero_subset_theorem49BoundaryTarget_of_remainingInteriorSupportEmpty`,
+`no_boundaryZeroEvader_with_theorem49BoundaryVertexKirchhoffFailure_of_remainingInteriorSupportEmpty`,
+and
+`theorem49BoundaryRootSynthesis_and_boundaryTargetCoverage_of_theorem49BoundaryTargetClassifierControl_of_remainingInteriorSupportEmpty_of_no_missing_finsetControl`.
+Thus an empty canonical interior-support worklist no longer just closes the old
+no-evader route; it proves the row-span/subset certificate demanded by the
+current binary fork and rules out the concrete vertex-Kirchhoff evader branch.
+The remaining fork decision is narrower: prove exact CAP5 data reaches this
+empty-worklist/subset side uniformly, or formalize the evader exposed when it
+does not.
+
 ## The open problem
 
 Exactly two route forks are live; isolated repair-packet refutations are no
@@ -286,8 +301,10 @@ longer acceptable progress.
    selected-boundary-zero evader with a concrete theorem-4.9 boundary-vertex
    Kirchhoff failure, plus a decreasing worklist edge; and the row-span/subset
    bridge says the exact remaining certificate is that every forced-vanishing
-   boundary-zero chain lies in the theorem-4.9 target.  The exact binary theorem
-   now packages this as synthesis/target coverage or a genuine evader.  The
+   boundary-zero chain lies in the theorem-4.9 target.  The empty-worklist shell
+   now proves that exact subset certificate and eliminates the concrete
+   vertex-Kirchhoff evader branch there.  The exact binary theorem packages the
+   uniform route as synthesis/target coverage or a genuine evader.  The
    remaining crux is whether exact shell/CAP5 data proves that subset
    certificate uniformly, or whether a genuine vertex-Kirchhoff failure evader
    exists.
