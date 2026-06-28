@@ -9,8 +9,28 @@ claimed here; the target is a decided state for the Goertzel theorem-4.9 route.
 
 | Fork | State | PLN STV | ITV | Progress |
 |---|---|---:|---:|---:|
-| Geometric CAP5/Jordan repair | Multiple repairs are refuted; still missing the single structural obstruction theorem that retires the fork. | `<0.42,0.60>` | `[0.25,0.65]` | 62% |
+| Geometric CAP5/Jordan repair | The old packet-refutation lane has been consolidated for the source-bound canonical/one-collar part: every closed-walk exact shell structurally blocks the canonical witness choice and every one-collar collar/previous-boundary witness repair by the same two-interior-edge face obstruction. Still missing the side-cut/repair-removal theorem that retires the whole CAP5/Jordan repair class. | `<0.47,0.64>` | `[0.30,0.66]` | 68% |
 | Algebraic F2 cancellation oracle | Lab finds no top-level all-interior evader on 65 records, no declared-forced evader on the 36 forcing records, and no all-interior vertex-Kirchhoff failure on all 65 records; the vertex-failure crux survives on the 36 forcing records. Lean now proves the route-facing classifier-control iff/no-evader contract, the target-dimension fork theorem below-bound classifier implies genuine target evader, the full no-evader + closed-checker synthesis handoff, the all-interior success-or-remaining-edge frontier, the executable empty-worklist certificate, the closed-report failure branch as a genuine F2 evader plus a remaining worklist edge, the target-control bridge reducing any remaining closed-checker failure to an off-target boundary-zero evader, the vertex-Kirchhoff failure bridge making that evader concrete at a theorem-4.9 boundary vertex, the row-span/subset certificate bridge for excluding or exposing that failure, and the exact binary fork theorem. New: the empty canonical interior-support worklist now proves the exact row-span/subset certificate itself and rules out the concrete vertex-Kirchhoff evader branch. The remaining uniform burden is to prove the exact CAP5 shell reaches this empty-worklist/subset side, or formalize the genuine evader produced by failure. | `<0.47,0.72>` | `[0.34,0.62]` | 72% |
+
+## Latest Move-1 Evidence
+
+- Focused geometric build archived locally as
+  `fourcolor-move1-one-collar-obstruction-focused-build-20260628.log`.
+- Dependency replay repair build archived locally as
+  `fourcolor-move1-one-collar-obstruction-dependency-build-20260628.log`.
+- New Lean theorem surface:
+  `not_nonempty_planarBoundaryCanonicalWitnessChoice_of_closedWalkExactShell`,
+  `not_exists_oneCollarAnnulusCollarGeometry_of_closedWalkExactShell`, and
+  `not_exists_oneCollarAnnulusPreviousBoundaryWitnessGeometry_of_closedWalkExactShell`.
+  These package the shared geometric obstruction: a closed-walk exact shell
+  already forces a face with two distinct interior-support edges, while the
+  canonical one-collar witness/collar surfaces can carry at most one such edge
+  on that face.  This retires the source-bound canonical and one-collar
+  positive-collar repair packet family as one structural theorem family,
+  rather than as isolated benchmark failures.
+- Remaining Move-1 burden: extend this obstruction across the side-cut/cyclic
+  separator and repair-removal surfaces, or prove that those surfaces reduce
+  to the same two-interior-edge face contradiction.
 
 ## Latest Move-2 Evidence
 
@@ -134,7 +154,9 @@ claimed here; the target is a decided state for the Goertzel theorem-4.9 route.
 ## Remaining Completion Requirements
 
 - Move 1: prove a single fundamental obstruction for the repaired
-  CAP5/Jordan geometric class, not another isolated repair-packet failure.
+  CAP5/Jordan geometric class, extending the new closed-walk exact-shell
+  one-collar obstruction across side-cut/cyclic separator and repair-removal
+  surfaces.
 - Move 2: extend the empty-worklist exact subset certificate to the uniform
   CAP5 shell, or exhibit and formalize the genuine vertex-Kirchhoff evader
   produced by failure of that certificate.

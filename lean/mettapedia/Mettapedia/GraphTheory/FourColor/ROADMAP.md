@@ -281,16 +281,34 @@ The remaining fork decision is narrower: prove exact CAP5 data reaches this
 empty-worklist/subset side uniformly, or formalize the evader exposed when it
 does not.
 
+On the geometric fork, the source-bound one-collar repair treadmill has now
+been consolidated into a shell-level obstruction.  In
+`FrontierGeometric.lean`, the theorems
+`not_nonempty_planarBoundaryCanonicalWitnessChoice_of_closedWalkExactShell`,
+`not_exists_oneCollarAnnulusCollarGeometry_of_closedWalkExactShell`, and
+`not_exists_oneCollarAnnulusPreviousBoundaryWitnessGeometry_of_closedWalkExactShell`
+show that every closed-walk exact shell blocks the canonical witness choice
+and all one-collar collar/previous-boundary witness geometries for the same
+reason: the shell's unblocked endpoint already forces a face with two distinct
+interior-support edges.  This is no longer a single failing packet; it is a
+uniform obstruction for the canonical/one-collar positive-collar repair class.
+The remaining geometric work is to push that obstruction through the
+side-cut/cyclic-separator and repair-removal formulations, or prove those
+formulations reduce to the same contradiction.
+
 ## The open problem
 
 Exactly two route forks are live; isolated repair-packet refutations are no
 longer acceptable progress.
 
 1. **Geometric fork**: consolidate the repaired CAP5/Jordan failures into a
-   single structural obstruction theorem.  Current evidence says the
-   side-cut/outside-crossing and canonical-witness repairs fail on the same
-   two-band family, but the formal result is not yet a single "no repair of
-   this class realizes the needed cyclic separator" theorem.
+   single structural obstruction theorem.  The source-bound
+   canonical/one-collar part is now shell-wide: closed-walk exact shells force
+   the same two-interior-edge face obstruction against canonical witness
+   choice, one-collar collar geometry, and one-collar previous-boundary witness
+   geometry.  The remaining Move-1 gap is the side-cut/cyclic-separator and
+   repair-removal layer: prove it reduces to this obstruction, or state the
+   residual repair class precisely enough to refute it directly.
 2. **Algebraic fork**: resolve the F2 cancellation oracle.  The current
    machine-checked statement is sharper than a one-way handoff: classifier
    control of the theorem-4.9 target is equivalent to absence of a nonzero
