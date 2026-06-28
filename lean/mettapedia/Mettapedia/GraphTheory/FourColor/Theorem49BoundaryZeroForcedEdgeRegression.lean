@@ -8182,6 +8182,18 @@ theorem not_exists_twoBandAnnulus_side_cut_crosses_all_interiorEdges :
   rintro ⟨side, hcross⟩
   exact twoBandAnnulus_no_side_cut_crosses_all_interiorEdges side hcross
 
+/-- Interior-support form of the same two-band side-cut obstruction. -/
+theorem not_exists_twoBandAnnulus_side_cut_crosses_interiorEdgeSupport :
+    ¬ ∃ side : Fin 9 → Prop,
+      ∀ e : twoBandAnnulusGraph.edgeSet,
+        e ∈ interiorEdgeSupport
+            twoBandAnnulusEmbedding.faceBoundary
+            twoBandAnnulusEmbedding.faces →
+          EdgeCrossesVertexSide twoBandAnnulusGraph side e := by
+  rintro ⟨side, hcross⟩
+  exact twoBandAnnulus_no_side_cut_crosses_all_interiorEdges side
+    (fun e he => hcross e (by simpa [twoBandAnnulus_interiorEdgeSupport_eq] using he))
+
 /-- Counterexample packet for the outside-crossing crux: the two-band annulus has the closed-walk
 annulus source and integral boundary cycles, but there is no vertex-side cut crossing all interior
 edges. -/
@@ -8198,6 +8210,62 @@ theorem twoBandAnnulus_closedWalkBoundaryCycles_counterexample_to_allInterior_si
   ⟨nonempty_closedWalkAnnulusBoundarySource_twoBandAnnulus,
     annulusBoundaryCyclePair_twoBandAnnulus,
     not_exists_twoBandAnnulus_side_cut_crosses_all_interiorEdges⟩
+
+/-- Strong repaired-geometry counterexample packet for the outside-crossing crux.  The two-band
+annulus has the closed-walk source, two-sided boundary roots, integral boundary cycles,
+component-induced and cross-component-chord-free boundary supports, selected-boundary inducedness,
+chord-free interior support, nonempty purified carrier, and nonempty declared forcing support.
+Even with that repaired packet, no side predicate crosses every interior edge, and no side
+predicate crosses every declared forced edge. -/
+theorem twoBandAnnulus_repairedBoundaryGeometry_counterexample_to_sideCut_packets :
+    Nonempty (PlanarBoundaryAnnulusBoundaryReachabilityData twoBandAnnulusEmbedding) ∧
+      Nonempty
+          (PlanarBoundaryClosedWalkAnnulusBoundarySource twoBandAnnulusEmbedding) ∧
+        AnnulusBoundaryCyclePair twoBandAnnulusEmbedding
+            twoBandAnnulusOuterBoundarySet
+            twoBandAnnulusInnerBoundarySet ∧
+          selectedBoundarySupport
+              twoBandAnnulusEmbedding.faceBoundary
+              twoBandAnnulusEmbedding.faces
+              twoBandAnnulusEmbedding.faces =
+            twoBandAnnulusOuterBoundarySet ∪ twoBandAnnulusInnerBoundarySet ∧
+            BoundaryEdgeSetInducedSubgraph twoBandAnnulusOuterBoundarySet ∧
+              BoundaryEdgeSetInducedSubgraph twoBandAnnulusInnerBoundarySet ∧
+                BoundaryEdgeSetCrossComponentChordFree
+                  twoBandAnnulusOuterBoundarySet
+                  twoBandAnnulusInnerBoundarySet ∧
+                  SelectedBoundaryInducedSubgraph twoBandAnnulusEmbedding ∧
+                    InteriorEdgesNotSelectedBoundaryChords twoBandAnnulusEmbedding ∧
+                      (selectedBoundaryInteriorEdgeEndpointVertices
+                        twoBandAnnulusEmbedding).Nonempty ∧
+                        twoBandAnnulusInteriorEdges.Nonempty ∧
+                          (¬ ∃ side : Fin 9 → Prop,
+                            ∀ e : twoBandAnnulusGraph.edgeSet,
+                              e ∈ interiorEdgeSupport
+                                  twoBandAnnulusEmbedding.faceBoundary
+                                  twoBandAnnulusEmbedding.faces →
+                                EdgeCrossesVertexSide twoBandAnnulusGraph side e) ∧
+                            ¬ ∃ side : Fin 9 → Prop,
+                              ∀ e : twoBandAnnulusGraph.edgeSet,
+                                e ∈ twoBandAnnulusInteriorEdges →
+                                  EdgeCrossesVertexSide twoBandAnnulusGraph side e := by
+  rcases twoBandAnnulus_boundaryCyclePair_componentInduced_crossComponentChordFree_positive_packet with
+    ⟨hsource, hcycles, hsupport, houterInduced, hinnerInduced, hcrossFree,
+      hselectedInduced, hnoChord, hcarrier⟩
+  exact
+    ⟨⟨twoBandAnnulusAnnulusBoundaryReachabilityData⟩,
+      hsource,
+      hcycles,
+      hsupport,
+      houterInduced,
+      hinnerInduced,
+      hcrossFree,
+      hselectedInduced,
+      hnoChord,
+      hcarrier,
+      ⟨tbaR03, by simp [twoBandAnnulusInteriorEdges]⟩,
+      not_exists_twoBandAnnulus_side_cut_crosses_interiorEdgeSupport,
+      not_exists_twoBandAnnulus_side_cut_crosses_all_interiorEdges⟩
 
 /-- Counterexample packet for the declared-forced side-cut route on the same generated two-band
 shape: the declared interior/forcing support is nonempty, but no side predicate crosses all of it. -/
