@@ -10,7 +10,7 @@ claimed here; the target is a decided state for the Goertzel theorem-4.9 route.
 | Fork | State | PLN STV | ITV | Progress |
 |---|---|---:|---:|---:|
 | Geometric CAP5/Jordan repair | Multiple repairs are refuted; still missing the single structural obstruction theorem that retires the fork. | `<0.42,0.60>` | `[0.25,0.65]` | 62% |
-| Algebraic F2 cancellation oracle | Lab finds no top-level all-interior/declared forced-edge evader on 65 records; Lean now proves full no-evader + closed checker gives synthesis and target coverage, promotes the all-interior survivor to a success-or-remaining-edge frontier, exposes an executable empty-worklist certificate, and makes the closed-report failure branch a genuine F2 evader plus a remaining worklist edge. Uniform no-evader from exact shell data is not yet proved. | `<0.38,0.66>` | `[0.25,0.59]` | 62% |
+| Algebraic F2 cancellation oracle | Lab finds no top-level all-interior evader on 65 records and no declared-forced evader on the 36 forcing records; Lean now proves the route-facing classifier-control iff/no-evader contract, the full no-evader + closed-checker synthesis handoff, the all-interior success-or-remaining-edge frontier, the executable empty-worklist certificate, and the closed-report failure branch as a genuine F2 evader plus a remaining worklist edge. Uniform no-evader from exact shell data is not yet proved. | `<0.40,0.67>` | `[0.27,0.60]` | 64% |
 
 ## Latest Move-2 Evidence
 
@@ -53,14 +53,31 @@ claimed here; the target is a decided state for the Goertzel theorem-4.9 route.
   genuine selected-boundary-zero evader for the enumerated forced edges and a
   concrete remaining interior-support edge whose erasure decreases the finite
   worklist.
+- Classifier no-evader lab rerun archived locally as
+  `fourcolor-move2-classifier-noevader-lab-20260628.json`; exported 65
+  projected-generator certificate files and 80 rejected counterexample files.
+  In the record signatures, `f2_all_interior_boundary_zero_only_no_evader` and
+  `f2_all_interior_boundary_zero_plus_kirchhoff_no_evader` are true on all 65
+  records, while the declared-forced variants are true on the 36 records with
+  nonempty forcing interior edges.  The algebraic-F2 cruxes
+  `forcing_edges_to_f2_all_interior_boundary_zero_control` and
+  `forcing_edges_to_f2_all_interior_boundary_zero_kirchhoff_control` still
+  survive with support 36 and purified support 18.
+- Route-facing classifier theorem surface:
+  `CAP5TransportedEdgeComponentCoverCore.enumeratedExceptionalAnnulusForcedEdgeClassifierKirchhoffControl_iff_no_kirchhoffEvader`
+  and
+  `CAP5TransportedEdgeComponentCoverCore.theorem49BoundaryTargetClassifierControl_iff_no_targetEvader`.
+  These prove that the emitted classifier coordinates control the theorem-4.9
+  boundary target exactly when no nonzero target chain evades every enumerated
+  CAP5 forced edge.
 
 ## Remaining Completion Requirements
 
 - Move 1: prove a single fundamental obstruction for the repaired
   CAP5/Jordan geometric class, not another isolated repair-packet failure.
 - Move 2: either prove that the exact shell/CAP5 classifier always supplies
-  the full forced-edge no-evader verdict needed by the synthesis handoff, or
-  exhibit and formalize a genuine evader.
+  the now-equivalent target-control/no-evader verdict, or exhibit and
+  formalize a genuine evader.
 - Before any public checkpoint: strict proof-marker scan, trusted-constant audit for new
   theorems, validation lab rerun, full `lake -f lakefile.lean build
   Mettapedia`, and push only to `origin/fourcolor/cont-20260626`.
