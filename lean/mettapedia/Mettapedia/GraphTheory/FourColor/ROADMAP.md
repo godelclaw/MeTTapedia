@@ -379,9 +379,22 @@ say that realizing even one compatible exceptional CAP5/Jordan candidate as
 cyclic-cut data produces a cyclic edge cut of size at most four, impossible in
 a cyclically five-edge-connected graph; the wrapper packages this with the
 exact-shell one-collar/canonical obstruction.  The remaining geometric work is
-to prove that the residual side-cut/cyclic-separator surface always exposes
-the odd-walk obstruction or this realized small-cut obstruction, or reduces to
-the two-interior-edge face contradiction.
+to close the residual generator surface.
+
+The residual generator surface is now classified, but not yet eliminated.  In
+`FrontierGeometric.lean`,
+`closedWalkExactShell_oneCollar_and_CAP5GeneratorNode_residualClassifier`
+proves that a generated CAP5 separator node in a cyclically five-edge-connected
+graph is either missing primitive checker evidence or emits the concrete
+outside-crossing edge outside candidate support.  The report-level theorem
+`closedWalkExactShell_oneCollar_and_CAP5GeneratorReport_residualClassifier`
+adds the finite 16-latent statement: every generated latent is forced exactly
+when the missing-evidence frontier is empty, and if not, Lean returns a
+specific missing-evidence latent.  Thus the residual Move-1 task is now
+precise: prove that exact CAP5/Jordan shell data rules out primitive
+missing-checker evidence, or reduce that branch to the odd-walk obstruction,
+the realized small-cut obstruction, or the two-interior-edge face
+contradiction.
 
 ## The open problem
 
@@ -399,10 +412,14 @@ longer acceptable progress.
    normal form.  The repair-removal surface now also has the fundamental
    small-cut obstruction: any compatible exceptional CAP5/Jordan candidate
    realized as cyclic-cut data is a forbidden cyclic edge cut of size at most
-   four under cyclic five-edge-connectivity.  The remaining Move-1 gap is to
-   prove the residual side-cut/cyclic-separator layer necessarily enters the
-   odd-walk obstruction or this realized small-cut obstruction, or reduces to
-   the face obstruction.
+   four under cyclic five-edge-connectivity.  The residual generator/report
+   layer is now classified: under cyclic five-edge-connectivity every generated
+   node either emits the outside-crossing edge outside candidate support or is
+   missing primitive checker evidence, and the 16-latent report forces all
+   generated latents exactly when that missing-evidence frontier is empty.  The
+   remaining Move-1 gap is to prove the missing-evidence branch cannot occur
+   for exact CAP5/Jordan shell data, or to reduce it to the odd-walk
+   obstruction, the realized small-cut obstruction, or the face obstruction.
 2. **Algebraic fork**: resolve the F2 cancellation oracle.  The current
    machine-checked statement is sharper than a one-way handoff: full
    selected-boundary-zero classifier control is equivalent to absence of a
