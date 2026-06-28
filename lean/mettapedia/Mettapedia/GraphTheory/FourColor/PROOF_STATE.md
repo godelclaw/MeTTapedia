@@ -10,7 +10,7 @@ claimed here; the target is a decided state for the Goertzel theorem-4.9 route.
 | Fork | State | PLN STV | ITV | Progress |
 |---|---|---:|---:|---:|
 | Geometric CAP5/Jordan repair | Multiple repairs are refuted; still missing the single structural obstruction theorem that retires the fork. | `<0.42,0.60>` | `[0.25,0.65]` | 62% |
-| Algebraic F2 cancellation oracle | Lab finds no top-level all-interior/declared forced-edge evader on 65 records; Lean now proves full no-evader + closed checker gives synthesis and target coverage. Uniform no-evader from exact shell data is not yet proved. | `<0.34,0.64>` | `[0.22,0.58]` | 58% |
+| Algebraic F2 cancellation oracle | Lab finds no top-level all-interior/declared forced-edge evader on 65 records; Lean now proves full no-evader + closed checker gives synthesis and target coverage, and the all-interior survivor is promoted to a success-or-remaining-edge frontier. Uniform no-evader from exact shell data is not yet proved. | `<0.36,0.65>` | `[0.23,0.59]` | 60% |
 
 ## Latest Move-2 Evidence
 
@@ -26,6 +26,15 @@ claimed here; the target is a decided state for the Goertzel theorem-4.9 route.
   `CAP5TransportedEdgeComponentCoverCore.forcedEdgeBoundaryTargetCoverage_iff_no_targetEvader`
   and
   `CAP5TransportedEdgeComponentCoverCore.theorem49BoundaryRootSynthesis_and_boundaryTargetCoverage_of_no_evader_of_no_missing_finsetControl`.
+- Follow-up lab rerun archived locally as
+  `fourcolor-move2-interior-frontier-validation-lab-20260628.log`.
+- New Lean frontier:
+  `CAP5TransportedEdgeComponentCoverCore.interiorSupportForced_synthesis_and_boundaryTargetCoverage`
+  and
+  `CAP5TransportedEdgeComponentCoverCore.interiorSupportForced_or_remainingEdge`.
+  If the closed primitive checker enumerates every ambient interior-support
+  edge as forced, synthesis and target coverage follow; otherwise the
+  canonical worklist exposes a concrete remaining interior-support edge.
 
 ## Remaining Completion Requirements
 
