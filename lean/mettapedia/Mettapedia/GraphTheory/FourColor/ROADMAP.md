@@ -423,6 +423,15 @@ control.  Thus the remaining exact-shell task is not to reinterpret the
 empty-worklist certificate; it is to prove uniform CAP5/Jordan data reaches it
 or to formalize the evader/worklist branch.
 
+The forced-all finite scheduler fork is now explicit as well.  Lean proves
+`remainingInteriorEmpty_noEvader_and_synthesis_and_boundaryZeroControl_or_remainingInteriorEdgeSupportEdge_with_card_erase_lt_of_forcedAllLatents`:
+after the executable report has forced all latents, either the empty-worklist
+no-evader/full-control branch holds, or there is a concrete remaining
+interior-support edge whose erasure strictly decreases the finite worklist.
+This makes the next exact-shell obligation operational: prove the remaining
+worklist is empty from uniform CAP5/Jordan data, or use the returned edge to
+drive the finite scheduler toward an evader/worklist obstruction.
+
 On the geometric fork, the source-bound one-collar repair treadmill has now
 been consolidated into a shell-level obstruction.  In
 `FrontierGeometric.lean`, the theorems
