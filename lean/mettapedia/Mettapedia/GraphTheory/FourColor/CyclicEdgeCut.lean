@@ -197,6 +197,18 @@ theorem not_forall_edgeCrossesVertexSide_of_closed_walk_odd_length
   intro hcross
   exact (not_side_iff_of_walk_all_edges_cross_odd p hcross hodd) Iff.rfl
 
+/-- Finset-support form of the odd closed-walk obstruction for vertex-side cuts.  If an odd
+closed walk is supported inside a proposed finite edge set, then no fixed side predicate can
+cross every edge in that finite set. -/
+theorem not_forall_edgeCrossesVertexSide_of_closed_walk_odd_length_subset
+    {G : SimpleGraph V} {side : V → Prop} {u : V}
+    (p : G.Walk u u) (hodd : Odd p.length) {edges : Finset G.edgeSet}
+    (hsubset : ∀ e : G.edgeSet, (e : Sym2 V) ∈ p.edges → e ∈ edges) :
+    ¬ ∀ e : G.edgeSet, e ∈ edges → EdgeCrossesVertexSide G side e := by
+  intro hcross
+  exact not_forall_edgeCrossesVertexSide_of_closed_walk_odd_length p hodd
+    (fun e he => hcross e (hsubset e he))
+
 /-- An unordered pair with two distinct listed members is exactly the unordered pair of those
 members. -/
 theorem sym2_eq_mk_of_mem_of_mem_of_ne

@@ -89,6 +89,23 @@ theorem CAP5TransportedEdgeComponentCoverCore.not_forall_exceptionalAnnulusCross
     (fun e he => data.exceptionalAnnulusCrossingOutsideEdge_crosses
       (hcrossingOutside e he))
 
+/-- Finset-support form of the odd closed-walk obstruction for the normal-form outside-crossing
+CAP5 predicate.  This is the route-facing shape of the validation lab's odd-cycle side-cut
+counterexamples: any finite candidate support containing an odd closed walk cannot be wholly
+accepted by a single outside-crossing side predicate. -/
+theorem CAP5TransportedEdgeComponentCoverCore.not_forall_exceptionalAnnulusCrossingOutsideEdge_of_closed_walk_odd_length_subset
+    {G : SimpleGraph V}
+    {boundaryEdge : Fin 5 → G.edgeSet} {n : Nat}
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    {p0Inside p4Inside : Bool} {side : V → Prop} {u : V}
+    (p : G.Walk u u) (hodd : Odd p.length) {edges : Finset G.edgeSet}
+    (hsubset : ∀ e : G.edgeSet, (e : Sym2 V) ∈ p.edges → e ∈ edges) :
+    ¬ ∀ e : G.edgeSet, e ∈ edges →
+      data.ExceptionalAnnulusCrossingOutsideEdge p0Inside p4Inside side e := by
+  intro hcrossingOutside
+  exact data.not_forall_exceptionalAnnulusCrossingOutsideEdge_of_closed_walk_odd_length p hodd
+    (fun e he => hcrossingOutside e (hsubset e he))
+
 /-- The exceptional CAP5 one-edge counterexample predicate always emits a genuine
 side-crossing edge.  This keeps the algebraic lane connected to the raw cyclic-cut checker
 instead of treating the emitted edge as an opaque witness. -/
