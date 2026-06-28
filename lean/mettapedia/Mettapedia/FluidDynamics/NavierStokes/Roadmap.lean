@@ -81,6 +81,11 @@ def currentNavierRoadmap : List NavierRoadmapEntry :=
       truthValue := ⟨85, 90⟩
       obligation := "Use the checked line-invariant obstruction to rule out shear shortcuts; future nonzero canaries must break line invariance and close the pressure-slice momentum equation." },
     { stage := .nonzeroEnergyKernel
+      proofNodeId := "navier.energy.nonzero-schwartz-heat-shear-boundary"
+      status := .checked
+      truthValue := ⟨90, 91⟩
+      obligation := "Use the checked heat-shear boundary to separate the classical exact zero-pressure shear-flow solution from the whole-space slice-Schwartz canary lane; future nonzero canaries must avoid nondecaying time-zero slices as well as pressure-residual curl failures." },
+    { stage := .nonzeroEnergyKernel
       proofNodeId := "navier.energy.nonzero-schwartz-rank-one-shear-obstruction"
       status := .checked
       truthValue := ⟨82, 89⟩
@@ -128,8 +133,8 @@ def currentNavierRoadmap : List NavierRoadmapEntry :=
     { stage := .nonzeroEnergyKernel
       proofNodeId := "navier.energy.nonzero-schwartz-canary"
       status := .openGoal
-      truthValue := ⟨65, 86⟩
-      obligation := "Produce or refute an exact smooth evolution and Schwartz pressure slices for the localized stream-function seed or a comparable non-polynomial Schwartz profile; seed-only data, conditional constructors, rank-one zero-convection obstructions, profile-level nonzero anti-profile cancellation, amplitude-boundary guardrails, positive-viscosity stationary obstructions, strict-dissipation theorems conditional on the nonzero interface, flat-energy zero-rigidity obstructions, residual-curl pressure-closure rejections, and algebraic finite-mode boundary cases do not count." },
+      truthValue := ⟨66, 86⟩
+      obligation := "Produce or refute an exact smooth evolution and Schwartz pressure slices for the localized stream-function seed or a comparable non-polynomial Schwartz profile; seed-only data, conditional constructors, classical heat-shear exact solutions that fail Schwartz decay, rank-one zero-convection obstructions, profile-level nonzero anti-profile cancellation, amplitude-boundary guardrails, positive-viscosity stationary obstructions, strict-dissipation theorems conditional on the nonzero interface, flat-energy zero-rigidity obstructions, residual-curl pressure-closure rejections, and algebraic finite-mode boundary cases do not count." },
     { stage := .scalingGate
       proofNodeId := "navier.regularity-promotion-gate"
       status := .scalingUncleared
@@ -167,11 +172,18 @@ theorem currentNavierRoadmap_records_nonzero_schwartz_kernel_and_open_canary :
           "Use the checked line-invariant obstruction to rule out shear shortcuts; future nonzero canaries must break line invariance and close the pressure-slice momentum equation." } :
         NavierRoadmapEntry) ∈ currentNavierRoadmap ∧
       ({ stage := NavierRoadmapStage.nonzeroEnergyKernel
+         proofNodeId := "navier.energy.nonzero-schwartz-heat-shear-boundary"
+         status := .checked
+         truthValue := ⟨90, 91⟩
+         obligation :=
+          "Use the checked heat-shear boundary to separate the classical exact zero-pressure shear-flow solution from the whole-space slice-Schwartz canary lane; future nonzero canaries must avoid nondecaying time-zero slices as well as pressure-residual curl failures." } :
+        NavierRoadmapEntry) ∈ currentNavierRoadmap ∧
+      ({ stage := NavierRoadmapStage.nonzeroEnergyKernel
          proofNodeId := "navier.energy.nonzero-schwartz-canary"
          status := .openGoal
-         truthValue := ⟨65, 86⟩
+         truthValue := ⟨66, 86⟩
          obligation :=
-          "Produce or refute an exact smooth evolution and Schwartz pressure slices for the localized stream-function seed or a comparable non-polynomial Schwartz profile; seed-only data, conditional constructors, rank-one zero-convection obstructions, profile-level nonzero anti-profile cancellation, amplitude-boundary guardrails, positive-viscosity stationary obstructions, strict-dissipation theorems conditional on the nonzero interface, flat-energy zero-rigidity obstructions, residual-curl pressure-closure rejections, and algebraic finite-mode boundary cases do not count." } :
+          "Produce or refute an exact smooth evolution and Schwartz pressure slices for the localized stream-function seed or a comparable non-polynomial Schwartz profile; seed-only data, conditional constructors, classical heat-shear exact solutions that fail Schwartz decay, rank-one zero-convection obstructions, profile-level nonzero anti-profile cancellation, amplitude-boundary guardrails, positive-viscosity stationary obstructions, strict-dissipation theorems conditional on the nonzero interface, flat-energy zero-rigidity obstructions, residual-curl pressure-closure rejections, and algebraic finite-mode boundary cases do not count." } :
         NavierRoadmapEntry) ∈ currentNavierRoadmap ∧
       ({ stage := NavierRoadmapStage.nonzeroEnergyKernel
          proofNodeId := "navier.energy.nonzero-schwartz-rank-one-shear-obstruction"
@@ -238,6 +250,7 @@ theorem currentNavierRoadmap_records_nonzero_schwartz_kernel_and_open_canary :
         NavierRoadmapEntry) ∈ currentNavierRoadmap ∧
       navierNonzeroSchwartzEnergyKernelNode.status = .checked ∧
       navierNonzeroSchwartzLineInvariantObstructionNode.status = .checked ∧
+      navierNonzeroSchwartzHeatShearBoundaryNode.status = .checked ∧
       navierNonzeroSchwartzRankOneShearObstructionNode.status = .checked ∧
       navierNonzeroSchwartzSymmetricShearObstructionNode.status = .checked ∧
       navierNonzeroSchwartzLocalizedStreamSeedNode.status = .checked ∧
@@ -260,8 +273,10 @@ theorem currentNavierRoadmap_records_nonzero_schwartz_kernel_and_open_canary :
     by simp [currentNavierRoadmap],
     by simp [currentNavierRoadmap],
     by simp [currentNavierRoadmap],
+    by simp [currentNavierRoadmap],
     navierNonzeroSchwartzEnergyKernelNode_checked,
     navierNonzeroSchwartzLineInvariantObstructionNode_checked,
+    navierNonzeroSchwartzHeatShearBoundaryNode_checked,
     navierNonzeroSchwartzRankOneShearObstructionNode_checked,
     navierNonzeroSchwartzSymmetricShearObstructionNode_checked,
     navierNonzeroSchwartzLocalizedStreamSeedNode_checked,

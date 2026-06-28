@@ -1,4 +1,5 @@
 import Mettapedia.FluidDynamics.NavierStokes.NavierStokesEnergySchwartzSolutionKernel
+import Mettapedia.FluidDynamics.NavierStokes.NavierStokesSchwartzHeatShearObstruction
 import Mettapedia.FluidDynamics.NavierStokes.NavierStokesSchwartzDirectionalRigidity
 
 /-!
@@ -396,6 +397,109 @@ theorem not_exists_nonzeroSchwartzConcreteSolution_velocity_of_momentumPressureR
     not_exists_schwartzConcreteSolution_velocity_of_momentumPressureResidual_vorticity_ne_zero
       hcurl
       ⟨S.toSchwartzConcreteNavierStokesSolution, hvelocity⟩
+
+/-- A nondegenerate heat-shear field is genuinely nonzero as a spacetime
+velocity field. -/
+theorem heatShearVelocityField_exists_nonzero_of_amplitude_ne_zero_of_wavenumber_ne_zero
+    {ν a k : ℝ} (ha : a ≠ 0) (hk : k ≠ 0) :
+    ∃ t : NSTime, ∃ x : NSSpace, heatShearVelocityField ν a k t x ≠ 0 := by
+  by_contra hnone
+  have hvelocity_zero : heatShearVelocityField ν a k = (0 : NSVelocityField) := by
+    funext t x
+    by_contra hne
+    exact hnone ⟨t, x, hne⟩
+  have hinitial_zero : heatShearInitialVelocity a k = (0 : NSInitialVelocity) := by
+    funext x
+    have hfield_zero : heatShearVelocityField ν a k 0 x = 0 := by
+      simpa using congrArg (fun u : NSVelocityField => u 0 x) hvelocity_zero
+    rw [← matchesInitialVelocity_heatShearVelocityField ν a k x]
+    exact hfield_zero
+  exact
+    heatShearInitialVelocity_ne_zero_of_amplitude_ne_zero_of_wavenumber_ne_zero
+      ha hk hinitial_zero
+
+/-- The classical heat-shear family solves the zero-pressure equation at its
+own viscosity, but no nondegenerate member can be the velocity of a
+slice-Schwartz concrete solution: the time-zero Schwartz slice would equal the
+nondecaying heat-shear initial datum. -/
+theorem not_exists_schwartzConcreteSolution_velocity_heatShearVelocityField
+    {ν a k : ℝ} (ha : a ≠ 0) (hk : k ≠ 0) :
+    ¬ ∃ S : SchwartzConcreteNavierStokesSolution ν,
+      S.velocity = heatShearVelocityField ν a k := by
+  rintro ⟨S, hvelocity⟩
+  have hslice :
+      (S.velocitySlice 0 : NSInitialVelocity) = heatShearInitialVelocity a k := by
+    funext x
+    calc
+      (S.velocitySlice 0 : NSSpace → NSSpace) x = S.velocity 0 x := by
+        exact (S.velocitySlice_eq 0 x).symm
+      _ = heatShearVelocityField ν a k 0 x := by
+        simp [hvelocity]
+      _ = heatShearInitialVelocity a k x := by
+        exact matchesInitialVelocity_heatShearVelocityField ν a k x
+  exact
+    not_exists_schwartzInitialVelocity_eq_heatShearInitialVelocity_of_amplitude_ne_zero_of_wavenumber_ne_zero
+      ha hk ⟨S.velocitySlice 0, hslice⟩
+
+/-- Nonzero-interface version of the heat-shear Schwartz-decay obstruction. -/
+theorem not_exists_nonzeroSchwartzConcreteSolution_velocity_heatShearVelocityField
+    {ν a k : ℝ} (ha : a ≠ 0) (hk : k ≠ 0) :
+    ¬ ∃ S : NonzeroSchwartzConcreteNavierStokesSolution ν,
+      S.velocity = heatShearVelocityField ν a k := by
+  rintro ⟨S, hvelocity⟩
+  exact
+    not_exists_schwartzConcreteSolution_velocity_heatShearVelocityField
+      ha hk ⟨S.toSchwartzConcreteNavierStokesSolution, hvelocity⟩
+
+/-- Tested at the wrong viscosity, the same heat-shear family also fails the
+pressure-closure curl gate. -/
+theorem not_exists_schwartzConcreteSolution_velocity_heatShearVelocityField_wrongViscosity
+    {μ ν a k : ℝ} (hμν : μ ≠ ν) (ha : a ≠ 0) (hk : k ≠ 0) :
+    ¬ ∃ S : SchwartzConcreteNavierStokesSolution μ,
+      S.velocity = heatShearVelocityField ν a k := by
+  exact
+    not_exists_schwartzConcreteSolution_velocity_of_momentumPressureResidual_vorticity_ne_zero
+      (ν := μ) (u := heatShearVelocityField ν a k)
+      ⟨0, 0,
+        spatialVorticity_momentumPressureResidual_heatShearVelocityField_origin_ne_zero
+          hμν ha hk⟩
+
+/-- Nonzero-interface version of the wrong-viscosity heat-shear curl
+obstruction. -/
+theorem not_exists_nonzeroSchwartzConcreteSolution_velocity_heatShearVelocityField_wrongViscosity
+    {μ ν a k : ℝ} (hμν : μ ≠ ν) (ha : a ≠ 0) (hk : k ≠ 0) :
+    ¬ ∃ S : NonzeroSchwartzConcreteNavierStokesSolution μ,
+      S.velocity = heatShearVelocityField ν a k := by
+  rintro ⟨S, hvelocity⟩
+  exact
+    not_exists_schwartzConcreteSolution_velocity_heatShearVelocityField_wrongViscosity
+      hμν ha hk ⟨S.toSchwartzConcreteNavierStokesSolution, hvelocity⟩
+
+/-- Boundary packet for the classical shear-flow shortcut: nondegenerate
+heat-shear is nonzero, divergence-free, and solves the zero-pressure
+Navier-Stokes equation at its own viscosity, but it cannot inhabit the
+slice-Schwartz concrete-solution interface. -/
+theorem heatShearVelocityField_exact_nonzero_and_not_schwartzConcreteSolution
+    (ν : ℝ) {a k : ℝ} (ha : a ≠ 0) (hk : k ≠ 0) :
+    (∃ t : NSTime, ∃ x : NSSpace, heatShearVelocityField ν a k t x ≠ 0) ∧
+      (∀ t x, spatialDivergence (heatShearVelocityField ν a k) t x = 0) ∧
+      (∀ t x,
+        timeVelocityDerivative (heatShearVelocityField ν a k) t x +
+            spatialConvection (heatShearVelocityField ν a k) t x +
+            spatialPressureGradient (0 : NSPressureField) t x =
+          ν • spatialLaplacian (heatShearVelocityField ν a k) t x) ∧
+      (¬ ∃ S : SchwartzConcreteNavierStokesSolution ν,
+        S.velocity = heatShearVelocityField ν a k) ∧
+      (¬ ∃ S : NonzeroSchwartzConcreteNavierStokesSolution ν,
+        S.velocity = heatShearVelocityField ν a k) := by
+  exact
+    ⟨heatShearVelocityField_exists_nonzero_of_amplitude_ne_zero_of_wavenumber_ne_zero
+        ha hk,
+      spatialDivergence_heatShearVelocityField ν a k,
+      momentumEquation_heatShearVelocityField_zeroPressure ν a k,
+      not_exists_schwartzConcreteSolution_velocity_heatShearVelocityField ha hk,
+      not_exists_nonzeroSchwartzConcreteSolution_velocity_heatShearVelocityField
+        ha hk⟩
 
 /-- Contrapositive stationary gate for nonzero slice-Schwartz solutions:
 nonzero corrected dissipation rules out a time-independent velocity

@@ -105,6 +105,46 @@ theorem undamped_unit_heat_shear_not_schwartz_solution_velocity_regression :
       ⟨0, 0,
         spatialVorticity_momentumPressureResidual_undampedUnitHeatShearVelocityField_origin_ne_zero⟩
 
+theorem nondegenerate_heat_shear_exists_nonzero_regression
+    {ν a k : ℝ} (ha : a ≠ 0) (hk : k ≠ 0) :
+    ∃ t : NSTime, ∃ x : NSSpace, heatShearVelocityField ν a k t x ≠ 0 := by
+  exact
+    heatShearVelocityField_exists_nonzero_of_amplitude_ne_zero_of_wavenumber_ne_zero
+      ha hk
+
+theorem heat_shear_exact_but_not_schwartz_solution_velocity_regression
+    {ν a k : ℝ} (ha : a ≠ 0) (hk : k ≠ 0) :
+    (∃ t : NSTime, ∃ x : NSSpace, heatShearVelocityField ν a k t x ≠ 0) ∧
+      (∀ t x, spatialDivergence (heatShearVelocityField ν a k) t x = 0) ∧
+      (∀ t x,
+        timeVelocityDerivative (heatShearVelocityField ν a k) t x +
+            spatialConvection (heatShearVelocityField ν a k) t x +
+            spatialPressureGradient (0 : NSPressureField) t x =
+          ν • spatialLaplacian (heatShearVelocityField ν a k) t x) ∧
+      (¬ ∃ S : SchwartzConcreteNavierStokesSolution ν,
+        S.velocity = heatShearVelocityField ν a k) ∧
+      (¬ ∃ S : NonzeroSchwartzConcreteNavierStokesSolution ν,
+        S.velocity = heatShearVelocityField ν a k) := by
+  exact
+    heatShearVelocityField_exact_nonzero_and_not_schwartzConcreteSolution
+      ν ha hk
+
+theorem heat_shear_wrong_viscosity_not_schwartz_solution_velocity_regression
+    {μ ν a k : ℝ} (hμν : μ ≠ ν) (ha : a ≠ 0) (hk : k ≠ 0) :
+    ¬ ∃ S : SchwartzConcreteNavierStokesSolution μ,
+      S.velocity = heatShearVelocityField ν a k := by
+  exact
+    not_exists_schwartzConcreteSolution_velocity_heatShearVelocityField_wrongViscosity
+      hμν ha hk
+
+theorem heat_shear_wrong_viscosity_not_nonzero_schwartz_solution_velocity_regression
+    {μ ν a k : ℝ} (hμν : μ ≠ ν) (ha : a ≠ 0) (hk : k ≠ 0) :
+    ¬ ∃ S : NonzeroSchwartzConcreteNavierStokesSolution μ,
+      S.velocity = heatShearVelocityField ν a k := by
+  exact
+    not_exists_nonzeroSchwartzConcreteSolution_velocity_heatShearVelocityField_wrongViscosity
+      hμν ha hk
+
 theorem stationary_schwartz_solution_dissipation_zero_regression
     {ν : ℝ} (S : SchwartzConcreteNavierStokesSolution ν)
     {u₀ : NSInitialVelocity}
