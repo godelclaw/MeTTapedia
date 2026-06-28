@@ -81,10 +81,15 @@ def currentNavierRoadmap : List NavierRoadmapEntry :=
       truthValue := ⟨85, 90⟩
       obligation := "Use the checked line-invariant obstruction to rule out shear shortcuts; future nonzero canaries must break line invariance and close the pressure-slice momentum equation." },
     { stage := .nonzeroEnergyKernel
+      proofNodeId := "navier.energy.nonzero-schwartz-symmetric-shear-obstruction"
+      status := .checked
+      truthValue := ⟨88, 88⟩
+      obligation := "Treat the exact nonzero symmetric finite-mode shear as an algebraic boundary canary only; its nonzero constant directional derivative excludes it from the Schwartz canary lane." },
+    { stage := .nonzeroEnergyKernel
       proofNodeId := "navier.energy.nonzero-schwartz-canary"
       status := .openGoal
-      truthValue := ⟨42, 84⟩
-      obligation := "Produce or refute an explicit non-line-invariant nonzero divergence-free Schwartz profile pair with Schwartz pressure slices satisfying the expanded closure; conditional constructors alone do not count." },
+      truthValue := ⟨45, 85⟩
+      obligation := "Produce or refute an explicit localized non-polynomial nonzero divergence-free Schwartz profile pair with Schwartz pressure slices satisfying the expanded closure; conditional constructors and algebraic finite-mode boundary cases alone do not count." },
     { stage := .scalingGate
       proofNodeId := "navier.regularity-promotion-gate"
       status := .scalingUncleared
@@ -124,18 +129,28 @@ theorem currentNavierRoadmap_records_nonzero_schwartz_kernel_and_open_canary :
       ({ stage := NavierRoadmapStage.nonzeroEnergyKernel
          proofNodeId := "navier.energy.nonzero-schwartz-canary"
          status := .openGoal
-         truthValue := ⟨42, 84⟩
+         truthValue := ⟨45, 85⟩
          obligation :=
-          "Produce or refute an explicit non-line-invariant nonzero divergence-free Schwartz profile pair with Schwartz pressure slices satisfying the expanded closure; conditional constructors alone do not count." } :
+          "Produce or refute an explicit localized non-polynomial nonzero divergence-free Schwartz profile pair with Schwartz pressure slices satisfying the expanded closure; conditional constructors and algebraic finite-mode boundary cases alone do not count." } :
+        NavierRoadmapEntry) ∈ currentNavierRoadmap ∧
+      ({ stage := NavierRoadmapStage.nonzeroEnergyKernel
+         proofNodeId := "navier.energy.nonzero-schwartz-symmetric-shear-obstruction"
+         status := .checked
+         truthValue := ⟨88, 88⟩
+         obligation :=
+          "Treat the exact nonzero symmetric finite-mode shear as an algebraic boundary canary only; its nonzero constant directional derivative excludes it from the Schwartz canary lane." } :
         NavierRoadmapEntry) ∈ currentNavierRoadmap ∧
       navierNonzeroSchwartzEnergyKernelNode.status = .checked ∧
       navierNonzeroSchwartzLineInvariantObstructionNode.status = .checked ∧
+      navierNonzeroSchwartzSymmetricShearObstructionNode.status = .checked ∧
       navierNonzeroSchwartzCanaryNode.status = .openGoal := by
   exact ⟨by simp [currentNavierRoadmap],
     by simp [currentNavierRoadmap],
     by simp [currentNavierRoadmap],
+    by simp [currentNavierRoadmap],
     navierNonzeroSchwartzEnergyKernelNode_checked,
     navierNonzeroSchwartzLineInvariantObstructionNode_checked,
+    navierNonzeroSchwartzSymmetricShearObstructionNode_checked,
     navierNonzeroSchwartzCanaryNode_open⟩
 
 /-- The current roadmap pins the averaged-equation obstruction before any
