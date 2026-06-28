@@ -1,5 +1,6 @@
 import Mettapedia.GraphTheory.FourColor.ShellsCore
 import Mettapedia.GraphTheory.FourColor.CAP5AlgebraBridge
+import Mettapedia.GraphTheory.FourColor.CAP5WitnessGenerator
 import Mettapedia.GraphTheory.FourColor.Theorem49ClosedWalkShellSynthesis
 import Mettapedia.GraphTheory.FourColor.Theorem49DetectorStrength
 import Mettapedia.GraphTheory.FourColor.Theorem49AtMostOneNonemptyCarrierImpossibility
@@ -283,5 +284,69 @@ theorem closedWalkExactShell_oneCollar_and_CAP5CyclicSeparatorRepair_obstruction
       not_exists_oneCollarAnnulusPreviousBoundaryWitnessGeometry_of_closedWalkExactShell shell,
       not_CAP5ExceptionalCyclicSeparatorRepairRealization_of_cyclicallyFiveEdgeConnected
         data p0Inside p4Inside hcyclic⟩
+
+/--
+Residual generated-node classifier for the repaired CAP5/Jordan side-cut surface.  A generated
+separator node in a cyclically five-edge-connected graph cannot hide in the realized-separator
+bin: it is either missing primitive checker evidence, or it emits the concrete outside-crossing
+edge that refutes the proposed side-cut support.  The theorem packages that classifier with the
+closed-walk exact-shell one-collar/canonical obstruction.
+-/
+theorem closedWalkExactShell_oneCollar_and_CAP5GeneratorNode_residualClassifier
+    {emb : PlaneEmbeddingWithBoundary G} (shell : ClosedWalkExactShell emb)
+    {boundaryEdge : Fin 5 → G.edgeSet}
+    (node : CAP5ExceptionalAnnulusGeneratorNode boundaryEdge)
+    (hcyclic : CyclicallyFiveEdgeConnected G) :
+    (¬ Nonempty
+      (PlanarBoundaryCanonicalWitnessChoice
+        shell.source.toPlanarBoundaryAnnulusBoundaryData)) ∧
+      (¬ ∃ collar : PlanarBoundaryAnnulusCollarGeometry emb, collar.numCollars = 1) ∧
+        (¬ ∃ previous : PlanarBoundaryAnnulusPreviousBoundaryWitnessGeometry emb,
+          previous.numCollars = 1) ∧
+          (node.MissingCheckerEvidence ∨
+            ∃ e : G.edgeSet,
+              e ∉ node.candidate.edgeSupport ∧
+                EdgeCrossesVertexSide G node.side e) := by
+  exact
+    ⟨not_nonempty_planarBoundaryCanonicalWitnessChoice_of_closedWalkExactShell shell,
+      not_exists_oneCollarAnnulusCollarGeometry_of_closedWalkExactShell shell,
+      not_exists_oneCollarAnnulusPreviousBoundaryWitnessGeometry_of_closedWalkExactShell shell,
+      node.missingCheckerEvidence_or_exists_crossing_outside_of_cyclicallyFiveEdgeConnected
+        hcyclic⟩
+
+/--
+Report-level residual classifier for the repaired CAP5/Jordan side-cut surface.  Under cyclic
+five-edge-connectivity, a finite CAP5 report forces every generated latent exactly when the
+primitive missing-evidence frontier is empty; if it does not force every latent, Lean returns a
+specific latent with missing portal/cycle checker evidence.  This is the route-facing residual
+classifier that remains after the source-bound one-collar/canonical obstruction has been applied.
+-/
+theorem closedWalkExactShell_oneCollar_and_CAP5GeneratorReport_residualClassifier
+    {emb : PlaneEmbeddingWithBoundary G} (shell : ClosedWalkExactShell emb)
+    {boundaryEdge : Fin 5 → G.edgeSet} {side : V → Prop}
+    (report : CAP5ExceptionalAnnulusGeneratorReport boundaryEdge side)
+    (hcyclic : CyclicallyFiveEdgeConnected G) :
+    (¬ Nonempty
+      (PlanarBoundaryCanonicalWitnessChoice
+        shell.source.toPlanarBoundaryAnnulusBoundaryData)) ∧
+      (¬ ∃ collar : PlanarBoundaryAnnulusCollarGeometry emb, collar.numCollars = 1) ∧
+        (¬ ∃ previous : PlanarBoundaryAnnulusPreviousBoundaryWitnessGeometry emb,
+          previous.numCollars = 1) ∧
+          ((report.forcedCounterexampleLatents =
+              CAP5ExceptionalAnnulusGeneratorLatent.all boundaryEdge ↔
+            report.missingCheckerEvidenceLatents = []) ∧
+            (report.forcedCounterexampleLatents ≠
+                CAP5ExceptionalAnnulusGeneratorLatent.all boundaryEdge →
+              ∃ latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge,
+                (report.node latent).MissingCheckerEvidence)) := by
+  exact
+    ⟨not_nonempty_planarBoundaryCanonicalWitnessChoice_of_closedWalkExactShell shell,
+      not_exists_oneCollarAnnulusCollarGeometry_of_closedWalkExactShell shell,
+      not_exists_oneCollarAnnulusPreviousBoundaryWitnessGeometry_of_closedWalkExactShell shell,
+      ⟨report.forcedCounterexampleLatents_eq_all_iff_missingCheckerEvidenceLatents_eq_nil_of_cyclicallyFiveEdgeConnected
+          hcyclic,
+        fun hnotAll =>
+          (report.forcedCounterexampleLatents_ne_all_iff_exists_missingCheckerEvidence_of_cyclicallyFiveEdgeConnected
+            hcyclic).1 hnotAll⟩⟩
 
 end Mettapedia.GraphTheory.FourColor
