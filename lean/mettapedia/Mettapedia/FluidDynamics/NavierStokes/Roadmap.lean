@@ -76,10 +76,15 @@ def currentNavierRoadmap : List NavierRoadmapEntry :=
       truthValue := ⟨73, 86⟩
       obligation := "Use the checked nonzero-preserving kernel for finite-mode generator work, but keep the explicit inhabited nonzero pressure-slice closure as the open canary obligation." },
     { stage := .nonzeroEnergyKernel
+      proofNodeId := "navier.energy.nonzero-schwartz-line-invariant-obstruction"
+      status := .checked
+      truthValue := ⟨85, 90⟩
+      obligation := "Use the checked line-invariant obstruction to rule out shear shortcuts; future nonzero canaries must break line invariance and close the pressure-slice momentum equation." },
+    { stage := .nonzeroEnergyKernel
       proofNodeId := "navier.energy.nonzero-schwartz-canary"
       status := .openGoal
-      truthValue := ⟨39, 82⟩
-      obligation := "Produce or refute an explicit nonzero divergence-free Schwartz profile pair with Schwartz pressure slices satisfying the expanded closure; conditional constructors alone do not count." },
+      truthValue := ⟨42, 84⟩
+      obligation := "Produce or refute an explicit non-line-invariant nonzero divergence-free Schwartz profile pair with Schwartz pressure slices satisfying the expanded closure; conditional constructors alone do not count." },
     { stage := .scalingGate
       proofNodeId := "navier.regularity-promotion-gate"
       status := .scalingUncleared
@@ -110,17 +115,27 @@ theorem currentNavierRoadmap_records_nonzero_schwartz_kernel_and_open_canary :
         "Use the checked nonzero-preserving kernel for finite-mode generator work, but keep the explicit inhabited nonzero pressure-slice closure as the open canary obligation." } :
       NavierRoadmapEntry) ∈ currentNavierRoadmap ∧
       ({ stage := NavierRoadmapStage.nonzeroEnergyKernel
+         proofNodeId := "navier.energy.nonzero-schwartz-line-invariant-obstruction"
+         status := .checked
+         truthValue := ⟨85, 90⟩
+         obligation :=
+          "Use the checked line-invariant obstruction to rule out shear shortcuts; future nonzero canaries must break line invariance and close the pressure-slice momentum equation." } :
+        NavierRoadmapEntry) ∈ currentNavierRoadmap ∧
+      ({ stage := NavierRoadmapStage.nonzeroEnergyKernel
          proofNodeId := "navier.energy.nonzero-schwartz-canary"
          status := .openGoal
-         truthValue := ⟨39, 82⟩
+         truthValue := ⟨42, 84⟩
          obligation :=
-          "Produce or refute an explicit nonzero divergence-free Schwartz profile pair with Schwartz pressure slices satisfying the expanded closure; conditional constructors alone do not count." } :
+          "Produce or refute an explicit non-line-invariant nonzero divergence-free Schwartz profile pair with Schwartz pressure slices satisfying the expanded closure; conditional constructors alone do not count." } :
         NavierRoadmapEntry) ∈ currentNavierRoadmap ∧
       navierNonzeroSchwartzEnergyKernelNode.status = .checked ∧
+      navierNonzeroSchwartzLineInvariantObstructionNode.status = .checked ∧
       navierNonzeroSchwartzCanaryNode.status = .openGoal := by
   exact ⟨by simp [currentNavierRoadmap],
     by simp [currentNavierRoadmap],
+    by simp [currentNavierRoadmap],
     navierNonzeroSchwartzEnergyKernelNode_checked,
+    navierNonzeroSchwartzLineInvariantObstructionNode_checked,
     navierNonzeroSchwartzCanaryNode_open⟩
 
 /-- The current roadmap pins the averaged-equation obstruction before any
