@@ -378,6 +378,19 @@ a decreasing remaining-worklist edge.  This removes an interface ambiguity in
 the executable report path, but it does not by itself prove that exact
 CAP5/Jordan shell data supplies the no-evader/subset side.
 
+The same report-forced-all failure branch now has a canonical path-xor payload
+form.  Lean proves
+`canonicalPayloadEvader_of_notSynthesis_of_forcedAllLatents` and
+`synthesis_or_canonicalPayloadEvader_of_forcedAllLatents`: if the forced-all
+report branch still fails theorem-4.9 synthesis, the canonical interior-support
+runner returns the finite artifact the lab is designed to expose, namely a
+forced-bin path-xor detector payload, a selected-boundary-zero chain vanishing
+on every enumerated forced edge, a concrete remaining interior edge that is
+not forced and where the chain is nonzero, a strict worklist decrease, and a
+nonzero canonical red/blue family pairing.  This does not prove the exact-shell
+no-evader/subset side, but it makes the alternative branch computational rather
+than only existential.
+
 On the geometric fork, the source-bound one-collar repair treadmill has now
 been consolidated into a shell-level obstruction.  In
 `FrontierGeometric.lean`, the theorems
@@ -479,10 +492,13 @@ longer acceptable progress.
    target-controlled synthesis-or-evader fork.  That report-forced-all fork is
    now split into its no-evader and failed-synthesis halves: absence of the
    concrete vertex-Kirchhoff evader closes synthesis, while failed synthesis
-   produces the evader and a decreasing remaining-worklist edge.  The remaining
-   crux is whether exact shell/CAP5 data proves the no-evader/subset
-   certificate uniformly, or whether a genuine vertex-Kirchhoff failure evader
-   exists.
+   produces the evader and a decreasing remaining-worklist edge.  The same
+   forced-all failure side now also exposes the canonical path-xor payload
+   evader: a boundary-zero chain, non-forced remaining interior edge, strict
+   worklist decrease, and nonzero canonical red/blue family pairing.  The
+   remaining crux is whether exact shell/CAP5 data proves the no-evader/subset
+   certificate uniformly, or whether this genuine vertex-Kirchhoff/path-xor
+   evader branch exists.
 
 The historical trichotomy below remains useful background:
 
