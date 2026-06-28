@@ -96,10 +96,15 @@ def currentNavierRoadmap : List NavierRoadmapEntry :=
       truthValue := ⟨72, 88⟩
       obligation := "Use the checked localized stream-function seed as the concrete nonzero divergence-free Schwartz input for the next pressure-slice closure search." },
     { stage := .nonzeroEnergyKernel
+      proofNodeId := "navier.energy.nonzero-schwartz-antiprofile-canary-obstruction"
+      status := .checked
+      truthValue := ⟨84, 90⟩
+      obligation := "Use the checked localized stream/anti-stream cancellation guardrail to reject profile-level nonzero closures whose reconstructed velocity is zero." },
+    { stage := .nonzeroEnergyKernel
       proofNodeId := "navier.energy.nonzero-schwartz-canary"
       status := .openGoal
-      truthValue := ⟨57, 86⟩
-      obligation := "Produce or refute an exact smooth evolution and Schwartz pressure slices for the localized stream-function seed or a comparable non-polynomial Schwartz profile; seed-only data, conditional constructors, rank-one zero-convection obstructions, and algebraic finite-mode boundary cases do not count." },
+      truthValue := ⟨58, 86⟩
+      obligation := "Produce or refute an exact smooth evolution and Schwartz pressure slices for the localized stream-function seed or a comparable non-polynomial Schwartz profile; seed-only data, conditional constructors, rank-one zero-convection obstructions, profile-level nonzero anti-profile cancellation, and algebraic finite-mode boundary cases do not count." },
     { stage := .scalingGate
       proofNodeId := "navier.regularity-promotion-gate"
       status := .scalingUncleared
@@ -139,9 +144,9 @@ theorem currentNavierRoadmap_records_nonzero_schwartz_kernel_and_open_canary :
       ({ stage := NavierRoadmapStage.nonzeroEnergyKernel
          proofNodeId := "navier.energy.nonzero-schwartz-canary"
          status := .openGoal
-         truthValue := ⟨57, 86⟩
+         truthValue := ⟨58, 86⟩
          obligation :=
-          "Produce or refute an exact smooth evolution and Schwartz pressure slices for the localized stream-function seed or a comparable non-polynomial Schwartz profile; seed-only data, conditional constructors, rank-one zero-convection obstructions, and algebraic finite-mode boundary cases do not count." } :
+          "Produce or refute an exact smooth evolution and Schwartz pressure slices for the localized stream-function seed or a comparable non-polynomial Schwartz profile; seed-only data, conditional constructors, rank-one zero-convection obstructions, profile-level nonzero anti-profile cancellation, and algebraic finite-mode boundary cases do not count." } :
         NavierRoadmapEntry) ∈ currentNavierRoadmap ∧
       ({ stage := NavierRoadmapStage.nonzeroEnergyKernel
          proofNodeId := "navier.energy.nonzero-schwartz-rank-one-shear-obstruction"
@@ -164,13 +169,22 @@ theorem currentNavierRoadmap_records_nonzero_schwartz_kernel_and_open_canary :
          obligation :=
           "Use the checked localized stream-function seed as the concrete nonzero divergence-free Schwartz input for the next pressure-slice closure search." } :
         NavierRoadmapEntry) ∈ currentNavierRoadmap ∧
+      ({ stage := NavierRoadmapStage.nonzeroEnergyKernel
+         proofNodeId := "navier.energy.nonzero-schwartz-antiprofile-canary-obstruction"
+         status := .checked
+         truthValue := ⟨84, 90⟩
+         obligation :=
+          "Use the checked localized stream/anti-stream cancellation guardrail to reject profile-level nonzero closures whose reconstructed velocity is zero." } :
+        NavierRoadmapEntry) ∈ currentNavierRoadmap ∧
       navierNonzeroSchwartzEnergyKernelNode.status = .checked ∧
       navierNonzeroSchwartzLineInvariantObstructionNode.status = .checked ∧
       navierNonzeroSchwartzRankOneShearObstructionNode.status = .checked ∧
       navierNonzeroSchwartzSymmetricShearObstructionNode.status = .checked ∧
       navierNonzeroSchwartzLocalizedStreamSeedNode.status = .checked ∧
+      navierNonzeroSchwartzAntiProfileCanaryObstructionNode.status = .checked ∧
       navierNonzeroSchwartzCanaryNode.status = .openGoal := by
   exact ⟨by simp [currentNavierRoadmap],
+    by simp [currentNavierRoadmap],
     by simp [currentNavierRoadmap],
     by simp [currentNavierRoadmap],
     by simp [currentNavierRoadmap],
@@ -181,6 +195,7 @@ theorem currentNavierRoadmap_records_nonzero_schwartz_kernel_and_open_canary :
     navierNonzeroSchwartzRankOneShearObstructionNode_checked,
     navierNonzeroSchwartzSymmetricShearObstructionNode_checked,
     navierNonzeroSchwartzLocalizedStreamSeedNode_checked,
+    navierNonzeroSchwartzAntiProfileCanaryObstructionNode_checked,
     navierNonzeroSchwartzCanaryNode_open⟩
 
 /-- The current roadmap pins the averaged-equation obstruction before any
