@@ -15040,6 +15040,164 @@ theorem emittedFinsetPairingKernel_eq_bot_iff_no_theorem49BoundaryTargetEvader_a
     exact (hclosed.2 hnoEvaders).1
 
 /--
+Report-level emitted-rank route theorem.  If the finite F2 lab supplies the emitted-edge
+pairing-kernel close certificate, then the executable CAP5 report has only the primitive checker
+gap or the successful synthesis/control branch left.
+-/
+theorem ofDecidableChecks_missingCheckerEvidence_or_theorem49Synthesis_and_boundaryZeroControl_of_emittedFinsetPairingKernel_eq_bot
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    [Fintype G.edgeSet] [FiniteDimensional F2 (G.edgeSet → Color)]
+    (emb : PlaneEmbeddingWithBoundary G) (C₀ : G.EdgeColoring Color)
+    (colorings : Set (G.EdgeColoring Color))
+    (hsubset : colorings ⊆ G.EdgeKempeClosure C₀)
+    (p0Inside p4Inside : Bool) (h : data.IsExceptional)
+    (side : V → Prop)
+    [∀ latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge,
+      Decidable ((CAP5ExceptionalAnnulusGeneratorReport.latentNode
+        boundaryEdge side latent).PortalCrosses)]
+    [∀ latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge,
+      Decidable ((CAP5ExceptionalAnnulusGeneratorReport.latentNode
+        boundaryEdge side latent).SideCycles)]
+    [∀ latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge,
+      Decidable ((CAP5ExceptionalAnnulusGeneratorReport.latentNode
+        boundaryEdge side latent).RealizedSeparator)]
+    (hcyclic : CyclicallyFiveEdgeConnected G)
+    (hportal_crosses :
+      ∀ edgeCandidate : CAP5ExceptionalAnnulusBoundaryEdgeSupportCandidate boundaryEdge,
+        data.RealizesExceptionalBoundarySupportOrientation
+            edgeCandidate.portalCandidate.orientation →
+        edgeCandidate.portalCandidate.sideCase =
+            CAP5ExceptionalAnnulusSideCase.ofPortalSides p0Inside p4Inside →
+        ∀ i : Fin 5, i ∈ edgeCandidate.portalCandidate.portalSet →
+          EdgeCrossesVertexSide G side (boundaryEdge i))
+    (hcycles : HasCycleOnSide G side ∧ HasCycleOnSide G (fun v => ¬ side v))
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (hredEmitted :
+      ∀ e ∈ classifier.emittedFinset,
+        Pi.single e red ∈ projectedColoringGeneratorSubspace emb colorings)
+    (hblueEmitted :
+      ∀ e ∈ classifier.emittedFinset,
+        Pi.single e blue ∈ projectedColoringGeneratorSubspace emb colorings)
+    (hredRemaining :
+      ∀ e ∈ classifier.remainingControlEdges
+          (interiorEdgeSupport emb.faceBoundary emb.faces),
+        Pi.single e red ∈ projectedColoringGeneratorSubspace emb colorings)
+    (hblueRemaining :
+      ∀ e ∈ classifier.remainingControlEdges
+          (interiorEdgeSupport emb.faceBoundary emb.faces),
+        Pi.single e blue ∈ projectedColoringGeneratorSubspace emb colorings)
+    (hemittedKernel :
+      LinearMap.ker
+          (planarBoundaryZeroFamilyPairingMap
+            (redBlueSingleCoordinateFamily classifier.emittedFinset hredEmitted
+              hblueEmitted)) = ⊥) :
+    ((∃ latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge,
+      latent ∈ CAP5ExceptionalAnnulusGeneratorLatent.all boundaryEdge ∧
+        (CAP5ExceptionalAnnulusGeneratorReport.latentNode
+          boundaryEdge side latent).MissingPortalCrossingEvidence) ∨
+      (∃ latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge,
+        latent ∈ CAP5ExceptionalAnnulusGeneratorLatent.all boundaryEdge ∧
+          (CAP5ExceptionalAnnulusGeneratorReport.latentNode
+            boundaryEdge side latent).MissingSelectedSideCycleEvidence) ∨
+        (∃ latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge,
+          latent ∈ CAP5ExceptionalAnnulusGeneratorLatent.all boundaryEdge ∧
+            (CAP5ExceptionalAnnulusGeneratorReport.latentNode
+              boundaryEdge side latent).MissingComplementarySideCycleEvidence)) ∨
+      (Theorem49BoundaryRootSynthesis emb C₀ ∧
+        (∀ ⦃z : G.edgeSet → Color⦄,
+          z ∈ planarBoundaryZeroSubmodule emb →
+          (∀ e ∈ classifier.emittedFinset, z e = 0) →
+            z = 0)) := by
+  rcases
+      data.ofDecidableChecks_missingCheckerEvidence_or_emittedFinsetPairingKernel_eq_bot_iff_theorem49Synthesis_and_boundaryZeroControl
+        emb C₀ colorings hsubset p0Inside p4Inside h side hcyclic hportal_crosses
+        hcycles classifier hredEmitted hblueEmitted hredRemaining hblueRemaining with
+    hmissing | hrank
+  · exact Or.inl hmissing
+  · exact Or.inr (hrank.1 hemittedKernel)
+
+/--
+Closed-frontier emitted-rank route close.  Once the primitive checker frontier is closed, the
+finite emitted-edge pairing-kernel certificate directly proves theorem-4.9 synthesis and full
+selected-boundary-zero classifier control.
+-/
+theorem theorem49Synthesis_and_boundaryZeroControl_of_no_missingCheckerEvidence_and_emittedFinsetPairingKernel_eq_bot
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    [Fintype G.edgeSet] [FiniteDimensional F2 (G.edgeSet → Color)]
+    (emb : PlaneEmbeddingWithBoundary G) (C₀ : G.EdgeColoring Color)
+    (colorings : Set (G.EdgeColoring Color))
+    (hsubset : colorings ⊆ G.EdgeKempeClosure C₀)
+    (p0Inside p4Inside : Bool) (h : data.IsExceptional)
+    (side : V → Prop)
+    [∀ latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge,
+      Decidable ((CAP5ExceptionalAnnulusGeneratorReport.latentNode
+        boundaryEdge side latent).PortalCrosses)]
+    [∀ latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge,
+      Decidable ((CAP5ExceptionalAnnulusGeneratorReport.latentNode
+        boundaryEdge side latent).SideCycles)]
+    [∀ latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge,
+      Decidable ((CAP5ExceptionalAnnulusGeneratorReport.latentNode
+        boundaryEdge side latent).RealizedSeparator)]
+    (hcyclic : CyclicallyFiveEdgeConnected G)
+    (hportal_crosses :
+      ∀ edgeCandidate : CAP5ExceptionalAnnulusBoundaryEdgeSupportCandidate boundaryEdge,
+        data.RealizesExceptionalBoundarySupportOrientation
+            edgeCandidate.portalCandidate.orientation →
+        edgeCandidate.portalCandidate.sideCase =
+            CAP5ExceptionalAnnulusSideCase.ofPortalSides p0Inside p4Inside →
+        ∀ i : Fin 5, i ∈ edgeCandidate.portalCandidate.portalSet →
+          EdgeCrossesVertexSide G side (boundaryEdge i))
+    (hcycles : HasCycleOnSide G side ∧ HasCycleOnSide G (fun v => ¬ side v))
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (hredEmitted :
+      ∀ e ∈ classifier.emittedFinset,
+        Pi.single e red ∈ projectedColoringGeneratorSubspace emb colorings)
+    (hblueEmitted :
+      ∀ e ∈ classifier.emittedFinset,
+        Pi.single e blue ∈ projectedColoringGeneratorSubspace emb colorings)
+    (hredRemaining :
+      ∀ e ∈ classifier.remainingControlEdges
+          (interiorEdgeSupport emb.faceBoundary emb.faces),
+        Pi.single e red ∈ projectedColoringGeneratorSubspace emb colorings)
+    (hblueRemaining :
+      ∀ e ∈ classifier.remainingControlEdges
+          (interiorEdgeSupport emb.faceBoundary emb.faces),
+        Pi.single e blue ∈ projectedColoringGeneratorSubspace emb colorings)
+    (hnoMissing :
+      ¬ ((∃ latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge,
+        latent ∈ CAP5ExceptionalAnnulusGeneratorLatent.all boundaryEdge ∧
+          (CAP5ExceptionalAnnulusGeneratorReport.latentNode
+            boundaryEdge side latent).MissingPortalCrossingEvidence) ∨
+        (∃ latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge,
+          latent ∈ CAP5ExceptionalAnnulusGeneratorLatent.all boundaryEdge ∧
+            (CAP5ExceptionalAnnulusGeneratorReport.latentNode
+              boundaryEdge side latent).MissingSelectedSideCycleEvidence) ∨
+          (∃ latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge,
+            latent ∈ CAP5ExceptionalAnnulusGeneratorLatent.all boundaryEdge ∧
+              (CAP5ExceptionalAnnulusGeneratorReport.latentNode
+                boundaryEdge side latent).MissingComplementarySideCycleEvidence)))
+    (hemittedKernel :
+      LinearMap.ker
+          (planarBoundaryZeroFamilyPairingMap
+            (redBlueSingleCoordinateFamily classifier.emittedFinset hredEmitted
+              hblueEmitted)) = ⊥) :
+    Theorem49BoundaryRootSynthesis emb C₀ ∧
+      (∀ ⦃z : G.edgeSet → Color⦄,
+        z ∈ planarBoundaryZeroSubmodule emb →
+        (∀ e ∈ classifier.emittedFinset, z e = 0) →
+          z = 0) := by
+  rcases
+      data.ofDecidableChecks_missingCheckerEvidence_or_theorem49Synthesis_and_boundaryZeroControl_of_emittedFinsetPairingKernel_eq_bot
+        emb C₀ colorings hsubset p0Inside p4Inside h side hcyclic hportal_crosses
+        hcycles classifier hredEmitted hblueEmitted hredRemaining hblueRemaining
+        hemittedKernel with
+    hmissing | hclosed
+  · exact False.elim (hnoMissing hmissing)
+  · exact hclosed
+
+/--
 Report-level target/off-target no-evader route theorem.  If the finite F₂ lab excludes both
 evader shapes returned by the target/off-target split, then the executable CAP5 report has only
 the primitive checker gap or the successful no-evader branch left: theorem-4.9 synthesis plus
