@@ -1,4 +1,4 @@
-import Mettapedia.FluidDynamics.NavierStokes.NavierStokesEnergySchwartzSolutionKernel
+import Mettapedia.FluidDynamics.NavierStokes.NavierStokesEnergySchwartzSolutionObstruction
 import Mettapedia.FluidDynamics.NavierStokes.NavierStokesSchwartzLocalizedStreamFunction
 
 /-!
@@ -106,6 +106,49 @@ theorem nonzeroSchwartzConcreteSolution_antiProfileVelocity_forces_amplitude_ne
       simpa [hS] using htx⟩
   exact (antiProfileSchwartzVelocity_nonzero_iff_exists_amplitude_ne a b f hf).mp hnonzero
 
+/-- At positive viscosity, the anti-profile branch cannot use a constant
+amplitude difference: if `a(t) - b(t)` is constant, the reconstructed velocity
+is time independent and the positive-viscosity stationary obstruction rules it
+out of the nonzero slice-Schwartz interface. -/
+theorem not_exists_nonzeroSchwartzConcreteSolution_antiProfileVelocity_of_const_amplitudeDifference
+    {ν : ℝ} (hν : 0 < ν) (a b : NSTime → ℝ)
+    (f : NSSchwartzInitialVelocity) (c : ℝ)
+    (hdiff : ∀ t : NSTime, a t - b t = c) :
+    ¬ ∃ S : NonzeroSchwartzConcreteNavierStokesSolution ν,
+      S.velocity = twoModeSchwartzVelocity a b f (-f) := by
+  have hvelocity :
+      twoModeSchwartzVelocity a b f (-f) =
+        timeIndependentVelocity (fun x : NSSpace => c • f x) := by
+    funext t x
+    simp [twoModeSchwartzVelocity, timeIndependentVelocity]
+    rw [← hdiff t, sub_smul]
+    rfl
+  intro hS
+  exact
+    not_exists_nonzeroSchwartzConcreteSolution_velocity_timeIndependent_of_pos_viscosity
+      (ν := ν) (u₀ := fun x : NSSpace => c • f x) hν
+      (by
+        rcases hS with ⟨S, hSvelocity⟩
+        exact ⟨S, by simpa [hvelocity] using hSvelocity⟩)
+
+/-- Positive form of the previous obstruction: any positive-viscosity nonzero
+solution represented by an anti-profile family must have genuinely
+time-varying amplitude difference. -/
+theorem nonzeroSchwartzConcreteSolution_antiProfileVelocity_forces_amplitudeDifference_nonconstant
+    {ν : ℝ} (hν : 0 < ν)
+    (S : NonzeroSchwartzConcreteNavierStokesSolution ν)
+    (a b : NSTime → ℝ) (f : NSSchwartzInitialVelocity)
+    (hS : S.velocity = twoModeSchwartzVelocity a b f (-f)) :
+    ∃ t₀ t₁ : NSTime, a t₀ - b t₀ ≠ a t₁ - b t₁ := by
+  by_contra hnone
+  have hdiff : ∀ t : NSTime, a t - b t = a 0 - b 0 := by
+    intro t
+    by_contra ht
+    exact hnone ⟨t, 0, ht⟩
+  exact
+    (not_exists_nonzeroSchwartzConcreteSolution_antiProfileVelocity_of_const_amplitudeDifference
+      hν a b f (a 0 - b 0) hdiff) ⟨S, hS⟩
+
 /-- The anti-profile of the localized divergence-free stream seed. -/
 def nsLocalizedStreamAntiProfile : NSSchwartzInitialVelocity :=
   -nsLocalizedStreamDivergenceFreeInitialVelocity.1
@@ -158,6 +201,22 @@ theorem nonzeroSchwartzConcreteSolution_localizedStreamAntiProfileVelocity_force
     nonzeroSchwartzConcreteSolution_antiProfileVelocity_forces_amplitude_ne
       S a b nsLocalizedStreamDivergenceFreeInitialVelocity.1
       nsLocalizedStreamDivergenceFreeInitialVelocity_nonzero
+      (by simpa [nsLocalizedStreamAntiProfile] using hS)
+
+/-- Positive-viscosity localized stream/anti-stream candidates must vary the
+amplitude difference in time; a constant difference would be a forbidden
+time-independent positive-viscosity nonzero solution. -/
+theorem nonzeroSchwartzConcreteSolution_localizedStreamAntiProfileVelocity_forces_amplitudeDifference_nonconstant
+    {ν : ℝ} (hν : 0 < ν)
+    (S : NonzeroSchwartzConcreteNavierStokesSolution ν)
+    (a b : NSTime → ℝ)
+    (hS : S.velocity =
+      twoModeSchwartzVelocity a b
+        nsLocalizedStreamDivergenceFreeInitialVelocity.1 nsLocalizedStreamAntiProfile) :
+    ∃ t₀ t₁ : NSTime, a t₀ - b t₀ ≠ a t₁ - b t₁ := by
+  simpa [nsLocalizedStreamAntiProfile] using
+    nonzeroSchwartzConcreteSolution_antiProfileVelocity_forces_amplitudeDifference_nonconstant
+      hν S a b nsLocalizedStreamDivergenceFreeInitialVelocity.1
       (by simpa [nsLocalizedStreamAntiProfile] using hS)
 
 /-- Equal-amplitude localized stream/anti-stream profiles reconstruct the zero
