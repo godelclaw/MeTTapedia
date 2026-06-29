@@ -218,6 +218,31 @@ theorem vorticityEnstrophyGradientControlledAt_of_balance_logSobolev_pointwiseIn
         hC hΩ hH hIneq)
       ht0 htT hStretchInt hEnstrophyInt
 
+/-- The affine log-Sobolev/Biot-Savart pointwise gradient estimate controls
+the integrated vorticity-stretching production by the same affine logarithmic
+coefficient.  This is the integral estimate feeding the BKM enstrophy
+differential inequality. -/
+theorem vorticityStretchingPowerIntegral_le_affineLog_enstrophyAt
+    {T C0 C1 : ℝ} {u : NSVelocityField} {Ω H : NSTime → ℝ} {t : NSTime}
+    (hC0 : 0 ≤ C0) (hC1 : 0 ≤ C1)
+    (hΩ : ∀ s, 0 ≤ s → s ≤ T → 0 ≤ Ω s)
+    (hH : ∀ s, 0 ≤ s → s ≤ T → 0 ≤ H s)
+    (hAffine : BKMLogSobolevAffinePointwiseInequalityOn u T C0 C1 Ω H)
+    (ht0 : 0 ≤ t) (htT : t ≤ T)
+    (hStretchInt : Integrable (fun x => vorticityStretchingPower u t x))
+    (hEnstrophyInt : Integrable (fun x => vorticityEnstrophyDensity u t x)) :
+    vorticityStretchingPowerIntegral u t ≤
+      (C0 + C1 * bkmLogSobolevLogFactor Ω H t) *
+        vorticityEnstrophyAt u t := by
+  have hLogFactor : 0 ≤ bkmLogSobolevLogFactor Ω H t :=
+    bkmLogSobolevLogFactor_nonneg_of_nonneg
+      (hΩ t ht0 htT) (hH t ht0 htT)
+  have hCoeff : 0 ≤ C0 + C1 * bkmLogSobolevLogFactor Ω H t :=
+    add_nonneg hC0 (mul_nonneg hC1 hLogFactor)
+  exact
+    vorticityStretchingPowerIntegral_le_gradient_mul_enstrophyAt
+      hCoeff (fun x => hAffine t x ht0 htT) hStretchInt hEnstrophyInt
+
 /-- The conventional affine-log pointwise Biot-Savart/log-Sobolev estimate
 gives the BKM enstrophy growth inequality with the same affine coefficient:
 `dE/dt <= (C0 + C1 * Omega log(e + H)) * E`. -/
@@ -360,6 +385,34 @@ theorem BKMVorticityEnstrophyAffineLogGrowthClosed_proved :
   exact
     vorticityEnstrophyGradientControlledAt_of_balance_logSobolev_affinePointwiseInequality
       hν hBal hC0 hC1 hΩ hH hAffine ht0 htT hStretchInt hEnstrophyInt
+
+/-- Checked affine-logarithmic stretching-integral bound: the conventional
+pointwise Biot-Savart/log-Sobolev gradient estimate directly bounds the
+integrated BKM stretching production by
+`(C0 + C1 * Omega log(e + H)) * int |omega|^2`. -/
+def BKMVorticityStretchingAffineLogIntegralBoundClosed : Prop :=
+  ∀ (T C0 C1 : ℝ) (u : NSVelocityField) (Ω H : NSTime → ℝ) (t : NSTime),
+    0 ≤ C0 →
+      0 ≤ C1 →
+        (∀ s, 0 ≤ s → s ≤ T → 0 ≤ Ω s) →
+          (∀ s, 0 ≤ s → s ≤ T → 0 ≤ H s) →
+            BKMLogSobolevAffinePointwiseInequalityOn u T C0 C1 Ω H →
+              0 ≤ t →
+                t ≤ T →
+                  Integrable (fun x => vorticityStretchingPower u t x) →
+                    Integrable (fun x => vorticityEnstrophyDensity u t x) →
+                      vorticityStretchingPowerIntegral u t ≤
+                        (C0 + C1 * bkmLogSobolevLogFactor Ω H t) *
+                          vorticityEnstrophyAt u t
+
+/-- Checked proof of the affine-logarithmic stretching-integral package. -/
+theorem BKMVorticityStretchingAffineLogIntegralBoundClosed_proved :
+    BKMVorticityStretchingAffineLogIntegralBoundClosed := by
+  intro T C0 C1 u Ω H t hC0 hC1 hΩ hH hAffine ht0 htT
+    hStretchInt hEnstrophyInt
+  exact
+    vorticityStretchingPowerIntegral_le_affineLog_enstrophyAt
+      hC0 hC1 hΩ hH hAffine ht0 htT hStretchInt hEnstrophyInt
 
 /-- Checked finite-time witness affine-log enstrophy growth package.  This
 packages the BKM hard core from standard vorticity equation plus time-pairing

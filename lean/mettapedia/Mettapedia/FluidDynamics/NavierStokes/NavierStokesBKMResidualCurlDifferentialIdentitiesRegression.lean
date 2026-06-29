@@ -412,6 +412,25 @@ theorem BKMResidualCurlExpansionDefectVanishes_proved_regression :
     BKMResidualCurlExpansionDefectVanishes := by
   exact BKMResidualCurlExpansionDefectVanishes_proved
 
+theorem vorticityEnstrophyStretchingControlledAt_of_finiteTimeWitness_residualCurl_regression
+    {ν T : ℝ} {u₀ : NSInitialVelocity}
+    (W : ExplicitFiniteTimeRegularityWitness ν u₀ T)
+    {t : NSTime}
+    (hν : 0 ≤ ν)
+    (hVelocitySlices : finiteTimeWitnessVelocitySchwartzSlices W)
+    (hVorticitySlices : finiteTimeWitnessVorticitySchwartzSlices W)
+    (hInt : vorticityRawBalanceIntegralComponentsIntegrableAt W.velocity t)
+    (hTime : vorticityEnstrophyTimePairingDerivativeAt W.velocity t)
+    (ht0 : 0 ≤ t) (htT : t ≤ T) :
+    vorticityEnstrophyStretchingControlledAt ν W.velocity t := by
+  exact
+    vorticityEnstrophyStretchingControlledAt_of_finiteTimeWitness_residualCurl
+      W hν hVelocitySlices hVorticitySlices hInt hTime ht0 htT
+
+theorem BKMVorticityFiniteTimeWitnessResidualCurlAprioriClosed_proved_regression :
+    BKMVorticityFiniteTimeWitnessResidualCurlAprioriClosed := by
+  exact BKMVorticityFiniteTimeWitnessResidualCurlAprioriClosed_proved
+
 theorem vorticityEnstrophyGradientControlledAt_of_finiteTimeWitness_residualCurl_affinePointwiseInequality_regression
     {ν T C0 C1 : ℝ} {u₀ : NSInitialVelocity}
     (W : ExplicitFiniteTimeRegularityWitness ν u₀ T)
@@ -442,10 +461,11 @@ theorem BKMVorticityFiniteTimeWitnessResidualCurlAffineLogGrowthClosed_proved_re
 
 theorem BKMContinuation_reduced_to_affineLogHighNorm_after_residualCurl_regression :
     BKMResidualCurlExpansionDefectVanishes ∧
-      BKMVorticityFiniteTimeWitnessResidualCurlAffineLogGrowthClosed ∧
-        (BKMLogSobolevAffinePointwiseFromEnvelope →
-          BKMHighNormContinuationFromLogControl →
-            ExplicitFiniteEnergyBKMContinuationTargetOnNonnegHorizons) := by
+      BKMVorticityFiniteTimeWitnessResidualCurlAprioriClosed ∧
+        BKMVorticityFiniteTimeWitnessResidualCurlAffineLogGrowthClosed ∧
+          (BKMLogSobolevAffinePointwiseFromEnvelope →
+            BKMHighNormContinuationFromLogControl →
+              ExplicitFiniteEnergyBKMContinuationTargetOnNonnegHorizons) := by
   exact BKMContinuation_reduced_to_affineLogHighNorm_after_residualCurl
 
 theorem BKMAnalyticComponentsClosed_of_residualCurlDifferentialIdentities_regression

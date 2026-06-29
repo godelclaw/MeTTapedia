@@ -1670,6 +1670,57 @@ theorem BKMResidualCurlExpansionDefectVanishes_proved :
   BKMResidualCurlDifferentialIdentitiesClosed.implies_residualCurlExpansionDefectVanishes
     BKMResidualCurlDifferentialIdentitiesClosed_proved
 
+/-- Finite-time witness a-priori enstrophy control with the standard vorticity
+equation supplied by the now-closed residual-curl defect:
+`d/dt (1 / 2 * int |omega|^2)` is bounded by the integrated stretching
+production. -/
+theorem vorticityEnstrophyStretchingControlledAt_of_finiteTimeWitness_residualCurl
+    {ν T : ℝ} {u₀ : NSInitialVelocity}
+    (W : ExplicitFiniteTimeRegularityWitness ν u₀ T)
+    {t : NSTime}
+    (hν : 0 ≤ ν)
+    (hVelocitySlices : finiteTimeWitnessVelocitySchwartzSlices W)
+    (hVorticitySlices : finiteTimeWitnessVorticitySchwartzSlices W)
+    (hInt : vorticityRawBalanceIntegralComponentsIntegrableAt W.velocity t)
+    (hTime : vorticityEnstrophyTimePairingDerivativeAt W.velocity t)
+    (ht0 : 0 ≤ t) (htT : t ≤ T) :
+    vorticityEnstrophyStretchingControlledAt ν W.velocity t := by
+  have hEq : concreteVorticityEquationOn ν W.velocity T :=
+    BKMResidualCurlExpansionDefectVanishes_proved.implies_concreteVorticityEquationOn
+      W.smooth_velocity
+      (fun s x hs0 hsT => W.incompressible_on s x hs0 hsT)
+      W.vorticityResidualCurlEquationOn
+  have hRaw : vorticityEnstrophyRawBalanceAt ν W.velocity t :=
+    vorticityEnstrophyRawBalanceAt_of_timePairingDerivative_concreteVorticityEquationOn
+      hEq hInt hTime ht0 htT
+  exact
+    vorticityEnstrophyStretchingControlledAt_of_rawBalance_finiteTimeWitnessVelocityVorticitySchwartzSlices
+      hν W hVelocitySlices hVorticitySlices hRaw ht0 htT
+
+/-- Checked finite-time witness a-priori enstrophy package with the standard
+vorticity equation derived from residual-curl, not supplied as an extra
+hypothesis. -/
+def BKMVorticityFiniteTimeWitnessResidualCurlAprioriClosed : Prop :=
+  ∀ (ν T : ℝ) (u₀ : NSInitialVelocity)
+      (W : ExplicitFiniteTimeRegularityWitness ν u₀ T) (t : NSTime),
+    0 ≤ ν →
+      finiteTimeWitnessVelocitySchwartzSlices W →
+        finiteTimeWitnessVorticitySchwartzSlices W →
+          vorticityRawBalanceIntegralComponentsIntegrableAt W.velocity t →
+            vorticityEnstrophyTimePairingDerivativeAt W.velocity t →
+              0 ≤ t →
+                t ≤ T →
+                  vorticityEnstrophyStretchingControlledAt ν W.velocity t
+
+/-- Proof of the residual-curl finite-time witness a-priori enstrophy
+package. -/
+theorem BKMVorticityFiniteTimeWitnessResidualCurlAprioriClosed_proved :
+    BKMVorticityFiniteTimeWitnessResidualCurlAprioriClosed := by
+  intro ν T u₀ W t hν hVelocitySlices hVorticitySlices hInt hTime ht0 htT
+  exact
+    vorticityEnstrophyStretchingControlledAt_of_finiteTimeWitness_residualCurl
+      W hν hVelocitySlices hVorticitySlices hInt hTime ht0 htT
+
 /-- Finite-time witness affine-log enstrophy growth with the standard
 vorticity equation supplied by the now-closed residual-curl defect. -/
 theorem vorticityEnstrophyGradientControlledAt_of_finiteTimeWitness_residualCurl_affinePointwiseInequality
@@ -1742,12 +1793,14 @@ component route now needs only the affine log-Sobolev component and the
 high-norm continuation component. -/
 theorem BKMContinuation_reduced_to_affineLogHighNorm_after_residualCurl :
     BKMResidualCurlExpansionDefectVanishes ∧
-      BKMVorticityFiniteTimeWitnessResidualCurlAffineLogGrowthClosed ∧
-        (BKMLogSobolevAffinePointwiseFromEnvelope →
-          BKMHighNormContinuationFromLogControl →
-            ExplicitFiniteEnergyBKMContinuationTargetOnNonnegHorizons) := by
+      BKMVorticityFiniteTimeWitnessResidualCurlAprioriClosed ∧
+        BKMVorticityFiniteTimeWitnessResidualCurlAffineLogGrowthClosed ∧
+          (BKMLogSobolevAffinePointwiseFromEnvelope →
+            BKMHighNormContinuationFromLogControl →
+              ExplicitFiniteEnergyBKMContinuationTargetOnNonnegHorizons) := by
   exact
     ⟨BKMResidualCurlExpansionDefectVanishes_proved,
+      BKMVorticityFiniteTimeWitnessResidualCurlAprioriClosed_proved,
       BKMVorticityFiniteTimeWitnessResidualCurlAffineLogGrowthClosed_proved,
       fun hLog hHigh =>
         BKMAffineLogSobolevAnalyticComponentsClosed.implies_finiteEnergyBKMContinuationTargetOnNonnegHorizons

@@ -128,6 +128,21 @@ theorem bkm_logSobolev_affine_pointwise_to_enstrophy_growth_regression
   vorticityEnstrophyGradientControlledAt_of_balance_logSobolev_affinePointwiseInequality
     hν hBal hC0 hC1 hΩ hH hAffine ht0 htT hStretchInt hEnstrophyInt
 
+theorem bkm_logSobolev_affine_pointwise_to_stretching_integral_regression
+    {T C0 C1 : ℝ} {u : NSVelocityField} {Ω H : NSTime → ℝ} {t : NSTime}
+    (hC0 : 0 ≤ C0) (hC1 : 0 ≤ C1)
+    (hΩ : ∀ s, 0 ≤ s → s ≤ T → 0 ≤ Ω s)
+    (hH : ∀ s, 0 ≤ s → s ≤ T → 0 ≤ H s)
+    (hAffine : BKMLogSobolevAffinePointwiseInequalityOn u T C0 C1 Ω H)
+    (ht0 : 0 ≤ t) (htT : t ≤ T)
+    (hStretchInt : Integrable (fun x => vorticityStretchingPower u t x))
+    (hEnstrophyInt : Integrable (fun x => vorticityEnstrophyDensity u t x)) :
+    vorticityStretchingPowerIntegral u t ≤
+      (C0 + C1 * bkmLogSobolevLogFactor Ω H t) *
+        vorticityEnstrophyAt u t :=
+  vorticityStretchingPowerIntegral_le_affineLog_enstrophyAt
+    hC0 hC1 hΩ hH hAffine ht0 htT hStretchInt hEnstrophyInt
+
 theorem bkm_finite_time_witness_affine_log_enstrophy_growth_regression
     {ν T C0 C1 : ℝ} {u₀ : NSInitialVelocity}
     (W : ExplicitFiniteTimeRegularityWitness ν u₀ T)
@@ -189,6 +204,10 @@ theorem bkm_vorticity_enstrophy_logSobolev_growth_closed_regression :
 theorem bkm_vorticity_enstrophy_affine_log_growth_closed_regression :
     BKMVorticityEnstrophyAffineLogGrowthClosed :=
   BKMVorticityEnstrophyAffineLogGrowthClosed_proved
+
+theorem bkm_vorticity_stretching_affine_log_integral_bound_closed_regression :
+    BKMVorticityStretchingAffineLogIntegralBoundClosed :=
+  BKMVorticityStretchingAffineLogIntegralBoundClosed_proved
 
 theorem bkm_vorticity_finite_time_witness_affine_log_growth_closed_regression :
     BKMVorticityFiniteTimeWitnessAffineLogGrowthClosed :=
