@@ -103,6 +103,25 @@ theorem normalizedKineticEnergy_strict_lt_before_nonzero_endpoint_of_pos_viscosi
     S.normalizedKineticEnergy_strict_lt_of_exists_velocity_ne_zero_left
       hν hnes hst
 
+/-- Endpoint-parametric local no-recurrence: before any later nonzero
+endpoint of a positive-viscosity solution, no nontrivial forward subinterval
+can have pointwise equal velocity slices. -/
+theorem not_velocity_slice_eq_before_nonzero_endpoint_of_pos_viscosity
+    (hν : 0 < ν) {s t T : NSTime} (hst : s < t) (htT : t ≤ T)
+    (hneT : ∃ xT : NSSpace, S.velocity T xT ≠ 0) :
+    ¬ ∀ x : NSSpace, S.velocity t x = S.velocity s x := by
+  intro hslice
+  have henergy_eq :
+      normalizedKineticEnergy S.velocity t =
+        normalizedKineticEnergy S.velocity s :=
+    normalizedKineticEnergy_eq_of_velocity_slice_eq hslice
+  have hdrop :
+      normalizedKineticEnergy S.velocity t <
+        normalizedKineticEnergy S.velocity s :=
+    S.normalizedKineticEnergy_strict_lt_before_nonzero_endpoint_of_pos_viscosity
+      hν hst htT hneT
+  exact (ne_of_lt hdrop) henergy_eq
+
 /-- One-profile positive-viscosity boundary: if a concrete solution is a
 scalar-modulated fixed Schwartz profile, then before any later nonzero
 endpoint the squared scalar amplitude must strictly decrease forward in time.
@@ -235,6 +254,25 @@ theorem stokesFlow_nonzeroTimeSupport_packet
         S.normalizedKineticEnergy_strict_lt_before_nonzero_endpoint_of_pos_viscosity
           hν hst htT hne⟩
 
+/-- Exact Stokes-flow local no-recurrence packet: an inhabited
+positive-viscosity Stokes candidate cannot repeat any velocity slice along the
+past ray before a chosen nonzero endpoint. -/
+theorem stokesFlow_endpoint_noRepeatedVelocitySlice_packet
+    (hν : 0 < ν)
+    (hconv : ∀ t x, spatialConvection S.velocity t x = 0)
+    (hpressure : ∀ t x, spatialPressureGradient S.pressure t x = 0)
+    {T : NSTime} (hneT : ∃ xT : NSSpace, S.velocity T xT ≠ 0) :
+    NonzeroSchwartzStokesFlowKernel ν S.velocity S.pressure ∧
+      SchwartzNonzeroTimeSupportKernel ν S.velocity S.pressure ∧
+      ∀ {s t : NSTime}, s < t → t ≤ T →
+        ¬ ∀ x : NSSpace, S.velocity t x = S.velocity s x := by
+  exact
+    ⟨S.nonzeroStokesFlowKernel hconv hpressure,
+      S.nonzeroTimeSupportKernel,
+      fun {_s _t} hst htT =>
+        S.not_velocity_slice_eq_before_nonzero_endpoint_of_pos_viscosity
+          hν hst htT hneT⟩
+
 /-- Existential Stokes-flow support packet: an inhabited positive-viscosity
 Stokes candidate must choose a nonzero endpoint whose entire past support ray
 is strictly ordered by normalized kinetic energy on every nontrivial forward
@@ -323,6 +361,40 @@ theorem
     S.scalarProfile_amplitude_sq_strict_lt_before_nonzero_endpoint_of_pos_viscosity
       hν f hvelocity hst htT hneT
   exact not_lt_of_ge hnondec hdrop
+
+/-- Global endpoint-local no-recurrence obstruction: before a later nonzero
+endpoint of a positive-viscosity nonzero slice-Schwartz solution, no strictly
+forward subinterval can repeat the velocity slice. -/
+theorem
+    not_exists_nonzeroSchwartzConcreteSolution_repeated_velocity_slice_before_nonzero_endpoint_of_pos_viscosity
+    {ν : ℝ} (hν : 0 < ν) :
+    ¬ ∃ S : NonzeroSchwartzConcreteNavierStokesSolution ν,
+      ∃ s t T : NSTime,
+        s < t ∧ t ≤ T ∧
+          (∃ xT : NSSpace, S.velocity T xT ≠ 0) ∧
+            ∀ x : NSSpace, S.velocity t x = S.velocity s x := by
+  rintro ⟨S, s, t, T, hst, htT, hneT, hslice⟩
+  exact
+    S.not_velocity_slice_eq_before_nonzero_endpoint_of_pos_viscosity
+      hν hst htT hneT hslice
+
+/-- Global Stokes endpoint-local no-recurrence obstruction: the same repeated
+slice shortcut is impossible inside the zero-convection, zero-pressure-gradient
+Stokes subroute. -/
+theorem
+    not_exists_nonzeroSchwartzStokesFlow_repeated_velocity_slice_before_nonzero_endpoint_of_pos_viscosity
+    {ν : ℝ} (hν : 0 < ν) :
+    ¬ ∃ S : NonzeroSchwartzConcreteNavierStokesSolution ν,
+      (∀ t x, spatialConvection S.velocity t x = 0) ∧
+        (∀ t x, spatialPressureGradient S.pressure t x = 0) ∧
+          ∃ s t T : NSTime,
+            s < t ∧ t ≤ T ∧
+              (∃ xT : NSSpace, S.velocity T xT ≠ 0) ∧
+                ∀ x : NSSpace, S.velocity t x = S.velocity s x := by
+  rintro ⟨S, _hconv, _hpressure, s, t, T, hst, htT, hneT, hslice⟩
+  exact
+    S.not_velocity_slice_eq_before_nonzero_endpoint_of_pos_viscosity
+      hν hst htT hneT hslice
 
 end NavierStokes
 end FluidDynamics

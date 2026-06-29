@@ -74,6 +74,20 @@ theorem stokes_endpoint_strict_energy_low_rayleigh_regression
     S.stokesFlow_endpointStrictEnergy_and_smallPastCoordinateEnstrophyRatio_packet
       hν hconv hpressure hneT
 
+theorem stokes_endpoint_no_repeated_velocity_slice_regression
+    {ν : ℝ} (hν : 0 < ν)
+    (S : NonzeroSchwartzConcreteNavierStokesSolution ν)
+    (hconv : ∀ t x, spatialConvection S.velocity t x = 0)
+    (hpressure : ∀ t x, spatialPressureGradient S.pressure t x = 0)
+    {T : NSTime} (hneT : ∃ xT : NSSpace, S.velocity T xT ≠ 0) :
+    NonzeroSchwartzStokesFlowKernel ν S.velocity S.pressure ∧
+      SchwartzNonzeroTimeSupportKernel ν S.velocity S.pressure ∧
+      ∀ {s t : NSTime}, s < t → t ≤ T →
+        ¬ ∀ x : NSSpace, S.velocity t x = S.velocity s x := by
+  exact
+    S.stokesFlow_endpoint_noRepeatedVelocitySlice_packet
+      hν hconv hpressure hneT
+
 theorem not_exists_stokes_coordinate_enstrophy_floor_regression
     {ν lam : ℝ} (hν : 0 < ν) (hlam : 0 < lam) :
     ¬ ∃ S : NonzeroSchwartzConcreteNavierStokesSolution ν,
@@ -131,6 +145,19 @@ theorem not_exists_stokes_energy_nondecrease_before_endpoint_regression
                   normalizedKineticEnergy S.velocity t := by
   exact
     not_exists_nonzeroSchwartzStokesFlow_energy_nondecrease_before_nonzero_endpoint_of_pos_viscosity
+      hν
+
+theorem not_exists_stokes_repeated_velocity_slice_before_endpoint_regression
+    {ν : ℝ} (hν : 0 < ν) :
+    ¬ ∃ S : NonzeroSchwartzConcreteNavierStokesSolution ν,
+      (∀ t x, spatialConvection S.velocity t x = 0) ∧
+        (∀ t x, spatialPressureGradient S.pressure t x = 0) ∧
+          ∃ s t T : NSTime,
+            s < t ∧ t ≤ T ∧
+              (∃ xT : NSSpace, S.velocity T xT ≠ 0) ∧
+                ∀ x : NSSpace, S.velocity t x = S.velocity s x := by
+  exact
+    not_exists_nonzeroSchwartzStokesFlow_repeated_velocity_slice_before_nonzero_endpoint_of_pos_viscosity
       hν
 
 theorem not_exists_stokes_exact_coordinate_enstrophy_rayleigh_regression

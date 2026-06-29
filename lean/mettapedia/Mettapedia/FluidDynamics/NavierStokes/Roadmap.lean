@@ -168,8 +168,8 @@ def currentNavierRoadmap : List NavierRoadmapEntry :=
     { stage := .nonzeroEnergyKernel
       proofNodeId := "navier.energy.nonzero-schwartz-no-energy-recurrence"
       status := .checked
-      truthValue := ⟨95, 89⟩
-      obligation := "Use the checked no-recurrence gate to reject positive-viscosity nonzero canaries with positive-period normalized-energy recurrence or periodic velocity." },
+      truthValue := ⟨96, 89⟩
+      obligation := "Use the checked no-recurrence gate to reject positive-viscosity nonzero canaries with positive-period normalized-energy recurrence, periodic velocity, or a repeated nonzero velocity slice at a strictly later time." },
     { stage := .nonzeroEnergyKernel
       proofNodeId := "navier.energy.schwartz-pressure-residual-curl-gate"
       status := .checked
@@ -188,8 +188,8 @@ def currentNavierRoadmap : List NavierRoadmapEntry :=
     { stage := .nonzeroEnergyKernel
       proofNodeId := "navier.energy.nonzero-schwartz-stokes-kernel"
       status := .checked
-      truthValue := ⟨84, 89⟩
-      obligation := "Use the checked Stokes-flow kernel to make zero-convection/zero-pressure-gradient canary attempts satisfy the exact Stokes equation, strict positive-viscosity dissipation, a nonzero endpoint with strictly ordered past energy, no nondecreasing energy subinterval before that endpoint, and no positive-period recurrence; still construct an inhabited bounded whole-real-time Schwartz Stokes flow or prove that subroute empty." },
+      truthValue := ⟨85, 89⟩
+      obligation := "Use the checked Stokes-flow kernel to make zero-convection/zero-pressure-gradient canary attempts satisfy the exact Stokes equation, strict positive-viscosity dissipation, a nonzero endpoint with strictly ordered and nonrepeating past velocity slices, no nondecreasing energy subinterval before that endpoint, and no positive-period recurrence; still construct an inhabited bounded whole-real-time Schwartz Stokes flow or prove that subroute empty." },
     { stage := .nonzeroEnergyKernel
       proofNodeId := "navier.energy.nonzero-schwartz-stokes-rankone-obstruction"
       status := .checked
@@ -223,8 +223,8 @@ def currentNavierRoadmap : List NavierRoadmapEntry :=
     { stage := .nonzeroEnergyKernel
       proofNodeId := "navier.energy.nonzero-schwartz-canary"
       status := .openGoal
-      truthValue := ⟨81, 87⟩
-      obligation := "Produce or refute an exact smooth evolution and Schwartz pressure slices for the localized stream-function seed or a comparable non-polynomial Schwartz profile; seed-only data, conditional constructors, classical heat-shear exact solutions that fail Schwartz decay, rank-one zero-convection obstructions, nilpotent-shear pressure-residual obstructions, frozen nilpotent-slice obstructions, localized nilpotent stream stationary pressure-residual obstructions, profile-level nonzero anti-profile cancellation, amplitude-boundary guardrails, anti-profile constant-difference obstructions, positive-viscosity stationary obstructions, strict-dissipation theorems conditional on the nonzero interface, flat-energy zero-rigidity obstructions, local-extremum energy obstructions, pointwise strict-derivative gates, local energy plateau obstructions, immediate right-drop gates, sampled right-drop gates, strict future-drop gates, energy-recurrence obstructions, residual-curl pressure-closure rejections, finite-mode residual-curl boundaries, stationary inviscid closure constructors, conditional Stokes-flow kernels, Stokes rank-one obstructions, generalized zero-restart obstructions, past-dissipation ray theorems, endpoint support-order theorems, one-profile amplitude-boundary theorems, no-uniform-past-dissipation theorems, no-past-spectral-floor theorems, past dissipation-per-energy collapse theorems, past Rayleigh-quotient collapse theorems, spatial Rayleigh-quotient collapse theorems, exact Stokes Rayleigh-equality obstructions, and algebraic finite-mode boundary cases do not count." },
+      truthValue := ⟨82, 87⟩
+      obligation := "Produce or refute an exact smooth evolution and Schwartz pressure slices for the localized stream-function seed or a comparable non-polynomial Schwartz profile; seed-only data, conditional constructors, classical heat-shear exact solutions that fail Schwartz decay, rank-one zero-convection obstructions, nilpotent-shear pressure-residual obstructions, frozen nilpotent-slice obstructions, localized nilpotent stream stationary pressure-residual obstructions, profile-level nonzero anti-profile cancellation, amplitude-boundary guardrails, anti-profile constant-difference obstructions, positive-viscosity stationary obstructions, strict-dissipation theorems conditional on the nonzero interface, flat-energy zero-rigidity obstructions, local-extremum energy obstructions, pointwise strict-derivative gates, local energy plateau obstructions, immediate right-drop gates, sampled right-drop gates, strict future-drop gates, energy-recurrence or repeated-slice obstructions, residual-curl pressure-closure rejections, finite-mode residual-curl boundaries, stationary inviscid closure constructors, conditional Stokes-flow kernels, Stokes rank-one obstructions, generalized zero-restart obstructions, past-dissipation ray theorems, endpoint support-order theorems, one-profile amplitude-boundary theorems, no-uniform-past-dissipation theorems, no-past-spectral-floor theorems, past dissipation-per-energy collapse theorems, past Rayleigh-quotient collapse theorems, spatial Rayleigh-quotient collapse theorems, exact Stokes Rayleigh-equality obstructions, and algebraic finite-mode boundary cases do not count." },
     { stage := .scalingGate
       proofNodeId := "navier.regularity-promotion-gate"
       status := .scalingUncleared
@@ -271,9 +271,9 @@ theorem currentNavierRoadmap_records_nonzero_schwartz_kernel_and_open_canary :
       ({ stage := NavierRoadmapStage.nonzeroEnergyKernel
          proofNodeId := "navier.energy.nonzero-schwartz-canary"
          status := .openGoal
-         truthValue := ⟨81, 87⟩
+         truthValue := ⟨82, 87⟩
          obligation :=
-          "Produce or refute an exact smooth evolution and Schwartz pressure slices for the localized stream-function seed or a comparable non-polynomial Schwartz profile; seed-only data, conditional constructors, classical heat-shear exact solutions that fail Schwartz decay, rank-one zero-convection obstructions, nilpotent-shear pressure-residual obstructions, frozen nilpotent-slice obstructions, localized nilpotent stream stationary pressure-residual obstructions, profile-level nonzero anti-profile cancellation, amplitude-boundary guardrails, anti-profile constant-difference obstructions, positive-viscosity stationary obstructions, strict-dissipation theorems conditional on the nonzero interface, flat-energy zero-rigidity obstructions, local-extremum energy obstructions, pointwise strict-derivative gates, local energy plateau obstructions, immediate right-drop gates, sampled right-drop gates, strict future-drop gates, energy-recurrence obstructions, residual-curl pressure-closure rejections, finite-mode residual-curl boundaries, stationary inviscid closure constructors, conditional Stokes-flow kernels, Stokes rank-one obstructions, generalized zero-restart obstructions, past-dissipation ray theorems, endpoint support-order theorems, one-profile amplitude-boundary theorems, no-uniform-past-dissipation theorems, no-past-spectral-floor theorems, past dissipation-per-energy collapse theorems, past Rayleigh-quotient collapse theorems, spatial Rayleigh-quotient collapse theorems, exact Stokes Rayleigh-equality obstructions, and algebraic finite-mode boundary cases do not count." } :
+          "Produce or refute an exact smooth evolution and Schwartz pressure slices for the localized stream-function seed or a comparable non-polynomial Schwartz profile; seed-only data, conditional constructors, classical heat-shear exact solutions that fail Schwartz decay, rank-one zero-convection obstructions, nilpotent-shear pressure-residual obstructions, frozen nilpotent-slice obstructions, localized nilpotent stream stationary pressure-residual obstructions, profile-level nonzero anti-profile cancellation, amplitude-boundary guardrails, anti-profile constant-difference obstructions, positive-viscosity stationary obstructions, strict-dissipation theorems conditional on the nonzero interface, flat-energy zero-rigidity obstructions, local-extremum energy obstructions, pointwise strict-derivative gates, local energy plateau obstructions, immediate right-drop gates, sampled right-drop gates, strict future-drop gates, energy-recurrence or repeated-slice obstructions, residual-curl pressure-closure rejections, finite-mode residual-curl boundaries, stationary inviscid closure constructors, conditional Stokes-flow kernels, Stokes rank-one obstructions, generalized zero-restart obstructions, past-dissipation ray theorems, endpoint support-order theorems, one-profile amplitude-boundary theorems, no-uniform-past-dissipation theorems, no-past-spectral-floor theorems, past dissipation-per-energy collapse theorems, past Rayleigh-quotient collapse theorems, spatial Rayleigh-quotient collapse theorems, exact Stokes Rayleigh-equality obstructions, and algebraic finite-mode boundary cases do not count." } :
       NavierRoadmapEntry) ∈ currentNavierRoadmap ∧
       ({ stage := NavierRoadmapStage.nonzeroEnergyKernel
          proofNodeId := "navier.energy.nonzero-schwartz-rank-one-shear-obstruction"
@@ -390,9 +390,9 @@ theorem currentNavierRoadmap_records_nonzero_schwartz_kernel_and_open_canary :
       ({ stage := NavierRoadmapStage.nonzeroEnergyKernel
          proofNodeId := "navier.energy.nonzero-schwartz-no-energy-recurrence"
          status := .checked
-         truthValue := ⟨95, 89⟩
+         truthValue := ⟨96, 89⟩
          obligation :=
-          "Use the checked no-recurrence gate to reject positive-viscosity nonzero canaries with positive-period normalized-energy recurrence or periodic velocity." } :
+          "Use the checked no-recurrence gate to reject positive-viscosity nonzero canaries with positive-period normalized-energy recurrence, periodic velocity, or a repeated nonzero velocity slice at a strictly later time." } :
         NavierRoadmapEntry) ∈ currentNavierRoadmap ∧
       ({ stage := NavierRoadmapStage.nonzeroEnergyKernel
          proofNodeId := "navier.energy.schwartz-pressure-residual-curl-gate"
@@ -418,9 +418,9 @@ theorem currentNavierRoadmap_records_nonzero_schwartz_kernel_and_open_canary :
       ({ stage := NavierRoadmapStage.nonzeroEnergyKernel
          proofNodeId := "navier.energy.nonzero-schwartz-stokes-kernel"
          status := .checked
-         truthValue := ⟨84, 89⟩
+         truthValue := ⟨85, 89⟩
          obligation :=
-          "Use the checked Stokes-flow kernel to make zero-convection/zero-pressure-gradient canary attempts satisfy the exact Stokes equation, strict positive-viscosity dissipation, a nonzero endpoint with strictly ordered past energy, no nondecreasing energy subinterval before that endpoint, and no positive-period recurrence; still construct an inhabited bounded whole-real-time Schwartz Stokes flow or prove that subroute empty." } :
+          "Use the checked Stokes-flow kernel to make zero-convection/zero-pressure-gradient canary attempts satisfy the exact Stokes equation, strict positive-viscosity dissipation, a nonzero endpoint with strictly ordered and nonrepeating past velocity slices, no nondecreasing energy subinterval before that endpoint, and no positive-period recurrence; still construct an inhabited bounded whole-real-time Schwartz Stokes flow or prove that subroute empty." } :
         NavierRoadmapEntry) ∈ currentNavierRoadmap ∧
       ({ stage := NavierRoadmapStage.nonzeroEnergyKernel
          proofNodeId := "navier.energy.nonzero-schwartz-stokes-rankone-obstruction"

@@ -667,6 +667,24 @@ theorem normalizedKineticEnergy_ne_periodic_endpoint_at_nonzero_of_pos_viscosity
       (S.normalizedKineticEnergy_strict_lt_after_nonzero_of_pos_viscosity
         hν hne ht)
 
+/-- Local no-recurrence form: after a nonzero slice of a positive-viscosity
+solution, no strictly later velocity slice can be pointwise equal to it. -/
+theorem not_velocity_slice_eq_after_nonzero_of_pos_viscosity
+    (hν : 0 < ν) {t₀ t₁ : NSTime} {x₀ : NSSpace}
+    (hne : S.velocity t₀ x₀ ≠ 0) (ht : t₀ < t₁) :
+    ¬ ∀ x : NSSpace, S.velocity t₁ x = S.velocity t₀ x := by
+  intro hslice
+  have henergy_eq :
+      normalizedKineticEnergy S.velocity t₁ =
+        normalizedKineticEnergy S.velocity t₀ :=
+    normalizedKineticEnergy_eq_of_velocity_slice_eq hslice
+  have hdrop :
+      normalizedKineticEnergy S.velocity t₁ <
+        normalizedKineticEnergy S.velocity t₀ :=
+    S.normalizedKineticEnergy_strict_lt_after_nonzero_of_pos_viscosity
+      hν hne ht
+  exact (ne_of_lt hdrop) henergy_eq
+
 /-- Positive-viscosity nonzero slice-Schwartz solutions cannot have periodic
 normalized kinetic energy with a positive period. -/
 theorem not_forall_normalizedKineticEnergy_periodic_of_pos_viscosity
@@ -1152,6 +1170,20 @@ theorem not_exists_nonzeroSchwartzConcreteSolution_velocity_periodic_of_pos_visc
             S.velocity (t + P) x = S.velocity t x := by
   rintro ⟨S, P, hP, hperiod⟩
   exact S.not_forall_velocity_periodic_of_pos_viscosity hν hP hperiod
+
+/-- Global local-recurrence no-go: a positive-viscosity nonzero
+slice-Schwartz solution cannot repeat a velocity slice at a strictly later
+time after a nonzero witness on the earlier slice. -/
+theorem not_exists_nonzeroSchwartzConcreteSolution_repeated_velocity_slice_after_nonzero_of_pos_viscosity
+    {ν : ℝ} (hν : 0 < ν) :
+    ¬ ∃ S : NonzeroSchwartzConcreteNavierStokesSolution ν,
+      ∃ t₀ t₁ : NSTime,
+        t₀ < t₁ ∧
+          (∃ x₀ : NSSpace, S.velocity t₀ x₀ ≠ 0) ∧
+            ∀ x : NSSpace, S.velocity t₁ x = S.velocity t₀ x := by
+  rintro ⟨S, t₀, t₁, ht, ⟨x₀, hne⟩, hslice⟩
+  exact S.not_velocity_slice_eq_after_nonzero_of_pos_viscosity
+    hν hne ht hslice
 
 /-- Global no-go form of the rank-one zero-convection shortcut: no nonzero
 slice-Schwartz concrete solution has all slices in a fixed nonzero rank-one
