@@ -23,7 +23,7 @@ Read these four files first — they are the whole live surface:
 | `Shells.lean` | Bundled hypothesis packages (`ClosedWalkExactShell`, `SuccessorCycleExactShell`, `ClosedWalkCancellationShell`, …) replacing the historical 8–10-hypothesis telescopes |
 | `Frontier.lean` | The maximal positive and negative results, stated over the bundles as thin wrappers, including detector-based cancellation sufficiency |
 | `CAP5RouteVerdict.lean` | The current CAP5/F2 route verdict: either the executable report returns a concrete primitive portal/cycle checker gap, or the closed-frontier route is exactly the absence of the concrete target/off-target F2 evaders; it also names the unified emitted-kernel/remaining-map evader and proves, under no primitive gap, that this evader exists exactly when the closed route endpoint fails; in that same branch the CAP5/Jordan geometric separator repair is blocked by the cyclic-cut obstruction |
-| `CAP5RoutePayoff.lean` | Route payoff audit and finite gate surface: the former closed-route-to-`EdgeColorable 4` payoff is removed as vacuous because the root already has type `G.EdgeColoring Color`; the non-vacuous route endpoint is `CAP5RouteClosedSynthesisPayoff` (theorem-4.9 synthesis plus selected-boundary-zero classifier control); the finite no-gap pre-RREF input is named as `CAP5FiniteNoGapRouteInput`; and the exact finite wheel route-closed canary is named as `WheelCAP5FiniteRouteClosedCanary` |
+| `CAP5RoutePayoff.lean` / `F2KernelCertificate.lean` | Route payoff audit and finite gate surface: the former closed-route-to-`EdgeColorable 4` payoff is removed as vacuous because the root already has type `G.EdgeColoring Color`; the non-vacuous route endpoint is `CAP5RouteClosedSynthesisPayoff` (theorem-4.9 synthesis plus selected-boundary-zero classifier control); the finite no-gap pre-RREF input is named as `CAP5FiniteNoGapRouteInput`; checked finite left-inverse/RREF-style certificates land through `F2LeftInverseKernelCertificate`; and the exact finite wheel route-closed canary is named as `WheelCAP5FiniteRouteClosedCanary` |
 
 ## Current status (one paragraph)
 
@@ -296,6 +296,10 @@ side and check `CAP5F2NoUnifiedKernelMapEvader`, or accept that named
 obstruction.
 
 RREF-shaped finite gate update on 2026-06-29:
+`F2KernelCertificate.lean` introduces `F2LeftInverseKernelCertificate`, a
+finite basis-and-matrix certificate whose checked product equation reconstructs
+a left inverse and proves the emitted map has trivial kernel.  In
+`CAP5RoutePayoff.lean`,
 `cap5F2NoUnifiedKernelMapEvader_of_emittedFinsetPairingKernel_eq_bot` proves
 that a checked bottom emitted-pairing kernel certificate directly rules out the
 unified emitted-kernel/remaining-map evader.  The finite-input wrappers
@@ -303,9 +307,11 @@ unified emitted-kernel/remaining-map evader.  The finite-input wrappers
 `CAP5FiniteNoGapRouteInput.routeClosed_of_emittedFinsetPairingKernel_eq_bot`,
 and
 `CAP5FiniteNoGapRouteInput.toClosedWitness_of_emittedFinsetPairingKernel_eq_bot`
-show exactly what a checked RREF/kernel certificate has to feed.  This is only
-the certificate interface: the actual CAP5 no-gap input and its checked emitted
-kernel certificate remain the make-or-break artifact.
+plus their `...LeftInverseCertificate` variants show exactly what a checked
+RREF/kernel certificate has to feed.  This is only the certificate interface:
+the actual CAP5 no-gap input, a concrete basis for its selected-boundary-zero
+submodule, and its checked emitted matrix/certificate remain the make-or-break
+artifact.
 
 The next target-level corollary turns finite dimension into an explicit fork
 test for exact CAP5 data.  In Lean,
