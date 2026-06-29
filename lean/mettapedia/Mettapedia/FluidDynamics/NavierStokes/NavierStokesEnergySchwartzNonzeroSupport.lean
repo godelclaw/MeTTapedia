@@ -235,6 +235,30 @@ theorem stokesFlow_nonzeroTimeSupport_packet
         S.normalizedKineticEnergy_strict_lt_before_nonzero_endpoint_of_pos_viscosity
           hν hst htT hne⟩
 
+/-- Existential Stokes-flow support packet: an inhabited positive-viscosity
+Stokes candidate must choose a nonzero endpoint whose entire past support ray
+is strictly ordered by normalized kinetic energy on every nontrivial forward
+subinterval. -/
+theorem stokesFlow_exists_nonzero_endpoint_with_strict_past_energy_drop_packet
+    (hν : 0 < ν)
+    (hconv : ∀ t x, spatialConvection S.velocity t x = 0)
+    (hpressure : ∀ t x, spatialPressureGradient S.pressure t x = 0) :
+    NonzeroSchwartzStokesFlowKernel ν S.velocity S.pressure ∧
+      SchwartzNonzeroTimeSupportKernel ν S.velocity S.pressure ∧
+      ∃ T xT,
+        S.velocity T xT ≠ 0 ∧
+          ∀ {s t : NSTime}, s < t → t ≤ T →
+            normalizedKineticEnergy S.velocity t <
+              normalizedKineticEnergy S.velocity s := by
+  rcases S.nonzero_velocity with ⟨T, xT, hneT⟩
+  exact
+    ⟨S.nonzeroStokesFlowKernel hconv hpressure,
+      S.nonzeroTimeSupportKernel,
+      T, xT, hneT,
+      fun {_s _t} hst htT =>
+        S.normalizedKineticEnergy_strict_lt_before_nonzero_endpoint_of_pos_viscosity
+          hν hst htT ⟨xT, hneT⟩⟩
+
 end NonzeroSchwartzConcreteNavierStokesSolution
 
 /-- Global no-go form: before a later nonzero endpoint, a positive-viscosity
@@ -255,6 +279,28 @@ theorem
         normalizedKineticEnergy S.velocity s :=
     S.normalizedKineticEnergy_strict_lt_before_nonzero_endpoint_of_pos_viscosity
       hν hst htT hneT
+  exact not_lt_of_ge hnondec hdrop
+
+/-- Global Stokes-flow no-go form: before a later nonzero endpoint, a
+positive-viscosity exact Stokes candidate cannot have a nondecreasing
+normalized-energy subinterval. -/
+theorem
+    not_exists_nonzeroSchwartzStokesFlow_energy_nondecrease_before_nonzero_endpoint_of_pos_viscosity
+    {ν : ℝ} (hν : 0 < ν) :
+    ¬ ∃ S : NonzeroSchwartzConcreteNavierStokesSolution ν,
+      (∀ t x, spatialConvection S.velocity t x = 0) ∧
+        (∀ t x, spatialPressureGradient S.pressure t x = 0) ∧
+          ∃ s t T : NSTime,
+            s < t ∧ t ≤ T ∧
+              (∃ xT : NSSpace, S.velocity T xT ≠ 0) ∧
+                normalizedKineticEnergy S.velocity s ≤
+                  normalizedKineticEnergy S.velocity t := by
+  rintro ⟨S, hconv, hpressure, s, t, T, hst, htT, hneT, hnondec⟩
+  have hdrop :
+      normalizedKineticEnergy S.velocity t <
+        normalizedKineticEnergy S.velocity s :=
+    (S.stokesFlow_nonzeroTimeSupport_packet hν hconv hpressure).2.2
+      hst htT hneT
   exact not_lt_of_ge hnondec hdrop
 
 /-- Global one-profile amplitude no-recurrence obstruction: a positive-

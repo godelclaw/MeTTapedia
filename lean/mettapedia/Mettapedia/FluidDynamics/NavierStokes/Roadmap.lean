@@ -188,8 +188,8 @@ def currentNavierRoadmap : List NavierRoadmapEntry :=
     { stage := .nonzeroEnergyKernel
       proofNodeId := "navier.energy.nonzero-schwartz-stokes-kernel"
       status := .checked
-      truthValue := ⟨82, 88⟩
-      obligation := "Use the checked Stokes-flow kernel to make zero-convection/zero-pressure-gradient canary attempts satisfy the exact Stokes equation, strict positive-viscosity dissipation, and no positive-period recurrence; still construct an inhabited bounded whole-real-time Schwartz Stokes flow or prove that subroute empty." },
+      truthValue := ⟨84, 89⟩
+      obligation := "Use the checked Stokes-flow kernel to make zero-convection/zero-pressure-gradient canary attempts satisfy the exact Stokes equation, strict positive-viscosity dissipation, a nonzero endpoint with strictly ordered past energy, no nondecreasing energy subinterval before that endpoint, and no positive-period recurrence; still construct an inhabited bounded whole-real-time Schwartz Stokes flow or prove that subroute empty." },
     { stage := .nonzeroEnergyKernel
       proofNodeId := "navier.energy.nonzero-schwartz-stokes-rankone-obstruction"
       status := .checked
@@ -418,9 +418,9 @@ theorem currentNavierRoadmap_records_nonzero_schwartz_kernel_and_open_canary :
       ({ stage := NavierRoadmapStage.nonzeroEnergyKernel
          proofNodeId := "navier.energy.nonzero-schwartz-stokes-kernel"
          status := .checked
-         truthValue := ⟨82, 88⟩
+         truthValue := ⟨84, 89⟩
          obligation :=
-          "Use the checked Stokes-flow kernel to make zero-convection/zero-pressure-gradient canary attempts satisfy the exact Stokes equation, strict positive-viscosity dissipation, and no positive-period recurrence; still construct an inhabited bounded whole-real-time Schwartz Stokes flow or prove that subroute empty." } :
+          "Use the checked Stokes-flow kernel to make zero-convection/zero-pressure-gradient canary attempts satisfy the exact Stokes equation, strict positive-viscosity dissipation, a nonzero endpoint with strictly ordered past energy, no nondecreasing energy subinterval before that endpoint, and no positive-period recurrence; still construct an inhabited bounded whole-real-time Schwartz Stokes flow or prove that subroute empty." } :
         NavierRoadmapEntry) ∈ currentNavierRoadmap ∧
       ({ stage := NavierRoadmapStage.nonzeroEnergyKernel
          proofNodeId := "navier.energy.nonzero-schwartz-stokes-rankone-obstruction"
