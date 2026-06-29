@@ -66,6 +66,11 @@ theorem spatialDerivativeComponent_contDiff_spacetime_of_smooth_regression
       (fun tx : NSSpacetime => spatialDerivativeComponent u tx.1 tx.2 coord comp) := by
   exact spatialDerivativeComponent_contDiff_spacetime_of_smooth hu coord comp
 
+theorem spatialVorticity_smoothSpaceTimeVelocity_of_smooth_regression
+    {u : NSVelocityField} (hu : smoothSpaceTimeVelocity u) :
+    smoothSpaceTimeVelocity (fun t x => spatialVorticity u t x) := by
+  exact spatialVorticity_smoothSpaceTimeVelocity_of_smooth hu
+
 theorem timeVelocityDerivativeField_smoothSpaceTimeVelocity_of_smooth_regression
     {u : NSVelocityField} (hu : smoothSpaceTimeVelocity u) :
     smoothSpaceTimeVelocity (timeVelocityDerivativeField u) := by
