@@ -12,6 +12,8 @@ namespace Mettapedia
 namespace FluidDynamics
 namespace NavierStokes
 
+open scoped ContDiff
+
 section BKMContinuation
 
 theorem timeVelocityDerivativeField_differentiableAt_of_smooth_regression
@@ -44,6 +46,18 @@ theorem smoothSpaceTimeVelocity_fderiv_fderiv_swap_regression
     ((fderiv ℝ (fderiv ℝ (spaceTimeVelocityMap u)) tx) v) w =
       ((fderiv ℝ (fderiv ℝ (spaceTimeVelocityMap u)) tx) w) v := by
   exact smoothSpaceTimeVelocity_fderiv_fderiv_swap hu tx v w
+
+theorem spatialDerivativeComponent_contDiff_time_of_smooth_regression
+    {u : NSVelocityField} (hu : smoothSpaceTimeVelocity u)
+    (x : NSSpace) (coord comp : Fin 3) :
+    ContDiff ℝ ∞ (fun s : NSTime => spatialDerivativeComponent u s x coord comp) := by
+  exact spatialDerivativeComponent_contDiff_time_of_smooth hu x coord comp
+
+theorem spatialDerivativeComponent_differentiableAt_time_of_smooth_regression
+    {u : NSVelocityField} (hu : smoothSpaceTimeVelocity u)
+    (t : NSTime) (x : NSSpace) (coord comp : Fin 3) :
+    DifferentiableAt ℝ (fun s : NSTime => spatialDerivativeComponent u s x coord comp) t := by
+  exact spatialDerivativeComponent_differentiableAt_time_of_smooth hu t x coord comp
 
 theorem residualCurlLinearityDifferentiableAt_of_smooth_laplacian_regression
     {u : NSVelocityField} {t : NSTime} {x : NSSpace}
