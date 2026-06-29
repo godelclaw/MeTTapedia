@@ -745,7 +745,9 @@ longer acceptable progress.
    control update, and strict residual decrease.
    The initial residual closure layer
    `InitialResidualSchedulerImmutableProcessedControlObstruction`,
+   `emittedFinsetKernelMapEvader_of_initialResidualSchedulerImmutableProcessedControlObstruction`,
    `initialResidualSchedulerImmutableProcessedControlObstruction_of_no_missingCheckerEvidence_of_notSynthesis`,
+   `emittedFinsetKernelMapEvader_of_no_missingCheckerEvidence_of_notSynthesis_via_initialResidualScheduler`,
    `theorem49BoundaryRootSynthesis_of_no_missingCheckerEvidence_and_no_initialResidualSchedulerImmutableProcessedControlObstruction`,
    `ofDecidableChecks_missingCheckerEvidence_or_theorem49Synthesis_and_boundaryZeroControl_of_initialResidualRemainingControlEdgesEmpty`,
    and
@@ -754,9 +756,13 @@ longer acceptable progress.
    an initially empty residual scheduler proves theorem-4.9 synthesis with full
    selected-boundary-zero classifier control, while no primitive checker gap
    plus failed synthesis forces the named first residual evader/immutable
-   processing obstruction.  The remaining Move-2 burden is therefore to prove
-   exact CAP5 shell data empties that initial residual scheduler/emitted-rank
-   certificate, or to accept the named first residual obstruction.
+   processing obstruction.  That obstruction now promotes to the same unified
+   emitted-kernel/remaining-map evader used by the finite F2 rank oracle, so
+   the nonempty initial scheduler branch is no longer a separate branch from
+   the emitted-rank/map fork.  The remaining Move-2 burden is therefore to
+   prove exact CAP5 shell data empties that initial residual scheduler/emitted-
+   rank certificate, or to accept the named first residual obstruction as the
+   unified finite F2 evader.
    The direct no-evader route corollaries
    `ofDecidableChecks_missingCheckerEvidence_or_theorem49Synthesis_and_boundaryZeroControl_of_no_theorem49BoundaryTargetEvader_and_no_emittedFinsetKernelMapEvader_with_theorem49BoundaryVertexKirchhoffFailure`
    and
