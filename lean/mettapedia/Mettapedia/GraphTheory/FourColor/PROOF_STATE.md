@@ -33,7 +33,12 @@ to the theorem-4.9 target fork without going through prose.  Lean proves that
 absence of a full selected-boundary-zero evader is equivalent to target
 classifier control plus absence of the concrete off-target boundary-vertex
 Kirchhoff evader, and therefore that the emitted-edge pairing kernel is trivial
-exactly when that target/off-target oracle is closed.
+exactly when that target/off-target oracle is closed.  The failure side is now
+concrete too: under theorem-4.9 target classifier control, a nontrivial
+emitted-edge pairing kernel returns a selected-boundary-zero evader that
+vanishes on every enumerated forced edge, lies in the emitted kernel, is
+detected by the canonical remaining-family map, and fails Kirchhoff at a named
+theorem-4.9 boundary vertex.
 
 Trace-F2 delta: the same report-closed handoff now reaches the stronger
 trace-control split.  The executable report returns a primitive checker gap,
@@ -1041,6 +1046,30 @@ nonzero canonical remaining-map image.
   theorem-4.9 target classifier control plus exclusion of the concrete
   off-target boundary-vertex Kirchhoff evader.  Current Algebraic-F2 estimate
   remains PLN STV `<0.79,0.92>`, ITV `[0.73,0.81]`, progress `99%`.
+- Target-controlled kernel-evader focused detector build archived locally as
+  `fourcolor-move2-target-controlled-kernel-evader-focused-build-20260629.log`.
+- Target-controlled kernel-evader validation lab rerun archived locally as
+  `fourcolor-move2-target-controlled-kernel-evader-lab-20260629.json`;
+  stderr is empty.  It preserves the edge-40/color-1M projected-generator
+  counts: 65 reports split as 53 found and 12 no-Tait-coloring; 740 color
+  probes split as 454 found and 286 no-Tait-coloring, with 0 missing color
+  probes.
+- Target-controlled kernel-evader trusted-constant audit archived locally as
+  `fourcolor-move2-target-controlled-kernel-evader-axiom-audit-20260629.log`;
+  the new theorem constant depends only on
+  `[propext, Classical.choice, Quot.sound]`.
+- Full `lake -f lakefile.lean build Mettapedia` archived locally as
+  `fourcolor-move2-target-controlled-kernel-evader-full-build-20260629.log`;
+  it completed with 5900 jobs.
+- New target-controlled kernel-evader theorem surface:
+  `CAP5TransportedEdgeComponentCoverCore.emittedFinsetKernelMapEvader_with_theorem49BoundaryVertexKirchhoffFailure_of_not_emittedFinsetPairingKernel_eq_bot_of_theorem49BoundaryTargetClassifierControl`.
+  This closes the other half of the target/rank split: after theorem-4.9
+  target classifier control is known, emitted-rank failure is no longer an
+  abstract linear-algebra defect.  Lean returns the genuine
+  selected-boundary-zero evader carrying emitted-kernel membership, nonzero
+  canonical remaining-map image, and a concrete theorem-4.9 boundary-vertex
+  Kirchhoff failure.  Current Algebraic-F2 estimate remains PLN STV
+  `<0.79,0.92>`, ITV `[0.73,0.81]`, progress `99%`.
 - Projected-generator edge-40/color-1M lab rerun archived locally as
   `fourcolor-move2-projected-generator-edge40-color1m-lab-20260629.json`;
   stderr is empty.  With the edge cap raised to 40 and the coloring cap raised
