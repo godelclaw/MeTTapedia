@@ -254,6 +254,36 @@ no-gap part of the candidate.  A graph-specific `CAP5FiniteNoGapRouteInput`
 is still not claimed, because the projected-generator red/blue coordinate
 witnesses reported by the lab are not yet packaged as Lean membership
 certificates.
+The membership gap is now finite and explicit rather than exploratory:
+`fourcolor-gp12-membership-certificate-lab-20260629.json` verifies all 72
+closed-embedding interior red/blue coordinate probes in the chosen GP(12,2)
+Kempe-class projected-generator span, with generator rank 72/72, SymPy GF(2)
+rank cross-check 72/72, 72 used generator rows, and target-combination sizes
+between 2 and 42.  The lab script SHA256 is
+`2615eefc5c4a09faf556e00a17b769a2bde6dff7cb843f5619b0a5182fede9be`;
+the JSON SHA256 is
+`b96c76cb4660003371a3cd1902b162b53585d086ad2043dca9229f73754e761d`.
+Lean also now has the route-input adapter:
+`CAP5DecidableCheckerEvidence.noPrimitiveGapByFiniteCheck_of_noPrimitiveGap`,
+`CAP5FiniteNoGapRouteInput.ofNoPrimitiveGap`,
+`gp12FiveCutSideCheckerEvidence`,
+`gp12FiveCutSide_noPrimitiveGapByFiniteCheck`, and
+`gp12FiniteNoGapRouteInput_of_allCoordinateMemberships`.  Thus the remaining
+GP(12,2) route-input packaging obligation is exactly the finite Kempe-class
+closure proof plus the 72 projected-generator finite-sum memberships; no full
+route input is claimed yet.  This does not upgrade the six-cut residual:
+the generic six-cut meta-barrier is not proven, and the non-boundary six-cut
+degree of freedom remains open.  Verification for this adapter increment: focused
+`CAP5RoutePayoff` build SHA256
+`9fdef61516749e4915ed8b2d9ff508952dbe6469e15e52ba4e6ca632c35d06c1`;
+focused `CAP5GP12RouteData` build SHA256
+`42e5a2eee6b11df605ad6ff1aace863c0a6fda5f5ae59373474ef0e56e6eb298`;
+FourColor umbrella build SHA256
+`b75eccf9da5281172ab7b1dab910038972c0f950ec46e046bd3c58010e4f4f2a`;
+axiom audit driver/log SHA256
+`8c6c313a0b2bce1fb845cc7280a57af2022ae008cd384d5ba865627731a9aa13` /
+`940859f527dd923cb2c21008f756cd718076f40ea84dbb586dfa62520d2163ca`,
+baseline `[propext, Classical.choice, Quot.sound]`.
 Additional verification for this GP(12,2) Gate-1 no-gap increment: focused
 `CAP5GP12RouteData` build SHA256
 `6a0465c7b5b2500101e4e7afa74c8c43c4c7738ca0afa47bc06c75850ab83360`;

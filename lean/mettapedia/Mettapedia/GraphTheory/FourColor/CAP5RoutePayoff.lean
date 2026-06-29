@@ -127,6 +127,20 @@ theorem noPrimitiveGap_of_noPrimitiveGapByFiniteCheck
       boundaryEdge side).2 (by
         simpa [noPrimitiveGapByFiniteCheck, report] using hclosed)
 
+omit [Fintype G.edgeSet] [FiniteDimensional F2 (G.edgeSet → Color)] in
+theorem noPrimitiveGapByFiniteCheck_of_noPrimitiveGap
+    {boundaryEdge : Fin 5 → G.edgeSet} {side : V → Prop}
+    (checks : CAP5DecidableCheckerEvidence (G := G) boundaryEdge side)
+    (hnoGap : ¬ CAP5PrimitiveCheckerGap boundaryEdge side) :
+    checks.noPrimitiveGapByFiniteCheck := by
+  classical
+  letI := checks.portal
+  letI := checks.cycles
+  letI := checks.realized
+  exact
+    (no_cap5PrimitiveCheckerGap_iff_missingCheckerEvidenceLatents_eq_nil
+      boundaryEdge side).1 hnoGap
+
 end CAP5DecidableCheckerEvidence
 
 /--
@@ -158,6 +172,43 @@ structure CAP5FiniteNoGapRouteInput
     ∀ e ∈ classifier.remainingControlEdges
         (interiorEdgeSupport emb.faceBoundary emb.faces),
       Pi.single e blue ∈ projectedColoringGeneratorSubspace emb colorings
+
+omit [FiniteDimensional F2 (G.edgeSet → Color)] in
+def CAP5FiniteNoGapRouteInput.ofNoPrimitiveGap
+    {boundaryEdge : Fin 5 → G.edgeSet} {n : Nat}
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    {emb : PlaneEmbeddingWithBoundary G} {C₀ : G.EdgeColoring Color}
+    {colorings : Set (G.EdgeColoring Color)} {p0Inside p4Inside : Bool}
+    {side : V → Prop}
+    (checks : CAP5DecidableCheckerEvidence (G := G) boundaryEdge side)
+    (hnoGap : ¬ CAP5PrimitiveCheckerGap boundaryEdge side)
+    (hsubset : colorings ⊆ G.EdgeKempeClosure C₀)
+    (classifier : data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (hredEmitted :
+      ∀ e ∈ classifier.emittedFinset,
+        Pi.single e red ∈ projectedColoringGeneratorSubspace emb colorings)
+    (hblueEmitted :
+      ∀ e ∈ classifier.emittedFinset,
+        Pi.single e blue ∈ projectedColoringGeneratorSubspace emb colorings)
+    (hredRemaining :
+      ∀ e ∈ classifier.remainingControlEdges
+          (interiorEdgeSupport emb.faceBoundary emb.faces),
+        Pi.single e red ∈ projectedColoringGeneratorSubspace emb colorings)
+    (hblueRemaining :
+      ∀ e ∈ classifier.remainingControlEdges
+          (interiorEdgeSupport emb.faceBoundary emb.faces),
+        Pi.single e blue ∈ projectedColoringGeneratorSubspace emb colorings) :
+    CAP5FiniteNoGapRouteInput data emb C₀ colorings p0Inside p4Inside side where
+  checks := checks
+  checkerClosed :=
+    CAP5DecidableCheckerEvidence.noPrimitiveGapByFiniteCheck_of_noPrimitiveGap
+      checks hnoGap
+  subset := hsubset
+  classifier := classifier
+  redEmitted := hredEmitted
+  blueEmitted := hblueEmitted
+  redRemaining := hredRemaining
+  blueRemaining := hblueRemaining
 
 omit [FiniteDimensional F2 (G.edgeSet → Color)] in
 theorem CAP5FiniteNoGapRouteInput.noPrimitiveGap

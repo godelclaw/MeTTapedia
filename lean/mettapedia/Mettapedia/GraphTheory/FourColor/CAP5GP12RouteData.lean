@@ -572,6 +572,45 @@ theorem gp12FiveCutSide_noPrimitiveCheckerGap :
     · rcases hmissingComplement with ⟨_latent, _hmem, hmissing⟩
       exact hmissing gp12FiveCutComplement_hasCycle
 
+noncomputable def gp12FiveCutSideCheckerEvidence :
+    CAP5DecidableCheckerEvidence (G := gp12Graph) gp12CAP5BoundaryEdge
+      gp12FiveCutSide := by
+  classical
+  exact {
+    portal := by intro _latent; infer_instance
+    cycles := by intro _latent; infer_instance
+    realized := by intro _latent; infer_instance
+  }
+
+theorem gp12FiveCutSide_noPrimitiveGapByFiniteCheck :
+    gp12FiveCutSideCheckerEvidence.noPrimitiveGapByFiniteCheck :=
+  CAP5DecidableCheckerEvidence.noPrimitiveGapByFiniteCheck_of_noPrimitiveGap
+    gp12FiveCutSideCheckerEvidence gp12FiveCutSide_noPrimitiveCheckerGap
+
+noncomputable def gp12FiniteNoGapRouteInput_of_allCoordinateMemberships
+    {colorings : Set (gp12Graph.EdgeColoring Color)}
+    {p0Inside p4Inside : Bool}
+    (hsubset : colorings ⊆ gp12Graph.EdgeKempeClosure gp12TaitEdgeColoring)
+    (classifier :
+      gp12CAP5ComponentCoverCore.EnumeratedExceptionalAnnulusForcedEdgeClassifier
+        p0Inside p4Inside gp12FiveCutSide)
+    (hred :
+      ∀ e : gp12Graph.edgeSet,
+        Pi.single e red ∈ projectedColoringGeneratorSubspace gp12Embedding colorings)
+    (hblue :
+      ∀ e : gp12Graph.edgeSet,
+        Pi.single e blue ∈ projectedColoringGeneratorSubspace gp12Embedding colorings) :
+    CAP5FiniteNoGapRouteInput gp12CAP5ComponentCoverCore
+      gp12Embedding gp12TaitEdgeColoring colorings p0Inside p4Inside
+      gp12FiveCutSide :=
+  CAP5FiniteNoGapRouteInput.ofNoPrimitiveGap
+    gp12FiveCutSideCheckerEvidence gp12FiveCutSide_noPrimitiveCheckerGap
+    hsubset classifier
+    (fun e _he => hred e)
+    (fun e _he => hblue e)
+    (fun e _he => hred e)
+    (fun e _he => hblue e)
+
 def gp12P0InsideP4OutsideEmittedFinset : Finset gp12Graph.edgeSet :=
   {gp12_e15_17}
 
