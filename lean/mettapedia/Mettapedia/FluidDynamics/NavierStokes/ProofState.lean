@@ -182,9 +182,9 @@ nonzero exact-solution shortcut. -/
 def navierNonzeroSchwartzRankOneShearObstructionNode : NavierProofNode where
   id := "navier.energy.nonzero-schwartz-rank-one-shear-obstruction"
   status := .checked
-  truthValue := ⟨82, 89⟩
-  evidence := "spatialConvection_timeIndependent_rankOneSchwartzVelocity, rankOneSchwartzVelocity_eq_zero_of_spatialConvection_zero_at, and not_exists_nonzero_rankOneSchwartzVelocity_with_zero_spatialConvection prove that a fixed-direction profile u(x)=phi(x)v with nonzero v has zero pointwise convection only when the Schwartz scalar phi, hence u, is zero. PLN STV <s=.82,c=.89>, ITV [.7298,.8398], PROGRESS 61%."
-  blocker := "This blocks the rank-one zero-convection Stokes-flow shortcut. The remaining positive canary must close a genuinely non-rank-one pressure-slice momentum equation or prove a broader obstruction."
+  truthValue := ⟨84, 89⟩
+  evidence := "spatialConvection_timeIndependent_rankOneSchwartzVelocity, rankOneSchwartzVelocity_eq_zero_of_spatialConvection_zero_at, and not_exists_nonzero_rankOneSchwartzVelocity_with_zero_spatialConvection prove that a fixed-direction profile u(x)=phi(x)v with nonzero v has zero pointwise convection only when the Schwartz scalar phi, hence u, is zero. velocity_eq_zero_of_velocitySlice_eq_rankOne_zeroConvection_at and not_exists_nonzeroSchwartzConcreteSolution_forall_rankOne_zeroConvection lift the obstruction into the concrete solution interface slice-by-slice. PLN STV <s=.84,c=.89>, ITV [.7476,.8576], PROGRESS 62%."
+  blocker := "This blocks the rank-one zero-convection Stokes-flow shortcut even when packaged as slice-Schwartz concrete solution data. The remaining positive canary must close a genuinely non-rank-one pressure-slice momentum equation or prove a broader obstruction."
 
 /-- Symmetric finite-mode shear is a nonzero pressure-closed algebraic canary,
 but it is excluded from the slice-Schwartz lane. -/
@@ -737,6 +737,36 @@ theorem currentNavierNonzeroSchwartzRankOneShearObstruction_node
       navierNonzeroSchwartzCanaryNode.status = .openGoal := by
   exact
     ⟨not_exists_nonzero_rankOneSchwartzVelocity_with_zero_spatialConvection hv,
+      navierNonzeroSchwartzRankOneShearObstructionNode_checked,
+      navierNonzeroSchwartzCanaryNode_open⟩
+
+theorem currentNavierNonzeroSchwartzRankOneShearSolutionLift_node
+    {ν : ℝ} {v : NSSpace} (hv : v ≠ 0) :
+    (∀ S : SchwartzConcreteNavierStokesSolution ν,
+      ∀ t : NSTime,
+        ∀ φ : NSSchwartzScalar,
+          S.velocitySlice t = rankOneSchwartzVelocity φ v →
+            (∀ x : NSSpace, spatialConvection S.velocity t x = 0) →
+              ∀ x : NSSpace, S.velocity t x = 0) ∧
+      (∀ S : NonzeroSchwartzConcreteNavierStokesSolution ν,
+        ¬ ∀ t : NSTime,
+          ∃ φ : NSSchwartzScalar,
+            S.velocitySlice t = rankOneSchwartzVelocity φ v ∧
+              ∀ x : NSSpace, spatialConvection S.velocity t x = 0) ∧
+      (¬ ∃ S : NonzeroSchwartzConcreteNavierStokesSolution ν,
+        ∀ t : NSTime,
+          ∃ φ : NSSchwartzScalar,
+            S.velocitySlice t = rankOneSchwartzVelocity φ v ∧
+              ∀ x : NSSpace, spatialConvection S.velocity t x = 0) ∧
+      navierNonzeroSchwartzRankOneShearObstructionNode.status = .checked ∧
+      navierNonzeroSchwartzCanaryNode.status = .openGoal := by
+  exact
+    ⟨fun S t φ hslice hconv =>
+        S.velocity_eq_zero_of_velocitySlice_eq_rankOne_zeroConvection_at
+          φ hv hslice hconv,
+      fun S =>
+        S.not_forall_velocitySlice_rankOne_zeroConvection_of_fixed_direction hv,
+      not_exists_nonzeroSchwartzConcreteSolution_forall_rankOne_zeroConvection hv,
       navierNonzeroSchwartzRankOneShearObstructionNode_checked,
       navierNonzeroSchwartzCanaryNode_open⟩
 

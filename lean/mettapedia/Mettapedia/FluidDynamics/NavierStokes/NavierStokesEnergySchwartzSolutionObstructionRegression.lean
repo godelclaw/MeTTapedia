@@ -37,6 +37,34 @@ theorem nonzero_schwartz_solution_has_non_lineInvariant_slice_regression
       ¬ TranslationInvariantAlong v (fun x : NSSpace => S.velocitySlice t x) := by
   exact every_nonzeroSchwartzConcreteSolution_has_non_lineInvariant_slice S hv
 
+theorem schwartz_solution_rankOne_zero_convection_slice_zero_regression
+    {ν : ℝ} (S : SchwartzConcreteNavierStokesSolution ν)
+    {t : NSTime} (φ : NSSchwartzScalar) {v : NSSpace} (hv : v ≠ 0)
+    (hslice : S.velocitySlice t = rankOneSchwartzVelocity φ v)
+    (hconv : ∀ x : NSSpace, spatialConvection S.velocity t x = 0) :
+    ∀ x, S.velocity t x = 0 := by
+  exact
+    S.velocity_eq_zero_of_velocitySlice_eq_rankOne_zeroConvection_at
+      φ hv hslice hconv
+
+theorem nonzero_schwartz_solution_not_all_rankOne_zero_convection_regression
+    {ν : ℝ} (S : NonzeroSchwartzConcreteNavierStokesSolution ν)
+    {v : NSSpace} (hv : v ≠ 0) :
+    ¬ ∀ t : NSTime,
+      ∃ φ : NSSchwartzScalar,
+        S.velocitySlice t = rankOneSchwartzVelocity φ v ∧
+          ∀ x : NSSpace, spatialConvection S.velocity t x = 0 := by
+  exact S.not_forall_velocitySlice_rankOne_zeroConvection_of_fixed_direction hv
+
+theorem not_exists_nonzero_schwartz_solution_forall_rankOne_zero_convection_regression
+    {ν : ℝ} {v : NSSpace} (hv : v ≠ 0) :
+    ¬ ∃ S : NonzeroSchwartzConcreteNavierStokesSolution ν,
+      ∀ t : NSTime,
+        ∃ φ : NSSchwartzScalar,
+          S.velocitySlice t = rankOneSchwartzVelocity φ v ∧
+            ∀ x : NSSpace, spatialConvection S.velocity t x = 0 := by
+  exact not_exists_nonzeroSchwartzConcreteSolution_forall_rankOne_zeroConvection hv
+
 theorem zero_coordinate_enstrophy_schwartz_slice_zero_regression
     {ν : ℝ} (S : SchwartzConcreteNavierStokesSolution ν)
     {t : NSTime} (henst : coordinateEnstrophyAt S.velocity t = 0) :

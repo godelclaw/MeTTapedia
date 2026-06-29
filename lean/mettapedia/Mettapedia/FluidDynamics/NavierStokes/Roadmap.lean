@@ -88,8 +88,8 @@ def currentNavierRoadmap : List NavierRoadmapEntry :=
     { stage := .nonzeroEnergyKernel
       proofNodeId := "navier.energy.nonzero-schwartz-rank-one-shear-obstruction"
       status := .checked
-      truthValue := ⟨82, 89⟩
-      obligation := "Use the checked rank-one zero-convection obstruction to rule out fixed-direction Schwartz Stokes-flow shortcuts; future nonzero canaries must close a genuinely non-rank-one pressure-slice equation." },
+      truthValue := ⟨84, 89⟩
+      obligation := "Use the checked solution-level rank-one zero-convection obstruction to rule out fixed-direction Schwartz Stokes-flow shortcuts at every slice; future nonzero canaries must close a genuinely non-rank-one pressure-slice equation." },
     { stage := .nonzeroEnergyKernel
       proofNodeId := "navier.energy.nonzero-schwartz-symmetric-shear-obstruction"
       status := .checked
@@ -233,9 +233,9 @@ theorem currentNavierRoadmap_records_nonzero_schwartz_kernel_and_open_canary :
       ({ stage := NavierRoadmapStage.nonzeroEnergyKernel
          proofNodeId := "navier.energy.nonzero-schwartz-rank-one-shear-obstruction"
          status := .checked
-         truthValue := ⟨82, 89⟩
+         truthValue := ⟨84, 89⟩
          obligation :=
-          "Use the checked rank-one zero-convection obstruction to rule out fixed-direction Schwartz Stokes-flow shortcuts; future nonzero canaries must close a genuinely non-rank-one pressure-slice equation." } :
+          "Use the checked solution-level rank-one zero-convection obstruction to rule out fixed-direction Schwartz Stokes-flow shortcuts at every slice; future nonzero canaries must close a genuinely non-rank-one pressure-slice equation." } :
         NavierRoadmapEntry) ∈ currentNavierRoadmap ∧
       ({ stage := NavierRoadmapStage.nonzeroEnergyKernel
          proofNodeId := "navier.energy.nonzero-schwartz-symmetric-shear-obstruction"
