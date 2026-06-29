@@ -779,6 +779,105 @@ theorem vorticityRawBalanceIntegralComponentsIntegrableAt_of_schwartzVelocitySli
         u t v ω hu hω x]
     rfl
 
+/-- Time derivative of a scalar-modulated Schwartz vorticity slice. -/
+theorem timeVorticityDerivative_scalar_smul_schwartzVorticitySlice
+    (u : NSVelocityField) (a a' : ℝ → ℝ) (f : 𝓢(NSSpace, NSSpace))
+    (ha : ∀ t, HasDerivAt a (a' t) t)
+    (hω : ∀ t x, spatialVorticity u t x = a t • f x) :
+    ∀ t x, timeVorticityDerivative u t x = a' t • f x := by
+  intro t x
+  unfold timeVorticityDerivative
+  have hDeriv :
+      HasDerivAt (fun s : NSTime => spatialVorticity u s x)
+        (a' t • f x) t := by
+    have hscalar : HasDerivAt (fun s : NSTime => a s • f x)
+        (a' t • f x) t := by
+      exact (ha t).smul_const (f x)
+    convert hscalar using 1
+    ext s
+    rw [hω s x]
+  rw [hDeriv.hasFDerivAt.fderiv]
+  simp
+
+/-- Vorticity enstrophy of a scalar-modulated Schwartz vorticity slice. -/
+theorem vorticityEnstrophyAt_scalar_smul_schwartzVorticitySlice
+    (u : NSVelocityField) (a : ℝ → ℝ) (f : 𝓢(NSSpace, NSSpace))
+    (hω : ∀ t x, spatialVorticity u t x = a t • f x) :
+    vorticityEnstrophyAt u =
+      fun t => (a t) ^ (2 : ℕ) * ∫ x, ‖f x‖ ^ (2 : ℕ) ∂volume := by
+  funext t
+  rw [vorticityEnstrophyAt]
+  have hDensity :
+      vorticityEnstrophyDensity u t =
+        fun x : NSSpace => (a t) ^ (2 : ℕ) * ‖f x‖ ^ (2 : ℕ) := by
+    funext x
+    rw [vorticityEnstrophyDensity, hω t x]
+    simp [norm_smul, mul_pow, sq_abs]
+  rw [hDensity]
+  simpa [mul_comm, mul_left_comm, mul_assoc] using
+    integral_const_mul ((a t) ^ (2 : ℕ))
+      (fun x : NSSpace => ‖f x‖ ^ (2 : ℕ))
+
+/-- Time-pairing integral of a scalar-modulated Schwartz vorticity slice. -/
+theorem vorticityTimePowerIntegral_scalar_smul_schwartzVorticitySlice
+    (u : NSVelocityField) (a a' : ℝ → ℝ) (f : 𝓢(NSSpace, NSSpace))
+    (ha : ∀ t, HasDerivAt a (a' t) t)
+    (hω : ∀ t x, spatialVorticity u t x = a t • f x) :
+    ∀ t,
+      vorticityTimePowerIntegral u t =
+        (a t * a' t) * ∫ x, ‖f x‖ ^ (2 : ℕ) ∂volume := by
+  intro t
+  have hPair :
+      (fun x : NSSpace =>
+        ⟪spatialVorticity u t x, timeVorticityDerivative u t x⟫) =
+        fun x : NSSpace => (a t * a' t) * ‖f x‖ ^ (2 : ℕ) := by
+    funext x
+    rw [hω t x,
+      timeVorticityDerivative_scalar_smul_schwartzVorticitySlice
+        u a a' f ha hω t x]
+    simp [real_inner_smul_left, real_inner_smul_right, mul_assoc,
+      mul_left_comm]
+  rw [vorticityTimePowerIntegral, hPair]
+  simpa [mul_comm, mul_left_comm, mul_assoc] using
+    integral_const_mul (a t * a' t)
+      (fun x : NSSpace => ‖f x‖ ^ (2 : ℕ))
+
+/-- For scalar-modulated Schwartz vorticity slices, the time-pairing integral
+is the derivative of the normalized vorticity enstrophy. -/
+theorem vorticityEnstrophyTimePairingDerivativeAt_of_scalar_smul_schwartzVorticitySlice
+    (u : NSVelocityField) (a a' : ℝ → ℝ) (f : 𝓢(NSSpace, NSSpace))
+    (ha : ∀ t, HasDerivAt a (a' t) t)
+    (hω : ∀ t x, spatialVorticity u t x = a t • f x) :
+    ∀ t, vorticityEnstrophyTimePairingDerivativeAt u t := by
+  intro t
+  let E : ℝ := ∫ x, ‖f x‖ ^ (2 : ℕ) ∂volume
+  have hEnergy :
+      normalizedVorticityEnstrophyAt u =
+        fun s => ((1 / 2 : ℝ) * E) * (a s) ^ (2 : ℕ) := by
+    funext s
+    rw [normalizedVorticityEnstrophyAt,
+      vorticityEnstrophyAt_scalar_smul_schwartzVorticitySlice u a f hω]
+    simp [E]
+    ring
+  have hPair :
+      vorticityTimePowerIntegral u t = (a t * a' t) * E := by
+    simpa [E] using
+      vorticityTimePowerIntegral_scalar_smul_schwartzVorticitySlice
+        u a a' f ha hω t
+  unfold vorticityEnstrophyTimePairingDerivativeAt
+  rw [hEnergy, hPair]
+  have hPow :
+      HasDerivAt (fun s : ℝ => (a s) ^ (2 : ℕ)) (2 * a t * a' t) t := by
+    change HasDerivAt (a ^ (2 : ℕ)) (2 * a t * a' t) t
+    simpa [pow_one, mul_assoc, mul_left_comm, mul_comm] using (ha t).pow 2
+  have hDeriv :
+      HasDerivAt
+        (fun s : ℝ => ((1 / 2 : ℝ) * E) * (a s) ^ (2 : ℕ))
+        (((1 / 2 : ℝ) * E) * (2 * a t * a' t)) t := by
+    exact hPow.const_mul (((1 / 2 : ℝ) * E))
+  convert hDeriv using 1
+  ring
+
 /-- Witness-level hypothesis that every certified vorticity slice has a
 Schwartz representative.  This is the exact decay/regularity input needed to
 instantiate the checked vorticity diffusion integration-by-parts theorem on a
@@ -1460,6 +1559,24 @@ theorem BKMVorticityRawBalanceIntegrabilitySchwartzClosed_proved :
   exact
     vorticityRawBalanceIntegralComponentsIntegrableAt_of_schwartzVelocitySlice_schwartzVorticitySlice
       u t v ω hu hω
+
+/-- Checked scalar-Schwartz vorticity time-pairing package: for
+scalar-modulated Schwartz vorticity slices, the time-pairing integral is the
+derivative of the normalized vorticity enstrophy. -/
+def BKMVorticityScalarSchwartzTimePairingDerivativeClosed : Prop :=
+  ∀ (u : NSVelocityField) (a a' : ℝ → ℝ)
+      (f : 𝓢(NSSpace, NSSpace)),
+    (∀ t, HasDerivAt a (a' t) t) →
+      (∀ t x, spatialVorticity u t x = a t • f x) →
+        ∀ t, vorticityEnstrophyTimePairingDerivativeAt u t
+
+/-- Checked proof of the scalar-Schwartz vorticity time-pairing package. -/
+theorem BKMVorticityScalarSchwartzTimePairingDerivativeClosed_proved :
+    BKMVorticityScalarSchwartzTimePairingDerivativeClosed := by
+  intro u a a' f ha hω t
+  exact
+    vorticityEnstrophyTimePairingDerivativeAt_of_scalar_smul_schwartzVorticitySlice
+      u a a' f ha hω t
 
 /-- Checked finite-time witness package: Schwartz velocity slices make the
 vorticity enstrophy density integrable on every certified time slice. -/
