@@ -58,6 +58,20 @@ def vorticityStretchingPowerIntegral
     (u : NSVelocityField) (t : NSTime) : ℝ :=
   ∫ x, vorticityStretchingPower u t x ∂volume
 
+/-- Spatial integral of the vorticity transport pairing
+`omega · ((u · grad) omega)`.  This is the term that vanishes by
+incompressibility and spatial integration by parts in the enstrophy balance. -/
+def vorticityTransportPowerIntegral
+    (u : NSVelocityField) (t : NSTime) : ℝ :=
+  ∫ x, ⟪spatialVorticity u t x, vorticityTransportTerm u t x⟫ ∂volume
+
+/-- Spatial integral of the vorticity diffusion pairing
+`omega · Delta omega`.  This becomes `- int |grad omega|^2` after the viscous
+integration-by-parts step. -/
+def vorticityDiffusionPowerIntegral
+    (u : NSVelocityField) (t : NSTime) : ℝ :=
+  ∫ x, ⟪spatialVorticity u t x, vorticityDiffusionTerm u t x⟫ ∂volume
+
 /-- Density of the viscous vorticity dissipation term `|grad omega|^2`. -/
 def vorticityDiffusionDissipationDensity
     (u : NSVelocityField) (t : NSTime) (x : NSSpace) : ℝ :=
@@ -75,6 +89,15 @@ def vorticityEnstrophyBalanceDerivative
   vorticityStretchingPowerIntegral u t -
     ν * vorticityDiffusionDissipationAt u t
 
+/-- The derivative obtained directly from pairing the standard vorticity
+equation with `omega`, before applying transport cancellation and diffusion
+integration by parts. -/
+def vorticityEnstrophyRawBalanceDerivative
+    (ν : ℝ) (u : NSVelocityField) (t : NSTime) : ℝ :=
+  -vorticityTransportPowerIntegral u t +
+    ν * vorticityDiffusionPowerIntegral u t +
+      vorticityStretchingPowerIntegral u t
+
 /-- Local-in-time vorticity enstrophy balance at one time.  Proving this from
 the pointwise vorticity equation requires the transport cancellation and
 viscous integration-by-parts step; once supplied, the a-priori inequality below
@@ -83,6 +106,26 @@ def vorticityEnstrophyBalanceAt
     (ν : ℝ) (u : NSVelocityField) (t : NSTime) : Prop :=
   HasDerivAt (fun s => normalizedVorticityEnstrophyAt u s)
     (vorticityEnstrophyBalanceDerivative ν u t) t
+
+/-- Raw local-in-time vorticity enstrophy derivative before the transport and
+diffusion integral identities are applied. -/
+def vorticityEnstrophyRawBalanceAt
+    (ν : ℝ) (u : NSVelocityField) (t : NSTime) : Prop :=
+  HasDerivAt (fun s => normalizedVorticityEnstrophyAt u s)
+    (vorticityEnstrophyRawBalanceDerivative ν u t) t
+
+/-- The incompressible transport cancellation needed by the vorticity
+enstrophy balance. -/
+def vorticityTransportCancellationAt
+    (u : NSVelocityField) (t : NSTime) : Prop :=
+  vorticityTransportPowerIntegral u t = 0
+
+/-- The viscous integration-by-parts identity needed by the vorticity enstrophy
+balance. -/
+def vorticityDiffusionIntegrationByPartsAt
+    (u : NSVelocityField) (t : NSTime) : Prop :=
+  vorticityDiffusionPowerIntegral u t =
+    -vorticityDiffusionDissipationAt u t
 
 /-- The a-priori control shape for vorticity enstrophy: the derivative of
 `1 / 2 * int |omega|^2` exists and is bounded above by the stretching-power
@@ -142,6 +185,36 @@ theorem vorticityEnstrophyStretchingControlledAt_of_balance
     vorticityEnstrophyStretchingControlledAt ν u t := by
   refine ⟨vorticityEnstrophyBalanceDerivative ν u t, hBal, ?_⟩
   exact vorticityEnstrophyBalanceDerivative_le_stretchingPowerIntegral hν u t
+
+/-- The raw paired vorticity equation becomes the standard enstrophy balance
+once transport cancellation and viscous integration by parts are supplied. -/
+theorem vorticityEnstrophyBalanceAt_of_rawBalance_transportCancellation_diffusionIBP
+    {ν : ℝ} {u : NSVelocityField} {t : NSTime}
+    (hRaw : vorticityEnstrophyRawBalanceAt ν u t)
+    (hTransport : vorticityTransportCancellationAt u t)
+    (hDiffusion : vorticityDiffusionIntegrationByPartsAt u t) :
+    vorticityEnstrophyBalanceAt ν u t := by
+  unfold vorticityEnstrophyBalanceAt vorticityEnstrophyRawBalanceAt at *
+  convert hRaw using 1
+  unfold vorticityEnstrophyRawBalanceDerivative
+    vorticityEnstrophyBalanceDerivative
+    vorticityTransportCancellationAt
+    vorticityDiffusionIntegrationByPartsAt at *
+  rw [hTransport, hDiffusion]
+  ring
+
+/-- Combining the raw balance, transport cancellation, and diffusion
+integration by parts gives the stretching-controlled enstrophy estimate. -/
+theorem vorticityEnstrophyStretchingControlledAt_of_rawBalance_transportCancellation_diffusionIBP
+    {ν : ℝ} (hν : 0 ≤ ν) {u : NSVelocityField} {t : NSTime}
+    (hRaw : vorticityEnstrophyRawBalanceAt ν u t)
+    (hTransport : vorticityTransportCancellationAt u t)
+    (hDiffusion : vorticityDiffusionIntegrationByPartsAt u t) :
+    vorticityEnstrophyStretchingControlledAt ν u t := by
+  exact
+    vorticityEnstrophyStretchingControlledAt_of_balance hν u
+      (vorticityEnstrophyBalanceAt_of_rawBalance_transportCancellation_diffusionIBP
+        hRaw hTransport hDiffusion)
 
 /-- The standard vorticity equation identifies the material-minus-diffusion
 remainder with the stretching term. -/
@@ -278,6 +351,23 @@ theorem BKMVorticityEnstrophyAprioriEstimateClosed_proved :
     BKMVorticityEnstrophyAprioriEstimateClosed := by
   intro ν u t hν hBal
   exact vorticityEnstrophyStretchingControlledAt_of_balance hν u hBal
+
+/-- Checked assembly of the vorticity enstrophy balance from the raw paired
+equation plus the two integral identities. -/
+def BKMVorticityEnstrophyBalanceAssemblyClosed : Prop :=
+  ∀ (ν : ℝ) (u : NSVelocityField) (t : NSTime),
+    vorticityEnstrophyRawBalanceAt ν u t →
+      vorticityTransportCancellationAt u t →
+        vorticityDiffusionIntegrationByPartsAt u t →
+          vorticityEnstrophyBalanceAt ν u t
+
+/-- Checked proof of the vorticity enstrophy balance assembly. -/
+theorem BKMVorticityEnstrophyBalanceAssemblyClosed_proved :
+    BKMVorticityEnstrophyBalanceAssemblyClosed := by
+  intro ν u t hRaw hTransport hDiffusion
+  exact
+    vorticityEnstrophyBalanceAt_of_rawBalance_transportCancellation_diffusionIBP
+      hRaw hTransport hDiffusion
 
 end BKMContinuation
 

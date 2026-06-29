@@ -48,6 +48,29 @@ theorem bkm_vorticity_enstrophy_controlled_from_balance_regression
     vorticityEnstrophyStretchingControlledAt ν u t :=
   vorticityEnstrophyStretchingControlledAt_of_balance hν u hBal
 
+theorem bkm_vorticity_enstrophy_balance_assembly_closed_regression :
+    BKMVorticityEnstrophyBalanceAssemblyClosed :=
+  BKMVorticityEnstrophyBalanceAssemblyClosed_proved
+
+theorem bkm_vorticity_enstrophy_balance_from_raw_regression
+    {ν : ℝ} {u : NSVelocityField} {t : NSTime}
+    (hRaw : vorticityEnstrophyRawBalanceAt ν u t)
+    (hTransport : vorticityTransportCancellationAt u t)
+    (hDiffusion : vorticityDiffusionIntegrationByPartsAt u t) :
+    vorticityEnstrophyBalanceAt ν u t :=
+  vorticityEnstrophyBalanceAt_of_rawBalance_transportCancellation_diffusionIBP
+    hRaw hTransport hDiffusion
+
+theorem bkm_vorticity_enstrophy_controlled_from_raw_regression
+    {ν : ℝ} {u : NSVelocityField} {t : NSTime}
+    (hν : 0 ≤ ν)
+    (hRaw : vorticityEnstrophyRawBalanceAt ν u t)
+    (hTransport : vorticityTransportCancellationAt u t)
+    (hDiffusion : vorticityDiffusionIntegrationByPartsAt u t) :
+    vorticityEnstrophyStretchingControlledAt ν u t :=
+  vorticityEnstrophyStretchingControlledAt_of_rawBalance_transportCancellation_diffusionIBP
+    hν hRaw hTransport hDiffusion
+
 end Regression
 
 end NavierStokes
