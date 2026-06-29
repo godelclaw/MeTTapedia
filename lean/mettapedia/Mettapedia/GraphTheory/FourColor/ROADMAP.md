@@ -569,15 +569,19 @@ longer acceptable progress.
    algebraic surface exact: canonical remaining-interior trace-control is
    equivalent to absence of a selected-boundary-zero evader, and failure of
    trace-control returns a genuine evader plus a concrete trace edge where it
-   is nonzero.  Under the forced-all report, trace-control closes theorem-4.9
-   synthesis plus full selected-boundary-zero classifier control; otherwise the
-   trace-local evader is the obstruction.  The
+   is nonzero.  The failure side now also carries the canonical red/blue
+   single-coordinate family obstruction: with the remaining-edge generator
+   certificates, the same trace-local evader has a nonzero canonical family
+   pairing on that edge.  Under the forced-all report, trace-control closes
+   theorem-4.9 synthesis plus full selected-boundary-zero classifier control;
+   otherwise the trace-local evader plus canonical pairing is the obstruction.
+   The
    pure no-target theorem underneath those refinements says failed synthesis
    already produces a genuine selected-boundary-zero evader for the enumerated
    forced edges.  The remaining crux is whether exact shell/CAP5 data reaches
    canonical remaining-interior trace-control uniformly, or whether this
-   genuine boundary-zero/vertex-Kirchhoff/path-xor trace-local evader is the
-   decided obstruction.
+   genuine boundary-zero/vertex-Kirchhoff/path-xor trace-local evader with
+   canonical red/blue pairing is the decided obstruction.
 
 The historical trichotomy below remains useful background:
 
