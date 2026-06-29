@@ -1079,6 +1079,102 @@ theorem not_exists_nonzeroSchwartzConcreteSolution_oneProfile_past_exact_coordin
         intro t ht
         simpa [hvelocity] using heq t ht⟩
 
+/-- Fundamental fixed-profile obstruction: no positive-viscosity nonzero
+slice-Schwartz concrete solution can be represented by a single scalar amplitude
+times one fixed Schwartz profile.  A nonzero endpoint makes the profile's
+spatial Rayleigh quotient a fixed positive constant on the whole past ray, which
+contradicts the bounded-eternal Rayleigh-collapse theorem. -/
+theorem not_exists_nonzeroSchwartzConcreteSolution_oneProfile_of_posViscosity
+    {ν : ℝ} (hν : 0 < ν) :
+    ¬ ∃ S : NonzeroSchwartzConcreteNavierStokesSolution ν,
+      ∃ (a : NSTime → ℝ) (f : NSSchwartzInitialVelocity),
+        S.velocity = fun r y => a r • f y := by
+  rintro ⟨S, a, f, hvelocity⟩
+  rcases S.nonzero_velocity with ⟨T, xT, hneT⟩
+  let u : NSVelocityField := fun r y => a r • f y
+  let M : ℝ := ∫ x, ‖f x‖ ^ (2 : ℕ) ∂volume
+  let G : ℝ := coordinateEnstrophyAt
+    (timeIndependentVelocity (f : NSInitialVelocity)) 0
+  have hfne : ∃ x : NSSpace, f x ≠ 0 := by
+    refine ⟨xT, ?_⟩
+    intro hfx
+    have hzero : S.velocity T xT = 0 := by
+      rw [hvelocity]
+      simp [hfx]
+    exact hneT hzero
+  have hMpos : 0 < M := by
+    dsimp [M]
+    exact integral_norm_sq_pos_of_schwartz_ne_zero f hfne
+  have hcoordFormula :
+      ∀ t : NSTime, coordinateEnstrophyAt u t = (a t) ^ (2 : ℕ) * G := by
+    intro t
+    dsimp [u, G]
+    exact congrFun (coordinateEnstrophyAt_scalar_smul_schwartz a f) t
+  have henergyFormula :
+      ∀ t : NSTime,
+        normalizedKineticEnergy u t =
+          (1 / 2 : ℝ) * ((a t) ^ (2 : ℕ) * M) := by
+    intro t
+    dsimp [u, M]
+    exact congrFun (normalizedKineticEnergy_scalar_smul_schwartz a f) t
+  have haT_ne : a T ≠ 0 := by
+    intro haT
+    have hzero : S.velocity T xT = 0 := by
+      rw [hvelocity]
+      simp [haT]
+    exact hneT hzero
+  have hcoordTpos : 0 < coordinateEnstrophyAt u T := by
+    have hpos :
+        0 < coordinateEnstrophyAt S.velocity T :=
+      S.toSchwartzConcreteNavierStokesSolution
+        |>.coordinateEnstrophyAt_pos_of_velocity_ne_zero hneT
+    simpa [u, hvelocity] using hpos
+  have hGpos : 0 < G := by
+    have hcoordT := hcoordFormula T
+    rw [hcoordT] at hcoordTpos
+    have haTpos : 0 < (a T) ^ (2 : ℕ) := sq_pos_of_ne_zero haT_ne
+    nlinarith
+  let lam : ℝ := (2 * G) / M
+  have hlam : 0 < lam := by
+    dsimp [lam]
+    exact div_pos (mul_pos (by norm_num) hGpos) hMpos
+  have heq : ∀ t : NSTime, t ≤ T →
+      coordinateEnstrophyAt S.velocity t =
+        lam * normalizedKineticEnergy S.velocity t := by
+    intro t _ht
+    have hcoord := hcoordFormula t
+    have henergy := henergyFormula t
+    calc
+      coordinateEnstrophyAt S.velocity t = coordinateEnstrophyAt u t := by
+        rw [hvelocity]
+      _ = (a t) ^ (2 : ℕ) * G := hcoord
+      _ = lam * ((1 / 2 : ℝ) * ((a t) ^ (2 : ℕ) * M)) := by
+        dsimp [lam]
+        field_simp [ne_of_gt hMpos]
+      _ = lam * normalizedKineticEnergy u t := by
+        rw [henergy]
+      _ = lam * normalizedKineticEnergy S.velocity t := by
+        rw [hvelocity]
+  exact
+    (not_exists_nonzeroSchwartzConcreteSolution_past_exact_coordinateEnstrophyRayleigh_of_posViscosity
+      hν hlam)
+      ⟨S, T, ⟨xT, hneT⟩, heq⟩
+
+/-- Exact Stokes-flow specialization of the fixed-profile obstruction: a
+positive-viscosity nonzero zero-convection, zero-pressure-gradient candidate
+cannot stay in a single scalar-modulated Schwartz profile. -/
+theorem not_exists_nonzeroSchwartzStokesFlow_oneProfile_of_posViscosity
+    {ν : ℝ} (hν : 0 < ν) :
+    ¬ ∃ S : NonzeroSchwartzConcreteNavierStokesSolution ν,
+      (∀ t x, spatialConvection S.velocity t x = 0) ∧
+        (∀ t x, spatialPressureGradient S.pressure t x = 0) ∧
+          ∃ (a : NSTime → ℝ) (f : NSSchwartzInitialVelocity),
+            S.velocity = fun r y => a r • f y := by
+  rintro ⟨S, _hconv, _hpressure, a, f, hvelocity⟩
+  exact
+    not_exists_nonzeroSchwartzConcreteSolution_oneProfile_of_posViscosity hν
+      ⟨S, a, f, hvelocity⟩
+
 end NavierStokes
 end FluidDynamics
 end Mettapedia

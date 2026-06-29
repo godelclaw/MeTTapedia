@@ -299,6 +299,30 @@ theorem not_exists_one_profile_exact_coordinate_enstrophy_ratio_rayleigh_regress
     not_exists_nonzeroSchwartzConcreteSolution_oneProfile_past_exact_coordinateEnstrophyRatioRayleigh_of_posViscosity
       hν hlam
 
+theorem coordinate_enstrophy_scalar_smul_schwartz_regression
+    (a : NSTime → ℝ) (f : NSSchwartzInitialVelocity) :
+    coordinateEnstrophyAt (fun t x => a t • f x) =
+      fun t =>
+        (a t) ^ (2 : ℕ) *
+          coordinateEnstrophyAt (timeIndependentVelocity (f : NSInitialVelocity)) 0 := by
+  exact coordinateEnstrophyAt_scalar_smul_schwartz a f
+
+theorem not_exists_one_profile_positive_viscosity_regression
+    {ν : ℝ} (hν : 0 < ν) :
+    ¬ ∃ S : NonzeroSchwartzConcreteNavierStokesSolution ν,
+      ∃ (a : NSTime → ℝ) (f : NSSchwartzInitialVelocity),
+        S.velocity = fun r y => a r • f y := by
+  exact not_exists_nonzeroSchwartzConcreteSolution_oneProfile_of_posViscosity hν
+
+theorem not_exists_stokes_one_profile_positive_viscosity_regression
+    {ν : ℝ} (hν : 0 < ν) :
+    ¬ ∃ S : NonzeroSchwartzConcreteNavierStokesSolution ν,
+      (∀ t x, spatialConvection S.velocity t x = 0) ∧
+        (∀ t x, spatialPressureGradient S.pressure t x = 0) ∧
+          ∃ (a : NSTime → ℝ) (f : NSSchwartzInitialVelocity),
+            S.velocity = fun r y => a r • f y := by
+  exact not_exists_nonzeroSchwartzStokesFlow_oneProfile_of_posViscosity hν
+
 end Regression
 
 end NavierStokes
