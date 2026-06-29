@@ -712,6 +712,12 @@ longer acceptable progress.
    `theorem49Synthesis_and_boundaryZeroControl_of_no_missingCheckerEvidence_and_remainingInteriorSupportEmpty`
    now proves the same emitted-rank certificate directly from the concrete
    CAP5 condition that the canonical interior-support worklist is empty.
+   The report-level exact-worklist fork
+   `remainingInteriorSupportEmpty_closes_or_notSynthesis_boundaryZeroEvader_and_nonempty_worklist_of_no_missingCheckerEvidence`
+   makes the remaining Move-2 decision boundary explicit: with the primitive
+   checker frontier closed, empty worklist closes synthesis/control, while
+   failed synthesis forces a nonempty worklist and returns a genuine
+   selected-boundary-zero evader plus a decreasing remaining-worklist edge.
    The direct no-evader route corollaries
    `ofDecidableChecks_missingCheckerEvidence_or_theorem49Synthesis_and_boundaryZeroControl_of_no_theorem49BoundaryTargetEvader_and_no_emittedFinsetKernelMapEvader_with_theorem49BoundaryVertexKirchhoffFailure`
    and
