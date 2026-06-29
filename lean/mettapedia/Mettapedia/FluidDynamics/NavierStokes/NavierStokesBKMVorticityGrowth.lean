@@ -575,6 +575,15 @@ def finiteTimeWitnessVorticitySchwartzSlices
   ∀ t, 0 ≤ t → t ≤ T →
     ∃ ω : 𝓢(NSSpace, NSSpace), ∀ x, spatialVorticity W.velocity t x = ω x
 
+/-- Witness-level hypothesis that every certified velocity slice has a
+Schwartz representative.  Together with the vorticity-slice hypothesis, this
+instantiates the checked BKM transport cancellation theorem. -/
+def finiteTimeWitnessVelocitySchwartzSlices
+    {ν : ℝ} {u₀ : NSInitialVelocity} {T : ℝ}
+    (W : ExplicitFiniteTimeRegularityWitness ν u₀ T) : Prop :=
+  ∀ t, 0 ≤ t → t ≤ T →
+    ∃ v : 𝓢(NSSpace, NSSpace), ∀ x, W.velocity t x = v x
+
 /-- If a finite-time witness has Schwartz vorticity slices, the checked
 vorticity diffusion integration-by-parts identity applies on every certified
 time slice. -/
@@ -587,6 +596,23 @@ theorem vorticityDiffusionIntegrationByPartsAt_of_finiteTimeWitnessVorticitySchw
   rcases hSlices t ht0 htT with ⟨ω, hω⟩
   exact vorticityDiffusionIntegrationByPartsAt_of_schwartzVorticitySlice
     W.velocity t ω hω
+
+/-- If a finite-time witness has Schwartz velocity and vorticity slices, then
+incompressibility gives BKM vorticity transport cancellation on every certified
+time slice. -/
+theorem vorticityTransportCancellationAt_of_finiteTimeWitnessVelocityVorticitySchwartzSlices
+    {ν : ℝ} {u₀ : NSInitialVelocity} {T : ℝ}
+    (W : ExplicitFiniteTimeRegularityWitness ν u₀ T)
+    (hVelocitySlices : finiteTimeWitnessVelocitySchwartzSlices W)
+    (hVorticitySlices : finiteTimeWitnessVorticitySchwartzSlices W)
+    {t : NSTime} (ht0 : 0 ≤ t) (htT : t ≤ T) :
+    vorticityTransportCancellationAt W.velocity t := by
+  rcases hVelocitySlices t ht0 htT with ⟨v, hv⟩
+  rcases hVorticitySlices t ht0 htT with ⟨ω, hω⟩
+  exact
+    vorticityTransportCancellationAt_of_schwartzVelocitySlice_schwartzVorticitySlice_spatialDivergence_zero
+      W.velocity t v ω hv hω
+      (fun x => W.incompressible_on t x ht0 htT)
 
 /-- In the vorticity enstrophy balance, nonnegative viscosity can only decrease
 the derivative relative to the stretching-power integral. -/
@@ -702,6 +728,44 @@ theorem vorticityEnstrophyStretchingControlledAt_of_rawBalance_transportCancella
       hν hRaw hTransport
       (vorticityDiffusionIntegrationByPartsAt_of_finiteTimeWitnessVorticitySchwartzSlices
         W hSlices ht0 htT)
+
+/-- Witness-level enstrophy-balance assembly with the transport cancellation
+proved from Schwartz velocity/vorticity slices and incompressibility. -/
+theorem vorticityEnstrophyBalanceAt_of_rawBalance_finiteTimeWitnessVelocityVorticitySchwartzSlices
+    {ν : ℝ} {u₀ : NSInitialVelocity} {T : ℝ}
+    (W : ExplicitFiniteTimeRegularityWitness ν u₀ T)
+    (hVelocitySlices : finiteTimeWitnessVelocitySchwartzSlices W)
+    (hVorticitySlices : finiteTimeWitnessVorticitySchwartzSlices W)
+    {t : NSTime}
+    (hRaw : vorticityEnstrophyRawBalanceAt ν W.velocity t)
+    (ht0 : 0 ≤ t) (htT : t ≤ T) :
+    vorticityEnstrophyBalanceAt ν W.velocity t := by
+  exact
+    vorticityEnstrophyBalanceAt_of_rawBalance_transportCancellation_diffusionIBP
+      hRaw
+      (vorticityTransportCancellationAt_of_finiteTimeWitnessVelocityVorticitySchwartzSlices
+        W hVelocitySlices hVorticitySlices ht0 htT)
+      (vorticityDiffusionIntegrationByPartsAt_of_finiteTimeWitnessVorticitySchwartzSlices
+        W hVorticitySlices ht0 htT)
+
+/-- Witness-level a-priori enstrophy estimate with both integral identities
+instantiated from Schwartz velocity/vorticity slices. -/
+theorem vorticityEnstrophyStretchingControlledAt_of_rawBalance_finiteTimeWitnessVelocityVorticitySchwartzSlices
+    {ν : ℝ} (hν : 0 ≤ ν) {u₀ : NSInitialVelocity} {T : ℝ}
+    (W : ExplicitFiniteTimeRegularityWitness ν u₀ T)
+    (hVelocitySlices : finiteTimeWitnessVelocitySchwartzSlices W)
+    (hVorticitySlices : finiteTimeWitnessVorticitySchwartzSlices W)
+    {t : NSTime}
+    (hRaw : vorticityEnstrophyRawBalanceAt ν W.velocity t)
+    (ht0 : 0 ≤ t) (htT : t ≤ T) :
+    vorticityEnstrophyStretchingControlledAt ν W.velocity t := by
+  exact
+    vorticityEnstrophyStretchingControlledAt_of_rawBalance_transportCancellation_diffusionIBP
+      hν hRaw
+      (vorticityTransportCancellationAt_of_finiteTimeWitnessVelocityVorticitySchwartzSlices
+        W hVelocitySlices hVorticitySlices ht0 htT)
+      (vorticityDiffusionIntegrationByPartsAt_of_finiteTimeWitnessVorticitySchwartzSlices
+        W hVorticitySlices ht0 htT)
 
 /-- Pairing the standard vorticity equation with `omega` gives the scalar
 time/transport/diffusion/stretching balance at each point. -/
@@ -1039,6 +1103,29 @@ theorem BKMVorticityFiniteTimeWitnessSchwartzSliceAprioriClosed_proved :
   exact
     vorticityEnstrophyStretchingControlledAt_of_rawBalance_transportCancellation_finiteTimeWitnessVorticitySchwartzSlices
       hν W hSlices hRaw hTransport ht0 htT
+
+/-- Checked witness-level a-priori enstrophy package with both transport
+cancellation and diffusion integration by parts instantiated from Schwartz
+velocity/vorticity slices. -/
+def BKMVorticityFiniteTimeWitnessVelocityVorticitySchwartzAprioriClosed : Prop :=
+  ∀ (ν : ℝ) (u₀ : NSInitialVelocity) (T : ℝ)
+      (W : ExplicitFiniteTimeRegularityWitness ν u₀ T) (t : NSTime),
+    0 ≤ ν →
+      finiteTimeWitnessVelocitySchwartzSlices W →
+        finiteTimeWitnessVorticitySchwartzSlices W →
+          vorticityEnstrophyRawBalanceAt ν W.velocity t →
+            0 ≤ t →
+              t ≤ T →
+                vorticityEnstrophyStretchingControlledAt ν W.velocity t
+
+/-- Checked proof of the witness-level velocity/vorticity Schwartz-slice
+a-priori package. -/
+theorem BKMVorticityFiniteTimeWitnessVelocityVorticitySchwartzAprioriClosed_proved :
+    BKMVorticityFiniteTimeWitnessVelocityVorticitySchwartzAprioriClosed := by
+  intro ν u₀ T W t hν hVelocitySlices hVorticitySlices hRaw ht0 htT
+  exact
+    vorticityEnstrophyStretchingControlledAt_of_rawBalance_finiteTimeWitnessVelocityVorticitySchwartzSlices
+      hν W hVelocitySlices hVorticitySlices hRaw ht0 htT
 
 /-- Checked assembly of the vorticity enstrophy balance from the raw paired
 equation plus the two integral identities. -/
