@@ -28,6 +28,13 @@ classifier control holds.  The remaining shell obligation is exactly to prove
 that kernel certificate from uniform exact CAP5 data, or keep the unified
 evader as the obstruction.
 
+Target/rank decomposition delta: the emitted-rank certificate is now connected
+to the theorem-4.9 target fork without going through prose.  Lean proves that
+absence of a full selected-boundary-zero evader is equivalent to target
+classifier control plus absence of the concrete off-target boundary-vertex
+Kirchhoff evader, and therefore that the emitted-edge pairing kernel is trivial
+exactly when that target/off-target oracle is closed.
+
 Trace-F2 delta: the same report-closed handoff now reaches the stronger
 trace-control split.  The executable report returns a primitive checker gap,
 or else the closed frontier yields either theorem-4.9 synthesis with full
@@ -1011,6 +1018,29 @@ nonzero canonical remaining-map image.
   follows, or rank failure returns the unified emitted-kernel/remaining-map
   evader as the obstruction.  Current Algebraic-F2 estimate remains PLN STV
   `<0.79,0.92>`, ITV `[0.73,0.81]`, progress `99%`.
+- Target/rank decomposition focused detector build archived locally as
+  `fourcolor-move2-target-rank-decomposition-focused-build-20260629.log`.
+- Target/rank decomposition validation lab rerun archived locally as
+  `fourcolor-move2-target-rank-decomposition-lab-20260629.json`; stderr is
+  empty.  It preserves the edge-40/color-1M projected-generator counts: 65
+  reports split as 53 found, 12 no-Tait-coloring, and 0 missing; 740 color
+  probes split as 454 found, 286 no-Tait-coloring, and 0 missing.
+- Target/rank decomposition trusted-constant audit archived locally as
+  `fourcolor-move2-target-rank-decomposition-axiom-audit-20260629.log`; the
+  two new theorem constants depend only on
+  `[propext, Classical.choice, Quot.sound]`.
+- Full `lake -f lakefile.lean build Mettapedia` archived locally as
+  `fourcolor-move2-target-rank-decomposition-full-build-20260629.log`; it
+  completed with 5900 jobs.
+- New target/rank decomposition theorem surface:
+  `CAP5TransportedEdgeComponentCoverCore.no_boundaryZeroEvader_iff_theorem49BoundaryTargetClassifierControl_and_no_boundaryZeroEvader_with_theorem49BoundaryVertexKirchhoffFailure`
+  and
+  `CAP5TransportedEdgeComponentCoverCore.emittedFinsetPairingKernel_eq_bot_iff_theorem49BoundaryTargetClassifierControl_and_no_boundaryZeroEvader_with_theorem49BoundaryVertexKirchhoffFailure`.
+  These make the surviving algebraic fork more exact: the finite emitted-edge
+  rank certificate is equivalent not only to the full no-evader oracle, but to
+  theorem-4.9 target classifier control plus exclusion of the concrete
+  off-target boundary-vertex Kirchhoff evader.  Current Algebraic-F2 estimate
+  remains PLN STV `<0.79,0.92>`, ITV `[0.73,0.81]`, progress `99%`.
 - Projected-generator edge-40/color-1M lab rerun archived locally as
   `fourcolor-move2-projected-generator-edge40-color1m-lab-20260629.json`;
   stderr is empty.  With the edge cap raised to 40 and the coloring cap raised
