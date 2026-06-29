@@ -58,6 +58,13 @@ def vorticityStretchingPowerIntegral
     (u : NSVelocityField) (t : NSTime) : ℝ :=
   ∫ x, vorticityStretchingPower u t x ∂volume
 
+/-- Spatial integral of the vorticity time-pairing `omega · partial_t omega`.
+This is the derivative of `1 / 2 * int |omega|^2` once differentiation under
+the spatial integral has been justified. -/
+def vorticityTimePowerIntegral
+    (u : NSVelocityField) (t : NSTime) : ℝ :=
+  ∫ x, ⟪spatialVorticity u t x, timeVorticityDerivative u t x⟫ ∂volume
+
 /-- Spatial integral of the vorticity transport pairing
 `omega · ((u · grad) omega)`.  This is the term that vanishes by
 incompressibility and spatial integration by parts in the enstrophy balance. -/
@@ -113,6 +120,22 @@ def vorticityEnstrophyRawBalanceAt
     (ν : ℝ) (u : NSVelocityField) (t : NSTime) : Prop :=
   HasDerivAt (fun s => normalizedVorticityEnstrophyAt u s)
     (vorticityEnstrophyRawBalanceDerivative ν u t) t
+
+/-- The time-pairing form of the vorticity enstrophy derivative.  The remaining
+step from here to the raw BKM balance is pairing the standard vorticity
+equation with `omega`. -/
+def vorticityEnstrophyTimePairingDerivativeAt
+    (u : NSVelocityField) (t : NSTime) : Prop :=
+  HasDerivAt (fun s => normalizedVorticityEnstrophyAt u s)
+    (vorticityTimePowerIntegral u t) t
+
+/-- Integrability hypotheses needed to distribute the raw paired vorticity
+equation over the spatial integral. -/
+def vorticityRawBalanceIntegralComponentsIntegrableAt
+    (u : NSVelocityField) (t : NSTime) : Prop :=
+  Integrable (fun x => ⟪spatialVorticity u t x, vorticityTransportTerm u t x⟫) ∧
+    Integrable (fun x => ⟪spatialVorticity u t x, vorticityDiffusionTerm u t x⟫) ∧
+      Integrable (fun x => vorticityStretchingPower u t x)
 
 /-- The incompressible transport cancellation needed by the vorticity
 enstrophy balance. -/
@@ -215,6 +238,99 @@ theorem vorticityEnstrophyStretchingControlledAt_of_rawBalance_transportCancella
     vorticityEnstrophyStretchingControlledAt_of_balance hν u
       (vorticityEnstrophyBalanceAt_of_rawBalance_transportCancellation_diffusionIBP
         hRaw hTransport hDiffusion)
+
+/-- Pairing the standard vorticity equation with `omega` gives the scalar
+time/transport/diffusion/stretching balance at each point. -/
+theorem vorticityTimePairing_eq_rawBalanceIntegrand_of_concreteVorticityEquationOn
+    {ν T : ℝ} {u : NSVelocityField}
+    (hEq : concreteVorticityEquationOn ν u T)
+    {t : NSTime} {x : NSSpace} (ht0 : 0 ≤ t) (htT : t ≤ T) :
+    ⟪spatialVorticity u t x, timeVorticityDerivative u t x⟫ =
+      -⟪spatialVorticity u t x, vorticityTransportTerm u t x⟫ +
+        ν * ⟪spatialVorticity u t x, vorticityDiffusionTerm u t x⟫ +
+          vorticityStretchingPower u t x := by
+  let ω : NSSpace := spatialVorticity u t x
+  have heq := hEq t x ht0 htT
+  have htime :
+      timeVorticityDerivative u t x =
+        ν • vorticityDiffusionTerm u t x +
+          vorticityStretchingTerm u t x -
+            vorticityTransportTerm u t x := by
+    calc
+      timeVorticityDerivative u t x =
+          timeVorticityDerivative u t x + vorticityTransportTerm u t x -
+            vorticityTransportTerm u t x := by
+              abel
+      _ = ν • vorticityDiffusionTerm u t x +
+          vorticityStretchingTerm u t x -
+            vorticityTransportTerm u t x := by
+              rw [heq]
+  rw [htime]
+  simp [vorticityStretchingPower, inner_add_right, inner_sub_right,
+    real_inner_smul_right]
+  ring_nf
+
+/-- The pointwise paired standard vorticity equation integrates to the raw
+enstrophy-balance derivative once the transport, diffusion, and stretching
+pairings are integrable. -/
+theorem vorticityTimePowerIntegral_eq_rawBalanceDerivative_of_concreteVorticityEquationOn
+    {ν T : ℝ} {u : NSVelocityField} {t : NSTime}
+    (hEq : concreteVorticityEquationOn ν u T)
+    (hInt : vorticityRawBalanceIntegralComponentsIntegrableAt u t)
+    (ht0 : 0 ≤ t) (htT : t ≤ T) :
+    vorticityTimePowerIntegral u t =
+      vorticityEnstrophyRawBalanceDerivative ν u t := by
+  let transportPower : NSSpace → ℝ :=
+    fun x => ⟪spatialVorticity u t x, vorticityTransportTerm u t x⟫
+  let diffusionPower : NSSpace → ℝ :=
+    fun x => ⟪spatialVorticity u t x, vorticityDiffusionTerm u t x⟫
+  let stretchingPower : NSSpace → ℝ := fun x => vorticityStretchingPower u t x
+  have hTransportInt : Integrable transportPower := hInt.1
+  have hDiffusionInt : Integrable diffusionPower := hInt.2.1
+  have hStretchingInt : Integrable stretchingPower := hInt.2.2
+  have hNegTransportInt : Integrable (fun x => -transportPower x) :=
+    hTransportInt.neg
+  have hViscousDiffusionInt : Integrable (fun x => ν * diffusionPower x) :=
+    hDiffusionInt.const_mul ν
+  have hSumInt :
+      Integrable (fun x => -transportPower x + ν * diffusionPower x) :=
+    hNegTransportInt.add hViscousDiffusionInt
+  calc
+    vorticityTimePowerIntegral u t
+        = ∫ x, (-transportPower x + ν * diffusionPower x + stretchingPower x) ∂volume := by
+          unfold vorticityTimePowerIntegral
+          apply integral_congr_ae
+          exact Filter.Eventually.of_forall fun x =>
+            vorticityTimePairing_eq_rawBalanceIntegrand_of_concreteVorticityEquationOn
+              hEq ht0 htT
+    _ = (∫ x, (-transportPower x + ν * diffusionPower x) ∂volume) +
+          ∫ x, stretchingPower x ∂volume := by
+          rw [integral_add hSumInt hStretchingInt]
+    _ = ((∫ x, -transportPower x ∂volume) +
+          ∫ x, ν * diffusionPower x ∂volume) +
+            ∫ x, stretchingPower x ∂volume := by
+          rw [integral_add hNegTransportInt hViscousDiffusionInt]
+    _ = -vorticityTransportPowerIntegral u t +
+          ν * vorticityDiffusionPowerIntegral u t +
+            vorticityStretchingPowerIntegral u t := by
+          rw [integral_neg, integral_const_mul]
+          rfl
+    _ = vorticityEnstrophyRawBalanceDerivative ν u t := by
+          rfl
+
+/-- If the derivative of vorticity enstrophy is represented by the time
+pairing, then the standard vorticity equation gives the raw BKM balance. -/
+theorem vorticityEnstrophyRawBalanceAt_of_timePairingDerivative_concreteVorticityEquationOn
+    {ν T : ℝ} {u : NSVelocityField} {t : NSTime}
+    (hEq : concreteVorticityEquationOn ν u T)
+    (hInt : vorticityRawBalanceIntegralComponentsIntegrableAt u t)
+    (hTime : vorticityEnstrophyTimePairingDerivativeAt u t)
+    (ht0 : 0 ≤ t) (htT : t ≤ T) :
+    vorticityEnstrophyRawBalanceAt ν u t := by
+  unfold vorticityEnstrophyRawBalanceAt vorticityEnstrophyTimePairingDerivativeAt at *
+  rw [← vorticityTimePowerIntegral_eq_rawBalanceDerivative_of_concreteVorticityEquationOn
+    hEq hInt ht0 htT]
+  exact hTime
 
 /-- The standard vorticity equation identifies the material-minus-diffusion
 remainder with the stretching term. -/
@@ -368,6 +484,27 @@ theorem BKMVorticityEnstrophyBalanceAssemblyClosed_proved :
   exact
     vorticityEnstrophyBalanceAt_of_rawBalance_transportCancellation_diffusionIBP
       hRaw hTransport hDiffusion
+
+/-- Checked reduction of the raw enstrophy balance to the standard vorticity
+equation paired with `omega`, plus differentiation-under-the-integral and
+integrability hypotheses. -/
+def BKMVorticityRawBalanceFromStandardEquationClosed : Prop :=
+  ∀ (ν T : ℝ) (u : NSVelocityField) (t : NSTime),
+    concreteVorticityEquationOn ν u T →
+      vorticityRawBalanceIntegralComponentsIntegrableAt u t →
+        vorticityEnstrophyTimePairingDerivativeAt u t →
+          0 ≤ t →
+            t ≤ T →
+              vorticityEnstrophyRawBalanceAt ν u t
+
+/-- Checked proof that the standard vorticity equation implies the raw
+enstrophy balance under the explicit integral derivative hypotheses. -/
+theorem BKMVorticityRawBalanceFromStandardEquationClosed_proved :
+    BKMVorticityRawBalanceFromStandardEquationClosed := by
+  intro ν T u t hEq hInt hTime ht0 htT
+  exact
+    vorticityEnstrophyRawBalanceAt_of_timePairingDerivative_concreteVorticityEquationOn
+      hEq hInt hTime ht0 htT
 
 end BKMContinuation
 

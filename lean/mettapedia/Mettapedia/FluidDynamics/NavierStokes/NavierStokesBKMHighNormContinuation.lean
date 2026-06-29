@@ -104,15 +104,17 @@ theorem BKMContinuation_reduced_to_analytic_components :
     BKMVorticityStretchingEstimateClosed ∧
       BKMResidualCurlExpansionAlgebraClosed ∧
         BKMStandardVorticityGrowthEstimateClosed ∧
-          BKMVorticityEnstrophyBalanceAssemblyClosed ∧
-            BKMVorticityEnstrophyAprioriEstimateClosed ∧
-              BKMLogSobolevGrowthEstimateClosed ∧
-                (BKMAnalyticComponentsClosed →
-                  ExplicitFiniteEnergyBKMContinuationTargetOnNonnegHorizons) := by
+          BKMVorticityRawBalanceFromStandardEquationClosed ∧
+            BKMVorticityEnstrophyBalanceAssemblyClosed ∧
+              BKMVorticityEnstrophyAprioriEstimateClosed ∧
+                BKMLogSobolevGrowthEstimateClosed ∧
+                  (BKMAnalyticComponentsClosed →
+                    ExplicitFiniteEnergyBKMContinuationTargetOnNonnegHorizons) := by
   exact
     ⟨BKMVorticityStretchingEstimateClosed_proved,
       BKMResidualCurlExpansionAlgebraClosed_proved,
       BKMStandardVorticityGrowthEstimateClosed_proved,
+      BKMVorticityRawBalanceFromStandardEquationClosed_proved,
       BKMVorticityEnstrophyBalanceAssemblyClosed_proved,
       BKMVorticityEnstrophyAprioriEstimateClosed_proved,
       BKMLogSobolevGrowthEstimateClosed_proved,
