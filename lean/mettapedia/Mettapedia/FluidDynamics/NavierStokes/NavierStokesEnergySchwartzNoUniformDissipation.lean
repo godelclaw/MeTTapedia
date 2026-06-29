@@ -669,6 +669,42 @@ theorem stokesFlow_noPastCoordinateEnstrophyRatioFloor_packet
     ⟨t, htT, _hne, _hEnstpos, _hEpos, _hratio_pos, hratio_lt⟩
   exact not_le_of_gt hratio_lt (hfloor t htT)
 
+/-- General exact spatial Rayleigh-equality obstruction: no
+positive-viscosity nonzero candidate can keep
+`coordinateEnstrophyAt = lam * normalizedKineticEnergy` on the whole past ray
+of a nonzero endpoint. -/
+theorem noPastExactCoordinateEnstrophyRayleigh_packet
+    (hν : 0 < ν) {lam T : NSTime} (hlam : 0 < lam)
+    (hneT : ∃ xT : NSSpace, S.velocity T xT ≠ 0) :
+    ¬ ∀ t : NSTime, t ≤ T →
+      coordinateEnstrophyAt S.velocity t =
+        lam * normalizedKineticEnergy S.velocity t := by
+  intro heq
+  exact
+    (S.toSchwartzConcreteNavierStokesSolution
+      |>.not_forall_past_coordinateEnstrophyAt_ge_mul_normalizedKineticEnergy
+        hν hlam hneT)
+      (by
+        intro t ht
+        exact le_of_eq ((heq t ht).symm))
+
+/-- General exact spatial Rayleigh-quotient obstruction: no
+positive-viscosity nonzero candidate can keep
+`coordinateEnstrophyAt / normalizedKineticEnergy = lam` on the whole past ray
+of a nonzero endpoint. -/
+theorem noPastExactCoordinateEnstrophyRatioRayleigh_packet
+    (hν : 0 < ν) {lam T : NSTime} (hlam : 0 < lam)
+    (hneT : ∃ xT : NSSpace, S.velocity T xT ≠ 0) :
+    ¬ ∀ t : NSTime, t ≤ T →
+      coordinateEnstrophyAt S.velocity t /
+        normalizedKineticEnergy S.velocity t = lam := by
+  intro heq
+  rcases S.toSchwartzConcreteNavierStokesSolution
+      |>.exists_past_nonzero_with_small_positive_coordinateEnstrophy_ratio
+        hν hneT hlam with
+    ⟨t, htT, _hne, _hEnstpos, _hEpos, _hratio_pos, hratio_lt⟩
+  exact not_le_of_gt hratio_lt (le_of_eq ((heq t htT).symm))
+
 /-- Exact Stokes-flow obstruction to fixed positive spatial Rayleigh equality:
 no positive-viscosity nonzero Stokes candidate can keep
 `coordinateEnstrophyAt = lam * normalizedKineticEnergy` on the whole past ray
@@ -905,6 +941,32 @@ theorem not_exists_nonzeroSchwartzConcreteSolution_past_coordinateEnstrophy_floo
       |>.not_forall_past_coordinateEnstrophyAt_ge_mul_normalizedKineticEnergy
         hν hlam hneT) hfloor
 
+/-- Global no-go form for exact positive coordinate-enstrophy Rayleigh
+equality on a whole past ray before a nonzero endpoint. -/
+theorem not_exists_nonzeroSchwartzConcreteSolution_past_exact_coordinateEnstrophyRayleigh_of_posViscosity
+    {ν lam : ℝ} (hν : 0 < ν) (hlam : 0 < lam) :
+    ¬ ∃ S : NonzeroSchwartzConcreteNavierStokesSolution ν,
+      ∃ T : NSTime,
+        (∃ xT : NSSpace, S.velocity T xT ≠ 0) ∧
+          ∀ t : NSTime, t ≤ T →
+            coordinateEnstrophyAt S.velocity t =
+              lam * normalizedKineticEnergy S.velocity t := by
+  rintro ⟨S, T, hneT, heq⟩
+  exact S.noPastExactCoordinateEnstrophyRayleigh_packet hν hlam hneT heq
+
+/-- Global no-go form for exact positive spatial Rayleigh-quotient equality on
+a whole past ray before a nonzero endpoint. -/
+theorem not_exists_nonzeroSchwartzConcreteSolution_past_exact_coordinateEnstrophyRatioRayleigh_of_posViscosity
+    {ν lam : ℝ} (hν : 0 < ν) (hlam : 0 < lam) :
+    ¬ ∃ S : NonzeroSchwartzConcreteNavierStokesSolution ν,
+      ∃ T : NSTime,
+        (∃ xT : NSSpace, S.velocity T xT ≠ 0) ∧
+          ∀ t : NSTime, t ≤ T →
+            coordinateEnstrophyAt S.velocity t /
+              normalizedKineticEnergy S.velocity t = lam := by
+  rintro ⟨S, T, hneT, heq⟩
+  exact S.noPastExactCoordinateEnstrophyRatioRayleigh_packet hν hlam hneT heq
+
 /-- Global Stokes-flow no-go form for positive spatial Poincare floors on a
 whole past ray before a nonzero endpoint. -/
 theorem not_exists_nonzeroSchwartzStokesFlow_past_coordinateEnstrophy_floor_of_posViscosity
@@ -973,6 +1035,49 @@ theorem not_exists_nonzeroSchwartzStokesFlow_past_exact_coordinateEnstrophyRatio
   exact
     (S.stokesFlow_noPastExactCoordinateEnstrophyRatioRayleigh_packet
       hν hconv hpressure hlam hneT).2 heq
+
+/-- One-profile route-facing no-go: a positive-viscosity nonzero
+slice-Schwartz solution represented as a fixed Schwartz profile times a scalar
+amplitude cannot keep exact positive spatial Rayleigh equality on the whole
+past ray of a nonzero endpoint. -/
+theorem not_exists_nonzeroSchwartzConcreteSolution_oneProfile_past_exact_coordinateEnstrophyRayleigh_of_posViscosity
+    {ν lam : ℝ} (hν : 0 < ν) (hlam : 0 < lam) :
+    ¬ ∃ S : NonzeroSchwartzConcreteNavierStokesSolution ν,
+      ∃ (a : NSTime → ℝ) (f : NSSchwartzInitialVelocity) (T : NSTime),
+        S.velocity = (fun r y => a r • f y) ∧
+          (∃ xT : NSSpace, S.velocity T xT ≠ 0) ∧
+            ∀ t : NSTime, t ≤ T →
+              coordinateEnstrophyAt (fun r y => a r • f y) t =
+                lam * normalizedKineticEnergy (fun r y => a r • f y) t := by
+  rintro ⟨S, a, f, T, hvelocity, hneT, heq⟩
+  exact
+    not_exists_nonzeroSchwartzConcreteSolution_past_exact_coordinateEnstrophyRayleigh_of_posViscosity
+      hν hlam
+      ⟨S, T, hneT, by
+        intro t ht
+        simpa [hvelocity] using heq t ht⟩
+
+/-- One-profile route-facing no-go: a positive-viscosity nonzero
+slice-Schwartz solution represented as a fixed Schwartz profile times a scalar
+amplitude cannot keep exact positive spatial Rayleigh-quotient equality on the
+whole past ray of a nonzero endpoint. -/
+theorem not_exists_nonzeroSchwartzConcreteSolution_oneProfile_past_exact_coordinateEnstrophyRatioRayleigh_of_posViscosity
+    {ν lam : ℝ} (hν : 0 < ν) (hlam : 0 < lam) :
+    ¬ ∃ S : NonzeroSchwartzConcreteNavierStokesSolution ν,
+      ∃ (a : NSTime → ℝ) (f : NSSchwartzInitialVelocity) (T : NSTime),
+        S.velocity = (fun r y => a r • f y) ∧
+          (∃ xT : NSSpace, S.velocity T xT ≠ 0) ∧
+            ∀ t : NSTime, t ≤ T →
+              coordinateEnstrophyAt (fun r y => a r • f y) t /
+                  normalizedKineticEnergy (fun r y => a r • f y) t =
+                lam := by
+  rintro ⟨S, a, f, T, hvelocity, hneT, heq⟩
+  exact
+    not_exists_nonzeroSchwartzConcreteSolution_past_exact_coordinateEnstrophyRatioRayleigh_of_posViscosity
+      hν hlam
+      ⟨S, T, hneT, by
+        intro t ht
+        simpa [hvelocity] using heq t ht⟩
 
 end NavierStokes
 end FluidDynamics
