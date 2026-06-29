@@ -1,5 +1,6 @@
 import Mettapedia.FluidDynamics.NavierStokes.NavierStokesBKMAnalyticReduction
 import Mathlib.Analysis.ODE.Gronwall
+import Mathlib.Analysis.SpecialFunctions.Log.Deriv
 
 /-!
 # BKM high-norm continuation assembly
@@ -407,6 +408,267 @@ theorem normalizedVorticityEnstrophyAt_le_initial_mul_exp_antiderivative
                   (Real.exp (-(A 0)) * Real.exp (A t)) := by ring
             _ = normalizedVorticityEnstrophyAt u 0 * Real.exp (A t - A 0) := by
                   rw [hcombine]
+
+/-- Scalar logarithmic Gronwall in BKM form.  If a nonnegative controlling
+quantity `F` satisfies
+`F' <= R(t) * (1 + log(exp(1) + F)) * F`, and `A' = R`, then the logarithmic
+factor `1 + log(exp(1) + F)` times the integrating factor `exp(-A)` cannot
+increase.
+
+This is the ODE hard core behind the high-norm/BKM continuation step.  It does
+not by itself construct the PDE continuation output. -/
+theorem bkmScalarLogGronwallFactor_mul_exp_neg_antiderivative_le_initial
+    {T : ℝ} {F R A : NSTime → ℝ}
+    (hFcont : ContinuousOn F (Set.Icc 0 T))
+    (hAcont : ContinuousOn A (Set.Icc 0 T))
+    (hFnonneg : ∀ t, t ∈ Set.Icc 0 T → 0 ≤ F t)
+    (hRnonneg : ∀ t, t ∈ Set.Ico 0 T → 0 ≤ R t)
+    (hAderiv :
+      ∀ t, t ∈ Set.Ico 0 T →
+        HasDerivWithinAt A (R t) (Set.Ici t) t)
+    (hGrowth :
+      ∀ t, t ∈ Set.Ico 0 T →
+        ∃ D : ℝ,
+          HasDerivWithinAt F D (Set.Ici t) t ∧
+            D ≤ R t *
+              (1 + Real.log (Real.exp (1 : ℝ) + F t)) * F t) :
+    ∀ t, t ∈ Set.Icc 0 T →
+      (1 + Real.log (Real.exp (1 : ℝ) + F t)) * Real.exp (-(A t)) ≤
+        (1 + Real.log (Real.exp (1 : ℝ) + F 0)) *
+          Real.exp (-(A 0)) := by
+  let Y : ℝ → ℝ := fun t => 1 + Real.log (Real.exp (1 : ℝ) + F t)
+  let D : ℝ → ℝ := fun t =>
+    if ht : t ∈ Set.Ico 0 T then
+      Classical.choose (hGrowth t ht)
+    else
+      0
+  let YD : ℝ → ℝ := fun t => D t / (Real.exp (1 : ℝ) + F t)
+  let Q : ℝ → ℝ := Y * fun t => Real.exp (-(A t))
+  let QD : ℝ → ℝ := fun t =>
+    YD t * Real.exp (-(A t)) + Y t * (Real.exp (-(A t)) * (-(R t)))
+  have hLogcont :
+      ContinuousOn (fun t => Real.log (Real.exp (1 : ℝ) + F t))
+        (Set.Icc 0 T) := by
+    refine Real.continuousOn_log.comp' ?_ ?_
+    · exact continuousOn_const.add hFcont
+    · intro t ht
+      have harg_pos : 0 < Real.exp (1 : ℝ) + F t := by
+        linarith [Real.exp_pos (1 : ℝ), hFnonneg t ht]
+      exact harg_pos.ne'
+  have hYcont : ContinuousOn Y (Set.Icc 0 T) := by
+    dsimp [Y]
+    exact continuousOn_const.add hLogcont
+  have hQcont : ContinuousOn Q (Set.Icc 0 T) := by
+    dsimp [Q]
+    exact hYcont.mul (Real.continuous_exp.comp_continuousOn hAcont.neg)
+  have hYderiv :
+      ∀ t, t ∈ Set.Ico 0 T →
+        HasDerivWithinAt Y (YD t) (Set.Ici t) t := by
+    intro t ht
+    have hspec := Classical.choose_spec (hGrowth t ht)
+    have hD : D t = Classical.choose (hGrowth t ht) := by
+      unfold D
+      rw [dif_pos ht]
+    have hFderiv : HasDerivWithinAt F (D t) (Set.Ici t) t := by
+      rw [hD]
+      exact hspec.1
+    have hArgDeriv :
+        HasDerivWithinAt (fun s => Real.exp (1 : ℝ) + F s) (D t)
+          (Set.Ici t) t := by
+      simpa using hFderiv.const_add (Real.exp (1 : ℝ))
+    have harg_pos : 0 < Real.exp (1 : ℝ) + F t := by
+      have htIcc : t ∈ Set.Icc 0 T := ⟨ht.1, le_of_lt ht.2⟩
+      linarith [Real.exp_pos (1 : ℝ), hFnonneg t htIcc]
+    have hLogDeriv :
+        HasDerivWithinAt
+          (fun s => Real.log (Real.exp (1 : ℝ) + F s))
+          (D t / (Real.exp (1 : ℝ) + F t)) (Set.Ici t) t :=
+      hArgDeriv.log harg_pos.ne'
+    simpa [Y, YD] using hLogDeriv.const_add 1
+  have hYDerivBound :
+      ∀ t, t ∈ Set.Ico 0 T → YD t ≤ R t * Y t := by
+    intro t ht
+    have hspec := Classical.choose_spec (hGrowth t ht)
+    have hD : D t = Classical.choose (hGrowth t ht) := by
+      unfold D
+      rw [dif_pos ht]
+    have htIcc : t ∈ Set.Icc 0 T := ⟨ht.1, le_of_lt ht.2⟩
+    have hF_nonneg_t : 0 ≤ F t := hFnonneg t htIcc
+    have harg_pos : 0 < Real.exp (1 : ℝ) + F t := by
+      linarith [Real.exp_pos (1 : ℝ), hF_nonneg_t]
+    have hDle : D t ≤ R t * Y t * F t := by
+      rw [hD]
+      simpa [Y, mul_assoc] using hspec.2
+    have hlog_nonneg :
+        0 ≤ Real.log (Real.exp (1 : ℝ) + F t) := by
+      have hexp_one : (1 : ℝ) ≤ Real.exp (1 : ℝ) := by
+        rw [← Real.exp_zero]
+        exact Real.exp_le_exp.mpr (by norm_num)
+      have harg_one : (1 : ℝ) ≤ Real.exp (1 : ℝ) + F t := by
+        linarith
+      exact Real.log_nonneg harg_one
+    have hY_nonneg : 0 ≤ Y t := by
+      dsimp [Y]
+      linarith
+    have hRY_nonneg : 0 ≤ R t * Y t :=
+      mul_nonneg (hRnonneg t ht) hY_nonneg
+    have hF_le_arg : F t ≤ Real.exp (1 : ℝ) + F t := by
+      linarith [Real.exp_pos (1 : ℝ)]
+    have hmul_le :
+        (R t * Y t) * F t ≤
+          (R t * Y t) * (Real.exp (1 : ℝ) + F t) :=
+      mul_le_mul_of_nonneg_left hF_le_arg hRY_nonneg
+    calc
+      YD t = D t / (Real.exp (1 : ℝ) + F t) := rfl
+      _ ≤ (R t * Y t * F t) / (Real.exp (1 : ℝ) + F t) :=
+          div_le_div_of_nonneg_right hDle (le_of_lt harg_pos)
+      _ ≤ R t * Y t := by
+        rw [div_le_iff₀ harg_pos]
+        nlinarith [hmul_le]
+  have hQderiv :
+      ∀ t, t ∈ Set.Ico 0 T → HasDerivWithinAt Q (QD t) (Set.Ici t) t := by
+    intro t ht
+    have hExpDeriv :
+        HasDerivWithinAt (fun s => Real.exp (-(A s)))
+          (Real.exp (-(A t)) * (-(R t))) (Set.Ici t) t := by
+      exact ((hAderiv t ht).neg).exp
+    have hprod := (hYderiv t ht).mul hExpDeriv
+    simpa [Q, QD] using hprod
+  have hQbound : ∀ t, t ∈ Set.Ico 0 T → QD t ≤ 0 := by
+    intro t ht
+    have hsub : YD t - R t * Y t ≤ 0 := sub_nonpos.mpr (hYDerivBound t ht)
+    have hexp_nonneg : 0 ≤ Real.exp (-(A t)) := Real.exp_nonneg _
+    have hQD_eq :
+        QD t = (YD t - R t * Y t) * Real.exp (-(A t)) := by
+      dsimp [QD]
+      ring
+    rw [hQD_eq]
+    exact mul_nonpos_of_nonpos_of_nonneg hsub hexp_nonneg
+  have hcomp :
+      ∀ t, t ∈ Set.Icc 0 T → Q t ≤ Q 0 := by
+    simpa [gronwallBound_K0] using
+      le_gronwallBound_of_liminf_deriv_right_le
+        (f := Q)
+        (f' := QD)
+        (δ := Q 0)
+        (K := 0)
+        (ε := 0)
+        (a := 0)
+        (b := T)
+        hQcont
+        (fun t ht r hr => (hQderiv t ht).liminf_right_slope_le hr)
+        le_rfl
+        (by simpa using hQbound)
+  exact hcomp
+
+/-- Exponential form of the scalar BKM logarithmic Gronwall estimate. -/
+theorem bkmScalarLogGronwallFactor_le_initial_mul_exp_antiderivative
+    {T : ℝ} {F R A : NSTime → ℝ}
+    (hFcont : ContinuousOn F (Set.Icc 0 T))
+    (hAcont : ContinuousOn A (Set.Icc 0 T))
+    (hFnonneg : ∀ t, t ∈ Set.Icc 0 T → 0 ≤ F t)
+    (hRnonneg : ∀ t, t ∈ Set.Ico 0 T → 0 ≤ R t)
+    (hAderiv :
+      ∀ t, t ∈ Set.Ico 0 T →
+        HasDerivWithinAt A (R t) (Set.Ici t) t)
+    (hGrowth :
+      ∀ t, t ∈ Set.Ico 0 T →
+        ∃ D : ℝ,
+          HasDerivWithinAt F D (Set.Ici t) t ∧
+            D ≤ R t *
+              (1 + Real.log (Real.exp (1 : ℝ) + F t)) * F t) :
+    ∀ t, t ∈ Set.Icc 0 T →
+      1 + Real.log (Real.exp (1 : ℝ) + F t) ≤
+        (1 + Real.log (Real.exp (1 : ℝ) + F 0)) *
+          Real.exp (A t - A 0) := by
+  intro t ht
+  have hmul :=
+    bkmScalarLogGronwallFactor_mul_exp_neg_antiderivative_le_initial
+      hFcont hAcont hFnonneg hRnonneg hAderiv hGrowth t ht
+  have hexp_pos : 0 < Real.exp (A t) := Real.exp_pos _
+  have hscaled :=
+    mul_le_mul_of_nonneg_right hmul (le_of_lt hexp_pos)
+  have hcancel_t : Real.exp (-(A t)) * Real.exp (A t) = 1 := by
+    rw [← Real.exp_add]
+    have harg : -(A t) + A t = 0 := by ring
+    rw [harg, Real.exp_zero]
+  have hcombine :
+      Real.exp (-(A 0)) * Real.exp (A t) = Real.exp (A t - A 0) := by
+    rw [← Real.exp_add]
+    congr 1
+    ring
+  calc
+    1 + Real.log (Real.exp (1 : ℝ) + F t)
+        = (1 + Real.log (Real.exp (1 : ℝ) + F t)) *
+            Real.exp (-(A t)) * Real.exp (A t) := by
+          calc
+            1 + Real.log (Real.exp (1 : ℝ) + F t) =
+                (1 + Real.log (Real.exp (1 : ℝ) + F t)) * 1 := by ring
+            _ = (1 + Real.log (Real.exp (1 : ℝ) + F t)) *
+                (Real.exp (-(A t)) * Real.exp (A t)) := by
+                  rw [hcancel_t]
+            _ = (1 + Real.log (Real.exp (1 : ℝ) + F t)) *
+                Real.exp (-(A t)) * Real.exp (A t) := by ring
+    _ ≤ (1 + Real.log (Real.exp (1 : ℝ) + F 0)) *
+          Real.exp (-(A 0)) * Real.exp (A t) := hscaled
+    _ = (1 + Real.log (Real.exp (1 : ℝ) + F 0)) *
+          Real.exp (A t - A 0) := by
+          calc
+            (1 + Real.log (Real.exp (1 : ℝ) + F 0)) *
+                Real.exp (-(A 0)) * Real.exp (A t) =
+                (1 + Real.log (Real.exp (1 : ℝ) + F 0)) *
+                  (Real.exp (-(A 0)) * Real.exp (A t)) := by ring
+            _ = (1 + Real.log (Real.exp (1 : ℝ) + F 0)) *
+                Real.exp (A t - A 0) := by
+                  rw [hcombine]
+
+/-- Direct value bound derived from the scalar BKM logarithmic Gronwall
+estimate.  The right side is intentionally coarse but has the expected BKM
+shape: finite primitive `A` gives a finite exponential bound for the
+controlling quantity `F`. -/
+theorem bkmScalarLogGronwallValue_le_exp_initial_logFactor_mul_exp_antiderivative
+    {T : ℝ} {F R A : NSTime → ℝ}
+    (hFcont : ContinuousOn F (Set.Icc 0 T))
+    (hAcont : ContinuousOn A (Set.Icc 0 T))
+    (hFnonneg : ∀ t, t ∈ Set.Icc 0 T → 0 ≤ F t)
+    (hRnonneg : ∀ t, t ∈ Set.Ico 0 T → 0 ≤ R t)
+    (hAderiv :
+      ∀ t, t ∈ Set.Ico 0 T →
+        HasDerivWithinAt A (R t) (Set.Ici t) t)
+    (hGrowth :
+      ∀ t, t ∈ Set.Ico 0 T →
+        ∃ D : ℝ,
+          HasDerivWithinAt F D (Set.Ici t) t ∧
+            D ≤ R t *
+              (1 + Real.log (Real.exp (1 : ℝ) + F t)) * F t) :
+    ∀ t, t ∈ Set.Icc 0 T →
+      F t ≤
+        Real.exp
+          ((1 + Real.log (Real.exp (1 : ℝ) + F 0)) *
+            Real.exp (A t - A 0)) := by
+  intro t ht
+  have hlogFactor :=
+    bkmScalarLogGronwallFactor_le_initial_mul_exp_antiderivative
+      hFcont hAcont hFnonneg hRnonneg hAderiv hGrowth t ht
+  have harg_pos : 0 < Real.exp (1 : ℝ) + F t := by
+    linarith [Real.exp_pos (1 : ℝ), hFnonneg t ht]
+  have hlog_le :
+      Real.log (Real.exp (1 : ℝ) + F t) ≤
+        (1 + Real.log (Real.exp (1 : ℝ) + F 0)) *
+          Real.exp (A t - A 0) := by
+    linarith
+  have harg_le :
+      Real.exp (1 : ℝ) + F t ≤
+        Real.exp
+          ((1 + Real.log (Real.exp (1 : ℝ) + F 0)) *
+            Real.exp (A t - A 0)) :=
+    (Real.log_le_iff_le_exp harg_pos).mp hlog_le
+  calc
+    F t ≤ Real.exp (1 : ℝ) + F t := by
+      linarith [Real.exp_pos (1 : ℝ)]
+    _ ≤ Real.exp
+          ((1 + Real.log (Real.exp (1 : ℝ) + F 0)) *
+            Real.exp (A t - A 0)) := harg_le
 
 /-- Componentized form of the remaining BKM analytic route.  The first
 component is the residual-curl expansion identity, the second supplies the
