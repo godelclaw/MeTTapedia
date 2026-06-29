@@ -22,8 +22,8 @@ Read these four files first — they are the whole live surface:
 | `Goal.lean` | The target (`Theorem49ShellClaim`), its reduction to four geometric oracles plus a fifth non-geometric algebraic cancellation oracle, and proofs that **all four geometric uniform oracles are false** — including the v23.5 residual/current-boundary lane, whose positive wrapper is fixed-embedding equivalent to the refuted collar-layer surface |
 | `Shells.lean` | Bundled hypothesis packages (`ClosedWalkExactShell`, `SuccessorCycleExactShell`, `ClosedWalkCancellationShell`, …) replacing the historical 8–10-hypothesis telescopes |
 | `Frontier.lean` | The maximal positive and negative results, stated over the bundles as thin wrappers, including detector-based cancellation sufficiency |
-| `CAP5RouteVerdict.lean` | The current CAP5/F2 route verdict: either the executable report returns a concrete primitive portal/cycle checker gap, or the closed-frontier route is exactly the absence of the concrete target/off-target F2 evaders; it also names the unified emitted-kernel/remaining-map evader and proves, under no primitive gap, that this evader exists exactly when the closed route endpoint fails; in that same branch the CAP5/Jordan geometric separator repair is blocked by the cyclic-cut obstruction |
-| `CAP5RoutePayoff.lean` / `F2KernelCertificate.lean` | Route payoff audit and finite gate surface: the former closed-route-to-`EdgeColorable 4` payoff is removed as vacuous because the root already has type `G.EdgeColoring Color`; the non-vacuous route endpoint is `CAP5RouteClosedSynthesisPayoff` (theorem-4.9 synthesis plus selected-boundary-zero classifier control); the finite no-gap pre-RREF input is named as `CAP5FiniteNoGapRouteInput`; checked finite left-inverse/RREF-style certificates land through `F2LeftInverseKernelCertificate`; and the exact finite wheel route-closed canary is named as `WheelCAP5FiniteRouteClosedCanary` |
+| `CAP5RouteVerdict.lean` | The current CAP5/F2 route verdict: either the executable report returns a concrete primitive portal/cycle checker gap, or the closed-frontier route is exactly the absence of the concrete target/off-target F2 evaders; it also names the unified emitted-kernel/remaining-map evader and proves, under no primitive gap, that this evader exists exactly when the closed route endpoint fails; in that same branch the CAP5/Jordan geometric separator repair is blocked by the cyclic-cut obstruction; `noGap_forall_boundaryEdge_crosses` and `cap5PrimitiveCheckerGap_of_boundaryEdge_odd_closed_walk` record the Gate-1 parity barrier for honest odd CAP5 boundary cycles |
+| `CAP5RoutePayoff.lean` / `F2KernelCertificate.lean` / `CAP5WheelRouteData.lean` / `CAP5DodecahedralRouteData.lean` | Route payoff audit and finite gate surface: the former closed-route-to-`EdgeColorable 4` payoff is removed as vacuous because the root already has type `G.EdgeColoring Color`; the non-vacuous route endpoint is `CAP5RouteClosedSynthesisPayoff` (theorem-4.9 synthesis plus selected-boundary-zero classifier control); the finite no-gap pre-RREF input is named as `CAP5FiniteNoGapRouteInput`; checked finite left-inverse/RREF-style certificates land through `F2LeftInverseKernelCertificate`; empty-remaining finite certificates land through `CAP5FiniteNoGapRouteInput.routeClosed_of_remainingControlEdges_eq_empty`; `CAP5FiniteNoGapRouteInput.redInterior_mem_projectedColoringGeneratorSubspace` and `CAP5FiniteNoGapRouteInput.blueInterior_mem_projectedColoringGeneratorSubspace` expose the fixed-embedding formability condition that every interior-support red/blue coordinate probe must already lie in the projected generator span; `CAP5WheelRouteData.lean` proves one concrete exceptional five-edge wheel boundary is Gate-1 blocked; `CAP5DodecahedralRouteData.lean` records the strict incidence BREAK certificate for the cyclic-five/Tait dodecahedral six-cut; and the follow-up actual-route lab shows that same dodecahedral side is not a formable `CAP5FiniteNoGapRouteInput` because every required red/blue single-coordinate projected-generator membership is missing |
 
 ## Current status (one paragraph)
 
@@ -278,7 +278,14 @@ a raw edge-labeling/properness bridge or a route-type refactor, not the current
 independent coloring canary `WheelCAP5RoutePayoff.wheelColoringCanary`; this is
 not a CAP5 route payoff.  The exact positive CAP5 canary still missing is
 `WheelCAP5RoutePayoff.WheelCAP5FiniteRouteClosedCanary`: one finite checker
-report plus a closed CAP5/F2 route certificate for that concrete wheel graph.
+report plus a closed CAP5/F2 route certificate for an actual no-gap CAP5 side.
+`CAP5WheelRouteData.lean` now fixes one concrete five-edge wheel boundary
+enumeration and exceptional component-cover core, but proves this exact core
+is not such a side: `wheelCAP5PrimitiveCheckerGap` shows every vertex-side
+choice has a primitive checker gap because the `p0Inside/p4Outside` side case
+would force `wit12`, `wit23`, and `wit31` to cross the same side, contradicting
+the triangle parity lemma.  Consequently no `CAP5FiniteNoGapRouteInput` or
+`CAP5FiniteRouteClosedWitness` exists for this concrete five-edge wheel core.
 The finite pre-RREF input is explicit:
 `CAP5FiniteNoGapRouteInput` combines a closed executable primitive-checker
 report, the concrete forced-edge classifier, and all emitted/remaining
@@ -293,7 +300,12 @@ packages the finite route-closed witness.  The BREAK side is named as
 remaining-map evader for the induced certificate.  So the next make-or-break
 test is not another route fork; it is to instantiate that input for the actual
 side and check `CAP5F2NoUnifiedKernelMapEvader`, or accept that named
-obstruction.
+obstruction.  The BREAK constructor
+`CAP5FiniteNoGapRouteInput.exists_unifiedKernelMapEvader_of_boundaryZeroChain`
+now handles the finite certificate shape exposed by the lab: a
+selected-boundary-zero chain that vanishes on emitted coordinates and is
+nonzero on one remaining control edge gives the named unified kernel-map
+evader.
 
 RREF-shaped finite gate update on 2026-06-29:
 `F2KernelCertificate.lean` introduces `F2LeftInverseKernelCertificate`, a
@@ -312,6 +324,141 @@ RREF/kernel certificate has to feed.  This is only the certificate interface:
 the actual CAP5 no-gap input, a concrete basis for its selected-boundary-zero
 submodule, and its checked emitted matrix/certificate remain the make-or-break
 artifact.
+
+Lab-first finite Gate-2 verdict on 2026-06-29: the run recorded in
+`fourcolor-cap5-f2-all-static-verdict-20260629.json` builds the current CAP5
+forced-edge classifier matrix over F2 for all eight static benchmark JSONs and
+decides the finite kernel question by exact mod-2 row reduction before adding
+any more Lean apparatus.  The current Lean surface contains one concrete
+component-cover core (`wheelCAP5ComponentCoverCore`) and zero concrete
+positive `CAP5FiniteNoGapRouteInput` instances.  Seven static benchmarks have
+zero Gate-1 no-gap sides.  The only Gate-1-positive benchmark is
+chained-diamonds, with 32 no-gap sides and 368,640 route cases, all
+`BREAK_evader`; one explicit unit witness is the red-scalar edge `cdt12` after
+emitting `cdt46` and `cdt56`, with `cdt12` and `cdt45` remaining as controls.
+Lean also proves `not_exists_taitEdgeColoring_chainedDiamondsWithTriangleGraph`,
+so that regression case cannot be promoted to an actual Tait-route BREAK
+certificate.
+
+Strict incidence Gate-2 verdict on 2026-06-29: the run recorded in
+`fourcolor-cap5-strict-gate2-incidence-verdict-20260629.json` derives
+`selectedBoundarySupport` and `interiorEdgeSupport` from face incidence, as
+Lean's `PlaneEmbeddingWithBoundary` does, and then decides the unified
+emitted-kernel/remaining-map question by exact F2 row reduction.  This
+supersedes the earlier manual one-control prism MAKE: with incidence-derived
+support the prism has all 18 edges as interior edges, all 3,840 no-gap route
+cases are `BREAK_evader`, and a separate cyclic-cut audit shows the prism also
+fails `CyclicallyFiveEdgeConnected`.  The strict run then builds a
+dodecahedral six-cut candidate.  It is cubic, brute-force Tait-colorable,
+cyclically five-edge-connected, and Gate-1-positive; exact F2 row reduction
+finds 532 no-gap sides and 1,021,440 route cases, all `BREAK_evader`.  For the
+distinguished side `{0,1,2,3,4,19}` and boundary slots
+`dod0_10, dod1_8, dod2_6, dod4_5, dod4_17`, the
+`p0Inside_p4Outside` matrix emits `dod18_19, dod4_17`, leaves 28 remaining
+interior controls, has scalar rank 2 and kernel dimension 28, and the unit
+red-scalar chain supported on `dod0_1` is a concrete evader: it is
+boundary-zero, vanishes on emitted coordinates, and is detected by the
+remaining map at `dod0_1`.
+
+`CAP5DodecahedralRouteData.lean` now promotes the strict lab answer far enough
+to be checked in Lean: it defines the dodecahedral graph, face-boundary
+embedding, Tait coloring, exceptional component-cover core, distinguished
+six-cut side, emitted edges `dod18_19,dod4_17`, and
+`dodecahedralStrictF2KernelEvaderCertificate`.  That certificate records row
+words `0x20000000,0x400`, RREF row words `0x400,0x20000000`, scalar rank 2,
+kernel dimension 28, and the unit red-scalar evader on `dod0_1`.  The
+follow-up actual-route lab then blocks route-input witness promotion for this
+side: over the full edge-Kempe closure, the projected face-generator span has
+rank 42 in the 60-dimensional chain space and contains none of the 60
+emitted/remaining red/blue single-coordinate probes required by
+`CAP5FiniteNoGapRouteInput`.  The dedicated forced-classifier matrix run
+`fourcolor-dodeca-forced-classifier-matrix-lab-20260629.json` then checks all
+four portal sidecases with numpy and SymPy over GF(2): every raw coordinate
+matrix is `BREAK_evader`, with emitted ranks 6, 4, 4, and 4 in the
+60-dimensional red/blue domain and the unit `dod0_1` coordinate as a raw
+witness.  The formal answer for this actual dodecahedral side is still
+`INVALID_ROUTE_INPUT_missing_projected_generator_memberships`, not MAKE and
+not a formal BREAK witness, because the route family cannot be constructed.
+The one-face-punctured dodeca repair was also checked in
+`fourcolor-dodeca-punctured-route-f2-lab-20260629.json`: each omitted face
+creates a genuine selected-boundary support, but across all 12 omitted faces
+and four sidecases the projected-generator rank is 38 on the 50-dimensional
+selected-boundary-zero domain and no case is formable; each case still misses
+50, 52, or 54 route probes.  This rules out that natural repair of the
+distinguished six-cut, not all non-boundary CAP5 supports.
+Reruns
+`fourcolor-dodeca-forced-classifier-matrix-lab-rerun-20260629.json` and
+`fourcolor-dodeca-punctured-route-f2-lab-rerun-20260629.json` preserve those
+answers.  Lean now records the fixed-embedding reason in
+`CAP5FiniteNoGapRouteInput.false_of_missing_interior_red_probe` and
+`CAP5FiniteNoGapRouteInput.false_of_missing_interior_blue_probe`: any missing
+red or blue coordinate for an interior-support edge makes the finite route
+input impossible, since the edge is necessarily either emitted or remaining.
+The follow-up graph-generic filter
+`fourcolor-small-cubic-tait-route-formability-dodeca-kempeclasses-lab-20260629.json`
+shows that this is not merely a bad pinned dodeca root: all 60 dodecahedral
+Tait colorings split into 10 Kempe classes of size 6, and every individual
+class misses every required interior red/blue probe on the closed embedding
+and on every one-face puncture, even though the union of all Tait classes has
+full coordinate span.  The known-small-family run
+`fourcolor-small-cubic-tait-route-formability-known20-capped-lab-20260629.json`
+then checks 22 known cubic planar graphs through 20 vertices; formable Kempe
+classes occur only in tetrahedral or non-cyclic-five cases, while the genuine
+Tait cyclic-five case up to isomorphism is dodecahedral and remains
+non-formable.  This is finite evidence plus a dodeca-wide Kempe-class barrier,
+not yet the generic B1 meta-barrier.
+No 4CT claim, MAKE certificate, or full
+`CAP5FiniteUnifiedKernelMapEvaderWitness` is made here.
+
+Actual GP(12,2) Gate-2 verdict on 2026-06-29: the cyclic-first known-family
+filter through 24 vertices found `generalized_petersen_12_2` as a genuine
+cyclic-five/Tait candidate with a closed formable Kempe class.  The dedicated
+lab `fourcolor-gp12-cap5-gate2-verdict-lab-20260629.json` then builds the
+actual CAP5 forced-edge classifier matrix for the first five-edge cyclic cut
+`e0_1,e2_14,e3_4,e13_23,e15_17`.  The closed embedding has empty
+selected-boundary support, all 36 edges are interior, and the selected Kempe
+class has rank 72/72, so the finite route probes are present.  Exact numpy
+RREF with SymPy `GF(2)` rank cross-check gives BREAK in all four sidecases:
+emitted ranks 2, 2, 4, and 2; kernel dimensions 70, 70, 68, and 70; and
+explicit unit red-coordinate evaders recorded in the JSON.  This lands the
+finite decision for the first formable survivor: not MAKE, but
+`BREAK_unified_kernel_map_evader_in_every_side_case`.  The Lean-side promotion
+is now the exact current finite Gate-2 criterion:
+`CAP5FiniteNoGapRouteInput.noUnifiedKernelMapEvader_iff_remainingControlEdges_eq_empty`.
+Any nonempty remaining-control set yields a unit red-coordinate unified
+kernel-map evader, while empty remaining controls give the no-evader side.  The
+equivalent coverage form
+`CAP5FiniteNoGapRouteInput.noUnifiedKernelMapEvader_iff_interiorEdgeSupport_subset_emittedFinset`
+states the route-surface demand directly: the current CAP5 classifier must emit
+the whole canonical interior support.  Missing-edge and cardinality corollaries
+now package BREAK whenever an interior-support edge is not emitted, the emitted
+interior count is too small, or the total emitted set is smaller than the
+interior support.  The GP(12,2) sidecases leave 35, 35, 34, and 35 remaining
+controls, so the lab verdict factors through the checked Lean criterion.  No
+graph-specific GP(12,2) route-input witness is claimed yet, but
+`CAP5GP12RouteData.lean` now packages the concrete graph/embedding/Tait/CAP5
+core and the four sidecase unit-evader certificates matching the lab verdict.
+Focused
+`CAP5RoutePayoff` and FourColor umbrella builds passed, and the new criterion
+axiom audits are baseline `[propext, Classical.choice, Quot.sound]`.
+
+Boundary-cycle Gate-1 repair audit on 2026-06-29: the run recorded in
+`fourcolor-dodeca-boundary-cycle-gate1-lab-20260629.json` checks the natural
+dodecahedral repair where the five CAP5 boundary edges are an actual
+pentagonal boundary cycle rather than the strict lab's five-of-six cut support.
+Across all 12 pentagonal faces and all `2^20` vertex-side masks, it finds zero
+sides crossing all five boundary edges and therefore zero Gate-1 no-gap sides.
+Lean promotes the generic obstruction as
+`cap5PrimitiveCheckerGap_of_boundaryEdge_odd_closed_walk`: if the five boundary
+edges cover an odd closed walk, Gate 1 is impossible because no vertex-side cut
+can cross every edge of that odd closed walk.  `CAP5RoutePayoff.lean` now
+pushes that obstruction through the finite route surface:
+`CAP5FiniteNoGapRouteInput.false_of_boundaryEdge_odd_closed_walk` and
+`CAP5FiniteRouteClosedWitness.false_of_boundaryEdge_odd_closed_walk` rule out
+both finite no-gap inputs and finite route-closed witnesses for any such
+honest odd boundary.  This is a real barrier for honest odd CAP5 boundary
+cycles, but it is not claimed as a full refutation of non-boundary cut-style
+reformulations.
 
 The next target-level corollary turns finite dimension into an explicit fork
 test for exact CAP5 data.  In Lean,

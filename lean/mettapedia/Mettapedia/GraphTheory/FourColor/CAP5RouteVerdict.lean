@@ -166,6 +166,91 @@ theorem noGap_portalsCross_matchingCandidate
     CAP5ExceptionalAnnulusSeparatorPortalCandidate.ofOrientationAndSideCase,
     latent] using hiSelected
 
+/--
+Closing the primitive checker gap forces every one of the five CAP5 boundary edges to cross the
+chosen vertex side.  Each boundary index occurs in one of the finite exceptional side cases, so
+this is a direct consequence of the executable portal-crossing frontier.
+-/
+theorem noGap_forall_boundaryEdge_crosses
+    {side : V → Prop}
+    (hno : ¬ CAP5PrimitiveCheckerGap boundaryEdge side) :
+    ∀ i : Fin 5, EdgeCrossesVertexSide G side (boundaryEdge i) := by
+  intro i
+  fin_cases i
+  · let latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge :=
+      { orientation := .redBlue03_redPurple04
+        p0Inside := true
+        p4Inside := false }
+    have hportal :=
+      noGap_portalsCross_allLatents (boundaryEdge := boundaryEdge)
+        (side := side) hno latent
+    exact hportal 0 (by
+      change (0 : Fin 5) ∈
+        CAP5ExceptionalAnnulusSideCase.p0Inside_p4Outside.separatorPortalSet
+      simp [CAP5ExceptionalAnnulusSideCase.separatorPortalSet])
+  · let latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge :=
+      { orientation := .redBlue03_redPurple04
+        p0Inside := true
+        p4Inside := false }
+    have hportal :=
+      noGap_portalsCross_allLatents (boundaryEdge := boundaryEdge)
+        (side := side) hno latent
+    exact hportal 1 (by
+      change (1 : Fin 5) ∈
+        CAP5ExceptionalAnnulusSideCase.p0Inside_p4Outside.separatorPortalSet
+      simp [CAP5ExceptionalAnnulusSideCase.separatorPortalSet])
+  · let latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge :=
+      { orientation := .redBlue03_redPurple04
+        p0Inside := true
+        p4Inside := false }
+    have hportal :=
+      noGap_portalsCross_allLatents (boundaryEdge := boundaryEdge)
+        (side := side) hno latent
+    exact hportal 2 (by
+      change (2 : Fin 5) ∈
+        CAP5ExceptionalAnnulusSideCase.p0Inside_p4Outside.separatorPortalSet
+      simp [CAP5ExceptionalAnnulusSideCase.separatorPortalSet])
+  · let latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge :=
+      { orientation := .redBlue03_redPurple04
+        p0Inside := true
+        p4Inside := false }
+    have hportal :=
+      noGap_portalsCross_allLatents (boundaryEdge := boundaryEdge)
+        (side := side) hno latent
+    exact hportal 3 (by
+      change (3 : Fin 5) ∈
+        CAP5ExceptionalAnnulusSideCase.p0Inside_p4Outside.separatorPortalSet
+      simp [CAP5ExceptionalAnnulusSideCase.separatorPortalSet])
+  · let latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge :=
+      { orientation := .redBlue03_redPurple04
+        p0Inside := false
+        p4Inside := true }
+    have hportal :=
+      noGap_portalsCross_allLatents (boundaryEdge := boundaryEdge)
+        (side := side) hno latent
+    exact hportal 4 (by
+      change (4 : Fin 5) ∈
+        CAP5ExceptionalAnnulusSideCase.p0Outside_p4Inside.separatorPortalSet
+      simp [CAP5ExceptionalAnnulusSideCase.separatorPortalSet])
+
+/--
+Odd closed-walk obstruction for a genuine five-edge CAP5 boundary.  If the route's five boundary
+edges cover an odd closed walk, Gate 1 cannot close: no vertex-side cut can cross every edge of
+an odd closed walk.
+-/
+theorem cap5PrimitiveCheckerGap_of_boundaryEdge_odd_closed_walk
+    {side : V → Prop} {u : V} (p : G.Walk u u) (hodd : Odd p.length)
+    (hsubset :
+      ∀ e : G.edgeSet, (e : Sym2 V) ∈ p.edges → ∃ i : Fin 5, boundaryEdge i = e) :
+    CAP5PrimitiveCheckerGap boundaryEdge side := by
+  by_contra hnoGap
+  have hallCross :=
+    noGap_forall_boundaryEdge_crosses (G := G) (boundaryEdge := boundaryEdge) hnoGap
+  exact not_forall_edgeCrossesVertexSide_of_closed_walk_odd_length p hodd
+    (fun e he => by
+      rcases hsubset e he with ⟨i, rfl⟩
+      exact hallCross i)
+
 /-- If the selected side has no cycle, the primitive checker gap is forced. -/
 theorem cap5PrimitiveCheckerGap_of_no_selectedSideCycle
     {side : V → Prop} (hmissing : ¬ HasCycleOnSide G side) :
