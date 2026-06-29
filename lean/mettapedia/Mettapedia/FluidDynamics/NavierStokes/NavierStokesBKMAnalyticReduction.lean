@@ -96,10 +96,11 @@ theorem BKMContinuation_reduced_to_single_analytic_lemma :
                               BKMVorticityEnstrophyGradientGrowthClosed ∧
                                 BKMVorticityEnstrophyLogSobolevGrowthClosed ∧
                                   BKMVorticityEnstrophyAffineLogGrowthClosed ∧
-                                    BKMLogSobolevAffineReductionClosed ∧
-                                      BKMLogSobolevGrowthEstimateClosed ∧
-                                        (BKMAnalyticContinuationLemma →
-                                          ExplicitFiniteEnergyBKMContinuationTargetOnNonnegHorizons) := by
+                                    BKMVorticityFiniteTimeWitnessAffineLogGrowthClosed ∧
+                                      BKMLogSobolevAffineReductionClosed ∧
+                                        BKMLogSobolevGrowthEstimateClosed ∧
+                                          (BKMAnalyticContinuationLemma →
+                                            ExplicitFiniteEnergyBKMContinuationTargetOnNonnegHorizons) := by
   exact
     ⟨BKMVorticityStretchingEstimateClosed_proved,
       BKMResidualCurlExpansionAlgebraClosed_proved,
@@ -116,6 +117,7 @@ theorem BKMContinuation_reduced_to_single_analytic_lemma :
       BKMVorticityEnstrophyGradientGrowthClosed_proved,
       BKMVorticityEnstrophyLogSobolevGrowthClosed_proved,
       BKMVorticityEnstrophyAffineLogGrowthClosed_proved,
+      BKMVorticityFiniteTimeWitnessAffineLogGrowthClosed_proved,
       BKMLogSobolevAffineReductionClosed_proved,
       BKMLogSobolevGrowthEstimateClosed_proved,
       BKMAnalyticContinuationLemma_implies_finiteEnergyBKMContinuationTargetOnNonnegHorizons⟩
