@@ -27,6 +27,13 @@ theorem BKMLogSobolevAffinePointwiseFromEnvelope_of_schwartzHighNormEnvelope_and
     BKMLogSobolevAffinePointwiseFromEnvelope_of_schwartzHighNormEnvelope_and_biotSavart
       hHighNorm hBiotSavart
 
+theorem BKMSchwartzSliceBiotSavartAffineLogPointwiseEstimate_of_vorticityToGradient_regression
+    (hSlice : BKMSchwartzSliceVorticityToGradientAffineLogEstimate) :
+    BKMSchwartzSliceBiotSavartAffineLogPointwiseEstimate := by
+  exact
+    BKMSchwartzSliceBiotSavartAffineLogPointwiseEstimate_of_vorticityToGradient
+      hSlice
+
 theorem BKMAnalyticContinuationLemma_of_components_regression
     (hDefect : BKMResidualCurlExpansionDefectVanishes)
     (hLog : BKMLogSobolevGradientControlFromEnvelope)
@@ -270,6 +277,50 @@ theorem normalizedVorticityEnstrophyAt_le_exp_of_logSobolevControl_balance_regre
     normalizedVorticityEnstrophyAt_le_exp_of_logSobolevControl_balance
       hcont hAcont hν hC hΩ_nonneg hH_nonneg hH_le_enstrophy
       hAderiv hLog hBal hStretchInt hEnstrophyInt
+
+theorem normalizedVorticityEnstrophyAt_le_exp_of_logSobolevControl_balance_of_antiderivative_bounded_regression
+    {ν T C Amax : ℝ} {u : NSVelocityField} {Ω H A : NSTime → ℝ}
+    (hcont :
+      ContinuousOn (fun t => normalizedVorticityEnstrophyAt u t)
+        (Set.Icc 0 T))
+    (hAcont : ContinuousOn A (Set.Icc 0 T))
+    (hν : 0 ≤ ν)
+    (hC : 0 ≤ C)
+    (hΩ_nonneg : ∀ t, 0 ≤ t → t ≤ T → 0 ≤ Ω t)
+    (hH_nonneg : ∀ t, 0 ≤ t → t ≤ T → 0 ≤ H t)
+    (hH_le_enstrophy :
+      ∀ t, t ∈ Set.Icc 0 T → H t ≤ normalizedVorticityEnstrophyAt u t)
+    (hAderiv :
+      ∀ t, t ∈ Set.Ico 0 T →
+        HasDerivWithinAt A (2 * C * (1 + Ω t)) (Set.Ici t) t)
+    (hA_le : ∀ t, t ∈ Set.Icc 0 T → A t ≤ Amax)
+    (hLog : BKMLogSobolevGradientControlOn u T C Ω H)
+    (hBal :
+      ∀ t, t ∈ Set.Ico 0 T → vorticityEnstrophyBalanceAt ν u t)
+    (hStretchInt :
+      ∀ t, t ∈ Set.Ico 0 T →
+        MeasureTheory.Integrable (fun x => vorticityStretchingPower u t x))
+    (hEnstrophyInt :
+      ∀ t, t ∈ Set.Ico 0 T →
+        MeasureTheory.Integrable (fun x => vorticityEnstrophyDensity u t x)) :
+    ∀ t, t ∈ Set.Icc 0 T →
+      normalizedVorticityEnstrophyAt u t ≤
+        Real.exp
+          ((1 + Real.log
+              (Real.exp (1 : ℝ) + normalizedVorticityEnstrophyAt u 0)) *
+            Real.exp (Amax - A 0)) := by
+  exact
+    normalizedVorticityEnstrophyAt_le_exp_of_logSobolevControl_balance_of_antiderivative_bounded
+      hcont hAcont hν hC hΩ_nonneg hH_nonneg hH_le_enstrophy
+      hAderiv hA_le hLog hBal hStretchInt hEnstrophyInt
+
+theorem BKMHighNormContinuationFromLogControl_of_enstrophyGronwallData_and_boundedEnstrophyBridge_regression
+    (hData : BKMLogControlWitnessEnstrophyGronwallDataFromWitness)
+    (hBridge : BKMBoundedEnstrophyContinuationBridge) :
+    BKMHighNormContinuationFromLogControl := by
+  exact
+    BKMHighNormContinuationFromLogControl_of_enstrophyGronwallData_and_boundedEnstrophyBridge
+      hData hBridge
 
 theorem BKMContinuation_reduced_to_analytic_components_regression :
     BKMVorticityStretchingEstimateClosed ∧
