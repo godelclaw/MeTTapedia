@@ -47,6 +47,15 @@ theorem bkm_logSobolev_envelope_le_of_bounds_regression
   bkmLogSobolevGradientEnvelope_le_of_bounds
     hC hΩ_nonneg hΩ_le hH_nonneg hH_le
 
+theorem bkm_logSobolev_envelope_le_scalarLogGrowthCoefficient_regression
+    {C : ℝ} {Ω H F : NSTime → ℝ} {t : NSTime}
+    (hC : 0 ≤ C) (hΩ : 0 ≤ Ω t) (hH : 0 ≤ H t)
+    (hHF : H t ≤ F t) :
+    bkmLogSobolevGradientEnvelope C Ω H t ≤
+      C * (1 + Ω t) * (1 + Real.log (Real.exp (1 : ℝ) + F t)) :=
+  bkmLogSobolevGradientEnvelope_le_scalarLogGrowthCoefficient
+    hC hΩ hH hHF
+
 theorem bkm_logSobolev_envelope_le_constant_on_Ico_of_bounds_regression
     {C T : ℝ} {Ω H : NSTime → ℝ} {Ωmax Hmax : ℝ}
     (hC : 0 ≤ C)

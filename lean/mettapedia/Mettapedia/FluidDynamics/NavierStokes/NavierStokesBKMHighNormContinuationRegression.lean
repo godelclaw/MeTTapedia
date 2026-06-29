@@ -207,6 +207,70 @@ theorem bkmScalarLogGronwallValue_le_exp_initial_logFactor_mul_exp_antiderivativ
     bkmScalarLogGronwallValue_le_exp_initial_logFactor_mul_exp_antiderivative
       hFcont hAcont hFnonneg hRnonneg hAderiv hGrowth
 
+theorem normalizedVorticityEnstrophyAt_le_exp_of_logSobolevGradientControlled_regression
+    {ν T C : ℝ} {u : NSVelocityField} {Ω H A : NSTime → ℝ}
+    (hcont :
+      ContinuousOn (fun t => normalizedVorticityEnstrophyAt u t)
+        (Set.Icc 0 T))
+    (hAcont : ContinuousOn A (Set.Icc 0 T))
+    (hC : 0 ≤ C)
+    (hΩ_nonneg : ∀ t, 0 ≤ t → t ≤ T → 0 ≤ Ω t)
+    (hH_nonneg : ∀ t, 0 ≤ t → t ≤ T → 0 ≤ H t)
+    (hH_le_enstrophy :
+      ∀ t, t ∈ Set.Icc 0 T → H t ≤ normalizedVorticityEnstrophyAt u t)
+    (hAderiv :
+      ∀ t, t ∈ Set.Ico 0 T →
+        HasDerivWithinAt A (2 * C * (1 + Ω t)) (Set.Ici t) t)
+    (hGrowth :
+      ∀ t, t ∈ Set.Ico 0 T →
+        vorticityEnstrophyGradientControlledAt ν u t
+          (bkmLogSobolevGradientEnvelope C Ω H t)) :
+    ∀ t, t ∈ Set.Icc 0 T →
+      normalizedVorticityEnstrophyAt u t ≤
+        Real.exp
+          ((1 + Real.log
+              (Real.exp (1 : ℝ) + normalizedVorticityEnstrophyAt u 0)) *
+            Real.exp (A t - A 0)) := by
+  exact
+    normalizedVorticityEnstrophyAt_le_exp_of_logSobolevGradientControlled
+      hcont hAcont hC hΩ_nonneg hH_nonneg hH_le_enstrophy
+      hAderiv hGrowth
+
+theorem normalizedVorticityEnstrophyAt_le_exp_of_logSobolevControl_balance_regression
+    {ν T C : ℝ} {u : NSVelocityField} {Ω H A : NSTime → ℝ}
+    (hcont :
+      ContinuousOn (fun t => normalizedVorticityEnstrophyAt u t)
+        (Set.Icc 0 T))
+    (hAcont : ContinuousOn A (Set.Icc 0 T))
+    (hν : 0 ≤ ν)
+    (hC : 0 ≤ C)
+    (hΩ_nonneg : ∀ t, 0 ≤ t → t ≤ T → 0 ≤ Ω t)
+    (hH_nonneg : ∀ t, 0 ≤ t → t ≤ T → 0 ≤ H t)
+    (hH_le_enstrophy :
+      ∀ t, t ∈ Set.Icc 0 T → H t ≤ normalizedVorticityEnstrophyAt u t)
+    (hAderiv :
+      ∀ t, t ∈ Set.Ico 0 T →
+        HasDerivWithinAt A (2 * C * (1 + Ω t)) (Set.Ici t) t)
+    (hLog : BKMLogSobolevGradientControlOn u T C Ω H)
+    (hBal :
+      ∀ t, t ∈ Set.Ico 0 T → vorticityEnstrophyBalanceAt ν u t)
+    (hStretchInt :
+      ∀ t, t ∈ Set.Ico 0 T →
+        MeasureTheory.Integrable (fun x => vorticityStretchingPower u t x))
+    (hEnstrophyInt :
+      ∀ t, t ∈ Set.Ico 0 T →
+        MeasureTheory.Integrable (fun x => vorticityEnstrophyDensity u t x)) :
+    ∀ t, t ∈ Set.Icc 0 T →
+      normalizedVorticityEnstrophyAt u t ≤
+        Real.exp
+          ((1 + Real.log
+              (Real.exp (1 : ℝ) + normalizedVorticityEnstrophyAt u 0)) *
+            Real.exp (A t - A 0)) := by
+  exact
+    normalizedVorticityEnstrophyAt_le_exp_of_logSobolevControl_balance
+      hcont hAcont hν hC hΩ_nonneg hH_nonneg hH_le_enstrophy
+      hAderiv hLog hBal hStretchInt hEnstrophyInt
+
 theorem BKMContinuation_reduced_to_analytic_components_regression :
     BKMVorticityStretchingEstimateClosed ∧
       BKMResidualCurlExpansionAlgebraClosed ∧

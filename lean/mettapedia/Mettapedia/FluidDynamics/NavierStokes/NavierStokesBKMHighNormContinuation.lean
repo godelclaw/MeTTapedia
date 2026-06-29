@@ -670,6 +670,122 @@ theorem bkmScalarLogGronwallValue_le_exp_initial_logFactor_mul_exp_antiderivativ
           ((1 + Real.log (Real.exp (1 : ℝ) + F 0)) *
             Real.exp (A t - A 0)) := harg_le
 
+/-- BKM log-Sobolev coefficient instantiation of scalar logarithmic Gronwall
+for normalized vorticity enstrophy.  The remaining analytic PDE work is to
+produce the continuity, growth, primitive, and high-norm-domination hypotheses
+from an arbitrary finite-time witness and then use the resulting finite bound
+in a continuation/local-existence bridge. -/
+theorem normalizedVorticityEnstrophyAt_le_exp_of_logSobolevGradientControlled
+    {ν T C : ℝ} {u : NSVelocityField} {Ω H A : NSTime → ℝ}
+    (hcont :
+      ContinuousOn (fun t => normalizedVorticityEnstrophyAt u t)
+        (Set.Icc 0 T))
+    (hAcont : ContinuousOn A (Set.Icc 0 T))
+    (hC : 0 ≤ C)
+    (hΩ_nonneg : ∀ t, 0 ≤ t → t ≤ T → 0 ≤ Ω t)
+    (hH_nonneg : ∀ t, 0 ≤ t → t ≤ T → 0 ≤ H t)
+    (hH_le_enstrophy :
+      ∀ t, t ∈ Set.Icc 0 T → H t ≤ normalizedVorticityEnstrophyAt u t)
+    (hAderiv :
+      ∀ t, t ∈ Set.Ico 0 T →
+        HasDerivWithinAt A (2 * C * (1 + Ω t)) (Set.Ici t) t)
+    (hGrowth :
+      ∀ t, t ∈ Set.Ico 0 T →
+        vorticityEnstrophyGradientControlledAt ν u t
+          (bkmLogSobolevGradientEnvelope C Ω H t)) :
+    ∀ t, t ∈ Set.Icc 0 T →
+      normalizedVorticityEnstrophyAt u t ≤
+        Real.exp
+          ((1 + Real.log
+              (Real.exp (1 : ℝ) + normalizedVorticityEnstrophyAt u 0)) *
+            Real.exp (A t - A 0)) := by
+  let F : NSTime → ℝ := fun t => normalizedVorticityEnstrophyAt u t
+  let R : NSTime → ℝ := fun t => 2 * C * (1 + Ω t)
+  refine
+    bkmScalarLogGronwallValue_le_exp_initial_logFactor_mul_exp_antiderivative
+      (F := F) (R := R) (A := A)
+      hcont hAcont
+      (fun t _ht => normalizedVorticityEnstrophyAt_nonneg u t)
+      ?_ ?_ ?_
+  · intro t ht
+    have hΩt : 0 ≤ Ω t := hΩ_nonneg t ht.1 (le_of_lt ht.2)
+    exact mul_nonneg (mul_nonneg (by norm_num) hC) (by linarith)
+  · intro t ht
+    exact hAderiv t ht
+  · intro t ht
+    rcases hGrowth t ht with ⟨D, hDderiv, hDle⟩
+    refine ⟨D, hDderiv.hasDerivWithinAt, ?_⟩
+    have htIcc : t ∈ Set.Icc 0 T := ⟨ht.1, le_of_lt ht.2⟩
+    have hΩt : 0 ≤ Ω t := hΩ_nonneg t ht.1 (le_of_lt ht.2)
+    have hHt : 0 ≤ H t := hH_nonneg t ht.1 (le_of_lt ht.2)
+    have hFnonneg : 0 ≤ F t := normalizedVorticityEnstrophyAt_nonneg u t
+    have hCoeff :
+        bkmLogSobolevGradientEnvelope C Ω H t ≤
+          C * (1 + Ω t) *
+            (1 + Real.log (Real.exp (1 : ℝ) + F t)) :=
+      bkmLogSobolevGradientEnvelope_le_scalarLogGrowthCoefficient
+        hC hΩt hHt (hH_le_enstrophy t htIcc)
+    have hEnstrophy_eq : vorticityEnstrophyAt u t = 2 * F t := by
+      dsimp [F]
+      rw [normalizedVorticityEnstrophyAt]
+      ring
+    have htwoF_nonneg : 0 ≤ 2 * F t := by
+      nlinarith
+    calc
+      D ≤ bkmLogSobolevGradientEnvelope C Ω H t *
+            vorticityEnstrophyAt u t := hDle
+      _ = bkmLogSobolevGradientEnvelope C Ω H t * (2 * F t) := by
+            rw [hEnstrophy_eq]
+      _ ≤ (C * (1 + Ω t) *
+              (1 + Real.log (Real.exp (1 : ℝ) + F t))) *
+            (2 * F t) :=
+            mul_le_mul_of_nonneg_right hCoeff htwoF_nonneg
+      _ = R t * (1 + Real.log (Real.exp (1 : ℝ) + F t)) * F t := by
+            dsimp [R]
+            ring
+
+/-- Version of
+`normalizedVorticityEnstrophyAt_le_exp_of_logSobolevGradientControlled` that
+uses the checked BKM enstrophy-growth theorem from a supplied log-Sobolev
+gradient control plus the local enstrophy balance and integrability data. -/
+theorem normalizedVorticityEnstrophyAt_le_exp_of_logSobolevControl_balance
+    {ν T C : ℝ} {u : NSVelocityField} {Ω H A : NSTime → ℝ}
+    (hcont :
+      ContinuousOn (fun t => normalizedVorticityEnstrophyAt u t)
+        (Set.Icc 0 T))
+    (hAcont : ContinuousOn A (Set.Icc 0 T))
+    (hν : 0 ≤ ν)
+    (hC : 0 ≤ C)
+    (hΩ_nonneg : ∀ t, 0 ≤ t → t ≤ T → 0 ≤ Ω t)
+    (hH_nonneg : ∀ t, 0 ≤ t → t ≤ T → 0 ≤ H t)
+    (hH_le_enstrophy :
+      ∀ t, t ∈ Set.Icc 0 T → H t ≤ normalizedVorticityEnstrophyAt u t)
+    (hAderiv :
+      ∀ t, t ∈ Set.Ico 0 T →
+        HasDerivWithinAt A (2 * C * (1 + Ω t)) (Set.Ici t) t)
+    (hLog : BKMLogSobolevGradientControlOn u T C Ω H)
+    (hBal :
+      ∀ t, t ∈ Set.Ico 0 T → vorticityEnstrophyBalanceAt ν u t)
+    (hStretchInt :
+      ∀ t, t ∈ Set.Ico 0 T →
+        MeasureTheory.Integrable (fun x => vorticityStretchingPower u t x))
+    (hEnstrophyInt :
+      ∀ t, t ∈ Set.Ico 0 T →
+        MeasureTheory.Integrable (fun x => vorticityEnstrophyDensity u t x)) :
+    ∀ t, t ∈ Set.Icc 0 T →
+      normalizedVorticityEnstrophyAt u t ≤
+        Real.exp
+          ((1 + Real.log
+              (Real.exp (1 : ℝ) + normalizedVorticityEnstrophyAt u 0)) *
+            Real.exp (A t - A 0)) := by
+  exact
+    normalizedVorticityEnstrophyAt_le_exp_of_logSobolevGradientControlled
+      hcont hAcont hC hΩ_nonneg hH_nonneg hH_le_enstrophy hAderiv
+      (fun t ht =>
+        vorticityEnstrophyGradientControlledAt_of_balance_logSobolev_control
+          hν (hBal t ht) hLog ht.1 (le_of_lt ht.2)
+          (hStretchInt t ht) (hEnstrophyInt t ht))
+
 /-- Componentized form of the remaining BKM analytic route.  The first
 component is the residual-curl expansion identity, the second supplies the
 logarithmic gradient envelope from BKM data, and the third closes the high-norm
