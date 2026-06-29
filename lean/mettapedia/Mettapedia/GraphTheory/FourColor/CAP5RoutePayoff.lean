@@ -115,7 +115,77 @@ def noPrimitiveGapByFiniteCheck
     (checks : CAP5DecidableCheckerEvidence (G := G) boundaryEdge side) : Prop :=
   checks.report.missingCheckerEvidenceLatents = []
 
+omit [Fintype G.edgeSet] [FiniteDimensional F2 (G.edgeSet → Color)] in
+theorem noPrimitiveGap_of_noPrimitiveGapByFiniteCheck
+    {boundaryEdge : Fin 5 → G.edgeSet} {side : V → Prop}
+    (checks : CAP5DecidableCheckerEvidence (G := G) boundaryEdge side)
+    (hclosed : checks.noPrimitiveGapByFiniteCheck) :
+    ¬ CAP5PrimitiveCheckerGap boundaryEdge side := by
+  classical
+  letI := checks.portal
+  letI := checks.cycles
+  letI := checks.realized
+  exact
+    (no_cap5PrimitiveCheckerGap_iff_missingCheckerEvidenceLatents_eq_nil
+      boundaryEdge side).2 (by
+        simpa [noPrimitiveGapByFiniteCheck, report] using hclosed)
+
 end CAP5DecidableCheckerEvidence
+
+/--
+The exact finite input needed before the unified F2 question can be decided for a concrete CAP5
+side.  It combines the executable primitive-checker closure with the forced-edge classifier and
+the emitted/remaining red-blue single-coordinate witnesses consumed by the route certificate.
+-/
+structure CAP5FiniteNoGapRouteInput
+    {boundaryEdge : Fin 5 → G.edgeSet} {n : Nat}
+    (data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n)
+    (emb : PlaneEmbeddingWithBoundary G) (C₀ : G.EdgeColoring Color)
+    (colorings : Set (G.EdgeColoring Color)) (p0Inside p4Inside : Bool)
+    (side : V → Prop) : Type _ where
+  checks : CAP5DecidableCheckerEvidence (G := G) boundaryEdge side
+  checkerClosed : checks.noPrimitiveGapByFiniteCheck
+  subset : colorings ⊆ G.EdgeKempeClosure C₀
+  classifier : data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side
+  redEmitted :
+    ∀ e ∈ classifier.emittedFinset,
+      Pi.single e red ∈ projectedColoringGeneratorSubspace emb colorings
+  blueEmitted :
+    ∀ e ∈ classifier.emittedFinset,
+      Pi.single e blue ∈ projectedColoringGeneratorSubspace emb colorings
+  redRemaining :
+    ∀ e ∈ classifier.remainingControlEdges
+        (interiorEdgeSupport emb.faceBoundary emb.faces),
+      Pi.single e red ∈ projectedColoringGeneratorSubspace emb colorings
+  blueRemaining :
+    ∀ e ∈ classifier.remainingControlEdges
+        (interiorEdgeSupport emb.faceBoundary emb.faces),
+      Pi.single e blue ∈ projectedColoringGeneratorSubspace emb colorings
+
+omit [FiniteDimensional F2 (G.edgeSet → Color)] in
+theorem CAP5FiniteNoGapRouteInput.noPrimitiveGap
+    {boundaryEdge : Fin 5 → G.edgeSet} {n : Nat}
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    {emb : PlaneEmbeddingWithBoundary G} {C₀ : G.EdgeColoring Color}
+    {colorings : Set (G.EdgeColoring Color)} {p0Inside p4Inside : Bool}
+    {side : V → Prop}
+    (input :
+      CAP5FiniteNoGapRouteInput data emb C₀ colorings p0Inside p4Inside side) :
+    ¬ CAP5PrimitiveCheckerGap boundaryEdge side :=
+  CAP5DecidableCheckerEvidence.noPrimitiveGap_of_noPrimitiveGapByFiniteCheck
+    input.checks input.checkerClosed
+
+def CAP5FiniteNoGapRouteInput.toRouteCertificate
+    {boundaryEdge : Fin 5 → G.edgeSet} {n : Nat}
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    {emb : PlaneEmbeddingWithBoundary G} {C₀ : G.EdgeColoring Color}
+    {colorings : Set (G.EdgeColoring Color)} {p0Inside p4Inside : Bool}
+    {side : V → Prop}
+    (input :
+      CAP5FiniteNoGapRouteInput data emb C₀ colorings p0Inside p4Inside side) :
+    CAP5F2RouteCertificate data emb C₀ colorings p0Inside p4Inside side :=
+  CAP5F2RouteCertificate.ofNoGap input.subset input.noPrimitiveGap input.classifier
+    input.redEmitted input.blueEmitted input.redRemaining input.blueRemaining
 
 /--
 A finite checked route-closed certificate: executable primitive checker evidence is complete, and
@@ -132,6 +202,33 @@ structure CAP5FiniteRouteClosedWitness
   cert : CAP5F2RouteCertificate data emb C₀ colorings p0Inside p4Inside side
   checkerClosed : checks.noPrimitiveGapByFiniteCheck
   routeClosed : CAP5F2RouteClosed cert
+
+theorem CAP5FiniteRouteClosedWitness.noPrimitiveGap
+    {boundaryEdge : Fin 5 → G.edgeSet} {n : Nat}
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    {emb : PlaneEmbeddingWithBoundary G} {C₀ : G.EdgeColoring Color}
+    {colorings : Set (G.EdgeColoring Color)} {p0Inside p4Inside : Bool}
+    {side : V → Prop}
+    (w :
+      CAP5FiniteRouteClosedWitness data emb C₀ colorings p0Inside p4Inside side) :
+    ¬ CAP5PrimitiveCheckerGap boundaryEdge side :=
+  CAP5DecidableCheckerEvidence.noPrimitiveGap_of_noPrimitiveGapByFiniteCheck
+    w.checks w.checkerClosed
+
+def CAP5FiniteRouteClosedWitness.ofNoGapRouteInput
+    {boundaryEdge : Fin 5 → G.edgeSet} {n : Nat}
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    {emb : PlaneEmbeddingWithBoundary G} {C₀ : G.EdgeColoring Color}
+    {colorings : Set (G.EdgeColoring Color)} {p0Inside p4Inside : Bool}
+    {side : V → Prop}
+    (input :
+      CAP5FiniteNoGapRouteInput data emb C₀ colorings p0Inside p4Inside side)
+    (hclosed : CAP5F2RouteClosed input.toRouteCertificate) :
+    CAP5FiniteRouteClosedWitness data emb C₀ colorings p0Inside p4Inside side where
+  checks := input.checks
+  cert := input.toRouteCertificate
+  checkerClosed := input.checkerClosed
+  routeClosed := hclosed
 
 theorem CAP5FiniteRouteClosedWitness.coloringPayoff
     {boundaryEdge : Fin 5 → G.edgeSet} {n : Nat}
