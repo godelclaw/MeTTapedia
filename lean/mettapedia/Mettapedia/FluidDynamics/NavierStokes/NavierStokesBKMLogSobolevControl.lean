@@ -28,12 +28,17 @@ def bkmLogSobolevGradientEnvelope
     (C : ℝ) (Ω H : NSTime → ℝ) (t : NSTime) : ℝ :=
   C * (1 + Ω t * Real.log (Real.exp 1 + H t))
 
-/-- The logarithmic envelope is nonnegative under the expected sign
-hypotheses on its constant, vorticity envelope, and high-norm envelope. -/
-theorem bkmLogSobolevGradientEnvelope_nonneg_of_nonneg
-    {C : ℝ} {Ω H : NSTime → ℝ} {t : NSTime}
-    (hC : 0 ≤ C) (hΩ : 0 ≤ Ω t) (hH : 0 ≤ H t) :
-    0 ≤ bkmLogSobolevGradientEnvelope C Ω H t := by
+/-- The vorticity-log factor in the BKM logarithmic gradient envelope. -/
+def bkmLogSobolevLogFactor
+    (Ω H : NSTime → ℝ) (t : NSTime) : ℝ :=
+  Ω t * Real.log (Real.exp 1 + H t)
+
+/-- The BKM logarithmic factor is nonnegative when both envelopes are
+nonnegative at the current time. -/
+theorem bkmLogSobolevLogFactor_nonneg_of_nonneg
+    {Ω H : NSTime → ℝ} {t : NSTime}
+    (hΩ : 0 ≤ Ω t) (hH : 0 ≤ H t) :
+    0 ≤ bkmLogSobolevLogFactor Ω H t := by
   have hexp_one : (1 : ℝ) ≤ Real.exp (1 : ℝ) := by
     rw [← Real.exp_zero]
     exact Real.exp_le_exp.mpr (by norm_num)
@@ -41,9 +46,40 @@ theorem bkmLogSobolevGradientEnvelope_nonneg_of_nonneg
     linarith
   have hlog : 0 ≤ Real.log (Real.exp (1 : ℝ) + H t) :=
     Real.log_nonneg harg
-  have hprod : 0 ≤ Ω t * Real.log (Real.exp (1 : ℝ) + H t) :=
-    mul_nonneg hΩ hlog
+  exact mul_nonneg hΩ hlog
+
+/-- The logarithmic envelope is nonnegative under the expected sign
+hypotheses on its constant, vorticity envelope, and high-norm envelope. -/
+theorem bkmLogSobolevGradientEnvelope_nonneg_of_nonneg
+    {C : ℝ} {Ω H : NSTime → ℝ} {t : NSTime}
+    (hC : 0 ≤ C) (hΩ : 0 ≤ Ω t) (hH : 0 ≤ H t) :
+    0 ≤ bkmLogSobolevGradientEnvelope C Ω H t := by
+  have hprod : 0 ≤ bkmLogSobolevLogFactor Ω H t :=
+    bkmLogSobolevLogFactor_nonneg_of_nonneg hΩ hH
+  have hprod_raw : 0 ≤ Ω t * Real.log (Real.exp (1 : ℝ) + H t) := by
+    simpa [bkmLogSobolevLogFactor] using hprod
   exact mul_nonneg hC (by linarith)
+
+/-- The one-constant BKM envelope dominates the conventional affine-log
+form `C0 + C1 * Omega log(e + H)` once `C` dominates both affine constants. -/
+theorem bkmLogSobolevGradientEnvelope_dominates_affineLog
+    {C C0 C1 : ℝ} {Ω H : NSTime → ℝ} {t : NSTime}
+    (hC0 : C0 ≤ C) (hC1 : C1 ≤ C)
+    (hΩ : 0 ≤ Ω t) (hH : 0 ≤ H t) :
+    C0 + C1 * bkmLogSobolevLogFactor Ω H t ≤
+      bkmLogSobolevGradientEnvelope C Ω H t := by
+  have hlogFactor : 0 ≤ bkmLogSobolevLogFactor Ω H t :=
+    bkmLogSobolevLogFactor_nonneg_of_nonneg hΩ hH
+  have hmul :
+      C1 * bkmLogSobolevLogFactor Ω H t ≤
+        C * bkmLogSobolevLogFactor Ω H t :=
+    mul_le_mul_of_nonneg_right hC1 hlogFactor
+  calc
+    C0 + C1 * bkmLogSobolevLogFactor Ω H t
+        ≤ C + C * bkmLogSobolevLogFactor Ω H t := add_le_add hC0 hmul
+    _ = bkmLogSobolevGradientEnvelope C Ω H t := by
+      simp [bkmLogSobolevGradientEnvelope, bkmLogSobolevLogFactor]
+      ring
 
 /-- The actual pointwise log-Sobolev/Biot-Savart inequality on a slab.  The
 separate control predicate below adds only envelope nonnegativity. -/
@@ -51,6 +87,17 @@ def BKMLogSobolevPointwiseInequalityOn
     (u : NSVelocityField) (T C : ℝ) (Ω H : NSTime → ℝ) : Prop :=
   ∀ t x, 0 ≤ t → t ≤ T →
     ‖spatialFDeriv u t x‖ ≤ bkmLogSobolevGradientEnvelope C Ω H t
+
+/-- Conventional affine-log form of the BKM Biot-Savart/log-Sobolev estimate:
+`||grad u||_∞ <= C0 + C1 * Omega log(e + H)`.
+
+The checked theorem below normalizes this two-constant analytic statement into
+the one-constant downstream BKM envelope. -/
+def BKMLogSobolevAffinePointwiseInequalityOn
+    (u : NSVelocityField) (T C0 C1 : ℝ) (Ω H : NSTime → ℝ) : Prop :=
+  ∀ t x, 0 ≤ t → t ≤ T →
+    ‖spatialFDeriv u t x‖ ≤
+      C0 + C1 * bkmLogSobolevLogFactor Ω H t
 
 /-- A supplied log-Sobolev/Biot-Savart gradient-control hypothesis on a slab. -/
 def BKMLogSobolevGradientControlOn
@@ -73,6 +120,55 @@ theorem BKMLogSobolevGradientControlOn.of_pointwiseInequality
         bkmLogSobolevGradientEnvelope_nonneg_of_nonneg hC
           (hΩ t ht0 htT) (hH t ht0 htT),
       hIneq⟩
+
+/-- A conventional affine-log pointwise estimate implies the downstream
+one-constant pointwise BKM log-Sobolev estimate. -/
+theorem BKMLogSobolevPointwiseInequalityOn.of_affinePointwiseInequality
+    {u : NSVelocityField} {T C C0 C1 : ℝ} {Ω H : NSTime → ℝ}
+    (hC0 : C0 ≤ C) (hC1 : C1 ≤ C)
+    (hΩ : ∀ t, 0 ≤ t → t ≤ T → 0 ≤ Ω t)
+    (hH : ∀ t, 0 ≤ t → t ≤ T → 0 ≤ H t)
+    (hAffine : BKMLogSobolevAffinePointwiseInequalityOn u T C0 C1 Ω H) :
+    BKMLogSobolevPointwiseInequalityOn u T C Ω H := by
+  intro t x ht0 htT
+  exact
+    (hAffine t x ht0 htT).trans
+      (bkmLogSobolevGradientEnvelope_dominates_affineLog
+        hC0 hC1 (hΩ t ht0 htT) (hH t ht0 htT))
+
+/-- A conventional affine-log pointwise estimate plus nonnegative envelopes
+gives the downstream log-Sobolev gradient-control predicate. -/
+theorem BKMLogSobolevGradientControlOn.of_affinePointwiseInequality
+    {u : NSVelocityField} {T C C0 C1 : ℝ} {Ω H : NSTime → ℝ}
+    (hC : 0 ≤ C)
+    (hC0 : C0 ≤ C) (hC1 : C1 ≤ C)
+    (hΩ : ∀ t, 0 ≤ t → t ≤ T → 0 ≤ Ω t)
+    (hH : ∀ t, 0 ≤ t → t ≤ T → 0 ≤ H t)
+    (hAffine : BKMLogSobolevAffinePointwiseInequalityOn u T C0 C1 Ω H) :
+    BKMLogSobolevGradientControlOn u T C Ω H := by
+  exact
+    BKMLogSobolevGradientControlOn.of_pointwiseInequality
+      hC hΩ hH
+      (BKMLogSobolevPointwiseInequalityOn.of_affinePointwiseInequality
+        hC0 hC1 hΩ hH hAffine)
+
+/-- If the affine constants are nonnegative, the normalized BKM constant can
+be chosen as their maximum. -/
+theorem BKMLogSobolevGradientControlOn.of_affinePointwiseInequality_max
+    {u : NSVelocityField} {T C0 C1 : ℝ} {Ω H : NSTime → ℝ}
+    (hC0_nonneg : 0 ≤ C0) (hC1_nonneg : 0 ≤ C1)
+    (hΩ : ∀ t, 0 ≤ t → t ≤ T → 0 ≤ Ω t)
+    (hH : ∀ t, 0 ≤ t → t ≤ T → 0 ≤ H t)
+    (hAffine : BKMLogSobolevAffinePointwiseInequalityOn u T C0 C1 Ω H) :
+    BKMLogSobolevGradientControlOn u T (max C0 C1) Ω H := by
+  have hC : 0 ≤ max C0 C1 := by
+    by_cases h : C0 ≤ C1
+    · simpa [max_eq_right h] using hC1_nonneg
+    · have h' : C1 ≤ C0 := le_of_not_ge h
+      simpa [max_eq_left h'] using hC0_nonneg
+  exact
+    BKMLogSobolevGradientControlOn.of_affinePointwiseInequality
+      hC (le_max_left C0 C1) (le_max_right C0 C1) hΩ hH hAffine
 
 /-- A supplied log-Sobolev gradient control is exactly the gradient envelope
 needed by the checked stretching estimates. -/
@@ -205,6 +301,27 @@ theorem BKMLogSobolevGrowthEstimateClosed_proved :
       fun t x ht0 htT =>
         abs_vorticityMaterialDiffusionPower_le_of_logSobolev_control
           hEq hLog hΩ ht0 htT⟩
+
+/-- Checked affine-log normalization package: the conventional two-constant
+Biot-Savart/log-Sobolev pointwise estimate is enough to provide the exact
+one-constant gradient-control predicate consumed by the BKM growth route. -/
+def BKMLogSobolevAffineReductionClosed : Prop :=
+  ∀ (u : NSVelocityField) (T C C0 C1 : ℝ) (Ω H : NSTime → ℝ),
+    0 ≤ C →
+      C0 ≤ C →
+        C1 ≤ C →
+          (∀ t, 0 ≤ t → t ≤ T → 0 ≤ Ω t) →
+            (∀ t, 0 ≤ t → t ≤ T → 0 ≤ H t) →
+              BKMLogSobolevAffinePointwiseInequalityOn u T C0 C1 Ω H →
+                BKMLogSobolevGradientControlOn u T C Ω H
+
+/-- Checked proof of the affine-log normalization package. -/
+theorem BKMLogSobolevAffineReductionClosed_proved :
+    BKMLogSobolevAffineReductionClosed := by
+  intro u T C C0 C1 Ω H hC hC0 hC1 hΩ hH hAffine
+  exact
+    BKMLogSobolevGradientControlOn.of_affinePointwiseInequality
+      hC hC0 hC1 hΩ hH hAffine
 
 end BKMContinuation
 

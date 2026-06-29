@@ -20,6 +20,32 @@ namespace NavierStokes
 
 section BKMContinuation
 
+/-- Sharper analytic log-Sobolev/Biot-Savart ingredient in the conventional
+affine form: from BKM vorticity-envelope data, produce constants and a
+nonnegative high-norm envelope satisfying
+`||grad u|| <= C0 + C1 * Omega log(exp(1) + H)`.
+
+The checked algebra in `NavierStokesBKMLogSobolevControl` normalizes this into
+the one-constant gradient envelope used downstream. -/
+def BKMLogSobolevAffinePointwiseFromEnvelope : Prop :=
+  ∀ (ν : ℝ) (u₀ : NSInitialVelocity) (T : ℝ)
+      (W : ExplicitFiniteTimeRegularityWitness ν u₀ T)
+      (Ω : NSTime → ℝ) (B : ℝ),
+    0 ≤ T →
+      0 < ν →
+        smoothInitialVelocityData u₀ →
+          (∀ x, initialSpatialDivergence u₀ x = 0) →
+            finiteInitialKineticEnergy u₀ →
+              concreteVorticityEquationOn ν W.velocity T →
+                vorticityEnvelopeOn W.velocity T Ω →
+                  integrableVorticityEnvelopeOn Ω T B →
+                    ∃ C0 : ℝ, ∃ C1 : ℝ, ∃ H : NSTime → ℝ,
+                      0 ≤ C0 ∧
+                        0 ≤ C1 ∧
+                          (∀ t, 0 ≤ t → t ≤ T → 0 ≤ H t) ∧
+                            BKMLogSobolevAffinePointwiseInequalityOn
+                              W.velocity T C0 C1 Ω H
+
 /-- Analytic log-Sobolev/Biot-Savart ingredient: once the standard vorticity
 equation and BKM envelope data are available on a slab, produce a logarithmic
 gradient-control envelope for the witness velocity. -/
@@ -37,6 +63,19 @@ def BKMLogSobolevGradientControlFromEnvelope : Prop :=
                   integrableVorticityEnvelopeOn Ω T B →
                     ∃ C : ℝ, ∃ H : NSTime → ℝ,
                       BKMLogSobolevGradientControlOn W.velocity T C Ω H
+
+/-- The sharper affine pointwise log-Sobolev component implies the older
+one-constant gradient-control component. -/
+theorem BKMLogSobolevGradientControlFromEnvelope_of_affinePointwiseFromEnvelope
+    (hAffine : BKMLogSobolevAffinePointwiseFromEnvelope) :
+    BKMLogSobolevGradientControlFromEnvelope := by
+  intro ν u₀ T W Ω B hT hν hsmooth hdiv hfinite hEq hΩ hInt
+  rcases hAffine ν u₀ T W Ω B hT hν hsmooth hdiv hfinite hEq hΩ hInt with
+    ⟨C0, C1, H, hC0, hC1, hH, hAffinePointwise⟩
+  refine ⟨max C0 C1, H, ?_⟩
+  exact
+    BKMLogSobolevGradientControlOn.of_affinePointwiseInequality_max
+      hC0 hC1 hΩ.1 hH hAffinePointwise
 
 /-- Analytic high-norm continuation ingredient: the standard vorticity equation,
 an integrable vorticity envelope, and the corresponding logarithmic gradient
@@ -65,6 +104,22 @@ def BKMAnalyticComponentsClosed : Prop :=
   BKMResidualCurlExpansionDefectVanishes ∧
     BKMLogSobolevGradientControlFromEnvelope ∧
       BKMHighNormContinuationFromLogControl
+
+/-- Componentized BKM route with the log-Sobolev ingredient stated in the
+conventional affine pointwise form. -/
+def BKMAffineLogSobolevAnalyticComponentsClosed : Prop :=
+  BKMResidualCurlExpansionDefectVanishes ∧
+    BKMLogSobolevAffinePointwiseFromEnvelope ∧
+      BKMHighNormContinuationFromLogControl
+
+/-- The affine-log component bundle implies the older component bundle. -/
+theorem BKMAffineLogSobolevAnalyticComponentsClosed.implies_BKMAnalyticComponentsClosed
+    (h : BKMAffineLogSobolevAnalyticComponentsClosed) :
+    BKMAnalyticComponentsClosed := by
+  exact
+    ⟨h.1,
+      BKMLogSobolevGradientControlFromEnvelope_of_affinePointwiseFromEnvelope h.2.1,
+      h.2.2⟩
 
 /-- The three analytic components imply the previous single continuation
 lemma. -/
@@ -98,6 +153,14 @@ theorem BKMAnalyticComponentsClosed.implies_finiteEnergyBKMContinuationTargetOnN
   BKMAnalyticContinuationLemma_implies_finiteEnergyBKMContinuationTargetOnNonnegHorizons
     h.implies_BKMAnalyticContinuationLemma
 
+/-- The affine-log component bundle implies the repaired nonnegative-horizon
+BKM target through the checked affine normalization. -/
+theorem BKMAffineLogSobolevAnalyticComponentsClosed.implies_finiteEnergyBKMContinuationTargetOnNonnegHorizons
+    (h : BKMAffineLogSobolevAnalyticComponentsClosed) :
+    ExplicitFiniteEnergyBKMContinuationTargetOnNonnegHorizons :=
+  BKMAnalyticComponentsClosed.implies_finiteEnergyBKMContinuationTargetOnNonnegHorizons
+    (BKMAffineLogSobolevAnalyticComponentsClosed.implies_BKMAnalyticComponentsClosed h)
+
 /-- Route-facing packet: the local BKM estimates are checked, and the remaining
 target follows from the componentized analytic ingredients. -/
 theorem BKMContinuation_reduced_to_analytic_components :
@@ -115,9 +178,12 @@ theorem BKMContinuation_reduced_to_analytic_components :
                           BKMVorticityEnstrophyAprioriEstimateClosed ∧
                             BKMVorticityEnstrophyGradientGrowthClosed ∧
                               BKMVorticityEnstrophyLogSobolevGrowthClosed ∧
-                                BKMLogSobolevGrowthEstimateClosed ∧
-                                  (BKMAnalyticComponentsClosed →
-                                    ExplicitFiniteEnergyBKMContinuationTargetOnNonnegHorizons) := by
+                                BKMLogSobolevAffineReductionClosed ∧
+                                  BKMLogSobolevGrowthEstimateClosed ∧
+                                    (BKMAnalyticComponentsClosed →
+                                      ExplicitFiniteEnergyBKMContinuationTargetOnNonnegHorizons) ∧
+                                      (BKMAffineLogSobolevAnalyticComponentsClosed →
+                                        ExplicitFiniteEnergyBKMContinuationTargetOnNonnegHorizons) := by
   exact
     ⟨BKMVorticityStretchingEstimateClosed_proved,
       BKMResidualCurlExpansionAlgebraClosed_proved,
@@ -133,8 +199,10 @@ theorem BKMContinuation_reduced_to_analytic_components :
       BKMVorticityEnstrophyAprioriEstimateClosed_proved,
       BKMVorticityEnstrophyGradientGrowthClosed_proved,
       BKMVorticityEnstrophyLogSobolevGrowthClosed_proved,
+      BKMLogSobolevAffineReductionClosed_proved,
       BKMLogSobolevGrowthEstimateClosed_proved,
-      BKMAnalyticComponentsClosed.implies_finiteEnergyBKMContinuationTargetOnNonnegHorizons⟩
+      BKMAnalyticComponentsClosed.implies_finiteEnergyBKMContinuationTargetOnNonnegHorizons,
+      BKMAffineLogSobolevAnalyticComponentsClosed.implies_finiteEnergyBKMContinuationTargetOnNonnegHorizons⟩
 
 end BKMContinuation
 
