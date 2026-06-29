@@ -540,6 +540,93 @@ theorem stokesFlow_smallPastCoordinateEnstrophyRatio_packet
       |>.exists_past_nonzero_with_small_positive_coordinateEnstrophy_ratio
         hν ⟨xT, hneT⟩ hlam
 
+/-- Exact Stokes-flow specialization of the spatial Poincare-floor
+obstruction: no positive-viscosity nonzero Stokes candidate can keep a
+positive coordinate-enstrophy floor over normalized energy on the whole past
+ray of a nonzero endpoint. -/
+theorem stokesFlow_noPastCoordinateEnstrophyFloor_packet
+    (hν : 0 < ν)
+    (hconv : ∀ t x, spatialConvection S.velocity t x = 0)
+    (hpressure : ∀ t x, spatialPressureGradient S.pressure t x = 0)
+    {lam T : NSTime} (hlam : 0 < lam)
+    (hneT : ∃ xT : NSSpace, S.velocity T xT ≠ 0) :
+    NonzeroSchwartzStokesFlowKernel ν S.velocity S.pressure ∧
+      ¬ ∀ t : NSTime, t ≤ T →
+        lam * normalizedKineticEnergy S.velocity t ≤
+          coordinateEnstrophyAt S.velocity t := by
+  exact
+    ⟨S.nonzeroStokesFlowKernel hconv hpressure,
+      S.toSchwartzConcreteNavierStokesSolution
+        |>.not_forall_past_coordinateEnstrophyAt_ge_mul_normalizedKineticEnergy
+          hν hlam hneT⟩
+
+/-- Exact Stokes-flow specialization of the spatial Rayleigh-quotient floor
+obstruction: no positive-viscosity nonzero Stokes candidate can keep a positive
+lower bound on coordinate enstrophy divided by normalized kinetic energy along
+the whole past ray of a nonzero endpoint. -/
+theorem stokesFlow_noPastCoordinateEnstrophyRatioFloor_packet
+    (hν : 0 < ν)
+    (hconv : ∀ t x, spatialConvection S.velocity t x = 0)
+    (hpressure : ∀ t x, spatialPressureGradient S.pressure t x = 0)
+    {lam T : NSTime} (hlam : 0 < lam)
+    (hneT : ∃ xT : NSSpace, S.velocity T xT ≠ 0) :
+    NonzeroSchwartzStokesFlowKernel ν S.velocity S.pressure ∧
+      ¬ ∀ t : NSTime, t ≤ T →
+        lam ≤
+          coordinateEnstrophyAt S.velocity t /
+            normalizedKineticEnergy S.velocity t := by
+  refine ⟨S.nonzeroStokesFlowKernel hconv hpressure, ?_⟩
+  intro hfloor
+  rcases S.toSchwartzConcreteNavierStokesSolution
+      |>.exists_past_nonzero_with_small_positive_coordinateEnstrophy_ratio
+        hν hneT hlam with
+    ⟨t, htT, _hne, _hEnstpos, _hEpos, _hratio_pos, hratio_lt⟩
+  exact not_le_of_gt hratio_lt (hfloor t htT)
+
+/-- Positive-viscosity Stokes profile-gap obstruction packet: any nonzero
+Stokes candidate carries the Stokes kernel, but whole-past spectral,
+coordinate-enstrophy, and spatial Rayleigh-quotient floors all fail before a
+nonzero endpoint, with an explicit small positive spatial Rayleigh sample. -/
+theorem stokesFlow_positiveViscosity_profileGapObstruction_packet
+    (hν : 0 < ν)
+    (hconv : ∀ t x, spatialConvection S.velocity t x = 0)
+    (hpressure : ∀ t x, spatialPressureGradient S.pressure t x = 0)
+    {lam T : NSTime} (hlam : 0 < lam)
+    (hneT : ∃ xT : NSSpace, S.velocity T xT ≠ 0) :
+    NonzeroSchwartzStokesFlowKernel ν S.velocity S.pressure ∧
+      (¬ ∀ t : NSTime, t ≤ T →
+        lam * normalizedKineticEnergy S.velocity t ≤
+          coordinateEnergyDissipationRate S.velocity ν t) ∧
+      (¬ ∀ t : NSTime, t ≤ T →
+        lam * normalizedKineticEnergy S.velocity t ≤
+          coordinateEnstrophyAt S.velocity t) ∧
+      (¬ ∀ t : NSTime, t ≤ T →
+        lam ≤
+          coordinateEnstrophyAt S.velocity t /
+            normalizedKineticEnergy S.velocity t) ∧
+      ∃ t : NSTime,
+        t ≤ T ∧
+          (∃ x : NSSpace, S.velocity t x ≠ 0) ∧
+            0 < coordinateEnstrophyAt S.velocity t ∧
+              0 < normalizedKineticEnergy S.velocity t ∧
+                0 <
+                  coordinateEnstrophyAt S.velocity t /
+                    normalizedKineticEnergy S.velocity t ∧
+                  coordinateEnstrophyAt S.velocity t /
+                      normalizedKineticEnergy S.velocity t < lam := by
+  refine
+    ⟨S.nonzeroStokesFlowKernel hconv hpressure,
+      S.toSchwartzConcreteNavierStokesSolution
+        |>.not_forall_past_coordinateEnergyDissipationRate_ge_mul_normalizedKineticEnergy
+          hν.le hlam hneT,
+      (S.stokesFlow_noPastCoordinateEnstrophyFloor_packet
+        hν hconv hpressure hlam hneT).2,
+      (S.stokesFlow_noPastCoordinateEnstrophyRatioFloor_packet
+        hν hconv hpressure hlam hneT).2,
+      S.toSchwartzConcreteNavierStokesSolution
+        |>.exists_past_nonzero_with_small_positive_coordinateEnstrophy_ratio
+          hν hneT hlam⟩
+
 end NonzeroSchwartzConcreteNavierStokesSolution
 
 /-- Global no-go form for uniform past dissipation gaps in the nonzero
@@ -623,6 +710,41 @@ theorem not_exists_nonzeroSchwartzConcreteSolution_past_coordinateEnstrophy_floo
     (S.toSchwartzConcreteNavierStokesSolution
       |>.not_forall_past_coordinateEnstrophyAt_ge_mul_normalizedKineticEnergy
         hν hlam hneT) hfloor
+
+/-- Global Stokes-flow no-go form for positive spatial Poincare floors on a
+whole past ray before a nonzero endpoint. -/
+theorem not_exists_nonzeroSchwartzStokesFlow_past_coordinateEnstrophy_floor_of_posViscosity
+    {ν lam : ℝ} (hν : 0 < ν) (hlam : 0 < lam) :
+    ¬ ∃ S : NonzeroSchwartzConcreteNavierStokesSolution ν,
+      (∀ t x, spatialConvection S.velocity t x = 0) ∧
+        (∀ t x, spatialPressureGradient S.pressure t x = 0) ∧
+          ∃ T : NSTime,
+            (∃ xT : NSSpace, S.velocity T xT ≠ 0) ∧
+              ∀ t : NSTime, t ≤ T →
+                lam * normalizedKineticEnergy S.velocity t ≤
+                  coordinateEnstrophyAt S.velocity t := by
+  rintro ⟨S, hconv, hpressure, T, hneT, hfloor⟩
+  exact
+    (S.stokesFlow_noPastCoordinateEnstrophyFloor_packet
+      hν hconv hpressure hlam hneT).2 hfloor
+
+/-- Global Stokes-flow no-go form for positive whole-past spatial
+Rayleigh-quotient floors before a nonzero endpoint. -/
+theorem not_exists_nonzeroSchwartzStokesFlow_past_coordinateEnstrophy_ratio_floor_of_posViscosity
+    {ν lam : ℝ} (hν : 0 < ν) (hlam : 0 < lam) :
+    ¬ ∃ S : NonzeroSchwartzConcreteNavierStokesSolution ν,
+      (∀ t x, spatialConvection S.velocity t x = 0) ∧
+        (∀ t x, spatialPressureGradient S.pressure t x = 0) ∧
+          ∃ T : NSTime,
+            (∃ xT : NSSpace, S.velocity T xT ≠ 0) ∧
+              ∀ t : NSTime, t ≤ T →
+                lam ≤
+                  coordinateEnstrophyAt S.velocity t /
+                    normalizedKineticEnergy S.velocity t := by
+  rintro ⟨S, hconv, hpressure, T, hneT, hfloor⟩
+  exact
+    (S.stokesFlow_noPastCoordinateEnstrophyRatioFloor_packet
+      hν hconv hpressure hlam hneT).2 hfloor
 
 end NavierStokes
 end FluidDynamics
