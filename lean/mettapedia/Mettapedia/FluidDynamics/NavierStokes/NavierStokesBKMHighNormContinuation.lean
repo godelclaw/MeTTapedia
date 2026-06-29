@@ -101,6 +101,63 @@ def BKMSchwartzSliceBiotSavartAffineLogPointwiseEstimate : Prop :=
                 BKMLogSobolevSchwartzHighNormEnvelopeOn u T H →
                   BKMLogSobolevAffinePointwiseInequalityOn u T C0 C1 Ω H
 
+/-- Exact slice-level singular-integral theorem missing from mathlib for the
+BKM route.  For one divergence-free Schwartz velocity slice on `ℝ^3`, a
+uniform vorticity bound and a fourth Schwartz-seminorm bound must control the
+spatial gradient by the conventional affine-log Biot-Savart estimate.
+
+This is deliberately stated as a one-slice theorem: proving it requires the
+Biot-Savart/Riesz-transform/Calderon-Zygmund/log-Sobolev machinery, while the
+checked theorem below handles only the packaging from slices to the current
+space-time BKM interface. -/
+def BKMSchwartzSliceVorticityToGradientAffineLogEstimate : Prop :=
+  ∃ C0 : ℝ, ∃ C1 : ℝ,
+    0 ≤ C0 ∧
+      0 ≤ C1 ∧
+        ∀ (f : 𝓢(NSSpace, NSSpace)) (Ω H : ℝ),
+          0 ≤ Ω →
+            0 ≤ H →
+              (∀ x,
+                spatialDivergence
+                  (fun _ : NSTime => fun y : NSSpace => f y) 0 x = 0) →
+                (∀ x,
+                  ‖spatialVorticity
+                    (fun _ : NSTime => fun y : NSSpace => f y) 0 x‖ ≤ Ω) →
+                  SchwartzMap.seminorm ℝ 0 4 f ≤ H →
+                    ∀ x,
+                      ‖spatialFDeriv
+                        (fun _ : NSTime => fun y : NSSpace => f y) 0 x‖ ≤
+                        C0 + C1 * (Ω * Real.log (Real.exp (1 : ℝ) + H))
+
+/-- The exact one-slice singular-integral theorem implies the current
+space-time Biot-Savart interface once a Schwartz representative and high-norm
+envelope are supplied at each time. -/
+theorem BKMSchwartzSliceBiotSavartAffineLogPointwiseEstimate_of_vorticityToGradient
+    (hSlice : BKMSchwartzSliceVorticityToGradientAffineLogEstimate) :
+    BKMSchwartzSliceBiotSavartAffineLogPointwiseEstimate := by
+  rcases hSlice with ⟨C0, C1, hC0, hC1, hPointwise⟩
+  refine ⟨C0, C1, hC0, hC1, ?_⟩
+  intro u T Ω H _hu hdiv hΩ hH t x ht0 htT
+  rcases hH.2 t ht0 htT with ⟨f, hf_eq, hf_seminorm⟩
+  have hdiv_f :
+      ∀ y,
+        spatialDivergence
+          (fun _ : NSTime => fun z : NSSpace => f z) 0 y = 0 := by
+    intro y
+    simpa [spatialDivergence, spatialFDeriv, hf_eq] using
+      hdiv t y ht0 htT
+  have hω_f :
+      ∀ y,
+        ‖spatialVorticity
+          (fun _ : NSTime => fun z : NSSpace => f z) 0 y‖ ≤ Ω t := by
+    intro y
+    simpa [spatialVorticity, spatialDerivativeComponent, spatialFDeriv, hf_eq] using
+      hΩ.2 t y ht0 htT
+  have hgrad :=
+    hPointwise f (Ω t) (H t) (hΩ.1 t ht0 htT) (hH.1 t ht0 htT)
+      hdiv_f hω_f hf_seminorm x
+  simpa [spatialFDeriv, hf_eq, bkmLogSobolevLogFactor] using hgrad
+
 /-- A concrete Schwartz-slice high-norm extraction theorem plus the
 Biot-Savart/Riesz affine-log pointwise estimate imply the first current open
 BKM analytic lemma. -/
@@ -785,6 +842,166 @@ theorem normalizedVorticityEnstrophyAt_le_exp_of_logSobolevControl_balance
         vorticityEnstrophyGradientControlledAt_of_balance_logSobolev_control
           hν (hBal t ht) hLog ht.1 (le_of_lt ht.2)
           (hStretchInt t ht) (hEnstrophyInt t ht))
+
+/-- Bounded-primitive form of the BKM log-Sobolev enstrophy estimate.  Once a
+right primitive of `2*C*(1+Omega)` is bounded above on the slab, the previous
+scalar log-Gronwall estimate gives a single finite scalar bound for normalized
+vorticity enstrophy on the whole slab. -/
+theorem normalizedVorticityEnstrophyAt_le_exp_of_logSobolevControl_balance_of_antiderivative_bounded
+    {ν T C Amax : ℝ} {u : NSVelocityField} {Ω H A : NSTime → ℝ}
+    (hcont :
+      ContinuousOn (fun t => normalizedVorticityEnstrophyAt u t)
+        (Set.Icc 0 T))
+    (hAcont : ContinuousOn A (Set.Icc 0 T))
+    (hν : 0 ≤ ν)
+    (hC : 0 ≤ C)
+    (hΩ_nonneg : ∀ t, 0 ≤ t → t ≤ T → 0 ≤ Ω t)
+    (hH_nonneg : ∀ t, 0 ≤ t → t ≤ T → 0 ≤ H t)
+    (hH_le_enstrophy :
+      ∀ t, t ∈ Set.Icc 0 T → H t ≤ normalizedVorticityEnstrophyAt u t)
+    (hAderiv :
+      ∀ t, t ∈ Set.Ico 0 T →
+        HasDerivWithinAt A (2 * C * (1 + Ω t)) (Set.Ici t) t)
+    (hA_le : ∀ t, t ∈ Set.Icc 0 T → A t ≤ Amax)
+    (hLog : BKMLogSobolevGradientControlOn u T C Ω H)
+    (hBal :
+      ∀ t, t ∈ Set.Ico 0 T → vorticityEnstrophyBalanceAt ν u t)
+    (hStretchInt :
+      ∀ t, t ∈ Set.Ico 0 T →
+        MeasureTheory.Integrable (fun x => vorticityStretchingPower u t x))
+    (hEnstrophyInt :
+      ∀ t, t ∈ Set.Ico 0 T →
+        MeasureTheory.Integrable (fun x => vorticityEnstrophyDensity u t x)) :
+    ∀ t, t ∈ Set.Icc 0 T →
+      normalizedVorticityEnstrophyAt u t ≤
+        Real.exp
+          ((1 + Real.log
+              (Real.exp (1 : ℝ) + normalizedVorticityEnstrophyAt u 0)) *
+            Real.exp (Amax - A 0)) := by
+  intro t ht
+  have hbase :=
+    normalizedVorticityEnstrophyAt_le_exp_of_logSobolevControl_balance
+      hcont hAcont hν hC hΩ_nonneg hH_nonneg hH_le_enstrophy
+      hAderiv hLog hBal hStretchInt hEnstrophyInt t ht
+  have hF0 : 0 ≤ normalizedVorticityEnstrophyAt u 0 :=
+    normalizedVorticityEnstrophyAt_nonneg u 0
+  have hlog_nonneg :
+      0 ≤ Real.log
+        (Real.exp (1 : ℝ) + normalizedVorticityEnstrophyAt u 0) := by
+    have hexp_one : (1 : ℝ) ≤ Real.exp (1 : ℝ) := by
+      rw [← Real.exp_zero]
+      exact Real.exp_le_exp.mpr (by norm_num)
+    have harg_one :
+        (1 : ℝ) ≤ Real.exp (1 : ℝ) + normalizedVorticityEnstrophyAt u 0 := by
+      linarith
+    exact Real.log_nonneg harg_one
+  have hfactor_nonneg :
+      0 ≤ 1 + Real.log
+        (Real.exp (1 : ℝ) + normalizedVorticityEnstrophyAt u 0) := by
+    linarith
+  have hAexp_le :
+      Real.exp (A t - A 0) ≤ Real.exp (Amax - A 0) :=
+    Real.exp_le_exp.mpr (by linarith [hA_le t ht])
+  have hinner_le :
+      (1 + Real.log
+          (Real.exp (1 : ℝ) + normalizedVorticityEnstrophyAt u 0)) *
+        Real.exp (A t - A 0) ≤
+      (1 + Real.log
+          (Real.exp (1 : ℝ) + normalizedVorticityEnstrophyAt u 0)) *
+        Real.exp (Amax - A 0) :=
+    mul_le_mul_of_nonneg_left hAexp_le hfactor_nonneg
+  exact hbase.trans (Real.exp_le_exp.mpr hinner_le)
+
+/-- Exact residual needed to turn supplied BKM log-Sobolev control on an
+arbitrary finite-time witness into the hypotheses of the checked scalar
+log-Gronwall enstrophy estimate.  This includes continuity of the normalized
+enstrophy scalar, a bounded primitive for `2*C*(1+Omega)`, high-norm envelope
+domination by that scalar, and the local balance/integrability inputs.  The
+nonnegativity of `Omega` is not part of this residual: it is already carried by
+`vorticityEnvelopeOn`. -/
+def BKMLogControlWitnessEnstrophyGronwallDataFromWitness : Prop :=
+  ∀ (ν : ℝ) (u₀ : NSInitialVelocity) (T : ℝ)
+      (W : ExplicitFiniteTimeRegularityWitness ν u₀ T)
+      (Ω : NSTime → ℝ) (B C : ℝ) (H : NSTime → ℝ),
+    0 ≤ T →
+      0 < ν →
+        smoothInitialVelocityData u₀ →
+          (∀ x, initialSpatialDivergence u₀ x = 0) →
+            finiteInitialKineticEnergy u₀ →
+              vorticityEnvelopeOn W.velocity T Ω →
+                integrableVorticityEnvelopeOn Ω T B →
+                  concreteVorticityEquationOn ν W.velocity T →
+                    BKMLogSobolevGradientControlOn W.velocity T C Ω H →
+                      ∃ A : NSTime → ℝ, ∃ Amax : ℝ,
+                        ContinuousOn
+                          (fun t => normalizedVorticityEnstrophyAt W.velocity t)
+                          (Set.Icc 0 T) ∧
+                        ContinuousOn A (Set.Icc 0 T) ∧
+                        0 ≤ C ∧
+                        (∀ t, 0 ≤ t → t ≤ T → 0 ≤ H t) ∧
+                        (∀ t, t ∈ Set.Icc 0 T →
+                          H t ≤ normalizedVorticityEnstrophyAt W.velocity t) ∧
+                        (∀ t, t ∈ Set.Ico 0 T →
+                          HasDerivWithinAt A (2 * C * (1 + Ω t))
+                            (Set.Ici t) t) ∧
+                        (∀ t, t ∈ Set.Icc 0 T → A t ≤ Amax) ∧
+                        (∀ t, t ∈ Set.Ico 0 T →
+                          vorticityEnstrophyBalanceAt ν W.velocity t) ∧
+                        (∀ t, t ∈ Set.Ico 0 T →
+                          MeasureTheory.Integrable
+                            (fun x => vorticityStretchingPower W.velocity t x)) ∧
+                        (∀ t, t ∈ Set.Ico 0 T →
+                          MeasureTheory.Integrable
+                            (fun x => vorticityEnstrophyDensity W.velocity t x))
+
+/-- Exact PDE continuation bridge still missing after the scalar high-norm
+work: a finite scalar bound for normalized vorticity enstrophy on the witness
+slab must be converted into the existing fully explicit global-output surface.
+This is deliberately stated over the current witness and output APIs. -/
+def BKMBoundedEnstrophyContinuationBridge : Prop :=
+  ∀ (ν : ℝ) (u₀ : NSInitialVelocity) (T : ℝ)
+      (W : ExplicitFiniteTimeRegularityWitness ν u₀ T) (M : ℝ),
+    0 ≤ T →
+      0 < ν →
+        smoothInitialVelocityData u₀ →
+          (∀ x, initialSpatialDivergence u₀ x = 0) →
+            finiteInitialKineticEnergy u₀ →
+              concreteVorticityEquationOn ν W.velocity T →
+                0 ≤ M →
+                  (∀ t, t ∈ Set.Icc 0 T →
+                    normalizedVorticityEnstrophyAt W.velocity t ≤ M) →
+                    ExplicitConcreteNavierStokesGlobalOutput ν u₀
+
+/-- The high-norm continuation component follows once the arbitrary-witness
+Gronwall data are extracted and finite bounded enstrophy is connected to the
+existing global-output surface.  This proves the scalar/Gronwall half of the
+high-norm route while keeping the remaining PDE continuation bridge explicit. -/
+theorem BKMHighNormContinuationFromLogControl_of_enstrophyGronwallData_and_boundedEnstrophyBridge
+    (hData : BKMLogControlWitnessEnstrophyGronwallDataFromWitness)
+    (hBridge : BKMBoundedEnstrophyContinuationBridge) :
+    BKMHighNormContinuationFromLogControl := by
+  intro ν u₀ T W Ω B C H hT hν hsmooth hdiv hfinite hΩ hInt hEq hLog
+  rcases hData ν u₀ T W Ω B C H hT hν hsmooth hdiv hfinite hΩ hInt hEq hLog with
+    ⟨A, Amax, hcont, hAcont, hC, hH_nonneg, hH_le_enstrophy,
+      hAderiv, hA_le, hBal, hStretchInt, hEnstrophyInt⟩
+  let M : ℝ :=
+    Real.exp
+      ((1 + Real.log
+          (Real.exp (1 : ℝ) + normalizedVorticityEnstrophyAt W.velocity 0)) *
+        Real.exp (Amax - A 0))
+  have hM_nonneg : 0 ≤ M := by
+    dsimp [M]
+    exact Real.exp_nonneg _
+  have hBound :
+      ∀ t, t ∈ Set.Icc 0 T →
+        normalizedVorticityEnstrophyAt W.velocity t ≤ M := by
+    dsimp [M]
+    exact
+      normalizedVorticityEnstrophyAt_le_exp_of_logSobolevControl_balance_of_antiderivative_bounded
+        hcont hAcont (le_of_lt hν) hC hΩ.1 hH_nonneg
+        hH_le_enstrophy hAderiv hA_le hLog hBal hStretchInt hEnstrophyInt
+  exact
+    hBridge ν u₀ T W M hT hν hsmooth hdiv hfinite hEq hM_nonneg hBound
 
 /-- Componentized form of the remaining BKM analytic route.  The first
 component is the residual-curl expansion identity, the second supplies the
