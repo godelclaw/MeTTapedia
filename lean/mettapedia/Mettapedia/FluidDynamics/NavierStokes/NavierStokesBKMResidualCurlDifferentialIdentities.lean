@@ -312,6 +312,283 @@ theorem spatialVorticity_timeVelocityDerivativeField_smoothSpaceTimeVelocity_of_
   exact spatialVorticity_smoothSpaceTimeVelocity_of_smooth
     (timeVelocityDerivativeField_smoothSpaceTimeVelocity_of_smooth hu)
 
+/-- The derivative of a fixed-time spacetime embedding is the spatial product
+inclusion. -/
+theorem fderiv_prodMk_right_const_eq_inr
+    (t : NSTime) (x : NSSpace) :
+    fderiv ℝ (fun y : NSSpace => (t, y)) x =
+      ContinuousLinearMap.inr ℝ NSTime NSSpace := by
+  have h : HasFDerivAt (fun y : NSSpace => (t, y))
+      (ContinuousLinearMap.inr ℝ NSTime NSSpace) x := by
+    simpa [ContinuousLinearMap.inr, ContinuousLinearMap.inr_apply] using
+      ((hasFDerivAt_const t x).prodMk (hasFDerivAt_id x))
+  exact h.fderiv
+
+/-- The derivative of a fixed-space spacetime embedding is the time product
+inclusion. -/
+theorem fderiv_prodMk_left_const_eq_inl
+    (t : NSTime) (x : NSSpace) :
+    fderiv ℝ (fun s : NSTime => (s, x)) t =
+      ContinuousLinearMap.inl ℝ NSTime NSSpace := by
+  have h : HasFDerivAt (fun s : NSTime => (s, x))
+      (ContinuousLinearMap.inl ℝ NSTime NSSpace) t := by
+    simpa [ContinuousLinearMap.inl, ContinuousLinearMap.inl_apply] using
+      ((hasFDerivAt_id t).prodMk (hasFDerivAt_const x t))
+  exact h.fderiv
+
+/-- The spatial derivative of a fixed-time slice is the spacetime derivative
+restricted along the spatial inclusion. -/
+theorem spatialSlice_fderiv_eq_spaceTime_fderiv_inr_of_smooth
+    {u : NSVelocityField} (hu : smoothSpaceTimeVelocity u)
+    (t : NSTime) (x : NSSpace) :
+    fderiv ℝ (fun y : NSSpace => u t y) x =
+      (fderiv ℝ (spaceTimeVelocityMap u) (t, x)).comp
+        (ContinuousLinearMap.inr ℝ NSTime NSSpace) := by
+  have hU : DifferentiableAt ℝ (spaceTimeVelocityMap u) (t, x) :=
+    hu.differentiable (by simp) (t, x)
+  have hembed : DifferentiableAt ℝ (fun y : NSSpace => (t, y)) x := by
+    fun_prop
+  have hcomp := fderiv_fun_comp (x := x) (g := spaceTimeVelocityMap u) hU hembed
+  rw [fderiv_prodMk_right_const_eq_inr] at hcomp
+  simpa [spaceTimeVelocityMap, Function.comp_def, ContinuousLinearMap.comp] using hcomp
+
+/-- The time derivative of a fixed-space slice is the spacetime derivative
+restricted along the time inclusion. -/
+theorem timeSlice_fderiv_eq_spaceTime_fderiv_inl_of_smooth
+    {u : NSVelocityField} (hu : smoothSpaceTimeVelocity u)
+    (t : NSTime) (x : NSSpace) :
+    fderiv ℝ (fun s : NSTime => u s x) t =
+      (fderiv ℝ (spaceTimeVelocityMap u) (t, x)).comp
+        (ContinuousLinearMap.inl ℝ NSTime NSSpace) := by
+  have hU : DifferentiableAt ℝ (spaceTimeVelocityMap u) (t, x) :=
+    hu.differentiable (by simp) (t, x)
+  have hembed : DifferentiableAt ℝ (fun s : NSTime => (s, x)) t := by
+    fun_prop
+  have hcomp := fderiv_fun_comp (x := t) (g := spaceTimeVelocityMap u) hU hembed
+  rw [fderiv_prodMk_left_const_eq_inl] at hcomp
+  simpa [spaceTimeVelocityMap, Function.comp_def, ContinuousLinearMap.comp] using hcomp
+
+/-- For a smooth spacetime velocity, differentiating the derivative applied to
+a fixed direction gives the second derivative with that direction in the
+second slot. -/
+theorem smoothSpaceTimeVelocity_hasFDerivAt_fderiv_apply_const
+    {u : NSVelocityField} (hu : smoothSpaceTimeVelocity u)
+    (tx v : NSSpacetime) :
+    HasFDerivAt (fun p : NSSpacetime => (fderiv ℝ (spaceTimeVelocityMap u) p) v)
+      ((fderiv ℝ (fderiv ℝ (spaceTimeVelocityMap u)) tx).flip v) tx := by
+  have hFdiff : DifferentiableAt ℝ (fderiv ℝ (spaceTimeVelocityMap u)) tx :=
+    (hu.fderiv_right (m := ∞) (by simp)).differentiable (by simp) tx
+  have hconst : HasFDerivAt (fun _p : NSSpacetime => v)
+      (0 : NSSpacetime →L[ℝ] NSSpacetime) tx :=
+    hasFDerivAt_const v tx
+  have h := hFdiff.hasFDerivAt.clm_apply hconst
+  simpa using h
+
+/-- The time derivative of a scalar spatial derivative component is the
+spacetime second derivative with the time direction first. -/
+theorem spatialDerivativeComponent_time_derivative_eq_spacetime_second
+    {u : NSVelocityField} (hu : smoothSpaceTimeVelocity u)
+    (t : NSTime) (x : NSSpace) (coord comp : Fin 3) :
+    fderiv ℝ (fun s : NSTime => spatialDerivativeComponent u s x coord comp) t (1 : ℝ) =
+      (((fderiv ℝ (fderiv ℝ (spaceTimeVelocityMap u)) (t, x))
+          (ContinuousLinearMap.inl ℝ NSTime NSSpace (1 : NSTime)))
+        (ContinuousLinearMap.inr ℝ NSTime NSSpace
+          (EuclideanSpace.single coord (1 : ℝ)))) comp := by
+  let e : NSSpace := EuclideanSpace.single coord (1 : ℝ)
+  let vSpace : NSSpacetime := ContinuousLinearMap.inr ℝ NSTime NSSpace e
+  have hfun :
+      (fun s : NSTime => spatialDerivativeComponent u s x coord comp) =
+        (fun s : NSTime => ((fderiv ℝ (spaceTimeVelocityMap u) (s, x)) vSpace) comp) := by
+    funext s
+    have hslice := spatialSlice_fderiv_eq_spaceTime_fderiv_inr_of_smooth hu s x
+    simp [spatialDerivativeComponent, spatialFDeriv, e, vSpace, hslice,
+      ContinuousLinearMap.comp_apply]
+  rw [hfun]
+  have hscalar : HasFDerivAt
+      (fun p : NSSpacetime => ((fderiv ℝ (spaceTimeVelocityMap u) p) vSpace) comp)
+      ((EuclideanSpace.proj comp : NSSpace →L[ℝ] ℝ).comp
+        ((fderiv ℝ (fderiv ℝ (spaceTimeVelocityMap u)) (t, x)).flip vSpace))
+      (t, x) := by
+    exact (EuclideanSpace.proj comp : NSSpace →L[ℝ] ℝ).hasFDerivAt.comp (t, x)
+      (smoothSpaceTimeVelocity_hasFDerivAt_fderiv_apply_const hu (t, x) vSpace)
+  have htime : HasFDerivAt (fun s : NSTime => (s, x))
+      (ContinuousLinearMap.inl ℝ NSTime NSSpace) t := by
+    simpa [ContinuousLinearMap.inl, ContinuousLinearMap.inl_apply] using
+      ((hasFDerivAt_id t).prodMk (hasFDerivAt_const x t))
+  have hcomp := hscalar.comp t htime
+  change (fderiv ℝ
+      (((fun p : NSSpacetime => ((fderiv ℝ (spaceTimeVelocityMap u) p) vSpace) comp) ∘
+        fun s : NSTime => (s, x))) t) (1 : ℝ) = _
+  rw [hcomp.fderiv]
+  simp [vSpace, e, ContinuousLinearMap.comp_apply, ContinuousLinearMap.flip_apply]
+
+/-- The scalar spatial derivative component of the time-derivative velocity
+field is the spacetime second derivative with the spatial direction first. -/
+theorem spatialDerivativeComponent_timeVelocityDerivativeField_eq_spacetime_second
+    {u : NSVelocityField} (hu : smoothSpaceTimeVelocity u)
+    (t : NSTime) (x : NSSpace) (coord comp : Fin 3) :
+    spatialDerivativeComponent (timeVelocityDerivativeField u) t x coord comp =
+      (((fderiv ℝ (fderiv ℝ (spaceTimeVelocityMap u)) (t, x))
+          (ContinuousLinearMap.inr ℝ NSTime NSSpace
+            (EuclideanSpace.single coord (1 : ℝ))))
+        (ContinuousLinearMap.inl ℝ NSTime NSSpace (1 : NSTime))) comp := by
+  let e : NSSpace := EuclideanSpace.single coord (1 : ℝ)
+  let vTime : NSSpacetime := ContinuousLinearMap.inl ℝ NSTime NSSpace (1 : NSTime)
+  have hfun :
+      (fun y : NSSpace => timeVelocityDerivativeField u t y) =
+        (fun y : NSSpace => (fderiv ℝ (spaceTimeVelocityMap u) (t, y)) vTime) := by
+    funext y
+    have hslice := timeSlice_fderiv_eq_spaceTime_fderiv_inl_of_smooth hu t y
+    simp [timeVelocityDerivativeField, timeVelocityDerivative, timeFDeriv, vTime,
+      hslice, ContinuousLinearMap.comp_apply]
+  rw [spatialDerivativeComponent, spatialFDeriv, hfun]
+  have hvec : HasFDerivAt
+      (((fun p : NSSpacetime => (fderiv ℝ (spaceTimeVelocityMap u) p) vTime) ∘
+        fun y : NSSpace => (t, y)))
+      (((fderiv ℝ (fderiv ℝ (spaceTimeVelocityMap u)) (t, x)).flip vTime).comp
+        (ContinuousLinearMap.inr ℝ NSTime NSSpace)) x := by
+    have hbase := smoothSpaceTimeVelocity_hasFDerivAt_fderiv_apply_const hu (t, x) vTime
+    have hspace : HasFDerivAt (fun y : NSSpace => (t, y))
+        (ContinuousLinearMap.inr ℝ NSTime NSSpace) x := by
+      simpa [ContinuousLinearMap.inr, ContinuousLinearMap.inr_apply] using
+        ((hasFDerivAt_const t x).prodMk (hasFDerivAt_id x))
+    exact hbase.comp x hspace
+  change ((fderiv ℝ
+      (((fun p : NSSpacetime => (fderiv ℝ (spaceTimeVelocityMap u) p) vTime) ∘
+        fun y : NSSpace => (t, y))) x) e) comp = _
+  rw [hvec.fderiv]
+  simp [vTime, e, ContinuousLinearMap.comp_apply, ContinuousLinearMap.flip_apply]
+
+/-- Smooth spacetime velocities commute the time derivative past every scalar
+spatial derivative component. -/
+theorem spatialDerivativeComponent_time_derivative_eq_timeVelocityDerivativeField
+    {u : NSVelocityField} (hu : smoothSpaceTimeVelocity u)
+    (t : NSTime) (x : NSSpace) (coord comp : Fin 3) :
+    fderiv ℝ (fun s : NSTime => spatialDerivativeComponent u s x coord comp) t (1 : ℝ) =
+      spatialDerivativeComponent (timeVelocityDerivativeField u) t x coord comp := by
+  rw [spatialDerivativeComponent_time_derivative_eq_spacetime_second hu t x coord comp,
+    spatialDerivativeComponent_timeVelocityDerivativeField_eq_spacetime_second hu t x coord comp]
+  exact congrArg (fun z : NSSpace => z comp)
+    (smoothSpaceTimeVelocity_fderiv_fderiv_swap hu (t, x)
+      (ContinuousLinearMap.inl ℝ NSTime NSSpace (1 : NSTime))
+      (ContinuousLinearMap.inr ℝ NSTime NSSpace (EuclideanSpace.single coord (1 : ℝ))))
+
+/-- A coordinate of the vector-valued vorticity time derivative is the
+derivative of the corresponding coordinate function. -/
+theorem timeVorticityDerivative_component_eq_fderiv_coordinate
+    {u : NSVelocityField} (hu : smoothSpaceTimeVelocity u)
+    (t : NSTime) (x : NSSpace) (i : Fin 3) :
+    (timeVorticityDerivative u t x) i =
+      fderiv ℝ (fun s : NSTime => (spatialVorticity u s x) i) t (1 : ℝ) := by
+  have hdiff : DifferentiableAt ℝ (fun s : NSTime => spatialVorticity u s x) t :=
+    smoothSpaceTimeVelocity_differentiableAt_timeSlice
+      (spatialVorticity_smoothSpaceTimeVelocity_of_smooth hu) t x
+  have hhas : HasFDerivAt (fun s : NSTime => (spatialVorticity u s x) i)
+      ((EuclideanSpace.proj i : NSSpace →L[ℝ] ℝ).comp
+        (fderiv ℝ (fun s : NSTime => spatialVorticity u s x) t)) t := by
+    exact (EuclideanSpace.proj i : NSSpace →L[ℝ] ℝ).hasFDerivAt.comp
+      t hdiff.hasFDerivAt
+  rw [timeVorticityDerivative, hhas.fderiv]
+  simp [ContinuousLinearMap.comp_apply]
+
+/-- Smooth spacetime velocities commute curl with the time derivative at each
+point. -/
+theorem timeVorticityDerivative_eq_spatialVorticity_timeVelocityDerivativeField
+    {u : NSVelocityField} (hu : smoothSpaceTimeVelocity u)
+    (t : NSTime) (x : NSSpace) :
+    timeVorticityDerivative u t x =
+      spatialVorticity (timeVelocityDerivativeField u) t x := by
+  ext i
+  fin_cases i
+  · change (timeVorticityDerivative u t x) nsCoord0 =
+      (spatialVorticity (timeVelocityDerivativeField u) t x) nsCoord0
+    rw [timeVorticityDerivative_component_eq_fderiv_coordinate hu t x nsCoord0]
+    have hfun :
+        (fun s : NSTime => (spatialVorticity u s x) nsCoord0) =
+          (fun s : NSTime =>
+            spatialDerivativeComponent u s x nsCoord1 nsCoord2 -
+              spatialDerivativeComponent u s x nsCoord2 nsCoord1) := by
+      funext s
+      simp [spatialVorticity, nsCoord0, nsCoord1, nsCoord2]
+    rw [hfun]
+    have h12 := spatialDerivativeComponent_differentiableAt_time_of_smooth
+      hu t x nsCoord1 nsCoord2
+    have h21 := spatialDerivativeComponent_differentiableAt_time_of_smooth
+      hu t x nsCoord2 nsCoord1
+    rw [show fderiv ℝ
+        (fun s : NSTime =>
+          spatialDerivativeComponent u s x nsCoord1 nsCoord2 -
+            spatialDerivativeComponent u s x nsCoord2 nsCoord1) t =
+        fderiv ℝ (fun s : NSTime =>
+          spatialDerivativeComponent u s x nsCoord1 nsCoord2) t -
+          fderiv ℝ (fun s : NSTime =>
+            spatialDerivativeComponent u s x nsCoord2 nsCoord1) t from
+        fderiv_sub h12 h21]
+    simp [spatialDerivativeComponent_time_derivative_eq_timeVelocityDerivativeField hu t x,
+      spatialVorticity, nsCoord0, nsCoord1, nsCoord2]
+  · change (timeVorticityDerivative u t x) nsCoord1 =
+      (spatialVorticity (timeVelocityDerivativeField u) t x) nsCoord1
+    rw [timeVorticityDerivative_component_eq_fderiv_coordinate hu t x nsCoord1]
+    have hfun :
+        (fun s : NSTime => (spatialVorticity u s x) nsCoord1) =
+          (fun s : NSTime =>
+            spatialDerivativeComponent u s x nsCoord2 nsCoord0 -
+              spatialDerivativeComponent u s x nsCoord0 nsCoord2) := by
+      funext s
+      simp [spatialVorticity, nsCoord0, nsCoord1, nsCoord2]
+    rw [hfun]
+    have h20 := spatialDerivativeComponent_differentiableAt_time_of_smooth
+      hu t x nsCoord2 nsCoord0
+    have h02 := spatialDerivativeComponent_differentiableAt_time_of_smooth
+      hu t x nsCoord0 nsCoord2
+    rw [show fderiv ℝ
+        (fun s : NSTime =>
+          spatialDerivativeComponent u s x nsCoord2 nsCoord0 -
+            spatialDerivativeComponent u s x nsCoord0 nsCoord2) t =
+        fderiv ℝ (fun s : NSTime =>
+          spatialDerivativeComponent u s x nsCoord2 nsCoord0) t -
+          fderiv ℝ (fun s : NSTime =>
+            spatialDerivativeComponent u s x nsCoord0 nsCoord2) t from
+        fderiv_sub h20 h02]
+    simp [spatialDerivativeComponent_time_derivative_eq_timeVelocityDerivativeField hu t x,
+      spatialVorticity, nsCoord0, nsCoord1, nsCoord2]
+  · change (timeVorticityDerivative u t x) nsCoord2 =
+      (spatialVorticity (timeVelocityDerivativeField u) t x) nsCoord2
+    rw [timeVorticityDerivative_component_eq_fderiv_coordinate hu t x nsCoord2]
+    have hfun :
+        (fun s : NSTime => (spatialVorticity u s x) nsCoord2) =
+          (fun s : NSTime =>
+            spatialDerivativeComponent u s x nsCoord0 nsCoord1 -
+              spatialDerivativeComponent u s x nsCoord1 nsCoord0) := by
+      funext s
+      simp [spatialVorticity, nsCoord0, nsCoord1, nsCoord2]
+    rw [hfun]
+    have h01 := spatialDerivativeComponent_differentiableAt_time_of_smooth
+      hu t x nsCoord0 nsCoord1
+    have h10 := spatialDerivativeComponent_differentiableAt_time_of_smooth
+      hu t x nsCoord1 nsCoord0
+    rw [show fderiv ℝ
+        (fun s : NSTime =>
+          spatialDerivativeComponent u s x nsCoord0 nsCoord1 -
+            spatialDerivativeComponent u s x nsCoord1 nsCoord0) t =
+        fderiv ℝ (fun s : NSTime =>
+          spatialDerivativeComponent u s x nsCoord0 nsCoord1) t -
+          fderiv ℝ (fun s : NSTime =>
+            spatialDerivativeComponent u s x nsCoord1 nsCoord0) t from
+        fderiv_sub h01 h10]
+    simp [spatialDerivativeComponent_time_derivative_eq_timeVelocityDerivativeField hu t x,
+      spatialVorticity, nsCoord0, nsCoord1, nsCoord2]
+
+/-- Smooth spacetime velocities have zero curl/time commutation defect at each
+point. -/
+theorem vorticityTimeCommutationDefect_eq_zero_of_smooth
+    {u : NSVelocityField} (hu : smoothSpaceTimeVelocity u)
+    (t : NSTime) (x : NSSpace) :
+    vorticityTimeCommutationDefect u t x = 0 := by
+  rw [vorticityTimeCommutationDefect]
+  rw [← timeVorticityDerivative_eq_spatialVorticity_timeVelocityDerivativeField hu t x]
+  simp
+
 /-- After the Laplacian-field differentiability bridge, smoothness supplies the
 other two differentiability hypotheses needed for residual-curl linearity. -/
 theorem residualCurlLinearityDifferentiableAt_of_smooth_laplacian
@@ -460,6 +737,13 @@ theorem residualCurlLinearityClosedOn_of_smooth
 def vorticityTimeCommutationClosedOn
     (u : NSVelocityField) (T : ℝ) : Prop :=
   ∀ t x, 0 ≤ t → t ≤ T → vorticityTimeCommutationDefect u t x = 0
+
+/-- Smooth spacetime velocities close curl/time commutation on every slab. -/
+theorem vorticityTimeCommutationClosedOn_of_smooth
+    {u : NSVelocityField} {T : ℝ} (hu : smoothSpaceTimeVelocity u) :
+    vorticityTimeCommutationClosedOn u T := by
+  intro t x _ht0 _htT
+  exact vorticityTimeCommutationDefect_eq_zero_of_smooth hu t x
 
 /-- Slabwise closure of curl/Laplacian commutation. -/
 def vorticityLaplacianCommutationClosedOn

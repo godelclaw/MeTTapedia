@@ -200,8 +200,8 @@ def navierBKMResidualCurlDifferentialIdentitiesNode : NavierProofNode where
   id := "navier.bkm.residual-curl-differential-identities"
   status := .checked
   truthValue := ⟨88, 88⟩
-  evidence := "residualCurlLinearityDefect, vorticityTimeCommutationDefect, vorticityLaplacianCommutationDefect, and vorticityConvectionExpansionDefect name the exact pointwise identities needed to expand residual curl into the standard vorticity equation. residualCurlLinearityDefect_eq_zero_of_differentiableAt proves the residual-field curl-linearity defect vanishes from spatial differentiability of the Laplacian, time-derivative, and convection fields. spatialLaplacianField_differentiableAt_of_smooth, timeVelocityDerivativeField_differentiableAt_of_smooth, and spatialConvectionField_differentiableAt_of_smooth derive all three differentiability pieces from smoothSpaceTimeVelocity, and residualCurlLinearityClosedOn_of_smooth closes slabwise curl-linearity from smoothness alone. smoothSpaceTimeVelocity_isSymmSndFDerivAt and smoothSpaceTimeVelocity_fderiv_fderiv_swap provide the checked second-derivative symmetry bridge needed by the mixed-partial commutation identities. spatialDerivativeComponent_contDiff_time_of_smooth and spatialDerivativeComponent_differentiableAt_time_of_smooth give the time-smooth component bridge for the six scalar derivatives inside spatialVorticity, spatialDerivativeComponent_contDiff_spacetime_of_smooth upgrades those scalar derivatives to full space-time smoothness, spatialVorticity_smoothSpaceTimeVelocity_of_smooth assembles them into smooth vorticity, timeVorticityDerivative_smoothSpaceTimeVelocity_of_smooth and spatialVorticity_timeVelocityDerivativeField_smoothSpaceTimeVelocity_of_smooth make both sides of curl/time commutation smooth, and timeVelocityDerivativeField_smoothSpaceTimeVelocity_of_smooth keeps the time-derivative velocity field inside the same smooth space-time class. residualCurlCommutationExpansionClosedOn packages the remaining three identities, residualCurlExpansionClosedOn_of_smooth_commutationExpansion closes the expansion defect on a slab from that package, and BKMResidualCurlDifferentialIdentitiesClosed_of_commutationExpansion reduces the global decomposed target to BKMResidualCurlCommutationExpansionClosed. Validation lab ns-bkm-residual-curl-defect-decomposition-lab-20260629.json passed 5/5 Taylor-Green and random solenoidal checks. PLN STV <s=.88,c=.88>, ITV [.7744,.8944], PROGRESS 66%."
-  blocker := "The residual-curl linearity subidentity is checked from smoothSpaceTimeVelocity. The remaining named target is BKMResidualCurlCommutationExpansionClosed: curl/time commutation, curl/Laplacian commutation, and the incompressible curl-convection identity for arbitrary smooth incompressible velocity fields."
+  evidence := "residualCurlLinearityDefect, vorticityTimeCommutationDefect, vorticityLaplacianCommutationDefect, and vorticityConvectionExpansionDefect name the exact pointwise identities needed to expand residual curl into the standard vorticity equation. residualCurlLinearityDefect_eq_zero_of_differentiableAt proves the residual-field curl-linearity defect vanishes from spatial differentiability of the Laplacian, time-derivative, and convection fields. spatialLaplacianField_differentiableAt_of_smooth, timeVelocityDerivativeField_differentiableAt_of_smooth, and spatialConvectionField_differentiableAt_of_smooth derive all three differentiability pieces from smoothSpaceTimeVelocity, and residualCurlLinearityClosedOn_of_smooth closes slabwise curl-linearity from smoothness alone. smoothSpaceTimeVelocity_isSymmSndFDerivAt and smoothSpaceTimeVelocity_fderiv_fderiv_swap provide the checked second-derivative symmetry bridge for mixed partials. spatialDerivativeComponent_time_derivative_eq_timeVelocityDerivativeField proves scalar spatial/time derivative commutation, timeVorticityDerivative_eq_spatialVorticity_timeVelocityDerivativeField lifts it to the concrete curl, and vorticityTimeCommutationClosedOn_of_smooth closes curl/time commutation on every slab from smoothSpaceTimeVelocity. The smoothness bridges for spatialDerivativeComponent, spatialVorticity, timeVorticityDerivative, and spatialVorticity(timeVelocityDerivativeField) remain available for the next commutation identities. residualCurlCommutationExpansionClosedOn packages the remaining commutation/expansion identities, residualCurlExpansionClosedOn_of_smooth_commutationExpansion closes the expansion defect on a slab from that package, and BKMResidualCurlDifferentialIdentitiesClosed_of_commutationExpansion reduces the global decomposed target to BKMResidualCurlCommutationExpansionClosed. Validation lab ns-bkm-residual-curl-defect-decomposition-lab-20260629.json passed 5/5 Taylor-Green and random solenoidal checks. PLN STV <s=.88,c=.88>, ITV [.7744,.8944], PROGRESS 72%."
+  blocker := "The residual-curl linearity and curl/time commutation subidentities are checked from smoothSpaceTimeVelocity. The remaining vector-calculus work for BKMResidualCurlCommutationExpansionClosed is curl/Laplacian commutation and the incompressible curl-convection identity for arbitrary smooth incompressible velocity fields."
 
 /-- Once the standard vorticity equation is available, the BKM growth term is
 checked and controlled by the stretching estimate. -/
@@ -1016,6 +1016,19 @@ theorem currentNavierBKMResidualCurlDifferentialIdentities_node
       (smoothSpaceTimeVelocity u →
         smoothSpaceTimeVelocity
           (fun t x => spatialVorticity (timeVelocityDerivativeField u) t x)) ∧
+      (smoothSpaceTimeVelocity u →
+        ∀ t x coord comp,
+          fderiv ℝ
+            (fun s : NSTime => spatialDerivativeComponent u s x coord comp)
+            t (1 : ℝ) =
+              spatialDerivativeComponent (timeVelocityDerivativeField u)
+                t x coord comp) ∧
+      (smoothSpaceTimeVelocity u →
+        ∀ t x,
+          timeVorticityDerivative u t x =
+            spatialVorticity (timeVelocityDerivativeField u) t x) ∧
+      (smoothSpaceTimeVelocity u →
+        vorticityTimeCommutationClosedOn u T) ∧
       (BKMResidualCurlDifferentialIdentitiesClosed →
         BKMResidualCurlExpansionDefectVanishes) ∧
       (BKMResidualCurlDifferentialIdentitiesClosed →
@@ -1036,6 +1049,13 @@ theorem currentNavierBKMResidualCurlDifferentialIdentities_node
       spatialVorticity_smoothSpaceTimeVelocity_of_smooth,
       timeVorticityDerivative_smoothSpaceTimeVelocity_of_smooth,
       spatialVorticity_timeVelocityDerivativeField_smoothSpaceTimeVelocity_of_smooth,
+      fun hu t x coord comp =>
+        spatialDerivativeComponent_time_derivative_eq_timeVelocityDerivativeField
+          hu t x coord comp,
+      fun hu t x =>
+        timeVorticityDerivative_eq_spatialVorticity_timeVelocityDerivativeField
+          hu t x,
+      vorticityTimeCommutationClosedOn_of_smooth,
       BKMResidualCurlDifferentialIdentitiesClosed.implies_residualCurlExpansionDefectVanishes,
       BKMAnalyticComponentsClosed_of_residualCurlDifferentialIdentities,
       navierBKMResidualCurlDifferentialIdentitiesNode_checked⟩
