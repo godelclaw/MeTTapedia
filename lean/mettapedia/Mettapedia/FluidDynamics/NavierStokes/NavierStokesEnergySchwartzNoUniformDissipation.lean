@@ -224,6 +224,39 @@ theorem exists_past_nonzero_with_small_positive_dissipation_per_energy
     (S.not_forall_past_coordinateEnergyDissipationRate_ge_mul_normalizedKineticEnergy
       hν.le hlam hneT) hfloor
 
+/-- Rayleigh-quotient form of the past spectral-floor obstruction: the
+corrected dissipation divided by normalized kinetic energy is positive but
+arbitrarily small somewhere on the past ray before any nonzero endpoint. -/
+theorem exists_past_nonzero_with_small_positive_dissipation_ratio
+    (hν : 0 < ν) {lam T : NSTime}
+    (hneT : ∃ xT : NSSpace, S.velocity T xT ≠ 0) (hlam : 0 < lam) :
+    ∃ t : NSTime,
+      t ≤ T ∧
+        (∃ x : NSSpace, S.velocity t x ≠ 0) ∧
+          0 < coordinateEnergyDissipationRate S.velocity ν t ∧
+            0 < normalizedKineticEnergy S.velocity t ∧
+              0 <
+                coordinateEnergyDissipationRate S.velocity ν t /
+                  normalizedKineticEnergy S.velocity t ∧
+                coordinateEnergyDissipationRate S.velocity ν t /
+                    normalizedKineticEnergy S.velocity t < lam := by
+  rcases S.exists_past_nonzero_with_small_positive_dissipation_per_energy
+      hν hneT hlam with
+    ⟨t, htT, hne, hDpos, hlt⟩
+  have hEpos :
+      0 < normalizedKineticEnergy S.velocity t :=
+    S.normalizedKineticEnergy_pos_of_exists_velocity_ne_zero hne
+  have hratio_pos :
+      0 <
+        coordinateEnergyDissipationRate S.velocity ν t /
+          normalizedKineticEnergy S.velocity t :=
+    div_pos hDpos hEpos
+  have hratio_lt :
+      coordinateEnergyDissipationRate S.velocity ν t /
+          normalizedKineticEnergy S.velocity t < lam := by
+    exact (div_lt_iff₀ hEpos).2 hlt
+  exact ⟨t, htT, hne, hDpos, hEpos, hratio_pos, hratio_lt⟩
+
 end SchwartzConcreteNavierStokesSolution
 
 namespace NonzeroSchwartzConcreteNavierStokesSolution
@@ -292,6 +325,32 @@ theorem exists_nonzero_endpoint_with_arbitrarily_small_past_dissipation_per_ener
       |>.exists_past_nonzero_with_small_positive_dissipation_per_energy
         hν ⟨xT, hneT⟩ hlam
 
+/-- Quotient form: a positive-viscosity nonzero solution has a nonzero endpoint
+whose whole past ray contains nonzero slices where the corrected
+dissipation-to-normalized-energy ratio is positive but arbitrarily small. -/
+theorem exists_nonzero_endpoint_with_arbitrarily_small_past_dissipation_ratio
+    (hν : 0 < ν) :
+    ∃ T xT,
+      S.velocity T xT ≠ 0 ∧
+        ∀ lam : NSTime, 0 < lam →
+          ∃ t : NSTime,
+            t ≤ T ∧
+              (∃ x : NSSpace, S.velocity t x ≠ 0) ∧
+                0 < coordinateEnergyDissipationRate S.velocity ν t ∧
+                  0 < normalizedKineticEnergy S.velocity t ∧
+                    0 <
+                      coordinateEnergyDissipationRate S.velocity ν t /
+                        normalizedKineticEnergy S.velocity t ∧
+                      coordinateEnergyDissipationRate S.velocity ν t /
+                          normalizedKineticEnergy S.velocity t < lam := by
+  rcases S.nonzero_velocity with ⟨T, xT, hneT⟩
+  refine ⟨T, xT, hneT, ?_⟩
+  intro lam hlam
+  exact
+    S.toSchwartzConcreteNavierStokesSolution
+      |>.exists_past_nonzero_with_small_positive_dissipation_ratio
+        hν ⟨xT, hneT⟩ hlam
+
 /-- Exact Stokes-flow specialization of the spectral-floor obstruction: no
 positive-viscosity nonzero Stokes candidate can keep a positive Poincare-style
 floor `lambda * energy <= dissipation` on the whole past ray of a nonzero
@@ -334,6 +393,31 @@ theorem stokesFlow_smallPastDissipationPerEnergy_packet
     ⟨S.nonzeroStokesFlowKernel hconv hpressure,
       S.exists_nonzero_endpoint_with_arbitrarily_small_past_dissipation_per_energy hν⟩
 
+/-- Exact Stokes-flow specialization of the quotient form: a
+positive-viscosity nonzero Stokes candidate has arbitrarily small positive
+past corrected-dissipation Rayleigh quotients. -/
+theorem stokesFlow_smallPastDissipationRatio_packet
+    (hν : 0 < ν)
+    (hconv : ∀ t x, spatialConvection S.velocity t x = 0)
+    (hpressure : ∀ t x, spatialPressureGradient S.pressure t x = 0) :
+    NonzeroSchwartzStokesFlowKernel ν S.velocity S.pressure ∧
+      ∃ T xT,
+        S.velocity T xT ≠ 0 ∧
+          ∀ lam : NSTime, 0 < lam →
+            ∃ t : NSTime,
+              t ≤ T ∧
+                (∃ x : NSSpace, S.velocity t x ≠ 0) ∧
+                  0 < coordinateEnergyDissipationRate S.velocity ν t ∧
+                    0 < normalizedKineticEnergy S.velocity t ∧
+                      0 <
+                        coordinateEnergyDissipationRate S.velocity ν t /
+                          normalizedKineticEnergy S.velocity t ∧
+                        coordinateEnergyDissipationRate S.velocity ν t /
+                            normalizedKineticEnergy S.velocity t < lam := by
+  exact
+    ⟨S.nonzeroStokesFlowKernel hconv hpressure,
+      S.exists_nonzero_endpoint_with_arbitrarily_small_past_dissipation_ratio hν⟩
+
 end NonzeroSchwartzConcreteNavierStokesSolution
 
 /-- Global no-go form for uniform past dissipation gaps in the nonzero
@@ -364,6 +448,24 @@ theorem not_exists_nonzeroSchwartzConcreteSolution_past_spectral_floor
     (S.toSchwartzConcreteNavierStokesSolution
       |>.not_forall_past_coordinateEnergyDissipationRate_ge_mul_normalizedKineticEnergy
         hν hlam hneT) hfloor
+
+/-- Global no-go form for positive lower bounds on the whole-past corrected
+dissipation Rayleigh quotient in the nonzero slice-Schwartz interface. -/
+theorem not_exists_nonzeroSchwartzConcreteSolution_past_dissipation_ratio_floor
+    {ν lam : ℝ} (hν : 0 < ν) (hlam : 0 < lam) :
+    ¬ ∃ S : NonzeroSchwartzConcreteNavierStokesSolution ν,
+      ∃ T : NSTime,
+        (∃ xT : NSSpace, S.velocity T xT ≠ 0) ∧
+          ∀ t : NSTime, t ≤ T →
+            lam ≤
+              coordinateEnergyDissipationRate S.velocity ν t /
+                normalizedKineticEnergy S.velocity t := by
+  rintro ⟨S, T, hneT, hfloor⟩
+  rcases S.toSchwartzConcreteNavierStokesSolution
+      |>.exists_past_nonzero_with_small_positive_dissipation_ratio
+        hν hneT hlam with
+    ⟨t, htT, _hne, _hDpos, _hEpos, _hratio_pos, hratio_lt⟩
+  exact not_le_of_gt hratio_lt (hfloor t htT)
 
 end NavierStokes
 end FluidDynamics

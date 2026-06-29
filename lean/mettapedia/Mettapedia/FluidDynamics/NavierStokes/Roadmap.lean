@@ -208,8 +208,8 @@ def currentNavierRoadmap : List NavierRoadmapEntry :=
     { stage := .nonzeroEnergyKernel
       proofNodeId := "navier.energy.nonzero-schwartz-no-uniform-past-dissipation"
       status := .checked
-      truthValue := ⟨92, 90⟩
-      obligation := "Use the checked no-uniform-past-dissipation, no-past-spectral-floor, and past dissipation-per-energy collapse obstructions to reject bounded eternal positive-viscosity candidates certified by a uniform positive past dissipation gap or by a positive Poincare/spectral floor of corrected dissipation over normalized energy. Future canary work must construct the exact nonzero evolution while allowing arbitrarily small past dissipation-per-energy samples, or prove a stronger structural emptiness theorem for the Stokes/pressure-closure class." },
+      truthValue := ⟨93, 90⟩
+      obligation := "Use the checked no-uniform-past-dissipation, no-past-spectral-floor, past dissipation-per-energy collapse, and past Rayleigh-quotient collapse obstructions to reject bounded eternal positive-viscosity candidates certified by a uniform positive past dissipation gap, a positive Poincare/spectral floor of corrected dissipation over normalized energy, or a positive whole-past corrected-dissipation Rayleigh-quotient floor. Future canary work must construct the exact nonzero evolution while allowing arbitrarily small past Rayleigh-quotient samples, or prove a stronger structural emptiness theorem for the Stokes/pressure-closure class." },
     { stage := .nonzeroEnergyKernel
       proofNodeId := "navier.energy.nonzero-schwartz-canary"
       status := .openGoal
@@ -436,9 +436,9 @@ theorem currentNavierRoadmap_records_nonzero_schwartz_kernel_and_open_canary :
       ({ stage := NavierRoadmapStage.nonzeroEnergyKernel
          proofNodeId := "navier.energy.nonzero-schwartz-no-uniform-past-dissipation"
          status := .checked
-         truthValue := ⟨92, 90⟩
+         truthValue := ⟨93, 90⟩
          obligation :=
-          "Use the checked no-uniform-past-dissipation, no-past-spectral-floor, and past dissipation-per-energy collapse obstructions to reject bounded eternal positive-viscosity candidates certified by a uniform positive past dissipation gap or by a positive Poincare/spectral floor of corrected dissipation over normalized energy. Future canary work must construct the exact nonzero evolution while allowing arbitrarily small past dissipation-per-energy samples, or prove a stronger structural emptiness theorem for the Stokes/pressure-closure class." } :
+          "Use the checked no-uniform-past-dissipation, no-past-spectral-floor, past dissipation-per-energy collapse, and past Rayleigh-quotient collapse obstructions to reject bounded eternal positive-viscosity candidates certified by a uniform positive past dissipation gap, a positive Poincare/spectral floor of corrected dissipation over normalized energy, or a positive whole-past corrected-dissipation Rayleigh-quotient floor. Future canary work must construct the exact nonzero evolution while allowing arbitrarily small past Rayleigh-quotient samples, or prove a stronger structural emptiness theorem for the Stokes/pressure-closure class." } :
         NavierRoadmapEntry) ∈ currentNavierRoadmap ∧
       navierNonzeroSchwartzEnergyKernelNode.status = .checked ∧
       navierNonzeroSchwartzLineInvariantObstructionNode.status = .checked ∧
