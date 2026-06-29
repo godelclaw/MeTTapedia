@@ -615,7 +615,10 @@ longer acceptable progress.
    emitted-rank oracle then makes the lab-facing finite F2 certificate itself
    equivalent to route closure: under forced-all, the emitted-edge pairing
    kernel is trivial iff theorem-4.9 synthesis plus full selected-boundary-zero
-   classifier control holds.  The
+   classifier control holds.  The report-closed emitted-rank wrapper now removes
+   that raw handoff from the public route state: the executable CAP5 report
+   either has a primitive portal/cycle checker gap, or its closed frontier
+   supplies forced-all and the same emitted-rank iff applies.  The
    pure no-target theorem underneath those refinements says failed synthesis
    already produces a genuine selected-boundary-zero evader for the enumerated
    forced edges.  The remaining crux is whether exact shell/CAP5 data reaches
