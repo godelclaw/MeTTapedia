@@ -19,7 +19,7 @@ completed report branch is forced-all and the realized exceptional separator is
 blocked by the same cyclic-five small-cut obstruction.
 
 Algebraic-F2 table delta: the latest initial residual closure layer names the
-first scheduler obstruction and removes two remaining handoffs.  First,
+first scheduler obstruction and removes three remaining handoffs.  First,
 `residualRemainingControlEdges ... ∅ = ∅` is now proved equivalent to the
 empty immutable remaining-control worklist, so an initially empty residual
 scheduler closes theorem-4.9 synthesis plus full selected-boundary-zero
@@ -27,9 +27,15 @@ classifier control, modulo only the primitive checker gap.  Second, once that
 primitive gap is absent, failed synthesis forces the named first residual
 obstruction: a genuine selected-boundary-zero evader, a concrete residual edge
 where it is nonzero, immutable one-edge processed-control failure, the promoted
-one-edge control update, and strict residual decrease.  Therefore excluding
-that named obstruction closes synthesis.  Current Algebraic-F2 estimate is PLN
-STV `<0.90,0.95>`, ITV `[0.86,0.91]`, progress `99%`.
+one-edge control update, and strict residual decrease.  Third, that named
+obstruction now promotes to the unified emitted-kernel/remaining-map evader,
+so the first residual scheduler failure is not a separate branch from the
+finite F2 rank/map oracle.  Accepting it is accepting a genuine emitted-kernel
+evader with nonzero canonical remaining-family map image; excluding the
+unified evader closes synthesis/control through the existing no-gap
+no-evader theorem, and excluding the named scheduler obstruction still closes
+synthesis.  Current Algebraic-F2 estimate is PLN STV `<0.91,0.95>`, ITV
+`[0.86,0.91]`, progress `99%`.
 
 Target/rank decomposition delta: the emitted-rank certificate is now connected
 to the theorem-4.9 target fork without going through prose.  Lean proves that
@@ -1446,6 +1452,37 @@ nonzero canonical remaining-map image.
 - Full `lake -f lakefile.lean build Mettapedia` archived locally as
   `fourcolor-move2-initial-residual-closure-full-build-20260629.log`;
   it completed with 5900 jobs.
+- New initial residual unified-evader theorem surface:
+  `CAP5TransportedEdgeComponentCoverCore.emittedFinsetKernelMapEvader_of_initialResidualSchedulerImmutableProcessedControlObstruction`
+  and
+  `CAP5TransportedEdgeComponentCoverCore.emittedFinsetKernelMapEvader_of_no_missingCheckerEvidence_of_notSynthesis_via_initialResidualScheduler`.
+  Lean now proves the named first residual scheduler obstruction is the same
+  surviving finite F2 obstruction used by the emitted-rank/map oracle: it
+  returns a nonzero selected-boundary-zero chain vanishing on every enumerated
+  forced edge, membership in the immutable emitted-edge pairing kernel, and
+  nonzero image under the canonical remaining-family pairing map.  Thus under
+  a closed primitive checker frontier, failed theorem-4.9 synthesis via the
+  initial scheduler no longer leaves a scheduler-local branch; it returns the
+  unified emitted-kernel/remaining-map evader directly.  Current Algebraic-F2
+  estimate is PLN STV `<0.91,0.95>`, ITV `[0.86,0.91]`, progress `99%`.
+  The validation lab was rerun as
+  `fourcolor-move2-initial-residual-unified-evader-lab-20260629.json`; stderr
+  is empty, and the projected-generator summary has 65 reports split as
+  53 found and 12 no-Tait-coloring, 726 color probes split as 458 found and
+  268 no-Tait-coloring, with 0 missing reports, 0 missing color probes, and
+  0 truncations.
+  Focused detector build archived locally as
+  `fourcolor-move2-initial-residual-unified-evader-focused-build-20260629.log`.
+  Trusted-constant audit archived locally as
+  `fourcolor-move2-initial-residual-unified-evader-axiom-audit-20260629.log`;
+  the two new theorem constants depend only on
+  `[propext, Classical.choice, Quot.sound]`.
+  Full `lake -f lakefile.lean build Mettapedia` archived locally as
+  `fourcolor-move2-initial-residual-unified-evader-full-build-20260629.log`;
+  it completed with 5900 jobs.  Strict current-diff proof-marker, leak, and
+  whitespace scans are archived under the same
+  `fourcolor-move2-initial-residual-unified-evader-*20260629.log` prefix and
+  are empty.
 - Report-route target/off-target no-evader focused detector build archived
   locally as
   `fourcolor-move2-report-target-offtarget-noevader-route-focused-build-20260629.log`.
