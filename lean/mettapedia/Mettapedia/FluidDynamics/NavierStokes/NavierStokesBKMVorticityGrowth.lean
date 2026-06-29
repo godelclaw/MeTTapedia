@@ -1,4 +1,5 @@
 import Mettapedia.FluidDynamics.NavierStokes.NavierStokesBKMVorticityEquation
+import Mettapedia.FluidDynamics.NavierStokes.NavierStokesEnergySchwartzDissipationViscous
 import Mathlib.Analysis.InnerProductSpace.Calculus
 import Mathlib.MeasureTheory.Integral.Bochner.Basic
 
@@ -20,7 +21,7 @@ namespace FluidDynamics
 namespace NavierStokes
 
 open MeasureTheory
-open scoped RealInnerProductSpace
+open scoped Laplacian LineDeriv RealInnerProductSpace SchwartzMap
 
 section BKMContinuation
 
@@ -105,10 +106,14 @@ def vorticityDiffusionPowerIntegral
     (u : NSVelocityField) (t : NSTime) : ℝ :=
   ∫ x, ⟪spatialVorticity u t x, vorticityDiffusionTerm u t x⟫ ∂volume
 
-/-- Density of the viscous vorticity dissipation term `|grad omega|^2`. -/
+/-- Density of the viscous vorticity dissipation term `|grad omega|^2`,
+coordinatewise in the standard orthonormal basis of `ℝ^3`.  This is the
+Hilbert-gradient square that matches the Laplacian integration-by-parts
+identity. -/
 def vorticityDiffusionDissipationDensity
     (u : NSVelocityField) (t : NSTime) (x : NSSpace) : ℝ :=
-  ‖spatialFDeriv (fun s y => spatialVorticity u s y) t x‖ ^ (2 : ℕ)
+  ∑ i : NSStdBasisIndex,
+    ‖spatialFDeriv (fun s y => spatialVorticity u s y) t x (nsStdBasis i)‖ ^ (2 : ℕ)
 
 /-- Spatial integral of the viscous vorticity dissipation density. -/
 def vorticityDiffusionDissipationAt
@@ -328,7 +333,24 @@ theorem vorticityStretchingPowerIntegral_le_gradient_mul_enstrophyAt
 theorem vorticityDiffusionDissipationDensity_nonneg
     (u : NSVelocityField) (t : NSTime) (x : NSSpace) :
     0 ≤ vorticityDiffusionDissipationDensity u t x := by
-  simp [vorticityDiffusionDissipationDensity]
+  unfold vorticityDiffusionDissipationDensity
+  exact Finset.sum_nonneg fun i _ => by positivity
+
+/-- The vorticity diffusion dissipation density is the coordinate enstrophy
+density of the vorticity field. -/
+theorem vorticityDiffusionDissipationDensity_eq_coordinateEnstrophyDensity_vorticityField
+    (u : NSVelocityField) (t : NSTime) :
+    vorticityDiffusionDissipationDensity u t =
+      coordinateEnstrophyDensity (fun s y => spatialVorticity u s y) t := by
+  rfl
+
+/-- The vorticity diffusion dissipation is the coordinate enstrophy of the
+vorticity field. -/
+theorem vorticityDiffusionDissipationAt_eq_coordinateEnstrophyAt_vorticityField
+    (u : NSVelocityField) (t : NSTime) :
+    vorticityDiffusionDissipationAt u t =
+      coordinateEnstrophyAt (fun s y => spatialVorticity u s y) t := by
+  rfl
 
 /-- Vorticity diffusion dissipation is nonnegative on the unguarded integral
 surface. -/
@@ -339,6 +361,21 @@ theorem vorticityDiffusionDissipationAt_nonneg
   exact integral_nonneg_of_ae
     (Filter.Eventually.of_forall fun x =>
       vorticityDiffusionDissipationDensity_nonneg u t x)
+
+/-- On a Schwartz vorticity slice, mathlib's Schwartz-space Laplacian
+integration by parts gives the viscous vorticity identity
+`int omega dot Delta omega = -int |grad omega|^2`. -/
+theorem vorticityDiffusionIntegrationByPartsAt_of_schwartzVorticitySlice
+    (u : NSVelocityField) (t : NSTime) (ω : 𝓢(NSSpace, NSSpace))
+    (hω : ∀ x, spatialVorticity u t x = ω x) :
+    vorticityDiffusionIntegrationByPartsAt u t := by
+  have hIBP :=
+    coordinateViscousEnergyPairingFormula_of_schwartzSlice
+      (u := fun s y => spatialVorticity u s y) (t := t) (f := ω) hω
+  simpa [vorticityDiffusionIntegrationByPartsAt, vorticityDiffusionPowerIntegral,
+    vorticityDiffusionTerm, vorticityDiffusionDissipationAt,
+    vorticityDiffusionDissipationDensity, laplacianEnergyPairing,
+    coordinateEnstrophyAt, coordinateEnstrophyDensity] using hIBP
 
 /-- In the vorticity enstrophy balance, nonnegative viscosity can only decrease
 the derivative relative to the stretching-power integral. -/
@@ -699,6 +736,21 @@ theorem BKMVorticityTransportCancellationAlgebraClosed_proved :
   intro u t hω hZero
   exact vorticityTransportCancellationAt_of_normalizedDensityTransportIntegral_zero
     hω hZero
+
+/-- Checked viscous vorticity integration-by-parts subcase: if a time slice of
+vorticity is represented by a Schwartz function, the BKM diffusion pairing
+identity follows from the coordinate Laplacian IBP theorem. -/
+def BKMVorticityDiffusionIntegrationByPartsSchwartzClosed : Prop :=
+  ∀ (u : NSVelocityField) (t : NSTime) (ω : 𝓢(NSSpace, NSSpace)),
+    (∀ x, spatialVorticity u t x = ω x) →
+      vorticityDiffusionIntegrationByPartsAt u t
+
+/-- Checked proof of the Schwartz-vorticity-slice viscous IBP package. -/
+theorem BKMVorticityDiffusionIntegrationByPartsSchwartzClosed_proved :
+    BKMVorticityDiffusionIntegrationByPartsSchwartzClosed := by
+  intro u t ω hω
+  exact vorticityDiffusionIntegrationByPartsAt_of_schwartzVorticitySlice
+    u t ω hω
 
 /-- Checked assembly of the vorticity enstrophy balance from the raw paired
 equation plus the two integral identities. -/
