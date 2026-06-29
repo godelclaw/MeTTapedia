@@ -19,6 +19,14 @@ theorem BKMLogSobolevGradientControlFromEnvelope_of_affinePointwiseFromEnvelope_
     BKMLogSobolevGradientControlFromEnvelope := by
   exact BKMLogSobolevGradientControlFromEnvelope_of_affinePointwiseFromEnvelope hAffine
 
+theorem BKMLogSobolevAffinePointwiseFromEnvelope_of_schwartzHighNormEnvelope_and_biotSavart_regression
+    (hHighNorm : BKMFiniteTimeWitnessSchwartzHighNormEnvelopeFromBKMData)
+    (hBiotSavart : BKMSchwartzSliceBiotSavartAffineLogPointwiseEstimate) :
+    BKMLogSobolevAffinePointwiseFromEnvelope := by
+  exact
+    BKMLogSobolevAffinePointwiseFromEnvelope_of_schwartzHighNormEnvelope_and_biotSavart
+      hHighNorm hBiotSavart
+
 theorem BKMAnalyticContinuationLemma_of_components_regression
     (hDefect : BKMResidualCurlExpansionDefectVanishes)
     (hLog : BKMLogSobolevGradientControlFromEnvelope)
