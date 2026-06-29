@@ -673,6 +673,41 @@ theorem stokesFlow_positiveViscosity_profileGapObstruction_packet
         |>.exists_past_nonzero_with_small_positive_coordinateEnstrophy_ratio
           hν hneT hlam⟩
 
+/-- Endpoint-parametric Stokes obstruction packet: before any chosen nonzero
+endpoint, a positive-viscosity exact Stokes candidate has strict past energy
+ordering and arbitrarily small positive spatial Rayleigh samples. -/
+theorem stokesFlow_endpointStrictEnergy_and_smallPastCoordinateEnstrophyRatio_packet
+    (hν : 0 < ν)
+    (hconv : ∀ t x, spatialConvection S.velocity t x = 0)
+    (hpressure : ∀ t x, spatialPressureGradient S.pressure t x = 0)
+    {T : NSTime} (hneT : ∃ xT : NSSpace, S.velocity T xT ≠ 0) :
+    NonzeroSchwartzStokesFlowKernel ν S.velocity S.pressure ∧
+      SchwartzNonzeroTimeSupportKernel ν S.velocity S.pressure ∧
+      (∀ {s t : NSTime}, s < t → t ≤ T →
+        normalizedKineticEnergy S.velocity t <
+          normalizedKineticEnergy S.velocity s) ∧
+      ∀ lam : NSTime, 0 < lam →
+        ∃ t : NSTime,
+          t ≤ T ∧
+            (∃ x : NSSpace, S.velocity t x ≠ 0) ∧
+              0 < coordinateEnstrophyAt S.velocity t ∧
+                0 < normalizedKineticEnergy S.velocity t ∧
+                  0 <
+                    coordinateEnstrophyAt S.velocity t /
+                      normalizedKineticEnergy S.velocity t ∧
+                    coordinateEnstrophyAt S.velocity t /
+                        normalizedKineticEnergy S.velocity t < lam := by
+  exact
+    ⟨S.nonzeroStokesFlowKernel hconv hpressure,
+      S.nonzeroTimeSupportKernel,
+      fun {_s _t} hst htT =>
+        S.normalizedKineticEnergy_strict_lt_before_nonzero_endpoint_of_pos_viscosity
+          hν hst htT hneT,
+      fun lam hlam =>
+        S.toSchwartzConcreteNavierStokesSolution
+          |>.exists_past_nonzero_with_small_positive_coordinateEnstrophy_ratio
+            hν hneT hlam⟩
+
 end NonzeroSchwartzConcreteNavierStokesSolution
 
 /-- Global no-go form for uniform past dissipation gaps in the nonzero

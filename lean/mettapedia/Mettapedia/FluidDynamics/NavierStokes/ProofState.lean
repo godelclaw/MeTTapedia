@@ -417,9 +417,9 @@ past dissipation gap. -/
 def navierNonzeroSchwartzNoUniformPastDissipationNode : NavierProofNode where
   id := "navier.energy.nonzero-schwartz-no-uniform-past-dissipation"
   status := .checked
-  truthValue := ⟨95, 91⟩
-  evidence := "not_forall_past_coordinateEnergyDissipationRate_ge proves that bounded whole-time slice-Schwartz concrete solutions cannot keep corrected coordinate dissipation uniformly above any positive constant on an entire past ray. exists_past_nonzero_with_small_positive_coordinateEnergyDissipationRate proves that, at positive viscosity before a later nonzero endpoint, every positive threshold has an earlier nonzero slice with strictly positive but smaller corrected dissipation. not_forall_past_coordinateEnergyDissipationRate_ge_mul_normalizedKineticEnergy and not_exists_nonzeroSchwartzConcreteSolution_past_spectral_floor rule out positive whole-past Poincare/spectral floors of the form lambda times normalized energy below corrected dissipation. exists_past_nonzero_with_small_positive_dissipation_per_energy, exists_nonzero_endpoint_with_arbitrarily_small_past_dissipation_per_energy, exists_past_nonzero_with_small_positive_dissipation_ratio, exists_nonzero_endpoint_with_arbitrarily_small_past_dissipation_ratio, and not_exists_nonzeroSchwartzConcreteSolution_past_dissipation_ratio_floor strengthen this from a negative floor theorem to positive nonzero witnesses with arbitrarily small positive corrected-dissipation Rayleigh quotient. not_forall_past_coordinateEnstrophyAt_ge_mul_normalizedKineticEnergy, exists_past_nonzero_with_small_positive_coordinateEnstrophy_ratio, not_exists_nonzeroSchwartzConcreteSolution_past_coordinateEnstrophy_floor, and not_exists_nonzeroSchwartzConcreteSolution_past_coordinateEnstrophy_ratio_floor lift the same obstruction to the spatial coordinate-enstrophy Rayleigh quotient itself. stokesFlow_positiveViscosity_profileGapObstruction_packet, not_exists_nonzeroSchwartzStokesFlow_past_coordinateEnstrophy_floor_of_posViscosity, not_exists_nonzeroSchwartzStokesFlow_past_coordinateEnstrophy_ratio_floor_of_posViscosity, not_exists_nonzeroSchwartzStokesFlow_past_exact_coordinateEnstrophyRayleigh_of_posViscosity, and not_exists_nonzeroSchwartzStokesFlow_past_exact_coordinateEnstrophyRatioRayleigh_of_posViscosity specialize the spatial floor, quotient-floor, and exact Rayleigh-equality obstructions to exact Stokes-flow candidates. PLN STV <s=.95,c=.91>, ITV [.8645,.9545], PROGRESS 93%."
-  blocker := "This rules out uniform positive past dissipation, corrected-dissipation Poincare/spectral-floor certificates, spatial coordinate-enstrophy Poincare floors, positive whole-past corrected-dissipation Rayleigh-quotient floors, positive whole-past spatial Rayleigh-quotient floors, and any zero-convection/zero-pressure-gradient Stokes canary certified by a positive past coordinate-enstrophy floor, spatial Rayleigh floor, or exact positive spatial Rayleigh equality on an entire past ray. It still does not construct the required nonzero inhabitant or prove the full bounded-eternal Stokes/pressure-closure subroute empty without a stronger structural frequency/localization theorem."
+  truthValue := ⟨96, 91⟩
+  evidence := "not_forall_past_coordinateEnergyDissipationRate_ge proves that bounded whole-time slice-Schwartz concrete solutions cannot keep corrected coordinate dissipation uniformly above any positive constant on an entire past ray. exists_past_nonzero_with_small_positive_coordinateEnergyDissipationRate proves that, at positive viscosity before a later nonzero endpoint, every positive threshold has an earlier nonzero slice with strictly positive but smaller corrected dissipation. not_forall_past_coordinateEnergyDissipationRate_ge_mul_normalizedKineticEnergy and not_exists_nonzeroSchwartzConcreteSolution_past_spectral_floor rule out positive whole-past Poincare/spectral floors of the form lambda times normalized energy below corrected dissipation. exists_past_nonzero_with_small_positive_dissipation_per_energy, exists_nonzero_endpoint_with_arbitrarily_small_past_dissipation_per_energy, exists_past_nonzero_with_small_positive_dissipation_ratio, exists_nonzero_endpoint_with_arbitrarily_small_past_dissipation_ratio, and not_exists_nonzeroSchwartzConcreteSolution_past_dissipation_ratio_floor strengthen this from a negative floor theorem to positive nonzero witnesses with arbitrarily small positive corrected-dissipation Rayleigh quotient. not_forall_past_coordinateEnstrophyAt_ge_mul_normalizedKineticEnergy, exists_past_nonzero_with_small_positive_coordinateEnstrophy_ratio, not_exists_nonzeroSchwartzConcreteSolution_past_coordinateEnstrophy_floor, and not_exists_nonzeroSchwartzConcreteSolution_past_coordinateEnstrophy_ratio_floor lift the same obstruction to the spatial coordinate-enstrophy Rayleigh quotient itself. stokesFlow_positiveViscosity_profileGapObstruction_packet, stokesFlow_endpointStrictEnergy_and_smallPastCoordinateEnstrophyRatio_packet, not_exists_nonzeroSchwartzStokesFlow_past_coordinateEnstrophy_floor_of_posViscosity, not_exists_nonzeroSchwartzStokesFlow_past_coordinateEnstrophy_ratio_floor_of_posViscosity, not_exists_nonzeroSchwartzStokesFlow_past_exact_coordinateEnstrophyRayleigh_of_posViscosity, and not_exists_nonzeroSchwartzStokesFlow_past_exact_coordinateEnstrophyRatioRayleigh_of_posViscosity specialize the spatial floor, quotient-floor, exact Rayleigh-equality, and endpoint-parametric strict-energy/low-Rayleigh obstructions to exact Stokes-flow candidates. PLN STV <s=.96,c=.91>, ITV [.8736,.9636], PROGRESS 94%."
+  blocker := "This rules out uniform positive past dissipation, corrected-dissipation Poincare/spectral-floor certificates, spatial coordinate-enstrophy Poincare floors, positive whole-past corrected-dissipation Rayleigh-quotient floors, positive whole-past spatial Rayleigh-quotient floors, and any zero-convection/zero-pressure-gradient Stokes canary certified by a positive past coordinate-enstrophy floor, spatial Rayleigh floor, exact positive spatial Rayleigh equality, or endpoint ray that avoids arbitrarily small positive spatial Rayleigh samples. It still does not construct the required nonzero inhabitant or prove the full bounded-eternal Stokes/pressure-closure subroute empty without a stronger structural frequency/localization theorem."
 
 /-- The explicit nonzero slice-Schwartz canary remains open until the
 finite-mode closure hypotheses are inhabited by concrete profiles. -/
@@ -1893,7 +1893,7 @@ theorem currentNavierNonzeroSchwartzNoUniformPastDissipation_node
                         coordinateEnergyDissipationRate S.velocity ν t /
                           normalizedKineticEnergy S.velocity t ∧
                         coordinateEnergyDissipationRate S.velocity ν t /
-                            normalizedKineticEnergy S.velocity t < κ) ∧
+                          normalizedKineticEnergy S.velocity t < κ) ∧
       (NonzeroSchwartzStokesFlowKernel ν S.velocity S.pressure ∧
         ∃ T xT,
           S.velocity T xT ≠ 0 ∧
@@ -1908,6 +1908,22 @@ theorem currentNavierNonzeroSchwartzNoUniformPastDissipation_node
                             normalizedKineticEnergy S.velocity t ∧
                           coordinateEnstrophyAt S.velocity t /
                               normalizedKineticEnergy S.velocity t < κ) ∧
+      (NonzeroSchwartzStokesFlowKernel ν S.velocity S.pressure ∧
+        SchwartzNonzeroTimeSupportKernel ν S.velocity S.pressure ∧
+        (∀ {s t : NSTime}, s < t → t ≤ T →
+          normalizedKineticEnergy S.velocity t <
+            normalizedKineticEnergy S.velocity s) ∧
+        ∀ lam : NSTime, 0 < lam →
+          ∃ t : NSTime,
+            t ≤ T ∧
+              (∃ x : NSSpace, S.velocity t x ≠ 0) ∧
+                0 < coordinateEnstrophyAt S.velocity t ∧
+                  0 < normalizedKineticEnergy S.velocity t ∧
+                    0 <
+                      coordinateEnstrophyAt S.velocity t /
+                        normalizedKineticEnergy S.velocity t ∧
+                      coordinateEnstrophyAt S.velocity t /
+                          normalizedKineticEnergy S.velocity t < lam) ∧
       (NonzeroSchwartzStokesFlowKernel ν S.velocity S.pressure ∧
         (¬ ∀ t : NSTime, t ≤ T →
           κ * normalizedKineticEnergy S.velocity t ≤
@@ -2023,6 +2039,8 @@ theorem currentNavierNonzeroSchwartzNoUniformPastDissipation_node
       S.stokesFlow_smallPastDissipationRatio_packet hν hconv hpressure,
       S.exists_nonzero_endpoint_with_arbitrarily_small_past_dissipation_ratio hν,
       S.stokesFlow_smallPastCoordinateEnstrophyRatio_packet hν hconv hpressure,
+      S.stokesFlow_endpointStrictEnergy_and_smallPastCoordinateEnstrophyRatio_packet
+        hν hconv hpressure hneT,
       S.stokesFlow_positiveViscosity_profileGapObstruction_packet
         hν hconv hpressure hκ hneT,
       not_exists_nonzeroSchwartzConcreteSolution_uniform_past_dissipation_gap hκ,
