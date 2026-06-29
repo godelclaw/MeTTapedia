@@ -791,6 +791,17 @@ longer acceptable progress.
    synthesis/full selected-boundary-zero control except for primitive checker
    gaps.  The Move-2 lift target is now this emitted-interior-support subset,
    uniformly.
+   The failure-side corollaries
+   `exists_initialResidualInteriorSupportEdge_not_emitted_of_no_missingCheckerEvidence_of_notSynthesis`
+   and
+   `initialResidualInteriorSupportGap_and_emittedFinsetKernelMapEvader_of_no_missingCheckerEvidence_of_notSynthesis`
+   make the opposite side equally concrete: with the primitive checker frontier
+   closed, failed theorem-4.9 synthesis forces a residual canonical
+   interior-support edge outside the emitted classifier output, and returns it
+   together with the unified emitted-kernel/remaining-map F2 evader.  So the
+   exact shell-data handoff is now a true close-or-witness fork: prove emitted
+   canonical interior-support subset, or accept the missing interior coordinate
+   plus the unified finite F2 obstruction.
    The direct no-evader route corollaries
    `ofDecidableChecks_missingCheckerEvidence_or_theorem49Synthesis_and_boundaryZeroControl_of_no_theorem49BoundaryTargetEvader_and_no_emittedFinsetKernelMapEvader_with_theorem49BoundaryVertexKirchhoffFailure`
    and
