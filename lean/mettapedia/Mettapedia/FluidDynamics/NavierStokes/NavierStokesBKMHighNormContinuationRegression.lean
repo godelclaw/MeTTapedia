@@ -12,7 +12,20 @@ namespace Mettapedia
 namespace FluidDynamics
 namespace NavierStokes
 
+open scoped SchwartzMap
+
 section BKMContinuation
+
+theorem seminorm_zero_one_le_bkmSchwartzHighNormSeminorm_regression
+    (f : 𝓢(NSSpace, NSSpace)) :
+    SchwartzMap.seminorm ℝ 0 1 f ≤ bkmSchwartzHighNormSeminorm f :=
+  seminorm_zero_one_le_bkmSchwartzHighNormSeminorm f
+
+theorem spatialFDeriv_norm_le_bkmSchwartzHighNormSeminorm_regression
+    (v : 𝓢(NSSpace, NSSpace)) (x : NSSpace) :
+    ‖spatialFDeriv (fun _ y => v y) 0 x‖ ≤
+      bkmSchwartzHighNormSeminorm v :=
+  spatialFDeriv_norm_le_bkmSchwartzHighNormSeminorm v x
 
 theorem BKMLogSobolevGradientControlFromEnvelope_of_affinePointwiseFromEnvelope_regression
     (hAffine : BKMLogSobolevAffinePointwiseFromEnvelope) :

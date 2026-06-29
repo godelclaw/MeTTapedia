@@ -50,9 +50,48 @@ def BKMLogSobolevAffinePointwiseFromEnvelope : Prop :=
                             BKMLogSobolevAffinePointwiseInequalityOn
                               W.velocity T C0 C1 Ω H
 
+/-- Finite fourth-order Schwartz high norm used by the Biot-Savart/log-Sobolev
+proof attempt.  It is the supremum of the finite family of Schwartz seminorms
+with polynomial weight and derivative order at most four. -/
+def bkmSchwartzHighNormSeminorm (f : 𝓢(NSSpace, NSSpace)) : ℝ :=
+  ((Finset.Iic (4, 4)).sup
+    (fun m : ℕ × ℕ => (SchwartzMap.seminorm ℝ m.1 m.2 :
+      Seminorm ℝ 𝓢(NSSpace, NSSpace)))) f
+
+/-- The finite fourth-order Schwartz high norm controls the first unweighted
+Schwartz seminorm. -/
+theorem seminorm_zero_one_le_bkmSchwartzHighNormSeminorm
+    (f : 𝓢(NSSpace, NSSpace)) :
+    SchwartzMap.seminorm ℝ 0 1 f ≤ bkmSchwartzHighNormSeminorm f := by
+  unfold bkmSchwartzHighNormSeminorm
+  exact (Finset.le_sup (s := Finset.Iic (4, 4))
+    (f := fun m : ℕ × ℕ => (SchwartzMap.seminorm ℝ m.1 m.2 :
+      Seminorm ℝ 𝓢(NSSpace, NSSpace)))
+    (b := (0, 1)) (by simp)) f
+
+/-- The gradient operator norm of a frozen Schwartz velocity slice is
+controlled by the first unweighted Schwartz seminorm. -/
+theorem spatialFDeriv_norm_le_schwartzSeminorm_zero_one
+    (v : 𝓢(NSSpace, NSSpace)) (x : NSSpace) :
+    ‖spatialFDeriv (fun _ y => v y) 0 x‖ ≤
+      SchwartzMap.seminorm ℝ 0 1 v := by
+  rw [spatialFDeriv]
+  rw [← norm_iteratedFDeriv_one
+    (𝕜 := ℝ) (f := (v : NSSpace → NSSpace)) (x := x)]
+  exact SchwartzMap.norm_iteratedFDeriv_le_seminorm ℝ v 1 x
+
+/-- The finite fourth-order Schwartz high norm controls the gradient operator
+norm of every frozen slice point. -/
+theorem spatialFDeriv_norm_le_bkmSchwartzHighNormSeminorm
+    (v : 𝓢(NSSpace, NSSpace)) (x : NSSpace) :
+    ‖spatialFDeriv (fun _ y => v y) 0 x‖ ≤
+      bkmSchwartzHighNormSeminorm v :=
+  (spatialFDeriv_norm_le_schwartzSeminorm_zero_one v x).trans
+    (seminorm_zero_one_le_bkmSchwartzHighNormSeminorm v)
+
 /-- Concrete high-norm envelope used by the Biot-Savart/log-Sobolev proof
 attempt.  At each time in the slab, the velocity slice must be represented by a
-Schwartz map whose fourth Schwartz seminorm is bounded by `H`.
+Schwartz map whose finite fourth-order Schwartz high norm is bounded by `H`.
 
 This is stronger than the current arbitrary finite-energy witness surface; it
 is recorded only to expose the exact analytic theorem needed for the
@@ -63,7 +102,7 @@ def BKMLogSobolevSchwartzHighNormEnvelopeOn
     ∀ t, 0 ≤ t → t ≤ T →
       ∃ f : 𝓢(NSSpace, NSSpace),
         (∀ x, f x = u t x) ∧
-          SchwartzMap.seminorm ℝ 0 4 f ≤ H t
+          bkmSchwartzHighNormSeminorm f ≤ H t
 
 /-- The extra high-norm-envelope extraction needed before the Schwartz-slice
 Biot-Savart estimate can be applied to an arbitrary finite-energy witness. -/
@@ -103,8 +142,9 @@ def BKMSchwartzSliceBiotSavartAffineLogPointwiseEstimate : Prop :=
 
 /-- Exact slice-level singular-integral theorem missing from mathlib for the
 BKM route.  For one divergence-free Schwartz velocity slice on `ℝ^3`, a
-uniform vorticity bound and a fourth Schwartz-seminorm bound must control the
-spatial gradient by the conventional affine-log Biot-Savart estimate.
+uniform vorticity bound and a finite fourth-order Schwartz high-norm bound
+must control the spatial gradient by the conventional affine-log Biot-Savart
+estimate.
 
 This is deliberately stated as a one-slice theorem: proving it requires the
 Biot-Savart/Riesz-transform/Calderon-Zygmund/log-Sobolev machinery, while the
@@ -123,7 +163,7 @@ def BKMSchwartzSliceVorticityToGradientAffineLogEstimate : Prop :=
                 (∀ x,
                   ‖spatialVorticity
                     (fun _ : NSTime => fun y : NSSpace => f y) 0 x‖ ≤ Ω) →
-                  SchwartzMap.seminorm ℝ 0 4 f ≤ H →
+                  bkmSchwartzHighNormSeminorm f ≤ H →
                     ∀ x,
                       ‖spatialFDeriv
                         (fun _ : NSTime => fun y : NSSpace => f y) 0 x‖ ≤
