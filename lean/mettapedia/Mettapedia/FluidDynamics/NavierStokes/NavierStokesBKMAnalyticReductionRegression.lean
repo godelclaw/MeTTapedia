@@ -27,9 +27,10 @@ theorem bkm_continuation_reduced_to_single_analytic_lemma_regression :
     BKMVorticityStretchingEstimateClosed ∧
       BKMResidualCurlExpansionAlgebraClosed ∧
         BKMStandardVorticityGrowthEstimateClosed ∧
-          BKMLogSobolevGrowthEstimateClosed ∧
-            (BKMAnalyticContinuationLemma →
-              ExplicitFiniteEnergyBKMContinuationTargetOnNonnegHorizons) :=
+          BKMVorticityEnstrophyAprioriEstimateClosed ∧
+            BKMLogSobolevGrowthEstimateClosed ∧
+              (BKMAnalyticContinuationLemma →
+                ExplicitFiniteEnergyBKMContinuationTargetOnNonnegHorizons) :=
   BKMContinuation_reduced_to_single_analytic_lemma
 
 end Regression

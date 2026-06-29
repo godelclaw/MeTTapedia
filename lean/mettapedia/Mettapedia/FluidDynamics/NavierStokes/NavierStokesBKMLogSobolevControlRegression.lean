@@ -14,6 +14,21 @@ namespace NavierStokes
 
 namespace Regression
 
+theorem bkm_logSobolev_envelope_nonneg_regression
+    {C : ℝ} {Ω H : NSTime → ℝ} {t : NSTime}
+    (hC : 0 ≤ C) (hΩ : 0 ≤ Ω t) (hH : 0 ≤ H t) :
+    0 ≤ bkmLogSobolevGradientEnvelope C Ω H t :=
+  bkmLogSobolevGradientEnvelope_nonneg_of_nonneg hC hΩ hH
+
+theorem bkm_logSobolev_pointwise_to_control_regression
+    {u : NSVelocityField} {T C : ℝ} {Ω H : NSTime → ℝ}
+    (hC : 0 ≤ C)
+    (hΩ : ∀ t, 0 ≤ t → t ≤ T → 0 ≤ Ω t)
+    (hH : ∀ t, 0 ≤ t → t ≤ T → 0 ≤ H t)
+    (hIneq : BKMLogSobolevPointwiseInequalityOn u T C Ω H) :
+    BKMLogSobolevGradientControlOn u T C Ω H :=
+  BKMLogSobolevGradientControlOn.of_pointwiseInequality hC hΩ hH hIneq
+
 theorem bkm_logSobolev_control_to_gradient_envelope_regression
     {u : NSVelocityField} {T C : ℝ} {Ω H : NSTime → ℝ}
     (hLog : BKMLogSobolevGradientControlOn u T C Ω H) :

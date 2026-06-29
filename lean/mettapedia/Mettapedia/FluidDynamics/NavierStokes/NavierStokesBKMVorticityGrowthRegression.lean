@@ -38,6 +38,16 @@ theorem bkm_standard_vorticity_growth_estimate_closed_regression :
     BKMStandardVorticityGrowthEstimateClosed :=
   BKMStandardVorticityGrowthEstimateClosed_proved
 
+theorem bkm_vorticity_enstrophy_apriori_estimate_closed_regression :
+    BKMVorticityEnstrophyAprioriEstimateClosed :=
+  BKMVorticityEnstrophyAprioriEstimateClosed_proved
+
+theorem bkm_vorticity_enstrophy_controlled_from_balance_regression
+    {ν : ℝ} {u : NSVelocityField} {t : NSTime}
+    (hν : 0 ≤ ν) (hBal : vorticityEnstrophyBalanceAt ν u t) :
+    vorticityEnstrophyStretchingControlledAt ν u t :=
+  vorticityEnstrophyStretchingControlledAt_of_balance hν u hBal
+
 end Regression
 
 end NavierStokes
