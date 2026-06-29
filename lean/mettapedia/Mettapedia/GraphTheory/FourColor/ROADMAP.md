@@ -662,7 +662,15 @@ longer acceptable progress.
    equivalent to absence of that concrete off-target Kirchhoff evader, and
    `emittedFinsetPairingKernel_eq_bot_or_emittedFinsetKernelMapEvader_with_theorem49BoundaryVertexKirchhoffFailure_of_theorem49BoundaryTargetClassifierControl`
    packages the close-or-witness branch with emitted-kernel and nonzero
-   canonical remaining-map certificates.  A higher edge-cap/coloring-cap
+   canonical remaining-map certificates.  The target-control side condition is
+   now removed from the failure interpretation:
+   `theorem49BoundaryTargetEvader_or_emittedFinsetKernelMapEvader_with_theorem49BoundaryVertexKirchhoffFailure_of_not_emittedFinsetPairingKernel_eq_bot`
+   turns nontrivial emitted-rank failure into either a nonzero theorem-4.9
+   target chain vanishing on every enumerated forced edge or the off-target
+   kernel/map/vertex-failure evader, and
+   `emittedFinsetPairingKernel_eq_bot_or_theorem49BoundaryTargetEvader_or_emittedFinsetKernelMapEvader_with_theorem49BoundaryVertexKirchhoffFailure`
+   packages the local finite F2 verdict as close, target evader, or off-target
+   evader.  A higher edge-cap/coloring-cap
    projected-generator lab run now records this distinction explicitly: among
    65 reports there are 53 found coordinate-probe reports, 12 no-Tait-coloring
    reports, and 0 missing probe reports.
