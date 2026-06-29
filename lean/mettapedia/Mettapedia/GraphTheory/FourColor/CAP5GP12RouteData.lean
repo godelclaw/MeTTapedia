@@ -488,6 +488,90 @@ theorem gp12_e15_17_crosses_gp12FiveCutSide :
     EdgeCrossesVertexSide gp12Graph gp12FiveCutSide gp12_e15_17 := by
   refine ⟨15, 17, ?_, ?_, ?_, ?_⟩ <;> simp [gp12_e15_17, gp12FiveCutSide]
 
+theorem gp12_adj_2_3 : gp12Graph.Adj (2 : Fin 24) 3 := by
+  simp [gp12Graph]
+
+theorem gp12_adj_3_15 : gp12Graph.Adj (3 : Fin 24) 15 := by
+  simp [gp12Graph]
+
+theorem gp12_adj_15_13 : gp12Graph.Adj (15 : Fin 24) 13 := by
+  simp [gp12Graph]
+
+theorem gp12_adj_13_1 : gp12Graph.Adj (13 : Fin 24) 1 := by
+  simp [gp12Graph]
+
+def gp12FiveCutSideCycleWalk : gp12Graph.Walk (1 : Fin 24) 1 :=
+  Walk.cons gp12_adj_1_2
+    (Walk.cons gp12_adj_2_3
+      (Walk.cons gp12_adj_3_15
+        (Walk.cons gp12_adj_15_13
+          (Walk.cons gp12_adj_13_1 Walk.nil))))
+
+theorem gp12FiveCutSideCycleWalk_isCycle :
+    gp12FiveCutSideCycleWalk.IsCycle := by
+  simp [gp12FiveCutSideCycleWalk, Walk.cons_isCycle_iff, Walk.cons_isPath_iff]
+
+theorem gp12FiveCutSide_hasCycle :
+    HasCycleOnSide gp12Graph gp12FiveCutSide := by
+  refine ⟨1, by simp [gp12FiveCutSide], gp12FiveCutSideCycleWalk,
+    gp12FiveCutSideCycleWalk_isCycle, ?_⟩
+  intro v hv
+  fin_cases v <;> simp [gp12FiveCutSide, gp12FiveCutSideCycleWalk] at hv ⊢
+
+theorem gp12_adj_0_11 : gp12Graph.Adj (0 : Fin 24) 11 := by
+  simp [gp12Graph]
+
+theorem gp12_adj_11_10 : gp12Graph.Adj (11 : Fin 24) 10 := by
+  simp [gp12Graph]
+
+theorem gp12_adj_10_22 : gp12Graph.Adj (10 : Fin 24) 22 := by
+  simp [gp12Graph]
+
+theorem gp12_adj_22_12 : gp12Graph.Adj (22 : Fin 24) 12 := by
+  simp [gp12Graph]
+
+def gp12FiveCutComplementCycleWalk : gp12Graph.Walk (0 : Fin 24) 0 :=
+  Walk.cons gp12_adj_0_11
+    (Walk.cons gp12_adj_11_10
+      (Walk.cons gp12_adj_10_22
+        (Walk.cons gp12_adj_22_12
+          (Walk.cons gp12_adj_12_0 Walk.nil))))
+
+theorem gp12FiveCutComplementCycleWalk_isCycle :
+    gp12FiveCutComplementCycleWalk.IsCycle := by
+  simp [gp12FiveCutComplementCycleWalk, Walk.cons_isCycle_iff, Walk.cons_isPath_iff]
+
+theorem gp12FiveCutComplement_hasCycle :
+    HasCycleOnSide gp12Graph (fun v => ¬ gp12FiveCutSide v) := by
+  refine ⟨0, by simp [gp12FiveCutSide], gp12FiveCutComplementCycleWalk,
+    gp12FiveCutComplementCycleWalk_isCycle, ?_⟩
+  intro v hv
+  fin_cases v <;> simp [gp12FiveCutSide, gp12FiveCutComplementCycleWalk] at hv ⊢
+
+theorem gp12FiveCutSide_noPrimitiveCheckerGap :
+    ¬ CAP5PrimitiveCheckerGap gp12CAP5BoundaryEdge gp12FiveCutSide := by
+  intro hgap
+  rcases hgap with hmissingPortal | hmissingCycle
+  · rcases hmissingPortal with ⟨latent, _hmem, hmissing⟩
+    exact hmissing (by
+      intro i _hi
+      fin_cases i
+      · simpa [CAP5ExceptionalAnnulusGeneratorReport.latentNode, gp12CAP5BoundaryEdge]
+          using gp12_e0_1_crosses_gp12FiveCutSide
+      · simpa [CAP5ExceptionalAnnulusGeneratorReport.latentNode, gp12CAP5BoundaryEdge]
+          using gp12_e2_14_crosses_gp12FiveCutSide
+      · simpa [CAP5ExceptionalAnnulusGeneratorReport.latentNode, gp12CAP5BoundaryEdge]
+          using gp12_e3_4_crosses_gp12FiveCutSide
+      · simpa [CAP5ExceptionalAnnulusGeneratorReport.latentNode, gp12CAP5BoundaryEdge]
+          using gp12_e13_23_crosses_gp12FiveCutSide
+      · simpa [CAP5ExceptionalAnnulusGeneratorReport.latentNode, gp12CAP5BoundaryEdge]
+          using gp12_e15_17_crosses_gp12FiveCutSide)
+  · rcases hmissingCycle with hmissingSelected | hmissingComplement
+    · rcases hmissingSelected with ⟨_latent, _hmem, hmissing⟩
+      exact hmissing gp12FiveCutSide_hasCycle
+    · rcases hmissingComplement with ⟨_latent, _hmem, hmissing⟩
+      exact hmissing gp12FiveCutComplement_hasCycle
+
 def gp12P0InsideP4OutsideEmittedFinset : Finset gp12Graph.edgeSet :=
   {gp12_e15_17}
 

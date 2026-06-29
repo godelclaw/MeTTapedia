@@ -246,6 +246,23 @@ five-edge side cut, and four checked sidecase evader certificates:
 `gp12P0OutsideP4OutsideKernelEvaderCertificate`.  Each certificate packages the
 lab rank/kernel-dimension pair plus a unit red boundary-zero chain that vanishes
 on the emitted edges and is detected on a remaining interior control edge.
+The same file now also proves the concrete GP(12,2) five-cut is Gate-1 closed:
+`gp12FiveCutSide_noPrimitiveCheckerGap` discharges the primitive checker gap
+from the five boundary-slot crossing facts plus explicit selected-side and
+complement-side cycle witnesses.  This removes the Lean handoff for the
+no-gap part of the candidate.  A graph-specific `CAP5FiniteNoGapRouteInput`
+is still not claimed, because the projected-generator red/blue coordinate
+witnesses reported by the lab are not yet packaged as Lean membership
+certificates.
+Additional verification for this GP(12,2) Gate-1 no-gap increment: focused
+`CAP5GP12RouteData` build SHA256
+`6a0465c7b5b2500101e4e7afa74c8c43c4c7738ca0afa47bc06c75850ab83360`;
+FourColor umbrella build SHA256
+`1c6dbe74bdaa401f5655b468a78884784eda313c787a725987421e8c0a2e2961`;
+axiom audit driver/log SHA256
+`79f27c6c5494e9c06b955c2c322e839a7d768b1f4d45803cbd7bd5a2a12601dd` /
+`e1db9e764ef2a54b6c3470e18adc175d631bc5ee83988349f7bbb4b5b55cfcaa`,
+baseline `[propext, Classical.choice, Quot.sound]`.
 Verification: focused
 `CAP5RoutePayoff` build SHA256
 `3e54951880633f264897c516d9840130917f59156877eb6b6dd41f1cf949b851`;

@@ -435,9 +435,22 @@ now package BREAK whenever an interior-support edge is not emitted, the emitted
 interior count is too small, or the total emitted set is smaller than the
 interior support.  The GP(12,2) sidecases leave 35, 35, 34, and 35 remaining
 controls, so the lab verdict factors through the checked Lean criterion.  No
-graph-specific GP(12,2) route-input witness is claimed yet, but
-`CAP5GP12RouteData.lean` now packages the concrete graph/embedding/Tait/CAP5
-core and the four sidecase unit-evader certificates matching the lab verdict.
+graph-specific GP(12,2) route-input witness is claimed yet, because the
+projected-generator coordinate witnesses are still lab evidence rather than
+Lean membership certificates.  The Gate-1 half is now checked in Lean:
+`gp12FiveCutSide_noPrimitiveCheckerGap` proves the selected five-edge cut has
+no primitive checker gap from the five boundary-slot crossing facts and
+explicit cycles on both sides.  In addition, `CAP5GP12RouteData.lean` now
+packages the concrete graph/embedding/Tait/CAP5 core and the four sidecase
+unit-evader certificates matching the lab verdict.  Verification for the
+Gate-1 no-gap increment: focused `CAP5GP12RouteData` build SHA256
+`6a0465c7b5b2500101e4e7afa74c8c43c4c7738ca0afa47bc06c75850ab83360`,
+FourColor umbrella build SHA256
+`1c6dbe74bdaa401f5655b468a78884784eda313c787a725987421e8c0a2e2961`,
+and axiom audit driver/log SHA256
+`79f27c6c5494e9c06b955c2c322e839a7d768b1f4d45803cbd7bd5a2a12601dd` /
+`e1db9e764ef2a54b6c3470e18adc175d631bc5ee83988349f7bbb4b5b55cfcaa`
+with baseline `[propext, Classical.choice, Quot.sound]`.
 The geometric strengthening
 `CAP5FiniteNoGapRouteInput.not_noUnifiedKernelMapEvader_of_noncrossing_interiorEdgeSupport`
 and
