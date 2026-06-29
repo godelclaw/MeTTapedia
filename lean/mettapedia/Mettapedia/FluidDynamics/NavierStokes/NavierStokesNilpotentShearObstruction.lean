@@ -180,6 +180,35 @@ theorem spatialVorticity_momentumPressureResidual_nilpotentLinearShearVelocityFi
   have hcoord := congrArg (fun v : NSSpace => v nsCoord1) h
   norm_num [nsCoord1] at hcoord
 
+/-- Frozen-slice version of the nilpotent obstruction.  Any candidate whose
+velocity slice and time-derivative slice match the steady nilpotent shear at a
+time has the same nonzero pressure-residual curl at that time. -/
+theorem spatialVorticity_momentumPressureResidual_of_frozen_nilpotentLinearShearSlice
+    {ν : ℝ} {u : NSVelocityField} {t : NSTime} (x : NSSpace)
+    (hslice : ∀ y : NSSpace, u t y = nilpotentLinearShearVelocityField t y)
+    (htime : ∀ y : NSSpace, timeVelocityDerivative u t y = 0) :
+    spatialVorticity (momentumPressureResidual ν u) t x =
+      EuclideanSpace.single nsCoord1 (-1 : ℝ) := by
+  have htime' :
+      ∀ y : NSSpace,
+        timeVelocityDerivative u t y =
+          timeVelocityDerivative nilpotentLinearShearVelocityField t y := by
+    intro y
+    rw [htime y, timeVelocityDerivative_nilpotentLinearShearVelocityField]
+  rw [spatialVorticity_momentumPressureResidual_congr_at hslice htime']
+  exact spatialVorticity_momentumPressureResidual_nilpotentLinearShearVelocityField ν t x
+
+theorem spatialVorticity_momentumPressureResidual_of_frozen_nilpotentLinearShearSlice_ne_zero
+    {ν : ℝ} {u : NSVelocityField} {t : NSTime} (x : NSSpace)
+    (hslice : ∀ y : NSSpace, u t y = nilpotentLinearShearVelocityField t y)
+    (htime : ∀ y : NSSpace, timeVelocityDerivative u t y = 0) :
+    spatialVorticity (momentumPressureResidual ν u) t x ≠ 0 := by
+  rw [spatialVorticity_momentumPressureResidual_of_frozen_nilpotentLinearShearSlice
+    x hslice htime]
+  intro h
+  have hcoord := congrArg (fun v : NSSpace => v nsCoord1) h
+  norm_num [nsCoord1] at hcoord
+
 /-- No smooth pressure can repair the nilpotent shear chain into the concrete
 momentum equation at any viscosity. -/
 theorem not_exists_smoothPressure_momentumEquation_nilpotentLinearShearVelocityField
@@ -223,6 +252,36 @@ theorem not_exists_nonzeroSchwartzConcreteSolution_velocity_nilpotentLinearShear
       ⟨0, 0,
         spatialVorticity_momentumPressureResidual_nilpotentLinearShearVelocityField_ne_zero
           ν 0 0⟩
+
+/-- No ordinary slice-Schwartz solution can have a frozen nilpotent-shear slice:
+matching the nilpotent velocity slice and having zero instantaneous time
+derivative already force a nonzero pressure-residual curl at that time. -/
+theorem not_exists_schwartzConcreteSolution_frozen_nilpotentLinearShearSlice
+    (ν : ℝ) (t : NSTime) :
+    ¬ ∃ S : SchwartzConcreteNavierStokesSolution ν,
+      (∀ y : NSSpace, S.velocity t y = nilpotentLinearShearVelocityField t y) ∧
+        (∀ y : NSSpace, timeVelocityDerivative S.velocity t y = 0) := by
+  rintro ⟨S, hslice, htime⟩
+  have hzero :
+      spatialVorticity (momentumPressureResidual ν S.velocity) t 0 = 0 :=
+    S.momentumPressureResidual_spatialVorticity_zero t 0
+  have hne :
+      spatialVorticity (momentumPressureResidual ν S.velocity) t 0 ≠ 0 :=
+    spatialVorticity_momentumPressureResidual_of_frozen_nilpotentLinearShearSlice_ne_zero
+      (ν := ν) (u := S.velocity) (t := t) 0 hslice htime
+  exact hne hzero
+
+/-- The nonzero slice-Schwartz interface is likewise excluded for a frozen
+nilpotent-shear time slice. -/
+theorem not_exists_nonzeroSchwartzConcreteSolution_frozen_nilpotentLinearShearSlice
+    (ν : ℝ) (t : NSTime) :
+    ¬ ∃ S : NonzeroSchwartzConcreteNavierStokesSolution ν,
+      (∀ y : NSSpace, S.velocity t y = nilpotentLinearShearVelocityField t y) ∧
+        (∀ y : NSSpace, timeVelocityDerivative S.velocity t y = 0) := by
+  rintro ⟨S, hslice, htime⟩
+  exact
+    not_exists_schwartzConcreteSolution_frozen_nilpotentLinearShearSlice ν t
+      ⟨S.toSchwartzConcreteNavierStokesSolution, hslice, htime⟩
 
 end NavierStokes
 end FluidDynamics

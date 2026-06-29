@@ -98,8 +98,8 @@ def currentNavierRoadmap : List NavierRoadmapEntry :=
     { stage := .nonzeroEnergyKernel
       proofNodeId := "navier.energy.nonzero-schwartz-nilpotent-shear-pressure-obstruction"
       status := .checked
-      truthValue := ⟨90, 91⟩
-      obligation := "Use the checked nilpotent-shear pressure-residual curl obstruction to reject multi-stage steady linear shear chains; future nonzero canaries must prove curl-free pressure residual closure after localization, not just divergence-free linear algebra." },
+      truthValue := ⟨91, 92⟩
+      obligation := "Use the checked nilpotent-shear and frozen nilpotent-slice pressure-residual curl obstructions to reject multi-stage steady linear shear chains; future nonzero canaries must prove curl-free pressure residual closure after localization, not just divergence-free linear algebra." },
     { stage := .nonzeroEnergyKernel
       proofNodeId := "navier.energy.nonzero-schwartz-localized-stream-seed"
       status := .checked
@@ -183,8 +183,8 @@ def currentNavierRoadmap : List NavierRoadmapEntry :=
     { stage := .nonzeroEnergyKernel
       proofNodeId := "navier.energy.nonzero-schwartz-canary"
       status := .openGoal
-      truthValue := ⟨74, 87⟩
-      obligation := "Produce or refute an exact smooth evolution and Schwartz pressure slices for the localized stream-function seed or a comparable non-polynomial Schwartz profile; seed-only data, conditional constructors, classical heat-shear exact solutions that fail Schwartz decay, rank-one zero-convection obstructions, nilpotent-shear pressure-residual obstructions, profile-level nonzero anti-profile cancellation, amplitude-boundary guardrails, positive-viscosity stationary obstructions, strict-dissipation theorems conditional on the nonzero interface, flat-energy zero-rigidity obstructions, local-extremum energy obstructions, pointwise strict-derivative gates, local energy plateau obstructions, immediate right-drop gates, sampled right-drop gates, strict future-drop gates, energy-recurrence obstructions, residual-curl pressure-closure rejections, finite-mode residual-curl boundaries, stationary inviscid closure constructors, and algebraic finite-mode boundary cases do not count." },
+      truthValue := ⟨75, 87⟩
+      obligation := "Produce or refute an exact smooth evolution and Schwartz pressure slices for the localized stream-function seed or a comparable non-polynomial Schwartz profile; seed-only data, conditional constructors, classical heat-shear exact solutions that fail Schwartz decay, rank-one zero-convection obstructions, nilpotent-shear pressure-residual obstructions, frozen nilpotent-slice obstructions, profile-level nonzero anti-profile cancellation, amplitude-boundary guardrails, positive-viscosity stationary obstructions, strict-dissipation theorems conditional on the nonzero interface, flat-energy zero-rigidity obstructions, local-extremum energy obstructions, pointwise strict-derivative gates, local energy plateau obstructions, immediate right-drop gates, sampled right-drop gates, strict future-drop gates, energy-recurrence obstructions, residual-curl pressure-closure rejections, finite-mode residual-curl boundaries, stationary inviscid closure constructors, and algebraic finite-mode boundary cases do not count." },
     { stage := .scalingGate
       proofNodeId := "navier.regularity-promotion-gate"
       status := .scalingUncleared
@@ -231,10 +231,10 @@ theorem currentNavierRoadmap_records_nonzero_schwartz_kernel_and_open_canary :
       ({ stage := NavierRoadmapStage.nonzeroEnergyKernel
          proofNodeId := "navier.energy.nonzero-schwartz-canary"
          status := .openGoal
-         truthValue := ⟨74, 87⟩
+         truthValue := ⟨75, 87⟩
          obligation :=
-          "Produce or refute an exact smooth evolution and Schwartz pressure slices for the localized stream-function seed or a comparable non-polynomial Schwartz profile; seed-only data, conditional constructors, classical heat-shear exact solutions that fail Schwartz decay, rank-one zero-convection obstructions, nilpotent-shear pressure-residual obstructions, profile-level nonzero anti-profile cancellation, amplitude-boundary guardrails, positive-viscosity stationary obstructions, strict-dissipation theorems conditional on the nonzero interface, flat-energy zero-rigidity obstructions, local-extremum energy obstructions, pointwise strict-derivative gates, local energy plateau obstructions, immediate right-drop gates, sampled right-drop gates, strict future-drop gates, energy-recurrence obstructions, residual-curl pressure-closure rejections, finite-mode residual-curl boundaries, stationary inviscid closure constructors, and algebraic finite-mode boundary cases do not count." } :
-        NavierRoadmapEntry) ∈ currentNavierRoadmap ∧
+          "Produce or refute an exact smooth evolution and Schwartz pressure slices for the localized stream-function seed or a comparable non-polynomial Schwartz profile; seed-only data, conditional constructors, classical heat-shear exact solutions that fail Schwartz decay, rank-one zero-convection obstructions, nilpotent-shear pressure-residual obstructions, frozen nilpotent-slice obstructions, profile-level nonzero anti-profile cancellation, amplitude-boundary guardrails, positive-viscosity stationary obstructions, strict-dissipation theorems conditional on the nonzero interface, flat-energy zero-rigidity obstructions, local-extremum energy obstructions, pointwise strict-derivative gates, local energy plateau obstructions, immediate right-drop gates, sampled right-drop gates, strict future-drop gates, energy-recurrence obstructions, residual-curl pressure-closure rejections, finite-mode residual-curl boundaries, stationary inviscid closure constructors, and algebraic finite-mode boundary cases do not count." } :
+      NavierRoadmapEntry) ∈ currentNavierRoadmap ∧
       ({ stage := NavierRoadmapStage.nonzeroEnergyKernel
          proofNodeId := "navier.energy.nonzero-schwartz-rank-one-shear-obstruction"
          status := .checked
@@ -252,10 +252,10 @@ theorem currentNavierRoadmap_records_nonzero_schwartz_kernel_and_open_canary :
       ({ stage := NavierRoadmapStage.nonzeroEnergyKernel
          proofNodeId := "navier.energy.nonzero-schwartz-nilpotent-shear-pressure-obstruction"
          status := .checked
-         truthValue := ⟨90, 91⟩
+         truthValue := ⟨91, 92⟩
          obligation :=
-          "Use the checked nilpotent-shear pressure-residual curl obstruction to reject multi-stage steady linear shear chains; future nonzero canaries must prove curl-free pressure residual closure after localization, not just divergence-free linear algebra." } :
-        NavierRoadmapEntry) ∈ currentNavierRoadmap ∧
+          "Use the checked nilpotent-shear and frozen nilpotent-slice pressure-residual curl obstructions to reject multi-stage steady linear shear chains; future nonzero canaries must prove curl-free pressure residual closure after localization, not just divergence-free linear algebra." } :
+      NavierRoadmapEntry) ∈ currentNavierRoadmap ∧
       ({ stage := NavierRoadmapStage.nonzeroEnergyKernel
          proofNodeId := "navier.energy.nonzero-schwartz-localized-stream-seed"
          status := .checked
