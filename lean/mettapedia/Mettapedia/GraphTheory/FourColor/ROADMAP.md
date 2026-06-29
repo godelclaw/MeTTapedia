@@ -599,7 +599,10 @@ longer acceptable progress.
    emitted-kernel and remaining-map certificates.  The failed-synthesis
    corollary removes the success side from that fork under
    `¬ Theorem49BoundaryRootSynthesis`: if synthesis fails, Lean directly
-   returns the unified emitted-kernel/remaining-map evader.  The
+   returns the unified emitted-kernel/remaining-map evader.  The exact
+   kernel/map oracle theorem now gives the corresponding iff: under forced-all,
+   no unified emitted-kernel/remaining-map evader is equivalent to theorem-4.9
+   synthesis plus full selected-boundary-zero classifier control.  The
    pure no-target theorem underneath those refinements says failed synthesis
    already produces a genuine selected-boundary-zero evader for the enumerated
    forced edges.  The remaining crux is whether exact shell/CAP5 data reaches
