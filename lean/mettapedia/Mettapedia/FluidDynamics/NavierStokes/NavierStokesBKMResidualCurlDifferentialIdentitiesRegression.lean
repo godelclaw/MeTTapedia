@@ -76,6 +76,16 @@ theorem timeVelocityDerivativeField_smoothSpaceTimeVelocity_of_smooth_regression
     smoothSpaceTimeVelocity (timeVelocityDerivativeField u) := by
   exact timeVelocityDerivativeField_smoothSpaceTimeVelocity_of_smooth hu
 
+theorem timeVorticityDerivative_smoothSpaceTimeVelocity_of_smooth_regression
+    {u : NSVelocityField} (hu : smoothSpaceTimeVelocity u) :
+    smoothSpaceTimeVelocity (fun t x => timeVorticityDerivative u t x) := by
+  exact timeVorticityDerivative_smoothSpaceTimeVelocity_of_smooth hu
+
+theorem spatialVorticity_timeVelocityDerivativeField_smoothSpaceTimeVelocity_of_smooth_regression
+    {u : NSVelocityField} (hu : smoothSpaceTimeVelocity u) :
+    smoothSpaceTimeVelocity (fun t x => spatialVorticity (timeVelocityDerivativeField u) t x) := by
+  exact spatialVorticity_timeVelocityDerivativeField_smoothSpaceTimeVelocity_of_smooth hu
+
 theorem residualCurlLinearityDifferentiableAt_of_smooth_laplacian_regression
     {u : NSVelocityField} {t : NSTime} {x : NSSpace}
     (hu : smoothSpaceTimeVelocity u)

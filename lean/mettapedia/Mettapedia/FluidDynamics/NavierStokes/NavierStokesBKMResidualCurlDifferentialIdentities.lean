@@ -288,6 +288,30 @@ theorem timeVelocityDerivativeField_smoothSpaceTimeVelocity_of_smooth
     simp [spaceTimeVelocityMap, timeVelocityDerivativeField,
       timeVelocityDerivative, timeFDeriv])
 
+/-- The time derivative of vorticity is smooth when the velocity is smooth. -/
+theorem timeVorticityDerivative_smoothSpaceTimeVelocity_of_smooth
+    {u : NSVelocityField} (hu : smoothSpaceTimeVelocity u) :
+    smoothSpaceTimeVelocity (fun t x => timeVorticityDerivative u t x) := by
+  have hω : smoothSpaceTimeVelocity (fun t x => spatialVorticity u t x) :=
+    spatialVorticity_smoothSpaceTimeVelocity_of_smooth hu
+  have htime :
+      smoothSpaceTimeVelocity
+        (timeVelocityDerivativeField (fun t x => spatialVorticity u t x)) :=
+    timeVelocityDerivativeField_smoothSpaceTimeVelocity_of_smooth hω
+  rw [smoothSpaceTimeVelocity] at htime ⊢
+  exact contDiff_congr_global htime (by
+    intro tx
+    simp [spaceTimeVelocityMap, timeVelocityDerivativeField, timeVelocityDerivative,
+      timeFDeriv, timeVorticityDerivative])
+
+/-- The vorticity of the time-derivative velocity field is smooth when the
+velocity is smooth. -/
+theorem spatialVorticity_timeVelocityDerivativeField_smoothSpaceTimeVelocity_of_smooth
+    {u : NSVelocityField} (hu : smoothSpaceTimeVelocity u) :
+    smoothSpaceTimeVelocity (fun t x => spatialVorticity (timeVelocityDerivativeField u) t x) := by
+  exact spatialVorticity_smoothSpaceTimeVelocity_of_smooth
+    (timeVelocityDerivativeField_smoothSpaceTimeVelocity_of_smooth hu)
+
 /-- After the Laplacian-field differentiability bridge, smoothness supplies the
 other two differentiability hypotheses needed for residual-curl linearity. -/
 theorem residualCurlLinearityDifferentiableAt_of_smooth_laplacian
