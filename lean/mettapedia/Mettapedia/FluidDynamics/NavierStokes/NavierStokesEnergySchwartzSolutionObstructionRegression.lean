@@ -333,6 +333,37 @@ theorem nonzero_schwartz_solution_energy_strict_future_drop_at_nonzero_regressio
     S.normalizedKineticEnergy_strict_lt_after_nonzero_of_pos_viscosity
       hν hne ht
 
+theorem normalized_energy_eq_of_velocity_slice_eq_regression
+    {u : NSVelocityField} {t₀ t₁ : NSTime}
+    (hslice : ∀ x : NSSpace, u t₁ x = u t₀ x) :
+    normalizedKineticEnergy u t₁ = normalizedKineticEnergy u t₀ := by
+  exact normalizedKineticEnergy_eq_of_velocity_slice_eq hslice
+
+theorem nonzero_schwartz_solution_energy_no_periodic_endpoint_regression
+    {ν : ℝ} (hν : 0 < ν) (S : NonzeroSchwartzConcreteNavierStokesSolution ν)
+    {t P : NSTime} {x : NSSpace}
+    (hne : S.velocity t x ≠ 0) (hP : 0 < P) :
+    normalizedKineticEnergy S.velocity (t + P) ≠
+      normalizedKineticEnergy S.velocity t := by
+  exact
+    S.normalizedKineticEnergy_ne_periodic_endpoint_at_nonzero_of_pos_viscosity
+      hν hne hP
+
+theorem nonzero_schwartz_solution_not_periodic_energy_regression
+    {ν : ℝ} (hν : 0 < ν) (S : NonzeroSchwartzConcreteNavierStokesSolution ν)
+    {P : NSTime} (hP : 0 < P) :
+    ¬ ∀ t : NSTime,
+      normalizedKineticEnergy S.velocity (t + P) =
+        normalizedKineticEnergy S.velocity t := by
+  exact S.not_forall_normalizedKineticEnergy_periodic_of_pos_viscosity hν hP
+
+theorem nonzero_schwartz_solution_not_periodic_velocity_regression
+    {ν : ℝ} (hν : 0 < ν) (S : NonzeroSchwartzConcreteNavierStokesSolution ν)
+    {P : NSTime} (hP : 0 < P) :
+    ¬ ∀ t : NSTime, ∀ x : NSSpace,
+      S.velocity (t + P) x = S.velocity t x := by
+  exact S.not_forall_velocity_periodic_of_pos_viscosity hν hP
+
 theorem nonzero_schwartz_solution_exists_strict_energy_identity_regression
     {ν : ℝ} (hν : 0 < ν) (S : NonzeroSchwartzConcreteNavierStokesSolution ν) :
     ∃ t : NSTime,
@@ -500,6 +531,29 @@ theorem not_exists_nonzero_schwartz_solution_nonzero_later_energy_nondecreasing_
               normalizedKineticEnergy S.velocity t₁ := by
   exact
     not_exists_nonzeroSchwartzConcreteSolution_nonzero_later_energy_nondecreasing_of_pos_viscosity
+      hν
+
+theorem not_exists_nonzero_schwartz_solution_periodic_energy_regression
+    {ν : ℝ} (hν : 0 < ν) :
+    ¬ ∃ S : NonzeroSchwartzConcreteNavierStokesSolution ν,
+      ∃ P : NSTime,
+        0 < P ∧
+          ∀ t : NSTime,
+            normalizedKineticEnergy S.velocity (t + P) =
+              normalizedKineticEnergy S.velocity t := by
+  exact
+    not_exists_nonzeroSchwartzConcreteSolution_energy_periodic_of_pos_viscosity
+      hν
+
+theorem not_exists_nonzero_schwartz_solution_periodic_velocity_regression
+    {ν : ℝ} (hν : 0 < ν) :
+    ¬ ∃ S : NonzeroSchwartzConcreteNavierStokesSolution ν,
+      ∃ P : NSTime,
+        0 < P ∧
+          ∀ t : NSTime, ∀ x : NSSpace,
+            S.velocity (t + P) x = S.velocity t x := by
+  exact
+    not_exists_nonzeroSchwartzConcreteSolution_velocity_periodic_of_pos_viscosity
       hν
 
 theorem not_exists_nonzero_stationary_schwartz_solution_of_dissipation_ne_regression
