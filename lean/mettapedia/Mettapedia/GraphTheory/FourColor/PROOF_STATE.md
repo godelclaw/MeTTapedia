@@ -1716,14 +1716,37 @@ nonzero canonical remaining-map image.
   marker, leak, whitespace, and `git diff --check` scans are clean.  Full
   `lake -f lakefile.lean build Mettapedia` completed successfully with
   5900 jobs and only pre-existing warnings outside this checkpoint.
+- No-gap oracle side-condition discharge:
+  `noGap_portalsCross_matchingCandidate`,
+  `CAP5F2RouteCertificate.ofNoGap`, and
+  `budgetMetNoEvader_boundaryZeroControl_oracle_of_noGap`.  These remove the
+  old separate portal-crossing, two-side-cycle, and no-missing-checker
+  arguments from the budget oracle once `¬ CAP5PrimitiveCheckerGap` is known.
+  The portal transport is now broad enough for the oracle: any candidate with
+  the selected `ofPortalSides p0 p4` side case has the same finite portal set
+  as the corresponding canonical latent, so no-gap supplies the portal premise
+  for that candidate.  Lean also proves `cap5PrimitiveCheckerGap_falseSide`
+  and `not_forall_no_cap5PrimitiveCheckerGap_allSides`, showing that a
+  completely side-uniform no-gap theorem is false because the constant-empty
+  side has no selected-side cycle.  The remaining side-condition seam is
+  therefore localized: exact CAP5 shell data must prove that its actual side
+  is not such a degenerate side and closes `CAP5PrimitiveCheckerGap`.  The
+  unified target/off-target F2 evader set remains undecided.  Focused
+  `CAP5RouteVerdict`, FourColor aggregate, and full `Mettapedia` builds all
+  pass; trusted-constant audit for the five new headline constants reports
+  only `[propext, Classical.choice, Quot.sound]`, and current-diff proof
+  marker, leak, whitespace, and `git diff --check` scans are clean.
 
 ## Remaining Completion Requirements
 
 - Move 1: prove the remaining exact-shell handoff into the primitive
   portal/cycle prerequisites.  The route-level checker lemmas now show that a
   missing selected-side or complementary-side cycle directly inhabits
-  `CAP5PrimitiveCheckerGap`, so this handoff must prove both cycle witnesses
-  and all latent portal crossings rather than only clear a report flag.  The
+  `CAP5PrimitiveCheckerGap`, and the no-gap oracle wrapper now derives the
+  broad portal premise automatically from no-gap.  This handoff must therefore
+  prove the exact CAP5 side has both cycle witnesses and closes
+  `CAP5PrimitiveCheckerGap`, rather than try to clear a report flag for all
+  possible side predicates.  The
   completed-prerequisite
   branch is now blocked by the cyclic-five small-cut repair-removal
   obstruction.

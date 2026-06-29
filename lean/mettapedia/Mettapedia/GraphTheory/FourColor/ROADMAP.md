@@ -245,6 +245,22 @@ unconditional closure: exact CAP5 data still has to supply the portal/cycle
 evidence and decide the target/off-target F2 evader set, or accept the concrete
 gap/evader branch already returned by the formal route.
 
+Second follow-up on 2026-06-29: the side-condition discharge was pushed through
+the packaged budget oracle as far as the current definitions permit.  The
+theorem `budgetMetNoEvader_boundaryZeroControl_oracle_of_noGap` derives the
+oracle's broad portal-crossing premise, both side-cycle witnesses, and the
+no-missing checker premise from the single hypothesis
+`¬ CAP5PrimitiveCheckerGap`.  The new constructor
+`CAP5F2RouteCertificate.ofNoGap` does the same for the top-level route
+certificate.  Lean also proves
+`not_forall_no_cap5PrimitiveCheckerGap_allSides`: a completely side-uniform
+checker-gap discharge is impossible because the constant-empty side has no
+selected-side cycle and therefore directly inhabits `CAP5PrimitiveCheckerGap`.
+So the remaining side-condition seam is not a report/latent transport gap; it
+is the need to prove that the actual CAP5 side selected by exact shell data has
+the two cycle witnesses and no primitive checker gap.  The unified F2
+target/off-target evader set remains undecided.
+
 The next target-level corollary turns finite dimension into an explicit fork
 test for exact CAP5 data.  In Lean,
 `exists_theorem49BoundaryTargetEvader_of_emittedFinset_card_add_boundary_card_add_theorem49BoundaryVertices_card_lt`

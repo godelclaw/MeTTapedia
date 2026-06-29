@@ -126,6 +126,46 @@ theorem noGap_portalsCross_allLatents
       boundaryEdge side latent).PortalCrosses :=
   noGap_portalsCross hno (CAP5ExceptionalAnnulusGeneratorLatent.mem_all latent)
 
+/--
+No primitive checker gap supplies the broad portal-crossing premise used by the F2 oracle.  The
+candidate need not be definitionally the canonical latent candidate: matching the selected
+portal-side case is enough, because both portal lists are the same finite side-case portal set.
+-/
+theorem noGap_portalsCross_matchingCandidate
+    {side : V → Prop} (p0Inside p4Inside : Bool)
+    (hno : ¬ CAP5PrimitiveCheckerGap boundaryEdge side)
+    (edgeCandidate : CAP5ExceptionalAnnulusBoundaryEdgeSupportCandidate boundaryEdge)
+    (hsideCase :
+      edgeCandidate.portalCandidate.sideCase =
+        CAP5ExceptionalAnnulusSideCase.ofPortalSides p0Inside p4Inside) :
+    ∀ i : Fin 5, i ∈ edgeCandidate.portalCandidate.portalSet →
+      EdgeCrossesVertexSide G side (boundaryEdge i) := by
+  let latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge :=
+    { orientation := edgeCandidate.portalCandidate.orientation
+      p0Inside := p0Inside
+      p4Inside := p4Inside }
+  have hportal :
+      (CAP5ExceptionalAnnulusGeneratorReport.latentNode
+        boundaryEdge side latent).PortalCrosses :=
+    noGap_portalsCross_allLatents hno latent
+  intro i hi
+  apply hportal i
+  have hiSideCase :
+      i ∈ edgeCandidate.portalCandidate.sideCase.separatorPortalSet := by
+    simpa [edgeCandidate.portalCandidate.hportalSet] using hi
+  have hiSelected :
+      i ∈ (CAP5ExceptionalAnnulusSideCase.ofPortalSides
+        p0Inside p4Inside).separatorPortalSet := by
+    simpa [hsideCase] using hiSideCase
+  simpa [CAP5ExceptionalAnnulusGeneratorReport.latentNode,
+    CAP5ExceptionalAnnulusGeneratorNode.candidate,
+    CAP5ExceptionalAnnulusGeneratorLatent.candidate,
+    CAP5ExceptionalAnnulusGeneratorLatent.sideCase,
+    CAP5ExceptionalAnnulusBoundaryEdgeSupportCandidate.ofOrientationAndSideCase,
+    CAP5ExceptionalAnnulusBoundaryEdgeSupportCandidate.ofPortalCandidate,
+    CAP5ExceptionalAnnulusSeparatorPortalCandidate.ofOrientationAndSideCase,
+    latent] using hiSelected
+
 /-- If the selected side has no cycle, the primitive checker gap is forced. -/
 theorem cap5PrimitiveCheckerGap_of_no_selectedSideCycle
     {side : V → Prop} (hmissing : ¬ HasCycleOnSide G side) :
@@ -187,6 +227,26 @@ theorem noGap_forces_sideCycles
   · by_contra hmissing
     exact hno (cap5PrimitiveCheckerGap_of_no_complementarySideCycle hmissing)
 
+/-- The constant-empty side always has a primitive checker gap: it has no selected-side cycle. -/
+theorem cap5PrimitiveCheckerGap_falseSide
+    (boundaryEdge : Fin 5 → G.edgeSet) :
+    CAP5PrimitiveCheckerGap boundaryEdge (fun _ : V => False) := by
+  exact cap5PrimitiveCheckerGap_of_no_selectedSideCycle (boundaryEdge := boundaryEdge)
+    (side := fun _ : V => False) (by
+      rintro ⟨_u, hfalse, _p, _hpcycle, _hpside⟩
+      exact hfalse)
+
+/--
+A completely side-uniform checker-gap discharge is impossible from the current hypotheses:
+the constant-empty side is a formal counterexample.
+-/
+theorem not_forall_no_cap5PrimitiveCheckerGap_allSides
+    (boundaryEdge : Fin 5 → G.edgeSet) :
+    ¬ (∀ side : V → Prop, ¬ CAP5PrimitiveCheckerGap boundaryEdge side) := by
+  intro hforall
+  exact hforall (fun _ : V => False)
+    (cap5PrimitiveCheckerGap_falseSide boundaryEdge)
+
 variable [Fintype G.edgeSet] [FiniteDimensional F2 (G.edgeSet → Color)]
 
 /--
@@ -224,6 +284,43 @@ structure CAP5F2RouteCertificate
     ∀ e ∈ classifier.remainingControlEdges
         (interiorEdgeSupport emb.faceBoundary emb.faces),
       Pi.single e blue ∈ projectedColoringGeneratorSubspace emb colorings
+
+/-- Build the route certificate after the primitive checker gap has been closed. -/
+def CAP5F2RouteCertificate.ofNoGap
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    {emb : PlaneEmbeddingWithBoundary G} {C₀ : G.EdgeColoring Color}
+    {colorings : Set (G.EdgeColoring Color)}
+    {p0Inside p4Inside : Bool} {side : V → Prop}
+    (hsubset : colorings ⊆ G.EdgeKempeClosure C₀)
+    (hnoGap : ¬ CAP5PrimitiveCheckerGap boundaryEdge side)
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (hredEmitted :
+      ∀ e ∈ classifier.emittedFinset,
+        Pi.single e red ∈ projectedColoringGeneratorSubspace emb colorings)
+    (hblueEmitted :
+      ∀ e ∈ classifier.emittedFinset,
+        Pi.single e blue ∈ projectedColoringGeneratorSubspace emb colorings)
+    (hredRemaining :
+      ∀ e ∈ classifier.remainingControlEdges
+          (interiorEdgeSupport emb.faceBoundary emb.faces),
+        Pi.single e red ∈ projectedColoringGeneratorSubspace emb colorings)
+    (hblueRemaining :
+      ∀ e ∈ classifier.remainingControlEdges
+          (interiorEdgeSupport emb.faceBoundary emb.faces),
+        Pi.single e blue ∈ projectedColoringGeneratorSubspace emb colorings) :
+    CAP5F2RouteCertificate data emb C₀ colorings p0Inside p4Inside side where
+  subset := hsubset
+  portal_crosses := by
+    intro edgeCandidate _horientation hsideCase
+    exact noGap_portalsCross_matchingCandidate p0Inside p4Inside hnoGap
+      edgeCandidate hsideCase
+  cycles := noGap_forces_sideCycles hnoGap
+  classifier := classifier
+  redEmitted := hredEmitted
+  blueEmitted := hblueEmitted
+  redRemaining := hredRemaining
+  blueRemaining := hblueRemaining
 
 /-- The closed no-evader side of the CAP5/F2 route, split into target and off-target evaders. -/
 def CAP5F2NoTargetOffTargetEvader
@@ -268,6 +365,93 @@ def CAP5F2RouteClosed
       z ∈ planarBoundaryZeroSubmodule emb →
       (∀ e ∈ cert.classifier.emittedFinset, z e = 0) →
         z = 0
+
+/--
+Closed-frontier budget oracle with the portal/cycle/no-missing side conditions discharged from
+`¬ CAP5PrimitiveCheckerGap`.  The remaining mathematical question is exactly the unified
+emitted-kernel/remaining-map evader set in the conclusion.
+-/
+theorem budgetMetNoEvader_boundaryZeroControl_oracle_of_noGap
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    (emb : PlaneEmbeddingWithBoundary G) (C₀ : G.EdgeColoring Color)
+    (colorings : Set (G.EdgeColoring Color))
+    (hsubset : colorings ⊆ G.EdgeKempeClosure C₀)
+    (p0Inside p4Inside : Bool) (h : data.IsExceptional)
+    (side : V → Prop)
+    [∀ latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge,
+      Decidable ((CAP5ExceptionalAnnulusGeneratorReport.latentNode
+        boundaryEdge side latent).PortalCrosses)]
+    [∀ latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge,
+      Decidable ((CAP5ExceptionalAnnulusGeneratorReport.latentNode
+        boundaryEdge side latent).SideCycles)]
+    [∀ latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge,
+      Decidable ((CAP5ExceptionalAnnulusGeneratorReport.latentNode
+        boundaryEdge side latent).RealizedSeparator)]
+    (hcyclic : CyclicallyFiveEdgeConnected G)
+    (hnoGap : ¬ CAP5PrimitiveCheckerGap boundaryEdge side)
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (hredEmitted :
+      ∀ e ∈ classifier.emittedFinset,
+        Pi.single e red ∈ projectedColoringGeneratorSubspace emb colorings)
+    (hblueEmitted :
+      ∀ e ∈ classifier.emittedFinset,
+        Pi.single e blue ∈ projectedColoringGeneratorSubspace emb colorings)
+    (hredRemaining :
+      ∀ e ∈ classifier.remainingControlEdges
+          (interiorEdgeSupport emb.faceBoundary emb.faces),
+        Pi.single e red ∈ projectedColoringGeneratorSubspace emb colorings)
+    (hblueRemaining :
+      ∀ e ∈ classifier.remainingControlEdges
+          (interiorEdgeSupport emb.faceBoundary emb.faces),
+        Pi.single e blue ∈ projectedColoringGeneratorSubspace emb colorings) :
+    ((¬ ∃ z : planarBoundaryZeroSubmodule emb,
+      ((z : G.edgeSet → Color) ≠ 0) ∧
+        (∀ e : G.edgeSet,
+          data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e →
+            (z : G.edgeSet → Color) e = 0) ∧
+          z ∈ LinearMap.ker
+            (planarBoundaryZeroFamilyPairingMap
+              (redBlueSingleCoordinateFamily classifier.emittedFinset hredEmitted
+                hblueEmitted)) ∧
+            planarBoundaryZeroFamilyPairingMap
+                (redBlueSingleCoordinateFamily
+                  (classifier.remainingControlEdges
+                    (interiorEdgeSupport emb.faceBoundary emb.faces))
+                  hredRemaining hblueRemaining) z ≠ 0) ↔
+      Theorem49BoundaryRootSynthesis emb C₀ ∧
+        (∀ ⦃z : G.edgeSet → Color⦄,
+          z ∈ planarBoundaryZeroSubmodule emb →
+          (∀ e ∈ classifier.emittedFinset, z e = 0) →
+            z = 0)) ∧
+      (¬ (Theorem49BoundaryRootSynthesis emb C₀ ∧
+        (∀ ⦃z : G.edgeSet → Color⦄,
+          z ∈ planarBoundaryZeroSubmodule emb →
+          (∀ e ∈ classifier.emittedFinset, z e = 0) →
+            z = 0)) →
+        ∃ z : planarBoundaryZeroSubmodule emb,
+          ((z : G.edgeSet → Color) ≠ 0) ∧
+            (∀ e : G.edgeSet,
+              data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e →
+                (z : G.edgeSet → Color) e = 0) ∧
+              z ∈ LinearMap.ker
+                (planarBoundaryZeroFamilyPairingMap
+                  (redBlueSingleCoordinateFamily classifier.emittedFinset hredEmitted
+                    hblueEmitted)) ∧
+                planarBoundaryZeroFamilyPairingMap
+                    (redBlueSingleCoordinateFamily
+                      (classifier.remainingControlEdges
+                        (interiorEdgeSupport emb.faceBoundary emb.faces))
+                      hredRemaining hblueRemaining) z ≠ 0) := by
+  exact
+    data.budgetMetNoEvader_boundaryZeroControl_oracle
+      emb C₀ colorings hsubset p0Inside p4Inside h side hcyclic
+      (fun edgeCandidate _horientation hsideCase =>
+        noGap_portalsCross_matchingCandidate p0Inside p4Inside hnoGap
+          edgeCandidate hsideCase)
+      (noGap_forces_sideCycles hnoGap)
+      classifier hredEmitted hblueEmitted hredRemaining hblueRemaining
+      (by simpa [CAP5PrimitiveCheckerGap] using hnoGap)
 
 /-- The geometric repair surfaces already ruled out in the closed primitive-frontier branch. -/
 def CAP5GeometricRepairBlocked
