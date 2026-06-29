@@ -705,6 +705,13 @@ longer acceptable progress.
    nonzero selected-boundary-zero chain and is already emitted by the
    classifier, proves the emitted red/blue pairing-kernel certificate consumed
    by the executable report route.
+   The exact-shell empty-worklist specialization
+   `emittedFinsetPairingKernel_eq_bot_of_remainingInteriorSupportEmpty`,
+   `ofDecidableChecks_missingCheckerEvidence_or_theorem49Synthesis_and_boundaryZeroControl_of_remainingInteriorSupportEmpty`,
+   and
+   `theorem49Synthesis_and_boundaryZeroControl_of_no_missingCheckerEvidence_and_remainingInteriorSupportEmpty`
+   now proves the same emitted-rank certificate directly from the concrete
+   CAP5 condition that the canonical interior-support worklist is empty.
    The direct no-evader route corollaries
    `ofDecidableChecks_missingCheckerEvidence_or_theorem49Synthesis_and_boundaryZeroControl_of_no_theorem49BoundaryTargetEvader_and_no_emittedFinsetKernelMapEvader_with_theorem49BoundaryVertexKirchhoffFailure`
    and
