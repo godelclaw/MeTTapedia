@@ -264,6 +264,34 @@ theorem BKMHighNormContinuationFromLogControl_of_bkmEnvelopeSchwartzHighNormCont
     ⟨_F, _M, _hEnvelope, _hM_nonneg, _hF_bound, hOut⟩
   exact hOut
 
+/-- The single high-norm/Sobolev frontier also supplies the high-norm envelope
+needed by the Biot-Savart packaging layer.  This does not add another residual:
+it records that the current Lemma A frontier already contains the envelope
+extraction previously listed on the Biot-Savart side. -/
+theorem BKMFiniteTimeWitnessSchwartzHighNormEnvelopeFromBKMData_of_bkmEnvelopeSchwartzHighNormContinuation
+    (hHighNorm :
+      BKMFiniteEnergyWitnessBKMEnvelopeSchwartzHighNormContinuation) :
+    BKMFiniteTimeWitnessSchwartzHighNormEnvelopeFromBKMData := by
+  intro ν u₀ T W Ω B hT hν hsmooth hdiv hfinite hEq hΩ hInt
+  rcases hHighNorm ν u₀ T W Ω B hT hν hsmooth hdiv hfinite hΩ hInt hEq with
+    ⟨F, _M, hEnvelope, _hM_nonneg, _hF_bound, _hOut⟩
+  exact ⟨F, hEnvelope⟩
+
+/-- With the high-norm frontier providing the Schwartz high-norm envelope, the
+affine Biot-Savart/log-Sobolev component is reduced to the exact one-slice
+singular-integral theorem. -/
+theorem BKMLogSobolevAffinePointwiseFromEnvelope_of_bkmEnvelopeSchwartzHighNormContinuation_and_vorticityToGradient
+    (hHighNorm :
+      BKMFiniteEnergyWitnessBKMEnvelopeSchwartzHighNormContinuation)
+    (hSlice : BKMSchwartzSliceVorticityToGradientAffineLogEstimate) :
+    BKMLogSobolevAffinePointwiseFromEnvelope := by
+  exact
+    BKMLogSobolevAffinePointwiseFromEnvelope_of_schwartzHighNormEnvelope_and_biotSavart
+      (BKMFiniteTimeWitnessSchwartzHighNormEnvelopeFromBKMData_of_bkmEnvelopeSchwartzHighNormContinuation
+        hHighNorm)
+      (BKMSchwartzSliceBiotSavartAffineLogPointwiseEstimate_of_vorticityToGradient
+        hSlice)
+
 /-- The normalized vorticity enstrophy is nonnegative on the unguarded integral
 surface. -/
 theorem normalizedVorticityEnstrophyAt_nonneg
@@ -1448,6 +1476,20 @@ theorem BKMArbitraryWitnessAffineLogBiotSavartGronwallContinuationLemma_of_affin
       hAffine
       (BKMHighNormContinuationFromLogControl_of_bkmEnvelopeSchwartzHighNormContinuation
         hHighNorm)
+
+/-- Sharp two-frontier form of the current BKM reduction: the exact one-slice
+Biot-Savart/log-Sobolev theorem plus the single high-norm/Sobolev continuation
+frontier imply the bundled arbitrary-witness BKM continuation lemma. -/
+theorem BKMArbitraryWitnessAffineLogBiotSavartGronwallContinuationLemma_of_vorticityToGradient_and_bkmEnvelopeSchwartzHighNormContinuation
+    (hSlice : BKMSchwartzSliceVorticityToGradientAffineLogEstimate)
+    (hHighNorm :
+      BKMFiniteEnergyWitnessBKMEnvelopeSchwartzHighNormContinuation) :
+    BKMArbitraryWitnessAffineLogBiotSavartGronwallContinuationLemma := by
+  exact
+    BKMArbitraryWitnessAffineLogBiotSavartGronwallContinuationLemma_of_affinePointwiseFromEnvelope_and_bkmEnvelopeSchwartzHighNormContinuation
+      (BKMLogSobolevAffinePointwiseFromEnvelope_of_bkmEnvelopeSchwartzHighNormContinuation_and_vorticityToGradient
+        hHighNorm hSlice)
+      hHighNorm
 
 /-- The repaired nonnegative-horizon BKM target follows from the single named
 arbitrary-witness affine-log/Biot-Savart/Gronwall continuation lemma once the
