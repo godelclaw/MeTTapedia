@@ -18,7 +18,6 @@ namespace Mettapedia.GraphTheory.FourColor
 variable {V : Type*} [DecidableEq V]
 variable {G : SimpleGraph V}
 variable {boundaryEdge : Fin 5 → G.edgeSet} {n : Nat}
-variable [Fintype G.edgeSet] [FiniteDimensional F2 (G.edgeSet → Color)]
 
 /-- The primitive portal/cycle checker gap returned by the executable CAP5 report. -/
 def CAP5PrimitiveCheckerGap
@@ -35,6 +34,160 @@ def CAP5PrimitiveCheckerGap
         latent ∈ CAP5ExceptionalAnnulusGeneratorLatent.all boundaryEdge ∧
           (CAP5ExceptionalAnnulusGeneratorReport.latentNode
             boundaryEdge side latent).MissingComplementarySideCycleEvidence)
+
+/-- The route-level checker gap is exactly a nonempty executable missing-evidence report. -/
+theorem cap5PrimitiveCheckerGap_iff_missingCheckerEvidenceLatents_ne_nil
+    (boundaryEdge : Fin 5 → G.edgeSet) (side : V → Prop)
+    [∀ latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge,
+      Decidable ((CAP5ExceptionalAnnulusGeneratorReport.latentNode
+        boundaryEdge side latent).PortalCrosses)]
+    [∀ latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge,
+      Decidable ((CAP5ExceptionalAnnulusGeneratorReport.latentNode
+        boundaryEdge side latent).SideCycles)]
+    [∀ latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge,
+      Decidable ((CAP5ExceptionalAnnulusGeneratorReport.latentNode
+        boundaryEdge side latent).RealizedSeparator)] :
+    CAP5PrimitiveCheckerGap boundaryEdge side ↔
+      (CAP5ExceptionalAnnulusGeneratorReport.ofDecidableChecks
+        boundaryEdge side).missingCheckerEvidenceLatents ≠ [] := by
+  simpa [CAP5PrimitiveCheckerGap] using
+    (CAP5ExceptionalAnnulusGeneratorReport.ofDecidableChecks_missingCheckerEvidenceLatents_ne_nil_iff_exists_missing_checker_ingredient
+        boundaryEdge side).symm
+
+/-- Closing the route-level checker gap is exactly emptying the executable missing-evidence report. -/
+theorem no_cap5PrimitiveCheckerGap_iff_missingCheckerEvidenceLatents_eq_nil
+    (boundaryEdge : Fin 5 → G.edgeSet) (side : V → Prop)
+    [∀ latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge,
+      Decidable ((CAP5ExceptionalAnnulusGeneratorReport.latentNode
+        boundaryEdge side latent).PortalCrosses)]
+    [∀ latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge,
+      Decidable ((CAP5ExceptionalAnnulusGeneratorReport.latentNode
+        boundaryEdge side latent).SideCycles)]
+    [∀ latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge,
+      Decidable ((CAP5ExceptionalAnnulusGeneratorReport.latentNode
+        boundaryEdge side latent).RealizedSeparator)] :
+    ¬ CAP5PrimitiveCheckerGap boundaryEdge side ↔
+      (CAP5ExceptionalAnnulusGeneratorReport.ofDecidableChecks
+        boundaryEdge side).missingCheckerEvidenceLatents = [] := by
+  simpa [CAP5PrimitiveCheckerGap] using
+    (CAP5ExceptionalAnnulusGeneratorReport.ofDecidableChecks_missingCheckerEvidenceLatents_eq_nil_iff_no_missing_checker_ingredient
+        boundaryEdge side).symm
+
+/-- Any enumerated latent missing portal-crossing evidence is already a primitive checker gap. -/
+theorem cap5PrimitiveCheckerGap_of_missingPortal
+    {side : V → Prop} {latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge}
+    (hmem : latent ∈ CAP5ExceptionalAnnulusGeneratorLatent.all boundaryEdge)
+    (hmissing :
+      (CAP5ExceptionalAnnulusGeneratorReport.latentNode
+        boundaryEdge side latent).MissingPortalCrossingEvidence) :
+    CAP5PrimitiveCheckerGap boundaryEdge side :=
+  Or.inl ⟨latent, hmem, hmissing⟩
+
+/-- Any enumerated latent missing the selected-side cycle is already a primitive checker gap. -/
+theorem cap5PrimitiveCheckerGap_of_missingSelectedCycle
+    {side : V → Prop} {latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge}
+    (hmem : latent ∈ CAP5ExceptionalAnnulusGeneratorLatent.all boundaryEdge)
+    (hmissing :
+      (CAP5ExceptionalAnnulusGeneratorReport.latentNode
+        boundaryEdge side latent).MissingSelectedSideCycleEvidence) :
+    CAP5PrimitiveCheckerGap boundaryEdge side :=
+  Or.inr (Or.inl ⟨latent, hmem, hmissing⟩)
+
+/-- Any enumerated latent missing the complementary-side cycle is already a primitive checker gap. -/
+theorem cap5PrimitiveCheckerGap_of_missingComplementaryCycle
+    {side : V → Prop} {latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge}
+    (hmem : latent ∈ CAP5ExceptionalAnnulusGeneratorLatent.all boundaryEdge)
+    (hmissing :
+      (CAP5ExceptionalAnnulusGeneratorReport.latentNode
+        boundaryEdge side latent).MissingComplementarySideCycleEvidence) :
+    CAP5PrimitiveCheckerGap boundaryEdge side :=
+  Or.inr (Or.inr ⟨latent, hmem, hmissing⟩)
+
+/--
+No primitive checker gap forces portal crossings for every enumerated latent.  This is the
+precise bridge from the finite checker frontier to the portal premise consumed by the F2 oracle.
+-/
+theorem noGap_portalsCross
+    {side : V → Prop}
+    (hno : ¬ CAP5PrimitiveCheckerGap boundaryEdge side)
+    {latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge}
+    (hmem : latent ∈ CAP5ExceptionalAnnulusGeneratorLatent.all boundaryEdge) :
+    (CAP5ExceptionalAnnulusGeneratorReport.latentNode
+      boundaryEdge side latent).PortalCrosses := by
+  by_contra hmissing
+  exact hno (cap5PrimitiveCheckerGap_of_missingPortal hmem hmissing)
+
+/-- Since the latent list enumerates every latent, no gap gives portal crossings for all latents. -/
+theorem noGap_portalsCross_allLatents
+    {side : V → Prop}
+    (hno : ¬ CAP5PrimitiveCheckerGap boundaryEdge side)
+    (latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge) :
+    (CAP5ExceptionalAnnulusGeneratorReport.latentNode
+      boundaryEdge side latent).PortalCrosses :=
+  noGap_portalsCross hno (CAP5ExceptionalAnnulusGeneratorLatent.mem_all latent)
+
+/-- If the selected side has no cycle, the primitive checker gap is forced. -/
+theorem cap5PrimitiveCheckerGap_of_no_selectedSideCycle
+    {side : V → Prop} (hmissing : ¬ HasCycleOnSide G side) :
+    CAP5PrimitiveCheckerGap boundaryEdge side := by
+  let latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge :=
+    { orientation := .redBlue03_redPurple04
+      p0Inside := true
+      p4Inside := true }
+  exact
+    cap5PrimitiveCheckerGap_of_missingSelectedCycle
+      (CAP5ExceptionalAnnulusGeneratorLatent.mem_all latent) (by
+        simpa [CAP5ExceptionalAnnulusGeneratorNode.MissingSelectedSideCycleEvidence,
+          CAP5ExceptionalAnnulusGeneratorReport.latentNode, latent] using hmissing)
+
+/-- If the complementary side has no cycle, the primitive checker gap is forced. -/
+theorem cap5PrimitiveCheckerGap_of_no_complementarySideCycle
+    {side : V → Prop} (hmissing : ¬ HasCycleOnSide G (fun v => ¬ side v)) :
+    CAP5PrimitiveCheckerGap boundaryEdge side := by
+  let latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge :=
+    { orientation := .redBlue03_redPurple04
+      p0Inside := true
+      p4Inside := true }
+  exact
+    cap5PrimitiveCheckerGap_of_missingComplementaryCycle
+      (CAP5ExceptionalAnnulusGeneratorLatent.mem_all latent) (by
+        simpa [CAP5ExceptionalAnnulusGeneratorNode.MissingComplementarySideCycleEvidence,
+          CAP5ExceptionalAnnulusGeneratorReport.latentNode, latent] using hmissing)
+
+/--
+No primitive checker gap forces both side-cycle witnesses.  Hence an unconditional discharge of
+the checker gap must prove these graph-side cycle facts for the selected CAP5 side.
+-/
+theorem noGap_sideCycles
+    {side : V → Prop}
+    (hno : ¬ CAP5PrimitiveCheckerGap boundaryEdge side)
+    {latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge}
+    (hmem : latent ∈ CAP5ExceptionalAnnulusGeneratorLatent.all boundaryEdge) :
+    HasCycleOnSide G side ∧ HasCycleOnSide G (fun v => ¬ side v) := by
+  constructor
+  · by_contra hmissing
+    exact hno
+      (cap5PrimitiveCheckerGap_of_missingSelectedCycle hmem (by
+        simpa [CAP5ExceptionalAnnulusGeneratorNode.MissingSelectedSideCycleEvidence,
+          CAP5ExceptionalAnnulusGeneratorReport.latentNode] using hmissing))
+  · by_contra hmissing
+    exact hno
+      (cap5PrimitiveCheckerGap_of_missingComplementaryCycle hmem (by
+        simpa [CAP5ExceptionalAnnulusGeneratorNode.MissingComplementarySideCycleEvidence,
+          CAP5ExceptionalAnnulusGeneratorReport.latentNode] using hmissing))
+
+/-- No primitive checker gap forces the two graph-side cycle witnesses outright. -/
+theorem noGap_forces_sideCycles
+    {side : V → Prop}
+    (hno : ¬ CAP5PrimitiveCheckerGap boundaryEdge side) :
+    HasCycleOnSide G side ∧ HasCycleOnSide G (fun v => ¬ side v) := by
+  constructor
+  · by_contra hmissing
+    exact hno (cap5PrimitiveCheckerGap_of_no_selectedSideCycle hmissing)
+  · by_contra hmissing
+    exact hno (cap5PrimitiveCheckerGap_of_no_complementarySideCycle hmissing)
+
+variable [Fintype G.edgeSet] [FiniteDimensional F2 (G.edgeSet → Color)]
 
 /--
 The finite F2 data consumed by the closed-frontier route theorem.  This bundles the
