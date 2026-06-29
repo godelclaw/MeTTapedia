@@ -25,6 +25,29 @@ Read these four files first — they are the whole live surface:
 | `CAP5RouteVerdict.lean` | The current CAP5/F2 route verdict: either the executable report returns a concrete primitive portal/cycle checker gap, or the closed-frontier route is exactly the absence of the concrete target/off-target F2 evaders; it also names the unified emitted-kernel/remaining-map evader and proves, under no primitive gap, that this evader exists exactly when the closed route endpoint fails; in that same branch the CAP5/Jordan geometric separator repair is blocked by the cyclic-cut obstruction; `noGap_forall_boundaryEdge_crosses` and `cap5PrimitiveCheckerGap_of_boundaryEdge_odd_closed_walk` record the Gate-1 parity barrier for honest odd CAP5 boundary cycles |
 | `CAP5RoutePayoff.lean` / `F2KernelCertificate.lean` / `CAP5WheelRouteData.lean` / `CAP5DodecahedralRouteData.lean` | Route payoff audit and finite gate surface: the former closed-route-to-`EdgeColorable 4` payoff is removed as vacuous because the root already has type `G.EdgeColoring Color`; the non-vacuous route endpoint is `CAP5RouteClosedSynthesisPayoff` (theorem-4.9 synthesis plus selected-boundary-zero classifier control); the finite no-gap pre-RREF input is named as `CAP5FiniteNoGapRouteInput`; checked finite left-inverse/RREF-style certificates land through `F2LeftInverseKernelCertificate`; empty-remaining finite certificates land through `CAP5FiniteNoGapRouteInput.routeClosed_of_remainingControlEdges_eq_empty`; `CAP5FiniteNoGapRouteInput.redInterior_mem_projectedColoringGeneratorSubspace` and `CAP5FiniteNoGapRouteInput.blueInterior_mem_projectedColoringGeneratorSubspace` expose the fixed-embedding formability condition that every interior-support red/blue coordinate probe must already lie in the projected generator span; `CAP5WheelRouteData.lean` proves one concrete exceptional five-edge wheel boundary is Gate-1 blocked; `CAP5DodecahedralRouteData.lean` records the strict incidence BREAK certificate for the cyclic-five/Tait dodecahedral six-cut; and the follow-up actual-route lab shows that same dodecahedral side is not a formable `CAP5FiniteNoGapRouteInput` because every required red/blue single-coordinate projected-generator membership is missing |
 
+## Consolidated CAP5/F2 Verdict
+
+The current finite CAP5/F2 route is decided at the make-or-break level already:
+the first formable cyclic-five/Tait survivor, GP(12,2), gives a wide Gate-2
+BREAK in every sidecase under the checked finite criterion
+`CAP5FiniteNoGapRouteInput.noUnifiedKernelMapEvader_iff_remainingControlEdges_eq_empty`.
+That result is the checkpoint represented by `cb729b3a`; later GP12 adapter and
+two-row route-certificate commits are upside evidence only.
+
+The generic six-cut meta-barrier has not been proved.  The non-boundary six-cut
+degree of freedom remains open.  The consolidated route status is therefore:
+decided current-route wide BREAK, six-cut residual open, no Four Color Theorem
+claim, and no route-derived coloring payoff.
+
+Consolidation verification: focused `CAP5RouteVerdict` build SHA256
+`7b6ae89e8bfa82e8cc7df6070d84fd71e2ca1a6172f02db3ee5c9e2212d119c8`;
+FourColor umbrella build SHA256
+`737deefdb55e3f567d1a23d0caf36854be06e510a68be13d3eb6e0f39d18b99d`;
+axiom audit driver/log SHA256
+`b0110815b9229f6956455e7ad0e6940e15986836dff08631fb58b46b3204623c` /
+`c599bbefab7d583e1d737e4edc5056bb57e984e54076e1b6821af0451e903b7e`,
+baseline `[propext, Classical.choice, Quot.sound]`.
+
 ## Current status (one paragraph)
 
 The positive lane is complete from geometry upward: repaired previous-boundary

@@ -5,6 +5,31 @@ Last updated: 2026-06-29 on `fourcolor/cont-20260626`.
 This file tracks the two active route forks.  The Four Color Theorem is not
 claimed here; the target is a decided state for the Goertzel theorem-4.9 route.
 
+## Consolidated Verdict
+
+As of the checkpoint after `08cd9ed6`, stop treating additional GP(12,2)
+adapter slices as make-or-break work.  The make-or-break decision for the
+current finite CAP5/F2 route is already banked at `cb729b3a`: the first
+formable cyclic-five/Tait survivor, GP(12,2), is a wide Gate-2 BREAK under the
+checked finite criterion
+`CAP5FiniteNoGapRouteInput.noUnifiedKernelMapEvader_iff_remainingControlEdges_eq_empty`.
+The later GP12 route-input adapter and two-row certificate slice are useful
+upside evidence only and do not change that verdict.
+
+The generic six-cut meta-barrier is not proved.  The non-boundary six-cut
+degree of freedom remains open.  Therefore the consolidated status is:
+decided current-route wide BREAK, six-cut residual honestly open, no 4CT claim,
+and no route-derived coloring payoff.
+
+Consolidation verification: focused `CAP5RouteVerdict` build SHA256
+`7b6ae89e8bfa82e8cc7df6070d84fd71e2ca1a6172f02db3ee5c9e2212d119c8`;
+FourColor umbrella build SHA256
+`737deefdb55e3f567d1a23d0caf36854be06e510a68be13d3eb6e0f39d18b99d`;
+axiom audit driver/log SHA256
+`b0110815b9229f6956455e7ad0e6940e15986836dff08631fb58b46b3204623c` /
+`c599bbefab7d583e1d737e4edc5056bb57e984e54076e1b6821af0451e903b7e`,
+baseline `[propext, Classical.choice, Quot.sound]`.
+
 ## Fork State
 
 | Fork | State | PLN STV | ITV | Progress |

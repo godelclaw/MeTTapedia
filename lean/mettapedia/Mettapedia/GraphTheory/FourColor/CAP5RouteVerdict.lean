@@ -11,6 +11,15 @@ primitive portal/cycle checker has a concrete missing-evidence row, or, after
 that frontier is closed, the route closes exactly when the concrete
 target/off-target F2 evaders are absent; in the same branch the CAP5/Jordan
 geometric separator repair is ruled out by the small cyclic-cut obstruction.
+
+Consolidated status, 2026-06-29: the finite make-or-break run on the first
+formable cyclic-five/Tait survivor, GP(12,2), is a wide Gate-2 BREAK in every
+sidecase under the checked current finite route criterion.  The follow-up
+six-cut work is deliberately only residual evidence: the generic six-cut
+meta-barrier over all cyclic-five route degrees of freedom is not proved, and
+the non-boundary six-cut degree of freedom remains open.  The route therefore
+stops here as a decided current-route BREAK with an honestly open generic
+six-cut residual, not as a 4CT proof and not as a route-derived coloring payoff.
 -/
 
 namespace Mettapedia.GraphTheory.FourColor
