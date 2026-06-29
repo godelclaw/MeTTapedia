@@ -48,6 +48,15 @@ the returned witness carries forced-edge vanishing, emitted-kernel membership,
 nonzero canonical remaining-map image, and the concrete boundary-vertex
 Kirchhoff failure.
 
+Unconditional rank-failure split delta: the target-control hypothesis is no
+longer needed to interpret emitted-rank failure.  Lean proves that a nontrivial
+emitted-edge pairing kernel returns either a nonzero theorem-4.9 target chain
+vanishing on every enumerated forced edge, or the off-target selected-boundary-
+zero evader with emitted-kernel membership, nonzero canonical remaining-map
+image, and a theorem-4.9 boundary-vertex Kirchhoff failure.  The corresponding
+decision theorem packages the local finite F2 verdict as kernel close, target
+evader, or off-target kernel/map/vertex-failure evader.
+
 Trace-F2 delta: the same report-closed handoff now reaches the stronger
 trace-control split.  The executable report returns a primitive checker gap,
 or else the closed frontier yields either theorem-4.9 synthesis with full
@@ -1103,6 +1112,30 @@ nonzero canonical remaining-map image.
   that evader with emitted-kernel and remaining-map certificates.  Current
   Algebraic-F2 estimate remains PLN STV `<0.79,0.92>`, ITV `[0.73,0.81]`,
   progress `99%`.
+- Unconditional rank-failure split focused detector build archived locally as
+  `fourcolor-move2-unconditional-rank-evader-split-focused-build-20260629.log`.
+- Unconditional rank-failure split validation lab rerun archived locally as
+  `fourcolor-move2-unconditional-rank-evader-split-lab-20260629.json`;
+  stderr is empty.  It preserves the edge-40/color-1M projected-generator
+  counts: 65 reports split as 53 found and 12 no-Tait-coloring; 740 color
+  probes split as 454 found and 286 no-Tait-coloring, with 0 missing color
+  probes.
+- Unconditional rank-failure split trusted-constant audit archived locally as
+  `fourcolor-move2-unconditional-rank-evader-split-axiom-audit-20260629.log`;
+  the two new theorem constants depend only on
+  `[propext, Classical.choice, Quot.sound]`.
+- Full `lake -f lakefile.lean build Mettapedia` archived locally as
+  `fourcolor-move2-unconditional-rank-evader-split-full-build-20260629.log`;
+  it completed with 5900 jobs.
+- New unconditional rank-failure theorem surface:
+  `CAP5TransportedEdgeComponentCoverCore.theorem49BoundaryTargetEvader_or_emittedFinsetKernelMapEvader_with_theorem49BoundaryVertexKirchhoffFailure_of_not_emittedFinsetPairingKernel_eq_bot`
+  and
+  `CAP5TransportedEdgeComponentCoverCore.emittedFinsetPairingKernel_eq_bot_or_theorem49BoundaryTargetEvader_or_emittedFinsetKernelMapEvader_with_theorem49BoundaryVertexKirchhoffFailure`.
+  These remove the target-control side condition from the finite-rank failure
+  branch: a failed emitted-rank certificate now returns either a nonzero
+  theorem-4.9 target chain vanishing on every enumerated forced edge or the
+  off-target kernel/map/vertex-failure evader.  Current Algebraic-F2 estimate
+  remains PLN STV `<0.79,0.92>`, ITV `[0.73,0.81]`, progress `99%`.
 - Projected-generator edge-40/color-1M lab rerun archived locally as
   `fourcolor-move2-projected-generator-edge40-color1m-lab-20260629.json`;
   stderr is empty.  With the edge cap raised to 40 and the coloring cap raised
