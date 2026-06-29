@@ -802,6 +802,13 @@ longer acceptable progress.
    exact shell-data handoff is now a true close-or-witness fork: prove emitted
    canonical interior-support subset, or accept the missing interior coordinate
    plus the unified finite F2 obstruction.
+   The report-level wrappers
+   `ofDecidableChecks_missingCheckerEvidence_or_initialResidualInteriorSupportGap_and_emittedFinsetKernelMapEvader_of_notSynthesis`
+   and
+   `ofDecidableChecks_missingCheckerEvidence_or_theorem49Synthesis_or_initialResidualInteriorSupportGap_and_emittedFinsetKernelMapEvader`
+   remove the remaining closed-frontier handoff from this paired obstruction:
+   the executable report itself now returns primitive checker gap, synthesis,
+   or the paired missing-interior-coordinate plus unified finite F2 evader.
    The direct no-evader route corollaries
    `ofDecidableChecks_missingCheckerEvidence_or_theorem49Synthesis_and_boundaryZeroControl_of_no_theorem49BoundaryTargetEvader_and_no_emittedFinsetKernelMapEvader_with_theorem49BoundaryVertexKirchhoffFailure`
    and
