@@ -548,6 +548,11 @@ longer acceptable progress.
    closes the matching success endpoint: residual exhaustion plus the
    processed-control invariant proves no selected-boundary-zero evader, theorem
    4.9 synthesis, and full selected-boundary-zero classifier control.  The
+   failed-terminal scheduler theorem now connects those endpoints: failed
+   synthesis under forced-all cannot be sitting at an exhausted residual
+   worklist, and instead returns a selected-boundary-zero evader, the next
+   residual edge, immutable-control failure for that edge, the one-edge
+   emitted/control update, and strict residual decrease.  The
    pure no-target theorem underneath those refinements says failed synthesis
    already produces a genuine selected-boundary-zero evader for the enumerated
    forced edges.  The remaining crux is whether exact shell/CAP5 data reaches
