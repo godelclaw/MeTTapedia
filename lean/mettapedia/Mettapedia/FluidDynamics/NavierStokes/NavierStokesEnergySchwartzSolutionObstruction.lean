@@ -1003,6 +1003,66 @@ theorem
       f g hclosure hcurl
       ⟨S.toSchwartzConcreteNavierStokesSolution, hvelocity⟩
 
+/-- Slice-Schwartz route separation for the constant-one two-mode branch.  The
+same inviscid zero-pressure closure that gives a nonzero whole-time
+energy-identity canary at viscosity `0` also exposes the exact residual-curl
+gate that any attempt to reuse that velocity at viscosity `ν` must pass. -/
+theorem
+    oneOneTwoModeSchwartzVelocity_inviscidZeroPressureCanary_and_residualCurlBoundary
+    {ν : ℝ} (f g : NSSchwartzInitialVelocity)
+    (hfg : ∃ x : NSSpace, f x + g x ≠ 0)
+    (hfDiv : ∀ x, initialSpatialDivergence (f : NSInitialVelocity) x = 0)
+    (hgDiv : ∀ x, initialSpatialDivergence (g : NSInitialVelocity) x = 0)
+    (hclosure : ∀ t x,
+          spatialConvection (timeIndependentVelocity (f : NSInitialVelocity)) t x +
+            spatialFDeriv (timeIndependentVelocity (f : NSInitialVelocity)) t x (g x) +
+            spatialFDeriv (timeIndependentVelocity (g : NSInitialVelocity)) t x (f x) +
+            spatialConvection (timeIndependentVelocity (g : NSInitialVelocity)) t x =
+        0) :
+    (∃ S : NonzeroSchwartzConcreteNavierStokesSolution 0,
+      S.velocity =
+          twoModeSchwartzVelocity (fun _ : NSTime => 1) (fun _ : NSTime => 1) f g ∧
+        S.pressure = (0 : NSPressureField) ∧
+        (∃ t x, S.velocity t x ≠ 0) ∧
+        SchwartzEnergyIdentityKernel 0 S.velocity S.pressure ∧
+        SchwartzConcreteSolutionKernel 0 S.velocity S.pressure ∧
+        (∀ t, ∫ x, pressureEnergyPairing S.velocity S.pressure t x ∂volume = 0) ∧
+        (∀ t, ∫ x, convectionEnergyPairing S.velocity t x ∂volume = 0) ∧
+        CoordinateViscousEnergyPairingFormula S.velocity ∧
+        (∀ t, HasDerivAt (normalizedKineticEnergy S.velocity) 0 t) ∧
+        (∀ t,
+          Integrable (kineticEnergyDensity S.velocity t) ∧
+            HasDerivAt (normalizedKineticEnergy S.velocity) 0 t)) ∧
+      ((∃ t x,
+        spatialVorticity
+          (fun s y =>
+            (ν : ℝ) •
+              (spatialLaplacian (timeIndependentVelocity (f : NSInitialVelocity)) s y +
+                spatialLaplacian (timeIndependentVelocity (g : NSInitialVelocity)) s y)) t x ≠
+          0) →
+        ¬ ∃ S : SchwartzConcreteNavierStokesSolution ν,
+          S.velocity =
+            twoModeSchwartzVelocity (fun _ : NSTime => 1) (fun _ : NSTime => 1) f g) ∧
+      ((∃ t x,
+        spatialVorticity
+          (fun s y =>
+            (ν : ℝ) •
+              (spatialLaplacian (timeIndependentVelocity (f : NSInitialVelocity)) s y +
+                spatialLaplacian (timeIndependentVelocity (g : NSInitialVelocity)) s y)) t x ≠
+          0) →
+        ¬ ∃ S : NonzeroSchwartzConcreteNavierStokesSolution ν,
+          S.velocity =
+            twoModeSchwartzVelocity (fun _ : NSTime => 1) (fun _ : NSTime => 1) f g) := by
+  exact
+    ⟨oneOneTwoModeSchwartzZeroPressure_nonzero_energyIdentityCanary_packet
+        f g hfg hfDiv hgDiv hclosure,
+      fun hcurl =>
+        not_exists_schwartzConcreteSolution_oneOneTwoModeSchwartzVelocity_of_inviscidClosure_residualVorticity_ne_zero
+          f g hclosure hcurl,
+      fun hcurl =>
+        not_exists_nonzeroSchwartzConcreteSolution_oneOneTwoModeSchwartzVelocity_of_inviscidClosure_residualVorticity_ne_zero
+          f g hclosure hcurl⟩
+
 /-- Contrapositive stationary gate for nonzero slice-Schwartz solutions:
 nonzero corrected dissipation rules out a time-independent velocity
 representation. -/

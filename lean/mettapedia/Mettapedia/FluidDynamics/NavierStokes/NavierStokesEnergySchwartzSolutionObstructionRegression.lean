@@ -12,6 +12,7 @@ namespace Mettapedia
 namespace FluidDynamics
 namespace NavierStokes
 
+open MeasureTheory
 open scoped ContDiff Laplacian RealInnerProductSpace LineDeriv SchwartzMap Topology
 
 namespace Regression
@@ -239,6 +240,55 @@ theorem oneOne_twoMode_residual_curl_not_nonzero_schwartz_solution_regression
   exact
     not_exists_nonzeroSchwartzConcreteSolution_oneOneTwoModeSchwartzVelocity_of_inviscidClosure_residualVorticity_ne_zero
       f g hclosure hcurl
+
+theorem oneOne_twoMode_inviscid_canary_and_residual_boundary_regression
+    {ν : ℝ} (f g : NSSchwartzInitialVelocity)
+    (hfg : ∃ x : NSSpace, f x + g x ≠ 0)
+    (hfDiv : ∀ x, initialSpatialDivergence (f : NSInitialVelocity) x = 0)
+    (hgDiv : ∀ x, initialSpatialDivergence (g : NSInitialVelocity) x = 0)
+    (hclosure : ∀ t x,
+          spatialConvection (timeIndependentVelocity (f : NSInitialVelocity)) t x +
+            spatialFDeriv (timeIndependentVelocity (f : NSInitialVelocity)) t x (g x) +
+            spatialFDeriv (timeIndependentVelocity (g : NSInitialVelocity)) t x (f x) +
+            spatialConvection (timeIndependentVelocity (g : NSInitialVelocity)) t x =
+        0) :
+    (∃ S : NonzeroSchwartzConcreteNavierStokesSolution 0,
+      S.velocity =
+          twoModeSchwartzVelocity (fun _ : NSTime => 1) (fun _ : NSTime => 1) f g ∧
+        S.pressure = (0 : NSPressureField) ∧
+        (∃ t x, S.velocity t x ≠ 0) ∧
+        SchwartzEnergyIdentityKernel 0 S.velocity S.pressure ∧
+        SchwartzConcreteSolutionKernel 0 S.velocity S.pressure ∧
+        (∀ t, ∫ x, pressureEnergyPairing S.velocity S.pressure t x ∂volume = 0) ∧
+        (∀ t, ∫ x, convectionEnergyPairing S.velocity t x ∂volume = 0) ∧
+        CoordinateViscousEnergyPairingFormula S.velocity ∧
+        (∀ t, HasDerivAt (normalizedKineticEnergy S.velocity) 0 t) ∧
+        (∀ t,
+          Integrable (kineticEnergyDensity S.velocity t) ∧
+            HasDerivAt (normalizedKineticEnergy S.velocity) 0 t)) ∧
+      ((∃ t x,
+        spatialVorticity
+          (fun s y =>
+            (ν : ℝ) •
+              (spatialLaplacian (timeIndependentVelocity (f : NSInitialVelocity)) s y +
+                spatialLaplacian (timeIndependentVelocity (g : NSInitialVelocity)) s y)) t x ≠
+          0) →
+        ¬ ∃ S : SchwartzConcreteNavierStokesSolution ν,
+          S.velocity =
+            twoModeSchwartzVelocity (fun _ : NSTime => 1) (fun _ : NSTime => 1) f g) ∧
+      ((∃ t x,
+        spatialVorticity
+          (fun s y =>
+            (ν : ℝ) •
+              (spatialLaplacian (timeIndependentVelocity (f : NSInitialVelocity)) s y +
+                spatialLaplacian (timeIndependentVelocity (g : NSInitialVelocity)) s y)) t x ≠
+          0) →
+        ¬ ∃ S : NonzeroSchwartzConcreteNavierStokesSolution ν,
+          S.velocity =
+            twoModeSchwartzVelocity (fun _ : NSTime => 1) (fun _ : NSTime => 1) f g) := by
+  exact
+    oneOneTwoModeSchwartzVelocity_inviscidZeroPressureCanary_and_residualCurlBoundary
+      (ν := ν) f g hfg hfDiv hgDiv hclosure
 
 theorem stationary_schwartz_solution_dissipation_zero_regression
     {ν : ℝ} (S : SchwartzConcreteNavierStokesSolution ν)
