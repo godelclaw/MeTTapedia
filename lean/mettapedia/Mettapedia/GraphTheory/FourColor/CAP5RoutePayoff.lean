@@ -1230,6 +1230,81 @@ theorem CAP5FiniteNoGapRouteInput.not_routeClosed_of_sideCycle_edges_subset_inte
 
 omit [FiniteDimensional F2 (G.edgeSet → Color)] in
 /--
+Explicit covered-cycle obstruction for the current finite route surface.  A single cycle
+contained in the selected side is enough: if each of its edges is either canonical interior
+support or one of the five CAP5 boundary slots, then no-evader would force every edge of that
+side-internal cycle to cross the selected side.
+-/
+theorem CAP5FiniteNoGapRouteInput.not_noUnifiedKernelMapEvader_of_cycle_edges_subset_interiorEdgeSupport_or_boundaryEdge
+    {boundaryEdge : Fin 5 → G.edgeSet} {n : Nat}
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    {emb : PlaneEmbeddingWithBoundary G} {C₀ : G.EdgeColoring Color}
+    {colorings : Set (G.EdgeColoring Color)} {p0Inside p4Inside : Bool}
+    {side : V → Prop} {u : V}
+    (input :
+      CAP5FiniteNoGapRouteInput data emb C₀ colorings p0Inside p4Inside side)
+    (p : G.Walk u u) (hpcycle : p.IsCycle)
+    (hpside : ∀ v : V, v ∈ p.support → side v)
+    (hcovered :
+      ∀ e : G.edgeSet, (e : Sym2 V) ∈ p.edges →
+        e ∈ interiorEdgeSupport emb.faceBoundary emb.faces ∨
+          ∃ i : Fin 5, boundaryEdge i = e) :
+    ¬ CAP5F2NoUnifiedKernelMapEvader input.toRouteCertificate := by
+  intro hnoEvader
+  have hedgesLength : 0 < p.edges.length := by
+    rw [SimpleGraph.Walk.length_edges]
+    exact Nat.lt_of_lt_of_le (by decide : 0 < 3) hpcycle.three_le_length
+  rcases List.length_pos_iff_exists_mem.1 hedgesLength with ⟨edgeSym, hedgeSym⟩
+  let e : G.edgeSet := ⟨edgeSym, p.edges_subset_edgeSet hedgeSym⟩
+  have hcross : EdgeCrossesVertexSide G side e := by
+    rcases hcovered e hedgeSym with heInterior | ⟨i, hi⟩
+    · exact
+        input.edgeCrossesVertexSide_of_noUnifiedKernelMapEvader_of_mem_interiorEdgeSupport
+          hnoEvader heInterior
+    · have hboundary :
+          EdgeCrossesVertexSide G side (boundaryEdge i) :=
+        noGap_forall_boundaryEdge_crosses
+          (G := G) (boundaryEdge := boundaryEdge) input.noPrimitiveGap i
+      simpa [hi] using hboundary
+  have hnotCross : ¬ EdgeCrossesVertexSide G side e := by
+    rw [not_edgeCrossesVertexSide_iff_forall_side_iff]
+    intro x y hx hy
+    have hxSupport : x ∈ p.support := p.mem_support_of_mem_edges hedgeSym hx
+    have hySupport : y ∈ p.support := p.mem_support_of_mem_edges hedgeSym hy
+    exact ⟨fun _ => hpside y hySupport, fun _ => hpside x hxSupport⟩
+  exact hnotCross hcross
+
+theorem CAP5FiniteNoGapRouteInput.not_routeClosed_of_cycle_edges_subset_interiorEdgeSupport_or_boundaryEdge
+    {boundaryEdge : Fin 5 → G.edgeSet} {n : Nat}
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    {emb : PlaneEmbeddingWithBoundary G} {C₀ : G.EdgeColoring Color}
+    {colorings : Set (G.EdgeColoring Color)} {p0Inside p4Inside : Bool}
+    {side : V → Prop} {u : V}
+    (input :
+      CAP5FiniteNoGapRouteInput data emb C₀ colorings p0Inside p4Inside side)
+    (hExceptional : data.IsExceptional) (hcyclic : CyclicallyFiveEdgeConnected G)
+    (p : G.Walk u u) (hpcycle : p.IsCycle)
+    (hpside : ∀ v : V, v ∈ p.support → side v)
+    (hcovered :
+      ∀ e : G.edgeSet, (e : Sym2 V) ∈ p.edges →
+        e ∈ interiorEdgeSupport emb.faceBoundary emb.faces ∨
+          ∃ i : Fin 5, boundaryEdge i = e) :
+    ¬ CAP5F2RouteClosed input.toRouteCertificate := by
+  classical
+  letI := input.checks.portal
+  letI := input.checks.cycles
+  letI := input.checks.realized
+  intro hclosed
+  have hnoEvader : CAP5F2NoUnifiedKernelMapEvader input.toRouteCertificate :=
+    (cap5F2NoUnifiedKernelMapEvader_iff_routeClosed_of_noGap
+      emb C₀ colorings p0Inside p4Inside hExceptional side hcyclic
+      input.noPrimitiveGap input.toRouteCertificate).2 hclosed
+  exact
+    (input.not_noUnifiedKernelMapEvader_of_cycle_edges_subset_interiorEdgeSupport_or_boundaryEdge
+      p hpcycle hpside hcovered) hnoEvader
+
+omit [FiniteDimensional F2 (G.edgeSet → Color)] in
+/--
 Active-portal BREAK for the current finite route surface: a sidecase portal edge is part of
 every enumerated separator candidate for that sidecase, while emitted forced edges are outside
 their candidate support.  Hence an active portal edge that is also in canonical interior support

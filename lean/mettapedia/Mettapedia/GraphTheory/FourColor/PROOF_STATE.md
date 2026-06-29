@@ -386,6 +386,36 @@ axiom audit driver/log SHA256
 `252079c06d2416bd393f457ab8b57be8b5211106658a5bc721b1bcb3b8ad733e` /
 `3ecc5bc92ce68601cf1b945fb15ce54f45bc2f9e00ce5138be4973d1121de5c0`,
 baseline `[propext, Classical.choice, Quot.sound]`.
+The obstruction is now also available from one explicit covered cycle, not
+only from the particular Gate-1 cycle returned by the no-gap package:
+`CAP5FiniteNoGapRouteInput.not_noUnifiedKernelMapEvader_of_cycle_edges_subset_interiorEdgeSupport_or_boundaryEdge`
+and
+`CAP5FiniteNoGapRouteInput.not_routeClosed_of_cycle_edges_subset_interiorEdgeSupport_or_boundaryEdge`.
+Thus a current-surface survivor must avoid even a single side-contained cycle
+whose edges lie in canonical interior support or among the five CAP5 boundary
+slots; every selected-side cycle must use some non-interior non-boundary-slot
+edge.  This still does not prove the generic six-cut meta-barrier, but it
+narrows the non-boundary DOF to an explicit graph-side cycle-escape condition.
+Verification: focused `CAP5RoutePayoff` build SHA256
+`d18b4d66459dd04dfcbda08c9aef4279530ded9a05b5242eb2fa3cfc39de365d`;
+focused `CAP5GP12RouteData` build SHA256
+`98a2ec8a3513ce8348aeacd3f96fe7f8b6907a51365476956f12d52588eb6a38`;
+FourColor umbrella build SHA256
+`6e72fb11a40bb6894da320174c0b887e40b60c1d589b2e5dec5821bd5207dd4e`;
+axiom audit driver/log SHA256
+`9025abf124771a09382dd56560a9a83e4c17d2d63410ca45754d2d4720d75cc4` /
+`ba6559862ad00a3993086afa49144ff51b919c3759aeb4f35b3e0fdb06dae284`,
+baseline `[propext, Classical.choice, Quot.sound]`.
+The finite dodeca audit
+`fourcolor-dodeca-explicit-covered-cycle-audit-20260629.json` then checks this
+condition against the archived strict and one-face-punctured dodecahedral
+six-cut rows.  It finds all 4 closed strict sidecases have a covered side
+cycle.  Among the 48 punctured rows, 24 have a covered side cycle and 24 escape
+because the omitted face is one of faces `0..5`, so the archived
+selected-side pentagon uses a non-interior non-boundary-slot edge.  All 48
+punctured rows, including the 24 escape rows, remain invalid route inputs by
+projected-generator membership failure.  Audit SHA256
+`fd1b7ce900538396200206b66dee682f63c56b4002cd1550442977e5e46ef734`.
 The side-bipartition audit of the archived known/generalized-Petersen sweep
 through 24 vertices gives finite evidence for why the current surface keeps
 stalling: among cyclic-five/Tait route-relevant Kempe-formable embeddings, the
