@@ -77,6 +77,20 @@ def vorticityEnstrophyDensityTimeDerivativeIntegrand
     (u : NSVelocityField) (t : NSTime) (x : NSSpace) : ℝ :=
   ⟪spatialVorticity u t x, timeVorticityDerivative u t x⟫
 
+/-- Directional derivative of the normalized enstrophy density along the
+velocity field.  Transport cancellation reduces this integral to a boundary
+or divergence theorem statement under incompressibility. -/
+def normalizedVorticityEnstrophyDensityTransport
+    (u : NSVelocityField) (t : NSTime) (x : NSSpace) : ℝ :=
+  (1 / 2 : ℝ) *
+    fderiv ℝ (fun y : NSSpace => vorticityEnstrophyDensity u t y) x (u t x)
+
+/-- Spatial integral of the directional derivative of `1 / 2 * |omega|^2`
+along the velocity field. -/
+def normalizedVorticityEnstrophyDensityTransportIntegral
+    (u : NSVelocityField) (t : NSTime) : ℝ :=
+  ∫ x, normalizedVorticityEnstrophyDensityTransport u t x ∂volume
+
 /-- Spatial integral of the vorticity transport pairing
 `omega · ((u · grad) omega)`.  This is the term that vanishes by
 incompressibility and spatial integration by parts in the enstrophy balance. -/
@@ -147,6 +161,13 @@ def vorticityTimeDerivativeRepresentedAt
     (u : NSVelocityField) (t : NSTime) (x : NSSpace) : Prop :=
   HasDerivAt (fun s => spatialVorticity u s x) (timeVorticityDerivative u t x) t
 
+/-- The concrete spatial derivative of vorticity represents the Fréchet
+derivative of the vorticity time slice at a fixed spatial point. -/
+def vorticitySpatialDerivativeRepresentedAt
+    (u : NSVelocityField) (t : NSTime) (x : NSSpace) : Prop :=
+  HasFDerivAt (fun y => spatialVorticity u t y)
+    (spatialFDeriv (fun s y => spatialVorticity u s y) t x) x
+
 /-- Integrability hypotheses needed to distribute the raw paired vorticity
 equation over the spatial integral. -/
 def vorticityRawBalanceIntegralComponentsIntegrableAt
@@ -215,6 +236,56 @@ theorem hasDerivAt_normalizedVorticityEnstrophyDensity_of_timeDerivativeRepresen
   have hhalf := hsq.const_mul (1 / 2 : ℝ)
   simpa [normalizedVorticityEnstrophyDensity,
     vorticityEnstrophyDensityTimeDerivativeIntegrand] using hhalf
+
+/-- Pointwise transport algebra: `omega · ((u · grad) omega)` is the velocity
+directional derivative of `1 / 2 * |omega|^2`. -/
+theorem normalizedVorticityEnstrophyDensityTransport_eq_transportPower
+    {u : NSVelocityField} {t : NSTime} {x : NSSpace}
+    (hω : vorticitySpatialDerivativeRepresentedAt u t x) :
+    normalizedVorticityEnstrophyDensityTransport u t x =
+      ⟪spatialVorticity u t x, vorticityTransportTerm u t x⟫ := by
+  have hsq :
+      HasFDerivAt
+        (fun y => vorticityEnstrophyDensity u t y)
+        (2 • (innerSL ℝ (spatialVorticity u t x)).comp
+          (spatialFDeriv (fun s y => spatialVorticity u s y) t x)) x := by
+    simpa [vorticitySpatialDerivativeRepresentedAt, vorticityEnstrophyDensity]
+      using hω.norm_sq
+  have hfderiv :
+      fderiv ℝ (fun y : NSSpace => vorticityEnstrophyDensity u t y) x =
+        2 • (innerSL ℝ (spatialVorticity u t x)).comp
+          (spatialFDeriv (fun s y => spatialVorticity u s y) t x) := by
+    simpa using hsq.fderiv
+  simp [normalizedVorticityEnstrophyDensityTransport, vorticityTransportTerm,
+    hfderiv, innerSL_apply_apply]
+
+/-- If the spatial vorticity derivative is represented pointwise, the transport
+power integral is the integral of the velocity directional derivative of
+`1 / 2 * |omega|^2`. -/
+theorem vorticityTransportPowerIntegral_eq_normalizedDensityTransportIntegral
+    {u : NSVelocityField} {t : NSTime}
+    (hω : ∀ x, vorticitySpatialDerivativeRepresentedAt u t x) :
+    vorticityTransportPowerIntegral u t =
+      normalizedVorticityEnstrophyDensityTransportIntegral u t := by
+  unfold vorticityTransportPowerIntegral
+    normalizedVorticityEnstrophyDensityTransportIntegral
+  apply integral_congr_ae
+  exact Filter.Eventually.of_forall fun x =>
+    (normalizedVorticityEnstrophyDensityTransport_eq_transportPower
+      (hω x)).symm
+
+/-- Once the normalized density transport integral is zero, the pointwise
+transport algebra gives the BKM transport cancellation.  The remaining analytic
+work is proving this zero integral from incompressibility and boundary/decay
+conditions. -/
+theorem vorticityTransportCancellationAt_of_normalizedDensityTransportIntegral_zero
+    {u : NSVelocityField} {t : NSTime}
+    (hω : ∀ x, vorticitySpatialDerivativeRepresentedAt u t x)
+    (hZero : normalizedVorticityEnstrophyDensityTransportIntegral u t = 0) :
+    vorticityTransportCancellationAt u t := by
+  unfold vorticityTransportCancellationAt
+  rw [vorticityTransportPowerIntegral_eq_normalizedDensityTransportIntegral hω,
+    hZero]
 
 /-- A pointwise gradient bound controls the integrated vorticity-stretching
 power by `G * int |omega|^2`. -/
@@ -612,6 +683,22 @@ theorem BKMVorticityEnstrophyGradientGrowthClosed_proved :
   exact
     vorticityEnstrophyGradientControlledAt_of_balance_gradient_bound
       hν hBal hG hGrad hStretchInt hEnstrophyInt
+
+/-- Checked transport-cancellation algebra: after the pointwise spatial
+vorticity derivative is represented, transport cancellation is reduced to the
+zero integral of the velocity directional derivative of `1 / 2 * |omega|^2`. -/
+def BKMVorticityTransportCancellationAlgebraClosed : Prop :=
+  ∀ (u : NSVelocityField) (t : NSTime),
+    (∀ x, vorticitySpatialDerivativeRepresentedAt u t x) →
+      normalizedVorticityEnstrophyDensityTransportIntegral u t = 0 →
+        vorticityTransportCancellationAt u t
+
+/-- Checked proof of the BKM vorticity transport-cancellation algebra package. -/
+theorem BKMVorticityTransportCancellationAlgebraClosed_proved :
+    BKMVorticityTransportCancellationAlgebraClosed := by
+  intro u t hω hZero
+  exact vorticityTransportCancellationAt_of_normalizedDensityTransportIntegral_zero
+    hω hZero
 
 /-- Checked assembly of the vorticity enstrophy balance from the raw paired
 equation plus the two integral identities. -/

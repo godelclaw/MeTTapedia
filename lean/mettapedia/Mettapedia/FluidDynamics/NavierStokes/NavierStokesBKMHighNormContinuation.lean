@@ -106,18 +106,20 @@ theorem BKMContinuation_reduced_to_analytic_components :
         BKMStandardVorticityGrowthEstimateClosed ∧
           BKMVorticityPointwiseEnstrophyDerivativeClosed ∧
             BKMVorticityRawBalanceFromStandardEquationClosed ∧
-              BKMVorticityEnstrophyBalanceAssemblyClosed ∧
-                BKMVorticityEnstrophyAprioriEstimateClosed ∧
-                  BKMVorticityEnstrophyGradientGrowthClosed ∧
-                    BKMLogSobolevGrowthEstimateClosed ∧
-                      (BKMAnalyticComponentsClosed →
-                        ExplicitFiniteEnergyBKMContinuationTargetOnNonnegHorizons) := by
+              BKMVorticityTransportCancellationAlgebraClosed ∧
+                BKMVorticityEnstrophyBalanceAssemblyClosed ∧
+                  BKMVorticityEnstrophyAprioriEstimateClosed ∧
+                    BKMVorticityEnstrophyGradientGrowthClosed ∧
+                      BKMLogSobolevGrowthEstimateClosed ∧
+                        (BKMAnalyticComponentsClosed →
+                          ExplicitFiniteEnergyBKMContinuationTargetOnNonnegHorizons) := by
   exact
     ⟨BKMVorticityStretchingEstimateClosed_proved,
       BKMResidualCurlExpansionAlgebraClosed_proved,
       BKMStandardVorticityGrowthEstimateClosed_proved,
       BKMVorticityPointwiseEnstrophyDerivativeClosed_proved,
       BKMVorticityRawBalanceFromStandardEquationClosed_proved,
+      BKMVorticityTransportCancellationAlgebraClosed_proved,
       BKMVorticityEnstrophyBalanceAssemblyClosed_proved,
       BKMVorticityEnstrophyAprioriEstimateClosed_proved,
       BKMVorticityEnstrophyGradientGrowthClosed_proved,
