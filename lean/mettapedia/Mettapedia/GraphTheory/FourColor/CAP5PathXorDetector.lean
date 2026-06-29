@@ -11768,6 +11768,74 @@ theorem boundaryZeroTraceEvader_of_not_remainingInteriorSupportTraceControl
   exact hnoTraceEvader ⟨z, hzBoundary, hzNonzero, hvanishForced, e, heTrace, hze⟩
 
 /--
+Failure of canonical trace-control is not only a bare boundary-zero evader.  If the remaining
+interior-support worklist has the canonical red/blue single-coordinate generator certificates,
+then the trace-local evader is detected by that canonical family: the returned nonzero trace edge
+also has a nonzero family pairing.
+-/
+theorem boundaryZeroTraceEvader_and_canonicalFamilyPairing_ne_zero_of_not_remainingInteriorSupportTraceControl
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    [Fintype G.edgeSet]
+    (emb : PlaneEmbeddingWithBoundary G)
+    (colorings : Set (G.EdgeColoring Color))
+    (p0Inside p4Inside : Bool) (side : V → Prop)
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (hredRemaining :
+      ∀ e ∈ classifier.remainingControlEdges
+          (interiorEdgeSupport emb.faceBoundary emb.faces),
+        Pi.single e red ∈ projectedColoringGeneratorSubspace emb colorings)
+    (hblueRemaining :
+      ∀ e ∈ classifier.remainingControlEdges
+          (interiorEdgeSupport emb.faceBoundary emb.faces),
+        Pi.single e blue ∈ projectedColoringGeneratorSubspace emb colorings)
+    (hnotTraceControl :
+      ¬ (∀ ⦃z : G.edgeSet → Color⦄,
+        z ∈ planarBoundaryZeroSubmodule emb →
+        (∀ e ∈ classifier.emittedFinset, z e = 0) →
+          ∀ e ∈ (classifier.remainingControlEdgeTrace
+            (interiorEdgeSupport emb.faceBoundary emb.faces)).toFinset,
+            z e = 0)) :
+    ∃ z : G.edgeSet → Color,
+      z ∈ planarBoundaryZeroSubmodule emb ∧
+        z ≠ 0 ∧
+          (∀ e : G.edgeSet,
+            data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e →
+              z e = 0) ∧
+            ∃ e : G.edgeSet,
+              e ∈ (classifier.remainingControlEdgeTrace
+                (interiorEdgeSupport emb.faceBoundary emb.faces)).toFinset ∧
+                e ∈ classifier.remainingControlEdges
+                  (interiorEdgeSupport emb.faceBoundary emb.faces) ∧
+                  z e ≠ 0 ∧
+                    ∃ i :
+                      ({e : G.edgeSet //
+                        e ∈ classifier.remainingControlEdges
+                          (interiorEdgeSupport emb.faceBoundary emb.faces)} × Bool),
+                      chainDotBilinForm G.edgeSet
+                        (redBlueSingleCoordinateFamily
+                          (classifier.remainingControlEdges
+                            (interiorEdgeSupport emb.faceBoundary emb.faces))
+                          hredRemaining hblueRemaining i :
+                          G.edgeSet → Color) z ≠ 0 := by
+  rcases data.boundaryZeroTraceEvader_of_not_remainingInteriorSupportTraceControl
+      emb p0Inside p4Inside side classifier hnotTraceControl with
+    ⟨z, hzBoundary, hzNonzero, hvanishForced, e, heTrace, hze⟩
+  have heRemaining :
+      e ∈ classifier.remainingControlEdges
+        (interiorEdgeSupport emb.faceBoundary emb.faces) := by
+    simpa [classifier.remainingControlEdgeTrace_toFinset_eq_remainingControlEdges
+      (interiorEdgeSupport emb.faceBoundary emb.faces)] using heTrace
+  rcases exists_familyPairing_ne_zero_of_redBlueSingleCoordinateMembership
+      (classifier.remainingControlEdges
+        (interiorEdgeSupport emb.faceBoundary emb.faces))
+      hredRemaining hblueRemaining heRemaining hze with
+    ⟨i, hpair⟩
+  exact
+    ⟨z, hzBoundary, hzNonzero, hvanishForced, e, heTrace, heRemaining, hze,
+      i, hpair⟩
+
+/--
 Trace-facing forced-all F₂ fork.  Under the executable forced-all report, the finite canonical
 trace is now the exact algebraic decision surface: if the classifier controls that trace, theorem
 4.9 synthesis and full selected-boundary-zero classifier control follow; otherwise Lean returns a
@@ -11859,6 +11927,112 @@ theorem theorem49Synthesis_and_boundaryZeroControl_or_boundaryZeroTraceEvader_of
   · exact Or.inr
       (data.boundaryZeroTraceEvader_of_not_remainingInteriorSupportTraceControl
         emb p0Inside p4Inside side classifier htraceControl)
+
+/--
+Trace-facing forced-all F₂ fork with a canonical generator obstruction on the failure side.  The
+closed branch is theorem-4.9 synthesis plus full selected-boundary-zero control; the open branch
+is a genuine boundary-zero evader, a concrete trace edge where it is nonzero, and a nonzero
+pairing against the canonical red/blue single-coordinate family for the remaining worklist.
+-/
+theorem theorem49Synthesis_and_boundaryZeroControl_or_boundaryZeroTraceEvader_canonicalFamilyPairing_ne_zero_of_forcedAllLatents
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    [Fintype G.edgeSet] [FiniteDimensional F2 (G.edgeSet → Color)]
+    (emb : PlaneEmbeddingWithBoundary G) (C₀ : G.EdgeColoring Color)
+    (colorings : Set (G.EdgeColoring Color))
+    (hsubset : colorings ⊆ G.EdgeKempeClosure C₀)
+    (p0Inside p4Inside : Bool) (h : data.IsExceptional)
+    (side : V → Prop)
+    [∀ latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge,
+      Decidable ((CAP5ExceptionalAnnulusGeneratorReport.latentNode
+        boundaryEdge side latent).PortalCrosses)]
+    [∀ latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge,
+      Decidable ((CAP5ExceptionalAnnulusGeneratorReport.latentNode
+        boundaryEdge side latent).SideCycles)]
+    [∀ latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge,
+      Decidable ((CAP5ExceptionalAnnulusGeneratorReport.latentNode
+        boundaryEdge side latent).RealizedSeparator)]
+    (hcyclic : CyclicallyFiveEdgeConnected G)
+    (hportal_crosses :
+      ∀ edgeCandidate : CAP5ExceptionalAnnulusBoundaryEdgeSupportCandidate boundaryEdge,
+        data.RealizesExceptionalBoundarySupportOrientation
+            edgeCandidate.portalCandidate.orientation →
+        edgeCandidate.portalCandidate.sideCase =
+            CAP5ExceptionalAnnulusSideCase.ofPortalSides p0Inside p4Inside →
+        ∀ i : Fin 5, i ∈ edgeCandidate.portalCandidate.portalSet →
+          EdgeCrossesVertexSide G side (boundaryEdge i))
+    (hcycles : HasCycleOnSide G side ∧ HasCycleOnSide G (fun v => ¬ side v))
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (hredEmitted :
+      ∀ e ∈ classifier.emittedFinset,
+        Pi.single e red ∈ projectedColoringGeneratorSubspace emb colorings)
+    (hblueEmitted :
+      ∀ e ∈ classifier.emittedFinset,
+        Pi.single e blue ∈ projectedColoringGeneratorSubspace emb colorings)
+    (hredRemaining :
+      ∀ e ∈ classifier.remainingControlEdges
+          (interiorEdgeSupport emb.faceBoundary emb.faces),
+        Pi.single e red ∈ projectedColoringGeneratorSubspace emb colorings)
+    (hblueRemaining :
+      ∀ e ∈ classifier.remainingControlEdges
+          (interiorEdgeSupport emb.faceBoundary emb.faces),
+        Pi.single e blue ∈ projectedColoringGeneratorSubspace emb colorings)
+    (hforcedAll :
+      (CAP5ExceptionalAnnulusGeneratorReport.ofDecidableChecks
+        boundaryEdge side).forcedCounterexampleLatents =
+          CAP5ExceptionalAnnulusGeneratorLatent.all boundaryEdge) :
+    (Theorem49BoundaryRootSynthesis emb C₀ ∧
+      (∀ ⦃z : G.edgeSet → Color⦄,
+        z ∈ planarBoundaryZeroSubmodule emb →
+        (∀ e ∈ classifier.emittedFinset, z e = 0) →
+          z = 0)) ∨
+      ∃ z : G.edgeSet → Color,
+        z ∈ planarBoundaryZeroSubmodule emb ∧
+          z ≠ 0 ∧
+            (∀ e : G.edgeSet,
+              data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e →
+                z e = 0) ∧
+              ∃ e : G.edgeSet,
+                e ∈ (classifier.remainingControlEdgeTrace
+                  (interiorEdgeSupport emb.faceBoundary emb.faces)).toFinset ∧
+                  e ∈ classifier.remainingControlEdges
+                    (interiorEdgeSupport emb.faceBoundary emb.faces) ∧
+                    z e ≠ 0 ∧
+                      ∃ i :
+                        ({e : G.edgeSet //
+                          e ∈ classifier.remainingControlEdges
+                            (interiorEdgeSupport emb.faceBoundary emb.faces)} × Bool),
+                        chainDotBilinForm G.edgeSet
+                          (redBlueSingleCoordinateFamily
+                            (classifier.remainingControlEdges
+                              (interiorEdgeSupport emb.faceBoundary emb.faces))
+                            hredRemaining hblueRemaining i :
+                            G.edgeSet → Color) z ≠ 0 := by
+  by_cases htraceControl :
+      ∀ ⦃z : G.edgeSet → Color⦄,
+        z ∈ planarBoundaryZeroSubmodule emb →
+        (∀ e ∈ classifier.emittedFinset, z e = 0) →
+          ∀ e ∈ (classifier.remainingControlEdgeTrace
+            (interiorEdgeSupport emb.faceBoundary emb.faces)).toFinset,
+            z e = 0
+  · have hnoEvader :
+        ¬ ∃ z : G.edgeSet → Color,
+          z ∈ planarBoundaryZeroSubmodule emb ∧
+            z ≠ 0 ∧
+              ∀ e : G.edgeSet,
+                data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e →
+                  z e = 0 :=
+      (data.remainingInteriorSupportTraceControl_iff_no_boundaryZeroEvader
+        emb p0Inside p4Inside side classifier).1 htraceControl
+    exact Or.inl
+      (data.theorem49Synthesis_and_boundaryZeroControl_of_noEvader_of_forcedAllLatents
+        emb C₀ colorings hsubset p0Inside p4Inside h side hcyclic hportal_crosses
+        hcycles classifier hredEmitted hblueEmitted hredRemaining hblueRemaining
+        hnoEvader hforcedAll)
+  · exact Or.inr
+      (data.boundaryZeroTraceEvader_and_canonicalFamilyPairing_ne_zero_of_not_remainingInteriorSupportTraceControl
+        emb colorings p0Inside p4Inside side classifier hredRemaining hblueRemaining
+        htraceControl)
 
 /--
 Forced-all finite scheduler fork.  The executable report has already closed the primitive
