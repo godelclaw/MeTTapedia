@@ -193,6 +193,37 @@ theorem not_forall_past_coordinateEnergyDissipationRate_ge_mul_normalizedKinetic
     exact le_trans hmul (hfloor t ht)
   exact (S.not_forall_past_coordinateEnergyDissipationRate_ge hκ) hgap
 
+/-- Positive witness form of the past spectral-floor obstruction: before any
+nonzero endpoint of a positive-viscosity solution, every positive candidate
+Rayleigh coefficient is beaten by an earlier nonzero slice with positive
+dissipation. -/
+theorem exists_past_nonzero_with_small_positive_dissipation_per_energy
+    (hν : 0 < ν) {lam T : NSTime}
+    (hneT : ∃ xT : NSSpace, S.velocity T xT ≠ 0) (hlam : 0 < lam) :
+    ∃ t : NSTime,
+      t ≤ T ∧
+        (∃ x : NSSpace, S.velocity t x ≠ 0) ∧
+          0 < coordinateEnergyDissipationRate S.velocity ν t ∧
+            coordinateEnergyDissipationRate S.velocity ν t <
+              lam * normalizedKineticEnergy S.velocity t := by
+  by_contra hnone
+  have hfloor :
+      ∀ t : NSTime, t ≤ T →
+        lam * normalizedKineticEnergy S.velocity t ≤
+          coordinateEnergyDissipationRate S.velocity ν t := by
+    intro t ht
+    have hne :
+        ∃ x : NSSpace, S.velocity t x ≠ 0 :=
+      S.exists_velocity_ne_zero_at_or_before_nonzero_endpoint_of_nonneg_viscosity
+        hν.le ht hneT
+    have hpos :
+        0 < coordinateEnergyDissipationRate S.velocity ν t :=
+      S.coordinateEnergyDissipationRate_pos_of_exists_velocity_ne_zero hν hne
+    exact le_of_not_gt fun hlt => hnone ⟨t, ht, hne, hpos, hlt⟩
+  exact
+    (S.not_forall_past_coordinateEnergyDissipationRate_ge_mul_normalizedKineticEnergy
+      hν.le hlam hneT) hfloor
+
 end SchwartzConcreteNavierStokesSolution
 
 namespace NonzeroSchwartzConcreteNavierStokesSolution
@@ -239,6 +270,28 @@ theorem stokesFlow_noUniformPastDissipation_packet
     ⟨S.nonzeroStokesFlowKernel hconv hpressure,
       S.exists_nonzero_endpoint_with_arbitrarily_small_past_dissipation hν⟩
 
+/-- A positive-viscosity nonzero solution has a nonzero endpoint whose whole
+past ray contains nonzero slices with arbitrarily small positive dissipation
+relative to normalized kinetic energy. -/
+theorem exists_nonzero_endpoint_with_arbitrarily_small_past_dissipation_per_energy
+    (hν : 0 < ν) :
+    ∃ T xT,
+      S.velocity T xT ≠ 0 ∧
+        ∀ lam : NSTime, 0 < lam →
+          ∃ t : NSTime,
+            t ≤ T ∧
+              (∃ x : NSSpace, S.velocity t x ≠ 0) ∧
+                0 < coordinateEnergyDissipationRate S.velocity ν t ∧
+                  coordinateEnergyDissipationRate S.velocity ν t <
+                    lam * normalizedKineticEnergy S.velocity t := by
+  rcases S.nonzero_velocity with ⟨T, xT, hneT⟩
+  refine ⟨T, xT, hneT, ?_⟩
+  intro lam hlam
+  exact
+    S.toSchwartzConcreteNavierStokesSolution
+      |>.exists_past_nonzero_with_small_positive_dissipation_per_energy
+        hν ⟨xT, hneT⟩ hlam
+
 /-- Exact Stokes-flow specialization of the spectral-floor obstruction: no
 positive-viscosity nonzero Stokes candidate can keep a positive Poincare-style
 floor `lambda * energy <= dissipation` on the whole past ray of a nonzero
@@ -258,6 +311,28 @@ theorem stokesFlow_noPastSpectralFloor_packet
       S.toSchwartzConcreteNavierStokesSolution
         |>.not_forall_past_coordinateEnergyDissipationRate_ge_mul_normalizedKineticEnergy
           hν.le hlam hneT⟩
+
+/-- Exact Stokes-flow specialization of the positive witness form: a
+positive-viscosity nonzero Stokes candidate cannot avoid arbitrarily small
+positive dissipation-per-energy samples on the whole past ray of some nonzero
+endpoint. -/
+theorem stokesFlow_smallPastDissipationPerEnergy_packet
+    (hν : 0 < ν)
+    (hconv : ∀ t x, spatialConvection S.velocity t x = 0)
+    (hpressure : ∀ t x, spatialPressureGradient S.pressure t x = 0) :
+    NonzeroSchwartzStokesFlowKernel ν S.velocity S.pressure ∧
+      ∃ T xT,
+        S.velocity T xT ≠ 0 ∧
+          ∀ lam : NSTime, 0 < lam →
+            ∃ t : NSTime,
+              t ≤ T ∧
+                (∃ x : NSSpace, S.velocity t x ≠ 0) ∧
+                  0 < coordinateEnergyDissipationRate S.velocity ν t ∧
+                    coordinateEnergyDissipationRate S.velocity ν t <
+                      lam * normalizedKineticEnergy S.velocity t := by
+  exact
+    ⟨S.nonzeroStokesFlowKernel hconv hpressure,
+      S.exists_nonzero_endpoint_with_arbitrarily_small_past_dissipation_per_energy hν⟩
 
 end NonzeroSchwartzConcreteNavierStokesSolution
 
