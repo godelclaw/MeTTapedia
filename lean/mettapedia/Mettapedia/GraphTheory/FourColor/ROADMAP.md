@@ -576,11 +576,12 @@ longer acceptable progress.
    F₂ detector surface explicit: every genuine selected-boundary-zero evader
    has nonzero image under the canonical remaining-edge family-pairing map,
    while emitted classifier zeros plus zero image under that map force the
-   boundary-zero chain itself to be zero.  Under the forced-all report,
-   trace-control, or equivalently absence of a map-detected evader, closes
-   theorem-4.9 synthesis plus full selected-boundary-zero classifier control;
-   otherwise the trace-local evader plus canonical pairing/map signal is the
-   obstruction.  The
+   boundary-zero chain itself to be zero.  The exact split now proves that
+   absence of a map-detected evader is equivalent to absence of a
+   selected-boundary-zero evader.  Under the forced-all report, trace-control,
+   or equivalently no map-detected evader, closes theorem-4.9 synthesis plus
+   full selected-boundary-zero classifier control; otherwise Lean returns the
+   map-detected evader as the obstruction.  The
    pure no-target theorem underneath those refinements says failed synthesis
    already produces a genuine selected-boundary-zero evader for the enumerated
    forced edges.  The remaining crux is whether exact shell/CAP5 data reaches
