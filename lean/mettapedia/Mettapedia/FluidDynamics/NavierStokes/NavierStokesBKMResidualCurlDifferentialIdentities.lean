@@ -236,6 +236,28 @@ theorem spatialDerivativeComponent_contDiff_spacetime_of_smooth
         (EuclideanSpace.single coord (1 : ℝ))) comp)
   exact contDiff_congr_global (hproj.comp hfield) (by intro tx; rfl)
 
+/-- The vorticity field of a smooth velocity is smooth in space-time. -/
+theorem spatialVorticity_smoothSpaceTimeVelocity_of_smooth
+    {u : NSVelocityField} (hu : smoothSpaceTimeVelocity u) :
+    smoothSpaceTimeVelocity (fun t x => spatialVorticity u t x) := by
+  rw [smoothSpaceTimeVelocity]
+  rw [← (PiLp.continuousLinearEquiv 2 ℝ (fun _ : Fin 3 => ℝ)).comp_contDiff_iff]
+  rw [contDiff_pi]
+  intro i
+  fin_cases i
+  · simpa [Function.comp_def, spaceTimeVelocityMap, spatialVorticity,
+      nsCoord0, nsCoord1, nsCoord2] using
+        (spatialDerivativeComponent_contDiff_spacetime_of_smooth hu nsCoord1 nsCoord2).sub
+          (spatialDerivativeComponent_contDiff_spacetime_of_smooth hu nsCoord2 nsCoord1)
+  · simpa [Function.comp_def, spaceTimeVelocityMap, spatialVorticity,
+      nsCoord0, nsCoord1, nsCoord2] using
+        (spatialDerivativeComponent_contDiff_spacetime_of_smooth hu nsCoord2 nsCoord0).sub
+          (spatialDerivativeComponent_contDiff_spacetime_of_smooth hu nsCoord0 nsCoord2)
+  · simpa [Function.comp_def, spaceTimeVelocityMap, spatialVorticity,
+      nsCoord0, nsCoord1, nsCoord2] using
+        (spatialDerivativeComponent_contDiff_spacetime_of_smooth hu nsCoord0 nsCoord1).sub
+          (spatialDerivativeComponent_contDiff_spacetime_of_smooth hu nsCoord1 nsCoord0)
+
 /-- The time-derivative velocity field of a smooth velocity is again smooth in
 space-time. -/
 theorem timeVelocityDerivativeField_smoothSpaceTimeVelocity_of_smooth
