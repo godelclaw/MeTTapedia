@@ -541,12 +541,16 @@ longer acceptable progress.
    processed-state trace: complete checker histogram, forced-bin detector,
    selected-boundary-zero evader, traced remaining interior-support edge,
    residual-worklist membership, and strict residual decrease after inserting
-   that edge into the processed set.  The pure no-target theorem underneath
+   that edge into the processed set.  The residual transition theorem then
+   proves the selected edge is not controlled by the immutable classifier
+   output and returns the one-edge emitted/control update needed to insert it
+   into the processed scheduler state.  The pure no-target theorem underneath
    those refinements says failed synthesis already produces a genuine
    selected-boundary-zero evader for the enumerated forced edges.  The
    remaining crux is whether exact shell/CAP5 data proves the no-evader/subset
    certificate uniformly, or whether this genuine
-   boundary-zero/vertex-Kirchhoff/path-xor residual-scheduler branch exists.
+   boundary-zero/vertex-Kirchhoff/path-xor residual-scheduler branch exists
+   and must be promoted edge by edge.
 
 The historical trichotomy below remains useful background:
 
