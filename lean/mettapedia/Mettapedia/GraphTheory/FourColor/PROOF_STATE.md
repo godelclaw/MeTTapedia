@@ -1558,6 +1558,39 @@ nonzero canonical remaining-map image.
   whitespace scans are archived under the same
   `fourcolor-move2-uniform-initial-residual-subset-*20260629.log` prefix and
   are empty.
+- New emitted-interior-support failure theorem surface:
+  `CAP5TransportedEdgeComponentCoverCore.exists_initialResidualInteriorSupportEdge_not_emitted_of_no_missingCheckerEvidence_of_notSynthesis`
+  and
+  `CAP5TransportedEdgeComponentCoverCore.initialResidualInteriorSupportGap_and_emittedFinsetKernelMapEvader_of_no_missingCheckerEvidence_of_notSynthesis`.
+  Lean now proves the contrapositive of the uniform subset close in the
+  closed primitive frontier: failed theorem-4.9 synthesis forces a concrete
+  canonical interior-support edge in the initial residual worklist and outside
+  the immutable emitted classifier output.  The paired failure theorem returns
+  that exact emitted-interior-support gap together with the unified finite F2
+  obstruction: a nonzero selected-boundary-zero chain vanishing on every
+  enumerated forced edge, lying in the emitted pairing kernel, and having
+  nonzero canonical remaining-family map image.  Thus the remaining Move-2
+  branch is now a clean fork: prove the emitted canonical interior-support
+  subset and close synthesis/control, or accept a named missing interior
+  coordinate plus the unified evader.  Current Algebraic-F2 estimate remains
+  PLN STV `<0.93,0.95>`, ITV `[0.88,0.93]`, progress `99%`.  Focused detector
+  build archived locally as
+  `fourcolor-move2-interior-subset-gap-evader-focused-build-20260629.log`.
+  Trusted-constant audit archived locally as
+  `fourcolor-move2-interior-subset-gap-evader-axiom-audit-20260629.log`;
+  the two new theorem constants depend only on
+  `[propext, Classical.choice, Quot.sound]`.  The seeded validation lab rerun
+  is archived as
+  `fourcolor-move2-interior-subset-gap-evader-lab-20260629.json`; stderr is
+  empty, and the projected-generator summary has 65 reports split as 54 found
+  and 11 no-Tait-coloring, 700 color probes split as 456 found and
+  244 no-Tait-coloring, 0 missing color probes, and 0 truncations.
+  Full `lake -f lakefile.lean build Mettapedia` archived locally as
+  `fourcolor-move2-interior-subset-gap-evader-full-build-20260629.log`; it
+  completed with 5900 jobs.  Strict current-diff proof-marker, leak, and
+  whitespace scans are archived under the same
+  `fourcolor-move2-interior-subset-gap-evader-*20260629.log` prefix and are
+  empty.
 - Report-route target/off-target no-evader focused detector build archived
   locally as
   `fourcolor-move2-report-target-offtarget-noevader-route-focused-build-20260629.log`.
