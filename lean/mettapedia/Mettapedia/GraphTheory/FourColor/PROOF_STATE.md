@@ -626,6 +626,34 @@ claimed here; the target is a decided state for the Goertzel theorem-4.9 route.
   exhaustion, and the remaining branch returns a genuine evader plus the next
   promoted edge with immutable processing ruled out and strict residual
   decrease.
+- Terminal-coverage scheduler focused detector build archived locally as
+  `fourcolor-move2-terminal-coverage-focused-build-20260629.log`.
+- Terminal-coverage scheduler lab rerun archived locally as
+  `fourcolor-move2-terminal-coverage-lab-20260629.json`; stderr is empty, and
+  the run contains 65 benchmark signatures, 65 projected-generator certificate
+  files, 80 mined rejections, and 80 mined survivors.  The all-interior
+  no-evader and vertex-Kirchhoff-failure-absent signatures are true on all 65
+  records; the declared-forced boundary-zero variants are true on the 38
+  declared-forced rows in this run.
+- Axiom audit archived locally as
+  `fourcolor-move2-terminal-coverage-axiom-audit-20260629.log`; the two new
+  theorem constants depend only on `[propext, Classical.choice, Quot.sound]`.
+- Strict diff/proof-marker/leak scans archived locally as
+  `fourcolor-move2-terminal-coverage-strict-scans-20260629.log`.
+- Full `lake -f lakefile.lean build Mettapedia` archived locally as
+  `fourcolor-move2-terminal-coverage-full-build-20260629.log` with 5900 jobs.
+- New terminal-coverage scheduler theorem surface:
+  `CAP5TransportedEdgeComponentCoverCore.remainingInteriorSupportCovered_noEvader_and_synthesis_and_boundaryZeroControl_of_forcedAllLatents_of_processedControl`
+  and
+  `CAP5TransportedEdgeComponentCoverCore.residualSchedulerCoverageNoEvader_or_synthesis_or_immutableProcessedControlObstruction_of_forcedAllLatents_of_processedControl`.
+  These restate the scheduler success and route-decision endpoints using the
+  semantic invariant that `processed` covers every original remaining control
+  edge, rather than the implementation detail that the residual finset is
+  empty.  This keeps the promoted finite scheduler focused on the real
+  invariant: prove coverage and close no-evader/synthesis/control, or accept
+  the genuine evader plus promoted-edge obstruction returned by the route.
+  Current Algebraic-F2 estimate: PLN STV `<0.69,0.84>`, ITV `[0.58,0.74]`,
+  progress `93%`.
 
 ## Remaining Completion Requirements
 
@@ -634,10 +662,11 @@ claimed here; the target is a decided state for the Goertzel theorem-4.9 route.
   cyclic-five small-cut repair-removal obstruction, or the closed-walk
   exact-shell two-interior-edge face contradiction.
 - Move 2: derive the no-evader/subset certificate from the uniform CAP5 shell
-  data by reaching the terminal residual scheduler success theorem, or iterate
-  the route-decision theorem by promoting each selected edge with new certified
-  control information.  Immutable processing of that edge is formally ruled
-  out; if promotion cannot be certified, formalize the genuine
+  data by reaching the terminal processed-coverage scheduler success theorem,
+  or iterate the coverage-form route-decision theorem by promoting each
+  selected edge with new certified control information.  Immutable processing
+  of that edge is formally ruled out; if promotion cannot be certified,
+  formalize the genuine
   vertex-Kirchhoff/path-xor evader produced by failure of that certificate.
   The no-evader direction now already gives full selected-boundary-zero
   classifier control and synthesis, and the success side carries the
