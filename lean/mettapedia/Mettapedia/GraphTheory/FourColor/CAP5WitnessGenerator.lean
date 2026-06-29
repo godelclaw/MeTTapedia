@@ -1517,6 +1517,67 @@ theorem partialLatents_eq_missingCheckerEvidenceLatents
         ((report.classify_eq_partialCase_iff_missingCheckerEvidence latent).2 h)
     simp [hstatus, hmissing]
 
+/--
+The missing frontier is empty exactly when every enumerated latent has the primitive
+portal-crossing and two-sided-cycle evidence required by the CAP5/Jordan separator checker.
+Thus a nonempty missing frontier is not a separate realized-repair case: it is precisely failure
+of the checker prerequisites for this repair class.
+-/
+theorem missingCheckerEvidenceLatents_eq_nil_iff_all_checker_evidence
+    (report : CAP5ExceptionalAnnulusGeneratorReport boundaryEdge side) :
+    report.missingCheckerEvidenceLatents = [] ↔
+      ∀ latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge,
+        latent ∈ CAP5ExceptionalAnnulusGeneratorLatent.all boundaryEdge →
+          (report.node latent).PortalCrosses ∧ (report.node latent).SideCycles := by
+  constructor
+  · intro hmissingEmpty latent hmemAll
+    have hnotMissing : ¬ (report.node latent).MissingCheckerEvidence := by
+      intro hmissing
+      have hmissingMem : latent ∈ report.missingCheckerEvidenceLatents :=
+        (report.mem_missingCheckerEvidenceLatents_iff).2 ⟨hmemAll, hmissing⟩
+      rw [hmissingEmpty] at hmissingMem
+      cases hmissingMem
+    exact ((report.node latent).not_missingCheckerEvidence_iff_complete).1 hnotMissing
+  · intro hallEvidence
+    apply List.eq_nil_iff_forall_not_mem.2
+    intro latent hmissingMem
+    rcases (report.mem_missingCheckerEvidenceLatents_iff).1 hmissingMem with
+      ⟨hmemAll, hmissing⟩
+    exact
+      (((report.node latent).not_missingCheckerEvidence_iff_complete).2
+        (hallEvidence latent hmemAll)) hmissing
+
+/--
+Nonempty missing-frontier form of the same boundary: failure to empty the report means that some
+enumerated latent lacks the primitive checker evidence needed to even enter the realized
+CAP5/Jordan separator-repair class.
+-/
+theorem missingCheckerEvidenceLatents_ne_nil_iff_exists_failed_checker_evidence
+    (report : CAP5ExceptionalAnnulusGeneratorReport boundaryEdge side) :
+    report.missingCheckerEvidenceLatents ≠ [] ↔
+      ∃ latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge,
+        latent ∈ CAP5ExceptionalAnnulusGeneratorLatent.all boundaryEdge ∧
+          ¬ ((report.node latent).PortalCrosses ∧ (report.node latent).SideCycles) := by
+  constructor
+  · intro hnotEmpty
+    classical
+    by_contra hnoFailure
+    have hallEvidence :
+        ∀ latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge,
+          latent ∈ CAP5ExceptionalAnnulusGeneratorLatent.all boundaryEdge →
+            (report.node latent).PortalCrosses ∧ (report.node latent).SideCycles := by
+      intro latent hmemAll
+      by_contra hfail
+      exact hnoFailure ⟨latent, hmemAll, hfail⟩
+    exact hnotEmpty
+      ((report.missingCheckerEvidenceLatents_eq_nil_iff_all_checker_evidence).2
+        hallEvidence)
+  · rintro ⟨latent, hmemAll, hfail⟩ hmissingEmpty
+    have hallEvidence :=
+      (report.missingCheckerEvidenceLatents_eq_nil_iff_all_checker_evidence).1
+        hmissingEmpty
+    exact hfail (hallEvidence latent hmemAll)
+
 /-- Every enumerated latent lands in exactly one of the three report bins. -/
 theorem mem_one_status_bin_of_mem_all
     (report : CAP5ExceptionalAnnulusGeneratorReport boundaryEdge side)
