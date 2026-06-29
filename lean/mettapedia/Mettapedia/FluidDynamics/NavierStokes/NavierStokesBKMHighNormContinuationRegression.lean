@@ -63,12 +63,13 @@ theorem BKMContinuation_reduced_to_analytic_components_regression :
                               BKMVorticityEnstrophyLogSobolevGrowthClosed ∧
                                 BKMVorticityEnstrophyAffineLogGrowthClosed ∧
                                   BKMVorticityFiniteTimeWitnessAffineLogGrowthClosed ∧
-                                    BKMLogSobolevAffineReductionClosed ∧
-                                      BKMLogSobolevGrowthEstimateClosed ∧
-                                        (BKMAnalyticComponentsClosed →
-                                          ExplicitFiniteEnergyBKMContinuationTargetOnNonnegHorizons) ∧
-                                          (BKMAffineLogSobolevAnalyticComponentsClosed →
-                                            ExplicitFiniteEnergyBKMContinuationTargetOnNonnegHorizons) := by
+                                    BKMVorticityStretchingAffineLogIntegralBoundClosed ∧
+                                      BKMLogSobolevAffineReductionClosed ∧
+                                        BKMLogSobolevGrowthEstimateClosed ∧
+                                          (BKMAnalyticComponentsClosed →
+                                            ExplicitFiniteEnergyBKMContinuationTargetOnNonnegHorizons) ∧
+                                            (BKMAffineLogSobolevAnalyticComponentsClosed →
+                                              ExplicitFiniteEnergyBKMContinuationTargetOnNonnegHorizons) := by
   exact BKMContinuation_reduced_to_analytic_components
 
 end BKMContinuation
