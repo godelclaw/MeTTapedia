@@ -1320,6 +1320,27 @@ nonzero canonical remaining-map image.
   `fourcolor-move2-empty-worklist-rank-close-focused-build-20260629.log`.
 - Empty-worklist rank-close trusted-constant audit archived locally as
   `fourcolor-move2-empty-worklist-rank-close-axiom-audit-20260629.log`.
+- New exact-worklist fork theorem surface:
+  `CAP5TransportedEdgeComponentCoverCore.remainingInteriorSupportEmpty_closes_or_notSynthesis_boundaryZeroEvader_and_nonempty_worklist_of_no_missingCheckerEvidence`.
+  This packages the current Move-2 decision boundary at report level: with the
+  primitive checker frontier closed, an empty canonical interior-support
+  worklist closes theorem-4.9 synthesis plus full selected-boundary-zero
+  classifier control, while failed synthesis forces the worklist to be nonempty
+  and returns a genuine selected-boundary-zero evader vanishing on all
+  enumerated forced edges plus a decreasing remaining-worklist edge.  Current
+  Algebraic-F2 estimate is PLN STV `<0.86,0.95>`, ITV `[0.82,0.87]`, progress
+  `99%`.  The lab was rerun as
+  `fourcolor-move2-exact-worklist-fork-lab-20260629.json`; stderr is empty and
+  the edge-40/color-1M projected-generator counts remain: 65 reports split as
+  53 found and 12 no-Tait-coloring; 740 color probes split as 454 found and 286
+  no-Tait-coloring, with 0 missing color probes.
+- Exact-worklist fork focused detector build archived locally as
+  `fourcolor-move2-exact-worklist-fork-focused-build-20260629.log`.
+- Exact-worklist fork trusted-constant audit archived locally as
+  `fourcolor-move2-exact-worklist-fork-axiom-audit-20260629.log`.
+- Full `lake -f lakefile.lean build Mettapedia` archived locally as
+  `fourcolor-move2-exact-worklist-fork-full-build-20260629.log`; it completed
+  with 5900 jobs.
 - Report-route target/off-target no-evader focused detector build archived
   locally as
   `fourcolor-move2-report-target-offtarget-noevader-route-focused-build-20260629.log`.
