@@ -12,6 +12,8 @@ namespace Mettapedia
 namespace FluidDynamics
 namespace NavierStokes
 
+open scoped RealInnerProductSpace
+
 namespace Regression
 
 theorem bkm_material_diffusion_remainder_uniform_bound_regression
@@ -70,6 +72,41 @@ theorem bkm_vorticity_enstrophy_controlled_from_raw_regression
     vorticityEnstrophyStretchingControlledAt ν u t :=
   vorticityEnstrophyStretchingControlledAt_of_rawBalance_transportCancellation_diffusionIBP
     hν hRaw hTransport hDiffusion
+
+theorem bkm_vorticity_time_pairing_pointwise_regression
+    {ν T : ℝ} {u : NSVelocityField}
+    (hEq : concreteVorticityEquationOn ν u T)
+    {t : NSTime} {x : NSSpace} (ht0 : 0 ≤ t) (htT : t ≤ T) :
+    ⟪spatialVorticity u t x, timeVorticityDerivative u t x⟫ =
+      -⟪spatialVorticity u t x, vorticityTransportTerm u t x⟫ +
+        ν * ⟪spatialVorticity u t x, vorticityDiffusionTerm u t x⟫ +
+          vorticityStretchingPower u t x :=
+  vorticityTimePairing_eq_rawBalanceIntegrand_of_concreteVorticityEquationOn
+    hEq ht0 htT
+
+theorem bkm_vorticity_time_power_integral_raw_balance_regression
+    {ν T : ℝ} {u : NSVelocityField} {t : NSTime}
+    (hEq : concreteVorticityEquationOn ν u T)
+    (hInt : vorticityRawBalanceIntegralComponentsIntegrableAt u t)
+    (ht0 : 0 ≤ t) (htT : t ≤ T) :
+    vorticityTimePowerIntegral u t =
+      vorticityEnstrophyRawBalanceDerivative ν u t :=
+  vorticityTimePowerIntegral_eq_rawBalanceDerivative_of_concreteVorticityEquationOn
+    hEq hInt ht0 htT
+
+theorem bkm_vorticity_raw_balance_from_standard_equation_closed_regression :
+    BKMVorticityRawBalanceFromStandardEquationClosed :=
+  BKMVorticityRawBalanceFromStandardEquationClosed_proved
+
+theorem bkm_vorticity_raw_balance_from_standard_equation_regression
+    {ν T : ℝ} {u : NSVelocityField} {t : NSTime}
+    (hEq : concreteVorticityEquationOn ν u T)
+    (hInt : vorticityRawBalanceIntegralComponentsIntegrableAt u t)
+    (hTime : vorticityEnstrophyTimePairingDerivativeAt u t)
+    (ht0 : 0 ≤ t) (htT : t ≤ T) :
+    vorticityEnstrophyRawBalanceAt ν u t :=
+  vorticityEnstrophyRawBalanceAt_of_timePairingDerivative_concreteVorticityEquationOn
+    hEq hInt hTime ht0 htT
 
 end Regression
 

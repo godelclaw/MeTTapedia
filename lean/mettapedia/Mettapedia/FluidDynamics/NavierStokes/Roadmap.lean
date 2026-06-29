@@ -95,7 +95,7 @@ def currentNavierRoadmap : List NavierRoadmapEntry :=
       proofNodeId := "navier.bkm.standard-vorticity-growth"
       status := .checked
       truthValue := ⟨86, 88⟩
-      obligation := "Once concreteVorticityEquationOn is derived, use the checked material-minus-diffusion growth estimates to control partial_t omega + (u.grad)omega - nu Delta omega and its enstrophy-production scalar by the gradient and vorticity envelopes." },
+      obligation := "Once concreteVorticityEquationOn is derived, use the checked material-minus-diffusion growth estimates and the standard-equation-to-raw-enstrophy pairing algebra. Remaining enstrophy work is differentiation under the integral, transport cancellation, and viscous integration by parts on the finite-energy witness surface." },
     { stage := .bkmContinuation
       proofNodeId := "navier.bkm.log-sobolev-gradient-control"
       status := .checked
@@ -105,12 +105,12 @@ def currentNavierRoadmap : List NavierRoadmapEntry :=
       proofNodeId := "navier.bkm.single-analytic-lemma"
       status := .checked
       truthValue := ⟨86, 88⟩
-      obligation := "The repaired nonnegative-horizon BKM target is reduced to BKMAnalyticContinuationLemma, whose statement is the remaining analytic proof obligation: positive-viscosity smooth divergence-free finite-energy data plus a finite-time witness with residual-curl vorticity equation and integrable vorticity envelope extend to the global output after proving BKMResidualCurlExpansionDefectVanishes, proving log-Sobolev gradient control, and closing the high-norm continuation argument." },
+      obligation := "The repaired nonnegative-horizon BKM target is reduced to BKMAnalyticContinuationLemma, whose statement is the remaining analytic proof obligation: positive-viscosity smooth divergence-free finite-energy data plus a finite-time witness with residual-curl vorticity equation and integrable vorticity envelope extend to the global output after proving residual-curl expansion, the remaining vorticity-enstrophy integral identities, log-Sobolev gradient control, and high-norm continuation." },
     { stage := .bkmContinuation
       proofNodeId := "navier.bkm.analytic-components"
       status := .checked
       truthValue := ⟨87, 88⟩
-      obligation := "Use BKMAnalyticContinuationLemma_of_components and BKMContinuation_reduced_to_analytic_components to work on the remaining analytic route as three named component targets: residual-curl expansion defect vanishing, log-Sobolev/Biot-Savart gradient control from BKM envelope data, and high-norm continuation/Gronwall closure." },
+      obligation := "Use BKMAnalyticContinuationLemma_of_components and BKMContinuation_reduced_to_analytic_components with the checked vorticity raw-balance and enstrophy-control packages. Remaining component targets are residual-curl expansion defect vanishing, the vorticity-enstrophy integral identities, log-Sobolev/Biot-Savart gradient control from BKM envelope data, and high-norm continuation/Gronwall closure." },
     { stage := .nonzeroEnergyKernel
       proofNodeId := "navier.energy.nonzero-schwartz-kernel"
       status := .checked
@@ -350,7 +350,7 @@ theorem currentNavierRoadmap_records_bkm_standard_vorticity_growth :
        status := .checked
        truthValue := ⟨86, 88⟩
        obligation :=
-        "Once concreteVorticityEquationOn is derived, use the checked material-minus-diffusion growth estimates to control partial_t omega + (u.grad)omega - nu Delta omega and its enstrophy-production scalar by the gradient and vorticity envelopes." } :
+        "Once concreteVorticityEquationOn is derived, use the checked material-minus-diffusion growth estimates and the standard-equation-to-raw-enstrophy pairing algebra. Remaining enstrophy work is differentiation under the integral, transport cancellation, and viscous integration by parts on the finite-energy witness surface." } :
       NavierRoadmapEntry) ∈ currentNavierRoadmap := by
   simp [currentNavierRoadmap]
 
@@ -373,7 +373,7 @@ theorem currentNavierRoadmap_records_bkm_single_analytic_lemma :
        status := .checked
        truthValue := ⟨86, 88⟩
        obligation :=
-        "The repaired nonnegative-horizon BKM target is reduced to BKMAnalyticContinuationLemma, whose statement is the remaining analytic proof obligation: positive-viscosity smooth divergence-free finite-energy data plus a finite-time witness with residual-curl vorticity equation and integrable vorticity envelope extend to the global output after proving BKMResidualCurlExpansionDefectVanishes, proving log-Sobolev gradient control, and closing the high-norm continuation argument." } :
+        "The repaired nonnegative-horizon BKM target is reduced to BKMAnalyticContinuationLemma, whose statement is the remaining analytic proof obligation: positive-viscosity smooth divergence-free finite-energy data plus a finite-time witness with residual-curl vorticity equation and integrable vorticity envelope extend to the global output after proving residual-curl expansion, the remaining vorticity-enstrophy integral identities, log-Sobolev gradient control, and high-norm continuation." } :
       NavierRoadmapEntry) ∈ currentNavierRoadmap := by
   simp [currentNavierRoadmap]
 
@@ -385,7 +385,7 @@ theorem currentNavierRoadmap_records_bkm_analytic_components :
        status := .checked
        truthValue := ⟨87, 88⟩
        obligation :=
-        "Use BKMAnalyticContinuationLemma_of_components and BKMContinuation_reduced_to_analytic_components to work on the remaining analytic route as three named component targets: residual-curl expansion defect vanishing, log-Sobolev/Biot-Savart gradient control from BKM envelope data, and high-norm continuation/Gronwall closure." } :
+        "Use BKMAnalyticContinuationLemma_of_components and BKMContinuation_reduced_to_analytic_components with the checked vorticity raw-balance and enstrophy-control packages. Remaining component targets are residual-curl expansion defect vanishing, the vorticity-enstrophy integral identities, log-Sobolev/Biot-Savart gradient control from BKM envelope data, and high-norm continuation/Gronwall closure." } :
       NavierRoadmapEntry) ∈ currentNavierRoadmap := by
   simp [currentNavierRoadmap]
 
