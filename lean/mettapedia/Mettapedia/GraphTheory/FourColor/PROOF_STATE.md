@@ -1483,6 +1483,44 @@ nonzero canonical remaining-map image.
   whitespace scans are archived under the same
   `fourcolor-move2-initial-residual-unified-evader-*20260629.log` prefix and
   are empty.
+- New focus-shell initial residual threshold theorem surface:
+  `sharedInteriorPair_CAP5_initialResidualRemainingControlEdges_eq_empty_iff_emittedInterior_card_ge_two`,
+  `wheelWithInnerTriangle_CAP5_initialResidualRemainingControlEdges_eq_empty_iff_emittedInterior_card_ge_three`,
+  `sharedInteriorPair_CAP5_theorem49BoundaryRootSynthesis_of_initialResidualRemainingControlEdges_eq_empty_uniqueCertificates_boundaryTrimmed`,
+  `wheelWithInnerTriangle_CAP5_theorem49BoundaryRootSynthesis_of_initialResidualRemainingControlEdges_eq_empty_uniqueCertificates_boundaryTrimmed`,
+  `sharedInteriorPair_CAP5_initialResidualRemainingControlEdges_ne_empty_of_not_theorem49BoundaryRootSynthesis_uniqueCertificates_boundaryTrimmed`,
+  and
+  `wheelWithInnerTriangle_CAP5_initialResidualRemainingControlEdges_ne_empty_of_not_theorem49BoundaryRootSynthesis_uniqueCertificates_boundaryTrimmed`.
+  These prove the initial residual scheduler is empty exactly at the finite F2
+  focus-shell thresholds already certified by the lab: both shared interior
+  controls for `sharedInteriorPair`, and all three spokes for
+  `wheelWithInnerTriangle`.  Empty initial residual now closes the
+  boundary-trimmed unique-certificate synthesis route for those shells, while
+  failed synthesis forces a genuinely nonempty initial residual worklist.  This
+  moves the Move-2 burden from isolated repair packets to the uniform CAP5
+  shell-data question: lift these exact focus thresholds uniformly, or accept
+  the unified finite F2 evader already returned by the fork.  Current
+  Algebraic-F2 estimate is PLN STV `<0.92,0.95>`, ITV `[0.87,0.92]`, progress
+  `99%`.  Focused detector build archived locally as
+  `fourcolor-move2-focus-initial-residual-threshold-focused-build-20260629.log`.
+  Trusted-constant audit archived locally as
+  `fourcolor-move2-focus-initial-residual-threshold-axiom-audit-20260629.log`;
+  the six new theorem constants depend only on
+  `[propext, Classical.choice, Quot.sound]`.  The seeded validation lab rerun
+  is archived as
+  `fourcolor-move2-focus-initial-residual-threshold-lab-20260629.json`;
+  stderr is empty, and the projected-generator summary has 65 reports split as
+  54 found and 11 no-Tait-coloring, 700 color probes split as 456 found and
+  244 no-Tait-coloring, 0 missing color probes, and 0 truncations.  The two
+  focus rows both return found red/blue certificates on all target controls:
+  `shared-interior-pair` targets `sip01`/`sip12`, and
+  `wheel-with-inner-triangle` targets `wit01`/`wit02`/`wit03`.
+  Full `lake -f lakefile.lean build Mettapedia` archived locally as
+  `fourcolor-move2-focus-initial-residual-threshold-full-build-20260629.log`;
+  it completed with 5900 jobs.  Strict current-diff proof-marker, leak, and
+  whitespace scans are archived under the same
+  `fourcolor-move2-focus-initial-residual-threshold-*20260629.log` prefix and
+  are empty.
 - Report-route target/off-target no-evader focused detector build archived
   locally as
   `fourcolor-move2-report-target-offtarget-noevader-route-focused-build-20260629.log`.

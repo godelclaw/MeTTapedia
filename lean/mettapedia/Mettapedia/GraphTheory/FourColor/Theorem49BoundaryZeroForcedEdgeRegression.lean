@@ -21153,6 +21153,204 @@ theorem wheelWithInnerTriangle_CAP5_not_forcedEdgeCoverage_of_not_theorem49Bound
       C₀ hsubset p0Inside p4Inside side classifier hcoverage)
 
 /--
+Initial-residual threshold for the shared focus shell.  The initial immutable scheduler worklist
+is empty exactly when the emitted classifier has reached the two-control F₂ threshold certified
+by the finite lab.
+-/
+theorem sharedInteriorPair_CAP5_initialResidualRemainingControlEdges_eq_empty_iff_emittedInterior_card_ge_two
+    {boundaryEdge : Fin 5 → sharedInteriorPairGraph.edgeSet} {n : Nat}
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    (p0Inside p4Inside : Bool) (side : Fin 8 → Prop)
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side) :
+    classifier.residualRemainingControlEdges sharedInteriorPairInteriorControlEdges
+        (∅ : Finset sharedInteriorPairGraph.edgeSet) = ∅ ↔
+      2 ≤ (classifier.emittedFinset.filter fun e =>
+        e ∈ sharedInteriorPairInteriorControlEdges).card := by
+  constructor
+  · intro hinitialEmpty
+    have hremainingEmpty :
+        classifier.remainingControlEdges sharedInteriorPairInteriorControlEdges = ∅ :=
+      (classifier.residualRemainingControlEdges_empty_processed_eq_empty_iff_remainingControlEdges_eq_empty
+        sharedInteriorPairInteriorControlEdges).1 hinitialEmpty
+    have hsubset :
+        sharedInteriorPairInteriorControlEdges ⊆ classifier.emittedFinset := by
+      intro e heControl
+      by_contra heNotEmitted
+      have heRemaining : e ∈ classifier.remainingControlEdges sharedInteriorPairInteriorControlEdges :=
+        (classifier.mem_remainingControlEdges_iff sharedInteriorPairInteriorControlEdges e).2
+          ⟨heControl, heNotEmitted⟩
+      rw [hremainingEmpty] at heRemaining
+      simp at heRemaining
+    exact (sharedInteriorPair_emittedInterior_card_ge_two_iff classifier.emittedFinset).2 hsubset
+  · intro hcard
+    have hsubset :
+        sharedInteriorPairInteriorControlEdges ⊆ classifier.emittedFinset :=
+      (sharedInteriorPair_emittedInterior_card_ge_two_iff classifier.emittedFinset).1 hcard
+    have hremainingEmpty :
+        classifier.remainingControlEdges sharedInteriorPairInteriorControlEdges = ∅ := by
+      ext e
+      constructor
+      · intro he
+        have he' :=
+          (classifier.mem_remainingControlEdges_iff sharedInteriorPairInteriorControlEdges e).1 he
+        exact False.elim (he'.2 (hsubset he'.1))
+      · intro he
+        simp at he
+    exact
+      (classifier.residualRemainingControlEdges_empty_processed_eq_empty_iff_remainingControlEdges_eq_empty
+        sharedInteriorPairInteriorControlEdges).2 hremainingEmpty
+
+/--
+Initial-residual threshold for the wheel focus shell.  The initial immutable scheduler worklist
+is empty exactly when the emitted classifier has reached the three-spoke F₂ threshold certified
+by the finite lab.
+-/
+theorem wheelWithInnerTriangle_CAP5_initialResidualRemainingControlEdges_eq_empty_iff_emittedInterior_card_ge_three
+    {boundaryEdge : Fin 5 → wheelWithInnerTriangleGraph.edgeSet} {n : Nat}
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    (p0Inside p4Inside : Bool) (side : Fin 7 → Prop)
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side) :
+    classifier.residualRemainingControlEdges wheelWithInnerTriangleInteriorControlEdges
+        (∅ : Finset wheelWithInnerTriangleGraph.edgeSet) = ∅ ↔
+      3 ≤ (classifier.emittedFinset.filter fun e =>
+        e ∈ wheelWithInnerTriangleInteriorControlEdges).card := by
+  constructor
+  · intro hinitialEmpty
+    have hremainingEmpty :
+        classifier.remainingControlEdges wheelWithInnerTriangleInteriorControlEdges = ∅ :=
+      (classifier.residualRemainingControlEdges_empty_processed_eq_empty_iff_remainingControlEdges_eq_empty
+        wheelWithInnerTriangleInteriorControlEdges).1 hinitialEmpty
+    have hsubset :
+        wheelWithInnerTriangleInteriorControlEdges ⊆ classifier.emittedFinset := by
+      intro e heControl
+      by_contra heNotEmitted
+      have heRemaining :
+          e ∈ classifier.remainingControlEdges wheelWithInnerTriangleInteriorControlEdges :=
+        (classifier.mem_remainingControlEdges_iff wheelWithInnerTriangleInteriorControlEdges e).2
+          ⟨heControl, heNotEmitted⟩
+      rw [hremainingEmpty] at heRemaining
+      simp at heRemaining
+    exact
+      (wheelWithInnerTriangle_emittedInterior_card_ge_three_iff classifier.emittedFinset).2 hsubset
+  · intro hcard
+    have hsubset :
+        wheelWithInnerTriangleInteriorControlEdges ⊆ classifier.emittedFinset :=
+      (wheelWithInnerTriangle_emittedInterior_card_ge_three_iff classifier.emittedFinset).1 hcard
+    have hremainingEmpty :
+        classifier.remainingControlEdges wheelWithInnerTriangleInteriorControlEdges = ∅ := by
+      ext e
+      constructor
+      · intro he
+        have he' :=
+          (classifier.mem_remainingControlEdges_iff wheelWithInnerTriangleInteriorControlEdges e).1 he
+        exact False.elim (he'.2 (hsubset he'.1))
+      · intro he
+        simp at he
+    exact
+      (classifier.residualRemainingControlEdges_empty_processed_eq_empty_iff_remainingControlEdges_eq_empty
+        wheelWithInnerTriangleInteriorControlEdges).2 hremainingEmpty
+
+/--
+Shared focus-shell decision endpoint for the initial residual scheduler: if the immutable
+initial worklist is empty, the boundary-trimmed unique-certificate route already closes
+theorem-4.9 synthesis.
+-/
+theorem sharedInteriorPair_CAP5_theorem49BoundaryRootSynthesis_of_initialResidualRemainingControlEdges_eq_empty_uniqueCertificates_boundaryTrimmed
+    {boundaryEdge : Fin 5 → sharedInteriorPairGraph.edgeSet} {n : Nat}
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    [FiniteDimensional F2 (sharedInteriorPairGraph.edgeSet → Color)]
+    (C₀ : sharedInteriorPairGraph.EdgeColoring Color)
+    (hsubset :
+      sharedInteriorPairProjectedGeneratorCertificateColorings ⊆
+        sharedInteriorPairGraph.EdgeKempeClosure C₀)
+    (p0Inside p4Inside : Bool) (side : Fin 8 → Prop)
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (hinitialEmpty :
+      classifier.residualRemainingControlEdges sharedInteriorPairInteriorControlEdges
+        (∅ : Finset sharedInteriorPairGraph.edgeSet) = ∅) :
+    Theorem49BoundaryRootSynthesis sharedInteriorPairEmbedding C₀ :=
+  sharedInteriorPair_CAP5_theorem49BoundaryRootSynthesis_of_emittedInterior_card_ge_two_uniqueCertificates_boundaryTrimmed
+    C₀ hsubset p0Inside p4Inside side classifier
+    ((sharedInteriorPair_CAP5_initialResidualRemainingControlEdges_eq_empty_iff_emittedInterior_card_ge_two
+      p0Inside p4Inside side classifier).1 hinitialEmpty)
+
+/--
+Wheel focus-shell decision endpoint for the initial residual scheduler: if the immutable
+initial worklist is empty, the boundary-trimmed unique-certificate route already closes
+theorem-4.9 synthesis.
+-/
+theorem wheelWithInnerTriangle_CAP5_theorem49BoundaryRootSynthesis_of_initialResidualRemainingControlEdges_eq_empty_uniqueCertificates_boundaryTrimmed
+    {boundaryEdge : Fin 5 → wheelWithInnerTriangleGraph.edgeSet} {n : Nat}
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    [FiniteDimensional F2 (wheelWithInnerTriangleGraph.edgeSet → Color)]
+    (C₀ : wheelWithInnerTriangleGraph.EdgeColoring Color)
+    (hsubset :
+      wheelWithInnerTriangleProjectedGeneratorCertificateColorings ⊆
+        wheelWithInnerTriangleGraph.EdgeKempeClosure C₀)
+    (p0Inside p4Inside : Bool) (side : Fin 7 → Prop)
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (hinitialEmpty :
+      classifier.residualRemainingControlEdges wheelWithInnerTriangleInteriorControlEdges
+        (∅ : Finset wheelWithInnerTriangleGraph.edgeSet) = ∅) :
+    Theorem49BoundaryRootSynthesis wheelWithInnerTriangleEmbedding C₀ :=
+  wheelWithInnerTriangle_CAP5_theorem49BoundaryRootSynthesis_of_emittedInterior_card_ge_three_uniqueCertificates_boundaryTrimmed
+    C₀ hsubset p0Inside p4Inside side classifier
+    ((wheelWithInnerTriangle_CAP5_initialResidualRemainingControlEdges_eq_empty_iff_emittedInterior_card_ge_three
+      p0Inside p4Inside side classifier).1 hinitialEmpty)
+
+/--
+Contrapositive shared focus-shell scheduler verdict: failed boundary-trimmed synthesis means
+the initial immutable residual worklist is genuinely nonempty, not merely missing a later
+repair-packet refutation.
+-/
+theorem sharedInteriorPair_CAP5_initialResidualRemainingControlEdges_ne_empty_of_not_theorem49BoundaryRootSynthesis_uniqueCertificates_boundaryTrimmed
+    {boundaryEdge : Fin 5 → sharedInteriorPairGraph.edgeSet} {n : Nat}
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    [FiniteDimensional F2 (sharedInteriorPairGraph.edgeSet → Color)]
+    (C₀ : sharedInteriorPairGraph.EdgeColoring Color)
+    (hsubset :
+      sharedInteriorPairProjectedGeneratorCertificateColorings ⊆
+        sharedInteriorPairGraph.EdgeKempeClosure C₀)
+    (p0Inside p4Inside : Bool) (side : Fin 8 → Prop)
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (hnotSynthesis : ¬ Theorem49BoundaryRootSynthesis sharedInteriorPairEmbedding C₀) :
+    classifier.residualRemainingControlEdges sharedInteriorPairInteriorControlEdges
+        (∅ : Finset sharedInteriorPairGraph.edgeSet) ≠ ∅ := by
+  intro hinitialEmpty
+  exact hnotSynthesis
+    (sharedInteriorPair_CAP5_theorem49BoundaryRootSynthesis_of_initialResidualRemainingControlEdges_eq_empty_uniqueCertificates_boundaryTrimmed
+      C₀ hsubset p0Inside p4Inside side classifier hinitialEmpty)
+
+/--
+Contrapositive wheel focus-shell scheduler verdict: failed boundary-trimmed synthesis means the
+initial immutable residual worklist is genuinely nonempty, exposing the three-spoke F₂ oracle
+deficit directly.
+-/
+theorem wheelWithInnerTriangle_CAP5_initialResidualRemainingControlEdges_ne_empty_of_not_theorem49BoundaryRootSynthesis_uniqueCertificates_boundaryTrimmed
+    {boundaryEdge : Fin 5 → wheelWithInnerTriangleGraph.edgeSet} {n : Nat}
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    [FiniteDimensional F2 (wheelWithInnerTriangleGraph.edgeSet → Color)]
+    (C₀ : wheelWithInnerTriangleGraph.EdgeColoring Color)
+    (hsubset :
+      wheelWithInnerTriangleProjectedGeneratorCertificateColorings ⊆
+        wheelWithInnerTriangleGraph.EdgeKempeClosure C₀)
+    (p0Inside p4Inside : Bool) (side : Fin 7 → Prop)
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (hnotSynthesis : ¬ Theorem49BoundaryRootSynthesis wheelWithInnerTriangleEmbedding C₀) :
+    classifier.residualRemainingControlEdges wheelWithInnerTriangleInteriorControlEdges
+        (∅ : Finset wheelWithInnerTriangleGraph.edgeSet) ≠ ∅ := by
+  intro hinitialEmpty
+  exact hnotSynthesis
+    (wheelWithInnerTriangle_CAP5_theorem49BoundaryRootSynthesis_of_initialResidualRemainingControlEdges_eq_empty_uniqueCertificates_boundaryTrimmed
+      C₀ hsubset p0Inside p4Inside side classifier hinitialEmpty)
+
+/--
 Boundary-trimmed coordinate-signal form for the shared focus shell.  A failed
 unique-certificate synthesis run gives a nonzero selected-boundary-zero evader; against the
 lab-certified shared controls this is exactly a CAP5 crossing/noncrossing extension coordinate
