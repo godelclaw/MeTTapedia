@@ -639,7 +639,10 @@ longer acceptable progress.
    executable report returns either a primitive gap or that exact equivalence.
    The emitted-rank/no-unified-evader bridge now identifies the lab-facing
    finite kernel certificate with absence of that unified obstruction after the
-   same closed primitive frontier.  The
+   same closed primitive frontier.  The report-level emitted-rank trichotomy
+   then packages the finite verdict as the actual executable branch:
+   primitive checker gap, emitted-rank close with synthesis/control, or
+   rank-failure unified evader.  The
    pure no-target theorem underneath those refinements says failed synthesis
    already produces a genuine selected-boundary-zero evader for the enumerated
    forced edges.  The remaining crux is whether exact shell/CAP5 data reaches

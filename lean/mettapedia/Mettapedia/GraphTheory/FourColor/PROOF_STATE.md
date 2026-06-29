@@ -1003,6 +1003,14 @@ nonzero canonical remaining-map image.
   evader; the executable report returns a primitive checker gap or that exact
   finite F2 equivalence.  Current Algebraic-F2 estimate remains PLN STV
   `<0.79,0.92>`, ITV `[0.73,0.81]`, progress `99%`.
+- New report-level emitted-rank trichotomy surface:
+  `CAP5TransportedEdgeComponentCoverCore.ofDecidableChecks_missingCheckerEvidence_or_emittedFinsetPairingKernel_eq_bot_and_theorem49Synthesis_and_boundaryZeroControl_or_emittedFinsetKernelMapEvader`.
+  The finite rank verdict now decides the executable Move-2 branch directly:
+  the report has a primitive checker gap, or the emitted-edge kernel is
+  trivial and theorem-4.9 synthesis with full selected-boundary-zero control
+  follows, or rank failure returns the unified emitted-kernel/remaining-map
+  evader as the obstruction.  Current Algebraic-F2 estimate remains PLN STV
+  `<0.79,0.92>`, ITV `[0.73,0.81]`, progress `99%`.
 
 ## Remaining Completion Requirements
 
