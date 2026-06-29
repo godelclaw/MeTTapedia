@@ -75,6 +75,14 @@ report-level no-evader side is therefore stated in the same target/off-target
 vocabulary returned by the failure branch, rather than only through the older
 unified-kernel predicate.
 
+Report-route target/off-target no-evader conclusion delta: Lean now exposes the
+surviving F2 oracle in the direct route form requested by the decide goal.  If
+the target-side theorem-4.9 evader and the off-target emitted-kernel/
+remaining-map Kirchhoff evader are both absent, the executable CAP5 report
+returns either a primitive checker gap or theorem-4.9 synthesis with full
+selected-boundary-zero classifier control.  If the primitive checker frontier
+is closed too, the no-evader hypotheses directly prove synthesis/control.
+
 Trace-F2 delta: the same report-closed handoff now reaches the stronger
 trace-control split.  The executable report returns a primitive checker gap,
 or else the closed frontier yields either theorem-4.9 synthesis with full
@@ -1202,6 +1210,31 @@ nonzero canonical remaining-map image.
   `[propext, Classical.choice, Quot.sound]`.
 - Full `lake -f lakefile.lean build Mettapedia` archived locally as
   `fourcolor-move2-report-target-offtarget-noevader-iff-full-build-20260629.log`;
+  it completed with 5900 jobs.
+- New route-facing target/off-target no-evader theorem surface:
+  `CAP5TransportedEdgeComponentCoverCore.ofDecidableChecks_missingCheckerEvidence_or_theorem49Synthesis_and_boundaryZeroControl_of_no_theorem49BoundaryTargetEvader_and_no_emittedFinsetKernelMapEvader_with_theorem49BoundaryVertexKirchhoffFailure`
+  and
+  `CAP5TransportedEdgeComponentCoverCore.theorem49Synthesis_and_boundaryZeroControl_of_no_missingCheckerEvidence_and_no_theorem49BoundaryTargetEvader_and_no_emittedFinsetKernelMapEvader_with_theorem49BoundaryVertexKirchhoffFailure`.
+  The first theorem proves that excluding both concrete target/off-target
+  evader branches leaves only primitive checker gap or synthesis/control in
+  the executable report.  The second theorem closes the route under a closed
+  primitive frontier.  The lab was rerun first as
+  `fourcolor-move2-report-target-offtarget-noevader-route-lab-20260629.json`;
+  stderr is empty and the edge-40/color-1M projected-generator counts remain:
+  65 reports split as 53 found and 12 no-Tait-coloring; 740 color probes split
+  as 454 found and 286 no-Tait-coloring, with 0 missing color probes.  Current
+  Algebraic-F2 estimate is PLN STV `<0.81,0.93>`, ITV `[0.75,0.82]`, progress
+  `99%`.
+- Report-route target/off-target no-evader focused detector build archived
+  locally as
+  `fourcolor-move2-report-target-offtarget-noevader-route-focused-build-20260629.log`.
+- Report-route target/off-target no-evader trusted-constant audit archived
+  locally as
+  `fourcolor-move2-report-target-offtarget-noevader-route-axiom-audit-20260629.log`;
+  the two new theorem constants depend only on
+  `[propext, Classical.choice, Quot.sound]`.
+- Full `lake -f lakefile.lean build Mettapedia` archived locally as
+  `fourcolor-move2-report-target-offtarget-noevader-route-full-build-20260629.log`;
   it completed with 5900 jobs.
 - Projected-generator edge-40/color-1M lab rerun archived locally as
   `fourcolor-move2-projected-generator-edge40-color1m-lab-20260629.json`;

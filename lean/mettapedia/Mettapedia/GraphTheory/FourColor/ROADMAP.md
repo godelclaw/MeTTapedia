@@ -682,7 +682,14 @@ longer acceptable progress.
    `emittedFinsetPairingKernel_eq_bot_and_theorem49Synthesis_and_boundaryZeroControl_iff_no_theorem49BoundaryTargetEvader_and_no_emittedFinsetKernelMapEvader_with_theorem49BoundaryVertexKirchhoffFailure_of_no_missingCheckerEvidence`
    proves that, once the primitive checker frontier is closed, emitted-rank
    close with synthesis/control is equivalent to absence of both target-side
-   and off-target report evaders.  The higher edge-cap/coloring-cap
+   and off-target report evaders.  The direct route corollaries
+   `ofDecidableChecks_missingCheckerEvidence_or_theorem49Synthesis_and_boundaryZeroControl_of_no_theorem49BoundaryTargetEvader_and_no_emittedFinsetKernelMapEvader_with_theorem49BoundaryVertexKirchhoffFailure`
+   and
+   `theorem49Synthesis_and_boundaryZeroControl_of_no_missingCheckerEvidence_and_no_theorem49BoundaryTargetEvader_and_no_emittedFinsetKernelMapEvader_with_theorem49BoundaryVertexKirchhoffFailure`
+   now expose the decision step in the requested form: excluding both concrete
+   evader branches leaves only primitive checker gap or synthesis/control, and
+   with the primitive frontier closed it directly proves synthesis/control.
+   The higher edge-cap/coloring-cap
    projected-generator lab run now records this distinction explicitly: among
    65 reports there are 53 found coordinate-probe reports, 12 no-Tait-coloring
    reports, and 0 missing probe reports.
