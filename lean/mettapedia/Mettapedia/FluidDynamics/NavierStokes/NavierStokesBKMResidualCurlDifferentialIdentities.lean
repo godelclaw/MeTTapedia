@@ -115,6 +115,32 @@ theorem spatialConvectionField_differentiableAt_of_smooth
   simpa [spatialConvectionField, spatialConvection, spatialFDeriv] using
     hfield.differentiable (by simp) x
 
+/-- Product-rule expansion for a coordinate derivative of the convection field
+`(u . grad)u`.  This is the calculus component of the curl-convection identity;
+the remaining step is the finite-dimensional Jacobian algebra plus
+incompressibility. -/
+theorem spatialDerivativeComponent_spatialConvectionField_eq_productRule_of_smooth
+    {u : NSVelocityField} (hu : smoothSpaceTimeVelocity u)
+    (t : NSTime) (x : NSSpace) (coord comp : Fin 3) :
+    spatialDerivativeComponent (spatialConvectionField u) t x coord comp =
+      (spatialFDeriv u t x
+        (spatialFDeriv u t x (EuclideanSpace.single coord (1 : ℝ)))) comp +
+        ((fderiv ℝ (fun y : NSSpace => spatialFDeriv u t y) x
+          (EuclideanSpace.single coord (1 : ℝ))) (u t x)) comp := by
+  let e : NSSpace := EuclideanSpace.single coord (1 : ℝ)
+  have hslice : ContDiff ℝ ∞ (fun y : NSSpace => u t y) :=
+    smoothSpaceTimeVelocity_contDiff_spatialSlice hu t
+  have huAt : DifferentiableAt ℝ (fun y : NSSpace => u t y) x :=
+    hslice.differentiable (by simp) x
+  have hgradAt : DifferentiableAt ℝ (fun y : NSSpace => spatialFDeriv u t y) x := by
+    exact (hslice.fderiv_right (m := ∞) (by simp)).differentiable (by simp) x
+  change (fderiv ℝ
+      (fun y : NSSpace => spatialFDeriv u t y (u t y)) x e) comp =
+    (spatialFDeriv u t x (spatialFDeriv u t x e)) comp +
+      ((fderiv ℝ (fun y : NSSpace => spatialFDeriv u t y) x e) (u t x)) comp
+  rw [fderiv_clm_apply hgradAt huAt]
+  simp [e, spatialFDeriv]
+
 /-- Smooth velocities give spatial differentiability of the Laplacian field. -/
 theorem spatialLaplacianField_differentiableAt_of_smooth
     {u : NSVelocityField} (hu : smoothSpaceTimeVelocity u)
