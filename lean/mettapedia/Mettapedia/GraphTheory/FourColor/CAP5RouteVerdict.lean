@@ -353,6 +353,41 @@ def CAP5F2NoTargetOffTargetEvader
                 v ∈ Theorem49BoundaryVertices emb ∧
                   vertexKirchhoffSum G (z : G.edgeSet → Color) v ≠ 0
 
+/--
+The single unified emitted-kernel/remaining-map evader left by the packaged F2 oracle.
+This is the witness returned when the closed-frontier route is not closed.
+-/
+def CAP5F2UnifiedKernelMapEvader
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    {emb : PlaneEmbeddingWithBoundary G} {C₀ : G.EdgeColoring Color}
+    {colorings : Set (G.EdgeColoring Color)} {p0Inside p4Inside : Bool}
+    {side : V → Prop}
+    (cert : CAP5F2RouteCertificate data emb C₀ colorings p0Inside p4Inside side)
+    (z : planarBoundaryZeroSubmodule emb) : Prop :=
+  ((z : G.edgeSet → Color) ≠ 0) ∧
+    (∀ e : G.edgeSet,
+      data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e →
+        (z : G.edgeSet → Color) e = 0) ∧
+      z ∈ LinearMap.ker
+        (planarBoundaryZeroFamilyPairingMap
+          (redBlueSingleCoordinateFamily cert.classifier.emittedFinset
+            cert.redEmitted cert.blueEmitted)) ∧
+        planarBoundaryZeroFamilyPairingMap
+            (redBlueSingleCoordinateFamily
+              (cert.classifier.remainingControlEdges
+                (interiorEdgeSupport emb.faceBoundary emb.faces))
+              cert.redRemaining cert.blueRemaining) z ≠ 0
+
+/-- The closed-frontier no-evader predicate for the unified kernel/map witness. -/
+def CAP5F2NoUnifiedKernelMapEvader
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    {emb : PlaneEmbeddingWithBoundary G} {C₀ : G.EdgeColoring Color}
+    {colorings : Set (G.EdgeColoring Color)} {p0Inside p4Inside : Bool}
+    {side : V → Prop}
+    (cert : CAP5F2RouteCertificate data emb C₀ colorings p0Inside p4Inside side) :
+    Prop :=
+  ¬ ∃ z : planarBoundaryZeroSubmodule emb, CAP5F2UnifiedKernelMapEvader cert z
+
 /-- The route-success endpoint: theorem-4.9 synthesis plus full selected-boundary-zero control. -/
 def CAP5F2RouteClosed
     {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
@@ -453,6 +488,78 @@ theorem budgetMetNoEvader_boundaryZeroControl_oracle_of_noGap
       classifier hredEmitted hblueEmitted hredRemaining hblueRemaining
       (by simpa [CAP5PrimitiveCheckerGap] using hnoGap)
 
+/--
+Closed-frontier route equivalence stated directly in the single unified-evader vocabulary.
+After the primitive checker frontier is closed, this is the exact remaining F2 question.
+-/
+theorem cap5F2NoUnifiedKernelMapEvader_iff_routeClosed_of_noGap
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    (emb : PlaneEmbeddingWithBoundary G) (C₀ : G.EdgeColoring Color)
+    (colorings : Set (G.EdgeColoring Color))
+    (p0Inside p4Inside : Bool) (h : data.IsExceptional)
+    (side : V → Prop)
+    [∀ latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge,
+      Decidable ((CAP5ExceptionalAnnulusGeneratorReport.latentNode
+        boundaryEdge side latent).PortalCrosses)]
+    [∀ latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge,
+      Decidable ((CAP5ExceptionalAnnulusGeneratorReport.latentNode
+        boundaryEdge side latent).SideCycles)]
+    [∀ latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge,
+      Decidable ((CAP5ExceptionalAnnulusGeneratorReport.latentNode
+        boundaryEdge side latent).RealizedSeparator)]
+    (hcyclic : CyclicallyFiveEdgeConnected G)
+    (hnoGap : ¬ CAP5PrimitiveCheckerGap boundaryEdge side)
+    (cert : CAP5F2RouteCertificate data emb C₀ colorings p0Inside p4Inside side) :
+    CAP5F2NoUnifiedKernelMapEvader cert ↔ CAP5F2RouteClosed cert := by
+  have horacle :=
+    budgetMetNoEvader_boundaryZeroControl_oracle_of_noGap
+      emb C₀ colorings cert.subset p0Inside p4Inside h side hcyclic hnoGap
+      cert.classifier cert.redEmitted cert.blueEmitted cert.redRemaining
+      cert.blueRemaining
+  simpa [CAP5F2NoUnifiedKernelMapEvader, CAP5F2UnifiedKernelMapEvader,
+    CAP5F2RouteClosed] using horacle.1
+
+/--
+The pinned barrier form of the same oracle: under no checker gap, the unified evader set is
+inhabited exactly when the closed route endpoint fails.
+-/
+theorem cap5F2UnifiedKernelMapEvader_exists_iff_not_routeClosed_of_noGap
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    (emb : PlaneEmbeddingWithBoundary G) (C₀ : G.EdgeColoring Color)
+    (colorings : Set (G.EdgeColoring Color))
+    (p0Inside p4Inside : Bool) (h : data.IsExceptional)
+    (side : V → Prop)
+    [∀ latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge,
+      Decidable ((CAP5ExceptionalAnnulusGeneratorReport.latentNode
+        boundaryEdge side latent).PortalCrosses)]
+    [∀ latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge,
+      Decidable ((CAP5ExceptionalAnnulusGeneratorReport.latentNode
+        boundaryEdge side latent).SideCycles)]
+    [∀ latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge,
+      Decidable ((CAP5ExceptionalAnnulusGeneratorReport.latentNode
+        boundaryEdge side latent).RealizedSeparator)]
+    (hcyclic : CyclicallyFiveEdgeConnected G)
+    (hnoGap : ¬ CAP5PrimitiveCheckerGap boundaryEdge side)
+    (cert : CAP5F2RouteCertificate data emb C₀ colorings p0Inside p4Inside side) :
+    (∃ z : planarBoundaryZeroSubmodule emb, CAP5F2UnifiedKernelMapEvader cert z) ↔
+      ¬ CAP5F2RouteClosed cert := by
+  constructor
+  · intro hevader hclosed
+    have hnoEvader :
+        CAP5F2NoUnifiedKernelMapEvader cert :=
+      (cap5F2NoUnifiedKernelMapEvader_iff_routeClosed_of_noGap
+        emb C₀ colorings p0Inside p4Inside h side hcyclic hnoGap cert).2 hclosed
+    exact hnoEvader hevader
+  · intro hnotClosed
+    have horacle :=
+      budgetMetNoEvader_boundaryZeroControl_oracle_of_noGap
+        emb C₀ colorings cert.subset p0Inside p4Inside h side hcyclic hnoGap
+        cert.classifier cert.redEmitted cert.blueEmitted cert.redRemaining
+        cert.blueRemaining
+    have hevader :=
+      horacle.2 (by simpa [CAP5F2RouteClosed] using hnotClosed)
+    simpa [CAP5F2UnifiedKernelMapEvader] using hevader
+
 /-- The geometric repair surfaces already ruled out in the closed primitive-frontier branch. -/
 def CAP5GeometricRepairBlocked
     {emb : PlaneEmbeddingWithBoundary G} (shell : ClosedWalkExactShell emb)
@@ -549,5 +656,37 @@ theorem cap5F2Route_irreducibleBarrier
     exact
       (CAP5ExceptionalAnnulusGeneratorReport.ofDecidableChecks_missingCheckerEvidenceLatents_ne_nil_iff_exists_missing_checker_ingredient
         boundaryEdge side).1 (by simpa [report] using hmissingEmpty)
+
+/--
+No-gap form of the top route verdict.  Once exact side data closes the primitive checker
+frontier, the route has only the target/off-target F2 no-evader question and the geometric
+repair obstruction remains blocked.
+-/
+theorem cap5F2Route_irreducibleBarrier_of_noGap
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    {emb : PlaneEmbeddingWithBoundary G} (shell : ClosedWalkExactShell emb)
+    (C₀ : G.EdgeColoring Color) (colorings : Set (G.EdgeColoring Color))
+    (p0Inside p4Inside : Bool) (h : data.IsExceptional)
+    (side : V → Prop)
+    [∀ latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge,
+      Decidable ((CAP5ExceptionalAnnulusGeneratorReport.latentNode
+        boundaryEdge side latent).PortalCrosses)]
+    [∀ latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge,
+      Decidable ((CAP5ExceptionalAnnulusGeneratorReport.latentNode
+        boundaryEdge side latent).SideCycles)]
+    [∀ latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge,
+      Decidable ((CAP5ExceptionalAnnulusGeneratorReport.latentNode
+        boundaryEdge side latent).RealizedSeparator)]
+    (hcyclic : CyclicallyFiveEdgeConnected G)
+    (hnoGap : ¬ CAP5PrimitiveCheckerGap boundaryEdge side)
+    (cert : CAP5F2RouteCertificate data emb C₀ colorings p0Inside p4Inside side) :
+    (CAP5F2NoTargetOffTargetEvader cert ↔ CAP5F2RouteClosed cert) ∧
+      CAP5GeometricRepairBlocked shell data p0Inside p4Inside side := by
+  rcases
+      cap5F2Route_irreducibleBarrier
+        shell C₀ colorings p0Inside p4Inside h side hcyclic cert with
+    hgap | hclosed
+  · exact False.elim (hnoGap hgap)
+  · exact hclosed
 
 end Mettapedia.GraphTheory.FourColor

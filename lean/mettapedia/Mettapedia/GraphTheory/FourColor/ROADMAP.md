@@ -22,7 +22,7 @@ Read these four files first — they are the whole live surface:
 | `Goal.lean` | The target (`Theorem49ShellClaim`), its reduction to four geometric oracles plus a fifth non-geometric algebraic cancellation oracle, and proofs that **all four geometric uniform oracles are false** — including the v23.5 residual/current-boundary lane, whose positive wrapper is fixed-embedding equivalent to the refuted collar-layer surface |
 | `Shells.lean` | Bundled hypothesis packages (`ClosedWalkExactShell`, `SuccessorCycleExactShell`, `ClosedWalkCancellationShell`, …) replacing the historical 8–10-hypothesis telescopes |
 | `Frontier.lean` | The maximal positive and negative results, stated over the bundles as thin wrappers, including detector-based cancellation sufficiency |
-| `CAP5RouteVerdict.lean` | The current CAP5/F2 route verdict: either the executable report returns a concrete primitive portal/cycle checker gap, or the closed-frontier route is exactly the absence of the concrete target/off-target F2 evaders; in that same branch the CAP5/Jordan geometric separator repair is blocked by the cyclic-cut obstruction |
+| `CAP5RouteVerdict.lean` | The current CAP5/F2 route verdict: either the executable report returns a concrete primitive portal/cycle checker gap, or the closed-frontier route is exactly the absence of the concrete target/off-target F2 evaders; it also names the unified emitted-kernel/remaining-map evader and proves, under no primitive gap, that this evader exists exactly when the closed route endpoint fails; in that same branch the CAP5/Jordan geometric separator repair is blocked by the cyclic-cut obstruction |
 
 ## Current status (one paragraph)
 
@@ -258,8 +258,11 @@ checker-gap discharge is impossible because the constant-empty side has no
 selected-side cycle and therefore directly inhabits `CAP5PrimitiveCheckerGap`.
 So the remaining side-condition seam is not a report/latent transport gap; it
 is the need to prove that the actual CAP5 side selected by exact shell data has
-the two cycle witnesses and no primitive checker gap.  The unified F2
-target/off-target evader set remains undecided.
+the two cycle witnesses and no primitive checker gap.  The surviving algebraic
+barrier is now named directly: `CAP5F2UnifiedKernelMapEvader` is the unified
+emitted-kernel/remaining-map obstruction, and under no primitive checker gap
+Lean proves `CAP5F2NoUnifiedKernelMapEvader` iff `CAP5F2RouteClosed`, while
+existence of such an evader is equivalent to failure of that closed endpoint.
 
 The next target-level corollary turns finite dimension into an explicit fork
 test for exact CAP5 data.  In Lean,
