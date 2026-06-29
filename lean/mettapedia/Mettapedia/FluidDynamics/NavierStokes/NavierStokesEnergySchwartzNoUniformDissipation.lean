@@ -31,6 +31,32 @@ namespace SchwartzConcreteNavierStokesSolution
 
 variable {ν : ℝ} (S : SchwartzConcreteNavierStokesSolution ν)
 
+/-- Any nonzero value in a Schwartz velocity slice gives strictly positive
+normalized kinetic energy at that time. -/
+theorem normalizedKineticEnergy_pos_of_velocity_ne_zero
+    {t : NSTime} {x : NSSpace} (hne : S.velocity t x ≠ 0) :
+    0 < normalizedKineticEnergy S.velocity t := by
+  have hkin_nonneg : 0 ≤ kineticEnergyAt S.velocity t :=
+    kineticEnergyAt_nonneg S.velocity t
+  have hkin_ne : kineticEnergyAt S.velocity t ≠ 0 := by
+    intro hzero
+    have hvelzero :
+        S.velocity t x = 0 :=
+      S.velocity_eq_zero_of_kineticEnergyAt_eq_zero hzero x
+    exact hne hvelzero
+  have hkin_pos : 0 < kineticEnergyAt S.velocity t :=
+    lt_of_le_of_ne hkin_nonneg (Ne.symm hkin_ne)
+  rw [normalizedKineticEnergy]
+  nlinarith
+
+/-- Existential form of positive normalized kinetic energy on a nonzero
+Schwartz velocity slice. -/
+theorem normalizedKineticEnergy_pos_of_exists_velocity_ne_zero
+    {t : NSTime} (hne : ∃ x : NSSpace, S.velocity t x ≠ 0) :
+    0 < normalizedKineticEnergy S.velocity t := by
+  rcases hne with ⟨x, hx⟩
+  exact S.normalizedKineticEnergy_pos_of_velocity_ne_zero hx
+
 /-- A bounded whole-time slice-Schwartz concrete solution cannot keep its
 corrected dissipation rate uniformly above a positive constant on a whole past
 ray. -/
@@ -135,6 +161,38 @@ theorem exists_past_nonzero_with_small_positive_coordinateEnergyDissipationRate
     S.coordinateEnergyDissipationRate_pos_of_exists_velocity_ne_zero hν hne
   exact ⟨t, htT, hne, hpos, hlt⟩
 
+/-- A positive whole-past spectral/Poincare floor is impossible before any
+nonzero endpoint.  The floor would turn the positive endpoint energy into a
+uniform positive corrected-dissipation gap on the whole past ray. -/
+theorem not_forall_past_coordinateEnergyDissipationRate_ge_mul_normalizedKineticEnergy
+    (hν : 0 ≤ ν) {lam T : NSTime} (hlam : 0 < lam)
+    (hneT : ∃ xT : NSSpace, S.velocity T xT ≠ 0) :
+    ¬ ∀ t : NSTime, t ≤ T →
+      lam * normalizedKineticEnergy S.velocity t ≤
+        coordinateEnergyDissipationRate S.velocity ν t := by
+  have hET :
+      0 < normalizedKineticEnergy S.velocity T :=
+    S.normalizedKineticEnergy_pos_of_exists_velocity_ne_zero hneT
+  let κ : NSTime := lam * normalizedKineticEnergy S.velocity T
+  have hκ : 0 < κ := by
+    dsimp [κ]
+    exact mul_pos hlam hET
+  intro hfloor
+  have hgap :
+      ∀ t : NSTime, t ≤ T →
+        κ ≤ coordinateEnergyDissipationRate S.velocity ν t := by
+    intro t ht
+    have henergy :
+        normalizedKineticEnergy S.velocity T ≤
+          normalizedKineticEnergy S.velocity t :=
+      S.normalizedKineticEnergy_antitone hν ht
+    have hmul :
+        lam * normalizedKineticEnergy S.velocity T ≤
+          lam * normalizedKineticEnergy S.velocity t :=
+      mul_le_mul_of_nonneg_left henergy hlam.le
+    exact le_trans hmul (hfloor t ht)
+  exact (S.not_forall_past_coordinateEnergyDissipationRate_ge hκ) hgap
+
 end SchwartzConcreteNavierStokesSolution
 
 namespace NonzeroSchwartzConcreteNavierStokesSolution
@@ -181,6 +239,26 @@ theorem stokesFlow_noUniformPastDissipation_packet
     ⟨S.nonzeroStokesFlowKernel hconv hpressure,
       S.exists_nonzero_endpoint_with_arbitrarily_small_past_dissipation hν⟩
 
+/-- Exact Stokes-flow specialization of the spectral-floor obstruction: no
+positive-viscosity nonzero Stokes candidate can keep a positive Poincare-style
+floor `lambda * energy <= dissipation` on the whole past ray of a nonzero
+endpoint. -/
+theorem stokesFlow_noPastSpectralFloor_packet
+    (hν : 0 < ν)
+    (hconv : ∀ t x, spatialConvection S.velocity t x = 0)
+    (hpressure : ∀ t x, spatialPressureGradient S.pressure t x = 0)
+    {lam T : NSTime} (hlam : 0 < lam)
+    (hneT : ∃ xT : NSSpace, S.velocity T xT ≠ 0) :
+    NonzeroSchwartzStokesFlowKernel ν S.velocity S.pressure ∧
+      ¬ ∀ t : NSTime, t ≤ T →
+        lam * normalizedKineticEnergy S.velocity t ≤
+          coordinateEnergyDissipationRate S.velocity ν t := by
+  exact
+    ⟨S.nonzeroStokesFlowKernel hconv hpressure,
+      S.toSchwartzConcreteNavierStokesSolution
+        |>.not_forall_past_coordinateEnergyDissipationRate_ge_mul_normalizedKineticEnergy
+          hν.le hlam hneT⟩
+
 end NonzeroSchwartzConcreteNavierStokesSolution
 
 /-- Global no-go form for uniform past dissipation gaps in the nonzero
@@ -195,6 +273,22 @@ theorem not_exists_nonzeroSchwartzConcreteSolution_uniform_past_dissipation_gap
   exact
     (S.toSchwartzConcreteNavierStokesSolution
       |>.not_forall_past_coordinateEnergyDissipationRate_ge hκ) hgap
+
+/-- Global no-go form for positive Poincare-style past spectral floors in the
+nonzero slice-Schwartz interface. -/
+theorem not_exists_nonzeroSchwartzConcreteSolution_past_spectral_floor
+    {ν lam : ℝ} (hν : 0 ≤ ν) (hlam : 0 < lam) :
+    ¬ ∃ S : NonzeroSchwartzConcreteNavierStokesSolution ν,
+      ∃ T : NSTime,
+        (∃ xT : NSSpace, S.velocity T xT ≠ 0) ∧
+          ∀ t : NSTime, t ≤ T →
+            lam * normalizedKineticEnergy S.velocity t ≤
+              coordinateEnergyDissipationRate S.velocity ν t := by
+  rintro ⟨S, T, hneT, hfloor⟩
+  exact
+    (S.toSchwartzConcreteNavierStokesSolution
+      |>.not_forall_past_coordinateEnergyDissipationRate_ge_mul_normalizedKineticEnergy
+        hν hlam hneT) hfloor
 
 end NavierStokes
 end FluidDynamics
