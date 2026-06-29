@@ -47,6 +47,17 @@ theorem eventually_right_lt_of_hasDerivAt_lt_zero
     simpa [g] using hnum
   simpa [g, sub_lt_iff_lt_add] using hg
 
+/-- A right-neighborhood strict drop gives an actual strict-drop sample in
+every positive right interval. -/
+theorem exists_right_drop_sample_of_eventually_right_lt
+    {f : ℝ → ℝ} {t ε : ℝ}
+    (hdrop : ∀ᶠ s in 𝓝[>] t, f s < f t) (hε : 0 < ε) :
+    ∃ s, t < s ∧ s < t + ε ∧ f s < f t := by
+  have hinterval : Set.Ioo t (t + ε) ∈ 𝓝[>] t := by
+    exact Ioo_mem_nhdsGT (by linarith)
+  rcases (hdrop.and hinterval).exists with ⟨s, hlt, hsinterval⟩
+  exact ⟨s, hsinterval.1, hsinterval.2, hlt⟩
+
 namespace SchwartzConcreteNavierStokesSolution
 
 variable {ν : ℝ} (S : SchwartzConcreteNavierStokesSolution ν)
@@ -198,6 +209,20 @@ theorem normalizedKineticEnergy_eventually_right_lt_of_exists_velocity_ne_zero
     S.normalizedKineticEnergy_derivative_lt_zero_of_exists_velocity_ne_zero
       hν hne hidentity
   exact eventually_right_lt_of_hasDerivAt_lt_zero hidentity hlt
+
+/-- Sampled form of the immediate energy-drop gate: every positive right
+interval contains an actual later time with strictly smaller normalized kinetic
+energy. -/
+theorem exists_normalizedKineticEnergy_right_drop_sample_of_exists_velocity_ne_zero
+    (hν : 0 < ν) {t ε : NSTime}
+    (hne : ∃ x : NSSpace, S.velocity t x ≠ 0) (hε : 0 < ε) :
+    ∃ s, t < s ∧ s < t + ε ∧
+      normalizedKineticEnergy S.velocity s <
+        normalizedKineticEnergy S.velocity t :=
+  exists_right_drop_sample_of_eventually_right_lt
+    (S.normalizedKineticEnergy_eventually_right_lt_of_exists_velocity_ne_zero
+      hν hne)
+    hε
 
 /-- Zero normalized-energy derivative at every time is rigid at positive
 viscosity: an ordinary slice-Schwartz concrete solution satisfying this
@@ -537,6 +562,17 @@ theorem not_eventually_right_normalizedKineticEnergy_nondecreasing_at_nonzero_of
     exact not_lt_of_ge hle hlt
   exact (by infer_instance : (𝓝[>] t).NeBot).ne
     (Filter.eventually_false_iff_eq_bot.mp hfalse)
+
+/-- At a positive-viscosity nonzero witness, every positive right interval
+contains an actual lower normalized-energy sample. -/
+theorem exists_normalizedKineticEnergy_right_drop_sample_at_nonzero_of_pos_viscosity
+    (hν : 0 < ν) {t ε : NSTime} {x : NSSpace}
+    (hne : S.velocity t x ≠ 0) (hε : 0 < ε) :
+    ∃ s, t < s ∧ s < t + ε ∧
+      normalizedKineticEnergy S.velocity s <
+        normalizedKineticEnergy S.velocity t :=
+  SchwartzConcreteNavierStokesSolution.exists_normalizedKineticEnergy_right_drop_sample_of_exists_velocity_ne_zero
+    S.toSchwartzConcreteNavierStokesSolution hν ⟨x, hne⟩ hε
 
 end NonzeroSchwartzConcreteNavierStokesSolution
 

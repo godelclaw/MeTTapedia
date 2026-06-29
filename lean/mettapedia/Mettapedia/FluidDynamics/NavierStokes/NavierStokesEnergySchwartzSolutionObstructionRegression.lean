@@ -291,6 +291,28 @@ theorem schwartz_solution_energy_eventually_right_lt_of_nonzero_slice_regression
     S.normalizedKineticEnergy_eventually_right_lt_of_exists_velocity_ne_zero
       hν hne
 
+theorem schwartz_solution_energy_right_drop_sample_of_nonzero_slice_regression
+    {ν : ℝ} (hν : 0 < ν) (S : SchwartzConcreteNavierStokesSolution ν)
+    {t ε : NSTime}
+    (hne : ∃ x : NSSpace, S.velocity t x ≠ 0) (hε : 0 < ε) :
+    ∃ s, t < s ∧ s < t + ε ∧
+      normalizedKineticEnergy S.velocity s <
+        normalizedKineticEnergy S.velocity t := by
+  exact
+    S.exists_normalizedKineticEnergy_right_drop_sample_of_exists_velocity_ne_zero
+      hν hne hε
+
+theorem nonzero_schwartz_solution_energy_right_drop_sample_at_nonzero_regression
+    {ν : ℝ} (hν : 0 < ν) (S : NonzeroSchwartzConcreteNavierStokesSolution ν)
+    {t ε : NSTime} {x : NSSpace}
+    (hne : S.velocity t x ≠ 0) (hε : 0 < ε) :
+    ∃ s, t < s ∧ s < t + ε ∧
+      normalizedKineticEnergy S.velocity s <
+        normalizedKineticEnergy S.velocity t := by
+  exact
+    S.exists_normalizedKineticEnergy_right_drop_sample_at_nonzero_of_pos_viscosity
+      hν hne hε
+
 theorem nonzero_schwartz_solution_exists_strict_energy_identity_regression
     {ν : ℝ} (hν : 0 < ν) (S : NonzeroSchwartzConcreteNavierStokesSolution ν) :
     ∃ t : NSTime,
