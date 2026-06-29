@@ -48,6 +48,32 @@ theorem stokes_positive_viscosity_profile_gap_obstruction_regression
     S.stokesFlow_positiveViscosity_profileGapObstruction_packet
       hν hconv hpressure hlam hneT
 
+theorem stokes_endpoint_strict_energy_low_rayleigh_regression
+    {ν : ℝ} (hν : 0 < ν)
+    (S : NonzeroSchwartzConcreteNavierStokesSolution ν)
+    (hconv : ∀ t x, spatialConvection S.velocity t x = 0)
+    (hpressure : ∀ t x, spatialPressureGradient S.pressure t x = 0)
+    {T : NSTime} (hneT : ∃ xT : NSSpace, S.velocity T xT ≠ 0) :
+    NonzeroSchwartzStokesFlowKernel ν S.velocity S.pressure ∧
+      SchwartzNonzeroTimeSupportKernel ν S.velocity S.pressure ∧
+      (∀ {s t : NSTime}, s < t → t ≤ T →
+        normalizedKineticEnergy S.velocity t <
+          normalizedKineticEnergy S.velocity s) ∧
+      ∀ lam : NSTime, 0 < lam →
+        ∃ t : NSTime,
+          t ≤ T ∧
+            (∃ x : NSSpace, S.velocity t x ≠ 0) ∧
+              0 < coordinateEnstrophyAt S.velocity t ∧
+                0 < normalizedKineticEnergy S.velocity t ∧
+                  0 <
+                    coordinateEnstrophyAt S.velocity t /
+                      normalizedKineticEnergy S.velocity t ∧
+                    coordinateEnstrophyAt S.velocity t /
+                        normalizedKineticEnergy S.velocity t < lam := by
+  exact
+    S.stokesFlow_endpointStrictEnergy_and_smallPastCoordinateEnstrophyRatio_packet
+      hν hconv hpressure hneT
+
 theorem not_exists_stokes_coordinate_enstrophy_floor_regression
     {ν lam : ℝ} (hν : 0 < ν) (hlam : 0 < lam) :
     ¬ ∃ S : NonzeroSchwartzConcreteNavierStokesSolution ν,

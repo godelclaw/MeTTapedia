@@ -218,8 +218,8 @@ def currentNavierRoadmap : List NavierRoadmapEntry :=
     { stage := .nonzeroEnergyKernel
       proofNodeId := "navier.energy.nonzero-schwartz-no-uniform-past-dissipation"
       status := .checked
-      truthValue := ⟨95, 91⟩
-      obligation := "Use the checked no-uniform-past-dissipation, no-past-spectral-floor, past dissipation-per-energy collapse, corrected-dissipation Rayleigh collapse, spatial Rayleigh collapse, Stokes profile-gap, and exact Stokes Rayleigh-equality obstruction packets to reject bounded eternal positive-viscosity candidates certified by a uniform positive past dissipation gap, a positive Poincare/spectral floor of corrected dissipation or coordinate enstrophy over normalized energy, a positive whole-past Rayleigh-quotient floor, or an exact positive whole-past Stokes spatial Rayleigh equality. Future canary work must construct the exact nonzero evolution while allowing arbitrarily small past spatial Rayleigh-quotient samples, or prove a stronger structural emptiness theorem for the Stokes/pressure-closure class." },
+      truthValue := ⟨96, 91⟩
+      obligation := "Use the checked no-uniform-past-dissipation, no-past-spectral-floor, past dissipation-per-energy collapse, corrected-dissipation Rayleigh collapse, spatial Rayleigh collapse, Stokes profile-gap, endpoint strict-energy/low-Rayleigh, and exact Stokes Rayleigh-equality obstruction packets to reject bounded eternal positive-viscosity candidates certified by a uniform positive past dissipation gap, a positive Poincare/spectral floor of corrected dissipation or coordinate enstrophy over normalized energy, a positive whole-past Rayleigh-quotient floor, an endpoint ray avoiding arbitrarily small positive spatial Rayleigh samples, or an exact positive whole-past Stokes spatial Rayleigh equality. Future canary work must construct the exact nonzero evolution while allowing arbitrarily small past spatial Rayleigh-quotient samples before every nonzero endpoint, or prove a stronger structural emptiness theorem for the Stokes/pressure-closure class." },
     { stage := .nonzeroEnergyKernel
       proofNodeId := "navier.energy.nonzero-schwartz-canary"
       status := .openGoal
@@ -460,9 +460,9 @@ theorem currentNavierRoadmap_records_nonzero_schwartz_kernel_and_open_canary :
       ({ stage := NavierRoadmapStage.nonzeroEnergyKernel
          proofNodeId := "navier.energy.nonzero-schwartz-no-uniform-past-dissipation"
          status := .checked
-         truthValue := ⟨95, 91⟩
+         truthValue := ⟨96, 91⟩
          obligation :=
-          "Use the checked no-uniform-past-dissipation, no-past-spectral-floor, past dissipation-per-energy collapse, corrected-dissipation Rayleigh collapse, spatial Rayleigh collapse, Stokes profile-gap, and exact Stokes Rayleigh-equality obstruction packets to reject bounded eternal positive-viscosity candidates certified by a uniform positive past dissipation gap, a positive Poincare/spectral floor of corrected dissipation or coordinate enstrophy over normalized energy, a positive whole-past Rayleigh-quotient floor, or an exact positive whole-past Stokes spatial Rayleigh equality. Future canary work must construct the exact nonzero evolution while allowing arbitrarily small past spatial Rayleigh-quotient samples, or prove a stronger structural emptiness theorem for the Stokes/pressure-closure class." } :
+          "Use the checked no-uniform-past-dissipation, no-past-spectral-floor, past dissipation-per-energy collapse, corrected-dissipation Rayleigh collapse, spatial Rayleigh collapse, Stokes profile-gap, endpoint strict-energy/low-Rayleigh, and exact Stokes Rayleigh-equality obstruction packets to reject bounded eternal positive-viscosity candidates certified by a uniform positive past dissipation gap, a positive Poincare/spectral floor of corrected dissipation or coordinate enstrophy over normalized energy, a positive whole-past Rayleigh-quotient floor, an endpoint ray avoiding arbitrarily small positive spatial Rayleigh samples, or an exact positive whole-past Stokes spatial Rayleigh equality. Future canary work must construct the exact nonzero evolution while allowing arbitrarily small past spatial Rayleigh-quotient samples before every nonzero endpoint, or prove a stronger structural emptiness theorem for the Stokes/pressure-closure class." } :
         NavierRoadmapEntry) ∈ currentNavierRoadmap ∧
       navierNonzeroSchwartzEnergyKernelNode.status = .checked ∧
       navierNonzeroSchwartzLineInvariantObstructionNode.status = .checked ∧
