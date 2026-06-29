@@ -51,14 +51,19 @@ theorem BKMContinuation_reduced_to_analytic_components_regression :
       BKMResidualCurlExpansionAlgebraClosed ∧
         BKMStandardVorticityGrowthEstimateClosed ∧
           BKMVorticityPointwiseEnstrophyDerivativeClosed ∧
-            BKMVorticityRawBalanceFromStandardEquationClosed ∧
-              BKMVorticityTransportCancellationAlgebraClosed ∧
-                BKMVorticityTransportCancellationSchwartzClosed ∧
-                  BKMVorticityDiffusionIntegrationByPartsSchwartzClosed ∧
-                    BKMVorticityFiniteTimeWitnessSchwartzSliceAprioriClosed ∧
-                      BKMVorticityFiniteTimeWitnessVelocityVorticitySchwartzAprioriClosed ∧
-                        BKMVorticityFiniteTimeWitnessVelocitySchwartzAprioriClosed ∧
-                          BKMVorticityEnstrophyBalanceAssemblyClosed ∧
+            BKMVorticityRawBalanceIntegrabilitySchwartzClosed ∧
+              BKMVorticityScalarSchwartzTimePairingDerivativeClosed ∧
+                BKMVorticityTwoProfileSchwartzTimePairingDerivativeClosed ∧
+                  BKMVorticityRawBalanceFromStandardEquationClosed ∧
+                    BKMVorticityTransportCancellationAlgebraClosed ∧
+                      BKMVorticityTransportCancellationSchwartzClosed ∧
+                        BKMVorticityDiffusionIntegrationByPartsSchwartzClosed ∧
+                          BKMVorticityFiniteTimeWitnessVelocitySchwartzEnstrophyIntegrableClosed ∧
+                            BKMVorticityFiniteTimeWitnessVelocitySchwartzRawBalanceIntegrabilityClosed ∧
+                              BKMVorticityFiniteTimeWitnessSchwartzSliceAprioriClosed ∧
+                                BKMVorticityFiniteTimeWitnessVelocityVorticitySchwartzAprioriClosed ∧
+                                  BKMVorticityFiniteTimeWitnessVelocitySchwartzAprioriClosed ∧
+                                    BKMVorticityEnstrophyBalanceAssemblyClosed ∧
                             BKMVorticityEnstrophyAprioriEstimateClosed ∧
                               BKMVorticityEnstrophyGradientGrowthClosed ∧
                                 BKMVorticityEnstrophyLogSobolevGrowthClosed ∧

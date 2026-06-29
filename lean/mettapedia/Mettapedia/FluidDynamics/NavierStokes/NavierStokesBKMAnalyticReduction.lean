@@ -85,14 +85,19 @@ theorem BKMContinuation_reduced_to_single_analytic_lemma :
       BKMResidualCurlExpansionAlgebraClosed ∧
         BKMStandardVorticityGrowthEstimateClosed ∧
           BKMVorticityPointwiseEnstrophyDerivativeClosed ∧
-            BKMVorticityRawBalanceFromStandardEquationClosed ∧
-              BKMVorticityTransportCancellationAlgebraClosed ∧
-                BKMVorticityTransportCancellationSchwartzClosed ∧
-                  BKMVorticityDiffusionIntegrationByPartsSchwartzClosed ∧
-                    BKMVorticityFiniteTimeWitnessSchwartzSliceAprioriClosed ∧
-                      BKMVorticityFiniteTimeWitnessVelocityVorticitySchwartzAprioriClosed ∧
-                        BKMVorticityFiniteTimeWitnessVelocitySchwartzAprioriClosed ∧
-                          BKMVorticityEnstrophyBalanceAssemblyClosed ∧
+            BKMVorticityRawBalanceIntegrabilitySchwartzClosed ∧
+              BKMVorticityScalarSchwartzTimePairingDerivativeClosed ∧
+                BKMVorticityTwoProfileSchwartzTimePairingDerivativeClosed ∧
+                  BKMVorticityRawBalanceFromStandardEquationClosed ∧
+                    BKMVorticityTransportCancellationAlgebraClosed ∧
+                      BKMVorticityTransportCancellationSchwartzClosed ∧
+                        BKMVorticityDiffusionIntegrationByPartsSchwartzClosed ∧
+                          BKMVorticityFiniteTimeWitnessVelocitySchwartzEnstrophyIntegrableClosed ∧
+                            BKMVorticityFiniteTimeWitnessVelocitySchwartzRawBalanceIntegrabilityClosed ∧
+                              BKMVorticityFiniteTimeWitnessSchwartzSliceAprioriClosed ∧
+                                BKMVorticityFiniteTimeWitnessVelocityVorticitySchwartzAprioriClosed ∧
+                                  BKMVorticityFiniteTimeWitnessVelocitySchwartzAprioriClosed ∧
+                                    BKMVorticityEnstrophyBalanceAssemblyClosed ∧
                               BKMVorticityEnstrophyAprioriEstimateClosed ∧
                                 BKMVorticityEnstrophyGradientGrowthClosed ∧
                                 BKMVorticityEnstrophyLogSobolevGrowthClosed ∧
@@ -109,10 +114,15 @@ theorem BKMContinuation_reduced_to_single_analytic_lemma :
       BKMResidualCurlExpansionAlgebraClosed_proved,
       BKMStandardVorticityGrowthEstimateClosed_proved,
       BKMVorticityPointwiseEnstrophyDerivativeClosed_proved,
+      BKMVorticityRawBalanceIntegrabilitySchwartzClosed_proved,
+      BKMVorticityScalarSchwartzTimePairingDerivativeClosed_proved,
+      BKMVorticityTwoProfileSchwartzTimePairingDerivativeClosed_proved,
       BKMVorticityRawBalanceFromStandardEquationClosed_proved,
       BKMVorticityTransportCancellationAlgebraClosed_proved,
       BKMVorticityTransportCancellationSchwartzClosed_proved,
       BKMVorticityDiffusionIntegrationByPartsSchwartzClosed_proved,
+      BKMVorticityFiniteTimeWitnessVelocitySchwartzEnstrophyIntegrableClosed_proved,
+      BKMVorticityFiniteTimeWitnessVelocitySchwartzRawBalanceIntegrabilityClosed_proved,
       BKMVorticityFiniteTimeWitnessSchwartzSliceAprioriClosed_proved,
       BKMVorticityFiniteTimeWitnessVelocityVorticitySchwartzAprioriClosed_proved,
       BKMVorticityFiniteTimeWitnessVelocitySchwartzAprioriClosed_proved,

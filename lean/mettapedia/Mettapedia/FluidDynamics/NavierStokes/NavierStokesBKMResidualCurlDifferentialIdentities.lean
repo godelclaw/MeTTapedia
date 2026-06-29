@@ -2017,13 +2017,17 @@ theorem BKMContinuation_reduced_to_affineLogHighNorm_after_residualCurl :
 vorticity-balance integrability from velocity Schwartz slices. -/
 theorem BKMContinuation_reduced_to_affineLogHighNorm_after_residualCurl_integrability :
     BKMResidualCurlExpansionDefectVanishes ∧
-      BKMVorticityFiniteTimeWitnessResidualCurlVelocitySchwartzAprioriIntegrabilityClosed ∧
-        BKMVorticityFiniteTimeWitnessResidualCurlVelocitySchwartzAffineLogGrowthIntegrabilityClosed ∧
-          (BKMLogSobolevAffinePointwiseFromEnvelope →
-            BKMHighNormContinuationFromLogControl →
-              ExplicitFiniteEnergyBKMContinuationTargetOnNonnegHorizons) := by
+      BKMVorticityScalarSchwartzTimePairingDerivativeClosed ∧
+        BKMVorticityTwoProfileSchwartzTimePairingDerivativeClosed ∧
+          BKMVorticityFiniteTimeWitnessResidualCurlVelocitySchwartzAprioriIntegrabilityClosed ∧
+            BKMVorticityFiniteTimeWitnessResidualCurlVelocitySchwartzAffineLogGrowthIntegrabilityClosed ∧
+              (BKMLogSobolevAffinePointwiseFromEnvelope →
+                BKMHighNormContinuationFromLogControl →
+                  ExplicitFiniteEnergyBKMContinuationTargetOnNonnegHorizons) := by
   exact
     ⟨BKMResidualCurlExpansionDefectVanishes_proved,
+      BKMVorticityScalarSchwartzTimePairingDerivativeClosed_proved,
+      BKMVorticityTwoProfileSchwartzTimePairingDerivativeClosed_proved,
       BKMVorticityFiniteTimeWitnessResidualCurlVelocitySchwartzAprioriIntegrabilityClosed_proved,
       BKMVorticityFiniteTimeWitnessResidualCurlVelocitySchwartzAffineLogGrowthIntegrabilityClosed_proved,
       fun hLog hHigh =>
