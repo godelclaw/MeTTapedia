@@ -34,17 +34,19 @@ theorem bkm_continuation_reduced_to_single_analytic_lemma_regression :
                   BKMVorticityDiffusionIntegrationByPartsSchwartzClosed ∧
                     BKMVorticityFiniteTimeWitnessSchwartzSliceAprioriClosed ∧
                       BKMVorticityFiniteTimeWitnessVelocityVorticitySchwartzAprioriClosed ∧
-                        BKMVorticityEnstrophyBalanceAssemblyClosed ∧
-                          BKMVorticityEnstrophyAprioriEstimateClosed ∧
-                            BKMVorticityEnstrophyGradientGrowthClosed ∧
-                              BKMVorticityEnstrophyLogSobolevGrowthClosed ∧
-                                BKMVorticityEnstrophyAffineLogGrowthClosed ∧
-                                  BKMVorticityFiniteTimeWitnessAffineLogGrowthClosed ∧
-                                    BKMVorticityStretchingAffineLogIntegralBoundClosed ∧
-                                      BKMLogSobolevAffineReductionClosed ∧
-                                        BKMLogSobolevGrowthEstimateClosed ∧
-                                          (BKMAnalyticContinuationLemma →
-                                            ExplicitFiniteEnergyBKMContinuationTargetOnNonnegHorizons) :=
+                        BKMVorticityFiniteTimeWitnessVelocitySchwartzAprioriClosed ∧
+                          BKMVorticityEnstrophyBalanceAssemblyClosed ∧
+                            BKMVorticityEnstrophyAprioriEstimateClosed ∧
+                              BKMVorticityEnstrophyGradientGrowthClosed ∧
+                                BKMVorticityEnstrophyLogSobolevGrowthClosed ∧
+                                  BKMVorticityEnstrophyAffineLogGrowthClosed ∧
+                                    BKMVorticityFiniteTimeWitnessAffineLogGrowthClosed ∧
+                                      BKMVorticityFiniteTimeWitnessVelocitySchwartzAffineLogGrowthClosed ∧
+                                        BKMVorticityStretchingAffineLogIntegralBoundClosed ∧
+                                          BKMLogSobolevAffineReductionClosed ∧
+                                            BKMLogSobolevGrowthEstimateClosed ∧
+                                              (BKMAnalyticContinuationLemma →
+                                                ExplicitFiniteEnergyBKMContinuationTargetOnNonnegHorizons) :=
   BKMContinuation_reduced_to_single_analytic_lemma
 
 end Regression

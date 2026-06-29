@@ -196,6 +196,23 @@ theorem bkm_finite_time_witness_velocity_vorticity_schwartz_transport_regression
   vorticityTransportCancellationAt_of_finiteTimeWitnessVelocityVorticitySchwartzSlices
     W hVelocitySlices hVorticitySlices ht0 htT
 
+theorem bkm_finite_time_witness_vorticity_schwartz_slices_from_velocity_regression
+    {ν : ℝ} {u₀ : NSInitialVelocity} {T : ℝ}
+    (W : ExplicitFiniteTimeRegularityWitness ν u₀ T)
+    (hVelocitySlices : finiteTimeWitnessVelocitySchwartzSlices W) :
+    finiteTimeWitnessVorticitySchwartzSlices W :=
+  finiteTimeWitnessVorticitySchwartzSlices_of_velocitySchwartzSlices
+    W hVelocitySlices
+
+theorem bkm_finite_time_witness_velocity_schwartz_transport_regression
+    {ν : ℝ} {u₀ : NSInitialVelocity} {T : ℝ}
+    (W : ExplicitFiniteTimeRegularityWitness ν u₀ T)
+    (hVelocitySlices : finiteTimeWitnessVelocitySchwartzSlices W)
+    {t : NSTime} (ht0 : 0 ≤ t) (htT : t ≤ T) :
+    vorticityTransportCancellationAt W.velocity t :=
+  vorticityTransportCancellationAt_of_finiteTimeWitnessVelocitySchwartzSlices
+    W hVelocitySlices ht0 htT
+
 theorem bkm_finite_time_witness_vorticity_schwartz_slice_balance_regression
     {ν : ℝ} {u₀ : NSInitialVelocity} {T : ℝ}
     (W : ExplicitFiniteTimeRegularityWitness ν u₀ T)
@@ -251,6 +268,32 @@ theorem bkm_finite_time_witness_velocity_vorticity_schwartz_slice_apriori_regres
 theorem bkm_finite_time_witness_velocity_vorticity_schwartz_slice_apriori_closed_regression :
     BKMVorticityFiniteTimeWitnessVelocityVorticitySchwartzAprioriClosed :=
   BKMVorticityFiniteTimeWitnessVelocityVorticitySchwartzAprioriClosed_proved
+
+theorem bkm_finite_time_witness_velocity_schwartz_slice_balance_regression
+    {ν : ℝ} {u₀ : NSInitialVelocity} {T : ℝ}
+    (W : ExplicitFiniteTimeRegularityWitness ν u₀ T)
+    (hVelocitySlices : finiteTimeWitnessVelocitySchwartzSlices W)
+    {t : NSTime}
+    (hRaw : vorticityEnstrophyRawBalanceAt ν W.velocity t)
+    (ht0 : 0 ≤ t) (htT : t ≤ T) :
+    vorticityEnstrophyBalanceAt ν W.velocity t :=
+  vorticityEnstrophyBalanceAt_of_rawBalance_finiteTimeWitnessVelocitySchwartzSlices
+    W hVelocitySlices hRaw ht0 htT
+
+theorem bkm_finite_time_witness_velocity_schwartz_slice_apriori_regression
+    {ν : ℝ} (hν : 0 ≤ ν) {u₀ : NSInitialVelocity} {T : ℝ}
+    (W : ExplicitFiniteTimeRegularityWitness ν u₀ T)
+    (hVelocitySlices : finiteTimeWitnessVelocitySchwartzSlices W)
+    {t : NSTime}
+    (hRaw : vorticityEnstrophyRawBalanceAt ν W.velocity t)
+    (ht0 : 0 ≤ t) (htT : t ≤ T) :
+    vorticityEnstrophyStretchingControlledAt ν W.velocity t :=
+  vorticityEnstrophyStretchingControlledAt_of_rawBalance_finiteTimeWitnessVelocitySchwartzSlices
+    hν W hVelocitySlices hRaw ht0 htT
+
+theorem bkm_finite_time_witness_velocity_schwartz_slice_apriori_closed_regression :
+    BKMVorticityFiniteTimeWitnessVelocitySchwartzAprioriClosed :=
+  BKMVorticityFiniteTimeWitnessVelocitySchwartzAprioriClosed_proved
 
 theorem bkm_vorticity_enstrophy_balance_assembly_closed_regression :
     BKMVorticityEnstrophyBalanceAssemblyClosed :=
