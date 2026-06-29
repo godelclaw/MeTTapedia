@@ -114,6 +114,46 @@ theorem bkm_vorticity_transport_cancellation_algebra_closed_regression :
     BKMVorticityTransportCancellationAlgebraClosed :=
   BKMVorticityTransportCancellationAlgebraClosed_proved
 
+theorem bkm_schwartz_scalar_directional_derivative_transport_zero_regression
+    (u : NSVelocityField) (t : NSTime)
+    (v : 𝓢(NSSpace, NSSpace)) (φ : 𝓢(NSSpace, ℝ))
+    (hslice : ∀ x, u t x = v x)
+    (hdiv : ∀ x, spatialDivergence u t x = 0) :
+    ∫ x, fderiv ℝ (φ : NSSpace → ℝ) x (u t x) ∂volume = 0 :=
+  integral_schwartzScalar_directionalDerivative_of_schwartzVectorSlice_spatialDivergence_zero
+    u t v φ hslice hdiv
+
+theorem bkm_vorticity_spatial_derivative_represented_from_schwartz_slice_regression
+    (u : NSVelocityField) (t : NSTime) (ω : 𝓢(NSSpace, NSSpace))
+    (hω : ∀ x, spatialVorticity u t x = ω x) :
+    ∀ x, vorticitySpatialDerivativeRepresentedAt u t x :=
+  vorticitySpatialDerivativeRepresentedAt_of_schwartzVorticitySlice
+    u t ω hω
+
+theorem bkm_normalized_vorticity_enstrophy_transport_zero_schwartz_regression
+    (u : NSVelocityField) (t : NSTime)
+    (v ω : 𝓢(NSSpace, NSSpace))
+    (hu : ∀ x, u t x = v x)
+    (hω : ∀ x, spatialVorticity u t x = ω x)
+    (hdiv : ∀ x, spatialDivergence u t x = 0) :
+    normalizedVorticityEnstrophyDensityTransportIntegral u t = 0 :=
+  normalizedVorticityEnstrophyDensityTransportIntegral_eq_zero_of_schwartzVelocitySlice_schwartzVorticitySlice_spatialDivergence_zero
+    u t v ω hu hω hdiv
+
+theorem bkm_vorticity_transport_cancellation_schwartz_slice_regression
+    (u : NSVelocityField) (t : NSTime)
+    (v ω : 𝓢(NSSpace, NSSpace))
+    (hu : ∀ x, u t x = v x)
+    (hω : ∀ x, spatialVorticity u t x = ω x)
+    (hdiv : ∀ x, spatialDivergence u t x = 0) :
+    vorticityTransportCancellationAt u t :=
+  vorticityTransportCancellationAt_of_schwartzVelocitySlice_schwartzVorticitySlice_spatialDivergence_zero
+    u t v ω hu hω hdiv
+
+theorem bkm_vorticity_transport_cancellation_schwartz_closed_regression :
+    BKMVorticityTransportCancellationSchwartzClosed :=
+  BKMVorticityTransportCancellationSchwartzClosed_proved
+
 theorem bkm_vorticity_diffusion_dissipation_density_coordinate_regression
     (u : NSVelocityField) (t : NSTime) :
     vorticityDiffusionDissipationDensity u t =

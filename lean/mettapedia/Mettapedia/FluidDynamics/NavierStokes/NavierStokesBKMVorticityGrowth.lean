@@ -292,6 +292,194 @@ theorem vorticityTransportCancellationAt_of_normalizedDensityTransportIntegral_z
   rw [vorticityTransportPowerIntegral_eq_normalizedDensityTransportIntegral hω,
     hZero]
 
+/-- A scalar Schwartz density transported by a divergence-free Schwartz
+velocity slice has zero spatial integral.  This is the boundary/decay part of
+the BKM transport cancellation step. -/
+theorem integral_schwartzScalar_directionalDerivative_of_schwartzVectorSlice_spatialDivergence_zero
+    (u : NSVelocityField) (t : NSTime)
+    (v : 𝓢(NSSpace, NSSpace)) (φ : 𝓢(NSSpace, ℝ))
+    (hslice : ∀ x, u t x = v x)
+    (hdiv : ∀ x, spatialDivergence u t x = 0) :
+    ∫ x, fderiv ℝ (φ : NSSpace → ℝ) x (u t x) ∂volume = 0 := by
+  let coord : Fin 3 → 𝓢(NSSpace, ℝ) := fun i =>
+    SchwartzMap.bilinLeftCLM
+      (ContinuousLinearMap.apply ℝ ℝ)
+      (g := fun _ : NSSpace => (EuclideanSpace.proj i : NSSpace →L[ℝ] ℝ))
+      (by fun_prop) v
+  have hsliceFun : (fun x : NSSpace => u t x) = (v : NSSpace → NSSpace) :=
+    funext hslice
+  have hCoordEq (i : Fin 3) (x : NSSpace) : coord i x = (v x) i := by
+    simp [coord, SchwartzMap.bilinLeftCLM_apply, ContinuousLinearMap.apply_apply]
+  have hCoordDeriv (i : Fin 3) (x : NSSpace) :
+      (∂_{EuclideanSpace.single i (1 : ℝ)} (coord i)) x =
+        (∂_{EuclideanSpace.single i (1 : ℝ)} v x) i := by
+    have hcoordFun : (coord i : NSSpace → ℝ) = fun y : NSSpace => (v y) i := by
+      funext y
+      simp [coord, SchwartzMap.bilinLeftCLM_apply, ContinuousLinearMap.apply_apply]
+    have hproj :=
+      congrArg
+        (fun L : NSSpace →L[ℝ] ℝ => L (EuclideanSpace.single i (1 : ℝ)))
+        (((EuclideanSpace.proj i : NSSpace →L[ℝ] ℝ).hasFDerivAt.comp x
+          (v.hasFDerivAt x)).fderiv)
+    calc
+      (∂_{EuclideanSpace.single i (1 : ℝ)} (coord i)) x =
+          fderiv ℝ (fun y : NSSpace => (v y) i) x
+            (EuclideanSpace.single i (1 : ℝ)) := by
+        rw [SchwartzMap.lineDerivOp_apply_eq_fderiv, hcoordFun]
+      _ = fderiv ℝ v x (EuclideanSpace.single i (1 : ℝ)) i := by
+        change fderiv ℝ ((fun y : NSSpace => y i) ∘ (v : NSSpace → NSSpace)) x
+            (EuclideanSpace.single i (1 : ℝ)) =
+          fderiv ℝ v x (EuclideanSpace.single i (1 : ℝ)) i
+        simpa [ContinuousLinearMap.comp_apply] using hproj
+      _ = (∂_{EuclideanSpace.single i (1 : ℝ)} v x) i := by
+        rw [SchwartzMap.lineDerivOp_apply_eq_fderiv]
+  have hDirectionalEq :
+      (fun x : NSSpace => fderiv ℝ (φ : NSSpace → ℝ) x (u t x)) =
+        fun x : NSSpace =>
+          ∑ i : Fin 3,
+            coord i x * (∂_{EuclideanSpace.single i (1 : ℝ)} φ) x := by
+    funext x
+    have hVec :
+        v x = ∑ i : Fin 3, coord i x • EuclideanSpace.single i (1 : ℝ) := by
+      ext j
+      change (v x).ofLp j =
+        (∑ i : Fin 3, coord i x • EuclideanSpace.single i (1 : ℝ)).ofLp j
+      fin_cases j <;> rw [Fin.sum_univ_three] <;> simp [hCoordEq]
+    rw [hslice x, hVec, map_sum]
+    refine Finset.sum_congr rfl ?_
+    intro i hi
+    rw [ContinuousLinearMap.map_smul]
+    simp [SchwartzMap.lineDerivOp_apply_eq_fderiv]
+  have hTermIntegrable (i : Fin 3) :
+      Integrable
+        (fun x : NSSpace =>
+          coord i x * (∂_{EuclideanSpace.single i (1 : ℝ)} φ) x) := by
+    refine ((SchwartzMap.pairing
+        (ContinuousLinearMap.mul ℝ ℝ)
+        (coord i)
+        (∂_{EuclideanSpace.single i (1 : ℝ)} φ)).integrable).congr ?_
+    filter_upwards with x
+    rw [SchwartzMap.pairing_apply_apply]
+    rfl
+  have hDivTermIntegrable (i : Fin 3) :
+      Integrable
+        (fun x : NSSpace =>
+          (∂_{EuclideanSpace.single i (1 : ℝ)} (coord i)) x * φ x) := by
+    refine ((SchwartzMap.pairing
+        (ContinuousLinearMap.mul ℝ ℝ)
+        (∂_{EuclideanSpace.single i (1 : ℝ)} (coord i))
+        φ).integrable).congr ?_
+    filter_upwards with x
+    rw [SchwartzMap.pairing_apply_apply]
+    rfl
+  have hDivEq (x : NSSpace) :
+      ∑ i : Fin 3, (∂_{EuclideanSpace.single i (1 : ℝ)} (coord i)) x = 0 := by
+    have hx : spatialDivergence u t x = 0 := hdiv x
+    rw [spatialDivergence, spatialFDeriv, hsliceFun] at hx
+    convert hx using 1
+    refine Finset.sum_congr rfl ?_
+    intro i hi
+    exact hCoordDeriv i x
+  calc
+    ∫ x, fderiv ℝ (φ : NSSpace → ℝ) x (u t x) ∂volume
+        = ∫ x,
+            ∑ i : Fin 3,
+              coord i x * (∂_{EuclideanSpace.single i (1 : ℝ)} φ) x ∂volume := by
+          rw [hDirectionalEq]
+    _ = ∑ i : Fin 3,
+          ∫ x, coord i x * (∂_{EuclideanSpace.single i (1 : ℝ)} φ) x ∂volume := by
+          rw [integral_finsetSum]
+          intro i hi
+          exact hTermIntegrable i
+    _ = ∑ i : Fin 3,
+          -∫ x, (∂_{EuclideanSpace.single i (1 : ℝ)} (coord i)) x * φ x ∂volume := by
+          refine Finset.sum_congr rfl ?_
+          intro i hi
+          rw [SchwartzMap.integral_mul_lineDerivOp_right_eq_neg_left
+            (coord i) φ (EuclideanSpace.single i (1 : ℝ))]
+    _ = -∑ i : Fin 3,
+          ∫ x, (∂_{EuclideanSpace.single i (1 : ℝ)} (coord i)) x * φ x ∂volume := by
+          rw [Finset.sum_neg_distrib]
+    _ = -∫ x,
+          ∑ i : Fin 3,
+            (∂_{EuclideanSpace.single i (1 : ℝ)} (coord i)) x * φ x ∂volume := by
+          congr 1
+          rw [integral_finsetSum]
+          intro i hi
+          exact hDivTermIntegrable i
+    _ = -∫ x, (0 : ℝ) ∂volume := by
+          have hZeroFun :
+              (fun x : NSSpace =>
+                ∑ i : Fin 3,
+                  (∂_{EuclideanSpace.single i (1 : ℝ)} (coord i)) x * φ x) =
+                fun _ : NSSpace => (0 : ℝ) := by
+            funext x
+            rw [← Finset.sum_mul, hDivEq x]
+            simp
+          rw [hZeroFun]
+    _ = 0 := by simp
+
+/-- A Schwartz vorticity slice represents the concrete spatial derivative
+used in the transport algebra. -/
+theorem vorticitySpatialDerivativeRepresentedAt_of_schwartzVorticitySlice
+    (u : NSVelocityField) (t : NSTime) (ω : 𝓢(NSSpace, NSSpace))
+    (hω : ∀ x, spatialVorticity u t x = ω x) :
+    ∀ x, vorticitySpatialDerivativeRepresentedAt u t x := by
+  intro x
+  have hfun : (fun y : NSSpace => spatialVorticity u t y) =
+      (ω : NSSpace → NSSpace) :=
+    funext hω
+  unfold vorticitySpatialDerivativeRepresentedAt spatialFDeriv
+  rw [hfun]
+  exact ω.hasFDerivAt x
+
+/-- For a divergence-free Schwartz velocity slice and a Schwartz vorticity
+slice, the transported normalized enstrophy density has zero integral. -/
+theorem normalizedVorticityEnstrophyDensityTransportIntegral_eq_zero_of_schwartzVelocitySlice_schwartzVorticitySlice_spatialDivergence_zero
+    (u : NSVelocityField) (t : NSTime)
+    (v ω : 𝓢(NSSpace, NSSpace))
+    (hu : ∀ x, u t x = v x)
+    (hω : ∀ x, spatialVorticity u t x = ω x)
+    (hdiv : ∀ x, spatialDivergence u t x = 0) :
+    normalizedVorticityEnstrophyDensityTransportIntegral u t = 0 := by
+  let normSq : 𝓢(NSSpace, ℝ) := SchwartzMap.pairing (innerSL ℝ) ω ω
+  have hDensityEq :
+      (fun y : NSSpace => vorticityEnstrophyDensity u t y) =
+        (normSq : NSSpace → ℝ) := by
+    funext y
+    rw [vorticityEnstrophyDensity, hω y, SchwartzMap.pairing_apply_apply]
+    change ‖ω y‖ ^ (2 : ℕ) = ⟪ω y, ω y⟫
+    rw [real_inner_self_eq_norm_sq]
+  have hTransportEq :
+      normalizedVorticityEnstrophyDensityTransport u t =
+        fun x : NSSpace =>
+          (1 / 2 : ℝ) * fderiv ℝ (normSq : NSSpace → ℝ) x (u t x) := by
+    funext x
+    unfold normalizedVorticityEnstrophyDensityTransport
+    rw [hDensityEq]
+  unfold normalizedVorticityEnstrophyDensityTransportIntegral
+  rw [hTransportEq, integral_const_mul]
+  rw [
+    integral_schwartzScalar_directionalDerivative_of_schwartzVectorSlice_spatialDivergence_zero
+      u t v normSq hu hdiv]
+  ring
+
+/-- The full BKM transport cancellation follows from incompressibility when
+both the velocity and vorticity slices are Schwartz. -/
+theorem vorticityTransportCancellationAt_of_schwartzVelocitySlice_schwartzVorticitySlice_spatialDivergence_zero
+    (u : NSVelocityField) (t : NSTime)
+    (v ω : 𝓢(NSSpace, NSSpace))
+    (hu : ∀ x, u t x = v x)
+    (hω : ∀ x, spatialVorticity u t x = ω x)
+    (hdiv : ∀ x, spatialDivergence u t x = 0) :
+    vorticityTransportCancellationAt u t := by
+  exact
+    vorticityTransportCancellationAt_of_normalizedDensityTransportIntegral_zero
+      (vorticitySpatialDerivativeRepresentedAt_of_schwartzVorticitySlice
+        u t ω hω)
+      (normalizedVorticityEnstrophyDensityTransportIntegral_eq_zero_of_schwartzVelocitySlice_schwartzVorticitySlice_spatialDivergence_zero
+        u t v ω hu hω hdiv)
+
 /-- A pointwise gradient bound controls the integrated vorticity-stretching
 power by `G * int |omega|^2`. -/
 theorem vorticityStretchingPowerIntegral_le_gradient_mul_enstrophyAt
@@ -795,6 +983,25 @@ theorem BKMVorticityTransportCancellationAlgebraClosed_proved :
   intro u t hω hZero
   exact vorticityTransportCancellationAt_of_normalizedDensityTransportIntegral_zero
     hω hZero
+
+/-- Checked Schwartz-slice transport cancellation: incompressibility plus
+Schwartz velocity and vorticity slices make the vorticity transport integral
+vanish. -/
+def BKMVorticityTransportCancellationSchwartzClosed : Prop :=
+  ∀ (u : NSVelocityField) (t : NSTime)
+      (v ω : 𝓢(NSSpace, NSSpace)),
+    (∀ x, u t x = v x) →
+      (∀ x, spatialVorticity u t x = ω x) →
+        (∀ x, spatialDivergence u t x = 0) →
+          vorticityTransportCancellationAt u t
+
+/-- Checked proof of the Schwartz-slice transport-cancellation package. -/
+theorem BKMVorticityTransportCancellationSchwartzClosed_proved :
+    BKMVorticityTransportCancellationSchwartzClosed := by
+  intro u t v ω hu hω hdiv
+  exact
+    vorticityTransportCancellationAt_of_schwartzVelocitySlice_schwartzVorticitySlice_spatialDivergence_zero
+      u t v ω hu hω hdiv
 
 /-- Checked viscous vorticity integration-by-parts subcase: if a time slice of
 vorticity is represented by a Schwartz function, the BKM diffusion pairing

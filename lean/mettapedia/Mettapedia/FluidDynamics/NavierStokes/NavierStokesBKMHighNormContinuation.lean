@@ -107,15 +107,16 @@ theorem BKMContinuation_reduced_to_analytic_components :
           BKMVorticityPointwiseEnstrophyDerivativeClosed ∧
             BKMVorticityRawBalanceFromStandardEquationClosed ∧
               BKMVorticityTransportCancellationAlgebraClosed ∧
-                BKMVorticityDiffusionIntegrationByPartsSchwartzClosed ∧
-                  BKMVorticityFiniteTimeWitnessSchwartzSliceAprioriClosed ∧
-                    BKMVorticityEnstrophyBalanceAssemblyClosed ∧
-                      BKMVorticityEnstrophyAprioriEstimateClosed ∧
-                        BKMVorticityEnstrophyGradientGrowthClosed ∧
-                          BKMVorticityEnstrophyLogSobolevGrowthClosed ∧
-                            BKMLogSobolevGrowthEstimateClosed ∧
-                              (BKMAnalyticComponentsClosed →
-                                ExplicitFiniteEnergyBKMContinuationTargetOnNonnegHorizons) := by
+                BKMVorticityTransportCancellationSchwartzClosed ∧
+                  BKMVorticityDiffusionIntegrationByPartsSchwartzClosed ∧
+                    BKMVorticityFiniteTimeWitnessSchwartzSliceAprioriClosed ∧
+                      BKMVorticityEnstrophyBalanceAssemblyClosed ∧
+                        BKMVorticityEnstrophyAprioriEstimateClosed ∧
+                          BKMVorticityEnstrophyGradientGrowthClosed ∧
+                            BKMVorticityEnstrophyLogSobolevGrowthClosed ∧
+                              BKMLogSobolevGrowthEstimateClosed ∧
+                                (BKMAnalyticComponentsClosed →
+                                  ExplicitFiniteEnergyBKMContinuationTargetOnNonnegHorizons) := by
   exact
     ⟨BKMVorticityStretchingEstimateClosed_proved,
       BKMResidualCurlExpansionAlgebraClosed_proved,
@@ -123,6 +124,7 @@ theorem BKMContinuation_reduced_to_analytic_components :
       BKMVorticityPointwiseEnstrophyDerivativeClosed_proved,
       BKMVorticityRawBalanceFromStandardEquationClosed_proved,
       BKMVorticityTransportCancellationAlgebraClosed_proved,
+      BKMVorticityTransportCancellationSchwartzClosed_proved,
       BKMVorticityDiffusionIntegrationByPartsSchwartzClosed_proved,
       BKMVorticityFiniteTimeWitnessSchwartzSliceAprioriClosed_proved,
       BKMVorticityEnstrophyBalanceAssemblyClosed_proved,
