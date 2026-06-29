@@ -349,6 +349,100 @@ theorem spatialVorticity_momentumPressureResidual_zero_localizedNilpotentStreamV
   have hcoord := congrArg (fun v : NSSpace => v nsCoord1) h
   norm_num [nsCoord1] at hcoord
 
+/-- Local-germ form of the localized nilpotent stream obstruction.  At
+viscosity `0`, the pressure residual near the origin is forced to have the
+same germ as the nilpotent shear residual for any candidate whose velocity
+germ matches the localized nilpotent stream and whose instantaneous time
+derivative vanishes on that germ. -/
+theorem momentumPressureResidual_zero_of_localizedNilpotentStreamVelocityField_germ_eventuallyEq_origin
+    {u : NSVelocityField} {t : NSTime}
+    (hvel : (fun x : NSSpace => u t x) =ᶠ[𝓝 (0 : NSSpace)]
+      fun x : NSSpace => localizedNilpotentStreamVelocityField 0 x)
+    (htime : (fun x : NSSpace => timeVelocityDerivative u t x) =ᶠ[𝓝 (0 : NSSpace)]
+      fun _ : NSSpace => 0) :
+    (fun x : NSSpace => momentumPressureResidual 0 u t x) =ᶠ[𝓝 (0 : NSSpace)]
+      fun x : NSSpace => momentumPressureResidual 0 nilpotentLinearShearVelocityField t x := by
+  have hderiv := Filter.EventuallyEq.fderiv (𝕜 := ℝ) hvel
+  have htoLocalized :
+      (fun x : NSSpace => momentumPressureResidual 0 u t x) =ᶠ[𝓝 (0 : NSSpace)]
+        fun x : NSSpace => momentumPressureResidual 0 localizedNilpotentStreamVelocityField 0 x := by
+    filter_upwards [hvel, hderiv, htime] with x hx hdx htx
+    unfold momentumPressureResidual
+    have htime_local :
+        timeVelocityDerivative localizedNilpotentStreamVelocityField 0 x = 0 := by
+      simpa [localizedNilpotentStreamVelocityField] using
+        timeVelocityDerivative_timeIndependentVelocity
+          (streamFunctionVelocity nsLocalizedNilpotentStreamFunction : NSInitialVelocity) 0 x
+    have hconv :
+        spatialConvection u t x =
+          spatialConvection localizedNilpotentStreamVelocityField 0 x := by
+      unfold spatialConvection spatialFDeriv
+      rw [hdx, hx]
+    simp [hconv, htx, htime_local]
+  have hnilTime :
+      (fun x : NSSpace => momentumPressureResidual 0 nilpotentLinearShearVelocityField 0 x) =ᶠ[𝓝 (0 : NSSpace)]
+        fun x : NSSpace => momentumPressureResidual 0 nilpotentLinearShearVelocityField t x := by
+    exact Filter.Eventually.of_forall fun x => by
+      change
+        momentumPressureResidual 0 nilpotentLinearShearVelocityField 0 x =
+          momentumPressureResidual 0 nilpotentLinearShearVelocityField t x
+      rw [momentumPressureResidual_nilpotentLinearShearVelocityField,
+        momentumPressureResidual_nilpotentLinearShearVelocityField]
+  exact
+    (htoLocalized.trans
+      momentumPressureResidual_zero_localizedNilpotentStreamVelocityField_eventuallyEq_origin).trans
+        hnilTime
+
+/-- The local-germ obstruction has the same nonzero residual curl as the
+nilpotent shear at the sampled point. -/
+theorem spatialVorticity_momentumPressureResidual_zero_of_localizedNilpotentStreamVelocityField_germ_origin
+    {u : NSVelocityField} {t : NSTime}
+    (hvel : (fun x : NSSpace => u t x) =ᶠ[𝓝 (0 : NSSpace)]
+      fun x : NSSpace => localizedNilpotentStreamVelocityField 0 x)
+    (htime : (fun x : NSSpace => timeVelocityDerivative u t x) =ᶠ[𝓝 (0 : NSSpace)]
+      fun _ : NSSpace => 0) :
+    spatialVorticity (momentumPressureResidual 0 u) t 0 =
+      EuclideanSpace.single nsCoord1 (-1 : ℝ) := by
+  rw [spatialVorticity_congr_nhds_at
+    (momentumPressureResidual_zero_of_localizedNilpotentStreamVelocityField_germ_eventuallyEq_origin
+      hvel htime)]
+  exact spatialVorticity_momentumPressureResidual_nilpotentLinearShearVelocityField 0 t 0
+
+theorem spatialVorticity_momentumPressureResidual_zero_of_localizedNilpotentStreamVelocityField_germ_origin_ne_zero
+    {u : NSVelocityField} {t : NSTime}
+    (hvel : (fun x : NSSpace => u t x) =ᶠ[𝓝 (0 : NSSpace)]
+      fun x : NSSpace => localizedNilpotentStreamVelocityField 0 x)
+    (htime : (fun x : NSSpace => timeVelocityDerivative u t x) =ᶠ[𝓝 (0 : NSSpace)]
+      fun _ : NSSpace => 0) :
+    spatialVorticity (momentumPressureResidual 0 u) t 0 ≠ 0 := by
+  rw [spatialVorticity_momentumPressureResidual_zero_of_localizedNilpotentStreamVelocityField_germ_origin
+    hvel htime]
+  intro h
+  have hcoord := congrArg (fun v : NSSpace => v nsCoord1) h
+  norm_num [nsCoord1] at hcoord
+
+/-- No smooth pressure can repair any inviscid candidate with the localized
+nilpotent stream velocity germ and a vanishing instantaneous time derivative
+germ at the same time. -/
+theorem not_exists_smoothPressure_momentumEquation_zero_of_localizedNilpotentStreamVelocityField_germ_origin
+    {u : NSVelocityField} {t : NSTime}
+    (hvel : (fun x : NSSpace => u t x) =ᶠ[𝓝 (0 : NSSpace)]
+      fun x : NSSpace => localizedNilpotentStreamVelocityField 0 x)
+    (htime : (fun x : NSSpace => timeVelocityDerivative u t x) =ᶠ[𝓝 (0 : NSSpace)]
+      fun _ : NSSpace => 0) :
+    ¬ ∃ p : NSPressureField,
+      smoothSpaceTimePressure p ∧
+        ∀ s x,
+          timeVelocityDerivative u s x + spatialConvection u s x +
+              spatialPressureGradient p s x =
+            (0 : ℝ) • spatialLaplacian u s x := by
+  exact
+    not_exists_smoothPressure_momentumEquation_of_momentumPressureResidual_vorticity_ne_zero
+      (ν := 0) (u := u)
+      ⟨t, 0,
+        spatialVorticity_momentumPressureResidual_zero_of_localizedNilpotentStreamVelocityField_germ_origin_ne_zero
+          hvel htime⟩
+
 /-- No smooth pressure can make the localized nilpotent stream velocity a
 stationary inviscid exact solution.  The obstruction is local and
 pressure-agnostic: the required pressure residual has nonzero curl at the
@@ -366,6 +460,40 @@ theorem not_exists_smoothPressure_momentumEquation_zero_localizedNilpotentStream
       (ν := 0) (u := localizedNilpotentStreamVelocityField)
       ⟨0, 0,
         spatialVorticity_momentumPressureResidual_zero_localizedNilpotentStreamVelocityField_origin_ne_zero⟩
+
+/-- No ordinary slice-Schwartz concrete solution can have the localized
+nilpotent stream velocity germ and vanishing instantaneous time-derivative
+germ at the same time in the inviscid interface. -/
+theorem not_exists_schwartzConcreteSolution_localizedNilpotentStreamVelocityField_germ_stationary_at
+    (t : NSTime) :
+    ¬ ∃ S : SchwartzConcreteNavierStokesSolution 0,
+      ((fun x : NSSpace => S.velocity t x) =ᶠ[𝓝 (0 : NSSpace)]
+        fun x : NSSpace => localizedNilpotentStreamVelocityField 0 x) ∧
+        ((fun x : NSSpace => timeVelocityDerivative S.velocity t x) =ᶠ[𝓝 (0 : NSSpace)]
+          fun _ : NSSpace => 0) := by
+  rintro ⟨S, hvel, htime⟩
+  have hzero :
+      spatialVorticity (momentumPressureResidual 0 S.velocity) t 0 = 0 :=
+    S.momentumPressureResidual_spatialVorticity_zero t 0
+  have hne :
+      spatialVorticity (momentumPressureResidual 0 S.velocity) t 0 ≠ 0 :=
+    spatialVorticity_momentumPressureResidual_zero_of_localizedNilpotentStreamVelocityField_germ_origin_ne_zero
+      hvel htime
+  exact hne hzero
+
+/-- The nonzero slice-Schwartz interface is likewise excluded for the same
+localized nilpotent stationary germ. -/
+theorem not_exists_nonzeroSchwartzConcreteSolution_localizedNilpotentStreamVelocityField_germ_stationary_at
+    (t : NSTime) :
+    ¬ ∃ S : NonzeroSchwartzConcreteNavierStokesSolution 0,
+      ((fun x : NSSpace => S.velocity t x) =ᶠ[𝓝 (0 : NSSpace)]
+        fun x : NSSpace => localizedNilpotentStreamVelocityField 0 x) ∧
+        ((fun x : NSSpace => timeVelocityDerivative S.velocity t x) =ᶠ[𝓝 (0 : NSSpace)]
+          fun _ : NSSpace => 0) := by
+  rintro ⟨S, hvel, htime⟩
+  exact
+    not_exists_schwartzConcreteSolution_localizedNilpotentStreamVelocityField_germ_stationary_at t
+      ⟨S.toSchwartzConcreteNavierStokesSolution, hvel, htime⟩
 
 /-- The localized nilpotent stream gives a concrete divergence-free Schwartz
 initial velocity. -/
