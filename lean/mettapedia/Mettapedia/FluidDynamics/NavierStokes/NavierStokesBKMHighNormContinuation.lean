@@ -224,6 +224,46 @@ def BKMHighNormContinuationFromLogControl : Prop :=
                     BKMLogSobolevGradientControlOn W.velocity T C Ω H →
                       ExplicitConcreteNavierStokesGlobalOutput ν u₀
 
+/-- Single remaining high-norm/Sobolev continuation frontier for Lemma A.
+
+For an arbitrary genuine finite-energy finite-time witness with the standard
+vorticity equation and a time-integrable BKM vorticity envelope, prove a
+bounded concrete high-norm envelope on the closed slab and use it to reach the
+existing explicit global-output surface.  This is the place for the classical
+H^s/Sobolev differentiation, logarithmic Gronwall, and local-continuation
+argument; the scalar enstrophy lemmas below are supporting checks, not further
+public residuals. -/
+def BKMFiniteEnergyWitnessBKMEnvelopeSchwartzHighNormContinuation : Prop :=
+  ∀ (ν : ℝ) (u₀ : NSInitialVelocity) (T : ℝ)
+      (W : ExplicitFiniteTimeRegularityWitness ν u₀ T)
+      (Ω : NSTime → ℝ) (B : ℝ),
+    0 ≤ T →
+      0 < ν →
+        smoothInitialVelocityData u₀ →
+          (∀ x, initialSpatialDivergence u₀ x = 0) →
+            finiteInitialKineticEnergy u₀ →
+              vorticityEnvelopeOn W.velocity T Ω →
+                integrableVorticityEnvelopeOn Ω T B →
+                  concreteVorticityEquationOn ν W.velocity T →
+                    ∃ F : NSTime → ℝ, ∃ M : ℝ,
+                      BKMLogSobolevSchwartzHighNormEnvelopeOn W.velocity T F ∧
+                        0 ≤ M ∧
+                          (∀ t, 0 ≤ t → t ≤ T → F t ≤ M) ∧
+                            ExplicitConcreteNavierStokesGlobalOutput ν u₀
+
+/-- Lemma A is reduced to the single high-norm/Sobolev frontier above.  The
+supplied log-control profile is no longer split into smaller public residuals:
+once the BKM-envelope high-norm continuation criterion is proved, the
+`BKMHighNormContinuationFromLogControl` component follows immediately. -/
+theorem BKMHighNormContinuationFromLogControl_of_bkmEnvelopeSchwartzHighNormContinuation
+    (hHighNorm :
+      BKMFiniteEnergyWitnessBKMEnvelopeSchwartzHighNormContinuation) :
+    BKMHighNormContinuationFromLogControl := by
+  intro ν u₀ T W Ω B C H hT hν hsmooth hdiv hfinite hΩ hInt hEq _hLog
+  rcases hHighNorm ν u₀ T W Ω B hT hν hsmooth hdiv hfinite hΩ hInt hEq with
+    ⟨_F, _M, _hEnvelope, _hM_nonneg, _hF_bound, hOut⟩
+  exact hOut
+
 /-- The normalized vorticity enstrophy is nonnegative on the unguarded integral
 surface. -/
 theorem normalizedVorticityEnstrophyAt_nonneg
@@ -1394,6 +1434,20 @@ theorem BKMArbitraryWitnessAffineLogBiotSavartGronwallContinuationLemma_of_compo
     ⟨C0, C1, H, hC0, hC1, hH, hAffinePointwise,
       hHigh ν u₀ T W Ω B (max C0 C1) H
         hT hν hsmooth hdiv hfinite hΩ hInt hEq hLog⟩
+
+/-- Current sharp reduction: full arbitrary-witness BKM continuation follows
+from the affine Biot-Savart/log-Sobolev pointwise estimate and the single
+high-norm/Sobolev continuation frontier. -/
+theorem BKMArbitraryWitnessAffineLogBiotSavartGronwallContinuationLemma_of_affinePointwiseFromEnvelope_and_bkmEnvelopeSchwartzHighNormContinuation
+    (hAffine : BKMLogSobolevAffinePointwiseFromEnvelope)
+    (hHighNorm :
+      BKMFiniteEnergyWitnessBKMEnvelopeSchwartzHighNormContinuation) :
+    BKMArbitraryWitnessAffineLogBiotSavartGronwallContinuationLemma := by
+  exact
+    BKMArbitraryWitnessAffineLogBiotSavartGronwallContinuationLemma_of_components
+      hAffine
+      (BKMHighNormContinuationFromLogControl_of_bkmEnvelopeSchwartzHighNormContinuation
+        hHighNorm)
 
 /-- The repaired nonnegative-horizon BKM target follows from the single named
 arbitrary-witness affine-log/Biot-Savart/Gronwall continuation lemma once the
