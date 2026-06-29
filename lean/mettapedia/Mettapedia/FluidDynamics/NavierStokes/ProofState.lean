@@ -366,9 +366,9 @@ def navierNonzeroSchwartzStationaryInviscidConstructorNode : NavierProofNode whe
 def navierNonzeroSchwartzStokesKernelNode : NavierProofNode where
   id := "navier.energy.nonzero-schwartz-stokes-kernel"
   status := .checked
-  truthValue := ⟨82, 88⟩
-  evidence := "SchwartzStokesFlowKernel packages any slice-Schwartz concrete solution whose convection and pressure-gradient terms vanish into the exact Stokes equation partial_t u = nu*Delta u plus the inherited concrete solution kernel. NonzeroSchwartzConcreteNavierStokesSolution.stokesFlow_strictDissipation_packet proves that every positive-viscosity nonzero inhabitant of this subroute has a strict negative normalized-energy derivative at some time, and stokesFlow_not_forall_velocity_periodic_of_pos_viscosity plus not_exists_nonzeroSchwartzStokesFlow_velocity_periodic_of_pos_viscosity rule out positive-period recurrent Stokes shortcuts. PLN STV <s=.82,c=.88>, ITV [.7216,.8416], PROGRESS 82%."
-  blocker := "This is still conditional on an inhabited positive-viscosity nonzero Stokes-flow solution. The remaining canary obligation is to construct such a bounded whole-real-time Schwartz heat/Stokes evolution, or prove the bounded-eternal Stokes subroute is empty."
+  truthValue := ⟨84, 89⟩
+  evidence := "SchwartzStokesFlowKernel packages any slice-Schwartz concrete solution whose convection and pressure-gradient terms vanish into the exact Stokes equation partial_t u = nu*Delta u plus the inherited concrete solution kernel. NonzeroSchwartzConcreteNavierStokesSolution.stokesFlow_strictDissipation_packet proves that every positive-viscosity nonzero inhabitant of this subroute has a strict negative normalized-energy derivative at some time. stokesFlow_exists_nonzero_endpoint_with_strict_past_energy_drop_packet proves that any inhabited positive-viscosity Stokes candidate has a nonzero endpoint whose whole past support ray is strictly energy-ordered, and not_exists_nonzeroSchwartzStokesFlow_energy_nondecrease_before_nonzero_endpoint_of_pos_viscosity rules out Stokes candidates with a nondecreasing energy subinterval before such an endpoint. stokesFlow_not_forall_velocity_periodic_of_pos_viscosity plus not_exists_nonzeroSchwartzStokesFlow_velocity_periodic_of_pos_viscosity rule out positive-period recurrent Stokes shortcuts. PLN STV <s=.84,c=.89>, ITV [.7476,.8576], PROGRESS 84%."
+  blocker := "This is still conditional on an inhabited positive-viscosity nonzero Stokes-flow solution. The remaining canary obligation is to construct such a bounded whole-real-time Schwartz heat/Stokes evolution with strictly ordered past energy, or prove the bounded-eternal Stokes/pressure-closure subroute is empty."
 
 /-- Exact Stokes-flow canaries must break fixed-direction rank-one shear form. -/
 def navierNonzeroSchwartzStokesRankOneObstructionNode : NavierProofNode where
@@ -1617,14 +1617,28 @@ theorem currentNavierNonzeroSchwartzStokesKernel_node
     (hconv : ∀ t x, spatialConvection S.velocity t x = 0)
     (hpressure : ∀ t x, spatialPressureGradient S.pressure t x = 0) :
     NonzeroSchwartzStokesFlowKernel ν S.velocity S.pressure ∧
+      SchwartzNonzeroTimeSupportKernel ν S.velocity S.pressure ∧
       (∃ t : NSTime,
         0 < coordinateEnergyDissipationRate S.velocity ν t ∧
           HasDerivAt (normalizedKineticEnergy S.velocity)
             (-(coordinateEnergyDissipationRate S.velocity ν t)) t ∧
           -(coordinateEnergyDissipationRate S.velocity ν t) < 0) ∧
+      (∃ T xT,
+        S.velocity T xT ≠ 0 ∧
+          ∀ {s t : NSTime}, s < t → t ≤ T →
+            normalizedKineticEnergy S.velocity t <
+              normalizedKineticEnergy S.velocity s) ∧
       (∀ {P : NSTime}, 0 < P →
         ¬ ∀ t : NSTime, ∀ x : NSSpace,
           S.velocity (t + P) x = S.velocity t x) ∧
+      (¬ ∃ W : NonzeroSchwartzConcreteNavierStokesSolution ν,
+        (∀ t x, spatialConvection W.velocity t x = 0) ∧
+          (∀ t x, spatialPressureGradient W.pressure t x = 0) ∧
+          ∃ s t T : NSTime,
+            s < t ∧ t ≤ T ∧
+              (∃ xT : NSSpace, W.velocity T xT ≠ 0) ∧
+                normalizedKineticEnergy W.velocity s ≤
+                  normalizedKineticEnergy W.velocity t) ∧
       (¬ ∃ W : NonzeroSchwartzConcreteNavierStokesSolution ν,
         (∀ t x, spatialConvection W.velocity t x = 0) ∧
           (∀ t x, spatialPressureGradient W.pressure t x = 0) ∧
@@ -1634,12 +1648,20 @@ theorem currentNavierNonzeroSchwartzStokesKernel_node
                 W.velocity (t + P) x = W.velocity t x) ∧
       navierNonzeroSchwartzStokesKernelNode.status = .checked ∧
       navierNonzeroSchwartzCanaryNode.status = .openGoal := by
+  rcases
+      S.stokesFlow_exists_nonzero_endpoint_with_strict_past_energy_drop_packet
+        hν hconv hpressure with
+    ⟨hkernel, hsupport, hendpoint⟩
   exact
-    ⟨S.nonzeroStokesFlowKernel hconv hpressure,
+    ⟨hkernel,
+      hsupport,
       S.exists_strict_coordinateEnergyDissipationIdentity_of_pos_viscosity hν,
+      hendpoint,
       fun {_P} hP =>
         S.stokesFlow_not_forall_velocity_periodic_of_pos_viscosity
           hν hconv hpressure hP,
+      not_exists_nonzeroSchwartzStokesFlow_energy_nondecrease_before_nonzero_endpoint_of_pos_viscosity
+        hν,
       not_exists_nonzeroSchwartzStokesFlow_velocity_periodic_of_pos_viscosity hν,
       navierNonzeroSchwartzStokesKernelNode_checked,
       navierNonzeroSchwartzCanaryNode_open⟩

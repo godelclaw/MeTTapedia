@@ -77,6 +77,36 @@ theorem not_exists_stokes_coordinate_enstrophy_ratio_floor_regression
     not_exists_nonzeroSchwartzStokesFlow_past_coordinateEnstrophy_ratio_floor_of_posViscosity
       hν hlam
 
+theorem stokes_exists_nonzero_endpoint_strict_past_energy_drop_regression
+    {ν : ℝ} (hν : 0 < ν)
+    (S : NonzeroSchwartzConcreteNavierStokesSolution ν)
+    (hconv : ∀ t x, spatialConvection S.velocity t x = 0)
+    (hpressure : ∀ t x, spatialPressureGradient S.pressure t x = 0) :
+    NonzeroSchwartzStokesFlowKernel ν S.velocity S.pressure ∧
+      SchwartzNonzeroTimeSupportKernel ν S.velocity S.pressure ∧
+      ∃ T xT,
+        S.velocity T xT ≠ 0 ∧
+          ∀ {s t : NSTime}, s < t → t ≤ T →
+            normalizedKineticEnergy S.velocity t <
+              normalizedKineticEnergy S.velocity s := by
+  exact
+    S.stokesFlow_exists_nonzero_endpoint_with_strict_past_energy_drop_packet
+      hν hconv hpressure
+
+theorem not_exists_stokes_energy_nondecrease_before_endpoint_regression
+    {ν : ℝ} (hν : 0 < ν) :
+    ¬ ∃ S : NonzeroSchwartzConcreteNavierStokesSolution ν,
+      (∀ t x, spatialConvection S.velocity t x = 0) ∧
+        (∀ t x, spatialPressureGradient S.pressure t x = 0) ∧
+          ∃ s t T : NSTime,
+            s < t ∧ t ≤ T ∧
+              (∃ xT : NSSpace, S.velocity T xT ≠ 0) ∧
+                normalizedKineticEnergy S.velocity s ≤
+                  normalizedKineticEnergy S.velocity t := by
+  exact
+    not_exists_nonzeroSchwartzStokesFlow_energy_nondecrease_before_nonzero_endpoint_of_pos_viscosity
+      hν
+
 theorem not_exists_stokes_exact_coordinate_enstrophy_rayleigh_regression
     {ν lam : ℝ} (hν : 0 < ν) (hlam : 0 < lam) :
     ¬ ∃ S : NonzeroSchwartzConcreteNavierStokesSolution ν,
