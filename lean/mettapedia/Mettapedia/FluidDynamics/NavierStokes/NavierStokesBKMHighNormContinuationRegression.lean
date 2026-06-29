@@ -90,6 +90,15 @@ theorem normalizedVorticityEnstrophyAt_le_gronwallBound_of_gradientControlled_co
     normalizedVorticityEnstrophyAt_le_gronwallBound_of_gradientControlled_constant
       hcont hGrowth
 
+theorem continuousOn_normalizedVorticityEnstrophyAt_of_timePairingDerivativeAt_regression
+    {T : ℝ} {u : NSVelocityField}
+    (hTime :
+      ∀ t, t ∈ Set.Icc 0 T →
+        vorticityEnstrophyTimePairingDerivativeAt u t) :
+    ContinuousOn (fun t => normalizedVorticityEnstrophyAt u t)
+      (Set.Icc 0 T) := by
+  exact continuousOn_normalizedVorticityEnstrophyAt_of_timePairingDerivativeAt hTime
+
 theorem normalizedVorticityEnstrophyAt_le_gronwallBound_of_gradientControlled_majorized_regression
     {ν K T : ℝ} {u : NSVelocityField} {G : NSTime → ℝ}
     (hcont :
@@ -340,6 +349,32 @@ theorem BKMLogControlWitnessEnstrophyGronwallDataFromWitness_of_scalarGronwallDa
     BKMLogControlWitnessEnstrophyGronwallDataFromWitness_of_scalarGronwallData_velocitySchwartz
       hScalar hVelocitySlices hTimePairing
 
+theorem BKMLogControlWitnessEnstrophyGronwallDataFromWitness_of_primitiveDominationData_velocitySchwartz_closedTimePairing_regression
+    (hPrimitive : BKMLogControlWitnessPrimitiveDominationDataFromWitness)
+    (hVelocitySlices :
+      ∀ (ν : ℝ) (u₀ : NSInitialVelocity) (T : ℝ)
+          (W : ExplicitFiniteTimeRegularityWitness ν u₀ T),
+        0 ≤ T →
+          0 < ν →
+            smoothInitialVelocityData u₀ →
+              (∀ x, initialSpatialDivergence u₀ x = 0) →
+                finiteInitialKineticEnergy u₀ →
+                  finiteTimeWitnessVelocitySchwartzSlices W)
+    (hTimePairing :
+      ∀ (ν : ℝ) (u₀ : NSInitialVelocity) (T : ℝ)
+          (W : ExplicitFiniteTimeRegularityWitness ν u₀ T) (t : NSTime),
+        0 ≤ T →
+          0 < ν →
+            smoothInitialVelocityData u₀ →
+              (∀ x, initialSpatialDivergence u₀ x = 0) →
+                finiteInitialKineticEnergy u₀ →
+                  t ∈ Set.Icc 0 T →
+                    vorticityEnstrophyTimePairingDerivativeAt W.velocity t) :
+    BKMLogControlWitnessEnstrophyGronwallDataFromWitness := by
+  exact
+    BKMLogControlWitnessEnstrophyGronwallDataFromWitness_of_primitiveDominationData_velocitySchwartz_closedTimePairing
+      hPrimitive hVelocitySlices hTimePairing
+
 theorem BKMHighNormContinuationFromLogControl_of_enstrophyGronwallData_and_boundedEnstrophyBridge_regression
     (hData : BKMLogControlWitnessEnstrophyGronwallDataFromWitness)
     (hBridge : BKMBoundedEnstrophyContinuationBridge) :
@@ -374,6 +409,33 @@ theorem BKMHighNormContinuationFromLogControl_of_scalarGronwallData_velocitySchw
   exact
     BKMHighNormContinuationFromLogControl_of_scalarGronwallData_velocitySchwartz_and_boundedEnstrophyBridge
       hScalar hVelocitySlices hTimePairing hBridge
+
+theorem BKMHighNormContinuationFromLogControl_of_primitiveDominationData_velocitySchwartz_closedTimePairing_and_boundedEnstrophyBridge_regression
+    (hPrimitive : BKMLogControlWitnessPrimitiveDominationDataFromWitness)
+    (hVelocitySlices :
+      ∀ (ν : ℝ) (u₀ : NSInitialVelocity) (T : ℝ)
+          (W : ExplicitFiniteTimeRegularityWitness ν u₀ T),
+        0 ≤ T →
+          0 < ν →
+            smoothInitialVelocityData u₀ →
+              (∀ x, initialSpatialDivergence u₀ x = 0) →
+                finiteInitialKineticEnergy u₀ →
+                  finiteTimeWitnessVelocitySchwartzSlices W)
+    (hTimePairing :
+      ∀ (ν : ℝ) (u₀ : NSInitialVelocity) (T : ℝ)
+          (W : ExplicitFiniteTimeRegularityWitness ν u₀ T) (t : NSTime),
+        0 ≤ T →
+          0 < ν →
+            smoothInitialVelocityData u₀ →
+              (∀ x, initialSpatialDivergence u₀ x = 0) →
+                finiteInitialKineticEnergy u₀ →
+                  t ∈ Set.Icc 0 T →
+                    vorticityEnstrophyTimePairingDerivativeAt W.velocity t)
+    (hBridge : BKMBoundedEnstrophyContinuationBridge) :
+    BKMHighNormContinuationFromLogControl := by
+  exact
+    BKMHighNormContinuationFromLogControl_of_primitiveDominationData_velocitySchwartz_closedTimePairing_and_boundedEnstrophyBridge
+      hPrimitive hVelocitySlices hTimePairing hBridge
 
 theorem BKMContinuation_reduced_to_analytic_components_regression :
     BKMVorticityStretchingEstimateClosed ∧
