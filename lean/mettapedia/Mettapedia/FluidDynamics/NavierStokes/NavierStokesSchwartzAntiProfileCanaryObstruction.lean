@@ -1,4 +1,4 @@
-import Mettapedia.FluidDynamics.NavierStokes.NavierStokesEnergySchwartzSolutionObstruction
+import Mettapedia.FluidDynamics.NavierStokes.NavierStokesEnergySchwartzNonzeroSupport
 import Mettapedia.FluidDynamics.NavierStokes.NavierStokesSchwartzLocalizedStreamFunction
 
 /-!
@@ -91,6 +91,18 @@ theorem antiProfileSchwartzVelocity_nonzero_iff_exists_amplitude_ne
   · intro hab
     exact exists_antiProfileSchwartzVelocity_ne_zero_of_exists_amplitude_ne a b f hf hab
 
+/-- Anti-profile reconstruction is exactly a one-profile reconstruction with
+scalar amplitude `a-b`. -/
+theorem antiProfileSchwartzVelocity_eq_scalarProfile_amplitudeDifference
+    (a b : NSTime → ℝ) (f : NSSchwartzInitialVelocity) :
+    twoModeSchwartzVelocity a b f (-f) =
+      fun t x => (a t - b t) • f x := by
+  funext t x
+  have hneg : (-f : NSSchwartzInitialVelocity) x = -f x := rfl
+  simp only [twoModeSchwartzVelocity, hneg, smul_neg]
+  rw [sub_smul]
+  simp [sub_eq_add_neg]
+
 /-- Any nonzero slice-Schwartz concrete solution represented by a nonzero
 anti-profile family must lie on the unequal-amplitude side of the boundary. -/
 theorem nonzeroSchwartzConcreteSolution_antiProfileVelocity_forces_amplitude_ne
@@ -148,6 +160,61 @@ theorem nonzeroSchwartzConcreteSolution_antiProfileVelocity_forces_amplitudeDiff
   exact
     (not_exists_nonzeroSchwartzConcreteSolution_antiProfileVelocity_of_const_amplitudeDifference
       hν a b f (a 0 - b 0) hdiff) ⟨S, hS⟩
+
+/-- Positive-viscosity anti-profile endpoint boundary: before any later nonzero
+endpoint, the squared amplitude difference must strictly decrease forward in
+time.  This is the localized anti-profile version of the scalar one-profile
+support law. -/
+theorem nonzeroSchwartzConcreteSolution_antiProfileVelocity_amplitudeDifference_sq_strict_lt_before_nonzero_endpoint
+    {ν : ℝ} (hν : 0 < ν)
+    (S : NonzeroSchwartzConcreteNavierStokesSolution ν)
+    (a b : NSTime → ℝ) (f : NSSchwartzInitialVelocity)
+    (hS : S.velocity = twoModeSchwartzVelocity a b f (-f))
+    {s t T : NSTime} (hst : s < t) (htT : t ≤ T)
+    (hneT : ∃ xT : NSSpace, S.velocity T xT ≠ 0) :
+    (a t - b t) ^ (2 : ℕ) < (a s - b s) ^ (2 : ℕ) := by
+  have hvelocity : S.velocity = fun r y => (a r - b r) • f y := by
+    rw [hS, antiProfileSchwartzVelocity_eq_scalarProfile_amplitudeDifference]
+  exact
+    S.scalarProfile_amplitude_sq_strict_lt_before_nonzero_endpoint_of_pos_viscosity
+      hν f hvelocity hst htT hneT
+
+/-- Existential anti-profile support packet: any positive-viscosity nonzero
+anti-profile solution has a nonzero endpoint whose whole past support ray has
+strictly decreasing squared amplitude difference. -/
+theorem nonzeroSchwartzConcreteSolution_antiProfileVelocity_exists_nonzero_endpoint_with_amplitudeDifference_sq_strict_drop
+    {ν : ℝ} (hν : 0 < ν)
+    (S : NonzeroSchwartzConcreteNavierStokesSolution ν)
+    (a b : NSTime → ℝ) (f : NSSchwartzInitialVelocity)
+    (hS : S.velocity = twoModeSchwartzVelocity a b f (-f)) :
+    ∃ T xT,
+      S.velocity T xT ≠ 0 ∧
+        ∀ {s t : NSTime}, s < t → t ≤ T →
+          (a t - b t) ^ (2 : ℕ) < (a s - b s) ^ (2 : ℕ) := by
+  have hvelocity : S.velocity = fun r y => (a r - b r) • f y := by
+    rw [hS, antiProfileSchwartzVelocity_eq_scalarProfile_amplitudeDifference]
+  exact
+    S.exists_nonzero_endpoint_with_scalarProfile_amplitude_sq_strict_drop
+      hν f hvelocity
+
+/-- Global anti-profile no-go: a positive-viscosity nonzero anti-profile
+candidate cannot have a nondecreasing squared amplitude-difference subinterval
+before a later nonzero endpoint. -/
+theorem not_exists_nonzeroSchwartzConcreteSolution_antiProfileVelocity_amplitudeDifference_sq_nondecrease_before_nonzero_endpoint_of_pos_viscosity
+    {ν : ℝ} (hν : 0 < ν) :
+    ¬ ∃ S : NonzeroSchwartzConcreteNavierStokesSolution ν,
+      ∃ (a b : NSTime → ℝ) (f : NSSchwartzInitialVelocity),
+        S.velocity = twoModeSchwartzVelocity a b f (-f) ∧
+          ∃ s t T : NSTime,
+            s < t ∧ t ≤ T ∧
+              (∃ xT : NSSpace, S.velocity T xT ≠ 0) ∧
+                (a s - b s) ^ (2 : ℕ) ≤ (a t - b t) ^ (2 : ℕ) := by
+  rintro ⟨S, a, b, f, hS, s, t, T, hst, htT, hneT, hnondec⟩
+  have hdrop :
+      (a t - b t) ^ (2 : ℕ) < (a s - b s) ^ (2 : ℕ) :=
+    nonzeroSchwartzConcreteSolution_antiProfileVelocity_amplitudeDifference_sq_strict_lt_before_nonzero_endpoint
+      hν S a b f hS hst htT hneT
+  exact not_lt_of_ge hnondec hdrop
 
 /-- The anti-profile of the localized divergence-free stream seed. -/
 def nsLocalizedStreamAntiProfile : NSSchwartzInitialVelocity :=
@@ -218,6 +285,66 @@ theorem nonzeroSchwartzConcreteSolution_localizedStreamAntiProfileVelocity_force
     nonzeroSchwartzConcreteSolution_antiProfileVelocity_forces_amplitudeDifference_nonconstant
       hν S a b nsLocalizedStreamDivergenceFreeInitialVelocity.1
       (by simpa [nsLocalizedStreamAntiProfile] using hS)
+
+/-- Endpoint support law specialized to the explicit localized stream/
+anti-stream seed: any positive-viscosity nonzero inhabitant represented by
+this pair has strictly decreasing squared amplitude difference before a later
+nonzero endpoint. -/
+theorem nonzeroSchwartzConcreteSolution_localizedStreamAntiProfileVelocity_amplitudeDifference_sq_strict_lt_before_nonzero_endpoint
+    {ν : ℝ} (hν : 0 < ν)
+    (S : NonzeroSchwartzConcreteNavierStokesSolution ν)
+    (a b : NSTime → ℝ)
+    (hS : S.velocity =
+      twoModeSchwartzVelocity a b
+        nsLocalizedStreamDivergenceFreeInitialVelocity.1 nsLocalizedStreamAntiProfile)
+    {s t T : NSTime} (hst : s < t) (htT : t ≤ T)
+    (hneT : ∃ xT : NSSpace, S.velocity T xT ≠ 0) :
+    (a t - b t) ^ (2 : ℕ) < (a s - b s) ^ (2 : ℕ) := by
+  exact
+    nonzeroSchwartzConcreteSolution_antiProfileVelocity_amplitudeDifference_sq_strict_lt_before_nonzero_endpoint
+      hν S a b nsLocalizedStreamDivergenceFreeInitialVelocity.1
+      (by simpa [nsLocalizedStreamAntiProfile] using hS) hst htT hneT
+
+/-- Existential endpoint support packet specialized to the localized
+stream/anti-stream seed. -/
+theorem nonzeroSchwartzConcreteSolution_localizedStreamAntiProfileVelocity_exists_nonzero_endpoint_with_amplitudeDifference_sq_strict_drop
+    {ν : ℝ} (hν : 0 < ν)
+    (S : NonzeroSchwartzConcreteNavierStokesSolution ν)
+    (a b : NSTime → ℝ)
+    (hS : S.velocity =
+      twoModeSchwartzVelocity a b
+        nsLocalizedStreamDivergenceFreeInitialVelocity.1 nsLocalizedStreamAntiProfile) :
+    ∃ T xT,
+      S.velocity T xT ≠ 0 ∧
+        ∀ {s t : NSTime}, s < t → t ≤ T →
+          (a t - b t) ^ (2 : ℕ) < (a s - b s) ^ (2 : ℕ) := by
+  exact
+    nonzeroSchwartzConcreteSolution_antiProfileVelocity_exists_nonzero_endpoint_with_amplitudeDifference_sq_strict_drop
+      hν S a b nsLocalizedStreamDivergenceFreeInitialVelocity.1
+      (by simpa [nsLocalizedStreamAntiProfile] using hS)
+
+/-- Global localized anti-profile no-go: before a later nonzero endpoint, a
+positive-viscosity exact localized stream/anti-stream candidate cannot have a
+nondecreasing squared amplitude-difference subinterval. -/
+theorem not_exists_nonzeroSchwartzConcreteSolution_localizedStreamAntiProfileVelocity_amplitudeDifference_sq_nondecrease_before_nonzero_endpoint_of_pos_viscosity
+    {ν : ℝ} (hν : 0 < ν) :
+    ¬ ∃ S : NonzeroSchwartzConcreteNavierStokesSolution ν,
+      ∃ (a b : NSTime → ℝ),
+        S.velocity =
+          twoModeSchwartzVelocity a b
+            nsLocalizedStreamDivergenceFreeInitialVelocity.1 nsLocalizedStreamAntiProfile ∧
+          ∃ s t T : NSTime,
+            s < t ∧ t ≤ T ∧
+              (∃ xT : NSSpace, S.velocity T xT ≠ 0) ∧
+                (a s - b s) ^ (2 : ℕ) ≤ (a t - b t) ^ (2 : ℕ) := by
+  intro h
+  apply
+    not_exists_nonzeroSchwartzConcreteSolution_antiProfileVelocity_amplitudeDifference_sq_nondecrease_before_nonzero_endpoint_of_pos_viscosity
+      hν
+  rcases h with ⟨S, a, b, hS, hbad⟩
+  exact
+    ⟨S, a, b, nsLocalizedStreamDivergenceFreeInitialVelocity.1,
+      by simpa [nsLocalizedStreamAntiProfile] using hS, hbad⟩
 
 /-- Equal-amplitude localized stream/anti-stream profiles reconstruct the zero
 space-time velocity field. -/

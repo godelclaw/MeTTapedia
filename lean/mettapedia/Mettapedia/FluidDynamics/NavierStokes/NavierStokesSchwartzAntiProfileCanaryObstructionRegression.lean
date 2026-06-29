@@ -51,6 +51,36 @@ theorem localized_stream_antiprofile_nonzero_solution_forces_amplitude_ne_regres
     nonzeroSchwartzConcreteSolution_localizedStreamAntiProfileVelocity_forces_amplitude_ne
       S a b hS
 
+theorem localized_stream_antiprofile_endpoint_amplitude_difference_strict_drop_regression
+    {ν : ℝ} (hν : 0 < ν)
+    (S : NonzeroSchwartzConcreteNavierStokesSolution ν)
+    (a b : NSTime → ℝ)
+    (hS : S.velocity =
+      twoModeSchwartzVelocity a b
+        nsLocalizedStreamDivergenceFreeInitialVelocity.1 nsLocalizedStreamAntiProfile) :
+    ∃ T xT,
+      S.velocity T xT ≠ 0 ∧
+        ∀ {s t : NSTime}, s < t → t ≤ T →
+          (a t - b t) ^ (2 : ℕ) < (a s - b s) ^ (2 : ℕ) := by
+  exact
+    nonzeroSchwartzConcreteSolution_localizedStreamAntiProfileVelocity_exists_nonzero_endpoint_with_amplitudeDifference_sq_strict_drop
+      hν S a b hS
+
+theorem localized_stream_antiprofile_no_nondecreasing_amplitude_difference_before_endpoint_regression
+    {ν : ℝ} (hν : 0 < ν) :
+    ¬ ∃ S : NonzeroSchwartzConcreteNavierStokesSolution ν,
+      ∃ (a b : NSTime → ℝ),
+        S.velocity =
+          twoModeSchwartzVelocity a b
+            nsLocalizedStreamDivergenceFreeInitialVelocity.1 nsLocalizedStreamAntiProfile ∧
+          ∃ s t T : NSTime,
+            s < t ∧ t ≤ T ∧
+              (∃ xT : NSSpace, S.velocity T xT ≠ 0) ∧
+                (a s - b s) ^ (2 : ℕ) ≤ (a t - b t) ^ (2 : ℕ) := by
+  exact
+    not_exists_nonzeroSchwartzConcreteSolution_localizedStreamAntiProfileVelocity_amplitudeDifference_sq_nondecrease_before_nonzero_endpoint_of_pos_viscosity
+      hν
+
 theorem localized_stream_antiprofile_closure_packet_regression
     (ν : ℝ) :
     (∃ x : NSSpace, nsLocalizedStreamDivergenceFreeInitialVelocity.1 x ≠ 0) ∧
