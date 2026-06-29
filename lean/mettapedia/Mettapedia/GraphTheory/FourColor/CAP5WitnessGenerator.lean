@@ -4053,6 +4053,63 @@ theorem residualRemainingControlEdges_empty_processed_eq_empty_iff_remainingCont
       simp at he
 
 /--
+The immutable finite worklist is empty exactly when every desired control edge has already been
+emitted by the Boolean CAP5 classifier.
+-/
+theorem remainingControlEdges_eq_empty_iff_controlEdges_subset_emittedFinset
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    [Fintype G.edgeSet]
+    {p0Inside p4Inside : Bool} {side : V → Prop}
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (controlEdges : Finset G.edgeSet) :
+    classifier.remainingControlEdges controlEdges = ∅ ↔
+      controlEdges ⊆ classifier.emittedFinset := by
+  constructor
+  · intro hremainingEmpty e heControl
+    by_contra heNotEmitted
+    have heRemaining : e ∈ classifier.remainingControlEdges controlEdges :=
+      (classifier.mem_remainingControlEdges_iff controlEdges e).2
+        ⟨heControl, heNotEmitted⟩
+    rw [hremainingEmpty] at heRemaining
+    simp at heRemaining
+  · intro hsubset
+    ext e
+    constructor
+    · intro heRemaining
+      have he' := (classifier.mem_remainingControlEdges_iff controlEdges e).1 heRemaining
+      exact False.elim (he'.2 (hsubset he'.1))
+    · intro he
+      simp at he
+
+/--
+At scheduler start, initial residual exhaustion is exactly the fixed-point condition that every
+desired finite control edge has already been emitted by the immutable classifier.
+-/
+theorem initialResidualRemainingControlEdges_eq_empty_iff_controlEdges_subset_emittedFinset
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    [Fintype G.edgeSet]
+    {p0Inside p4Inside : Bool} {side : V → Prop}
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (controlEdges : Finset G.edgeSet) :
+    classifier.residualRemainingControlEdges controlEdges (∅ : Finset G.edgeSet) = ∅ ↔
+      controlEdges ⊆ classifier.emittedFinset := by
+  constructor
+  · intro hinitialEmpty
+    exact
+      (classifier.remainingControlEdges_eq_empty_iff_controlEdges_subset_emittedFinset
+        controlEdges).1
+        ((classifier.residualRemainingControlEdges_empty_processed_eq_empty_iff_remainingControlEdges_eq_empty
+          controlEdges).1 hinitialEmpty)
+  · intro hsubset
+    exact
+      (classifier.residualRemainingControlEdges_empty_processed_eq_empty_iff_remainingControlEdges_eq_empty
+        controlEdges).2
+        ((classifier.remainingControlEdges_eq_empty_iff_controlEdges_subset_emittedFinset
+          controlEdges).2 hsubset)
+
+/--
 Any finite set already contained in the remaining-control worklist is unchanged by applying
 `remainingControlEdges` again.
 -/

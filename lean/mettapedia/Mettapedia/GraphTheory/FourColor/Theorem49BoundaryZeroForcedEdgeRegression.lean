@@ -21169,37 +21169,18 @@ theorem sharedInteriorPair_CAP5_initialResidualRemainingControlEdges_eq_empty_if
         e ∈ sharedInteriorPairInteriorControlEdges).card := by
   constructor
   · intro hinitialEmpty
-    have hremainingEmpty :
-        classifier.remainingControlEdges sharedInteriorPairInteriorControlEdges = ∅ :=
-      (classifier.residualRemainingControlEdges_empty_processed_eq_empty_iff_remainingControlEdges_eq_empty
-        sharedInteriorPairInteriorControlEdges).1 hinitialEmpty
     have hsubset :
-        sharedInteriorPairInteriorControlEdges ⊆ classifier.emittedFinset := by
-      intro e heControl
-      by_contra heNotEmitted
-      have heRemaining : e ∈ classifier.remainingControlEdges sharedInteriorPairInteriorControlEdges :=
-        (classifier.mem_remainingControlEdges_iff sharedInteriorPairInteriorControlEdges e).2
-          ⟨heControl, heNotEmitted⟩
-      rw [hremainingEmpty] at heRemaining
-      simp at heRemaining
+        sharedInteriorPairInteriorControlEdges ⊆ classifier.emittedFinset :=
+      (classifier.initialResidualRemainingControlEdges_eq_empty_iff_controlEdges_subset_emittedFinset
+        sharedInteriorPairInteriorControlEdges).1 hinitialEmpty
     exact (sharedInteriorPair_emittedInterior_card_ge_two_iff classifier.emittedFinset).2 hsubset
   · intro hcard
     have hsubset :
         sharedInteriorPairInteriorControlEdges ⊆ classifier.emittedFinset :=
       (sharedInteriorPair_emittedInterior_card_ge_two_iff classifier.emittedFinset).1 hcard
-    have hremainingEmpty :
-        classifier.remainingControlEdges sharedInteriorPairInteriorControlEdges = ∅ := by
-      ext e
-      constructor
-      · intro he
-        have he' :=
-          (classifier.mem_remainingControlEdges_iff sharedInteriorPairInteriorControlEdges e).1 he
-        exact False.elim (he'.2 (hsubset he'.1))
-      · intro he
-        simp at he
     exact
-      (classifier.residualRemainingControlEdges_empty_processed_eq_empty_iff_remainingControlEdges_eq_empty
-        sharedInteriorPairInteriorControlEdges).2 hremainingEmpty
+      (classifier.initialResidualRemainingControlEdges_eq_empty_iff_controlEdges_subset_emittedFinset
+        sharedInteriorPairInteriorControlEdges).2 hsubset
 
 /--
 Initial-residual threshold for the wheel focus shell.  The initial immutable scheduler worklist
@@ -21218,39 +21199,19 @@ theorem wheelWithInnerTriangle_CAP5_initialResidualRemainingControlEdges_eq_empt
         e ∈ wheelWithInnerTriangleInteriorControlEdges).card := by
   constructor
   · intro hinitialEmpty
-    have hremainingEmpty :
-        classifier.remainingControlEdges wheelWithInnerTriangleInteriorControlEdges = ∅ :=
-      (classifier.residualRemainingControlEdges_empty_processed_eq_empty_iff_remainingControlEdges_eq_empty
-        wheelWithInnerTriangleInteriorControlEdges).1 hinitialEmpty
     have hsubset :
-        wheelWithInnerTriangleInteriorControlEdges ⊆ classifier.emittedFinset := by
-      intro e heControl
-      by_contra heNotEmitted
-      have heRemaining :
-          e ∈ classifier.remainingControlEdges wheelWithInnerTriangleInteriorControlEdges :=
-        (classifier.mem_remainingControlEdges_iff wheelWithInnerTriangleInteriorControlEdges e).2
-          ⟨heControl, heNotEmitted⟩
-      rw [hremainingEmpty] at heRemaining
-      simp at heRemaining
+        wheelWithInnerTriangleInteriorControlEdges ⊆ classifier.emittedFinset :=
+      (classifier.initialResidualRemainingControlEdges_eq_empty_iff_controlEdges_subset_emittedFinset
+        wheelWithInnerTriangleInteriorControlEdges).1 hinitialEmpty
     exact
       (wheelWithInnerTriangle_emittedInterior_card_ge_three_iff classifier.emittedFinset).2 hsubset
   · intro hcard
     have hsubset :
         wheelWithInnerTriangleInteriorControlEdges ⊆ classifier.emittedFinset :=
       (wheelWithInnerTriangle_emittedInterior_card_ge_three_iff classifier.emittedFinset).1 hcard
-    have hremainingEmpty :
-        classifier.remainingControlEdges wheelWithInnerTriangleInteriorControlEdges = ∅ := by
-      ext e
-      constructor
-      · intro he
-        have he' :=
-          (classifier.mem_remainingControlEdges_iff wheelWithInnerTriangleInteriorControlEdges e).1 he
-        exact False.elim (he'.2 (hsubset he'.1))
-      · intro he
-        simp at he
     exact
-      (classifier.residualRemainingControlEdges_empty_processed_eq_empty_iff_remainingControlEdges_eq_empty
-        wheelWithInnerTriangleInteriorControlEdges).2 hremainingEmpty
+      (classifier.initialResidualRemainingControlEdges_eq_empty_iff_controlEdges_subset_emittedFinset
+        wheelWithInnerTriangleInteriorControlEdges).2 hsubset
 
 /--
 Shared focus-shell decision endpoint for the initial residual scheduler: if the immutable
