@@ -137,6 +137,76 @@ theorem normalizedVorticityEnstrophyAt_le_initial_mul_exp_antiderivative_regress
     normalizedVorticityEnstrophyAt_le_initial_mul_exp_antiderivative
       hcont hAcont hAderiv hGrowth
 
+theorem bkmScalarLogGronwallFactor_mul_exp_neg_antiderivative_le_initial_regression
+    {T : ℝ} {F R A : NSTime → ℝ}
+    (hFcont : ContinuousOn F (Set.Icc 0 T))
+    (hAcont : ContinuousOn A (Set.Icc 0 T))
+    (hFnonneg : ∀ t, t ∈ Set.Icc 0 T → 0 ≤ F t)
+    (hRnonneg : ∀ t, t ∈ Set.Ico 0 T → 0 ≤ R t)
+    (hAderiv :
+      ∀ t, t ∈ Set.Ico 0 T →
+        HasDerivWithinAt A (R t) (Set.Ici t) t)
+    (hGrowth :
+      ∀ t, t ∈ Set.Ico 0 T →
+        ∃ D : ℝ,
+          HasDerivWithinAt F D (Set.Ici t) t ∧
+            D ≤ R t *
+              (1 + Real.log (Real.exp (1 : ℝ) + F t)) * F t) :
+    ∀ t, t ∈ Set.Icc 0 T →
+      (1 + Real.log (Real.exp (1 : ℝ) + F t)) * Real.exp (-(A t)) ≤
+        (1 + Real.log (Real.exp (1 : ℝ) + F 0)) *
+          Real.exp (-(A 0)) := by
+  exact
+    bkmScalarLogGronwallFactor_mul_exp_neg_antiderivative_le_initial
+      hFcont hAcont hFnonneg hRnonneg hAderiv hGrowth
+
+theorem bkmScalarLogGronwallFactor_le_initial_mul_exp_antiderivative_regression
+    {T : ℝ} {F R A : NSTime → ℝ}
+    (hFcont : ContinuousOn F (Set.Icc 0 T))
+    (hAcont : ContinuousOn A (Set.Icc 0 T))
+    (hFnonneg : ∀ t, t ∈ Set.Icc 0 T → 0 ≤ F t)
+    (hRnonneg : ∀ t, t ∈ Set.Ico 0 T → 0 ≤ R t)
+    (hAderiv :
+      ∀ t, t ∈ Set.Ico 0 T →
+        HasDerivWithinAt A (R t) (Set.Ici t) t)
+    (hGrowth :
+      ∀ t, t ∈ Set.Ico 0 T →
+        ∃ D : ℝ,
+          HasDerivWithinAt F D (Set.Ici t) t ∧
+            D ≤ R t *
+              (1 + Real.log (Real.exp (1 : ℝ) + F t)) * F t) :
+    ∀ t, t ∈ Set.Icc 0 T →
+      1 + Real.log (Real.exp (1 : ℝ) + F t) ≤
+        (1 + Real.log (Real.exp (1 : ℝ) + F 0)) *
+          Real.exp (A t - A 0) := by
+  exact
+    bkmScalarLogGronwallFactor_le_initial_mul_exp_antiderivative
+      hFcont hAcont hFnonneg hRnonneg hAderiv hGrowth
+
+theorem bkmScalarLogGronwallValue_le_exp_initial_logFactor_mul_exp_antiderivative_regression
+    {T : ℝ} {F R A : NSTime → ℝ}
+    (hFcont : ContinuousOn F (Set.Icc 0 T))
+    (hAcont : ContinuousOn A (Set.Icc 0 T))
+    (hFnonneg : ∀ t, t ∈ Set.Icc 0 T → 0 ≤ F t)
+    (hRnonneg : ∀ t, t ∈ Set.Ico 0 T → 0 ≤ R t)
+    (hAderiv :
+      ∀ t, t ∈ Set.Ico 0 T →
+        HasDerivWithinAt A (R t) (Set.Ici t) t)
+    (hGrowth :
+      ∀ t, t ∈ Set.Ico 0 T →
+        ∃ D : ℝ,
+          HasDerivWithinAt F D (Set.Ici t) t ∧
+            D ≤ R t *
+              (1 + Real.log (Real.exp (1 : ℝ) + F t)) * F t) :
+    ∀ t, t ∈ Set.Icc 0 T →
+      F t ≤
+        Real.exp
+          ((1 + Real.log (Real.exp (1 : ℝ) + F 0)) *
+            Real.exp (A t - A 0)) := by
+  exact
+    bkmScalarLogGronwallValue_le_exp_initial_logFactor_mul_exp_antiderivative
+      hFcont hAcont hFnonneg hRnonneg hAderiv hGrowth
+
 theorem BKMContinuation_reduced_to_analytic_components_regression :
     BKMVorticityStretchingEstimateClosed ∧
       BKMResidualCurlExpansionAlgebraClosed ∧
