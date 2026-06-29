@@ -100,7 +100,7 @@ def currentNavierRoadmap : List NavierRoadmapEntry :=
       proofNodeId := "navier.bkm.log-sobolev-gradient-control"
       status := .checked
       truthValue := ⟨87, 88⟩
-      obligation := "Once the analytic log-Sobolev/Biot-Savart gradient-control hypothesis is proved, use the checked logarithmic gradient envelope to feed the standard-vorticity growth, enstrophy-production, and dE/dt <= C * (1 + Omega log(exp(1) + H)) * E bounds. This does not itself prove the analytic gradient estimate." },
+      obligation := "Prove the analytic affine log-Sobolev/Biot-Savart pointwise estimate ||grad u|| <= C0 + C1 * Omega log(exp(1) + H); the checked affine normalization then feeds the standard-vorticity growth, enstrophy-production, and dE/dt <= C * (1 + Omega log(exp(1) + H)) * E bounds. This does not itself prove the analytic gradient estimate." },
     { stage := .bkmContinuation
       proofNodeId := "navier.bkm.single-analytic-lemma"
       status := .checked
@@ -110,7 +110,7 @@ def currentNavierRoadmap : List NavierRoadmapEntry :=
       proofNodeId := "navier.bkm.analytic-components"
       status := .checked
       truthValue := ⟨87, 88⟩
-      obligation := "Use BKMAnalyticContinuationLemma_of_components and BKMContinuation_reduced_to_analytic_components with the checked pointwise density derivative, vorticity raw-balance, transport-cancellation algebra plus Schwartz-slice transport cancellation, witness-level Schwartz-slice enstrophy control, and gradient-growth packages. Remaining component targets are residual-curl expansion defect vanishing, the finite-energy vorticity-enstrophy integral identities, log-Sobolev/Biot-Savart gradient control from BKM envelope data, and high-norm continuation/Gronwall closure." },
+      obligation := "Use BKMAnalyticContinuationLemma_of_components and BKMContinuation_reduced_to_analytic_components with the checked pointwise density derivative, vorticity raw-balance, transport-cancellation algebra plus Schwartz-slice transport cancellation, witness-level Schwartz-slice enstrophy control, gradient-growth packages, and affine log-Sobolev normalization. Remaining component targets are residual-curl expansion defect vanishing, the finite-energy vorticity-enstrophy integral identities, the affine log-Sobolev/Biot-Savart pointwise estimate from BKM envelope data, and high-norm continuation/Gronwall closure." },
     { stage := .nonzeroEnergyKernel
       proofNodeId := "navier.energy.nonzero-schwartz-kernel"
       status := .checked
@@ -361,7 +361,7 @@ theorem currentNavierRoadmap_records_bkm_log_sobolev_gradient_control :
        status := .checked
        truthValue := ⟨87, 88⟩
        obligation :=
-        "Once the analytic log-Sobolev/Biot-Savart gradient-control hypothesis is proved, use the checked logarithmic gradient envelope to feed the standard-vorticity growth, enstrophy-production, and dE/dt <= C * (1 + Omega log(exp(1) + H)) * E bounds. This does not itself prove the analytic gradient estimate." } :
+        "Prove the analytic affine log-Sobolev/Biot-Savart pointwise estimate ||grad u|| <= C0 + C1 * Omega log(exp(1) + H); the checked affine normalization then feeds the standard-vorticity growth, enstrophy-production, and dE/dt <= C * (1 + Omega log(exp(1) + H)) * E bounds. This does not itself prove the analytic gradient estimate." } :
       NavierRoadmapEntry) ∈ currentNavierRoadmap := by
   simp [currentNavierRoadmap]
 
@@ -385,7 +385,7 @@ theorem currentNavierRoadmap_records_bkm_analytic_components :
        status := .checked
        truthValue := ⟨87, 88⟩
        obligation :=
-        "Use BKMAnalyticContinuationLemma_of_components and BKMContinuation_reduced_to_analytic_components with the checked pointwise density derivative, vorticity raw-balance, transport-cancellation algebra plus Schwartz-slice transport cancellation, witness-level Schwartz-slice enstrophy control, and gradient-growth packages. Remaining component targets are residual-curl expansion defect vanishing, the finite-energy vorticity-enstrophy integral identities, log-Sobolev/Biot-Savart gradient control from BKM envelope data, and high-norm continuation/Gronwall closure." } :
+        "Use BKMAnalyticContinuationLemma_of_components and BKMContinuation_reduced_to_analytic_components with the checked pointwise density derivative, vorticity raw-balance, transport-cancellation algebra plus Schwartz-slice transport cancellation, witness-level Schwartz-slice enstrophy control, gradient-growth packages, and affine log-Sobolev normalization. Remaining component targets are residual-curl expansion defect vanishing, the finite-energy vorticity-enstrophy integral identities, the affine log-Sobolev/Biot-Savart pointwise estimate from BKM envelope data, and high-norm continuation/Gronwall closure." } :
       NavierRoadmapEntry) ∈ currentNavierRoadmap := by
   simp [currentNavierRoadmap]
 

@@ -14,12 +14,22 @@ namespace NavierStokes
 
 section BKMContinuation
 
+theorem BKMLogSobolevGradientControlFromEnvelope_of_affinePointwiseFromEnvelope_regression
+    (hAffine : BKMLogSobolevAffinePointwiseFromEnvelope) :
+    BKMLogSobolevGradientControlFromEnvelope := by
+  exact BKMLogSobolevGradientControlFromEnvelope_of_affinePointwiseFromEnvelope hAffine
+
 theorem BKMAnalyticContinuationLemma_of_components_regression
     (hDefect : BKMResidualCurlExpansionDefectVanishes)
     (hLog : BKMLogSobolevGradientControlFromEnvelope)
     (hHigh : BKMHighNormContinuationFromLogControl) :
     BKMAnalyticContinuationLemma := by
   exact BKMAnalyticContinuationLemma_of_components hDefect hLog hHigh
+
+theorem BKMAffineLogSobolevAnalyticComponentsClosed_implies_BKMAnalyticComponentsClosed_regression
+    (h : BKMAffineLogSobolevAnalyticComponentsClosed) :
+    BKMAnalyticComponentsClosed := by
+  exact h.implies_BKMAnalyticComponentsClosed
 
 theorem BKMAnalyticComponentsClosed_implies_BKMAnalyticContinuationLemma_regression
     (h : BKMAnalyticComponentsClosed) :
@@ -28,6 +38,11 @@ theorem BKMAnalyticComponentsClosed_implies_BKMAnalyticContinuationLemma_regress
 
 theorem BKMAnalyticComponentsClosed_implies_finiteEnergyBKMContinuationTargetOnNonnegHorizons_regression
     (h : BKMAnalyticComponentsClosed) :
+    ExplicitFiniteEnergyBKMContinuationTargetOnNonnegHorizons := by
+  exact h.implies_finiteEnergyBKMContinuationTargetOnNonnegHorizons
+
+theorem BKMAffineLogSobolevAnalyticComponentsClosed_implies_finiteEnergyBKMContinuationTargetOnNonnegHorizons_regression
+    (h : BKMAffineLogSobolevAnalyticComponentsClosed) :
     ExplicitFiniteEnergyBKMContinuationTargetOnNonnegHorizons := by
   exact h.implies_finiteEnergyBKMContinuationTargetOnNonnegHorizons
 
@@ -46,9 +61,12 @@ theorem BKMContinuation_reduced_to_analytic_components_regression :
                           BKMVorticityEnstrophyAprioriEstimateClosed ∧
                             BKMVorticityEnstrophyGradientGrowthClosed ∧
                               BKMVorticityEnstrophyLogSobolevGrowthClosed ∧
-                                BKMLogSobolevGrowthEstimateClosed ∧
-                                  (BKMAnalyticComponentsClosed →
-                                    ExplicitFiniteEnergyBKMContinuationTargetOnNonnegHorizons) := by
+                                BKMLogSobolevAffineReductionClosed ∧
+                                  BKMLogSobolevGrowthEstimateClosed ∧
+                                    (BKMAnalyticComponentsClosed →
+                                      ExplicitFiniteEnergyBKMContinuationTargetOnNonnegHorizons) ∧
+                                      (BKMAffineLogSobolevAnalyticComponentsClosed →
+                                        ExplicitFiniteEnergyBKMContinuationTargetOnNonnegHorizons) := by
   exact BKMContinuation_reduced_to_analytic_components
 
 end BKMContinuation
