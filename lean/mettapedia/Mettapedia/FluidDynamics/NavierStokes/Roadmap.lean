@@ -90,7 +90,7 @@ def currentNavierRoadmap : List NavierRoadmapEntry :=
       proofNodeId := "navier.bkm.residual-curl-differential-identities"
       status := .checked
       truthValue := ⟨88, 88⟩
-      obligation := "Use BKMResidualCurlDifferentialIdentitiesClosed_of_commutationExpansion: the remaining decomposed residual-curl target is BKMResidualCurlCommutationExpansionClosed, i.e. curl/time commutation, curl/Laplacian commutation, and the incompressible curl-convection identity." },
+      obligation := "Use BKMResidualCurlDifferentialIdentitiesClosed_of_commutationExpansion: curl/time and curl/Laplacian commutation are checked from smoothness, and residualCurlCommutationExpansionClosedOn_of_smooth_convection reduces the remaining decomposed target to the incompressible curl-convection identity." },
     { stage := .bkmContinuation
       proofNodeId := "navier.bkm.standard-vorticity-growth"
       status := .checked
@@ -339,7 +339,7 @@ theorem currentNavierRoadmap_records_bkm_residual_curl_differential_identities :
        status := .checked
        truthValue := ⟨88, 88⟩
        obligation :=
-        "Use BKMResidualCurlDifferentialIdentitiesClosed_of_commutationExpansion: the remaining decomposed residual-curl target is BKMResidualCurlCommutationExpansionClosed, i.e. curl/time commutation, curl/Laplacian commutation, and the incompressible curl-convection identity." } :
+        "Use BKMResidualCurlDifferentialIdentitiesClosed_of_commutationExpansion: curl/time and curl/Laplacian commutation are checked from smoothness, and residualCurlCommutationExpansionClosedOn_of_smooth_convection reduces the remaining decomposed target to the incompressible curl-convection identity." } :
       NavierRoadmapEntry) ∈ currentNavierRoadmap := by
   simp [currentNavierRoadmap]
 

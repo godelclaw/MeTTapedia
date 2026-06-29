@@ -13,6 +13,7 @@ namespace FluidDynamics
 namespace NavierStokes
 
 open scoped ContDiff
+open scoped Laplacian
 
 section BKMContinuation
 
@@ -165,6 +166,30 @@ theorem timeVorticityDerivative_eq_spatialVorticity_timeVelocityDerivativeField_
       spatialVorticity (timeVelocityDerivativeField u) t x := by
   exact timeVorticityDerivative_eq_spatialVorticity_timeVelocityDerivativeField hu t x
 
+theorem fderiv_laplacian_apply_eq_laplacian_fderiv_apply_of_contDiff_regression
+    {F : Type*} [NormedAddCommGroup F] [NormedSpace ℝ F]
+    {f : NSSpace → F} (hf : ContDiff ℝ ∞ f)
+    (x e : NSSpace) :
+    fderiv ℝ (fun y : NSSpace => Δ f y) x e =
+      Δ (fun y : NSSpace => fderiv ℝ f y e) x := by
+  exact fderiv_laplacian_apply_eq_laplacian_fderiv_apply_of_contDiff hf x e
+
+theorem spatialDerivativeComponent_spatialLaplacianField_eq_laplacian_spatialDerivativeComponent_regression
+    {u : NSVelocityField} (hu : smoothSpaceTimeVelocity u)
+    (t : NSTime) (x : NSSpace) (coord comp : Fin 3) :
+    spatialDerivativeComponent (spatialLaplacianField u) t x coord comp =
+      Δ (fun y : NSSpace => spatialDerivativeComponent u t y coord comp) x := by
+  exact spatialDerivativeComponent_spatialLaplacianField_eq_laplacian_spatialDerivativeComponent
+    hu t x coord comp
+
+theorem spatialVorticity_spatialLaplacianField_eq_vorticityDiffusionTerm_of_smooth_regression
+    {u : NSVelocityField} (hu : smoothSpaceTimeVelocity u)
+    (t : NSTime) (x : NSSpace) :
+    spatialVorticity (spatialLaplacianField u) t x =
+      vorticityDiffusionTerm u t x := by
+  exact spatialVorticity_spatialLaplacianField_eq_vorticityDiffusionTerm_of_smooth
+    hu t x
+
 theorem vorticityTimeCommutationDefect_eq_zero_of_smooth_regression
     {u : NSVelocityField} (hu : smoothSpaceTimeVelocity u)
     (t : NSTime) (x : NSSpace) :
@@ -175,6 +200,17 @@ theorem vorticityTimeCommutationClosedOn_of_smooth_regression
     {u : NSVelocityField} {T : ℝ} (hu : smoothSpaceTimeVelocity u) :
     vorticityTimeCommutationClosedOn u T := by
   exact vorticityTimeCommutationClosedOn_of_smooth hu
+
+theorem vorticityLaplacianCommutationDefect_eq_zero_of_smooth_regression
+    {u : NSVelocityField} (hu : smoothSpaceTimeVelocity u)
+    (t : NSTime) (x : NSSpace) :
+    vorticityLaplacianCommutationDefect u t x = 0 := by
+  exact vorticityLaplacianCommutationDefect_eq_zero_of_smooth hu t x
+
+theorem vorticityLaplacianCommutationClosedOn_of_smooth_regression
+    {u : NSVelocityField} {T : ℝ} (hu : smoothSpaceTimeVelocity u) :
+    vorticityLaplacianCommutationClosedOn u T := by
+  exact vorticityLaplacianCommutationClosedOn_of_smooth hu
 
 theorem residualCurlLinearityDifferentiableAt_of_smooth_laplacian_regression
     {u : NSVelocityField} {t : NSTime} {x : NSSpace}
@@ -244,6 +280,13 @@ theorem residualCurlDifferentialIdentitiesClosedOn_of_smooth_commutationExpansio
     residualCurlDifferentialIdentitiesClosedOn ν u T := by
   exact residualCurlDifferentialIdentitiesClosedOn_of_smooth_commutationExpansion
     hu hComm
+
+theorem residualCurlCommutationExpansionClosedOn_of_smooth_convection_regression
+    {T : ℝ} {u : NSVelocityField}
+    (hu : smoothSpaceTimeVelocity u)
+    (hConv : vorticityConvectionExpansionClosedOn u T) :
+    residualCurlCommutationExpansionClosedOn u T := by
+  exact residualCurlCommutationExpansionClosedOn_of_smooth_convection hu hConv
 
 theorem residualCurlExpansionClosedOn_of_smooth_commutationExpansion_regression
     {ν T : ℝ} {u : NSVelocityField}

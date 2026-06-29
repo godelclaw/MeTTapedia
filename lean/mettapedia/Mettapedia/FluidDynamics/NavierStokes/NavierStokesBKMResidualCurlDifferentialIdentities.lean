@@ -1,4 +1,5 @@
 import Mettapedia.FluidDynamics.NavierStokes.NavierStokesBKMHighNormContinuation
+import Mathlib.Analysis.Calculus.ContDiff.FTaylorSeries
 
 /-!
 # BKM residual-curl differential identities
@@ -579,6 +580,301 @@ theorem timeVorticityDerivative_eq_spatialVorticity_timeVelocityDerivativeField
     simp [spatialDerivativeComponent_time_derivative_eq_timeVelocityDerivativeField hu t x,
       spatialVorticity, nsCoord0, nsCoord1, nsCoord2]
 
+/-- Differentiating a Laplacian gives the trace of the third Frechet
+derivative with the new direction in the first slot. -/
+theorem fderiv_laplacian_apply_eq_sum_iteratedFDeriv_three
+    {F : Type*} [NormedAddCommGroup F] [NormedSpace ℝ F]
+    {f : NSSpace → F} (hf : ContDiff ℝ ∞ f)
+    (x e : NSSpace) :
+    fderiv ℝ (fun y : NSSpace => Δ f y) x e =
+      ∑ i : Fin (Module.finrank ℝ NSSpace),
+        (iteratedFDeriv ℝ 3 f x)
+          ![e, (stdOrthonormalBasis ℝ NSSpace) i,
+            (stdOrthonormalBasis ℝ NSSpace) i] := by
+  have hiter :
+      Differentiable ℝ (fun y : NSSpace => iteratedFDeriv ℝ 2 f y) :=
+    hf.differentiable_iteratedFDeriv (m := 2) (by
+      exact WithTop.coe_lt_coe.2 (ENat.coe_lt_top 2))
+  have hterm : ∀ i : Fin (Module.finrank ℝ NSSpace),
+      DifferentiableAt ℝ
+        (fun y : NSSpace =>
+          (iteratedFDeriv ℝ 2 f y)
+            ![(stdOrthonormalBasis ℝ NSSpace) i,
+              (stdOrthonormalBasis ℝ NSSpace) i]) x := by
+    intro i
+    exact (hiter x).continuousMultilinear_apply_const
+      ![(stdOrthonormalBasis ℝ NSSpace) i,
+        (stdOrthonormalBasis ℝ NSSpace) i]
+  rw [InnerProductSpace.laplacian_eq_iteratedFDeriv_stdOrthonormalBasis]
+  rw [fderiv_fun_sum (u := Finset.univ) (A := fun i y =>
+    (iteratedFDeriv ℝ 2 f y)
+      ![(stdOrthonormalBasis ℝ NSSpace) i,
+        (stdOrthonormalBasis ℝ NSSpace) i]) (by
+      intro i _hi
+      exact hterm i)]
+  rw [sum_apply]
+  refine Finset.sum_congr rfl ?_
+  intro i _hi
+  rw [fderiv_continuousMultilinear_apply_const_apply (hiter x)
+    ![(stdOrthonormalBasis ℝ NSSpace) i,
+      (stdOrthonormalBasis ℝ NSSpace) i] e]
+  rw [fderiv_iteratedFDeriv]
+  simp [continuousMultilinearCurryLeftEquiv_apply]
+
+/-- The Laplacian of a fixed directional derivative gives the same trace with
+the fixed direction in the last slot. -/
+theorem laplacian_fderiv_apply_eq_sum_iteratedFDeriv_three
+    {F : Type*} [NormedAddCommGroup F] [NormedSpace ℝ F]
+    {f : NSSpace → F} (hf : ContDiff ℝ ∞ f)
+    (x e : NSSpace) :
+    Δ (fun y : NSSpace => fderiv ℝ f y e) x =
+      ∑ i : Fin (Module.finrank ℝ NSSpace),
+        (iteratedFDeriv ℝ 3 f x)
+          ![(stdOrthonormalBasis ℝ NSSpace) i,
+            (stdOrthonormalBasis ℝ NSSpace) i, e] := by
+  have hfderiv : ContDiff ℝ ∞ (fun y : NSSpace => fderiv ℝ f y) :=
+    hf.fderiv_right (m := ∞) (by simp)
+  rw [InnerProductSpace.laplacian_eq_iteratedFDeriv_stdOrthonormalBasis]
+  refine Finset.sum_congr rfl ?_
+  intro i _hi
+  rw [iteratedFDeriv_clm_apply_const_apply (hc := hfderiv)
+    (i := 2) (hi := by
+      exact ENat.natCast_le_of_coe_top_le_withTop
+        (N := (∞ : WithTop ℕ∞)) (by rfl) 2) (u := e)]
+  have hright :=
+    (iteratedFDeriv_succ_apply_right
+      (𝕜 := ℝ) (f := f) (x := x) (n := 2)
+      (m := ![(stdOrthonormalBasis ℝ NSSpace) i,
+        (stdOrthonormalBasis ℝ NSSpace) i, e])).symm
+  rw [show
+      Fin.init ![(stdOrthonormalBasis ℝ NSSpace) i,
+        (stdOrthonormalBasis ℝ NSSpace) i, e] =
+        ![(stdOrthonormalBasis ℝ NSSpace) i,
+          (stdOrthonormalBasis ℝ NSSpace) i] by
+        ext j
+        fin_cases j <;> rfl] at hright
+  exact hright
+
+/-- In `C∞`, the first two slots of the third Frechet derivative commute.
+This avoids the stronger analytic-only full permutation theorem. -/
+theorem iteratedFDeriv_three_swap_first_two_of_contDiff
+    {F : Type*} [NormedAddCommGroup F] [NormedSpace ℝ F]
+    {f : NSSpace → F} (hf : ContDiff ℝ ∞ f)
+    (x a b c : NSSpace) :
+    (iteratedFDeriv ℝ 3 f x) ![a, b, c] =
+      (iteratedFDeriv ℝ 3 f x) ![b, a, c] := by
+  have hfderiv : ContDiff ℝ ∞ (fun y : NSSpace => fderiv ℝ f y) :=
+    hf.fderiv_right (m := ∞) (by simp)
+  have hsymm : IsSymmSndFDerivAt ℝ (fun y : NSSpace => fderiv ℝ f y) x := by
+    exact (hfderiv.contDiffAt (x := x)).isSymmSndFDerivAt (by
+      simpa using ENat.natCast_le_of_coe_top_le_withTop
+        (N := (∞ : WithTop ℕ∞)) (by rfl) 2)
+  rw [iteratedFDeriv_succ_apply_right
+    (𝕜 := ℝ) (f := f) (x := x) (n := 2) (m := ![a, b, c])]
+  rw [iteratedFDeriv_succ_apply_right
+    (𝕜 := ℝ) (f := f) (x := x) (n := 2) (m := ![b, a, c])]
+  rw [show Fin.init ![a, b, c] = ![a, b] by
+      ext j; fin_cases j <;> rfl]
+  rw [show Fin.init ![b, a, c] = ![b, a] by
+      ext j; fin_cases j <;> rfl]
+  change ((iteratedFDeriv ℝ 2 (fun y : NSSpace => fderiv ℝ f y) x) ![a, b]) c =
+    ((iteratedFDeriv ℝ 2 (fun y : NSSpace => fderiv ℝ f y) x) ![b, a]) c
+  rw [iteratedFDeriv_two_apply, iteratedFDeriv_two_apply]
+  exact congrArg (fun L : NSSpace →L[ℝ] F => L c) (hsymm.eq a b)
+
+/-- In `C∞`, the last two slots of the third Frechet derivative commute,
+obtained by differentiating the ordinary second-derivative symmetry identity. -/
+theorem iteratedFDeriv_three_swap_last_two_of_contDiff
+    {F : Type*} [NormedAddCommGroup F] [NormedSpace ℝ F]
+    {f : NSSpace → F} (hf : ContDiff ℝ ∞ f)
+    (x a b c : NSSpace) :
+    (iteratedFDeriv ℝ 3 f x) ![a, b, c] =
+      (iteratedFDeriv ℝ 3 f x) ![a, c, b] := by
+  have hiter :
+      Differentiable ℝ (fun y : NSSpace => iteratedFDeriv ℝ 2 f y) :=
+    hf.differentiable_iteratedFDeriv (m := 2) (by
+      exact WithTop.coe_lt_coe.2 (ENat.coe_lt_top 2))
+  have hbc :
+      (fun y : NSSpace => (iteratedFDeriv ℝ 2 f y) ![b, c]) =
+        fun y : NSSpace => fderiv ℝ (fderiv ℝ f) y b c := by
+    funext y
+    simpa using
+      (iteratedFDeriv_two_apply (𝕜 := ℝ) (f := f) (z := y) (m := ![b, c]))
+  have hcb :
+      (fun y : NSSpace => (iteratedFDeriv ℝ 2 f y) ![c, b]) =
+        fun y : NSSpace => fderiv ℝ (fderiv ℝ f) y c b := by
+    funext y
+    simpa using
+      (iteratedFDeriv_two_apply (𝕜 := ℝ) (f := f) (z := y) (m := ![c, b]))
+  have hsymmFun :
+      (fun y : NSSpace => fderiv ℝ (fderiv ℝ f) y b c) =
+        fun y : NSSpace => fderiv ℝ (fderiv ℝ f) y c b := by
+    funext y
+    have hsymm : IsSymmSndFDerivAt ℝ f y := by
+      exact (hf.contDiffAt (x := y)).isSymmSndFDerivAt (by
+        simpa using ENat.natCast_le_of_coe_top_le_withTop
+          (N := (∞ : WithTop ℕ∞)) (by rfl) 2)
+    exact hsymm.eq b c
+  rw [iteratedFDeriv_succ_apply_left
+    (𝕜 := ℝ) (f := f) (x := x) (n := 2) (m := ![a, b, c])]
+  rw [iteratedFDeriv_succ_apply_left
+    (𝕜 := ℝ) (f := f) (x := x) (n := 2) (m := ![a, c, b])]
+  rw [show Fin.tail ![a, b, c] = ![b, c] by
+      ext j; fin_cases j <;> rfl]
+  rw [show Fin.tail ![a, c, b] = ![c, b] by
+      ext j; fin_cases j <;> rfl]
+  change ((fderiv ℝ (fun y : NSSpace => iteratedFDeriv ℝ 2 f y) x) a) ![b, c] =
+    ((fderiv ℝ (fun y : NSSpace => iteratedFDeriv ℝ 2 f y) x) a) ![c, b]
+  rw [← fderiv_continuousMultilinear_apply_const_apply (hiter x) ![b, c] a]
+  rw [← fderiv_continuousMultilinear_apply_const_apply (hiter x) ![c, b] a]
+  rw [hbc, hcb, hsymmFun]
+
+/-- Directional derivatives commute with the spatial Laplacian for smooth
+fixed-time slices. -/
+theorem fderiv_laplacian_apply_eq_laplacian_fderiv_apply_of_contDiff
+    {F : Type*} [NormedAddCommGroup F] [NormedSpace ℝ F]
+    {f : NSSpace → F} (hf : ContDiff ℝ ∞ f)
+    (x e : NSSpace) :
+    fderiv ℝ (fun y : NSSpace => Δ f y) x e =
+      Δ (fun y : NSSpace => fderiv ℝ f y e) x := by
+  rw [fderiv_laplacian_apply_eq_sum_iteratedFDeriv_three hf x e]
+  rw [laplacian_fderiv_apply_eq_sum_iteratedFDeriv_three hf x e]
+  refine Finset.sum_congr rfl ?_
+  intro i _hi
+  let b : NSSpace := (stdOrthonormalBasis ℝ NSSpace) i
+  calc
+    (iteratedFDeriv ℝ 3 f x) ![e, b, b]
+        = (iteratedFDeriv ℝ 3 f x) ![b, e, b] := by
+          exact iteratedFDeriv_three_swap_first_two_of_contDiff hf x e b b
+    _ = (iteratedFDeriv ℝ 3 f x) ![b, b, e] := by
+          exact iteratedFDeriv_three_swap_last_two_of_contDiff hf x b e b
+
+/-- For smooth velocity fields, each coordinate derivative of `Delta u`
+equals the Laplacian of the corresponding coordinate derivative of `u`. -/
+theorem spatialDerivativeComponent_spatialLaplacianField_eq_laplacian_spatialDerivativeComponent
+    {u : NSVelocityField} (hu : smoothSpaceTimeVelocity u)
+    (t : NSTime) (x : NSSpace) (coord comp : Fin 3) :
+    spatialDerivativeComponent (spatialLaplacianField u) t x coord comp =
+      Δ (fun y : NSSpace => spatialDerivativeComponent u t y coord comp) x := by
+  let e : NSSpace := EuclideanSpace.single coord (1 : ℝ)
+  let f : NSSpace → NSSpace := fun y => u t y
+  have hf : ContDiff ℝ ∞ f :=
+    smoothSpaceTimeVelocity_contDiff_spatialSlice hu t
+  have hcomm :=
+    congrArg (fun z : NSSpace => z comp)
+      (fderiv_laplacian_apply_eq_laplacian_fderiv_apply_of_contDiff
+        (f := f) hf x e)
+  have hfderiv : ContDiff ℝ ∞ (fun y : NSSpace => fderiv ℝ f y) :=
+    hf.fderiv_right (m := ∞) (by simp)
+  have hdir :
+      ContDiff ℝ ∞ (fun y : NSSpace => fderiv ℝ f y e) :=
+    hfderiv.clm_apply contDiff_const
+  have hproj :=
+    ((hdir.contDiffAt (x := x)).of_le (by
+      exact ENat.natCast_le_of_coe_top_le_withTop
+        (N := (∞ : WithTop ℕ∞)) (by rfl) 2)).laplacian_CLM_comp_left
+      (l := (EuclideanSpace.proj comp : NSSpace →L[ℝ] ℝ))
+  change (fderiv ℝ (fun y : NSSpace => Δ f y) x e) comp =
+    Δ (fun y : NSSpace => (fderiv ℝ f y e) comp) x
+  calc
+    (fderiv ℝ (fun y : NSSpace => Δ f y) x e) comp
+        = (Δ (fun y : NSSpace => fderiv ℝ f y e) x) comp := hcomm
+    _ = Δ (fun y : NSSpace => (fderiv ℝ f y e) comp) x := by
+          simpa [Function.comp_def] using hproj.symm
+
+/-- Smoothness commutes the concrete curl with the spatial Laplacian. -/
+theorem spatialVorticity_spatialLaplacianField_eq_vorticityDiffusionTerm_of_smooth
+    {u : NSVelocityField} (hu : smoothSpaceTimeVelocity u)
+    (t : NSTime) (x : NSSpace) :
+    spatialVorticity (spatialLaplacianField u) t x =
+      vorticityDiffusionTerm u t x := by
+  have hωslice :
+      ContDiff ℝ ∞ (fun y : NSSpace => spatialVorticity u t y) :=
+    smoothSpaceTimeVelocity_contDiff_spatialSlice
+      (spatialVorticity_smoothSpaceTimeVelocity_of_smooth hu) t
+  have hωproj : ∀ i : Fin 3,
+      (vorticityDiffusionTerm u t x) i =
+        Δ (fun y : NSSpace => (spatialVorticity u t y) i) x := by
+    intro i
+    have hproj :=
+      ((hωslice.contDiffAt (x := x)).of_le (by
+        exact ENat.natCast_le_of_coe_top_le_withTop
+          (N := (∞ : WithTop ℕ∞)) (by rfl) 2)).laplacian_CLM_comp_left
+        (l := (EuclideanSpace.proj i : NSSpace →L[ℝ] ℝ))
+    simpa [vorticityDiffusionTerm, spatialLaplacian, Function.comp_def] using hproj.symm
+  have hderivAt : ∀ coord comp : Fin 3,
+      ContDiffAt ℝ 2
+        (fun y : NSSpace => spatialDerivativeComponent u t y coord comp) x := by
+    intro coord comp
+    have hst :=
+      spatialDerivativeComponent_contDiff_spacetime_of_smooth hu coord comp
+    have hslice :
+        ContDiff ℝ ∞
+          (fun y : NSSpace => spatialDerivativeComponent u t y coord comp) :=
+      contDiff_congr_global
+        (hst.comp (contDiff_prodMk_right (𝕜 := ℝ) t)) (by intro y; rfl)
+    exact (hslice.contDiffAt (x := x)).of_le (by
+      exact ENat.natCast_le_of_coe_top_le_withTop
+        (N := (∞ : WithTop ℕ∞)) (by rfl) 2)
+  ext i
+  fin_cases i
+  · change (spatialVorticity (spatialLaplacianField u) t x) nsCoord0 =
+      (vorticityDiffusionTerm u t x) nsCoord0
+    rw [hωproj nsCoord0]
+    simp [spatialVorticity, nsCoord0, nsCoord1, nsCoord2]
+    change
+      spatialDerivativeComponent (spatialLaplacianField u) t x nsCoord1 nsCoord2 -
+          spatialDerivativeComponent (spatialLaplacianField u) t x nsCoord2 nsCoord1 =
+        Δ ((fun y : NSSpace => spatialDerivativeComponent u t y nsCoord1 nsCoord2) -
+          fun y : NSSpace => spatialDerivativeComponent u t y nsCoord2 nsCoord1) x
+    rw [(hderivAt nsCoord1 nsCoord2).laplacian_sub
+      (hderivAt nsCoord2 nsCoord1)]
+    rw [spatialDerivativeComponent_spatialLaplacianField_eq_laplacian_spatialDerivativeComponent
+      hu t x nsCoord1 nsCoord2]
+    rw [spatialDerivativeComponent_spatialLaplacianField_eq_laplacian_spatialDerivativeComponent
+      hu t x nsCoord2 nsCoord1]
+  · change (spatialVorticity (spatialLaplacianField u) t x) nsCoord1 =
+      (vorticityDiffusionTerm u t x) nsCoord1
+    rw [hωproj nsCoord1]
+    simp [spatialVorticity, nsCoord0, nsCoord1, nsCoord2]
+    change
+      spatialDerivativeComponent (spatialLaplacianField u) t x nsCoord2 nsCoord0 -
+          spatialDerivativeComponent (spatialLaplacianField u) t x nsCoord0 nsCoord2 =
+        Δ ((fun y : NSSpace => spatialDerivativeComponent u t y nsCoord2 nsCoord0) -
+          fun y : NSSpace => spatialDerivativeComponent u t y nsCoord0 nsCoord2) x
+    rw [(hderivAt nsCoord2 nsCoord0).laplacian_sub
+      (hderivAt nsCoord0 nsCoord2)]
+    rw [spatialDerivativeComponent_spatialLaplacianField_eq_laplacian_spatialDerivativeComponent
+      hu t x nsCoord2 nsCoord0]
+    rw [spatialDerivativeComponent_spatialLaplacianField_eq_laplacian_spatialDerivativeComponent
+      hu t x nsCoord0 nsCoord2]
+  · change (spatialVorticity (spatialLaplacianField u) t x) nsCoord2 =
+      (vorticityDiffusionTerm u t x) nsCoord2
+    rw [hωproj nsCoord2]
+    simp [spatialVorticity, nsCoord0, nsCoord1, nsCoord2]
+    change
+      spatialDerivativeComponent (spatialLaplacianField u) t x nsCoord0 nsCoord1 -
+          spatialDerivativeComponent (spatialLaplacianField u) t x nsCoord1 nsCoord0 =
+        Δ ((fun y : NSSpace => spatialDerivativeComponent u t y nsCoord0 nsCoord1) -
+          fun y : NSSpace => spatialDerivativeComponent u t y nsCoord1 nsCoord0) x
+    rw [(hderivAt nsCoord0 nsCoord1).laplacian_sub
+      (hderivAt nsCoord1 nsCoord0)]
+    rw [spatialDerivativeComponent_spatialLaplacianField_eq_laplacian_spatialDerivativeComponent
+      hu t x nsCoord0 nsCoord1]
+    rw [spatialDerivativeComponent_spatialLaplacianField_eq_laplacian_spatialDerivativeComponent
+      hu t x nsCoord1 nsCoord0]
+
+/-- Smooth velocities have zero curl/Laplacian commutation defect at each
+point. -/
+theorem vorticityLaplacianCommutationDefect_eq_zero_of_smooth
+    {u : NSVelocityField} (hu : smoothSpaceTimeVelocity u)
+    (t : NSTime) (x : NSSpace) :
+    vorticityLaplacianCommutationDefect u t x = 0 := by
+  rw [vorticityLaplacianCommutationDefect]
+  rw [spatialVorticity_spatialLaplacianField_eq_vorticityDiffusionTerm_of_smooth
+    hu t x]
+  simp
+
 /-- Smooth spacetime velocities have zero curl/time commutation defect at each
 point. -/
 theorem vorticityTimeCommutationDefect_eq_zero_of_smooth
@@ -750,6 +1046,14 @@ def vorticityLaplacianCommutationClosedOn
     (u : NSVelocityField) (T : ℝ) : Prop :=
   ∀ t x, 0 ≤ t → t ≤ T → vorticityLaplacianCommutationDefect u t x = 0
 
+/-- Smooth spacetime velocities close curl/Laplacian commutation on every
+slab. -/
+theorem vorticityLaplacianCommutationClosedOn_of_smooth
+    {u : NSVelocityField} {T : ℝ} (hu : smoothSpaceTimeVelocity u) :
+    vorticityLaplacianCommutationClosedOn u T := by
+  intro t x _ht0 _htT
+  exact vorticityLaplacianCommutationDefect_eq_zero_of_smooth hu t x
+
 /-- Slabwise closure of the incompressible curl-convection identity. -/
 def vorticityConvectionExpansionClosedOn
     (u : NSVelocityField) (T : ℝ) : Prop :=
@@ -771,6 +1075,17 @@ def residualCurlCommutationExpansionClosedOn
   vorticityTimeCommutationClosedOn u T ∧
     vorticityLaplacianCommutationClosedOn u T ∧
       vorticityConvectionExpansionClosedOn u T
+
+/-- Once smoothness supplies curl/time and curl/Laplacian commutation, the
+residual-curl commutation bundle reduces to the incompressible convection
+identity. -/
+theorem residualCurlCommutationExpansionClosedOn_of_smooth_convection
+    {u : NSVelocityField} {T : ℝ}
+    (hu : smoothSpaceTimeVelocity u)
+    (hConv : vorticityConvectionExpansionClosedOn u T) :
+    residualCurlCommutationExpansionClosedOn u T :=
+  ⟨vorticityTimeCommutationClosedOn_of_smooth hu,
+    vorticityLaplacianCommutationClosedOn_of_smooth hu, hConv⟩
 
 /-- A differentiability proof for curl-linearity plus the remaining three
 commutation/expansion identities supplies the bundled residual-curl
