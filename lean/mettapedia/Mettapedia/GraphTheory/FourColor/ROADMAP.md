@@ -629,7 +629,11 @@ longer acceptable progress.
    primitive checker gap or that trace-local evader directly.  The
    failure-only report kernel/map theorem gives the same failed route in the
    lab-facing rank language: primitive checker gap or unified
-   emitted-kernel/remaining-map evader.  The
+   emitted-kernel/remaining-map evader.  The report-level kernel/map split and
+   no-gap/no-evader closure corollary give the complementary positive
+   direction: excluding both primitive checker gaps and the unified
+   emitted-kernel/remaining-map evader closes theorem-4.9 synthesis plus full
+   selected-boundary-zero classifier control.  The
    pure no-target theorem underneath those refinements says failed synthesis
    already produces a genuine selected-boundary-zero evader for the enumerated
    forced edges.  The remaining crux is whether exact shell/CAP5 data reaches
