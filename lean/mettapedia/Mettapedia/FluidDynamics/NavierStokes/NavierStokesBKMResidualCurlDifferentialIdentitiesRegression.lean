@@ -520,6 +520,10 @@ theorem BKMVorticityFiniteTimeWitnessResidualCurlVelocitySchwartzFiniteFamilyAff
     BKMVorticityFiniteTimeWitnessResidualCurlVelocitySchwartzFiniteFamilyAffineLogGrowthClosed := by
   exact BKMVorticityFiniteTimeWitnessResidualCurlVelocitySchwartzFiniteFamilyAffineLogGrowthClosed_proved
 
+theorem BKMVorticityFiniteTimeWitnessResidualCurlVelocitySchwartzFiniteFamilyHardCoreAffineLogClosed_proved_regression :
+    BKMVorticityFiniteTimeWitnessResidualCurlVelocitySchwartzFiniteFamilyHardCoreAffineLogClosed := by
+  exact BKMVorticityFiniteTimeWitnessResidualCurlVelocitySchwartzFiniteFamilyHardCoreAffineLogClosed_proved
+
 theorem BKMContinuation_reduced_to_affineLogHighNorm_after_residualCurl_regression :
     BKMResidualCurlExpansionDefectVanishes ∧
       BKMVorticityFiniteTimeWitnessResidualCurlAprioriClosed ∧
@@ -542,10 +546,27 @@ theorem BKMContinuation_reduced_to_affineLogHighNorm_after_residualCurl_integrab
                   BKMVorticityFiniteTimeWitnessResidualCurlVelocitySchwartzTwoProfileAffineLogGrowthClosed ∧
                     BKMVorticityFiniteTimeWitnessResidualCurlVelocitySchwartzFiniteFamilyAprioriClosed ∧
                       BKMVorticityFiniteTimeWitnessResidualCurlVelocitySchwartzFiniteFamilyAffineLogGrowthClosed ∧
-                        (BKMLogSobolevAffinePointwiseFromEnvelope →
-                          BKMHighNormContinuationFromLogControl →
-                            ExplicitFiniteEnergyBKMContinuationTargetOnNonnegHorizons) := by
+                        BKMVorticityFiniteTimeWitnessResidualCurlVelocitySchwartzFiniteFamilyHardCoreAffineLogClosed ∧
+                          (BKMLogSobolevAffinePointwiseFromEnvelope →
+                            BKMHighNormContinuationFromLogControl →
+                              ExplicitFiniteEnergyBKMContinuationTargetOnNonnegHorizons) := by
   exact BKMContinuation_reduced_to_affineLogHighNorm_after_residualCurl_integrability
+
+theorem BKMContinuation_reduced_to_single_affineLogBiotSavartGronwallLemma_regression :
+    BKMResidualCurlExpansionDefectVanishes ∧
+      BKMVorticityScalarSchwartzTimePairingDerivativeClosed ∧
+        BKMVorticityTwoProfileSchwartzTimePairingDerivativeClosed ∧
+          BKMVorticityFiniteFamilySchwartzTimePairingDerivativeClosed ∧
+            BKMVorticityFiniteTimeWitnessResidualCurlVelocitySchwartzAprioriIntegrabilityClosed ∧
+              BKMVorticityFiniteTimeWitnessResidualCurlVelocitySchwartzAffineLogGrowthIntegrabilityClosed ∧
+                BKMVorticityFiniteTimeWitnessResidualCurlVelocitySchwartzTwoProfileAprioriClosed ∧
+                  BKMVorticityFiniteTimeWitnessResidualCurlVelocitySchwartzTwoProfileAffineLogGrowthClosed ∧
+                    BKMVorticityFiniteTimeWitnessResidualCurlVelocitySchwartzFiniteFamilyAprioriClosed ∧
+                      BKMVorticityFiniteTimeWitnessResidualCurlVelocitySchwartzFiniteFamilyAffineLogGrowthClosed ∧
+                        BKMVorticityFiniteTimeWitnessResidualCurlVelocitySchwartzFiniteFamilyHardCoreAffineLogClosed ∧
+                          (BKMArbitraryWitnessAffineLogBiotSavartGronwallContinuationLemma →
+                            ExplicitFiniteEnergyBKMContinuationTargetOnNonnegHorizons) := by
+  exact BKMContinuation_reduced_to_single_affineLogBiotSavartGronwallLemma
 
 theorem BKMAnalyticComponentsClosed_of_residualCurlDifferentialIdentities_regression
     (hIds : BKMResidualCurlDifferentialIdentitiesClosed)
