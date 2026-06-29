@@ -163,9 +163,9 @@ unconditional positive canary. -/
 def navierNonzeroSchwartzEnergyKernelNode : NavierProofNode where
   id := "navier.energy.nonzero-schwartz-kernel"
   status := .checked
-  truthValue := ⟨73, 86⟩
-  evidence := "SchwartzEnergyIdentityKernel, NonzeroSchwartzConcreteNavierStokesSolution.energyIdentityKernel, twoModeSchwartzPressureSlice_nonzeroSchwartzConcreteSolution_of_momentumEquation, and twoModeSchwartzPressureSlice_nonzero_energyIdentityKernel_of_momentumEquation package the pressure and convection cancellations, viscous formula, meaningful identity, and nonzero witness for any bounded divergence-free two-mode Schwartz ansatz with Schwartz pressure slices satisfying the literal pointwise momentum equation. PLN STV <s=.73,c=.86>, ITV [.6278,.7678], PROGRESS 40%."
-  blocker := "This is nonzero-preserving and PDE-grounded but still conditional on an inhabited pressure-slice momentum closure. The remaining canary obligation is an explicit nonzero divergence-free Schwartz profile pair and Schwartz pressure slices satisfying that closure."
+  truthValue := ⟨76, 87⟩
+  evidence := "SchwartzEnergyIdentityKernel, SchwartzMomentumClosureKernel, SchwartzConcreteSolutionKernel, NonzeroSchwartzConcreteNavierStokesSolution.energyIdentityKernel, NonzeroSchwartzConcreteNavierStokesSolution.nonzero_energyMomentumCanary_packet, twoModeSchwartzPressureSlice_nonzeroSchwartzConcreteSolution_of_momentumEquation, and twoModeSchwartzPressureSlice_nonzero_energyIdentityKernel_of_momentumEquation package the nonzero witness, pressure and convection cancellations, viscous formula, meaningful identity, literal momentum equation, incompressibility, pressure-residual equality, and residual-curl-zero gate for any bounded divergence-free two-mode Schwartz ansatz with Schwartz pressure slices satisfying the literal pointwise momentum equation. PLN STV <s=.76,c=.87>, ITV [.6612,.7912], PROGRESS 44%."
+  blocker := "This is nonzero-preserving and PDE-grounded, and the reusable API now exposes both the energy cancellations and the pressure-closure gates from a single packet. It is still conditional on an inhabited pressure-slice momentum closure; the remaining canary obligation is an explicit nonzero divergence-free Schwartz profile pair and Schwartz pressure slices satisfying that closure."
 
 /-- Line-invariant shear shortcuts are now blocked for nonzero slice-Schwartz
 solutions. -/
@@ -796,11 +796,33 @@ theorem currentNavierNonzeroSchwartzEnergyKernel_node
     {ν : ℝ} (S : NonzeroSchwartzConcreteNavierStokesSolution ν) :
     (∃ t x, S.velocity t x ≠ 0) ∧
       SchwartzEnergyIdentityKernel ν S.velocity S.pressure ∧
+      SchwartzMomentumClosureKernel ν S.velocity S.pressure ∧
+      SchwartzConcreteSolutionKernel ν S.velocity S.pressure ∧
+      (∀ t, ∫ x, pressureEnergyPairing S.velocity S.pressure t x ∂volume = 0) ∧
+      (∀ t, ∫ x, convectionEnergyPairing S.velocity t x ∂volume = 0) ∧
+      CoordinateViscousEnergyPairingFormula S.velocity ∧
+      (∀ t,
+        HasDerivAt (normalizedKineticEnergy S.velocity)
+          (-(coordinateEnergyDissipationRate S.velocity ν t)) t) ∧
+      (∀ t,
+        Integrable (kineticEnergyDensity S.velocity t) ∧
+          HasDerivAt (normalizedKineticEnergy S.velocity)
+            (-(coordinateEnergyDissipationRate S.velocity ν t)) t) ∧
+      (∀ t x,
+        timeVelocityDerivative S.velocity t x + spatialConvection S.velocity t x +
+            spatialPressureGradient S.pressure t x =
+          ν • spatialLaplacian S.velocity t x) ∧
+      (∀ t x, spatialDivergence S.velocity t x = 0) ∧
+      pressureGradientVelocityField S.pressure = momentumPressureResidual ν S.velocity ∧
+      (∀ t x, spatialVorticity (momentumPressureResidual ν S.velocity) t x = 0) ∧
       navierNonzeroSchwartzEnergyKernelNode.status = .checked ∧
       navierNonzeroSchwartzCanaryNode.status = .openGoal := by
+  rcases S.nonzero_energyMomentumCanary_packet with
+    ⟨hnonzero, henergy, hmomentum, hconcrete, hpressureCancel, hconvectionCancel,
+      hviscous, hcoordinate, hmeaningful, heq, hdiv, hresidual, hvort⟩
   exact
-    ⟨S.nonzero_velocity,
-      S.energyIdentityKernel,
+    ⟨hnonzero, henergy, hmomentum, hconcrete, hpressureCancel, hconvectionCancel,
+      hviscous, hcoordinate, hmeaningful, heq, hdiv, hresidual, hvort,
       navierNonzeroSchwartzEnergyKernelNode_checked,
       navierNonzeroSchwartzCanaryNode_open⟩
 
