@@ -245,6 +245,45 @@ theorem gp12_e0_11_mem_interiorEdgeSupport :
   rw [mem_interiorEdgeSupport_iff]
   exact ⟨by decide, gp12_totalIncidenceCount_eq_two gp12_e0_11⟩
 
+theorem gp12_mem_interiorEdgeSupport (e : gp12Graph.edgeSet) :
+    e ∈ interiorEdgeSupport gp12Embedding.faceBoundary gp12Embedding.faces := by
+  rw [mem_interiorEdgeSupport_iff]
+  exact ⟨by simpa [gp12Embedding] using gp12Embedding.edge_mem_faceSupport e,
+    by simpa [gp12Embedding] using gp12_totalIncidenceCount_eq_two e⟩
+
+theorem gp12_adj_0_1 : gp12Graph.Adj (0 : Fin 24) 1 := by
+  simp [gp12Graph]
+
+theorem gp12_adj_1_2 : gp12Graph.Adj (1 : Fin 24) 2 := by
+  simp [gp12Graph]
+
+theorem gp12_adj_2_14 : gp12Graph.Adj (2 : Fin 24) 14 := by
+  simp [gp12Graph]
+
+theorem gp12_adj_14_12 : gp12Graph.Adj (14 : Fin 24) 12 := by
+  simp [gp12Graph]
+
+theorem gp12_adj_12_0 : gp12Graph.Adj (12 : Fin 24) 0 := by
+  simp [gp12Graph]
+
+def gp12Face0OddClosedWalk : gp12Graph.Walk (0 : Fin 24) 0 :=
+  Walk.cons gp12_adj_0_1
+    (Walk.cons gp12_adj_1_2
+      (Walk.cons gp12_adj_2_14
+        (Walk.cons gp12_adj_14_12
+          (Walk.cons gp12_adj_12_0 Walk.nil))))
+
+theorem gp12Face0OddClosedWalk_length_odd :
+    Odd gp12Face0OddClosedWalk.length := by
+  change Odd 5
+  exact ⟨2, rfl⟩
+
+theorem gp12Face0OddClosedWalk_edges_subset_interiorEdgeSupport :
+    ∀ e : gp12Graph.edgeSet, (e : Sym2 (Fin 24)) ∈ gp12Face0OddClosedWalk.edges →
+      e ∈ interiorEdgeSupport gp12Embedding.faceBoundary gp12Embedding.faces := by
+  intro e _he
+  exact gp12_mem_interiorEdgeSupport e
+
 def gp12EdgeColor (e : gp12Graph.edgeSet) : Color :=
   if e = gp12_e0_1 then red else
   if e = gp12_e0_11 then blue else
@@ -404,6 +443,27 @@ theorem gp12CAP5ComponentCoverCore_isExceptional :
   rw [CAP5BadExceptionalPairingPattern, CAP5BadRedBlueExceptionalPairing,
     CAP5BadRedPurpleExceptionalPairing]
   exact ⟨Or.inl ⟨rfl, rfl⟩, Or.inl ⟨rfl, rfl⟩⟩
+
+theorem gp12_not_noUnifiedKernelMapEvader_of_finiteNoGapRouteInput
+    {colorings : Set (gp12Graph.EdgeColoring Color)}
+    {p0Inside p4Inside : Bool} {side : Fin 24 → Prop}
+    (input :
+      CAP5FiniteNoGapRouteInput gp12CAP5ComponentCoverCore
+        gp12Embedding gp12TaitEdgeColoring colorings p0Inside p4Inside side) :
+    ¬ CAP5F2NoUnifiedKernelMapEvader input.toRouteCertificate :=
+  input.not_noUnifiedKernelMapEvader_of_forall_mem_interiorEdgeSupport
+    gp12_mem_interiorEdgeSupport
+
+theorem gp12_not_routeClosed_of_finiteNoGapRouteInput
+    {colorings : Set (gp12Graph.EdgeColoring Color)}
+    {p0Inside p4Inside : Bool} {side : Fin 24 → Prop}
+    (input :
+      CAP5FiniteNoGapRouteInput gp12CAP5ComponentCoverCore
+        gp12Embedding gp12TaitEdgeColoring colorings p0Inside p4Inside side)
+    (hcyclic : CyclicallyFiveEdgeConnected gp12Graph) :
+    ¬ CAP5F2RouteClosed input.toRouteCertificate :=
+  input.not_routeClosed_of_forall_mem_interiorEdgeSupport
+    gp12CAP5ComponentCoverCore_isExceptional hcyclic gp12_mem_interiorEdgeSupport
 
 def gp12FiveCutSide (v : Fin 24) : Prop :=
   v ∈ ({1, 2, 3, 13, 15} : Finset (Fin 24))

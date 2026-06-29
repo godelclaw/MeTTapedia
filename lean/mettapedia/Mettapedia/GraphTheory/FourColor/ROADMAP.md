@@ -438,9 +438,162 @@ controls, so the lab verdict factors through the checked Lean criterion.  No
 graph-specific GP(12,2) route-input witness is claimed yet, but
 `CAP5GP12RouteData.lean` now packages the concrete graph/embedding/Tait/CAP5
 core and the four sidecase unit-evader certificates matching the lab verdict.
-Focused
+The geometric strengthening
+`CAP5FiniteNoGapRouteInput.not_noUnifiedKernelMapEvader_of_noncrossing_interiorEdgeSupport`
+and
+`CAP5FiniteNoGapRouteInput.not_noUnifiedKernelMapEvader_of_sameSide_interiorEdgeSupport`
+adds the repair-relevant current-surface barrier: any interior-support edge that
+does not cross the selected vertex side remains un-emitted and yields a unified
+kernel-map evader.  The stronger named side-bipartition wrappers
+`CAP5FiniteNoGapRouteInput.interiorEdgeSupport_edges_cross_of_noUnifiedKernelMapEvader`
+and
+`CAP5FiniteNoGapRouteInput.interiorEdgeSupport_edges_cross_of_routeClosed`
+state the successful current-route condition directly: the selected side must
+cut every canonical interior-support edge.  Focused
 `CAP5RoutePayoff` and FourColor umbrella builds passed, and the new criterion
 axiom audits are baseline `[propext, Classical.choice, Quot.sound]`.
+This has now been sharpened beyond odd parity.  The side-cycle theorem
+`CAP5FiniteNoGapRouteInput.not_noUnifiedKernelMapEvader_of_sideCycle_edges_subset_interiorEdgeSupport`
+shows that if Gate 1's selected-side cycle is wholly supported by canonical
+interior edges, no no-evader certificate can exist.  Its all-interior
+specialization
+`CAP5FiniteNoGapRouteInput.not_noUnifiedKernelMapEvader_of_forall_mem_interiorEdgeSupport`
+and route-closed form
+`CAP5FiniteNoGapRouteInput.not_routeClosed_of_forall_mem_interiorEdgeSupport`
+rule out the closed/all-interior current finite surface even when the interior
+graph is bipartite.  Focused `CAP5RoutePayoff` build SHA256
+`4ebb17291eadc7fdfa20a925dd9ce713dfe0769bcedfa9513f3e36981ad4bbc4`.
+The odd-interior-walk form remains available:
+`CAP5FiniteNoGapRouteInput.not_noUnifiedKernelMapEvader_of_interiorEdgeSupport_odd_closed_walk`
+and
+`CAP5FiniteNoGapRouteInput.not_routeClosed_of_interiorEdgeSupport_odd_closed_walk`
+show that an odd closed walk inside canonical interior support forbids the
+no-evader side, and forbids route closure under the usual exceptional/cyclic
+equivalence.  The necessary-condition wrappers
+`CAP5FiniteNoGapRouteInput.no_interiorEdgeSupport_odd_closed_walk_of_noUnifiedKernelMapEvader`
+and
+`CAP5FiniteNoGapRouteInput.no_interiorEdgeSupport_odd_closed_walk_of_routeClosed`
+state the same result as an internal bipartiteness requirement on successful
+current-route inputs.  In `CAP5GP12RouteData.lean`,
+`gp12_not_noUnifiedKernelMapEvader_of_finiteNoGapRouteInput` now instantiates
+the all-interior theorem rather than the face-0 odd-cycle special case: because
+every GP12 edge is interior in the closed embedding, no-evader is impossible
+for any finite no-gap GP12 route input, independent of side and `p0/p4`
+sidecase.  `gp12_not_routeClosed_of_finiteNoGapRouteInput` gives the
+route-closed obstruction once cyclic-five connectivity is supplied.  The
+face-0 cycle `0-1-2-14-12-0` remains recorded as an odd-cycle witness, but the
+main GP12 obstruction no longer depends on odd parity.  This is a stronger
+current-surface GP12 BREAK than the four emitted-set sidecase witnesses, but it
+is still not a route-independent repair-proof meta-barrier.
+Focused `CAP5RoutePayoff`, focused `CAP5GP12RouteData`, and FourColor umbrella
+builds passed with SHA256
+`4ba71936046ffcbe56af1b281b0ffd5c32b9c25c7d95acbaa39f0225a8e9ed93`,
+`2218bdab2ff586615c68280ae97b7839c66fa64822a01f0567dbb10b6b0e5082`, and
+`5e9bd78b573fbfe4ac9ec9d80d70db706da56dffb08d2e67b47bcdcd51c1e07d`;
+the axiom audit remains baseline `[propext, Classical.choice, Quot.sound]`
+with log SHA256
+`d840b6dfd5b523987e455e18708756dd1ca18b761232530ac908743919241cd5`.
+The side-cycle/all-interior increment then passed focused builds with SHA256
+`4ebb17291eadc7fdfa20a925dd9ce713dfe0769bcedfa9513f3e36981ad4bbc4`
+for `CAP5RoutePayoff` and
+`0428e629dc3fe6a9b56af418efacd69aaf4a88d6fbc0db26de64de1f6e4a3946`
+for `CAP5GP12RouteData`; FourColor umbrella SHA256
+`be8496df88da4efab22699fc57e0810c00bdbaf01ddc372e9d16e3e3170acaab`;
+axiom audit driver/log SHA256
+`275258792b1d337e665fe36b151d644b2e20c1ec5344da2c83bd02e2396ea6f2` /
+`afe9cfe8a01ab5cfa77ee3c6ca6a14f04f55223d3e9ffc833c5fb8f7e728b409`,
+baseline `[propext, Classical.choice, Quot.sound]`; `git diff --check`,
+touched Lean proof-token scan, and public diff leak scan clean.
+The side-cycle obstruction also now has a non-interior crossing form:
+`CAP5FiniteNoGapRouteInput.not_noUnifiedKernelMapEvader_of_nonInterior_edges_cross`
+and
+`CAP5FiniteNoGapRouteInput.not_routeClosed_of_nonInterior_edges_cross`
+rule out no-evader and route closure when every non-interior edge already
+crosses the selected side.  The boundary-slot corollaries
+`CAP5FiniteNoGapRouteInput.not_noUnifiedKernelMapEvader_of_nonInterior_subset_boundaryEdge`
+and
+`CAP5FiniteNoGapRouteInput.not_routeClosed_of_nonInterior_subset_boundaryEdge`
+specialize this to the case where every non-interior edge is one of the five
+CAP5 boundary slots: no-gap makes all five slots cross, but Gate 1 also
+supplies a selected-side cycle.  A surviving repair of the current finite
+surface must therefore find a selected-side cycle edge outside canonical
+interior support that is not merely a no-gap boundary slot.  This is a current
+classifier/input-surface obstruction, not the final repair-robust B1
+meta-barrier.  Focused `CAP5RoutePayoff`, focused `CAP5GP12RouteData`, and
+FourColor umbrella builds passed with SHA256
+`baf83bc864536339ace652630fe76b3e599db14aa5f3d291ab6b9340a4d72732`,
+`693bd616b3420f260a081b7dfc12cace892414788ffdc5b5a3e449b37bddbfa2`, and
+`6423fcb114a3354125db4ce80e2a57eef6a5b4db6246f4b1758923f5fa2fe00e`;
+the axiom audit driver/log SHA256 are
+`7f081459a669e1d1e34925a146d0237555f67c491209ae962f4cf0f726515382` /
+`ac507e5c9c1061c160d3d7758765dbe4c49aa1e6f180da0d546e320d89bd2049`,
+baseline `[propext, Classical.choice, Quot.sound]`.
+The sharper local side-cycle version is checked as
+`CAP5FiniteNoGapRouteInput.not_noUnifiedKernelMapEvader_of_sideCycle_edges_subset_interiorEdgeSupport_or_boundaryEdge`
+and
+`CAP5FiniteNoGapRouteInput.not_routeClosed_of_sideCycle_edges_subset_interiorEdgeSupport_or_boundaryEdge`:
+it is enough that the Gate-1 selected-side cycle itself be covered by
+canonical interior support or the five CAP5 boundary slots.  Six-cut
+checkpoint status: this is finite-evidence/current-surface progress, not a
+proven generic six-cut meta-barrier.  The non-boundary six-cut degree of
+freedom remains open.  Focused `CAP5RoutePayoff`, focused
+`CAP5GP12RouteData`, and FourColor umbrella builds passed with SHA256
+`9f93d299da21e27eb3492abfdd0312b1c96ced1475b2994989638ae5917032f5`,
+`b6e618c3603acc54be5a54deed1bfd502c196ba8e62216e4f416951191968069`, and
+`ce461cfe7aa93c85d50a752bf7d19405286fc8474c3d3fcb1aaf2140ee13a8e5`;
+the axiom audit driver/log SHA256 are
+`252079c06d2416bd393f457ab8b57be8b5211106658a5bc721b1bcb3b8ad733e` /
+`3ecc5bc92ce68601cf1b945fb15ce54f45bc2f9e00ce5138be4973d1121de5c0`,
+baseline `[propext, Classical.choice, Quot.sound]`.
+The archived known/generalized-Petersen sweep through 24 vertices was also
+post-audited against this side-bipartition requirement: the route-relevant
+Kempe-formable class has 15 embeddings, all on `generalized_petersen_12_2`,
+and zero have bipartite canonical interior support; the cyclic-five full-Tait
+upper-bound formable class also has zero bipartite-interior survivors.  The
+audit log SHA256 is
+`5e654ecb29cb59261e74d28269a4f73e130e8d9b267b7c3bc74b1ba010d3faaa`.
+This is finite evidence only, not the generic B1 meta-barrier.
+The older archive candidates with apparent route-case verdicts were audited
+before promotion.  `spoke-cut-prism-6` is Tait/cubic and had an old all-MAKE
+lab abstraction, but it fails cyclic-five via nine size-four cyclic cuts.
+`split-chained-diamonds` is Tait-colorable under backtracking and had an old
+all-BREAK abstraction, but it is disconnected and not connected cubic
+3-regular.  Evidence JSON SHA256
+`3ab3a792466d092d81af761b5c841e7138b241b01880a25b6e0f9b2ff5edc3c6`.
+Neither is an objective-A valid CAP5/Tait/cyclic-five input.
+
+The current finite surface now also has an active-portal obstruction:
+`CAP5FiniteNoGapRouteInput.not_noUnifiedKernelMapEvader_of_activePortal_interiorEdgeSupport`
+and
+`CAP5FiniteNoGapRouteInput.not_routeClosed_of_activePortal_interiorEdgeSupport`
+show that an active sidecase portal boundary edge in canonical interior support
+cannot be emitted and therefore forces a unified kernel-map evader, and rules
+out route closure under the usual exceptional/cyclic equivalence.  Focused
+`CAP5RoutePayoff` build SHA256
+`582e5065827594125f1da8bd6a68be437d42fbc5a503569c46ed26c357a4a760`.
+
+A two-face annulus audit was added to test the obvious repair gap left by the
+closed/one-face-punctured sweep.  Over known NetworkX cubic planar/Tait/cyclic-
+five graphs through 24 vertices, all two-face omissions, and all five-edge
+cyclic two-component cuts, the lab found 223 full-Tait formable annular
+upper-bound surfaces and 91 Kempe-formable annular surfaces, but zero
+side-bipartition-valid side rows and zero rows that could fit a sidecase
+emitted portal-complement under any boundary ordering.  Evidence JSON SHA256
+`1016cde08d7f2aec705488118bf7c12ee714290b24a6a54328f8970073266077`; run log
+SHA256 `2efd5b38fb16788a4d6edcc7148af1d8dbc258fcb8805dbcddbccdd4ae5afc4b`.
+This is wider finite evidence over legitimate annular DOF, not a generic
+repair-robust meta-barrier.
+Final verification for the active-portal/annulus refinement: focused
+`CAP5GP12RouteData` build SHA256
+`2e1faf197bd9d5fb7fa1ef9902e0d2acf1e791024ee2b9d201a17e72f5566a63`;
+FourColor umbrella build SHA256
+`c744a4994d825744513323cdfbeed1892f7bf5b639355aa8862df2dabc26e909`;
+axiom audit driver SHA256
+`fb4089155bc838ebf170b3bdfcb3227a63c2bbc21af083f00e05d3ed931d83d1`;
+axiom audit log SHA256
+`096d98e3fa7e9556b63cc8b9ede8c8e6f35ef7a7c57e03ab3603ec2032a8c802`,
+baseline `[propext, Classical.choice, Quot.sound]`.  `git diff --check`,
+the touched Lean proof-token scan, and the public diff leak scan are clean.
 
 Boundary-cycle Gate-1 repair audit on 2026-06-29: the run recorded in
 `fourcolor-dodeca-boundary-cycle-gate1-lab-20260629.json` checks the natural
