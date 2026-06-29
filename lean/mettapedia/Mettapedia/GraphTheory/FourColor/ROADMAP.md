@@ -545,6 +545,33 @@ the axiom audit driver/log SHA256 are
 `252079c06d2416bd393f457ab8b57be8b5211106658a5bc721b1bcb3b8ad733e` /
 `3ecc5bc92ce68601cf1b945fb15ce54f45bc2f9e00ce5138be4973d1121de5c0`,
 baseline `[propext, Classical.choice, Quot.sound]`.
+The same obstruction now has an explicit-cycle form:
+`CAP5FiniteNoGapRouteInput.not_noUnifiedKernelMapEvader_of_cycle_edges_subset_interiorEdgeSupport_or_boundaryEdge`
+and
+`CAP5FiniteNoGapRouteInput.not_routeClosed_of_cycle_edges_subset_interiorEdgeSupport_or_boundaryEdge`.
+One side-contained cycle covered by canonical interior support plus the five
+CAP5 boundary slots is enough to rule out no-evader or route closure.  A
+current-surface survivor must therefore make every selected-side cycle escape
+through a non-interior non-boundary-slot edge.  This is still not the generic
+six-cut meta-barrier, but it is the right graph-side residual.  Focused
+`CAP5RoutePayoff`, focused `CAP5GP12RouteData`, and FourColor umbrella builds
+passed with SHA256
+`d18b4d66459dd04dfcbda08c9aef4279530ded9a05b5242eb2fa3cfc39de365d`,
+`98a2ec8a3513ce8348aeacd3f96fe7f8b6907a51365476956f12d52588eb6a38`, and
+`6e72fb11a40bb6894da320174c0b887e40b60c1d589b2e5dec5821bd5207dd4e`;
+the axiom audit driver/log SHA256 are
+`9025abf124771a09382dd56560a9a83e4c17d2d63410ca45754d2d4720d75cc4` /
+`ba6559862ad00a3993086afa49144ff51b919c3759aeb4f35b3e0fdb06dae284`,
+baseline `[propext, Classical.choice, Quot.sound]`.
+A finite dodeca audit against this explicit-cycle condition gives the current
+lab boundary.  `fourcolor-dodeca-explicit-covered-cycle-audit-20260629.json`
+finds all 4 closed strict sidecases have a covered side cycle.  Among the 48
+one-face-punctured rows, 24 have a covered side cycle and 24 escape because the
+omitted face is one of faces `0..5`, leaving the archived selected-side
+pentagon with a non-interior non-boundary-slot edge.  All 48 punctured rows,
+including the 24 escape rows, remain invalid route inputs by projected-generator
+membership failure.  Audit SHA256
+`fd1b7ce900538396200206b66dee682f63c56b4002cd1550442977e5e46ef734`.
 The archived known/generalized-Petersen sweep through 24 vertices was also
 post-audited against this side-bipartition requirement: the route-relevant
 Kempe-formable class has 15 embeddings, all on `generalized_petersen_12_2`,
