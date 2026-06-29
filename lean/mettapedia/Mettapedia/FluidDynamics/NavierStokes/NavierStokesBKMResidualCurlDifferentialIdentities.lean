@@ -151,6 +151,24 @@ theorem spatialLaplacianField_differentiableAt_of_smooth
   rw [InnerProductSpace.laplacian_eq_iteratedFDeriv_stdOrthonormalBasis]
   exact hsum
 
+/-- Smooth space-time velocities have symmetric second Frechet derivatives. -/
+theorem smoothSpaceTimeVelocity_isSymmSndFDerivAt
+    {u : NSVelocityField} (hu : smoothSpaceTimeVelocity u)
+    (tx : NSSpacetime) :
+    IsSymmSndFDerivAt ℝ (spaceTimeVelocityMap u) tx := by
+  exact hu.contDiffAt.isSymmSndFDerivAt (by
+    simpa using ENat.natCast_le_of_coe_top_le_withTop
+      (N := (∞ : WithTop ℕ∞)) (by rfl) 2)
+
+/-- The second derivative of a smooth space-time velocity can swap its two
+directions. -/
+theorem smoothSpaceTimeVelocity_fderiv_fderiv_swap
+    {u : NSVelocityField} (hu : smoothSpaceTimeVelocity u)
+    (tx v w : NSSpacetime) :
+    ((fderiv ℝ (fderiv ℝ (spaceTimeVelocityMap u)) tx) v) w =
+      ((fderiv ℝ (fderiv ℝ (spaceTimeVelocityMap u)) tx) w) v :=
+  (smoothSpaceTimeVelocity_isSymmSndFDerivAt hu tx).eq v w
+
 /-- After the Laplacian-field differentiability bridge, smoothness supplies the
 other two differentiability hypotheses needed for residual-curl linearity. -/
 theorem residualCurlLinearityDifferentiableAt_of_smooth_laplacian

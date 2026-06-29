@@ -32,6 +32,19 @@ theorem spatialLaplacianField_differentiableAt_of_smooth_regression
     DifferentiableAt ℝ (fun y : NSSpace => spatialLaplacianField u t y) x := by
   exact spatialLaplacianField_differentiableAt_of_smooth hu t x
 
+theorem smoothSpaceTimeVelocity_isSymmSndFDerivAt_regression
+    {u : NSVelocityField} (hu : smoothSpaceTimeVelocity u)
+    (tx : NSSpacetime) :
+    IsSymmSndFDerivAt ℝ (spaceTimeVelocityMap u) tx := by
+  exact smoothSpaceTimeVelocity_isSymmSndFDerivAt hu tx
+
+theorem smoothSpaceTimeVelocity_fderiv_fderiv_swap_regression
+    {u : NSVelocityField} (hu : smoothSpaceTimeVelocity u)
+    (tx v w : NSSpacetime) :
+    ((fderiv ℝ (fderiv ℝ (spaceTimeVelocityMap u)) tx) v) w =
+      ((fderiv ℝ (fderiv ℝ (spaceTimeVelocityMap u)) tx) w) v := by
+  exact smoothSpaceTimeVelocity_fderiv_fderiv_swap hu tx v w
+
 theorem residualCurlLinearityDifferentiableAt_of_smooth_laplacian_regression
     {u : NSVelocityField} {t : NSTime} {x : NSSpace}
     (hu : smoothSpaceTimeVelocity u)
