@@ -260,6 +260,154 @@ theorem normalizedVorticityEnstrophyAt_le_gronwallBound_of_gradientControlled_ma
     (fun t ht =>
       (hGrowth t ht).mono_coefficient (hGle t ht))
 
+/-- Variable-coefficient scalar Gronwall in integrating-factor form.  If `A`
+is a right primitive of `2 * G`, then
+`(1 / 2) * int |omega|^2 * exp (-A)` cannot increase on the slab.
+
+This is the exact ODE comparison shape needed before instantiating `A` as an
+integral primitive of the logarithmic BKM growth coefficient. -/
+theorem normalizedVorticityEnstrophyAt_mul_exp_neg_antiderivative_le_initial
+    {ν T : ℝ} {u : NSVelocityField} {G A : NSTime → ℝ}
+    (hcont :
+      ContinuousOn (fun t => normalizedVorticityEnstrophyAt u t)
+        (Set.Icc 0 T))
+    (hAcont : ContinuousOn A (Set.Icc 0 T))
+    (hAderiv :
+      ∀ t, t ∈ Set.Ico 0 T →
+        HasDerivWithinAt A (2 * G t) (Set.Ici t) t)
+    (hGrowth :
+      ∀ t, t ∈ Set.Ico 0 T →
+        vorticityEnstrophyGradientControlledAt ν u t (G t)) :
+    ∀ t, t ∈ Set.Icc 0 T →
+      normalizedVorticityEnstrophyAt u t * Real.exp (-(A t)) ≤
+        normalizedVorticityEnstrophyAt u 0 * Real.exp (-(A 0)) := by
+  let F : ℝ → ℝ := fun t => normalizedVorticityEnstrophyAt u t
+  let D : ℝ → ℝ := fun t =>
+    if ht : t ∈ Set.Ico 0 T then
+      Classical.choose (hGrowth t ht)
+    else
+      0
+  let Q : ℝ → ℝ := F * fun t => Real.exp (-(A t))
+  let QD : ℝ → ℝ := fun t =>
+    D t * Real.exp (-(A t)) + F t * (Real.exp (-(A t)) * (-(2 * G t)))
+  have hQcont : ContinuousOn Q (Set.Icc 0 T) := by
+    dsimp [Q, F]
+    exact hcont.mul (Real.continuous_exp.comp_continuousOn hAcont.neg)
+  have hQderiv :
+      ∀ t, t ∈ Set.Ico 0 T → HasDerivWithinAt Q (QD t) (Set.Ici t) t := by
+    intro t ht
+    have hspec := Classical.choose_spec (hGrowth t ht)
+    have hD : D t = Classical.choose (hGrowth t ht) := by
+      unfold D
+      rw [dif_pos ht]
+    have hFderiv : HasDerivWithinAt F (D t) (Set.Ici t) t := by
+      dsimp [F]
+      rw [hD]
+      exact hspec.1.hasDerivWithinAt
+    have hExpDeriv :
+        HasDerivWithinAt (fun s => Real.exp (-(A s)))
+          (Real.exp (-(A t)) * (-(2 * G t))) (Set.Ici t) t := by
+      exact ((hAderiv t ht).neg).exp
+    have hprod := hFderiv.mul hExpDeriv
+    simpa [Q, QD] using hprod
+  have hQbound : ∀ t, t ∈ Set.Ico 0 T → QD t ≤ 0 := by
+    intro t ht
+    have hspec := Classical.choose_spec (hGrowth t ht)
+    have hD : D t = Classical.choose (hGrowth t ht) := by
+      unfold D
+      rw [dif_pos ht]
+    have hDle : D t ≤ G t * vorticityEnstrophyAt u t := by
+      rw [hD]
+      exact hspec.2
+    have hDle_norm : D t ≤ (2 * G t) * F t := by
+      calc
+        D t ≤ G t * vorticityEnstrophyAt u t := hDle
+        _ = (2 * G t) * F t := by
+              dsimp [F]
+              rw [normalizedVorticityEnstrophyAt]
+              ring
+    have hsub : D t - (2 * G t) * F t ≤ 0 := sub_nonpos.mpr hDle_norm
+    have hexp_nonneg : 0 ≤ Real.exp (-(A t)) := Real.exp_nonneg _
+    have hQD_eq :
+        QD t = (D t - (2 * G t) * F t) * Real.exp (-(A t)) := by
+      dsimp [QD]
+      ring
+    rw [hQD_eq]
+    exact mul_nonpos_of_nonpos_of_nonneg hsub hexp_nonneg
+  have hcomp :
+      ∀ t, t ∈ Set.Icc 0 T → Q t ≤ Q 0 := by
+    simpa [gronwallBound_K0] using
+      le_gronwallBound_of_liminf_deriv_right_le
+        (f := Q)
+        (f' := QD)
+        (δ := Q 0)
+        (K := 0)
+        (ε := 0)
+        (a := 0)
+        (b := T)
+        hQcont
+        (fun t ht r hr => (hQderiv t ht).liminf_right_slope_le hr)
+        le_rfl
+        (by simpa using hQbound)
+  exact hcomp
+
+/-- Variable-coefficient scalar Gronwall in exponential form.  Supplying a
+right primitive `A' = 2 * G` yields the usual bound
+`E(t) <= E(0) * exp (A(t) - A(0))` for normalized vorticity enstrophy. -/
+theorem normalizedVorticityEnstrophyAt_le_initial_mul_exp_antiderivative
+    {ν T : ℝ} {u : NSVelocityField} {G A : NSTime → ℝ}
+    (hcont :
+      ContinuousOn (fun t => normalizedVorticityEnstrophyAt u t)
+        (Set.Icc 0 T))
+    (hAcont : ContinuousOn A (Set.Icc 0 T))
+    (hAderiv :
+      ∀ t, t ∈ Set.Ico 0 T →
+        HasDerivWithinAt A (2 * G t) (Set.Ici t) t)
+    (hGrowth :
+      ∀ t, t ∈ Set.Ico 0 T →
+        vorticityEnstrophyGradientControlledAt ν u t (G t)) :
+    ∀ t, t ∈ Set.Icc 0 T →
+      normalizedVorticityEnstrophyAt u t ≤
+        normalizedVorticityEnstrophyAt u 0 * Real.exp (A t - A 0) := by
+  intro t ht
+  have hmul :=
+    normalizedVorticityEnstrophyAt_mul_exp_neg_antiderivative_le_initial
+      hcont hAcont hAderiv hGrowth t ht
+  have hexp_pos : 0 < Real.exp (A t) := Real.exp_pos _
+  have hscaled :=
+    mul_le_mul_of_nonneg_right hmul (le_of_lt hexp_pos)
+  have hcancel_t : Real.exp (-(A t)) * Real.exp (A t) = 1 := by
+    rw [← Real.exp_add]
+    have harg : -(A t) + A t = 0 := by ring
+    rw [harg, Real.exp_zero]
+  have hcombine :
+      Real.exp (-(A 0)) * Real.exp (A t) = Real.exp (A t - A 0) := by
+    rw [← Real.exp_add]
+    congr 1
+    ring
+  calc
+    normalizedVorticityEnstrophyAt u t
+        = normalizedVorticityEnstrophyAt u t * Real.exp (-(A t)) *
+            Real.exp (A t) := by
+          calc
+            normalizedVorticityEnstrophyAt u t =
+                normalizedVorticityEnstrophyAt u t * 1 := by ring
+            _ = normalizedVorticityEnstrophyAt u t *
+                (Real.exp (-(A t)) * Real.exp (A t)) := by
+                  rw [hcancel_t]
+            _ = normalizedVorticityEnstrophyAt u t * Real.exp (-(A t)) *
+                Real.exp (A t) := by ring
+    _ ≤ normalizedVorticityEnstrophyAt u 0 * Real.exp (-(A 0)) *
+          Real.exp (A t) := hscaled
+    _ = normalizedVorticityEnstrophyAt u 0 * Real.exp (A t - A 0) := by
+          calc
+            normalizedVorticityEnstrophyAt u 0 * Real.exp (-(A 0)) *
+                Real.exp (A t) =
+                normalizedVorticityEnstrophyAt u 0 *
+                  (Real.exp (-(A 0)) * Real.exp (A t)) := by ring
+            _ = normalizedVorticityEnstrophyAt u 0 * Real.exp (A t - A 0) := by
+                  rw [hcombine]
+
 /-- Componentized form of the remaining BKM analytic route.  The first
 component is the residual-curl expansion identity, the second supplies the
 logarithmic gradient envelope from BKM data, and the third closes the high-norm

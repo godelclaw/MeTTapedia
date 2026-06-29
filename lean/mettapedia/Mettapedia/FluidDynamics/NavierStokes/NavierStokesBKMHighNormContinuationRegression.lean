@@ -99,6 +99,44 @@ theorem normalizedVorticityEnstrophyAt_le_gronwallBound_of_gradientControlled_ma
     normalizedVorticityEnstrophyAt_le_gronwallBound_of_gradientControlled_majorized
       hcont hGrowth hGle
 
+theorem normalizedVorticityEnstrophyAt_mul_exp_neg_antiderivative_le_initial_regression
+    {ν T : ℝ} {u : NSVelocityField} {G A : NSTime → ℝ}
+    (hcont :
+      ContinuousOn (fun t => normalizedVorticityEnstrophyAt u t)
+        (Set.Icc 0 T))
+    (hAcont : ContinuousOn A (Set.Icc 0 T))
+    (hAderiv :
+      ∀ t, t ∈ Set.Ico 0 T →
+        HasDerivWithinAt A (2 * G t) (Set.Ici t) t)
+    (hGrowth :
+      ∀ t, t ∈ Set.Ico 0 T →
+        vorticityEnstrophyGradientControlledAt ν u t (G t)) :
+    ∀ t, t ∈ Set.Icc 0 T →
+      normalizedVorticityEnstrophyAt u t * Real.exp (-(A t)) ≤
+        normalizedVorticityEnstrophyAt u 0 * Real.exp (-(A 0)) := by
+  exact
+    normalizedVorticityEnstrophyAt_mul_exp_neg_antiderivative_le_initial
+      hcont hAcont hAderiv hGrowth
+
+theorem normalizedVorticityEnstrophyAt_le_initial_mul_exp_antiderivative_regression
+    {ν T : ℝ} {u : NSVelocityField} {G A : NSTime → ℝ}
+    (hcont :
+      ContinuousOn (fun t => normalizedVorticityEnstrophyAt u t)
+        (Set.Icc 0 T))
+    (hAcont : ContinuousOn A (Set.Icc 0 T))
+    (hAderiv :
+      ∀ t, t ∈ Set.Ico 0 T →
+        HasDerivWithinAt A (2 * G t) (Set.Ici t) t)
+    (hGrowth :
+      ∀ t, t ∈ Set.Ico 0 T →
+        vorticityEnstrophyGradientControlledAt ν u t (G t)) :
+    ∀ t, t ∈ Set.Icc 0 T →
+      normalizedVorticityEnstrophyAt u t ≤
+        normalizedVorticityEnstrophyAt u 0 * Real.exp (A t - A 0) := by
+  exact
+    normalizedVorticityEnstrophyAt_le_initial_mul_exp_antiderivative
+      hcont hAcont hAderiv hGrowth
+
 theorem BKMContinuation_reduced_to_analytic_components_regression :
     BKMVorticityStretchingEstimateClosed ∧
       BKMResidualCurlExpansionAlgebraClosed ∧
