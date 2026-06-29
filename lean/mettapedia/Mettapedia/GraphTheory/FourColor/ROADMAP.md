@@ -544,11 +544,14 @@ longer acceptable progress.
    that edge into the processed set.  The residual transition theorem then
    proves the selected edge is not controlled by the immutable classifier
    output and returns the one-edge emitted/control update needed to insert it
-   into the processed scheduler state.  The pure no-target theorem underneath
-   those refinements says failed synthesis already produces a genuine
-   selected-boundary-zero evader for the enumerated forced edges.  The
-   remaining crux is whether exact shell/CAP5 data proves the no-evader/subset
-   certificate uniformly, or whether this genuine
+   into the processed scheduler state.  The terminal residual-scheduler theorem
+   closes the matching success endpoint: residual exhaustion plus the
+   processed-control invariant proves no selected-boundary-zero evader, theorem
+   4.9 synthesis, and full selected-boundary-zero classifier control.  The
+   pure no-target theorem underneath those refinements says failed synthesis
+   already produces a genuine selected-boundary-zero evader for the enumerated
+   forced edges.  The remaining crux is whether exact shell/CAP5 data reaches
+   that terminal no-evader scheduler state uniformly, or whether this genuine
    boundary-zero/vertex-Kirchhoff/path-xor residual-scheduler branch exists
    and must be promoted edge by edge.
 

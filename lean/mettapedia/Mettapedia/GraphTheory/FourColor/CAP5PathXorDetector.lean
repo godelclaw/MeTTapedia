@@ -11441,6 +11441,150 @@ theorem remainingInteriorEmpty_noEvader_and_synthesis_and_boundaryZeroControl_of
         hnoEvader hforcedAll⟩
 
 /--
+Terminal residual scheduler no-evader certificate.  If every original remaining interior-support
+edge has been recorded in the processed state, and processed edges are zero whenever the immutable
+classifier output is zero, then no nonzero selected-boundary-zero chain can still vanish on all
+enumerated forced edges.
+-/
+theorem no_boundaryZeroEvader_of_residualRemainingInteriorSupportEmpty_of_processedControl
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    [Fintype G.edgeSet]
+    (emb : PlaneEmbeddingWithBoundary G)
+    (p0Inside p4Inside : Bool) (side : V → Prop)
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (processed : Finset G.edgeSet)
+    (hprocessedControl :
+      ∀ ⦃z : G.edgeSet → Color⦄,
+        z ∈ planarBoundaryZeroSubmodule emb →
+        (∀ e ∈ classifier.emittedFinset, z e = 0) →
+          ∀ e ∈ processed, z e = 0)
+    (hresidualEmpty :
+      classifier.residualRemainingControlEdges
+          (interiorEdgeSupport emb.faceBoundary emb.faces) processed = ∅) :
+    ¬ ∃ z : G.edgeSet → Color,
+      z ∈ planarBoundaryZeroSubmodule emb ∧
+        z ≠ 0 ∧
+          ∀ e : G.edgeSet,
+            data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e →
+              z e = 0 := by
+  rintro ⟨z, hzBoundary, hzNonzero, hvanishForced⟩
+  have hvanishEmitted : ∀ e ∈ classifier.emittedFinset, z e = 0 := by
+    intro e he
+    exact hvanishForced e ((classifier.emittedFinset_spec e).1 he)
+  have hremainingSubset :
+      classifier.remainingControlEdges
+          (interiorEdgeSupport emb.faceBoundary emb.faces) ⊆ processed :=
+    (classifier.residualRemainingControlEdges_eq_empty_iff_remainingControlEdges_subset_processed
+      (interiorEdgeSupport emb.faceBoundary emb.faces) processed).1 hresidualEmpty
+  have hInteriorZero :
+      ∀ e : G.edgeSet,
+        e ∈ interiorEdgeSupport emb.faceBoundary emb.faces → z e = 0 := by
+    intro e heInterior
+    by_cases heEmitted : e ∈ classifier.emittedFinset
+    · exact hvanishEmitted e heEmitted
+    · have heRemaining :
+          e ∈ classifier.remainingControlEdges
+              (interiorEdgeSupport emb.faceBoundary emb.faces) :=
+        (classifier.mem_remainingControlEdges_iff
+          (interiorEdgeSupport emb.faceBoundary emb.faces) e).2
+          ⟨heInterior, heEmitted⟩
+      exact hprocessedControl hzBoundary hvanishEmitted e
+        (hremainingSubset heRemaining)
+  exact hzNonzero
+    (eq_zero_of_mem_planarBoundaryZeroSubmodule_of_interiorEdgeSupport
+      z hzBoundary hInteriorZero)
+
+/--
+Report-forced-all terminal residual scheduler success.  The residual scheduler endpoint is now a
+real no-evader endpoint: if the residual interior-support worklist is exhausted while the
+processed-control invariant holds, Lean closes theorem-4.9 synthesis and full
+selected-boundary-zero classifier control.
+-/
+theorem residualRemainingInteriorEmpty_noEvader_and_synthesis_and_boundaryZeroControl_of_forcedAllLatents_of_processedControl
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    [Fintype G.edgeSet] [FiniteDimensional F2 (G.edgeSet → Color)]
+    (emb : PlaneEmbeddingWithBoundary G) (C₀ : G.EdgeColoring Color)
+    (colorings : Set (G.EdgeColoring Color))
+    (hsubset : colorings ⊆ G.EdgeKempeClosure C₀)
+    (p0Inside p4Inside : Bool) (h : data.IsExceptional)
+    (side : V → Prop)
+    [∀ latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge,
+      Decidable ((CAP5ExceptionalAnnulusGeneratorReport.latentNode
+        boundaryEdge side latent).PortalCrosses)]
+    [∀ latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge,
+      Decidable ((CAP5ExceptionalAnnulusGeneratorReport.latentNode
+        boundaryEdge side latent).SideCycles)]
+    [∀ latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge,
+      Decidable ((CAP5ExceptionalAnnulusGeneratorReport.latentNode
+        boundaryEdge side latent).RealizedSeparator)]
+    (hcyclic : CyclicallyFiveEdgeConnected G)
+    (hportal_crosses :
+      ∀ edgeCandidate : CAP5ExceptionalAnnulusBoundaryEdgeSupportCandidate boundaryEdge,
+        data.RealizesExceptionalBoundarySupportOrientation
+            edgeCandidate.portalCandidate.orientation →
+        edgeCandidate.portalCandidate.sideCase =
+            CAP5ExceptionalAnnulusSideCase.ofPortalSides p0Inside p4Inside →
+        ∀ i : Fin 5, i ∈ edgeCandidate.portalCandidate.portalSet →
+          EdgeCrossesVertexSide G side (boundaryEdge i))
+    (hcycles : HasCycleOnSide G side ∧ HasCycleOnSide G (fun v => ¬ side v))
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (processed : Finset G.edgeSet)
+    (hredEmitted :
+      ∀ e ∈ classifier.emittedFinset,
+        Pi.single e red ∈ projectedColoringGeneratorSubspace emb colorings)
+    (hblueEmitted :
+      ∀ e ∈ classifier.emittedFinset,
+        Pi.single e blue ∈ projectedColoringGeneratorSubspace emb colorings)
+    (hredRemaining :
+      ∀ e ∈ classifier.remainingControlEdges
+          (interiorEdgeSupport emb.faceBoundary emb.faces),
+        Pi.single e red ∈ projectedColoringGeneratorSubspace emb colorings)
+    (hblueRemaining :
+      ∀ e ∈ classifier.remainingControlEdges
+          (interiorEdgeSupport emb.faceBoundary emb.faces),
+        Pi.single e blue ∈ projectedColoringGeneratorSubspace emb colorings)
+    (hprocessedControl :
+      ∀ ⦃z : G.edgeSet → Color⦄,
+        z ∈ planarBoundaryZeroSubmodule emb →
+        (∀ e ∈ classifier.emittedFinset, z e = 0) →
+          ∀ e ∈ processed, z e = 0)
+    (hresidualEmpty :
+      classifier.residualRemainingControlEdges
+          (interiorEdgeSupport emb.faceBoundary emb.faces) processed = ∅)
+    (hforcedAll :
+      (CAP5ExceptionalAnnulusGeneratorReport.ofDecidableChecks
+        boundaryEdge side).forcedCounterexampleLatents =
+          CAP5ExceptionalAnnulusGeneratorLatent.all boundaryEdge) :
+    (¬ ∃ z : G.edgeSet → Color,
+      z ∈ planarBoundaryZeroSubmodule emb ∧
+        z ≠ 0 ∧
+          ∀ e : G.edgeSet,
+            data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e →
+              z e = 0) ∧
+      Theorem49BoundaryRootSynthesis emb C₀ ∧
+        (∀ ⦃z : G.edgeSet → Color⦄,
+          z ∈ planarBoundaryZeroSubmodule emb →
+          (∀ e ∈ classifier.emittedFinset, z e = 0) →
+            z = 0) := by
+  have hnoEvader :
+      ¬ ∃ z : G.edgeSet → Color,
+        z ∈ planarBoundaryZeroSubmodule emb ∧
+          z ≠ 0 ∧
+            ∀ e : G.edgeSet,
+              data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e →
+                z e = 0 :=
+    data.no_boundaryZeroEvader_of_residualRemainingInteriorSupportEmpty_of_processedControl
+      emb p0Inside p4Inside side classifier processed hprocessedControl hresidualEmpty
+  exact
+    ⟨hnoEvader,
+      data.theorem49Synthesis_and_boundaryZeroControl_of_noEvader_of_forcedAllLatents
+        emb C₀ colorings hsubset p0Inside p4Inside h side hcyclic hportal_crosses
+        hcycles classifier hredEmitted hblueEmitted hredRemaining hblueRemaining
+        hnoEvader hforcedAll⟩
+
+/--
 Forced-all finite scheduler fork.  The executable report has already closed the primitive
 checker frontier.  The remaining Move-2 finite obligation is therefore exact: either the
 canonical interior-support worklist is empty, which is the no-evader/full-control branch, or a
