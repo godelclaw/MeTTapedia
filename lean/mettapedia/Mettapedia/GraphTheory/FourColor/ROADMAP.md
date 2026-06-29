@@ -23,7 +23,7 @@ Read these four files first — they are the whole live surface:
 | `Shells.lean` | Bundled hypothesis packages (`ClosedWalkExactShell`, `SuccessorCycleExactShell`, `ClosedWalkCancellationShell`, …) replacing the historical 8–10-hypothesis telescopes |
 | `Frontier.lean` | The maximal positive and negative results, stated over the bundles as thin wrappers, including detector-based cancellation sufficiency |
 | `CAP5RouteVerdict.lean` | The current CAP5/F2 route verdict: either the executable report returns a concrete primitive portal/cycle checker gap, or the closed-frontier route is exactly the absence of the concrete target/off-target F2 evaders; it also names the unified emitted-kernel/remaining-map evader and proves, under no primitive gap, that this evader exists exactly when the closed route endpoint fails; in that same branch the CAP5/Jordan geometric separator repair is blocked by the cyclic-cut obstruction |
-| `CAP5RoutePayoff.lean` | Route payoff extraction: a closed CAP5/F2 route certificate gives theorem-4.9 synthesis plus genuine line-graph `EdgeColorable 4` from the root `Color` edge-coloring; the missing stronger Tait upgrade is isolated as `CAP5RouteClosedRootTaitBridge`, and the exact finite wheel route-closed canary is named as `WheelCAP5FiniteRouteClosedCanary` |
+| `CAP5RoutePayoff.lean` | Route payoff extraction: a closed CAP5/F2 route certificate gives theorem-4.9 synthesis plus genuine line-graph `EdgeColorable 4` from the root `Color` edge-coloring; the missing stronger Tait upgrade is isolated as `CAP5RouteClosedRootTaitBridge`; the finite no-gap pre-RREF input is named as `CAP5FiniteNoGapRouteInput`; and the exact finite wheel route-closed canary is named as `WheelCAP5FiniteRouteClosedCanary` |
 
 ## Current status (one paragraph)
 
@@ -278,8 +278,14 @@ graph has the proven coloring canary `WheelCAP5RoutePayoff.wheelColoringCanary`.
 The exact positive CAP5 canary still missing is
 `WheelCAP5RoutePayoff.WheelCAP5FiniteRouteClosedCanary`: one finite checker
 report plus a closed CAP5/F2 route certificate for that concrete wheel graph.
-So the next make-or-break test is not another route fork; it is to construct
-that witness or accept the named obstruction it would fail on.
+The finite pre-RREF input is now explicit too:
+`CAP5FiniteNoGapRouteInput` combines a closed executable primitive-checker
+report, the concrete forced-edge classifier, and all emitted/remaining
+red-blue single-coordinate witnesses into the `CAP5F2RouteCertificate`
+consumed by the unified-evader oracle.  So the next make-or-break test is not
+another route fork; it is to instantiate that input for the actual side and
+check `CAP5F2NoUnifiedKernelMapEvader`, or accept the named obstruction it
+would fail on.
 
 The next target-level corollary turns finite dimension into an explicit fork
 test for exact CAP5 data.  In Lean,
