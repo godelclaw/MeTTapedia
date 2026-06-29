@@ -230,6 +230,75 @@ theorem not_exists_stokes_exact_coordinate_enstrophy_ratio_rayleigh_regression
     not_exists_nonzeroSchwartzStokesFlow_past_exact_coordinateEnstrophyRatioRayleigh_of_posViscosity
       hν hlam
 
+theorem no_past_exact_coordinate_enstrophy_rayleigh_packet_regression
+    {ν lam T : ℝ} (hν : 0 < ν) (hlam : 0 < lam)
+    (S : NonzeroSchwartzConcreteNavierStokesSolution ν)
+    (hneT : ∃ xT : NSSpace, S.velocity T xT ≠ 0) :
+    ¬ ∀ t : NSTime, t ≤ T →
+      coordinateEnstrophyAt S.velocity t =
+        lam * normalizedKineticEnergy S.velocity t := by
+  exact S.noPastExactCoordinateEnstrophyRayleigh_packet hν hlam hneT
+
+theorem no_past_exact_coordinate_enstrophy_ratio_rayleigh_packet_regression
+    {ν lam T : ℝ} (hν : 0 < ν) (hlam : 0 < lam)
+    (S : NonzeroSchwartzConcreteNavierStokesSolution ν)
+    (hneT : ∃ xT : NSSpace, S.velocity T xT ≠ 0) :
+    ¬ ∀ t : NSTime, t ≤ T →
+      coordinateEnstrophyAt S.velocity t /
+        normalizedKineticEnergy S.velocity t = lam := by
+  exact S.noPastExactCoordinateEnstrophyRatioRayleigh_packet hν hlam hneT
+
+theorem not_exists_exact_coordinate_enstrophy_rayleigh_regression
+    {ν lam : ℝ} (hν : 0 < ν) (hlam : 0 < lam) :
+    ¬ ∃ S : NonzeroSchwartzConcreteNavierStokesSolution ν,
+      ∃ T : NSTime,
+        (∃ xT : NSSpace, S.velocity T xT ≠ 0) ∧
+          ∀ t : NSTime, t ≤ T →
+            coordinateEnstrophyAt S.velocity t =
+              lam * normalizedKineticEnergy S.velocity t := by
+  exact
+    not_exists_nonzeroSchwartzConcreteSolution_past_exact_coordinateEnstrophyRayleigh_of_posViscosity
+      hν hlam
+
+theorem not_exists_exact_coordinate_enstrophy_ratio_rayleigh_regression
+    {ν lam : ℝ} (hν : 0 < ν) (hlam : 0 < lam) :
+    ¬ ∃ S : NonzeroSchwartzConcreteNavierStokesSolution ν,
+      ∃ T : NSTime,
+        (∃ xT : NSSpace, S.velocity T xT ≠ 0) ∧
+          ∀ t : NSTime, t ≤ T →
+            coordinateEnstrophyAt S.velocity t /
+              normalizedKineticEnergy S.velocity t = lam := by
+  exact
+    not_exists_nonzeroSchwartzConcreteSolution_past_exact_coordinateEnstrophyRatioRayleigh_of_posViscosity
+      hν hlam
+
+theorem not_exists_one_profile_exact_coordinate_enstrophy_rayleigh_regression
+    {ν lam : ℝ} (hν : 0 < ν) (hlam : 0 < lam) :
+    ¬ ∃ S : NonzeroSchwartzConcreteNavierStokesSolution ν,
+      ∃ (a : NSTime → ℝ) (f : NSSchwartzInitialVelocity) (T : NSTime),
+        S.velocity = (fun r y => a r • f y) ∧
+          (∃ xT : NSSpace, S.velocity T xT ≠ 0) ∧
+            ∀ t : NSTime, t ≤ T →
+              coordinateEnstrophyAt (fun r y => a r • f y) t =
+                lam * normalizedKineticEnergy (fun r y => a r • f y) t := by
+  exact
+    not_exists_nonzeroSchwartzConcreteSolution_oneProfile_past_exact_coordinateEnstrophyRayleigh_of_posViscosity
+      hν hlam
+
+theorem not_exists_one_profile_exact_coordinate_enstrophy_ratio_rayleigh_regression
+    {ν lam : ℝ} (hν : 0 < ν) (hlam : 0 < lam) :
+    ¬ ∃ S : NonzeroSchwartzConcreteNavierStokesSolution ν,
+      ∃ (a : NSTime → ℝ) (f : NSSchwartzInitialVelocity) (T : NSTime),
+        S.velocity = (fun r y => a r • f y) ∧
+          (∃ xT : NSSpace, S.velocity T xT ≠ 0) ∧
+            ∀ t : NSTime, t ≤ T →
+              coordinateEnstrophyAt (fun r y => a r • f y) t /
+                  normalizedKineticEnergy (fun r y => a r • f y) t =
+                lam := by
+  exact
+    not_exists_nonzeroSchwartzConcreteSolution_oneProfile_past_exact_coordinateEnstrophyRatioRayleigh_of_posViscosity
+      hν hlam
+
 end Regression
 
 end NavierStokes
