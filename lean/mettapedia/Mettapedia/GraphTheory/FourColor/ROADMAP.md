@@ -743,6 +743,20 @@ longer acceptable progress.
    either the primitive gap or the first residual selected-boundary-zero evader
    with immutable one-edge processed-control failure, the one-edge promoted
    control update, and strict residual decrease.
+   The initial residual closure layer
+   `InitialResidualSchedulerImmutableProcessedControlObstruction`,
+   `initialResidualSchedulerImmutableProcessedControlObstruction_of_no_missingCheckerEvidence_of_notSynthesis`,
+   `theorem49BoundaryRootSynthesis_of_no_missingCheckerEvidence_and_no_initialResidualSchedulerImmutableProcessedControlObstruction`,
+   `ofDecidableChecks_missingCheckerEvidence_or_theorem49Synthesis_and_boundaryZeroControl_of_initialResidualRemainingControlEdgesEmpty`,
+   and
+   `theorem49Synthesis_and_boundaryZeroControl_of_no_missingCheckerEvidence_and_initialResidualRemainingControlEdgesEmpty`
+   turns that fork into a direct route decision: no primitive checker gap plus
+   an initially empty residual scheduler proves theorem-4.9 synthesis with full
+   selected-boundary-zero classifier control, while no primitive checker gap
+   plus failed synthesis forces the named first residual evader/immutable
+   processing obstruction.  The remaining Move-2 burden is therefore to prove
+   exact CAP5 shell data empties that initial residual scheduler/emitted-rank
+   certificate, or to accept the named first residual obstruction.
    The direct no-evader route corollaries
    `ofDecidableChecks_missingCheckerEvidence_or_theorem49Synthesis_and_boundaryZeroControl_of_no_theorem49BoundaryTargetEvader_and_no_emittedFinsetKernelMapEvader_with_theorem49BoundaryVertexKirchhoffFailure`
    and

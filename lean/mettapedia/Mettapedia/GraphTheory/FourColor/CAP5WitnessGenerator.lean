@@ -4013,6 +4013,46 @@ theorem residualRemainingControlEdges_eq_empty_iff_remainingControlEdges_subset_
       simp at he
 
 /--
+At the initial scheduler state, residual exhaustion is exactly exhaustion of the immutable
+remaining-control worklist.
+-/
+theorem residualRemainingControlEdges_empty_processed_eq_empty_iff_remainingControlEdges_eq_empty
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    [Fintype G.edgeSet]
+    {p0Inside p4Inside : Bool} {side : V → Prop}
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (controlEdges : Finset G.edgeSet) :
+    classifier.residualRemainingControlEdges controlEdges (∅ : Finset G.edgeSet) = ∅ ↔
+      classifier.remainingControlEdges controlEdges = ∅ := by
+  constructor
+  · intro hresidual
+    ext e
+    constructor
+    · intro heRemaining
+      have heResidual :
+          e ∈ classifier.residualRemainingControlEdges controlEdges
+            (∅ : Finset G.edgeSet) :=
+        (classifier.mem_residualRemainingControlEdges_iff controlEdges
+          (∅ : Finset G.edgeSet) e).2 ⟨heRemaining, by simp⟩
+      rw [hresidual] at heResidual
+      simp at heResidual
+    · intro he
+      simp at he
+  · intro hremaining
+    ext e
+    constructor
+    · intro heResidual
+      have heRemaining :
+          e ∈ classifier.remainingControlEdges controlEdges :=
+        (classifier.mem_residualRemainingControlEdges_iff controlEdges
+          (∅ : Finset G.edgeSet) e).1 heResidual |>.1
+      rw [hremaining] at heRemaining
+      simp at heRemaining
+    · intro he
+      simp at he
+
+/--
 Any finite set already contained in the remaining-control worklist is unchanged by applying
 `remainingControlEdges` again.
 -/
