@@ -481,6 +481,13 @@ the missing branch is exactly failure of the primitive portal/cycle
 prerequisites for the realized CAP5/Jordan separator-repair class; if those
 prerequisites are present, the report is forced-all and the completed
 repair branch is blocked by the same cyclic-five small-cut obstruction.
+The completed-prerequisite wrapper
+`closedWalkExactShell_CAP5Jordan_fundamentalRepairObstruction` records that
+closed branch without another report fork: once the missing-evidence frontier
+is empty, cyclic five-edge-connectivity forces all generated latents into the
+counterexample bin and forbids the exceptional cyclic-separator repair
+realization by the size-at-most-four cyclic-cut obstruction, while the
+closed-walk shell still blocks the canonical and one-collar repair surfaces.
 Thus the residual Move-1 task is no longer another packet refutation: either
 prove exact shell data supplies the primitive prerequisites, or keep failed
 prerequisites as outside the realized repair class.
@@ -508,11 +515,20 @@ longer acceptable progress.
    evidence is exactly failure of the primitive portal/cycle prerequisites for
    the realized separator-repair class; and if those prerequisites are present,
    the completed branch is forced-all and blocked by the small-cut
-   obstruction.  The remaining Move-1 gap is to prove exact shell data supplies
-   those primitive prerequisites, or keep failed prerequisites outside the
-   realized CAP5/Jordan repair class.
+   obstruction.  The completed-prerequisite wrapper
+   `closedWalkExactShell_CAP5Jordan_fundamentalRepairObstruction` names that
+   branch as the single CAP5/Jordan small-cut obstruction.  The remaining
+   Move-1 gap is to prove exact shell data supplies those primitive
+   prerequisites, or keep failed prerequisites outside the realized CAP5/Jordan
+   repair class.
 2. **Algebraic fork**: resolve the F2 cancellation oracle.  The current
-   machine-checked statement is sharper than a one-way handoff: full
+   machine-checked statement is now packaged rather than exposed as case
+   cartography: with the primitive checker gap absent,
+   `budgetMetNoEvader_boundaryZeroControl_oracle` proves no unified
+   emitted-kernel/remaining-map evader iff theorem-4.9 synthesis plus full
+   selected-boundary-zero classifier control, and failure returns that same
+   precise unified evader.  The supporting statements remain sharper than a
+   one-way handoff: full
    selected-boundary-zero classifier control is equivalent to absence of a
    nonzero selected-boundary-zero evader, and the closed finite checker plus
    that no-evader verdict gives both theorem-4.9 synthesis and full
@@ -809,6 +825,14 @@ longer acceptable progress.
    remove the remaining closed-frontier handoff from this paired obstruction:
    the executable report itself now returns primitive checker gap, synthesis,
    or the paired missing-interior-coordinate plus unified finite F2 evader.
+   The packaged theorem
+   `budgetMetNoEvader_boundaryZeroControl_oracle` is the assembled oracle
+   surface over those case lemmas: with the primitive checker gap absent, no
+   unified emitted-kernel/remaining-map evader is equivalent to theorem-4.9
+   synthesis plus full selected-boundary-zero classifier control; if that
+   closed result fails, the theorem returns the same precise unified evader.
+   The remaining exact-shell question is therefore the no-evader certificate
+   itself, not another scheduler/rank/report split.
    The direct no-evader route corollaries
    `ofDecidableChecks_missingCheckerEvidence_or_theorem49Synthesis_and_boundaryZeroControl_of_no_theorem49BoundaryTargetEvader_and_no_emittedFinsetKernelMapEvader_with_theorem49BoundaryVertexKirchhoffFailure`
    and

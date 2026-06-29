@@ -16,7 +16,12 @@ Geometric table delta: the latest report-level decision theorem reduces the
 primitive missing branch to failed portal/cycle prerequisites for the
 CAP5/Jordan separator-repair class.  If those prerequisites are present, the
 completed report branch is forced-all and the realized exceptional separator is
-blocked by the same cyclic-five small-cut obstruction.
+blocked by the same cyclic-five small-cut obstruction.  The new completed-
+prerequisite wrapper
+`closedWalkExactShell_CAP5Jordan_fundamentalRepairObstruction` packages this
+as one fundamental obstruction: no source-bound canonical/one-collar repair,
+forced-all report output, and no CAP5/Jordan exceptional cyclic-separator
+repair realization under cyclic five-edge-connectivity.
 
 Algebraic-F2 table delta: the latest initial residual closure layer names the
 first scheduler obstruction and removes three remaining handoffs.  First,
@@ -36,6 +41,18 @@ unified evader closes synthesis/control through the existing no-gap
 no-evader theorem, and excluding the named scheduler obstruction still closes
 synthesis.  Current Algebraic-F2 estimate is PLN STV `<0.91,0.95>`, ITV
 `[0.86,0.91]`, progress `99%`.
+
+Packaged oracle delta: the case-lemma surface is now assembled into
+`CAP5TransportedEdgeComponentCoverCore.budgetMetNoEvader_boundaryZeroControl_oracle`.
+With the primitive portal/cycle checker gap absent, this single theorem states
+that absence of the unified emitted-kernel/remaining-map evader is equivalent
+to theorem-4.9 synthesis plus full selected-boundary-zero classifier control;
+if that closed result fails, the theorem returns the same precise nonzero
+selected-boundary-zero evader with forced-edge vanishing, emitted-kernel
+membership, and nonzero canonical remaining-family map image.  Current
+Algebraic-F2 estimate is PLN STV `<0.95,0.96>`, ITV `[0.91,0.95]`, progress
+`100%` for the oracle-packaging layer; exact CAP5 shell data still must supply
+the no-evader side or accept the returned evader.
 
 Target/rank decomposition delta: the emitted-rank certificate is now connected
 to the theorem-4.9 target fork without going through prose.  Lean proves that
@@ -213,6 +230,15 @@ nonzero canonical remaining-map image.
   class.  If the primitive frontier is complete, the report is forced-all and
   the completed repair branch is blocked by the cyclic-five small-cut
   obstruction.
+- New completed-prerequisite geometric obstruction surface:
+  `closedWalkExactShell_CAP5Jordan_fundamentalRepairObstruction`.
+  This removes the last report fork from the completed CAP5/Jordan repair
+  branch: assuming the primitive missing-evidence frontier is empty, cyclic
+  five-edge-connectivity forces all generated latents into the counterexample
+  bin and forbids the exceptional cyclic-separator repair realization by the
+  single size-at-most-four cyclic-cut obstruction, while the closed-walk shell
+  still blocks the source-bound canonical and one-collar repairs by the
+  two-interior-edge face obstruction.
 - Remaining Move-1 burden: if the route insists that exact shell data supplies
   all primitive portal/cycle prerequisites, prove that handoff explicitly;
   otherwise the CAP5/Jordan geometric repair class is now reduced to failed
@@ -1611,6 +1637,23 @@ nonzero canonical remaining-map image.
   is empty, and the projected-generator summary has 65 reports split as
   54 found and 11 no-Tait-coloring, 700 color probes split as 456 found and
   244 no-Tait-coloring, 0 missing color probes, and 0 truncations.
+- New packaged oracle theorem surface:
+  `CAP5TransportedEdgeComponentCoverCore.budgetMetNoEvader_boundaryZeroControl_oracle`.
+  This assembles the committed rank/map/trace/scheduler case lemmas into one
+  closed-frontier statement: no unified emitted-kernel/remaining-map evader
+  iff theorem-4.9 synthesis plus full selected-boundary-zero classifier
+  control, and failure of that closed result returns the same precise unified
+  evader.  Focused build archived locally as
+  `fourcolor-fresh-oracle-package-focused-build-20260629.log`; trusted-
+  constant audit archived locally as
+  `fourcolor-fresh-oracle-package-axiom-audit-20260629.log`, with both new
+  theorem constants depending only on `[propext, Classical.choice,
+  Quot.sound]`.  Strict current-diff, added Lean proof-marker, and added leak
+  scans are archived under the `fourcolor-fresh-oracle-package-*20260629.log`
+  prefix and are empty.  Full `lake -f lakefile.lean build Mettapedia`
+  archived locally as
+  `fourcolor-fresh-oracle-package-full-build-20260629.log`; it completed with
+  5900 jobs.
 - Report-route target/off-target no-evader focused detector build archived
   locally as
   `fourcolor-move2-report-target-offtarget-noevader-route-focused-build-20260629.log`.
