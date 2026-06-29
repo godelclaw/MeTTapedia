@@ -1760,6 +1760,27 @@ theorem vorticityEnstrophyStretchingControlledAt_of_finiteTimeWitness_velocitySc
         W.velocity a a' b b' f g ha hb hω t)
       ht0 htT
 
+/-- Finite-time witness a-priori enstrophy control from residual-curl for a
+finite scalar Schwartz vorticity representation.  The time-pairing derivative
+is discharged by the checked finite-family calculation, and raw integrability
+is derived from the velocity Schwartz slices. -/
+theorem vorticityEnstrophyStretchingControlledAt_of_finiteTimeWitness_velocitySchwartz_residualCurl_finiteFamilyVorticity
+    {ι : Type} [Fintype ι] {ν T : ℝ} {u₀ : NSInitialVelocity}
+    (W : ExplicitFiniteTimeRegularityWitness ν u₀ T)
+    {t : NSTime} (a a' : ι → ℝ → ℝ) (f : ι → 𝓢(NSSpace, NSSpace))
+    (hν : 0 ≤ ν)
+    (hVelocitySlices : finiteTimeWitnessVelocitySchwartzSlices W)
+    (ha : ∀ i s, HasDerivAt (a i) (a' i s) s)
+    (hω : ∀ s x, spatialVorticity W.velocity s x = ∑ i, a i s • f i x)
+    (ht0 : 0 ≤ t) (htT : t ≤ T) :
+    vorticityEnstrophyStretchingControlledAt ν W.velocity t := by
+  exact
+    vorticityEnstrophyStretchingControlledAt_of_finiteTimeWitness_velocitySchwartz_residualCurl_integrable
+      W hν hVelocitySlices
+      (vorticityEnstrophyTimePairingDerivativeAt_of_fintype_sum_scalar_smul_schwartzVorticitySlice
+        W.velocity a a' f ha hω t)
+      ht0 htT
+
 /-- Checked finite-time witness a-priori enstrophy package with the standard
 vorticity equation derived from residual-curl, not supplied as an extra
 hypothesis. -/
@@ -1853,6 +1874,29 @@ theorem BKMVorticityFiniteTimeWitnessResidualCurlVelocitySchwartzTwoProfileAprio
   exact
     vorticityEnstrophyStretchingControlledAt_of_finiteTimeWitness_velocitySchwartz_residualCurl_twoProfileVorticity
       W a a' b b' f g hν hVelocitySlices ha hb hω ht0 htT
+
+/-- Checked finite-family finite-time witness a-priori enstrophy package from
+residual-curl and velocity Schwartz slices. -/
+def BKMVorticityFiniteTimeWitnessResidualCurlVelocitySchwartzFiniteFamilyAprioriClosed : Prop :=
+  ∀ (ι : Type) [Fintype ι] (ν T : ℝ) (u₀ : NSInitialVelocity)
+      (W : ExplicitFiniteTimeRegularityWitness ν u₀ T) (t : NSTime)
+      (a a' : ι → ℝ → ℝ) (f : ι → 𝓢(NSSpace, NSSpace)),
+    0 ≤ ν →
+      finiteTimeWitnessVelocitySchwartzSlices W →
+        (∀ i s, HasDerivAt (a i) (a' i s) s) →
+          (∀ s x, spatialVorticity W.velocity s x = ∑ i, a i s • f i x) →
+            0 ≤ t →
+              t ≤ T →
+                vorticityEnstrophyStretchingControlledAt ν W.velocity t
+
+/-- Proof of the finite-family residual-curl finite-time witness a-priori
+package. -/
+theorem BKMVorticityFiniteTimeWitnessResidualCurlVelocitySchwartzFiniteFamilyAprioriClosed_proved :
+    BKMVorticityFiniteTimeWitnessResidualCurlVelocitySchwartzFiniteFamilyAprioriClosed := by
+  intro ι _ ν T u₀ W t a a' f hν hVelocitySlices ha hω ht0 htT
+  exact
+    vorticityEnstrophyStretchingControlledAt_of_finiteTimeWitness_velocitySchwartz_residualCurl_finiteFamilyVorticity
+      W a a' f hν hVelocitySlices ha hω ht0 htT
 
 /-- Finite-time witness affine-log enstrophy growth with the standard
 vorticity equation supplied by the now-closed residual-curl defect. -/
@@ -1966,6 +2010,33 @@ theorem vorticityEnstrophyGradientControlledAt_of_finiteTimeWitness_velocitySchw
       W hν hVelocitySlices
       (vorticityEnstrophyTimePairingDerivativeAt_of_add_scalar_smul_schwartzVorticitySlice
         W.velocity a a' b b' f g ha hb hω t)
+      hC0 hC1 hΩ hH hAffine ht0 htT
+
+/-- Finite-time witness affine-log enstrophy growth from residual-curl for a
+finite scalar Schwartz vorticity representation.  The checked finite-family
+time-pairing calculation supplies the remaining derivative input. -/
+theorem vorticityEnstrophyGradientControlledAt_of_finiteTimeWitness_velocitySchwartz_residualCurl_affinePointwiseInequality_finiteFamilyVorticity
+    {ι : Type} [Fintype ι] {ν T C0 C1 : ℝ} {u₀ : NSInitialVelocity}
+    (W : ExplicitFiniteTimeRegularityWitness ν u₀ T)
+    {Ω H : NSTime → ℝ} {t : NSTime}
+    (a a' : ι → ℝ → ℝ) (f : ι → 𝓢(NSSpace, NSSpace))
+    (hν : 0 ≤ ν)
+    (hVelocitySlices : finiteTimeWitnessVelocitySchwartzSlices W)
+    (ha : ∀ i s, HasDerivAt (a i) (a' i s) s)
+    (hω : ∀ s x, spatialVorticity W.velocity s x = ∑ i, a i s • f i x)
+    (hC0 : 0 ≤ C0) (hC1 : 0 ≤ C1)
+    (hΩ : ∀ s, 0 ≤ s → s ≤ T → 0 ≤ Ω s)
+    (hH : ∀ s, 0 ≤ s → s ≤ T → 0 ≤ H s)
+    (hAffine : BKMLogSobolevAffinePointwiseInequalityOn
+      W.velocity T C0 C1 Ω H)
+    (ht0 : 0 ≤ t) (htT : t ≤ T) :
+    vorticityEnstrophyGradientControlledAt ν W.velocity t
+      (C0 + C1 * bkmLogSobolevLogFactor Ω H t) := by
+  exact
+    vorticityEnstrophyGradientControlledAt_of_finiteTimeWitness_velocitySchwartz_residualCurl_affinePointwiseInequality_integrable
+      W hν hVelocitySlices
+      (vorticityEnstrophyTimePairingDerivativeAt_of_fintype_sum_scalar_smul_schwartzVorticitySlice
+        W.velocity a a' f ha hω t)
       hC0 hC1 hΩ hH hAffine ht0 htT
 
 /-- Checked finite-time witness affine-log enstrophy growth package with the
@@ -2105,6 +2176,38 @@ theorem BKMVorticityFiniteTimeWitnessResidualCurlVelocitySchwartzTwoProfileAffin
       W a a' b b' f g hν hVelocitySlices ha hb hω hC0 hC1 hΩ hH hAffine
       ht0 htT
 
+/-- Checked finite-family finite-time witness affine-log enstrophy growth
+package from residual-curl and velocity Schwartz slices. -/
+def BKMVorticityFiniteTimeWitnessResidualCurlVelocitySchwartzFiniteFamilyAffineLogGrowthClosed : Prop :=
+  ∀ (ι : Type) [Fintype ι] (ν T C0 C1 : ℝ) (u₀ : NSInitialVelocity)
+      (W : ExplicitFiniteTimeRegularityWitness ν u₀ T)
+      (Ω H : NSTime → ℝ) (t : NSTime)
+      (a a' : ι → ℝ → ℝ) (f : ι → 𝓢(NSSpace, NSSpace)),
+    0 ≤ ν →
+      finiteTimeWitnessVelocitySchwartzSlices W →
+        (∀ i s, HasDerivAt (a i) (a' i s) s) →
+          (∀ s x, spatialVorticity W.velocity s x = ∑ i, a i s • f i x) →
+            0 ≤ C0 →
+              0 ≤ C1 →
+                (∀ s, 0 ≤ s → s ≤ T → 0 ≤ Ω s) →
+                  (∀ s, 0 ≤ s → s ≤ T → 0 ≤ H s) →
+                    BKMLogSobolevAffinePointwiseInequalityOn
+                      W.velocity T C0 C1 Ω H →
+                      0 ≤ t →
+                        t ≤ T →
+                          vorticityEnstrophyGradientControlledAt ν W.velocity t
+                            (C0 + C1 * bkmLogSobolevLogFactor Ω H t)
+
+/-- Proof of the finite-family residual-curl finite-time witness affine-log
+growth package. -/
+theorem BKMVorticityFiniteTimeWitnessResidualCurlVelocitySchwartzFiniteFamilyAffineLogGrowthClosed_proved :
+    BKMVorticityFiniteTimeWitnessResidualCurlVelocitySchwartzFiniteFamilyAffineLogGrowthClosed := by
+  intro ι _ ν T C0 C1 u₀ W Ω H t a a' f hν hVelocitySlices ha hω
+    hC0 hC1 hΩ hH hAffine ht0 htT
+  exact
+    vorticityEnstrophyGradientControlledAt_of_finiteTimeWitness_velocitySchwartz_residualCurl_affinePointwiseInequality_finiteFamilyVorticity
+      W a a' f hν hVelocitySlices ha hω hC0 hC1 hΩ hH hAffine ht0 htT
+
 /-- Route-facing packet after closing the residual-curl defect: the remaining
 component route now needs only the affine log-Sobolev component and the
 high-norm continuation component. -/
@@ -2133,21 +2236,27 @@ theorem BKMContinuation_reduced_to_affineLogHighNorm_after_residualCurl_integrab
     BKMResidualCurlExpansionDefectVanishes ∧
       BKMVorticityScalarSchwartzTimePairingDerivativeClosed ∧
         BKMVorticityTwoProfileSchwartzTimePairingDerivativeClosed ∧
-          BKMVorticityFiniteTimeWitnessResidualCurlVelocitySchwartzAprioriIntegrabilityClosed ∧
-            BKMVorticityFiniteTimeWitnessResidualCurlVelocitySchwartzAffineLogGrowthIntegrabilityClosed ∧
-              BKMVorticityFiniteTimeWitnessResidualCurlVelocitySchwartzTwoProfileAprioriClosed ∧
-                BKMVorticityFiniteTimeWitnessResidualCurlVelocitySchwartzTwoProfileAffineLogGrowthClosed ∧
-                  (BKMLogSobolevAffinePointwiseFromEnvelope →
-                    BKMHighNormContinuationFromLogControl →
-                      ExplicitFiniteEnergyBKMContinuationTargetOnNonnegHorizons) := by
+          BKMVorticityFiniteFamilySchwartzTimePairingDerivativeClosed ∧
+            BKMVorticityFiniteTimeWitnessResidualCurlVelocitySchwartzAprioriIntegrabilityClosed ∧
+              BKMVorticityFiniteTimeWitnessResidualCurlVelocitySchwartzAffineLogGrowthIntegrabilityClosed ∧
+                BKMVorticityFiniteTimeWitnessResidualCurlVelocitySchwartzTwoProfileAprioriClosed ∧
+                  BKMVorticityFiniteTimeWitnessResidualCurlVelocitySchwartzTwoProfileAffineLogGrowthClosed ∧
+                    BKMVorticityFiniteTimeWitnessResidualCurlVelocitySchwartzFiniteFamilyAprioriClosed ∧
+                      BKMVorticityFiniteTimeWitnessResidualCurlVelocitySchwartzFiniteFamilyAffineLogGrowthClosed ∧
+                        (BKMLogSobolevAffinePointwiseFromEnvelope →
+                          BKMHighNormContinuationFromLogControl →
+                            ExplicitFiniteEnergyBKMContinuationTargetOnNonnegHorizons) := by
   exact
     ⟨BKMResidualCurlExpansionDefectVanishes_proved,
       BKMVorticityScalarSchwartzTimePairingDerivativeClosed_proved,
       BKMVorticityTwoProfileSchwartzTimePairingDerivativeClosed_proved,
+      BKMVorticityFiniteFamilySchwartzTimePairingDerivativeClosed_proved,
       BKMVorticityFiniteTimeWitnessResidualCurlVelocitySchwartzAprioriIntegrabilityClosed_proved,
       BKMVorticityFiniteTimeWitnessResidualCurlVelocitySchwartzAffineLogGrowthIntegrabilityClosed_proved,
       BKMVorticityFiniteTimeWitnessResidualCurlVelocitySchwartzTwoProfileAprioriClosed_proved,
       BKMVorticityFiniteTimeWitnessResidualCurlVelocitySchwartzTwoProfileAffineLogGrowthClosed_proved,
+      BKMVorticityFiniteTimeWitnessResidualCurlVelocitySchwartzFiniteFamilyAprioriClosed_proved,
+      BKMVorticityFiniteTimeWitnessResidualCurlVelocitySchwartzFiniteFamilyAffineLogGrowthClosed_proved,
       fun hLog hHigh =>
         BKMAffineLogSobolevAnalyticComponentsClosed.implies_finiteEnergyBKMContinuationTargetOnNonnegHorizons
           ⟨BKMResidualCurlExpansionDefectVanishes_proved, hLog, hHigh⟩⟩
