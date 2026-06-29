@@ -633,7 +633,11 @@ longer acceptable progress.
    no-gap/no-evader closure corollary give the complementary positive
    direction: excluding both primitive checker gaps and the unified
    emitted-kernel/remaining-map evader closes theorem-4.9 synthesis plus full
-   selected-boundary-zero classifier control.  The
+   selected-boundary-zero classifier control.  The exact report-level
+   kernel/map oracle strengthens this to an iff: after a closed primitive
+   frontier, no unified evader is equivalent to synthesis/control, and the
+   executable report returns either a primitive gap or that exact equivalence.
+   The
    pure no-target theorem underneath those refinements says failed synthesis
    already produces a genuine selected-boundary-zero evader for the enumerated
    forced edges.  The remaining crux is whether exact shell/CAP5 data reaches
