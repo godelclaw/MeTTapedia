@@ -319,6 +319,14 @@ def residualCurlDifferentialIdentitiesClosedOn
       vorticityLaplacianCommutationClosedOn u T ∧
         vorticityConvectionExpansionClosedOn u T
 
+/-- The three residual-curl identities still needed after smoothness closes
+curl-linearity. -/
+def residualCurlCommutationExpansionClosedOn
+    (u : NSVelocityField) (T : ℝ) : Prop :=
+  vorticityTimeCommutationClosedOn u T ∧
+    vorticityLaplacianCommutationClosedOn u T ∧
+      vorticityConvectionExpansionClosedOn u T
+
 /-- A differentiability proof for curl-linearity plus the remaining three
 commutation/expansion identities supplies the bundled residual-curl
 differential identities. -/
@@ -331,6 +339,29 @@ theorem residualCurlDifferentialIdentitiesClosedOn_of_linearityDifferentiableOn
     residualCurlDifferentialIdentitiesClosedOn ν u T :=
   ⟨residualCurlLinearityClosedOn_of_differentiableOn hLin,
     hTime, hLap, hConv⟩
+
+/-- Smoothness supplies curl-linearity, so only the three commutation/expansion
+identities are needed for the bundled residual-curl differential identities. -/
+theorem residualCurlDifferentialIdentitiesClosedOn_of_smooth_commutationExpansion
+    {ν T : ℝ} {u : NSVelocityField}
+    (hu : smoothSpaceTimeVelocity u)
+    (hComm : residualCurlCommutationExpansionClosedOn u T) :
+    residualCurlDifferentialIdentitiesClosedOn ν u T :=
+  ⟨residualCurlLinearityClosedOn_of_smooth hu,
+    hComm.1, hComm.2.1, hComm.2.2⟩
+
+/-- Smoothness plus the three remaining commutation/expansion identities closes
+the residual-curl expansion defect on a slab. -/
+theorem residualCurlExpansionClosedOn_of_smooth_commutationExpansion
+    {ν T : ℝ} {u : NSVelocityField}
+    (hu : smoothSpaceTimeVelocity u)
+    (hComm : residualCurlCommutationExpansionClosedOn u T) :
+    residualCurlExpansionClosedOn ν u T := by
+  intro t x ht0 htT
+  rw [residualCurlExpansionDefect_eq_differentialIdentityDefects]
+  rw [residualCurlLinearityClosedOn_of_smooth (ν := ν) (u := u) hu t x ht0 htT,
+    hComm.1 t x ht0 htT, hComm.2.1 t x ht0 htT, hComm.2.2 t x ht0 htT]
+  simp
 
 /-- The bundled differential identities force the residual-curl expansion
 defect to vanish on the same slab. -/
@@ -351,6 +382,23 @@ def BKMResidualCurlDifferentialIdentitiesClosed : Prop :=
     smoothSpaceTimeVelocity u →
       (∀ t x, 0 ≤ t → t ≤ T → spatialDivergence u t x = 0) →
         residualCurlDifferentialIdentitiesClosedOn ν u T
+
+/-- Global remaining residual-curl target after curl-linearity has been closed
+from smoothness. -/
+def BKMResidualCurlCommutationExpansionClosed : Prop :=
+  ∀ (u : NSVelocityField) (T : ℝ),
+    smoothSpaceTimeVelocity u →
+      (∀ t x, 0 ≤ t → t ≤ T → spatialDivergence u t x = 0) →
+        residualCurlCommutationExpansionClosedOn u T
+
+/-- Closing the three remaining commutation/expansion identities closes the
+bundled residual-curl differential identity target. -/
+theorem BKMResidualCurlDifferentialIdentitiesClosed_of_commutationExpansion
+    (hComm : BKMResidualCurlCommutationExpansionClosed) :
+    BKMResidualCurlDifferentialIdentitiesClosed := by
+  intro ν u T hu hdiv
+  exact residualCurlDifferentialIdentitiesClosedOn_of_smooth_commutationExpansion
+    (ν := ν) hu (hComm u T hu hdiv)
 
 /-- Closing the decomposed differential identities closes the previous
 residual-curl expansion target. -/

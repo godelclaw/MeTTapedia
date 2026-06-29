@@ -93,6 +93,21 @@ theorem residualCurlDifferentialIdentitiesClosedOn_of_linearityDifferentiableOn_
   exact residualCurlDifferentialIdentitiesClosedOn_of_linearityDifferentiableOn
     hLin hTime hLap hConv
 
+theorem residualCurlDifferentialIdentitiesClosedOn_of_smooth_commutationExpansion_regression
+    {ν T : ℝ} {u : NSVelocityField}
+    (hu : smoothSpaceTimeVelocity u)
+    (hComm : residualCurlCommutationExpansionClosedOn u T) :
+    residualCurlDifferentialIdentitiesClosedOn ν u T := by
+  exact residualCurlDifferentialIdentitiesClosedOn_of_smooth_commutationExpansion
+    hu hComm
+
+theorem residualCurlExpansionClosedOn_of_smooth_commutationExpansion_regression
+    {ν T : ℝ} {u : NSVelocityField}
+    (hu : smoothSpaceTimeVelocity u)
+    (hComm : residualCurlCommutationExpansionClosedOn u T) :
+    residualCurlExpansionClosedOn ν u T := by
+  exact residualCurlExpansionClosedOn_of_smooth_commutationExpansion hu hComm
+
 theorem residualCurlExpansionDefect_eq_differentialIdentityDefects_regression
     (ν : ℝ) (u : NSVelocityField) (t : NSTime) (x : NSSpace) :
     residualCurlExpansionDefect ν u t x =
@@ -112,6 +127,11 @@ theorem BKMResidualCurlDifferentialIdentitiesClosed_implies_residualCurlExpansio
     (hIds : BKMResidualCurlDifferentialIdentitiesClosed) :
     BKMResidualCurlExpansionDefectVanishes := by
   exact hIds.implies_residualCurlExpansionDefectVanishes
+
+theorem BKMResidualCurlDifferentialIdentitiesClosed_of_commutationExpansion_regression
+    (hComm : BKMResidualCurlCommutationExpansionClosed) :
+    BKMResidualCurlDifferentialIdentitiesClosed := by
+  exact BKMResidualCurlDifferentialIdentitiesClosed_of_commutationExpansion hComm
 
 theorem BKMAnalyticComponentsClosed_of_residualCurlDifferentialIdentities_regression
     (hIds : BKMResidualCurlDifferentialIdentitiesClosed)
