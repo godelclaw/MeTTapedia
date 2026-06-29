@@ -11836,6 +11836,139 @@ theorem boundaryZeroTraceEvader_and_canonicalFamilyPairing_ne_zero_of_not_remain
       i, hpair⟩
 
 /--
+Every genuine selected-boundary-zero evader is detected by the canonical red/blue pairing map on
+the remaining interior-support worklist.  Thus the failure branch is a finite F₂ linear-algebra
+signal: a chain that vanishes on the immutable emitted classifier output but is still nonzero
+cannot lie in the kernel of the canonical remaining-edge family-pairing map.
+-/
+theorem boundaryZeroEvader_remainingControlFamilyPairingMap_ne_zero
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    [Fintype G.edgeSet]
+    (emb : PlaneEmbeddingWithBoundary G)
+    (colorings : Set (G.EdgeColoring Color))
+    (p0Inside p4Inside : Bool) (side : V → Prop)
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (hredRemaining :
+      ∀ e ∈ classifier.remainingControlEdges
+          (interiorEdgeSupport emb.faceBoundary emb.faces),
+        Pi.single e red ∈ projectedColoringGeneratorSubspace emb colorings)
+    (hblueRemaining :
+      ∀ e ∈ classifier.remainingControlEdges
+          (interiorEdgeSupport emb.faceBoundary emb.faces),
+        Pi.single e blue ∈ projectedColoringGeneratorSubspace emb colorings)
+    {z : G.edgeSet → Color}
+    (hzBoundary : z ∈ planarBoundaryZeroSubmodule emb)
+    (hzNonzero : z ≠ 0)
+    (hvanishForced :
+      ∀ e : G.edgeSet,
+        data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e →
+          z e = 0) :
+    planarBoundaryZeroFamilyPairingMap
+        (redBlueSingleCoordinateFamily
+          (classifier.remainingControlEdges
+            (interiorEdgeSupport emb.faceBoundary emb.faces))
+          hredRemaining hblueRemaining)
+        (⟨z, hzBoundary⟩ : planarBoundaryZeroSubmodule emb) ≠ 0 := by
+  intro hmapZero
+  have hpairZero :
+      ∀ i :
+        ({e : G.edgeSet //
+          e ∈ classifier.remainingControlEdges
+            (interiorEdgeSupport emb.faceBoundary emb.faces)} × Bool),
+        chainDotBilinForm G.edgeSet
+          (redBlueSingleCoordinateFamily
+            (classifier.remainingControlEdges
+              (interiorEdgeSupport emb.faceBoundary emb.faces))
+            hredRemaining hblueRemaining i :
+            G.edgeSet → Color) z = 0 := by
+    intro i
+    have hcoord :=
+      congrArg
+        (fun f :
+          (({e : G.edgeSet //
+            e ∈ classifier.remainingControlEdges
+              (interiorEdgeSupport emb.faceBoundary emb.faces)} × Bool) → F2) =>
+            f i)
+        hmapZero
+    simpa [planarBoundaryZeroFamilyPairingMap] using hcoord
+  have hremainingZero :
+      ∀ e ∈ classifier.remainingControlEdges
+          (interiorEdgeSupport emb.faceBoundary emb.faces),
+        z e = 0 := by
+    intro e heRemaining
+    by_contra hze
+    rcases exists_familyPairing_ne_zero_of_redBlueSingleCoordinateMembership
+        (classifier.remainingControlEdges
+          (interiorEdgeSupport emb.faceBoundary emb.faces))
+        hredRemaining hblueRemaining heRemaining hze with
+      ⟨i, hpair⟩
+    exact hpair (hpairZero i)
+  have hvanishEmitted : ∀ e ∈ classifier.emittedFinset, z e = 0 := by
+    intro e he
+    exact hvanishForced e ((classifier.emittedFinset_spec e).1 he)
+  have hInteriorZero :
+      ∀ e : G.edgeSet,
+        e ∈ interiorEdgeSupport emb.faceBoundary emb.faces → z e = 0 := by
+    intro e heInterior
+    by_cases heEmitted : e ∈ classifier.emittedFinset
+    · exact hvanishEmitted e heEmitted
+    · have heRemaining :
+          e ∈ classifier.remainingControlEdges
+              (interiorEdgeSupport emb.faceBoundary emb.faces) :=
+        (classifier.mem_remainingControlEdges_iff
+          (interiorEdgeSupport emb.faceBoundary emb.faces) e).2
+          ⟨heInterior, heEmitted⟩
+      exact hremainingZero e heRemaining
+  exact hzNonzero
+    (eq_zero_of_mem_planarBoundaryZeroSubmodule_of_interiorEdgeSupport
+      z hzBoundary hInteriorZero)
+
+/--
+Emitted classifier zeros plus a zero canonical remaining-family pairing map control the whole
+selected-boundary-zero subspace.  This is the positive form of the F₂ oracle after the worklist
+has been split into immutable emitted coordinates and canonical remaining generator probes.
+-/
+theorem eq_zero_of_emittedFinset_vanishes_and_remainingControlFamilyPairingMap_eq_zero
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    [Fintype G.edgeSet]
+    (emb : PlaneEmbeddingWithBoundary G)
+    (colorings : Set (G.EdgeColoring Color))
+    (p0Inside p4Inside : Bool) (side : V → Prop)
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (hredRemaining :
+      ∀ e ∈ classifier.remainingControlEdges
+          (interiorEdgeSupport emb.faceBoundary emb.faces),
+        Pi.single e red ∈ projectedColoringGeneratorSubspace emb colorings)
+    (hblueRemaining :
+      ∀ e ∈ classifier.remainingControlEdges
+          (interiorEdgeSupport emb.faceBoundary emb.faces),
+        Pi.single e blue ∈ projectedColoringGeneratorSubspace emb colorings)
+    {z : G.edgeSet → Color}
+    (hzBoundary : z ∈ planarBoundaryZeroSubmodule emb)
+    (hvanishEmitted : ∀ e ∈ classifier.emittedFinset, z e = 0)
+    (hmapZero :
+      planarBoundaryZeroFamilyPairingMap
+          (redBlueSingleCoordinateFamily
+            (classifier.remainingControlEdges
+              (interiorEdgeSupport emb.faceBoundary emb.faces))
+            hredRemaining hblueRemaining)
+          (⟨z, hzBoundary⟩ : planarBoundaryZeroSubmodule emb) = 0) :
+    z = 0 := by
+  by_contra hzNonzero
+  have hvanishForced :
+      ∀ e : G.edgeSet,
+        data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e →
+          z e = 0 := by
+    intro e heForced
+    exact hvanishEmitted e ((classifier.emittedFinset_spec e).2 heForced)
+  exact
+    (data.boundaryZeroEvader_remainingControlFamilyPairingMap_ne_zero
+      emb colorings p0Inside p4Inside side classifier hredRemaining hblueRemaining
+      hzBoundary hzNonzero hvanishForced) hmapZero
+
+/--
 Trace-facing forced-all F₂ fork.  Under the executable forced-all report, the finite canonical
 trace is now the exact algebraic decision surface: if the classifier controls that trace, theorem
 4.9 synthesis and full selected-boundary-zero classifier control follow; otherwise Lean returns a
@@ -11927,6 +12060,94 @@ theorem theorem49Synthesis_and_boundaryZeroControl_or_boundaryZeroTraceEvader_of
   · exact Or.inr
       (data.boundaryZeroTraceEvader_of_not_remainingInteriorSupportTraceControl
         emb p0Inside p4Inside side classifier htraceControl)
+
+/--
+Map-oracle forced-all F₂ close.  Since every selected-boundary-zero evader is detected by the
+canonical remaining-edge family-pairing map, absence of such a map-detected evader is exactly
+strong enough to feed the no-evader theorem and close theorem-4.9 synthesis with full immutable
+classifier control.
+-/
+theorem theorem49Synthesis_and_boundaryZeroControl_of_no_remainingControlFamilyPairingMapEvader_of_forcedAllLatents
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    [Fintype G.edgeSet] [FiniteDimensional F2 (G.edgeSet → Color)]
+    (emb : PlaneEmbeddingWithBoundary G) (C₀ : G.EdgeColoring Color)
+    (colorings : Set (G.EdgeColoring Color))
+    (hsubset : colorings ⊆ G.EdgeKempeClosure C₀)
+    (p0Inside p4Inside : Bool) (h : data.IsExceptional)
+    (side : V → Prop)
+    [∀ latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge,
+      Decidable ((CAP5ExceptionalAnnulusGeneratorReport.latentNode
+        boundaryEdge side latent).PortalCrosses)]
+    [∀ latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge,
+      Decidable ((CAP5ExceptionalAnnulusGeneratorReport.latentNode
+        boundaryEdge side latent).SideCycles)]
+    [∀ latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge,
+      Decidable ((CAP5ExceptionalAnnulusGeneratorReport.latentNode
+        boundaryEdge side latent).RealizedSeparator)]
+    (hcyclic : CyclicallyFiveEdgeConnected G)
+    (hportal_crosses :
+      ∀ edgeCandidate : CAP5ExceptionalAnnulusBoundaryEdgeSupportCandidate boundaryEdge,
+        data.RealizesExceptionalBoundarySupportOrientation
+            edgeCandidate.portalCandidate.orientation →
+        edgeCandidate.portalCandidate.sideCase =
+            CAP5ExceptionalAnnulusSideCase.ofPortalSides p0Inside p4Inside →
+        ∀ i : Fin 5, i ∈ edgeCandidate.portalCandidate.portalSet →
+          EdgeCrossesVertexSide G side (boundaryEdge i))
+    (hcycles : HasCycleOnSide G side ∧ HasCycleOnSide G (fun v => ¬ side v))
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (hredEmitted :
+      ∀ e ∈ classifier.emittedFinset,
+        Pi.single e red ∈ projectedColoringGeneratorSubspace emb colorings)
+    (hblueEmitted :
+      ∀ e ∈ classifier.emittedFinset,
+        Pi.single e blue ∈ projectedColoringGeneratorSubspace emb colorings)
+    (hredRemaining :
+      ∀ e ∈ classifier.remainingControlEdges
+          (interiorEdgeSupport emb.faceBoundary emb.faces),
+        Pi.single e red ∈ projectedColoringGeneratorSubspace emb colorings)
+    (hblueRemaining :
+      ∀ e ∈ classifier.remainingControlEdges
+          (interiorEdgeSupport emb.faceBoundary emb.faces),
+        Pi.single e blue ∈ projectedColoringGeneratorSubspace emb colorings)
+    (hnoMapEvader :
+      ¬ ∃ z : planarBoundaryZeroSubmodule emb,
+        ((z : G.edgeSet → Color) ≠ 0) ∧
+          (∀ e : G.edgeSet,
+            data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e →
+              (z : G.edgeSet → Color) e = 0) ∧
+            planarBoundaryZeroFamilyPairingMap
+                (redBlueSingleCoordinateFamily
+                  (classifier.remainingControlEdges
+                    (interiorEdgeSupport emb.faceBoundary emb.faces))
+                  hredRemaining hblueRemaining) z ≠ 0)
+    (hforcedAll :
+      (CAP5ExceptionalAnnulusGeneratorReport.ofDecidableChecks
+        boundaryEdge side).forcedCounterexampleLatents =
+          CAP5ExceptionalAnnulusGeneratorLatent.all boundaryEdge) :
+    Theorem49BoundaryRootSynthesis emb C₀ ∧
+      (∀ ⦃z : G.edgeSet → Color⦄,
+        z ∈ planarBoundaryZeroSubmodule emb →
+        (∀ e ∈ classifier.emittedFinset, z e = 0) →
+          z = 0) := by
+  have hnoEvader :
+      ¬ ∃ z : G.edgeSet → Color,
+        z ∈ planarBoundaryZeroSubmodule emb ∧
+          z ≠ 0 ∧
+            ∀ e : G.edgeSet,
+              data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e →
+                z e = 0 := by
+    rintro ⟨z, hzBoundary, hzNonzero, hvanishForced⟩
+    exact hnoMapEvader
+      ⟨⟨z, hzBoundary⟩, hzNonzero, hvanishForced,
+        data.boundaryZeroEvader_remainingControlFamilyPairingMap_ne_zero
+          emb colorings p0Inside p4Inside side classifier hredRemaining hblueRemaining
+          hzBoundary hzNonzero hvanishForced⟩
+  exact
+    data.theorem49Synthesis_and_boundaryZeroControl_of_noEvader_of_forcedAllLatents
+      emb C₀ colorings hsubset p0Inside p4Inside h side hcyclic hportal_crosses
+      hcycles classifier hredEmitted hblueEmitted hredRemaining hblueRemaining
+      hnoEvader hforcedAll
 
 /--
 Trace-facing forced-all F₂ fork with a canonical generator obstruction on the failure side.  The

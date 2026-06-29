@@ -572,16 +572,21 @@ longer acceptable progress.
    is nonzero.  The failure side now also carries the canonical red/blue
    single-coordinate family obstruction: with the remaining-edge generator
    certificates, the same trace-local evader has a nonzero canonical family
-   pairing on that edge.  Under the forced-all report, trace-control closes
+   pairing on that edge.  The remaining-family map oracle now makes the finite
+   F₂ detector surface explicit: every genuine selected-boundary-zero evader
+   has nonzero image under the canonical remaining-edge family-pairing map,
+   while emitted classifier zeros plus zero image under that map force the
+   boundary-zero chain itself to be zero.  Under the forced-all report,
+   trace-control, or equivalently absence of a map-detected evader, closes
    theorem-4.9 synthesis plus full selected-boundary-zero classifier control;
-   otherwise the trace-local evader plus canonical pairing is the obstruction.
-   The
+   otherwise the trace-local evader plus canonical pairing/map signal is the
+   obstruction.  The
    pure no-target theorem underneath those refinements says failed synthesis
    already produces a genuine selected-boundary-zero evader for the enumerated
    forced edges.  The remaining crux is whether exact shell/CAP5 data reaches
    canonical remaining-interior trace-control uniformly, or whether this
    genuine boundary-zero/vertex-Kirchhoff/path-xor trace-local evader with
-   canonical red/blue pairing is the decided obstruction.
+   canonical red/blue pairing/map signal is the decided obstruction.
 
 The historical trichotomy below remains useful background:
 
