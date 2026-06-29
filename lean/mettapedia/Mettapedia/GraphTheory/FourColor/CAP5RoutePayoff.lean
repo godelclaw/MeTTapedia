@@ -171,6 +171,33 @@ theorem CAP5FiniteNoGapRouteInput.noPrimitiveGap
   CAP5DecidableCheckerEvidence.noPrimitiveGap_of_noPrimitiveGapByFiniteCheck
     input.checks input.checkerClosed
 
+omit [FiniteDimensional F2 (G.edgeSet → Color)] in
+theorem CAP5FiniteNoGapRouteInput.noMissingCheckerEvidence
+    {boundaryEdge : Fin 5 → G.edgeSet} {n : Nat}
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    {emb : PlaneEmbeddingWithBoundary G} {C₀ : G.EdgeColoring Color}
+    {colorings : Set (G.EdgeColoring Color)} {p0Inside p4Inside : Bool}
+    {side : V → Prop}
+    (input :
+      CAP5FiniteNoGapRouteInput data emb C₀ colorings p0Inside p4Inside side) :
+    ¬ ((∃ latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge,
+      latent ∈ CAP5ExceptionalAnnulusGeneratorLatent.all boundaryEdge ∧
+        (CAP5ExceptionalAnnulusGeneratorReport.latentNode
+          boundaryEdge side latent).MissingPortalCrossingEvidence) ∨
+      (∃ latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge,
+        latent ∈ CAP5ExceptionalAnnulusGeneratorLatent.all boundaryEdge ∧
+          (CAP5ExceptionalAnnulusGeneratorReport.latentNode
+            boundaryEdge side latent).MissingSelectedSideCycleEvidence) ∨
+        (∃ latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge,
+          latent ∈ CAP5ExceptionalAnnulusGeneratorLatent.all boundaryEdge ∧
+            (CAP5ExceptionalAnnulusGeneratorReport.latentNode
+              boundaryEdge side latent).MissingComplementarySideCycleEvidence)) := by
+  classical
+  letI := input.checks.portal
+  letI := input.checks.cycles
+  letI := input.checks.realized
+  simpa [CAP5PrimitiveCheckerGap] using input.noPrimitiveGap
+
 def CAP5FiniteNoGapRouteInput.toRouteCertificate
     {boundaryEdge : Fin 5 → G.edgeSet} {n : Nat}
     {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
@@ -182,6 +209,28 @@ def CAP5FiniteNoGapRouteInput.toRouteCertificate
     CAP5F2RouteCertificate data emb C₀ colorings p0Inside p4Inside side :=
   CAP5F2RouteCertificate.ofNoGap input.subset input.noPrimitiveGap input.classifier
     input.redEmitted input.blueEmitted input.redRemaining input.blueRemaining
+
+omit [FiniteDimensional F2 (G.edgeSet → Color)] in
+theorem cap5F2NoUnifiedKernelMapEvader_of_emittedFinsetPairingKernel_eq_bot
+    {boundaryEdge : Fin 5 → G.edgeSet} {n : Nat}
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    {emb : PlaneEmbeddingWithBoundary G} {C₀ : G.EdgeColoring Color}
+    {colorings : Set (G.EdgeColoring Color)} {p0Inside p4Inside : Bool}
+    {side : V → Prop}
+    {cert : CAP5F2RouteCertificate data emb C₀ colorings p0Inside p4Inside side}
+    (hemittedKernel :
+      LinearMap.ker
+          (planarBoundaryZeroFamilyPairingMap
+            (redBlueSingleCoordinateFamily cert.classifier.emittedFinset
+              cert.redEmitted cert.blueEmitted)) = ⊥) :
+    CAP5F2NoUnifiedKernelMapEvader cert := by
+  rintro ⟨z, hzNonzero, _hvanishForced, hmemKernel, _hmapNonzero⟩
+  have hbot : z ∈ (⊥ : Submodule F2 (planarBoundaryZeroSubmodule emb)) := by
+    simpa [hemittedKernel] using hmemKernel
+  rw [Submodule.mem_bot] at hbot
+  exact hzNonzero (by
+    simpa using
+      congrArg (fun w : planarBoundaryZeroSubmodule emb => (w : G.edgeSet → Color)) hbot)
 
 /--
 MAKE side of the finite CAP5 route gate: once the executable primitive-checker
@@ -207,6 +256,59 @@ theorem CAP5FiniteNoGapRouteInput.routeClosed_of_noUnifiedKernelMapEvader
     (cap5F2NoUnifiedKernelMapEvader_iff_routeClosed_of_noGap
       emb C₀ colorings p0Inside p4Inside hExceptional side hcyclic
       input.noPrimitiveGap input.toRouteCertificate).1 hnoEvader
+
+omit [FiniteDimensional F2 (G.edgeSet → Color)] in
+theorem CAP5FiniteNoGapRouteInput.noUnifiedKernelMapEvader_of_emittedFinsetPairingKernel_eq_bot
+    {boundaryEdge : Fin 5 → G.edgeSet} {n : Nat}
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    {emb : PlaneEmbeddingWithBoundary G} {C₀ : G.EdgeColoring Color}
+    {colorings : Set (G.EdgeColoring Color)} {p0Inside p4Inside : Bool}
+    {side : V → Prop}
+    (input :
+      CAP5FiniteNoGapRouteInput data emb C₀ colorings p0Inside p4Inside side)
+    (hemittedKernel :
+      LinearMap.ker
+          (planarBoundaryZeroFamilyPairingMap
+            (redBlueSingleCoordinateFamily input.classifier.emittedFinset
+              input.redEmitted input.blueEmitted)) = ⊥) :
+    CAP5F2NoUnifiedKernelMapEvader input.toRouteCertificate := by
+  simpa [CAP5FiniteNoGapRouteInput.toRouteCertificate, CAP5F2RouteCertificate.ofNoGap] using
+    cap5F2NoUnifiedKernelMapEvader_of_emittedFinsetPairingKernel_eq_bot
+      (cert := input.toRouteCertificate) hemittedKernel
+
+/--
+MAKE side in the RREF-shaped certificate vocabulary: after the primitive checker frontier is
+closed, a checked bottom emitted-pairing kernel proves the CAP5/F2 route endpoint.
+-/
+theorem CAP5FiniteNoGapRouteInput.routeClosed_of_emittedFinsetPairingKernel_eq_bot
+    {boundaryEdge : Fin 5 → G.edgeSet} {n : Nat}
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    {emb : PlaneEmbeddingWithBoundary G} {C₀ : G.EdgeColoring Color}
+    {colorings : Set (G.EdgeColoring Color)} {p0Inside p4Inside : Bool}
+    {side : V → Prop}
+    (input :
+      CAP5FiniteNoGapRouteInput data emb C₀ colorings p0Inside p4Inside side)
+    (hExceptional : data.IsExceptional) (hcyclic : CyclicallyFiveEdgeConnected G)
+    (hemittedKernel :
+      LinearMap.ker
+          (planarBoundaryZeroFamilyPairingMap
+            (redBlueSingleCoordinateFamily input.classifier.emittedFinset
+              input.redEmitted input.blueEmitted)) = ⊥) :
+    CAP5F2RouteClosed input.toRouteCertificate := by
+  classical
+  letI := input.checks.portal
+  letI := input.checks.cycles
+  letI := input.checks.realized
+  simpa [CAP5F2RouteClosed, CAP5FiniteNoGapRouteInput.toRouteCertificate,
+    CAP5F2RouteCertificate.ofNoGap] using
+    data.theorem49Synthesis_and_boundaryZeroControl_of_no_missingCheckerEvidence_and_emittedFinsetPairingKernel_eq_bot
+      emb C₀ colorings input.subset p0Inside p4Inside hExceptional side hcyclic
+      (fun edgeCandidate _horientation hsideCase =>
+        noGap_portalsCross_matchingCandidate p0Inside p4Inside input.noPrimitiveGap
+          edgeCandidate hsideCase)
+      (noGap_forces_sideCycles input.noPrimitiveGap)
+      input.classifier input.redEmitted input.blueEmitted input.redRemaining input.blueRemaining
+      input.noMissingCheckerEvidence hemittedKernel
 
 /--
 A finite checked route-closed certificate: executable primitive checker evidence is complete, and
@@ -264,6 +366,24 @@ def CAP5FiniteNoGapRouteInput.toClosedWitness_of_noUnifiedKernelMapEvader
     CAP5FiniteRouteClosedWitness data emb C₀ colorings p0Inside p4Inside side :=
   CAP5FiniteRouteClosedWitness.ofNoGapRouteInput input
     (input.routeClosed_of_noUnifiedKernelMapEvader hExceptional hcyclic hnoEvader)
+
+def CAP5FiniteNoGapRouteInput.toClosedWitness_of_emittedFinsetPairingKernel_eq_bot
+    {boundaryEdge : Fin 5 → G.edgeSet} {n : Nat}
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    {emb : PlaneEmbeddingWithBoundary G} {C₀ : G.EdgeColoring Color}
+    {colorings : Set (G.EdgeColoring Color)} {p0Inside p4Inside : Bool}
+    {side : V → Prop}
+    (input :
+      CAP5FiniteNoGapRouteInput data emb C₀ colorings p0Inside p4Inside side)
+    (hExceptional : data.IsExceptional) (hcyclic : CyclicallyFiveEdgeConnected G)
+    (hemittedKernel :
+      LinearMap.ker
+          (planarBoundaryZeroFamilyPairingMap
+            (redBlueSingleCoordinateFamily input.classifier.emittedFinset
+              input.redEmitted input.blueEmitted)) = ⊥) :
+    CAP5FiniteRouteClosedWitness data emb C₀ colorings p0Inside p4Inside side :=
+  CAP5FiniteRouteClosedWitness.ofNoGapRouteInput input
+    (input.routeClosed_of_emittedFinsetPairingKernel_eq_bot hExceptional hcyclic hemittedKernel)
 
 /--
 BREAK side of the finite CAP5 route gate after primitive-checker closure: a concrete unified
