@@ -12,6 +12,8 @@ namespace Mettapedia
 namespace FluidDynamics
 namespace NavierStokes
 
+open MeasureTheory
+
 namespace Regression
 
 theorem bkm_logSobolev_envelope_nonneg_regression
@@ -35,6 +37,35 @@ theorem bkm_logSobolev_control_to_gradient_envelope_regression
     spatialGradientOperatorEnvelopeOn u T
       (bkmLogSobolevGradientEnvelope C Ω H) :=
   BKMLogSobolevGradientControlOn.to_spatialGradientOperatorEnvelopeOn hLog
+
+theorem bkm_logSobolev_control_to_enstrophy_growth_regression
+    {ν T C : ℝ} {u : NSVelocityField} {Ω H : NSTime → ℝ} {t : NSTime}
+    (hν : 0 ≤ ν)
+    (hBal : vorticityEnstrophyBalanceAt ν u t)
+    (hLog : BKMLogSobolevGradientControlOn u T C Ω H)
+    (ht0 : 0 ≤ t) (htT : t ≤ T)
+    (hStretchInt : Integrable (fun x => vorticityStretchingPower u t x))
+    (hEnstrophyInt : Integrable (fun x => vorticityEnstrophyDensity u t x)) :
+    vorticityEnstrophyGradientControlledAt ν u t
+      (bkmLogSobolevGradientEnvelope C Ω H t) :=
+  vorticityEnstrophyGradientControlledAt_of_balance_logSobolev_control
+    hν hBal hLog ht0 htT hStretchInt hEnstrophyInt
+
+theorem bkm_logSobolev_pointwise_to_enstrophy_growth_regression
+    {ν T C : ℝ} {u : NSVelocityField} {Ω H : NSTime → ℝ} {t : NSTime}
+    (hν : 0 ≤ ν)
+    (hBal : vorticityEnstrophyBalanceAt ν u t)
+    (hC : 0 ≤ C)
+    (hΩ : ∀ s, 0 ≤ s → s ≤ T → 0 ≤ Ω s)
+    (hH : ∀ s, 0 ≤ s → s ≤ T → 0 ≤ H s)
+    (hIneq : BKMLogSobolevPointwiseInequalityOn u T C Ω H)
+    (ht0 : 0 ≤ t) (htT : t ≤ T)
+    (hStretchInt : Integrable (fun x => vorticityStretchingPower u t x))
+    (hEnstrophyInt : Integrable (fun x => vorticityEnstrophyDensity u t x)) :
+    vorticityEnstrophyGradientControlledAt ν u t
+      (bkmLogSobolevGradientEnvelope C Ω H t) :=
+  vorticityEnstrophyGradientControlledAt_of_balance_logSobolev_pointwiseInequality
+    hν hBal hC hΩ hH hIneq ht0 htT hStretchInt hEnstrophyInt
 
 theorem bkm_logSobolev_material_remainder_bound_regression
     {ν T C : ℝ} {u : NSVelocityField} {Ω H : NSTime → ℝ}
@@ -61,6 +92,10 @@ theorem bkm_logSobolev_material_power_bound_regression
 theorem bkm_logSobolev_growth_estimate_closed_regression :
     BKMLogSobolevGrowthEstimateClosed :=
   BKMLogSobolevGrowthEstimateClosed_proved
+
+theorem bkm_vorticity_enstrophy_logSobolev_growth_closed_regression :
+    BKMVorticityEnstrophyLogSobolevGrowthClosed :=
+  BKMVorticityEnstrophyLogSobolevGrowthClosed_proved
 
 end Regression
 
