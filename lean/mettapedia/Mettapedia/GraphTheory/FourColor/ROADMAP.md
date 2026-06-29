@@ -561,13 +561,17 @@ longer acceptable progress.
    residual scheduler decision now packages the current finite state into the
    exact alternatives needed by Move 2: terminal no-evader/synthesis,
    already-closed synthesis, or a promoted one-edge obstruction with immutable
-   processing ruled out and strict residual decrease.  The
+   processing ruled out and strict residual decrease.  The coverage-form
+   scheduler theorem then restates the terminal branch as the semantic
+   invariant that the processed set covers every original remaining control
+   edge, while preserving the same already-closed synthesis branch and promoted
+   obstruction branch.  The
    pure no-target theorem underneath those refinements says failed synthesis
    already produces a genuine selected-boundary-zero evader for the enumerated
    forced edges.  The remaining crux is whether exact shell/CAP5 data reaches
-   that terminal no-evader scheduler state uniformly, or whether this genuine
-   boundary-zero/vertex-Kirchhoff/path-xor residual-scheduler branch exists
-   and must be promoted edge by edge.
+   that terminal processed-coverage scheduler state uniformly, or whether this
+   genuine boundary-zero/vertex-Kirchhoff/path-xor residual-scheduler branch
+   exists and must be promoted edge by edge.
 
 The historical trichotomy below remains useful background:
 
