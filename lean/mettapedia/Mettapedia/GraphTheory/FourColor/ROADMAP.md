@@ -682,7 +682,12 @@ longer acceptable progress.
    `emittedFinsetPairingKernel_eq_bot_and_theorem49Synthesis_and_boundaryZeroControl_iff_no_theorem49BoundaryTargetEvader_and_no_emittedFinsetKernelMapEvader_with_theorem49BoundaryVertexKirchhoffFailure_of_no_missingCheckerEvidence`
    proves that, once the primitive checker frontier is closed, emitted-rank
    close with synthesis/control is equivalent to absence of both target-side
-   and off-target report evaders.  The direct route corollaries
+   and off-target report evaders.  The rank-certificate corollary
+   `emittedFinsetPairingKernel_eq_bot_iff_no_theorem49BoundaryTargetEvader_and_no_emittedFinsetKernelMapEvader_with_theorem49BoundaryVertexKirchhoffFailure_of_no_missingCheckerEvidence`
+   removes the bundled-success wording: under the same closed primitive
+   frontier, the emitted F2 pairing-kernel certificate itself is equivalent to
+   absence of both concrete report evaders, with synthesis/control recovered
+   from that certificate.  The direct route corollaries
    `ofDecidableChecks_missingCheckerEvidence_or_theorem49Synthesis_and_boundaryZeroControl_of_no_theorem49BoundaryTargetEvader_and_no_emittedFinsetKernelMapEvader_with_theorem49BoundaryVertexKirchhoffFailure`
    and
    `theorem49Synthesis_and_boundaryZeroControl_of_no_missingCheckerEvidence_and_no_theorem49BoundaryTargetEvader_and_no_emittedFinsetKernelMapEvader_with_theorem49BoundaryVertexKirchhoffFailure`
