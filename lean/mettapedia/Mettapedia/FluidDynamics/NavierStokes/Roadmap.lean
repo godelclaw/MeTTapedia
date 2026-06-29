@@ -95,7 +95,7 @@ def currentNavierRoadmap : List NavierRoadmapEntry :=
       proofNodeId := "navier.bkm.standard-vorticity-growth"
       status := .checked
       truthValue := ⟨86, 88⟩
-      obligation := "Once concreteVorticityEquationOn is derived, use the checked material-minus-diffusion growth estimates, pointwise derivative d/dt (1/2 |omega|^2) = omega dot partial_t omega, transport algebra omega dot ((u.grad)omega) = (u.grad)(1/2 |omega|^2), standard-equation-to-raw-enstrophy pairing algebra, and conditional dE/dt <= ||grad u||_inf E enstrophy-growth estimate. Remaining enstrophy work is lifting the pointwise time derivative through the spatial integral, proving the transported half-enstrophy density has zero integral from incompressibility and boundary/decay, and viscous integration by parts on the finite-energy witness surface." },
+      obligation := "Once concreteVorticityEquationOn is derived, use the checked material-minus-diffusion growth estimates, pointwise derivative d/dt (1/2 |omega|^2) = omega dot partial_t omega, transport algebra omega dot ((u.grad)omega) = (u.grad)(1/2 |omega|^2), coordinate vorticity diffusion dissipation and Schwartz-slice Laplacian IBP, standard-equation-to-raw-enstrophy pairing algebra, and conditional dE/dt <= ||grad u||_inf E enstrophy-growth estimate. Remaining enstrophy work is lifting the pointwise time derivative through the spatial integral, proving the transported half-enstrophy density has zero integral from incompressibility and boundary/decay, and lifting viscous integration by parts from Schwartz vorticity slices to the finite-energy witness surface." },
     { stage := .bkmContinuation
       proofNodeId := "navier.bkm.log-sobolev-gradient-control"
       status := .checked
@@ -350,7 +350,7 @@ theorem currentNavierRoadmap_records_bkm_standard_vorticity_growth :
        status := .checked
        truthValue := ⟨86, 88⟩
        obligation :=
-        "Once concreteVorticityEquationOn is derived, use the checked material-minus-diffusion growth estimates, pointwise derivative d/dt (1/2 |omega|^2) = omega dot partial_t omega, transport algebra omega dot ((u.grad)omega) = (u.grad)(1/2 |omega|^2), standard-equation-to-raw-enstrophy pairing algebra, and conditional dE/dt <= ||grad u||_inf E enstrophy-growth estimate. Remaining enstrophy work is lifting the pointwise time derivative through the spatial integral, proving the transported half-enstrophy density has zero integral from incompressibility and boundary/decay, and viscous integration by parts on the finite-energy witness surface." } :
+        "Once concreteVorticityEquationOn is derived, use the checked material-minus-diffusion growth estimates, pointwise derivative d/dt (1/2 |omega|^2) = omega dot partial_t omega, transport algebra omega dot ((u.grad)omega) = (u.grad)(1/2 |omega|^2), coordinate vorticity diffusion dissipation and Schwartz-slice Laplacian IBP, standard-equation-to-raw-enstrophy pairing algebra, and conditional dE/dt <= ||grad u||_inf E enstrophy-growth estimate. Remaining enstrophy work is lifting the pointwise time derivative through the spatial integral, proving the transported half-enstrophy density has zero integral from incompressibility and boundary/decay, and lifting viscous integration by parts from Schwartz vorticity slices to the finite-energy witness surface." } :
       NavierRoadmapEntry) ∈ currentNavierRoadmap := by
   simp [currentNavierRoadmap]
 

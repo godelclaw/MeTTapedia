@@ -82,11 +82,11 @@ deriving Repr
 /-- Current dependency-map counts for `FluidDynamics/NavierStokes`. -/
 def currentNavierLaneSurvey : NavierLaneSurvey where
   sourceFiles := 531
-  sourceLines := 121239
-  internalImportEdges := 1352
+  sourceLines := 122681
+  internalImportEdges := 1353
   regressionFiles := 153
-  filesOverThousandLines := 3
-  filesOverSevenHundredFiftyLines := 3
+  filesOverThousandLines := 4
+  filesOverSevenHundredFiftyLines := 6
   leavesWithoutInternalImports := 2
 
 /-- Simple PLN-style truth bookkeeping: support and confidence percentages. -/
@@ -209,8 +209,8 @@ def navierBKMVorticityGrowthNode : NavierProofNode where
   id := "navier.bkm.standard-vorticity-growth"
   status := .checked
   truthValue := ⟨86, 88⟩
-  evidence := "vorticityMaterialDiffusionRemainder names partial_t omega + (u.grad)omega - nu Delta omega. vorticityMaterialDiffusionRemainder_eq_vorticityStretchingTerm proves that concreteVorticityEquationOn identifies this remainder with (omega.grad)u, and uniform_vorticityMaterialDiffusionRemainder_boundUpTo plus uniform_vorticityMaterialDiffusionPower_boundUpTo lift the checked stretching bounds to the material-minus-diffusion growth and enstrophy-production terms. vorticityEnstrophyAt and normalizedVorticityEnstrophyAt define the BKM quantity 1/2 int |omega|^2; normalizedVorticityEnstrophyDensity and vorticityEnstrophyDensityTimeDerivativeIntegrand identify the pointwise density derivative, and BKMVorticityPointwiseEnstrophyDerivativeClosed_proved proves d/dt (1/2 |omega|^2) = omega dot partial_t omega from vorticityTimeDerivativeRepresentedAt. normalizedVorticityEnstrophyDensityTransport_eq_transportPower proves the pointwise transport algebra omega dot ((u.grad)omega) = (u.grad)(1/2 |omega|^2), and BKMVorticityTransportCancellationAlgebraClosed_proved reduces transport cancellation to the zero integral of that transported half-enstrophy density. vorticityStretchingPowerIntegral_le_gradient_mul_enstrophyAt proves int omega dot ((omega.grad)u) <= G int |omega|^2 from ||grad u|| <= G plus integrability, and BKMVorticityEnstrophyGradientGrowthClosed_proved packages the derivative growth inequality dE/dt <= G E once the enstrophy balance is available. vorticityTimePowerIntegral records int omega dot partial_t omega; vorticityTimePairing_eq_rawBalanceIntegrand_of_concreteVorticityEquationOn pairs the standard vorticity equation with omega pointwise; vorticityTimePowerIntegral_eq_rawBalanceDerivative_of_concreteVorticityEquationOn integrates that pointwise identity under explicit integrability hypotheses; BKMVorticityRawBalanceFromStandardEquationClosed_proved converts a time-pairing derivative into the raw enstrophy balance; BKMVorticityEnstrophyBalanceAssemblyClosed_proved assembles raw balance plus transport cancellation and diffusion IBP into vorticityEnstrophyBalanceAt; and BKMVorticityEnstrophyAprioriEstimateClosed_proved packages derivative control by the stretching-power integral. Validation lab ns-bkm-enstrophy-log-sobolev-lab-20260629.json checked transport cancellation, viscous integration by parts, and enstrophy finite differences on periodic solenoidal samples. PLN STV <s=.91,c=.89>, ITV [.8099,.9199], PROGRESS 68%."
-  blocker := "This closes the pointwise density derivative, pointwise transport algebra, the integrated stretching-growth inequality under explicit integrability/gradient-bound hypotheses, and standard-equation-to-raw-enstrophy algebra once the time-pairing derivative and scalar-pairing integrability are supplied. The remaining analytic work is lifting the pointwise time derivative through the spatial integral, proving the transported half-enstrophy density has zero integral from incompressibility and boundary/decay, proving diffusion integration by parts on the finite-energy witness surface, and proving the genuine Biot-Savart/log-Sobolev pointwise inequality."
+  evidence := "vorticityMaterialDiffusionRemainder names partial_t omega + (u.grad)omega - nu Delta omega. vorticityMaterialDiffusionRemainder_eq_vorticityStretchingTerm proves that concreteVorticityEquationOn identifies this remainder with (omega.grad)u, and uniform_vorticityMaterialDiffusionRemainder_boundUpTo plus uniform_vorticityMaterialDiffusionPower_boundUpTo lift the checked stretching bounds to the material-minus-diffusion growth and enstrophy-production terms. vorticityEnstrophyAt and normalizedVorticityEnstrophyAt define the BKM quantity 1/2 int |omega|^2; normalizedVorticityEnstrophyDensity and vorticityEnstrophyDensityTimeDerivativeIntegrand identify the pointwise density derivative, and BKMVorticityPointwiseEnstrophyDerivativeClosed_proved proves d/dt (1/2 |omega|^2) = omega dot partial_t omega from vorticityTimeDerivativeRepresentedAt. normalizedVorticityEnstrophyDensityTransport_eq_transportPower proves the pointwise transport algebra omega dot ((u.grad)omega) = (u.grad)(1/2 |omega|^2), and BKMVorticityTransportCancellationAlgebraClosed_proved reduces transport cancellation to the zero integral of that transported half-enstrophy density. vorticityDiffusionDissipationDensity is now the coordinate Hilbert-gradient square of the vorticity field, vorticityDiffusionDissipationDensity_eq_coordinateEnstrophyDensity_vorticityField and vorticityDiffusionDissipationAt_eq_coordinateEnstrophyAt_vorticityField align it with the coordinate energy layer, and BKMVorticityDiffusionIntegrationByPartsSchwartzClosed_proved closes Laplacian integration by parts for Schwartz vorticity slices. vorticityStretchingPowerIntegral_le_gradient_mul_enstrophyAt proves int omega dot ((omega.grad)u) <= G int |omega|^2 from ||grad u|| <= G plus integrability, and BKMVorticityEnstrophyGradientGrowthClosed_proved packages the derivative growth inequality dE/dt <= G E once the enstrophy balance is available. vorticityTimePowerIntegral records int omega dot partial_t omega; vorticityTimePairing_eq_rawBalanceIntegrand_of_concreteVorticityEquationOn pairs the standard vorticity equation with omega pointwise; vorticityTimePowerIntegral_eq_rawBalanceDerivative_of_concreteVorticityEquationOn integrates that pointwise identity under explicit integrability hypotheses; BKMVorticityRawBalanceFromStandardEquationClosed_proved converts a time-pairing derivative into the raw enstrophy balance; BKMVorticityEnstrophyBalanceAssemblyClosed_proved assembles raw balance plus transport cancellation and diffusion IBP into vorticityEnstrophyBalanceAt; and BKMVorticityEnstrophyAprioriEstimateClosed_proved packages derivative control by the stretching-power integral. Validation labs ns-bkm-enstrophy-log-sobolev-lab-20260629.json and ns-bkm-vorticity-diffusion-ibp-lab-20260629.log checked transport cancellation, viscous integration by parts, the coordinate/operator dissipation distinction, and enstrophy finite differences on periodic solenoidal samples. PLN STV <s=.91,c=.89>, ITV [.8099,.9199], PROGRESS 69%."
+  blocker := "This closes the pointwise density derivative, pointwise transport algebra, Schwartz-vorticity-slice diffusion IBP, the integrated stretching-growth inequality under explicit integrability/gradient-bound hypotheses, and standard-equation-to-raw-enstrophy algebra once the time-pairing derivative and scalar-pairing integrability are supplied. The remaining analytic work is lifting the pointwise time derivative through the spatial integral, proving the transported half-enstrophy density has zero integral from incompressibility and boundary/decay, lifting diffusion integration by parts from Schwartz vorticity slices to the finite-energy witness surface, and proving the genuine Biot-Savart/log-Sobolev pointwise inequality."
 
 /-- Once log-Sobolev/Biot-Savart gradient control is supplied, the checked BKM
 growth estimates use its logarithmic envelope directly. -/
@@ -226,16 +226,16 @@ def navierBKMAnalyticReductionNode : NavierProofNode where
   id := "navier.bkm.single-analytic-lemma"
   status := .checked
   truthValue := ⟨86, 88⟩
-  evidence := "BKMVorticityStretchingEstimateClosed_proved closes the stretching subdependency, finite-time witnesses now supply vorticityResidualCurlEquationOn, BKMResidualCurlExpansionAlgebraClosed_proved closes the algebra from residual-curl zero plus vanishing expansion defect to concreteVorticityEquationOn, BKMStandardVorticityGrowthEstimateClosed_proved closes the standard-equation growth estimate, BKMVorticityPointwiseEnstrophyDerivativeClosed_proved closes the pointwise derivative d/dt (1/2 |omega|^2) = omega dot partial_t omega, BKMVorticityRawBalanceFromStandardEquationClosed_proved closes the standard-equation-to-raw-enstrophy algebra, BKMVorticityTransportCancellationAlgebraClosed_proved closes the pointwise algebra behind transport cancellation, BKMVorticityEnstrophyBalanceAssemblyClosed_proved closes the raw-balance/cancellation/IBP assembly, BKMVorticityEnstrophyAprioriEstimateClosed_proved closes the enstrophy derivative control from the balance identity, BKMVorticityEnstrophyGradientGrowthClosed_proved closes the conditional dE/dt <= ||grad u||_inf E growth estimate, BKMVorticityEnstrophyLogSobolevGrowthClosed_proved closes the supplied-log-Sobolev-control dE/dt <= C * (1 + Omega log(exp(1) + H)) * E estimate, BKMLogSobolevGrowthEstimateClosed_proved closes the supplied-log-Sobolev-control growth interface, and BKMContinuation_reduced_to_single_analytic_lemma proves that the repaired nonnegative-horizon BKM target follows from the single named hypothesis BKMAnalyticContinuationLemma. PLN STV <s=.91,c=.89>, ITV [.8099,.9199], PROGRESS 69%."
-  blocker := "BKMAnalyticContinuationLemma is the remaining precise analytic lemma: for positive viscosity smooth divergence-free finite-energy data, every finite-time witness on a nonnegative slab with residual-curl vorticity equation and integrable vorticity envelope must extend to ExplicitConcreteNavierStokesGlobalOutput. Its proof must prove BKMResidualCurlExpansionDefectVanishes, justify the time-pairing derivative/integrability plus transport cancellation and viscous integration by parts, prove the log-Sobolev/Biot-Savart pointwise inequality, then supply high-norm continuation/Gronwall closure."
+  evidence := "BKMVorticityStretchingEstimateClosed_proved closes the stretching subdependency, finite-time witnesses now supply vorticityResidualCurlEquationOn, BKMResidualCurlExpansionAlgebraClosed_proved closes the algebra from residual-curl zero plus vanishing expansion defect to concreteVorticityEquationOn, BKMStandardVorticityGrowthEstimateClosed_proved closes the standard-equation growth estimate, BKMVorticityPointwiseEnstrophyDerivativeClosed_proved closes the pointwise derivative d/dt (1/2 |omega|^2) = omega dot partial_t omega, BKMVorticityRawBalanceFromStandardEquationClosed_proved closes the standard-equation-to-raw-enstrophy algebra, BKMVorticityTransportCancellationAlgebraClosed_proved closes the pointwise algebra behind transport cancellation, BKMVorticityDiffusionIntegrationByPartsSchwartzClosed_proved closes the Schwartz-vorticity-slice diffusion IBP subcase, BKMVorticityEnstrophyBalanceAssemblyClosed_proved closes the raw-balance/cancellation/IBP assembly, BKMVorticityEnstrophyAprioriEstimateClosed_proved closes the enstrophy derivative control from the balance identity, BKMVorticityEnstrophyGradientGrowthClosed_proved closes the conditional dE/dt <= ||grad u||_inf E growth estimate, BKMVorticityEnstrophyLogSobolevGrowthClosed_proved closes the supplied-log-Sobolev-control dE/dt <= C * (1 + Omega log(exp(1) + H)) * E estimate, BKMLogSobolevGrowthEstimateClosed_proved closes the supplied-log-Sobolev-control growth interface, and BKMContinuation_reduced_to_single_analytic_lemma proves that the repaired nonnegative-horizon BKM target follows from the single named hypothesis BKMAnalyticContinuationLemma. PLN STV <s=.91,c=.89>, ITV [.8099,.9199], PROGRESS 70%."
+  blocker := "BKMAnalyticContinuationLemma is the remaining precise analytic lemma: for positive viscosity smooth divergence-free finite-energy data, every finite-time witness on a nonnegative slab with residual-curl vorticity equation and integrable vorticity envelope must extend to ExplicitConcreteNavierStokesGlobalOutput. Its proof must prove BKMResidualCurlExpansionDefectVanishes, justify the time-pairing derivative/integrability plus transport cancellation and the finite-energy lift of viscous integration by parts, prove the log-Sobolev/Biot-Savart pointwise inequality, then supply high-norm continuation/Gronwall closure."
 
 /-- The one analytic BKM lemma is now split into explicit component targets. -/
 def navierBKMAnalyticComponentsNode : NavierProofNode where
   id := "navier.bkm.analytic-components"
   status := .checked
   truthValue := ⟨87, 88⟩
-  evidence := "BKMLogSobolevGradientControlFromEnvelope and BKMHighNormContinuationFromLogControl name the two analytic estimates still downstream of BKMResidualCurlExpansionDefectVanishes, while BKMVorticityPointwiseEnstrophyDerivativeClosed_proved, BKMVorticityRawBalanceFromStandardEquationClosed_proved, BKMVorticityTransportCancellationAlgebraClosed_proved, BKMVorticityEnstrophyBalanceAssemblyClosed_proved, BKMVorticityEnstrophyAprioriEstimateClosed_proved, BKMVorticityEnstrophyGradientGrowthClosed_proved, and BKMVorticityEnstrophyLogSobolevGrowthClosed_proved supply the checked pointwise density derivative, standard-equation pairing algebra, transport-cancellation algebra, enstrophy-balance assembly, stretching-power derivative control, conditional gradient-bound enstrophy growth estimate, and logarithmic-envelope enstrophy growth estimate once the remaining integral-analysis identities are proved. BKMAnalyticContinuationLemma_of_components proves these components imply BKMAnalyticContinuationLemma, and BKMContinuation_reduced_to_analytic_components proves the repaired nonnegative-horizon BKM target follows from the component bundle. PLN STV <s=.91,c=.89>, ITV [.8099,.9199], PROGRESS 70%."
-  blocker := "The component split is a checked assembly layer, not the analytic proof itself. The remaining work is to prove residual-curl expansion defect vanishing, justify the vorticity time-pairing derivative/integrability plus transport/diffusion integral identities, derive the log-Sobolev/Biot-Savart gradient envelope from the BKM vorticity data, and close the high-norm continuation/Gronwall step without assuming the global output."
+  evidence := "BKMLogSobolevGradientControlFromEnvelope and BKMHighNormContinuationFromLogControl name the two analytic estimates still downstream of BKMResidualCurlExpansionDefectVanishes, while BKMVorticityPointwiseEnstrophyDerivativeClosed_proved, BKMVorticityRawBalanceFromStandardEquationClosed_proved, BKMVorticityTransportCancellationAlgebraClosed_proved, BKMVorticityDiffusionIntegrationByPartsSchwartzClosed_proved, BKMVorticityEnstrophyBalanceAssemblyClosed_proved, BKMVorticityEnstrophyAprioriEstimateClosed_proved, BKMVorticityEnstrophyGradientGrowthClosed_proved, and BKMVorticityEnstrophyLogSobolevGrowthClosed_proved supply the checked pointwise density derivative, standard-equation pairing algebra, transport-cancellation algebra, Schwartz-slice diffusion IBP, enstrophy-balance assembly, stretching-power derivative control, conditional gradient-bound enstrophy growth estimate, and logarithmic-envelope enstrophy growth estimate once the remaining integral-analysis identities are proved. BKMAnalyticContinuationLemma_of_components proves these components imply BKMAnalyticContinuationLemma, and BKMContinuation_reduced_to_analytic_components proves the repaired nonnegative-horizon BKM target follows from the component bundle. PLN STV <s=.91,c=.89>, ITV [.8099,.9199], PROGRESS 71%."
+  blocker := "The component split is a checked assembly layer, not the analytic proof itself. The remaining work is to prove residual-curl expansion defect vanishing, justify the vorticity time-pairing derivative/integrability plus transport cancellation and the finite-energy lift of diffusion IBP, derive the log-Sobolev/Biot-Savart gradient envelope from the BKM vorticity data, and close the high-norm continuation/Gronwall step without assuming the global output."
 
 /-- The nonzero slice-Schwartz kernel is checked, but it is not yet an
 unconditional positive canary. -/
@@ -1074,6 +1074,7 @@ theorem currentNavierBKMVorticityGrowth_node
       BKMVorticityPointwiseEnstrophyDerivativeClosed ∧
       BKMVorticityRawBalanceFromStandardEquationClosed ∧
       BKMVorticityTransportCancellationAlgebraClosed ∧
+      BKMVorticityDiffusionIntegrationByPartsSchwartzClosed ∧
       BKMVorticityEnstrophyBalanceAssemblyClosed ∧
       BKMVorticityEnstrophyAprioriEstimateClosed ∧
       BKMVorticityEnstrophyGradientGrowthClosed ∧
@@ -1084,6 +1085,7 @@ theorem currentNavierBKMVorticityGrowth_node
       BKMVorticityPointwiseEnstrophyDerivativeClosed_proved,
       BKMVorticityRawBalanceFromStandardEquationClosed_proved,
       BKMVorticityTransportCancellationAlgebraClosed_proved,
+      BKMVorticityDiffusionIntegrationByPartsSchwartzClosed_proved,
       BKMVorticityEnstrophyBalanceAssemblyClosed_proved,
       BKMVorticityEnstrophyAprioriEstimateClosed_proved,
       BKMVorticityEnstrophyGradientGrowthClosed_proved,
@@ -1120,6 +1122,7 @@ theorem currentNavierBKMAnalyticReduction_node :
       BKMVorticityPointwiseEnstrophyDerivativeClosed ∧
       BKMVorticityRawBalanceFromStandardEquationClosed ∧
       BKMVorticityTransportCancellationAlgebraClosed ∧
+      BKMVorticityDiffusionIntegrationByPartsSchwartzClosed ∧
       BKMVorticityEnstrophyBalanceAssemblyClosed ∧
       BKMVorticityEnstrophyAprioriEstimateClosed ∧
       BKMVorticityEnstrophyGradientGrowthClosed ∧
@@ -1135,6 +1138,7 @@ theorem currentNavierBKMAnalyticReduction_node :
       BKMVorticityPointwiseEnstrophyDerivativeClosed_proved,
       BKMVorticityRawBalanceFromStandardEquationClosed_proved,
       BKMVorticityTransportCancellationAlgebraClosed_proved,
+      BKMVorticityDiffusionIntegrationByPartsSchwartzClosed_proved,
       BKMVorticityEnstrophyBalanceAssemblyClosed_proved,
       BKMVorticityEnstrophyAprioriEstimateClosed_proved,
       BKMVorticityEnstrophyGradientGrowthClosed_proved,
@@ -1150,6 +1154,7 @@ theorem currentNavierBKMAnalyticComponents_node :
       BKMVorticityPointwiseEnstrophyDerivativeClosed ∧
       BKMVorticityRawBalanceFromStandardEquationClosed ∧
       BKMVorticityTransportCancellationAlgebraClosed ∧
+      BKMVorticityDiffusionIntegrationByPartsSchwartzClosed ∧
       BKMVorticityEnstrophyBalanceAssemblyClosed ∧
       BKMVorticityEnstrophyAprioriEstimateClosed ∧
       BKMVorticityEnstrophyGradientGrowthClosed ∧
@@ -1166,6 +1171,7 @@ theorem currentNavierBKMAnalyticComponents_node :
       BKMVorticityPointwiseEnstrophyDerivativeClosed_proved,
       BKMVorticityRawBalanceFromStandardEquationClosed_proved,
       BKMVorticityTransportCancellationAlgebraClosed_proved,
+      BKMVorticityDiffusionIntegrationByPartsSchwartzClosed_proved,
       BKMVorticityEnstrophyBalanceAssemblyClosed_proved,
       BKMVorticityEnstrophyAprioriEstimateClosed_proved,
       BKMVorticityEnstrophyGradientGrowthClosed_proved,

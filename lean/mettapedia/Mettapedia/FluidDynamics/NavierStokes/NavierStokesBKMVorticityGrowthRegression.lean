@@ -13,7 +13,7 @@ namespace FluidDynamics
 namespace NavierStokes
 
 open MeasureTheory
-open scoped RealInnerProductSpace
+open scoped RealInnerProductSpace SchwartzMap
 
 namespace Regression
 
@@ -113,6 +113,29 @@ theorem bkm_vorticity_transport_cancellation_from_density_transport_zero_regress
 theorem bkm_vorticity_transport_cancellation_algebra_closed_regression :
     BKMVorticityTransportCancellationAlgebraClosed :=
   BKMVorticityTransportCancellationAlgebraClosed_proved
+
+theorem bkm_vorticity_diffusion_dissipation_density_coordinate_regression
+    (u : NSVelocityField) (t : NSTime) :
+    vorticityDiffusionDissipationDensity u t =
+      coordinateEnstrophyDensity (fun s y => spatialVorticity u s y) t :=
+  vorticityDiffusionDissipationDensity_eq_coordinateEnstrophyDensity_vorticityField
+    u t
+
+theorem bkm_vorticity_diffusion_dissipation_coordinate_regression
+    (u : NSVelocityField) (t : NSTime) :
+    vorticityDiffusionDissipationAt u t =
+      coordinateEnstrophyAt (fun s y => spatialVorticity u s y) t :=
+  vorticityDiffusionDissipationAt_eq_coordinateEnstrophyAt_vorticityField u t
+
+theorem bkm_vorticity_diffusion_ibp_schwartz_slice_regression
+    (u : NSVelocityField) (t : NSTime) (ω : 𝓢(NSSpace, NSSpace))
+    (hω : ∀ x, spatialVorticity u t x = ω x) :
+    vorticityDiffusionIntegrationByPartsAt u t :=
+  vorticityDiffusionIntegrationByPartsAt_of_schwartzVorticitySlice u t ω hω
+
+theorem bkm_vorticity_diffusion_ibp_schwartz_closed_regression :
+    BKMVorticityDiffusionIntegrationByPartsSchwartzClosed :=
+  BKMVorticityDiffusionIntegrationByPartsSchwartzClosed_proved
 
 theorem bkm_vorticity_enstrophy_balance_assembly_closed_regression :
     BKMVorticityEnstrophyBalanceAssemblyClosed :=
