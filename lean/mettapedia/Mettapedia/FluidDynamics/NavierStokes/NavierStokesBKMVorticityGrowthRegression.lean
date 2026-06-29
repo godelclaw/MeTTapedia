@@ -12,6 +12,7 @@ namespace Mettapedia
 namespace FluidDynamics
 namespace NavierStokes
 
+open MeasureTheory
 open scoped RealInnerProductSpace
 
 namespace Regression
@@ -55,11 +56,37 @@ theorem bkm_vorticity_pointwise_enstrophy_derivative_closed_regression :
     BKMVorticityPointwiseEnstrophyDerivativeClosed :=
   BKMVorticityPointwiseEnstrophyDerivativeClosed_proved
 
+theorem bkm_vorticity_stretching_integral_gradient_control_regression
+    {u : NSVelocityField} {t : NSTime} {G : ℝ}
+    (hG : 0 ≤ G)
+    (hGrad : ∀ x, ‖spatialFDeriv u t x‖ ≤ G)
+    (hStretchInt : Integrable (fun x => vorticityStretchingPower u t x))
+    (hEnstrophyInt : Integrable (fun x => vorticityEnstrophyDensity u t x)) :
+    vorticityStretchingPowerIntegral u t ≤ G * vorticityEnstrophyAt u t :=
+  vorticityStretchingPowerIntegral_le_gradient_mul_enstrophyAt
+    hG hGrad hStretchInt hEnstrophyInt
+
 theorem bkm_vorticity_enstrophy_controlled_from_balance_regression
     {ν : ℝ} {u : NSVelocityField} {t : NSTime}
     (hν : 0 ≤ ν) (hBal : vorticityEnstrophyBalanceAt ν u t) :
     vorticityEnstrophyStretchingControlledAt ν u t :=
   vorticityEnstrophyStretchingControlledAt_of_balance hν u hBal
+
+theorem bkm_vorticity_enstrophy_gradient_controlled_from_balance_regression
+    {ν G : ℝ} {u : NSVelocityField} {t : NSTime}
+    (hν : 0 ≤ ν)
+    (hBal : vorticityEnstrophyBalanceAt ν u t)
+    (hG : 0 ≤ G)
+    (hGrad : ∀ x, ‖spatialFDeriv u t x‖ ≤ G)
+    (hStretchInt : Integrable (fun x => vorticityStretchingPower u t x))
+    (hEnstrophyInt : Integrable (fun x => vorticityEnstrophyDensity u t x)) :
+    vorticityEnstrophyGradientControlledAt ν u t G :=
+  vorticityEnstrophyGradientControlledAt_of_balance_gradient_bound
+    hν hBal hG hGrad hStretchInt hEnstrophyInt
+
+theorem bkm_vorticity_enstrophy_gradient_growth_closed_regression :
+    BKMVorticityEnstrophyGradientGrowthClosed :=
+  BKMVorticityEnstrophyGradientGrowthClosed_proved
 
 theorem bkm_vorticity_enstrophy_balance_assembly_closed_regression :
     BKMVorticityEnstrophyBalanceAssemblyClosed :=

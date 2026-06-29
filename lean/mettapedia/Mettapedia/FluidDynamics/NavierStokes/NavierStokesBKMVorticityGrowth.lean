@@ -177,6 +177,14 @@ def vorticityEnstrophyStretchingControlledAt
     HasDerivAt (fun s => normalizedVorticityEnstrophyAt u s) D t ∧
       D ≤ vorticityStretchingPowerIntegral u t
 
+/-- Vorticity enstrophy growth controlled by a pointwise gradient bound:
+`d/dt (1 / 2 * int |omega|^2) <= G * int |omega|^2`. -/
+def vorticityEnstrophyGradientControlledAt
+    (_ν : ℝ) (u : NSVelocityField) (t : NSTime) (G : ℝ) : Prop :=
+  ∃ D : ℝ,
+    HasDerivAt (fun s => normalizedVorticityEnstrophyAt u s) D t ∧
+      D ≤ G * vorticityEnstrophyAt u t
+
 /-- Vorticity enstrophy density is pointwise nonnegative. -/
 theorem vorticityEnstrophyDensity_nonneg
     (u : NSVelocityField) (t : NSTime) (x : NSSpace) :
@@ -207,6 +215,43 @@ theorem hasDerivAt_normalizedVorticityEnstrophyDensity_of_timeDerivativeRepresen
   have hhalf := hsq.const_mul (1 / 2 : ℝ)
   simpa [normalizedVorticityEnstrophyDensity,
     vorticityEnstrophyDensityTimeDerivativeIntegrand] using hhalf
+
+/-- A pointwise gradient bound controls the integrated vorticity-stretching
+power by `G * int |omega|^2`. -/
+theorem vorticityStretchingPowerIntegral_le_gradient_mul_enstrophyAt
+    {u : NSVelocityField} {t : NSTime} {G : ℝ}
+    (hG : 0 ≤ G)
+    (hGrad : ∀ x, ‖spatialFDeriv u t x‖ ≤ G)
+    (hStretchInt : Integrable (fun x => vorticityStretchingPower u t x))
+    (hEnstrophyInt : Integrable (fun x => vorticityEnstrophyDensity u t x)) :
+    vorticityStretchingPowerIntegral u t ≤ G * vorticityEnstrophyAt u t := by
+  have hRightInt : Integrable (fun x => G * vorticityEnstrophyDensity u t x) :=
+    hEnstrophyInt.const_mul G
+  calc
+    vorticityStretchingPowerIntegral u t
+        = ∫ x, vorticityStretchingPower u t x ∂volume := by
+          rfl
+    _ ≤ ∫ x, G * vorticityEnstrophyDensity u t x ∂volume := by
+          exact integral_mono hStretchInt hRightInt fun x => by
+            have hωprod_nonneg :
+                0 ≤ ‖spatialVorticity u t x‖ *
+                  ‖spatialVorticity u t x‖ :=
+              mul_nonneg (norm_nonneg _) (norm_nonneg _)
+            have habs :
+                |vorticityStretchingPower u t x| ≤
+                  G * (‖spatialVorticity u t x‖ *
+                    ‖spatialVorticity u t x‖) :=
+              (abs_vorticityStretchingPower_le u t x).trans
+                (mul_le_mul (hGrad x) le_rfl hωprod_nonneg hG)
+            calc
+              vorticityStretchingPower u t x
+                  ≤ |vorticityStretchingPower u t x| := le_abs_self _
+              _ ≤ G * (‖spatialVorticity u t x‖ *
+                    ‖spatialVorticity u t x‖) := habs
+              _ = G * vorticityEnstrophyDensity u t x := by
+                    simp [vorticityEnstrophyDensity, pow_two]
+    _ = G * vorticityEnstrophyAt u t := by
+          rw [vorticityEnstrophyAt, integral_const_mul]
 
 /-- Vorticity diffusion-dissipation density is pointwise nonnegative. -/
 theorem vorticityDiffusionDissipationDensity_nonneg
@@ -243,6 +288,35 @@ theorem vorticityEnstrophyStretchingControlledAt_of_balance
     vorticityEnstrophyStretchingControlledAt ν u t := by
   refine ⟨vorticityEnstrophyBalanceDerivative ν u t, hBal, ?_⟩
   exact vorticityEnstrophyBalanceDerivative_le_stretchingPowerIntegral hν u t
+
+/-- Stretching-control plus the integrated gradient/enstrophy comparison gives
+the usual BKM enstrophy growth inequality. -/
+theorem vorticityEnstrophyGradientControlledAt_of_stretchingControlled_integral
+    {ν G : ℝ} {u : NSVelocityField} {t : NSTime}
+    (hStretching : vorticityEnstrophyStretchingControlledAt ν u t)
+    (hIntegral :
+      vorticityStretchingPowerIntegral u t ≤ G * vorticityEnstrophyAt u t) :
+    vorticityEnstrophyGradientControlledAt ν u t G := by
+  rcases hStretching with ⟨D, hD, hDle⟩
+  exact ⟨D, hD, hDle.trans hIntegral⟩
+
+/-- If the enstrophy balance is known and `||grad u||` is pointwise bounded by
+`G`, then normalized vorticity enstrophy grows at most like
+`G * int |omega|^2`. -/
+theorem vorticityEnstrophyGradientControlledAt_of_balance_gradient_bound
+    {ν G : ℝ} {u : NSVelocityField} {t : NSTime}
+    (hν : 0 ≤ ν)
+    (hBal : vorticityEnstrophyBalanceAt ν u t)
+    (hG : 0 ≤ G)
+    (hGrad : ∀ x, ‖spatialFDeriv u t x‖ ≤ G)
+    (hStretchInt : Integrable (fun x => vorticityStretchingPower u t x))
+    (hEnstrophyInt : Integrable (fun x => vorticityEnstrophyDensity u t x)) :
+    vorticityEnstrophyGradientControlledAt ν u t G := by
+  exact
+    vorticityEnstrophyGradientControlledAt_of_stretchingControlled_integral
+      (vorticityEnstrophyStretchingControlledAt_of_balance hν u hBal)
+      (vorticityStretchingPowerIntegral_le_gradient_mul_enstrophyAt
+        hG hGrad hStretchInt hEnstrophyInt)
 
 /-- The raw paired vorticity equation becomes the standard enstrophy balance
 once transport cancellation and viscous integration by parts are supplied. -/
@@ -517,6 +591,27 @@ theorem BKMVorticityPointwiseEnstrophyDerivativeClosed_proved :
     BKMVorticityPointwiseEnstrophyDerivativeClosed := by
   intro u t x hω
   exact hasDerivAt_normalizedVorticityEnstrophyDensity_of_timeDerivativeRepresented hω
+
+/-- Checked gradient-bound form of the BKM vorticity enstrophy growth estimate:
+after the enstrophy balance is established, a pointwise gradient bound controls
+the normalized enstrophy derivative by `G * int |omega|^2`. -/
+def BKMVorticityEnstrophyGradientGrowthClosed : Prop :=
+  ∀ (ν : ℝ) (u : NSVelocityField) (t : NSTime) (G : ℝ),
+    0 ≤ ν →
+      vorticityEnstrophyBalanceAt ν u t →
+        0 ≤ G →
+          (∀ x, ‖spatialFDeriv u t x‖ ≤ G) →
+            Integrable (fun x => vorticityStretchingPower u t x) →
+              Integrable (fun x => vorticityEnstrophyDensity u t x) →
+                vorticityEnstrophyGradientControlledAt ν u t G
+
+/-- Checked proof of the gradient-bound vorticity enstrophy growth package. -/
+theorem BKMVorticityEnstrophyGradientGrowthClosed_proved :
+    BKMVorticityEnstrophyGradientGrowthClosed := by
+  intro ν u t G hν hBal hG hGrad hStretchInt hEnstrophyInt
+  exact
+    vorticityEnstrophyGradientControlledAt_of_balance_gradient_bound
+      hν hBal hG hGrad hStretchInt hEnstrophyInt
 
 /-- Checked assembly of the vorticity enstrophy balance from the raw paired
 equation plus the two integral identities. -/
