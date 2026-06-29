@@ -23,6 +23,15 @@ namespace NavierStokes
 open MeasureTheory
 open scoped ContDiff Laplacian RealInnerProductSpace LineDeriv SchwartzMap Topology
 
+/-- Equal velocity slices have equal normalized kinetic energy.  This
+slice-level helper lets recurrence tests stated on the velocity field feed into
+the energy-drop obstruction without adding any PDE hypotheses. -/
+theorem normalizedKineticEnergy_eq_of_velocity_slice_eq
+    {u : NSVelocityField} {t₀ t₁ : NSTime}
+    (hslice : ∀ x : NSSpace, u t₁ x = u t₀ x) :
+    normalizedKineticEnergy u t₁ = normalizedKineticEnergy u t₀ := by
+  simp [normalizedKineticEnergy, kineticEnergyAt, kineticEnergyDensity, hslice]
+
 /-- Calculus helper used by the energy gates: a negative derivative forces an
 immediate strict decrease on the right. -/
 theorem eventually_right_lt_of_hasDerivAt_lt_zero
@@ -605,6 +614,48 @@ theorem normalizedKineticEnergy_strict_lt_after_nonzero_of_pos_viscosity
   SchwartzConcreteNavierStokesSolution.normalizedKineticEnergy_strict_lt_of_exists_velocity_ne_zero_left
     S.toSchwartzConcreteNavierStokesSolution hν ⟨x, hne⟩ ht
 
+/-- At a nonzero witness of a positive-viscosity solution, normalized kinetic
+energy cannot return to the same value after any positive period. -/
+theorem normalizedKineticEnergy_ne_periodic_endpoint_at_nonzero_of_pos_viscosity
+    (hν : 0 < ν) {t P : NSTime} {x : NSSpace}
+    (hne : S.velocity t x ≠ 0) (hP : 0 < P) :
+    normalizedKineticEnergy S.velocity (t + P) ≠
+      normalizedKineticEnergy S.velocity t := by
+  have ht : t < t + P := by linarith
+  exact
+    ne_of_lt
+      (S.normalizedKineticEnergy_strict_lt_after_nonzero_of_pos_viscosity
+        hν hne ht)
+
+/-- Positive-viscosity nonzero slice-Schwartz solutions cannot have periodic
+normalized kinetic energy with a positive period. -/
+theorem not_forall_normalizedKineticEnergy_periodic_of_pos_viscosity
+    (hν : 0 < ν) {P : NSTime} (hP : 0 < P) :
+    ¬ ∀ t : NSTime,
+      normalizedKineticEnergy S.velocity (t + P) =
+        normalizedKineticEnergy S.velocity t := by
+  intro hperiod
+  rcases S.nonzero_velocity with ⟨t, x, hne⟩
+  exact
+    (S.normalizedKineticEnergy_ne_periodic_endpoint_at_nonzero_of_pos_viscosity
+      hν hne hP)
+      (hperiod t)
+
+/-- Positive-viscosity nonzero slice-Schwartz solutions cannot have a periodic
+velocity field with a positive period.  Periodic velocity would force periodic
+normalized kinetic energy, contradicting strict future dissipation at a
+nonzero witness. -/
+theorem not_forall_velocity_periodic_of_pos_viscosity
+    (hν : 0 < ν) {P : NSTime} (hP : 0 < P) :
+    ¬ ∀ t : NSTime, ∀ x : NSSpace,
+      S.velocity (t + P) x = S.velocity t x := by
+  intro hperiod
+  exact
+    S.not_forall_normalizedKineticEnergy_periodic_of_pos_viscosity hν hP
+      (by
+        intro t
+        exact normalizedKineticEnergy_eq_of_velocity_slice_eq (hperiod t))
+
 end NonzeroSchwartzConcreteNavierStokesSolution
 
 /-- No nonzero slice-Schwartz concrete solution can keep all velocity slices
@@ -1017,6 +1068,33 @@ theorem
     S.normalizedKineticEnergy_strict_lt_after_nonzero_of_pos_viscosity
       hν hne ht
   exact not_lt_of_ge hnondec hdrop
+
+/-- Global no-go form of the energy-recurrence filter: no positive-viscosity
+nonzero slice-Schwartz solution can have positive-period normalized kinetic
+energy recurrence. -/
+theorem not_exists_nonzeroSchwartzConcreteSolution_energy_periodic_of_pos_viscosity
+    {ν : ℝ} (hν : 0 < ν) :
+    ¬ ∃ S : NonzeroSchwartzConcreteNavierStokesSolution ν,
+      ∃ P : NSTime,
+        0 < P ∧
+          ∀ t : NSTime,
+            normalizedKineticEnergy S.velocity (t + P) =
+              normalizedKineticEnergy S.velocity t := by
+  rintro ⟨S, P, hP, hperiod⟩
+  exact S.not_forall_normalizedKineticEnergy_periodic_of_pos_viscosity
+    hν hP hperiod
+
+/-- Global no-go form for recurrent candidate velocities: positive-viscosity
+nonzero slice-Schwartz solutions cannot have a positive-period velocity field. -/
+theorem not_exists_nonzeroSchwartzConcreteSolution_velocity_periodic_of_pos_viscosity
+    {ν : ℝ} (hν : 0 < ν) :
+    ¬ ∃ S : NonzeroSchwartzConcreteNavierStokesSolution ν,
+      ∃ P : NSTime,
+        0 < P ∧
+          ∀ t : NSTime, ∀ x : NSSpace,
+            S.velocity (t + P) x = S.velocity t x := by
+  rintro ⟨S, P, hP, hperiod⟩
+  exact S.not_forall_velocity_periodic_of_pos_viscosity hν hP hperiod
 
 end NavierStokes
 end FluidDynamics
