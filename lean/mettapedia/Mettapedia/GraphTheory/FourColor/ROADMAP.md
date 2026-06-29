@@ -618,7 +618,12 @@ longer acceptable progress.
    classifier control holds.  The report-closed emitted-rank wrapper now removes
    that raw handoff from the public route state: the executable CAP5 report
    either has a primitive portal/cycle checker gap, or its closed frontier
-   supplies forced-all and the same emitted-rank iff applies.  The
+   supplies forced-all and the same emitted-rank iff applies.  The stronger
+   report-closed trace wrapper now removes the same raw handoff from the
+   canonical trace-control fork: the executable report returns a primitive
+   checker gap, theorem-4.9 synthesis with full selected-boundary-zero control,
+   or a genuine trace-local selected-boundary-zero evader with a concrete
+   remaining trace edge and nonzero canonical remaining-family pairing.  The
    pure no-target theorem underneath those refinements says failed synthesis
    already produces a genuine selected-boundary-zero evader for the enumerated
    forced edges.  The remaining crux is whether exact shell/CAP5 data reaches
