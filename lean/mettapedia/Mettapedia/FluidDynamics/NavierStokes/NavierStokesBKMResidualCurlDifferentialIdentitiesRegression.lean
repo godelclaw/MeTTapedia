@@ -26,12 +26,24 @@ theorem spatialConvectionField_differentiableAt_of_smooth_regression
     DifferentiableAt ℝ (fun y : NSSpace => spatialConvectionField u t y) x := by
   exact spatialConvectionField_differentiableAt_of_smooth hu t x
 
+theorem spatialLaplacianField_differentiableAt_of_smooth_regression
+    {u : NSVelocityField} (hu : smoothSpaceTimeVelocity u)
+    (t : NSTime) (x : NSSpace) :
+    DifferentiableAt ℝ (fun y : NSSpace => spatialLaplacianField u t y) x := by
+  exact spatialLaplacianField_differentiableAt_of_smooth hu t x
+
 theorem residualCurlLinearityDifferentiableAt_of_smooth_laplacian_regression
     {u : NSVelocityField} {t : NSTime} {x : NSSpace}
     (hu : smoothSpaceTimeVelocity u)
     (hlap : DifferentiableAt ℝ (fun y : NSSpace => spatialLaplacianField u t y) x) :
     residualCurlLinearityDifferentiableAt u t x := by
   exact residualCurlLinearityDifferentiableAt_of_smooth_laplacian hu hlap
+
+theorem residualCurlLinearityDifferentiableAt_of_smooth_regression
+    {u : NSVelocityField} (hu : smoothSpaceTimeVelocity u)
+    (t : NSTime) (x : NSSpace) :
+    residualCurlLinearityDifferentiableAt u t x := by
+  exact residualCurlLinearityDifferentiableAt_of_smooth hu t x
 
 theorem residualCurlLinearityDifferentiableOn_of_smooth_laplacian_regression
     {T : ℝ} {u : NSVelocityField}
@@ -40,12 +52,24 @@ theorem residualCurlLinearityDifferentiableOn_of_smooth_laplacian_regression
     residualCurlLinearityDifferentiableOn u T := by
   exact residualCurlLinearityDifferentiableOn_of_smooth_laplacian hu hLap
 
+theorem residualCurlLinearityDifferentiableOn_of_smooth_regression
+    {T : ℝ} {u : NSVelocityField}
+    (hu : smoothSpaceTimeVelocity u) :
+    residualCurlLinearityDifferentiableOn u T := by
+  exact residualCurlLinearityDifferentiableOn_of_smooth hu
+
 theorem residualCurlLinearityClosedOn_of_smooth_laplacian_regression
     {ν T : ℝ} {u : NSVelocityField}
     (hu : smoothSpaceTimeVelocity u)
     (hLap : residualCurlLinearityLaplacianDifferentiableOn u T) :
     residualCurlLinearityClosedOn ν u T := by
   exact residualCurlLinearityClosedOn_of_smooth_laplacian hu hLap
+
+theorem residualCurlLinearityClosedOn_of_smooth_regression
+    {ν T : ℝ} {u : NSVelocityField}
+    (hu : smoothSpaceTimeVelocity u) :
+    residualCurlLinearityClosedOn ν u T := by
+  exact residualCurlLinearityClosedOn_of_smooth hu
 
 theorem residualCurlLinearityDefect_eq_zero_of_differentiableAt_regression
     {ν : ℝ} {u : NSVelocityField} {t : NSTime} {x : NSSpace}

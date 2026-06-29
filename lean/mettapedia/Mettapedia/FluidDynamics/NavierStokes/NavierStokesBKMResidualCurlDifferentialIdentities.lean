@@ -17,7 +17,9 @@ namespace Mettapedia
 namespace FluidDynamics
 namespace NavierStokes
 
+open scoped BigOperators
 open scoped ContDiff
+open scoped Laplacian
 
 section BKMContinuation
 
@@ -112,6 +114,43 @@ theorem spatialConvectionField_differentiableAt_of_smooth
   simpa [spatialConvectionField, spatialConvection, spatialFDeriv] using
     hfield.differentiable (by simp) x
 
+/-- Smooth velocities give spatial differentiability of the Laplacian field. -/
+theorem spatialLaplacianField_differentiableAt_of_smooth
+    {u : NSVelocityField} (hu : smoothSpaceTimeVelocity u)
+    (t : NSTime) (x : NSSpace) :
+    DifferentiableAt ℝ (fun y : NSSpace => spatialLaplacianField u t y) x := by
+  have hslice : ContDiff ℝ ∞ (fun y : NSSpace => u t y) :=
+    smoothSpaceTimeVelocity_contDiff_spatialSlice hu t
+  have hiter :
+      Differentiable ℝ
+        (fun y : NSSpace => iteratedFDeriv ℝ 2 (fun z : NSSpace => u t z) y) := by
+    exact hslice.differentiable_iteratedFDeriv (m := 2) (by
+      exact WithTop.coe_lt_coe.2 (ENat.coe_lt_top 2))
+  have hterm : ∀ i : Fin (Module.finrank ℝ NSSpace),
+      DifferentiableAt ℝ
+        (fun y : NSSpace =>
+          (iteratedFDeriv ℝ 2 (fun z : NSSpace => u t z) y)
+            ![(stdOrthonormalBasis ℝ NSSpace) i,
+              (stdOrthonormalBasis ℝ NSSpace) i]) x := by
+    intro i
+    fun_prop
+  have hsum :
+      DifferentiableAt ℝ
+        (fun y : NSSpace =>
+          ∑ i : Fin (Module.finrank ℝ NSSpace),
+            (iteratedFDeriv ℝ 2 (fun z : NSSpace => u t z) y)
+              ![(stdOrthonormalBasis ℝ NSSpace) i,
+                (stdOrthonormalBasis ℝ NSSpace) i]) x := by
+    exact DifferentiableAt.fun_sum (u := Finset.univ) (A := fun i y =>
+      (iteratedFDeriv ℝ 2 (fun z : NSSpace => u t z) y)
+        ![(stdOrthonormalBasis ℝ NSSpace) i,
+          (stdOrthonormalBasis ℝ NSSpace) i]) (by
+        intro i _hi
+        exact hterm i)
+  change DifferentiableAt ℝ (fun y : NSSpace => Δ (fun z : NSSpace => u t z) y) x
+  rw [InnerProductSpace.laplacian_eq_iteratedFDeriv_stdOrthonormalBasis]
+  exact hsum
+
 /-- After the Laplacian-field differentiability bridge, smoothness supplies the
 other two differentiability hypotheses needed for residual-curl linearity. -/
 theorem residualCurlLinearityDifferentiableAt_of_smooth_laplacian
@@ -121,6 +160,16 @@ theorem residualCurlLinearityDifferentiableAt_of_smooth_laplacian
     residualCurlLinearityDifferentiableAt u t x :=
   ⟨hlap, timeVelocityDerivativeField_differentiableAt_of_smooth hu t x,
     spatialConvectionField_differentiableAt_of_smooth hu t x⟩
+
+/-- Smooth velocities give the pointwise differentiability hypotheses needed
+for residual-curl linearity. -/
+theorem residualCurlLinearityDifferentiableAt_of_smooth
+    {u : NSVelocityField} (hu : smoothSpaceTimeVelocity u)
+    (t : NSTime) (x : NSSpace) :
+    residualCurlLinearityDifferentiableAt u t x :=
+  residualCurlLinearityDifferentiableAt_of_smooth_laplacian
+    (u := u) (t := t) (x := x) hu
+    (spatialLaplacianField_differentiableAt_of_smooth hu t x)
 
 /-- Ordinary spatial differentiability of the three pressure-residual
 components closes the curl-linearity defect at a point. -/
@@ -210,6 +259,14 @@ theorem residualCurlLinearityDifferentiableOn_of_smooth_laplacian
   exact residualCurlLinearityDifferentiableAt_of_smooth_laplacian
     (u := u) (t := t) (x := x) hu (hLap t x ht0 htT)
 
+/-- Smooth velocities give slabwise residual-curl linearity differentiability. -/
+theorem residualCurlLinearityDifferentiableOn_of_smooth
+    {T : ℝ} {u : NSVelocityField}
+    (hu : smoothSpaceTimeVelocity u) :
+    residualCurlLinearityDifferentiableOn u T := by
+  intro t x _ht0 _htT
+  exact residualCurlLinearityDifferentiableAt_of_smooth hu t x
+
 /-- Slabwise differentiability of the three residual components closes the
 slabwise curl-linearity defect. -/
 theorem residualCurlLinearityClosedOn_of_differentiableOn
@@ -229,6 +286,14 @@ theorem residualCurlLinearityClosedOn_of_smooth_laplacian
     residualCurlLinearityClosedOn ν u T :=
   residualCurlLinearityClosedOn_of_differentiableOn
     (residualCurlLinearityDifferentiableOn_of_smooth_laplacian hu hLap)
+
+/-- Smoothness closes the slabwise residual-curl linearity defect. -/
+theorem residualCurlLinearityClosedOn_of_smooth
+    {ν T : ℝ} {u : NSVelocityField}
+    (hu : smoothSpaceTimeVelocity u) :
+    residualCurlLinearityClosedOn ν u T :=
+  residualCurlLinearityClosedOn_of_differentiableOn
+    (residualCurlLinearityDifferentiableOn_of_smooth hu)
 
 /-- Slabwise closure of curl/time commutation. -/
 def vorticityTimeCommutationClosedOn
