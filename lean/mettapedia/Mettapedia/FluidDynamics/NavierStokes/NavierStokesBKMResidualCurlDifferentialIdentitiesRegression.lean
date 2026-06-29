@@ -504,6 +504,14 @@ theorem BKMVorticityFiniteTimeWitnessResidualCurlVelocitySchwartzAffineLogGrowth
     BKMVorticityFiniteTimeWitnessResidualCurlVelocitySchwartzAffineLogGrowthClosed := by
   exact BKMVorticityFiniteTimeWitnessResidualCurlVelocitySchwartzAffineLogGrowthClosed_proved
 
+theorem BKMVorticityFiniteTimeWitnessResidualCurlVelocitySchwartzTwoProfileAprioriClosed_proved_regression :
+    BKMVorticityFiniteTimeWitnessResidualCurlVelocitySchwartzTwoProfileAprioriClosed := by
+  exact BKMVorticityFiniteTimeWitnessResidualCurlVelocitySchwartzTwoProfileAprioriClosed_proved
+
+theorem BKMVorticityFiniteTimeWitnessResidualCurlVelocitySchwartzTwoProfileAffineLogGrowthClosed_proved_regression :
+    BKMVorticityFiniteTimeWitnessResidualCurlVelocitySchwartzTwoProfileAffineLogGrowthClosed := by
+  exact BKMVorticityFiniteTimeWitnessResidualCurlVelocitySchwartzTwoProfileAffineLogGrowthClosed_proved
+
 theorem BKMContinuation_reduced_to_affineLogHighNorm_after_residualCurl_regression :
     BKMResidualCurlExpansionDefectVanishes ∧
       BKMVorticityFiniteTimeWitnessResidualCurlAprioriClosed ∧
@@ -521,9 +529,11 @@ theorem BKMContinuation_reduced_to_affineLogHighNorm_after_residualCurl_integrab
         BKMVorticityTwoProfileSchwartzTimePairingDerivativeClosed ∧
           BKMVorticityFiniteTimeWitnessResidualCurlVelocitySchwartzAprioriIntegrabilityClosed ∧
             BKMVorticityFiniteTimeWitnessResidualCurlVelocitySchwartzAffineLogGrowthIntegrabilityClosed ∧
-              (BKMLogSobolevAffinePointwiseFromEnvelope →
-                BKMHighNormContinuationFromLogControl →
-                  ExplicitFiniteEnergyBKMContinuationTargetOnNonnegHorizons) := by
+              BKMVorticityFiniteTimeWitnessResidualCurlVelocitySchwartzTwoProfileAprioriClosed ∧
+                BKMVorticityFiniteTimeWitnessResidualCurlVelocitySchwartzTwoProfileAffineLogGrowthClosed ∧
+                  (BKMLogSobolevAffinePointwiseFromEnvelope →
+                    BKMHighNormContinuationFromLogControl →
+                      ExplicitFiniteEnergyBKMContinuationTargetOnNonnegHorizons) := by
   exact BKMContinuation_reduced_to_affineLogHighNorm_after_residualCurl_integrability
 
 theorem BKMAnalyticComponentsClosed_of_residualCurlDifferentialIdentities_regression
