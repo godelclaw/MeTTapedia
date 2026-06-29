@@ -670,7 +670,14 @@ longer acceptable progress.
    kernel/map/vertex-failure evader, and
    `emittedFinsetPairingKernel_eq_bot_or_theorem49BoundaryTargetEvader_or_emittedFinsetKernelMapEvader_with_theorem49BoundaryVertexKirchhoffFailure`
    packages the local finite F2 verdict as close, target evader, or off-target
-   evader.  A higher edge-cap/coloring-cap
+   evader.  The same target/off-target split is now report-level:
+   `ofDecidableChecks_missingCheckerEvidence_or_emittedFinsetPairingKernel_eq_bot_and_theorem49Synthesis_and_boundaryZeroControl_or_theorem49BoundaryTargetEvader_or_emittedFinsetKernelMapEvader_with_theorem49BoundaryVertexKirchhoffFailure`
+   packages the executable branch as primitive checker gap, emitted-rank close
+   with synthesis/control, target evader, or off-target kernel/map/vertex
+   evader, and
+   `ofDecidableChecks_missingCheckerEvidence_or_theorem49BoundaryTargetEvader_or_emittedFinsetKernelMapEvader_with_theorem49BoundaryVertexKirchhoffFailure_of_not_theorem49BoundaryRootSynthesis`
+   removes the close branch under failed synthesis.  A higher
+   edge-cap/coloring-cap
    projected-generator lab run now records this distinction explicitly: among
    65 reports there are 53 found coordinate-probe reports, 12 no-Tait-coloring
    reports, and 0 missing probe reports.
