@@ -90,7 +90,7 @@ def currentNavierRoadmap : List NavierRoadmapEntry :=
       proofNodeId := "navier.bkm.residual-curl-differential-identities"
       status := .checked
       truthValue := ⟨88, 88⟩
-      obligation := "Use residualCurlLinearityDefect_eq_zero_of_differentiableAt and residualCurlExpansionDefect_eq_differentialIdentityDefects to reduce BKMResidualCurlExpansionDefectVanishes to smoothness-derived residual-field differentiability plus curl/time commutation, curl/Laplacian commutation, and the incompressible curl-convection identity." },
+      obligation := "Use residualCurlLinearityClosedOn_of_smooth_laplacian and residualCurlExpansionDefect_eq_differentialIdentityDefects to reduce BKMResidualCurlExpansionDefectVanishes to Laplacian-field differentiability plus curl/time commutation, curl/Laplacian commutation, and the incompressible curl-convection identity." },
     { stage := .bkmContinuation
       proofNodeId := "navier.bkm.standard-vorticity-growth"
       status := .checked
@@ -339,7 +339,7 @@ theorem currentNavierRoadmap_records_bkm_residual_curl_differential_identities :
        status := .checked
        truthValue := ⟨88, 88⟩
        obligation :=
-        "Use residualCurlLinearityDefect_eq_zero_of_differentiableAt and residualCurlExpansionDefect_eq_differentialIdentityDefects to reduce BKMResidualCurlExpansionDefectVanishes to smoothness-derived residual-field differentiability plus curl/time commutation, curl/Laplacian commutation, and the incompressible curl-convection identity." } :
+        "Use residualCurlLinearityClosedOn_of_smooth_laplacian and residualCurlExpansionDefect_eq_differentialIdentityDefects to reduce BKMResidualCurlExpansionDefectVanishes to Laplacian-field differentiability plus curl/time commutation, curl/Laplacian commutation, and the incompressible curl-convection identity." } :
       NavierRoadmapEntry) ∈ currentNavierRoadmap := by
   simp [currentNavierRoadmap]
 

@@ -82,7 +82,7 @@ deriving Repr
 /-- Current dependency-map counts for `FluidDynamics/NavierStokes`. -/
 def currentNavierLaneSurvey : NavierLaneSurvey where
   sourceFiles := 531
-  sourceLines := 120718
+  sourceLines := 120839
   internalImportEdges := 1352
   regressionFiles := 153
   filesOverThousandLines := 3
@@ -200,8 +200,8 @@ def navierBKMResidualCurlDifferentialIdentitiesNode : NavierProofNode where
   id := "navier.bkm.residual-curl-differential-identities"
   status := .checked
   truthValue := ⟨88, 88⟩
-  evidence := "residualCurlLinearityDefect, vorticityTimeCommutationDefect, vorticityLaplacianCommutationDefect, and vorticityConvectionExpansionDefect name the exact pointwise identities needed to expand residual curl into the standard vorticity equation. residualCurlLinearityDefect_eq_zero_of_differentiableAt proves the residual-field curl-linearity defect vanishes from spatial differentiability of the Laplacian, time-derivative, and convection fields; residualCurlLinearityClosedOn_of_differentiableOn lifts this to slabs; residualCurlDifferentialIdentitiesClosedOn_of_linearityDifferentiableOn combines it with the remaining three identities. residualCurlExpansionDefect_eq_differentialIdentityDefects proves the algebraic decomposition, and BKMResidualCurlDifferentialIdentitiesClosed.implies_residualCurlExpansionDefectVanishes proves the decomposed target closes BKMResidualCurlExpansionDefectVanishes. Validation lab ns-bkm-residual-curl-defect-decomposition-lab-20260629.json passed 5/5 Taylor-Green and random solenoidal checks. PLN STV <s=.88,c=.88>, ITV [.7744,.8944], PROGRESS 58%."
-  blocker := "The residual-curl linearity subidentity is now reduced to ordinary spatial differentiability of the three derived residual fields. The remaining concrete work is deriving that differentiability from smoothSpaceTimeVelocity and proving curl/time commutation, curl/Laplacian commutation, and the incompressible curl-convection identity for arbitrary smooth incompressible velocity fields."
+  evidence := "residualCurlLinearityDefect, vorticityTimeCommutationDefect, vorticityLaplacianCommutationDefect, and vorticityConvectionExpansionDefect name the exact pointwise identities needed to expand residual curl into the standard vorticity equation. residualCurlLinearityDefect_eq_zero_of_differentiableAt proves the residual-field curl-linearity defect vanishes from spatial differentiability of the Laplacian, time-derivative, and convection fields. timeVelocityDerivativeField_differentiableAt_of_smooth and spatialConvectionField_differentiableAt_of_smooth derive the latter two differentiability pieces from smoothSpaceTimeVelocity, while residualCurlLinearityClosedOn_of_smooth_laplacian reduces slabwise curl-linearity closure to Laplacian-field differentiability. residualCurlExpansionDefect_eq_differentialIdentityDefects proves the algebraic decomposition, and BKMResidualCurlDifferentialIdentitiesClosed.implies_residualCurlExpansionDefectVanishes proves the decomposed target closes BKMResidualCurlExpansionDefectVanishes. Validation lab ns-bkm-residual-curl-defect-decomposition-lab-20260629.json passed 5/5 Taylor-Green and random solenoidal checks. PLN STV <s=.88,c=.88>, ITV [.7744,.8944], PROGRESS 59%."
+  blocker := "The residual-curl linearity subidentity is now reduced to deriving spatial differentiability of the Laplacian field from smoothSpaceTimeVelocity. The other remaining concrete work is curl/time commutation, curl/Laplacian commutation, and the incompressible curl-convection identity for arbitrary smooth incompressible velocity fields."
 
 /-- Once the standard vorticity equation is available, the BKM growth term is
 checked and controlled by the stretching estimate. -/
@@ -987,6 +987,9 @@ theorem currentNavierBKMResidualCurlDifferentialIdentities_node
     residualCurlExpansionClosedOn ν u T ∧
       (residualCurlLinearityDifferentiableOn u T →
         residualCurlLinearityClosedOn ν u T) ∧
+      (smoothSpaceTimeVelocity u →
+        residualCurlLinearityLaplacianDifferentiableOn u T →
+          residualCurlLinearityClosedOn ν u T) ∧
       (BKMResidualCurlDifferentialIdentitiesClosed →
         BKMResidualCurlExpansionDefectVanishes) ∧
       (BKMResidualCurlDifferentialIdentitiesClosed →
@@ -997,6 +1000,7 @@ theorem currentNavierBKMResidualCurlDifferentialIdentities_node
   exact
     ⟨residualCurlExpansionClosedOn_of_differentialIdentitiesClosedOn hIds,
       residualCurlLinearityClosedOn_of_differentiableOn,
+      residualCurlLinearityClosedOn_of_smooth_laplacian,
       BKMResidualCurlDifferentialIdentitiesClosed.implies_residualCurlExpansionDefectVanishes,
       BKMAnalyticComponentsClosed_of_residualCurlDifferentialIdentities,
       navierBKMResidualCurlDifferentialIdentitiesNode_checked⟩
