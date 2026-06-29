@@ -1341,6 +1341,26 @@ nonzero canonical remaining-map image.
 - Full `lake -f lakefile.lean build Mettapedia` archived locally as
   `fourcolor-move2-exact-worklist-fork-full-build-20260629.log`; it completed
   with 5900 jobs.
+- New executable-report exact-worklist fork theorem surface:
+  `CAP5TransportedEdgeComponentCoverCore.ofDecidableChecks_missingCheckerEvidence_or_remainingInteriorSupportEmpty_closes_or_notSynthesis_boundaryZeroEvader_and_nonempty_worklist`.
+  This removes the raw closed-frontier handoff from the exact-worklist fork:
+  the decidable CAP5 report returns either a primitive checker gap or the same
+  exact worklist decision surface.  In the closed branch, empty canonical
+  interior-support worklist closes synthesis/control, while failed synthesis
+  forces a nonempty worklist and returns a genuine selected-boundary-zero evader
+  plus a decreasing remaining-worklist edge.  Current Algebraic-F2 estimate is
+  PLN STV `<0.87,0.95>`, ITV `[0.83,0.88]`, progress `99%`.  The lab was rerun
+  as `fourcolor-move2-report-exact-worklist-fork-lab-20260629.json`; stderr is
+  empty and the edge-40/color-1M projected-generator counts remain: 65 reports
+  split as 53 found and 12 no-Tait-coloring; 740 color probes split as 454
+  found and 286 no-Tait-coloring, with 0 missing color probes.
+- Report-level exact-worklist fork focused detector build archived locally as
+  `fourcolor-move2-report-exact-worklist-fork-focused-build-20260629.log`.
+- Report-level exact-worklist fork trusted-constant audit archived locally as
+  `fourcolor-move2-report-exact-worklist-fork-axiom-audit-20260629.log`.
+- Full `lake -f lakefile.lean build Mettapedia` archived locally as
+  `fourcolor-move2-report-exact-worklist-fork-full-build-20260629.log`; it
+  completed with 5900 jobs.
 - Report-route target/off-target no-evader focused detector build archived
   locally as
   `fourcolor-move2-report-target-offtarget-noevader-route-focused-build-20260629.log`.
