@@ -95,12 +95,12 @@ def currentNavierRoadmap : List NavierRoadmapEntry :=
       proofNodeId := "navier.bkm.standard-vorticity-growth"
       status := .checked
       truthValue := ⟨86, 88⟩
-      obligation := "Once concreteVorticityEquationOn is derived, use the checked material-minus-diffusion growth estimates, pointwise derivative d/dt (1/2 |omega|^2) = omega dot partial_t omega, transport algebra omega dot ((u.grad)omega) = (u.grad)(1/2 |omega|^2), Schwartz-slice transport cancellation from incompressibility, coordinate vorticity diffusion dissipation, Schwartz-slice Laplacian IBP, the witness-level Schwartz-slice a-priori enstrophy estimates, standard-equation-to-raw-enstrophy pairing algebra, and conditional dE/dt <= ||grad u||_inf E enstrophy-growth estimate. Remaining enstrophy work is lifting the pointwise time derivative through the spatial integral and instantiating or extending the Schwartz-slice transport/diffusion identities for finite-energy witnesses." },
+      obligation := "Use the checked material-minus-diffusion growth estimates, pointwise derivative d/dt (1/2 |omega|^2) = omega dot partial_t omega, transport algebra omega dot ((u.grad)omega) = (u.grad)(1/2 |omega|^2), Schwartz-slice transport cancellation from incompressibility, coordinate vorticity diffusion dissipation, Schwartz-slice Laplacian IBP, witness-level Schwartz-slice a-priori enstrophy estimates, standard-equation-to-raw-enstrophy pairing algebra, conditional dE/dt <= ||grad u||_inf E, and the residual-curl-derived affine-log witness enstrophy estimate. Remaining enstrophy work is lifting the pointwise time derivative through the spatial integral and instantiating or extending the Schwartz-slice identities for finite-energy witnesses." },
     { stage := .bkmContinuation
       proofNodeId := "navier.bkm.log-sobolev-gradient-control"
       status := .checked
       truthValue := ⟨87, 88⟩
-      obligation := "Prove the analytic affine log-Sobolev/Biot-Savart pointwise estimate ||grad u|| <= C0 + C1 * Omega log(exp(1) + H); the checked affine-log growth theorems give dE/dt <= (C0 + C1 * Omega log(exp(1) + H)) * E, including the finite-time witness package from the standard vorticity equation plus time-pairing and Schwartz-slice identities. This does not itself prove the analytic gradient estimate." },
+      obligation := "Prove the analytic affine log-Sobolev/Biot-Savart pointwise estimate ||grad u|| <= C0 + C1 * Omega log(exp(1) + H); the checked affine-log growth theorems give dE/dt <= (C0 + C1 * Omega log(exp(1) + H)) * E, including the finite-time witness package from residual-curl plus time-pairing and Schwartz-slice identities. This does not itself prove the analytic gradient estimate." },
     { stage := .bkmContinuation
       proofNodeId := "navier.bkm.single-analytic-lemma"
       status := .checked
@@ -350,7 +350,7 @@ theorem currentNavierRoadmap_records_bkm_standard_vorticity_growth :
        status := .checked
        truthValue := ⟨86, 88⟩
        obligation :=
-        "Once concreteVorticityEquationOn is derived, use the checked material-minus-diffusion growth estimates, pointwise derivative d/dt (1/2 |omega|^2) = omega dot partial_t omega, transport algebra omega dot ((u.grad)omega) = (u.grad)(1/2 |omega|^2), Schwartz-slice transport cancellation from incompressibility, coordinate vorticity diffusion dissipation, Schwartz-slice Laplacian IBP, the witness-level Schwartz-slice a-priori enstrophy estimates, standard-equation-to-raw-enstrophy pairing algebra, and conditional dE/dt <= ||grad u||_inf E enstrophy-growth estimate. Remaining enstrophy work is lifting the pointwise time derivative through the spatial integral and instantiating or extending the Schwartz-slice transport/diffusion identities for finite-energy witnesses." } :
+        "Use the checked material-minus-diffusion growth estimates, pointwise derivative d/dt (1/2 |omega|^2) = omega dot partial_t omega, transport algebra omega dot ((u.grad)omega) = (u.grad)(1/2 |omega|^2), Schwartz-slice transport cancellation from incompressibility, coordinate vorticity diffusion dissipation, Schwartz-slice Laplacian IBP, witness-level Schwartz-slice a-priori enstrophy estimates, standard-equation-to-raw-enstrophy pairing algebra, conditional dE/dt <= ||grad u||_inf E, and the residual-curl-derived affine-log witness enstrophy estimate. Remaining enstrophy work is lifting the pointwise time derivative through the spatial integral and instantiating or extending the Schwartz-slice identities for finite-energy witnesses." } :
       NavierRoadmapEntry) ∈ currentNavierRoadmap := by
   simp [currentNavierRoadmap]
 
@@ -361,7 +361,7 @@ theorem currentNavierRoadmap_records_bkm_log_sobolev_gradient_control :
        status := .checked
        truthValue := ⟨87, 88⟩
        obligation :=
-        "Prove the analytic affine log-Sobolev/Biot-Savart pointwise estimate ||grad u|| <= C0 + C1 * Omega log(exp(1) + H); the checked affine-log growth theorems give dE/dt <= (C0 + C1 * Omega log(exp(1) + H)) * E, including the finite-time witness package from the standard vorticity equation plus time-pairing and Schwartz-slice identities. This does not itself prove the analytic gradient estimate." } :
+        "Prove the analytic affine log-Sobolev/Biot-Savart pointwise estimate ||grad u|| <= C0 + C1 * Omega log(exp(1) + H); the checked affine-log growth theorems give dE/dt <= (C0 + C1 * Omega log(exp(1) + H)) * E, including the finite-time witness package from residual-curl plus time-pairing and Schwartz-slice identities. This does not itself prove the analytic gradient estimate." } :
       NavierRoadmapEntry) ∈ currentNavierRoadmap := by
   simp [currentNavierRoadmap]
 

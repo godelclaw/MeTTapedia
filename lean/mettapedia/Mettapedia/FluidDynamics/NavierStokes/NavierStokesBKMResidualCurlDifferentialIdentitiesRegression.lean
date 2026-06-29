@@ -12,6 +12,7 @@ namespace Mettapedia
 namespace FluidDynamics
 namespace NavierStokes
 
+open MeasureTheory
 open scoped ContDiff
 open scoped Laplacian
 
@@ -410,6 +411,42 @@ theorem BKMResidualCurlDifferentialIdentitiesClosed_proved_regression :
 theorem BKMResidualCurlExpansionDefectVanishes_proved_regression :
     BKMResidualCurlExpansionDefectVanishes := by
   exact BKMResidualCurlExpansionDefectVanishes_proved
+
+theorem vorticityEnstrophyGradientControlledAt_of_finiteTimeWitness_residualCurl_affinePointwiseInequality_regression
+    {ν T C0 C1 : ℝ} {u₀ : NSInitialVelocity}
+    (W : ExplicitFiniteTimeRegularityWitness ν u₀ T)
+    {Ω H : NSTime → ℝ} {t : NSTime}
+    (hν : 0 ≤ ν)
+    (hVelocitySlices : finiteTimeWitnessVelocitySchwartzSlices W)
+    (hVorticitySlices : finiteTimeWitnessVorticitySchwartzSlices W)
+    (hInt : vorticityRawBalanceIntegralComponentsIntegrableAt W.velocity t)
+    (hTime : vorticityEnstrophyTimePairingDerivativeAt W.velocity t)
+    (hC0 : 0 ≤ C0) (hC1 : 0 ≤ C1)
+    (hΩ : ∀ s, 0 ≤ s → s ≤ T → 0 ≤ Ω s)
+    (hH : ∀ s, 0 ≤ s → s ≤ T → 0 ≤ H s)
+    (hAffine : BKMLogSobolevAffinePointwiseInequalityOn
+      W.velocity T C0 C1 Ω H)
+    (ht0 : 0 ≤ t) (htT : t ≤ T)
+    (hEnstrophyInt :
+      Integrable (fun x => vorticityEnstrophyDensity W.velocity t x)) :
+    vorticityEnstrophyGradientControlledAt ν W.velocity t
+      (C0 + C1 * bkmLogSobolevLogFactor Ω H t) := by
+  exact
+    vorticityEnstrophyGradientControlledAt_of_finiteTimeWitness_residualCurl_affinePointwiseInequality
+      W hν hVelocitySlices hVorticitySlices hInt hTime hC0 hC1 hΩ hH hAffine
+      ht0 htT hEnstrophyInt
+
+theorem BKMVorticityFiniteTimeWitnessResidualCurlAffineLogGrowthClosed_proved_regression :
+    BKMVorticityFiniteTimeWitnessResidualCurlAffineLogGrowthClosed := by
+  exact BKMVorticityFiniteTimeWitnessResidualCurlAffineLogGrowthClosed_proved
+
+theorem BKMContinuation_reduced_to_affineLogHighNorm_after_residualCurl_regression :
+    BKMResidualCurlExpansionDefectVanishes ∧
+      BKMVorticityFiniteTimeWitnessResidualCurlAffineLogGrowthClosed ∧
+        (BKMLogSobolevAffinePointwiseFromEnvelope →
+          BKMHighNormContinuationFromLogControl →
+            ExplicitFiniteEnergyBKMContinuationTargetOnNonnegHorizons) := by
+  exact BKMContinuation_reduced_to_affineLogHighNorm_after_residualCurl
 
 theorem BKMAnalyticComponentsClosed_of_residualCurlDifferentialIdentities_regression
     (hIds : BKMResidualCurlDifferentialIdentitiesClosed)
