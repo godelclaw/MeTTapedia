@@ -14,6 +14,8 @@ set_option autoImplicit false
 
 noncomputable section
 
+open scoped SchwartzMap
+
 namespace Mettapedia
 namespace FluidDynamics
 namespace NavierStokes
@@ -45,6 +47,73 @@ def BKMLogSobolevAffinePointwiseFromEnvelope : Prop :=
                           (∀ t, 0 ≤ t → t ≤ T → 0 ≤ H t) ∧
                             BKMLogSobolevAffinePointwiseInequalityOn
                               W.velocity T C0 C1 Ω H
+
+/-- Concrete high-norm envelope used by the Biot-Savart/log-Sobolev proof
+attempt.  At each time in the slab, the velocity slice must be represented by a
+Schwartz map whose fourth Schwartz seminorm is bounded by `H`.
+
+This is stronger than the current arbitrary finite-energy witness surface; it
+is recorded only to expose the exact analytic theorem needed for the
+Biot-Savart estimate. -/
+def BKMLogSobolevSchwartzHighNormEnvelopeOn
+    (u : NSVelocityField) (T : ℝ) (H : NSTime → ℝ) : Prop :=
+  (∀ t, 0 ≤ t → t ≤ T → 0 ≤ H t) ∧
+    ∀ t, 0 ≤ t → t ≤ T →
+      ∃ f : 𝓢(NSSpace, NSSpace),
+        (∀ x, f x = u t x) ∧
+          SchwartzMap.seminorm ℝ 0 4 f ≤ H t
+
+/-- The extra high-norm-envelope extraction needed before the Schwartz-slice
+Biot-Savart estimate can be applied to an arbitrary finite-energy witness. -/
+def BKMFiniteTimeWitnessSchwartzHighNormEnvelopeFromBKMData : Prop :=
+  ∀ (ν : ℝ) (u₀ : NSInitialVelocity) (T : ℝ)
+      (W : ExplicitFiniteTimeRegularityWitness ν u₀ T)
+      (Ω : NSTime → ℝ) (B : ℝ),
+    0 ≤ T →
+      0 < ν →
+        smoothInitialVelocityData u₀ →
+          (∀ x, initialSpatialDivergence u₀ x = 0) →
+            finiteInitialKineticEnergy u₀ →
+              concreteVorticityEquationOn ν W.velocity T →
+                vorticityEnvelopeOn W.velocity T Ω →
+                  integrableVorticityEnvelopeOn Ω T B →
+                    ∃ H : NSTime → ℝ,
+                      BKMLogSobolevSchwartzHighNormEnvelopeOn W.velocity T H
+
+/-- Exact singular-integral theorem exposed by the Biot-Savart attempt:
+for divergence-free whole-space velocity fields with a vorticity envelope and a
+Schwartz high-norm envelope, prove the affine logarithmic pointwise gradient
+bound.
+
+The local proof search found Fourier/Schwartz/Sobolev infrastructure in
+mathlib, but not the Biot-Savart/Riesz-transform/Calderon-Zygmund/BMO layer
+needed to prove this theorem directly. -/
+def BKMSchwartzSliceBiotSavartAffineLogPointwiseEstimate : Prop :=
+  ∃ C0 : ℝ, ∃ C1 : ℝ,
+    0 ≤ C0 ∧
+      0 ≤ C1 ∧
+        ∀ (u : NSVelocityField) (T : ℝ) (Ω H : NSTime → ℝ),
+          smoothSpaceTimeVelocity u →
+            (∀ t x, 0 ≤ t → t ≤ T → spatialDivergence u t x = 0) →
+              vorticityEnvelopeOn u T Ω →
+                BKMLogSobolevSchwartzHighNormEnvelopeOn u T H →
+                  BKMLogSobolevAffinePointwiseInequalityOn u T C0 C1 Ω H
+
+/-- A concrete Schwartz-slice high-norm extraction theorem plus the
+Biot-Savart/Riesz affine-log pointwise estimate imply the first current open
+BKM analytic lemma. -/
+theorem BKMLogSobolevAffinePointwiseFromEnvelope_of_schwartzHighNormEnvelope_and_biotSavart
+    (hHighNorm : BKMFiniteTimeWitnessSchwartzHighNormEnvelopeFromBKMData)
+    (hBiotSavart : BKMSchwartzSliceBiotSavartAffineLogPointwiseEstimate) :
+    BKMLogSobolevAffinePointwiseFromEnvelope := by
+  intro ν u₀ T W Ω B hT hν hsmooth hdiv hfinite hEq hΩ hInt
+  rcases hHighNorm ν u₀ T W Ω B hT hν hsmooth hdiv hfinite hEq hΩ hInt with
+    ⟨H, hH⟩
+  rcases hBiotSavart with ⟨C0, C1, hC0, hC1, hPointwise⟩
+  exact
+    ⟨C0, C1, H, hC0, hC1, hH.1,
+      hPointwise W.velocity T Ω H W.smooth_velocity
+        (fun t x ht0 htT => W.incompressible_on t x ht0 htT) hΩ hH⟩
 
 /-- Analytic log-Sobolev/Biot-Savart ingredient: once the standard vorticity
 equation and BKM envelope data are available on a slab, produce a logarithmic
