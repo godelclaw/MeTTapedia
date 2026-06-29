@@ -88,6 +88,32 @@ theorem bkm_vorticity_enstrophy_gradient_growth_closed_regression :
     BKMVorticityEnstrophyGradientGrowthClosed :=
   BKMVorticityEnstrophyGradientGrowthClosed_proved
 
+theorem bkm_vorticity_transport_power_pointwise_algebra_regression
+    {u : NSVelocityField} {t : NSTime} {x : NSSpace}
+    (hω : vorticitySpatialDerivativeRepresentedAt u t x) :
+    normalizedVorticityEnstrophyDensityTransport u t x =
+      ⟪spatialVorticity u t x, vorticityTransportTerm u t x⟫ :=
+  normalizedVorticityEnstrophyDensityTransport_eq_transportPower hω
+
+theorem bkm_vorticity_transport_power_integral_algebra_regression
+    {u : NSVelocityField} {t : NSTime}
+    (hω : ∀ x, vorticitySpatialDerivativeRepresentedAt u t x) :
+    vorticityTransportPowerIntegral u t =
+      normalizedVorticityEnstrophyDensityTransportIntegral u t :=
+  vorticityTransportPowerIntegral_eq_normalizedDensityTransportIntegral hω
+
+theorem bkm_vorticity_transport_cancellation_from_density_transport_zero_regression
+    {u : NSVelocityField} {t : NSTime}
+    (hω : ∀ x, vorticitySpatialDerivativeRepresentedAt u t x)
+    (hZero : normalizedVorticityEnstrophyDensityTransportIntegral u t = 0) :
+    vorticityTransportCancellationAt u t :=
+  vorticityTransportCancellationAt_of_normalizedDensityTransportIntegral_zero
+    hω hZero
+
+theorem bkm_vorticity_transport_cancellation_algebra_closed_regression :
+    BKMVorticityTransportCancellationAlgebraClosed :=
+  BKMVorticityTransportCancellationAlgebraClosed_proved
+
 theorem bkm_vorticity_enstrophy_balance_assembly_closed_regression :
     BKMVorticityEnstrophyBalanceAssemblyClosed :=
   BKMVorticityEnstrophyBalanceAssemblyClosed_proved

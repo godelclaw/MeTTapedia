@@ -95,7 +95,7 @@ def currentNavierRoadmap : List NavierRoadmapEntry :=
       proofNodeId := "navier.bkm.standard-vorticity-growth"
       status := .checked
       truthValue := ⟨86, 88⟩
-      obligation := "Once concreteVorticityEquationOn is derived, use the checked material-minus-diffusion growth estimates, pointwise derivative d/dt (1/2 |omega|^2) = omega dot partial_t omega, standard-equation-to-raw-enstrophy pairing algebra, and conditional dE/dt <= ||grad u||_inf E enstrophy-growth estimate. Remaining enstrophy work is lifting the pointwise derivative through the spatial integral, transport cancellation, and viscous integration by parts on the finite-energy witness surface." },
+      obligation := "Once concreteVorticityEquationOn is derived, use the checked material-minus-diffusion growth estimates, pointwise derivative d/dt (1/2 |omega|^2) = omega dot partial_t omega, transport algebra omega dot ((u.grad)omega) = (u.grad)(1/2 |omega|^2), standard-equation-to-raw-enstrophy pairing algebra, and conditional dE/dt <= ||grad u||_inf E enstrophy-growth estimate. Remaining enstrophy work is lifting the pointwise time derivative through the spatial integral, proving the transported half-enstrophy density has zero integral from incompressibility and boundary/decay, and viscous integration by parts on the finite-energy witness surface." },
     { stage := .bkmContinuation
       proofNodeId := "navier.bkm.log-sobolev-gradient-control"
       status := .checked
@@ -110,7 +110,7 @@ def currentNavierRoadmap : List NavierRoadmapEntry :=
       proofNodeId := "navier.bkm.analytic-components"
       status := .checked
       truthValue := ⟨87, 88⟩
-      obligation := "Use BKMAnalyticContinuationLemma_of_components and BKMContinuation_reduced_to_analytic_components with the checked pointwise density derivative, vorticity raw-balance, enstrophy-control, and gradient-growth packages. Remaining component targets are residual-curl expansion defect vanishing, the vorticity-enstrophy integral identities, log-Sobolev/Biot-Savart gradient control from BKM envelope data, and high-norm continuation/Gronwall closure." },
+      obligation := "Use BKMAnalyticContinuationLemma_of_components and BKMContinuation_reduced_to_analytic_components with the checked pointwise density derivative, vorticity raw-balance, transport-cancellation algebra, enstrophy-control, and gradient-growth packages. Remaining component targets are residual-curl expansion defect vanishing, the remaining vorticity-enstrophy integral identities, log-Sobolev/Biot-Savart gradient control from BKM envelope data, and high-norm continuation/Gronwall closure." },
     { stage := .nonzeroEnergyKernel
       proofNodeId := "navier.energy.nonzero-schwartz-kernel"
       status := .checked
@@ -350,7 +350,7 @@ theorem currentNavierRoadmap_records_bkm_standard_vorticity_growth :
        status := .checked
        truthValue := ⟨86, 88⟩
        obligation :=
-        "Once concreteVorticityEquationOn is derived, use the checked material-minus-diffusion growth estimates, pointwise derivative d/dt (1/2 |omega|^2) = omega dot partial_t omega, standard-equation-to-raw-enstrophy pairing algebra, and conditional dE/dt <= ||grad u||_inf E enstrophy-growth estimate. Remaining enstrophy work is lifting the pointwise derivative through the spatial integral, transport cancellation, and viscous integration by parts on the finite-energy witness surface." } :
+        "Once concreteVorticityEquationOn is derived, use the checked material-minus-diffusion growth estimates, pointwise derivative d/dt (1/2 |omega|^2) = omega dot partial_t omega, transport algebra omega dot ((u.grad)omega) = (u.grad)(1/2 |omega|^2), standard-equation-to-raw-enstrophy pairing algebra, and conditional dE/dt <= ||grad u||_inf E enstrophy-growth estimate. Remaining enstrophy work is lifting the pointwise time derivative through the spatial integral, proving the transported half-enstrophy density has zero integral from incompressibility and boundary/decay, and viscous integration by parts on the finite-energy witness surface." } :
       NavierRoadmapEntry) ∈ currentNavierRoadmap := by
   simp [currentNavierRoadmap]
 
@@ -385,7 +385,7 @@ theorem currentNavierRoadmap_records_bkm_analytic_components :
        status := .checked
        truthValue := ⟨87, 88⟩
        obligation :=
-        "Use BKMAnalyticContinuationLemma_of_components and BKMContinuation_reduced_to_analytic_components with the checked pointwise density derivative, vorticity raw-balance, enstrophy-control, and gradient-growth packages. Remaining component targets are residual-curl expansion defect vanishing, the vorticity-enstrophy integral identities, log-Sobolev/Biot-Savart gradient control from BKM envelope data, and high-norm continuation/Gronwall closure." } :
+        "Use BKMAnalyticContinuationLemma_of_components and BKMContinuation_reduced_to_analytic_components with the checked pointwise density derivative, vorticity raw-balance, transport-cancellation algebra, enstrophy-control, and gradient-growth packages. Remaining component targets are residual-curl expansion defect vanishing, the remaining vorticity-enstrophy integral identities, log-Sobolev/Biot-Savart gradient control from BKM envelope data, and high-norm continuation/Gronwall closure." } :
       NavierRoadmapEntry) ∈ currentNavierRoadmap := by
   simp [currentNavierRoadmap]
 

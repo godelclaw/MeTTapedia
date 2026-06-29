@@ -86,18 +86,20 @@ theorem BKMContinuation_reduced_to_single_analytic_lemma :
         BKMStandardVorticityGrowthEstimateClosed ∧
           BKMVorticityPointwiseEnstrophyDerivativeClosed ∧
             BKMVorticityRawBalanceFromStandardEquationClosed ∧
-              BKMVorticityEnstrophyBalanceAssemblyClosed ∧
-                BKMVorticityEnstrophyAprioriEstimateClosed ∧
-                  BKMVorticityEnstrophyGradientGrowthClosed ∧
-                    BKMLogSobolevGrowthEstimateClosed ∧
-                      (BKMAnalyticContinuationLemma →
-                        ExplicitFiniteEnergyBKMContinuationTargetOnNonnegHorizons) := by
+              BKMVorticityTransportCancellationAlgebraClosed ∧
+                BKMVorticityEnstrophyBalanceAssemblyClosed ∧
+                  BKMVorticityEnstrophyAprioriEstimateClosed ∧
+                    BKMVorticityEnstrophyGradientGrowthClosed ∧
+                      BKMLogSobolevGrowthEstimateClosed ∧
+                        (BKMAnalyticContinuationLemma →
+                          ExplicitFiniteEnergyBKMContinuationTargetOnNonnegHorizons) := by
   exact
     ⟨BKMVorticityStretchingEstimateClosed_proved,
       BKMResidualCurlExpansionAlgebraClosed_proved,
       BKMStandardVorticityGrowthEstimateClosed_proved,
       BKMVorticityPointwiseEnstrophyDerivativeClosed_proved,
       BKMVorticityRawBalanceFromStandardEquationClosed_proved,
+      BKMVorticityTransportCancellationAlgebraClosed_proved,
       BKMVorticityEnstrophyBalanceAssemblyClosed_proved,
       BKMVorticityEnstrophyAprioriEstimateClosed_proved,
       BKMVorticityEnstrophyGradientGrowthClosed_proved,
