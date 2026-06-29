@@ -557,7 +557,11 @@ longer acceptable progress.
    invalid next move: that same edge cannot be marked processed under the
    original classifier output.  Continuing the scheduler requires adding the
    one-edge emitted/control update as real new control information, or keeping
-   the evading boundary-zero chain as the obstruction.  The
+   the evading boundary-zero chain as the obstruction.  The route-facing
+   residual scheduler decision now packages the current finite state into the
+   exact alternatives needed by Move 2: terminal no-evader/synthesis,
+   already-closed synthesis, or a promoted one-edge obstruction with immutable
+   processing ruled out and strict residual decrease.  The
    pure no-target theorem underneath those refinements says failed synthesis
    already produces a genuine selected-boundary-zero evader for the enumerated
    forced edges.  The remaining crux is whether exact shell/CAP5 data reaches
