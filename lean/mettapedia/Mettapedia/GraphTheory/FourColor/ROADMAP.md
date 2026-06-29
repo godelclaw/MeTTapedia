@@ -627,6 +627,9 @@ longer acceptable progress.
    failure-only report trace theorem removes the success branch under
    `¬ Theorem49BoundaryRootSynthesis`, so a failed route now returns a
    primitive checker gap or that trace-local evader directly.  The
+   failure-only report kernel/map theorem gives the same failed route in the
+   lab-facing rank language: primitive checker gap or unified
+   emitted-kernel/remaining-map evader.  The
    pure no-target theorem underneath those refinements says failed synthesis
    already produces a genuine selected-boundary-zero evader for the enumerated
    forced edges.  The remaining crux is whether exact shell/CAP5 data reaches
