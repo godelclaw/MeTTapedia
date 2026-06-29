@@ -184,15 +184,15 @@ def navierBKMVorticityResidualEquationNode : NavierProofNode where
   status := .checked
   truthValue := ⟨85, 88⟩
   evidence := "vorticityResidualCurlEquationOn names the pressure-free curl equation spatialVorticity(momentumPressureResidual nu u)=0 on a slab. ExplicitFiniteTimeRegularityWitness.vorticityResidualCurlEquationOn proves every finite-time witness satisfies it, and finiteTimeWitness_BKMData_vorticityResidualCurl_packet packages it with BKM envelope data. Validation lab ns-bkm-vorticity-equation-lab-20260629.json passed Taylor-Green vorticity-equation and random solenoidal curl-convection identity checks. PLN STV <s=.85,c=.88>, ITV [.748,.868], PROGRESS 45%."
-  blocker := "This is the exact pressure-free curl surface supplied by the concrete momentum equation. Expanding it into the standard transport/diffusion/stretching form now factors through residualCurlExpansionDefect; proving that defect vanishes for smooth incompressible fields remains inside BKMAnalyticContinuationLemma."
+  blocker := "This is the exact pressure-free curl surface supplied by the concrete momentum equation. Expanding it into the standard transport/diffusion/stretching form factors through residualCurlExpansionDefect, now closed by BKMResidualCurlExpansionDefectVanishes_proved for smooth incompressible fields."
 
 /-- The residual-curl expansion is reduced to one named vector-calculus defect. -/
 def navierBKMResidualCurlExpansionNode : NavierProofNode where
   id := "navier.bkm.residual-curl-expansion-defect"
   status := .checked
   truthValue := ⟨87, 88⟩
-  evidence := "residualCurlExpansionDefect names curl(nu Delta u - partial_t u - (u.grad)u) plus the standard vorticity-equation residual partial_t omega + (u.grad)omega - nu Delta omega - (omega.grad)u. concreteVorticityEquationOn_of_residualCurlExpansionClosedOn proves that residual-curl zero plus vanishing defect gives concreteVorticityEquationOn, and ExplicitFiniteTimeRegularityWitness.concreteVorticityEquationOn_of_residualCurlExpansionDefectVanishes shows finite-time witnesses would supply the standard vorticity equation once BKMResidualCurlExpansionDefectVanishes is proved. Validation lab ns-bkm-residual-curl-expansion-lab-20260629.json passed Taylor-Green and random solenoidal periodic checks. PLN STV <s=.87,c=.88>, ITV [.7656,.8656], PROGRESS 50%."
-  blocker := "The exact remaining vector-calculus identity is BKMResidualCurlExpansionDefectVanishes: for every smooth velocity that is divergence-free on the slab, residualCurlExpansionDefect vanishes on the slab. Curl/time-derivative commutation and curl/Laplacian commutation are checked from smoothness; the remaining decomposed identity is the incompressible curl-convection identity."
+  evidence := "residualCurlExpansionDefect names curl(nu Delta u - partial_t u - (u.grad)u) plus the standard vorticity-equation residual partial_t omega + (u.grad)omega - nu Delta omega - (omega.grad)u. concreteVorticityEquationOn_of_residualCurlExpansionClosedOn proves that residual-curl zero plus vanishing defect gives concreteVorticityEquationOn, and ExplicitFiniteTimeRegularityWitness.concreteVorticityEquationOn_of_residualCurlExpansionDefectVanishes shows finite-time witnesses supply the standard vorticity equation once BKMResidualCurlExpansionDefectVanishes is available. BKMResidualCurlExpansionDefectVanishes_proved now closes that vector-calculus target for smooth incompressible slabs via the decomposed differential identities. Validation lab ns-bkm-residual-curl-expansion-lab-20260629.json passed Taylor-Green and random solenoidal periodic checks. PLN STV <s=.90,c=.88>, ITV [.792,.88], PROGRESS 63%."
+  blocker := "The residual-curl expansion defect is closed. Remaining BKM work is analytic: time-pairing derivative/integrability, finite-energy decay or approximation for the Schwartz-slice identities, the affine log-Sobolev/Biot-Savart gradient bound, and high-norm continuation/Gronwall closure."
 
 /-- The residual-curl expansion target is decomposed into four exact
 differential identities. -/
@@ -200,8 +200,8 @@ def navierBKMResidualCurlDifferentialIdentitiesNode : NavierProofNode where
   id := "navier.bkm.residual-curl-differential-identities"
   status := .checked
   truthValue := ⟨88, 88⟩
-  evidence := "residualCurlLinearityDefect, vorticityTimeCommutationDefect, vorticityLaplacianCommutationDefect, and vorticityConvectionExpansionDefect name the exact pointwise identities needed to expand residual curl into the standard vorticity equation. residualCurlLinearityDefect_eq_zero_of_differentiableAt proves the residual-field curl-linearity defect vanishes from spatial differentiability of the Laplacian, time-derivative, and convection fields. spatialLaplacianField_differentiableAt_of_smooth, timeVelocityDerivativeField_differentiableAt_of_smooth, and spatialConvectionField_differentiableAt_of_smooth derive all three differentiability pieces from smoothSpaceTimeVelocity, and residualCurlLinearityClosedOn_of_smooth closes slabwise curl-linearity from smoothness alone. smoothSpaceTimeVelocity_isSymmSndFDerivAt and smoothSpaceTimeVelocity_fderiv_fderiv_swap provide the checked second-derivative symmetry bridge for mixed partials. spatialDerivativeComponent_time_derivative_eq_timeVelocityDerivativeField proves scalar spatial/time derivative commutation, timeVorticityDerivative_eq_spatialVorticity_timeVelocityDerivativeField lifts it to the concrete curl, and vorticityTimeCommutationClosedOn_of_smooth closes curl/time commutation on every slab from smoothSpaceTimeVelocity. fderiv_laplacian_apply_eq_laplacian_fderiv_apply_of_contDiff proves smooth directional derivatives commute with the spatial Laplacian, spatialDerivativeComponent_spatialLaplacianField_eq_laplacian_spatialDerivativeComponent specializes it to velocity components, spatialVorticity_spatialLaplacianField_eq_vorticityDiffusionTerm_of_smooth lifts it to concrete curl, and vorticityLaplacianCommutationClosedOn_of_smooth closes curl/Laplacian commutation on every slab from smoothSpaceTimeVelocity. spatialDerivativeComponent_spatialConvectionField_eq_productRule_of_smooth proves the coordinate product-rule expansion for derivatives of (u.grad)u. residualCurlCommutationExpansionClosedOn packages the remaining commutation/expansion identities, residualCurlCommutationExpansionClosedOn_of_smooth_convection reduces that package to the incompressible curl-convection identity, residualCurlExpansionClosedOn_of_smooth_commutationExpansion closes the expansion defect on a slab from the package, and BKMResidualCurlDifferentialIdentitiesClosed_of_commutationExpansion reduces the global decomposed target to BKMResidualCurlCommutationExpansionClosed. Validation lab ns-bkm-residual-curl-defect-decomposition-lab-20260629.json passed 5/5 Taylor-Green and random solenoidal checks. PLN STV <s=.88,c=.88>, ITV [.7744,.8944], PROGRESS 79%."
-  blocker := "The residual-curl linearity, curl/time commutation, curl/Laplacian commutation, and convection product-rule calculus are checked from smoothSpaceTimeVelocity. The remaining vector-calculus work for BKMResidualCurlCommutationExpansionClosed is the finite-dimensional Jacobian algebra and divergence-free specialization behind the incompressible curl-convection identity."
+  evidence := "residualCurlLinearityDefect, vorticityTimeCommutationDefect, vorticityLaplacianCommutationDefect, and vorticityConvectionExpansionDefect name the exact pointwise identities needed to expand residual curl into the standard vorticity equation. residualCurlLinearityDefect_eq_zero_of_differentiableAt proves the residual-field curl-linearity defect vanishes from spatial differentiability of the Laplacian, time-derivative, and convection fields. spatialLaplacianField_differentiableAt_of_smooth, timeVelocityDerivativeField_differentiableAt_of_smooth, and spatialConvectionField_differentiableAt_of_smooth derive all three differentiability pieces from smoothSpaceTimeVelocity, and residualCurlLinearityClosedOn_of_smooth closes slabwise curl-linearity from smoothness alone. smoothSpaceTimeVelocity_isSymmSndFDerivAt and smoothSpaceTimeVelocity_fderiv_fderiv_swap provide the checked second-derivative symmetry bridge for mixed partials. spatialDerivativeComponent_time_derivative_eq_timeVelocityDerivativeField proves scalar spatial/time derivative commutation, timeVorticityDerivative_eq_spatialVorticity_timeVelocityDerivativeField lifts it to the concrete curl, and vorticityTimeCommutationClosedOn_of_smooth closes curl/time commutation on every slab from smoothSpaceTimeVelocity. fderiv_laplacian_apply_eq_laplacian_fderiv_apply_of_contDiff proves smooth directional derivatives commute with the spatial Laplacian, spatialDerivativeComponent_spatialLaplacianField_eq_laplacian_spatialDerivativeComponent specializes it to velocity components, spatialVorticity_spatialLaplacianField_eq_vorticityDiffusionTerm_of_smooth lifts it to concrete curl, and vorticityLaplacianCommutationClosedOn_of_smooth closes curl/Laplacian commutation on every slab from smoothSpaceTimeVelocity. spatialDerivativeComponent_spatialConvectionField_eq_productRule_of_smooth proves the coordinate product-rule expansion for derivatives of (u.grad)u. spatialVorticity_spatialConvectionField_eq_transport_sub_stretching_add_divergence proves curl((u.grad)u) = (u.grad)omega - (omega.grad)u + (div u)omega, vorticityConvectionExpansionDefect_eq_divergence_smul_vorticity_of_smooth identifies the remaining defect with (div u)omega, and vorticityConvectionExpansionClosedOn_of_smooth_divergence closes it on incompressible slabs. BKMResidualCurlCommutationExpansionClosed_proved, BKMResidualCurlDifferentialIdentitiesClosed_proved, and BKMResidualCurlExpansionDefectVanishes_proved close the global residual-curl vector-calculus target. Validation lab ns-bkm-residual-curl-defect-decomposition-lab-20260629.json passed 5/5 Taylor-Green and random solenoidal checks. PLN STV <s=.91,c=.88>, ITV [.8008,.9064], PROGRESS 90%."
+  blocker := "The residual-curl differential identities and incompressible curl-convection expansion are checked. Remaining BKM work is analytic: time-pairing derivative/integrability, finite-energy decay or approximation for the Schwartz-slice identities, the affine log-Sobolev/Biot-Savart gradient bound, and high-norm continuation/Gronwall closure."
 
 /-- Once the standard vorticity equation is available, the BKM growth term is
 checked and controlled by the stretching estimate. -/
@@ -226,16 +226,16 @@ def navierBKMAnalyticReductionNode : NavierProofNode where
   id := "navier.bkm.single-analytic-lemma"
   status := .checked
   truthValue := ⟨86, 88⟩
-  evidence := "BKMVorticityStretchingEstimateClosed_proved closes the stretching subdependency, finite-time witnesses now supply vorticityResidualCurlEquationOn, BKMResidualCurlExpansionAlgebraClosed_proved closes the algebra from residual-curl zero plus vanishing expansion defect to concreteVorticityEquationOn, BKMStandardVorticityGrowthEstimateClosed_proved closes the standard-equation growth estimate, BKMVorticityPointwiseEnstrophyDerivativeClosed_proved closes the pointwise derivative d/dt (1/2 |omega|^2) = omega dot partial_t omega, BKMVorticityRawBalanceFromStandardEquationClosed_proved closes the standard-equation-to-raw-enstrophy algebra, BKMVorticityTransportCancellationAlgebraClosed_proved closes the pointwise algebra behind transport cancellation, BKMVorticityTransportCancellationSchwartzClosed_proved closes transport cancellation for incompressible Schwartz velocity/vorticity slices, BKMVorticityDiffusionIntegrationByPartsSchwartzClosed_proved closes the Schwartz-vorticity-slice diffusion IBP subcase, BKMVorticityFiniteTimeWitnessSchwartzSliceAprioriClosed_proved closes the raw-balance/transport/Schwartz-slice witness a-priori estimate, BKMVorticityFiniteTimeWitnessVelocityVorticitySchwartzAprioriClosed_proved closes the raw-balance/Schwartz-velocity/Schwartz-vorticity witness a-priori estimate without a separate transport-cancellation premise, BKMVorticityEnstrophyBalanceAssemblyClosed_proved closes the raw-balance/cancellation/IBP assembly, BKMVorticityEnstrophyAprioriEstimateClosed_proved closes the enstrophy derivative control from the balance identity, BKMVorticityEnstrophyGradientGrowthClosed_proved closes the conditional dE/dt <= ||grad u||_inf E growth estimate, BKMVorticityEnstrophyLogSobolevGrowthClosed_proved closes the supplied-log-Sobolev-control dE/dt <= C * (1 + Omega log(exp(1) + H)) * E estimate, BKMVorticityEnstrophyAffineLogGrowthClosed_proved closes the conventional affine-log dE/dt <= (C0 + C1 * Omega log(exp(1) + H)) * E estimate, BKMVorticityFiniteTimeWitnessAffineLogGrowthClosed_proved closes the witness-level standard-equation/time-pairing/Schwartz-slice affine-log enstrophy growth estimate, BKMLogSobolevAffineReductionClosed_proved closes the affine-log normalization, BKMLogSobolevGrowthEstimateClosed_proved closes the supplied-log-Sobolev-control growth interface, and BKMContinuation_reduced_to_single_analytic_lemma proves that the repaired nonnegative-horizon BKM target follows from the single named hypothesis BKMAnalyticContinuationLemma. PLN STV <s=.94,c=.89>, ITV [.8366,.9377], PROGRESS 77%."
-  blocker := "BKMAnalyticContinuationLemma is the remaining precise analytic lemma: for positive viscosity smooth divergence-free finite-energy data, every finite-time witness on a nonnegative slab with residual-curl vorticity equation and integrable vorticity envelope must extend to ExplicitConcreteNavierStokesGlobalOutput. Its proof must prove BKMResidualCurlExpansionDefectVanishes, justify the time-pairing derivative/integrability plus instantiate or extend the Schwartz-slice transport/diffusion identities on finite-energy witnesses, prove the affine log-Sobolev/Biot-Savart pointwise inequality, then supply high-norm continuation/Gronwall closure."
+  evidence := "BKMVorticityStretchingEstimateClosed_proved closes the stretching subdependency, finite-time witnesses now supply vorticityResidualCurlEquationOn, BKMResidualCurlExpansionAlgebraClosed_proved closes the algebra from residual-curl zero plus vanishing expansion defect to concreteVorticityEquationOn, BKMResidualCurlExpansionDefectVanishes_proved closes that vanishing defect for smooth incompressible slabs, BKMStandardVorticityGrowthEstimateClosed_proved closes the standard-equation growth estimate, BKMVorticityPointwiseEnstrophyDerivativeClosed_proved closes the pointwise derivative d/dt (1/2 |omega|^2) = omega dot partial_t omega, BKMVorticityRawBalanceFromStandardEquationClosed_proved closes the standard-equation-to-raw-enstrophy algebra, BKMVorticityTransportCancellationAlgebraClosed_proved closes the pointwise algebra behind transport cancellation, BKMVorticityTransportCancellationSchwartzClosed_proved closes transport cancellation for incompressible Schwartz velocity/vorticity slices, BKMVorticityDiffusionIntegrationByPartsSchwartzClosed_proved closes the Schwartz-vorticity-slice diffusion IBP subcase, BKMVorticityFiniteTimeWitnessSchwartzSliceAprioriClosed_proved closes the raw-balance/transport/Schwartz-slice witness a-priori estimate, BKMVorticityFiniteTimeWitnessVelocityVorticitySchwartzAprioriClosed_proved closes the raw-balance/Schwartz-velocity/Schwartz-vorticity witness a-priori estimate without a separate transport-cancellation premise, BKMVorticityEnstrophyBalanceAssemblyClosed_proved closes the raw-balance/cancellation/IBP assembly, BKMVorticityEnstrophyAprioriEstimateClosed_proved closes the enstrophy derivative control from the balance identity, BKMVorticityEnstrophyGradientGrowthClosed_proved closes the conditional dE/dt <= ||grad u||_inf E growth estimate, BKMVorticityEnstrophyLogSobolevGrowthClosed_proved closes the supplied-log-Sobolev-control dE/dt <= C * (1 + Omega log(exp(1) + H)) * E estimate, BKMVorticityEnstrophyAffineLogGrowthClosed_proved closes the conventional affine-log dE/dt <= (C0 + C1 * Omega log(exp(1) + H)) * E estimate, BKMVorticityFiniteTimeWitnessAffineLogGrowthClosed_proved closes the witness-level standard-equation/time-pairing/Schwartz-slice affine-log enstrophy growth estimate, BKMLogSobolevAffineReductionClosed_proved closes the affine-log normalization, BKMLogSobolevGrowthEstimateClosed_proved closes the supplied-log-Sobolev-control growth interface, and BKMContinuation_reduced_to_single_analytic_lemma proves that the repaired nonnegative-horizon BKM target follows from the single named hypothesis BKMAnalyticContinuationLemma. PLN STV <s=.95,c=.89>, ITV [.8455,.9466], PROGRESS 80%."
+  blocker := "BKMAnalyticContinuationLemma is the remaining precise analytic lemma: for positive viscosity smooth divergence-free finite-energy data, every finite-time witness on a nonnegative slab with residual-curl vorticity equation and integrable vorticity envelope must extend to ExplicitConcreteNavierStokesGlobalOutput. Its proof must justify the time-pairing derivative/integrability plus instantiate or extend the Schwartz-slice transport/diffusion identities on finite-energy witnesses, prove the affine log-Sobolev/Biot-Savart pointwise inequality, then supply high-norm continuation/Gronwall closure."
 
 /-- The one analytic BKM lemma is now split into explicit component targets. -/
 def navierBKMAnalyticComponentsNode : NavierProofNode where
   id := "navier.bkm.analytic-components"
   status := .checked
   truthValue := ⟨87, 88⟩
-  evidence := "BKMLogSobolevAffinePointwiseFromEnvelope names the sharper conventional affine log-Sobolev/Biot-Savart component, and BKMLogSobolevGradientControlFromEnvelope_of_affinePointwiseFromEnvelope proves it implies the older one-constant BKMLogSobolevGradientControlFromEnvelope component. BKMHighNormContinuationFromLogControl names the high-norm/Gronwall component still downstream of BKMResidualCurlExpansionDefectVanishes, while BKMVorticityPointwiseEnstrophyDerivativeClosed_proved, BKMVorticityRawBalanceFromStandardEquationClosed_proved, BKMVorticityTransportCancellationAlgebraClosed_proved, BKMVorticityTransportCancellationSchwartzClosed_proved, BKMVorticityDiffusionIntegrationByPartsSchwartzClosed_proved, BKMVorticityFiniteTimeWitnessSchwartzSliceAprioriClosed_proved, BKMVorticityFiniteTimeWitnessVelocityVorticitySchwartzAprioriClosed_proved, BKMVorticityEnstrophyBalanceAssemblyClosed_proved, BKMVorticityEnstrophyAprioriEstimateClosed_proved, BKMVorticityEnstrophyGradientGrowthClosed_proved, BKMVorticityEnstrophyLogSobolevGrowthClosed_proved, BKMVorticityEnstrophyAffineLogGrowthClosed_proved, BKMVorticityFiniteTimeWitnessAffineLogGrowthClosed_proved, and BKMLogSobolevAffineReductionClosed_proved supply the checked pointwise density derivative, standard-equation pairing algebra, transport-cancellation algebra, Schwartz-slice transport cancellation, Schwartz-slice diffusion IBP, witness-level Schwartz-slice a-priori estimates, enstrophy-balance assembly, stretching-power derivative control, conditional gradient-bound enstrophy growth estimate, logarithmic-envelope enstrophy growth estimate, conventional affine-log enstrophy growth estimate, witness-level affine-log enstrophy growth estimate, and affine-log normalization. BKMAnalyticContinuationLemma_of_components and BKMAffineLogSobolevAnalyticComponentsClosed.implies_finiteEnergyBKMContinuationTargetOnNonnegHorizons prove the repaired nonnegative-horizon BKM target follows from either component bundle. PLN STV <s=.94,c=.89>, ITV [.8366,.9466], PROGRESS 78%."
-  blocker := "The component split is a checked assembly layer, not the analytic proof itself. The remaining work is to prove residual-curl expansion defect vanishing, justify the vorticity time-pairing derivative/integrability plus instantiate or extend the Schwartz-slice transport/diffusion identities on finite-energy witnesses, derive the affine log-Sobolev/Biot-Savart pointwise estimate from the BKM vorticity data, and close the high-norm continuation/Gronwall step without assuming the global output."
+  evidence := "BKMResidualCurlExpansionDefectVanishes_proved closes the residual-curl expansion defect component for smooth incompressible slabs. BKMLogSobolevAffinePointwiseFromEnvelope names the sharper conventional affine log-Sobolev/Biot-Savart component, and BKMLogSobolevGradientControlFromEnvelope_of_affinePointwiseFromEnvelope proves it implies the older one-constant BKMLogSobolevGradientControlFromEnvelope component. BKMHighNormContinuationFromLogControl names the high-norm/Gronwall component still downstream, while BKMVorticityPointwiseEnstrophyDerivativeClosed_proved, BKMVorticityRawBalanceFromStandardEquationClosed_proved, BKMVorticityTransportCancellationAlgebraClosed_proved, BKMVorticityTransportCancellationSchwartzClosed_proved, BKMVorticityDiffusionIntegrationByPartsSchwartzClosed_proved, BKMVorticityFiniteTimeWitnessSchwartzSliceAprioriClosed_proved, BKMVorticityFiniteTimeWitnessVelocityVorticitySchwartzAprioriClosed_proved, BKMVorticityEnstrophyBalanceAssemblyClosed_proved, BKMVorticityEnstrophyAprioriEstimateClosed_proved, BKMVorticityEnstrophyGradientGrowthClosed_proved, BKMVorticityEnstrophyLogSobolevGrowthClosed_proved, BKMVorticityEnstrophyAffineLogGrowthClosed_proved, BKMVorticityFiniteTimeWitnessAffineLogGrowthClosed_proved, and BKMLogSobolevAffineReductionClosed_proved supply the checked pointwise density derivative, standard-equation pairing algebra, transport-cancellation algebra, Schwartz-slice transport cancellation, Schwartz-slice diffusion IBP, witness-level Schwartz-slice a-priori estimates, enstrophy-balance assembly, stretching-power derivative control, conditional gradient-bound enstrophy growth estimate, logarithmic-envelope enstrophy growth estimate, conventional affine-log enstrophy growth estimate, witness-level affine-log enstrophy growth estimate, and affine-log normalization. BKMAnalyticContinuationLemma_of_components and BKMAffineLogSobolevAnalyticComponentsClosed.implies_finiteEnergyBKMContinuationTargetOnNonnegHorizons prove the repaired nonnegative-horizon BKM target follows from either component bundle. PLN STV <s=.95,c=.89>, ITV [.8455,.9466], PROGRESS 81%."
+  blocker := "The component split is a checked assembly layer, not the analytic proof itself. The remaining work is to justify the vorticity time-pairing derivative/integrability plus instantiate or extend the Schwartz-slice transport/diffusion identities on finite-energy witnesses, derive the affine log-Sobolev/Biot-Savart pointwise estimate from the BKM vorticity data, and close the high-norm continuation/Gronwall step without assuming the global output."
 
 /-- The nonzero slice-Schwartz kernel is checked, but it is not yet an
 unconditional positive canary. -/
@@ -1035,6 +1035,21 @@ theorem currentNavierBKMResidualCurlDifferentialIdentities_node
               ((fderiv ℝ (fun y : NSSpace => spatialFDeriv u t y) x
                 (EuclideanSpace.single coord (1 : ℝ))) (u t x)) comp) ∧
       (smoothSpaceTimeVelocity u →
+        ∀ t x,
+          spatialVorticity (spatialConvectionField u) t x =
+            vorticityTransportTerm u t x - vorticityStretchingTerm u t x +
+              spatialDivergence u t x • spatialVorticity u t x) ∧
+      (smoothSpaceTimeVelocity u →
+        ∀ t x,
+          vorticityConvectionExpansionDefect u t x =
+            spatialDivergence u t x • spatialVorticity u t x) ∧
+      (smoothSpaceTimeVelocity u →
+        (∀ t x, 0 ≤ t → t ≤ T → spatialDivergence u t x = 0) →
+          vorticityConvectionExpansionClosedOn u T) ∧
+      (smoothSpaceTimeVelocity u →
+        (∀ t x, 0 ≤ t → t ≤ T → spatialDivergence u t x = 0) →
+          residualCurlCommutationExpansionClosedOn u T) ∧
+      (smoothSpaceTimeVelocity u →
         vorticityTimeCommutationClosedOn u T) ∧
       (smoothSpaceTimeVelocity u →
         ∀ t x,
@@ -1045,6 +1060,9 @@ theorem currentNavierBKMResidualCurlDifferentialIdentities_node
       (smoothSpaceTimeVelocity u →
         vorticityConvectionExpansionClosedOn u T →
           residualCurlCommutationExpansionClosedOn u T) ∧
+      BKMResidualCurlCommutationExpansionClosed ∧
+      BKMResidualCurlDifferentialIdentitiesClosed ∧
+      BKMResidualCurlExpansionDefectVanishes ∧
       (BKMResidualCurlDifferentialIdentitiesClosed →
         BKMResidualCurlExpansionDefectVanishes) ∧
       (BKMResidualCurlDifferentialIdentitiesClosed →
@@ -1074,6 +1092,16 @@ theorem currentNavierBKMResidualCurlDifferentialIdentities_node
       fun hu t x coord comp =>
         spatialDerivativeComponent_spatialConvectionField_eq_productRule_of_smooth
           hu t x coord comp,
+      fun hu t x =>
+        spatialVorticity_spatialConvectionField_eq_transport_sub_stretching_add_divergence
+          hu t x,
+      fun hu t x =>
+        vorticityConvectionExpansionDefect_eq_divergence_smul_vorticity_of_smooth
+          hu t x,
+      fun hu hdiv =>
+        vorticityConvectionExpansionClosedOn_of_smooth_divergence hu hdiv,
+      fun hu hdiv =>
+        residualCurlCommutationExpansionClosedOn_of_smooth_divergence hu hdiv,
       vorticityTimeCommutationClosedOn_of_smooth,
       fun hu t x =>
         spatialVorticity_spatialLaplacianField_eq_vorticityDiffusionTerm_of_smooth
@@ -1081,6 +1109,9 @@ theorem currentNavierBKMResidualCurlDifferentialIdentities_node
       vorticityLaplacianCommutationClosedOn_of_smooth,
       fun hu hConv =>
         residualCurlCommutationExpansionClosedOn_of_smooth_convection hu hConv,
+      BKMResidualCurlCommutationExpansionClosed_proved,
+      BKMResidualCurlDifferentialIdentitiesClosed_proved,
+      BKMResidualCurlExpansionDefectVanishes_proved,
       BKMResidualCurlDifferentialIdentitiesClosed.implies_residualCurlExpansionDefectVanishes,
       BKMAnalyticComponentsClosed_of_residualCurlDifferentialIdentities,
       navierBKMResidualCurlDifferentialIdentitiesNode_checked⟩
@@ -1155,6 +1186,7 @@ theorem currentNavierBKMLogSobolevControl_node
 theorem currentNavierBKMAnalyticReduction_node :
     BKMVorticityStretchingEstimateClosed ∧
       BKMResidualCurlExpansionAlgebraClosed ∧
+      BKMResidualCurlExpansionDefectVanishes ∧
       BKMStandardVorticityGrowthEstimateClosed ∧
       BKMVorticityPointwiseEnstrophyDerivativeClosed ∧
       BKMVorticityRawBalanceFromStandardEquationClosed ∧
@@ -1177,6 +1209,7 @@ theorem currentNavierBKMAnalyticReduction_node :
   exact
     ⟨BKMVorticityStretchingEstimateClosed_proved,
       BKMResidualCurlExpansionAlgebraClosed_proved,
+      BKMResidualCurlExpansionDefectVanishes_proved,
       BKMStandardVorticityGrowthEstimateClosed_proved,
       BKMVorticityPointwiseEnstrophyDerivativeClosed_proved,
       BKMVorticityRawBalanceFromStandardEquationClosed_proved,
@@ -1199,6 +1232,7 @@ theorem currentNavierBKMAnalyticReduction_node :
 theorem currentNavierBKMAnalyticComponents_node :
     BKMVorticityStretchingEstimateClosed ∧
       BKMResidualCurlExpansionAlgebraClosed ∧
+      BKMResidualCurlExpansionDefectVanishes ∧
       BKMStandardVorticityGrowthEstimateClosed ∧
       BKMVorticityPointwiseEnstrophyDerivativeClosed ∧
       BKMVorticityRawBalanceFromStandardEquationClosed ∧
@@ -1224,6 +1258,7 @@ theorem currentNavierBKMAnalyticComponents_node :
   exact
     ⟨BKMVorticityStretchingEstimateClosed_proved,
       BKMResidualCurlExpansionAlgebraClosed_proved,
+      BKMResidualCurlExpansionDefectVanishes_proved,
       BKMStandardVorticityGrowthEstimateClosed_proved,
       BKMVorticityPointwiseEnstrophyDerivativeClosed_proved,
       BKMVorticityRawBalanceFromStandardEquationClosed_proved,

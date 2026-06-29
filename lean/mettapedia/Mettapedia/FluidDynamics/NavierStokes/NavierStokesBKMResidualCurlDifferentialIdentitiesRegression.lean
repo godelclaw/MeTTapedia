@@ -177,6 +177,60 @@ theorem spatialDerivativeComponent_spatialConvectionField_eq_productRule_of_smoo
   exact spatialDerivativeComponent_spatialConvectionField_eq_productRule_of_smooth
     hu t x coord comp
 
+theorem spatialFDeriv_fderiv_apply_swap_of_smooth_regression
+    {u : NSVelocityField} (hu : smoothSpaceTimeVelocity u)
+    (t : NSTime) (x v w : NSSpace) :
+    ((fderiv ℝ (fun y : NSSpace => spatialFDeriv u t y) x) v) w =
+      ((fderiv ℝ (fun y : NSSpace => spatialFDeriv u t y) x) w) v := by
+  exact spatialFDeriv_fderiv_apply_swap_of_smooth hu t x v w
+
+theorem fderiv_spatialDerivativeComponent_eq_fderiv_spatialFDeriv_apply_of_smooth_regression
+    {u : NSVelocityField} (hu : smoothSpaceTimeVelocity u)
+    (t : NSTime) (x v : NSSpace) (coord comp : Fin 3) :
+    fderiv ℝ (fun y : NSSpace => spatialDerivativeComponent u t y coord comp) x v =
+      ((fderiv ℝ (fun y : NSSpace => spatialFDeriv u t y) x v)
+        (EuclideanSpace.single coord (1 : ℝ))) comp := by
+  exact fderiv_spatialDerivativeComponent_eq_fderiv_spatialFDeriv_apply_of_smooth
+    hu t x v coord comp
+
+theorem spatialDerivativeComponent_differentiableAt_spatial_of_smooth_regression
+    {u : NSVelocityField} (hu : smoothSpaceTimeVelocity u)
+    (t : NSTime) (x : NSSpace) (coord comp : Fin 3) :
+    DifferentiableAt ℝ (fun y : NSSpace =>
+      spatialDerivativeComponent u t y coord comp) x := by
+  exact spatialDerivativeComponent_differentiableAt_spatial_of_smooth
+    hu t x coord comp
+
+theorem vorticityTransportTerm_component_eq_fderiv_coordinate_regression
+    {u : NSVelocityField} (hu : smoothSpaceTimeVelocity u)
+    (t : NSTime) (x : NSSpace) (i : Fin 3) :
+    (vorticityTransportTerm u t x) i =
+      fderiv ℝ (fun y : NSSpace => (spatialVorticity u t y) i) x (u t x) := by
+  exact vorticityTransportTerm_component_eq_fderiv_coordinate hu t x i
+
+theorem spatialVorticity_spatialConvectionField_eq_transport_sub_stretching_add_divergence_regression
+    {u : NSVelocityField} (hu : smoothSpaceTimeVelocity u)
+    (t : NSTime) (x : NSSpace) :
+    spatialVorticity (spatialConvectionField u) t x =
+      vorticityTransportTerm u t x - vorticityStretchingTerm u t x +
+        spatialDivergence u t x • spatialVorticity u t x := by
+  exact spatialVorticity_spatialConvectionField_eq_transport_sub_stretching_add_divergence
+    hu t x
+
+theorem vorticityConvectionExpansionDefect_eq_divergence_smul_vorticity_of_smooth_regression
+    {u : NSVelocityField} (hu : smoothSpaceTimeVelocity u)
+    (t : NSTime) (x : NSSpace) :
+    vorticityConvectionExpansionDefect u t x =
+      spatialDivergence u t x • spatialVorticity u t x := by
+  exact vorticityConvectionExpansionDefect_eq_divergence_smul_vorticity_of_smooth
+    hu t x
+
+theorem vorticityConvectionExpansionDefect_eq_zero_of_smooth_divergence_regression
+    {u : NSVelocityField} (hu : smoothSpaceTimeVelocity u)
+    {t : NSTime} {x : NSSpace} (hdiv : spatialDivergence u t x = 0) :
+    vorticityConvectionExpansionDefect u t x = 0 := by
+  exact vorticityConvectionExpansionDefect_eq_zero_of_smooth_divergence hu hdiv
+
 theorem fderiv_laplacian_apply_eq_laplacian_fderiv_apply_of_contDiff_regression
     {F : Type*} [NormedAddCommGroup F] [NormedSpace ℝ F]
     {f : NSSpace → F} (hf : ContDiff ℝ ∞ f)
@@ -299,6 +353,20 @@ theorem residualCurlCommutationExpansionClosedOn_of_smooth_convection_regression
     residualCurlCommutationExpansionClosedOn u T := by
   exact residualCurlCommutationExpansionClosedOn_of_smooth_convection hu hConv
 
+theorem vorticityConvectionExpansionClosedOn_of_smooth_divergence_regression
+    {T : ℝ} {u : NSVelocityField}
+    (hu : smoothSpaceTimeVelocity u)
+    (hdiv : ∀ t x, 0 ≤ t → t ≤ T → spatialDivergence u t x = 0) :
+    vorticityConvectionExpansionClosedOn u T := by
+  exact vorticityConvectionExpansionClosedOn_of_smooth_divergence hu hdiv
+
+theorem residualCurlCommutationExpansionClosedOn_of_smooth_divergence_regression
+    {T : ℝ} {u : NSVelocityField}
+    (hu : smoothSpaceTimeVelocity u)
+    (hdiv : ∀ t x, 0 ≤ t → t ≤ T → spatialDivergence u t x = 0) :
+    residualCurlCommutationExpansionClosedOn u T := by
+  exact residualCurlCommutationExpansionClosedOn_of_smooth_divergence hu hdiv
+
 theorem residualCurlExpansionClosedOn_of_smooth_commutationExpansion_regression
     {ν T : ℝ} {u : NSVelocityField}
     (hu : smoothSpaceTimeVelocity u)
@@ -330,6 +398,18 @@ theorem BKMResidualCurlDifferentialIdentitiesClosed_of_commutationExpansion_regr
     (hComm : BKMResidualCurlCommutationExpansionClosed) :
     BKMResidualCurlDifferentialIdentitiesClosed := by
   exact BKMResidualCurlDifferentialIdentitiesClosed_of_commutationExpansion hComm
+
+theorem BKMResidualCurlCommutationExpansionClosed_proved_regression :
+    BKMResidualCurlCommutationExpansionClosed := by
+  exact BKMResidualCurlCommutationExpansionClosed_proved
+
+theorem BKMResidualCurlDifferentialIdentitiesClosed_proved_regression :
+    BKMResidualCurlDifferentialIdentitiesClosed := by
+  exact BKMResidualCurlDifferentialIdentitiesClosed_proved
+
+theorem BKMResidualCurlExpansionDefectVanishes_proved_regression :
+    BKMResidualCurlExpansionDefectVanishes := by
+  exact BKMResidualCurlExpansionDefectVanishes_proved
 
 theorem BKMAnalyticComponentsClosed_of_residualCurlDifferentialIdentities_regression
     (hIds : BKMResidualCurlDifferentialIdentitiesClosed)
