@@ -763,6 +763,19 @@ longer acceptable progress.
    prove exact CAP5 shell data empties that initial residual scheduler/emitted-
    rank certificate, or to accept the named first residual obstruction as the
    unified finite F2 evader.
+   The focus-shell threshold bridge
+   `sharedInteriorPair_CAP5_initialResidualRemainingControlEdges_eq_empty_iff_emittedInterior_card_ge_two`
+   and
+   `wheelWithInnerTriangle_CAP5_initialResidualRemainingControlEdges_eq_empty_iff_emittedInterior_card_ge_three`
+   resolves that question for the two current lab focus shells: the shared
+   interior-pair shell has an empty initial residual worklist exactly when both
+   shared controls are emitted, and the inner-triangle wheel shell has an empty
+   initial residual worklist exactly when all three spoke controls are emitted.
+   The paired synthesis and contrapositive corollaries close the
+   boundary-trimmed unique-certificate route from those empty worklists, while
+   failed synthesis forces a genuinely nonempty initial residual worklist.  The
+   remaining question is now the uniform exact CAP5 shell-data lift of these
+   finite focus thresholds, not another isolated repair-packet refutation.
    The direct no-evader route corollaries
    `ofDecidableChecks_missingCheckerEvidence_or_theorem49Synthesis_and_boundaryZeroControl_of_no_theorem49BoundaryTargetEvader_and_no_emittedFinsetKernelMapEvader_with_theorem49BoundaryVertexKirchhoffFailure`
    and
