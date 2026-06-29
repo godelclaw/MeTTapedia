@@ -26,12 +26,51 @@ def bkmLogSobolevGradientEnvelope
     (C : ℝ) (Ω H : NSTime → ℝ) (t : NSTime) : ℝ :=
   C * (1 + Ω t * Real.log (Real.exp 1 + H t))
 
+/-- The logarithmic envelope is nonnegative under the expected sign
+hypotheses on its constant, vorticity envelope, and high-norm envelope. -/
+theorem bkmLogSobolevGradientEnvelope_nonneg_of_nonneg
+    {C : ℝ} {Ω H : NSTime → ℝ} {t : NSTime}
+    (hC : 0 ≤ C) (hΩ : 0 ≤ Ω t) (hH : 0 ≤ H t) :
+    0 ≤ bkmLogSobolevGradientEnvelope C Ω H t := by
+  have hexp_one : (1 : ℝ) ≤ Real.exp (1 : ℝ) := by
+    rw [← Real.exp_zero]
+    exact Real.exp_le_exp.mpr (by norm_num)
+  have harg : (1 : ℝ) ≤ Real.exp (1 : ℝ) + H t := by
+    linarith
+  have hlog : 0 ≤ Real.log (Real.exp (1 : ℝ) + H t) :=
+    Real.log_nonneg harg
+  have hprod : 0 ≤ Ω t * Real.log (Real.exp (1 : ℝ) + H t) :=
+    mul_nonneg hΩ hlog
+  exact mul_nonneg hC (by linarith)
+
+/-- The actual pointwise log-Sobolev/Biot-Savart inequality on a slab.  The
+separate control predicate below adds only envelope nonnegativity. -/
+def BKMLogSobolevPointwiseInequalityOn
+    (u : NSVelocityField) (T C : ℝ) (Ω H : NSTime → ℝ) : Prop :=
+  ∀ t x, 0 ≤ t → t ≤ T →
+    ‖spatialFDeriv u t x‖ ≤ bkmLogSobolevGradientEnvelope C Ω H t
+
 /-- A supplied log-Sobolev/Biot-Savart gradient-control hypothesis on a slab. -/
 def BKMLogSobolevGradientControlOn
     (u : NSVelocityField) (T C : ℝ) (Ω H : NSTime → ℝ) : Prop :=
   (∀ t, 0 ≤ t → t ≤ T → 0 ≤ bkmLogSobolevGradientEnvelope C Ω H t) ∧
     ∀ t x, 0 ≤ t → t ≤ T →
       ‖spatialFDeriv u t x‖ ≤ bkmLogSobolevGradientEnvelope C Ω H t
+
+/-- A pointwise log-Sobolev inequality plus nonnegative envelopes gives the
+gradient-control predicate used downstream. -/
+theorem BKMLogSobolevGradientControlOn.of_pointwiseInequality
+    {u : NSVelocityField} {T C : ℝ} {Ω H : NSTime → ℝ}
+    (hC : 0 ≤ C)
+    (hΩ : ∀ t, 0 ≤ t → t ≤ T → 0 ≤ Ω t)
+    (hH : ∀ t, 0 ≤ t → t ≤ T → 0 ≤ H t)
+    (hIneq : BKMLogSobolevPointwiseInequalityOn u T C Ω H) :
+    BKMLogSobolevGradientControlOn u T C Ω H := by
+  exact
+    ⟨fun t ht0 htT =>
+        bkmLogSobolevGradientEnvelope_nonneg_of_nonneg hC
+          (hΩ t ht0 htT) (hH t ht0 htT),
+      hIneq⟩
 
 /-- A supplied log-Sobolev gradient control is exactly the gradient envelope
 needed by the checked stretching estimates. -/

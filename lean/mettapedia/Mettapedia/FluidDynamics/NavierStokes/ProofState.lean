@@ -209,8 +209,8 @@ def navierBKMVorticityGrowthNode : NavierProofNode where
   id := "navier.bkm.standard-vorticity-growth"
   status := .checked
   truthValue := ⟨86, 88⟩
-  evidence := "vorticityMaterialDiffusionRemainder names partial_t omega + (u.grad)omega - nu Delta omega. vorticityMaterialDiffusionRemainder_eq_vorticityStretchingTerm proves that concreteVorticityEquationOn identifies this remainder with (omega.grad)u, and uniform_vorticityMaterialDiffusionRemainder_boundUpTo plus uniform_vorticityMaterialDiffusionPower_boundUpTo lift the checked stretching bounds to the material-minus-diffusion growth and enstrophy-production terms. PLN STV <s=.86,c=.88>, ITV [.7568,.8608], PROGRESS 49%."
-  blocker := "This closes the growth estimate downstream of concreteVorticityEquationOn. The remaining analytic seam is deriving concreteVorticityEquationOn from residual curl and smooth incompressible finite-time witnesses, then completing log-Sobolev/high-norm continuation."
+  evidence := "vorticityMaterialDiffusionRemainder names partial_t omega + (u.grad)omega - nu Delta omega. vorticityMaterialDiffusionRemainder_eq_vorticityStretchingTerm proves that concreteVorticityEquationOn identifies this remainder with (omega.grad)u, and uniform_vorticityMaterialDiffusionRemainder_boundUpTo plus uniform_vorticityMaterialDiffusionPower_boundUpTo lift the checked stretching bounds to the material-minus-diffusion growth and enstrophy-production terms. vorticityEnstrophyAt and normalizedVorticityEnstrophyAt now define the BKM quantity 1/2 int |omega|^2, vorticityEnstrophyBalanceDerivative records stretching integral minus viscous dissipation, vorticityDiffusionDissipationAt_nonneg proves the dissipation is nonnegative, and BKMVorticityEnstrophyAprioriEstimateClosed_proved packages the derivative control by the stretching-power integral. Validation lab ns-bkm-enstrophy-log-sobolev-lab-20260629.json checked transport cancellation, viscous integration by parts, and enstrophy finite differences on periodic solenoidal samples. PLN STV <s=.87,c=.88>, ITV [.7656,.8656], PROGRESS 56%."
+  blocker := "This closes the a-priori enstrophy inequality once vorticityEnstrophyBalanceAt is supplied. The remaining analytic work is proving that balance from the standard vorticity equation by transport cancellation and viscous integration by parts on the finite-energy witness surface, plus the genuine Biot-Savart/log-Sobolev pointwise inequality."
 
 /-- Once log-Sobolev/Biot-Savart gradient control is supplied, the checked BKM
 growth estimates use its logarithmic envelope directly. -/
@@ -218,24 +218,24 @@ def navierBKMLogSobolevControlNode : NavierProofNode where
   id := "navier.bkm.log-sobolev-gradient-control"
   status := .checked
   truthValue := ⟨87, 88⟩
-  evidence := "bkmLogSobolevGradientEnvelope records the downstream envelope shape C * (1 + Omega(t) * log(exp(1) + H(t))). BKMLogSobolevGradientControlOn.to_spatialGradientOperatorEnvelopeOn converts a supplied log-Sobolev/Biot-Savart gradient-control hypothesis into spatialGradientOperatorEnvelopeOn, and BKMLogSobolevGrowthEstimateClosed_proved feeds that envelope into the checked material-vorticity and enstrophy-production bounds. Validation probe ns-bkm-log-sobolev-probe-20260629.json passed Taylor-Green plus four random solenoidal periodic fields. PLN STV <s=.87,c=.88>, ITV [.7656,.8656], PROGRESS 51%."
-  blocker := "This closes the downstream interface, not the analytic log-Sobolev theorem itself. BKMAnalyticContinuationLemma still must prove such gradient control from residual curl, Biot-Savart/log-Sobolev estimates, a high-norm envelope, and the integrable vorticity envelope."
+  evidence := "bkmLogSobolevGradientEnvelope records the downstream envelope shape C * (1 + Omega(t) * log(exp(1) + H(t))). bkmLogSobolevGradientEnvelope_nonneg_of_nonneg proves this envelope is nonnegative from nonnegative C, Omega, and H; BKMLogSobolevPointwiseInequalityOn isolates the actual pointwise Biot-Savart/log-Sobolev inequality; and BKMLogSobolevGradientControlOn.of_pointwiseInequality converts that pointwise estimate into the downstream control predicate. BKMLogSobolevGradientControlOn.to_spatialGradientOperatorEnvelopeOn and BKMLogSobolevGrowthEstimateClosed_proved feed the envelope into the checked material-vorticity and enstrophy-production bounds. Validation probe ns-bkm-enstrophy-log-sobolev-lab-20260629.json sampled the log envelope ratio on Taylor-Green plus random solenoidal periodic fields. PLN STV <s=.87,c=.88>, ITV [.7656,.8656], PROGRESS 54%."
+  blocker := "This closes the downstream interface and sign algebra, not the analytic Biot-Savart/log-Sobolev theorem itself. BKMAnalyticContinuationLemma still must prove BKMLogSobolevPointwiseInequalityOn from the BKM vorticity data and a high-norm envelope."
 
 /-- The BKM route is now reduced to one explicitly named analytic lemma. -/
 def navierBKMAnalyticReductionNode : NavierProofNode where
   id := "navier.bkm.single-analytic-lemma"
   status := .checked
   truthValue := ⟨86, 88⟩
-  evidence := "BKMVorticityStretchingEstimateClosed_proved closes the stretching subdependency, finite-time witnesses now supply vorticityResidualCurlEquationOn, BKMResidualCurlExpansionAlgebraClosed_proved closes the algebra from residual-curl zero plus vanishing expansion defect to concreteVorticityEquationOn, BKMStandardVorticityGrowthEstimateClosed_proved closes the standard-equation growth estimate, BKMLogSobolevGrowthEstimateClosed_proved closes the supplied-log-Sobolev-control growth interface, and BKMContinuation_reduced_to_single_analytic_lemma proves that the repaired nonnegative-horizon BKM target follows from the single named hypothesis BKMAnalyticContinuationLemma. PLN STV <s=.86,c=.88>, ITV [.7568,.8608], PROGRESS 53%."
-  blocker := "BKMAnalyticContinuationLemma is the remaining precise analytic lemma: for positive viscosity smooth divergence-free finite-energy data, every finite-time witness on a nonnegative slab with residual-curl vorticity equation and integrable vorticity envelope must extend to ExplicitConcreteNavierStokesGlobalOutput. Its proof must prove BKMResidualCurlExpansionDefectVanishes, prove the log-Sobolev/Biot-Savart gradient control hypothesis, then supply high-norm/enstrophy differential inequality and continuation/Gronwall closure."
+  evidence := "BKMVorticityStretchingEstimateClosed_proved closes the stretching subdependency, finite-time witnesses now supply vorticityResidualCurlEquationOn, BKMResidualCurlExpansionAlgebraClosed_proved closes the algebra from residual-curl zero plus vanishing expansion defect to concreteVorticityEquationOn, BKMStandardVorticityGrowthEstimateClosed_proved closes the standard-equation growth estimate, BKMVorticityEnstrophyAprioriEstimateClosed_proved closes the enstrophy derivative control from the balance identity, BKMLogSobolevGrowthEstimateClosed_proved closes the supplied-log-Sobolev-control growth interface, and BKMContinuation_reduced_to_single_analytic_lemma proves that the repaired nonnegative-horizon BKM target follows from the single named hypothesis BKMAnalyticContinuationLemma. PLN STV <s=.87,c=.88>, ITV [.7656,.8656], PROGRESS 56%."
+  blocker := "BKMAnalyticContinuationLemma is the remaining precise analytic lemma: for positive viscosity smooth divergence-free finite-energy data, every finite-time witness on a nonnegative slab with residual-curl vorticity equation and integrable vorticity envelope must extend to ExplicitConcreteNavierStokesGlobalOutput. Its proof must prove BKMResidualCurlExpansionDefectVanishes, prove vorticityEnstrophyBalanceAt from transport cancellation and viscous integration by parts, prove the log-Sobolev/Biot-Savart pointwise inequality, then supply high-norm continuation/Gronwall closure."
 
 /-- The one analytic BKM lemma is now split into explicit component targets. -/
 def navierBKMAnalyticComponentsNode : NavierProofNode where
   id := "navier.bkm.analytic-components"
   status := .checked
   truthValue := ⟨87, 88⟩
-  evidence := "BKMLogSobolevGradientControlFromEnvelope and BKMHighNormContinuationFromLogControl name the two analytic estimates still downstream of BKMResidualCurlExpansionDefectVanishes. BKMAnalyticContinuationLemma_of_components proves these three components imply BKMAnalyticContinuationLemma, and BKMContinuation_reduced_to_analytic_components proves the repaired nonnegative-horizon BKM target follows from the component bundle. PLN STV <s=.87,c=.88>, ITV [.7656,.8656], PROGRESS 55%."
-  blocker := "The component split is a checked assembly layer, not the analytic proof itself. The remaining work is to prove residual-curl expansion defect vanishing, derive the log-Sobolev/Biot-Savart gradient envelope from the BKM vorticity data, and close the high-norm continuation/Gronwall step without assuming the global output."
+  evidence := "BKMLogSobolevGradientControlFromEnvelope and BKMHighNormContinuationFromLogControl name the two analytic estimates still downstream of BKMResidualCurlExpansionDefectVanishes, while BKMVorticityEnstrophyAprioriEstimateClosed_proved supplies the checked enstrophy derivative control once the balance identity is proved. BKMAnalyticContinuationLemma_of_components proves these components imply BKMAnalyticContinuationLemma, and BKMContinuation_reduced_to_analytic_components proves the repaired nonnegative-horizon BKM target follows from the component bundle. PLN STV <s=.87,c=.88>, ITV [.7656,.8656], PROGRESS 57%."
+  blocker := "The component split is a checked assembly layer, not the analytic proof itself. The remaining work is to prove residual-curl expansion defect vanishing, prove the vorticity enstrophy balance, derive the log-Sobolev/Biot-Savart gradient envelope from the BKM vorticity data, and close the high-norm continuation/Gronwall step without assuming the global output."
 
 /-- The nonzero slice-Schwartz kernel is checked, but it is not yet an
 unconditional positive canary. -/
@@ -1071,10 +1071,12 @@ theorem currentNavierBKMVorticityGrowth_node
       (0 ≤ G * (B * B) ∧
         ∀ t x, 0 ≤ t → t ≤ T →
           |vorticityMaterialDiffusionPower ν u t x| ≤ G * (B * B)) ∧
+      BKMVorticityEnstrophyAprioriEstimateClosed ∧
       navierBKMVorticityGrowthNode.status = .checked := by
   exact
     ⟨uniform_vorticityMaterialDiffusionRemainder_boundUpTo hEq hG hω,
       uniform_vorticityMaterialDiffusionPower_boundUpTo hEq hG hω,
+      BKMVorticityEnstrophyAprioriEstimateClosed_proved,
       navierBKMVorticityGrowthNode_checked⟩
 
 theorem currentNavierBKMLogSobolevControl_node
@@ -1103,6 +1105,7 @@ theorem currentNavierBKMAnalyticReduction_node :
     BKMVorticityStretchingEstimateClosed ∧
       BKMResidualCurlExpansionAlgebraClosed ∧
       BKMStandardVorticityGrowthEstimateClosed ∧
+      BKMVorticityEnstrophyAprioriEstimateClosed ∧
       BKMLogSobolevGrowthEstimateClosed ∧
       (BKMAnalyticContinuationLemma →
         ExplicitFiniteEnergyBKMContinuationTargetOnNonnegHorizons) ∧
@@ -1111,6 +1114,7 @@ theorem currentNavierBKMAnalyticReduction_node :
     ⟨BKMVorticityStretchingEstimateClosed_proved,
       BKMResidualCurlExpansionAlgebraClosed_proved,
       BKMStandardVorticityGrowthEstimateClosed_proved,
+      BKMVorticityEnstrophyAprioriEstimateClosed_proved,
       BKMLogSobolevGrowthEstimateClosed_proved,
       BKMAnalyticContinuationLemma_implies_finiteEnergyBKMContinuationTargetOnNonnegHorizons,
       navierBKMAnalyticReductionNode_checked⟩
@@ -1119,6 +1123,7 @@ theorem currentNavierBKMAnalyticComponents_node :
     BKMVorticityStretchingEstimateClosed ∧
       BKMResidualCurlExpansionAlgebraClosed ∧
       BKMStandardVorticityGrowthEstimateClosed ∧
+      BKMVorticityEnstrophyAprioriEstimateClosed ∧
       BKMLogSobolevGrowthEstimateClosed ∧
       (BKMAnalyticComponentsClosed → BKMAnalyticContinuationLemma) ∧
       (BKMAnalyticComponentsClosed →
@@ -1128,6 +1133,7 @@ theorem currentNavierBKMAnalyticComponents_node :
     ⟨BKMVorticityStretchingEstimateClosed_proved,
       BKMResidualCurlExpansionAlgebraClosed_proved,
       BKMStandardVorticityGrowthEstimateClosed_proved,
+      BKMVorticityEnstrophyAprioriEstimateClosed_proved,
       BKMLogSobolevGrowthEstimateClosed_proved,
       BKMAnalyticComponentsClosed.implies_BKMAnalyticContinuationLemma,
       BKMAnalyticComponentsClosed.implies_finiteEnergyBKMContinuationTargetOnNonnegHorizons,

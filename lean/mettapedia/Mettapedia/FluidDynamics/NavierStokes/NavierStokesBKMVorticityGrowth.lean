@@ -1,4 +1,5 @@
 import Mettapedia.FluidDynamics.NavierStokes.NavierStokesBKMVorticityEquation
+import Mathlib.MeasureTheory.Integral.Bochner.Basic
 
 /-!
 # BKM vorticity-growth estimates from the standard vorticity equation
@@ -17,6 +18,7 @@ namespace Mettapedia
 namespace FluidDynamics
 namespace NavierStokes
 
+open MeasureTheory
 open scoped RealInnerProductSpace
 
 section BKMContinuation
@@ -33,6 +35,113 @@ def vorticityMaterialDiffusionRemainder
 def vorticityMaterialDiffusionPower
     (ν : ℝ) (u : NSVelocityField) (t : NSTime) (x : NSSpace) : ℝ :=
   ⟪spatialVorticity u t x, vorticityMaterialDiffusionRemainder ν u t x⟫
+
+/-- Vorticity enstrophy density, `|omega|^2`.  This is the density used in the
+BKM a-priori enstrophy estimate, distinct from the velocity-gradient enstrophy
+used in the basic energy identity. -/
+def vorticityEnstrophyDensity
+    (u : NSVelocityField) (t : NSTime) (x : NSSpace) : ℝ :=
+  ‖spatialVorticity u t x‖ ^ (2 : ℕ)
+
+/-- Total vorticity enstrophy of a time slice. -/
+def vorticityEnstrophyAt (u : NSVelocityField) (t : NSTime) : ℝ :=
+  ∫ x, vorticityEnstrophyDensity u t x ∂volume
+
+/-- The conventional `1 / 2`-normalized vorticity enstrophy. -/
+def normalizedVorticityEnstrophyAt
+    (u : NSVelocityField) (t : NSTime) : ℝ :=
+  (1 / 2 : ℝ) * vorticityEnstrophyAt u t
+
+/-- Spatial integral of the BKM stretching power
+`omega · ((omega · grad) u)`. -/
+def vorticityStretchingPowerIntegral
+    (u : NSVelocityField) (t : NSTime) : ℝ :=
+  ∫ x, vorticityStretchingPower u t x ∂volume
+
+/-- Density of the viscous vorticity dissipation term `|grad omega|^2`. -/
+def vorticityDiffusionDissipationDensity
+    (u : NSVelocityField) (t : NSTime) (x : NSSpace) : ℝ :=
+  ‖spatialFDeriv (fun s y => spatialVorticity u s y) t x‖ ^ (2 : ℕ)
+
+/-- Spatial integral of the viscous vorticity dissipation density. -/
+def vorticityDiffusionDissipationAt
+    (u : NSVelocityField) (t : NSTime) : ℝ :=
+  ∫ x, vorticityDiffusionDissipationDensity u t x ∂volume
+
+/-- The scalar derivative predicted by the vorticity enstrophy balance:
+stretching production minus viscous dissipation. -/
+def vorticityEnstrophyBalanceDerivative
+    (ν : ℝ) (u : NSVelocityField) (t : NSTime) : ℝ :=
+  vorticityStretchingPowerIntegral u t -
+    ν * vorticityDiffusionDissipationAt u t
+
+/-- Local-in-time vorticity enstrophy balance at one time.  Proving this from
+the pointwise vorticity equation requires the transport cancellation and
+viscous integration-by-parts step; once supplied, the a-priori inequality below
+is pure order algebra. -/
+def vorticityEnstrophyBalanceAt
+    (ν : ℝ) (u : NSVelocityField) (t : NSTime) : Prop :=
+  HasDerivAt (fun s => normalizedVorticityEnstrophyAt u s)
+    (vorticityEnstrophyBalanceDerivative ν u t) t
+
+/-- The a-priori control shape for vorticity enstrophy: the derivative of
+`1 / 2 * int |omega|^2` exists and is bounded above by the stretching-power
+integral. -/
+def vorticityEnstrophyStretchingControlledAt
+    (_ν : ℝ) (u : NSVelocityField) (t : NSTime) : Prop :=
+  ∃ D : ℝ,
+    HasDerivAt (fun s => normalizedVorticityEnstrophyAt u s) D t ∧
+      D ≤ vorticityStretchingPowerIntegral u t
+
+/-- Vorticity enstrophy density is pointwise nonnegative. -/
+theorem vorticityEnstrophyDensity_nonneg
+    (u : NSVelocityField) (t : NSTime) (x : NSSpace) :
+    0 ≤ vorticityEnstrophyDensity u t x := by
+  simp [vorticityEnstrophyDensity]
+
+/-- Total vorticity enstrophy is nonnegative on the unguarded integral surface. -/
+theorem vorticityEnstrophyAt_nonneg
+    (u : NSVelocityField) (t : NSTime) :
+    0 ≤ vorticityEnstrophyAt u t := by
+  rw [vorticityEnstrophyAt]
+  exact integral_nonneg_of_ae
+    (Filter.Eventually.of_forall fun x => vorticityEnstrophyDensity_nonneg u t x)
+
+/-- Vorticity diffusion-dissipation density is pointwise nonnegative. -/
+theorem vorticityDiffusionDissipationDensity_nonneg
+    (u : NSVelocityField) (t : NSTime) (x : NSSpace) :
+    0 ≤ vorticityDiffusionDissipationDensity u t x := by
+  simp [vorticityDiffusionDissipationDensity]
+
+/-- Vorticity diffusion dissipation is nonnegative on the unguarded integral
+surface. -/
+theorem vorticityDiffusionDissipationAt_nonneg
+    (u : NSVelocityField) (t : NSTime) :
+    0 ≤ vorticityDiffusionDissipationAt u t := by
+  rw [vorticityDiffusionDissipationAt]
+  exact integral_nonneg_of_ae
+    (Filter.Eventually.of_forall fun x =>
+      vorticityDiffusionDissipationDensity_nonneg u t x)
+
+/-- In the vorticity enstrophy balance, nonnegative viscosity can only decrease
+the derivative relative to the stretching-power integral. -/
+theorem vorticityEnstrophyBalanceDerivative_le_stretchingPowerIntegral
+    {ν : ℝ} (hν : 0 ≤ ν) (u : NSVelocityField) (t : NSTime) :
+    vorticityEnstrophyBalanceDerivative ν u t ≤
+      vorticityStretchingPowerIntegral u t := by
+  unfold vorticityEnstrophyBalanceDerivative
+  have hmul : 0 ≤ ν * vorticityDiffusionDissipationAt u t :=
+    mul_nonneg hν (vorticityDiffusionDissipationAt_nonneg u t)
+  linarith
+
+/-- Once the vorticity enstrophy balance is available, the BKM a-priori
+enstrophy estimate is controlled by the stretching-power integral. -/
+theorem vorticityEnstrophyStretchingControlledAt_of_balance
+    {ν : ℝ} (hν : 0 ≤ ν) (u : NSVelocityField) {t : NSTime}
+    (hBal : vorticityEnstrophyBalanceAt ν u t) :
+    vorticityEnstrophyStretchingControlledAt ν u t := by
+  refine ⟨vorticityEnstrophyBalanceDerivative ν u t, hBal, ?_⟩
+  exact vorticityEnstrophyBalanceDerivative_le_stretchingPowerIntegral hν u t
 
 /-- The standard vorticity equation identifies the material-minus-diffusion
 remainder with the stretching term. -/
@@ -154,6 +263,21 @@ theorem BKMStandardVorticityGrowthEstimateClosed_proved :
   exact
     ⟨uniform_vorticityMaterialDiffusionRemainder_boundUpTo hEq hG hB,
       uniform_vorticityMaterialDiffusionPower_boundUpTo hEq hG hB⟩
+
+/-- Checked a-priori vorticity enstrophy estimate: after the enstrophy balance
+has been established, the derivative of `1 / 2 * int |omega|^2` is bounded
+above by the stretching-power integral. -/
+def BKMVorticityEnstrophyAprioriEstimateClosed : Prop :=
+  ∀ (ν : ℝ) (u : NSVelocityField) (t : NSTime),
+    0 ≤ ν →
+      vorticityEnstrophyBalanceAt ν u t →
+        vorticityEnstrophyStretchingControlledAt ν u t
+
+/-- Checked proof of the BKM vorticity enstrophy a-priori estimate. -/
+theorem BKMVorticityEnstrophyAprioriEstimateClosed_proved :
+    BKMVorticityEnstrophyAprioriEstimateClosed := by
+  intro ν u t hν hBal
+  exact vorticityEnstrophyStretchingControlledAt_of_balance hν u hBal
 
 end BKMContinuation
 
