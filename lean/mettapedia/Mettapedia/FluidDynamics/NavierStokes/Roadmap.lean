@@ -100,7 +100,7 @@ def currentNavierRoadmap : List NavierRoadmapEntry :=
       proofNodeId := "navier.bkm.log-sobolev-gradient-control"
       status := .checked
       truthValue := ⟨87, 88⟩
-      obligation := "Once the analytic log-Sobolev/Biot-Savart gradient-control hypothesis is proved, use the checked logarithmic gradient envelope to feed the standard-vorticity growth and enstrophy-production bounds. This does not itself prove the analytic gradient estimate." },
+      obligation := "Once the analytic log-Sobolev/Biot-Savart gradient-control hypothesis is proved, use the checked logarithmic gradient envelope to feed the standard-vorticity growth, enstrophy-production, and dE/dt <= C * (1 + Omega log(exp(1) + H)) * E bounds. This does not itself prove the analytic gradient estimate." },
     { stage := .bkmContinuation
       proofNodeId := "navier.bkm.single-analytic-lemma"
       status := .checked
@@ -361,7 +361,7 @@ theorem currentNavierRoadmap_records_bkm_log_sobolev_gradient_control :
        status := .checked
        truthValue := ⟨87, 88⟩
        obligation :=
-        "Once the analytic log-Sobolev/Biot-Savart gradient-control hypothesis is proved, use the checked logarithmic gradient envelope to feed the standard-vorticity growth and enstrophy-production bounds. This does not itself prove the analytic gradient estimate." } :
+        "Once the analytic log-Sobolev/Biot-Savart gradient-control hypothesis is proved, use the checked logarithmic gradient envelope to feed the standard-vorticity growth, enstrophy-production, and dE/dt <= C * (1 + Omega log(exp(1) + H)) * E bounds. This does not itself prove the analytic gradient estimate." } :
       NavierRoadmapEntry) ∈ currentNavierRoadmap := by
   simp [currentNavierRoadmap]
 

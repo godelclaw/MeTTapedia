@@ -17,6 +17,8 @@ namespace Mettapedia
 namespace FluidDynamics
 namespace NavierStokes
 
+open MeasureTheory
+
 section BKMContinuation
 
 /-- Candidate logarithmic gradient envelope for the BKM route.  The `H`
@@ -81,6 +83,45 @@ theorem BKMLogSobolevGradientControlOn.to_spatialGradientOperatorEnvelopeOn
       (bkmLogSobolevGradientEnvelope C Ω H) :=
   hLog
 
+/-- Log-Sobolev gradient control gives the BKM enstrophy growth inequality
+with the logarithmic coefficient at the current time. -/
+theorem vorticityEnstrophyGradientControlledAt_of_balance_logSobolev_control
+    {ν T C : ℝ} {u : NSVelocityField} {Ω H : NSTime → ℝ} {t : NSTime}
+    (hν : 0 ≤ ν)
+    (hBal : vorticityEnstrophyBalanceAt ν u t)
+    (hLog : BKMLogSobolevGradientControlOn u T C Ω H)
+    (ht0 : 0 ≤ t) (htT : t ≤ T)
+    (hStretchInt : Integrable (fun x => vorticityStretchingPower u t x))
+    (hEnstrophyInt : Integrable (fun x => vorticityEnstrophyDensity u t x)) :
+    vorticityEnstrophyGradientControlledAt ν u t
+      (bkmLogSobolevGradientEnvelope C Ω H t) := by
+  exact
+    vorticityEnstrophyGradientControlledAt_of_balance_gradient_bound
+      hν hBal (hLog.1 t ht0 htT) (fun x => hLog.2 t x ht0 htT)
+      hStretchInt hEnstrophyInt
+
+/-- The pointwise log-Sobolev/Biot-Savart inequality plugs directly into the
+BKM enstrophy growth inequality once the balance identity is available. -/
+theorem vorticityEnstrophyGradientControlledAt_of_balance_logSobolev_pointwiseInequality
+    {ν T C : ℝ} {u : NSVelocityField} {Ω H : NSTime → ℝ} {t : NSTime}
+    (hν : 0 ≤ ν)
+    (hBal : vorticityEnstrophyBalanceAt ν u t)
+    (hC : 0 ≤ C)
+    (hΩ : ∀ s, 0 ≤ s → s ≤ T → 0 ≤ Ω s)
+    (hH : ∀ s, 0 ≤ s → s ≤ T → 0 ≤ H s)
+    (hIneq : BKMLogSobolevPointwiseInequalityOn u T C Ω H)
+    (ht0 : 0 ≤ t) (htT : t ≤ T)
+    (hStretchInt : Integrable (fun x => vorticityStretchingPower u t x))
+    (hEnstrophyInt : Integrable (fun x => vorticityEnstrophyDensity u t x)) :
+    vorticityEnstrophyGradientControlledAt ν u t
+      (bkmLogSobolevGradientEnvelope C Ω H t) := by
+  exact
+    vorticityEnstrophyGradientControlledAt_of_balance_logSobolev_control
+      hν hBal
+      (BKMLogSobolevGradientControlOn.of_pointwiseInequality
+        hC hΩ hH hIneq)
+      ht0 htT hStretchInt hEnstrophyInt
+
 /-- Log-Sobolev gradient control and a vorticity envelope control the
 material-minus-diffusion remainder under the standard vorticity equation. -/
 theorem norm_vorticityMaterialDiffusionRemainder_le_of_logSobolev_control
@@ -111,6 +152,29 @@ theorem abs_vorticityMaterialDiffusionPower_le_of_logSobolev_control
     abs_vorticityMaterialDiffusionPower_le_of_envelopes hEq
       (BKMLogSobolevGradientControlOn.to_spatialGradientOperatorEnvelopeOn hLog)
       hΩ ht0 htT
+
+/-- Checked logarithmic-enstrophy growth package: supplied log-Sobolev
+gradient control turns the BKM enstrophy balance into
+`dE/dt <= C (1 + Omega log(e + H)) E`. -/
+def BKMVorticityEnstrophyLogSobolevGrowthClosed : Prop :=
+  ∀ (ν T C : ℝ) (u : NSVelocityField) (Ω H : NSTime → ℝ) (t : NSTime),
+    0 ≤ ν →
+      vorticityEnstrophyBalanceAt ν u t →
+        BKMLogSobolevGradientControlOn u T C Ω H →
+          0 ≤ t →
+            t ≤ T →
+              Integrable (fun x => vorticityStretchingPower u t x) →
+                Integrable (fun x => vorticityEnstrophyDensity u t x) →
+                  vorticityEnstrophyGradientControlledAt ν u t
+                    (bkmLogSobolevGradientEnvelope C Ω H t)
+
+/-- Checked proof of the logarithmic-enstrophy growth package. -/
+theorem BKMVorticityEnstrophyLogSobolevGrowthClosed_proved :
+    BKMVorticityEnstrophyLogSobolevGrowthClosed := by
+  intro ν T C u Ω H t hν hBal hLog ht0 htT hStretchInt hEnstrophyInt
+  exact
+    vorticityEnstrophyGradientControlledAt_of_balance_logSobolev_control
+      hν hBal hLog ht0 htT hStretchInt hEnstrophyInt
 
 /-- The downstream BKM growth estimates are closed once the analytic
 log-Sobolev/Biot-Savart gradient control is supplied as an explicit
