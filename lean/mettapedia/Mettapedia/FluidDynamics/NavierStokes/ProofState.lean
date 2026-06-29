@@ -1,4 +1,12 @@
 import Mettapedia.FluidDynamics.NavierStokes.NavierStokesEnergyBKMBridge
+import Mettapedia.FluidDynamics.NavierStokes.NavierStokesBKMVorticityStretching
+import Mettapedia.FluidDynamics.NavierStokes.NavierStokesBKMVorticityEquation
+import Mettapedia.FluidDynamics.NavierStokes.NavierStokesBKMVorticityGrowth
+import Mettapedia.FluidDynamics.NavierStokes.NavierStokesBKMResidualCurlExpansion
+import Mettapedia.FluidDynamics.NavierStokes.NavierStokesBKMLogSobolevControl
+import Mettapedia.FluidDynamics.NavierStokes.NavierStokesBKMAnalyticReduction
+import Mettapedia.FluidDynamics.NavierStokes.NavierStokesBKMHighNormContinuation
+import Mettapedia.FluidDynamics.NavierStokes.NavierStokesBKMResidualCurlDifferentialIdentities
 import Mettapedia.FluidDynamics.NavierStokes.FeffermanCompatibilityFrontier
 import Mettapedia.FluidDynamics.NavierStokes.NavierStokesDEGroundedCanary
 import Mettapedia.FluidDynamics.NavierStokes.NavierStokesEnergySchwartzSolutionKernel
@@ -9,6 +17,7 @@ import Mettapedia.FluidDynamics.NavierStokes.NavierStokesEnergySchwartzPastDissi
 import Mettapedia.FluidDynamics.NavierStokes.NavierStokesEnergySchwartzNonzeroSupport
 import Mettapedia.FluidDynamics.NavierStokes.NavierStokesEnergySchwartzNoUniformDissipation
 import Mettapedia.FluidDynamics.NavierStokes.NavierStokesEnergySchwartzStokesFiniteProfileObstruction
+import Mettapedia.FluidDynamics.NavierStokes.NavierStokesEnergySchwartzPressureClosureCertificate
 import Mettapedia.FluidDynamics.NavierStokes.NavierStokesEnergySchwartzZeroRestartObstruction
 import Mettapedia.FluidDynamics.NavierStokes.NavierStokesSchwartzAntiProfileCanaryObstruction
 import Mettapedia.FluidDynamics.NavierStokes.NavierStokesSchwartzLocalizedStreamFunction
@@ -72,12 +81,12 @@ deriving Repr
 
 /-- Current dependency-map counts for `FluidDynamics/NavierStokes`. -/
 def currentNavierLaneSurvey : NavierLaneSurvey where
-  sourceFiles := 509
-  sourceLines := 115799
-  internalImportEdges := 1298
-  regressionFiles := 141
-  filesOverThousandLines := 2
-  filesOverSevenHundredFiftyLines := 2
+  sourceFiles := 531
+  sourceLines := 120718
+  internalImportEdges := 1352
+  regressionFiles := 153
+  filesOverThousandLines := 3
+  filesOverSevenHundredFiftyLines := 3
   leavesWithoutInternalImports := 2
 
 /-- Simple PLN-style truth bookkeeping: support and confidence percentages. -/
@@ -158,6 +167,75 @@ def navierSchwartzEnergyIdentityNode : NavierProofNode where
   truthValue := ⟨78, 84⟩
   evidence := "coordinateEnergyDissipationIdentity_of_schwartzConcreteSolution proves, for arbitrary energy-admissible slice-Schwartz velocity/pressure fields satisfying SatisfiesMomentumEquation and IsIncompressible on mkFullyConcreteNavierStokesSurface, the pressure-work cancellation, convection-work cancellation, coordinate viscous Laplacian identity, and d/dt normalized kinetic energy = -coordinateEnergyDissipationRate. PLN STV <s=.78,c=.84>, ITV [.6552,.8152], PROGRESS 34%."
   blocker := "This decides the Schwartz-solution energy identity subnode, not global regularity. Extending it to every smooth finite-energy solution still requires closing the derivative-under-the-integral and decay/approximation seam beyond the slice-Schwartz energy-admissible class."
+
+/-- The BKM route now has the local pointwise control of the vorticity
+stretching term. -/
+def navierBKMVorticityStretchingNode : NavierProofNode where
+  id := "navier.bkm.vorticity-stretching"
+  status := .checked
+  truthValue := ⟨83, 88⟩
+  evidence := "vorticityStretchingTerm defines the concrete pointwise term (omega . grad)u as spatialFDeriv u applied to spatialVorticity u. norm_vorticityStretchingTerm_le proves ||(omega . grad)u|| <= ||grad u||op * ||omega||, abs_vorticityStretchingPower_le proves the pointwise enstrophy-production bound |<omega,(omega . grad)u>| <= ||grad u||op * ||omega|| * ||omega||, and the envelope/uniform corollaries lift these bounds to slabwise gradient and vorticity controls. Validation lab ns-bkm-vorticity-stretching-lab-20260629.json passed on Taylor-Green and random solenoidal periodic fields. PLN STV <s=.83,c=.88>, ITV [.7304,.8504], PROGRESS 43%."
+  blocker := "This genuinely handles the local stretching estimate, but it is not the full BKM continuation criterion. Remaining analytic dependencies are the exact vorticity equation on the concrete smooth-solution surface, log-Sobolev/Biot-Savart control of ||grad u||_infty by the time-integrable vorticity envelope plus high norm, the H^s/enstrophy differential inequality, and the continuation/Gronwall closure."
+
+/-- Finite-time BKM witnesses now expose the pressure-free curl form of the
+vorticity equation. -/
+def navierBKMVorticityResidualEquationNode : NavierProofNode where
+  id := "navier.bkm.vorticity-residual-curl-equation"
+  status := .checked
+  truthValue := ⟨85, 88⟩
+  evidence := "vorticityResidualCurlEquationOn names the pressure-free curl equation spatialVorticity(momentumPressureResidual nu u)=0 on a slab. ExplicitFiniteTimeRegularityWitness.vorticityResidualCurlEquationOn proves every finite-time witness satisfies it, and finiteTimeWitness_BKMData_vorticityResidualCurl_packet packages it with BKM envelope data. Validation lab ns-bkm-vorticity-equation-lab-20260629.json passed Taylor-Green vorticity-equation and random solenoidal curl-convection identity checks. PLN STV <s=.85,c=.88>, ITV [.748,.868], PROGRESS 45%."
+  blocker := "This is the exact pressure-free curl surface supplied by the concrete momentum equation. Expanding it into the standard transport/diffusion/stretching form now factors through residualCurlExpansionDefect; proving that defect vanishes for smooth incompressible fields remains inside BKMAnalyticContinuationLemma."
+
+/-- The residual-curl expansion is reduced to one named vector-calculus defect. -/
+def navierBKMResidualCurlExpansionNode : NavierProofNode where
+  id := "navier.bkm.residual-curl-expansion-defect"
+  status := .checked
+  truthValue := ⟨87, 88⟩
+  evidence := "residualCurlExpansionDefect names curl(nu Delta u - partial_t u - (u.grad)u) plus the standard vorticity-equation residual partial_t omega + (u.grad)omega - nu Delta omega - (omega.grad)u. concreteVorticityEquationOn_of_residualCurlExpansionClosedOn proves that residual-curl zero plus vanishing defect gives concreteVorticityEquationOn, and ExplicitFiniteTimeRegularityWitness.concreteVorticityEquationOn_of_residualCurlExpansionDefectVanishes shows finite-time witnesses would supply the standard vorticity equation once BKMResidualCurlExpansionDefectVanishes is proved. Validation lab ns-bkm-residual-curl-expansion-lab-20260629.json passed Taylor-Green and random solenoidal periodic checks. PLN STV <s=.87,c=.88>, ITV [.7656,.8656], PROGRESS 50%."
+  blocker := "The exact remaining vector-calculus identity is BKMResidualCurlExpansionDefectVanishes: for every smooth velocity that is divergence-free on the slab, residualCurlExpansionDefect vanishes on the slab. This requires curl/time-derivative commutation, curl/Laplacian commutation, and the incompressible curl-convection identity."
+
+/-- The residual-curl expansion target is decomposed into four exact
+differential identities. -/
+def navierBKMResidualCurlDifferentialIdentitiesNode : NavierProofNode where
+  id := "navier.bkm.residual-curl-differential-identities"
+  status := .checked
+  truthValue := ⟨88, 88⟩
+  evidence := "residualCurlLinearityDefect, vorticityTimeCommutationDefect, vorticityLaplacianCommutationDefect, and vorticityConvectionExpansionDefect name the exact pointwise identities needed to expand residual curl into the standard vorticity equation. residualCurlLinearityDefect_eq_zero_of_differentiableAt proves the residual-field curl-linearity defect vanishes from spatial differentiability of the Laplacian, time-derivative, and convection fields; residualCurlLinearityClosedOn_of_differentiableOn lifts this to slabs; residualCurlDifferentialIdentitiesClosedOn_of_linearityDifferentiableOn combines it with the remaining three identities. residualCurlExpansionDefect_eq_differentialIdentityDefects proves the algebraic decomposition, and BKMResidualCurlDifferentialIdentitiesClosed.implies_residualCurlExpansionDefectVanishes proves the decomposed target closes BKMResidualCurlExpansionDefectVanishes. Validation lab ns-bkm-residual-curl-defect-decomposition-lab-20260629.json passed 5/5 Taylor-Green and random solenoidal checks. PLN STV <s=.88,c=.88>, ITV [.7744,.8944], PROGRESS 58%."
+  blocker := "The residual-curl linearity subidentity is now reduced to ordinary spatial differentiability of the three derived residual fields. The remaining concrete work is deriving that differentiability from smoothSpaceTimeVelocity and proving curl/time commutation, curl/Laplacian commutation, and the incompressible curl-convection identity for arbitrary smooth incompressible velocity fields."
+
+/-- Once the standard vorticity equation is available, the BKM growth term is
+checked and controlled by the stretching estimate. -/
+def navierBKMVorticityGrowthNode : NavierProofNode where
+  id := "navier.bkm.standard-vorticity-growth"
+  status := .checked
+  truthValue := ⟨86, 88⟩
+  evidence := "vorticityMaterialDiffusionRemainder names partial_t omega + (u.grad)omega - nu Delta omega. vorticityMaterialDiffusionRemainder_eq_vorticityStretchingTerm proves that concreteVorticityEquationOn identifies this remainder with (omega.grad)u, and uniform_vorticityMaterialDiffusionRemainder_boundUpTo plus uniform_vorticityMaterialDiffusionPower_boundUpTo lift the checked stretching bounds to the material-minus-diffusion growth and enstrophy-production terms. PLN STV <s=.86,c=.88>, ITV [.7568,.8608], PROGRESS 49%."
+  blocker := "This closes the growth estimate downstream of concreteVorticityEquationOn. The remaining analytic seam is deriving concreteVorticityEquationOn from residual curl and smooth incompressible finite-time witnesses, then completing log-Sobolev/high-norm continuation."
+
+/-- Once log-Sobolev/Biot-Savart gradient control is supplied, the checked BKM
+growth estimates use its logarithmic envelope directly. -/
+def navierBKMLogSobolevControlNode : NavierProofNode where
+  id := "navier.bkm.log-sobolev-gradient-control"
+  status := .checked
+  truthValue := ⟨87, 88⟩
+  evidence := "bkmLogSobolevGradientEnvelope records the downstream envelope shape C * (1 + Omega(t) * log(exp(1) + H(t))). BKMLogSobolevGradientControlOn.to_spatialGradientOperatorEnvelopeOn converts a supplied log-Sobolev/Biot-Savart gradient-control hypothesis into spatialGradientOperatorEnvelopeOn, and BKMLogSobolevGrowthEstimateClosed_proved feeds that envelope into the checked material-vorticity and enstrophy-production bounds. Validation probe ns-bkm-log-sobolev-probe-20260629.json passed Taylor-Green plus four random solenoidal periodic fields. PLN STV <s=.87,c=.88>, ITV [.7656,.8656], PROGRESS 51%."
+  blocker := "This closes the downstream interface, not the analytic log-Sobolev theorem itself. BKMAnalyticContinuationLemma still must prove such gradient control from residual curl, Biot-Savart/log-Sobolev estimates, a high-norm envelope, and the integrable vorticity envelope."
+
+/-- The BKM route is now reduced to one explicitly named analytic lemma. -/
+def navierBKMAnalyticReductionNode : NavierProofNode where
+  id := "navier.bkm.single-analytic-lemma"
+  status := .checked
+  truthValue := ⟨86, 88⟩
+  evidence := "BKMVorticityStretchingEstimateClosed_proved closes the stretching subdependency, finite-time witnesses now supply vorticityResidualCurlEquationOn, BKMResidualCurlExpansionAlgebraClosed_proved closes the algebra from residual-curl zero plus vanishing expansion defect to concreteVorticityEquationOn, BKMStandardVorticityGrowthEstimateClosed_proved closes the standard-equation growth estimate, BKMLogSobolevGrowthEstimateClosed_proved closes the supplied-log-Sobolev-control growth interface, and BKMContinuation_reduced_to_single_analytic_lemma proves that the repaired nonnegative-horizon BKM target follows from the single named hypothesis BKMAnalyticContinuationLemma. PLN STV <s=.86,c=.88>, ITV [.7568,.8608], PROGRESS 53%."
+  blocker := "BKMAnalyticContinuationLemma is the remaining precise analytic lemma: for positive viscosity smooth divergence-free finite-energy data, every finite-time witness on a nonnegative slab with residual-curl vorticity equation and integrable vorticity envelope must extend to ExplicitConcreteNavierStokesGlobalOutput. Its proof must prove BKMResidualCurlExpansionDefectVanishes, prove the log-Sobolev/Biot-Savart gradient control hypothesis, then supply high-norm/enstrophy differential inequality and continuation/Gronwall closure."
+
+/-- The one analytic BKM lemma is now split into explicit component targets. -/
+def navierBKMAnalyticComponentsNode : NavierProofNode where
+  id := "navier.bkm.analytic-components"
+  status := .checked
+  truthValue := ⟨87, 88⟩
+  evidence := "BKMLogSobolevGradientControlFromEnvelope and BKMHighNormContinuationFromLogControl name the two analytic estimates still downstream of BKMResidualCurlExpansionDefectVanishes. BKMAnalyticContinuationLemma_of_components proves these three components imply BKMAnalyticContinuationLemma, and BKMContinuation_reduced_to_analytic_components proves the repaired nonnegative-horizon BKM target follows from the component bundle. PLN STV <s=.87,c=.88>, ITV [.7656,.8656], PROGRESS 55%."
+  blocker := "The component split is a checked assembly layer, not the analytic proof itself. The remaining work is to prove residual-curl expansion defect vanishing, derive the log-Sobolev/Biot-Savart gradient envelope from the BKM vorticity data, and close the high-norm continuation/Gronwall step without assuming the global output."
 
 /-- The nonzero slice-Schwartz kernel is checked, but it is not yet an
 unconditional positive canary. -/
@@ -344,6 +422,14 @@ def navierSchwartzPressureResidualCurlGateNode : NavierProofNode where
   truthValue := ⟨87, 89⟩
   evidence := "momentumPressureResidual_spatialVorticity_zero proves that every ordinary slice-Schwartz concrete solution has curl-free pressure residual νΔu - ∂tu - (u.grad)u, and not_exists_schwartzConcreteSolution_velocity_of_momentumPressureResidual_vorticity_ne_zero proves that any velocity whose residual curl is nonzero somewhere cannot inhabit the interface. The regression undamped_unit_heat_shear_not_schwartz_solution_velocity_regression applies this gate to an explicit heat-shear false positive. PLN STV <s=.87,c=.89>, ITV [.7743,.8843], PROGRESS 70%."
   blocker := "This is a sharp pressure-closure filter for candidate velocities. It does not construct the required nonzero localized Schwartz pressure-slice closure."
+
+/-- Residual-curl failures are now first-class generator certificates. -/
+def navierSchwartzPressureClosureCertificateNode : NavierProofNode where
+  id := "navier.energy.schwartz-pressure-closure-certificate"
+  status := .checked
+  truthValue := ⟨90, 91⟩
+  evidence := "PressureClosureObstructionCertificate packages a residual-curl witness into reusable no-smooth-pressure, no-momentum-kernel, no-concrete-kernel, no-ordinary-solution, and no-nonzero-solution consequences. localizedNilpotentStreamPressureClosureObstructionCertificate and localizedNilpotentStream_pressureClosureCertificate_packet instantiate the certificate for an explicit nonzero divergence-free Schwartz localized nilpotent stream seed at viscosity 0. PLN STV <s=.90,c=.91>, ITV [.819,.909], PROGRESS 82%."
+  blocker := "This turns one failed localized Schwartz generator into a reusable certificate API. It is still a pressure-closure obstruction, not the requested positive-viscosity nonzero canary; a successful canary must prove curl-free residual closure and construct Schwartz pressure slices."
 
 /-- The two-mode generator now exposes the exact residual-curl obligation at
 the slice-Schwartz solution interface. -/
@@ -570,6 +656,14 @@ def currentNavierProofNodes : List NavierProofNode :=
   , navierFeffermanLiftNode
   , navierDEGroundedZeroCanaryNode
   , navierSchwartzEnergyIdentityNode
+  , navierBKMVorticityStretchingNode
+  , navierBKMVorticityResidualEquationNode
+  , navierBKMResidualCurlExpansionNode
+  , navierBKMResidualCurlDifferentialIdentitiesNode
+  , navierBKMVorticityGrowthNode
+  , navierBKMLogSobolevControlNode
+  , navierBKMAnalyticReductionNode
+  , navierBKMAnalyticComponentsNode
   , navierNonzeroSchwartzEnergyKernelNode
   , navierNonzeroSchwartzLineInvariantObstructionNode
   , navierNonzeroSchwartzHeatShearBoundaryNode
@@ -591,6 +685,7 @@ def currentNavierProofNodes : List NavierProofNode :=
   , navierNonzeroSchwartzStrictFutureDropNode
   , navierNonzeroSchwartzNoEnergyRecurrenceNode
   , navierSchwartzPressureResidualCurlGateNode
+  , navierSchwartzPressureClosureCertificateNode
   , navierNonzeroSchwartzFiniteModeResidualCurlBoundaryNode
   , navierNonzeroSchwartzStationaryInviscidConstructorNode
   , navierNonzeroSchwartzStokesKernelNode
@@ -644,6 +739,38 @@ theorem navierDEGroundedZeroCanaryNode_checked :
 
 theorem navierSchwartzEnergyIdentityNode_checked :
     navierSchwartzEnergyIdentityNode.status = .checked := by
+  rfl
+
+theorem navierBKMVorticityStretchingNode_checked :
+    navierBKMVorticityStretchingNode.status = .checked := by
+  rfl
+
+theorem navierBKMVorticityResidualEquationNode_checked :
+    navierBKMVorticityResidualEquationNode.status = .checked := by
+  rfl
+
+theorem navierBKMResidualCurlExpansionNode_checked :
+    navierBKMResidualCurlExpansionNode.status = .checked := by
+  rfl
+
+theorem navierBKMResidualCurlDifferentialIdentitiesNode_checked :
+    navierBKMResidualCurlDifferentialIdentitiesNode.status = .checked := by
+  rfl
+
+theorem navierBKMVorticityGrowthNode_checked :
+    navierBKMVorticityGrowthNode.status = .checked := by
+  rfl
+
+theorem navierBKMLogSobolevControlNode_checked :
+    navierBKMLogSobolevControlNode.status = .checked := by
+  rfl
+
+theorem navierBKMAnalyticReductionNode_checked :
+    navierBKMAnalyticReductionNode.status = .checked := by
+  rfl
+
+theorem navierBKMAnalyticComponentsNode_checked :
+    navierBKMAnalyticComponentsNode.status = .checked := by
   rfl
 
 theorem navierNonzeroSchwartzEnergyKernelNode_checked :
@@ -730,6 +857,10 @@ theorem navierSchwartzPressureResidualCurlGateNode_checked :
     navierSchwartzPressureResidualCurlGateNode.status = .checked := by
   rfl
 
+theorem navierSchwartzPressureClosureCertificateNode_checked :
+    navierSchwartzPressureClosureCertificateNode.status = .checked := by
+  rfl
+
 theorem navierNonzeroSchwartzFiniteModeResidualCurlBoundaryNode_checked :
     navierNonzeroSchwartzFiniteModeResidualCurlBoundaryNode.status = .checked := by
   rfl
@@ -806,6 +937,142 @@ theorem currentNavierSchwartzEnergyIdentity_node
       S.coordinateViscousEnergyPairingFormula,
       S.coordinateEnergyDissipationIdentity,
       navierSchwartzEnergyIdentityNode_checked⟩
+
+theorem currentNavierBKMVorticityStretching_node
+    {u : NSVelocityField} {T G B : ℝ}
+    (hG : uniformSpatialGradientOperatorBoundUpTo u T G)
+    (hω : uniformVorticityBoundUpTo u T B) :
+    (0 ≤ G * B ∧
+      ∀ t x, 0 ≤ t → t ≤ T →
+        ‖vorticityStretchingTerm u t x‖ ≤ G * B) ∧
+      (0 ≤ G * (B * B) ∧
+        ∀ t x, 0 ≤ t → t ≤ T →
+          |vorticityStretchingPower u t x| ≤ G * (B * B)) ∧
+      navierBKMVorticityStretchingNode.status = .checked := by
+  exact
+    ⟨uniform_vorticityStretchingTerm_boundUpTo hG hω,
+      uniform_vorticityStretchingPower_boundUpTo hG hω,
+      navierBKMVorticityStretchingNode_checked⟩
+
+theorem currentNavierBKMVorticityResidualEquation_node
+    {ν T : ℝ} {u₀ : NSInitialVelocity}
+    (W : ExplicitFiniteTimeRegularityWitness ν u₀ T)
+    (hBKM : ∃ Ω : NSTime → ℝ, ∃ B : ℝ,
+      vorticityEnvelopeOn W.velocity T Ω ∧
+        integrableVorticityEnvelopeOn Ω T B) :
+    vorticityResidualCurlEquationOn ν W.velocity T ∧
+      (∀ t x, 0 ≤ t → t ≤ T →
+        spatialVorticity (momentumPressureResidual ν W.velocity) t x = 0) ∧
+      navierBKMVorticityResidualEquationNode.status = .checked := by
+  exact
+    ⟨(finiteTimeWitness_BKMData_vorticityResidualCurl_packet W hBKM).1,
+      (finiteTimeWitness_BKMData_vorticityResidualCurl_packet W hBKM).2,
+      navierBKMVorticityResidualEquationNode_checked⟩
+
+theorem currentNavierBKMResidualCurlExpansion_node
+    {ν T : ℝ} {u : NSVelocityField}
+    (hCurl : vorticityResidualCurlEquationOn ν u T)
+    (hExpand : residualCurlExpansionClosedOn ν u T) :
+    concreteVorticityEquationOn ν u T ∧
+      BKMResidualCurlExpansionAlgebraClosed ∧
+      navierBKMResidualCurlExpansionNode.status = .checked := by
+  exact
+    ⟨concreteVorticityEquationOn_of_residualCurlExpansionClosedOn hCurl hExpand,
+      BKMResidualCurlExpansionAlgebraClosed_proved,
+      navierBKMResidualCurlExpansionNode_checked⟩
+
+theorem currentNavierBKMResidualCurlDifferentialIdentities_node
+    {ν T : ℝ} {u : NSVelocityField}
+    (hIds : residualCurlDifferentialIdentitiesClosedOn ν u T) :
+    residualCurlExpansionClosedOn ν u T ∧
+      (residualCurlLinearityDifferentiableOn u T →
+        residualCurlLinearityClosedOn ν u T) ∧
+      (BKMResidualCurlDifferentialIdentitiesClosed →
+        BKMResidualCurlExpansionDefectVanishes) ∧
+      (BKMResidualCurlDifferentialIdentitiesClosed →
+        BKMLogSobolevGradientControlFromEnvelope →
+          BKMHighNormContinuationFromLogControl →
+            BKMAnalyticComponentsClosed) ∧
+      navierBKMResidualCurlDifferentialIdentitiesNode.status = .checked := by
+  exact
+    ⟨residualCurlExpansionClosedOn_of_differentialIdentitiesClosedOn hIds,
+      residualCurlLinearityClosedOn_of_differentiableOn,
+      BKMResidualCurlDifferentialIdentitiesClosed.implies_residualCurlExpansionDefectVanishes,
+      BKMAnalyticComponentsClosed_of_residualCurlDifferentialIdentities,
+      navierBKMResidualCurlDifferentialIdentitiesNode_checked⟩
+
+theorem currentNavierBKMVorticityGrowth_node
+    {ν T G B : ℝ} {u : NSVelocityField}
+    (hEq : concreteVorticityEquationOn ν u T)
+    (hG : uniformSpatialGradientOperatorBoundUpTo u T G)
+    (hω : uniformVorticityBoundUpTo u T B) :
+    (0 ≤ G * B ∧
+      ∀ t x, 0 ≤ t → t ≤ T →
+        ‖vorticityMaterialDiffusionRemainder ν u t x‖ ≤ G * B) ∧
+      (0 ≤ G * (B * B) ∧
+        ∀ t x, 0 ≤ t → t ≤ T →
+          |vorticityMaterialDiffusionPower ν u t x| ≤ G * (B * B)) ∧
+      navierBKMVorticityGrowthNode.status = .checked := by
+  exact
+    ⟨uniform_vorticityMaterialDiffusionRemainder_boundUpTo hEq hG hω,
+      uniform_vorticityMaterialDiffusionPower_boundUpTo hEq hG hω,
+      navierBKMVorticityGrowthNode_checked⟩
+
+theorem currentNavierBKMLogSobolevControl_node
+    {ν T C : ℝ} {u : NSVelocityField} {Ω H : NSTime → ℝ}
+    (hEq : concreteVorticityEquationOn ν u T)
+    (hLog : BKMLogSobolevGradientControlOn u T C Ω H)
+    (hΩ : vorticityEnvelopeOn u T Ω) :
+    spatialGradientOperatorEnvelopeOn u T
+        (bkmLogSobolevGradientEnvelope C Ω H) ∧
+      (∀ t x, 0 ≤ t → t ≤ T →
+        ‖vorticityMaterialDiffusionRemainder ν u t x‖ ≤
+          bkmLogSobolevGradientEnvelope C Ω H t * Ω t) ∧
+      (∀ t x, 0 ≤ t → t ≤ T →
+        |vorticityMaterialDiffusionPower ν u t x| ≤
+          bkmLogSobolevGradientEnvelope C Ω H t * (Ω t * Ω t)) ∧
+      BKMLogSobolevGrowthEstimateClosed ∧
+      navierBKMLogSobolevControlNode.status = .checked := by
+  exact
+    ⟨(BKMLogSobolevGrowthEstimateClosed_proved ν u T C Ω H hEq hLog hΩ).1,
+      (BKMLogSobolevGrowthEstimateClosed_proved ν u T C Ω H hEq hLog hΩ).2.1,
+      (BKMLogSobolevGrowthEstimateClosed_proved ν u T C Ω H hEq hLog hΩ).2.2,
+      BKMLogSobolevGrowthEstimateClosed_proved,
+      navierBKMLogSobolevControlNode_checked⟩
+
+theorem currentNavierBKMAnalyticReduction_node :
+    BKMVorticityStretchingEstimateClosed ∧
+      BKMResidualCurlExpansionAlgebraClosed ∧
+      BKMStandardVorticityGrowthEstimateClosed ∧
+      BKMLogSobolevGrowthEstimateClosed ∧
+      (BKMAnalyticContinuationLemma →
+        ExplicitFiniteEnergyBKMContinuationTargetOnNonnegHorizons) ∧
+      navierBKMAnalyticReductionNode.status = .checked := by
+  exact
+    ⟨BKMVorticityStretchingEstimateClosed_proved,
+      BKMResidualCurlExpansionAlgebraClosed_proved,
+      BKMStandardVorticityGrowthEstimateClosed_proved,
+      BKMLogSobolevGrowthEstimateClosed_proved,
+      BKMAnalyticContinuationLemma_implies_finiteEnergyBKMContinuationTargetOnNonnegHorizons,
+      navierBKMAnalyticReductionNode_checked⟩
+
+theorem currentNavierBKMAnalyticComponents_node :
+    BKMVorticityStretchingEstimateClosed ∧
+      BKMResidualCurlExpansionAlgebraClosed ∧
+      BKMStandardVorticityGrowthEstimateClosed ∧
+      BKMLogSobolevGrowthEstimateClosed ∧
+      (BKMAnalyticComponentsClosed → BKMAnalyticContinuationLemma) ∧
+      (BKMAnalyticComponentsClosed →
+        ExplicitFiniteEnergyBKMContinuationTargetOnNonnegHorizons) ∧
+      navierBKMAnalyticComponentsNode.status = .checked := by
+  exact
+    ⟨BKMVorticityStretchingEstimateClosed_proved,
+      BKMResidualCurlExpansionAlgebraClosed_proved,
+      BKMStandardVorticityGrowthEstimateClosed_proved,
+      BKMLogSobolevGrowthEstimateClosed_proved,
+      BKMAnalyticComponentsClosed.implies_BKMAnalyticContinuationLemma,
+      BKMAnalyticComponentsClosed.implies_finiteEnergyBKMContinuationTargetOnNonnegHorizons,
+      navierBKMAnalyticComponentsNode_checked⟩
 
 theorem currentNavierNonzeroSchwartzEnergyKernel_node
     {ν : ℝ} (S : NonzeroSchwartzConcreteNavierStokesSolution ν) :
@@ -1564,6 +1831,41 @@ theorem currentNavierSchwartzPressureResidualCurlGate_node
         not_exists_nonzeroSchwartzConcreteSolution_velocity_of_momentumPressureResidual_vorticity_ne_zero
           hcurl,
       navierSchwartzPressureResidualCurlGateNode_checked,
+      navierNonzeroSchwartzCanaryNode_open⟩
+
+theorem currentNavierSchwartzPressureClosureCertificate_node
+    {ν : ℝ} {u : NSVelocityField}
+    (C : PressureClosureObstructionCertificate ν u) :
+    (∃ t : NSTime, ∃ x : NSSpace,
+      spatialVorticity (momentumPressureResidual ν u) t x ≠ 0) ∧
+      (¬ ∃ p : NSPressureField,
+        smoothSpaceTimePressure p ∧
+          ∀ t x,
+            timeVelocityDerivative u t x + spatialConvection u t x +
+                spatialPressureGradient p t x =
+              ν • spatialLaplacian u t x) ∧
+      (∀ p : NSPressureField, ¬ SchwartzMomentumClosureKernel ν u p) ∧
+      (∀ p : NSPressureField, ¬ SchwartzConcreteSolutionKernel ν u p) ∧
+      (¬ ∃ S : SchwartzConcreteNavierStokesSolution ν, S.velocity = u) ∧
+      (¬ ∃ S : NonzeroSchwartzConcreteNavierStokesSolution ν, S.velocity = u) ∧
+      Nonempty (PressureClosureObstructionCertificate 0 localizedNilpotentStreamVelocityField) ∧
+      (¬ ∃ p : NSPressureField,
+        SchwartzMomentumClosureKernel 0 localizedNilpotentStreamVelocityField p) ∧
+      (¬ ∃ S : NonzeroSchwartzConcreteNavierStokesSolution 0,
+        S.velocity = localizedNilpotentStreamVelocityField) ∧
+      navierSchwartzPressureClosureCertificateNode.status = .checked ∧
+      navierNonzeroSchwartzCanaryNode.status = .openGoal := by
+  exact
+    ⟨C.residualVorticity_witness,
+      C.noSmoothPressure_momentumEquation,
+      fun p => C.incompatible_momentumClosureKernel,
+      fun p => C.incompatible_concreteSolutionKernel,
+      C.noSchwartzConcreteSolution_velocity,
+      C.noNonzeroSchwartzConcreteSolution_velocity,
+      ⟨localizedNilpotentStreamPressureClosureObstructionCertificate⟩,
+      not_exists_localizedNilpotentStream_momentumClosureKernel,
+      not_exists_nonzeroSchwartzConcreteSolution_velocity_localizedNilpotentStream_of_pressureClosureCertificate,
+      navierSchwartzPressureClosureCertificateNode_checked,
       navierNonzeroSchwartzCanaryNode_open⟩
 
 theorem currentNavierNonzeroSchwartzFiniteModeResidualCurlBoundary_node
