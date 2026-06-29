@@ -112,6 +112,22 @@ theorem bkm_logSobolev_pointwise_to_enstrophy_growth_regression
   vorticityEnstrophyGradientControlledAt_of_balance_logSobolev_pointwiseInequality
     hν hBal hC hΩ hH hIneq ht0 htT hStretchInt hEnstrophyInt
 
+theorem bkm_logSobolev_affine_pointwise_to_enstrophy_growth_regression
+    {ν T C0 C1 : ℝ} {u : NSVelocityField} {Ω H : NSTime → ℝ} {t : NSTime}
+    (hν : 0 ≤ ν)
+    (hBal : vorticityEnstrophyBalanceAt ν u t)
+    (hC0 : 0 ≤ C0) (hC1 : 0 ≤ C1)
+    (hΩ : ∀ s, 0 ≤ s → s ≤ T → 0 ≤ Ω s)
+    (hH : ∀ s, 0 ≤ s → s ≤ T → 0 ≤ H s)
+    (hAffine : BKMLogSobolevAffinePointwiseInequalityOn u T C0 C1 Ω H)
+    (ht0 : 0 ≤ t) (htT : t ≤ T)
+    (hStretchInt : Integrable (fun x => vorticityStretchingPower u t x))
+    (hEnstrophyInt : Integrable (fun x => vorticityEnstrophyDensity u t x)) :
+    vorticityEnstrophyGradientControlledAt ν u t
+      (C0 + C1 * bkmLogSobolevLogFactor Ω H t) :=
+  vorticityEnstrophyGradientControlledAt_of_balance_logSobolev_affinePointwiseInequality
+    hν hBal hC0 hC1 hΩ hH hAffine ht0 htT hStretchInt hEnstrophyInt
+
 theorem bkm_logSobolev_material_remainder_bound_regression
     {ν T C : ℝ} {u : NSVelocityField} {Ω H : NSTime → ℝ}
     (hEq : concreteVorticityEquationOn ν u T)
@@ -145,6 +161,10 @@ theorem bkm_logSobolev_affine_reduction_closed_regression :
 theorem bkm_vorticity_enstrophy_logSobolev_growth_closed_regression :
     BKMVorticityEnstrophyLogSobolevGrowthClosed :=
   BKMVorticityEnstrophyLogSobolevGrowthClosed_proved
+
+theorem bkm_vorticity_enstrophy_affine_log_growth_closed_regression :
+    BKMVorticityEnstrophyAffineLogGrowthClosed :=
+  BKMVorticityEnstrophyAffineLogGrowthClosed_proved
 
 end Regression
 

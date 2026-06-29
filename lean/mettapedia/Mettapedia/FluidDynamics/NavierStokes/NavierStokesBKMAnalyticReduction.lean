@@ -92,13 +92,14 @@ theorem BKMContinuation_reduced_to_single_analytic_lemma :
                     BKMVorticityFiniteTimeWitnessSchwartzSliceAprioriClosed ∧
                       BKMVorticityFiniteTimeWitnessVelocityVorticitySchwartzAprioriClosed ∧
                         BKMVorticityEnstrophyBalanceAssemblyClosed ∧
-                          BKMVorticityEnstrophyAprioriEstimateClosed ∧
-                            BKMVorticityEnstrophyGradientGrowthClosed ∧
-                              BKMVorticityEnstrophyLogSobolevGrowthClosed ∧
-                                BKMLogSobolevAffineReductionClosed ∧
-                                  BKMLogSobolevGrowthEstimateClosed ∧
-                                    (BKMAnalyticContinuationLemma →
-                                      ExplicitFiniteEnergyBKMContinuationTargetOnNonnegHorizons) := by
+                            BKMVorticityEnstrophyAprioriEstimateClosed ∧
+                              BKMVorticityEnstrophyGradientGrowthClosed ∧
+                                BKMVorticityEnstrophyLogSobolevGrowthClosed ∧
+                                  BKMVorticityEnstrophyAffineLogGrowthClosed ∧
+                                    BKMLogSobolevAffineReductionClosed ∧
+                                      BKMLogSobolevGrowthEstimateClosed ∧
+                                        (BKMAnalyticContinuationLemma →
+                                          ExplicitFiniteEnergyBKMContinuationTargetOnNonnegHorizons) := by
   exact
     ⟨BKMVorticityStretchingEstimateClosed_proved,
       BKMResidualCurlExpansionAlgebraClosed_proved,
@@ -114,6 +115,7 @@ theorem BKMContinuation_reduced_to_single_analytic_lemma :
       BKMVorticityEnstrophyAprioriEstimateClosed_proved,
       BKMVorticityEnstrophyGradientGrowthClosed_proved,
       BKMVorticityEnstrophyLogSobolevGrowthClosed_proved,
+      BKMVorticityEnstrophyAffineLogGrowthClosed_proved,
       BKMLogSobolevAffineReductionClosed_proved,
       BKMLogSobolevGrowthEstimateClosed_proved,
       BKMAnalyticContinuationLemma_implies_finiteEnergyBKMContinuationTargetOnNonnegHorizons⟩
