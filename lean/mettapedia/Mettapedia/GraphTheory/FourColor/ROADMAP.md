@@ -295,6 +295,18 @@ test is not another route fork; it is to instantiate that input for the actual
 side and check `CAP5F2NoUnifiedKernelMapEvader`, or accept that named
 obstruction.
 
+RREF-shaped finite gate update on 2026-06-29:
+`cap5F2NoUnifiedKernelMapEvader_of_emittedFinsetPairingKernel_eq_bot` proves
+that a checked bottom emitted-pairing kernel certificate directly rules out the
+unified emitted-kernel/remaining-map evader.  The finite-input wrappers
+`CAP5FiniteNoGapRouteInput.noUnifiedKernelMapEvader_of_emittedFinsetPairingKernel_eq_bot`,
+`CAP5FiniteNoGapRouteInput.routeClosed_of_emittedFinsetPairingKernel_eq_bot`,
+and
+`CAP5FiniteNoGapRouteInput.toClosedWitness_of_emittedFinsetPairingKernel_eq_bot`
+show exactly what a checked RREF/kernel certificate has to feed.  This is only
+the certificate interface: the actual CAP5 no-gap input and its checked emitted
+kernel certificate remain the make-or-break artifact.
+
 The next target-level corollary turns finite dimension into an explicit fork
 test for exact CAP5 data.  In Lean,
 `exists_theorem49BoundaryTargetEvader_of_emittedFinset_card_add_boundary_card_add_theorem49BoundaryVertices_card_lt`

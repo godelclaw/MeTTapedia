@@ -55,6 +55,21 @@ remaining-map evader for the certificate induced by the finite no-gap input.
 No concrete actual-side instance, checked unified RREF/no-evader certificate, or
 route-derived coloring payoff is claimed by this delta.
 
+RREF-shaped finite gate update: `CAP5RoutePayoff.lean` now proves
+`cap5F2NoUnifiedKernelMapEvader_of_emittedFinsetPairingKernel_eq_bot`, so a
+checked bottom emitted-pairing kernel certificate directly excludes the unified
+emitted-kernel/remaining-map evader.  At the finite-input surface,
+`CAP5FiniteNoGapRouteInput.noMissingCheckerEvidence` exposes the closed
+primitive frontier in the exact report vocabulary, and
+`CAP5FiniteNoGapRouteInput.routeClosed_of_emittedFinsetPairingKernel_eq_bot`
+plus
+`CAP5FiniteNoGapRouteInput.toClosedWitness_of_emittedFinsetPairingKernel_eq_bot`
+turn such a checked emitted-kernel certificate, together with the required
+actual exceptional/cyclic side data, into `CAP5F2RouteClosed` and the finite
+closed witness.  This is the certificate-shaped bridge for Gate 2, not the
+actual Gate 2 decision: the concrete actual `CAP5FiniteNoGapRouteInput` and
+the checked emitted-kernel certificate for that input are still missing.
+
 Geometric table delta: the latest report-level decision theorem reduces the
 primitive missing branch to failed portal/cycle prerequisites for the
 CAP5/Jordan separator-repair class.  If those prerequisites are present, the
