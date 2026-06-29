@@ -642,7 +642,12 @@ longer acceptable progress.
    same closed primitive frontier.  The report-level emitted-rank trichotomy
    then packages the finite verdict as the actual executable branch:
    primitive checker gap, emitted-rank close with synthesis/control, or
-   rank-failure unified evader.  The
+   rank-failure unified evader.  A higher edge-cap projected-generator lab run
+   now records this distinction explicitly: among 65 reports there are 46
+   found coordinate-probe reports, 12 no-Tait-coloring reports, and 7
+   truncation-limited missing probe reports on 18-edge generated collar shells.
+   These projected probes are supporting realization evidence, not the
+   emitted-kernel rank certificate needed by the Lean oracle.  The
    pure no-target theorem underneath those refinements says failed synthesis
    already produces a genuine selected-boundary-zero evader for the enumerated
    forced edges.  The remaining crux is whether exact shell/CAP5 data reaches
