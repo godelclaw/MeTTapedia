@@ -42,6 +42,23 @@ theorem BKMHighNormContinuationFromLogControl_of_bkmEnvelopeSchwartzHighNormCont
     BKMHighNormContinuationFromLogControl_of_bkmEnvelopeSchwartzHighNormContinuation
       hHighNorm
 
+theorem BKMFiniteTimeWitnessSchwartzHighNormEnvelopeFromBKMData_of_bkmEnvelopeSchwartzHighNormContinuation_regression
+    (hHighNorm :
+      BKMFiniteEnergyWitnessBKMEnvelopeSchwartzHighNormContinuation) :
+    BKMFiniteTimeWitnessSchwartzHighNormEnvelopeFromBKMData := by
+  exact
+    BKMFiniteTimeWitnessSchwartzHighNormEnvelopeFromBKMData_of_bkmEnvelopeSchwartzHighNormContinuation
+      hHighNorm
+
+theorem BKMLogSobolevAffinePointwiseFromEnvelope_of_bkmEnvelopeSchwartzHighNormContinuation_and_vorticityToGradient_regression
+    (hHighNorm :
+      BKMFiniteEnergyWitnessBKMEnvelopeSchwartzHighNormContinuation)
+    (hSlice : BKMSchwartzSliceVorticityToGradientAffineLogEstimate) :
+    BKMLogSobolevAffinePointwiseFromEnvelope := by
+  exact
+    BKMLogSobolevAffinePointwiseFromEnvelope_of_bkmEnvelopeSchwartzHighNormContinuation_and_vorticityToGradient
+      hHighNorm hSlice
+
 theorem BKMAnalyticContinuationLemma_of_components_regression
     (hDefect : BKMResidualCurlExpansionDefectVanishes)
     (hLog : BKMLogSobolevGradientControlFromEnvelope)
@@ -85,6 +102,15 @@ theorem BKMArbitraryWitnessAffineLogBiotSavartGronwallContinuationLemma_of_affin
   exact
     BKMArbitraryWitnessAffineLogBiotSavartGronwallContinuationLemma_of_affinePointwiseFromEnvelope_and_bkmEnvelopeSchwartzHighNormContinuation
       hAffine hHighNorm
+
+theorem BKMArbitraryWitnessAffineLogBiotSavartGronwallContinuationLemma_of_vorticityToGradient_and_bkmEnvelopeSchwartzHighNormContinuation_regression
+    (hSlice : BKMSchwartzSliceVorticityToGradientAffineLogEstimate)
+    (hHighNorm :
+      BKMFiniteEnergyWitnessBKMEnvelopeSchwartzHighNormContinuation) :
+    BKMArbitraryWitnessAffineLogBiotSavartGronwallContinuationLemma := by
+  exact
+    BKMArbitraryWitnessAffineLogBiotSavartGronwallContinuationLemma_of_vorticityToGradient_and_bkmEnvelopeSchwartzHighNormContinuation
+      hSlice hHighNorm
 
 theorem BKMArbitraryWitnessAffineLogBiotSavartGronwallContinuationLemma_implies_finiteEnergyBKMContinuationTargetOnNonnegHorizons_regression
     (hDefect : BKMResidualCurlExpansionDefectVanishes)
