@@ -1085,6 +1085,240 @@ theorem vorticityEnstrophyTimePairingDerivativeAt_of_add_scalar_smul_schwartzVor
   convert hDeriv using 1
   ring
 
+/-- Inner product of two finite scalar Schwartz-vorticity superpositions. -/
+theorem inner_fintype_sum_scalar_smul_schwartzVorticitySlice
+    {ι : Type} [Fintype ι]
+    (a b : ι → ℝ) (f g : ι → 𝓢(NSSpace, NSSpace)) (x : NSSpace) :
+    ⟪(∑ i, a i • f i x), (∑ j, b j • g j x)⟫ =
+      ∑ j, ∑ i, (a i * b j) * ⟪f i x, g j x⟫ := by
+  simp [sum_inner, inner_sum, real_inner_smul_left, real_inner_smul_right,
+    mul_assoc, mul_left_comm]
+
+/-- Time derivative of a finite scalar Schwartz vorticity superposition. -/
+theorem timeVorticityDerivative_fintype_sum_scalar_smul_schwartzVorticitySlice
+    {ι : Type} [Fintype ι]
+    (u : NSVelocityField) (a a' : ι → ℝ → ℝ)
+    (f : ι → 𝓢(NSSpace, NSSpace))
+    (ha : ∀ i t, HasDerivAt (a i) (a' i t) t)
+    (hω : ∀ t x, spatialVorticity u t x = ∑ i, a i t • f i x) :
+    ∀ t x, timeVorticityDerivative u t x = ∑ i, a' i t • f i x := by
+  intro t x
+  unfold timeVorticityDerivative
+  have hDeriv :
+      HasDerivAt (fun s : NSTime => spatialVorticity u s x)
+        (∑ i, a' i t • f i x) t := by
+    have hscalar :
+        HasDerivAt (fun s : NSTime => ∑ i, a i s • f i x)
+          (∑ i, a' i t • f i x) t := by
+      exact HasDerivAt.fun_sum (fun i _ => (ha i t).smul_const (f i x))
+    convert hscalar using 1
+    ext s
+    rw [hω s x]
+  rw [hDeriv.hasFDerivAt.fderiv]
+  simp
+
+/-- Vorticity enstrophy of a finite scalar Schwartz vorticity superposition,
+written as its finite Gram matrix quadratic form. -/
+theorem vorticityEnstrophyAt_fintype_sum_scalar_smul_schwartzVorticitySlice
+    {ι : Type} [Fintype ι]
+    (u : NSVelocityField) (a : ι → ℝ → ℝ)
+    (f : ι → 𝓢(NSSpace, NSSpace))
+    (hω : ∀ t x, spatialVorticity u t x = ∑ i, a i t • f i x) :
+    vorticityEnstrophyAt u =
+      fun t => ∑ j, ∑ i, (a i t * a j t) *
+        ∫ x, ⟪f i x, f j x⟫ ∂volume := by
+  funext t
+  rw [vorticityEnstrophyAt]
+  have hDensity :
+      vorticityEnstrophyDensity u t =
+        fun x : NSSpace =>
+          ∑ j, ∑ i, (a i t * a j t) * ⟪f i x, f j x⟫ := by
+    funext x
+    rw [vorticityEnstrophyDensity, hω t x, ← real_inner_self_eq_norm_sq]
+    exact inner_fintype_sum_scalar_smul_schwartzVorticitySlice
+      (fun i => a i t) (fun i => a i t) f f x
+  have hInt :
+      ∀ j ∈ (Finset.univ : Finset ι), Integrable
+        (fun x : NSSpace => ∑ i, (a i t * a j t) * ⟪f i x, f j x⟫) := by
+    intro j _hj
+    exact MeasureTheory.integrable_finsetSum Finset.univ (fun i _hi =>
+      (integrable_inner_schwartz (f i) (f j)).const_mul (a i t * a j t))
+  rw [hDensity]
+  calc
+    ∫ x,
+        (∑ j, ∑ i, (a i t * a j t) * ⟪f i x, f j x⟫) ∂volume
+      = ∑ j, ∫ x,
+          (∑ i, (a i t * a j t) * ⟪f i x, f j x⟫) ∂volume := by
+        rw [integral_finsetSum Finset.univ hInt]
+    _ = ∑ j, ∑ i, (a i t * a j t) *
+          ∫ x, ⟪f i x, f j x⟫ ∂volume := by
+      apply Finset.sum_congr rfl
+      intro j _hj
+      have hIntInner :
+          ∀ i ∈ (Finset.univ : Finset ι), Integrable
+            (fun x : NSSpace => (a i t * a j t) * ⟪f i x, f j x⟫) := by
+        intro i _hi
+        exact (integrable_inner_schwartz (f i) (f j)).const_mul (a i t * a j t)
+      rw [integral_finsetSum Finset.univ hIntInner]
+      apply Finset.sum_congr rfl
+      intro i _hi
+      rw [integral_const_mul]
+
+/-- Time-pairing integral of a finite scalar Schwartz vorticity superposition,
+written as the corresponding finite Gram matrix pairing. -/
+theorem vorticityTimePowerIntegral_fintype_sum_scalar_smul_schwartzVorticitySlice
+    {ι : Type} [Fintype ι]
+    (u : NSVelocityField) (a a' : ι → ℝ → ℝ)
+    (f : ι → 𝓢(NSSpace, NSSpace))
+    (ha : ∀ i t, HasDerivAt (a i) (a' i t) t)
+    (hω : ∀ t x, spatialVorticity u t x = ∑ i, a i t • f i x) :
+    ∀ t,
+      vorticityTimePowerIntegral u t =
+        ∑ j, ∑ i, (a i t * a' j t) *
+          ∫ x, ⟪f i x, f j x⟫ ∂volume := by
+  intro t
+  have hPair :
+      (fun x : NSSpace =>
+        ⟪spatialVorticity u t x, timeVorticityDerivative u t x⟫) =
+        fun x : NSSpace =>
+          ∑ j, ∑ i, (a i t * a' j t) * ⟪f i x, f j x⟫ := by
+    funext x
+    rw [hω t x,
+      timeVorticityDerivative_fintype_sum_scalar_smul_schwartzVorticitySlice
+        u a a' f ha hω t x]
+    exact inner_fintype_sum_scalar_smul_schwartzVorticitySlice
+      (fun i => a i t) (fun i => a' i t) f f x
+  have hInt :
+      ∀ j ∈ (Finset.univ : Finset ι), Integrable
+        (fun x : NSSpace => ∑ i, (a i t * a' j t) * ⟪f i x, f j x⟫) := by
+    intro j _hj
+    exact MeasureTheory.integrable_finsetSum Finset.univ (fun i _hi =>
+      (integrable_inner_schwartz (f i) (f j)).const_mul (a i t * a' j t))
+  rw [vorticityTimePowerIntegral, hPair]
+  calc
+    ∫ x,
+        (∑ j, ∑ i, (a i t * a' j t) * ⟪f i x, f j x⟫) ∂volume
+      = ∑ j, ∫ x,
+          (∑ i, (a i t * a' j t) * ⟪f i x, f j x⟫) ∂volume := by
+        rw [integral_finsetSum Finset.univ hInt]
+    _ = ∑ j, ∑ i, (a i t * a' j t) *
+          ∫ x, ⟪f i x, f j x⟫ ∂volume := by
+      apply Finset.sum_congr rfl
+      intro j _hj
+      have hIntInner :
+          ∀ i ∈ (Finset.univ : Finset ι), Integrable
+            (fun x : NSSpace => (a i t * a' j t) * ⟪f i x, f j x⟫) := by
+        intro i _hi
+        exact (integrable_inner_schwartz (f i) (f j)).const_mul (a i t * a' j t)
+      rw [integral_finsetSum Finset.univ hIntInner]
+      apply Finset.sum_congr rfl
+      intro i _hi
+      rw [integral_const_mul]
+
+/-- Symmetric finite-Gram algebra identifying the half-derivative of a
+quadratic form with the time-pairing form. -/
+theorem half_fintype_gram_derivative_sum_eq_pairing_sum
+    {ι : Type} [Fintype ι]
+    (A Ap : ι → ℝ) (G : ι → ι → ℝ)
+    (hG : ∀ i j, G i j = G j i) :
+    (1 / 2 : ℝ) *
+        (∑ j, ∑ i, ((Ap i * A j + A i * Ap j) * G i j)) =
+      ∑ j, ∑ i, (A i * Ap j) * G i j := by
+  let S1 : ℝ := ∑ j, ∑ i, (Ap i * A j) * G i j
+  let S2 : ℝ := ∑ j, ∑ i, (A i * Ap j) * G i j
+  have hS1S2 : S1 = S2 := by
+    have hSym :
+        (∑ j, ∑ i, (Ap i * A j) * G i j) =
+          ∑ j, ∑ i, (A i * Ap j) * G i j := by
+      calc
+        (∑ j, ∑ i, (Ap i * A j) * G i j)
+            = ∑ i, ∑ j, (Ap i * A j) * G i j := by
+              rw [Finset.sum_comm]
+        _ = ∑ i, ∑ j, (A j * Ap i) * G j i := by
+              apply Finset.sum_congr rfl
+              intro i _hi
+              apply Finset.sum_congr rfl
+              intro j _hj
+              rw [hG i j]
+              ring
+        _ = ∑ j, ∑ i, (A i * Ap j) * G i j := by
+              rw [Finset.sum_comm]
+    simpa [S1, S2] using hSym
+  have hsplit :
+      (∑ j, ∑ i, ((Ap i * A j + A i * Ap j) * G i j)) =
+        S1 + S2 := by
+    simp [S1, S2, add_mul, Finset.sum_add_distrib]
+  rw [hsplit, hS1S2]
+  ring
+
+/-- For finite scalar Schwartz vorticity superpositions, the time-pairing
+integral is the derivative of the normalized vorticity enstrophy. -/
+theorem vorticityEnstrophyTimePairingDerivativeAt_of_fintype_sum_scalar_smul_schwartzVorticitySlice
+    {ι : Type} [Fintype ι]
+    (u : NSVelocityField) (a a' : ι → ℝ → ℝ)
+    (f : ι → 𝓢(NSSpace, NSSpace))
+    (ha : ∀ i t, HasDerivAt (a i) (a' i t) t)
+    (hω : ∀ t x, spatialVorticity u t x = ∑ i, a i t • f i x) :
+    ∀ t, vorticityEnstrophyTimePairingDerivativeAt u t := by
+  intro t
+  let G : ι → ι → ℝ := fun i j => ∫ x, ⟪f i x, f j x⟫ ∂volume
+  have hGramSym : ∀ i j, G i j = G j i := by
+    intro i j
+    unfold G
+    have hPoint :
+        (fun x : NSSpace => ⟪f i x, f j x⟫) =
+          fun x : NSSpace => ⟪f j x, f i x⟫ := by
+      funext x
+      exact (real_inner_comm (f i x) (f j x)).symm
+    rw [hPoint]
+  have hEnergy :
+      normalizedVorticityEnstrophyAt u =
+        fun s => (1 / 2 : ℝ) * ∑ j, ∑ i, (a i s * a j s) * G i j := by
+    funext s
+    rw [normalizedVorticityEnstrophyAt,
+      vorticityEnstrophyAt_fintype_sum_scalar_smul_schwartzVorticitySlice
+        u a f hω]
+  have hPair :
+      vorticityTimePowerIntegral u t =
+        ∑ j, ∑ i, (a i t * a' j t) * G i j := by
+    simpa [G] using
+      vorticityTimePowerIntegral_fintype_sum_scalar_smul_schwartzVorticitySlice
+        u a a' f ha hω t
+  unfold vorticityEnstrophyTimePairingDerivativeAt
+  rw [hEnergy, hPair]
+  have hProdDeriv :
+      ∀ i j,
+        HasDerivAt (fun s : ℝ => a i s * a j s)
+          (a' i t * a j t + a i t * a' j t) t := by
+    intro i j
+    exact (ha i t).mul (ha j t)
+  have hTermDeriv :
+      ∀ j (_hj : j ∈ (Finset.univ : Finset ι)) i
+          (_hi : i ∈ (Finset.univ : Finset ι)),
+        HasDerivAt (fun s : ℝ => (a i s * a j s) * G i j)
+          ((a' i t * a j t + a i t * a' j t) * G i j) t := by
+    intro j _hj i _hi
+    exact (hProdDeriv i j).mul_const (G i j)
+  have hInnerDeriv :
+      ∀ j (_hj : j ∈ (Finset.univ : Finset ι)),
+        HasDerivAt (fun s : ℝ => ∑ i, (a i s * a j s) * G i j)
+          (∑ i, (a' i t * a j t + a i t * a' j t) * G i j) t := by
+    intro j hj
+    exact HasDerivAt.fun_sum (hTermDeriv j hj)
+  have hSumDeriv :
+      HasDerivAt (fun s : ℝ => ∑ j, ∑ i, (a i s * a j s) * G i j)
+        (∑ j, ∑ i, (a' i t * a j t + a i t * a' j t) * G i j) t := by
+    exact HasDerivAt.fun_sum hInnerDeriv
+  have hDeriv :
+      HasDerivAt
+        (fun s : ℝ => (1 / 2 : ℝ) * ∑ j, ∑ i, (a i s * a j s) * G i j)
+        ((1 / 2 : ℝ) *
+          (∑ j, ∑ i, (a' i t * a j t + a i t * a' j t) * G i j)) t := by
+    exact HasDerivAt.const_mul (1 / 2 : ℝ) hSumDeriv
+  convert hDeriv using 1
+  exact (half_fintype_gram_derivative_sum_eq_pairing_sum
+    (fun i => a i t) (fun i => a' i t) G hGramSym).symm
+
 /-- Witness-level hypothesis that every certified vorticity slice has a
 Schwartz representative.  This is the exact decay/regularity input needed to
 instantiate the checked vorticity diffusion integration-by-parts theorem on a
@@ -1804,6 +2038,25 @@ theorem BKMVorticityTwoProfileSchwartzTimePairingDerivativeClosed_proved :
   exact
     vorticityEnstrophyTimePairingDerivativeAt_of_add_scalar_smul_schwartzVorticitySlice
       u a a' b b' f g ha hb hω t
+
+/-- Checked finite-family Schwartz vorticity time-pairing package: for a
+finite scalar-modulated Schwartz vorticity superposition, the time-pairing
+integral is the derivative of the normalized vorticity enstrophy. -/
+def BKMVorticityFiniteFamilySchwartzTimePairingDerivativeClosed : Prop :=
+  ∀ (ι : Type) [Fintype ι] (u : NSVelocityField)
+      (a a' : ι → ℝ → ℝ) (f : ι → 𝓢(NSSpace, NSSpace)),
+    (∀ i t, HasDerivAt (a i) (a' i t) t) →
+      (∀ t x, spatialVorticity u t x = ∑ i, a i t • f i x) →
+        ∀ t, vorticityEnstrophyTimePairingDerivativeAt u t
+
+/-- Checked proof of the finite-family Schwartz vorticity time-pairing
+package. -/
+theorem BKMVorticityFiniteFamilySchwartzTimePairingDerivativeClosed_proved :
+    BKMVorticityFiniteFamilySchwartzTimePairingDerivativeClosed := by
+  intro ι _ u a a' f ha hω t
+  exact
+    vorticityEnstrophyTimePairingDerivativeAt_of_fintype_sum_scalar_smul_schwartzVorticitySlice
+      u a a' f ha hω t
 
 /-- Checked finite-time witness package: Schwartz velocity slices make the
 vorticity enstrophy density integrable on every certified time slice. -/
