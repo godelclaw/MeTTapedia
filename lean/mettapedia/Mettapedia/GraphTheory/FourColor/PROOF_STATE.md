@@ -10,7 +10,7 @@ claimed here; the target is a decided state for the Goertzel theorem-4.9 route.
 | Fork | State | PLN STV | ITV | Progress |
 |---|---|---:|---:|---:|
 | Whole CAP5/F2 route verdict | `CAP5RouteVerdict.lean` now packages the route into the single Lean theorem `cap5F2Route_irreducibleBarrier`, plus the closed-frontier no-gap form `cap5F2Route_irreducibleBarrier_of_noGap`.  The verdict is an irreducible barrier, not a 4CT claim and not a positive-canary sufficient condition: under the standard cyclic-five finite F2 route data, Lean returns either a concrete primitive portal/cycle checker gap from the executable CAP5 report, or the closed-frontier statement that absence of the two concrete target/off-target F2 evaders is exactly equivalent to theorem-4.9 synthesis plus full selected-boundary-zero classifier control.  The unified emitted-kernel/remaining-map obstruction is now named as `CAP5F2UnifiedKernelMapEvader`; under `¬ CAP5PrimitiveCheckerGap`, Lean proves no such evader iff the route is closed, and existence of such an evader iff the closed route endpoint fails.  In that same closed-frontier branch, the CAP5/Jordan geometric separator repair is impossible by the already formalized cyclic-cut obstruction.  The module also records the primitive Gate-1 parity barrier: `noGap_forall_boundaryEdge_crosses` forces all five CAP5 boundary edges to cross under no-gap, and `cap5PrimitiveCheckerGap_of_boundaryEdge_odd_closed_walk` shows any five-edge boundary support covering an odd closed walk is Gate-1 blocked.  The remaining open crux is therefore precisely the actual-side primitive checker frontier plus the single named unified no-evader predicate on candidates not already excluded by this parity barrier; adding more scheduler, rank, or report forks would not change the route decision. | `<0.97,0.95>` | `[0.92,0.97]` | 100% verdict layer |
-| Route payoff audit and finite gate | `CAP5RoutePayoff.lean` no longer claims that route closure yields `G.EdgeColorable 4`: that payoff was vacuous because the route root already has type `G.EdgeColoring Color`.  The non-vacuous route endpoint is now `CAP5RouteClosedSynthesisPayoff`, which extracts only `Theorem49BoundaryRootSynthesis emb C₀` and selected-boundary-zero classifier control from `CAP5F2RouteClosed`.  A genuine coloring payoff remains blocked until the route is refactored around a raw edge-labeling/properness object, or an additional bridge proves properness/nonzero colorability from synthesis rather than from the type of `C₀`.  The finite pre-RREF input is still `CAP5FiniteNoGapRouteInput`; with actual exceptional/cyclic side data and `CAP5F2NoUnifiedKernelMapEvader`, `CAP5FiniteNoGapRouteInput.routeClosed_of_noUnifiedKernelMapEvader` proves `CAP5F2RouteClosed`.  `F2KernelCertificate.lean` adds the checked finite left-inverse certificate `F2LeftInverseKernelCertificate`, and `CAP5RoutePayoff.lean` also consumes the exact empty-remaining finite certificate through `CAP5FiniteNoGapRouteInput.routeClosed_of_remainingControlEdges_eq_empty`.  The same file now records the generic honest-boundary no-input corollaries `CAP5FiniteNoGapRouteInput.false_of_boundaryEdge_odd_closed_walk` and `CAP5FiniteRouteClosedWitness.false_of_boundaryEdge_odd_closed_walk`: any finite route input or route-closed witness whose five CAP5 boundary edges cover an odd closed walk is impossible before Gate 2.  It also records the fixed-embedding formability obstruction `CAP5FiniteNoGapRouteInput.redInterior_mem_projectedColoringGeneratorSubspace`, `CAP5FiniteNoGapRouteInput.blueInterior_mem_projectedColoringGeneratorSubspace`, and the red/blue missing-probe contradiction corollaries: every interior-support edge is either emitted or remaining, so one missing interior red/blue projected-generator coordinate already refutes `CAP5FiniteNoGapRouteInput`.  `CAP5WheelRouteData.lean` fixes one concrete exceptional wheel boundary/component-cover core and proves that exact five-edge boundary is Gate-1 blocked by `wheelCAP5PrimitiveCheckerGap`, so no `CAP5FiniteNoGapRouteInput` or `CAP5FiniteRouteClosedWitness` exists for that core.  The strict incidence lab supersedes the earlier one-control prism MAKE: deriving `selectedBoundarySupport` and `interiorEdgeSupport` from the face incidence data makes the prism 3,840/3,840 `BREAK_evader`, and the prism also fails cyclic-five.  The cyclic-five/Tait dodecahedral six-cut lab candidate is Gate-1-positive and exact strict F2 row reduction gives 532 no-gap sides, 1,021,440 route cases, all `BREAK_evader`; the distinguished side has a unit red-scalar evader on `dod0_1`.  `CAP5DodecahedralRouteData.lean` now records the concrete dodecahedral graph, face embedding, Tait coloring, exceptional CAP5 core, distinguished side/cut data, and checked strict F2 evader certificate (`dodecahedralStrictF2KernelEvaderCertificate`: emitted rows `0x20000000,0x400`, rank 2, kernel dimension 28, unit red-scalar on `dod0_1`).  The actual-route lab then tried to promote that same side through the projected generator surface and failed before Gate 2: the full edge-Kempe closure has 6 colorings, the projected face-generator span has rank 42 in the 60-dimensional chain space, and none of the 60 red/blue single-coordinate route probes lies in that span.  Therefore the dodecahedral side is not a formable `CAP5FiniteNoGapRouteInput`; its raw emitted-coordinate matrix has a `BREAK_evader`, but no Lean `CAP5FiniteUnifiedKernelMapEvaderWitness` can honestly be built for this side. | `<0.84,0.94>` | `[0.68,0.85]` | honest odd-boundary and fixed-embedding no-input barriers added; non-boundary input search/open barrier remains |
+| Route payoff audit and finite gate | `CAP5RoutePayoff.lean` no longer claims that route closure yields `G.EdgeColorable 4`: that payoff was vacuous because the route root already has type `G.EdgeColoring Color`.  The non-vacuous route endpoint is now `CAP5RouteClosedSynthesisPayoff`, which extracts only `Theorem49BoundaryRootSynthesis emb C₀` and selected-boundary-zero classifier control from `CAP5F2RouteClosed`.  A genuine coloring payoff remains blocked until the route is refactored around a raw edge-labeling/properness object, or an additional bridge proves properness/nonzero colorability from synthesis rather than from the type of `C₀`.  The finite pre-RREF input is still `CAP5FiniteNoGapRouteInput`; with actual exceptional/cyclic side data and `CAP5F2NoUnifiedKernelMapEvader`, `CAP5FiniteNoGapRouteInput.routeClosed_of_noUnifiedKernelMapEvader` proves `CAP5F2RouteClosed`.  `F2KernelCertificate.lean` adds the checked finite left-inverse certificate `F2LeftInverseKernelCertificate`, and `CAP5RoutePayoff.lean` also consumes the exact empty-remaining finite certificate through `CAP5FiniteNoGapRouteInput.routeClosed_of_remainingControlEdges_eq_empty`.  The same file now records the generic honest-boundary no-input corollaries `CAP5FiniteNoGapRouteInput.false_of_boundaryEdge_odd_closed_walk` and `CAP5FiniteRouteClosedWitness.false_of_boundaryEdge_odd_closed_walk`: any finite route input or route-closed witness whose five CAP5 boundary edges cover an odd closed walk is impossible before Gate 2.  It also records the fixed-embedding formability obstruction `CAP5FiniteNoGapRouteInput.redInterior_mem_projectedColoringGeneratorSubspace`, `CAP5FiniteNoGapRouteInput.blueInterior_mem_projectedColoringGeneratorSubspace`, and the red/blue missing-probe contradiction corollaries: every interior-support edge is either emitted or remaining, so one missing interior red/blue projected-generator coordinate already refutes `CAP5FiniteNoGapRouteInput`.  `CAP5WheelRouteData.lean` fixes one concrete exceptional wheel boundary/component-cover core and proves that exact five-edge boundary is Gate-1 blocked by `wheelCAP5PrimitiveCheckerGap`, so no `CAP5FiniteNoGapRouteInput` or `CAP5FiniteRouteClosedWitness` exists for that core.  The strict incidence lab supersedes the earlier one-control prism MAKE: deriving `selectedBoundarySupport` and `interiorEdgeSupport` from the face incidence data makes the prism 3,840/3,840 `BREAK_evader`, and the prism also fails cyclic-five.  The cyclic-five/Tait dodecahedral six-cut lab candidate is Gate-1-positive and exact strict F2 row reduction gives 532 no-gap sides, 1,021,440 route cases, all `BREAK_evader`; the distinguished side has a unit red-scalar evader on `dod0_1`.  `CAP5DodecahedralRouteData.lean` now records the concrete dodecahedral graph, face embedding, Tait coloring, exceptional CAP5 core, side/cut data, and checked strict F2 evader certificate (`dodecahedralStrictF2KernelEvaderCertificate`: emitted rows `0x20000000,0x400`, rank 2, kernel dimension 28, unit red-scalar on `dod0_1`).  The actual-route lab then tried to promote that same side through the projected generator surface and failed before Gate 2: the full edge-Kempe closure has 6 colorings, the projected face-generator span has rank 42 in the 60-dimensional chain space, and none of the 60 red/blue single-coordinate route probes lies in that span.  Therefore the dodecahedral side is not a formable `CAP5FiniteNoGapRouteInput`; its raw emitted-coordinate matrix has a `BREAK_evader`, but no Lean `CAP5FiniteUnifiedKernelMapEvaderWitness` can honestly be built for this side. | `<0.87,0.95>` | `[0.73,0.89]` | finite-evidence/current-surface six-cut barriers added; generic six-cut meta-barrier not proven; non-boundary six-cut DOF remains open |
 | Geometric CAP5/Jordan repair | The old packet-refutation lane has been consolidated for the source-bound canonical/one-collar part: every closed-walk exact shell structurally blocks the canonical witness choice and every one-collar collar/previous-boundary witness repair by the same two-interior-edge face obstruction. The side-cut lane has two structural obstructions now: any finite support containing an odd closed walk cannot be realized by a single vertex-side cyclic separator, and any CAP5/Jordan exceptional candidate realized as cyclic-cut data produces a forbidden cyclic edge cut of size at most four in a cyclically five-edge-connected graph. The generated residual surface is now classified and decision-shaped: under cyclic five-edge-connectivity every generated node is either missing primitive checker evidence or emits a concrete outside-crossing edge outside candidate support; at report level, the missing frontier is empty exactly when every latent has the primitive portal/cycle checker evidence needed to enter the realized separator-repair class, while a nonempty frontier is precisely failed checker prerequisites. The report-level geometric decision theorem now says that after the one-collar/canonical obstruction, a CAP5/Jordan report either fails those primitive repair prerequisites or the completed frontier is forced-all and every compatible exceptional cyclic-separator realization is impossible by the same size-at-most-four edge-cut obstruction. Remaining work is to connect exact shell data to the completed-prerequisite side when the route wants more than refuting the repair class. | `<0.66,0.78>` | `[0.51,0.73]` | 88% |
 | Algebraic F2 cancellation oracle | Lab finds no top-level all-interior evader on 65 records, no declared-forced evader on the 38 declared-forced rows (36 forcing-tagged records), and no all-interior vertex-Kirchhoff failure on all 65 records; the vertex-failure crux survives on the 36 forcing records. Lean now proves the route-facing classifier-control iff/no-evader contract, including the full selected-boundary-zero version: emitted CAP5 coordinates control every selected-boundary-zero chain iff no nonzero selected-boundary-zero chain evades all enumerated forced edges. The completed-checker no-evader handoff now also returns full boundary-zero classifier control together with theorem-4.9 synthesis. The executable report bridge now consumes the generator verdict `forcedCounterexampleLatents = all`: under cyclic five-edge-connectivity that verdict closes the primitive missing-evidence frontier, so the report-forced-all branch feeds directly into full boundary-zero no-evader control, the empty-worklist subset certificate, and the target-controlled synthesis-or-genuine-evader fork. The empty-worklist subset certificate is now the actual no-evader branch too: if the forced-all report has no remaining canonical interior-support worklist, Lean proves there is no nonzero selected-boundary-zero evader and then closes synthesis plus full selected-boundary-zero classifier control. The forced-all finite scheduler fork packages the remaining exact-shell obligation: either that empty-worklist no-evader/full-control branch holds, or there is a concrete remaining interior-support edge whose erasure strictly decreases the finite worklist. The forced-all residual scheduler fork now strengthens the failure side: if synthesis fails under the forced-all report, Lean returns the complete checker histogram, forced-bin detector payload, a genuine selected-boundary-zero evader, a traced remaining interior-support edge in the residual worklist, and a strict residual decrease after recording that edge as processed. The residual scheduler transition now also proves that the chosen edge is not controlled by the immutable classifier output and returns the exact one-edge emitted/control update needed to insert it into the processed scheduler state. The terminal residual scheduler theorem closes the success side: if the explicit residual interior-support worklist is exhausted while the processed-control invariant holds, Lean proves no selected-boundary-zero evader exists and closes theorem-4.9 synthesis plus full selected-boundary-zero classifier control. The failed-terminal scheduler decision now connects the two sides: under forced-all and processed-control, failed synthesis cannot have an exhausted residual worklist, and Lean returns a genuine selected-boundary-zero evader plus the next residual edge, immutable-control failure for that edge, the one-edge emitted/control update, and strict residual decrease. The immutable-scheduler obstruction now proves that the same returned edge cannot be silently inserted into the processed state under the original classifier output: processing it is invalid unless the scheduler promotes new emitted/control information, or the returned boundary-zero chain is accepted as the obstruction. The route-facing residual scheduler decision now packages the live finite state as terminal no-evader/synthesis, already-closed synthesis, or a promoted one-edge obstruction with immutable processing ruled out and strict residual decrease. The initial residual closure layer now names the first scheduler obstruction, proves that no primitive checker gap plus failed synthesis forces that obstruction, and proves that no primitive checker gap plus an initially empty residual scheduler closes theorem-4.9 synthesis and full selected-boundary-zero classifier control. The terminal-coverage and trace-control forms sharpen that state: processed coverage is the semantic terminal invariant, canonical remaining-interior trace-control is equivalent to absence of a selected-boundary-zero evader, and trace-control failure returns a concrete trace edge where the evader is nonzero and, given the canonical red/blue remaining-edge certificates, a nonzero pairing against the canonical single-coordinate family. The remaining-family map oracle now sharpens this again: every genuine selected-boundary-zero evader has nonzero image under the canonical remaining-edge family-pairing map; conversely, emitted classifier zeros plus zero image under that map force the boundary-zero chain to be zero. The exact split proves no map-detected evader iff no selected-boundary-zero evader, and under forced-all the route is theorem-4.9 synthesis plus full selected-boundary-zero classifier control or a concrete map-detected evader. The emitted-kernel bridge identifies the lab-facing finite rank certificate on immutable emitted forced-edge coordinates with the same no-evader oracle. The new emitted-kernel/map equivalence proves the two failure languages coincide: every nontrivial emitted-kernel witness has nonzero remaining-family map image, and every map-detected evader lies in the emitted kernel. The forced-all rank split now returns one concrete witness carrying both certificates. The failed-synthesis corollary removes the success branch entirely: under forced-all, if theorem-4.9 synthesis fails, Lean returns that same unified emitted-kernel/remaining-map evader directly. The exact forced-all oracle equivalence now proves that absence of this unified evader is equivalent to theorem-4.9 synthesis plus full selected-boundary-zero classifier control. The emitted-rank exact oracle now proves the lab-facing finite F2 kernel certificate itself is equivalent to theorem-4.9 synthesis plus full selected-boundary-zero classifier control under forced-all; the report-closed emitted-rank theorem removes that raw handoff by deriving forced-all from an empty executable missing-evidence frontier, and the report fork now states either primitive portal/cycle evidence is missing or this rank certificate is exactly equivalent to synthesis/control. The stronger report-level trace fork now removes the same raw handoff from the trace-control split: the executable report returns a primitive checker gap, theorem-4.9 synthesis with full selected-boundary-zero control, or a genuine trace-local selected-boundary-zero evader with nonzero canonical remaining-family pairing. The failure-only report trace theorem now removes the success side under `¬ Theorem49BoundaryRootSynthesis`: a failed route returns a primitive checker gap or that genuine trace-local evader directly. The failure-only report kernel/map theorem now makes the same failed route lab-facing: the executable report returns the primitive checker gap or the unified emitted-kernel/remaining-map evader carrying kernel membership and nonzero canonical remaining-map image. The report-level kernel/map split and no-gap/no-evader closure corollary turn this around: if the executable report has no primitive checker gap and no unified emitted-kernel/remaining-map evader, Lean proves theorem-4.9 synthesis plus full selected-boundary-zero classifier control. The forced-all F2 oracle is also packaged as a direct route-facing split: either no-evader closes synthesis plus full selected-boundary-zero classifier control, or Lean returns an actual nonzero selected-boundary-zero evader. The same report-forced-all interface is now split into its two decision halves: target control plus absence of the concrete theorem-4.9 boundary-vertex Kirchhoff evader yields synthesis and target coverage, while target control plus failed synthesis returns that genuine evader and a decreasing remaining-worklist edge. The forced-all branch now also exposes the pure F2 failure fork without target control: failed synthesis itself returns a nonzero selected-boundary-zero chain vanishing on every enumerated forced edge plus a decreasing remaining interior-support worklist edge. Its stronger canonical path-xor payload form returns the detector payload, a selected-boundary-zero chain, a concrete non-forced remaining interior edge where the chain is nonzero, a strict worklist decrease, and a nonzero canonical red/blue family pairing. Lean also proves the target-dimension fork theorem below-bound classifier implies genuine target evader, the target-control/off-target bridge, the vertex-Kirchhoff failure bridge, the row-span/subset certificate bridge, and the exact binary fork theorem. The empty canonical interior-support worklist proves the exact row-span/subset certificate itself and rules out the concrete vertex-Kirchhoff evader branch. The all-interior/empty-worklist success side proves there is no odd closed walk in ambient interior support, while odd-worklist witnesses do not block synthesis once the concrete evader is excluded. The closed-frontier target/off-target rank-certificate theorem now states the lab-facing emitted kernel certificate itself is equivalent to absence of both target and off-target report evaders; synthesis/control is recovered from the same rank certificate rather than bundled into the certificate predicate. The emitted-rank route-close theorem now consumes that rank certificate directly: the executable report returns only primitive checker gap or synthesis/control, and with a closed primitive frontier the same certificate proves theorem-4.9 synthesis plus full selected-boundary-zero classifier control. The coverage-to-rank bridge now removes one more handoff: exact forced-edge coverage, or a concrete finite control set that meets every nonzero selected-boundary-zero chain and is contained in the emitted classifier output, proves the emitted red/blue pairing-kernel certificate itself; therefore the report route can consume the lab no-evader/coverage verdict as the rank certificate. The empty-worklist rank close now specializes this to exact CAP5 shell data: if the canonical interior-support worklist is empty, Lean proves the emitted pairing kernel is trivial, the executable report has only primitive checker gap or synthesis/control left, and with a closed primitive frontier the empty worklist directly proves synthesis plus full selected-boundary-zero classifier control. The report-level interior-gap wrapper now removes the remaining closed-frontier handoff from the paired failure branch: the executable report returns primitive checker gap, theorem-4.9 synthesis, or a residual canonical interior-support coordinate outside the immutable emitted classifier output together with the unified emitted-kernel/remaining-map evader. The remaining burden is now sharper: prove uniform exact CAP5 data emits every canonical interior-support coordinate and closes the no-evader branch, or accept the paired missing interior coordinate plus the genuine unified finite F2 obstruction. | `<0.94,0.95>` | `[0.89,0.94]` | 99% |
 
@@ -266,6 +266,189 @@ axiom audit driver SHA256
 axiom audit log SHA256
 `2e6788ec7ffd6ae6dbd396500e57b9ea756d0a34646755fac758b20b8ad48c3c`,
 baseline `[propext, Classical.choice, Quot.sound]`.
+The same current-route-surface obstruction is now also stated geometrically:
+`CAP5FiniteNoGapRouteInput.not_noUnifiedKernelMapEvader_of_noncrossing_interiorEdgeSupport`
+and
+`CAP5FiniteNoGapRouteInput.not_noUnifiedKernelMapEvader_of_sameSide_interiorEdgeSupport`
+prove that any canonical interior-support edge whose endpoints stay on one
+vertex side cannot be emitted by the CAP5 forced-edge classifier and therefore
+forces a unified kernel-map evader.  Thus a MAKE run for the present finite
+surface would need every interior-support edge to cross the selected side.
+The side-bipartition requirement is now named directly by
+`CAP5FiniteNoGapRouteInput.interiorEdgeSupport_edges_cross_of_noUnifiedKernelMapEvader`
+and
+`CAP5FiniteNoGapRouteInput.interiorEdgeSupport_edges_cross_of_routeClosed`:
+no-evader, and route closure under the usual exceptional/cyclic equivalence,
+force the selected route side to cut every canonical interior-support edge.
+This is a generic obstruction for the current classifier/input surface, not a
+route-independent refutation of every possible future repair.
+The same pressure is now packaged in two stronger current-surface forms.
+First,
+`CAP5FiniteNoGapRouteInput.not_noUnifiedKernelMapEvader_of_sideCycle_edges_subset_interiorEdgeSupport`
+proves that if Gate 1's selected-side cycle is wholly supported by canonical
+interior edges, then no no-evader certificate can exist: no-evader would force
+one of that side-internal cycle's own edges to cross the selected side.  The
+all-interior specialization
+`CAP5FiniteNoGapRouteInput.not_noUnifiedKernelMapEvader_of_forall_mem_interiorEdgeSupport`
+and the route-closed form
+`CAP5FiniteNoGapRouteInput.not_routeClosed_of_forall_mem_interiorEdgeSupport`
+therefore rule out the closed/all-interior current finite surface even when
+the interior graph is bipartite.  Focused `CAP5RoutePayoff` build SHA256
+`4ebb17291eadc7fdfa20a925dd9ce713dfe0769bcedfa9513f3e36981ad4bbc4`.
+Second, the odd-specialized pressure is still available as an
+odd-interior-walk obstruction:
+`CAP5FiniteNoGapRouteInput.edgeCrossesVertexSide_of_noUnifiedKernelMapEvader_of_mem_interiorEdgeSupport`,
+`CAP5FiniteNoGapRouteInput.not_noUnifiedKernelMapEvader_of_interiorEdgeSupport_odd_closed_walk`,
+`CAP5FiniteNoGapRouteInput.not_routeClosed_of_interiorEdgeSupport_odd_closed_walk`,
+`CAP5FiniteNoGapRouteInput.no_interiorEdgeSupport_odd_closed_walk_of_noUnifiedKernelMapEvader`,
+and
+`CAP5FiniteNoGapRouteInput.no_interiorEdgeSupport_odd_closed_walk_of_routeClosed`
+prove that no-evader would force every interior-support edge to cross one
+vertex side, so an odd closed walk inside the canonical interior support
+forbids both the no-evader certificate and, under the usual exceptional/cyclic
+route equivalence, route closure.  `CAP5GP12RouteData.lean` now routes its
+graph-specific obstruction through the all-interior theorem: because every
+GP(12,2) edge is interior in the closed embedding,
+`gp12_not_noUnifiedKernelMapEvader_of_finiteNoGapRouteInput` rules out
+no-evader for any finite no-gap GP12 route input, for every side and every
+`p0/p4` sidecase; `gp12_not_routeClosed_of_finiteNoGapRouteInput` gives the
+corresponding route-closed obstruction when cyclic-five connectivity is
+supplied.  The face-0 5-cycle `0-1-2-14-12-0` remains recorded as an odd-cycle
+special case, but GP12 no longer depends on odd parity.  This removes the
+sidecase emitted-set equality dependency for GP12's current-surface Gate-2
+BREAK, while remaining conditional on the present finite route input/classifier
+surface rather than a repair-independent meta-barrier.  Prior verification:
+focused `CAP5RoutePayoff` build SHA256
+`4ba71936046ffcbe56af1b281b0ffd5c32b9c25c7d95acbaa39f0225a8e9ed93`;
+focused `CAP5GP12RouteData` build SHA256
+`2218bdab2ff586615c68280ae97b7839c66fa64822a01f0567dbb10b6b0e5082`;
+FourColor umbrella SHA256
+`5e9bd78b573fbfe4ac9ec9d80d70db706da56dffb08d2e67b47bcdcd51c1e07d`;
+axiom audit driver SHA256
+`de85fe0a4e9418255cbe84fe0257899fcaba734fdc096a7346180bf9b85b91ef`;
+axiom audit log SHA256
+`d840b6dfd5b523987e455e18708756dd1ca18b761232530ac908743919241cd5`,
+baseline `[propext, Classical.choice, Quot.sound]`.
+The GP12 all-interior rewrite focused build SHA256 is
+`0428e629dc3fe6a9b56af418efacd69aaf4a88d6fbc0db26de64de1f6e4a3946`.
+Final verification for the side-cycle/all-interior increment: axiom audit
+driver SHA256
+`275258792b1d337e665fe36b151d644b2e20c1ec5344da2c83bd02e2396ea6f2`;
+axiom audit log SHA256
+`afe9cfe8a01ab5cfa77ee3c6ca6a14f04f55223d3e9ffc833c5fb8f7e728b409`,
+baseline `[propext, Classical.choice, Quot.sound]`; FourColor umbrella build
+SHA256
+`be8496df88da4efab22699fc57e0810c00bdbaf01ddc372e9d16e3e3170acaab`.
+`git diff --check`, the touched Lean proof-token scan, and the public diff
+leak scan are clean.
+The side-cycle obstruction now also has a non-interior crossing form:
+`CAP5FiniteNoGapRouteInput.not_noUnifiedKernelMapEvader_of_nonInterior_edges_cross`
+and
+`CAP5FiniteNoGapRouteInput.not_routeClosed_of_nonInterior_edges_cross`
+show that if every edge outside canonical interior support already crosses the
+selected route side, then the current finite route surface cannot be no-evader
+or route-closed.  The boundary-slot corollaries
+`CAP5FiniteNoGapRouteInput.not_noUnifiedKernelMapEvader_of_nonInterior_subset_boundaryEdge`
+and
+`CAP5FiniteNoGapRouteInput.not_routeClosed_of_nonInterior_subset_boundaryEdge`
+specialize this to the case where every non-interior graph edge is one of the
+five CAP5 boundary slots; no-gap forces those slots to cross, while Gate 1 also
+supplies a side-contained cycle.  Thus any surviving repair of the current
+surface must expose a selected-side cycle edge outside canonical interior
+support that is not merely a no-gap boundary slot.  This is a stronger current
+classifier/input-surface obstruction, not a repair-independent B1
+meta-barrier.  Verification: focused `CAP5RoutePayoff` build SHA256
+`baf83bc864536339ace652630fe76b3e599db14aa5f3d291ab6b9340a4d72732`;
+focused `CAP5GP12RouteData` build SHA256
+`693bd616b3420f260a081b7dfc12cace892414788ffdc5b5a3e449b37bddbfa2`;
+FourColor umbrella build SHA256
+`6423fcb114a3354125db4ce80e2a57eef6a5b4db6246f4b1758923f5fa2fe00e`;
+axiom audit driver/log SHA256
+`7f081459a669e1d1e34925a146d0237555f67c491209ae962f4cf0f726515382` /
+`ac507e5c9c1061c160d3d7758765dbe4c49aa1e6f180da0d546e320d89bd2049`,
+baseline `[propext, Classical.choice, Quot.sound]`.
+The local side-cycle version is now checked too:
+`CAP5FiniteNoGapRouteInput.not_noUnifiedKernelMapEvader_of_sideCycle_edges_subset_interiorEdgeSupport_or_boundaryEdge`
+and
+`CAP5FiniteNoGapRouteInput.not_routeClosed_of_sideCycle_edges_subset_interiorEdgeSupport_or_boundaryEdge`
+need only the Gate-1 selected-side cycle itself to be covered by canonical
+interior support or the five CAP5 boundary slots.  This is the six-cut
+checkpoint status: the generic six-cut meta-barrier is not proven.  The
+evidence is finite plus current classifier/input-surface Lean obstruction; the
+non-boundary six-cut degree of freedom remains honestly open.  Verification:
+focused `CAP5RoutePayoff` build SHA256
+`9f93d299da21e27eb3492abfdd0312b1c96ced1475b2994989638ae5917032f5`;
+focused `CAP5GP12RouteData` build SHA256
+`b6e618c3603acc54be5a54deed1bfd502c196ba8e62216e4f416951191968069`;
+FourColor umbrella build SHA256
+`ce461cfe7aa93c85d50a752bf7d19405286fc8474c3d3fcb1aaf2140ee13a8e5`;
+axiom audit driver/log SHA256
+`252079c06d2416bd393f457ab8b57be8b5211106658a5bc721b1bcb3b8ad733e` /
+`3ecc5bc92ce68601cf1b945fb15ce54f45bc2f9e00ce5138be4973d1121de5c0`,
+baseline `[propext, Classical.choice, Quot.sound]`.
+The side-bipartition audit of the archived known/generalized-Petersen sweep
+through 24 vertices gives finite evidence for why the current surface keeps
+stalling: among cyclic-five/Tait route-relevant Kempe-formable embeddings, the
+only graph is `generalized_petersen_12_2`, with 15 closed/punctured embeddings,
+and all 15 have non-bipartite canonical interior support.  Even the cyclic-five
+full-Tait upper-bound formable embeddings have zero bipartite-interior
+survivors.  Evidence:
+`fourcolor-small-cubic-formability-bipartite-interior-audit-20260629.log`
+SHA256 `5e654ecb29cb59261e74d28269a4f73e130e8d9b267b7c3bc74b1ba010d3faaa`;
+source sweep SHA256
+`06ac2ac0ba4626119c6bbce7396a79974bdf81bc35402d1d33e5e8a3882bd1c6`.
+Scope: this is still a finite audit, not the required generic meta-barrier.
+The older archive artifacts with apparent route-case verdicts were also
+validity-audited before promotion: `spoke-cut-prism-6` is Tait/cubic and had an
+old all-MAKE lab abstraction, but fails cyclic-five via nine size-four cyclic
+cuts; `split-chained-diamonds` is Tait-colorable under backtracking and had an
+old all-BREAK abstraction, but it is disconnected and not connected cubic
+3-regular.  Evidence:
+`fourcolor-valid-cap5-archive-candidate-validity-audit-20260629.json` SHA256
+`3ab3a792466d092d81af761b5c841e7138b241b01880a25b6e0f9b2ff5edc3c6`.
+Neither is an objective-A valid CAP5/Tait/cyclic-five input.
+
+The current-surface obstruction also now separates active portal edges from
+emitted forced edges.  The theorem
+`CAP5FiniteNoGapRouteInput.not_noUnifiedKernelMapEvader_of_activePortal_interiorEdgeSupport`
+proves that if a sidecase-active portal boundary edge lies in canonical
+interior support, then it cannot be emitted by the finite forced-edge
+classifier and therefore gives a unified kernel-map evader.  The route-closed
+form
+`CAP5FiniteNoGapRouteInput.not_routeClosed_of_activePortal_interiorEdgeSupport`
+uses the usual exceptional/cyclic no-evader equivalence to rule out
+`CAP5F2RouteClosed` from the same hypothesis.  Focused `CAP5RoutePayoff`
+build SHA256
+`582e5065827594125f1da8bd6a68be437d42fbc5a503569c46ed26c357a4a760`.
+This is a current finite classifier/input-surface theorem, not a claim about
+all possible repaired route encodings.
+
+To avoid hiding an annular repair gap, a new two-face annulus audit checked the
+known NetworkX cubic planar/Tait/cyclic-five graphs through 24 vertices, all
+two-face omissions, and all five-edge cyclic two-component cuts.  It found
+three graph families in scope (`dodecahedral`, `generalized_petersen_10_2`,
+and `generalized_petersen_12_2`), 223 annular surface rows of interest, 223
+full-Tait formable annular upper-bound surfaces, 91 Kempe-formable annular
+surfaces, zero side-bipartition-valid side rows, and zero side rows that could
+fit any sidecase emitted portal-complement under any ordering of the five
+boundary edges.  Evidence:
+`fourcolor-two-face-annulus-current-surface-audit-20260629.json` SHA256
+`1016cde08d7f2aec705488118bf7c12ee714290b24a6a54328f8970073266077`;
+run log SHA256
+`2efd5b38fb16788a4d6edcc7148af1d8dbc258fcb8805dbcddbccdd4ae5afc4b`.
+This widens the finite evidence to legitimate two-boundary annular embeddings,
+but it is still not the B1 generic repair-robust meta-barrier.
+Final verification for the active-portal/annulus refinement: focused
+`CAP5GP12RouteData` build SHA256
+`2e1faf197bd9d5fb7fa1ef9902e0d2acf1e791024ee2b9d201a17e72f5566a63`;
+FourColor umbrella build SHA256
+`c744a4994d825744513323cdfbeed1892f7bf5b639355aa8862df2dabc26e909`;
+axiom audit driver SHA256
+`fb4089155bc838ebf170b3bdfcb3227a63c2bbc21af083f00e05d3ed931d83d1`;
+axiom audit log SHA256
+`096d98e3fa7e9556b63cc8b9ede8c8e6f35ef7a7c57e03ab3603ec2032a8c802`,
+baseline `[propext, Classical.choice, Quot.sound]`.  `git diff --check`,
+the touched Lean proof-token scan, and the public diff leak scan are clean.
 
 Boundary-cycle Gate-1 repair audit: the lab
 `fourcolor-dodeca-boundary-cycle-gate1-lab-20260629.json` checks the natural
