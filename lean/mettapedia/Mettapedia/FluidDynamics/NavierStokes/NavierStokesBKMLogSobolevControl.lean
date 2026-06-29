@@ -109,6 +109,51 @@ theorem bkmLogSobolevGradientEnvelope_le_of_bounds
   simpa [bkmLogSobolevGradientEnvelope, bkmLogSobolevLogFactor] using
     (mul_le_mul_of_nonneg_left hsum hC)
 
+/-- Pointwise algebra turning the BKM logarithmic gradient envelope into the
+scalar log-Gronwall coefficient shape.  If the analytic high-norm envelope `H`
+is dominated by a nonnegative controlling scalar `F`, then
+`C * (1 + Omega * log(e + H))` is bounded by
+`C * (1 + Omega) * (1 + log(e + F))`. -/
+theorem bkmLogSobolevGradientEnvelope_le_scalarLogGrowthCoefficient
+    {C : ℝ} {Ω H F : NSTime → ℝ} {t : NSTime}
+    (hC : 0 ≤ C) (hΩ : 0 ≤ Ω t) (hH : 0 ≤ H t)
+    (hHF : H t ≤ F t) :
+    bkmLogSobolevGradientEnvelope C Ω H t ≤
+      C * (1 + Ω t) * (1 + Real.log (Real.exp (1 : ℝ) + F t)) := by
+  have hF : 0 ≤ F t := hH.trans hHF
+  have hargH_pos : 0 < Real.exp (1 : ℝ) + H t := by
+    linarith [Real.exp_pos (1 : ℝ)]
+  have harg_le :
+      Real.exp (1 : ℝ) + H t ≤ Real.exp (1 : ℝ) + F t := by
+    linarith
+  have hlog_le :
+      Real.log (Real.exp (1 : ℝ) + H t) ≤
+        Real.log (Real.exp (1 : ℝ) + F t) :=
+    Real.log_le_log hargH_pos harg_le
+  have hlogF_nonneg :
+      0 ≤ Real.log (Real.exp (1 : ℝ) + F t) := by
+    have hexp_one : (1 : ℝ) ≤ Real.exp (1 : ℝ) := by
+      rw [← Real.exp_zero]
+      exact Real.exp_le_exp.mpr (by norm_num)
+    have harg_one : (1 : ℝ) ≤ Real.exp (1 : ℝ) + F t := by
+      linarith
+    exact Real.log_nonneg harg_one
+  have hmul_log :
+      Ω t * Real.log (Real.exp (1 : ℝ) + H t) ≤
+        Ω t * Real.log (Real.exp (1 : ℝ) + F t) :=
+    mul_le_mul_of_nonneg_left hlog_le hΩ
+  have hsum_log :
+      1 + Ω t * Real.log (Real.exp (1 : ℝ) + H t) ≤
+        1 + Ω t * Real.log (Real.exp (1 : ℝ) + F t) :=
+    by linarith
+  have hproduct :
+      1 + Ω t * Real.log (Real.exp (1 : ℝ) + F t) ≤
+        (1 + Ω t) * (1 + Real.log (Real.exp (1 : ℝ) + F t)) := by
+    nlinarith [hΩ, hlogF_nonneg]
+  have hinner := hsum_log.trans hproduct
+  simpa [bkmLogSobolevGradientEnvelope, mul_assoc] using
+    mul_le_mul_of_nonneg_left hinner hC
+
 /-- Slabwise version of `bkmLogSobolevGradientEnvelope_le_of_bounds`, shaped
 for the constant-majorant scalar Gronwall comparison on `Set.Ico 0 T`. -/
 theorem bkmLogSobolevGradientEnvelope_le_constant_on_Ico_of_bounds
