@@ -637,7 +637,9 @@ longer acceptable progress.
    kernel/map oracle strengthens this to an iff: after a closed primitive
    frontier, no unified evader is equivalent to synthesis/control, and the
    executable report returns either a primitive gap or that exact equivalence.
-   The
+   The emitted-rank/no-unified-evader bridge now identifies the lab-facing
+   finite kernel certificate with absence of that unified obstruction after the
+   same closed primitive frontier.  The
    pure no-target theorem underneath those refinements says failed synthesis
    already produces a genuine selected-boundary-zero evader for the enumerated
    forced edges.  The remaining crux is whether exact shell/CAP5 data reaches
