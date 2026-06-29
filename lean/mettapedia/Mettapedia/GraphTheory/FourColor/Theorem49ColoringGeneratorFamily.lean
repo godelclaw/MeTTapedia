@@ -2,6 +2,8 @@ import Mettapedia.GraphTheory.FourColor.Theorem49BoundaryProjection
 
 namespace Mettapedia.GraphTheory.FourColor
 
+open scoped BigOperators
+
 variable {V : Type*} [DecidableEq V]
 
 /-- Definition 4.8 generator family built from an arbitrary set of admissible colorings rather
@@ -266,6 +268,50 @@ theorem single_mem_projectedColoringGeneratorSubspace_of_exists_projectedFaceGen
   exact
     single_mem_projectedColoringGeneratorSubspace_of_projectedFaceGenerator_eq
       (emb := emb) (colorings := colorings) hC f hab hproj
+
+/-- A finite checked sum of projected face generators lies in the projected generator subspace,
+provided every listed coloring is admitted.  This is the direct Lean target for finite RREF
+combination certificates. -/
+theorem finset_sum_projectedFaceGenerator_mem_projectedColoringGeneratorSubspace
+    {ι : Type*} {G : SimpleGraph V} {emb : PlaneEmbeddingWithBoundary G}
+    {colorings : Set (G.EdgeColoring Color)}
+    (s : Finset ι) (C : ι → G.EdgeColoring Color)
+    (hC : ∀ i ∈ s, C i ∈ colorings) (rowFace : ι → emb.Face)
+    (a b : ι → Color) (hab : ∀ i ∈ s, ValidColorPair (a i) (b i)) :
+    (∑ i ∈ s,
+      boundaryZeroProjection
+        (selectedBoundarySupport emb.faceBoundary emb.faces emb.faces)
+        (polarizedFaceGenerator (C i) (a i) (b i)
+          (emb.faceBoundary (rowFace i)))) ∈
+      projectedColoringGeneratorSubspace emb colorings := by
+  refine Submodule.sum_mem _ ?_
+  intro i hi
+  exact
+    boundaryZeroProjection_polarizedFaceGenerator_mem_projectedColoringGeneratorSubspace
+      (emb := emb) (colorings := colorings) (hC i hi) (rowFace i) (hab i hi)
+
+/-- Single-coordinate membership from a finite checked projected-generator sum.  The heavy
+finite computation is isolated in the equality `hsum`; Lean only checks that every row is an
+admitted Definition 4.8 generator and rewrites the verified sum. -/
+theorem single_mem_projectedColoringGeneratorSubspace_of_finset_sum_projectedFaceGenerator_eq
+    {ι : Type*} {G : SimpleGraph V} {emb : PlaneEmbeddingWithBoundary G}
+    {colorings : Set (G.EdgeColoring Color)}
+    (s : Finset ι) (C : ι → G.EdgeColoring Color)
+    (hC : ∀ i ∈ s, C i ∈ colorings) (rowFace : ι → emb.Face)
+    (a b : ι → Color) (hab : ∀ i ∈ s, ValidColorPair (a i) (b i))
+    {e : G.edgeSet} {c : Color}
+    (hsum :
+      (∑ i ∈ s,
+        boundaryZeroProjection
+          (selectedBoundarySupport emb.faceBoundary emb.faces emb.faces)
+          (polarizedFaceGenerator (C i) (a i) (b i)
+            (emb.faceBoundary (rowFace i)))) =
+        Pi.single e c) :
+    Pi.single e c ∈ projectedColoringGeneratorSubspace emb colorings := by
+  rw [← hsum]
+  exact
+    finset_sum_projectedFaceGenerator_mem_projectedColoringGeneratorSubspace
+      (emb := emb) (colorings := colorings) s C hC rowFace a b hab
 
 /-- Red/blue control-set memberships extracted from concrete projected face-generator
 equalities.  This is the certificate shape emitted by finite generator searches before the
