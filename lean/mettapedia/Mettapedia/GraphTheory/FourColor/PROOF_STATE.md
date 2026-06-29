@@ -40,6 +40,14 @@ vanishes on every enumerated forced edge, lies in the emitted kernel, is
 detected by the canonical remaining-family map, and fails Kirchhoff at a named
 theorem-4.9 boundary vertex.
 
+Target-controlled rank-decision delta: after theorem-4.9 target classifier
+control is assumed, the finite emitted-edge rank certificate is now exactly
+the absence of that off-target boundary-vertex Kirchhoff evader.  Lean also
+packages the binary decision form: either the emitted-edge kernel closes, or
+the returned witness carries forced-edge vanishing, emitted-kernel membership,
+nonzero canonical remaining-map image, and the concrete boundary-vertex
+Kirchhoff failure.
+
 Trace-F2 delta: the same report-closed handoff now reaches the stronger
 trace-control split.  The executable report returns a primitive checker gap,
 or else the closed frontier yields either theorem-4.9 synthesis with full
@@ -1070,6 +1078,31 @@ nonzero canonical remaining-map image.
   canonical remaining-map image, and a concrete theorem-4.9 boundary-vertex
   Kirchhoff failure.  Current Algebraic-F2 estimate remains PLN STV
   `<0.79,0.92>`, ITV `[0.73,0.81]`, progress `99%`.
+- Target-controlled rank-decision focused detector build archived locally as
+  `fourcolor-move2-target-controlled-rank-decision-focused-build-20260629.log`.
+- Target-controlled rank-decision validation lab rerun archived locally as
+  `fourcolor-move2-target-controlled-rank-decision-lab-20260629.json`;
+  stderr is empty.  It preserves the edge-40/color-1M projected-generator
+  counts: 65 reports split as 53 found and 12 no-Tait-coloring; 740 color
+  probes split as 454 found and 286 no-Tait-coloring, with 0 missing color
+  probes.
+- Target-controlled rank-decision trusted-constant audit archived locally as
+  `fourcolor-move2-target-controlled-rank-decision-axiom-audit-20260629.log`;
+  the two new theorem constants depend only on
+  `[propext, Classical.choice, Quot.sound]`.
+- Full `lake -f lakefile.lean build Mettapedia` archived locally as
+  `fourcolor-move2-target-controlled-rank-decision-full-build-20260629.log`;
+  it completed with 5900 jobs.
+- New target-controlled rank-decision theorem surface:
+  `CAP5TransportedEdgeComponentCoverCore.emittedFinsetPairingKernel_eq_bot_iff_no_boundaryZeroEvader_with_theorem49BoundaryVertexKirchhoffFailure_of_theorem49BoundaryTargetClassifierControl`
+  and
+  `CAP5TransportedEdgeComponentCoverCore.emittedFinsetPairingKernel_eq_bot_or_emittedFinsetKernelMapEvader_with_theorem49BoundaryVertexKirchhoffFailure_of_theorem49BoundaryTargetClassifierControl`.
+  These turn the target-controlled algebraic fork into an exact local
+  decision: after target control, emitted-rank triviality is equivalent to
+  excluding the concrete off-target Kirchhoff evader, and rank failure returns
+  that evader with emitted-kernel and remaining-map certificates.  Current
+  Algebraic-F2 estimate remains PLN STV `<0.79,0.92>`, ITV `[0.73,0.81]`,
+  progress `99%`.
 - Projected-generator edge-40/color-1M lab rerun archived locally as
   `fourcolor-move2-projected-generator-edge40-color1m-lab-20260629.json`;
   stderr is empty.  With the edge cap raised to 40 and the coloring cap raised

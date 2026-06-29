@@ -655,7 +655,14 @@ longer acceptable progress.
    proves that once target classifier control is known, emitted-rank failure
    returns the genuine evader with emitted-kernel membership, nonzero
    remaining-map image, and a concrete theorem-4.9 boundary-vertex Kirchhoff
-   failure.  A higher edge-cap/coloring-cap
+   failure.
+   The target-controlled split is now also an exact local rank decision:
+   `emittedFinsetPairingKernel_eq_bot_iff_no_boundaryZeroEvader_with_theorem49BoundaryVertexKirchhoffFailure_of_theorem49BoundaryTargetClassifierControl`
+   proves that, after theorem-4.9 target control, emitted-rank triviality is
+   equivalent to absence of that concrete off-target Kirchhoff evader, and
+   `emittedFinsetPairingKernel_eq_bot_or_emittedFinsetKernelMapEvader_with_theorem49BoundaryVertexKirchhoffFailure_of_theorem49BoundaryTargetClassifierControl`
+   packages the close-or-witness branch with emitted-kernel and nonzero
+   canonical remaining-map certificates.  A higher edge-cap/coloring-cap
    projected-generator lab run now records this distinction explicitly: among
    65 reports there are 53 found coordinate-probe reports, 12 no-Tait-coloring
    reports, and 0 missing probe reports.
