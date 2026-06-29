@@ -553,6 +553,11 @@ longer acceptable progress.
    worklist, and instead returns a selected-boundary-zero evader, the next
    residual edge, immutable-control failure for that edge, the one-edge
    emitted/control update, and strict residual decrease.  The
+   immutable-scheduler obstruction theorem then rules out the tempting but
+   invalid next move: that same edge cannot be marked processed under the
+   original classifier output.  Continuing the scheduler requires adding the
+   one-edge emitted/control update as real new control information, or keeping
+   the evading boundary-zero chain as the obstruction.  The
    pure no-target theorem underneath those refinements says failed synthesis
    already produces a genuine selected-boundary-zero evader for the enumerated
    forced edges.  The remaining crux is whether exact shell/CAP5 data reaches
