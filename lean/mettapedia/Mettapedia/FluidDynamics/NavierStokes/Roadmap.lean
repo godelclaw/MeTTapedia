@@ -183,8 +183,8 @@ def currentNavierRoadmap : List NavierRoadmapEntry :=
     { stage := .nonzeroEnergyKernel
       proofNodeId := "navier.energy.nonzero-schwartz-stationary-inviscid-constructor"
       status := .checked
-      truthValue := ⟨76, 88⟩
-      obligation := "Use the checked stationary inviscid constructor as the exact one-profile closure surface for localized Euler-style searches, while keeping the positive-viscosity nonzero canary open." },
+      truthValue := ⟨78, 88⟩
+      obligation := "Use the checked stationary inviscid energy-identity canary packet as the exact one-profile closure surface for localized Euler-style searches: at viscosity 0 it returns a nonzero concrete solution witness with exact velocity/pressure equalities, cancellation integrals, coordinate viscous formula, and zero-viscosity meaningful energy identity. Keep the positive-viscosity nonzero canary open." },
     { stage := .nonzeroEnergyKernel
       proofNodeId := "navier.energy.nonzero-schwartz-stokes-kernel"
       status := .checked
@@ -411,9 +411,9 @@ theorem currentNavierRoadmap_records_nonzero_schwartz_kernel_and_open_canary :
       ({ stage := NavierRoadmapStage.nonzeroEnergyKernel
          proofNodeId := "navier.energy.nonzero-schwartz-stationary-inviscid-constructor"
          status := .checked
-         truthValue := ⟨76, 88⟩
+         truthValue := ⟨78, 88⟩
          obligation :=
-          "Use the checked stationary inviscid constructor as the exact one-profile closure surface for localized Euler-style searches, while keeping the positive-viscosity nonzero canary open." } :
+          "Use the checked stationary inviscid energy-identity canary packet as the exact one-profile closure surface for localized Euler-style searches: at viscosity 0 it returns a nonzero concrete solution witness with exact velocity/pressure equalities, cancellation integrals, coordinate viscous formula, and zero-viscosity meaningful energy identity. Keep the positive-viscosity nonzero canary open." } :
         NavierRoadmapEntry) ∈ currentNavierRoadmap ∧
       ({ stage := NavierRoadmapStage.nonzeroEnergyKernel
          proofNodeId := "navier.energy.nonzero-schwartz-stokes-kernel"
