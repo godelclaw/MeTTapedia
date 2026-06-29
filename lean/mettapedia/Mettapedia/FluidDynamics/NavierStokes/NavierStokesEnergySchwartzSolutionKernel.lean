@@ -317,6 +317,82 @@ def oneOneTwoModeSchwartzPressureSlice_nonzeroSchwartzConcreteSolution_of_explic
       intro t x
       simpa using hclosure t x)
 
+/-- Constant-one zero-pressure inviscid specialization of the finite-mode
+constructor.  A nonzero divergence-free two-profile Schwartz branch whose
+stationary convection closure vanishes inhabits the whole-time nonzero
+slice-Schwartz concrete interface at viscosity `0`. -/
+def oneOneTwoModeSchwartzZeroPressure_nonzeroSchwartzConcreteSolution_of_inviscidClosure
+    (f g : NSSchwartzInitialVelocity)
+    (hfg : ∃ x : NSSpace, f x + g x ≠ 0)
+    (hfDiv : ∀ x, initialSpatialDivergence (f : NSInitialVelocity) x = 0)
+    (hgDiv : ∀ x, initialSpatialDivergence (g : NSInitialVelocity) x = 0)
+    (hclosure : ∀ t x,
+          spatialConvection (timeIndependentVelocity (f : NSInitialVelocity)) t x +
+            spatialFDeriv (timeIndependentVelocity (f : NSInitialVelocity)) t x (g x) +
+            spatialFDeriv (timeIndependentVelocity (g : NSInitialVelocity)) t x (f x) +
+            spatialConvection (timeIndependentVelocity (g : NSInitialVelocity)) t x =
+        0) :
+    NonzeroSchwartzConcreteNavierStokesSolution 0 :=
+  oneOneTwoModeSchwartzPressureSlice_nonzeroSchwartzConcreteSolution_of_explicitClosure
+    f g (fun _ : NSTime => (0 : 𝓢(NSSpace, ℝ)))
+    (by
+      change smoothSpaceTimePressure (0 : NSPressureField)
+      exact smoothSpaceTimePressure_zero)
+    hfDiv hgDiv hfg
+    (by
+      intro t x
+      have hpressure_zero :
+          (fun _ : NSTime => fun y : NSSpace => (0 : 𝓢(NSSpace, ℝ)) y) =
+            (0 : NSPressureField) := by
+        funext s y
+        rfl
+      rw [hpressure_zero, spatialPressureGradient_zero]
+      simpa using hclosure t x)
+
+/-- Energy-identity canary packet for the constant-one zero-pressure inviscid
+two-profile branch.  The returned witness is a genuine nonzero
+`NonzeroSchwartzConcreteNavierStokesSolution` at viscosity `0`, with exact
+velocity and pressure fields and the reusable cancellation/energy kernels
+exposed directly. -/
+theorem oneOneTwoModeSchwartzZeroPressure_nonzero_energyIdentityCanary_packet
+    (f g : NSSchwartzInitialVelocity)
+    (hfg : ∃ x : NSSpace, f x + g x ≠ 0)
+    (hfDiv : ∀ x, initialSpatialDivergence (f : NSInitialVelocity) x = 0)
+    (hgDiv : ∀ x, initialSpatialDivergence (g : NSInitialVelocity) x = 0)
+    (hclosure : ∀ t x,
+          spatialConvection (timeIndependentVelocity (f : NSInitialVelocity)) t x +
+            spatialFDeriv (timeIndependentVelocity (f : NSInitialVelocity)) t x (g x) +
+            spatialFDeriv (timeIndependentVelocity (g : NSInitialVelocity)) t x (f x) +
+            spatialConvection (timeIndependentVelocity (g : NSInitialVelocity)) t x =
+        0) :
+    ∃ S : NonzeroSchwartzConcreteNavierStokesSolution 0,
+      S.velocity =
+          twoModeSchwartzVelocity (fun _ : NSTime => 1) (fun _ : NSTime => 1) f g ∧
+        S.pressure = (0 : NSPressureField) ∧
+        (∃ t x, S.velocity t x ≠ 0) ∧
+        SchwartzEnergyIdentityKernel 0 S.velocity S.pressure ∧
+        SchwartzConcreteSolutionKernel 0 S.velocity S.pressure ∧
+        (∀ t, ∫ x, pressureEnergyPairing S.velocity S.pressure t x ∂volume = 0) ∧
+        (∀ t, ∫ x, convectionEnergyPairing S.velocity t x ∂volume = 0) ∧
+        CoordinateViscousEnergyPairingFormula S.velocity ∧
+        (∀ t, HasDerivAt (normalizedKineticEnergy S.velocity) 0 t) ∧
+        (∀ t,
+          Integrable (kineticEnergyDensity S.velocity t) ∧
+            HasDerivAt (normalizedKineticEnergy S.velocity) 0 t) := by
+  let S :=
+    oneOneTwoModeSchwartzZeroPressure_nonzeroSchwartzConcreteSolution_of_inviscidClosure
+      f g hfg hfDiv hgDiv hclosure
+  refine ⟨S, rfl, rfl, S.nonzero_velocity, S.energyIdentityKernel,
+    S.concreteSolutionKernel, S.pressureEnergyCancellation,
+    S.convectionEnergyCancellation, S.coordinateViscousEnergyPairingFormula,
+    ?_, ?_⟩
+  · intro t
+    simpa [coordinateEnergyDissipationRate] using
+      S.coordinateEnergyDissipationIdentity t
+  · intro t
+    rcases S.meaningfulCoordinateEnergyDissipationIdentity t with ⟨hInt, hderiv⟩
+    exact ⟨hInt, by simpa [coordinateEnergyDissipationRate] using hderiv⟩
+
 /-- Energy-kernel consequence for the nonzero finite-mode constructor. -/
 theorem
     twoModeSchwartzPressureSlice_nonzero_energyIdentityKernel_of_momentumEquation
