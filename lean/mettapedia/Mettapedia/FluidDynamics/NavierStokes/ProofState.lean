@@ -358,8 +358,8 @@ slice-Schwartz constructor once the pressure closure is supplied. -/
 def navierNonzeroSchwartzStationaryInviscidConstructorNode : NavierProofNode where
   id := "navier.energy.nonzero-schwartz-stationary-inviscid-constructor"
   status := .checked
-  truthValue := ⟨76, 88⟩
-  evidence := "stationaryInviscidSchwartzPressureSlice_nonzeroSchwartzConcreteSolution and stationaryInviscidSchwartzPressureSlice_nonzero_concreteSolutionKernel prove that any nonzero divergence-free Schwartz initial velocity with a Schwartz pressure slice satisfying the stationary inviscid pointwise closure inhabits NonzeroSchwartzConcreteNavierStokesSolution at viscosity 0 and carries SchwartzConcreteSolutionKernel. PLN STV <s=.76,c=.88>, ITV [.6688,.7888], PROGRESS 73%."
+  truthValue := ⟨78, 88⟩
+  evidence := "stationaryInviscidSchwartzPressureSlice_nonzeroSchwartzConcreteSolution and stationaryInviscidSchwartzPressureSlice_nonzero_concreteSolutionKernel prove that any nonzero divergence-free Schwartz initial velocity with a Schwartz pressure slice satisfying the stationary inviscid pointwise closure inhabits NonzeroSchwartzConcreteNavierStokesSolution at viscosity 0 and carries SchwartzConcreteSolutionKernel. stationaryInviscidSchwartzPressureSlice_nonzero_energyIdentityCanary_packet now exposes the constructed witness with exact velocity/pressure equalities, nonzero witness, both cancellation integrals, the coordinate viscous formula, and the zero-viscosity meaningful energy identity. PLN STV <s=.78,c=.88>, ITV [.6864,.8064], PROGRESS 75%."
   blocker := "This exposes the exact stationary localized Euler-style pressure-closure seam. It is still conditional on an explicit closure witness and works at viscosity 0, so it does not satisfy the positive-viscosity nonzero canary obligation."
 
 /-- The exact Stokes-flow subroute is now separated as a reusable kernel. -/
@@ -1523,6 +1523,19 @@ theorem currentNavierNonzeroSchwartzStationaryInviscidConstructor_node
       S.velocity = timeIndependentVelocity (u₀.1 : NSInitialVelocity) ∧
         S.pressure = (fun _ : NSTime => fun y : NSSpace => q y) ∧
         SchwartzConcreteSolutionKernel 0 S.velocity S.pressure) ∧
+      (∃ S : NonzeroSchwartzConcreteNavierStokesSolution 0,
+        S.velocity = timeIndependentVelocity (u₀.1 : NSInitialVelocity) ∧
+          S.pressure = (fun _ : NSTime => fun y : NSSpace => q y) ∧
+          (∃ t x, S.velocity t x ≠ 0) ∧
+          SchwartzEnergyIdentityKernel 0 S.velocity S.pressure ∧
+          SchwartzConcreteSolutionKernel 0 S.velocity S.pressure ∧
+          (∀ t, ∫ x, pressureEnergyPairing S.velocity S.pressure t x ∂volume = 0) ∧
+          (∀ t, ∫ x, convectionEnergyPairing S.velocity t x ∂volume = 0) ∧
+          CoordinateViscousEnergyPairingFormula S.velocity ∧
+          (∀ t, HasDerivAt (normalizedKineticEnergy S.velocity) 0 t) ∧
+          (∀ t,
+            Integrable (kineticEnergyDensity S.velocity t) ∧
+              HasDerivAt (normalizedKineticEnergy S.velocity) 0 t)) ∧
       (∃ t x, timeIndependentVelocity (u₀.1 : NSInitialVelocity) t x ≠ 0) ∧
       navierNonzeroSchwartzStationaryInviscidConstructorNode.status = .checked ∧
       navierNonzeroSchwartzCanaryNode.status = .openGoal := by
@@ -1531,6 +1544,8 @@ theorem currentNavierNonzeroSchwartzStationaryInviscidConstructor_node
       u₀ q hnonzero hstationary
   exact
     ⟨⟨S, rfl, rfl, S.concreteSolutionKernel⟩,
+      stationaryInviscidSchwartzPressureSlice_nonzero_energyIdentityCanary_packet
+        u₀ q hnonzero hstationary,
       (stationaryInviscidSchwartzPressureSlice_nonzero_concreteSolutionKernel
         u₀ q hnonzero hstationary).1,
       navierNonzeroSchwartzStationaryInviscidConstructorNode_checked,

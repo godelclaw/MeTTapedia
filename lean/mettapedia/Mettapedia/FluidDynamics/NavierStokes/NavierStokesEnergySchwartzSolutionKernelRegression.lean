@@ -50,6 +50,31 @@ theorem stationary_inviscid_schwartz_pressure_slice_kernel_regression
     stationaryInviscidSchwartzPressureSlice_nonzero_concreteSolutionKernel
       u₀ q hnonzero hstationary
 
+theorem stationary_inviscid_schwartz_pressure_slice_energy_canary_regression
+    (u₀ : NSSchwartzDivergenceFreeInitialVelocity)
+    (q : 𝓢(NSSpace, ℝ))
+    (hnonzero : ∃ x : NSSpace, u₀.1 x ≠ 0)
+    (hstationary : ∀ t x,
+      spatialConvection (timeIndependentVelocity (u₀.1 : NSInitialVelocity)) t x +
+          spatialPressureGradient (fun _ : NSTime => fun y : NSSpace => q y) t x =
+        0) :
+    ∃ S : NonzeroSchwartzConcreteNavierStokesSolution 0,
+      S.velocity = timeIndependentVelocity (u₀.1 : NSInitialVelocity) ∧
+        S.pressure = (fun _ : NSTime => fun y : NSSpace => q y) ∧
+        (∃ t x, S.velocity t x ≠ 0) ∧
+        SchwartzEnergyIdentityKernel 0 S.velocity S.pressure ∧
+        SchwartzConcreteSolutionKernel 0 S.velocity S.pressure ∧
+        (∀ t, ∫ x, pressureEnergyPairing S.velocity S.pressure t x ∂volume = 0) ∧
+        (∀ t, ∫ x, convectionEnergyPairing S.velocity t x ∂volume = 0) ∧
+        CoordinateViscousEnergyPairingFormula S.velocity ∧
+        (∀ t, HasDerivAt (normalizedKineticEnergy S.velocity) 0 t) ∧
+        (∀ t,
+          Integrable (kineticEnergyDensity S.velocity t) ∧
+            HasDerivAt (normalizedKineticEnergy S.velocity) 0 t) := by
+  exact
+    stationaryInviscidSchwartzPressureSlice_nonzero_energyIdentityCanary_packet
+      u₀ q hnonzero hstationary
+
 theorem twoMode_nonzero_schwartz_pressure_slice_kernel_regression
     {a b : NSTime → ℝ} (ha : ContDiff ℝ ∞ a) (hb : ContDiff ℝ ∞ b)
     (f g : NSSchwartzInitialVelocity) (A B : ℝ)

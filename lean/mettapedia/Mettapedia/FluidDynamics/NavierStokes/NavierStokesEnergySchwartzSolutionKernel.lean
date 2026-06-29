@@ -402,6 +402,47 @@ theorem stationaryInviscidSchwartzPressureSlice_nonzero_concreteSolutionKernel
       u₀ q hnonzero hstationary
   exact S.nonzero_and_concreteSolutionKernel
 
+/-- Explicit energy-identity canary packet for the stationary inviscid
+one-profile constructor.  The returned witness is a genuine nonzero
+`NonzeroSchwartzConcreteNavierStokesSolution` at viscosity `0`, with its
+velocity and pressure fixed definitionally to the supplied stationary data,
+and with the universal slice-Schwartz cancellations and zero-viscosity energy
+identity exposed directly rather than hidden behind the kernel record. -/
+theorem stationaryInviscidSchwartzPressureSlice_nonzero_energyIdentityCanary_packet
+    (u₀ : NSSchwartzDivergenceFreeInitialVelocity)
+    (q : 𝓢(NSSpace, ℝ))
+    (hnonzero : ∃ x : NSSpace, u₀.1 x ≠ 0)
+    (hstationary : ∀ t x,
+      spatialConvection (timeIndependentVelocity (u₀.1 : NSInitialVelocity)) t x +
+          spatialPressureGradient (fun _ : NSTime => fun y : NSSpace => q y) t x =
+        0) :
+    ∃ S : NonzeroSchwartzConcreteNavierStokesSolution 0,
+      S.velocity = timeIndependentVelocity (u₀.1 : NSInitialVelocity) ∧
+        S.pressure = (fun _ : NSTime => fun y : NSSpace => q y) ∧
+        (∃ t x, S.velocity t x ≠ 0) ∧
+        SchwartzEnergyIdentityKernel 0 S.velocity S.pressure ∧
+        SchwartzConcreteSolutionKernel 0 S.velocity S.pressure ∧
+        (∀ t, ∫ x, pressureEnergyPairing S.velocity S.pressure t x ∂volume = 0) ∧
+        (∀ t, ∫ x, convectionEnergyPairing S.velocity t x ∂volume = 0) ∧
+        CoordinateViscousEnergyPairingFormula S.velocity ∧
+        (∀ t, HasDerivAt (normalizedKineticEnergy S.velocity) 0 t) ∧
+        (∀ t,
+          Integrable (kineticEnergyDensity S.velocity t) ∧
+            HasDerivAt (normalizedKineticEnergy S.velocity) 0 t) := by
+  let S :=
+    stationaryInviscidSchwartzPressureSlice_nonzeroSchwartzConcreteSolution
+      u₀ q hnonzero hstationary
+  refine ⟨S, rfl, rfl, S.nonzero_velocity, S.energyIdentityKernel,
+    S.concreteSolutionKernel, S.pressureEnergyCancellation,
+    S.convectionEnergyCancellation, S.coordinateViscousEnergyPairingFormula,
+    ?_, ?_⟩
+  · intro t
+    simpa [coordinateEnergyDissipationRate] using
+      S.coordinateEnergyDissipationIdentity t
+  · intro t
+    rcases S.meaningfulCoordinateEnergyDissipationIdentity t with ⟨hInt, hderiv⟩
+    exact ⟨hInt, by simpa [coordinateEnergyDissipationRate] using hderiv⟩
+
 end NavierStokes
 end FluidDynamics
 end Mettapedia
