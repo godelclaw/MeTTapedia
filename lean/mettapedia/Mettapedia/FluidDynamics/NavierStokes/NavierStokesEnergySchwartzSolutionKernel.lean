@@ -142,6 +142,48 @@ theorem nonzero_and_concreteSolutionKernel :
       SchwartzConcreteSolutionKernel ν S.velocity S.pressure :=
   ⟨S.nonzero_velocity, S.concreteSolutionKernel⟩
 
+/-- Reusable nonzero energy/momentum packet.  Any nonzero slice-Schwartz
+concrete solution carries the nonzero witness, both energy cancellations, the
+viscous identity, the meaningful energy identity, the literal momentum equation,
+incompressibility, and the pressure-residual curl gate. -/
+theorem nonzero_energyMomentumCanary_packet :
+    (∃ t x, S.velocity t x ≠ 0) ∧
+      SchwartzEnergyIdentityKernel ν S.velocity S.pressure ∧
+      SchwartzMomentumClosureKernel ν S.velocity S.pressure ∧
+      SchwartzConcreteSolutionKernel ν S.velocity S.pressure ∧
+      (∀ t, ∫ x, pressureEnergyPairing S.velocity S.pressure t x ∂volume = 0) ∧
+      (∀ t, ∫ x, convectionEnergyPairing S.velocity t x ∂volume = 0) ∧
+      CoordinateViscousEnergyPairingFormula S.velocity ∧
+      (∀ t,
+        HasDerivAt (normalizedKineticEnergy S.velocity)
+          (-(coordinateEnergyDissipationRate S.velocity ν t)) t) ∧
+      (∀ t,
+        Integrable (kineticEnergyDensity S.velocity t) ∧
+          HasDerivAt (normalizedKineticEnergy S.velocity)
+            (-(coordinateEnergyDissipationRate S.velocity ν t)) t) ∧
+      (∀ t x,
+        timeVelocityDerivative S.velocity t x + spatialConvection S.velocity t x +
+            spatialPressureGradient S.pressure t x =
+          ν • spatialLaplacian S.velocity t x) ∧
+      (∀ t x, spatialDivergence S.velocity t x = 0) ∧
+      pressureGradientVelocityField S.pressure = momentumPressureResidual ν S.velocity ∧
+      (∀ t x, spatialVorticity (momentumPressureResidual ν S.velocity) t x = 0) := by
+  let K := S.concreteSolutionKernel
+  exact
+    ⟨S.nonzero_velocity,
+      K.energy,
+      K.momentum,
+      K,
+      K.energy.pressureCancellation,
+      K.energy.convectionCancellation,
+      K.energy.viscousFormula,
+      K.energy.coordinateIdentity,
+      K.energy.meaningfulIdentity,
+      K.momentum.momentumEquation,
+      K.momentum.incompressible,
+      K.momentum.pressureResidual_eq_gradient,
+      K.momentum.pressureResidual_vorticity_zero⟩
+
 end NonzeroSchwartzConcreteNavierStokesSolution
 
 /-- A bounded two-profile Schwartz ansatz with Schwartz pressure slices and the

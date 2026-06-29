@@ -73,8 +73,8 @@ def currentNavierRoadmap : List NavierRoadmapEntry :=
     { stage := .nonzeroEnergyKernel
       proofNodeId := "navier.energy.nonzero-schwartz-kernel"
       status := .checked
-      truthValue := ⟨73, 86⟩
-      obligation := "Use the checked nonzero-preserving kernel for finite-mode generator work, but keep the explicit inhabited nonzero pressure-slice closure as the open canary obligation." },
+      truthValue := ⟨76, 87⟩
+      obligation := "Use the checked nonzero-preserving energy/momentum packet for finite-mode generator work: it exposes the nonzero witness, pressure and convection cancellations, viscous identity, meaningful energy identity, literal momentum equation, incompressibility, pressure-residual equality, and residual-curl-zero gate. Keep the explicit inhabited nonzero pressure-slice closure as the open canary obligation." },
     { stage := .nonzeroEnergyKernel
       proofNodeId := "navier.energy.nonzero-schwartz-line-invariant-obstruction"
       status := .checked
@@ -247,12 +247,12 @@ theorem currentNavierRoadmap_nonempty : currentNavierRoadmap ≠ [] := by
 /-- The roadmap records the checked nonzero-preserving kernel and keeps the
 explicit nonzero canary open. -/
 theorem currentNavierRoadmap_records_nonzero_schwartz_kernel_and_open_canary :
-    ({ stage := NavierRoadmapStage.nonzeroEnergyKernel
-       proofNodeId := "navier.energy.nonzero-schwartz-kernel"
-       status := .checked
-       truthValue := ⟨73, 86⟩
-       obligation :=
-        "Use the checked nonzero-preserving kernel for finite-mode generator work, but keep the explicit inhabited nonzero pressure-slice closure as the open canary obligation." } :
+      ({ stage := NavierRoadmapStage.nonzeroEnergyKernel
+         proofNodeId := "navier.energy.nonzero-schwartz-kernel"
+         status := .checked
+         truthValue := ⟨76, 87⟩
+         obligation :=
+          "Use the checked nonzero-preserving energy/momentum packet for finite-mode generator work: it exposes the nonzero witness, pressure and convection cancellations, viscous identity, meaningful energy identity, literal momentum equation, incompressibility, pressure-residual equality, and residual-curl-zero gate. Keep the explicit inhabited nonzero pressure-slice closure as the open canary obligation." } :
       NavierRoadmapEntry) ∈ currentNavierRoadmap ∧
       ({ stage := NavierRoadmapStage.nonzeroEnergyKernel
          proofNodeId := "navier.energy.nonzero-schwartz-line-invariant-obstruction"

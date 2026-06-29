@@ -34,6 +34,31 @@ theorem nonzero_schwartz_solution_concrete_kernel_regression
       SchwartzConcreteSolutionKernel ν S.velocity S.pressure := by
   exact S.nonzero_and_concreteSolutionKernel
 
+theorem nonzero_schwartz_solution_energy_momentum_canary_packet_regression
+    {ν : ℝ} (S : NonzeroSchwartzConcreteNavierStokesSolution ν) :
+    (∃ t x, S.velocity t x ≠ 0) ∧
+      SchwartzEnergyIdentityKernel ν S.velocity S.pressure ∧
+      SchwartzMomentumClosureKernel ν S.velocity S.pressure ∧
+      SchwartzConcreteSolutionKernel ν S.velocity S.pressure ∧
+      (∀ t, ∫ x, pressureEnergyPairing S.velocity S.pressure t x ∂volume = 0) ∧
+      (∀ t, ∫ x, convectionEnergyPairing S.velocity t x ∂volume = 0) ∧
+      CoordinateViscousEnergyPairingFormula S.velocity ∧
+      (∀ t,
+        HasDerivAt (normalizedKineticEnergy S.velocity)
+          (-(coordinateEnergyDissipationRate S.velocity ν t)) t) ∧
+      (∀ t,
+        Integrable (kineticEnergyDensity S.velocity t) ∧
+          HasDerivAt (normalizedKineticEnergy S.velocity)
+            (-(coordinateEnergyDissipationRate S.velocity ν t)) t) ∧
+      (∀ t x,
+        timeVelocityDerivative S.velocity t x + spatialConvection S.velocity t x +
+            spatialPressureGradient S.pressure t x =
+          ν • spatialLaplacian S.velocity t x) ∧
+      (∀ t x, spatialDivergence S.velocity t x = 0) ∧
+      pressureGradientVelocityField S.pressure = momentumPressureResidual ν S.velocity ∧
+      (∀ t x, spatialVorticity (momentumPressureResidual ν S.velocity) t x = 0) := by
+  exact S.nonzero_energyMomentumCanary_packet
+
 theorem stationary_inviscid_schwartz_pressure_slice_kernel_regression
     (u₀ : NSSchwartzDivergenceFreeInitialVelocity)
     (q : 𝓢(NSSpace, ℝ))
