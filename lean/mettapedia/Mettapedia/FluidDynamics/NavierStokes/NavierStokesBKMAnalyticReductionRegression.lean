@@ -31,13 +31,14 @@ theorem bkm_continuation_reduced_to_single_analytic_lemma_regression :
             BKMVorticityRawBalanceFromStandardEquationClosed ∧
               BKMVorticityTransportCancellationAlgebraClosed ∧
                 BKMVorticityDiffusionIntegrationByPartsSchwartzClosed ∧
-                  BKMVorticityEnstrophyBalanceAssemblyClosed ∧
-                    BKMVorticityEnstrophyAprioriEstimateClosed ∧
-                      BKMVorticityEnstrophyGradientGrowthClosed ∧
-                        BKMVorticityEnstrophyLogSobolevGrowthClosed ∧
-                          BKMLogSobolevGrowthEstimateClosed ∧
-                            (BKMAnalyticContinuationLemma →
-                              ExplicitFiniteEnergyBKMContinuationTargetOnNonnegHorizons) :=
+                  BKMVorticityFiniteTimeWitnessSchwartzSliceAprioriClosed ∧
+                    BKMVorticityEnstrophyBalanceAssemblyClosed ∧
+                      BKMVorticityEnstrophyAprioriEstimateClosed ∧
+                        BKMVorticityEnstrophyGradientGrowthClosed ∧
+                          BKMVorticityEnstrophyLogSobolevGrowthClosed ∧
+                            BKMLogSobolevGrowthEstimateClosed ∧
+                              (BKMAnalyticContinuationLemma →
+                                ExplicitFiniteEnergyBKMContinuationTargetOnNonnegHorizons) :=
   BKMContinuation_reduced_to_single_analytic_lemma
 
 end Regression

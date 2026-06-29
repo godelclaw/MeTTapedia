@@ -39,13 +39,14 @@ theorem BKMContinuation_reduced_to_analytic_components_regression :
             BKMVorticityRawBalanceFromStandardEquationClosed ∧
               BKMVorticityTransportCancellationAlgebraClosed ∧
                 BKMVorticityDiffusionIntegrationByPartsSchwartzClosed ∧
-                  BKMVorticityEnstrophyBalanceAssemblyClosed ∧
-                    BKMVorticityEnstrophyAprioriEstimateClosed ∧
-                      BKMVorticityEnstrophyGradientGrowthClosed ∧
-                        BKMVorticityEnstrophyLogSobolevGrowthClosed ∧
-                          BKMLogSobolevGrowthEstimateClosed ∧
-                            (BKMAnalyticComponentsClosed →
-                              ExplicitFiniteEnergyBKMContinuationTargetOnNonnegHorizons) := by
+                  BKMVorticityFiniteTimeWitnessSchwartzSliceAprioriClosed ∧
+                    BKMVorticityEnstrophyBalanceAssemblyClosed ∧
+                      BKMVorticityEnstrophyAprioriEstimateClosed ∧
+                        BKMVorticityEnstrophyGradientGrowthClosed ∧
+                          BKMVorticityEnstrophyLogSobolevGrowthClosed ∧
+                            BKMLogSobolevGrowthEstimateClosed ∧
+                              (BKMAnalyticComponentsClosed →
+                                ExplicitFiniteEnergyBKMContinuationTargetOnNonnegHorizons) := by
   exact BKMContinuation_reduced_to_analytic_components
 
 end BKMContinuation

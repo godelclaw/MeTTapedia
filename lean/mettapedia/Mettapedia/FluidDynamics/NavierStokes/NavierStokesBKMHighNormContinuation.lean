@@ -108,13 +108,14 @@ theorem BKMContinuation_reduced_to_analytic_components :
             BKMVorticityRawBalanceFromStandardEquationClosed ∧
               BKMVorticityTransportCancellationAlgebraClosed ∧
                 BKMVorticityDiffusionIntegrationByPartsSchwartzClosed ∧
-                  BKMVorticityEnstrophyBalanceAssemblyClosed ∧
-                    BKMVorticityEnstrophyAprioriEstimateClosed ∧
-                      BKMVorticityEnstrophyGradientGrowthClosed ∧
-                        BKMVorticityEnstrophyLogSobolevGrowthClosed ∧
-                          BKMLogSobolevGrowthEstimateClosed ∧
-                            (BKMAnalyticComponentsClosed →
-                              ExplicitFiniteEnergyBKMContinuationTargetOnNonnegHorizons) := by
+                  BKMVorticityFiniteTimeWitnessSchwartzSliceAprioriClosed ∧
+                    BKMVorticityEnstrophyBalanceAssemblyClosed ∧
+                      BKMVorticityEnstrophyAprioriEstimateClosed ∧
+                        BKMVorticityEnstrophyGradientGrowthClosed ∧
+                          BKMVorticityEnstrophyLogSobolevGrowthClosed ∧
+                            BKMLogSobolevGrowthEstimateClosed ∧
+                              (BKMAnalyticComponentsClosed →
+                                ExplicitFiniteEnergyBKMContinuationTargetOnNonnegHorizons) := by
   exact
     ⟨BKMVorticityStretchingEstimateClosed_proved,
       BKMResidualCurlExpansionAlgebraClosed_proved,
@@ -123,6 +124,7 @@ theorem BKMContinuation_reduced_to_analytic_components :
       BKMVorticityRawBalanceFromStandardEquationClosed_proved,
       BKMVorticityTransportCancellationAlgebraClosed_proved,
       BKMVorticityDiffusionIntegrationByPartsSchwartzClosed_proved,
+      BKMVorticityFiniteTimeWitnessSchwartzSliceAprioriClosed_proved,
       BKMVorticityEnstrophyBalanceAssemblyClosed_proved,
       BKMVorticityEnstrophyAprioriEstimateClosed_proved,
       BKMVorticityEnstrophyGradientGrowthClosed_proved,
