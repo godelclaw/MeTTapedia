@@ -1011,18 +1011,19 @@ nonzero canonical remaining-map image.
   follows, or rank failure returns the unified emitted-kernel/remaining-map
   evader as the obstruction.  Current Algebraic-F2 estimate remains PLN STV
   `<0.79,0.92>`, ITV `[0.73,0.81]`, progress `99%`.
-- Projected-generator edge-40 lab rerun archived locally as
-  `fourcolor-move2-projected-generator-summary-lab-20260629.json`; stderr is
-  empty.  With the edge cap raised to 40, the 65 generated/benchmark
-  projected-coordinate probe reports split as 46 `found`, 12
-  `no_tait_coloring`, and 7 `missing`; the 7 missing cases are all
-  truncation-limited at the 100000-coloring search bound on 18-edge generated
-  collar shells.  This removes the previous edge-limit skip artifact but does
-  not certify the emitted-kernel/no-evader branch.  Move 2 therefore remains:
-  prove canonical trace-control/emitted-kernel triviality from exact shell data
-  or formalize the genuine unified evader already returned by the Lean fork.
-  Current Algebraic-F2 estimate remains PLN STV `<0.79,0.92>`, ITV
-  `[0.73,0.81]`, progress `99%`.
+- Projected-generator edge-40/color-1M lab rerun archived locally as
+  `fourcolor-move2-projected-generator-edge40-color1m-lab-20260629.json`;
+  stderr is empty.  With the edge cap raised to 40 and the coloring cap raised
+  to 1000000, the 65 generated/benchmark projected-coordinate probe reports
+  split as 53 `found`, 12 `no_tait_coloring`, and 0 `missing`; the 740 color
+  probes split as 454 `found`, 286 `no_tait_coloring`, and 0 `missing`.  This
+  removes both the previous edge-limit skip artifact and the later 100000-bound
+  truncation artifact, but still does not certify the emitted-kernel/no-evader
+  branch.  Move 2 therefore remains: prove canonical
+  trace-control/emitted-kernel triviality from exact shell data or formalize
+  the genuine unified evader already returned by the Lean fork.  Current
+  Algebraic-F2 estimate remains PLN STV `<0.79,0.92>`, ITV `[0.73,0.81]`,
+  progress `99%`.
 
 ## Remaining Completion Requirements
 
