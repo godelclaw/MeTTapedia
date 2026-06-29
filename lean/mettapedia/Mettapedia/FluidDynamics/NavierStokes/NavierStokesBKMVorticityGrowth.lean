@@ -377,6 +377,29 @@ theorem vorticityDiffusionIntegrationByPartsAt_of_schwartzVorticitySlice
     vorticityDiffusionDissipationDensity, laplacianEnergyPairing,
     coordinateEnstrophyAt, coordinateEnstrophyDensity] using hIBP
 
+/-- Witness-level hypothesis that every certified vorticity slice has a
+Schwartz representative.  This is the exact decay/regularity input needed to
+instantiate the checked vorticity diffusion integration-by-parts theorem on a
+finite-time witness. -/
+def finiteTimeWitnessVorticitySchwartzSlices
+    {ν : ℝ} {u₀ : NSInitialVelocity} {T : ℝ}
+    (W : ExplicitFiniteTimeRegularityWitness ν u₀ T) : Prop :=
+  ∀ t, 0 ≤ t → t ≤ T →
+    ∃ ω : 𝓢(NSSpace, NSSpace), ∀ x, spatialVorticity W.velocity t x = ω x
+
+/-- If a finite-time witness has Schwartz vorticity slices, the checked
+vorticity diffusion integration-by-parts identity applies on every certified
+time slice. -/
+theorem vorticityDiffusionIntegrationByPartsAt_of_finiteTimeWitnessVorticitySchwartzSlices
+    {ν : ℝ} {u₀ : NSInitialVelocity} {T : ℝ}
+    (W : ExplicitFiniteTimeRegularityWitness ν u₀ T)
+    (hSlices : finiteTimeWitnessVorticitySchwartzSlices W)
+    {t : NSTime} (ht0 : 0 ≤ t) (htT : t ≤ T) :
+    vorticityDiffusionIntegrationByPartsAt W.velocity t := by
+  rcases hSlices t ht0 htT with ⟨ω, hω⟩
+  exact vorticityDiffusionIntegrationByPartsAt_of_schwartzVorticitySlice
+    W.velocity t ω hω
+
 /-- In the vorticity enstrophy balance, nonnegative viscosity can only decrease
 the derivative relative to the stretching-power integral. -/
 theorem vorticityEnstrophyBalanceDerivative_le_stretchingPowerIntegral
@@ -455,6 +478,42 @@ theorem vorticityEnstrophyStretchingControlledAt_of_rawBalance_transportCancella
     vorticityEnstrophyStretchingControlledAt_of_balance hν u
       (vorticityEnstrophyBalanceAt_of_rawBalance_transportCancellation_diffusionIBP
         hRaw hTransport hDiffusion)
+
+/-- Witness-level enstrophy-balance assembly: raw balance plus transport
+cancellation and Schwartz vorticity slices give the standard BKM enstrophy
+balance on the certified time slice. -/
+theorem vorticityEnstrophyBalanceAt_of_rawBalance_transportCancellation_finiteTimeWitnessVorticitySchwartzSlices
+    {ν : ℝ} {u₀ : NSInitialVelocity} {T : ℝ}
+    (W : ExplicitFiniteTimeRegularityWitness ν u₀ T)
+    (hSlices : finiteTimeWitnessVorticitySchwartzSlices W)
+    {t : NSTime}
+    (hRaw : vorticityEnstrophyRawBalanceAt ν W.velocity t)
+    (hTransport : vorticityTransportCancellationAt W.velocity t)
+    (ht0 : 0 ≤ t) (htT : t ≤ T) :
+    vorticityEnstrophyBalanceAt ν W.velocity t := by
+  exact
+    vorticityEnstrophyBalanceAt_of_rawBalance_transportCancellation_diffusionIBP
+      hRaw hTransport
+      (vorticityDiffusionIntegrationByPartsAt_of_finiteTimeWitnessVorticitySchwartzSlices
+        W hSlices ht0 htT)
+
+/-- Witness-level a-priori enstrophy estimate: after raw balance and transport
+cancellation are supplied, Schwartz vorticity slices give diffusion IBP and
+hence derivative control by the stretching term. -/
+theorem vorticityEnstrophyStretchingControlledAt_of_rawBalance_transportCancellation_finiteTimeWitnessVorticitySchwartzSlices
+    {ν : ℝ} (hν : 0 ≤ ν) {u₀ : NSInitialVelocity} {T : ℝ}
+    (W : ExplicitFiniteTimeRegularityWitness ν u₀ T)
+    (hSlices : finiteTimeWitnessVorticitySchwartzSlices W)
+    {t : NSTime}
+    (hRaw : vorticityEnstrophyRawBalanceAt ν W.velocity t)
+    (hTransport : vorticityTransportCancellationAt W.velocity t)
+    (ht0 : 0 ≤ t) (htT : t ≤ T) :
+    vorticityEnstrophyStretchingControlledAt ν W.velocity t := by
+  exact
+    vorticityEnstrophyStretchingControlledAt_of_rawBalance_transportCancellation_diffusionIBP
+      hν hRaw hTransport
+      (vorticityDiffusionIntegrationByPartsAt_of_finiteTimeWitnessVorticitySchwartzSlices
+        W hSlices ht0 htT)
 
 /-- Pairing the standard vorticity equation with `omega` gives the scalar
 time/transport/diffusion/stretching balance at each point. -/
@@ -751,6 +810,28 @@ theorem BKMVorticityDiffusionIntegrationByPartsSchwartzClosed_proved :
   intro u t ω hω
   exact vorticityDiffusionIntegrationByPartsAt_of_schwartzVorticitySlice
     u t ω hω
+
+/-- Checked witness-level a-priori enstrophy package: if the finite-time
+witness supplies Schwartz vorticity slices, then raw balance plus transport
+cancellation imply derivative control by the stretching term. -/
+def BKMVorticityFiniteTimeWitnessSchwartzSliceAprioriClosed : Prop :=
+  ∀ (ν : ℝ) (u₀ : NSInitialVelocity) (T : ℝ)
+      (W : ExplicitFiniteTimeRegularityWitness ν u₀ T) (t : NSTime),
+    0 ≤ ν →
+      finiteTimeWitnessVorticitySchwartzSlices W →
+        vorticityEnstrophyRawBalanceAt ν W.velocity t →
+          vorticityTransportCancellationAt W.velocity t →
+            0 ≤ t →
+              t ≤ T →
+                vorticityEnstrophyStretchingControlledAt ν W.velocity t
+
+/-- Checked proof of the witness-level Schwartz-slice a-priori package. -/
+theorem BKMVorticityFiniteTimeWitnessSchwartzSliceAprioriClosed_proved :
+    BKMVorticityFiniteTimeWitnessSchwartzSliceAprioriClosed := by
+  intro ν u₀ T W t hν hSlices hRaw hTransport ht0 htT
+  exact
+    vorticityEnstrophyStretchingControlledAt_of_rawBalance_transportCancellation_finiteTimeWitnessVorticitySchwartzSlices
+      hν W hSlices hRaw hTransport ht0 htT
 
 /-- Checked assembly of the vorticity enstrophy balance from the raw paired
 equation plus the two integral identities. -/
