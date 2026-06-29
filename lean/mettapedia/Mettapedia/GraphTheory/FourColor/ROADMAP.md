@@ -442,7 +442,31 @@ Lean membership certificates.  The Gate-1 half is now checked in Lean:
 no primitive checker gap from the five boundary-slot crossing facts and
 explicit cycles on both sides.  In addition, `CAP5GP12RouteData.lean` now
 packages the concrete graph/embedding/Tait/CAP5 core and the four sidecase
-unit-evader certificates matching the lab verdict.  Verification for the
+unit-evader certificates matching the lab verdict.
+The membership side has a new finite certificate artifact:
+`fourcolor-gp12-membership-certificate-lab-20260629.json` verifies all 72
+closed GP(12,2) interior red/blue probes in the chosen Kempe-class projected
+span, with rank 72/72, SymPy GF(2) rank cross-check 72/72, 72 used generator
+rows, and combination sizes 2..42.  Script/JSON SHA256:
+`2615eefc5c4a09faf556e00a17b769a2bde6dff7cb843f5619b0a5182fede9be` /
+`b96c76cb4660003371a3cd1902b162b53585d086ad2043dca9229f73754e761d`.
+Lean now reduces the actual GP(12,2) route-input construction to those finite
+memberships and Kempe-class closure via
+`gp12FiniteNoGapRouteInput_of_allCoordinateMemberships`; no graph-specific
+route-input witness is claimed until that finite certificate is packaged.
+This does not upgrade the six-cut residual: the generic six-cut meta-barrier
+is not proven, and the non-boundary six-cut degree of freedom remains open.
+Verification for this adapter increment: focused `CAP5RoutePayoff` build
+SHA256 `9fdef61516749e4915ed8b2d9ff508952dbe6469e15e52ba4e6ca632c35d06c1`,
+focused `CAP5GP12RouteData` build SHA256
+`42e5a2eee6b11df605ad6ff1aace863c0a6fda5f5ae59373474ef0e56e6eb298`,
+FourColor umbrella build SHA256
+`b75eccf9da5281172ab7b1dab910038972c0f950ec46e046bd3c58010e4f4f2a`,
+and axiom audit driver/log SHA256
+`8c6c313a0b2bce1fb845cc7280a57af2022ae008cd384d5ba865627731a9aa13` /
+`940859f527dd923cb2c21008f756cd718076f40ea84dbb586dfa62520d2163ca`
+with baseline `[propext, Classical.choice, Quot.sound]`.
+Verification for the
 Gate-1 no-gap increment: focused `CAP5GP12RouteData` build SHA256
 `6a0465c7b5b2500101e4e7afa74c8c43c4c7738ca0afa47bc06c75850ab83360`,
 FourColor umbrella build SHA256
