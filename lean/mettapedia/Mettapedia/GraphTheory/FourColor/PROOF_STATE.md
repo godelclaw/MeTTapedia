@@ -1694,12 +1694,37 @@ nonzero canonical remaining-map image.
   exact-worklist, and residual-scheduler forks above; the current
   Algebraic-F2 estimate is PLN STV `<0.94,0.95>`, ITV `[0.89,0.94]`,
   progress `99%`.
+- Route-verdict checker-frontier sharpening:
+  `cap5PrimitiveCheckerGap_iff_missingCheckerEvidenceLatents_ne_nil`,
+  `no_cap5PrimitiveCheckerGap_iff_missingCheckerEvidenceLatents_eq_nil`,
+  `noGap_portalsCross_allLatents`,
+  `cap5PrimitiveCheckerGap_of_no_selectedSideCycle`,
+  `cap5PrimitiveCheckerGap_of_no_complementarySideCycle`, and
+  `noGap_forces_sideCycles`.  These prove that the route-level primitive
+  checker gap is exactly the executable 16-latent missing-evidence report, and
+  that closing the gap already entails all portal crossings plus both
+  graph-side cycle witnesses.  Conversely, failure of either side-cycle
+  witness immediately inhabits the primitive checker gap.  This is the current
+  proof-level reason the barrier cannot be restated as an unconditional
+  closure from the existing hypotheses alone: the exact CAP5 class must still
+  prove those portal/cycle facts and decide the target/off-target F2 evader
+  set, or accept the formal gap/evader alternatives.  Focused verification:
+  `lake -f lakefile.lean build Mettapedia.GraphTheory.FourColor.CAP5RouteVerdict`
+  completed successfully with the repo's existing upstream deprecation/linter
+  warnings only.  Trusted-constant audit for these six theorem constants
+  reports only `[propext, Classical.choice, Quot.sound]`; current-diff proof
+  marker, leak, whitespace, and `git diff --check` scans are clean.  Full
+  `lake -f lakefile.lean build Mettapedia` completed successfully with
+  5900 jobs and only pre-existing warnings outside this checkpoint.
 
 ## Remaining Completion Requirements
 
 - Move 1: prove the remaining exact-shell handoff into the primitive
-  portal/cycle prerequisites, or keep the failed-prerequisite side as outside
-  the realized CAP5/Jordan separator-repair class.  The completed-prerequisite
+  portal/cycle prerequisites.  The route-level checker lemmas now show that a
+  missing selected-side or complementary-side cycle directly inhabits
+  `CAP5PrimitiveCheckerGap`, so this handoff must prove both cycle witnesses
+  and all latent portal crossings rather than only clear a report flag.  The
+  completed-prerequisite
   branch is now blocked by the cyclic-five small-cut repair-removal
   obstruction.
 - Move 2: derive canonical remaining-interior trace-control, equivalently the

@@ -232,6 +232,19 @@ branch, the exceptional CAP5/Jordan cyclic-separator repair is impossible.
 This is an irreducible-barrier verdict on this route, not a proof of 4CT and
 not a positive-canary 4-colorability sufficient condition.
 
+Follow-up on 2026-06-29: the primitive checker frontier was sharpened inside
+`CAP5RouteVerdict.lean`.  Lean now proves that
+`CAP5PrimitiveCheckerGap` is exactly nonempty
+`missingCheckerEvidenceLatents` in the executable 16-latent report; conversely,
+emptying that report is exactly `¬ CAP5PrimitiveCheckerGap`.  The same file
+also proves that no primitive gap forces portal crossings for every latent and
+forces both graph-side cycle witnesses, while absence of either side-cycle
+witness immediately inhabits the primitive checker gap.  This is the precise
+proof-level reason the current route verdict remains a barrier rather than an
+unconditional closure: exact CAP5 data still has to supply the portal/cycle
+evidence and decide the target/off-target F2 evader set, or accept the concrete
+gap/evader branch already returned by the formal route.
+
 The next target-level corollary turns finite dimension into an explicit fork
 test for exact CAP5 data.  In Lean,
 `exists_theorem49BoundaryTargetEvader_of_emittedFinset_card_add_boundary_card_add_theorem49BoundaryVertices_card_lt`
