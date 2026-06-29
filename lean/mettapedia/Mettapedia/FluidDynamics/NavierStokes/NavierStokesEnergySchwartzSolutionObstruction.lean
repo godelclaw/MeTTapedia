@@ -1,6 +1,7 @@
 import Mettapedia.FluidDynamics.NavierStokes.NavierStokesEnergySchwartzSolutionKernel
 import Mettapedia.FluidDynamics.NavierStokes.NavierStokesSchwartzHeatShearObstruction
 import Mettapedia.FluidDynamics.NavierStokes.NavierStokesSchwartzDirectionalRigidity
+import Mettapedia.FluidDynamics.NavierStokes.NavierStokesSchwartzRankOneShearObstruction
 
 /-!
 # Line-Invariant Obstruction for Nonzero Slice-Schwartz Solutions
@@ -83,6 +84,45 @@ theorem velocity_eq_zero_of_velocitySlice_translationInvariantAlong
   have hslice_x : S.velocitySlice t x = 0 := by
     simpa using congrArg (fun f : 𝓢(NSSpace, NSSpace) => f x) hslice_zero
   simpa [hslice_x] using S.velocitySlice_eq t x
+
+/-- Solution-interface lift of the rank-one shear obstruction: if one
+slice-Schwartz solution slice is a fixed-direction rank-one Schwartz profile
+and the convection term vanishes on that slice, then that whole velocity slice
+is zero. -/
+theorem velocity_eq_zero_of_velocitySlice_eq_rankOne_zeroConvection_at
+    {t : NSTime} (φ : NSSchwartzScalar) {v : NSSpace} (hv : v ≠ 0)
+    (hslice : S.velocitySlice t = rankOneSchwartzVelocity φ v)
+    (hconv : ∀ x : NSSpace, spatialConvection S.velocity t x = 0) :
+    ∀ x, S.velocity t x = 0 := by
+  let r : NSSchwartzInitialVelocity := rankOneSchwartzVelocity φ v
+  have hpoint :
+      ∀ y : NSSpace,
+        S.velocity t y = timeIndependentVelocity (r : NSInitialVelocity) t y := by
+    intro y
+    have hslice_y :
+        S.velocitySlice t y = r y := by
+      simpa [r] using congrArg (fun f : NSSchwartzInitialVelocity => f y) hslice
+    simpa [timeIndependentVelocity, hslice_y] using S.velocitySlice_eq t y
+  have hconv_rank :
+      ∀ x : NSSpace,
+        spatialConvection (timeIndependentVelocity (r : NSInitialVelocity)) t x = 0 := by
+    intro x
+    have hcongr :=
+      spatialConvection_congr_at (u := S.velocity)
+        (v := timeIndependentVelocity (r : NSInitialVelocity)) (t := t) (x := x)
+        hpoint
+    rw [← hcongr]
+    exact hconv x
+  have hrank_zero :
+      (r : NSInitialVelocity) = 0 := by
+    simpa [r] using
+      rankOneSchwartzVelocity_eq_zero_of_spatialConvection_zero_at φ hv hconv_rank
+  intro x
+  have hrank_x :
+      timeIndependentVelocity (r : NSInitialVelocity) t x = 0 := by
+    simpa [timeIndependentVelocity] using
+      congrArg (fun u : NSInitialVelocity => u x) hrank_zero
+  rw [hpoint x, hrank_x]
 
 /-- Zero corrected coordinate enstrophy on a Schwartz velocity slice forces the
 entire slice to vanish.  This packages the positivity of the coordinate
@@ -656,6 +696,23 @@ theorem not_forall_velocity_periodic_of_pos_viscosity
         intro t
         exact normalizedKineticEnergy_eq_of_velocity_slice_eq (hperiod t))
 
+/-- A nonzero slice-Schwartz solution cannot have every time slice be a
+fixed-direction rank-one Schwartz profile whose convection vanishes on that
+slice.  The conclusion is independent of viscosity: the obstruction is caused
+by Schwartz decay plus the zero-convection shortcut itself. -/
+theorem not_forall_velocitySlice_rankOne_zeroConvection_of_fixed_direction
+    {v : NSSpace} (hv : v ≠ 0) :
+    ¬ ∀ t : NSTime,
+      ∃ φ : NSSchwartzScalar,
+        S.velocitySlice t = rankOneSchwartzVelocity φ v ∧
+          ∀ x : NSSpace, spatialConvection S.velocity t x = 0 := by
+  intro hshortcut
+  rcases S.nonzero_velocity with ⟨t, x, hne⟩
+  rcases hshortcut t with ⟨φ, hslice, hconv⟩
+  exact hne
+    (SchwartzConcreteNavierStokesSolution.velocity_eq_zero_of_velocitySlice_eq_rankOne_zeroConvection_at
+      S.toSchwartzConcreteNavierStokesSolution φ hv hslice hconv x)
+
 end NonzeroSchwartzConcreteNavierStokesSolution
 
 /-- No nonzero slice-Schwartz concrete solution can keep all velocity slices
@@ -1095,6 +1152,20 @@ theorem not_exists_nonzeroSchwartzConcreteSolution_velocity_periodic_of_pos_visc
             S.velocity (t + P) x = S.velocity t x := by
   rintro ⟨S, P, hP, hperiod⟩
   exact S.not_forall_velocity_periodic_of_pos_viscosity hν hP hperiod
+
+/-- Global no-go form of the rank-one zero-convection shortcut: no nonzero
+slice-Schwartz concrete solution has all slices in a fixed nonzero rank-one
+direction while also using zero convection on every slice. -/
+theorem not_exists_nonzeroSchwartzConcreteSolution_forall_rankOne_zeroConvection
+    {ν : ℝ} {v : NSSpace} (hv : v ≠ 0) :
+    ¬ ∃ S : NonzeroSchwartzConcreteNavierStokesSolution ν,
+      ∀ t : NSTime,
+        ∃ φ : NSSchwartzScalar,
+          S.velocitySlice t = rankOneSchwartzVelocity φ v ∧
+            ∀ x : NSSpace, spatialConvection S.velocity t x = 0 := by
+  rintro ⟨S, hshortcut⟩
+  exact S.not_forall_velocitySlice_rankOne_zeroConvection_of_fixed_direction
+    hv hshortcut
 
 end NavierStokes
 end FluidDynamics
