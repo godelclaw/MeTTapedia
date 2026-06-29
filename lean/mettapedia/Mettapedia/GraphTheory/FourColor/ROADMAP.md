@@ -718,6 +718,10 @@ longer acceptable progress.
    checker frontier closed, empty worklist closes synthesis/control, while
    failed synthesis forces a nonempty worklist and returns a genuine
    selected-boundary-zero evader plus a decreasing remaining-worklist edge.
+   The executable-report exact-worklist fork
+   `ofDecidableChecks_missingCheckerEvidence_or_remainingInteriorSupportEmpty_closes_or_notSynthesis_boundaryZeroEvader_and_nonempty_worklist`
+   removes the raw closed-frontier handoff from that statement: the report now
+   returns either a primitive checker gap or the same exact worklist fork.
    The direct no-evader route corollaries
    `ofDecidableChecks_missingCheckerEvidence_or_theorem49Synthesis_and_boundaryZeroControl_of_no_theorem49BoundaryTargetEvader_and_no_emittedFinsetKernelMapEvader_with_theorem49BoundaryVertexKirchhoffFailure`
    and
