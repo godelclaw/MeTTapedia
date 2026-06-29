@@ -60,6 +60,75 @@ theorem bkmLogSobolevGradientEnvelope_nonneg_of_nonneg
     simpa [bkmLogSobolevLogFactor] using hprod
   exact mul_nonneg hC (by linarith)
 
+/-- If the vorticity and high-norm envelopes are bounded at a time, then the
+BKM logarithmic factor is bounded by the corresponding constant factor. -/
+theorem bkmLogSobolevLogFactor_le_of_bounds
+    {Ω H : NSTime → ℝ} {t : NSTime} {Ωmax Hmax : ℝ}
+    (hΩ_nonneg : 0 ≤ Ω t) (hΩ_le : Ω t ≤ Ωmax)
+    (hH_nonneg : 0 ≤ H t) (hH_le : H t ≤ Hmax) :
+    bkmLogSobolevLogFactor Ω H t ≤
+      Ωmax * Real.log (Real.exp (1 : ℝ) + Hmax) := by
+  have hΩmax_nonneg : 0 ≤ Ωmax := hΩ_nonneg.trans hΩ_le
+  have harg_pos : 0 < Real.exp (1 : ℝ) + H t := by
+    linarith [Real.exp_pos (1 : ℝ)]
+  have harg_le :
+      Real.exp (1 : ℝ) + H t ≤ Real.exp (1 : ℝ) + Hmax := by
+    linarith
+  have hlog_le :
+      Real.log (Real.exp (1 : ℝ) + H t) ≤
+        Real.log (Real.exp (1 : ℝ) + Hmax) :=
+    Real.log_le_log harg_pos harg_le
+  have hlog_nonneg :
+      0 ≤ Real.log (Real.exp (1 : ℝ) + H t) := by
+    have hexp_one : (1 : ℝ) ≤ Real.exp (1 : ℝ) := by
+      rw [← Real.exp_zero]
+      exact Real.exp_le_exp.mpr (by norm_num)
+    have harg_one : (1 : ℝ) ≤ Real.exp (1 : ℝ) + H t := by
+      linarith
+    exact Real.log_nonneg harg_one
+  simpa [bkmLogSobolevLogFactor] using
+    (mul_le_mul hΩ_le hlog_le hlog_nonneg hΩmax_nonneg)
+
+/-- A slabwise constant upper bound for both the vorticity envelope and the
+high-norm envelope gives a constant upper bound for the BKM gradient
+coefficient at the current time. -/
+theorem bkmLogSobolevGradientEnvelope_le_of_bounds
+    {C : ℝ} {Ω H : NSTime → ℝ} {t : NSTime} {Ωmax Hmax : ℝ}
+    (hC : 0 ≤ C)
+    (hΩ_nonneg : 0 ≤ Ω t) (hΩ_le : Ω t ≤ Ωmax)
+    (hH_nonneg : 0 ≤ H t) (hH_le : H t ≤ Hmax) :
+    bkmLogSobolevGradientEnvelope C Ω H t ≤
+      C * (1 + Ωmax * Real.log (Real.exp (1 : ℝ) + Hmax)) := by
+  have hLogFactor :=
+    bkmLogSobolevLogFactor_le_of_bounds
+      hΩ_nonneg hΩ_le hH_nonneg hH_le
+  have hsum :
+      1 + bkmLogSobolevLogFactor Ω H t ≤
+        1 + Ωmax * Real.log (Real.exp (1 : ℝ) + Hmax) := by
+    exact add_le_add_right hLogFactor 1
+  simpa [bkmLogSobolevGradientEnvelope, bkmLogSobolevLogFactor] using
+    (mul_le_mul_of_nonneg_left hsum hC)
+
+/-- Slabwise version of `bkmLogSobolevGradientEnvelope_le_of_bounds`, shaped
+for the constant-majorant scalar Gronwall comparison on `Set.Ico 0 T`. -/
+theorem bkmLogSobolevGradientEnvelope_le_constant_on_Ico_of_bounds
+    {C T : ℝ} {Ω H : NSTime → ℝ} {Ωmax Hmax : ℝ}
+    (hC : 0 ≤ C)
+    (hΩ_nonneg : ∀ t, 0 ≤ t → t ≤ T → 0 ≤ Ω t)
+    (hΩ_le : ∀ t, 0 ≤ t → t ≤ T → Ω t ≤ Ωmax)
+    (hH_nonneg : ∀ t, 0 ≤ t → t ≤ T → 0 ≤ H t)
+    (hH_le : ∀ t, 0 ≤ t → t ≤ T → H t ≤ Hmax) :
+    ∀ t, t ∈ Set.Ico 0 T →
+      bkmLogSobolevGradientEnvelope C Ω H t ≤
+        C * (1 + Ωmax * Real.log (Real.exp (1 : ℝ) + Hmax)) := by
+  intro t ht
+  exact
+    bkmLogSobolevGradientEnvelope_le_of_bounds hC
+      (hΩ_nonneg t ht.1 (le_of_lt ht.2))
+      (hΩ_le t ht.1 (le_of_lt ht.2))
+      (hH_nonneg t ht.1 (le_of_lt ht.2))
+      (hH_le t ht.1 (le_of_lt ht.2))
+
 /-- The one-constant BKM envelope dominates the conventional affine-log
 form `C0 + C1 * Omega log(e + H)` once `C` dominates both affine constants. -/
 theorem bkmLogSobolevGradientEnvelope_dominates_affineLog
@@ -178,6 +247,40 @@ theorem BKMLogSobolevGradientControlOn.to_spatialGradientOperatorEnvelopeOn
     spatialGradientOperatorEnvelopeOn u T
       (bkmLogSobolevGradientEnvelope C Ω H) :=
   hLog
+
+/-- If a supplied BKM log-Sobolev control has slabwise constant bounds for
+the vorticity and high-norm envelopes, then it gives a uniform slabwise
+gradient bound.  This is the algebraic bridge from the logarithmic coefficient
+to the constant-coefficient continuation estimates; it does not prove the
+missing PDE continuation theorem. -/
+theorem BKMLogSobolevGradientControlOn.to_uniformSpatialGradientOperatorBoundUpTo_of_bounds
+    {u : NSVelocityField} {T C : ℝ} {Ω H : NSTime → ℝ} {Ωmax Hmax : ℝ}
+    (hLog : BKMLogSobolevGradientControlOn u T C Ω H)
+    (hC : 0 ≤ C) (hΩmax : 0 ≤ Ωmax) (hHmax : 0 ≤ Hmax)
+    (hΩ_nonneg : ∀ t, 0 ≤ t → t ≤ T → 0 ≤ Ω t)
+    (hΩ_le : ∀ t, 0 ≤ t → t ≤ T → Ω t ≤ Ωmax)
+    (hH_nonneg : ∀ t, 0 ≤ t → t ≤ T → 0 ≤ H t)
+    (hH_le : ∀ t, 0 ≤ t → t ≤ T → H t ≤ Hmax) :
+    uniformSpatialGradientOperatorBoundUpTo u T
+      (C * (1 + Ωmax * Real.log (Real.exp (1 : ℝ) + Hmax))) := by
+  have hexp_one : (1 : ℝ) ≤ Real.exp (1 : ℝ) := by
+    rw [← Real.exp_zero]
+    exact Real.exp_le_exp.mpr (by norm_num)
+  have hlog_max_nonneg :
+      0 ≤ Real.log (Real.exp (1 : ℝ) + Hmax) := by
+    have harg_one : (1 : ℝ) ≤ Real.exp (1 : ℝ) + Hmax := by
+      linarith
+    exact Real.log_nonneg harg_one
+  have hcoeff_nonneg :
+      0 ≤ 1 + Ωmax * Real.log (Real.exp (1 : ℝ) + Hmax) := by
+    exact add_nonneg zero_le_one (mul_nonneg hΩmax hlog_max_nonneg)
+  refine ⟨mul_nonneg hC hcoeff_nonneg, ?_⟩
+  intro t x ht0 htT
+  exact
+    (hLog.2 t x ht0 htT).trans
+      (bkmLogSobolevGradientEnvelope_le_of_bounds hC
+        (hΩ_nonneg t ht0 htT) (hΩ_le t ht0 htT)
+        (hH_nonneg t ht0 htT) (hH_le t ht0 htT))
 
 /-- Log-Sobolev gradient control gives the BKM enstrophy growth inequality
 with the logarithmic coefficient at the current time. -/

@@ -28,6 +28,38 @@ theorem bkm_logSobolev_log_factor_nonneg_regression
     0 ≤ bkmLogSobolevLogFactor Ω H t :=
   bkmLogSobolevLogFactor_nonneg_of_nonneg hΩ hH
 
+theorem bkm_logSobolev_log_factor_le_of_bounds_regression
+    {Ω H : NSTime → ℝ} {t : NSTime} {Ωmax Hmax : ℝ}
+    (hΩ_nonneg : 0 ≤ Ω t) (hΩ_le : Ω t ≤ Ωmax)
+    (hH_nonneg : 0 ≤ H t) (hH_le : H t ≤ Hmax) :
+    bkmLogSobolevLogFactor Ω H t ≤
+      Ωmax * Real.log (Real.exp (1 : ℝ) + Hmax) :=
+  bkmLogSobolevLogFactor_le_of_bounds
+    hΩ_nonneg hΩ_le hH_nonneg hH_le
+
+theorem bkm_logSobolev_envelope_le_of_bounds_regression
+    {C : ℝ} {Ω H : NSTime → ℝ} {t : NSTime} {Ωmax Hmax : ℝ}
+    (hC : 0 ≤ C)
+    (hΩ_nonneg : 0 ≤ Ω t) (hΩ_le : Ω t ≤ Ωmax)
+    (hH_nonneg : 0 ≤ H t) (hH_le : H t ≤ Hmax) :
+    bkmLogSobolevGradientEnvelope C Ω H t ≤
+      C * (1 + Ωmax * Real.log (Real.exp (1 : ℝ) + Hmax)) :=
+  bkmLogSobolevGradientEnvelope_le_of_bounds
+    hC hΩ_nonneg hΩ_le hH_nonneg hH_le
+
+theorem bkm_logSobolev_envelope_le_constant_on_Ico_of_bounds_regression
+    {C T : ℝ} {Ω H : NSTime → ℝ} {Ωmax Hmax : ℝ}
+    (hC : 0 ≤ C)
+    (hΩ_nonneg : ∀ t, 0 ≤ t → t ≤ T → 0 ≤ Ω t)
+    (hΩ_le : ∀ t, 0 ≤ t → t ≤ T → Ω t ≤ Ωmax)
+    (hH_nonneg : ∀ t, 0 ≤ t → t ≤ T → 0 ≤ H t)
+    (hH_le : ∀ t, 0 ≤ t → t ≤ T → H t ≤ Hmax) :
+    ∀ t, t ∈ Set.Ico 0 T →
+      bkmLogSobolevGradientEnvelope C Ω H t ≤
+        C * (1 + Ωmax * Real.log (Real.exp (1 : ℝ) + Hmax)) :=
+  bkmLogSobolevGradientEnvelope_le_constant_on_Ico_of_bounds
+    hC hΩ_nonneg hΩ_le hH_nonneg hH_le
+
 theorem bkm_logSobolev_envelope_dominates_affineLog_regression
     {C C0 C1 : ℝ} {Ω H : NSTime → ℝ} {t : NSTime}
     (hC0 : C0 ≤ C) (hC1 : C1 ≤ C)
@@ -82,6 +114,19 @@ theorem bkm_logSobolev_control_to_gradient_envelope_regression
     spatialGradientOperatorEnvelopeOn u T
       (bkmLogSobolevGradientEnvelope C Ω H) :=
   BKMLogSobolevGradientControlOn.to_spatialGradientOperatorEnvelopeOn hLog
+
+theorem bkm_logSobolev_control_to_uniform_gradient_bound_of_bounds_regression
+    {u : NSVelocityField} {T C : ℝ} {Ω H : NSTime → ℝ} {Ωmax Hmax : ℝ}
+    (hLog : BKMLogSobolevGradientControlOn u T C Ω H)
+    (hC : 0 ≤ C) (hΩmax : 0 ≤ Ωmax) (hHmax : 0 ≤ Hmax)
+    (hΩ_nonneg : ∀ t, 0 ≤ t → t ≤ T → 0 ≤ Ω t)
+    (hΩ_le : ∀ t, 0 ≤ t → t ≤ T → Ω t ≤ Ωmax)
+    (hH_nonneg : ∀ t, 0 ≤ t → t ≤ T → 0 ≤ H t)
+    (hH_le : ∀ t, 0 ≤ t → t ≤ T → H t ≤ Hmax) :
+    uniformSpatialGradientOperatorBoundUpTo u T
+      (C * (1 + Ωmax * Real.log (Real.exp (1 : ℝ) + Hmax))) :=
+  BKMLogSobolevGradientControlOn.to_uniformSpatialGradientOperatorBoundUpTo_of_bounds
+    hLog hC hΩmax hHmax hΩ_nonneg hΩ_le hH_nonneg hH_le
 
 theorem bkm_logSobolev_control_to_enstrophy_growth_regression
     {ν T C : ℝ} {u : NSVelocityField} {Ω H : NSTime → ℝ} {t : NSTime}
