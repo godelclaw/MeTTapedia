@@ -1,4 +1,5 @@
 import Mettapedia.FluidDynamics.NavierStokes.NavierStokesBKMAnalyticReduction
+import Mathlib.Analysis.ODE.Gronwall
 
 /-!
 # BKM high-norm continuation assembly
@@ -164,6 +165,100 @@ def BKMHighNormContinuationFromLogControl : Prop :=
                   concreteVorticityEquationOn ν W.velocity T →
                     BKMLogSobolevGradientControlOn W.velocity T C Ω H →
                       ExplicitConcreteNavierStokesGlobalOutput ν u₀
+
+/-- The normalized vorticity enstrophy is nonnegative on the unguarded integral
+surface. -/
+theorem normalizedVorticityEnstrophyAt_nonneg
+    (u : NSVelocityField) (t : NSTime) :
+    0 ≤ normalizedVorticityEnstrophyAt u t := by
+  unfold normalizedVorticityEnstrophyAt
+  nlinarith [vorticityEnstrophyAt_nonneg u t]
+
+/-- The gradient-growth coefficient can be enlarged, since vorticity enstrophy
+is nonnegative. -/
+theorem vorticityEnstrophyGradientControlledAt.mono_coefficient
+    {ν G K : ℝ} {u : NSVelocityField} {t : NSTime}
+    (h : vorticityEnstrophyGradientControlledAt ν u t G)
+    (hGK : G ≤ K) :
+    vorticityEnstrophyGradientControlledAt ν u t K := by
+  rcases h with ⟨D, hDderiv, hDle⟩
+  refine ⟨D, hDderiv, ?_⟩
+  exact hDle.trans
+    (mul_le_mul_of_nonneg_right hGK (vorticityEnstrophyAt_nonneg u t))
+
+/-- Constant-coefficient scalar Gronwall closure for the checked BKM
+enstrophy-growth inequality.  This is the real ODE part of the high-norm
+continuation step; it still needs a separate PDE continuation/local-existence
+bridge to produce `ExplicitConcreteNavierStokesGlobalOutput`. -/
+theorem normalizedVorticityEnstrophyAt_le_gronwallBound_of_gradientControlled_constant
+    {ν G T : ℝ} {u : NSVelocityField}
+    (hcont :
+      ContinuousOn (fun t => normalizedVorticityEnstrophyAt u t)
+        (Set.Icc 0 T))
+    (hGrowth :
+      ∀ t, t ∈ Set.Ico 0 T →
+        vorticityEnstrophyGradientControlledAt ν u t G) :
+    ∀ t, t ∈ Set.Icc 0 T →
+      normalizedVorticityEnstrophyAt u t ≤
+        gronwallBound (normalizedVorticityEnstrophyAt u 0) (2 * G) 0 (t - 0) := by
+  let D : ℝ → ℝ := fun t =>
+    if ht : t ∈ Set.Ico 0 T then
+      Classical.choose (hGrowth t ht)
+    else
+      0
+  refine
+    le_gronwallBound_of_liminf_deriv_right_le
+      (f := fun t => normalizedVorticityEnstrophyAt u t)
+      (f' := D)
+      (δ := normalizedVorticityEnstrophyAt u 0)
+      (K := 2 * G)
+      (ε := 0)
+      (a := 0)
+      (b := T)
+      hcont ?_ le_rfl ?_
+  · intro t ht r hr
+    have hspec := Classical.choose_spec (hGrowth t ht)
+    have hD : D t = Classical.choose (hGrowth t ht) := by
+      unfold D
+      rw [dif_pos ht]
+    have hderiv : HasDerivWithinAt
+        (fun s => normalizedVorticityEnstrophyAt u s) (D t) (Set.Ici t) t := by
+      rw [hD]
+      exact hspec.1.hasDerivWithinAt
+    exact hderiv.liminf_right_slope_le hr
+  · intro t ht
+    have hspec := Classical.choose_spec (hGrowth t ht)
+    have hD : D t = Classical.choose (hGrowth t ht) := by
+      unfold D
+      rw [dif_pos ht]
+    have hDle : D t ≤ G * vorticityEnstrophyAt u t := by
+      rw [hD]
+      exact hspec.2
+    calc
+      D t ≤ G * vorticityEnstrophyAt u t := hDle
+      _ = (2 * G) * normalizedVorticityEnstrophyAt u t + 0 := by
+            rw [normalizedVorticityEnstrophyAt]
+            ring
+
+/-- Constant-majorant version of the scalar Gronwall closure.  It is useful
+when a time-dependent gradient envelope has already been bounded above by a
+single slab constant. -/
+theorem normalizedVorticityEnstrophyAt_le_gronwallBound_of_gradientControlled_majorized
+    {ν K T : ℝ} {u : NSVelocityField} {G : NSTime → ℝ}
+    (hcont :
+      ContinuousOn (fun t => normalizedVorticityEnstrophyAt u t)
+        (Set.Icc 0 T))
+    (hGrowth :
+      ∀ t, t ∈ Set.Ico 0 T →
+        vorticityEnstrophyGradientControlledAt ν u t (G t))
+    (hGle : ∀ t, t ∈ Set.Ico 0 T → G t ≤ K) :
+    ∀ t, t ∈ Set.Icc 0 T →
+      normalizedVorticityEnstrophyAt u t ≤
+        gronwallBound (normalizedVorticityEnstrophyAt u 0) (2 * K) 0 (t - 0) :=
+  normalizedVorticityEnstrophyAt_le_gronwallBound_of_gradientControlled_constant
+    hcont
+    (fun t ht =>
+      (hGrowth t ht).mono_coefficient (hGle t ht))
 
 /-- Componentized form of the remaining BKM analytic route.  The first
 component is the residual-curl expansion identity, the second supplies the

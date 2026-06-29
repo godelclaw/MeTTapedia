@@ -68,6 +68,37 @@ theorem BKMArbitraryWitnessAffineLogBiotSavartGronwallContinuationLemma_implies_
     ExplicitFiniteEnergyBKMContinuationTargetOnNonnegHorizons := by
   exact h.implies_finiteEnergyBKMContinuationTargetOnNonnegHorizons hDefect
 
+theorem normalizedVorticityEnstrophyAt_le_gronwallBound_of_gradientControlled_constant_regression
+    {ν G T : ℝ} {u : NSVelocityField}
+    (hcont :
+      ContinuousOn (fun t => normalizedVorticityEnstrophyAt u t)
+        (Set.Icc 0 T))
+    (hGrowth :
+      ∀ t, t ∈ Set.Ico 0 T →
+        vorticityEnstrophyGradientControlledAt ν u t G) :
+    ∀ t, t ∈ Set.Icc 0 T →
+      normalizedVorticityEnstrophyAt u t ≤
+        gronwallBound (normalizedVorticityEnstrophyAt u 0) (2 * G) 0 (t - 0) := by
+  exact
+    normalizedVorticityEnstrophyAt_le_gronwallBound_of_gradientControlled_constant
+      hcont hGrowth
+
+theorem normalizedVorticityEnstrophyAt_le_gronwallBound_of_gradientControlled_majorized_regression
+    {ν K T : ℝ} {u : NSVelocityField} {G : NSTime → ℝ}
+    (hcont :
+      ContinuousOn (fun t => normalizedVorticityEnstrophyAt u t)
+        (Set.Icc 0 T))
+    (hGrowth :
+      ∀ t, t ∈ Set.Ico 0 T →
+        vorticityEnstrophyGradientControlledAt ν u t (G t))
+    (hGle : ∀ t, t ∈ Set.Ico 0 T → G t ≤ K) :
+    ∀ t, t ∈ Set.Icc 0 T →
+      normalizedVorticityEnstrophyAt u t ≤
+        gronwallBound (normalizedVorticityEnstrophyAt u 0) (2 * K) 0 (t - 0) := by
+  exact
+    normalizedVorticityEnstrophyAt_le_gronwallBound_of_gradientControlled_majorized
+      hcont hGrowth hGle
+
 theorem BKMContinuation_reduced_to_analytic_components_regression :
     BKMVorticityStretchingEstimateClosed ∧
       BKMResidualCurlExpansionAlgebraClosed ∧
