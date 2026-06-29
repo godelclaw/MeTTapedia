@@ -591,7 +591,12 @@ longer acceptable progress.
    coordinates is trivial iff no selected-boundary-zero evader exists.  Under
    forced-all this emitted-kernel certificate closes synthesis/control; failure
    returns a concrete nonzero selected-boundary-zero kernel witness vanishing
-   on every enumerated forced edge.  The
+   on every enumerated forced edge.  The emitted-kernel/map equivalence now
+   collapses the two failure languages: a nontrivial emitted-kernel witness has
+   nonzero remaining-family map image, and a map-detected evader lies in the
+   emitted kernel.  The forced-all rank fork therefore returns either
+   synthesis/control or one genuine boundary-zero evader carrying both the
+   emitted-kernel and remaining-map certificates.  The
    pure no-target theorem underneath those refinements says failed synthesis
    already produces a genuine selected-boundary-zero evader for the enumerated
    forced edges.  The remaining crux is whether exact shell/CAP5 data reaches
