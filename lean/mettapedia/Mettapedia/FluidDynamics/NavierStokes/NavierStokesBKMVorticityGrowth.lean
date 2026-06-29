@@ -1,4 +1,5 @@
 import Mettapedia.FluidDynamics.NavierStokes.NavierStokesBKMVorticityEquation
+import Mathlib.Analysis.InnerProductSpace.Calculus
 import Mathlib.MeasureTheory.Integral.Bochner.Basic
 
 /-!
@@ -43,6 +44,11 @@ def vorticityEnstrophyDensity
     (u : NSVelocityField) (t : NSTime) (x : NSSpace) : ℝ :=
   ‖spatialVorticity u t x‖ ^ (2 : ℕ)
 
+/-- Pointwise `1 / 2`-normalized vorticity enstrophy density. -/
+def normalizedVorticityEnstrophyDensity
+    (u : NSVelocityField) (t : NSTime) (x : NSSpace) : ℝ :=
+  (1 / 2 : ℝ) * vorticityEnstrophyDensity u t x
+
 /-- Total vorticity enstrophy of a time slice. -/
 def vorticityEnstrophyAt (u : NSVelocityField) (t : NSTime) : ℝ :=
   ∫ x, vorticityEnstrophyDensity u t x ∂volume
@@ -64,6 +70,12 @@ the spatial integral has been justified. -/
 def vorticityTimePowerIntegral
     (u : NSVelocityField) (t : NSTime) : ℝ :=
   ∫ x, ⟪spatialVorticity u t x, timeVorticityDerivative u t x⟫ ∂volume
+
+/-- Pointwise density derivative integrand for the normalized vorticity
+enstrophy density: `omega · partial_t omega`. -/
+def vorticityEnstrophyDensityTimeDerivativeIntegrand
+    (u : NSVelocityField) (t : NSTime) (x : NSSpace) : ℝ :=
+  ⟪spatialVorticity u t x, timeVorticityDerivative u t x⟫
 
 /-- Spatial integral of the vorticity transport pairing
 `omega · ((u · grad) omega)`.  This is the term that vanishes by
@@ -129,6 +141,12 @@ def vorticityEnstrophyTimePairingDerivativeAt
   HasDerivAt (fun s => normalizedVorticityEnstrophyAt u s)
     (vorticityTimePowerIntegral u t) t
 
+/-- The concrete vorticity time derivative represents the derivative of the
+vorticity curve at a fixed spatial point. -/
+def vorticityTimeDerivativeRepresentedAt
+    (u : NSVelocityField) (t : NSTime) (x : NSSpace) : Prop :=
+  HasDerivAt (fun s => spatialVorticity u s x) (timeVorticityDerivative u t x) t
+
 /-- Integrability hypotheses needed to distribute the raw paired vorticity
 equation over the spatial integral. -/
 def vorticityRawBalanceIntegralComponentsIntegrableAt
@@ -172,6 +190,23 @@ theorem vorticityEnstrophyAt_nonneg
   rw [vorticityEnstrophyAt]
   exact integral_nonneg_of_ae
     (Filter.Eventually.of_forall fun x => vorticityEnstrophyDensity_nonneg u t x)
+
+/-- At a fixed spatial point, the derivative of `1 / 2 * |omega|^2` is the
+time pairing `omega · partial_t omega`. -/
+theorem hasDerivAt_normalizedVorticityEnstrophyDensity_of_timeDerivativeRepresented
+    {u : NSVelocityField} {t : NSTime} {x : NSSpace}
+    (hω : vorticityTimeDerivativeRepresentedAt u t x) :
+    HasDerivAt (fun s => normalizedVorticityEnstrophyDensity u s x)
+      (vorticityEnstrophyDensityTimeDerivativeIntegrand u t x) t := by
+  have hsq :
+      HasDerivAt
+        (fun s => vorticityEnstrophyDensity u s x)
+        (2 * ⟪spatialVorticity u t x, timeVorticityDerivative u t x⟫) t := by
+    simpa [vorticityTimeDerivativeRepresentedAt, vorticityEnstrophyDensity]
+      using hω.norm_sq
+  have hhalf := hsq.const_mul (1 / 2 : ℝ)
+  simpa [normalizedVorticityEnstrophyDensity,
+    vorticityEnstrophyDensityTimeDerivativeIntegrand] using hhalf
 
 /-- Vorticity diffusion-dissipation density is pointwise nonnegative. -/
 theorem vorticityDiffusionDissipationDensity_nonneg
@@ -467,6 +502,21 @@ theorem BKMVorticityEnstrophyAprioriEstimateClosed_proved :
     BKMVorticityEnstrophyAprioriEstimateClosed := by
   intro ν u t hν hBal
   exact vorticityEnstrophyStretchingControlledAt_of_balance hν u hBal
+
+/-- Checked pointwise part of the BKM enstrophy derivative.  The remaining
+analytic step is to integrate this pointwise derivative in space and justify
+differentiation under the integral. -/
+def BKMVorticityPointwiseEnstrophyDerivativeClosed : Prop :=
+  ∀ (u : NSVelocityField) (t : NSTime) (x : NSSpace),
+    vorticityTimeDerivativeRepresentedAt u t x →
+      HasDerivAt (fun s => normalizedVorticityEnstrophyDensity u s x)
+        (vorticityEnstrophyDensityTimeDerivativeIntegrand u t x) t
+
+/-- Checked proof of the pointwise normalized vorticity enstrophy derivative. -/
+theorem BKMVorticityPointwiseEnstrophyDerivativeClosed_proved :
+    BKMVorticityPointwiseEnstrophyDerivativeClosed := by
+  intro u t x hω
+  exact hasDerivAt_normalizedVorticityEnstrophyDensity_of_timeDerivativeRepresented hω
 
 /-- Checked assembly of the vorticity enstrophy balance from the raw paired
 equation plus the two integral identities. -/

@@ -35,12 +35,13 @@ theorem BKMContinuation_reduced_to_analytic_components_regression :
     BKMVorticityStretchingEstimateClosed ∧
       BKMResidualCurlExpansionAlgebraClosed ∧
         BKMStandardVorticityGrowthEstimateClosed ∧
-          BKMVorticityRawBalanceFromStandardEquationClosed ∧
-            BKMVorticityEnstrophyBalanceAssemblyClosed ∧
-              BKMVorticityEnstrophyAprioriEstimateClosed ∧
-                BKMLogSobolevGrowthEstimateClosed ∧
-                  (BKMAnalyticComponentsClosed →
-                    ExplicitFiniteEnergyBKMContinuationTargetOnNonnegHorizons) := by
+          BKMVorticityPointwiseEnstrophyDerivativeClosed ∧
+            BKMVorticityRawBalanceFromStandardEquationClosed ∧
+              BKMVorticityEnstrophyBalanceAssemblyClosed ∧
+                BKMVorticityEnstrophyAprioriEstimateClosed ∧
+                  BKMLogSobolevGrowthEstimateClosed ∧
+                    (BKMAnalyticComponentsClosed →
+                      ExplicitFiniteEnergyBKMContinuationTargetOnNonnegHorizons) := by
   exact BKMContinuation_reduced_to_analytic_components
 
 end BKMContinuation

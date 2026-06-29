@@ -44,6 +44,17 @@ theorem bkm_vorticity_enstrophy_apriori_estimate_closed_regression :
     BKMVorticityEnstrophyAprioriEstimateClosed :=
   BKMVorticityEnstrophyAprioriEstimateClosed_proved
 
+theorem bkm_pointwise_normalized_vorticity_enstrophy_density_derivative_regression
+    {u : NSVelocityField} {t : NSTime} {x : NSSpace}
+    (hω : vorticityTimeDerivativeRepresentedAt u t x) :
+    HasDerivAt (fun s => normalizedVorticityEnstrophyDensity u s x)
+      (vorticityEnstrophyDensityTimeDerivativeIntegrand u t x) t :=
+  hasDerivAt_normalizedVorticityEnstrophyDensity_of_timeDerivativeRepresented hω
+
+theorem bkm_vorticity_pointwise_enstrophy_derivative_closed_regression :
+    BKMVorticityPointwiseEnstrophyDerivativeClosed :=
+  BKMVorticityPointwiseEnstrophyDerivativeClosed_proved
+
 theorem bkm_vorticity_enstrophy_controlled_from_balance_regression
     {ν : ℝ} {u : NSVelocityField} {t : NSTime}
     (hν : 0 ≤ ν) (hBal : vorticityEnstrophyBalanceAt ν u t) :
