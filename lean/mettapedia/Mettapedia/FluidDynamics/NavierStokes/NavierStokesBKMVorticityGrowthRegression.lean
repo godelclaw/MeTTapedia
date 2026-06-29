@@ -353,6 +353,26 @@ theorem bkm_vorticity_raw_balance_from_standard_equation_regression
   vorticityEnstrophyRawBalanceAt_of_timePairingDerivative_concreteVorticityEquationOn
     hEq hInt hTime ht0 htT
 
+theorem bkm_vorticity_raw_balance_integrability_schwartz_closed_regression :
+    BKMVorticityRawBalanceIntegrabilitySchwartzClosed :=
+  BKMVorticityRawBalanceIntegrabilitySchwartzClosed_proved
+
+theorem bkm_vorticity_scalar_schwartz_time_pairing_closed_regression :
+    BKMVorticityScalarSchwartzTimePairingDerivativeClosed :=
+  BKMVorticityScalarSchwartzTimePairingDerivativeClosed_proved
+
+theorem bkm_vorticity_two_profile_schwartz_time_pairing_closed_regression :
+    BKMVorticityTwoProfileSchwartzTimePairingDerivativeClosed :=
+  BKMVorticityTwoProfileSchwartzTimePairingDerivativeClosed_proved
+
+theorem bkm_vorticity_velocity_schwartz_enstrophy_integrable_closed_regression :
+    BKMVorticityFiniteTimeWitnessVelocitySchwartzEnstrophyIntegrableClosed :=
+  BKMVorticityFiniteTimeWitnessVelocitySchwartzEnstrophyIntegrableClosed_proved
+
+theorem bkm_vorticity_velocity_schwartz_raw_balance_integrability_closed_regression :
+    BKMVorticityFiniteTimeWitnessVelocitySchwartzRawBalanceIntegrabilityClosed :=
+  BKMVorticityFiniteTimeWitnessVelocitySchwartzRawBalanceIntegrabilityClosed_proved
+
 end Regression
 
 end NavierStokes

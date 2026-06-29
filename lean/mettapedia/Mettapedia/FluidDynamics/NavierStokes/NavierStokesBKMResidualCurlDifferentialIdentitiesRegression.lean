@@ -515,6 +515,17 @@ theorem BKMContinuation_reduced_to_affineLogHighNorm_after_residualCurl_regressi
                   ExplicitFiniteEnergyBKMContinuationTargetOnNonnegHorizons) := by
   exact BKMContinuation_reduced_to_affineLogHighNorm_after_residualCurl
 
+theorem BKMContinuation_reduced_to_affineLogHighNorm_after_residualCurl_integrability_regression :
+    BKMResidualCurlExpansionDefectVanishes ∧
+      BKMVorticityScalarSchwartzTimePairingDerivativeClosed ∧
+        BKMVorticityTwoProfileSchwartzTimePairingDerivativeClosed ∧
+          BKMVorticityFiniteTimeWitnessResidualCurlVelocitySchwartzAprioriIntegrabilityClosed ∧
+            BKMVorticityFiniteTimeWitnessResidualCurlVelocitySchwartzAffineLogGrowthIntegrabilityClosed ∧
+              (BKMLogSobolevAffinePointwiseFromEnvelope →
+                BKMHighNormContinuationFromLogControl →
+                  ExplicitFiniteEnergyBKMContinuationTargetOnNonnegHorizons) := by
+  exact BKMContinuation_reduced_to_affineLogHighNorm_after_residualCurl_integrability
+
 theorem BKMAnalyticComponentsClosed_of_residualCurlDifferentialIdentities_regression
     (hIds : BKMResidualCurlDifferentialIdentitiesClosed)
     (hLog : BKMLogSobolevGradientControlFromEnvelope)
