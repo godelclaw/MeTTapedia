@@ -602,7 +602,11 @@ longer acceptable progress.
    returns the unified emitted-kernel/remaining-map evader.  The exact
    kernel/map oracle theorem now gives the corresponding iff: under forced-all,
    no unified emitted-kernel/remaining-map evader is equivalent to theorem-4.9
-   synthesis plus full selected-boundary-zero classifier control.  The
+   synthesis plus full selected-boundary-zero classifier control.  The exact
+   emitted-rank oracle then makes the lab-facing finite F2 certificate itself
+   equivalent to route closure: under forced-all, the emitted-edge pairing
+   kernel is trivial iff theorem-4.9 synthesis plus full selected-boundary-zero
+   classifier control holds.  The
    pure no-target theorem underneath those refinements says failed synthesis
    already produces a genuine selected-boundary-zero evader for the enumerated
    forced edges.  The remaining crux is whether exact shell/CAP5 data reaches
