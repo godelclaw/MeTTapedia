@@ -169,6 +169,38 @@ theorem smoothSpaceTimeVelocity_fderiv_fderiv_swap
       ((fderiv ℝ (fderiv ℝ (spaceTimeVelocityMap u)) tx) w) v :=
   (smoothSpaceTimeVelocity_isSymmSndFDerivAt hu tx).eq v w
 
+/-- Each spatial derivative component of a smooth space-time velocity is smooth
+as a function of time. -/
+theorem spatialDerivativeComponent_contDiff_time_of_smooth
+    {u : NSVelocityField} (hu : smoothSpaceTimeVelocity u)
+    (x : NSSpace) (coord comp : Fin 3) :
+    ContDiff ℝ ∞ (fun s : NSTime => spatialDerivativeComponent u s x coord comp) := by
+  have hfield :
+      ContDiff ℝ ∞
+        (fun s : NSTime =>
+          fderiv ℝ (fun y : NSSpace => u s y) x
+            (EuclideanSpace.single coord (1 : ℝ))) := by
+    simpa [spaceTimeVelocityMap] using
+      (hu.fderiv_apply (g := fun _ : NSTime => x)
+        (k := fun _ : NSTime => EuclideanSpace.single coord (1 : ℝ))
+        contDiff_const contDiff_const (by simp))
+  have hproj : ContDiff ℝ ∞ (fun z : NSSpace => z comp) := by
+    simpa using (EuclideanSpace.proj comp : NSSpace →L[ℝ] ℝ).contDiff
+  change ContDiff ℝ ∞
+    (fun s : NSTime =>
+      ((fderiv ℝ (fun y : NSSpace => u s y) x)
+        (EuclideanSpace.single coord (1 : ℝ))) comp)
+  exact contDiff_congr_global (hproj.comp hfield) (by intro s; rfl)
+
+/-- Each spatial derivative component of a smooth space-time velocity is
+differentiable in time. -/
+theorem spatialDerivativeComponent_differentiableAt_time_of_smooth
+    {u : NSVelocityField} (hu : smoothSpaceTimeVelocity u)
+    (t : NSTime) (x : NSSpace) (coord comp : Fin 3) :
+    DifferentiableAt ℝ (fun s : NSTime => spatialDerivativeComponent u s x coord comp) t :=
+  (spatialDerivativeComponent_contDiff_time_of_smooth hu x coord comp).differentiable
+    (by simp) t
+
 /-- After the Laplacian-field differentiability bridge, smoothness supplies the
 other two differentiability hypotheses needed for residual-curl linearity. -/
 theorem residualCurlLinearityDifferentiableAt_of_smooth_laplacian
