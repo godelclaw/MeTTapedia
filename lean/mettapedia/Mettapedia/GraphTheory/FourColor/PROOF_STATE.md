@@ -993,6 +993,16 @@ nonzero canonical remaining-map image.
   the executable report returns a primitive checker gap or that exact iff.
   Current Algebraic-F2 estimate remains PLN STV `<0.79,0.92>`, ITV
   `[0.73,0.81]`, progress `99%`.
+- New report-closed emitted-rank/no-unified-evader equivalence surfaces:
+  `CAP5TransportedEdgeComponentCoverCore.emittedFinsetPairingKernel_eq_bot_iff_no_emittedFinsetKernelMapEvader_of_missingCheckerEvidenceLatents_eq_nil`
+  and
+  `CAP5TransportedEdgeComponentCoverCore.ofDecidableChecks_missingCheckerEvidence_or_emittedFinsetPairingKernel_eq_bot_iff_no_emittedFinsetKernelMapEvader`.
+  These connect the lab-facing finite rank certificate directly to the
+  obstruction branch: after a closed primitive frontier, the emitted-edge
+  pairing kernel is trivial iff there is no unified emitted-kernel/remaining-map
+  evader; the executable report returns a primitive checker gap or that exact
+  finite F2 equivalence.  Current Algebraic-F2 estimate remains PLN STV
+  `<0.79,0.92>`, ITV `[0.73,0.81]`, progress `99%`.
 
 ## Remaining Completion Requirements
 
