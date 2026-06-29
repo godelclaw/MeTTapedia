@@ -3,12 +3,12 @@ import Mettapedia.GraphTheory.FourColor.Goal
 import Mettapedia.GraphTheory.FourColor.Theorem49WheelWithInnerTriangleBenchmark
 
 /-!
-# CAP5 route payoff as a real coloring statement
+# CAP5 route payoff and finite gate surface
 
-This module records the coloring object obtained from the closed CAP5/F2 route
-surface.  The route is still about the Theorem 4.9 synthesis layer; it does
-not by itself supply the nonzero-color condition needed for Tait colorability.
-That extra bridge is named explicitly below.
+This module records the route-dependent endpoint obtained from the closed CAP5/F2 route
+surface.  The route currently closes the Theorem 4.9 synthesis/control layer; it does
+not by itself supply a new proper edge coloring, because the route certificate still
+takes the root as `G.EdgeColoring Color`.
 -/
 
 namespace Mettapedia.GraphTheory.FourColor
@@ -17,24 +17,15 @@ open SimpleGraph
 
 variable {V : Type*} [DecidableEq V] {G : SimpleGraph V}
 
-theorem color_card : Fintype.card Color = 4 := by
-  decide
-
-/- Any proper edge coloring by the four-element `Color` type is real line-graph 4-colorability. -/
-omit [DecidableEq V] in
-theorem edgeColorable_four_of_color_edgeColoring (C : G.EdgeColoring Color) :
-    G.EdgeColorable 4 := by
-  simpa [SimpleGraph.EdgeColorable, color_card] using
-    (SimpleGraph.Coloring.colorable C)
-
 variable [Fintype G.edgeSet] [FiniteDimensional F2 (G.edgeSet → Color)]
 
 /--
-The real coloring payoff currently justified by a closed CAP5/F2 route certificate.
-The theorem-4.9 part comes from `CAP5F2RouteClosed`; the `Colorable 4` object is
-the line-graph coloring already carried by the route root `C₀`.
+The route-dependent endpoint currently justified by a closed CAP5/F2 route certificate:
+theorem-4.9 synthesis plus the selected-boundary-zero classifier control carried by
+`CAP5F2RouteClosed`.  This deliberately contains no `EdgeColorable 4` field, because
+`C₀ : G.EdgeColoring Color` is already a proper coloring in the current route type.
 -/
-structure CAP5RouteClosedColoringPayoff
+structure CAP5RouteClosedSynthesisPayoff
     {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
     {emb : PlaneEmbeddingWithBoundary G} {C₀ : G.EdgeColoring Color}
     {colorings : Set (G.EdgeColoring Color)} {p0Inside p4Inside : Bool}
@@ -43,24 +34,29 @@ structure CAP5RouteClosedColoringPayoff
     Prop where
   routeClosed : CAP5F2RouteClosed cert
   synthesis : Theorem49BoundaryRootSynthesis emb C₀
-  edgeColorable_four : G.EdgeColorable 4
+  boundaryZeroControl :
+    ∀ ⦃z : G.edgeSet → Color⦄,
+      z ∈ planarBoundaryZeroSubmodule emb →
+      (∀ e ∈ cert.classifier.emittedFinset, z e = 0) →
+        z = 0
 
-theorem cap5RouteClosedColoringPayoff_of_routeClosed
+theorem cap5RouteClosedSynthesisPayoff_of_routeClosed
     {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
     {emb : PlaneEmbeddingWithBoundary G} {C₀ : G.EdgeColoring Color}
     {colorings : Set (G.EdgeColoring Color)} {p0Inside p4Inside : Bool}
     {side : V → Prop}
     {cert : CAP5F2RouteCertificate data emb C₀ colorings p0Inside p4Inside side}
     (hclosed : CAP5F2RouteClosed cert) :
-    CAP5RouteClosedColoringPayoff cert where
+    CAP5RouteClosedSynthesisPayoff cert where
   routeClosed := hclosed
   synthesis := hclosed.1
-  edgeColorable_four := edgeColorable_four_of_color_edgeColoring C₀
+  boundaryZeroControl := hclosed.2
 
 /--
-The exact additional bridge needed to upgrade a closed route to Tait colorability
-from the route data alone: the root `Color` edge-coloring must be nonzero on
-every edge.
+The exact additional bridge needed to upgrade a closed route to Tait colorability from the
+route data alone.  This is not supplied by `CAP5F2RouteClosed`; the current route type
+already assumes `C₀` is a proper `EdgeColoring`, and the missing Tait part is the
+nonzero-color condition.
 -/
 def CAP5RouteClosedRootTaitBridge
     {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
@@ -188,6 +184,31 @@ def CAP5FiniteNoGapRouteInput.toRouteCertificate
     input.redEmitted input.blueEmitted input.redRemaining input.blueRemaining
 
 /--
+MAKE side of the finite CAP5 route gate: once the executable primitive-checker
+frontier is closed, a checked absence of the unified emitted-kernel/remaining-map
+evader is exactly enough to close the packaged CAP5/F2 route.
+-/
+theorem CAP5FiniteNoGapRouteInput.routeClosed_of_noUnifiedKernelMapEvader
+    {boundaryEdge : Fin 5 → G.edgeSet} {n : Nat}
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    {emb : PlaneEmbeddingWithBoundary G} {C₀ : G.EdgeColoring Color}
+    {colorings : Set (G.EdgeColoring Color)} {p0Inside p4Inside : Bool}
+    {side : V → Prop}
+    (input :
+      CAP5FiniteNoGapRouteInput data emb C₀ colorings p0Inside p4Inside side)
+    (hExceptional : data.IsExceptional) (hcyclic : CyclicallyFiveEdgeConnected G)
+    (hnoEvader : CAP5F2NoUnifiedKernelMapEvader input.toRouteCertificate) :
+    CAP5F2RouteClosed input.toRouteCertificate := by
+  classical
+  letI := input.checks.portal
+  letI := input.checks.cycles
+  letI := input.checks.realized
+  exact
+    (cap5F2NoUnifiedKernelMapEvader_iff_routeClosed_of_noGap
+      emb C₀ colorings p0Inside p4Inside hExceptional side hcyclic
+      input.noPrimitiveGap input.toRouteCertificate).1 hnoEvader
+
+/--
 A finite checked route-closed certificate: executable primitive checker evidence is complete, and
 the route endpoint itself is closed.  Supplying one of these for a concrete graph is the exact
 canary obligation left by the current route surface.
@@ -230,7 +251,48 @@ def CAP5FiniteRouteClosedWitness.ofNoGapRouteInput
   checkerClosed := input.checkerClosed
   routeClosed := hclosed
 
-theorem CAP5FiniteRouteClosedWitness.coloringPayoff
+def CAP5FiniteNoGapRouteInput.toClosedWitness_of_noUnifiedKernelMapEvader
+    {boundaryEdge : Fin 5 → G.edgeSet} {n : Nat}
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    {emb : PlaneEmbeddingWithBoundary G} {C₀ : G.EdgeColoring Color}
+    {colorings : Set (G.EdgeColoring Color)} {p0Inside p4Inside : Bool}
+    {side : V → Prop}
+    (input :
+      CAP5FiniteNoGapRouteInput data emb C₀ colorings p0Inside p4Inside side)
+    (hExceptional : data.IsExceptional) (hcyclic : CyclicallyFiveEdgeConnected G)
+    (hnoEvader : CAP5F2NoUnifiedKernelMapEvader input.toRouteCertificate) :
+    CAP5FiniteRouteClosedWitness data emb C₀ colorings p0Inside p4Inside side :=
+  CAP5FiniteRouteClosedWitness.ofNoGapRouteInput input
+    (input.routeClosed_of_noUnifiedKernelMapEvader hExceptional hcyclic hnoEvader)
+
+/--
+BREAK side of the finite CAP5 route gate after primitive-checker closure: a concrete unified
+emitted-kernel/remaining-map evader for the certificate induced by the finite no-gap input.
+-/
+structure CAP5FiniteUnifiedKernelMapEvaderWitness
+    {boundaryEdge : Fin 5 → G.edgeSet} {n : Nat}
+    (data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n)
+    (emb : PlaneEmbeddingWithBoundary G) (C₀ : G.EdgeColoring Color)
+    (colorings : Set (G.EdgeColoring Color)) (p0Inside p4Inside : Bool)
+    (side : V → Prop) : Type _ where
+  input : CAP5FiniteNoGapRouteInput data emb C₀ colorings p0Inside p4Inside side
+  evader : ∃ z : planarBoundaryZeroSubmodule emb,
+    CAP5F2UnifiedKernelMapEvader input.toRouteCertificate z
+
+omit [FiniteDimensional F2 (G.edgeSet → Color)] in
+theorem CAP5FiniteUnifiedKernelMapEvaderWitness.not_noUnifiedKernelMapEvader
+    {boundaryEdge : Fin 5 → G.edgeSet} {n : Nat}
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    {emb : PlaneEmbeddingWithBoundary G} {C₀ : G.EdgeColoring Color}
+    {colorings : Set (G.EdgeColoring Color)} {p0Inside p4Inside : Bool}
+    {side : V → Prop}
+    (w :
+      CAP5FiniteUnifiedKernelMapEvaderWitness data emb C₀ colorings p0Inside p4Inside side) :
+    ¬ CAP5F2NoUnifiedKernelMapEvader w.input.toRouteCertificate := by
+  intro hnoEvader
+  exact hnoEvader w.evader
+
+theorem CAP5FiniteRouteClosedWitness.synthesisPayoff
     {boundaryEdge : Fin 5 → G.edgeSet} {n : Nat}
     {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
     {emb : PlaneEmbeddingWithBoundary G} {C₀ : G.EdgeColoring Color}
@@ -238,17 +300,20 @@ theorem CAP5FiniteRouteClosedWitness.coloringPayoff
     {side : V → Prop}
     (w :
       CAP5FiniteRouteClosedWitness data emb C₀ colorings p0Inside p4Inside side) :
-    CAP5RouteClosedColoringPayoff w.cert :=
-  cap5RouteClosedColoringPayoff_of_routeClosed w.routeClosed
+    CAP5RouteClosedSynthesisPayoff w.cert :=
+  cap5RouteClosedSynthesisPayoff_of_routeClosed w.routeClosed
 
 namespace WheelCAP5RoutePayoff
 
 open Theorem49PlanarBoundaryAnnulusWheelWitnessRegression
 
+theorem color_card : Fintype.card Color = 4 := by
+  decide
+
 /-!
-The wheel-with-inner-triangle benchmark is the concrete coloring canary currently available
-from the maintained benchmark module.  The stronger CAP5 finite route-closed canary is the
-existential `WheelCAP5FiniteRouteClosedCanary` below.
+The wheel-with-inner-triangle benchmark has an independent coloring canary from the maintained
+benchmark module.  This is not a payoff from the CAP5 route.  The CAP5 finite route-closed canary
+is the separate existential `WheelCAP5FiniteRouteClosedCanary` below.
 -/
 
 structure WheelColoringCanary : Prop where
@@ -257,7 +322,9 @@ structure WheelColoringCanary : Prop where
 
 theorem wheelColoringCanary : WheelColoringCanary where
   edgeColorable_four :=
-    edgeColorable_four_of_color_edgeColoring wheelWithInnerTriangleTaitEdgeColoring
+    by
+      simpa [SimpleGraph.EdgeColorable, color_card] using
+        (SimpleGraph.Coloring.colorable wheelWithInnerTriangleTaitEdgeColoring)
   taitColorable :=
     exists_taitEdgeColoring_wheelWithInnerTriangleGraph
 
@@ -274,16 +341,14 @@ def WheelCAP5FiniteRouteClosedCanary : Prop :=
         (CAP5FiniteRouteClosedWitness data wheelWithInnerTriangleEmbedding
           wheelWithInnerTriangleTaitEdgeColoring colorings p0Inside p4Inside side)
 
-theorem wheelColoringPayoff_of_CAP5FiniteRouteClosedCanary
+theorem wheelSynthesisPayoff_of_CAP5FiniteRouteClosedCanary
     (hcanary : WheelCAP5FiniteRouteClosedCanary) :
-    wheelWithInnerTriangleGraph.EdgeColorable 4 ∧
-      TaitColorable wheelWithInnerTriangleGraph := by
+    Theorem49BoundaryRootSynthesis wheelWithInnerTriangleEmbedding
+      wheelWithInnerTriangleTaitEdgeColoring := by
   rcases hcanary with
     ⟨_boundaryEdge, _n, _data, _colorings, _p0Inside, _p4Inside, _side, hwitness⟩
   rcases hwitness with ⟨witness⟩
-  exact
-    ⟨(CAP5FiniteRouteClosedWitness.coloringPayoff witness).edgeColorable_four,
-      exists_taitEdgeColoring_wheelWithInnerTriangleGraph⟩
+  exact witness.routeClosed.1
 
 end WheelCAP5RoutePayoff
 
