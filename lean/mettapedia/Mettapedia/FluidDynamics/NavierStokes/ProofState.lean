@@ -1069,10 +1069,13 @@ theorem currentNavierBKMResidualCurlDifferentialIdentities_node
       BKMVorticityFiniteTimeWitnessResidualCurlVelocitySchwartzAffineLogGrowthClosed ∧
       BKMVorticityScalarSchwartzTimePairingDerivativeClosed ∧
       BKMVorticityTwoProfileSchwartzTimePairingDerivativeClosed ∧
+      BKMVorticityFiniteFamilySchwartzTimePairingDerivativeClosed ∧
       BKMVorticityFiniteTimeWitnessResidualCurlVelocitySchwartzAprioriIntegrabilityClosed ∧
       BKMVorticityFiniteTimeWitnessResidualCurlVelocitySchwartzAffineLogGrowthIntegrabilityClosed ∧
       BKMVorticityFiniteTimeWitnessResidualCurlVelocitySchwartzTwoProfileAprioriClosed ∧
       BKMVorticityFiniteTimeWitnessResidualCurlVelocitySchwartzTwoProfileAffineLogGrowthClosed ∧
+      BKMVorticityFiniteTimeWitnessResidualCurlVelocitySchwartzFiniteFamilyAprioriClosed ∧
+      BKMVorticityFiniteTimeWitnessResidualCurlVelocitySchwartzFiniteFamilyAffineLogGrowthClosed ∧
       (BKMLogSobolevAffinePointwiseFromEnvelope →
         BKMHighNormContinuationFromLogControl →
           ExplicitFiniteEnergyBKMContinuationTargetOnNonnegHorizons) ∧
@@ -1131,11 +1134,16 @@ theorem currentNavierBKMResidualCurlDifferentialIdentities_node
       BKMVorticityFiniteTimeWitnessResidualCurlVelocitySchwartzAffineLogGrowthClosed_proved,
       BKMVorticityScalarSchwartzTimePairingDerivativeClosed_proved,
       BKMVorticityTwoProfileSchwartzTimePairingDerivativeClosed_proved,
+      BKMVorticityFiniteFamilySchwartzTimePairingDerivativeClosed_proved,
       BKMVorticityFiniteTimeWitnessResidualCurlVelocitySchwartzAprioriIntegrabilityClosed_proved,
       BKMVorticityFiniteTimeWitnessResidualCurlVelocitySchwartzAffineLogGrowthIntegrabilityClosed_proved,
       BKMVorticityFiniteTimeWitnessResidualCurlVelocitySchwartzTwoProfileAprioriClosed_proved,
       BKMVorticityFiniteTimeWitnessResidualCurlVelocitySchwartzTwoProfileAffineLogGrowthClosed_proved,
-      (BKMContinuation_reduced_to_affineLogHighNorm_after_residualCurl_integrability).2.2.2.2.2.2.2,
+      BKMVorticityFiniteTimeWitnessResidualCurlVelocitySchwartzFiniteFamilyAprioriClosed_proved,
+      BKMVorticityFiniteTimeWitnessResidualCurlVelocitySchwartzFiniteFamilyAffineLogGrowthClosed_proved,
+      fun hLog hHigh =>
+        BKMAffineLogSobolevAnalyticComponentsClosed.implies_finiteEnergyBKMContinuationTargetOnNonnegHorizons
+          ⟨BKMResidualCurlExpansionDefectVanishes_proved, hLog, hHigh⟩,
       BKMResidualCurlDifferentialIdentitiesClosed.implies_residualCurlExpansionDefectVanishes,
       BKMAnalyticComponentsClosed_of_residualCurlDifferentialIdentities,
       navierBKMResidualCurlDifferentialIdentitiesNode_checked⟩
