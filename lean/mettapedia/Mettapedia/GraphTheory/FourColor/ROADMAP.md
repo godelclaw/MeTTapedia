@@ -565,13 +565,19 @@ longer acceptable progress.
    scheduler theorem then restates the terminal branch as the semantic
    invariant that the processed set covers every original remaining control
    edge, while preserving the same already-closed synthesis branch and promoted
-   obstruction branch.  The
+   obstruction branch.  The trace-control fork now makes this terminal
+   algebraic surface exact: canonical remaining-interior trace-control is
+   equivalent to absence of a selected-boundary-zero evader, and failure of
+   trace-control returns a genuine evader plus a concrete trace edge where it
+   is nonzero.  Under the forced-all report, trace-control closes theorem-4.9
+   synthesis plus full selected-boundary-zero classifier control; otherwise the
+   trace-local evader is the obstruction.  The
    pure no-target theorem underneath those refinements says failed synthesis
    already produces a genuine selected-boundary-zero evader for the enumerated
    forced edges.  The remaining crux is whether exact shell/CAP5 data reaches
-   that terminal processed-coverage scheduler state uniformly, or whether this
-   genuine boundary-zero/vertex-Kirchhoff/path-xor residual-scheduler branch
-   exists and must be promoted edge by edge.
+   canonical remaining-interior trace-control uniformly, or whether this
+   genuine boundary-zero/vertex-Kirchhoff/path-xor trace-local evader is the
+   decided obstruction.
 
 The historical trichotomy below remains useful background:
 
