@@ -611,6 +611,27 @@ noncomputable def gp12FiniteNoGapRouteInput_of_allCoordinateMemberships
     (fun e _he => hred e)
     (fun e _he => hblue e)
 
+noncomputable def gp12FiniteNoGapRouteInput_of_closureCoordinateMemberships
+    {p0Inside p4Inside : Bool}
+    (classifier :
+      gp12CAP5ComponentCoverCore.EnumeratedExceptionalAnnulusForcedEdgeClassifier
+        p0Inside p4Inside gp12FiveCutSide)
+    (hred :
+      ∀ e : gp12Graph.edgeSet,
+        Pi.single e red ∈ projectedColoringGeneratorSubspace gp12Embedding
+          (gp12Graph.EdgeKempeClosure gp12TaitEdgeColoring))
+    (hblue :
+      ∀ e : gp12Graph.edgeSet,
+        Pi.single e blue ∈ projectedColoringGeneratorSubspace gp12Embedding
+          (gp12Graph.EdgeKempeClosure gp12TaitEdgeColoring)) :
+    CAP5FiniteNoGapRouteInput gp12CAP5ComponentCoverCore
+      gp12Embedding gp12TaitEdgeColoring
+      (gp12Graph.EdgeKempeClosure gp12TaitEdgeColoring) p0Inside p4Inside
+      gp12FiveCutSide :=
+  gp12FiniteNoGapRouteInput_of_allCoordinateMemberships
+    (colorings := gp12Graph.EdgeKempeClosure gp12TaitEdgeColoring)
+    (fun _ hC => hC) classifier hred hblue
+
 def gp12P0InsideP4OutsideEmittedFinset : Finset gp12Graph.edgeSet :=
   {gp12_e15_17}
 

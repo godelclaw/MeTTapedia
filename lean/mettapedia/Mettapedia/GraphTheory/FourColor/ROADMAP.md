@@ -450,21 +450,31 @@ span, with rank 72/72, SymPy GF(2) rank cross-check 72/72, 72 used generator
 rows, and combination sizes 2..42.  Script/JSON SHA256:
 `2615eefc5c4a09faf556e00a17b769a2bde6dff7cb843f5619b0a5182fede9be` /
 `b96c76cb4660003371a3cd1902b162b53585d086ad2043dca9229f73754e761d`.
+`fourcolor-gp12-kempe-path-certificate-lab-20260629.json` verifies the Kempe
+paths from Lean `gp12TaitEdgeColoring` to the 11 coloring IDs used by those
+rows: Lean base ID 5, maximum depth 4, and 15 distinct coloring IDs across the
+paths.  Script/JSON SHA256:
+`574553f65496cc7babe6ef1153700014a3766bb4a4a14a330df48d11c67a8aac` /
+`77276a587f35964baa88342b53a28d9e5e09d055209d1496fd1099e6f26fb139`.
 Lean now reduces the actual GP(12,2) route-input construction to those finite
 memberships and Kempe-class closure via
 `gp12FiniteNoGapRouteInput_of_allCoordinateMemberships`; no graph-specific
 route-input witness is claimed until that finite certificate is packaged.
+The additional closure-set adapter
+`gp12FiniteNoGapRouteInput_of_closureCoordinateMemberships` removes the need to
+name a separate finite coloring set in the route input: using the full
+`EdgeKempeClosure gp12TaitEdgeColoring`, the remaining certificate package is
+the 72 projected-generator finite-sum memberships in the closure subspace.
 This does not upgrade the six-cut residual: the generic six-cut meta-barrier
 is not proven, and the non-boundary six-cut degree of freedom remains open.
-Verification for this adapter increment: focused `CAP5RoutePayoff` build
-SHA256 `9fdef61516749e4915ed8b2d9ff508952dbe6469e15e52ba4e6ca632c35d06c1`,
-focused `CAP5GP12RouteData` build SHA256
-`42e5a2eee6b11df605ad6ff1aace863c0a6fda5f5ae59373474ef0e56e6eb298`,
+Verification for this closure-set adapter increment: focused
+`CAP5GP12RouteData` build SHA256
+`c5cf0251289caeb631efa958cbc2e78f3960812f36b3f680878a845e8cf96870`,
 FourColor umbrella build SHA256
-`b75eccf9da5281172ab7b1dab910038972c0f950ec46e046bd3c58010e4f4f2a`,
+`af99f08c3c25acf21c284845e1f3b84ac7cb9f357dabf99089a4dcf73de4bbbe`,
 and axiom audit driver/log SHA256
-`8c6c313a0b2bce1fb845cc7280a57af2022ae008cd384d5ba865627731a9aa13` /
-`940859f527dd923cb2c21008f756cd718076f40ea84dbb586dfa62520d2163ca`
+`8c2907f04d6c54ee3e173a7cfd331c0da24c33e86bdb529c931187c2e7ec7cf1` /
+`37b88abc5bf1563500e2a736d493cf9073a00e54396ce8d7e0c4f5d55de909be`
 with baseline `[propext, Classical.choice, Quot.sound]`.
 Verification for the
 Gate-1 no-gap increment: focused `CAP5GP12RouteData` build SHA256
