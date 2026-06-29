@@ -139,6 +139,78 @@ theorem exists_past_coordinateEnergyDissipationRate_lt
     exact le_of_not_gt fun hlt => hnone ⟨t, ht, hlt⟩
   exact (S.not_forall_past_coordinateEnergyDissipationRate_ge hκ) hall
 
+/-- A nonnegative energy identity also forbids a uniform positive corrected
+dissipation rate on an entire future ray.  Otherwise the normalized kinetic
+energy would become negative after a sufficiently long interval. -/
+theorem not_forall_future_coordinateEnergyDissipationRate_ge
+    {κ T : NSTime} (hκ : 0 < κ) :
+    ¬ ∀ t : NSTime, T ≤ t →
+      κ ≤ coordinateEnergyDissipationRate S.velocity ν t := by
+  intro hgap
+  let E : NSTime → ℝ := normalizedKineticEnergy S.velocity
+  let R : NSTime := T + (E T + 1) / κ
+  have hET_nonneg : 0 ≤ E T := by
+    dsimp [E]
+    exact normalizedKineticEnergy_nonneg S.velocity T
+  have hET1 : 0 < E T + 1 := by
+    linarith
+  have hTR : T ≤ R := by
+    have hdiv : 0 < (E T + 1) / κ := div_pos hET1 hκ
+    dsimp [R]
+    linarith
+  have hcont : ContinuousOn E (Icc T R) := by
+    intro x _hx
+    exact (S.coordinateEnergyDissipationIdentity x).continuousAt.continuousWithinAt
+  have hdiff : DifferentiableOn ℝ E (interior (Icc T R)) := by
+    intro x _hx
+    exact (S.coordinateEnergyDissipationIdentity x).differentiableAt.differentiableWithinAt
+  have hderiv_le :
+      ∀ x ∈ interior (Icc T R), deriv E x ≤ -κ := by
+    intro x hx
+    have hxIcc : x ∈ Icc T R := interior_subset hx
+    have hrate :
+        κ ≤ coordinateEnergyDissipationRate S.velocity ν x :=
+      hgap x hxIcc.1
+    have hderiv :
+        deriv E x = -(coordinateEnergyDissipationRate S.velocity ν x) := by
+      dsimp [E]
+      exact (S.coordinateEnergyDissipationIdentity x).deriv
+    rw [hderiv]
+    exact neg_le_neg hrate
+  have hmv :
+      E R - E T ≤ -κ * (R - T) :=
+    (convex_Icc T R).image_sub_le_mul_sub_of_deriv_le
+      hcont hdiff hderiv_le
+      T (left_mem_Icc.mpr hTR) R (right_mem_Icc.mpr hTR) hTR
+  have hspan : κ * (R - T) = E T + 1 := by
+    calc
+      κ * (R - T) = κ * ((E T + 1) / κ) := by
+        congr 1
+        dsimp [R]
+        ring
+      _ = E T + 1 := by
+        field_simp [ne_of_gt hκ]
+  have hnegative : E R < 0 := by
+    nlinarith
+  have hnonneg : 0 ≤ E R := by
+    dsimp [E]
+    exact normalizedKineticEnergy_nonneg S.velocity R
+  exact not_lt_of_ge hnonneg hnegative
+
+/-- Positive form of the future no-uniform-gap theorem: every positive
+threshold is beaten at some time on every future ray. -/
+theorem exists_future_coordinateEnergyDissipationRate_lt
+    {κ T : NSTime} (hκ : 0 < κ) :
+    ∃ t : NSTime,
+      T ≤ t ∧ coordinateEnergyDissipationRate S.velocity ν t < κ := by
+  by_contra hnone
+  have hall :
+      ∀ t : NSTime, T ≤ t →
+        κ ≤ coordinateEnergyDissipationRate S.velocity ν t := by
+    intro t ht
+    exact le_of_not_gt fun hlt => hnone ⟨t, ht, hlt⟩
+  exact (S.not_forall_future_coordinateEnergyDissipationRate_ge hκ) hall
+
 /-- Endpoint version: if a positive-viscosity solution is nonzero at a later
 endpoint, then every positive threshold is crossed at some earlier nonzero slice
 with strictly positive but smaller corrected dissipation. -/
@@ -395,6 +467,20 @@ theorem stokesFlow_noUniformPastDissipation_packet
   exact
     ⟨S.nonzeroStokesFlowKernel hconv hpressure,
       S.exists_nonzero_endpoint_with_arbitrarily_small_past_dissipation hν⟩
+
+/-- Exact Stokes-flow specialization of the future no-uniform-gap theorem:
+no positive dissipation threshold can hold forever to the future. -/
+theorem stokesFlow_noUniformFutureDissipation_packet
+    (hconv : ∀ t x, spatialConvection S.velocity t x = 0)
+    (hpressure : ∀ t x, spatialPressureGradient S.pressure t x = 0)
+    {κ T : NSTime} (hκ : 0 < κ) :
+    NonzeroSchwartzStokesFlowKernel ν S.velocity S.pressure ∧
+      ∃ t : NSTime,
+        T ≤ t ∧ coordinateEnergyDissipationRate S.velocity ν t < κ := by
+  exact
+    ⟨S.nonzeroStokesFlowKernel hconv hpressure,
+      S.toSchwartzConcreteNavierStokesSolution
+        |>.exists_future_coordinateEnergyDissipationRate_lt hκ⟩
 
 /-- A positive-viscosity nonzero solution has a nonzero endpoint whose whole
 past ray contains nonzero slices with arbitrarily small positive dissipation
@@ -722,6 +808,33 @@ theorem not_exists_nonzeroSchwartzConcreteSolution_uniform_past_dissipation_gap
   exact
     (S.toSchwartzConcreteNavierStokesSolution
       |>.not_forall_past_coordinateEnergyDissipationRate_ge hκ) hgap
+
+/-- Global no-go form for uniform future dissipation gaps in the nonzero
+slice-Schwartz interface. -/
+theorem not_exists_nonzeroSchwartzConcreteSolution_uniform_future_dissipation_gap
+    {ν κ : ℝ} (hκ : 0 < κ) :
+    ¬ ∃ S : NonzeroSchwartzConcreteNavierStokesSolution ν,
+      ∃ T : NSTime,
+        ∀ t : NSTime, T ≤ t →
+          κ ≤ coordinateEnergyDissipationRate S.velocity ν t := by
+  rintro ⟨S, T, hgap⟩
+  exact
+    (S.toSchwartzConcreteNavierStokesSolution
+      |>.not_forall_future_coordinateEnergyDissipationRate_ge hκ) hgap
+
+/-- Global Stokes-flow no-go form for uniform future dissipation gaps. -/
+theorem not_exists_nonzeroSchwartzStokesFlow_uniform_future_dissipation_gap
+    {ν κ : ℝ} (hκ : 0 < κ) :
+    ¬ ∃ S : NonzeroSchwartzConcreteNavierStokesSolution ν,
+      (∀ t x, spatialConvection S.velocity t x = 0) ∧
+        (∀ t x, spatialPressureGradient S.pressure t x = 0) ∧
+          ∃ T : NSTime,
+            ∀ t : NSTime, T ≤ t →
+              κ ≤ coordinateEnergyDissipationRate S.velocity ν t := by
+  rintro ⟨S, _hconv, _hpressure, T, hgap⟩
+  exact
+    (S.toSchwartzConcreteNavierStokesSolution
+      |>.not_forall_future_coordinateEnergyDissipationRate_ge hκ) hgap
 
 /-- Global no-go form for positive Poincare-style past spectral floors in the
 nonzero slice-Schwartz interface. -/

@@ -88,6 +88,48 @@ theorem stokes_endpoint_no_repeated_velocity_slice_regression
     S.stokesFlow_endpoint_noRepeatedVelocitySlice_packet
       hν hconv hpressure hneT
 
+theorem future_coordinate_dissipation_no_uniform_gap_regression
+    {ν κ T : ℝ} (hκ : 0 < κ)
+    (S : SchwartzConcreteNavierStokesSolution ν) :
+    ¬ ∀ t : NSTime, T ≤ t →
+      κ ≤ coordinateEnergyDissipationRate S.velocity ν t := by
+  exact S.not_forall_future_coordinateEnergyDissipationRate_ge hκ
+
+theorem future_coordinate_dissipation_small_sample_regression
+    {ν κ T : ℝ} (hκ : 0 < κ)
+    (S : SchwartzConcreteNavierStokesSolution ν) :
+    ∃ t : NSTime,
+      T ≤ t ∧ coordinateEnergyDissipationRate S.velocity ν t < κ := by
+  exact S.exists_future_coordinateEnergyDissipationRate_lt hκ
+
+theorem stokes_future_no_uniform_dissipation_packet_regression
+    {ν κ T : ℝ} (hκ : 0 < κ)
+    (S : NonzeroSchwartzConcreteNavierStokesSolution ν)
+    (hconv : ∀ t x, spatialConvection S.velocity t x = 0)
+    (hpressure : ∀ t x, spatialPressureGradient S.pressure t x = 0) :
+    NonzeroSchwartzStokesFlowKernel ν S.velocity S.pressure ∧
+      ∃ t : NSTime,
+        T ≤ t ∧ coordinateEnergyDissipationRate S.velocity ν t < κ := by
+  exact S.stokesFlow_noUniformFutureDissipation_packet hconv hpressure hκ
+
+theorem not_exists_nonzero_future_uniform_dissipation_gap_regression
+    {ν κ : ℝ} (hκ : 0 < κ) :
+    ¬ ∃ S : NonzeroSchwartzConcreteNavierStokesSolution ν,
+      ∃ T : NSTime,
+        ∀ t : NSTime, T ≤ t →
+          κ ≤ coordinateEnergyDissipationRate S.velocity ν t := by
+  exact not_exists_nonzeroSchwartzConcreteSolution_uniform_future_dissipation_gap hκ
+
+theorem not_exists_stokes_future_uniform_dissipation_gap_regression
+    {ν κ : ℝ} (hκ : 0 < κ) :
+    ¬ ∃ S : NonzeroSchwartzConcreteNavierStokesSolution ν,
+      (∀ t x, spatialConvection S.velocity t x = 0) ∧
+        (∀ t x, spatialPressureGradient S.pressure t x = 0) ∧
+          ∃ T : NSTime,
+            ∀ t : NSTime, T ≤ t →
+              κ ≤ coordinateEnergyDissipationRate S.velocity ν t := by
+  exact not_exists_nonzeroSchwartzStokesFlow_uniform_future_dissipation_gap hκ
+
 theorem not_exists_stokes_coordinate_enstrophy_floor_regression
     {ν lam : ℝ} (hν : 0 < ν) (hlam : 0 < lam) :
     ¬ ∃ S : NonzeroSchwartzConcreteNavierStokesSolution ν,
