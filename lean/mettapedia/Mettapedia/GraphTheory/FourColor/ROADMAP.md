@@ -507,7 +507,11 @@ longer acceptable progress.
    selected-boundary-zero classifier control is equivalent to absence of a
    nonzero selected-boundary-zero evader, and the closed finite checker plus
    that no-evader verdict gives both theorem-4.9 synthesis and full
-   boundary-zero classifier control; classifier control of the theorem-4.9
+   boundary-zero classifier control.  The emitted-edge red/blue pairing kernel
+   is now exact for the same no-evader verdict, so a finite rank certificate on
+   the immutable emitted forced-edge coordinates closes the forced-all route,
+   while kernel failure returns a genuine selected-boundary-zero evader;
+   classifier control of the theorem-4.9
    target is also equivalent to absence of a nonzero target evader;
    underdimensioned classifiers produce a genuine target evader; target
    classifier control reduces the remaining failure branch to a
@@ -581,13 +585,20 @@ longer acceptable progress.
    selected-boundary-zero evader.  Under the forced-all report, trace-control,
    or equivalently no map-detected evader, closes theorem-4.9 synthesis plus
    full selected-boundary-zero classifier control; otherwise Lean returns the
-   map-detected evader as the obstruction.  The
+   map-detected evader as the obstruction.  The emitted-edge kernel bridge now
+   connects the lab-facing rank certificate directly to that same oracle: the
+   canonical red/blue pairing kernel on the immutable emitted forced-edge
+   coordinates is trivial iff no selected-boundary-zero evader exists.  Under
+   forced-all this emitted-kernel certificate closes synthesis/control; failure
+   returns a concrete nonzero selected-boundary-zero kernel witness vanishing
+   on every enumerated forced edge.  The
    pure no-target theorem underneath those refinements says failed synthesis
    already produces a genuine selected-boundary-zero evader for the enumerated
    forced edges.  The remaining crux is whether exact shell/CAP5 data reaches
-   canonical remaining-interior trace-control uniformly, or whether this
+   canonical remaining-interior trace-control/emitted-kernel triviality
+   uniformly, or whether this
    genuine boundary-zero/vertex-Kirchhoff/path-xor trace-local evader with
-   canonical red/blue pairing/map signal is the decided obstruction.
+   canonical red/blue pairing/map/kernel signal is the decided obstruction.
 
 The historical trichotomy below remains useful background:
 
