@@ -86,6 +86,96 @@ theorem spatialVorticity_timeVelocityDerivativeField_smoothSpaceTimeVelocity_of_
     smoothSpaceTimeVelocity (fun t x => spatialVorticity (timeVelocityDerivativeField u) t x) := by
   exact spatialVorticity_timeVelocityDerivativeField_smoothSpaceTimeVelocity_of_smooth hu
 
+theorem fderiv_prodMk_right_const_eq_inr_regression
+    (t : NSTime) (x : NSSpace) :
+    fderiv ℝ (fun y : NSSpace => (t, y)) x =
+      ContinuousLinearMap.inr ℝ NSTime NSSpace := by
+  exact fderiv_prodMk_right_const_eq_inr t x
+
+theorem fderiv_prodMk_left_const_eq_inl_regression
+    (t : NSTime) (x : NSSpace) :
+    fderiv ℝ (fun s : NSTime => (s, x)) t =
+      ContinuousLinearMap.inl ℝ NSTime NSSpace := by
+  exact fderiv_prodMk_left_const_eq_inl t x
+
+theorem spatialSlice_fderiv_eq_spaceTime_fderiv_inr_of_smooth_regression
+    {u : NSVelocityField} (hu : smoothSpaceTimeVelocity u)
+    (t : NSTime) (x : NSSpace) :
+    fderiv ℝ (fun y : NSSpace => u t y) x =
+      (fderiv ℝ (spaceTimeVelocityMap u) (t, x)).comp
+        (ContinuousLinearMap.inr ℝ NSTime NSSpace) := by
+  exact spatialSlice_fderiv_eq_spaceTime_fderiv_inr_of_smooth hu t x
+
+theorem timeSlice_fderiv_eq_spaceTime_fderiv_inl_of_smooth_regression
+    {u : NSVelocityField} (hu : smoothSpaceTimeVelocity u)
+    (t : NSTime) (x : NSSpace) :
+    fderiv ℝ (fun s : NSTime => u s x) t =
+      (fderiv ℝ (spaceTimeVelocityMap u) (t, x)).comp
+        (ContinuousLinearMap.inl ℝ NSTime NSSpace) := by
+  exact timeSlice_fderiv_eq_spaceTime_fderiv_inl_of_smooth hu t x
+
+theorem smoothSpaceTimeVelocity_hasFDerivAt_fderiv_apply_const_regression
+    {u : NSVelocityField} (hu : smoothSpaceTimeVelocity u)
+    (tx v : NSSpacetime) :
+    HasFDerivAt (fun p : NSSpacetime => (fderiv ℝ (spaceTimeVelocityMap u) p) v)
+      ((fderiv ℝ (fderiv ℝ (spaceTimeVelocityMap u)) tx).flip v) tx := by
+  exact smoothSpaceTimeVelocity_hasFDerivAt_fderiv_apply_const hu tx v
+
+theorem spatialDerivativeComponent_time_derivative_eq_spacetime_second_regression
+    {u : NSVelocityField} (hu : smoothSpaceTimeVelocity u)
+    (t : NSTime) (x : NSSpace) (coord comp : Fin 3) :
+    fderiv ℝ (fun s : NSTime => spatialDerivativeComponent u s x coord comp) t (1 : ℝ) =
+      (((fderiv ℝ (fderiv ℝ (spaceTimeVelocityMap u)) (t, x))
+          (ContinuousLinearMap.inl ℝ NSTime NSSpace (1 : NSTime)))
+        (ContinuousLinearMap.inr ℝ NSTime NSSpace
+          (EuclideanSpace.single coord (1 : ℝ)))) comp := by
+  exact spatialDerivativeComponent_time_derivative_eq_spacetime_second
+    hu t x coord comp
+
+theorem spatialDerivativeComponent_timeVelocityDerivativeField_eq_spacetime_second_regression
+    {u : NSVelocityField} (hu : smoothSpaceTimeVelocity u)
+    (t : NSTime) (x : NSSpace) (coord comp : Fin 3) :
+    spatialDerivativeComponent (timeVelocityDerivativeField u) t x coord comp =
+      (((fderiv ℝ (fderiv ℝ (spaceTimeVelocityMap u)) (t, x))
+          (ContinuousLinearMap.inr ℝ NSTime NSSpace
+            (EuclideanSpace.single coord (1 : ℝ))))
+        (ContinuousLinearMap.inl ℝ NSTime NSSpace (1 : NSTime))) comp := by
+  exact spatialDerivativeComponent_timeVelocityDerivativeField_eq_spacetime_second
+    hu t x coord comp
+
+theorem spatialDerivativeComponent_time_derivative_eq_timeVelocityDerivativeField_regression
+    {u : NSVelocityField} (hu : smoothSpaceTimeVelocity u)
+    (t : NSTime) (x : NSSpace) (coord comp : Fin 3) :
+    fderiv ℝ (fun s : NSTime => spatialDerivativeComponent u s x coord comp) t (1 : ℝ) =
+      spatialDerivativeComponent (timeVelocityDerivativeField u) t x coord comp := by
+  exact spatialDerivativeComponent_time_derivative_eq_timeVelocityDerivativeField
+    hu t x coord comp
+
+theorem timeVorticityDerivative_component_eq_fderiv_coordinate_regression
+    {u : NSVelocityField} (hu : smoothSpaceTimeVelocity u)
+    (t : NSTime) (x : NSSpace) (i : Fin 3) :
+    (timeVorticityDerivative u t x) i =
+      fderiv ℝ (fun s : NSTime => (spatialVorticity u s x) i) t (1 : ℝ) := by
+  exact timeVorticityDerivative_component_eq_fderiv_coordinate hu t x i
+
+theorem timeVorticityDerivative_eq_spatialVorticity_timeVelocityDerivativeField_regression
+    {u : NSVelocityField} (hu : smoothSpaceTimeVelocity u)
+    (t : NSTime) (x : NSSpace) :
+    timeVorticityDerivative u t x =
+      spatialVorticity (timeVelocityDerivativeField u) t x := by
+  exact timeVorticityDerivative_eq_spatialVorticity_timeVelocityDerivativeField hu t x
+
+theorem vorticityTimeCommutationDefect_eq_zero_of_smooth_regression
+    {u : NSVelocityField} (hu : smoothSpaceTimeVelocity u)
+    (t : NSTime) (x : NSSpace) :
+    vorticityTimeCommutationDefect u t x = 0 := by
+  exact vorticityTimeCommutationDefect_eq_zero_of_smooth hu t x
+
+theorem vorticityTimeCommutationClosedOn_of_smooth_regression
+    {u : NSVelocityField} {T : ℝ} (hu : smoothSpaceTimeVelocity u) :
+    vorticityTimeCommutationClosedOn u T := by
+  exact vorticityTimeCommutationClosedOn_of_smooth hu
+
 theorem residualCurlLinearityDifferentiableAt_of_smooth_laplacian_regression
     {u : NSVelocityField} {t : NSTime} {x : NSSpace}
     (hu : smoothSpaceTimeVelocity u)
