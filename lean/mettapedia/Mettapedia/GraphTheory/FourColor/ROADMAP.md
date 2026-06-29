@@ -733,6 +733,16 @@ longer acceptable progress.
    only the primitive gap or the genuine residual selected-boundary-zero
    evader with immutable processed-control failure and strict residual decrease
    remains.
+   The initial residual scheduler corollaries
+   `ofDecidableChecks_missingCheckerEvidence_or_initialResidualSchedulerNoEvader_or_synthesis_or_immutableProcessedControlObstruction`
+   and
+   `ofDecidableChecks_missingCheckerEvidence_or_initialResidualSchedulerImmutableProcessedControlObstruction_of_notSynthesis`
+   remove the scheduler-side processed-state handoff altogether at the start:
+   `processed = ∅` supplies processed-control automatically, so the executable
+   report itself starts the promoted scheduler.  Failed synthesis now returns
+   either the primitive gap or the first residual selected-boundary-zero evader
+   with immutable one-edge processed-control failure, the one-edge promoted
+   control update, and strict residual decrease.
    The direct no-evader route corollaries
    `ofDecidableChecks_missingCheckerEvidence_or_theorem49Synthesis_and_boundaryZeroControl_of_no_theorem49BoundaryTargetEvader_and_no_emittedFinsetKernelMapEvader_with_theorem49BoundaryVertexKirchhoffFailure`
    and

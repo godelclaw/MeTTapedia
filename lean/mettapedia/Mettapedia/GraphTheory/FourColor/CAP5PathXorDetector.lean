@@ -19615,6 +19615,252 @@ theorem ofDecidableChecks_missingCheckerEvidence_or_residualSchedulerImmutablePr
       · exact False.elim (hnotSynthesis hsynthesis)
       · exact Or.inr hobstruction
 
+/--
+Initial executable-report residual scheduler decision.  The promoted scheduler can be started
+without any extra processed-state hypothesis: with `processed = ∅`, processed-control is
+automatic.  Thus the decidable CAP5 report returns either a primitive checker gap, an empty
+initial remaining-worklist no-evader/synthesis branch, an already-closed synthesis branch, or the
+same promoted residual-edge obstruction.
+-/
+theorem ofDecidableChecks_missingCheckerEvidence_or_initialResidualSchedulerNoEvader_or_synthesis_or_immutableProcessedControlObstruction
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    [Fintype G.edgeSet] [FiniteDimensional F2 (G.edgeSet → Color)]
+    (emb : PlaneEmbeddingWithBoundary G) (C₀ : G.EdgeColoring Color)
+    (colorings : Set (G.EdgeColoring Color))
+    (hsubset : colorings ⊆ G.EdgeKempeClosure C₀)
+    (p0Inside p4Inside : Bool) (h : data.IsExceptional)
+    (side : V → Prop)
+    [∀ latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge,
+      Decidable ((CAP5ExceptionalAnnulusGeneratorReport.latentNode
+        boundaryEdge side latent).PortalCrosses)]
+    [∀ latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge,
+      Decidable ((CAP5ExceptionalAnnulusGeneratorReport.latentNode
+        boundaryEdge side latent).SideCycles)]
+    [∀ latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge,
+      Decidable ((CAP5ExceptionalAnnulusGeneratorReport.latentNode
+        boundaryEdge side latent).RealizedSeparator)]
+    (hcyclic : CyclicallyFiveEdgeConnected G)
+    (hportal_crosses :
+      ∀ edgeCandidate : CAP5ExceptionalAnnulusBoundaryEdgeSupportCandidate boundaryEdge,
+        data.RealizesExceptionalBoundarySupportOrientation
+            edgeCandidate.portalCandidate.orientation →
+        edgeCandidate.portalCandidate.sideCase =
+            CAP5ExceptionalAnnulusSideCase.ofPortalSides p0Inside p4Inside →
+        ∀ i : Fin 5, i ∈ edgeCandidate.portalCandidate.portalSet →
+          EdgeCrossesVertexSide G side (boundaryEdge i))
+    (hcycles : HasCycleOnSide G side ∧ HasCycleOnSide G (fun v => ¬ side v))
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (hredEmitted :
+      ∀ e ∈ classifier.emittedFinset,
+        Pi.single e red ∈ projectedColoringGeneratorSubspace emb colorings)
+    (hblueEmitted :
+      ∀ e ∈ classifier.emittedFinset,
+        Pi.single e blue ∈ projectedColoringGeneratorSubspace emb colorings)
+    (hredRemaining :
+      ∀ e ∈ classifier.remainingControlEdges
+          (interiorEdgeSupport emb.faceBoundary emb.faces),
+        Pi.single e red ∈ projectedColoringGeneratorSubspace emb colorings)
+    (hblueRemaining :
+      ∀ e ∈ classifier.remainingControlEdges
+          (interiorEdgeSupport emb.faceBoundary emb.faces),
+        Pi.single e blue ∈ projectedColoringGeneratorSubspace emb colorings) :
+    ((∃ latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge,
+      latent ∈ CAP5ExceptionalAnnulusGeneratorLatent.all boundaryEdge ∧
+        (CAP5ExceptionalAnnulusGeneratorReport.latentNode
+          boundaryEdge side latent).MissingPortalCrossingEvidence) ∨
+      (∃ latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge,
+        latent ∈ CAP5ExceptionalAnnulusGeneratorLatent.all boundaryEdge ∧
+          (CAP5ExceptionalAnnulusGeneratorReport.latentNode
+            boundaryEdge side latent).MissingSelectedSideCycleEvidence) ∨
+        (∃ latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge,
+          latent ∈ CAP5ExceptionalAnnulusGeneratorLatent.all boundaryEdge ∧
+            (CAP5ExceptionalAnnulusGeneratorReport.latentNode
+              boundaryEdge side latent).MissingComplementarySideCycleEvidence)) ∨
+      ((classifier.remainingControlEdges
+          (interiorEdgeSupport emb.faceBoundary emb.faces) = ∅ ∧
+        (¬ ∃ z : G.edgeSet → Color,
+          z ∈ planarBoundaryZeroSubmodule emb ∧
+            z ≠ 0 ∧
+              ∀ e : G.edgeSet,
+                data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e →
+                  z e = 0) ∧
+          Theorem49BoundaryRootSynthesis emb C₀ ∧
+            (∀ ⦃z : G.edgeSet → Color⦄,
+              z ∈ planarBoundaryZeroSubmodule emb →
+              (∀ e ∈ classifier.emittedFinset, z e = 0) →
+                z = 0)) ∨
+        Theorem49BoundaryRootSynthesis emb C₀ ∨
+          classifier.residualRemainingControlEdges
+              (interiorEdgeSupport emb.faceBoundary emb.faces)
+              (∅ : Finset G.edgeSet) ≠ ∅ ∧
+            ∃ z : G.edgeSet → Color,
+              z ∈ planarBoundaryZeroSubmodule emb ∧
+                z ≠ 0 ∧
+                  (∀ e : G.edgeSet,
+                    data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e →
+                      z e = 0) ∧
+                    ∃ e : G.edgeSet,
+                      e ∈ classifier.residualRemainingControlEdges
+                          (interiorEdgeSupport emb.faceBoundary emb.faces)
+                          (∅ : Finset G.edgeSet) ∧
+                        ¬ data.EnumeratedExceptionalAnnulusForcedEdge
+                          p0Inside p4Inside side e ∧
+                          z e ≠ 0 ∧
+                            ¬ (∀ ⦃w : G.edgeSet → Color⦄,
+                              w ∈ planarBoundaryZeroSubmodule emb →
+                              (∀ f ∈ classifier.emittedFinset, w f = 0) →
+                                ∀ f ∈ ({e} : Finset G.edgeSet), w f = 0) ∧
+                              (∀ ⦃w : G.edgeSet → Color⦄,
+                                w ∈ planarBoundaryZeroSubmodule emb →
+                                (∀ f ∈ insert e classifier.emittedFinset, w f = 0) →
+                                  ∀ f ∈ ({e} : Finset G.edgeSet), w f = 0) ∧
+                                (classifier.residualRemainingControlEdges
+                                    (interiorEdgeSupport emb.faceBoundary emb.faces)
+                                    ({e} : Finset G.edgeSet)).card <
+                                  (classifier.residualRemainingControlEdges
+                                    (interiorEdgeSupport emb.faceBoundary emb.faces)
+                                    (∅ : Finset G.edgeSet)).card) := by
+  have hprocessedControl :
+      ∀ ⦃z : G.edgeSet → Color⦄,
+        z ∈ planarBoundaryZeroSubmodule emb →
+        (∀ e ∈ classifier.emittedFinset, z e = 0) →
+          ∀ e ∈ (∅ : Finset G.edgeSet), z e = 0 := by
+    intro z _hzBoundary _hvanishEmitted e he
+    simp at he
+  rcases
+      data.ofDecidableChecks_missingCheckerEvidence_or_residualSchedulerCoverageNoEvader_or_synthesis_or_immutableProcessedControlObstruction_of_processedControl
+        emb C₀ colorings hsubset p0Inside p4Inside h side hcyclic hportal_crosses
+        hcycles classifier (∅ : Finset G.edgeSet) hredEmitted hblueEmitted
+        hredRemaining hblueRemaining hprocessedControl with
+    hmissing | hfork
+  · exact Or.inl hmissing
+  · refine Or.inr ?_
+    rcases hfork with hterminal | hremaining
+    · rcases hterminal with ⟨hcovered, hnoEvader, hsynthesis, hcontrol⟩
+      have hremainingEmpty :
+          classifier.remainingControlEdges
+              (interiorEdgeSupport emb.faceBoundary emb.faces) = ∅ := by
+        ext e
+        constructor
+        · intro he
+          exact hcovered he
+        · intro he
+          simp at he
+      exact Or.inl ⟨hremainingEmpty, hnoEvader, hsynthesis, hcontrol⟩
+    · rcases hremaining with hsynthesis | hobstruction
+      · exact Or.inr (Or.inl hsynthesis)
+      · exact Or.inr (Or.inr (by simpa using hobstruction))
+
+/--
+Failure-only initial executable-report residual scheduler obstruction.  If theorem-4.9 synthesis
+fails before the scheduler has processed any remaining edge, the executable report has no hidden
+success branch left: it returns either a primitive checker gap or the first promoted residual
+edge with a genuine selected-boundary-zero evader, immutable one-edge processed-control failure,
+the promoted one-edge control update, and strict residual decrease.
+-/
+theorem ofDecidableChecks_missingCheckerEvidence_or_initialResidualSchedulerImmutableProcessedControlObstruction_of_notSynthesis
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    [Fintype G.edgeSet] [FiniteDimensional F2 (G.edgeSet → Color)]
+    (emb : PlaneEmbeddingWithBoundary G) (C₀ : G.EdgeColoring Color)
+    (colorings : Set (G.EdgeColoring Color))
+    (hsubset : colorings ⊆ G.EdgeKempeClosure C₀)
+    (p0Inside p4Inside : Bool) (h : data.IsExceptional)
+    (side : V → Prop)
+    [∀ latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge,
+      Decidable ((CAP5ExceptionalAnnulusGeneratorReport.latentNode
+        boundaryEdge side latent).PortalCrosses)]
+    [∀ latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge,
+      Decidable ((CAP5ExceptionalAnnulusGeneratorReport.latentNode
+        boundaryEdge side latent).SideCycles)]
+    [∀ latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge,
+      Decidable ((CAP5ExceptionalAnnulusGeneratorReport.latentNode
+        boundaryEdge side latent).RealizedSeparator)]
+    (hcyclic : CyclicallyFiveEdgeConnected G)
+    (hportal_crosses :
+      ∀ edgeCandidate : CAP5ExceptionalAnnulusBoundaryEdgeSupportCandidate boundaryEdge,
+        data.RealizesExceptionalBoundarySupportOrientation
+            edgeCandidate.portalCandidate.orientation →
+        edgeCandidate.portalCandidate.sideCase =
+            CAP5ExceptionalAnnulusSideCase.ofPortalSides p0Inside p4Inside →
+        ∀ i : Fin 5, i ∈ edgeCandidate.portalCandidate.portalSet →
+          EdgeCrossesVertexSide G side (boundaryEdge i))
+    (hcycles : HasCycleOnSide G side ∧ HasCycleOnSide G (fun v => ¬ side v))
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (hredEmitted :
+      ∀ e ∈ classifier.emittedFinset,
+        Pi.single e red ∈ projectedColoringGeneratorSubspace emb colorings)
+    (hblueEmitted :
+      ∀ e ∈ classifier.emittedFinset,
+        Pi.single e blue ∈ projectedColoringGeneratorSubspace emb colorings)
+    (hredRemaining :
+      ∀ e ∈ classifier.remainingControlEdges
+          (interiorEdgeSupport emb.faceBoundary emb.faces),
+        Pi.single e red ∈ projectedColoringGeneratorSubspace emb colorings)
+    (hblueRemaining :
+      ∀ e ∈ classifier.remainingControlEdges
+          (interiorEdgeSupport emb.faceBoundary emb.faces),
+        Pi.single e blue ∈ projectedColoringGeneratorSubspace emb colorings)
+    (hnotSynthesis : ¬ Theorem49BoundaryRootSynthesis emb C₀) :
+    ((∃ latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge,
+      latent ∈ CAP5ExceptionalAnnulusGeneratorLatent.all boundaryEdge ∧
+        (CAP5ExceptionalAnnulusGeneratorReport.latentNode
+          boundaryEdge side latent).MissingPortalCrossingEvidence) ∨
+      (∃ latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge,
+        latent ∈ CAP5ExceptionalAnnulusGeneratorLatent.all boundaryEdge ∧
+          (CAP5ExceptionalAnnulusGeneratorReport.latentNode
+            boundaryEdge side latent).MissingSelectedSideCycleEvidence) ∨
+        (∃ latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge,
+          latent ∈ CAP5ExceptionalAnnulusGeneratorLatent.all boundaryEdge ∧
+            (CAP5ExceptionalAnnulusGeneratorReport.latentNode
+              boundaryEdge side latent).MissingComplementarySideCycleEvidence)) ∨
+      classifier.residualRemainingControlEdges
+          (interiorEdgeSupport emb.faceBoundary emb.faces)
+          (∅ : Finset G.edgeSet) ≠ ∅ ∧
+        ∃ z : G.edgeSet → Color,
+          z ∈ planarBoundaryZeroSubmodule emb ∧
+            z ≠ 0 ∧
+              (∀ e : G.edgeSet,
+                data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e →
+                  z e = 0) ∧
+                ∃ e : G.edgeSet,
+                  e ∈ classifier.residualRemainingControlEdges
+                      (interiorEdgeSupport emb.faceBoundary emb.faces)
+                      (∅ : Finset G.edgeSet) ∧
+                    ¬ data.EnumeratedExceptionalAnnulusForcedEdge
+                      p0Inside p4Inside side e ∧
+                      z e ≠ 0 ∧
+                        ¬ (∀ ⦃w : G.edgeSet → Color⦄,
+                          w ∈ planarBoundaryZeroSubmodule emb →
+                          (∀ f ∈ classifier.emittedFinset, w f = 0) →
+                            ∀ f ∈ ({e} : Finset G.edgeSet), w f = 0) ∧
+                          (∀ ⦃w : G.edgeSet → Color⦄,
+                            w ∈ planarBoundaryZeroSubmodule emb →
+                            (∀ f ∈ insert e classifier.emittedFinset, w f = 0) →
+                              ∀ f ∈ ({e} : Finset G.edgeSet), w f = 0) ∧
+                            (classifier.residualRemainingControlEdges
+                                (interiorEdgeSupport emb.faceBoundary emb.faces)
+                                ({e} : Finset G.edgeSet)).card <
+                              (classifier.residualRemainingControlEdges
+                                (interiorEdgeSupport emb.faceBoundary emb.faces)
+                                (∅ : Finset G.edgeSet)).card := by
+  have hprocessedControl :
+      ∀ ⦃z : G.edgeSet → Color⦄,
+        z ∈ planarBoundaryZeroSubmodule emb →
+        (∀ e ∈ classifier.emittedFinset, z e = 0) →
+          ∀ e ∈ (∅ : Finset G.edgeSet), z e = 0 := by
+    intro z _hzBoundary _hvanishEmitted e he
+    simp at he
+  rcases
+      data.ofDecidableChecks_missingCheckerEvidence_or_residualSchedulerImmutableProcessedControlObstruction_of_notSynthesis_of_processedControl
+        emb C₀ colorings hsubset p0Inside p4Inside h side hcyclic hportal_crosses
+        hcycles classifier (∅ : Finset G.edgeSet) hredEmitted hblueEmitted
+        hredRemaining hblueRemaining hprocessedControl hnotSynthesis with
+    hmissing | hobstruction
+  · exact Or.inl hmissing
+  · exact Or.inr (by simpa using hobstruction)
+
 end CAP5TransportedEdgeComponentCoverCore
 
 end Mettapedia.GraphTheory.FourColor
