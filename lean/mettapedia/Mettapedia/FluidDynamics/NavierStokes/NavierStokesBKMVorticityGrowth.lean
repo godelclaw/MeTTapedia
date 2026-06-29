@@ -585,6 +585,44 @@ theorem schwartzDirectionalComponent_apply
     SchwartzMap.lineDerivOp_apply_eq_fderiv, SchwartzMap.bilinLeftCLM_apply,
     ContinuousLinearMap.apply_apply]
 
+/-- The concrete coordinate derivative of a Schwartz velocity slice is
+pointwise controlled by the first unweighted Schwartz seminorm of the slice. -/
+theorem spatialDerivativeComponent_abs_le_schwartzSeminorm_zero_one
+    (v : 𝓢(NSSpace, NSSpace)) (coord comp : Fin 3) (x : NSSpace) :
+    |spatialDerivativeComponent (fun _ y => v y) 0 x coord comp| ≤
+      SchwartzMap.seminorm ℝ 0 1 v := by
+  let e : NSSpace := EuclideanSpace.single coord (1 : ℝ)
+  have hcomp :
+      ‖(fderiv ℝ (v : NSSpace → NSSpace) x e) comp‖ ≤
+        ‖fderiv ℝ (v : NSSpace → NSSpace) x e‖ := by
+    exact PiLp.norm_apply_le (fderiv ℝ (v : NSSpace → NSSpace) x e) comp
+  have hf_apply :
+      ‖fderiv ℝ (v : NSSpace → NSSpace) x e‖ ≤
+        ‖fderiv ℝ (v : NSSpace → NSSpace) x‖ := by
+    calc
+      ‖fderiv ℝ (v : NSSpace → NSSpace) x e‖
+          ≤ ‖fderiv ℝ (v : NSSpace → NSSpace) x‖ * ‖e‖ := by
+            exact ContinuousLinearMap.le_opNorm
+              (fderiv ℝ (v : NSSpace → NSSpace) x) e
+      _ ≤ ‖fderiv ℝ (v : NSSpace → NSSpace) x‖ * 1 := by
+            gcongr
+            simp [e]
+      _ = ‖fderiv ℝ (v : NSSpace → NSSpace) x‖ := by
+            rw [mul_one]
+  have hf_norm :
+      ‖fderiv ℝ (v : NSSpace → NSSpace) x‖ ≤
+        SchwartzMap.seminorm ℝ 0 1 v := by
+    rw [← norm_iteratedFDeriv_one
+      (𝕜 := ℝ) (f := (v : NSSpace → NSSpace)) (x := x)]
+    exact SchwartzMap.norm_iteratedFDeriv_le_seminorm ℝ v 1 x
+  calc
+    |spatialDerivativeComponent (fun _ y => v y) 0 x coord comp|
+        = ‖(fderiv ℝ (v : NSSpace → NSSpace) x e) comp‖ := by
+          simp [spatialDerivativeComponent, spatialFDeriv, e]
+    _ ≤ ‖fderiv ℝ (v : NSSpace → NSSpace) x e‖ := hcomp
+    _ ≤ ‖fderiv ℝ (v : NSSpace → NSSpace) x‖ := hf_apply
+    _ ≤ SchwartzMap.seminorm ℝ 0 1 v := hf_norm
+
 /-- Inject a scalar Schwartz component into one Euclidean coordinate axis. -/
 def schwartzBasisComponent
     (comp : Fin 3) (φ : 𝓢(NSSpace, ℝ)) : 𝓢(NSSpace, NSSpace) :=

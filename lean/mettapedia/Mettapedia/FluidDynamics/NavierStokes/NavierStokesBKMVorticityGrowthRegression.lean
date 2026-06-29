@@ -204,6 +204,13 @@ theorem bkm_finite_time_witness_vorticity_schwartz_slices_from_velocity_regressi
   finiteTimeWitnessVorticitySchwartzSlices_of_velocitySchwartzSlices
     W hVelocitySlices
 
+theorem bkm_spatial_derivative_component_abs_le_schwartzSeminorm_zero_one_regression
+    (v : 𝓢(NSSpace, NSSpace)) (coord comp : Fin 3) (x : NSSpace) :
+    |spatialDerivativeComponent (fun _ y => v y) 0 x coord comp| ≤
+      SchwartzMap.seminorm ℝ 0 1 v :=
+  spatialDerivativeComponent_abs_le_schwartzSeminorm_zero_one
+    v coord comp x
+
 theorem bkm_finite_time_witness_velocity_schwartz_transport_regression
     {ν : ℝ} {u₀ : NSInitialVelocity} {T : ℝ}
     (W : ExplicitFiniteTimeRegularityWitness ν u₀ T)
