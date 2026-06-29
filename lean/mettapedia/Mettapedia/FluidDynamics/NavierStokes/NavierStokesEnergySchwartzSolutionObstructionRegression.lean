@@ -313,6 +313,26 @@ theorem nonzero_schwartz_solution_energy_right_drop_sample_at_nonzero_regression
     S.exists_normalizedKineticEnergy_right_drop_sample_at_nonzero_of_pos_viscosity
       hν hne hε
 
+theorem schwartz_solution_energy_strict_future_drop_of_nonzero_slice_regression
+    {ν : ℝ} (hν : 0 < ν) (S : SchwartzConcreteNavierStokesSolution ν)
+    {t₀ t₁ : NSTime}
+    (hne : ∃ x : NSSpace, S.velocity t₀ x ≠ 0) (ht : t₀ < t₁) :
+    normalizedKineticEnergy S.velocity t₁ <
+      normalizedKineticEnergy S.velocity t₀ := by
+  exact
+    S.normalizedKineticEnergy_strict_lt_of_exists_velocity_ne_zero_left
+      hν hne ht
+
+theorem nonzero_schwartz_solution_energy_strict_future_drop_at_nonzero_regression
+    {ν : ℝ} (hν : 0 < ν) (S : NonzeroSchwartzConcreteNavierStokesSolution ν)
+    {t₀ t₁ : NSTime} {x : NSSpace}
+    (hne : S.velocity t₀ x ≠ 0) (ht : t₀ < t₁) :
+    normalizedKineticEnergy S.velocity t₁ <
+      normalizedKineticEnergy S.velocity t₀ := by
+  exact
+    S.normalizedKineticEnergy_strict_lt_after_nonzero_of_pos_viscosity
+      hν hne ht
+
 theorem nonzero_schwartz_solution_exists_strict_energy_identity_regression
     {ν : ℝ} (hν : 0 < ν) (S : NonzeroSchwartzConcreteNavierStokesSolution ν) :
     ∃ t : NSTime,
@@ -468,6 +488,18 @@ theorem not_exists_nonzero_schwartz_solution_nonzero_eventually_right_energy_non
               normalizedKineticEnergy S.velocity s) := by
   exact
     not_exists_nonzeroSchwartzConcreteSolution_nonzero_eventually_right_energy_nondecreasing_of_pos_viscosity
+      hν
+
+theorem not_exists_nonzero_schwartz_solution_nonzero_later_energy_nondecreasing_regression
+    {ν : ℝ} (hν : 0 < ν) :
+    ¬ ∃ S : NonzeroSchwartzConcreteNavierStokesSolution ν,
+      ∃ t₀ t₁ x,
+        S.velocity t₀ x ≠ 0 ∧
+          t₀ < t₁ ∧
+            normalizedKineticEnergy S.velocity t₀ ≤
+              normalizedKineticEnergy S.velocity t₁ := by
+  exact
+    not_exists_nonzeroSchwartzConcreteSolution_nonzero_later_energy_nondecreasing_of_pos_viscosity
       hν
 
 theorem not_exists_nonzero_stationary_schwartz_solution_of_dissipation_ne_regression

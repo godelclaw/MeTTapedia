@@ -224,6 +224,26 @@ theorem exists_normalizedKineticEnergy_right_drop_sample_of_exists_velocity_ne_z
       hν hne)
     hε
 
+/-- Global strict future-drop form: at positive viscosity, if the velocity
+slice is nonzero at `t₀`, then normalized kinetic energy is strictly lower at
+every later time. -/
+theorem normalizedKineticEnergy_strict_lt_of_exists_velocity_ne_zero_left
+    (hν : 0 < ν) {t₀ t₁ : NSTime}
+    (hne : ∃ x : NSSpace, S.velocity t₀ x ≠ 0) (ht : t₀ < t₁) :
+    normalizedKineticEnergy S.velocity t₁ <
+      normalizedKineticEnergy S.velocity t₀ := by
+  have hε : 0 < t₁ - t₀ := sub_pos.mpr ht
+  rcases
+      S.exists_normalizedKineticEnergy_right_drop_sample_of_exists_velocity_ne_zero
+        hν hne hε with
+    ⟨s, _hts, hslt, hsdrop⟩
+  have hanti : Antitone (normalizedKineticEnergy S.velocity) :=
+    S.normalizedKineticEnergy_antitone hν.le
+  have hle : normalizedKineticEnergy S.velocity t₁ ≤
+      normalizedKineticEnergy S.velocity s :=
+    hanti (le_of_lt (by simpa using hslt))
+  exact lt_of_le_of_lt hle hsdrop
+
 /-- Zero normalized-energy derivative at every time is rigid at positive
 viscosity: an ordinary slice-Schwartz concrete solution satisfying this
 energy-flat condition has identically zero velocity. -/
@@ -573,6 +593,17 @@ theorem exists_normalizedKineticEnergy_right_drop_sample_at_nonzero_of_pos_visco
         normalizedKineticEnergy S.velocity t :=
   SchwartzConcreteNavierStokesSolution.exists_normalizedKineticEnergy_right_drop_sample_of_exists_velocity_ne_zero
     S.toSchwartzConcreteNavierStokesSolution hν ⟨x, hne⟩ hε
+
+/-- Nonzero-interface global strict future-drop form: at positive viscosity,
+any nonzero witness time has strictly larger normalized kinetic energy than
+every later time. -/
+theorem normalizedKineticEnergy_strict_lt_after_nonzero_of_pos_viscosity
+    (hν : 0 < ν) {t₀ t₁ : NSTime} {x : NSSpace}
+    (hne : S.velocity t₀ x ≠ 0) (ht : t₀ < t₁) :
+    normalizedKineticEnergy S.velocity t₁ <
+      normalizedKineticEnergy S.velocity t₀ :=
+  SchwartzConcreteNavierStokesSolution.normalizedKineticEnergy_strict_lt_of_exists_velocity_ne_zero_left
+    S.toSchwartzConcreteNavierStokesSolution hν ⟨x, hne⟩ ht
 
 end NonzeroSchwartzConcreteNavierStokesSolution
 
@@ -965,6 +996,27 @@ theorem
   exact
     S.not_eventually_right_normalizedKineticEnergy_nondecreasing_at_nonzero_of_pos_viscosity
       hν hne hnondec
+
+/-- Endpoint version of the strict energy-drop gate: no positive-viscosity
+nonzero slice-Schwartz solution can have a nonzero witness at `t₀` while a
+later time has normalized kinetic energy greater than or equal to the witness
+time. -/
+theorem
+    not_exists_nonzeroSchwartzConcreteSolution_nonzero_later_energy_nondecreasing_of_pos_viscosity
+    {ν : ℝ} (hν : 0 < ν) :
+    ¬ ∃ S : NonzeroSchwartzConcreteNavierStokesSolution ν,
+      ∃ t₀ t₁ x,
+        S.velocity t₀ x ≠ 0 ∧
+          t₀ < t₁ ∧
+            normalizedKineticEnergy S.velocity t₀ ≤
+              normalizedKineticEnergy S.velocity t₁ := by
+  rintro ⟨S, t₀, t₁, x, hne, ht, hnondec⟩
+  have hdrop :
+      normalizedKineticEnergy S.velocity t₁ <
+        normalizedKineticEnergy S.velocity t₀ :=
+    S.normalizedKineticEnergy_strict_lt_after_nonzero_of_pos_viscosity
+      hν hne ht
+  exact not_lt_of_ge hnondec hdrop
 
 end NavierStokes
 end FluidDynamics
