@@ -687,7 +687,14 @@ longer acceptable progress.
    removes the bundled-success wording: under the same closed primitive
    frontier, the emitted F2 pairing-kernel certificate itself is equivalent to
    absence of both concrete report evaders, with synthesis/control recovered
-   from that certificate.  The direct route corollaries
+   from that certificate.  The emitted-rank route-close corollaries
+   `ofDecidableChecks_missingCheckerEvidence_or_theorem49Synthesis_and_boundaryZeroControl_of_emittedFinsetPairingKernel_eq_bot`
+   and
+   `theorem49Synthesis_and_boundaryZeroControl_of_no_missingCheckerEvidence_and_emittedFinsetPairingKernel_eq_bot`
+   now consume that finite rank certificate directly: the executable report
+   has only primitive checker gap or synthesis/control left, and with the
+   primitive frontier closed the certificate directly proves synthesis/control.
+   The direct no-evader route corollaries
    `ofDecidableChecks_missingCheckerEvidence_or_theorem49Synthesis_and_boundaryZeroControl_of_no_theorem49BoundaryTargetEvader_and_no_emittedFinsetKernelMapEvader_with_theorem49BoundaryVertexKirchhoffFailure`
    and
    `theorem49Synthesis_and_boundaryZeroControl_of_no_missingCheckerEvidence_and_no_theorem49BoundaryTargetEvader_and_no_emittedFinsetKernelMapEvader_with_theorem49BoundaryVertexKirchhoffFailure`
