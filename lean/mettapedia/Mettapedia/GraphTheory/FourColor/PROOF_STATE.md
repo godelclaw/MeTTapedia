@@ -982,6 +982,17 @@ nonzero canonical remaining-map image.
   evader, Lean proves theorem-4.9 synthesis plus full selected-boundary-zero
   classifier control.  Current Algebraic-F2 estimate remains PLN STV
   `<0.79,0.92>`, ITV `[0.73,0.81]`, progress `99%`.
+- New report-closed exact kernel/map oracle surfaces:
+  `CAP5TransportedEdgeComponentCoverCore.no_emittedFinsetKernelMapEvader_iff_theorem49Synthesis_and_boundaryZeroControl_of_missingCheckerEvidenceLatents_eq_nil`
+  and
+  `CAP5TransportedEdgeComponentCoverCore.ofDecidableChecks_missingCheckerEvidence_or_no_emittedFinsetKernelMapEvader_iff_theorem49Synthesis_and_boundaryZeroControl`.
+  These strengthen the no-gap/no-evader closure into the exact report-level
+  F2 decision: once the primitive missing-evidence frontier is closed, absence
+  of the unified emitted-kernel/remaining-map evader is equivalent to
+  theorem-4.9 synthesis plus full selected-boundary-zero classifier control;
+  the executable report returns a primitive checker gap or that exact iff.
+  Current Algebraic-F2 estimate remains PLN STV `<0.79,0.92>`, ITV
+  `[0.73,0.81]`, progress `99%`.
 
 ## Remaining Completion Requirements
 
