@@ -218,6 +218,32 @@ theorem vorticityEnstrophyGradientControlledAt_of_balance_logSobolev_pointwiseIn
         hC hΩ hH hIneq)
       ht0 htT hStretchInt hEnstrophyInt
 
+/-- The conventional affine-log pointwise Biot-Savart/log-Sobolev estimate
+gives the BKM enstrophy growth inequality with the same affine coefficient:
+`dE/dt <= (C0 + C1 * Omega log(e + H)) * E`. -/
+theorem vorticityEnstrophyGradientControlledAt_of_balance_logSobolev_affinePointwiseInequality
+    {ν T C0 C1 : ℝ} {u : NSVelocityField} {Ω H : NSTime → ℝ} {t : NSTime}
+    (hν : 0 ≤ ν)
+    (hBal : vorticityEnstrophyBalanceAt ν u t)
+    (hC0 : 0 ≤ C0) (hC1 : 0 ≤ C1)
+    (hΩ : ∀ s, 0 ≤ s → s ≤ T → 0 ≤ Ω s)
+    (hH : ∀ s, 0 ≤ s → s ≤ T → 0 ≤ H s)
+    (hAffine : BKMLogSobolevAffinePointwiseInequalityOn u T C0 C1 Ω H)
+    (ht0 : 0 ≤ t) (htT : t ≤ T)
+    (hStretchInt : Integrable (fun x => vorticityStretchingPower u t x))
+    (hEnstrophyInt : Integrable (fun x => vorticityEnstrophyDensity u t x)) :
+    vorticityEnstrophyGradientControlledAt ν u t
+      (C0 + C1 * bkmLogSobolevLogFactor Ω H t) := by
+  have hLogFactor : 0 ≤ bkmLogSobolevLogFactor Ω H t :=
+    bkmLogSobolevLogFactor_nonneg_of_nonneg
+      (hΩ t ht0 htT) (hH t ht0 htT)
+  have hCoeff : 0 ≤ C0 + C1 * bkmLogSobolevLogFactor Ω H t :=
+    add_nonneg hC0 (mul_nonneg hC1 hLogFactor)
+  exact
+    vorticityEnstrophyGradientControlledAt_of_balance_gradient_bound
+      hν hBal hCoeff (fun x => hAffine t x ht0 htT)
+      hStretchInt hEnstrophyInt
+
 /-- Log-Sobolev gradient control and a vorticity envelope control the
 material-minus-diffusion remainder under the standard vorticity equation. -/
 theorem norm_vorticityMaterialDiffusionRemainder_le_of_logSobolev_control
@@ -271,6 +297,34 @@ theorem BKMVorticityEnstrophyLogSobolevGrowthClosed_proved :
   exact
     vorticityEnstrophyGradientControlledAt_of_balance_logSobolev_control
       hν hBal hLog ht0 htT hStretchInt hEnstrophyInt
+
+/-- Checked affine-logarithmic enstrophy growth package: a conventional
+affine pointwise Biot-Savart/log-Sobolev estimate turns the BKM enstrophy
+balance into `dE/dt <= (C0 + C1 * Omega log(e + H)) * E`. -/
+def BKMVorticityEnstrophyAffineLogGrowthClosed : Prop :=
+  ∀ (ν T C0 C1 : ℝ) (u : NSVelocityField) (Ω H : NSTime → ℝ) (t : NSTime),
+    0 ≤ ν →
+      vorticityEnstrophyBalanceAt ν u t →
+        0 ≤ C0 →
+          0 ≤ C1 →
+            (∀ s, 0 ≤ s → s ≤ T → 0 ≤ Ω s) →
+              (∀ s, 0 ≤ s → s ≤ T → 0 ≤ H s) →
+                BKMLogSobolevAffinePointwiseInequalityOn u T C0 C1 Ω H →
+                  0 ≤ t →
+                    t ≤ T →
+                      Integrable (fun x => vorticityStretchingPower u t x) →
+                        Integrable (fun x => vorticityEnstrophyDensity u t x) →
+                          vorticityEnstrophyGradientControlledAt ν u t
+                            (C0 + C1 * bkmLogSobolevLogFactor Ω H t)
+
+/-- Checked proof of the affine-logarithmic enstrophy growth package. -/
+theorem BKMVorticityEnstrophyAffineLogGrowthClosed_proved :
+    BKMVorticityEnstrophyAffineLogGrowthClosed := by
+  intro ν T C0 C1 u Ω H t hν hBal hC0 hC1 hΩ hH hAffine
+    ht0 htT hStretchInt hEnstrophyInt
+  exact
+    vorticityEnstrophyGradientControlledAt_of_balance_logSobolev_affinePointwiseInequality
+      hν hBal hC0 hC1 hΩ hH hAffine ht0 htT hStretchInt hEnstrophyInt
 
 /-- The downstream BKM growth estimates are closed once the analytic
 log-Sobolev/Biot-Savart gradient control is supplied as an explicit
