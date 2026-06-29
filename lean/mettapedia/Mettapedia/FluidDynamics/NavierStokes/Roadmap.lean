@@ -100,7 +100,7 @@ def currentNavierRoadmap : List NavierRoadmapEntry :=
       proofNodeId := "navier.bkm.log-sobolev-gradient-control"
       status := .checked
       truthValue := ⟨87, 88⟩
-      obligation := "Prove the analytic affine log-Sobolev/Biot-Savart pointwise estimate ||grad u|| <= C0 + C1 * Omega log(exp(1) + H); the checked affine-log growth theorem gives dE/dt <= (C0 + C1 * Omega log(exp(1) + H)) * E, and affine normalization also feeds the one-constant downstream bounds. This does not itself prove the analytic gradient estimate." },
+      obligation := "Prove the analytic affine log-Sobolev/Biot-Savart pointwise estimate ||grad u|| <= C0 + C1 * Omega log(exp(1) + H); the checked affine-log growth theorems give dE/dt <= (C0 + C1 * Omega log(exp(1) + H)) * E, including the finite-time witness package from the standard vorticity equation plus time-pairing and Schwartz-slice identities. This does not itself prove the analytic gradient estimate." },
     { stage := .bkmContinuation
       proofNodeId := "navier.bkm.single-analytic-lemma"
       status := .checked
@@ -361,7 +361,7 @@ theorem currentNavierRoadmap_records_bkm_log_sobolev_gradient_control :
        status := .checked
        truthValue := ⟨87, 88⟩
        obligation :=
-        "Prove the analytic affine log-Sobolev/Biot-Savart pointwise estimate ||grad u|| <= C0 + C1 * Omega log(exp(1) + H); the checked affine-log growth theorem gives dE/dt <= (C0 + C1 * Omega log(exp(1) + H)) * E, and affine normalization also feeds the one-constant downstream bounds. This does not itself prove the analytic gradient estimate." } :
+        "Prove the analytic affine log-Sobolev/Biot-Savart pointwise estimate ||grad u|| <= C0 + C1 * Omega log(exp(1) + H); the checked affine-log growth theorems give dE/dt <= (C0 + C1 * Omega log(exp(1) + H)) * E, including the finite-time witness package from the standard vorticity equation plus time-pairing and Schwartz-slice identities. This does not itself prove the analytic gradient estimate." } :
       NavierRoadmapEntry) ∈ currentNavierRoadmap := by
   simp [currentNavierRoadmap]
 

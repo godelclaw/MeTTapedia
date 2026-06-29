@@ -179,12 +179,13 @@ theorem BKMContinuation_reduced_to_analytic_components :
                               BKMVorticityEnstrophyGradientGrowthClosed ∧
                                 BKMVorticityEnstrophyLogSobolevGrowthClosed ∧
                                   BKMVorticityEnstrophyAffineLogGrowthClosed ∧
-                                    BKMLogSobolevAffineReductionClosed ∧
-                                      BKMLogSobolevGrowthEstimateClosed ∧
-                                        (BKMAnalyticComponentsClosed →
-                                          ExplicitFiniteEnergyBKMContinuationTargetOnNonnegHorizons) ∧
-                                          (BKMAffineLogSobolevAnalyticComponentsClosed →
-                                            ExplicitFiniteEnergyBKMContinuationTargetOnNonnegHorizons) := by
+                                    BKMVorticityFiniteTimeWitnessAffineLogGrowthClosed ∧
+                                      BKMLogSobolevAffineReductionClosed ∧
+                                        BKMLogSobolevGrowthEstimateClosed ∧
+                                          (BKMAnalyticComponentsClosed →
+                                            ExplicitFiniteEnergyBKMContinuationTargetOnNonnegHorizons) ∧
+                                            (BKMAffineLogSobolevAnalyticComponentsClosed →
+                                              ExplicitFiniteEnergyBKMContinuationTargetOnNonnegHorizons) := by
   exact
     ⟨BKMVorticityStretchingEstimateClosed_proved,
       BKMResidualCurlExpansionAlgebraClosed_proved,
@@ -201,6 +202,7 @@ theorem BKMContinuation_reduced_to_analytic_components :
       BKMVorticityEnstrophyGradientGrowthClosed_proved,
       BKMVorticityEnstrophyLogSobolevGrowthClosed_proved,
       BKMVorticityEnstrophyAffineLogGrowthClosed_proved,
+      BKMVorticityFiniteTimeWitnessAffineLogGrowthClosed_proved,
       BKMLogSobolevAffineReductionClosed_proved,
       BKMLogSobolevGrowthEstimateClosed_proved,
       BKMAnalyticComponentsClosed.implies_finiteEnergyBKMContinuationTargetOnNonnegHorizons,
