@@ -201,6 +201,41 @@ theorem spatialDerivativeComponent_differentiableAt_time_of_smooth
   (spatialDerivativeComponent_contDiff_time_of_smooth hu x coord comp).differentiable
     (by simp) t
 
+/-- Each spatial derivative component of a smooth space-time velocity is smooth
+as a function on space-time. -/
+theorem spatialDerivativeComponent_contDiff_spacetime_of_smooth
+    {u : NSVelocityField} (hu : smoothSpaceTimeVelocity u)
+    (coord comp : Fin 3) :
+    ContDiff ℝ ∞
+      (fun tx : NSSpacetime => spatialDerivativeComponent u tx.1 tx.2 coord comp) := by
+  have huncurry :
+      ContDiff ℝ ∞
+        (Function.uncurry
+          (fun tx : NSSpacetime => fun y : NSSpace => u tx.1 y)) := by
+    have hmap :
+        ContDiff ℝ ∞ (fun p : NSSpacetime × NSSpace => (p.1.1, p.2)) := by
+      fun_prop
+    exact contDiff_congr_global (hu.comp hmap) (by
+      intro p
+      rcases p with ⟨⟨t, x⟩, y⟩
+      rfl)
+  have hfield :
+      ContDiff ℝ ∞
+        (fun tx : NSSpacetime =>
+          fderiv ℝ (fun y : NSSpace => u tx.1 y) tx.2
+            (EuclideanSpace.single coord (1 : ℝ))) := by
+    simpa using
+      (huncurry.fderiv_apply (g := fun tx : NSSpacetime => tx.2)
+        (k := fun _tx : NSSpacetime => EuclideanSpace.single coord (1 : ℝ))
+          contDiff_snd contDiff_const (by simp))
+  have hproj : ContDiff ℝ ∞ (fun z : NSSpace => z comp) := by
+    simpa using (EuclideanSpace.proj comp : NSSpace →L[ℝ] ℝ).contDiff
+  change ContDiff ℝ ∞
+    (fun tx : NSSpacetime =>
+      ((fderiv ℝ (fun y : NSSpace => u tx.1 y) tx.2)
+        (EuclideanSpace.single coord (1 : ℝ))) comp)
+  exact contDiff_congr_global (hproj.comp hfield) (by intro tx; rfl)
+
 /-- The time-derivative velocity field of a smooth velocity is again smooth in
 space-time. -/
 theorem timeVelocityDerivativeField_smoothSpaceTimeVelocity_of_smooth

@@ -59,6 +59,13 @@ theorem spatialDerivativeComponent_differentiableAt_time_of_smooth_regression
     DifferentiableAt ℝ (fun s : NSTime => spatialDerivativeComponent u s x coord comp) t := by
   exact spatialDerivativeComponent_differentiableAt_time_of_smooth hu t x coord comp
 
+theorem spatialDerivativeComponent_contDiff_spacetime_of_smooth_regression
+    {u : NSVelocityField} (hu : smoothSpaceTimeVelocity u)
+    (coord comp : Fin 3) :
+    ContDiff ℝ ∞
+      (fun tx : NSSpacetime => spatialDerivativeComponent u tx.1 tx.2 coord comp) := by
+  exact spatialDerivativeComponent_contDiff_spacetime_of_smooth hu coord comp
+
 theorem timeVelocityDerivativeField_smoothSpaceTimeVelocity_of_smooth_regression
     {u : NSVelocityField} (hu : smoothSpaceTimeVelocity u) :
     smoothSpaceTimeVelocity (timeVelocityDerivativeField u) := by
