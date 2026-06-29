@@ -166,6 +166,17 @@ theorem timeVorticityDerivative_eq_spatialVorticity_timeVelocityDerivativeField_
       spatialVorticity (timeVelocityDerivativeField u) t x := by
   exact timeVorticityDerivative_eq_spatialVorticity_timeVelocityDerivativeField hu t x
 
+theorem spatialDerivativeComponent_spatialConvectionField_eq_productRule_of_smooth_regression
+    {u : NSVelocityField} (hu : smoothSpaceTimeVelocity u)
+    (t : NSTime) (x : NSSpace) (coord comp : Fin 3) :
+    spatialDerivativeComponent (spatialConvectionField u) t x coord comp =
+      (spatialFDeriv u t x
+        (spatialFDeriv u t x (EuclideanSpace.single coord (1 : ℝ)))) comp +
+        ((fderiv ℝ (fun y : NSSpace => spatialFDeriv u t y) x
+          (EuclideanSpace.single coord (1 : ℝ))) (u t x)) comp := by
+  exact spatialDerivativeComponent_spatialConvectionField_eq_productRule_of_smooth
+    hu t x coord comp
+
 theorem fderiv_laplacian_apply_eq_laplacian_fderiv_apply_of_contDiff_regression
     {F : Type*} [NormedAddCommGroup F] [NormedSpace ℝ F]
     {f : NSSpace → F} (hf : ContDiff ℝ ∞ f)
