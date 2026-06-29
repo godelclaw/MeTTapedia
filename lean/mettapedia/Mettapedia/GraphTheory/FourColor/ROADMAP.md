@@ -722,6 +722,17 @@ longer acceptable progress.
    `ofDecidableChecks_missingCheckerEvidence_or_remainingInteriorSupportEmpty_closes_or_notSynthesis_boundaryZeroEvader_and_nonempty_worklist`
    removes the raw closed-frontier handoff from that statement: the report now
    returns either a primitive checker gap or the same exact worklist fork.
+   The executable-report residual scheduler fork
+   `ofDecidableChecks_missingCheckerEvidence_or_residualSchedulerCoverageNoEvader_or_synthesis_or_immutableProcessedControlObstruction_of_processedControl`
+   and its failure-only corollary
+   `ofDecidableChecks_missingCheckerEvidence_or_residualSchedulerImmutableProcessedControlObstruction_of_notSynthesis_of_processedControl`
+   now remove the raw forced-all handoff from the promoted scheduler as well:
+   the report returns either a primitive checker gap or the terminal
+   processed-coverage no-evader/synthesis branch, an already-closed synthesis
+   branch, or a promoted residual-edge obstruction; under failed synthesis,
+   only the primitive gap or the genuine residual selected-boundary-zero
+   evader with immutable processed-control failure and strict residual decrease
+   remains.
    The direct no-evader route corollaries
    `ofDecidableChecks_missingCheckerEvidence_or_theorem49Synthesis_and_boundaryZeroControl_of_no_theorem49BoundaryTargetEvader_and_no_emittedFinsetKernelMapEvader_with_theorem49BoundaryVertexKirchhoffFailure`
    and
