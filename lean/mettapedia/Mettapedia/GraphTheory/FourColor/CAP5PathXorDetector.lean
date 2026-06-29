@@ -14892,6 +14892,154 @@ theorem emittedFinsetPairingKernel_eq_bot_and_theorem49Synthesis_and_boundaryZer
         · exact False.elim (hnoOffTargetEvader hoffTargetEvader)
 
 /--
+Closed-frontier target/off-target rank-certificate oracle.  Once the primitive checker frontier
+is closed, the lab-facing emitted-edge pairing-kernel certificate itself is equivalent to
+absence of both concrete target/off-target report evaders.  This is the finite F2 decision
+predicate the lab must certify, with synthesis/control recovered from the same rank certificate.
+-/
+theorem emittedFinsetPairingKernel_eq_bot_iff_no_theorem49BoundaryTargetEvader_and_no_emittedFinsetKernelMapEvader_with_theorem49BoundaryVertexKirchhoffFailure_of_no_missingCheckerEvidence
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    [Fintype G.edgeSet] [FiniteDimensional F2 (G.edgeSet → Color)]
+    (emb : PlaneEmbeddingWithBoundary G) (C₀ : G.EdgeColoring Color)
+    (colorings : Set (G.EdgeColoring Color))
+    (hsubset : colorings ⊆ G.EdgeKempeClosure C₀)
+    (p0Inside p4Inside : Bool) (h : data.IsExceptional)
+    (side : V → Prop)
+    [∀ latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge,
+      Decidable ((CAP5ExceptionalAnnulusGeneratorReport.latentNode
+        boundaryEdge side latent).PortalCrosses)]
+    [∀ latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge,
+      Decidable ((CAP5ExceptionalAnnulusGeneratorReport.latentNode
+        boundaryEdge side latent).SideCycles)]
+    [∀ latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge,
+      Decidable ((CAP5ExceptionalAnnulusGeneratorReport.latentNode
+        boundaryEdge side latent).RealizedSeparator)]
+    (hcyclic : CyclicallyFiveEdgeConnected G)
+    (hportal_crosses :
+      ∀ edgeCandidate : CAP5ExceptionalAnnulusBoundaryEdgeSupportCandidate boundaryEdge,
+        data.RealizesExceptionalBoundarySupportOrientation
+            edgeCandidate.portalCandidate.orientation →
+        edgeCandidate.portalCandidate.sideCase =
+            CAP5ExceptionalAnnulusSideCase.ofPortalSides p0Inside p4Inside →
+        ∀ i : Fin 5, i ∈ edgeCandidate.portalCandidate.portalSet →
+          EdgeCrossesVertexSide G side (boundaryEdge i))
+    (hcycles : HasCycleOnSide G side ∧ HasCycleOnSide G (fun v => ¬ side v))
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (hredEmitted :
+      ∀ e ∈ classifier.emittedFinset,
+        Pi.single e red ∈ projectedColoringGeneratorSubspace emb colorings)
+    (hblueEmitted :
+      ∀ e ∈ classifier.emittedFinset,
+        Pi.single e blue ∈ projectedColoringGeneratorSubspace emb colorings)
+    (hredRemaining :
+      ∀ e ∈ classifier.remainingControlEdges
+          (interiorEdgeSupport emb.faceBoundary emb.faces),
+        Pi.single e red ∈ projectedColoringGeneratorSubspace emb colorings)
+    (hblueRemaining :
+      ∀ e ∈ classifier.remainingControlEdges
+          (interiorEdgeSupport emb.faceBoundary emb.faces),
+        Pi.single e blue ∈ projectedColoringGeneratorSubspace emb colorings)
+    (hnoMissing :
+      ¬ ((∃ latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge,
+        latent ∈ CAP5ExceptionalAnnulusGeneratorLatent.all boundaryEdge ∧
+          (CAP5ExceptionalAnnulusGeneratorReport.latentNode
+            boundaryEdge side latent).MissingPortalCrossingEvidence) ∨
+        (∃ latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge,
+          latent ∈ CAP5ExceptionalAnnulusGeneratorLatent.all boundaryEdge ∧
+            (CAP5ExceptionalAnnulusGeneratorReport.latentNode
+              boundaryEdge side latent).MissingSelectedSideCycleEvidence) ∨
+          (∃ latent : CAP5ExceptionalAnnulusGeneratorLatent boundaryEdge,
+            latent ∈ CAP5ExceptionalAnnulusGeneratorLatent.all boundaryEdge ∧
+              (CAP5ExceptionalAnnulusGeneratorReport.latentNode
+                boundaryEdge side latent).MissingComplementarySideCycleEvidence))) :
+    LinearMap.ker
+        (planarBoundaryZeroFamilyPairingMap
+          (redBlueSingleCoordinateFamily classifier.emittedFinset hredEmitted
+            hblueEmitted)) = ⊥ ↔
+      (¬ ∃ z : G.edgeSet → Color,
+        z ∈ Theorem49BoundaryTarget emb ∧
+          z ≠ 0 ∧
+            ∀ e : G.edgeSet,
+              data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e →
+                z e = 0) ∧
+        ¬ ∃ z : planarBoundaryZeroSubmodule emb,
+          ((z : G.edgeSet → Color) ≠ 0) ∧
+            (∀ e : G.edgeSet,
+              data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e →
+                (z : G.edgeSet → Color) e = 0) ∧
+              z ∈ LinearMap.ker
+                (planarBoundaryZeroFamilyPairingMap
+                  (redBlueSingleCoordinateFamily classifier.emittedFinset hredEmitted
+                    hblueEmitted)) ∧
+                planarBoundaryZeroFamilyPairingMap
+                    (redBlueSingleCoordinateFamily
+                      (classifier.remainingControlEdges
+                        (interiorEdgeSupport emb.faceBoundary emb.faces))
+                      hredRemaining hblueRemaining) z ≠ 0 ∧
+                  ∃ v : V,
+                    v ∈ Theorem49BoundaryVertices emb ∧
+                      vertexKirchhoffSum G (z : G.edgeSet → Color) v ≠ 0 := by
+  have hrank :
+      LinearMap.ker
+          (planarBoundaryZeroFamilyPairingMap
+            (redBlueSingleCoordinateFamily classifier.emittedFinset hredEmitted
+              hblueEmitted)) = ⊥ ↔
+        Theorem49BoundaryRootSynthesis emb C₀ ∧
+          (∀ ⦃z : G.edgeSet → Color⦄,
+            z ∈ planarBoundaryZeroSubmodule emb →
+            (∀ e ∈ classifier.emittedFinset, z e = 0) →
+              z = 0) := by
+    rcases
+        data.ofDecidableChecks_missingCheckerEvidence_or_emittedFinsetPairingKernel_eq_bot_iff_theorem49Synthesis_and_boundaryZeroControl
+          emb C₀ colorings hsubset p0Inside p4Inside h side hcyclic hportal_crosses
+          hcycles classifier hredEmitted hblueEmitted hredRemaining hblueRemaining with
+      hmissing | hrank
+    · exact False.elim (hnoMissing hmissing)
+    · exact hrank
+  have hclosed :
+      (LinearMap.ker
+          (planarBoundaryZeroFamilyPairingMap
+            (redBlueSingleCoordinateFamily classifier.emittedFinset hredEmitted
+              hblueEmitted)) = ⊥ ∧
+        Theorem49BoundaryRootSynthesis emb C₀ ∧
+          (∀ ⦃z : G.edgeSet → Color⦄,
+            z ∈ planarBoundaryZeroSubmodule emb →
+            (∀ e ∈ classifier.emittedFinset, z e = 0) →
+              z = 0)) ↔
+        (¬ ∃ z : G.edgeSet → Color,
+          z ∈ Theorem49BoundaryTarget emb ∧
+            z ≠ 0 ∧
+              ∀ e : G.edgeSet,
+                data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e →
+                  z e = 0) ∧
+          ¬ ∃ z : planarBoundaryZeroSubmodule emb,
+            ((z : G.edgeSet → Color) ≠ 0) ∧
+              (∀ e : G.edgeSet,
+                data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e →
+                  (z : G.edgeSet → Color) e = 0) ∧
+                z ∈ LinearMap.ker
+                  (planarBoundaryZeroFamilyPairingMap
+                    (redBlueSingleCoordinateFamily classifier.emittedFinset hredEmitted
+                      hblueEmitted)) ∧
+                  planarBoundaryZeroFamilyPairingMap
+                      (redBlueSingleCoordinateFamily
+                        (classifier.remainingControlEdges
+                          (interiorEdgeSupport emb.faceBoundary emb.faces))
+                        hredRemaining hblueRemaining) z ≠ 0 ∧
+                    ∃ v : V,
+                      v ∈ Theorem49BoundaryVertices emb ∧
+                        vertexKirchhoffSum G (z : G.edgeSet → Color) v ≠ 0 :=
+    data.emittedFinsetPairingKernel_eq_bot_and_theorem49Synthesis_and_boundaryZeroControl_iff_no_theorem49BoundaryTargetEvader_and_no_emittedFinsetKernelMapEvader_with_theorem49BoundaryVertexKirchhoffFailure_of_no_missingCheckerEvidence
+      emb C₀ colorings hsubset p0Inside p4Inside h side hcyclic hportal_crosses
+      hcycles classifier hredEmitted hblueEmitted hredRemaining hblueRemaining hnoMissing
+  constructor
+  · intro hemittedKernel
+    exact hclosed.1 ⟨hemittedKernel, hrank.1 hemittedKernel⟩
+  · intro hnoEvaders
+    exact (hclosed.2 hnoEvaders).1
+
+/--
 Report-level target/off-target no-evader route theorem.  If the finite F₂ lab excludes both
 evader shapes returned by the target/off-target split, then the executable CAP5 report has only
 the primitive checker gap or the successful no-evader branch left: theorem-4.9 synthesis plus
