@@ -649,7 +649,13 @@ longer acceptable progress.
    absence of the concrete off-target boundary-vertex Kirchhoff evader, and
    `emittedFinsetPairingKernel_eq_bot_iff_theorem49BoundaryTargetClassifierControl_and_no_boundaryZeroEvader_with_theorem49BoundaryVertexKirchhoffFailure`
    proves the emitted-edge pairing kernel is trivial exactly when this
-   decomposed target/off-target oracle is closed.  A higher edge-cap/coloring-cap
+   decomposed target/off-target oracle is closed.  The failure side is now
+   route-facing as well:
+   `emittedFinsetKernelMapEvader_with_theorem49BoundaryVertexKirchhoffFailure_of_not_emittedFinsetPairingKernel_eq_bot_of_theorem49BoundaryTargetClassifierControl`
+   proves that once target classifier control is known, emitted-rank failure
+   returns the genuine evader with emitted-kernel membership, nonzero
+   remaining-map image, and a concrete theorem-4.9 boundary-vertex Kirchhoff
+   failure.  A higher edge-cap/coloring-cap
    projected-generator lab run now records this distinction explicitly: among
    65 reports there are 53 found coordinate-probe reports, 12 no-Tait-coloring
    reports, and 0 missing probe reports.

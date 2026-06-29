@@ -12456,6 +12456,131 @@ theorem emittedFinsetPairingKernel_eq_bot_iff_theorem49BoundaryTargetClassifierC
         emb p0Inside p4Inside side classifier)
 
 /--
+Target-controlled finite-rank failure is already the concrete off-target evader branch.  Once
+the classifier controls the theorem-4.9 target, a nontrivial emitted-edge pairing kernel cannot
+be an abstract rank defect: Lean returns a selected-boundary-zero evader vanishing on all
+enumerated forced edges, lying in the emitted pairing kernel, detected by the canonical
+remaining-family map, and failing Kirchhoff at a named theorem-4.9 boundary vertex.
+-/
+theorem emittedFinsetKernelMapEvader_with_theorem49BoundaryVertexKirchhoffFailure_of_not_emittedFinsetPairingKernel_eq_bot_of_theorem49BoundaryTargetClassifierControl
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    [Fintype G.edgeSet]
+    (emb : PlaneEmbeddingWithBoundary G)
+    (colorings : Set (G.EdgeColoring Color))
+    (p0Inside p4Inside : Bool) (side : V → Prop)
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (hredEmitted :
+      ∀ e ∈ classifier.emittedFinset,
+        Pi.single e red ∈ projectedColoringGeneratorSubspace emb colorings)
+    (hblueEmitted :
+      ∀ e ∈ classifier.emittedFinset,
+        Pi.single e blue ∈ projectedColoringGeneratorSubspace emb colorings)
+    (hredRemaining :
+      ∀ e ∈ classifier.remainingControlEdges
+          (interiorEdgeSupport emb.faceBoundary emb.faces),
+        Pi.single e red ∈ projectedColoringGeneratorSubspace emb colorings)
+    (hblueRemaining :
+      ∀ e ∈ classifier.remainingControlEdges
+          (interiorEdgeSupport emb.faceBoundary emb.faces),
+        Pi.single e blue ∈ projectedColoringGeneratorSubspace emb colorings)
+    (hcontrolTarget :
+      ∀ ⦃z : G.edgeSet → Color⦄,
+        z ∈ Theorem49BoundaryTarget emb →
+        (∀ e ∈ classifier.emittedFinset, z e = 0) →
+          z = 0)
+    (hnotKernel :
+      LinearMap.ker
+          (planarBoundaryZeroFamilyPairingMap
+            (redBlueSingleCoordinateFamily classifier.emittedFinset hredEmitted
+              hblueEmitted)) ≠ ⊥) :
+    ∃ z : planarBoundaryZeroSubmodule emb,
+      ((z : G.edgeSet → Color) ≠ 0) ∧
+        (∀ e : G.edgeSet,
+          data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e →
+            (z : G.edgeSet → Color) e = 0) ∧
+          z ∈ LinearMap.ker
+            (planarBoundaryZeroFamilyPairingMap
+              (redBlueSingleCoordinateFamily classifier.emittedFinset hredEmitted
+                hblueEmitted)) ∧
+            planarBoundaryZeroFamilyPairingMap
+                (redBlueSingleCoordinateFamily
+                  (classifier.remainingControlEdges
+                    (interiorEdgeSupport emb.faceBoundary emb.faces))
+                  hredRemaining hblueRemaining) z ≠ 0 ∧
+              ∃ v : V,
+                v ∈ Theorem49BoundaryVertices emb ∧
+                  vertexKirchhoffSum G (z : G.edgeSet → Color) v ≠ 0 := by
+  have hevader :
+      ∃ z : G.edgeSet → Color,
+        z ∈ planarBoundaryZeroSubmodule emb ∧
+          z ≠ 0 ∧
+            (∀ e : G.edgeSet,
+              data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e →
+                z e = 0) ∧
+              ∃ v : V,
+                v ∈ Theorem49BoundaryVertices emb ∧
+                  vertexKirchhoffSum G z v ≠ 0 := by
+    by_contra hnoKirchhoffFailureEvader
+    have hclosed :
+        (∀ ⦃z : G.edgeSet → Color⦄,
+          z ∈ Theorem49BoundaryTarget emb →
+          (∀ e ∈ classifier.emittedFinset, z e = 0) →
+            z = 0) ∧
+          ¬ ∃ z : G.edgeSet → Color,
+            z ∈ planarBoundaryZeroSubmodule emb ∧
+              z ≠ 0 ∧
+                (∀ e : G.edgeSet,
+                  data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e →
+                    z e = 0) ∧
+                  ∃ v : V,
+                    v ∈ Theorem49BoundaryVertices emb ∧
+                      vertexKirchhoffSum G z v ≠ 0 :=
+      ⟨hcontrolTarget, hnoKirchhoffFailureEvader⟩
+    exact hnotKernel
+      ((data.emittedFinsetPairingKernel_eq_bot_iff_theorem49BoundaryTargetClassifierControl_and_no_boundaryZeroEvader_with_theorem49BoundaryVertexKirchhoffFailure
+        emb colorings p0Inside p4Inside side classifier hredEmitted hblueEmitted).2
+        hclosed)
+  rcases hevader with
+    ⟨z, hzBoundary, hzNonzero, hvanishForced, hvertexFailure⟩
+  let z0 : planarBoundaryZeroSubmodule emb := ⟨z, hzBoundary⟩
+  have hvanishEmitted :
+      ∀ e ∈ classifier.emittedFinset, z e = 0 := by
+    intro e he
+    exact hvanishForced e ((classifier.emittedFinset_spec e).1 he)
+  have hpairZero :
+      ∀ i : ({e : G.edgeSet // e ∈ classifier.emittedFinset} × Bool),
+        chainDotBilinForm G.edgeSet
+            (redBlueSingleCoordinateFamily classifier.emittedFinset hredEmitted
+              hblueEmitted i : G.edgeSet → Color) z =
+          0 :=
+    forall_redBlueSingleCoordinateFamily_pairing_eq_zero_of_vanishes_on_controlEdges
+      classifier.emittedFinset hredEmitted hblueEmitted hvanishEmitted
+  have hmemKernel :
+      z0 ∈ LinearMap.ker
+        (planarBoundaryZeroFamilyPairingMap
+          (redBlueSingleCoordinateFamily classifier.emittedFinset hredEmitted
+            hblueEmitted)) :=
+    (mem_ker_planarBoundaryZeroFamilyPairingMap_iff_forall_pairing_eq_zero
+      (redBlueSingleCoordinateFamily classifier.emittedFinset hredEmitted hblueEmitted)
+      z0).2
+      (by
+        intro i
+        simpa [z0] using hpairZero i)
+  have hmapNonzero :
+      planarBoundaryZeroFamilyPairingMap
+          (redBlueSingleCoordinateFamily
+            (classifier.remainingControlEdges
+              (interiorEdgeSupport emb.faceBoundary emb.faces))
+            hredRemaining hblueRemaining) z0 ≠ 0 :=
+    data.boundaryZeroEvader_remainingControlFamilyPairingMap_ne_zero
+      emb colorings p0Inside p4Inside side classifier hredRemaining hblueRemaining
+      hzBoundary hzNonzero hvanishForced
+  exact
+    ⟨z0, hzNonzero, hvanishForced, hmemKernel, hmapNonzero,
+      by simpa [z0] using hvertexFailure⟩
+
+/--
 The two failure languages for the surviving F₂ oracle coincide.  A nonzero chain in the
 canonical emitted-edge pairing kernel is exactly a selected-boundary-zero evader, and every such
 evader has nonzero image under the canonical remaining-edge family-pairing map.  Conversely, a
