@@ -186,6 +186,11 @@ def currentNavierRoadmap : List NavierRoadmapEntry :=
       truthValue := ⟨82, 88⟩
       obligation := "Use the checked Stokes-flow kernel to make zero-convection/zero-pressure-gradient canary attempts satisfy the exact Stokes equation, strict positive-viscosity dissipation, and no positive-period recurrence; still construct an inhabited bounded whole-real-time Schwartz Stokes flow or prove that subroute empty." },
     { stage := .nonzeroEnergyKernel
+      proofNodeId := "navier.energy.nonzero-schwartz-stokes-rankone-obstruction"
+      status := .checked
+      truthValue := ⟨85, 88⟩
+      obligation := "Use the checked Stokes rank-one obstruction to reject exact Stokes-flow candidates whose every slice stays in one fixed nonzero rank-one Schwartz direction; future Stokes canaries must be genuinely non-rank-one or prove the whole bounded eternal Stokes subroute empty." },
+    { stage := .nonzeroEnergyKernel
       proofNodeId := "navier.energy.nonzero-schwartz-zero-restart-obstruction"
       status := .checked
       truthValue := ⟨84, 88⟩
@@ -193,8 +198,8 @@ def currentNavierRoadmap : List NavierRoadmapEntry :=
     { stage := .nonzeroEnergyKernel
       proofNodeId := "navier.energy.nonzero-schwartz-canary"
       status := .openGoal
-      truthValue := ⟨78, 87⟩
-      obligation := "Produce or refute an exact smooth evolution and Schwartz pressure slices for the localized stream-function seed or a comparable non-polynomial Schwartz profile; seed-only data, conditional constructors, classical heat-shear exact solutions that fail Schwartz decay, rank-one zero-convection obstructions, nilpotent-shear pressure-residual obstructions, frozen nilpotent-slice obstructions, profile-level nonzero anti-profile cancellation, amplitude-boundary guardrails, positive-viscosity stationary obstructions, strict-dissipation theorems conditional on the nonzero interface, flat-energy zero-rigidity obstructions, local-extremum energy obstructions, pointwise strict-derivative gates, local energy plateau obstructions, immediate right-drop gates, sampled right-drop gates, strict future-drop gates, energy-recurrence obstructions, residual-curl pressure-closure rejections, finite-mode residual-curl boundaries, stationary inviscid closure constructors, conditional Stokes-flow kernels, generalized zero-restart obstructions, and algebraic finite-mode boundary cases do not count." },
+      truthValue := ⟨79, 87⟩
+      obligation := "Produce or refute an exact smooth evolution and Schwartz pressure slices for the localized stream-function seed or a comparable non-polynomial Schwartz profile; seed-only data, conditional constructors, classical heat-shear exact solutions that fail Schwartz decay, rank-one zero-convection obstructions, nilpotent-shear pressure-residual obstructions, frozen nilpotent-slice obstructions, profile-level nonzero anti-profile cancellation, amplitude-boundary guardrails, positive-viscosity stationary obstructions, strict-dissipation theorems conditional on the nonzero interface, flat-energy zero-rigidity obstructions, local-extremum energy obstructions, pointwise strict-derivative gates, local energy plateau obstructions, immediate right-drop gates, sampled right-drop gates, strict future-drop gates, energy-recurrence obstructions, residual-curl pressure-closure rejections, finite-mode residual-curl boundaries, stationary inviscid closure constructors, conditional Stokes-flow kernels, Stokes rank-one obstructions, generalized zero-restart obstructions, and algebraic finite-mode boundary cases do not count." },
     { stage := .scalingGate
       proofNodeId := "navier.regularity-promotion-gate"
       status := .scalingUncleared
@@ -241,9 +246,9 @@ theorem currentNavierRoadmap_records_nonzero_schwartz_kernel_and_open_canary :
       ({ stage := NavierRoadmapStage.nonzeroEnergyKernel
          proofNodeId := "navier.energy.nonzero-schwartz-canary"
          status := .openGoal
-         truthValue := ⟨78, 87⟩
+         truthValue := ⟨79, 87⟩
          obligation :=
-          "Produce or refute an exact smooth evolution and Schwartz pressure slices for the localized stream-function seed or a comparable non-polynomial Schwartz profile; seed-only data, conditional constructors, classical heat-shear exact solutions that fail Schwartz decay, rank-one zero-convection obstructions, nilpotent-shear pressure-residual obstructions, frozen nilpotent-slice obstructions, profile-level nonzero anti-profile cancellation, amplitude-boundary guardrails, positive-viscosity stationary obstructions, strict-dissipation theorems conditional on the nonzero interface, flat-energy zero-rigidity obstructions, local-extremum energy obstructions, pointwise strict-derivative gates, local energy plateau obstructions, immediate right-drop gates, sampled right-drop gates, strict future-drop gates, energy-recurrence obstructions, residual-curl pressure-closure rejections, finite-mode residual-curl boundaries, stationary inviscid closure constructors, conditional Stokes-flow kernels, generalized zero-restart obstructions, and algebraic finite-mode boundary cases do not count." } :
+          "Produce or refute an exact smooth evolution and Schwartz pressure slices for the localized stream-function seed or a comparable non-polynomial Schwartz profile; seed-only data, conditional constructors, classical heat-shear exact solutions that fail Schwartz decay, rank-one zero-convection obstructions, nilpotent-shear pressure-residual obstructions, frozen nilpotent-slice obstructions, profile-level nonzero anti-profile cancellation, amplitude-boundary guardrails, positive-viscosity stationary obstructions, strict-dissipation theorems conditional on the nonzero interface, flat-energy zero-rigidity obstructions, local-extremum energy obstructions, pointwise strict-derivative gates, local energy plateau obstructions, immediate right-drop gates, sampled right-drop gates, strict future-drop gates, energy-recurrence obstructions, residual-curl pressure-closure rejections, finite-mode residual-curl boundaries, stationary inviscid closure constructors, conditional Stokes-flow kernels, Stokes rank-one obstructions, generalized zero-restart obstructions, and algebraic finite-mode boundary cases do not count." } :
       NavierRoadmapEntry) ∈ currentNavierRoadmap ∧
       ({ stage := NavierRoadmapStage.nonzeroEnergyKernel
          proofNodeId := "navier.energy.nonzero-schwartz-rank-one-shear-obstruction"
@@ -386,6 +391,13 @@ theorem currentNavierRoadmap_records_nonzero_schwartz_kernel_and_open_canary :
           "Use the checked Stokes-flow kernel to make zero-convection/zero-pressure-gradient canary attempts satisfy the exact Stokes equation, strict positive-viscosity dissipation, and no positive-period recurrence; still construct an inhabited bounded whole-real-time Schwartz Stokes flow or prove that subroute empty." } :
         NavierRoadmapEntry) ∈ currentNavierRoadmap ∧
       ({ stage := NavierRoadmapStage.nonzeroEnergyKernel
+         proofNodeId := "navier.energy.nonzero-schwartz-stokes-rankone-obstruction"
+         status := .checked
+         truthValue := ⟨85, 88⟩
+         obligation :=
+          "Use the checked Stokes rank-one obstruction to reject exact Stokes-flow candidates whose every slice stays in one fixed nonzero rank-one Schwartz direction; future Stokes canaries must be genuinely non-rank-one or prove the whole bounded eternal Stokes subroute empty." } :
+        NavierRoadmapEntry) ∈ currentNavierRoadmap ∧
+      ({ stage := NavierRoadmapStage.nonzeroEnergyKernel
          proofNodeId := "navier.energy.nonzero-schwartz-zero-restart-obstruction"
          status := .checked
          truthValue := ⟨84, 88⟩
@@ -415,9 +427,11 @@ theorem currentNavierRoadmap_records_nonzero_schwartz_kernel_and_open_canary :
       navierNonzeroSchwartzFiniteModeResidualCurlBoundaryNode.status = .checked ∧
       navierNonzeroSchwartzStationaryInviscidConstructorNode.status = .checked ∧
       navierNonzeroSchwartzStokesKernelNode.status = .checked ∧
+      navierNonzeroSchwartzStokesRankOneObstructionNode.status = .checked ∧
       navierNonzeroSchwartzZeroRestartNode.status = .checked ∧
       navierNonzeroSchwartzCanaryNode.status = .openGoal := by
   exact ⟨by simp [currentNavierRoadmap],
+    by simp [currentNavierRoadmap],
     by simp [currentNavierRoadmap],
     by simp [currentNavierRoadmap],
     by simp [currentNavierRoadmap],
@@ -465,6 +479,7 @@ theorem currentNavierRoadmap_records_nonzero_schwartz_kernel_and_open_canary :
     navierNonzeroSchwartzFiniteModeResidualCurlBoundaryNode_checked,
     navierNonzeroSchwartzStationaryInviscidConstructorNode_checked,
     navierNonzeroSchwartzStokesKernelNode_checked,
+    navierNonzeroSchwartzStokesRankOneObstructionNode_checked,
     navierNonzeroSchwartzZeroRestartNode_checked,
     navierNonzeroSchwartzCanaryNode_open⟩
 
