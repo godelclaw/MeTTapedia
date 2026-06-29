@@ -80,17 +80,17 @@ def currentNavierRoadmap : List NavierRoadmapEntry :=
       proofNodeId := "navier.bkm.vorticity-residual-curl-equation"
       status := .checked
       truthValue := ⟨85, 88⟩
-      obligation := "Use the checked finite-time witness residual-curl equation spatialVorticity(momentumPressureResidual nu u)=0 as the pressure-free vorticity-equation surface. Remaining BKM work factors the expansion through residualCurlExpansionDefect and then completes the log-Sobolev/high-norm continuation estimate." },
+      obligation := "Use the checked finite-time witness residual-curl equation spatialVorticity(momentumPressureResidual nu u)=0 as the pressure-free vorticity-equation surface. The residualCurlExpansionDefect bridge is now closed for smooth incompressible slabs; remaining BKM work is time-pairing/integrability, finite-energy decay or approximation, log-Sobolev/Biot-Savart control, and high-norm continuation." },
     { stage := .bkmContinuation
       proofNodeId := "navier.bkm.residual-curl-expansion-defect"
       status := .checked
       truthValue := ⟨87, 88⟩
-      obligation := "Use the checked algebraic bridge from residual-curl zero plus residualCurlExpansionDefect = 0 to concreteVorticityEquationOn. The exact remaining vector-calculus target is BKMResidualCurlExpansionDefectVanishes for smooth incompressible velocities on the slab." },
+      obligation := "Use the checked algebraic bridge from residual-curl zero plus BKMResidualCurlExpansionDefectVanishes_proved to concreteVorticityEquationOn. The vector-calculus defect is closed for smooth incompressible slabs; remaining BKM work is analytic." },
     { stage := .bkmContinuation
       proofNodeId := "navier.bkm.residual-curl-differential-identities"
       status := .checked
       truthValue := ⟨88, 88⟩
-      obligation := "Use BKMResidualCurlDifferentialIdentitiesClosed_of_commutationExpansion: curl/time, curl/Laplacian, and the convection product-rule calculus are checked from smoothness; residualCurlCommutationExpansionClosedOn_of_smooth_convection reduces the remaining decomposed target to the finite-dimensional Jacobian algebra and divergence-free specialization behind the incompressible curl-convection identity." },
+      obligation := "Use BKMResidualCurlExpansionDefectVanishes_proved: curl/time, curl/Laplacian, and the divergence-form curl-convection identity are checked from smoothness plus incompressibility. Remaining BKM work is time-pairing/integrability, finite-energy decay or approximation, log-Sobolev/Biot-Savart control, and high-norm continuation." },
     { stage := .bkmContinuation
       proofNodeId := "navier.bkm.standard-vorticity-growth"
       status := .checked
@@ -315,7 +315,7 @@ theorem currentNavierRoadmap_records_bkm_vorticity_residual_curl_equation :
        status := .checked
        truthValue := ⟨85, 88⟩
        obligation :=
-        "Use the checked finite-time witness residual-curl equation spatialVorticity(momentumPressureResidual nu u)=0 as the pressure-free vorticity-equation surface. Remaining BKM work factors the expansion through residualCurlExpansionDefect and then completes the log-Sobolev/high-norm continuation estimate." } :
+        "Use the checked finite-time witness residual-curl equation spatialVorticity(momentumPressureResidual nu u)=0 as the pressure-free vorticity-equation surface. The residualCurlExpansionDefect bridge is now closed for smooth incompressible slabs; remaining BKM work is time-pairing/integrability, finite-energy decay or approximation, log-Sobolev/Biot-Savart control, and high-norm continuation." } :
       NavierRoadmapEntry) ∈ currentNavierRoadmap := by
   simp [currentNavierRoadmap]
 
@@ -327,7 +327,7 @@ theorem currentNavierRoadmap_records_bkm_residual_curl_expansion_defect :
        status := .checked
        truthValue := ⟨87, 88⟩
        obligation :=
-        "Use the checked algebraic bridge from residual-curl zero plus residualCurlExpansionDefect = 0 to concreteVorticityEquationOn. The exact remaining vector-calculus target is BKMResidualCurlExpansionDefectVanishes for smooth incompressible velocities on the slab." } :
+        "Use the checked algebraic bridge from residual-curl zero plus BKMResidualCurlExpansionDefectVanishes_proved to concreteVorticityEquationOn. The vector-calculus defect is closed for smooth incompressible slabs; remaining BKM work is analytic." } :
       NavierRoadmapEntry) ∈ currentNavierRoadmap := by
   simp [currentNavierRoadmap]
 
@@ -339,7 +339,7 @@ theorem currentNavierRoadmap_records_bkm_residual_curl_differential_identities :
        status := .checked
        truthValue := ⟨88, 88⟩
        obligation :=
-        "Use BKMResidualCurlDifferentialIdentitiesClosed_of_commutationExpansion: curl/time, curl/Laplacian, and the convection product-rule calculus are checked from smoothness; residualCurlCommutationExpansionClosedOn_of_smooth_convection reduces the remaining decomposed target to the finite-dimensional Jacobian algebra and divergence-free specialization behind the incompressible curl-convection identity." } :
+        "Use BKMResidualCurlExpansionDefectVanishes_proved: curl/time, curl/Laplacian, and the divergence-form curl-convection identity are checked from smoothness plus incompressibility. Remaining BKM work is time-pairing/integrability, finite-energy decay or approximation, log-Sobolev/Biot-Savart control, and high-norm continuation." } :
       NavierRoadmapEntry) ∈ currentNavierRoadmap := by
   simp [currentNavierRoadmap]
 

@@ -606,6 +606,438 @@ theorem timeVorticityDerivative_eq_spatialVorticity_timeVelocityDerivativeField
     simp [spatialDerivativeComponent_time_derivative_eq_timeVelocityDerivativeField hu t x,
       spatialVorticity, nsCoord0, nsCoord1, nsCoord2]
 
+/-- A linear map on `NSSpace` is determined componentwise by its values on the
+coordinate basis. -/
+theorem nsContinuousLinearMap_apply_eq_sum_basis
+    (L : NSSpace →L[ℝ] NSSpace) (v : NSSpace) (comp : Fin 3) :
+    (L v) comp =
+      ∑ i : Fin 3, v i * (L (EuclideanSpace.single i (1 : ℝ))) comp := by
+  have hv : v = ∑ i : Fin 3, EuclideanSpace.single i (v i) := by
+    ext j
+    simp
+  nth_rw 1 [hv]
+  rw [map_sum]
+  change (EuclideanSpace.proj comp : NSSpace →L[ℝ] ℝ)
+      (∑ x : Fin 3, L (EuclideanSpace.single x (v x))) =
+    ∑ i : Fin 3, v i * (L (EuclideanSpace.single i (1 : ℝ))) comp
+  rw [map_sum]
+  refine Finset.sum_congr rfl ?_
+  intro i _hi
+  have hsingle :
+      EuclideanSpace.single i (v i) =
+        v i • EuclideanSpace.single i (1 : ℝ) := by
+    ext j
+    by_cases hji : j = i
+    · subst j
+      simp
+    · simp [EuclideanSpace.single, hji]
+  rw [hsingle, map_smul]
+  simp
+
+/-- Component form of linearity on a coordinate-basis vector. -/
+theorem nsContinuousLinearMap_apply_single
+    (L : NSSpace →L[ℝ] NSSpace) (i comp : Fin 3) (a : ℝ) :
+    (L (EuclideanSpace.single i a)) comp =
+      a * (L (EuclideanSpace.single i (1 : ℝ))) comp := by
+  have hsingle :
+      EuclideanSpace.single i a =
+        a • EuclideanSpace.single i (1 : ℝ) := by
+    ext j
+    by_cases hji : j = i
+    · subst j
+      simp
+    · simp [EuclideanSpace.single, hji]
+  rw [hsingle, map_smul]
+  simp
+
+/-- For a smooth fixed-time velocity slice, the derivative of the spatial
+Jacobian is symmetric in the outer direction and the applied vector. -/
+theorem spatialFDeriv_fderiv_apply_swap_of_smooth
+    {u : NSVelocityField} (hu : smoothSpaceTimeVelocity u)
+    (t : NSTime) (x v w : NSSpace) :
+    ((fderiv ℝ (fun y : NSSpace => spatialFDeriv u t y) x) v) w =
+      ((fderiv ℝ (fun y : NSSpace => spatialFDeriv u t y) x) w) v := by
+  have hslice : ContDiff ℝ ∞ (fun y : NSSpace => u t y) :=
+    smoothSpaceTimeVelocity_contDiff_spatialSlice hu t
+  have hsymm : IsSymmSndFDerivAt ℝ (fun y : NSSpace => u t y) x := by
+    exact (hslice.contDiffAt (x := x)).isSymmSndFDerivAt (by
+      simpa using ENat.natCast_le_of_coe_top_le_withTop
+        (N := (∞ : WithTop ℕ∞)) (by rfl) 2)
+  simpa [spatialFDeriv] using hsymm.eq v w
+
+/-- Spatial derivative of a scalar coordinate of the velocity Jacobian. -/
+theorem fderiv_spatialDerivativeComponent_eq_fderiv_spatialFDeriv_apply_of_smooth
+    {u : NSVelocityField} (hu : smoothSpaceTimeVelocity u)
+    (t : NSTime) (x v : NSSpace) (coord comp : Fin 3) :
+    fderiv ℝ (fun y : NSSpace => spatialDerivativeComponent u t y coord comp) x v =
+      ((fderiv ℝ (fun y : NSSpace => spatialFDeriv u t y) x v)
+        (EuclideanSpace.single coord (1 : ℝ))) comp := by
+  let e : NSSpace := EuclideanSpace.single coord (1 : ℝ)
+  have hslice : ContDiff ℝ ∞ (fun y : NSSpace => u t y) :=
+    smoothSpaceTimeVelocity_contDiff_spatialSlice hu t
+  have hgradAt : DifferentiableAt ℝ (fun y : NSSpace => spatialFDeriv u t y) x := by
+    exact (hslice.fderiv_right (m := ∞) (by simp)).differentiable (by simp) x
+  change (fderiv ℝ (fun y : NSSpace => (spatialFDeriv u t y e) comp) x v) =
+    ((fderiv ℝ (fun y : NSSpace => spatialFDeriv u t y) x v) e) comp
+  have happly :
+      fderiv ℝ (fun y : NSSpace => spatialFDeriv u t y e) x =
+        (fderiv ℝ (fun y : NSSpace => spatialFDeriv u t y) x).flip e := by
+    rw [fderiv_clm_apply hgradAt (differentiableAt_const e)]
+    ext z
+    simp
+  rw [show (fun y : NSSpace => (spatialFDeriv u t y e) comp) =
+      (fun z : NSSpace => z comp) ∘ (fun y : NSSpace => spatialFDeriv u t y e) by rfl]
+  rw [fderiv_comp]
+  · rw [happly]
+    have hproj :
+        fderiv ℝ (fun z : NSSpace => z comp) ((spatialFDeriv u t x) e) =
+          (EuclideanSpace.proj comp : NSSpace →L[ℝ] ℝ) := by
+      change fderiv ℝ (EuclideanSpace.proj comp : NSSpace → ℝ)
+          ((spatialFDeriv u t x) e) =
+        (EuclideanSpace.proj comp : NSSpace →L[ℝ] ℝ)
+      exact (EuclideanSpace.proj comp : NSSpace →L[ℝ] ℝ).fderiv
+    rw [hproj]
+    rfl
+  · exact (EuclideanSpace.proj comp : NSSpace →L[ℝ] ℝ).differentiableAt
+  · exact hgradAt.clm_apply (differentiableAt_const (c := e))
+
+/-- Smooth velocities make scalar spatial-derivative components differentiable
+in the spatial variable. -/
+theorem spatialDerivativeComponent_differentiableAt_spatial_of_smooth
+    {u : NSVelocityField} (hu : smoothSpaceTimeVelocity u)
+    (t : NSTime) (x : NSSpace) (coord comp : Fin 3) :
+    DifferentiableAt ℝ (fun y : NSSpace =>
+      spatialDerivativeComponent u t y coord comp) x := by
+  have hst :=
+    spatialDerivativeComponent_contDiff_spacetime_of_smooth hu coord comp
+  have hslice :
+      ContDiff ℝ ∞
+        (fun y : NSSpace => spatialDerivativeComponent u t y coord comp) :=
+    contDiff_congr_global
+      (hst.comp (contDiff_prodMk_right (𝕜 := ℝ) t)) (by intro y; rfl)
+  exact hslice.differentiable (by simp) x
+
+/-- A coordinate of the transport term is the directional derivative of the
+corresponding coordinate of vorticity. -/
+theorem vorticityTransportTerm_component_eq_fderiv_coordinate
+    {u : NSVelocityField} (hu : smoothSpaceTimeVelocity u)
+    (t : NSTime) (x : NSSpace) (i : Fin 3) :
+    (vorticityTransportTerm u t x) i =
+      fderiv ℝ (fun y : NSSpace => (spatialVorticity u t y) i) x (u t x) := by
+  have hdiff : DifferentiableAt ℝ (fun y : NSSpace => spatialVorticity u t y) x :=
+    smoothSpaceTimeVelocity_differentiableAt_spatialSlice
+      (spatialVorticity_smoothSpaceTimeVelocity_of_smooth hu) t x
+  have hhas : HasFDerivAt (fun y : NSSpace => (spatialVorticity u t y) i)
+      ((EuclideanSpace.proj i : NSSpace →L[ℝ] ℝ).comp
+        (fderiv ℝ (fun y : NSSpace => spatialVorticity u t y) x)) x := by
+    exact (EuclideanSpace.proj i : NSSpace →L[ℝ] ℝ).hasFDerivAt.comp
+      x hdiff.hasFDerivAt
+  rw [vorticityTransportTerm, spatialFDeriv, hhas.fderiv]
+  simp [ContinuousLinearMap.comp_apply]
+
+/-- First coordinate expansion of `(u . grad) omega`. -/
+theorem vorticityTransportTerm_component0_eq_fderiv_spatialFDeriv_of_smooth
+    {u : NSVelocityField} (hu : smoothSpaceTimeVelocity u)
+    (t : NSTime) (x : NSSpace) :
+    (vorticityTransportTerm u t x) nsCoord0 =
+      ((fderiv ℝ (fun y : NSSpace => spatialFDeriv u t y) x (u t x))
+        (EuclideanSpace.single nsCoord1 (1 : ℝ))) nsCoord2 -
+      ((fderiv ℝ (fun y : NSSpace => spatialFDeriv u t y) x (u t x))
+        (EuclideanSpace.single nsCoord2 (1 : ℝ))) nsCoord1 := by
+  have h1 :=
+    fderiv_spatialDerivativeComponent_eq_fderiv_spatialFDeriv_apply_of_smooth
+      hu t x (u t x) nsCoord1 nsCoord2
+  have h2 :=
+    fderiv_spatialDerivativeComponent_eq_fderiv_spatialFDeriv_apply_of_smooth
+      hu t x (u t x) nsCoord2 nsCoord1
+  rw [vorticityTransportTerm_component_eq_fderiv_coordinate hu t x nsCoord0]
+  have hfun :
+      (fun y : NSSpace => (spatialVorticity u t y) nsCoord0) =
+        (fun y : NSSpace =>
+          spatialDerivativeComponent u t y nsCoord1 nsCoord2 -
+            spatialDerivativeComponent u t y nsCoord2 nsCoord1) := by
+    funext y
+    simp [spatialVorticity, nsCoord0, nsCoord1, nsCoord2]
+  rw [hfun]
+  have h12 := spatialDerivativeComponent_differentiableAt_spatial_of_smooth
+    hu t x nsCoord1 nsCoord2
+  have h21 := spatialDerivativeComponent_differentiableAt_spatial_of_smooth
+    hu t x nsCoord2 nsCoord1
+  rw [show fderiv ℝ
+      (fun y : NSSpace =>
+        spatialDerivativeComponent u t y nsCoord1 nsCoord2 -
+          spatialDerivativeComponent u t y nsCoord2 nsCoord1) x =
+      fderiv ℝ (fun y : NSSpace =>
+        spatialDerivativeComponent u t y nsCoord1 nsCoord2) x -
+        fderiv ℝ (fun y : NSSpace =>
+          spatialDerivativeComponent u t y nsCoord2 nsCoord1) x from
+      fderiv_sub h12 h21]
+  simp only [sub_apply]
+  rw [h1, h2]
+
+/-- Second coordinate expansion of `(u . grad) omega`. -/
+theorem vorticityTransportTerm_component1_eq_fderiv_spatialFDeriv_of_smooth
+    {u : NSVelocityField} (hu : smoothSpaceTimeVelocity u)
+    (t : NSTime) (x : NSSpace) :
+    (vorticityTransportTerm u t x) nsCoord1 =
+      ((fderiv ℝ (fun y : NSSpace => spatialFDeriv u t y) x (u t x))
+        (EuclideanSpace.single nsCoord2 (1 : ℝ))) nsCoord0 -
+      ((fderiv ℝ (fun y : NSSpace => spatialFDeriv u t y) x (u t x))
+        (EuclideanSpace.single nsCoord0 (1 : ℝ))) nsCoord2 := by
+  have h1 :=
+    fderiv_spatialDerivativeComponent_eq_fderiv_spatialFDeriv_apply_of_smooth
+      hu t x (u t x) nsCoord2 nsCoord0
+  have h2 :=
+    fderiv_spatialDerivativeComponent_eq_fderiv_spatialFDeriv_apply_of_smooth
+      hu t x (u t x) nsCoord0 nsCoord2
+  rw [vorticityTransportTerm_component_eq_fderiv_coordinate hu t x nsCoord1]
+  have hfun :
+      (fun y : NSSpace => (spatialVorticity u t y) nsCoord1) =
+        (fun y : NSSpace =>
+          spatialDerivativeComponent u t y nsCoord2 nsCoord0 -
+            spatialDerivativeComponent u t y nsCoord0 nsCoord2) := by
+    funext y
+    simp [spatialVorticity, nsCoord0, nsCoord1, nsCoord2]
+  rw [hfun]
+  have h20 := spatialDerivativeComponent_differentiableAt_spatial_of_smooth
+    hu t x nsCoord2 nsCoord0
+  have h02 := spatialDerivativeComponent_differentiableAt_spatial_of_smooth
+    hu t x nsCoord0 nsCoord2
+  rw [show fderiv ℝ
+      (fun y : NSSpace =>
+        spatialDerivativeComponent u t y nsCoord2 nsCoord0 -
+          spatialDerivativeComponent u t y nsCoord0 nsCoord2) x =
+      fderiv ℝ (fun y : NSSpace =>
+        spatialDerivativeComponent u t y nsCoord2 nsCoord0) x -
+        fderiv ℝ (fun y : NSSpace =>
+          spatialDerivativeComponent u t y nsCoord0 nsCoord2) x from
+      fderiv_sub h20 h02]
+  simp only [sub_apply]
+  rw [h1, h2]
+
+/-- Third coordinate expansion of `(u . grad) omega`. -/
+theorem vorticityTransportTerm_component2_eq_fderiv_spatialFDeriv_of_smooth
+    {u : NSVelocityField} (hu : smoothSpaceTimeVelocity u)
+    (t : NSTime) (x : NSSpace) :
+    (vorticityTransportTerm u t x) nsCoord2 =
+      ((fderiv ℝ (fun y : NSSpace => spatialFDeriv u t y) x (u t x))
+        (EuclideanSpace.single nsCoord0 (1 : ℝ))) nsCoord1 -
+      ((fderiv ℝ (fun y : NSSpace => spatialFDeriv u t y) x (u t x))
+        (EuclideanSpace.single nsCoord1 (1 : ℝ))) nsCoord0 := by
+  have h1 :=
+    fderiv_spatialDerivativeComponent_eq_fderiv_spatialFDeriv_apply_of_smooth
+      hu t x (u t x) nsCoord0 nsCoord1
+  have h2 :=
+    fderiv_spatialDerivativeComponent_eq_fderiv_spatialFDeriv_apply_of_smooth
+      hu t x (u t x) nsCoord1 nsCoord0
+  rw [vorticityTransportTerm_component_eq_fderiv_coordinate hu t x nsCoord2]
+  have hfun :
+      (fun y : NSSpace => (spatialVorticity u t y) nsCoord2) =
+        (fun y : NSSpace =>
+          spatialDerivativeComponent u t y nsCoord0 nsCoord1 -
+            spatialDerivativeComponent u t y nsCoord1 nsCoord0) := by
+    funext y
+    simp [spatialVorticity, nsCoord0, nsCoord1, nsCoord2]
+  rw [hfun]
+  have h01 := spatialDerivativeComponent_differentiableAt_spatial_of_smooth
+    hu t x nsCoord0 nsCoord1
+  have h10 := spatialDerivativeComponent_differentiableAt_spatial_of_smooth
+    hu t x nsCoord1 nsCoord0
+  rw [show fderiv ℝ
+      (fun y : NSSpace =>
+        spatialDerivativeComponent u t y nsCoord0 nsCoord1 -
+          spatialDerivativeComponent u t y nsCoord1 nsCoord0) x =
+      fderiv ℝ (fun y : NSSpace =>
+        spatialDerivativeComponent u t y nsCoord0 nsCoord1) x -
+        fderiv ℝ (fun y : NSSpace =>
+          spatialDerivativeComponent u t y nsCoord1 nsCoord0) x from
+      fderiv_sub h01 h10]
+  simp only [sub_apply]
+  rw [h1, h2]
+
+/-- First coordinate of the divergence-form curl-convection identity. -/
+theorem spatialVorticity_spatialConvectionField_component0_eq_transport_sub_stretching_add_divergence
+    {u : NSVelocityField} (hu : smoothSpaceTimeVelocity u)
+    (t : NSTime) (x : NSSpace) :
+    (spatialVorticity (spatialConvectionField u) t x) nsCoord0 =
+      (vorticityTransportTerm u t x) nsCoord0 -
+        (vorticityStretchingTerm u t x) nsCoord0 +
+          spatialDivergence u t x * (spatialVorticity u t x) nsCoord0 := by
+  rw [vorticityTransportTerm_component0_eq_fderiv_spatialFDeriv_of_smooth hu t x]
+  rw [show (spatialVorticity (spatialConvectionField u) t x) nsCoord0 =
+    spatialDerivativeComponent (spatialConvectionField u) t x nsCoord1 nsCoord2 -
+        spatialDerivativeComponent (spatialConvectionField u) t x nsCoord2 nsCoord1 by
+    simp [spatialVorticity, nsCoord0, nsCoord1, nsCoord2]]
+  rw [spatialDerivativeComponent_spatialConvectionField_eq_productRule_of_smooth
+    hu t x nsCoord1 nsCoord2]
+  rw [spatialDerivativeComponent_spatialConvectionField_eq_productRule_of_smooth
+    hu t x nsCoord2 nsCoord1]
+  rw [spatialFDeriv_fderiv_apply_swap_of_smooth
+    hu t x (EuclideanSpace.single nsCoord1 (1 : ℝ)) (u t x)]
+  rw [spatialFDeriv_fderiv_apply_swap_of_smooth
+    hu t x (EuclideanSpace.single nsCoord2 (1 : ℝ)) (u t x)]
+  rw [nsContinuousLinearMap_apply_eq_sum_basis
+    (spatialFDeriv u t x)
+    (spatialFDeriv u t x (EuclideanSpace.single nsCoord1 (1 : ℝ))) nsCoord2]
+  rw [nsContinuousLinearMap_apply_eq_sum_basis
+    (spatialFDeriv u t x)
+    (spatialFDeriv u t x (EuclideanSpace.single nsCoord2 (1 : ℝ))) nsCoord1]
+  simp [spatialVorticity, vorticityStretchingTerm, spatialDivergence,
+    Fin.sum_univ_three]
+  rw [nsContinuousLinearMap_apply_single
+    (spatialFDeriv u t x) nsCoord0 nsCoord0
+    (spatialDerivativeComponent u t x nsCoord1 nsCoord2 -
+      spatialDerivativeComponent u t x nsCoord2 nsCoord1)]
+  rw [nsContinuousLinearMap_apply_single
+    (spatialFDeriv u t x) nsCoord1 nsCoord0
+    (spatialDerivativeComponent u t x nsCoord2 nsCoord0 -
+      spatialDerivativeComponent u t x nsCoord0 nsCoord2)]
+  rw [nsContinuousLinearMap_apply_single
+    (spatialFDeriv u t x) nsCoord2 nsCoord0
+    (spatialDerivativeComponent u t x nsCoord0 nsCoord1 -
+      spatialDerivativeComponent u t x nsCoord1 nsCoord0)]
+  simp [spatialDerivativeComponent, nsCoord0, nsCoord1, nsCoord2]
+  ring_nf
+
+/-- Second coordinate of the divergence-form curl-convection identity. -/
+theorem spatialVorticity_spatialConvectionField_component1_eq_transport_sub_stretching_add_divergence
+    {u : NSVelocityField} (hu : smoothSpaceTimeVelocity u)
+    (t : NSTime) (x : NSSpace) :
+    (spatialVorticity (spatialConvectionField u) t x) nsCoord1 =
+      (vorticityTransportTerm u t x) nsCoord1 -
+        (vorticityStretchingTerm u t x) nsCoord1 +
+          spatialDivergence u t x * (spatialVorticity u t x) nsCoord1 := by
+  rw [vorticityTransportTerm_component1_eq_fderiv_spatialFDeriv_of_smooth hu t x]
+  rw [show (spatialVorticity (spatialConvectionField u) t x) nsCoord1 =
+    spatialDerivativeComponent (spatialConvectionField u) t x nsCoord2 nsCoord0 -
+        spatialDerivativeComponent (spatialConvectionField u) t x nsCoord0 nsCoord2 by
+    simp [spatialVorticity, nsCoord0, nsCoord1, nsCoord2]]
+  rw [spatialDerivativeComponent_spatialConvectionField_eq_productRule_of_smooth
+    hu t x nsCoord2 nsCoord0]
+  rw [spatialDerivativeComponent_spatialConvectionField_eq_productRule_of_smooth
+    hu t x nsCoord0 nsCoord2]
+  rw [spatialFDeriv_fderiv_apply_swap_of_smooth
+    hu t x (EuclideanSpace.single nsCoord2 (1 : ℝ)) (u t x)]
+  rw [spatialFDeriv_fderiv_apply_swap_of_smooth
+    hu t x (EuclideanSpace.single nsCoord0 (1 : ℝ)) (u t x)]
+  rw [nsContinuousLinearMap_apply_eq_sum_basis
+    (spatialFDeriv u t x)
+    (spatialFDeriv u t x (EuclideanSpace.single nsCoord2 (1 : ℝ))) nsCoord0]
+  rw [nsContinuousLinearMap_apply_eq_sum_basis
+    (spatialFDeriv u t x)
+    (spatialFDeriv u t x (EuclideanSpace.single nsCoord0 (1 : ℝ))) nsCoord2]
+  simp [spatialVorticity, vorticityStretchingTerm, spatialDivergence,
+    Fin.sum_univ_three]
+  rw [nsContinuousLinearMap_apply_single
+    (spatialFDeriv u t x) nsCoord0 nsCoord1
+    (spatialDerivativeComponent u t x nsCoord1 nsCoord2 -
+      spatialDerivativeComponent u t x nsCoord2 nsCoord1)]
+  rw [nsContinuousLinearMap_apply_single
+    (spatialFDeriv u t x) nsCoord1 nsCoord1
+    (spatialDerivativeComponent u t x nsCoord2 nsCoord0 -
+      spatialDerivativeComponent u t x nsCoord0 nsCoord2)]
+  rw [nsContinuousLinearMap_apply_single
+    (spatialFDeriv u t x) nsCoord2 nsCoord1
+    (spatialDerivativeComponent u t x nsCoord0 nsCoord1 -
+      spatialDerivativeComponent u t x nsCoord1 nsCoord0)]
+  simp [spatialDerivativeComponent, nsCoord0, nsCoord1, nsCoord2]
+  ring_nf
+
+/-- Third coordinate of the divergence-form curl-convection identity. -/
+theorem spatialVorticity_spatialConvectionField_component2_eq_transport_sub_stretching_add_divergence
+    {u : NSVelocityField} (hu : smoothSpaceTimeVelocity u)
+    (t : NSTime) (x : NSSpace) :
+    (spatialVorticity (spatialConvectionField u) t x) nsCoord2 =
+      (vorticityTransportTerm u t x) nsCoord2 -
+        (vorticityStretchingTerm u t x) nsCoord2 +
+          spatialDivergence u t x * (spatialVorticity u t x) nsCoord2 := by
+  rw [vorticityTransportTerm_component2_eq_fderiv_spatialFDeriv_of_smooth hu t x]
+  rw [show (spatialVorticity (spatialConvectionField u) t x) nsCoord2 =
+    spatialDerivativeComponent (spatialConvectionField u) t x nsCoord0 nsCoord1 -
+        spatialDerivativeComponent (spatialConvectionField u) t x nsCoord1 nsCoord0 by
+    simp [spatialVorticity, nsCoord0, nsCoord1, nsCoord2]]
+  rw [spatialDerivativeComponent_spatialConvectionField_eq_productRule_of_smooth
+    hu t x nsCoord0 nsCoord1]
+  rw [spatialDerivativeComponent_spatialConvectionField_eq_productRule_of_smooth
+    hu t x nsCoord1 nsCoord0]
+  rw [spatialFDeriv_fderiv_apply_swap_of_smooth
+    hu t x (EuclideanSpace.single nsCoord0 (1 : ℝ)) (u t x)]
+  rw [spatialFDeriv_fderiv_apply_swap_of_smooth
+    hu t x (EuclideanSpace.single nsCoord1 (1 : ℝ)) (u t x)]
+  rw [nsContinuousLinearMap_apply_eq_sum_basis
+    (spatialFDeriv u t x)
+    (spatialFDeriv u t x (EuclideanSpace.single nsCoord0 (1 : ℝ))) nsCoord1]
+  rw [nsContinuousLinearMap_apply_eq_sum_basis
+    (spatialFDeriv u t x)
+    (spatialFDeriv u t x (EuclideanSpace.single nsCoord1 (1 : ℝ))) nsCoord0]
+  simp [spatialVorticity, vorticityStretchingTerm, spatialDivergence,
+    Fin.sum_univ_three]
+  rw [nsContinuousLinearMap_apply_single
+    (spatialFDeriv u t x) nsCoord0 nsCoord2
+    (spatialDerivativeComponent u t x nsCoord1 nsCoord2 -
+      spatialDerivativeComponent u t x nsCoord2 nsCoord1)]
+  rw [nsContinuousLinearMap_apply_single
+    (spatialFDeriv u t x) nsCoord1 nsCoord2
+    (spatialDerivativeComponent u t x nsCoord2 nsCoord0 -
+      spatialDerivativeComponent u t x nsCoord0 nsCoord2)]
+  rw [nsContinuousLinearMap_apply_single
+    (spatialFDeriv u t x) nsCoord2 nsCoord2
+    (spatialDerivativeComponent u t x nsCoord0 nsCoord1 -
+      spatialDerivativeComponent u t x nsCoord1 nsCoord0)]
+  simp [spatialDerivativeComponent, nsCoord0, nsCoord1, nsCoord2]
+  ring_nf
+
+/-- Divergence-form curl-convection identity:
+`curl((u . grad)u) = (u . grad)omega - (omega . grad)u + (div u) omega`. -/
+theorem spatialVorticity_spatialConvectionField_eq_transport_sub_stretching_add_divergence
+    {u : NSVelocityField} (hu : smoothSpaceTimeVelocity u)
+    (t : NSTime) (x : NSSpace) :
+    spatialVorticity (spatialConvectionField u) t x =
+      vorticityTransportTerm u t x - vorticityStretchingTerm u t x +
+        spatialDivergence u t x • spatialVorticity u t x := by
+  ext i
+  fin_cases i
+  · change (spatialVorticity (spatialConvectionField u) t x) nsCoord0 =
+      (vorticityTransportTerm u t x - vorticityStretchingTerm u t x +
+        spatialDivergence u t x • spatialVorticity u t x) nsCoord0
+    rw [spatialVorticity_spatialConvectionField_component0_eq_transport_sub_stretching_add_divergence
+      hu t x]
+    simp
+  · change (spatialVorticity (spatialConvectionField u) t x) nsCoord1 =
+      (vorticityTransportTerm u t x - vorticityStretchingTerm u t x +
+        spatialDivergence u t x • spatialVorticity u t x) nsCoord1
+    rw [spatialVorticity_spatialConvectionField_component1_eq_transport_sub_stretching_add_divergence
+      hu t x]
+    simp
+  · change (spatialVorticity (spatialConvectionField u) t x) nsCoord2 =
+      (vorticityTransportTerm u t x - vorticityStretchingTerm u t x +
+        spatialDivergence u t x • spatialVorticity u t x) nsCoord2
+    rw [spatialVorticity_spatialConvectionField_component2_eq_transport_sub_stretching_add_divergence
+      hu t x]
+    simp
+
+/-- The curl-convection defect is exactly `(div u) omega` for smooth velocity
+fields. -/
+theorem vorticityConvectionExpansionDefect_eq_divergence_smul_vorticity_of_smooth
+    {u : NSVelocityField} (hu : smoothSpaceTimeVelocity u)
+    (t : NSTime) (x : NSSpace) :
+    vorticityConvectionExpansionDefect u t x =
+      spatialDivergence u t x • spatialVorticity u t x := by
+  rw [vorticityConvectionExpansionDefect]
+  rw [spatialVorticity_spatialConvectionField_eq_transport_sub_stretching_add_divergence
+    hu t x]
+  module
+
+/-- Smooth divergence-free velocity fields have zero curl-convection defect at
+each point. -/
+theorem vorticityConvectionExpansionDefect_eq_zero_of_smooth_divergence
+    {u : NSVelocityField} (hu : smoothSpaceTimeVelocity u)
+    {t : NSTime} {x : NSSpace} (hdiv : spatialDivergence u t x = 0) :
+    vorticityConvectionExpansionDefect u t x = 0 := by
+  rw [vorticityConvectionExpansionDefect_eq_divergence_smul_vorticity_of_smooth
+    hu t x, hdiv]
+  simp
+
 /-- Differentiating a Laplacian gives the trace of the third Frechet
 derivative with the new direction in the first slot. -/
 theorem fderiv_laplacian_apply_eq_sum_iteratedFDeriv_three
@@ -1085,6 +1517,17 @@ def vorticityConvectionExpansionClosedOn
     (u : NSVelocityField) (T : ℝ) : Prop :=
   ∀ t x, 0 ≤ t → t ≤ T → vorticityConvectionExpansionDefect u t x = 0
 
+/-- Smooth divergence-free velocity fields close the slabwise
+curl-convection identity. -/
+theorem vorticityConvectionExpansionClosedOn_of_smooth_divergence
+    {u : NSVelocityField} {T : ℝ}
+    (hu : smoothSpaceTimeVelocity u)
+    (hdiv : ∀ t x, 0 ≤ t → t ≤ T → spatialDivergence u t x = 0) :
+    vorticityConvectionExpansionClosedOn u T := by
+  intro t x ht0 htT
+  exact vorticityConvectionExpansionDefect_eq_zero_of_smooth_divergence
+    hu (hdiv t x ht0 htT)
+
 /-- Bundled slabwise differential identities sufficient to close the
 residual-curl expansion defect. -/
 def residualCurlDifferentialIdentitiesClosedOn
@@ -1112,6 +1555,16 @@ theorem residualCurlCommutationExpansionClosedOn_of_smooth_convection
     residualCurlCommutationExpansionClosedOn u T :=
   ⟨vorticityTimeCommutationClosedOn_of_smooth hu,
     vorticityLaplacianCommutationClosedOn_of_smooth hu, hConv⟩
+
+/-- Smooth divergence-free velocities close the slabwise residual-curl
+commutation/expansion package. -/
+theorem residualCurlCommutationExpansionClosedOn_of_smooth_divergence
+    {u : NSVelocityField} {T : ℝ}
+    (hu : smoothSpaceTimeVelocity u)
+    (hdiv : ∀ t x, 0 ≤ t → t ≤ T → spatialDivergence u t x = 0) :
+    residualCurlCommutationExpansionClosedOn u T :=
+  residualCurlCommutationExpansionClosedOn_of_smooth_convection hu
+    (vorticityConvectionExpansionClosedOn_of_smooth_divergence hu hdiv)
 
 /-- A differentiability proof for curl-linearity plus the remaining three
 commutation/expansion identities supplies the bundled residual-curl
@@ -1186,6 +1639,20 @@ theorem BKMResidualCurlDifferentialIdentitiesClosed_of_commutationExpansion
   exact residualCurlDifferentialIdentitiesClosedOn_of_smooth_commutationExpansion
     (ν := ν) hu (hComm u T hu hdiv)
 
+/-- The concrete divergence-form curl-convection identity closes the global
+residual-curl commutation/expansion package. -/
+theorem BKMResidualCurlCommutationExpansionClosed_proved :
+    BKMResidualCurlCommutationExpansionClosed := by
+  intro u T hu hdiv
+  exact residualCurlCommutationExpansionClosedOn_of_smooth_divergence hu hdiv
+
+/-- The decomposed residual-curl differential identities are closed for smooth
+incompressible velocities. -/
+theorem BKMResidualCurlDifferentialIdentitiesClosed_proved :
+    BKMResidualCurlDifferentialIdentitiesClosed :=
+  BKMResidualCurlDifferentialIdentitiesClosed_of_commutationExpansion
+    BKMResidualCurlCommutationExpansionClosed_proved
+
 /-- Closing the decomposed differential identities closes the previous
 residual-curl expansion target. -/
 theorem BKMResidualCurlDifferentialIdentitiesClosed.implies_residualCurlExpansionDefectVanishes
@@ -1194,6 +1661,13 @@ theorem BKMResidualCurlDifferentialIdentitiesClosed.implies_residualCurlExpansio
   intro ν u T hsmooth hdiv
   exact residualCurlExpansionClosedOn_of_differentialIdentitiesClosedOn
     (hIds ν u T hsmooth hdiv)
+
+/-- The residual-curl expansion defect vanishes for every smooth
+incompressible slab. -/
+theorem BKMResidualCurlExpansionDefectVanishes_proved :
+    BKMResidualCurlExpansionDefectVanishes :=
+  BKMResidualCurlDifferentialIdentitiesClosed.implies_residualCurlExpansionDefectVanishes
+    BKMResidualCurlDifferentialIdentitiesClosed_proved
 
 /-- A componentized residual-curl route can feed the analytic BKM component
 bundle by first closing `BKMResidualCurlExpansionDefectVanishes`. -/
