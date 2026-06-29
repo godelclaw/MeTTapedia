@@ -23,6 +23,7 @@ inductive NavierRoadmapStage where
   | placeholderRetirement
   | deGroundedSurface
   | energyIdentity
+  | bkmContinuation
   | nonzeroEnergyKernel
   | scalingGate
   | averagedEquationGate
@@ -70,6 +71,46 @@ def currentNavierRoadmap : List NavierRoadmapEntry :=
       status := .checked
       truthValue := ⟨78, 84⟩
       obligation := "Use the checked slice-Schwartz solution energy identity as the PDE-grounded energy subnode; next extend derivative-under-integral and decay hypotheses beyond the current energy-admissible class." },
+    { stage := .bkmContinuation
+      proofNodeId := "navier.bkm.vorticity-stretching"
+      status := .checked
+      truthValue := ⟨83, 88⟩
+      obligation := "Use the checked pointwise BKM stretching estimates to control (omega . grad)u and its enstrophy-production scalar from gradient and vorticity envelopes. Remaining BKM work is the concrete vorticity equation, log-Sobolev/Biot-Savart gradient control, H^s/enstrophy differential inequality, and continuation closure." },
+    { stage := .bkmContinuation
+      proofNodeId := "navier.bkm.vorticity-residual-curl-equation"
+      status := .checked
+      truthValue := ⟨85, 88⟩
+      obligation := "Use the checked finite-time witness residual-curl equation spatialVorticity(momentumPressureResidual nu u)=0 as the pressure-free vorticity-equation surface. Remaining BKM work factors the expansion through residualCurlExpansionDefect and then completes the log-Sobolev/high-norm continuation estimate." },
+    { stage := .bkmContinuation
+      proofNodeId := "navier.bkm.residual-curl-expansion-defect"
+      status := .checked
+      truthValue := ⟨87, 88⟩
+      obligation := "Use the checked algebraic bridge from residual-curl zero plus residualCurlExpansionDefect = 0 to concreteVorticityEquationOn. The exact remaining vector-calculus target is BKMResidualCurlExpansionDefectVanishes for smooth incompressible velocities on the slab." },
+    { stage := .bkmContinuation
+      proofNodeId := "navier.bkm.residual-curl-differential-identities"
+      status := .checked
+      truthValue := ⟨88, 88⟩
+      obligation := "Use residualCurlLinearityDefect_eq_zero_of_differentiableAt and residualCurlExpansionDefect_eq_differentialIdentityDefects to reduce BKMResidualCurlExpansionDefectVanishes to smoothness-derived residual-field differentiability plus curl/time commutation, curl/Laplacian commutation, and the incompressible curl-convection identity." },
+    { stage := .bkmContinuation
+      proofNodeId := "navier.bkm.standard-vorticity-growth"
+      status := .checked
+      truthValue := ⟨86, 88⟩
+      obligation := "Once concreteVorticityEquationOn is derived, use the checked material-minus-diffusion growth estimates to control partial_t omega + (u.grad)omega - nu Delta omega and its enstrophy-production scalar by the gradient and vorticity envelopes." },
+    { stage := .bkmContinuation
+      proofNodeId := "navier.bkm.log-sobolev-gradient-control"
+      status := .checked
+      truthValue := ⟨87, 88⟩
+      obligation := "Once the analytic log-Sobolev/Biot-Savart gradient-control hypothesis is proved, use the checked logarithmic gradient envelope to feed the standard-vorticity growth and enstrophy-production bounds. This does not itself prove the analytic gradient estimate." },
+    { stage := .bkmContinuation
+      proofNodeId := "navier.bkm.single-analytic-lemma"
+      status := .checked
+      truthValue := ⟨86, 88⟩
+      obligation := "The repaired nonnegative-horizon BKM target is reduced to BKMAnalyticContinuationLemma, whose statement is the remaining analytic proof obligation: positive-viscosity smooth divergence-free finite-energy data plus a finite-time witness with residual-curl vorticity equation and integrable vorticity envelope extend to the global output after proving BKMResidualCurlExpansionDefectVanishes, proving log-Sobolev gradient control, and closing the high-norm continuation argument." },
+    { stage := .bkmContinuation
+      proofNodeId := "navier.bkm.analytic-components"
+      status := .checked
+      truthValue := ⟨87, 88⟩
+      obligation := "Use BKMAnalyticContinuationLemma_of_components and BKMContinuation_reduced_to_analytic_components to work on the remaining analytic route as three named component targets: residual-curl expansion defect vanishing, log-Sobolev/Biot-Savart gradient control from BKM envelope data, and high-norm continuation/Gronwall closure." },
     { stage := .nonzeroEnergyKernel
       proofNodeId := "navier.energy.nonzero-schwartz-kernel"
       status := .checked
@@ -110,6 +151,11 @@ def currentNavierRoadmap : List NavierRoadmapEntry :=
       status := .checked
       truthValue := ⟨88, 91⟩
       obligation := "Use the checked localized nilpotent stream germ obstruction to reject stationary inviscid pressure-closure shortcuts for an inhabited nonzero divergence-free Schwartz datum, even when only the local velocity germ and vanishing instantaneous time-derivative germ are fixed; future canaries must use nonstationary time dependence or a different localized profile so the residual curl vanishes." },
+    { stage := .nonzeroEnergyKernel
+      proofNodeId := "navier.energy.schwartz-pressure-closure-certificate"
+      status := .checked
+      truthValue := ⟨90, 91⟩
+      obligation := "Use the checked pressure-closure certificate API to make residual-curl failures generator-facing: the localized nilpotent stream certificate is an explicit nonzero divergence-free Schwartz failed-canary boundary, and future positive canaries must prove no such certificate exists before constructing pressure slices." },
     { stage := .nonzeroEnergyKernel
       proofNodeId := "navier.energy.nonzero-schwartz-antiprofile-canary-obstruction"
       status := .checked
@@ -247,6 +293,100 @@ def currentNavierRoadmap : List NavierRoadmapEntry :=
       obligation := "Start a replacement global route only after scaling, challenge-world, and averaged-equation checks clear." } ]
 
 theorem currentNavierRoadmap_nonempty : currentNavierRoadmap ≠ [] := by
+  simp [currentNavierRoadmap]
+
+/-- The roadmap records the checked local BKM vorticity-stretching estimate and
+keeps the global continuation criterion open. -/
+theorem currentNavierRoadmap_records_bkm_vorticity_stretching :
+    ({ stage := NavierRoadmapStage.bkmContinuation
+       proofNodeId := "navier.bkm.vorticity-stretching"
+       status := .checked
+       truthValue := ⟨83, 88⟩
+       obligation :=
+        "Use the checked pointwise BKM stretching estimates to control (omega . grad)u and its enstrophy-production scalar from gradient and vorticity envelopes. Remaining BKM work is the concrete vorticity equation, log-Sobolev/Biot-Savart gradient control, H^s/enstrophy differential inequality, and continuation closure." } :
+      NavierRoadmapEntry) ∈ currentNavierRoadmap := by
+  simp [currentNavierRoadmap]
+
+/-- The roadmap records the residual-curl vorticity-equation surface supplied
+by finite-time BKM witnesses. -/
+theorem currentNavierRoadmap_records_bkm_vorticity_residual_curl_equation :
+    ({ stage := NavierRoadmapStage.bkmContinuation
+       proofNodeId := "navier.bkm.vorticity-residual-curl-equation"
+       status := .checked
+       truthValue := ⟨85, 88⟩
+       obligation :=
+        "Use the checked finite-time witness residual-curl equation spatialVorticity(momentumPressureResidual nu u)=0 as the pressure-free vorticity-equation surface. Remaining BKM work factors the expansion through residualCurlExpansionDefect and then completes the log-Sobolev/high-norm continuation estimate." } :
+      NavierRoadmapEntry) ∈ currentNavierRoadmap := by
+  simp [currentNavierRoadmap]
+
+/-- The roadmap records the residual-curl expansion defect bridge and its
+precise remaining vector-calculus target. -/
+theorem currentNavierRoadmap_records_bkm_residual_curl_expansion_defect :
+    ({ stage := NavierRoadmapStage.bkmContinuation
+       proofNodeId := "navier.bkm.residual-curl-expansion-defect"
+       status := .checked
+       truthValue := ⟨87, 88⟩
+       obligation :=
+        "Use the checked algebraic bridge from residual-curl zero plus residualCurlExpansionDefect = 0 to concreteVorticityEquationOn. The exact remaining vector-calculus target is BKMResidualCurlExpansionDefectVanishes for smooth incompressible velocities on the slab." } :
+      NavierRoadmapEntry) ∈ currentNavierRoadmap := by
+  simp [currentNavierRoadmap]
+
+/-- The roadmap records the differential-identity decomposition of the
+residual-curl expansion target. -/
+theorem currentNavierRoadmap_records_bkm_residual_curl_differential_identities :
+    ({ stage := NavierRoadmapStage.bkmContinuation
+       proofNodeId := "navier.bkm.residual-curl-differential-identities"
+       status := .checked
+       truthValue := ⟨88, 88⟩
+       obligation :=
+        "Use residualCurlLinearityDefect_eq_zero_of_differentiableAt and residualCurlExpansionDefect_eq_differentialIdentityDefects to reduce BKMResidualCurlExpansionDefectVanishes to smoothness-derived residual-field differentiability plus curl/time commutation, curl/Laplacian commutation, and the incompressible curl-convection identity." } :
+      NavierRoadmapEntry) ∈ currentNavierRoadmap := by
+  simp [currentNavierRoadmap]
+
+/-- The roadmap records the checked standard-vorticity-equation growth estimate. -/
+theorem currentNavierRoadmap_records_bkm_standard_vorticity_growth :
+    ({ stage := NavierRoadmapStage.bkmContinuation
+       proofNodeId := "navier.bkm.standard-vorticity-growth"
+       status := .checked
+       truthValue := ⟨86, 88⟩
+       obligation :=
+        "Once concreteVorticityEquationOn is derived, use the checked material-minus-diffusion growth estimates to control partial_t omega + (u.grad)omega - nu Delta omega and its enstrophy-production scalar by the gradient and vorticity envelopes." } :
+      NavierRoadmapEntry) ∈ currentNavierRoadmap := by
+  simp [currentNavierRoadmap]
+
+/-- The roadmap records the checked log-Sobolev gradient-control interface. -/
+theorem currentNavierRoadmap_records_bkm_log_sobolev_gradient_control :
+    ({ stage := NavierRoadmapStage.bkmContinuation
+       proofNodeId := "navier.bkm.log-sobolev-gradient-control"
+       status := .checked
+       truthValue := ⟨87, 88⟩
+       obligation :=
+        "Once the analytic log-Sobolev/Biot-Savart gradient-control hypothesis is proved, use the checked logarithmic gradient envelope to feed the standard-vorticity growth and enstrophy-production bounds. This does not itself prove the analytic gradient estimate." } :
+      NavierRoadmapEntry) ∈ currentNavierRoadmap := by
+  simp [currentNavierRoadmap]
+
+/-- The roadmap records the one-lemma analytic reduction for the repaired BKM
+continuation target. -/
+theorem currentNavierRoadmap_records_bkm_single_analytic_lemma :
+    ({ stage := NavierRoadmapStage.bkmContinuation
+       proofNodeId := "navier.bkm.single-analytic-lemma"
+       status := .checked
+       truthValue := ⟨86, 88⟩
+       obligation :=
+        "The repaired nonnegative-horizon BKM target is reduced to BKMAnalyticContinuationLemma, whose statement is the remaining analytic proof obligation: positive-viscosity smooth divergence-free finite-energy data plus a finite-time witness with residual-curl vorticity equation and integrable vorticity envelope extend to the global output after proving BKMResidualCurlExpansionDefectVanishes, proving log-Sobolev gradient control, and closing the high-norm continuation argument." } :
+      NavierRoadmapEntry) ∈ currentNavierRoadmap := by
+  simp [currentNavierRoadmap]
+
+/-- The roadmap records the componentized analytic route for the repaired BKM
+continuation target. -/
+theorem currentNavierRoadmap_records_bkm_analytic_components :
+    ({ stage := NavierRoadmapStage.bkmContinuation
+       proofNodeId := "navier.bkm.analytic-components"
+       status := .checked
+       truthValue := ⟨87, 88⟩
+       obligation :=
+        "Use BKMAnalyticContinuationLemma_of_components and BKMContinuation_reduced_to_analytic_components to work on the remaining analytic route as three named component targets: residual-curl expansion defect vanishing, log-Sobolev/Biot-Savart gradient control from BKM envelope data, and high-norm continuation/Gronwall closure." } :
+      NavierRoadmapEntry) ∈ currentNavierRoadmap := by
   simp [currentNavierRoadmap]
 
 /-- The roadmap records the checked nonzero-preserving kernel and keeps the
@@ -476,6 +616,13 @@ theorem currentNavierRoadmap_records_nonzero_schwartz_kernel_and_open_canary :
          obligation :=
           "Use the checked finite-profile Stokes Rayleigh-floor obstruction to reject generator classes that try to certify a bounded eternal positive-viscosity exact Stokes canary by a positive whole-past spatial Rayleigh floor; future Stokes canaries must either evade every positive past Rayleigh floor with low-frequency slices, leave the exact Stokes subroute, or prove a stronger full Stokes/pressure-closure emptiness theorem." } :
         NavierRoadmapEntry) ∈ currentNavierRoadmap ∧
+      ({ stage := NavierRoadmapStage.nonzeroEnergyKernel
+         proofNodeId := "navier.energy.schwartz-pressure-closure-certificate"
+         status := .checked
+         truthValue := ⟨90, 91⟩
+         obligation :=
+          "Use the checked pressure-closure certificate API to make residual-curl failures generator-facing: the localized nilpotent stream certificate is an explicit nonzero divergence-free Schwartz failed-canary boundary, and future positive canaries must prove no such certificate exists before constructing pressure slices." } :
+        NavierRoadmapEntry) ∈ currentNavierRoadmap ∧
       navierNonzeroSchwartzEnergyKernelNode.status = .checked ∧
       navierNonzeroSchwartzLineInvariantObstructionNode.status = .checked ∧
       navierNonzeroSchwartzHeatShearBoundaryNode.status = .checked ∧
@@ -497,6 +644,7 @@ theorem currentNavierRoadmap_records_nonzero_schwartz_kernel_and_open_canary :
       navierNonzeroSchwartzStrictFutureDropNode.status = .checked ∧
       navierNonzeroSchwartzNoEnergyRecurrenceNode.status = .checked ∧
       navierSchwartzPressureResidualCurlGateNode.status = .checked ∧
+      navierSchwartzPressureClosureCertificateNode.status = .checked ∧
       navierNonzeroSchwartzFiniteModeResidualCurlBoundaryNode.status = .checked ∧
       navierNonzeroSchwartzStationaryInviscidConstructorNode.status = .checked ∧
       navierNonzeroSchwartzStokesKernelNode.status = .checked ∧
@@ -509,6 +657,7 @@ theorem currentNavierRoadmap_records_nonzero_schwartz_kernel_and_open_canary :
       navierNonzeroSchwartzStokesFiniteProfileRayleighObstructionNode.status = .checked ∧
       navierNonzeroSchwartzCanaryNode.status = .openGoal := by
   exact ⟨by simp [currentNavierRoadmap],
+    by simp [currentNavierRoadmap],
     by simp [currentNavierRoadmap],
     by simp [currentNavierRoadmap],
     by simp [currentNavierRoadmap],
@@ -561,6 +710,7 @@ theorem currentNavierRoadmap_records_nonzero_schwartz_kernel_and_open_canary :
     navierNonzeroSchwartzStrictFutureDropNode_checked,
     navierNonzeroSchwartzNoEnergyRecurrenceNode_checked,
     navierSchwartzPressureResidualCurlGateNode_checked,
+    navierSchwartzPressureClosureCertificateNode_checked,
     navierNonzeroSchwartzFiniteModeResidualCurlBoundaryNode_checked,
     navierNonzeroSchwartzStationaryInviscidConstructorNode_checked,
     navierNonzeroSchwartzStokesKernelNode_checked,
