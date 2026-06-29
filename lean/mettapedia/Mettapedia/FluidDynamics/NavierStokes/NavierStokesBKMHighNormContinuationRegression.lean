@@ -34,6 +34,14 @@ theorem BKMSchwartzSliceBiotSavartAffineLogPointwiseEstimate_of_vorticityToGradi
     BKMSchwartzSliceBiotSavartAffineLogPointwiseEstimate_of_vorticityToGradient
       hSlice
 
+theorem BKMHighNormContinuationFromLogControl_of_bkmEnvelopeSchwartzHighNormContinuation_regression
+    (hHighNorm :
+      BKMFiniteEnergyWitnessBKMEnvelopeSchwartzHighNormContinuation) :
+    BKMHighNormContinuationFromLogControl := by
+  exact
+    BKMHighNormContinuationFromLogControl_of_bkmEnvelopeSchwartzHighNormContinuation
+      hHighNorm
+
 theorem BKMAnalyticContinuationLemma_of_components_regression
     (hDefect : BKMResidualCurlExpansionDefectVanishes)
     (hLog : BKMLogSobolevGradientControlFromEnvelope)
@@ -68,6 +76,15 @@ theorem BKMArbitraryWitnessAffineLogBiotSavartGronwallContinuationLemma_of_compo
   exact
     BKMArbitraryWitnessAffineLogBiotSavartGronwallContinuationLemma_of_components
       hAffine hHigh
+
+theorem BKMArbitraryWitnessAffineLogBiotSavartGronwallContinuationLemma_of_affinePointwiseFromEnvelope_and_bkmEnvelopeSchwartzHighNormContinuation_regression
+    (hAffine : BKMLogSobolevAffinePointwiseFromEnvelope)
+    (hHighNorm :
+      BKMFiniteEnergyWitnessBKMEnvelopeSchwartzHighNormContinuation) :
+    BKMArbitraryWitnessAffineLogBiotSavartGronwallContinuationLemma := by
+  exact
+    BKMArbitraryWitnessAffineLogBiotSavartGronwallContinuationLemma_of_affinePointwiseFromEnvelope_and_bkmEnvelopeSchwartzHighNormContinuation
+      hAffine hHighNorm
 
 theorem BKMArbitraryWitnessAffineLogBiotSavartGronwallContinuationLemma_implies_finiteEnergyBKMContinuationTargetOnNonnegHorizons_regression
     (hDefect : BKMResidualCurlExpansionDefectVanishes)
