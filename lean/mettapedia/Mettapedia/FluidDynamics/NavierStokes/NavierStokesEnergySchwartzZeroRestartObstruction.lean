@@ -128,6 +128,35 @@ theorem not_velocity_ne_zero_at_or_after_zero_slice_of_nonneg_viscosity
       S.toSchwartzConcreteNavierStokesSolution hν ht hzero x
   exact hne hzero₁
 
+/-- Positive form of the no-restart gate: every earlier slice before a nonzero
+witness must itself be nonzero somewhere. -/
+theorem exists_velocity_ne_zero_at_or_before_nonzero_of_nonneg_viscosity
+    (hν : 0 ≤ ν) {t₀ t₁ : NSTime} (ht : t₀ ≤ t₁)
+    {x₁ : NSSpace} (hne : S.velocity t₁ x₁ ≠ 0) :
+    ∃ x₀ : NSSpace, S.velocity t₀ x₀ ≠ 0 := by
+  by_contra hnone
+  have hzero : ∀ x, S.velocity t₀ x = 0 := by
+    intro x
+    by_contra hx
+    exact hnone ⟨x, hx⟩
+  exact
+    (S.not_velocity_ne_zero_at_or_after_zero_slice_of_nonneg_viscosity
+      hν ht hzero x₁) hne
+
+/-- Every nonzero solution has a nonzero witness whose entire past, up to that
+witness time, is nonzero somewhere on each slice. -/
+theorem exists_nonzero_witness_with_nonzero_at_all_prior_times
+    (hν : 0 ≤ ν) :
+    ∃ t₁ x₁,
+      S.velocity t₁ x₁ ≠ 0 ∧
+        ∀ t₀ : NSTime, t₀ ≤ t₁ →
+          ∃ x₀ : NSSpace, S.velocity t₀ x₀ ≠ 0 := by
+  rcases S.nonzero_velocity with ⟨t₁, x₁, hne⟩
+  exact
+    ⟨t₁, x₁, hne, fun t₀ ht =>
+      S.exists_velocity_ne_zero_at_or_before_nonzero_of_nonneg_viscosity
+        hν ht hne⟩
+
 /-- Stokes-flow specialization of the no-restart gate.  The Stokes hypotheses
 are kept in the statement so zero-pressure/zero-convection candidate searches
 can call this theorem directly. -/
@@ -144,6 +173,21 @@ theorem stokesFlow_not_velocity_ne_zero_at_or_after_zero_slice_of_nonneg_viscosi
     hν ht hzero x
 
 end NonzeroSchwartzConcreteNavierStokesSolution
+
+/-- Global no-restart obstruction: a nonnegative-viscosity nonzero
+slice-Schwartz concrete solution cannot have a zero slice before a later
+nonzero value. -/
+theorem not_exists_nonzeroSchwartzConcreteSolution_zero_slice_before_nonzero_of_nonneg_viscosity
+    {ν : ℝ} (hν : 0 ≤ ν) :
+    ¬ ∃ S : NonzeroSchwartzConcreteNavierStokesSolution ν,
+      ∃ t₀ t₁ : NSTime,
+        t₀ ≤ t₁ ∧
+          (∀ x, S.velocity t₀ x = 0) ∧
+          ∃ x, S.velocity t₁ x ≠ 0 := by
+  rintro ⟨S, t₀, t₁, ht, hzero, x, hne⟩
+  exact
+    S.not_velocity_ne_zero_at_or_after_zero_slice_of_nonneg_viscosity
+      hν ht hzero x hne
 
 /-- Global Stokes-flow no-restart obstruction: a nonnegative-viscosity nonzero
 Stokes-flow candidate cannot have a zero slice before a later nonzero value. -/
