@@ -1521,6 +1521,43 @@ nonzero canonical remaining-map image.
   whitespace scans are archived under the same
   `fourcolor-move2-focus-initial-residual-threshold-*20260629.log` prefix and
   are empty.
+- New uniform initial-residual subset bridge:
+  `CAP5TransportedEdgeComponentCoverCore.EnumeratedExceptionalAnnulusForcedEdgeClassifier.remainingControlEdges_eq_empty_iff_controlEdges_subset_emittedFinset`,
+  `CAP5TransportedEdgeComponentCoverCore.EnumeratedExceptionalAnnulusForcedEdgeClassifier.initialResidualRemainingControlEdges_eq_empty_iff_controlEdges_subset_emittedFinset`,
+  `CAP5TransportedEdgeComponentCoverCore.ofDecidableChecks_missingCheckerEvidence_or_theorem49Synthesis_and_boundaryZeroControl_of_initialResidualInteriorSupport_subset_emittedFinset`,
+  and
+  `CAP5TransportedEdgeComponentCoverCore.theorem49Synthesis_and_boundaryZeroControl_of_no_missingCheckerEvidence_and_initialResidualInteriorSupport_subset_emittedFinset`.
+  Lean now proves the scheduler start condition is exactly the fixed point
+  `controlEdges ⊆ classifier.emittedFinset` for any finite control set.  The
+  report-level no-evader route consumes the canonical exact-shell obligation
+  directly: if `interiorEdgeSupport emb.faceBoundary emb.faces` is contained
+  in the emitted classifier output, the remaining-edge red/blue obligations
+  are vacuous, the initial residual scheduler is empty, and the executable
+  report leaves only primitive checker gap or theorem-4.9 synthesis with full
+  selected-boundary-zero classifier control.  With the primitive checker
+  frontier closed, that subset condition alone closes synthesis/control.  This
+  is the uniform lift point for the focus-shell thresholds; the remaining
+  Move-2 burden is to prove exact CAP5 shell data supplies this emitted
+  interior-support subset, or accept the unified finite F2 evader already
+  isolated by the failure branch.  Current Algebraic-F2 estimate is PLN STV
+  `<0.93,0.95>`, ITV `[0.88,0.93]`, progress `99%`.  Focused detector build
+  archived locally as
+  `fourcolor-move2-uniform-initial-residual-subset-focused-build-20260629.log`.
+  Trusted-constant audit archived locally as
+  `fourcolor-move2-uniform-initial-residual-subset-axiom-audit-20260629.log`;
+  the four new theorem constants depend only on
+  `[propext, Classical.choice, Quot.sound]`.  The seeded validation lab rerun
+  is archived as
+  `fourcolor-move2-uniform-initial-residual-subset-lab-20260629.json`;
+  stderr is empty, and the projected-generator summary has 65 reports split as
+  54 found and 11 no-Tait-coloring, 700 color probes split as 456 found and
+  244 no-Tait-coloring, 0 missing color probes, and 0 truncations.  Full
+  `lake -f lakefile.lean build Mettapedia` archived locally as
+  `fourcolor-move2-uniform-initial-residual-subset-full-build-20260629.log`;
+  it completed with 5900 jobs.  Strict current-diff proof-marker, leak, and
+  whitespace scans are archived under the same
+  `fourcolor-move2-uniform-initial-residual-subset-*20260629.log` prefix and
+  are empty.
 - Report-route target/off-target no-evader focused detector build archived
   locally as
   `fourcolor-move2-report-target-offtarget-noevader-route-focused-build-20260629.log`.

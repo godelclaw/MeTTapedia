@@ -776,6 +776,21 @@ longer acceptable progress.
    failed synthesis forces a genuinely nonempty initial residual worklist.  The
    remaining question is now the uniform exact CAP5 shell-data lift of these
    finite focus thresholds, not another isolated repair-packet refutation.
+   The uniform scheduler bridge
+   `initialResidualRemainingControlEdges_eq_empty_iff_controlEdges_subset_emittedFinset`
+   now identifies the initial residual condition for any finite control set
+   with the concrete fixed point that all chosen controls are already emitted.
+   The report-facing corollaries
+   `ofDecidableChecks_missingCheckerEvidence_or_theorem49Synthesis_and_boundaryZeroControl_of_initialResidualInteriorSupport_subset_emittedFinset`
+   and
+   `theorem49Synthesis_and_boundaryZeroControl_of_no_missingCheckerEvidence_and_initialResidualInteriorSupport_subset_emittedFinset`
+   therefore state the exact remaining shell-data handoff directly: if the
+   canonical `interiorEdgeSupport` is contained in the emitted classifier
+   output, then the remaining-edge certificate obligations are vacuous, the
+   initial residual scheduler is empty, and the report route closes to
+   synthesis/full selected-boundary-zero control except for primitive checker
+   gaps.  The Move-2 lift target is now this emitted-interior-support subset,
+   uniformly.
    The direct no-evader route corollaries
    `ofDecidableChecks_missingCheckerEvidence_or_theorem49Synthesis_and_boundaryZeroControl_of_no_theorem49BoundaryTargetEvader_and_no_emittedFinsetKernelMapEvader_with_theorem49BoundaryVertexKirchhoffFailure`
    and
