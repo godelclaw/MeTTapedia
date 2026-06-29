@@ -694,6 +694,17 @@ longer acceptable progress.
    now consume that finite rank certificate directly: the executable report
    has only primitive checker gap or synthesis/control left, and with the
    primitive frontier closed the certificate directly proves synthesis/control.
+   The coverage-to-rank bridge
+   `emittedFinsetPairingKernel_eq_bot_of_forcedEdgeCoverage`,
+   `emittedFinsetPairingKernel_eq_bot_of_controlEdges_nonzeroCoverage_subset_emittedFinset`,
+   `ofDecidableChecks_missingCheckerEvidence_or_theorem49Synthesis_and_boundaryZeroControl_of_forcedEdgeCoverage`,
+   and
+   `theorem49Synthesis_and_boundaryZeroControl_of_no_missingCheckerEvidence_and_forcedEdgeCoverage`
+   now connect the lab no-evader/coverage verdict to that rank certificate:
+   exact forced-edge coverage, or a finite control set that meets every
+   nonzero selected-boundary-zero chain and is already emitted by the
+   classifier, proves the emitted red/blue pairing-kernel certificate consumed
+   by the executable report route.
    The direct no-evader route corollaries
    `ofDecidableChecks_missingCheckerEvidence_or_theorem49Synthesis_and_boundaryZeroControl_of_no_theorem49BoundaryTargetEvader_and_no_emittedFinsetKernelMapEvader_with_theorem49BoundaryVertexKirchhoffFailure`
    and
