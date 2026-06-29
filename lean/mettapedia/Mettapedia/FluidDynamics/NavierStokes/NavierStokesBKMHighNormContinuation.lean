@@ -954,6 +954,108 @@ def BKMLogControlWitnessEnstrophyGronwallDataFromWitness : Prop :=
                           MeasureTheory.Integrable
                             (fun x => vorticityEnstrophyDensity W.velocity t x))
 
+/-- Sharper scalar-data residual for the high-norm Gronwall route.  The
+balance and integrability hypotheses are no longer bundled here: they are
+derived below from velocity Schwartz slices and the time-pairing derivative.
+What remains is the genuinely scalar part of the witness extraction, namely
+continuity of normalized enstrophy, signs, high-norm domination by normalized
+enstrophy, and a bounded right primitive for `2*C*(1+Omega)`. -/
+def BKMLogControlWitnessScalarGronwallDataFromWitness : Prop :=
+  ∀ (ν : ℝ) (u₀ : NSInitialVelocity) (T : ℝ)
+      (W : ExplicitFiniteTimeRegularityWitness ν u₀ T)
+      (Ω : NSTime → ℝ) (B C : ℝ) (H : NSTime → ℝ),
+    0 ≤ T →
+      0 < ν →
+        smoothInitialVelocityData u₀ →
+          (∀ x, initialSpatialDivergence u₀ x = 0) →
+            finiteInitialKineticEnergy u₀ →
+              vorticityEnvelopeOn W.velocity T Ω →
+                integrableVorticityEnvelopeOn Ω T B →
+                  concreteVorticityEquationOn ν W.velocity T →
+                    BKMLogSobolevGradientControlOn W.velocity T C Ω H →
+                      finiteTimeWitnessVelocitySchwartzSlices W →
+                        (∀ t, t ∈ Set.Ico 0 T →
+                          vorticityEnstrophyTimePairingDerivativeAt W.velocity t) →
+                          ∃ A : NSTime → ℝ, ∃ Amax : ℝ,
+                            ContinuousOn
+                              (fun t => normalizedVorticityEnstrophyAt W.velocity t)
+                              (Set.Icc 0 T) ∧
+                            ContinuousOn A (Set.Icc 0 T) ∧
+                            0 ≤ C ∧
+                            (∀ t, 0 ≤ t → t ≤ T → 0 ≤ H t) ∧
+                            (∀ t, t ∈ Set.Icc 0 T →
+                              H t ≤ normalizedVorticityEnstrophyAt W.velocity t) ∧
+                            (∀ t, t ∈ Set.Ico 0 T →
+                              HasDerivWithinAt A (2 * C * (1 + Ω t))
+                                (Set.Ici t) t) ∧
+                            (∀ t, t ∈ Set.Icc 0 T → A t ≤ Amax)
+
+/-- Velocity Schwartz slices plus the time-pairing derivative discharge the
+balance and integrability parts of
+`BKMLogControlWitnessEnstrophyGronwallDataFromWitness`.  This isolates the
+remaining high-norm/Gronwall extraction work to scalar continuity, primitive,
+sign, and domination data. -/
+theorem BKMLogControlWitnessEnstrophyGronwallDataFromWitness_of_scalarGronwallData_velocitySchwartz
+    (hScalar : BKMLogControlWitnessScalarGronwallDataFromWitness)
+    (hVelocitySlices :
+      ∀ (ν : ℝ) (u₀ : NSInitialVelocity) (T : ℝ)
+          (W : ExplicitFiniteTimeRegularityWitness ν u₀ T),
+        0 ≤ T →
+          0 < ν →
+            smoothInitialVelocityData u₀ →
+              (∀ x, initialSpatialDivergence u₀ x = 0) →
+                finiteInitialKineticEnergy u₀ →
+                  finiteTimeWitnessVelocitySchwartzSlices W)
+    (hTimePairing :
+      ∀ (ν : ℝ) (u₀ : NSInitialVelocity) (T : ℝ)
+          (W : ExplicitFiniteTimeRegularityWitness ν u₀ T) (t : NSTime),
+        0 ≤ T →
+          0 < ν →
+            smoothInitialVelocityData u₀ →
+              (∀ x, initialSpatialDivergence u₀ x = 0) →
+                finiteInitialKineticEnergy u₀ →
+                  t ∈ Set.Ico 0 T →
+                    vorticityEnstrophyTimePairingDerivativeAt W.velocity t) :
+    BKMLogControlWitnessEnstrophyGronwallDataFromWitness := by
+  intro ν u₀ T W Ω B C H hT hν hsmooth hdiv hfinite hΩ hInt hEq hLog
+  have hSlices : finiteTimeWitnessVelocitySchwartzSlices W :=
+    hVelocitySlices ν u₀ T W hT hν hsmooth hdiv hfinite
+  have hTime :
+      ∀ t, t ∈ Set.Ico 0 T →
+        vorticityEnstrophyTimePairingDerivativeAt W.velocity t := by
+    intro t ht
+    exact hTimePairing ν u₀ T W t hT hν hsmooth hdiv hfinite ht
+  rcases hScalar ν u₀ T W Ω B C H hT hν hsmooth hdiv hfinite hΩ hInt hEq hLog
+      hSlices hTime with
+    ⟨A, Amax, hcont, hAcont, hC, hH_nonneg, hH_le_enstrophy, hAderiv,
+      hA_le⟩
+  refine
+    ⟨A, Amax, hcont, hAcont, hC, hH_nonneg, hH_le_enstrophy, hAderiv,
+      hA_le, ?_, ?_, ?_⟩
+  · intro t ht
+    have htT : t ≤ T := le_of_lt ht.2
+    have hRawInt :
+        vorticityRawBalanceIntegralComponentsIntegrableAt W.velocity t :=
+      vorticityRawBalanceIntegralComponentsIntegrableAt_of_finiteTimeWitnessVelocitySchwartzSlices
+        W hSlices ht.1 htT
+    have hRaw : vorticityEnstrophyRawBalanceAt ν W.velocity t :=
+      vorticityEnstrophyRawBalanceAt_of_timePairingDerivative_concreteVorticityEquationOn
+        hEq hRawInt (hTime t ht) ht.1 htT
+    exact
+      vorticityEnstrophyBalanceAt_of_rawBalance_finiteTimeWitnessVelocitySchwartzSlices
+        W hSlices hRaw ht.1 htT
+  · intro t ht
+    have htT : t ≤ T := le_of_lt ht.2
+    have hRawInt :
+        vorticityRawBalanceIntegralComponentsIntegrableAt W.velocity t :=
+      vorticityRawBalanceIntegralComponentsIntegrableAt_of_finiteTimeWitnessVelocitySchwartzSlices
+        W hSlices ht.1 htT
+    exact hRawInt.2.2
+  · intro t ht
+    exact
+      integrable_vorticityEnstrophyDensity_of_finiteTimeWitnessVelocitySchwartzSlices
+        W hSlices ht.1 (le_of_lt ht.2)
+
 /-- Exact PDE continuation bridge still missing after the scalar high-norm
 work: a finite scalar bound for normalized vorticity enstrophy on the witness
 slab must be converted into the existing fully explicit global-output surface.
@@ -1002,6 +1104,39 @@ theorem BKMHighNormContinuationFromLogControl_of_enstrophyGronwallData_and_bound
         hH_le_enstrophy hAderiv hA_le hLog hBal hStretchInt hEnstrophyInt
   exact
     hBridge ν u₀ T W M hT hν hsmooth hdiv hfinite hEq hM_nonneg hBound
+
+/-- Direct sharpened high-norm route: after the checked scalar/log-Gronwall
+layer, velocity-slice and time-pairing extraction discharge the balance and
+integrability hypotheses; the only remaining inputs are scalar Gronwall data
+and the bounded-enstrophy continuation bridge. -/
+theorem BKMHighNormContinuationFromLogControl_of_scalarGronwallData_velocitySchwartz_and_boundedEnstrophyBridge
+    (hScalar : BKMLogControlWitnessScalarGronwallDataFromWitness)
+    (hVelocitySlices :
+      ∀ (ν : ℝ) (u₀ : NSInitialVelocity) (T : ℝ)
+          (W : ExplicitFiniteTimeRegularityWitness ν u₀ T),
+        0 ≤ T →
+          0 < ν →
+            smoothInitialVelocityData u₀ →
+              (∀ x, initialSpatialDivergence u₀ x = 0) →
+                finiteInitialKineticEnergy u₀ →
+                  finiteTimeWitnessVelocitySchwartzSlices W)
+    (hTimePairing :
+      ∀ (ν : ℝ) (u₀ : NSInitialVelocity) (T : ℝ)
+          (W : ExplicitFiniteTimeRegularityWitness ν u₀ T) (t : NSTime),
+        0 ≤ T →
+          0 < ν →
+            smoothInitialVelocityData u₀ →
+              (∀ x, initialSpatialDivergence u₀ x = 0) →
+                finiteInitialKineticEnergy u₀ →
+                  t ∈ Set.Ico 0 T →
+                    vorticityEnstrophyTimePairingDerivativeAt W.velocity t)
+    (hBridge : BKMBoundedEnstrophyContinuationBridge) :
+    BKMHighNormContinuationFromLogControl := by
+  exact
+    BKMHighNormContinuationFromLogControl_of_enstrophyGronwallData_and_boundedEnstrophyBridge
+      (BKMLogControlWitnessEnstrophyGronwallDataFromWitness_of_scalarGronwallData_velocitySchwartz
+        hScalar hVelocitySlices hTimePairing)
+      hBridge
 
 /-- Componentized form of the remaining BKM analytic route.  The first
 component is the residual-curl expansion identity, the second supplies the

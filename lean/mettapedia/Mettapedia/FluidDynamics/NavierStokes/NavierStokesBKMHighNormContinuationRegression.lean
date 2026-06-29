@@ -314,6 +314,32 @@ theorem normalizedVorticityEnstrophyAt_le_exp_of_logSobolevControl_balance_of_an
       hcont hAcont hν hC hΩ_nonneg hH_nonneg hH_le_enstrophy
       hAderiv hA_le hLog hBal hStretchInt hEnstrophyInt
 
+theorem BKMLogControlWitnessEnstrophyGronwallDataFromWitness_of_scalarGronwallData_velocitySchwartz_regression
+    (hScalar : BKMLogControlWitnessScalarGronwallDataFromWitness)
+    (hVelocitySlices :
+      ∀ (ν : ℝ) (u₀ : NSInitialVelocity) (T : ℝ)
+          (W : ExplicitFiniteTimeRegularityWitness ν u₀ T),
+        0 ≤ T →
+          0 < ν →
+            smoothInitialVelocityData u₀ →
+              (∀ x, initialSpatialDivergence u₀ x = 0) →
+                finiteInitialKineticEnergy u₀ →
+                  finiteTimeWitnessVelocitySchwartzSlices W)
+    (hTimePairing :
+      ∀ (ν : ℝ) (u₀ : NSInitialVelocity) (T : ℝ)
+          (W : ExplicitFiniteTimeRegularityWitness ν u₀ T) (t : NSTime),
+        0 ≤ T →
+          0 < ν →
+            smoothInitialVelocityData u₀ →
+              (∀ x, initialSpatialDivergence u₀ x = 0) →
+                finiteInitialKineticEnergy u₀ →
+                  t ∈ Set.Ico 0 T →
+                    vorticityEnstrophyTimePairingDerivativeAt W.velocity t) :
+    BKMLogControlWitnessEnstrophyGronwallDataFromWitness := by
+  exact
+    BKMLogControlWitnessEnstrophyGronwallDataFromWitness_of_scalarGronwallData_velocitySchwartz
+      hScalar hVelocitySlices hTimePairing
+
 theorem BKMHighNormContinuationFromLogControl_of_enstrophyGronwallData_and_boundedEnstrophyBridge_regression
     (hData : BKMLogControlWitnessEnstrophyGronwallDataFromWitness)
     (hBridge : BKMBoundedEnstrophyContinuationBridge) :
@@ -321,6 +347,33 @@ theorem BKMHighNormContinuationFromLogControl_of_enstrophyGronwallData_and_bound
   exact
     BKMHighNormContinuationFromLogControl_of_enstrophyGronwallData_and_boundedEnstrophyBridge
       hData hBridge
+
+theorem BKMHighNormContinuationFromLogControl_of_scalarGronwallData_velocitySchwartz_and_boundedEnstrophyBridge_regression
+    (hScalar : BKMLogControlWitnessScalarGronwallDataFromWitness)
+    (hVelocitySlices :
+      ∀ (ν : ℝ) (u₀ : NSInitialVelocity) (T : ℝ)
+          (W : ExplicitFiniteTimeRegularityWitness ν u₀ T),
+        0 ≤ T →
+          0 < ν →
+            smoothInitialVelocityData u₀ →
+              (∀ x, initialSpatialDivergence u₀ x = 0) →
+                finiteInitialKineticEnergy u₀ →
+                  finiteTimeWitnessVelocitySchwartzSlices W)
+    (hTimePairing :
+      ∀ (ν : ℝ) (u₀ : NSInitialVelocity) (T : ℝ)
+          (W : ExplicitFiniteTimeRegularityWitness ν u₀ T) (t : NSTime),
+        0 ≤ T →
+          0 < ν →
+            smoothInitialVelocityData u₀ →
+              (∀ x, initialSpatialDivergence u₀ x = 0) →
+                finiteInitialKineticEnergy u₀ →
+                  t ∈ Set.Ico 0 T →
+                    vorticityEnstrophyTimePairingDerivativeAt W.velocity t)
+    (hBridge : BKMBoundedEnstrophyContinuationBridge) :
+    BKMHighNormContinuationFromLogControl := by
+  exact
+    BKMHighNormContinuationFromLogControl_of_scalarGronwallData_velocitySchwartz_and_boundedEnstrophyBridge
+      hScalar hVelocitySlices hTimePairing hBridge
 
 theorem BKMContinuation_reduced_to_analytic_components_regression :
     BKMVorticityStretchingEstimateClosed ∧
