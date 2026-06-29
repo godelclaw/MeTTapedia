@@ -642,7 +642,14 @@ longer acceptable progress.
    same closed primitive frontier.  The report-level emitted-rank trichotomy
    then packages the finite verdict as the actual executable branch:
    primitive checker gap, emitted-rank close with synthesis/control, or
-   rank-failure unified evader.  A higher edge-cap/coloring-cap
+   rank-failure unified evader.  The target/off-target oracle is now tied to
+   that same rank certificate:
+   `no_boundaryZeroEvader_iff_theorem49BoundaryTargetClassifierControl_and_no_boundaryZeroEvader_with_theorem49BoundaryVertexKirchhoffFailure`
+   decomposes full no-evader into theorem-4.9 target classifier control plus
+   absence of the concrete off-target boundary-vertex Kirchhoff evader, and
+   `emittedFinsetPairingKernel_eq_bot_iff_theorem49BoundaryTargetClassifierControl_and_no_boundaryZeroEvader_with_theorem49BoundaryVertexKirchhoffFailure`
+   proves the emitted-edge pairing kernel is trivial exactly when this
+   decomposed target/off-target oracle is closed.  A higher edge-cap/coloring-cap
    projected-generator lab run now records this distinction explicitly: among
    65 reports there are 53 found coordinate-probe reports, 12 no-Tait-coloring
    reports, and 0 missing probe reports.

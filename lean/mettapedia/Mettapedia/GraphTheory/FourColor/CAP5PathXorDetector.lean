@@ -9104,6 +9104,74 @@ theorem forced_vanishing_boundaryZero_subset_theorem49BoundaryTarget_iff_no_boun
           emb hzBoundary hzOffTarget⟩
 
 /--
+Exact target/off-target decomposition of the selected-boundary-zero no-evader oracle.  The
+classifier controls the theorem-4.9 boundary target and there is no forced-edge-vanishing
+boundary-zero chain with a theorem-4.9 boundary-vertex Kirchhoff failure exactly when no
+selected-boundary-zero chain evades every enumerated CAP5 forced edge.  This is the algebraic
+fork behind the target-control route: the only complement to target control is the concrete
+vertex-Kirchhoff evader.
+-/
+theorem no_boundaryZeroEvader_iff_theorem49BoundaryTargetClassifierControl_and_no_boundaryZeroEvader_with_theorem49BoundaryVertexKirchhoffFailure
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    [Fintype G.edgeSet]
+    (emb : PlaneEmbeddingWithBoundary G)
+    (p0Inside p4Inside : Bool) (side : V → Prop)
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side) :
+    (¬ ∃ z : G.edgeSet → Color,
+      z ∈ planarBoundaryZeroSubmodule emb ∧
+        z ≠ 0 ∧
+          ∀ e : G.edgeSet,
+            data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e →
+              z e = 0) ↔
+      (∀ ⦃z : G.edgeSet → Color⦄,
+        z ∈ Theorem49BoundaryTarget emb →
+        (∀ e ∈ classifier.emittedFinset, z e = 0) →
+          z = 0) ∧
+        ¬ ∃ z : G.edgeSet → Color,
+          z ∈ planarBoundaryZeroSubmodule emb ∧
+            z ≠ 0 ∧
+              (∀ e : G.edgeSet,
+                data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e →
+                  z e = 0) ∧
+                ∃ v : V,
+                  v ∈ Theorem49BoundaryVertices emb ∧
+                    vertexKirchhoffSum G z v ≠ 0 := by
+  constructor
+  · intro hnoEvader
+    have hnoTargetEvader :
+        ¬ ∃ z : G.edgeSet → Color,
+          z ∈ Theorem49BoundaryTarget emb ∧
+            z ≠ 0 ∧
+              ∀ e : G.edgeSet,
+                data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e →
+                  z e = 0 := by
+      rintro ⟨z, hzTarget, hzNonzero, hzForcedZero⟩
+      have hzBoundary : z ∈ planarBoundaryZeroSubmodule emb :=
+        (theorem49BoundaryZeroKirchhoffSubspace_le_planarBoundaryZeroSubmodule
+          emb (Theorem49BoundaryVertices emb)) (by
+            simpa [Theorem49BoundaryTarget, Theorem49BoundaryVertices] using hzTarget)
+      exact hnoEvader ⟨z, hzBoundary, hzNonzero, hzForcedZero⟩
+    exact
+      ⟨(data.theorem49BoundaryTargetClassifierControl_iff_no_targetEvader
+          emb p0Inside p4Inside side classifier).2 hnoTargetEvader,
+        by
+          rintro ⟨z, hzBoundary, hzNonzero, hzForcedZero, _hvertex⟩
+          exact hnoEvader ⟨z, hzBoundary, hzNonzero, hzForcedZero⟩⟩
+  · rintro ⟨hcontrolTarget, hnoKirchhoffFailureEvader⟩
+    rintro ⟨z, hzBoundary, hzNonzero, hzForcedZero⟩
+    by_cases hzTarget : z ∈ Theorem49BoundaryTarget emb
+    · have hzEmittedZero :
+          ∀ e ∈ classifier.emittedFinset, z e = 0 := by
+        intro e heEmitted
+        exact hzForcedZero e ((classifier.emittedFinset_spec e).1 heEmitted)
+      exact hzNonzero (hcontrolTarget hzTarget hzEmittedZero)
+    · exact hnoKirchhoffFailureEvader
+        ⟨z, hzBoundary, hzNonzero, hzForcedZero,
+          exists_theorem49BoundaryVertex_vertexKirchhoffSum_ne_zero_of_boundaryZero_of_not_theorem49BoundaryTarget
+            emb hzBoundary hzTarget⟩
+
+/--
 Empty-worklist extraction for the exact F2 fork.  Once the canonical interior-support
 worklist is empty, every ambient interior-support edge is already enumerated as a CAP5
 forced edge.
@@ -12343,6 +12411,49 @@ theorem emittedFinsetPairingKernel_eq_bot_iff_no_boundaryZeroEvader
       intro e heForced
       exact hvanishEmitted e ((classifier.emittedFinset_spec e).2 heForced)
     exact hnoEvader ⟨z, hzBoundary, hzNonzero, hvanishForced⟩
+
+/--
+Finite-rank form of the target/off-target oracle.  The lab-facing emitted-edge red/blue
+pairing kernel is trivial exactly when the classifier controls the theorem-4.9 target and the
+only possible off-target complement, a forced-edge-vanishing boundary-zero chain with a
+theorem-4.9 boundary-vertex Kirchhoff failure, is absent.
+-/
+theorem emittedFinsetPairingKernel_eq_bot_iff_theorem49BoundaryTargetClassifierControl_and_no_boundaryZeroEvader_with_theorem49BoundaryVertexKirchhoffFailure
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    [Fintype G.edgeSet]
+    (emb : PlaneEmbeddingWithBoundary G)
+    (colorings : Set (G.EdgeColoring Color))
+    (p0Inside p4Inside : Bool) (side : V → Prop)
+    (classifier :
+      data.EnumeratedExceptionalAnnulusForcedEdgeClassifier p0Inside p4Inside side)
+    (hredEmitted :
+      ∀ e ∈ classifier.emittedFinset,
+        Pi.single e red ∈ projectedColoringGeneratorSubspace emb colorings)
+    (hblueEmitted :
+      ∀ e ∈ classifier.emittedFinset,
+        Pi.single e blue ∈ projectedColoringGeneratorSubspace emb colorings) :
+    LinearMap.ker
+        (planarBoundaryZeroFamilyPairingMap
+          (redBlueSingleCoordinateFamily classifier.emittedFinset hredEmitted
+            hblueEmitted)) = ⊥ ↔
+      (∀ ⦃z : G.edgeSet → Color⦄,
+        z ∈ Theorem49BoundaryTarget emb →
+        (∀ e ∈ classifier.emittedFinset, z e = 0) →
+          z = 0) ∧
+        ¬ ∃ z : G.edgeSet → Color,
+          z ∈ planarBoundaryZeroSubmodule emb ∧
+            z ≠ 0 ∧
+              (∀ e : G.edgeSet,
+                data.EnumeratedExceptionalAnnulusForcedEdge p0Inside p4Inside side e →
+                  z e = 0) ∧
+                ∃ v : V,
+                  v ∈ Theorem49BoundaryVertices emb ∧
+                    vertexKirchhoffSum G z v ≠ 0 := by
+  exact
+    (data.emittedFinsetPairingKernel_eq_bot_iff_no_boundaryZeroEvader
+      emb colorings p0Inside p4Inside side classifier hredEmitted hblueEmitted).trans
+      (data.no_boundaryZeroEvader_iff_theorem49BoundaryTargetClassifierControl_and_no_boundaryZeroEvader_with_theorem49BoundaryVertexKirchhoffFailure
+        emb p0Inside p4Inside side classifier)
 
 /--
 The two failure languages for the surviving F₂ oracle coincide.  A nonzero chain in the
