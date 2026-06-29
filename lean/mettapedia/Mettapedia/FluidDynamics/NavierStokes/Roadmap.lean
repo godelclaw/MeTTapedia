@@ -108,8 +108,8 @@ def currentNavierRoadmap : List NavierRoadmapEntry :=
     { stage := .nonzeroEnergyKernel
       proofNodeId := "navier.energy.nonzero-schwartz-localized-nilpotent-stream-obstruction"
       status := .checked
-      truthValue := ⟨86, 90⟩
-      obligation := "Use the checked localized nilpotent stream obstruction to reject the stationary inviscid pressure-closure shortcut for an inhabited nonzero divergence-free Schwartz datum; future canaries must change the time evolution or profile so the residual curl vanishes." },
+      truthValue := ⟨88, 91⟩
+      obligation := "Use the checked localized nilpotent stream germ obstruction to reject stationary inviscid pressure-closure shortcuts for an inhabited nonzero divergence-free Schwartz datum, even when only the local velocity germ and vanishing instantaneous time-derivative germ are fixed; future canaries must use nonstationary time dependence or a different localized profile so the residual curl vanishes." },
     { stage := .nonzeroEnergyKernel
       proofNodeId := "navier.energy.nonzero-schwartz-antiprofile-canary-obstruction"
       status := .checked
@@ -306,9 +306,9 @@ theorem currentNavierRoadmap_records_nonzero_schwartz_kernel_and_open_canary :
       ({ stage := NavierRoadmapStage.nonzeroEnergyKernel
          proofNodeId := "navier.energy.nonzero-schwartz-localized-nilpotent-stream-obstruction"
          status := .checked
-         truthValue := ⟨86, 90⟩
+         truthValue := ⟨88, 91⟩
          obligation :=
-          "Use the checked localized nilpotent stream obstruction to reject the stationary inviscid pressure-closure shortcut for an inhabited nonzero divergence-free Schwartz datum; future canaries must change the time evolution or profile so the residual curl vanishes." } :
+          "Use the checked localized nilpotent stream germ obstruction to reject stationary inviscid pressure-closure shortcuts for an inhabited nonzero divergence-free Schwartz datum, even when only the local velocity germ and vanishing instantaneous time-derivative germ are fixed; future canaries must use nonstationary time dependence or a different localized profile so the residual curl vanishes." } :
         NavierRoadmapEntry) ∈ currentNavierRoadmap ∧
       ({ stage := NavierRoadmapStage.nonzeroEnergyKernel
          proofNodeId := "navier.energy.nonzero-schwartz-antiprofile-canary-obstruction"

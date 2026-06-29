@@ -226,9 +226,9 @@ stationary inviscid pressure closure is blocked by residual curl. -/
 def navierNonzeroSchwartzLocalizedNilpotentStreamObstructionNode : NavierProofNode where
   id := "navier.energy.nonzero-schwartz-localized-nilpotent-stream-obstruction"
   status := .checked
-  truthValue := ⟨86, 90⟩
-  evidence := "nsLocalizedNilpotentStreamDivergenceFreeInitialVelocity_nonzero proves that the compactly supported localized nilpotent stream function gives a concrete nonzero divergence-free Schwartz initial datum, while spatialVorticity_momentumPressureResidual_zero_localizedNilpotentStreamVelocityField_origin and not_exists_smoothPressure_momentumEquation_zero_localizedNilpotentStreamVelocityField prove that the stationary inviscid pressure-closure route has nonzero residual curl at the origin and no smooth pressure repair. PLN STV <s=.86,c=.90>, ITV [.774,.874], PROGRESS 89%."
-  blocker := "This supplies an inhabited localized nilpotent Schwartz seed and a real pressure-closure obstruction for its stationary inviscid shortcut. It is not an exact positive-viscosity nonzero solution; the remaining canary must use time dependence or a different localized profile with curl-free residual closure."
+  truthValue := ⟨88, 91⟩
+  evidence := "nsLocalizedNilpotentStreamDivergenceFreeInitialVelocity_nonzero proves that the compactly supported localized nilpotent stream function gives a concrete nonzero divergence-free Schwartz initial datum, while spatialVorticity_momentumPressureResidual_zero_localizedNilpotentStreamVelocityField_origin and not_exists_smoothPressure_momentumEquation_zero_localizedNilpotentStreamVelocityField prove that the stationary inviscid pressure-closure route has nonzero residual curl at the origin and no smooth pressure repair. The local-germ theorems spatialVorticity_momentumPressureResidual_zero_of_localizedNilpotentStreamVelocityField_germ_origin, not_exists_smoothPressure_momentumEquation_zero_of_localizedNilpotentStreamVelocityField_germ_origin, and not_exists_nonzeroSchwartzConcreteSolution_localizedNilpotentStreamVelocityField_germ_stationary_at strengthen this to any inviscid candidate whose velocity germ matches the localized nilpotent stream and whose instantaneous time-derivative germ vanishes there. PLN STV <s=.88,c=.91>, ITV [.8008,.8908], PROGRESS 90%."
+  blocker := "This supplies an inhabited localized nilpotent Schwartz seed and a germ-level pressure-closure obstruction for its stationary inviscid shortcut. It is not an exact positive-viscosity nonzero solution; the remaining canary must use nonstationary time dependence or a different localized profile with curl-free residual closure."
 
 /-- Equal-amplitude anti-profile cancellation is now blocked as a nonzero
 canary false positive. -/
@@ -1028,6 +1028,36 @@ theorem currentNavierNonzeroSchwartzLocalizedNilpotentStreamObstruction_node :
                 spatialConvection localizedNilpotentStreamVelocityField t x +
                 spatialPressureGradient p t x =
               (0 : ℝ) • spatialLaplacian localizedNilpotentStreamVelocityField t x) ∧
+      (∀ {u : NSVelocityField} {t : NSTime},
+        ((fun x : NSSpace => u t x) =ᶠ[𝓝 (0 : NSSpace)]
+          fun x : NSSpace => localizedNilpotentStreamVelocityField 0 x) →
+        ((fun x : NSSpace => timeVelocityDerivative u t x) =ᶠ[𝓝 (0 : NSSpace)]
+          fun _ : NSSpace => 0) →
+        spatialVorticity (momentumPressureResidual 0 u) t 0 =
+          EuclideanSpace.single nsCoord1 (-1 : ℝ)) ∧
+      (∀ {u : NSVelocityField} {t : NSTime},
+        ((fun x : NSSpace => u t x) =ᶠ[𝓝 (0 : NSSpace)]
+          fun x : NSSpace => localizedNilpotentStreamVelocityField 0 x) →
+        ((fun x : NSSpace => timeVelocityDerivative u t x) =ᶠ[𝓝 (0 : NSSpace)]
+          fun _ : NSSpace => 0) →
+        ¬ ∃ p : NSPressureField,
+          smoothSpaceTimePressure p ∧
+            ∀ s x,
+              timeVelocityDerivative u s x + spatialConvection u s x +
+                  spatialPressureGradient p s x =
+                (0 : ℝ) • spatialLaplacian u s x) ∧
+      (∀ t : NSTime,
+        ¬ ∃ S : SchwartzConcreteNavierStokesSolution 0,
+          ((fun x : NSSpace => S.velocity t x) =ᶠ[𝓝 (0 : NSSpace)]
+            fun x : NSSpace => localizedNilpotentStreamVelocityField 0 x) ∧
+            ((fun x : NSSpace => timeVelocityDerivative S.velocity t x) =ᶠ[𝓝 (0 : NSSpace)]
+              fun _ : NSSpace => 0)) ∧
+      (∀ t : NSTime,
+        ¬ ∃ S : NonzeroSchwartzConcreteNavierStokesSolution 0,
+          ((fun x : NSSpace => S.velocity t x) =ᶠ[𝓝 (0 : NSSpace)]
+            fun x : NSSpace => localizedNilpotentStreamVelocityField 0 x) ∧
+            ((fun x : NSSpace => timeVelocityDerivative S.velocity t x) =ᶠ[𝓝 (0 : NSSpace)]
+              fun _ : NSSpace => 0)) ∧
       navierNonzeroSchwartzLocalizedNilpotentStreamObstructionNode.status = .checked ∧
       navierNonzeroSchwartzCanaryNode.status = .openGoal := by
   exact
@@ -1037,6 +1067,14 @@ theorem currentNavierNonzeroSchwartzLocalizedNilpotentStreamObstruction_node :
       spatialVorticity_momentumPressureResidual_zero_localizedNilpotentStreamVelocityField_origin,
       spatialVorticity_momentumPressureResidual_zero_localizedNilpotentStreamVelocityField_origin_ne_zero,
       not_exists_smoothPressure_momentumEquation_zero_localizedNilpotentStreamVelocityField,
+      fun {_u} {_t} hvel htime =>
+        spatialVorticity_momentumPressureResidual_zero_of_localizedNilpotentStreamVelocityField_germ_origin
+          hvel htime,
+      fun {_u} {_t} hvel htime =>
+        not_exists_smoothPressure_momentumEquation_zero_of_localizedNilpotentStreamVelocityField_germ_origin
+          hvel htime,
+      not_exists_schwartzConcreteSolution_localizedNilpotentStreamVelocityField_germ_stationary_at,
+      not_exists_nonzeroSchwartzConcreteSolution_localizedNilpotentStreamVelocityField_germ_stationary_at,
       navierNonzeroSchwartzLocalizedNilpotentStreamObstructionNode_checked,
       navierNonzeroSchwartzCanaryNode_open⟩
 
