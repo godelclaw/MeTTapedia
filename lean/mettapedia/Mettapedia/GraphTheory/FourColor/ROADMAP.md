@@ -624,6 +624,9 @@ longer acceptable progress.
    checker gap, theorem-4.9 synthesis with full selected-boundary-zero control,
    or a genuine trace-local selected-boundary-zero evader with a concrete
    remaining trace edge and nonzero canonical remaining-family pairing.  The
+   failure-only report trace theorem removes the success branch under
+   `¬ Theorem49BoundaryRootSynthesis`, so a failed route now returns a
+   primitive checker gap or that trace-local evader directly.  The
    pure no-target theorem underneath those refinements says failed synthesis
    already produces a genuine selected-boundary-zero evader for the enumerated
    forced edges.  The remaining crux is whether exact shell/CAP5 data reaches
