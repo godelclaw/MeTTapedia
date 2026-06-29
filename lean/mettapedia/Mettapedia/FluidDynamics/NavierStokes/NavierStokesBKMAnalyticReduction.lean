@@ -90,13 +90,14 @@ theorem BKMContinuation_reduced_to_single_analytic_lemma :
                 BKMVorticityTransportCancellationSchwartzClosed ∧
                   BKMVorticityDiffusionIntegrationByPartsSchwartzClosed ∧
                     BKMVorticityFiniteTimeWitnessSchwartzSliceAprioriClosed ∧
-                      BKMVorticityEnstrophyBalanceAssemblyClosed ∧
-                        BKMVorticityEnstrophyAprioriEstimateClosed ∧
-                          BKMVorticityEnstrophyGradientGrowthClosed ∧
-                            BKMVorticityEnstrophyLogSobolevGrowthClosed ∧
-                              BKMLogSobolevGrowthEstimateClosed ∧
-                                (BKMAnalyticContinuationLemma →
-                                  ExplicitFiniteEnergyBKMContinuationTargetOnNonnegHorizons) := by
+                      BKMVorticityFiniteTimeWitnessVelocityVorticitySchwartzAprioriClosed ∧
+                        BKMVorticityEnstrophyBalanceAssemblyClosed ∧
+                          BKMVorticityEnstrophyAprioriEstimateClosed ∧
+                            BKMVorticityEnstrophyGradientGrowthClosed ∧
+                              BKMVorticityEnstrophyLogSobolevGrowthClosed ∧
+                                BKMLogSobolevGrowthEstimateClosed ∧
+                                  (BKMAnalyticContinuationLemma →
+                                    ExplicitFiniteEnergyBKMContinuationTargetOnNonnegHorizons) := by
   exact
     ⟨BKMVorticityStretchingEstimateClosed_proved,
       BKMResidualCurlExpansionAlgebraClosed_proved,
@@ -107,6 +108,7 @@ theorem BKMContinuation_reduced_to_single_analytic_lemma :
       BKMVorticityTransportCancellationSchwartzClosed_proved,
       BKMVorticityDiffusionIntegrationByPartsSchwartzClosed_proved,
       BKMVorticityFiniteTimeWitnessSchwartzSliceAprioriClosed_proved,
+      BKMVorticityFiniteTimeWitnessVelocityVorticitySchwartzAprioriClosed_proved,
       BKMVorticityEnstrophyBalanceAssemblyClosed_proved,
       BKMVorticityEnstrophyAprioriEstimateClosed_proved,
       BKMVorticityEnstrophyGradientGrowthClosed_proved,

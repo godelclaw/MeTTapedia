@@ -110,13 +110,14 @@ theorem BKMContinuation_reduced_to_analytic_components :
                 BKMVorticityTransportCancellationSchwartzClosed ∧
                   BKMVorticityDiffusionIntegrationByPartsSchwartzClosed ∧
                     BKMVorticityFiniteTimeWitnessSchwartzSliceAprioriClosed ∧
-                      BKMVorticityEnstrophyBalanceAssemblyClosed ∧
-                        BKMVorticityEnstrophyAprioriEstimateClosed ∧
-                          BKMVorticityEnstrophyGradientGrowthClosed ∧
-                            BKMVorticityEnstrophyLogSobolevGrowthClosed ∧
-                              BKMLogSobolevGrowthEstimateClosed ∧
-                                (BKMAnalyticComponentsClosed →
-                                  ExplicitFiniteEnergyBKMContinuationTargetOnNonnegHorizons) := by
+                      BKMVorticityFiniteTimeWitnessVelocityVorticitySchwartzAprioriClosed ∧
+                        BKMVorticityEnstrophyBalanceAssemblyClosed ∧
+                          BKMVorticityEnstrophyAprioriEstimateClosed ∧
+                            BKMVorticityEnstrophyGradientGrowthClosed ∧
+                              BKMVorticityEnstrophyLogSobolevGrowthClosed ∧
+                                BKMLogSobolevGrowthEstimateClosed ∧
+                                  (BKMAnalyticComponentsClosed →
+                                    ExplicitFiniteEnergyBKMContinuationTargetOnNonnegHorizons) := by
   exact
     ⟨BKMVorticityStretchingEstimateClosed_proved,
       BKMResidualCurlExpansionAlgebraClosed_proved,
@@ -127,6 +128,7 @@ theorem BKMContinuation_reduced_to_analytic_components :
       BKMVorticityTransportCancellationSchwartzClosed_proved,
       BKMVorticityDiffusionIntegrationByPartsSchwartzClosed_proved,
       BKMVorticityFiniteTimeWitnessSchwartzSliceAprioriClosed_proved,
+      BKMVorticityFiniteTimeWitnessVelocityVorticitySchwartzAprioriClosed_proved,
       BKMVorticityEnstrophyBalanceAssemblyClosed_proved,
       BKMVorticityEnstrophyAprioriEstimateClosed_proved,
       BKMVorticityEnstrophyGradientGrowthClosed_proved,
