@@ -112,6 +112,37 @@ def BKMAffineLogSobolevAnalyticComponentsClosed : Prop :=
     BKMLogSobolevAffinePointwiseFromEnvelope ∧
       BKMHighNormContinuationFromLogControl
 
+/-- Single named analytic lemma left after the checked BKM scaffolding.
+
+For an arbitrary genuine finite-energy finite-time witness with the standard
+vorticity equation and an integrable vorticity envelope, the classical analytic
+work must produce both:
+* affine Biot-Savart/log-Sobolev pointwise gradient constants and high-norm
+  envelope, and
+* the high-norm/Gronwall continuation output.
+
+This is not a new witness class: it quantifies over
+`ExplicitFiniteTimeRegularityWitness` directly. -/
+def BKMArbitraryWitnessAffineLogBiotSavartGronwallContinuationLemma : Prop :=
+  ∀ (ν : ℝ) (u₀ : NSInitialVelocity) (T : ℝ)
+      (W : ExplicitFiniteTimeRegularityWitness ν u₀ T)
+      (Ω : NSTime → ℝ) (B : ℝ),
+    0 ≤ T →
+      0 < ν →
+        smoothInitialVelocityData u₀ →
+          (∀ x, initialSpatialDivergence u₀ x = 0) →
+            finiteInitialKineticEnergy u₀ →
+              concreteVorticityEquationOn ν W.velocity T →
+                vorticityEnvelopeOn W.velocity T Ω →
+                  integrableVorticityEnvelopeOn Ω T B →
+                    ∃ C0 : ℝ, ∃ C1 : ℝ, ∃ H : NSTime → ℝ,
+                      0 ≤ C0 ∧
+                        0 ≤ C1 ∧
+                          (∀ t, 0 ≤ t → t ≤ T → 0 ≤ H t) ∧
+                            BKMLogSobolevAffinePointwiseInequalityOn
+                              W.velocity T C0 C1 Ω H ∧
+                              ExplicitConcreteNavierStokesGlobalOutput ν u₀
+
 /-- The affine-log component bundle implies the older component bundle. -/
 theorem BKMAffineLogSobolevAnalyticComponentsClosed.implies_BKMAnalyticComponentsClosed
     (h : BKMAffineLogSobolevAnalyticComponentsClosed) :
@@ -160,6 +191,41 @@ theorem BKMAffineLogSobolevAnalyticComponentsClosed.implies_finiteEnergyBKMConti
     ExplicitFiniteEnergyBKMContinuationTargetOnNonnegHorizons :=
   BKMAnalyticComponentsClosed.implies_finiteEnergyBKMContinuationTargetOnNonnegHorizons
     (BKMAffineLogSobolevAnalyticComponentsClosed.implies_BKMAnalyticComponentsClosed h)
+
+/-- The previous two-component analytic route implies the single direct
+arbitrary-witness lemma. -/
+theorem BKMArbitraryWitnessAffineLogBiotSavartGronwallContinuationLemma_of_components
+    (hAffine : BKMLogSobolevAffinePointwiseFromEnvelope)
+    (hHigh : BKMHighNormContinuationFromLogControl) :
+    BKMArbitraryWitnessAffineLogBiotSavartGronwallContinuationLemma := by
+  intro ν u₀ T W Ω B hT hν hsmooth hdiv hfinite hEq hΩ hInt
+  rcases hAffine ν u₀ T W Ω B hT hν hsmooth hdiv hfinite hEq hΩ hInt with
+    ⟨C0, C1, H, hC0, hC1, hH, hAffinePointwise⟩
+  have hLog :
+      BKMLogSobolevGradientControlOn W.velocity T (max C0 C1) Ω H :=
+    BKMLogSobolevGradientControlOn.of_affinePointwiseInequality_max
+      hC0 hC1 hΩ.1 hH hAffinePointwise
+  exact
+    ⟨C0, C1, H, hC0, hC1, hH, hAffinePointwise,
+      hHigh ν u₀ T W Ω B (max C0 C1) H
+        hT hν hsmooth hdiv hfinite hΩ hInt hEq hLog⟩
+
+/-- The repaired nonnegative-horizon BKM target follows from the single named
+arbitrary-witness affine-log/Biot-Savart/Gronwall continuation lemma once the
+residual-curl defect closure is supplied. -/
+theorem BKMArbitraryWitnessAffineLogBiotSavartGronwallContinuationLemma.implies_finiteEnergyBKMContinuationTargetOnNonnegHorizons
+    (hDefect : BKMResidualCurlExpansionDefectVanishes)
+    (h : BKMArbitraryWitnessAffineLogBiotSavartGronwallContinuationLemma) :
+    ExplicitFiniteEnergyBKMContinuationTargetOnNonnegHorizons := by
+  intro ν u₀ T hT hν hsmooth hdiv hfinite W hEnv
+  rcases hEnv with ⟨Ω, B, hΩ, hInt⟩
+  have hEq : concreteVorticityEquationOn ν W.velocity T :=
+    hDefect.implies_concreteVorticityEquationOn W.smooth_velocity
+      (fun t x ht0 htT => W.incompressible_on t x ht0 htT)
+      W.vorticityResidualCurlEquationOn
+  rcases h ν u₀ T W Ω B hT hν hsmooth hdiv hfinite hEq hΩ hInt with
+    ⟨_C0, _C1, _H, _hC0, _hC1, _hH, _hAffine, hOut⟩
+  exact hOut
 
 /-- Route-facing packet: the local BKM estimates are checked, and the remaining
 target follows from the componentized analytic ingredients. -/

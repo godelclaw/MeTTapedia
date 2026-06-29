@@ -105,12 +105,12 @@ def currentNavierRoadmap : List NavierRoadmapEntry :=
       proofNodeId := "navier.bkm.single-analytic-lemma"
       status := .checked
       truthValue := ⟨86, 88⟩
-      obligation := "The repaired nonnegative-horizon BKM target is reduced to BKMAnalyticContinuationLemma, whose statement is the remaining analytic proof obligation: positive-viscosity smooth divergence-free finite-energy data plus a finite-time witness with residual-curl vorticity equation and integrable vorticity envelope extend to the global output after proving residual-curl expansion, the remaining vorticity-enstrophy integral identities, log-Sobolev gradient control, and high-norm continuation." },
+      obligation := "Full arbitrary-witness BKM continuation is reduced to the two open analytic lemmas BKMLogSobolevAffinePointwiseFromEnvelope and BKMHighNormContinuationFromLogControl, bundled as BKMArbitraryWitnessAffineLogBiotSavartGronwallContinuationLemma over the genuine finite-energy ExplicitFiniteTimeRegularityWitness class. The checked reduction is axiom-clean at the Lean baseline and is not a global regularity claim." },
     { stage := .bkmContinuation
       proofNodeId := "navier.bkm.analytic-components"
       status := .checked
       truthValue := ⟨87, 88⟩
-      obligation := "Use BKMAnalyticContinuationLemma_of_components and BKMContinuation_reduced_to_analytic_components with the checked residual-curl expansion defect closure, pointwise density derivative, scalar/two-profile Schwartz time-pairing, vorticity raw-balance integrability, transport-cancellation algebra plus Schwartz-slice transport cancellation, the Schwartz curl bridge from velocity slices to vorticity slices, witness-level Schwartz-slice enstrophy control, gradient-growth packages, affine-log stretching integral bound, and affine log-Sobolev normalization. Remaining component targets are the arbitrary finite-energy vorticity-enstrophy integral identities, the affine log-Sobolev/Biot-Savart pointwise estimate from BKM envelope data, and high-norm continuation/Gronwall closure." },
+      obligation := "Use BKMContinuation_reduced_to_single_affineLogBiotSavartGronwallLemma with the checked residual-curl expansion defect closure, pointwise density derivative, scalar/two-profile/finite-family Schwartz time-pairing packages, vorticity raw-balance integrability, transport-cancellation algebra plus Schwartz-slice transport cancellation, the Schwartz curl bridge from velocity slices to vorticity slices, witness-level Schwartz-slice enstrophy control, gradient-growth packages, affine-log stretching integral bound, and affine log-Sobolev normalization. The repaired arbitrary-witness BKM target follows from BKMLogSobolevAffinePointwiseFromEnvelope plus BKMHighNormContinuationFromLogControl via the bundled lemma BKMArbitraryWitnessAffineLogBiotSavartGronwallContinuationLemma; the zero BKM witness premise records non-vacuity. This is not a global regularity claim." },
     { stage := .nonzeroEnergyKernel
       proofNodeId := "navier.energy.nonzero-schwartz-kernel"
       status := .checked
@@ -373,7 +373,7 @@ theorem currentNavierRoadmap_records_bkm_single_analytic_lemma :
        status := .checked
        truthValue := ⟨86, 88⟩
        obligation :=
-        "The repaired nonnegative-horizon BKM target is reduced to BKMAnalyticContinuationLemma, whose statement is the remaining analytic proof obligation: positive-viscosity smooth divergence-free finite-energy data plus a finite-time witness with residual-curl vorticity equation and integrable vorticity envelope extend to the global output after proving residual-curl expansion, the remaining vorticity-enstrophy integral identities, log-Sobolev gradient control, and high-norm continuation." } :
+        "Full arbitrary-witness BKM continuation is reduced to the two open analytic lemmas BKMLogSobolevAffinePointwiseFromEnvelope and BKMHighNormContinuationFromLogControl, bundled as BKMArbitraryWitnessAffineLogBiotSavartGronwallContinuationLemma over the genuine finite-energy ExplicitFiniteTimeRegularityWitness class. The checked reduction is axiom-clean at the Lean baseline and is not a global regularity claim." } :
       NavierRoadmapEntry) ∈ currentNavierRoadmap := by
   simp [currentNavierRoadmap]
 
@@ -385,7 +385,7 @@ theorem currentNavierRoadmap_records_bkm_analytic_components :
        status := .checked
        truthValue := ⟨87, 88⟩
        obligation :=
-        "Use BKMAnalyticContinuationLemma_of_components and BKMContinuation_reduced_to_analytic_components with the checked residual-curl expansion defect closure, pointwise density derivative, scalar/two-profile Schwartz time-pairing, vorticity raw-balance integrability, transport-cancellation algebra plus Schwartz-slice transport cancellation, the Schwartz curl bridge from velocity slices to vorticity slices, witness-level Schwartz-slice enstrophy control, gradient-growth packages, affine-log stretching integral bound, and affine log-Sobolev normalization. Remaining component targets are the arbitrary finite-energy vorticity-enstrophy integral identities, the affine log-Sobolev/Biot-Savart pointwise estimate from BKM envelope data, and high-norm continuation/Gronwall closure." } :
+        "Use BKMContinuation_reduced_to_single_affineLogBiotSavartGronwallLemma with the checked residual-curl expansion defect closure, pointwise density derivative, scalar/two-profile/finite-family Schwartz time-pairing packages, vorticity raw-balance integrability, transport-cancellation algebra plus Schwartz-slice transport cancellation, the Schwartz curl bridge from velocity slices to vorticity slices, witness-level Schwartz-slice enstrophy control, gradient-growth packages, affine-log stretching integral bound, and affine log-Sobolev normalization. The repaired arbitrary-witness BKM target follows from BKMLogSobolevAffinePointwiseFromEnvelope plus BKMHighNormContinuationFromLogControl via the bundled lemma BKMArbitraryWitnessAffineLogBiotSavartGronwallContinuationLemma; the zero BKM witness premise records non-vacuity. This is not a global regularity claim." } :
       NavierRoadmapEntry) ∈ currentNavierRoadmap := by
   simp [currentNavierRoadmap]
 

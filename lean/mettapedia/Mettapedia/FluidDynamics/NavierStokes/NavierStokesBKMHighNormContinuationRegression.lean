@@ -46,6 +46,20 @@ theorem BKMAffineLogSobolevAnalyticComponentsClosed_implies_finiteEnergyBKMConti
     ExplicitFiniteEnergyBKMContinuationTargetOnNonnegHorizons := by
   exact h.implies_finiteEnergyBKMContinuationTargetOnNonnegHorizons
 
+theorem BKMArbitraryWitnessAffineLogBiotSavartGronwallContinuationLemma_of_components_regression
+    (hAffine : BKMLogSobolevAffinePointwiseFromEnvelope)
+    (hHigh : BKMHighNormContinuationFromLogControl) :
+    BKMArbitraryWitnessAffineLogBiotSavartGronwallContinuationLemma := by
+  exact
+    BKMArbitraryWitnessAffineLogBiotSavartGronwallContinuationLemma_of_components
+      hAffine hHigh
+
+theorem BKMArbitraryWitnessAffineLogBiotSavartGronwallContinuationLemma_implies_finiteEnergyBKMContinuationTargetOnNonnegHorizons_regression
+    (hDefect : BKMResidualCurlExpansionDefectVanishes)
+    (h : BKMArbitraryWitnessAffineLogBiotSavartGronwallContinuationLemma) :
+    ExplicitFiniteEnergyBKMContinuationTargetOnNonnegHorizons := by
+  exact h.implies_finiteEnergyBKMContinuationTargetOnNonnegHorizons hDefect
+
 theorem BKMContinuation_reduced_to_analytic_components_regression :
     BKMVorticityStretchingEstimateClosed ∧
       BKMResidualCurlExpansionAlgebraClosed ∧
