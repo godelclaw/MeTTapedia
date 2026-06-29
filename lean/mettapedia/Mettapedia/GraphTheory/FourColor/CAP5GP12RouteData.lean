@@ -632,6 +632,192 @@ noncomputable def gp12FiniteNoGapRouteInput_of_closureCoordinateMemberships
     (colorings := gp12Graph.EdgeKempeClosure gp12TaitEdgeColoring)
     (fun _ hC => hC) classifier hred hblue
 
+/-- GP12 landing point for the finite projected-generator sum certificates: once each listed row
+coloring is in the Kempe closure and the checked row sum is the requested coordinate probe, the
+probe belongs to the closure projected-generator subspace. -/
+theorem gp12_single_mem_projectedColoringGeneratorSubspace_of_closureGeneratorSum
+    {ι : Type*} (s : Finset ι) (C : ι → gp12Graph.EdgeColoring Color)
+    (hC : ∀ i ∈ s, C i ∈ gp12Graph.EdgeKempeClosure gp12TaitEdgeColoring)
+    (rowFace : ι → GP12Face) (a b : ι → Color)
+    (hab : ∀ i ∈ s, ValidColorPair (a i) (b i))
+    {e : gp12Graph.edgeSet} {c : Color}
+    (hsum :
+      (∑ i ∈ s,
+        boundaryZeroProjection
+          (selectedBoundarySupport gp12Embedding.faceBoundary gp12Embedding.faces
+            gp12Embedding.faces)
+          (polarizedFaceGenerator (C i) (a i) (b i)
+            (gp12Embedding.faceBoundary (rowFace i)))) =
+        Pi.single e c) :
+    Pi.single e c ∈ projectedColoringGeneratorSubspace gp12Embedding
+      (gp12Graph.EdgeKempeClosure gp12TaitEdgeColoring) :=
+  single_mem_projectedColoringGeneratorSubspace_of_finset_sum_projectedFaceGenerator_eq
+    (emb := gp12Embedding)
+    (colorings := gp12Graph.EdgeKempeClosure gp12TaitEdgeColoring)
+    s C hC rowFace a b hab hsum
+
+def gp12RouteCertEdgeColor0 (e : gp12Graph.edgeSet) : Color :=
+  if e = gp12_e0_1 then red else
+  if e = gp12_e0_11 then blue else
+  if e = gp12_e0_12 then purple else
+  if e = gp12_e1_2 then blue else
+  if e = gp12_e1_13 then purple else
+  if e = gp12_e2_3 then red else
+  if e = gp12_e2_14 then purple else
+  if e = gp12_e3_4 then blue else
+  if e = gp12_e3_15 then purple else
+  if e = gp12_e4_5 then red else
+  if e = gp12_e4_16 then purple else
+  if e = gp12_e5_6 then blue else
+  if e = gp12_e5_17 then purple else
+  if e = gp12_e6_7 then red else
+  if e = gp12_e6_18 then purple else
+  if e = gp12_e7_8 then blue else
+  if e = gp12_e7_19 then purple else
+  if e = gp12_e8_9 then red else
+  if e = gp12_e8_20 then purple else
+  if e = gp12_e9_10 then blue else
+  if e = gp12_e9_21 then purple else
+  if e = gp12_e10_11 then red else
+  if e = gp12_e10_22 then purple else
+  if e = gp12_e11_23 then purple else
+  if e = gp12_e12_14 then red else
+  if e = gp12_e12_22 then blue else
+  if e = gp12_e13_15 then red else
+  if e = gp12_e13_23 then blue else
+  if e = gp12_e14_16 then blue else
+  if e = gp12_e15_17 then blue else
+  if e = gp12_e16_18 then red else
+  if e = gp12_e17_19 then red else
+  if e = gp12_e18_20 then blue else
+  if e = gp12_e19_21 then blue else
+  if e = gp12_e20_22 then red else
+  if e = gp12_e21_23 then red else
+  red
+
+def gp12RouteCertEdgeColor4 (e : gp12Graph.edgeSet) : Color :=
+  if e = gp12_e0_1 then red else
+  if e = gp12_e0_11 then blue else
+  if e = gp12_e0_12 then purple else
+  if e = gp12_e1_2 then blue else
+  if e = gp12_e1_13 then purple else
+  if e = gp12_e2_3 then red else
+  if e = gp12_e2_14 then purple else
+  if e = gp12_e3_4 then blue else
+  if e = gp12_e3_15 then purple else
+  if e = gp12_e4_5 then red else
+  if e = gp12_e4_16 then purple else
+  if e = gp12_e5_6 then blue else
+  if e = gp12_e5_17 then purple else
+  if e = gp12_e6_7 then red else
+  if e = gp12_e6_18 then purple else
+  if e = gp12_e7_8 then blue else
+  if e = gp12_e7_19 then purple else
+  if e = gp12_e8_9 then purple else
+  if e = gp12_e8_20 then red else
+  if e = gp12_e9_10 then blue else
+  if e = gp12_e9_21 then red else
+  if e = gp12_e10_11 then purple else
+  if e = gp12_e10_22 then red else
+  if e = gp12_e11_23 then red else
+  if e = gp12_e12_14 then red else
+  if e = gp12_e12_22 then blue else
+  if e = gp12_e13_15 then red else
+  if e = gp12_e13_23 then blue else
+  if e = gp12_e14_16 then blue else
+  if e = gp12_e15_17 then blue else
+  if e = gp12_e16_18 then red else
+  if e = gp12_e17_19 then red else
+  if e = gp12_e18_20 then blue else
+  if e = gp12_e19_21 then blue else
+  if e = gp12_e20_22 then purple else
+  if e = gp12_e21_23 then purple else
+  red
+
+set_option maxRecDepth 10000 in
+theorem gp12RouteCertEdgeColor0_ne_of_lineGraph_adj
+    {e f : gp12Graph.edgeSet}
+    (hadj : gp12Graph.lineGraph.Adj e f) :
+    gp12RouteCertEdgeColor0 e ≠ gp12RouteCertEdgeColor0 f := by
+  decide +revert
+
+set_option maxRecDepth 10000 in
+theorem gp12RouteCertEdgeColor4_ne_of_lineGraph_adj
+    {e f : gp12Graph.edgeSet}
+    (hadj : gp12Graph.lineGraph.Adj e f) :
+    gp12RouteCertEdgeColor4 e ≠ gp12RouteCertEdgeColor4 f := by
+  decide +revert
+
+def gp12RouteCertColoring0 : gp12Graph.EdgeColoring Color :=
+  Coloring.mk gp12RouteCertEdgeColor0 (by
+    intro e f hadj
+    exact gp12RouteCertEdgeColor0_ne_of_lineGraph_adj hadj)
+
+@[simp] theorem gp12RouteCertColoring0_apply (e : gp12Graph.edgeSet) :
+    gp12RouteCertColoring0 e = gp12RouteCertEdgeColor0 e :=
+  rfl
+
+def gp12RouteCertColoring4 : gp12Graph.EdgeColoring Color :=
+  Coloring.mk gp12RouteCertEdgeColor4 (by
+    intro e f hadj
+    exact gp12RouteCertEdgeColor4_ne_of_lineGraph_adj hadj)
+
+@[simp] theorem gp12RouteCertColoring4_apply (e : gp12Graph.edgeSet) :
+    gp12RouteCertColoring4 e = gp12RouteCertEdgeColor4 e :=
+  rfl
+
+def gp12TwoRowRouteCertColoring (i : Fin 2) : gp12Graph.EdgeColoring Color :=
+  if i = 0 then gp12RouteCertColoring0 else gp12RouteCertColoring4
+
+def gp12TwoRowRouteCertFace : Fin 2 → GP12Face :=
+  fun _ => ⟨8, by decide⟩
+
+@[simp] theorem gp12_not_mem_selectedBoundarySupport (e : gp12Graph.edgeSet) :
+    e ∉ selectedBoundarySupport gp12Embedding.faceBoundary gp12Embedding.faces
+      gp12Embedding.faces := by
+  rw [gp12_selectedBoundarySupport_eq_empty]
+  simp
+
+@[simp] theorem gp12_not_mem_selectedBoundarySupport_unfolded (e : gp12Graph.edgeSet) :
+    e ∉ selectedBoundarySupport gp12FaceBoundary gp12Faces gp12Faces := by
+  simpa [gp12Embedding] using gp12_not_mem_selectedBoundarySupport e
+
+theorem gp12_e8_20_red_twoRowRouteGeneratorSum :
+    (∑ i ∈ ({0, 1} : Finset (Fin 2)),
+      boundaryZeroProjection
+        (selectedBoundarySupport gp12Embedding.faceBoundary gp12Embedding.faces
+          gp12Embedding.faces)
+        (polarizedFaceGenerator (gp12TwoRowRouteCertColoring i) blue purple
+          (gp12Embedding.faceBoundary (gp12TwoRowRouteCertFace i)))) =
+      Pi.single gp12_e8_20 red := by
+  funext e
+  rcases gp12_edge_eq e with
+    rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl |
+    rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl |
+    rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl <;>
+    simp [gp12TwoRowRouteCertColoring, gp12TwoRowRouteCertFace,
+      gp12RouteCertEdgeColor0, gp12RouteCertEdgeColor4, boundaryZeroProjection,
+      gp12Embedding, gp12FaceBoundary, polarizedFaceGenerator, boundaryBicoloredEdges,
+      indicatorChain, Pi.single] <;>
+    decide
+
+theorem gp12_e8_20_red_mem_projectedColoringGeneratorSubspace_of_routeCertColorings_mem_closure
+    (h0 : gp12RouteCertColoring0 ∈ gp12Graph.EdgeKempeClosure gp12TaitEdgeColoring)
+    (h4 : gp12RouteCertColoring4 ∈ gp12Graph.EdgeKempeClosure gp12TaitEdgeColoring) :
+    Pi.single gp12_e8_20 red ∈ projectedColoringGeneratorSubspace gp12Embedding
+      (gp12Graph.EdgeKempeClosure gp12TaitEdgeColoring) := by
+  refine
+    gp12_single_mem_projectedColoringGeneratorSubspace_of_closureGeneratorSum
+      ({0, 1} : Finset (Fin 2)) gp12TwoRowRouteCertColoring ?_
+      gp12TwoRowRouteCertFace (fun _ => blue) (fun _ => purple) ?_
+      gp12_e8_20_red_twoRowRouteGeneratorSum
+  · intro i hi
+    fin_cases i <;> simp [gp12TwoRowRouteCertColoring] at hi ⊢
+    · exact h0
+    · exact h4
+  · intro i _hi
+    fin_cases i <;> exact ⟨blue_ne_zero, purple_ne_zero, blue_ne_purple⟩
+
 def gp12P0InsideP4OutsideEmittedFinset : Finset gp12Graph.edgeSet :=
   {gp12_e15_17}
 

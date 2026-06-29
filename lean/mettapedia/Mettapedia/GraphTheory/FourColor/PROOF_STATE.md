@@ -284,7 +284,28 @@ adapter `gp12FiniteNoGapRouteInput_of_closureCoordinateMemberships` can take
 route-input surface itself no longer needs a separate finite coloring-set
 subset proof.  The remaining GP(12,2) route-input packaging obligation is the
 72 projected-generator finite-sum memberships in that closure subspace; no full
-route input is claimed yet.  This does not upgrade the six-cut residual:
+route input is claimed yet.  Lean now has the finite-sum landing lemmas
+`finset_sum_projectedFaceGenerator_mem_projectedColoringGeneratorSubspace` and
+`single_mem_projectedColoringGeneratorSubspace_of_finset_sum_projectedFaceGenerator_eq`.
+`CAP5GP12RouteData.lean` also checks the first concrete two-row lab certificate:
+rows 26 and 194, both on face 8 with pair `blue_purple`, sum to the red
+single-coordinate probe on `gp12_e8_20`.  The theorem
+`gp12_e8_20_red_mem_projectedColoringGeneratorSubspace_of_routeCertColorings_mem_closure`
+therefore reduces that one target to the two remaining Kempe-closure facts for
+route-certificate colorings 0 and 4.  This is a certificate-slice check, not a
+full all-coordinate package.  Smoke file
+`fourcolor-gp12-two-row-certificate-smoke-20260629.lean` has SHA256
+`79b6b90c1842f4f923e7d6da3c51e7125ecc8646de0709251f69af7358ecd435`.
+Verification for this two-row route-certificate increment: focused
+`CAP5GP12RouteData` build SHA256
+`c72439a459caa6fb401efba52bbeb04c71f9ec9e481631b98b49b40adeac09e3`;
+FourColor umbrella build SHA256
+`b1828374afcbde99b5c3d02b8ceb52e98ba519fb6dd90728168b5bfa5399f6f7`;
+axiom audit driver/log SHA256
+`3a878f943ba33d7c2522db0304e56360cdcee99f8b1727e832763c863f561222` /
+`faf81cb4f15a4517e0f56ed58aaf36b7ebfc0baa07e71ad02e921d44db8c7987`,
+baseline `[propext, Classical.choice, Quot.sound]`.  This does not upgrade the
+six-cut residual:
 the generic six-cut meta-barrier is not proven, and the non-boundary six-cut
 degree of freedom remains open.  Verification for this closure-set adapter
 increment: focused `CAP5GP12RouteData` build SHA256
