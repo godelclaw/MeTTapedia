@@ -201,6 +201,36 @@ theorem spatialDerivativeComponent_differentiableAt_time_of_smooth
   (spatialDerivativeComponent_contDiff_time_of_smooth hu x coord comp).differentiable
     (by simp) t
 
+/-- The time-derivative velocity field of a smooth velocity is again smooth in
+space-time. -/
+theorem timeVelocityDerivativeField_smoothSpaceTimeVelocity_of_smooth
+    {u : NSVelocityField} (hu : smoothSpaceTimeVelocity u) :
+    smoothSpaceTimeVelocity (timeVelocityDerivativeField u) := by
+  have huncurry :
+      ContDiff ℝ ∞
+        (Function.uncurry
+          (fun tx : NSSpacetime => fun s : NSTime => u s tx.2)) := by
+    have hmap :
+        ContDiff ℝ ∞ (fun p : NSSpacetime × NSTime => (p.2, p.1.2)) := by
+      fun_prop
+    exact contDiff_congr_global (hu.comp hmap) (by
+      intro p
+      rcases p with ⟨⟨t, x⟩, s⟩
+      rfl)
+  have hfield :
+      ContDiff ℝ ∞
+        (fun tx : NSSpacetime =>
+          fderiv ℝ (fun s : NSTime => u s tx.2) tx.1 (1 : ℝ)) := by
+    simpa using
+      (huncurry.fderiv_apply (g := fun tx : NSSpacetime => tx.1)
+        (k := fun _tx : NSSpacetime => (1 : ℝ)) contDiff_fst
+          contDiff_const (by simp))
+  rw [smoothSpaceTimeVelocity]
+  exact contDiff_congr_global hfield (by
+    intro tx
+    simp [spaceTimeVelocityMap, timeVelocityDerivativeField,
+      timeVelocityDerivative, timeFDeriv])
+
 /-- After the Laplacian-field differentiability bridge, smoothness supplies the
 other two differentiability hypotheses needed for residual-curl linearity. -/
 theorem residualCurlLinearityDifferentiableAt_of_smooth_laplacian

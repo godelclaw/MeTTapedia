@@ -59,6 +59,11 @@ theorem spatialDerivativeComponent_differentiableAt_time_of_smooth_regression
     DifferentiableAt ℝ (fun s : NSTime => spatialDerivativeComponent u s x coord comp) t := by
   exact spatialDerivativeComponent_differentiableAt_time_of_smooth hu t x coord comp
 
+theorem timeVelocityDerivativeField_smoothSpaceTimeVelocity_of_smooth_regression
+    {u : NSVelocityField} (hu : smoothSpaceTimeVelocity u) :
+    smoothSpaceTimeVelocity (timeVelocityDerivativeField u) := by
+  exact timeVelocityDerivativeField_smoothSpaceTimeVelocity_of_smooth hu
+
 theorem residualCurlLinearityDifferentiableAt_of_smooth_laplacian_regression
     {u : NSVelocityField} {t : NSTime} {x : NSSpace}
     (hu : smoothSpaceTimeVelocity u)
