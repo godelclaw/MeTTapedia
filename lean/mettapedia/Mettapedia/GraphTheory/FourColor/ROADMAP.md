@@ -15,13 +15,14 @@ boundary-zero Kirchhoff subspace is spanned by projected Kempe-closure
 generators on a plane embedding with boundary.  This development is the formal
 audit and (attempted) formalization of that step.
 
-Read these three files first — they are the whole live surface:
+Read these four files first — they are the whole live surface:
 
 | File | Contents |
 |---|---|
 | `Goal.lean` | The target (`Theorem49ShellClaim`), its reduction to four geometric oracles plus a fifth non-geometric algebraic cancellation oracle, and proofs that **all four geometric uniform oracles are false** — including the v23.5 residual/current-boundary lane, whose positive wrapper is fixed-embedding equivalent to the refuted collar-layer surface |
 | `Shells.lean` | Bundled hypothesis packages (`ClosedWalkExactShell`, `SuccessorCycleExactShell`, `ClosedWalkCancellationShell`, …) replacing the historical 8–10-hypothesis telescopes |
 | `Frontier.lean` | The maximal positive and negative results, stated over the bundles as thin wrappers, including detector-based cancellation sufficiency |
+| `CAP5RouteVerdict.lean` | The current CAP5/F2 route verdict: either the executable report returns a concrete primitive portal/cycle checker gap, or the closed-frontier route is exactly the absence of the concrete target/off-target F2 evaders; in that same branch the CAP5/Jordan geometric separator repair is blocked by the cyclic-cut obstruction |
 
 ## Current status (one paragraph)
 
@@ -218,6 +219,18 @@ yields theorem-4.9 synthesis and proves that the emitted CAP5 coordinates
 control the whole selected-boundary-zero subspace.  The remaining problem is
 therefore not this direction of the oracle; it is deriving the no-evader
 verdict from uniform exact-shell data, or producing the genuine evader.
+
+Update 2026-06-29: the CAP5/F2 continuation is now packaged as a route verdict
+in `CAP5RouteVerdict.lean`.  The theorem `cap5F2Route_irreducibleBarrier`
+assembles the oracle, the target/off-target F2 split, and the geometric
+CAP5/Jordan obstruction into one top-level statement.  Under the standard
+cyclic-five finite F2 route data, Lean returns either a primitive
+portal/cycle checker gap, or a closed-frontier equivalence:
+no target/off-target F2 evaders iff theorem-4.9 synthesis plus full
+selected-boundary-zero classifier control.  In the same closed-frontier
+branch, the exceptional CAP5/Jordan cyclic-separator repair is impossible.
+This is an irreducible-barrier verdict on this route, not a proof of 4CT and
+not a positive-canary 4-colorability sufficient condition.
 
 The next target-level corollary turns finite dimension into an explicit fork
 test for exact CAP5 data.  In Lean,
