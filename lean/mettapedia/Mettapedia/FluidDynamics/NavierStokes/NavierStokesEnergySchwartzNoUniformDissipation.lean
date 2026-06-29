@@ -257,6 +257,99 @@ theorem exists_past_nonzero_with_small_positive_dissipation_ratio
     exact (div_lt_iff₀ hEpos).2 hlt
   exact ⟨t, htT, hne, hDpos, hEpos, hratio_pos, hratio_lt⟩
 
+/-- Spatial Rayleigh-floor form of the past obstruction: before any nonzero
+endpoint of a positive-viscosity solution, no positive lower bound of
+coordinate enstrophy by normalized kinetic energy can hold on the whole past
+ray.  This is the Poincare/eigenprofile obstruction stated at the spatial
+profile level rather than through the viscosity-scaled dissipation rate. -/
+theorem not_forall_past_coordinateEnstrophyAt_ge_mul_normalizedKineticEnergy
+    (hν : 0 < ν) {lam T : NSTime} (hlam : 0 < lam)
+    (hneT : ∃ xT : NSSpace, S.velocity T xT ≠ 0) :
+    ¬ ∀ t : NSTime, t ≤ T →
+      lam * normalizedKineticEnergy S.velocity t ≤
+        coordinateEnstrophyAt S.velocity t := by
+  intro hfloor
+  have hscaled :
+      ∀ t : NSTime, t ≤ T →
+        (ν * lam) * normalizedKineticEnergy S.velocity t ≤
+          coordinateEnergyDissipationRate S.velocity ν t := by
+    intro t ht
+    have hmul :
+        ν * (lam * normalizedKineticEnergy S.velocity t) ≤
+          ν * coordinateEnstrophyAt S.velocity t :=
+      mul_le_mul_of_nonneg_left (hfloor t ht) hν.le
+    simpa [coordinateEnergyDissipationRate, mul_assoc, mul_left_comm, mul_comm] using hmul
+  exact
+    (S.not_forall_past_coordinateEnergyDissipationRate_ge_mul_normalizedKineticEnergy
+      hν.le (mul_pos hν hlam) hneT) hscaled
+
+/-- Positive spatial Rayleigh-quotient form: before any nonzero endpoint of a
+positive-viscosity solution, every positive spatial Poincare coefficient is
+beaten by an earlier nonzero slice whose coordinate enstrophy divided by
+normalized kinetic energy is positive but smaller than that coefficient. -/
+theorem exists_past_nonzero_with_small_positive_coordinateEnstrophy_ratio
+    (hν : 0 < ν) {lam T : NSTime}
+    (hneT : ∃ xT : NSSpace, S.velocity T xT ≠ 0) (hlam : 0 < lam) :
+    ∃ t : NSTime,
+      t ≤ T ∧
+        (∃ x : NSSpace, S.velocity t x ≠ 0) ∧
+          0 < coordinateEnstrophyAt S.velocity t ∧
+            0 < normalizedKineticEnergy S.velocity t ∧
+              0 <
+                coordinateEnstrophyAt S.velocity t /
+                  normalizedKineticEnergy S.velocity t ∧
+                coordinateEnstrophyAt S.velocity t /
+                    normalizedKineticEnergy S.velocity t < lam := by
+  rcases S.exists_past_nonzero_with_small_positive_dissipation_ratio
+      hν hneT (mul_pos hν hlam) with
+    ⟨t, htT, hne, hDpos, hEpos, _hDratio_pos, hDratio_lt⟩
+  have hEnst_pos :
+      0 < coordinateEnstrophyAt S.velocity t := by
+    have hmul :
+        0 < ν * coordinateEnstrophyAt S.velocity t := by
+      simpa [coordinateEnergyDissipationRate] using hDpos
+    by_contra hnot
+    have hnonpos : coordinateEnstrophyAt S.velocity t ≤ 0 := le_of_not_gt hnot
+    have hle : ν * coordinateEnstrophyAt S.velocity t ≤ 0 :=
+      mul_nonpos_of_nonneg_of_nonpos hν.le hnonpos
+    exact not_le_of_gt hmul hle
+  have hratio_pos :
+      0 <
+        coordinateEnstrophyAt S.velocity t /
+          normalizedKineticEnergy S.velocity t :=
+    div_pos hEnst_pos hEpos
+  have hscaled_ratio :
+      ν *
+          (coordinateEnstrophyAt S.velocity t /
+            normalizedKineticEnergy S.velocity t) =
+        coordinateEnergyDissipationRate S.velocity ν t /
+          normalizedKineticEnergy S.velocity t := by
+    rw [coordinateEnergyDissipationRate]
+    ring
+  have hratio_lt :
+      coordinateEnstrophyAt S.velocity t /
+          normalizedKineticEnergy S.velocity t < lam := by
+    have hmul_lt :
+        ν *
+            (coordinateEnstrophyAt S.velocity t /
+              normalizedKineticEnergy S.velocity t) <
+          ν * lam := by
+      simpa [hscaled_ratio] using hDratio_lt
+    by_contra hnot
+    have hle_ratio :
+        lam ≤
+          coordinateEnstrophyAt S.velocity t /
+            normalizedKineticEnergy S.velocity t :=
+      le_of_not_gt hnot
+    have hle_mul :
+        ν * lam ≤
+          ν *
+            (coordinateEnstrophyAt S.velocity t /
+              normalizedKineticEnergy S.velocity t) :=
+      mul_le_mul_of_nonneg_left hle_ratio hν.le
+    exact not_le_of_gt hmul_lt hle_mul
+  exact ⟨t, htT, hne, hEnst_pos, hEpos, hratio_pos, hratio_lt⟩
+
 end SchwartzConcreteNavierStokesSolution
 
 namespace NonzeroSchwartzConcreteNavierStokesSolution
@@ -418,6 +511,35 @@ theorem stokesFlow_smallPastDissipationRatio_packet
     ⟨S.nonzeroStokesFlowKernel hconv hpressure,
       S.exists_nonzero_endpoint_with_arbitrarily_small_past_dissipation_ratio hν⟩
 
+/-- Exact Stokes-flow specialization of the spatial Rayleigh-quotient
+collapse: a positive-viscosity nonzero Stokes candidate has arbitrarily small
+positive past coordinate-enstrophy quotients. -/
+theorem stokesFlow_smallPastCoordinateEnstrophyRatio_packet
+    (hν : 0 < ν)
+    (hconv : ∀ t x, spatialConvection S.velocity t x = 0)
+    (hpressure : ∀ t x, spatialPressureGradient S.pressure t x = 0) :
+    NonzeroSchwartzStokesFlowKernel ν S.velocity S.pressure ∧
+      ∃ T xT,
+        S.velocity T xT ≠ 0 ∧
+          ∀ lam : NSTime, 0 < lam →
+            ∃ t : NSTime,
+              t ≤ T ∧
+                (∃ x : NSSpace, S.velocity t x ≠ 0) ∧
+                  0 < coordinateEnstrophyAt S.velocity t ∧
+                    0 < normalizedKineticEnergy S.velocity t ∧
+                      0 <
+                        coordinateEnstrophyAt S.velocity t /
+                          normalizedKineticEnergy S.velocity t ∧
+                        coordinateEnstrophyAt S.velocity t /
+                            normalizedKineticEnergy S.velocity t < lam := by
+  rcases S.nonzero_velocity with ⟨T, xT, hneT⟩
+  refine ⟨S.nonzeroStokesFlowKernel hconv hpressure, T, xT, hneT, ?_⟩
+  intro lam hlam
+  exact
+    S.toSchwartzConcreteNavierStokesSolution
+      |>.exists_past_nonzero_with_small_positive_coordinateEnstrophy_ratio
+        hν ⟨xT, hneT⟩ hlam
+
 end NonzeroSchwartzConcreteNavierStokesSolution
 
 /-- Global no-go form for uniform past dissipation gaps in the nonzero
@@ -466,6 +588,41 @@ theorem not_exists_nonzeroSchwartzConcreteSolution_past_dissipation_ratio_floor
         hν hneT hlam with
     ⟨t, htT, _hne, _hDpos, _hEpos, _hratio_pos, hratio_lt⟩
   exact not_le_of_gt hratio_lt (hfloor t htT)
+
+/-- Global no-go form for positive lower bounds on the whole-past spatial
+coordinate-enstrophy Rayleigh quotient in the nonzero slice-Schwartz
+interface. -/
+theorem not_exists_nonzeroSchwartzConcreteSolution_past_coordinateEnstrophy_ratio_floor
+    {ν lam : ℝ} (hν : 0 < ν) (hlam : 0 < lam) :
+    ¬ ∃ S : NonzeroSchwartzConcreteNavierStokesSolution ν,
+      ∃ T : NSTime,
+        (∃ xT : NSSpace, S.velocity T xT ≠ 0) ∧
+          ∀ t : NSTime, t ≤ T →
+            lam ≤
+              coordinateEnstrophyAt S.velocity t /
+                normalizedKineticEnergy S.velocity t := by
+  rintro ⟨S, T, hneT, hfloor⟩
+  rcases S.toSchwartzConcreteNavierStokesSolution
+      |>.exists_past_nonzero_with_small_positive_coordinateEnstrophy_ratio
+        hν hneT hlam with
+    ⟨t, htT, _hne, _hEnstpos, _hEpos, _hratio_pos, hratio_lt⟩
+  exact not_le_of_gt hratio_lt (hfloor t htT)
+
+/-- Global no-go form for positive spatial Poincare floors on a whole past ray
+before a nonzero endpoint. -/
+theorem not_exists_nonzeroSchwartzConcreteSolution_past_coordinateEnstrophy_floor
+    {ν lam : ℝ} (hν : 0 < ν) (hlam : 0 < lam) :
+    ¬ ∃ S : NonzeroSchwartzConcreteNavierStokesSolution ν,
+      ∃ T : NSTime,
+        (∃ xT : NSSpace, S.velocity T xT ≠ 0) ∧
+          ∀ t : NSTime, t ≤ T →
+            lam * normalizedKineticEnergy S.velocity t ≤
+              coordinateEnstrophyAt S.velocity t := by
+  rintro ⟨S, T, hneT, hfloor⟩
+  exact
+    (S.toSchwartzConcreteNavierStokesSolution
+      |>.not_forall_past_coordinateEnstrophyAt_ge_mul_normalizedKineticEnergy
+        hν hlam hneT) hfloor
 
 end NavierStokes
 end FluidDynamics
