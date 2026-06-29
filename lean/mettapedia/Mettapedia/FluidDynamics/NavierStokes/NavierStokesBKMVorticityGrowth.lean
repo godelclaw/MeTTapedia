@@ -565,6 +565,68 @@ theorem vorticityDiffusionIntegrationByPartsAt_of_schwartzVorticitySlice
     vorticityDiffusionDissipationDensity, laplacianEnergyPairing,
     coordinateEnstrophyAt, coordinateEnstrophyDensity] using hIBP
 
+/-- Scalar Schwartz representative of a coordinate directional derivative of
+a vector-valued Schwartz velocity slice. -/
+def schwartzDirectionalComponent
+    (v : 𝓢(NSSpace, NSSpace)) (coord comp : Fin 3) : 𝓢(NSSpace, ℝ) :=
+  SchwartzMap.bilinLeftCLM
+    (ContinuousLinearMap.apply ℝ ℝ)
+    (g := fun _ : NSSpace => (EuclideanSpace.proj comp : NSSpace →L[ℝ] ℝ))
+    (by fun_prop)
+    (∂_{EuclideanSpace.single coord (1 : ℝ)} v)
+
+/-- The scalar Schwartz directional component agrees with the concrete
+coordinate derivative of the frozen velocity slice. -/
+theorem schwartzDirectionalComponent_apply
+    (v : 𝓢(NSSpace, NSSpace)) (coord comp : Fin 3) (x : NSSpace) :
+    schwartzDirectionalComponent v coord comp x =
+      spatialDerivativeComponent (fun _ y => v y) 0 x coord comp := by
+  simp [schwartzDirectionalComponent, spatialDerivativeComponent, spatialFDeriv,
+    SchwartzMap.lineDerivOp_apply_eq_fderiv, SchwartzMap.bilinLeftCLM_apply,
+    ContinuousLinearMap.apply_apply]
+
+/-- Inject a scalar Schwartz component into one Euclidean coordinate axis. -/
+def schwartzBasisComponent
+    (comp : Fin 3) (φ : 𝓢(NSSpace, ℝ)) : 𝓢(NSSpace, NSSpace) :=
+  SchwartzMap.bilinLeftCLM
+    (ContinuousLinearMap.lsmul ℝ ℝ : ℝ →L[ℝ] NSSpace →L[ℝ] NSSpace)
+    (g := fun _ : NSSpace => EuclideanSpace.single comp (1 : ℝ))
+    (by fun_prop)
+    φ
+
+/-- Pointwise value of a scalar Schwartz component injected into one Euclidean
+coordinate axis. -/
+theorem schwartzBasisComponent_apply
+    (comp : Fin 3) (φ : 𝓢(NSSpace, ℝ)) (x : NSSpace) :
+    schwartzBasisComponent comp φ x = EuclideanSpace.single comp (φ x) := by
+  ext i
+  simp [schwartzBasisComponent, SchwartzMap.bilinLeftCLM_apply]
+
+/-- Curl of a vector-valued Schwartz velocity slice as a vector-valued
+Schwartz map. -/
+def schwartzSpatialVorticitySlice (v : 𝓢(NSSpace, NSSpace)) :
+    𝓢(NSSpace, NSSpace) :=
+  schwartzBasisComponent nsCoord0
+      (schwartzDirectionalComponent v nsCoord1 nsCoord2 -
+        schwartzDirectionalComponent v nsCoord2 nsCoord1) +
+    schwartzBasisComponent nsCoord1
+      (schwartzDirectionalComponent v nsCoord2 nsCoord0 -
+        schwartzDirectionalComponent v nsCoord0 nsCoord2) +
+      schwartzBasisComponent nsCoord2
+        (schwartzDirectionalComponent v nsCoord0 nsCoord1 -
+          schwartzDirectionalComponent v nsCoord1 nsCoord0)
+
+/-- The Schwartz curl slice agrees pointwise with the concrete spatial
+vorticity of the frozen velocity slice. -/
+theorem schwartzSpatialVorticitySlice_apply
+    (v : 𝓢(NSSpace, NSSpace)) (x : NSSpace) :
+    schwartzSpatialVorticitySlice v x =
+      spatialVorticity (fun _ y => v y) 0 x := by
+  ext i
+  fin_cases i <;>
+    simp [schwartzSpatialVorticitySlice, schwartzBasisComponent_apply,
+      schwartzDirectionalComponent_apply, spatialVorticity]
+
 /-- Witness-level hypothesis that every certified vorticity slice has a
 Schwartz representative.  This is the exact decay/regularity input needed to
 instantiate the checked vorticity diffusion integration-by-parts theorem on a
@@ -583,6 +645,24 @@ def finiteTimeWitnessVelocitySchwartzSlices
     (W : ExplicitFiniteTimeRegularityWitness ν u₀ T) : Prop :=
   ∀ t, 0 ≤ t → t ≤ T →
     ∃ v : 𝓢(NSSpace, NSSpace), ∀ x, W.velocity t x = v x
+
+/-- A Schwartz velocity slice supplies a Schwartz vorticity slice by taking
+the checked Schwartz curl of the frozen velocity representative. -/
+theorem finiteTimeWitnessVorticitySchwartzSlices_of_velocitySchwartzSlices
+    {ν : ℝ} {u₀ : NSInitialVelocity} {T : ℝ}
+    (W : ExplicitFiniteTimeRegularityWitness ν u₀ T)
+    (hVelocitySlices : finiteTimeWitnessVelocitySchwartzSlices W) :
+    finiteTimeWitnessVorticitySchwartzSlices W := by
+  intro t ht0 htT
+  rcases hVelocitySlices t ht0 htT with ⟨v, hv⟩
+  refine ⟨schwartzSpatialVorticitySlice v, ?_⟩
+  intro x
+  calc
+    spatialVorticity W.velocity t x = spatialVorticity (fun _ y => v y) 0 x := by
+      exact spatialVorticity_congr_at (u := W.velocity) (v := fun _ y => v y)
+        (t := t) (x := x) hv
+    _ = schwartzSpatialVorticitySlice v x := by
+      rw [schwartzSpatialVorticitySlice_apply]
 
 /-- If a finite-time witness has Schwartz vorticity slices, the checked
 vorticity diffusion integration-by-parts identity applies on every certified
@@ -613,6 +693,22 @@ theorem vorticityTransportCancellationAt_of_finiteTimeWitnessVelocityVorticitySc
     vorticityTransportCancellationAt_of_schwartzVelocitySlice_schwartzVorticitySlice_spatialDivergence_zero
       W.velocity t v ω hv hω
       (fun x => W.incompressible_on t x ht0 htT)
+
+/-- If a finite-time witness has Schwartz velocity slices, then the vorticity
+Schwartz slice needed for transport cancellation is obtained by taking the
+Schwartz curl of the velocity slice. -/
+theorem vorticityTransportCancellationAt_of_finiteTimeWitnessVelocitySchwartzSlices
+    {ν : ℝ} {u₀ : NSInitialVelocity} {T : ℝ}
+    (W : ExplicitFiniteTimeRegularityWitness ν u₀ T)
+    (hVelocitySlices : finiteTimeWitnessVelocitySchwartzSlices W)
+    {t : NSTime} (ht0 : 0 ≤ t) (htT : t ≤ T) :
+    vorticityTransportCancellationAt W.velocity t := by
+  exact
+    vorticityTransportCancellationAt_of_finiteTimeWitnessVelocityVorticitySchwartzSlices
+      W hVelocitySlices
+      (finiteTimeWitnessVorticitySchwartzSlices_of_velocitySchwartzSlices
+        W hVelocitySlices)
+      ht0 htT
 
 /-- In the vorticity enstrophy balance, nonnegative viscosity can only decrease
 the derivative relative to the stretching-power integral. -/
@@ -766,6 +862,42 @@ theorem vorticityEnstrophyStretchingControlledAt_of_rawBalance_finiteTimeWitness
         W hVelocitySlices hVorticitySlices ht0 htT)
       (vorticityDiffusionIntegrationByPartsAt_of_finiteTimeWitnessVorticitySchwartzSlices
         W hVorticitySlices ht0 htT)
+
+/-- Witness-level enstrophy-balance assembly with transport cancellation and
+diffusion integration by parts instantiated from Schwartz velocity slices
+alone.  The vorticity Schwartz representative is the Schwartz curl of the
+velocity representative. -/
+theorem vorticityEnstrophyBalanceAt_of_rawBalance_finiteTimeWitnessVelocitySchwartzSlices
+    {ν : ℝ} {u₀ : NSInitialVelocity} {T : ℝ}
+    (W : ExplicitFiniteTimeRegularityWitness ν u₀ T)
+    (hVelocitySlices : finiteTimeWitnessVelocitySchwartzSlices W)
+    {t : NSTime}
+    (hRaw : vorticityEnstrophyRawBalanceAt ν W.velocity t)
+    (ht0 : 0 ≤ t) (htT : t ≤ T) :
+    vorticityEnstrophyBalanceAt ν W.velocity t := by
+  exact
+    vorticityEnstrophyBalanceAt_of_rawBalance_finiteTimeWitnessVelocityVorticitySchwartzSlices
+      W hVelocitySlices
+      (finiteTimeWitnessVorticitySchwartzSlices_of_velocitySchwartzSlices
+        W hVelocitySlices)
+      hRaw ht0 htT
+
+/-- Witness-level a-priori enstrophy estimate with both integral identities
+instantiated from Schwartz velocity slices alone. -/
+theorem vorticityEnstrophyStretchingControlledAt_of_rawBalance_finiteTimeWitnessVelocitySchwartzSlices
+    {ν : ℝ} (hν : 0 ≤ ν) {u₀ : NSInitialVelocity} {T : ℝ}
+    (W : ExplicitFiniteTimeRegularityWitness ν u₀ T)
+    (hVelocitySlices : finiteTimeWitnessVelocitySchwartzSlices W)
+    {t : NSTime}
+    (hRaw : vorticityEnstrophyRawBalanceAt ν W.velocity t)
+    (ht0 : 0 ≤ t) (htT : t ≤ T) :
+    vorticityEnstrophyStretchingControlledAt ν W.velocity t := by
+  exact
+    vorticityEnstrophyStretchingControlledAt_of_rawBalance_finiteTimeWitnessVelocityVorticitySchwartzSlices
+      hν W hVelocitySlices
+      (finiteTimeWitnessVorticitySchwartzSlices_of_velocitySchwartzSlices
+        W hVelocitySlices)
+      hRaw ht0 htT
 
 /-- Pairing the standard vorticity equation with `omega` gives the scalar
 time/transport/diffusion/stretching balance at each point. -/
@@ -1126,6 +1258,28 @@ theorem BKMVorticityFiniteTimeWitnessVelocityVorticitySchwartzAprioriClosed_prov
   exact
     vorticityEnstrophyStretchingControlledAt_of_rawBalance_finiteTimeWitnessVelocityVorticitySchwartzSlices
       hν W hVelocitySlices hVorticitySlices hRaw ht0 htT
+
+/-- Checked witness-level a-priori enstrophy package with both transport
+cancellation and diffusion integration by parts instantiated from Schwartz
+velocity slices alone. -/
+def BKMVorticityFiniteTimeWitnessVelocitySchwartzAprioriClosed : Prop :=
+  ∀ (ν : ℝ) (u₀ : NSInitialVelocity) (T : ℝ)
+      (W : ExplicitFiniteTimeRegularityWitness ν u₀ T) (t : NSTime),
+    0 ≤ ν →
+      finiteTimeWitnessVelocitySchwartzSlices W →
+        vorticityEnstrophyRawBalanceAt ν W.velocity t →
+          0 ≤ t →
+            t ≤ T →
+              vorticityEnstrophyStretchingControlledAt ν W.velocity t
+
+/-- Proof of the velocity-only Schwartz-slice finite-time witness a-priori
+package. -/
+theorem BKMVorticityFiniteTimeWitnessVelocitySchwartzAprioriClosed_proved :
+    BKMVorticityFiniteTimeWitnessVelocitySchwartzAprioriClosed := by
+  intro ν u₀ T W t hν hVelocitySlices hRaw ht0 htT
+  exact
+    vorticityEnstrophyStretchingControlledAt_of_rawBalance_finiteTimeWitnessVelocitySchwartzSlices
+      hν W hVelocitySlices hRaw ht0 htT
 
 /-- Checked assembly of the vorticity enstrophy balance from the raw paired
 equation plus the two integral identities. -/

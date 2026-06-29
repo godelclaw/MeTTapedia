@@ -304,6 +304,35 @@ theorem vorticityEnstrophyGradientControlledAt_of_finiteTimeWitness_affinePointw
     vorticityEnstrophyGradientControlledAt_of_balance_logSobolev_affinePointwiseInequality
       hν hBal hC0 hC1 hΩ hH hAffine ht0 htT hInt.2.2 hEnstrophyInt
 
+/-- Finite-time witness form of the affine-log BKM enstrophy estimate with
+the vorticity Schwartz-slice input derived from the velocity Schwartz slice by
+taking the checked Schwartz curl. -/
+theorem vorticityEnstrophyGradientControlledAt_of_finiteTimeWitness_velocitySchwartz_affinePointwiseInequality
+    {ν T C0 C1 : ℝ} {u₀ : NSInitialVelocity}
+    (W : ExplicitFiniteTimeRegularityWitness ν u₀ T)
+    {Ω H : NSTime → ℝ} {t : NSTime}
+    (hν : 0 ≤ ν)
+    (hEq : concreteVorticityEquationOn ν W.velocity T)
+    (hVelocitySlices : finiteTimeWitnessVelocitySchwartzSlices W)
+    (hInt : vorticityRawBalanceIntegralComponentsIntegrableAt W.velocity t)
+    (hTime : vorticityEnstrophyTimePairingDerivativeAt W.velocity t)
+    (hC0 : 0 ≤ C0) (hC1 : 0 ≤ C1)
+    (hΩ : ∀ s, 0 ≤ s → s ≤ T → 0 ≤ Ω s)
+    (hH : ∀ s, 0 ≤ s → s ≤ T → 0 ≤ H s)
+    (hAffine : BKMLogSobolevAffinePointwiseInequalityOn
+      W.velocity T C0 C1 Ω H)
+    (ht0 : 0 ≤ t) (htT : t ≤ T)
+    (hEnstrophyInt :
+      Integrable (fun x => vorticityEnstrophyDensity W.velocity t x)) :
+    vorticityEnstrophyGradientControlledAt ν W.velocity t
+      (C0 + C1 * bkmLogSobolevLogFactor Ω H t) := by
+  exact
+    vorticityEnstrophyGradientControlledAt_of_finiteTimeWitness_affinePointwiseInequality
+      W hν hEq hVelocitySlices
+      (finiteTimeWitnessVorticitySchwartzSlices_of_velocitySchwartzSlices
+        W hVelocitySlices)
+      hInt hTime hC0 hC1 hΩ hH hAffine ht0 htT hEnstrophyInt
+
 /-- Log-Sobolev gradient control and a vorticity envelope control the
 material-minus-diffusion remainder under the standard vorticity equation. -/
 theorem norm_vorticityMaterialDiffusionRemainder_le_of_logSobolev_control
@@ -451,6 +480,41 @@ theorem BKMVorticityFiniteTimeWitnessAffineLogGrowthClosed_proved :
     vorticityEnstrophyGradientControlledAt_of_finiteTimeWitness_affinePointwiseInequality
       W hν hEq hVelocitySlices hVorticitySlices hInt hTime hC0 hC1 hΩ hH
       hAffine ht0 htT hEnstrophyInt
+
+/-- Checked finite-time witness affine-log enstrophy growth package with the
+vorticity Schwartz-slice input derived from the velocity Schwartz slice. -/
+def BKMVorticityFiniteTimeWitnessVelocitySchwartzAffineLogGrowthClosed : Prop :=
+  ∀ (ν T C0 C1 : ℝ) (u₀ : NSInitialVelocity)
+      (W : ExplicitFiniteTimeRegularityWitness ν u₀ T)
+      (Ω H : NSTime → ℝ) (t : NSTime),
+    0 ≤ ν →
+      concreteVorticityEquationOn ν W.velocity T →
+        finiteTimeWitnessVelocitySchwartzSlices W →
+          vorticityRawBalanceIntegralComponentsIntegrableAt W.velocity t →
+            vorticityEnstrophyTimePairingDerivativeAt W.velocity t →
+              0 ≤ C0 →
+                0 ≤ C1 →
+                  (∀ s, 0 ≤ s → s ≤ T → 0 ≤ Ω s) →
+                    (∀ s, 0 ≤ s → s ≤ T → 0 ≤ H s) →
+                      BKMLogSobolevAffinePointwiseInequalityOn
+                        W.velocity T C0 C1 Ω H →
+                        0 ≤ t →
+                          t ≤ T →
+                            Integrable
+                              (fun x => vorticityEnstrophyDensity W.velocity t x) →
+                              vorticityEnstrophyGradientControlledAt ν W.velocity t
+                                (C0 + C1 * bkmLogSobolevLogFactor Ω H t)
+
+/-- Proof of the velocity-only Schwartz-slice finite-time witness affine-log
+enstrophy growth package. -/
+theorem BKMVorticityFiniteTimeWitnessVelocitySchwartzAffineLogGrowthClosed_proved :
+    BKMVorticityFiniteTimeWitnessVelocitySchwartzAffineLogGrowthClosed := by
+  intro ν T C0 C1 u₀ W Ω H t hν hEq hVelocitySlices hInt hTime hC0 hC1
+    hΩ hH hAffine ht0 htT hEnstrophyInt
+  exact
+    vorticityEnstrophyGradientControlledAt_of_finiteTimeWitness_velocitySchwartz_affinePointwiseInequality
+      W hν hEq hVelocitySlices hInt hTime hC0 hC1 hΩ hH hAffine ht0 htT
+      hEnstrophyInt
 
 /-- The downstream BKM growth estimates are closed once the analytic
 log-Sobolev/Biot-Savart gradient control is supplied as an explicit
