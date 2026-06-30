@@ -187,6 +187,98 @@ def wordMode : List TauOrient → Option FrontierMode
   | [] => none
   | orient :: rest => some (rest.foldl step (initialMode orient))
 
+def representativeWords : FrontierMode → List (List TauOrient)
+  | FrontierMode.mode00 => [[TauOrient.mirror, TauOrient.tau, TauOrient.mirror]]
+  | FrontierMode.mode01 =>
+      [ [TauOrient.mirror, TauOrient.mirror, TauOrient.tau]
+      , [TauOrient.mirror, TauOrient.tau, TauOrient.tau]
+      ]
+  | FrontierMode.mode02 =>
+      [ [TauOrient.mirror, TauOrient.mirror, TauOrient.mirror, TauOrient.tau]
+      , [TauOrient.mirror, TauOrient.mirror, TauOrient.tau, TauOrient.tau]
+      , [TauOrient.mirror, TauOrient.tau, TauOrient.tau, TauOrient.tau]
+      ]
+  | FrontierMode.mode03 => [[TauOrient.tau, TauOrient.mirror, TauOrient.tau]]
+  | FrontierMode.mode04 => [[TauOrient.mirror, TauOrient.mirror]]
+  | FrontierMode.mode05 =>
+      [ [TauOrient.mirror, TauOrient.mirror, TauOrient.mirror]
+      , [TauOrient.mirror, TauOrient.tau, TauOrient.mirror, TauOrient.tau, TauOrient.mirror]
+      , [TauOrient.mirror, TauOrient.tau, TauOrient.tau, TauOrient.mirror, TauOrient.mirror]
+      , [TauOrient.mirror, TauOrient.tau, TauOrient.tau, TauOrient.tau, TauOrient.mirror]
+      ]
+  | FrontierMode.mode06 =>
+      [ [TauOrient.tau, TauOrient.mirror, TauOrient.mirror]
+      , [TauOrient.tau, TauOrient.tau, TauOrient.mirror]
+      ]
+  | FrontierMode.mode07 => [[TauOrient.tau]]
+  | FrontierMode.mode08 =>
+      [[TauOrient.mirror, TauOrient.tau, TauOrient.mirror, TauOrient.tau]]
+  | FrontierMode.mode09 =>
+      [ [TauOrient.tau, TauOrient.mirror, TauOrient.tau, TauOrient.mirror, TauOrient.tau]
+      , [TauOrient.tau, TauOrient.tau, TauOrient.tau]
+      , [TauOrient.tau, TauOrient.tau, TauOrient.tau, TauOrient.mirror, TauOrient.tau]
+      , [TauOrient.tau, TauOrient.tau, TauOrient.tau, TauOrient.tau, TauOrient.tau]
+      ]
+  | FrontierMode.mode10 => [[TauOrient.tau, TauOrient.tau]]
+  | FrontierMode.mode11 => [[TauOrient.mirror, TauOrient.tau]]
+  | FrontierMode.mode12 =>
+      [ [TauOrient.tau, TauOrient.mirror, TauOrient.mirror, TauOrient.tau]
+      , [TauOrient.tau, TauOrient.mirror, TauOrient.tau, TauOrient.tau]
+      , [TauOrient.tau, TauOrient.tau, TauOrient.mirror, TauOrient.tau]
+      , [TauOrient.tau, TauOrient.tau, TauOrient.tau, TauOrient.tau]
+      ]
+  | FrontierMode.mode13 =>
+      [ [TauOrient.tau, TauOrient.mirror, TauOrient.tau, TauOrient.mirror, TauOrient.mirror]
+      , [TauOrient.tau, TauOrient.tau, TauOrient.tau, TauOrient.mirror, TauOrient.mirror]
+      , [TauOrient.tau, TauOrient.tau, TauOrient.tau, TauOrient.tau, TauOrient.mirror]
+      ]
+  | FrontierMode.mode14 =>
+      [ [TauOrient.tau, TauOrient.mirror, TauOrient.mirror, TauOrient.mirror]
+      , [TauOrient.tau, TauOrient.tau, TauOrient.mirror, TauOrient.mirror]
+      , [TauOrient.tau, TauOrient.tau, TauOrient.tau, TauOrient.mirror]
+      ]
+  | FrontierMode.mode15 =>
+      [ [TauOrient.mirror, TauOrient.tau, TauOrient.mirror, TauOrient.tau, TauOrient.tau]
+      , [TauOrient.mirror, TauOrient.tau, TauOrient.tau, TauOrient.mirror, TauOrient.tau]
+      , [TauOrient.mirror, TauOrient.tau, TauOrient.tau, TauOrient.tau, TauOrient.tau]
+      ]
+  | FrontierMode.mode16 => [[TauOrient.mirror]]
+  | FrontierMode.mode17 =>
+      [ [TauOrient.mirror, TauOrient.mirror, TauOrient.mirror, TauOrient.mirror]
+      , [TauOrient.mirror, TauOrient.mirror, TauOrient.tau, TauOrient.mirror]
+      , [TauOrient.mirror, TauOrient.tau, TauOrient.mirror, TauOrient.mirror]
+      , [TauOrient.mirror, TauOrient.tau, TauOrient.tau, TauOrient.mirror]
+      ]
+  | FrontierMode.mode18 => [[TauOrient.tau, TauOrient.mirror]]
+  | FrontierMode.mode19 =>
+      [[TauOrient.tau, TauOrient.mirror, TauOrient.tau, TauOrient.mirror]]
+
+def modeWitnessWord : FrontierMode → List TauOrient
+  | mode => (representativeWords mode).headD []
+
+def representativeWordsSoundCheck : Bool :=
+  allModes.all (fun mode =>
+    (representativeWords mode).all (fun word => wordMode word == some mode))
+
+def representativeWordsNonemptyCheck : Bool :=
+  allModes.all (fun mode =>
+    (representativeWords mode).any (fun word => wordMode word == some mode))
+
+def representativeCoverageCheck : Bool :=
+  representativeWordsSoundCheck && representativeWordsNonemptyCheck
+
+theorem representativeWordsSoundCheck_ok :
+    representativeWordsSoundCheck = true := by
+  rfl
+
+theorem representativeCoverageCheck_ok :
+    representativeCoverageCheck = true := by
+  rfl
+
+theorem modeWitnessWord_sound (mode : FrontierMode) :
+    wordMode (modeWitnessWord mode) = some mode := by
+  cases mode <;> rfl
+
 def modeInTable (mode : FrontierMode) : Bool :=
   allModes.contains mode
 
