@@ -39,6 +39,7 @@ import Mettapedia.FluidDynamics.NavierStokes.WindowedColeHopfHeatScaledSelfCompa
 import Mettapedia.FluidDynamics.NavierStokes.WindowedColeHopfHeatScaledSelfCompatibilityRigidity
 import Mettapedia.FluidDynamics.NavierStokes.WindowedColeHopfHeatScaledBridgeObstructions
 import Mettapedia.FluidDynamics.NavierStokes.WindowedColeHopfHeatScaledSeededClauses
+import Mettapedia.FluidDynamics.NavierStokes.BenH1Break
 
 /-!
 # Navier-Stokes live surface
