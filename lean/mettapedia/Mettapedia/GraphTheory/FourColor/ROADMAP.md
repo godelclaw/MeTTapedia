@@ -58,6 +58,12 @@ first single-`τ` fixed-input fiber `{0,1,2,3,48,49,50,51}`.  The remaining
 work is to generate these small certificates for the representative/profile
 surface and connect them to the frontier-mode induction; the interface itself
 does not yet prove all-chain `LKR_in`.
+The first generated base layer is also present:
+`tauSingleNormalAllFiberCertificateAudit_ok` checks all 81 fixed-input color
+assignments for the single normal `τ` chain in nine chunks, with nonempty
+fiber certificates derived from the Lemma 8.14 path rows and validated through
+the chain certificate checker.  This is the model for the next generated
+representative-word certificates.
 
 Gate-2 frontier-mode status: stop treating longer exploratory sweeps as the
 main work item.  The current lab surface is a finite 20-mode profile DFA with
