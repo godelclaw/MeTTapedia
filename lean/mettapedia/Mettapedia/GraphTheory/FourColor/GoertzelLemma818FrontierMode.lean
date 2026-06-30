@@ -100,6 +100,58 @@ def FrontierMode.profileHash : FrontierMode → String
   | FrontierMode.mode18 => "ee430509815c4119619027004ad84897eedaa41083f0943d0bbe5cf897c3318d"
   | FrontierMode.mode19 => "fee62bcd43e995b828267ffbc5884830c37ba523e054f90e234c3462e21f797d"
 
+def modeOfProfileHash (hash : String) : Option FrontierMode :=
+  if hash == "1ac3ffcefef0e72e6d7ca7523253d47490558ba9755a3581090ca0e3031cc346" then
+    some FrontierMode.mode00
+  else if hash == "1c719d44a7c47a9a05f69ffdae83288968d51a47c878745afd834202333e731b" then
+    some FrontierMode.mode01
+  else if hash == "31e0381fca6cfb76796fbe9ee63f3447b730f8e5a830e3202e1ae637e8eb8da0" then
+    some FrontierMode.mode02
+  else if hash == "45249313d2951ddb58981181ef744871e6447e025a3a24b89dcb4655b8f8aac9" then
+    some FrontierMode.mode03
+  else if hash == "61c5d954e3ad806b77ddfab87032a265a0fc404a55cced477b0e2fda3ebe4490" then
+    some FrontierMode.mode04
+  else if hash == "6c0a99870e3f8ab863f3e90fefc269e0d0703d6ec0dbf434a770553deb986324" then
+    some FrontierMode.mode05
+  else if hash == "9318012cf65c57b5cb19668eb29c73030d6bbfd2eb80a6feead9c9d110f5a220" then
+    some FrontierMode.mode06
+  else if hash == "9b07069297dcf0a45b1ad3c8f672c21d2f1ecfb3889b6a6f01b16423fda14344" then
+    some FrontierMode.mode07
+  else if hash == "9dbefb6157618a01e724f2961504a6e733d54d751aabd27889bdada506804956" then
+    some FrontierMode.mode08
+  else if hash == "9faaa7e69dd874b8116994c980dff5b7dd32a797e27eebf1be40a198901cd3ff" then
+    some FrontierMode.mode09
+  else if hash == "abaad60a99389d64a9b52c6be4496f49a1b8a434e8ca4cb930ee2deae4807abc" then
+    some FrontierMode.mode10
+  else if hash == "c55532ec739ee43c3df016eeb3a1ac488e4e478df70ecb870cc886cfd49d7931" then
+    some FrontierMode.mode11
+  else if hash == "c797b98adfe7aca087274c6ff03bdc56449078fcfdc54bec9dc489cf1fa8ebfc" then
+    some FrontierMode.mode12
+  else if hash == "c9150749204c8e0fd1c5f72fa01ed17a3c9e8ab2d801c61013ab1772569daacd" then
+    some FrontierMode.mode13
+  else if hash == "ce046c768ea8a600c35974f97b38652149e7175eff70cc28f506e09dedacfb31" then
+    some FrontierMode.mode14
+  else if hash == "de80ad0377b63e410b0feceafbebdac0e6bb5b9133f37ebb35e9ea7eeefd91e4" then
+    some FrontierMode.mode15
+  else if hash == "ebccdaf35fc51d2e09dc7a18bca456d4ba509e742adeb9ed6bbbadf41e92f33d" then
+    some FrontierMode.mode16
+  else if hash == "ed111eea780e730925edcf7921b337533c1d4954665d245b6676de3ca57c2a63" then
+    some FrontierMode.mode17
+  else if hash == "ee430509815c4119619027004ad84897eedaa41083f0943d0bbe5cf897c3318d" then
+    some FrontierMode.mode18
+  else if hash == "fee62bcd43e995b828267ffbc5884830c37ba523e054f90e234c3462e21f797d" then
+    some FrontierMode.mode19
+  else
+    none
+
+def profileHashLookupCheck : Bool :=
+  allModes.all (fun mode =>
+    modeOfProfileHash (FrontierMode.profileHash mode) == some mode)
+
+theorem profileHashLookupCheck_ok :
+    profileHashLookupCheck = true := by
+  rfl
+
 def FrontierMode.witnessWords : FrontierMode → List String
   | FrontierMode.mode00 => ["MTM"]
   | FrontierMode.mode01 => ["MMT", "MTT"]

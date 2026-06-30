@@ -65,7 +65,8 @@ singleton modes are connected; the open item is Lean formalization of
 representative coverage and the per-fixed-input consequence to all-chain
 `LKR_in`.  The first Lean table layer is now present in
 `GoertzelLemma818FrontierMode.lean`: `tableClosedCheck_ok` axiom-free checks
-the 20-mode, 40-transition profile-mode DFA table, and
+the 20-mode, 40-transition profile-mode DFA table, `profileHashLookupCheck_ok`
+checks the 20 archived profile hashes against the hash-to-mode lookup, and
 `wordMode_inTable` is the abstract finite-mode induction skeleton for
 nonempty orientation words.  The representative-word layer is also checked:
 `representativeWordsSoundCheck_ok`, `representativeCoverageCheck_ok`, and
@@ -85,7 +86,7 @@ Read these four files first — they are the whole live surface:
 | File | Contents |
 |---|---|
 | `GoertzelLemma814.lean` | Pillar-C finite model for Lemma 8.14: canonical three-cell gadget, finite proper-coloring state space, input-disjoint Kempe switches, indexed `LKR_in` path certificate, mirror check, Lemma 8.15 transparency finite check, the checked Lemma 8.18 pointwise-preparation obstruction, and the build-checked composite-chain model for the Gate-1 salvage audit |
-| `GoertzelLemma818FrontierMode.lean` | Lab-facing finite profile-mode DFA table for the Lemma 8.18/8.19 repair: 20 mode constructors, profile hashes, representative words, two orientations, 40 total transitions, axiom-free `tableClosedCheck_ok`, abstract word-fold theorem `wordMode_inTable`, and checked representative coverage theorems `representativeWordsSoundCheck_ok`, `representativeCoverageCheck_ok`, and `modeWitnessWord_sound`; this is table closure/induction/representative metadata only, not yet the all-chain `LKR_in` consequence |
+| `GoertzelLemma818FrontierMode.lean` | Lab-facing finite profile-mode DFA table for the Lemma 8.18/8.19 repair: 20 mode constructors, profile hashes, representative words, two orientations, 40 total transitions, axiom-free `tableClosedCheck_ok`, `profileHashLookupCheck_ok`, abstract word-fold theorem `wordMode_inTable`, and checked representative coverage theorems `representativeWordsSoundCheck_ok`, `representativeCoverageCheck_ok`, and `modeWitnessWord_sound`; this is table closure/induction/hash/representative metadata only, not yet the all-chain `LKR_in` consequence |
 | `Goal.lean` | The target (`Theorem49ShellClaim`), its reduction to four geometric oracles plus a fifth non-geometric algebraic cancellation oracle, and proofs that **all four geometric uniform oracles are false** — including the v23.5 residual/current-boundary lane, whose positive wrapper is fixed-embedding equivalent to the refuted collar-layer surface |
 | `Shells.lean` | Bundled hypothesis packages (`ClosedWalkExactShell`, `SuccessorCycleExactShell`, `ClosedWalkCancellationShell`, …) replacing the historical 8–10-hypothesis telescopes |
 | `Frontier.lean` | The maximal positive and negative results, stated over the bundles as thin wrappers, including detector-based cancellation sufficiency |
