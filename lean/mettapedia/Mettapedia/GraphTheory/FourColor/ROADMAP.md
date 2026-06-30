@@ -199,6 +199,19 @@ already smoke-checked with explicit components.  Next, generate the same
 row-split component certificates for one representative target, then scale that
 format across the fourteen target audits.
 
+Checkpoint stop status, 2026-07-01: the exploration pass is checkpointed and
+should not be extended by longer word sweeps.  The profile automaton is finite
+and closed at the metadata layer: 20 modes, 40 transitions, 42 representative
+word/hash checks, 30 length-1-through-4 atom-connectivity rows, and two
+length-5 singleton quotient-connectivity rows.  Every mode has archived
+per-fixed-input connectivity evidence; no profile mode is currently unverified
+at that layer.  The remaining work is the semantic certificate layer: the six
+base modes are backed by real single/length-2 chain certificates, while the
+fourteen non-base modes still need compact per-fixed-input chain/component
+certificates or an equivalent finite transition certificate.  Once those target
+audits exist, `GoertzelLemma818SemanticBridge.lean` provides the finite
+induction hook to lift them to all nonempty `τ`/mirror-`τ` chains.
+
 The older CAP5/F2, GP(12,2), and six-cut files are exploratory negative audits
 of a divergent additive F2 route.  They remain useful for provenance and
 infrastructure, but they are not Ben's actual route and should not be worked

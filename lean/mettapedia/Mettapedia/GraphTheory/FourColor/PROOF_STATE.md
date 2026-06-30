@@ -1,6 +1,6 @@
 # FourColor Proof State
 
-Last updated: 2026-06-30 on `fourcolor/cont-20260626`.
+Last updated: 2026-07-01 on `fourcolor/cont-20260626`.
 
 This file tracks the active route forks.  The Four Color Theorem is not
 claimed here.
@@ -281,6 +281,23 @@ style: seven explicit component-switch row theorems plus a parent-depth theorem
 cover the same non-root moves as the existing `tauSingleNormalFiber0Certificate`.
 This is the intended small-row proof shape for the fourteen remaining
 representative targets; those target certificates are still open.
+
+Checkpoint stop status, 2026-07-01: the exploratory Gate-2 connectivity sweeps
+are stopped.  The finite mode set is not the open question anymore: Lean records
+a 20-mode profile DFA, 40 closed transitions, 42 representative word/hash
+checks, 30 direct length-1-through-4 atom-connectivity rows, and the two
+length-5 singleton quotient-connectivity rows.  Every one of the 20 modes has
+archived per-fixed-input connectivity evidence at that metadata layer, and no
+mode is presently flagged as lacking such evidence.  The closure that is still
+unproved is semantic: only six modes are currently backed by real single or
+length-2 chain-level parent/path certificates
+(`mode07/mode16/mode10/mode18/mode11/mode04`).  The other fourteen modes
+(`mode00/mode01/mode02/mode03/mode05/mode06/mode08/mode09/mode12/mode13/mode14/mode15/mode17/mode19`)
+still need compact per-fixed-input chain/component certificates, or an
+equivalent finite transition certificate, before `wordMode_induction` can yield
+all-chain `LKR_in`.  This checkpoint is therefore a finite-mode/table-closure
+checkpoint, not a completed Lemma 8.18/8.19 lift and not a Four Color Theorem
+claim.
 
 The CAP5/F2, GP(12,2), dodecahedral six-cut, and related files below are
 exploratory audits of a divergent F2-additivity route.  They are retained for
