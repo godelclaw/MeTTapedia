@@ -112,11 +112,12 @@ Lean now contains the lab-facing profile-mode DFA table in
 total transition function, mode hashes, and representative word metadata.  The
 table check theorem `tableClosedCheck_ok` proves by `rfl` that the table has
 20 modes, 2 orientations, 40 transitions, and every one-step transition lands
-inside the finite mode list.  The same module defines `wordMode`, the abstract
-fold of a nonempty orientation word through the DFA, and proves
-`wordMode_inTable`: any mode returned by that fold is one of the 20 table
-modes.  It also encodes the archived representative words for every mode and
-proves `representativeWordsSoundCheck_ok`,
+inside the finite mode list.  The theorem `profileHashLookupCheck_ok` checks
+that the 20 archived profile hashes round-trip through the hash-to-mode lookup.
+The same module defines `wordMode`, the abstract fold of a nonempty orientation
+word through the DFA, and proves `wordMode_inTable`: any mode returned by that
+fold is one of the 20 table modes.  It also encodes the archived representative
+words for every mode and proves `representativeWordsSoundCheck_ok`,
 `representativeCoverageCheck_ok`, and `modeWitnessWord_sound`: every stored
 representative word folds to the listed mode, and every mode has a checked
 canonical representative.  `#print axioms` reports no axioms for these
