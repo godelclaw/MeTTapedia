@@ -12,6 +12,7 @@ import Mettapedia.Computability.PNP.PNPv13FiniteGibbsDobrushinCanaries
 import Mettapedia.Computability.PNP.PNPv13LockedCoreLabCanaries
 import Mettapedia.Computability.PNP.PNPv13SwitchedHistoryProductAuditorCanaries
 import Mettapedia.Computability.PNP.PNPv13TraceFactorizationCanaries
+import Mettapedia.Computability.PNP.PNPSteelmanConditional
 import Mettapedia.Computability.PNP.PostSwitchInputObstruction
 import Mettapedia.Computability.PNP.SharedExactZABAffineDecisionListStructuralObstructionExactZAB
 /-!
@@ -155,6 +156,13 @@ def currentPNPProofNodes : List PNPProofNode := [
     truthValue := ⟨100, 98⟩,
     evidence := "calibrationFullInputPreservation_fails_of_nonzeroColumn proves that the post-switch involution preserves only `(z,a)` while changing `b` and the full `(z,a,b)` input on every nonzero VV column. finite_successDomination_counterexample proves a two-point finite local/global domination counterexample: the global decoder succeeds on both full instances, while every decoder depending only on the shared local input succeeds on at most one. Lab pnp-calibration-success-domination-break-lab-20260630.json tabulates the parity-USAT/VV instance where all nonzero columns move `b`, global exact success is 1, best local bit success is 1/2, and best local exact success falls as 2^(1-m).",
     nextObligation := "Do not use Ben Goertzel's A.17 calibration or Proposition A.5 success-domination step as stated; any replacement must condition on an actually invariant input or supply a new domination theorem that survives global decoders."
+  },
+  {
+    key := "pnp.steelman.kernel-flip-no-threading-star-sw-conditional",
+    status := .checked,
+    truthValue := ⟨100, 92⟩,
+    evidence := "KernelFlipInvolution proves the finite ZMod 2 kernel-flip pairing `kernelFlip_exactNeutrality_card`, with `toyKernelFlip_exactNeutrality_card` as an inhabited model. NoThreadingLemma proves `noThreading_neutral_sufficient_blocks_nontrivial_bit`, showing a neutral local statistic cannot also be sufficient for a nontrivial deterministic witness bit. PNPSteelmanConditional proves `pnp_steelman_conditional`: KernelFlipNeutrality plus the explicit open StarSWAverageCaseWitnessBitHardness input implies the abstract PNP endpoint through the non-SW chain.",
+    nextObligation := "The exact remaining input is StarSWAverageCaseWitnessBitHardness for Ben's masked isolated ensemble; no concentration/log-Sobolev replacement and no unconditional separation is asserted by this node."
   },
   {
     key := "pnp.kpoly-promoted-packet",
@@ -782,4 +790,20 @@ theorem currentPNPGoertzelCalibrationBreak_node :
           (∀ guess : Bool, twoPointLocalSuccessCount guess < twoPointGlobalSuccessCount) := by
   exact ⟨fun u ha => calibrationFullInputPreservation_fails_of_nonzeroColumn u ha,
     finite_successDomination_counterexample⟩
+
+theorem currentPNPSteelmanConditional_node :
+    Nonempty
+        (KernelBitFiber toyKernelA toyKernelB 0 0 ≃
+          KernelBitFiber toyKernelA toyKernelB 0 1) ∧
+      ¬ (Neutral noThreadingToyStatistic noThreadingToyWitness ∧
+          Sufficient noThreadingToyStatistic noThreadingToyWitness) ∧
+      (∀ {F : PNPConditionalFramework},
+        KernelFlipNeutrality F ->
+          StarSWAverageCaseWitnessBitHardness F -> F.pNeNPClaim) ∧
+      toyPNPConditionalFramework.pNeNPClaim := by
+  exact
+    ⟨⟨kernelFlipZeroOneEquiv toyKernelW_isKernel toyKernelW_hits_zero⟩,
+      noThreadingToy_obstruction,
+      fun hKernel hSW => pnp_steelman_conditional hKernel hSW,
+      toy_pnp_steelman_conditional_nonvacuous⟩
 end Mettapedia.Computability.PNP
