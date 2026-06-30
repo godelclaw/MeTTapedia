@@ -22,6 +22,7 @@ inductive NavierRoadmapStage where
   | finiteEnergyRepair
   | placeholderRetirement
   | goertzelH1Break
+  | goertzelBakryEmeryConditionalReduction
   | deGroundedSurface
   | energyIdentity
   | bkmContinuation
@@ -67,6 +68,11 @@ def currentNavierRoadmap : List NavierRoadmapEntry :=
       status := .refuted
       truthValue := ⟨100, 94⟩
       obligation := "Use benGoertzelH1_false_in_fourierModeShearModel and the exact Fourier-mode lab as the scoped break of Ben Goertzel's H1 adjoint-bound route: the shear family stays within every positive H^m chart radius while its H^m -> H^m adjoint ratio grows like epsilon*k. Do not treat this as a Navier-Stokes regularity result." },
+    { stage := .goertzelBakryEmeryConditionalReduction
+      proofNodeId := "navier.goertzel-bakry-emery.conditional-reduction"
+      status := .checked
+      truthValue := ⟨100, 91⟩
+      obligation := "Use bakryEmeryGradientEstimate and NSBakryEmeryConditionalReduction.reductionPacket only as the conditional replacement scaffold: CD(-K,infinity) plus H2 gives Gamma(P_t phi)(id) <= exp(2*K*t) Cphi^2 and feeds the abstract Proposition 7.1 / G.7 / G.8 BKM gate. The exact remaining obligation is LocalSGCurvatureDimensionOpenInput for the SG generator near id; do not treat the scaffold as a Navier-Stokes regularity theorem." },
     { stage := .deGroundedSurface
       proofNodeId := "navier.de-grounded-zero-canary"
       status := .checked
@@ -304,6 +310,18 @@ def currentNavierRoadmap : List NavierRoadmapEntry :=
       obligation := "Start a replacement global route only after scaling, challenge-world, and averaged-equation checks clear." } ]
 
 theorem currentNavierRoadmap_nonempty : currentNavierRoadmap ≠ [] := by
+  simp [currentNavierRoadmap]
+
+/-- The roadmap records the conditional Bakry-Emery replacement scaffold and
+keeps the local SG curvature-dimension bound explicit. -/
+theorem currentNavierRoadmap_records_bakry_emery_conditional_reduction :
+    ({ stage := NavierRoadmapStage.goertzelBakryEmeryConditionalReduction
+       proofNodeId := "navier.goertzel-bakry-emery.conditional-reduction"
+       status := .checked
+       truthValue := ⟨100, 91⟩
+       obligation :=
+        "Use bakryEmeryGradientEstimate and NSBakryEmeryConditionalReduction.reductionPacket only as the conditional replacement scaffold: CD(-K,infinity) plus H2 gives Gamma(P_t phi)(id) <= exp(2*K*t) Cphi^2 and feeds the abstract Proposition 7.1 / G.7 / G.8 BKM gate. The exact remaining obligation is LocalSGCurvatureDimensionOpenInput for the SG generator near id; do not treat the scaffold as a Navier-Stokes regularity theorem." } :
+      NavierRoadmapEntry) ∈ currentNavierRoadmap := by
   simp [currentNavierRoadmap]
 
 /-- The roadmap records the checked local BKM vorticity-stretching estimate and

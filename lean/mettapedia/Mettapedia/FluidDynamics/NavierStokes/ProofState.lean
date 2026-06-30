@@ -8,6 +8,7 @@ import Mettapedia.FluidDynamics.NavierStokes.NavierStokesBKMAnalyticReduction
 import Mettapedia.FluidDynamics.NavierStokes.NavierStokesBKMHighNormContinuation
 import Mettapedia.FluidDynamics.NavierStokes.NavierStokesBKMResidualCurlDifferentialIdentities
 import Mettapedia.FluidDynamics.NavierStokes.BenH1Break
+import Mettapedia.FluidDynamics.NavierStokes.BakryEmeryConditionalReduction
 import Mettapedia.FluidDynamics.NavierStokes.FeffermanCompatibilityFrontier
 import Mettapedia.FluidDynamics.NavierStokes.NavierStokesDEGroundedCanary
 import Mettapedia.FluidDynamics.NavierStokes.NavierStokesEnergySchwartzSolutionKernel
@@ -82,13 +83,13 @@ deriving Repr
 
 /-- Current dependency-map counts for `FluidDynamics/NavierStokes`. -/
 def currentNavierLaneSurvey : NavierLaneSurvey where
-  sourceFiles := 532
-  sourceLines := 129197
-  internalImportEdges := 1355
-  regressionFiles := 153
-  filesOverThousandLines := 7
-  filesOverSevenHundredFiftyLines := 8
-  leavesWithoutInternalImports := 3
+  sourceFiles := 534
+  sourceLines := 129579
+  internalImportEdges := 1359
+  regressionFiles := 154
+  filesOverThousandLines := 6
+  filesOverSevenHundredFiftyLines := 7
+  leavesWithoutInternalImports := 4
 
 /-- Simple PLN-style truth bookkeeping: support and confidence percentages. -/
 structure SimpleTruthValue where
@@ -160,6 +161,15 @@ def navierBenH1FourierModeBreakNode : NavierProofNode where
   truthValue := ⟨100, 94⟩
   evidence := "benGoertzelH1_false_in_fourierModeShearModel proves that every positive chart radius in the normalized two-torus shear model defeats every proposed finite H^m -> H^m adjoint bound; the exact lab ns-ben-h1-fourier-mode-lab-20260630.json records ||delta_k||_H^m = epsilon and ratio sqrt(1 + (epsilon*k)^2)."
   blocker := "This refutes the H1 adjoint-bound route used in NS-Proof-v7.pdf Sections 5.3/6 and Appendix F; it is not a Navier-Stokes regularity theorem."
+
+/-- Ben's false H1 adjoint bound is replaced only by an explicit conditional
+Bakry-Emery curvature-dimension input. -/
+def navierBakryEmeryConditionalReductionNode : NavierProofNode where
+  id := "navier.goertzel-bakry-emery.conditional-reduction"
+  status := .checked
+  truthValue := ⟨100, 91⟩
+  evidence := "BakryEmeryConditionalReduction.lean defines an abstract carre-du-champ semigroup with semigroup, generator, Gamma, Gamma2, diffusion, self-adjointness, and Gronwall/interpolation facts as fields. bakryEmeryGradientEstimate proves that CD(-K,infinity) implies Gamma(P_t f) <= exp(2*K*t) P_t(Gamma f). NSBakryEmeryConditionalReduction.reductionPacket proves that CD plus H2, Gamma(phi) <= Cphi^2, gives the identity gradient bound and feeds the abstract Proposition 7.1 / G.7 / G.8 BKM gate chain."
+  blocker := "The local SG curvature-dimension bound CD(-K,infinity) near the identity is the exact open input LocalSGCurvatureDimensionOpenInput; it is never discharged here. The BKM gate remains an abstract conditional scaffold, so this is not a Navier-Stokes regularity theorem."
 
 /-- The actual `ℝ × ℝ^3` equation surface has a committed positive canary. -/
 def navierDEGroundedZeroCanaryNode : NavierProofNode where
@@ -664,6 +674,7 @@ def currentNavierProofNodes : List NavierProofNode :=
   , navierEnergyBKMHeatShearNode
   , navierFeffermanLiftNode
   , navierBenH1FourierModeBreakNode
+  , navierBakryEmeryConditionalReductionNode
   , navierDEGroundedZeroCanaryNode
   , navierSchwartzEnergyIdentityNode
   , navierBKMVorticityStretchingNode
@@ -745,6 +756,10 @@ theorem navierFeffermanLiftNode_retiredPlaceholder :
 
 theorem navierBenH1FourierModeBreakNode_refuted :
     navierBenH1FourierModeBreakNode.status = .refuted := by
+  rfl
+
+theorem navierBakryEmeryConditionalReductionNode_checked :
+    navierBakryEmeryConditionalReductionNode.status = .checked := by
   rfl
 
 theorem navierDEGroundedZeroCanaryNode_checked :
@@ -918,6 +933,28 @@ theorem navierNonzeroSchwartzStokesFiniteProfileRayleighObstructionNode_checked 
 theorem navierNonzeroSchwartzCanaryNode_open :
     navierNonzeroSchwartzCanaryNode.status = .openGoal := by
   rfl
+
+theorem currentNavierBakryEmeryConditionalReduction_node
+    {G : BakryEmeryGronwallFramework}
+    (D : NSBakryEmeryConditionalReduction G) :
+    (∀ t : ℝ, 0 ≤ t → t ≤ D.T →
+      G.base.eval D.id (G.base.gammaSelf (G.base.P t D.phi)) ≤
+        Real.exp (2 * D.K * t) * D.Cphi ^ 2) ∧
+      D.gate.logHeatEnergyBound ∧
+        D.gate.vorticityBound ∧
+          D.gate.bkmIntegralFinite ∧
+            D.gate.bkmGate ∧
+              LocalSGCurvatureDimensionOpenInput G D.K ∧
+                navierBakryEmeryConditionalReductionNode.status = .checked := by
+  have hpacket := D.reductionPacket
+  exact
+    ⟨hpacket.1,
+      hpacket.2.1,
+      hpacket.2.2.1,
+      hpacket.2.2.2.1,
+      hpacket.2.2.2.2.1,
+      hpacket.2.2.2.2.2,
+      navierBakryEmeryConditionalReductionNode_checked⟩
 
 theorem currentNavierDEGroundedZeroCanary_node :
     NavierStokesGlobalRegularityClause
