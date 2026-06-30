@@ -9,6 +9,7 @@ import Mettapedia.GraphTheory.FourColor.CAP5RoutePayoff
 import Mettapedia.GraphTheory.FourColor.CAP5WheelRouteData
 import Mettapedia.GraphTheory.FourColor.CAP5DodecahedralRouteData
 import Mettapedia.GraphTheory.FourColor.CAP5GP12RouteData
+import Mettapedia.GraphTheory.FourColor.GoertzelLemma814
 import Mettapedia.GraphTheory.FourColor.Theorem49BoundaryZeroForcedEdgeRegression
 import Mettapedia.GraphTheory.FourColor.Theorem49BoundaryZeroForcedEdgeCanonicalWitnessRegression
 import Mettapedia.GraphTheory.FourColor.Theorem49BoundaryZeroForcedEdgeF2FocusRegression

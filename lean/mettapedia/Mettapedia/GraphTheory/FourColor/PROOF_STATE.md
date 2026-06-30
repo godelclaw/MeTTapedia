@@ -1,11 +1,42 @@
 # FourColor Proof State
 
-Last updated: 2026-06-29 on `fourcolor/cont-20260626`.
+Last updated: 2026-06-30 on `fourcolor/cont-20260626`.
 
-This file tracks the two active route forks.  The Four Color Theorem is not
-claimed here; the target is a decided state for the Goertzel theorem-4.9 route.
+This file tracks the active route forks.  The Four Color Theorem is not
+claimed here.
+
+## Current Pillar-C Reset
+
+The Ben-route status is now Pillar C, not the older CAP5/F2/six-cut route.
+`GoertzelLemma814.lean` models the canonical three-cell gadget from Lemma 8.14:
+internal tree `F1-F0-F2-F4-F5` with leaf `F3`, boundary stubs `B0..B7`,
+inputs `B0..B3`, the finite proper-coloring state space, input-disjoint
+Kempe-component switches, an indexed path certificate for `LKR_in`, and the
+tree-transparency finite check for Lemma 8.15.  The lab script
+`lemma814_lkr_in_lab.py` confirms the finite audit numerically with numpy and
+Sympy: tau has 192 proper colorings, fixed-input fibers of size 4 or 8 when
+nonempty, all fixed-input Kempe graphs connected, and the `sigmaL`/`sigmaR`
+piece checks and tree transparency pass.
+
+Lean status: Lemma 8.14 is closed by the finite certificate theorem
+`lemma814_tau_lkrIn_audit`, which proves
+`lemma814_tau_lkrIn_finiteCheck = true`.  The supporting row-split theorems
+prove the 192-state space audit, indexed path certificate, and fixed-input
+representative coherence.  The mirror invariance theorem is
+`lemma814_mirror_lkrIn_same_check`.  Lemma 8.15 transparency is still an honest
+finite-check pin: `lemma815_tau_tree_transparency_finiteCheck` is the exact
+Boolean check over all colorings and two-color components, but its in-kernel
+`decide` proof is too expensive in the current all-components encoding.
+
+The CAP5/F2, GP(12,2), dodecahedral six-cut, and related files below are
+exploratory audits of a divergent F2-additivity route.  They are retained for
+negative evidence and infrastructure, but they are not Ben's actual route and
+should not be promoted as a counterexample or as a Four Color Theorem claim.
 
 ## Consolidated Verdict
+
+The section below records the older CAP5/F2 exploratory verdict and is
+superseded for Ben-route planning by the Pillar-C reset above.
 
 As of the checkpoint after `08cd9ed6`, stop treating additional GP(12,2)
 adapter slices as make-or-break work.  The make-or-break decision for the
