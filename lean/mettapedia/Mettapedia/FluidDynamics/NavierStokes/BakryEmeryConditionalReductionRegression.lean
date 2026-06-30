@@ -38,6 +38,13 @@ theorem bakry_emery_interpolation_lower_bound_from_cd_regression
     M.InterpolationDerivativeLowerBound K t f x :=
   M.interpolationDerivativeLowerBound_of_CD hCD
 
+theorem bakry_emery_variable_cd_lower_bound_regression
+    (M : CarreDuChampSemigroup) {rho : M.Point → ℝ} {rhoMin : ℝ}
+    (hCD : M.CDVariableInfinity rho)
+    (hmin : ∀ x : M.Point, rhoMin ≤ rho x) :
+    M.CDMinusInfinity (-rhoMin) :=
+  M.cdMinusInfinity_of_cdVariable_lowerBound hCD hmin
+
 theorem bakry_emery_weighted_interpolation_mono_regression
     (M : CarreDuChampSemigroup) {K t : ℝ} {f : M.Func} {x : M.Point}
     (hK : 0 ≤ K) (ht : 0 ≤ t)
@@ -65,6 +72,62 @@ theorem bakry_emery_gradient_estimate_regression
       Real.exp (2 * K * t) *
         G.base.eval x (G.base.P t (G.base.gammaSelf f)) :=
   bakryEmeryGradientEstimate G hK ht hCD f x
+
+theorem bakry_emery_variable_lower_bound_gradient_regression
+    (G : BakryEmeryGronwallFramework) {rho : G.base.Point → ℝ}
+    {rhoMin t : ℝ}
+    (hrhoMin_nonpos : rhoMin ≤ 0) (ht : 0 ≤ t)
+    (hCD : G.base.CDVariableInfinity rho)
+    (hmin : ∀ x : G.base.Point, rhoMin ≤ rho x)
+    (f : G.base.Func) (x : G.base.Point) :
+    G.base.eval x (G.base.gammaSelf (G.base.P t f)) ≤
+      Real.exp (2 * (-rhoMin) * t) *
+        G.base.eval x (G.base.P t (G.base.gammaSelf f)) :=
+  bakryEmeryGradientEstimate_variableLowerBound G
+    hrhoMin_nonpos ht hCD hmin f x
+
+theorem two_point_chain_cd_zero_regression :
+    TwoPointChain.semigroup.CDMinusInfinity 0 :=
+  TwoPointChain.cdZero
+
+theorem two_point_chain_unit_slope_nonconstant_regression :
+    TwoPointChain.unitSlope 0 ≠ TwoPointChain.unitSlope 1 :=
+  TwoPointChain.unitSlope_nonconstant
+
+theorem two_point_chain_gradient_estimate_fires_regression :
+    TwoPointChain.semigroup.eval (0 : TwoPointChain.State)
+        (TwoPointChain.semigroup.gammaSelf
+          (TwoPointChain.semigroup.P 1 TwoPointChain.unitSlope)) ≤
+      Real.exp (2 * (0 : ℝ) * 1) *
+        TwoPointChain.semigroup.eval (0 : TwoPointChain.State)
+          (TwoPointChain.semigroup.P 1
+            (TwoPointChain.semigroup.gammaSelf TwoPointChain.unitSlope)) :=
+  TwoPointChain.unitSlope_bakryEmeryEstimate_fires
+
+theorem two_point_chain_gradient_estimate_strict_regression :
+    TwoPointChain.semigroup.eval (0 : TwoPointChain.State)
+        (TwoPointChain.semigroup.gammaSelf
+          (TwoPointChain.semigroup.P 1 TwoPointChain.unitSlope)) <
+      TwoPointChain.semigroup.eval (0 : TwoPointChain.State)
+        (TwoPointChain.semigroup.P 1
+          (TwoPointChain.semigroup.gammaSelf TwoPointChain.unitSlope)) :=
+  TwoPointChain.unitSlope_bakryEmeryEstimate_strict
+
+theorem local_sg_variable_curvature_constant_cd_regression
+    {G : BakryEmeryGronwallFramework}
+    (H : LocalSGVariableCurvatureIntegratedOpenInput G) :
+    G.base.CDMinusInfinity (-H.rhoMin) :=
+  H.constantCurvatureDimension
+
+theorem local_sg_variable_curvature_gradient_regression
+    {G : BakryEmeryGronwallFramework}
+    (H : LocalSGVariableCurvatureIntegratedOpenInput G)
+    {t : ℝ} (ht : 0 ≤ t)
+    (f : G.base.Func) (x : G.base.Point) :
+    G.base.eval x (G.base.gammaSelf (G.base.P t f)) ≤
+      Real.exp (2 * (-H.rhoMin) * t) *
+        G.base.eval x (G.base.P t (G.base.gammaSelf f)) :=
+  H.gradientEstimate ht f x
 
 theorem ns_bakry_emery_conditional_gradient_regression
     {G : BakryEmeryGronwallFramework}

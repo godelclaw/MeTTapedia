@@ -49,10 +49,11 @@ structure CarreDuChampSemigroup where
     ∀ (a : ℝ) (f g : Func), Gamma f (a • g) = a • Gamma f g
   semigroup_mono :
     ∀ {f g : Func} {t : ℝ} {x : Point},
-      (∀ y : Point, eval y f ≤ eval y g) → eval x (P t f) ≤ eval x (P t g)
+      0 ≤ t →
+        (∀ y : Point, eval y f ≤ eval y g) → eval x (P t f) ≤ eval x (P t g)
   semigroup_le_const :
     ∀ {f : Func} {c t : ℝ} {x : Point},
-      (∀ y : Point, eval y f ≤ c) → eval x (P t f) ≤ c
+      0 ≤ t → (∀ y : Point, eval y f ≤ c) → eval x (P t f) ≤ c
   generator_product_rule :
     ∀ f g : Func,
       L (mul f g) = mul f (L g) + mul g (L f) + (2 : ℝ) • Gamma f g
@@ -61,17 +62,24 @@ structure CarreDuChampSemigroup where
     ∀ (s : ℝ) (f : Func), timeDeriv (fun r => P r f) s = P s (L f)
   semigroup_generator_commute :
     ∀ (s : ℝ) (f : Func), P s (L f) = L (P s f)
-  timeDeriv_semigroup_curve :
-    ∀ (u : ℝ → Func) (s : ℝ),
-      timeDeriv (fun r => P r (u r)) s =
-        P s (L (u s)) + P s (timeDeriv u s)
+  timeDeriv_semigroup_interpolation :
+    ∀ (t s : ℝ) (f : Func),
+      timeDeriv
+          (fun r => P r (Gamma (P (t - r) f) (P (t - r) f))) s =
+        P s (L (Gamma (P (t - s) f) (P (t - s) f))) +
+          P s
+            (timeDeriv
+              (fun r => Gamma (P (t - r) f) (P (t - r) f)) s)
   timeDeriv_reverse_semigroup :
     ∀ (t s : ℝ) (f : Func),
       timeDeriv (fun r => P (t - r) f) s = -L (P (t - s) f)
-  timeDeriv_gamma_self :
-    ∀ (u : ℝ → Func) (s : ℝ),
-      timeDeriv (fun r => Gamma (u r) (u r)) s =
-        (2 : ℝ) • Gamma (u s) (timeDeriv u s)
+  timeDeriv_gamma_self_reverse :
+    ∀ (t s : ℝ) (f : Func),
+      timeDeriv
+          (fun r => Gamma (P (t - r) f) (P (t - r) f)) s =
+        (2 : ℝ) •
+          Gamma (P (t - s) f)
+            (timeDeriv (fun r => P (t - r) f) s)
   interpolation_scalar_continuous :
     ∀ {t : ℝ} {f : Func} {x : Point}, 0 ≤ t →
       ContinuousOn
@@ -135,6 +143,33 @@ def CDMinusInfinity (M : CarreDuChampSemigroup) (K : ℝ) : Prop :=
   ∀ (f : M.Func) (x : M.Point),
     -K * M.eval x (M.gammaSelf f) ≤ M.eval x (M.gamma2 f)
 
+/-- Variable-curvature curvature-dimension input
+`Gamma2(f)(x) >= rho(x) * Gamma(f)(x)`. -/
+def CDVariableInfinity (M : CarreDuChampSemigroup)
+    (rho : M.Point → ℝ) : Prop :=
+  ∀ (f : M.Func) (x : M.Point),
+    rho x * M.eval x (M.gammaSelf f) ≤ M.eval x (M.gamma2 f)
+
+/-- A variable-curvature lower bound reduces to the constant one-sided
+`CD(-K, infinity)` input used by the checked Gronwall proof. -/
+theorem cdMinusInfinity_of_cdVariable_lowerBound
+    (M : CarreDuChampSemigroup) {rho : M.Point → ℝ} {rhoMin : ℝ}
+    (hCD : M.CDVariableInfinity rho)
+    (hmin : ∀ x : M.Point, rhoMin ≤ rho x) :
+    M.CDMinusInfinity (-rhoMin) := by
+  intro f x
+  have hgamma : 0 ≤ M.eval x (M.gammaSelf f) :=
+    M.gamma_nonneg f x
+  have hmul :
+      rhoMin * M.eval x (M.gammaSelf f) ≤
+        rho x * M.eval x (M.gammaSelf f) :=
+    mul_le_mul_of_nonneg_right (hmin x) hgamma
+  calc
+    -(-rhoMin) * M.eval x (M.gammaSelf f)
+        = rhoMin * M.eval x (M.gammaSelf f) := by ring
+    _ ≤ rho x * M.eval x (M.gammaSelf f) := hmul
+    _ ≤ M.eval x (M.gamma2 f) := hCD f x
+
 /-- Bakry-Emery interpolation:
 `s |-> P_s (Gamma(P_{t-s} f))`. -/
 def beInterpolation (M : CarreDuChampSemigroup)
@@ -165,8 +200,8 @@ theorem interpolationDerivativeIdentity_func (M : CarreDuChampSemigroup)
     M.timeDeriv (fun r => M.beInterpolation t r f) s =
       (2 : ℝ) • M.P s (M.gamma2 (M.P (t - s) f)) := by
   unfold beInterpolation gammaSelf
-  rw [M.timeDeriv_semigroup_curve]
-  rw [M.timeDeriv_gamma_self]
+  rw [M.timeDeriv_semigroup_interpolation]
+  rw [M.timeDeriv_gamma_self_reverse]
   rw [M.timeDeriv_reverse_semigroup]
   have hgamma :
       M.Gamma (M.P (t - s) f) (-M.L (M.P (t - s) f)) =
@@ -242,7 +277,7 @@ theorem interpolationDerivativeLowerBound_of_CD
       M.eval x (M.P s ((-K) • M.gammaSelf g)) ≤
         M.eval x (M.P s (M.gamma2 g)) :=
     M.semigroup_mono (f := (-K) • M.gammaSelf g)
-      (g := M.gamma2 g) (t := s) (x := x) hpoint
+      (g := M.gamma2 g) (t := s) (x := x) _hs hpoint
   have hscaled :
       -K * M.eval x (M.P s (M.gammaSelf g)) ≤
         M.eval x (M.P s (M.gamma2 g)) := by
@@ -380,6 +415,582 @@ theorem bakryEmeryGradientEstimate
       (G.base.interpolationDerivativeLowerBound_of_CD
         (K := K) (t := t) (f := f) (x := x) hCD)
 
+/-- Variable-curvature lower-bound form of the Bakry-Emery estimate.
+
+When `rho(x) >= rhoMin` and `rhoMin <= 0`, the variable condition
+`CD(rho, infinity)` implies the checked constant estimate with
+`K = -rhoMin`.  A genuinely variable weighted interpolation would require
+extra Feynman-Kac/invariant-measure structure not present in the minimal
+`CarreDuChampSemigroup` API. -/
+theorem bakryEmeryGradientEstimate_variableLowerBound
+    (G : BakryEmeryGronwallFramework) {rho : G.base.Point → ℝ}
+    {rhoMin t : ℝ}
+    (hrhoMin_nonpos : rhoMin ≤ 0) (ht : 0 ≤ t)
+    (hCD : G.base.CDVariableInfinity rho)
+    (hmin : ∀ x : G.base.Point, rhoMin ≤ rho x)
+    (f : G.base.Func) (x : G.base.Point) :
+    G.base.eval x (G.base.gammaSelf (G.base.P t f)) ≤
+      Real.exp (2 * (-rhoMin) * t) *
+        G.base.eval x (G.base.P t (G.base.gammaSelf f)) := by
+  exact
+    bakryEmeryGradientEstimate G
+      (K := -rhoMin) (t := t) (by linarith) ht
+      (G.base.cdMinusInfinity_of_cdVariable_lowerBound hCD hmin) f x
+
+/-!
+## A concrete two-state witness
+
+The next section instantiates the scaffold on the continuous-time reversible
+two-point chain with jump rate `1`.  The heat semigroup is written in closed
+form:
+
+`P_t f(0) = mean(f) - exp(-2t) diff(f)/2`,
+`P_t f(1) = mean(f) + exp(-2t) diff(f)/2`.
+
+This is the usual closed form of `Matrix.exp (t • L)` for
+`L = [[-1, 1], [1, -1]]`; the checked Lean instance below uses the explicit
+formula so that all structure fields reduce to finite arithmetic and scalar
+`Real.exp` differentiation.
+-/
+
+namespace TwoPointChain
+
+abbrev State := Fin 2
+
+abbrev Func := State → ℝ
+
+def mean (f : Func) : ℝ :=
+  (f 0 + f 1) / 2
+
+def diff (f : Func) : ℝ :=
+  f 1 - f 0
+
+def mul (f g : Func) : Func :=
+  fun x => f x * g x
+
+def LFun (f : Func) : Func
+  | 0 => diff f
+  | 1 => -diff f
+
+def PFun (t : ℝ) (f : Func) : Func
+  | 0 => mean f - Real.exp (-2 * t) * diff f / 2
+  | 1 => mean f + Real.exp (-2 * t) * diff f / 2
+
+def GammaFun (f g : Func) : Func :=
+  fun _ => diff f * diff g / 2
+
+noncomputable def timeDeriv (u : ℝ → Func) (s : ℝ) : Func :=
+  fun x => deriv (fun r : ℝ => u r x) s
+
+lemma mean_PFun (t : ℝ) (f : Func) :
+    mean (PFun t f) = mean f := by
+  simp [mean, PFun]
+
+lemma diff_PFun (t : ℝ) (f : Func) :
+    diff (PFun t f) = Real.exp (-2 * t) * diff f := by
+  simp [diff, PFun]
+
+lemma mean_LFun (f : Func) :
+    mean (LFun f) = 0 := by
+  simp [mean, LFun, diff]
+
+lemma diff_LFun (f : Func) :
+    diff (LFun f) = -2 * diff f := by
+  simp [diff, LFun]
+  ring
+
+lemma PFun_zero (f : Func) :
+    PFun 0 f = f := by
+  funext x
+  fin_cases x <;> simp [PFun, mean, diff] <;> ring
+
+lemma PFun_add (s t : ℝ) (f : Func) :
+    PFun (s + t) f = PFun s (PFun t f) := by
+  have hexp : Real.exp (-(2 * (s + t))) =
+      Real.exp (-(2 * s)) * Real.exp (-(2 * t)) := by
+    rw [← Real.exp_add]
+    ring_nf
+  funext x
+  fin_cases x <;> simp [PFun, mean_PFun, diff_PFun]
+  all_goals
+    rw [hexp]
+    ring_nf
+
+noncomputable def P (t : ℝ) : Func →ₗ[ℝ] Func where
+  toFun := PFun t
+  map_add' := by
+    intro f g
+    funext x
+    fin_cases x <;> simp [PFun, mean, diff] <;> ring
+  map_smul' := by
+    intro a f
+    funext x
+    fin_cases x <;> simp [PFun, mean, diff] <;> ring
+
+def L : Func →ₗ[ℝ] Func where
+  toFun := LFun
+  map_add' := by
+    intro f g
+    funext x
+    fin_cases x <;> simp [LFun, diff] <;> ring
+  map_smul' := by
+    intro a f
+    funext x
+    fin_cases x <;> simp [LFun, diff] <;> ring
+
+def eval (x : State) : Func →ₗ[ℝ] ℝ where
+  toFun := fun f => f x
+  map_add' := by
+    intro f g
+    rfl
+  map_smul' := by
+    intro a f
+    rfl
+
+lemma GammaFun_symm (f g : Func) (x : State) :
+    GammaFun f g x = GammaFun g f x := by
+  simp [GammaFun]
+  ring
+
+lemma GammaFun_nonneg (f : Func) (x : State) :
+    0 ≤ GammaFun f f x := by
+  have hsq : 0 ≤ diff f ^ (2 : ℕ) := sq_nonneg (diff f)
+  simp [GammaFun]
+  nlinarith
+
+lemma GammaFun_smul_right (a : ℝ) (f g : Func) :
+    GammaFun f (a • g) = a • GammaFun f g := by
+  funext x
+  simp [GammaFun, diff]
+  ring
+
+lemma generator_product_rule (f g : Func) :
+    L (mul f g) = mul f (L g) + mul g (L f) + (2 : ℝ) • GammaFun f g := by
+  funext x
+  fin_cases x <;> simp [L, LFun, mul, GammaFun, diff] <;> ring
+
+lemma P_generator_commute (s : ℝ) (f : Func) :
+    P s (L f) = L (P s f) := by
+  funext x
+  fin_cases x <;> simp [P, L, LFun, PFun, diff_PFun, diff_LFun, mean_LFun] <;>
+    ring_nf
+
+lemma hasDerivAt_exp_decay_half (a s : ℝ) :
+    HasDerivAt (fun r : ℝ => Real.exp (-2 * r) * a / 2)
+      (-(Real.exp (-2 * s) * a)) s := by
+  have hlinear :
+      HasDerivAt (fun r : ℝ => -2 * r) (-2) s := by
+    simpa using (hasDerivAt_id s).const_mul (-2 : ℝ)
+  have h := (hlinear.exp.mul_const (a / 2))
+  simpa [mul_assoc, mul_left_comm, mul_comm, div_eq_mul_inv] using h
+
+lemma timeDeriv_PFun (s : ℝ) (f : Func) :
+    timeDeriv (fun r => PFun r f) s = PFun s (LFun f) := by
+  funext x
+  fin_cases x
+  · have hterm := hasDerivAt_exp_decay_half (diff f) s
+    have hder :
+        HasDerivAt
+          (fun r : ℝ => mean f - Real.exp (-2 * r) * diff f / 2)
+          (Real.exp (-2 * s) * diff f) s := by
+      simpa using (hterm.const_sub (mean f))
+    change deriv (fun r : ℝ => PFun r f 0) s = PFun s (LFun f) 0
+    rw [show (fun r : ℝ => PFun r f 0) =
+        (fun r : ℝ => mean f - Real.exp (-2 * r) * diff f / 2) by
+          funext r
+          simp [PFun]]
+    rw [hder.deriv]
+    simp [PFun, mean_LFun, diff_LFun]
+    ring_nf
+  · have hterm := hasDerivAt_exp_decay_half (diff f) s
+    have hder :
+        HasDerivAt
+          (fun r : ℝ => mean f + Real.exp (-2 * r) * diff f / 2)
+          (-(Real.exp (-2 * s) * diff f)) s := by
+      simpa using (hterm.const_add (mean f))
+    change deriv (fun r : ℝ => PFun r f 1) s = PFun s (LFun f) 1
+    rw [show (fun r : ℝ => PFun r f 1) =
+        (fun r : ℝ => mean f + Real.exp (-2 * r) * diff f / 2) by
+          funext r
+          simp [PFun]]
+    rw [hder.deriv]
+    simp [PFun, mean_LFun, diff_LFun]
+    ring_nf
+
+lemma timeDeriv_reverse_PFun (t s : ℝ) (f : Func) :
+    timeDeriv (fun r => PFun (t - r) f) s = -LFun (PFun (t - s) f) := by
+  funext x
+  fin_cases x
+  · have hlinear :
+        HasDerivAt (fun r : ℝ => -2 * (t - r)) 2 s := by
+      simpa using ((hasDerivAt_const (x := s) t).sub (hasDerivAt_id s)).const_mul (-2 : ℝ)
+    have hexp := hlinear.exp
+    have hterm := hexp.mul_const (diff f / 2)
+    have hder :
+        HasDerivAt
+          (fun r : ℝ => mean f - Real.exp (-2 * (t - r)) * diff f / 2)
+          (-(Real.exp (-2 * (t - s)) * diff f)) s := by
+      simpa [mul_assoc, mul_left_comm, mul_comm, div_eq_mul_inv] using
+        (hterm.const_sub (mean f))
+    change deriv (fun r : ℝ => PFun (t - r) f 0) s =
+      (-LFun (PFun (t - s) f)) 0
+    rw [show (fun r : ℝ => PFun (t - r) f 0) =
+        (fun r : ℝ => mean f - Real.exp (-2 * (t - r)) * diff f / 2) by
+          funext r
+          simp [PFun]]
+    rw [hder.deriv]
+    simp [LFun, diff_PFun]
+  · have hlinear :
+        HasDerivAt (fun r : ℝ => -2 * (t - r)) 2 s := by
+      simpa using ((hasDerivAt_const (x := s) t).sub (hasDerivAt_id s)).const_mul (-2 : ℝ)
+    have hexp := hlinear.exp
+    have hterm := hexp.mul_const (diff f / 2)
+    have hder :
+        HasDerivAt
+          (fun r : ℝ => mean f + Real.exp (-2 * (t - r)) * diff f / 2)
+          (Real.exp (-2 * (t - s)) * diff f) s := by
+      simpa [mul_assoc, mul_left_comm, mul_comm, div_eq_mul_inv] using
+        (hterm.const_add (mean f))
+    change deriv (fun r : ℝ => PFun (t - r) f 1) s =
+      (-LFun (PFun (t - s) f)) 1
+    rw [show (fun r : ℝ => PFun (t - r) f 1) =
+        (fun r : ℝ => mean f + Real.exp (-2 * (t - r)) * diff f / 2) by
+          funext r
+          simp [PFun]]
+    rw [hder.deriv]
+    simp [LFun, diff_PFun]
+
+lemma P_mono {f g : Func} {t : ℝ} {x : State}
+    (ht : 0 ≤ t) (hfg : ∀ y : State, f y ≤ g y) :
+    eval x (P t f) ≤ eval x (P t g) := by
+  have hexp_le : Real.exp (-2 * t) ≤ 1 := by
+    rw [Real.exp_le_one_iff]
+    nlinarith
+  have hexp_nonneg : 0 ≤ Real.exp (-2 * t) := Real.exp_nonneg _
+  have hcoef0 : 0 ≤ (1 + Real.exp (-2 * t)) / 2 := by nlinarith
+  have hcoef1 : 0 ≤ (1 - Real.exp (-2 * t)) / 2 := by nlinarith
+  fin_cases x
+  · have hf0 := hfg 0
+    have hf1 := hfg 1
+    calc
+      eval 0 (P t f)
+          = ((1 + Real.exp (-2 * t)) / 2) * f 0 +
+              ((1 - Real.exp (-2 * t)) / 2) * f 1 := by
+              simp [eval, P, PFun, mean, diff]
+              ring_nf
+      _ ≤ ((1 + Real.exp (-2 * t)) / 2) * g 0 +
+              ((1 - Real.exp (-2 * t)) / 2) * g 1 :=
+              add_le_add
+                (mul_le_mul_of_nonneg_left hf0 hcoef0)
+                (mul_le_mul_of_nonneg_left hf1 hcoef1)
+      _ = eval 0 (P t g) := by
+              simp [eval, P, PFun, mean, diff]
+              ring_nf
+  · have hf0 := hfg 0
+    have hf1 := hfg 1
+    calc
+      eval 1 (P t f)
+          = ((1 - Real.exp (-2 * t)) / 2) * f 0 +
+              ((1 + Real.exp (-2 * t)) / 2) * f 1 := by
+              simp [eval, P, PFun, mean, diff]
+              ring_nf
+      _ ≤ ((1 - Real.exp (-2 * t)) / 2) * g 0 +
+              ((1 + Real.exp (-2 * t)) / 2) * g 1 :=
+              add_le_add
+                (mul_le_mul_of_nonneg_left hf0 hcoef1)
+                (mul_le_mul_of_nonneg_left hf1 hcoef0)
+      _ = eval 1 (P t g) := by
+              simp [eval, P, PFun, mean, diff]
+              ring_nf
+
+lemma P_le_const {f : Func} {c t : ℝ} {x : State}
+    (ht : 0 ≤ t) (hf : ∀ y : State, eval y f ≤ c) :
+    eval x (P t f) ≤ c := by
+  have hconst : ∀ y : State, eval y f ≤ eval y (fun _ : State => c) := by
+    intro y
+    exact hf y
+  have hmono := P_mono (f := f) (g := fun _ : State => c) (t := t) (x := x) ht hconst
+  have hconstP : eval x (P t (fun _ : State => c)) = c := by
+    fin_cases x <;> simp [eval, P, PFun, mean, diff]
+  exact hmono.trans_eq hconstP
+
+lemma PFun_const (t c : ℝ) :
+    PFun t (fun _ : State => c) = fun _ : State => c := by
+  funext x
+  fin_cases x <;> simp [PFun, mean, diff]
+
+lemma LFun_const (c : ℝ) :
+    LFun (fun _ : State => c) = 0 := by
+  funext x
+  fin_cases x <;> simp [LFun, diff]
+
+lemma GammaFun_PFun_self (t : ℝ) (f : Func) :
+    GammaFun (PFun t f) (PFun t f) =
+      fun _ : State => (Real.exp (-2 * t) * diff f) ^ (2 : ℕ) / 2 := by
+  funext x
+  simp [GammaFun, diff_PFun, pow_two]
+
+lemma hasDerivAt_reverse_mode (a t s : ℝ) :
+    HasDerivAt (fun r : ℝ => Real.exp (-2 * (t - r)) * a)
+      (2 * Real.exp (-2 * (t - s)) * a) s := by
+  have hlinear :
+      HasDerivAt (fun r : ℝ => -2 * (t - r)) 2 s := by
+    simpa using ((hasDerivAt_const (x := s) t).sub (hasDerivAt_id s)).const_mul (-2 : ℝ)
+  have h := hlinear.exp.mul_const a
+  simpa [mul_assoc, mul_left_comm, mul_comm] using h
+
+lemma hasDerivAt_reverse_gamma_scalar (t s : ℝ) (f : Func) :
+    HasDerivAt
+      (fun r : ℝ => (Real.exp (-2 * (t - r)) * diff f) ^ (2 : ℕ) / 2)
+      (2 * (Real.exp (-2 * (t - s)) * diff f) ^ (2 : ℕ)) s := by
+  have hmode := hasDerivAt_reverse_mode (diff f) t s
+  have hsquare := hmode.mul hmode
+  have h := hsquare.div_const 2
+  simpa [pow_two, mul_assoc, mul_left_comm, mul_comm, div_eq_mul_inv]
+    using h.congr_deriv (by ring_nf)
+
+lemma timeDeriv_gamma_reverse (t s : ℝ) (f : Func) :
+    timeDeriv
+        (fun r => GammaFun (PFun (t - r) f) (PFun (t - r) f)) s =
+      (2 : ℝ) •
+        GammaFun (PFun (t - s) f)
+          (timeDeriv (fun r => PFun (t - r) f) s) := by
+  have hscalar := hasDerivAt_reverse_gamma_scalar t s f
+  funext x
+  fin_cases x
+  ·
+    change deriv
+        (fun r : ℝ => GammaFun (PFun (t - r) f) (PFun (t - r) f) 0) s =
+      ((2 : ℝ) •
+        GammaFun (PFun (t - s) f)
+          (timeDeriv (fun r => PFun (t - r) f) s)) 0
+    rw [show
+        (fun r : ℝ => GammaFun (PFun (t - r) f) (PFun (t - r) f) 0) =
+          (fun r : ℝ => (Real.exp (-2 * (t - r)) * diff f) ^ (2 : ℕ) / 2) by
+        funext r
+        simp [GammaFun, diff_PFun, pow_two]
+        ]
+    rw [hscalar.deriv]
+    simp [GammaFun, timeDeriv_reverse_PFun, LFun, PFun, mean, diff, pow_two]
+    ring_nf
+  ·
+    change deriv
+        (fun r : ℝ => GammaFun (PFun (t - r) f) (PFun (t - r) f) 1) s =
+      ((2 : ℝ) •
+        GammaFun (PFun (t - s) f)
+          (timeDeriv (fun r => PFun (t - r) f) s)) 1
+    rw [show
+        (fun r : ℝ => GammaFun (PFun (t - r) f) (PFun (t - r) f) 1) =
+          (fun r : ℝ => (Real.exp (-2 * (t - r)) * diff f) ^ (2 : ℕ) / 2) by
+        funext r
+        simp [GammaFun, diff_PFun, pow_two]
+        ]
+    rw [hscalar.deriv]
+    simp [GammaFun, timeDeriv_reverse_PFun, LFun, PFun, mean, diff, pow_two]
+    ring_nf
+
+lemma timeDeriv_semigroup_interpolation (t s : ℝ) (f : Func) :
+    timeDeriv
+        (fun r => PFun r (GammaFun (PFun (t - r) f) (PFun (t - r) f))) s =
+      PFun s (LFun (GammaFun (PFun (t - s) f) (PFun (t - s) f))) +
+        PFun s
+          (timeDeriv
+            (fun r => GammaFun (PFun (t - r) f) (PFun (t - r) f)) s) := by
+  have hscalar := hasDerivAt_reverse_gamma_scalar t s f
+  funext x
+  fin_cases x
+  ·
+    change deriv
+        (fun r : ℝ =>
+          PFun r (GammaFun (PFun (t - r) f) (PFun (t - r) f)) 0) s =
+      (PFun s (LFun (GammaFun (PFun (t - s) f) (PFun (t - s) f))) +
+        PFun s
+          (timeDeriv
+            (fun r => GammaFun (PFun (t - r) f) (PFun (t - r) f)) s)) 0
+    rw [show
+        (fun r : ℝ =>
+          PFun r (GammaFun (PFun (t - r) f) (PFun (t - r) f)) 0) =
+          (fun r : ℝ => (Real.exp (-2 * (t - r)) * diff f) ^ (2 : ℕ) / 2) by
+        funext r
+        simp [PFun, GammaFun, mean, diff, pow_two]
+        ]
+    rw [hscalar.deriv]
+    rw [timeDeriv_gamma_reverse t s f]
+    simp [PFun, LFun, GammaFun, timeDeriv_reverse_PFun, mean, diff, pow_two]
+    ring_nf
+  ·
+    change deriv
+        (fun r : ℝ =>
+          PFun r (GammaFun (PFun (t - r) f) (PFun (t - r) f)) 1) s =
+      (PFun s (LFun (GammaFun (PFun (t - s) f) (PFun (t - s) f))) +
+        PFun s
+          (timeDeriv
+            (fun r => GammaFun (PFun (t - r) f) (PFun (t - r) f)) s)) 1
+    rw [show
+        (fun r : ℝ =>
+          PFun r (GammaFun (PFun (t - r) f) (PFun (t - r) f)) 1) =
+          (fun r : ℝ => (Real.exp (-2 * (t - r)) * diff f) ^ (2 : ℕ) / 2) by
+        funext r
+        simp [PFun, GammaFun, mean, diff, pow_two]
+        ]
+    rw [hscalar.deriv]
+    rw [timeDeriv_gamma_reverse t s f]
+    simp [PFun, LFun, GammaFun, timeDeriv_reverse_PFun, mean, diff, pow_two]
+    ring_nf
+
+lemma interpolation_scalar_curve_eq (t : ℝ) (f : Func) (x : State) :
+    (fun s : ℝ =>
+      eval x (P s (GammaFun (P (t - s) f) (P (t - s) f)))) =
+      fun s : ℝ => (Real.exp (-2 * (t - s)) * diff f) ^ (2 : ℕ) / 2 := by
+  funext s
+  fin_cases x <;> simp [eval, P, PFun, GammaFun, mean, diff, pow_two]
+
+lemma interpolation_scalar_timeDeriv_eq (t s : ℝ) (f : Func) (x : State) :
+    eval x
+      (timeDeriv
+        (fun r : ℝ => P r (GammaFun (P (t - r) f) (P (t - r) f))) s) =
+      2 * (Real.exp (-2 * (t - s)) * diff f) ^ (2 : ℕ) := by
+  have hscalar := hasDerivAt_reverse_gamma_scalar t s f
+  fin_cases x
+  · change deriv
+        (fun r : ℝ =>
+          PFun r (GammaFun (PFun (t - r) f) (PFun (t - r) f)) 0) s =
+        2 * (Real.exp (-2 * (t - s)) * diff f) ^ (2 : ℕ)
+    rw [show
+        (fun r : ℝ =>
+          PFun r (GammaFun (PFun (t - r) f) (PFun (t - r) f)) 0) =
+          (fun r : ℝ => (Real.exp (-2 * (t - r)) * diff f) ^ (2 : ℕ) / 2) by
+        funext r
+        simp [PFun, GammaFun, mean, diff, pow_two]]
+    exact hscalar.deriv
+  · change deriv
+        (fun r : ℝ =>
+          PFun r (GammaFun (PFun (t - r) f) (PFun (t - r) f)) 1) s =
+        2 * (Real.exp (-2 * (t - s)) * diff f) ^ (2 : ℕ)
+    rw [show
+        (fun r : ℝ =>
+          PFun r (GammaFun (PFun (t - r) f) (PFun (t - r) f)) 1) =
+          (fun r : ℝ => (Real.exp (-2 * (t - r)) * diff f) ^ (2 : ℕ) / 2) by
+        funext r
+        simp [PFun, GammaFun, mean, diff, pow_two]]
+    exact hscalar.deriv
+
+noncomputable def semigroup : CarreDuChampSemigroup where
+  Func := Func
+  funcAddCommGroup := inferInstance
+  funcModule := inferInstance
+  Point := State
+  P := P
+  L := L
+  Gamma := GammaFun
+  eval := eval
+  mul := mul
+  semigroup_zero := by
+    intro f
+    exact PFun_zero f
+  semigroup_add := by
+    intro s t f
+    exact PFun_add s t f
+  gamma_symm := GammaFun_symm
+  gamma_nonneg := GammaFun_nonneg
+  gamma_smul_right := GammaFun_smul_right
+  semigroup_mono := by
+    intro f g t x ht hfg
+    exact P_mono (f := f) (g := g) (t := t) (x := x) ht hfg
+  semigroup_le_const := by
+    intro f c t x ht hf
+    exact P_le_const (f := f) (c := c) (t := t) (x := x) ht hf
+  generator_product_rule := generator_product_rule
+  timeDeriv := timeDeriv
+  semigroup_derivative_const := by
+    intro s f
+    exact timeDeriv_PFun s f
+  semigroup_generator_commute := P_generator_commute
+  timeDeriv_semigroup_interpolation := timeDeriv_semigroup_interpolation
+  timeDeriv_reverse_semigroup := by
+    intro t s f
+    exact timeDeriv_reverse_PFun t s f
+  timeDeriv_gamma_self_reverse := timeDeriv_gamma_reverse
+  interpolation_scalar_continuous := by
+    intro t f x ht
+    rw [interpolation_scalar_curve_eq t f x]
+    fun_prop
+  interpolation_scalar_hasDerivWithinAt := by
+    intro t f x s hs
+    have hscalar := (hasDerivAt_reverse_gamma_scalar t s f).hasDerivWithinAt
+      (s := Set.Ioo 0 t)
+    rw [interpolation_scalar_curve_eq t f x]
+    exact hscalar.congr_deriv
+      (by exact (interpolation_scalar_timeDeriv_eq t s f x).symm)
+  generator_carre_du_champ_identity := True
+  semigroup_self_adjoint := True
+
+noncomputable def framework : BakryEmeryGronwallFramework where
+  base := semigroup
+
+lemma gamma2_eq_square_diff (f : Func) :
+    semigroup.gamma2 f = fun _ : State => diff f ^ (2 : ℕ) := by
+  funext x
+  fin_cases x
+  · change
+      ((1 / 2 : ℝ) •
+        (L (GammaFun f f) - (2 : ℝ) • GammaFun f (L f))) 0 =
+        diff f ^ (2 : ℕ)
+    simp [L, LFun, GammaFun, diff, pow_two]
+    ring
+  · change
+      ((1 / 2 : ℝ) •
+        (L (GammaFun f f) - (2 : ℝ) • GammaFun f (L f))) 1 =
+        diff f ^ (2 : ℕ)
+    simp [L, LFun, GammaFun, diff, pow_two]
+    ring
+
+def unitSlope : Func
+  | 0 => 0
+  | 1 => 1
+
+theorem unitSlope_nonconstant : unitSlope 0 ≠ unitSlope 1 := by
+  norm_num [unitSlope]
+
+theorem cdZero : semigroup.CDMinusInfinity 0 := by
+  unfold CarreDuChampSemigroup.CDMinusInfinity
+  change ∀ (f : Func) (x : State),
+    -0 * (eval x) (GammaFun f f) ≤ (eval x) (semigroup.gamma2 f)
+  intro f x
+  rw [gamma2_eq_square_diff f]
+  have hsq : 0 ≤ diff f ^ (2 : ℕ) := sq_nonneg (diff f)
+  fin_cases x <;> simpa [eval] using hsq
+
+theorem unitSlope_bakryEmeryEstimate_fires :
+    semigroup.eval (0 : State)
+        (semigroup.gammaSelf (semigroup.P 1 unitSlope)) ≤
+      Real.exp (2 * (0 : ℝ) * 1) *
+        semigroup.eval (0 : State)
+          (semigroup.P 1 (semigroup.gammaSelf unitSlope)) := by
+  exact
+    bakryEmeryGradientEstimate framework
+      (K := 0) (t := 1) (by norm_num) (by norm_num)
+      cdZero unitSlope (0 : State)
+
+theorem unitSlope_bakryEmeryEstimate_strict :
+    semigroup.eval (0 : State)
+        (semigroup.gammaSelf (semigroup.P 1 unitSlope)) <
+      semigroup.eval (0 : State)
+        (semigroup.P 1 (semigroup.gammaSelf unitSlope)) := by
+  have hexp_lt_one : Real.exp (-4) < 1 := by
+    rw [Real.exp_lt_one_iff]
+    norm_num
+  change GammaFun (PFun 1 unitSlope) (PFun 1 unitSlope) (0 : State) <
+    PFun 1 (GammaFun unitSlope unitSlope) (0 : State)
+  simp [PFun, GammaFun, unitSlope, mean, diff]
+  have hexp_mul : Real.exp (-2) * Real.exp (-2) = Real.exp (-4) := by
+    rw [← Real.exp_add]
+    norm_num
+  rw [hexp_mul]
+  nlinarith [Real.exp_pos (-4), hexp_lt_one]
+
+end TwoPointChain
+
 /-- Abstract version of Ben's downstream chain:
 
 identity heat-gradient bound -> log-heat energy bound (Proposition 7.1),
@@ -409,6 +1020,69 @@ structure AbstractBKMIdentityGate
 def LocalSGCurvatureDimensionOpenInput
     (G : BakryEmeryGronwallFramework) (K : ℝ) : Prop :=
   G.base.CDMinusInfinity K
+
+/-- The variable-curvature SG input: pointwise `CD(rho, infinity)`.
+
+This is only a hypothesis package.  Nothing here proves that the SG generator
+satisfies it. -/
+def LocalSGVariableCurvatureDimensionOpenInput
+    (G : BakryEmeryGronwallFramework) (rho : G.base.Point → ℝ) : Prop :=
+  G.base.CDVariableInfinity rho
+
+/-- Integrated positivity datum for a variable-curvature SG route.
+
+The `rhoWeight` field is the function-level representative of the pointwise
+curvature `rho`; the final field states the open averaged positivity condition
+against an invariant mean.  This records the stronger Cattiaux-style target
+for a future SG proof while keeping it explicit and undischarged here. -/
+structure LocalSGVariableCurvatureIntegratedOpenInput
+    (G : BakryEmeryGronwallFramework) where
+  rho : G.base.Point → ℝ
+  rhoWeight : G.base.Func
+  rhoWeight_eval : ∀ x : G.base.Point, G.base.eval x rhoWeight = rho x
+  rhoMin : ℝ
+  rhoMin_nonpos : rhoMin ≤ 0
+  lowerBound : ∀ x : G.base.Point, rhoMin ≤ rho x
+  localVariableCurvatureDimension :
+    LocalSGVariableCurvatureDimensionOpenInput G rho
+  invariantMean : G.base.Func →ₗ[ℝ] ℝ
+  semigroupInvariant :
+    ∀ (t : ℝ) (f : G.base.Func),
+      invariantMean (G.base.P t f) = invariantMean f
+  integratedPositivityConstant : ℝ
+  integratedPositivityPositive : 0 < integratedPositivityConstant
+  integratedCurvaturePositivity :
+    ∀ f : G.base.Func,
+      integratedPositivityConstant * invariantMean (G.base.gammaSelf f) ≤
+        invariantMean (G.base.mul rhoWeight (G.base.gammaSelf f))
+
+namespace LocalSGVariableCurvatureIntegratedOpenInput
+
+variable {G : BakryEmeryGronwallFramework}
+
+/-- The variable SG package supplies the constant lower-bound CD input used by
+the checked Bakry-Emery estimate. -/
+theorem constantCurvatureDimension
+    (H : LocalSGVariableCurvatureIntegratedOpenInput G) :
+    G.base.CDMinusInfinity (-H.rhoMin) :=
+  G.base.cdMinusInfinity_of_cdVariable_lowerBound
+    H.localVariableCurvatureDimension H.lowerBound
+
+/-- The checked gradient estimate available from the variable SG package via
+its constant lower bound.  The integrated positivity condition remains an
+explicit additional field of `H`; it is not proved here. -/
+theorem gradientEstimate
+    (H : LocalSGVariableCurvatureIntegratedOpenInput G)
+    {t : ℝ} (ht : 0 ≤ t)
+    (f : G.base.Func) (x : G.base.Point) :
+    G.base.eval x (G.base.gammaSelf (G.base.P t f)) ≤
+      Real.exp (2 * (-H.rhoMin) * t) *
+        G.base.eval x (G.base.P t (G.base.gammaSelf f)) :=
+  bakryEmeryGradientEstimate_variableLowerBound G
+    H.rhoMin_nonpos ht
+    H.localVariableCurvatureDimension H.lowerBound f x
+
+end LocalSGVariableCurvatureIntegratedOpenInput
 
 /-- Conditional NS reduction datum.
 
@@ -454,7 +1128,7 @@ theorem identityGradientBound
         D.Cphi ^ 2 :=
     G.base.semigroup_le_const
       (f := G.base.gammaSelf D.phi) (c := D.Cphi ^ 2)
-      (t := t) (x := D.id) D.h2_bound
+      (t := t) (x := D.id) ht D.h2_bound
   have hexp_nonneg : 0 ≤ Real.exp (2 * D.K * t) :=
     le_of_lt (Real.exp_pos _)
   exact hBE.trans (mul_le_mul_of_nonneg_left hH2 hexp_nonneg)
