@@ -60,6 +60,42 @@ same checker evaluated successfully.  The next formal step is therefore a
 per-fixed-input-fiber generated certificate, or a smaller frontier automaton
 certificate, not another literal repair of Ben's pointwise-preparation proof.
 
+Gate-2 frontier-mode checkpoint, 2026-06-30: the lab evidence has stabilized
+at a finite profile-mode surface, but it is not yet a Lean composition
+certificate.  The archived automaton runs record 936 frontier summaries after
+three saturation rounds; raw summary fibers are too coarse, but the
+atom-refined fixed-input Kempe graphs are connected for every word of length
+1 through 4 and the atom transition is congruent through the full length-4
+surface.  The compact state key
+`profile mode + frontier summary + local atom index` is transition-congruent
+on the observed surface (`888192` transition cases, `56064` transition keys,
+0 failures), and the profile-mode DFA closes at 20 modes with 40 transitions
+in the lab (`36` observed, `4` inferred by singleton-summary transition).
+The key archive reports are
+`fourcolor-lemma818-frontier-atom-stabilization-20260630.json` (SHA256
+`0ac0783238bf84fdaa2da6258f6104eedfa67018f70c4388dead11f2140e3d88`),
+`fourcolor-lemma818-frontier-mode-atom-transition-len4-20260630.json` (SHA256
+`4d8ae453b06643fd6fdc9931b6503062f7b3861217fb310b88ede904e70f5d9a`), and
+`fourcolor-lemma818-frontier-profile-mode-dfa-closure-20260630.json` (SHA256
+`2b1f24eb3d3939020bca6f5423b7aa7d57ddac7967f513029a76beda414d659e`).
+
+The honest frontier is connectivity, not mode finiteness.  Targeted length-5
+profile checks show the alternating words collapse back to existing singleton
+modes, and the remaining representatives either collapse to existing modes or
+land in two new singleton profile modes; the length-5 profile reports are
+`fourcolor-lemma818-frontier-alternating-len5-light-flag-20260630.json`
+(SHA256
+`a45d47b19815d1d0d7e6fbcf75e7fecd85dc6d936a94c46e9162d1dfc06739f1`) and
+`fourcolor-lemma818-frontier-remaining-len5-light-profiles-20260630.json`
+(SHA256
+`a12c8163a06dd57fc15b91811edd6ef6c84840c2f25fc0acc4529244c963913a`).
+The two new singleton modes do not yet have an independent per-fixed-input
+quotient-connectivity seal, and representative coverage is not yet formalized
+in Lean.  Thus the finite automaton is lab-closed at the profile-mode level,
+while the all-chain `LKR_in` certificate remains open until those connectivity
+obligations are discharged by small per-fiber lemmas or a generated finite
+transition certificate.
+
 The CAP5/F2, GP(12,2), dodecahedral six-cut, and related files below are
 exploratory audits of a divergent F2-additivity route.  They are retained for
 negative evidence and infrastructure, but they are not Ben's actual route and
