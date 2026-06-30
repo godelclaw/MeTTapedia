@@ -228,6 +228,15 @@ against the real single/length-2 chain certificate audits, frontier word-mode
 folding, and archived connectivity evidence.  The other 14 modes still need
 representative-word semantic certificates before the DFA induction can imply
 all-chain `LKR_in`.
+`GoertzelLemma818RepresentativeTargets.lean` now names those 14 remaining
+semantic targets explicitly.  `representativeTargetCoverageAudit_ok` checks
+that the chosen words fold to modes
+`mode00/mode01/mode02/mode03/mode05/mode06/mode08/mode09/mode12/mode13/mode14/mode15/mode17/mode19`,
+that each target mode already has archived connectivity evidence, and that
+none is among the six base-certified modes.  `plannedSemanticModeCoverageAudit_ok`
+checks that the six certified base modes plus these 14 targets cover all 20
+frontier modes.  This is still only the finite target surface; the real
+per-fixed-input chain/path certificates for those target words remain open.
 
 The CAP5/F2, GP(12,2), dodecahedral six-cut, and related files below are
 exploratory audits of a divergent F2-additivity route.  They are retained for
