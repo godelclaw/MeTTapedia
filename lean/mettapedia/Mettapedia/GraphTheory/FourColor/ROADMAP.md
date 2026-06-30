@@ -209,6 +209,13 @@ empty fibers, 24 nonempty size-16 fibers, and all 384 light chain states for
 the `TTT`/`mode09` representative.  The next useful expansion is the 12 large
 size-512 `TTT` fibers by a smaller transition/component certificate or further
 row splitting, before moving to the other thirteen representative targets.
+The first large-fiber row split is now checked in
+`GoertzelLemma818TripleTauLargeFiber4Block0ComponentCertificate.lean`:
+`tttLargeFiber4Block0ComponentCertificateAudit_ok` covers the first 64 rows of
+the first size-512 `TTT` fiber (`[r,r,b,b]`, root `2176`) with explicit
+component rows, parent-map agreement, and parent-depth convergence.  Continue
+that fiber as seven more 64-row blocks, then repeat or replace the pattern for
+the other eleven size-512 `TTT` fibers.
 
 Checkpoint stop status, 2026-07-01: the exploration pass is checkpointed and
 should not be extended by longer word sweeps.  The profile automaton is finite
@@ -220,10 +227,10 @@ at that layer.  The remaining work is the semantic certificate layer: the six
 base modes are backed by real single/length-2 chain certificates, while the
 fourteen non-base modes still need compact per-fixed-input chain/component
 certificates or an equivalent finite transition certificate.  The `TTT`/`mode09`
-target is partially discharged on its light fibers, but its 12 large fibers are
-still open.  Once the target audits exist, `GoertzelLemma818SemanticBridge.lean`
-provides the finite induction hook to lift them to all nonempty
-`τ`/mirror-`τ` chains.
+target is partially discharged on its light fibers and one 64-row block of the
+first large fiber, but the remaining large-fiber blocks are still open.  Once
+the target audits exist, `GoertzelLemma818SemanticBridge.lean` provides the
+finite induction hook to lift them to all nonempty `τ`/mirror-`τ` chains.
 
 The older CAP5/F2, GP(12,2), and six-cut files are exploratory negative audits
 of a divergent additive F2 route.  They remain useful for provenance and
@@ -242,6 +249,7 @@ Read these four files first — they are the whole live surface:
 | `GoertzelLemma818MirrorMirrorCertificate.lean` | Generated full `mirror-τ,mirror-τ` direct parent/path certificate table: `mmAllFiberCertificateAudit_ok` checks all 81 fixed-input keys, 36 nonempty fibers, 960 generated chain states, and parent depth at most 4 by row-split direct Kempe moves and parent-iteration checks; this completes the length-2 base table layer but is not the all-chain `LKR_in` consequence |
 | `GoertzelLemma818LengthTwoBase.lean` | Finite aggregate interface for the four length-2 generated tables: `lengthTwoCertificateAudit_ok` proves the appropriate table audit for each constructor of `LengthTwoOrientWord`, and `lengthTwoAllCertificateAudit_ok` checks the complete four-word base list; this is a base hook, not the all-chain `LKR_in` consequence |
 | `GoertzelLemma818TripleTauLightComponentCertificate.lean` | Generated explicit component-row certificate for the light part of the `TTT`/`mode09` representative target: `tttLightComponentCertificateAudit_ok` checks target/mode bookkeeping, 69 light fixed-input fibers, 45 empty fibers, 24 nonempty size-16 fibers, and 384 light chain states without expanding full `chainComponent`; the 12 size-512 `TTT` fibers and the other thirteen representative target modes remain open |
+| `GoertzelLemma818TripleTauLargeFiber4Data.lean` / `GoertzelLemma818TripleTauLargeFiber4Block0ComponentCertificate.lean` | First large-fiber decomposition for `TTT`/`mode09`: records the parent map for the `[r,r,b,b]` size-512 fiber and checks the first 64 source rows by explicit component rows, parent-map agreement, and parent-depth convergence; the other 448 rows of this fiber, the other eleven large `TTT` fibers, and the other thirteen representative target modes remain open |
 | `Goal.lean` | The target (`Theorem49ShellClaim`), its reduction to four geometric oracles plus a fifth non-geometric algebraic cancellation oracle, and proofs that **all four geometric uniform oracles are false** — including the v23.5 residual/current-boundary lane, whose positive wrapper is fixed-embedding equivalent to the refuted collar-layer surface |
 | `Shells.lean` | Bundled hypothesis packages (`ClosedWalkExactShell`, `SuccessorCycleExactShell`, `ClosedWalkCancellationShell`, …) replacing the historical 8–10-hypothesis telescopes |
 | `Frontier.lean` | The maximal positive and negative results, stated over the bundles as thin wrappers, including detector-based cancellation sufficiency |
