@@ -171,6 +171,18 @@ each target mode, and complete coverage of the 20-mode frontier plan by
 representative certificate generator: attach real per-fixed-input parent/path
 certificates for these target words without monolithic closure search or large
 row scans.
+Stop checkpoint, 2026-07-01: the finite mode set has stabilized enough for
+formalization.  The profile DFA is finite and closed at 20 modes and 40
+transitions; all 20 modes have archived per-fixed-input connectivity evidence
+at the metadata/quotient layer; no profile mode is currently known to lack such
+evidence.  What is not yet checked is the semantic bridge from those archived
+rows to actual chain-state Kempe paths for the 14 non-base representative
+modes.  A `TTT` light-fiber prototype found the expected finite split
+(45 empty fibers, 24 size-16 fibers, and 12 size-512 fibers), but the direct
+row checker was still too large for the kernel at default recursion settings.
+Leave that as archived WIP.  The next pass should generate smaller component
+certificates or a finite transition certificate, then feed the result through
+`wordMode_induction`; do not continue length sweeps or increase kernel limits.
 
 The older CAP5/F2, GP(12,2), and six-cut files are exploratory negative audits
 of a divergent additive F2 route.  They remain useful for provenance and

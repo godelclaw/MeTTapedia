@@ -238,6 +238,24 @@ checks that the six certified base modes plus these 14 targets cover all 20
 frontier modes.  This is still only the finite target surface; the real
 per-fixed-input chain/path certificates for those target words remain open.
 
+Gate-2 stop checkpoint, 2026-07-01: the open-ended connectivity sweeps should
+remain stopped.  There is no known unverified profile mode at the archived
+connectivity-evidence layer: all 20 modes have a source-consistent witness row,
+the profile-mode transition table is finite and closed, and the six modes
+`mode07/mode16/mode10/mode18/mode11/mode04` are already backed by real
+single/length-2 chain certificate audits.  The unverified layer is semantic,
+not exploratory: the remaining 14 representative modes still need real
+per-fixed-input chain/path certificates, or an equivalent finite transition
+certificate, before the DFA induction can imply all-chain `LKR_in`.  A
+generated `TTT` light-fiber prototype confirmed that direct representative
+certificates must be decomposed further: it split the `TTT` state space into
+45 empty fixed-input fibers, 24 size-16 light fibers, and 12 size-512 large
+fibers, but the Lean row checks still expanded too much for the default kernel
+recursion budget.  That prototype is archived as failed WIP, not imported and
+not part of the proof surface.  The next pass should formalize smaller
+component certificates or the finite transition automaton; it should not extend
+word lengths or raise kernel limits.
+
 The CAP5/F2, GP(12,2), dodecahedral six-cut, and related files below are
 exploratory audits of a divergent F2-additivity route.  They are retained for
 negative evidence and infrastructure, but they are not Ben's actual route and
