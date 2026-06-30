@@ -21,6 +21,7 @@ namespace YangMills
 inductive YangMillsRoadmapStage where
   | finiteLatticeStrongCouplingGap
   | continuumScalingDiagnostic
+  | extractionConstantBreak
   | continuumMassGapEndpoint
 deriving DecidableEq, Repr
 
@@ -85,6 +86,19 @@ def z3HalfScaleLinearRGStepRoadmapEntry : YangMillsRoadmapEntry where
   evidence := "z3HalfScaleLinearRGStep_preserves_physicalGap proves a concrete kappa=1/2 refinement step preserving t(a)/a, while z3QuadraticHeatTime_physicalGap_closes records the schedule boundary."
   nextObligation := "Classify the full refinement schedules that preserve or close the physical lower bound; this is a scaling diagnostic, not a continuum mass-gap theorem."
 
+/-- The advertised extended-extraction contraction constant is not established
+by the displayed extraction-projection series. -/
+def yangMillsExtractionConstantBreakRoadmapEntry : YangMillsRoadmapEntry where
+  stage := .extractionConstantBreak
+  nodeId := yangMillsExtractionConstantBreakNode.id
+  status := .refuted
+  truthValue := ⟨100, 98⟩
+  itvLowerPercent := 98
+  itvUpperPercent := 100
+  progressPercent := 100
+  evidence := "currentYangMillsExtractionConstantBreak_packet records that the displayed extraction series exceeds the asserted Cextract <= 2 and that the series-derived dmax=16 constant fails HasExtendedExtractionContraction."
+  nextObligation := "Keep the advertised 2224 arithmetic as an input-only benchmark; any continuum route must derive the actual P_le_dmax norm before using Lambda < 1."
+
 /-- The continuum Yang-Mills mass-gap endpoint remains open. -/
 def yangMillsContinuumMassGapEndpointRoadmapEntry : YangMillsRoadmapEntry where
   stage := .continuumMassGapEndpoint
@@ -103,6 +117,7 @@ def currentYangMillsRoadmap : List YangMillsRoadmapEntry :=
   , z3StrongCouplingFiniteLandmarkRoadmapEntry
   , z2QuadraticHeatTimeGapClosingRoadmapEntry
   , z3HalfScaleLinearRGStepRoadmapEntry
+  , yangMillsExtractionConstantBreakRoadmapEntry
   , yangMillsContinuumMassGapEndpointRoadmapEntry
   ]
 
@@ -163,6 +178,19 @@ theorem currentYangMillsRoadmap_records_z3_half_scale_rg_step :
         intro a κ ha
         exact z3HalfScaleLinearRGStep_preserves_physicalGap (a := a) (κ := κ) ha,
       z3QuadraticHeatTime_physicalGap_closes⟩
+
+theorem currentYangMillsRoadmap_records_extraction_constant_break :
+    ∃ entry : YangMillsRoadmapEntry,
+      entry.nodeId = yangMillsExtractionConstantBreakNode.id ∧
+        entry.status = .refuted ∧
+        entry.progressPercent = 100 ∧
+        ¬ HasExtendedExtractionContraction manuscriptSeriesC1LowerBound16 2 16 := by
+  refine ⟨yangMillsExtractionConstantBreakRoadmapEntry, ?_⟩
+  exact
+    ⟨rfl,
+      rfl,
+      rfl,
+      not_rgContraction_manuscriptSeriesC1LowerBound_two_sixteen⟩
 
 theorem currentYangMillsRoadmap_keeps_continuum_endpoint_open :
     yangMillsContinuumMassGapEndpointRoadmapEntry.status = .openGoal ∧

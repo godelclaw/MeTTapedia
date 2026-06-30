@@ -1,6 +1,7 @@
 import Mettapedia.QuantumTheory.YangMills.MassGap
 import Mettapedia.QuantumTheory.YangMills.RGBootstrap
 import Mettapedia.QuantumTheory.YangMills.RGCrux
+import Mettapedia.QuantumTheory.YangMills.ExtractionConstantBreak
 import Mettapedia.QuantumTheory.YangMills.ExtractionStateRouteCollapse
 
 /-!
@@ -518,6 +519,15 @@ def yangMillsSameConstantLowerEvenExtractionNode : YangMillsProofNode where
   evidence := "not_sameConstantEvenBelowSixteenGapRouteCertificate and not_atLeast2048EvenBelowSixteenGapRouteCertificate rule out the lower-even extraction repair, while rgContraction_2224_two_sixteen records the positive dmax=16 arithmetic benchmark."
   nextObligation := "Do not revive lower-even extraction as a mass-gap route unless the recombination constant or route shape is genuinely changed and audited."
 
+/-- The manuscript's displayed extraction-projection series does not support
+the small `Cextract <= 2` input used to obtain `C1 <= 2224`. -/
+def yangMillsExtractionConstantBreakNode : YangMillsProofNode where
+  id := "yang-mills.rg.extraction-constant-break"
+  status := .refuted
+  truthValue := ⟨100, 98⟩
+  evidence := "manuscriptExtractionSeriesLowerBound16_exceeds_asserted_two proves that the displayed extraction series already exceeds the asserted Cextract <= 2 in the one-variable lower-bound scenario; manuscriptSeriesGain_two_sixteen_gt_one and not_rgContraction_manuscriptSeriesC1LowerBound_two_sixteen prove that the resulting dmax=16 RG gain is expanding, not contracting. Lab ym-extraction-constant-break-lab-20260630.json tabulates the same series/advertised gap."
+  nextObligation := "Do not use Ben Goertzel's extended-extraction Lambda < 1 step unless a new derivation supplies the actual P_le_dmax operator norm and reconciles it with the displayed series."
+
 /-- The current route audit does not construct the full continuum object. -/
 def yangMillsConstructiveQFTNode : YangMillsProofNode where
   id := "yang-mills.constructive-qft"
@@ -579,6 +589,7 @@ def currentYangMillsProofNodes : List YangMillsProofNode :=
   [ yangMillsLiveSurfaceNode
   , yangMillsRegressionSurfaceNode
   , yangMillsSameConstantLowerEvenExtractionNode
+  , yangMillsExtractionConstantBreakNode
   , yangMillsConstructiveQFTNode
   , yangMillsContinuumMeasureCanaryNode
   , yangMillsEuclideanCovarianceCanaryNode
@@ -597,6 +608,10 @@ theorem yangMillsConstructiveQFTNode_constructiveGateUncleared :
 
 theorem yangMillsSameConstantLowerEvenExtractionNode_refuted :
     yangMillsSameConstantLowerEvenExtractionNode.status = .refuted := by
+  rfl
+
+theorem yangMillsExtractionConstantBreakNode_refuted :
+    yangMillsExtractionConstantBreakNode.status = .refuted := by
   rfl
 
 theorem yangMillsMassGapPromotionGateNode_constructiveGateUncleared :
@@ -637,6 +652,17 @@ theorem currentYangMillsRGCrux_lowerEvenExtraction_arithmetic_packet :
   exact
     ⟨rgContraction_2224_two_sixteen,
       not_rgContraction_2224_two_fourteen⟩
+
+theorem currentYangMillsExtractionConstantBreak_packet :
+    (2 : ℝ) < manuscriptExtractionSeriesLowerBound16 ∧
+      (2224 : ℝ) < manuscriptSeriesC1LowerBound16 ∧
+      (1 : ℝ) < manuscriptSeriesC1LowerBound16 * irrelevantScale 2 16 ∧
+      ¬ HasExtendedExtractionContraction manuscriptSeriesC1LowerBound16 2 16 := by
+  exact
+    ⟨manuscriptExtractionSeriesLowerBound16_exceeds_asserted_two,
+      manuscriptSeriesC1LowerBound16_exceeds_advertised,
+      manuscriptSeriesGain_two_sixteen_gt_one,
+      not_rgContraction_manuscriptSeriesC1LowerBound_two_sixteen⟩
 
 theorem currentYangMillsConstructiveDependency_packet :
     currentYangMillsConstructiveStatus.representedChecks = [] ∧
