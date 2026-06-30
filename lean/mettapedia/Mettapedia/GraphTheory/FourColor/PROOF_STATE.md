@@ -301,6 +301,17 @@ failed direct-row prototype for the light slice: Lean no longer expands full
 `chainComponent` for these rows.  It is still not the full `TTT` target audit,
 because the 12 size-512 `TTT` fibers remain open, and it is not the all-chain
 `LKR_in` consequence.
+`GoertzelLemma818TripleTauLargeFiber4Data.lean` and
+`GoertzelLemma818TripleTauLargeFiber4Block0ComponentCertificate.lean` start the
+large-fiber decomposition at the same granularity.  The checked fiber is the
+first size-512 `TTT` fiber, fixed-input key `[r,r,b,b]`, with root `2176` and
+BFS parent depth 6.  The theorem
+`tttLargeFiber4Block0ComponentCertificateAudit_ok` checks the first 64 source
+rows of that fiber by explicit component-switch rows, verifies that each row's
+parent agrees with the generated parent map, and verifies convergence to the
+root under that parent map.  This is a large-fiber block certificate, not the
+full size-512 fiber audit: the other 448 rows of this fiber and the other
+eleven size-512 `TTT` fibers remain open.
 
 Checkpoint stop status, 2026-07-01: the exploratory Gate-2 connectivity sweeps
 are stopped.  The finite mode set is not the open question anymore: Lean records
@@ -316,9 +327,11 @@ length-2 chain-level parent/path certificates
 still need compact per-fixed-input chain/component certificates, or an
 equivalent finite transition certificate, before `wordMode_induction` can yield
 all-chain `LKR_in`.  The first non-base target, `mode09`, now has its `TTT`
-light fibers certified, but not the 12 large `TTT` fibers.  This checkpoint is
-therefore a finite-mode/table-closure plus light-target-certificate checkpoint,
-not a completed Lemma 8.18/8.19 lift and not a Four Color Theorem claim.
+light fibers certified and the first 64 rows of the first large `TTT` fiber
+certified, but not the rest of the large `TTT` fibers.  This checkpoint is
+therefore a finite-mode/table-closure plus partial target-certificate
+checkpoint, not a completed Lemma 8.18/8.19 lift and not a Four Color Theorem
+claim.
 
 The CAP5/F2, GP(12,2), dodecahedral six-cut, and related files below are
 exploratory audits of a divergent F2-additivity route.  They are retained for
