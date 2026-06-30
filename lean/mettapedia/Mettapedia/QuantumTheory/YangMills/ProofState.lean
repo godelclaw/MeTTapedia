@@ -1,6 +1,7 @@
 import Mettapedia.QuantumTheory.YangMills.MassGap
 import Mettapedia.QuantumTheory.YangMills.RGBootstrap
 import Mettapedia.QuantumTheory.YangMills.RGCrux
+import Mettapedia.QuantumTheory.YangMills.ContinuumOSReconstruction
 import Mettapedia.QuantumTheory.YangMills.ExtractionConstantBreak
 import Mettapedia.QuantumTheory.YangMills.ExtractionStateRouteCollapse
 
@@ -268,9 +269,9 @@ deriving Repr
 
 /-- Current dependency-map counts for `QuantumTheory/YangMills`. -/
 def currentYangMillsLaneSurvey : YangMillsLaneSurvey where
-  sourceFiles := 40
-  sourceLines := 7468
-  regressionFiles := 18
+  sourceFiles := 43
+  sourceLines := 8084
+  regressionFiles := 19
   filesOverThousandLines := 0
   filesOverSevenHundredFiftyLines := 0
 
@@ -528,6 +529,14 @@ def yangMillsExtractionConstantErratumNode : YangMillsProofNode where
   evidence := "benCauchyC1UpperBound_le_advertised proves that the corrected Cauchy-estimate bound Cextract <= 2 gives C1 <= 2224; benCauchyC1UpperBound_gain_two_sixteen_lt_one and benCauchyC1UpperBound_contraction_two_sixteen prove the resulting b=2,dmax=16 gain is below 1. The old displayed-series contraction failure was an artifact of reading an inverted-ratio typo literally, so it is retracted as an erratum, not a Yang-Mills refutation."
   nextObligation := "Keep the extended-extraction contraction as standing route evidence, and focus the open endpoint on the continuum constructive-QFT gate: continuum measure, covariance, reflection positivity, OS reconstruction, and Hamiltonian mass-gap transfer."
 
+/-- Conditional OS reconstruction scaffold for the continuum endpoint. -/
+def yangMillsContinuumOSConditionalScaffoldNode : YangMillsProofNode where
+  id := "yang-mills.continuum-os-reconstruction-conditional"
+  status := .checked
+  truthValue := ⟨100, 96⟩
+  evidence := "BenYMContinuumOSConditional.continuumMassGap proves the conditional endpoint: the standing corrected Lambda<1 contraction feeds an explicit open bridge to lattice mass gap and exponential clustering, then OS reflection positivity and a Kirk-style OS reconstruction machine yield HasSpectralMassGap for the continuum Hamiltonian."
+  nextObligation := "Discharge the open bridge from Ben's Lambda<1 contraction to lattice gap/clustering, prove Wilson-measure OS reflection positivity for the same lattice family, and supply the OS reconstruction/subsequential-limit machinery; until then the continuum mass gap remains unclaimed."
+
 /-- The current route audit does not construct the full continuum object. -/
 def yangMillsConstructiveQFTNode : YangMillsProofNode where
   id := "yang-mills.constructive-qft"
@@ -590,6 +599,7 @@ def currentYangMillsProofNodes : List YangMillsProofNode :=
   , yangMillsRegressionSurfaceNode
   , yangMillsSameConstantLowerEvenExtractionNode
   , yangMillsExtractionConstantErratumNode
+  , yangMillsContinuumOSConditionalScaffoldNode
   , yangMillsConstructiveQFTNode
   , yangMillsContinuumMeasureCanaryNode
   , yangMillsEuclideanCovarianceCanaryNode
@@ -612,6 +622,10 @@ theorem yangMillsSameConstantLowerEvenExtractionNode_refuted :
 
 theorem yangMillsExtractionConstantErratumNode_checked :
     yangMillsExtractionConstantErratumNode.status = .checked := by
+  rfl
+
+theorem yangMillsContinuumOSConditionalScaffoldNode_checked :
+    yangMillsContinuumOSConditionalScaffoldNode.status = .checked := by
   rfl
 
 theorem yangMillsMassGapPromotionGateNode_constructiveGateUncleared :
@@ -671,6 +685,35 @@ theorem currentYangMillsExtractionConstant_hypotheticalThreshold_packet :
       ¬ HasExtendedExtractionContraction C 2 16 := by
   intro C hC
   exact hypothetical_not_rgContraction_two_sixteen_of_constant_ge_8192 hC
+
+theorem currentYangMillsBenRoute_reflectionPositivityOpenInput :
+    currentYangMillsConstructiveWorldInterfaces.missingFor .reflectionPositivity =
+      [.reflectionPositiveFunctional, .reflectionPositiveCone] := by
+  simpa [YangMillsConstructiveCheck.requiredWorldInterfaces]
+    using currentYangMillsConstructiveWorldInterfaces_missing_reflectionPositivity
+
+theorem currentYangMillsContinuumOSConditional_packet
+    {H : Type*} [NormedAddCommGroup H] [NormedSpace ℝ H]
+    {A : LinearOperator H} {Δ : ℝ} {corr : SpatialCorrelation}
+    (D : BenYMContinuumOSConditional A Δ corr) :
+    BenStandingExtendedExtractionContraction ∧
+      HasSpectralMassGap A Δ ∧
+        0 < Δ ∧
+          currentYangMillsConstructiveWorldInterfaces.missingFor
+              .reflectionPositivity =
+            [.reflectionPositiveFunctional, .reflectionPositiveCone] ∧
+          preprints2025041268Verdict = .notRouteBlocking ∧
+          yangMillsContinuumOSConditionalScaffoldNode.status = .checked ∧
+          yangMillsMassGapEndpointNode.status = .openGoal := by
+  have hpacket := D.reductionPacket
+  exact
+    ⟨hpacket.1,
+      hpacket.2.1,
+      hpacket.2.2,
+      currentYangMillsBenRoute_reflectionPositivityOpenInput,
+      preprints2025041268Verdict_notRouteBlocking,
+      yangMillsContinuumOSConditionalScaffoldNode_checked,
+      yangMillsMassGapEndpointNode_open⟩
 
 theorem currentYangMillsConstructiveDependency_packet :
     currentYangMillsConstructiveStatus.representedChecks = [] ∧

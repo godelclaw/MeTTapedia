@@ -1,4 +1,5 @@
 import Mettapedia.QuantumTheory.YangMills.ClusteringRegression
+import Mettapedia.QuantumTheory.YangMills.ContinuumOSReconstructionRegression
 import Mettapedia.QuantumTheory.YangMills.ContinuumMeasureGateCanariesRegression
 import Mettapedia.QuantumTheory.YangMills.EuclideanCovarianceGateCanariesRegression
 import Mettapedia.QuantumTheory.YangMills.ExtractionObservableRegression
