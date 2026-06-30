@@ -75,6 +75,11 @@ maximum parent depth 4.  The proof is decomposed into individual row and
 parent-iteration checks rather than a monolithic closure search.  This is the
 first complete two-gadget generated table; the remaining work is still the
 frontier/DFA lift to all finite chains.
+`GoertzelLemma818TauMirrorCertificate.lean` now checks the next length-2 base
+table: `tmAllFiberCertificateAudit_ok` covers all 81 fixed-input keys for the
+`τ,mirror-τ` chain, with 36 nonempty fibers, 1152 generated chain states, and
+maximum parent depth 4.  The other two length-2 orientation tables remain to
+be generated before this base layer is complete.
 
 Gate-2 frontier-mode status: stop treating longer exploratory sweeps as the
 main work item.  The current lab surface is a finite 20-mode profile DFA with
@@ -137,6 +142,7 @@ Read these four files first — they are the whole live surface:
 | `GoertzelLemma814.lean` | Pillar-C finite model for Lemma 8.14: canonical three-cell gadget, finite proper-coloring state space, input-disjoint Kempe switches, indexed `LKR_in` path certificate, mirror check, Lemma 8.15 transparency finite check, the checked Lemma 8.18 pointwise-preparation obstruction, and the build-checked composite-chain model for the Gate-1 salvage audit |
 | `GoertzelLemma818FrontierMode.lean` | Lab-facing finite profile-mode DFA table for the Lemma 8.18/8.19 repair: 20 mode constructors, profile hashes, representative words, two orientations, 40 total transitions, axiom-free `tableClosedCheck_ok`, `profileHashLookupCheck_ok`, abstract word-fold theorem `wordMode_inTable`, checked representative coverage theorems `representativeWordsSoundCheck_ok`, `representativeCoverageCheck_ok`, `modeWitnessWord_sound`, 42-word profile-hash consistency check `knownProfileWordHashCheck_ok`, 40-transition hash consistency check `knownTransitionHashCheck_ok`, structural induction hooks `wordMode_induction`/`wordMode_bool_induction`, and archived mode-connectivity witness coverage `archivedConnectivityCoverageCheck_ok`/`wordMode_hasArchivedConnectivityEvidence`; this is table closure/induction/hash/representative/evidence metadata only, not yet the all-chain `LKR_in` consequence |
 | `GoertzelLemma818CompositeCertificate.lean` | Generated full `τ,τ` direct parent/path certificate table: `ttAllFiberCertificateAudit_ok` checks all 81 fixed-input keys, 36 nonempty fibers, 960 generated chain states, and parent depth at most 4 by row-split direct Kempe moves and parent-iteration checks; this is the base two-gadget table, not the all-chain `LKR_in` consequence |
+| `GoertzelLemma818TauMirrorCertificate.lean` | Generated full `τ,mirror-τ` direct parent/path certificate table: `tmAllFiberCertificateAudit_ok` checks all 81 fixed-input keys, 36 nonempty fibers, 1152 generated chain states, and parent depth at most 4 by row-split direct Kempe moves and parent-iteration checks; this advances the length-2 base layer but is not the all-chain `LKR_in` consequence |
 | `Goal.lean` | The target (`Theorem49ShellClaim`), its reduction to four geometric oracles plus a fifth non-geometric algebraic cancellation oracle, and proofs that **all four geometric uniform oracles are false** — including the v23.5 residual/current-boundary lane, whose positive wrapper is fixed-embedding equivalent to the refuted collar-layer surface |
 | `Shells.lean` | Bundled hypothesis packages (`ClosedWalkExactShell`, `SuccessorCycleExactShell`, `ClosedWalkCancellationShell`, …) replacing the historical 8–10-hypothesis telescopes |
 | `Frontier.lean` | The maximal positive and negative results, stated over the bundles as thin wrappers, including detector-based cancellation sufficiency |
