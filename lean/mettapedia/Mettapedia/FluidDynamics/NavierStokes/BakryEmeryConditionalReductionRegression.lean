@@ -38,6 +38,24 @@ theorem bakry_emery_interpolation_lower_bound_from_cd_regression
     M.InterpolationDerivativeLowerBound K t f x :=
   M.interpolationDerivativeLowerBound_of_CD hCD
 
+theorem bakry_emery_weighted_interpolation_mono_regression
+    (M : CarreDuChampSemigroup) {K t : ℝ} {f : M.Func} {x : M.Point}
+    (hK : 0 ≤ K) (ht : 0 ≤ t)
+    (hIdentity : M.InterpolationDerivativeIdentity t f x)
+    (hLower : M.InterpolationDerivativeLowerBound K t f x) :
+    MonotoneOn (M.weightedBEInterpolation K t f x) (Set.Icc 0 t) :=
+  M.weightedBEInterpolation_monoOn hK ht hIdentity hLower
+
+theorem bakry_emery_gronwall_from_interpolation_regression
+    (M : CarreDuChampSemigroup) {K t : ℝ} {f : M.Func} {x : M.Point}
+    (hK : 0 ≤ K) (ht : 0 ≤ t)
+    (hIdentity : M.InterpolationDerivativeIdentity t f x)
+    (hLower : M.InterpolationDerivativeLowerBound K t f x) :
+    M.eval x (M.gammaSelf (M.P t f)) ≤
+      Real.exp (2 * K * t) *
+        M.eval x (M.P t (M.gammaSelf f)) :=
+  M.gronwallFromInterpolation hK ht hIdentity hLower
+
 theorem bakry_emery_gradient_estimate_regression
     (G : BakryEmeryGronwallFramework) {K t : ℝ}
     (hK : 0 ≤ K) (ht : 0 ≤ t)

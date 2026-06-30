@@ -72,7 +72,7 @@ def currentNavierRoadmap : List NavierRoadmapEntry :=
       proofNodeId := "navier.goertzel-bakry-emery.conditional-reduction"
       status := .checked
       truthValue := ⟨100, 91⟩
-      obligation := "Use bakryEmeryGradientEstimate and NSBakryEmeryConditionalReduction.reductionPacket only as the conditional replacement scaffold: gamma2 is defined by the Bochner generator identity, the interpolation derivative identity is checked, and CD(-K,infinity) plus H2 gives Gamma(P_t phi)(id) <= exp(2*K*t) Cphi^2 through the abstract scalar Gronwall comparison field. The exact remaining SG obligation is LocalSGCurvatureDimensionOpenInput for the SG generator near id; do not treat the scaffold as a Navier-Stokes regularity theorem." },
+      obligation := "Use bakryEmeryGradientEstimate and NSBakryEmeryConditionalReduction.reductionPacket only as the conditional replacement scaffold: gamma2 is defined by the Bochner generator identity, the interpolation derivative identity is checked, the integrating-factor monotonicity/Gronwall step is checked, and CD(-K,infinity) plus H2 gives Gamma(P_t phi)(id) <= exp(2*K*t) Cphi^2. The exact remaining SG obligation is LocalSGCurvatureDimensionOpenInput for the SG generator near id; do not treat the scaffold as a Navier-Stokes regularity theorem." },
     { stage := .deGroundedSurface
       proofNodeId := "navier.de-grounded-zero-canary"
       status := .checked
@@ -320,7 +320,7 @@ theorem currentNavierRoadmap_records_bakry_emery_conditional_reduction :
        status := .checked
        truthValue := ⟨100, 91⟩
        obligation :=
-        "Use bakryEmeryGradientEstimate and NSBakryEmeryConditionalReduction.reductionPacket only as the conditional replacement scaffold: gamma2 is defined by the Bochner generator identity, the interpolation derivative identity is checked, and CD(-K,infinity) plus H2 gives Gamma(P_t phi)(id) <= exp(2*K*t) Cphi^2 through the abstract scalar Gronwall comparison field. The exact remaining SG obligation is LocalSGCurvatureDimensionOpenInput for the SG generator near id; do not treat the scaffold as a Navier-Stokes regularity theorem." } :
+        "Use bakryEmeryGradientEstimate and NSBakryEmeryConditionalReduction.reductionPacket only as the conditional replacement scaffold: gamma2 is defined by the Bochner generator identity, the interpolation derivative identity is checked, the integrating-factor monotonicity/Gronwall step is checked, and CD(-K,infinity) plus H2 gives Gamma(P_t phi)(id) <= exp(2*K*t) Cphi^2. The exact remaining SG obligation is LocalSGCurvatureDimensionOpenInput for the SG generator near id; do not treat the scaffold as a Navier-Stokes regularity theorem." } :
       NavierRoadmapEntry) ∈ currentNavierRoadmap := by
   simp [currentNavierRoadmap]
 

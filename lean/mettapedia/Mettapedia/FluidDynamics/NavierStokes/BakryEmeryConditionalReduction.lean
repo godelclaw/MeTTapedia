@@ -1,4 +1,5 @@
-import Mathlib.Analysis.SpecialFunctions.Exp
+import Mathlib.Analysis.Calculus.Deriv.MeanValue
+import Mathlib.Analysis.SpecialFunctions.ExpDeriv
 import Mathlib.Algebra.Module.Basic
 import Mathlib.Data.Real.Basic
 import Mathlib.Tactic
@@ -71,6 +72,19 @@ structure CarreDuChampSemigroup where
     ∀ (u : ℝ → Func) (s : ℝ),
       timeDeriv (fun r => Gamma (u r) (u r)) s =
         (2 : ℝ) • Gamma (u s) (timeDeriv u s)
+  interpolation_scalar_continuous :
+    ∀ {t : ℝ} {f : Func} {x : Point}, 0 ≤ t →
+      ContinuousOn
+        (fun s : ℝ => eval x (P s (Gamma (P (t - s) f) (P (t - s) f))))
+        (Set.Icc 0 t)
+  interpolation_scalar_hasDerivWithinAt :
+    ∀ {t : ℝ} {f : Func} {x : Point} {s : ℝ}, s ∈ Set.Ioo 0 t →
+      HasDerivWithinAt
+        (fun r : ℝ => eval x (P r (Gamma (P (t - r) f) (P (t - r) f))))
+        (eval x
+          (timeDeriv
+            (fun r : ℝ => P r (Gamma (P (t - r) f) (P (t - r) f))) s))
+        (Set.Ioo 0 t) s
   generator_carre_du_champ_identity : Prop
   semigroup_self_adjoint : Prop
 
@@ -243,34 +257,114 @@ theorem interpolationDerivativeLowerBound_of_CD
           ring
     _ ≤ 2 * M.eval x (M.P s (M.gamma2 g)) := htwo
 
+/-- Weighted Bakry-Emery interpolation used in the scalar comparison step. -/
+def weightedBEInterpolation (M : CarreDuChampSemigroup)
+    (K t : ℝ) (f : M.Func) (x : M.Point) (s : ℝ) : ℝ :=
+  Real.exp (2 * K * s) * M.eval x (M.beInterpolation t s f)
+
+/-- The weighted interpolation is monotone once the interpolation differential
+lower bound has been derived. -/
+theorem weightedBEInterpolation_monoOn
+    (M : CarreDuChampSemigroup) {K t : ℝ} {f : M.Func} {x : M.Point}
+    (_hK : 0 ≤ K) (ht : 0 ≤ t)
+    (hIdentity : M.InterpolationDerivativeIdentity t f x)
+    (hLower : M.InterpolationDerivativeLowerBound K t f x) :
+    MonotoneOn (M.weightedBEInterpolation K t f x) (Set.Icc 0 t) := by
+  let φ : ℝ → ℝ := fun s => M.eval x (M.beInterpolation t s f)
+  let φ' : ℝ → ℝ :=
+    fun s => M.eval x
+      (M.timeDeriv (fun r : ℝ => M.beInterpolation t r f) s)
+  have hφcont : ContinuousOn φ (Set.Icc 0 t) := by
+    simpa [φ, beInterpolation, gammaSelf]
+      using M.interpolation_scalar_continuous (t := t) (f := f) (x := x) ht
+  have hmonoProd :
+      MonotoneOn ((fun s : ℝ => Real.exp (2 * K * s)) * φ) (Set.Icc 0 t) := by
+    have hexpcont :
+        ContinuousOn (fun s : ℝ => Real.exp (2 * K * s)) (Set.Icc 0 t) := by
+      fun_prop
+    refine
+      monotoneOn_of_hasDerivWithinAt_nonneg
+        (D := Set.Icc 0 t)
+        (f := ((fun s : ℝ => Real.exp (2 * K * s)) * φ))
+        (f' := fun s : ℝ => Real.exp (2 * K * s) * (2 * K * φ s + φ' s))
+        (convex_Icc 0 t) (hexpcont.mul hφcont) ?_ ?_
+    · rw [interior_Icc]
+      intro s hs
+      have hφder : HasDerivWithinAt φ (φ' s) (Set.Ioo 0 t) s := by
+        simpa [φ, φ', beInterpolation, gammaSelf]
+          using M.interpolation_scalar_hasDerivWithinAt
+            (t := t) (f := f) (x := x) hs
+      have hlinear :
+          HasDerivWithinAt (fun r : ℝ => (2 * K) * r) (2 * K) (Set.Ioo 0 t) s := by
+        simpa using
+          ((hasDerivWithinAt_id (x := s) (s := Set.Ioo 0 t)).const_mul (2 * K))
+      have hexpder :
+          HasDerivWithinAt (fun r : ℝ => Real.exp (2 * K * r))
+            (Real.exp (2 * K * s) * (2 * K)) (Set.Ioo 0 t) s := by
+        simpa [mul_assoc] using hlinear.exp
+      have hwder := hexpder.mul hφder
+      simpa [Pi.mul_apply, mul_add, mul_assoc, mul_left_comm, mul_comm]
+        using hwder
+    · rw [interior_Icc]
+      intro s hs
+      have hderiv_lower : -2 * K * φ s ≤ φ' s := by
+        have hId := hIdentity s hs.1.le hs.2.le
+        have hLow := hLower s hs.1.le hs.2.le
+        rw [← hId] at hLow
+        simpa [φ, φ'] using hLow
+      have hsum : 0 ≤ 2 * K * φ s + φ' s := by
+        have h := add_le_add_left hderiv_lower (2 * K * φ s)
+        ring_nf at h
+        simpa [mul_assoc, mul_left_comm, mul_comm] using h
+      have hexp_nonneg : 0 ≤ Real.exp (2 * K * s) :=
+        le_of_lt (Real.exp_pos _)
+      have hweighted :
+          0 ≤ Real.exp (2 * K * s) * (2 * K * φ s + φ' s) :=
+        mul_nonneg hexp_nonneg hsum
+      simpa [mul_add, mul_assoc, mul_left_comm, mul_comm]
+        using hweighted
+  intro a ha b hb hab
+  simpa [weightedBEInterpolation, φ, Pi.mul_apply] using hmonoProd ha hb hab
+
+/-- Scalar comparison closing the Bakry-Emery interpolation argument.
+
+The proof is the standard integrating-factor step: from
+`φ'(s) >= -2K φ(s)` it proves monotonicity of
+`s |-> exp(2*K*s) * φ(s)`, then evaluates at `0` and `t`. -/
+theorem gronwallFromInterpolation
+    (M : CarreDuChampSemigroup) {K t : ℝ} {f : M.Func} {x : M.Point}
+    (hK : 0 ≤ K) (ht : 0 ≤ t)
+    (hIdentity : M.InterpolationDerivativeIdentity t f x)
+    (hLower : M.InterpolationDerivativeLowerBound K t f x) :
+    M.eval x (M.gammaSelf (M.P t f)) ≤
+      Real.exp (2 * K * t) *
+        M.eval x (M.P t (M.gammaSelf f)) := by
+  have hmono :=
+    M.weightedBEInterpolation_monoOn (K := K) (t := t) (f := f) (x := x)
+      hK ht hIdentity hLower
+  have h0mem : (0 : ℝ) ∈ Set.Icc 0 t := Set.left_mem_Icc.mpr ht
+  have htmem : t ∈ Set.Icc 0 t := Set.right_mem_Icc.mpr ht
+  have hle := hmono h0mem htmem ht
+  simpa [weightedBEInterpolation, beInterpolation_zero, beInterpolation_time]
+    using hle
+
 end CarreDuChampSemigroup
 
-/-- A carré-du-champ semigroup together with the scalar Gronwall comparison
-principle needed for the Bakry-Emery estimate.
+/-- A carré-du-champ semigroup packaged for the Bakry-Emery estimate.
 
-The final gradient estimate is not a field.  It is proved by first deriving
-the interpolation derivative identity, deriving the differential lower bound
-from `CD(-K, infinity)`, and then feeding those checked ingredients to the
-comparison principle. -/
+The final gradient estimate is not a field.  It is proved from the structure
+fields and the explicit `CD(-K, infinity)` hypothesis. -/
 structure BakryEmeryGronwallFramework where
   base : CarreDuChampSemigroup
-  gronwall_from_interpolation :
-    ∀ {K t : ℝ} {f : base.Func} {x : base.Point},
-      0 ≤ K →
-        0 ≤ t →
-          base.InterpolationDerivativeIdentity t f x →
-            base.InterpolationDerivativeLowerBound K t f x →
-            base.eval x (base.gammaSelf (base.P t f)) ≤
-              Real.exp (2 * K * t) *
-                base.eval x (base.P t (base.gammaSelf f))
 
 /-- Bakry-Emery gradient estimate in abstract carré-du-champ form:
 
 `CD(-K, infinity)` implies
 `Gamma(P_t f) <= exp(2*K*t) P_t(Gamma f)`.
 
-The proof genuinely passes through the interpolation derivative lower bound
-and a Gronwall comparison field; the estimate itself is not assumed. -/
+The proof genuinely passes through the interpolation derivative identity, the
+CD-derived interpolation lower bound, and the checked scalar integrating-factor
+comparison; the estimate itself is not assumed. -/
 theorem bakryEmeryGradientEstimate
     (G : BakryEmeryGronwallFramework) {K t : ℝ}
     (hK : 0 ≤ K) (ht : 0 ≤ t)
@@ -280,7 +374,7 @@ theorem bakryEmeryGradientEstimate
       Real.exp (2 * K * t) *
         G.base.eval x (G.base.P t (G.base.gammaSelf f)) := by
   exact
-    G.gronwall_from_interpolation (K := K) (t := t) (f := f) (x := x)
+    G.base.gronwallFromInterpolation (K := K) (t := t) (f := f) (x := x)
       hK ht
       (G.base.interpolationDerivativeIdentity t f x)
       (G.base.interpolationDerivativeLowerBound_of_CD
