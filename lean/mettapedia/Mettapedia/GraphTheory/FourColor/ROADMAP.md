@@ -32,10 +32,19 @@ checks a concrete `τ -> τ` state where the upstream switch exits at two
 interface stubs, but the downstream fixed-input fiber cannot be prepared to
 pair the corresponding stubs for the same color pair.  This pinpoints the
 failed Step-1 premise in Lemma 8.18; it is not a counterexample to composite
-`LKR_in`.  The next Pillar-C task is a replacement transparent-composition
-invariant or a finite-plus-induction certificate that avoids this false
-pointwise preparation claim, before any Section 9 assembly can be trusted.
-This is still not a Four Color Theorem claim.
+`LKR_in`.
+
+The first salvage gate is favorable: `lemma818_composite_lkr_gate1_lab.py`
+directly checks all length-2 and length-3 `τ`/mirror-`τ` composite fixed-input
+Kempe graphs and reports no disconnected fiber among the 12 words.  This means
+the pointwise-preparation obstruction is not an immediate structural failure
+of short composite `LKR_in`.  The Lean file now contains a build-checked
+composite-chain model whose state counts match the lab, but the final proof
+certificate is still missing: raw Lean closure search is too slow.  The next
+Pillar-C task is a generated path/frontier automaton certificate that avoids
+Ben's false pointwise preparation claim and proves composition before any
+Section 9 assembly can be trusted.  This is still not a Four Color Theorem
+claim.
 
 The older CAP5/F2, GP(12,2), and six-cut files are exploratory negative audits
 of a divergent additive F2 route.  They remain useful for provenance and
@@ -46,7 +55,7 @@ Read these four files first — they are the whole live surface:
 
 | File | Contents |
 |---|---|
-| `GoertzelLemma814.lean` | Pillar-C finite model for Lemma 8.14: canonical three-cell gadget, finite proper-coloring state space, input-disjoint Kempe switches, indexed `LKR_in` path certificate, mirror check, Lemma 8.15 transparency finite check, and the checked Lemma 8.18 pointwise-preparation obstruction |
+| `GoertzelLemma814.lean` | Pillar-C finite model for Lemma 8.14: canonical three-cell gadget, finite proper-coloring state space, input-disjoint Kempe switches, indexed `LKR_in` path certificate, mirror check, Lemma 8.15 transparency finite check, the checked Lemma 8.18 pointwise-preparation obstruction, and the build-checked composite-chain model for the Gate-1 salvage audit |
 | `Goal.lean` | The target (`Theorem49ShellClaim`), its reduction to four geometric oracles plus a fifth non-geometric algebraic cancellation oracle, and proofs that **all four geometric uniform oracles are false** — including the v23.5 residual/current-boundary lane, whose positive wrapper is fixed-embedding equivalent to the refuted collar-layer surface |
 | `Shells.lean` | Bundled hypothesis packages (`ClosedWalkExactShell`, `SuccessorCycleExactShell`, `ClosedWalkCancellationShell`, …) replacing the historical 8–10-hypothesis telescopes |
 | `Frontier.lean` | The maximal positive and negative results, stated over the bundles as thin wrappers, including detector-based cancellation sufficiency |
