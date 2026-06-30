@@ -1,6 +1,6 @@
 # FourColor: goal, status, and how to approach it
 
-*Last restructured: 2026-06-10.  Last proof-state update: 2026-06-29.  This file replaces the 3,577-line
+*Last restructured: 2026-06-10.  Last proof-state update: 2026-06-30.  This file replaces the 3,577-line
 `Theorem49NextHardProblemSummary.lean` prose (now in `Legacy/`) as the
 entry point.*
 
@@ -9,16 +9,35 @@ entry point.*
 By Tait's classical reduction, the Four Color Theorem is equivalent to: every
 bridgeless cubic planar graph has a proper 3-edge-coloring
 (`IsTaitEdgeColoring`).  Goertzel's v23 manuscript attacks this via an
-inductive boundary argument whose load-bearing step is **Theorem 4.9**: an
-F₂-algebraic synthesis (`Theorem49BoundaryRootSynthesis`) saying the
-boundary-zero Kirchhoff subspace is spanned by projected Kempe-closure
-generators on a plane embedding with boundary.  This development is the formal
-audit and (attempted) formalization of that step.
+inductive boundary argument.  The current live route is the manuscript's
+Pillar-C execution step: the noncommuting Penrose-Kauffman/Kempe-operator
+route whose local finite keystone is **Lemma 8.14**, `LKR_in` for the canonical
+three-cell gadget.
+
+`GoertzelLemma814.lean` is the current entry point for that actual route.  It
+formalizes the canonical gadget state space, input-disjoint Kempe switches, an
+indexed `LKR_in` path certificate, and the Lemma 8.15 tree-transparency finite
+check.  The companion lab `lemma814_lkr_in_lab.py` enumerates the same gadget
+with numpy/Sympy and reports 192 proper tau colorings, connected fixed-input
+Kempe graphs, passing `sigmaL`/`sigmaR` checks, and passing tree transparency.
+Lean now closes Lemma 8.14 by `lemma814_tau_lkrIn_audit`, a row-split finite
+certificate theorem proving `lemma814_tau_lkrIn_finiteCheck = true`.
+Lemma 8.15 transparency remains a precise finite-check pin:
+`lemma815_tau_tree_transparency_finiteCheck` names the exact Boolean check, but
+the current all-components encoding does not yet prove that Boolean by kernel
+reduction.  Closing transparency by splitting or shrinking that checker is the
+next hard task.
+
+The older CAP5/F2, GP(12,2), and six-cut files are exploratory negative audits
+of a divergent additive F2 route.  They remain useful for provenance and
+infrastructure, but they are not Ben's actual route and should not be worked
+as the main proof lane.
 
 Read these four files first — they are the whole live surface:
 
 | File | Contents |
 |---|---|
+| `GoertzelLemma814.lean` | Pillar-C finite model for Lemma 8.14: canonical three-cell gadget, finite proper-coloring state space, input-disjoint Kempe switches, indexed `LKR_in` path certificate, mirror check, and Lemma 8.15 transparency finite check |
 | `Goal.lean` | The target (`Theorem49ShellClaim`), its reduction to four geometric oracles plus a fifth non-geometric algebraic cancellation oracle, and proofs that **all four geometric uniform oracles are false** — including the v23.5 residual/current-boundary lane, whose positive wrapper is fixed-embedding equivalent to the refuted collar-layer surface |
 | `Shells.lean` | Bundled hypothesis packages (`ClosedWalkExactShell`, `SuccessorCycleExactShell`, `ClosedWalkCancellationShell`, …) replacing the historical 8–10-hypothesis telescopes |
 | `Frontier.lean` | The maximal positive and negative results, stated over the bundles as thin wrappers, including detector-based cancellation sufficiency |
@@ -26,6 +45,9 @@ Read these four files first — they are the whole live surface:
 | `CAP5RoutePayoff.lean` / `F2KernelCertificate.lean` / `CAP5WheelRouteData.lean` / `CAP5DodecahedralRouteData.lean` | Route payoff audit and finite gate surface: the former closed-route-to-`EdgeColorable 4` payoff is removed as vacuous because the root already has type `G.EdgeColoring Color`; the non-vacuous route endpoint is `CAP5RouteClosedSynthesisPayoff` (theorem-4.9 synthesis plus selected-boundary-zero classifier control); the finite no-gap pre-RREF input is named as `CAP5FiniteNoGapRouteInput`; checked finite left-inverse/RREF-style certificates land through `F2LeftInverseKernelCertificate`; empty-remaining finite certificates land through `CAP5FiniteNoGapRouteInput.routeClosed_of_remainingControlEdges_eq_empty`; `CAP5FiniteNoGapRouteInput.redInterior_mem_projectedColoringGeneratorSubspace` and `CAP5FiniteNoGapRouteInput.blueInterior_mem_projectedColoringGeneratorSubspace` expose the fixed-embedding formability condition that every interior-support red/blue coordinate probe must already lie in the projected generator span; `CAP5WheelRouteData.lean` proves one concrete exceptional five-edge wheel boundary is Gate-1 blocked; `CAP5DodecahedralRouteData.lean` records the strict incidence BREAK certificate for the cyclic-five/Tait dodecahedral six-cut; and the follow-up actual-route lab shows that same dodecahedral side is not a formable `CAP5FiniteNoGapRouteInput` because every required red/blue single-coordinate projected-generator membership is missing |
 
 ## Consolidated CAP5/F2 Verdict
+
+This section is retained as exploratory route history.  It is superseded for
+current Ben-route work by `GoertzelLemma814.lean` and the Pillar-C status above.
 
 The current finite CAP5/F2 route is decided at the make-or-break level already:
 the first formable cyclic-five/Tait survivor, GP(12,2), gives a wide Gate-2
