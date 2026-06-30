@@ -106,6 +106,11 @@ layer: `mmAllFiberCertificateAudit_ok` checks all 81 fixed-input keys for the
 and maximum parent depth 4.  All four length-2 orientation words now have
 generated direct parent/path certificate tables; the all-chain frontier/DFA
 consequence is still separate.
+`GoertzelLemma818LengthTwoBase.lean` packages those four tables as a finite
+base interface: `lengthTwoCertificateAudit_ok` proves the generated
+certificate audit for any constructor of the four-word length-2 orientation
+type, and `lengthTwoAllCertificateAudit_ok` checks the aggregate list.  This
+is the base hook for the future DFA induction, not the induction consequence.
 
 Gate-2 frontier-mode checkpoint, 2026-06-30: the lab evidence has stabilized
 at a finite profile-mode surface, but it is not yet a Lean composition

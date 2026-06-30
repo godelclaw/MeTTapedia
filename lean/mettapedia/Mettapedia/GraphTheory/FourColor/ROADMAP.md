@@ -93,6 +93,12 @@ chain states, and maximum parent depth 4.  All four length-2 orientation
 words now have generated direct parent/path certificate tables.  The remaining
 local-to-global burden is still the frontier/DFA consequence for arbitrary
 finite chains.
+`GoertzelLemma818LengthTwoBase.lean` packages the four generated tables into a
+small finite base interface: `lengthTwoCertificateAudit_ok` proves the audit
+for each length-2 orientation constructor, and
+`lengthTwoAllCertificateAudit_ok` checks the aggregate four-word base list.
+This is the reusable base hook for the frontier/DFA lift; it does not itself
+prove all-chain `LKR_in`.
 
 Gate-2 frontier-mode status: stop treating longer exploratory sweeps as the
 main work item.  The current lab surface is a finite 20-mode profile DFA with
@@ -158,6 +164,7 @@ Read these four files first — they are the whole live surface:
 | `GoertzelLemma818TauMirrorCertificate.lean` | Generated full `τ,mirror-τ` direct parent/path certificate table: `tmAllFiberCertificateAudit_ok` checks all 81 fixed-input keys, 36 nonempty fibers, 1152 generated chain states, and parent depth at most 4 by row-split direct Kempe moves and parent-iteration checks; this advances the length-2 base layer but is not the all-chain `LKR_in` consequence |
 | `GoertzelLemma818MirrorTauCertificate.lean` | Generated full `mirror-τ,τ` direct parent/path certificate table: `mtAllFiberCertificateAudit_ok` checks all 81 fixed-input keys, 36 nonempty fibers, 1152 generated chain states, and parent depth at most 4 by row-split direct Kempe moves and parent-iteration checks; this advances the length-2 base layer but is not the all-chain `LKR_in` consequence |
 | `GoertzelLemma818MirrorMirrorCertificate.lean` | Generated full `mirror-τ,mirror-τ` direct parent/path certificate table: `mmAllFiberCertificateAudit_ok` checks all 81 fixed-input keys, 36 nonempty fibers, 960 generated chain states, and parent depth at most 4 by row-split direct Kempe moves and parent-iteration checks; this completes the length-2 base table layer but is not the all-chain `LKR_in` consequence |
+| `GoertzelLemma818LengthTwoBase.lean` | Finite aggregate interface for the four length-2 generated tables: `lengthTwoCertificateAudit_ok` proves the appropriate table audit for each constructor of `LengthTwoOrientWord`, and `lengthTwoAllCertificateAudit_ok` checks the complete four-word base list; this is a base hook, not the all-chain `LKR_in` consequence |
 | `Goal.lean` | The target (`Theorem49ShellClaim`), its reduction to four geometric oracles plus a fifth non-geometric algebraic cancellation oracle, and proofs that **all four geometric uniform oracles are false** — including the v23.5 residual/current-boundary lane, whose positive wrapper is fixed-embedding equivalent to the refuted collar-layer surface |
 | `Shells.lean` | Bundled hypothesis packages (`ClosedWalkExactShell`, `SuccessorCycleExactShell`, `ClosedWalkCancellationShell`, …) replacing the historical 8–10-hypothesis telescopes |
 | `Frontier.lean` | The maximal positive and negative results, stated over the bundles as thin wrappers, including detector-based cancellation sufficiency |
