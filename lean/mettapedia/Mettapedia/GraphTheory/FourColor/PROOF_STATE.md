@@ -46,6 +46,20 @@ that the two-gadget composite fails `LKR_in`; it proves that Lemma 8.18 as
 written needs a stronger or different composition invariant than Lemmas 8.14
 and 8.15 supply.
 
+Gate-1 salvage audit is now favorable, but not yet a formal seal.  The lab
+`lemma818_composite_lkr_gate1_lab.py` directly constructs composite fixed-input
+Kempe graphs for every length-2 and length-3 word over `τ` and mirror-`τ`,
+with mirror modeled as the same incidence tree and reversed ordered
+input/output stubs.  The fast connectivity run reports all 12 composite words
+connected in every nonempty fixed-input fiber.  The corresponding Lean model
+in `GoertzelLemma814.lean` now builds and matches the lab's composite state
+counts, but raw in-Lean closure search is too slow to serve as the final proof
+certificate.  A generated parent-certificate prototype for the first `τ²`
+word also timed out as one monolithic theorem at 2M heartbeats, even though the
+same checker evaluated successfully.  The next formal step is therefore a
+per-fixed-input-fiber generated certificate, or a smaller frontier automaton
+certificate, not another literal repair of Ben's pointwise-preparation proof.
+
 The CAP5/F2, GP(12,2), dodecahedral six-cut, and related files below are
 exploratory audits of a divergent F2-additivity route.  They are retained for
 negative evidence and infrastructure, but they are not Ben's actual route and

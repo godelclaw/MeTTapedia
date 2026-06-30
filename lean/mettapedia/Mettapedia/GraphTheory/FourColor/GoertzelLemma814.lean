@@ -1009,6 +1009,331 @@ theorem lemma818_pointwise_lift_preparation_obstruction :
     lemma818_pointwiseLiftCounterexampleCheck = true := by
   decide
 
+/-!
+## Gate-1 direct composite `LKR_in` audit
+
+The obstruction above refutes the manuscript's pointwise preparation argument,
+not composite reachability itself.  The definitions below model serial chains
+of `τ` and its reflected ordered-stub version and test the composite fixed-input
+Kempe graph directly.
+-/
+
+inductive TauOrient
+  | normal
+  | mirror
+  deriving DecidableEq, BEq, Repr, Inhabited
+
+def tauOrientInputOrder : TauOrient → List TauEdge
+  | TauOrient.normal => [TauEdge.B0, TauEdge.B1, TauEdge.B2, TauEdge.B3]
+  | TauOrient.mirror => [TauEdge.B3, TauEdge.B2, TauEdge.B1, TauEdge.B0]
+
+def tauOrientOutputOrder : TauOrient → List TauEdge
+  | TauOrient.normal => [TauEdge.B4, TauEdge.B5, TauEdge.B6, TauEdge.B7]
+  | TauOrient.mirror => [TauEdge.B7, TauEdge.B6, TauEdge.B5, TauEdge.B4]
+
+def listGetD (xs : List α) (i : Nat) (fallback : α) : α :=
+  match xs, i with
+  | [], _ => fallback
+  | x :: _, 0 => x
+  | _ :: rest, n + 1 => listGetD rest n fallback
+
+def indexOfAux [BEq α] (needle : α) : List α → Nat → Option Nat
+  | [], _ => none
+  | x :: xs, n => if x == needle then some n else indexOfAux needle xs (n + 1)
+
+def indexOf? [BEq α] (xs : List α) (needle : α) : Option Nat :=
+  indexOfAux needle xs 0
+
+def tauOrientAt (orients : List TauOrient) (i : Nat) : TauOrient :=
+  listGetD orients i TauOrient.normal
+
+def chainStateAt (states : List TauState) (i : Nat) : TauState :=
+  listGetD states i default
+
+def tauStateColorAt (states : List TauState) (i : Nat) (e : TauEdge) : LColor :=
+  (chainStateAt states i).color e
+
+structure ChainEdge where
+  occ : Nat
+  edge : TauEdge
+  deriving DecidableEq, BEq, Repr, Inhabited
+
+inductive ChainEndpoint
+  | internal (occ : Nat) (v : TauEndpoint)
+  | boundary (occ : Nat) (v : TauEndpoint)
+  deriving DecidableEq, BEq, Repr, Inhabited
+
+def tauStubInternalEndpoint : TauEdge → TauEndpoint
+  | TauEdge.B0 => TauEndpoint.F0
+  | TauEdge.B1 => TauEndpoint.F1
+  | TauEdge.B2 => TauEndpoint.F1
+  | TauEdge.B3 => TauEndpoint.F3
+  | TauEdge.B4 => TauEndpoint.F3
+  | TauEdge.B5 => TauEndpoint.F5
+  | TauEdge.B6 => TauEndpoint.F5
+  | TauEdge.B7 => TauEndpoint.F4
+  | e => (edgeEndpoints e).1
+
+def chainInputOrder (orients : List TauOrient) : List TauEdge :=
+  tauOrientInputOrder (tauOrientAt orients 0)
+
+def chainOutputOrder (orients : List TauOrient) (i : Nat) : List TauEdge :=
+  tauOrientOutputOrder (tauOrientAt orients i)
+
+def chainIsGluedInput (orients : List TauOrient) (i : Nat) (e : TauEdge) : Bool :=
+  i > 0 && (tauOrientInputOrder (tauOrientAt orients i)).contains e
+
+def chainIsGluedOutput (orients : List TauOrient) (i : Nat) (e : TauEdge) : Bool :=
+  i + 1 < orients.length && (tauOrientOutputOrder (tauOrientAt orients i)).contains e
+
+def chainIsRepresentativeEdge (orients : List TauOrient) (ge : ChainEdge) : Bool :=
+  !(chainIsGluedInput orients ge.occ ge.edge)
+
+def chainCanonicalEdge (orients : List TauOrient) (ge : ChainEdge) : ChainEdge :=
+  if ge.occ > 0 then
+    match indexOf? (tauOrientInputOrder (tauOrientAt orients ge.occ)) ge.edge with
+    | some k =>
+        { occ := ge.occ - 1
+          edge := listGetD (chainOutputOrder orients (ge.occ - 1)) k TauEdge.B4 }
+    | none => ge
+  else
+    ge
+
+def chainLocalEdges (orients : List TauOrient) : List ChainEdge :=
+  bindList (List.range orients.length) fun i =>
+    tauEdges.map fun e => ({ occ := i, edge := e } : ChainEdge)
+
+def chainEdges (orients : List TauOrient) : List ChainEdge :=
+  (chainLocalEdges orients).filter (chainIsRepresentativeEdge orients)
+
+def chainEdgeColor (states : List TauState) (ge : ChainEdge) : LColor :=
+  tauStateColorAt states ge.occ ge.edge
+
+def tauEndpointToChainEndpoint (i : Nat) (v : TauEndpoint) : ChainEndpoint :=
+  if isInternalEndpoint v then ChainEndpoint.internal i v else ChainEndpoint.boundary i v
+
+def chainEdgeEndpoints (orients : List TauOrient) (ge : ChainEdge) :
+    ChainEndpoint × ChainEndpoint :=
+  if chainIsGluedOutput orients ge.occ ge.edge then
+    match indexOf? (tauOrientOutputOrder (tauOrientAt orients ge.occ)) ge.edge with
+    | some k =>
+        let nextInput := listGetD
+          (tauOrientInputOrder (tauOrientAt orients (ge.occ + 1))) k TauEdge.B0
+        ( ChainEndpoint.internal ge.occ (tauStubInternalEndpoint ge.edge)
+        , ChainEndpoint.internal (ge.occ + 1) (tauStubInternalEndpoint nextInput) )
+    | none =>
+        let p := edgeEndpoints ge.edge
+        (tauEndpointToChainEndpoint ge.occ p.1, tauEndpointToChainEndpoint ge.occ p.2)
+  else
+    let p := edgeEndpoints ge.edge
+    (tauEndpointToChainEndpoint ge.occ p.1, tauEndpointToChainEndpoint ge.occ p.2)
+
+def chainEdgesShareEndpoint (orients : List TauOrient) (e f : ChainEdge) : Bool :=
+  if e == f then
+    false
+  else
+    let ep := chainEdgeEndpoints orients e
+    let fp := chainEdgeEndpoints orients f
+    ep.1 == fp.1 || ep.1 == fp.2 || ep.2 == fp.1 || ep.2 == fp.2
+
+def chainEdgeInPair (states : List TauState) (a c : LColor) (e : ChainEdge) : Bool :=
+  colorInPair (chainEdgeColor states e) a c
+
+def nextChainComponentLayer (orients : List TauOrient) (states : List TauState)
+    (a c : LColor) (seen : List ChainEdge) : List ChainEdge :=
+  (chainEdges orients).filter fun e =>
+    chainEdgeInPair states a c e &&
+      !seen.contains e &&
+      seen.any (chainEdgesShareEndpoint orients e)
+
+def closeChainComponent (orients : List TauOrient) (states : List TauState)
+    (a c : LColor) : Nat → List ChainEdge → List ChainEdge
+  | 0, seen => seen
+  | n + 1, seen =>
+      let layer := nextChainComponentLayer orients states a c seen
+      closeChainComponent orients states a c n (appendFresh seen layer)
+
+def chainComponent (orients : List TauOrient) (states : List TauState)
+    (a c : LColor) (seed : ChainEdge) : List ChainEdge :=
+  if chainEdgeInPair states a c seed then
+    closeChainComponent orients states a c (chainEdges orients).length [seed]
+  else
+    []
+
+def chainOuterInputEdges (orients : List TauOrient) : List ChainEdge :=
+  (chainInputOrder orients).map fun e => ({ occ := 0, edge := e } : ChainEdge)
+
+def chainComponentAvoidsInputs (orients : List TauOrient) (component : List ChainEdge) : Bool :=
+  !component.any (fun e => (chainOuterInputEdges orients).contains e)
+
+def chainSwitchedColor (orients : List TauOrient) (states : List TauState)
+    (component : List ChainEdge) (a c : LColor) (ge : ChainEdge) : LColor :=
+  let canonical := chainCanonicalEdge orients ge
+  if component.contains canonical then swapColor a c (chainEdgeColor states canonical)
+  else chainEdgeColor states canonical
+
+def chainAgreesWithSwitch (orients : List TauOrient) (s t : List TauState)
+    (component : List ChainEdge) (a c : LColor) : Bool :=
+  (chainLocalEdges orients).all fun ge =>
+    colorEq (chainEdgeColor t ge) (chainSwitchedColor orients s component a c ge)
+
+def chainSingleKempeStep (orients : List TauOrient) (s t : List TauState) : Bool :=
+  colorPairs.any fun pair =>
+    let a := pair.1
+    let c := pair.2
+    (chainEdges orients).any fun seed =>
+      let component := chainComponent orients s a c seed
+      !component.isEmpty && chainComponentAvoidsInputs orients component &&
+        chainAgreesWithSwitch orients s t component a c
+
+structure ChainMove where
+  a : LColor
+  c : LColor
+  seed : ChainEdge
+  deriving DecidableEq, BEq, Repr, Inhabited
+
+def chainSpecifiedKempeStep (orients : List TauOrient) (s t : List TauState)
+    (move : ChainMove) : Bool :=
+  let component := chainComponent orients s move.a move.c move.seed
+  !component.isEmpty && chainComponentAvoidsInputs orients component &&
+    chainAgreesWithSwitch orients s t component move.a move.c
+
+def compatibleAdjacent (leftOrient rightOrient : TauOrient) (x y : TauState) : Bool :=
+  (List.zip (tauOrientOutputOrder leftOrient) (tauOrientInputOrder rightOrient)).all fun pair =>
+    colorEq (x.color pair.1) (y.color pair.2)
+
+def compatibleChainStates (orients : List TauOrient) (states : List TauState) : Bool :=
+  states.length == orients.length &&
+    (List.range (orients.length - 1)).all fun i =>
+      compatibleAdjacent (tauOrientAt orients i) (tauOrientAt orients (i + 1))
+        (chainStateAt states i) (chainStateAt states (i + 1))
+
+def extendChainStates (orients : List TauOrient) (prefixes : List (List TauState))
+    (nextIndex : Nat) : List (List TauState) :=
+  bindList prefixes fun accStates =>
+    let prevOrient := tauOrientAt orients (nextIndex - 1)
+    let nextOrient := tauOrientAt orients nextIndex
+    let prevState := chainStateAt accStates (nextIndex - 1)
+    (allTauStates.filter fun nextState =>
+      compatibleAdjacent prevOrient nextOrient prevState nextState).map fun nextState =>
+        accStates ++ [nextState]
+
+def buildChainStatesFrom (orients : List TauOrient) :
+    Nat → List (List TauState) → List (List TauState)
+  | 0, prefixes => prefixes
+  | n + 1, prefixes =>
+      let nextIndex := orients.length - (n + 1)
+      buildChainStatesFrom orients n (extendChainStates orients prefixes nextIndex)
+
+def allChainStates (orients : List TauOrient) : List (List TauState) :=
+  match orients with
+  | [] => [[]]
+  | _ :: rest =>
+      let starts := allTauStates.map fun s => [s]
+      buildChainStatesFrom orients rest.length starts
+
+def colorAssignments4 : List (List LColor) :=
+  bindList colors fun c₀ =>
+  bindList colors fun c₁ =>
+  bindList colors fun c₂ =>
+  colors.map fun c₃ => [c₀, c₁, c₂, c₃]
+
+def chainInputKey (orients : List TauOrient) (states : List TauState) : List LColor :=
+  (chainInputOrder orients).map fun e => tauStateColorAt states 0 e
+
+def chainFiberFrom (orients : List TauOrient) (statesList : List (List TauState))
+    (key : List LColor) : List (List TauState) :=
+  statesList.filter fun states => chainInputKey orients states == key
+
+def chainClosureStep (orients : List TauOrient) (fiber seen : List (List TauState)) :
+    List (List TauState) :=
+  fiber.foldl
+    (fun acc candidate =>
+      if acc.any (fun current => chainSingleKempeStep orients current candidate) then
+        addIfFresh acc candidate
+      else
+        acc)
+    seen
+
+def closeChainFiber (orients : List TauOrient) (fiber : List (List TauState)) :
+    Nat → List (List TauState) → List (List TauState)
+  | 0, seen => seen
+  | n + 1, seen =>
+      let seen' := chainClosureStep orients fiber seen
+      if seen'.length == seen.length then seen' else closeChainFiber orients fiber n seen'
+
+def chainFiberConnected (orients : List TauOrient) (fiber : List (List TauState)) : Bool :=
+  match fiber with
+  | [] => true
+  | root :: _ =>
+      let closure := closeChainFiber orients fiber fiber.length [root]
+      fiber.all fun state => closure.contains state
+
+def chainLKRInAudit (orients : List TauOrient) : Bool :=
+  let statesList := allChainStates orients
+  statesList.all (compatibleChainStates orients) &&
+    colorAssignments4.all fun key =>
+      chainFiberConnected orients (chainFiberFrom orients statesList key)
+
+def chainParentAt (parents : List Nat) (i : Nat) : Nat :=
+  listGetD parents i i
+
+def chainMoveAt (moves : List ChainMove) (i : Nat) : ChainMove :=
+  listGetD moves i default
+
+def chainParentIter (parents : List Nat) : Nat → Nat → Nat
+  | 0, i => i
+  | n + 1, i => chainParentIter parents n (chainParentAt parents i)
+
+def firstChainIndexWithInputAux (orients : List TauOrient) (key : List LColor) :
+    List (List TauState) → Nat → Nat
+  | [], _ => 0
+  | states :: rest, i =>
+      if chainInputKey orients states == key then
+        i
+      else
+        firstChainIndexWithInputAux orients key rest (i + 1)
+
+def chainRepresentativeIndex (orients : List TauOrient) (statesList : List (List TauState))
+    (states : List TauState) : Nat :=
+  firstChainIndexWithInputAux orients (chainInputKey orients states) statesList 0
+
+def chainParentRowValid (orients : List TauOrient) (statesList : List (List TauState))
+    (parents : List Nat) (moves : List ChainMove) (i : Nat) : Bool :=
+  i < statesList.length &&
+    let parent := chainParentAt parents i
+    parent < statesList.length &&
+      let s := listGetD statesList i []
+      let t := listGetD statesList parent []
+      chainInputKey orients s == chainInputKey orients t &&
+        (i == parent || chainSpecifiedKempeStep orients s t (chainMoveAt moves i))
+
+def chainParentCertificateAudit (orients : List TauOrient) (maxDepth : Nat)
+    (parents : List Nat) (moves : List ChainMove) : Bool :=
+  let statesList := allChainStates orients
+  statesList.all (compatibleChainStates orients) &&
+    parents.length == statesList.length &&
+    moves.length == statesList.length &&
+    (List.range statesList.length).all (chainParentRowValid orients statesList parents moves) &&
+    (List.range statesList.length).all fun i =>
+      let states := listGetD statesList i []
+      chainParentIter parents maxDepth i ==
+        chainRepresentativeIndex orients statesList states
+
+def tauOrientWords2 : List (List TauOrient) :=
+  [ [TauOrient.normal, TauOrient.normal]
+  , [TauOrient.normal, TauOrient.mirror]
+  , [TauOrient.mirror, TauOrient.normal]
+  , [TauOrient.mirror, TauOrient.mirror]
+  ]
+
+def tauOrientWords3 : List (List TauOrient) :=
+  bindList tauOrientWords2 fun word =>
+    [word ++ [TauOrient.normal], word ++ [TauOrient.mirror]]
+
+def lemma818_composite_lkr_gate1_finiteCheck : Bool :=
+  (tauOrientWords2 ++ tauOrientWords3).all chainLKRInAudit
+
 end GoertzelLemma814
 
 end Mettapedia.GraphTheory.FourColor
