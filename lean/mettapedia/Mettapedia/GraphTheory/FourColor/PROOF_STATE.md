@@ -112,9 +112,12 @@ Lean now contains the lab-facing profile-mode DFA table in
 total transition function, mode hashes, and representative word metadata.  The
 table check theorem `tableClosedCheck_ok` proves by `rfl` that the table has
 20 modes, 2 orientations, 40 transitions, and every one-step transition lands
-inside the finite mode list; `#print axioms` reports no axioms.  This is only
-the finite table layer, not yet the proof that every reachable chain state is
-represented by that table or that the table entails all-chain `LKR_in`.
+inside the finite mode list.  The same module defines `wordMode`, the abstract
+fold of a nonempty orientation word through the DFA, and proves
+`wordMode_inTable`: any mode returned by that fold is one of the 20 table
+modes.  `#print axioms` reports no axioms for these table-layer theorems.  This
+is not yet the proof that every reachable chain state is represented by that
+table or that the table entails all-chain `LKR_in`.
 
 The CAP5/F2, GP(12,2), dodecahedral six-cut, and related files below are
 exploratory audits of a divergent F2-additivity route.  They are retained for
