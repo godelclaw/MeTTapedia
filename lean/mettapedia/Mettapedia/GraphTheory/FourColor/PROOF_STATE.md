@@ -82,6 +82,12 @@ The mirrored base orientation is covered as well:
 parent rows under the mirror input order.  Thus both one-gadget base
 orientations have per-fiber chain certificates; the composite representative
 certificates and the all-chain induction consequence remain open.
+`GoertzelLemma818CompositeCertificate.lean` is the first checked composite
+slice for this certificate format: `ttFiber3CertificateAudit_ok` validates the
+first nonempty fixed-input fiber of the `τ,τ` word by row-split direct parent
+edges and bounded parent iteration.  This is intentionally only one fiber
+slice, not the full `τ²` certificate; the full lab-generated `τ²` certificate
+must still be emitted as small per-fiber row chunks.
 
 Gate-2 frontier-mode checkpoint, 2026-06-30: the lab evidence has stabilized
 at a finite profile-mode surface, but it is not yet a Lean composition
@@ -162,6 +168,13 @@ to every nonempty orientation word.  This is not yet the proof that every
 reachable chain profile is represented by the table's canonical representatives
 or that the table entails all-chain `LKR_in`; it is evidence coverage plus the
 induction hook that a generated connectivity certificate must instantiate.
+Current checkpoint status: stop the open-ended sweeps.  The profile-mode
+automaton is finite and Lean table-closed, and every one of the 20 modes has a
+source-consistent archived connectivity witness row.  No additional mode is
+currently known to lack archived connectivity evidence.  What remains
+unverified is the semantic bridge from those archived quotient/atom rows to
+actual chain-state fixed-input path certificates and then through
+`wordMode_induction` to all-chain `LKR_in`.
 
 The CAP5/F2, GP(12,2), dodecahedral six-cut, and related files below are
 exploratory audits of a divergent F2-additivity route.  They are retained for
