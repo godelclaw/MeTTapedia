@@ -1,0 +1,64 @@
+import Mettapedia.FluidDynamics.NavierStokes.BakryEmeryConditionalReduction
+
+/-!
+# Regression checks for the abstract Bakry-Emery conditional reduction
+-/
+
+set_option autoImplicit false
+
+noncomputable section
+
+namespace Mettapedia
+namespace FluidDynamics
+namespace NavierStokes
+
+namespace Regression
+
+theorem bakry_emery_gradient_estimate_regression
+    (G : BakryEmeryGronwallFramework) {K t : ℝ}
+    (hK : 0 ≤ K) (ht : 0 ≤ t)
+    (hCD : G.base.CDMinusInfinity K)
+    (f : G.base.Func) (x : G.base.Point) :
+    G.base.eval x (G.base.gammaSelf (G.base.P t f)) ≤
+      Real.exp (2 * K * t) *
+        G.base.eval x (G.base.P t (G.base.gammaSelf f)) :=
+  bakryEmeryGradientEstimate G hK ht hCD f x
+
+theorem ns_bakry_emery_conditional_gradient_regression
+    {G : BakryEmeryGronwallFramework}
+    (D : NSBakryEmeryConditionalReduction G) :
+    ∀ t : ℝ, 0 ≤ t → t ≤ D.T →
+      G.base.eval D.id (G.base.gammaSelf (G.base.P t D.phi)) ≤
+        Real.exp (2 * D.K * t) * D.Cphi ^ 2 :=
+  D.identityGradientBound
+
+theorem ns_bakry_emery_conditional_bkm_gate_regression
+    {G : BakryEmeryGronwallFramework}
+    (D : NSBakryEmeryConditionalReduction G) :
+    D.gate.bkmGate :=
+  D.abstractBKMGate
+
+theorem ns_bakry_emery_exact_open_input_regression
+    {G : BakryEmeryGronwallFramework}
+    (D : NSBakryEmeryConditionalReduction G) :
+    LocalSGCurvatureDimensionOpenInput G D.K :=
+  D.exactOpenInput
+
+theorem ns_bakry_emery_conditional_packet_regression
+    {G : BakryEmeryGronwallFramework}
+    (D : NSBakryEmeryConditionalReduction G) :
+    (∀ t : ℝ, 0 ≤ t → t ≤ D.T →
+      G.base.eval D.id (G.base.gammaSelf (G.base.P t D.phi)) ≤
+        Real.exp (2 * D.K * t) * D.Cphi ^ 2) ∧
+      D.gate.logHeatEnergyBound ∧
+        D.gate.vorticityBound ∧
+          D.gate.bkmIntegralFinite ∧
+            D.gate.bkmGate ∧
+              LocalSGCurvatureDimensionOpenInput G D.K :=
+  D.reductionPacket
+
+end Regression
+
+end NavierStokes
+end FluidDynamics
+end Mettapedia
