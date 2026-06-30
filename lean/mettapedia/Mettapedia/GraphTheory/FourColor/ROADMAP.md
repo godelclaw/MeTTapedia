@@ -46,6 +46,22 @@ Ben's false pointwise preparation claim and proves composition before any
 Section 9 assembly can be trusted.  This is still not a Four Color Theorem
 claim.
 
+Gate-2 frontier-mode status: stop treating longer exploratory sweeps as the
+main work item.  The current lab surface is a finite 20-mode profile DFA with
+40 transitions; 36 transitions are observed directly and 4 are inferred by the
+singleton-summary transition law.  The stabilized evidence includes 936
+frontier summaries, atom-refined fixed-input connectivity for every
+`τ`/mirror-`τ` word of length 1 through 4, atom-transition congruence through
+length 4, and a compact transition-congruent state key
+`profile mode + frontier summary + local atom index`.  Length-5 targeted
+profile checks show the alternating cases collapse back to existing singleton
+modes and the remaining representatives either collapse to known modes or
+produce two new singleton profile modes.  The open item is no longer whether a
+finite mode set exists; the open item is the honest connectivity seal for the
+two new singleton modes, plus Lean formalization of representative coverage,
+mode transitions, and the per-fixed-input consequence to all-chain `LKR_in`.
+Do not resume monolithic `decide` or open-ended length sweeps for this step.
+
 The older CAP5/F2, GP(12,2), and six-cut files are exploratory negative audits
 of a divergent additive F2 route.  They remain useful for provenance and
 infrastructure, but they are not Ben's actual route and should not be worked
