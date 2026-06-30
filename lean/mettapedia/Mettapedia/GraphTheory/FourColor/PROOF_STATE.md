@@ -89,6 +89,12 @@ maximum parent depth 4.  The row checks are split down to individual direct
 Kempe moves and parent-iteration facts, avoiding the failed monolithic closure
 search.  This is the first complete two-gadget generated certificate table,
 not the all-chain `LKR_in` theorem and not the 8.18/8.19 DFA lift.
+`GoertzelLemma818TauMirrorCertificate.lean` adds the next mixed-orientation
+length-2 base table: `tmAllFiberCertificateAudit_ok` checks all 81 fixed-input
+keys for the `τ,mirror-τ` chain, with 36 nonempty fibers, 1152 generated chain
+states, and maximum parent depth 4.  The remaining length-2 generated base
+tables are `mirror-τ,τ` and `mirror-τ,mirror-τ`; those still do not replace
+the frontier/DFA lift.
 
 Gate-2 frontier-mode checkpoint, 2026-06-30: the lab evidence has stabilized
 at a finite profile-mode surface, but it is not yet a Lean composition
