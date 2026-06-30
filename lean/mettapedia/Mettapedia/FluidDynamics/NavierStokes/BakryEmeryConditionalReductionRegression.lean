@@ -14,6 +14,30 @@ namespace NavierStokes
 
 namespace Regression
 
+theorem bakry_emery_gamma2_bochner_identity_regression
+    (M : CarreDuChampSemigroup) (f : M.Func) :
+    M.gamma2 f =
+      (1 / 2 : ℝ) •
+        (M.L (M.gammaSelf f) - (2 : ℝ) • M.Gamma f (M.L f)) :=
+  M.gamma2_bochner_identity f
+
+theorem bakry_emery_interpolation_derivative_identity_func_regression
+    (M : CarreDuChampSemigroup) (t s : ℝ) (f : M.Func) :
+    M.timeDeriv (fun r => M.beInterpolation t r f) s =
+      (2 : ℝ) • M.P s (M.gamma2 (M.P (t - s) f)) :=
+  M.interpolationDerivativeIdentity_func t s f
+
+theorem bakry_emery_interpolation_derivative_identity_regression
+    (M : CarreDuChampSemigroup) (t : ℝ) (f : M.Func) (x : M.Point) :
+    M.InterpolationDerivativeIdentity t f x :=
+  M.interpolationDerivativeIdentity t f x
+
+theorem bakry_emery_interpolation_lower_bound_from_cd_regression
+    (M : CarreDuChampSemigroup) {K t : ℝ} {f : M.Func} {x : M.Point}
+    (hCD : M.CDMinusInfinity K) :
+    M.InterpolationDerivativeLowerBound K t f x :=
+  M.interpolationDerivativeLowerBound_of_CD hCD
+
 theorem bakry_emery_gradient_estimate_regression
     (G : BakryEmeryGronwallFramework) {K t : ℝ}
     (hK : 0 ≤ K) (ht : 0 ≤ t)
