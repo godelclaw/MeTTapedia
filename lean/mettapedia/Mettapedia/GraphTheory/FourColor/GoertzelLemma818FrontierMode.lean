@@ -483,6 +483,52 @@ theorem wordMode_inTable
       rw [← hfold]
       exact foldl_step_inTable rest (initialMode_inTable orient)
 
+theorem foldl_step_induction
+    {P : FrontierMode → Prop}
+    (hStep : ∀ mode orient, P mode → P (step mode orient))
+    (rest : List TauOrient) {mode : FrontierMode}
+    (hmode : P mode) :
+    P (rest.foldl step mode) := by
+  induction rest generalizing mode with
+  | nil =>
+      exact hmode
+  | cons orient rest ih =>
+      exact ih (hStep mode orient hmode)
+
+theorem wordMode_induction
+    {P : FrontierMode → Prop}
+    (hInitial : ∀ orient, P (initialMode orient))
+    (hStep : ∀ mode orient, P mode → P (step mode orient))
+    {word : List TauOrient} {mode : FrontierMode}
+    (hmode : wordMode word = some mode) :
+    P mode := by
+  cases word with
+  | nil =>
+      change none = some mode at hmode
+      contradiction
+  | cons orient rest =>
+      change some (rest.foldl step (initialMode orient)) = some mode at hmode
+      injection hmode with hfold
+      rw [← hfold]
+      exact foldl_step_induction hStep rest (hInitial orient)
+
+theorem foldl_step_bool_induction
+    (good : FrontierMode → Bool)
+    (hStep : ∀ mode orient, good mode = true → good (step mode orient) = true)
+    (rest : List TauOrient) {mode : FrontierMode}
+    (hmode : good mode = true) :
+    good (rest.foldl step mode) = true :=
+  foldl_step_induction hStep rest hmode
+
+theorem wordMode_bool_induction
+    (good : FrontierMode → Bool)
+    (hInitial : ∀ orient, good (initialMode orient) = true)
+    (hStep : ∀ mode orient, good mode = true → good (step mode orient) = true)
+    {word : List TauOrient} {mode : FrontierMode}
+    (hmode : wordMode word = some mode) :
+    good mode = true :=
+  wordMode_induction hInitial hStep hmode
+
 end GoertzelLemma818FrontierMode
 
 end Mettapedia.GraphTheory.FourColor
