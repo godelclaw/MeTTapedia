@@ -82,12 +82,13 @@ The mirrored base orientation is covered as well:
 parent rows under the mirror input order.  Thus both one-gadget base
 orientations have per-fiber chain certificates; the composite representative
 certificates and the all-chain induction consequence remain open.
-`GoertzelLemma818CompositeCertificate.lean` is the first checked composite
-slice for this certificate format: `ttFiber3CertificateAudit_ok` validates the
-first nonempty fixed-input fiber of the `τ,τ` word by row-split direct parent
-edges and bounded parent iteration.  This is intentionally only one fiber
-slice, not the full `τ²` certificate; the full lab-generated `τ²` certificate
-must still be emitted as small per-fiber row chunks.
+`GoertzelLemma818CompositeCertificate.lean` now checks the generated full
+`τ,τ` direct parent/path table: `ttAllFiberCertificateAudit_ok` covers all 81
+fixed-input keys, with 36 nonempty fibers, 960 generated chain states, and
+maximum parent depth 4.  The row checks are split down to individual direct
+Kempe moves and parent-iteration facts, avoiding the failed monolithic closure
+search.  This is the first complete two-gadget generated certificate table,
+not the all-chain `LKR_in` theorem and not the 8.18/8.19 DFA lift.
 
 Gate-2 frontier-mode checkpoint, 2026-06-30: the lab evidence has stabilized
 at a finite profile-mode surface, but it is not yet a Lean composition
