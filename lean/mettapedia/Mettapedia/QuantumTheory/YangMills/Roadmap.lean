@@ -22,6 +22,7 @@ inductive YangMillsRoadmapStage where
   | finiteLatticeStrongCouplingGap
   | continuumScalingDiagnostic
   | extractionConstantErratum
+  | continuumOSReconstructionConditional
   | continuumMassGapEndpoint
 deriving DecidableEq, Repr
 
@@ -99,6 +100,19 @@ def yangMillsExtractionConstantErratumRoadmapEntry : YangMillsRoadmapEntry where
   evidence := "currentYangMillsExtractionConstantErratum_packet records that the corrected Cauchy estimate gives C1 <= 2224 and a b=2,dmax=16 gain 693/2560 < 1, so HasExtendedExtractionContraction holds. The old displayed-series contraction failure is retracted as an inverted-ratio erratum, not a Yang-Mills refutation."
   nextObligation := "Treat the extended-extraction contraction as standing route evidence, and keep the continuum mass-gap endpoint gated by constructive-QFT obligations."
 
+/-- Conditional continuum scaffold: OS reconstruction closes the endpoint only
+after the explicit lattice gap/clustering, RP, and OS inputs are supplied. -/
+def yangMillsContinuumOSConditionalRoadmapEntry : YangMillsRoadmapEntry where
+  stage := .continuumOSReconstructionConditional
+  nodeId := yangMillsContinuumOSConditionalScaffoldNode.id
+  status := .checked
+  truthValue := ⟨100, 96⟩
+  itvLowerPercent := 96
+  itvUpperPercent := 100
+  progressPercent := 100
+  evidence := "BenYMContinuumOSConditional.continuumMassGap proves the conditional OS/Kirk endpoint: standing Lambda<1 contraction plus an explicit bridge to lattice gap/clustering, OS reflection positivity, and the carried OS reconstruction machine imply HasSpectralMassGap for the continuum Hamiltonian."
+  nextObligation := "Do not treat the conditional as a mass-gap theorem until Ben's Lambda<1-to-clustering bridge, Wilson-measure reflection positivity, and OS reconstruction/subsequential-limit inputs are supplied."
+
 /-- The continuum Yang-Mills mass-gap endpoint remains open. -/
 def yangMillsContinuumMassGapEndpointRoadmapEntry : YangMillsRoadmapEntry where
   stage := .continuumMassGapEndpoint
@@ -118,6 +132,7 @@ def currentYangMillsRoadmap : List YangMillsRoadmapEntry :=
   , z2QuadraticHeatTimeGapClosingRoadmapEntry
   , z3HalfScaleLinearRGStepRoadmapEntry
   , yangMillsExtractionConstantErratumRoadmapEntry
+  , yangMillsContinuumOSConditionalRoadmapEntry
   , yangMillsContinuumMassGapEndpointRoadmapEntry
   ]
 
@@ -195,6 +210,23 @@ theorem currentYangMillsRoadmap_records_extraction_constant_erratum :
       benCauchyC1UpperBound_contraction_two_sixteen,
       rgContraction_2224_two_sixteen,
       benCauchyC1UpperBound_gain_two_sixteen_lt_one⟩
+
+theorem currentYangMillsRoadmap_records_continuum_os_conditional :
+    ∃ entry : YangMillsRoadmapEntry,
+      entry.nodeId = yangMillsContinuumOSConditionalScaffoldNode.id ∧
+        entry.status = .checked ∧
+        entry.progressPercent = 100 ∧
+        BenStandingExtendedExtractionContraction ∧
+        preprints2025041268Verdict = .notRouteBlocking ∧
+        yangMillsMassGapEndpointNode.status = .openGoal := by
+  refine ⟨yangMillsContinuumOSConditionalRoadmapEntry, ?_⟩
+  exact
+    ⟨rfl,
+      rfl,
+      rfl,
+      benStandingExtendedExtractionContraction_checked,
+      preprints2025041268Verdict_notRouteBlocking,
+      yangMillsMassGapEndpointNode_open⟩
 
 theorem currentYangMillsRoadmap_keeps_continuum_endpoint_open :
     yangMillsContinuumMassGapEndpointRoadmapEntry.status = .openGoal ∧
