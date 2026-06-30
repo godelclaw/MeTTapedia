@@ -72,6 +72,11 @@ theorem `tauSingleNormalFiber0Certificate_ok` checks the first single-`τ`
 fixed-input fiber `{0,1,2,3,48,49,50,51}` against the real chain-state model
 and real chain Kempe moves.  This is the intended small target for generated
 per-fiber path certificates, not yet a proof of all composite `LKR_in`.
+The base single-`τ` case now also has a generated all-key audit:
+`tauSingleNormalAllFiberCertificateAudit_ok` checks all 81 fixed-input color
+assignments, including empty fibers, in nine 9-key chunks.  The 36 nonempty
+fiber certificates are generated from the Lemma 8.14 path rows and rechecked
+against the serial-chain model rather than the original one-gadget checker.
 
 Gate-2 frontier-mode checkpoint, 2026-06-30: the lab evidence has stabilized
 at a finite profile-mode surface, but it is not yet a Lean composition

@@ -1419,6 +1419,119 @@ theorem tauSingleNormalFiber0Certificate_ok :
       tauSingleNormalFiber0Certificate = true := by
   decide
 
+def indexedStepToChainMove0 (st : IndexedPathStep) : ChainMove :=
+  chainMove st.move.a st.move.c 0 st.move.seed
+
+def tauSingleNormalParentRowFromIndex (i : Nat) : ChainFiberParentRow :=
+  let r := rowAt i
+  match r.steps with
+  | [] => chainFiberRow i i default
+  | st :: _ => chainFiberRow i st.target (indexedStepToChainMove0 st)
+
+def tauSingleNormalFiberCertificateForKey (key : List LColor) :
+    ChainFiberCertificate :=
+  let statesList := allChainStates [TauOrient.normal]
+  let indices := chainFiberIndicesFrom [TauOrient.normal] statesList key
+  { key := key
+    root := chainFiberRootIndex indices
+    maxDepth := 2
+    rows := indices.map tauSingleNormalParentRowFromIndex }
+
+def tauSingleNormalFiberCertificateAt (i : Nat) : ChainFiberCertificate :=
+  tauSingleNormalFiberCertificateForKey (listGetD colorAssignments4 i [])
+
+def tauSingleNormalAllFiberCertificates : List ChainFiberCertificate :=
+  colorAssignments4.map tauSingleNormalFiberCertificateForKey
+
+def tauSingleNormalFiberCertificateChunkAudit (start len : Nat) : Bool :=
+  (List.range len).all fun k =>
+    chainFiberParentCertificateAudit [TauOrient.normal]
+      (tauSingleNormalFiberCertificateAt (start + k))
+
+def tauSingleNormalAllFiberCertificateKeysCheck : Bool :=
+  (tauSingleNormalAllFiberCertificates.map fun cert => cert.key) == colorAssignments4
+
+def tauSingleNormalChainStatesCompatibleCheck : Bool :=
+  (allChainStates [TauOrient.normal]).all (compatibleChainStates [TauOrient.normal])
+
+theorem tauSingleNormalAllFiberCertificateKeysCheck_ok :
+    tauSingleNormalAllFiberCertificateKeysCheck = true := by
+  decide
+
+theorem tauSingleNormalChainStatesCompatibleCheck_ok :
+    tauSingleNormalChainStatesCompatibleCheck = true := by
+  decide
+
+theorem tauSingleNormalFiberCertificateChunk_0_9_ok :
+    tauSingleNormalFiberCertificateChunkAudit 0 9 = true := by
+  decide
+
+theorem tauSingleNormalFiberCertificateChunk_9_9_ok :
+    tauSingleNormalFiberCertificateChunkAudit 9 9 = true := by
+  decide
+
+theorem tauSingleNormalFiberCertificateChunk_18_9_ok :
+    tauSingleNormalFiberCertificateChunkAudit 18 9 = true := by
+  decide
+
+theorem tauSingleNormalFiberCertificateChunk_27_9_ok :
+    tauSingleNormalFiberCertificateChunkAudit 27 9 = true := by
+  decide
+
+theorem tauSingleNormalFiberCertificateChunk_36_9_ok :
+    tauSingleNormalFiberCertificateChunkAudit 36 9 = true := by
+  decide
+
+theorem tauSingleNormalFiberCertificateChunk_45_9_ok :
+    tauSingleNormalFiberCertificateChunkAudit 45 9 = true := by
+  decide
+
+theorem tauSingleNormalFiberCertificateChunk_54_9_ok :
+    tauSingleNormalFiberCertificateChunkAudit 54 9 = true := by
+  decide
+
+theorem tauSingleNormalFiberCertificateChunk_63_9_ok :
+    tauSingleNormalFiberCertificateChunkAudit 63 9 = true := by
+  decide
+
+theorem tauSingleNormalFiberCertificateChunk_72_9_ok :
+    tauSingleNormalFiberCertificateChunkAudit 72 9 = true := by
+  decide
+
+def tauSingleNormalAllFiberCertificateAudit : Bool :=
+  tauSingleNormalChainStatesCompatibleCheck &&
+    tauSingleNormalAllFiberCertificateKeysCheck &&
+    tauSingleNormalFiberCertificateChunkAudit 0 9 &&
+    tauSingleNormalFiberCertificateChunkAudit 9 9 &&
+    tauSingleNormalFiberCertificateChunkAudit 18 9 &&
+    tauSingleNormalFiberCertificateChunkAudit 27 9 &&
+    tauSingleNormalFiberCertificateChunkAudit 36 9 &&
+    tauSingleNormalFiberCertificateChunkAudit 45 9 &&
+    tauSingleNormalFiberCertificateChunkAudit 54 9 &&
+    tauSingleNormalFiberCertificateChunkAudit 63 9 &&
+    tauSingleNormalFiberCertificateChunkAudit 72 9
+
+/--
+All 81 fixed-input assignments for a single normal `τ` have checked per-fiber
+parent certificates in the chain model.  Empty fibers are included as empty
+certificates; the 36 nonempty fibers are generated from the Lemma 8.14 path
+rows and checked in nine small chunks.
+-/
+theorem tauSingleNormalAllFiberCertificateAudit_ok :
+    tauSingleNormalAllFiberCertificateAudit = true := by
+  simp [tauSingleNormalAllFiberCertificateAudit,
+    tauSingleNormalChainStatesCompatibleCheck_ok,
+    tauSingleNormalAllFiberCertificateKeysCheck_ok,
+    tauSingleNormalFiberCertificateChunk_0_9_ok,
+    tauSingleNormalFiberCertificateChunk_9_9_ok,
+    tauSingleNormalFiberCertificateChunk_18_9_ok,
+    tauSingleNormalFiberCertificateChunk_27_9_ok,
+    tauSingleNormalFiberCertificateChunk_36_9_ok,
+    tauSingleNormalFiberCertificateChunk_45_9_ok,
+    tauSingleNormalFiberCertificateChunk_54_9_ok,
+    tauSingleNormalFiberCertificateChunk_63_9_ok,
+    tauSingleNormalFiberCertificateChunk_72_9_ok]
+
 def tauOrientWords2 : List (List TauOrient) :=
   [ [TauOrient.normal, TauOrient.normal]
   , [TauOrient.normal, TauOrient.mirror]
