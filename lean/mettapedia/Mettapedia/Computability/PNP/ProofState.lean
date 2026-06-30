@@ -15,6 +15,7 @@ import Mettapedia.Computability.PNP.PNPv13TraceFactorizationCanaries
 import Mettapedia.Computability.PNP.PNPSteelmanConditional
 import Mettapedia.Computability.PNP.PostSwitchInputObstruction
 import Mettapedia.Computability.PNP.SharedExactZABAffineDecisionListStructuralObstructionExactZAB
+import Mettapedia.Computability.PNP.WeaknessCalculus
 /-!
 # PNP proof state
 
@@ -163,6 +164,13 @@ def currentPNPProofNodes : List PNPProofNode := [
     truthValue := ⟨100, 92⟩,
     evidence := "KernelFlipInvolution proves the finite ZMod 2 kernel-flip pairing `kernelFlip_exactNeutrality_card`, with `toyKernelFlip_exactNeutrality_card` as an inhabited model. NoThreadingLemma proves `noThreading_neutral_sufficient_blocks_nontrivial_bit`, showing a neutral local statistic cannot also be sufficient for a nontrivial deterministic witness bit. PNPSteelmanConditional proves `pnp_steelman_conditional`: KernelFlipNeutrality plus the explicit open StarSWAverageCaseWitnessBitHardness input implies the abstract PNP endpoint through the non-SW chain.",
     nextObligation := "The exact remaining input is StarSWAverageCaseWitnessBitHardness for Ben's masked isolated ensemble; no concentration/log-Sobolev replacement and no unconditional separation is asserted by this node."
+  },
+  {
+    key := "pnp.weakness-calculus.finite-spectrum-gap",
+    status := .checked,
+    truthValue := ⟨100, 93⟩,
+    evidence := "WeaknessCalculus proves the finite budget-lattice spectrum, the gap identity `spectrumGap_eq_zero_iff_domination`, budget monotonicity, data-processing monotonicity, and a no-threading-to-positive-gap theorem. The two-point toy has local spectrum 1, poly spectrum 2, and gap 1.",
+    nextObligation := "Keep `StarSWDominationHypothesis` explicit: domination/average-case witness-bit hardness is not proved by the calculus, and no final separation is asserted."
   },
   {
     key := "pnp.kpoly-promoted-packet",
@@ -806,4 +814,23 @@ theorem currentPNPSteelmanConditional_node :
       noThreadingToy_obstruction,
       fun hKernel hSW => pnp_steelman_conditional hKernel hSW,
       toy_pnp_steelman_conditional_nonvacuous⟩
+
+theorem currentPNPWeaknessCalculus_node :
+    toyWeaknessTask.localSpectrum = 1 ∧
+      toyWeaknessTask.polySpectrum = 2 ∧
+      toyWeaknessTask.spectrumGap = 1 ∧
+      0 < toyWeaknessTask.spectrumGap ∧
+      DataProcessing toyWeaknessTask toyWeaknessPostProcessedTask ∧
+      ¬ (Neutral noThreadingToyStatistic noThreadingToyWitness ∧
+          Sufficient noThreadingToyStatistic noThreadingToyWitness) ∧
+      (∀ {budgetTop : Nat} {T : WeaknessTask budgetTop},
+        StarSWDominationHypothesis T -> T.spectrumGap = 0) := by
+  exact
+    ⟨toyWeaknessTask_localSpectrum,
+      toyWeaknessTask_polySpectrum,
+      toyWeaknessTask_spectrumGap,
+      toyWeakness_noThreading_forces_gap,
+      toyWeakness_dataProcessing,
+      noThreadingToy_obstruction,
+      fun h => spectrumGap_zero_of_starSWDomination h⟩
 end Mettapedia.Computability.PNP
