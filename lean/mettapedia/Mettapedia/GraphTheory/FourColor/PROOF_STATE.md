@@ -77,6 +77,11 @@ The base single-`τ` case now also has a generated all-key audit:
 assignments, including empty fibers, in nine 9-key chunks.  The 36 nonempty
 fiber certificates are generated from the Lemma 8.14 path rows and rechecked
 against the serial-chain model rather than the original one-gadget checker.
+The mirrored base orientation is covered as well:
+`tauSingleMirrorAllFiberCertificateAudit_ok` checks the same generated local
+parent rows under the mirror input order.  Thus both one-gadget base
+orientations have per-fiber chain certificates; the composite representative
+certificates and the all-chain induction consequence remain open.
 
 Gate-2 frontier-mode checkpoint, 2026-06-30: the lab evidence has stabilized
 at a finite profile-mode surface, but it is not yet a Lean composition

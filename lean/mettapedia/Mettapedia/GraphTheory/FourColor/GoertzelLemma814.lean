@@ -1532,6 +1532,111 @@ theorem tauSingleNormalAllFiberCertificateAudit_ok :
     tauSingleNormalFiberCertificateChunk_63_9_ok,
     tauSingleNormalFiberCertificateChunk_72_9_ok]
 
+def tauSingleFiberCertificateForKey (orient : TauOrient) (key : List LColor) :
+    ChainFiberCertificate :=
+  let statesList := allChainStates [orient]
+  let indices := chainFiberIndicesFrom [orient] statesList key
+  { key := key
+    root := chainFiberRootIndex indices
+    maxDepth := 2
+    rows := indices.map tauSingleNormalParentRowFromIndex }
+
+def tauSingleFiberCertificateAt (orient : TauOrient) (i : Nat) :
+    ChainFiberCertificate :=
+  tauSingleFiberCertificateForKey orient (listGetD colorAssignments4 i [])
+
+def tauSingleAllFiberCertificates (orient : TauOrient) : List ChainFiberCertificate :=
+  colorAssignments4.map (tauSingleFiberCertificateForKey orient)
+
+def tauSingleFiberCertificateChunkAudit (orient : TauOrient) (start len : Nat) : Bool :=
+  (List.range len).all fun k =>
+    chainFiberParentCertificateAudit [orient]
+      (tauSingleFiberCertificateAt orient (start + k))
+
+def tauSingleAllFiberCertificateKeysCheck (orient : TauOrient) : Bool :=
+  ((tauSingleAllFiberCertificates orient).map fun cert => cert.key) == colorAssignments4
+
+def tauSingleChainStatesCompatibleCheck (orient : TauOrient) : Bool :=
+  (allChainStates [orient]).all (compatibleChainStates [orient])
+
+def tauSingleAllFiberCertificateAudit (orient : TauOrient) : Bool :=
+  tauSingleChainStatesCompatibleCheck orient &&
+    tauSingleAllFiberCertificateKeysCheck orient &&
+    tauSingleFiberCertificateChunkAudit orient 0 9 &&
+    tauSingleFiberCertificateChunkAudit orient 9 9 &&
+    tauSingleFiberCertificateChunkAudit orient 18 9 &&
+    tauSingleFiberCertificateChunkAudit orient 27 9 &&
+    tauSingleFiberCertificateChunkAudit orient 36 9 &&
+    tauSingleFiberCertificateChunkAudit orient 45 9 &&
+    tauSingleFiberCertificateChunkAudit orient 54 9 &&
+    tauSingleFiberCertificateChunkAudit orient 63 9 &&
+    tauSingleFiberCertificateChunkAudit orient 72 9
+
+theorem tauSingleMirrorAllFiberCertificateKeysCheck_ok :
+    tauSingleAllFiberCertificateKeysCheck TauOrient.mirror = true := by
+  decide
+
+theorem tauSingleMirrorChainStatesCompatibleCheck_ok :
+    tauSingleChainStatesCompatibleCheck TauOrient.mirror = true := by
+  decide
+
+theorem tauSingleMirrorFiberCertificateChunk_0_9_ok :
+    tauSingleFiberCertificateChunkAudit TauOrient.mirror 0 9 = true := by
+  decide
+
+theorem tauSingleMirrorFiberCertificateChunk_9_9_ok :
+    tauSingleFiberCertificateChunkAudit TauOrient.mirror 9 9 = true := by
+  decide
+
+theorem tauSingleMirrorFiberCertificateChunk_18_9_ok :
+    tauSingleFiberCertificateChunkAudit TauOrient.mirror 18 9 = true := by
+  decide
+
+theorem tauSingleMirrorFiberCertificateChunk_27_9_ok :
+    tauSingleFiberCertificateChunkAudit TauOrient.mirror 27 9 = true := by
+  decide
+
+theorem tauSingleMirrorFiberCertificateChunk_36_9_ok :
+    tauSingleFiberCertificateChunkAudit TauOrient.mirror 36 9 = true := by
+  decide
+
+theorem tauSingleMirrorFiberCertificateChunk_45_9_ok :
+    tauSingleFiberCertificateChunkAudit TauOrient.mirror 45 9 = true := by
+  decide
+
+theorem tauSingleMirrorFiberCertificateChunk_54_9_ok :
+    tauSingleFiberCertificateChunkAudit TauOrient.mirror 54 9 = true := by
+  decide
+
+theorem tauSingleMirrorFiberCertificateChunk_63_9_ok :
+    tauSingleFiberCertificateChunkAudit TauOrient.mirror 63 9 = true := by
+  decide
+
+theorem tauSingleMirrorFiberCertificateChunk_72_9_ok :
+    tauSingleFiberCertificateChunkAudit TauOrient.mirror 72 9 = true := by
+  decide
+
+/--
+All 81 fixed-input assignments for a single mirror-`τ` chain have checked
+per-fiber parent certificates in the chain model.  The certificate generator
+uses the same local Lemma 8.14 parent rows; the mirror case changes only the
+ordered outer input key.
+-/
+theorem tauSingleMirrorAllFiberCertificateAudit_ok :
+    tauSingleAllFiberCertificateAudit TauOrient.mirror = true := by
+  simp [tauSingleAllFiberCertificateAudit,
+    tauSingleMirrorChainStatesCompatibleCheck_ok,
+    tauSingleMirrorAllFiberCertificateKeysCheck_ok,
+    tauSingleMirrorFiberCertificateChunk_0_9_ok,
+    tauSingleMirrorFiberCertificateChunk_9_9_ok,
+    tauSingleMirrorFiberCertificateChunk_18_9_ok,
+    tauSingleMirrorFiberCertificateChunk_27_9_ok,
+    tauSingleMirrorFiberCertificateChunk_36_9_ok,
+    tauSingleMirrorFiberCertificateChunk_45_9_ok,
+    tauSingleMirrorFiberCertificateChunk_54_9_ok,
+    tauSingleMirrorFiberCertificateChunk_63_9_ok,
+    tauSingleMirrorFiberCertificateChunk_72_9_ok]
+
 def tauOrientWords2 : List (List TauOrient) :=
   [ [TauOrient.normal, TauOrient.normal]
   , [TauOrient.normal, TauOrient.mirror]
