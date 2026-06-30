@@ -72,7 +72,15 @@ def currentPNPRoadmap : List PNPRoadmapEntry :=
       progressPercent := 100
       itvLowerPercent := 99
       itvUpperPercent := 100
-      obligation := "Do not promote the route while all three barrier escape layers are missing." },
+      obligation := "Do not promote the local Kpoly ledger route; its own promotion gate remains blocked." },
+    { stage := .replacementRoute
+      proofNodeKey := "pnp.replacement-route.opened-barrier-gate"
+      status := .replacementOpened
+      truthValue := ⟨100, 99⟩
+      progressPercent := 10
+      itvLowerPercent := 10
+      itvUpperPercent := 15
+      obligation := "Replacement route opened at the represented all-three barrier gate; next formalize the global complexity-class interface." },
     { stage := .replacementRoute
       proofNodeKey := "pnp.global-separation"
       status := .openBackground
@@ -80,13 +88,33 @@ def currentPNPRoadmap : List PNPRoadmapEntry :=
       progressPercent := 0
       itvLowerPercent := 0
       itvUpperPercent := 1
-      obligation := "Start a replacement global route only after the barrier-world interfaces and escape witnesses are represented." } ]
+      obligation := "No final separation theorem is asserted before the global complexity-class interface is formalized." } ]
 
 theorem currentPNPRoadmap_nonempty : currentPNPRoadmap ≠ [] := by
   simp [currentPNPRoadmap]
 
 /-- The current roadmap pins the local ledger before the blocked global
-promotion gate. -/
+promotion gate and opens only the replacement barrier interface. -/
+theorem currentPNPRoadmap_decides_kpoly_barrier_and_opens_replacement :
+    currentPNPKpolyCompressionBridgePromotedPacket.StopGrade ∧
+      ¬ currentPNPKpolyPromotedBarrierPromotionGate.ClearsAll ∧
+      currentPNPBarrierRouteDecision.barrierGate.ClearsAll ∧
+      ({ stage := PNPRoadmapStage.replacementRoute
+         proofNodeKey := "pnp.replacement-route.opened-barrier-gate"
+         status := .replacementOpened
+         truthValue := ⟨100, 99⟩
+         progressPercent := 10
+         itvLowerPercent := 10
+         itvUpperPercent := 15
+         obligation :=
+          "Replacement route opened at the represented all-three barrier gate; next formalize the global complexity-class interface." } :
+        PNPRoadmapEntry) ∈ currentPNPRoadmap := by
+  exact
+    ⟨(currentPNPKpolyPromotedPacket_stopGrade_and_allBarrierObstructions).1,
+      currentPNPKpolyPromotedBarrierPromotionGate_not_cleared,
+      (currentPNPBarrierRouteDecision_scope).2.2.2.1,
+      by simp [currentPNPRoadmap]⟩
+
 theorem currentPNPRoadmap_orders_local_ledger_before_global_promotion :
     currentPNPKpolyCompressionBridgePromotedPacket.StopGrade ∧
       ¬ currentPNPKpolyPromotedBarrierPromotionGate.ClearsAll ∧
@@ -98,11 +126,11 @@ theorem currentPNPRoadmap_orders_local_ledger_before_global_promotion :
          itvLowerPercent := 0
          itvUpperPercent := 1
          obligation :=
-          "Start a replacement global route only after the barrier-world interfaces and escape witnesses are represented." } :
+          "No final separation theorem is asserted before the global complexity-class interface is formalized." } :
         PNPRoadmapEntry) ∈ currentPNPRoadmap := by
   exact
-    ⟨(currentPNPKpolyPromotedPacket_stopGrade_and_allBarrierObstructions).1,
-      currentPNPKpolyPromotedBarrierPromotionGate_not_cleared,
+    ⟨(currentPNPRoadmap_decides_kpoly_barrier_and_opens_replacement).1,
+      (currentPNPRoadmap_decides_kpoly_barrier_and_opens_replacement).2.1,
       by simp [currentPNPRoadmap]⟩
 
 end Mettapedia.Computability.PNP
