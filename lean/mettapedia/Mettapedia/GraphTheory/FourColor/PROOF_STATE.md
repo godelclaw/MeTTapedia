@@ -34,6 +34,18 @@ colorings and every two-color component.  The 8.15 theorem and its chunk
 theorems are axiom-clean; the 8.14 theorem and mirror check remain at the
 standard finite-audit footprint `[propext]`.
 
+Lemma 8.18/Corollary 8.19 are not closed by the manuscript's Step-1
+preparation argument.  The theorem
+`lemma818_pointwise_lift_preparation_obstruction` is a finite, axiom-clean
+`τ -> τ` obstruction to the pointwise downstream-pairing claim used in Lemma
+8.18: with an upstream state `6` and downstream state `176`, the upstream
+`{r,b}` component seeded at `B5` is input-disjoint and exits the interface at
+`B5,B7`, but the downstream fixed-input fiber has no extension pairing the
+corresponding input stubs `B1,B3` in the `{r,b}` subgraph.  This does not prove
+that the two-gadget composite fails `LKR_in`; it proves that Lemma 8.18 as
+written needs a stronger or different composition invariant than Lemmas 8.14
+and 8.15 supply.
+
 The CAP5/F2, GP(12,2), dodecahedral six-cut, and related files below are
 exploratory audits of a divergent F2-additivity route.  They are retained for
 negative evidence and infrastructure, but they are not Ben's actual route and

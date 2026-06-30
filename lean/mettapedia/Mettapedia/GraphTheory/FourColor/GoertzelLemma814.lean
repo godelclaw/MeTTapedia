@@ -940,6 +940,75 @@ theorem lemma815_tau_tree_transparency_audit :
   rw [tauTreeTransparencyRange_128_64_ok]
   rfl
 
+/--
+The output stubs of an upstream `τ` when composing two canonical gadgets along
+the interface used in Lemma 8.18.
+-/
+def tauOutputEdges : List TauEdge :=
+  [TauEdge.B4, TauEdge.B5, TauEdge.B6, TauEdge.B7]
+
+def tauOutputFootprint (component : List TauEdge) : List TauEdge :=
+  tauOutputEdges.filter fun e => component.contains e
+
+/-- Interface color agreement for the serial gluing
+`X.B4..X.B7 = Y.B0..Y.B3`. -/
+def tauInterfaceColorAgrees (x y : TauState) : Bool :=
+  colorEq (x.color TauEdge.B4) (y.color TauEdge.B0) &&
+    colorEq (x.color TauEdge.B5) (y.color TauEdge.B1) &&
+    colorEq (x.color TauEdge.B6) (y.color TauEdge.B2) &&
+    colorEq (x.color TauEdge.B7) (y.color TauEdge.B3)
+
+/--
+The exact downstream-preparation condition used in Lemma 8.18's Step 1 for a
+single downstream `τ`: with the downstream input colors fixed, some extension
+must pair the two named input stubs in the chosen two-color component.
+
+By Lemma 8.14, existence of such an extension would be enough to reach it by a
+Kempe word disjoint from the downstream input stubs.  The obstruction below
+shows that the existence premise itself can fail.
+-/
+def downstreamInputPairCanBePrepared (y : TauState) (a c : LColor)
+    (u v : TauEdge) : Bool :=
+  allTauStates.any fun y' =>
+    sameInput y' y && (tauComponent y' a c u).contains v
+
+/--
+Finite obstruction to the pointwise preparation step in Lemma 8.18.
+
+Take an upstream `τ` in state `6` and a downstream `τ` in state `176`, glued
+along `B4..B7 = B0..B3`.  The upstream `{r,b}`-component seeded at `B5`
+is input-disjoint and has interface footprint exactly `{B5,B7}`.  Lemma 8.18's
+proof then asks the downstream side to preserve its input colors while pairing
+the corresponding downstream input stubs `{B1,B3}` in the `{r,b}`-subgraph.
+The final conjunct checks that no downstream extension with those fixed input
+colors has that pairing.
+
+This is not a counterexample to `LKR_in` for the two-gadget composite; it is a
+checked failure of the pointwise lift-preparation claim used in the manuscript
+proof of Lemma 8.18.
+-/
+def lemma818_pointwiseLiftCounterexampleCheck : Bool :=
+  let x := stateAt 6
+  let y := stateAt 176
+  let component := tauComponent x LColor.r LColor.b TauEdge.B5
+  tauInterfaceColorAgrees x y &&
+    componentAvoidsInputs component &&
+    tauOutputFootprint component == [TauEdge.B5, TauEdge.B7] &&
+    colorInPair (y.color TauEdge.B1) LColor.r LColor.b &&
+    colorInPair (y.color TauEdge.B3) LColor.r LColor.b &&
+    !downstreamInputPairCanBePrepared y LColor.r LColor.b TauEdge.B1 TauEdge.B3
+
+set_option maxRecDepth 4096
+
+/--
+Lemma 8.18 as written cannot be closed from Lemmas 8.14 and 8.15 alone:
+the downstream pairing-preparation step invoked for a lifted upstream switch
+has this finite `τ → τ` obstruction.
+-/
+theorem lemma818_pointwise_lift_preparation_obstruction :
+    lemma818_pointwiseLiftCounterexampleCheck = true := by
+  decide
+
 end GoertzelLemma814
 
 end Mettapedia.GraphTheory.FourColor

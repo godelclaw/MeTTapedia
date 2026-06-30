@@ -26,10 +26,16 @@ Lean also closes Lemma 8.15 by `lemma815_tau_tree_transparency_audit`, a
 chunked finite certificate proving
 `lemma815_tau_tree_transparency_finiteCheck = true` across all 192 canonical
 gadget colorings and all two-color components.  The 8.15 audit is axiom-clean.
-The next Pillar-C work is therefore the composition layer: make the
-8.15 transparency interface usable by the Lemma 8.18-8.19 gadget-composition
-steps and then assemble the Section 9 induction surface.  This is still not a
-Four Color Theorem claim.
+The manuscript's Lemma 8.18/Corollary 8.19 composition step does not currently
+close from these finite gadget facts: `lemma818_pointwise_lift_preparation_obstruction`
+checks a concrete `τ -> τ` state where the upstream switch exits at two
+interface stubs, but the downstream fixed-input fiber cannot be prepared to
+pair the corresponding stubs for the same color pair.  This pinpoints the
+failed Step-1 premise in Lemma 8.18; it is not a counterexample to composite
+`LKR_in`.  The next Pillar-C task is a replacement transparent-composition
+invariant or a finite-plus-induction certificate that avoids this false
+pointwise preparation claim, before any Section 9 assembly can be trusted.
+This is still not a Four Color Theorem claim.
 
 The older CAP5/F2, GP(12,2), and six-cut files are exploratory negative audits
 of a divergent additive F2 route.  They remain useful for provenance and
@@ -40,7 +46,7 @@ Read these four files first — they are the whole live surface:
 
 | File | Contents |
 |---|---|
-| `GoertzelLemma814.lean` | Pillar-C finite model for Lemma 8.14: canonical three-cell gadget, finite proper-coloring state space, input-disjoint Kempe switches, indexed `LKR_in` path certificate, mirror check, and Lemma 8.15 transparency finite check |
+| `GoertzelLemma814.lean` | Pillar-C finite model for Lemma 8.14: canonical three-cell gadget, finite proper-coloring state space, input-disjoint Kempe switches, indexed `LKR_in` path certificate, mirror check, Lemma 8.15 transparency finite check, and the checked Lemma 8.18 pointwise-preparation obstruction |
 | `Goal.lean` | The target (`Theorem49ShellClaim`), its reduction to four geometric oracles plus a fifth non-geometric algebraic cancellation oracle, and proofs that **all four geometric uniform oracles are false** — including the v23.5 residual/current-boundary lane, whose positive wrapper is fixed-embedding equivalent to the refuted collar-layer surface |
 | `Shells.lean` | Bundled hypothesis packages (`ClosedWalkExactShell`, `SuccessorCycleExactShell`, `ClosedWalkCancellationShell`, …) replacing the historical 8–10-hypothesis telescopes |
 | `Frontier.lean` | The maximal positive and negative results, stated over the bundles as thin wrappers, including detector-based cancellation sufficiency |
