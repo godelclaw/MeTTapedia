@@ -5,7 +5,7 @@ import Mettapedia.Computability.PNP.CruxKpolyPromotedPacket
 import Mettapedia.Computability.PNP.CruxSynthesisRegression
 import Mettapedia.Computability.PNP.KpolyPolynomialFunctorAgreementObstruction
 import Mettapedia.Computability.PNP.KpolyQuantaleShortcutRemovalCanary
-import Mettapedia.Computability.PNP.Barriers.ProperSubsetLabCanaries
+import Mettapedia.Computability.PNP.Barriers.ReplacementOpened
 import Mettapedia.Computability.PNP.PNPv13AtomicBudgetLedgerAuditorCanaries
 import Mettapedia.Computability.PNP.PNPv13CDENFNormalizerCanaries
 import Mettapedia.Computability.PNP.PNPv13FiniteGibbsDobrushinCanaries
@@ -31,6 +31,7 @@ inductive PNPProofNodeStatus where
   | blockedByCounterexample
   | barrierBlocked
   | barrierUncleared
+  | replacementOpened
   | openBackground
 deriving DecidableEq, Repr
 
@@ -47,13 +48,13 @@ deriving Repr
 
 /-- Current source-map summary for `Mettapedia/Computability/PNP`. -/
 def currentPNPLaneSurveyCounts : PNPLaneSurveyCounts where
-  sourceFiles := 947
-  sourceLines := 125417
-  internalImportEdges := 2291
-  regressionFiles := 294
-  filesOverSevenHundredFiftyLines := 0
+  sourceFiles := 948
+  sourceLines := 125563
+  internalImportEdges := 2292
+  regressionFiles := 295
+  filesOverSevenHundredFiftyLines := 1
   zeroInternalImporterEntrypoints := 256
-  noDeclarationCompatibilityHubs := 126
+  noDeclarationCompatibilityHubs := 128
 
 /-- Simple PLN-style truth bookkeeping: support and confidence percentages. -/
 structure SimpleTruthValue where
@@ -76,7 +77,7 @@ def currentPNPProofNodes : List PNPProofNode := [
     key := "pnp.map.current-lane",
     status := .surveyed,
     truthValue := ⟨100, 94⟩,
-    evidence := "The lane currently has 947 Lean files, 125417 lines, 2291 internal import edges, and no files over the split threshold.",
+    evidence := "The lane currently has 948 Lean files, 125563 lines, 2292 internal import edges, and one file over the split threshold.",
     nextObligation := "Keep broad regression files separate from the live entrypoint unless a checked theorem needs them."
   },
   {
@@ -284,10 +285,17 @@ def currentPNPProofNodes : List PNPProofNode := [
   },
   {
     key := "pnp.replacement-route.barrier-subset-lab-canaries",
-    status := .barrierBlocked,
+    status := .checked,
     truthValue := ⟨100, 98⟩,
     evidence := "pnpBarrierSubsetFrontierCanaries_guardrails records the finite lab-backed Boolean gate: a toy all-three-barrier route clears, every proper subset of the barrier layers fails promotion, and the current local Kpoly promotion gate remains blocked.",
-    nextObligation := "Do not begin a replacement global route unless the finite lab and Lean gate both show all three barrier layers represented."
+    nextObligation := "Use only the all-three represented barrier gate as the entry condition for the replacement route."
+  },
+  {
+    key := "pnp.replacement-route.opened-barrier-gate",
+    status := .replacementOpened,
+    truthValue := ⟨100, 99⟩,
+    evidence := "currentPNPBarrierRouteDecision_verdict_packet records the decided barrier verdict: the current local Kpoly promotion gate remains blocked, while currentPNPAllBarrierCandidatePromotionGate_clears represents the all-three replacement barrier gate with every required challenge-world interface and positive escape witness.",
+    nextObligation := "First concrete obligation: formalize the global complexity-class interface linking the barrier-cleared replacement gate to actual language, uniformity, reduction, and nonmembership data; no final separation theorem is asserted here."
   },
   {
     key := "pnp.replacement-route.promotion-layer-omissions",
@@ -322,7 +330,7 @@ def currentPNPProofNodes : List PNPProofNode := [
     status := .openBackground,
     truthValue := ⟨0, 99⟩,
     evidence := "The live PNP surface is a route audit; it does not assert a final P versus NP separation theorem.",
-    nextObligation := "Formalize the missing global complexity-class interface and barrier checks before introducing any final separation statement."
+    nextObligation := "Discharge currentPNPBarrierRouteDecision_first_obligation by formalizing the missing global complexity-class interface before introducing any final separation statement."
   },
   {
     key := "pnp.barrier-checks",
@@ -746,4 +754,13 @@ theorem currentPNPBarrierSubsetFrontierLabCanaries_node :
       pnpBarrierSubsetNaturalProofAlgebrizationCanaryAudit.clearsGlobalPromotionGate =
         false := by
   exact pnpBarrierSubsetFrontierCanaries_guardrails
+
+theorem currentPNPReplacementRouteOpenedBarrierGate_node :
+    currentPNPKpolyCompressionBridgePromotedPacket.StopGrade ∧
+      ¬ currentPNPKpolyPromotedBarrierPromotionGate.ClearsAll ∧
+      currentPNPBarrierRouteDecision.barrierGate.ClearsAll ∧
+      currentPNPBarrierRouteDecision.firstObligation =
+        .globalComplexityClassInterface ∧
+      currentPNPBarrierRouteDecision.claimsFinalSeparation = false := by
+  exact currentPNPBarrierRouteDecision_verdict_packet
 end Mettapedia.Computability.PNP
