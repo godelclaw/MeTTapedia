@@ -291,6 +291,16 @@ is a real chain-state component certificate slice for a non-base representative
 mode, but it is not the full `TTT` target audit: the other `TTT` fibers,
 including the 12 large size-512 fibers, and the other thirteen target modes
 remain open.
+`GoertzelLemma818TripleTauLightComponentCertificate.lean` now scales that row
+shape across the light part of the same `TTT`/`mode09` representative target.
+The theorem `tttLightComponentCertificateAudit_ok` checks the target/mode
+bookkeeping, the 69 light fixed-input fibers, the 45 empty fibers, the 24
+nonempty size-16 fibers, and all 384 light chain states by explicit
+component-switch rows and parent-depth convergence.  This replaces the archived
+failed direct-row prototype for the light slice: Lean no longer expands full
+`chainComponent` for these rows.  It is still not the full `TTT` target audit,
+because the 12 size-512 `TTT` fibers remain open, and it is not the all-chain
+`LKR_in` consequence.
 
 Checkpoint stop status, 2026-07-01: the exploratory Gate-2 connectivity sweeps
 are stopped.  The finite mode set is not the open question anymore: Lean records
@@ -305,9 +315,10 @@ length-2 chain-level parent/path certificates
 (`mode00/mode01/mode02/mode03/mode05/mode06/mode08/mode09/mode12/mode13/mode14/mode15/mode17/mode19`)
 still need compact per-fixed-input chain/component certificates, or an
 equivalent finite transition certificate, before `wordMode_induction` can yield
-all-chain `LKR_in`.  This checkpoint is therefore a finite-mode/table-closure
-checkpoint, not a completed Lemma 8.18/8.19 lift and not a Four Color Theorem
-claim.
+all-chain `LKR_in`.  The first non-base target, `mode09`, now has its `TTT`
+light fibers certified, but not the 12 large `TTT` fibers.  This checkpoint is
+therefore a finite-mode/table-closure plus light-target-certificate checkpoint,
+not a completed Lemma 8.18/8.19 lift and not a Four Color Theorem claim.
 
 The CAP5/F2, GP(12,2), dodecahedral six-cut, and related files below are
 exploratory audits of a divergent F2-additivity route.  They are retained for
