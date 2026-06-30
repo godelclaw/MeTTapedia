@@ -15,6 +15,7 @@ inductive PNPRoadmapStage where
   | liveRegressionSplit
   | localLedgerAudit
   | goertzelCalibrationBreak
+  | steelmanConditional
   | barrierObstruction
   | replacementRoute
 deriving DecidableEq, Repr
@@ -74,6 +75,14 @@ def currentPNPRoadmap : List PNPRoadmapEntry :=
       itvLowerPercent := 98
       itvUpperPercent := 100
       obligation := "Treat Ben Goertzel's calibration/success-domination step as refuted as stated: the full post-switch input is not T_i-invariant on nonzero VV columns, and a finite two-point witness separates global exact recovery from every shared-local-input decoder. P vs NP remains open." },
+    { stage := .steelmanConditional
+      proofNodeKey := "pnp.steelman.kernel-flip-no-threading-star-sw-conditional"
+      status := .checked
+      truthValue := ⟨100, 92⟩
+      progressPercent := 100
+      itvLowerPercent := 92
+      itvUpperPercent := 100
+      obligation := "Kernel-flip exact neutrality and no-threading are finite checked facts; the conditional chain is checked only after the explicit StarSWAverageCaseWitnessBitHardness input is supplied. No concentration/log-Sobolev replacement and no final separation are asserted." },
     { stage := .barrierObstruction
       proofNodeKey := "pnp.kpoly-promoted.all-barrier-obstructions"
       status := .barrierBlocked
@@ -141,5 +150,18 @@ theorem currentPNPRoadmap_orders_local_ledger_before_global_promotion :
     ⟨(currentPNPRoadmap_decides_kpoly_barrier_and_opens_replacement).1,
       (currentPNPRoadmap_decides_kpoly_barrier_and_opens_replacement).2.1,
       by simp [currentPNPRoadmap]⟩
+
+theorem currentPNPRoadmap_records_pnp_steelman_conditional :
+    ({ stage := PNPRoadmapStage.steelmanConditional
+       proofNodeKey := "pnp.steelman.kernel-flip-no-threading-star-sw-conditional"
+       status := .checked
+       truthValue := ⟨100, 92⟩
+       progressPercent := 100
+       itvLowerPercent := 92
+       itvUpperPercent := 100
+       obligation :=
+        "Kernel-flip exact neutrality and no-threading are finite checked facts; the conditional chain is checked only after the explicit StarSWAverageCaseWitnessBitHardness input is supplied. No concentration/log-Sobolev replacement and no final separation are asserted." } :
+      PNPRoadmapEntry) ∈ currentPNPRoadmap := by
+  simp [currentPNPRoadmap]
 
 end Mettapedia.Computability.PNP
