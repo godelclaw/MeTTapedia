@@ -100,6 +100,12 @@ table: `mtAllFiberCertificateAudit_ok` checks all 81 fixed-input keys for the
 `mirror-τ,τ` chain, with 36 nonempty fibers, 1152 generated chain states, and
 maximum parent depth 4.  The only remaining length-2 generated base table is
 `mirror-τ,mirror-τ`; the all-chain frontier/DFA consequence is still separate.
+`GoertzelLemma818MirrorMirrorCertificate.lean` completes the length-2 base
+layer: `mmAllFiberCertificateAudit_ok` checks all 81 fixed-input keys for the
+`mirror-τ,mirror-τ` chain, with 36 nonempty fibers, 960 generated chain states,
+and maximum parent depth 4.  All four length-2 orientation words now have
+generated direct parent/path certificate tables; the all-chain frontier/DFA
+consequence is still separate.
 
 Gate-2 frontier-mode checkpoint, 2026-06-30: the lab evidence has stabilized
 at a finite profile-mode surface, but it is not yet a Lean composition
