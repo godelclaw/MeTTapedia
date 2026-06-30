@@ -1,6 +1,6 @@
 # FourColor: goal, status, and how to approach it
 
-*Last restructured: 2026-06-10.  Last proof-state update: 2026-06-30.  This file replaces the 3,577-line
+*Last restructured: 2026-06-10.  Last proof-state update: 2026-07-01.  This file replaces the 3,577-line
 `Theorem49NextHardProblemSummary.lean` prose (now in `Legacy/`) as the
 entry point.*
 
@@ -148,6 +148,11 @@ evidence at the metadata level.  No mode is presently flagged as lacking
 connectivity evidence.  The open work is semantic certification: attach real
 chain/profile certificates and per-fiber path certificates to the archived
 rows, then use the DFA induction hook to obtain all-chain `LKR_in`.
+This is the stop point for the current exploration pass.  Further work should
+formalize the existing finite mode/certificate surface, not extend the
+length-sweep search.  The next useful checkpoint is a generated representative
+certificate layer that ties the archived atom/quotient rows to actual
+chain-state Kempe paths and feeds `wordMode_induction`.
 
 The older CAP5/F2, GP(12,2), and six-cut files are exploratory negative audits
 of a divergent additive F2 route.  They remain useful for provenance and
