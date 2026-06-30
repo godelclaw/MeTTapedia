@@ -46,6 +46,19 @@ Ben's false pointwise preparation claim and proves composition before any
 Section 9 assembly can be trusted.  This is still not a Four Color Theorem
 claim.
 
+The Lean certificate interface is now split at the right granularity for that
+generated proof.  `GoertzelLemma814.lean` contains per-fixed-input certificate
+records (`ChainFiberParentRow`, `ChainFiberCertificate`) and audits
+(`chainFiberParentCertificateAudit`,
+`chainAllFiberParentCertificateAudit`) that check exact fiber-index coverage,
+same-fiber parent edges, specified input-disjoint chain Kempe moves, and
+bounded parent iteration to the fiber root.  The theorem
+`tauSingleNormalFiber0Certificate_ok` is a nontrivial smoke consumer for the
+first single-`τ` fixed-input fiber `{0,1,2,3,48,49,50,51}`.  The remaining
+work is to generate these small certificates for the representative/profile
+surface and connect them to the frontier-mode induction; the interface itself
+does not yet prove all-chain `LKR_in`.
+
 Gate-2 frontier-mode status: stop treating longer exploratory sweeps as the
 main work item.  The current lab surface is a finite 20-mode profile DFA with
 40 transitions; 36 transitions are observed directly and 4 are inferred by the
