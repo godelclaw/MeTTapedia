@@ -198,6 +198,13 @@ agreement without expanding `chainComponent`.  The first single-`τ` fiber is
 already smoke-checked with explicit components.  Next, generate the same
 row-split component certificates for one representative target, then scale that
 format across the fourteen target audits.
+The first non-base representative slice is now checked in
+`GoertzelLemma818TripleTauComponentSmoke.lean`: `TTT`/`mode09`, fixed-input key
+`[r,r,b,r]`, 16 states, explicit component rows, and parent-depth convergence.
+This proves the component-certificate format works on a genuine remaining
+representative mode.  The next useful expansion is all light `TTT` fibers, then
+the large `TTT` fibers by a smaller transition/component certificate or further
+row splitting, before moving to the other thirteen representative targets.
 
 Checkpoint stop status, 2026-07-01: the exploration pass is checkpointed and
 should not be extended by longer word sweeps.  The profile automaton is finite
