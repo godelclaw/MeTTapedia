@@ -179,6 +179,49 @@ def tableClosedCheck : Bool :=
 theorem tableClosedCheck_ok : tableClosedCheck = true := by
   rfl
 
+def initialMode : TauOrient → FrontierMode
+  | TauOrient.tau => FrontierMode.mode07
+  | TauOrient.mirror => FrontierMode.mode16
+
+def wordMode : List TauOrient → Option FrontierMode
+  | [] => none
+  | orient :: rest => some (rest.foldl step (initialMode orient))
+
+def modeInTable (mode : FrontierMode) : Bool :=
+  allModes.contains mode
+
+theorem initialMode_inTable (orient : TauOrient) :
+    modeInTable (initialMode orient) = true := by
+  cases orient <;> rfl
+
+theorem step_inTable (mode : FrontierMode) (orient : TauOrient) :
+    modeInTable (step mode orient) = true := by
+  cases mode <;> cases orient <;> rfl
+
+theorem foldl_step_inTable
+    (rest : List TauOrient) {mode : FrontierMode}
+    (hmode : modeInTable mode = true) :
+    modeInTable (rest.foldl step mode) = true := by
+  induction rest generalizing mode with
+  | nil =>
+      exact hmode
+  | cons orient rest ih =>
+      simpa [List.foldl] using ih (step_inTable mode orient)
+
+theorem wordMode_inTable
+    {word : List TauOrient} {mode : FrontierMode}
+    (hmode : wordMode word = some mode) :
+    modeInTable mode = true := by
+  cases word with
+  | nil =>
+      change none = some mode at hmode
+      contradiction
+  | cons orient rest =>
+      change some (rest.foldl step (initialMode orient)) = some mode at hmode
+      injection hmode with hfold
+      rw [← hfold]
+      exact foldl_step_inTable rest (initialMode_inTable orient)
+
 end GoertzelLemma818FrontierMode
 
 end Mettapedia.GraphTheory.FourColor
