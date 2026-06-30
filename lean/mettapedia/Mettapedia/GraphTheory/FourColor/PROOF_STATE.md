@@ -122,10 +122,12 @@ words for every mode and proves `representativeWordsSoundCheck_ok`,
 representative word folds to the listed mode, and every mode has a checked
 canonical representative.  The theorem `knownProfileWordHashCheck_ok` checks
 the 42 archived known word/profile-hash pairs against both `wordMode` and
-`modeOfProfileHash`.  `#print axioms` reports no axioms for these table-layer
-theorems.  This is not yet the proof that every reachable chain profile is
-represented by the table's canonical representatives or that the table entails
-all-chain `LKR_in`.
+`modeOfProfileHash`.  The theorem `knownTransitionHashCheck_ok` checks the 40
+archived source-hash/orientation/target-hash transition entries against the
+hash lookup and the Lean `step` function.  `#print axioms` reports no axioms
+for these table-layer theorems.  This is not yet the proof that every reachable
+chain profile is represented by the table's canonical representatives or that
+the table entails all-chain `LKR_in`.
 
 The CAP5/F2, GP(12,2), dodecahedral six-cut, and related files below are
 exploratory audits of a divergent F2-additivity route.  They are retained for

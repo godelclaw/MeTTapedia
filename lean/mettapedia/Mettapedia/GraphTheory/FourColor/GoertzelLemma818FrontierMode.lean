@@ -345,6 +345,109 @@ theorem knownProfileWordHashCheck_ok :
     knownProfileWordHashCheck = true := by
   rfl
 
+def knownTransitionHashes : List (String × TauOrient × String) :=
+  [ ("1ac3ffcefef0e72e6d7ca7523253d47490558ba9755a3581090ca0e3031cc346", TauOrient.mirror, "ed111eea780e730925edcf7921b337533c1d4954665d245b6676de3ca57c2a63")
+  , ("1ac3ffcefef0e72e6d7ca7523253d47490558ba9755a3581090ca0e3031cc346", TauOrient.tau, "9dbefb6157618a01e724f2961504a6e733d54d751aabd27889bdada506804956")
+  , ("1c719d44a7c47a9a05f69ffdae83288968d51a47c878745afd834202333e731b", TauOrient.mirror, "ed111eea780e730925edcf7921b337533c1d4954665d245b6676de3ca57c2a63")
+  , ("1c719d44a7c47a9a05f69ffdae83288968d51a47c878745afd834202333e731b", TauOrient.tau, "31e0381fca6cfb76796fbe9ee63f3447b730f8e5a830e3202e1ae637e8eb8da0")
+  , ("31e0381fca6cfb76796fbe9ee63f3447b730f8e5a830e3202e1ae637e8eb8da0", TauOrient.mirror, "6c0a99870e3f8ab863f3e90fefc269e0d0703d6ec0dbf434a770553deb986324")
+  , ("31e0381fca6cfb76796fbe9ee63f3447b730f8e5a830e3202e1ae637e8eb8da0", TauOrient.tau, "de80ad0377b63e410b0feceafbebdac0e6bb5b9133f37ebb35e9ea7eeefd91e4")
+  , ("45249313d2951ddb58981181ef744871e6447e025a3a24b89dcb4655b8f8aac9", TauOrient.mirror, "fee62bcd43e995b828267ffbc5884830c37ba523e054f90e234c3462e21f797d")
+  , ("45249313d2951ddb58981181ef744871e6447e025a3a24b89dcb4655b8f8aac9", TauOrient.tau, "c797b98adfe7aca087274c6ff03bdc56449078fcfdc54bec9dc489cf1fa8ebfc")
+  , ("61c5d954e3ad806b77ddfab87032a265a0fc404a55cced477b0e2fda3ebe4490", TauOrient.mirror, "6c0a99870e3f8ab863f3e90fefc269e0d0703d6ec0dbf434a770553deb986324")
+  , ("61c5d954e3ad806b77ddfab87032a265a0fc404a55cced477b0e2fda3ebe4490", TauOrient.tau, "1c719d44a7c47a9a05f69ffdae83288968d51a47c878745afd834202333e731b")
+  , ("6c0a99870e3f8ab863f3e90fefc269e0d0703d6ec0dbf434a770553deb986324", TauOrient.mirror, "ed111eea780e730925edcf7921b337533c1d4954665d245b6676de3ca57c2a63")
+  , ("6c0a99870e3f8ab863f3e90fefc269e0d0703d6ec0dbf434a770553deb986324", TauOrient.tau, "31e0381fca6cfb76796fbe9ee63f3447b730f8e5a830e3202e1ae637e8eb8da0")
+  , ("9318012cf65c57b5cb19668eb29c73030d6bbfd2eb80a6feead9c9d110f5a220", TauOrient.mirror, "ce046c768ea8a600c35974f97b38652149e7175eff70cc28f506e09dedacfb31")
+  , ("9318012cf65c57b5cb19668eb29c73030d6bbfd2eb80a6feead9c9d110f5a220", TauOrient.tau, "c797b98adfe7aca087274c6ff03bdc56449078fcfdc54bec9dc489cf1fa8ebfc")
+  , ("9b07069297dcf0a45b1ad3c8f672c21d2f1ecfb3889b6a6f01b16423fda14344", TauOrient.mirror, "ee430509815c4119619027004ad84897eedaa41083f0943d0bbe5cf897c3318d")
+  , ("9b07069297dcf0a45b1ad3c8f672c21d2f1ecfb3889b6a6f01b16423fda14344", TauOrient.tau, "abaad60a99389d64a9b52c6be4496f49a1b8a434e8ca4cb930ee2deae4807abc")
+  , ("9dbefb6157618a01e724f2961504a6e733d54d751aabd27889bdada506804956", TauOrient.mirror, "6c0a99870e3f8ab863f3e90fefc269e0d0703d6ec0dbf434a770553deb986324")
+  , ("9dbefb6157618a01e724f2961504a6e733d54d751aabd27889bdada506804956", TauOrient.tau, "de80ad0377b63e410b0feceafbebdac0e6bb5b9133f37ebb35e9ea7eeefd91e4")
+  , ("9faaa7e69dd874b8116994c980dff5b7dd32a797e27eebf1be40a198901cd3ff", TauOrient.mirror, "ce046c768ea8a600c35974f97b38652149e7175eff70cc28f506e09dedacfb31")
+  , ("9faaa7e69dd874b8116994c980dff5b7dd32a797e27eebf1be40a198901cd3ff", TauOrient.tau, "c797b98adfe7aca087274c6ff03bdc56449078fcfdc54bec9dc489cf1fa8ebfc")
+  , ("abaad60a99389d64a9b52c6be4496f49a1b8a434e8ca4cb930ee2deae4807abc", TauOrient.mirror, "9318012cf65c57b5cb19668eb29c73030d6bbfd2eb80a6feead9c9d110f5a220")
+  , ("abaad60a99389d64a9b52c6be4496f49a1b8a434e8ca4cb930ee2deae4807abc", TauOrient.tau, "9faaa7e69dd874b8116994c980dff5b7dd32a797e27eebf1be40a198901cd3ff")
+  , ("c55532ec739ee43c3df016eeb3a1ac488e4e478df70ecb870cc886cfd49d7931", TauOrient.mirror, "1ac3ffcefef0e72e6d7ca7523253d47490558ba9755a3581090ca0e3031cc346")
+  , ("c55532ec739ee43c3df016eeb3a1ac488e4e478df70ecb870cc886cfd49d7931", TauOrient.tau, "1c719d44a7c47a9a05f69ffdae83288968d51a47c878745afd834202333e731b")
+  , ("c797b98adfe7aca087274c6ff03bdc56449078fcfdc54bec9dc489cf1fa8ebfc", TauOrient.mirror, "c9150749204c8e0fd1c5f72fa01ed17a3c9e8ab2d801c61013ab1772569daacd")
+  , ("c797b98adfe7aca087274c6ff03bdc56449078fcfdc54bec9dc489cf1fa8ebfc", TauOrient.tau, "9faaa7e69dd874b8116994c980dff5b7dd32a797e27eebf1be40a198901cd3ff")
+  , ("c9150749204c8e0fd1c5f72fa01ed17a3c9e8ab2d801c61013ab1772569daacd", TauOrient.mirror, "ce046c768ea8a600c35974f97b38652149e7175eff70cc28f506e09dedacfb31")
+  , ("c9150749204c8e0fd1c5f72fa01ed17a3c9e8ab2d801c61013ab1772569daacd", TauOrient.tau, "c797b98adfe7aca087274c6ff03bdc56449078fcfdc54bec9dc489cf1fa8ebfc")
+  , ("ce046c768ea8a600c35974f97b38652149e7175eff70cc28f506e09dedacfb31", TauOrient.mirror, "c9150749204c8e0fd1c5f72fa01ed17a3c9e8ab2d801c61013ab1772569daacd")
+  , ("ce046c768ea8a600c35974f97b38652149e7175eff70cc28f506e09dedacfb31", TauOrient.tau, "9faaa7e69dd874b8116994c980dff5b7dd32a797e27eebf1be40a198901cd3ff")
+  , ("de80ad0377b63e410b0feceafbebdac0e6bb5b9133f37ebb35e9ea7eeefd91e4", TauOrient.mirror, "ed111eea780e730925edcf7921b337533c1d4954665d245b6676de3ca57c2a63")
+  , ("de80ad0377b63e410b0feceafbebdac0e6bb5b9133f37ebb35e9ea7eeefd91e4", TauOrient.tau, "31e0381fca6cfb76796fbe9ee63f3447b730f8e5a830e3202e1ae637e8eb8da0")
+  , ("ebccdaf35fc51d2e09dc7a18bca456d4ba509e742adeb9ed6bbbadf41e92f33d", TauOrient.mirror, "61c5d954e3ad806b77ddfab87032a265a0fc404a55cced477b0e2fda3ebe4490")
+  , ("ebccdaf35fc51d2e09dc7a18bca456d4ba509e742adeb9ed6bbbadf41e92f33d", TauOrient.tau, "c55532ec739ee43c3df016eeb3a1ac488e4e478df70ecb870cc886cfd49d7931")
+  , ("ed111eea780e730925edcf7921b337533c1d4954665d245b6676de3ca57c2a63", TauOrient.mirror, "6c0a99870e3f8ab863f3e90fefc269e0d0703d6ec0dbf434a770553deb986324")
+  , ("ed111eea780e730925edcf7921b337533c1d4954665d245b6676de3ca57c2a63", TauOrient.tau, "de80ad0377b63e410b0feceafbebdac0e6bb5b9133f37ebb35e9ea7eeefd91e4")
+  , ("ee430509815c4119619027004ad84897eedaa41083f0943d0bbe5cf897c3318d", TauOrient.mirror, "9318012cf65c57b5cb19668eb29c73030d6bbfd2eb80a6feead9c9d110f5a220")
+  , ("ee430509815c4119619027004ad84897eedaa41083f0943d0bbe5cf897c3318d", TauOrient.tau, "45249313d2951ddb58981181ef744871e6447e025a3a24b89dcb4655b8f8aac9")
+  , ("fee62bcd43e995b828267ffbc5884830c37ba523e054f90e234c3462e21f797d", TauOrient.mirror, "c9150749204c8e0fd1c5f72fa01ed17a3c9e8ab2d801c61013ab1772569daacd")
+  , ("fee62bcd43e995b828267ffbc5884830c37ba523e054f90e234c3462e21f797d", TauOrient.tau, "9faaa7e69dd874b8116994c980dff5b7dd32a797e27eebf1be40a198901cd3ff")
+  ]
+
+def transitionHashDirectCheck
+    (sourceHash : String) (sourceMode : FrontierMode)
+    (orient : TauOrient) (targetHash : String) (targetMode : FrontierMode) :
+    Bool :=
+  (modeOfProfileHash sourceHash == some sourceMode)
+  && (modeOfProfileHash targetHash == some targetMode)
+  && (step sourceMode orient == targetMode)
+
+def knownTransitionHashDirectChecks : List Bool :=
+  [ transitionHashDirectCheck "1ac3ffcefef0e72e6d7ca7523253d47490558ba9755a3581090ca0e3031cc346" FrontierMode.mode00 TauOrient.mirror "ed111eea780e730925edcf7921b337533c1d4954665d245b6676de3ca57c2a63" FrontierMode.mode17
+  , transitionHashDirectCheck "1ac3ffcefef0e72e6d7ca7523253d47490558ba9755a3581090ca0e3031cc346" FrontierMode.mode00 TauOrient.tau "9dbefb6157618a01e724f2961504a6e733d54d751aabd27889bdada506804956" FrontierMode.mode08
+  , transitionHashDirectCheck "1c719d44a7c47a9a05f69ffdae83288968d51a47c878745afd834202333e731b" FrontierMode.mode01 TauOrient.mirror "ed111eea780e730925edcf7921b337533c1d4954665d245b6676de3ca57c2a63" FrontierMode.mode17
+  , transitionHashDirectCheck "1c719d44a7c47a9a05f69ffdae83288968d51a47c878745afd834202333e731b" FrontierMode.mode01 TauOrient.tau "31e0381fca6cfb76796fbe9ee63f3447b730f8e5a830e3202e1ae637e8eb8da0" FrontierMode.mode02
+  , transitionHashDirectCheck "31e0381fca6cfb76796fbe9ee63f3447b730f8e5a830e3202e1ae637e8eb8da0" FrontierMode.mode02 TauOrient.mirror "6c0a99870e3f8ab863f3e90fefc269e0d0703d6ec0dbf434a770553deb986324" FrontierMode.mode05
+  , transitionHashDirectCheck "31e0381fca6cfb76796fbe9ee63f3447b730f8e5a830e3202e1ae637e8eb8da0" FrontierMode.mode02 TauOrient.tau "de80ad0377b63e410b0feceafbebdac0e6bb5b9133f37ebb35e9ea7eeefd91e4" FrontierMode.mode15
+  , transitionHashDirectCheck "45249313d2951ddb58981181ef744871e6447e025a3a24b89dcb4655b8f8aac9" FrontierMode.mode03 TauOrient.mirror "fee62bcd43e995b828267ffbc5884830c37ba523e054f90e234c3462e21f797d" FrontierMode.mode19
+  , transitionHashDirectCheck "45249313d2951ddb58981181ef744871e6447e025a3a24b89dcb4655b8f8aac9" FrontierMode.mode03 TauOrient.tau "c797b98adfe7aca087274c6ff03bdc56449078fcfdc54bec9dc489cf1fa8ebfc" FrontierMode.mode12
+  , transitionHashDirectCheck "61c5d954e3ad806b77ddfab87032a265a0fc404a55cced477b0e2fda3ebe4490" FrontierMode.mode04 TauOrient.mirror "6c0a99870e3f8ab863f3e90fefc269e0d0703d6ec0dbf434a770553deb986324" FrontierMode.mode05
+  , transitionHashDirectCheck "61c5d954e3ad806b77ddfab87032a265a0fc404a55cced477b0e2fda3ebe4490" FrontierMode.mode04 TauOrient.tau "1c719d44a7c47a9a05f69ffdae83288968d51a47c878745afd834202333e731b" FrontierMode.mode01
+  , transitionHashDirectCheck "6c0a99870e3f8ab863f3e90fefc269e0d0703d6ec0dbf434a770553deb986324" FrontierMode.mode05 TauOrient.mirror "ed111eea780e730925edcf7921b337533c1d4954665d245b6676de3ca57c2a63" FrontierMode.mode17
+  , transitionHashDirectCheck "6c0a99870e3f8ab863f3e90fefc269e0d0703d6ec0dbf434a770553deb986324" FrontierMode.mode05 TauOrient.tau "31e0381fca6cfb76796fbe9ee63f3447b730f8e5a830e3202e1ae637e8eb8da0" FrontierMode.mode02
+  , transitionHashDirectCheck "9318012cf65c57b5cb19668eb29c73030d6bbfd2eb80a6feead9c9d110f5a220" FrontierMode.mode06 TauOrient.mirror "ce046c768ea8a600c35974f97b38652149e7175eff70cc28f506e09dedacfb31" FrontierMode.mode14
+  , transitionHashDirectCheck "9318012cf65c57b5cb19668eb29c73030d6bbfd2eb80a6feead9c9d110f5a220" FrontierMode.mode06 TauOrient.tau "c797b98adfe7aca087274c6ff03bdc56449078fcfdc54bec9dc489cf1fa8ebfc" FrontierMode.mode12
+  , transitionHashDirectCheck "9b07069297dcf0a45b1ad3c8f672c21d2f1ecfb3889b6a6f01b16423fda14344" FrontierMode.mode07 TauOrient.mirror "ee430509815c4119619027004ad84897eedaa41083f0943d0bbe5cf897c3318d" FrontierMode.mode18
+  , transitionHashDirectCheck "9b07069297dcf0a45b1ad3c8f672c21d2f1ecfb3889b6a6f01b16423fda14344" FrontierMode.mode07 TauOrient.tau "abaad60a99389d64a9b52c6be4496f49a1b8a434e8ca4cb930ee2deae4807abc" FrontierMode.mode10
+  , transitionHashDirectCheck "9dbefb6157618a01e724f2961504a6e733d54d751aabd27889bdada506804956" FrontierMode.mode08 TauOrient.mirror "6c0a99870e3f8ab863f3e90fefc269e0d0703d6ec0dbf434a770553deb986324" FrontierMode.mode05
+  , transitionHashDirectCheck "9dbefb6157618a01e724f2961504a6e733d54d751aabd27889bdada506804956" FrontierMode.mode08 TauOrient.tau "de80ad0377b63e410b0feceafbebdac0e6bb5b9133f37ebb35e9ea7eeefd91e4" FrontierMode.mode15
+  , transitionHashDirectCheck "9faaa7e69dd874b8116994c980dff5b7dd32a797e27eebf1be40a198901cd3ff" FrontierMode.mode09 TauOrient.mirror "ce046c768ea8a600c35974f97b38652149e7175eff70cc28f506e09dedacfb31" FrontierMode.mode14
+  , transitionHashDirectCheck "9faaa7e69dd874b8116994c980dff5b7dd32a797e27eebf1be40a198901cd3ff" FrontierMode.mode09 TauOrient.tau "c797b98adfe7aca087274c6ff03bdc56449078fcfdc54bec9dc489cf1fa8ebfc" FrontierMode.mode12
+  , transitionHashDirectCheck "abaad60a99389d64a9b52c6be4496f49a1b8a434e8ca4cb930ee2deae4807abc" FrontierMode.mode10 TauOrient.mirror "9318012cf65c57b5cb19668eb29c73030d6bbfd2eb80a6feead9c9d110f5a220" FrontierMode.mode06
+  , transitionHashDirectCheck "abaad60a99389d64a9b52c6be4496f49a1b8a434e8ca4cb930ee2deae4807abc" FrontierMode.mode10 TauOrient.tau "9faaa7e69dd874b8116994c980dff5b7dd32a797e27eebf1be40a198901cd3ff" FrontierMode.mode09
+  , transitionHashDirectCheck "c55532ec739ee43c3df016eeb3a1ac488e4e478df70ecb870cc886cfd49d7931" FrontierMode.mode11 TauOrient.mirror "1ac3ffcefef0e72e6d7ca7523253d47490558ba9755a3581090ca0e3031cc346" FrontierMode.mode00
+  , transitionHashDirectCheck "c55532ec739ee43c3df016eeb3a1ac488e4e478df70ecb870cc886cfd49d7931" FrontierMode.mode11 TauOrient.tau "1c719d44a7c47a9a05f69ffdae83288968d51a47c878745afd834202333e731b" FrontierMode.mode01
+  , transitionHashDirectCheck "c797b98adfe7aca087274c6ff03bdc56449078fcfdc54bec9dc489cf1fa8ebfc" FrontierMode.mode12 TauOrient.mirror "c9150749204c8e0fd1c5f72fa01ed17a3c9e8ab2d801c61013ab1772569daacd" FrontierMode.mode13
+  , transitionHashDirectCheck "c797b98adfe7aca087274c6ff03bdc56449078fcfdc54bec9dc489cf1fa8ebfc" FrontierMode.mode12 TauOrient.tau "9faaa7e69dd874b8116994c980dff5b7dd32a797e27eebf1be40a198901cd3ff" FrontierMode.mode09
+  , transitionHashDirectCheck "c9150749204c8e0fd1c5f72fa01ed17a3c9e8ab2d801c61013ab1772569daacd" FrontierMode.mode13 TauOrient.mirror "ce046c768ea8a600c35974f97b38652149e7175eff70cc28f506e09dedacfb31" FrontierMode.mode14
+  , transitionHashDirectCheck "c9150749204c8e0fd1c5f72fa01ed17a3c9e8ab2d801c61013ab1772569daacd" FrontierMode.mode13 TauOrient.tau "c797b98adfe7aca087274c6ff03bdc56449078fcfdc54bec9dc489cf1fa8ebfc" FrontierMode.mode12
+  , transitionHashDirectCheck "ce046c768ea8a600c35974f97b38652149e7175eff70cc28f506e09dedacfb31" FrontierMode.mode14 TauOrient.mirror "c9150749204c8e0fd1c5f72fa01ed17a3c9e8ab2d801c61013ab1772569daacd" FrontierMode.mode13
+  , transitionHashDirectCheck "ce046c768ea8a600c35974f97b38652149e7175eff70cc28f506e09dedacfb31" FrontierMode.mode14 TauOrient.tau "9faaa7e69dd874b8116994c980dff5b7dd32a797e27eebf1be40a198901cd3ff" FrontierMode.mode09
+  , transitionHashDirectCheck "de80ad0377b63e410b0feceafbebdac0e6bb5b9133f37ebb35e9ea7eeefd91e4" FrontierMode.mode15 TauOrient.mirror "ed111eea780e730925edcf7921b337533c1d4954665d245b6676de3ca57c2a63" FrontierMode.mode17
+  , transitionHashDirectCheck "de80ad0377b63e410b0feceafbebdac0e6bb5b9133f37ebb35e9ea7eeefd91e4" FrontierMode.mode15 TauOrient.tau "31e0381fca6cfb76796fbe9ee63f3447b730f8e5a830e3202e1ae637e8eb8da0" FrontierMode.mode02
+  , transitionHashDirectCheck "ebccdaf35fc51d2e09dc7a18bca456d4ba509e742adeb9ed6bbbadf41e92f33d" FrontierMode.mode16 TauOrient.mirror "61c5d954e3ad806b77ddfab87032a265a0fc404a55cced477b0e2fda3ebe4490" FrontierMode.mode04
+  , transitionHashDirectCheck "ebccdaf35fc51d2e09dc7a18bca456d4ba509e742adeb9ed6bbbadf41e92f33d" FrontierMode.mode16 TauOrient.tau "c55532ec739ee43c3df016eeb3a1ac488e4e478df70ecb870cc886cfd49d7931" FrontierMode.mode11
+  , transitionHashDirectCheck "ed111eea780e730925edcf7921b337533c1d4954665d245b6676de3ca57c2a63" FrontierMode.mode17 TauOrient.mirror "6c0a99870e3f8ab863f3e90fefc269e0d0703d6ec0dbf434a770553deb986324" FrontierMode.mode05
+  , transitionHashDirectCheck "ed111eea780e730925edcf7921b337533c1d4954665d245b6676de3ca57c2a63" FrontierMode.mode17 TauOrient.tau "de80ad0377b63e410b0feceafbebdac0e6bb5b9133f37ebb35e9ea7eeefd91e4" FrontierMode.mode15
+  , transitionHashDirectCheck "ee430509815c4119619027004ad84897eedaa41083f0943d0bbe5cf897c3318d" FrontierMode.mode18 TauOrient.mirror "9318012cf65c57b5cb19668eb29c73030d6bbfd2eb80a6feead9c9d110f5a220" FrontierMode.mode06
+  , transitionHashDirectCheck "ee430509815c4119619027004ad84897eedaa41083f0943d0bbe5cf897c3318d" FrontierMode.mode18 TauOrient.tau "45249313d2951ddb58981181ef744871e6447e025a3a24b89dcb4655b8f8aac9" FrontierMode.mode03
+  , transitionHashDirectCheck "fee62bcd43e995b828267ffbc5884830c37ba523e054f90e234c3462e21f797d" FrontierMode.mode19 TauOrient.mirror "c9150749204c8e0fd1c5f72fa01ed17a3c9e8ab2d801c61013ab1772569daacd" FrontierMode.mode13
+  , transitionHashDirectCheck "fee62bcd43e995b828267ffbc5884830c37ba523e054f90e234c3462e21f797d" FrontierMode.mode19 TauOrient.tau "9faaa7e69dd874b8116994c980dff5b7dd32a797e27eebf1be40a198901cd3ff" FrontierMode.mode09
+  ]
+
+def knownTransitionHashCheck : Bool :=
+  knownTransitionHashes.length == 40
+  && knownTransitionHashDirectChecks.length == 40
+  && knownTransitionHashDirectChecks.all id
+
+theorem knownTransitionHashCheck_ok :
+    knownTransitionHashCheck = true := by
+  rfl
+
 def modeInTable (mode : FrontierMode) : Bool :=
   allModes.contains mode
 
