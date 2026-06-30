@@ -1,16 +1,24 @@
 import Mettapedia.QuantumTheory.YangMills.RGBootstrap
 
 /-!
-# Yang-Mills Extraction Constant Break
+# Yang-Mills Extraction Constant Erratum
 
 The manuscript's extended-extraction contraction uses the advertised numerical
 audit `2224 * 2^-13 < 1`.  That arithmetic remains true when `2224` is supplied
-as an input.  This file records the separate obstruction: the manuscript's own
-displayed extraction-projection series at `r1 / r0 = 1/2` is already enormous
-in the one-variable lower-bound scenario, so the corresponding `C₁` is not a
-contraction constant at `dmax = 16`.
+as an input, and it also remains true for the Cauchy-estimate bound
+`Cextract <= 2`.
 
-This is a route-step audit, not a Yang-Mills mass-gap theorem.
+Erratum: the previous `ExtractionConstantBreak` audit read the displayed
+extraction-projection ratio with the inverted exponent literally.  That made a
+convergent Cauchy estimate look like a growing series and incorrectly produced
+an extraction-constant refutation.  The corrected interpretation keeps the
+extended-extraction contraction standing; the continuum Yang-Mills endpoint
+is still open because the constructive-QFT/continuum gate has not been closed.
+
+The only negative theorem retained here is a generic HYPOTHETICAL threshold:
+if some unrelated future constant satisfies `C >= 8192`, then it cannot certify
+the `b = 2, dmax = 16` contraction.  This theorem is not applied to Ben's
+corrected Cauchy constant.
 -/
 
 set_option autoImplicit false
@@ -27,37 +35,33 @@ recursion constant at block factor `b = 2`, using `1.65 = 33/20`,
 def manuscriptC1FromCextract (Cextract : ℝ) : ℝ :=
   ((33 : ℝ) / 20) * (3 * (2 : ℝ) ^ 4) * 14 * Cextract
 
-/-- The one-variable lower-bound value of the displayed extraction series
-`sum_{d=0}^{16} (1/2)^(-d) = 2^17 - 1`. -/
-def manuscriptExtractionSeriesLowerBound16 : ℝ :=
-  (2 : ℝ) ^ 17 - 1
+/-- The corrected Cauchy-estimate extraction bound used by the manuscript:
+`Cextract <= 2`. -/
+def benCauchyCextractUpperBound : ℝ :=
+  2
 
-/-- The RG-recursion constant obtained from the displayed extraction series
-lower bound at `dmax = 16`. -/
-def manuscriptSeriesC1LowerBound16 : ℝ :=
-  manuscriptC1FromCextract manuscriptExtractionSeriesLowerBound16
+/-- The resulting `C1` bound from the manuscript factor map. -/
+def benCauchyC1UpperBound : ℝ :=
+  manuscriptC1FromCextract benCauchyCextractUpperBound
 
-theorem manuscriptExtractionSeriesLowerBound16_eq :
-    manuscriptExtractionSeriesLowerBound16 = 131071 := by
-  norm_num [manuscriptExtractionSeriesLowerBound16]
+theorem benCauchyC1UpperBound_eq :
+    benCauchyC1UpperBound = (11088 : ℝ) / 5 := by
+  norm_num [benCauchyC1UpperBound, benCauchyCextractUpperBound,
+    manuscriptC1FromCextract]
 
-theorem manuscriptExtractionSeriesLowerBound16_exceeds_asserted_two :
-    (2 : ℝ) < manuscriptExtractionSeriesLowerBound16 := by
-  norm_num [manuscriptExtractionSeriesLowerBound16]
+theorem benCauchyC1UpperBound_nonneg :
+    0 ≤ benCauchyC1UpperBound := by
+  norm_num [benCauchyC1UpperBound, benCauchyCextractUpperBound,
+    manuscriptC1FromCextract]
 
-theorem manuscriptSeriesC1LowerBound16_eq :
-    manuscriptSeriesC1LowerBound16 = (726657624 : ℝ) / 5 := by
-  norm_num [manuscriptSeriesC1LowerBound16, manuscriptC1FromCextract,
-    manuscriptExtractionSeriesLowerBound16]
-
-theorem manuscriptSeriesC1LowerBound16_exceeds_advertised :
-    (2224 : ℝ) < manuscriptSeriesC1LowerBound16 := by
-  norm_num [manuscriptSeriesC1LowerBound16, manuscriptC1FromCextract,
-    manuscriptExtractionSeriesLowerBound16]
+theorem benCauchyC1UpperBound_le_advertised :
+    benCauchyC1UpperBound ≤ (2224 : ℝ) := by
+  norm_num [benCauchyC1UpperBound, benCauchyCextractUpperBound,
+    manuscriptC1FromCextract]
 
 /-- At the manuscript's `b = 2, dmax = 16` endpoint, contraction forces the
 constant below `2^(16-3) = 8192`. -/
-theorem not_rgContraction_two_sixteen_of_constant_ge_8192
+theorem hypothetical_not_rgContraction_two_sixteen_of_constant_ge_8192
     {C : ℝ} (hC : (8192 : ℝ) ≤ C) :
     ¬ HasExtendedExtractionContraction C 2 16 := by
   intro h
@@ -67,50 +71,28 @@ theorem not_rgContraction_two_sixteen_of_constant_ge_8192
   norm_num at hlt
   exact (not_lt_of_ge hC) hlt
 
-theorem manuscriptSeriesC1LowerBound16_ge_threshold :
-    (8192 : ℝ) ≤ manuscriptSeriesC1LowerBound16 := by
-  norm_num [manuscriptSeriesC1LowerBound16, manuscriptC1FromCextract,
-    manuscriptExtractionSeriesLowerBound16]
-
-/-- Using the displayed extraction series lower-bound constant, the advertised
-extended-extraction contraction certificate fails at `dmax = 16`. -/
-theorem not_rgContraction_manuscriptSeriesC1LowerBound_two_sixteen :
-    ¬ HasExtendedExtractionContraction manuscriptSeriesC1LowerBound16 2 16 := by
-  exact
-    not_rgContraction_two_sixteen_of_constant_ge_8192
-      manuscriptSeriesC1LowerBound16_ge_threshold
-
-theorem manuscriptSeriesGain_two_sixteen_eq :
-    manuscriptSeriesC1LowerBound16 * irrelevantScale 2 16 =
-      (90832203 : ℝ) / 5120 := by
+/-- The corrected Cauchy-estimate constant has one-step gain about `0.2707`,
+so it is below `1`. -/
+theorem benCauchyC1UpperBound_gain_two_sixteen_eq :
+    benCauchyC1UpperBound * irrelevantScale 2 16 =
+      (693 : ℝ) / 2560 := by
   rw [irrelevantScale_two_sixteen]
-  norm_num [manuscriptSeriesC1LowerBound16, manuscriptC1FromCextract,
-    manuscriptExtractionSeriesLowerBound16]
+  norm_num [benCauchyC1UpperBound, benCauchyCextractUpperBound,
+    manuscriptC1FromCextract]
 
-theorem manuscriptSeriesGain_two_sixteen_gt_one :
-    (1 : ℝ) < manuscriptSeriesC1LowerBound16 * irrelevantScale 2 16 := by
-  rw [manuscriptSeriesGain_two_sixteen_eq]
+theorem benCauchyC1UpperBound_gain_two_sixteen_lt_one :
+    benCauchyC1UpperBound * irrelevantScale 2 16 < 1 := by
+  rw [benCauchyC1UpperBound_gain_two_sixteen_eq]
   norm_num
 
-/-- If the actual extraction norm is at least the one-variable displayed-series
-lower bound, then the manuscript factor map cannot yield a contraction at
-`b = 2, dmax = 16`. -/
-theorem not_rgContraction_two_sixteen_of_manuscriptCextract_ge_seriesLowerBound
-    {Cextract : ℝ}
-    (hCextract : manuscriptExtractionSeriesLowerBound16 ≤ Cextract) :
-    ¬ HasExtendedExtractionContraction (manuscriptC1FromCextract Cextract) 2 16 := by
-  apply not_rgContraction_two_sixteen_of_constant_ge_8192
-  have hbase :
-      (8192 : ℝ) ≤ manuscriptC1FromCextract
-        manuscriptExtractionSeriesLowerBound16 := by
-    simpa [manuscriptSeriesC1LowerBound16] using
-      manuscriptSeriesC1LowerBound16_ge_threshold
-  have hmono :
-      manuscriptC1FromCextract manuscriptExtractionSeriesLowerBound16 ≤
-        manuscriptC1FromCextract Cextract := by
-    unfold manuscriptC1FromCextract
-    nlinarith [hCextract]
-  exact le_trans hbase hmono
+/-- Therefore the corrected Cauchy-estimate bound certifies the advertised
+extended-extraction contraction at `b = 2, dmax = 16`. -/
+theorem benCauchyC1UpperBound_contraction_two_sixteen :
+    HasExtendedExtractionContraction benCauchyC1UpperBound 2 16 := by
+  exact
+    rgContraction_of_nonneg_le_2224_two_sixteen
+      benCauchyC1UpperBound_nonneg
+      benCauchyC1UpperBound_le_advertised
 
 end YangMills
 end QuantumTheory

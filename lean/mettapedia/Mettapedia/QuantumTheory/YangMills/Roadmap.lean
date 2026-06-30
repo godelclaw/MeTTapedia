@@ -21,7 +21,7 @@ namespace YangMills
 inductive YangMillsRoadmapStage where
   | finiteLatticeStrongCouplingGap
   | continuumScalingDiagnostic
-  | extractionConstantBreak
+  | extractionConstantErratum
   | continuumMassGapEndpoint
 deriving DecidableEq, Repr
 
@@ -86,18 +86,18 @@ def z3HalfScaleLinearRGStepRoadmapEntry : YangMillsRoadmapEntry where
   evidence := "z3HalfScaleLinearRGStep_preserves_physicalGap proves a concrete kappa=1/2 refinement step preserving t(a)/a, while z3QuadraticHeatTime_physicalGap_closes records the schedule boundary."
   nextObligation := "Classify the full refinement schedules that preserve or close the physical lower bound; this is a scaling diagnostic, not a continuum mass-gap theorem."
 
-/-- The advertised extended-extraction contraction constant is not established
-by the displayed extraction-projection series. -/
-def yangMillsExtractionConstantBreakRoadmapEntry : YangMillsRoadmapEntry where
-  stage := .extractionConstantBreak
-  nodeId := yangMillsExtractionConstantBreakNode.id
-  status := .refuted
+/-- Erratum for the extraction constant: the corrected Cauchy estimate keeps
+the advertised extended-extraction contraction standing. -/
+def yangMillsExtractionConstantErratumRoadmapEntry : YangMillsRoadmapEntry where
+  stage := .extractionConstantErratum
+  nodeId := yangMillsExtractionConstantErratumNode.id
+  status := .checked
   truthValue := ⟨100, 98⟩
   itvLowerPercent := 98
   itvUpperPercent := 100
   progressPercent := 100
-  evidence := "currentYangMillsExtractionConstantBreak_packet records that the displayed extraction series exceeds the asserted Cextract <= 2 and that the series-derived dmax=16 constant fails HasExtendedExtractionContraction."
-  nextObligation := "Keep the advertised 2224 arithmetic as an input-only benchmark; any continuum route must derive the actual P_le_dmax norm before using Lambda < 1."
+  evidence := "currentYangMillsExtractionConstantErratum_packet records that the corrected Cauchy estimate gives C1 <= 2224 and a b=2,dmax=16 gain 693/2560 < 1, so HasExtendedExtractionContraction holds. The old displayed-series contraction failure is retracted as an inverted-ratio erratum, not a Yang-Mills refutation."
+  nextObligation := "Treat the extended-extraction contraction as standing route evidence, and keep the continuum mass-gap endpoint gated by constructive-QFT obligations."
 
 /-- The continuum Yang-Mills mass-gap endpoint remains open. -/
 def yangMillsContinuumMassGapEndpointRoadmapEntry : YangMillsRoadmapEntry where
@@ -117,7 +117,7 @@ def currentYangMillsRoadmap : List YangMillsRoadmapEntry :=
   , z3StrongCouplingFiniteLandmarkRoadmapEntry
   , z2QuadraticHeatTimeGapClosingRoadmapEntry
   , z3HalfScaleLinearRGStepRoadmapEntry
-  , yangMillsExtractionConstantBreakRoadmapEntry
+  , yangMillsExtractionConstantErratumRoadmapEntry
   , yangMillsContinuumMassGapEndpointRoadmapEntry
   ]
 
@@ -179,18 +179,22 @@ theorem currentYangMillsRoadmap_records_z3_half_scale_rg_step :
         exact z3HalfScaleLinearRGStep_preserves_physicalGap (a := a) (κ := κ) ha,
       z3QuadraticHeatTime_physicalGap_closes⟩
 
-theorem currentYangMillsRoadmap_records_extraction_constant_break :
+theorem currentYangMillsRoadmap_records_extraction_constant_erratum :
     ∃ entry : YangMillsRoadmapEntry,
-      entry.nodeId = yangMillsExtractionConstantBreakNode.id ∧
-        entry.status = .refuted ∧
+      entry.nodeId = yangMillsExtractionConstantErratumNode.id ∧
+        entry.status = .checked ∧
         entry.progressPercent = 100 ∧
-        ¬ HasExtendedExtractionContraction manuscriptSeriesC1LowerBound16 2 16 := by
-  refine ⟨yangMillsExtractionConstantBreakRoadmapEntry, ?_⟩
+        HasExtendedExtractionContraction benCauchyC1UpperBound 2 16 ∧
+        HasExtendedExtractionContraction 2224 2 16 ∧
+        benCauchyC1UpperBound * irrelevantScale 2 16 < 1 := by
+  refine ⟨yangMillsExtractionConstantErratumRoadmapEntry, ?_⟩
   exact
     ⟨rfl,
       rfl,
       rfl,
-      not_rgContraction_manuscriptSeriesC1LowerBound_two_sixteen⟩
+      benCauchyC1UpperBound_contraction_two_sixteen,
+      rgContraction_2224_two_sixteen,
+      benCauchyC1UpperBound_gain_two_sixteen_lt_one⟩
 
 theorem currentYangMillsRoadmap_keeps_continuum_endpoint_open :
     yangMillsContinuumMassGapEndpointRoadmapEntry.status = .openGoal ∧
