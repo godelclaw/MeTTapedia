@@ -448,6 +448,198 @@ theorem knownTransitionHashCheck_ok :
     knownTransitionHashCheck = true := by
   rfl
 
+/--
+Where a representative mode-connectivity witness came from.
+
+`directLenLe4` rows are from the length-1 through length-4 atom-refined
+connectivity report.  The two singleton rows are the independent length-5
+quotient-connectivity checks for the new singleton modes.
+-/
+inductive ConnectivitySource
+  | directLenLe4
+  | singletonTTTTM
+  | singletonMTTTT
+  deriving DecidableEq, BEq, Repr, Inhabited
+
+/--
+A compact row from an archived finite connectivity report.
+
+For `directLenLe4`, `connectedPerInput` is the report field
+`atom_graph_connected_per_input` and `failureCount` is
+`atom_input_failure_count`.  For the singleton length-5 rows, these are
+`quotient_connected_per_input` and `input_failure_count`.
+-/
+structure ConnectivityRow where
+  word : List TauOrient
+  stateCount : Nat
+  signatureCount : Nat
+  atomCount : Nat
+  inputCount : Nat
+  connectedPerInput : Bool
+  failureCount : Nat
+  deriving DecidableEq, BEq, Repr
+
+def connectivityRow
+    (word : List TauOrient) (stateCount signatureCount atomCount : Nat) :
+    ConnectivityRow :=
+  { word := word, stateCount := stateCount, signatureCount := signatureCount,
+    atomCount := atomCount, inputCount := 36, connectedPerInput := true,
+    failureCount := 0 }
+
+def directLenLe4ConnectivityRows : List ConnectivityRow :=
+  [ connectivityRow [TauOrient.tau] 192 192 192
+  , connectivityRow [TauOrient.mirror] 192 192 192
+  , connectivityRow [TauOrient.tau, TauOrient.tau] 960 336 432
+  , connectivityRow [TauOrient.tau, TauOrient.mirror] 1152 288 288
+  , connectivityRow [TauOrient.mirror, TauOrient.tau] 1152 288 288
+  , connectivityRow [TauOrient.mirror, TauOrient.mirror] 960 336 432
+  , connectivityRow [TauOrient.tau, TauOrient.tau, TauOrient.tau] 6528 336 336
+  , connectivityRow [TauOrient.tau, TauOrient.tau, TauOrient.mirror] 6912 336 432
+  , connectivityRow [TauOrient.tau, TauOrient.mirror, TauOrient.tau] 7680 336 432
+  , connectivityRow [TauOrient.tau, TauOrient.mirror, TauOrient.mirror] 6912 336 432
+  , connectivityRow [TauOrient.mirror, TauOrient.tau, TauOrient.tau] 6912 336 432
+  , connectivityRow [TauOrient.mirror, TauOrient.tau, TauOrient.mirror] 7680 336 432
+  , connectivityRow [TauOrient.mirror, TauOrient.mirror, TauOrient.tau] 6912 336 432
+  , connectivityRow [TauOrient.mirror, TauOrient.mirror, TauOrient.mirror] 6528 336 336
+  , connectivityRow [TauOrient.tau, TauOrient.tau, TauOrient.tau, TauOrient.tau] 49920 336 336
+  , connectivityRow [TauOrient.tau, TauOrient.tau, TauOrient.tau, TauOrient.mirror] 50688 336 336
+  , connectivityRow [TauOrient.tau, TauOrient.tau, TauOrient.mirror, TauOrient.tau] 52224 336 336
+  , connectivityRow [TauOrient.tau, TauOrient.tau, TauOrient.mirror, TauOrient.mirror] 50688 336 336
+  , connectivityRow [TauOrient.tau, TauOrient.mirror, TauOrient.tau, TauOrient.tau] 52224 336 336
+  , connectivityRow [TauOrient.tau, TauOrient.mirror, TauOrient.tau, TauOrient.mirror] 55296 336 432
+  , connectivityRow [TauOrient.tau, TauOrient.mirror, TauOrient.mirror, TauOrient.tau] 52224 336 336
+  , connectivityRow [TauOrient.tau, TauOrient.mirror, TauOrient.mirror, TauOrient.mirror] 50688 336 336
+  , connectivityRow [TauOrient.mirror, TauOrient.tau, TauOrient.tau, TauOrient.tau] 50688 336 336
+  , connectivityRow [TauOrient.mirror, TauOrient.tau, TauOrient.tau, TauOrient.mirror] 52224 336 336
+  , connectivityRow [TauOrient.mirror, TauOrient.tau, TauOrient.mirror, TauOrient.tau] 55296 336 432
+  , connectivityRow [TauOrient.mirror, TauOrient.tau, TauOrient.mirror, TauOrient.mirror] 52224 336 336
+  , connectivityRow [TauOrient.mirror, TauOrient.mirror, TauOrient.tau, TauOrient.tau] 50688 336 336
+  , connectivityRow [TauOrient.mirror, TauOrient.mirror, TauOrient.tau, TauOrient.mirror] 52224 336 336
+  , connectivityRow [TauOrient.mirror, TauOrient.mirror, TauOrient.mirror, TauOrient.tau] 50688 336 336
+  , connectivityRow [TauOrient.mirror, TauOrient.mirror, TauOrient.mirror, TauOrient.mirror] 49920 336 336
+  ]
+
+def singletonTTTTMConnectivityRow : ConnectivityRow :=
+  connectivityRow
+    [TauOrient.tau, TauOrient.tau, TauOrient.tau, TauOrient.tau, TauOrient.mirror]
+    396288 336 336
+
+def singletonMTTTTConnectivityRow : ConnectivityRow :=
+  connectivityRow
+    [TauOrient.mirror, TauOrient.tau, TauOrient.tau, TauOrient.tau, TauOrient.tau]
+    396288 336 336
+
+structure ArchivedConnectivityWitness where
+  source : ConnectivitySource
+  row : ConnectivityRow
+  deriving DecidableEq, BEq, Repr
+
+def archivedConnectivitySourceCheck (w : ArchivedConnectivityWitness) : Bool :=
+  match w.source with
+  | ConnectivitySource.directLenLe4 =>
+      directLenLe4ConnectivityRows.contains w.row
+  | ConnectivitySource.singletonTTTTM =>
+      w.row == singletonTTTTMConnectivityRow
+  | ConnectivitySource.singletonMTTTT =>
+      w.row == singletonMTTTTConnectivityRow
+
+def archivedConnectivityWitness : FrontierMode → ArchivedConnectivityWitness
+  | FrontierMode.mode00 =>
+      { source := ConnectivitySource.directLenLe4,
+        row := connectivityRow [TauOrient.mirror, TauOrient.tau, TauOrient.mirror]
+          7680 336 432 }
+  | FrontierMode.mode01 =>
+      { source := ConnectivitySource.directLenLe4,
+        row := connectivityRow [TauOrient.mirror, TauOrient.mirror, TauOrient.tau]
+          6912 336 432 }
+  | FrontierMode.mode02 =>
+      { source := ConnectivitySource.directLenLe4,
+        row := connectivityRow
+          [TauOrient.mirror, TauOrient.mirror, TauOrient.mirror, TauOrient.tau]
+          50688 336 336 }
+  | FrontierMode.mode03 =>
+      { source := ConnectivitySource.directLenLe4,
+        row := connectivityRow [TauOrient.tau, TauOrient.mirror, TauOrient.tau]
+          7680 336 432 }
+  | FrontierMode.mode04 =>
+      { source := ConnectivitySource.directLenLe4,
+        row := connectivityRow [TauOrient.mirror, TauOrient.mirror] 960 336 432 }
+  | FrontierMode.mode05 =>
+      { source := ConnectivitySource.directLenLe4,
+        row := connectivityRow [TauOrient.mirror, TauOrient.mirror, TauOrient.mirror]
+          6528 336 336 }
+  | FrontierMode.mode06 =>
+      { source := ConnectivitySource.directLenLe4,
+        row := connectivityRow [TauOrient.tau, TauOrient.mirror, TauOrient.mirror]
+          6912 336 432 }
+  | FrontierMode.mode07 =>
+      { source := ConnectivitySource.directLenLe4,
+        row := connectivityRow [TauOrient.tau] 192 192 192 }
+  | FrontierMode.mode08 =>
+      { source := ConnectivitySource.directLenLe4,
+        row := connectivityRow
+          [TauOrient.mirror, TauOrient.tau, TauOrient.mirror, TauOrient.tau]
+          55296 336 432 }
+  | FrontierMode.mode09 =>
+      { source := ConnectivitySource.directLenLe4,
+        row := connectivityRow [TauOrient.tau, TauOrient.tau, TauOrient.tau]
+          6528 336 336 }
+  | FrontierMode.mode10 =>
+      { source := ConnectivitySource.directLenLe4,
+        row := connectivityRow [TauOrient.tau, TauOrient.tau] 960 336 432 }
+  | FrontierMode.mode11 =>
+      { source := ConnectivitySource.directLenLe4,
+        row := connectivityRow [TauOrient.mirror, TauOrient.tau] 1152 288 288 }
+  | FrontierMode.mode12 =>
+      { source := ConnectivitySource.directLenLe4,
+        row := connectivityRow
+          [TauOrient.tau, TauOrient.mirror, TauOrient.mirror, TauOrient.tau]
+          52224 336 336 }
+  | FrontierMode.mode13 =>
+      { source := ConnectivitySource.singletonTTTTM,
+        row := singletonTTTTMConnectivityRow }
+  | FrontierMode.mode14 =>
+      { source := ConnectivitySource.directLenLe4,
+        row := connectivityRow
+          [TauOrient.tau, TauOrient.mirror, TauOrient.mirror, TauOrient.mirror]
+          50688 336 336 }
+  | FrontierMode.mode15 =>
+      { source := ConnectivitySource.singletonMTTTT,
+        row := singletonMTTTTConnectivityRow }
+  | FrontierMode.mode16 =>
+      { source := ConnectivitySource.directLenLe4,
+        row := connectivityRow [TauOrient.mirror] 192 192 192 }
+  | FrontierMode.mode17 =>
+      { source := ConnectivitySource.directLenLe4,
+        row := connectivityRow
+          [TauOrient.mirror, TauOrient.mirror, TauOrient.mirror, TauOrient.mirror]
+          49920 336 336 }
+  | FrontierMode.mode18 =>
+      { source := ConnectivitySource.directLenLe4,
+        row := connectivityRow [TauOrient.tau, TauOrient.mirror] 1152 288 288 }
+  | FrontierMode.mode19 =>
+      { source := ConnectivitySource.directLenLe4,
+        row := connectivityRow
+          [TauOrient.tau, TauOrient.mirror, TauOrient.tau, TauOrient.mirror]
+          55296 336 432 }
+
+def modeHasArchivedConnectivityEvidence (mode : FrontierMode) : Bool :=
+  let witness := archivedConnectivityWitness mode
+  archivedConnectivitySourceCheck witness
+    && (wordMode witness.row.word == some mode)
+    && witness.row.connectedPerInput
+    && (witness.row.inputCount == 36)
+    && (witness.row.failureCount == 0)
+
+def archivedConnectivityCoverageCheck : Bool :=
+  allModes.length == 20
+    && directLenLe4ConnectivityRows.length == 30
+    && allModes.all modeHasArchivedConnectivityEvidence
+
+theorem archivedConnectivityCoverageCheck_ok :
+    archivedConnectivityCoverageCheck = true := by
+  decide
+
 def modeInTable (mode : FrontierMode) : Bool :=
   allModes.contains mode
 
@@ -528,6 +720,34 @@ theorem wordMode_bool_induction
     (hmode : wordMode word = some mode) :
     good mode = true :=
   wordMode_induction hInitial hStep hmode
+
+theorem archivedConnectivityEvidence_initial_ok (orient : TauOrient) :
+    modeHasArchivedConnectivityEvidence (initialMode orient) = true := by
+  cases orient <;> decide
+
+theorem archivedConnectivityEvidence_step_ok
+    (mode : FrontierMode) (orient : TauOrient)
+    (_hmode : modeHasArchivedConnectivityEvidence mode = true) :
+    modeHasArchivedConnectivityEvidence (step mode orient) = true := by
+  cases mode <;> cases orient <;> decide
+
+/--
+Every nonempty orientation word folds to a DFA mode with an archived
+atom-connectivity witness row.
+
+This is still only evidence coverage for the finite mode table.  It is not the
+final all-chain `LKR_in` consequence: that requires a generated theorem tying
+these archived rows to actual per-fixed-input path certificates.
+-/
+theorem wordMode_hasArchivedConnectivityEvidence
+    {word : List TauOrient} {mode : FrontierMode}
+    (hmode : wordMode word = some mode) :
+    modeHasArchivedConnectivityEvidence mode = true :=
+  wordMode_bool_induction
+    modeHasArchivedConnectivityEvidence
+    archivedConnectivityEvidence_initial_ok
+    archivedConnectivityEvidence_step_ok
+    hmode
 
 end GoertzelLemma818FrontierMode
 
