@@ -56,11 +56,15 @@ length 4, and a compact transition-congruent state key
 `profile mode + frontier summary + local atom index`.  Length-5 targeted
 profile checks show the alternating cases collapse back to existing singleton
 modes and the remaining representatives either collapse to known modes or
-produce two new singleton profile modes.  The open item is no longer whether a
-finite mode set exists; the open item is the honest connectivity seal for the
-two new singleton modes, plus Lean formalization of representative coverage,
-mode transitions, and the per-fixed-input consequence to all-chain `LKR_in`.
-Do not resume monolithic `decide` or open-ended length sweeps for this step.
+produce two new singleton profile modes.  The two new singleton representatives
+`TTTTM` and `MTTTT` have now passed independent per-fixed-input
+quotient-connectivity checks: each has 336 singleton atoms, 36 nonempty
+fixed-input fibers, and 0 disconnected quotient fibers.  The open item is no
+longer whether a finite mode set exists, nor whether the representative new
+singleton modes are connected; the open item is Lean formalization of
+representative coverage, mode transitions, and the per-fixed-input consequence
+to all-chain `LKR_in`.  Do not resume monolithic `decide` or open-ended length
+sweeps for this step.
 
 The older CAP5/F2, GP(12,2), and six-cut files are exploratory negative audits
 of a divergent additive F2 route.  They remain useful for provenance and
