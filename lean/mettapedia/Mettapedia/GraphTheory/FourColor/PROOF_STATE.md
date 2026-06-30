@@ -199,6 +199,19 @@ unverified is the semantic bridge from those archived quotient/atom rows to
 actual chain-state fixed-input path certificates and then through
 `wordMode_induction` to all-chain `LKR_in`.
 
+Green checkpoint, 2026-07-01: this is the intended stopping point for the
+Gate-2 exploration pass.  The branch records the finite 20-mode profile DFA,
+its table closure, the 42 archived representative word/profile-hash checks,
+the 40 transition-hash checks, the induction hook, the 30 direct
+length-1-through-4 atom-connectivity rows, and the two length-5 singleton
+quotient-connectivity rows.  The automaton is finite and closed at the
+profile-mode metadata level.  All 20 modes have archived per-fixed-input
+connectivity evidence; no mode is currently flagged as unverified at that
+metadata layer.  The remaining frontier is to formalize the semantic
+certificate connecting those rows to real per-fixed-input Kempe path
+certificates and then derive all-chain `LKR_in`.  This checkpoint does not
+claim the Four Color Theorem.
+
 The CAP5/F2, GP(12,2), dodecahedral six-cut, and related files below are
 exploratory audits of a divergent F2-additivity route.  They are retained for
 negative evidence and infrastructure, but they are not Ben's actual route and
