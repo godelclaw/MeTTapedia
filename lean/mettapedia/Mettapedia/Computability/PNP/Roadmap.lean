@@ -14,6 +14,7 @@ inductive PNPRoadmapStage where
   | sourceMap
   | liveRegressionSplit
   | localLedgerAudit
+  | goertzelCalibrationBreak
   | barrierObstruction
   | replacementRoute
 deriving DecidableEq, Repr
@@ -65,6 +66,14 @@ def currentPNPRoadmap : List PNPRoadmapEntry :=
       itvUpperPercent := 100
       obligation := "Treat local Kpoly coverage as local ledger evidence only." },
     { stage := .localLedgerAudit, proofNodeKey := "pnp.kpoly.feature-route-quantale-boundary", status := .checked, truthValue := ⟨100, 99⟩, progressPercent := 100, itvLowerPercent := 99, itvUpperPercent := 100, obligation := "Treat the shortcut-removal packet as a non-vacuous necessary-condition boundary: the committed singleton/Bool canary inhabits all four obligations, while scaled or global routes still need the same obligations plus separate barrier-world evidence." },
+    { stage := .goertzelCalibrationBreak
+      proofNodeKey := "pnp.goertzel-calibration-success-domination-break"
+      status := .blockedByCounterexample
+      truthValue := ⟨100, 98⟩
+      progressPercent := 100
+      itvLowerPercent := 98
+      itvUpperPercent := 100
+      obligation := "Treat Ben Goertzel's calibration/success-domination step as refuted as stated: the full post-switch input is not T_i-invariant on nonzero VV columns, and a finite two-point witness separates global exact recovery from every shared-local-input decoder. P vs NP remains open." },
     { stage := .barrierObstruction
       proofNodeKey := "pnp.kpoly-promoted.all-barrier-obstructions"
       status := .barrierBlocked

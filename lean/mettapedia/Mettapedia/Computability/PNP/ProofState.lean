@@ -12,6 +12,7 @@ import Mettapedia.Computability.PNP.PNPv13FiniteGibbsDobrushinCanaries
 import Mettapedia.Computability.PNP.PNPv13LockedCoreLabCanaries
 import Mettapedia.Computability.PNP.PNPv13SwitchedHistoryProductAuditorCanaries
 import Mettapedia.Computability.PNP.PNPv13TraceFactorizationCanaries
+import Mettapedia.Computability.PNP.PostSwitchInputObstruction
 import Mettapedia.Computability.PNP.SharedExactZABAffineDecisionListStructuralObstructionExactZAB
 /-!
 # PNP proof state
@@ -49,10 +50,10 @@ deriving Repr
 /-- Current source-map summary for `Mettapedia/Computability/PNP`. -/
 def currentPNPLaneSurveyCounts : PNPLaneSurveyCounts where
   sourceFiles := 948
-  sourceLines := 125563
-  internalImportEdges := 2292
+  sourceLines := 125688
+  internalImportEdges := 2294
   regressionFiles := 295
-  filesOverSevenHundredFiftyLines := 1
+  filesOverSevenHundredFiftyLines := 2
   zeroInternalImporterEntrypoints := 256
   noDeclarationCompatibilityHubs := 128
 
@@ -77,7 +78,7 @@ def currentPNPProofNodes : List PNPProofNode := [
     key := "pnp.map.current-lane",
     status := .surveyed,
     truthValue := ⟨100, 94⟩,
-    evidence := "The lane currently has 948 Lean files, 125563 lines, 2292 internal import edges, and one file over the split threshold.",
+    evidence := "The lane currently has 948 Lean files, 125688 lines, 2294 internal import edges, and two files over the split threshold.",
     nextObligation := "Keep broad regression files separate from the live entrypoint unless a checked theorem needs them."
   },
   {
@@ -147,6 +148,13 @@ def currentPNPProofNodes : List PNPProofNode := [
     truthValue := ⟨100, 97⟩,
     evidence := "finiteGibbsDobrushinStrictContraction_lab_positive_canary clears a strict max-row contraction toy matrix, while the negative canaries show that average influence, critical equality, and sampled-row evidence do not clear the full Dobrushin/qSSM gate.",
     nextObligation := "Do not promote finite Gibbs boundary-law mixing claims unless the explicit max-qSSM row constant is strictly below scale for every row."
+  },
+  {
+    key := "pnp.goertzel-calibration-success-domination-break",
+    status := .blockedByCounterexample,
+    truthValue := ⟨100, 98⟩,
+    evidence := "calibrationFullInputPreservation_fails_of_nonzeroColumn proves that the post-switch involution preserves only `(z,a)` while changing `b` and the full `(z,a,b)` input on every nonzero VV column. finite_successDomination_counterexample proves a two-point finite local/global domination counterexample: the global decoder succeeds on both full instances, while every decoder depending only on the shared local input succeeds on at most one. Lab pnp-calibration-success-domination-break-lab-20260630.json tabulates the parity-USAT/VV instance where all nonzero columns move `b`, global exact success is 1, best local bit success is 1/2, and best local exact success falls as 2^(1-m).",
+    nextObligation := "Do not use Ben Goertzel's A.17 calibration or Proposition A.5 success-domination step as stated; any replacement must condition on an actually invariant input or supply a new domination theorem that survives global decoders."
   },
   {
     key := "pnp.kpoly-promoted-packet",
@@ -763,4 +771,15 @@ theorem currentPNPReplacementRouteOpenedBarrierGate_node :
         .globalComplexityClassInterface ∧
       currentPNPBarrierRouteDecision.claimsFinalSeparation = false := by
   exact currentPNPBarrierRouteDecision_verdict_packet
+
+theorem currentPNPGoertzelCalibrationBreak_node :
+    (∀ {Z : Type*} {k : Nat} (u : PostSwitchInput Z k),
+        nonzeroColumn u.a ->
+          invariantProjection (tiInputMap u) = invariantProjection u ∧
+            tiInputMap u ≠ u ∧ (tiInputMap u).b ≠ u.b) ∧
+      twoPointGlobalSuccessCount = 2 ∧
+        (∀ guess : Bool, twoPointLocalSuccessCount guess ≤ 1) ∧
+          (∀ guess : Bool, twoPointLocalSuccessCount guess < twoPointGlobalSuccessCount) := by
+  exact ⟨fun u ha => calibrationFullInputPreservation_fails_of_nonzeroColumn u ha,
+    finite_successDomination_counterexample⟩
 end Mettapedia.Computability.PNP
