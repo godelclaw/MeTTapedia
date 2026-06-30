@@ -1,5 +1,7 @@
 import Mathlib.Analysis.SpecialFunctions.Exp
+import Mathlib.Algebra.Module.Basic
 import Mathlib.Data.Real.Basic
+import Mathlib.Tactic
 
 /-!
 # Abstract Bakry-Emery conditional reduction
@@ -30,23 +32,50 @@ self-adjointness arguments are kept as structure fields.  The checked theorems
 below are conditional on an explicitly provided structure. -/
 structure CarreDuChampSemigroup where
   Func : Type
+  funcAddCommGroup : AddCommGroup Func
+  funcModule : Module ℝ Func
   Point : Type
-  P : ℝ → Func → Func
-  L : Func → Func
+  P : ℝ → Func →ₗ[ℝ] Func
+  L : Func →ₗ[ℝ] Func
   Gamma : Func → Func → Func
-  Gamma2 : Func → Func
-  eval : Point → Func → ℝ
+  eval : Point → Func →ₗ[ℝ] ℝ
+  mul : Func → Func → Func
   semigroup_zero : ∀ f : Func, P 0 f = f
   semigroup_add : ∀ (s t : ℝ) (f : Func), P (s + t) f = P s (P t f)
   gamma_symm : ∀ (f g : Func) (x : Point), eval x (Gamma f g) = eval x (Gamma g f)
   gamma_nonneg : ∀ (f : Func) (x : Point), 0 ≤ eval x (Gamma f f)
+  gamma_smul_right :
+    ∀ (a : ℝ) (f g : Func), Gamma f (a • g) = a • Gamma f g
+  semigroup_mono :
+    ∀ {f g : Func} {t : ℝ} {x : Point},
+      (∀ y : Point, eval y f ≤ eval y g) → eval x (P t f) ≤ eval x (P t g)
   semigroup_le_const :
     ∀ {f : Func} {c t : ℝ} {x : Point},
       (∀ y : Point, eval y f ≤ c) → eval x (P t f) ≤ c
-  diffusion_chain_rule : Prop
+  generator_product_rule :
+    ∀ f g : Func,
+      L (mul f g) = mul f (L g) + mul g (L f) + (2 : ℝ) • Gamma f g
+  timeDeriv : (ℝ → Func) → ℝ → Func
+  semigroup_derivative_const :
+    ∀ (s : ℝ) (f : Func), timeDeriv (fun r => P r f) s = P s (L f)
+  semigroup_generator_commute :
+    ∀ (s : ℝ) (f : Func), P s (L f) = L (P s f)
+  timeDeriv_semigroup_curve :
+    ∀ (u : ℝ → Func) (s : ℝ),
+      timeDeriv (fun r => P r (u r)) s =
+        P s (L (u s)) + P s (timeDeriv u s)
+  timeDeriv_reverse_semigroup :
+    ∀ (t s : ℝ) (f : Func),
+      timeDeriv (fun r => P (t - r) f) s = -L (P (t - s) f)
+  timeDeriv_gamma_self :
+    ∀ (u : ℝ → Func) (s : ℝ),
+      timeDeriv (fun r => Gamma (u r) (u r)) s =
+        (2 : ℝ) • Gamma (u s) (timeDeriv u s)
   generator_carre_du_champ_identity : Prop
   semigroup_self_adjoint : Prop
-  gamma2_bochner_identity : Prop
+
+attribute [instance] CarreDuChampSemigroup.funcAddCommGroup
+attribute [instance] CarreDuChampSemigroup.funcModule
 
 namespace CarreDuChampSemigroup
 
@@ -54,10 +83,43 @@ namespace CarreDuChampSemigroup
 def gammaSelf (M : CarreDuChampSemigroup) (f : M.Func) : M.Func :=
   M.Gamma f f
 
+/-- The iterated carré-du-champ, defined by the Bochner generator identity. -/
+def gamma2 (M : CarreDuChampSemigroup) (f : M.Func) : M.Func :=
+  (1 / 2 : ℝ) • (M.L (M.gammaSelf f) - (2 : ℝ) • M.Gamma f (M.L f))
+
+/-- The Bochner identity is definitional in this abstract API. -/
+theorem gamma2_bochner_identity (M : CarreDuChampSemigroup) (f : M.Func) :
+    M.gamma2 f =
+      (1 / 2 : ℝ) •
+        (M.L (M.gammaSelf f) - (2 : ℝ) • M.Gamma f (M.L f)) := by
+  rfl
+
+/-- Twice `Gamma2` is the Bochner numerator. -/
+theorem two_smul_gamma2 (M : CarreDuChampSemigroup) (f : M.Func) :
+    (2 : ℝ) • M.gamma2 f =
+      M.L (M.gammaSelf f) - (2 : ℝ) • M.Gamma f (M.L f) := by
+  simp [gamma2, smul_smul]
+
+/-- The semigroup-linear form of the Bochner numerator. -/
+theorem two_smul_P_gamma2 (M : CarreDuChampSemigroup)
+    (s : ℝ) (f : M.Func) :
+    (2 : ℝ) • M.P s (M.gamma2 f) =
+      M.P s (M.L (M.gammaSelf f)) -
+        (2 : ℝ) • M.P s (M.Gamma f (M.L f)) := by
+  calc
+    (2 : ℝ) • M.P s (M.gamma2 f)
+        = M.P s ((2 : ℝ) • M.gamma2 f) := by
+          simp
+    _ = M.P s (M.L (M.gammaSelf f) - (2 : ℝ) • M.Gamma f (M.L f)) := by
+          rw [M.two_smul_gamma2]
+    _ = M.P s (M.L (M.gammaSelf f)) -
+          (2 : ℝ) • M.P s (M.Gamma f (M.L f)) := by
+          simp
+
 /-- The one-sided local curvature-dimension input `Gamma2(f) >= -K Gamma(f)`. -/
 def CDMinusInfinity (M : CarreDuChampSemigroup) (K : ℝ) : Prop :=
   ∀ (f : M.Func) (x : M.Point),
-    -K * M.eval x (M.gammaSelf f) ≤ M.eval x (M.Gamma2 f)
+    -K * M.eval x (M.gammaSelf f) ≤ M.eval x (M.gamma2 f)
 
 /-- Bakry-Emery interpolation:
 `s |-> P_s (Gamma(P_{t-s} f))`. -/
@@ -77,40 +139,127 @@ theorem beInterpolation_time (M : CarreDuChampSemigroup)
   unfold beInterpolation
   rw [sub_self, M.semigroup_zero]
 
+/-- Checked interpolation derivative identity:
+`d/ds P_s Gamma(P_{t-s} f) = 2 P_s Gamma2(P_{t-s} f)`.
+
+The derivative operator is abstract, but the result is no longer an assumed
+lower-bound field: it follows from the supplied semigroup derivative laws,
+the reverse heat-flow derivative, right-linearity of `Gamma`, and the
+generator definition of `gamma2`. -/
+theorem interpolationDerivativeIdentity_func (M : CarreDuChampSemigroup)
+    (t s : ℝ) (f : M.Func) :
+    M.timeDeriv (fun r => M.beInterpolation t r f) s =
+      (2 : ℝ) • M.P s (M.gamma2 (M.P (t - s) f)) := by
+  unfold beInterpolation gammaSelf
+  rw [M.timeDeriv_semigroup_curve]
+  rw [M.timeDeriv_gamma_self]
+  rw [M.timeDeriv_reverse_semigroup]
+  have hgamma :
+      M.Gamma (M.P (t - s) f) (-M.L (M.P (t - s) f)) =
+        -M.Gamma (M.P (t - s) f) (M.L (M.P (t - s) f)) := by
+    calc
+      M.Gamma (M.P (t - s) f) (-M.L (M.P (t - s) f))
+          = M.Gamma (M.P (t - s) f)
+              ((-1 : ℝ) • M.L (M.P (t - s) f)) := by
+            simp
+      _ = (-1 : ℝ) •
+            M.Gamma (M.P (t - s) f) (M.L (M.P (t - s) f)) := by
+            rw [M.gamma_smul_right]
+      _ = -M.Gamma (M.P (t - s) f) (M.L (M.P (t - s) f)) := by
+            simp
+  have htwo :=
+    (M.two_smul_P_gamma2 s (M.P (t - s) f)).symm
+  have hPgamma :
+      M.P s ((2 : ℝ) •
+          M.Gamma (M.P (t - s) f) (-M.L (M.P (t - s) f))) =
+        -(2 : ℝ) •
+          M.P s (M.Gamma (M.P (t - s) f) (M.L (M.P (t - s) f))) := by
+    rw [hgamma]
+    simp
+  rw [hPgamma]
+  simpa [gammaSelf, sub_eq_add_neg] using htwo
+
+/-- Pointwise form of the checked interpolation derivative identity. -/
+def InterpolationDerivativeIdentity (M : CarreDuChampSemigroup)
+    (t : ℝ) (f : M.Func) (x : M.Point) : Prop :=
+  ∀ s : ℝ, 0 ≤ s → s ≤ t →
+    M.eval x (M.timeDeriv (fun r => M.beInterpolation t r f) s) =
+      2 * M.eval x (M.P s (M.gamma2 (M.P (t - s) f)))
+
+/-- The checked pointwise interpolation derivative identity. -/
+theorem interpolationDerivativeIdentity (M : CarreDuChampSemigroup)
+    (t : ℝ) (f : M.Func) (x : M.Point) :
+    M.InterpolationDerivativeIdentity t f x := by
+  intro s _hs _hst
+  have h :=
+    congrArg (fun g : M.Func => M.eval x g)
+      (M.interpolationDerivativeIdentity_func t s f)
+  simpa using h
+
 /-- The checked endpoint form of the interpolation differential lower bound.
 
 Analytically this is obtained from
 `d/ds P_s Gamma(P_{t-s} f) = 2 P_s Gamma2(P_{t-s} f)` plus the local
 `CD(-K, infinity)` inequality and positivity/order preservation of the
-semigroup.  The derivative and order-preservation work is represented by this
-explicit predicate. -/
+semigroup. -/
 def InterpolationDerivativeLowerBound (M : CarreDuChampSemigroup)
     (K t : ℝ) (f : M.Func) (x : M.Point) : Prop :=
   ∀ s : ℝ, 0 ≤ s → s ≤ t →
     -2 * K * M.eval x (M.beInterpolation t s f) ≤
-      2 * M.eval x (M.P s (M.Gamma2 (M.P (t - s) f)))
+      2 * M.eval x (M.P s (M.gamma2 (M.P (t - s) f)))
+
+/-- `CD(-K, infinity)` and semigroup order preservation imply the
+interpolation lower bound used by the comparison step. -/
+theorem interpolationDerivativeLowerBound_of_CD
+    (M : CarreDuChampSemigroup) {K t : ℝ} {f : M.Func} {x : M.Point}
+    (hCD : M.CDMinusInfinity K) :
+    M.InterpolationDerivativeLowerBound K t f x := by
+  intro s _hs _hst
+  let g : M.Func := M.P (t - s) f
+  change -2 * K * M.eval x (M.P s (M.gammaSelf g)) ≤
+    2 * M.eval x (M.P s (M.gamma2 g))
+  have hpoint :
+      ∀ y : M.Point,
+        M.eval y ((-K) • M.gammaSelf g) ≤ M.eval y (M.gamma2 g) := by
+    intro y
+    have hy := hCD g y
+    simpa using hy
+  have hmono :
+      M.eval x (M.P s ((-K) • M.gammaSelf g)) ≤
+        M.eval x (M.P s (M.gamma2 g)) :=
+    M.semigroup_mono (f := (-K) • M.gammaSelf g)
+      (g := M.gamma2 g) (t := s) (x := x) hpoint
+  have hscaled :
+      -K * M.eval x (M.P s (M.gammaSelf g)) ≤
+        M.eval x (M.P s (M.gamma2 g)) := by
+    simpa using hmono
+  have htwo :
+      2 * (-K * M.eval x (M.P s (M.gammaSelf g))) ≤
+        2 * M.eval x (M.P s (M.gamma2 g)) :=
+    mul_le_mul_of_nonneg_left hscaled (by norm_num)
+  calc
+    -2 * K * M.eval x (M.P s (M.gammaSelf g))
+        = 2 * (-K * M.eval x (M.P s (M.gammaSelf g))) := by
+          ring
+    _ ≤ 2 * M.eval x (M.P s (M.gamma2 g)) := htwo
 
 end CarreDuChampSemigroup
 
-/-- A carré-du-champ semigroup together with the analytic interpolation and
-Gronwall comparison principles needed for the Bakry-Emery estimate.
+/-- A carré-du-champ semigroup together with the scalar Gronwall comparison
+principle needed for the Bakry-Emery estimate.
 
 The final gradient estimate is not a field.  It is proved by first deriving
-the interpolation differential lower bound from `CD(-K, infinity)` and then
-feeding that bound to the comparison principle. -/
+the interpolation derivative identity, deriving the differential lower bound
+from `CD(-K, infinity)`, and then feeding those checked ingredients to the
+comparison principle. -/
 structure BakryEmeryGronwallFramework where
   base : CarreDuChampSemigroup
-  interpolation_derivative_lower_bound :
-    ∀ {K t : ℝ} {f : base.Func} {x : base.Point},
-      base.CDMinusInfinity K →
-        0 ≤ K →
-          0 ≤ t →
-            base.InterpolationDerivativeLowerBound K t f x
   gronwall_from_interpolation :
     ∀ {K t : ℝ} {f : base.Func} {x : base.Point},
       0 ≤ K →
         0 ≤ t →
-          base.InterpolationDerivativeLowerBound K t f x →
+          base.InterpolationDerivativeIdentity t f x →
+            base.InterpolationDerivativeLowerBound K t f x →
             base.eval x (base.gammaSelf (base.P t f)) ≤
               Real.exp (2 * K * t) *
                 base.eval x (base.P t (base.gammaSelf f))
@@ -133,8 +282,9 @@ theorem bakryEmeryGradientEstimate
   exact
     G.gronwall_from_interpolation (K := K) (t := t) (f := f) (x := x)
       hK ht
-      (G.interpolation_derivative_lower_bound
-        (K := K) (t := t) (f := f) (x := x) hCD hK ht)
+      (G.base.interpolationDerivativeIdentity t f x)
+      (G.base.interpolationDerivativeLowerBound_of_CD
+        (K := K) (t := t) (f := f) (x := x) hCD)
 
 /-- Abstract version of Ben's downstream chain:
 
