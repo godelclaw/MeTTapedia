@@ -100,12 +100,13 @@ The reports are
 `fourcolor-lemma818-frontier-new-singleton-MTTTT-quotient-20260630.json`
 (SHA256
 `e4d650337c6976215ead2c6680fc2d8263e75ad454f88ec86f260eb16dcefa19`).
-Representative coverage is not yet formalized in Lean.  Thus the finite
-automaton is lab-closed at the profile-mode level with representative
-connectivity evidence for the newly discovered singleton modes, while the
-all-chain `LKR_in` certificate remains open until coverage, transition
-closure, and the consequence theorem are discharged by small generated
-lemmas or a finite transition certificate.
+Archived representative evidence coverage is now formalized in Lean at the
+metadata level.  Thus the finite automaton is lab-closed at the profile-mode
+level with source-consistent archived connectivity witness rows for all 20
+modes, including the newly discovered singleton modes, while the all-chain
+`LKR_in` certificate remains open until real chain/profile certificates and
+per-fixed-input path certificates discharge the semantic connectivity
+consequence by small generated lemmas or a finite transition certificate.
 
 Lean now contains the lab-facing profile-mode DFA table in
 `GoertzelLemma818FrontierMode.lean`: 20 modes, two orientations, the 40-entry
@@ -129,10 +130,15 @@ for these table-layer theorems.  The structural closure skeleton is also now
 checked: `wordMode_induction` and `wordMode_bool_induction` prove, axiom-free,
 that any Prop-valued or Bool-valued invariant holding at the two initial modes
 and preserved by `step` holds for the mode returned by any nonempty orientation
-word.  This is not yet the proof that every reachable chain profile is
-represented by the table's canonical representatives or that the table entails
-all-chain `LKR_in`; it is the induction hook that a generated connectivity
-certificate must instantiate.
+word.  The archived connectivity-witness layer is checked by
+`archivedConnectivityCoverageCheck_ok`: the table contains the 30
+length-1-through-4 atom-connectivity rows, the two length-5 singleton quotient
+rows, and a source-consistent connectivity row for each of the 20 modes.
+`wordMode_hasArchivedConnectivityEvidence` lifts that coverage through the DFA
+to every nonempty orientation word.  This is not yet the proof that every
+reachable chain profile is represented by the table's canonical representatives
+or that the table entails all-chain `LKR_in`; it is evidence coverage plus the
+induction hook that a generated connectivity certificate must instantiate.
 
 The CAP5/F2, GP(12,2), dodecahedral six-cut, and related files below are
 exploratory audits of a divergent F2-additivity route.  They are retained for
