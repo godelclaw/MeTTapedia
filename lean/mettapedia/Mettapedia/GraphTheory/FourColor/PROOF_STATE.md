@@ -107,6 +107,15 @@ all-chain `LKR_in` certificate remains open until coverage, transition
 closure, and the consequence theorem are discharged by small generated
 lemmas or a finite transition certificate.
 
+Lean now contains the lab-facing profile-mode DFA table in
+`GoertzelLemma818FrontierMode.lean`: 20 modes, two orientations, the 40-entry
+total transition function, mode hashes, and representative word metadata.  The
+table check theorem `tableClosedCheck_ok` proves by `rfl` that the table has
+20 modes, 2 orientations, 40 transitions, and every one-step transition lands
+inside the finite mode list; `#print axioms` reports no axioms.  This is only
+the finite table layer, not yet the proof that every reachable chain state is
+represented by that table or that the table entails all-chain `LKR_in`.
+
 The CAP5/F2, GP(12,2), dodecahedral six-cut, and related files below are
 exploratory audits of a divergent F2-additivity route.  They are retained for
 negative evidence and infrastructure, but they are not Ben's actual route and
