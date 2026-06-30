@@ -63,7 +63,11 @@ The first generated base layer is also present:
 assignments for the single normal `τ` chain in nine chunks, with nonempty
 fiber certificates derived from the Lemma 8.14 path rows and validated through
 the chain certificate checker.  This is the model for the next generated
-representative-word certificates.
+representative-word certificates.  The mirror base orientation is now checked
+too by `tauSingleMirrorAllFiberCertificateAudit_ok`, using the same local
+parent rows under the mirror input order.  The next certificate step is no
+longer one-gadget base coverage; it is generated representative/composite
+coverage and the DFA induction consequence.
 
 Gate-2 frontier-mode status: stop treating longer exploratory sweeps as the
 main work item.  The current lab surface is a finite 20-mode profile DFA with
