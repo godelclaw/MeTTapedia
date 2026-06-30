@@ -211,6 +211,15 @@ metadata layer.  The remaining frontier is to formalize the semantic
 certificate connecting those rows to real per-fixed-input Kempe path
 certificates and then derive all-chain `LKR_in`.  This checkpoint does not
 claim the Four Color Theorem.
+`GoertzelLemma818FrontierBaseBridge.lean` now adds the first explicit bridge
+from the generated length-2 chain certificates to the frontier-mode surface:
+each constructor of `LengthTwoOrientWord` is converted to the frontier word,
+checked against the expected DFA mode (`TT -> mode10`, `TM -> mode18`,
+`MT -> mode11`, `MM -> mode04`), and paired with both the generated
+length-2 fiber certificate audit and the archived connectivity-evidence row.
+The aggregate theorem `lengthTwoFrontierBaseCoverageAudit_ok` checks all four
+base words.  This is still a base bridge only; the representative-word
+semantic certificate and all-chain induction consequence remain open.
 
 The CAP5/F2, GP(12,2), dodecahedral six-cut, and related files below are
 exploratory audits of a divergent F2-additivity route.  They are retained for
