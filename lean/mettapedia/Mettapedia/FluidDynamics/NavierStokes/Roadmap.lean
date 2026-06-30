@@ -21,6 +21,7 @@ inductive NavierRoadmapStage where
   | liveRegressionSplit
   | finiteEnergyRepair
   | placeholderRetirement
+  | goertzelH1Break
   | deGroundedSurface
   | energyIdentity
   | bkmContinuation
@@ -61,6 +62,11 @@ def currentNavierRoadmap : List NavierRoadmapEntry :=
       status := .retiredPlaceholder
       truthValue := ⟨100, 99⟩
       obligation := "Treat the audited FeffermanPredicateKit global-clause family as missing-lift checklists only; they establish nothing about the concrete R^3 PDE." },
+    { stage := .goertzelH1Break
+      proofNodeId := "navier.goertzel-h1.fourier-mode-break"
+      status := .refuted
+      truthValue := ⟨100, 94⟩
+      obligation := "Use benGoertzelH1_false_in_fourierModeShearModel and the exact Fourier-mode lab as the scoped break of Ben Goertzel's H1 adjoint-bound route: the shear family stays within every positive H^m chart radius while its H^m -> H^m adjoint ratio grows like epsilon*k. Do not treat this as a Navier-Stokes regularity result." },
     { stage := .deGroundedSurface
       proofNodeId := "navier.de-grounded-zero-canary"
       status := .checked

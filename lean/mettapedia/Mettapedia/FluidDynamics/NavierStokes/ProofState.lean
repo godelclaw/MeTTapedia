@@ -7,6 +7,7 @@ import Mettapedia.FluidDynamics.NavierStokes.NavierStokesBKMLogSobolevControl
 import Mettapedia.FluidDynamics.NavierStokes.NavierStokesBKMAnalyticReduction
 import Mettapedia.FluidDynamics.NavierStokes.NavierStokesBKMHighNormContinuation
 import Mettapedia.FluidDynamics.NavierStokes.NavierStokesBKMResidualCurlDifferentialIdentities
+import Mettapedia.FluidDynamics.NavierStokes.BenH1Break
 import Mettapedia.FluidDynamics.NavierStokes.FeffermanCompatibilityFrontier
 import Mettapedia.FluidDynamics.NavierStokes.NavierStokesDEGroundedCanary
 import Mettapedia.FluidDynamics.NavierStokes.NavierStokesEnergySchwartzSolutionKernel
@@ -81,13 +82,13 @@ deriving Repr
 
 /-- Current dependency-map counts for `FluidDynamics/NavierStokes`. -/
 def currentNavierLaneSurvey : NavierLaneSurvey where
-  sourceFiles := 531
-  sourceLines := 123467
-  internalImportEdges := 1353
+  sourceFiles := 532
+  sourceLines := 129197
+  internalImportEdges := 1355
   regressionFiles := 153
-  filesOverThousandLines := 5
-  filesOverSevenHundredFiftyLines := 6
-  leavesWithoutInternalImports := 2
+  filesOverThousandLines := 7
+  filesOverSevenHundredFiftyLines := 8
+  leavesWithoutInternalImports := 3
 
 /-- Simple PLN-style truth bookkeeping: support and confidence percentages. -/
 structure SimpleTruthValue where
@@ -151,6 +152,14 @@ def navierFeffermanLiftNode : NavierProofNode where
   truthValue := ⟨100, 99⟩
   evidence := "The audited FeffermanGlobalRegularityClause family is parameterized by FeffermanPredicateKit rather than the concrete R^3 PDE; one seeded model instantiates SmoothVelocity and MomentumEquation as True. These predicate-kit route nodes are retained only as missing-lift checklists and establish nothing about the real Navier-Stokes equation."
   blocker := "Do not count any FeffermanPredicateKit global-regularity clause as PDE progress unless it is replaced by a witness for mkFullyConcreteNavierStokesSurface."
+
+/-- Ben Goertzel's H1 route is refuted on the Fourier-mode shear model. -/
+def navierBenH1FourierModeBreakNode : NavierProofNode where
+  id := "navier.goertzel-h1.fourier-mode-break"
+  status := .refuted
+  truthValue := ⟨100, 94⟩
+  evidence := "benGoertzelH1_false_in_fourierModeShearModel proves that every positive chart radius in the normalized two-torus shear model defeats every proposed finite H^m -> H^m adjoint bound; the exact lab ns-ben-h1-fourier-mode-lab-20260630.json records ||delta_k||_H^m = epsilon and ratio sqrt(1 + (epsilon*k)^2)."
+  blocker := "This refutes the H1 adjoint-bound route used in NS-Proof-v7.pdf Sections 5.3/6 and Appendix F; it is not a Navier-Stokes regularity theorem."
 
 /-- The actual `ℝ × ℝ^3` equation surface has a committed positive canary. -/
 def navierDEGroundedZeroCanaryNode : NavierProofNode where
@@ -654,6 +663,7 @@ def currentNavierProofNodes : List NavierProofNode :=
   , navierEnergyBKMConstantVelocityNode
   , navierEnergyBKMHeatShearNode
   , navierFeffermanLiftNode
+  , navierBenH1FourierModeBreakNode
   , navierDEGroundedZeroCanaryNode
   , navierSchwartzEnergyIdentityNode
   , navierBKMVorticityStretchingNode
@@ -731,6 +741,10 @@ theorem navierSupercriticalScalingNode_uncleared :
 
 theorem navierFeffermanLiftNode_retiredPlaceholder :
     navierFeffermanLiftNode.status = .retiredPlaceholder := by
+  rfl
+
+theorem navierBenH1FourierModeBreakNode_refuted :
+    navierBenH1FourierModeBreakNode.status = .refuted := by
   rfl
 
 theorem navierDEGroundedZeroCanaryNode_checked :
