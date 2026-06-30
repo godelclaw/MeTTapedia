@@ -2,6 +2,7 @@ import Mettapedia.Computability.PNP.Live
 import Mettapedia.Computability.PNP.PNPSteelmanConditional
 import Mettapedia.Computability.PNP.ProofState
 import Mettapedia.Computability.PNP.Roadmap
+import Mettapedia.Computability.PNP.WeaknessCalculus
 
 /-!
 # PNP live entrypoint

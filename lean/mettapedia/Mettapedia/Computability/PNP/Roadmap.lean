@@ -16,6 +16,7 @@ inductive PNPRoadmapStage where
   | localLedgerAudit
   | goertzelCalibrationBreak
   | steelmanConditional
+  | weaknessCalculus
   | barrierObstruction
   | replacementRoute
 deriving DecidableEq, Repr
@@ -83,6 +84,14 @@ def currentPNPRoadmap : List PNPRoadmapEntry :=
       itvLowerPercent := 92
       itvUpperPercent := 100
       obligation := "Kernel-flip exact neutrality and no-threading are finite checked facts; the conditional chain is checked only after the explicit StarSWAverageCaseWitnessBitHardness input is supplied. No concentration/log-Sobolev replacement and no final separation are asserted." },
+    { stage := .weaknessCalculus
+      proofNodeKey := "pnp.weakness-calculus.finite-spectrum-gap"
+      status := .checked
+      truthValue := ⟨100, 93⟩
+      progressPercent := 100
+      itvLowerPercent := 93
+      itvUpperPercent := 100
+      obligation := "Use the finite spectrum/gap calculus as reusable bookkeeping only; domination remains the explicit StarSW open input and no final separation is asserted." },
     { stage := .barrierObstruction
       proofNodeKey := "pnp.kpoly-promoted.all-barrier-obstructions"
       status := .barrierBlocked
@@ -161,6 +170,19 @@ theorem currentPNPRoadmap_records_pnp_steelman_conditional :
        itvUpperPercent := 100
        obligation :=
         "Kernel-flip exact neutrality and no-threading are finite checked facts; the conditional chain is checked only after the explicit StarSWAverageCaseWitnessBitHardness input is supplied. No concentration/log-Sobolev replacement and no final separation are asserted." } :
+      PNPRoadmapEntry) ∈ currentPNPRoadmap := by
+  simp [currentPNPRoadmap]
+
+theorem currentPNPRoadmap_records_weakness_calculus :
+    ({ stage := PNPRoadmapStage.weaknessCalculus
+       proofNodeKey := "pnp.weakness-calculus.finite-spectrum-gap"
+       status := .checked
+       truthValue := ⟨100, 93⟩
+       progressPercent := 100
+       itvLowerPercent := 93
+       itvUpperPercent := 100
+       obligation :=
+        "Use the finite spectrum/gap calculus as reusable bookkeeping only; domination remains the explicit StarSW open input and no final separation is asserted." } :
       PNPRoadmapEntry) ∈ currentPNPRoadmap := by
   simp [currentPNPRoadmap]
 
