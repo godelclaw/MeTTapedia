@@ -125,9 +125,14 @@ the 42 archived known word/profile-hash pairs against both `wordMode` and
 `modeOfProfileHash`.  The theorem `knownTransitionHashCheck_ok` checks the 40
 archived source-hash/orientation/target-hash transition entries against the
 hash lookup and the Lean `step` function.  `#print axioms` reports no axioms
-for these table-layer theorems.  This is not yet the proof that every reachable
-chain profile is represented by the table's canonical representatives or that
-the table entails all-chain `LKR_in`.
+for these table-layer theorems.  The structural closure skeleton is also now
+checked: `wordMode_induction` and `wordMode_bool_induction` prove, axiom-free,
+that any Prop-valued or Bool-valued invariant holding at the two initial modes
+and preserved by `step` holds for the mode returned by any nonempty orientation
+word.  This is not yet the proof that every reachable chain profile is
+represented by the table's canonical representatives or that the table entails
+all-chain `LKR_in`; it is the induction hook that a generated connectivity
+certificate must instantiate.
 
 The CAP5/F2, GP(12,2), dodecahedral six-cut, and related files below are
 exploratory audits of a divergent F2-additivity route.  They are retained for
