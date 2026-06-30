@@ -23,6 +23,7 @@ inductive NavierRoadmapStage where
   | placeholderRetirement
   | goertzelH1Break
   | goertzelBakryEmeryConditionalReduction
+  | goertzelGalerkinBakryEmeryCurvature
   | deGroundedSurface
   | energyIdentity
   | bkmContinuation
@@ -73,6 +74,11 @@ def currentNavierRoadmap : List NavierRoadmapEntry :=
       status := .checked
       truthValue := ⟨100, 91⟩
       obligation := "Use bakryEmeryGradientEstimate and NSBakryEmeryConditionalReduction.reductionPacket only as the conditional replacement scaffold: gamma2 is defined by the Bochner generator identity, the interpolation derivative identity is checked, the integrating-factor monotonicity/Gronwall step is checked, and CD(-K,infinity) plus H2 gives Gamma(P_t phi)(id) <= exp(2*K*t) Cphi^2. The scaffold is non-vacuous on TwoPointChain.semigroup, where CD(0,infinity) holds and the estimate fires strictly on nonconstant unitSlope. The variable-rho route is formalized by CDVariableInfinity and bakryEmeryGradientEstimate_variableLowerBound; the exact remaining SG obligations are LocalSGCurvatureDimensionOpenInput or LocalSGVariableCurvatureIntegratedOpenInput, including the invariant-mean integrated positivity condition. Do not treat the scaffold as a Navier-Stokes regularity theorem." },
+    { stage := .goertzelGalerkinBakryEmeryCurvature
+      proofNodeId := "navier.goertzel-bakry-emery.galerkin-curvature"
+      status := .checked
+      truthValue := ⟨68, 87⟩
+      obligation := "Use FiniteGalerkinBochnerRealization.curvatureDimension as the exact finite-N certificate interface: finite structure constants, skew/Jacobi closure, exact Gamma/Gamma2 Bochner jet realization, and a Ricci quadratic-form lower bound imply CD(-K,infinity), hence the existing BE gradient estimate and conditional BKM gate. AbelianTranslationJet.gamma2_lowerBound_zero certifies the flat two-translation sanity case. The nonconstant Fourier projection lab is diagnostic only: T2 radii 1..5 and T3 radius 1 have nonzero bracket residuals and Jacobi defects, so they cannot be promoted to finite CD certificates until the actual truncated generator supplies closure/Bochner realization or a replacement variable/integrated curvature certificate. Do not treat this as a Navier-Stokes regularity theorem." },
     { stage := .deGroundedSurface
       proofNodeId := "navier.de-grounded-zero-canary"
       status := .checked
@@ -321,6 +327,18 @@ theorem currentNavierRoadmap_records_bakry_emery_conditional_reduction :
        truthValue := ⟨100, 91⟩
        obligation :=
         "Use bakryEmeryGradientEstimate and NSBakryEmeryConditionalReduction.reductionPacket only as the conditional replacement scaffold: gamma2 is defined by the Bochner generator identity, the interpolation derivative identity is checked, the integrating-factor monotonicity/Gronwall step is checked, and CD(-K,infinity) plus H2 gives Gamma(P_t phi)(id) <= exp(2*K*t) Cphi^2. The scaffold is non-vacuous on TwoPointChain.semigroup, where CD(0,infinity) holds and the estimate fires strictly on nonconstant unitSlope. The variable-rho route is formalized by CDVariableInfinity and bakryEmeryGradientEstimate_variableLowerBound; the exact remaining SG obligations are LocalSGCurvatureDimensionOpenInput or LocalSGVariableCurvatureIntegratedOpenInput, including the invariant-mean integrated positivity condition. Do not treat the scaffold as a Navier-Stokes regularity theorem." } :
+      NavierRoadmapEntry) ∈ currentNavierRoadmap := by
+  simp [currentNavierRoadmap]
+
+/-- The roadmap records the finite Galerkin curvature certificate interface and
+the lab obstruction for nonconstant projected Fourier cutoffs. -/
+theorem currentNavierRoadmap_records_galerkin_bakry_emery_curvature :
+    ({ stage := NavierRoadmapStage.goertzelGalerkinBakryEmeryCurvature
+       proofNodeId := "navier.goertzel-bakry-emery.galerkin-curvature"
+       status := .checked
+       truthValue := ⟨68, 87⟩
+       obligation :=
+        "Use FiniteGalerkinBochnerRealization.curvatureDimension as the exact finite-N certificate interface: finite structure constants, skew/Jacobi closure, exact Gamma/Gamma2 Bochner jet realization, and a Ricci quadratic-form lower bound imply CD(-K,infinity), hence the existing BE gradient estimate and conditional BKM gate. AbelianTranslationJet.gamma2_lowerBound_zero certifies the flat two-translation sanity case. The nonconstant Fourier projection lab is diagnostic only: T2 radii 1..5 and T3 radius 1 have nonzero bracket residuals and Jacobi defects, so they cannot be promoted to finite CD certificates until the actual truncated generator supplies closure/Bochner realization or a replacement variable/integrated curvature certificate. Do not treat this as a Navier-Stokes regularity theorem." } :
       NavierRoadmapEntry) ∈ currentNavierRoadmap := by
   simp [currentNavierRoadmap]
 

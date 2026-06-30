@@ -41,6 +41,7 @@ import Mettapedia.FluidDynamics.NavierStokes.WindowedColeHopfHeatScaledBridgeObs
 import Mettapedia.FluidDynamics.NavierStokes.WindowedColeHopfHeatScaledSeededClauses
 import Mettapedia.FluidDynamics.NavierStokes.BenH1Break
 import Mettapedia.FluidDynamics.NavierStokes.BakryEmeryConditionalReduction
+import Mettapedia.FluidDynamics.NavierStokes.GalerkinBakryEmeryCurvature
 
 /-!
 # Navier-Stokes live surface
