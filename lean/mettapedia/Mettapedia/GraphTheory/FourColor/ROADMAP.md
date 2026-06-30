@@ -191,6 +191,13 @@ conversion, the witness coverage is closed under both profile transitions, and
 the finite list of fourteen remaining target audits plus the six already
 checked base audits.  The next useful theorem should instantiate those target
 audits with real compact chain/component certificates, not add more metadata.
+`GoertzelLemma818ComponentCertificate.lean` now supplies the intended compact
+row checker: generated rows can give an explicit two-color component and prove
+pair-color membership, seed-connectedness, closure, input avoidance, and switch
+agreement without expanding `chainComponent`.  The first single-`τ` fiber is
+already smoke-checked with explicit components.  Next, generate the same
+row-split component certificates for one representative target, then scale that
+format across the fourteen target audits.
 
 The older CAP5/F2, GP(12,2), and six-cut files are exploratory negative audits
 of a divergent additive F2 route.  They remain useful for provenance and
