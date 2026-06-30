@@ -20,7 +20,20 @@ set_option autoImplicit false
 #check noThreading_general
 #check spectrumGap_pos_of_noThreading
 #check spectrumGap_zero_of_starSWDomination
+#check tensorSpectrumList_additive
+#check WeaknessTask.tensorSpectrum_additive
+#check tensorSpectrumGap_eq_add
+#check tensorValueSpectrumList_multiplicative
+#check WeaknessTask.tensorValueSpectrum_multiplicative
+#check tensorValueSpectrumGap_eq_crossTerms
+#check sequential_chainRule_subadditive
+#check sequentialSplitSpectrumGap_eq_add
 #check toyWeakness_noThreading_forces_gap
+#check toyWeakness_tensor_spectrumGap
+#check toyWeakness_tensorValue_multiplicative
+#check toyWeakness_tensorValue_spectrumGap
+#check toyWeakness_sequential_poly_chainRule
+#check toyWeakness_sequential_splitGap
 
 #print axioms WeaknessTask.spectrum_mono
 #print axioms spectrumGap_eq_zero_iff_domination
@@ -28,6 +41,19 @@ set_option autoImplicit false
 #print axioms noThreading_general
 #print axioms spectrumGap_pos_of_noThreading
 #print axioms spectrumGap_zero_of_starSWDomination
+#print axioms tensorSpectrumList_additive
+#print axioms WeaknessTask.tensorSpectrum_additive
+#print axioms tensorSpectrumGap_eq_add
+#print axioms tensorValueSpectrumList_multiplicative
+#print axioms WeaknessTask.tensorValueSpectrum_multiplicative
+#print axioms tensorValueSpectrumGap_eq_crossTerms
+#print axioms sequential_chainRule_subadditive
+#print axioms sequentialSplitSpectrumGap_eq_add
 #print axioms toyWeakness_noThreading_forces_gap
+#print axioms toyWeakness_tensor_spectrumGap
+#print axioms toyWeakness_tensorValue_multiplicative
+#print axioms toyWeakness_tensorValue_spectrumGap
+#print axioms toyWeakness_sequential_poly_chainRule
+#print axioms toyWeakness_sequential_splitGap
 
 end Mettapedia.Computability.PNP
