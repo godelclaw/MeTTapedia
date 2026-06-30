@@ -281,6 +281,16 @@ style: seven explicit component-switch row theorems plus a parent-depth theorem
 cover the same non-root moves as the existing `tauSingleNormalFiber0Certificate`.
 This is the intended small-row proof shape for the fourteen remaining
 representative targets; those target certificates are still open.
+`GoertzelLemma818TripleTauComponentSmoke.lean` applies that proof shape to the
+first non-base representative slice: the `TTT` word
+(`RepresentativeSemanticTarget.ttt`, `mode09`) and fixed-input key
+`[r,r,b,r]`.  The theorem `tttFiber3ComponentCertificateAudit_ok` checks the
+16-state fiber with explicit two-color component rows, source coverage,
+parent-depth convergence to root `3808`, and the target/mode bookkeeping.  It
+is a real chain-state component certificate slice for a non-base representative
+mode, but it is not the full `TTT` target audit: the other `TTT` fibers,
+including the 12 large size-512 fibers, and the other thirteen target modes
+remain open.
 
 Checkpoint stop status, 2026-07-01: the exploratory Gate-2 connectivity sweeps
 are stopped.  The finite mode set is not the open question anymore: Lean records
