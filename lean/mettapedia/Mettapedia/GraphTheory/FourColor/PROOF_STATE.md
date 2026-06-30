@@ -89,12 +89,23 @@ land in two new singleton profile modes; the length-5 profile reports are
 `fourcolor-lemma818-frontier-remaining-len5-light-profiles-20260630.json`
 (SHA256
 `a12c8163a06dd57fc15b91811edd6ef6c84840c2f25fc0acc4529244c963913a`).
-The two new singleton modes do not yet have an independent per-fixed-input
-quotient-connectivity seal, and representative coverage is not yet formalized
-in Lean.  Thus the finite automaton is lab-closed at the profile-mode level,
-while the all-chain `LKR_in` certificate remains open until those connectivity
-obligations are discharged by small per-fiber lemmas or a generated finite
-transition certificate.
+The two new singleton mode representatives now also have independent
+per-fixed-input quotient-connectivity checks: `TTTTM` and `MTTTT` each have
+396288 states, 336 summaries, 336 singleton atoms, 36 nonempty fixed-input
+fibers, connected quotient graph in every fixed-input fiber, and 0 failures.
+The reports are
+`fourcolor-lemma818-frontier-new-singleton-TTTTM-quotient-20260630.json`
+(SHA256
+`c2e526666d3076319468d98cbbc14237d38fe72bad6851cc56f01f67492f3da1`) and
+`fourcolor-lemma818-frontier-new-singleton-MTTTT-quotient-20260630.json`
+(SHA256
+`e4d650337c6976215ead2c6680fc2d8263e75ad454f88ec86f260eb16dcefa19`).
+Representative coverage is not yet formalized in Lean.  Thus the finite
+automaton is lab-closed at the profile-mode level with representative
+connectivity evidence for the newly discovered singleton modes, while the
+all-chain `LKR_in` certificate remains open until coverage, transition
+closure, and the consequence theorem are discharged by small generated
+lemmas or a finite transition certificate.
 
 The CAP5/F2, GP(12,2), dodecahedral six-cut, and related files below are
 exploratory audits of a divergent F2-additivity route.  They are retained for
