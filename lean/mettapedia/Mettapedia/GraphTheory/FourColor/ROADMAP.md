@@ -163,6 +163,14 @@ The current semantically certified base modes are now explicit in Lean:
 pass `baseCertifiedFrontierCoverageAudit_ok` through real chain certificate
 audits.  The next certificate-generation target is the other 14 frontier
 modes, using representative words already recorded in the DFA table.
+`GoertzelLemma818RepresentativeTargets.lean` now makes that target list
+machine-checked: one chosen representative word for each remaining mode, no
+overlap with the six base-certified modes, archived connectivity evidence for
+each target mode, and complete coverage of the 20-mode frontier plan by
+`plannedSemanticModeCoverageAudit_ok`.  The next non-metadata step is a compact
+representative certificate generator: attach real per-fixed-input parent/path
+certificates for these target words without monolithic closure search or large
+row scans.
 
 The older CAP5/F2, GP(12,2), and six-cut files are exploratory negative audits
 of a divergent additive F2 route.  They remain useful for provenance and
