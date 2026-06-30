@@ -270,6 +270,18 @@ to a mode with a planned semantic audit.  This is still not the all-chain
 `LKR_in` theorem; it makes the remaining finite obligations explicit and keeps
 the final semantic bridge separate from metadata coverage.
 
+`GoertzelLemma818ComponentCertificate.lean` now provides the next certificate
+shape for those obligations.  Instead of reducing `chainComponent`, a row
+supplies the switched two-color component explicitly.  The checker verifies
+that the component is made of representative chain edges in the chosen color
+pair, contains the seed, is connected from the seed, is closed under adjacent
+pair-colored chain edges, avoids the fixed input, and switches to the claimed
+parent state.  The single-`τ` fixed-input fiber-0 smoke is rechecked in this
+style: seven explicit component-switch row theorems plus a parent-depth theorem
+cover the same non-root moves as the existing `tauSingleNormalFiber0Certificate`.
+This is the intended small-row proof shape for the fourteen remaining
+representative targets; those target certificates are still open.
+
 The CAP5/F2, GP(12,2), dodecahedral six-cut, and related files below are
 exploratory audits of a divergent F2-additivity route.  They are retained for
 negative evidence and infrastructure, but they are not Ben's actual route and

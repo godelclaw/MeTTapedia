@@ -10,6 +10,7 @@ import Mettapedia.GraphTheory.FourColor.CAP5WheelRouteData
 import Mettapedia.GraphTheory.FourColor.CAP5DodecahedralRouteData
 import Mettapedia.GraphTheory.FourColor.CAP5GP12RouteData
 import Mettapedia.GraphTheory.FourColor.GoertzelLemma814
+import Mettapedia.GraphTheory.FourColor.GoertzelLemma818ComponentCertificate
 import Mettapedia.GraphTheory.FourColor.GoertzelLemma818FrontierMode
 import Mettapedia.GraphTheory.FourColor.GoertzelLemma818CompositeCertificate
 import Mettapedia.GraphTheory.FourColor.GoertzelLemma818TauMirrorCertificate
