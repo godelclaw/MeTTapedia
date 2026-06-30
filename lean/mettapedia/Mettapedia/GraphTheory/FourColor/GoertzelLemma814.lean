@@ -1320,6 +1320,105 @@ def chainParentCertificateAudit (orients : List TauOrient) (maxDepth : Nat)
       chainParentIter parents maxDepth i ==
         chainRepresentativeIndex orients statesList states
 
+/-
+Per-fixed-input certificates are the intended replacement for the too-heavy
+global `chainParentCertificateAudit`: a generator can emit one tiny parent tree
+per input fiber instead of asking Lean to reduce one large closure proof.
+-/
+
+structure ChainFiberParentRow where
+  source : Nat
+  parent : Nat
+  move : ChainMove
+  deriving DecidableEq, BEq, Repr, Inhabited
+
+structure ChainFiberCertificate where
+  key : List LColor
+  root : Nat
+  maxDepth : Nat
+  rows : List ChainFiberParentRow
+  deriving DecidableEq, BEq, Repr, Inhabited
+
+def chainFiberIndicesFrom (orients : List TauOrient)
+    (statesList : List (List TauState)) (key : List LColor) : List Nat :=
+  (List.range statesList.length).filter fun i =>
+    chainInputKey orients (listGetD statesList i []) == key
+
+def chainFiberRootIndex (indices : List Nat) : Nat :=
+  listGetD indices 0 0
+
+def chainFiberParentFromRows : List ChainFiberParentRow → Nat → Nat
+  | [], i => i
+  | row :: rows, i =>
+      if row.source == i then row.parent else chainFiberParentFromRows rows i
+
+def chainFiberParentIter (rows : List ChainFiberParentRow) : Nat → Nat → Nat
+  | 0, i => i
+  | n + 1, i => chainFiberParentIter rows n (chainFiberParentFromRows rows i)
+
+def chainFiberParentRowValidFrom (orients : List TauOrient)
+    (statesList : List (List TauState)) (indices : List Nat)
+    (row : ChainFiberParentRow) : Bool :=
+  indices.contains row.source &&
+    indices.contains row.parent &&
+      let s := listGetD statesList row.source []
+      let t := listGetD statesList row.parent []
+      chainInputKey orients s == chainInputKey orients t &&
+        (row.source == row.parent || chainSpecifiedKempeStep orients s t row.move)
+
+def chainFiberParentCertificateAuditFrom (orients : List TauOrient)
+    (statesList : List (List TauState)) (cert : ChainFiberCertificate) : Bool :=
+  let indices := chainFiberIndicesFrom orients statesList cert.key
+  cert.key.length == 4 &&
+    cert.root == chainFiberRootIndex indices &&
+    (cert.rows.map fun row => row.source) == indices &&
+    cert.rows.all (chainFiberParentRowValidFrom orients statesList indices) &&
+    cert.rows.all fun row =>
+      chainFiberParentIter cert.rows cert.maxDepth row.source == cert.root
+
+def chainFiberParentCertificateAudit (orients : List TauOrient)
+    (cert : ChainFiberCertificate) : Bool :=
+  chainFiberParentCertificateAuditFrom orients (allChainStates orients) cert
+
+def chainAllFiberParentCertificateAudit (orients : List TauOrient)
+    (certs : List ChainFiberCertificate) : Bool :=
+  let statesList := allChainStates orients
+  statesList.all (compatibleChainStates orients) &&
+    (certs.map fun cert => cert.key) == colorAssignments4 &&
+    certs.all (chainFiberParentCertificateAuditFrom orients statesList)
+
+def chainMove (a c : LColor) (occ : Nat) (seed : TauEdge) : ChainMove :=
+  { a := a, c := c, seed := { occ := occ, edge := seed } }
+
+def chainFiberRow (source parent : Nat) (move : ChainMove) : ChainFiberParentRow :=
+  { source := source, parent := parent, move := move }
+
+/--
+Small semantic smoke certificate for the first fixed-input fiber of a single
+normal `τ` chain.  The non-root rows check real input-disjoint Kempe moves in
+the chain model, and row `3` intentionally uses a two-step parent path through
+row `1`.
+-/
+def tauSingleNormalFiber0Certificate : ChainFiberCertificate :=
+  { key := chainInputKey [TauOrient.normal] [stateAt 0]
+    root := 0
+    maxDepth := 2
+    rows :=
+      [ chainFiberRow 0 0 default
+      , chainFiberRow 1 0 (chainMove LColor.b LColor.p 0 TauEdge.B5)
+      , chainFiberRow 2 0 (chainMove LColor.r LColor.b 0 TauEdge.F4F5)
+      , chainFiberRow 3 1 (chainMove LColor.r LColor.b 0 TauEdge.F4F5)
+      , chainFiberRow 48 0 (chainMove LColor.b LColor.p 0 TauEdge.F2F3)
+      , chainFiberRow 49 1 (chainMove LColor.b LColor.p 0 TauEdge.F2F3)
+      , chainFiberRow 50 2 (chainMove LColor.b LColor.p 0 TauEdge.F2F3)
+      , chainFiberRow 51 48 (chainMove LColor.r LColor.p 0 TauEdge.F4F5)
+      ] }
+
+theorem tauSingleNormalFiber0Certificate_ok :
+    chainFiberParentCertificateAudit [TauOrient.normal]
+      tauSingleNormalFiber0Certificate = true := by
+  decide
+
 def tauOrientWords2 : List (List TauOrient) :=
   [ [TauOrient.normal, TauOrient.normal]
   , [TauOrient.normal, TauOrient.mirror]

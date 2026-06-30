@@ -60,6 +60,19 @@ same checker evaluated successfully.  The next formal step is therefore a
 per-fixed-input-fiber generated certificate, or a smaller frontier automaton
 certificate, not another literal repair of Ben's pointwise-preparation proof.
 
+The chain certificate target has now been decomposed at the Lean API level.
+`GoertzelLemma814.lean` defines `ChainFiberParentRow`,
+`ChainFiberCertificate`, `chainFiberIndicesFrom`,
+`chainFiberParentCertificateAudit`, and
+`chainAllFiberParentCertificateAudit`.  A certificate row names a concrete
+source state index, a parent index in the same fixed-input fiber, and the
+specific input-disjoint chain Kempe move witnessing the parent edge; bounded
+parent iteration must reach the canonical root of that exact fiber.  The smoke
+theorem `tauSingleNormalFiber0Certificate_ok` checks the first single-`τ`
+fixed-input fiber `{0,1,2,3,48,49,50,51}` against the real chain-state model
+and real chain Kempe moves.  This is the intended small target for generated
+per-fiber path certificates, not yet a proof of all composite `LKR_in`.
+
 Gate-2 frontier-mode checkpoint, 2026-06-30: the lab evidence has stabilized
 at a finite profile-mode surface, but it is not yet a Lean composition
 certificate.  The archived automaton runs record 936 frontier summaries after
