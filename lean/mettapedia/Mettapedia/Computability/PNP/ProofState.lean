@@ -169,7 +169,7 @@ def currentPNPProofNodes : List PNPProofNode := [
     key := "pnp.weakness-calculus.finite-spectrum-gap",
     status := .checked,
     truthValue := ⟨100, 93⟩,
-    evidence := "WeaknessCalculus proves the finite budget-lattice spectrum, the gap identity `spectrumGap_eq_zero_iff_domination`, budget monotonicity, data-processing monotonicity, and a no-threading-to-positive-gap theorem. The two-point toy has local spectrum 1, poly spectrum 2, and gap 1.",
+    evidence := "WeaknessCalculus proves the finite budget-lattice spectrum, the gap identity `spectrumGap_eq_zero_iff_domination`, budget monotonicity, data-processing monotonicity, no-threading-to-positive-gap, split-budget tensor additivity, independent-value tensor multiplicativity, sequential chain-rule availability with an explicit finite defect, additive gap laws for tensor/split sequential composition, and the product cross-term law for independent-value gaps. The two-point toy has local spectrum 1, poly spectrum 2, gap 1, additive tensor gap 2, multiplicative tensor gap 3, and sequential split gap 2.",
     nextObligation := "Keep `StarSWDominationHypothesis` explicit: domination/average-case witness-bit hardness is not proved by the calculus, and no final separation is asserted."
   },
   {
@@ -833,4 +833,41 @@ theorem currentPNPWeaknessCalculus_node :
       toyWeakness_dataProcessing,
       noThreadingToy_obstruction,
       fun h => spectrumGap_zero_of_starSWDomination h⟩
+
+theorem currentPNPWeaknessCompositional_node :
+    tensorSpectrumGap toyWeaknessTask toyWeaknessTask = 2 ∧
+      tensorValueSpectrumGap toyWeaknessTask toyWeaknessTask = 3 ∧
+      sequentialSplitSpectrumGap toyWeaknessTask toyWeaknessTask = 2 ∧
+      sequentialSplitLocalSpectrum toyWeaknessTask toyWeaknessTask ≤
+        sequentialSpectrum toyWeaknessTask toyWeaknessTask toySequentialDefect
+          (sequentialSplitBudget toyWeaknessTask.localBudget
+            toyWeaknessTask.localBudget toySequentialDefect) ∧
+      sequentialSplitPolySpectrum toyWeaknessTask toyWeaknessTask ≤
+        sequentialSpectrum toyWeaknessTask toyWeaknessTask toySequentialDefect
+          (sequentialSplitBudget toyWeaknessTask.polyBudget
+            toyWeaknessTask.polyBudget toySequentialDefect) ∧
+      (∀ {leftTop rightTop : Nat}
+        {T : WeaknessTask leftTop} {U : WeaknessTask rightTop},
+        BudgetOrdered T -> BudgetOrdered U ->
+          tensorSpectrumGap T U = T.spectrumGap + U.spectrumGap) ∧
+      (∀ {leftTop rightTop : Nat}
+        {T : WeaknessTask leftTop} {U : WeaknessTask rightTop},
+        BudgetOrdered T -> BudgetOrdered U ->
+          tensorValueSpectrumGap T U =
+            T.spectrumGap * U.polySpectrum +
+              T.localSpectrum * U.spectrumGap) ∧
+      (∀ {leftTop rightTop : Nat}
+        {T : WeaknessTask leftTop} {U : WeaknessTask rightTop},
+        BudgetOrdered T -> BudgetOrdered U ->
+          sequentialSplitSpectrumGap T U =
+            T.spectrumGap + U.spectrumGap) := by
+  exact
+    ⟨toyWeakness_tensor_spectrumGap,
+      toyWeakness_tensorValue_spectrumGap,
+      toyWeakness_sequential_splitGap,
+      toyWeakness_sequential_local_chainRule,
+      toyWeakness_sequential_poly_chainRule,
+      fun hT hU => tensorSpectrumGap_eq_add hT hU,
+      fun hT hU => tensorValueSpectrumGap_eq_crossTerms hT hU,
+      fun hT hU => sequentialSplitSpectrumGap_eq_add hT hU⟩
 end Mettapedia.Computability.PNP

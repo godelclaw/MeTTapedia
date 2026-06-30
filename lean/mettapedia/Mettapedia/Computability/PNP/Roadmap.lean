@@ -91,7 +91,7 @@ def currentPNPRoadmap : List PNPRoadmapEntry :=
       progressPercent := 100
       itvLowerPercent := 93
       itvUpperPercent := 100
-      obligation := "Use the finite spectrum/gap calculus as reusable bookkeeping only; domination remains the explicit StarSW open input and no final separation is asserted." },
+      obligation := "Use the finite spectrum/gap, split-budget additive tensor, independent-value tensor, and sequential budget-composition calculus as reusable bookkeeping only; domination remains the explicit StarSW open input and no final separation is asserted." },
     { stage := .barrierObstruction
       proofNodeKey := "pnp.kpoly-promoted.all-barrier-obstructions"
       status := .barrierBlocked
@@ -182,7 +182,7 @@ theorem currentPNPRoadmap_records_weakness_calculus :
        itvLowerPercent := 93
        itvUpperPercent := 100
        obligation :=
-        "Use the finite spectrum/gap calculus as reusable bookkeeping only; domination remains the explicit StarSW open input and no final separation is asserted." } :
+        "Use the finite spectrum/gap, split-budget additive tensor, independent-value tensor, and sequential budget-composition calculus as reusable bookkeeping only; domination remains the explicit StarSW open input and no final separation is asserted." } :
       PNPRoadmapEntry) ∈ currentPNPRoadmap := by
   simp [currentPNPRoadmap]
 
