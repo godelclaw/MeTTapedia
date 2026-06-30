@@ -9,6 +9,7 @@ import Mettapedia.FluidDynamics.NavierStokes.NavierStokesBKMHighNormContinuation
 import Mettapedia.FluidDynamics.NavierStokes.NavierStokesBKMResidualCurlDifferentialIdentities
 import Mettapedia.FluidDynamics.NavierStokes.BenH1Break
 import Mettapedia.FluidDynamics.NavierStokes.BakryEmeryConditionalReduction
+import Mettapedia.FluidDynamics.NavierStokes.GalerkinBakryEmeryCurvature
 import Mettapedia.FluidDynamics.NavierStokes.FeffermanCompatibilityFrontier
 import Mettapedia.FluidDynamics.NavierStokes.NavierStokesDEGroundedCanary
 import Mettapedia.FluidDynamics.NavierStokes.NavierStokesEnergySchwartzSolutionKernel
@@ -170,6 +171,15 @@ def navierBakryEmeryConditionalReductionNode : NavierProofNode where
   truthValue := ⟨100, 91⟩
   evidence := "BakryEmeryConditionalReduction.lean defines an abstract carre-du-champ semigroup with linear semigroup/generator/evaluation maps, Gamma, an abstract derivative operator, order preservation, scalar continuity/right-derivative bridge fields for the interpolation curve, diffusion product and self-adjointness facts as fields, and gamma2 defined by the Bochner generator identity. interpolationDerivativeIdentity_func proves d/ds P_s Gamma(P_(t-s) f) = 2 P_s gamma2(P_(t-s) f); interpolationDerivativeLowerBound_of_CD derives the lower bound from CD(-K,infinity). weightedBEInterpolation_monoOn proves monotonicity of exp(2*K*s)*P_s Gamma(P_(t-s) f), gronwallFromInterpolation proves the scalar comparison step, and bakryEmeryGradientEstimate uses only the structure fields plus CD. TwoPointChain.semigroup instantiates the scaffold on the reversible two-state continuous-time chain in closed form, cdZero proves CD(0,infinity), unitSlope_nonconstant proves the test function is nonconstant, and unitSlope_bakryEmeryEstimate_fires plus unitSlope_bakryEmeryEstimate_strict show the checked estimate fires nontrivially. CDVariableInfinity, cdMinusInfinity_of_cdVariable_lowerBound, and bakryEmeryGradientEstimate_variableLowerBound formalize the variable-rho lower-bound route. NSBakryEmeryConditionalReduction.reductionPacket proves that CD plus H2, Gamma(phi) <= Cphi^2, gives the identity gradient bound and feeds the abstract Proposition 7.1 / G.7 / G.8 BKM gate chain."
   blocker := "The local SG curvature-dimension bound is still an open SG input: either LocalSGCurvatureDimensionOpenInput for a constant lower bound or LocalSGVariableCurvatureIntegratedOpenInput for pointwise CD(rho,infinity) plus the explicit invariant-mean integrated positivity condition. The two-point witness uses the closed-form heat semigroup; the precise Matrix.exp realization is documented as a Mathlib-infrastructure boundary, not assumed. The BKM gate remains an abstract conditional scaffold, so this is not a Navier-Stokes regularity theorem."
+
+/-- Finite Galerkin curvature certificates now feed the Bakry-Emery scaffold,
+but nonconstant Fourier cutoffs still need exact closure/Bochner evidence. -/
+def navierGalerkinBakryEmeryCurvatureNode : NavierProofNode where
+  id := "navier.goertzel-bakry-emery.galerkin-curvature"
+  status := .checked
+  truthValue := ⟨68, 87⟩
+  evidence := "GalerkinBakryEmeryCurvature.lean defines finiteJetEnergy, finiteJetGamma, finiteJetGamma2, and proves finiteJetGamma2_lowerBound: a finite Bochner Ricci lower bound plus nonnegative Hessian square gives Gamma2 >= -K Gamma. FiniteGalerkinBochnerRealization packages a finite mode type, structure constants, skew/Jacobi fields, Ricci lower-bound quadratic form, exact Gamma/Gamma2 jet realization fields, and proves curvatureDimension, localCurvatureInput, and gradientEstimate. FiniteGalerkinNSBakryEmeryReduction then feeds that derived CD input into the existing NSBakryEmeryConditionalReduction.reductionPacket. AbelianTranslationJet.gamma2_lowerBound_zero gives an exact flat two-translation finite jet sanity certificate. The validation lab ns_galerkin_be_curvature_lab.py reports T2 radii 1..5 and T3 radius 1 projected Ricci diagnostics; all nonconstant projected Fourier cutoffs in those runs have nonzero bracket residuals and Jacobi defects, so they are diagnostic only, not finite CD certificates."
+  blocker := "The nonconstant Galerkin Fourier cutoff is not yet certified as a finite SG CD input. The exact remaining finite-N input is a closed finite bracket/Jacobi certificate plus the exact Bochner Gamma2 realization and Ricci lower-bound proof for the actual truncated generator. Uniform control as N tends to infinity remains open. This is not a Navier-Stokes regularity theorem."
 
 /-- The actual `ℝ × ℝ^3` equation surface has a committed positive canary. -/
 def navierDEGroundedZeroCanaryNode : NavierProofNode where
@@ -675,6 +685,7 @@ def currentNavierProofNodes : List NavierProofNode :=
   , navierFeffermanLiftNode
   , navierBenH1FourierModeBreakNode
   , navierBakryEmeryConditionalReductionNode
+  , navierGalerkinBakryEmeryCurvatureNode
   , navierDEGroundedZeroCanaryNode
   , navierSchwartzEnergyIdentityNode
   , navierBKMVorticityStretchingNode
@@ -760,6 +771,10 @@ theorem navierBenH1FourierModeBreakNode_refuted :
 
 theorem navierBakryEmeryConditionalReductionNode_checked :
     navierBakryEmeryConditionalReductionNode.status = .checked := by
+  rfl
+
+theorem navierGalerkinBakryEmeryCurvatureNode_checked :
+    navierGalerkinBakryEmeryCurvatureNode.status = .checked := by
   rfl
 
 theorem navierDEGroundedZeroCanaryNode_checked :
@@ -955,6 +970,28 @@ theorem currentNavierBakryEmeryConditionalReduction_node
       hpacket.2.2.2.2.1,
       hpacket.2.2.2.2.2,
       navierBakryEmeryConditionalReductionNode_checked⟩
+
+theorem currentNavierGalerkinBakryEmeryCurvature_node
+    {G : BakryEmeryGronwallFramework}
+    (D : FiniteGalerkin.FiniteGalerkinNSBakryEmeryReduction G) :
+    (∀ t : ℝ, 0 ≤ t → t ≤ D.T →
+      G.base.eval D.id (G.base.gammaSelf (G.base.P t D.phi)) ≤
+        Real.exp (2 * D.realization.K * t) * D.Cphi ^ 2) ∧
+      D.gate.logHeatEnergyBound ∧
+        D.gate.vorticityBound ∧
+          D.gate.bkmIntegralFinite ∧
+            D.gate.bkmGate ∧
+              LocalSGCurvatureDimensionOpenInput G D.realization.K ∧
+                navierGalerkinBakryEmeryCurvatureNode.status = .checked := by
+  have hpacket := D.reductionPacket
+  exact
+    ⟨hpacket.1,
+      hpacket.2.1,
+      hpacket.2.2.1,
+      hpacket.2.2.2.1,
+      hpacket.2.2.2.2.1,
+      hpacket.2.2.2.2.2,
+      navierGalerkinBakryEmeryCurvatureNode_checked⟩
 
 theorem currentNavierDEGroundedZeroCanary_node :
     NavierStokesGlobalRegularityClause
