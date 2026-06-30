@@ -256,6 +256,20 @@ not part of the proof surface.  The next pass should formalize smaller
 component certificates or the finite transition automaton; it should not extend
 word lengths or raise kernel limits.
 
+`GoertzelLemma818SemanticBridge.lean` now records the finite semantic handoff
+for that next pass.  It maps each of the 20 profile modes to exactly one
+planned semantic witness: one of the six base-certified chain words, or one of
+the fourteen representative targets.  The theorem
+`semanticWitnessCoverageAudit_ok` checks the witness map, representative
+word-mode agreement, and frontier-word-to-chain-word agreement.  The theorem
+`semanticPlanStepClosureAudit_ok` checks that this witness coverage is closed
+under both DFA transitions.  The theorem
+`wordMode_hasSemanticModeAudit_of_targets` is the small consequence hook: once
+the fourteen target audits are supplied, every nonempty orientation word folds
+to a mode with a planned semantic audit.  This is still not the all-chain
+`LKR_in` theorem; it makes the remaining finite obligations explicit and keeps
+the final semantic bridge separate from metadata coverage.
+
 The CAP5/F2, GP(12,2), dodecahedral six-cut, and related files below are
 exploratory audits of a divergent F2-additivity route.  They are retained for
 negative evidence and infrastructure, but they are not Ben's actual route and

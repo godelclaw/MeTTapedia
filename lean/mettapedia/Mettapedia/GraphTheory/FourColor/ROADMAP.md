@@ -183,6 +183,14 @@ row checker was still too large for the kernel at default recursion settings.
 Leave that as archived WIP.  The next pass should generate smaller component
 certificates or a finite transition certificate, then feed the result through
 `wordMode_induction`; do not continue length sweeps or increase kernel limits.
+`GoertzelLemma818SemanticBridge.lean` now provides the bookkeeping hook for
+that pass: every profile mode has a checked planned semantic witness, the
+witness words agree with the DFA mode fold and the chain-orientation
+conversion, the witness coverage is closed under both profile transitions, and
+`wordMode_hasSemanticModeAudit_of_targets` reduces arbitrary nonempty words to
+the finite list of fourteen remaining target audits plus the six already
+checked base audits.  The next useful theorem should instantiate those target
+audits with real compact chain/component certificates, not add more metadata.
 
 The older CAP5/F2, GP(12,2), and six-cut files are exploratory negative audits
 of a divergent additive F2 route.  They remain useful for provenance and
