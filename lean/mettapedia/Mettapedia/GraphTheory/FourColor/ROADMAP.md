@@ -153,6 +153,11 @@ formalize the existing finite mode/certificate surface, not extend the
 length-sweep search.  The next useful checkpoint is a generated representative
 certificate layer that ties the archived atom/quotient rows to actual
 chain-state Kempe paths and feeds `wordMode_induction`.
+The first small bridge in that direction is
+`GoertzelLemma818FrontierBaseBridge.lean`: it ties the four checked length-2
+certificate audits to the corresponding frontier modes and archived
+connectivity evidence.  The remaining bridge is broader representative-word
+semantic certification, not another length sweep.
 
 The older CAP5/F2, GP(12,2), and six-cut files are exploratory negative audits
 of a divergent additive F2 route.  They remain useful for provenance and
