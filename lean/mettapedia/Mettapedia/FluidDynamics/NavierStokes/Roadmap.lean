@@ -111,6 +111,11 @@ def currentNavierRoadmap : List NavierRoadmapEntry :=
       status := .checked
       truthValue := ⟨87, 88⟩
       obligation := "Use BKMContinuation_reduced_to_single_affineLogBiotSavartGronwallLemma with the checked residual-curl expansion defect closure, pointwise density derivative, scalar/two-profile/finite-family Schwartz time-pairing packages, vorticity raw-balance integrability, transport-cancellation algebra plus Schwartz-slice transport cancellation, the Schwartz curl bridge from velocity slices to vorticity slices, witness-level Schwartz-slice enstrophy control, gradient-growth packages, affine-log stretching integral bound, log-envelope coefficient majorization, scalar Gronwall comparisons, affine log-Sobolev normalization, and BKMHighNormContinuationFromLogControl_of_bkmEnvelopeSchwartzHighNormContinuation. BKMArbitraryWitnessAffineLogBiotSavartGronwallContinuationLemma_of_vorticityToGradient_and_bkmEnvelopeSchwartzHighNormContinuation records the current sharp reduction: the repaired arbitrary-witness BKM target follows from BKMSchwartzSliceVorticityToGradientAffineLogEstimate plus BKMFiniteEnergyWitnessBKMEnvelopeSchwartzHighNormContinuation. The older scalar/enstrophy high-norm lemmas remain checked support, not separate public residuals; the zero BKM witness premise records non-vacuity, and this is not a global regularity claim." },
+    { stage := .bkmContinuation
+      proofNodeId := "navier.bkm.analytic-components"
+      status := .checked
+      truthValue := ⟨88, 88⟩
+      obligation := "Finalized deliverable: complete arbitrary-witness BKM continuation is reduced to exactly two named open analytic frontiers, BKMSchwartzSliceVorticityToGradientAffineLogEstimate and BKMFiniteEnergyWitnessBKMEnvelopeSchwartzHighNormContinuation. The composition theorem is BKMArbitraryWitnessAffineLogBiotSavartGronwallContinuationLemma_of_vorticityToGradient_and_bkmEnvelopeSchwartzHighNormContinuation, followed by BKMArbitraryWitnessAffineLogBiotSavartGronwallContinuationLemma.implies_finiteEnergyBKMContinuationTargetOnNonnegHorizons. The Biot-Savart lab and audit record is ns-bkm-biot-savart-affine-constant-lab-strong-20260630.json, ns-bkm-biot-savart-reconstruction-lab-strong-20260630.json, and ns-bkm-biot-savart-mathlib-audit-20260630.log; the audit found no named Calderon-Zygmund/BMO/Littlewood-Paley endpoint layer in mathlib. The reduction has Lean dependency seal {propext, Classical.choice, Quot.sound}, (omega.grad)u is handled by the checked stretching/enstrophy layer, and this is not a global regularity claim. PLN STV <s=.88,c=.88>, ITV [.7744,.8944], PROGRESS 100% for the two-frontier reduction deliverable." },
     { stage := .nonzeroEnergyKernel
       proofNodeId := "navier.energy.nonzero-schwartz-kernel"
       status := .checked
@@ -386,6 +391,17 @@ theorem currentNavierRoadmap_records_bkm_analytic_components :
        truthValue := ⟨87, 88⟩
        obligation :=
         "Use BKMContinuation_reduced_to_single_affineLogBiotSavartGronwallLemma with the checked residual-curl expansion defect closure, pointwise density derivative, scalar/two-profile/finite-family Schwartz time-pairing packages, vorticity raw-balance integrability, transport-cancellation algebra plus Schwartz-slice transport cancellation, the Schwartz curl bridge from velocity slices to vorticity slices, witness-level Schwartz-slice enstrophy control, gradient-growth packages, affine-log stretching integral bound, log-envelope coefficient majorization, scalar Gronwall comparisons, affine log-Sobolev normalization, and BKMHighNormContinuationFromLogControl_of_bkmEnvelopeSchwartzHighNormContinuation. BKMArbitraryWitnessAffineLogBiotSavartGronwallContinuationLemma_of_vorticityToGradient_and_bkmEnvelopeSchwartzHighNormContinuation records the current sharp reduction: the repaired arbitrary-witness BKM target follows from BKMSchwartzSliceVorticityToGradientAffineLogEstimate plus BKMFiniteEnergyWitnessBKMEnvelopeSchwartzHighNormContinuation. The older scalar/enstrophy high-norm lemmas remain checked support, not separate public residuals; the zero BKM witness premise records non-vacuity, and this is not a global regularity claim." } :
+      NavierRoadmapEntry) ∈ currentNavierRoadmap := by
+  simp [currentNavierRoadmap]
+
+/-- The roadmap records the finalized two-frontier BKM reduction deliverable. -/
+theorem currentNavierRoadmap_records_bkm_two_frontier_deliverable :
+    ({ stage := NavierRoadmapStage.bkmContinuation
+       proofNodeId := "navier.bkm.analytic-components"
+       status := .checked
+       truthValue := ⟨88, 88⟩
+       obligation :=
+        "Finalized deliverable: complete arbitrary-witness BKM continuation is reduced to exactly two named open analytic frontiers, BKMSchwartzSliceVorticityToGradientAffineLogEstimate and BKMFiniteEnergyWitnessBKMEnvelopeSchwartzHighNormContinuation. The composition theorem is BKMArbitraryWitnessAffineLogBiotSavartGronwallContinuationLemma_of_vorticityToGradient_and_bkmEnvelopeSchwartzHighNormContinuation, followed by BKMArbitraryWitnessAffineLogBiotSavartGronwallContinuationLemma.implies_finiteEnergyBKMContinuationTargetOnNonnegHorizons. The Biot-Savart lab and audit record is ns-bkm-biot-savart-affine-constant-lab-strong-20260630.json, ns-bkm-biot-savart-reconstruction-lab-strong-20260630.json, and ns-bkm-biot-savart-mathlib-audit-20260630.log; the audit found no named Calderon-Zygmund/BMO/Littlewood-Paley endpoint layer in mathlib. The reduction has Lean dependency seal {propext, Classical.choice, Quot.sound}, (omega.grad)u is handled by the checked stretching/enstrophy layer, and this is not a global regularity claim. PLN STV <s=.88,c=.88>, ITV [.7744,.8944], PROGRESS 100% for the two-frontier reduction deliverable." } :
       NavierRoadmapEntry) ∈ currentNavierRoadmap := by
   simp [currentNavierRoadmap]
 
