@@ -519,14 +519,14 @@ def yangMillsSameConstantLowerEvenExtractionNode : YangMillsProofNode where
   evidence := "not_sameConstantEvenBelowSixteenGapRouteCertificate and not_atLeast2048EvenBelowSixteenGapRouteCertificate rule out the lower-even extraction repair, while rgContraction_2224_two_sixteen records the positive dmax=16 arithmetic benchmark."
   nextObligation := "Do not revive lower-even extraction as a mass-gap route unless the recombination constant or route shape is genuinely changed and audited."
 
-/-- The manuscript's displayed extraction-projection series does not support
-the small `Cextract <= 2` input used to obtain `C1 <= 2224`. -/
-def yangMillsExtractionConstantBreakNode : YangMillsProofNode where
-  id := "yang-mills.rg.extraction-constant-break"
-  status := .refuted
+/-- Erratum for the extraction-constant audit: the corrected Cauchy estimate
+keeps the extended-extraction contraction standing. -/
+def yangMillsExtractionConstantErratumNode : YangMillsProofNode where
+  id := "yang-mills.rg.extraction-constant-erratum"
+  status := .checked
   truthValue := ⟨100, 98⟩
-  evidence := "manuscriptExtractionSeriesLowerBound16_exceeds_asserted_two proves that the displayed extraction series already exceeds the asserted Cextract <= 2 in the one-variable lower-bound scenario; manuscriptSeriesGain_two_sixteen_gt_one and not_rgContraction_manuscriptSeriesC1LowerBound_two_sixteen prove that the resulting dmax=16 RG gain is expanding, not contracting. Lab ym-extraction-constant-break-lab-20260630.json tabulates the same series/advertised gap."
-  nextObligation := "Do not use Ben Goertzel's extended-extraction Lambda < 1 step unless a new derivation supplies the actual P_le_dmax operator norm and reconciles it with the displayed series."
+  evidence := "benCauchyC1UpperBound_le_advertised proves that the corrected Cauchy-estimate bound Cextract <= 2 gives C1 <= 2224; benCauchyC1UpperBound_gain_two_sixteen_lt_one and benCauchyC1UpperBound_contraction_two_sixteen prove the resulting b=2,dmax=16 gain is below 1. The old displayed-series contraction failure was an artifact of reading an inverted-ratio typo literally, so it is retracted as an erratum, not a Yang-Mills refutation."
+  nextObligation := "Keep the extended-extraction contraction as standing route evidence, and focus the open endpoint on the continuum constructive-QFT gate: continuum measure, covariance, reflection positivity, OS reconstruction, and Hamiltonian mass-gap transfer."
 
 /-- The current route audit does not construct the full continuum object. -/
 def yangMillsConstructiveQFTNode : YangMillsProofNode where
@@ -589,7 +589,7 @@ def currentYangMillsProofNodes : List YangMillsProofNode :=
   [ yangMillsLiveSurfaceNode
   , yangMillsRegressionSurfaceNode
   , yangMillsSameConstantLowerEvenExtractionNode
-  , yangMillsExtractionConstantBreakNode
+  , yangMillsExtractionConstantErratumNode
   , yangMillsConstructiveQFTNode
   , yangMillsContinuumMeasureCanaryNode
   , yangMillsEuclideanCovarianceCanaryNode
@@ -610,8 +610,8 @@ theorem yangMillsSameConstantLowerEvenExtractionNode_refuted :
     yangMillsSameConstantLowerEvenExtractionNode.status = .refuted := by
   rfl
 
-theorem yangMillsExtractionConstantBreakNode_refuted :
-    yangMillsExtractionConstantBreakNode.status = .refuted := by
+theorem yangMillsExtractionConstantErratumNode_checked :
+    yangMillsExtractionConstantErratumNode.status = .checked := by
   rfl
 
 theorem yangMillsMassGapPromotionGateNode_constructiveGateUncleared :
@@ -653,16 +653,24 @@ theorem currentYangMillsRGCrux_lowerEvenExtraction_arithmetic_packet :
     ⟨rgContraction_2224_two_sixteen,
       not_rgContraction_2224_two_fourteen⟩
 
-theorem currentYangMillsExtractionConstantBreak_packet :
-    (2 : ℝ) < manuscriptExtractionSeriesLowerBound16 ∧
-      (2224 : ℝ) < manuscriptSeriesC1LowerBound16 ∧
-      (1 : ℝ) < manuscriptSeriesC1LowerBound16 * irrelevantScale 2 16 ∧
-      ¬ HasExtendedExtractionContraction manuscriptSeriesC1LowerBound16 2 16 := by
+theorem currentYangMillsExtractionConstantErratum_packet :
+    benCauchyC1UpperBound ≤ (2224 : ℝ) ∧
+      benCauchyC1UpperBound * irrelevantScale 2 16 = (693 : ℝ) / 2560 ∧
+      benCauchyC1UpperBound * irrelevantScale 2 16 < 1 ∧
+      HasExtendedExtractionContraction benCauchyC1UpperBound 2 16 ∧
+      HasExtendedExtractionContraction 2224 2 16 := by
   exact
-    ⟨manuscriptExtractionSeriesLowerBound16_exceeds_asserted_two,
-      manuscriptSeriesC1LowerBound16_exceeds_advertised,
-      manuscriptSeriesGain_two_sixteen_gt_one,
-      not_rgContraction_manuscriptSeriesC1LowerBound_two_sixteen⟩
+    ⟨benCauchyC1UpperBound_le_advertised,
+      benCauchyC1UpperBound_gain_two_sixteen_eq,
+      benCauchyC1UpperBound_gain_two_sixteen_lt_one,
+      benCauchyC1UpperBound_contraction_two_sixteen,
+      rgContraction_2224_two_sixteen⟩
+
+theorem currentYangMillsExtractionConstant_hypotheticalThreshold_packet :
+    ∀ {C : ℝ}, (8192 : ℝ) ≤ C →
+      ¬ HasExtendedExtractionContraction C 2 16 := by
+  intro C hC
+  exact hypothetical_not_rgContraction_two_sixteen_of_constant_ge_8192 hC
 
 theorem currentYangMillsConstructiveDependency_packet :
     currentYangMillsConstructiveStatus.representedChecks = [] ∧

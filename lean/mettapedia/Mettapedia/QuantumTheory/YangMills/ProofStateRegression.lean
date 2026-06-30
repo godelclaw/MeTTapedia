@@ -23,9 +23,9 @@ theorem same_constant_lower_even_extraction_node_refuted_regression :
     yangMillsSameConstantLowerEvenExtractionNode.status = .refuted :=
   yangMillsSameConstantLowerEvenExtractionNode_refuted
 
-theorem extraction_constant_break_node_refuted_regression :
-    yangMillsExtractionConstantBreakNode.status = .refuted :=
-  yangMillsExtractionConstantBreakNode_refuted
+theorem extraction_constant_erratum_node_checked_regression :
+    yangMillsExtractionConstantErratumNode.status = .checked :=
+  yangMillsExtractionConstantErratumNode_checked
 
 theorem current_rg_crux_same_constant_even_below_sixteen_route_refuted_regression
     {H : Type*} [NormedAddCommGroup H] [NormedSpace ℝ H]
@@ -44,12 +44,18 @@ theorem current_rg_crux_lower_even_extraction_arithmetic_packet_regression :
       ¬ HasExtendedExtractionContraction 2224 2 14 := by
   exact currentYangMillsRGCrux_lowerEvenExtraction_arithmetic_packet
 
-theorem current_extraction_constant_break_packet_regression :
-    (2 : ℝ) < manuscriptExtractionSeriesLowerBound16 ∧
-      (2224 : ℝ) < manuscriptSeriesC1LowerBound16 ∧
-      (1 : ℝ) < manuscriptSeriesC1LowerBound16 * irrelevantScale 2 16 ∧
-      ¬ HasExtendedExtractionContraction manuscriptSeriesC1LowerBound16 2 16 := by
-  exact currentYangMillsExtractionConstantBreak_packet
+theorem current_extraction_constant_erratum_packet_regression :
+    benCauchyC1UpperBound ≤ (2224 : ℝ) ∧
+      benCauchyC1UpperBound * irrelevantScale 2 16 = (693 : ℝ) / 2560 ∧
+      benCauchyC1UpperBound * irrelevantScale 2 16 < 1 ∧
+      HasExtendedExtractionContraction benCauchyC1UpperBound 2 16 ∧
+      HasExtendedExtractionContraction 2224 2 16 := by
+  exact currentYangMillsExtractionConstantErratum_packet
+
+theorem current_extraction_constant_hypothetical_threshold_packet_regression :
+    ∀ {C : ℝ}, (8192 : ℝ) ≤ C →
+      ¬ HasExtendedExtractionContraction C 2 16 := by
+  exact currentYangMillsExtractionConstant_hypotheticalThreshold_packet
 
 theorem current_constructive_status_unrepresented_checks_regression :
     currentYangMillsConstructiveStatus.unrepresentedChecks =
