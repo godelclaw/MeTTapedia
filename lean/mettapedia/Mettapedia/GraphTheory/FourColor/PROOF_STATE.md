@@ -220,6 +220,14 @@ length-2 fiber certificate audit and the archived connectivity-evidence row.
 The aggregate theorem `lengthTwoFrontierBaseCoverageAudit_ok` checks all four
 base words.  This is still a base bridge only; the representative-word
 semantic certificate and all-chain induction consequence remain open.
+The same bridge now names the six frontier modes already backed by real
+chain-level per-fixed-input certificates: `T -> mode07`, `M -> mode16`,
+`TT -> mode10`, `TM -> mode18`, `MT -> mode11`, and `MM -> mode04`.
+`baseCertifiedFrontierCoverageAudit_ok` checks those six base-certified words
+against the real single/length-2 chain certificate audits, frontier word-mode
+folding, and archived connectivity evidence.  The other 14 modes still need
+representative-word semantic certificates before the DFA induction can imply
+all-chain `LKR_in`.
 
 The CAP5/F2, GP(12,2), dodecahedral six-cut, and related files below are
 exploratory audits of a divergent F2-additivity route.  They are retained for

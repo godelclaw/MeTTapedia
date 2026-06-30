@@ -103,6 +103,147 @@ theorem lengthTwoFrontierBaseCoverageAudit_ok :
     GoertzelLemma818LengthTwoBase.allLengthTwoOrientWords,
     lengthTwoFrontierBaseAudit_ok]
 
+/--
+The frontier modes whose representative words already have real chain-level
+per-fixed-input parent/path certificates in Lean.
+
+The remaining frontier modes still only have archived atom/quotient evidence
+until representative chain certificates are generated for them.
+-/
+inductive BaseCertifiedWord
+  | t
+  | m
+  | tt
+  | tm
+  | mt
+  | mm
+  deriving DecidableEq, BEq, Repr, Inhabited
+
+def allBaseCertifiedWords : List BaseCertifiedWord :=
+  [ BaseCertifiedWord.t
+  , BaseCertifiedWord.m
+  , BaseCertifiedWord.tt
+  , BaseCertifiedWord.tm
+  , BaseCertifiedWord.mt
+  , BaseCertifiedWord.mm
+  ]
+
+def baseCertifiedChainWord : BaseCertifiedWord → List GoertzelLemma814.TauOrient
+  | BaseCertifiedWord.t => [GoertzelLemma814.TauOrient.normal]
+  | BaseCertifiedWord.m => [GoertzelLemma814.TauOrient.mirror]
+  | BaseCertifiedWord.tt =>
+      GoertzelLemma818LengthTwoBase.lengthTwoOrientWord
+        GoertzelLemma818LengthTwoBase.LengthTwoOrientWord.tt
+  | BaseCertifiedWord.tm =>
+      GoertzelLemma818LengthTwoBase.lengthTwoOrientWord
+        GoertzelLemma818LengthTwoBase.LengthTwoOrientWord.tm
+  | BaseCertifiedWord.mt =>
+      GoertzelLemma818LengthTwoBase.lengthTwoOrientWord
+        GoertzelLemma818LengthTwoBase.LengthTwoOrientWord.mt
+  | BaseCertifiedWord.mm =>
+      GoertzelLemma818LengthTwoBase.lengthTwoOrientWord
+        GoertzelLemma818LengthTwoBase.LengthTwoOrientWord.mm
+
+def baseCertifiedFrontierWord :
+    BaseCertifiedWord → List GoertzelLemma818FrontierMode.TauOrient
+  | BaseCertifiedWord.t => [GoertzelLemma818FrontierMode.TauOrient.tau]
+  | BaseCertifiedWord.m => [GoertzelLemma818FrontierMode.TauOrient.mirror]
+  | BaseCertifiedWord.tt =>
+      [ GoertzelLemma818FrontierMode.TauOrient.tau
+      , GoertzelLemma818FrontierMode.TauOrient.tau
+      ]
+  | BaseCertifiedWord.tm =>
+      [ GoertzelLemma818FrontierMode.TauOrient.tau
+      , GoertzelLemma818FrontierMode.TauOrient.mirror
+      ]
+  | BaseCertifiedWord.mt =>
+      [ GoertzelLemma818FrontierMode.TauOrient.mirror
+      , GoertzelLemma818FrontierMode.TauOrient.tau
+      ]
+  | BaseCertifiedWord.mm =>
+      [ GoertzelLemma818FrontierMode.TauOrient.mirror
+      , GoertzelLemma818FrontierMode.TauOrient.mirror
+      ]
+
+def baseCertifiedChainFrontierWord
+    (w : BaseCertifiedWord) : List GoertzelLemma818FrontierMode.TauOrient :=
+  (baseCertifiedChainWord w).map chainOrientToFrontier
+
+def baseCertifiedFrontierMode :
+    BaseCertifiedWord → GoertzelLemma818FrontierMode.FrontierMode
+  | BaseCertifiedWord.t => GoertzelLemma818FrontierMode.FrontierMode.mode07
+  | BaseCertifiedWord.m => GoertzelLemma818FrontierMode.FrontierMode.mode16
+  | BaseCertifiedWord.tt => GoertzelLemma818FrontierMode.FrontierMode.mode10
+  | BaseCertifiedWord.tm => GoertzelLemma818FrontierMode.FrontierMode.mode18
+  | BaseCertifiedWord.mt => GoertzelLemma818FrontierMode.FrontierMode.mode11
+  | BaseCertifiedWord.mm => GoertzelLemma818FrontierMode.FrontierMode.mode04
+
+def baseCertifiedChainCertificateAudit : BaseCertifiedWord → Bool
+  | BaseCertifiedWord.t =>
+      GoertzelLemma814.tauSingleNormalAllFiberCertificateAudit
+  | BaseCertifiedWord.m =>
+      GoertzelLemma814.tauSingleAllFiberCertificateAudit
+        GoertzelLemma814.TauOrient.mirror
+  | BaseCertifiedWord.tt =>
+      GoertzelLemma818LengthTwoBase.lengthTwoCertificateAudit
+        GoertzelLemma818LengthTwoBase.LengthTwoOrientWord.tt
+  | BaseCertifiedWord.tm =>
+      GoertzelLemma818LengthTwoBase.lengthTwoCertificateAudit
+        GoertzelLemma818LengthTwoBase.LengthTwoOrientWord.tm
+  | BaseCertifiedWord.mt =>
+      GoertzelLemma818LengthTwoBase.lengthTwoCertificateAudit
+        GoertzelLemma818LengthTwoBase.LengthTwoOrientWord.mt
+  | BaseCertifiedWord.mm =>
+      GoertzelLemma818LengthTwoBase.lengthTwoCertificateAudit
+        GoertzelLemma818LengthTwoBase.LengthTwoOrientWord.mm
+
+theorem baseCertifiedChainCertificateAudit_ok (w : BaseCertifiedWord) :
+    baseCertifiedChainCertificateAudit w = true := by
+  cases w <;>
+    simp [baseCertifiedChainCertificateAudit,
+      GoertzelLemma814.tauSingleNormalAllFiberCertificateAudit_ok,
+      GoertzelLemma814.tauSingleMirrorAllFiberCertificateAudit_ok,
+      GoertzelLemma818LengthTwoBase.lengthTwoCertificateAudit_ok]
+
+theorem baseCertifiedChainFrontierWord_eq (w : BaseCertifiedWord) :
+    baseCertifiedChainFrontierWord w = baseCertifiedFrontierWord w := by
+  cases w <;> rfl
+
+theorem baseCertifiedFrontierWordMode_ok (w : BaseCertifiedWord) :
+    GoertzelLemma818FrontierMode.wordMode (baseCertifiedFrontierWord w) =
+      some (baseCertifiedFrontierMode w) := by
+  cases w <;> rfl
+
+theorem baseCertifiedFrontierMode_hasArchivedConnectivityEvidence
+    (w : BaseCertifiedWord) :
+    GoertzelLemma818FrontierMode.modeHasArchivedConnectivityEvidence
+      (baseCertifiedFrontierMode w) = true := by
+  cases w <;> decide
+
+def baseCertifiedFrontierAudit (w : BaseCertifiedWord) : Bool :=
+  baseCertifiedChainCertificateAudit w
+    && (baseCertifiedChainFrontierWord w == baseCertifiedFrontierWord w)
+    && (GoertzelLemma818FrontierMode.wordMode (baseCertifiedFrontierWord w) ==
+      some (baseCertifiedFrontierMode w))
+    && GoertzelLemma818FrontierMode.modeHasArchivedConnectivityEvidence
+      (baseCertifiedFrontierMode w)
+
+theorem baseCertifiedFrontierAudit_ok (w : BaseCertifiedWord) :
+    baseCertifiedFrontierAudit w = true := by
+  cases w <;>
+    simp [baseCertifiedFrontierAudit, baseCertifiedChainCertificateAudit_ok,
+      baseCertifiedChainFrontierWord, baseCertifiedChainWord,
+      baseCertifiedFrontierWord, baseCertifiedFrontierMode] <;>
+    decide
+
+def baseCertifiedFrontierCoverageAudit : Bool :=
+  allBaseCertifiedWords.all baseCertifiedFrontierAudit
+
+theorem baseCertifiedFrontierCoverageAudit_ok :
+    baseCertifiedFrontierCoverageAudit = true := by
+  simp [baseCertifiedFrontierCoverageAudit, allBaseCertifiedWords,
+    baseCertifiedFrontierAudit_ok]
+
 end GoertzelLemma818FrontierBaseBridge
 
 end Mettapedia.GraphTheory.FourColor

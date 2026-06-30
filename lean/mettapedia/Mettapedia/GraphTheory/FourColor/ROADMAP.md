@@ -158,6 +158,11 @@ The first small bridge in that direction is
 certificate audits to the corresponding frontier modes and archived
 connectivity evidence.  The remaining bridge is broader representative-word
 semantic certification, not another length sweep.
+The current semantically certified base modes are now explicit in Lean:
+`T/M/TT/TM/MT/MM` map to `mode07/mode16/mode10/mode18/mode11/mode04` and
+pass `baseCertifiedFrontierCoverageAudit_ok` through real chain certificate
+audits.  The next certificate-generation target is the other 14 frontier
+modes, using representative words already recorded in the DFA table.
 
 The older CAP5/F2, GP(12,2), and six-cut files are exploratory negative audits
 of a divergent additive F2 route.  They remain useful for provenance and
