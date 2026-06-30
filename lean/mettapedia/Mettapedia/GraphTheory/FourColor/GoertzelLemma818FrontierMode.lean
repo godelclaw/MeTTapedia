@@ -331,6 +331,20 @@ theorem modeWitnessWord_sound (mode : FrontierMode) :
     wordMode (modeWitnessWord mode) = some mode := by
   cases mode <;> rfl
 
+def knownProfileWordHashes : List (List TauOrient × String) :=
+  allModes.flatMap (fun mode =>
+    (representativeWords mode).map (fun word =>
+      (word, FrontierMode.profileHash mode)))
+
+def knownProfileWordHashCheck : Bool :=
+  knownProfileWordHashes.length == 42
+  && knownProfileWordHashes.all (fun item =>
+    modeOfProfileHash item.2 == wordMode item.1)
+
+theorem knownProfileWordHashCheck_ok :
+    knownProfileWordHashCheck = true := by
+  rfl
+
 def modeInTable (mode : FrontierMode) : Bool :=
   allModes.contains mode
 

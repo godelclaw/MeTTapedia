@@ -71,10 +71,12 @@ checks the 20 archived profile hashes against the hash-to-mode lookup, and
 nonempty orientation words.  The representative-word layer is also checked:
 `representativeWordsSoundCheck_ok`, `representativeCoverageCheck_ok`, and
 `modeWitnessWord_sound` show that every archived representative word folds to
-the listed mode and every mode has a checked canonical representative.  The
-remaining bridge is from real chain profiles and generated connectivity
-certificates to these table representatives.  Do not resume monolithic
-`decide` or open-ended length sweeps for this step.
+the listed mode and every mode has a checked canonical representative.
+`knownProfileWordHashCheck_ok` checks the 42 archived known word/profile-hash
+pairs against both the DFA fold and the hash lookup.  The remaining bridge is
+from real chain profiles and generated connectivity certificates to these
+table representatives.  Do not resume monolithic `decide` or open-ended length
+sweeps for this step.
 
 The older CAP5/F2, GP(12,2), and six-cut files are exploratory negative audits
 of a divergent additive F2 route.  They remain useful for provenance and
@@ -86,7 +88,7 @@ Read these four files first — they are the whole live surface:
 | File | Contents |
 |---|---|
 | `GoertzelLemma814.lean` | Pillar-C finite model for Lemma 8.14: canonical three-cell gadget, finite proper-coloring state space, input-disjoint Kempe switches, indexed `LKR_in` path certificate, mirror check, Lemma 8.15 transparency finite check, the checked Lemma 8.18 pointwise-preparation obstruction, and the build-checked composite-chain model for the Gate-1 salvage audit |
-| `GoertzelLemma818FrontierMode.lean` | Lab-facing finite profile-mode DFA table for the Lemma 8.18/8.19 repair: 20 mode constructors, profile hashes, representative words, two orientations, 40 total transitions, axiom-free `tableClosedCheck_ok`, `profileHashLookupCheck_ok`, abstract word-fold theorem `wordMode_inTable`, and checked representative coverage theorems `representativeWordsSoundCheck_ok`, `representativeCoverageCheck_ok`, and `modeWitnessWord_sound`; this is table closure/induction/hash/representative metadata only, not yet the all-chain `LKR_in` consequence |
+| `GoertzelLemma818FrontierMode.lean` | Lab-facing finite profile-mode DFA table for the Lemma 8.18/8.19 repair: 20 mode constructors, profile hashes, representative words, two orientations, 40 total transitions, axiom-free `tableClosedCheck_ok`, `profileHashLookupCheck_ok`, abstract word-fold theorem `wordMode_inTable`, checked representative coverage theorems `representativeWordsSoundCheck_ok`, `representativeCoverageCheck_ok`, `modeWitnessWord_sound`, and 42-word profile-hash consistency check `knownProfileWordHashCheck_ok`; this is table closure/induction/hash/representative metadata only, not yet the all-chain `LKR_in` consequence |
 | `Goal.lean` | The target (`Theorem49ShellClaim`), its reduction to four geometric oracles plus a fifth non-geometric algebraic cancellation oracle, and proofs that **all four geometric uniform oracles are false** — including the v23.5 residual/current-boundary lane, whose positive wrapper is fixed-embedding equivalent to the refuted collar-layer surface |
 | `Shells.lean` | Bundled hypothesis packages (`ClosedWalkExactShell`, `SuccessorCycleExactShell`, `ClosedWalkCancellationShell`, …) replacing the historical 8–10-hypothesis telescopes |
 | `Frontier.lean` | The maximal positive and negative results, stated over the bundles as thin wrappers, including detector-based cancellation sufficiency |

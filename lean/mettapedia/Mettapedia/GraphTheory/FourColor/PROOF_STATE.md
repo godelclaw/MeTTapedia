@@ -120,10 +120,12 @@ fold is one of the 20 table modes.  It also encodes the archived representative
 words for every mode and proves `representativeWordsSoundCheck_ok`,
 `representativeCoverageCheck_ok`, and `modeWitnessWord_sound`: every stored
 representative word folds to the listed mode, and every mode has a checked
-canonical representative.  `#print axioms` reports no axioms for these
-table-layer theorems.  This is not yet the proof that every reachable chain
-profile is represented by the table's canonical representatives or that the
-table entails all-chain `LKR_in`.
+canonical representative.  The theorem `knownProfileWordHashCheck_ok` checks
+the 42 archived known word/profile-hash pairs against both `wordMode` and
+`modeOfProfileHash`.  `#print axioms` reports no axioms for these table-layer
+theorems.  This is not yet the proof that every reachable chain profile is
+represented by the table's canonical representatives or that the table entails
+all-chain `LKR_in`.
 
 The CAP5/F2, GP(12,2), dodecahedral six-cut, and related files below are
 exploratory audits of a divergent F2-additivity route.  They are retained for
