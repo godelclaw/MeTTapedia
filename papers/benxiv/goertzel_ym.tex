@@ -1,0 +1,510 @@
+\documentclass[11pt]{article}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern}
+\usepackage{geometry}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{amsthm}
+\usepackage{booktabs}
+\usepackage{hyperref}
+\usepackage{listings}
+\geometry{margin=1in}
+
+\lstdefinestyle{lean}{
+  basicstyle=\ttfamily\small,
+  breaklines=true,
+  columns=fullflexible,
+  keepspaces=true,
+  showstringspaces=false,
+  frame=single,
+  framesep=4pt,
+  xleftmargin=2pt,
+  aboveskip=8pt,
+  belowskip=8pt,
+  literate=
+    {ℝ}{{$\mathbb{R}$}}1
+    {ℕ}{{$\mathbb{N}$}}1
+    {ℤ}{{$\mathbb{Z}$}}1
+    {λ}{{$\lambda$}}1
+    {ε}{{$\varepsilon$}}1
+    {Δ}{{$\Delta$}}1
+    {κ}{{$\kappa$}}1
+    {≤}{{$\leq$}}1
+    {≥}{{$\geq$}}1
+    {≠}{{$\neq$}}1
+    {∧}{{$\wedge$}}1
+    {∨}{{$\vee$}}1
+    {¬}{{$\neg$}}1
+    {→}{{$\rightarrow$}}1
+    {↦}{{$\mapsto$}}1
+    {∃}{{$\exists$}}1
+    {∀}{{$\forall$}}1
+    {∈}{{$\in$}}1
+    {·}{{$\cdot$}}1
+    {²}{{$^2$}}1
+    {₀}{{$_0$}}1
+    {₁}{{$_1$}}1
+    {₂}{{$_2$}}1
+    {₃}{{$_3$}}1
+    {⟨}{{$\langle$}}1
+    {⟩}{{$\rangle$}}1,
+}
+\lstset{style=lean}
+
+\newtheorem{theorem}{Theorem}
+\newtheorem{proposition}{Proposition}
+\newtheorem{lemma}{Lemma}
+\newtheorem{remark}{Remark}
+\theoremstyle{definition}
+\newtheorem{definition}{Definition}
+
+\newcommand{\SUN}{\mathrm{SU}(N)}
+\newcommand{\Lirr}{\lambda_{\mathrm{irr}}}
+\newcommand{\dmax}{d_{\max}}
+\newcommand{\Tr}{\mathrm{Tr}}
+\newcommand{\Pleq}{P_{\leq \dmax}}
+
+\title{A Machine-Checked Audit of the Extended-Extraction\\
+RG Contraction in the Wilson-Lattice / OS Route\\
+to a 4D Yang--Mills Mass Gap}
+\author{The MeTTapedia formalization effort}
+\date{June 2026}
+
+\begin{document}
+\maketitle
+\sloppy
+
+\begin{abstract}
+Ben Goertzel's manuscript \emph{Yang--Mills Mass Gap in 4D: RG Bootstrap,
+Polymer Expansion, OS Reconstruction} (v14) proposes to construct a continuum
+$\SUN$ Yang--Mills theory as a limit of Wilson lattice gauge theory, organized
+around a multiscale renormalization-group (RG) bootstrap, a Koteck\'y--Preiss
+(KP) polymer expansion yielding exponential clustering at a fixed physical
+scale, and an Osterwalder--Schrader (OS) reconstruction producing a Hamiltonian
+with a strictly positive spectral gap. The technical keystone is an
+\emph{extended-extraction} RG contraction $\Lambda = C_1\,\Lirr < 1$, with an
+advertised recombination constant $C_1 \leq 2224$ and an irrelevant-eigenvalue
+factor $\Lirr = 2^{-13}$ (block factor $b=2$, extraction depth $\dmax = 16$), so
+that $2224 \cdot 2^{-13} \approx 0.27 < 1$. We report what the MeTTapedia
+formalization effort has machine-checked in Lean about this route. We model the
+contraction predicate \texttt{HasExtendedExtractionContraction}, verify the
+knife-edge arithmetic ($2224 \cdot 2^{-13} < 1$ holds at $\dmax=16$; the
+analogous bound \emph{fails} at the nearest even depth $\dmax=14$, where
+$2^{11}=2048<2224$), establish genuine finite $\mathbb{Z}_2$ and $\mathbb{Z}_3$
+single-link strong-coupling spectral gaps through a finite OS reconstruction, and
+\emph{gate the continuum endpoint as open}: the continuum mass gap carries an
+explicit open status with no claimed support. We are precise about scope. The
+checked arithmetic takes the recombination constant $C_1 = 2224$ as a
+\emph{given input}. The load-bearing quantity --- whether the true
+extraction-projection operator norm, hence $C_1$, is as small as advertised ---
+lies outside the present formalization; we record neutrally that the manuscript's
+own written expression for that norm appears to grow rapidly with the extraction
+depth $\dmax$, so the small constant is not self-evidently justified, and we flag
+this as the key unformalized risk rather than asserting any resolution. The
+finite gaps that are checked are real but Clay-irrelevant (abelian, single-link,
+strong-coupling, finite). The Yang--Mills mass gap itself remains open; we make
+no claim about it.
+\end{abstract}
+
+\section{The problem and Ben Goertzel's route}
+
+\subsection{The Millennium problem and the lattice strategy}
+
+Fix the gauge group $G = \SUN$ with $N \geq 2$ and let $\mathbb{R}^4$ be
+Euclidean space. The Yang--Mills mass-gap problem asks for the construction of a
+nontrivial continuum quantum Yang--Mills theory on $\mathbb{R}^4$ with gauge
+group $G$, satisfying the Wightman / Osterwalder--Schrader axioms, whose
+reconstructed Hamiltonian has a unique vacuum and a strictly positive spectral
+gap on the orthocomplement of the vacuum.
+
+Goertzel's v14 manuscript follows Wilson's lattice regularization. One
+discretizes $\mathbb{R}^4$ as a hypercubic lattice $a\mathbb{Z}^4$ with spacing
+$a>0$, with link variables $U_{x,\mu}\in G$ on oriented nearest-neighbor links.
+The plaquette variable is the parallel transporter around an elementary square,
+\[
+  U_{x,\mu\nu} \;=\; U_{x,\mu}\,U_{x+a e_\mu,\nu}\,U_{x+a e_\nu,\mu}^{-1}\,U_{x,\nu}^{-1},
+  \qquad 1 \leq \mu < \nu \leq 4,
+\]
+and the Wilson action penalizes deviation of plaquettes from the identity,
+\[
+  S_{\Lambda,a}(U) \;=\; \beta \sum_{p\subset\Lambda} V(U_p),
+  \qquad \beta = \frac{2N}{g^2},
+  \qquad V(U) := 1 - \tfrac{1}{N}\mathrm{Re}\,\Tr(U) \in [0,2].
+\]
+Weak coupling is $\beta \gg 1$. The strategy is: (Step 1) start from the
+well-defined finite-dimensional lattice integral; (Step 2) run a multiscale RG
+bootstrap controlling the effective theory across all scales; (Step 3)
+establish exponential clustering at a fixed physical scale $\ell_*$ via a KP
+polymer expansion; (Step 4) transfer clustering from the coarse scale back to
+the fine scale with a glue / back-propagation lemma; (Step 5) reconstruct the
+continuum Hilbert space, vacuum, and Hamiltonian by OS, with the clustering rate
+becoming the spectral gap; (Step 6) verify nontriviality through a nonzero
+third cumulant of the action density.
+
+\subsection{The continuum-limit obstruction and extended extraction}
+
+In any RG scheme one must show that the ``irrelevant'' sector (operators of
+canonical dimension $>4$) contracts at each step:
+\[
+  \| K^{\mathrm{irr}}_{j+1}\| \;\leq\; \Lambda\, \|K^{\mathrm{irr}}_{j}\| + (\text{source terms}),
+  \qquad \Lambda < 1.
+\]
+The manuscript identifies a sharp obstruction in the \emph{naive} scheme, where
+one extracts only the relevant and marginal operators of dimension $\leq 4$.
+Under rescaling, a dimension-$d$ operator scales by $b^{4-d}$, so the leading
+irrelevant operators (dimension $6$) contract by $b^{-2} = 0.25$ for $b=2$. But
+the RG step also recombines polymers, contributing a combinatorial constant
+$C_1$. The manuscript's rigorous worst-case bound is $C_1 \leq 2224$ for $b=2$,
+giving
+\[
+  \Lambda_{\mathrm{naive}} \;=\; C_1\, b^{-2} \;\geq\; 2224 \times 0.25 \;=\; 556 \;>\; 1,
+\]
+an \emph{expanding} map: initial smallness would grow like $556^{J}$ over
+$J\sim|\log a_0|$ steps and diverge as $a_0\to 0$.
+
+The proposed resolution is \emph{extended extraction}. Instead of extracting
+only dimension $\leq 4$ operators, one extracts all gauge-invariant local
+operators up to canonical dimension $\dmax = 16$ (for $b=2$). The irrelevant
+sector then begins at dimension $\dmax+1 = 17$ and contracts by
+\[
+  \Lirr \;=\; b^{\,4-(\dmax+1)} \;=\; b^{\,3-\dmax} \;=\; 2^{-13} \;\approx\; 1.2\times 10^{-4}.
+\]
+With the same rigorous $C_1 \leq 2224$, the effective contraction factor becomes
+\[
+  \boxed{\;\Lambda \;=\; C_1\,\Lirr \;\leq\; 2224 \cdot 2^{-13} \;\approx\; 0.27 \;<\; 1.\;}
+\]
+The manuscript presents this as genuine contraction ``with substantial slack.''
+The price is tracking a finite-dimensional vector of higher couplings
+$\vec g_j = (g_j^{(4)},g_j^{(6)},\dots,g_j^{(\dmax)})$ rather than the single
+gauge coupling; the manuscript argues these are perturbatively small and do not
+affect the universal one-loop beta-function coefficient
+$b_0 = 11/(3\cdot 16\pi^2)$, which is determined entirely by local ultraviolet
+information.
+
+\subsection{The recombination constant and the extraction-projection norm}
+
+The constant $C_1$ is itself a product of factors (manuscript Computation~O.7),
+\[
+  C_1 \;\leq\; C_{\mathrm{fluct}} \cdot C_{\mathrm{cumulant}} \cdot C_{\mathrm{recomb}} \cdot C_{\mathrm{extract}}
+  \;\leq\; 1.65 \times 3b^4 \times 14 \times 2 \;\approx\; 139\,b^4,
+\]
+which for $b=2$ gives $C_1 \leq 139 \times 16 \approx 2224$. The last factor
+$C_{\mathrm{extract}} = \|\Pleq\|_{\mathrm{op}}$ is the operator norm of the
+extraction projection onto the finite-dimensional space of operators of
+dimension $\leq \dmax$. The manuscript bounds it (its Computation~O.7(d)) by
+\[
+  \|\Pleq\|_{\mathrm{op}} \;\leq\; \sum_{d=0}^{\dmax} \binom{\#\mathrm{indices}}{d}\,(r_1/r_0)^{-d}
+  \;\leq\; 1 + O\!\big((r_0/r_1)^{\dmax}\big),
+\]
+and asserts $\|\Pleq\|_{\mathrm{op}} \leq 2$ for $r_1/r_0 = 1/2$ and $\dmax=16$.
+We return to this expression in \S\ref{sec:honest}; it is the load-bearing
+input on which the smallness of $C_1$, and hence the contraction, rests.
+
+\section{What we formalized}
+
+The formalization lives in the Lean namespace
+\texttt{Mettapedia.QuantumTheory.YangMills}. We summarize the four checked
+components: the contraction predicate, the knife-edge arithmetic, the finite
+strong-coupling gaps with their finite OS reconstruction, and the
+continuum-open gating. All theorem and definition names below are reproduced
+verbatim from the corresponding modules.
+
+\subsection{The extended-extraction contraction predicate}
+
+The module \texttt{Mettapedia.QuantumTheory.YangMills.RGBootstrap} models the
+route's contraction obligation as a predicate over a recombination constant
+$C$, block factor $b$, and extraction depth $\dmax$. The irrelevant scaling
+factor is $b^{3-\dmax}$ (an integer power, since the useful cases have
+$\dmax>3$), and a contraction is a nonnegative constant whose product with the
+irrelevant scale is below $1$.
+
+\begin{lstlisting}
+/-- Irrelevant scaling factor `b^(3-dmax)` used by the extended-extraction
+discussion.  The exponent is an integer because the useful cases have
+`dmax > 3`. -/
+def irrelevantScale (b dmax : ℕ) : ℝ :=
+  (b : ℝ) ^ (3 - (dmax : ℤ))
+
+/-- The route-level contraction audit for a combinatorial constant and an
+irrelevant scaling factor. -/
+def HasRGContraction (C scale : ℝ) : Prop :=
+  0 ≤ C ∧ 0 ≤ scale ∧ C * scale < 1
+
+/-- The extended-extraction audit specialized to `λ = b^(3-dmax)`. -/
+def HasExtendedExtractionContraction (C : ℝ) (b dmax : ℕ) : Prop :=
+  HasRGContraction C (irrelevantScale b dmax)
+\end{lstlisting}
+
+A threshold lemma in the same module records the exact content of the predicate:
+for $b>0$ and $\dmax\geq 3$, the contraction \texttt{HasExtendedExtractionContraction
+C b dmax} holds if and only if $0 \leq C < b^{\dmax-3}$. Thus the entire
+arithmetic content of the route is the comparison of $C$ with the threshold
+$b^{\dmax-3}$.
+
+\subsection{The knife-edge arithmetic}
+
+The module machine-checks that the advertised constant contracts at $\dmax=16$
+and that the exact one-step gain is $2224\cdot 2^{-13} = 139/512 < 1/3$:
+
+\begin{lstlisting}
+/-- The advertised numerical slack: `2224 * 2^-13 < 1`. -/
+theorem rgContraction_2224_two_sixteen :
+    HasExtendedExtractionContraction 2224 2 16 := by
+  refine ⟨by norm_num, by rw [irrelevantScale_two_sixteen]; norm_num, ?_⟩
+  rw [irrelevantScale_two_sixteen]
+  norm_num
+
+/-- Exact advertised one-step gain for the extended-extraction constants. -/
+theorem rgGain_2224_two_sixteen_eq :
+    (2224 : ℝ) * irrelevantScale 2 16 = (139 : ℝ) / 512 := by
+  rw [irrelevantScale_two_sixteen]
+  norm_num
+\end{lstlisting}
+
+Crucially, the same constant does \emph{not} contract at the nearest even
+extraction depth below the advertised one. At $\dmax=14$ the threshold is
+$2^{11}=2048<2224$, so the contraction is arithmetically false; the module
+proves that any contraction at $\dmax=14$ would force $C<2048$, and hence that
+$2224$ fails:
+
+\begin{lstlisting}
+/-- Any contraction proof at `dmax = 14` must improve the linear recombination
+constant below `2048`.  The manuscript's advertised bound `2224` is therefore
+insufficient for this lower extraction depth. -/
+theorem rgContraction_two_fourteen_forces_constant_lt_2048
+    {C : ℝ} (h : HasExtendedExtractionContraction C 2 14) :
+    C < 2048 := by
+  have hprod : C * irrelevantScale 2 14 < 1 := h.2.2
+  rw [irrelevantScale_two_fourteen] at hprod
+  nlinarith
+
+/-- Same-constant blocker at the nearest even extraction depth below `16`. -/
+theorem not_rgContraction_2224_two_fourteen :
+    ¬ HasExtendedExtractionContraction 2224 2 14 := by
+  intro h
+  have hC : (2224 : ℝ) < 2048 :=
+    rgContraction_two_fourteen_forces_constant_lt_2048 h
+  norm_num at hC
+\end{lstlisting}
+
+This is the knife edge: the choice $\dmax=16$ is exactly what makes the
+advertised constant contract, and the manuscript's own table shows
+$\dmax\in\{10,12,14\}$ all fail against $C_1\leq 2224$ while $\dmax=16$ succeeds.
+The module \texttt{Mettapedia.QuantumTheory.YangMills.RGCrux} packages this into
+a route-level statement: a mass-gap route that keeps the advertised constant
+$2224$ but uses an even extraction depth strictly below $16$ cannot exist, since
+the required contraction is arithmetically false before any OS / clustering
+layer is reached.
+
+\begin{lstlisting}
+/-- Same-constant lower-extraction certificate in the manuscript's even
+canonical-dimension shape: the cutoff is strictly below `16`, is even, and uses
+the same advertised recombination bound `2224`. -/
+def SameConstantEvenBelowSixteenRGCertificate (dmax : ℕ) : Prop :=
+  dmax < 16 ∧ Even dmax ∧ HasExtendedExtractionContraction 2224 2 dmax
+
+/-- No same-constant RG certificate exists for an even manuscript-shape cutoff
+strictly below `16`. -/
+theorem not_sameConstantEvenBelowSixteenRGCertificate
+    {dmax : ℕ} :
+    ¬ SameConstantEvenBelowSixteenRGCertificate dmax := by
+  intro hcert
+  have hdmax : dmax ≤ 14 :=
+    even_lt_sixteen_le_fourteen hcert.1 hcert.2.1
+  exact (not_rgContraction_2224_two_of_dmax_le_fourteen hdmax) hcert.2.2
+\end{lstlisting}
+
+A strengthened companion theorem,
+\texttt{not\_atLeast2048EvenBelowSixteenRGCertificate}, shows that any even
+lower-extraction repair below $\dmax=16$ would need a genuinely sharper constant
+($C<2048$), not merely the advertised one. We stress that this is an honest
+delimiter of the arithmetic surface, not a refutation of the route: at the raw
+natural number $\dmax=15$ the same constant \emph{does} contract
+($2^{12}=4096>2224$), and the module records this explicitly so that the
+obstruction is read precisely as an even canonical-dimension statement matching
+the manuscript's dimensions $4,6,\dots,\dmax$.
+
+\subsection{Finite strong-coupling spectral gaps and finite OS reconstruction}
+
+The module \texttt{Mettapedia.QuantumTheory.YangMills.FiniteOSReconstruction}
+formalizes the finite algebraic core of OS reconstruction: a reflection-positive
+finite kernel induces a positive pairing on observables, and a transfer operator
+that is self-adjoint for that pairing descends to the pairing quotient and
+remains self-adjoint there. On this base, the modules
+\texttt{Z2StrongCouplingGap} and \texttt{Z3StrongCouplingGap} build explicit
+finite single-link abelian lattice gauge models. For $\mathbb{Z}_2$, the
+one-link heat-kernel transfer at heat time $1$ has eigenvalues $1$ and
+$\exp(-1)$, so the dimensionless gap is $-\log(\exp(-1)/1)=1$:
+
+\begin{lstlisting}
+theorem z2StrongCouplingGap_eq_one :
+    z2StrongCouplingGap = 1 := by
+  simp [z2StrongCouplingGap, z2StrongCouplingLambdaTwo,
+    z2StrongCouplingLambdaOne, z2StrongCouplingRatio, Real.log_exp]
+
+/-- End-to-end finite lattice theorem: the explicit `Z₂` strong-coupling model is
+nontrivial, reflection positive, has an OS transfer operator, and has
+dimensionless transfer gap at least `1`. -/
+theorem z2StrongCoupling_latticeYangMills_massGap_landmark :
+    ∃ _ : Z2StrongCouplingGapCanary,
+      (∃ x y : Z2OneLinkConfig, x ≠ y) ∧
+        OSReflectionPositive z2StrongCouplingKernel ∧
+        z2StrongCouplingGap = 1 ∧
+        (1 : ℝ) ≤ z2StrongCouplingGap ∧
+        0 < z2StrongCouplingGap := by
+  exact
+    ⟨z2StrongCouplingPositiveCanary,
+      z2OneLinkConfig_nontrivial,
+      z2StrongCouplingKernel_reflectionPositive,
+      z2StrongCouplingGap_eq_one,
+      z2StrongCouplingGap_lower_bound_one,
+      z2StrongCouplingGap_positive⟩
+\end{lstlisting}
+
+The $\mathbb{Z}_3$ module proves the analogous landmark with two mean-zero
+transfer eigenvectors and the same unit gap. These theorems are unconditional
+and non-vacuous: they exhibit genuine reflection positivity, a genuine finite OS
+transfer reconstruction, and a strictly positive spectral gap. They are also
+kept rigorously separate from any continuum claim. Each module carries an
+explicit scaling diagnostic showing that a finite gap need not survive a naive
+continuum schedule. For the heat-time schedule $t(a)=a^2$, the \emph{physical}
+gap (dimensionless gap divided by lattice spacing) closes as $a\to0$:
+
+\begin{lstlisting}
+/-- A concrete gap-closing schedule for the finite model under the heat-time
+scaling `t(a)=a²`: the physical gap can be made smaller than any positive
+threshold by taking the lattice spacing small enough. -/
+theorem z2QuadraticHeatTime_physicalGap_closes :
+    ∀ ε : ℝ, 0 < ε →
+      ∃ a : ℝ,
+        0 < a ∧ a < ε ∧
+          z2HeatTimePhysicalGap a (a ^ 2) < ε := by
+  intro ε hε
+  refine ⟨ε / 2, by linarith, by linarith, ?_⟩
+  have hne : ε / 2 ≠ 0 := by linarith
+  rw [z2QuadraticHeatTime_physicalGap_eq hne]
+  linarith
+\end{lstlisting}
+
+\subsection{The continuum endpoint is gated open}
+
+The module \texttt{Mettapedia.QuantumTheory.YangMills.ProofState} records a
+status ledger over the route's nodes. The finite RG / extraction surfaces are
+marked \texttt{checked} or \texttt{refuted} as appropriate, but the continuum
+mass-gap endpoint carries an explicit \texttt{openGoal} status, gated behind a
+constructive-QFT promotion barrier (continuum measure, Euclidean covariance,
+reflection positivity, OS reconstruction, and Hamiltonian mass-gap transfer ---
+none of which is represented for the RG / extraction route, which supplies only
+a finite ledger):
+
+\begin{lstlisting}
+/-- The final mass-gap endpoint remains an open goal in this lane. -/
+def yangMillsMassGapEndpointNode : YangMillsProofNode where
+  id := "yang-mills.mass-gap-endpoint"
+  status := .openGoal
+  truthValue := ⟨0, 95⟩
+  evidence := "currentYangMillsMassGapEndpoint_blockedByConstructiveGate blocks promotion from the audited RG/extraction surfaces to a continuum mass-gap endpoint ..."
+  nextObligation := "Connect the RG and extraction surfaces to a genuine continuum mass-gap statement only after the constructive-QFT gate, OS/Hamiltonian transfer dependency packet, challenge-world interface packet, and mass-gap promotion gate clear."
+
+theorem yangMillsMassGapEndpointNode_open :
+    yangMillsMassGapEndpointNode.status = .openGoal := by
+  rfl
+\end{lstlisting}
+
+A companion theorem \texttt{currentYangMillsMassGapEndpoint\_blockedByConstructiveGate}
+records that the endpoint is open, the constructive checks are all unrepresented,
+and the only supplied interface is the finite RG / extraction ledger. In short,
+the formalization does not overclaim: nothing in it asserts a continuum mass gap.
+
+\section{Honest status and scope}\label{sec:honest}
+
+This lane is, by construction, conservative; we now state precisely what is and
+is not established.
+
+\paragraph{The contraction constant is an input, not a conclusion.}
+Every arithmetic theorem above takes the recombination constant as a
+\emph{given real number}. The predicate \texttt{HasExtendedExtractionContraction
+C b dmax} is a statement about $C$, $b$, $\dmax$ alone; the checked facts
+\texttt{rgContraction\_2224\_two\_sixteen} and
+\texttt{not\_rgContraction\_2224\_two\_fourteen} verify the comparison
+$C \lessgtr b^{\dmax-3}$ for the specific value $C=2224$. Nothing in the
+formalization derives that $2224$ (or any $O(1)\cdot b^4$ bound) is the correct
+value of the manuscript's recombination constant. The Lean ledger is therefore
+faithful to the route's bookkeeping but agnostic about the route's hardest
+analytic claim.
+
+\paragraph{The extraction-projection norm justification is the key
+unformalized risk.}
+The smallness of $C_1$ rests on the factor
+$C_{\mathrm{extract}} = \|\Pleq\|_{\mathrm{op}}$, which the manuscript bounds by
+\[
+  \|\Pleq\|_{\mathrm{op}}
+  \;\leq\; \sum_{d=0}^{\dmax} \binom{\#\mathrm{indices}}{d}\,(r_1/r_0)^{-d}
+  \;\leq\; 1 + O\!\big((r_0/r_1)^{\dmax}\big),
+\]
+asserting the value $\leq 2$ for $r_1/r_0 = 1/2$, $\dmax = 16$. We record
+neutrally a tension internal to this written expression: with $r_1/r_0 = 1/2$
+the summand $(r_1/r_0)^{-d} = 2^{d}$ \emph{grows} geometrically in $d$, and the
+binomial weights only enlarge it further, so the written partial sum is an
+\emph{increasing} function of $\dmax$ that grows at least like $2^{\dmax}$; the
+asserted closed form $1 + O\big((r_0/r_1)^{\dmax}\big) = 1 + O(2^{-\dmax})$
+instead behaves as if the summand were $(r_1/r_0)^{d} = 2^{-d}$, i.e. as if it
+\emph{decayed}. We do not adjudicate which reading is intended. We observe only
+that this single step decides whether $C_1$ stays $O(1)\cdot b^4 \approx 2224$ or
+instead grows with the extraction depth $\dmax$ --- and that, because the
+irrelevant factor is $\Lirr = 2^{3-\dmax}$ while $C_{\mathrm{extract}}$ enters
+$C_1$ multiplicatively, a $C_{\mathrm{extract}}$ that grew like $2^{\dmax}$ would
+overwhelm the very $2^{-13}$ contraction the scheme relies on. This is precisely
+the part not captured in Lean. We flag it as the key unformalized risk; we do
+not assert that the constant is wrong, only that its smallness is not
+self-evident from the manuscript's own stated expression and is not yet
+machine-checked.
+
+\paragraph{The finite gaps are real but Clay-irrelevant.}
+The $\mathbb{Z}_2$ and $\mathbb{Z}_3$ spectral gaps are honest theorems, but
+they are abelian, single-link, strong-coupling, and finite. They exemplify the
+finite OS-reconstruction mechanism; they are not lattice approximations to a
+continuum $\SUN$ theory, and the accompanying scaling diagnostics show that the
+physical gap can close under a naive continuum schedule. They establish the
+machinery, not the target.
+
+\paragraph{The continuum mass gap is correctly open.}
+The continuum endpoint is gated \texttt{openGoal} with no claimed support, and
+the constructive-QFT prerequisites are all marked unrepresented. The
+formalization makes no claim, in either direction, about the existence of a
+continuum Yang--Mills mass gap.
+
+\section{What remains}
+
+To turn this lane into evidence about the route's central claim rather than its
+bookkeeping, the decisive next step is to formalize, or independently bound, the
+extraction-projection operator norm $\|\Pleq\|_{\mathrm{op}}$ as a function of
+$\dmax$, and thereby determine whether the recombination constant $C_1$ is
+genuinely $O(1)\cdot b^4$ or grows with the extraction depth. Until that input is
+established, the checked contraction arithmetic --- correct as it is --- rests on
+an assumed value. Beyond it lie the genuinely infinite-dimensional layers the
+route requires and the present ledger leaves unrepresented: the KP polymer
+expansion and tree-decay clustering at the stopping scale, the glue /
+back-propagation transfer of clustering from the coarse to the fine scale, the
+thermodynamic and continuum OS limits, rotation restoration, the
+transfer-matrix spectral gap, and the nontriviality witness. Each is an
+analytic theorem, not an arithmetic comparison, and none is currently
+machine-checked. The Yang--Mills mass gap remains open.
+
+\paragraph{Lean modules.}
+The results reported here are in
+\texttt{Mettapedia.QuantumTheory.YangMills.RGBootstrap} (the contraction
+predicate and knife-edge arithmetic),
+\texttt{Mettapedia.QuantumTheory.YangMills.RGCrux} (the even lower-extraction
+route obstruction),
+\texttt{Mettapedia.QuantumTheory.YangMills.FiniteOSReconstruction},
+\texttt{Mettapedia.QuantumTheory.YangMills.Z2StrongCouplingGap}, and
+\texttt{Mettapedia.QuantumTheory.YangMills.Z3StrongCouplingGap} (the finite OS
+reconstruction and strong-coupling gaps), and
+\texttt{Mettapedia.QuantumTheory.YangMills.ProofState} (the continuum-open
+gating). The primary mathematical source is Ben Goertzel's manuscript
+\emph{Yang--Mills Mass Gap in 4D: RG Bootstrap, Polymer Expansion, OS
+Reconstruction} (v14).
+
+\end{document}
