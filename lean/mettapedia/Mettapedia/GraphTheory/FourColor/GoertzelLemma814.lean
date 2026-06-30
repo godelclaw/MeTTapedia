@@ -776,13 +776,20 @@ def tauEndpoints : List TauEndpoint :=
   ]
 
 def isInternalEndpoint : TauEndpoint → Bool
-  | TauEndpoint.F0
-  | TauEndpoint.F1
-  | TauEndpoint.F2
-  | TauEndpoint.F3
-  | TauEndpoint.F4
+  | TauEndpoint.F0 => true
+  | TauEndpoint.F1 => true
+  | TauEndpoint.F2 => true
+  | TauEndpoint.F3 => true
+  | TauEndpoint.F4 => true
   | TauEndpoint.F5 => true
-  | _ => false
+  | TauEndpoint.B0 => false
+  | TauEndpoint.B1 => false
+  | TauEndpoint.B2 => false
+  | TauEndpoint.B3 => false
+  | TauEndpoint.B4 => false
+  | TauEndpoint.B5 => false
+  | TauEndpoint.B6 => false
+  | TauEndpoint.B7 => false
 
 def edgeEndpoints : TauEdge → TauEndpoint × TauEndpoint
   | TauEdge.F1F0 => (TauEndpoint.F1, TauEndpoint.F0)
@@ -836,9 +843,14 @@ def tauTreeTransparencyAtIndex (i : Nat) : Bool :=
       let component := tauComponent (stateAt i) pair.1 pair.2 seed
       component.isEmpty || transparentComponent component
 
+def tauTreeTransparencyRangeAudit (start len : Nat) : Bool :=
+  (List.range len).all (fun k => tauTreeTransparencyAtIndex (start + k))
+
 /-- The finite tree-transparency audit corresponding to Lemma 8.15. -/
 def tauTreeTransparencyAudit : Bool :=
-  (List.range 192).all tauTreeTransparencyAtIndex
+  tauTreeTransparencyRangeAudit 0 64 &&
+    tauTreeTransparencyRangeAudit 64 64 &&
+    tauTreeTransparencyRangeAudit 128 64
 
 /--
 Finite check for Lemma 8.14 on the canonical gadget.  This is the exact Lean
@@ -897,6 +909,36 @@ coloring of the tree gadget is a boundary-to-boundary path.
 -/
 def lemma815_tau_tree_transparency_finiteCheck : Bool :=
   tauTreeTransparencyAudit
+
+set_option maxRecDepth 4096 in
+set_option maxHeartbeats 8000000 in
+theorem tauTreeTransparencyRange_0_64_ok :
+    tauTreeTransparencyRangeAudit 0 64 = true := by
+  decide
+
+set_option maxRecDepth 4096 in
+set_option maxHeartbeats 8000000 in
+theorem tauTreeTransparencyRange_64_64_ok :
+    tauTreeTransparencyRangeAudit 64 64 = true := by
+  decide
+
+set_option maxRecDepth 4096 in
+set_option maxHeartbeats 8000000 in
+theorem tauTreeTransparencyRange_128_64_ok :
+    tauTreeTransparencyRangeAudit 128 64 = true := by
+  decide
+
+/--
+Lemma 8.15 finite audit: every two-color component in every canonical
+three-cell gadget coloring is a boundary-to-boundary tree path.
+-/
+theorem lemma815_tau_tree_transparency_audit :
+    lemma815_tau_tree_transparency_finiteCheck = true := by
+  unfold lemma815_tau_tree_transparency_finiteCheck tauTreeTransparencyAudit
+  rw [tauTreeTransparencyRange_0_64_ok]
+  rw [tauTreeTransparencyRange_64_64_ok]
+  rw [tauTreeTransparencyRange_128_64_ok]
+  rfl
 
 end GoertzelLemma814
 

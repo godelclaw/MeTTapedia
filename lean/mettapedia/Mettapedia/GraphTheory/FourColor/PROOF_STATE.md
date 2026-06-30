@@ -23,10 +23,16 @@ Lean status: Lemma 8.14 is closed by the finite certificate theorem
 `lemma814_tau_lkrIn_finiteCheck = true`.  The supporting row-split theorems
 prove the 192-state space audit, indexed path certificate, and fixed-input
 representative coherence.  The mirror invariance theorem is
-`lemma814_mirror_lkrIn_same_check`.  Lemma 8.15 transparency is still an honest
-finite-check pin: `lemma815_tau_tree_transparency_finiteCheck` is the exact
-Boolean check over all colorings and two-color components, but its in-kernel
-`decide` proof is too expensive in the current all-components encoding.
+`lemma814_mirror_lkrIn_same_check`.  Lemma 8.15 transparency is now closed by
+the finite certificate theorem `lemma815_tau_tree_transparency_audit`, proving
+`lemma815_tau_tree_transparency_finiteCheck = true`.  The audit is split into
+three 64-state chunks
+`tauTreeTransparencyRange_0_64_ok`,
+`tauTreeTransparencyRange_64_64_ok`, and
+`tauTreeTransparencyRange_128_64_ok`, covering all 192 canonical gadget
+colorings and every two-color component.  The 8.15 theorem and its chunk
+theorems are axiom-clean; the 8.14 theorem and mirror check remain at the
+standard finite-audit footprint `[propext]`.
 
 The CAP5/F2, GP(12,2), dodecahedral six-cut, and related files below are
 exploratory audits of a divergent F2-additivity route.  They are retained for

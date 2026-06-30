@@ -22,11 +22,14 @@ with numpy/Sympy and reports 192 proper tau colorings, connected fixed-input
 Kempe graphs, passing `sigmaL`/`sigmaR` checks, and passing tree transparency.
 Lean now closes Lemma 8.14 by `lemma814_tau_lkrIn_audit`, a row-split finite
 certificate theorem proving `lemma814_tau_lkrIn_finiteCheck = true`.
-Lemma 8.15 transparency remains a precise finite-check pin:
-`lemma815_tau_tree_transparency_finiteCheck` names the exact Boolean check, but
-the current all-components encoding does not yet prove that Boolean by kernel
-reduction.  Closing transparency by splitting or shrinking that checker is the
-next hard task.
+Lean also closes Lemma 8.15 by `lemma815_tau_tree_transparency_audit`, a
+chunked finite certificate proving
+`lemma815_tau_tree_transparency_finiteCheck = true` across all 192 canonical
+gadget colorings and all two-color components.  The 8.15 audit is axiom-clean.
+The next Pillar-C work is therefore the composition layer: make the
+8.15 transparency interface usable by the Lemma 8.18-8.19 gadget-composition
+steps and then assemble the Section 9 induction surface.  This is still not a
+Four Color Theorem claim.
 
 The older CAP5/F2, GP(12,2), and six-cut files are exploratory negative audits
 of a divergent additive F2 route.  They remain useful for provenance and
