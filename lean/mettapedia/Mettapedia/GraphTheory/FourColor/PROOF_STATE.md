@@ -16,6 +16,27 @@ source-consistent archived per-fixed-input connectivity evidence with
 36 nonempty fixed-input fibers and zero recorded failures; no profile mode is
 currently marked connectivity-unverified at this metadata layer.
 
+Streaming lab delta, 2026-07-01: the memory-light real-fiber checker stopped
+after the finite mode surface stabilized.  The exact length-6 DFA surface has
+four representatives, `MTTTTT -> mode02`, `TTTTTT -> mode12`,
+`TTTTTM -> mode14`, and `MTTTTM -> mode17`; all four passed the real
+per-fixed-input Kempe connectivity check.  This covers 324 fixed-input checks,
+144 nonempty fixed-input fibers, 12,610,560 chain states, max fiber size
+262,144, max RSS 455,964 KiB, and zero recorded failures.  The exact length-6
+surface does not cover all 20 profile modes; it is corroborating evidence for
+the stabilized quotient dynamics, not a closure proof.
+
+The exact length-7 DFA surface also collapses to four representatives
+(`MTTTTTM -> mode05`, `TTTTTTT -> mode09`, `TTTTTTM -> mode13`,
+`MTTTTTT -> mode15`), but it is not fully checked.  The stopped run has only
+partial positive evidence for `TTTTTTT`/`mode09`: the union-engine timeout log
+records inputs 0 through 19 connected, including three 2,097,152-state fibers;
+a later chunked run was terminated after inputs 0 through 7.  No length-7
+representative has a complete all-81-input verdict, and modes
+`mode05/mode09/mode13/mode15` remain unverified at the length-7 real-fiber
+streaming layer.  Do not extend the sweep in this context; the next step is a
+fresh formalization pass from the finite automaton/certificate surface.
+
 This does not yet close Lemma 8.18/8.19.  The unverified layer is semantic:
 the six base modes `mode07/mode16/mode10/mode18/mode11/mode04` are backed by
 real single/length-2 chain certificates, and the first non-base target

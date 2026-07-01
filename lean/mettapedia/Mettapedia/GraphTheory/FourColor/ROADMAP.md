@@ -54,9 +54,26 @@ length-1-through-4 atom-connectivity rows, and two length-5 singleton
 quotient-connectivity rows.  Every profile mode has source-consistent
 per-fixed-input connectivity evidence with zero recorded failures, so no mode
 is presently unverified at the profile/quotient evidence layer.  The open
-frontier is semantic certification: six base modes have real single/length-2
-chain certificates, and `mode09`/`TTT` now has light fibers plus all twelve
-large fibers checked.  The remaining representative obligations are
+frontier is semantic certification, not another open-ended length sweep.
+
+The latest streaming lab checkpoint stopped at this boundary.  The exact
+length-6 DFA surface has four representatives, `MTTTTT -> mode02`,
+`TTTTTT -> mode12`, `TTTTTM -> mode14`, and `MTTTTM -> mode17`; all four
+passed real per-fixed-input Kempe connectivity, with 324 fixed-input checks,
+144 nonempty fibers, 12,610,560 chain states, max fiber size 262,144, and
+zero recorded failures.  The exact length-7 surface also has four
+representatives, `MTTTTTM -> mode05`, `TTTTTTT -> mode09`,
+`TTTTTTM -> mode13`, and `MTTTTTT -> mode15`, but it is only partially
+sampled: `TTTTTTT`/`mode09` has connected evidence for inputs 0 through 19 in
+the timeout run and inputs 0 through 7 in the later killed chunk, while no
+length-7 representative has a complete all-81-input verdict.
+
+Thus the finite automaton is table-closed at the metadata layer, and the
+length-6 real-fiber corroboration is positive, but the length-7 streaming
+surface and the semantic all-chain consequence remain unproved.  Six base
+modes have real single/length-2 chain certificates, and `mode09`/`TTT` now has
+light fibers plus all twelve large fibers checked.  The remaining
+representative obligations are
 `mode00/mode01/mode02/mode03/mode05/mode06/mode08/mode12/mode13/mode14/mode15/mode17/mode19`.
 `GoertzelLemma818SemanticProgress.lean` packages that post-`TTT` frontier as
 a checked audit: one certified non-base target, seven certified semantic modes
