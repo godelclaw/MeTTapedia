@@ -599,9 +599,9 @@ Fresh finite-surface formalization delta, 2026-07-01:
 witness to `RepresentativeSemanticTarget.ttt`, checks the light-fiber theorem
 and the three completed large-fiber theorems, verifies the completed-fiber
 count split of 1,920 certified states versus 4,608 states still in named large
-fibers, and now also checks the first five 64-row blocks of the next large fiber
-`[r,p,r,p]` by `tttLargeFiber20Block4ProgressAudit_ok`.  With those blocks,
-2,240 `TTT` states have explicit target-surface certificates and 4,288 states
+fibers, and now also checks the first six 64-row blocks of the next large fiber
+`[r,p,r,p]` by `tttLargeFiber20Block5ProgressAudit_ok`.  With those blocks,
+2,304 `TTT` states have explicit target-surface certificates and 4,224 states
 remain in the large-fiber layer.  This is a structured partial target
 certificate, not a completed `TTT` audit and not the all-chain Lemma 8.18/8.19
 lift.
