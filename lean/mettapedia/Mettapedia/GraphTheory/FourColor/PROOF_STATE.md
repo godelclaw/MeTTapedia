@@ -430,6 +430,12 @@ checks rows 448 through 511 by explicit component-switch rows, generated
 parent-map agreement, and explicit bounded parent paths to root `2176`.  Thus
 all 512 rows of the `[r,r,b,b]` size-512 fiber are now checked; the other eleven
 size-512 `TTT` fibers remain open.
+`GoertzelLemma818TripleTauLargeFiber4Certificate.lean` is the aggregate surface
+for that completed first large fiber.  The theorem
+`tttLargeFiber4ComponentCertificateAudit_ok` combines target/mode bookkeeping,
+the fiber count audit, and all eight 64-row block audits into one checked
+certificate for the `[r,r,b,b]` size-512 fiber.  It is still one fixed-input
+large-fiber certificate, not the full `TTT` target audit.
 
 Checkpoint stop status, 2026-07-01: the exploratory Gate-2 connectivity sweeps
 are stopped.  The finite mode set is not the open question anymore: Lean records
