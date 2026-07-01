@@ -5,6 +5,29 @@ Last updated: 2026-07-01 on `fourcolor/cont-20260626`.
 This file tracks the active route forks.  The Four Color Theorem is not
 claimed here.
 
+## Gate-2 Halt Checkpoint
+
+Stop the open-ended frontier connectivity sweeps at the current finite-mode
+surface.  The checked profile layer is finite and table-closed: 20 modes,
+40 total `tau`/mirror transitions, 42 representative word/profile-hash rows,
+30 direct length-1-through-4 atom-connectivity rows, and two length-5
+singleton quotient-connectivity rows.  Each of the 20 modes has
+source-consistent archived per-fixed-input connectivity evidence with
+36 nonempty fixed-input fibers and zero recorded failures; no profile mode is
+currently marked connectivity-unverified at this metadata layer.
+
+This does not yet close Lemma 8.18/8.19.  The unverified layer is semantic:
+the six base modes `mode07/mode16/mode10/mode18/mode11/mode04` are backed by
+real single/length-2 chain certificates, while the 14 non-base representative
+targets still need real per-fixed-input chain/path certificates, or an
+equivalent finite transition certificate, before the DFA induction can imply
+all-chain `LKR_in`.  Within the first non-base target, `mode09`/`TTT`, the
+light fibers and eleven of the twelve size-512 large fixed-input fibers are
+checked, leaving the final large `TTT` fiber plus
+`mode00/mode01/mode02/mode03/mode05/mode06/mode08/mode12/mode13/mode14/mode15/mode17/mode19`.
+The next pass should formalize this finite surface; it should not extend
+representative lengths or raise kernel limits.
+
 ## Current Pillar-C Reset
 
 The Ben-route status is now Pillar C, not the older CAP5/F2/six-cut route.
