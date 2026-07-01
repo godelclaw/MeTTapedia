@@ -202,7 +202,7 @@ def currentPNPProofNodes : List PNPProofNode := [
     key := "pnp.v13.phase-d.conditional-upper-lower-clash",
     status := .checked,
     truthValue := ⟨100, 89⟩,
-    evidence := "V13ConditionalClash defines `ParameterRecord`, `LedgerFieldUseCertificate`, and `UpperLowerClash`; `v13_upperLowerClash` consumes Phase A, observer CD-ENF normalization, and all nine GaugeBufferedLockedInterface fields to produce the conditional upper/lower interval clash.",
+    evidence := "V13ConditionalClash defines `ParameterRecord`, `LedgerFieldUseCertificate`, and `UpperLowerClash`; `v13_upperLowerClash` consumes Phase A, observer CD-ENF normalization, and all nine GaugeBufferedLockedInterface fields. The second-round version derives the lower consequence by `compressionLower_of_budget_machine`, isolates the upper side as one `SelfReductionUpperHypothesis`, and records the seven-field parameter audit in `v13ParameterRecordAudit`.",
     nextObligation := "Keep the concrete ensemble outside this artifact; any concrete instantiation must supply the external ParameterRecord rather than weakening the ledger fields."
   },
   {
@@ -955,10 +955,13 @@ theorem currentPNPV13ConditionalClash_node :
     (∀ P : ParameterRecord toyLockedInterface,
       Nonempty (UpperLowerClash toyLockedInterface P)) ∧
       (∀ P : ParameterRecord toyLockedInterface,
-        Nonempty (LedgerFieldUseCertificate toyLockedInterface P)) := by
+        Nonempty (LedgerFieldUseCertificate toyLockedInterface P)) ∧
+      v13ParameterRecordAudit.length = 7 := by
   constructor
   · intro P
     exact ⟨toyLockedInterface_conditional_clash P⟩
-  · intro P
-    exact ⟨(toyLockedInterface_conditional_clash P).fieldUse⟩
+  · constructor
+    · intro P
+      exact ⟨(toyLockedInterface_conditional_clash P).fieldUse⟩
+    · exact v13ParameterRecordAudit_length
 end Mettapedia.Computability.PNP

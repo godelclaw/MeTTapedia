@@ -6,6 +6,8 @@ import Mettapedia.Computability.PNP.V13ConditionalClash
 
 namespace Mettapedia.Computability.PNP
 
+#print axioms compressionLower_of_budget_machine
+#print axioms v13ParameterRecordAudit_length
 #print axioms v13_upperLowerClash
 #print axioms toyLockedInterface_conditional_clash
 

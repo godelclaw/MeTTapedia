@@ -128,7 +128,7 @@ def currentPNPRoadmap : List PNPRoadmapEntry :=
       progressPercent := 100
       itvLowerPercent := 89
       itvUpperPercent := 100
-      obligation := "Treat `v13_upperLowerClash` as the abstract conditional Phase-D object; concrete ensemble parameters remain out of scope." },
+      obligation := "Treat `v13_upperLowerClash` as the abstract conditional Phase-D object with lower consequence derived from the compression budget machine and only one named self-reduction upper hypothesis; concrete ensemble parameters remain out of scope." },
     { stage := .weaknessCalculus
       proofNodeKey := "pnp.weakness-calculus.finite-spectrum-gap"
       status := .checked
@@ -292,7 +292,7 @@ theorem currentPNPRoadmap_records_v13_conditional_clash :
        itvLowerPercent := 89
        itvUpperPercent := 100
        obligation :=
-        "Treat `v13_upperLowerClash` as the abstract conditional Phase-D object; concrete ensemble parameters remain out of scope." } :
+        "Treat `v13_upperLowerClash` as the abstract conditional Phase-D object with lower consequence derived from the compression budget machine and only one named self-reduction upper hypothesis; concrete ensemble parameters remain out of scope." } :
       PNPRoadmapEntry) ∈ currentPNPRoadmap := by
   simp [currentPNPRoadmap]
 
