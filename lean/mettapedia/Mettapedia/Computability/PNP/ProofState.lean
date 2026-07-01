@@ -21,6 +21,7 @@ import Mettapedia.Computability.PNP.V13ConditionalClash
 import Mettapedia.Computability.PNP.V13EvidenceSpine
 import Mettapedia.Computability.PNP.V13FaithfulnessAudit
 import Mettapedia.Computability.PNP.V13GaugeBufferedLockedInterface
+import Mettapedia.Computability.PNP.V13PhaseEConcrete
 import Mettapedia.Computability.PNP.WeaknessCalculus
 /-!
 # PNP proof state
@@ -212,6 +213,13 @@ def currentPNPProofNodes : List PNPProofNode := [
     truthValue := ⟨100, 88⟩,
     evidence := "V13FaithfulnessAudit records 20 rows mapping Phase A definitions, Phase B definitions, and all nine GaugeBufferedLockedInterface fields to v13 note sections, with explicit faithful/weaker/stronger mismatch verdicts and no reportable-finding row.",
     nextObligation := "Use the weaker-than-note rows as Phase E obligations rather than treating the abstract ledger as a concrete ensemble proof."
+  },
+  {
+    key := "pnp.v13.phase-e.small-locked-sat-smoke",
+    status := .checked,
+    truthValue := ⟨100, 86⟩,
+    evidence := "V13PhaseEConcrete instantiates GaugeBufferedLockedInterface on a four-world one-variable locked CNF family with a VV-style isolation row and hidden gauge bit. It proves the locked-CNF uniqueness lemma, discharges the nine obligations individually in the requested order, and records a nine-row obligation map with no checked failures.",
+    nextObligation := "Do not generalize the zero-cost safeQSSM and Unit-pivot boundaryMixing smoke proofs to the scaled ensemble; those remain the hard scaled obligations."
   },
   {
     key := "pnp.weakness-calculus.finite-spectrum-gap",
@@ -986,4 +994,18 @@ theorem currentPNPV13FaithfulnessAudit_node :
       v13LedgerFaithfulnessRows_length,
       v13FaithfulnessAudit_length,
       v13FaithfulnessAudit_has_no_reportable_findings⟩
+
+theorem currentPNPV13PhaseEConcrete_node :
+    Nonempty
+        (GaugeBufferedLockedInterface
+          PhaseEWorld PhaseEPublic PhaseENeutral PhaseESafe PhaseEGauge Bool
+          Bool Unit Unit Unit Unit Unit Unit Unit) ∧
+      phaseEObligationMap.length = 9 ∧
+        (∀ row ∈ phaseEObligationMap, row.status ≠ .failed) ∧
+          PhaseEAllNineObligations := by
+  exact
+    ⟨⟨phaseELockedInterface⟩,
+      phaseEObligationMap_length,
+      phaseEObligationMap_has_no_failures,
+      phaseE_all_nine_obligations⟩
 end Mettapedia.Computability.PNP
