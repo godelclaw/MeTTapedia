@@ -333,6 +333,22 @@ therefore a finite-mode/table-closure plus partial target-certificate
 checkpoint, not a completed Lemma 8.18/8.19 lift and not a Four Color Theorem
 claim.
 
+Immediate halt checkpoint, 2026-07-01: no longer run broader word-length or
+representative sweeps from this context.  The generated blocks for the rest of
+the first large `TTT` fiber were produced as WIP, but they are not imported:
+the direct 64-row block shape again becomes too large for default kernel
+recursion in later blocks.  That WIP is archived outside the Lean import
+surface and the green branch keeps only the already checked block 0 theorem.
+The status split is therefore precise:
+all 20 profile modes have metadata/quotient connectivity evidence; six modes
+have full base chain certificates; `mode09` has the light `TTT` fibers plus
+one large-fiber block certified; and the remaining semantic certificates are
+still open for the rest of `mode09` and for
+`mode00/mode01/mode02/mode03/mode05/mode06/mode08/mode12/mode13/mode14/mode15/mode17/mode19`.
+The next pass should replace the large-block proof shape with smaller
+per-fixed-input/per-component lemmas or a finite transition certificate, then
+feed those audits through `GoertzelLemma818SemanticBridge.lean`.
+
 The CAP5/F2, GP(12,2), dodecahedral six-cut, and related files below are
 exploratory audits of a divergent F2-additivity route.  They are retained for
 negative evidence and infrastructure, but they are not Ben's actual route and
