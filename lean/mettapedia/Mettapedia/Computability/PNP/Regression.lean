@@ -10,6 +10,7 @@ import Mettapedia.Computability.PNP.PNPv13SwitchedHistoryProductAuditorCanariesR
 import Mettapedia.Computability.PNP.PNPv13TraceFactorizationCanariesRegression
 import Mettapedia.Computability.PNP.PNPSteelmanConditionalRegression
 import Mettapedia.Computability.PNP.V13CDENFRegression
+import Mettapedia.Computability.PNP.V13ConditionalClashRegression
 import Mettapedia.Computability.PNP.V13EvidenceSpineRegression
 import Mettapedia.Computability.PNP.V13GaugeBufferedLockedInterfaceRegression
 import Mettapedia.Computability.PNP.WeaknessCalculusRegression
