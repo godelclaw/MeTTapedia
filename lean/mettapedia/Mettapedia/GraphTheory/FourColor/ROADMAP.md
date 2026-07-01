@@ -46,6 +46,22 @@ Ben's false pointwise preparation claim and proves composition before any
 Section 9 assembly can be trusted.  This is still not a Four Color Theorem
 claim.
 
+Gate-2 checkpoint rule: stop the exploratory length sweeps at the finite-mode
+surface already recorded in Lean.  The profile automaton is finite and
+table-closed with 20 modes and 40 transitions; the archive-backed metadata
+evidence contains 42 representative word/profile-hash rows, 30 direct
+length-1-through-4 atom-connectivity rows, and two length-5 singleton
+quotient-connectivity rows.  Every profile mode has source-consistent
+per-fixed-input connectivity evidence with zero recorded failures, so no mode
+is presently unverified at the profile/quotient evidence layer.  The open
+frontier is semantic certification: six modes have real single/length-2 chain
+certificates, `mode09`/`TTT` has light fibers plus eleven large fibers checked,
+and the remaining obligations are the last large `TTT` fiber plus
+`mode00/mode01/mode02/mode03/mode05/mode06/mode08/mode12/mode13/mode14/mode15/mode17/mode19`.
+Do not extend representatives or raise kernel limits from this checkpoint;
+formalize the existing finite surface with compact per-fixed-input
+chain/component certificates or an equivalent finite transition invariant.
+
 The Lean certificate interface is now split at the right granularity for that
 generated proof.  `GoertzelLemma814.lean` contains per-fixed-input certificate
 records (`ChainFiberParentRow`, `ChainFiberCertificate`) and audits
