@@ -257,6 +257,17 @@ blocks.  Use smaller parent-path certificates or a transition certificate for
 the rows beyond 127; the attempted block2/block3 chunk WIP showed that local
 source lists alone are not enough for later parent-depth checks.
 
+Second stop checkpoint, 2026-07-01: a later generated block2-through-block7
+continuation was left unimported and archived outside the public tree.  It is
+not part of the checked proof surface.  The checkpoint verdict is unchanged
+and should guide the fresh pass: the finite automaton is table-closed at 20
+modes and 40 transitions, all 20 modes have archived per-fixed-input
+connectivity evidence, and no profile mode is currently known to lack such
+evidence.  What remains is not more exploratory sweeping; it is a compact
+semantic certificate for the remaining target modes, starting with the
+uncertified rows beyond 127 in the first `TTT`/`mode09` large fiber or with an
+equivalent finite transition invariant.
+
 The older CAP5/F2, GP(12,2), and six-cut files are exploratory negative audits
 of a divergent additive F2 route.  They remain useful for provenance and
 infrastructure, but they are not Ben's actual route and should not be worked
