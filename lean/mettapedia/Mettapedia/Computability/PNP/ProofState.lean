@@ -16,6 +16,7 @@ import Mettapedia.Computability.PNP.PNPv13TraceFactorizationCanaries
 import Mettapedia.Computability.PNP.PNPSteelmanConditional
 import Mettapedia.Computability.PNP.PostSwitchInputObstruction
 import Mettapedia.Computability.PNP.SharedExactZABAffineDecisionListStructuralObstructionExactZAB
+import Mettapedia.Computability.PNP.V13CDENF
 import Mettapedia.Computability.PNP.V13EvidenceSpine
 import Mettapedia.Computability.PNP.WeaknessCalculus
 /-!
@@ -180,6 +181,13 @@ def currentPNPProofNodes : List PNPProofNode := [
     truthValue := ⟨100, 91⟩,
     evidence := "V13EvidenceSpine defines finite rational laws, conditional target gaps, static pairwise-capture certificates, derivative-telescoping certificates, and the combined `phaseA_gap_le_half_derivative_sum`; `toyV13_phaseA_gap_le_half_derivative_sum` gives a two-point inhabited model.",
     nextObligation := "Feed the finite derivative sum through CD-ENF safe/gauge normalization rather than treating observer output as an opaque atom."
+  },
+  {
+    key := "pnp.v13.phase-b.cd-enf-normalization",
+    status := .checked,
+    truthValue := ⟨100, 91⟩,
+    evidence := "V13CDENF defines RawEvidence without observer-output atoms, NormalEvidence with exactly neutral/safe/gauge leaf constructors, proves `CDENF_semantics`, and routes observers through `observerToEvidence_sat` plus `observerToCDENF_sat`; the toy observer interface inhabits the discipline.",
+    nextObligation := "Use the normalized safe/gauge leaves as the ledger surface for Phase C, including the joint nine-field inhabitation test."
   },
   {
     key := "pnp.weakness-calculus.finite-spectrum-gap",
@@ -900,4 +908,16 @@ theorem currentPNPV13EvidenceSpine_node :
       toyV13StaticCapture_capturesGap,
       toyV13Telescoping.derivative_telescoping,
       toyV13_phaseA_gap_le_half_derivative_sum⟩
+
+theorem currentPNPV13CDENF_node :
+    toyCDENFSemantics.SatNormal (CDENF toyCDENFRaw) =
+        toyCDENFSemantics.SatRaw toyCDENFRaw ∧
+      (∀ output : Bool,
+        toyObserverEvidenceInterface.semantics.SatNormal
+            (CDENF
+              (toyObserverEvidenceInterface.observerToEvidence () output)) =
+          fun omega =>
+            toyObserverEvidenceInterface.evalObserver ()
+              (toyObserverEvidenceInterface.publicInput omega) = output) := by
+  exact ⟨toyCDENF_semantics, toy_observerToCDENF_sat⟩
 end Mettapedia.Computability.PNP
