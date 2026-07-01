@@ -552,7 +552,7 @@ length-2 chain-level parent/path certificates
 still need compact per-fixed-input chain/component certificates, or an
 equivalent finite transition certificate, before `wordMode_induction` can yield
 all-chain `LKR_in`.  The first non-base target, `mode09`, now has its `TTT`
-light fibers certified and ten of its twelve large `TTT` fibers fully certified,
+light fibers certified and eleven of its twelve large `TTT` fibers fully certified,
 but not the remaining large `TTT` work.  This checkpoint is
 therefore a finite-mode/table-closure plus partial target-certificate
 checkpoint, not a completed Lemma 8.18/8.19 lift and not a Four Color Theorem
@@ -567,8 +567,8 @@ for blocks 1, 2, 3, 4, 5, 6, and 7.
 The status split is therefore precise:
 all 20 profile modes have metadata/quotient connectivity evidence; six modes
 have full base chain certificates; `mode09` has the light `TTT` fibers plus the
-first ten large `TTT` fibers certified; and the remaining semantic
-certificates are still open for the other two large `TTT` fibers and for
+first eleven large `TTT` fibers certified; and the remaining semantic
+certificates are still open for the other large `TTT` fiber and for
 `mode00/mode01/mode02/mode03/mode05/mode06/mode08/mode12/mode13/mode14/mode15/mode17/mode19`.
 The 16-row chunk shape with explicit parent paths is viable through block 7.
 The next pass should continue only as small explicit parent-path/component
@@ -589,9 +589,9 @@ certified, the second large `[r,r,p,p]` fiber certified, and the third large
 certified, the fifth large `[b,r,b,r]` fiber certified, and the sixth large
 `[b,b,r,r]` fiber certified, and the seventh large `[b,b,p,p]` fiber
 certified, the eighth large `[b,p,b,p]` fiber certified, and the ninth large
-`[p,r,p,r]` fiber certified, and the tenth large `[p,b,p,b]` fiber certified.
-The remaining semantic work is the other two
-large `TTT` fibers, plus
+`[p,r,p,r]` fiber certified, the tenth large `[p,b,p,b]` fiber certified, and
+the eleventh large `[p,p,r,r]` fiber certified.  The remaining semantic work is
+the single remaining large `TTT` fiber, plus
 `mode00/mode01/mode02/mode03/mode05/mode06/mode08/mode12/mode13/mode14/mode15/mode17/mode19`.
 The next pass should formalize this stabilized finite surface by compact
 per-fixed-input chain/component certificates or an equivalent finite transition
@@ -602,11 +602,11 @@ Fresh finite-surface formalization delta, 2026-07-01:
 `TTT`/`mode09` target progress into the theorem
 `tttPartialTargetCertificateAudit_ok`.  The audit ties the `mode09` semantic
 witness to `RepresentativeSemanticTarget.ttt`, checks the light-fiber theorem
-and the ten completed large-fiber theorems, and verifies the current split of
-5,504 certified states versus 1,024 states still in named large fibers.
-The tenth large fiber `[p,b,p,b]` is now closed by
-`tttLargeFiber70ClosedProgressAudit_ok` and
-`tttLargeFiber70ComponentCertificateAudit_ok`.  This is a structured partial
+and the eleven completed large-fiber theorems, and verifies the current split of
+6,016 certified states versus 512 states still in the named large fiber.
+The eleventh large fiber `[p,p,r,r]` is now closed by
+`tttLargeFiber72ClosedProgressAudit_ok` and
+`tttLargeFiber72ComponentCertificateAudit_ok`.  This is a structured partial
 target certificate, not a completed `TTT` audit and not the all-chain
 Lemma 8.18/8.19 lift.
 
