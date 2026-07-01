@@ -1,0 +1,41 @@
+import Mettapedia.Computability.PNP.PublicNeutralityRedTeam
+
+/-!
+# Regression checks for the public-neutrality red-team suite
+-/
+
+namespace Mettapedia.Computability.PNP
+
+set_option autoImplicit false
+
+#check sameFullY_noOpposite
+#check neutral_generates_target_contradiction
+#check publicBit_derivative_mass_ge_one
+#check measurable_not_admissible
+#check sufficient_boundary_feature_forces_eps_ge_half
+#check neutralSkeleton_not_sufficient
+#check public_read_normalizes_neutral_or_charged
+
+#check publicNeutralityToy_sameFullY_noOpposite
+#check publicNeutralityToy_neutralSkeleton_not_sufficient
+#check publicNeutralityToy_publicBit_derivative_mass_ge_one
+#check publicNeutralityToy_measurable_not_admissible
+#check publicNeutralityToy_boundary_forces_eps_ge_half
+#check toy_public_read_normalizes_neutral_or_charged
+
+#print axioms sameFullY_noOpposite
+#print axioms neutral_generates_target_contradiction
+#print axioms publicBit_derivative_mass_ge_one
+#print axioms measurable_not_admissible
+#print axioms sufficient_boundary_feature_forces_eps_ge_half
+#print axioms neutralSkeleton_not_sufficient
+#print axioms public_read_normalizes_neutral_or_charged
+
+#print axioms publicNeutralityToy_sameFullY_noOpposite
+#print axioms publicNeutralityToy_neutralSkeleton_not_sufficient
+#print axioms publicNeutralityToy_publicBit_derivative_mass_ge_one
+#print axioms publicNeutralityToy_measurable_not_admissible
+#print axioms publicNeutralityToy_boundary_forces_eps_ge_half
+#print axioms toy_public_read_normalizes_neutral_or_charged
+
+end Mettapedia.Computability.PNP
