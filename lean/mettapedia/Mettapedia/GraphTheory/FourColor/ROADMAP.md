@@ -261,10 +261,9 @@ block audits with the target/mode and count checks into
 `tttLargeFiber4ComponentCertificateAudit_ok`, the downstream dependency point
 for this completed fixed-input fiber.
 `GoertzelLemma818TripleTauLargeFiber8Data.lean` and
-`GoertzelLemma818TripleTauLargeFiber8Block0Chunk0ComponentCertificate.lean` /
-`GoertzelLemma818TripleTauLargeFiber8Block0Chunk1ComponentCertificate.lean`
+`GoertzelLemma818TripleTauLargeFiber8Block0ComponentCertificate.lean`
 start the next size-512 `TTT` fiber, `[r,r,p,p]`: ranges `4368..4623` and
-`6000..6255`, root `4368`, max parent depth 6, and rows 0 through 31 checked
+`6000..6255`, root `4368`, max parent depth 6, and rows 0 through 63 checked
 by explicit component rows, parent-map agreement, and bounded parent paths.
 
 Checkpoint stop status, 2026-07-01: the exploration pass is checkpointed and
@@ -278,8 +277,8 @@ base modes are backed by real single/length-2 chain certificates, while the
 fourteen non-base modes still need compact per-fixed-input chain/component
 certificates or an equivalent finite transition certificate.  The `TTT`/`mode09`
 target is partially discharged on its light fibers, the completed first
-size-512 large fiber, and the first 32 rows of the second large fiber.  The
-remaining 480 rows of `[r,r,p,p]`, the other ten large `TTT` fibers, and the
+size-512 large fiber, and the first 64 rows of the second large fiber.  The
+remaining 448 rows of `[r,r,p,p]`, the other ten large `TTT` fibers, and the
 other thirteen non-base representative modes still lack real chain-level target
 certificates.  Once the target audits exist,
 `GoertzelLemma818SemanticBridge.lean` provides the finite induction hook to
@@ -317,8 +316,8 @@ records, and archived per-fixed-input connectivity evidence for every mode.
 No metadata/profile mode is currently marked as connectivity-unverified.  The
 open frontier is semantic, not exploratory: the six base modes have chain-level
 certificates, `mode09` has its light `TTT` fibers plus the first large
-`[r,r,b,b]` fiber and the first 32 rows of `[r,r,p,p]` certified, and the
-remaining work is the other 480 rows of `[r,r,p,p]`, the other ten large
+`[r,r,b,b]` fiber and the first 64 rows of `[r,r,p,p]` certified, and the
+remaining work is the other 448 rows of `[r,r,p,p]`, the other ten large
 `TTT` fibers, plus the thirteen non-base modes
 `mode00/mode01/mode02/mode03/mode05/mode06/mode08/mode12/mode13/mode14/mode15/mode17/mode19`.
 Formalize that finite surface next with compact per-fixed-input
