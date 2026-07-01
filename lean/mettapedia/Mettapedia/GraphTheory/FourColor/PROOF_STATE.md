@@ -592,6 +592,18 @@ The next pass should formalize this stabilized finite surface by compact
 per-fixed-input chain/component certificates or an equivalent finite transition
 invariant.  It should not extend representative lengths or raise kernel limits.
 
+Fresh finite-surface formalization delta, 2026-07-01:
+`GoertzelLemma818TripleTauTargetProgress.lean` now aggregates the checked
+`TTT`/`mode09` target progress into the theorem
+`tttPartialTargetCertificateAudit_ok`.  The audit ties the `mode09` semantic
+witness to `RepresentativeSemanticTarget.ttt`, checks the light-fiber theorem
+and the three completed large-fiber theorems, and verifies the exact current
+count split: 384 light states plus three 512-state large fibers give 1,920
+certified `TTT` states, while the nine named remaining 512-state large fibers
+account for the remaining 4,608 states of the 6,528-state `TTT` representative
+word.  This is a structured partial target certificate, not a completed
+`TTT` audit and not the all-chain Lemma 8.18/8.19 lift.
+
 The CAP5/F2, GP(12,2), dodecahedral six-cut, and related files below are
 exploratory audits of a divergent F2-additivity route.  They are retained for
 negative evidence and infrastructure, but they are not Ben's actual route and
