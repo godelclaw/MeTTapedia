@@ -52,7 +52,9 @@ extends that to the first checked 64-row block of the same large fiber, and
 `GoertzelLemma818MirrorTripleLargeFiber36Block2ComponentCertificate.lean`
 adds a second checked 64-row block.
 `GoertzelLemma818MirrorTripleLargeFiber36Block3ComponentCertificate.lean`
-adds a third checked 64-row block.  These block modules recheck row moves,
+adds a third checked 64-row block, and
+`GoertzelLemma818MirrorTripleLargeFiber36Block4ComponentCertificate.lean`
+adds a fourth checked 64-row block.  These block modules recheck row moves,
 parent-map agreement, and parent convergence under the actual mirror-triple
 word.  This is still not the full `MMM` target audit: the large fixed-input
 fibers for `mode05` remain mostly open, and the finite automaton
