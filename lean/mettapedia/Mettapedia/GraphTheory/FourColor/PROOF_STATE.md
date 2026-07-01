@@ -27,6 +27,16 @@ certificates, or an equivalent finite transition certificate, are
 The next pass should formalize this finite surface; it should not extend
 representative lengths or raise kernel limits.
 
+`GoertzelLemma818SemanticProgress.lean` now records the checked semantic
+frontier after the completed `TTT` target.  It proves
+`semanticProgressAfterTTTAudit_ok`: the certified target set contains exactly
+`TTT`, the certified semantic modes are the six base modes plus `mode09`, and
+the remaining semantic frontier is exactly the thirteen modes listed above.
+The pure frontier/count audits are axiom-free; the certificate-facing progress
+theorems inherit the existing `[propext, Quot.sound]` footprint from the base
+and `TTT` certificate imports.  This is still a progress frontier, not Lemma
+8.18/8.19 and not all-chain `LKR_in`.
+
 ## Current Pillar-C Reset
 
 The Ben-route status is now Pillar C, not the older CAP5/F2/six-cut route.

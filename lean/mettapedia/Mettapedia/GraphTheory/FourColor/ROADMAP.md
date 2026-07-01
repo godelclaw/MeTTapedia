@@ -58,6 +58,12 @@ frontier is semantic certification: six base modes have real single/length-2
 chain certificates, and `mode09`/`TTT` now has light fibers plus all twelve
 large fibers checked.  The remaining representative obligations are
 `mode00/mode01/mode02/mode03/mode05/mode06/mode08/mode12/mode13/mode14/mode15/mode17/mode19`.
+`GoertzelLemma818SemanticProgress.lean` packages that post-`TTT` frontier as
+a checked audit: one certified non-base target, seven certified semantic modes
+including the six base modes, and exactly thirteen remaining semantic modes.
+The next pass should consume this frontier by generating the remaining
+representative certificates or replacing them with a finite transition
+invariant; the progress audit itself is not the all-chain lift.
 Do not extend representatives or raise kernel limits from this checkpoint;
 formalize the existing finite surface with compact per-fixed-input
 chain/component certificates or an equivalent finite transition invariant.
