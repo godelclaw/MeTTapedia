@@ -325,8 +325,8 @@ fourteen non-base modes still need compact per-fixed-input chain/component
 certificates or an equivalent finite transition certificate.  The `TTT`/`mode09`
 target is partially discharged on its light fibers, the completed first
 size-512 large fiber, the completed second size-512 large fiber, and the
-completed third size-512 large fiber.  The other nine large `TTT` fibers and
-the other thirteen
+completed third and fourth size-512 large fibers.  The other eight large `TTT`
+fibers and the other thirteen
 non-base representative modes still lack real chain-level target certificates.
 Once the target audits exist,
 `GoertzelLemma818SemanticBridge.lean` provides the finite induction hook to
@@ -337,7 +337,7 @@ formalization from the stabilized finite-mode result already in hand: 20
 profile modes, 40 closed transitions, archived per-fixed-input connectivity
 evidence for every mode, six base modes certified by real chain tables, and a
 partial `TTT`/`mode09` semantic certificate.  The remaining open certificate
-set is the rest of `mode09` plus
+set is the eight still-open large `TTT`/`mode09` fibers plus
 `mode00/mode01/mode02/mode03/mode05/mode06/mode08/mode12/mode13/mode14/mode15/mode17/mode19`.
 For the immediate `mode09` large-fiber lane, do not regenerate broad 64-row
 blocks.  Use smaller parent-path certificates or a transition certificate for
@@ -363,9 +363,8 @@ length-1-through-4 atom-connectivity records, two length-5 singleton quotient
 records, and archived per-fixed-input connectivity evidence for every mode.
 No metadata/profile mode is currently marked as connectivity-unverified.  The
 open frontier is semantic, not exploratory: the six base modes have chain-level
-certificates, `mode09` has its light `TTT` fibers plus the first large
-`[r,r,b,b]` fiber, the second large `[r,r,p,p]` fiber, and the third large
-`[r,b,r,b]` fiber certified, and the remaining work is the other nine large
+certificates, `mode09` has its light `TTT` fibers plus the first four large
+fixed-input fibers certified, and the remaining work is the other eight large
 `TTT` fibers, plus the thirteen
 non-base modes
 `mode00/mode01/mode02/mode03/mode05/mode06/mode08/mode12/mode13/mode14/mode15/mode17/mode19`.
@@ -377,14 +376,11 @@ this checkpoint.
 Fresh finite-surface formalization delta: the partial `TTT` target surface is
 now explicit in `GoertzelLemma818TripleTauTargetProgress.lean`.  The theorem
 `tttPartialTargetCertificateAudit_ok` checks the semantic witness for
-`mode09`, the light-fiber audit, the three completed large-fiber audits, and
-the exact completed-fiber state-count split: 1,920 certified `TTT` states and
-4,608 states remaining in nine named large fixed-input fibers.  It now also
-checks the first six 64-row blocks of the next large fiber `[r,p,r,p]`, so the
-current explicit target-surface coverage is 2,304 states with 4,224 states
-still open in the large-fiber layer.  This is the right accumulation layer for
-the fresh pass: it records real semantic certificates without pretending that
-`TTT`, Lemma 8.18/8.19, or Section 9 is closed.
+`mode09`, the light-fiber audit, the four completed large-fiber audits, and
+the current exact state-count split: 2,432 certified `TTT` states and 4,096
+states remaining in eight named large fixed-input fibers.  This is the right
+accumulation layer for the fresh pass: it records real semantic certificates
+without pretending that `TTT`, Lemma 8.18/8.19, or Section 9 is closed.
 
 The older CAP5/F2, GP(12,2), and six-cut files are exploratory negative audits
 of a divergent additive F2 route.  They remain useful for provenance and
@@ -405,9 +401,9 @@ Read these four files first — they are the whole live surface:
 | `GoertzelLemma818TripleTauLightComponentCertificate.lean` | Generated explicit component-row certificate for the light part of the `TTT`/`mode09` representative target: `tttLightComponentCertificateAudit_ok` checks target/mode bookkeeping, 69 light fixed-input fibers, 45 empty fibers, 24 nonempty size-16 fibers, and 384 light chain states without expanding full `chainComponent`; the large-fiber certificates and the other thirteen representative target modes remain the open semantic layer |
 | `GoertzelLemma818TripleTauLargeFiber4Data.lean` / `GoertzelLemma818TripleTauLargeFiber4Block0ComponentCertificate.lean` / `GoertzelLemma818TripleTauLargeFiber4Block1ComponentCertificate.lean` / `GoertzelLemma818TripleTauLargeFiber4Block2ComponentCertificate.lean` / `GoertzelLemma818TripleTauLargeFiber4Block3ComponentCertificate.lean` / `GoertzelLemma818TripleTauLargeFiber4Block4ComponentCertificate.lean` / `GoertzelLemma818TripleTauLargeFiber4Block5ComponentCertificate.lean` / `GoertzelLemma818TripleTauLargeFiber4Block6ComponentCertificate.lean` / `GoertzelLemma818TripleTauLargeFiber4Block7ComponentCertificate.lean` / `GoertzelLemma818TripleTauLargeFiber4Certificate.lean` | First large-fiber decomposition for `TTT`/`mode09`: records the parent map for the `[r,r,b,b]` size-512 fiber and checks all 512 source rows by explicit component rows, parent-map agreement, and parent-depth convergence; the parent map is split into 64-entry offset matchers under the same public interface, and blocks 1 through 7 are split into four 16-row chunks, with blocks 2 through 7 using explicit bounded parent paths; `tttLargeFiber4ComponentCertificateAudit_ok` aggregates the completed fixed-input fiber |
 | `GoertzelLemma818TripleTauLargeFiber8Data.lean` / `GoertzelLemma818TripleTauLargeFiber8Block0ComponentCertificate.lean` / `GoertzelLemma818TripleTauLargeFiber8Block1ComponentCertificate.lean` / `GoertzelLemma818TripleTauLargeFiber8Block2ComponentCertificate.lean` / `GoertzelLemma818TripleTauLargeFiber8Block3ComponentCertificate.lean` / `GoertzelLemma818TripleTauLargeFiber8Block4ComponentCertificate.lean` / `GoertzelLemma818TripleTauLargeFiber8Block5ComponentCertificate.lean` / `GoertzelLemma818TripleTauLargeFiber8Block6ComponentCertificate.lean` / `GoertzelLemma818TripleTauLargeFiber8Block7ComponentCertificate.lean` / `GoertzelLemma818TripleTauLargeFiber8Certificate.lean` | Second large-fiber decomposition for `TTT`/`mode09`: records the parent map for the `[r,r,p,p]` size-512 fiber and checks all 512 source rows by explicit component rows, parent-map agreement, and explicit bounded parent paths; `tttLargeFiber8ComponentCertificateAudit_ok` aggregates the completed fixed-input fiber |
-| `GoertzelLemma818TripleTauLargeFiber10Data.lean` / `GoertzelLemma818TripleTauLargeFiber10Block0ComponentCertificate.lean` / `GoertzelLemma818TripleTauLargeFiber10Block1ComponentCertificate.lean` / `GoertzelLemma818TripleTauLargeFiber10Block2ComponentCertificate.lean` / `GoertzelLemma818TripleTauLargeFiber10Block3ComponentCertificate.lean` / `GoertzelLemma818TripleTauLargeFiber10Block4ComponentCertificate.lean` / `GoertzelLemma818TripleTauLargeFiber10Block5ComponentCertificate.lean` / `GoertzelLemma818TripleTauLargeFiber10Block6ComponentCertificate.lean` / `GoertzelLemma818TripleTauLargeFiber10Block7ComponentCertificate.lean` / `GoertzelLemma818TripleTauLargeFiber10Certificate.lean` | Third large-fiber decomposition for `TTT`/`mode09`: records the parent map for the `[r,b,r,b]` size-512 fiber and checks all 512 source rows by explicit component rows, parent-map agreement, and explicit bounded parent paths; `tttLargeFiber10ComponentCertificateAudit_ok` aggregates the completed fixed-input fiber, while the other nine large `TTT` fibers and the other thirteen representative target modes remain open |
-| `GoertzelLemma818TripleTauLargeFiber20Data.lean` / `GoertzelLemma818TripleTauLargeFiber20Block0ComponentCertificate.lean` / `GoertzelLemma818TripleTauLargeFiber20Block1ComponentCertificate.lean` / `GoertzelLemma818TripleTauLargeFiber20Block2ComponentCertificate.lean` / `GoertzelLemma818TripleTauLargeFiber20Block3ComponentCertificate.lean` / `GoertzelLemma818TripleTauLargeFiber20Block4ComponentCertificate.lean` / `GoertzelLemma818TripleTauLargeFiber20Block5ComponentCertificate.lean` | First six 64-row blocks of the fourth large `TTT`/`mode09` fixed-input fiber `[r,p,r,p]`: records the size-512 fiber data and checks rows 0 through 383 by explicit component rows, parent-map agreement, and bounded parent paths to root `4640`; this is a block certificate, not the full fourth large fiber |
-| `GoertzelLemma818TripleTauTargetProgress.lean` | Partial semantic progress aggregator for the `TTT`/`mode09` representative target: `tttPartialTargetCertificateAudit_ok` verifies the `mode09` semantic witness, the light-fiber audit, the three completed large-fiber audits, the first six 64-row `[r,p,r,p]` blocks, and the exact count split of 2,304 certified states versus 4,224 states still open in the large-fiber layer; this is not the full `TTT` audit and not the all-chain lift |
+| `GoertzelLemma818TripleTauLargeFiber10Data.lean` / `GoertzelLemma818TripleTauLargeFiber10Block0ComponentCertificate.lean` / `GoertzelLemma818TripleTauLargeFiber10Block1ComponentCertificate.lean` / `GoertzelLemma818TripleTauLargeFiber10Block2ComponentCertificate.lean` / `GoertzelLemma818TripleTauLargeFiber10Block3ComponentCertificate.lean` / `GoertzelLemma818TripleTauLargeFiber10Block4ComponentCertificate.lean` / `GoertzelLemma818TripleTauLargeFiber10Block5ComponentCertificate.lean` / `GoertzelLemma818TripleTauLargeFiber10Block6ComponentCertificate.lean` / `GoertzelLemma818TripleTauLargeFiber10Block7ComponentCertificate.lean` / `GoertzelLemma818TripleTauLargeFiber10Certificate.lean` | Third large-fiber decomposition for `TTT`/`mode09`: records the parent map for the `[r,b,r,b]` size-512 fiber and checks all 512 source rows by explicit component rows, parent-map agreement, and explicit bounded parent paths; `tttLargeFiber10ComponentCertificateAudit_ok` aggregates the completed fixed-input fiber |
+| `GoertzelLemma818TripleTauLargeFiber20Data.lean` / `GoertzelLemma818TripleTauLargeFiber20Block0ComponentCertificate.lean` / `GoertzelLemma818TripleTauLargeFiber20Block1ComponentCertificate.lean` / `GoertzelLemma818TripleTauLargeFiber20Block2ComponentCertificate.lean` / `GoertzelLemma818TripleTauLargeFiber20Block3ComponentCertificate.lean` / `GoertzelLemma818TripleTauLargeFiber20Block4ComponentCertificate.lean` / `GoertzelLemma818TripleTauLargeFiber20Block5ComponentCertificate.lean` / `GoertzelLemma818TripleTauLargeFiber20Block6ComponentCertificate.lean` / `GoertzelLemma818TripleTauLargeFiber20Block7ComponentCertificate.lean` / `GoertzelLemma818TripleTauLargeFiber20Certificate.lean` | Fourth large-fiber decomposition for `TTT`/`mode09`: records the parent map for the `[r,p,r,p]` size-512 fiber and checks all 512 source rows by explicit component rows, parent-map agreement, and bounded parent paths to root `4640`; `tttLargeFiber20ComponentCertificateAudit_ok` aggregates the completed fixed-input fiber, while the other eight large `TTT` fibers and the other thirteen representative target modes remain open |
+| `GoertzelLemma818TripleTauTargetProgress.lean` | Partial semantic progress aggregator for the `TTT`/`mode09` representative target: `tttPartialTargetCertificateAudit_ok` verifies the `mode09` semantic witness, the light-fiber audit, the four completed large-fiber audits, and the exact count split of 2,432 certified states versus 4,096 states still open in the large-fiber layer; this is not the full `TTT` audit and not the all-chain lift |
 | `Goal.lean` | The target (`Theorem49ShellClaim`), its reduction to four geometric oracles plus a fifth non-geometric algebraic cancellation oracle, and proofs that **all four geometric uniform oracles are false** — including the v23.5 residual/current-boundary lane, whose positive wrapper is fixed-embedding equivalent to the refuted collar-layer surface |
 | `Shells.lean` | Bundled hypothesis packages (`ClosedWalkExactShell`, `SuccessorCycleExactShell`, `ClosedWalkCancellationShell`, …) replacing the historical 8–10-hypothesis telescopes |
 | `Frontier.lean` | The maximal positive and negative results, stated over the bundles as thin wrappers, including detector-based cancellation sufficiency |

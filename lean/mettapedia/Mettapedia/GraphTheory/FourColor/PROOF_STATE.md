@@ -567,8 +567,8 @@ for blocks 1, 2, 3, 4, 5, 6, and 7.
 The status split is therefore precise:
 all 20 profile modes have metadata/quotient connectivity evidence; six modes
 have full base chain certificates; `mode09` has the light `TTT` fibers plus the
-first three large `TTT` fibers certified; and the remaining semantic
-certificates are still open for the other nine large `TTT` fibers and for
+first four large `TTT` fibers certified; and the remaining semantic
+certificates are still open for the other eight large `TTT` fibers and for
 `mode00/mode01/mode02/mode03/mode05/mode06/mode08/mode12/mode13/mode14/mode15/mode17/mode19`.
 The 16-row chunk shape with explicit parent paths is viable through block 7.
 The next pass should continue only as small explicit parent-path/component
@@ -585,8 +585,9 @@ layer.  What is not closed is the semantic lift from those archived rows to
 actual chain-state `LKR_in`: six base modes have real chain certificates,
 `mode09` has its light `TTT` fibers, the first large `[r,r,b,b]` fiber
 certified, the second large `[r,r,p,p]` fiber certified, and the third large
-`[r,b,r,b]` fiber certified.  The remaining semantic work is
-the other nine large `TTT` fibers, plus
+`[r,b,r,b]` fiber certified, and the fourth large `[r,p,r,p]` fiber
+certified.  The remaining semantic work is the other eight large `TTT` fibers,
+plus
 `mode00/mode01/mode02/mode03/mode05/mode06/mode08/mode12/mode13/mode14/mode15/mode17/mode19`.
 The next pass should formalize this stabilized finite surface by compact
 per-fixed-input chain/component certificates or an equivalent finite transition
@@ -597,14 +598,13 @@ Fresh finite-surface formalization delta, 2026-07-01:
 `TTT`/`mode09` target progress into the theorem
 `tttPartialTargetCertificateAudit_ok`.  The audit ties the `mode09` semantic
 witness to `RepresentativeSemanticTarget.ttt`, checks the light-fiber theorem
-and the three completed large-fiber theorems, verifies the completed-fiber
-count split of 1,920 certified states versus 4,608 states still in named large
-fibers, and now also checks the first six 64-row blocks of the next large fiber
-`[r,p,r,p]` by `tttLargeFiber20Block5ProgressAudit_ok`.  With those blocks,
-2,304 `TTT` states have explicit target-surface certificates and 4,224 states
-remain in the large-fiber layer.  This is a structured partial target
-certificate, not a completed `TTT` audit and not the all-chain Lemma 8.18/8.19
-lift.
+and the four completed large-fiber theorems, and verifies the current split of
+2,432 certified states versus 4,096 states still in named large fibers.
+The fourth large fiber `[r,p,r,p]` is now closed by
+`tttLargeFiber20ClosedProgressAudit_ok` and
+`tttLargeFiber20ComponentCertificateAudit_ok`.  This is a structured partial
+target certificate, not a completed `TTT` audit and not the all-chain
+Lemma 8.18/8.19 lift.
 
 The CAP5/F2, GP(12,2), dodecahedral six-cut, and related files below are
 exploratory audits of a divergent F2-additivity route.  They are retained for
