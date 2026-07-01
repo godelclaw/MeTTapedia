@@ -597,12 +597,14 @@ Fresh finite-surface formalization delta, 2026-07-01:
 `TTT`/`mode09` target progress into the theorem
 `tttPartialTargetCertificateAudit_ok`.  The audit ties the `mode09` semantic
 witness to `RepresentativeSemanticTarget.ttt`, checks the light-fiber theorem
-and the three completed large-fiber theorems, and verifies the exact current
-count split: 384 light states plus three 512-state large fibers give 1,920
-certified `TTT` states, while the nine named remaining 512-state large fibers
-account for the remaining 4,608 states of the 6,528-state `TTT` representative
-word.  This is a structured partial target certificate, not a completed
-`TTT` audit and not the all-chain Lemma 8.18/8.19 lift.
+and the three completed large-fiber theorems, verifies the completed-fiber
+count split of 1,920 certified states versus 4,608 states still in named large
+fibers, and now also checks the first 16-row slice of the next large fiber
+`[r,p,r,p]` by `tttLargeFiber20FirstChunkProgressAudit_ok`.  With that slice,
+1,936 `TTT` states have explicit target-surface certificates and 4,592 states
+remain in the large-fiber layer.  This is a structured partial target
+certificate, not a completed `TTT` audit and not the all-chain Lemma 8.18/8.19
+lift.
 
 The CAP5/F2, GP(12,2), dodecahedral six-cut, and related files below are
 exploratory audits of a divergent F2-additivity route.  They are retained for
