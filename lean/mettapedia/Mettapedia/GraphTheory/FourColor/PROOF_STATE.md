@@ -47,10 +47,12 @@ size-16 fibers, all 384 light states, and the reversed-key coverage invariant
 under the actual `[mirror, mirror, mirror]` chain word.
 `GoertzelLemma818MirrorTripleLargeFiber36Chunk0ComponentCertificate.lean`
 starts the large-fiber layer with one 16-row chunk for reversed key
-`[b,b,r,r]`, rechecking row moves, parent-map agreement, and parent convergence
-under the actual mirror-triple word.  This is still not the full `MMM` target
-audit: the large fixed-input fibers for `mode05` remain mostly open, and the
-finite automaton closure/consequence theorem is still open.
+`[b,b,r,r]`; `GoertzelLemma818MirrorTripleLargeFiber36Block1ComponentCertificate.lean`
+extends that to the first 64-row block of the same large fiber, rechecking row
+moves, parent-map agreement, and parent convergence under the actual
+mirror-triple word.  This is still not the full `MMM` target audit: the large
+fixed-input fibers for `mode05` remain mostly open, and the finite automaton
+closure/consequence theorem is still open.
 
 ## Current Pillar-C Reset
 
