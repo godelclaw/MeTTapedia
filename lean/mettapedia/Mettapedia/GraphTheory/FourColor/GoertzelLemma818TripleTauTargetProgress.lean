@@ -10,6 +10,9 @@ import Mettapedia.GraphTheory.FourColor.GoertzelLemma818TripleTauLargeFiber20Blo
 import Mettapedia.GraphTheory.FourColor.GoertzelLemma818TripleTauLargeFiber20Block3ComponentCertificate
 import Mettapedia.GraphTheory.FourColor.GoertzelLemma818TripleTauLargeFiber20Block4ComponentCertificate
 import Mettapedia.GraphTheory.FourColor.GoertzelLemma818TripleTauLargeFiber20Block5ComponentCertificate
+import Mettapedia.GraphTheory.FourColor.GoertzelLemma818TripleTauLargeFiber20Block6ComponentCertificate
+import Mettapedia.GraphTheory.FourColor.GoertzelLemma818TripleTauLargeFiber20Block7ComponentCertificate
+import Mettapedia.GraphTheory.FourColor.GoertzelLemma818TripleTauLargeFiber20Certificate
 
 namespace Mettapedia.GraphTheory.FourColor
 
@@ -19,10 +22,10 @@ namespace Mettapedia.GraphTheory.FourColor
 This module records the currently checked chain-level surface for the first
 non-base semantic target, `TTT`/`mode09`.
 
-It is intentionally partial.  The light fibers, three of the twelve large
-fixed-input fibers, and the first six blocks of a fourth large fiber are certified
-by explicit component/path tables.  The rest of the large-fiber layer remains
-open unless a smaller transition invariant replaces it.
+It is intentionally partial.  The light fibers and four of the twelve large
+fixed-input fibers are certified by explicit component/path tables.  The rest
+of the large-fiber layer remains open unless a smaller transition invariant
+replaces it.
 -/
 
 namespace GoertzelLemma818TripleTauTargetProgress
@@ -47,6 +50,9 @@ open GoertzelLemma818TripleTauLargeFiber20Block2ComponentCertificate
 open GoertzelLemma818TripleTauLargeFiber20Block3ComponentCertificate
 open GoertzelLemma818TripleTauLargeFiber20Block4ComponentCertificate
 open GoertzelLemma818TripleTauLargeFiber20Block5ComponentCertificate
+open GoertzelLemma818TripleTauLargeFiber20Block6ComponentCertificate
+open GoertzelLemma818TripleTauLargeFiber20Block7ComponentCertificate
+open GoertzelLemma818TripleTauLargeFiber20Certificate
 
 def tttCertifiedLargeFiberKeys : List (List LColor) :=
   [ tttLargeFiber4Key
@@ -137,6 +143,36 @@ def tttCertifiedStateCountWithFiber20Block5 : Nat :=
 
 def tttRemainingStateCountAfterFiber20Block5 : Nat :=
   tttCompositeStateCount - tttCertifiedStateCountWithFiber20Block5
+
+def tttLargeFiber20Block6CertifiedRows : Nat := 64
+
+def tttCertifiedStateCountWithFiber20Block6 : Nat :=
+  tttCertifiedStateCountWithFiber20Block5 + tttLargeFiber20Block6CertifiedRows
+
+def tttRemainingStateCountAfterFiber20Block6 : Nat :=
+  tttCompositeStateCount - tttCertifiedStateCountWithFiber20Block6
+
+def tttLargeFiber20Block7CertifiedRows : Nat := 64
+
+def tttCertifiedStateCountWithFiber20Block7 : Nat :=
+  tttCertifiedStateCountWithFiber20Block6 + tttLargeFiber20Block7CertifiedRows
+
+def tttRemainingStateCountAfterFiber20Block7 : Nat :=
+  tttCompositeStateCount - tttCertifiedStateCountWithFiber20Block7
+
+def tttCertifiedLargeFiberKeysAfterFiber20 : List (List LColor) :=
+  tttCertifiedLargeFiberKeys ++ [tttLargeFiber20Key]
+
+def tttRemainingLargeFiberKeysAfterFiber20 : List (List LColor) :=
+  [ [LColor.b, LColor.r, LColor.b, LColor.r]
+  , [LColor.b, LColor.b, LColor.r, LColor.r]
+  , [LColor.b, LColor.b, LColor.p, LColor.p]
+  , [LColor.b, LColor.p, LColor.b, LColor.p]
+  , [LColor.p, LColor.r, LColor.p, LColor.r]
+  , [LColor.p, LColor.b, LColor.p, LColor.b]
+  , [LColor.p, LColor.p, LColor.r, LColor.r]
+  , [LColor.p, LColor.p, LColor.b, LColor.b]
+  ]
 
 def tttTargetProgressCountsAudit : Bool :=
   tttLightFiberCount == 69
@@ -315,6 +351,83 @@ theorem tttLargeFiber20Block5ProgressAudit_ok :
     tttLargeFiber20Block5CountAudit_ok,
     tttLargeFiber20Block5ComponentCertificateAudit_ok]
 
+def tttLargeFiber20Block6CountAudit : Bool :=
+  tttRemainingLargeFiberKeys.contains tttLargeFiber20Key
+    && tttLargeFiber20Key ==
+      [LColor.r, LColor.p, LColor.r, LColor.p]
+    && tttLargeFiber20Block6CertifiedRows == 64
+    && tttCertifiedStateCountWithFiber20Block6 == 2368
+    && tttRemainingStateCountAfterFiber20Block6 == 4160
+
+theorem tttLargeFiber20Block6CountAudit_ok :
+    tttLargeFiber20Block6CountAudit = true := by
+  decide
+
+def tttLargeFiber20Block6ProgressAudit : Bool :=
+  tttLargeFiber20Block5ProgressAudit
+    && tttLargeFiber20Block6CountAudit
+    && tttLargeFiber20Block6ComponentCertificateAudit
+
+theorem tttLargeFiber20Block6ProgressAudit_ok :
+    tttLargeFiber20Block6ProgressAudit = true := by
+  simp [tttLargeFiber20Block6ProgressAudit,
+    tttLargeFiber20Block5ProgressAudit_ok,
+    tttLargeFiber20Block6CountAudit_ok,
+    tttLargeFiber20Block6ComponentCertificateAudit_ok]
+
+def tttLargeFiber20Block7CountAudit : Bool :=
+  tttRemainingLargeFiberKeys.contains tttLargeFiber20Key
+    && tttLargeFiber20Key ==
+      [LColor.r, LColor.p, LColor.r, LColor.p]
+    && tttLargeFiber20Block7CertifiedRows == 64
+    && tttCertifiedStateCountWithFiber20Block7 == 2432
+    && tttRemainingStateCountAfterFiber20Block7 == 4096
+
+theorem tttLargeFiber20Block7CountAudit_ok :
+    tttLargeFiber20Block7CountAudit = true := by
+  decide
+
+def tttLargeFiber20Block7ProgressAudit : Bool :=
+  tttLargeFiber20Block6ProgressAudit
+    && tttLargeFiber20Block7CountAudit
+    && tttLargeFiber20Block7ComponentCertificateAudit
+
+theorem tttLargeFiber20Block7ProgressAudit_ok :
+    tttLargeFiber20Block7ProgressAudit = true := by
+  simp [tttLargeFiber20Block7ProgressAudit,
+    tttLargeFiber20Block6ProgressAudit_ok,
+    tttLargeFiber20Block7CountAudit_ok,
+    tttLargeFiber20Block7ComponentCertificateAudit_ok]
+
+def tttLargeFiber20ClosedCountAudit : Bool :=
+  tttCertifiedLargeFiberKeysAfterFiber20.length == 4
+    && tttRemainingLargeFiberKeysAfterFiber20.length == 8
+    && tttCertifiedLargeFiberKeysAfterFiber20 ++
+        tttRemainingLargeFiberKeysAfterFiber20 == tttLargeFiberKeys
+    && tttCertifiedStateCountWithFiber20Block7 ==
+      tttLightStateCount +
+        tttCertifiedLargeFiberKeysAfterFiber20.length * tttRemainingLargeFiberSize
+    && tttRemainingStateCountAfterFiber20Block7 ==
+      tttRemainingLargeFiberKeysAfterFiber20.length * tttRemainingLargeFiberSize
+    && tttCertifiedStateCountWithFiber20Block7 +
+        tttRemainingStateCountAfterFiber20Block7 == tttCompositeStateCount
+
+theorem tttLargeFiber20ClosedCountAudit_ok :
+    tttLargeFiber20ClosedCountAudit = true := by
+  decide
+
+def tttLargeFiber20ClosedProgressAudit : Bool :=
+  tttLargeFiber20Block7ProgressAudit
+    && tttLargeFiber20ClosedCountAudit
+    && tttLargeFiber20ComponentCertificateAudit
+
+theorem tttLargeFiber20ClosedProgressAudit_ok :
+    tttLargeFiber20ClosedProgressAudit = true := by
+  simp [tttLargeFiber20ClosedProgressAudit,
+    tttLargeFiber20Block7ProgressAudit_ok,
+    tttLargeFiber20ClosedCountAudit_ok,
+    tttLargeFiber20ComponentCertificateAudit_ok]
+
 def tttMode09WitnessAudit : Bool :=
   semanticWitnessForMode FrontierMode.mode09 ==
       SemanticModeWitness.target RepresentativeSemanticTarget.ttt
@@ -334,16 +447,14 @@ def tttPartialTargetCertificateAudit : Bool :=
     && tttLargeFiber4ComponentCertificateAudit
     && tttLargeFiber8ComponentCertificateAudit
     && tttLargeFiber10ComponentCertificateAudit
-    && tttLargeFiber20Block5ProgressAudit
+    && tttLargeFiber20ClosedProgressAudit
 
 /--
 The currently checked `TTT`/`mode09` semantic surface.
 
-This proves only partial target progress: light fibers plus the three listed
-large fibers and the first six 64-row blocks of the next large fiber are
-certified.
-The rest of the fibers in `tttRemainingLargeFiberKeys` are still outside this
-audit.
+This proves only partial target progress: light fibers plus the four listed
+large fibers are certified.  The eight remaining large fibers in
+`tttRemainingLargeFiberKeysAfterFiber20` are still outside this audit.
 -/
 theorem tttPartialTargetCertificateAudit_ok :
     tttPartialTargetCertificateAudit = true := by
@@ -354,7 +465,7 @@ theorem tttPartialTargetCertificateAudit_ok :
     tttLargeFiber4ComponentCertificateAudit_ok,
     tttLargeFiber8ComponentCertificateAudit_ok,
     tttLargeFiber10ComponentCertificateAudit_ok,
-    tttLargeFiber20Block5ProgressAudit_ok]
+    tttLargeFiber20ClosedProgressAudit_ok]
 
 end GoertzelLemma818TripleTauTargetProgress
 

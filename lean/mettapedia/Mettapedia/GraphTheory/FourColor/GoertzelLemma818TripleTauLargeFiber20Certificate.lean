@@ -1,0 +1,62 @@
+import Mettapedia.GraphTheory.FourColor.GoertzelLemma818TripleTauLargeFiber20Block0ComponentCertificate
+import Mettapedia.GraphTheory.FourColor.GoertzelLemma818TripleTauLargeFiber20Block1ComponentCertificate
+import Mettapedia.GraphTheory.FourColor.GoertzelLemma818TripleTauLargeFiber20Block2ComponentCertificate
+import Mettapedia.GraphTheory.FourColor.GoertzelLemma818TripleTauLargeFiber20Block3ComponentCertificate
+import Mettapedia.GraphTheory.FourColor.GoertzelLemma818TripleTauLargeFiber20Block4ComponentCertificate
+import Mettapedia.GraphTheory.FourColor.GoertzelLemma818TripleTauLargeFiber20Block5ComponentCertificate
+import Mettapedia.GraphTheory.FourColor.GoertzelLemma818TripleTauLargeFiber20Block6ComponentCertificate
+import Mettapedia.GraphTheory.FourColor.GoertzelLemma818TripleTauLargeFiber20Block7ComponentCertificate
+
+namespace Mettapedia.GraphTheory.FourColor
+
+/-!
+# Goertzel Lemma 8.18: fourth large `TTT` fiber certificate
+
+This module aggregates the eight 64-row component-certificate blocks for the
+fourth size-512 fixed-input fiber of the `TTT`/`mode09` representative target.
+It closes this one large fiber, not the full `TTT` target and not all-chain
+`LKR_in`.
+-/
+
+namespace GoertzelLemma818TripleTauLargeFiber20Certificate
+
+open GoertzelLemma818TripleTauLightComponentCertificate
+open GoertzelLemma818TripleTauLargeFiber20Data
+open GoertzelLemma818TripleTauLargeFiber20Block0ComponentCertificate
+open GoertzelLemma818TripleTauLargeFiber20Block1ComponentCertificate
+open GoertzelLemma818TripleTauLargeFiber20Block2ComponentCertificate
+open GoertzelLemma818TripleTauLargeFiber20Block3ComponentCertificate
+open GoertzelLemma818TripleTauLargeFiber20Block4ComponentCertificate
+open GoertzelLemma818TripleTauLargeFiber20Block5ComponentCertificate
+open GoertzelLemma818TripleTauLargeFiber20Block6ComponentCertificate
+open GoertzelLemma818TripleTauLargeFiber20Block7ComponentCertificate
+
+def tttLargeFiber20ComponentCertificateAudit : Bool :=
+  tttRepresentativeModeAudit &&
+    tttLargeFiber20CountsAudit
+    && tttLargeFiber20Block0ComponentCertificateAudit
+    && tttLargeFiber20Block1ComponentCertificateAudit
+    && tttLargeFiber20Block2ComponentCertificateAudit
+    && tttLargeFiber20Block3ComponentCertificateAudit
+    && tttLargeFiber20Block4ComponentCertificateAudit
+    && tttLargeFiber20Block5ComponentCertificateAudit
+    && tttLargeFiber20Block6ComponentCertificateAudit
+    && tttLargeFiber20Block7ComponentCertificateAudit
+
+theorem tttLargeFiber20ComponentCertificateAudit_ok :
+    tttLargeFiber20ComponentCertificateAudit = true := by
+  simp [tttLargeFiber20ComponentCertificateAudit,
+    tttRepresentativeModeAudit_ok,
+    tttLargeFiber20CountsAudit_ok,
+    tttLargeFiber20Block0ComponentCertificateAudit_ok,
+    tttLargeFiber20Block1ComponentCertificateAudit_ok,
+    tttLargeFiber20Block2ComponentCertificateAudit_ok,
+    tttLargeFiber20Block3ComponentCertificateAudit_ok,
+    tttLargeFiber20Block4ComponentCertificateAudit_ok,
+    tttLargeFiber20Block5ComponentCertificateAudit_ok,
+    tttLargeFiber20Block6ComponentCertificateAudit_ok,
+    tttLargeFiber20Block7ComponentCertificateAudit_ok]
+
+end GoertzelLemma818TripleTauLargeFiber20Certificate
+
+end Mettapedia.GraphTheory.FourColor
