@@ -48,10 +48,12 @@ under the actual `[mirror, mirror, mirror]` chain word.
 `GoertzelLemma818MirrorTripleLargeFiber36Chunk0ComponentCertificate.lean`
 starts the large-fiber layer with one 16-row chunk for reversed key
 `[b,b,r,r]`; `GoertzelLemma818MirrorTripleLargeFiber36Block1ComponentCertificate.lean`
-extends that to the first 64-row block of the same large fiber, rechecking row
-moves, parent-map agreement, and parent convergence under the actual
-mirror-triple word.  This is still not the full `MMM` target audit: the large
-fixed-input fibers for `mode05` remain mostly open, and the finite automaton
+extends that to the first checked 64-row block of the same large fiber, and
+`GoertzelLemma818MirrorTripleLargeFiber36Block2ComponentCertificate.lean`
+adds a second checked 64-row block.  Both block modules recheck row moves,
+parent-map agreement, and parent convergence under the actual mirror-triple
+word.  This is still not the full `MMM` target audit: the large fixed-input
+fibers for `mode05` remain mostly open, and the finite automaton
 closure/consequence theorem is still open.
 
 ## Current Pillar-C Reset
