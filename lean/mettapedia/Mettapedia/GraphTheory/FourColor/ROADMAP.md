@@ -64,6 +64,11 @@ including the six base modes, and exactly thirteen remaining semantic modes.
 The next pass should consume this frontier by generating the remaining
 representative certificates or replacing them with a finite transition
 invariant; the progress audit itself is not the all-chain lift.
+`GoertzelLemma818MirrorTripleComponentSmoke.lean` now checks the first
+chain-level slice for a second remaining target: `MMM`/`mode05`, one
+16-state fixed-input fiber under the actual mirror-chain word.  This confirms
+that the `TTT` component-row format transfers to the mirror-triple target, but
+it does not complete `mode05`.
 Do not extend representatives or raise kernel limits from this checkpoint;
 formalize the existing finite surface with compact per-fixed-input
 chain/component certificates or an equivalent finite transition invariant.

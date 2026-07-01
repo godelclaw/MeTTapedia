@@ -37,6 +37,13 @@ theorems inherit the existing `[propext, Quot.sound]` footprint from the base
 and `TTT` certificate imports.  This is still a progress frontier, not Lemma
 8.18/8.19 and not all-chain `LKR_in`.
 
+`GoertzelLemma818MirrorTripleComponentSmoke.lean` adds the first real
+chain-level slice for another remaining mode: `MMM`/`mode05`, fixed-input key
+`[r,b,r,r]`, 16 states, explicit component rows, and parent-depth convergence.
+The row data mirrors the earlier `TTT` smoke slice but is rechecked against the
+actual `[mirror, mirror, mirror]` chain word and reversed outer input key.  It
+is only one fixed-input fiber of `mode05`, not the full `MMM` target audit.
+
 ## Current Pillar-C Reset
 
 The Ben-route status is now Pillar C, not the older CAP5/F2/six-cut route.
