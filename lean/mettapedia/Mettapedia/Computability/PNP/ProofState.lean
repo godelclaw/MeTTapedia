@@ -17,6 +17,7 @@ import Mettapedia.Computability.PNP.PNPSteelmanConditional
 import Mettapedia.Computability.PNP.PostSwitchInputObstruction
 import Mettapedia.Computability.PNP.SharedExactZABAffineDecisionListStructuralObstructionExactZAB
 import Mettapedia.Computability.PNP.V13CDENF
+import Mettapedia.Computability.PNP.V13ConditionalClash
 import Mettapedia.Computability.PNP.V13EvidenceSpine
 import Mettapedia.Computability.PNP.V13GaugeBufferedLockedInterface
 import Mettapedia.Computability.PNP.WeaknessCalculus
@@ -196,6 +197,13 @@ def currentPNPProofNodes : List PNPProofNode := [
     truthValue := ⟨100, 90⟩,
     evidence := "V13GaugeBufferedLockedInterface packages the nine ledger fields as propositions over Phase A/B objects and proves red-team coherence theorems for admissible histories, boundary mixing, and neutral skeleton non-sufficiency. `toyLockedInterface_jointly_inhabits_all_nine` checks that a two-point toy jointly inhabits all nine fields.",
     nextObligation := "Use every ledger field explicitly in the Phase D conditional upper/lower clash record; any unused field is an architectural finding."
+  },
+  {
+    key := "pnp.v13.phase-d.conditional-upper-lower-clash",
+    status := .checked,
+    truthValue := ⟨100, 89⟩,
+    evidence := "V13ConditionalClash defines `ParameterRecord`, `LedgerFieldUseCertificate`, and `UpperLowerClash`; `v13_upperLowerClash` consumes Phase A, observer CD-ENF normalization, and all nine GaugeBufferedLockedInterface fields to produce the conditional upper/lower interval clash.",
+    nextObligation := "Keep the concrete ensemble outside this artifact; any concrete instantiation must supply the external ParameterRecord rather than weakening the ledger fields."
   },
   {
     key := "pnp.weakness-calculus.finite-spectrum-gap",
@@ -942,4 +950,15 @@ theorem currentPNPV13GaugeBufferedLedger_node :
     ⟨⟨toyLockedInterface⟩,
       toyLockedInterface_history_not_target_measurable,
       toyLockedInterface_pivot_not_sufficient⟩
+
+theorem currentPNPV13ConditionalClash_node :
+    (∀ P : ParameterRecord toyLockedInterface,
+      Nonempty (UpperLowerClash toyLockedInterface P)) ∧
+      (∀ P : ParameterRecord toyLockedInterface,
+        Nonempty (LedgerFieldUseCertificate toyLockedInterface P)) := by
+  constructor
+  · intro P
+    exact ⟨toyLockedInterface_conditional_clash P⟩
+  · intro P
+    exact ⟨(toyLockedInterface_conditional_clash P).fieldUse⟩
 end Mettapedia.Computability.PNP

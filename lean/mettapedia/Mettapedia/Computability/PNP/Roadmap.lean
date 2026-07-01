@@ -20,6 +20,7 @@ inductive PNPRoadmapStage where
   | v13EvidenceSpine
   | v13CDENF
   | v13GaugeBufferedLedger
+  | v13ConditionalClash
   | weaknessCalculus
   | barrierObstruction
   | replacementRoute
@@ -120,6 +121,14 @@ def currentPNPRoadmap : List PNPRoadmapEntry :=
       itvLowerPercent := 90
       itvUpperPercent := 100
       obligation := "Treat the two-point joint toy as evidence that the abstract nine-field ledger is consistent; the concrete ensemble remains out of scope." },
+    { stage := .v13ConditionalClash
+      proofNodeKey := "pnp.v13.phase-d.conditional-upper-lower-clash"
+      status := .checked
+      truthValue := ⟨100, 89⟩
+      progressPercent := 100
+      itvLowerPercent := 89
+      itvUpperPercent := 100
+      obligation := "Treat `v13_upperLowerClash` as the abstract conditional Phase-D object; concrete ensemble parameters remain out of scope." },
     { stage := .weaknessCalculus
       proofNodeKey := "pnp.weakness-calculus.finite-spectrum-gap"
       status := .checked
@@ -271,6 +280,19 @@ theorem currentPNPRoadmap_records_v13_gauge_buffered_ledger :
        itvUpperPercent := 100
        obligation :=
         "Treat the two-point joint toy as evidence that the abstract nine-field ledger is consistent; the concrete ensemble remains out of scope." } :
+      PNPRoadmapEntry) ∈ currentPNPRoadmap := by
+  simp [currentPNPRoadmap]
+
+theorem currentPNPRoadmap_records_v13_conditional_clash :
+    ({ stage := PNPRoadmapStage.v13ConditionalClash
+       proofNodeKey := "pnp.v13.phase-d.conditional-upper-lower-clash"
+       status := .checked
+       truthValue := ⟨100, 89⟩
+       progressPercent := 100
+       itvLowerPercent := 89
+       itvUpperPercent := 100
+       obligation :=
+        "Treat `v13_upperLowerClash` as the abstract conditional Phase-D object; concrete ensemble parameters remain out of scope." } :
       PNPRoadmapEntry) ∈ currentPNPRoadmap := by
   simp [currentPNPRoadmap]
 
