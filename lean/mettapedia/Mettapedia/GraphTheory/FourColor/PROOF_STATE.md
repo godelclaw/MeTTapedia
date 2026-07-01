@@ -43,6 +43,12 @@ chain-level slice for another remaining mode: `MMM`/`mode05`, fixed-input key
 The row data mirrors the earlier `TTT` smoke slice but is rechecked against the
 actual `[mirror, mirror, mirror]` chain word and reversed outer input key.  It
 is only one fixed-input fiber of `mode05`, not the full `MMM` target audit.
+`GoertzelLemma818MirrorTripleLightSlices.lean` adds a second checked light
+slice for the same target: TTT light fiber 5 is rechecked under the actual
+`MMM` word with fixed-input key `[p,b,r,r]`, 16 explicit rows, and convergence
+to root `2432`.  `mmmCheckedLightSlicesAfterFiber63Audit_ok` records exactly
+two checked `MMM` light slices so far.  `mode05` remains partial, and the
+finite automaton closure/consequence theorem is still open.
 
 ## Current Pillar-C Reset
 
