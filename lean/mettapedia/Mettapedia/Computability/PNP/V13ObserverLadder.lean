@@ -244,6 +244,40 @@ def phaseEScaledEmptyRestriction (m k : Nat) :
     simp
   targetFree := rfl
 
+structure PhaseEScaledRandomRestrictionLaw (m k : Nat) where
+  Outcome : Type
+  outcomeDecidableEq : DecidableEq Outcome
+  outcomeFinite : Fintype Outcome
+  restriction : Outcome -> PhaseEScaledRestriction m k
+  probability : Outcome -> Rat
+  probability_nonnegative : ∀ outcome, 0 ≤ probability outcome
+  probability_total :
+    letI := outcomeDecidableEq
+    letI := outcomeFinite
+    Finset.univ.sum probability = 1
+
+def phaseEScaledPointMassRestrictionLaw {m k : Nat}
+    (restriction : PhaseEScaledRestriction m k) :
+    PhaseEScaledRandomRestrictionLaw m k where
+  Outcome := Unit
+  outcomeDecidableEq := inferInstance
+  outcomeFinite := inferInstance
+  restriction := fun _ => restriction
+  probability := fun _ => 1
+  probability_nonnegative := by
+    intro outcome
+    norm_num
+  probability_total := by
+    simp
+
+theorem phaseEScaled_pointMassRestriction_probability_total {m k : Nat}
+    (restriction : PhaseEScaledRestriction m k) :
+    let law := phaseEScaledPointMassRestrictionLaw restriction
+    letI := law.outcomeDecidableEq
+    letI := law.outcomeFinite
+    Finset.univ.sum law.probability = 1 :=
+  (phaseEScaledPointMassRestrictionLaw restriction).probability_total
+
 def phaseEScaledRestrictionResidualQueries {m k q : Nat}
     (R : PhaseEScaledRestriction m k)
     (observer : PhaseEScaledDecisionTreeObserver m k q) : Nat :=
