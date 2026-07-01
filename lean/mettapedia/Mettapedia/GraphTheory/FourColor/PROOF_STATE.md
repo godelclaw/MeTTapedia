@@ -18,12 +18,11 @@ currently marked connectivity-unverified at this metadata layer.
 
 This does not yet close Lemma 8.18/8.19.  The unverified layer is semantic:
 the six base modes `mode07/mode16/mode10/mode18/mode11/mode04` are backed by
-real single/length-2 chain certificates, while the 14 non-base representative
-targets still need real per-fixed-input chain/path certificates, or an
-equivalent finite transition certificate, before the DFA induction can imply
-all-chain `LKR_in`.  Within the first non-base target, `mode09`/`TTT`, the
-light fibers and eleven of the twelve size-512 large fixed-input fibers are
-checked, leaving the final large `TTT` fiber plus
+real single/length-2 chain certificates, and the first non-base target
+`mode09`/`TTT` is now backed by real per-fixed-input chain certificates for
+the light fibers and all twelve size-512 large fixed-input fibers.  The
+remaining representative targets that still need real chain/path
+certificates, or an equivalent finite transition certificate, are
 `mode00/mode01/mode02/mode03/mode05/mode06/mode08/mode12/mode13/mode14/mode15/mode17/mode19`.
 The next pass should formalize this finite surface; it should not extend
 representative lengths or raise kernel limits.
@@ -568,16 +567,16 @@ checks, 30 direct length-1-through-4 atom-connectivity rows, and the two
 length-5 singleton quotient-connectivity rows.  Every one of the 20 modes has
 archived per-fixed-input connectivity evidence at that metadata layer, and no
 mode is presently flagged as lacking such evidence.  The closure that is still
-unproved is semantic: only six modes are currently backed by real single or
-length-2 chain-level parent/path certificates
-(`mode07/mode16/mode10/mode18/mode11/mode04`).  The other fourteen modes
-(`mode00/mode01/mode02/mode03/mode05/mode06/mode08/mode09/mode12/mode13/mode14/mode15/mode17/mode19`)
+unproved is semantic: six modes are backed by real single or length-2
+chain-level parent/path certificates
+(`mode07/mode16/mode10/mode18/mode11/mode04`), and the first non-base target
+`mode09` now has its `TTT` light fibers and all twelve large `TTT` fibers fully
+certified.  The other thirteen modes
+(`mode00/mode01/mode02/mode03/mode05/mode06/mode08/mode12/mode13/mode14/mode15/mode17/mode19`)
 still need compact per-fixed-input chain/component certificates, or an
 equivalent finite transition certificate, before `wordMode_induction` can yield
-all-chain `LKR_in`.  The first non-base target, `mode09`, now has its `TTT`
-light fibers certified and eleven of its twelve large `TTT` fibers fully certified,
-but not the remaining large `TTT` work.  This checkpoint is
-therefore a finite-mode/table-closure plus partial target-certificate
+all-chain `LKR_in`.  This checkpoint is therefore a finite-mode/table-closure
+plus target-certificate
 checkpoint, not a completed Lemma 8.18/8.19 lift and not a Four Color Theorem
 claim.
 
@@ -590,12 +589,11 @@ for blocks 1, 2, 3, 4, 5, 6, and 7.
 The status split is therefore precise:
 all 20 profile modes have metadata/quotient connectivity evidence; six modes
 have full base chain certificates; `mode09` has the light `TTT` fibers plus the
-first eleven large `TTT` fibers certified; and the remaining semantic
-certificates are still open for the other large `TTT` fiber and for
+all twelve large `TTT` fibers certified; and the remaining semantic
+certificates are still open for
 `mode00/mode01/mode02/mode03/mode05/mode06/mode08/mode12/mode13/mode14/mode15/mode17/mode19`.
-The 16-row chunk shape with explicit parent paths is viable through block 7.
 The next pass should continue only as small explicit parent-path/component
-chunks or replace the remaining large-fiber proof with a finite transition
+chunks or replace the remaining target proofs with a finite transition
 certificate, then feed those audits through `GoertzelLemma818SemanticBridge.lean`.
 
 Final Gate-2 exploration stop, 2026-07-01: the finite-mode finding is now the
@@ -613,25 +611,26 @@ certified, the fifth large `[b,r,b,r]` fiber certified, and the sixth large
 `[b,b,r,r]` fiber certified, and the seventh large `[b,b,p,p]` fiber
 certified, the eighth large `[b,p,b,p]` fiber certified, and the ninth large
 `[p,r,p,r]` fiber certified, the tenth large `[p,b,p,b]` fiber certified, and
-the eleventh large `[p,p,r,r]` fiber certified.  The remaining semantic work is
-the single remaining large `TTT` fiber, plus
+the eleventh large `[p,p,r,r]` fiber certified, and the twelfth large
+`[p,p,b,b]` fiber certified.  The remaining semantic work is
 `mode00/mode01/mode02/mode03/mode05/mode06/mode08/mode12/mode13/mode14/mode15/mode17/mode19`.
 The next pass should formalize this stabilized finite surface by compact
 per-fixed-input chain/component certificates or an equivalent finite transition
 invariant.  It should not extend representative lengths or raise kernel limits.
 
 Fresh finite-surface formalization delta, 2026-07-01:
+`GoertzelLemma818TripleTauLargeFiber76Certificate.lean` closes the twelfth and
+final size-512 `TTT`/`mode09` large fixed-input fiber, key `[p,p,b,b]`, ranges
+`2992..3247` and `3552..3807`, root `2992`, and max parent depth `6`.
 `GoertzelLemma818TripleTauTargetProgress.lean` now aggregates the checked
-`TTT`/`mode09` target progress into the theorem
-`tttPartialTargetCertificateAudit_ok`.  The audit ties the `mode09` semantic
-witness to `RepresentativeSemanticTarget.ttt`, checks the light-fiber theorem
-and the eleven completed large-fiber theorems, and verifies the current split of
-6,016 certified states versus 512 states still in the named large fiber.
-The eleventh large fiber `[p,p,r,r]` is now closed by
-`tttLargeFiber72ClosedProgressAudit_ok` and
-`tttLargeFiber72ComponentCertificateAudit_ok`.  This is a structured partial
-target certificate, not a completed `TTT` audit and not the all-chain
-Lemma 8.18/8.19 lift.
+`TTT`/`mode09` target progress into `tttTargetCertificateAudit_ok`.  The audit
+ties the `mode09` semantic witness to `RepresentativeSemanticTarget.ttt`,
+checks the light-fiber theorem and all twelve completed large-fiber theorems,
+and verifies the current split of 6,528 certified states versus 0 open states
+in the explicit `TTT` target surface.  This closes the `TTT` representative
+audit, but it is not the all-chain Lemma 8.18/8.19 lift: the other thirteen
+representative target modes still need semantic certificates or an equivalent
+finite transition invariant.
 
 The CAP5/F2, GP(12,2), dodecahedral six-cut, and related files below are
 exploratory audits of a divergent F2-additivity route.  They are retained for
