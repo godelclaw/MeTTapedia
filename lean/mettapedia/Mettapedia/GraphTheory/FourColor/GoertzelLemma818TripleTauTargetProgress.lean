@@ -5,6 +5,7 @@ import Mettapedia.GraphTheory.FourColor.GoertzelLemma818TripleTauLargeFiber10Cer
 import Mettapedia.GraphTheory.FourColor.GoertzelLemma818TripleTauLargeFiber20Block0Chunk0ComponentCertificate
 import Mettapedia.GraphTheory.FourColor.GoertzelLemma818TripleTauLargeFiber20Block0Chunk1ComponentCertificate
 import Mettapedia.GraphTheory.FourColor.GoertzelLemma818TripleTauLargeFiber20Block0ComponentCertificate
+import Mettapedia.GraphTheory.FourColor.GoertzelLemma818TripleTauLargeFiber20Block1ComponentCertificate
 
 namespace Mettapedia.GraphTheory.FourColor
 
@@ -15,7 +16,7 @@ This module records the currently checked chain-level surface for the first
 non-base semantic target, `TTT`/`mode09`.
 
 It is intentionally partial.  The light fibers, three of the twelve large
-fixed-input fibers, and the first block of a fourth large fiber are certified
+fixed-input fibers, and the first two blocks of a fourth large fiber are certified
 by explicit component/path tables.  The rest of the large-fiber layer remains
 open unless a smaller transition invariant replaces it.
 -/
@@ -37,6 +38,7 @@ open GoertzelLemma818TripleTauLargeFiber20Data
 open GoertzelLemma818TripleTauLargeFiber20Block0Chunk0ComponentCertificate
 open GoertzelLemma818TripleTauLargeFiber20Block0Chunk1ComponentCertificate
 open GoertzelLemma818TripleTauLargeFiber20Block0ComponentCertificate
+open GoertzelLemma818TripleTauLargeFiber20Block1ComponentCertificate
 
 def tttCertifiedLargeFiberKeys : List (List LColor) :=
   [ tttLargeFiber4Key
@@ -87,6 +89,14 @@ def tttCertifiedStateCountWithFiber20Block0 : Nat :=
 
 def tttRemainingStateCountAfterFiber20Block0 : Nat :=
   tttCompositeStateCount - tttCertifiedStateCountWithFiber20Block0
+
+def tttLargeFiber20Block1CertifiedRows : Nat := 64
+
+def tttCertifiedStateCountWithFiber20Block1 : Nat :=
+  tttCertifiedStateCountWithFiber20Block0 + tttLargeFiber20Block1CertifiedRows
+
+def tttRemainingStateCountAfterFiber20Block1 : Nat :=
+  tttCompositeStateCount - tttCertifiedStateCountWithFiber20Block1
 
 def tttTargetProgressCountsAudit : Bool :=
   tttLightFiberCount == 69
@@ -155,6 +165,20 @@ theorem tttLargeFiber20Block0ProgressAudit_ok :
     tttLargeFiber20Block0ProgressAudit = true := by
   decide
 
+def tttLargeFiber20Block1ProgressAudit : Bool :=
+  tttLargeFiber20Block0ProgressAudit
+    && tttRemainingLargeFiberKeys.contains tttLargeFiber20Key
+    && tttLargeFiber20Key ==
+      [LColor.r, LColor.p, LColor.r, LColor.p]
+    && tttLargeFiber20Block1CertifiedRows == 64
+    && tttCertifiedStateCountWithFiber20Block1 == 2048
+    && tttRemainingStateCountAfterFiber20Block1 == 4480
+    && tttLargeFiber20Block1ComponentCertificateAudit
+
+theorem tttLargeFiber20Block1ProgressAudit_ok :
+    tttLargeFiber20Block1ProgressAudit = true := by
+  decide
+
 def tttMode09WitnessAudit : Bool :=
   semanticWitnessForMode FrontierMode.mode09 ==
       SemanticModeWitness.target RepresentativeSemanticTarget.ttt
@@ -174,13 +198,14 @@ def tttPartialTargetCertificateAudit : Bool :=
     && tttLargeFiber4ComponentCertificateAudit
     && tttLargeFiber8ComponentCertificateAudit
     && tttLargeFiber10ComponentCertificateAudit
-    && tttLargeFiber20Block0ProgressAudit
+    && tttLargeFiber20Block1ProgressAudit
 
 /--
 The currently checked `TTT`/`mode09` semantic surface.
 
 This proves only partial target progress: light fibers plus the three listed
-large fibers and the first 64-row block of the next large fiber are certified.
+large fibers and the first two 64-row blocks of the next large fiber are
+certified.
 The rest of the fibers in `tttRemainingLargeFiberKeys` are still outside this
 audit.
 -/
@@ -193,7 +218,7 @@ theorem tttPartialTargetCertificateAudit_ok :
     tttLargeFiber4ComponentCertificateAudit_ok,
     tttLargeFiber8ComponentCertificateAudit_ok,
     tttLargeFiber10ComponentCertificateAudit_ok,
-    tttLargeFiber20Block0ProgressAudit_ok]
+    tttLargeFiber20Block1ProgressAudit_ok]
 
 end GoertzelLemma818TripleTauTargetProgress
 
