@@ -44,9 +44,13 @@ chain-level slice for another remaining mode: `MMM`/`mode05`, fixed-input key
 full mirror-triple light surface: `mmmLightComponentCertificateAudit_ok`
 checks the 69 light fixed-input fibers, the 45 empty fibers, the 24 nonempty
 size-16 fibers, all 384 light states, and the reversed-key coverage invariant
-under the actual `[mirror, mirror, mirror]` chain word.  This is still not the
-full `MMM` target audit: the large fixed-input fibers for `mode05` remain open,
-and the finite automaton closure/consequence theorem is still open.
+under the actual `[mirror, mirror, mirror]` chain word.
+`GoertzelLemma818MirrorTripleLargeFiber36Chunk0ComponentCertificate.lean`
+starts the large-fiber layer with one 16-row chunk for reversed key
+`[b,b,r,r]`, rechecking row moves, parent-map agreement, and parent convergence
+under the actual mirror-triple word.  This is still not the full `MMM` target
+audit: the large fixed-input fibers for `mode05` remain mostly open, and the
+finite automaton closure/consequence theorem is still open.
 
 ## Current Pillar-C Reset
 
