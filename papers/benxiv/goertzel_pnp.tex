@@ -90,8 +90,13 @@ vanishing $2^{-k}=m^{-\Theta(1)}$ fraction of Valiant--Vazirani columns --- and
 the ``local comparator dominates the global decoder'' calibration is not valid as
 stated. The structural facts, together with a finite two-point success-domination
 counterexample, are formalized with no \texttt{sorry} in the Lean module
-\texttt{Mettapedia.Computability.PNP.PostSwitchInputObstruction}. We state the
-scope exactly: what is machine-checked is the \emph{structural} input-preservation
+\texttt{Mettapedia.Computability.PNP.PostSwitchInputObstruction}. We further
+machine-check that the natural repair --- re-deriving success domination on the
+$\Ti$-invariant reduced projection $(\zz,a_i)$ --- does not reduce the problem: on
+that neutral interface, success domination is logically equivalent to the
+average-case witness-bit hardness the route must prove, so it renames the target
+rather than weakening it (stated conditional on two explicit, unproven hypotheses).
+We state the scope exactly: what is machine-checked is the \emph{structural} input-preservation
 fact; the full claim that \emph{no} local comparator dominates a global decoder on
 this ensemble engages the genuine difficulty and is \emph{not} established by this
 work. We make no claim about $\mathrm{P}$ versus $\mathrm{NP}$, which remains open;
@@ -378,6 +383,67 @@ loses to the global decoder. It is the local, combinatorial shadow of the
 fiber-crossing exhibited above; the involution that would have justified
 calibration moves $\uu$ off the fiber rather than within it.
 
+\subsection{The reduced-projection repair is circular}
+\label{sec:coarse}
+
+The natural repair conditions the local rules on the $\Ti$-invariant projection
+$(\zz,a_i)$ --- the coordinate calibration may legitimately use --- rather than on
+the full $\uu$, hoping to trade the calibration gap for a coarser interface. We
+machine-check that this does not reduce the problem.
+
+Write $\mathrm{StarSW}$ for the half-bound success domination must deliver on a
+neutral interface: that every decoder scores at most $\tfrac12+\mathrm{slack}$ on
+the witness bit --- exactly the average-case witness-bit hardness of $\Dm$. If the
+reduced projection is neutral --- the property the repair itself asserts --- then
+the best $(\zz,a_i)$-measurable comparator scores exactly $\tfrac12$, and success
+domination on $(\zz,a_i)$ is \emph{logically equivalent} to $\mathrm{StarSW}$:
+
+\begin{lstlisting}[language={}]
+theorem bestLocalSuccess_eq_half_of_neutral (hN : Neutral u x) :
+    bestLocalSuccess u x = 1 / 2
+
+theorem coarseDominationAll_iff_starSW_of_neutral (hN : Neutral u x) :
+    CoarseDominationAll u x decoderSuccess slack
+      <-> StarSW decoderSuccess slack
+\end{lstlisting}
+
+Re-deriving domination on $(\zz,a_i)$ is thus re-deriving the hardness target, not
+reducing to anything weaker. A concrete two-point instance makes the failure
+explicit: two full instances that share the reduced projection but differ in $b$
+give a neutral projection on which a $b$-reading decoder wins on both, so
+domination fails ($1\le\tfrac12$):
+
+\begin{lstlisting}[language={}]
+theorem coarseProjectionToy_not_dominates :
+    not (Dominates coarseProjectionToyUCoarse coarseProjectionToyWitness ...)
+\end{lstlisting}
+
+This is an instance of a \emph{no-threading} impossibility: a neutral statistic
+cannot also be sufficient for a target that is a deterministic function of the
+instance (\texttt{neutral\_not\_sufficient}, from the general
+\texttt{noThreadingLemma}). Every coordinate dropped to gain $\Ti$-invariance is a
+coordinate the global decoder may still use; neutrality and sufficiency trade one
+for one.
+
+We are exact about scope. The conclusion that the repair is circular \emph{on the
+ensemble} is a theorem \emph{conditional on two explicit hypotheses we do not
+prove} --- that $(\zz,a_i)$ is neutral on $\Dm$, and that $\mathrm{StarSW}$ implies
+the separation --- both kept in the signature:
+
+\begin{lstlisting}[language={}]
+theorem coarseProjectionRepair_obstruction_conditional
+    (EnsembleCoarseNeutral : Neutral u x)
+    (StarSWImpliesSeparation : StarSW decoderSuccess slack -> pNeNPClaim) :
+    (CoarseDominationAll u x decoderSuccess slack <-> StarSW decoderSuccess slack)
+      /\ (CoarseDominationAll u x decoderSuccess slack -> pNeNPClaim)
+\end{lstlisting}
+
+The machine-checked content is the \emph{equivalence} and the \emph{finite
+counterexample}; together they show the reduced-projection repair renames the
+average-case hardness rather than reducing to it. The module is
+\texttt{Mettapedia.Computability.PNP.CoarseProjectionObstruction}, without
+\texttt{sorry}.
+
 \section{Status and scope}
 \label{sec:scope}
 
@@ -412,11 +478,15 @@ comparator can dominate a global decoder on the ensemble $\Dm$. That stronger,
 measure-theoretic statement --- a genuine anti-concentration / independence claim
 about the conditional law of $(X_i,Y_i)$ given the full $\uu$, integrated against
 the Valiant--Vazirani and masking laws --- is exactly the difficulty the proof
-must confront, and it is left open here. In particular, a repaired argument might
-still recover a valid domination bound by conditioning only on the invariant
-projection $(\zz,a_i)$ and supplying a separate mechanism for the $b$-coordinate,
-or by establishing the exchangeability at fixed $\uu$ from some structure other
-than $\Ti$. Nothing in this work rules out such a repair.
+must confront, and it is left open here. In particular, conditioning only on the
+invariant projection $(\zz,a_i)$ does not by itself help:
+\S\ref{sec:coarse} shows the domination bound one would re-derive there is
+equivalent to the average-case hardness it must prove, and a \emph{separate}
+neutral local mechanism for the $b$-coordinate is excluded by the same
+no-threading impossibility. What this work does \emph{not} rule out is a domination
+bound from genuinely new structure --- an exchangeability at fixed $\uu$ from a
+symmetry other than $\Ti$, or a direct anti-concentration of
+$(X_i,Y_i)\mid\uu$ against the masking and Valiant--Vazirani laws.
 
 \paragraph{$\mathrm{P}$ versus $\mathrm{NP}$ remains open.} We make no claim, in
 either direction, about $\mathrm{P}$ versus $\mathrm{NP}$. The finding concerns
@@ -436,13 +506,15 @@ involution supplies only on a vanishing fraction of columns. Closing the route
 therefore requires one of the following, none of which is provided here.
 
 \begin{itemize}
-  \item \emph{Calibration on the reduced projection.} Re-derive the
-        success-domination bound with the local rules conditioned on the
-        $\Ti$-invariant projection $(\zz,a_i)$ rather than on the full
-        $\uu=(\zz,a_i,b)$, and show that neutrality and sparsification still pin
-        the resulting rules near $1/2$. This trades the calibration gap for a
-        coarser local interface and must be checked to still feed the per-block
-        bounds of v12, \S5--\S6.
+  \item \emph{Calibration on the reduced projection --- machine-checked to be
+        circular.} One might re-derive the success-domination bound conditioning
+        the local rules on the $\Ti$-invariant projection $(\zz,a_i)$ rather than
+        the full $\uu=(\zz,a_i,b)$. Section~\ref{sec:coarse} shows this is not a
+        genuine reduction: on the neutral reduced projection, success domination is
+        \emph{equivalent} to the average-case hardness $\mathrm{StarSW}$ the route
+        must prove (conditional on the two explicit hypotheses of
+        \S\ref{sec:coarse}), so it renames the target rather than weakening it. We
+        record it here only to mark this door closed.
   \item \emph{Exchangeability at fixed $\uu$ from new structure.} Exhibit a
         promise-preserving symmetry that genuinely fixes the full
         $(\zz,a_i,b)$ while toggling $X_i$, or otherwise establish the
@@ -455,8 +527,10 @@ therefore requires one of the following, none of which is provided here.
         into the slack of \eqref{eq:domination}.
 \end{itemize}
 
-Each of these is a substantive analytic task on the masked-and-isolated ensemble.
-Until one is carried out, the Switching-by-Weakness route does not, as written,
+The two latter items are substantive analytic tasks on the masked-and-isolated
+ensemble; the first is closed above, machine-checked to be circular rather than a
+reduction. Until one of the substantive tasks is carried out, the
+Switching-by-Weakness route does not, as written,
 establish its distributional lower bound, because the calibration step on which
 that bound depends is not valid at fixed $\uu$ on the bulk of the ensemble. The
 machine-checked content of this paper is exactly the boundary of that gap, and
@@ -467,8 +541,10 @@ The manuscript discussed is Ben Goertzel, \emph{$\mathrm{P}\neq\mathrm{NP}$: A
 Non-Relativizing Proof via Quantale Weakness and Geometric Complexity},
 version~v12. The formalization is work of the MeTTapedia formalization effort; the
 Lean development is the module
-\texttt{Mettapedia.Computability.PNP.PostSwitchInputObstruction}, which carries no
-\texttt{sorry}. Notation in Sections~\ref{sec:problem}--\ref{sec:crux} follows
+\texttt{Mettapedia.Computability.PNP.PostSwitchInputObstruction} (the calibration
+obstruction), together with \texttt{CoarseProjectionObstruction} and the general
+\texttt{NoThreadingLemma} (the reduced-projection circularity of
+\S\ref{sec:coarse}); all carry no \texttt{sorry}. Notation in Sections~\ref{sec:problem}--\ref{sec:crux} follows
 v12 (the ensemble $\Dm$, the masks $H_m$, the Valiant--Vazirani labels
 $(a_i,b)$ with $a_i=\Aei$, the SILS features $\zz$, the post-switch input
 $\uu_i=(\zz,a_i,b)$, the involution $\Ti$, and the polytime-capped weakness
