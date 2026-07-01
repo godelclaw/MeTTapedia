@@ -474,6 +474,22 @@ The next pass should continue only as small explicit parent-path/component
 chunks or replace the remaining large-fiber proof with a finite transition
 certificate, then feed those audits through `GoertzelLemma818SemanticBridge.lean`.
 
+Final Gate-2 exploration stop, 2026-07-01: the finite-mode finding is now the
+checkpoint, not an instruction to keep sweeping.  The profile layer is a checked
+finite 20-mode, 40-transition table with representative/hash coverage, 30
+length-1-through-4 atom-connectivity rows, two length-5 singleton quotient rows,
+and archived per-fixed-input connectivity evidence for every mode.  Thus no
+profile mode is currently listed as connectivity-unverified at the metadata
+layer.  What is not closed is the semantic lift from those archived rows to
+actual chain-state `LKR_in`: six base modes have real chain certificates,
+`mode09` has its light `TTT` fibers and the first large `[r,r,b,b]` fiber
+certified, and the remaining semantic work is the other eleven large `TTT`
+fibers plus
+`mode00/mode01/mode02/mode03/mode05/mode06/mode08/mode12/mode13/mode14/mode15/mode17/mode19`.
+The next pass should formalize this stabilized finite surface by compact
+per-fixed-input chain/component certificates or an equivalent finite transition
+invariant.  It should not extend representative lengths or raise kernel limits.
+
 The CAP5/F2, GP(12,2), dodecahedral six-cut, and related files below are
 exploratory audits of a divergent F2-additivity route.  They are retained for
 negative evidence and infrastructure, but they are not Ben's actual route and

@@ -302,6 +302,22 @@ semantic certificate for the remaining target modes, starting with the other
 eleven large `TTT`/`mode09` fibers or with an equivalent finite transition
 invariant.
 
+Current Gate-2 checkpoint, 2026-07-01: stop the open-ended connectivity sweeps
+here.  The finite mode set has stabilized and is already the formal target:
+20 modes, 40 closed table transitions, representative/hash coverage, 30
+length-1-through-4 atom-connectivity records, two length-5 singleton quotient
+records, and archived per-fixed-input connectivity evidence for every mode.
+No metadata/profile mode is currently marked as connectivity-unverified.  The
+open frontier is semantic, not exploratory: the six base modes have chain-level
+certificates, `mode09` has its light `TTT` fibers plus the first large
+`[r,r,b,b]` fiber certified, and the remaining work is the other eleven large
+`TTT` fibers plus the thirteen non-base modes
+`mode00/mode01/mode02/mode03/mode05/mode06/mode08/mode12/mode13/mode14/mode15/mode17/mode19`.
+Formalize that finite surface next with compact per-fixed-input
+chain/component certificates, or replace it by a finite transition invariant
+that feeds the semantic bridge.  Do not extend lengths or representatives from
+this checkpoint.
+
 The older CAP5/F2, GP(12,2), and six-cut files are exploratory negative audits
 of a divergent additive F2 route.  They remain useful for provenance and
 infrastructure, but they are not Ben's actual route and should not be worked
