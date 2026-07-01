@@ -256,6 +256,19 @@ not part of the proof surface.  The next pass should formalize smaller
 component certificates or the finite transition automaton; it should not extend
 word lengths or raise kernel limits.
 
+Second stop checkpoint, 2026-07-01: a later generated continuation for the
+remaining blocks of the first `TTT` large fiber was not imported and is not
+counted as proof evidence.  The checked Lean surface remains the same
+semantic frontier: six base modes certified by real chain audits, `TTT`/`mode09`
+light fibers certified, and rows 0 through 127 of the first `[r,r,b,b]`
+size-512 fiber certified.  The finite automaton itself is still closed at the
+metadata layer: 20 modes, 40 transitions, archived per-fixed-input
+connectivity evidence for all modes, and no profile mode currently flagged as
+missing connectivity evidence.  The open layer is semantic certification for
+the rest of `mode09` and the other thirteen non-base representative modes, or
+an equivalent finite transition certificate that makes those per-fixed-input
+paths unnecessary as separate large tables.
+
 `GoertzelLemma818SemanticBridge.lean` now records the finite semantic handoff
 for that next pass.  It maps each of the 20 profile modes to exactly one
 planned semantic witness: one of the six base-certified chain words, or one of
