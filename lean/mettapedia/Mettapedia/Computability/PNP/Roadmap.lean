@@ -16,6 +16,7 @@ inductive PNPRoadmapStage where
   | localLedgerAudit
   | goertzelCalibrationBreak
   | steelmanConditional
+  | coarseProjectionObstruction
   | weaknessCalculus
   | barrierObstruction
   | replacementRoute
@@ -84,6 +85,14 @@ def currentPNPRoadmap : List PNPRoadmapEntry :=
       itvLowerPercent := 92
       itvUpperPercent := 100
       obligation := "Kernel-flip exact neutrality and no-threading are finite checked facts; the conditional chain is checked only after the explicit StarSWAverageCaseWitnessBitHardness input is supplied. No concentration/log-Sobolev replacement and no final separation are asserted." },
+    { stage := .coarseProjectionObstruction
+      proofNodeKey := "pnp.coarse-projection-repair-obstruction"
+      status := .checked
+      truthValue := ⟨100, 93⟩
+      progressPercent := 100
+      itvLowerPercent := 93
+      itvUpperPercent := 100
+      obligation := "Coarse-projection domination is checked only as an equivalence to the StarSW half-bound under explicit EnsembleCoarseNeutral; StarSWImpliesSeparation remains a separate open chain input." },
     { stage := .weaknessCalculus
       proofNodeKey := "pnp.weakness-calculus.finite-spectrum-gap"
       status := .checked
@@ -183,6 +192,19 @@ theorem currentPNPRoadmap_records_weakness_calculus :
        itvUpperPercent := 100
        obligation :=
         "Use the finite spectrum/gap, split-budget additive tensor, independent-value tensor, and sequential budget-composition calculus as reusable bookkeeping only; domination remains the explicit StarSW open input and no final separation is asserted." } :
+      PNPRoadmapEntry) ∈ currentPNPRoadmap := by
+  simp [currentPNPRoadmap]
+
+theorem currentPNPRoadmap_records_coarse_projection_obstruction :
+    ({ stage := PNPRoadmapStage.coarseProjectionObstruction
+       proofNodeKey := "pnp.coarse-projection-repair-obstruction"
+       status := .checked
+       truthValue := ⟨100, 93⟩
+       progressPercent := 100
+       itvLowerPercent := 93
+       itvUpperPercent := 100
+       obligation :=
+        "Coarse-projection domination is checked only as an equivalence to the StarSW half-bound under explicit EnsembleCoarseNeutral; StarSWImpliesSeparation remains a separate open chain input." } :
       PNPRoadmapEntry) ∈ currentPNPRoadmap := by
   simp [currentPNPRoadmap]
 

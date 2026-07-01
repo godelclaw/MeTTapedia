@@ -3,6 +3,7 @@ import Mettapedia.Computability.PNP.ClockedKpolyActualGapClosure
 import Mettapedia.Computability.PNP.CruxKpolyBridgeCurrentStatus
 import Mettapedia.Computability.PNP.CruxKpolyPromotedPacket
 import Mettapedia.Computability.PNP.CruxSynthesisRegression
+import Mettapedia.Computability.PNP.CoarseProjectionObstruction
 import Mettapedia.Computability.PNP.KpolyPolynomialFunctorAgreementObstruction
 import Mettapedia.Computability.PNP.KpolyQuantaleShortcutRemovalCanary
 import Mettapedia.Computability.PNP.Barriers.ReplacementOpened
@@ -164,6 +165,13 @@ def currentPNPProofNodes : List PNPProofNode := [
     truthValue := ⟨100, 92⟩,
     evidence := "KernelFlipInvolution proves the finite ZMod 2 kernel-flip pairing `kernelFlip_exactNeutrality_card`, with `toyKernelFlip_exactNeutrality_card` as an inhabited model. NoThreadingLemma proves `noThreading_neutral_sufficient_blocks_nontrivial_bit`, showing a neutral local statistic cannot also be sufficient for a nontrivial deterministic witness bit. PNPSteelmanConditional proves `pnp_steelman_conditional`: KernelFlipNeutrality plus the explicit open StarSWAverageCaseWitnessBitHardness input implies the abstract PNP endpoint through the non-SW chain.",
     nextObligation := "The exact remaining input is StarSWAverageCaseWitnessBitHardness for Ben's masked isolated ensemble; no concentration/log-Sobolev replacement and no unconditional separation is asserted by this node."
+  },
+  {
+    key := "pnp.coarse-projection-repair-obstruction",
+    status := .checked,
+    truthValue := ⟨100, 93⟩,
+    evidence := "CoarseProjectionObstruction proves `uCoarse_comp_T` and `uFull_T_moves_at`, the neutral-interface half-bound theorem `bestLocalSuccess_eq_half_of_neutral`, the domination equivalence `coarseDominationAll_iff_starSW_of_neutral`, the two-point failure `coarseProjectionToy_not_dominates`, the no-threading instance `coarseProjectionToy_not_sufficient`, and the conditional `coarseProjectionRepair_obstruction_conditional` with explicit hypotheses `EnsembleCoarseNeutral` and `StarSWImpliesSeparation`.",
+    nextObligation := "Do not treat the coarse `(z,a_i)` repair as an unconditional domination theorem: on a neutral interface it is exactly the StarSW half-bound, and neutrality on Ben's ensemble plus StarSW-to-separation remain open hypotheses."
   },
   {
     key := "pnp.weakness-calculus.finite-spectrum-gap",
