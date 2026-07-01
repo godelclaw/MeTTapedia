@@ -23,6 +23,7 @@ inductive PNPRoadmapStage where
   | v13ConditionalClash
   | v13FaithfulnessAudit
   | v13PhaseEConcrete
+  | v13PhaseEScaled
   | weaknessCalculus
   | barrierObstruction
   | replacementRoute
@@ -147,6 +148,14 @@ def currentPNPRoadmap : List PNPRoadmapEntry :=
       itvLowerPercent := 86
       itvUpperPercent := 100
       obligation := "Treat the small locked-SAT smoke instance as a checked Phase E entry, not as a scaled-ensemble qSSM or boundary-law proof." },
+    { stage := .v13PhaseEScaled
+      proofNodeKey := "pnp.v13.phase-e.scaled-obligation-map"
+      status := .checked
+      truthValue := ⟨100, 86⟩
+      progressPercent := 100
+      itvLowerPercent := 86
+      itvUpperPercent := 100
+      obligation := "Use the parameterized Phase E family as the current scaled endpoint: seven combinatorial obligations discharge at scale, while safeQSSM and boundaryMixing are bounded-class results for PhaseEScaledTargetBlindPayloadObserver." },
     { stage := .weaknessCalculus
       proofNodeKey := "pnp.weakness-calculus.finite-spectrum-gap"
       status := .checked
@@ -337,6 +346,19 @@ theorem currentPNPRoadmap_records_v13_phase_e_concrete :
        itvUpperPercent := 100
        obligation :=
         "Treat the small locked-SAT smoke instance as a checked Phase E entry, not as a scaled-ensemble qSSM or boundary-law proof." } :
+      PNPRoadmapEntry) ∈ currentPNPRoadmap := by
+  simp [currentPNPRoadmap]
+
+theorem currentPNPRoadmap_records_v13_phase_e_scaled :
+    ({ stage := PNPRoadmapStage.v13PhaseEScaled
+       proofNodeKey := "pnp.v13.phase-e.scaled-obligation-map"
+       status := .checked
+       truthValue := ⟨100, 86⟩
+       progressPercent := 100
+       itvLowerPercent := 86
+       itvUpperPercent := 100
+       obligation :=
+        "Use the parameterized Phase E family as the current scaled endpoint: seven combinatorial obligations discharge at scale, while safeQSSM and boundaryMixing are bounded-class results for PhaseEScaledTargetBlindPayloadObserver." } :
       PNPRoadmapEntry) ∈ currentPNPRoadmap := by
   simp [currentPNPRoadmap]
 
