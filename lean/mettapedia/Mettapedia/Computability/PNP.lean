@@ -10,6 +10,7 @@ import Mettapedia.Computability.PNP.V13EvidenceSpine
 import Mettapedia.Computability.PNP.V13FaithfulnessAudit
 import Mettapedia.Computability.PNP.V13GaugeBufferedLockedInterface
 import Mettapedia.Computability.PNP.V13PhaseEConcrete
+import Mettapedia.Computability.PNP.V13PhaseEScaled
 import Mettapedia.Computability.PNP.WeaknessCalculus
 
 /-!
