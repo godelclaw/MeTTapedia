@@ -22,6 +22,7 @@ import Mettapedia.Computability.PNP.V13EvidenceSpine
 import Mettapedia.Computability.PNP.V13FaithfulnessAudit
 import Mettapedia.Computability.PNP.V13GaugeBufferedLockedInterface
 import Mettapedia.Computability.PNP.V13PhaseEConcrete
+import Mettapedia.Computability.PNP.V13PhaseEScaled
 import Mettapedia.Computability.PNP.WeaknessCalculus
 /-!
 # PNP proof state
@@ -1008,4 +1009,20 @@ theorem currentPNPV13PhaseEConcrete_node :
       phaseEObligationMap_length,
       phaseEObligationMap_has_no_failures,
       phaseE_all_nine_obligations⟩
+
+theorem currentPNPV13PhaseEScaled_node :
+    (∀ m k : Nat,
+      Nonempty
+        (GaugeBufferedLockedInterface
+          (PhaseEScaledWorld m k) (PhaseEScaledPublic m k)
+          PhaseEScaledNeutral (PhaseEScaledSafe m k) (PhaseEScaledGauge m)
+          Unit Unit Unit Unit Unit (PhaseEScaledPayload m k) Unit Unit Unit)) ∧
+      phaseEScaledObligationMap.length = 9 ∧
+        (∀ row ∈ phaseEScaledObligationMap, row.status ≠ .failed) ∧
+          (∀ m k : Nat, PhaseEScaledAllMappedObligations m k) := by
+  exact
+    ⟨fun m k => ⟨phaseEScaledLockedInterface m k⟩,
+      phaseEScaledObligationMap_length,
+      phaseEScaledObligationMap_has_no_failures,
+      phaseEScaled_all_mapped_obligations⟩
 end Mettapedia.Computability.PNP
