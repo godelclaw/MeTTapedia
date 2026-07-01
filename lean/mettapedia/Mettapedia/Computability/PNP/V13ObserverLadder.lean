@@ -220,4 +220,88 @@ theorem phaseEScaled_rung2_targetBlindParity_exact_bound (m k : Nat)
 def PhaseEScaledRung2Finding : String :=
   "Rung 2 has the same public-lock stop: a one-coordinate junta/parity on targetLock succeeds with probability one; target-blind juntas and parities remain exactly half."
 
+/-! ## Rung 3: restriction seed and switching frontier -/
+
+inductive PhaseEScaledRestrictionValue where
+  | free
+  | fixed : Bool -> PhaseEScaledRestrictionValue
+deriving DecidableEq, Repr
+
+structure PhaseEScaledRestriction (m k : Nat) where
+  value : PhaseEScaledCoordinate m k -> PhaseEScaledRestrictionValue
+  fixedSet : Finset (PhaseEScaledCoordinate m k)
+  fixedSet_spec :
+    ∀ c : PhaseEScaledCoordinate m k,
+      c ∈ fixedSet ↔ ∃ b, value c = .fixed b
+  targetFree : value .targetLock = .free
+
+def phaseEScaledEmptyRestriction (m k : Nat) :
+    PhaseEScaledRestriction m k where
+  value := fun _ => .free
+  fixedSet := ∅
+  fixedSet_spec := by
+    intro c
+    simp
+  targetFree := rfl
+
+def phaseEScaledRestrictionResidualQueries {m k q : Nat}
+    (R : PhaseEScaledRestriction m k)
+    (observer : PhaseEScaledDecisionTreeObserver m k q) : Nat :=
+  observer.readSet.card - R.fixedSet.card
+
+structure PhaseEScaledRestrictionSeed (m k q : Nat) where
+  observer : PhaseEScaledDecisionTreeObserver m k q
+  restriction : PhaseEScaledRestriction m k
+  coversObserverReads : observer.readSet ⊆ restriction.fixedSet
+  noTargetRead : PhaseEScaledCoordinate.targetLock ∉ observer.readSet
+
+theorem phaseEScaled_restriction_seed_residual_queries_zero
+    {m k q : Nat} (seed : PhaseEScaledRestrictionSeed m k q) :
+    phaseEScaledRestrictionResidualQueries seed.restriction seed.observer = 0 := by
+  unfold phaseEScaledRestrictionResidualQueries
+  exact Nat.sub_eq_zero_of_le (Finset.card_le_card seed.coversObserverReads)
+
+def phaseEScaledRestrictionSeedCollapsedObserver {m k q : Nat}
+    (_seed : PhaseEScaledRestrictionSeed m k q) :
+    PhaseEScaledNoHitDecisionTreeObserver m k :=
+  fun _ => false
+
+theorem phaseEScaled_restriction_seed_collapsed_success_eq_half
+    {m k q : Nat} (seed : PhaseEScaledRestrictionSeed m k q) :
+    globalDecoderSuccess
+        (fun omega : PhaseEScaledWorld m k =>
+          phaseEScaledRestrictionSeedCollapsedObserver seed
+            (phaseEScaledPayloadSummary omega))
+        phaseEScaledTarget =
+      (1 : Rat) / 2 :=
+  phaseEScaled_noHitDecisionTree_success_eq_half m k
+    (phaseEScaledRestrictionSeedCollapsedObserver seed)
+
+theorem phaseEScaled_restriction_seed_probability_one :
+    (1 : Rat) = 1 := by
+  rfl
+
+/--
+Pinned switching frontier for the scaled family.
+
+The statement asks for an explicit finite restriction distribution whose
+probability of reducing every `q`-query observer to a target-blind residual
+observer of depth at most `residualDepth` is at least `successProbability`.
+This is the first unproved ladder step after the checked seed case.
+-/
+def PhaseEScaledSwitchingStatementNeeded : Prop :=
+  ∀ m k q residualDepth : Nat,
+    ∀ successProbability : Rat,
+      0 ≤ successProbability ->
+        successProbability ≤ 1 ->
+          ∀ observer : PhaseEScaledDecisionTreeObserver m k q,
+            ∃ restriction : PhaseEScaledRestriction m k,
+              restriction.value PhaseEScaledCoordinate.targetLock =
+                  PhaseEScaledRestrictionValue.free ∧
+                phaseEScaledRestrictionResidualQueries restriction observer ≤
+                  residualDepth
+
+def PhaseEScaledRung3Finding : String :=
+  "Rung 3 seed is checked for restrictions covering all non-target reads; the random switching lift is pinned as PhaseEScaledSwitchingStatementNeeded."
+
 end Mettapedia.Computability.PNP
