@@ -487,6 +487,16 @@ by explicit component rows, parent-map agreement, and bounded parent paths to
 root `4368`.  Thus rows 0 through 447 of `[r,r,p,p]` are now checked; the
 remaining 64 rows of that fiber and the other ten large `TTT` fibers remain
 open.
+`GoertzelLemma818TripleTauLargeFiber8Block7ComponentCertificate.lean` adds the
+last four 16-row chunks for the same fiber.  The theorem
+`tttLargeFiber8Block7ComponentCertificateAudit_ok` checks rows 448 through 511
+by explicit component rows, parent-map agreement, and bounded parent paths to
+root `4368`.  Thus all 512 rows of `[r,r,p,p]` are now checked; the other ten
+large `TTT` fibers remain open.
+`GoertzelLemma818TripleTauLargeFiber8Certificate.lean` aggregates the eight
+block audits with the target/mode and count checks into
+`tttLargeFiber8ComponentCertificateAudit_ok`, the downstream dependency point
+for this completed fixed-input fiber.
 
 Checkpoint stop status, 2026-07-01: the exploratory Gate-2 connectivity sweeps
 are stopped.  The finite mode set is not the open question anymore: Lean records
@@ -502,9 +512,8 @@ length-2 chain-level parent/path certificates
 still need compact per-fixed-input chain/component certificates, or an
 equivalent finite transition certificate, before `wordMode_induction` can yield
 all-chain `LKR_in`.  The first non-base target, `mode09`, now has its `TTT`
-light fibers certified, the first large `TTT` fiber fully certified, and the
-first 448 rows of the second large `TTT` fiber certified, but not the
-remaining large `TTT` work.  This checkpoint is
+light fibers certified, and the first two large `TTT` fibers fully certified,
+but not the remaining large `TTT` work.  This checkpoint is
 therefore a finite-mode/table-closure plus partial target-certificate
 checkpoint, not a completed Lemma 8.18/8.19 lift and not a Four Color Theorem
 claim.
@@ -518,9 +527,8 @@ for blocks 1, 2, 3, 4, 5, 6, and 7.
 The status split is therefore precise:
 all 20 profile modes have metadata/quotient connectivity evidence; six modes
 have full base chain certificates; `mode09` has the light `TTT` fibers plus the
-first large `TTT` fiber certified plus the first 448 rows of the second
-large `TTT` fiber; and the remaining semantic certificates are still open for
-the remaining 64 rows of `[r,r,p,p]`, the other ten large `TTT` fibers, and for
+first two large `TTT` fibers certified; and the remaining semantic certificates
+are still open for the other ten large `TTT` fibers and for
 `mode00/mode01/mode02/mode03/mode05/mode06/mode08/mode12/mode13/mode14/mode15/mode17/mode19`.
 The 16-row chunk shape with explicit parent paths is viable through block 7.
 The next pass should continue only as small explicit parent-path/component
@@ -536,9 +544,8 @@ profile mode is currently listed as connectivity-unverified at the metadata
 layer.  What is not closed is the semantic lift from those archived rows to
 actual chain-state `LKR_in`: six base modes have real chain certificates,
 `mode09` has its light `TTT` fibers, the first large `[r,r,b,b]` fiber
-certified, and the first 448 rows of the second large `[r,r,p,p]` fiber
-certified.  The remaining semantic work is the other 64 rows of `[r,r,p,p]`,
-the other ten large `TTT` fibers, plus
+certified, and the second large `[r,r,p,p]` fiber certified.  The remaining
+semantic work is the other ten large `TTT` fibers, plus
 `mode00/mode01/mode02/mode03/mode05/mode06/mode08/mode12/mode13/mode14/mode15/mode17/mode19`.
 The next pass should formalize this stabilized finite surface by compact
 per-fixed-input chain/component certificates or an equivalent finite transition
