@@ -126,4 +126,98 @@ theorem phaseEScaled_rung1_noHit_exact_bound (m k : Nat)
 def PhaseEScaledRung1Finding : String :=
   "Rung 1 stops for unrestricted full-coordinate observers: one query to the public target lock has success one; no-hit target-blind observers remain exactly half."
 
+/-! ## Rung 2: juntas and parities -/
+
+abbrev PhaseEScaledJuntaObserver (m k j : Nat) :=
+  PhaseEScaledDecisionTreeObserver m k j
+
+def phaseEScaledTargetLockJunta (m k : Nat) :
+    PhaseEScaledJuntaObserver m k 1 :=
+  phaseEScaledTargetLockObserver m k
+
+theorem phaseEScaled_targetLockJunta_success_eq_one (m k : Nat) :
+    globalDecoderSuccess
+        (phaseEScaledTargetLockJunta m k).decide
+        (@phaseEScaledTarget m k) =
+      1 :=
+  phaseEScaled_targetLockObserver_success_eq_one m k
+
+theorem phaseEScaled_targetLockJunta_support_card (m k : Nat) :
+    (phaseEScaledTargetLockJunta m k).readSet.card = 1 :=
+  phaseEScaled_targetLockObserver_reads_one_coordinate m k
+
+structure PhaseEScaledTargetBlindJuntaObserver (m k j : Nat) where
+  support : Finset (PhaseEScaledCoordinate m k)
+  supportBudget : support.card ≤ j
+  noTargetLock : PhaseEScaledCoordinate.targetLock ∉ support
+  decidePayload : PhaseEScaledPayload m k -> Bool
+
+theorem phaseEScaled_targetBlindJunta_success_eq_half (m k j : Nat)
+    (observer : PhaseEScaledTargetBlindJuntaObserver m k j) :
+    globalDecoderSuccess
+        (fun omega : PhaseEScaledWorld m k =>
+          observer.decidePayload (phaseEScaledPayloadSummary omega))
+        phaseEScaledTarget =
+      (1 : Rat) / 2 :=
+  phaseEScaled_payloadObserver_success_eq_half m k observer.decidePayload
+
+def phaseEScaledTargetParity (m k : Nat) :
+    PhaseEScaledWorld m k -> Bool :=
+  phaseEScaledTarget
+
+theorem phaseEScaled_targetParity_success_eq_one (m k : Nat) :
+    globalDecoderSuccess (phaseEScaledTargetParity m k)
+        (@phaseEScaledTarget m k) =
+      1 := by
+  exact globalDecoderSuccess_self_eq_one (@phaseEScaledTarget m k)
+
+structure PhaseEScaledTargetBlindParityObserver (m k : Nat) where
+  support : Finset (PhaseEScaledCoordinate m k)
+  noTargetLock : PhaseEScaledCoordinate.targetLock ∉ support
+  parityPayload : PhaseEScaledPayload m k -> Bool
+
+theorem phaseEScaled_targetBlindParity_success_eq_half (m k : Nat)
+    (observer : PhaseEScaledTargetBlindParityObserver m k) :
+    globalDecoderSuccess
+        (fun omega : PhaseEScaledWorld m k =>
+          observer.parityPayload (phaseEScaledPayloadSummary omega))
+        phaseEScaledTarget =
+      (1 : Rat) / 2 :=
+  phaseEScaled_payloadObserver_success_eq_half m k observer.parityPayload
+
+def phaseEScaledRung2JuntaEpsilon (j : Nat) : Rat :=
+  if 0 < j then (1 : Rat) / 2 else 0
+
+theorem phaseEScaled_rung2_targetLockJunta_tight_bound (m k : Nat) :
+    globalDecoderSuccess
+        (phaseEScaledTargetLockJunta m k).decide
+        (@phaseEScaledTarget m k) ≤
+      (1 : Rat) / 2 + phaseEScaledRung2JuntaEpsilon 1 := by
+  rw [phaseEScaled_targetLockJunta_success_eq_one]
+  simp [phaseEScaledRung2JuntaEpsilon]
+  norm_num
+
+theorem phaseEScaled_rung2_targetBlindJunta_exact_bound (m k j : Nat)
+    (observer : PhaseEScaledTargetBlindJuntaObserver m k j) :
+    globalDecoderSuccess
+        (fun omega : PhaseEScaledWorld m k =>
+          observer.decidePayload (phaseEScaledPayloadSummary omega))
+        phaseEScaledTarget ≤
+      (1 : Rat) / 2 + 0 := by
+  rw [phaseEScaled_targetBlindJunta_success_eq_half]
+  norm_num
+
+theorem phaseEScaled_rung2_targetBlindParity_exact_bound (m k : Nat)
+    (observer : PhaseEScaledTargetBlindParityObserver m k) :
+    globalDecoderSuccess
+        (fun omega : PhaseEScaledWorld m k =>
+          observer.parityPayload (phaseEScaledPayloadSummary omega))
+        phaseEScaledTarget ≤
+      (1 : Rat) / 2 + 0 := by
+  rw [phaseEScaled_targetBlindParity_success_eq_half]
+  norm_num
+
+def PhaseEScaledRung2Finding : String :=
+  "Rung 2 has the same public-lock stop: a one-coordinate junta/parity on targetLock succeeds with probability one; target-blind juntas and parities remain exactly half."
+
 end Mettapedia.Computability.PNP
