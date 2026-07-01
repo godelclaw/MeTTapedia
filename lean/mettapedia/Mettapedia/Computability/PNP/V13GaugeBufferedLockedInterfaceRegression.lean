@@ -1,0 +1,25 @@
+import Mettapedia.Computability.PNP.V13GaugeBufferedLockedInterface
+
+/-!
+# Regression checks for the v13 gauge-buffered locked ledger
+-/
+
+namespace Mettapedia.Computability.PNP
+
+set_option autoImplicit false
+
+#check GaugeBufferedLockedInterface.admissible_history_not_target_measurable
+#check GaugeBufferedLockedInterface.boundary_mixing_blocks_pivot_sufficiency
+#check GaugeBufferedLockedInterface.neutral_skeleton_not_target_sufficient
+#check toyLockedInterface_jointly_inhabits_all_nine
+#check toyLockedInterface_history_not_target_measurable
+#check toyLockedInterface_pivot_not_sufficient
+
+#print axioms GaugeBufferedLockedInterface.admissible_history_not_target_measurable
+#print axioms GaugeBufferedLockedInterface.boundary_mixing_blocks_pivot_sufficiency
+#print axioms GaugeBufferedLockedInterface.neutral_skeleton_not_target_sufficient
+#print axioms toyLockedInterface_jointly_inhabits_all_nine
+#print axioms toyLockedInterface_history_not_target_measurable
+#print axioms toyLockedInterface_pivot_not_sufficient
+
+end Mettapedia.Computability.PNP

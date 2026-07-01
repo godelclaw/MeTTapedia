@@ -19,6 +19,7 @@ inductive PNPRoadmapStage where
   | coarseProjectionObstruction
   | v13EvidenceSpine
   | v13CDENF
+  | v13GaugeBufferedLedger
   | weaknessCalculus
   | barrierObstruction
   | replacementRoute
@@ -111,6 +112,14 @@ def currentPNPRoadmap : List PNPRoadmapEntry :=
       itvLowerPercent := 91
       itvUpperPercent := 100
       obligation := "Route observer output through semantics-preserving CD-ENF before any safe/gauge ledger accounting; no opaque observer-output raw atom is available." },
+    { stage := .v13GaugeBufferedLedger
+      proofNodeKey := "pnp.v13.phase-c.gauge-buffered-ledger"
+      status := .checked
+      truthValue := ⟨100, 90⟩
+      progressPercent := 100
+      itvLowerPercent := 90
+      itvUpperPercent := 100
+      obligation := "Treat the two-point joint toy as evidence that the abstract nine-field ledger is consistent; the concrete ensemble remains out of scope." },
     { stage := .weaknessCalculus
       proofNodeKey := "pnp.weakness-calculus.finite-spectrum-gap"
       status := .checked
@@ -249,6 +258,19 @@ theorem currentPNPRoadmap_records_v13_cd_enf :
        itvUpperPercent := 100
        obligation :=
         "Route observer output through semantics-preserving CD-ENF before any safe/gauge ledger accounting; no opaque observer-output raw atom is available." } :
+      PNPRoadmapEntry) ∈ currentPNPRoadmap := by
+  simp [currentPNPRoadmap]
+
+theorem currentPNPRoadmap_records_v13_gauge_buffered_ledger :
+    ({ stage := PNPRoadmapStage.v13GaugeBufferedLedger
+       proofNodeKey := "pnp.v13.phase-c.gauge-buffered-ledger"
+       status := .checked
+       truthValue := ⟨100, 90⟩
+       progressPercent := 100
+       itvLowerPercent := 90
+       itvUpperPercent := 100
+       obligation :=
+        "Treat the two-point joint toy as evidence that the abstract nine-field ledger is consistent; the concrete ensemble remains out of scope." } :
       PNPRoadmapEntry) ∈ currentPNPRoadmap := by
   simp [currentPNPRoadmap]
 

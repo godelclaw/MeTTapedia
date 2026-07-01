@@ -18,6 +18,7 @@ import Mettapedia.Computability.PNP.PostSwitchInputObstruction
 import Mettapedia.Computability.PNP.SharedExactZABAffineDecisionListStructuralObstructionExactZAB
 import Mettapedia.Computability.PNP.V13CDENF
 import Mettapedia.Computability.PNP.V13EvidenceSpine
+import Mettapedia.Computability.PNP.V13GaugeBufferedLockedInterface
 import Mettapedia.Computability.PNP.WeaknessCalculus
 /-!
 # PNP proof state
@@ -188,6 +189,13 @@ def currentPNPProofNodes : List PNPProofNode := [
     truthValue := ⟨100, 91⟩,
     evidence := "V13CDENF defines RawEvidence without observer-output atoms, NormalEvidence with exactly neutral/safe/gauge leaf constructors, proves `CDENF_semantics`, and routes observers through `observerToEvidence_sat` plus `observerToCDENF_sat`; the toy observer interface inhabits the discipline.",
     nextObligation := "Use the normalized safe/gauge leaves as the ledger surface for Phase C, including the joint nine-field inhabitation test."
+  },
+  {
+    key := "pnp.v13.phase-c.gauge-buffered-ledger",
+    status := .checked,
+    truthValue := ⟨100, 90⟩,
+    evidence := "V13GaugeBufferedLockedInterface packages the nine ledger fields as propositions over Phase A/B objects and proves red-team coherence theorems for admissible histories, boundary mixing, and neutral skeleton non-sufficiency. `toyLockedInterface_jointly_inhabits_all_nine` checks that a two-point toy jointly inhabits all nine fields.",
+    nextObligation := "Use every ledger field explicitly in the Phase D conditional upper/lower clash record; any unused field is an architectural finding."
   },
   {
     key := "pnp.weakness-calculus.finite-spectrum-gap",
@@ -920,4 +928,18 @@ theorem currentPNPV13CDENF_node :
             toyObserverEvidenceInterface.evalObserver ()
               (toyObserverEvidenceInterface.publicInput omega) = output) := by
   exact ⟨toyCDENF_semantics, toy_observerToCDENF_sat⟩
+
+theorem currentPNPV13GaugeBufferedLedger_node :
+    Nonempty
+        (GaugeBufferedLockedInterface
+          Bool Bool toyCDENFNeutral toyCDENFSafe toyCDENFGauge Bool Unit Unit
+          Unit Unit Unit Unit Bool Unit) ∧
+      ¬ MeasurableWrt toyLockedInterface.historyField toyLockedInterface.target ∧
+      ¬ ∃ h0 : Unit -> Bool,
+        ∀ omega, toyLockedInterface.target omega =
+          h0 (toyLockedInterface.pivotSummary omega) := by
+  exact
+    ⟨⟨toyLockedInterface⟩,
+      toyLockedInterface_history_not_target_measurable,
+      toyLockedInterface_pivot_not_sufficient⟩
 end Mettapedia.Computability.PNP

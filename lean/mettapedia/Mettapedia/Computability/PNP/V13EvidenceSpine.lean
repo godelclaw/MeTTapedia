@@ -12,7 +12,7 @@ namespace Mettapedia.Computability.PNP
 
 set_option autoImplicit false
 
-universe u v w x
+universe u v w x y
 
 /-- A finite rational probability law. -/
 structure FiniteRationalLaw (Omega : Type u) [Fintype Omega] where
@@ -163,7 +163,7 @@ structure EvidenceSpineBound
     (mu : FiniteRationalLaw Omega) (B : Omega -> Bool)
     {Transcript : Type v} [DecidableEq Transcript]
     (T : Omega -> Transcript) (g : Transcript -> Bool)
-    (Pair : Type w) [Fintype Pair] (Stage : Type x) (Branch : Type u) where
+    (Pair : Type w) [Fintype Pair] (Stage : Type x) (Branch : Type y) where
   capture : StaticPairwiseCapture mu B T g Pair
   capturesGap : capture.CapturesGap
   telescoping : DerivativeTelescoping Stage Branch
@@ -175,7 +175,7 @@ theorem phaseA_gap_le_half_derivative_sum
     {mu : FiniteRationalLaw Omega} {B : Omega -> Bool}
     {Transcript : Type v} [DecidableEq Transcript]
     {T : Omega -> Transcript} {g : Transcript -> Bool}
-    {Pair : Type w} [Fintype Pair] {Stage : Type x} {Branch : Type u}
+    {Pair : Type w} [Fintype Pair] {Stage : Type x} {Branch : Type y}
     (C : EvidenceSpineBound mu B T g Pair Stage Branch) :
     Gap mu B T g ≤ (1 / 2 : Rat) * C.telescoping.derivativeSum := by
   have hhalf : 0 ≤ (1 / 2 : Rat) := by norm_num
