@@ -269,6 +269,14 @@ the rest of `mode09` and the other thirteen non-base representative modes, or
 an equivalent finite transition certificate that makes those per-fixed-input
 paths unnecessary as separate large tables.
 
+Fresh-pass block2 checkpoint, 2026-07-01: the next 64 rows of that same
+`[r,r,b,b]` large fiber are now restored as four 16-row chunk modules and
+checked by explicit parent-path facts, not by reducing the recursive parent
+iterator over the large fiber.  The checked semantic surface now covers rows
+0 through 191 of this size-512 fiber.  Rows 192 through 511, the other eleven
+large `TTT` fibers, and the other thirteen non-base representative modes remain
+open.
+
 `GoertzelLemma818SemanticBridge.lean` now records the finite semantic handoff
 for that next pass.  It maps each of the 20 profile modes to exactly one
 planned semantic witness: one of the six base-certified chain words, or one of
@@ -333,6 +341,14 @@ parent-map agreement, and parent-depth convergence from local 16-source lists.
 Thus the first 128 rows of the `[r,r,b,b]` size-512 fiber are now checked; the
 remaining 384 rows of this fiber and the other eleven size-512 `TTT` fibers
 remain open.
+`GoertzelLemma818TripleTauLargeFiber4Block2ComponentCertificate.lean` extends
+the same fiber by a third 64-row block, again split into four 16-row chunk
+modules.  The theorem `tttLargeFiber4Block2ComponentCertificateAudit_ok`
+checks rows 128 through 191 by explicit component-switch rows, generated
+parent-map agreement, and explicit bounded parent paths to root `2176`.
+Thus rows 0 through 191 of the `[r,r,b,b]` size-512 fiber are now checked; the
+remaining 320 rows of this fiber and the other eleven size-512 `TTT` fibers
+remain open.
 
 Checkpoint stop status, 2026-07-01: the exploratory Gate-2 connectivity sweeps
 are stopped.  The finite mode set is not the open question anymore: Lean records
@@ -348,7 +364,7 @@ length-2 chain-level parent/path certificates
 still need compact per-fixed-input chain/component certificates, or an
 equivalent finite transition certificate, before `wordMode_induction` can yield
 all-chain `LKR_in`.  The first non-base target, `mode09`, now has its `TTT`
-light fibers certified and the first 128 rows of the first large `TTT` fiber
+light fibers certified and the first 192 rows of the first large `TTT` fiber
 certified, but not the rest of the large `TTT` fibers.  This checkpoint is
 therefore a finite-mode/table-closure plus partial target-certificate
 checkpoint, not a completed Lemma 8.18/8.19 lift and not a Four Color Theorem
@@ -359,20 +375,18 @@ representative sweeps from this context.  The generated blocks for the rest of
 the first large `TTT` fiber were produced as WIP, but they are not imported:
 the direct 64-row block shape again becomes too large for default kernel
 recursion in later blocks.  That WIP is archived outside the Lean import
-surface.  The green branch now keeps the checked block 0 theorem plus a
-smaller four-chunk replacement for block 1.
+surface.  The green branch now keeps the checked block 0 theorem plus
+four-chunk replacements for blocks 1 and 2.
 The status split is therefore precise:
 all 20 profile modes have metadata/quotient connectivity evidence; six modes
 have full base chain certificates; `mode09` has the light `TTT` fibers plus
-two large-fiber blocks certified; and the remaining semantic certificates are
+three large-fiber blocks certified; and the remaining semantic certificates are
 still open for the rest of `mode09` and for
 `mode00/mode01/mode02/mode03/mode05/mode06/mode08/mode12/mode13/mode14/mode15/mode17/mode19`.
-The 16-row chunk shape is viable for block 1, but attempted block2/block3
-chunks still hit default recursion in parent-depth normalization; that WIP is
-archived and unimported.  The next pass should split parent-depth certificates
-further, add a reusable local parent-path lemma, or replace the remaining
-large-fiber proof with a finite transition certificate, then feed those audits
-through `GoertzelLemma818SemanticBridge.lean`.
+The 16-row chunk shape with explicit parent paths is viable through block 2.
+The next pass should continue only as small explicit parent-path/component
+chunks or replace the remaining large-fiber proof with a finite transition
+certificate, then feed those audits through `GoertzelLemma818SemanticBridge.lean`.
 
 The CAP5/F2, GP(12,2), dodecahedral six-cut, and related files below are
 exploratory audits of a divergent F2-additivity route.  They are retained for
