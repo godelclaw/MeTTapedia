@@ -64,11 +64,12 @@ including the six base modes, and exactly thirteen remaining semantic modes.
 The next pass should consume this frontier by generating the remaining
 representative certificates or replacing them with a finite transition
 invariant; the progress audit itself is not the all-chain lift.
-`GoertzelLemma818MirrorTripleComponentSmoke.lean` now checks the first
-chain-level slice for a second remaining target: `MMM`/`mode05`, one
-16-state fixed-input fiber under the actual mirror-chain word.  This confirms
-that the `TTT` component-row format transfers to the mirror-triple target, but
-it does not complete `mode05`.
+`GoertzelLemma818MirrorTripleComponentSmoke.lean` and
+`GoertzelLemma818MirrorTripleLightSlices.lean` now check two chain-level
+slices for a second remaining target: `MMM`/`mode05`, two 16-state fixed-input
+fibers under the actual mirror-chain word.  This confirms that the `TTT`
+component-row format transfers to the mirror-triple target, but it does not
+complete `mode05`.
 Do not extend representatives or raise kernel limits from this checkpoint;
 formalize the existing finite surface with compact per-fixed-input
 chain/component certificates or an equivalent finite transition invariant.
@@ -401,6 +402,12 @@ large-fiber audits, and the current exact state-count split: 6,528 certified
 the right accumulation layer for the fresh pass: it records real semantic
 certificates without pretending that Lemma 8.18/8.19 or Section 9 is closed.
 
+Additional checkpoint delta: `MMM`/`mode05` now has two checked 16-state
+light-slice audits, keys `[r,b,r,r]` and `[p,b,r,r]`, both under the actual
+`[mirror, mirror, mirror]` chain word.  This is per-fixed-input connectivity
+evidence for a still-open representative target, not a full `mode05`
+certificate and not automaton closure.
+
 The older CAP5/F2, GP(12,2), and six-cut files are exploratory negative audits
 of a divergent additive F2 route.  They remain useful for provenance and
 infrastructure, but they are not Ben's actual route and should not be worked
@@ -431,6 +438,7 @@ Read these four files first — they are the whole live surface:
 | `GoertzelLemma818TripleTauLargeFiber72Data.lean` / `GoertzelLemma818TripleTauLargeFiber72Block0ComponentCertificate.lean` / `GoertzelLemma818TripleTauLargeFiber72Block1ComponentCertificate.lean` / `GoertzelLemma818TripleTauLargeFiber72Block2ComponentCertificate.lean` / `GoertzelLemma818TripleTauLargeFiber72Block3ComponentCertificate.lean` / `GoertzelLemma818TripleTauLargeFiber72Block4ComponentCertificate.lean` / `GoertzelLemma818TripleTauLargeFiber72Block5ComponentCertificate.lean` / `GoertzelLemma818TripleTauLargeFiber72Block6ComponentCertificate.lean` / `GoertzelLemma818TripleTauLargeFiber72Block7ComponentCertificate.lean` / `GoertzelLemma818TripleTauLargeFiber72Certificate.lean` | Eleventh large-fiber decomposition for `TTT`/`mode09`: records the parent map for the `[p,p,r,r]` size-512 fiber and checks all 512 source rows by explicit component rows, parent-map agreement, and bounded parent paths to root `816`; `tttLargeFiber72ComponentCertificateAudit_ok` aggregates the completed fixed-input fiber |
 | `GoertzelLemma818TripleTauLargeFiber76Data.lean` / `GoertzelLemma818TripleTauLargeFiber76Block0ComponentCertificate.lean` / `GoertzelLemma818TripleTauLargeFiber76Block1ComponentCertificate.lean` / `GoertzelLemma818TripleTauLargeFiber76Block2ComponentCertificate.lean` / `GoertzelLemma818TripleTauLargeFiber76Block3ComponentCertificate.lean` / `GoertzelLemma818TripleTauLargeFiber76Block4ComponentCertificate.lean` / `GoertzelLemma818TripleTauLargeFiber76Block5ComponentCertificate.lean` / `GoertzelLemma818TripleTauLargeFiber76Block6ComponentCertificate.lean` / `GoertzelLemma818TripleTauLargeFiber76Block7ComponentCertificate.lean` / `GoertzelLemma818TripleTauLargeFiber76Certificate.lean` | Twelfth large-fiber decomposition for `TTT`/`mode09`: records the parent map for the `[p,p,b,b]` size-512 fiber with ranges `2992..3247` and `3552..3807`, root `2992`, and max parent depth `6`; all 512 source rows are checked by explicit component rows, parent-map agreement, and bounded parent paths; `tttLargeFiber76ComponentCertificateAudit_ok` aggregates the completed fixed-input fiber |
 | `GoertzelLemma818TripleTauTargetProgress.lean` | Semantic progress aggregator for the `TTT`/`mode09` representative target: `tttPartialTargetCertificateAudit_ok` and `tttTargetCertificateAudit_ok` verify the `mode09` semantic witness, the light-fiber audit, all twelve completed large-fiber audits, and the exact count split of 6,528 certified states versus 0 states open in the `TTT` target surface; this closes the explicit `TTT` representative audit but not the other thirteen target modes and not the all-chain lift |
+| `GoertzelLemma818MirrorTripleComponentSmoke.lean` / `GoertzelLemma818MirrorTripleLightSlices.lean` | Partial semantic-certificate slices for the `MMM`/`mode05` representative target: `mmmFiber9ComponentCertificateAudit_ok` checks key `[r,b,r,r]`, `mmmFiber63ComponentCertificateAudit_ok` checks key `[p,b,r,r]`, and `mmmCheckedLightSlicesAfterFiber63Audit_ok` records two checked 16-state light slices under the actual mirror-triple word; this is evidence for `mode05`, not a full target audit and not the all-chain lift |
 | `Goal.lean` | The target (`Theorem49ShellClaim`), its reduction to four geometric oracles plus a fifth non-geometric algebraic cancellation oracle, and proofs that **all four geometric uniform oracles are false** — including the v23.5 residual/current-boundary lane, whose positive wrapper is fixed-embedding equivalent to the refuted collar-layer surface |
 | `Shells.lean` | Bundled hypothesis packages (`ClosedWalkExactShell`, `SuccessorCycleExactShell`, `ClosedWalkCancellationShell`, …) replacing the historical 8–10-hypothesis telescopes |
 | `Frontier.lean` | The maximal positive and negative results, stated over the bundles as thin wrappers, including detector-based cancellation sufficiency |
