@@ -13,7 +13,7 @@ namespace Mettapedia.Computability.PNP
 
 set_option autoImplicit false
 
-universe u v w x y
+universe u v w x y z a
 
 /-- Raw evidence before CD-ENF.  There is deliberately no observer-output
 constructor here. -/
@@ -132,7 +132,7 @@ theorem CDENF_semantics
 there is no raw observer-output constructor. -/
 structure ObserverEvidenceInterface
     (Omega : Type u) (Public : Type v) (Observer : Type w) (Output : Type x)
-    (Neutral Safe Gauge : Type y) where
+    (Neutral : Type y) (Safe : Type z) (Gauge : Type a) where
   semantics : EvidenceSemantics Omega Neutral Safe Gauge
   publicInput : Omega -> Public
   evalObserver : Observer -> Public -> Output
@@ -144,7 +144,7 @@ structure ObserverEvidenceInterface
 
 theorem observerToEvidence_sat
     {Omega : Type u} {Public : Type v} {Observer : Type w} {Output : Type x}
-    {Neutral Safe Gauge : Type y}
+    {Neutral : Type y} {Safe : Type z} {Gauge : Type a}
     (I : ObserverEvidenceInterface
       Omega Public Observer Output Neutral Safe Gauge)
     (observer : Observer) (output : Output) :
@@ -154,7 +154,7 @@ theorem observerToEvidence_sat
 
 theorem observerToCDENF_sat
     {Omega : Type u} {Public : Type v} {Observer : Type w} {Output : Type x}
-    {Neutral Safe Gauge : Type y}
+    {Neutral : Type y} {Safe : Type z} {Gauge : Type a}
     (I : ObserverEvidenceInterface
       Omega Public Observer Output Neutral Safe Gauge)
     (observer : Observer) (output : Output) :
