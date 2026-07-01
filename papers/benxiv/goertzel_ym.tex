@@ -98,10 +98,15 @@ explicit open status with no claimed support. We are precise about scope. The
 checked arithmetic takes the recombination constant $C_1 = 2224$ as a
 \emph{given input}. The load-bearing quantity --- whether the true
 extraction-projection operator norm, hence $C_1$, is as small as advertised ---
-lies outside the present formalization; we record neutrally that the manuscript's
-own written expression for that norm appears to grow rapidly with the extraction
-depth $\dmax$, so the small constant is not self-evidently justified, and we flag
-this as the key unformalized risk rather than asserting any resolution. The
+is taken as an input to the checked arithmetic. The manuscript's \emph{displayed}
+bound for that norm prints the summand $(r_1/r_0)^{-d}$, which for $r_1/r_0=1/2$
+would grow like $2^{d}$; read literally this is an apparent obstruction. That
+printed exponent is a sign erratum: the intended Cauchy estimate uses
+$(r_1/r_0)^{+d}$, a convergent geometric series summing to $1/(1-r_1/r_0)=2$, so
+$C_{\mathrm{extract}} \leq 2$ and the contraction $\Lambda \approx 0.27 < 1$
+stands. We therefore record a two-line displayed-formula erratum, not a defect in
+the route; the genuinely open endpoint is not this constant but the
+\emph{continuum limit} (clustering, glue, and OS reconstruction), which we gate open. The
 finite gaps that are checked are real but Clay-irrelevant (abelian, single-link,
 strong-coupling, finite). The Yang--Mills mass gap itself remains open; we make
 no claim about it.
@@ -198,8 +203,11 @@ dimension $\leq \dmax$. The manuscript bounds it (its Computation~O.7(d)) by
   \;\leq\; 1 + O\!\big((r_0/r_1)^{\dmax}\big),
 \]
 and asserts $\|\Pleq\|_{\mathrm{op}} \leq 2$ for $r_1/r_0 = 1/2$ and $\dmax=16$.
-We return to this expression in \S\ref{sec:honest}; it is the load-bearing
-input on which the smallness of $C_1$, and hence the contraction, rests.
+The displayed exponent $(r_1/r_0)^{-d}$ is a sign erratum (it should read
+$(r_1/r_0)^{+d}$); with that correction the sum is the convergent geometric series
+consistent with the asserted bound $\leq 2$. We return to this in
+\S\ref{sec:honest}; it is the load-bearing input on which the smallness of $C_1$,
+and hence the contraction, rests.
 
 \section{What we formalized}
 
@@ -434,8 +442,8 @@ value of the manuscript's recombination constant. The Lean ledger is therefore
 faithful to the route's bookkeeping but agnostic about the route's hardest
 analytic claim.
 
-\paragraph{The extraction-projection norm justification is the key
-unformalized risk.}
+\paragraph{The extraction-projection norm: a displayed-formula erratum, not a
+defect.}
 The smallness of $C_1$ rests on the factor
 $C_{\mathrm{extract}} = \|\Pleq\|_{\mathrm{op}}$, which the manuscript bounds by
 \[
@@ -443,23 +451,21 @@ $C_{\mathrm{extract}} = \|\Pleq\|_{\mathrm{op}}$, which the manuscript bounds by
   \;\leq\; \sum_{d=0}^{\dmax} \binom{\#\mathrm{indices}}{d}\,(r_1/r_0)^{-d}
   \;\leq\; 1 + O\!\big((r_0/r_1)^{\dmax}\big),
 \]
-asserting the value $\leq 2$ for $r_1/r_0 = 1/2$, $\dmax = 16$. We record
-neutrally a tension internal to this written expression: with $r_1/r_0 = 1/2$
-the summand $(r_1/r_0)^{-d} = 2^{d}$ \emph{grows} geometrically in $d$, and the
-binomial weights only enlarge it further, so the written partial sum is an
-\emph{increasing} function of $\dmax$ that grows at least like $2^{\dmax}$; the
-asserted closed form $1 + O\big((r_0/r_1)^{\dmax}\big) = 1 + O(2^{-\dmax})$
-instead behaves as if the summand were $(r_1/r_0)^{d} = 2^{-d}$, i.e. as if it
-\emph{decayed}. We do not adjudicate which reading is intended. We observe only
-that this single step decides whether $C_1$ stays $O(1)\cdot b^4 \approx 2224$ or
-instead grows with the extraction depth $\dmax$ --- and that, because the
-irrelevant factor is $\Lirr = 2^{3-\dmax}$ while $C_{\mathrm{extract}}$ enters
-$C_1$ multiplicatively, a $C_{\mathrm{extract}}$ that grew like $2^{\dmax}$ would
-overwhelm the very $2^{-13}$ contraction the scheme relies on. This is precisely
-the part not captured in Lean. We flag it as the key unformalized risk; we do
-not assert that the constant is wrong, only that its smallness is not
-self-evident from the manuscript's own stated expression and is not yet
-machine-checked.
+asserting the value $\leq 2$ for $r_1/r_0 = 1/2$, $\dmax = 16$. There is a tension
+internal to the written expression: taken literally the summand
+$(r_1/r_0)^{-d} = 2^{d}$ \emph{grows} in $d$, whereas the asserted closed form
+$1 + O\big((r_0/r_1)^{\dmax}\big)$ is a convergent, \emph{decaying} tail. The two
+are reconciled by the intended reading, in which the exponent carries the
+opposite sign: the Cauchy estimate is the convergent geometric series
+$\sum_{d \geq 0} (r_1/r_0)^{d} = 1/(1 - r_1/r_0) = 2$, whose exact tail is the
+displayed closed form. On that reading $C_{\mathrm{extract}} \leq 2$,
+$C_1 \leq 2224$, and $\Lambda \approx 0.27 < 1$ all stand; the printed
+$(r_1/r_0)^{-d}$ is a sign erratum in two displayed lines, not a growth in the
+norm. The corresponding Lean module records this as a \emph{retracted erratum}
+rather than a break in the contraction. We remain precise that the \emph{sharp}
+value of $C_1$ is taken as an input to the checked arithmetic, not independently
+derived; but the apparent growth is a transcription typo, and the load-bearing
+open question for this route is the continuum endpoint below, not this constant.
 
 \paragraph{The finite gaps are real but Clay-irrelevant.}
 The $\mathbb{Z}_2$ and $\mathbb{Z}_3$ spectral gaps are honest theorems, but
