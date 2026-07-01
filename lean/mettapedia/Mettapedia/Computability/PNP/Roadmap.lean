@@ -21,6 +21,7 @@ inductive PNPRoadmapStage where
   | v13CDENF
   | v13GaugeBufferedLedger
   | v13ConditionalClash
+  | v13FaithfulnessAudit
   | weaknessCalculus
   | barrierObstruction
   | replacementRoute
@@ -129,6 +130,14 @@ def currentPNPRoadmap : List PNPRoadmapEntry :=
       itvLowerPercent := 89
       itvUpperPercent := 100
       obligation := "Treat `v13_upperLowerClash` as the abstract conditional Phase-D object with lower consequence derived from the compression budget machine and only one named self-reduction upper hypothesis; concrete ensemble parameters remain out of scope." },
+    { stage := .v13FaithfulnessAudit
+      proofNodeKey := "pnp.v13.faithfulness-audit"
+      status := .checked
+      truthValue := ⟨100, 88⟩
+      progressPercent := 100
+      itvLowerPercent := 88
+      itvUpperPercent := 100
+      obligation := "Carry weaker-than-note audit rows into Phase E as concrete ensemble obligations." },
     { stage := .weaknessCalculus
       proofNodeKey := "pnp.weakness-calculus.finite-spectrum-gap"
       status := .checked
@@ -293,6 +302,19 @@ theorem currentPNPRoadmap_records_v13_conditional_clash :
        itvUpperPercent := 100
        obligation :=
         "Treat `v13_upperLowerClash` as the abstract conditional Phase-D object with lower consequence derived from the compression budget machine and only one named self-reduction upper hypothesis; concrete ensemble parameters remain out of scope." } :
+      PNPRoadmapEntry) ∈ currentPNPRoadmap := by
+  simp [currentPNPRoadmap]
+
+theorem currentPNPRoadmap_records_v13_faithfulness_audit :
+    ({ stage := PNPRoadmapStage.v13FaithfulnessAudit
+       proofNodeKey := "pnp.v13.faithfulness-audit"
+       status := .checked
+       truthValue := ⟨100, 88⟩
+       progressPercent := 100
+       itvLowerPercent := 88
+       itvUpperPercent := 100
+       obligation :=
+        "Carry weaker-than-note audit rows into Phase E as concrete ensemble obligations." } :
       PNPRoadmapEntry) ∈ currentPNPRoadmap := by
   simp [currentPNPRoadmap]
 

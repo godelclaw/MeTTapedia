@@ -19,6 +19,7 @@ import Mettapedia.Computability.PNP.SharedExactZABAffineDecisionListStructuralOb
 import Mettapedia.Computability.PNP.V13CDENF
 import Mettapedia.Computability.PNP.V13ConditionalClash
 import Mettapedia.Computability.PNP.V13EvidenceSpine
+import Mettapedia.Computability.PNP.V13FaithfulnessAudit
 import Mettapedia.Computability.PNP.V13GaugeBufferedLockedInterface
 import Mettapedia.Computability.PNP.WeaknessCalculus
 /-!
@@ -204,6 +205,13 @@ def currentPNPProofNodes : List PNPProofNode := [
     truthValue := ⟨100, 89⟩,
     evidence := "V13ConditionalClash defines `ParameterRecord`, `LedgerFieldUseCertificate`, and `UpperLowerClash`; `v13_upperLowerClash` consumes Phase A, observer CD-ENF normalization, and all nine GaugeBufferedLockedInterface fields. The second-round version derives the lower consequence by `compressionLower_of_budget_machine`, isolates the upper side as one `SelfReductionUpperHypothesis`, and records the seven-field parameter audit in `v13ParameterRecordAudit`.",
     nextObligation := "Keep the concrete ensemble outside this artifact; any concrete instantiation must supply the external ParameterRecord rather than weakening the ledger fields."
+  },
+  {
+    key := "pnp.v13.faithfulness-audit",
+    status := .checked,
+    truthValue := ⟨100, 88⟩,
+    evidence := "V13FaithfulnessAudit records 20 rows mapping Phase A definitions, Phase B definitions, and all nine GaugeBufferedLockedInterface fields to v13 note sections, with explicit faithful/weaker/stronger mismatch verdicts and no reportable-finding row.",
+    nextObligation := "Use the weaker-than-note rows as Phase E obligations rather than treating the abstract ledger as a concrete ensemble proof."
   },
   {
     key := "pnp.weakness-calculus.finite-spectrum-gap",
@@ -964,4 +972,18 @@ theorem currentPNPV13ConditionalClash_node :
     · intro P
       exact ⟨(toyLockedInterface_conditional_clash P).fieldUse⟩
     · exact v13ParameterRecordAudit_length
+
+theorem currentPNPV13FaithfulnessAudit_node :
+    v13PhaseAFaithfulnessRows.length = 5 ∧
+      v13PhaseBFaithfulnessRows.length = 6 ∧
+        v13LedgerFaithfulnessRows.length = 9 ∧
+          v13FaithfulnessAudit.length = 20 ∧
+            (∀ row ∈ v13FaithfulnessAudit,
+              row.verdict ≠ .reportableFinding) := by
+  exact
+    ⟨v13PhaseAFaithfulnessRows_length,
+      v13PhaseBFaithfulnessRows_length,
+      v13LedgerFaithfulnessRows_length,
+      v13FaithfulnessAudit_length,
+      v13FaithfulnessAudit_has_no_reportable_findings⟩
 end Mettapedia.Computability.PNP
