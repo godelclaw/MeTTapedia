@@ -17,6 +17,7 @@ inductive PNPRoadmapStage where
   | goertzelCalibrationBreak
   | steelmanConditional
   | coarseProjectionObstruction
+  | v13EvidenceSpine
   | weaknessCalculus
   | barrierObstruction
   | replacementRoute
@@ -93,6 +94,14 @@ def currentPNPRoadmap : List PNPRoadmapEntry :=
       itvLowerPercent := 93
       itvUpperPercent := 100
       obligation := "Coarse-projection domination is checked only as an equivalence to the StarSW half-bound under explicit EnsembleCoarseNeutral; StarSWImpliesSeparation remains a separate open chain input." },
+    { stage := .v13EvidenceSpine
+      proofNodeKey := "pnp.v13.phase-a.finite-evidence-spine"
+      status := .checked
+      truthValue := ⟨100, 91⟩
+      progressPercent := 100
+      itvLowerPercent := 91
+      itvUpperPercent := 100
+      obligation := "Use the finite gap/capture/telescoping spine as the numeric input to CD-ENF and safe/gauge budget accounting; it is not a concrete ensemble instantiation." },
     { stage := .weaknessCalculus
       proofNodeKey := "pnp.weakness-calculus.finite-spectrum-gap"
       status := .checked
@@ -205,6 +214,19 @@ theorem currentPNPRoadmap_records_coarse_projection_obstruction :
        itvUpperPercent := 100
        obligation :=
         "Coarse-projection domination is checked only as an equivalence to the StarSW half-bound under explicit EnsembleCoarseNeutral; StarSWImpliesSeparation remains a separate open chain input." } :
+      PNPRoadmapEntry) ∈ currentPNPRoadmap := by
+  simp [currentPNPRoadmap]
+
+theorem currentPNPRoadmap_records_v13_evidence_spine :
+    ({ stage := PNPRoadmapStage.v13EvidenceSpine
+       proofNodeKey := "pnp.v13.phase-a.finite-evidence-spine"
+       status := .checked
+       truthValue := ⟨100, 91⟩
+       progressPercent := 100
+       itvLowerPercent := 91
+       itvUpperPercent := 100
+       obligation :=
+        "Use the finite gap/capture/telescoping spine as the numeric input to CD-ENF and safe/gauge budget accounting; it is not a concrete ensemble instantiation." } :
       PNPRoadmapEntry) ∈ currentPNPRoadmap := by
   simp [currentPNPRoadmap]
 
