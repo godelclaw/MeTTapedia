@@ -9,6 +9,7 @@ import Mettapedia.Computability.PNP.PublicNeutralityRedTeamRegression
 import Mettapedia.Computability.PNP.PNPv13SwitchedHistoryProductAuditorCanariesRegression
 import Mettapedia.Computability.PNP.PNPv13TraceFactorizationCanariesRegression
 import Mettapedia.Computability.PNP.PNPSteelmanConditionalRegression
+import Mettapedia.Computability.PNP.V13ObserverLadderRegression
 import Mettapedia.Computability.PNP.V13CDENFRegression
 import Mettapedia.Computability.PNP.V13ConditionalClashRegression
 import Mettapedia.Computability.PNP.V13EvidenceSpineRegression

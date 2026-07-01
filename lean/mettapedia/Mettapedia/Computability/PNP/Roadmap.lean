@@ -24,6 +24,7 @@ inductive PNPRoadmapStage where
   | v13FaithfulnessAudit
   | v13PhaseEConcrete
   | v13PhaseEScaled
+  | v13ObserverLadder
   | weaknessCalculus
   | barrierObstruction
   | replacementRoute
@@ -156,6 +157,14 @@ def currentPNPRoadmap : List PNPRoadmapEntry :=
       itvLowerPercent := 86
       itvUpperPercent := 100
       obligation := "Use the parameterized Phase E family as the current scaled endpoint: seven combinatorial obligations discharge at scale, while safeQSSM and boundaryMixing are bounded-class results for PhaseEScaledTargetBlindPayloadObserver." },
+    { stage := .v13ObserverLadder
+      proofNodeKey := "pnp.v13.phase-e.observer-ladder-mark"
+      status := .checked
+      truthValue := ⟨100, 87⟩
+      progressPercent := 100
+      itvLowerPercent := 87
+      itvUpperPercent := 100
+      obligation := "Treat the observer ladder mark as checked: unrestricted full-coordinate observers stop at a q=1 public target-lock counterexample; target-blind payload domination is equivalent to the StarSW half-bound, and full random switching is pinned as PhaseEScaledSwitchingStatementNeeded." },
     { stage := .weaknessCalculus
       proofNodeKey := "pnp.weakness-calculus.finite-spectrum-gap"
       status := .checked
@@ -359,6 +368,19 @@ theorem currentPNPRoadmap_records_v13_phase_e_scaled :
        itvUpperPercent := 100
        obligation :=
         "Use the parameterized Phase E family as the current scaled endpoint: seven combinatorial obligations discharge at scale, while safeQSSM and boundaryMixing are bounded-class results for PhaseEScaledTargetBlindPayloadObserver." } :
+      PNPRoadmapEntry) ∈ currentPNPRoadmap := by
+  simp [currentPNPRoadmap]
+
+theorem currentPNPRoadmap_records_v13_observer_ladder :
+    ({ stage := PNPRoadmapStage.v13ObserverLadder
+       proofNodeKey := "pnp.v13.phase-e.observer-ladder-mark"
+       status := .checked
+       truthValue := ⟨100, 87⟩
+       progressPercent := 100
+       itvLowerPercent := 87
+       itvUpperPercent := 100
+       obligation :=
+        "Treat the observer ladder mark as checked: unrestricted full-coordinate observers stop at a q=1 public target-lock counterexample; target-blind payload domination is equivalent to the StarSW half-bound, and full random switching is pinned as PhaseEScaledSwitchingStatementNeeded." } :
       PNPRoadmapEntry) ∈ currentPNPRoadmap := by
   simp [currentPNPRoadmap]
 

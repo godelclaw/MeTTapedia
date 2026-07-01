@@ -21,6 +21,7 @@ import Mettapedia.Computability.PNP.V13ConditionalClash
 import Mettapedia.Computability.PNP.V13EvidenceSpine
 import Mettapedia.Computability.PNP.V13FaithfulnessAudit
 import Mettapedia.Computability.PNP.V13GaugeBufferedLockedInterface
+import Mettapedia.Computability.PNP.V13ObserverLadder
 import Mettapedia.Computability.PNP.V13PhaseEConcrete
 import Mettapedia.Computability.PNP.V13PhaseEScaled
 import Mettapedia.Computability.PNP.WeaknessCalculus
@@ -1025,4 +1026,15 @@ theorem currentPNPV13PhaseEScaled_node :
       phaseEScaledObligationMap_length,
       phaseEScaledObligationMap_has_no_failures,
       phaseEScaled_all_mapped_obligations⟩
+
+theorem currentPNPV13ObserverLadder_node :
+    PhaseEScaledObserverLadderMark ∧
+      phaseEScaledObserverLadderMap.length = 4 ∧
+        (∀ row ∈ phaseEScaledObserverLadderMap,
+          row.status = .exactHalf ∨ row.status = .checkedCounterexample ∨
+            row.status = .pinnedHypothesis ∨ row.status = .iffHardCore) := by
+  exact
+    ⟨phaseEScaled_observer_ladder_mark,
+      phaseEScaledObserverLadderMap_length,
+      phaseEScaledObserverLadderMap_has_no_unlabeled_stop⟩
 end Mettapedia.Computability.PNP

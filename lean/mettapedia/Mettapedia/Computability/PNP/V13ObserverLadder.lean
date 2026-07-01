@@ -304,4 +304,124 @@ def PhaseEScaledSwitchingStatementNeeded : Prop :=
 def PhaseEScaledRung3Finding : String :=
   "Rung 3 seed is checked for restrictions covering all non-target reads; the random switching lift is pinned as PhaseEScaledSwitchingStatementNeeded."
 
+/-! ## Rung 4: the mark and StarSW equivalence -/
+
+def phaseEScaledPayloadFiberFlipEquiv (m k : Nat)
+    (payload : PhaseEScaledPayload m k) :
+    FiberTrue (@phaseEScaledPayloadSummary m k) (@phaseEScaledTarget m k)
+        payload ≃
+      FiberFalse (@phaseEScaledPayloadSummary m k) (@phaseEScaledTarget m k)
+        payload where
+  toFun phi := ⟨(false, phi.val.2), ⟨phi.property.1, rfl⟩⟩
+  invFun phi := ⟨(true, phi.val.2), ⟨phi.property.1, rfl⟩⟩
+  left_inv := by
+    intro phi
+    rcases phi with ⟨⟨b, payload'⟩, hphi⟩
+    cases b
+    · simp [phaseEScaledTarget, PhaseEScaledWorld.target] at hphi
+    · rfl
+  right_inv := by
+    intro phi
+    rcases phi with ⟨⟨b, payload'⟩, hphi⟩
+    cases b
+    · rfl
+    · simp [phaseEScaledTarget, PhaseEScaledWorld.target] at hphi
+
+theorem phaseEScaled_payloadSummary_neutral (m k : Nat) :
+    Neutral (@phaseEScaledPayloadSummary m k) (@phaseEScaledTarget m k) := by
+  intro payload
+  exact Fintype.card_congr (phaseEScaledPayloadFiberFlipEquiv m k payload)
+
+theorem phaseEScaled_payloadDomination_iff_starSW
+    (m k : Nat) {Decoder : Type*} {decoderSuccess : Decoder -> Rat}
+    {slack : Rat} :
+    CoarseDominationAll (@phaseEScaledPayloadSummary m k)
+        (@phaseEScaledTarget m k) decoderSuccess slack ↔
+      StarSW decoderSuccess slack :=
+  coarseDominationAll_iff_starSW_of_neutral
+    (u := @phaseEScaledPayloadSummary m k)
+    (x := @phaseEScaledTarget m k)
+    (phaseEScaled_payloadSummary_neutral m k)
+
+inductive PhaseEScaledLadderStatus where
+  | exactHalf
+  | checkedCounterexample
+  | pinnedHypothesis
+  | iffHardCore
+deriving DecidableEq, Repr
+
+structure PhaseEScaledLadderRow where
+  rung : String
+  status : PhaseEScaledLadderStatus
+  theoremName : String
+  explicitBound : String
+  nextStatement : String
+deriving Repr
+
+def phaseEScaledObserverLadderMap : List PhaseEScaledLadderRow := [
+  {
+    rung := "Rung 1 bounded-query observers"
+    status := .checkedCounterexample
+    theoremName := "phaseEScaled_targetLockObserver_success_eq_one"
+    explicitBound := "q = 1 target-lock observer has success 1 = 1/2 + 1/2; no-hit observers have success 1/2."
+    nextStatement := "Unrestricted full-coordinate q-query hardness stops at the public target lock."
+  },
+  {
+    rung := "Rung 2 juntas and parities"
+    status := .checkedCounterexample
+    theoremName := "phaseEScaled_targetLockJunta_success_eq_one / phaseEScaled_targetParity_success_eq_one"
+    explicitBound := "A one-coordinate junta/parity on targetLock has success 1; target-blind juntas/parities have success 1/2."
+    nextStatement := "Only target-blind junta/parity subclasses are unconditionally defeated."
+  },
+  {
+    rung := "Rung 3 restrictions"
+    status := .pinnedHypothesis
+    theoremName := "phaseEScaled_restriction_seed_collapsed_success_eq_half / PhaseEScaledSwitchingStatementNeeded"
+    explicitBound := "Seed restriction covering all non-target reads collapses residual queries to 0 with probability 1 in the point-mass seed case."
+    nextStatement := "Full random switching remains exactly PhaseEScaledSwitchingStatementNeeded."
+  },
+  {
+    rung := "Rung 4 mark"
+    status := .iffHardCore
+    theoremName := "phaseEScaled_payloadDomination_iff_starSW"
+    explicitBound := "On the neutral target-blind payload surface, domination is equivalent to the StarSW half-bound with the same explicit slack."
+    nextStatement := "Defeating polynomial-time observers requires replacing the public target-lock surface or proving the open StarSW-shaped hardness."
+  }
+]
+
+theorem phaseEScaledObserverLadderMap_length :
+    phaseEScaledObserverLadderMap.length = 4 := by
+  rfl
+
+theorem phaseEScaledObserverLadderMap_has_no_unlabeled_stop :
+    ∀ row ∈ phaseEScaledObserverLadderMap,
+      row.status = .exactHalf ∨ row.status = .checkedCounterexample ∨
+        row.status = .pinnedHypothesis ∨ row.status = .iffHardCore := by
+  intro row hmem
+  simp [phaseEScaledObserverLadderMap] at hmem
+  rcases hmem with h | h | h | h
+  all_goals
+    subst row
+    simp
+
+def PhaseEScaledObserverLadderMark : Prop :=
+  (∀ m k : Nat,
+    globalDecoderSuccess
+        (phaseEScaledTargetLockObserver m k).decide
+        (@phaseEScaledTarget m k) = 1) ∧
+  (∀ m k : Nat,
+    globalDecoderSuccess (phaseEScaledTargetParity m k)
+        (@phaseEScaledTarget m k) = 1) ∧
+  (∀ m k : Nat,
+    Neutral (@phaseEScaledPayloadSummary m k) (@phaseEScaledTarget m k)) ∧
+  phaseEScaledObserverLadderMap.length = 4
+
+theorem phaseEScaled_observer_ladder_mark :
+    PhaseEScaledObserverLadderMark := by
+  exact
+    ⟨phaseEScaled_targetLockObserver_success_eq_one,
+      phaseEScaled_targetParity_success_eq_one,
+      phaseEScaled_payloadSummary_neutral,
+      phaseEScaledObserverLadderMap_length⟩
+
 end Mettapedia.Computability.PNP
