@@ -17,6 +17,7 @@ import Mettapedia.GraphTheory.FourColor.GoertzelLemma818TripleTauLargeFiber30Cer
 import Mettapedia.GraphTheory.FourColor.GoertzelLemma818TripleTauLargeFiber36Certificate
 import Mettapedia.GraphTheory.FourColor.GoertzelLemma818TripleTauLargeFiber44Certificate
 import Mettapedia.GraphTheory.FourColor.GoertzelLemma818TripleTauLargeFiber50Certificate
+import Mettapedia.GraphTheory.FourColor.GoertzelLemma818TripleTauLargeFiber60Certificate
 
 namespace Mettapedia.GraphTheory.FourColor
 
@@ -26,7 +27,7 @@ namespace Mettapedia.GraphTheory.FourColor
 This module records the currently checked chain-level surface for the first
 non-base semantic target, `TTT`/`mode09`.
 
-It is intentionally partial.  The light fibers and eight of the twelve large
+It is intentionally partial.  The light fibers and nine of the twelve large
 fixed-input fibers are certified by explicit component/path tables.  The rest
 of the large-fiber layer remains open unless a smaller transition invariant
 replaces it.
@@ -65,6 +66,8 @@ open GoertzelLemma818TripleTauLargeFiber44Data
 open GoertzelLemma818TripleTauLargeFiber44Certificate
 open GoertzelLemma818TripleTauLargeFiber50Data
 open GoertzelLemma818TripleTauLargeFiber50Certificate
+open GoertzelLemma818TripleTauLargeFiber60Data
+open GoertzelLemma818TripleTauLargeFiber60Certificate
 
 def tttCertifiedLargeFiberKeys : List (List LColor) :=
   [ tttLargeFiber4Key
@@ -252,6 +255,21 @@ def tttCertifiedLargeFiberKeysAfterFiber50 : List (List LColor) :=
 def tttRemainingLargeFiberKeysAfterFiber50 : List (List LColor) :=
   [ [LColor.p, LColor.r, LColor.p, LColor.r]
   , [LColor.p, LColor.b, LColor.p, LColor.b]
+  , [LColor.p, LColor.p, LColor.r, LColor.r]
+  , [LColor.p, LColor.p, LColor.b, LColor.b]
+  ]
+
+def tttCertifiedStateCountWithFiber60 : Nat :=
+  tttCertifiedStateCountWithFiber50 + tttRemainingLargeFiberSize
+
+def tttRemainingStateCountAfterFiber60 : Nat :=
+  tttCompositeStateCount - tttCertifiedStateCountWithFiber60
+
+def tttCertifiedLargeFiberKeysAfterFiber60 : List (List LColor) :=
+  tttCertifiedLargeFiberKeysAfterFiber50 ++ [tttLargeFiber60Key]
+
+def tttRemainingLargeFiberKeysAfterFiber60 : List (List LColor) :=
+  [ [LColor.p, LColor.b, LColor.p, LColor.b]
   , [LColor.p, LColor.p, LColor.r, LColor.r]
   , [LColor.p, LColor.p, LColor.b, LColor.b]
   ]
@@ -646,6 +664,40 @@ theorem tttLargeFiber50ClosedProgressAudit_ok :
     tttLargeFiber50ClosedCountAudit_ok,
     tttLargeFiber50ComponentCertificateAudit_ok]
 
+def tttLargeFiber60ClosedCountAudit : Bool :=
+  tttRemainingLargeFiberKeysAfterFiber50.contains tttLargeFiber60Key
+    && tttLargeFiber60Key ==
+      [LColor.p, LColor.r, LColor.p, LColor.r]
+    && tttCertifiedLargeFiberKeysAfterFiber60.length == 9
+    && tttRemainingLargeFiberKeysAfterFiber60.length == 3
+    && tttCertifiedLargeFiberKeysAfterFiber60 ++
+        tttRemainingLargeFiberKeysAfterFiber60 == tttLargeFiberKeys
+    && tttCertifiedStateCountWithFiber60 == 4992
+    && tttRemainingStateCountAfterFiber60 == 1536
+    && tttCertifiedStateCountWithFiber60 ==
+      tttLightStateCount +
+        tttCertifiedLargeFiberKeysAfterFiber60.length * tttRemainingLargeFiberSize
+    && tttRemainingStateCountAfterFiber60 ==
+      tttRemainingLargeFiberKeysAfterFiber60.length * tttRemainingLargeFiberSize
+    && tttCertifiedStateCountWithFiber60 +
+        tttRemainingStateCountAfterFiber60 == tttCompositeStateCount
+
+theorem tttLargeFiber60ClosedCountAudit_ok :
+    tttLargeFiber60ClosedCountAudit = true := by
+  decide
+
+def tttLargeFiber60ClosedProgressAudit : Bool :=
+  tttLargeFiber50ClosedProgressAudit
+    && tttLargeFiber60ClosedCountAudit
+    && tttLargeFiber60ComponentCertificateAudit
+
+theorem tttLargeFiber60ClosedProgressAudit_ok :
+    tttLargeFiber60ClosedProgressAudit = true := by
+  simp [tttLargeFiber60ClosedProgressAudit,
+    tttLargeFiber50ClosedProgressAudit_ok,
+    tttLargeFiber60ClosedCountAudit_ok,
+    tttLargeFiber60ComponentCertificateAudit_ok]
+
 def tttMode09WitnessAudit : Bool :=
   semanticWitnessForMode FrontierMode.mode09 ==
       SemanticModeWitness.target RepresentativeSemanticTarget.ttt
@@ -670,13 +722,14 @@ def tttPartialTargetCertificateAudit : Bool :=
     && tttLargeFiber36ClosedProgressAudit
     && tttLargeFiber44ClosedProgressAudit
     && tttLargeFiber50ClosedProgressAudit
+    && tttLargeFiber60ClosedProgressAudit
 
 /--
 The currently checked `TTT`/`mode09` semantic surface.
 
-This proves only partial target progress: light fibers plus the eight listed
-large fibers are certified.  The four remaining large fibers in
-`tttRemainingLargeFiberKeysAfterFiber50` are still outside this audit.
+This proves only partial target progress: light fibers plus the nine listed
+large fibers are certified.  The three remaining large fibers in
+`tttRemainingLargeFiberKeysAfterFiber60` are still outside this audit.
 -/
 theorem tttPartialTargetCertificateAudit_ok :
     tttPartialTargetCertificateAudit = true := by
@@ -691,7 +744,8 @@ theorem tttPartialTargetCertificateAudit_ok :
     tttLargeFiber30ClosedProgressAudit_ok,
     tttLargeFiber36ClosedProgressAudit_ok,
     tttLargeFiber44ClosedProgressAudit_ok,
-    tttLargeFiber50ClosedProgressAudit_ok]
+    tttLargeFiber50ClosedProgressAudit_ok,
+    tttLargeFiber60ClosedProgressAudit_ok]
 
 end GoertzelLemma818TripleTauTargetProgress
 
