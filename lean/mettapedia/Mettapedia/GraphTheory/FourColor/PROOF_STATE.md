@@ -54,11 +54,15 @@ adds a second checked 64-row block.
 `GoertzelLemma818MirrorTripleLargeFiber36Block3ComponentCertificate.lean`
 adds a third checked 64-row block, and
 `GoertzelLemma818MirrorTripleLargeFiber36Block4ComponentCertificate.lean`
-adds a fourth checked 64-row block.  These block modules recheck row moves,
-parent-map agreement, and parent convergence under the actual mirror-triple
-word.  This is still not the full `MMM` target audit: the large fixed-input
-fibers for `mode05` remain mostly open, and the finite automaton
-closure/consequence theorem is still open.
+adds a fourth checked 64-row block.
+`GoertzelLemma818MirrorTripleLargeFiber36Block5PrefixComponentCertificate.lean`
+then checks the first three 16-row chunks of block 5, for 304 checked rows of
+that 512-row fixed-input fiber.  These modules recheck row moves, parent-map
+agreement, and parent convergence under the actual mirror-triple word.  This
+is still not the full `MMM` target audit: the large fixed-input fibers for
+`mode05` remain mostly open, block 5 chunk 3 still needs a stronger split or
+symmetry proof, and the finite automaton closure/consequence theorem is still
+open.
 
 ## Current Pillar-C Reset
 
