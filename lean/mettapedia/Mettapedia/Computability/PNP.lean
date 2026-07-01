@@ -7,6 +7,7 @@ import Mettapedia.Computability.PNP.Roadmap
 import Mettapedia.Computability.PNP.V13CDENF
 import Mettapedia.Computability.PNP.V13ConditionalClash
 import Mettapedia.Computability.PNP.V13EvidenceSpine
+import Mettapedia.Computability.PNP.V13FaithfulnessAudit
 import Mettapedia.Computability.PNP.V13GaugeBufferedLockedInterface
 import Mettapedia.Computability.PNP.WeaknessCalculus
 
