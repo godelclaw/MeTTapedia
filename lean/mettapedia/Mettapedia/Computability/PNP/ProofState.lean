@@ -16,6 +16,7 @@ import Mettapedia.Computability.PNP.PNPv13TraceFactorizationCanaries
 import Mettapedia.Computability.PNP.PNPSteelmanConditional
 import Mettapedia.Computability.PNP.PostSwitchInputObstruction
 import Mettapedia.Computability.PNP.SharedExactZABAffineDecisionListStructuralObstructionExactZAB
+import Mettapedia.Computability.PNP.V13EvidenceSpine
 import Mettapedia.Computability.PNP.WeaknessCalculus
 /-!
 # PNP proof state
@@ -172,6 +173,13 @@ def currentPNPProofNodes : List PNPProofNode := [
     truthValue := ⟨100, 93⟩,
     evidence := "CoarseProjectionObstruction proves `uCoarse_comp_T` and `uFull_T_moves_at`, the neutral-interface half-bound theorem `bestLocalSuccess_eq_half_of_neutral`, the domination equivalence `coarseDominationAll_iff_starSW_of_neutral`, the two-point failure `coarseProjectionToy_not_dominates`, the no-threading instance `coarseProjectionToy_not_sufficient`, and the conditional `coarseProjectionRepair_obstruction_conditional` with explicit hypotheses `EnsembleCoarseNeutral` and `StarSWImpliesSeparation`.",
     nextObligation := "Do not treat the coarse `(z,a_i)` repair as an unconditional domination theorem: on a neutral interface it is exactly the StarSW half-bound, and neutrality on Ben's ensemble plus StarSW-to-separation remain open hypotheses."
+  },
+  {
+    key := "pnp.v13.phase-a.finite-evidence-spine",
+    status := .checked,
+    truthValue := ⟨100, 91⟩,
+    evidence := "V13EvidenceSpine defines finite rational laws, conditional target gaps, static pairwise-capture certificates, derivative-telescoping certificates, and the combined `phaseA_gap_le_half_derivative_sum`; `toyV13_phaseA_gap_le_half_derivative_sum` gives a two-point inhabited model.",
+    nextObligation := "Feed the finite derivative sum through CD-ENF safe/gauge normalization rather than treating observer output as an opaque atom."
   },
   {
     key := "pnp.weakness-calculus.finite-spectrum-gap",
@@ -878,4 +886,18 @@ theorem currentPNPWeaknessCompositional_node :
       fun hT hU => tensorSpectrumGap_eq_add hT hU,
       fun hT hU => tensorValueSpectrumGap_eq_crossTerms hT hU,
       fun hT hU => sequentialSplitSpectrumGap_eq_add hT hU⟩
+
+theorem currentPNPV13EvidenceSpine_node :
+    Gap toyV13Law toyV13Phase toyV13Transcript toyV13Observer =
+        (1 / 2 : Rat) ∧
+      toyV13StaticCapture.CapturesGap ∧
+      1 - toyV13Telescoping.finalWeight =
+        toyV13Telescoping.derivativeSum ∧
+      Gap toyV13Law toyV13Phase toyV13Transcript toyV13Observer ≤
+        (1 / 2 : Rat) * toyV13Telescoping.derivativeSum := by
+  exact
+    ⟨toyV13_gap_eq_half,
+      toyV13StaticCapture_capturesGap,
+      toyV13Telescoping.derivative_telescoping,
+      toyV13_phaseA_gap_le_half_derivative_sum⟩
 end Mettapedia.Computability.PNP
