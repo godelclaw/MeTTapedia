@@ -1,0 +1,38 @@
+import Mettapedia.GraphTheory.FourColor.GoertzelLemma818TripleTauLargeFiber50Block1Chunk0ComponentCertificate
+import Mettapedia.GraphTheory.FourColor.GoertzelLemma818TripleTauLargeFiber50Block1Chunk1ComponentCertificate
+import Mettapedia.GraphTheory.FourColor.GoertzelLemma818TripleTauLargeFiber50Block1Chunk2ComponentCertificate
+import Mettapedia.GraphTheory.FourColor.GoertzelLemma818TripleTauLargeFiber50Block1Chunk3ComponentCertificate
+
+namespace Mettapedia.GraphTheory.FourColor
+
+/-!
+# Goertzel Lemma 8.18: `TTT` large fiber 50 block 1 aggregate
+
+This module aggregates chunk certificates for rows 64 through 127 of one
+size-512 fixed-input fiber of the `TTT`/`mode09` representative target.
+-/
+
+namespace GoertzelLemma818TripleTauLargeFiber50Block1ComponentCertificate
+
+open GoertzelLemma818TripleTauLargeFiber50Block1Chunk0ComponentCertificate
+open GoertzelLemma818TripleTauLargeFiber50Block1Chunk1ComponentCertificate
+open GoertzelLemma818TripleTauLargeFiber50Block1Chunk2ComponentCertificate
+open GoertzelLemma818TripleTauLargeFiber50Block1Chunk3ComponentCertificate
+
+def tttLargeFiber50Block1ComponentCertificateAudit : Bool :=
+  tttLargeFiber50Block1Chunk0ComponentCertificateAudit &&
+    tttLargeFiber50Block1Chunk1ComponentCertificateAudit &&
+    tttLargeFiber50Block1Chunk2ComponentCertificateAudit &&
+    tttLargeFiber50Block1Chunk3ComponentCertificateAudit
+
+theorem tttLargeFiber50Block1ComponentCertificateAudit_ok :
+    tttLargeFiber50Block1ComponentCertificateAudit = true := by
+  simp [tttLargeFiber50Block1ComponentCertificateAudit,
+    tttLargeFiber50Block1Chunk0ComponentCertificateAudit_ok,
+    tttLargeFiber50Block1Chunk1ComponentCertificateAudit_ok,
+    tttLargeFiber50Block1Chunk2ComponentCertificateAudit_ok,
+    tttLargeFiber50Block1Chunk3ComponentCertificateAudit_ok]
+
+end GoertzelLemma818TripleTauLargeFiber50Block1ComponentCertificate
+
+end Mettapedia.GraphTheory.FourColor
