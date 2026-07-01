@@ -1,14 +1,15 @@
+import Mettapedia.Computability.PNP.PNPSteelmanConditional
 import Mettapedia.Computability.PNP.V13GaugeBufferedLockedInterface
 
 /-!
 # PNP v13 conditional upper/lower clash
 
 This module packages the Phase A-D v13 architecture as a conditional proof
-object.  It does not instantiate the concrete ensemble.  Instead, an external
-`ParameterRecord` supplies the lower/upper numeric consequences, and the main
-theorem turns a gauge-buffered locked ledger plus those parameters into an
-explicit clash record.  The record also carries a certificate showing that all
-nine ledger fields were used.
+object.  It does not instantiate the concrete ensemble.  The lower side is
+derived from a product-small-success/compression-from-success budget machine,
+using the same lower-bound chain as `PNPSteelmanConditional`.  The upper side is
+isolated as one named self-reduction hypothesis.  The conclusion also carries a
+certificate showing that all nine ledger fields were used.
 -/
 
 namespace Mettapedia.Computability.PNP
@@ -24,10 +25,169 @@ variable {Pair : Type a} [Fintype Pair] {Stage : Type b} {Branch : Type c}
 variable {HistoryAtom : Type d} {Pivot : Type e}
 variable {Observer : Type f} {Output : Type f} {Skeleton : Type w}
 
-/-- External parameter payload for the conditional clash.  These are the
-non-Phase-E inputs: a derivative-to-gap budget, small boundary-mixing error,
-nondegeneracy, probes for the safe/gauge/observer ledgers, and the abstract
-lower/upper bounds whose simultaneous satisfaction is the clash. -/
+/-- Lower-side budget machine: product small-success followed by
+compression-from-success.  This is the lower-bound fragment of
+`PNPConditionalFramework`, deliberately excluding the final self-reduction
+step. -/
+structure CompressionLowerFramework where
+  Predictor : Type
+  short : Predictor -> Prop
+  uLocal : Predictor -> Prop
+  pivotSuccess : Predictor -> Nat
+  tupleSuccess : Predictor -> Nat
+  halfBudget : Nat
+  halfPlusSlackBudget : Nat
+  smallSuccessBudget : Nat
+  targetBlocks : Nat
+  etaTimes : Nat -> Nat
+  kpolyAt : Nat -> Nat
+  productSmallSuccess :
+    ∀ A : Predictor,
+      pivotSuccess A ≤ halfPlusSlackBudget ->
+        tupleSuccess A ≤ smallSuccessBudget
+  compressionFromSuccess :
+    (∀ A : Predictor, short A -> tupleSuccess A ≤ smallSuccessBudget) ->
+      etaTimes targetBlocks ≤ kpolyAt targetBlocks
+
+namespace CompressionLowerFramework
+
+/-- Embed the lower-side machine into the existing steelman framework with a
+trivial endpoint, so the lower-bound theorem can reuse the checked steelman
+chain without hiding any self-reduction content in the lower side. -/
+def toSteelmanFramework (F : CompressionLowerFramework) :
+    PNPConditionalFramework where
+  Predictor := F.Predictor
+  short := F.short
+  uLocal := F.uLocal
+  pivotSuccess := F.pivotSuccess
+  tupleSuccess := F.tupleSuccess
+  halfBudget := F.halfBudget
+  halfPlusSlackBudget := F.halfPlusSlackBudget
+  smallSuccessBudget := F.smallSuccessBudget
+  targetBlocks := F.targetBlocks
+  etaTimes := F.etaTimes
+  kpolyAt := F.kpolyAt
+  pNeNPClaim := True
+  pivotIndependenceStep := F.productSmallSuccess
+  compressionFromSuccessStep := F.compressionFromSuccess
+  selfReductionClashStep := by
+    intro hlower
+    trivial
+
+end CompressionLowerFramework
+
+/-- Kernel-flip lower-side input, stated over the self-reduction-free lower
+framework. -/
+structure CompressionKernelNeutrality (F : CompressionLowerFramework) where
+  exactLocalHalfBound :
+    ∀ A : F.Predictor, F.uLocal A -> F.pivotSuccess A ≤ F.halfBudget
+  halfBudget_le_starBudget :
+    F.halfBudget ≤ F.halfPlusSlackBudget
+
+/-- The open SW/hardness input needed to transfer the local half-bound to all
+short predictors. -/
+structure CompressionStarSWHardness (F : CompressionLowerFramework) where
+  transferLocalNeutralityToShortPredictors :
+    (∀ A : F.Predictor, F.uLocal A -> F.pivotSuccess A ≤ F.halfBudget) ->
+      ∀ A : F.Predictor, F.short A -> F.pivotSuccess A ≤ F.halfBudget
+
+def CompressionKernelNeutrality.toSteelman
+    {F : CompressionLowerFramework}
+    (h : CompressionKernelNeutrality F) :
+    KernelFlipNeutrality F.toSteelmanFramework where
+  exactLocalHalfBound := h.exactLocalHalfBound
+  halfBudget_le_starBudget := h.halfBudget_le_starBudget
+
+def CompressionStarSWHardness.toSteelman
+    {F : CompressionLowerFramework}
+    (h : CompressionStarSWHardness F) :
+    StarSWAverageCaseWitnessBitHardness F.toSteelmanFramework where
+  transferLocalNeutralityToShortPredictors :=
+    h.transferLocalNeutralityToShortPredictors
+
+/-- Lower consequence derived from product small-success and
+compression-from-success, via the checked steelman lower-bound chain. -/
+theorem compressionLower_of_budget_machine
+    {F : CompressionLowerFramework}
+    (hKernel : CompressionKernelNeutrality F)
+    (hSW : CompressionStarSWHardness F) :
+    F.etaTimes F.targetBlocks ≤ F.kpolyAt F.targetBlocks :=
+  kpolyLowerBound_of_kernelFlipNeutrality_starSW
+    hKernel.toSteelman hSW.toSteelman
+
+/--
+The single upper-side open input.
+
+Analytic content carried here: the constant-length self-reduction/P=NP wrapper
+forces the same `Kpoly` quantity below the compression floor for the lower-side
+budget machine.  No separate lower consequence, upper consequence, or strict
+gap field is allowed in `ParameterRecord`.
+-/
+structure SelfReductionUpperHypothesis (F : CompressionLowerFramework) where
+  upperStrictlyBelowCompressionFloor :
+    F.kpolyAt F.targetBlocks < F.etaTimes F.targetBlocks
+
+/-- Classification tags for the post-review `ParameterRecord` audit. -/
+inductive ParameterFieldStatus where
+  | numeric
+  | derived
+  | openInput
+deriving DecidableEq, Repr
+
+/-- One row in the `ParameterRecord` audit. -/
+structure ParameterFieldAudit where
+  fieldName : String
+  status : ParameterFieldStatus
+  note : String
+deriving Repr
+
+/-- Audit list required by the second-round review: every parameter field is a
+number/numeric inequality, a derived finite-budget input, or an explicitly
+flagged open analytic input. -/
+def v13ParameterRecordAudit : List ParameterFieldAudit := [
+  {
+    fieldName := "fixedGapBudget",
+    status := .numeric,
+    note := "Rational bound used to cap the Phase A finite observer gap."
+  },
+  {
+    fieldName := "phaseABudget",
+    status := .numeric,
+    note := "Numeric inequality converting the derivative-telescoping sum into fixedGapBudget."
+  },
+  {
+    fieldName := "epsSmall",
+    status := .numeric,
+    note := "Rational boundary-mixing threshold epsMix < 1/2."
+  },
+  {
+    fieldName := "lowerFramework",
+    status := .derived,
+    note := "Finite product-small-success plus compression-from-success budget machine; it contains no self-reduction step."
+  },
+  {
+    fieldName := "kernelNeutrality",
+    status := .derived,
+    note := "Finite kernel/local-neutrality half-bound input for the lower-side budget machine."
+  },
+  {
+    fieldName := "starSWHardness",
+    status := .openInput,
+    note := "Open SW-shaped average-case transfer from local-neutral predictors to all short predictors."
+  },
+  {
+    fieldName := "selfReductionUpper",
+    status := .openInput,
+    note := "The single upper-side self-reduction/P=NP wrapper hypothesis."
+  }
+]
+
+theorem v13ParameterRecordAudit_length :
+    v13ParameterRecordAudit.length = 7 := by
+  rfl
+
+/-- External parameter payload for the conditional clash after the
+second-round cleanup.  No conclusion field appears here. -/
 structure ParameterRecord
     (L : GaugeBufferedLockedInterface Omega Public Neutral Safe Gauge Transcript
       Pair Stage Branch HistoryAtom Pivot Observer Output Skeleton) where
@@ -35,18 +195,10 @@ structure ParameterRecord
   phaseABudget :
     (1 / 2 : Rat) * L.phaseA.telescoping.derivativeSum ≤ fixedGapBudget
   epsSmall : L.epsMix < (1 / 2 : Rat)
-  targetNondegenerate : NontrivialWitnessBit L.target
-  safeProbe : Safe
-  gaugeProbe : Gauge
-  observerProbe : Observer
-  outputProbe : Output
-  evidenceProbe : RawEvidence Neutral Safe Gauge
-  lowerBound : Rat
-  upperBound : Rat
-  witnessBound : Rat
-  compressionLower : lowerBound ≤ witnessBound
-  selfReductionUpper : witnessBound ≤ upperBound
-  upper_lt_lower : upperBound < lowerBound
+  lowerFramework : CompressionLowerFramework
+  kernelNeutrality : CompressionKernelNeutrality lowerFramework
+  starSWHardness : CompressionStarSWHardness lowerFramework
+  selfReductionUpper : SelfReductionUpperHypothesis lowerFramework
 
 /-- Evidence that Phase D used every one of the nine ledger fields. -/
 structure LedgerFieldUseCertificate
@@ -61,23 +213,23 @@ structure LedgerFieldUseCertificate
       L.publicInput w0 = L.publicInput w1 ∧
         L.target w0 = false ∧ L.target w1 = true
   hiddenGaugeProductUsed :
-    ∀ omega, L.semantics.gaugeSat P.gaugeProbe omega
+    ∀ gamma omega, L.semantics.gaugeSat gamma omega
   noPublicTargetTagsUsed :
     PairNeutral L.oppositeSupport L.neutralSkeleton ∧
       HasMessageOppositePair L.oppositeSupport L.target ∧
         ¬ ∃ f : Skeleton -> Bool,
           ∀ omega, L.target omega = f (L.neutralSkeleton omega)
   atomCompletenessUsed :
-    L.semantics.SatNormal (CDENF P.evidenceProbe) =
-      L.semantics.SatRaw P.evidenceProbe
+    ∀ E : RawEvidence Neutral Safe Gauge,
+      L.semantics.SatNormal (CDENF E) = L.semantics.SatRaw E
   gaugeFaithfulnessUsed :
-    L.semantics.SatNormal (CDENF (.gauge P.gaugeProbe)) =
-      L.semantics.gaugeSat P.gaugeProbe
+    ∀ gamma : Gauge,
+      L.semantics.SatNormal (CDENF (.gauge gamma)) =
+        L.semantics.gaugeSat gamma
   safeQSSMUsed :
-    0 ≤ L.safeCost P.safeProbe ∧
-      L.safeCost P.safeProbe ≤ L.safeBudget
+    ∀ q : Safe, 0 ≤ L.safeCost q ∧ L.safeCost q ≤ L.safeBudget
   boundedGaugeIncidenceUsed :
-    L.gaugeIncidence P.gaugeProbe ≤ L.gaugeBound
+    ∀ gamma : Gauge, L.gaugeIncidence gamma ≤ L.gaugeBound
   boundaryMixingUsed :
     BoundaryMixingBound L.target L.pivotSummary L.epsMix
   admissibleHistoriesUsed :
@@ -103,19 +255,21 @@ structure UpperLowerClash
   phaseAGapBound :
     Gap L.law L.target L.transcript L.observerBit ≤ P.fixedGapBudget
   observerNormalized :
-    L.observerEvidence.semantics.SatNormal
-        (CDENF
-          (L.observerEvidence.observerToEvidence
-            P.observerProbe P.outputProbe)) =
-      fun omega =>
-        L.observerEvidence.evalObserver P.observerProbe
-          (L.observerEvidence.publicInput omega) = P.outputProbe
+    ∀ observer output,
+      L.observerEvidence.semantics.SatNormal
+          (CDENF
+            (L.observerEvidence.observerToEvidence observer output)) =
+        fun omega =>
+          L.observerEvidence.evalObserver observer
+            (L.observerEvidence.publicInput omega) = output
   fieldUse : LedgerFieldUseCertificate L P
-  lowerConsequence : P.lowerBound ≤ P.witnessBound
-  upperConsequence : P.witnessBound ≤ P.upperBound
-  upperBelowLower : P.upperBound < P.lowerBound
-  noConsistentInterval :
-    ¬ (P.lowerBound ≤ P.witnessBound ∧ P.witnessBound ≤ P.upperBound)
+  lowerConsequence :
+    P.lowerFramework.etaTimes P.lowerFramework.targetBlocks ≤
+      P.lowerFramework.kpolyAt P.lowerFramework.targetBlocks
+  selfReductionUpper :
+    P.lowerFramework.kpolyAt P.lowerFramework.targetBlocks <
+      P.lowerFramework.etaTimes P.lowerFramework.targetBlocks
+  noConsistentBounds : False
 
 /-- Phase D: a gauge-buffered locked ledger plus the external parameter record
 produces the conditional upper/lower clash. -/
@@ -128,36 +282,40 @@ theorem v13_upperLowerClash
     { phaseAGapBound := ?phaseAGapBound
       observerNormalized := ?observerNormalized
       fieldUse := ?fieldUse
-      lowerConsequence := P.compressionLower
-      upperConsequence := P.selfReductionUpper
-      upperBelowLower := P.upper_lt_lower
-      noConsistentInterval := ?noConsistentInterval }
+      lowerConsequence :=
+        compressionLower_of_budget_machine
+          P.kernelNeutrality P.starSWHardness
+      selfReductionUpper :=
+        P.selfReductionUpper.upperStrictlyBelowCompressionFloor
+      noConsistentBounds := ?noConsistentBounds }
   · exact le_trans (phaseA_gap_le_half_derivative_sum L.phaseA) P.phaseABudget
-  · exact
-      observerToCDENF_sat
-        L.observerEvidence P.observerProbe P.outputProbe
+  · intro observer output
+    exact observerToCDENF_sat L.observerEvidence observer output
   · exact
       { singleMessageUsed := L.singleMessage
         samePublicNotOpposite :=
           sameFullY_noOpposite L.publicInput L.target L.singleMessage
-        hiddenGaugeProductUsed := by
-          intro omega
-          exact L.hiddenGaugeProduct P.gaugeProbe omega
+        hiddenGaugeProductUsed := L.hiddenGaugeProduct
         noPublicTargetTagsUsed := L.noPublicTargetTags
-        atomCompletenessUsed := L.atomCompleteness P.evidenceProbe
-        gaugeFaithfulnessUsed := L.gaugeFaithfulness P.gaugeProbe
-        safeQSSMUsed := L.safeQSSM P.safeProbe
-        boundedGaugeIncidenceUsed := L.boundedGaugeIncidence P.gaugeProbe
+        atomCompletenessUsed := L.atomCompleteness
+        gaugeFaithfulnessUsed := L.gaugeFaithfulness
+        safeQSSMUsed := L.safeQSSM
+        boundedGaugeIncidenceUsed := L.boundedGaugeIncidence
         boundaryMixingUsed := L.boundaryMixing
         admissibleHistoriesUsed := L.admissibleHistories
         historyNotTargetMeasurable :=
-          L.admissible_history_not_target_measurable P.targetNondegenerate
+          L.admissible_history_not_target_measurable (by
+            rcases L.noPublicTargetTags.2.1 with ⟨w0, w1, _hs, h0, h1⟩
+            exact ⟨w1, w0, h1, h0⟩)
         pivotNotSufficient :=
           L.boundary_mixing_blocks_pivot_sufficiency P.epsSmall
         neutralSkeletonNotSufficient :=
           L.neutral_skeleton_not_target_sufficient }
-  · intro h
-    linarith [h.1, h.2, P.upper_lt_lower]
+  · exact
+      not_lt_of_ge
+        (compressionLower_of_budget_machine
+          P.kernelNeutrality P.starSWHardness)
+        P.selfReductionUpper.upperStrictlyBelowCompressionFloor
 
 /-- The toy ledger supports the same Phase-D conditional theorem.  No concrete
 ensemble parameters are constructed here. -/
