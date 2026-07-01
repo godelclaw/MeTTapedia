@@ -213,9 +213,14 @@ The first large-fiber row split is now checked in
 `GoertzelLemma818TripleTauLargeFiber4Block0ComponentCertificate.lean`:
 `tttLargeFiber4Block0ComponentCertificateAudit_ok` covers the first 64 rows of
 the first size-512 `TTT` fiber (`[r,r,b,b]`, root `2176`) with explicit
-component rows, parent-map agreement, and parent-depth convergence.  Continue
-that fiber as seven more 64-row blocks, then repeat or replace the pattern for
-the other eleven size-512 `TTT` fibers.
+component rows, parent-map agreement, and parent-depth convergence.  A direct
+continuation of that same generated 64-row block shape is not the right next
+move: later generated blocks again exceed default kernel recursion in row or
+parent-convergence checks.  Keep the checked block 0 theorem, leave the failed
+block1-through-block7 WIP archived and unimported, and redesign the rest of
+the large-fiber certificate as smaller per-fixed-input/per-component lemmas or
+as a finite transition certificate before repeating the pattern on the other
+eleven size-512 `TTT` fibers.
 
 Checkpoint stop status, 2026-07-01: the exploration pass is checkpointed and
 should not be extended by longer word sweeps.  The profile automaton is finite
@@ -228,9 +233,19 @@ base modes are backed by real single/length-2 chain certificates, while the
 fourteen non-base modes still need compact per-fixed-input chain/component
 certificates or an equivalent finite transition certificate.  The `TTT`/`mode09`
 target is partially discharged on its light fibers and one 64-row block of the
-first large fiber, but the remaining large-fiber blocks are still open.  Once
-the target audits exist, `GoertzelLemma818SemanticBridge.lean` provides the
-finite induction hook to lift them to all nonempty `τ`/mirror-`τ` chains.
+first large fiber, but the remaining large-fiber blocks are still open and the
+other thirteen non-base representative modes have no real chain-level target
+certificate yet.  Once the target audits exist,
+`GoertzelLemma818SemanticBridge.lean` provides the finite induction hook to
+lift them to all nonempty `τ`/mirror-`τ` chains.
+
+Immediate next goal: do not extend the exploration surface.  Build the
+formalization from the stabilized finite-mode result already in hand: 20
+profile modes, 40 closed transitions, archived per-fixed-input connectivity
+evidence for every mode, six base modes certified by real chain tables, and a
+partial `TTT`/`mode09` semantic certificate.  The remaining open certificate
+set is the rest of `mode09` plus
+`mode00/mode01/mode02/mode03/mode05/mode06/mode08/mode12/mode13/mode14/mode15/mode17/mode19`.
 
 The older CAP5/F2, GP(12,2), and six-cut files are exploratory negative audits
 of a divergent additive F2 route.  They remain useful for provenance and
