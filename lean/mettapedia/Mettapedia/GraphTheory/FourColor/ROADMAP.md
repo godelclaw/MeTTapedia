@@ -282,6 +282,9 @@ are now checked, leaving 192 rows of that fiber open.
 `GoertzelLemma818TripleTauLargeFiber8Block5ComponentCertificate.lean` continues
 the same fiber with rows 320 through 383.  Rows 0 through 383 of `[r,r,p,p]`
 are now checked, leaving 128 rows of that fiber open.
+`GoertzelLemma818TripleTauLargeFiber8Block6ComponentCertificate.lean` continues
+the same fiber with rows 384 through 447.  Rows 0 through 447 of `[r,r,p,p]`
+are now checked, leaving 64 rows of that fiber open.
 
 Checkpoint stop status, 2026-07-01: the exploration pass is checkpointed and
 should not be extended by longer word sweeps.  The profile automaton is finite
@@ -294,8 +297,8 @@ base modes are backed by real single/length-2 chain certificates, while the
 fourteen non-base modes still need compact per-fixed-input chain/component
 certificates or an equivalent finite transition certificate.  The `TTT`/`mode09`
 target is partially discharged on its light fibers, the completed first
-size-512 large fiber, and the first 384 rows of the second large fiber.  The
-remaining 128 rows of `[r,r,p,p]`, the other ten large `TTT` fibers, and the
+size-512 large fiber, and the first 448 rows of the second large fiber.  The
+remaining 64 rows of `[r,r,p,p]`, the other ten large `TTT` fibers, and the
 other thirteen non-base representative modes still lack real chain-level target
 certificates.  Once the target audits exist,
 `GoertzelLemma818SemanticBridge.lean` provides the finite induction hook to
@@ -333,8 +336,8 @@ records, and archived per-fixed-input connectivity evidence for every mode.
 No metadata/profile mode is currently marked as connectivity-unverified.  The
 open frontier is semantic, not exploratory: the six base modes have chain-level
 certificates, `mode09` has its light `TTT` fibers plus the first large
-`[r,r,b,b]` fiber and the first 384 rows of `[r,r,p,p]` certified, and the
-remaining work is the other 128 rows of `[r,r,p,p]`, the other ten large
+`[r,r,b,b]` fiber and the first 448 rows of `[r,r,p,p]` certified, and the
+remaining work is the other 64 rows of `[r,r,p,p]`, the other ten large
 `TTT` fibers, plus the thirteen non-base modes
 `mode00/mode01/mode02/mode03/mode05/mode06/mode08/mode12/mode13/mode14/mode15/mode17/mode19`.
 Formalize that finite surface next with compact per-fixed-input
