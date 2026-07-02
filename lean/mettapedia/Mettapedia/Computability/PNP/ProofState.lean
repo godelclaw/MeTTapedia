@@ -1298,6 +1298,28 @@ theorem currentPNPV13RealRungOneQRowBound_node :
             2 ^ m ≤
           Fintype.card
             (V13RealLinearAdaptiveQRowWorld m (V13F2LinearEquiv m))) ∧
+      (∀ {m : Nat} (observer : V13RealLinearAdaptiveRowObserver m 1)
+          (i₀ : Fin m),
+        Fintype.card
+            (V13RealLinearAdaptiveQRowGenerated
+              (v13RealLinearUniformQRowExperiment observer) i₀) *
+            2 ^ m ≤
+          Fintype.card
+              (V13RealLinearUniformOneRowGeneratedCylinderIndex
+                observer i₀) *
+            Fintype.card
+              (V13RealLinearAdaptiveQRowWorld m (V13F2LinearEquiv m))) ∧
+      (∀ {m : Nat} (observer : V13RealLinearCausalRowObserver m 1)
+          (i₀ : Fin m),
+        Fintype.card
+            (V13RealLinearAdaptiveQRowGenerated
+              (v13RealLinearUniformCausalQRowExperiment observer) i₀) *
+            2 ^ m ≤
+          Fintype.card
+              (V13RealLinearUniformOneRowGeneratedCylinderIndex
+                observer.toAdaptive i₀) *
+            Fintype.card
+              (V13RealLinearAdaptiveQRowWorld m (V13F2LinearEquiv m))) ∧
       V13RealLinearUniformFixedTargetRowOccurrenceCountingBound ∧
       V13RealLinearUniformRepresentativeFixedTargetRowOccurrenceCountingBound ∧
       (V13RealLinearUniformFixedTargetRowOccurrenceCountingBound →
@@ -1475,6 +1497,12 @@ theorem currentPNPV13RealRungOneQRowBound_node :
         v13RealLinearFixedTargetRowBitCylinder_card_le_equiv row i₀ bit,
       fun row i₀ bit =>
         v13RealLinearFixedTargetRowBitCylinder_counting row i₀ bit,
+      fun observer i₀ =>
+        v13RealLinearUniformOneRowGenerated_counting_by_activeBitCylinderIndex
+          observer i₀,
+      fun observer i₀ =>
+        v13RealLinearUniformCausalOneRowGenerated_counting_by_activeBitCylinderIndex
+          observer i₀,
       v13RealLinearUniformFixedTargetRowOccurrenceCountingBound_proved,
       v13RealLinearUniformRepresentativeFixedTargetRowOccurrenceCountingBound_proved,
       fun hcount {m} row i₀ =>
