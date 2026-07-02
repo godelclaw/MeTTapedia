@@ -1281,6 +1281,23 @@ theorem currentPNPV13RealRungOneQRowBound_node :
             (V13RealLinearUniformFixedTargetRowOccurrence row i₀) *
             2 ^ 2 ≤
           2 * Fintype.card (V13F2LinearEquiv 2)) ∧
+      (∀ {m : Nat} (i₀ : Fin m) (bit : ZMod 2),
+        Fintype.card (V13RealLinearBitAt i₀ bit) * 2 = 2 ^ m) ∧
+      (∀ {m : Nat} (row i₀ : Fin m) (bit : ZMod 2),
+        Fintype.card
+            (V13RealLinearUniformFixedTargetRowBitCylinder row i₀ bit) =
+          Fintype.card (V13RealLinearUniformFixedTargetRowOccurrence row i₀) *
+            Fintype.card (V13RealLinearBitAt i₀ bit)) ∧
+      (∀ {m : Nat} (row i₀ : Fin m) (bit : ZMod 2),
+        Fintype.card
+            (V13RealLinearUniformFixedTargetRowBitCylinder row i₀ bit) ≤
+          Fintype.card (V13F2LinearEquiv m)) ∧
+      (∀ {m : Nat} (row i₀ : Fin m) (bit : ZMod 2),
+        Fintype.card
+            (V13RealLinearUniformFixedTargetRowBitCylinder row i₀ bit) *
+            2 ^ m ≤
+          Fintype.card
+            (V13RealLinearAdaptiveQRowWorld m (V13F2LinearEquiv m))) ∧
       V13RealLinearUniformFixedTargetRowOccurrenceCountingBound ∧
       V13RealLinearUniformRepresentativeFixedTargetRowOccurrenceCountingBound ∧
       (V13RealLinearUniformFixedTargetRowOccurrenceCountingBound →
@@ -1450,6 +1467,14 @@ theorem currentPNPV13RealRungOneQRowBound_node :
       v13RealLinearFixedTargetRowOccurrence_two_card_le_two,
       v13RealLinear_fixedTargetRowOccurrence_zero_two_counting,
       v13RealLinear_fixedTargetRowOccurrence_two_counting,
+      fun i₀ bit =>
+        v13RealLinear_bitAt_card_mul_two i₀ bit,
+      fun row i₀ bit =>
+        v13RealLinearFixedTargetRowBitCylinder_card_eq row i₀ bit,
+      fun row i₀ bit =>
+        v13RealLinearFixedTargetRowBitCylinder_card_le_equiv row i₀ bit,
+      fun row i₀ bit =>
+        v13RealLinearFixedTargetRowBitCylinder_counting row i₀ bit,
       v13RealLinearUniformFixedTargetRowOccurrenceCountingBound_proved,
       v13RealLinearUniformRepresentativeFixedTargetRowOccurrenceCountingBound_proved,
       fun hcount {m} row i₀ =>

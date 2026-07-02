@@ -859,6 +859,97 @@ theorem v13RealLinear_zeroAt_card_mul_two {m : Nat} (i₀ : Fin m) :
     simp [F2Vec]
   simpa [hzmod, hf2] using hcard
 
+/-- Vectors whose selected coordinate is a fixed bit. -/
+def V13RealLinearBitAt {m : Nat} (i₀ : Fin m) (bit : ZMod 2) :=
+  {x : F2Vec m // x i₀ = bit}
+
+noncomputable instance {m : Nat} (i₀ : Fin m) (bit : ZMod 2) :
+    Fintype (V13RealLinearBitAt i₀ bit) := by
+  classical
+  unfold V13RealLinearBitAt
+  infer_instance
+
+noncomputable def v13RealLinearBitAtZeroAtEquiv {m : Nat}
+    (i₀ : Fin m) (bit : ZMod 2) :
+    V13RealLinearBitAt i₀ bit ≃ V13RealLinearZeroAt i₀ where
+  toFun x :=
+    ⟨fun j => if j = i₀ then 0 else x.val j, by simp⟩
+  invFun z :=
+    ⟨fun j => if j = i₀ then bit else z.val j, by simp⟩
+  left_inv x := by
+    apply Subtype.ext
+    funext j
+    by_cases hj : j = i₀
+    · subst j
+      simp [x.property]
+    · simp [hj]
+  right_inv z := by
+    apply Subtype.ext
+    funext j
+    by_cases hj : j = i₀
+    · subst j
+      simp [z.property]
+    · simp [hj]
+
+theorem v13RealLinear_bitAt_card_mul_two {m : Nat}
+    (i₀ : Fin m) (bit : ZMod 2) :
+    Fintype.card (V13RealLinearBitAt i₀ bit) * 2 = 2 ^ m := by
+  classical
+  rw [Fintype.card_congr (v13RealLinearBitAtZeroAtEquiv i₀ bit)]
+  exact v13RealLinear_zeroAt_card_mul_two i₀
+
+/-- A fixed target-row occurrence together with one fixed row-transcript RHS
+bit.  When the row is the target row, the RHS bit is exactly the hidden target
+coordinate. -/
+structure V13RealLinearUniformFixedTargetRowBitCylinder {m : Nat}
+    (row i₀ : Fin m) (bit : ZMod 2) where
+  A : V13F2LinearEquiv m
+  x : F2Vec m
+  targetRow : row ∈ V13RealLinearTargetRows A i₀
+  targetBit : x i₀ = bit
+
+noncomputable def v13RealLinearFixedTargetRowBitCylinderEquiv
+    {m : Nat} (row i₀ : Fin m) (bit : ZMod 2) :
+    V13RealLinearUniformFixedTargetRowBitCylinder row i₀ bit ≃
+      V13RealLinearUniformFixedTargetRowOccurrence row i₀ ×
+        V13RealLinearBitAt i₀ bit where
+  toFun data :=
+    (⟨data.A, data.targetRow⟩, ⟨data.x, data.targetBit⟩)
+  invFun data :=
+    { A := data.1.val
+      x := data.2.val
+      targetRow := data.1.property
+      targetBit := data.2.property }
+  left_inv data := by
+    cases data
+    rfl
+  right_inv data := by
+    cases data with
+    | mk occ x =>
+        cases occ
+        cases x
+        rfl
+
+noncomputable instance {m : Nat} (row i₀ : Fin m) (bit : ZMod 2) :
+    Fintype (V13RealLinearUniformFixedTargetRowBitCylinder row i₀ bit) := by
+  classical
+  exact
+    Fintype.ofEquiv
+      (V13RealLinearUniformFixedTargetRowOccurrence row i₀ ×
+        V13RealLinearBitAt i₀ bit)
+      (v13RealLinearFixedTargetRowBitCylinderEquiv row i₀ bit).symm
+
+theorem v13RealLinearFixedTargetRowBitCylinder_card_eq
+    {m : Nat} (row i₀ : Fin m) (bit : ZMod 2) :
+    Fintype.card
+        (V13RealLinearUniformFixedTargetRowBitCylinder row i₀ bit) =
+      Fintype.card (V13RealLinearUniformFixedTargetRowOccurrence row i₀) *
+        Fintype.card (V13RealLinearBitAt i₀ bit) := by
+  classical
+  rw [Fintype.card_congr
+    (v13RealLinearFixedTargetRowBitCylinderEquiv row i₀ bit)]
+  rw [Fintype.card_prod]
+
 def v13RealLinearZeroAtShearSum {m : Nat} (i₀ : Fin m)
     (s : V13RealLinearZeroAt i₀) (w : F2Vec m) : ZMod 2 :=
   (Finset.univ.erase i₀).sum (fun j => s.val j * w j)
@@ -1002,6 +1093,63 @@ theorem v13RealLinearFixedTargetRowOccurrence_counting
     O * 2 ^ m = O * (Z * 2) := by rw [hZ]
     _ = 2 * (O * Z) := by ring
     _ ≤ 2 * A := by exact Nat.mul_le_mul_left 2 hOZ
+
+theorem v13RealLinearFixedTargetRowBitCylinder_card_le_equiv
+    {m : Nat} (row i₀ : Fin m) (bit : ZMod 2) :
+    Fintype.card
+        (V13RealLinearUniformFixedTargetRowBitCylinder row i₀ bit) ≤
+      Fintype.card (V13F2LinearEquiv m) := by
+  classical
+  let C :=
+    Fintype.card
+      (V13RealLinearUniformFixedTargetRowBitCylinder row i₀ bit)
+  let O := Fintype.card (V13RealLinearUniformFixedTargetRowOccurrence row i₀)
+  let B := Fintype.card (V13RealLinearBitAt i₀ bit)
+  let A := Fintype.card (V13F2LinearEquiv m)
+  have hC : C = O * B := by
+    simpa [C, O, B] using
+      v13RealLinearFixedTargetRowBitCylinder_card_eq row i₀ bit
+  have hO : O * 2 ^ m ≤ 2 * A := by
+    simpa [O, A] using
+      v13RealLinearFixedTargetRowOccurrence_counting row i₀
+  have hB : B * 2 = 2 ^ m := by
+    simpa [B] using v13RealLinear_bitAt_card_mul_two i₀ bit
+  have hdouble : 2 * C ≤ 2 * A := by
+    rw [hC]
+    calc
+      2 * (O * B) = O * (B * 2) := by ring
+      _ = O * 2 ^ m := by rw [hB]
+      _ ≤ 2 * A := hO
+  omega
+
+theorem v13RealLinearFixedTargetRowBitCylinder_counting
+    {m : Nat} (row i₀ : Fin m) (bit : ZMod 2) :
+    Fintype.card
+        (V13RealLinearUniformFixedTargetRowBitCylinder row i₀ bit) *
+        2 ^ m ≤
+      Fintype.card
+        (V13RealLinearAdaptiveQRowWorld m (V13F2LinearEquiv m)) := by
+  classical
+  let C :=
+    Fintype.card
+      (V13RealLinearUniformFixedTargetRowBitCylinder row i₀ bit)
+  let A := Fintype.card (V13F2LinearEquiv m)
+  let X := 2 ^ m
+  have hC : C ≤ A := by
+    simpa [C, A] using
+      v13RealLinearFixedTargetRowBitCylinder_card_le_equiv row i₀ bit
+  have hworld :
+      Fintype.card
+          (V13RealLinearAdaptiveQRowWorld m (V13F2LinearEquiv m)) =
+        A * X := by
+    dsimp [V13RealLinearAdaptiveQRowWorld, A, X]
+    rw [Fintype.card_prod]
+    simp [F2Vec]
+  calc
+    C * X ≤ A * X := Nat.mul_le_mul_right X hC
+    _ =
+        Fintype.card
+          (V13RealLinearAdaptiveQRowWorld m (V13F2LinearEquiv m)) := hworld.symm
 
 noncomputable def v13RealLinearFixedTargetRowOccurrenceSwapEquiv
     {m : Nat} (row row' i₀ i₀' : Fin m) :
