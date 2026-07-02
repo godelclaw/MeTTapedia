@@ -2690,6 +2690,18 @@ abbrev V13RealLinearAdaptiveQRowGeneratedTargetCoefficientRowsetProductCell
   V13RealLinearAdaptiveQRowRowsetFiber E seed rows ×
     V13RealLinearRowsTargetCoefficient (E.sampleA seed) rows i₀
 
+/-- Transcript-indexed product form of a fixed-map rowset cell: choose the
+hidden vector in one transcript cell, then choose the rowset-local target
+coefficient. -/
+abbrev
+    V13RealLinearAdaptiveQRowGeneratedTargetCoefficientRowsetTranscriptProductCell
+    {m q : Nat} {Seed : Type*}
+    (E : V13RealLinearAdaptiveQRowExperiment m q Seed)
+    (i₀ : Fin m) (seed : Seed) (rows : Finset (Fin m))
+    (transcript : V13RealLinearRowsTranscriptSpace m rows) :=
+  V13RealLinearAdaptiveQRowRowsetTranscriptCell E seed rows transcript ×
+    V13RealLinearRowsTargetCoefficient (E.sampleA seed) rows i₀
+
 noncomputable instance {m q : Nat} {Seed : Type*} [Fintype Seed]
     (E : V13RealLinearAdaptiveQRowExperiment m q Seed) (i₀ : Fin m) :
     Fintype (V13RealLinearAdaptiveQRowGeneratedCoefficient E i₀) := by
@@ -2814,6 +2826,47 @@ theorem v13RealLinearAdaptiveQRow_rowsetProduct_eq_sum_transcriptCells
   rw [v13RealLinearAdaptiveQRowRowsetFiber_card_eq_sum_transcriptCells
     E seed rows]
   rw [Finset.sum_mul]
+
+theorem
+    v13RealLinearAdaptiveQRowGeneratedTargetCoefficientRowsetTranscriptProductCell_card_eq_product
+    {m q : Nat} {Seed : Type*} [Fintype Seed]
+    (E : V13RealLinearAdaptiveQRowExperiment m q Seed) (i₀ : Fin m)
+    (seed : Seed) (rows : Finset (Fin m))
+    (transcript : V13RealLinearRowsTranscriptSpace m rows) :
+    Fintype.card
+        (V13RealLinearAdaptiveQRowGeneratedTargetCoefficientRowsetTranscriptProductCell
+          E i₀ seed rows transcript) =
+      Fintype.card
+          (V13RealLinearAdaptiveQRowRowsetTranscriptCell
+            E seed rows transcript) *
+        Fintype.card
+          (V13RealLinearRowsTargetCoefficient
+            (E.sampleA seed) rows i₀) := by
+  classical
+  simp [V13RealLinearAdaptiveQRowGeneratedTargetCoefficientRowsetTranscriptProductCell,
+    Fintype.card_prod]
+
+theorem
+    v13RealLinearAdaptiveQRow_rowsetProduct_eq_sum_transcriptProductCells
+    {m q : Nat} {Seed : Type*} [Fintype Seed]
+    (E : V13RealLinearAdaptiveQRowExperiment m q Seed) (i₀ : Fin m)
+    (seed : Seed) (rows : Finset (Fin m)) :
+    Fintype.card (V13RealLinearAdaptiveQRowRowsetFiber E seed rows) *
+        Fintype.card
+          (V13RealLinearRowsTargetCoefficient
+            (E.sampleA seed) rows i₀) =
+      ∑ transcript : V13RealLinearRowsTranscriptSpace m rows,
+        Fintype.card
+          (V13RealLinearAdaptiveQRowGeneratedTargetCoefficientRowsetTranscriptProductCell
+            E i₀ seed rows transcript) := by
+  classical
+  rw [v13RealLinearAdaptiveQRow_rowsetProduct_eq_sum_transcriptCells
+    E i₀ seed rows]
+  apply Finset.sum_congr rfl
+  intro transcript _
+  rw [
+    v13RealLinearAdaptiveQRowGeneratedTargetCoefficientRowsetTranscriptProductCell_card_eq_product
+      E i₀ seed rows transcript]
 
 theorem
     v13RealLinearUniformCausal_rowsetTranscriptCell_branch_eq
@@ -2983,6 +3036,23 @@ theorem
     simpa [E, V13RealLinearAdaptiveQRowExperiment.target,
       V13RealLinearAdaptiveQRowExperiment.world, v13RealLinearTarget] using
       htarget.symm
+
+theorem
+    v13RealLinearUniformCausal_rowsetTranscriptProductCell_correct_iff
+    {m q : Nat} (observer : V13RealLinearCausalRowObserver m q)
+    (i₀ : Fin m) (A : V13F2LinearEquiv m) (rows : Finset (Fin m))
+    (transcript : V13RealLinearRowsTranscriptSpace m rows)
+    (x y :
+      V13RealLinearAdaptiveQRowGeneratedTargetCoefficientRowsetTranscriptProductCell
+        (v13RealLinearUniformCausalQRowExperiment observer) i₀ A rows
+        transcript) :
+    (v13RealLinearUniformCausalQRowExperiment observer).correct i₀
+        (A, x.1.val.val) ↔
+      (v13RealLinearUniformCausalQRowExperiment observer).correct i₀
+        (A, y.1.val.val) := by
+  exact
+    v13RealLinearUniformCausal_rowsetTranscriptCell_correct_iff_of_coefficient
+      observer i₀ A rows transcript x.2 x.1 y.1
 
 noncomputable def
     v13RealLinearAdaptiveQRowGeneratedTargetCoefficientRowsetCellEquivProduct
