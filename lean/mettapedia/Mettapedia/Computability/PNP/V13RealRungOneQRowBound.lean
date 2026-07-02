@@ -563,11 +563,52 @@ def V13RealLinearUniformFixedTargetRowOccurrence {m : Nat}
     (row i₀ : Fin m) :=
   {A : V13F2LinearEquiv m // row ∈ V13RealLinearTargetRows A i₀}
 
+structure V13RealLinearRowIndexedFixedTargetRowOccurrenceWorld
+    (m : Nat) (i₀ : Fin m) where
+  row : Fin m
+  A : V13F2LinearEquiv m
+  x : F2Vec m
+  targetRow : row ∈ V13RealLinearTargetRows A i₀
+
+noncomputable def v13RealLinearRowIndexedFixedTargetRowOccurrenceWorldEquiv
+    {m : Nat} (i₀ : Fin m) :
+    V13RealLinearRowIndexedFixedTargetRowOccurrenceWorld m i₀ ≃
+      (Σ row : Fin m,
+        V13RealLinearUniformFixedTargetRowOccurrence row i₀ × F2Vec m) where
+  toFun data :=
+    ⟨data.row, (⟨data.A, data.targetRow⟩, data.x)⟩
+  invFun data :=
+    { row := data.1
+      A := data.2.1.val
+      x := data.2.2
+      targetRow := data.2.1.property }
+  left_inv := by
+    intro data
+    cases data
+    rfl
+  right_inv := by
+    intro data
+    cases data with
+    | mk row rest =>
+        cases rest with
+        | mk occ x =>
+            cases occ
+            rfl
+
 noncomputable instance {m : Nat} (row i₀ : Fin m) :
     Fintype (V13RealLinearUniformFixedTargetRowOccurrence row i₀) := by
   classical
   unfold V13RealLinearUniformFixedTargetRowOccurrence
   infer_instance
+
+noncomputable instance {m : Nat} (i₀ : Fin m) :
+    Fintype (V13RealLinearRowIndexedFixedTargetRowOccurrenceWorld m i₀) := by
+  classical
+  exact
+    Fintype.ofEquiv
+      (Σ row : Fin m,
+        V13RealLinearUniformFixedTargetRowOccurrence row i₀ × F2Vec m)
+      (v13RealLinearRowIndexedFixedTargetRowOccurrenceWorldEquiv i₀).symm
 
 /-- Vectors whose selected coordinate is zero.  These index the elementary
 row transvections used to spread one fixed target row through a half-space of
@@ -2161,6 +2202,151 @@ theorem v13RealLinear_f2vec_card (m : Nat) :
     Fintype.card (F2Vec m) = 2 ^ m := by
   classical
   simp [F2Vec]
+
+theorem v13RealLinearRowIndexedFixedTargetRowOccurrenceWorld_card_eq_sum
+    {m : Nat} (i₀ : Fin m) :
+    Fintype.card
+        (V13RealLinearRowIndexedFixedTargetRowOccurrenceWorld m i₀) =
+      ∑ row : Fin m,
+        Fintype.card
+          (V13RealLinearUniformFixedTargetRowOccurrence row i₀ × F2Vec m) := by
+  classical
+  rw [Fintype.card_congr
+    (v13RealLinearRowIndexedFixedTargetRowOccurrenceWorldEquiv i₀)]
+  rw [Fintype.card_sigma]
+
+theorem v13RealLinearRowIndexedFixedTargetRowOccurrenceWorld_card_le
+    {m : Nat} (i₀ : Fin m) :
+    Fintype.card
+        (V13RealLinearRowIndexedFixedTargetRowOccurrenceWorld m i₀) ≤
+      Fintype.card (Fin m) *
+        (2 * Fintype.card (V13F2LinearEquiv m)) := by
+  classical
+  rw [v13RealLinearRowIndexedFixedTargetRowOccurrenceWorld_card_eq_sum i₀]
+  have hsum :
+      (∑ row : Fin m,
+        Fintype.card
+          (V13RealLinearUniformFixedTargetRowOccurrence row i₀ × F2Vec m)) ≤
+        ∑ _row : Fin m,
+          2 * Fintype.card (V13F2LinearEquiv m) := by
+    apply Finset.sum_le_sum
+    intro row _hrow
+    rw [Fintype.card_prod, v13RealLinear_f2vec_card]
+    exact v13RealLinearFixedTargetRowOccurrence_counting row i₀
+  simpa using hsum
+
+noncomputable def v13RealLinearUniformOneRowGeneratedToRowIndexedFixedOccurrence
+    {m : Nat} (observer : V13RealLinearAdaptiveRowObserver m 1)
+    (i₀ : Fin m) :
+    V13RealLinearAdaptiveQRowGenerated
+        (v13RealLinearUniformQRowExperiment observer) i₀ ↪
+      V13RealLinearRowIndexedFixedTargetRowOccurrenceWorld m i₀ where
+  toFun omega := by
+    classical
+    let htargetExists :=
+        V13RealLinearAdaptiveQRowExperiment.generated_one_budget_exists_target_row
+          (v13RealLinearUniformQRowExperiment observer) i₀ omega.val
+          omega.property
+    let row : Fin m := Classical.choose htargetExists
+    have htarget :
+        ∀ w : F2Vec m, omega.val.1.toEquiv w row = w i₀ := by
+      have hspec := Classical.choose_spec htargetExists
+      simpa [v13RealLinearUniformQRowExperiment, row] using hspec.2
+    exact
+      { row := row
+        A := omega.val.1
+        x := omega.val.2
+        targetRow :=
+          (v13RealLinear_mem_targetRows_iff omega.val.1 i₀ row).2
+            htarget }
+  inj' := by
+    intro omega₀ omega₁ hmap
+    apply Subtype.ext
+    apply Prod.ext
+    · exact
+        congrArg
+          V13RealLinearRowIndexedFixedTargetRowOccurrenceWorld.A hmap
+    · exact
+        congrArg
+          V13RealLinearRowIndexedFixedTargetRowOccurrenceWorld.x hmap
+
+theorem v13RealLinearUniformOneRowGenerated_card_le_rowIndexedFixedOccurrence
+    {m : Nat} (observer : V13RealLinearAdaptiveRowObserver m 1)
+    (i₀ : Fin m) :
+    Fintype.card
+        (V13RealLinearAdaptiveQRowGenerated
+          (v13RealLinearUniformQRowExperiment observer) i₀) ≤
+      Fintype.card
+        (V13RealLinearRowIndexedFixedTargetRowOccurrenceWorld m i₀) :=
+  Fintype.card_le_of_embedding
+    (v13RealLinearUniformOneRowGeneratedToRowIndexedFixedOccurrence
+      observer i₀)
+
+theorem v13RealLinearUniformOneRowGenerated_counting_with_rowFactor
+    {m : Nat} (observer : V13RealLinearAdaptiveRowObserver m 1)
+    (i₀ : Fin m) :
+    Fintype.card
+        (V13RealLinearAdaptiveQRowGenerated
+          (v13RealLinearUniformQRowExperiment observer) i₀) *
+        2 ^ m ≤
+      (2 * Fintype.card (Fin m)) *
+        Fintype.card
+          (V13RealLinearAdaptiveQRowWorld m (V13F2LinearEquiv m)) := by
+  classical
+  let G :=
+    Fintype.card
+      (V13RealLinearAdaptiveQRowGenerated
+        (v13RealLinearUniformQRowExperiment observer) i₀)
+  let R :=
+    Fintype.card
+      (V13RealLinearRowIndexedFixedTargetRowOccurrenceWorld m i₀)
+  let A := Fintype.card (V13F2LinearEquiv m)
+  let X := 2 ^ m
+  let N := Fintype.card (Fin m)
+  have hG : G ≤ R := by
+    simpa [G, R] using
+      v13RealLinearUniformOneRowGenerated_card_le_rowIndexedFixedOccurrence
+        observer i₀
+  have hR : R ≤ N * (2 * A) := by
+    simpa [R, N, A] using
+      v13RealLinearRowIndexedFixedTargetRowOccurrenceWorld_card_le i₀
+  have hworld :
+      Fintype.card
+          (V13RealLinearAdaptiveQRowWorld m (V13F2LinearEquiv m)) =
+        A * X := by
+    dsimp [V13RealLinearAdaptiveQRowWorld, A, X]
+    rw [Fintype.card_prod, v13RealLinear_f2vec_card]
+  calc
+    G * X ≤ (N * (2 * A)) * X :=
+      Nat.mul_le_mul_right X (hG.trans hR)
+    _ = (2 * N) * (A * X) := by ring
+    _ =
+        (2 * Fintype.card (Fin m)) *
+          Fintype.card
+            (V13RealLinearAdaptiveQRowWorld m (V13F2LinearEquiv m)) := by
+      simp [N, A, X, hworld]
+
+theorem v13RealLinearUniformCausalOneRowGenerated_counting_with_rowFactor
+    {m : Nat} (observer : V13RealLinearCausalRowObserver m 1)
+    (i₀ : Fin m) :
+    Fintype.card
+        (V13RealLinearAdaptiveQRowGenerated
+          (v13RealLinearUniformCausalQRowExperiment observer) i₀) *
+        2 ^ m ≤
+      (2 * Fintype.card (Fin m)) *
+        Fintype.card
+          (V13RealLinearAdaptiveQRowWorld m (V13F2LinearEquiv m)) := by
+  change
+    Fintype.card
+        (V13RealLinearAdaptiveQRowGenerated
+          (v13RealLinearUniformQRowExperiment observer.toAdaptive) i₀) *
+        2 ^ m ≤
+      (2 * Fintype.card (Fin m)) *
+        Fintype.card
+          (V13RealLinearAdaptiveQRowWorld m (V13F2LinearEquiv m))
+  exact
+    v13RealLinearUniformOneRowGenerated_counting_with_rowFactor
+      observer.toAdaptive i₀
 
 noncomputable def v13RealLinearFixedTargetRowOccurrenceZeroEmbedding :
     V13RealLinearUniformFixedTargetRowOccurrence

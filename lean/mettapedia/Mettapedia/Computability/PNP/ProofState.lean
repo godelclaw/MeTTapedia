@@ -1276,6 +1276,29 @@ theorem currentPNPV13RealRungOneQRowBound_node :
             2 ^ 1 *
               Fintype.card
                 (V13RealLinearAdaptiveQRowWorld m (V13F2LinearEquiv m))) ∧
+      (∀ {m : Nat} (i₀ : Fin m),
+        Fintype.card
+            (V13RealLinearRowIndexedFixedTargetRowOccurrenceWorld m i₀) ≤
+          Fintype.card (Fin m) *
+            (2 * Fintype.card (V13F2LinearEquiv m))) ∧
+      (∀ {m : Nat} (observer : V13RealLinearAdaptiveRowObserver m 1)
+        (i₀ : Fin m),
+        Fintype.card
+            (V13RealLinearAdaptiveQRowGenerated
+              (v13RealLinearUniformQRowExperiment observer) i₀) *
+            2 ^ m ≤
+          (2 * Fintype.card (Fin m)) *
+            Fintype.card
+              (V13RealLinearAdaptiveQRowWorld m (V13F2LinearEquiv m))) ∧
+      (∀ {m : Nat} (observer : V13RealLinearCausalRowObserver m 1)
+        (i₀ : Fin m),
+        Fintype.card
+            (V13RealLinearAdaptiveQRowGenerated
+              (v13RealLinearUniformCausalQRowExperiment observer) i₀) *
+            2 ^ m ≤
+          (2 * Fintype.card (Fin m)) *
+            Fintype.card
+              (V13RealLinearAdaptiveQRowWorld m (V13F2LinearEquiv m))) ∧
       (Fintype.card
           (V13RealLinearAdaptiveQRowGeneratedCoefficient
             (v13RealLinearUniformCausalQRowExperiment
@@ -1392,6 +1415,14 @@ theorem currentPNPV13RealRungOneQRowBound_node :
       fun {m} row i₀ =>
         v13RealLinear_causalSingleRow_coefficientCounting
           (m := m) row i₀,
+      fun i₀ =>
+        v13RealLinearRowIndexedFixedTargetRowOccurrenceWorld_card_le i₀,
+      fun observer i₀ =>
+        v13RealLinearUniformOneRowGenerated_counting_with_rowFactor
+          observer i₀,
+      fun observer i₀ =>
+        v13RealLinearUniformCausalOneRowGenerated_counting_with_rowFactor
+          observer i₀,
       v13RealLinear_causalSingleRow_zero_two_coefficientCounting,
       v13RealLinear_causalSingleRow_two_coefficientCounting,
       fun hcount =>
