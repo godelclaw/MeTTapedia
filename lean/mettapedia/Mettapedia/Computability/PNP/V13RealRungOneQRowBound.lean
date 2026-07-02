@@ -113,6 +113,19 @@ def V13RealLinearCausalRowObserver.toAdaptive {m q : Nat}
       v13RealLinear_same_rowsTranscript_after_kernel_add
         A x w (observer.rows b) hkernel
 
+theorem V13RealLinearCausalRowObserver.branch_eq_of_same_branchRowsTranscript
+    {m q : Nat} (observer : V13RealLinearCausalRowObserver m q)
+    (public₀ public₁ : V13RealLinearPublic m)
+    (hsame :
+      v13RealLinearRowsTranscript
+          (observer.rows (observer.branch public₀)) public₀ =
+        v13RealLinearRowsTranscript
+          (observer.rows (observer.branch public₀)) public₁) :
+    observer.branch public₁ = observer.branch public₀ := by
+  exact
+    observer.branchCausal public₀ public₁ (observer.branch public₀) rfl
+      hsame
+
 noncomputable def v13RealLinearUniformCausalQRowExperiment {m q : Nat}
     (observer : V13RealLinearCausalRowObserver m q) :
     V13RealLinearAdaptiveQRowExperiment m q (V13F2LinearEquiv m) :=
@@ -507,6 +520,36 @@ theorem V13RealLinearAdaptiveQRowExperiment.generated_one_budget_exists_target_r
       (v13RealLinear_rowsGenerateTarget_singleton_iff
         (E.sampleA omega.1) row i₀).1 hsingleton
 
+theorem V13RealLinearAdaptiveQRowExperiment.generated_one_budget_exists_singleton_target_row
+    {m : Nat} {Seed : Type*}
+    (E : V13RealLinearAdaptiveQRowExperiment m 1 Seed) (i₀ : Fin m)
+    (omega : V13RealLinearAdaptiveQRowWorld m Seed)
+    (hgen : E.generated i₀ omega) :
+    ∃ row : Fin m,
+      E.branchRows omega = ({row} : Finset (Fin m)) ∧
+        row ∈ V13RealLinearTargetRows (E.sampleA omega.1) i₀ := by
+  classical
+  have hcardLe : (E.branchRows omega).card ≤ 1 :=
+    E.branchRows_card_le omega
+  have hcardNe : (E.branchRows omega).card ≠ 0 := by
+    intro hzero
+    exact (E.not_generated_of_branchRows_card_zero i₀ omega hzero) hgen
+  have hcard : (E.branchRows omega).card = 1 := by
+    omega
+  rcases Finset.card_eq_one.mp hcard with ⟨row, hrows⟩
+  have hsingleton :
+      V13RealLinearRowsGenerateTarget
+        (E.sampleA omega.1) ({row} : Finset (Fin m)) i₀ := by
+    simpa [V13RealLinearAdaptiveQRowExperiment.generated, hrows] using hgen
+  have htarget :
+      ∀ w : F2Vec m, (E.sampleA omega.1).toEquiv w row = w i₀ :=
+    (v13RealLinear_rowsGenerateTarget_singleton_iff
+      (E.sampleA omega.1) row i₀).1 hsingleton
+  exact
+    ⟨row, hrows,
+      (v13RealLinear_mem_targetRows_iff
+        (E.sampleA omega.1) i₀ row).2 htarget⟩
+
 theorem V13RealLinearAdaptiveQRowExperiment.targetRows_nonempty_of_generated_one_budget
     {m : Nat} {Seed : Type*}
     (E : V13RealLinearAdaptiveQRowExperiment m 1 Seed) (i₀ : Fin m)
@@ -519,6 +562,70 @@ theorem V13RealLinearAdaptiveQRowExperiment.targetRows_nonempty_of_generated_one
     ⟨row,
       (v13RealLinear_mem_targetRows_iff
         (E.sampleA omega.1) i₀ row).2 htarget⟩
+
+theorem v13RealLinearUniformCausalOneRowGenerated_exists_targetRow_cylinder
+    {m : Nat} (observer : V13RealLinearCausalRowObserver m 1)
+    (i₀ : Fin m)
+    (omega : V13RealLinearAdaptiveQRowWorld m (V13F2LinearEquiv m))
+    (hgen :
+      (v13RealLinearUniformCausalQRowExperiment observer).generated
+        i₀ omega) :
+    ∃ row : Fin m,
+      (v13RealLinearUniformCausalQRowExperiment observer).branchRows omega =
+          ({row} : Finset (Fin m)) ∧
+        row ∈ V13RealLinearTargetRows omega.1 i₀ ∧
+          ∀ omega' : V13RealLinearAdaptiveQRowWorld m (V13F2LinearEquiv m),
+            v13RealLinearRowsTranscript ({row} : Finset (Fin m))
+                (v13RealLinearPublicInput
+                  ((v13RealLinearUniformCausalQRowExperiment observer).world
+                    omega)) =
+              v13RealLinearRowsTranscript ({row} : Finset (Fin m))
+                (v13RealLinearPublicInput
+                  ((v13RealLinearUniformCausalQRowExperiment observer).world
+                    omega')) →
+            observer.branch
+                (v13RealLinearPublicInput
+                  ((v13RealLinearUniformCausalQRowExperiment observer).world
+                    omega')) =
+              observer.branch
+                (v13RealLinearPublicInput
+                  ((v13RealLinearUniformCausalQRowExperiment observer).world
+                    omega)) := by
+  classical
+  let E := v13RealLinearUniformCausalQRowExperiment observer
+  rcases
+      E.generated_one_budget_exists_singleton_target_row i₀ omega hgen with
+    ⟨row, hrows, htarget⟩
+  refine ⟨row, hrows, ?_, ?_⟩
+  · simpa [E, v13RealLinearUniformCausalQRowExperiment,
+      v13RealLinearUniformQRowExperiment] using htarget
+  · intro omega' hsame
+    let public₀ :=
+      v13RealLinearPublicInput
+        ((v13RealLinearUniformCausalQRowExperiment observer).world omega)
+    let public₁ :=
+      v13RealLinearPublicInput
+        ((v13RealLinearUniformCausalQRowExperiment observer).world omega')
+    have hrowsObserver :
+        observer.rows (observer.branch public₀) =
+          ({row} : Finset (Fin m)) := by
+      simpa [public₀, E,
+        V13RealLinearAdaptiveQRowExperiment.branchRows,
+        V13RealLinearAdaptiveQRowExperiment.branch,
+        V13RealLinearCausalRowObserver.toAdaptive,
+        V13RealLinearCausalRowObserver.staticBranch,
+        v13RealLinearUniformCausalQRowExperiment,
+        v13RealLinearUniformQRowExperiment] using hrows
+    have hsameBranch :
+        v13RealLinearRowsTranscript
+            (observer.rows (observer.branch public₀)) public₀ =
+          v13RealLinearRowsTranscript
+            (observer.rows (observer.branch public₀)) public₁ := by
+      rw [hrowsObserver]
+      simpa [public₀, public₁] using hsame
+    exact
+      observer.branch_eq_of_same_branchRowsTranscript
+        public₀ public₁ hsameBranch
 
 theorem v13RealLinear_targetRowObserver_generated_of_targetRows_nonempty
     {m : Nat} (i₀ : Fin m) (A : V13F2LinearEquiv m) (x : F2Vec m)

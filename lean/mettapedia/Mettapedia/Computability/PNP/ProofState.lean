@@ -1116,6 +1116,13 @@ theorem currentPNPV13RealRungOneQRowBound_node :
         (E : V13RealLinearAdaptiveQRowExperiment m q Seed)
         (omega : V13RealLinearAdaptiveQRowWorld m Seed),
         (E.branchRows omega).card ≤ q) ∧
+      (∀ {m q : Nat} (observer : V13RealLinearCausalRowObserver m q)
+        (public₀ public₁ : V13RealLinearPublic m),
+        v13RealLinearRowsTranscript
+            (observer.rows (observer.branch public₀)) public₀ =
+          v13RealLinearRowsTranscript
+            (observer.rows (observer.branch public₀)) public₁ →
+          observer.branch public₁ = observer.branch public₀) ∧
       (∀ {m : Nat} (A : V13F2LinearEquiv m) (rows : Finset (Fin m))
         (i₀ : Fin m),
         V13RealLinearRowsBlockTarget A rows i₀ ↔
@@ -1132,6 +1139,13 @@ theorem currentPNPV13RealRungOneQRowBound_node :
           ∃ row : Fin m,
             row ∈ E.branchRows omega ∧
               ∀ w : F2Vec m, (E.sampleA omega.1).toEquiv w row = w i₀) ∧
+      (∀ {m : Nat} {Seed : Type*}
+        (E : V13RealLinearAdaptiveQRowExperiment m 1 Seed) (i₀ : Fin m)
+        (omega : V13RealLinearAdaptiveQRowWorld m Seed),
+        E.generated i₀ omega →
+          ∃ row : Fin m,
+            E.branchRows omega = ({row} : Finset (Fin m)) ∧
+              row ∈ V13RealLinearTargetRows (E.sampleA omega.1) i₀) ∧
       (∀ {m : Nat} {Seed : Type*}
         (E : V13RealLinearAdaptiveQRowExperiment m 1 Seed) (i₀ : Fin m)
         (omega : V13RealLinearAdaptiveQRowWorld m Seed),
@@ -1332,6 +1346,9 @@ theorem currentPNPV13RealRungOneQRowBound_node :
         v13RealLinear_rowCombination_card_le_of_rows_card_le hrows,
       fun E omega =>
         E.branchRows_card_le omega,
+      fun observer public₀ public₁ hsame =>
+        observer.branch_eq_of_same_branchRowsTranscript
+          public₀ public₁ hsame,
       fun A rows i₀ =>
         v13RealLinear_rowsBlockTarget_iff_rowsGenerateTarget A rows i₀,
       fun A row i₀ =>
@@ -1340,6 +1357,8 @@ theorem currentPNPV13RealRungOneQRowBound_node :
         v13RealLinear_targetRows_card_le_one A i₀,
       fun E i₀ omega hgen =>
         E.generated_one_budget_exists_target_row i₀ omega hgen,
+      fun E i₀ omega hgen =>
+        E.generated_one_budget_exists_singleton_target_row i₀ omega hgen,
       fun E i₀ omega hgen =>
         E.targetRows_nonempty_of_generated_one_budget i₀ omega hgen,
       fun i₀ A x =>
