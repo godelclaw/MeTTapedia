@@ -242,6 +242,11 @@ def v13RealLinearRowTraceRows {m : Nat}
 abbrev V13RealLinearSequentialRowTranscript (m : Nat) :=
   List (Fin m × V13RealLinearRowView m)
 
+def v13RealLinearSequentialRowTranscriptRows {m : Nat}
+    (transcript : V13RealLinearSequentialRowTranscript m) :
+    Finset (Fin m) :=
+  (transcript.map Prod.fst).toFinset
+
 /-- A sequential q-row observer chooses each next row from the ordered
 transcript already read, then decides from the final ordered transcript. -/
 structure V13RealLinearSequentialRowObserver (m q : Nat) where
@@ -271,6 +276,17 @@ def v13RealLinearSequentialRowTraceOf {m q : Nat}
     V13RealLinearRowTrace m :=
   (v13RealLinearSequentialRowTranscriptOf observer publicInput).map Prod.fst
 
+theorem v13RealLinearSequentialRowTranscriptRows_card_le_length
+    {m : Nat} (transcript : V13RealLinearSequentialRowTranscript m) :
+    (v13RealLinearSequentialRowTranscriptRows transcript).card ≤
+      transcript.length := by
+  calc
+    (v13RealLinearSequentialRowTranscriptRows transcript).card ≤
+        (transcript.map Prod.fst).length := by
+      exact List.toFinset_card_le (transcript.map Prod.fst)
+    _ = transcript.length := by
+      simp
+
 theorem v13RealLinearSequentialRowRunAux_length
     {m q : Nat} (observer : V13RealLinearSequentialRowObserver m q)
     (publicInput : V13RealLinearPublic m) (n : Nat)
@@ -297,6 +313,161 @@ theorem v13RealLinearSequentialRowTraceOf_length
     (v13RealLinearSequentialRowTraceOf observer publicInput).length = q := by
   simp [v13RealLinearSequentialRowTraceOf,
     v13RealLinearSequentialRowTranscriptOf_length]
+
+theorem v13RealLinearSequentialRowRunAux_rows_mono
+    {m q : Nat} (observer : V13RealLinearSequentialRowObserver m q)
+    (publicInput : V13RealLinearPublic m) (n : Nat)
+    (transcript : V13RealLinearSequentialRowTranscript m) {row : Fin m}
+    (hrow : row ∈ v13RealLinearSequentialRowTranscriptRows transcript) :
+    row ∈
+      v13RealLinearSequentialRowTranscriptRows
+        (v13RealLinearSequentialRowRunAux observer publicInput n transcript) := by
+  induction n generalizing transcript with
+  | zero =>
+      simpa [v13RealLinearSequentialRowRunAux] using hrow
+  | succ n ih =>
+      apply ih
+      simp [v13RealLinearSequentialRowTranscriptRows]
+      right
+      simpa [v13RealLinearSequentialRowTranscriptRows] using hrow
+
+theorem v13RealLinearRowsTranscript_eq_rowView_of_mem
+    {m : Nat} {rows : Finset (Fin m)} {row : Fin m}
+    {public₀ public₁ : V13RealLinearPublic m}
+    (hrow : row ∈ rows)
+    (hsame :
+      v13RealLinearRowsTranscript rows public₀ =
+        v13RealLinearRowsTranscript rows public₁) :
+    v13RealLinearRowView row public₀ =
+      v13RealLinearRowView row public₁ := by
+  have h := congrFun hsame ⟨row, hrow⟩
+  simpa [v13RealLinearRowsTranscript] using h
+
+theorem v13RealLinearSequentialRowRunAux_eq_of_final_rowsTranscript_eq
+    {m q : Nat} (observer : V13RealLinearSequentialRowObserver m q)
+    (public₀ public₁ : V13RealLinearPublic m) (n : Nat)
+    (transcript : V13RealLinearSequentialRowTranscript m)
+    (hsame :
+      v13RealLinearRowsTranscript
+          (v13RealLinearSequentialRowTranscriptRows
+            (v13RealLinearSequentialRowRunAux observer public₀ n transcript))
+          public₀ =
+        v13RealLinearRowsTranscript
+          (v13RealLinearSequentialRowTranscriptRows
+            (v13RealLinearSequentialRowRunAux observer public₀ n transcript))
+          public₁) :
+    v13RealLinearSequentialRowRunAux observer public₁ n transcript =
+      v13RealLinearSequentialRowRunAux observer public₀ n transcript := by
+  induction n generalizing transcript with
+  | zero =>
+      simp [v13RealLinearSequentialRowRunAux]
+  | succ n ih =>
+      let row := observer.chooseRow transcript
+      have hrowStart :
+          row ∈
+            v13RealLinearSequentialRowTranscriptRows
+              (transcript ++
+                [(row, v13RealLinearRowView row public₀)]) := by
+        simp [v13RealLinearSequentialRowTranscriptRows, row]
+      have hrowFinal :
+          row ∈
+            v13RealLinearSequentialRowTranscriptRows
+              (v13RealLinearSequentialRowRunAux observer public₀ n
+                (transcript ++
+                  [(row, v13RealLinearRowView row public₀)])) :=
+        v13RealLinearSequentialRowRunAux_rows_mono
+          observer public₀ n
+          (transcript ++ [(row, v13RealLinearRowView row public₀)])
+          hrowStart
+      have hsameTail :
+          v13RealLinearRowsTranscript
+              (v13RealLinearSequentialRowTranscriptRows
+                (v13RealLinearSequentialRowRunAux observer public₀ n
+                  (transcript ++
+                    [(row, v13RealLinearRowView row public₀)])))
+              public₀ =
+            v13RealLinearRowsTranscript
+              (v13RealLinearSequentialRowTranscriptRows
+                (v13RealLinearSequentialRowRunAux observer public₀ n
+                  (transcript ++
+                    [(row, v13RealLinearRowView row public₀)])))
+              public₁ := by
+        simpa [v13RealLinearSequentialRowRunAux, row] using hsame
+      have hview :
+          v13RealLinearRowView row public₁ =
+            v13RealLinearRowView row public₀ :=
+        (v13RealLinearRowsTranscript_eq_rowView_of_mem hrowFinal
+          hsameTail).symm
+      simpa [v13RealLinearSequentialRowRunAux, row, hview] using
+        ih
+          (transcript ++ [(row, v13RealLinearRowView row public₀)])
+          hsameTail
+
+theorem v13RealLinearSequentialRowTranscriptOf_eq_of_rowsTranscript_eq
+    {m q : Nat} (observer : V13RealLinearSequentialRowObserver m q)
+    {public₀ public₁ : V13RealLinearPublic m}
+    (hsame :
+      v13RealLinearRowsTranscript
+          (v13RealLinearSequentialRowTranscriptRows
+            (v13RealLinearSequentialRowTranscriptOf observer public₀))
+          public₀ =
+        v13RealLinearRowsTranscript
+          (v13RealLinearSequentialRowTranscriptRows
+            (v13RealLinearSequentialRowTranscriptOf observer public₀))
+          public₁) :
+    v13RealLinearSequentialRowTranscriptOf observer public₁ =
+      v13RealLinearSequentialRowTranscriptOf observer public₀ := by
+  simpa [v13RealLinearSequentialRowTranscriptOf] using
+    v13RealLinearSequentialRowRunAux_eq_of_final_rowsTranscript_eq
+      observer public₀ public₁ q [] hsame
+
+def V13RealLinearSequentialRowObserver.toCausal
+    {m q : Nat} (observer : V13RealLinearSequentialRowObserver m q) :
+    V13RealLinearCausalRowObserver m q where
+  Branch :=
+    {transcript : V13RealLinearSequentialRowTranscript m //
+      transcript.length = q}
+  branch := fun publicInput =>
+    ⟨v13RealLinearSequentialRowTranscriptOf observer publicInput,
+      v13RealLinearSequentialRowTranscriptOf_length observer publicInput⟩
+  rows := fun branch =>
+    v13RealLinearSequentialRowTranscriptRows branch.val
+  decideFromTranscript := fun branch _ =>
+    observer.decideFromTranscript branch.val
+  readBudget := by
+    intro branch
+    exact
+      (v13RealLinearSequentialRowTranscriptRows_card_le_length
+        branch.val).trans_eq branch.property
+  branchCausal := by
+    intro public₀ public₁ branch hbranch hsame
+    apply Subtype.ext
+    have hbranchVal :
+        v13RealLinearSequentialRowTranscriptOf observer public₀ =
+          branch.val :=
+      congrArg Subtype.val hbranch
+    have hsame' :
+        v13RealLinearRowsTranscript
+            (v13RealLinearSequentialRowTranscriptRows
+              (v13RealLinearSequentialRowTranscriptOf observer public₀))
+            public₀ =
+          v13RealLinearRowsTranscript
+            (v13RealLinearSequentialRowTranscriptRows
+              (v13RealLinearSequentialRowTranscriptOf observer public₀))
+            public₁ := by
+      have hsameBranch :
+          v13RealLinearRowsTranscript
+              (v13RealLinearSequentialRowTranscriptRows branch.val)
+              public₀ =
+            v13RealLinearRowsTranscript
+              (v13RealLinearSequentialRowTranscriptRows branch.val)
+              public₁ := by
+        simpa using hsame
+      rw [hbranchVal]
+      exact hsameBranch
+    exact
+      (v13RealLinearSequentialRowTranscriptOf_eq_of_rowsTranscript_eq
+        observer hsame').trans hbranchVal
 
 def v13RealLinearRowTracePrefixRows {m : Nat}
     (trace : V13RealLinearRowTrace m) (n : Nat) : Finset (Fin m) :=
