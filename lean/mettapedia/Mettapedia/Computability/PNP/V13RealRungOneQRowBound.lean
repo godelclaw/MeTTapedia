@@ -5045,6 +5045,53 @@ theorem v13RealLinear_causalSingleRow_coefficientCounting
       v13RealLinearUniformFixedTargetRowOccurrenceCountingBound_proved
       row i₀
 
+theorem v13RealLinear_causalSingleRow_generated_counting
+    {m : Nat} (row i₀ : Fin m) :
+    Fintype.card
+        (V13RealLinearAdaptiveQRowGenerated
+          (v13RealLinearUniformCausalQRowExperiment
+            (v13RealLinearCausalSingleRowObserver row)) i₀) *
+        2 ^ m ≤
+      2 ^ 1 *
+        Fintype.card
+          (V13RealLinearAdaptiveQRowWorld m (V13F2LinearEquiv m)) := by
+  classical
+  let E :=
+    v13RealLinearUniformCausalQRowExperiment
+      (v13RealLinearCausalSingleRowObserver row)
+  let G := Fintype.card (V13RealLinearAdaptiveQRowGenerated E i₀)
+  let C :=
+    Fintype.card (V13RealLinearAdaptiveQRowGeneratedCoefficient E i₀)
+  let M := 2 ^ m
+  have hG : G ≤ C := by
+    simpa [G, C, E] using
+      v13RealLinearAdaptiveQRowGenerated_card_le_coefficient E i₀
+  have hC :
+      C * M ≤
+        2 ^ 1 *
+          Fintype.card
+            (V13RealLinearAdaptiveQRowWorld m (V13F2LinearEquiv m)) := by
+    simpa [C, E, M] using
+      v13RealLinear_causalSingleRow_coefficientCounting row i₀
+  exact (Nat.mul_le_mul_right M hG).trans hC
+
+theorem v13RealLinear_causalSingleRow_rowSpanCountingBound
+    {m : Nat} (row i₀ : Fin m) :
+    V13RealLinearUniformCausalRowSpanCountingBound
+      (v13RealLinearCausalSingleRowObserver row) i₀ :=
+  v13RealLinearUniformCausalRowSpanCountingBound_of_generated_counting
+    (v13RealLinearCausalSingleRowObserver row) i₀
+    (v13RealLinear_causalSingleRow_generated_counting row i₀)
+
+theorem v13RealLinear_causalSingleRow_success_bound
+    {m : Nat} (row i₀ : Fin m) :
+    v13RealLinearUniformCausalQRowSuccess
+        (v13RealLinearCausalSingleRowObserver row) i₀ ≤
+      (1 / 2 : Rat) + v13RealLinearQRowEpsilon 1 m :=
+  v13RealLinear_uniform_causal_qrow_success_bound_of_spanCounting
+    (v13RealLinearCausalSingleRowObserver row) i₀
+    (v13RealLinear_causalSingleRow_rowSpanCountingBound row i₀)
+
 theorem v13RealLinear_fixedTargetRowOccurrence_zero_two_counting :
     Fintype.card
         (V13RealLinearUniformFixedTargetRowOccurrence
