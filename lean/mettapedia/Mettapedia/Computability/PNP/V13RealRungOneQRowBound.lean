@@ -598,6 +598,21 @@ def v13RealLinearRowFunctional {m : Nat}
         intro x y
         exact congrFun (A.map_add x y) row })
 
+theorem v13RealLinearRowFunctional_injective {m : Nat}
+    (A : V13F2LinearEquiv m) :
+    Function.Injective (v13RealLinearRowFunctional A) := by
+  intro row₀ row₁ hfun
+  by_contra hne
+  let w : F2Vec m := A.toEquiv.symm (v13RealLinearSingleBit row₀)
+  have hpoint := LinearMap.congr_fun hfun w
+  have hleft : v13RealLinearRowFunctional A row₀ w = 1 := by
+    simp [v13RealLinearRowFunctional, w, v13RealLinearSingleBit]
+  have hright : v13RealLinearRowFunctional A row₁ w = 0 := by
+    have hne₁₀ : row₁ ≠ row₀ := fun h => hne h.symm
+    simp [v13RealLinearRowFunctional, w, v13RealLinearSingleBit, hne₁₀]
+  rw [hleft, hright] at hpoint
+  norm_num at hpoint
+
 def v13RealLinearTargetFunctional {m : Nat} (i₀ : Fin m) :
     F2Vec m →ₗ[ZMod 2] ZMod 2 :=
   LinearMap.proj i₀
@@ -903,6 +918,46 @@ noncomputable def v13RealLinearRowFunctionalTargetCosetElement_of_hit {m : Nat}
   let htarget := (Classical.choose_spec hhit).2
   ⟨v13RealLinearRowFunctional A row, ⟨⟨z, hz⟩, htarget⟩⟩
 
+def V13RealLinearRowTracePrefixTargetCosetRows {m : Nat}
+    (A : V13F2LinearEquiv m) (i₀ : Fin m)
+    (trace : V13RealLinearRowTrace m) (t : Nat) :=
+  {row : Fin m //
+    V13RealLinearRowFunctionalTargetCosetHit
+      A (v13RealLinearRowTracePrefixRows trace t) i₀ row}
+
+noncomputable instance {m : Nat} (A : V13F2LinearEquiv m)
+    (i₀ : Fin m) (trace : V13RealLinearRowTrace m) (t : Nat) :
+    Fintype (V13RealLinearRowTracePrefixTargetCosetRows A i₀ trace t) := by
+  classical
+  unfold V13RealLinearRowTracePrefixTargetCosetRows
+  infer_instance
+
+noncomputable def v13RealLinearRowTracePrefixTargetCosetRowsEmbedding
+    {m : Nat} (A : V13F2LinearEquiv m) (i₀ : Fin m)
+    (trace : V13RealLinearRowTrace m) (t : Nat) :
+    V13RealLinearRowTracePrefixTargetCosetRows A i₀ trace t ↪
+      V13RealLinearRowsFunctionalTargetCoset A
+        (v13RealLinearRowTracePrefixRows trace t) i₀ where
+  toFun row :=
+    v13RealLinearRowFunctionalTargetCosetElement_of_hit row.property
+  inj' := by
+    intro row₀ row₁ hrow
+    apply Subtype.ext
+    apply v13RealLinearRowFunctional_injective A
+    have hval := congrArg Subtype.val hrow
+    simpa [v13RealLinearRowFunctionalTargetCosetElement_of_hit] using hval
+
+theorem v13RealLinearRowTracePrefixTargetCosetRows_card_le_coset
+    {m : Nat} (A : V13F2LinearEquiv m) (i₀ : Fin m)
+    (trace : V13RealLinearRowTrace m) (t : Nat) :
+    Fintype.card
+        (V13RealLinearRowTracePrefixTargetCosetRows A i₀ trace t) ≤
+      Fintype.card
+        (V13RealLinearRowsFunctionalTargetCoset A
+          (v13RealLinearRowTracePrefixRows trace t) i₀) :=
+  Fintype.card_le_of_embedding
+    (v13RealLinearRowTracePrefixTargetCosetRowsEmbedding A i₀ trace t)
+
 theorem v13RealLinearRowTracePrefixTargetCoset_card_le {m : Nat}
     (A : V13F2LinearEquiv m) (i₀ : Fin m)
     (trace : V13RealLinearRowTrace m) (t : Nat) :
@@ -920,6 +975,16 @@ theorem v13RealLinearRowTracePrefixTargetCoset_card_le {m : Nat}
     _ ≤ 2 ^ t :=
       Nat.pow_le_pow_right (by norm_num : 0 < 2)
         (v13RealLinearRowTracePrefixRows_card_le trace t)
+
+theorem v13RealLinearRowTracePrefixTargetCosetRows_card_le
+    {m : Nat} (A : V13F2LinearEquiv m) (i₀ : Fin m)
+    (trace : V13RealLinearRowTrace m) (t : Nat) :
+    Fintype.card
+        (V13RealLinearRowTracePrefixTargetCosetRows A i₀ trace t) ≤
+      2 ^ t :=
+  (v13RealLinearRowTracePrefixTargetCosetRows_card_le_coset
+    A i₀ trace t).trans
+    (v13RealLinearRowTracePrefixTargetCoset_card_le A i₀ trace t)
 
 noncomputable instance {m : Nat} (A : V13F2LinearEquiv m)
     (rows : Finset (Fin m)) (i₀ : Fin m) :
