@@ -293,6 +293,13 @@ component shifted into the appended last gadget cannot contain either a prefix
 edge or its canonical representative.  The remaining prefix branch is therefore
 the color-equality bookkeeping for unchanged prefix states, including canonical
 glued-input comparisons via prefix compatibility.
+The last-gadget non-glued branch now has reusable last-occurrence transport
+facts: shifted-component membership is identified with local occurrence `0`,
+edge colors over `pref ++ [last]` reduce to the singleton last-gadget color,
+and non-glued last edges are their own chain-canonical representatives.  The
+remaining work is to apply these facts to the specified switched-color
+agreement in
+`concreteChainFiberAppendRelativeSingletonShiftedSwitchLastNonGluedPointClosed`.
 The closure-under-step side is now reduced by
 `concreteChainFiberAppendRelativeSingletonGlobalStepClosureClosed_of_bounded_saturation`
 to the pure closure-iterator lemma
