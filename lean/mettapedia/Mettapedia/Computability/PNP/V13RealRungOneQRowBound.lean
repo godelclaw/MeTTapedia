@@ -1226,6 +1226,57 @@ theorem
         (fun row =>
           v13RealLinearFunctionalTableRowView omega.1 omega.2 row) n
 
+theorem
+    v13RealLinearFunctionalTableSequentialWorldPrefixTranscript_update_eq
+    {m q : Nat} (observer : V13RealLinearSequentialRowObserver m q)
+    (omega : V13RealLinearFunctionalTableWorld m) (n : Nat)
+    (row : Fin m) (replacement : F2Vec m →ₗ[ZMod 2] ZMod 2)
+    (hrow :
+      row ∉
+        v13RealLinearFunctionalTableSequentialWorldPrefixRows
+          observer omega n) :
+    v13RealLinearFunctionalTableSequentialWorldPrefixTranscript observer
+        (Function.update omega.1 row replacement, omega.2) n =
+      v13RealLinearFunctionalTableSequentialWorldPrefixTranscript
+        observer omega n := by
+  simpa [v13RealLinearFunctionalTableSequentialWorldPrefixRows,
+    v13RealLinearFunctionalTableSequentialWorldPrefixTranscript] using
+    v13RealLinearFunctionalTableSequentialRowPrefixTranscriptOf_update_eq
+      observer omega.1 omega.2 n row replacement hrow
+
+theorem
+    v13RealLinearFunctionalTableSequentialWorldPrefixRows_update_eq
+    {m q : Nat} (observer : V13RealLinearSequentialRowObserver m q)
+    (omega : V13RealLinearFunctionalTableWorld m) (n : Nat)
+    (row : Fin m) (replacement : F2Vec m →ₗ[ZMod 2] ZMod 2)
+    (hrow :
+      row ∉
+        v13RealLinearFunctionalTableSequentialWorldPrefixRows
+          observer omega n) :
+    v13RealLinearFunctionalTableSequentialWorldPrefixRows observer
+        (Function.update omega.1 row replacement, omega.2) n =
+      v13RealLinearFunctionalTableSequentialWorldPrefixRows
+        observer omega n := by
+  unfold v13RealLinearFunctionalTableSequentialWorldPrefixRows
+  rw [v13RealLinearFunctionalTableSequentialWorldPrefixTranscript_update_eq
+    observer omega n row replacement hrow]
+
+theorem
+    v13RealLinearFunctionalTableSequentialWorldNextRow_update_eq
+    {m q : Nat} (observer : V13RealLinearSequentialRowObserver m q)
+    (omega : V13RealLinearFunctionalTableWorld m) (n : Nat)
+    (row : Fin m) (replacement : F2Vec m →ₗ[ZMod 2] ZMod 2)
+    (hrow :
+      row ∉
+        v13RealLinearFunctionalTableSequentialWorldPrefixRows
+          observer omega n) :
+    v13RealLinearFunctionalTableSequentialWorldNextRow observer
+        (Function.update omega.1 row replacement, omega.2) n =
+      v13RealLinearFunctionalTableSequentialWorldNextRow observer omega n := by
+  unfold v13RealLinearFunctionalTableSequentialWorldNextRow
+  rw [v13RealLinearFunctionalTableSequentialWorldPrefixTranscript_update_eq
+    observer omega n row replacement hrow]
+
 noncomputable instance v13RealLinearRowFunctionalTableFintype (m : Nat) :
     Fintype (V13RealLinearRowFunctionalTable m) := by
   classical
@@ -1435,6 +1486,16 @@ def V13RealLinearFunctionalTableSequentialFreshTargetCosetHit
   row ∉ rows ∧
     V13RealLinearFunctionalTableTargetCosetHit omega.1 rows i₀ row
 
+noncomputable instance {m q : Nat}
+    (observer : V13RealLinearSequentialRowObserver m q)
+    (i₀ : Fin m) (n : Nat) :
+    Fintype
+      {omega : V13RealLinearFunctionalTableWorld m //
+        V13RealLinearFunctionalTableSequentialFreshTargetCosetHit
+          observer i₀ n omega} := by
+  classical
+  infer_instance
+
 theorem
     v13RealLinearFunctionalTableSequentialTargetCosetSigma_card_le
     {m q : Nat} (observer : V13RealLinearSequentialRowObserver m q)
@@ -1551,6 +1612,230 @@ noncomputable def
         simpa [Function.update, hr] using happ
     · have happ := congrFun htable row
       simpa [Function.update] using happ
+
+noncomputable def
+    v13RealLinearFunctionalTableSequentialFreshTargetCosetHitSwitchToFun
+    {m q : Nat} (observer : V13RealLinearSequentialRowObserver m q)
+    (i₀ : Fin m) (n : Nat)
+    (input :
+      {omega : V13RealLinearFunctionalTableWorld m //
+        V13RealLinearFunctionalTableSequentialFreshTargetCosetHit
+          observer i₀ n omega} ×
+        (F2Vec m →ₗ[ZMod 2] ZMod 2)) :
+    (Σ omega : V13RealLinearFunctionalTableWorld m,
+      V13RealLinearFunctionalTableTargetCoset omega.1
+        (v13RealLinearFunctionalTableSequentialWorldPrefixRows
+          observer omega n)
+        i₀) := by
+  classical
+  let omega : V13RealLinearFunctionalTableWorld m := input.1.val
+  let rows :=
+    v13RealLinearFunctionalTableSequentialWorldPrefixRows
+      observer omega n
+  let row :=
+    v13RealLinearFunctionalTableSequentialWorldNextRow
+      observer omega n
+  let replacement : F2Vec m →ₗ[ZMod 2] ZMod 2 := input.2
+  have hrow : row ∉ rows := by
+    simpa [V13RealLinearFunctionalTableSequentialFreshTargetCosetHit,
+      rows, row, omega] using input.1.property.1
+  have hhit :
+      V13RealLinearFunctionalTableTargetCosetHit
+        omega.1 rows i₀ row := by
+    simpa [V13RealLinearFunctionalTableSequentialFreshTargetCosetHit,
+      rows, row, omega] using input.1.property.2
+  let switched :=
+    v13RealLinearFunctionalTableFreshCosetHitSwitchToFun
+      rows i₀ row hrow (⟨omega.1, hhit⟩, replacement)
+  let omega' : V13RealLinearFunctionalTableWorld m :=
+    (switched.1, omega.2)
+  have hrowsEq :
+      v13RealLinearFunctionalTableSequentialWorldPrefixRows
+          observer omega' n =
+        rows := by
+    simpa [omega', switched, rows, row, replacement,
+      v13RealLinearFunctionalTableFreshCosetHitSwitchToFun] using
+      v13RealLinearFunctionalTableSequentialWorldPrefixRows_update_eq
+        observer omega n row replacement hrow
+  exact
+    ⟨omega', ⟨switched.2.val, by
+      simpa [omega', hrowsEq] using switched.2.property⟩⟩
+
+noncomputable def
+    v13RealLinearFunctionalTableSequentialFreshTargetCosetHitSwitch
+    {m q : Nat} (observer : V13RealLinearSequentialRowObserver m q)
+    (i₀ : Fin m) (n : Nat) :
+    ({omega : V13RealLinearFunctionalTableWorld m //
+      V13RealLinearFunctionalTableSequentialFreshTargetCosetHit
+        observer i₀ n omega} ×
+      (F2Vec m →ₗ[ZMod 2] ZMod 2)) ↪
+    (Σ omega : V13RealLinearFunctionalTableWorld m,
+      V13RealLinearFunctionalTableTargetCoset omega.1
+        (v13RealLinearFunctionalTableSequentialWorldPrefixRows
+          observer omega n)
+        i₀) where
+  toFun :=
+    v13RealLinearFunctionalTableSequentialFreshTargetCosetHitSwitchToFun
+      observer i₀ n
+  inj' := by
+    classical
+    intro input₀ input₁ h
+    rcases input₀ with ⟨hit₀, replacement₀⟩
+    rcases input₁ with ⟨hit₁, replacement₁⟩
+    let omega₀ : V13RealLinearFunctionalTableWorld m := hit₀.val
+    let omega₁ : V13RealLinearFunctionalTableWorld m := hit₁.val
+    let rows₀ :=
+      v13RealLinearFunctionalTableSequentialWorldPrefixRows
+        observer omega₀ n
+    let rows₁ :=
+      v13RealLinearFunctionalTableSequentialWorldPrefixRows
+        observer omega₁ n
+    let row₀ :=
+      v13RealLinearFunctionalTableSequentialWorldNextRow
+        observer omega₀ n
+    let row₁ :=
+      v13RealLinearFunctionalTableSequentialWorldNextRow
+        observer omega₁ n
+    have hrow₀ : row₀ ∉ rows₀ := by
+      simpa [V13RealLinearFunctionalTableSequentialFreshTargetCosetHit,
+        rows₀, row₀, omega₀] using hit₀.property.1
+    have hrow₁ : row₁ ∉ rows₁ := by
+      simpa [V13RealLinearFunctionalTableSequentialFreshTargetCosetHit,
+        rows₁, row₁, omega₁] using hit₁.property.1
+    have hworldRaw :
+        (v13RealLinearFunctionalTableSequentialFreshTargetCosetHitSwitchToFun
+            observer i₀ n (hit₀, replacement₀)).1 =
+          (v13RealLinearFunctionalTableSequentialFreshTargetCosetHitSwitchToFun
+            observer i₀ n (hit₁, replacement₁)).1 :=
+      congrArg Sigma.fst h
+    have htableUpdate :
+        Function.update omega₀.1 row₀ replacement₀ =
+          Function.update omega₁.1 row₁ replacement₁ := by
+      simpa [v13RealLinearFunctionalTableSequentialFreshTargetCosetHitSwitchToFun,
+        v13RealLinearFunctionalTableFreshCosetHitSwitchToFun,
+        omega₀, omega₁, rows₀, rows₁, row₀, row₁] using
+        congrArg
+          (fun omega : V13RealLinearFunctionalTableWorld m => omega.1)
+          hworldRaw
+    have hx : omega₀.2 = omega₁.2 := by
+      simpa [v13RealLinearFunctionalTableSequentialFreshTargetCosetHitSwitchToFun,
+        omega₀, omega₁, rows₀, rows₁, row₀, row₁] using
+        congrArg
+          (fun omega : V13RealLinearFunctionalTableWorld m => omega.2)
+          hworldRaw
+    have hworld :
+        (Function.update omega₀.1 row₀ replacement₀, omega₀.2) =
+          (Function.update omega₁.1 row₁ replacement₁, omega₁.2) :=
+      Prod.ext htableUpdate hx
+    have hprefix₀ :
+        v13RealLinearFunctionalTableSequentialWorldPrefixTranscript
+            observer (Function.update omega₀.1 row₀ replacement₀, omega₀.2)
+            n =
+          v13RealLinearFunctionalTableSequentialWorldPrefixTranscript
+            observer omega₀ n :=
+      v13RealLinearFunctionalTableSequentialWorldPrefixTranscript_update_eq
+        observer omega₀ n row₀ replacement₀ hrow₀
+    have hprefix₁ :
+        v13RealLinearFunctionalTableSequentialWorldPrefixTranscript
+            observer (Function.update omega₁.1 row₁ replacement₁, omega₁.2)
+            n =
+          v13RealLinearFunctionalTableSequentialWorldPrefixTranscript
+            observer omega₁ n :=
+      v13RealLinearFunctionalTableSequentialWorldPrefixTranscript_update_eq
+        observer omega₁ n row₁ replacement₁ hrow₁
+    have hprefix :
+        v13RealLinearFunctionalTableSequentialWorldPrefixTranscript
+            observer omega₀ n =
+          v13RealLinearFunctionalTableSequentialWorldPrefixTranscript
+            observer omega₁ n := by
+      calc
+        v13RealLinearFunctionalTableSequentialWorldPrefixTranscript
+            observer omega₀ n =
+            v13RealLinearFunctionalTableSequentialWorldPrefixTranscript
+              observer
+                (Function.update omega₀.1 row₀ replacement₀, omega₀.2)
+              n := hprefix₀.symm
+        _ =
+            v13RealLinearFunctionalTableSequentialWorldPrefixTranscript
+              observer
+                (Function.update omega₁.1 row₁ replacement₁, omega₁.2)
+              n := by rw [hworld]
+        _ =
+            v13RealLinearFunctionalTableSequentialWorldPrefixTranscript
+              observer omega₁ n := hprefix₁
+    have hrows : rows₀ = rows₁ := by
+      simpa [rows₀, rows₁,
+        v13RealLinearFunctionalTableSequentialWorldPrefixRows] using
+        congrArg v13RealLinearSequentialRowTranscriptRows hprefix
+    have hrow : row₀ = row₁ := by
+      simpa [row₀, row₁,
+        v13RealLinearFunctionalTableSequentialWorldNextRow] using
+        congrArg observer.chooseRow hprefix
+    have htargetValue : omega₀.1 row₀ = omega₁.1 row₁ := by
+      simpa [v13RealLinearFunctionalTableSequentialFreshTargetCosetHitSwitchToFun,
+        v13RealLinearFunctionalTableFreshCosetHitSwitchToFun,
+        omega₀, omega₁, rows₀, rows₁, row₀, row₁] using
+        congrArg
+          (fun out :
+            (Σ omega : V13RealLinearFunctionalTableWorld m,
+              V13RealLinearFunctionalTableTargetCoset omega.1
+                (v13RealLinearFunctionalTableSequentialWorldPrefixRows
+                  observer omega n)
+                i₀) =>
+            (out.2.val : F2Vec m →ₗ[ZMod 2] ZMod 2))
+          h
+    have htable : omega₀.1 = omega₁.1 := by
+      funext r
+      by_cases hr₀ : r = row₀
+      · subst r
+        simpa [hrow] using htargetValue
+      · have hr₁ : r ≠ row₁ := by
+          intro hr
+          exact hr₀ (by simpa [hrow] using hr)
+        have happ := congrFun htableUpdate r
+        simpa [Function.update, hr₀, hr₁] using happ
+    have hreplacement : replacement₀ = replacement₁ := by
+      have happ := congrFun htableUpdate row₀
+      simpa [Function.update, hrow] using happ
+    apply Prod.ext
+    · apply Subtype.ext
+      exact Prod.ext htable hx
+    · exact hreplacement
+
+theorem
+    v13RealLinearFunctionalTableSequentialFreshTargetCosetHit_card_mul_two_pow_le
+    {m q : Nat} (observer : V13RealLinearSequentialRowObserver m q)
+    (i₀ : Fin m) (n : Nat) :
+    Fintype.card
+        {omega : V13RealLinearFunctionalTableWorld m //
+          V13RealLinearFunctionalTableSequentialFreshTargetCosetHit
+            observer i₀ n omega} *
+      2 ^ m ≤
+    2 ^ n * Fintype.card (V13RealLinearFunctionalTableWorld m) := by
+  classical
+  let Hit :=
+    {omega : V13RealLinearFunctionalTableWorld m //
+      V13RealLinearFunctionalTableSequentialFreshTargetCosetHit
+        observer i₀ n omega}
+  let TargetSigma :=
+    Σ omega : V13RealLinearFunctionalTableWorld m,
+      V13RealLinearFunctionalTableTargetCoset omega.1
+        (v13RealLinearFunctionalTableSequentialWorldPrefixRows
+          observer omega n)
+        i₀
+  have hleSwitch :
+      Fintype.card Hit *
+          Fintype.card (F2Vec m →ₗ[ZMod 2] ZMod 2) ≤
+        Fintype.card TargetSigma := by
+    have hle :=
+      Fintype.card_le_of_embedding
+        (v13RealLinearFunctionalTableSequentialFreshTargetCosetHitSwitch
+          observer i₀ n)
+    simpa [Hit, TargetSigma, Fintype.card_prod] using hle
+  rw [← v13RealLinearFunctional_card m]
+  exact hleSwitch.trans
+    (v13RealLinearFunctionalTableSequentialTargetCosetSigma_card_le
+      observer i₀ n)
 
 theorem
     v13RealLinearFunctionalTableTargetCosetHit_card_mul_functional_le
