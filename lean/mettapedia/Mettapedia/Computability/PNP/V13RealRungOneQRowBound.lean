@@ -674,6 +674,50 @@ theorem v13RealLinearSequentialRowTracePrefixRows_eq_prefixTranscriptRows
     observer publicInput hn]
   rfl
 
+theorem v13RealLinearSequentialRowTraceOf_get_eq_chooseRow
+    {m q : Nat} (observer : V13RealLinearSequentialRowObserver m q)
+    (publicInput : V13RealLinearPublic m) {t : Nat} (ht : t < q) :
+    (v13RealLinearSequentialRowTraceOf observer publicInput).get
+        ⟨t, by
+          simpa [v13RealLinearSequentialRowTraceOf_length observer
+            publicInput] using ht⟩ =
+      observer.chooseRow
+        (v13RealLinearSequentialRowPrefixTranscriptOf
+          observer publicInput t) := by
+  have htraceIndex :
+      t < (v13RealLinearSequentialRowTraceOf observer publicInput).length := by
+    simpa [v13RealLinearSequentialRowTraceOf_length observer publicInput]
+      using ht
+  have htakeGet :=
+    List.take_concat_get
+      (l := v13RealLinearSequentialRowTraceOf observer publicInput)
+      (i := t) htraceIndex
+  have htake_t :
+      (v13RealLinearSequentialRowTraceOf observer publicInput).take t =
+        v13RealLinearSequentialRowPrefixTraceOf observer publicInput t :=
+    v13RealLinearSequentialRowTraceOf_take_eq_prefix observer publicInput
+      (Nat.le_of_lt ht)
+  have htake_succ :
+      (v13RealLinearSequentialRowTraceOf observer publicInput).take
+          (t + 1) =
+        v13RealLinearSequentialRowPrefixTraceOf observer publicInput
+          (t + 1) :=
+    v13RealLinearSequentialRowTraceOf_take_eq_prefix observer publicInput
+      (Nat.succ_le_of_lt ht)
+  rw [htake_t, htake_succ,
+    v13RealLinearSequentialRowPrefixTraceOf_succ] at htakeGet
+  have hsingle :
+      [(v13RealLinearSequentialRowTraceOf observer publicInput).get
+        ⟨t, htraceIndex⟩] =
+        [observer.chooseRow
+          (v13RealLinearSequentialRowPrefixTranscriptOf
+            observer publicInput t)] := by
+    exact
+      List.append_right_injective
+        (v13RealLinearSequentialRowPrefixTraceOf observer publicInput t)
+        (by simpa [List.concat_eq_append] using htakeGet)
+  simpa using hsingle
+
 theorem v13RealLinearRowTracePrefixRows_succ {m : Nat}
     (trace : V13RealLinearRowTrace m) {t : Nat} (h : t < trace.length) :
     v13RealLinearRowTracePrefixRows trace (t + 1) =
