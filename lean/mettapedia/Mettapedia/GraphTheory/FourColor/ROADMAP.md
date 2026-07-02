@@ -177,6 +177,12 @@ rooted form `concreteChainFiberAppendQuotientFibrationRootFieldsClosed` lets a
 spanning-tree-style base certificate provide root reachability instead of a
 raw `Connected` proof; it implies final sufficiency via
 `semanticFrontierStateSufficientForChain_of_append_quotient_root_fields`.
+Since quotient-base steps are intended to be witnessed by reversible Kempe
+switches, the still smaller target
+`concreteChainFiberAppendQuotientFibrationSymmetricRootFieldsClosed` needs only
+base-step symmetry plus reachability from each base node to the root; it implies
+final sufficiency via
+`semanticFrontierStateSufficientForChain_of_append_quotient_symmetric_root`.
 Thus finite per-input interface or trace-pair mobility can serve directly as
 base connectivity, while any necessary prefix motion is absorbed by the
 quotient base rather than forced through a fixed-prefix last-state invariant.

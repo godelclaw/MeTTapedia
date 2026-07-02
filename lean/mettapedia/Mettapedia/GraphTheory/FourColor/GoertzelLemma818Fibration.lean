@@ -89,6 +89,35 @@ theorem connected (cert : RootedConnectedCertificate step) :
 
 end RootedConnectedCertificate
 
+/--
+A rooted certificate for a symmetric step relation.
+
+For reversible finite graphs it is enough to emit the parent path from each
+node to the root; symmetry supplies the reverse paths.
+-/
+structure SymmetricRootedConnectedCertificate
+    {α : Type u} (step : α → α → Prop) : Type u where
+  root : α
+  stepSymmetric : StepSymmetric step
+  reachToRoot : ∀ x, Reach step x root
+
+namespace SymmetricRootedConnectedCertificate
+
+variable {α : Type u} {step : α → α → Prop}
+
+def toRooted (cert : SymmetricRootedConnectedCertificate step) :
+    RootedConnectedCertificate step :=
+  { root := cert.root
+    reachFromRoot := fun x =>
+      Reach.reverse_of_stepSymmetric cert.stepSymmetric (cert.reachToRoot x)
+    reachToRoot := cert.reachToRoot }
+
+theorem connected (cert : SymmetricRootedConnectedCertificate step) :
+    Connected step :=
+  cert.toRooted.connected
+
+end SymmetricRootedConnectedCertificate
+
 theorem connected_of_root_reachable_and_stepSymmetric
     {α : Type u} {step : α → α → Prop}
     (hsym : StepSymmetric step)

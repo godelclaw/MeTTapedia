@@ -73,9 +73,14 @@ spanning-tree-style base certificate provide root reachability for that
 quotient base.  The theorem
 `semanticFrontierStateSufficientForChain_of_append_quotient_root_fields` proves
 final semantic sufficiency from those rooted fields and the existing singleton
-concrete seeds.  The fixed-prefix route remains available as a sufficient
-stronger route, but the quotient route is the current surface for finite
-per-input interface or trace-pair mobility.
+concrete seeds.  The symmetric-root variant
+`concreteChainFiberAppendQuotientFibrationSymmetricRootFieldsClosed` is the
+current generated-certificate target for reversible quotient-base moves: prove
+base-step symmetry and reachability from each base node to a root.  The theorem
+`semanticFrontierStateSufficientForChain_of_append_quotient_symmetric_root`
+proves final sufficiency from that surface.  The fixed-prefix route remains
+available as a sufficient stronger route, but the quotient route is the current
+surface for finite per-input interface or trace-pair mobility.
 
 `GoertzelLemma818SemanticProgress.lean` now records the checked semantic
 frontier after the completed `TTT` target.  It proves
