@@ -2704,6 +2704,175 @@ theorem v13RealLinearUniformCausalOneRowGenerated_counting_with_rowFactor
     v13RealLinearUniformOneRowGenerated_counting_with_rowFactor
       observer.toAdaptive i₀
 
+/-- The row/bit transcript cylinders that are actually hit by generated
+one-row worlds for a fixed observer.  Bounding this finite index set is exactly
+the multiplicity left after the fixed-cylinder count. -/
+def V13RealLinearUniformOneRowGeneratedCylinderIndex
+    {m : Nat} (observer : V13RealLinearAdaptiveRowObserver m 1)
+    (i₀ : Fin m) :=
+  {idx : Fin m × ZMod 2 //
+    ∃ omega : V13RealLinearAdaptiveQRowWorld m (V13F2LinearEquiv m),
+      (v13RealLinearUniformQRowExperiment observer).generated i₀ omega ∧
+        (v13RealLinearUniformQRowExperiment observer).branchRows omega =
+          ({idx.1} : Finset (Fin m)) ∧
+        idx.1 ∈ V13RealLinearTargetRows omega.1 i₀ ∧
+        omega.2 i₀ = idx.2}
+
+noncomputable instance {m : Nat}
+    (observer : V13RealLinearAdaptiveRowObserver m 1) (i₀ : Fin m) :
+    Fintype
+      (V13RealLinearUniformOneRowGeneratedCylinderIndex observer i₀) := by
+  classical
+  unfold V13RealLinearUniformOneRowGeneratedCylinderIndex
+  infer_instance
+
+abbrev V13RealLinearUniformOneRowGeneratedCylinderCover
+    {m : Nat} (observer : V13RealLinearAdaptiveRowObserver m 1)
+    (i₀ : Fin m) :=
+  Σ idx : V13RealLinearUniformOneRowGeneratedCylinderIndex observer i₀,
+    V13RealLinearUniformFixedTargetRowBitCylinder idx.val.1 i₀ idx.val.2
+
+noncomputable def
+    v13RealLinearUniformOneRowGeneratedToActiveBitCylinderCover
+    {m : Nat} (observer : V13RealLinearAdaptiveRowObserver m 1)
+    (i₀ : Fin m) :
+    V13RealLinearAdaptiveQRowGenerated
+        (v13RealLinearUniformQRowExperiment observer) i₀ ↪
+      V13RealLinearUniformOneRowGeneratedCylinderCover observer i₀ where
+  toFun omega := by
+    classical
+    let E := v13RealLinearUniformQRowExperiment observer
+    have htargetExists :=
+      E.generated_one_budget_exists_singleton_target_row i₀ omega.val
+        omega.property
+    let row : Fin m := Classical.choose htargetExists
+    have hspec := Classical.choose_spec htargetExists
+    have hrows :
+        E.branchRows omega.val = ({row} : Finset (Fin m)) := hspec.1
+    have htarget :
+        row ∈ V13RealLinearTargetRows omega.val.1 i₀ := by
+      simpa [E, v13RealLinearUniformQRowExperiment, row] using hspec.2
+    let bit : ZMod 2 := omega.val.2 i₀
+    refine
+      ⟨⟨(row, bit), ?_⟩,
+        { A := omega.val.1
+          x := omega.val.2
+          targetRow := htarget
+          targetBit := rfl }⟩
+    exact ⟨omega.val, omega.property, hrows, htarget, rfl⟩
+  inj' := by
+    intro omega₀ omega₁ hmap
+    apply Subtype.ext
+    apply Prod.ext
+    · exact
+        congrArg
+          (fun data :
+              V13RealLinearUniformOneRowGeneratedCylinderCover
+                observer i₀ =>
+              data.2.A) hmap
+    · exact
+        congrArg
+          (fun data :
+              V13RealLinearUniformOneRowGeneratedCylinderCover
+                observer i₀ =>
+              data.2.x) hmap
+
+theorem v13RealLinearUniformOneRowGenerated_card_le_activeBitCylinderCover
+    {m : Nat} (observer : V13RealLinearAdaptiveRowObserver m 1)
+    (i₀ : Fin m) :
+    Fintype.card
+        (V13RealLinearAdaptiveQRowGenerated
+          (v13RealLinearUniformQRowExperiment observer) i₀) ≤
+      Fintype.card
+        (V13RealLinearUniformOneRowGeneratedCylinderCover observer i₀) :=
+  Fintype.card_le_of_embedding
+    (v13RealLinearUniformOneRowGeneratedToActiveBitCylinderCover
+      observer i₀)
+
+theorem v13RealLinearUniformOneRowGenerated_counting_by_activeBitCylinderIndex
+    {m : Nat} (observer : V13RealLinearAdaptiveRowObserver m 1)
+    (i₀ : Fin m) :
+    Fintype.card
+        (V13RealLinearAdaptiveQRowGenerated
+          (v13RealLinearUniformQRowExperiment observer) i₀) *
+        2 ^ m ≤
+      Fintype.card
+          (V13RealLinearUniformOneRowGeneratedCylinderIndex observer i₀) *
+        Fintype.card
+          (V13RealLinearAdaptiveQRowWorld m (V13F2LinearEquiv m)) := by
+  classical
+  let G :=
+    Fintype.card
+      (V13RealLinearAdaptiveQRowGenerated
+        (v13RealLinearUniformQRowExperiment observer) i₀)
+  let I :=
+    V13RealLinearUniformOneRowGeneratedCylinderIndex observer i₀
+  let C := V13RealLinearUniformOneRowGeneratedCylinderCover observer i₀
+  let X := 2 ^ m
+  let W :=
+    Fintype.card
+      (V13RealLinearAdaptiveQRowWorld m (V13F2LinearEquiv m))
+  have hG : G ≤ Fintype.card C := by
+    simpa [G, C] using
+      v13RealLinearUniformOneRowGenerated_card_le_activeBitCylinderCover
+        observer i₀
+  have hC :
+      Fintype.card C =
+        ∑ idx : I,
+          Fintype.card
+            (V13RealLinearUniformFixedTargetRowBitCylinder
+              idx.val.1 i₀ idx.val.2) := by
+    dsimp [C, I, V13RealLinearUniformOneRowGeneratedCylinderCover]
+    rw [Fintype.card_sigma]
+  calc
+    G * X ≤ Fintype.card C * X := Nat.mul_le_mul_right X hG
+    _ =
+        (∑ idx : I,
+          Fintype.card
+            (V13RealLinearUniformFixedTargetRowBitCylinder
+              idx.val.1 i₀ idx.val.2)) * X := by rw [hC]
+    _ =
+        ∑ idx : I,
+          Fintype.card
+              (V13RealLinearUniformFixedTargetRowBitCylinder
+                idx.val.1 i₀ idx.val.2) * X := by
+      rw [Finset.sum_mul]
+    _ ≤ ∑ _idx : I, W := by
+      apply Finset.sum_le_sum
+      intro idx _hidx
+      simpa [X, W] using
+        v13RealLinearFixedTargetRowBitCylinder_counting
+          idx.val.1 i₀ idx.val.2
+    _ = Fintype.card I * W := by
+      simp
+
+theorem
+    v13RealLinearUniformCausalOneRowGenerated_counting_by_activeBitCylinderIndex
+    {m : Nat} (observer : V13RealLinearCausalRowObserver m 1)
+    (i₀ : Fin m) :
+    Fintype.card
+        (V13RealLinearAdaptiveQRowGenerated
+          (v13RealLinearUniformCausalQRowExperiment observer) i₀) *
+        2 ^ m ≤
+      Fintype.card
+          (V13RealLinearUniformOneRowGeneratedCylinderIndex
+            observer.toAdaptive i₀) *
+        Fintype.card
+          (V13RealLinearAdaptiveQRowWorld m (V13F2LinearEquiv m)) := by
+  change
+    Fintype.card
+        (V13RealLinearAdaptiveQRowGenerated
+          (v13RealLinearUniformQRowExperiment observer.toAdaptive) i₀) *
+        2 ^ m ≤
+      Fintype.card
+          (V13RealLinearUniformOneRowGeneratedCylinderIndex
+            observer.toAdaptive i₀) *
+        Fintype.card
+          (V13RealLinearAdaptiveQRowWorld m (V13F2LinearEquiv m))
+  exact
+    v13RealLinearUniformOneRowGenerated_counting_by_activeBitCylinderIndex
+      observer.toAdaptive i₀
+
 noncomputable def v13RealLinearFixedTargetRowOccurrenceZeroEmbedding :
     V13RealLinearUniformFixedTargetRowOccurrence
         (0 : Fin 2) (0 : Fin 2) ↪
