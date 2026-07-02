@@ -67,9 +67,12 @@ fiber may project to an arbitrary connected finite base, and the fibration
 fields carry the lifted Kempe motion.  The field-level target
 `concreteChainFiberAppendQuotientFibrationFieldsClosed` splits the route into
 same-base fiber reach, lifted base steps, and connected quotient-base
-connectivity.  The theorem
-`semanticFrontierStateSufficientForChain_of_append_quotient_fields` proves
-final semantic sufficiency from those fields and the existing singleton
+connectivity.  The rooted field target
+`concreteChainFiberAppendQuotientFibrationRootFieldsClosed` lets a generated
+spanning-tree-style base certificate provide root reachability for that
+quotient base.  The theorem
+`semanticFrontierStateSufficientForChain_of_append_quotient_root_fields` proves
+final semantic sufficiency from those rooted fields and the existing singleton
 concrete seeds.  The fixed-prefix route remains available as a sufficient
 stronger route, but the quotient route is the current surface for finite
 per-input interface or trace-pair mobility.

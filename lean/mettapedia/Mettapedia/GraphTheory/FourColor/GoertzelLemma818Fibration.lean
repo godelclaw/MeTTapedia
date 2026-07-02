@@ -46,11 +46,58 @@ theorem map
   | tail hpre hstep ih =>
       exact Reach.tail ih (hmap hstep)
 
+theorem reverse_of_stepSymmetric
+    (hsym : ∀ {x y : α}, step x y → step y x)
+    {x y : α} (hxy : Reach step x y) :
+    Reach step y x := by
+  induction hxy with
+  | refl =>
+      exact Reach.refl x
+  | tail hpre hstep ih =>
+      exact Reach.trans (Reach.single (hsym hstep)) ih
+
 end Reach
 
 /-- A step relation is connected when every ordered pair is reachable. -/
 def Connected {α : Type u} (step : α → α → Prop) : Prop :=
   ∀ x y, Reach step x y
+
+/-- A step relation is symmetric when every directed step can be reversed. -/
+def StepSymmetric {α : Type u} (step : α → α → Prop) : Prop :=
+  ∀ {x y}, step x y → step y x
+
+/--
+A rooted connectivity certificate for a directed step relation.
+
+Generated finite checks often produce this shape directly: every node can reach
+a chosen root and the root can reach every node.
+-/
+structure RootedConnectedCertificate
+    {α : Type u} (step : α → α → Prop) : Type u where
+  root : α
+  reachFromRoot : ∀ x, Reach step root x
+  reachToRoot : ∀ x, Reach step x root
+
+namespace RootedConnectedCertificate
+
+variable {α : Type u} {step : α → α → Prop}
+
+theorem connected (cert : RootedConnectedCertificate step) :
+    Connected step := by
+  intro x y
+  exact Reach.trans (cert.reachToRoot x) (cert.reachFromRoot y)
+
+end RootedConnectedCertificate
+
+theorem connected_of_root_reachable_and_stepSymmetric
+    {α : Type u} {step : α → α → Prop}
+    (hsym : StepSymmetric step)
+    (root : α)
+    (hroot : ∀ x, Reach step x root) :
+    Connected step := by
+  intro x y
+  exact Reach.trans (hroot x)
+    (Reach.reverse_of_stepSymmetric hsym (hroot y))
 
 /--
 Data needed to lift base connectivity to total connectivity.
