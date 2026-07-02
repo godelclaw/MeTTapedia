@@ -1512,6 +1512,18 @@ def concreteChainFiberAppendShiftMove
       { occ := move.seed.occ + word.length
         edge := move.seed.edge } }
 
+def concreteChainFiberAppendShiftEdge
+    (word : List GoertzelLemma818FrontierMode.TauOrient)
+    (edge : GoertzelLemma814.ChainEdge) : GoertzelLemma814.ChainEdge :=
+  { occ := edge.occ + word.length
+    edge := edge.edge }
+
+def concreteChainFiberAppendShiftComponent
+    (word : List GoertzelLemma818FrontierMode.TauOrient)
+    (component : List GoertzelLemma814.ChainEdge) :
+    List GoertzelLemma814.ChainEdge :=
+  component.map (concreteChainFiberAppendShiftEdge word)
+
 theorem concreteChainFiberAppendShiftedEdgePresent_of_not_input
     (word : List GoertzelLemma818FrontierMode.TauOrient)
     (orient : GoertzelLemma818FrontierMode.TauOrient)
@@ -1608,6 +1620,135 @@ theorem concreteChainFiberAppendRelativeSingletonShiftedSeedPresentClosed_of_loc
       word orient move.seed.edge hnotInput
   simpa [concreteChainFiberAppendShiftMove, hocc] using hshift
 
+theorem concreteChainFiberAppendOuterInputContainsShiftEdge_false
+    (word : List GoertzelLemma818FrontierMode.TauOrient)
+    (orient : GoertzelLemma818FrontierMode.TauOrient)
+    (edge : GoertzelLemma814.ChainEdge)
+    (hne : word ≠ []) :
+    (GoertzelLemma814.chainOuterInputEdges
+      (frontierWordToChainWord (word ++ [orient]))).contains
+        (concreteChainFiberAppendShiftEdge word edge) = false := by
+  cases word with
+  | nil =>
+      contradiction
+  | cons _ _ =>
+      cases edge with
+      | mk _ _ =>
+          simp [concreteChainFiberAppendShiftEdge,
+            GoertzelLemma814.chainOuterInputEdges,
+            GoertzelLemma814.chainInputOrder, frontierWordToChainWord,
+            GoertzelLemma814.tauOrientAt, GoertzelLemma814.listGetD]
+
+theorem concreteChainFiberAppendShiftComponent_avoids_inputs
+    (word : List GoertzelLemma818FrontierMode.TauOrient)
+    (orient : GoertzelLemma818FrontierMode.TauOrient)
+    (component : List GoertzelLemma814.ChainEdge)
+    (hne : word ≠ []) :
+    GoertzelLemma814.chainComponentAvoidsInputs
+      (frontierWordToChainWord (word ++ [orient]))
+      (concreteChainFiberAppendShiftComponent word component) = true := by
+  unfold GoertzelLemma814.chainComponentAvoidsInputs
+  have hany :
+      (concreteChainFiberAppendShiftComponent word component).any
+        (fun e => (GoertzelLemma814.chainOuterInputEdges
+          (frontierWordToChainWord (word ++ [orient]))).contains e) = false := by
+    apply GoertzelLemma814.list_any_false_of_forall_mem
+    intro edge hmem
+    unfold concreteChainFiberAppendShiftComponent at hmem
+    rcases List.mem_map.mp hmem with ⟨localEdge, _hLocal, rfl⟩
+    exact concreteChainFiberAppendOuterInputContainsShiftEdge_false
+      word orient localEdge hne
+  rw [hany]
+  rfl
+
+def concreteChainFiberAppendRelativeSingletonShiftedComponentClosed : Prop :=
+  ∀ (word : List GoertzelLemma818FrontierMode.TauOrient)
+    (orient : GoertzelLemma818FrontierMode.TauOrient)
+    (_hne : word ≠ []),
+    Nonempty (ChainWordConcreteFibrationCertificate word) →
+      ∀ (key : List GoertzelLemma814.LColor),
+        key ∈ GoertzelLemma814.colorAssignments4 →
+          ∀ (pref : List GoertzelLemma814.TauState)
+            (lastX : GoertzelLemma814.TauState),
+            (_hpref : pref ∈ concreteChainFiber word key) →
+            (_hlastX : lastX ∈ GoertzelLemma814.allTauStates) →
+            (_hcompatibleX : GoertzelLemma814.compatibleAdjacent
+              (GoertzelLemma814.tauOrientAt
+                (frontierWordToChainWord (word ++ [orient])) (word.length - 1))
+              (GoertzelLemma814.tauOrientAt
+                (frontierWordToChainWord (word ++ [orient])) word.length)
+              (GoertzelLemma814.chainStateAt pref (word.length - 1))
+              lastX = true) →
+            ∀ (_hkeyLocal :
+                concreteChainFiberAppendLastInputTrace orient lastX ∈
+                  GoertzelLemma814.colorAssignments4)
+              (current target : List GoertzelLemma814.TauState)
+              (currentLast targetLast : GoertzelLemma814.TauState),
+              current ∈ concreteChainFiber [orient]
+                (concreteChainFiberAppendLastInputTrace orient lastX) →
+              target ∈ concreteChainFiber [orient]
+                (concreteChainFiberAppendLastInputTrace orient lastX) →
+              current = [currentLast] →
+              target = [targetLast] →
+              ∀ (move : GoertzelLemma814.ChainMove),
+                GoertzelLemma814.colorPairs.contains (move.a, move.c) = true →
+                (GoertzelLemma814.chainEdges (frontierWordToChainWord [orient])).contains
+                  move.seed = true →
+                GoertzelLemma814.chainSpecifiedKempeStep
+                  (frontierWordToChainWord [orient]) current target move = true →
+                GoertzelLemma814.chainComponent
+                  (frontierWordToChainWord (word ++ [orient]))
+                  (pref ++ [currentLast]) move.a move.c
+                  (concreteChainFiberAppendShiftMove word move).seed =
+                concreteChainFiberAppendShiftComponent word
+                  (GoertzelLemma814.chainComponent
+                    (frontierWordToChainWord [orient]) current move.a move.c
+                    move.seed)
+
+def concreteChainFiberAppendRelativeSingletonShiftedSwitchAgreementClosed : Prop :=
+  ∀ (word : List GoertzelLemma818FrontierMode.TauOrient)
+    (orient : GoertzelLemma818FrontierMode.TauOrient)
+    (_hne : word ≠ []),
+    Nonempty (ChainWordConcreteFibrationCertificate word) →
+      ∀ (key : List GoertzelLemma814.LColor),
+        key ∈ GoertzelLemma814.colorAssignments4 →
+          ∀ (pref : List GoertzelLemma814.TauState)
+            (lastX : GoertzelLemma814.TauState),
+            (_hpref : pref ∈ concreteChainFiber word key) →
+            (_hlastX : lastX ∈ GoertzelLemma814.allTauStates) →
+            (_hcompatibleX : GoertzelLemma814.compatibleAdjacent
+              (GoertzelLemma814.tauOrientAt
+                (frontierWordToChainWord (word ++ [orient])) (word.length - 1))
+              (GoertzelLemma814.tauOrientAt
+                (frontierWordToChainWord (word ++ [orient])) word.length)
+              (GoertzelLemma814.chainStateAt pref (word.length - 1))
+              lastX = true) →
+            ∀ (_hkeyLocal :
+                concreteChainFiberAppendLastInputTrace orient lastX ∈
+                  GoertzelLemma814.colorAssignments4)
+              (current target : List GoertzelLemma814.TauState)
+              (currentLast targetLast : GoertzelLemma814.TauState),
+              current ∈ concreteChainFiber [orient]
+                (concreteChainFiberAppendLastInputTrace orient lastX) →
+              target ∈ concreteChainFiber [orient]
+                (concreteChainFiberAppendLastInputTrace orient lastX) →
+              current = [currentLast] →
+              target = [targetLast] →
+              ∀ (move : GoertzelLemma814.ChainMove),
+                GoertzelLemma814.colorPairs.contains (move.a, move.c) = true →
+                (GoertzelLemma814.chainEdges (frontierWordToChainWord [orient])).contains
+                  move.seed = true →
+                GoertzelLemma814.chainSpecifiedKempeStep
+                  (frontierWordToChainWord [orient]) current target move = true →
+                GoertzelLemma814.chainAgreesWithSwitch
+                  (frontierWordToChainWord (word ++ [orient]))
+                  (pref ++ [currentLast]) (pref ++ [targetLast])
+                  (concreteChainFiberAppendShiftComponent word
+                    (GoertzelLemma814.chainComponent
+                      (frontierWordToChainWord [orient]) current move.a move.c
+                      move.seed))
+                  move.a move.c = true
+
 def concreteChainFiberAppendRelativeSingletonShiftedSpecifiedStepClosed : Prop :=
   ∀ (word : List GoertzelLemma818FrontierMode.TauOrient)
     (orient : GoertzelLemma818FrontierMode.TauOrient)
@@ -1647,6 +1788,75 @@ def concreteChainFiberAppendRelativeSingletonShiftedSpecifiedStepClosed : Prop :
                   (frontierWordToChainWord (word ++ [orient]))
                   (pref ++ [currentLast]) (pref ++ [targetLast])
                   (concreteChainFiberAppendShiftMove word move) = true
+
+theorem concreteChainFiberAppendRelativeSingletonShiftedSpecifiedStepClosed_of_component_and_switch
+    (hComponent :
+      concreteChainFiberAppendRelativeSingletonShiftedComponentClosed)
+    (hSwitch :
+      concreteChainFiberAppendRelativeSingletonShiftedSwitchAgreementClosed) :
+    concreteChainFiberAppendRelativeSingletonShiftedSpecifiedStepClosed := by
+  intro word orient hne hcert key hkey pref lastX hpref hlastX
+    hcompatibleX hkeyLocal current target currentLast targetLast hcurrent
+    htarget hcurrentEq htargetEq move hpair hseed hspecified
+  let localComponent :=
+    GoertzelLemma814.chainComponent (frontierWordToChainWord [orient])
+      current move.a move.c move.seed
+  let shiftedComponent :=
+    concreteChainFiberAppendShiftComponent word localComponent
+  let globalComponent :=
+    GoertzelLemma814.chainComponent
+      (frontierWordToChainWord (word ++ [orient]))
+      (pref ++ [currentLast]) move.a move.c
+      (concreteChainFiberAppendShiftMove word move).seed
+  have hspecifiedParts := hspecified
+  unfold GoertzelLemma814.chainSpecifiedKempeStep at hspecifiedParts
+  change (!localComponent.isEmpty &&
+      GoertzelLemma814.chainComponentAvoidsInputs
+        (frontierWordToChainWord [orient]) localComponent &&
+      GoertzelLemma814.chainAgreesWithSwitch
+        (frontierWordToChainWord [orient]) current target localComponent
+        move.a move.c) = true at hspecifiedParts
+  simp only [Bool.and_eq_true] at hspecifiedParts
+  rcases hspecifiedParts with ⟨⟨hLocalNonempty, _hLocalAvoid⟩, _hLocalAgree⟩
+  have hComponentEq : globalComponent = shiftedComponent := by
+    exact hComponent word orient hne hcert key hkey pref lastX hpref hlastX
+      hcompatibleX hkeyLocal current target currentLast targetLast hcurrent
+      htarget hcurrentEq htargetEq move hpair hseed hspecified
+  have hGlobalNonempty : (!globalComponent.isEmpty) = true := by
+    rw [hComponentEq]
+    simpa [shiftedComponent, concreteChainFiberAppendShiftComponent,
+      localComponent] using hLocalNonempty
+  have hGlobalAvoid :
+      GoertzelLemma814.chainComponentAvoidsInputs
+        (frontierWordToChainWord (word ++ [orient])) globalComponent = true := by
+    rw [hComponentEq]
+    exact concreteChainFiberAppendShiftComponent_avoids_inputs
+      word orient localComponent hne
+  have hGlobalAgreeShifted :
+      GoertzelLemma814.chainAgreesWithSwitch
+        (frontierWordToChainWord (word ++ [orient]))
+        (pref ++ [currentLast]) (pref ++ [targetLast]) shiftedComponent
+        move.a move.c = true := by
+    simpa [shiftedComponent, localComponent] using
+      hSwitch word orient hne hcert key hkey pref lastX hpref hlastX
+        hcompatibleX hkeyLocal current target currentLast targetLast hcurrent
+        htarget hcurrentEq htargetEq move hpair hseed hspecified
+  have hGlobalAgree :
+      GoertzelLemma814.chainAgreesWithSwitch
+        (frontierWordToChainWord (word ++ [orient]))
+        (pref ++ [currentLast]) (pref ++ [targetLast]) globalComponent
+        move.a move.c = true := by
+    rw [hComponentEq]
+    exact hGlobalAgreeShifted
+  unfold GoertzelLemma814.chainSpecifiedKempeStep
+  change (!globalComponent.isEmpty &&
+      GoertzelLemma814.chainComponentAvoidsInputs
+        (frontierWordToChainWord (word ++ [orient])) globalComponent &&
+      GoertzelLemma814.chainAgreesWithSwitch
+        (frontierWordToChainWord (word ++ [orient]))
+        (pref ++ [currentLast]) (pref ++ [targetLast]) globalComponent
+        move.a move.c) = true
+  simp [hGlobalNonempty, hGlobalAvoid, hGlobalAgree]
 
 def concreteChainFiberAppendRelativeSingletonShiftedSpecifiedKempeStepClosed : Prop :=
   ∀ (word : List GoertzelLemma818FrontierMode.TauOrient)
