@@ -221,7 +221,18 @@ append theorem.  The remaining parent-row append target is now named exactly as
 the length-two seeds discharge singleton prefixes, and the wrapper
 `semanticFrontierStateSufficientForChain_of_append_quotient_parent_rows_non_singleton`
 shows that proving this non-singleton-prefix field theorem is sufficient for
-the semantic route.
+the semantic route.  The bridge now separates that target into generated
+base-graph data and structural motion fields:
+`ChainFiberAppendQuotientFibrationParentRowsBaseData` is the emitted-data
+surface for `Base`, decidable equality, `baseStep`, and the parent-row rooted
+certificate, while
+`ChainFiberAppendQuotientFibrationParentRowsStructuralFields` supplies `proj`,
+same-base `fiberReach`, and lifted `baseStep` motion.  Proving
+`concreteChainFiberAppendQuotientFibrationParentRowsNonSingletonPrefixBaseDataClosed`
+and
+`concreteChainFiberAppendQuotientFibrationParentRowsNonSingletonPrefixStructuralClosed`
+is now enough via
+`semanticFrontierStateSufficientForChain_of_append_quotient_parent_rows_base_data_and_structural`.
 The same-prefix closure side is now separated from prefix mobility:
 `concreteChainFiberAppendPrefixSelfLiftClosureClosed_of_lift` derives a closed
 appended representative over the current prefix from the lift-closure theorem

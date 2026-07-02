@@ -120,7 +120,17 @@ is the only append-field hypothesis needed after the length-two seeds, via
 and
 `semanticFrontierStateSufficientForChain_of_append_quotient_parent_rows_non_singleton`.
 Thus the parent-row route no longer asks generated data to reprove singleton
-prefix appends; those are supplied by the existing real length-two audits.
+prefix appends; those are supplied by the existing real length-two audits.  The
+non-singleton remainder is also split into finite emitted data versus structural
+proof obligations: `ChainFiberAppendQuotientFibrationParentRowsBaseData` carries
+`Base`, `baseDecidableEq`, `baseStep`, and the parent-row rooted certificate,
+while `ChainFiberAppendQuotientFibrationParentRowsStructuralFields` carries
+`proj`, `fiberReach`, and `liftStep`.  The theorem
+`semanticFrontierStateSufficientForChain_of_append_quotient_parent_rows_base_data_and_structural`
+shows that the existing semantic route follows from
+`concreteChainFiberAppendQuotientFibrationParentRowsNonSingletonPrefixBaseDataClosed`
+plus
+`concreteChainFiberAppendQuotientFibrationParentRowsNonSingletonPrefixStructuralClosed`.
 
 `GoertzelLemma818SemanticProgress.lean` now records the checked semantic
 frontier after the completed `TTT` target.  It proves
