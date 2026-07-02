@@ -4939,6 +4939,29 @@ def V13RealLinearAdaptiveQRowTraceRealizesBranchRows
     (traceOf omega).length ≤ q ∧
       E.branchRows omega = v13RealLinearRowTraceRows (traceOf omega)
 
+noncomputable def v13RealLinearAdaptiveQRowBranchRowsTrace
+    {m q : Nat} {Seed : Type*}
+    (E : V13RealLinearAdaptiveQRowExperiment m q Seed)
+    (omega : V13RealLinearAdaptiveQRowWorld m Seed) :
+    V13RealLinearRowTrace m :=
+  (E.branchRows omega).toList
+
+theorem v13RealLinearAdaptiveQRowBranchRowsTrace_realizesBranchRows
+    {m q : Nat} {Seed : Type*}
+    (E : V13RealLinearAdaptiveQRowExperiment m q Seed) :
+    V13RealLinearAdaptiveQRowTraceRealizesBranchRows E
+      (v13RealLinearAdaptiveQRowBranchRowsTrace E) := by
+  intro omega
+  constructor
+  · have hlen :
+        (v13RealLinearAdaptiveQRowBranchRowsTrace E omega).length =
+          (E.branchRows omega).card := by
+      simp [v13RealLinearAdaptiveQRowBranchRowsTrace, Finset.length_toList]
+    rw [hlen]
+    exact E.branchRows_card_le omega
+  · exact
+      (Finset.toList_toFinset (E.branchRows omega)).symm
+
 def V13RealLinearAdaptiveQRowTraceFirstNewCapture
     {m q : Nat} {Seed : Type*}
     (E : V13RealLinearAdaptiveQRowExperiment m q Seed)
@@ -5529,6 +5552,44 @@ def V13RealLinearUniformCausalDeferredDecisionNewCaptureBound
   V13RealLinearAdaptiveDeferredDecisionNewCaptureBound
     (v13RealLinearUniformCausalQRowExperiment observer) i₀
 
+noncomputable def v13RealLinearUniformCausalQRowBranchRowsTrace
+    {m q : Nat} (observer : V13RealLinearCausalRowObserver m q) :
+    V13RealLinearAdaptiveQRowWorld m (V13F2LinearEquiv m) →
+      V13RealLinearRowTrace m :=
+  v13RealLinearAdaptiveQRowBranchRowsTrace
+    (v13RealLinearUniformCausalQRowExperiment observer)
+
+theorem
+    v13RealLinearUniformCausalQRowBranchRowsTrace_realizesBranchRows
+    {m q : Nat} (observer : V13RealLinearCausalRowObserver m q) :
+    V13RealLinearAdaptiveQRowTraceRealizesBranchRows
+      (v13RealLinearUniformCausalQRowExperiment observer)
+      (v13RealLinearUniformCausalQRowBranchRowsTrace observer) :=
+  v13RealLinearAdaptiveQRowBranchRowsTrace_realizesBranchRows
+    (v13RealLinearUniformCausalQRowExperiment observer)
+
+def V13RealLinearUniformCausalDeferredDecisionTraceCosetHitCountingBound
+    {m q : Nat} (observer : V13RealLinearCausalRowObserver m q)
+    (i₀ : Fin m) : Prop :=
+  V13RealLinearAdaptiveQRowTraceCosetHitCountingBound
+    (v13RealLinearUniformCausalQRowExperiment observer) i₀
+    (v13RealLinearUniformCausalQRowBranchRowsTrace observer)
+
+theorem
+    V13RealLinearUniformCausalDeferredDecisionCountingBound_of_traceCosetHit
+    {m q : Nat} (observer : V13RealLinearCausalRowObserver m q)
+    (i₀ : Fin m)
+    (hcoset :
+      V13RealLinearUniformCausalDeferredDecisionTraceCosetHitCountingBound
+        observer i₀) :
+    V13RealLinearUniformCausalDeferredDecisionCountingBound observer i₀ :=
+  v13RealLinearAdaptiveDeferredDecisionCountingBound_of_rowTraceCosetHit
+    (v13RealLinearUniformCausalQRowExperiment observer) i₀
+    (v13RealLinearUniformCausalQRowBranchRowsTrace observer)
+    (v13RealLinearUniformCausalQRowBranchRowsTrace_realizesBranchRows
+      observer)
+    hcoset
+
 theorem
     V13RealLinearUniformCausalDeferredDecisionCountingBound_of_newCapture
     {m q : Nat} (observer : V13RealLinearCausalRowObserver m q)
@@ -5720,6 +5781,15 @@ def V13RealLinearUniformCausalTwoOrMoreDeferredDecisionNewCaptureBound :
     1 < q → q < m →
       V13RealLinearUniformCausalDeferredDecisionNewCaptureBound observer i₀
 
+def
+    V13RealLinearUniformCausalTwoOrMoreDeferredDecisionTraceCosetHitCountingBound :
+    Prop :=
+  ∀ {m q : Nat} (observer : V13RealLinearCausalRowObserver m q)
+    (i₀ : Fin m),
+    1 < q → q < m →
+      V13RealLinearUniformCausalDeferredDecisionTraceCosetHitCountingBound
+        observer i₀
+
 theorem
     V13RealLinearUniformCausalTwoOrMoreDeferredDecisionCountingBound_of_newCapture
     (hnew :
@@ -5729,6 +5799,16 @@ theorem
   exact
     V13RealLinearUniformCausalDeferredDecisionCountingBound_of_newCapture
       observer i₀ (hnew observer i₀ hqgt hqm)
+
+theorem
+    V13RealLinearUniformCausalTwoOrMoreDeferredDecisionCountingBound_of_traceCosetHit
+    (hcoset :
+      V13RealLinearUniformCausalTwoOrMoreDeferredDecisionTraceCosetHitCountingBound) :
+    V13RealLinearUniformCausalTwoOrMoreDeferredDecisionCountingBound := by
+  intro m q observer i₀ hqgt hqm
+  exact
+    V13RealLinearUniformCausalDeferredDecisionCountingBound_of_traceCosetHit
+      observer i₀ (hcoset observer i₀ hqgt hqm)
 
 theorem
     V13RealLinearUniformCausalTwoOrMoreDeferredDecisionCountingBound_of_completionCounting
