@@ -84,11 +84,70 @@ def V13RealLinearAdaptiveQRowExperiment.branchRows {m q : Nat}
     (omega : V13RealLinearAdaptiveQRowWorld m Seed) : Finset (Fin m) :=
   (E.observer.staticBranch (E.branch omega)).rows
 
+theorem V13RealLinearAdaptiveQRowExperiment.branchRows_card_le {m q : Nat}
+    {Seed : Type*} (E : V13RealLinearAdaptiveQRowExperiment m q Seed)
+    (omega : V13RealLinearAdaptiveQRowWorld m Seed) :
+    (E.branchRows omega).card ≤ q := by
+  exact (E.observer.staticBranch (E.branch omega)).readBudget
+
 def V13RealLinearAdaptiveQRowExperiment.blocked {m q : Nat} {Seed : Type*}
     (E : V13RealLinearAdaptiveQRowExperiment m q Seed) (i₀ : Fin m)
     (omega : V13RealLinearAdaptiveQRowWorld m Seed) : Prop :=
   V13RealLinearRowsBlockTarget
     (E.sampleA omega.1) (E.branchRows omega) i₀
+
+/-- A coefficient assignment for the span of a finite set of public rows. -/
+abbrev V13RealLinearRowCombination {m : Nat} (rows : Finset (Fin m)) :=
+  {row : Fin m // row ∈ rows} → ZMod 2
+
+def v13RealLinearRowCombinationEval {m : Nat}
+    (A : V13F2LinearEquiv m) (rows : Finset (Fin m))
+    (coeff : V13RealLinearRowCombination rows) (w : F2Vec m) : ZMod 2 :=
+  Finset.univ.sum
+    (fun row : {row : Fin m // row ∈ rows} =>
+      coeff row * A.toEquiv w row.1)
+
+def V13RealLinearRowsGenerateTarget {m : Nat}
+    (A : V13F2LinearEquiv m) (rows : Finset (Fin m)) (i₀ : Fin m) :
+    Prop :=
+  ∃ coeff : V13RealLinearRowCombination rows,
+    ∀ w : F2Vec m,
+      v13RealLinearRowCombinationEval A rows coeff w = w i₀
+
+theorem v13RealLinear_rowCombination_card {m : Nat}
+    (rows : Finset (Fin m)) :
+    Fintype.card (V13RealLinearRowCombination rows) = 2 ^ rows.card := by
+  classical
+  simp [V13RealLinearRowCombination]
+
+theorem v13RealLinear_rowCombination_card_le_of_rows_card_le {m q : Nat}
+    {rows : Finset (Fin m)} (hrows : rows.card ≤ q) :
+    Fintype.card (V13RealLinearRowCombination rows) ≤ 2 ^ q := by
+  classical
+  rw [v13RealLinear_rowCombination_card rows]
+  exact Nat.pow_le_pow_right (by norm_num : 0 < 2) hrows
+
+theorem v13RealLinear_rowCombination_card_le_for_branch {m q : Nat}
+    {Seed : Type*} (E : V13RealLinearAdaptiveQRowExperiment m q Seed)
+    (omega : V13RealLinearAdaptiveQRowWorld m Seed) :
+    Fintype.card (V13RealLinearRowCombination (E.branchRows omega)) ≤
+      2 ^ q :=
+  v13RealLinear_rowCombination_card_le_of_rows_card_le
+    (E.branchRows_card_le omega)
+
+theorem v13RealLinear_rowsBlockTarget_of_rowsGenerateTarget {m : Nat}
+    (A : V13F2LinearEquiv m) (rows : Finset (Fin m)) (i₀ : Fin m)
+    (hgen : V13RealLinearRowsGenerateTarget A rows i₀) :
+    V13RealLinearRowsBlockTarget A rows i₀ := by
+  rcases hgen with ⟨coeff, hcoeff⟩
+  intro w hkernel
+  have hsum :
+      v13RealLinearRowCombinationEval A rows coeff w = 0 := by
+    unfold v13RealLinearRowCombinationEval
+    simp [hkernel]
+  calc
+    w i₀ = v13RealLinearRowCombinationEval A rows coeff w := (hcoeff w).symm
+    _ = 0 := hsum
 
 def V13RealLinearAdaptiveQRowExperiment.correct {m q : Nat} {Seed : Type*}
     (E : V13RealLinearAdaptiveQRowExperiment m q Seed) (i₀ : Fin m)

@@ -1108,7 +1108,19 @@ theorem currentPNPV13RealRungOneAdaptiveRows_node :
       observer A i₀ b hnot
 
 theorem currentPNPV13RealRungOneQRowBound_node :
-    (∀ {m q : Nat} {Seed : Type*} [Fintype Seed]
+    (∀ {m : Nat} (rows : Finset (Fin m)),
+      Fintype.card (V13RealLinearRowCombination rows) = 2 ^ rows.card) ∧
+      (∀ {m q : Nat} {rows : Finset (Fin m)}, rows.card ≤ q →
+        Fintype.card (V13RealLinearRowCombination rows) ≤ 2 ^ q) ∧
+      (∀ {m q : Nat} {Seed : Type*}
+        (E : V13RealLinearAdaptiveQRowExperiment m q Seed)
+        (omega : V13RealLinearAdaptiveQRowWorld m Seed),
+        (E.branchRows omega).card ≤ q) ∧
+      (∀ {m : Nat} (A : V13F2LinearEquiv m) (rows : Finset (Fin m))
+        (i₀ : Fin m),
+        V13RealLinearRowsGenerateTarget A rows i₀ →
+          V13RealLinearRowsBlockTarget A rows i₀) ∧
+      (∀ {m q : Nat} {Seed : Type*} [Fintype Seed]
       (E : V13RealLinearAdaptiveQRowExperiment m q Seed) (i₀ : Fin m),
       V13RealLinearAdaptiveKernelFlipSurchargeBound E i₀) ∧
       (∀ {m q : Nat} {Seed : Type*} [Fintype Seed]
@@ -1123,7 +1135,14 @@ theorem currentPNPV13RealRungOneQRowBound_node :
             (1 / 2 : Rat) + v13RealLinearQRowEpsilon q m) ∧
       (∀ q m : Nat, 0 ≤ v13RealLinearQRowEpsilon q m) := by
   exact
-    ⟨fun E i₀ =>
+    ⟨v13RealLinear_rowCombination_card,
+      fun hrows =>
+        v13RealLinear_rowCombination_card_le_of_rows_card_le hrows,
+      fun E omega =>
+        E.branchRows_card_le omega,
+      fun A rows i₀ hgen =>
+        v13RealLinear_rowsBlockTarget_of_rowsGenerateTarget A rows i₀ hgen,
+      fun E i₀ =>
         v13RealLinear_adaptiveKernelFlipSurchargeBound E i₀,
       fun E i₀ hcount =>
         v13RealLinear_adaptive_qrow_success_bound_of_spanCounting
