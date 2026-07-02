@@ -26,6 +26,7 @@ import Mettapedia.Computability.PNP.V13PhaseEConcrete
 import Mettapedia.Computability.PNP.V13PhaseEScaled
 import Mettapedia.Computability.PNP.V13RealRungOneLinear
 import Mettapedia.Computability.PNP.V13RealRungOneRowObservers
+import Mettapedia.Computability.PNP.V13RealRungOneStaticRows
 import Mettapedia.Computability.PNP.WeaknessCalculus
 /-!
 # PNP proof state
@@ -1079,6 +1080,17 @@ theorem currentPNPV13RealRungOneRowObservers_node :
       fun A rows i₀ hnot =>
         v13RealLinear_opposite_targets_same_rowsTranscript_of_not_blocked
           A rows i₀ hnot⟩
+
+theorem currentPNPV13RealRungOneStaticRows_node :
+    ∀ {m q : Nat} (observer : V13RealLinearStaticRowObserver m q)
+      (A : V13F2LinearEquiv m) (i₀ : Fin m),
+      ¬ V13RealLinearRowsBlockTarget A observer.rows i₀ →
+        Fintype.card (V13RealLinearFixedCorrect observer A i₀) =
+          Fintype.card (V13RealLinearFixedIncorrect observer A i₀) := by
+  intro m q observer A i₀ hnot
+  exact
+    v13RealLinear_staticRows_correct_card_eq_incorrect_card_of_not_blocked
+      observer A i₀ hnot
 
 theorem currentPNPV13ObserverLadder_node :
     PhaseEScaledObserverLadderMark ∧
