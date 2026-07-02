@@ -265,6 +265,24 @@ theorem v13RealLinearRowTracePrefixRows_card_le {m : Nat}
       rw [List.length_take]
       exact Nat.min_le_left n trace.length
 
+theorem v13RealLinearRowTracePrefixRows_succ {m : Nat}
+    (trace : V13RealLinearRowTrace m) {t : Nat} (h : t < trace.length) :
+    v13RealLinearRowTracePrefixRows trace (t + 1) =
+      insert (trace.get ⟨t, h⟩)
+        (v13RealLinearRowTracePrefixRows trace t) := by
+  have htake := List.take_concat_get (l := trace) (i := t) h
+  unfold v13RealLinearRowTracePrefixRows
+  calc
+    (List.take (t + 1) trace).toFinset =
+        ((List.take t trace).concat (trace.get ⟨t, h⟩)).toFinset := by
+      rw [← htake]
+      simp only [List.get_eq_getElem]
+    _ = insert (trace.get ⟨t, h⟩) (List.take t trace).toFinset := by
+      ext x
+      simp only [List.concat_eq_append, List.mem_toFinset, List.mem_append,
+        List.mem_singleton, Finset.mem_insert]
+      tauto
+
 def V13RealLinearRowTraceNewCapture {m : Nat}
     (A : V13F2LinearEquiv m) (i₀ : Fin m)
     (trace : V13RealLinearRowTrace m) (t : Nat) : Prop :=
@@ -353,6 +371,133 @@ def v13RealLinearRowFunctional {m : Nat}
 def v13RealLinearTargetFunctional {m : Nat} (i₀ : Fin m) :
     F2Vec m →ₗ[ZMod 2] ZMod 2 :=
   LinearMap.proj i₀
+
+noncomputable def V13RealLinearRowsFunctionalSpan {m : Nat}
+    (A : V13F2LinearEquiv m) (rows : Finset (Fin m)) :
+    Submodule (ZMod 2) (F2Vec m →ₗ[ZMod 2] ZMod 2) :=
+  Submodule.span (ZMod 2)
+    (Set.range (fun row : {row : Fin m // row ∈ rows} =>
+      v13RealLinearRowFunctional A row.1))
+
+theorem v13RealLinearRowsGenerateTarget_iff_targetFunctional_mem_span
+    {m : Nat} (A : V13F2LinearEquiv m) (rows : Finset (Fin m))
+    (i₀ : Fin m) :
+    V13RealLinearRowsGenerateTarget A rows i₀ ↔
+      v13RealLinearTargetFunctional i₀ ∈
+        V13RealLinearRowsFunctionalSpan A rows := by
+  classical
+  constructor
+  · intro hgen
+    rcases hgen with ⟨coeff, hcoeff⟩
+    have hsumEq :
+        (∑ row : {row : Fin m // row ∈ rows},
+          coeff row • v13RealLinearRowFunctional A row.1) =
+          v13RealLinearTargetFunctional i₀ := by
+      apply LinearMap.ext
+      intro w
+      have h := hcoeff w
+      simpa [v13RealLinearRowCombinationEval, v13RealLinearRowFunctional,
+        v13RealLinearTargetFunctional] using h
+    rw [← hsumEq]
+    exact
+      (Submodule.mem_span_range_iff_exists_fun (R := ZMod 2)).2
+        ⟨coeff, rfl⟩
+  · intro hspan
+    rcases (Submodule.mem_span_range_iff_exists_fun (R := ZMod 2)).1
+        hspan with
+      ⟨coeff, hcoeff⟩
+    refine ⟨coeff, ?_⟩
+    intro w
+    have happly := LinearMap.congr_fun hcoeff w
+    simpa [v13RealLinearRowCombinationEval, v13RealLinearRowFunctional,
+      v13RealLinearTargetFunctional] using happly
+
+def V13RealLinearRowFunctionalTargetCosetHit {m : Nat}
+    (A : V13F2LinearEquiv m) (rows : Finset (Fin m))
+    (i₀ row : Fin m) : Prop :=
+  ∃ z ∈ V13RealLinearRowsFunctionalSpan A rows,
+    v13RealLinearTargetFunctional i₀ =
+      v13RealLinearRowFunctional A row + z
+
+theorem v13RealLinear_rowFunctional_range_insert {m : Nat}
+    (A : V13F2LinearEquiv m) (rows : Finset (Fin m)) (row : Fin m) :
+    Set.range (fun r : {r : Fin m // r ∈ insert row rows} =>
+        v13RealLinearRowFunctional A r.1) =
+      insert (v13RealLinearRowFunctional A row)
+        (Set.range (fun r : {r : Fin m // r ∈ rows} =>
+          v13RealLinearRowFunctional A r.1)) := by
+  ext f
+  constructor
+  · intro hf
+    rcases hf with ⟨r, rfl⟩
+    rcases (Finset.mem_insert.mp r.2) with hrow | hrows
+    · left
+      simp [hrow]
+    · right
+      exact ⟨⟨r.1, hrows⟩, rfl⟩
+  · intro hf
+    rcases hf with hrow | hprev
+    · exact ⟨⟨row, Finset.mem_insert_self row rows⟩, hrow.symm⟩
+    · rcases hprev with ⟨r, rfl⟩
+      exact ⟨⟨r.1, Finset.mem_insert_of_mem r.2⟩, rfl⟩
+
+theorem v13RealLinear_rowFunctionalTargetCosetHit_of_insert_generates
+    {m : Nat} (A : V13F2LinearEquiv m) (rows : Finset (Fin m))
+    (i₀ row : Fin m)
+    (hprev : ¬ V13RealLinearRowsGenerateTarget A rows i₀)
+    (hnew : V13RealLinearRowsGenerateTarget A (insert row rows) i₀) :
+    V13RealLinearRowFunctionalTargetCosetHit A rows i₀ row := by
+  classical
+  have hnewSpan :
+      v13RealLinearTargetFunctional i₀ ∈
+        Submodule.span (ZMod 2)
+          (insert (v13RealLinearRowFunctional A row)
+            (Set.range (fun r : {r : Fin m // r ∈ rows} =>
+              v13RealLinearRowFunctional A r.1))) := by
+    have h :=
+      (v13RealLinearRowsGenerateTarget_iff_targetFunctional_mem_span
+        A (insert row rows) i₀).1 hnew
+    simpa [V13RealLinearRowsFunctionalSpan,
+      v13RealLinear_rowFunctional_range_insert A rows row] using h
+  have hprevNot :
+      v13RealLinearTargetFunctional i₀ ∉
+        V13RealLinearRowsFunctionalSpan A rows := by
+    intro hspan
+    exact hprev
+      ((v13RealLinearRowsGenerateTarget_iff_targetFunctional_mem_span
+        A rows i₀).2 hspan)
+  rcases (Submodule.mem_span_insert.mp hnewSpan) with
+    ⟨a, z, hz, htarget⟩
+  have haNonzero : a ≠ 0 := by
+    intro ha0
+    apply hprevNot
+    have htargetZ : v13RealLinearTargetFunctional i₀ = z := by
+      simpa [ha0] using htarget
+    simpa [V13RealLinearRowsFunctionalSpan, htargetZ] using hz
+  have ha : a = 1 := v13_zmod2_eq_one_of_ne_zero a haNonzero
+  refine ⟨z, hz, ?_⟩
+  simpa [ha] using htarget
+
+def V13RealLinearRowTraceCosetHit {m : Nat}
+    (A : V13F2LinearEquiv m) (i₀ : Fin m)
+    (trace : V13RealLinearRowTrace m) (t : Nat) : Prop :=
+  ∃ h : t < trace.length,
+    V13RealLinearRowFunctionalTargetCosetHit
+      A (v13RealLinearRowTracePrefixRows trace t) i₀
+      (trace.get ⟨t, h⟩)
+
+theorem v13RealLinearRowTraceCosetHit_of_newCapture {m : Nat}
+    (A : V13F2LinearEquiv m) (i₀ : Fin m)
+    (trace : V13RealLinearRowTrace m) {t : Nat} (h : t < trace.length)
+    (hcapture : V13RealLinearRowTraceNewCapture A i₀ trace t) :
+    V13RealLinearRowTraceCosetHit A i₀ trace t := by
+  refine ⟨h, ?_⟩
+  apply
+    v13RealLinear_rowFunctionalTargetCosetHit_of_insert_generates
+      A (v13RealLinearRowTracePrefixRows trace t) i₀
+      (trace.get ⟨t, h⟩)
+  · exact hcapture.1
+  · simpa [v13RealLinearRowTracePrefixRows_succ trace h] using hcapture.2
 
 theorem v13RealLinear_rowCombination_card {m : Nat}
     (rows : Finset (Fin m)) :
