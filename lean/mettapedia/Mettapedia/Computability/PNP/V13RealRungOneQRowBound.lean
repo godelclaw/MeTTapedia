@@ -230,6 +230,104 @@ theorem v13RealLinear_not_rowsGenerateTarget_of_rows_card_zero {m : Nat}
   norm_num [v13RealLinearRowCombinationEval,
     v13RealLinearSingleBit] at htarget
 
+/-- Ordered row traces record the reads used by the deferred-decision view.
+Their set-valued prefixes are the rowsets used by the existing span predicates. -/
+abbrev V13RealLinearRowTrace (m : Nat) :=
+  List (Fin m)
+
+def v13RealLinearRowTraceRows {m : Nat}
+    (trace : V13RealLinearRowTrace m) : Finset (Fin m) :=
+  trace.toFinset
+
+def v13RealLinearRowTracePrefixRows {m : Nat}
+    (trace : V13RealLinearRowTrace m) (n : Nat) : Finset (Fin m) :=
+  (trace.take n).toFinset
+
+theorem v13RealLinearRowTracePrefixRows_zero {m : Nat}
+    (trace : V13RealLinearRowTrace m) :
+    v13RealLinearRowTracePrefixRows trace 0 = ∅ := by
+  simp [v13RealLinearRowTracePrefixRows]
+
+theorem v13RealLinearRowTracePrefixRows_length {m : Nat}
+    (trace : V13RealLinearRowTrace m) :
+    v13RealLinearRowTracePrefixRows trace trace.length =
+      v13RealLinearRowTraceRows trace := by
+  simp [v13RealLinearRowTracePrefixRows, v13RealLinearRowTraceRows]
+
+theorem v13RealLinearRowTracePrefixRows_card_le {m : Nat}
+    (trace : V13RealLinearRowTrace m) (n : Nat) :
+    (v13RealLinearRowTracePrefixRows trace n).card ≤ n := by
+  calc
+    (v13RealLinearRowTracePrefixRows trace n).card ≤
+        (trace.take n).length := by
+      exact List.toFinset_card_le (trace.take n)
+    _ ≤ n := by
+      rw [List.length_take]
+      exact Nat.min_le_left n trace.length
+
+def V13RealLinearRowTraceNewCapture {m : Nat}
+    (A : V13F2LinearEquiv m) (i₀ : Fin m)
+    (trace : V13RealLinearRowTrace m) (t : Nat) : Prop :=
+  ¬ V13RealLinearRowsGenerateTarget
+      A (v13RealLinearRowTracePrefixRows trace t) i₀ ∧
+    V13RealLinearRowsGenerateTarget
+      A (v13RealLinearRowTracePrefixRows trace (t + 1)) i₀
+
+theorem v13RealLinearRowTrace_not_generate_at_zero {m : Nat}
+    (A : V13F2LinearEquiv m) (i₀ : Fin m)
+    (trace : V13RealLinearRowTrace m) :
+    ¬ V13RealLinearRowsGenerateTarget
+      A (v13RealLinearRowTracePrefixRows trace 0) i₀ := by
+  exact
+    v13RealLinear_not_rowsGenerateTarget_of_rows_card_zero
+      A i₀ (by simp [v13RealLinearRowTracePrefixRows])
+
+theorem v13RealLinearRowTraceNewCaptureCover {m : Nat}
+    (A : V13F2LinearEquiv m) (i₀ : Fin m)
+    (trace : V13RealLinearRowTrace m)
+    (hfinal :
+      V13RealLinearRowsGenerateTarget
+        A (v13RealLinearRowTracePrefixRows trace trace.length) i₀) :
+    ∃ t : Fin trace.length,
+      V13RealLinearRowTraceNewCapture A i₀ trace t := by
+  classical
+  let P : Nat → Prop := fun n =>
+    V13RealLinearRowsGenerateTarget
+      A (v13RealLinearRowTracePrefixRows trace n) i₀
+  have hex : ∃ n : Nat, n ≤ trace.length ∧ P n :=
+    ⟨trace.length, le_rfl, hfinal⟩
+  let n := Nat.find hex
+  have hnSpec : n ≤ trace.length ∧ P n := Nat.find_spec hex
+  have hnotZero : ¬ P 0 := by
+    simpa [P] using v13RealLinearRowTrace_not_generate_at_zero A i₀ trace
+  have hnPos : 0 < n := by
+    by_contra hnot
+    have hnZero : n = 0 := Nat.eq_zero_of_not_pos hnot
+    exact hnotZero (by simpa [hnZero] using hnSpec.2)
+  let tNat := n - 1
+  have htLtLen : tNat < trace.length := by
+    omega
+  refine ⟨⟨tNat, htLtLen⟩, ?_⟩
+  have htLtN : tNat < n := by
+    omega
+  have htSucc : tNat + 1 = n := by
+    omega
+  constructor
+  · intro htGen
+    exact Nat.find_min hex htLtN ⟨le_of_lt htLtLen, htGen⟩
+  · simpa [V13RealLinearRowTraceNewCapture, P, htSucc] using hnSpec.2
+
+theorem v13RealLinearRowTraceNewCaptureCover_of_traceRows {m : Nat}
+    (A : V13F2LinearEquiv m) (i₀ : Fin m)
+    (trace : V13RealLinearRowTrace m)
+    (hfinal :
+      V13RealLinearRowsGenerateTarget
+        A (v13RealLinearRowTraceRows trace) i₀) :
+    ∃ t : Fin trace.length,
+      V13RealLinearRowTraceNewCapture A i₀ trace t := by
+  apply v13RealLinearRowTraceNewCaptureCover A i₀ trace
+  simpa [v13RealLinearRowTracePrefixRows_length] using hfinal
+
 def V13RealLinearAdaptiveQRowExperiment.generated {m q : Nat}
     {Seed : Type*} (E : V13RealLinearAdaptiveQRowExperiment m q Seed)
     (i₀ : Fin m) (omega : V13RealLinearAdaptiveQRowWorld m Seed) : Prop :=
@@ -4682,6 +4780,61 @@ def V13RealLinearAdaptiveDeferredDecisionNewCaptureBound
     V13RealLinearAdaptiveDeferredDecisionNewCaptureCountingBound
       E newCapture
 
+/-- An ordered trace realizes an adaptive branch when its final rowset is the
+branch rowset and its length obeys the read budget.  This records exactly the
+deterministic part of the deferred-decision reduction; freshness bounds are
+separate per-step obligations. -/
+def V13RealLinearAdaptiveQRowTraceRealizesBranchRows
+    {m q : Nat} {Seed : Type*}
+    (E : V13RealLinearAdaptiveQRowExperiment m q Seed)
+    (traceOf :
+      V13RealLinearAdaptiveQRowWorld m Seed → V13RealLinearRowTrace m) :
+    Prop :=
+  ∀ omega : V13RealLinearAdaptiveQRowWorld m Seed,
+    (traceOf omega).length ≤ q ∧
+      E.branchRows omega = v13RealLinearRowTraceRows (traceOf omega)
+
+def V13RealLinearAdaptiveQRowTraceFirstNewCapture
+    {m q : Nat} {Seed : Type*}
+    (E : V13RealLinearAdaptiveQRowExperiment m q Seed)
+    (i₀ : Fin m)
+    (traceOf :
+      V13RealLinearAdaptiveQRowWorld m Seed → V13RealLinearRowTrace m)
+    (t : Fin q) (omega : V13RealLinearAdaptiveQRowWorld m Seed) :
+    Prop :=
+  (t : Nat) < (traceOf omega).length ∧
+    V13RealLinearRowTraceNewCapture
+      (E.sampleA omega.1) i₀ (traceOf omega) t
+
+theorem
+    v13RealLinearAdaptiveDeferredDecisionNewCaptureCover_of_rowTrace
+    {m q : Nat} {Seed : Type*} [Fintype Seed]
+    (E : V13RealLinearAdaptiveQRowExperiment m q Seed)
+    (i₀ : Fin m)
+    (traceOf :
+      V13RealLinearAdaptiveQRowWorld m Seed → V13RealLinearRowTrace m)
+    (htrace :
+      V13RealLinearAdaptiveQRowTraceRealizesBranchRows E traceOf) :
+    V13RealLinearAdaptiveDeferredDecisionNewCaptureCover E i₀
+      (V13RealLinearAdaptiveQRowTraceFirstNewCapture E i₀ traceOf) := by
+  intro omega hgen
+  have hlen : (traceOf omega).length ≤ q := (htrace omega).1
+  have hrows :
+      E.branchRows omega = v13RealLinearRowTraceRows (traceOf omega) :=
+    (htrace omega).2
+  have hfinal :
+      V13RealLinearRowsGenerateTarget
+        (E.sampleA omega.1) (v13RealLinearRowTraceRows (traceOf omega))
+        i₀ := by
+    simpa [V13RealLinearAdaptiveQRowExperiment.generated, hrows] using hgen
+  rcases
+      v13RealLinearRowTraceNewCaptureCover_of_traceRows
+        (E.sampleA omega.1) i₀ (traceOf omega) hfinal with
+    ⟨t, ht⟩
+  have htBudget : (t : Nat) < q := lt_of_lt_of_le t.isLt hlen
+  refine ⟨⟨t, htBudget⟩, ?_⟩
+  exact ⟨t.isLt, ht⟩
+
 theorem
     v13RealLinearAdaptiveDeferredDecisionCountingBound_of_newCapture
     {m q : Nat} {Seed : Type*} [Fintype Seed]
@@ -4753,6 +4906,26 @@ theorem
         (4 * (2 ^ q - 1)) * T :=
     v13RealLinear_sum_fin_deferredDecisionWeights q T
   exact (hmul.trans hsumStep).trans_eq hweights
+
+theorem
+    v13RealLinearAdaptiveDeferredDecisionCountingBound_of_rowTraceNewCapture
+    {m q : Nat} {Seed : Type*} [Fintype Seed]
+    (E : V13RealLinearAdaptiveQRowExperiment m q Seed)
+    (i₀ : Fin m)
+    (traceOf :
+      V13RealLinearAdaptiveQRowWorld m Seed → V13RealLinearRowTrace m)
+    (htrace :
+      V13RealLinearAdaptiveQRowTraceRealizesBranchRows E traceOf)
+    (hstep :
+      V13RealLinearAdaptiveDeferredDecisionNewCaptureCountingBound E
+        (V13RealLinearAdaptiveQRowTraceFirstNewCapture E i₀ traceOf)) :
+    V13RealLinearAdaptiveDeferredDecisionCountingBound E i₀ := by
+  exact
+    v13RealLinearAdaptiveDeferredDecisionCountingBound_of_newCapture E i₀
+      ⟨V13RealLinearAdaptiveQRowTraceFirstNewCapture E i₀ traceOf,
+        v13RealLinearAdaptiveDeferredDecisionNewCaptureCover_of_rowTrace
+          E i₀ traceOf htrace,
+        hstep⟩
 
 theorem v13RealLinearAdaptiveQRowGeneratedMass_le_one
     {m q : Nat} {Seed : Type*} [Fintype Seed]
