@@ -469,6 +469,15 @@ def V13RealLinearSequentialRowObserver.toCausal
       (v13RealLinearSequentialRowTranscriptOf_eq_of_rowsTranscript_eq
         observer hsame').trans hbranchVal
 
+def v13RealLinearUniformSequentialQRowTrace {m q : Nat}
+    (observer : V13RealLinearSequentialRowObserver m q) :
+    V13RealLinearAdaptiveQRowWorld m (V13F2LinearEquiv m) →
+      V13RealLinearRowTrace m :=
+  fun omega =>
+    v13RealLinearSequentialRowTraceOf observer
+      (v13RealLinearPublicInput
+        ({ x := omega.2, A := omega.1 } : V13RealLinearWorld m))
+
 def v13RealLinearRowTracePrefixRows {m : Nat}
     (trace : V13RealLinearRowTrace m) (n : Nat) : Finset (Fin m) :=
   (trace.take n).toFinset
@@ -5428,6 +5437,27 @@ theorem v13RealLinearAdaptiveQRowBranchRowsTrace_realizesBranchRows
   · exact
       (Finset.toList_toFinset (E.branchRows omega)).symm
 
+theorem v13RealLinearUniformSequentialQRowTrace_realizesBranchRows
+    {m q : Nat} (observer : V13RealLinearSequentialRowObserver m q) :
+    V13RealLinearAdaptiveQRowTraceRealizesBranchRows
+      (v13RealLinearUniformCausalQRowExperiment observer.toCausal)
+      (v13RealLinearUniformSequentialQRowTrace observer) := by
+  intro omega
+  constructor
+  · rw [v13RealLinearUniformSequentialQRowTrace,
+      v13RealLinearSequentialRowTraceOf_length]
+  · simp [v13RealLinearUniformSequentialQRowTrace,
+      v13RealLinearSequentialRowTraceOf, v13RealLinearRowTraceRows,
+      v13RealLinearSequentialRowTranscriptRows,
+      V13RealLinearAdaptiveQRowExperiment.branchRows,
+      V13RealLinearAdaptiveQRowExperiment.branch,
+      V13RealLinearAdaptiveQRowExperiment.world,
+      V13RealLinearCausalRowObserver.staticBranch,
+      V13RealLinearCausalRowObserver.toAdaptive,
+      V13RealLinearSequentialRowObserver.toCausal,
+      v13RealLinearUniformCausalQRowExperiment,
+      v13RealLinearUniformQRowExperiment]
+
 def V13RealLinearAdaptiveQRowTraceFirstNewCapture
     {m q : Nat} {Seed : Type*}
     (E : V13RealLinearAdaptiveQRowExperiment m q Seed)
@@ -6041,6 +6071,13 @@ def V13RealLinearUniformCausalDeferredDecisionTraceCosetHitCountingBound
     (v13RealLinearUniformCausalQRowExperiment observer) i₀
     (v13RealLinearUniformCausalQRowBranchRowsTrace observer)
 
+def V13RealLinearUniformSequentialDeferredDecisionTraceCosetHitCountingBound
+    {m q : Nat} (observer : V13RealLinearSequentialRowObserver m q)
+    (i₀ : Fin m) : Prop :=
+  V13RealLinearAdaptiveQRowTraceCosetHitCountingBound
+    (v13RealLinearUniformCausalQRowExperiment observer.toCausal) i₀
+    (v13RealLinearUniformSequentialQRowTrace observer)
+
 theorem
     V13RealLinearUniformCausalDeferredDecisionCountingBound_of_traceCosetHit
     {m q : Nat} (observer : V13RealLinearCausalRowObserver m q)
@@ -6054,6 +6091,21 @@ theorem
     (v13RealLinearUniformCausalQRowBranchRowsTrace observer)
     (v13RealLinearUniformCausalQRowBranchRowsTrace_realizesBranchRows
       observer)
+    hcoset
+
+theorem
+    V13RealLinearUniformSequentialDeferredDecisionCountingBound_of_traceCosetHit
+    {m q : Nat} (observer : V13RealLinearSequentialRowObserver m q)
+    (i₀ : Fin m)
+    (hcoset :
+      V13RealLinearUniformSequentialDeferredDecisionTraceCosetHitCountingBound
+        observer i₀) :
+    V13RealLinearUniformCausalDeferredDecisionCountingBound
+      observer.toCausal i₀ :=
+  v13RealLinearAdaptiveDeferredDecisionCountingBound_of_rowTraceCosetHit
+    (v13RealLinearUniformCausalQRowExperiment observer.toCausal) i₀
+    (v13RealLinearUniformSequentialQRowTrace observer)
+    (v13RealLinearUniformSequentialQRowTrace_realizesBranchRows observer)
     hcoset
 
 theorem
@@ -6106,6 +6158,26 @@ theorem
       observer i₀
       (V13RealLinearUniformCausalDeferredDecisionCountingBound_of_newCapture
         observer i₀ hnew)
+
+noncomputable def v13RealLinearUniformSequentialQRowSuccess
+    {m q : Nat} (observer : V13RealLinearSequentialRowObserver m q)
+    (i₀ : Fin m) : Rat :=
+  v13RealLinearUniformCausalQRowSuccess observer.toCausal i₀
+
+theorem
+    v13RealLinear_uniform_sequential_qrow_success_bound_of_deferredDecisionTraceCosetHit
+    {m q : Nat} (observer : V13RealLinearSequentialRowObserver m q)
+    (i₀ : Fin m)
+    (hcoset :
+      V13RealLinearUniformSequentialDeferredDecisionTraceCosetHitCountingBound
+        observer i₀) :
+    v13RealLinearUniformSequentialQRowSuccess observer i₀ ≤
+      (1 / 2 : Rat) + v13RealLinearQRowDeferredDecisionEpsilon q m := by
+  exact
+    v13RealLinear_uniform_causal_qrow_success_bound_of_deferredDecisionCounting
+      observer.toCausal i₀
+      (V13RealLinearUniformSequentialDeferredDecisionCountingBound_of_traceCosetHit
+        observer i₀ hcoset)
 
 theorem v13RealLinear_uniform_zero_row_success_bound
     {m : Nat} (observer : V13RealLinearAdaptiveRowObserver m 0)
