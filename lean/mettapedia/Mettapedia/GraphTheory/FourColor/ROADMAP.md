@@ -297,9 +297,12 @@ The last-gadget non-glued branch now has reusable last-occurrence transport
 facts: shifted-component membership is identified with local occurrence `0`,
 edge colors over `pref ++ [last]` reduce to the singleton last-gadget color,
 and non-glued last edges are their own chain-canonical representatives.  The
-remaining work is to apply these facts to the specified switched-color
-agreement in
-`concreteChainFiberAppendRelativeSingletonShiftedSwitchLastNonGluedPointClosed`.
+specified switched-color agreement for this branch is now closed by
+`concreteChainFiberAppendRelativeSingletonShiftedSwitchLastNonGluedPointClosed_of_local_specified`.
+The switch-agreement hook therefore reduces to the prefix-edge and glued-input
+edge cases via
+`concreteChainFiberAppendRelativeSingletonShiftedSwitchAgreementClosed_of_prefix_and_glued`;
+component confinement remains separate.
 The closure-under-step side is now reduced by
 `concreteChainFiberAppendRelativeSingletonGlobalStepClosureClosed_of_bounded_saturation`
 to the pure closure-iterator lemma
