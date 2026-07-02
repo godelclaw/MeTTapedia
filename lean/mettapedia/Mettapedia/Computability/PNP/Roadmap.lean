@@ -156,7 +156,7 @@ def currentPNPRoadmap : List PNPRoadmapEntry :=
       progressPercent := 100
       itvLowerPercent := 86
       itvUpperPercent := 100
-      obligation := "Use the parameterized Phase E family as the current scaled endpoint: seven combinatorial obligations discharge at scale, while safeQSSM and boundaryMixing are bounded-class results for PhaseEScaledTargetBlindPayloadObserver." },
+      obligation := "Treat the parameterized Phase E family as inadmissible for the architecture: a single public targetLock coordinate determines the target, so its obligation map is re-tagged familyInadmissible." },
     { stage := .v13ObserverLadder
       proofNodeKey := "pnp.v13.phase-e.observer-ladder-mark"
       status := .checked
@@ -367,7 +367,7 @@ theorem currentPNPRoadmap_records_v13_phase_e_scaled :
        itvLowerPercent := 86
        itvUpperPercent := 100
        obligation :=
-        "Use the parameterized Phase E family as the current scaled endpoint: seven combinatorial obligations discharge at scale, while safeQSSM and boundaryMixing are bounded-class results for PhaseEScaledTargetBlindPayloadObserver." } :
+        "Treat the parameterized Phase E family as inadmissible for the architecture: a single public targetLock coordinate determines the target, so its obligation map is re-tagged familyInadmissible." } :
       PNPRoadmapEntry) ∈ currentPNPRoadmap := by
   simp [currentPNPRoadmap]
 

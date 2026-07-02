@@ -177,6 +177,38 @@ def phaseEScaledPublicInput {m k : Nat}
   tailLock := omega.tail
   vvRhs := phaseEScaledVVRhs omega
 
+def phaseEScaledPublicTargetLockCoordinate {m k : Nat}
+    (publicInput : PhaseEScaledPublic m k) : Bool :=
+  publicInput.targetLock
+
+theorem phaseEScaled_publicTargetLockCoordinate_determines_target
+    (m k : Nat) :
+    ∀ omega : PhaseEScaledWorld m k,
+      phaseEScaledPublicTargetLockCoordinate
+          (phaseEScaledPublicInput omega) =
+        phaseEScaledTarget omega := by
+  intro omega
+  rfl
+
+theorem phaseEScaled_exists_single_public_coordinate_determines_target
+    (m k : Nat) :
+    ∃ coordinate : PhaseEScaledPublic m k -> Bool,
+      ∀ omega : PhaseEScaledWorld m k,
+        coordinate (phaseEScaledPublicInput omega) =
+          phaseEScaledTarget omega := by
+  exact
+    ⟨phaseEScaledPublicTargetLockCoordinate,
+      phaseEScaled_publicTargetLockCoordinate_determines_target m k⟩
+
+def PhaseEScaledPublicTargetTagViolation (m k : Nat) : Prop :=
+  ∃ coordinate : PhaseEScaledPublic m k -> Bool,
+    ∀ omega : PhaseEScaledWorld m k,
+      coordinate (phaseEScaledPublicInput omega) = phaseEScaledTarget omega
+
+theorem phaseEScaled_familyInadmissible_publicTargetTag (m k : Nat) :
+    PhaseEScaledPublicTargetTagViolation m k :=
+  phaseEScaled_exists_single_public_coordinate_determines_target m k
+
 def phaseEScaledVVAccept {m k : Nat} (omega : PhaseEScaledWorld m k) : Prop :=
   ∀ r : Fin k,
     ((phaseEScaledTarget omega != phaseEScaledGaugeBit omega) !=
@@ -527,6 +559,7 @@ inductive PhaseEScaledObligationStatus where
   | dischargedAtScale
   | boundedClass
   | iffHardCore
+  | familyInadmissible
   | failed
   | pinnedOpen
 deriving DecidableEq, Repr
@@ -539,62 +572,63 @@ structure PhaseEScaledObligationRow where
 deriving Repr
 
 /-- Scaled obligation map for the Phase E family.  Rows marked
-`boundedClass` use the explicitly named `PhaseEScaledTargetBlindPayloadObserver`
-class; no row claims a full unrestricted hard-core theorem. -/
+`familyInadmissible` are not usable as evidence for the architecture because
+`phaseEScaled_familyInadmissible_publicTargetTag` proves a single public
+coordinate determines the target. -/
 def phaseEScaledObligationMap : List PhaseEScaledObligationRow := [
   {
     fieldName := "singleMessage"
-    status := .dischargedAtScale
-    theoremName := "phaseEScaled_singleMessage"
-    finding := "The public locked instance includes the target lock, so equal full public inputs fix the target."
+    status := .familyInadmissible
+    theoremName := "phaseEScaled_familyInadmissible_publicTargetTag"
+    finding := "Family inadmissible: the public targetLock coordinate itself determines the target."
   },
   {
     fieldName := "noPublicTargetTags"
-    status := .dischargedAtScale
-    theoremName := "phaseEScaled_noPublicTargetTags"
-    finding := "The neutral skeleton is target-blind and has an explicit opposite pair."
+    status := .familyInadmissible
+    theoremName := "phaseEScaled_familyInadmissible_publicTargetTag"
+    finding := "Family inadmissible: the full public input contains a target tag, even though the neutral skeleton is target-blind."
   },
   {
     fieldName := "atomCompleteness"
-    status := .dischargedAtScale
-    theoremName := "phaseEScaled_atomCompleteness"
-    finding := "CD-ENF semantic preservation applies uniformly for every m and k."
+    status := .familyInadmissible
+    theoremName := "phaseEScaled_familyInadmissible_publicTargetTag"
+    finding := "CD-ENF preservation remains true, but this family cannot certify the architecture."
   },
   {
     fieldName := "gaugeFaithfulness"
-    status := .dischargedAtScale
-    theoremName := "phaseEScaled_gaugeFaithfulness"
-    finding := "Gauge leaves normalize to the same hidden-gauge satisfaction predicate."
+    status := .familyInadmissible
+    theoremName := "phaseEScaled_familyInadmissible_publicTargetTag"
+    finding := "Gauge faithfulness remains true, but the family is invalidated by a public target tag."
   },
   {
     fieldName := "hiddenGaugeProduct"
-    status := .dischargedAtScale
-    theoremName := "phaseEScaled_hiddenGaugeProduct"
-    finding := "The gauge layer is hidden in the evidence semantics and is product-satisfied."
+    status := .familyInadmissible
+    theoremName := "phaseEScaled_familyInadmissible_publicTargetTag"
+    finding := "The hidden-gauge product does not repair the exposed public targetLock coordinate."
   },
   {
     fieldName := "boundedGaugeIncidence"
-    status := .dischargedAtScale
-    theoremName := "phaseEScaled_boundedGaugeIncidence"
-    finding := "Every gauge coordinate has incidence one."
+    status := .familyInadmissible
+    theoremName := "phaseEScaled_familyInadmissible_publicTargetTag"
+    finding := "Gauge incidence remains bounded, but the family is inadmissible."
   },
   {
     fieldName := "admissibleHistories"
-    status := .dischargedAtScale
-    theoremName := "phaseEScaled_admissibleHistories"
-    finding := "The Unit history field is balanced; the target/gauge parity core also cites KernelFlip exact neutrality."
+    status := .familyInadmissible
+    theoremName := "phaseEScaled_familyInadmissible_publicTargetTag"
+    finding := "Balanced histories on this surface do not offset the public target tag."
   },
   {
     fieldName := "safeQSSM"
-    status := .boundedClass
-    theoremName := "phaseEScaled_safeQSSM_boundedClass"
-    finding := "Discharged for target-blind safe reads in the named bounded class."
+    status := .familyInadmissible
+    theoremName := "phaseEScaled_familyInadmissible_publicTargetTag"
+    finding := "The prior bounded-class result was target-blind and cannot certify the inadmissible full-public family."
   },
   {
     fieldName := "boundaryMixing"
-    status := .boundedClass
-    theoremName := "phaseEScaled_boundaryMixing_boundedClass"
-    finding := "Every target-blind payload observer has exact half success."
+    status := .familyInadmissible
+    theoremName := "phaseEScaled_familyInadmissible_publicTargetTag"
+    finding := "The target-blind payload half-bound is not a boundary-mixing theorem for the inadmissible full-public family."
   }
 ]
 
@@ -608,6 +642,16 @@ theorem phaseEScaledObligationMap_has_no_failures :
   simp [phaseEScaledObligationMap] at hmem
   rcases hmem with h | h | h | h | h | h | h | h | h
   all_goals subst row; decide
+
+theorem phaseEScaledObligationMap_all_familyInadmissible :
+    ∀ row ∈ phaseEScaledObligationMap,
+      row.status = .familyInadmissible := by
+  intro row hmem
+  simp [phaseEScaledObligationMap] at hmem
+  rcases hmem with h | h | h | h | h | h | h | h | h
+  all_goals
+    subst row
+    rfl
 
 def PhaseEScaledAllMappedObligations (m k : Nat) : Prop :=
     PhaseEScaledSevenCombinatorialObligations m k ∧
