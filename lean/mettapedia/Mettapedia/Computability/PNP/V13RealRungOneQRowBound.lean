@@ -239,6 +239,65 @@ def v13RealLinearRowTraceRows {m : Nat}
     (trace : V13RealLinearRowTrace m) : Finset (Fin m) :=
   trace.toFinset
 
+abbrev V13RealLinearSequentialRowTranscript (m : Nat) :=
+  List (Fin m × V13RealLinearRowView m)
+
+/-- A sequential q-row observer chooses each next row from the ordered
+transcript already read, then decides from the final ordered transcript. -/
+structure V13RealLinearSequentialRowObserver (m q : Nat) where
+  chooseRow : V13RealLinearSequentialRowTranscript m → Fin m
+  decideFromTranscript : V13RealLinearSequentialRowTranscript m → ZMod 2
+
+def v13RealLinearSequentialRowRunAux {m q : Nat}
+    (observer : V13RealLinearSequentialRowObserver m q)
+    (publicInput : V13RealLinearPublic m) :
+    Nat → V13RealLinearSequentialRowTranscript m →
+      V13RealLinearSequentialRowTranscript m
+  | 0, transcript => transcript
+  | n + 1, transcript =>
+      let row := observer.chooseRow transcript
+      v13RealLinearSequentialRowRunAux observer publicInput n
+        (transcript ++ [(row, v13RealLinearRowView row publicInput)])
+
+def v13RealLinearSequentialRowTranscriptOf {m q : Nat}
+    (observer : V13RealLinearSequentialRowObserver m q)
+    (publicInput : V13RealLinearPublic m) :
+    V13RealLinearSequentialRowTranscript m :=
+  v13RealLinearSequentialRowRunAux observer publicInput q []
+
+def v13RealLinearSequentialRowTraceOf {m q : Nat}
+    (observer : V13RealLinearSequentialRowObserver m q)
+    (publicInput : V13RealLinearPublic m) :
+    V13RealLinearRowTrace m :=
+  (v13RealLinearSequentialRowTranscriptOf observer publicInput).map Prod.fst
+
+theorem v13RealLinearSequentialRowRunAux_length
+    {m q : Nat} (observer : V13RealLinearSequentialRowObserver m q)
+    (publicInput : V13RealLinearPublic m) (n : Nat)
+    (transcript : V13RealLinearSequentialRowTranscript m) :
+    (v13RealLinearSequentialRowRunAux observer publicInput n transcript).length =
+      transcript.length + n := by
+  induction n generalizing transcript with
+  | zero =>
+      simp [v13RealLinearSequentialRowRunAux]
+  | succ n ih =>
+      simp [v13RealLinearSequentialRowRunAux, ih, Nat.add_assoc,
+        Nat.add_comm]
+
+theorem v13RealLinearSequentialRowTranscriptOf_length
+    {m q : Nat} (observer : V13RealLinearSequentialRowObserver m q)
+    (publicInput : V13RealLinearPublic m) :
+    (v13RealLinearSequentialRowTranscriptOf observer publicInput).length = q := by
+  simpa [v13RealLinearSequentialRowTranscriptOf] using
+    v13RealLinearSequentialRowRunAux_length observer publicInput q []
+
+theorem v13RealLinearSequentialRowTraceOf_length
+    {m q : Nat} (observer : V13RealLinearSequentialRowObserver m q)
+    (publicInput : V13RealLinearPublic m) :
+    (v13RealLinearSequentialRowTraceOf observer publicInput).length = q := by
+  simp [v13RealLinearSequentialRowTraceOf,
+    v13RealLinearSequentialRowTranscriptOf_length]
+
 def v13RealLinearRowTracePrefixRows {m : Nat}
     (trace : V13RealLinearRowTrace m) (n : Nat) : Finset (Fin m) :=
   (trace.take n).toFinset
