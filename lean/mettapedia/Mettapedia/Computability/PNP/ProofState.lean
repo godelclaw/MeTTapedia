@@ -24,6 +24,7 @@ import Mettapedia.Computability.PNP.V13GaugeBufferedLockedInterface
 import Mettapedia.Computability.PNP.V13ObserverLadder
 import Mettapedia.Computability.PNP.V13PhaseEConcrete
 import Mettapedia.Computability.PNP.V13PhaseEScaled
+import Mettapedia.Computability.PNP.V13RealRungOneAdaptiveRows
 import Mettapedia.Computability.PNP.V13RealRungOneLinear
 import Mettapedia.Computability.PNP.V13RealRungOneRowObservers
 import Mettapedia.Computability.PNP.V13RealRungOneStaticRows
@@ -1091,6 +1092,19 @@ theorem currentPNPV13RealRungOneStaticRows_node :
   exact
     v13RealLinear_staticRows_correct_card_eq_incorrect_card_of_not_blocked
       observer A i₀ hnot
+
+theorem currentPNPV13RealRungOneAdaptiveRows_node :
+    ∀ {m q : Nat} (observer : V13RealLinearAdaptiveRowObserver m q)
+      (A : V13F2LinearEquiv m) (i₀ : Fin m) (b : observer.Branch),
+      ¬ V13RealLinearRowsBlockTarget A (observer.staticBranch b).rows i₀ →
+        Fintype.card
+            (V13RealLinearAdaptiveBranchCorrect observer A i₀ b) =
+          Fintype.card
+            (V13RealLinearAdaptiveBranchIncorrect observer A i₀ b) := by
+  intro m q observer A i₀ b hnot
+  exact
+    v13RealLinear_adaptiveBranch_correct_card_eq_incorrect_card_of_not_blocked
+      observer A i₀ b hnot
 
 theorem currentPNPV13ObserverLadder_node :
     PhaseEScaledObserverLadderMark ∧

@@ -17,6 +17,7 @@ import Mettapedia.Computability.PNP.V13FaithfulnessAuditRegression
 import Mettapedia.Computability.PNP.V13GaugeBufferedLockedInterfaceRegression
 import Mettapedia.Computability.PNP.V13PhaseEConcreteRegression
 import Mettapedia.Computability.PNP.V13PhaseEScaledRegression
+import Mettapedia.Computability.PNP.V13RealRungOneAdaptiveRowsRegression
 import Mettapedia.Computability.PNP.V13RealRungOneLinearRegression
 import Mettapedia.Computability.PNP.V13RealRungOneRowObserversRegression
 import Mettapedia.Computability.PNP.V13RealRungOneStaticRowsRegression

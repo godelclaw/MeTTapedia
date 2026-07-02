@@ -24,6 +24,7 @@ inductive PNPRoadmapStage where
   | v13FaithfulnessAudit
   | v13PhaseEConcrete
   | v13PhaseEScaled
+  | v13RealRungOneAdaptiveRows
   | v13RealRungOneLinear
   | v13RealRungOneRowObservers
   | v13RealRungOneStaticRows
@@ -184,6 +185,14 @@ def currentPNPRoadmap : List PNPRoadmapEntry :=
       itvLowerPercent := 90
       itvUpperPercent := 100
       obligation := "Use the fixed-branch theorem: any static row observer whose rows do not block the target has exactly paired correct and incorrect hidden witnesses by kernel flip. The remaining q-row theorem is the adaptive row-span counting lift." },
+    { stage := .v13RealRungOneAdaptiveRows
+      proofNodeKey := "pnp.v13.real-rung-one.adaptive-branch-exact-half"
+      status := .replacementOpened
+      truthValue := ⟨100, 91⟩
+      progressPercent := 80
+      itvLowerPercent := 91
+      itvUpperPercent := 100
+      obligation := "Use the adaptive branch-stability theorem: every realized non-blocked adaptive branch has paired correct and incorrect hidden witnesses. The remaining q-row theorem is the row-span counting bound for blocked branches." },
     { stage := .v13ObserverLadder
       proofNodeKey := "pnp.v13.phase-e.observer-ladder-mark"
       status := .checked
@@ -434,6 +443,19 @@ theorem currentPNPRoadmap_records_v13_real_rung_one_static_rows :
        itvUpperPercent := 100
        obligation :=
         "Use the fixed-branch theorem: any static row observer whose rows do not block the target has exactly paired correct and incorrect hidden witnesses by kernel flip. The remaining q-row theorem is the adaptive row-span counting lift." } :
+      PNPRoadmapEntry) ∈ currentPNPRoadmap := by
+  simp [currentPNPRoadmap]
+
+theorem currentPNPRoadmap_records_v13_real_rung_one_adaptive_rows :
+    ({ stage := PNPRoadmapStage.v13RealRungOneAdaptiveRows
+       proofNodeKey := "pnp.v13.real-rung-one.adaptive-branch-exact-half"
+       status := .replacementOpened
+       truthValue := ⟨100, 91⟩
+       progressPercent := 80
+       itvLowerPercent := 91
+       itvUpperPercent := 100
+       obligation :=
+        "Use the adaptive branch-stability theorem: every realized non-blocked adaptive branch has paired correct and incorrect hidden witnesses. The remaining q-row theorem is the row-span counting bound for blocked branches." } :
       PNPRoadmapEntry) ∈ currentPNPRoadmap := by
   simp [currentPNPRoadmap]
 
