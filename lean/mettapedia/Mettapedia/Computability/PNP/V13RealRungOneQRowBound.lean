@@ -1,5 +1,6 @@
 import Mettapedia.Computability.PNP.V13RealRungOneAdaptiveRows
 import Mathlib.LinearAlgebra.Dual.Lemmas
+import Mathlib.LinearAlgebra.Matrix.GeneralLinearGroup.Card
 
 /-!
 # PNP v13 real rung one: q-row bound assembly
@@ -49,6 +50,253 @@ noncomputable instance v13F2LinearEquivFintype (m : Nat) :
           intro A
           cases A
           rfl }
+
+noncomputable def v13F2LinearEquivToLinearEquiv {m : Nat}
+    (A : V13F2LinearEquiv m) : F2Vec m ≃ₗ[ZMod 2] F2Vec m := by
+  let f : F2Vec m →+ F2Vec m :=
+    { toFun := A.toEquiv
+      map_zero' := by
+        change A.toEquiv (f2ZeroVec m) = f2ZeroVec m
+        exact A.map_zero
+      map_add' := by
+        intro x y
+        change A.toEquiv (f2AddVec x y) =
+          f2AddVec (A.toEquiv x) (A.toEquiv y)
+        exact A.map_add x y }
+  exact
+    LinearEquiv.ofBijective (f.toZModLinearMap 2)
+      ⟨by
+        intro x y h
+        exact A.toEquiv.injective h,
+       by
+        intro y
+        exact ⟨A.toEquiv.symm y, by simp [f]⟩⟩
+
+noncomputable def v13F2LinearEquivLinearEquivEquiv (m : Nat) :
+    V13F2LinearEquiv m ≃ (F2Vec m ≃ₗ[ZMod 2] F2Vec m) where
+  toFun := v13F2LinearEquivToLinearEquiv
+  invFun := fun e =>
+    { toEquiv := e.toEquiv
+      map_add := by
+        intro x y
+        change e (x + y) = e x + e y
+        exact e.map_add x y
+      map_zero := by
+        change e 0 = 0
+        exact e.map_zero }
+  left_inv := by
+    intro A
+    apply v13RealLinearEquiv_ext
+    intro x
+    rfl
+  right_inv := by
+    intro e
+    ext x
+    rfl
+
+noncomputable def v13F2LinearEquivGLEquiv (m : Nat) :
+    GL (Fin m) (ZMod 2) ≃ V13F2LinearEquiv m :=
+  ((Matrix.GeneralLinearGroup.toLin (n := Fin m) (R := ZMod 2)).toEquiv.trans
+    (LinearMap.GeneralLinearGroup.generalLinearEquiv
+      (ZMod 2) (F2Vec m)).toEquiv).trans
+    (v13F2LinearEquivLinearEquivEquiv m).symm
+
+theorem v13F2LinearEquiv_card_eq_gl (m : Nat) :
+    Fintype.card (V13F2LinearEquiv m) =
+      Nat.card (GL (Fin m) (ZMod 2)) := by
+  rw [Nat.card_eq_fintype_card]
+  exact (Fintype.card_congr (v13F2LinearEquivGLEquiv m)).symm
+
+theorem v13F2LinearEquiv_card_formula (m : Nat) :
+    Fintype.card (V13F2LinearEquiv m) =
+      ∏ i : Fin m, (2 ^ m - 2 ^ (i : Nat)) := by
+  rw [v13F2LinearEquiv_card_eq_gl]
+  rw [Matrix.card_GL_field (𝔽 := ZMod 2) m]
+  simp
+
+theorem v13F2LinearEquiv_card_formula_rat (m : Nat) :
+    (Fintype.card (V13F2LinearEquiv m) : Rat) =
+      ∏ i ∈ Finset.range m, ((2 : Rat) ^ m - (2 : Rat) ^ i) := by
+  rw [v13F2LinearEquiv_card_formula]
+  rw [Fin.prod_univ_eq_prod_range
+    (fun i : Nat => 2 ^ m - 2 ^ i) m]
+  rw [Nat.cast_prod]
+  apply Finset.prod_congr rfl
+  intro i hi
+  have hle : 2 ^ i ≤ 2 ^ m :=
+    Nat.pow_le_pow_right (by norm_num : 0 < 2)
+      (Nat.le_of_lt (Finset.mem_range.mp hi))
+  rw [Nat.cast_sub hle]
+  norm_num
+
+theorem v13RealLinear_one_sub_sum_le_prod_one_sub
+    {α : Type*} (s : Finset α) (f : α → Rat) :
+    (∀ a ∈ s, 0 ≤ f a) →
+    (∀ a ∈ s, f a ≤ 1) →
+    1 - ∑ a ∈ s, f a ≤ ∏ a ∈ s, (1 - f a) := by
+  classical
+  refine Finset.induction_on s ?base ?step
+  · intro _ _
+    simp
+  · intro a s ha ih hnonneg hleone
+    have hnonnegS : ∀ b ∈ s, 0 ≤ f b := by
+      intro b hb
+      exact hnonneg b (Finset.mem_insert_of_mem hb)
+    have hleoneS : ∀ b ∈ s, f b ≤ 1 := by
+      intro b hb
+      exact hleone b (Finset.mem_insert_of_mem hb)
+    have ih' := ih hnonnegS hleoneS
+    have hfa0 : 0 ≤ f a := hnonneg a (Finset.mem_insert_self a s)
+    have hfa1 : f a ≤ 1 := hleone a (Finset.mem_insert_self a s)
+    have hfactor0 : 0 ≤ 1 - f a := by
+      linarith
+    have hsum0 : 0 ≤ ∑ b ∈ s, f b := by
+      exact Finset.sum_nonneg fun b hb => hnonnegS b hb
+    have hmul :
+        (1 - ∑ b ∈ s, f b) * (1 - f a) ≤
+          (∏ b ∈ s, (1 - f b)) * (1 - f a) := by
+      exact mul_le_mul_of_nonneg_right ih' hfactor0
+    calc
+      1 - ∑ b ∈ insert a s, f b =
+          1 - (f a + ∑ b ∈ s, f b) := by
+        simp [ha]
+      _ ≤ (1 - ∑ b ∈ s, f b) * (1 - f a) := by
+        nlinarith
+      _ ≤ (∏ b ∈ s, (1 - f b)) * (1 - f a) := hmul
+      _ = ∏ b ∈ insert a s, (1 - f b) := by
+        simp [ha, mul_comm]
+
+theorem v13RealLinear_sum_range_half_pow_tail (n : Nat) :
+    (∑ j ∈ Finset.range n, ((1 / 2 : Rat) ^ (j + 3))) =
+      (1 / 4 : Rat) - (1 / 2 : Rat) ^ (n + 2) := by
+  induction n with
+  | zero =>
+      norm_num
+  | succ n ih =>
+      rw [Finset.sum_range_succ, ih]
+      ring_nf
+
+theorem v13RealLinear_sum_range_half_pow_tail_le (n : Nat) :
+    (∑ j ∈ Finset.range n, ((1 / 2 : Rat) ^ (j + 3))) ≤
+      (1 / 4 : Rat) := by
+  rw [v13RealLinear_sum_range_half_pow_tail]
+  have hnonneg : 0 ≤ (1 / 2 : Rat) ^ (n + 2) := by
+    positivity
+  linarith
+
+theorem v13RealLinear_tail_product_ge_three_quarters (n : Nat) :
+    (3 / 4 : Rat) ≤
+      ∏ j ∈ Finset.range n, (1 - (1 / 2 : Rat) ^ (j + 3)) := by
+  let f : Nat → Rat := fun j => (1 / 2 : Rat) ^ (j + 3)
+  have hprod :=
+    v13RealLinear_one_sub_sum_le_prod_one_sub (Finset.range n) f
+      (by
+        intro j _hj
+        dsimp [f]
+        positivity)
+      (by
+        intro j _hj
+        dsimp [f]
+        exact
+          pow_le_one₀ (by norm_num : (0 : Rat) ≤ 1 / 2)
+            (by norm_num : (1 / 2 : Rat) ≤ 1))
+  have hsum := v13RealLinear_sum_range_half_pow_tail_le n
+  calc
+    (3 / 4 : Rat) ≤ 1 - ∑ j ∈ Finset.range n, f j := by
+      dsimp [f]
+      linarith
+    _ ≤ ∏ j ∈ Finset.range n, (1 - f j) := hprod
+    _ = ∏ j ∈ Finset.range n, (1 - (1 / 2 : Rat) ^ (j + 3)) := rfl
+
+theorem v13RealLinear_gl_density_shifted_product_ge_quarter (m : Nat) :
+    (1 / 4 : Rat) ≤
+      ∏ j ∈ Finset.range m, (1 - (1 / 2 : Rat) ^ (j + 1)) := by
+  rcases m with _ | m
+  · norm_num
+  rcases m with _ | m
+  · norm_num
+  rcases m with _ | n
+  · norm_num
+  have htail := v13RealLinear_tail_product_ge_three_quarters (n + 1)
+  calc
+    (1 / 4 : Rat) ≤ (1 / 2) * (3 / 4) * (3 / 4) := by
+      norm_num
+    _ ≤ (1 / 2) * (3 / 4) *
+        (∏ j ∈ Finset.range (n + 1),
+          (1 - (1 / 2 : Rat) ^ (j + 3))) := by
+      nlinarith
+    _ = ∏ j ∈ Finset.range (n + 3),
+        (1 - (1 / 2 : Rat) ^ (j + 1)) := by
+      rw [Finset.prod_range_succ'
+        (fun j => 1 - (1 / 2 : Rat) ^ (j + 1)) (n + 2)]
+      rw [Finset.prod_range_succ'
+        (fun j => 1 - (1 / 2 : Rat) ^ (j + 1 + 1)) (n + 1)]
+      ring_nf
+
+theorem v13RealLinear_half_pow_reflect {m j : Nat} (hj : j < m) :
+    ((2 : Rat) ^ (m - 1 - j)) / ((2 : Rat) ^ m) =
+      (1 / 2 : Rat) ^ (j + 1) := by
+  have hm : m = (m - 1 - j) + (j + 1) := by
+    omega
+  nth_rewrite 2 [hm]
+  rw [pow_add]
+  field_simp [pow_ne_zero _ (by norm_num : (2 : Rat) ≠ 0)]
+  rw [← mul_pow]
+  norm_num
+
+theorem v13RealLinear_gl_density_product_ge_quarter (m : Nat) :
+    (1 / 4 : Rat) ≤
+      ∏ i ∈ Finset.range m,
+        (1 - ((2 : Rat) ^ i) / ((2 : Rat) ^ m)) := by
+  have hshift := v13RealLinear_gl_density_shifted_product_ge_quarter m
+  calc
+    (1 / 4 : Rat) ≤
+        ∏ j ∈ Finset.range m, (1 - (1 / 2 : Rat) ^ (j + 1)) := hshift
+    _ = ∏ j ∈ Finset.range m,
+        (1 - ((2 : Rat) ^ (m - 1 - j)) / ((2 : Rat) ^ m)) := by
+      apply Finset.prod_congr rfl
+      intro j hj
+      rw [v13RealLinear_half_pow_reflect (Finset.mem_range.mp hj)]
+    _ = ∏ i ∈ Finset.range m,
+        (1 - ((2 : Rat) ^ i) / ((2 : Rat) ^ m)) := by
+      exact Finset.prod_range_reflect
+        (fun i => 1 - ((2 : Rat) ^ i) / ((2 : Rat) ^ m)) m
+
+theorem v13RealLinear_density_times_full_product (m : Nat) :
+    ((2 : Rat) ^ (m * m)) *
+        (∏ i ∈ Finset.range m,
+          (1 - ((2 : Rat) ^ i) / ((2 : Rat) ^ m))) =
+      ∏ i ∈ Finset.range m,
+        ((2 : Rat) ^ m - (2 : Rat) ^ i) := by
+  have hpow : (2 : Rat) ^ (m * m) = ((2 : Rat) ^ m) ^ m := by
+    rw [pow_mul]
+  rw [hpow]
+  have hconst :
+      ((2 : Rat) ^ m) ^ m =
+        ∏ _i ∈ Finset.range m, ((2 : Rat) ^ m) := by
+    rw [Finset.prod_const, Finset.card_range]
+  rw [hconst]
+  rw [← Finset.prod_mul_distrib]
+  apply Finset.prod_congr rfl
+  intro _i _hi
+  have hden : (2 : Rat) ^ m ≠ 0 :=
+    pow_ne_zero _ (by norm_num : (2 : Rat) ≠ 0)
+  field_simp [hden]
+
+theorem v13F2LinearEquiv_card_density_quarter (m : Nat) :
+    2 ^ (m * m) ≤ 4 * Fintype.card (V13F2LinearEquiv m) := by
+  have hden := v13RealLinear_gl_density_product_ge_quarter m
+  have hscaleNonneg : 0 ≤ (4 : Rat) * (2 : Rat) ^ (m * m) := by
+    positivity
+  have hmul := mul_le_mul_of_nonneg_left hden hscaleNonneg
+  have hprod := v13RealLinear_density_times_full_product m
+  have hcard := v13F2LinearEquiv_card_formula_rat m
+  have hrat :
+      ((2 ^ (m * m) : Nat) : Rat) ≤
+        ((4 * Fintype.card (V13F2LinearEquiv m) : Nat) : Rat) := by
+    norm_num at hmul ⊢
+    nlinarith
+  exact_mod_cast hrat
 
 def v13RealLinearUniformQRowExperiment {m q : Nat}
     (observer : V13RealLinearAdaptiveRowObserver m q) :
@@ -1116,6 +1364,36 @@ def v13RealLinearRowFunctionalTableOfEquiv {m : Nat}
     (A : V13F2LinearEquiv m) :
     V13RealLinearRowFunctionalTable m :=
   fun row => v13RealLinearRowFunctional A row
+
+theorem v13RealLinearRowFunctionalTable_card (m : Nat) :
+    Fintype.card (V13RealLinearRowFunctionalTable m) = 2 ^ (m * m) := by
+  have hfun :
+      Fintype.card (Fin m → (F2Vec m →ₗ[ZMod 2] ZMod 2)) =
+        Fintype.card (F2Vec m →ₗ[ZMod 2] ZMod 2) ^
+          Fintype.card (Fin m) := by
+    exact Fintype.card_fun
+  unfold V13RealLinearRowFunctionalTable
+  rw [hfun, v13RealLinearFunctional_card, Fintype.card_fin, pow_mul]
+
+theorem v13RealLinearRowFunctionalTable_card_le_four_mul_equiv
+    (m : Nat) :
+    Fintype.card (V13RealLinearRowFunctionalTable m) ≤
+      4 * Fintype.card (V13F2LinearEquiv m) := by
+  rw [v13RealLinearRowFunctionalTable_card]
+  exact v13F2LinearEquiv_card_density_quarter m
+
+theorem v13RealLinearRowFunctionalTableOfEquiv_injective {m : Nat} :
+    Function.Injective
+      (v13RealLinearRowFunctionalTableOfEquiv :
+        V13F2LinearEquiv m → V13RealLinearRowFunctionalTable m) := by
+  intro A B htable
+  apply v13RealLinearEquiv_ext
+  intro x
+  funext row
+  have hrow := congrFun htable row
+  have hpoint := LinearMap.congr_fun hrow x
+  simpa [v13RealLinearRowFunctionalTableOfEquiv,
+    v13RealLinearRowFunctional] using hpoint
 
 def v13RealLinearFunctionalTableRowView {m : Nat}
     (table : V13RealLinearRowFunctionalTable m) (x : F2Vec m)
@@ -2237,6 +2515,20 @@ theorem v13RealLinearRowsGenerateTarget_iff_targetFunctional_mem_span
     have happly := LinearMap.congr_fun hcoeff w
     simpa [v13RealLinearRowCombinationEval, v13RealLinearRowFunctional,
       v13RealLinearTargetFunctional] using happly
+
+theorem v13RealLinearFunctionalTableRowsGenerateTarget_of_rowsGenerateTarget
+    {m : Nat} (A : V13F2LinearEquiv m) (rows : Finset (Fin m))
+    (i₀ : Fin m)
+    (hgen : V13RealLinearRowsGenerateTarget A rows i₀) :
+    V13RealLinearFunctionalTableRowsGenerateTarget
+      (v13RealLinearRowFunctionalTableOfEquiv A) rows i₀ := by
+  have hspan :=
+    (v13RealLinearRowsGenerateTarget_iff_targetFunctional_mem_span
+      A rows i₀).1 hgen
+  simpa [V13RealLinearFunctionalTableRowsGenerateTarget,
+    V13RealLinearRowsFunctionalSpan,
+    V13RealLinearFunctionalTableRowsSpan,
+    v13RealLinearRowFunctionalTableOfEquiv] using hspan
 
 def V13RealLinearRowFunctionalTargetCosetHit {m : Nat}
     (A : V13F2LinearEquiv m) (rows : Finset (Fin m))
@@ -7952,6 +8244,218 @@ noncomputable def v13RealLinearUniformSequentialQRowSuccess
     {m q : Nat} (observer : V13RealLinearSequentialRowObserver m q)
     (i₀ : Fin m) : Rat :=
   v13RealLinearUniformCausalQRowSuccess observer.toCausal i₀
+
+def v13RealLinearUniformSequentialWorldToFunctionalTableWorld {m : Nat}
+    (omega : V13RealLinearAdaptiveQRowWorld m (V13F2LinearEquiv m)) :
+    V13RealLinearFunctionalTableWorld m :=
+  (v13RealLinearRowFunctionalTableOfEquiv omega.1, omega.2)
+
+theorem
+    v13RealLinearUniformSequentialWorldToFunctionalTableWorld_injective
+    {m : Nat} :
+    Function.Injective
+      (v13RealLinearUniformSequentialWorldToFunctionalTableWorld
+        (m := m)) := by
+  intro omega₀ omega₁ hworld
+  rcases omega₀ with ⟨A₀, x₀⟩
+  rcases omega₁ with ⟨A₁, x₁⟩
+  have hpair :
+      (v13RealLinearRowFunctionalTableOfEquiv A₀, x₀) =
+        (v13RealLinearRowFunctionalTableOfEquiv A₁, x₁) := by
+    simpa [v13RealLinearUniformSequentialWorldToFunctionalTableWorld]
+      using hworld
+  apply Prod.ext
+  · apply v13RealLinearRowFunctionalTableOfEquiv_injective
+    exact congrArg
+      (fun p : V13RealLinearRowFunctionalTable m × F2Vec m => p.1) hpair
+  · exact congrArg
+      (fun p : V13RealLinearRowFunctionalTable m × F2Vec m => p.2) hpair
+
+theorem v13RealLinearFunctionalTableWorld_card_le_four_mul_uniformWorld
+    (m : Nat) :
+    Fintype.card (V13RealLinearFunctionalTableWorld m) ≤
+      4 *
+        Fintype.card
+          (V13RealLinearAdaptiveQRowWorld m (V13F2LinearEquiv m)) := by
+  unfold V13RealLinearFunctionalTableWorld
+  unfold V13RealLinearAdaptiveQRowWorld
+  rw [Fintype.card_prod, Fintype.card_prod]
+  calc
+    Fintype.card (V13RealLinearRowFunctionalTable m) *
+        Fintype.card (F2Vec m) ≤
+      (4 * Fintype.card (V13F2LinearEquiv m)) *
+        Fintype.card (F2Vec m) := by
+        exact
+          Nat.mul_le_mul_right (Fintype.card (F2Vec m))
+            (v13RealLinearRowFunctionalTable_card_le_four_mul_equiv m)
+    _ =
+      4 * (Fintype.card (V13F2LinearEquiv m) *
+        Fintype.card (F2Vec m)) := by
+        ring
+
+theorem v13RealLinearUniformSequentialGenerated_functionalTableGenerated
+    {m q : Nat} (observer : V13RealLinearSequentialRowObserver m q)
+    (i₀ : Fin m)
+    (omega : V13RealLinearAdaptiveQRowWorld m (V13F2LinearEquiv m))
+    (hgen :
+      (v13RealLinearUniformCausalQRowExperiment
+        observer.toCausal).generated i₀ omega) :
+    V13RealLinearFunctionalTableSequentialGenerated observer i₀
+      (v13RealLinearUniformSequentialWorldToFunctionalTableWorld omega) := by
+  rcases omega with ⟨A, x⟩
+  unfold v13RealLinearUniformSequentialWorldToFunctionalTableWorld
+  unfold V13RealLinearFunctionalTableSequentialGenerated
+  apply v13RealLinearFunctionalTableRowsGenerateTarget_of_rowsGenerateTarget
+  simpa [V13RealLinearAdaptiveQRowExperiment.generated,
+    V13RealLinearAdaptiveQRowExperiment.branchRows,
+    V13RealLinearAdaptiveQRowExperiment.branch,
+    V13RealLinearAdaptiveQRowExperiment.world,
+    V13RealLinearCausalRowObserver.toAdaptive,
+    V13RealLinearCausalRowObserver.staticBranch,
+    V13RealLinearSequentialRowObserver.toCausal,
+    v13RealLinearUniformCausalQRowExperiment,
+    v13RealLinearUniformQRowExperiment,
+    v13RealLinearFunctionalTableSequentialWorldPrefixRows,
+    v13RealLinearFunctionalTableSequentialWorldPrefixTranscript,
+    v13RealLinearFunctionalTableSequentialRowPrefixTranscriptOf_equiv,
+    v13RealLinearSequentialRowTranscriptOf,
+    v13RealLinearSequentialRowPrefixTranscriptOf]
+    using hgen
+
+noncomputable def
+    v13RealLinearUniformSequentialGeneratedToFunctionalTableGenerated
+    {m q : Nat} (observer : V13RealLinearSequentialRowObserver m q)
+    (i₀ : Fin m) :
+    V13RealLinearAdaptiveQRowGenerated
+        (v13RealLinearUniformCausalQRowExperiment observer.toCausal) i₀ ↪
+      {omega : V13RealLinearFunctionalTableWorld m //
+        V13RealLinearFunctionalTableSequentialGenerated
+          observer i₀ omega} where
+  toFun := fun omega =>
+    ⟨v13RealLinearUniformSequentialWorldToFunctionalTableWorld omega.val,
+      v13RealLinearUniformSequentialGenerated_functionalTableGenerated
+        observer i₀ omega.val omega.property⟩
+  inj' := by
+    intro omega₀ omega₁ h
+    apply Subtype.ext
+    exact
+      v13RealLinearUniformSequentialWorldToFunctionalTableWorld_injective
+        (congrArg Subtype.val h)
+
+theorem
+    v13RealLinearUniformSequentialGenerated_card_mul_two_pow_le_transfer
+    {m q : Nat} (observer : V13RealLinearSequentialRowObserver m q)
+    (i₀ : Fin m) :
+    Fintype.card
+        (V13RealLinearAdaptiveQRowGenerated
+          (v13RealLinearUniformCausalQRowExperiment observer.toCausal) i₀) *
+      2 ^ m ≤
+    (4 * (2 ^ q - 1)) *
+      Fintype.card
+        (V13RealLinearAdaptiveQRowWorld m (V13F2LinearEquiv m)) := by
+  classical
+  let GeneratedUniform :=
+    V13RealLinearAdaptiveQRowGenerated
+      (v13RealLinearUniformCausalQRowExperiment observer.toCausal) i₀
+  let GeneratedTable :=
+    {omega : V13RealLinearFunctionalTableWorld m //
+      V13RealLinearFunctionalTableSequentialGenerated observer i₀ omega}
+  let TableWorld := V13RealLinearFunctionalTableWorld m
+  let UniformWorld := V13RealLinearAdaptiveQRowWorld m (V13F2LinearEquiv m)
+  have hgenerated :
+      Fintype.card GeneratedUniform ≤ Fintype.card GeneratedTable :=
+    Fintype.card_le_of_embedding
+      (v13RealLinearUniformSequentialGeneratedToFunctionalTableGenerated
+        observer i₀)
+  have htelescope :
+      Fintype.card GeneratedTable * 2 ^ m ≤
+        (2 ^ q - 1) * Fintype.card TableWorld := by
+    simpa [GeneratedTable, TableWorld] using
+      v13RealLinearFunctionalTableSequentialGenerated_card_mul_two_pow_le
+        observer i₀
+  have hworld :
+      Fintype.card TableWorld ≤ 4 * Fintype.card UniformWorld := by
+    simpa [TableWorld, UniformWorld] using
+      v13RealLinearFunctionalTableWorld_card_le_four_mul_uniformWorld m
+  calc
+    Fintype.card GeneratedUniform * 2 ^ m ≤
+        Fintype.card GeneratedTable * 2 ^ m := by
+      exact Nat.mul_le_mul_right (2 ^ m) hgenerated
+    _ ≤ (2 ^ q - 1) * Fintype.card TableWorld := htelescope
+    _ ≤ (2 ^ q - 1) * (4 * Fintype.card UniformWorld) := by
+      exact Nat.mul_le_mul_left (2 ^ q - 1) hworld
+    _ = (4 * (2 ^ q - 1)) * Fintype.card UniformWorld := by
+      ring
+
+theorem v13RealLinearUniformSequentialGeneratedMass_le_transfer
+    {m q : Nat} (observer : V13RealLinearSequentialRowObserver m q)
+    (i₀ : Fin m) :
+    v13RealLinearAdaptiveQRowGeneratedMass
+        (v13RealLinearUniformCausalQRowExperiment observer.toCausal) i₀ ≤
+      (4 * ((2 : Rat) ^ q - 1)) / ((2 : Rat) ^ m) := by
+  unfold v13RealLinearAdaptiveQRowGeneratedMass
+  let G := Fintype.card
+    (V13RealLinearAdaptiveQRowGenerated
+      (v13RealLinearUniformCausalQRowExperiment observer.toCausal) i₀)
+  let T := Fintype.card
+    (V13RealLinearAdaptiveQRowWorld m (V13F2LinearEquiv m))
+  let C := 4 * (2 ^ q - 1)
+  let M := 2 ^ m
+  have hcount :
+      G * M ≤ C * T := by
+    simpa [G, T, C, M] using
+      v13RealLinearUniformSequentialGenerated_card_mul_two_pow_le_transfer
+        observer i₀
+  have hTposNat : 0 < T := by
+    dsimp [T]
+    exact Fintype.card_pos_iff.mpr ⟨(v13RealLinearIdentity m, f2ZeroVec m)⟩
+  have hMposNat : 0 < M := by
+    dsimp [M]
+    positivity
+  have hTpos : (0 : Rat) < (T : Rat) := by
+    exact_mod_cast hTposNat
+  have hMpos : (0 : Rat) < (M : Rat) := by
+    exact_mod_cast hMposNat
+  have hcountRat :
+      (G : Rat) * (M : Rat) ≤ (C : Rat) * (T : Rat) := by
+    exact_mod_cast hcount
+  have hMrat : (M : Rat) = (2 : Rat) ^ m := by
+    dsimp [M]
+    norm_num
+  have hCrat : (C : Rat) = 4 * ((2 : Rat) ^ q - 1) := by
+    dsimp [C]
+    have hone : 1 ≤ 2 ^ q := by
+      have hpos : 0 < 2 ^ q := by
+        positivity
+      omega
+    rw [Nat.cast_mul, Nat.cast_sub hone]
+    norm_num
+  rw [← hMrat, ← hCrat]
+  change (G : Rat) / (T : Rat) ≤ (C : Rat) / (M : Rat)
+  rw [div_le_div_iff₀ hTpos hMpos]
+  exact hcountRat
+
+theorem
+    v13RealLinear_uniform_sequential_qrow_success_bound_of_transfer
+    {m q : Nat} (observer : V13RealLinearSequentialRowObserver m q)
+    (i₀ : Fin m) :
+    v13RealLinearUniformSequentialQRowSuccess observer i₀ ≤
+      (1 / 2 : Rat) +
+        (4 * ((2 : Rat) ^ q - 1)) / ((2 : Rat) ^ m) := by
+  unfold v13RealLinearUniformSequentialQRowSuccess
+  unfold v13RealLinearUniformCausalQRowSuccess
+  have hflip :=
+    v13RealLinear_adaptiveKernelFlipSurchargeBound
+      (v13RealLinearUniformCausalQRowExperiment observer.toCausal) i₀
+  unfold V13RealLinearAdaptiveKernelFlipSurchargeBound at hflip
+  have hblocked :
+      v13RealLinearAdaptiveQRowBlockedMass
+          (v13RealLinearUniformCausalQRowExperiment observer.toCausal) i₀ ≤
+        (4 * ((2 : Rat) ^ q - 1)) / ((2 : Rat) ^ m) := by
+    rw [v13RealLinearAdaptiveQRowBlockedMass_eq_generatedMass]
+    exact v13RealLinearUniformSequentialGeneratedMass_le_transfer
+      observer i₀
+  linarith
 
 theorem
     v13RealLinear_uniform_sequential_qrow_success_bound_of_deferredDecisionTraceCosetHit
