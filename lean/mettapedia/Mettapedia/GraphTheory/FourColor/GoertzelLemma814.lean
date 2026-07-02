@@ -1,4 +1,5 @@
 import Mathlib.Data.List.Basic
+import Mathlib.Data.List.Perm.Subperm
 
 namespace Mettapedia.GraphTheory.FourColor
 
@@ -23,7 +24,7 @@ inductive LColor
   | r
   | b
   | p
-  deriving DecidableEq, BEq, Repr, Inhabited
+  deriving DecidableEq, BEq, ReflBEq, LawfulBEq, Repr, Inhabited
 
 def colors : List LColor :=
   [LColor.r, LColor.b, LColor.p]
@@ -66,7 +67,7 @@ inductive TauEdge
   | B5
   | B6
   | B7
-  deriving DecidableEq, BEq, Repr, Inhabited
+  deriving DecidableEq, BEq, ReflBEq, LawfulBEq, Repr, Inhabited
 
 def tauEdges : List TauEdge :=
   [ TauEdge.F1F0
@@ -95,7 +96,7 @@ inductive TauVertex
   | F3
   | F4
   | F5
-  deriving DecidableEq, BEq, Repr, Inhabited
+  deriving DecidableEq, BEq, ReflBEq, LawfulBEq, Repr, Inhabited
 
 def tauVertices : List TauVertex :=
   [TauVertex.F0, TauVertex.F1, TauVertex.F2, TauVertex.F3, TauVertex.F4, TauVertex.F5]
@@ -119,7 +120,7 @@ structure F2Triple where
   e02 : LColor
   e23 : LColor
   e24 : LColor
-  deriving DecidableEq, BEq, Repr, Inhabited
+  deriving DecidableEq, BEq, ReflBEq, LawfulBEq, Repr, Inhabited
 
 def f2Triples : List F2Triple :=
   [ ⟨LColor.r, LColor.b, LColor.p⟩
@@ -145,7 +146,7 @@ structure TauState where
   b3b4Swap : Bool
   f4Swap : Bool
   b5b6Swap : Bool
-  deriving DecidableEq, BEq, Repr, Inhabited
+  deriving DecidableEq, BEq, ReflBEq, LawfulBEq, Repr, Inhabited
 
 def bools : List Bool :=
   [false, true]
@@ -256,17 +257,17 @@ structure KempeMove where
   a : LColor
   c : LColor
   seed : TauEdge
-  deriving DecidableEq, BEq, Repr, Inhabited
+  deriving DecidableEq, BEq, ReflBEq, LawfulBEq, Repr, Inhabited
 
 structure IndexedPathStep where
   move : KempeMove
   target : Nat
-  deriving DecidableEq, BEq, Repr, Inhabited
+  deriving DecidableEq, BEq, ReflBEq, LawfulBEq, Repr, Inhabited
 
 structure IndexedPathRow where
   representative : Nat
   steps : List IndexedPathStep
-  deriving DecidableEq, BEq, Repr, Inhabited
+  deriving DecidableEq, BEq, ReflBEq, LawfulBEq, Repr, Inhabited
 
 def mv (a c : LColor) (seed : TauEdge) : KempeMove :=
   { a := a, c := c, seed := seed }
@@ -756,7 +757,7 @@ inductive TauEndpoint
   | B5
   | B6
   | B7
-  deriving DecidableEq, BEq, Repr, Inhabited
+  deriving DecidableEq, BEq, ReflBEq, LawfulBEq, Repr, Inhabited
 
 def tauEndpoints : List TauEndpoint :=
   [ TauEndpoint.F0
@@ -1021,7 +1022,7 @@ Kempe graph directly.
 inductive TauOrient
   | normal
   | mirror
-  deriving DecidableEq, BEq, Repr, Inhabited
+  deriving DecidableEq, BEq, ReflBEq, LawfulBEq, Repr, Inhabited
 
 def tauOrientInputOrder : TauOrient → List TauEdge
   | TauOrient.normal => [TauEdge.B0, TauEdge.B1, TauEdge.B2, TauEdge.B3]
@@ -1056,12 +1057,12 @@ def tauStateColorAt (states : List TauState) (i : Nat) (e : TauEdge) : LColor :=
 structure ChainEdge where
   occ : Nat
   edge : TauEdge
-  deriving DecidableEq, BEq, Repr, Inhabited
+  deriving DecidableEq, BEq, ReflBEq, LawfulBEq, Repr, Inhabited
 
 inductive ChainEndpoint
   | internal (occ : Nat) (v : TauEndpoint)
   | boundary (occ : Nat) (v : TauEndpoint)
-  deriving DecidableEq, BEq, Repr, Inhabited
+  deriving DecidableEq, BEq, ReflBEq, LawfulBEq, Repr, Inhabited
 
 def tauStubInternalEndpoint : TauEdge → TauEndpoint
   | TauEdge.B0 => TauEndpoint.F0
@@ -1190,7 +1191,7 @@ structure ChainMove where
   a : LColor
   c : LColor
   seed : ChainEdge
-  deriving DecidableEq, BEq, Repr, Inhabited
+  deriving DecidableEq, BEq, ReflBEq, LawfulBEq, Repr, Inhabited
 
 def chainSpecifiedKempeStep (orients : List TauOrient) (s t : List TauState)
     (move : ChainMove) : Bool :=
@@ -1225,12 +1226,441 @@ def buildChainStatesFrom (orients : List TauOrient) :
       let nextIndex := orients.length - (n + 1)
       buildChainStatesFrom orients n (extendChainStates orients prefixes nextIndex)
 
+def buildChainStatesFromIndex (orients : List TauOrient) :
+    Nat → Nat → List (List TauState) → List (List TauState)
+  | _, 0, prefixes => prefixes
+  | nextIndex, n + 1, prefixes =>
+      buildChainStatesFromIndex orients (nextIndex + 1) n
+        (extendChainStates orients prefixes nextIndex)
+
 def allChainStates (orients : List TauOrient) : List (List TauState) :=
   match orients with
   | [] => [[]]
   | _ :: rest =>
       let starts := allTauStates.map fun s => [s]
       buildChainStatesFrom orients rest.length starts
+
+theorem mem_bindList_iff {α β : Type} {xs : List α} {f : α → List β} {y : β} :
+    y ∈ bindList xs f ↔ ∃ x, x ∈ xs ∧ y ∈ f x := by
+  induction xs with
+  | nil =>
+      simp [bindList]
+  | cons x xs ih =>
+      simp [bindList, or_and_right, exists_or]
+
+theorem listGetD_append_length {α : Type} (xs : List α) (x fallback : α) :
+    listGetD (xs ++ [x]) xs.length fallback = x := by
+  induction xs with
+  | nil =>
+      rfl
+  | cons _ rest ih =>
+      simp [listGetD, ih]
+
+theorem listGetD_append_left {α : Type}
+    (xs ys : List α) (fallback : α) {idx : Nat}
+    (hidx : idx < xs.length) :
+    listGetD (xs ++ ys) idx fallback = listGetD xs idx fallback := by
+  induction xs generalizing idx with
+  | nil =>
+      cases hidx
+  | cons _ rest ih =>
+      cases idx with
+      | zero =>
+          rfl
+      | succ idx =>
+          simp [listGetD]
+          exact ih (Nat.succ_lt_succ_iff.mp hidx)
+
+theorem tauOrientAt_append_left
+    (orients suffix : List TauOrient) {idx : Nat}
+    (hidx : idx < orients.length) :
+    tauOrientAt (orients ++ suffix) idx = tauOrientAt orients idx := by
+  simp [tauOrientAt, listGetD_append_left orients suffix TauOrient.normal hidx]
+
+theorem chainStateAt_append_length
+    (acc : List TauState) (next : TauState) (idx : Nat)
+    (hidx : acc.length = idx) :
+    chainStateAt (acc ++ [next]) idx = next := by
+  subst idx
+  simp [chainStateAt, listGetD_append_length]
+
+theorem chainStateAt_append_left
+    (acc : List TauState) (next : TauState) {idx : Nat}
+    (hidx : idx < acc.length) :
+    chainStateAt (acc ++ [next]) idx = chainStateAt acc idx := by
+  simp [chainStateAt, listGetD_append_left acc [next] default hidx]
+
+def chainPrefixCompatibleAt
+    (orients : List TauOrient) (states : List TauState)
+    (nextIndex : Nat) : Prop :=
+  states.length = nextIndex ∧
+    (List.range (nextIndex - 1)).all (fun i =>
+      compatibleAdjacent (tauOrientAt orients i) (tauOrientAt orients (i + 1))
+        (chainStateAt states i) (chainStateAt states (i + 1))) = true
+
+theorem chainPrefixCompatibleAt_full
+    {orients : List TauOrient} {states : List TauState}
+    (h : chainPrefixCompatibleAt orients states orients.length) :
+    compatibleChainStates orients states = true := by
+  rcases h with ⟨hlen, hadj⟩
+  unfold compatibleChainStates
+  simp [hlen, hadj]
+
+theorem chainPrefixCompatibleAt_singleton
+    (orients : List TauOrient) (state : TauState) :
+    chainPrefixCompatibleAt orients [state] 1 := by
+  simp [chainPrefixCompatibleAt]
+
+theorem chainPrefixCompatibleAt_extend
+    {orients : List TauOrient} {acc : List TauState} {next : TauState}
+    {nextIndex : Nat}
+    (hpos : 0 < nextIndex)
+    (hprefix : chainPrefixCompatibleAt orients acc nextIndex)
+    (hcomp : compatibleAdjacent
+      (tauOrientAt orients (nextIndex - 1)) (tauOrientAt orients nextIndex)
+      (chainStateAt acc (nextIndex - 1)) next = true) :
+    chainPrefixCompatibleAt orients (acc ++ [next]) (nextIndex + 1) := by
+  rcases hprefix with ⟨hlen, hadj⟩
+  constructor
+  · simp [hlen]
+  · rw [List.all_eq_true]
+    intro i hi
+    have hiLt : i < nextIndex := by
+      simpa using (List.mem_range.mp hi)
+    by_cases hiOld : i < nextIndex - 1
+    · rw [List.all_eq_true] at hadj
+      have hOld := hadj i (List.mem_range.mpr hiOld)
+      have hiAcc : i < acc.length := by
+        omega
+      have hiSuccAcc : i + 1 < acc.length := by
+        omega
+      simpa [chainStateAt_append_left acc next hiAcc,
+        chainStateAt_append_left acc next hiSuccAcc] using hOld
+    · have hiLast : i = nextIndex - 1 := by
+        omega
+      subst i
+      have hprev : nextIndex - 1 < acc.length := by
+        omega
+      have hnext : chainStateAt (acc ++ [next]) nextIndex = next := by
+        exact chainStateAt_append_length acc next nextIndex hlen
+      have hprevEq :
+          chainStateAt (acc ++ [next]) (nextIndex - 1) =
+            chainStateAt acc (nextIndex - 1) :=
+        chainStateAt_append_left acc next hprev
+      have hsucc : (nextIndex - 1) + 1 = nextIndex := by
+        omega
+      simpa [hprevEq, hnext, hsucc] using hcomp
+
+theorem extendChainStates_prefixCompatible
+    {orients : List TauOrient} {prefixes : List (List TauState)}
+    {nextIndex : Nat}
+    (hpos : 0 < nextIndex)
+    (hprefixes : ∀ states, states ∈ prefixes →
+      chainPrefixCompatibleAt orients states nextIndex) :
+    ∀ states, states ∈ extendChainStates orients prefixes nextIndex →
+      chainPrefixCompatibleAt orients states (nextIndex + 1) := by
+  intro states hmem
+  unfold extendChainStates at hmem
+  rw [mem_bindList_iff] at hmem
+  rcases hmem with ⟨acc, hacc, hstates⟩
+  rw [List.mem_map] at hstates
+  rcases hstates with ⟨next, hnext, rfl⟩
+  rw [List.mem_filter] at hnext
+  rcases hnext with ⟨_, hcomp⟩
+  exact chainPrefixCompatibleAt_extend hpos (hprefixes acc hacc) hcomp
+
+theorem extendChainStates_mem_split
+    {orients : List TauOrient} {prefixes : List (List TauState)}
+    {nextIndex : Nat} {states : List TauState}
+    (hmem : states ∈ extendChainStates orients prefixes nextIndex) :
+    ∃ acc next,
+      acc ∈ prefixes ∧
+        next ∈ allTauStates ∧
+        compatibleAdjacent
+          (tauOrientAt orients (nextIndex - 1)) (tauOrientAt orients nextIndex)
+          (chainStateAt acc (nextIndex - 1)) next = true ∧
+        states = acc ++ [next] := by
+  unfold extendChainStates at hmem
+  rw [mem_bindList_iff] at hmem
+  rcases hmem with ⟨acc, hacc, hstates⟩
+  rw [List.mem_map] at hstates
+  rcases hstates with ⟨next, hnext, rfl⟩
+  rw [List.mem_filter] at hnext
+  exact ⟨acc, next, hacc, hnext.1, hnext.2, rfl⟩
+
+theorem extendChainStates_mem_of_split
+    {orients : List TauOrient} {prefixes : List (List TauState)}
+    {nextIndex : Nat} {acc : List TauState} {next : TauState}
+    (hacc : acc ∈ prefixes)
+    (hnext : next ∈ allTauStates)
+    (hcomp : compatibleAdjacent
+      (tauOrientAt orients (nextIndex - 1)) (tauOrientAt orients nextIndex)
+      (chainStateAt acc (nextIndex - 1)) next = true) :
+    acc ++ [next] ∈ extendChainStates orients prefixes nextIndex := by
+  unfold extendChainStates
+  rw [mem_bindList_iff]
+  refine ⟨acc, hacc, ?_⟩
+  rw [List.mem_map]
+  refine ⟨next, ?_, rfl⟩
+  rw [List.mem_filter]
+  exact ⟨hnext, hcomp⟩
+
+theorem extendChainStates_mem_prefix
+    {orients : List TauOrient} {prefixes : List (List TauState)}
+    {nextIndex : Nat} {states : List TauState}
+    (hlen : ∀ acc, acc ∈ prefixes → acc.length = nextIndex)
+    (hmem : states ∈ extendChainStates orients prefixes nextIndex) :
+    states.take nextIndex ∈ prefixes := by
+  rcases extendChainStates_mem_split
+      (orients := orients) (prefixes := prefixes) (nextIndex := nextIndex)
+      hmem with ⟨acc, next, hacc, _hnext, _hcomp, hstates⟩
+  subst states
+  have htake : (acc ++ [next]).take nextIndex = acc := by
+    rw [← hlen acc hacc]
+    simp
+  simpa [htake] using hacc
+
+theorem extendChainStates_append_left
+    (orients suffix : List TauOrient) (prefixes : List (List TauState))
+    {nextIndex : Nat}
+    (hpos : 0 < nextIndex)
+    (hidx : nextIndex < orients.length) :
+    extendChainStates (orients ++ suffix) prefixes nextIndex =
+      extendChainStates orients prefixes nextIndex := by
+  have hprev : nextIndex - 1 < orients.length := by
+    omega
+  simp [extendChainStates,
+    tauOrientAt_append_left (orients := orients) (suffix := suffix)
+      (idx := nextIndex) hidx,
+    tauOrientAt_append_left (orients := orients) (suffix := suffix)
+      (idx := nextIndex - 1) hprev]
+
+theorem buildChainStatesFrom_eq_fromIndex
+    {orients : List TauOrient} {n : Nat} {prefixes : List (List TauState)}
+    (hn : n ≤ orients.length) :
+    buildChainStatesFrom orients n prefixes =
+      buildChainStatesFromIndex orients (orients.length - n) n prefixes := by
+  induction n generalizing prefixes with
+  | zero =>
+      rfl
+  | succ n ih =>
+      unfold buildChainStatesFrom
+      unfold buildChainStatesFromIndex
+      rw [ih (prefixes :=
+        extendChainStates orients prefixes (orients.length - (n + 1)))
+        (by omega)]
+      congr
+      omega
+
+theorem buildChainStatesFromIndex_append_singleton_last_aux
+    (orients : List TauOrient) (next : TauOrient)
+    (prefixes : List (List TauState))
+    (start k : Nat)
+    (hpos : 0 < start)
+    (hlen : start + k = orients.length) :
+    buildChainStatesFromIndex (orients ++ [next]) start (k + 1) prefixes =
+      extendChainStates (orients ++ [next])
+        (buildChainStatesFromIndex orients start k prefixes) orients.length := by
+  induction k generalizing start prefixes with
+  | zero =>
+      have hstart : start = orients.length := by
+        omega
+      subst start
+      rfl
+  | succ k ih =>
+      have hidx : start < orients.length := by
+        omega
+      have hlen' : start + 1 + k = orients.length := by
+        omega
+      have hExt :
+          extendChainStates (orients ++ [next]) prefixes start =
+            extendChainStates orients prefixes start :=
+        extendChainStates_append_left orients [next] prefixes hpos hidx
+      simpa [buildChainStatesFromIndex, hExt] using
+        ih (prefixes := extendChainStates orients prefixes start)
+          (start := start + 1) (by omega) hlen'
+
+theorem buildChainStatesFrom_prefixCompatible_full
+    (orients : List TauOrient) (n : Nat)
+    (prefixes : List (List TauState))
+    (hn : n < orients.length)
+    (hprefixes : ∀ states, states ∈ prefixes →
+      chainPrefixCompatibleAt orients states (orients.length - n)) :
+    ∀ states, states ∈ buildChainStatesFrom orients n prefixes →
+      chainPrefixCompatibleAt orients states orients.length := by
+  induction n generalizing prefixes with
+  | zero =>
+      simpa [buildChainStatesFrom] using hprefixes
+  | succ n ih =>
+      intro states hmem
+      unfold buildChainStatesFrom at hmem
+      let nextIndex := orients.length - (n + 1)
+      have hpos : 0 < nextIndex := by
+        simp [nextIndex]
+        omega
+      have hExt : ∀ states, states ∈ extendChainStates orients prefixes nextIndex →
+          chainPrefixCompatibleAt orients states (orients.length - n) := by
+        intro states hstates
+        have hraw := extendChainStates_prefixCompatible
+          (orients := orients) (prefixes := prefixes) (nextIndex := nextIndex)
+          hpos (by
+            intro s hs
+            simpa [nextIndex] using hprefixes s hs) states hstates
+        have hidx : nextIndex + 1 = orients.length - n := by
+          simp [nextIndex]
+          omega
+        simpa [hidx] using hraw
+      exact ih (extendChainStates orients prefixes nextIndex) (by omega)
+        hExt states hmem
+
+theorem allChainStates_compatible (orients : List TauOrient) :
+    (allChainStates orients).all (compatibleChainStates orients) = true := by
+  cases orients with
+  | nil =>
+      decide
+  | cons orient rest =>
+      rw [List.all_eq_true]
+      intro states hmem
+      have hprefix := buildChainStatesFrom_prefixCompatible_full
+        (orient :: rest) rest.length (allTauStates.map fun s => [s])
+        (by simp)
+        (by
+          intro states hstates
+          rw [List.mem_map] at hstates
+          rcases hstates with ⟨state, _hstate, rfl⟩
+          have hlen : (orient :: rest).length - rest.length = 1 := by
+            simp
+          simpa [hlen] using
+            chainPrefixCompatibleAt_singleton (orient :: rest) state)
+        states hmem
+      exact chainPrefixCompatibleAt_full hprefix
+
+theorem allChainStates_mem_length
+    {orients : List TauOrient} {states : List TauState}
+    (hmem : states ∈ allChainStates orients) :
+    states.length = orients.length := by
+  have hAll := allChainStates_compatible orients
+  rw [List.all_eq_true] at hAll
+  have hcomp := hAll states hmem
+  unfold compatibleChainStates at hcomp
+  have hparts :
+      (states.length == orients.length) = true ∧
+        (List.range (orients.length - 1)).all (fun i =>
+          compatibleAdjacent (tauOrientAt orients i)
+            (tauOrientAt orients (i + 1))
+            (chainStateAt states i) (chainStateAt states (i + 1))) = true := by
+    simpa [Bool.and_eq_true] using hcomp
+  exact beq_iff_eq.mp hparts.1
+
+theorem allChainStates_append_singleton_eq_extend
+    (orients : List TauOrient) (next : TauOrient)
+    (hne : orients ≠ []) :
+    allChainStates (orients ++ [next]) =
+      extendChainStates (orients ++ [next]) (allChainStates orients)
+        orients.length := by
+  cases orients with
+  | nil =>
+      exact False.elim (hne rfl)
+  | cons orient rest =>
+      have hApp :
+          allChainStates ((orient :: rest) ++ [next]) =
+            buildChainStatesFromIndex ((orient :: rest) ++ [next]) 1
+              (orient :: rest).length (allTauStates.map fun s => [s]) := by
+        simpa [allChainStates] using
+          (buildChainStatesFrom_eq_fromIndex
+            (orients := (orient :: rest) ++ [next])
+            (n := (orient :: rest).length)
+            (prefixes := allTauStates.map fun s => [s]) (by simp))
+      have hOrig :
+          allChainStates (orient :: rest) =
+            buildChainStatesFromIndex (orient :: rest) 1 rest.length
+              (allTauStates.map fun s => [s]) := by
+        simpa [allChainStates] using
+          (buildChainStatesFrom_eq_fromIndex
+            (orients := orient :: rest)
+            (n := rest.length)
+            (prefixes := allTauStates.map fun s => [s]) (by simp))
+      have hAux :
+          buildChainStatesFromIndex ((orient :: rest) ++ [next]) 1
+              (orient :: rest).length (allTauStates.map fun s => [s]) =
+            extendChainStates ((orient :: rest) ++ [next])
+              (buildChainStatesFromIndex (orient :: rest) 1 rest.length
+                (allTauStates.map fun s => [s]))
+              (orient :: rest).length := by
+        simpa using
+          (buildChainStatesFromIndex_append_singleton_last_aux
+            (orients := orient :: rest) (next := next)
+            (prefixes := allTauStates.map fun s => [s])
+            (start := 1) (k := rest.length) (by omega) (by simp [Nat.add_comm]))
+      calc
+        allChainStates ((orient :: rest) ++ [next])
+            = buildChainStatesFromIndex ((orient :: rest) ++ [next]) 1
+                (orient :: rest).length (allTauStates.map fun s => [s]) := hApp
+        _ = extendChainStates ((orient :: rest) ++ [next])
+              (buildChainStatesFromIndex (orient :: rest) 1 rest.length
+                (allTauStates.map fun s => [s]))
+              (orient :: rest).length := hAux
+        _ = extendChainStates ((orient :: rest) ++ [next])
+              (allChainStates (orient :: rest)) (orient :: rest).length := by
+                rw [← hOrig]
+
+theorem allChainStates_append_singleton_mem_split
+    {orients : List TauOrient} {next : TauOrient}
+    {states : List TauState}
+    (hne : orients ≠ [])
+    (hmem : states ∈ allChainStates (orients ++ [next])) :
+    ∃ pref last,
+      pref ∈ allChainStates orients ∧
+        last ∈ allTauStates ∧
+        compatibleAdjacent
+          (tauOrientAt (orients ++ [next]) (orients.length - 1))
+          (tauOrientAt (orients ++ [next]) orients.length)
+          (chainStateAt pref (orients.length - 1)) last = true ∧
+        states = pref ++ [last] := by
+  have hEq := allChainStates_append_singleton_eq_extend orients next hne
+  rw [hEq] at hmem
+  exact extendChainStates_mem_split
+    (orients := orients ++ [next])
+    (prefixes := allChainStates orients)
+    (nextIndex := orients.length)
+    hmem
+
+theorem allChainStates_append_singleton_mem_of_split
+    {orients : List TauOrient} {next : TauOrient}
+    {pref : List TauState} {last : TauState}
+    (hne : orients ≠ [])
+    (hpref : pref ∈ allChainStates orients)
+    (hlast : last ∈ allTauStates)
+    (hcompatible : compatibleAdjacent
+      (tauOrientAt (orients ++ [next]) (orients.length - 1))
+      (tauOrientAt (orients ++ [next]) orients.length)
+      (chainStateAt pref (orients.length - 1)) last = true) :
+    pref ++ [last] ∈ allChainStates (orients ++ [next]) := by
+  have hEq := allChainStates_append_singleton_eq_extend orients next hne
+  rw [hEq]
+  exact extendChainStates_mem_of_split
+    (orients := orients ++ [next])
+    (prefixes := allChainStates orients)
+    (nextIndex := orients.length)
+    hpref hlast hcompatible
+
+theorem allChainStates_append_singleton_mem_prefix
+    {orients : List TauOrient} {next : TauOrient}
+    {states : List TauState}
+    (hne : orients ≠ [])
+    (hmem : states ∈ allChainStates (orients ++ [next])) :
+    states.take orients.length ∈ allChainStates orients := by
+  have hEq := allChainStates_append_singleton_eq_extend orients next hne
+  rw [hEq] at hmem
+  exact extendChainStates_mem_prefix
+    (orients := orients ++ [next])
+    (prefixes := allChainStates orients)
+    (nextIndex := orients.length)
+    (states := states)
+    (by
+      intro acc hacc
+      exact allChainStates_mem_length hacc)
+    hmem
 
 def colorAssignments4 : List (List LColor) :=
   bindList colors fun c₀ =>
@@ -1240,6 +1670,18 @@ def colorAssignments4 : List (List LColor) :=
 
 def chainInputKey (orients : List TauOrient) (states : List TauState) : List LColor :=
   (chainInputOrder orients).map fun e => tauStateColorAt states 0 e
+
+theorem chainInputKey_append_prefix_take
+    (orients : List TauOrient) (next : TauOrient)
+    (states : List TauState)
+    (hne : orients ≠ []) :
+    chainInputKey orients (states.take orients.length) =
+      chainInputKey (orients ++ [next]) states := by
+  cases orients with
+  | nil =>
+      exact False.elim (hne rfl)
+  | cons orient rest =>
+      cases states <;> rfl
 
 def chainFiberFrom (orients : List TauOrient) (statesList : List (List TauState))
     (key : List LColor) : List (List TauState) :=
@@ -1268,6 +1710,461 @@ def chainFiberConnected (orients : List TauOrient) (fiber : List (List TauState)
   | root :: _ =>
       let closure := closeChainFiber orients fiber fiber.length [root]
       fiber.all fun state => closure.contains state
+
+theorem bool_false_of_not_true {b : Bool} (h : ¬ b = true) : b = false := by
+  cases hb : b
+  · rfl
+  · exact False.elim (h hb)
+
+theorem mem_addIfFresh_of_mem {α : Type} [BEq α]
+    {xs : List α} {x y : α} (h : x ∈ xs) :
+    x ∈ addIfFresh xs y := by
+  unfold addIfFresh
+  split
+  · exact h
+  · simp [h]
+
+theorem mem_addIfFresh_self {α : Type} [BEq α] [LawfulBEq α]
+    (xs : List α) (x : α) :
+    x ∈ addIfFresh xs x := by
+  unfold addIfFresh
+  by_cases hc : xs.contains x = true
+  · simp only [hc, if_true]
+    exact List.contains_iff_mem.mp hc
+  · have hfalse : xs.contains x = false := bool_false_of_not_true hc
+    simp only [hfalse, Bool.false_eq_true, if_false]
+    exact List.mem_append_right xs (by simp)
+
+theorem list_any_true_of_mem {α : Type} {xs : List α} {x : α} {p : α → Bool}
+    (hmem : x ∈ xs) (hp : p x = true) :
+    xs.any p = true := by
+  rw [List.any_eq_true]
+  exact ⟨x, hmem, hp⟩
+
+theorem mem_addIfFresh_source_or_eq {α : Type} [BEq α] [LawfulBEq α]
+    (xs : List α) (x y : α) (h : y ∈ addIfFresh xs x) :
+    y ∈ xs ∨ y = x := by
+  unfold addIfFresh at h
+  by_cases hc : xs.contains x = true
+  · simp only [hc, if_true] at h
+    exact Or.inl h
+  · have hfalse : xs.contains x = false := bool_false_of_not_true hc
+    simp only [hfalse, Bool.false_eq_true, if_false] at h
+    rw [List.mem_append] at h
+    rcases h with hxs | hsingle
+    · exact Or.inl hxs
+    · simp at hsingle
+      exact Or.inr hsingle
+
+theorem list_any_false_of_forall_mem {α : Type} {xs : List α} {p : α → Bool}
+    (h : ∀ x, x ∈ xs → p x = false) :
+    xs.any p = false := by
+  rw [List.any_eq_false]
+  intro x hx hp
+  have hfalse := h x hx
+  rw [hfalse] at hp
+  cases hp
+
+theorem addIfFresh_nodup {α : Type} [BEq α] [LawfulBEq α]
+    (xs : List α) (x : α) (hxs : xs.Nodup) :
+    (addIfFresh xs x).Nodup := by
+  unfold addIfFresh
+  by_cases hc : xs.contains x = true
+  · simp only [hc, if_true]
+    exact hxs
+  · have hfalse : xs.contains x = false := bool_false_of_not_true hc
+    have hxnot : x ∉ xs := by
+      intro hx
+      exact hc (List.contains_iff_mem.mpr hx)
+    simp only [hfalse, Bool.false_eq_true, if_false]
+    simp [List.nodup_append, hxs]
+    intro a ha heq
+    subst heq
+    exact hxnot ha
+
+theorem list_length_beq_false_of_nodup_subset_new {α : Type} [DecidableEq α]
+    (xs ys : List α) (y : α) (hxs : xs.Nodup) (hsub : xs ⊆ ys)
+    (hy : y ∈ ys) (hnot : y ∉ xs) :
+    (ys.length == xs.length) = false := by
+  by_cases hbeq : (ys.length == xs.length) = true
+  · have hlen : ys.length = xs.length := by
+      simpa using hbeq
+    have hsp : List.Subperm xs ys := List.subperm_of_subset hxs hsub
+    have hperm : List.Perm xs ys :=
+      List.Subperm.perm_of_length_le hsp (by simp [hlen])
+    have hyx : y ∈ xs := (List.Perm.mem_iff hperm).mpr hy
+    exact False.elim (hnot hyx)
+  · exact bool_false_of_not_true hbeq
+
+theorem list_length_beq_one_false_of_two_mem {α : Type}
+    [DecidableEq α] (xs : List α) (x y : α)
+    (hx : x ∈ xs) (hy : y ∈ xs) (hne : x ≠ y) :
+    (xs.length == 1) = false := by
+  cases xs with
+  | nil => cases hx
+  | cons a rest =>
+      cases rest with
+      | nil =>
+          simp only [List.mem_cons, List.not_mem_nil] at hx hy
+          rcases hx with rfl | hxfalse
+          · rcases hy with rfl | hyfalse
+            · exact False.elim (hne rfl)
+            · cases hyfalse
+          · cases hxfalse
+      | cons _ _ =>
+          rfl
+
+theorem chainClosureStep_append (orients : List TauOrient)
+    (pref suffix seen : List (List TauState)) :
+    chainClosureStep orients (pref ++ suffix) seen =
+      chainClosureStep orients suffix (chainClosureStep orients pref seen) := by
+  simp [chainClosureStep, List.foldl_append]
+
+theorem chainClosureStep_mem_of_seen (orients : List TauOrient)
+    (fiber seen : List (List TauState)) (x : List TauState)
+    (h : x ∈ seen) :
+    x ∈ chainClosureStep orients fiber seen := by
+  unfold chainClosureStep
+  induction fiber generalizing seen with
+  | nil =>
+      simpa using h
+  | cons candidate rest ih =>
+      simp only [List.foldl_cons]
+      apply ih
+      by_cases hc :
+          (seen.any fun current => chainSingleKempeStep orients current candidate) = true
+      · simp only [hc, if_true]
+        exact mem_addIfFresh_of_mem h
+      · have hfalse :
+            (seen.any fun current => chainSingleKempeStep orients current candidate) =
+              false :=
+          bool_false_of_not_true hc
+        simp only [hfalse, Bool.false_eq_true, if_false]
+        exact h
+
+theorem chainClosureStep_nodup (orients : List TauOrient)
+    (fiber seen : List (List TauState)) (hseen : seen.Nodup) :
+    (chainClosureStep orients fiber seen).Nodup := by
+  unfold chainClosureStep
+  induction fiber generalizing seen with
+  | nil =>
+      simpa using hseen
+  | cons candidate rest ih =>
+      simp only [List.foldl_cons]
+      by_cases hc :
+          (seen.any fun current => chainSingleKempeStep orients current candidate) = true
+      · simp only [hc, if_true]
+        exact ih (addIfFresh seen candidate) (addIfFresh_nodup seen candidate hseen)
+      · have hfalse :
+            (seen.any fun current => chainSingleKempeStep orients current candidate) =
+              false :=
+          bool_false_of_not_true hc
+        simp only [hfalse, Bool.false_eq_true, if_false]
+        exact ih seen hseen
+
+theorem chainClosureStep_cons_mem_of_seen_step (orients : List TauOrient)
+    (target : List TauState) (rest seen : List (List TauState))
+    (current : List TauState) (hcurrent : current ∈ seen)
+    (hstep : chainSingleKempeStep orients current target = true) :
+    target ∈ chainClosureStep orients (target :: rest) seen := by
+  unfold chainClosureStep
+  simp only [List.foldl_cons]
+  have hany : (seen.any fun cur => chainSingleKempeStep orients cur target) = true :=
+    list_any_true_of_mem hcurrent hstep
+  apply chainClosureStep_mem_of_seen
+  simp only [hany, if_true]
+  exact mem_addIfFresh_self seen target
+
+theorem chainClosureStep_mem_of_seen_step (orients : List TauOrient)
+    (fiber seen : List (List TauState)) (current target : List TauState)
+    (htarget : target ∈ fiber) (hcurrent : current ∈ seen)
+    (hstep : chainSingleKempeStep orients current target = true) :
+    target ∈ chainClosureStep orients fiber seen := by
+  unfold chainClosureStep
+  induction fiber generalizing seen current with
+  | nil =>
+      cases htarget
+  | cons candidate rest ih =>
+      simp only [List.foldl_cons]
+      let newSeen : List (List TauState) :=
+        if (seen.any fun cur => chainSingleKempeStep orients cur candidate) = true then
+          addIfFresh seen candidate
+        else seen
+      change target ∈ List.foldl
+        (fun acc cand =>
+          if (acc.any fun cur => chainSingleKempeStep orients cur cand) = true then
+            addIfFresh acc cand
+          else acc)
+        newSeen rest
+      by_cases heq : candidate = target
+      · have hany :
+            (seen.any fun cur => chainSingleKempeStep orients cur candidate) = true := by
+          rw [heq]
+          exact list_any_true_of_mem hcurrent hstep
+        have hnew : target ∈ newSeen := by
+          simp only [newSeen, hany, if_true]
+          rw [heq]
+          exact mem_addIfFresh_self seen target
+        change target ∈ chainClosureStep orients rest newSeen
+        exact chainClosureStep_mem_of_seen orients rest newSeen target hnew
+      · have htail : target ∈ rest := by
+          cases htarget with
+          | head hhead => contradiction
+          | tail _ htail => exact htail
+        have hcurrent' : current ∈ newSeen := by
+          by_cases hc :
+              (seen.any fun cur => chainSingleKempeStep orients cur candidate) = true
+          · simp only [newSeen, hc, if_true]
+            exact mem_addIfFresh_of_mem hcurrent
+          · have hfalse :
+                (seen.any fun cur => chainSingleKempeStep orients cur candidate) =
+                  false :=
+              bool_false_of_not_true hc
+            simp only [newSeen, hfalse, Bool.false_eq_true, if_false]
+            exact hcurrent
+        change target ∈ chainClosureStep orients rest newSeen
+        exact ih newSeen current htail hcurrent' hstep
+
+theorem chainClosureStep_mem_seen_or_fiber (orients : List TauOrient)
+    (fiber seen : List (List TauState)) (x : List TauState)
+    (h : x ∈ chainClosureStep orients fiber seen) :
+    x ∈ seen ∨ x ∈ fiber := by
+  unfold chainClosureStep at h
+  induction fiber generalizing seen with
+  | nil =>
+      simp at h
+      exact Or.inl h
+  | cons candidate rest ih =>
+      simp only [List.foldl_cons] at h
+      by_cases hc :
+          (seen.any fun current => chainSingleKempeStep orients current candidate) = true
+      · simp only [hc, if_true] at h
+        rcases ih (addIfFresh seen candidate) h with hnew | hrest
+        · rcases mem_addIfFresh_source_or_eq seen candidate x hnew with hseen | rfl
+          · exact Or.inl hseen
+          · exact Or.inr (by simp)
+        · exact Or.inr (by simp [hrest])
+      · have hfalse :
+            (seen.any fun current => chainSingleKempeStep orients current candidate) =
+              false :=
+          bool_false_of_not_true hc
+        simp only [hfalse, Bool.false_eq_true, if_false] at h
+        rcases ih seen h with hseen | hrest
+        · exact Or.inl hseen
+        · exact Or.inr (by simp [hrest])
+
+theorem chainClosureStep_not_mem_of_not_mem_seen_not_mem_fiber
+    (orients : List TauOrient) (fiber seen : List (List TauState)) (x : List TauState)
+    (hseen : x ∉ seen) (hfiber : x ∉ fiber) :
+    x ∉ chainClosureStep orients fiber seen := by
+  intro hx
+  rcases chainClosureStep_mem_seen_or_fiber orients fiber seen x hx with hxseen | hxfiber
+  · exact hseen hxseen
+  · exact hfiber hxfiber
+
+theorem chainClosureStep_cons_not_mem_target_of_no_step
+    (orients : List TauOrient) (target : List TauState)
+    (rest seen : List (List TauState))
+    (hany : (seen.any fun cur => chainSingleKempeStep orients cur target) = false)
+    (hseen : target ∉ seen) (hrest : target ∉ rest) :
+    target ∉ chainClosureStep orients (target :: rest) seen := by
+  unfold chainClosureStep
+  simp only [List.foldl_cons, hany, Bool.false_eq_true, if_false]
+  exact chainClosureStep_not_mem_of_not_mem_seen_not_mem_fiber
+    orients rest seen target hseen hrest
+
+theorem chainClosureStep_mem_seen_of_stop (orients : List TauOrient)
+    (fiber seen : List (List TauState)) (x : List TauState)
+    (hseen : seen.Nodup)
+    (hstop : ((chainClosureStep orients fiber seen).length == seen.length) = true)
+    (hx : x ∈ chainClosureStep orients fiber seen) :
+    x ∈ seen := by
+  have hlen : (chainClosureStep orients fiber seen).length = seen.length := by
+    simpa using hstop
+  have hsub : seen ⊆ chainClosureStep orients fiber seen := by
+    intro y hy
+    exact chainClosureStep_mem_of_seen orients fiber seen y hy
+  have hsp : List.Subperm seen (chainClosureStep orients fiber seen) :=
+    List.subperm_of_subset hseen hsub
+  have hperm : List.Perm seen (chainClosureStep orients fiber seen) :=
+    List.Subperm.perm_of_length_le hsp (by simp [hlen])
+  exact (List.Perm.mem_iff hperm).mpr hx
+
+theorem closeChainFiber_mem_of_seen (orients : List TauOrient)
+    (fiber : List (List TauState)) (n : Nat) (seen : List (List TauState))
+    (x : List TauState) (h : x ∈ seen) :
+    x ∈ closeChainFiber orients fiber n seen := by
+  induction n generalizing seen with
+  | zero =>
+      simpa [closeChainFiber] using h
+  | succ n ih =>
+      simp only [closeChainFiber]
+      let seen' := chainClosureStep orients fiber seen
+      have hx' : x ∈ seen' := chainClosureStep_mem_of_seen orients fiber seen x h
+      by_cases hstop : ((seen'.length == seen.length) = true)
+      · simp only [seen', hstop, if_true]
+        exact hx'
+      · have hfalse : (seen'.length == seen.length) = false :=
+          bool_false_of_not_true hstop
+        simp only [seen', hfalse, Bool.false_eq_true, if_false]
+        exact ih seen' hx'
+
+theorem closeChainFiber_mem_of_seen_step (orients : List TauOrient)
+    (fiber : List (List TauState)) (n : Nat) (seen : List (List TauState))
+    (current target : List TauState)
+    (htarget : target ∈ fiber) (hcurrent : current ∈ seen)
+    (hstep : chainSingleKempeStep orients current target = true) :
+    target ∈ closeChainFiber orients fiber (n + 1) seen := by
+  simp only [closeChainFiber]
+  let seen' := chainClosureStep orients fiber seen
+  have ht' : target ∈ seen' :=
+    chainClosureStep_mem_of_seen_step orients fiber seen current target htarget hcurrent hstep
+  by_cases hstop : ((seen'.length == seen.length) = true)
+  · simp only [seen', hstop, if_true]
+    exact ht'
+  · have hfalse : (seen'.length == seen.length) = false :=
+      bool_false_of_not_true hstop
+    simp only [seen', hfalse, Bool.false_eq_true, if_false]
+    exact closeChainFiber_mem_of_seen orients fiber n seen' target ht'
+
+theorem closeChainFiber_mem_of_closureStep (orients : List TauOrient)
+    (fiber : List (List TauState)) (n : Nat) (seen : List (List TauState))
+    (x : List TauState) (h : x ∈ chainClosureStep orients fiber seen) :
+    x ∈ closeChainFiber orients fiber (n + 1) seen := by
+  simp only [closeChainFiber]
+  let seen' := chainClosureStep orients fiber seen
+  have hx' : x ∈ seen' := h
+  by_cases hstop : ((seen'.length == seen.length) = true)
+  · simp only [seen', hstop, if_true]
+    exact hx'
+  · have hfalse : (seen'.length == seen.length) = false :=
+      bool_false_of_not_true hstop
+    simp only [seen', hfalse, Bool.false_eq_true, if_false]
+    exact closeChainFiber_mem_of_seen orients fiber n seen' x hx'
+
+theorem closeChainFiber_mem_of_second_closureStep (orients : List TauOrient)
+    (fiber : List (List TauState)) (n : Nat) (seen : List (List TauState))
+    (x : List TauState)
+    (hgrow :
+      ((chainClosureStep orients fiber seen).length == seen.length) = false)
+    (h : x ∈ chainClosureStep orients fiber
+      (chainClosureStep orients fiber seen)) :
+    x ∈ closeChainFiber orients fiber (n + 2) seen := by
+  simp only [closeChainFiber]
+  let seen' := chainClosureStep orients fiber seen
+  have hfalse : (seen'.length == seen.length) = false := by
+    simpa [seen'] using hgrow
+  simp only [seen', hfalse, Bool.false_eq_true, if_false]
+  exact closeChainFiber_mem_of_closureStep orients fiber n seen' x h
+
+theorem closeChainFiber_mem_of_third_closureStep (orients : List TauOrient)
+    (fiber : List (List TauState)) (n : Nat) (seen : List (List TauState))
+    (x : List TauState)
+    (hgrow₁ :
+      ((chainClosureStep orients fiber seen).length == seen.length) = false)
+    (hgrow₂ :
+      ((chainClosureStep orients fiber
+          (chainClosureStep orients fiber seen)).length ==
+        (chainClosureStep orients fiber seen).length) = false)
+    (h : x ∈ chainClosureStep orients fiber
+      (chainClosureStep orients fiber
+        (chainClosureStep orients fiber seen))) :
+    x ∈ closeChainFiber orients fiber (n + 3) seen := by
+  simp only [closeChainFiber]
+  let seen' := chainClosureStep orients fiber seen
+  have hfalse : (seen'.length == seen.length) = false := by
+    simpa [seen'] using hgrow₁
+  simp only [seen', hfalse, Bool.false_eq_true, if_false]
+  exact closeChainFiber_mem_of_second_closureStep orients fiber n seen' x (by
+    simpa [seen'] using hgrow₂) (by
+    simpa [seen'] using h)
+
+theorem closeChainFiber_mem_mono_succ (orients : List TauOrient)
+    (fiber : List (List TauState)) (n : Nat) (seen : List (List TauState))
+    (x : List TauState)
+    (h : x ∈ closeChainFiber orients fiber n seen) :
+    x ∈ closeChainFiber orients fiber (n + 1) seen := by
+  induction n generalizing seen with
+  | zero =>
+      exact closeChainFiber_mem_of_seen orients fiber 1 seen x h
+  | succ n ih =>
+      simp only [closeChainFiber] at h ⊢
+      let seen' := chainClosureStep orients fiber seen
+      by_cases hstop : ((seen'.length == seen.length) = true)
+      · simp only [seen', hstop, if_true] at h ⊢
+        exact h
+      · have hfalse : (seen'.length == seen.length) = false :=
+          bool_false_of_not_true hstop
+        simp only [seen', hfalse, Bool.false_eq_true, if_false] at h ⊢
+        exact ih seen' h
+
+theorem closeChainFiber_mem_step_of_close (orients : List TauOrient)
+    (fiber : List (List TauState)) (n : Nat) (seen : List (List TauState))
+    (current target : List TauState)
+    (hseen : seen.Nodup)
+    (hcurrent : current ∈ closeChainFiber orients fiber n seen)
+    (htarget : target ∈ fiber)
+    (hstep : chainSingleKempeStep orients current target = true) :
+    target ∈ closeChainFiber orients fiber (n + 1) seen := by
+  induction n generalizing seen with
+  | zero =>
+      exact closeChainFiber_mem_of_seen_step orients fiber 0 seen current target
+        htarget hcurrent hstep
+  | succ n ih =>
+      simp only [closeChainFiber] at hcurrent ⊢
+      let seen' := chainClosureStep orients fiber seen
+      by_cases hstop : ((seen'.length == seen.length) = true)
+      · simp only [seen', hstop, if_true] at hcurrent ⊢
+        have hcurrentSeen : current ∈ seen := by
+          exact chainClosureStep_mem_seen_of_stop orients fiber seen current
+            hseen (by simpa [seen'] using hstop) (by simpa [seen'] using hcurrent)
+        exact chainClosureStep_mem_of_seen_step orients fiber seen current target
+          htarget hcurrentSeen hstep
+      · have hfalse : (seen'.length == seen.length) = false := bool_false_of_not_true hstop
+        simp only [seen', hfalse, Bool.false_eq_true, if_false] at hcurrent ⊢
+        exact ih seen' (chainClosureStep_nodup orients fiber seen hseen) hcurrent
+
+theorem closeChainFiber_mem_mono_add (orients : List TauOrient)
+    (fiber : List (List TauState)) (n m : Nat) (seen : List (List TauState))
+    (x : List TauState)
+    (h : x ∈ closeChainFiber orients fiber n seen) :
+    x ∈ closeChainFiber orients fiber (n + m) seen := by
+  induction m with
+  | zero =>
+      simpa using h
+  | succ m ih =>
+      change x ∈ closeChainFiber orients fiber ((n + m) + 1) seen
+      exact closeChainFiber_mem_mono_succ orients fiber (n + m) seen x ih
+
+theorem chainFiberConnected_of_forall_mem_close (orients : List TauOrient)
+    (fiber : List (List TauState))
+    (h : ∀ state, state ∈ fiber →
+      match fiber with
+      | [] => True
+      | root :: _ =>
+          state ∈ closeChainFiber orients fiber fiber.length [root]) :
+    chainFiberConnected orients fiber = true := by
+  cases fiber with
+  | nil =>
+      rfl
+  | cons root rest =>
+      unfold chainFiberConnected
+      rw [List.all_eq_true]
+      intro state hmem
+      exact List.contains_iff_mem.mpr (h state hmem)
+
+theorem chainSpecifiedKempeStep_implies_single
+    (orients : List TauOrient) (s t : List TauState) (move : ChainMove)
+    (hpair : colorPairs.contains (move.a, move.c) = true)
+    (hseed : (chainEdges orients).contains move.seed = true)
+    (hstep : chainSpecifiedKempeStep orients s t move = true) :
+    chainSingleKempeStep orients s t = true := by
+  unfold chainSingleKempeStep
+  rw [List.any_eq_true]
+  refine ⟨(move.a, move.c), List.contains_iff_mem.mp hpair, ?_⟩
+  rw [List.any_eq_true]
+  refine ⟨move.seed, List.contains_iff_mem.mp hseed, ?_⟩
+  simpa [chainSpecifiedKempeStep] using hstep
 
 def chainLKRInAudit (orients : List TauOrient) : Bool :=
   let statesList := allChainStates orients
@@ -1330,14 +2227,14 @@ structure ChainFiberParentRow where
   source : Nat
   parent : Nat
   move : ChainMove
-  deriving DecidableEq, BEq, Repr, Inhabited
+  deriving DecidableEq, BEq, ReflBEq, LawfulBEq, Repr, Inhabited
 
 structure ChainFiberCertificate where
   key : List LColor
   root : Nat
   maxDepth : Nat
   rows : List ChainFiberParentRow
-  deriving DecidableEq, BEq, Repr, Inhabited
+  deriving DecidableEq, BEq, ReflBEq, LawfulBEq, Repr, Inhabited
 
 def chainFiberIndicesFrom (orients : List TauOrient)
     (statesList : List (List TauState)) (key : List LColor) : List Nat :=

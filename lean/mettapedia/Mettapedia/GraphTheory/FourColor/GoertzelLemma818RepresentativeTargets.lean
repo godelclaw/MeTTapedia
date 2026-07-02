@@ -114,7 +114,8 @@ def representativeTargetModes : List FrontierMode :=
 
 def representativeTargetAudit (t : RepresentativeSemanticTarget) : Bool :=
   wordMode (targetFrontierWord t) == some (targetFrontierMode t)
-    && modeHasArchivedConnectivityEvidence (targetFrontierMode t)
+    && (frontierState (targetFrontierWord t) ==
+      FrontierState.active (targetFrontierMode t))
     && !(baseCertifiedModes.contains (targetFrontierMode t))
 
 theorem representativeTargetFrontierWordMode_ok
@@ -122,9 +123,10 @@ theorem representativeTargetFrontierWordMode_ok
     wordMode (targetFrontierWord t) = some (targetFrontierMode t) := by
   cases t <;> rfl
 
-theorem representativeTargetMode_hasArchivedConnectivityEvidence
+theorem representativeTargetFrontierState_ok
     (t : RepresentativeSemanticTarget) :
-    modeHasArchivedConnectivityEvidence (targetFrontierMode t) = true := by
+    frontierState (targetFrontierWord t) =
+      FrontierState.active (targetFrontierMode t) := by
   cases t <;> decide
 
 theorem representativeTarget_not_baseCertified

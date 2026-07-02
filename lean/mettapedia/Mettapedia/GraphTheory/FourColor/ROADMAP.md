@@ -1,6 +1,6 @@
 # FourColor: goal, status, and how to approach it
 
-*Last restructured: 2026-06-10.  Last proof-state update: 2026-07-01.  This file replaces the 3,577-line
+*Last restructured: 2026-06-10.  Last proof-state update: 2026-07-02.  This file replaces the 3,577-line
 `Theorem49NextHardProblemSummary.lean` prose (now in `Legacy/`) as the
 entry point.*
 
@@ -63,24 +63,157 @@ passed real per-fixed-input Kempe connectivity, with 324 fixed-input checks,
 144 nonempty fibers, 12,610,560 chain states, max fiber size 262,144, and
 zero recorded failures.  The exact length-7 surface also has four
 representatives, `MTTTTTM -> mode05`, `TTTTTTT -> mode09`,
-`TTTTTTM -> mode13`, and `MTTTTTT -> mode15`, but it is only partially
-sampled: `TTTTTTT`/`mode09` has connected evidence for inputs 0 through 19 in
-the timeout run and inputs 0 through 7 in the later killed chunk, while no
-length-7 representative has a complete all-81-input verdict.
+`TTTTTTM -> mode13`, and `MTTTTTT -> mode15`; the consolidated lazy-runner
+verdict now has complete all-81-input coverage for all four representatives:
+324 fixed-input verdicts, zero missing inputs, zero disconnected inputs,
+maximum fiber size 2,097,152 states, and maximum recorded RSS 1,871,948 KiB.
+The local archive filenames are
+`fourcolor-lemma818-gate2-length7-lazy-20260702-consolidated-summary.json`
+with SHA256
+`cc9b5d1c7080c4b97c20aafd7f885055db70001105455c06299626bfef6d373d`, plus
+`fourcolor-lemma818-gate2-length7-lazy-20260702-verdicts.jsonl` with SHA256
+`f5880f42687d303aea0ea7cbb20aca256c13a4a1031f56cecf0d9cc99dc1c099`.
 
 Thus the finite automaton is table-closed at the metadata layer, and the
-length-6 real-fiber corroboration is positive, but the length-7 streaming
-surface and the semantic all-chain consequence remain unproved.  Six base
-modes have real single/length-2 chain certificates, and `mode09`/`TTT` now has
-light fibers plus all twelve large fibers checked.  The remaining
-representative obligations are
-`mode00/mode01/mode02/mode03/mode05/mode06/mode08/mode12/mode13/mode14/mode15/mode17/mode19`.
-`GoertzelLemma818SemanticProgress.lean` packages that post-`TTT` frontier as
-a checked audit: one certified non-base target, seven certified semantic modes
-including the six base modes, and exactly thirteen remaining semantic modes.
-The next pass should consume this frontier by generating the remaining
-representative certificates or replacing them with a finite transition
-invariant; the progress audit itself is not the all-chain lift.
+length-6 and length-7 real-fiber corroboration is positive, but the semantic
+all-chain consequence remains unproved.  Six base modes have real
+single/length-2 chain certificates.  The live frontier route now represents
+the finite state explicitly as `frontierState`, proves append congruence by
+`frontierState_append_singleton`, and removes the old hard-coded
+connectivity report Boolean from the active semantic route.  The named
+remaining theorem is
+`GoertzelLemma818SemanticBridge.semanticFrontierStateSufficientForChain`.
+`GoertzelLemma818Fibration.lean` now supplies the abstract fibration lemma:
+connected base relation plus connected fibers plus lifted base steps imply
+connected total relation.  The next pass should instantiate that abstract
+fibration with the real chain/interface relations, the Lemma 8.14 local input,
+and the transparency/joint-interface lift.  The semantic bridge has also proved
+the empty-prefix fibration seed and reduced the all-word obligation to the
+append-one-gadget transfer closure theorem
+`chainAuditFibrationTransferClosed`, with
+`chainAuditForFrontierWord_ok_of_targets_and_transfer` as the final assembly
+theorem under that single hypothesis.  If the concrete interface lift resists,
+pin its exact quantified statement rather than returning to per-mode
+certification.
+The bridge now also has a concrete fixed-input layer:
+`ChainFiberPoint` is an actual member of `chainFiberFrom`,
+`ChainFiberFibrationCertificate` proves the real `chainFiberConnected` Boolean
+via `closeChainFiber`, and `ChainWordConcreteFibrationCertificate` assembles the
+all-input `chainLKRInAudit`.  This pins the proof-producing target as
+`concreteChainAuditFibrationTransferClosed`; the concrete empty-word seed is
+proved by `concreteChainWordFibrationEmptyCertificate_ok`, so
+`chainAuditForFrontierWord_ok_of_concrete_transfer` is now the direct all-word
+assembly theorem under that single concrete transfer hypothesis.  The adapter
+`chainAuditFibrationTransferClosed_of_concrete_empty_and_transfer` carries that
+concrete route back into the abstract final assembly.  The concrete transfer
+target has been split into two smaller hooks:
+`concreteChainStatesGeneratedCompatible`, proving that the chain-state generator
+only emits compatible chains, and `concreteChainFiberFibrationTransferClosed`,
+the per-input append-one-gadget fibration lift.  Together they imply
+`concreteChainAuditFibrationTransferClosed` via
+`concreteChainAuditFibrationTransferClosed_of_generated_and_fiber`.  The
+generator hook is now proved by `concreteChainStatesGeneratedCompatible_ok`
+using the general `allChainStates_compatible` prefix invariant, so the concrete
+route has one remaining proof-producing hook:
+`concreteChainFiberFibrationTransferClosed`.  This has been sharpened again:
+`ChainFiberAppendFibrationLift` states the append step as a fibration from the
+appended fixed-input fiber over the prefix fixed-input fiber.  The corrected
+induction is nonempty-prefix: singleton words are seeds, since the empty chain's
+artificial default input key is not a same-key prefix for arbitrary one-gadget
+fibers.  The abstract singleton audit seeds are now proved by
+`chainAuditFibrationSingletonSeeds_ok`, and
+`semanticFrontierStateSufficientForChain_of_singletons_and_nonempty_transfer`
+is the all-word route under the exact nonempty transfer hook
+`chainAuditFibrationNonemptyTransferClosed`.  On the concrete route the
+certificate quantifier has been tightened to the 81 audited
+`colorAssignments4` keys, and `concreteChainWordFibrationSingletonSeeds_ok`
+proves the singleton concrete seeds from the existing one-gadget audits.  Thus
+`semanticFrontierStateSufficientForChain_of_append_lift` depends only on the
+nonempty `concreteChainFiberAppendFibrationLiftClosed` hook.  That hook is now
+split into `concreteChainFiberAppendProjectionClosed`, the structural
+same-input projection from an appended fiber back to its prefix fiber, and
+`concreteChainFiberAppendFibrationOverProjectionClosed`, the genuine
+Kempe-lifting/fiber argument over such a projection; together they imply final
+sufficiency via
+`semanticFrontierStateSufficientForChain_of_projection_and_fibration`.  The
+local generator fact `extendChainStates_mem_split`/`extendChainStates_mem_prefix`
+records the one-step list-construction projection used by the structural side.
+The projection side has also been factored to the exact data-level target:
+`concreteChainFiberAppendPrefixClosed` follows from
+`concreteChainStatesAppendPrefixClosed` plus
+`concreteChainInputKeyAppendPrefixClosed`, and
+`semanticFrontierStateSufficientForChain_of_prefix_and_fibration` is the final
+route under that prefix theorem plus the remaining fibration-over-projection
+theorem.  The structural prefix theorem is now closed:
+`allChainStates_append_singleton_mem_prefix` proves that the chain-state
+generator projects an appended generated chain back to a generated prefix,
+`chainInputKey_append_prefix_take` proves fixed-input-key preservation, and
+`concreteChainFiberAppendPrefixClosed_ok` combines them.  Consequently
+`concreteChainFiberAppendPrefixProjection` is the exact projection used by the
+route.  The old all-projections hook
+`concreteChainFiberAppendFibrationOverProjectionClosed` remains as a stronger
+compatibility target, but the active remaining theorem is now the canonical
+prefix fibration `concreteChainFiberAppendPrefixFibrationClosed`, split into
+`concreteChainFiberAppendPrefixFiberReachClosed` and
+`concreteChainFiberAppendPrefixLiftStepClosed`; together they imply final
+sufficiency via
+`semanticFrontierStateSufficientForChain_of_prefix_fibration_fields`.  Since
+`chainFiberRootClosureStep` is encoded as membership in root closure, these two
+field obligations have been factored once more into explicit
+`closeChainFiber` membership targets:
+`concreteChainFiberAppendPrefixFiberClosureClosed` and
+`concreteChainFiberAppendPrefixLiftClosureClosed`; they imply final sufficiency
+via `semanticFrontierStateSufficientForChain_of_prefix_closure_fields`.  The
+same-prefix closure side is now separated from prefix mobility:
+`concreteChainFiberAppendPrefixSelfLiftClosureClosed_of_lift` derives a closed
+appended representative over the current prefix from the lift-closure theorem
+and the already-proved prefix certificate, while
+`concreteChainFiberAppendSamePrefixClosureTransferClosed` is the remaining
+local same-prefix transfer theorem.  The route now factors through
+`semanticFrontierStateSufficientForChain_of_lift_and_same_prefix`.
+This has been sharpened once more: prefix mobility can be supplied as either
+`concreteChainFiberAppendPrefixRootClosureLiftClosed` or
+`concreteChainFiberAppendPrefixPointClosureLiftClosed`, while local
+same-prefix transfer can be supplied by the path-shaped
+`concreteChainFiberAppendPrefixFiberReachClosed` via
+`concreteChainFiberAppendSamePrefixClosureTransferClosed_of_reach`.  These
+feed
+`semanticFrontierStateSufficientForChain_of_root_lift_and_same_prefix_reach`
+and
+`semanticFrontierStateSufficientForChain_of_point_lift_and_same_prefix_reach`.
+The same-prefix side now also has a raw list-prefix formulation:
+`concreteChainFiberAppendRawPrefixReachClosed`, equivalent to the
+projection-shaped reach target by
+`concreteChainFiberAppendPrefixProjection_eq_iff_take`.  This is the preferred
+interface for a last-gadget/local Kempe lift proof, since it asks directly for
+reach when `x.1.take word.length = y.1.take word.length`.  The corresponding
+sufficiency wrappers are
+`semanticFrontierStateSufficientForChain_of_root_lift_and_raw_prefix_reach`
+and
+`semanticFrontierStateSufficientForChain_of_point_lift_and_raw_prefix_reach`.
+The appended-state shape is now explicit too:
+`GoertzelLemma814.allChainStates_append_singleton_mem_split` extracts
+`states = pref ++ [last]` from `allChainStates (orients ++ [next])`, and
+`concreteChainFiberAppendPoint_mem_split` lifts this to appended fiber points
+with `pref ∈ concreteChainFiber word key`, `last ∈ allTauStates`, and the
+glued-interface compatibility equation.  A local same-prefix proof should use
+this split to reduce raw-prefix reach to last-gadget motion over a fixed
+prefix.  The constructive converse is now available too:
+`GoertzelLemma814.extendChainStates_mem_of_split` and
+`GoertzelLemma814.allChainStates_append_singleton_mem_of_split` rebuild
+appended generated chains from a generated prefix, a last Tau state, and the
+boundary compatibility equation, and
+`concreteChainFiberAppend_mem_of_prefix_last` lifts this to fixed-input
+fibers.  This makes the next local theorem a pure fixed-prefix/last-state
+reachability statement rather than another projection bookkeeping theorem.
+The exact local target is
+`concreteChainFiberAppendFixedPrefixLastReachClosed`; the wrapper
+`concreteChainFiberAppendRawPrefixReachClosed_of_fixed_prefix_last_reach`
+proves that this fixed-prefix last-state theorem implies the raw-prefix reach
+hook used by the final sufficiency theorems.
+`GoertzelLemma818SemanticProgress.lean` still packages the older post-`TTT`
+generated-certificate progress surface, but the current local-to-global work
+is the fibration-based frontier sufficiency theorem, not another length sweep.
 `GoertzelLemma818MirrorTripleComponentSmoke.lean` and
 `GoertzelLemma818MirrorTripleLightSlices.lean` now check the full light surface
 for a second remaining target: `MMM`/`mode05`, covering 69 light fixed-input
@@ -92,6 +225,32 @@ plus a fifth checked block of the reversed `[b,b,r,r]` large fiber.
 Do not extend representatives or raise kernel limits from this checkpoint;
 formalize the existing finite surface with compact per-fixed-input
 chain/component certificates or an equivalent finite transition invariant.
+
+## Build hygiene
+
+Do not use the archival aggregate as the default edit-check target.  The
+module `Mettapedia.GraphTheory.FourColor` imports the old CAP5/Theorem49
+route material and the generated Lemma 8.18 large-fiber certificate archive;
+at the current checkpoint it has 446 direct imports, a transitive FourColor
+closure of 638 modules, and 507 large-fiber modules.  It is the exhaustive
+archive build, not the day-to-day Pillar-C build.
+
+Use `Mettapedia.GraphTheory.FourColor.PillarC` for fast local-to-global
+interface work.  It imports the actual live route boundary: `GoertzelLemma814`,
+the length-two base/frontier semantic bridge, and the compact component-row
+certificate checker.  Its transitive closure has 12 FourColor modules
+including the wrapper itself, and no large-fiber modules.  From the Lean
+package directory, build it with:
+
+```
+lake -f lakefile.lean build Mettapedia.GraphTheory.FourColor.PillarC
+```
+
+Use `Mettapedia.GraphTheory.FourColor.GoertzelLemma818SemanticProgress` only
+when checking the completed `TTT` target-progress surface, since that module
+pulls in the generated large-fiber certificate layer.  Use the full
+`Mettapedia.GraphTheory.FourColor` aggregate only for archival or release-style
+checks.
 
 The Lean certificate interface is now split at the right granularity for that
 generated proof.  `GoertzelLemma814.lean` contains per-fixed-input certificate
