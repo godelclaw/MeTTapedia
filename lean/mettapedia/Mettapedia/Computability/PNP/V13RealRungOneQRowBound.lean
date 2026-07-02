@@ -358,6 +358,37 @@ theorem v13RealLinear_rowsTargetCoefficient_card_le_one {m : Nat}
   letI := v13RealLinearRowsTargetCoefficient_subsingleton A rows i₀
   exact Fintype.card_le_one_iff_subsingleton.mpr inferInstance
 
+theorem v13RealLinear_rowsTargetCoefficient_card_eq_one_of_rowsGenerateTarget
+    {m : Nat} (A : V13F2LinearEquiv m) (rows : Finset (Fin m))
+    (i₀ : Fin m) (hgen : V13RealLinearRowsGenerateTarget A rows i₀) :
+    Fintype.card (V13RealLinearRowsTargetCoefficient A rows i₀) = 1 := by
+  classical
+  rcases hgen with ⟨coeff, hcoeff⟩
+  let witness : V13RealLinearRowsTargetCoefficient A rows i₀ :=
+    ⟨coeff, hcoeff⟩
+  letI := v13RealLinearRowsTargetCoefficient_subsingleton A rows i₀
+  let equiv : V13RealLinearRowsTargetCoefficient A rows i₀ ≃ Unit :=
+    {
+      toFun := fun _ => ()
+      invFun := fun _ => witness
+      left_inv := by
+        intro coeff'
+        exact Subsingleton.elim witness coeff'
+      right_inv := by
+        intro unit'
+        cases unit'
+        rfl
+    }
+  simpa using Fintype.card_congr equiv
+
+theorem v13RealLinear_rowsTargetCoefficient_card_eq_zero_of_not_rowsGenerateTarget
+    {m : Nat} (A : V13F2LinearEquiv m) (rows : Finset (Fin m))
+    (i₀ : Fin m) (hgen : ¬ V13RealLinearRowsGenerateTarget A rows i₀) :
+    Fintype.card (V13RealLinearRowsTargetCoefficient A rows i₀) = 0 := by
+  classical
+  rw [Fintype.card_eq_zero_iff]
+  exact ⟨fun coeff => hgen ⟨coeff.val, coeff.property⟩⟩
+
 theorem v13RealLinear_rowsBlockTarget_of_rowsGenerateTarget {m : Nat}
     (A : V13F2LinearEquiv m) (rows : Finset (Fin m)) (i₀ : Fin m)
     (hgen : V13RealLinearRowsGenerateTarget A rows i₀) :
@@ -3014,6 +3045,49 @@ theorem
     have hpos : 1 ≤ C := Nat.succ_le_of_lt (Nat.pos_of_ne_zero hzero)
     have hone : C = 1 := Nat.le_antisymm hcoeff hpos
     simp [C, hone]
+
+theorem
+    v13RealLinearAdaptiveQRowGeneratedTargetCoefficientRowsetTranscriptProductCell_card_eq_transcriptCell_of_rowsGenerateTarget
+    {m q : Nat} {Seed : Type*} [Fintype Seed]
+    (E : V13RealLinearAdaptiveQRowExperiment m q Seed) (i₀ : Fin m)
+    (seed : Seed) (rows : Finset (Fin m))
+    (transcript : V13RealLinearRowsTranscriptSpace m rows)
+    (hgen :
+      V13RealLinearRowsGenerateTarget (E.sampleA seed) rows i₀) :
+    Fintype.card
+        (V13RealLinearAdaptiveQRowGeneratedTargetCoefficientRowsetTranscriptProductCell
+          E i₀ seed rows transcript) =
+      Fintype.card
+        (V13RealLinearAdaptiveQRowRowsetTranscriptCell
+          E seed rows transcript) := by
+  classical
+  rw [
+    v13RealLinearAdaptiveQRowGeneratedTargetCoefficientRowsetTranscriptProductCell_card_eq_product
+      E i₀ seed rows transcript]
+  rw [
+    v13RealLinear_rowsTargetCoefficient_card_eq_one_of_rowsGenerateTarget
+      (E.sampleA seed) rows i₀ hgen]
+  exact Nat.mul_one _
+
+theorem
+    v13RealLinearAdaptiveQRowGeneratedTargetCoefficientRowsetTranscriptProductCell_card_eq_zero_of_not_rowsGenerateTarget
+    {m q : Nat} {Seed : Type*} [Fintype Seed]
+    (E : V13RealLinearAdaptiveQRowExperiment m q Seed) (i₀ : Fin m)
+    (seed : Seed) (rows : Finset (Fin m))
+    (transcript : V13RealLinearRowsTranscriptSpace m rows)
+    (hgen :
+      ¬ V13RealLinearRowsGenerateTarget (E.sampleA seed) rows i₀) :
+    Fintype.card
+        (V13RealLinearAdaptiveQRowGeneratedTargetCoefficientRowsetTranscriptProductCell
+          E i₀ seed rows transcript) = 0 := by
+  classical
+  rw [
+    v13RealLinearAdaptiveQRowGeneratedTargetCoefficientRowsetTranscriptProductCell_card_eq_product
+      E i₀ seed rows transcript]
+  rw [
+    v13RealLinear_rowsTargetCoefficient_card_eq_zero_of_not_rowsGenerateTarget
+      (E.sampleA seed) rows i₀ hgen]
+  exact Nat.mul_zero _
 
 theorem
     v13RealLinearAdaptiveQRow_rowsetProduct_eq_sum_transcriptProductCells
