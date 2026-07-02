@@ -85,8 +85,13 @@ set_option autoImplicit false
 #check V13RealLinearUniformCausalLowPositiveRowSpanCountingBound
 #check V13RealLinearUniformCausalLowPositiveCompletionCountingBound
 #check V13RealLinearAdaptiveQRowGeneratedCoefficient
+#check V13RealLinearAdaptiveQRowGeneratedCoefficientFiber
+#check v13RealLinearAdaptiveQRowGeneratedCoefficient_card_eq_sum_fibers
 #check v13RealLinearAdaptiveQRowGenerated_card_le_coefficient
 #check V13RealLinearUniformCausalLowPositiveCoefficientCountingBound
+#check V13RealLinearUniformCausalLowPositiveFiberCoefficientCountingBound
+#check v13RealLinear_f2vec_card
+#check v13RealLinearUniformCausalLowPositiveCoefficientCountingBound_of_fiberCounting
 #check v13RealLinearUniformCausalLowPositiveCompletionCountingBound_of_coefficientCounting
 #check v13RealLinearUniformCausalLowPositiveRowSpanCountingBound_of_completionCounting
 #check v13RealLinear_uniform_causal_qrow_success_bound_of_lowPositiveSpanCounting
@@ -198,6 +203,18 @@ theorem v13RealLinearQRowBoundRegression_causal_coefficient_shape
     v13RealLinear_uniform_causal_qrow_success_bound_of_coefficientCounting
       hcount v13RealLinearQRowBoundRegression_causalConstant 0
 
+theorem v13RealLinearQRowBoundRegression_causal_fiber_shape
+    (hcount :
+      V13RealLinearUniformCausalLowPositiveFiberCoefficientCountingBound) :
+    v13RealLinearUniformCausalQRowSuccess
+        v13RealLinearQRowBoundRegression_causalConstant 0 ≤
+      (1 / 2 : Rat) + v13RealLinearQRowEpsilon 0 2 := by
+  exact
+    v13RealLinear_uniform_causal_qrow_success_bound_of_coefficientCounting
+      (v13RealLinearUniformCausalLowPositiveCoefficientCountingBound_of_fiberCounting
+        hcount)
+      v13RealLinearQRowBoundRegression_causalConstant 0
+
 #print axioms v13RealLinear_adaptiveKernelFlipSurchargeBound
 #print axioms v13RealLinear_rowCombination_card_le_for_branch
 #print axioms v13RealLinear_rowsBlockTarget_of_rowsGenerateTarget
@@ -233,7 +250,10 @@ theorem v13RealLinearQRowBoundRegression_causal_coefficient_shape
 #print axioms v13RealLinear_uniform_causal_zero_row_success_bound
 #print axioms v13RealLinear_uniform_high_budget_success_bound
 #print axioms v13RealLinear_uniform_causal_high_budget_success_bound
+#print axioms v13RealLinearAdaptiveQRowGeneratedCoefficient_card_eq_sum_fibers
 #print axioms v13RealLinearAdaptiveQRowGenerated_card_le_coefficient
+#print axioms v13RealLinear_f2vec_card
+#print axioms v13RealLinearUniformCausalLowPositiveCoefficientCountingBound_of_fiberCounting
 #print axioms v13RealLinearUniformCausalLowPositiveCompletionCountingBound_of_coefficientCounting
 #print axioms v13RealLinearUniformCausalLowPositiveRowSpanCountingBound_of_completionCounting
 #print axioms v13RealLinear_uniform_causal_qrow_success_bound_of_lowPositiveSpanCounting
@@ -246,5 +266,6 @@ theorem v13RealLinearQRowBoundRegression_causal_coefficient_shape
 #print axioms v13RealLinearQRowBoundRegression_causal_global_shape
 #print axioms v13RealLinearQRowBoundRegression_causal_completion_shape
 #print axioms v13RealLinearQRowBoundRegression_causal_coefficient_shape
+#print axioms v13RealLinearQRowBoundRegression_causal_fiber_shape
 
 end Mettapedia.Computability.PNP
