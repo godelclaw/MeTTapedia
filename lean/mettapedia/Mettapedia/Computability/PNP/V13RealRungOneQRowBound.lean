@@ -1309,6 +1309,37 @@ def v13RealLinearShear01Swap : V13F2LinearEquiv 2 where
     funext r
     fin_cases r <;> simp [f2ZeroVec]
 
+def v13RealLinearSwapShear10 : V13F2LinearEquiv 2 where
+  toEquiv :=
+    { toFun := fun x r => if r = 0 then x 1 else x 0 + x 1
+      invFun := fun x r => if r = 0 then x 0 + x 1 else x 0
+      left_inv := by
+        intro x
+        funext r
+        fin_cases r
+        · simp
+          calc
+            x 1 + (x 0 + x 1) = x 0 + x 1 + x 1 := by ac_rfl
+            _ = x 0 := f2_add_right_self (x 0) (x 1)
+        · simp
+      right_inv := by
+        intro x
+        funext r
+        fin_cases r
+        · simp
+        · simp
+          calc
+            (x 0 + x 1) + x 0 = x 1 + x 0 + x 0 := by ac_rfl
+            _ = x 1 := f2_add_right_self (x 1) (x 0) }
+  map_add := by
+    intro x y
+    funext r
+    fin_cases r <;>
+      simp [f2AddVec, add_assoc, add_left_comm, add_comm]
+  map_zero := by
+    funext r
+    fin_cases r <;> simp [f2ZeroVec]
+
 theorem v13RealLinearIdentity_targetRows_zero_nonempty :
     (V13RealLinearTargetRows (v13RealLinearIdentity 2) (0 : Fin 2)).Nonempty := by
   refine ⟨0, ?_⟩
@@ -1347,6 +1378,25 @@ theorem v13RealLinearShear01Swap_targetRows_zero_nonempty :
       v13RealLinearShear01Swap (0 : Fin 2) 1).2 (by
         intro w
         simp [v13RealLinearShear01Swap])
+
+theorem v13RealLinearSwapShear10_targetRows_zero_empty :
+    V13RealLinearTargetRows v13RealLinearSwapShear10 (0 : Fin 2) = ∅ := by
+  classical
+  ext row
+  constructor
+  · intro hrow
+    have htarget :
+        ∀ w : F2Vec 2,
+          v13RealLinearSwapShear10.toEquiv w row = w (0 : Fin 2) :=
+      (v13RealLinear_mem_targetRows_iff
+        v13RealLinearSwapShear10 (0 : Fin 2) row).1 hrow
+    fin_cases row
+    · have h := htarget (v13RealLinearSingleBit (1 : Fin 2))
+      norm_num [v13RealLinearSwapShear10, v13RealLinearSingleBit] at h
+    · have h := htarget (v13RealLinearSingleBit (1 : Fin 2))
+      norm_num [v13RealLinearSwapShear10, v13RealLinearSingleBit] at h
+  · intro h
+    simp at h
 
 noncomputable def v13RealLinearTargetRowOccurrenceFour
     (k : Fin 4) : V13RealLinearUniformTargetRowOccurrence (0 : Fin 2) :=

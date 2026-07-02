@@ -1185,6 +1185,8 @@ theorem currentPNPV13RealRungOneQRowBound_node :
       (4 ≤
         Fintype.card
           (V13RealLinearUniformTargetRowOccurrence (0 : Fin 2))) ∧
+      (V13RealLinearTargetRows
+          v13RealLinearSwapShear10 (0 : Fin 2) = ∅) ∧
       (Fintype.card (V13F2LinearEquiv 2) ≤ 6 →
         (1 / 2 : Rat) <
           v13RealLinearUniformTargetRowOccurrenceMass (0 : Fin 2)) ∧
@@ -1478,6 +1480,7 @@ theorem currentPNPV13RealRungOneQRowBound_node :
       fun i₀ =>
         v13RealLinear_targetRowObserverGeneratedMass_eq_occurrenceMass i₀,
       v13RealLinearUniformTargetRowOccurrence_card_four_le,
+      v13RealLinearSwapShear10_targetRows_zero_empty,
       fun hcard =>
         v13RealLinearUniformTargetRowOccurrenceMass_two_zero_gt_half hcard,
       fun hcard =>
