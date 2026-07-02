@@ -210,7 +210,16 @@ The exact local target is
 `concreteChainFiberAppendFixedPrefixLastReachClosed`; the wrapper
 `concreteChainFiberAppendRawPrefixReachClosed_of_fixed_prefix_last_reach`
 proves that this fixed-prefix last-state theorem implies the raw-prefix reach
-hook used by the final sufficiency theorems.
+hook used by the final sufficiency theorems.  The target is now split by the
+last gadget's outgoing interface trace:
+`concreteChainFiberAppendFixedPrefixSameInterfaceTraceReachClosed` is the
+same-trace case, intended to be proved by reusing the checked Lemma 8.14
+gadget audit relative to the fixed interface boundary, and
+`concreteChainFiberAppendFixedPrefixInterfaceMobilityReachClosed` is the
+different-trace/base-mobility case, intended to be finite per representative.
+`concreteChainFiberAppendFixedPrefixLastReachClosed_of_interface_trace_cases`
+and `concreteChainFiberAppendRawPrefixReachClosed_of_interface_trace_cases`
+assemble those two cases back into the existing sufficiency route.
 `GoertzelLemma818SemanticProgress.lean` still packages the older post-`TTT`
 generated-certificate progress surface, but the current local-to-global work
 is the fibration-based frontier sufficiency theorem, not another length sweep.
