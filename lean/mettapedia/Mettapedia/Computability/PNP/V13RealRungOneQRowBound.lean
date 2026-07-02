@@ -866,6 +866,11 @@ theorem v13RealLinearFunctional_card (m : Nat) :
 abbrev V13RealLinearRowFunctionalTable (m : Nat) :=
   Fin m → (F2Vec m →ₗ[ZMod 2] ZMod 2)
 
+def v13RealLinearRowFunctionalTableOfEquiv {m : Nat}
+    (A : V13F2LinearEquiv m) :
+    V13RealLinearRowFunctionalTable m :=
+  fun row => v13RealLinearRowFunctional A row
+
 noncomputable instance v13RealLinearRowFunctionalTableFintype (m : Nat) :
     Fintype (V13RealLinearRowFunctionalTable m) := by
   classical
@@ -1296,6 +1301,20 @@ def V13RealLinearRowFunctionalTargetCosetHit {m : Nat}
     v13RealLinearTargetFunctional i₀ =
       v13RealLinearRowFunctional A row + z
 
+theorem
+    v13RealLinearFunctionalTableTargetCosetHit_of_rowFunctionalTargetCosetHit
+    {m : Nat} {A : V13F2LinearEquiv m} {rows : Finset (Fin m)}
+    {i₀ row : Fin m}
+    (hhit : V13RealLinearRowFunctionalTargetCosetHit A rows i₀ row) :
+    V13RealLinearFunctionalTableTargetCosetHit
+      (v13RealLinearRowFunctionalTableOfEquiv A) rows i₀ row := by
+  rcases hhit with ⟨z, hz, htarget⟩
+  refine ⟨z, ?_, ?_⟩
+  · simpa [V13RealLinearRowsFunctionalSpan,
+      V13RealLinearFunctionalTableRowsSpan,
+      v13RealLinearRowFunctionalTableOfEquiv] using hz
+  · simpa [v13RealLinearRowFunctionalTableOfEquiv] using htarget
+
 theorem v13RealLinear_rowFunctional_range_insert {m : Nat}
     (A : V13F2LinearEquiv m) (rows : Finset (Fin m)) (row : Fin m) :
     Set.range (fun r : {r : Fin m // r ∈ insert row rows} =>
@@ -1375,6 +1394,119 @@ theorem v13RealLinearRowTraceCosetHit_of_newCapture {m : Nat}
       (trace.get ⟨t, h⟩)
   · exact hcapture.1
   · simpa [v13RealLinearRowTracePrefixRows_succ trace h] using hcapture.2
+
+theorem v13RealLinearRowTraceNewCapture_get_not_mem {m : Nat}
+    (A : V13F2LinearEquiv m) (i₀ : Fin m)
+    (trace : V13RealLinearRowTrace m) {t : Nat}
+    (h : t < trace.length)
+    (hcapture : V13RealLinearRowTraceNewCapture A i₀ trace t) :
+    trace.get ⟨t, h⟩ ∉
+      v13RealLinearRowTracePrefixRows trace t := by
+  intro hmem
+  apply hcapture.1
+  have hprefixSucc :
+      v13RealLinearRowTracePrefixRows trace (t + 1) =
+        v13RealLinearRowTracePrefixRows trace t := by
+    rw [v13RealLinearRowTracePrefixRows_succ trace h]
+    exact Finset.insert_eq_of_mem hmem
+  simpa [hprefixSucc] using hcapture.2
+
+theorem
+    v13RealLinearFunctionalTableTargetCosetHit_of_rowTraceNewCapture
+    {m : Nat} (A : V13F2LinearEquiv m) (i₀ : Fin m)
+    (trace : V13RealLinearRowTrace m) {t : Nat}
+    (h : t < trace.length)
+    (hcapture : V13RealLinearRowTraceNewCapture A i₀ trace t) :
+    V13RealLinearFunctionalTableTargetCosetHit
+      (v13RealLinearRowFunctionalTableOfEquiv A)
+      (v13RealLinearRowTracePrefixRows trace t) i₀
+      (trace.get ⟨t, h⟩) := by
+  apply
+    v13RealLinearFunctionalTableTargetCosetHit_of_rowFunctionalTargetCosetHit
+  apply
+    v13RealLinear_rowFunctionalTargetCosetHit_of_insert_generates
+      A (v13RealLinearRowTracePrefixRows trace t) i₀
+      (trace.get ⟨t, h⟩)
+  · exact hcapture.1
+  · simpa [v13RealLinearRowTracePrefixRows_succ trace h] using hcapture.2
+
+theorem
+    v13RealLinearSequentialRowTraceNewCapture_chooseRow_not_mem
+    {m q : Nat} (observer : V13RealLinearSequentialRowObserver m q)
+    (publicInput : V13RealLinearPublic m) (i₀ : Fin m) {t : Nat}
+    (ht : t < q)
+    (hcapture :
+      V13RealLinearRowTraceNewCapture publicInput.A i₀
+        (v13RealLinearSequentialRowTraceOf observer publicInput) t) :
+    observer.chooseRow
+        (v13RealLinearSequentialRowPrefixTranscriptOf
+          observer publicInput t) ∉
+      v13RealLinearSequentialRowTranscriptRows
+        (v13RealLinearSequentialRowPrefixTranscriptOf
+          observer publicInput t) := by
+  have htraceLt :
+      t <
+        (v13RealLinearSequentialRowTraceOf observer publicInput).length := by
+    simpa [v13RealLinearSequentialRowTraceOf_length observer publicInput]
+      using ht
+  have hfresh :=
+    v13RealLinearRowTraceNewCapture_get_not_mem publicInput.A i₀
+      (v13RealLinearSequentialRowTraceOf observer publicInput)
+      htraceLt hcapture
+  have hget :=
+    v13RealLinearSequentialRowTraceOf_get_eq_chooseRow
+      observer publicInput ht
+  have hrows :=
+    v13RealLinearSequentialRowTracePrefixRows_eq_prefixTranscriptRows
+      observer publicInput (Nat.le_of_lt ht)
+  rw [← hget]
+  simpa [hrows] using hfresh
+
+theorem
+    v13RealLinearSequentialRowTraceNewCapture_prefixRows_card_le
+    {m q : Nat} (observer : V13RealLinearSequentialRowObserver m q)
+    (publicInput : V13RealLinearPublic m) (t : Nat) :
+    (v13RealLinearSequentialRowTranscriptRows
+        (v13RealLinearSequentialRowPrefixTranscriptOf
+          observer publicInput t)).card ≤ t :=
+  v13RealLinearSequentialRowPrefixTranscriptRows_card_le
+    observer publicInput t
+
+theorem
+    v13RealLinearSequentialRowTraceNewCapture_functionalTableTargetCosetHit
+    {m q : Nat} (observer : V13RealLinearSequentialRowObserver m q)
+    (publicInput : V13RealLinearPublic m) (i₀ : Fin m) {t : Nat}
+    (ht : t < q)
+    (hcapture :
+      V13RealLinearRowTraceNewCapture publicInput.A i₀
+        (v13RealLinearSequentialRowTraceOf observer publicInput) t) :
+    V13RealLinearFunctionalTableTargetCosetHit
+      (v13RealLinearRowFunctionalTableOfEquiv publicInput.A)
+      (v13RealLinearSequentialRowTranscriptRows
+        (v13RealLinearSequentialRowPrefixTranscriptOf
+          observer publicInput t))
+      i₀
+      (observer.chooseRow
+        (v13RealLinearSequentialRowPrefixTranscriptOf
+          observer publicInput t)) := by
+  have htraceLt :
+      t <
+        (v13RealLinearSequentialRowTraceOf observer publicInput).length := by
+    simpa [v13RealLinearSequentialRowTraceOf_length observer publicInput]
+      using ht
+  have hhit :=
+    v13RealLinearFunctionalTableTargetCosetHit_of_rowTraceNewCapture
+      publicInput.A i₀
+      (v13RealLinearSequentialRowTraceOf observer publicInput)
+      htraceLt hcapture
+  have hget :=
+    v13RealLinearSequentialRowTraceOf_get_eq_chooseRow
+      observer publicInput ht
+  have hrows :=
+    v13RealLinearSequentialRowTracePrefixRows_eq_prefixTranscriptRows
+      observer publicInput (Nat.le_of_lt ht)
+  rw [← hget]
+  simpa [hrows] using hhit
 
 theorem v13RealLinear_rowCombination_card {m : Nat}
     (rows : Finset (Fin m)) :
