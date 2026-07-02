@@ -3273,6 +3273,56 @@ theorem v13RealLinearUniformCausalLowPositiveRowSpanCountingBound_of_completionC
   rw [div_le_div_iff₀ hTpos hMpos]
   exact hcardRat
 
+theorem v13RealLinearUniformCausalLowPositiveCompletionCountingBound_of_rowSpanCounting
+    (hcount :
+      V13RealLinearUniformCausalLowPositiveRowSpanCountingBound) :
+    V13RealLinearUniformCausalLowPositiveCompletionCountingBound := by
+  intro m q observer i₀ hqpos hqm
+  have hmass := hcount observer i₀ hqpos hqm
+  unfold V13RealLinearUniformCausalRowSpanCountingBound at hmass
+  unfold V13RealLinearAdaptiveRowSpanCountingBound at hmass
+  unfold v13RealLinearAdaptiveQRowGeneratedMass at hmass
+  unfold v13RealLinearQRowEpsilon at hmass
+  let G := Fintype.card
+    (V13RealLinearAdaptiveQRowGenerated
+      (v13RealLinearUniformCausalQRowExperiment observer) i₀)
+  let T := Fintype.card
+    (V13RealLinearAdaptiveQRowWorld m (V13F2LinearEquiv m))
+  let Q := 2 ^ q
+  let M := 2 ^ m
+  have hTposNat : 0 < T := by
+    dsimp [T]
+    exact Fintype.card_pos_iff.mpr ⟨(v13RealLinearIdentity m, f2ZeroVec m)⟩
+  have hMposNat : 0 < M := by
+    dsimp [M]
+    positivity
+  have hTpos : (0 : Rat) < (T : Rat) := by
+    exact_mod_cast hTposNat
+  have hMpos : (0 : Rat) < (M : Rat) := by
+    exact_mod_cast hMposNat
+  have hQrat : (2 : Rat) ^ q = (Q : Rat) := by
+    dsimp [Q]
+    norm_num
+  have hMrat : (2 : Rat) ^ m = (M : Rat) := by
+    dsimp [M]
+    norm_num
+  have hmass' :
+      (G : Rat) / (T : Rat) ≤ (Q : Rat) / (M : Rat) := by
+    change (G : Rat) / (T : Rat) ≤ (2 : Rat) ^ q / (2 : Rat) ^ m at hmass
+    rw [hQrat, hMrat] at hmass
+    exact hmass
+  have hcardRat : (G : Rat) * (M : Rat) ≤ (Q : Rat) * (T : Rat) := by
+    exact (div_le_div_iff₀ hTpos hMpos).1 hmass'
+  have hcardNat : G * M ≤ Q * T := by
+    exact_mod_cast hcardRat
+  simpa [G, T, Q, M] using hcardNat
+
+theorem V13RealLinearUniformCausalLowPositiveRowSpanCountingBound_iff_completionCounting :
+    V13RealLinearUniformCausalLowPositiveRowSpanCountingBound ↔
+      V13RealLinearUniformCausalLowPositiveCompletionCountingBound :=
+  ⟨v13RealLinearUniformCausalLowPositiveCompletionCountingBound_of_rowSpanCounting,
+    v13RealLinearUniformCausalLowPositiveRowSpanCountingBound_of_completionCounting⟩
+
 theorem v13RealLinear_uniform_causal_qrow_success_bound_of_lowPositiveSpanCounting
     (hcount : V13RealLinearUniformCausalLowPositiveRowSpanCountingBound)
     {m q : Nat} (observer : V13RealLinearCausalRowObserver m q)
