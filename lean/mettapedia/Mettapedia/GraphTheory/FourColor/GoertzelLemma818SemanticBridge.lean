@@ -1027,6 +1027,69 @@ def ChainFiberAppendQuotientFibrationParentRowsFields.ofConcreteAppend
     baseParentRowsSymmetricRooted :=
       unitParentRowsSymmetricRootedConnectedCertificate baseStep }
 
+noncomputable def ChainFiberAppendQuotientFibrationParentRowsBaseData.ofPrefixRootStar
+    {word : List GoertzelLemma818FrontierMode.TauOrient}
+    {orient : GoertzelLemma818FrontierMode.TauOrient}
+    {key : List GoertzelLemma814.LColor}
+    (hcert : Nonempty (ChainWordConcreteFibrationCertificate word))
+    (hkey : key ∈ GoertzelLemma814.colorAssignments4)
+    {root : List GoertzelLemma814.TauState}
+    {rest : List (List GoertzelLemma814.TauState)}
+    (hfiber : concreteChainFiber word key = root :: rest) :
+    ChainFiberAppendQuotientFibrationParentRowsBaseData word orient key :=
+  letI : DecidableEq (ChainFiberPoint word key) := Classical.decEq _
+  let baseStep := chainFiberRootClosureStep word key
+  let rootPoint : ChainFiberPoint word key :=
+    ⟨root, by simp [hfiber]⟩
+  let nodes : List (ChainFiberPoint word key) :=
+    (concreteChainFiber word key).attach
+  let rootMem : rootPoint ∈ nodes := by
+    exact List.mem_attach _ _
+  let rootClose :
+      rootPoint.1 ∈ GoertzelLemma814.closeChainFiber
+        (frontierWordToChainWord word)
+        (concreteChainFiber word key)
+        (concreteChainFiber word key).length
+        [chainFiberRootState word key] := by
+    have hseen :
+        root ∈ ([root] : List (List GoertzelLemma814.TauState)) := by
+      simp
+    simpa [rootPoint, chainFiberRootState, GoertzelLemma814.listGetD,
+      hfiber] using
+      GoertzelLemma814.closeChainFiber_mem_of_seen
+        (frontierWordToChainWord word)
+        (concreteChainFiber word key)
+        (concreteChainFiber word key).length
+        [root] root hseen
+  { Base := ChainFiberPoint word key
+    baseDecidableEq := inferInstance
+    baseStep := baseStep
+    baseParentRowsSymmetricRooted :=
+      rootStarParentRowsSymmetricRootedConnectedCertificate
+        nodes rootPoint rootMem
+        (by
+          intro x
+          exact List.mem_attach _ _)
+        (by
+          intro x _y _hstep
+          exact chainFiberPoint_mem_rootClosure_of_concreteCertificate
+            hcert hkey x)
+        (by
+          intro _x
+          simpa [baseStep, chainFiberRootClosureStep] using rootClose) }
+
+def ChainFiberAppendQuotientFibrationParentRowsBaseData.unit
+    {word : List GoertzelLemma818FrontierMode.TauOrient}
+    {orient : GoertzelLemma818FrontierMode.TauOrient}
+    {key : List GoertzelLemma814.LColor} :
+    ChainFiberAppendQuotientFibrationParentRowsBaseData word orient key :=
+  let baseStep : Unit → Unit → Prop := fun _ _ => True
+  { Base := Unit
+    baseDecidableEq := inferInstance
+    baseStep := baseStep
+    baseParentRowsSymmetricRooted :=
+      unitParentRowsSymmetricRootedConnectedCertificate baseStep }
+
 def ChainFiberAppendQuotientFibrationParentMapFields.ofParentRows
     {word : List GoertzelLemma818FrontierMode.TauOrient}
     {orient : GoertzelLemma818FrontierMode.TauOrient}
@@ -4181,6 +4244,62 @@ theorem concreteChainFiberAppendQuotientFibrationParentRowsNonSingletonPrefixBas
   rcases hData word orient hlen hcert key hkey with ⟨data⟩
   rcases hStructural word orient hlen hcert key hkey data with ⟨structural⟩
   exact ⟨⟨data, structural⟩⟩
+
+theorem concreteChainFiberAppendQuotientFibrationParentRowsNonSingletonPrefixBaseDataStructuralClosed_of_prefix_fibration
+    (hFibration : concreteChainFiberAppendPrefixFibrationClosed) :
+    concreteChainFiberAppendQuotientFibrationParentRowsNonSingletonPrefixBaseDataStructuralClosed := by
+  intro word orient hlen hcert key hkey
+  have hne : word ≠ [] := by
+    intro hnil
+    subst word
+    simp at hlen
+  cases hfiber : concreteChainFiber word key with
+  | nil =>
+      let data :
+          ChainFiberAppendQuotientFibrationParentRowsBaseData
+            word orient key :=
+        ChainFiberAppendQuotientFibrationParentRowsBaseData.unit
+      let structural :
+          ChainFiberAppendQuotientFibrationParentRowsStructuralFields data :=
+        { proj := fun _ => ()
+          fiberReach := by
+            intro x _y _hproj
+            have hxPrefix :
+                x.1.take word.length ∈ concreteChainFiber word key :=
+              concreteChainFiberAppendPrefixClosed_ok
+                word orient hne key x.1 x.2
+            rw [hfiber] at hxPrefix
+            cases hxPrefix
+          liftStep := by
+            intro x _b _hstep
+            have hxPrefix :
+                x.1.take word.length ∈ concreteChainFiber word key :=
+              concreteChainFiberAppendPrefixClosed_ok
+                word orient hne key x.1 x.2
+            rw [hfiber] at hxPrefix
+            cases hxPrefix }
+      exact ⟨⟨data, structural⟩⟩
+  | cons root rest =>
+      let data :
+          ChainFiberAppendQuotientFibrationParentRowsBaseData
+            word orient key :=
+        ChainFiberAppendQuotientFibrationParentRowsBaseData.ofPrefixRootStar
+          hcert hkey hfiber
+      have hfib :
+          Fibration
+            (chainFiberRootClosureStep (word ++ [orient]) key)
+            (chainFiberRootClosureStep word key)
+            (concreteChainFiberAppendPrefixProjection
+              word orient hne key).prefixPoint :=
+        hFibration word orient hne hcert key hkey
+      let structural :
+          ChainFiberAppendQuotientFibrationParentRowsStructuralFields data :=
+        { proj :=
+            (concreteChainFiberAppendPrefixProjection
+              word orient hne key).prefixPoint
+          fiberReach := hfib.fiberReach
+          liftStep := hfib.liftStep }
+      exact ⟨⟨data, structural⟩⟩
 
 theorem concreteChainFiberAppendQuotientFibrationParentRowsFieldsClosed_of_length_two_seeds_and_non_singleton
     (hLengthTwo :

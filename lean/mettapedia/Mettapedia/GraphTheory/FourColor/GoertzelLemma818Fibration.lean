@@ -242,6 +242,14 @@ namespace ParentMapRow
 
 variable {α : Type u} [DecidableEq α] {step : α → α → Prop}
 
+def rootRows (root : α) (nodes : List α)
+    (hstep : ∀ x : α, root = x ∨ step x root) :
+    List (ParentMapRow step) :=
+  nodes.map fun x =>
+    { source := x
+      parent := root
+      stepOrSelf := hstep x }
+
 theorem parentFromRows_stepOrSelf_of_exists
     (root : α) :
     ∀ (rows : List (ParentMapRow step)) (x : α),
@@ -298,6 +306,29 @@ theorem parentFromRows_mem_of_exists
             exact False.elim (hsource hfound)
           | tail _ htail =>
             exact ⟨found, htail, hfound⟩
+
+theorem parentFromRows_rootRows_eq
+    (root : α) (nodes : List α)
+    (hstep : ∀ x : α, root = x ∨ step x root) :
+    ∀ {x : α}, x ∈ nodes →
+      parentFromRows root (rootRows root nodes hstep) x = root := by
+  intro x hx
+  induction nodes with
+  | nil =>
+      cases hx
+  | cons head tail ih =>
+      unfold rootRows
+      simp only [List.map_cons]
+      unfold parentFromRows
+      by_cases hhead : head = x
+      · rw [if_pos hhead]
+      · rw [if_neg hhead]
+        apply ih
+        cases hx with
+        | head =>
+            exact False.elim (hhead rfl)
+        | tail _ htail =>
+            exact htail
 
 end ParentMapRow
 
@@ -359,6 +390,49 @@ theorem connected
   cert.toParentMap.connected
 
 end ParentRowsSymmetricRootedConnectedCertificate
+
+def rootStarParentRowsSymmetricRootedConnectedCertificate
+    {α : Type u} [DecidableEq α] {step : α → α → Prop}
+    (nodes : List α) (root : α)
+    (hRootMem : root ∈ nodes)
+    (hCovers : ∀ x : α, x ∈ nodes)
+    (hStepSymmetric : StepSymmetric step)
+    (hStepToRoot : ∀ x : α, step x root) :
+    ParentRowsSymmetricRootedConnectedCertificate step :=
+  let rows :=
+    ParentMapRow.rootRows root nodes (fun x => Or.inr (hStepToRoot x))
+  { nodes := nodes
+    root := root
+    rows := rows
+    maxDepth := 1
+    stepSymmetric := hStepSymmetric
+    covers := hCovers
+    rowSourceMem := by
+      intro row hrow
+      unfold rows ParentMapRow.rootRows at hrow
+      rcases List.mem_map.mp hrow with ⟨x, hx, hrowEq⟩
+      cases hrowEq
+      exact hx
+    rowParentMem := by
+      intro row hrow
+      unfold rows ParentMapRow.rootRows at hrow
+      rcases List.mem_map.mp hrow with ⟨_x, _hx, hrowEq⟩
+      cases hrowEq
+      exact hRootMem
+    rowForNode := by
+      intro x hx
+      let row : ParentMapRow step :=
+        { source := x
+          parent := root
+          stepOrSelf := Or.inr (hStepToRoot x) }
+      refine ⟨row, ?_, rfl⟩
+      unfold rows ParentMapRow.rootRows
+      exact List.mem_map.mpr ⟨x, hx, rfl⟩
+    reachesRootOfMem := by
+      intro x hx
+      simp [parentIter, rows,
+        ParentMapRow.parentFromRows_rootRows_eq root nodes
+          (fun x => Or.inr (hStepToRoot x)) hx] }
 
 def unitParentRowsSymmetricRootedConnectedCertificate
     (step : Unit → Unit → Prop) :

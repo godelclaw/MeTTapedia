@@ -144,6 +144,14 @@ together with the matching structural fields.  This paired target feeds the same
 field, transfer, semantic sufficiency, and target-gated all-word wrappers
 through the `_base_data_structural` theorems, while the older `_base_data_and_structural`
 wrappers remain a stronger two-hypothesis variant.
+A new prefix-fibration adapter,
+`concreteChainFiberAppendQuotientFibrationParentRowsNonSingletonPrefixBaseDataStructuralClosed_of_prefix_fibration`,
+builds that paired parent-row record from
+`concreteChainFiberAppendPrefixFibrationClosed`.  In the nonempty prefix-fiber
+case it uses the canonical prefix projection and a root-star parent-row
+certificate over the prefix fiber; in the empty prefix-fiber case the structural
+fields are vacuous.  This pins the remaining structural route to the existing
+prefix-fibration closure surface and keeps the parent-row quotient route frozen.
 
 `GoertzelLemma818SemanticProgress.lean` now records the checked semantic
 frontier after the completed `TTT` target.  It proves
