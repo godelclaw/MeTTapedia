@@ -1986,6 +1986,10 @@ theorem currentPNPV13RealRungOneSequentialQRowTransfer_node :
   exact v13RealLinear_uniform_sequential_qrow_success_bound_of_transfer
     observer i₀
 
+theorem currentPNPV13RealRungOneSequentialQRowTransferCertificate_node :
+    V13RealLinearSequentialQRowTransferCertificate := by
+  exact v13RealLinear_sequentialQRowTransferCertificate
+
 theorem currentPNPV13ObserverLadder_node :
     PhaseEScaledObserverLadderMark ∧
       phaseEScaledObserverLadderMap.length = 4 ∧

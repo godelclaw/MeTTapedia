@@ -233,7 +233,7 @@ def currentPNPRoadmap : List PNPRoadmapEntry :=
       progressPercent := 100
       itvLowerPercent := 96
       itvUpperPercent := 100
-      obligation := "Record the sequential adaptive row-query theorem: every sequential q-row observer over the uniform certified-invertible sampler has success at most 1/2 + 4*(2^q - 1)/2^m. The broader causal interface remains tracked by the row-span hard-core entry." },
+      obligation := "Record the sequential adaptive row-query theorem as V13RealLinearSequentialQRowTransferCertificate: every sequential q-row observer over the uniform certified-invertible sampler has success at most 1/2 + 4*(2^q - 1)/2^m. The broader causal interface remains tracked by the row-span hard-core entry." },
     { stage := .v13ObserverLadder
       proofNodeKey := "pnp.v13.phase-e.observer-ladder-mark"
       status := .checked
@@ -535,7 +535,7 @@ theorem currentPNPRoadmap_records_v13_real_rung_one_sequential_qrow_transfer :
        itvLowerPercent := 96
        itvUpperPercent := 100
        obligation :=
-        "Record the sequential adaptive row-query theorem: every sequential q-row observer over the uniform certified-invertible sampler has success at most 1/2 + 4*(2^q - 1)/2^m. The broader causal interface remains tracked by the row-span hard-core entry." } :
+        "Record the sequential adaptive row-query theorem as V13RealLinearSequentialQRowTransferCertificate: every sequential q-row observer over the uniform certified-invertible sampler has success at most 1/2 + 4*(2^q - 1)/2^m. The broader causal interface remains tracked by the row-span hard-core entry." } :
       PNPRoadmapEntry) ∈ currentPNPRoadmap := by
   simp [currentPNPRoadmap]
 
