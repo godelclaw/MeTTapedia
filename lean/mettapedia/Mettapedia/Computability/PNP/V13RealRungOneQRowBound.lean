@@ -4360,6 +4360,24 @@ def
                 rows.val transcript)) ≤
       2 ^ q * Fintype.card (V13F2LinearEquiv m)
 
+/-- Correct-cell version of the transcript-indexed budgeted product-cell hard
+core.  This counts only correct elements inside each generated transcript
+product cell. -/
+def
+    V13RealLinearUniformCausalTwoOrMoreTargetCoefficientBudgetedRowsetTranscriptProductCellCorrectAverageBound :
+    Prop :=
+  ∀ {m q : Nat} (observer : V13RealLinearCausalRowObserver m q)
+    (i₀ : Fin m),
+    1 < q → q < m →
+      (∑ A : V13F2LinearEquiv m,
+        ∑ rows : V13RealLinearBudgetedRowset m q,
+          ∑ transcript : V13RealLinearRowsTranscriptSpace m rows.val,
+            Fintype.card
+              (V13RealLinearAdaptiveQRowGeneratedTargetCoefficientRowsetTranscriptProductCellCorrect
+                (v13RealLinearUniformCausalQRowExperiment observer) i₀ A
+                rows.val transcript)) ≤
+      2 ^ q * Fintype.card (V13F2LinearEquiv m)
+
 theorem v13RealLinear_f2vec_card (m : Nat) :
     Fintype.card (F2Vec m) = 2 ^ m := by
   classical
@@ -8030,6 +8048,51 @@ theorem
       V13RealLinearUniformCausalTwoOrMoreTargetCoefficientBudgetedRowsetTranscriptProductCellAverageBound :=
   ⟨V13RealLinearUniformCausalTwoOrMoreTargetCoefficientBudgetedRowsetTranscriptProductCellAverageBound_of_budgetedRowsetTranscriptProductAverage,
     V13RealLinearUniformCausalTwoOrMoreTargetCoefficientBudgetedRowsetTranscriptProductAverageBound_of_budgetedRowsetTranscriptProductCellAverage⟩
+
+theorem
+    V13RealLinearUniformCausalTwoOrMoreTargetCoefficientBudgetedRowsetTranscriptProductCellCorrectAverageBound_of_productCellAverage
+    (hcount :
+      V13RealLinearUniformCausalTwoOrMoreTargetCoefficientBudgetedRowsetTranscriptProductCellAverageBound) :
+    V13RealLinearUniformCausalTwoOrMoreTargetCoefficientBudgetedRowsetTranscriptProductCellCorrectAverageBound := by
+  intro m q observer i₀ hqgt hqm
+  let E := v13RealLinearUniformCausalQRowExperiment observer
+  let Q := 2 ^ q
+  let S := Fintype.card (V13F2LinearEquiv m)
+  have hsum :
+      (∑ A : V13F2LinearEquiv m,
+        ∑ rows : V13RealLinearBudgetedRowset m q,
+          ∑ transcript : V13RealLinearRowsTranscriptSpace m rows.val,
+            Fintype.card
+              (V13RealLinearAdaptiveQRowGeneratedTargetCoefficientRowsetTranscriptProductCell
+                E i₀ A rows.val transcript)) ≤
+      Q * S := by
+    simpa [E, Q, S] using hcount observer i₀ hqgt hqm
+  have hmono :
+      (∑ A : V13F2LinearEquiv m,
+        ∑ rows : V13RealLinearBudgetedRowset m q,
+          ∑ transcript : V13RealLinearRowsTranscriptSpace m rows.val,
+            Fintype.card
+              (V13RealLinearAdaptiveQRowGeneratedTargetCoefficientRowsetTranscriptProductCellCorrect
+                E i₀ A rows.val transcript)) ≤
+        ∑ A : V13F2LinearEquiv m,
+          ∑ rows : V13RealLinearBudgetedRowset m q,
+            ∑ transcript : V13RealLinearRowsTranscriptSpace m rows.val,
+              Fintype.card
+                (V13RealLinearAdaptiveQRowGeneratedTargetCoefficientRowsetTranscriptProductCell
+                  E i₀ A rows.val transcript) := by
+    apply Finset.sum_le_sum
+    intro A _hA
+    apply Finset.sum_le_sum
+    intro rows _hrows
+    apply Finset.sum_le_sum
+    intro transcript _htranscript
+    exact
+      Fintype.card_subtype_le
+        (fun z :
+          V13RealLinearAdaptiveQRowGeneratedTargetCoefficientRowsetTranscriptProductCell
+            E i₀ A rows.val transcript =>
+          E.correct i₀ (A, z.1.val.val))
+  exact hmono.trans hsum
 
 theorem
     V13RealLinearUniformCausalTwoOrMoreCoefficientCompressionBound_of_targetCoefficientRowsetProductAverage
