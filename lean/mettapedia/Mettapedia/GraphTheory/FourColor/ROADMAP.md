@@ -248,6 +248,14 @@ through field closure, transfer closure, semantic sufficiency, and the
 target-gated all-word audit.  The `_base_data_and_structural` wrappers remain a
 stronger split useful when finite base data and structural motion are proved as
 separate global facts.
+The prefix-fibration adapter
+`concreteChainFiberAppendQuotientFibrationParentRowsNonSingletonPrefixBaseDataStructuralClosed_of_prefix_fibration`
+now shows that `concreteChainFiberAppendPrefixFibrationClosed` is enough to
+produce the paired parent-row target.  Its nonempty prefix-fiber branch uses
+the canonical prefix projection and a root-star parent-row certificate on the
+prefix fiber, while empty prefix fibers are handled vacuously.  Thus the
+remaining structural work can stay focused on the existing prefix-fibration
+closure ingredients rather than opening another quotient route.
 The same-prefix closure side is now separated from prefix mobility:
 `concreteChainFiberAppendPrefixSelfLiftClosureClosed_of_lift` derives a closed
 appended representative over the current prefix from the lift-closure theorem
