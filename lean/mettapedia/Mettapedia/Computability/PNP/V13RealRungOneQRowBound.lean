@@ -1224,6 +1224,74 @@ theorem v13RealLinearNoTargetRowShear_bridgeTranscripts_of_row_matches
       v13RealLinearRowsTranscript_singleton_eq_of_row_match
         activeA bridgeA activeX bridgeX activeRow hactiveFun hactiveBit
 
+theorem v13RealLinearZeroAtShearSum_singleBit
+    {m : Nat} {i₀ spare : Fin m} (hne : spare ≠ i₀)
+    (w : F2Vec m) :
+    v13RealLinearZeroAtShearSum i₀
+        (⟨v13RealLinearSingleBit spare, by
+          have hne' : i₀ ≠ spare := fun h => hne h.symm
+          simp [v13RealLinearSingleBit, hne']⟩ :
+          V13RealLinearZeroAt i₀) w =
+      w spare := by
+  classical
+  let s : V13RealLinearZeroAt i₀ :=
+    ⟨v13RealLinearSingleBit spare, by
+      have hne' : i₀ ≠ spare := fun h => hne h.symm
+      simp [v13RealLinearSingleBit, hne']⟩
+  unfold v13RealLinearZeroAtShearSum
+  change (Finset.univ.erase i₀).sum (fun j => s.val j * w j) = w spare
+  calc
+    (Finset.univ.erase i₀).sum (fun j => s.val j * w j) =
+        s.val spare * w spare := by
+      refine Finset.sum_eq_single spare ?_ ?_
+      · intro j _hj hjne
+        simp [s, v13RealLinearSingleBit, hjne]
+      · intro hnotMem
+        simp [hne] at hnotMem
+    _ = w spare := by
+      simp [s, v13RealLinearSingleBit]
+
+theorem v13RealLinearNoTargetRowShear_exists_bridgeX_for_row_target_bits
+    {m : Nat} (i₀ : Fin m) (hm : 1 < m) (restRow : Fin m)
+    (restBit targetBit : ZMod 2) :
+    ∃ bridgeX : F2Vec m,
+      (v13RealLinearNoTargetRowShear i₀ hm).toEquiv bridgeX restRow =
+        restBit ∧
+      bridgeX i₀ = targetBit := by
+  classical
+  by_cases hrow : restRow = i₀
+  · subst restRow
+    let spare := v13FinSpare i₀ hm
+    let bridgeX : F2Vec m :=
+      fun j => if j = i₀ then targetBit
+        else if j = spare then restBit + targetBit else 0
+    refine ⟨bridgeX, ?_, ?_⟩
+    · have hspare : spare ≠ i₀ := by
+        simpa [spare] using v13FinSpare_ne i₀ hm
+      have hsum :
+          v13RealLinearZeroAtShearSum i₀
+              (⟨v13RealLinearSingleBit spare, by
+                have hne' : i₀ ≠ spare := fun h => hspare h.symm
+                simp [v13RealLinearSingleBit, hne']⟩ :
+                V13RealLinearZeroAt i₀) bridgeX =
+            restBit + targetBit := by
+        rw [v13RealLinearZeroAtShearSum_singleBit hspare]
+        simp [bridgeX, hspare]
+      calc
+        (v13RealLinearNoTargetRowShear i₀ hm).toEquiv bridgeX i₀ =
+            targetBit + (restBit + targetBit) := by
+          simp [v13RealLinearNoTargetRowShear,
+            v13RealLinearZeroAtRowShear, bridgeX, spare, hsum]
+        _ = restBit + targetBit + targetBit := by ring
+        _ = restBit := f2_add_right_self restBit targetBit
+    · simp [bridgeX]
+  · let bridgeX : F2Vec m :=
+      fun j => if j = i₀ then targetBit else if j = restRow then restBit else 0
+    refine ⟨bridgeX, ?_, ?_⟩
+    · simp [v13RealLinearNoTargetRowShear, v13RealLinearZeroAtRowShear,
+        bridgeX, hrow]
+    · simp [bridgeX]
+
 noncomputable def v13RealLinearFixedTargetRowOccurrenceZeroAtEmbedding
     {m : Nat} (row i₀ : Fin m) :
     V13RealLinearUniformFixedTargetRowOccurrence row i₀ ×
