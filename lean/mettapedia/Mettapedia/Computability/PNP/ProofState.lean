@@ -1320,6 +1320,17 @@ theorem currentPNPV13RealRungOneQRowBound_node :
                 observer.toAdaptive i₀) *
             Fintype.card
               (V13RealLinearAdaptiveQRowWorld m (V13F2LinearEquiv m))) ∧
+      (V13RealLinearUniformCausalOneRowActiveBitCylinderIndexBound →
+        ∀ {m : Nat} (observer : V13RealLinearCausalRowObserver m 1)
+          (i₀ : Fin m),
+          1 < m →
+            Fintype.card
+                (V13RealLinearAdaptiveQRowGenerated
+                  (v13RealLinearUniformCausalQRowExperiment observer) i₀) *
+                2 ^ m ≤
+              2 ^ 1 *
+                Fintype.card
+                  (V13RealLinearAdaptiveQRowWorld m (V13F2LinearEquiv m))) ∧
       V13RealLinearUniformFixedTargetRowOccurrenceCountingBound ∧
       V13RealLinearUniformRepresentativeFixedTargetRowOccurrenceCountingBound ∧
       (V13RealLinearUniformFixedTargetRowOccurrenceCountingBound →
@@ -1503,6 +1514,9 @@ theorem currentPNPV13RealRungOneQRowBound_node :
       fun observer i₀ =>
         v13RealLinearUniformCausalOneRowGenerated_counting_by_activeBitCylinderIndex
           observer i₀,
+      fun hindex {m} observer i₀ hm =>
+        v13RealLinearUniformCausalOneRowGenerated_counting_of_activeBitCylinderIndexBound
+          hindex observer i₀ hm,
       v13RealLinearUniformFixedTargetRowOccurrenceCountingBound_proved,
       v13RealLinearUniformRepresentativeFixedTargetRowOccurrenceCountingBound_proved,
       fun hcount {m} row i₀ =>

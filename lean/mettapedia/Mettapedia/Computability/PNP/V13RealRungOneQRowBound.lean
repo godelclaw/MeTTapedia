@@ -2873,6 +2873,67 @@ theorem
     v13RealLinearUniformOneRowGenerated_counting_by_activeBitCylinderIndex
       observer.toAdaptive i₀
 
+/-- Exact q = 1 sub-obligation left by the active-cylinder reduction: a causal
+one-row observer should activate at most the two target-bit cylinders needed
+for the `2 / 2^m` bound. -/
+def V13RealLinearUniformCausalOneRowActiveBitCylinderIndexBound : Prop :=
+  ∀ {m : Nat} (observer : V13RealLinearCausalRowObserver m 1)
+    (i₀ : Fin m),
+    1 < m →
+      Fintype.card
+          (V13RealLinearUniformOneRowGeneratedCylinderIndex
+            observer.toAdaptive i₀) ≤ 2
+
+theorem
+    v13RealLinearUniformCausalOneRowGenerated_counting_of_activeBitCylinderIndex_le_two
+    {m : Nat} (observer : V13RealLinearCausalRowObserver m 1)
+    (i₀ : Fin m)
+    (hindex :
+      Fintype.card
+          (V13RealLinearUniformOneRowGeneratedCylinderIndex
+            observer.toAdaptive i₀) ≤ 2) :
+    Fintype.card
+        (V13RealLinearAdaptiveQRowGenerated
+          (v13RealLinearUniformCausalQRowExperiment observer) i₀) *
+        2 ^ m ≤
+      2 ^ 1 *
+        Fintype.card
+          (V13RealLinearAdaptiveQRowWorld m (V13F2LinearEquiv m)) := by
+  classical
+  let I :=
+    Fintype.card
+      (V13RealLinearUniformOneRowGeneratedCylinderIndex
+        observer.toAdaptive i₀)
+  let W :=
+    Fintype.card
+      (V13RealLinearAdaptiveQRowWorld m (V13F2LinearEquiv m))
+  calc
+    Fintype.card
+        (V13RealLinearAdaptiveQRowGenerated
+          (v13RealLinearUniformCausalQRowExperiment observer) i₀) *
+        2 ^ m ≤ I * W := by
+      simpa [I, W] using
+        v13RealLinearUniformCausalOneRowGenerated_counting_by_activeBitCylinderIndex
+          observer i₀
+    _ ≤ 2 * W := Nat.mul_le_mul_right W hindex
+    _ = 2 ^ 1 * W := by norm_num
+
+theorem
+    v13RealLinearUniformCausalOneRowGenerated_counting_of_activeBitCylinderIndexBound
+    (hindex :
+      V13RealLinearUniformCausalOneRowActiveBitCylinderIndexBound)
+    {m : Nat} (observer : V13RealLinearCausalRowObserver m 1)
+    (i₀ : Fin m) (hm : 1 < m) :
+    Fintype.card
+        (V13RealLinearAdaptiveQRowGenerated
+          (v13RealLinearUniformCausalQRowExperiment observer) i₀) *
+        2 ^ m ≤
+      2 ^ 1 *
+        Fintype.card
+          (V13RealLinearAdaptiveQRowWorld m (V13F2LinearEquiv m)) :=
+  v13RealLinearUniformCausalOneRowGenerated_counting_of_activeBitCylinderIndex_le_two
+    observer i₀ (hindex observer i₀ hm)
+
 noncomputable def v13RealLinearFixedTargetRowOccurrenceZeroEmbedding :
     V13RealLinearUniformFixedTargetRowOccurrence
         (0 : Fin 2) (0 : Fin 2) ↪
