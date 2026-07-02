@@ -1020,11 +1020,16 @@ theorem currentPNPV13PhaseEScaled_node :
           Unit Unit Unit Unit Unit (PhaseEScaledPayload m k) Unit Unit Unit)) ∧
       phaseEScaledObligationMap.length = 9 ∧
         (∀ row ∈ phaseEScaledObligationMap, row.status ≠ .failed) ∧
-          (∀ m k : Nat, PhaseEScaledAllMappedObligations m k) := by
+          (∀ row ∈ phaseEScaledObligationMap,
+            row.status = .familyInadmissible) ∧
+            (∀ m k : Nat, PhaseEScaledPublicTargetTagViolation m k) ∧
+              (∀ m k : Nat, PhaseEScaledAllMappedObligations m k) := by
   exact
     ⟨fun m k => ⟨phaseEScaledLockedInterface m k⟩,
       phaseEScaledObligationMap_length,
       phaseEScaledObligationMap_has_no_failures,
+      phaseEScaledObligationMap_all_familyInadmissible,
+      phaseEScaled_familyInadmissible_publicTargetTag,
       phaseEScaled_all_mapped_obligations⟩
 
 theorem currentPNPV13ObserverLadder_node :
