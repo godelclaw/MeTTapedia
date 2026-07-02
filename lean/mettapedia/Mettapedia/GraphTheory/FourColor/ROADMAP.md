@@ -253,6 +253,12 @@ That statement now factors through
 `concreteChainFiberAppendRelativeSingletonSpecifiedKempeStepLiftClosed_of_shifted`:
 the remaining local-to-global move proof is exactly that the specified local
 move, shifted to occurrence `word.length`, is a valid specified global move.
+That shifted-move proof is now split once more by
+`concreteChainFiberAppendRelativeSingletonShiftedSpecifiedKempeStepClosed_of_seed_and_step`:
+the shifted seed must be present in the appended chain edge list
+(`concreteChainFiberAppendRelativeSingletonShiftedSeedPresentClosed`), and the
+shifted move must validate as the corresponding global specified Kempe step
+(`concreteChainFiberAppendRelativeSingletonShiftedSpecifiedStepClosed`).
 The closure-under-step side is now reduced by
 `concreteChainFiberAppendRelativeSingletonGlobalStepClosureClosed_of_bounded_saturation`
 to the pure closure-iterator lemma
