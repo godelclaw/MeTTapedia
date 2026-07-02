@@ -201,7 +201,7 @@ def currentPNPRoadmap : List PNPRoadmapEntry :=
       progressPercent := 84
       itvLowerPercent := 92
       itvUpperPercent := 100
-      obligation := "Assemble the explicit q-row success bound for the uniform certified-invertible sampler: the proved kernel-flip surcharge plus the single pinned span-counting obligation V13RealLinearUniformInvertibleRowSpanCountingBound imply success at most 1/2 + 2^q/2^m." },
+      obligation := "Assemble the explicit q-row success bound for the uniform certified-invertible sampler: the proved kernel-flip surcharge and proved row-combination space bound leave the single pinned span-hit mass obligation V13RealLinearUniformInvertibleRowSpanCountingBound, implying success at most 1/2 + 2^q/2^m." },
     { stage := .v13ObserverLadder
       proofNodeKey := "pnp.v13.phase-e.observer-ladder-mark"
       status := .checked
@@ -477,7 +477,7 @@ theorem currentPNPRoadmap_records_v13_real_rung_one_qrow_bound :
        itvLowerPercent := 92
        itvUpperPercent := 100
        obligation :=
-        "Assemble the explicit q-row success bound for the uniform certified-invertible sampler: the proved kernel-flip surcharge plus the single pinned span-counting obligation V13RealLinearUniformInvertibleRowSpanCountingBound imply success at most 1/2 + 2^q/2^m." } :
+        "Assemble the explicit q-row success bound for the uniform certified-invertible sampler: the proved kernel-flip surcharge and proved row-combination space bound leave the single pinned span-hit mass obligation V13RealLinearUniformInvertibleRowSpanCountingBound, implying success at most 1/2 + 2^q/2^m." } :
       PNPRoadmapEntry) ∈ currentPNPRoadmap := by
   simp [currentPNPRoadmap]
 

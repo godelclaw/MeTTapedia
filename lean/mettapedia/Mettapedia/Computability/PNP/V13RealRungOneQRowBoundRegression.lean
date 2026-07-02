@@ -8,6 +8,14 @@ set_option autoImplicit false
 #check v13RealLinearAdaptiveQRowSuccess
 #check v13RealLinearAdaptiveQRowBlockedMass
 #check v13RealLinearQRowEpsilon
+#check V13RealLinearAdaptiveQRowExperiment.branchRows_card_le
+#check V13RealLinearRowCombination
+#check v13RealLinearRowCombinationEval
+#check V13RealLinearRowsGenerateTarget
+#check v13RealLinear_rowCombination_card
+#check v13RealLinear_rowCombination_card_le_of_rows_card_le
+#check v13RealLinear_rowCombination_card_le_for_branch
+#check v13RealLinear_rowsBlockTarget_of_rowsGenerateTarget
 #check V13RealLinearAdaptiveRowSpanCountingBound
 #check V13RealLinearUniformInvertibleRowSpanCountingBound
 #check v13RealLinearUniformAdaptiveQRowSuccess
@@ -72,6 +80,8 @@ theorem v13RealLinearQRowBoundRegression_uniform_conditional_shape
       v13RealLinearQRowBoundRegression_adaptiveConstant 0 hcount
 
 #print axioms v13RealLinear_adaptiveKernelFlipSurchargeBound
+#print axioms v13RealLinear_rowCombination_card_le_for_branch
+#print axioms v13RealLinear_rowsBlockTarget_of_rowsGenerateTarget
 #print axioms v13RealLinear_adaptive_qrow_success_bound_of_spanCounting
 #print axioms v13RealLinear_uniform_adaptive_qrow_success_bound_of_spanCounting
 #print axioms v13RealLinear_qrow_epsilon_nonnegative
