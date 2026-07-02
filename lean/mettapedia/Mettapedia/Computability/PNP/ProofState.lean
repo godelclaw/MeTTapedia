@@ -1229,6 +1229,8 @@ theorem currentPNPV13RealRungOneQRowBound_node :
             (1 / 2 : Rat) + v13RealLinearQRowEpsilon q m) ∧
       (V13RealLinearUniformCausalLowPositiveCompletionCountingBound →
         V13RealLinearUniformCausalLowPositiveRowSpanCountingBound) ∧
+      (V13RealLinearUniformCausalLowPositiveRowSpanCountingBound ↔
+        V13RealLinearUniformCausalLowPositiveCompletionCountingBound) ∧
       (V13RealLinearUniformCausalLowPositiveCompletionCountingBound →
         ∀ {m q : Nat} (observer : V13RealLinearCausalRowObserver m q)
           (i₀ : Fin m),
@@ -1409,6 +1411,7 @@ theorem currentPNPV13RealRungOneQRowBound_node :
       fun hcount =>
         v13RealLinearUniformCausalLowPositiveRowSpanCountingBound_of_completionCounting
           hcount,
+      V13RealLinearUniformCausalLowPositiveRowSpanCountingBound_iff_completionCounting,
       fun hcount {m q} observer i₀ =>
         v13RealLinear_uniform_causal_qrow_success_bound_of_completionCounting
           (m := m) (q := q) hcount observer i₀,
