@@ -10,6 +10,8 @@ set_option autoImplicit false
 #check v13RealLinearFullDecoder
 #check v13RealLinear_fullPublic_decodes_target
 #check v13RealLinear_fullPublic_determines_target
+#check v13RealLinearEquiv_ext
+#check v13RealLinearComp
 #check V13RealLinearPublicCoordinate
 #check V13RealLinearCoordinateDeterminesTarget
 #check v13RealLinear_no_single_public_coordinate_determines_target_of_spare
@@ -29,6 +31,8 @@ theorem v13RealLinearRegression_no_single_coordinate_small :
 
 #print axioms v13RealLinear_fullPublic_decodes_target
 #print axioms v13RealLinear_fullPublic_determines_target
+#print axioms v13RealLinearEquiv_ext
+#print axioms v13RealLinearComp
 #print axioms v13RealLinear_no_single_public_coordinate_determines_target_of_spare
 #print axioms v13RealLinearRegression_full_decoding_small
 #print axioms v13RealLinearRegression_no_single_coordinate_small
