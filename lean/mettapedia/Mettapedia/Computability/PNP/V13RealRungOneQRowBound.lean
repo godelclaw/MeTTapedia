@@ -3492,6 +3492,18 @@ def V13RealLinearUniformCausalTwoOrMoreCoefficientCountingBound : Prop :=
         Fintype.card
           (V13RealLinearAdaptiveQRowWorld m (V13F2LinearEquiv m))
 
+/-- Compressed residual coefficient form.  Since the uniform world count is
+`card GL(m,2) * 2^m`, this is the coefficient-counting hard core with the
+hidden-vector factor cancelled. -/
+def V13RealLinearUniformCausalTwoOrMoreCoefficientCompressionBound : Prop :=
+  ∀ {m q : Nat} (observer : V13RealLinearCausalRowObserver m q)
+    (i₀ : Fin m),
+    1 < q → q < m →
+      Fintype.card
+          (V13RealLinearAdaptiveQRowGeneratedCoefficient
+            (v13RealLinearUniformCausalQRowExperiment observer) i₀) ≤
+      2 ^ q * Fintype.card (V13F2LinearEquiv m)
+
 theorem v13RealLinear_f2vec_card (m : Nat) :
     Fintype.card (F2Vec m) = 2 ^ m := by
   classical
@@ -6493,6 +6505,77 @@ theorem
     (V13RealLinearUniformCausalTwoOrMoreCompletionCountingBound_of_coefficientCounting
       hcount)
 
+theorem
+    V13RealLinearUniformCausalTwoOrMoreCoefficientCountingBound_of_compression
+    (hcount :
+      V13RealLinearUniformCausalTwoOrMoreCoefficientCompressionBound) :
+    V13RealLinearUniformCausalTwoOrMoreCoefficientCountingBound := by
+  intro m q observer i₀ hqgt hqm
+  let E := v13RealLinearUniformCausalQRowExperiment observer
+  let C :=
+    Fintype.card (V13RealLinearAdaptiveQRowGeneratedCoefficient E i₀)
+  let S := Fintype.card (V13F2LinearEquiv m)
+  let M := 2 ^ m
+  let Q := 2 ^ q
+  have hC : C ≤ Q * S := by
+    simpa [C, E, Q, S] using hcount observer i₀ hqgt hqm
+  have hworld :
+      Fintype.card
+          (V13RealLinearAdaptiveQRowWorld m (V13F2LinearEquiv m)) =
+        S * M := by
+    dsimp [V13RealLinearAdaptiveQRowWorld, S, M]
+    rw [Fintype.card_prod]
+    rw [v13RealLinear_f2vec_card m]
+  have hmain : C * M ≤ Q * (S * M) := by
+    calc
+      C * M ≤ (Q * S) * M := Nat.mul_le_mul_right M hC
+      _ = Q * (S * M) := by ring
+  simpa [C, E, M, Q, hworld] using hmain
+
+theorem
+    V13RealLinearUniformCausalTwoOrMoreCoefficientCompressionBound_of_counting
+    (hcount :
+      V13RealLinearUniformCausalTwoOrMoreCoefficientCountingBound) :
+    V13RealLinearUniformCausalTwoOrMoreCoefficientCompressionBound := by
+  intro m q observer i₀ hqgt hqm
+  let E := v13RealLinearUniformCausalQRowExperiment observer
+  let C :=
+    Fintype.card (V13RealLinearAdaptiveQRowGeneratedCoefficient E i₀)
+  let S := Fintype.card (V13F2LinearEquiv m)
+  let M := 2 ^ m
+  let Q := 2 ^ q
+  have hworld :
+      Fintype.card
+          (V13RealLinearAdaptiveQRowWorld m (V13F2LinearEquiv m)) =
+        S * M := by
+    dsimp [V13RealLinearAdaptiveQRowWorld, S, M]
+    rw [Fintype.card_prod]
+    rw [v13RealLinear_f2vec_card m]
+  have hcount' : C * M ≤ (Q * S) * M := by
+    have hraw : C * M ≤ Q * (S * M) := by
+      simpa [C, E, M, Q, hworld] using hcount observer i₀ hqgt hqm
+    simpa [Nat.mul_assoc, Nat.mul_left_comm, Nat.mul_comm] using hraw
+  have hMpos : 0 < M := by
+    dsimp [M]
+    positivity
+  exact Nat.le_of_mul_le_mul_right hcount' hMpos
+
+theorem
+    V13RealLinearUniformCausalTwoOrMoreCoefficientCountingBound_iff_compression :
+    V13RealLinearUniformCausalTwoOrMoreCoefficientCountingBound ↔
+      V13RealLinearUniformCausalTwoOrMoreCoefficientCompressionBound :=
+  ⟨V13RealLinearUniformCausalTwoOrMoreCoefficientCompressionBound_of_counting,
+    V13RealLinearUniformCausalTwoOrMoreCoefficientCountingBound_of_compression⟩
+
+theorem
+    V13RealLinearUniformCausalTwoOrMoreCompletionCountingBound_of_coefficientCompression
+    (hcount :
+      V13RealLinearUniformCausalTwoOrMoreCoefficientCompressionBound) :
+    V13RealLinearUniformCausalTwoOrMoreCompletionCountingBound :=
+  V13RealLinearUniformCausalTwoOrMoreCompletionCountingBound_of_coefficientCounting
+    (V13RealLinearUniformCausalTwoOrMoreCoefficientCountingBound_of_compression
+      hcount)
+
 theorem v13RealLinear_uniform_causal_qrow_success_bound_of_lowPositiveSpanCounting
     (hcount : V13RealLinearUniformCausalLowPositiveRowSpanCountingBound)
     {m q : Nat} (observer : V13RealLinearCausalRowObserver m q)
@@ -6610,6 +6693,19 @@ theorem
       (1 / 2 : Rat) + v13RealLinearQRowEpsilon q m :=
   v13RealLinear_uniform_causal_qrow_success_bound_of_completionCounting
     (V13RealLinearUniformCausalLowPositiveCompletionCountingBound_of_twoOrMoreCoefficientCounting
+      hcount)
+    observer i₀
+
+theorem
+    v13RealLinear_uniform_causal_qrow_success_bound_of_twoOrMoreCoefficientCompressionBound
+    (hcount :
+      V13RealLinearUniformCausalTwoOrMoreCoefficientCompressionBound)
+    {m q : Nat} (observer : V13RealLinearCausalRowObserver m q)
+    (i₀ : Fin m) :
+    v13RealLinearUniformCausalQRowSuccess observer i₀ ≤
+      (1 / 2 : Rat) + v13RealLinearQRowEpsilon q m :=
+  v13RealLinear_uniform_causal_qrow_success_bound_of_twoOrMoreCoefficientCountingBound
+    (V13RealLinearUniformCausalTwoOrMoreCoefficientCountingBound_of_compression
       hcount)
     observer i₀
 
