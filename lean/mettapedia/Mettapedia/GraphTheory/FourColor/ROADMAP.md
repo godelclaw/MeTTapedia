@@ -195,6 +195,11 @@ existing generated parent-certificate style even more closely: parent edges
 stay within the listed quotient base, each row is stationary or a base step,
 and a bounded parent iteration reaches the root.  It implies final sufficiency via
 `semanticFrontierStateSufficientForChain_of_append_quotient_parent_map`.
+The row-list variant
+`concreteChainFiberAppendQuotientFibrationParentRowsFieldsClosed` is the
+preferred emitted form: explicit parent rows plus row coverage derive the
+parent map and imply final sufficiency via
+`semanticFrontierStateSufficientForChain_of_append_quotient_parent_rows`.
 Thus finite per-input interface or trace-pair mobility can serve directly as
 base connectivity, while any necessary prefix motion is absorbed by the
 quotient base rather than forced through a fixed-prefix last-state invariant.

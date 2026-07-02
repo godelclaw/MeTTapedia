@@ -225,6 +225,141 @@ theorem connected
 
 end ParentMapSymmetricRootedConnectedCertificate
 
+/-- One generated parent row in a quotient-base spanning forest. -/
+structure ParentMapRow {α : Type u} (step : α → α → Prop) : Type u where
+  source : α
+  parent : α
+  stepOrSelf : parent = source ∨ step source parent
+
+/-- Lookup the parent named by a row list, defaulting to the root off-list. -/
+def parentFromRows {α : Type u} [DecidableEq α] {step : α → α → Prop}
+    (root : α) : List (ParentMapRow step) → α → α
+  | [], _ => root
+  | row :: rows, x =>
+      if row.source = x then row.parent else parentFromRows root rows x
+
+namespace ParentMapRow
+
+variable {α : Type u} [DecidableEq α] {step : α → α → Prop}
+
+theorem parentFromRows_stepOrSelf_of_exists
+    (root : α) :
+    ∀ (rows : List (ParentMapRow step)) (x : α),
+      (∃ row, row ∈ rows ∧ row.source = x) →
+        parentFromRows root rows x = x ∨
+          step x (parentFromRows root rows x) := by
+  intro rows
+  induction rows with
+  | nil =>
+      intro x hrow
+      rcases hrow with ⟨row, hmem, _hsource⟩
+      cases hmem
+  | cons row rows ih =>
+      intro x hrow
+      unfold parentFromRows
+      by_cases hsource : row.source = x
+      · rw [if_pos hsource]
+        cases hsource
+        exact row.stepOrSelf
+      · rw [if_neg hsource]
+        apply ih
+        rcases hrow with ⟨found, hmem, hfound⟩
+        cases hmem with
+        | head =>
+          exact False.elim (hsource hfound)
+        | tail _ htail =>
+          exact ⟨found, htail, hfound⟩
+
+theorem parentFromRows_mem_of_exists
+    {nodes : List α} (root : α) :
+    ∀ (rows : List (ParentMapRow step)) (x : α),
+      (∀ row, row ∈ rows → row.parent ∈ nodes) →
+      (∃ row, row ∈ rows ∧ row.source = x) →
+        parentFromRows root rows x ∈ nodes := by
+  intro rows
+  induction rows with
+  | nil =>
+      intro x _hparent hrow
+      rcases hrow with ⟨row, hmem, _hsource⟩
+      cases hmem
+  | cons row rows ih =>
+      intro x hparent hrow
+      unfold parentFromRows
+      by_cases hsource : row.source = x
+      · rw [if_pos hsource]
+        exact hparent row List.mem_cons_self
+      · rw [if_neg hsource]
+        apply ih
+        · intro found hfound
+          exact hparent found (List.mem_cons_of_mem row hfound)
+        · rcases hrow with ⟨found, hmem, hfound⟩
+          cases hmem with
+          | head =>
+            exact False.elim (hsource hfound)
+          | tail _ htail =>
+            exact ⟨found, htail, hfound⟩
+
+end ParentMapRow
+
+/--
+A row-list variant of the parent-map certificate.
+
+Generated files can emit explicit parent rows and a coverage proof instead of
+first defining a total parent function over the base type.
+-/
+structure ParentRowsSymmetricRootedConnectedCertificate
+    {α : Type u} [DecidableEq α] (step : α → α → Prop) : Type u where
+  nodes : List α
+  root : α
+  rows : List (ParentMapRow step)
+  maxDepth : Nat
+  stepSymmetric : StepSymmetric step
+  covers : ∀ x, x ∈ nodes
+  rowSourceMem : ∀ row, row ∈ rows → row.source ∈ nodes
+  rowParentMem : ∀ row, row ∈ rows → row.parent ∈ nodes
+  rowForNode : ∀ x, x ∈ nodes → ∃ row, row ∈ rows ∧ row.source = x
+  reachesRootOfMem :
+    ∀ x, x ∈ nodes →
+      parentIter (parentFromRows root rows) maxDepth x = root
+
+namespace ParentRowsSymmetricRootedConnectedCertificate
+
+variable {α : Type u} [DecidableEq α] {step : α → α → Prop}
+
+def toParentMap
+    (cert : ParentRowsSymmetricRootedConnectedCertificate step) :
+    ParentMapSymmetricRootedConnectedCertificate step :=
+  { nodes := cert.nodes
+    root := cert.root
+    parent := parentFromRows cert.root cert.rows
+    maxDepth := cert.maxDepth
+    stepSymmetric := cert.stepSymmetric
+    covers := cert.covers
+    parentStepOrSelfOfMem := fun x hmem =>
+      ParentMapRow.parentFromRows_stepOrSelf_of_exists cert.root
+        cert.rows x (cert.rowForNode x hmem)
+    parentMemOfMem := fun x hmem =>
+      ParentMapRow.parentFromRows_mem_of_exists cert.root
+        cert.rows x cert.rowParentMem (cert.rowForNode x hmem)
+    reachesRootOfMem := cert.reachesRootOfMem }
+
+def toListed
+    (cert : ParentRowsSymmetricRootedConnectedCertificate step) :
+    ListedSymmetricRootedConnectedCertificate step :=
+  cert.toParentMap.toListed
+
+def toSymmetricRooted
+    (cert : ParentRowsSymmetricRootedConnectedCertificate step) :
+    SymmetricRootedConnectedCertificate step :=
+  cert.toParentMap.toSymmetricRooted
+
+theorem connected
+    (cert : ParentRowsSymmetricRootedConnectedCertificate step) :
+    Connected step :=
+  cert.toParentMap.connected
+
+end ParentRowsSymmetricRootedConnectedCertificate
+
 theorem connected_of_root_reachable_and_stepSymmetric
     {α : Type u} {step : α → α → Prop}
     (hsym : StepSymmetric step)
