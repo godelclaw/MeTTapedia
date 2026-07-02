@@ -1124,9 +1124,18 @@ theorem currentPNPV13RealRungOneQRowBound_node :
         (E : V13RealLinearAdaptiveQRowExperiment m q Seed) (i₀ : Fin m),
         v13RealLinearAdaptiveQRowBlockedMass E i₀ =
           v13RealLinearAdaptiveQRowGeneratedMass E i₀) ∧
+      (∀ {m q : Nat} {Seed : Type*} [Fintype Seed]
+        (E : V13RealLinearAdaptiveQRowExperiment m q Seed) (i₀ : Fin m),
+        v13RealLinearAdaptiveQRowGeneratedMass E i₀ ≤ 1) ∧
+      (∀ {m q : Nat}, m ≤ q →
+        (1 : Rat) ≤ v13RealLinearQRowEpsilon q m) ∧
       (∀ {m : Nat} {Seed : Type*} [Fintype Seed]
         (E : V13RealLinearAdaptiveQRowExperiment m 0 Seed) (i₀ : Fin m),
         V13RealLinearAdaptiveRowSpanCountingBound E i₀) ∧
+      (∀ {m q : Nat} {Seed : Type*} [Fintype Seed]
+        (E : V13RealLinearAdaptiveQRowExperiment m q Seed) (i₀ : Fin m),
+        m ≤ q →
+          V13RealLinearAdaptiveRowSpanCountingBound E i₀) ∧
       (∀ {m q : Nat} {Seed : Type*} [Fintype Seed]
       (E : V13RealLinearAdaptiveQRowExperiment m q Seed) (i₀ : Fin m),
       V13RealLinearAdaptiveKernelFlipSurchargeBound E i₀) ∧
@@ -1152,7 +1161,13 @@ theorem currentPNPV13RealRungOneQRowBound_node :
       fun E i₀ =>
         v13RealLinearAdaptiveQRowBlockedMass_eq_generatedMass E i₀,
       fun E i₀ =>
+        v13RealLinearAdaptiveQRowGeneratedMass_le_one E i₀,
+      fun hmq =>
+        v13RealLinear_qrow_one_le_epsilon_of_m_le_q hmq,
+      fun E i₀ =>
         v13RealLinearAdaptiveRowSpanCountingBound_of_zero_budget E i₀,
+      fun E i₀ hmq =>
+        v13RealLinearAdaptiveRowSpanCountingBound_of_m_le_q E i₀ hmq,
       fun E i₀ =>
         v13RealLinear_adaptiveKernelFlipSurchargeBound E i₀,
       fun E i₀ hcount =>

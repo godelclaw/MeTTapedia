@@ -705,6 +705,49 @@ theorem v13RealLinearAdaptiveQRow_world_card_eq_correct_add_incorrect
 noncomputable def v13RealLinearQRowEpsilon (q m : Nat) : Rat :=
   (2 ^ q : Rat) / (2 ^ m : Rat)
 
+theorem v13RealLinearAdaptiveQRowGeneratedMass_le_one
+    {m q : Nat} {Seed : Type*} [Fintype Seed]
+    (E : V13RealLinearAdaptiveQRowExperiment m q Seed) (i₀ : Fin m) :
+    v13RealLinearAdaptiveQRowGeneratedMass E i₀ ≤ 1 := by
+  classical
+  unfold v13RealLinearAdaptiveQRowGeneratedMass
+  let G := Fintype.card (V13RealLinearAdaptiveQRowGenerated E i₀)
+  let T := Fintype.card (V13RealLinearAdaptiveQRowWorld m Seed)
+  have hleNat : G ≤ T := by
+    dsimp [G, T, V13RealLinearAdaptiveQRowGenerated]
+    change
+      Fintype.card
+          {omega : V13RealLinearAdaptiveQRowWorld m Seed //
+            E.generated i₀ omega} ≤
+        Fintype.card (V13RealLinearAdaptiveQRowWorld m Seed)
+    exact
+      Fintype.card_subtype_le
+        (fun omega : V13RealLinearAdaptiveQRowWorld m Seed =>
+          E.generated i₀ omega)
+  change (G : Rat) / (T : Rat) ≤ 1
+  by_cases hTzero : T = 0
+  · simp [hTzero]
+  · have hTposNat : 0 < T := Nat.pos_of_ne_zero hTzero
+    have hTpos : (0 : Rat) < (T : Rat) := by
+      exact_mod_cast hTposNat
+    rw [div_le_iff₀ hTpos]
+    have hleRat : (G : Rat) ≤ (T : Rat) := by
+      exact_mod_cast hleNat
+    nlinarith
+
+theorem v13RealLinear_qrow_one_le_epsilon_of_m_le_q {m q : Nat}
+    (hmq : m ≤ q) :
+    (1 : Rat) ≤ v13RealLinearQRowEpsilon q m := by
+  unfold v13RealLinearQRowEpsilon
+  have hpowNat : 2 ^ m ≤ 2 ^ q :=
+    Nat.pow_le_pow_right (by norm_num : 0 < 2) hmq
+  have hpowRat : (2 ^ m : Rat) ≤ (2 ^ q : Rat) := by
+    exact_mod_cast hpowNat
+  have hdenpos : (0 : Rat) < (2 ^ m : Rat) := by
+    positivity
+  rw [le_div_iff₀ hdenpos]
+  simpa using hpowRat
+
 /-- Generic blocked-mass bound used as an arithmetic interface.  The public
 remaining pin below specializes this to the uniform invertible-map sampler. -/
 def V13RealLinearAdaptiveRowSpanCountingBound {m q : Nat}
@@ -723,6 +766,16 @@ theorem v13RealLinearAdaptiveRowSpanCountingBound_of_zero_budget
   unfold v13RealLinearQRowEpsilon
   positivity
 
+theorem v13RealLinearAdaptiveRowSpanCountingBound_of_m_le_q
+    {m q : Nat} {Seed : Type*} [Fintype Seed]
+    (E : V13RealLinearAdaptiveQRowExperiment m q Seed) (i₀ : Fin m)
+    (hmq : m ≤ q) :
+    V13RealLinearAdaptiveRowSpanCountingBound E i₀ := by
+  unfold V13RealLinearAdaptiveRowSpanCountingBound
+  exact
+    (v13RealLinearAdaptiveQRowGeneratedMass_le_one E i₀).trans
+      (v13RealLinear_qrow_one_le_epsilon_of_m_le_q hmq)
+
 /-- The single named pinned obligation: under the uniform sampler over all
 certified invertible maps, the realized branch generates the target functional
 from its read rows with mass at most `2^q / 2^m`. -/
@@ -737,6 +790,13 @@ theorem v13RealLinearUniformInvertibleRowSpanCountingBound_of_zero_budget
     V13RealLinearUniformInvertibleRowSpanCountingBound observer i₀ :=
   v13RealLinearAdaptiveRowSpanCountingBound_of_zero_budget
     (v13RealLinearUniformQRowExperiment observer) i₀
+
+theorem v13RealLinearUniformInvertibleRowSpanCountingBound_of_m_le_q
+    {m q : Nat} (observer : V13RealLinearAdaptiveRowObserver m q)
+    (i₀ : Fin m) (hmq : m ≤ q) :
+    V13RealLinearUniformInvertibleRowSpanCountingBound observer i₀ :=
+  v13RealLinearAdaptiveRowSpanCountingBound_of_m_le_q
+    (v13RealLinearUniformQRowExperiment observer) i₀ hmq
 
 noncomputable def v13RealLinearUniformAdaptiveQRowSuccess {m q : Nat}
     (observer : V13RealLinearAdaptiveRowObserver m q) (i₀ : Fin m) : Rat :=
@@ -821,6 +881,17 @@ theorem v13RealLinear_uniform_zero_row_success_bound
       observer i₀
       (v13RealLinearUniformInvertibleRowSpanCountingBound_of_zero_budget
         observer i₀)
+
+theorem v13RealLinear_uniform_high_budget_success_bound
+    {m q : Nat} (observer : V13RealLinearAdaptiveRowObserver m q)
+    (i₀ : Fin m) (hmq : m ≤ q) :
+    v13RealLinearUniformAdaptiveQRowSuccess observer i₀ ≤
+      (1 / 2 : Rat) + v13RealLinearQRowEpsilon q m := by
+  exact
+    v13RealLinear_uniform_adaptive_qrow_success_bound_of_spanCounting
+      observer i₀
+      (v13RealLinearUniformInvertibleRowSpanCountingBound_of_m_le_q
+        observer i₀ hmq)
 
 theorem v13RealLinear_qrow_epsilon_nonnegative (q m : Nat) :
     0 ≤ v13RealLinearQRowEpsilon q m := by
