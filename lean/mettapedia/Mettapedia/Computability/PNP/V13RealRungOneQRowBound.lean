@@ -2843,6 +2843,44 @@ theorem
     v13RealLinearUniformCausalQRowExperiment,
     v13RealLinearUniformQRowExperiment] using hbranch.symm
 
+theorem v13RealLinearRowsTargetCoefficient_target_eq_of_rowsTranscript_eq
+    {m : Nat} (A : V13F2LinearEquiv m) (rows : Finset (Fin m))
+    (i₀ : Fin m) (coeff : V13RealLinearRowsTargetCoefficient A rows i₀)
+    {x y : F2Vec m}
+    (htranscript :
+      v13RealLinearRowsTranscript rows
+          (v13RealLinearPublicInput ({x := x, A := A} :
+            V13RealLinearWorld m)) =
+        v13RealLinearRowsTranscript rows
+          (v13RealLinearPublicInput ({x := y, A := A} :
+            V13RealLinearWorld m))) :
+    x i₀ = y i₀ := by
+  rw [← coeff.property x, ← coeff.property y]
+  unfold v13RealLinearRowCombinationEval
+  apply Finset.sum_congr rfl
+  intro row _hrow
+  have hview := congrFun htranscript row
+  have hbit :
+      A.toEquiv x row.1 = A.toEquiv y row.1 := by
+    exact congrArg Prod.snd hview
+  rw [hbit]
+
+theorem
+    v13RealLinearUniformCausal_rowsetTranscriptCell_target_eq_of_coefficient
+    {m q : Nat} (observer : V13RealLinearCausalRowObserver m q)
+    (i₀ : Fin m) (A : V13F2LinearEquiv m) (rows : Finset (Fin m))
+    (transcript : V13RealLinearRowsTranscriptSpace m rows)
+    (coeff : V13RealLinearRowsTargetCoefficient A rows i₀)
+    (x y :
+      V13RealLinearAdaptiveQRowRowsetTranscriptCell
+        (v13RealLinearUniformCausalQRowExperiment observer) A rows
+        transcript) :
+    x.val.val i₀ = y.val.val i₀ := by
+  apply
+    v13RealLinearRowsTargetCoefficient_target_eq_of_rowsTranscript_eq
+      A rows i₀ coeff
+  exact x.property.trans y.property.symm
+
 noncomputable def
     v13RealLinearAdaptiveQRowGeneratedTargetCoefficientRowsetCellEquivProduct
     {m q : Nat} {Seed : Type*}
