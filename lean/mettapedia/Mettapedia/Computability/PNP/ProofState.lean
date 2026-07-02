@@ -1238,6 +1238,27 @@ theorem currentPNPV13RealRungOneQRowBound_node :
         (v13RealLinearUniformCausalQRowExperiment observer).branchRows
           (v13RealLinearSwapShear10, x) ≠
           ({(0 : Fin 2)} : Finset (Fin 2))) ∧
+      (∀ (observer : V13RealLinearCausalRowObserver 2 1) (x : F2Vec 2)
+        (omega : V13RealLinearAdaptiveQRowWorld 2 (V13F2LinearEquiv 2)),
+        (v13RealLinearUniformCausalQRowExperiment observer).branchRows omega =
+          ({(0 : Fin 2)} : Finset (Fin 2)) →
+        (0 : Fin 2) ∈ V13RealLinearTargetRows omega.1 (0 : Fin 2) →
+        (v13RealLinearUniformCausalQRowExperiment observer).branchRows
+          (v13RealLinearSwapShear10, x) ≠
+          ({(1 : Fin 2)} : Finset (Fin 2))) ∧
+      (∀ (observer : V13RealLinearCausalRowObserver 2 1) (x : F2Vec 2)
+        (activeRow :
+          V13RealLinearUniformOneRowGeneratedRowIndex
+            observer.toAdaptive (0 : Fin 2)),
+        activeRow.val = (0 : Fin 2) →
+        (v13RealLinearUniformCausalQRowExperiment observer).branchRows
+          (v13RealLinearSwapShear10, x) ≠
+          ({(1 : Fin 2)} : Finset (Fin 2))) ∧
+      (∀ (observer : V13RealLinearCausalRowObserver 2 1)
+        (row₀ row₁ :
+          V13RealLinearUniformOneRowGeneratedRowIndex
+            observer.toAdaptive (0 : Fin 2)),
+        row₀.val = row₁.val) ∧
       (Fintype.card (V13F2LinearEquiv 2) ≤ 6 →
         (1 / 2 : Rat) <
           v13RealLinearUniformTargetRowOccurrenceMass (0 : Fin 2)) ∧
@@ -1541,6 +1562,9 @@ theorem currentPNPV13RealRungOneQRowBound_node :
       v13RealLinearSwapShear10_branchRows_ne_empty_of_activeRowIndex,
       v13RealLinearSwapShear10_branchRows_ne_zero_of_singletonOneWitness,
       v13RealLinearSwapShear10_branchRows_ne_zero_of_activeRowOne,
+      v13RealLinearSwapShear10_branchRows_ne_one_of_singletonZeroWitness,
+      v13RealLinearSwapShear10_branchRows_ne_one_of_activeRowZero,
+      v13RealLinearUniformCausalOneRowActiveRowPairExclusion_two_zero,
       fun hcard =>
         v13RealLinearUniformTargetRowOccurrenceMass_two_zero_gt_half hcard,
       fun hcard =>
