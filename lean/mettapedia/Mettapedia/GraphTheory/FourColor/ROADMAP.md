@@ -183,6 +183,12 @@ switches, the still smaller target
 base-step symmetry plus reachability from each base node to the root; it implies
 final sufficiency via
 `semanticFrontierStateSufficientForChain_of_append_quotient_symmetric_root`.
+The listed variant
+`concreteChainFiberAppendQuotientFibrationListedSymmetricRootFieldsClosed`
+matches generated spanning-forest output: a finite base-node list covers the
+quotient base, every listed node has a path to the root, and reversible base
+steps supply the reverse paths.  It implies final sufficiency via
+`semanticFrontierStateSufficientForChain_of_append_quotient_listed_symmetric_root`.
 Thus finite per-input interface or trace-pair mobility can serve directly as
 base connectivity, while any necessary prefix motion is absorbed by the
 quotient base rather than forced through a fixed-prefix last-state invariant.
