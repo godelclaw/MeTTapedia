@@ -3466,6 +3466,21 @@ theorem v13RealLinearNoTargetRowShear_branchRows_eq_singleton_of_activeRowIndex
   v13RealLinearUniformCausalOneRow_branchRows_eq_singleton_of_activeRowIndex
     observer i₀ (v13RealLinearNoTargetRowShear i₀ hm, x) activeRow
 
+/-- The all-dimensional singleton-rest bridge left by the no-target shear
+reduction.  It says that a causal one-row observer cannot simultaneously have
+an active generated singleton row `r` and put the explicit no-target rest world
+in a different singleton branch row `s`. -/
+def V13RealLinearUniformCausalOneRowNoTargetRestMismatchExclusion : Prop :=
+  ∀ {m : Nat} (observer : V13RealLinearCausalRowObserver m 1)
+    (i₀ : Fin m) (hm : 1 < m) (x : F2Vec m)
+    (activeRow :
+      V13RealLinearUniformOneRowGeneratedRowIndex observer.toAdaptive i₀)
+    (restRow : Fin m),
+    activeRow.val ≠ restRow →
+      (v13RealLinearUniformCausalQRowExperiment observer).branchRows
+          (v13RealLinearNoTargetRowShear i₀ hm, x) ≠
+        ({restRow} : Finset (Fin m))
+
 theorem v13RealLinearSwapShear10_branchRows_ne_empty_of_activeRowIndex
     (observer : V13RealLinearCausalRowObserver 2 1) (x : F2Vec 2)
     (activeRow :
@@ -4295,6 +4310,45 @@ theorem
     _ = 2 := by norm_num
 
 theorem
+    V13RealLinearUniformCausalOneRowActiveRowPairExclusion_of_noTargetRestMismatch
+    (hmismatch :
+      V13RealLinearUniformCausalOneRowNoTargetRestMismatchExclusion) :
+    V13RealLinearUniformCausalOneRowActiveRowPairExclusion := by
+  classical
+  intro m observer i₀ hm row₀ row₁
+  let restX : F2Vec m := fun _ => 0
+  obtain ⟨restRow, hrestRows⟩ :=
+    v13RealLinearNoTargetRowShear_branchRows_eq_singleton_of_activeRowIndex
+      observer i₀ hm restX row₀
+  by_cases hrow₀ : row₀.val = restRow
+  · by_cases hrow₁ : row₁.val = restRow
+    · exact hrow₀.trans hrow₁.symm
+    · exact
+        False.elim
+          (hmismatch observer i₀ hm restX row₁ restRow hrow₁ hrestRows)
+  · exact
+      False.elim
+        (hmismatch observer i₀ hm restX row₀ restRow hrow₀ hrestRows)
+
+theorem
+    V13RealLinearUniformCausalOneRowActiveRowIndexBound_of_noTargetRestMismatch
+    (hmismatch :
+      V13RealLinearUniformCausalOneRowNoTargetRestMismatchExclusion) :
+    V13RealLinearUniformCausalOneRowActiveRowIndexBound :=
+  V13RealLinearUniformCausalOneRowActiveRowIndexBound_of_pairExclusion
+    (V13RealLinearUniformCausalOneRowActiveRowPairExclusion_of_noTargetRestMismatch
+      hmismatch)
+
+theorem
+    V13RealLinearUniformCausalOneRowActiveBitCylinderIndexBound_of_noTargetRestMismatch
+    (hmismatch :
+      V13RealLinearUniformCausalOneRowNoTargetRestMismatchExclusion) :
+    V13RealLinearUniformCausalOneRowActiveBitCylinderIndexBound :=
+  V13RealLinearUniformCausalOneRowActiveBitCylinderIndexBound_of_rowIndexBound
+    (V13RealLinearUniformCausalOneRowActiveRowIndexBound_of_noTargetRestMismatch
+      hmismatch)
+
+theorem
     v13RealLinearUniformCausalOneRowGenerated_counting_of_activeBitCylinderIndex_le_two
     {m : Nat} (observer : V13RealLinearCausalRowObserver m 1)
     (i₀ : Fin m)
@@ -4381,6 +4435,24 @@ theorem
     observer i₀ hm
 
 theorem
+    v13RealLinearUniformCausalOneRowGenerated_counting_of_noTargetRestMismatch
+    (hmismatch :
+      V13RealLinearUniformCausalOneRowNoTargetRestMismatchExclusion)
+    {m : Nat} (observer : V13RealLinearCausalRowObserver m 1)
+    (i₀ : Fin m) (hm : 1 < m) :
+    Fintype.card
+        (V13RealLinearAdaptiveQRowGenerated
+          (v13RealLinearUniformCausalQRowExperiment observer) i₀) *
+        2 ^ m ≤
+      2 ^ 1 *
+        Fintype.card
+          (V13RealLinearAdaptiveQRowWorld m (V13F2LinearEquiv m)) :=
+  v13RealLinearUniformCausalOneRowGenerated_counting_of_activeRowPairExclusion
+    (V13RealLinearUniformCausalOneRowActiveRowPairExclusion_of_noTargetRestMismatch
+      hmismatch)
+    observer i₀ hm
+
+theorem
     v13RealLinearUniformCausalOneRowRowSpanCountingBound_of_activeBitCylinderIndexBound
     (hindex :
       V13RealLinearUniformCausalOneRowActiveBitCylinderIndexBound)
@@ -4414,6 +4486,18 @@ theorem
   v13RealLinearUniformCausalOneRowRowSpanCountingBound_of_activeRowIndexBound
     (V13RealLinearUniformCausalOneRowActiveRowIndexBound_of_pairExclusion
       hpair)
+    observer i₀ hm
+
+theorem
+    v13RealLinearUniformCausalOneRowRowSpanCountingBound_of_noTargetRestMismatch
+    (hmismatch :
+      V13RealLinearUniformCausalOneRowNoTargetRestMismatchExclusion)
+    {m : Nat} (observer : V13RealLinearCausalRowObserver m 1)
+    (i₀ : Fin m) (hm : 1 < m) :
+    V13RealLinearUniformCausalRowSpanCountingBound observer i₀ :=
+  v13RealLinearUniformCausalOneRowRowSpanCountingBound_of_activeRowPairExclusion
+    (V13RealLinearUniformCausalOneRowActiveRowPairExclusion_of_noTargetRestMismatch
+      hmismatch)
     observer i₀ hm
 
 theorem
@@ -4453,6 +4537,19 @@ theorem
   v13RealLinear_uniform_causal_one_row_success_bound_of_activeRowIndexBound
     (V13RealLinearUniformCausalOneRowActiveRowIndexBound_of_pairExclusion
       hpair)
+    observer i₀ hm
+
+theorem
+    v13RealLinear_uniform_causal_one_row_success_bound_of_noTargetRestMismatch
+    (hmismatch :
+      V13RealLinearUniformCausalOneRowNoTargetRestMismatchExclusion)
+    {m : Nat} (observer : V13RealLinearCausalRowObserver m 1)
+    (i₀ : Fin m) (hm : 1 < m) :
+    v13RealLinearUniformCausalQRowSuccess observer i₀ ≤
+      (1 / 2 : Rat) + v13RealLinearQRowEpsilon 1 m :=
+  v13RealLinear_uniform_causal_one_row_success_bound_of_activeRowPairExclusion
+    (V13RealLinearUniformCausalOneRowActiveRowPairExclusion_of_noTargetRestMismatch
+      hmismatch)
     observer i₀ hm
 
 theorem
