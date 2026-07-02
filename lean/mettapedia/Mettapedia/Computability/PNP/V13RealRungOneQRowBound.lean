@@ -655,6 +655,184 @@ theorem v13RealLinearUniformTargetRowOccurrenceMass_two_zero_gt_half
   rw [lt_div_iff₀ hApos]
   nlinarith
 
+abbrev V13RealLinearNonzeroF2Vec2 :=
+  {v : F2Vec 2 // v ≠ f2ZeroVec 2}
+
+noncomputable instance : Fintype V13RealLinearNonzeroF2Vec2 := by
+  unfold V13RealLinearNonzeroF2Vec2
+  infer_instance
+
+theorem v13RealLinearNonzeroF2Vec2_card :
+    Fintype.card V13RealLinearNonzeroF2Vec2 = 3 := by
+  unfold V13RealLinearNonzeroF2Vec2
+  rw [Fintype.card_subtype_compl (fun v : F2Vec 2 => v = f2ZeroVec 2)]
+  rw [Fintype.card_subtype_eq]
+  norm_num [F2Vec]
+
+theorem v13RealLinearNonzeroF2Vec2_ne_card_le_two
+    (v : V13RealLinearNonzeroF2Vec2) :
+    Fintype.card {w : V13RealLinearNonzeroF2Vec2 // w.val ≠ v.val} ≤ 2 := by
+  rw [Fintype.card_subtype_compl
+    (fun w : V13RealLinearNonzeroF2Vec2 => w.val = v.val)]
+  have hcard :
+      Fintype.card {w : V13RealLinearNonzeroF2Vec2 // w.val = v.val} = 1 := by
+    rw [Fintype.card_eq_one_iff]
+    refine ⟨⟨v, rfl⟩, ?_⟩
+    intro y
+    apply Subtype.ext
+    apply Subtype.ext
+    exact y.property
+  rw [hcard]
+  rw [v13RealLinearNonzeroF2Vec2_card]
+
+lemma v13_zmod2_cases (a : ZMod 2) : a = 0 ∨ a = 1 := by
+  have hlt : a.val < 2 := ZMod.val_lt a
+  have hcases : a.val = 0 ∨ a.val = 1 := by omega
+  rcases hcases with h | h
+  · left
+    rw [← ZMod.natCast_zmod_val a, h]
+    norm_num
+  · right
+    rw [← ZMod.natCast_zmod_val a, h]
+    norm_num
+
+lemma v13RealLinear_f2vec2_cases (x : F2Vec 2) :
+    x = f2ZeroVec 2 ∨
+      x = v13RealLinearSingleBit (0 : Fin 2) ∨
+      x = v13RealLinearSingleBit (1 : Fin 2) ∨
+      x = f2AddVec (v13RealLinearSingleBit (0 : Fin 2))
+        (v13RealLinearSingleBit (1 : Fin 2)) := by
+  have hx0 : x 0 = 0 ∨ x 0 = 1 := v13_zmod2_cases (x 0)
+  have hx1 : x 1 = 0 ∨ x 1 = 1 := v13_zmod2_cases (x 1)
+  rcases hx0 with h00 | h01 <;> rcases hx1 with h10 | h11
+  · left
+    funext r
+    fin_cases r <;> simp [f2ZeroVec, h00, h10]
+  · right; right; left
+    funext r
+    fin_cases r <;> simp [v13RealLinearSingleBit, h00, h11]
+  · right; left
+    funext r
+    fin_cases r <;> simp [v13RealLinearSingleBit, h01, h10]
+  · right; right; right
+    funext r
+    fin_cases r <;> simp [v13RealLinearSingleBit, f2AddVec, h01, h11]
+
+theorem v13RealLinear_equiv_two_ext
+    (A B : V13F2LinearEquiv 2)
+    (h0 : A.toEquiv (v13RealLinearSingleBit (0 : Fin 2)) =
+      B.toEquiv (v13RealLinearSingleBit (0 : Fin 2)))
+    (h1 : A.toEquiv (v13RealLinearSingleBit (1 : Fin 2)) =
+      B.toEquiv (v13RealLinearSingleBit (1 : Fin 2))) :
+    A = B := by
+  cases A with
+  | mk Ae Aadd Azero =>
+  cases B with
+  | mk Be Badd Bzero =>
+  have heq : Ae = Be := by
+    apply Equiv.ext
+    intro x
+    rcases v13RealLinear_f2vec2_cases x with hx | hx | hx | hx
+    · subst x
+      simpa using Azero.trans Bzero.symm
+    · subst x
+      simpa using h0
+    · subst x
+      simpa using h1
+    · subst x
+      calc
+        Ae (f2AddVec (v13RealLinearSingleBit (0 : Fin 2))
+            (v13RealLinearSingleBit (1 : Fin 2))) =
+          f2AddVec (Ae (v13RealLinearSingleBit (0 : Fin 2)))
+            (Ae (v13RealLinearSingleBit (1 : Fin 2))) := Aadd _ _
+        _ = f2AddVec (Be (v13RealLinearSingleBit (0 : Fin 2)))
+            (Be (v13RealLinearSingleBit (1 : Fin 2))) := by rw [h0, h1]
+        _ = Be (f2AddVec (v13RealLinearSingleBit (0 : Fin 2))
+            (v13RealLinearSingleBit (1 : Fin 2))) := (Badd _ _).symm
+  subst Be
+  rfl
+
+abbrev V13RealLinearTwoBasisImagePairs :=
+  Sigma (fun v : V13RealLinearNonzeroF2Vec2 =>
+    {w : V13RealLinearNonzeroF2Vec2 // w.val ≠ v.val})
+
+noncomputable def v13RealLinearTwoBasisImagePair
+    (A : V13F2LinearEquiv 2) : V13RealLinearTwoBasisImagePairs := by
+  let e0 := v13RealLinearSingleBit (0 : Fin 2)
+  let e1 := v13RealLinearSingleBit (1 : Fin 2)
+  have hsymmZero : A.toEquiv.symm (f2ZeroVec 2) = f2ZeroVec 2 := by
+    apply A.toEquiv.injective
+    simp [A.map_zero]
+  let v0 : V13RealLinearNonzeroF2Vec2 := ⟨A.toEquiv e0, by
+    intro hzero
+    have hpre := congrArg A.toEquiv.symm hzero
+    have hne : e0 ≠ f2ZeroVec 2 := by
+      intro h
+      have hp := congrFun h (0 : Fin 2)
+      simp [e0, v13RealLinearSingleBit, f2ZeroVec] at hp
+    apply hne
+    rw [hsymmZero] at hpre
+    simpa [e0] using hpre⟩
+  let v1 : V13RealLinearNonzeroF2Vec2 := ⟨A.toEquiv e1, by
+    intro hzero
+    have hpre := congrArg A.toEquiv.symm hzero
+    have hne : e1 ≠ f2ZeroVec 2 := by
+      intro h
+      have hp := congrFun h (1 : Fin 2)
+      simp [e1, v13RealLinearSingleBit, f2ZeroVec] at hp
+    apply hne
+    rw [hsymmZero] at hpre
+    simpa [e1] using hpre⟩
+  exact ⟨v0, ⟨v1, by
+    intro heq
+    have hpre := congrArg A.toEquiv.symm heq
+    have hne : e1 ≠ e0 := by
+      intro h
+      have hp := congrFun h (0 : Fin 2)
+      simp [e0, e1, v13RealLinearSingleBit] at hp
+    apply hne
+    simpa [v0, v1, e0, e1] using hpre⟩⟩
+
+theorem v13RealLinearTwoBasisImagePair_injective :
+    Function.Injective v13RealLinearTwoBasisImagePair := by
+  intro A B h
+  apply v13RealLinear_equiv_two_ext A B
+  · exact congrArg Subtype.val (congrArg Sigma.fst h)
+  · exact congrArg
+      (fun p : V13RealLinearTwoBasisImagePairs => (p.2).val.val) h
+
+theorem v13RealLinearTwoBasisImagePairs_card_le_six :
+    Fintype.card V13RealLinearTwoBasisImagePairs ≤ 6 := by
+  classical
+  rw [Fintype.card_sigma]
+  calc
+    (∑ v : V13RealLinearNonzeroF2Vec2,
+        Fintype.card {w : V13RealLinearNonzeroF2Vec2 // w.val ≠ v.val})
+        ≤ ∑ _v : V13RealLinearNonzeroF2Vec2, 2 := by
+      apply Finset.sum_le_sum
+      intro v _hv
+      exact v13RealLinearNonzeroF2Vec2_ne_card_le_two v
+    _ = 6 := by
+      rw [Finset.sum_const]
+      rw [Finset.card_univ]
+      rw [v13RealLinearNonzeroF2Vec2_card]
+      norm_num
+
+theorem v13RealLinear_f2_equiv_two_card_le_six :
+    Fintype.card (V13F2LinearEquiv 2) ≤ 6 := by
+  have hleImage : Fintype.card (V13F2LinearEquiv 2) ≤
+      Fintype.card V13RealLinearTwoBasisImagePairs :=
+    Fintype.card_le_of_embedding
+      { toFun := v13RealLinearTwoBasisImagePair
+        inj' := v13RealLinearTwoBasisImagePair_injective }
+  exact hleImage.trans v13RealLinearTwoBasisImagePairs_card_le_six
+
+theorem v13RealLinearUniformTargetRowOccurrenceMass_two_zero_gt_half_unconditional :
+    (1 / 2 : Rat) <
+      v13RealLinearUniformTargetRowOccurrenceMass (0 : Fin 2) :=
+  v13RealLinearUniformTargetRowOccurrenceMass_two_zero_gt_half
+    v13RealLinear_f2_equiv_two_card_le_six
+
 def V13RealLinearAdaptiveQRowExperiment.correct {m q : Nat} {Seed : Type*}
     (E : V13RealLinearAdaptiveQRowExperiment m q Seed) (i₀ : Fin m)
     (omega : V13RealLinearAdaptiveQRowWorld m Seed) : Prop :=
@@ -1265,6 +1443,12 @@ theorem v13RealLinear_targetRowObserver_spanCountingBound_fails_two_zero
   exact
     not_lt_of_ge hbound
       (v13RealLinearUniformTargetRowOccurrenceMass_two_zero_gt_half hcard)
+
+theorem v13RealLinear_targetRowObserver_spanCountingBound_fails_two_zero_unconditional :
+    ¬ V13RealLinearUniformInvertibleRowSpanCountingBound
+        (v13RealLinearTargetRowObserver (0 : Fin 2)) (0 : Fin 2) :=
+  v13RealLinear_targetRowObserver_spanCountingBound_fails_two_zero
+    v13RealLinear_f2_equiv_two_card_le_six
 
 noncomputable def v13RealLinearUniformAdaptiveQRowSuccess {m q : Nat}
     (observer : V13RealLinearAdaptiveRowObserver m q) (i₀ : Fin m) : Rat :=
