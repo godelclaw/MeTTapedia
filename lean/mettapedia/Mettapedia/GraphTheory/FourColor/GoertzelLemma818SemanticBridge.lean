@@ -926,6 +926,12 @@ def concreteChainFiberAppendRawPrefixReachClosed : Prop :=
             x.1.take word.length = y.1.take word.length →
               Reach (chainFiberRootClosureStep (word ++ [orient]) key) x y
 
+def concreteChainFiberAppendLastInterfaceTrace
+    (orient : GoertzelLemma818FrontierMode.TauOrient)
+    (last : GoertzelLemma814.TauState) : List GoertzelLemma814.LColor :=
+  (GoertzelLemma814.tauOrientOutputOrder (frontierOrientToChain orient)).map
+    fun edge => last.color edge
+
 def concreteChainFiberAppendFixedPrefixLastReachClosed : Prop :=
   ∀ (word : List GoertzelLemma818FrontierMode.TauOrient)
     (orient : GoertzelLemma818FrontierMode.TauOrient)
@@ -961,6 +967,96 @@ def concreteChainFiberAppendFixedPrefixLastReachClosed : Prop :=
                   concreteChainFiberAppend_mem_of_prefix_last
                     word orient hne key hpref hlastY hcompatibleY⟩ :
                   ChainFiberPoint (word ++ [orient]) key)
+
+def concreteChainFiberAppendFixedPrefixSameInterfaceTraceReachClosed : Prop :=
+  ∀ (word : List GoertzelLemma818FrontierMode.TauOrient)
+    (orient : GoertzelLemma818FrontierMode.TauOrient)
+    (hne : word ≠ []),
+    Nonempty (ChainWordConcreteFibrationCertificate word) →
+      ∀ (key : List GoertzelLemma814.LColor),
+        key ∈ GoertzelLemma814.colorAssignments4 →
+          ∀ (pref : List GoertzelLemma814.TauState)
+            (lastX lastY : GoertzelLemma814.TauState),
+            (hpref : pref ∈ concreteChainFiber word key) →
+            (hlastX : lastX ∈ GoertzelLemma814.allTauStates) →
+            (hlastY : lastY ∈ GoertzelLemma814.allTauStates) →
+            (hcompatibleX : GoertzelLemma814.compatibleAdjacent
+              (GoertzelLemma814.tauOrientAt
+                (frontierWordToChainWord (word ++ [orient])) (word.length - 1))
+              (GoertzelLemma814.tauOrientAt
+                (frontierWordToChainWord (word ++ [orient])) word.length)
+              (GoertzelLemma814.chainStateAt pref (word.length - 1))
+              lastX = true) →
+            (hcompatibleY : GoertzelLemma814.compatibleAdjacent
+              (GoertzelLemma814.tauOrientAt
+                (frontierWordToChainWord (word ++ [orient])) (word.length - 1))
+              (GoertzelLemma814.tauOrientAt
+                (frontierWordToChainWord (word ++ [orient])) word.length)
+              (GoertzelLemma814.chainStateAt pref (word.length - 1))
+              lastY = true) →
+            concreteChainFiberAppendLastInterfaceTrace orient lastX =
+              concreteChainFiberAppendLastInterfaceTrace orient lastY →
+              Reach (chainFiberRootClosureStep (word ++ [orient]) key)
+                (⟨pref ++ [lastX],
+                  concreteChainFiberAppend_mem_of_prefix_last
+                    word orient hne key hpref hlastX hcompatibleX⟩ :
+                  ChainFiberPoint (word ++ [orient]) key)
+                (⟨pref ++ [lastY],
+                  concreteChainFiberAppend_mem_of_prefix_last
+                    word orient hne key hpref hlastY hcompatibleY⟩ :
+                  ChainFiberPoint (word ++ [orient]) key)
+
+def concreteChainFiberAppendFixedPrefixInterfaceMobilityReachClosed : Prop :=
+  ∀ (word : List GoertzelLemma818FrontierMode.TauOrient)
+    (orient : GoertzelLemma818FrontierMode.TauOrient)
+    (hne : word ≠ []),
+    Nonempty (ChainWordConcreteFibrationCertificate word) →
+      ∀ (key : List GoertzelLemma814.LColor),
+        key ∈ GoertzelLemma814.colorAssignments4 →
+          ∀ (pref : List GoertzelLemma814.TauState)
+            (lastX lastY : GoertzelLemma814.TauState),
+            (hpref : pref ∈ concreteChainFiber word key) →
+            (hlastX : lastX ∈ GoertzelLemma814.allTauStates) →
+            (hlastY : lastY ∈ GoertzelLemma814.allTauStates) →
+            (hcompatibleX : GoertzelLemma814.compatibleAdjacent
+              (GoertzelLemma814.tauOrientAt
+                (frontierWordToChainWord (word ++ [orient])) (word.length - 1))
+              (GoertzelLemma814.tauOrientAt
+                (frontierWordToChainWord (word ++ [orient])) word.length)
+              (GoertzelLemma814.chainStateAt pref (word.length - 1))
+              lastX = true) →
+            (hcompatibleY : GoertzelLemma814.compatibleAdjacent
+              (GoertzelLemma814.tauOrientAt
+                (frontierWordToChainWord (word ++ [orient])) (word.length - 1))
+              (GoertzelLemma814.tauOrientAt
+                (frontierWordToChainWord (word ++ [orient])) word.length)
+              (GoertzelLemma814.chainStateAt pref (word.length - 1))
+              lastY = true) →
+            concreteChainFiberAppendLastInterfaceTrace orient lastX ≠
+              concreteChainFiberAppendLastInterfaceTrace orient lastY →
+              Reach (chainFiberRootClosureStep (word ++ [orient]) key)
+                (⟨pref ++ [lastX],
+                  concreteChainFiberAppend_mem_of_prefix_last
+                    word orient hne key hpref hlastX hcompatibleX⟩ :
+                  ChainFiberPoint (word ++ [orient]) key)
+                (⟨pref ++ [lastY],
+                  concreteChainFiberAppend_mem_of_prefix_last
+                    word orient hne key hpref hlastY hcompatibleY⟩ :
+                  ChainFiberPoint (word ++ [orient]) key)
+
+theorem concreteChainFiberAppendFixedPrefixLastReachClosed_of_interface_trace_cases
+    (hSame : concreteChainFiberAppendFixedPrefixSameInterfaceTraceReachClosed)
+    (hMobility : concreteChainFiberAppendFixedPrefixInterfaceMobilityReachClosed) :
+    concreteChainFiberAppendFixedPrefixLastReachClosed := by
+  intro word orient hne hcert key hkey pref lastX lastY hpref hlastX hlastY
+    hcompatibleX hcompatibleY
+  by_cases htrace :
+      concreteChainFiberAppendLastInterfaceTrace orient lastX =
+        concreteChainFiberAppendLastInterfaceTrace orient lastY
+  · exact hSame word orient hne hcert key hkey pref lastX lastY
+      hpref hlastX hlastY hcompatibleX hcompatibleY htrace
+  · exact hMobility word orient hne hcert key hkey pref lastX lastY
+      hpref hlastX hlastY hcompatibleX hcompatibleY htrace
 
 theorem concreteChainFiberAppendRawPrefixReachClosed_of_fixed_prefix_last_reach
     (hLast : concreteChainFiberAppendFixedPrefixLastReachClosed) :
@@ -1001,6 +1097,14 @@ theorem concreteChainFiberAppendRawPrefixReachClosed_of_fixed_prefix_last_reach
       hprefX hlastX hlastY hcompatibleX hcompatibleY'
   rw [hxEq, hyEq]
   simpa [x', y'] using hreach
+
+theorem concreteChainFiberAppendRawPrefixReachClosed_of_interface_trace_cases
+    (hSame : concreteChainFiberAppendFixedPrefixSameInterfaceTraceReachClosed)
+    (hMobility : concreteChainFiberAppendFixedPrefixInterfaceMobilityReachClosed) :
+    concreteChainFiberAppendRawPrefixReachClosed :=
+  concreteChainFiberAppendRawPrefixReachClosed_of_fixed_prefix_last_reach
+    (concreteChainFiberAppendFixedPrefixLastReachClosed_of_interface_trace_cases
+      hSame hMobility)
 
 theorem concreteChainFiberAppendPrefixFiberReachClosed_of_raw
     (hRaw : concreteChainFiberAppendRawPrefixReachClosed) :
