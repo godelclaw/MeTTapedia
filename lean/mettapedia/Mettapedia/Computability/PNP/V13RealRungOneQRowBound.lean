@@ -4609,6 +4609,151 @@ theorem
     rw [div_le_div_iff₀ hTpos hMpos]
     exact hcardRat
 
+theorem v13RealLinear_sum_range_two_pow (q : Nat) :
+    (∑ t ∈ Finset.range q, 2 ^ t) = 2 ^ q - 1 := by
+  induction q with
+  | zero =>
+      simp
+  | succ q ih =>
+      rw [Finset.sum_range_succ, ih]
+      have hpowpos : 0 < 2 ^ q := by
+        positivity
+      have hpow : 2 ^ (q + 1) = 2 ^ q + 2 ^ q := by
+        rw [pow_succ]
+        ring
+      omega
+
+theorem v13RealLinear_sum_fin_deferredDecisionWeights (q T : Nat) :
+    (∑ t : Fin q, (4 * 2 ^ (t : Nat)) * T) =
+      (4 * (2 ^ q - 1)) * T := by
+  rw [Fin.sum_univ_eq_sum_range
+    (fun t : Nat => (4 * 2 ^ t) * T)]
+  calc
+    (∑ t ∈ Finset.range q, (4 * 2 ^ t) * T) =
+        (∑ t ∈ Finset.range q, 2 ^ t) * (4 * T) := by
+      rw [Finset.sum_mul]
+      apply Finset.sum_congr rfl
+      intro t _ht
+      ring
+    _ = (2 ^ q - 1) * (4 * T) := by
+      rw [v13RealLinear_sum_range_two_pow q]
+    _ = (4 * (2 ^ q - 1)) * T := by
+      ring
+
+/-- A family of per-read events covers all generated worlds.  This is the
+finite union-bound interface used by deferred-decision counting: later
+sequential observers should instantiate `newCapture t omega` with "the
+`t`-th read is the first read that puts the target in span." -/
+def V13RealLinearAdaptiveDeferredDecisionNewCaptureCover
+    {m q : Nat} {Seed : Type*} [Fintype Seed]
+    (E : V13RealLinearAdaptiveQRowExperiment m q Seed)
+    (i₀ : Fin m)
+    (newCapture :
+      Fin q → V13RealLinearAdaptiveQRowWorld m Seed → Prop) : Prop :=
+  ∀ omega : V13RealLinearAdaptiveQRowWorld m Seed,
+    E.generated i₀ omega → ∃ t : Fin q, newCapture t omega
+
+/-- Per-read cardinal bounds for deferred-decision new-capture events.  The
+factor `2^t` is zero-indexed: summing over `t < q` gives `2^q - 1`. -/
+def V13RealLinearAdaptiveDeferredDecisionNewCaptureCountingBound
+    {m q : Nat} {Seed : Type*} [Fintype Seed]
+    (_E : V13RealLinearAdaptiveQRowExperiment m q Seed)
+    (newCapture :
+      Fin q → V13RealLinearAdaptiveQRowWorld m Seed → Prop) : Prop :=
+  ∀ t : Fin q,
+    letI : DecidablePred (newCapture t) := Classical.decPred _
+    Fintype.card
+        {omega : V13RealLinearAdaptiveQRowWorld m Seed //
+          newCapture t omega} *
+      2 ^ m ≤
+    (4 * 2 ^ (t : Nat)) *
+      Fintype.card (V13RealLinearAdaptiveQRowWorld m Seed)
+
+/-- Combined deferred-decision telescope surface: generated worlds are covered
+by first-new-capture events, and each event has its explicit per-read bound. -/
+def V13RealLinearAdaptiveDeferredDecisionNewCaptureBound
+    {m q : Nat} {Seed : Type*} [Fintype Seed]
+    (E : V13RealLinearAdaptiveQRowExperiment m q Seed)
+    (i₀ : Fin m) : Prop :=
+  ∃ newCapture :
+      Fin q → V13RealLinearAdaptiveQRowWorld m Seed → Prop,
+    V13RealLinearAdaptiveDeferredDecisionNewCaptureCover
+      E i₀ newCapture ∧
+    V13RealLinearAdaptiveDeferredDecisionNewCaptureCountingBound
+      E newCapture
+
+theorem
+    v13RealLinearAdaptiveDeferredDecisionCountingBound_of_newCapture
+    {m q : Nat} {Seed : Type*} [Fintype Seed]
+    (E : V13RealLinearAdaptiveQRowExperiment m q Seed)
+    (i₀ : Fin m)
+    (hnew :
+      V13RealLinearAdaptiveDeferredDecisionNewCaptureBound E i₀) :
+    V13RealLinearAdaptiveDeferredDecisionCountingBound E i₀ := by
+  classical
+  rcases hnew with ⟨newCapture, hcover, hstep⟩
+  unfold V13RealLinearAdaptiveDeferredDecisionCountingBound
+  let World := V13RealLinearAdaptiveQRowWorld m Seed
+  let Generated := V13RealLinearAdaptiveQRowGenerated E i₀
+  let T := Fintype.card World
+  let M := 2 ^ m
+  let G := Fintype.card Generated
+  have hGle :
+      G ≤
+        Fintype.card
+          (Σ t : Fin q, {omega : World // newCapture t omega}) := by
+    dsimp [G, Generated, World]
+    exact
+      Fintype.card_le_of_embedding
+        { toFun := fun omega =>
+            let t := Classical.choose (hcover omega.val omega.property)
+            ⟨t, ⟨omega.val,
+              Classical.choose_spec (hcover omega.val omega.property)⟩⟩
+          inj' := by
+            intro omega₀ omega₁ h
+            apply Subtype.ext
+            exact
+              congrArg
+                (fun z :
+                  (Σ t : Fin q,
+                    {omega : World // newCapture t omega}) => z.2.val)
+                h }
+  have hGleSum :
+      G ≤
+        ∑ t : Fin q,
+          Fintype.card {omega : World // newCapture t omega} := by
+    have hsigma :
+        Fintype.card
+            (Σ t : Fin q, {omega : World // newCapture t omega}) =
+          ∑ t : Fin q,
+            Fintype.card {omega : World // newCapture t omega} := by
+      rw [Fintype.card_sigma]
+    exact hGle.trans_eq hsigma
+  have hmul :
+      G * M ≤
+        (∑ t : Fin q,
+          Fintype.card {omega : World // newCapture t omega}) * M :=
+    Nat.mul_le_mul_right M hGleSum
+  have hsumStep :
+      (∑ t : Fin q,
+          Fintype.card {omega : World // newCapture t omega}) * M ≤
+        ∑ t : Fin q, (4 * 2 ^ (t : Nat)) * T := by
+    calc
+      (∑ t : Fin q,
+          Fintype.card {omega : World // newCapture t omega}) * M =
+          ∑ t : Fin q,
+            Fintype.card {omega : World // newCapture t omega} * M := by
+        rw [Finset.sum_mul]
+      _ ≤ ∑ t : Fin q, (4 * 2 ^ (t : Nat)) * T := by
+        apply Finset.sum_le_sum
+        intro t _ht
+        simpa [World, T, M] using hstep t
+  have hweights :
+      (∑ t : Fin q, (4 * 2 ^ (t : Nat)) * T) =
+        (4 * (2 ^ q - 1)) * T :=
+    v13RealLinear_sum_fin_deferredDecisionWeights q T
+  exact (hmul.trans hsumStep).trans_eq hweights
+
 theorem v13RealLinearAdaptiveQRowGeneratedMass_le_one
     {m q : Nat} {Seed : Type*} [Fintype Seed]
     (E : V13RealLinearAdaptiveQRowExperiment m q Seed) (i₀ : Fin m) :
@@ -4890,6 +5035,20 @@ theorem
       (v13RealLinearAdaptiveDeferredDecisionGeneratedMassBound_of_counting
         E i₀ hcount)
 
+theorem
+    v13RealLinear_adaptive_qrow_success_bound_of_deferredDecisionNewCapture
+    {m q : Nat} {Seed : Type*} [Fintype Seed]
+    (E : V13RealLinearAdaptiveQRowExperiment m q Seed) (i₀ : Fin m)
+    (hnew :
+      V13RealLinearAdaptiveDeferredDecisionNewCaptureBound E i₀) :
+    v13RealLinearAdaptiveQRowSuccess E i₀ ≤
+      (1 / 2 : Rat) + v13RealLinearQRowDeferredDecisionEpsilon q m := by
+  exact
+    v13RealLinear_adaptive_qrow_success_bound_of_deferredDecisionCounting
+      E i₀
+      (v13RealLinearAdaptiveDeferredDecisionCountingBound_of_newCapture
+        E i₀ hnew)
+
 theorem v13RealLinear_uniform_adaptive_qrow_success_bound_of_spanCounting
     {m q : Nat} (observer : V13RealLinearAdaptiveRowObserver m q)
     (i₀ : Fin m)
@@ -4924,6 +5083,23 @@ def V13RealLinearUniformCausalDeferredDecisionCountingBound
   V13RealLinearAdaptiveDeferredDecisionCountingBound
     (v13RealLinearUniformCausalQRowExperiment observer) i₀
 
+def V13RealLinearUniformCausalDeferredDecisionNewCaptureBound
+    {m q : Nat} (observer : V13RealLinearCausalRowObserver m q)
+    (i₀ : Fin m) : Prop :=
+  V13RealLinearAdaptiveDeferredDecisionNewCaptureBound
+    (v13RealLinearUniformCausalQRowExperiment observer) i₀
+
+theorem
+    V13RealLinearUniformCausalDeferredDecisionCountingBound_of_newCapture
+    {m q : Nat} (observer : V13RealLinearCausalRowObserver m q)
+    (i₀ : Fin m)
+    (hnew :
+      V13RealLinearUniformCausalDeferredDecisionNewCaptureBound
+        observer i₀) :
+    V13RealLinearUniformCausalDeferredDecisionCountingBound observer i₀ :=
+  v13RealLinearAdaptiveDeferredDecisionCountingBound_of_newCapture
+    (v13RealLinearUniformCausalQRowExperiment observer) i₀ hnew
+
 theorem
     v13RealLinear_uniform_causal_qrow_success_bound_of_deferredDecision
     {m q : Nat} (observer : V13RealLinearCausalRowObserver m q)
@@ -4948,6 +5124,21 @@ theorem
   exact
     v13RealLinear_adaptive_qrow_success_bound_of_deferredDecisionCounting
       (v13RealLinearUniformCausalQRowExperiment observer) i₀ hcount
+
+theorem
+    v13RealLinear_uniform_causal_qrow_success_bound_of_deferredDecisionNewCapture
+    {m q : Nat} (observer : V13RealLinearCausalRowObserver m q)
+    (i₀ : Fin m)
+    (hnew :
+      V13RealLinearUniformCausalDeferredDecisionNewCaptureBound
+        observer i₀) :
+    v13RealLinearUniformCausalQRowSuccess observer i₀ ≤
+      (1 / 2 : Rat) + v13RealLinearQRowDeferredDecisionEpsilon q m := by
+  exact
+    v13RealLinear_uniform_causal_qrow_success_bound_of_deferredDecisionCounting
+      observer i₀
+      (V13RealLinearUniformCausalDeferredDecisionCountingBound_of_newCapture
+        observer i₀ hnew)
 
 theorem v13RealLinear_uniform_zero_row_success_bound
     {m : Nat} (observer : V13RealLinearAdaptiveRowObserver m 0)
@@ -5078,6 +5269,27 @@ def V13RealLinearUniformCausalTwoOrMoreDeferredDecisionCountingBound :
     1 < q → q < m →
       V13RealLinearUniformCausalDeferredDecisionCountingBound observer i₀
 
+/-- Residual deferred-decision telescope form: for each nontrivial
+low-budget causal row observer, generated worlds are covered by first
+new-capture events, and each step has the explicit deferred-decision cardinal
+bound. -/
+def V13RealLinearUniformCausalTwoOrMoreDeferredDecisionNewCaptureBound :
+    Prop :=
+  ∀ {m q : Nat} (observer : V13RealLinearCausalRowObserver m q)
+    (i₀ : Fin m),
+    1 < q → q < m →
+      V13RealLinearUniformCausalDeferredDecisionNewCaptureBound observer i₀
+
+theorem
+    V13RealLinearUniformCausalTwoOrMoreDeferredDecisionCountingBound_of_newCapture
+    (hnew :
+      V13RealLinearUniformCausalTwoOrMoreDeferredDecisionNewCaptureBound) :
+    V13RealLinearUniformCausalTwoOrMoreDeferredDecisionCountingBound := by
+  intro m q observer i₀ hqgt hqm
+  exact
+    V13RealLinearUniformCausalDeferredDecisionCountingBound_of_newCapture
+      observer i₀ (hnew observer i₀ hqgt hqm)
+
 theorem
     V13RealLinearUniformCausalTwoOrMoreDeferredDecisionCountingBound_of_completionCounting
     (hcount : V13RealLinearUniformCausalTwoOrMoreCompletionCountingBound) :
@@ -5114,6 +5326,19 @@ theorem
   exact
     v13RealLinear_uniform_causal_qrow_success_bound_of_deferredDecisionCounting
       observer i₀ (hcount observer i₀ hqgt hqm)
+
+theorem
+    v13RealLinear_uniform_causal_qrow_success_bound_of_twoOrMoreDeferredDecisionNewCaptureBound
+    (hnew :
+      V13RealLinearUniformCausalTwoOrMoreDeferredDecisionNewCaptureBound)
+    {m q : Nat} (observer : V13RealLinearCausalRowObserver m q)
+    (i₀ : Fin m) (hqgt : 1 < q) (hqm : q < m) :
+    v13RealLinearUniformCausalQRowSuccess observer i₀ ≤
+      (1 / 2 : Rat) + v13RealLinearQRowDeferredDecisionEpsilon q m :=
+  v13RealLinear_uniform_causal_qrow_success_bound_of_twoOrMoreDeferredDecisionCountingBound
+    (V13RealLinearUniformCausalTwoOrMoreDeferredDecisionCountingBound_of_newCapture
+      hnew)
+    observer i₀ hqgt hqm
 
 /-- Residual coefficient-certificate form after the zero-budget, high-budget,
 and q = 1 cases have been closed. -/
