@@ -2097,6 +2097,39 @@ theorem concreteChainWordFibrationSingletonSeeds_ok :
     (List.all_eq_true.mp hFiberAll) key hkey
   exact ⟨ChainFiberFibrationCertificate.ofChainFiberConnected hFiber⟩
 
+theorem concreteChainFiberAppendFixedPrefixSameInterfaceTraceReachClosed_of_singleton_lift
+    (hLift : concreteChainFiberAppendRelativeSingletonLiftClosed) :
+    concreteChainFiberAppendFixedPrefixSameInterfaceTraceReachClosed :=
+  concreteChainFiberAppendFixedPrefixSameInterfaceTraceReachClosed_of_relative_singleton
+    (concreteChainFiberAppendSameTraceRelativeSingletonReachClosed_of_singleton_seeds
+      concreteChainWordFibrationSingletonSeeds_ok)
+    hLift
+
+theorem concreteChainFiberAppendFixedPrefixLastReachClosed_of_singleton_lift_and_mobility
+    (hLift : concreteChainFiberAppendRelativeSingletonLiftClosed)
+    (hMobility : concreteChainFiberAppendFixedPrefixInterfaceMobilityReachClosed) :
+    concreteChainFiberAppendFixedPrefixLastReachClosed :=
+  concreteChainFiberAppendFixedPrefixLastReachClosed_of_interface_trace_cases
+    (concreteChainFiberAppendFixedPrefixSameInterfaceTraceReachClosed_of_singleton_lift
+      hLift)
+    hMobility
+
+theorem concreteChainFiberAppendRawPrefixReachClosed_of_singleton_lift_and_mobility
+    (hLift : concreteChainFiberAppendRelativeSingletonLiftClosed)
+    (hMobility : concreteChainFiberAppendFixedPrefixInterfaceMobilityReachClosed) :
+    concreteChainFiberAppendRawPrefixReachClosed :=
+  concreteChainFiberAppendRawPrefixReachClosed_of_fixed_prefix_last_reach
+    (concreteChainFiberAppendFixedPrefixLastReachClosed_of_singleton_lift_and_mobility
+      hLift hMobility)
+
+theorem concreteChainFiberAppendPrefixFiberReachClosed_of_singleton_lift_and_mobility
+    (hLift : concreteChainFiberAppendRelativeSingletonLiftClosed)
+    (hMobility : concreteChainFiberAppendFixedPrefixInterfaceMobilityReachClosed) :
+    concreteChainFiberAppendPrefixFiberReachClosed :=
+  concreteChainFiberAppendPrefixFiberReachClosed_of_raw
+    (concreteChainFiberAppendRawPrefixReachClosed_of_singleton_lift_and_mobility
+      hLift hMobility)
+
 def chainAuditFibrationTransferClosed : Prop :=
   ∀ (word : List GoertzelLemma818FrontierMode.TauOrient)
     (orient : GoertzelLemma818FrontierMode.TauOrient),
