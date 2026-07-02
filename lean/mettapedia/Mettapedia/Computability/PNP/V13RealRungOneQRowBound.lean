@@ -851,6 +851,175 @@ noncomputable instance v13RealLinearFunctionalFintype (m : Nat) :
         intro f g h
         exact DFunLike.ext f g (fun w => congrFun h w))
 
+abbrev V13RealLinearRowFunctionalTable (m : Nat) :=
+  Fin m → (F2Vec m →ₗ[ZMod 2] ZMod 2)
+
+noncomputable instance v13RealLinearRowFunctionalTableFintype (m : Nat) :
+    Fintype (V13RealLinearRowFunctionalTable m) := by
+  classical
+  dsimp [V13RealLinearRowFunctionalTable]
+  infer_instance
+
+noncomputable def V13RealLinearFunctionalTableRowsSpan {m : Nat}
+    (table : V13RealLinearRowFunctionalTable m)
+    (rows : Finset (Fin m)) :
+    Submodule (ZMod 2) (F2Vec m →ₗ[ZMod 2] ZMod 2) :=
+  Submodule.span (ZMod 2)
+    (Set.range (fun row : {row : Fin m // row ∈ rows} =>
+      table row.1))
+
+noncomputable instance {m : Nat}
+    (table : V13RealLinearRowFunctionalTable m)
+    (rows : Finset (Fin m)) :
+    Fintype (V13RealLinearFunctionalTableRowsSpan table rows) := by
+  classical
+  haveI : Finite (V13RealLinearFunctionalTableRowsSpan table rows) :=
+    Finite.of_injective
+      (fun z : V13RealLinearFunctionalTableRowsSpan table rows =>
+        (z.val : F2Vec m →ₗ[ZMod 2] ZMod 2))
+      (by
+        intro z₀ z₁ h
+        exact Subtype.ext h)
+  exact Fintype.ofFinite _
+
+def V13RealLinearFunctionalTableTargetCosetHit {m : Nat}
+    (table : V13RealLinearRowFunctionalTable m)
+    (rows : Finset (Fin m)) (i₀ row : Fin m) : Prop :=
+  ∃ z ∈ V13RealLinearFunctionalTableRowsSpan table rows,
+    v13RealLinearTargetFunctional i₀ = table row + z
+
+noncomputable def v13RealLinearFunctionalTableRowsSpanCombination
+    {m : Nat} (table : V13RealLinearRowFunctionalTable m)
+    (rows : Finset (Fin m))
+    (coeff : V13RealLinearRowCombination rows) :
+    V13RealLinearFunctionalTableRowsSpan table rows :=
+  ⟨∑ row : {row : Fin m // row ∈ rows}, coeff row • table row.1,
+    (Submodule.mem_span_range_iff_exists_fun (R := ZMod 2)).2
+      ⟨coeff, rfl⟩⟩
+
+theorem v13RealLinearFunctionalTableRowsSpanCombination_surjective
+    {m : Nat} (table : V13RealLinearRowFunctionalTable m)
+    (rows : Finset (Fin m)) :
+    Function.Surjective
+      (v13RealLinearFunctionalTableRowsSpanCombination table rows) := by
+  intro z
+  rcases
+      (Submodule.mem_span_range_iff_exists_fun (R := ZMod 2)).1
+        z.property with
+    ⟨coeff, hcoeff⟩
+  refine ⟨coeff, ?_⟩
+  apply Subtype.ext
+  simpa [v13RealLinearFunctionalTableRowsSpanCombination] using hcoeff
+
+theorem v13RealLinearFunctionalTableRowsSpan_card_le
+    {m : Nat} (table : V13RealLinearRowFunctionalTable m)
+    (rows : Finset (Fin m)) :
+    Fintype.card (V13RealLinearFunctionalTableRowsSpan table rows) ≤
+      2 ^ rows.card := by
+  calc
+    Fintype.card (V13RealLinearFunctionalTableRowsSpan table rows) ≤
+        Fintype.card (V13RealLinearRowCombination rows) :=
+      Fintype.card_le_of_surjective
+        (v13RealLinearFunctionalTableRowsSpanCombination table rows)
+        (v13RealLinearFunctionalTableRowsSpanCombination_surjective
+          table rows)
+    _ = 2 ^ rows.card := by
+      simp [V13RealLinearRowCombination]
+
+def V13RealLinearFunctionalTableTargetCoset {m : Nat}
+    (table : V13RealLinearRowFunctionalTable m)
+    (rows : Finset (Fin m)) (i₀ : Fin m) :=
+  {f : F2Vec m →ₗ[ZMod 2] ZMod 2 //
+    ∃ z : V13RealLinearFunctionalTableRowsSpan table rows,
+      v13RealLinearTargetFunctional i₀ = f + z.val}
+
+noncomputable instance {m : Nat}
+    (table : V13RealLinearRowFunctionalTable m)
+    (rows : Finset (Fin m)) (i₀ : Fin m) :
+    Fintype (V13RealLinearFunctionalTableTargetCoset table rows i₀) := by
+  classical
+  exact
+    Fintype.ofInjective
+      (fun hit : V13RealLinearFunctionalTableTargetCoset table rows i₀ =>
+        (hit.val : F2Vec m →ₗ[ZMod 2] ZMod 2))
+      (by
+        intro hit₀ hit₁ h
+        exact Subtype.ext h)
+
+noncomputable def v13RealLinearFunctionalTableTargetCosetToSpan
+    {m : Nat} (table : V13RealLinearRowFunctionalTable m)
+    (rows : Finset (Fin m)) (i₀ : Fin m)
+    (hit : V13RealLinearFunctionalTableTargetCoset table rows i₀) :
+    V13RealLinearFunctionalTableRowsSpan table rows := by
+  refine
+    ⟨v13RealLinearTargetFunctional i₀ + hit.val, ?_⟩
+  rcases hit.property with ⟨z, hz⟩
+  have hzEq :
+      v13RealLinearTargetFunctional i₀ + hit.val = z.val := by
+    apply LinearMap.ext
+    intro w
+    have hpoint := LinearMap.congr_fun hz w
+    have hpoint' :
+        v13RealLinearTargetFunctional i₀ w =
+          hit.val w + z.val w := by
+      simpa using hpoint
+    calc
+      (v13RealLinearTargetFunctional i₀ + hit.val) w =
+          v13RealLinearTargetFunctional i₀ w + hit.val w := rfl
+      _ = (hit.val w + z.val w) + hit.val w := by rw [hpoint']
+      _ = z.val w := by
+        rw [add_assoc, add_comm (z.val w) (hit.val w), ← add_assoc,
+          f2_add_self, zero_add]
+  rw [hzEq]
+  exact z.property
+
+theorem v13RealLinearFunctionalTableTargetCosetToSpan_injective
+    {m : Nat} (table : V13RealLinearRowFunctionalTable m)
+    (rows : Finset (Fin m)) (i₀ : Fin m) :
+    Function.Injective
+      (v13RealLinearFunctionalTableTargetCosetToSpan table rows i₀) := by
+  intro hit₀ hit₁ hspan
+  apply Subtype.ext
+  have hval := congrArg Subtype.val hspan
+  apply LinearMap.ext
+  intro w
+  have hpoint :
+      (v13RealLinearTargetFunctional i₀ + hit₀.val) w =
+        (v13RealLinearTargetFunctional i₀ + hit₁.val) w := by
+    simpa [v13RealLinearFunctionalTableTargetCosetToSpan] using
+      LinearMap.congr_fun hval w
+  have hpoint' :
+      v13RealLinearTargetFunctional i₀ w + hit₀.val w =
+        v13RealLinearTargetFunctional i₀ w + hit₁.val w := by
+    simpa using hpoint
+  exact add_left_cancel hpoint'
+
+noncomputable def v13RealLinearFunctionalTableTargetCosetEmbedding
+    {m : Nat} (table : V13RealLinearRowFunctionalTable m)
+    (rows : Finset (Fin m)) (i₀ : Fin m) :
+    V13RealLinearFunctionalTableTargetCoset table rows i₀ ↪
+      V13RealLinearFunctionalTableRowsSpan table rows where
+  toFun := v13RealLinearFunctionalTableTargetCosetToSpan table rows i₀
+  inj' := v13RealLinearFunctionalTableTargetCosetToSpan_injective
+    table rows i₀
+
+theorem v13RealLinearFunctionalTableTargetCoset_card_le_span
+    {m : Nat} (table : V13RealLinearRowFunctionalTable m)
+    (rows : Finset (Fin m)) (i₀ : Fin m) :
+    Fintype.card (V13RealLinearFunctionalTableTargetCoset table rows i₀) ≤
+      Fintype.card (V13RealLinearFunctionalTableRowsSpan table rows) :=
+  Fintype.card_le_of_embedding
+    (v13RealLinearFunctionalTableTargetCosetEmbedding table rows i₀)
+
+theorem v13RealLinearFunctionalTableTargetCoset_card_le
+    {m : Nat} (table : V13RealLinearRowFunctionalTable m)
+    (rows : Finset (Fin m)) (i₀ : Fin m) :
+    Fintype.card (V13RealLinearFunctionalTableTargetCoset table rows i₀) ≤
+      2 ^ rows.card :=
+  (v13RealLinearFunctionalTableTargetCoset_card_le_span
+    table rows i₀).trans
+    (v13RealLinearFunctionalTableRowsSpan_card_le table rows)
+
 noncomputable def V13RealLinearRowsFunctionalSpan {m : Nat}
     (A : V13F2LinearEquiv m) (rows : Finset (Fin m)) :
     Submodule (ZMod 2) (F2Vec m →ₗ[ZMod 2] ZMod 2) :=
