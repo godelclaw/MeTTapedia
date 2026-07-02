@@ -312,6 +312,52 @@ theorem v13RealLinear_rowsTargetCoefficient_card_le_of_rows_card_le
       v13RealLinear_rowsTargetCoefficient_card_le_rowCombination A rows i₀
     _ ≤ 2 ^ q := v13RealLinear_rowCombination_card_le_of_rows_card_le hrows
 
+theorem v13RealLinearRowsTargetCoefficient_subsingleton {m : Nat}
+    (A : V13F2LinearEquiv m) (rows : Finset (Fin m)) (i₀ : Fin m) :
+    Subsingleton (V13RealLinearRowsTargetCoefficient A rows i₀) := by
+  classical
+  refine ⟨?_⟩
+  intro coeff₀ coeff₁
+  apply Subtype.ext
+  funext row
+  let w : F2Vec m := A.toEquiv.symm (v13RealLinearSingleBit row.1)
+  have heval₀ :
+      v13RealLinearRowCombinationEval A rows coeff₀.val w = coeff₀.val row := by
+    unfold v13RealLinearRowCombinationEval
+    rw [Finset.sum_eq_single row]
+    · simp [w, v13RealLinearSingleBit]
+    · intro row' _hrow' hne
+      have hneVal : row'.1 ≠ row.1 := by
+        intro hval
+        exact hne (Subtype.ext hval)
+      simp [w, v13RealLinearSingleBit, hneVal]
+    · intro hrow
+      exact (hrow (Finset.mem_univ row)).elim
+  have heval₁ :
+      v13RealLinearRowCombinationEval A rows coeff₁.val w = coeff₁.val row := by
+    unfold v13RealLinearRowCombinationEval
+    rw [Finset.sum_eq_single row]
+    · simp [w, v13RealLinearSingleBit]
+    · intro row' _hrow' hne
+      have hneVal : row'.1 ≠ row.1 := by
+        intro hval
+        exact hne (Subtype.ext hval)
+      simp [w, v13RealLinearSingleBit, hneVal]
+    · intro hrow
+      exact (hrow (Finset.mem_univ row)).elim
+  calc
+    coeff₀.val row = v13RealLinearRowCombinationEval A rows coeff₀.val w := heval₀.symm
+    _ = w i₀ := coeff₀.property w
+    _ = v13RealLinearRowCombinationEval A rows coeff₁.val w := (coeff₁.property w).symm
+    _ = coeff₁.val row := heval₁
+
+theorem v13RealLinear_rowsTargetCoefficient_card_le_one {m : Nat}
+    (A : V13F2LinearEquiv m) (rows : Finset (Fin m)) (i₀ : Fin m) :
+    Fintype.card (V13RealLinearRowsTargetCoefficient A rows i₀) ≤ 1 := by
+  classical
+  letI := v13RealLinearRowsTargetCoefficient_subsingleton A rows i₀
+  exact Fintype.card_le_one_iff_subsingleton.mpr inferInstance
+
 theorem v13RealLinear_rowsBlockTarget_of_rowsGenerateTarget {m : Nat}
     (A : V13F2LinearEquiv m) (rows : Finset (Fin m)) (i₀ : Fin m)
     (hgen : V13RealLinearRowsGenerateTarget A rows i₀) :
@@ -2893,6 +2939,81 @@ theorem
     Fintype.card_prod
       (V13RealLinearAdaptiveQRowRowsetTranscriptCell E seed rows transcript)
       (V13RealLinearRowsTargetCoefficient (E.sampleA seed) rows i₀)
+
+theorem
+    v13RealLinearAdaptiveQRowGeneratedTargetCoefficientRowsetTranscriptProductCell_card_le_transcriptCell
+    {m q : Nat} {Seed : Type*} [Fintype Seed]
+    (E : V13RealLinearAdaptiveQRowExperiment m q Seed) (i₀ : Fin m)
+    (seed : Seed) (rows : Finset (Fin m))
+    (transcript : V13RealLinearRowsTranscriptSpace m rows) :
+    Fintype.card
+        (V13RealLinearAdaptiveQRowGeneratedTargetCoefficientRowsetTranscriptProductCell
+          E i₀ seed rows transcript) ≤
+      Fintype.card
+        (V13RealLinearAdaptiveQRowRowsetTranscriptCell
+          E seed rows transcript) := by
+  classical
+  rw [
+    v13RealLinearAdaptiveQRowGeneratedTargetCoefficientRowsetTranscriptProductCell_card_eq_product
+      E i₀ seed rows transcript]
+  have hcoeff :
+      Fintype.card
+          (V13RealLinearRowsTargetCoefficient
+            (E.sampleA seed) rows i₀) ≤ 1 :=
+    v13RealLinear_rowsTargetCoefficient_card_le_one (E.sampleA seed) rows i₀
+  calc
+    Fintype.card
+          (V13RealLinearAdaptiveQRowRowsetTranscriptCell
+            E seed rows transcript) *
+        Fintype.card
+          (V13RealLinearRowsTargetCoefficient
+            (E.sampleA seed) rows i₀) ≤
+      Fintype.card
+          (V13RealLinearAdaptiveQRowRowsetTranscriptCell
+            E seed rows transcript) * 1 := by
+        exact Nat.mul_le_mul_left _ hcoeff
+    _ =
+      Fintype.card
+        (V13RealLinearAdaptiveQRowRowsetTranscriptCell
+          E seed rows transcript) := Nat.mul_one _
+
+theorem
+    v13RealLinearAdaptiveQRowGeneratedTargetCoefficientRowsetTranscriptProductCell_card_eq_zero_or_transcriptCell
+    {m q : Nat} {Seed : Type*} [Fintype Seed]
+    (E : V13RealLinearAdaptiveQRowExperiment m q Seed) (i₀ : Fin m)
+    (seed : Seed) (rows : Finset (Fin m))
+    (transcript : V13RealLinearRowsTranscriptSpace m rows) :
+    Fintype.card
+        (V13RealLinearAdaptiveQRowGeneratedTargetCoefficientRowsetTranscriptProductCell
+          E i₀ seed rows transcript) = 0 ∨
+      Fintype.card
+          (V13RealLinearAdaptiveQRowGeneratedTargetCoefficientRowsetTranscriptProductCell
+            E i₀ seed rows transcript) =
+        Fintype.card
+          (V13RealLinearAdaptiveQRowRowsetTranscriptCell
+            E seed rows transcript) := by
+  classical
+  rw [
+    v13RealLinearAdaptiveQRowGeneratedTargetCoefficientRowsetTranscriptProductCell_card_eq_product
+      E i₀ seed rows transcript]
+  let T :=
+    Fintype.card
+      (V13RealLinearAdaptiveQRowRowsetTranscriptCell
+        E seed rows transcript)
+  let C :=
+    Fintype.card
+      (V13RealLinearRowsTargetCoefficient
+        (E.sampleA seed) rows i₀)
+  have hcoeff : C ≤ 1 := by
+    simpa [C] using
+      v13RealLinear_rowsTargetCoefficient_card_le_one (E.sampleA seed) rows i₀
+  by_cases hzero : C = 0
+  · left
+    simp [C, hzero]
+  · right
+    have hpos : 1 ≤ C := Nat.succ_le_of_lt (Nat.pos_of_ne_zero hzero)
+    have hone : C = 1 := Nat.le_antisymm hcoeff hpos
+    simp [C, hone]
 
 theorem
     v13RealLinearAdaptiveQRow_rowsetProduct_eq_sum_transcriptProductCells
