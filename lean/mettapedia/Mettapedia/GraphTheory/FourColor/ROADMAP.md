@@ -225,7 +225,12 @@ the separate lift that prefixes that local reach with the frozen chain prefix.
 The singleton reach side is closed by
 `concreteChainFiberAppendSameTraceRelativeSingletonReachClosed_of_singleton_seeds`,
 which reuses the existing singleton fibration seeds; the remaining same-trace
-work is the prefix lift.
+work is the prefix lift.  The wrappers
+`concreteChainFiberAppendRawPrefixReachClosed_of_singleton_lift_and_mobility`
+and
+`concreteChainFiberAppendPrefixFiberReachClosed_of_singleton_lift_and_mobility`
+now reduce the raw/prefix reach route to exactly the frozen-prefix singleton
+lift plus the different-trace interface-mobility hook.
 `concreteChainFiberAppendFixedPrefixLastReachClosed_of_interface_trace_cases`
 and `concreteChainFiberAppendRawPrefixReachClosed_of_interface_trace_cases`
 assemble those two cases back into the existing sufficiency route.
