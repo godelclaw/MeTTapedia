@@ -329,6 +329,92 @@ theorem v13RealLinearSequentialRowRunAuxWithRowView_congr
       simp [v13RealLinearSequentialRowRunAuxWithRowView,
         hview (observer.chooseRow transcript), ih]
 
+theorem v13RealLinearSequentialRowRunAuxWithRowView_rows_mono
+    {m q : Nat} (observer : V13RealLinearSequentialRowObserver m q)
+    (rowView : Fin m → V13RealLinearRowView m) (n : Nat)
+    (transcript : V13RealLinearSequentialRowTranscript m) {row : Fin m}
+    (hrow : row ∈ v13RealLinearSequentialRowTranscriptRows transcript) :
+    row ∈
+      v13RealLinearSequentialRowTranscriptRows
+        (v13RealLinearSequentialRowRunAuxWithRowView
+          observer rowView n transcript) := by
+  induction n generalizing transcript with
+  | zero =>
+      simpa [v13RealLinearSequentialRowRunAuxWithRowView] using hrow
+  | succ n ih =>
+      apply ih
+      simp [v13RealLinearSequentialRowTranscriptRows]
+      right
+      simpa [v13RealLinearSequentialRowTranscriptRows] using hrow
+
+theorem
+    v13RealLinearSequentialRowRunAuxWithRowView_eq_of_final_rows_eq
+    {m q : Nat} (observer : V13RealLinearSequentialRowObserver m q)
+    (rowView₀ rowView₁ : Fin m → V13RealLinearRowView m) (n : Nat)
+    (transcript : V13RealLinearSequentialRowTranscript m)
+    (hsame :
+      ∀ row : Fin m,
+        row ∈
+          v13RealLinearSequentialRowTranscriptRows
+            (v13RealLinearSequentialRowRunAuxWithRowView
+              observer rowView₀ n transcript) →
+        rowView₁ row = rowView₀ row) :
+    v13RealLinearSequentialRowRunAuxWithRowView observer rowView₁ n
+        transcript =
+      v13RealLinearSequentialRowRunAuxWithRowView observer rowView₀ n
+        transcript := by
+  induction n generalizing transcript with
+  | zero =>
+      simp [v13RealLinearSequentialRowRunAuxWithRowView]
+  | succ n ih =>
+      let row := observer.chooseRow transcript
+      have hrowStart :
+          row ∈
+            v13RealLinearSequentialRowTranscriptRows
+              (transcript ++ [(row, rowView₀ row)]) := by
+        simp [v13RealLinearSequentialRowTranscriptRows, row]
+      have hrowFinal :
+          row ∈
+            v13RealLinearSequentialRowTranscriptRows
+              (v13RealLinearSequentialRowRunAuxWithRowView
+                observer rowView₀ n
+                (transcript ++ [(row, rowView₀ row)])) :=
+        v13RealLinearSequentialRowRunAuxWithRowView_rows_mono
+          observer rowView₀ n
+          (transcript ++ [(row, rowView₀ row)]) hrowStart
+      have hview : rowView₁ row = rowView₀ row := hsame row hrowFinal
+      have hsameTail :
+          ∀ r : Fin m,
+            r ∈
+              v13RealLinearSequentialRowTranscriptRows
+                (v13RealLinearSequentialRowRunAuxWithRowView
+                  observer rowView₀ n
+                  (transcript ++ [(row, rowView₀ row)])) →
+            rowView₁ r = rowView₀ r := by
+        intro r hr
+        exact hsame r hr
+      simpa [v13RealLinearSequentialRowRunAuxWithRowView, row, hview] using
+        ih (transcript ++ [(row, rowView₀ row)]) hsameTail
+
+theorem
+    v13RealLinearSequentialRowPrefixTranscriptOfWithRowView_eq_of_final_rows_eq
+    {m q : Nat} (observer : V13RealLinearSequentialRowObserver m q)
+    (rowView₀ rowView₁ : Fin m → V13RealLinearRowView m) (n : Nat)
+    (hsame :
+      ∀ row : Fin m,
+        row ∈
+          v13RealLinearSequentialRowTranscriptRows
+            (v13RealLinearSequentialRowPrefixTranscriptOfWithRowView
+              observer rowView₀ n) →
+        rowView₁ row = rowView₀ row) :
+    v13RealLinearSequentialRowPrefixTranscriptOfWithRowView
+        observer rowView₁ n =
+      v13RealLinearSequentialRowPrefixTranscriptOfWithRowView
+        observer rowView₀ n := by
+  exact
+    v13RealLinearSequentialRowRunAuxWithRowView_eq_of_final_rows_eq
+      observer rowView₀ rowView₁ n [] hsame
+
 theorem v13RealLinearSequentialRowRunAux_eq_withRowView
     {m q : Nat} (observer : V13RealLinearSequentialRowObserver m q)
     (publicInput : V13RealLinearPublic m) (n : Nat)
@@ -1003,6 +1089,52 @@ theorem
   rw [v13RealLinearFunctionalTableSequentialRowPrefixTraceOf,
     v13RealLinearSequentialRowPrefixTraceOf]
   rw [v13RealLinearFunctionalTableSequentialRowPrefixTranscriptOf_equiv]
+
+theorem
+    v13RealLinearFunctionalTableSequentialRowPrefixTranscriptOf_update_eq
+    {m q : Nat} (observer : V13RealLinearSequentialRowObserver m q)
+    (table : V13RealLinearRowFunctionalTable m) (x : F2Vec m)
+    (n : Nat) (row : Fin m)
+    (replacement : F2Vec m →ₗ[ZMod 2] ZMod 2)
+    (hrow :
+      row ∉
+        v13RealLinearSequentialRowTranscriptRows
+          (v13RealLinearFunctionalTableSequentialRowPrefixTranscriptOf
+            observer table x n)) :
+    v13RealLinearFunctionalTableSequentialRowPrefixTranscriptOf observer
+        (Function.update table row replacement) x n =
+      v13RealLinearFunctionalTableSequentialRowPrefixTranscriptOf observer
+        table x n := by
+  unfold v13RealLinearFunctionalTableSequentialRowPrefixTranscriptOf
+  apply
+    v13RealLinearSequentialRowPrefixTranscriptOfWithRowView_eq_of_final_rows_eq
+  intro r hr
+  have hne : r ≠ row := by
+    intro hrEq
+    exact hrow (by
+      simpa [v13RealLinearFunctionalTableSequentialRowPrefixTranscriptOf,
+        hrEq] using hr)
+  simp [v13RealLinearFunctionalTableRowView, Function.update, hne]
+
+theorem
+    v13RealLinearFunctionalTableSequentialRowPrefixTraceOf_update_eq
+    {m q : Nat} (observer : V13RealLinearSequentialRowObserver m q)
+    (table : V13RealLinearRowFunctionalTable m) (x : F2Vec m)
+    (n : Nat) (row : Fin m)
+    (replacement : F2Vec m →ₗ[ZMod 2] ZMod 2)
+    (hrow :
+      row ∉
+        v13RealLinearSequentialRowTranscriptRows
+          (v13RealLinearFunctionalTableSequentialRowPrefixTranscriptOf
+            observer table x n)) :
+    v13RealLinearFunctionalTableSequentialRowPrefixTraceOf observer
+        (Function.update table row replacement) x n =
+      v13RealLinearFunctionalTableSequentialRowPrefixTraceOf observer
+        table x n := by
+  rw [v13RealLinearFunctionalTableSequentialRowPrefixTraceOf,
+    v13RealLinearFunctionalTableSequentialRowPrefixTraceOf,
+    v13RealLinearFunctionalTableSequentialRowPrefixTranscriptOf_update_eq
+      observer table x n row replacement hrow]
 
 noncomputable instance v13RealLinearRowFunctionalTableFintype (m : Nat) :
     Fintype (V13RealLinearRowFunctionalTable m) := by
