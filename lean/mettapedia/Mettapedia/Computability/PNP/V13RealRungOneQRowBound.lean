@@ -4951,6 +4951,46 @@ def V13RealLinearAdaptiveQRowTraceFirstNewCapture
     V13RealLinearRowTraceNewCapture
       (E.sampleA omega.1) i₀ (traceOf omega) t
 
+def V13RealLinearAdaptiveQRowTraceFirstCosetHit
+    {m q : Nat} {Seed : Type*}
+    (E : V13RealLinearAdaptiveQRowExperiment m q Seed)
+    (i₀ : Fin m)
+    (traceOf :
+      V13RealLinearAdaptiveQRowWorld m Seed → V13RealLinearRowTrace m)
+    (t : Fin q) (omega : V13RealLinearAdaptiveQRowWorld m Seed) :
+    Prop :=
+  (t : Nat) < (traceOf omega).length ∧
+    V13RealLinearRowTraceCosetHit
+      (E.sampleA omega.1) i₀ (traceOf omega) t
+
+def V13RealLinearAdaptiveQRowTraceCosetHitCountingBound
+    {m q : Nat} {Seed : Type*} [Fintype Seed]
+    (E : V13RealLinearAdaptiveQRowExperiment m q Seed)
+    (i₀ : Fin m)
+    (traceOf :
+      V13RealLinearAdaptiveQRowWorld m Seed → V13RealLinearRowTrace m) :
+    Prop :=
+  V13RealLinearAdaptiveDeferredDecisionNewCaptureCountingBound E
+    (V13RealLinearAdaptiveQRowTraceFirstCosetHit E i₀ traceOf)
+
+theorem
+    v13RealLinearAdaptiveQRowTraceFirstNewCapture_imp_cosetHit
+    {m q : Nat} {Seed : Type*}
+    (E : V13RealLinearAdaptiveQRowExperiment m q Seed)
+    (i₀ : Fin m)
+    (traceOf :
+      V13RealLinearAdaptiveQRowWorld m Seed → V13RealLinearRowTrace m)
+    {t : Fin q} {omega : V13RealLinearAdaptiveQRowWorld m Seed}
+    (hnew :
+      V13RealLinearAdaptiveQRowTraceFirstNewCapture E i₀ traceOf
+        t omega) :
+    V13RealLinearAdaptiveQRowTraceFirstCosetHit E i₀ traceOf
+      t omega := by
+  exact
+    ⟨hnew.1,
+      v13RealLinearRowTraceCosetHit_of_newCapture
+        (E.sampleA omega.1) i₀ (traceOf omega) hnew.1 hnew.2⟩
+
 theorem
     v13RealLinearAdaptiveDeferredDecisionNewCaptureCover_of_rowTrace
     {m q : Nat} {Seed : Type*} [Fintype Seed]
@@ -4979,6 +5019,69 @@ theorem
   have htBudget : (t : Nat) < q := lt_of_lt_of_le t.isLt hlen
   refine ⟨⟨t, htBudget⟩, ?_⟩
   exact ⟨t.isLt, ht⟩
+
+theorem
+    v13RealLinearAdaptiveDeferredDecisionNewCaptureCountingBound_of_rowTraceCosetHit
+    {m q : Nat} {Seed : Type*} [Fintype Seed]
+    (E : V13RealLinearAdaptiveQRowExperiment m q Seed)
+    (i₀ : Fin m)
+    (traceOf :
+      V13RealLinearAdaptiveQRowWorld m Seed → V13RealLinearRowTrace m)
+    (hcoset :
+      V13RealLinearAdaptiveQRowTraceCosetHitCountingBound E i₀
+        traceOf) :
+    V13RealLinearAdaptiveDeferredDecisionNewCaptureCountingBound E
+      (V13RealLinearAdaptiveQRowTraceFirstNewCapture E i₀ traceOf) := by
+  classical
+  intro t
+  have hcard :
+      Fintype.card
+          {omega : V13RealLinearAdaptiveQRowWorld m Seed //
+            V13RealLinearAdaptiveQRowTraceFirstNewCapture E i₀ traceOf
+              t omega} ≤
+        Fintype.card
+          {omega : V13RealLinearAdaptiveQRowWorld m Seed //
+            V13RealLinearAdaptiveQRowTraceFirstCosetHit E i₀ traceOf
+              t omega} := by
+    exact
+      Fintype.card_le_of_embedding
+        { toFun := fun omega =>
+            ⟨omega.val,
+              v13RealLinearAdaptiveQRowTraceFirstNewCapture_imp_cosetHit
+                E i₀ traceOf omega.property⟩
+          inj' := by
+            intro omega₀ omega₁ h
+            apply Subtype.ext
+            exact
+              congrArg
+                (fun z :
+                  {omega : V13RealLinearAdaptiveQRowWorld m Seed //
+                    V13RealLinearAdaptiveQRowTraceFirstCosetHit E i₀
+                      traceOf t omega} => z.val)
+                h }
+  have hmul :
+      Fintype.card
+          {omega : V13RealLinearAdaptiveQRowWorld m Seed //
+            V13RealLinearAdaptiveQRowTraceFirstNewCapture E i₀ traceOf
+              t omega} *
+          2 ^ m ≤
+        Fintype.card
+          {omega : V13RealLinearAdaptiveQRowWorld m Seed //
+            V13RealLinearAdaptiveQRowTraceFirstCosetHit E i₀ traceOf
+              t omega} *
+          2 ^ m :=
+    Nat.mul_le_mul_right (2 ^ m) hcard
+  have hcosetStep :
+      Fintype.card
+          {omega : V13RealLinearAdaptiveQRowWorld m Seed //
+            V13RealLinearAdaptiveQRowTraceFirstCosetHit E i₀ traceOf
+              t omega} *
+          2 ^ m ≤
+        (4 * 2 ^ (t : Nat)) *
+          Fintype.card (V13RealLinearAdaptiveQRowWorld m Seed) := by
+    simpa [V13RealLinearAdaptiveQRowTraceCosetHitCountingBound] using
+      hcoset t
+  exact hmul.trans hcosetStep
 
 theorem
     v13RealLinearAdaptiveDeferredDecisionCountingBound_of_newCapture
@@ -5071,6 +5174,25 @@ theorem
         v13RealLinearAdaptiveDeferredDecisionNewCaptureCover_of_rowTrace
           E i₀ traceOf htrace,
         hstep⟩
+
+theorem
+    v13RealLinearAdaptiveDeferredDecisionCountingBound_of_rowTraceCosetHit
+    {m q : Nat} {Seed : Type*} [Fintype Seed]
+    (E : V13RealLinearAdaptiveQRowExperiment m q Seed)
+    (i₀ : Fin m)
+    (traceOf :
+      V13RealLinearAdaptiveQRowWorld m Seed → V13RealLinearRowTrace m)
+    (htrace :
+      V13RealLinearAdaptiveQRowTraceRealizesBranchRows E traceOf)
+    (hcoset :
+      V13RealLinearAdaptiveQRowTraceCosetHitCountingBound E i₀
+        traceOf) :
+    V13RealLinearAdaptiveDeferredDecisionCountingBound E i₀ := by
+  exact
+    v13RealLinearAdaptiveDeferredDecisionCountingBound_of_rowTraceNewCapture
+      E i₀ traceOf htrace
+      (v13RealLinearAdaptiveDeferredDecisionNewCaptureCountingBound_of_rowTraceCosetHit
+        E i₀ traceOf hcoset)
 
 theorem v13RealLinearAdaptiveQRowGeneratedMass_le_one
     {m q : Nat} {Seed : Type*} [Fintype Seed]
