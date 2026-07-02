@@ -2726,6 +2726,70 @@ noncomputable instance {m : Nat}
   unfold V13RealLinearUniformOneRowGeneratedCylinderIndex
   infer_instance
 
+/-- Rows that occur in the active generated row/bit cylinder index.  This
+forgets the target bit and isolates the row-choice part of the q = 1
+obstruction. -/
+def V13RealLinearUniformOneRowGeneratedRowIndex
+    {m : Nat} (observer : V13RealLinearAdaptiveRowObserver m 1)
+    (i₀ : Fin m) :=
+  {row : Fin m //
+    ∃ idx : V13RealLinearUniformOneRowGeneratedCylinderIndex observer i₀,
+      idx.val.1 = row}
+
+noncomputable instance {m : Nat}
+    (observer : V13RealLinearAdaptiveRowObserver m 1) (i₀ : Fin m) :
+    Fintype
+      (V13RealLinearUniformOneRowGeneratedRowIndex observer i₀) := by
+  classical
+  unfold V13RealLinearUniformOneRowGeneratedRowIndex
+  infer_instance
+
+noncomputable def
+    v13RealLinearUniformOneRowGeneratedCylinderIndexToRowBit
+    {m : Nat} (observer : V13RealLinearAdaptiveRowObserver m 1)
+    (i₀ : Fin m) :
+    V13RealLinearUniformOneRowGeneratedCylinderIndex observer i₀ ↪
+      V13RealLinearUniformOneRowGeneratedRowIndex observer i₀ × ZMod 2 where
+  toFun idx :=
+    (⟨idx.val.1, ⟨idx, rfl⟩⟩, idx.val.2)
+  inj' := by
+    intro idx₀ idx₁ h
+    apply Subtype.ext
+    have hrowIndex :
+        (⟨idx₀.val.1, ⟨idx₀, rfl⟩⟩ :
+            V13RealLinearUniformOneRowGeneratedRowIndex observer i₀) =
+          (⟨idx₁.val.1, ⟨idx₁, rfl⟩⟩ :
+            V13RealLinearUniformOneRowGeneratedRowIndex observer i₀) :=
+      congrArg Prod.fst h
+    have hrow : idx₀.val.1 = idx₁.val.1 :=
+      congrArg Subtype.val hrowIndex
+    have hbit : idx₀.val.2 = idx₁.val.2 := by
+      simpa using
+        congrArg
+          (fun p :
+              V13RealLinearUniformOneRowGeneratedRowIndex observer i₀ ×
+                ZMod 2 => p.2) h
+    exact Prod.ext hrow hbit
+
+theorem v13RealLinearUniformOneRowGeneratedCylinderIndex_card_le_rowIndex_mul_two
+    {m : Nat} (observer : V13RealLinearAdaptiveRowObserver m 1)
+    (i₀ : Fin m) :
+    Fintype.card
+        (V13RealLinearUniformOneRowGeneratedCylinderIndex observer i₀) ≤
+      Fintype.card
+          (V13RealLinearUniformOneRowGeneratedRowIndex observer i₀) * 2 := by
+  classical
+  have hcard :
+      Fintype.card
+          (V13RealLinearUniformOneRowGeneratedCylinderIndex observer i₀) ≤
+        Fintype.card
+          (V13RealLinearUniformOneRowGeneratedRowIndex observer i₀ ×
+            ZMod 2) :=
+    Fintype.card_le_of_embedding
+      (v13RealLinearUniformOneRowGeneratedCylinderIndexToRowBit
+        observer i₀)
+  simpa [Fintype.card_prod] using hcard
+
 abbrev V13RealLinearUniformOneRowGeneratedCylinderCover
     {m : Nat} (observer : V13RealLinearAdaptiveRowObserver m 1)
     (i₀ : Fin m) :=
@@ -2884,6 +2948,38 @@ def V13RealLinearUniformCausalOneRowActiveBitCylinderIndexBound : Prop :=
           (V13RealLinearUniformOneRowGeneratedCylinderIndex
             observer.toAdaptive i₀) ≤ 2
 
+/-- Sharper q = 1 row-choice sub-obligation: after forgetting the target bit,
+a causal one-row observer should activate at most one generated target row.
+Together with the two possible target bits, this implies the active row/bit
+cylinder bound. -/
+def V13RealLinearUniformCausalOneRowActiveRowIndexBound : Prop :=
+  ∀ {m : Nat} (observer : V13RealLinearCausalRowObserver m 1)
+    (i₀ : Fin m),
+    1 < m →
+      Fintype.card
+          (V13RealLinearUniformOneRowGeneratedRowIndex
+            observer.toAdaptive i₀) ≤ 1
+
+theorem
+    V13RealLinearUniformCausalOneRowActiveBitCylinderIndexBound_of_rowIndexBound
+    (hrow :
+      V13RealLinearUniformCausalOneRowActiveRowIndexBound) :
+    V13RealLinearUniformCausalOneRowActiveBitCylinderIndexBound := by
+  intro m observer i₀ hm
+  let R :=
+    Fintype.card
+      (V13RealLinearUniformOneRowGeneratedRowIndex
+        observer.toAdaptive i₀)
+  calc
+    Fintype.card
+        (V13RealLinearUniformOneRowGeneratedCylinderIndex
+          observer.toAdaptive i₀) ≤ R * 2 := by
+      simpa [R] using
+        v13RealLinearUniformOneRowGeneratedCylinderIndex_card_le_rowIndex_mul_two
+          observer.toAdaptive i₀
+    _ ≤ 1 * 2 := Nat.mul_le_mul_right 2 (by simpa [R] using hrow observer i₀ hm)
+    _ = 2 := by norm_num
+
 theorem
     v13RealLinearUniformCausalOneRowGenerated_counting_of_activeBitCylinderIndex_le_two
     {m : Nat} (observer : V13RealLinearCausalRowObserver m 1)
@@ -2933,6 +3029,24 @@ theorem
           (V13RealLinearAdaptiveQRowWorld m (V13F2LinearEquiv m)) :=
   v13RealLinearUniformCausalOneRowGenerated_counting_of_activeBitCylinderIndex_le_two
     observer i₀ (hindex observer i₀ hm)
+
+theorem
+    v13RealLinearUniformCausalOneRowGenerated_counting_of_activeRowIndexBound
+    (hrow :
+      V13RealLinearUniformCausalOneRowActiveRowIndexBound)
+    {m : Nat} (observer : V13RealLinearCausalRowObserver m 1)
+    (i₀ : Fin m) (hm : 1 < m) :
+    Fintype.card
+        (V13RealLinearAdaptiveQRowGenerated
+          (v13RealLinearUniformCausalQRowExperiment observer) i₀) *
+        2 ^ m ≤
+      2 ^ 1 *
+        Fintype.card
+          (V13RealLinearAdaptiveQRowWorld m (V13F2LinearEquiv m)) :=
+  v13RealLinearUniformCausalOneRowGenerated_counting_of_activeBitCylinderIndexBound
+    (V13RealLinearUniformCausalOneRowActiveBitCylinderIndexBound_of_rowIndexBound
+      hrow)
+    observer i₀ hm
 
 noncomputable def v13RealLinearFixedTargetRowOccurrenceZeroEmbedding :
     V13RealLinearUniformFixedTargetRowOccurrence
