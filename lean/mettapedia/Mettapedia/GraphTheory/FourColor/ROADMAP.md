@@ -253,7 +253,13 @@ The prefix-fibration adapter
 now shows that `concreteChainFiberAppendPrefixFibrationClosed` is enough to
 produce the paired parent-row target.  Its nonempty prefix-fiber branch uses
 the canonical prefix projection and a root-star parent-row certificate on the
-prefix fiber, while empty prefix fibers are handled vacuously.  Thus the
+prefix fiber, while empty prefix fibers are handled vacuously.  The standalone
+base-data split is also closed directly by
+`concreteChainFiberAppendQuotientFibrationParentRowsNonSingletonPrefixBaseDataClosed_of_prefix_root_star`,
+so emitted finite data is no longer needed for that half of the split.  The
+semantic wrapper
+`semanticFrontierStateSufficientForChain_of_append_quotient_parent_rows_prefix_fibration`
+records the same route through the parent-row quotient assembly.  Thus the
 remaining structural work can stay focused on the existing prefix-fibration
 closure ingredients rather than opening another quotient route.
 The same-prefix closure side is now separated from prefix mobility:
