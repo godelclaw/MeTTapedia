@@ -9,9 +9,12 @@ set_option autoImplicit false
 #check v13RealLinearAdaptiveQRowBlockedMass
 #check v13RealLinearQRowEpsilon
 #check V13RealLinearAdaptiveRowSpanCountingBound
+#check V13RealLinearUniformInvertibleRowSpanCountingBound
+#check v13RealLinearUniformAdaptiveQRowSuccess
 #check V13RealLinearAdaptiveKernelFlipSurchargeBound
 #check v13RealLinear_adaptiveKernelFlipSurchargeBound
 #check v13RealLinear_adaptive_qrow_success_bound_of_spanCounting
+#check v13RealLinear_uniform_adaptive_qrow_success_bound_of_spanCounting
 #check v13RealLinear_qrow_epsilon_nonnegative
 
 def v13RealLinearQRowBoundRegression_staticConstant :
@@ -57,9 +60,22 @@ theorem v13RealLinearQRowBoundRegression_conditional_shape
     v13RealLinear_adaptive_qrow_success_bound_of_spanCounting
       v13RealLinearQRowBoundRegression_experiment 0 hcount
 
+theorem v13RealLinearQRowBoundRegression_uniform_conditional_shape
+    (hcount :
+      V13RealLinearUniformInvertibleRowSpanCountingBound
+        v13RealLinearQRowBoundRegression_adaptiveConstant 0) :
+    v13RealLinearUniformAdaptiveQRowSuccess
+        v13RealLinearQRowBoundRegression_adaptiveConstant 0 ≤
+      (1 / 2 : Rat) + v13RealLinearQRowEpsilon 0 2 := by
+  exact
+    v13RealLinear_uniform_adaptive_qrow_success_bound_of_spanCounting
+      v13RealLinearQRowBoundRegression_adaptiveConstant 0 hcount
+
 #print axioms v13RealLinear_adaptiveKernelFlipSurchargeBound
 #print axioms v13RealLinear_adaptive_qrow_success_bound_of_spanCounting
+#print axioms v13RealLinear_uniform_adaptive_qrow_success_bound_of_spanCounting
 #print axioms v13RealLinear_qrow_epsilon_nonnegative
 #print axioms v13RealLinearQRowBoundRegression_conditional_shape
+#print axioms v13RealLinearQRowBoundRegression_uniform_conditional_shape
 
 end Mettapedia.Computability.PNP
