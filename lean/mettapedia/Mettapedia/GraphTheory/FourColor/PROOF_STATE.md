@@ -1,6 +1,6 @@
 # FourColor Proof State
 
-Last updated: 2026-07-01 on `fourcolor/cont-20260626`.
+Last updated: 2026-07-02 on `fourcolor/cont-20260626`.
 
 This file tracks the active route forks.  The Four Color Theorem is not
 claimed here.
@@ -28,25 +28,48 @@ the stabilized quotient dynamics, not a closure proof.
 
 The exact length-7 DFA surface also collapses to four representatives
 (`MTTTTTM -> mode05`, `TTTTTTT -> mode09`, `TTTTTTM -> mode13`,
-`MTTTTTT -> mode15`), but it is not fully checked.  The stopped run has only
-partial positive evidence for `TTTTTTT`/`mode09`: the union-engine timeout log
-records inputs 0 through 19 connected, including three 2,097,152-state fibers;
-a later chunked run was terminated after inputs 0 through 7.  No length-7
-representative has a complete all-81-input verdict, and modes
-`mode05/mode09/mode13/mode15` remain unverified at the length-7 real-fiber
-streaming layer.  Do not extend the sweep in this context; the next step is a
-fresh formalization pass from the finite automaton/certificate surface.
+`MTTTTTT -> mode15`), and the resumable lazy runner now has a complete
+all-input verdict for that surface.  The consolidated report
+`fourcolor-lemma818-gate2-length7-lazy-20260702-consolidated-summary.json`
+(SHA256
+`cc9b5d1c7080c4b97c20aafd7f885055db70001105455c06299626bfef6d373d`)
+records 4 representatives, 324 fixed-input verdicts, 324 connected
+fixed-input verdicts, no missing inputs, no disconnected inputs, maximum fiber
+size 2,097,152, and peak recorded RSS below 1.9 GiB.  The emitted verdict rows
+are in `fourcolor-lemma818-gate2-length7-lazy-20260702-verdicts.jsonl`
+(SHA256
+`f5880f42687d303aea0ea7cbb20aca256c13a4a1031f56cecf0d9cc99dc1c099`).
+This is still corroborating finite-run evidence, not a closure proof by
+itself; the next step is the formal semantic composition pass from the finite
+automaton/certificate surface.
 
 This does not yet close Lemma 8.18/8.19.  The unverified layer is semantic:
 the six base modes `mode07/mode16/mode10/mode18/mode11/mode04` are backed by
-real single/length-2 chain certificates, and the first non-base target
-`mode09`/`TTT` is now backed by real per-fixed-input chain certificates for
-the light fibers and all twelve size-512 large fixed-input fibers.  The
-remaining representative targets that still need real chain/path
+real single/length-2 `chainLKRInAudit` theorems, including the four length-two
+assemblies
+`GoertzelLemma818LengthTwoTTRealAudit.ttChainLKRInAudit_ok`,
+`GoertzelLemma818LengthTwoTMRealAudit.tmChainLKRInAudit_ok`,
+`GoertzelLemma818LengthTwoMTRealAudit.mtChainLKRInAudit_ok`, and
+`GoertzelLemma818LengthTwoMMRealAudit.mmChainLKRInAudit_ok`.  The first
+non-base target `mode09`/`TTT` is now backed by real per-fixed-input chain
+certificates for the light fibers and all twelve size-512 large fixed-input
+fibers.  The remaining representative targets that still need real chain/path
 certificates, or an equivalent finite transition certificate, are
 `mode00/mode01/mode02/mode03/mode05/mode06/mode08/mode12/mode13/mode14/mode15/mode17/mode19`.
 The next pass should formalize this finite surface; it should not extend
 representative lengths or raise kernel limits.
+
+`GoertzelLemma818SemanticBridge.lean` now exposes the semantic composition
+route as an append fibration rather than a per-representative sweep.  The
+latest route is `ChainFiberAppendQuotientFibrationLift` together with
+`concreteChainFiberAppendQuotientFibrationClosed`: each appended fixed-input
+fiber may project to an arbitrary connected finite base, and the fibration
+fields carry the lifted Kempe motion.  The theorem
+`semanticFrontierStateSufficientForChain_of_append_quotient_fibration` proves
+final semantic sufficiency from that append-quotient hook and the existing
+singleton concrete seeds.  The fixed-prefix route remains available as a
+sufficient stronger route, but the quotient route is the current surface for
+finite per-input interface or trace-pair mobility.
 
 `GoertzelLemma818SemanticProgress.lean` now records the checked semantic
 frontier after the completed `TTT` target.  It proves
