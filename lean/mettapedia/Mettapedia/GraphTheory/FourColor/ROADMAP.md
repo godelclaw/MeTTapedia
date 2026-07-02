@@ -239,6 +239,12 @@ The closure lift now reduces by
 `concreteChainFiberAppendRelativeSingletonClosureLiftClosed_of_root_and_step_lift`
 to two concrete obligations: lift the local singleton root into the global
 closure, then lift one local fixed-input Kempe step through the frozen prefix.
+The step obligation has now been narrowed again by
+`concreteChainFiberAppendRelativeSingletonClosureStepLiftClosed_of_global_step`:
+the local singleton target is known to embed as an appended fixed-input fiber
+member, so it remains only to prove that a local singleton Kempe step becomes
+the corresponding global Kempe step under `pref ++ [last]`, and that the global
+root closure is closed under such an embedded step.
 `concreteChainFiberAppendFixedPrefixLastReachClosed_of_interface_trace_cases`
 and `concreteChainFiberAppendRawPrefixReachClosed_of_interface_trace_cases`
 assemble those two cases back into the existing sufficiency route.

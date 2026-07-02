@@ -1429,6 +1429,110 @@ def concreteChainFiberAppendRelativeSingletonClosureStepLiftClosed : Prop :=
                 (concreteChainFiber (word ++ [orient]) key).length
                 [chainFiberRootState (word ++ [orient]) key]
 
+def concreteChainFiberAppendRelativeSingletonGlobalKempeStepLiftClosed : Prop :=
+  ∀ (word : List GoertzelLemma818FrontierMode.TauOrient)
+    (orient : GoertzelLemma818FrontierMode.TauOrient)
+    (_hne : word ≠ []),
+    Nonempty (ChainWordConcreteFibrationCertificate word) →
+      ∀ (key : List GoertzelLemma814.LColor),
+        key ∈ GoertzelLemma814.colorAssignments4 →
+          ∀ (pref : List GoertzelLemma814.TauState)
+            (lastX : GoertzelLemma814.TauState),
+            (_hpref : pref ∈ concreteChainFiber word key) →
+            (_hlastX : lastX ∈ GoertzelLemma814.allTauStates) →
+            (_hcompatibleX : GoertzelLemma814.compatibleAdjacent
+              (GoertzelLemma814.tauOrientAt
+                (frontierWordToChainWord (word ++ [orient])) (word.length - 1))
+              (GoertzelLemma814.tauOrientAt
+                (frontierWordToChainWord (word ++ [orient])) word.length)
+              (GoertzelLemma814.chainStateAt pref (word.length - 1))
+              lastX = true) →
+            ∀ (_hkeyLocal :
+                concreteChainFiberAppendLastInputTrace orient lastX ∈
+                  GoertzelLemma814.colorAssignments4)
+              (current target : List GoertzelLemma814.TauState)
+              (currentLast targetLast : GoertzelLemma814.TauState),
+              current ∈ concreteChainFiber [orient]
+                (concreteChainFiberAppendLastInputTrace orient lastX) →
+              target ∈ concreteChainFiber [orient]
+                (concreteChainFiberAppendLastInputTrace orient lastX) →
+              current = [currentLast] →
+              target = [targetLast] →
+              GoertzelLemma814.chainSingleKempeStep
+                (frontierWordToChainWord [orient]) current target = true →
+              GoertzelLemma814.chainSingleKempeStep
+                (frontierWordToChainWord (word ++ [orient]))
+                (pref ++ [currentLast]) (pref ++ [targetLast]) = true
+
+def concreteChainFiberAppendRelativeSingletonGlobalStepClosureClosed : Prop :=
+  ∀ (word : List GoertzelLemma818FrontierMode.TauOrient)
+    (orient : GoertzelLemma818FrontierMode.TauOrient)
+    (_hne : word ≠ []),
+    Nonempty (ChainWordConcreteFibrationCertificate word) →
+      ∀ (key : List GoertzelLemma814.LColor),
+        key ∈ GoertzelLemma814.colorAssignments4 →
+          ∀ (pref : List GoertzelLemma814.TauState)
+            (lastX : GoertzelLemma814.TauState),
+            (_hpref : pref ∈ concreteChainFiber word key) →
+            (_hlastX : lastX ∈ GoertzelLemma814.allTauStates) →
+            (_hcompatibleX : GoertzelLemma814.compatibleAdjacent
+              (GoertzelLemma814.tauOrientAt
+                (frontierWordToChainWord (word ++ [orient])) (word.length - 1))
+              (GoertzelLemma814.tauOrientAt
+                (frontierWordToChainWord (word ++ [orient])) word.length)
+              (GoertzelLemma814.chainStateAt pref (word.length - 1))
+              lastX = true) →
+            ∀ (_hkeyLocal :
+                concreteChainFiberAppendLastInputTrace orient lastX ∈
+                  GoertzelLemma814.colorAssignments4)
+              (current target : List GoertzelLemma814.TauState)
+              (currentLast targetLast : GoertzelLemma814.TauState),
+              current ∈ concreteChainFiber [orient]
+                (concreteChainFiberAppendLastInputTrace orient lastX) →
+              target ∈ concreteChainFiber [orient]
+                (concreteChainFiberAppendLastInputTrace orient lastX) →
+              current = [currentLast] →
+              target = [targetLast] →
+              pref ++ [targetLast] ∈ concreteChainFiber
+                (word ++ [orient]) key →
+              pref ++ [currentLast] ∈ GoertzelLemma814.closeChainFiber
+                (frontierWordToChainWord (word ++ [orient]))
+                (concreteChainFiber (word ++ [orient]) key)
+                (concreteChainFiber (word ++ [orient]) key).length
+                [chainFiberRootState (word ++ [orient]) key] →
+              GoertzelLemma814.chainSingleKempeStep
+                (frontierWordToChainWord (word ++ [orient]))
+                (pref ++ [currentLast]) (pref ++ [targetLast]) = true →
+              pref ++ [targetLast] ∈ GoertzelLemma814.closeChainFiber
+                (frontierWordToChainWord (word ++ [orient]))
+                (concreteChainFiber (word ++ [orient]) key)
+                (concreteChainFiber (word ++ [orient]) key).length
+                [chainFiberRootState (word ++ [orient]) key]
+
+theorem concreteChainFiberAppendRelativeSingletonClosureStepLiftClosed_of_global_step
+    (hKempe :
+      concreteChainFiberAppendRelativeSingletonGlobalKempeStepLiftClosed)
+    (hClosure :
+      concreteChainFiberAppendRelativeSingletonGlobalStepClosureClosed) :
+    concreteChainFiberAppendRelativeSingletonClosureStepLiftClosed := by
+  intro word orient hne hcert key hkey pref lastX hpref hlastX
+    hcompatibleX hkeyLocal current target currentLast targetLast hcurrent
+    htarget hcurrentEq htargetEq hcurrentClose hlocalStep
+  have htargetGlobal :
+      pref ++ [targetLast] ∈ concreteChainFiber (word ++ [orient]) key :=
+    concreteChainFiberAppend_mem_of_prefix_and_local_singleton
+      word orient hne key hpref hcompatibleX htarget htargetEq
+  have hglobalStep :
+      GoertzelLemma814.chainSingleKempeStep
+        (frontierWordToChainWord (word ++ [orient]))
+        (pref ++ [currentLast]) (pref ++ [targetLast]) = true :=
+    hKempe word orient hne hcert key hkey pref lastX hpref hlastX
+      hcompatibleX hkeyLocal current target currentLast targetLast hcurrent
+      htarget hcurrentEq htargetEq hlocalStep
+  exact hClosure word orient hne hcert key hkey pref lastX hpref hlastX
+    hcompatibleX hkeyLocal current target currentLast targetLast hcurrent
+    htarget hcurrentEq htargetEq htargetGlobal hcurrentClose hglobalStep
+
 theorem concreteChainFiberAppendRelativeSingletonClosureLiftClosed_of_root_and_step_lift
     (hRoot :
       concreteChainFiberAppendRelativeSingletonClosureRootLiftClosed)
