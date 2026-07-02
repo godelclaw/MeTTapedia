@@ -327,6 +327,23 @@ theorem v13RealLinearSequentialRowRunAuxWithRowView_length
       simp [v13RealLinearSequentialRowRunAuxWithRowView, ih,
         Nat.add_assoc, Nat.add_comm]
 
+theorem v13RealLinearSequentialRowRunAuxWithRowView_add
+    {m q : Nat} (observer : V13RealLinearSequentialRowObserver m q)
+    (rowView : Fin m → V13RealLinearRowView m) (n k : Nat)
+    (transcript : V13RealLinearSequentialRowTranscript m) :
+    v13RealLinearSequentialRowRunAuxWithRowView observer rowView (n + k)
+        transcript =
+      v13RealLinearSequentialRowRunAuxWithRowView observer rowView k
+        (v13RealLinearSequentialRowRunAuxWithRowView observer rowView n
+          transcript) := by
+  induction n generalizing transcript with
+  | zero =>
+      simp [v13RealLinearSequentialRowRunAuxWithRowView]
+  | succ n ih =>
+      have hnk : n + 1 + k = n + k + 1 := by omega
+      rw [hnk]
+      simp [v13RealLinearSequentialRowRunAuxWithRowView, ih]
+
 theorem v13RealLinearSequentialRowPrefixTranscriptOfWithRowView_length
     {m q : Nat} (observer : V13RealLinearSequentialRowObserver m q)
     (rowView : Fin m → V13RealLinearRowView m) (n : Nat) :
@@ -361,6 +378,26 @@ theorem
       exact
         v13RealLinearSequentialRowPrefixTranscriptOfWithRowView_length
           observer rowView n
+
+theorem v13RealLinearSequentialRowPrefixTranscriptOfWithRowView_succ
+    {m q : Nat} (observer : V13RealLinearSequentialRowObserver m q)
+    (rowView : Fin m → V13RealLinearRowView m) (n : Nat) :
+    v13RealLinearSequentialRowPrefixTranscriptOfWithRowView observer rowView
+        (n + 1) =
+      v13RealLinearSequentialRowPrefixTranscriptOfWithRowView
+        observer rowView n ++
+        [(observer.chooseRow
+            (v13RealLinearSequentialRowPrefixTranscriptOfWithRowView
+              observer rowView n),
+          rowView
+            (observer.chooseRow
+              (v13RealLinearSequentialRowPrefixTranscriptOfWithRowView
+                observer rowView n)))] := by
+  have hadd :=
+    v13RealLinearSequentialRowRunAuxWithRowView_add
+      observer rowView n 1 []
+  simpa [v13RealLinearSequentialRowPrefixTranscriptOfWithRowView,
+    v13RealLinearSequentialRowRunAuxWithRowView, Nat.add_comm] using hadd
 
 theorem v13RealLinearSequentialRowRunAuxWithRowView_congr
     {m q : Nat} (observer : V13RealLinearSequentialRowObserver m q)
@@ -1277,6 +1314,23 @@ theorem
   rw [v13RealLinearFunctionalTableSequentialWorldPrefixTranscript_update_eq
     observer omega n row replacement hrow]
 
+theorem v13RealLinearFunctionalTableSequentialWorldPrefixRows_succ
+    {m q : Nat} (observer : V13RealLinearSequentialRowObserver m q)
+    (omega : V13RealLinearFunctionalTableWorld m) (n : Nat) :
+    v13RealLinearFunctionalTableSequentialWorldPrefixRows observer omega
+        (n + 1) =
+      insert
+        (v13RealLinearFunctionalTableSequentialWorldNextRow
+          observer omega n)
+        (v13RealLinearFunctionalTableSequentialWorldPrefixRows
+          observer omega n) := by
+  unfold v13RealLinearFunctionalTableSequentialWorldPrefixRows
+  unfold v13RealLinearFunctionalTableSequentialWorldNextRow
+  unfold v13RealLinearFunctionalTableSequentialWorldPrefixTranscript
+  unfold v13RealLinearFunctionalTableSequentialRowPrefixTranscriptOf
+  rw [v13RealLinearSequentialRowPrefixTranscriptOfWithRowView_succ]
+  simp [v13RealLinearSequentialRowTranscriptRows]
+
 noncomputable instance v13RealLinearRowFunctionalTableFintype (m : Nat) :
     Fintype (V13RealLinearRowFunctionalTable m) := by
   classical
@@ -1380,6 +1434,106 @@ theorem v13RealLinearFunctionalTableRowsSpan_card_le
           table rows)
     _ = 2 ^ rows.card := by
       simp [V13RealLinearRowCombination]
+
+def V13RealLinearFunctionalTableRowsGenerateTarget {m : Nat}
+    (table : V13RealLinearRowFunctionalTable m)
+    (rows : Finset (Fin m)) (i₀ : Fin m) : Prop :=
+  v13RealLinearTargetFunctional i₀ ∈
+    V13RealLinearFunctionalTableRowsSpan table rows
+
+theorem v13RealLinearTargetFunctional_ne_zero {m : Nat}
+    (i₀ : Fin m) :
+    v13RealLinearTargetFunctional i₀ ≠ 0 := by
+  intro hzero
+  have hpoint := LinearMap.congr_fun hzero (v13RealLinearSingleBit i₀)
+  simp [v13RealLinearTargetFunctional, v13RealLinearSingleBit] at hpoint
+
+theorem
+    v13RealLinearFunctionalTable_not_rowsGenerateTarget_of_rows_card_zero
+    {m : Nat} (table : V13RealLinearRowFunctionalTable m)
+    {rows : Finset (Fin m)} (i₀ : Fin m)
+    (hrows : rows.card = 0) :
+    ¬ V13RealLinearFunctionalTableRowsGenerateTarget table rows i₀ := by
+  classical
+  intro hgen
+  have hrowsEmpty : rows = ∅ := Finset.card_eq_zero.mp hrows
+  subst rows
+  haveI : IsEmpty ((∅ : Finset (Fin m)) : Type) := by
+    refine ⟨?_⟩
+    intro row
+    exact Finset.notMem_empty row.1 row.2
+  have hzero :
+      v13RealLinearTargetFunctional i₀ = 0 := by
+    have hbot :
+        v13RealLinearTargetFunctional i₀ ∈
+          (⊥ : Submodule (ZMod 2)
+            (F2Vec m →ₗ[ZMod 2] ZMod 2)) := by
+      simpa [V13RealLinearFunctionalTableRowsGenerateTarget,
+        V13RealLinearFunctionalTableRowsSpan, Set.range_eq_empty,
+        Submodule.span_empty] using hgen
+    exact (Submodule.mem_bot (R := ZMod 2)).mp hbot
+  exact v13RealLinearTargetFunctional_ne_zero i₀ hzero
+
+theorem v13RealLinearFunctionalTable_range_insert {m : Nat}
+    (table : V13RealLinearRowFunctionalTable m)
+    (rows : Finset (Fin m)) (row : Fin m) :
+    Set.range (fun r : {r : Fin m // r ∈ insert row rows} =>
+        table r.1) =
+      insert (table row)
+        (Set.range (fun r : {r : Fin m // r ∈ rows} =>
+          table r.1)) := by
+  ext f
+  constructor
+  · intro hf
+    rcases hf with ⟨r, rfl⟩
+    rcases (Finset.mem_insert.mp r.2) with hrow | hrows
+    · left
+      simp [hrow]
+    · right
+      exact ⟨⟨r.1, hrows⟩, rfl⟩
+  · intro hf
+    rcases hf with hrow | hprev
+    · exact ⟨⟨row, Finset.mem_insert_self row rows⟩, hrow.symm⟩
+    · rcases hprev with ⟨r, rfl⟩
+      exact ⟨⟨r.1, Finset.mem_insert_of_mem r.2⟩, rfl⟩
+
+theorem
+    v13RealLinearFunctionalTableTargetCosetHit_of_insert_generates
+    {m : Nat} (table : V13RealLinearRowFunctionalTable m)
+    (rows : Finset (Fin m)) (i₀ row : Fin m)
+    (hprev :
+      ¬ V13RealLinearFunctionalTableRowsGenerateTarget table rows i₀)
+    (hnew :
+      V13RealLinearFunctionalTableRowsGenerateTarget table
+        (insert row rows) i₀) :
+    V13RealLinearFunctionalTableTargetCosetHit table rows i₀ row := by
+  classical
+  have hnewSpan :
+      v13RealLinearTargetFunctional i₀ ∈
+        Submodule.span (ZMod 2)
+          (insert (table row)
+            (Set.range (fun r : {r : Fin m // r ∈ rows} =>
+              table r.1))) := by
+    simpa [V13RealLinearFunctionalTableRowsGenerateTarget,
+      V13RealLinearFunctionalTableRowsSpan,
+      v13RealLinearFunctionalTable_range_insert table rows row] using hnew
+  have hprevNot :
+      v13RealLinearTargetFunctional i₀ ∉
+        V13RealLinearFunctionalTableRowsSpan table rows := by
+    intro hspan
+    exact hprev hspan
+  rcases (Submodule.mem_span_insert.mp hnewSpan) with
+    ⟨a, z, hz, htarget⟩
+  have haNonzero : a ≠ 0 := by
+    intro ha0
+    apply hprevNot
+    have htargetZ : v13RealLinearTargetFunctional i₀ = z := by
+      simpa [ha0] using htarget
+    simpa [V13RealLinearFunctionalTableRowsGenerateTarget,
+      V13RealLinearFunctionalTableRowsSpan, htargetZ] using hz
+  have ha : a = 1 := v13_zmod2_eq_one_of_ne_zero a haNonzero
+  refine ⟨z, hz, ?_⟩
+  simpa [ha] using htarget
 
 def V13RealLinearFunctionalTableTargetCoset {m : Nat}
     (table : V13RealLinearRowFunctionalTable m)
@@ -1493,6 +1647,25 @@ noncomputable instance {m q : Nat}
       {omega : V13RealLinearFunctionalTableWorld m //
         V13RealLinearFunctionalTableSequentialFreshTargetCosetHit
           observer i₀ n omega} := by
+  classical
+  infer_instance
+
+def V13RealLinearFunctionalTableSequentialGenerated
+    {m q : Nat} (observer : V13RealLinearSequentialRowObserver m q)
+    (i₀ : Fin m)
+    (omega : V13RealLinearFunctionalTableWorld m) : Prop :=
+  V13RealLinearFunctionalTableRowsGenerateTarget omega.1
+    (v13RealLinearFunctionalTableSequentialWorldPrefixRows
+      observer omega q)
+    i₀
+
+noncomputable instance {m q : Nat}
+    (observer : V13RealLinearSequentialRowObserver m q)
+    (i₀ : Fin m) :
+    Fintype
+      {omega : V13RealLinearFunctionalTableWorld m //
+        V13RealLinearFunctionalTableSequentialGenerated
+          observer i₀ omega} := by
   classical
   infer_instance
 
@@ -1836,6 +2009,89 @@ theorem
   exact hleSwitch.trans
     (v13RealLinearFunctionalTableSequentialTargetCosetSigma_card_le
       observer i₀ n)
+
+theorem
+    v13RealLinearFunctionalTableSequentialGenerated_freshTargetCosetHit_cover
+    {m q : Nat} (observer : V13RealLinearSequentialRowObserver m q)
+    (i₀ : Fin m) :
+    ∀ omega : V13RealLinearFunctionalTableWorld m,
+      V13RealLinearFunctionalTableSequentialGenerated observer i₀ omega →
+        ∃ t : Fin q,
+          V13RealLinearFunctionalTableSequentialFreshTargetCosetHit
+            observer i₀ t omega := by
+  classical
+  intro omega hgen
+  let P : Nat → Prop := fun n =>
+    V13RealLinearFunctionalTableRowsGenerateTarget omega.1
+      (v13RealLinearFunctionalTableSequentialWorldPrefixRows
+        observer omega n)
+      i₀
+  have hex : ∃ n : Nat, n ≤ q ∧ P n :=
+    ⟨q, le_rfl, by
+      simpa [P, V13RealLinearFunctionalTableSequentialGenerated] using hgen⟩
+  let n := Nat.find hex
+  have hnSpec : n ≤ q ∧ P n := Nat.find_spec hex
+  have hnotZero : ¬ P 0 := by
+    dsimp [P]
+    apply
+      v13RealLinearFunctionalTable_not_rowsGenerateTarget_of_rows_card_zero
+        omega.1 i₀
+    simp [v13RealLinearFunctionalTableSequentialWorldPrefixRows,
+      v13RealLinearFunctionalTableSequentialWorldPrefixTranscript,
+      v13RealLinearFunctionalTableSequentialRowPrefixTranscriptOf,
+      v13RealLinearSequentialRowPrefixTranscriptOfWithRowView,
+      v13RealLinearSequentialRowRunAuxWithRowView,
+      v13RealLinearSequentialRowTranscriptRows]
+  have hnPos : 0 < n := by
+    by_contra hnot
+    have hnZero : n = 0 := Nat.eq_zero_of_not_pos hnot
+    exact hnotZero (by simpa [hnZero] using hnSpec.2)
+  let tNat := n - 1
+  have htLtN : tNat < n := by omega
+  have htSucc : tNat + 1 = n := by omega
+  have htLtQ : tNat < q := by omega
+  have hprev : ¬ P tNat := by
+    intro hp
+    exact Nat.find_min hex htLtN
+      ⟨le_of_lt (lt_of_lt_of_le htLtN hnSpec.1), hp⟩
+  have hnew : P (tNat + 1) := by
+    simpa [htSucc] using hnSpec.2
+  let rows :=
+    v13RealLinearFunctionalTableSequentialWorldPrefixRows
+      observer omega tNat
+  let row :=
+    v13RealLinearFunctionalTableSequentialWorldNextRow
+      observer omega tNat
+  have hsucc :
+      v13RealLinearFunctionalTableSequentialWorldPrefixRows
+          observer omega (tNat + 1) =
+        insert row rows := by
+    simpa [rows, row] using
+      v13RealLinearFunctionalTableSequentialWorldPrefixRows_succ
+        observer omega tNat
+  have hrowFresh : row ∉ rows := by
+    intro hmem
+    apply hprev
+    have hsame :
+        v13RealLinearFunctionalTableSequentialWorldPrefixRows
+            observer omega (tNat + 1) =
+          rows := by
+      rw [hsucc]
+      exact Finset.insert_eq_of_mem hmem
+    simpa [P, rows, hsame] using hnew
+  have hnewInsert :
+      V13RealLinearFunctionalTableRowsGenerateTarget omega.1
+        (insert row rows) i₀ := by
+    simpa [P, rows, row, hsucc] using hnew
+  have hhit :
+      V13RealLinearFunctionalTableTargetCosetHit omega.1 rows i₀ row :=
+    v13RealLinearFunctionalTableTargetCosetHit_of_insert_generates
+      omega.1 rows i₀ row
+      (by simpa [P, rows] using hprev)
+      hnewInsert
+  refine ⟨⟨tNat, htLtQ⟩, ?_⟩
+  exact ⟨by simpa [rows, row] using hrowFresh,
+    by simpa [rows, row] using hhit⟩
 
 theorem
     v13RealLinearFunctionalTableTargetCosetHit_card_mul_functional_le
@@ -6760,6 +7016,13 @@ theorem v13RealLinear_sum_range_two_pow (q : Nat) :
         ring
       omega
 
+theorem v13RealLinear_sum_fin_two_pow_mul (q T : Nat) :
+    (∑ t : Fin q, 2 ^ (t : Nat) * T) =
+      (2 ^ q - 1) * T := by
+  rw [Fin.sum_univ_eq_sum_range (fun t : Nat => 2 ^ t * T)]
+  rw [← Finset.sum_mul]
+  rw [v13RealLinear_sum_range_two_pow q]
+
 theorem v13RealLinear_sum_fin_deferredDecisionWeights (q T : Nat) :
     (∑ t : Fin q, (4 * 2 ^ (t : Nat)) * T) =
       (4 * (2 ^ q - 1)) * T := by
@@ -6776,6 +7039,113 @@ theorem v13RealLinear_sum_fin_deferredDecisionWeights (q T : Nat) :
       rw [v13RealLinear_sum_range_two_pow q]
     _ = (4 * (2 ^ q - 1)) * T := by
       ring
+
+theorem
+    v13RealLinearFunctionalTableSequentialGenerated_card_mul_two_pow_le
+    {m q : Nat} (observer : V13RealLinearSequentialRowObserver m q)
+    (i₀ : Fin m) :
+    Fintype.card
+        {omega : V13RealLinearFunctionalTableWorld m //
+          V13RealLinearFunctionalTableSequentialGenerated observer i₀ omega} *
+      2 ^ m ≤
+    (2 ^ q - 1) *
+      Fintype.card (V13RealLinearFunctionalTableWorld m) := by
+  classical
+  let World := V13RealLinearFunctionalTableWorld m
+  let Generated :=
+    {omega : World //
+      V13RealLinearFunctionalTableSequentialGenerated observer i₀ omega}
+  let T := Fintype.card World
+  let M := 2 ^ m
+  let G := Fintype.card Generated
+  have hGle :
+      G ≤
+        Fintype.card
+          (Σ t : Fin q,
+            {omega : World //
+              V13RealLinearFunctionalTableSequentialFreshTargetCosetHit
+                observer i₀ t omega}) := by
+    dsimp [G, Generated, World]
+    exact
+      Fintype.card_le_of_embedding
+        { toFun := fun omega =>
+            let t :=
+              Classical.choose
+                (v13RealLinearFunctionalTableSequentialGenerated_freshTargetCosetHit_cover
+                  observer i₀ omega.val omega.property)
+            ⟨t, ⟨omega.val,
+              Classical.choose_spec
+                (v13RealLinearFunctionalTableSequentialGenerated_freshTargetCosetHit_cover
+                  observer i₀ omega.val omega.property)⟩⟩
+          inj' := by
+            intro omega₀ omega₁ h
+            apply Subtype.ext
+            exact
+              congrArg
+                (fun z :
+                  (Σ t : Fin q,
+                    {omega : World //
+                      V13RealLinearFunctionalTableSequentialFreshTargetCosetHit
+                        observer i₀ t omega}) => z.2.val)
+                h }
+  have hGleSum :
+      G ≤
+        ∑ t : Fin q,
+          Fintype.card
+            {omega : World //
+              V13RealLinearFunctionalTableSequentialFreshTargetCosetHit
+                observer i₀ t omega} := by
+    have hsigma :
+        Fintype.card
+            (Σ t : Fin q,
+              {omega : World //
+                V13RealLinearFunctionalTableSequentialFreshTargetCosetHit
+                  observer i₀ t omega}) =
+          ∑ t : Fin q,
+            Fintype.card
+              {omega : World //
+                V13RealLinearFunctionalTableSequentialFreshTargetCosetHit
+                  observer i₀ t omega} := by
+      rw [Fintype.card_sigma]
+    exact hGle.trans_eq hsigma
+  have hmul :
+      G * M ≤
+        (∑ t : Fin q,
+          Fintype.card
+            {omega : World //
+              V13RealLinearFunctionalTableSequentialFreshTargetCosetHit
+                observer i₀ t omega}) * M :=
+    Nat.mul_le_mul_right M hGleSum
+  have hsumStep :
+      (∑ t : Fin q,
+          Fintype.card
+            {omega : World //
+              V13RealLinearFunctionalTableSequentialFreshTargetCosetHit
+                observer i₀ t omega}) * M ≤
+        ∑ t : Fin q, 2 ^ (t : Nat) * T := by
+    calc
+      (∑ t : Fin q,
+          Fintype.card
+            {omega : World //
+              V13RealLinearFunctionalTableSequentialFreshTargetCosetHit
+                observer i₀ t omega}) * M =
+          ∑ t : Fin q,
+            Fintype.card
+              {omega : World //
+                V13RealLinearFunctionalTableSequentialFreshTargetCosetHit
+                  observer i₀ t omega} * M := by
+        rw [Finset.sum_mul]
+      _ ≤ ∑ t : Fin q, 2 ^ (t : Nat) * T := by
+        apply Finset.sum_le_sum
+        intro t _ht
+        simpa [World, T, M] using
+          v13RealLinearFunctionalTableSequentialFreshTargetCosetHit_card_mul_two_pow_le
+            observer i₀ (t : Nat)
+  have hweights :
+      (∑ t : Fin q, 2 ^ (t : Nat) * T) =
+        (2 ^ q - 1) * T :=
+    v13RealLinear_sum_fin_two_pow_mul q T
+  exact (hmul.trans hsumStep).trans_eq hweights
 
 /-- A family of per-read events covers all generated worlds.  This is the
 finite union-bound interface used by deferred-decision counting: later
