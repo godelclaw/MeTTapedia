@@ -3349,6 +3349,123 @@ noncomputable instance {m : Nat}
   unfold V13RealLinearUniformOneRowGeneratedRowIndex
   infer_instance
 
+theorem v13RealLinearUniformCausalOneRow_branchRows_ne_empty_of_singletonWitness
+    {m : Nat} (observer : V13RealLinearCausalRowObserver m 1)
+    (rest omega : V13RealLinearAdaptiveQRowWorld m (V13F2LinearEquiv m))
+    (row : Fin m)
+    (homegaRows :
+      (v13RealLinearUniformCausalQRowExperiment observer).branchRows omega =
+        ({row} : Finset (Fin m))) :
+    (v13RealLinearUniformCausalQRowExperiment observer).branchRows rest ≠
+      ∅ := by
+  classical
+  intro hrestRows
+  let E := v13RealLinearUniformCausalQRowExperiment observer
+  let publicRest :=
+    v13RealLinearPublicInput (E.world rest)
+  let publicOmega :=
+    v13RealLinearPublicInput (E.world omega)
+  have hobserverRestRows :
+      observer.rows (observer.branch publicRest) = ∅ := by
+    simpa [E, publicRest, v13RealLinearUniformCausalQRowExperiment,
+      v13RealLinearUniformQRowExperiment,
+      V13RealLinearAdaptiveQRowExperiment.branchRows,
+      V13RealLinearAdaptiveQRowExperiment.branch,
+      V13RealLinearCausalRowObserver.toAdaptive,
+      V13RealLinearCausalRowObserver.staticBranch] using hrestRows
+  have hsame :
+      v13RealLinearRowsTranscript
+          (observer.rows (observer.branch publicRest)) publicRest =
+        v13RealLinearRowsTranscript
+          (observer.rows (observer.branch publicRest)) publicOmega := by
+    funext row'
+    have hmemEmpty : row'.val ∈ (∅ : Finset (Fin m)) := by
+      rw [← hobserverRestRows]
+      exact row'.property
+    simp at hmemEmpty
+  have hbranch :
+      observer.branch publicOmega = observer.branch publicRest :=
+    observer.branch_eq_of_same_branchRowsTranscript publicRest publicOmega
+      hsame
+  have hrowsEq :
+      observer.rows (observer.branch publicOmega) =
+        observer.rows (observer.branch publicRest) :=
+    congrArg observer.rows hbranch
+  have homegaObserverRows :
+      observer.rows (observer.branch publicOmega) =
+        ({row} : Finset (Fin m)) := by
+    simpa [E, publicOmega, v13RealLinearUniformCausalQRowExperiment,
+      v13RealLinearUniformQRowExperiment,
+      V13RealLinearAdaptiveQRowExperiment.branchRows,
+      V13RealLinearAdaptiveQRowExperiment.branch,
+      V13RealLinearCausalRowObserver.toAdaptive,
+      V13RealLinearCausalRowObserver.staticBranch] using homegaRows
+  have hsingletonEmpty :
+      ({row} : Finset (Fin m)) = ∅ := by
+    rw [← homegaObserverRows, hrowsEq, hobserverRestRows]
+  have hmem : row ∈ ({row} : Finset (Fin m)) := by simp
+  rw [hsingletonEmpty] at hmem
+  simp at hmem
+
+theorem v13RealLinearUniformCausalOneRow_branchRows_ne_empty_of_activeRowIndex
+    {m : Nat} (observer : V13RealLinearCausalRowObserver m 1)
+    (i₀ : Fin m)
+    (rest : V13RealLinearAdaptiveQRowWorld m (V13F2LinearEquiv m))
+    (_activeRow :
+      V13RealLinearUniformOneRowGeneratedRowIndex observer.toAdaptive i₀) :
+    (v13RealLinearUniformCausalQRowExperiment observer).branchRows rest ≠
+      ∅ := by
+  classical
+  rcases _activeRow.property with ⟨idx, _hidx⟩
+  rcases idx.property with
+    ⟨omega, _hgen, homegaRows, _htarget, _hbit⟩
+  exact
+    v13RealLinearUniformCausalOneRow_branchRows_ne_empty_of_singletonWitness
+      observer rest omega idx.val.1 homegaRows
+
+theorem v13RealLinearUniformCausalOneRow_branchRows_eq_singleton_of_activeRowIndex
+    {m : Nat} (observer : V13RealLinearCausalRowObserver m 1)
+    (i₀ : Fin m)
+    (rest : V13RealLinearAdaptiveQRowWorld m (V13F2LinearEquiv m))
+    (activeRow :
+      V13RealLinearUniformOneRowGeneratedRowIndex observer.toAdaptive i₀) :
+    ∃ row : Fin m,
+      (v13RealLinearUniformCausalQRowExperiment observer).branchRows rest =
+        ({row} : Finset (Fin m)) := by
+  classical
+  let E := v13RealLinearUniformCausalQRowExperiment observer
+  have hcard : (E.branchRows rest).card ≤ 1 := E.branchRows_card_le rest
+  have hne : E.branchRows rest ≠ ∅ :=
+    v13RealLinearUniformCausalOneRow_branchRows_ne_empty_of_activeRowIndex
+      observer i₀ rest activeRow
+  have hcardNe : (E.branchRows rest).card ≠ 0 := by
+    intro hzero
+    exact hne (Finset.card_eq_zero.mp hzero)
+  have hcardOne : (E.branchRows rest).card = 1 := by omega
+  exact Finset.card_eq_one.mp hcardOne
+
+theorem v13RealLinearNoTargetRowShear_not_generated_one_budget
+    {m : Nat} (observer : V13RealLinearCausalRowObserver m 1)
+    (i₀ : Fin m) (hm : 1 < m) (x : F2Vec m) :
+    ¬ (v13RealLinearUniformCausalQRowExperiment observer).generated i₀
+        (v13RealLinearNoTargetRowShear i₀ hm, x) := by
+  exact
+    (v13RealLinearUniformCausalQRowExperiment observer).not_generated_of_targetRows_empty
+      i₀ (v13RealLinearNoTargetRowShear i₀ hm, x)
+      (v13RealLinearNoTargetRowShear_targetRows_empty i₀ hm)
+
+theorem v13RealLinearNoTargetRowShear_branchRows_eq_singleton_of_activeRowIndex
+    {m : Nat} (observer : V13RealLinearCausalRowObserver m 1)
+    (i₀ : Fin m) (hm : 1 < m) (x : F2Vec m)
+    (activeRow :
+      V13RealLinearUniformOneRowGeneratedRowIndex observer.toAdaptive i₀) :
+    ∃ row : Fin m,
+      (v13RealLinearUniformCausalQRowExperiment observer).branchRows
+          (v13RealLinearNoTargetRowShear i₀ hm, x) =
+        ({row} : Finset (Fin m)) :=
+  v13RealLinearUniformCausalOneRow_branchRows_eq_singleton_of_activeRowIndex
+    observer i₀ (v13RealLinearNoTargetRowShear i₀ hm, x) activeRow
+
 theorem v13RealLinearSwapShear10_branchRows_ne_empty_of_activeRowIndex
     (observer : V13RealLinearCausalRowObserver 2 1) (x : F2Vec 2)
     (activeRow :

@@ -1141,6 +1141,42 @@ theorem currentPNPV13RealRungOneQRowBound_node :
       (∀ {m : Nat} (i₀ : Fin m) (hm : 1 < m),
         V13RealLinearTargetRows
           (v13RealLinearNoTargetRowShear i₀ hm) i₀ = ∅) ∧
+      (∀ {m : Nat} (observer : V13RealLinearCausalRowObserver m 1)
+        (rest omega : V13RealLinearAdaptiveQRowWorld m (V13F2LinearEquiv m))
+        (row : Fin m),
+        (v13RealLinearUniformCausalQRowExperiment observer).branchRows
+            omega =
+          ({row} : Finset (Fin m)) →
+        (v13RealLinearUniformCausalQRowExperiment observer).branchRows
+            rest ≠ ∅) ∧
+      (∀ {m : Nat} (observer : V13RealLinearCausalRowObserver m 1)
+        (i₀ : Fin m)
+        (rest : V13RealLinearAdaptiveQRowWorld m (V13F2LinearEquiv m))
+        (_activeRow :
+          V13RealLinearUniformOneRowGeneratedRowIndex observer.toAdaptive i₀),
+        (v13RealLinearUniformCausalQRowExperiment observer).branchRows
+            rest ≠ ∅) ∧
+      (∀ {m : Nat} (observer : V13RealLinearCausalRowObserver m 1)
+        (i₀ : Fin m)
+        (rest : V13RealLinearAdaptiveQRowWorld m (V13F2LinearEquiv m))
+        (_activeRow :
+          V13RealLinearUniformOneRowGeneratedRowIndex observer.toAdaptive i₀),
+        ∃ row : Fin m,
+          (v13RealLinearUniformCausalQRowExperiment observer).branchRows
+              rest =
+            ({row} : Finset (Fin m))) ∧
+      (∀ {m : Nat} (observer : V13RealLinearCausalRowObserver m 1)
+        (i₀ : Fin m) (hm : 1 < m) (x : F2Vec m),
+        ¬ (v13RealLinearUniformCausalQRowExperiment observer).generated i₀
+            (v13RealLinearNoTargetRowShear i₀ hm, x)) ∧
+      (∀ {m : Nat} (observer : V13RealLinearCausalRowObserver m 1)
+        (i₀ : Fin m) (hm : 1 < m) (x : F2Vec m)
+        (_activeRow :
+          V13RealLinearUniformOneRowGeneratedRowIndex observer.toAdaptive i₀),
+        ∃ row : Fin m,
+          (v13RealLinearUniformCausalQRowExperiment observer).branchRows
+              (v13RealLinearNoTargetRowShear i₀ hm, x) =
+            ({row} : Finset (Fin m))) ∧
       (∀ {m : Nat} {Seed : Type*}
         (E : V13RealLinearAdaptiveQRowExperiment m 1 Seed) (i₀ : Fin m)
         (omega : V13RealLinearAdaptiveQRowWorld m Seed),
@@ -1683,6 +1719,21 @@ theorem currentPNPV13RealRungOneQRowBound_node :
         v13FinSpare_ne i₀ hm,
       fun i₀ hm =>
         v13RealLinearNoTargetRowShear_targetRows_empty i₀ hm,
+      fun observer rest omega row homegaRows =>
+        v13RealLinearUniformCausalOneRow_branchRows_ne_empty_of_singletonWitness
+          observer rest omega row homegaRows,
+      fun observer i₀ rest activeRow =>
+        v13RealLinearUniformCausalOneRow_branchRows_ne_empty_of_activeRowIndex
+          observer i₀ rest activeRow,
+      fun observer i₀ rest activeRow =>
+        v13RealLinearUniformCausalOneRow_branchRows_eq_singleton_of_activeRowIndex
+          observer i₀ rest activeRow,
+      fun observer i₀ hm x =>
+        v13RealLinearNoTargetRowShear_not_generated_one_budget
+          observer i₀ hm x,
+      fun observer i₀ hm x activeRow =>
+        v13RealLinearNoTargetRowShear_branchRows_eq_singleton_of_activeRowIndex
+          observer i₀ hm x activeRow,
       fun E i₀ omega hgen =>
         E.generated_one_budget_exists_target_row i₀ omega hgen,
       fun E i₀ omega hgen =>
