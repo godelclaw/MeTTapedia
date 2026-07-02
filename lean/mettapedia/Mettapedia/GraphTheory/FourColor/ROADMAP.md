@@ -231,6 +231,10 @@ and
 `concreteChainFiberAppendPrefixFiberReachClosed_of_singleton_lift_and_mobility`
 now reduce the raw/prefix reach route to exactly the frozen-prefix singleton
 lift plus the different-trace interface-mobility hook.
+The lift is sharpened to the closure-level hook
+`concreteChainFiberAppendRelativeSingletonClosureLiftClosed`;
+`concreteChainFiberAppendRelativeSingletonLiftClosed_of_closure_lift` derives
+the reach-shaped lift from it by using the existing singleton seed closure.
 `concreteChainFiberAppendFixedPrefixLastReachClosed_of_interface_trace_cases`
 and `concreteChainFiberAppendRawPrefixReachClosed_of_interface_trace_cases`
 assemble those two cases back into the existing sufficiency route.
