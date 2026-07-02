@@ -1081,6 +1081,11 @@ theorem currentPNPV13RealRungOneNoTargetRowsRhsBalance_node :
     v13RealLinearFixedRhsTargetFiber_card_eq_of_row_not_mem_targetRows
       A row i₀ rhs hrow
 
+theorem currentPNPV13RealRungOneNoTargetRowsPublicSurface_node :
+    ∀ m : Nat, V13RealLinearNoTargetRowsPublicSurfaceCertificate m := by
+  intro m
+  exact v13RealLinearNoTargetRows_publicSurfaceCertificate
+
 theorem currentPNPV13RealRungOneRowObservers_node :
     (∀ {m : Nat} {A : V13F2LinearEquiv m}
       {rows : Finset (Fin m)} {i₀ : Fin m},
