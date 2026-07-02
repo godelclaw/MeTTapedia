@@ -761,6 +761,38 @@ structure ChainFiberAppendQuotientFibrationFields
             Reach (chainFiberRootClosureStep (word ++ [orient]) key) x y
   baseConnected : Connected baseStep
 
+structure ChainFiberAppendQuotientFibrationRootFields
+    (word : List GoertzelLemma818FrontierMode.TauOrient)
+    (orient : GoertzelLemma818FrontierMode.TauOrient)
+    (key : List GoertzelLemma814.LColor) : Type 1 where
+  Base : Type
+  baseStep : Base → Base → Prop
+  proj : ChainFiberPoint (word ++ [orient]) key → Base
+  fiberReach :
+    ∀ x y : ChainFiberPoint (word ++ [orient]) key,
+      proj x = proj y →
+        Reach (chainFiberRootClosureStep (word ++ [orient]) key) x y
+  liftStep :
+    ∀ (x : ChainFiberPoint (word ++ [orient]) key) (b : Base),
+      baseStep (proj x) b →
+        ∃ y : ChainFiberPoint (word ++ [orient]) key,
+          proj y = b ∧
+            Reach (chainFiberRootClosureStep (word ++ [orient]) key) x y
+  baseRooted : RootedConnectedCertificate baseStep
+
+def ChainFiberAppendQuotientFibrationFields.ofRootFields
+    {word : List GoertzelLemma818FrontierMode.TauOrient}
+    {orient : GoertzelLemma818FrontierMode.TauOrient}
+    {key : List GoertzelLemma814.LColor}
+    (fields : ChainFiberAppendQuotientFibrationRootFields word orient key) :
+    ChainFiberAppendQuotientFibrationFields word orient key :=
+  { Base := fields.Base
+    baseStep := fields.baseStep
+    proj := fields.proj
+    fiberReach := fields.fiberReach
+    liftStep := fields.liftStep
+    baseConnected := fields.baseRooted.connected }
+
 def ChainFiberAppendQuotientFibrationLift.ofFields
     {word : List GoertzelLemma818FrontierMode.TauOrient}
     {orient : GoertzelLemma818FrontierMode.TauOrient}
@@ -823,6 +855,22 @@ def concreteChainFiberAppendQuotientFibrationFieldsClosed : Prop :=
       ∀ (key : List GoertzelLemma814.LColor),
         key ∈ GoertzelLemma814.colorAssignments4 →
           Nonempty (ChainFiberAppendQuotientFibrationFields word orient key)
+
+def concreteChainFiberAppendQuotientFibrationRootFieldsClosed : Prop :=
+  ∀ (word : List GoertzelLemma818FrontierMode.TauOrient)
+    (orient : GoertzelLemma818FrontierMode.TauOrient),
+    word ≠ [] →
+    Nonempty (ChainWordConcreteFibrationCertificate word) →
+      ∀ (key : List GoertzelLemma814.LColor),
+        key ∈ GoertzelLemma814.colorAssignments4 →
+          Nonempty (ChainFiberAppendQuotientFibrationRootFields word orient key)
+
+theorem concreteChainFiberAppendQuotientFibrationFieldsClosed_of_root_fields
+    (hFields : concreteChainFiberAppendQuotientFibrationRootFieldsClosed) :
+    concreteChainFiberAppendQuotientFibrationFieldsClosed := by
+  intro word orient hne hcert key hkey
+  rcases hFields word orient hne hcert key hkey with ⟨fields⟩
+  exact ⟨ChainFiberAppendQuotientFibrationFields.ofRootFields fields⟩
 
 theorem concreteChainFiberAppendQuotientFibrationClosed_of_fields
     (hFields : concreteChainFiberAppendQuotientFibrationFieldsClosed) :
@@ -3262,6 +3310,13 @@ theorem concreteChainFiberFibrationNonemptyTransferClosed_of_append_quotient_fie
   concreteChainFiberFibrationNonemptyTransferClosed_of_append_quotient_fibration
     (concreteChainFiberAppendQuotientFibrationClosed_of_fields hFields)
 
+theorem concreteChainFiberFibrationNonemptyTransferClosed_of_append_quotient_root_fields
+    (hFields : concreteChainFiberAppendQuotientFibrationRootFieldsClosed) :
+    concreteChainFiberFibrationNonemptyTransferClosed :=
+  concreteChainFiberFibrationNonemptyTransferClosed_of_append_quotient_fields
+    (concreteChainFiberAppendQuotientFibrationFieldsClosed_of_root_fields
+      hFields)
+
 theorem concreteChainFiberFibrationNonemptyTransferClosed_of_projection_and_fibration
     (hProjection : concreteChainFiberAppendProjectionClosed)
     (hFibration : concreteChainFiberAppendFibrationOverProjectionClosed) :
@@ -3344,6 +3399,13 @@ theorem concreteChainAuditFibrationNonemptyTransferClosed_of_append_quotient_fie
   concreteChainAuditFibrationNonemptyTransferClosed_of_append_components
     concreteChainStatesGeneratedCompatible_ok
     (concreteChainFiberFibrationNonemptyTransferClosed_of_append_quotient_fields
+      hFields)
+
+theorem concreteChainAuditFibrationNonemptyTransferClosed_of_append_quotient_root_fields
+    (hFields : concreteChainFiberAppendQuotientFibrationRootFieldsClosed) :
+    concreteChainAuditFibrationNonemptyTransferClosed :=
+  concreteChainAuditFibrationNonemptyTransferClosed_of_append_quotient_fields
+    (concreteChainFiberAppendQuotientFibrationFieldsClosed_of_root_fields
       hFields)
 
 theorem concreteChainAuditFibrationNonemptyTransferClosed_of_projection_and_fibration
@@ -3563,6 +3625,17 @@ theorem chainAuditForFrontierWord_ok_of_append_quotient_fields
   chainAuditForFrontierWord_ok_of_concrete_singletons_and_nonempty_transfer
     hSeed
     (concreteChainAuditFibrationNonemptyTransferClosed_of_append_quotient_fields
+      hFields)
+    word
+
+theorem chainAuditForFrontierWord_ok_of_append_quotient_root_fields
+    (hSeed : concreteChainWordFibrationSingletonSeeds)
+    (hFields : concreteChainFiberAppendQuotientFibrationRootFieldsClosed)
+    (word : List GoertzelLemma818FrontierMode.TauOrient) :
+    chainAuditForFrontierWord word = true :=
+  chainAuditForFrontierWord_ok_of_append_quotient_fields
+    hSeed
+    (concreteChainFiberAppendQuotientFibrationFieldsClosed_of_root_fields
       hFields)
     word
 
@@ -4087,6 +4160,14 @@ theorem semanticFrontierStateSufficientForChain_of_append_quotient_fields
     semanticFrontierStateSufficientForChain targetAudit := by
   intro word _state _hstate _haudit
   exact chainAuditForFrontierWord_ok_of_append_quotient_fields
+    concreteChainWordFibrationSingletonSeeds_ok hFields word
+
+theorem semanticFrontierStateSufficientForChain_of_append_quotient_root_fields
+    {targetAudit : RepresentativeSemanticTarget → Bool}
+    (hFields : concreteChainFiberAppendQuotientFibrationRootFieldsClosed) :
+    semanticFrontierStateSufficientForChain targetAudit := by
+  intro word _state _hstate _haudit
+  exact chainAuditForFrontierWord_ok_of_append_quotient_root_fields
     concreteChainWordFibrationSingletonSeeds_ok hFields word
 
 theorem semanticFrontierStateSufficientForChain_of_prefix_fibration
