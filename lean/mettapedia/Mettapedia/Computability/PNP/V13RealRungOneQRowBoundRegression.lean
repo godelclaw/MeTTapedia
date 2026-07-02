@@ -82,6 +82,8 @@ set_option autoImplicit false
 #check v13RealLinear_uniform_causal_zero_row_success_bound
 #check v13RealLinear_uniform_high_budget_success_bound
 #check v13RealLinear_uniform_causal_high_budget_success_bound
+#check V13RealLinearUniformCausalLowPositiveRowSpanCountingBound
+#check v13RealLinear_uniform_causal_qrow_success_bound_of_lowPositiveSpanCounting
 #check v13RealLinear_qrow_epsilon_nonnegative
 
 def v13RealLinearQRowBoundRegression_staticConstant :
@@ -161,6 +163,15 @@ theorem v13RealLinearQRowBoundRegression_causal_zero_shape :
     v13RealLinear_uniform_causal_zero_row_success_bound
       v13RealLinearQRowBoundRegression_causalConstant 0
 
+theorem v13RealLinearQRowBoundRegression_causal_global_shape
+    (hcount : V13RealLinearUniformCausalLowPositiveRowSpanCountingBound) :
+    v13RealLinearUniformCausalQRowSuccess
+        v13RealLinearQRowBoundRegression_causalConstant 0 ≤
+      (1 / 2 : Rat) + v13RealLinearQRowEpsilon 0 2 := by
+  exact
+    v13RealLinear_uniform_causal_qrow_success_bound_of_lowPositiveSpanCounting
+      hcount v13RealLinearQRowBoundRegression_causalConstant 0
+
 #print axioms v13RealLinear_adaptiveKernelFlipSurchargeBound
 #print axioms v13RealLinear_rowCombination_card_le_for_branch
 #print axioms v13RealLinear_rowsBlockTarget_of_rowsGenerateTarget
@@ -196,9 +207,11 @@ theorem v13RealLinearQRowBoundRegression_causal_zero_shape :
 #print axioms v13RealLinear_uniform_causal_zero_row_success_bound
 #print axioms v13RealLinear_uniform_high_budget_success_bound
 #print axioms v13RealLinear_uniform_causal_high_budget_success_bound
+#print axioms v13RealLinear_uniform_causal_qrow_success_bound_of_lowPositiveSpanCounting
 #print axioms v13RealLinear_qrow_epsilon_nonnegative
 #print axioms v13RealLinearQRowBoundRegression_conditional_shape
 #print axioms v13RealLinearQRowBoundRegression_uniform_conditional_shape
 #print axioms v13RealLinearQRowBoundRegression_causal_zero_shape
+#print axioms v13RealLinearQRowBoundRegression_causal_global_shape
 
 end Mettapedia.Computability.PNP
