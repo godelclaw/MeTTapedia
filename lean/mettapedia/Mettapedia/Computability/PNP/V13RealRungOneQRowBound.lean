@@ -2429,6 +2429,49 @@ def V13RealLinearUniformFixedTargetRowOccurrenceCountingBound : Prop :=
         2 ^ m ≤
       2 * Fintype.card (V13F2LinearEquiv m)
 
+/-- Representative form of the constant single-row occurrence count.  Since
+fixed-row occurrence cardinalities are invariant under coordinate swaps, it is
+enough to prove the bound for one row/target pair in each nonempty dimension. -/
+def V13RealLinearUniformRepresentativeFixedTargetRowOccurrenceCountingBound :
+    Prop :=
+  ∀ {m : Nat}, Nonempty (Fin m) →
+    ∃ row i₀ : Fin m,
+      Fintype.card (V13RealLinearUniformFixedTargetRowOccurrence row i₀) *
+          2 ^ m ≤
+        2 * Fintype.card (V13F2LinearEquiv m)
+
+theorem
+    V13RealLinearUniformRepresentativeFixedTargetRowOccurrenceCountingBound_of_fixed
+    (hcount : V13RealLinearUniformFixedTargetRowOccurrenceCountingBound) :
+    V13RealLinearUniformRepresentativeFixedTargetRowOccurrenceCountingBound := by
+  classical
+  intro m hnonempty
+  let row : Fin m := Classical.choice hnonempty
+  exact ⟨row, row, hcount row row⟩
+
+theorem
+    V13RealLinearUniformFixedTargetRowOccurrenceCountingBound_of_representative
+    (hcount :
+      V13RealLinearUniformRepresentativeFixedTargetRowOccurrenceCountingBound) :
+    V13RealLinearUniformFixedTargetRowOccurrenceCountingBound := by
+  classical
+  intro m row i₀
+  rcases hcount (m := m) ⟨row⟩ with ⟨row', i₀', hrep⟩
+  have hcard :
+      Fintype.card
+          (V13RealLinearUniformFixedTargetRowOccurrence row i₀) =
+        Fintype.card
+          (V13RealLinearUniformFixedTargetRowOccurrence row' i₀') :=
+    v13RealLinearFixedTargetRowOccurrence_card_eq_of_swap
+      row row' i₀ i₀'
+  rwa [hcard]
+
+theorem V13RealLinearUniformFixedTargetRowOccurrenceCountingBound_iff_representative :
+    V13RealLinearUniformFixedTargetRowOccurrenceCountingBound ↔
+      V13RealLinearUniformRepresentativeFixedTargetRowOccurrenceCountingBound :=
+  ⟨V13RealLinearUniformRepresentativeFixedTargetRowOccurrenceCountingBound_of_fixed,
+    V13RealLinearUniformFixedTargetRowOccurrenceCountingBound_of_representative⟩
+
 theorem v13RealLinear_causalSingleRow_coefficientCounting_of_fixedTargetRowOccurrenceCounting
     (hcount : V13RealLinearUniformFixedTargetRowOccurrenceCountingBound)
     {m : Nat} (row i₀ : Fin m) :
@@ -2450,6 +2493,25 @@ theorem v13RealLinear_causalSingleRow_coefficientCounting_of_fixedTargetRowOccur
     simpa [O, A, X] using hcount row i₀
   change (O * X) * X ≤ 2 * (A * X)
   nlinarith
+
+theorem
+    v13RealLinear_causalSingleRow_coefficientCounting_of_representativeFixedTargetRowOccurrenceCounting
+    (hcount :
+      V13RealLinearUniformRepresentativeFixedTargetRowOccurrenceCountingBound)
+    {m : Nat} (row i₀ : Fin m) :
+    Fintype.card
+        (V13RealLinearAdaptiveQRowGeneratedCoefficient
+          (v13RealLinearUniformCausalQRowExperiment
+            (v13RealLinearCausalSingleRowObserver row)) i₀) *
+        2 ^ m ≤
+      2 ^ 1 *
+        Fintype.card
+          (V13RealLinearAdaptiveQRowWorld m (V13F2LinearEquiv m)) := by
+  exact
+    v13RealLinear_causalSingleRow_coefficientCounting_of_fixedTargetRowOccurrenceCounting
+      (V13RealLinearUniformFixedTargetRowOccurrenceCountingBound_of_representative
+        hcount)
+      row i₀
 
 theorem v13RealLinear_fixedTargetRowOccurrence_zero_two_counting :
     Fintype.card
