@@ -4204,6 +4204,81 @@ theorem
     observer i₀ hm
 
 theorem
+    v13RealLinearUniformCausalOneRowRowSpanCountingBound_of_activeBitCylinderIndexBound
+    (hindex :
+      V13RealLinearUniformCausalOneRowActiveBitCylinderIndexBound)
+    {m : Nat} (observer : V13RealLinearCausalRowObserver m 1)
+    (i₀ : Fin m) (hm : 1 < m) :
+    V13RealLinearUniformCausalRowSpanCountingBound observer i₀ :=
+  v13RealLinearUniformCausalRowSpanCountingBound_of_generated_counting
+    observer i₀
+    (v13RealLinearUniformCausalOneRowGenerated_counting_of_activeBitCylinderIndexBound
+      hindex observer i₀ hm)
+
+theorem
+    v13RealLinearUniformCausalOneRowRowSpanCountingBound_of_activeRowIndexBound
+    (hrow :
+      V13RealLinearUniformCausalOneRowActiveRowIndexBound)
+    {m : Nat} (observer : V13RealLinearCausalRowObserver m 1)
+    (i₀ : Fin m) (hm : 1 < m) :
+    V13RealLinearUniformCausalRowSpanCountingBound observer i₀ :=
+  v13RealLinearUniformCausalOneRowRowSpanCountingBound_of_activeBitCylinderIndexBound
+    (V13RealLinearUniformCausalOneRowActiveBitCylinderIndexBound_of_rowIndexBound
+      hrow)
+    observer i₀ hm
+
+theorem
+    v13RealLinearUniformCausalOneRowRowSpanCountingBound_of_activeRowPairExclusion
+    (hpair :
+      V13RealLinearUniformCausalOneRowActiveRowPairExclusion)
+    {m : Nat} (observer : V13RealLinearCausalRowObserver m 1)
+    (i₀ : Fin m) (hm : 1 < m) :
+    V13RealLinearUniformCausalRowSpanCountingBound observer i₀ :=
+  v13RealLinearUniformCausalOneRowRowSpanCountingBound_of_activeRowIndexBound
+    (V13RealLinearUniformCausalOneRowActiveRowIndexBound_of_pairExclusion
+      hpair)
+    observer i₀ hm
+
+theorem
+    v13RealLinear_uniform_causal_one_row_success_bound_of_activeBitCylinderIndexBound
+    (hindex :
+      V13RealLinearUniformCausalOneRowActiveBitCylinderIndexBound)
+    {m : Nat} (observer : V13RealLinearCausalRowObserver m 1)
+    (i₀ : Fin m) (hm : 1 < m) :
+    v13RealLinearUniformCausalQRowSuccess observer i₀ ≤
+      (1 / 2 : Rat) + v13RealLinearQRowEpsilon 1 m :=
+  v13RealLinear_uniform_causal_qrow_success_bound_of_spanCounting
+    observer i₀
+    (v13RealLinearUniformCausalOneRowRowSpanCountingBound_of_activeBitCylinderIndexBound
+      hindex observer i₀ hm)
+
+theorem
+    v13RealLinear_uniform_causal_one_row_success_bound_of_activeRowIndexBound
+    (hrow :
+      V13RealLinearUniformCausalOneRowActiveRowIndexBound)
+    {m : Nat} (observer : V13RealLinearCausalRowObserver m 1)
+    (i₀ : Fin m) (hm : 1 < m) :
+    v13RealLinearUniformCausalQRowSuccess observer i₀ ≤
+      (1 / 2 : Rat) + v13RealLinearQRowEpsilon 1 m :=
+  v13RealLinear_uniform_causal_one_row_success_bound_of_activeBitCylinderIndexBound
+    (V13RealLinearUniformCausalOneRowActiveBitCylinderIndexBound_of_rowIndexBound
+      hrow)
+    observer i₀ hm
+
+theorem
+    v13RealLinear_uniform_causal_one_row_success_bound_of_activeRowPairExclusion
+    (hpair :
+      V13RealLinearUniformCausalOneRowActiveRowPairExclusion)
+    {m : Nat} (observer : V13RealLinearCausalRowObserver m 1)
+    (i₀ : Fin m) (hm : 1 < m) :
+    v13RealLinearUniformCausalQRowSuccess observer i₀ ≤
+      (1 / 2 : Rat) + v13RealLinearQRowEpsilon 1 m :=
+  v13RealLinear_uniform_causal_one_row_success_bound_of_activeRowIndexBound
+    (V13RealLinearUniformCausalOneRowActiveRowIndexBound_of_pairExclusion
+      hpair)
+    observer i₀ hm
+
+theorem
     v13RealLinearUniformCausalOneRowActiveRowIndexBound_two_zero
     (observer : V13RealLinearCausalRowObserver 2 1) :
     Fintype.card

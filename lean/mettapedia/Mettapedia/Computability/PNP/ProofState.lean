@@ -1449,6 +1449,39 @@ theorem currentPNPV13RealRungOneQRowBound_node :
               2 ^ 1 *
                 Fintype.card
                   (V13RealLinearAdaptiveQRowWorld m (V13F2LinearEquiv m))) ∧
+      (V13RealLinearUniformCausalOneRowActiveBitCylinderIndexBound →
+        ∀ {m : Nat} (observer : V13RealLinearCausalRowObserver m 1)
+          (i₀ : Fin m),
+          1 < m →
+            V13RealLinearUniformCausalRowSpanCountingBound observer i₀) ∧
+      (V13RealLinearUniformCausalOneRowActiveRowIndexBound →
+        ∀ {m : Nat} (observer : V13RealLinearCausalRowObserver m 1)
+          (i₀ : Fin m),
+          1 < m →
+            V13RealLinearUniformCausalRowSpanCountingBound observer i₀) ∧
+      (V13RealLinearUniformCausalOneRowActiveRowPairExclusion →
+        ∀ {m : Nat} (observer : V13RealLinearCausalRowObserver m 1)
+          (i₀ : Fin m),
+          1 < m →
+            V13RealLinearUniformCausalRowSpanCountingBound observer i₀) ∧
+      (V13RealLinearUniformCausalOneRowActiveBitCylinderIndexBound →
+        ∀ {m : Nat} (observer : V13RealLinearCausalRowObserver m 1)
+          (i₀ : Fin m),
+          1 < m →
+            v13RealLinearUniformCausalQRowSuccess observer i₀ ≤
+              (1 / 2 : Rat) + v13RealLinearQRowEpsilon 1 m) ∧
+      (V13RealLinearUniformCausalOneRowActiveRowIndexBound →
+        ∀ {m : Nat} (observer : V13RealLinearCausalRowObserver m 1)
+          (i₀ : Fin m),
+          1 < m →
+            v13RealLinearUniformCausalQRowSuccess observer i₀ ≤
+              (1 / 2 : Rat) + v13RealLinearQRowEpsilon 1 m) ∧
+      (V13RealLinearUniformCausalOneRowActiveRowPairExclusion →
+        ∀ {m : Nat} (observer : V13RealLinearCausalRowObserver m 1)
+          (i₀ : Fin m),
+          1 < m →
+            v13RealLinearUniformCausalQRowSuccess observer i₀ ≤
+              (1 / 2 : Rat) + v13RealLinearQRowEpsilon 1 m) ∧
       (∀ observer : V13RealLinearCausalRowObserver 2 1,
         Fintype.card
             (V13RealLinearUniformOneRowGeneratedRowIndex
@@ -1733,6 +1766,24 @@ theorem currentPNPV13RealRungOneQRowBound_node :
           hrow observer i₀ hm,
       fun hpair {m} observer i₀ hm =>
         v13RealLinearUniformCausalOneRowGenerated_counting_of_activeRowPairExclusion
+          hpair observer i₀ hm,
+      fun hindex {m} observer i₀ hm =>
+        v13RealLinearUniformCausalOneRowRowSpanCountingBound_of_activeBitCylinderIndexBound
+          hindex observer i₀ hm,
+      fun hrow {m} observer i₀ hm =>
+        v13RealLinearUniformCausalOneRowRowSpanCountingBound_of_activeRowIndexBound
+          hrow observer i₀ hm,
+      fun hpair {m} observer i₀ hm =>
+        v13RealLinearUniformCausalOneRowRowSpanCountingBound_of_activeRowPairExclusion
+          hpair observer i₀ hm,
+      fun hindex {m} observer i₀ hm =>
+        v13RealLinear_uniform_causal_one_row_success_bound_of_activeBitCylinderIndexBound
+          hindex observer i₀ hm,
+      fun hrow {m} observer i₀ hm =>
+        v13RealLinear_uniform_causal_one_row_success_bound_of_activeRowIndexBound
+          hrow observer i₀ hm,
+      fun hpair {m} observer i₀ hm =>
+        v13RealLinear_uniform_causal_one_row_success_bound_of_activeRowPairExclusion
           hpair observer i₀ hm,
       v13RealLinearUniformCausalOneRowActiveRowIndexBound_two_zero,
       v13RealLinearUniformCausalOneRowActiveBitCylinderIndexBound_two_zero,
