@@ -563,6 +563,57 @@ def V13RealLinearUniformFixedTargetRowOccurrence {m : Nat}
     (row i₀ : Fin m) :=
   {A : V13F2LinearEquiv m // row ∈ V13RealLinearTargetRows A i₀}
 
+noncomputable def v13RealLinearFixedTargetRowOccurrenceSwapEquiv
+    {m : Nat} (row row' i₀ i₀' : Fin m) :
+    V13RealLinearUniformFixedTargetRowOccurrence row i₀ ≃
+      V13RealLinearUniformFixedTargetRowOccurrence row' i₀' where
+  toFun A := by
+    let ρ : Equiv.Perm (Fin m) := Equiv.swap row row'
+    let κ : Equiv.Perm (Fin m) := Equiv.swap i₀ i₀'
+    refine
+      ⟨v13RealLinearComp (v13RealLinearPerm ρ)
+        (v13RealLinearComp A.val (v13RealLinearPerm κ)), ?_⟩
+    have htarget :
+        ∀ w : F2Vec m, A.val.toEquiv w row = w i₀ :=
+      (v13RealLinear_mem_targetRows_iff A.val i₀ row).1 A.property
+    exact
+      (v13RealLinear_mem_targetRows_iff
+        (v13RealLinearComp (v13RealLinearPerm ρ)
+          (v13RealLinearComp A.val (v13RealLinearPerm κ)))
+        i₀' row').2 (by
+          intro w
+          simpa [ρ, κ, v13RealLinearComp, v13RealLinearPerm] using
+            htarget ((v13RealLinearPerm κ).toEquiv w))
+  invFun A := by
+    let ρ : Equiv.Perm (Fin m) := Equiv.swap row row'
+    let κ : Equiv.Perm (Fin m) := Equiv.swap i₀ i₀'
+    refine
+      ⟨v13RealLinearComp (v13RealLinearPerm ρ)
+        (v13RealLinearComp A.val (v13RealLinearPerm κ)), ?_⟩
+    have htarget :
+        ∀ w : F2Vec m, A.val.toEquiv w row' = w i₀' :=
+      (v13RealLinear_mem_targetRows_iff A.val i₀' row').1 A.property
+    exact
+      (v13RealLinear_mem_targetRows_iff
+        (v13RealLinearComp (v13RealLinearPerm ρ)
+          (v13RealLinearComp A.val (v13RealLinearPerm κ)))
+        i₀ row).2 (by
+          intro w
+          simpa [ρ, κ, v13RealLinearComp, v13RealLinearPerm] using
+            htarget ((v13RealLinearPerm κ).toEquiv w))
+  left_inv A := by
+    apply Subtype.ext
+    apply v13RealLinearEquiv_ext
+    intro x
+    funext r
+    simp [v13RealLinearComp, v13RealLinearPerm]
+  right_inv A := by
+    apply Subtype.ext
+    apply v13RealLinearEquiv_ext
+    intro x
+    funext r
+    simp [v13RealLinearComp, v13RealLinearPerm]
+
 noncomputable instance {m : Nat} (i₀ : Fin m) :
     Fintype (V13RealLinearUniformTargetRowOccurrence i₀) := by
   classical
@@ -574,6 +625,16 @@ noncomputable instance {m : Nat} (row i₀ : Fin m) :
   classical
   unfold V13RealLinearUniformFixedTargetRowOccurrence
   infer_instance
+
+theorem v13RealLinearFixedTargetRowOccurrence_card_eq_of_swap
+    {m : Nat} (row row' i₀ i₀' : Fin m) :
+    Fintype.card (V13RealLinearUniformFixedTargetRowOccurrence row i₀) =
+      Fintype.card (V13RealLinearUniformFixedTargetRowOccurrence row' i₀') := by
+  classical
+  exact
+    Fintype.card_congr
+      (v13RealLinearFixedTargetRowOccurrenceSwapEquiv
+        row row' i₀ i₀')
 
 noncomputable def v13RealLinearUniformTargetRowOccurrenceMass {m : Nat}
     (i₀ : Fin m) : Rat :=

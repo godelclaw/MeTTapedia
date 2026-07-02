@@ -26,6 +26,39 @@ structure V13F2LinearEquiv (m : Nat) where
         f2AddVec (toEquiv x) (toEquiv y)
   map_zero : toEquiv (f2ZeroVec m) = f2ZeroVec m
 
+theorem v13RealLinearEquiv_ext {m : Nat} (A B : V13F2LinearEquiv m)
+    (h : ∀ x : F2Vec m, A.toEquiv x = B.toEquiv x) :
+    A = B := by
+  cases A with
+  | mk Ato Aadd Azero =>
+      cases B with
+      | mk Bto Badd Bzero =>
+          have hto : Ato = Bto := Equiv.ext h
+          subst hto
+          rfl
+
+def v13RealLinearComp {m : Nat}
+    (B A : V13F2LinearEquiv m) : V13F2LinearEquiv m where
+  toEquiv :=
+    { toFun := fun x => B.toEquiv (A.toEquiv x)
+      invFun := fun x => A.toEquiv.symm (B.toEquiv.symm x)
+      left_inv := by
+        intro x
+        simp
+      right_inv := by
+        intro x
+        simp }
+  map_add := by
+    intro x y
+    change
+      B.toEquiv (A.toEquiv (f2AddVec x y)) =
+        f2AddVec (B.toEquiv (A.toEquiv x))
+          (B.toEquiv (A.toEquiv y))
+    rw [A.map_add, B.map_add]
+  map_zero := by
+    change B.toEquiv (A.toEquiv (f2ZeroVec m)) = f2ZeroVec m
+    rw [A.map_zero, B.map_zero]
+
 /-- Public instance for the real rung-one replacement family.  The certified
 linear equivalence packages an invertible square `F₂`-linear map; the public
 right-hand side is `b = A x`. -/

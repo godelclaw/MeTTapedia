@@ -1160,6 +1160,11 @@ theorem currentPNPV13RealRungOneQRowBound_node :
         v13RealLinearUniformTargetRowOccurrenceMass (0 : Fin 2)) ∧
       (¬ V13RealLinearUniformInvertibleRowSpanCountingBound
         (v13RealLinearTargetRowObserver (0 : Fin 2)) (0 : Fin 2)) ∧
+      (∀ {m : Nat} (row row' i₀ i₀' : Fin m),
+        Fintype.card
+            (V13RealLinearUniformFixedTargetRowOccurrence row i₀) =
+          Fintype.card
+            (V13RealLinearUniformFixedTargetRowOccurrence row' i₀')) ∧
       (∀ {m q : Nat} {Seed : Type*} [Fintype Seed]
         (E : V13RealLinearAdaptiveQRowExperiment m q Seed) (i₀ : Fin m),
         v13RealLinearAdaptiveQRowBlockedMass E i₀ =
@@ -1304,6 +1309,9 @@ theorem currentPNPV13RealRungOneQRowBound_node :
       v13RealLinear_f2_equiv_two_card_le_six,
       v13RealLinearUniformTargetRowOccurrenceMass_two_zero_gt_half_unconditional,
       v13RealLinear_targetRowObserver_spanCountingBound_fails_two_zero_unconditional,
+      fun row row' i₀ i₀' =>
+        v13RealLinearFixedTargetRowOccurrence_card_eq_of_swap
+          row row' i₀ i₀',
       fun E i₀ =>
         v13RealLinearAdaptiveQRowBlockedMass_eq_generatedMass E i₀,
       fun E i₀ =>
