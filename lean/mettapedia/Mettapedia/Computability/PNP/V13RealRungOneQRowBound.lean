@@ -1,4 +1,5 @@
 import Mettapedia.Computability.PNP.V13RealRungOneAdaptiveRows
+import Mathlib.LinearAlgebra.Dual.Lemmas
 
 /-!
 # PNP v13 real rung one: q-row bound assembly
@@ -114,6 +115,26 @@ def V13RealLinearRowsGenerateTarget {m : Nat}
     ∀ w : F2Vec m,
       v13RealLinearRowCombinationEval A rows coeff w = w i₀
 
+def v13RealLinearRowFunctional {m : Nat}
+    (A : V13F2LinearEquiv m) (row : Fin m) :
+    F2Vec m →ₗ[ZMod 2] ZMod 2 :=
+  (AddMonoidHom.toZModLinearMap 2
+    { toFun := fun w : F2Vec m => A.toEquiv w row
+      map_zero' := by
+        change A.toEquiv (0 : F2Vec m) row = 0
+        have hzero : (0 : F2Vec m) = f2ZeroVec m := by
+          funext j
+          rfl
+        rw [hzero]
+        exact congrFun A.map_zero row
+      map_add' := by
+        intro x y
+        exact congrFun (A.map_add x y) row })
+
+def v13RealLinearTargetFunctional {m : Nat} (i₀ : Fin m) :
+    F2Vec m →ₗ[ZMod 2] ZMod 2 :=
+  LinearMap.proj i₀
+
 theorem v13RealLinear_rowCombination_card {m : Nat}
     (rows : Finset (Fin m)) :
     Fintype.card (V13RealLinearRowCombination rows) = 2 ^ rows.card := by
@@ -148,6 +169,50 @@ theorem v13RealLinear_rowsBlockTarget_of_rowsGenerateTarget {m : Nat}
   calc
     w i₀ = v13RealLinearRowCombinationEval A rows coeff w := (hcoeff w).symm
     _ = 0 := hsum
+
+theorem v13RealLinear_rowsGenerateTarget_of_rowsBlockTarget {m : Nat}
+    (A : V13F2LinearEquiv m) (rows : Finset (Fin m)) (i₀ : Fin m)
+    (hblock : V13RealLinearRowsBlockTarget A rows i₀) :
+    V13RealLinearRowsGenerateTarget A rows i₀ := by
+  classical
+  let rowFunctional : {row : Fin m // row ∈ rows} →
+      F2Vec m →ₗ[ZMod 2] ZMod 2 :=
+    fun row => v13RealLinearRowFunctional A row.1
+  let targetFunctional : F2Vec m →ₗ[ZMod 2] ZMod 2 :=
+    v13RealLinearTargetFunctional i₀
+  have hker :
+      ⨅ row, LinearMap.ker (rowFunctional row) ≤
+        LinearMap.ker targetFunctional := by
+    intro w hw
+    have hzero : w i₀ = 0 := by
+      apply hblock
+      intro row hrow
+      have hmem :
+          w ∈ LinearMap.ker
+              (rowFunctional (⟨row, hrow⟩ : {row : Fin m // row ∈ rows})) :=
+        (Submodule.mem_iInf _).1 hw ⟨row, hrow⟩
+      simpa [rowFunctional, v13RealLinearRowFunctional] using hmem
+    simpa [targetFunctional, v13RealLinearTargetFunctional] using hzero
+  have hspan :
+      targetFunctional ∈
+        Submodule.span (ZMod 2) (Set.range rowFunctional) :=
+    mem_span_of_iInf_ker_le_ker hker
+  rcases (Submodule.mem_span_range_iff_exists_fun (R := ZMod 2)).1
+      hspan with
+    ⟨coeff, hcoeff⟩
+  refine ⟨coeff, ?_⟩
+  intro w
+  have happly := LinearMap.congr_fun hcoeff w
+  simpa [v13RealLinearRowCombinationEval, rowFunctional,
+    targetFunctional, v13RealLinearRowFunctional,
+    v13RealLinearTargetFunctional] using happly
+
+theorem v13RealLinear_rowsBlockTarget_iff_rowsGenerateTarget {m : Nat}
+    (A : V13F2LinearEquiv m) (rows : Finset (Fin m)) (i₀ : Fin m) :
+    V13RealLinearRowsBlockTarget A rows i₀ ↔
+      V13RealLinearRowsGenerateTarget A rows i₀ :=
+  ⟨v13RealLinear_rowsGenerateTarget_of_rowsBlockTarget A rows i₀,
+    v13RealLinear_rowsBlockTarget_of_rowsGenerateTarget A rows i₀⟩
 
 def V13RealLinearAdaptiveQRowExperiment.correct {m q : Nat} {Seed : Type*}
     (E : V13RealLinearAdaptiveQRowExperiment m q Seed) (i₀ : Fin m)
