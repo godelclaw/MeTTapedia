@@ -169,11 +169,14 @@ append induction needs.  The bridge now also exposes the quotient route
 `ChainFiberAppendQuotientFibrationLift` and
 `concreteChainFiberAppendQuotientFibrationClosed`: each appended fixed-input
 fiber may project to an arbitrary connected finite base, with the fibration
-fields carrying the lifted Kempe motion.  Thus finite per-input interface or
+fields carrying the lifted Kempe motion.  The field-level target
+`concreteChainFiberAppendQuotientFibrationFieldsClosed` splits that route into
+the exact three proof obligations: same-base fiber reach, lifted base steps,
+and connectedness of the quotient base.  Thus finite per-input interface or
 trace-pair mobility can serve directly as base connectivity, while any necessary
 prefix motion is absorbed by the quotient base rather than forced through a
 fixed-prefix last-state invariant.  This route implies final sufficiency via
-`semanticFrontierStateSufficientForChain_of_append_quotient_fibration`.  The
+`semanticFrontierStateSufficientForChain_of_append_quotient_fields`.  The
 same-prefix closure side is now separated from prefix mobility:
 `concreteChainFiberAppendPrefixSelfLiftClosureClosed_of_lift` derives a closed
 appended representative over the current prefix from the lift-closure theorem
