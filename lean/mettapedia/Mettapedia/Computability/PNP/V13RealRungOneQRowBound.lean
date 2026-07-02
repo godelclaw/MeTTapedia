@@ -115,6 +115,19 @@ def V13RealLinearRowsGenerateTarget {m : Nat}
     ∀ w : F2Vec m,
       v13RealLinearRowCombinationEval A rows coeff w = w i₀
 
+theorem v13RealLinear_not_rowsGenerateTarget_of_rows_card_zero {m : Nat}
+    (A : V13F2LinearEquiv m) {rows : Finset (Fin m)} (i₀ : Fin m)
+    (hrows : rows.card = 0) :
+    ¬ V13RealLinearRowsGenerateTarget A rows i₀ := by
+  classical
+  intro hgen
+  rcases hgen with ⟨coeff, hcoeff⟩
+  have hrowsEmpty : rows = ∅ := Finset.card_eq_zero.mp hrows
+  subst rows
+  have htarget := hcoeff (v13RealLinearSingleBit i₀)
+  norm_num [v13RealLinearRowCombinationEval,
+    v13RealLinearSingleBit] at htarget
+
 def V13RealLinearAdaptiveQRowExperiment.generated {m q : Nat}
     {Seed : Type*} (E : V13RealLinearAdaptiveQRowExperiment m q Seed)
     (i₀ : Fin m) (omega : V13RealLinearAdaptiveQRowWorld m Seed) : Prop :=
@@ -230,6 +243,26 @@ theorem V13RealLinearAdaptiveQRowExperiment.blocked_iff_generated
     v13RealLinear_rowsBlockTarget_iff_rowsGenerateTarget
       (E.sampleA omega.1) (E.branchRows omega) i₀
 
+theorem V13RealLinearAdaptiveQRowExperiment.not_generated_of_branchRows_card_zero
+    {m q : Nat} {Seed : Type*}
+    (E : V13RealLinearAdaptiveQRowExperiment m q Seed) (i₀ : Fin m)
+    (omega : V13RealLinearAdaptiveQRowWorld m Seed)
+    (hrows : (E.branchRows omega).card = 0) :
+    ¬ E.generated i₀ omega := by
+  unfold V13RealLinearAdaptiveQRowExperiment.generated
+  exact
+    v13RealLinear_not_rowsGenerateTarget_of_rows_card_zero
+      (E.sampleA omega.1) i₀ hrows
+
+theorem V13RealLinearAdaptiveQRowExperiment.not_generated_of_zero_budget
+    {m : Nat} {Seed : Type*}
+    (E : V13RealLinearAdaptiveQRowExperiment m 0 Seed) (i₀ : Fin m)
+    (omega : V13RealLinearAdaptiveQRowWorld m Seed) :
+    ¬ E.generated i₀ omega := by
+  have hrows : (E.branchRows omega).card = 0 :=
+    Nat.eq_zero_of_le_zero (E.branchRows_card_le omega)
+  exact E.not_generated_of_branchRows_card_zero i₀ omega hrows
+
 def V13RealLinearAdaptiveQRowExperiment.correct {m q : Nat} {Seed : Type*}
     (E : V13RealLinearAdaptiveQRowExperiment m q Seed) (i₀ : Fin m)
     (omega : V13RealLinearAdaptiveQRowWorld m Seed) : Prop :=
@@ -337,6 +370,24 @@ theorem v13RealLinearAdaptiveQRowBlockedMass_eq_generatedMass
   unfold v13RealLinearAdaptiveQRowGeneratedMass
   rw [Fintype.card_congr
     (v13RealLinearAdaptiveQRowBlockedGeneratedEquiv E i₀)]
+
+theorem v13RealLinearAdaptiveQRowGenerated_card_eq_zero_of_zero_budget
+    {m : Nat} {Seed : Type*} [Fintype Seed]
+    (E : V13RealLinearAdaptiveQRowExperiment m 0 Seed) (i₀ : Fin m) :
+    Fintype.card (V13RealLinearAdaptiveQRowGenerated E i₀) = 0 := by
+  classical
+  rw [Fintype.card_eq_zero_iff]
+  exact
+    ⟨fun omega =>
+      E.not_generated_of_zero_budget i₀ omega.val omega.property⟩
+
+theorem v13RealLinearAdaptiveQRowGeneratedMass_eq_zero_of_zero_budget
+    {m : Nat} {Seed : Type*} [Fintype Seed]
+    (E : V13RealLinearAdaptiveQRowExperiment m 0 Seed) (i₀ : Fin m) :
+    v13RealLinearAdaptiveQRowGeneratedMass E i₀ = 0 := by
+  unfold v13RealLinearAdaptiveQRowGeneratedMass
+  rw [v13RealLinearAdaptiveQRowGenerated_card_eq_zero_of_zero_budget E i₀]
+  simp
 
 noncomputable def V13RealLinearAdaptiveQRowExperiment.branchFlipWitness
     {m q : Nat} {Seed : Type*}
@@ -663,12 +714,28 @@ def V13RealLinearAdaptiveRowSpanCountingBound {m q : Nat}
   v13RealLinearAdaptiveQRowGeneratedMass E i₀ ≤
     v13RealLinearQRowEpsilon q m
 
+theorem v13RealLinearAdaptiveRowSpanCountingBound_of_zero_budget
+    {m : Nat} {Seed : Type*} [Fintype Seed]
+    (E : V13RealLinearAdaptiveQRowExperiment m 0 Seed) (i₀ : Fin m) :
+    V13RealLinearAdaptiveRowSpanCountingBound E i₀ := by
+  unfold V13RealLinearAdaptiveRowSpanCountingBound
+  rw [v13RealLinearAdaptiveQRowGeneratedMass_eq_zero_of_zero_budget E i₀]
+  unfold v13RealLinearQRowEpsilon
+  positivity
+
 /-- The single named pinned obligation: under the uniform sampler over all
 certified invertible maps, the realized branch generates the target functional
 from its read rows with mass at most `2^q / 2^m`. -/
 def V13RealLinearUniformInvertibleRowSpanCountingBound {m q : Nat}
     (observer : V13RealLinearAdaptiveRowObserver m q) (i₀ : Fin m) : Prop :=
   V13RealLinearAdaptiveRowSpanCountingBound
+    (v13RealLinearUniformQRowExperiment observer) i₀
+
+theorem v13RealLinearUniformInvertibleRowSpanCountingBound_of_zero_budget
+    {m : Nat} (observer : V13RealLinearAdaptiveRowObserver m 0)
+    (i₀ : Fin m) :
+    V13RealLinearUniformInvertibleRowSpanCountingBound observer i₀ :=
+  v13RealLinearAdaptiveRowSpanCountingBound_of_zero_budget
     (v13RealLinearUniformQRowExperiment observer) i₀
 
 noncomputable def v13RealLinearUniformAdaptiveQRowSuccess {m q : Nat}
@@ -743,6 +810,17 @@ theorem v13RealLinear_uniform_adaptive_qrow_success_bound_of_spanCounting
   exact
     v13RealLinear_adaptive_qrow_success_bound_of_spanCounting
       (v13RealLinearUniformQRowExperiment observer) i₀ hcount
+
+theorem v13RealLinear_uniform_zero_row_success_bound
+    {m : Nat} (observer : V13RealLinearAdaptiveRowObserver m 0)
+    (i₀ : Fin m) :
+    v13RealLinearUniformAdaptiveQRowSuccess observer i₀ ≤
+      (1 / 2 : Rat) + v13RealLinearQRowEpsilon 0 m := by
+  exact
+    v13RealLinear_uniform_adaptive_qrow_success_bound_of_spanCounting
+      observer i₀
+      (v13RealLinearUniformInvertibleRowSpanCountingBound_of_zero_budget
+        observer i₀)
 
 theorem v13RealLinear_qrow_epsilon_nonnegative (q m : Nat) :
     0 ≤ v13RealLinearQRowEpsilon q m := by
