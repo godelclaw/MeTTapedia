@@ -249,6 +249,10 @@ The Kempe-step side is further split by
 `concreteChainFiberAppendRelativeSingletonGlobalKempeStepLiftClosed_of_specified_step`:
 the Boolean local step is unpacked once into a specified color-pair/seed move,
 leaving the real geometric lift as a specified-move statement.
+That statement now factors through
+`concreteChainFiberAppendRelativeSingletonSpecifiedKempeStepLiftClosed_of_shifted`:
+the remaining local-to-global move proof is exactly that the specified local
+move, shifted to occurrence `word.length`, is a valid specified global move.
 The closure-under-step side is now reduced by
 `concreteChainFiberAppendRelativeSingletonGlobalStepClosureClosed_of_bounded_saturation`
 to the pure closure-iterator lemma
