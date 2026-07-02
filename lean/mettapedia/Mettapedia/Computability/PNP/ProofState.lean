@@ -1132,6 +1132,15 @@ theorem currentPNPV13RealRungOneQRowBound_node :
           ∀ w : F2Vec m, A.toEquiv w row = w i₀) ∧
       (∀ {m : Nat} (A : V13F2LinearEquiv m) (i₀ : Fin m),
         (V13RealLinearTargetRows A i₀).card ≤ 1) ∧
+      (∀ {m : Nat} (i₀ : Fin m) (s : V13RealLinearZeroAt i₀),
+        (∃ j : Fin m, j ≠ i₀ ∧ s.val j = 1) →
+          V13RealLinearTargetRows
+            (v13RealLinearZeroAtRowShear i₀ s) i₀ = ∅) ∧
+      (∀ {m : Nat} (i₀ : Fin m) (hm : 1 < m),
+        v13FinSpare i₀ hm ≠ i₀) ∧
+      (∀ {m : Nat} (i₀ : Fin m) (hm : 1 < m),
+        V13RealLinearTargetRows
+          (v13RealLinearNoTargetRowShear i₀ hm) i₀ = ∅) ∧
       (∀ {m : Nat} {Seed : Type*}
         (E : V13RealLinearAdaptiveQRowExperiment m 1 Seed) (i₀ : Fin m)
         (omega : V13RealLinearAdaptiveQRowWorld m Seed),
@@ -1668,6 +1677,12 @@ theorem currentPNPV13RealRungOneQRowBound_node :
         v13RealLinear_rowsGenerateTarget_singleton_iff A row i₀,
       fun A i₀ =>
         v13RealLinear_targetRows_card_le_one A i₀,
+      fun i₀ s hs =>
+        v13RealLinearZeroAtRowShear_targetRows_empty_of_nonzero i₀ s hs,
+      fun i₀ hm =>
+        v13FinSpare_ne i₀ hm,
+      fun i₀ hm =>
+        v13RealLinearNoTargetRowShear_targetRows_empty i₀ hm,
       fun E i₀ omega hgen =>
         E.generated_one_budget_exists_target_row i₀ omega hgen,
       fun E i₀ omega hgen =>
