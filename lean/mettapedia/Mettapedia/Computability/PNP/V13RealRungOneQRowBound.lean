@@ -2926,6 +2926,392 @@ theorem v13RealLinearAdaptiveQRowRowsetFiber_card_eq_sum_transcriptCells
       E seed rows)]
   rw [Fintype.card_sigma]
 
+/-- Assignments to the unread public row coordinates of `A x`.  A fixed
+row-transcript cell injects into this type: the transcript fixes `A x` on the
+read rows, and these assignments record the remaining coordinates. -/
+abbrev V13RealLinearRowsUnreadAssignment (m : Nat)
+    (rows : Finset (Fin m)) :=
+  {row : Fin m // row ∉ rows} → ZMod 2
+
+theorem v13RealLinearRowsUnreadAssignment_card
+    {m : Nat} (rows : Finset (Fin m)) :
+    Fintype.card (V13RealLinearRowsUnreadAssignment m rows) =
+      2 ^ (m - rows.card) := by
+  classical
+  dsimp [V13RealLinearRowsUnreadAssignment]
+  rw [Fintype.card_fun]
+  have hzmod : Fintype.card (ZMod 2) = 2 := by
+    norm_num
+  rw [hzmod]
+  have hcomp :
+      Fintype.card {row : Fin m // row ∉ rows} = m - rows.card := by
+    have hread :
+        Fintype.card {row : Fin m // row ∈ rows} = rows.card :=
+      Fintype.card_of_subtype rows (fun row : Fin m => Iff.rfl)
+    rw [Fintype.card_subtype_compl (fun row : Fin m => row ∈ rows)]
+    simp [Fintype.card_fin, hread]
+  rw [hcomp]
+
+/-- Complete the public RHS vector by taking the transcript bits on read rows
+and an explicit assignment on unread rows. -/
+def v13RealLinearRowsTranscriptCompletion {m : Nat}
+    {rows : Finset (Fin m)}
+    (transcript : V13RealLinearRowsTranscriptSpace m rows)
+    (assignment : V13RealLinearRowsUnreadAssignment m rows) : F2Vec m :=
+  fun row =>
+    if hrow : row ∈ rows then
+      (transcript ⟨row, hrow⟩).2
+    else
+      assignment ⟨row, hrow⟩
+
+theorem v13RealLinearRowsTranscriptCompletion_of_mem {m : Nat}
+    {rows : Finset (Fin m)}
+    (transcript : V13RealLinearRowsTranscriptSpace m rows)
+    (assignment : V13RealLinearRowsUnreadAssignment m rows)
+    {row : Fin m} (hrow : row ∈ rows) :
+    v13RealLinearRowsTranscriptCompletion transcript assignment row =
+      (transcript ⟨row, hrow⟩).2 := by
+  simp [v13RealLinearRowsTranscriptCompletion, hrow]
+
+theorem v13RealLinearRowsTranscriptCompletion_of_not_mem {m : Nat}
+    {rows : Finset (Fin m)}
+    (transcript : V13RealLinearRowsTranscriptSpace m rows)
+    (assignment : V13RealLinearRowsUnreadAssignment m rows)
+    (row : {row : Fin m // row ∉ rows}) :
+    v13RealLinearRowsTranscriptCompletion transcript assignment row.1 =
+      assignment row := by
+  simp [v13RealLinearRowsTranscriptCompletion, row.property]
+
+noncomputable def
+    v13RealLinearAdaptiveQRowRowsetTranscriptCellToUnreadAssignment
+    {m q : Nat} {Seed : Type*}
+    (E : V13RealLinearAdaptiveQRowExperiment m q Seed)
+    (seed : Seed) (rows : Finset (Fin m))
+    (transcript : V13RealLinearRowsTranscriptSpace m rows) :
+    V13RealLinearAdaptiveQRowRowsetTranscriptCell E seed rows transcript ↪
+      V13RealLinearRowsUnreadAssignment m rows where
+  toFun x := fun row => (E.sampleA seed).toEquiv x.val.val row.1
+  inj' := by
+    intro x y hmap
+    apply Subtype.ext
+    apply Subtype.ext
+    apply (E.sampleA seed).toEquiv.injective
+    funext row
+    by_cases hrow : row ∈ rows
+    · have htranscript :=
+        congrFun (x.property.trans y.property.symm) ⟨row, hrow⟩
+      exact congrArg Prod.snd htranscript
+    · exact congrFun hmap ⟨row, hrow⟩
+
+theorem v13RealLinearAdaptiveQRowRowsetTranscriptCell_card_le_unreadAssignments
+    {m q : Nat} {Seed : Type*} [Fintype Seed]
+    (E : V13RealLinearAdaptiveQRowExperiment m q Seed)
+    (seed : Seed) (rows : Finset (Fin m))
+    (transcript : V13RealLinearRowsTranscriptSpace m rows) :
+    Fintype.card
+        (V13RealLinearAdaptiveQRowRowsetTranscriptCell
+          E seed rows transcript) ≤
+      2 ^ (m - rows.card) := by
+  classical
+  have hle :
+      Fintype.card
+          (V13RealLinearAdaptiveQRowRowsetTranscriptCell
+            E seed rows transcript) ≤
+        Fintype.card (V13RealLinearRowsUnreadAssignment m rows) :=
+    Fintype.card_le_of_embedding
+      (v13RealLinearAdaptiveQRowRowsetTranscriptCellToUnreadAssignment
+        E seed rows transcript)
+  exact hle.trans_eq (v13RealLinearRowsUnreadAssignment_card rows)
+
+def V13RealLinearAdaptiveQRowGeneratedFiber
+    {m q : Nat} {Seed : Type*}
+    (E : V13RealLinearAdaptiveQRowExperiment m q Seed)
+    (i₀ : Fin m) (seed : Seed) :=
+  {x : F2Vec m // E.generated i₀ (seed, x)}
+
+noncomputable instance {m q : Nat} {Seed : Type*} [Fintype Seed]
+    (E : V13RealLinearAdaptiveQRowExperiment m q Seed)
+    (i₀ : Fin m) (seed : Seed) :
+    Fintype (V13RealLinearAdaptiveQRowGeneratedFiber E i₀ seed) := by
+  classical
+  unfold V13RealLinearAdaptiveQRowGeneratedFiber
+  infer_instance
+
+noncomputable def
+    v13RealLinearAdaptiveQRowGeneratedEquivSigmaFiber
+    {m q : Nat} {Seed : Type*}
+    (E : V13RealLinearAdaptiveQRowExperiment m q Seed) (i₀ : Fin m) :
+    V13RealLinearAdaptiveQRowGenerated E i₀ ≃
+      (Σ seed : Seed,
+        V13RealLinearAdaptiveQRowGeneratedFiber E i₀ seed) where
+  toFun omega := by
+    exact ⟨omega.val.1, ⟨omega.val.2, omega.property⟩⟩
+  invFun cell := by
+    rcases cell with ⟨seed, x⟩
+    exact ⟨(seed, x.val), x.property⟩
+  left_inv omega := by
+    apply Subtype.ext
+    rfl
+  right_inv cell := by
+    rcases cell with ⟨seed, x⟩
+    rfl
+
+theorem v13RealLinearAdaptiveQRowGenerated_card_eq_sum_fibers
+    {m q : Nat} {Seed : Type*} [Fintype Seed]
+    (E : V13RealLinearAdaptiveQRowExperiment m q Seed) (i₀ : Fin m) :
+    Fintype.card (V13RealLinearAdaptiveQRowGenerated E i₀) =
+      ∑ seed : Seed,
+        Fintype.card
+          (V13RealLinearAdaptiveQRowGeneratedFiber E i₀ seed) := by
+  classical
+  rw [Fintype.card_congr
+    (v13RealLinearAdaptiveQRowGeneratedEquivSigmaFiber E i₀)]
+  rw [Fintype.card_sigma]
+
+def V13RealLinearAdaptiveQRowGeneratedBudgetedRowsetCell
+    {m q : Nat} {Seed : Type*}
+    (E : V13RealLinearAdaptiveQRowExperiment m q Seed)
+    (i₀ : Fin m) (seed : Seed) (rows : V13RealLinearBudgetedRowset m q) :=
+  {x : V13RealLinearAdaptiveQRowGeneratedFiber E i₀ seed //
+    (⟨E.branchRows (seed, x.val), E.branchRows_card_le (seed, x.val)⟩ :
+      V13RealLinearBudgetedRowset m q) = rows}
+
+noncomputable instance {m q : Nat} {Seed : Type*} [Fintype Seed]
+    (E : V13RealLinearAdaptiveQRowExperiment m q Seed)
+    (i₀ : Fin m) (seed : Seed) (rows : V13RealLinearBudgetedRowset m q) :
+    Fintype
+      (V13RealLinearAdaptiveQRowGeneratedBudgetedRowsetCell
+        E i₀ seed rows) := by
+  classical
+  unfold V13RealLinearAdaptiveQRowGeneratedBudgetedRowsetCell
+  infer_instance
+
+theorem
+    v13RealLinearAdaptiveQRowGeneratedFiber_card_eq_sum_budgetedRowsetCells
+    {m q : Nat} {Seed : Type*} [Fintype Seed]
+    (E : V13RealLinearAdaptiveQRowExperiment m q Seed)
+    (i₀ : Fin m) (seed : Seed) :
+    Fintype.card (V13RealLinearAdaptiveQRowGeneratedFiber E i₀ seed) =
+      ∑ rows : V13RealLinearBudgetedRowset m q,
+        Fintype.card
+          (V13RealLinearAdaptiveQRowGeneratedBudgetedRowsetCell
+            E i₀ seed rows) := by
+  classical
+  let f : V13RealLinearAdaptiveQRowGeneratedFiber E i₀ seed →
+      V13RealLinearBudgetedRowset m q := fun x =>
+    ⟨E.branchRows (seed, x.val), E.branchRows_card_le (seed, x.val)⟩
+  have hfiber :
+      (Finset.univ :
+          Finset (V13RealLinearAdaptiveQRowGeneratedFiber E i₀ seed)).card =
+        ∑ rows : V13RealLinearBudgetedRowset m q,
+          ((Finset.univ :
+              Finset (V13RealLinearAdaptiveQRowGeneratedFiber E i₀ seed)).filter
+            (fun x => f x = rows)).card := by
+    simpa [f] using
+      (Finset.card_eq_sum_card_fiberwise
+        (s := (Finset.univ :
+          Finset (V13RealLinearAdaptiveQRowGeneratedFiber E i₀ seed)))
+        (t := (Finset.univ : Finset (V13RealLinearBudgetedRowset m q)))
+        (f := f)
+        (by intro x _hx; exact Finset.mem_univ _))
+  calc
+    Fintype.card (V13RealLinearAdaptiveQRowGeneratedFiber E i₀ seed) =
+        (Finset.univ :
+          Finset (V13RealLinearAdaptiveQRowGeneratedFiber E i₀ seed)).card :=
+      rfl
+    _ =
+        ∑ rows : V13RealLinearBudgetedRowset m q,
+          ((Finset.univ :
+              Finset (V13RealLinearAdaptiveQRowGeneratedFiber E i₀ seed)).filter
+            (fun x => f x = rows)).card := hfiber
+    _ =
+        ∑ rows : V13RealLinearBudgetedRowset m q,
+          Fintype.card
+            (V13RealLinearAdaptiveQRowGeneratedBudgetedRowsetCell
+              E i₀ seed rows) := by
+      apply Finset.sum_congr rfl
+      intro rows _hrows
+      change
+        ((Finset.univ :
+            Finset (V13RealLinearAdaptiveQRowGeneratedFiber E i₀ seed)).filter
+          (fun x => f x = rows)).card =
+              Fintype.card
+            {x : V13RealLinearAdaptiveQRowGeneratedFiber E i₀ seed //
+              f x = rows}
+      rw [Fintype.card_subtype]
+
+noncomputable def
+    v13RealLinearAdaptiveQRowGeneratedBudgetedRowsetCellEquivFiber
+    {m q : Nat} {Seed : Type*}
+    (E : V13RealLinearAdaptiveQRowExperiment m q Seed)
+    (i₀ : Fin m) (seed : Seed) (rows : V13RealLinearBudgetedRowset m q)
+    (hgen :
+      V13RealLinearRowsGenerateTarget (E.sampleA seed) rows.1 i₀) :
+    V13RealLinearAdaptiveQRowGeneratedBudgetedRowsetCell E i₀ seed rows ≃
+      V13RealLinearAdaptiveQRowRowsetFiber E seed rows.1 where
+  toFun x := ⟨x.val.val, congrArg Subtype.val x.property⟩
+  invFun x := by
+    exact
+      ⟨⟨x.val, by
+          change
+            V13RealLinearRowsGenerateTarget
+              (E.sampleA seed) (E.branchRows (seed, x.val)) i₀
+          simpa [x.property] using hgen⟩,
+        Subtype.ext x.property⟩
+  left_inv x := by
+    apply Subtype.ext
+    apply Subtype.ext
+    rfl
+  right_inv x := by
+    apply Subtype.ext
+    rfl
+
+theorem
+    v13RealLinearAdaptiveQRowGeneratedBudgetedRowsetCell_card_eq_fiber_of_rowsGenerateTarget
+    {m q : Nat} {Seed : Type*} [Fintype Seed]
+    (E : V13RealLinearAdaptiveQRowExperiment m q Seed)
+    (i₀ : Fin m) (seed : Seed) (rows : V13RealLinearBudgetedRowset m q)
+    (hgen :
+      V13RealLinearRowsGenerateTarget (E.sampleA seed) rows.1 i₀) :
+    Fintype.card
+        (V13RealLinearAdaptiveQRowGeneratedBudgetedRowsetCell
+          E i₀ seed rows) =
+      Fintype.card
+        (V13RealLinearAdaptiveQRowRowsetFiber E seed rows.1) := by
+  classical
+  exact
+    Fintype.card_congr
+      (v13RealLinearAdaptiveQRowGeneratedBudgetedRowsetCellEquivFiber
+        E i₀ seed rows hgen)
+
+theorem
+    v13RealLinearAdaptiveQRowGeneratedBudgetedRowsetCell_card_eq_zero_of_not_rowsGenerateTarget
+    {m q : Nat} {Seed : Type*} [Fintype Seed]
+    (E : V13RealLinearAdaptiveQRowExperiment m q Seed)
+    (i₀ : Fin m) (seed : Seed) (rows : V13RealLinearBudgetedRowset m q)
+    (hgen :
+      ¬ V13RealLinearRowsGenerateTarget (E.sampleA seed) rows.1 i₀) :
+    Fintype.card
+        (V13RealLinearAdaptiveQRowGeneratedBudgetedRowsetCell
+          E i₀ seed rows) = 0 := by
+  classical
+  rw [Fintype.card_eq_zero_iff]
+  exact
+    ⟨fun x =>
+      hgen
+        (by
+          have hxrows : E.branchRows (seed, x.val.val) = rows.1 :=
+            congrArg Subtype.val x.property
+          simpa [V13RealLinearAdaptiveQRowExperiment.generated, hxrows]
+            using x.val.property)⟩
+
+theorem
+    v13RealLinearAdaptiveQRow_budgetedRowsetCell_sum_eq_targetGeneratingRowsetFibers
+    {m q : Nat} {Seed : Type*} [Fintype Seed]
+    (E : V13RealLinearAdaptiveQRowExperiment m q Seed)
+    (i₀ : Fin m) (seed : Seed) :
+    (∑ rows : V13RealLinearBudgetedRowset m q,
+      Fintype.card
+        (V13RealLinearAdaptiveQRowGeneratedBudgetedRowsetCell
+          E i₀ seed rows)) =
+      ∑ rows :
+        {rows : V13RealLinearBudgetedRowset m q //
+          V13RealLinearRowsGenerateTarget (E.sampleA seed) rows.1 i₀},
+        Fintype.card
+          (V13RealLinearAdaptiveQRowRowsetFiber E seed rows.1.1) := by
+  classical
+  let p : V13RealLinearBudgetedRowset m q → Prop := fun rows =>
+    V13RealLinearRowsGenerateTarget (E.sampleA seed) rows.1 i₀
+  let f : V13RealLinearBudgetedRowset m q → Nat := fun rows =>
+    Fintype.card
+      (V13RealLinearAdaptiveQRowGeneratedBudgetedRowsetCell
+        E i₀ seed rows)
+  let g : V13RealLinearBudgetedRowset m q → Nat := fun rows =>
+    Fintype.card (V13RealLinearAdaptiveQRowRowsetFiber E seed rows.1)
+  have hsplit :
+      (∑ rows : V13RealLinearBudgetedRowset m q, f rows) =
+        (∑ rows : {rows : V13RealLinearBudgetedRowset m q // p rows},
+          f rows.val) +
+          ∑ rows : {rows : V13RealLinearBudgetedRowset m q // ¬ p rows},
+            f rows.val := by
+    simpa [p, f] using
+      (Fintype.sum_subtype_add_sum_subtype p f).symm
+  have hgood :
+      (∑ rows : {rows : V13RealLinearBudgetedRowset m q // p rows},
+          f rows.val) =
+        ∑ rows : {rows : V13RealLinearBudgetedRowset m q // p rows},
+          g rows.val := by
+    apply Finset.sum_congr rfl
+    intro rows _
+    dsimp [f, g]
+    exact
+      v13RealLinearAdaptiveQRowGeneratedBudgetedRowsetCell_card_eq_fiber_of_rowsGenerateTarget
+        E i₀ seed rows.val rows.property
+  have hbad :
+      (∑ rows : {rows : V13RealLinearBudgetedRowset m q // ¬ p rows},
+          f rows.val) = 0 := by
+    apply Finset.sum_eq_zero
+    intro rows _
+    dsimp [f]
+    exact
+      v13RealLinearAdaptiveQRowGeneratedBudgetedRowsetCell_card_eq_zero_of_not_rowsGenerateTarget
+        E i₀ seed rows.val rows.property
+  calc
+    (∑ rows : V13RealLinearBudgetedRowset m q,
+      Fintype.card
+        (V13RealLinearAdaptiveQRowGeneratedBudgetedRowsetCell
+          E i₀ seed rows)) =
+        ∑ rows : V13RealLinearBudgetedRowset m q, f rows := rfl
+    _ =
+        (∑ rows : {rows : V13RealLinearBudgetedRowset m q // p rows},
+          f rows.val) +
+          ∑ rows : {rows : V13RealLinearBudgetedRowset m q // ¬ p rows},
+            f rows.val := hsplit
+    _ =
+        ∑ rows : {rows : V13RealLinearBudgetedRowset m q // p rows},
+          g rows.val := by
+      rw [hgood, hbad, Nat.add_zero]
+    _ =
+      ∑ rows :
+        {rows : V13RealLinearBudgetedRowset m q //
+          V13RealLinearRowsGenerateTarget (E.sampleA seed) rows.1 i₀},
+        Fintype.card
+          (V13RealLinearAdaptiveQRowRowsetFiber E seed rows.1.1) := rfl
+
+theorem
+    v13RealLinearAdaptiveQRowGenerated_card_eq_sum_targetGeneratingBudgetedRowsetFibers
+    {m q : Nat} {Seed : Type*} [Fintype Seed]
+    (E : V13RealLinearAdaptiveQRowExperiment m q Seed) (i₀ : Fin m) :
+    Fintype.card (V13RealLinearAdaptiveQRowGenerated E i₀) =
+      ∑ seed : Seed,
+        ∑ rows :
+          {rows : V13RealLinearBudgetedRowset m q //
+            V13RealLinearRowsGenerateTarget (E.sampleA seed) rows.1 i₀},
+          Fintype.card
+            (V13RealLinearAdaptiveQRowRowsetFiber E seed rows.1.1) := by
+  classical
+  rw [v13RealLinearAdaptiveQRowGenerated_card_eq_sum_fibers E i₀]
+  apply Finset.sum_congr rfl
+  intro seed _hseed
+  calc
+    Fintype.card (V13RealLinearAdaptiveQRowGeneratedFiber E i₀ seed) =
+        ∑ rows : V13RealLinearBudgetedRowset m q,
+          Fintype.card
+            (V13RealLinearAdaptiveQRowGeneratedBudgetedRowsetCell
+              E i₀ seed rows) := by
+        exact
+          v13RealLinearAdaptiveQRowGeneratedFiber_card_eq_sum_budgetedRowsetCells
+            E i₀ seed
+    _ =
+        ∑ rows :
+          {rows : V13RealLinearBudgetedRowset m q //
+            V13RealLinearRowsGenerateTarget (E.sampleA seed) rows.1 i₀},
+          Fintype.card
+            (V13RealLinearAdaptiveQRowRowsetFiber E seed rows.1.1) := by
+        exact
+          v13RealLinearAdaptiveQRow_budgetedRowsetCell_sum_eq_targetGeneratingRowsetFibers
+            E i₀ seed
+
 theorem v13RealLinearAdaptiveQRow_rowsetProduct_eq_sum_transcriptCells
     {m q : Nat} {Seed : Type*} [Fintype Seed]
     (E : V13RealLinearAdaptiveQRowExperiment m q Seed) (i₀ : Fin m)
@@ -4115,6 +4501,114 @@ theorem v13RealLinearAdaptiveQRow_world_card_eq_correct_add_incorrect
 noncomputable def v13RealLinearQRowEpsilon (q m : Nat) : Rat :=
   (2 ^ q : Rat) / (2 ^ m : Rat)
 
+/-- Explicit deferred-decision error term for q row reads after paying a
+constant-factor transfer from fully uniform rows to certified invertible maps. -/
+noncomputable def v13RealLinearQRowDeferredDecisionEpsilon
+    (q m : Nat) : Rat :=
+  ((4 * (2 ^ q - 1) : Nat) : Rat) / (2 ^ m : Rat)
+
+theorem v13RealLinearQRowDeferredDecisionEpsilon_nonnegative
+    (q m : Nat) :
+    0 ≤ v13RealLinearQRowDeferredDecisionEpsilon q m := by
+  unfold v13RealLinearQRowDeferredDecisionEpsilon
+  positivity
+
+theorem v13RealLinearQRowEpsilon_le_deferredDecisionEpsilon_of_pos
+    {q m : Nat} (hq : 0 < q) :
+    v13RealLinearQRowEpsilon q m ≤
+      v13RealLinearQRowDeferredDecisionEpsilon q m := by
+  unfold v13RealLinearQRowEpsilon
+  unfold v13RealLinearQRowDeferredDecisionEpsilon
+  let P := 2 ^ q
+  have hPtwo : 2 ≤ P := by
+    dsimp [P]
+    simpa using
+      (Nat.pow_le_pow_right (by norm_num : 1 ≤ 2)
+        (Nat.succ_le_of_lt hq) : 2 ^ 1 ≤ 2 ^ q)
+  have hP :
+      P ≤ 4 * (P - 1) := by
+    omega
+  have hnum : ((2 ^ q : Nat) : Rat) ≤
+      ((4 * (2 ^ q - 1) : Nat) : Rat) := by
+    simpa [P] using (show (P : Rat) ≤ (4 * (P - 1) : Nat) by
+      exact_mod_cast hP)
+  have hden : 0 < (2 ^ m : Rat) := by
+    positivity
+  have hqrat : (2 : Rat) ^ q = ((2 ^ q : Nat) : Rat) := by
+    norm_num
+  rw [hqrat]
+  rw [div_le_div_iff₀ hden hden]
+  exact mul_le_mul_of_nonneg_right hnum (le_of_lt hden)
+
+def V13RealLinearAdaptiveDeferredDecisionGeneratedMassBound
+    {m q : Nat} {Seed : Type*} [Fintype Seed]
+    (E : V13RealLinearAdaptiveQRowExperiment m q Seed)
+    (i₀ : Fin m) : Prop :=
+  v13RealLinearAdaptiveQRowGeneratedMass E i₀ ≤
+    v13RealLinearQRowDeferredDecisionEpsilon q m
+
+def V13RealLinearAdaptiveDeferredDecisionCountingBound
+    {m q : Nat} {Seed : Type*} [Fintype Seed]
+    (E : V13RealLinearAdaptiveQRowExperiment m q Seed)
+    (i₀ : Fin m) : Prop :=
+  Fintype.card (V13RealLinearAdaptiveQRowGenerated E i₀) * 2 ^ m ≤
+    (4 * (2 ^ q - 1)) *
+      Fintype.card (V13RealLinearAdaptiveQRowWorld m Seed)
+
+theorem
+    v13RealLinearAdaptiveDeferredDecisionGeneratedMassBound_of_counting
+    {m q : Nat} {Seed : Type*} [Fintype Seed]
+    (E : V13RealLinearAdaptiveQRowExperiment m q Seed)
+    (i₀ : Fin m)
+    (hcount :
+      V13RealLinearAdaptiveDeferredDecisionCountingBound E i₀) :
+    V13RealLinearAdaptiveDeferredDecisionGeneratedMassBound E i₀ := by
+  classical
+  unfold V13RealLinearAdaptiveDeferredDecisionGeneratedMassBound
+  unfold V13RealLinearAdaptiveDeferredDecisionCountingBound at hcount
+  unfold v13RealLinearAdaptiveQRowGeneratedMass
+  unfold v13RealLinearQRowDeferredDecisionEpsilon
+  let G := Fintype.card (V13RealLinearAdaptiveQRowGenerated E i₀)
+  let T := Fintype.card (V13RealLinearAdaptiveQRowWorld m Seed)
+  let Q := 4 * (2 ^ q - 1)
+  let M := 2 ^ m
+  have hcard : G * M ≤ Q * T := by
+    simpa [G, T, Q, M] using hcount
+  have hMposNat : 0 < M := by
+    dsimp [M]
+    positivity
+  have hMpos : (0 : Rat) < (M : Rat) := by
+    exact_mod_cast hMposNat
+  have hcardRat : (G : Rat) * (M : Rat) ≤ (Q : Rat) * (T : Rat) := by
+    exact_mod_cast hcard
+  have hMrat : (2 : Rat) ^ m = (M : Rat) := by
+    dsimp [M]
+    norm_num
+  rw [hMrat]
+  change (G : Rat) / (T : Rat) ≤ (Q : Rat) / (M : Rat)
+  by_cases hTzero : T = 0
+  · have hGleT : G ≤ T := by
+      dsimp [G, T, V13RealLinearAdaptiveQRowGenerated]
+      change
+        Fintype.card
+            {omega : V13RealLinearAdaptiveQRowWorld m Seed //
+              E.generated i₀ omega} ≤
+          Fintype.card (V13RealLinearAdaptiveQRowWorld m Seed)
+      exact
+        Fintype.card_subtype_le
+          (fun omega : V13RealLinearAdaptiveQRowWorld m Seed =>
+            E.generated i₀ omega)
+    have hGzero : G = 0 :=
+      Nat.eq_zero_of_le_zero (by simpa [hTzero] using hGleT)
+    have hnonneg : 0 ≤ (Q : Rat) / (M : Rat) := by
+      positivity
+    simpa [hGzero, hTzero] using hnonneg
+  · have hTposNat : 0 < T := Nat.pos_of_ne_zero hTzero
+    have hTpos : (0 : Rat) < (T : Rat) := by
+      exact_mod_cast hTposNat
+    rw [div_le_div_iff₀ hTpos hMpos]
+    exact hcardRat
+
 theorem v13RealLinearAdaptiveQRowGeneratedMass_le_one
     {m q : Nat} {Seed : Type*} [Fintype Seed]
     (E : V13RealLinearAdaptiveQRowExperiment m q Seed) (i₀ : Fin m) :
@@ -4366,6 +4860,36 @@ theorem v13RealLinear_adaptive_qrow_success_bound_of_spanCounting
     exact hcount
   linarith
 
+theorem v13RealLinear_adaptive_qrow_success_bound_of_deferredDecision
+    {m q : Nat} {Seed : Type*} [Fintype Seed]
+    (E : V13RealLinearAdaptiveQRowExperiment m q Seed) (i₀ : Fin m)
+    (hcount :
+      V13RealLinearAdaptiveDeferredDecisionGeneratedMassBound E i₀) :
+    v13RealLinearAdaptiveQRowSuccess E i₀ ≤
+      (1 / 2 : Rat) + v13RealLinearQRowDeferredDecisionEpsilon q m := by
+  unfold V13RealLinearAdaptiveDeferredDecisionGeneratedMassBound at hcount
+  have hflip := v13RealLinear_adaptiveKernelFlipSurchargeBound E i₀
+  unfold V13RealLinearAdaptiveKernelFlipSurchargeBound at hflip
+  have hblocked :
+      v13RealLinearAdaptiveQRowBlockedMass E i₀ ≤
+        v13RealLinearQRowDeferredDecisionEpsilon q m := by
+    rw [v13RealLinearAdaptiveQRowBlockedMass_eq_generatedMass E i₀]
+    exact hcount
+  linarith
+
+theorem
+    v13RealLinear_adaptive_qrow_success_bound_of_deferredDecisionCounting
+    {m q : Nat} {Seed : Type*} [Fintype Seed]
+    (E : V13RealLinearAdaptiveQRowExperiment m q Seed) (i₀ : Fin m)
+    (hcount :
+      V13RealLinearAdaptiveDeferredDecisionCountingBound E i₀) :
+    v13RealLinearAdaptiveQRowSuccess E i₀ ≤
+      (1 / 2 : Rat) + v13RealLinearQRowDeferredDecisionEpsilon q m := by
+  exact
+    v13RealLinear_adaptive_qrow_success_bound_of_deferredDecision E i₀
+      (v13RealLinearAdaptiveDeferredDecisionGeneratedMassBound_of_counting
+        E i₀ hcount)
+
 theorem v13RealLinear_uniform_adaptive_qrow_success_bound_of_spanCounting
     {m q : Nat} (observer : V13RealLinearAdaptiveRowObserver m q)
     (i₀ : Fin m)
@@ -4386,6 +4910,43 @@ theorem v13RealLinear_uniform_causal_qrow_success_bound_of_spanCounting
       (1 / 2 : Rat) + v13RealLinearQRowEpsilon q m := by
   exact
     v13RealLinear_adaptive_qrow_success_bound_of_spanCounting
+      (v13RealLinearUniformCausalQRowExperiment observer) i₀ hcount
+
+def V13RealLinearUniformCausalDeferredDecisionGeneratedMassBound
+    {m q : Nat} (observer : V13RealLinearCausalRowObserver m q)
+    (i₀ : Fin m) : Prop :=
+  V13RealLinearAdaptiveDeferredDecisionGeneratedMassBound
+    (v13RealLinearUniformCausalQRowExperiment observer) i₀
+
+def V13RealLinearUniformCausalDeferredDecisionCountingBound
+    {m q : Nat} (observer : V13RealLinearCausalRowObserver m q)
+    (i₀ : Fin m) : Prop :=
+  V13RealLinearAdaptiveDeferredDecisionCountingBound
+    (v13RealLinearUniformCausalQRowExperiment observer) i₀
+
+theorem
+    v13RealLinear_uniform_causal_qrow_success_bound_of_deferredDecision
+    {m q : Nat} (observer : V13RealLinearCausalRowObserver m q)
+    (i₀ : Fin m)
+    (hcount :
+      V13RealLinearUniformCausalDeferredDecisionGeneratedMassBound
+        observer i₀) :
+    v13RealLinearUniformCausalQRowSuccess observer i₀ ≤
+      (1 / 2 : Rat) + v13RealLinearQRowDeferredDecisionEpsilon q m := by
+  exact
+    v13RealLinear_adaptive_qrow_success_bound_of_deferredDecision
+      (v13RealLinearUniformCausalQRowExperiment observer) i₀ hcount
+
+theorem
+    v13RealLinear_uniform_causal_qrow_success_bound_of_deferredDecisionCounting
+    {m q : Nat} (observer : V13RealLinearCausalRowObserver m q)
+    (i₀ : Fin m)
+    (hcount :
+      V13RealLinearUniformCausalDeferredDecisionCountingBound observer i₀) :
+    v13RealLinearUniformCausalQRowSuccess observer i₀ ≤
+      (1 / 2 : Rat) + v13RealLinearQRowDeferredDecisionEpsilon q m := by
+  exact
+    v13RealLinear_adaptive_qrow_success_bound_of_deferredDecisionCounting
       (v13RealLinearUniformCausalQRowExperiment observer) i₀ hcount
 
 theorem v13RealLinear_uniform_zero_row_success_bound
@@ -4506,6 +5067,53 @@ def V13RealLinearUniformCausalTwoOrMoreCompletionCountingBound : Prop :=
       2 ^ q *
         Fintype.card
           (V13RealLinearAdaptiveQRowWorld m (V13F2LinearEquiv m))
+
+/-- Deferred-decision cardinal form of the residual causal counting problem.
+Compared with the sharper completion-counting hard core, this version pays the
+explicit constant-factor transfer term `4 * (2^q - 1)`. -/
+def V13RealLinearUniformCausalTwoOrMoreDeferredDecisionCountingBound :
+    Prop :=
+  ∀ {m q : Nat} (observer : V13RealLinearCausalRowObserver m q)
+    (i₀ : Fin m),
+    1 < q → q < m →
+      V13RealLinearUniformCausalDeferredDecisionCountingBound observer i₀
+
+theorem
+    V13RealLinearUniformCausalTwoOrMoreDeferredDecisionCountingBound_of_completionCounting
+    (hcount : V13RealLinearUniformCausalTwoOrMoreCompletionCountingBound) :
+    V13RealLinearUniformCausalTwoOrMoreDeferredDecisionCountingBound := by
+  intro m q observer i₀ hqgt hqm
+  unfold V13RealLinearUniformCausalDeferredDecisionCountingBound
+  unfold V13RealLinearAdaptiveDeferredDecisionCountingBound
+  let E := v13RealLinearUniformCausalQRowExperiment observer
+  let G := Fintype.card (V13RealLinearAdaptiveQRowGenerated E i₀)
+  let T := Fintype.card (V13RealLinearAdaptiveQRowWorld m (V13F2LinearEquiv m))
+  let Q := 2 ^ q
+  let D := 4 * (2 ^ q - 1)
+  have hsharp : G * 2 ^ m ≤ Q * T := by
+    simpa [E, G, T, Q] using hcount observer i₀ hqgt hqm
+  have hqpos : 0 < q := Nat.lt_trans Nat.zero_lt_one hqgt
+  have hQtwo : 2 ≤ Q := by
+    dsimp [Q]
+    simpa using
+      (Nat.pow_le_pow_right (by norm_num : 1 ≤ 2)
+        (Nat.succ_le_of_lt hqpos) : 2 ^ 1 ≤ 2 ^ q)
+  have hfactor : Q ≤ D := by
+    dsimp [D]
+    omega
+  exact hsharp.trans (Nat.mul_le_mul_right T hfactor)
+
+theorem
+    v13RealLinear_uniform_causal_qrow_success_bound_of_twoOrMoreDeferredDecisionCountingBound
+    (hcount :
+      V13RealLinearUniformCausalTwoOrMoreDeferredDecisionCountingBound)
+    {m q : Nat} (observer : V13RealLinearCausalRowObserver m q)
+    (i₀ : Fin m) (hqgt : 1 < q) (hqm : q < m) :
+    v13RealLinearUniformCausalQRowSuccess observer i₀ ≤
+      (1 / 2 : Rat) + v13RealLinearQRowDeferredDecisionEpsilon q m := by
+  exact
+    v13RealLinear_uniform_causal_qrow_success_bound_of_deferredDecisionCounting
+      observer i₀ (hcount observer i₀ hqgt hqm)
 
 /-- Residual coefficient-certificate form after the zero-budget, high-budget,
 and q = 1 cases have been closed. -/
@@ -4669,6 +5277,93 @@ def
               (V13RealLinearAdaptiveQRowRowsetTranscriptCell
                 (v13RealLinearUniformCausalQRowExperiment observer) A
                 rows.1.1 transcript)) ≤
+      2 ^ q * Fintype.card (V13F2LinearEquiv m)
+
+/-- A first-class index for the target-generating transcript cylinders of a
+causal q-row observer.  It records the sampled invertible map, a budgeted
+rowset that spans the target for that map, and the public row transcript on
+that rowset. -/
+abbrev
+    V13RealLinearUniformCausalTargetGeneratingBudgetedRowsetTranscriptCylinderIndex
+    (m q : Nat) (_observer : V13RealLinearCausalRowObserver m q)
+    (i₀ : Fin m) :=
+  Σ A : V13F2LinearEquiv m,
+    Σ rows :
+      {rows : V13RealLinearBudgetedRowset m q //
+        V13RealLinearRowsGenerateTarget A rows.1 i₀},
+      V13RealLinearRowsTranscriptSpace m rows.1.1
+
+/-- The hidden-vector cell cut out by one target-generating transcript
+cylinder. -/
+abbrev V13RealLinearUniformCausalTargetGeneratingBudgetedRowsetTranscriptCylinder
+    {m q : Nat} (observer : V13RealLinearCausalRowObserver m q)
+    (i₀ : Fin m)
+    (cylinder :
+      V13RealLinearUniformCausalTargetGeneratingBudgetedRowsetTranscriptCylinderIndex
+        m q observer i₀) :=
+  V13RealLinearAdaptiveQRowRowsetTranscriptCell
+    (v13RealLinearUniformCausalQRowExperiment observer)
+    cylinder.1 cylinder.2.1.1.1 cylinder.2.2
+
+/-- Active target-generating transcript cylinders: the cylinder is charged by
+capacity only when its hidden-vector cell is inhabited.  This avoids charging
+syntactic transcripts whose row-function part cannot occur for the fixed
+sampled map and rowset. -/
+abbrev
+    V13RealLinearUniformCausalActiveTargetGeneratingBudgetedRowsetTranscriptCylinderIndex
+    (m q : Nat) (observer : V13RealLinearCausalRowObserver m q)
+    (i₀ : Fin m) :=
+  {cylinder :
+    V13RealLinearUniformCausalTargetGeneratingBudgetedRowsetTranscriptCylinderIndex
+      m q observer i₀ //
+    Nonempty
+      (V13RealLinearUniformCausalTargetGeneratingBudgetedRowsetTranscriptCylinder
+        observer i₀ cylinder)}
+
+noncomputable instance
+    v13RealLinearUniformCausalActiveTargetGeneratingBudgetedRowsetTranscriptCylinderIndexFintype
+    {m q : Nat} (observer : V13RealLinearCausalRowObserver m q)
+    (i₀ : Fin m) :
+    Fintype
+      (V13RealLinearUniformCausalActiveTargetGeneratingBudgetedRowsetTranscriptCylinderIndex
+        m q observer i₀) := by
+  classical
+  dsimp
+    [V13RealLinearUniformCausalActiveTargetGeneratingBudgetedRowsetTranscriptCylinderIndex]
+  infer_instance
+
+/-- Causal-cylinder packing form of the residual hard core.  This is the same
+target-generating transcript-cell mass, but with the transcript cylinders made
+first-class so a later packing argument can act directly on them. -/
+def
+    V13RealLinearUniformCausalTwoOrMoreTargetGeneratingBudgetedRowsetTranscriptCylinderPackingBound :
+    Prop :=
+  ∀ {m q : Nat} (observer : V13RealLinearCausalRowObserver m q)
+    (i₀ : Fin m),
+    1 < q → q < m →
+      (∑ cylinder :
+        V13RealLinearUniformCausalTargetGeneratingBudgetedRowsetTranscriptCylinderIndex
+          m q observer i₀,
+        Fintype.card
+          (V13RealLinearUniformCausalTargetGeneratingBudgetedRowsetTranscriptCylinder
+            observer i₀ cylinder)) ≤
+      2 ^ q * Fintype.card (V13F2LinearEquiv m)
+
+/-- Capacity-packing form of the residual hard core.  The proved geometry of a
+fixed transcript cylinder bounds its hidden-vector mass by the number of
+assignments on unread rows.  Only active cylinders are charged: empty syntactic
+transcript cells contribute no hidden-vector mass and should not consume
+capacity. -/
+def
+    V13RealLinearUniformCausalTwoOrMoreTargetGeneratingBudgetedRowsetTranscriptCylinderCapacityBound :
+    Prop :=
+  ∀ {m q : Nat} (observer : V13RealLinearCausalRowObserver m q)
+    (i₀ : Fin m),
+    1 < q → q < m →
+      (∑ cylinder :
+        V13RealLinearUniformCausalActiveTargetGeneratingBudgetedRowsetTranscriptCylinderIndex
+          m q observer i₀,
+        2 ^ (m - cylinder.1.2.1.1.1.card)) ≤
       2 ^ q * Fintype.card (V13F2LinearEquiv m)
 
 /-- Target-generating rowset-fiber version of the residual hard core.  This
@@ -8563,6 +9258,509 @@ theorem
     V13RealLinearUniformCausalTwoOrMoreTargetGeneratingBudgetedRowsetTranscriptCellAverageBound_of_fiberAverage⟩
 
 theorem
+    v13RealLinearUniformCausal_targetGeneratingBudgetedRowsetTranscriptCylinder_sum_eq
+    {m q : Nat} (observer : V13RealLinearCausalRowObserver m q)
+    (i₀ : Fin m) :
+    (∑ cylinder :
+      V13RealLinearUniformCausalTargetGeneratingBudgetedRowsetTranscriptCylinderIndex
+        m q observer i₀,
+      Fintype.card
+        (V13RealLinearUniformCausalTargetGeneratingBudgetedRowsetTranscriptCylinder
+          observer i₀ cylinder)) =
+      ∑ A : V13F2LinearEquiv m,
+        ∑ rows :
+          {rows : V13RealLinearBudgetedRowset m q //
+            V13RealLinearRowsGenerateTarget A rows.1 i₀},
+          ∑ transcript : V13RealLinearRowsTranscriptSpace m rows.1.1,
+            Fintype.card
+              (V13RealLinearAdaptiveQRowRowsetTranscriptCell
+                (v13RealLinearUniformCausalQRowExperiment observer) A
+                rows.1.1 transcript) := by
+  classical
+  dsimp [
+    V13RealLinearUniformCausalTargetGeneratingBudgetedRowsetTranscriptCylinderIndex,
+    V13RealLinearUniformCausalTargetGeneratingBudgetedRowsetTranscriptCylinder]
+  rw [Fintype.sum_sigma]
+  apply Finset.sum_congr rfl
+  intro A _hA
+  rw [Fintype.sum_sigma]
+
+theorem
+    v13RealLinearUniformCausal_targetGeneratingBudgetedRowsetTranscriptCylinder_card_le_capacity
+    {m q : Nat} (observer : V13RealLinearCausalRowObserver m q)
+    (i₀ : Fin m)
+    (cylinder :
+      V13RealLinearUniformCausalTargetGeneratingBudgetedRowsetTranscriptCylinderIndex
+        m q observer i₀) :
+    Fintype.card
+        (V13RealLinearUniformCausalTargetGeneratingBudgetedRowsetTranscriptCylinder
+          observer i₀ cylinder) ≤
+      2 ^ (m - cylinder.2.1.1.1.card) := by
+  classical
+  exact
+    v13RealLinearAdaptiveQRowRowsetTranscriptCell_card_le_unreadAssignments
+      (v13RealLinearUniformCausalQRowExperiment observer)
+      cylinder.1 cylinder.2.1.1.1 cylinder.2.2
+
+noncomputable def
+    v13RealLinearRowsUnreadAssignmentToActiveTargetGeneratingBudgetedRowsetTranscriptCylinder
+    {m q : Nat} (observer : V13RealLinearCausalRowObserver m q)
+    (i₀ : Fin m)
+    (cylinder :
+      V13RealLinearUniformCausalActiveTargetGeneratingBudgetedRowsetTranscriptCylinderIndex
+        m q observer i₀) :
+    V13RealLinearRowsUnreadAssignment m cylinder.1.2.1.1.1 ↪
+      V13RealLinearUniformCausalTargetGeneratingBudgetedRowsetTranscriptCylinder
+        observer i₀ cylinder.1 where
+  toFun assignment := by
+    classical
+    let E := v13RealLinearUniformCausalQRowExperiment observer
+    let A := cylinder.1.1
+    let rows := cylinder.1.2.1.1.1
+    let transcript := cylinder.1.2.2
+    let witness :
+        V13RealLinearUniformCausalTargetGeneratingBudgetedRowsetTranscriptCylinder
+          observer i₀ cylinder.1 :=
+      Classical.choice cylinder.2
+    let b : F2Vec m :=
+      v13RealLinearRowsTranscriptCompletion transcript assignment
+    let z : F2Vec m := A.toEquiv.symm b
+    have htranscriptZ :
+        v13RealLinearRowsTranscript rows
+            (v13RealLinearPublicInput (E.world (A, z))) =
+          transcript := by
+      funext row
+      have hwitnessView :
+          v13RealLinearRowView row.1
+              (v13RealLinearPublicInput
+                (E.world (A, witness.val.val))) =
+            transcript row := by
+        exact congrFun witness.property row
+      apply Prod.ext
+      · simpa [E, V13RealLinearAdaptiveQRowExperiment.world,
+          v13RealLinearRowsTranscript, v13RealLinearRowView,
+          v13RealLinearPublicInput] using congrArg Prod.fst hwitnessView
+      · change
+          ((v13RealLinearUniformCausalQRowExperiment observer).sampleA A).toEquiv
+              z row.1 =
+            (transcript row).2
+        calc
+          ((v13RealLinearUniformCausalQRowExperiment observer).sampleA A).toEquiv
+              z row.1 =
+              A.toEquiv z row.1 := by
+            rfl
+          _ = v13RealLinearRowsTranscriptCompletion transcript assignment row.1 := by
+            simp [z, b]
+          _ = (transcript row).2 :=
+            v13RealLinearRowsTranscriptCompletion_of_mem
+              transcript assignment row.property
+    have hrowsZ : E.branchRows (A, z) = rows := by
+      let publicW :=
+        v13RealLinearPublicInput (E.world (A, witness.val.val))
+      let publicZ :=
+        v13RealLinearPublicInput (E.world (A, z))
+      have hrowsW :
+          observer.rows (observer.branch publicW) = rows := by
+        simpa [E, publicW, V13RealLinearAdaptiveQRowExperiment.branchRows,
+          V13RealLinearAdaptiveQRowExperiment.branch,
+          V13RealLinearAdaptiveQRowExperiment.world,
+          V13RealLinearCausalRowObserver.staticBranch,
+          V13RealLinearCausalRowObserver.toAdaptive,
+          v13RealLinearUniformCausalQRowExperiment,
+          v13RealLinearUniformQRowExperiment] using witness.val.property
+      have hsame :
+          v13RealLinearRowsTranscript
+              (observer.rows (observer.branch publicW)) publicW =
+            v13RealLinearRowsTranscript
+              (observer.rows (observer.branch publicW)) publicZ := by
+        rw [hrowsW]
+        exact witness.property.trans htranscriptZ.symm
+      have hbranch :=
+        observer.branch_eq_of_same_branchRowsTranscript publicW publicZ hsame
+      have hrowsEq := congrArg observer.rows hbranch
+      simpa [E, publicW, publicZ,
+        V13RealLinearAdaptiveQRowExperiment.branchRows,
+        V13RealLinearAdaptiveQRowExperiment.branch,
+        V13RealLinearAdaptiveQRowExperiment.world,
+        V13RealLinearCausalRowObserver.staticBranch,
+        V13RealLinearCausalRowObserver.toAdaptive,
+        v13RealLinearUniformCausalQRowExperiment,
+        v13RealLinearUniformQRowExperiment] using hrowsEq.trans hrowsW
+    exact ⟨⟨z, hrowsZ⟩, htranscriptZ⟩
+  inj' := by
+    classical
+    intro assignment₀ assignment₁ hcell
+    let A := cylinder.1.1
+    let rows := cylinder.1.2.1.1.1
+    let transcript := cylinder.1.2.2
+    funext row
+    have hz :
+        A.toEquiv.symm
+            (v13RealLinearRowsTranscriptCompletion transcript assignment₀) =
+          A.toEquiv.symm
+            (v13RealLinearRowsTranscriptCompletion transcript assignment₁) := by
+      simpa [A, rows, transcript] using
+        congrArg
+          (fun cell :
+            V13RealLinearUniformCausalTargetGeneratingBudgetedRowsetTranscriptCylinder
+              observer i₀ cylinder.1 => cell.val.val)
+          hcell
+    have hA := congrFun (congrArg A.toEquiv hz) row.1
+    simpa [v13RealLinearRowsTranscriptCompletion, row.property] using hA
+
+theorem
+    v13RealLinearUniformCausal_activeTargetGeneratingBudgetedRowsetTranscriptCylinder_capacity_le_card
+    {m q : Nat} (observer : V13RealLinearCausalRowObserver m q)
+    (i₀ : Fin m)
+    (cylinder :
+      V13RealLinearUniformCausalActiveTargetGeneratingBudgetedRowsetTranscriptCylinderIndex
+        m q observer i₀) :
+    2 ^ (m - cylinder.1.2.1.1.1.card) ≤
+      Fintype.card
+        (V13RealLinearUniformCausalTargetGeneratingBudgetedRowsetTranscriptCylinder
+          observer i₀ cylinder.1) := by
+  classical
+  have hle :
+      Fintype.card
+          (V13RealLinearRowsUnreadAssignment m cylinder.1.2.1.1.1) ≤
+        Fintype.card
+          (V13RealLinearUniformCausalTargetGeneratingBudgetedRowsetTranscriptCylinder
+            observer i₀ cylinder.1) :=
+    Fintype.card_le_of_embedding
+      (v13RealLinearRowsUnreadAssignmentToActiveTargetGeneratingBudgetedRowsetTranscriptCylinder
+        observer i₀ cylinder)
+  simpa [v13RealLinearRowsUnreadAssignment_card] using hle
+
+theorem
+    v13RealLinearUniformCausal_activeTargetGeneratingBudgetedRowsetTranscriptCylinder_card_eq_capacity
+    {m q : Nat} (observer : V13RealLinearCausalRowObserver m q)
+    (i₀ : Fin m)
+    (cylinder :
+      V13RealLinearUniformCausalActiveTargetGeneratingBudgetedRowsetTranscriptCylinderIndex
+        m q observer i₀) :
+    Fintype.card
+        (V13RealLinearUniformCausalTargetGeneratingBudgetedRowsetTranscriptCylinder
+          observer i₀ cylinder.1) =
+      2 ^ (m - cylinder.1.2.1.1.1.card) := by
+  exact
+    le_antisymm
+      (v13RealLinearUniformCausal_targetGeneratingBudgetedRowsetTranscriptCylinder_card_le_capacity
+        observer i₀ cylinder.1)
+      (v13RealLinearUniformCausal_activeTargetGeneratingBudgetedRowsetTranscriptCylinder_capacity_le_card
+        observer i₀ cylinder)
+
+theorem
+    V13RealLinearUniformCausalTwoOrMoreTargetGeneratingBudgetedRowsetTranscriptCylinderPackingBound_of_capacity
+    (hcount :
+      V13RealLinearUniformCausalTwoOrMoreTargetGeneratingBudgetedRowsetTranscriptCylinderCapacityBound) :
+    V13RealLinearUniformCausalTwoOrMoreTargetGeneratingBudgetedRowsetTranscriptCylinderPackingBound := by
+  intro m q observer i₀ hqgt hqm
+  classical
+  let Index :=
+    V13RealLinearUniformCausalTargetGeneratingBudgetedRowsetTranscriptCylinderIndex
+      m q observer i₀
+  let Cell : Index → Type :=
+    fun cylinder =>
+      V13RealLinearUniformCausalTargetGeneratingBudgetedRowsetTranscriptCylinder
+        observer i₀ cylinder
+  let active : Index → Prop := fun cylinder => Nonempty (Cell cylinder)
+  let mass : Index → Nat := fun cylinder => Fintype.card (Cell cylinder)
+  let capacity : Index → Nat := fun cylinder =>
+    2 ^ (m - cylinder.2.1.1.1.card)
+  have hcapacity :
+      (∑ cylinder : {cylinder : Index // active cylinder},
+        capacity cylinder.1) ≤
+      2 ^ q * Fintype.card (V13F2LinearEquiv m) :=
+    by
+      simpa [Index, active, capacity, Cell] using
+        hcount observer i₀ hqgt hqm
+  have hsplit :
+      (∑ cylinder : Index, mass cylinder) =
+        (∑ cylinder : {cylinder : Index // active cylinder},
+          mass cylinder.1) +
+          ∑ cylinder : {cylinder : Index // ¬ active cylinder},
+            mass cylinder.1 := by
+    exact (Fintype.sum_subtype_add_sum_subtype active mass).symm
+  have hinactive :
+      (∑ cylinder : {cylinder : Index // ¬ active cylinder},
+          mass cylinder.1) = 0 := by
+    apply Finset.sum_eq_zero
+    intro cylinder _hcylinder
+    dsimp [mass, Cell, active] at *
+    rw [Fintype.card_eq_zero_iff]
+    exact ⟨fun x => cylinder.property ⟨x⟩⟩
+  have hactiveMono :
+      (∑ cylinder : {cylinder : Index // active cylinder},
+          mass cylinder.1) ≤
+        ∑ cylinder : {cylinder : Index // active cylinder},
+          capacity cylinder.1 := by
+    apply Finset.sum_le_sum
+    intro cylinder _hcylinder
+    dsimp [mass, capacity, Cell]
+    exact
+      v13RealLinearUniformCausal_targetGeneratingBudgetedRowsetTranscriptCylinder_card_le_capacity
+        observer i₀ cylinder.1
+  have hmassActive :
+      (∑ cylinder : Index, mass cylinder) =
+        ∑ cylinder : {cylinder : Index // active cylinder},
+          mass cylinder.1 := by
+    calc
+      (∑ cylinder : Index, mass cylinder) =
+          (∑ cylinder : {cylinder : Index // active cylinder},
+            mass cylinder.1) +
+            ∑ cylinder : {cylinder : Index // ¬ active cylinder},
+              mass cylinder.1 := hsplit
+      _ =
+          (∑ cylinder : {cylinder : Index // active cylinder},
+            mass cylinder.1) + 0 := by rw [hinactive]
+      _ =
+          ∑ cylinder : {cylinder : Index // active cylinder},
+            mass cylinder.1 := by simp
+  calc
+    (∑ cylinder :
+      V13RealLinearUniformCausalTargetGeneratingBudgetedRowsetTranscriptCylinderIndex
+        m q observer i₀,
+      Fintype.card
+        (V13RealLinearUniformCausalTargetGeneratingBudgetedRowsetTranscriptCylinder
+          observer i₀ cylinder)) =
+        ∑ cylinder : Index, mass cylinder := rfl
+    _ =
+        ∑ cylinder : {cylinder : Index // active cylinder},
+          mass cylinder.1 := hmassActive
+    _ ≤
+        ∑ cylinder : {cylinder : Index // active cylinder},
+          capacity cylinder.1 := hactiveMono
+    _ ≤ 2 ^ q * Fintype.card (V13F2LinearEquiv m) := hcapacity
+
+theorem
+    V13RealLinearUniformCausalTwoOrMoreTargetGeneratingBudgetedRowsetTranscriptCylinderCapacityBound_of_packing
+    (hpack :
+      V13RealLinearUniformCausalTwoOrMoreTargetGeneratingBudgetedRowsetTranscriptCylinderPackingBound) :
+    V13RealLinearUniformCausalTwoOrMoreTargetGeneratingBudgetedRowsetTranscriptCylinderCapacityBound := by
+  intro m q observer i₀ hqgt hqm
+  classical
+  let Index :=
+    V13RealLinearUniformCausalTargetGeneratingBudgetedRowsetTranscriptCylinderIndex
+      m q observer i₀
+  let Cell : Index → Type :=
+    fun cylinder =>
+      V13RealLinearUniformCausalTargetGeneratingBudgetedRowsetTranscriptCylinder
+        observer i₀ cylinder
+  let active : Index → Prop := fun cylinder => Nonempty (Cell cylinder)
+  let mass : Index → Nat := fun cylinder => Fintype.card (Cell cylinder)
+  let capacity : Index → Nat := fun cylinder =>
+    2 ^ (m - cylinder.2.1.1.1.card)
+  have hpackRaw :
+      (∑ cylinder : Index, mass cylinder) ≤
+      2 ^ q * Fintype.card (V13F2LinearEquiv m) := by
+    simpa [Index, mass, Cell] using hpack observer i₀ hqgt hqm
+  have hsplit :
+      (∑ cylinder : Index, mass cylinder) =
+        (∑ cylinder : {cylinder : Index // active cylinder},
+          mass cylinder.1) +
+          ∑ cylinder : {cylinder : Index // ¬ active cylinder},
+            mass cylinder.1 := by
+    exact (Fintype.sum_subtype_add_sum_subtype active mass).symm
+  have hactiveLeAll :
+      (∑ cylinder : {cylinder : Index // active cylinder},
+          mass cylinder.1) ≤
+        ∑ cylinder : Index, mass cylinder := by
+    rw [hsplit]
+    exact Nat.le_add_right _ _
+  have hcapacityEqMass :
+      (∑ cylinder : {cylinder : Index // active cylinder},
+          capacity cylinder.1) =
+        ∑ cylinder : {cylinder : Index // active cylinder},
+          mass cylinder.1 := by
+    apply Finset.sum_congr rfl
+    intro cylinder _hcylinder
+    dsimp [capacity, mass, Cell]
+    exact
+      (v13RealLinearUniformCausal_activeTargetGeneratingBudgetedRowsetTranscriptCylinder_card_eq_capacity
+        observer i₀ cylinder).symm
+  calc
+    (∑ cylinder :
+      V13RealLinearUniformCausalActiveTargetGeneratingBudgetedRowsetTranscriptCylinderIndex
+        m q observer i₀,
+      2 ^ (m - cylinder.1.2.1.1.1.card)) =
+        ∑ cylinder : {cylinder : Index // active cylinder},
+          capacity cylinder.1 := by
+      rfl
+    _ =
+        ∑ cylinder : {cylinder : Index // active cylinder},
+          mass cylinder.1 := hcapacityEqMass
+    _ ≤ ∑ cylinder : Index, mass cylinder := hactiveLeAll
+    _ ≤ 2 ^ q * Fintype.card (V13F2LinearEquiv m) := hpackRaw
+
+theorem
+    V13RealLinearUniformCausalTwoOrMoreTargetGeneratingBudgetedRowsetTranscriptCylinderCapacityBound_iff_packing :
+    V13RealLinearUniformCausalTwoOrMoreTargetGeneratingBudgetedRowsetTranscriptCylinderCapacityBound ↔
+      V13RealLinearUniformCausalTwoOrMoreTargetGeneratingBudgetedRowsetTranscriptCylinderPackingBound :=
+  ⟨V13RealLinearUniformCausalTwoOrMoreTargetGeneratingBudgetedRowsetTranscriptCylinderPackingBound_of_capacity,
+    V13RealLinearUniformCausalTwoOrMoreTargetGeneratingBudgetedRowsetTranscriptCylinderCapacityBound_of_packing⟩
+
+theorem
+    V13RealLinearUniformCausalTwoOrMoreTargetGeneratingBudgetedRowsetTranscriptCylinderPackingBound_of_transcriptCellAverage
+    (hcount :
+      V13RealLinearUniformCausalTwoOrMoreTargetGeneratingBudgetedRowsetTranscriptCellAverageBound) :
+    V13RealLinearUniformCausalTwoOrMoreTargetGeneratingBudgetedRowsetTranscriptCylinderPackingBound := by
+  intro m q observer i₀ hqgt hqm
+  have hsum :
+      (∑ A : V13F2LinearEquiv m,
+        ∑ rows :
+          {rows : V13RealLinearBudgetedRowset m q //
+            V13RealLinearRowsGenerateTarget A rows.1 i₀},
+          ∑ transcript : V13RealLinearRowsTranscriptSpace m rows.1.1,
+            Fintype.card
+              (V13RealLinearAdaptiveQRowRowsetTranscriptCell
+                (v13RealLinearUniformCausalQRowExperiment observer) A
+                rows.1.1 transcript)) ≤
+      2 ^ q * Fintype.card (V13F2LinearEquiv m) :=
+    hcount observer i₀ hqgt hqm
+  calc
+    (∑ cylinder :
+      V13RealLinearUniformCausalTargetGeneratingBudgetedRowsetTranscriptCylinderIndex
+        m q observer i₀,
+      Fintype.card
+        (V13RealLinearUniformCausalTargetGeneratingBudgetedRowsetTranscriptCylinder
+          observer i₀ cylinder)) =
+        ∑ A : V13F2LinearEquiv m,
+          ∑ rows :
+            {rows : V13RealLinearBudgetedRowset m q //
+              V13RealLinearRowsGenerateTarget A rows.1 i₀},
+            ∑ transcript : V13RealLinearRowsTranscriptSpace m rows.1.1,
+              Fintype.card
+                (V13RealLinearAdaptiveQRowRowsetTranscriptCell
+                  (v13RealLinearUniformCausalQRowExperiment observer) A
+                  rows.1.1 transcript) := by
+        exact
+          v13RealLinearUniformCausal_targetGeneratingBudgetedRowsetTranscriptCylinder_sum_eq
+            observer i₀
+    _ ≤ 2 ^ q * Fintype.card (V13F2LinearEquiv m) := hsum
+
+theorem
+    V13RealLinearUniformCausalTwoOrMoreTargetGeneratingBudgetedRowsetTranscriptCellAverageBound_of_cylinderPacking
+    (hcount :
+      V13RealLinearUniformCausalTwoOrMoreTargetGeneratingBudgetedRowsetTranscriptCylinderPackingBound) :
+    V13RealLinearUniformCausalTwoOrMoreTargetGeneratingBudgetedRowsetTranscriptCellAverageBound := by
+  intro m q observer i₀ hqgt hqm
+  have hsum :
+      (∑ cylinder :
+        V13RealLinearUniformCausalTargetGeneratingBudgetedRowsetTranscriptCylinderIndex
+          m q observer i₀,
+        Fintype.card
+          (V13RealLinearUniformCausalTargetGeneratingBudgetedRowsetTranscriptCylinder
+            observer i₀ cylinder)) ≤
+      2 ^ q * Fintype.card (V13F2LinearEquiv m) :=
+    hcount observer i₀ hqgt hqm
+  calc
+    (∑ A : V13F2LinearEquiv m,
+        ∑ rows :
+          {rows : V13RealLinearBudgetedRowset m q //
+            V13RealLinearRowsGenerateTarget A rows.1 i₀},
+          ∑ transcript : V13RealLinearRowsTranscriptSpace m rows.1.1,
+            Fintype.card
+              (V13RealLinearAdaptiveQRowRowsetTranscriptCell
+                (v13RealLinearUniformCausalQRowExperiment observer) A
+                rows.1.1 transcript)) =
+        ∑ cylinder :
+          V13RealLinearUniformCausalTargetGeneratingBudgetedRowsetTranscriptCylinderIndex
+            m q observer i₀,
+          Fintype.card
+            (V13RealLinearUniformCausalTargetGeneratingBudgetedRowsetTranscriptCylinder
+              observer i₀ cylinder) := by
+        exact
+          (v13RealLinearUniformCausal_targetGeneratingBudgetedRowsetTranscriptCylinder_sum_eq
+            observer i₀).symm
+    _ ≤ 2 ^ q * Fintype.card (V13F2LinearEquiv m) := hsum
+
+theorem
+    V13RealLinearUniformCausalTwoOrMoreTargetGeneratingBudgetedRowsetTranscriptCylinderPackingBound_iff_transcriptCellAverage :
+    V13RealLinearUniformCausalTwoOrMoreTargetGeneratingBudgetedRowsetTranscriptCylinderPackingBound ↔
+      V13RealLinearUniformCausalTwoOrMoreTargetGeneratingBudgetedRowsetTranscriptCellAverageBound :=
+  ⟨V13RealLinearUniformCausalTwoOrMoreTargetGeneratingBudgetedRowsetTranscriptCellAverageBound_of_cylinderPacking,
+    V13RealLinearUniformCausalTwoOrMoreTargetGeneratingBudgetedRowsetTranscriptCylinderPackingBound_of_transcriptCellAverage⟩
+
+theorem
+    V13RealLinearUniformCausalTwoOrMoreTargetGeneratingBudgetedRowsetFiberAverageBound_of_cylinderPacking
+    (hcount :
+      V13RealLinearUniformCausalTwoOrMoreTargetGeneratingBudgetedRowsetTranscriptCylinderPackingBound) :
+    V13RealLinearUniformCausalTwoOrMoreTargetGeneratingBudgetedRowsetFiberAverageBound :=
+  V13RealLinearUniformCausalTwoOrMoreTargetGeneratingBudgetedRowsetFiberAverageBound_of_transcriptCellAverage
+    (V13RealLinearUniformCausalTwoOrMoreTargetGeneratingBudgetedRowsetTranscriptCellAverageBound_of_cylinderPacking
+      hcount)
+
+theorem
+    V13RealLinearUniformCausalTwoOrMoreTargetGeneratingBudgetedRowsetTranscriptCylinderPackingBound_of_fiberAverage
+    (hcount :
+      V13RealLinearUniformCausalTwoOrMoreTargetGeneratingBudgetedRowsetFiberAverageBound) :
+    V13RealLinearUniformCausalTwoOrMoreTargetGeneratingBudgetedRowsetTranscriptCylinderPackingBound :=
+  V13RealLinearUniformCausalTwoOrMoreTargetGeneratingBudgetedRowsetTranscriptCylinderPackingBound_of_transcriptCellAverage
+    (V13RealLinearUniformCausalTwoOrMoreTargetGeneratingBudgetedRowsetTranscriptCellAverageBound_of_fiberAverage
+      hcount)
+
+theorem
+    V13RealLinearUniformCausalTwoOrMoreTargetGeneratingBudgetedRowsetTranscriptCylinderPackingBound_iff_fiberAverage :
+    V13RealLinearUniformCausalTwoOrMoreTargetGeneratingBudgetedRowsetTranscriptCylinderPackingBound ↔
+      V13RealLinearUniformCausalTwoOrMoreTargetGeneratingBudgetedRowsetFiberAverageBound :=
+  ⟨V13RealLinearUniformCausalTwoOrMoreTargetGeneratingBudgetedRowsetFiberAverageBound_of_cylinderPacking,
+    V13RealLinearUniformCausalTwoOrMoreTargetGeneratingBudgetedRowsetTranscriptCylinderPackingBound_of_fiberAverage⟩
+
+theorem
+    V13RealLinearUniformCausalTwoOrMoreTargetGeneratingBudgetedRowsetFiberAverageBound_of_completionCounting
+    (hcount :
+      V13RealLinearUniformCausalTwoOrMoreCompletionCountingBound) :
+    V13RealLinearUniformCausalTwoOrMoreTargetGeneratingBudgetedRowsetFiberAverageBound := by
+  intro m q observer i₀ hqgt hqm
+  let E := v13RealLinearUniformCausalQRowExperiment observer
+  let G := Fintype.card (V13RealLinearAdaptiveQRowGenerated E i₀)
+  let Q := 2 ^ q
+  let S := Fintype.card (V13F2LinearEquiv m)
+  let M := 2 ^ m
+  let T := Fintype.card
+    (V13RealLinearAdaptiveQRowWorld m (V13F2LinearEquiv m))
+  have hGsum :
+      G =
+        ∑ A : V13F2LinearEquiv m,
+          ∑ rows :
+            {rows : V13RealLinearBudgetedRowset m q //
+              V13RealLinearRowsGenerateTarget (E.sampleA A) rows.1 i₀},
+            Fintype.card
+              (V13RealLinearAdaptiveQRowRowsetFiber E A rows.1.1) := by
+    simpa [G] using
+      v13RealLinearAdaptiveQRowGenerated_card_eq_sum_targetGeneratingBudgetedRowsetFibers
+        E i₀
+  have hworld : T = S * M := by
+    dsimp [T, S, M, V13RealLinearAdaptiveQRowWorld]
+    rw [Fintype.card_prod]
+    rw [v13RealLinear_f2vec_card m]
+  have hraw : G * M ≤ Q * T := by
+    simpa [E, G, Q, M, T] using hcount observer i₀ hqgt hqm
+  have hmul : G * M ≤ (Q * S) * M := by
+    simpa [hworld, Nat.mul_assoc, Nat.mul_left_comm, Nat.mul_comm] using hraw
+  have hMpos : 0 < M := by
+    dsimp [M]
+    positivity
+  have hG : G ≤ Q * S := Nat.le_of_mul_le_mul_right hmul hMpos
+  change
+    (∑ A : V13F2LinearEquiv m,
+        ∑ rows :
+          {rows : V13RealLinearBudgetedRowset m q //
+            V13RealLinearRowsGenerateTarget (E.sampleA A) rows.1 i₀},
+          Fintype.card
+            (V13RealLinearAdaptiveQRowRowsetFiber E A rows.1.1)) ≤
+      Q * S
+  calc
+    (∑ A : V13F2LinearEquiv m,
+        ∑ rows :
+          {rows : V13RealLinearBudgetedRowset m q //
+            V13RealLinearRowsGenerateTarget (E.sampleA A) rows.1 i₀},
+          Fintype.card
+            (V13RealLinearAdaptiveQRowRowsetFiber E A rows.1.1)) =
+        G := hGsum.symm
+    _ ≤ Q * S := hG
+
+theorem
     V13RealLinearUniformCausalTwoOrMoreTargetCoefficientBudgetedRowsetTranscriptProductCellCorrectAverageBound_of_productCellAverage
     (hcount :
       V13RealLinearUniformCausalTwoOrMoreTargetCoefficientBudgetedRowsetTranscriptProductCellAverageBound) :
@@ -8678,6 +9876,23 @@ theorem
   V13RealLinearUniformCausalTwoOrMoreCompletionCountingBound_of_targetCoefficientBudgetedRowsetTranscriptProductAverage
     (V13RealLinearUniformCausalTwoOrMoreTargetCoefficientBudgetedRowsetTranscriptProductAverageBound_of_budgetedRowsetTranscriptProductCellAverage
       hcount)
+
+theorem
+    V13RealLinearUniformCausalTwoOrMoreCompletionCountingBound_of_targetGeneratingBudgetedRowsetFiberAverage
+    (hcount :
+      V13RealLinearUniformCausalTwoOrMoreTargetGeneratingBudgetedRowsetFiberAverageBound) :
+    V13RealLinearUniformCausalTwoOrMoreCompletionCountingBound :=
+  V13RealLinearUniformCausalTwoOrMoreCompletionCountingBound_of_targetCoefficientBudgetedRowsetTranscriptProductCellAverage
+    (V13RealLinearUniformCausalTwoOrMoreTargetCoefficientBudgetedRowsetTranscriptProductCellAverageBound_of_targetGeneratingTranscriptCellAverage
+      (V13RealLinearUniformCausalTwoOrMoreTargetGeneratingBudgetedRowsetTranscriptCellAverageBound_of_fiberAverage
+        hcount))
+
+theorem
+    V13RealLinearUniformCausalTwoOrMoreCompletionCountingBound_iff_targetGeneratingBudgetedRowsetFiberAverage :
+    V13RealLinearUniformCausalTwoOrMoreCompletionCountingBound ↔
+      V13RealLinearUniformCausalTwoOrMoreTargetGeneratingBudgetedRowsetFiberAverageBound :=
+  ⟨V13RealLinearUniformCausalTwoOrMoreTargetGeneratingBudgetedRowsetFiberAverageBound_of_completionCounting,
+    V13RealLinearUniformCausalTwoOrMoreCompletionCountingBound_of_targetGeneratingBudgetedRowsetFiberAverage⟩
 
 theorem
     V13RealLinearUniformCausalTwoOrMoreCompletionCountingBound_of_fiberAverageCoefficient
@@ -8935,6 +10150,32 @@ theorem
       (1 / 2 : Rat) + v13RealLinearQRowEpsilon q m :=
   v13RealLinear_uniform_causal_qrow_success_bound_of_twoOrMoreTargetGeneratingBudgetedRowsetTranscriptCellAverageBound
     (V13RealLinearUniformCausalTwoOrMoreTargetGeneratingBudgetedRowsetTranscriptCellAverageBound_of_fiberAverage
+      hcount)
+    observer i₀
+
+theorem
+    v13RealLinear_uniform_causal_qrow_success_bound_of_twoOrMoreTargetGeneratingBudgetedRowsetTranscriptCylinderPackingBound
+    (hcount :
+      V13RealLinearUniformCausalTwoOrMoreTargetGeneratingBudgetedRowsetTranscriptCylinderPackingBound)
+    {m q : Nat} (observer : V13RealLinearCausalRowObserver m q)
+    (i₀ : Fin m) :
+    v13RealLinearUniformCausalQRowSuccess observer i₀ ≤
+      (1 / 2 : Rat) + v13RealLinearQRowEpsilon q m :=
+  v13RealLinear_uniform_causal_qrow_success_bound_of_twoOrMoreTargetGeneratingBudgetedRowsetFiberAverageBound
+    (V13RealLinearUniformCausalTwoOrMoreTargetGeneratingBudgetedRowsetFiberAverageBound_of_cylinderPacking
+      hcount)
+    observer i₀
+
+theorem
+    v13RealLinear_uniform_causal_qrow_success_bound_of_twoOrMoreTargetGeneratingBudgetedRowsetTranscriptCylinderCapacityBound
+    (hcount :
+      V13RealLinearUniformCausalTwoOrMoreTargetGeneratingBudgetedRowsetTranscriptCylinderCapacityBound)
+    {m q : Nat} (observer : V13RealLinearCausalRowObserver m q)
+    (i₀ : Fin m) :
+    v13RealLinearUniformCausalQRowSuccess observer i₀ ≤
+      (1 / 2 : Rat) + v13RealLinearQRowEpsilon q m :=
+  v13RealLinear_uniform_causal_qrow_success_bound_of_twoOrMoreTargetGeneratingBudgetedRowsetTranscriptCylinderPackingBound
+    (V13RealLinearUniformCausalTwoOrMoreTargetGeneratingBudgetedRowsetTranscriptCylinderPackingBound_of_capacity
       hcount)
     observer i₀
 
