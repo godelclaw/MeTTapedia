@@ -1110,15 +1110,19 @@ theorem currentPNPV13RealRungOneAdaptiveRows_node :
 theorem currentPNPV13RealRungOneQRowBound_node :
     (∀ {m q : Nat} {Seed : Type*} [Fintype Seed]
       (E : V13RealLinearAdaptiveQRowExperiment m q Seed) (i₀ : Fin m),
-      V13RealLinearAdaptiveKernelFlipSurchargeBound E i₀ →
+      V13RealLinearAdaptiveKernelFlipSurchargeBound E i₀) ∧
+      (∀ {m q : Nat} {Seed : Type*} [Fintype Seed]
+        (E : V13RealLinearAdaptiveQRowExperiment m q Seed) (i₀ : Fin m),
         V13RealLinearAdaptiveRowSpanCountingBound E i₀ →
-          v13RealLinearAdaptiveQRowSuccess E i₀ ≤
-            (1 / 2 : Rat) + v13RealLinearQRowEpsilon q m) ∧
+            v13RealLinearAdaptiveQRowSuccess E i₀ ≤
+              (1 / 2 : Rat) + v13RealLinearQRowEpsilon q m) ∧
       (∀ q m : Nat, 0 ≤ v13RealLinearQRowEpsilon q m) := by
   exact
-    ⟨fun E i₀ hflip hcount =>
+    ⟨fun E i₀ =>
+        v13RealLinear_adaptiveKernelFlipSurchargeBound E i₀,
+      fun E i₀ hcount =>
         v13RealLinear_adaptive_qrow_success_bound_of_spanCounting
-          E i₀ hflip hcount,
+          E i₀ hcount,
       v13RealLinear_qrow_epsilon_nonnegative⟩
 
 theorem currentPNPV13ObserverLadder_node :
