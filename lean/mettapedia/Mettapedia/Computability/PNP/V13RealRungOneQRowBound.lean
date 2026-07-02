@@ -4335,6 +4335,79 @@ theorem v13RealLinear_uniform_causal_qrow_success_bound_one_two_one
     observer (1 : Fin 2)
     (v13RealLinearUniformCausalRowSpanCountingBound_one_two_one observer)
 
+theorem v13RealLinearUniformCausalOneRowActiveRowPairExclusion_two
+    (observer : V13RealLinearCausalRowObserver 2 1) (i₀ : Fin 2)
+    (row₀ row₁ :
+      V13RealLinearUniformOneRowGeneratedRowIndex
+        observer.toAdaptive i₀) :
+    row₀.val = row₁.val := by
+  fin_cases i₀
+  · exact
+      v13RealLinearUniformCausalOneRowActiveRowPairExclusion_two_zero
+        observer row₀ row₁
+  · exact
+      v13RealLinearUniformCausalOneRowActiveRowPairExclusion_two_one
+        observer row₀ row₁
+
+theorem
+    v13RealLinearUniformCausalOneRowActiveRowIndexBound_one_two
+    (observer : V13RealLinearCausalRowObserver 2 1) (i₀ : Fin 2) :
+    Fintype.card
+        (V13RealLinearUniformOneRowGeneratedRowIndex
+          observer.toAdaptive i₀) ≤ 1 := by
+  fin_cases i₀
+  · exact
+      v13RealLinearUniformCausalOneRowActiveRowIndexBound_two_zero observer
+  · exact
+      v13RealLinearUniformCausalOneRowActiveRowIndexBound_two_one observer
+
+theorem
+    v13RealLinearUniformCausalOneRowActiveBitCylinderIndexBound_one_two
+    (observer : V13RealLinearCausalRowObserver 2 1) (i₀ : Fin 2) :
+    Fintype.card
+        (V13RealLinearUniformOneRowGeneratedCylinderIndex
+          observer.toAdaptive i₀) ≤ 2 := by
+  fin_cases i₀
+  · exact
+      v13RealLinearUniformCausalOneRowActiveBitCylinderIndexBound_two_zero
+        observer
+  · exact
+      v13RealLinearUniformCausalOneRowActiveBitCylinderIndexBound_two_one
+        observer
+
+theorem
+    v13RealLinearUniformCausalOneRowGenerated_counting_one_two
+    (observer : V13RealLinearCausalRowObserver 2 1) (i₀ : Fin 2) :
+    Fintype.card
+        (V13RealLinearAdaptiveQRowGenerated
+          (v13RealLinearUniformCausalQRowExperiment observer) i₀) *
+        2 ^ 2 ≤
+      2 ^ 1 *
+        Fintype.card
+          (V13RealLinearAdaptiveQRowWorld 2 (V13F2LinearEquiv 2)) := by
+  fin_cases i₀
+  · exact v13RealLinearUniformCausalOneRowGenerated_counting_two_zero observer
+  · exact v13RealLinearUniformCausalOneRowGenerated_counting_two_one observer
+
+theorem v13RealLinearUniformCausalRowSpanCountingBound_one_two
+    (observer : V13RealLinearCausalRowObserver 2 1) (i₀ : Fin 2) :
+    V13RealLinearUniformCausalRowSpanCountingBound observer i₀ := by
+  fin_cases i₀
+  · exact
+      v13RealLinearUniformCausalRowSpanCountingBound_one_two_zero observer
+  · exact
+      v13RealLinearUniformCausalRowSpanCountingBound_one_two_one observer
+
+theorem v13RealLinear_uniform_causal_qrow_success_bound_one_two
+    (observer : V13RealLinearCausalRowObserver 2 1) (i₀ : Fin 2) :
+    v13RealLinearUniformCausalQRowSuccess observer i₀ ≤
+      (1 / 2 : Rat) + v13RealLinearQRowEpsilon 1 2 := by
+  fin_cases i₀
+  · exact
+      v13RealLinear_uniform_causal_qrow_success_bound_one_two_zero observer
+  · exact
+      v13RealLinear_uniform_causal_qrow_success_bound_one_two_one observer
+
 noncomputable def v13RealLinearFixedTargetRowOccurrenceZeroEmbedding :
     V13RealLinearUniformFixedTargetRowOccurrence
         (0 : Fin 2) (0 : Fin 2) ↪
