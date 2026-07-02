@@ -4671,6 +4671,26 @@ def
                 rows.1.1 transcript)) ≤
       2 ^ q * Fintype.card (V13F2LinearEquiv m)
 
+/-- Target-generating rowset-fiber version of the residual hard core.  This
+collapses the transcript-cell partition inside each target-generating budgeted
+rowset; only the number of hidden vectors whose causal branch realizes that
+rowset remains. -/
+def
+    V13RealLinearUniformCausalTwoOrMoreTargetGeneratingBudgetedRowsetFiberAverageBound :
+    Prop :=
+  ∀ {m q : Nat} (observer : V13RealLinearCausalRowObserver m q)
+    (i₀ : Fin m),
+    1 < q → q < m →
+      (∑ A : V13F2LinearEquiv m,
+        ∑ rows :
+          {rows : V13RealLinearBudgetedRowset m q //
+            V13RealLinearRowsGenerateTarget A rows.1 i₀},
+          Fintype.card
+            (V13RealLinearAdaptiveQRowRowsetFiber
+              (v13RealLinearUniformCausalQRowExperiment observer) A
+              rows.1.1)) ≤
+      2 ^ q * Fintype.card (V13F2LinearEquiv m)
+
 /-- Correct-cell version of the transcript-indexed budgeted product-cell hard
 core.  This counts only correct elements inside each generated transcript
 product cell. -/
@@ -8450,6 +8470,99 @@ theorem
     V13RealLinearUniformCausalTwoOrMoreTargetCoefficientBudgetedRowsetTranscriptProductCellAverageBound_of_targetGeneratingTranscriptCellAverage⟩
 
 theorem
+    V13RealLinearUniformCausalTwoOrMoreTargetGeneratingBudgetedRowsetTranscriptCellAverageBound_of_fiberAverage
+    (hcount :
+      V13RealLinearUniformCausalTwoOrMoreTargetGeneratingBudgetedRowsetFiberAverageBound) :
+    V13RealLinearUniformCausalTwoOrMoreTargetGeneratingBudgetedRowsetTranscriptCellAverageBound := by
+  intro m q observer i₀ hqgt hqm
+  let E := v13RealLinearUniformCausalQRowExperiment observer
+  let Q := 2 ^ q
+  let S := Fintype.card (V13F2LinearEquiv m)
+  have hsum :
+      (∑ A : V13F2LinearEquiv m,
+        ∑ rows :
+          {rows : V13RealLinearBudgetedRowset m q //
+            V13RealLinearRowsGenerateTarget A rows.1 i₀},
+          Fintype.card
+            (V13RealLinearAdaptiveQRowRowsetFiber E A rows.1.1)) ≤
+      Q * S := by
+    simpa [E, Q, S] using hcount observer i₀ hqgt hqm
+  calc
+    (∑ A : V13F2LinearEquiv m,
+        ∑ rows :
+          {rows : V13RealLinearBudgetedRowset m q //
+            V13RealLinearRowsGenerateTarget A rows.1 i₀},
+          ∑ transcript : V13RealLinearRowsTranscriptSpace m rows.1.1,
+            Fintype.card
+              (V13RealLinearAdaptiveQRowRowsetTranscriptCell
+                E A rows.1.1 transcript)) =
+        ∑ A : V13F2LinearEquiv m,
+          ∑ rows :
+            {rows : V13RealLinearBudgetedRowset m q //
+              V13RealLinearRowsGenerateTarget A rows.1 i₀},
+            Fintype.card
+              (V13RealLinearAdaptiveQRowRowsetFiber E A rows.1.1) := by
+      apply Finset.sum_congr rfl
+      intro A _
+      apply Finset.sum_congr rfl
+      intro rows _
+      exact
+        (v13RealLinearAdaptiveQRowRowsetFiber_card_eq_sum_transcriptCells
+          E A rows.1.1).symm
+    _ ≤ Q * S := hsum
+
+theorem
+    V13RealLinearUniformCausalTwoOrMoreTargetGeneratingBudgetedRowsetFiberAverageBound_of_transcriptCellAverage
+    (hcount :
+      V13RealLinearUniformCausalTwoOrMoreTargetGeneratingBudgetedRowsetTranscriptCellAverageBound) :
+    V13RealLinearUniformCausalTwoOrMoreTargetGeneratingBudgetedRowsetFiberAverageBound := by
+  intro m q observer i₀ hqgt hqm
+  let E := v13RealLinearUniformCausalQRowExperiment observer
+  let Q := 2 ^ q
+  let S := Fintype.card (V13F2LinearEquiv m)
+  have hsum :
+      (∑ A : V13F2LinearEquiv m,
+        ∑ rows :
+          {rows : V13RealLinearBudgetedRowset m q //
+            V13RealLinearRowsGenerateTarget A rows.1 i₀},
+          ∑ transcript : V13RealLinearRowsTranscriptSpace m rows.1.1,
+            Fintype.card
+              (V13RealLinearAdaptiveQRowRowsetTranscriptCell
+                E A rows.1.1 transcript)) ≤
+      Q * S := by
+    simpa [E, Q, S] using hcount observer i₀ hqgt hqm
+  calc
+    (∑ A : V13F2LinearEquiv m,
+        ∑ rows :
+          {rows : V13RealLinearBudgetedRowset m q //
+            V13RealLinearRowsGenerateTarget A rows.1 i₀},
+          Fintype.card
+            (V13RealLinearAdaptiveQRowRowsetFiber E A rows.1.1)) =
+        ∑ A : V13F2LinearEquiv m,
+          ∑ rows :
+            {rows : V13RealLinearBudgetedRowset m q //
+              V13RealLinearRowsGenerateTarget A rows.1 i₀},
+            ∑ transcript : V13RealLinearRowsTranscriptSpace m rows.1.1,
+              Fintype.card
+                (V13RealLinearAdaptiveQRowRowsetTranscriptCell
+                  E A rows.1.1 transcript) := by
+      apply Finset.sum_congr rfl
+      intro A _
+      apply Finset.sum_congr rfl
+      intro rows _
+      exact
+        v13RealLinearAdaptiveQRowRowsetFiber_card_eq_sum_transcriptCells
+          E A rows.1.1
+    _ ≤ Q * S := hsum
+
+theorem
+    V13RealLinearUniformCausalTwoOrMoreTargetGeneratingBudgetedRowsetTranscriptCellAverageBound_iff_fiberAverage :
+    V13RealLinearUniformCausalTwoOrMoreTargetGeneratingBudgetedRowsetTranscriptCellAverageBound ↔
+      V13RealLinearUniformCausalTwoOrMoreTargetGeneratingBudgetedRowsetFiberAverageBound :=
+  ⟨V13RealLinearUniformCausalTwoOrMoreTargetGeneratingBudgetedRowsetFiberAverageBound_of_transcriptCellAverage,
+    V13RealLinearUniformCausalTwoOrMoreTargetGeneratingBudgetedRowsetTranscriptCellAverageBound_of_fiberAverage⟩
+
+theorem
     V13RealLinearUniformCausalTwoOrMoreTargetCoefficientBudgetedRowsetTranscriptProductCellCorrectAverageBound_of_productCellAverage
     (hcount :
       V13RealLinearUniformCausalTwoOrMoreTargetCoefficientBudgetedRowsetTranscriptProductCellAverageBound) :
@@ -8809,6 +8922,19 @@ theorem
       (1 / 2 : Rat) + v13RealLinearQRowEpsilon q m :=
   v13RealLinear_uniform_causal_qrow_success_bound_of_twoOrMoreTargetCoefficientBudgetedRowsetTranscriptProductCellAverageBound
     (V13RealLinearUniformCausalTwoOrMoreTargetCoefficientBudgetedRowsetTranscriptProductCellAverageBound_of_targetGeneratingTranscriptCellAverage
+      hcount)
+    observer i₀
+
+theorem
+    v13RealLinear_uniform_causal_qrow_success_bound_of_twoOrMoreTargetGeneratingBudgetedRowsetFiberAverageBound
+    (hcount :
+      V13RealLinearUniformCausalTwoOrMoreTargetGeneratingBudgetedRowsetFiberAverageBound)
+    {m q : Nat} (observer : V13RealLinearCausalRowObserver m q)
+    (i₀ : Fin m) :
+    v13RealLinearUniformCausalQRowSuccess observer i₀ ≤
+      (1 / 2 : Rat) + v13RealLinearQRowEpsilon q m :=
+  v13RealLinear_uniform_causal_qrow_success_bound_of_twoOrMoreTargetGeneratingBudgetedRowsetTranscriptCellAverageBound
+    (V13RealLinearUniformCausalTwoOrMoreTargetGeneratingBudgetedRowsetTranscriptCellAverageBound_of_fiberAverage
       hcount)
     observer i₀
 
