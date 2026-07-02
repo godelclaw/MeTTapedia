@@ -64,12 +64,15 @@ route as an append fibration rather than a per-representative sweep.  The
 latest route is `ChainFiberAppendQuotientFibrationLift` together with
 `concreteChainFiberAppendQuotientFibrationClosed`: each appended fixed-input
 fiber may project to an arbitrary connected finite base, and the fibration
-fields carry the lifted Kempe motion.  The theorem
-`semanticFrontierStateSufficientForChain_of_append_quotient_fibration` proves
-final semantic sufficiency from that append-quotient hook and the existing
-singleton concrete seeds.  The fixed-prefix route remains available as a
-sufficient stronger route, but the quotient route is the current surface for
-finite per-input interface or trace-pair mobility.
+fields carry the lifted Kempe motion.  The field-level target
+`concreteChainFiberAppendQuotientFibrationFieldsClosed` splits the route into
+same-base fiber reach, lifted base steps, and connected quotient-base
+connectivity.  The theorem
+`semanticFrontierStateSufficientForChain_of_append_quotient_fields` proves
+final semantic sufficiency from those fields and the existing singleton
+concrete seeds.  The fixed-prefix route remains available as a sufficient
+stronger route, but the quotient route is the current surface for finite
+per-input interface or trace-pair mobility.
 
 `GoertzelLemma818SemanticProgress.lean` now records the checked semantic
 frontier after the completed `TTT` target.  It proves
