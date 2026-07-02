@@ -2796,6 +2796,53 @@ theorem v13RealLinearAdaptiveQRow_rowsetProduct_eq_sum_transcriptCells
     E seed rows]
   rw [Finset.sum_mul]
 
+theorem
+    v13RealLinearUniformCausal_rowsetTranscriptCell_branch_eq
+    {m q : Nat} (observer : V13RealLinearCausalRowObserver m q)
+    (A : V13F2LinearEquiv m) (rows : Finset (Fin m))
+    (transcript : V13RealLinearRowsTranscriptSpace m rows)
+    (x y :
+      V13RealLinearAdaptiveQRowRowsetTranscriptCell
+        (v13RealLinearUniformCausalQRowExperiment observer) A rows
+        transcript) :
+    (v13RealLinearUniformCausalQRowExperiment observer).branch
+        (A, x.val.val) =
+      (v13RealLinearUniformCausalQRowExperiment observer).branch
+        (A, y.val.val) := by
+  let E := v13RealLinearUniformCausalQRowExperiment observer
+  let publicX :=
+    v13RealLinearPublicInput (E.world (A, x.val.val))
+  let publicY :=
+    v13RealLinearPublicInput (E.world (A, y.val.val))
+  have hrowsX :
+      observer.rows (observer.branch publicX) = rows := by
+    simpa [E, publicX, V13RealLinearAdaptiveQRowExperiment.branchRows,
+      V13RealLinearAdaptiveQRowExperiment.branch,
+      V13RealLinearAdaptiveQRowExperiment.world,
+      V13RealLinearCausalRowObserver.staticBranch,
+      V13RealLinearCausalRowObserver.toAdaptive,
+      v13RealLinearUniformCausalQRowExperiment,
+      v13RealLinearUniformQRowExperiment] using x.val.property
+  have htransRows :
+      v13RealLinearRowsTranscript rows publicX =
+        v13RealLinearRowsTranscript rows publicY := by
+    exact x.property.trans y.property.symm
+  have hsame :
+      v13RealLinearRowsTranscript
+          (observer.rows (observer.branch publicX)) publicX =
+        v13RealLinearRowsTranscript
+          (observer.rows (observer.branch publicX)) publicY := by
+    rw [hrowsX]
+    exact htransRows
+  have hbranch :=
+    observer.branch_eq_of_same_branchRowsTranscript publicX publicY hsame
+  simpa [E, publicX, publicY,
+    V13RealLinearAdaptiveQRowExperiment.branch,
+    V13RealLinearAdaptiveQRowExperiment.world,
+    V13RealLinearCausalRowObserver.toAdaptive,
+    v13RealLinearUniformCausalQRowExperiment,
+    v13RealLinearUniformQRowExperiment] using hbranch.symm
+
 noncomputable def
     v13RealLinearAdaptiveQRowGeneratedTargetCoefficientRowsetCellEquivProduct
     {m q : Nat} {Seed : Type*}
