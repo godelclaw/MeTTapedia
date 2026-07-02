@@ -222,6 +222,10 @@ The same-trace case is now factored again:
 single appended-gadget audit reach at the fixed local input trace and equal
 output trace, while `concreteChainFiberAppendRelativeSingletonLiftClosed` is
 the separate lift that prefixes that local reach with the frozen chain prefix.
+The singleton reach side is closed by
+`concreteChainFiberAppendSameTraceRelativeSingletonReachClosed_of_singleton_seeds`,
+which reuses the existing singleton fibration seeds; the remaining same-trace
+work is the prefix lift.
 `concreteChainFiberAppendFixedPrefixLastReachClosed_of_interface_trace_cases`
 and `concreteChainFiberAppendRawPrefixReachClosed_of_interface_trace_cases`
 assemble those two cases back into the existing sufficiency route.
