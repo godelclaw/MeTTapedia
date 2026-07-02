@@ -104,6 +104,15 @@ The path-row variant
 explicit row witnesses for same-base fiber reachability and lifted base-step
 paths, then implies final sufficiency through
 `semanticFrontierStateSufficientForChain_of_append_quotient_path_rows`.
+The length-two base now has a concrete fibration seed bridge:
+`ChainWordConcreteFibrationCertificate.ofChainAudit` turns the checked
+`chainLKRInAudit` Boolean into concrete fixed-input fibration certificates,
+`concreteChainWordFibrationLengthTwoSeeds_ok` covers `TT`, `TM`, `MT`, and
+`MM`, and
+`concreteChainFiberAppendQuotientFibrationParentRowsLengthTwoSeeds_ok`
+instantiates the parent-rows append fields for every singleton append and
+fixed input.  This closes the length-two parent-rows field surface only; the
+arbitrary append theorem remains the semantic composition target.
 
 `GoertzelLemma818SemanticProgress.lean` now records the checked semantic
 frontier after the completed `TTT` target.  It proves

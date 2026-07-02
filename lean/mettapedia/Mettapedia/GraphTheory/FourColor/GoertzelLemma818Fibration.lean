@@ -360,6 +360,45 @@ theorem connected
 
 end ParentRowsSymmetricRootedConnectedCertificate
 
+def unitParentRowsSymmetricRootedConnectedCertificate
+    (step : Unit → Unit → Prop) :
+    @ParentRowsSymmetricRootedConnectedCertificate Unit inferInstance step :=
+  let row : ParentMapRow step :=
+    { source := ()
+      parent := ()
+      stepOrSelf := Or.inl rfl }
+  { nodes := [()]
+    root := ()
+    rows := [row]
+    maxDepth := 0
+    stepSymmetric := by
+      intro x y hstep
+      cases x
+      cases y
+      exact hstep
+    covers := by
+      intro x
+      cases x
+      simp
+    rowSourceMem := by
+      intro row' hrow'
+      simp at hrow'
+      cases hrow'
+      simp
+    rowParentMem := by
+      intro row' hrow'
+      simp at hrow'
+      cases hrow'
+      simp
+    rowForNode := by
+      intro x _hx
+      cases x
+      exact ⟨row, by simp [row], rfl⟩
+    reachesRootOfMem := by
+      intro x _hx
+      cases x
+      rfl }
+
 /--
 A directed parent-row certificate for one reachability proof.
 

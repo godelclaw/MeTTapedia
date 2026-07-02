@@ -208,6 +208,15 @@ base-step paths, implying final sufficiency via
 Thus finite per-input interface or trace-pair mobility can serve directly as
 base connectivity, while any necessary prefix motion is absorbed by the
 quotient base rather than forced through a fixed-prefix last-state invariant.
+The length-two base has now been discharged at the concrete fibration layer:
+`ChainWordConcreteFibrationCertificate.ofChainAudit` lifts a checked
+`chainLKRInAudit` Boolean to concrete fixed-input fibration certificates,
+`concreteChainWordFibrationLengthTwoSeeds_ok` covers `TT`, `TM`, `MT`, and
+`MM`, and
+`concreteChainFiberAppendQuotientFibrationParentRowsLengthTwoSeeds_ok`
+instantiates the parent-rows append fields for all singleton appends and fixed
+inputs.  This is a base checkpoint for the parent-rows route, not the arbitrary
+append theorem.
 The same-prefix closure side is now separated from prefix mobility:
 `concreteChainFiberAppendPrefixSelfLiftClosureClosed_of_lift` derives a closed
 appended representative over the current prefix from the lift-closure theorem
