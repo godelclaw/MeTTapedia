@@ -286,6 +286,13 @@ last-gadget non-glued edges
 (`concreteChainFiberAppendRelativeSingletonShiftedSwitchLastNonGluedPointClosed`),
 and glued-input edges
 (`concreteChainFiberAppendRelativeSingletonShiftedSwitchLastGluedPointClosed`).
+The prefix-edge branch now has the occurrence-separation lemmas
+`concreteChainFiberAppendShiftComponent_contains_prefix_false` and
+`concreteChainFiberAppendShiftComponent_contains_canonical_prefix_false`: a
+component shifted into the appended last gadget cannot contain either a prefix
+edge or its canonical representative.  The remaining prefix branch is therefore
+the color-equality bookkeeping for unchanged prefix states, including canonical
+glued-input comparisons via prefix compatibility.
 The closure-under-step side is now reduced by
 `concreteChainFiberAppendRelativeSingletonGlobalStepClosureClosed_of_bounded_saturation`
 to the pure closure-iterator lemma

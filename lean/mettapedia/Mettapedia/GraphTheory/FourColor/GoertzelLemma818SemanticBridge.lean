@@ -1524,6 +1524,50 @@ def concreteChainFiberAppendShiftComponent
     List GoertzelLemma814.ChainEdge :=
   component.map (concreteChainFiberAppendShiftEdge word)
 
+theorem concreteChainFiberAppendShiftComponent_contains_prefix_false
+    (word : List GoertzelLemma818FrontierMode.TauOrient)
+    (component : List GoertzelLemma814.ChainEdge)
+    (ge : GoertzelLemma814.ChainEdge)
+    (hprefix : ge.occ < word.length) :
+    (concreteChainFiberAppendShiftComponent word component).contains ge =
+      false := by
+  apply GoertzelLemma814.bool_false_of_not_true
+  intro hcontains
+  have hmem : ge ∈ concreteChainFiberAppendShiftComponent word component :=
+    List.contains_iff_mem.mp hcontains
+  unfold concreteChainFiberAppendShiftComponent at hmem
+  rcases List.mem_map.mp hmem with ⟨localEdge, _hLocal, hshift⟩
+  have hocc :
+      localEdge.occ + word.length = ge.occ := by
+    simpa [concreteChainFiberAppendShiftEdge] using
+      congrArg GoertzelLemma814.ChainEdge.occ hshift
+  omega
+
+theorem concreteChainFiberAppendShiftComponent_contains_canonical_prefix_false
+    (word : List GoertzelLemma818FrontierMode.TauOrient)
+    (orient : GoertzelLemma818FrontierMode.TauOrient)
+    (component : List GoertzelLemma814.ChainEdge)
+    (ge : GoertzelLemma814.ChainEdge)
+    (hprefix : ge.occ < word.length) :
+    (concreteChainFiberAppendShiftComponent word component).contains
+      (GoertzelLemma814.chainCanonicalEdge
+        (frontierWordToChainWord (word ++ [orient])) ge) = false := by
+  have hcanonicalPrefix :
+      (GoertzelLemma814.chainCanonicalEdge
+        (frontierWordToChainWord (word ++ [orient])) ge).occ < word.length := by
+    unfold GoertzelLemma814.chainCanonicalEdge
+    split
+    · split
+      · simp
+        omega
+      · exact hprefix
+    · exact hprefix
+  exact concreteChainFiberAppendShiftComponent_contains_prefix_false
+    word component
+    (GoertzelLemma814.chainCanonicalEdge
+      (frontierWordToChainWord (word ++ [orient])) ge)
+    hcanonicalPrefix
+
 theorem concreteChainFiberAppendShiftedEdgePresent_of_not_input
     (word : List GoertzelLemma818FrontierMode.TauOrient)
     (orient : GoertzelLemma818FrontierMode.TauOrient)
