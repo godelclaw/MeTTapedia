@@ -56,6 +56,68 @@ def v13RealLinearUniformQRowExperiment {m q : Nat}
   sampleA := id
   observer := observer
 
+/-- Causal q-row observers choose their realized branch from the public row
+transcript of that branch, not from the full sampled map.  This is the refined
+interface needed after the full-map target-row chooser obstruction. -/
+structure V13RealLinearCausalRowObserver (m q : Nat) where
+  Branch : Type
+  branch : V13RealLinearPublic m → Branch
+  rows : Branch → Finset (Fin m)
+  decideFromTranscript :
+    ∀ b : Branch,
+      ({row : Fin m // row ∈ rows b} → V13RealLinearRowView m) → ZMod 2
+  readBudget : ∀ b : Branch, (rows b).card ≤ q
+  branchCausal :
+    ∀ (public₀ public₁ : V13RealLinearPublic m) (b : Branch),
+      branch public₀ = b →
+        v13RealLinearRowsTranscript (rows b) public₀ =
+          v13RealLinearRowsTranscript (rows b) public₁ →
+        branch public₁ = b
+
+def V13RealLinearCausalRowObserver.staticBranch {m q : Nat}
+    (observer : V13RealLinearCausalRowObserver m q)
+    (b : observer.Branch) : V13RealLinearStaticRowObserver m q where
+  rows := observer.rows b
+  decide := fun omega =>
+    observer.decideFromTranscript b
+      (v13RealLinearRowsTranscript (observer.rows b)
+        (v13RealLinearPublicInput omega))
+  readBudget := observer.readBudget b
+  factorsThroughRows := by
+    intro omega₀ omega₁ hsame
+    exact congrArg (observer.decideFromTranscript b) hsame
+
+def V13RealLinearCausalRowObserver.toAdaptive {m q : Nat}
+    (observer : V13RealLinearCausalRowObserver m q) :
+    V13RealLinearAdaptiveRowObserver m q where
+  Branch := observer.Branch
+  branch := fun omega => observer.branch (v13RealLinearPublicInput omega)
+  staticBranch := observer.staticBranch
+  decide := fun omega =>
+    let b := observer.branch (v13RealLinearPublicInput omega)
+    observer.decideFromTranscript b
+      (v13RealLinearRowsTranscript (observer.rows b)
+        (v13RealLinearPublicInput omega))
+  branchDecision := by
+    intro omega
+    rfl
+  branchStable := by
+    intro A x w b hbranch hkernel
+    apply observer.branchCausal
+      (v13RealLinearPublicInput
+        ({ x := x, A := A } : V13RealLinearWorld m))
+      (v13RealLinearPublicInput
+        ({ x := f2AddVec x w, A := A } : V13RealLinearWorld m))
+      b hbranch
+    exact
+      v13RealLinear_same_rowsTranscript_after_kernel_add
+        A x w (observer.rows b) hkernel
+
+noncomputable def v13RealLinearUniformCausalQRowExperiment {m q : Nat}
+    (observer : V13RealLinearCausalRowObserver m q) :
+    V13RealLinearAdaptiveQRowExperiment m q (V13F2LinearEquiv m) :=
+  v13RealLinearUniformQRowExperiment observer.toAdaptive
+
 abbrev V13RealLinearAdaptiveQRowWorld (m : Nat) (Seed : Type*) :=
   Seed × F2Vec m
 
@@ -1430,6 +1492,29 @@ theorem v13RealLinearUniformInvertibleRowSpanCountingBound_of_m_le_q
   v13RealLinearAdaptiveRowSpanCountingBound_of_m_le_q
     (v13RealLinearUniformQRowExperiment observer) i₀ hmq
 
+/-- The refined single remaining pin: under the causal row-query interface,
+the realized branch generates the target functional with mass at most
+`2^q / 2^m`.  The earlier full-map branch interface is intentionally not used
+for the final q-row theorem. -/
+def V13RealLinearUniformCausalRowSpanCountingBound {m q : Nat}
+    (observer : V13RealLinearCausalRowObserver m q) (i₀ : Fin m) : Prop :=
+  V13RealLinearAdaptiveRowSpanCountingBound
+    (v13RealLinearUniformCausalQRowExperiment observer) i₀
+
+theorem v13RealLinearUniformCausalRowSpanCountingBound_of_zero_budget
+    {m : Nat} (observer : V13RealLinearCausalRowObserver m 0)
+    (i₀ : Fin m) :
+    V13RealLinearUniformCausalRowSpanCountingBound observer i₀ :=
+  v13RealLinearAdaptiveRowSpanCountingBound_of_zero_budget
+    (v13RealLinearUniformCausalQRowExperiment observer) i₀
+
+theorem v13RealLinearUniformCausalRowSpanCountingBound_of_m_le_q
+    {m q : Nat} (observer : V13RealLinearCausalRowObserver m q)
+    (i₀ : Fin m) (hmq : m ≤ q) :
+    V13RealLinearUniformCausalRowSpanCountingBound observer i₀ :=
+  v13RealLinearAdaptiveRowSpanCountingBound_of_m_le_q
+    (v13RealLinearUniformCausalQRowExperiment observer) i₀ hmq
+
 theorem v13RealLinear_targetRowObserver_spanCountingBound_fails_two_zero
     (hcard : Fintype.card (V13F2LinearEquiv 2) ≤ 6) :
     ¬ V13RealLinearUniformInvertibleRowSpanCountingBound
@@ -1454,6 +1539,11 @@ noncomputable def v13RealLinearUniformAdaptiveQRowSuccess {m q : Nat}
     (observer : V13RealLinearAdaptiveRowObserver m q) (i₀ : Fin m) : Rat :=
   v13RealLinearAdaptiveQRowSuccess
     (v13RealLinearUniformQRowExperiment observer) i₀
+
+noncomputable def v13RealLinearUniformCausalQRowSuccess {m q : Nat}
+    (observer : V13RealLinearCausalRowObserver m q) (i₀ : Fin m) : Rat :=
+  v13RealLinearAdaptiveQRowSuccess
+    (v13RealLinearUniformCausalQRowExperiment observer) i₀
 
 /-- Kernel-flip branch pairing reduces success to half plus the blocked-branch
 mass.  This is not a pinned counting assumption; it is the arithmetic interface
@@ -1523,6 +1613,17 @@ theorem v13RealLinear_uniform_adaptive_qrow_success_bound_of_spanCounting
     v13RealLinear_adaptive_qrow_success_bound_of_spanCounting
       (v13RealLinearUniformQRowExperiment observer) i₀ hcount
 
+theorem v13RealLinear_uniform_causal_qrow_success_bound_of_spanCounting
+    {m q : Nat} (observer : V13RealLinearCausalRowObserver m q)
+    (i₀ : Fin m)
+    (hcount :
+      V13RealLinearUniformCausalRowSpanCountingBound observer i₀) :
+    v13RealLinearUniformCausalQRowSuccess observer i₀ ≤
+      (1 / 2 : Rat) + v13RealLinearQRowEpsilon q m := by
+  exact
+    v13RealLinear_adaptive_qrow_success_bound_of_spanCounting
+      (v13RealLinearUniformCausalQRowExperiment observer) i₀ hcount
+
 theorem v13RealLinear_uniform_zero_row_success_bound
     {m : Nat} (observer : V13RealLinearAdaptiveRowObserver m 0)
     (i₀ : Fin m) :
@@ -1534,6 +1635,17 @@ theorem v13RealLinear_uniform_zero_row_success_bound
       (v13RealLinearUniformInvertibleRowSpanCountingBound_of_zero_budget
         observer i₀)
 
+theorem v13RealLinear_uniform_causal_zero_row_success_bound
+    {m : Nat} (observer : V13RealLinearCausalRowObserver m 0)
+    (i₀ : Fin m) :
+    v13RealLinearUniformCausalQRowSuccess observer i₀ ≤
+      (1 / 2 : Rat) + v13RealLinearQRowEpsilon 0 m := by
+  exact
+    v13RealLinear_uniform_causal_qrow_success_bound_of_spanCounting
+      observer i₀
+      (v13RealLinearUniformCausalRowSpanCountingBound_of_zero_budget
+        observer i₀)
+
 theorem v13RealLinear_uniform_high_budget_success_bound
     {m q : Nat} (observer : V13RealLinearAdaptiveRowObserver m q)
     (i₀ : Fin m) (hmq : m ≤ q) :
@@ -1543,6 +1655,17 @@ theorem v13RealLinear_uniform_high_budget_success_bound
     v13RealLinear_uniform_adaptive_qrow_success_bound_of_spanCounting
       observer i₀
       (v13RealLinearUniformInvertibleRowSpanCountingBound_of_m_le_q
+        observer i₀ hmq)
+
+theorem v13RealLinear_uniform_causal_high_budget_success_bound
+    {m q : Nat} (observer : V13RealLinearCausalRowObserver m q)
+    (i₀ : Fin m) (hmq : m ≤ q) :
+    v13RealLinearUniformCausalQRowSuccess observer i₀ ≤
+      (1 / 2 : Rat) + v13RealLinearQRowEpsilon q m := by
+  exact
+    v13RealLinear_uniform_causal_qrow_success_bound_of_spanCounting
+      observer i₀
+      (v13RealLinearUniformCausalRowSpanCountingBound_of_m_le_q
         observer i₀ hmq)
 
 theorem v13RealLinear_qrow_epsilon_nonnegative (q m : Nat) :

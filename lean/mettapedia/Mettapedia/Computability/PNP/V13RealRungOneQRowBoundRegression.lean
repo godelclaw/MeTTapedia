@@ -5,7 +5,12 @@ namespace Mettapedia.Computability.PNP
 set_option autoImplicit false
 
 #check V13RealLinearAdaptiveQRowExperiment
+#check V13RealLinearCausalRowObserver
+#check V13RealLinearCausalRowObserver.staticBranch
+#check V13RealLinearCausalRowObserver.toAdaptive
+#check v13RealLinearUniformCausalQRowExperiment
 #check v13RealLinearAdaptiveQRowSuccess
+#check v13RealLinearUniformCausalQRowSuccess
 #check v13RealLinearAdaptiveQRowBlockedMass
 #check v13RealLinearAdaptiveQRowGeneratedMass
 #check v13RealLinearQRowEpsilon
@@ -62,6 +67,9 @@ set_option autoImplicit false
 #check V13RealLinearUniformInvertibleRowSpanCountingBound
 #check v13RealLinearUniformInvertibleRowSpanCountingBound_of_zero_budget
 #check v13RealLinearUniformInvertibleRowSpanCountingBound_of_m_le_q
+#check V13RealLinearUniformCausalRowSpanCountingBound
+#check v13RealLinearUniformCausalRowSpanCountingBound_of_zero_budget
+#check v13RealLinearUniformCausalRowSpanCountingBound_of_m_le_q
 #check v13RealLinear_targetRowObserver_spanCountingBound_fails_two_zero
 #check v13RealLinear_targetRowObserver_spanCountingBound_fails_two_zero_unconditional
 #check v13RealLinearUniformAdaptiveQRowSuccess
@@ -69,8 +77,11 @@ set_option autoImplicit false
 #check v13RealLinear_adaptiveKernelFlipSurchargeBound
 #check v13RealLinear_adaptive_qrow_success_bound_of_spanCounting
 #check v13RealLinear_uniform_adaptive_qrow_success_bound_of_spanCounting
+#check v13RealLinear_uniform_causal_qrow_success_bound_of_spanCounting
 #check v13RealLinear_uniform_zero_row_success_bound
+#check v13RealLinear_uniform_causal_zero_row_success_bound
 #check v13RealLinear_uniform_high_budget_success_bound
+#check v13RealLinear_uniform_causal_high_budget_success_bound
 #check v13RealLinear_qrow_epsilon_nonnegative
 
 def v13RealLinearQRowBoundRegression_staticConstant :
@@ -93,6 +104,21 @@ def v13RealLinearQRowBoundRegression_adaptiveConstant :
     rfl
   branchStable := by
     intro A x w b hbranch hkernel
+    cases b
+    rfl
+
+def v13RealLinearQRowBoundRegression_causalConstant :
+    V13RealLinearCausalRowObserver 2 0 where
+  Branch := Unit
+  branch := fun _ => ()
+  rows := fun _ => ∅
+  decideFromTranscript := fun _ _ => 0
+  readBudget := by
+    intro b
+    cases b
+    simp
+  branchCausal := by
+    intro public₀ public₁ b hbranch htranscript
     cases b
     rfl
 
@@ -127,6 +153,14 @@ theorem v13RealLinearQRowBoundRegression_uniform_conditional_shape
     v13RealLinear_uniform_adaptive_qrow_success_bound_of_spanCounting
       v13RealLinearQRowBoundRegression_adaptiveConstant 0 hcount
 
+theorem v13RealLinearQRowBoundRegression_causal_zero_shape :
+    v13RealLinearUniformCausalQRowSuccess
+        v13RealLinearQRowBoundRegression_causalConstant 0 ≤
+      (1 / 2 : Rat) + v13RealLinearQRowEpsilon 0 2 := by
+  exact
+    v13RealLinear_uniform_causal_zero_row_success_bound
+      v13RealLinearQRowBoundRegression_causalConstant 0
+
 #print axioms v13RealLinear_adaptiveKernelFlipSurchargeBound
 #print axioms v13RealLinear_rowCombination_card_le_for_branch
 #print axioms v13RealLinear_rowsBlockTarget_of_rowsGenerateTarget
@@ -151,14 +185,20 @@ theorem v13RealLinearQRowBoundRegression_uniform_conditional_shape
 #print axioms v13RealLinearUniformInvertibleRowSpanCountingBound_of_zero_budget
 #print axioms v13RealLinearAdaptiveRowSpanCountingBound_of_m_le_q
 #print axioms v13RealLinearUniformInvertibleRowSpanCountingBound_of_m_le_q
+#print axioms v13RealLinearUniformCausalRowSpanCountingBound_of_zero_budget
+#print axioms v13RealLinearUniformCausalRowSpanCountingBound_of_m_le_q
 #print axioms v13RealLinear_targetRowObserver_spanCountingBound_fails_two_zero
 #print axioms v13RealLinear_targetRowObserver_spanCountingBound_fails_two_zero_unconditional
 #print axioms v13RealLinear_adaptive_qrow_success_bound_of_spanCounting
 #print axioms v13RealLinear_uniform_adaptive_qrow_success_bound_of_spanCounting
+#print axioms v13RealLinear_uniform_causal_qrow_success_bound_of_spanCounting
 #print axioms v13RealLinear_uniform_zero_row_success_bound
+#print axioms v13RealLinear_uniform_causal_zero_row_success_bound
 #print axioms v13RealLinear_uniform_high_budget_success_bound
+#print axioms v13RealLinear_uniform_causal_high_budget_success_bound
 #print axioms v13RealLinear_qrow_epsilon_nonnegative
 #print axioms v13RealLinearQRowBoundRegression_conditional_shape
 #print axioms v13RealLinearQRowBoundRegression_uniform_conditional_shape
+#print axioms v13RealLinearQRowBoundRegression_causal_zero_shape
 
 end Mettapedia.Computability.PNP
