@@ -1524,6 +1524,144 @@ theorem v13RealLinearSwapShear10_branchRows_ne_empty_of_singletonWitness
   rw [hsingletonEmpty] at hmem
   simp at hmem
 
+theorem v13RealLinearSwapShear10_branchRows_ne_zero_of_singletonOneWitness
+    (observer : V13RealLinearCausalRowObserver 2 1) (x : F2Vec 2)
+    (omega : V13RealLinearAdaptiveQRowWorld 2 (V13F2LinearEquiv 2))
+    (homegaRows :
+      (v13RealLinearUniformCausalQRowExperiment observer).branchRows omega =
+        ({(1 : Fin 2)} : Finset (Fin 2)))
+    (htarget :
+      (1 : Fin 2) ∈ V13RealLinearTargetRows omega.1 (0 : Fin 2)) :
+    (v13RealLinearUniformCausalQRowExperiment observer).branchRows
+        (v13RealLinearSwapShear10, x) ≠
+      ({(0 : Fin 2)} : Finset (Fin 2)) := by
+  classical
+  intro hrestRows
+  let E := v13RealLinearUniformCausalQRowExperiment observer
+  let rest : V13RealLinearAdaptiveQRowWorld 2 (V13F2LinearEquiv 2) :=
+    (v13RealLinearSwapShear10, x)
+  let bridgeX : F2Vec 2 :=
+    fun r => if r = (0 : Fin 2) then omega.2 (0 : Fin 2) else x (1 : Fin 2)
+  let bridge : V13RealLinearAdaptiveQRowWorld 2 (V13F2LinearEquiv 2) :=
+    (v13RealLinearPerm (Equiv.swap (0 : Fin 2) (1 : Fin 2)), bridgeX)
+  let publicRest := v13RealLinearPublicInput (E.world rest)
+  let publicBridge := v13RealLinearPublicInput (E.world bridge)
+  let publicOmega := v13RealLinearPublicInput (E.world omega)
+  have hrestObserverRows :
+      observer.rows (observer.branch publicRest) =
+        ({(0 : Fin 2)} : Finset (Fin 2)) := by
+    simpa [E, rest, publicRest, v13RealLinearUniformCausalQRowExperiment,
+      v13RealLinearUniformQRowExperiment,
+      V13RealLinearAdaptiveQRowExperiment.branchRows,
+      V13RealLinearAdaptiveQRowExperiment.branch,
+      V13RealLinearCausalRowObserver.toAdaptive,
+      V13RealLinearCausalRowObserver.staticBranch] using hrestRows
+  have hsameRest :
+      v13RealLinearRowsTranscript
+          (observer.rows (observer.branch publicRest)) publicRest =
+        v13RealLinearRowsTranscript
+          (observer.rows (observer.branch publicRest)) publicBridge := by
+    rw [hrestObserverRows]
+    funext row
+    rcases row with ⟨row, hrow⟩
+    have hrow0 : row = (0 : Fin 2) := by
+      simpa using hrow
+    subst row
+    apply Prod.ext
+    · funext probe
+      change
+        v13RealLinearSwapShear10.toEquiv probe (0 : Fin 2) =
+          (v13RealLinearPerm (Equiv.swap (0 : Fin 2) (1 : Fin 2))).toEquiv
+            probe (0 : Fin 2)
+      simp [v13RealLinearSwapShear10, v13RealLinearPerm]
+    · change
+        v13RealLinearSwapShear10.toEquiv x (0 : Fin 2) =
+          (v13RealLinearPerm (Equiv.swap (0 : Fin 2) (1 : Fin 2))).toEquiv
+            bridgeX (0 : Fin 2)
+      simp [v13RealLinearSwapShear10, v13RealLinearPerm, bridgeX]
+  have hbranchRest :
+      observer.branch publicBridge = observer.branch publicRest :=
+    observer.branch_eq_of_same_branchRowsTranscript publicRest publicBridge
+      hsameRest
+  have hbridgeRowsZero :
+      E.branchRows bridge = ({(0 : Fin 2)} : Finset (Fin 2)) := by
+    have hrowsEq :
+        observer.rows (observer.branch publicBridge) =
+          observer.rows (observer.branch publicRest) :=
+      congrArg observer.rows hbranchRest
+    simpa [E, bridge, publicBridge, v13RealLinearUniformCausalQRowExperiment,
+      v13RealLinearUniformQRowExperiment,
+      V13RealLinearAdaptiveQRowExperiment.branchRows,
+      V13RealLinearAdaptiveQRowExperiment.branch,
+      V13RealLinearCausalRowObserver.toAdaptive,
+      V13RealLinearCausalRowObserver.staticBranch] using
+        hrowsEq.trans hrestObserverRows
+  have homegaObserverRows :
+      observer.rows (observer.branch publicOmega) =
+        ({(1 : Fin 2)} : Finset (Fin 2)) := by
+    simpa [E, publicOmega, v13RealLinearUniformCausalQRowExperiment,
+      v13RealLinearUniformQRowExperiment,
+      V13RealLinearAdaptiveQRowExperiment.branchRows,
+      V13RealLinearAdaptiveQRowExperiment.branch,
+      V13RealLinearCausalRowObserver.toAdaptive,
+      V13RealLinearCausalRowObserver.staticBranch] using homegaRows
+  have htargetFun :
+      ∀ probe : F2Vec 2, omega.1.toEquiv probe (1 : Fin 2) =
+        probe (0 : Fin 2) :=
+    (v13RealLinear_mem_targetRows_iff omega.1 (0 : Fin 2) (1 : Fin 2)).1
+      htarget
+  have hsameOmega :
+      v13RealLinearRowsTranscript
+          (observer.rows (observer.branch publicOmega)) publicOmega =
+        v13RealLinearRowsTranscript
+          (observer.rows (observer.branch publicOmega)) publicBridge := by
+    rw [homegaObserverRows]
+    funext row
+    rcases row with ⟨row, hrow⟩
+    have hrow1 : row = (1 : Fin 2) := by
+      simpa using hrow
+    subst row
+    apply Prod.ext
+    · funext probe
+      change
+        omega.1.toEquiv probe (1 : Fin 2) =
+          (v13RealLinearPerm (Equiv.swap (0 : Fin 2) (1 : Fin 2))).toEquiv
+            probe (1 : Fin 2)
+      rw [htargetFun probe]
+      simp [v13RealLinearPerm]
+    · have htargetX := htargetFun omega.2
+      change
+        omega.1.toEquiv omega.2 (1 : Fin 2) =
+          (v13RealLinearPerm (Equiv.swap (0 : Fin 2) (1 : Fin 2))).toEquiv
+            bridgeX (1 : Fin 2)
+      rw [htargetX]
+      simp [v13RealLinearPerm, bridgeX]
+  have hbranchOmega :
+      observer.branch publicBridge = observer.branch publicOmega :=
+    observer.branch_eq_of_same_branchRowsTranscript publicOmega publicBridge
+      hsameOmega
+  have hbridgeRowsOne :
+      E.branchRows bridge = ({(1 : Fin 2)} : Finset (Fin 2)) := by
+    have hrowsEq :
+        observer.rows (observer.branch publicBridge) =
+          observer.rows (observer.branch publicOmega) :=
+      congrArg observer.rows hbranchOmega
+    simpa [E, bridge, publicBridge, v13RealLinearUniformCausalQRowExperiment,
+      v13RealLinearUniformQRowExperiment,
+      V13RealLinearAdaptiveQRowExperiment.branchRows,
+      V13RealLinearAdaptiveQRowExperiment.branch,
+      V13RealLinearCausalRowObserver.toAdaptive,
+      V13RealLinearCausalRowObserver.staticBranch] using
+        hrowsEq.trans homegaObserverRows
+  have hzeroOne :
+      ({(0 : Fin 2)} : Finset (Fin 2)) =
+        ({(1 : Fin 2)} : Finset (Fin 2)) :=
+    hbridgeRowsZero.symm.trans hbridgeRowsOne
+  have hmem : (0 : Fin 2) ∈ ({(1 : Fin 2)} : Finset (Fin 2)) := by
+    rw [← hzeroOne]
+    simp
+  simp at hmem
+
 noncomputable def v13RealLinearTargetRowOccurrenceFour
     (k : Fin 4) : V13RealLinearUniformTargetRowOccurrence (0 : Fin 2) :=
   match k with
@@ -2934,6 +3072,32 @@ theorem v13RealLinearSwapShear10_branchRows_ne_empty_of_activeRowIndex
   exact
     v13RealLinearSwapShear10_branchRows_ne_empty_of_singletonWitness
       observer x omega idx.val.1 homegaRows
+
+theorem v13RealLinearSwapShear10_branchRows_ne_zero_of_activeRowOne
+    (observer : V13RealLinearCausalRowObserver 2 1) (x : F2Vec 2)
+    (activeRow :
+      V13RealLinearUniformOneRowGeneratedRowIndex
+        observer.toAdaptive (0 : Fin 2))
+    (hrow : activeRow.val = (1 : Fin 2)) :
+    (v13RealLinearUniformCausalQRowExperiment observer).branchRows
+        (v13RealLinearSwapShear10, x) ≠
+      ({(0 : Fin 2)} : Finset (Fin 2)) := by
+  classical
+  rcases activeRow.property with ⟨idx, hidx⟩
+  rcases idx.property with
+    ⟨omega, _hgen, homegaRows, htarget, _hbit⟩
+  have hidxRow : idx.val.1 = (1 : Fin 2) := by
+    exact hidx.trans hrow
+  have homegaRowsOne :
+      (v13RealLinearUniformCausalQRowExperiment observer).branchRows omega =
+        ({(1 : Fin 2)} : Finset (Fin 2)) := by
+    simpa [v13RealLinearUniformCausalQRowExperiment, hidxRow] using homegaRows
+  have htargetOne :
+      (1 : Fin 2) ∈ V13RealLinearTargetRows omega.1 (0 : Fin 2) := by
+    simpa [hidxRow] using htarget
+  exact
+    v13RealLinearSwapShear10_branchRows_ne_zero_of_singletonOneWitness
+      observer x omega homegaRowsOne htargetOne
 
 noncomputable def
     v13RealLinearUniformOneRowGeneratedCylinderIndexToRowBit
