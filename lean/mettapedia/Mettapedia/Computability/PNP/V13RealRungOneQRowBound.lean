@@ -9032,6 +9032,24 @@ theorem
       observer i₀
   linarith
 
+/-- Headline theorem package for adaptive sequential row reads over the
+uniform certified-invertible sampler.  The observer chooses each row from the
+previous transcript, so the bound includes adaptive row-choice policies. -/
+structure V13RealLinearSequentialQRowTransferCertificate : Prop where
+  successBound :
+    ∀ {m q : Nat} (observer : V13RealLinearSequentialRowObserver m q)
+      (i₀ : Fin m),
+      v13RealLinearUniformSequentialQRowSuccess observer i₀ ≤
+        (1 / 2 : Rat) +
+          (4 * ((2 : Rat) ^ q - 1)) / ((2 : Rat) ^ m)
+
+theorem v13RealLinear_sequentialQRowTransferCertificate :
+    V13RealLinearSequentialQRowTransferCertificate := by
+  exact
+    { successBound := fun observer i₀ =>
+        v13RealLinear_uniform_sequential_qrow_success_bound_of_transfer
+          observer i₀ }
+
 theorem
     v13RealLinear_uniform_sequential_qrow_success_bound_of_deferredDecisionTraceCosetHit
     {m q : Nat} (observer : V13RealLinearSequentialRowObserver m q)
