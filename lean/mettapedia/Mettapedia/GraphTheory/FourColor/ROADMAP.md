@@ -233,6 +233,13 @@ and
 `concreteChainFiberAppendQuotientFibrationParentRowsNonSingletonPrefixStructuralClosed`
 is now enough via
 `semanticFrontierStateSufficientForChain_of_append_quotient_parent_rows_base_data_and_structural`.
+That exact pair of hypotheses also has direct transfer and all-word audit
+wrappers:
+`concreteChainFiberFibrationNonemptyTransferClosed_of_append_quotient_parent_rows_base_data_and_structural`,
+`concreteChainAuditFibrationNonemptyTransferClosed_of_append_quotient_parent_rows_base_data_and_structural`,
+`chainAuditForFrontierWord_ok_of_append_quotient_parent_rows_base_data_and_structural`,
+and
+`chainAuditForFrontierWord_ok_of_targets_and_append_quotient_parent_rows_base_data_and_structural`.
 The same-prefix closure side is now separated from prefix mobility:
 `concreteChainFiberAppendPrefixSelfLiftClosureClosed_of_lift` derives a closed
 appended representative over the current prefix from the lift-closure theorem
