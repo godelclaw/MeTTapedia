@@ -1116,6 +1116,11 @@ theorem currentPNPV13RealRungOneQRowBound_node :
         V13RealLinearAdaptiveRowSpanCountingBound E i₀ →
             v13RealLinearAdaptiveQRowSuccess E i₀ ≤
               (1 / 2 : Rat) + v13RealLinearQRowEpsilon q m) ∧
+      (∀ {m q : Nat} (observer : V13RealLinearAdaptiveRowObserver m q)
+        (i₀ : Fin m),
+        V13RealLinearUniformInvertibleRowSpanCountingBound observer i₀ →
+          v13RealLinearUniformAdaptiveQRowSuccess observer i₀ ≤
+            (1 / 2 : Rat) + v13RealLinearQRowEpsilon q m) ∧
       (∀ q m : Nat, 0 ≤ v13RealLinearQRowEpsilon q m) := by
   exact
     ⟨fun E i₀ =>
@@ -1123,6 +1128,9 @@ theorem currentPNPV13RealRungOneQRowBound_node :
       fun E i₀ hcount =>
         v13RealLinear_adaptive_qrow_success_bound_of_spanCounting
           E i₀ hcount,
+      fun observer i₀ hcount =>
+        v13RealLinear_uniform_adaptive_qrow_success_bound_of_spanCounting
+          observer i₀ hcount,
       v13RealLinear_qrow_epsilon_nonnegative⟩
 
 theorem currentPNPV13ObserverLadder_node :

@@ -4,10 +4,9 @@ import Mettapedia.Computability.PNP.V13RealRungOneAdaptiveRows
 # PNP v13 real rung one: q-row bound assembly
 
 This file packages the finite sampled experiment for the real row-observer
-theorem.  It names exactly one remaining pinned counting obligation:
-`V13RealLinearAdaptiveRowSpanCountingBound`.  The kernel-flip side has already
-been reduced to adaptive branch exact-half; once that contributes the surcharge
-bound below, the explicit q-row success estimate is immediate.
+theorem.  The central public wrapper uses the uniform sampler over all
+certified invertible maps.  Its only remaining pinned counting obligation is
+`V13RealLinearUniformInvertibleRowSpanCountingBound`.
 -/
 
 namespace Mettapedia.Computability.PNP
@@ -20,6 +19,41 @@ structure V13RealLinearAdaptiveQRowExperiment
     (m q : Nat) (Seed : Type*) where
   sampleA : Seed → V13F2LinearEquiv m
   observer : V13RealLinearAdaptiveRowObserver m q
+
+/-- The certified invertible maps are finite because they are equivalences of
+the finite vector space with proof fields attached. -/
+noncomputable instance v13F2LinearEquivFintype (m : Nat) :
+    Fintype (V13F2LinearEquiv m) := by
+  classical
+  let Certified :=
+    {e : F2Vec m ≃ F2Vec m //
+      (∀ x y : F2Vec m,
+        e (f2AddVec x y) = f2AddVec (e x) (e y)) ∧
+          e (f2ZeroVec m) = f2ZeroVec m}
+  haveI : Fintype Certified := by
+    infer_instance
+  exact
+    Fintype.ofEquiv Certified
+      { toFun := fun e =>
+          { toEquiv := e.val
+            map_add := e.property.1
+            map_zero := e.property.2 }
+        invFun := fun A =>
+          ⟨A.toEquiv, A.map_add, A.map_zero⟩
+        left_inv := by
+          intro e
+          apply Subtype.ext
+          rfl
+        right_inv := by
+          intro A
+          cases A
+          rfl }
+
+def v13RealLinearUniformQRowExperiment {m q : Nat}
+    (observer : V13RealLinearAdaptiveRowObserver m q) :
+    V13RealLinearAdaptiveQRowExperiment m q (V13F2LinearEquiv m) where
+  sampleA := id
+  observer := observer
 
 abbrev V13RealLinearAdaptiveQRowWorld (m : Nat) (Seed : Type*) :=
   Seed × F2Vec m
@@ -436,14 +470,27 @@ theorem v13RealLinearAdaptiveQRow_world_card_eq_correct_add_incorrect
 noncomputable def v13RealLinearQRowEpsilon (q m : Nat) : Rat :=
   (2 ^ q : Rat) / (2 ^ m : Rat)
 
-/-- The single named pinned obligation: the realized branch is span-blocked
-with mass at most `2^q / 2^m`. -/
+/-- Generic blocked-mass bound used as an arithmetic interface.  The public
+remaining pin below specializes this to the uniform invertible-map sampler. -/
 def V13RealLinearAdaptiveRowSpanCountingBound {m q : Nat}
     {Seed : Type*} [Fintype Seed]
     (E : V13RealLinearAdaptiveQRowExperiment m q Seed) (i₀ : Fin m) :
     Prop :=
   v13RealLinearAdaptiveQRowBlockedMass E i₀ ≤
     v13RealLinearQRowEpsilon q m
+
+/-- The single named pinned obligation: under the uniform sampler over all
+certified invertible maps, the realized branch is span-blocked with mass at
+most `2^q / 2^m`. -/
+def V13RealLinearUniformInvertibleRowSpanCountingBound {m q : Nat}
+    (observer : V13RealLinearAdaptiveRowObserver m q) (i₀ : Fin m) : Prop :=
+  V13RealLinearAdaptiveRowSpanCountingBound
+    (v13RealLinearUniformQRowExperiment observer) i₀
+
+noncomputable def v13RealLinearUniformAdaptiveQRowSuccess {m q : Nat}
+    (observer : V13RealLinearAdaptiveRowObserver m q) (i₀ : Fin m) : Rat :=
+  v13RealLinearAdaptiveQRowSuccess
+    (v13RealLinearUniformQRowExperiment observer) i₀
 
 /-- Kernel-flip branch pairing reduces success to half plus the blocked-branch
 mass.  This is not a pinned counting assumption; it is the arithmetic interface
@@ -496,6 +543,17 @@ theorem v13RealLinear_adaptive_qrow_success_bound_of_spanCounting
   have hflip := v13RealLinear_adaptiveKernelFlipSurchargeBound E i₀
   unfold V13RealLinearAdaptiveKernelFlipSurchargeBound at hflip
   linarith
+
+theorem v13RealLinear_uniform_adaptive_qrow_success_bound_of_spanCounting
+    {m q : Nat} (observer : V13RealLinearAdaptiveRowObserver m q)
+    (i₀ : Fin m)
+    (hcount :
+      V13RealLinearUniformInvertibleRowSpanCountingBound observer i₀) :
+    v13RealLinearUniformAdaptiveQRowSuccess observer i₀ ≤
+      (1 / 2 : Rat) + v13RealLinearQRowEpsilon q m := by
+  exact
+    v13RealLinear_adaptive_qrow_success_bound_of_spanCounting
+      (v13RealLinearUniformQRowExperiment observer) i₀ hcount
 
 theorem v13RealLinear_qrow_epsilon_nonnegative (q m : Nat) :
     0 ≤ v13RealLinearQRowEpsilon q m := by
