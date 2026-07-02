@@ -216,7 +216,12 @@ The length-two base has now been discharged at the concrete fibration layer:
 `concreteChainFiberAppendQuotientFibrationParentRowsLengthTwoSeeds_ok`
 instantiates the parent-rows append fields for all singleton appends and fixed
 inputs.  This is a base checkpoint for the parent-rows route, not the arbitrary
-append theorem.
+append theorem.  The remaining parent-row append target is now named exactly as
+`concreteChainFiberAppendQuotientFibrationParentRowsNonSingletonPrefixFieldsClosed`:
+the length-two seeds discharge singleton prefixes, and the wrapper
+`semanticFrontierStateSufficientForChain_of_append_quotient_parent_rows_non_singleton`
+shows that proving this non-singleton-prefix field theorem is sufficient for
+the semantic route.
 The same-prefix closure side is now separated from prefix mobility:
 `concreteChainFiberAppendPrefixSelfLiftClosureClosed_of_lift` derives a closed
 appended representative over the current prefix from the lift-closure theorem

@@ -1,6 +1,6 @@
 # FourColor Proof State
 
-Last updated: 2026-07-02 on `fourcolor/cont-20260626`.
+Last updated: 2026-07-03 on `fourcolor/cont-20260626`.
 
 This file tracks the active route forks.  The Four Color Theorem is not
 claimed here.
@@ -112,7 +112,15 @@ The length-two base now has a concrete fibration seed bridge:
 `concreteChainFiberAppendQuotientFibrationParentRowsLengthTwoSeeds_ok`
 instantiates the parent-rows append fields for every singleton append and
 fixed input.  This closes the length-two parent-rows field surface only; the
-arbitrary append theorem remains the semantic composition target.
+arbitrary append theorem remains the semantic composition target.  The bridge
+now records this as the exact parent-row remainder:
+`concreteChainFiberAppendQuotientFibrationParentRowsNonSingletonPrefixFieldsClosed`
+is the only append-field hypothesis needed after the length-two seeds, via
+`concreteChainFiberAppendQuotientFibrationParentRowsFieldsClosed_of_non_singleton`
+and
+`semanticFrontierStateSufficientForChain_of_append_quotient_parent_rows_non_singleton`.
+Thus the parent-row route no longer asks generated data to reprove singleton
+prefix appends; those are supplied by the existing real length-two audits.
 
 `GoertzelLemma818SemanticProgress.lean` now records the checked semantic
 frontier after the completed `TTT` target.  It proves

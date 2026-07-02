@@ -4046,6 +4046,45 @@ theorem concreteChainFiberAppendQuotientFibrationParentRowsLengthTwoSeeds_ok :
   exact ⟨ChainFiberAppendQuotientFibrationParentRowsFields.ofConcreteAppend
     hkey cert⟩
 
+def concreteChainFiberAppendQuotientFibrationParentRowsNonSingletonPrefixFieldsClosed :
+    Prop :=
+  ∀ (word : List GoertzelLemma818FrontierMode.TauOrient)
+    (orient : GoertzelLemma818FrontierMode.TauOrient),
+    1 < word.length →
+    Nonempty (ChainWordConcreteFibrationCertificate word) →
+      ∀ key : List GoertzelLemma814.LColor,
+        key ∈ GoertzelLemma814.colorAssignments4 →
+          Nonempty
+            (ChainFiberAppendQuotientFibrationParentRowsFields
+              word orient key)
+
+theorem concreteChainFiberAppendQuotientFibrationParentRowsFieldsClosed_of_length_two_seeds_and_non_singleton
+    (hLengthTwo :
+      concreteChainFiberAppendQuotientFibrationParentRowsLengthTwoSeeds)
+    (hNonSingleton :
+      concreteChainFiberAppendQuotientFibrationParentRowsNonSingletonPrefixFieldsClosed) :
+    concreteChainFiberAppendQuotientFibrationParentRowsFieldsClosed := by
+  intro word orient hne hcert key hkey
+  cases word with
+  | nil =>
+      exact False.elim (hne rfl)
+  | cons head tail =>
+      cases tail with
+      | nil =>
+          simpa using hLengthTwo head orient key hkey
+      | cons next rest =>
+          have hlen : 1 < (head :: next :: rest).length := by
+            simp
+          exact hNonSingleton (head :: next :: rest) orient hlen hcert key hkey
+
+theorem concreteChainFiberAppendQuotientFibrationParentRowsFieldsClosed_of_non_singleton
+    (hNonSingleton :
+      concreteChainFiberAppendQuotientFibrationParentRowsNonSingletonPrefixFieldsClosed) :
+    concreteChainFiberAppendQuotientFibrationParentRowsFieldsClosed :=
+  concreteChainFiberAppendQuotientFibrationParentRowsFieldsClosed_of_length_two_seeds_and_non_singleton
+    concreteChainFiberAppendQuotientFibrationParentRowsLengthTwoSeeds_ok
+    hNonSingleton
+
 def concreteChainWordFibrationSingletonSeeds : Prop :=
   ∀ orient : GoertzelLemma818FrontierMode.TauOrient,
     Nonempty (ChainWordConcreteFibrationCertificate [orient])
@@ -4818,6 +4857,15 @@ theorem semanticFrontierStateSufficientForChain_of_append_quotient_parent_rows
   intro word _state _hstate _haudit
   exact chainAuditForFrontierWord_ok_of_append_quotient_parent_rows
     concreteChainWordFibrationSingletonSeeds_ok hFields word
+
+theorem semanticFrontierStateSufficientForChain_of_append_quotient_parent_rows_non_singleton
+    {targetAudit : RepresentativeSemanticTarget → Bool}
+    (hNonSingleton :
+      concreteChainFiberAppendQuotientFibrationParentRowsNonSingletonPrefixFieldsClosed) :
+    semanticFrontierStateSufficientForChain targetAudit :=
+  semanticFrontierStateSufficientForChain_of_append_quotient_parent_rows
+    (concreteChainFiberAppendQuotientFibrationParentRowsFieldsClosed_of_non_singleton
+      hNonSingleton)
 
 theorem semanticFrontierStateSufficientForChain_of_append_quotient_path_rows
     {targetAudit : RepresentativeSemanticTarget → Bool}
