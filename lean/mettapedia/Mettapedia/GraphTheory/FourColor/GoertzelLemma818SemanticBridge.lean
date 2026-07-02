@@ -938,6 +938,57 @@ def concreteChainFiberAppendLastInputTrace
   (GoertzelLemma814.tauOrientInputOrder (frontierOrientToChain orient)).map
     fun edge => last.color edge
 
+theorem colorAssignments4_mem_tuple
+    (c0 c1 c2 c3 : GoertzelLemma814.LColor) :
+    [c0, c1, c2, c3] ∈ GoertzelLemma814.colorAssignments4 := by
+  cases c0 <;> cases c1 <;> cases c2 <;> cases c3 <;> decide
+
+theorem concreteChainFiberAppendLastInputTrace_mem_colorAssignments4
+    (orient : GoertzelLemma818FrontierMode.TauOrient)
+    (last : GoertzelLemma814.TauState) :
+    concreteChainFiberAppendLastInputTrace orient last ∈
+      GoertzelLemma814.colorAssignments4 := by
+  cases orient <;>
+    simp [concreteChainFiberAppendLastInputTrace, frontierOrientToChain,
+      GoertzelLemma814.tauOrientInputOrder, colorAssignments4_mem_tuple]
+
+theorem concreteChainFiberAppendLastInputTrace_eq_of_compatible
+    (left : GoertzelLemma814.TauOrient)
+    (orient : GoertzelLemma818FrontierMode.TauOrient)
+    (prev lastX lastY : GoertzelLemma814.TauState)
+    (hx : GoertzelLemma814.compatibleAdjacent left (frontierOrientToChain orient)
+      prev lastX = true)
+    (hy : GoertzelLemma814.compatibleAdjacent left (frontierOrientToChain orient)
+      prev lastY = true) :
+    concreteChainFiberAppendLastInputTrace orient lastX =
+      concreteChainFiberAppendLastInputTrace orient lastY := by
+  cases left <;> cases orient <;>
+    simp [concreteChainFiberAppendLastInputTrace, frontierOrientToChain,
+      GoertzelLemma814.compatibleAdjacent, GoertzelLemma814.colorEq,
+      GoertzelLemma814.tauOrientInputOrder,
+      GoertzelLemma814.tauOrientOutputOrder] at hx hy ⊢ <;>
+    aesop
+
+theorem concreteChainFiber_singleton_mem_of_last_input_trace
+    (orient : GoertzelLemma818FrontierMode.TauOrient)
+    {last : GoertzelLemma814.TauState}
+    (hlast : last ∈ GoertzelLemma814.allTauStates) :
+    [last] ∈ concreteChainFiber [orient]
+      (concreteChainFiberAppendLastInputTrace orient last) := by
+  unfold concreteChainFiber GoertzelLemma814.chainFiberFrom concreteChainStates
+  rw [List.mem_filter]
+  constructor
+  · cases orient <;>
+      simp [frontierWordToChainWord, frontierOrientToChain,
+        GoertzelLemma814.allChainStates, GoertzelLemma814.buildChainStatesFrom,
+        hlast]
+  · cases orient <;>
+      simp [frontierWordToChainWord, frontierOrientToChain,
+        GoertzelLemma814.chainInputKey, GoertzelLemma814.chainInputOrder,
+        GoertzelLemma814.tauOrientInputOrder, GoertzelLemma814.tauOrientAt,
+        GoertzelLemma814.listGetD, GoertzelLemma814.chainStateAt,
+        GoertzelLemma814.tauStateColorAt, concreteChainFiberAppendLastInputTrace]
+
 def concreteChainFiberAppendFixedPrefixLastReachClosed : Prop :=
   ∀ (word : List GoertzelLemma818FrontierMode.TauOrient)
     (orient : GoertzelLemma818FrontierMode.TauOrient)
@@ -1730,6 +1781,52 @@ theorem chainAuditForFrontierWord_ok_of_fiber_transfer
 def concreteChainWordFibrationSingletonSeeds : Prop :=
   ∀ orient : GoertzelLemma818FrontierMode.TauOrient,
     Nonempty (ChainWordConcreteFibrationCertificate [orient])
+
+theorem concreteChainFiberAppendSameTraceRelativeSingletonReachClosed_of_singleton_seeds
+    (hSeed : concreteChainWordFibrationSingletonSeeds) :
+    concreteChainFiberAppendSameTraceRelativeSingletonReachClosed := by
+  intro word orient _hne _hcert key _hkey pref lastX lastY _hpref hlastX hlastY
+    hcompatibleX hcompatibleY _htrace
+  let localKey := concreteChainFiberAppendLastInputTrace orient lastX
+  have hkeyLocal :
+      localKey ∈ GoertzelLemma814.colorAssignments4 := by
+    simpa [localKey] using
+      concreteChainFiberAppendLastInputTrace_mem_colorAssignments4 orient lastX
+  have hright :
+      GoertzelLemma814.tauOrientAt
+        (frontierWordToChainWord (word ++ [orient])) word.length =
+        frontierOrientToChain orient := by
+    unfold GoertzelLemma814.tauOrientAt frontierWordToChainWord
+    simp only [List.map_append, List.map_cons, List.map_nil]
+    rw [← List.length_map (f := frontierOrientToChain) (as := word)]
+    exact GoertzelLemma814.listGetD_append_length
+      (List.map frontierOrientToChain word) (frontierOrientToChain orient)
+      GoertzelLemma814.TauOrient.normal
+  have hinputTrace :
+      concreteChainFiberAppendLastInputTrace orient lastX =
+        concreteChainFiberAppendLastInputTrace orient lastY :=
+    concreteChainFiberAppendLastInputTrace_eq_of_compatible
+      (GoertzelLemma814.tauOrientAt
+        (frontierWordToChainWord (word ++ [orient])) (word.length - 1))
+      orient
+      (GoertzelLemma814.chainStateAt pref (word.length - 1))
+      lastX lastY (by simpa [hright] using hcompatibleX)
+      (by simpa [hright] using hcompatibleY)
+  let xLocal : ChainFiberPoint [orient] localKey :=
+    ⟨[lastX],
+      by
+        simpa [localKey] using
+          concreteChainFiber_singleton_mem_of_last_input_trace orient hlastX⟩
+  let yLocal : ChainFiberPoint [orient] localKey :=
+    ⟨[lastY],
+      by
+        have hyLocal :=
+          concreteChainFiber_singleton_mem_of_last_input_trace orient hlastY
+        simpa [localKey, hinputTrace] using hyLocal⟩
+  refine ⟨hkeyLocal, xLocal, yLocal, rfl, rfl, ?_⟩
+  rcases hSeed orient with ⟨cert⟩
+  rcases cert.fiberCertificate localKey hkeyLocal with ⟨fiberCert⟩
+  exact fiberCert.connected xLocal yLocal
 
 theorem chainWordConcreteFibrationCertificate_of_singletons_and_nonempty_transfer_aux
     (hTransfer : concreteChainAuditFibrationNonemptyTransferClosed)
