@@ -1754,6 +1754,18 @@ theorem chainLocalEdges_mem_of_occ_edge
   refine ⟨i, List.mem_range.mpr hi, ?_⟩
   exact List.mem_map.mpr ⟨edge, tauEdges_mem edge, rfl⟩
 
+theorem chainLocalEdges_mem_occ_lt
+    {orients : List TauOrient} {ge : ChainEdge}
+    (hmem : ge ∈ chainLocalEdges orients) :
+    ge.occ < orients.length := by
+  unfold chainLocalEdges at hmem
+  rw [mem_bindList_iff] at hmem
+  rcases hmem with ⟨i, hi, hmap⟩
+  rw [List.mem_range] at hi
+  rcases List.mem_map.mp hmap with ⟨edge, _hedge, hgeEq⟩
+  rw [← hgeEq]
+  exact hi
+
 theorem chainEdges_contains_of_occ_edge_and_representative
     (orients : List TauOrient) (i : Nat) (edge : TauEdge)
     (hi : i < orients.length)
