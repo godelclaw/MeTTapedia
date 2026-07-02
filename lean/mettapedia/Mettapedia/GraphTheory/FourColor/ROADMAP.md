@@ -267,6 +267,15 @@ last-gadget edge into the appended chain's representative edge list.  The
 Kempe-lift branch is now reduced to
 `concreteChainFiberAppendRelativeSingletonShiftedSpecifiedStepClosed` via
 `concreteChainFiberAppendRelativeSingletonGlobalKempeStepLiftClosed_of_shifted_step`.
+That final shifted-step hook is now factored by
+`concreteChainFiberAppendRelativeSingletonShiftedSpecifiedStepClosed_of_component_and_switch`:
+the remaining component-confinement claim is
+`concreteChainFiberAppendRelativeSingletonShiftedComponentClosed`, and the
+remaining switch-agreement claim is
+`concreteChainFiberAppendRelativeSingletonShiftedSwitchAgreementClosed`.  The
+input-disjointness part is already handled by
+`concreteChainFiberAppendShiftComponent_avoids_inputs`, since every shifted
+edge lives at occurrence `word.length`.
 The closure-under-step side is now reduced by
 `concreteChainFiberAppendRelativeSingletonGlobalStepClosureClosed_of_bounded_saturation`
 to the pure closure-iterator lemma
