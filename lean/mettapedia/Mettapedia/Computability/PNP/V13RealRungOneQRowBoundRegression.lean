@@ -28,6 +28,14 @@ set_option autoImplicit false
 #check v13RealLinear_not_rowsGenerateTarget_of_rows_card_zero
 #check V13RealLinearRowTrace
 #check v13RealLinearRowTraceRows
+#check V13RealLinearSequentialRowTranscript
+#check V13RealLinearSequentialRowObserver
+#check v13RealLinearSequentialRowRunAux
+#check v13RealLinearSequentialRowTranscriptOf
+#check v13RealLinearSequentialRowTraceOf
+#check v13RealLinearSequentialRowRunAux_length
+#check v13RealLinearSequentialRowTranscriptOf_length
+#check v13RealLinearSequentialRowTraceOf_length
 #check v13RealLinearRowTracePrefixRows
 #check v13RealLinearRowTracePrefixRows_zero
 #check v13RealLinearRowTracePrefixRows_length
@@ -760,6 +768,9 @@ theorem
 #print axioms v13RealLinearQRowEpsilon_le_deferredDecisionEpsilon_of_pos
 #print axioms v13RealLinear_sum_range_two_pow
 #print axioms v13RealLinear_sum_fin_deferredDecisionWeights
+#print axioms v13RealLinearSequentialRowRunAux_length
+#print axioms v13RealLinearSequentialRowTranscriptOf_length
+#print axioms v13RealLinearSequentialRowTraceOf_length
 #print axioms v13RealLinearRowTracePrefixRows_succ
 #print axioms v13RealLinearRowTraceNewCaptureCover
 #print axioms v13RealLinearRowTraceNewCaptureCover_of_traceRows
