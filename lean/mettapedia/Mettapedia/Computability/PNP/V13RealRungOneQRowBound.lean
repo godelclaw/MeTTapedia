@@ -563,6 +563,18 @@ theorem V13RealLinearAdaptiveQRowExperiment.targetRows_nonempty_of_generated_one
       (v13RealLinear_mem_targetRows_iff
         (E.sampleA omega.1) i₀ row).2 htarget⟩
 
+theorem V13RealLinearAdaptiveQRowExperiment.not_generated_of_targetRows_empty
+    {m : Nat} {Seed : Type*}
+    (E : V13RealLinearAdaptiveQRowExperiment m 1 Seed) (i₀ : Fin m)
+    (omega : V13RealLinearAdaptiveQRowWorld m Seed)
+    (hempty : V13RealLinearTargetRows (E.sampleA omega.1) i₀ = ∅) :
+    ¬ E.generated i₀ omega := by
+  intro hgen
+  have hnonempty :=
+    E.targetRows_nonempty_of_generated_one_budget i₀ omega hgen
+  rw [hempty] at hnonempty
+  exact Finset.not_nonempty_empty hnonempty
+
 theorem v13RealLinearUniformCausalOneRowGenerated_exists_targetRow_cylinder
     {m : Nat} (observer : V13RealLinearCausalRowObserver m 1)
     (i₀ : Fin m)
@@ -1397,6 +1409,60 @@ theorem v13RealLinearSwapShear10_targetRows_zero_empty :
       norm_num [v13RealLinearSwapShear10, v13RealLinearSingleBit] at h
   · intro h
     simp at h
+
+theorem v13RealLinear_fin2_rows_card_le_one_cases
+    (rows : Finset (Fin 2)) (hcard : rows.card ≤ 1) :
+    rows = ∅ ∨
+      rows = ({(0 : Fin 2)} : Finset (Fin 2)) ∨
+        rows = ({(1 : Fin 2)} : Finset (Fin 2)) := by
+  classical
+  by_cases h0 : (0 : Fin 2) ∈ rows
+  · by_cases h1 : (1 : Fin 2) ∈ rows
+    · have htwo : 2 ≤ rows.card := by
+        have hsub : ({(0 : Fin 2), (1 : Fin 2)} : Finset (Fin 2)) ⊆ rows := by
+          intro row hrow
+          fin_cases row <;> simp [h0, h1]
+        simpa using
+          Finset.card_le_card hsub
+      omega
+    · right
+      left
+      ext row
+      fin_cases row <;> simp [h0, h1]
+  · by_cases h1 : (1 : Fin 2) ∈ rows
+    · right
+      right
+      ext row
+      fin_cases row <;> simp [h0, h1]
+    · left
+      ext row
+      fin_cases row <;> simp [h0, h1]
+
+theorem v13RealLinearSwapShear10_not_generated_one_budget
+    (observer : V13RealLinearCausalRowObserver 2 1) (x : F2Vec 2) :
+    ¬ (v13RealLinearUniformCausalQRowExperiment observer).generated
+        (0 : Fin 2) (v13RealLinearSwapShear10, x) := by
+  exact
+    (v13RealLinearUniformCausalQRowExperiment observer).not_generated_of_targetRows_empty
+      (0 : Fin 2) (v13RealLinearSwapShear10, x)
+      v13RealLinearSwapShear10_targetRows_zero_empty
+
+theorem v13RealLinearSwapShear10_branchRows_cases
+    (observer : V13RealLinearCausalRowObserver 2 1) (x : F2Vec 2) :
+    (v13RealLinearUniformCausalQRowExperiment observer).branchRows
+        (v13RealLinearSwapShear10, x) = ∅ ∨
+      (v13RealLinearUniformCausalQRowExperiment observer).branchRows
+          (v13RealLinearSwapShear10, x) =
+        ({(0 : Fin 2)} : Finset (Fin 2)) ∨
+        (v13RealLinearUniformCausalQRowExperiment observer).branchRows
+          (v13RealLinearSwapShear10, x) =
+        ({(1 : Fin 2)} : Finset (Fin 2)) := by
+  exact
+    v13RealLinear_fin2_rows_card_le_one_cases
+      ((v13RealLinearUniformCausalQRowExperiment observer).branchRows
+        (v13RealLinearSwapShear10, x))
+      ((v13RealLinearUniformCausalQRowExperiment observer).branchRows_card_le
+        (v13RealLinearSwapShear10, x))
 
 noncomputable def v13RealLinearTargetRowOccurrenceFour
     (k : Fin 4) : V13RealLinearUniformTargetRowOccurrence (0 : Fin 2) :=

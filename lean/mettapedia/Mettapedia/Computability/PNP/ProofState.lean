@@ -1187,6 +1187,28 @@ theorem currentPNPV13RealRungOneQRowBound_node :
           (V13RealLinearUniformTargetRowOccurrence (0 : Fin 2))) ∧
       (V13RealLinearTargetRows
           v13RealLinearSwapShear10 (0 : Fin 2) = ∅) ∧
+      (∀ {m : Nat} {Seed : Type}
+        (E : V13RealLinearAdaptiveQRowExperiment m 1 Seed)
+        (i₀ : Fin m) (omega : V13RealLinearAdaptiveQRowWorld m Seed),
+        V13RealLinearTargetRows (E.sampleA omega.1) i₀ = ∅ →
+          ¬ E.generated i₀ omega) ∧
+      (∀ rows : Finset (Fin 2),
+        rows.card ≤ 1 →
+          rows = ∅ ∨
+            rows = ({(0 : Fin 2)} : Finset (Fin 2)) ∨
+              rows = ({(1 : Fin 2)} : Finset (Fin 2))) ∧
+      (∀ (observer : V13RealLinearCausalRowObserver 2 1) (x : F2Vec 2),
+        ¬ (v13RealLinearUniformCausalQRowExperiment observer).generated
+          (0 : Fin 2) (v13RealLinearSwapShear10, x)) ∧
+      (∀ (observer : V13RealLinearCausalRowObserver 2 1) (x : F2Vec 2),
+        (v13RealLinearUniformCausalQRowExperiment observer).branchRows
+            (v13RealLinearSwapShear10, x) = ∅ ∨
+          (v13RealLinearUniformCausalQRowExperiment observer).branchRows
+              (v13RealLinearSwapShear10, x) =
+            ({(0 : Fin 2)} : Finset (Fin 2)) ∨
+            (v13RealLinearUniformCausalQRowExperiment observer).branchRows
+              (v13RealLinearSwapShear10, x) =
+            ({(1 : Fin 2)} : Finset (Fin 2))) ∧
       (Fintype.card (V13F2LinearEquiv 2) ≤ 6 →
         (1 / 2 : Rat) <
           v13RealLinearUniformTargetRowOccurrenceMass (0 : Fin 2)) ∧
@@ -1481,6 +1503,11 @@ theorem currentPNPV13RealRungOneQRowBound_node :
         v13RealLinear_targetRowObserverGeneratedMass_eq_occurrenceMass i₀,
       v13RealLinearUniformTargetRowOccurrence_card_four_le,
       v13RealLinearSwapShear10_targetRows_zero_empty,
+      fun E i₀ omega hempty =>
+        E.not_generated_of_targetRows_empty i₀ omega hempty,
+      v13RealLinear_fin2_rows_card_le_one_cases,
+      v13RealLinearSwapShear10_not_generated_one_budget,
+      v13RealLinearSwapShear10_branchRows_cases,
       fun hcard =>
         v13RealLinearUniformTargetRowOccurrenceMass_two_zero_gt_half hcard,
       fun hcard =>
