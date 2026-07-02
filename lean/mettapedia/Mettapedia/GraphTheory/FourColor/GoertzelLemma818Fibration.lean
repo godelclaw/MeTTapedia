@@ -151,6 +151,80 @@ theorem connected (cert : ListedSymmetricRootedConnectedCertificate step) :
 
 end ListedSymmetricRootedConnectedCertificate
 
+/-- Iterate a parent map a fixed number of steps toward a root. -/
+def parentIter {α : Type u} (parent : α → α) : Nat → α → α
+  | 0, x => x
+  | n + 1, x => parentIter parent n (parent x)
+
+/--
+A parent-map certificate for a finite symmetric rooted base graph.
+
+This is the shape generated spanning-forest checks usually have: a finite list
+of nodes covers the base, the parent map stays inside that list, non-root
+parent rows are valid steps, stationary rows are explicit, and a bounded
+parent iteration reaches the root.
+-/
+structure ParentMapSymmetricRootedConnectedCertificate
+    {α : Type u} (step : α → α → Prop) : Type u where
+  nodes : List α
+  root : α
+  parent : α → α
+  maxDepth : Nat
+  stepSymmetric : StepSymmetric step
+  covers : ∀ x, x ∈ nodes
+  parentStepOrSelfOfMem :
+    ∀ x, x ∈ nodes → parent x = x ∨ step x (parent x)
+  parentMemOfMem : ∀ x, x ∈ nodes → parent x ∈ nodes
+  reachesRootOfMem :
+    ∀ x, x ∈ nodes → parentIter parent maxDepth x = root
+
+namespace ParentMapSymmetricRootedConnectedCertificate
+
+variable {α : Type u} {step : α → α → Prop}
+
+theorem reachParentIterOfMem
+    (cert : ParentMapSymmetricRootedConnectedCertificate step) :
+    ∀ (n : Nat) (x : α), x ∈ cert.nodes →
+      Reach step x (parentIter cert.parent n x) := by
+  intro n
+  induction n with
+  | zero =>
+      intro x _hmem
+      exact Reach.refl x
+  | succ n ih =>
+      intro x hmem
+      have hfirst : Reach step x (cert.parent x) := by
+        rcases cert.parentStepOrSelfOfMem x hmem with hself | hstep
+        · simpa [hself] using (Reach.refl x : Reach step x x)
+        · exact Reach.single hstep
+      have htail :
+          Reach step (cert.parent x)
+            (parentIter cert.parent n (cert.parent x)) :=
+        ih (cert.parent x) (cert.parentMemOfMem x hmem)
+      simpa [parentIter] using Reach.trans hfirst htail
+
+def toListed (cert : ParentMapSymmetricRootedConnectedCertificate step) :
+    ListedSymmetricRootedConnectedCertificate step :=
+  { nodes := cert.nodes
+    root := cert.root
+    stepSymmetric := cert.stepSymmetric
+    covers := cert.covers
+    reachToRootOfMem := fun x hmem => by
+      have hreach := reachParentIterOfMem cert cert.maxDepth x hmem
+      simpa [cert.reachesRootOfMem x hmem] using hreach }
+
+def toSymmetricRooted
+    (cert : ParentMapSymmetricRootedConnectedCertificate step) :
+    SymmetricRootedConnectedCertificate step :=
+  cert.toListed.toSymmetricRooted
+
+theorem connected
+    (cert : ParentMapSymmetricRootedConnectedCertificate step) :
+    Connected step :=
+  cert.toSymmetricRooted.connected
+
+end ParentMapSymmetricRootedConnectedCertificate
+
 theorem connected_of_root_reachable_and_stepSymmetric
     {α : Type u} {step : α → α → Prop}
     (hsym : StepSymmetric step)
