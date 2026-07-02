@@ -25,6 +25,7 @@ import Mettapedia.Computability.PNP.V13ObserverLadder
 import Mettapedia.Computability.PNP.V13PhaseEConcrete
 import Mettapedia.Computability.PNP.V13PhaseEScaled
 import Mettapedia.Computability.PNP.V13RealRungOneLinear
+import Mettapedia.Computability.PNP.V13RealRungOneRowObservers
 import Mettapedia.Computability.PNP.WeaknessCalculus
 /-!
 # PNP proof state
@@ -1054,6 +1055,30 @@ theorem currentPNPV13RealRungOneLinear_node :
       fun i₀ spare hspare =>
         v13RealLinear_no_single_public_coordinate_determines_target_of_spare
           i₀ spare hspare⟩
+
+theorem currentPNPV13RealRungOneRowObservers_node :
+    (∀ {m : Nat} {A : V13F2LinearEquiv m}
+      {rows : Finset (Fin m)} {i₀ : Fin m},
+      ¬ V13RealLinearRowsBlockTarget A rows i₀ →
+        ∃ w : F2Vec m,
+          w i₀ = 1 ∧
+            ∀ row : Fin m, row ∈ rows → A.toEquiv w row = 0) ∧
+      (∀ {m : Nat} (A : V13F2LinearEquiv m)
+        (rows : Finset (Fin m)) (i₀ : Fin m),
+        ¬ V13RealLinearRowsBlockTarget A rows i₀ →
+          ∃ omega₀ omega₁ : V13RealLinearWorld m,
+            v13RealLinearRowsTranscript rows
+                (v13RealLinearPublicInput omega₀) =
+              v13RealLinearRowsTranscript rows
+                (v13RealLinearPublicInput omega₁) ∧
+            v13RealLinearTarget i₀ omega₀ ≠
+              v13RealLinearTarget i₀ omega₁) := by
+  exact
+    ⟨fun hnot =>
+        v13RealLinear_exists_kernel_hit_of_not_rowsBlockTarget hnot,
+      fun A rows i₀ hnot =>
+        v13RealLinear_opposite_targets_same_rowsTranscript_of_not_blocked
+          A rows i₀ hnot⟩
 
 theorem currentPNPV13ObserverLadder_node :
     PhaseEScaledObserverLadderMark ∧

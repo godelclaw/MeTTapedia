@@ -18,6 +18,7 @@ import Mettapedia.Computability.PNP.V13GaugeBufferedLockedInterfaceRegression
 import Mettapedia.Computability.PNP.V13PhaseEConcreteRegression
 import Mettapedia.Computability.PNP.V13PhaseEScaledRegression
 import Mettapedia.Computability.PNP.V13RealRungOneLinearRegression
+import Mettapedia.Computability.PNP.V13RealRungOneRowObserversRegression
 import Mettapedia.Computability.PNP.WeaknessCalculusRegression
 import Mettapedia.Computability.PNP.Barriers.Regression
 
