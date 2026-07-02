@@ -4133,6 +4133,21 @@ def concreteChainFiberAppendQuotientFibrationParentRowsNonSingletonPrefixStructu
                 (ChainFiberAppendQuotientFibrationParentRowsStructuralFields
                   data)
 
+def concreteChainFiberAppendQuotientFibrationParentRowsNonSingletonPrefixBaseDataStructuralClosed :
+    Prop :=
+  ∀ (word : List GoertzelLemma818FrontierMode.TauOrient)
+    (orient : GoertzelLemma818FrontierMode.TauOrient),
+    1 < word.length →
+    Nonempty (ChainWordConcreteFibrationCertificate word) →
+      ∀ key : List GoertzelLemma814.LColor,
+        key ∈ GoertzelLemma814.colorAssignments4 →
+          Nonempty
+            (Sigma (fun data :
+              ChainFiberAppendQuotientFibrationParentRowsBaseData
+                word orient key =>
+              ChainFiberAppendQuotientFibrationParentRowsStructuralFields
+                data))
+
 theorem concreteChainFiberAppendQuotientFibrationParentRowsNonSingletonPrefixFieldsClosed_of_base_data_and_structural
     (hData :
       concreteChainFiberAppendQuotientFibrationParentRowsNonSingletonPrefixBaseDataClosed)
@@ -4145,6 +4160,27 @@ theorem concreteChainFiberAppendQuotientFibrationParentRowsNonSingletonPrefixFie
   exact ⟨
     ChainFiberAppendQuotientFibrationParentRowsFields.ofBaseDataAndStructural
       data structural⟩
+
+theorem concreteChainFiberAppendQuotientFibrationParentRowsNonSingletonPrefixFieldsClosed_of_base_data_structural
+    (hPair :
+      concreteChainFiberAppendQuotientFibrationParentRowsNonSingletonPrefixBaseDataStructuralClosed) :
+    concreteChainFiberAppendQuotientFibrationParentRowsNonSingletonPrefixFieldsClosed := by
+  intro word orient hlen hcert key hkey
+  rcases hPair word orient hlen hcert key hkey with ⟨⟨data, structural⟩⟩
+  exact ⟨
+    ChainFiberAppendQuotientFibrationParentRowsFields.ofBaseDataAndStructural
+      data structural⟩
+
+theorem concreteChainFiberAppendQuotientFibrationParentRowsNonSingletonPrefixBaseDataStructuralClosed_of_base_data_and_structural
+    (hData :
+      concreteChainFiberAppendQuotientFibrationParentRowsNonSingletonPrefixBaseDataClosed)
+    (hStructural :
+      concreteChainFiberAppendQuotientFibrationParentRowsNonSingletonPrefixStructuralClosed) :
+    concreteChainFiberAppendQuotientFibrationParentRowsNonSingletonPrefixBaseDataStructuralClosed := by
+  intro word orient hlen hcert key hkey
+  rcases hData word orient hlen hcert key hkey with ⟨data⟩
+  rcases hStructural word orient hlen hcert key hkey data with ⟨structural⟩
+  exact ⟨⟨data, structural⟩⟩
 
 theorem concreteChainFiberAppendQuotientFibrationParentRowsFieldsClosed_of_length_two_seeds_and_non_singleton
     (hLengthTwo :
@@ -4173,6 +4209,14 @@ theorem concreteChainFiberAppendQuotientFibrationParentRowsFieldsClosed_of_non_s
     concreteChainFiberAppendQuotientFibrationParentRowsLengthTwoSeeds_ok
     hNonSingleton
 
+theorem concreteChainFiberAppendQuotientFibrationParentRowsFieldsClosed_of_non_singleton_base_data_structural
+    (hPair :
+      concreteChainFiberAppendQuotientFibrationParentRowsNonSingletonPrefixBaseDataStructuralClosed) :
+    concreteChainFiberAppendQuotientFibrationParentRowsFieldsClosed :=
+  concreteChainFiberAppendQuotientFibrationParentRowsFieldsClosed_of_non_singleton
+    (concreteChainFiberAppendQuotientFibrationParentRowsNonSingletonPrefixFieldsClosed_of_base_data_structural
+      hPair)
+
 theorem concreteChainFiberAppendQuotientFibrationParentRowsFieldsClosed_of_non_singleton_base_data_and_structural
     (hData :
       concreteChainFiberAppendQuotientFibrationParentRowsNonSingletonPrefixBaseDataClosed)
@@ -4193,6 +4237,14 @@ theorem concreteChainFiberFibrationNonemptyTransferClosed_of_append_quotient_par
     (concreteChainFiberAppendQuotientFibrationParentRowsFieldsClosed_of_non_singleton_base_data_and_structural
       hData hStructural)
 
+theorem concreteChainFiberFibrationNonemptyTransferClosed_of_append_quotient_parent_rows_base_data_structural
+    (hPair :
+      concreteChainFiberAppendQuotientFibrationParentRowsNonSingletonPrefixBaseDataStructuralClosed) :
+    concreteChainFiberFibrationNonemptyTransferClosed :=
+  concreteChainFiberFibrationNonemptyTransferClosed_of_append_quotient_parent_rows
+    (concreteChainFiberAppendQuotientFibrationParentRowsFieldsClosed_of_non_singleton_base_data_structural
+      hPair)
+
 theorem concreteChainAuditFibrationNonemptyTransferClosed_of_append_quotient_parent_rows_base_data_and_structural
     (hData :
       concreteChainFiberAppendQuotientFibrationParentRowsNonSingletonPrefixBaseDataClosed)
@@ -4202,6 +4254,14 @@ theorem concreteChainAuditFibrationNonemptyTransferClosed_of_append_quotient_par
   concreteChainAuditFibrationNonemptyTransferClosed_of_append_quotient_parent_rows
     (concreteChainFiberAppendQuotientFibrationParentRowsFieldsClosed_of_non_singleton_base_data_and_structural
       hData hStructural)
+
+theorem concreteChainAuditFibrationNonemptyTransferClosed_of_append_quotient_parent_rows_base_data_structural
+    (hPair :
+      concreteChainFiberAppendQuotientFibrationParentRowsNonSingletonPrefixBaseDataStructuralClosed) :
+    concreteChainAuditFibrationNonemptyTransferClosed :=
+  concreteChainAuditFibrationNonemptyTransferClosed_of_append_quotient_parent_rows
+    (concreteChainFiberAppendQuotientFibrationParentRowsFieldsClosed_of_non_singleton_base_data_structural
+      hPair)
 
 def concreteChainWordFibrationSingletonSeeds : Prop :=
   ∀ orient : GoertzelLemma818FrontierMode.TauOrient,
@@ -4409,6 +4469,18 @@ theorem chainAuditForFrontierWord_ok_of_append_quotient_parent_rows_base_data_an
     hSeed
     (concreteChainFiberAppendQuotientFibrationParentRowsFieldsClosed_of_non_singleton_base_data_and_structural
       hData hStructural)
+    word
+
+theorem chainAuditForFrontierWord_ok_of_append_quotient_parent_rows_base_data_structural
+    (hSeed : concreteChainWordFibrationSingletonSeeds)
+    (hPair :
+      concreteChainFiberAppendQuotientFibrationParentRowsNonSingletonPrefixBaseDataStructuralClosed)
+    (word : List GoertzelLemma818FrontierMode.TauOrient) :
+    chainAuditForFrontierWord word = true :=
+  chainAuditForFrontierWord_ok_of_append_quotient_parent_rows
+    hSeed
+    (concreteChainFiberAppendQuotientFibrationParentRowsFieldsClosed_of_non_singleton_base_data_structural
+      hPair)
     word
 
 theorem chainAuditForFrontierWord_ok_of_append_quotient_path_rows
@@ -5010,6 +5082,15 @@ theorem semanticFrontierStateSufficientForChain_of_append_quotient_parent_rows_b
     (concreteChainFiberAppendQuotientFibrationParentRowsFieldsClosed_of_non_singleton_base_data_and_structural
       hData hStructural)
 
+theorem semanticFrontierStateSufficientForChain_of_append_quotient_parent_rows_base_data_structural
+    {targetAudit : RepresentativeSemanticTarget → Bool}
+    (hPair :
+      concreteChainFiberAppendQuotientFibrationParentRowsNonSingletonPrefixBaseDataStructuralClosed) :
+    semanticFrontierStateSufficientForChain targetAudit :=
+  semanticFrontierStateSufficientForChain_of_append_quotient_parent_rows
+    (concreteChainFiberAppendQuotientFibrationParentRowsFieldsClosed_of_non_singleton_base_data_structural
+      hPair)
+
 theorem semanticFrontierStateSufficientForChain_of_append_quotient_path_rows
     {targetAudit : RepresentativeSemanticTarget → Bool}
     (hFields :
@@ -5181,6 +5262,19 @@ theorem chainAuditForFrontierWord_ok_of_targets_and_append_quotient_parent_rows_
     hTarget
     (semanticFrontierStateSufficientForChain_of_append_quotient_parent_rows_base_data_and_structural
       hData hStructural)
+    word
+
+theorem chainAuditForFrontierWord_ok_of_targets_and_append_quotient_parent_rows_base_data_structural
+    {targetAudit : RepresentativeSemanticTarget → Bool}
+    (hTarget : ∀ t, targetAudit t = true)
+    (hPair :
+      concreteChainFiberAppendQuotientFibrationParentRowsNonSingletonPrefixBaseDataStructuralClosed)
+    (word : List GoertzelLemma818FrontierMode.TauOrient) :
+    chainAuditForFrontierWord word = true :=
+  chainAuditForFrontierWord_ok_of_targets_and_frontier_state_sufficiency
+    hTarget
+    (semanticFrontierStateSufficientForChain_of_append_quotient_parent_rows_base_data_structural
+      hPair)
     word
 
 end GoertzelLemma818SemanticBridge

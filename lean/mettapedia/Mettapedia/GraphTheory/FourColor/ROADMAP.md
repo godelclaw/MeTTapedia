@@ -240,6 +240,14 @@ wrappers:
 `chainAuditForFrontierWord_ok_of_append_quotient_parent_rows_base_data_and_structural`,
 and
 `chainAuditForFrontierWord_ok_of_targets_and_append_quotient_parent_rows_base_data_and_structural`.
+For generated output, prefer the paired target
+`concreteChainFiberAppendQuotientFibrationParentRowsNonSingletonPrefixBaseDataStructuralClosed`:
+it supplies one emitted base-data record together with its structural fields for
+each case, and the `_base_data_structural` wrappers carry that paired target
+through field closure, transfer closure, semantic sufficiency, and the
+target-gated all-word audit.  The `_base_data_and_structural` wrappers remain a
+stronger split useful when finite base data and structural motion are proved as
+separate global facts.
 The same-prefix closure side is now separated from prefix mobility:
 `concreteChainFiberAppendPrefixSelfLiftClosureClosed_of_lift` derives a closed
 appended representative over the current prefix from the lift-closure theorem

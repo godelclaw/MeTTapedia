@@ -137,6 +137,13 @@ The same split now feeds the downstream assembly points directly through
 `chainAuditForFrontierWord_ok_of_append_quotient_parent_rows_base_data_and_structural`,
 and
 `chainAuditForFrontierWord_ok_of_targets_and_append_quotient_parent_rows_base_data_and_structural`.
+The preferred generated-certificate surface is the paired form
+`concreteChainFiberAppendQuotientFibrationParentRowsNonSingletonPrefixBaseDataStructuralClosed`:
+for each non-singleton prefix and fixed input it emits one base-data record
+together with the matching structural fields.  This paired target feeds the same
+field, transfer, semantic sufficiency, and target-gated all-word wrappers
+through the `_base_data_structural` theorems, while the older `_base_data_and_structural`
+wrappers remain a stronger two-hypothesis variant.
 
 `GoertzelLemma818SemanticProgress.lean` now records the checked semantic
 frontier after the completed `TTT` target.  It proves
