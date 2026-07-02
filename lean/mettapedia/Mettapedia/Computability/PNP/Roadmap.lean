@@ -170,6 +170,14 @@ def currentPNPRoadmap : List PNPRoadmapEntry :=
       itvLowerPercent := 88
       itvUpperPercent := 100
       obligation := "Use the certified invertible F2^m public surface `(A, A x)`: full public input decodes the target coordinate, and no elementary coordinate of A, A inverse, or the RHS determines it when a spare coordinate exists; the checked package is V13RealLinearPublicSurfaceCertificate." },
+    { stage := .v13RealRungOneLinear
+      proofNodeKey := "pnp.v13.real-rung-one.square-gl-rhs-balance-obstruction"
+      status := .checked
+      truthValue := ⟨100, 97⟩
+      progressPercent := 100
+      itvLowerPercent := 97
+      itvUpperPercent := 100
+      obligation := "Record the dimension-two square-GL obstruction: the RHS coordinate fiber `b0 = 0` has unequal target-bit counts, so exact coordinate-balance admissibility requires a changed sampler or a different formal statement." },
     { stage := .v13RealRungOneRowObservers
       proofNodeKey := "pnp.v13.real-rung-one.row-observer-hard-core"
       status := .replacementOpened
@@ -434,6 +442,19 @@ theorem currentPNPRoadmap_records_v13_real_rung_one_linear :
        itvUpperPercent := 100
        obligation :=
         "Use the certified invertible F2^m public surface `(A, A x)`: full public input decodes the target coordinate, and no elementary coordinate of A, A inverse, or the RHS determines it when a spare coordinate exists; the checked package is V13RealLinearPublicSurfaceCertificate." } :
+      PNPRoadmapEntry) ∈ currentPNPRoadmap := by
+  simp [currentPNPRoadmap]
+
+theorem currentPNPRoadmap_records_v13_real_rung_one_square_gl_rhs_balance_obstruction :
+    ({ stage := PNPRoadmapStage.v13RealRungOneLinear
+       proofNodeKey := "pnp.v13.real-rung-one.square-gl-rhs-balance-obstruction"
+       status := .checked
+       truthValue := ⟨100, 97⟩
+       progressPercent := 100
+       itvLowerPercent := 97
+       itvUpperPercent := 100
+       obligation :=
+        "Record the dimension-two square-GL obstruction: the RHS coordinate fiber `b0 = 0` has unequal target-bit counts, so exact coordinate-balance admissibility requires a changed sampler or a different formal statement." } :
       PNPRoadmapEntry) ∈ currentPNPRoadmap := by
   simp [currentPNPRoadmap]
 

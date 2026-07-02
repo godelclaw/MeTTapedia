@@ -5304,6 +5304,182 @@ theorem v13RealLinear_f2_equiv_two_card_four_le :
           (V13RealLinearTargetRows A (0 : Fin 2)).Nonempty)
   exact v13RealLinearUniformTargetRowOccurrence_card_four_le.trans hsub
 
+/-- Worlds in the two-dimensional square-GL sampler with RHS coordinate zero
+and a fixed target bit. -/
+abbrev V13RealLinearRhsZeroTargetFiber (bit : ZMod 2) :=
+  {omega :
+    V13RealLinearAdaptiveQRowWorld 2 (V13F2LinearEquiv 2) //
+      omega.1.toEquiv omega.2 (0 : Fin 2) = 0 ∧
+        omega.2 (0 : Fin 2) = bit}
+
+lemma v13RealLinear_equiv_two_not_both_basis_coord_zero
+    (A : V13F2LinearEquiv 2) :
+    ¬ (A.toEquiv (v13RealLinearSingleBit (0 : Fin 2)) (0 : Fin 2) = 0 ∧
+      A.toEquiv (v13RealLinearSingleBit (1 : Fin 2)) (0 : Fin 2) = 0) := by
+  intro hzero
+  have h0 :
+      A.toEquiv (v13RealLinearSingleBit (0 : Fin 2)) =
+        v13RealLinearSingleBit (1 : Fin 2) := by
+    exact
+      v13RealLinear_f2vec2_eq_singleBit_one_of_ne_zero_of_coord_zero
+        (A.toEquiv (v13RealLinearSingleBit (0 : Fin 2)))
+        (v13RealLinearTwoBasisImagePair A).1.property hzero.1
+  have h1 :
+      A.toEquiv (v13RealLinearSingleBit (1 : Fin 2)) =
+        v13RealLinearSingleBit (1 : Fin 2) := by
+    exact
+      v13RealLinear_f2vec2_eq_singleBit_one_of_ne_zero_of_coord_zero
+        (A.toEquiv (v13RealLinearSingleBit (1 : Fin 2)))
+        (v13RealLinearTwoBasisImagePair A).2.val.property hzero.2
+  have hpre :
+      v13RealLinearSingleBit (0 : Fin 2) =
+        v13RealLinearSingleBit (1 : Fin 2) :=
+    A.toEquiv.injective (h0.trans h1.symm)
+  have hcoord := congrFun hpre (0 : Fin 2)
+  simp [v13RealLinearSingleBit] at hcoord
+
+lemma v13RealLinear_equiv_two_rhs_zero_target_one_unique
+    (A : V13F2LinearEquiv 2) {x y : F2Vec 2}
+    (hxrhs : A.toEquiv x (0 : Fin 2) = 0)
+    (hxtarget : x (0 : Fin 2) = 1)
+    (hyrhs : A.toEquiv y (0 : Fin 2) = 0)
+    (hytarget : y (0 : Fin 2) = 1) :
+    x = y := by
+  rcases v13RealLinear_f2vec2_cases x with hx | hx | hx | hx <;>
+    rcases v13RealLinear_f2vec2_cases y with hy | hy | hy | hy
+  all_goals
+    try subst x
+    try subst y
+    try simp [f2ZeroVec, v13RealLinearSingleBit, f2AddVec] at hxtarget
+    try simp [f2ZeroVec, v13RealLinearSingleBit, f2AddVec] at hytarget
+  · rfl
+  · have he1zero :
+        A.toEquiv (v13RealLinearSingleBit (1 : Fin 2))
+            (0 : Fin 2) = 0 := by
+      have hmap :=
+        congrFun
+          (A.map_add (v13RealLinearSingleBit (0 : Fin 2))
+            (v13RealLinearSingleBit (1 : Fin 2))) (0 : Fin 2)
+      simp [f2AddVec, hxrhs] at hmap
+      simpa [hmap] using hyrhs
+    exact False.elim
+      (v13RealLinear_equiv_two_not_both_basis_coord_zero A
+        ⟨hxrhs, he1zero⟩)
+  · have he1zero :
+        A.toEquiv (v13RealLinearSingleBit (1 : Fin 2))
+            (0 : Fin 2) = 0 := by
+      have hmap :=
+        congrFun
+          (A.map_add (v13RealLinearSingleBit (0 : Fin 2))
+            (v13RealLinearSingleBit (1 : Fin 2))) (0 : Fin 2)
+      simp [f2AddVec, hyrhs] at hmap
+      simpa [hmap] using hxrhs
+    exact False.elim
+      (v13RealLinear_equiv_two_not_both_basis_coord_zero A
+        ⟨hyrhs, he1zero⟩)
+  · rfl
+
+noncomputable def v13RealLinearRhsZeroTargetOneToMap :
+    V13RealLinearRhsZeroTargetFiber 1 ↪ V13F2LinearEquiv 2 where
+  toFun omega := omega.val.1
+  inj' := by
+    intro omega₀ omega₁ hA
+    apply Subtype.ext
+    apply Prod.ext hA
+    exact
+      v13RealLinear_equiv_two_rhs_zero_target_one_unique omega₀.val.1
+        omega₀.property.1 omega₀.property.2
+        (by simpa [hA] using omega₁.property.1)
+        (by simpa using omega₁.property.2)
+
+theorem v13RealLinearRhsZeroTargetOne_card_le_maps :
+    Fintype.card (V13RealLinearRhsZeroTargetFiber 1) ≤
+      Fintype.card (V13F2LinearEquiv 2) :=
+  Fintype.card_le_of_embedding v13RealLinearRhsZeroTargetOneToMap
+
+noncomputable def v13RealLinearRhsZeroTargetZeroLowerEmbedding :
+    Sum (V13F2LinearEquiv 2) (Fin 2) ↪
+      V13RealLinearRhsZeroTargetFiber 0 where
+  toFun source :=
+    match source with
+    | Sum.inl A =>
+        ⟨(A, f2ZeroVec 2), by
+          simp [f2ZeroVec, A.map_zero]⟩
+    | Sum.inr ⟨0, _⟩ =>
+        ⟨(v13RealLinearIdentity 2,
+            v13RealLinearSingleBit (1 : Fin 2)), by
+          simp [v13RealLinearIdentity, v13RealLinearSingleBit]⟩
+    | Sum.inr ⟨1, _⟩ =>
+        ⟨(v13RealLinearShear01,
+            v13RealLinearSingleBit (1 : Fin 2)), by
+          simp [v13RealLinearShear01, v13RealLinearSingleBit]⟩
+    | Sum.inr ⟨n + 2, h⟩ => by omega
+  inj' := by
+    classical
+    intro a b h
+    cases a with
+    | inl A =>
+        cases b with
+        | inl B =>
+            exact congrArg Sum.inl
+              (congrArg (fun omega : V13RealLinearRhsZeroTargetFiber 0 =>
+                omega.val.1) h)
+        | inr k =>
+            have hx := congrArg (fun omega : V13RealLinearRhsZeroTargetFiber 0 =>
+              omega.val.2) h
+            fin_cases k
+            · have hcoord := congrFun hx (1 : Fin 2)
+              simp [f2ZeroVec, v13RealLinearSingleBit] at hcoord
+            · have hcoord := congrFun hx (1 : Fin 2)
+              simp [f2ZeroVec, v13RealLinearSingleBit] at hcoord
+    | inr k =>
+        cases b with
+        | inl B =>
+            have hx := congrArg (fun omega : V13RealLinearRhsZeroTargetFiber 0 =>
+              omega.val.2) h
+            fin_cases k
+            · have hcoord := congrFun hx (1 : Fin 2)
+              simp [f2ZeroVec, v13RealLinearSingleBit] at hcoord
+            · have hcoord := congrFun hx (1 : Fin 2)
+              simp [f2ZeroVec, v13RealLinearSingleBit] at hcoord
+        | inr l =>
+            fin_cases k <;> fin_cases l
+            · rfl
+            · have hA := congrArg
+                (fun omega : V13RealLinearRhsZeroTargetFiber 0 =>
+                  omega.val.1.toEquiv (v13RealLinearSingleBit (0 : Fin 2))
+                    (1 : Fin 2)) h
+              simp [v13RealLinearIdentity, v13RealLinearShear01,
+                v13RealLinearSingleBit] at hA
+            · have hA := congrArg
+                (fun omega : V13RealLinearRhsZeroTargetFiber 0 =>
+                  omega.val.1.toEquiv (v13RealLinearSingleBit (0 : Fin 2))
+                    (1 : Fin 2)) h
+              simp [v13RealLinearIdentity, v13RealLinearShear01,
+                v13RealLinearSingleBit] at hA
+            · rfl
+
+theorem v13RealLinearRhsZeroTargetZero_card_ge_maps_add_two :
+    Fintype.card (V13F2LinearEquiv 2) + 2 ≤
+      Fintype.card (V13RealLinearRhsZeroTargetFiber 0) := by
+  classical
+  have hle :
+      Fintype.card (Sum (V13F2LinearEquiv 2) (Fin 2)) ≤
+        Fintype.card (V13RealLinearRhsZeroTargetFiber 0) :=
+    Fintype.card_le_of_embedding
+      v13RealLinearRhsZeroTargetZeroLowerEmbedding
+  simpa [Fintype.card_sum, Fintype.card_fin] using hle
+
+theorem v13RealLinearRhsZeroTargetFiber_two_zero_not_balanced :
+    Fintype.card (V13RealLinearRhsZeroTargetFiber 0) ≠
+      Fintype.card (V13RealLinearRhsZeroTargetFiber 1) := by
+  intro hbalance
+  have hzero :=
+    v13RealLinearRhsZeroTargetZero_card_ge_maps_add_two
+  have hone :=
+    v13RealLinearRhsZeroTargetOne_card_le_maps
+  omega
+
 theorem v13RealLinearUniformTargetRowOccurrenceMass_two_zero_gt_half_unconditional :
     (1 / 2 : Rat) <
       v13RealLinearUniformTargetRowOccurrenceMass (0 : Fin 2) :=

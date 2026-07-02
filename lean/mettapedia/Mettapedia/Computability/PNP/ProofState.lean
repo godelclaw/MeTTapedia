@@ -1064,6 +1064,11 @@ theorem currentPNPV13RealRungOneLinear_certificate_node :
   intro m
   exact v13RealLinear_publicSurfaceCertificate
 
+theorem currentPNPV13RealRungOneRhsBalanceObstruction_node :
+    Fintype.card (V13RealLinearRhsZeroTargetFiber 0) ≠
+      Fintype.card (V13RealLinearRhsZeroTargetFiber 1) :=
+  v13RealLinearRhsZeroTargetFiber_two_zero_not_balanced
+
 theorem currentPNPV13RealRungOneRowObservers_node :
     (∀ {m : Nat} {A : V13F2LinearEquiv m}
       {rows : Finset (Fin m)} {i₀ : Fin m},
