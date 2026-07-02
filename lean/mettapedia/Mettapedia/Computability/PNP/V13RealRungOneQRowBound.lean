@@ -3856,6 +3856,105 @@ theorem v13RealLinearNoTargetRowShear_branchRows_ne_of_activeRowIndex_of_bridgeF
       (bridge active hactiveRows' htarget') restRow activeRow.val hrestRows
       hactiveRows' hrestSame hactiveSame hneq
 
+theorem v13RealLinearNoTargetRowShear_branchRows_ne_of_activeRowIndex_of_bridgeMapFamily
+    {m : Nat} (observer : V13RealLinearCausalRowObserver m 1)
+    (i₀ : Fin m) (hm : 1 < m) (x : F2Vec m)
+    (activeRow :
+      V13RealLinearUniformOneRowGeneratedRowIndex observer.toAdaptive i₀)
+    (restRow : Fin m)
+    (hneq : activeRow.val ≠ restRow)
+    (bridgeMap :
+      ∀ active :
+          V13RealLinearAdaptiveQRowWorld m (V13F2LinearEquiv m),
+        (v13RealLinearUniformCausalQRowExperiment observer).branchRows active =
+            ({activeRow.val} : Finset (Fin m)) →
+        activeRow.val ∈ V13RealLinearTargetRows active.1 i₀ →
+          {bridgeA : V13F2LinearEquiv m //
+            (∀ probe : F2Vec m,
+              (v13RealLinearNoTargetRowShear i₀ hm).toEquiv probe restRow =
+                bridgeA.toEquiv probe restRow) ∧
+            (∀ probe : F2Vec m,
+              active.1.toEquiv probe activeRow.val =
+                bridgeA.toEquiv probe activeRow.val)}) :
+    (v13RealLinearUniformCausalQRowExperiment observer).branchRows
+        (v13RealLinearNoTargetRowShear i₀ hm, x) ≠
+      ({restRow} : Finset (Fin m)) := by
+  classical
+  let bridge :
+      ∀ active :
+          V13RealLinearAdaptiveQRowWorld m (V13F2LinearEquiv m),
+        (v13RealLinearUniformCausalQRowExperiment observer).branchRows active =
+            ({activeRow.val} : Finset (Fin m)) →
+        activeRow.val ∈ V13RealLinearTargetRows active.1 i₀ →
+          V13RealLinearAdaptiveQRowWorld m (V13F2LinearEquiv m) :=
+    fun active hactiveRows htarget =>
+      let bridgeA := (bridgeMap active hactiveRows htarget).val
+      let restBit :=
+        (v13RealLinearNoTargetRowShear i₀ hm).toEquiv x restRow
+      let targetBit := active.2 i₀
+      let bridgeX :=
+        Classical.choose
+          (v13RealLinearNoTargetRowShear_exists_bridgeX_for_row_target_bits
+            i₀ hm restRow restBit targetBit)
+      (bridgeA, bridgeX)
+  refine
+    v13RealLinearNoTargetRowShear_branchRows_ne_of_activeRowIndex_of_bridgeFamily
+      observer i₀ hm x activeRow restRow hneq bridge ?_
+  intro active hactiveRows htarget
+  let bridgeMapData := bridgeMap active hactiveRows htarget
+  let bridgeA := bridgeMapData.val
+  let restBit :=
+    (v13RealLinearNoTargetRowShear i₀ hm).toEquiv x restRow
+  let targetBit := active.2 i₀
+  let bridgeX :=
+    Classical.choose
+      (v13RealLinearNoTargetRowShear_exists_bridgeX_for_row_target_bits
+        i₀ hm restRow restBit targetBit)
+  have hbridgeX :
+      (v13RealLinearNoTargetRowShear i₀ hm).toEquiv bridgeX restRow =
+          restBit ∧
+        bridgeX i₀ = targetBit :=
+    Classical.choose_spec
+      (v13RealLinearNoTargetRowShear_exists_bridgeX_for_row_target_bits
+        i₀ hm restRow restBit targetBit)
+  have hrestFun :
+      ∀ probe : F2Vec m,
+        (v13RealLinearNoTargetRowShear i₀ hm).toEquiv probe restRow =
+          bridgeA.toEquiv probe restRow :=
+    bridgeMapData.property.1
+  have hactiveFun :
+      ∀ probe : F2Vec m,
+        active.1.toEquiv probe activeRow.val =
+          bridgeA.toEquiv probe activeRow.val :=
+    bridgeMapData.property.2
+  have htargetFun :
+      ∀ probe : F2Vec m,
+        active.1.toEquiv probe activeRow.val = probe i₀ :=
+    (v13RealLinear_mem_targetRows_iff active.1 i₀ activeRow.val).1 htarget
+  have hrestBit :
+      (v13RealLinearNoTargetRowShear i₀ hm).toEquiv x restRow =
+        bridgeA.toEquiv bridgeX restRow := by
+    calc
+      (v13RealLinearNoTargetRowShear i₀ hm).toEquiv x restRow = restBit := rfl
+      _ = (v13RealLinearNoTargetRowShear i₀ hm).toEquiv bridgeX restRow :=
+        hbridgeX.1.symm
+      _ = bridgeA.toEquiv bridgeX restRow := hrestFun bridgeX
+  have hactiveBit :
+      active.1.toEquiv active.2 activeRow.val =
+        bridgeA.toEquiv bridgeX activeRow.val := by
+    calc
+      active.1.toEquiv active.2 activeRow.val = active.2 i₀ :=
+        htargetFun active.2
+      _ = bridgeX i₀ := hbridgeX.2.symm
+      _ = active.1.toEquiv bridgeX activeRow.val := (htargetFun bridgeX).symm
+      _ = bridgeA.toEquiv bridgeX activeRow.val := hactiveFun bridgeX
+  simpa [v13RealLinearUniformCausalQRowExperiment,
+    v13RealLinearUniformQRowExperiment, V13RealLinearAdaptiveQRowExperiment.world,
+    bridge, bridgeMapData, bridgeA, bridgeX, restBit, targetBit] using
+    v13RealLinearNoTargetRowShear_bridgeTranscripts_of_row_matches
+      i₀ hm x active.2 bridgeX active.1 bridgeA restRow activeRow.val
+      hrestFun hrestBit hactiveFun hactiveBit
+
 theorem v13RealLinearSwapShear10_branchRows_ne_empty_of_activeRowIndex
     (observer : V13RealLinearCausalRowObserver 2 1) (x : F2Vec 2)
     (activeRow :
