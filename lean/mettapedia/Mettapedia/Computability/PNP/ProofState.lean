@@ -1141,6 +1141,11 @@ theorem currentPNPV13RealRungOneQRowBound_node :
         (v13RealLinearUniformQRowExperiment
           (v13RealLinearTargetRowObserver i₀)).generated i₀ (A, x) ↔
           (V13RealLinearTargetRows A i₀).Nonempty) ∧
+      (∀ {m : Nat} (i₀ : Fin m),
+        v13RealLinearAdaptiveQRowGeneratedMass
+          (v13RealLinearUniformQRowExperiment
+            (v13RealLinearTargetRowObserver i₀)) i₀ =
+        v13RealLinearUniformTargetRowOccurrenceMass i₀) ∧
       (∀ {m q : Nat} {Seed : Type*} [Fintype Seed]
         (E : V13RealLinearAdaptiveQRowExperiment m q Seed) (i₀ : Fin m),
         v13RealLinearAdaptiveQRowBlockedMass E i₀ =
@@ -1190,6 +1195,8 @@ theorem currentPNPV13RealRungOneQRowBound_node :
       fun i₀ A x =>
         v13RealLinear_targetRowObserver_generated_iff_targetRows_nonempty
           i₀ A x,
+      fun i₀ =>
+        v13RealLinear_targetRowObserverGeneratedMass_eq_occurrenceMass i₀,
       fun E i₀ =>
         v13RealLinearAdaptiveQRowBlockedMass_eq_generatedMass E i₀,
       fun E i₀ =>

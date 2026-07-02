@@ -451,6 +451,20 @@ theorem v13RealLinear_targetRowObserver_generated_iff_targetRows_nonempty
       v13RealLinear_targetRowObserver_generated_of_targetRows_nonempty
         i₀ A x hnonempty
 
+def V13RealLinearUniformTargetRowOccurrence {m : Nat} (i₀ : Fin m) :=
+  {A : V13F2LinearEquiv m // (V13RealLinearTargetRows A i₀).Nonempty}
+
+noncomputable instance {m : Nat} (i₀ : Fin m) :
+    Fintype (V13RealLinearUniformTargetRowOccurrence i₀) := by
+  classical
+  unfold V13RealLinearUniformTargetRowOccurrence
+  infer_instance
+
+noncomputable def v13RealLinearUniformTargetRowOccurrenceMass {m : Nat}
+    (i₀ : Fin m) : Rat :=
+  (Fintype.card (V13RealLinearUniformTargetRowOccurrence i₀) : Rat) /
+    (Fintype.card (V13F2LinearEquiv m) : Rat)
+
 def V13RealLinearAdaptiveQRowExperiment.correct {m q : Nat} {Seed : Type*}
     (E : V13RealLinearAdaptiveQRowExperiment m q Seed) (i₀ : Fin m)
     (omega : V13RealLinearAdaptiveQRowWorld m Seed) : Prop :=
@@ -512,6 +526,39 @@ noncomputable instance {m q : Nat} {Seed : Type*} [Fintype Seed]
   unfold V13RealLinearAdaptiveQRowUnblockedCorrect
   infer_instance
 
+noncomputable def v13RealLinear_targetRowObserverGeneratedEquivOccurrenceProd
+    {m : Nat} (i₀ : Fin m) :
+    V13RealLinearAdaptiveQRowGenerated
+        (v13RealLinearUniformQRowExperiment
+          (v13RealLinearTargetRowObserver i₀)) i₀ ≃
+      V13RealLinearUniformTargetRowOccurrence i₀ × F2Vec m where
+  toFun omega :=
+    ⟨⟨omega.val.1,
+        (v13RealLinear_targetRowObserver_generated_iff_targetRows_nonempty
+          i₀ omega.val.1 omega.val.2).1 omega.property⟩,
+      omega.val.2⟩
+  invFun omega :=
+    ⟨(omega.1.val, omega.2),
+      (v13RealLinear_targetRowObserver_generated_iff_targetRows_nonempty
+        i₀ omega.1.val omega.2).2 omega.1.property⟩
+  left_inv omega := by
+    rfl
+  right_inv omega := by
+    rfl
+
+theorem v13RealLinear_targetRowObserverGenerated_card_eq
+    {m : Nat} (i₀ : Fin m) :
+    Fintype.card
+        (V13RealLinearAdaptiveQRowGenerated
+          (v13RealLinearUniformQRowExperiment
+            (v13RealLinearTargetRowObserver i₀)) i₀) =
+      Fintype.card (V13RealLinearUniformTargetRowOccurrence i₀) *
+        Fintype.card (F2Vec m) := by
+  classical
+  rw [Fintype.card_congr
+    (v13RealLinear_targetRowObserverGeneratedEquivOccurrenceProd i₀)]
+  simp [Fintype.card_prod]
+
 noncomputable def v13RealLinearAdaptiveQRowSuccess {m q : Nat}
     {Seed : Type*} [Fintype Seed]
     (E : V13RealLinearAdaptiveQRowExperiment m q Seed) (i₀ : Fin m) :
@@ -532,6 +579,35 @@ noncomputable def v13RealLinearAdaptiveQRowGeneratedMass {m q : Nat}
     Rat :=
   (Fintype.card (V13RealLinearAdaptiveQRowGenerated E i₀) : Rat) /
     (Fintype.card (V13RealLinearAdaptiveQRowWorld m Seed) : Rat)
+
+theorem v13RealLinear_targetRowObserverGeneratedMass_eq_occurrenceMass
+    {m : Nat} (i₀ : Fin m) :
+    v13RealLinearAdaptiveQRowGeneratedMass
+        (v13RealLinearUniformQRowExperiment
+          (v13RealLinearTargetRowObserver i₀)) i₀ =
+      v13RealLinearUniformTargetRowOccurrenceMass i₀ := by
+  classical
+  unfold v13RealLinearAdaptiveQRowGeneratedMass
+  unfold v13RealLinearUniformTargetRowOccurrenceMass
+  rw [v13RealLinear_targetRowObserverGenerated_card_eq i₀]
+  let O := Fintype.card (V13RealLinearUniformTargetRowOccurrence i₀)
+  let A := Fintype.card (V13F2LinearEquiv m)
+  let X := Fintype.card (F2Vec m)
+  have hXposNat : 0 < X := by
+    dsimp [X]
+    exact Fintype.card_pos_iff.mpr ⟨f2ZeroVec m⟩
+  have hXpos : (0 : Rat) < (X : Rat) := by
+    exact_mod_cast hXposNat
+  change ((Fintype.card (V13RealLinearUniformTargetRowOccurrence i₀) *
+      Fintype.card (F2Vec m) : Nat) : Rat) /
+      (Fintype.card (V13F2LinearEquiv m × F2Vec m) : Rat) =
+    (Fintype.card (V13RealLinearUniformTargetRowOccurrence i₀) : Rat) /
+      (Fintype.card (V13F2LinearEquiv m) : Rat)
+  rw [Fintype.card_prod]
+  change ((O * X : Nat) : Rat) / ((A * X : Nat) : Rat) =
+    (O : Rat) / (A : Rat)
+  rw [Nat.cast_mul, Nat.cast_mul]
+  field_simp [hXpos.ne']
 
 noncomputable def v13RealLinearAdaptiveQRowBlockedGeneratedEquiv
     {m q : Nat} {Seed : Type*}
