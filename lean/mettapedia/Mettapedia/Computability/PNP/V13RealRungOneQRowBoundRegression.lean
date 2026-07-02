@@ -10,6 +10,7 @@ set_option autoImplicit false
 #check v13RealLinearQRowEpsilon
 #check V13RealLinearAdaptiveRowSpanCountingBound
 #check V13RealLinearAdaptiveKernelFlipSurchargeBound
+#check v13RealLinear_adaptiveKernelFlipSurchargeBound
 #check v13RealLinear_adaptive_qrow_success_bound_of_spanCounting
 #check v13RealLinear_qrow_epsilon_nonnegative
 
@@ -46,9 +47,6 @@ theorem v13RealLinearQRowBoundRegression_epsilon_nonnegative :
   v13RealLinear_qrow_epsilon_nonnegative 0 2
 
 theorem v13RealLinearQRowBoundRegression_conditional_shape
-    (hflip :
-      V13RealLinearAdaptiveKernelFlipSurchargeBound
-        v13RealLinearQRowBoundRegression_experiment 0)
     (hcount :
       V13RealLinearAdaptiveRowSpanCountingBound
         v13RealLinearQRowBoundRegression_experiment 0) :
@@ -57,8 +55,9 @@ theorem v13RealLinearQRowBoundRegression_conditional_shape
       (1 / 2 : Rat) + v13RealLinearQRowEpsilon 0 2 := by
   exact
     v13RealLinear_adaptive_qrow_success_bound_of_spanCounting
-      v13RealLinearQRowBoundRegression_experiment 0 hflip hcount
+      v13RealLinearQRowBoundRegression_experiment 0 hcount
 
+#print axioms v13RealLinear_adaptiveKernelFlipSurchargeBound
 #print axioms v13RealLinear_adaptive_qrow_success_bound_of_spanCounting
 #print axioms v13RealLinear_qrow_epsilon_nonnegative
 #print axioms v13RealLinearQRowBoundRegression_conditional_shape
