@@ -1151,6 +1151,28 @@ theorem currentPNPV13RealRungOneQRowBound_node :
         (omega : V13RealLinearAdaptiveQRowWorld m Seed),
         E.generated i₀ omega →
           (V13RealLinearTargetRows (E.sampleA omega.1) i₀).Nonempty) ∧
+      (∀ {m : Nat} (observer : V13RealLinearCausalRowObserver m 1)
+        (i₀ : Fin m)
+        (omega : V13RealLinearAdaptiveQRowWorld m (V13F2LinearEquiv m)),
+        (v13RealLinearUniformCausalQRowExperiment observer).generated
+          i₀ omega →
+          ∃ row : Fin m,
+            (v13RealLinearUniformCausalQRowExperiment observer).branchRows
+                omega =
+              ({row} : Finset (Fin m)) ∧
+              row ∈ V13RealLinearTargetRows omega.1 i₀ ∧
+                ∀ omega' :
+                    V13RealLinearAdaptiveQRowWorld m (V13F2LinearEquiv m),
+                  v13RealLinearRowsTranscript ({row} : Finset (Fin m))
+                      (v13RealLinearPublicInput
+                        ((v13RealLinearUniformCausalQRowExperiment observer).world
+                          omega)) =
+                    v13RealLinearRowsTranscript ({row} : Finset (Fin m))
+                      (v13RealLinearPublicInput
+                        ((v13RealLinearUniformCausalQRowExperiment observer).world
+                          omega')) →
+                  (v13RealLinearUniformCausalQRowExperiment observer).generated
+                    i₀ omega') ∧
       (∀ {m : Nat} (i₀ : Fin m) (A : V13F2LinearEquiv m) (x : F2Vec m),
         (v13RealLinearUniformQRowExperiment
           (v13RealLinearTargetRowObserver i₀)).generated i₀ (A, x) ↔
@@ -1363,6 +1385,9 @@ theorem currentPNPV13RealRungOneQRowBound_node :
         E.generated_one_budget_exists_singleton_target_row i₀ omega hgen,
       fun E i₀ omega hgen =>
         E.targetRows_nonempty_of_generated_one_budget i₀ omega hgen,
+      fun observer i₀ omega hgen =>
+        v13RealLinearUniformCausalOneRowGenerated_exists_generated_cylinder
+          observer i₀ omega hgen,
       fun i₀ A x =>
         v13RealLinear_targetRowObserver_generated_iff_targetRows_nonempty
           i₀ A x,
