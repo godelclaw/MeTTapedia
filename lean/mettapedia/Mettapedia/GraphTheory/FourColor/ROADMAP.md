@@ -276,6 +276,11 @@ remaining switch-agreement claim is
 input-disjointness part is already handled by
 `concreteChainFiberAppendShiftComponent_avoids_inputs`, since every shifted
 edge lives at occurrence `word.length`.
+The switch-agreement side has been peeled to local edges by
+`concreteChainFiberAppendRelativeSingletonShiftedSwitchAgreementClosed_of_pointwise`;
+the remaining pointwise hook is
+`concreteChainFiberAppendRelativeSingletonShiftedSwitchPointClosed`, ready to
+split into prefix edges, last-gadget non-glued edges, and glued-input edges.
 The closure-under-step side is now reduced by
 `concreteChainFiberAppendRelativeSingletonGlobalStepClosureClosed_of_bounded_saturation`
 to the pure closure-iterator lemma
