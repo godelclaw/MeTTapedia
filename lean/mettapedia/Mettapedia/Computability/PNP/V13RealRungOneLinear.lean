@@ -125,6 +125,26 @@ def V13RealLinearCoordinateDeterminesTarget {m : Nat}
         (v13RealLinearPublicInput omega) =
       v13RealLinearTarget i₀ omega
 
+/-- The checked public-surface certificate for the square linear replacement:
+full public input decodes and determines the target coordinate, while no
+elementary public coordinate is a deterministic target tag when a spare
+coordinate exists. -/
+structure V13RealLinearPublicSurfaceCertificate (m : Nat) : Prop where
+  fullPublicDecodes :
+    ∀ i₀ : Fin m, ∀ omega : V13RealLinearWorld m,
+      v13RealLinearFullDecoder i₀ (v13RealLinearPublicInput omega) =
+        v13RealLinearTarget i₀ omega
+  fullPublicDeterminesTarget :
+    ∀ i₀ : Fin m, ∀ omega₀ omega₁ : V13RealLinearWorld m,
+      v13RealLinearPublicInput omega₀ =
+        v13RealLinearPublicInput omega₁ →
+      v13RealLinearTarget i₀ omega₀ =
+        v13RealLinearTarget i₀ omega₁
+  noSingleCoordinateDeterminesTarget :
+    ∀ i₀ spare : Fin m, spare ≠ i₀ →
+      ∀ coordinate : V13RealLinearPublicCoordinate m,
+        ¬ V13RealLinearCoordinateDeterminesTarget i₀ coordinate
+
 def v13RealLinearSingleBit {m : Nat} (i : Fin m) : F2Vec m :=
   fun r => if r = i then 1 else 0
 
@@ -321,5 +341,16 @@ theorem v13RealLinear_no_single_public_coordinate_determines_target_of_spare
           exact hsame
         simp [v13RealLinear_target_zero_world,
           v13RealLinear_target_one_world] at htarget
+
+theorem v13RealLinear_publicSurfaceCertificate {m : Nat} :
+    V13RealLinearPublicSurfaceCertificate m := by
+  exact
+    { fullPublicDecodes := fun i₀ omega =>
+        v13RealLinear_fullPublic_decodes_target i₀ omega
+      fullPublicDeterminesTarget := fun i₀ omega₀ omega₁ hpublic =>
+        v13RealLinear_fullPublic_determines_target i₀ omega₀ omega₁ hpublic
+      noSingleCoordinateDeterminesTarget := fun i₀ spare hspare =>
+        v13RealLinear_no_single_public_coordinate_determines_target_of_spare
+          i₀ spare hspare }
 
 end Mettapedia.Computability.PNP
