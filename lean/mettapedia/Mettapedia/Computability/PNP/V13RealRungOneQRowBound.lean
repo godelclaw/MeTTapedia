@@ -1090,6 +1090,78 @@ theorem v13RealLinearNoTargetRowShear_targetRows_empty {m : Nat}
   exact ⟨v13FinSpare i₀ hm, v13FinSpare_ne i₀ hm, by
     simp [v13RealLinearSingleBit]⟩
 
+theorem v13RealLinearNoTargetRowShear_rowFunctional_ne_target
+    {m : Nat} (i₀ : Fin m) (hm : 1 < m) (row : Fin m) :
+    ∃ w : F2Vec m,
+      (v13RealLinearNoTargetRowShear i₀ hm).toEquiv w row ≠ w i₀ := by
+  classical
+  by_cases hrow : row = i₀
+  · subst row
+    let spare := v13FinSpare i₀ hm
+    let s : V13RealLinearZeroAt i₀ :=
+      ⟨v13RealLinearSingleBit spare, by
+        have hne : i₀ ≠ spare := fun h => v13FinSpare_ne i₀ hm h.symm
+        simp [spare, v13RealLinearSingleBit, hne]⟩
+    refine ⟨v13RealLinearSingleBit spare, ?_⟩
+    have hspare : spare ≠ i₀ := by
+      simpa [spare] using v13FinSpare_ne i₀ hm
+    have hleft :
+        (v13RealLinearNoTargetRowShear i₀ hm).toEquiv
+            (v13RealLinearSingleBit spare) i₀ = 1 := by
+      have happly :
+          (v13RealLinearZeroAtRowShear i₀ s).toEquiv
+              (v13RealLinearSingleBit spare) i₀ = s.val spare :=
+        v13RealLinearZeroAtRowShear_row_apply_singleBit_of_ne s
+          (by simpa [spare] using v13FinSpare_ne i₀ hm)
+      simpa [v13RealLinearNoTargetRowShear, s, spare,
+        v13RealLinearSingleBit] using happly
+    have hright : v13RealLinearSingleBit spare i₀ = 0 := by
+      simp [v13RealLinearSingleBit, hspare.symm]
+    intro heq
+    rw [hleft, hright] at heq
+    norm_num at heq
+  · refine ⟨v13RealLinearSingleBit i₀, ?_⟩
+    have hleft :
+        (v13RealLinearNoTargetRowShear i₀ hm).toEquiv
+            (v13RealLinearSingleBit i₀) row = 0 := by
+      simp [v13RealLinearNoTargetRowShear, v13RealLinearZeroAtRowShear,
+        v13RealLinearSingleBit, hrow]
+    have hright : v13RealLinearSingleBit i₀ i₀ = 1 := by
+      simp [v13RealLinearSingleBit]
+    intro heq
+    rw [hleft, hright] at heq
+    norm_num at heq
+
+theorem v13RealLinearNoTargetRowShear_row_not_mem_targetRows
+    {m : Nat} (i₀ : Fin m) (hm : 1 < m) (row : Fin m) :
+    row ∉ V13RealLinearTargetRows (v13RealLinearNoTargetRowShear i₀ hm) i₀ := by
+  classical
+  intro hrow
+  rcases v13RealLinearNoTargetRowShear_rowFunctional_ne_target i₀ hm row with
+    ⟨w, hw⟩
+  exact
+    hw ((v13RealLinear_mem_targetRows_iff
+      (v13RealLinearNoTargetRowShear i₀ hm) i₀ row).1 hrow w)
+
+theorem v13RealLinearNoTargetRowShear_rowFunctional_ne_activeTarget
+    {m : Nat} (i₀ : Fin m) (hm : 1 < m)
+    (A : V13F2LinearEquiv m) (restRow activeRow : Fin m)
+    (htarget : activeRow ∈ V13RealLinearTargetRows A i₀) :
+    ∃ w : F2Vec m,
+      (v13RealLinearNoTargetRowShear i₀ hm).toEquiv w restRow ≠
+        A.toEquiv w activeRow := by
+  classical
+  rcases
+      v13RealLinearNoTargetRowShear_rowFunctional_ne_target
+        i₀ hm restRow with
+    ⟨w, hw⟩
+  refine ⟨w, ?_⟩
+  intro hsame
+  have htargetFun :
+      ∀ probe : F2Vec m, A.toEquiv probe activeRow = probe i₀ :=
+    (v13RealLinear_mem_targetRows_iff A i₀ activeRow).1 htarget
+  exact hw (hsame.trans (htargetFun w))
+
 noncomputable def v13RealLinearFixedTargetRowOccurrenceZeroAtEmbedding
     {m : Nat} (row i₀ : Fin m) :
     V13RealLinearUniformFixedTargetRowOccurrence row i₀ ×
