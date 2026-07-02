@@ -1306,6 +1306,16 @@ theorem currentPNPV13RealRungOneQRowBound_node :
             (1 / 2 : Rat) + v13RealLinearQRowEpsilon q m) ∧
       (∀ {m q : Nat} (observer : V13RealLinearCausalRowObserver m q)
         (i₀ : Fin m),
+        (Fintype.card
+            (V13RealLinearAdaptiveQRowGenerated
+              (v13RealLinearUniformCausalQRowExperiment observer) i₀) *
+          2 ^ m ≤
+        2 ^ q *
+          Fintype.card
+            (V13RealLinearAdaptiveQRowWorld m (V13F2LinearEquiv m))) →
+          V13RealLinearUniformCausalRowSpanCountingBound observer i₀) ∧
+      (∀ {m q : Nat} (observer : V13RealLinearCausalRowObserver m q)
+        (i₀ : Fin m),
         V13RealLinearUniformCausalRowSpanCountingBound observer i₀ →
           v13RealLinearUniformCausalQRowSuccess observer i₀ ≤
             (1 / 2 : Rat) + v13RealLinearQRowEpsilon q m) ∧
@@ -1439,6 +1449,29 @@ theorem currentPNPV13RealRungOneQRowBound_node :
               2 ^ 1 *
                 Fintype.card
                   (V13RealLinearAdaptiveQRowWorld m (V13F2LinearEquiv m))) ∧
+      (∀ observer : V13RealLinearCausalRowObserver 2 1,
+        Fintype.card
+            (V13RealLinearUniformOneRowGeneratedRowIndex
+              observer.toAdaptive (0 : Fin 2)) ≤ 1) ∧
+      (∀ observer : V13RealLinearCausalRowObserver 2 1,
+        Fintype.card
+            (V13RealLinearUniformOneRowGeneratedCylinderIndex
+              observer.toAdaptive (0 : Fin 2)) ≤ 2) ∧
+      (∀ observer : V13RealLinearCausalRowObserver 2 1,
+        Fintype.card
+            (V13RealLinearAdaptiveQRowGenerated
+              (v13RealLinearUniformCausalQRowExperiment observer)
+              (0 : Fin 2)) *
+          2 ^ 2 ≤
+        2 ^ 1 *
+          Fintype.card
+            (V13RealLinearAdaptiveQRowWorld 2 (V13F2LinearEquiv 2))) ∧
+      (∀ observer : V13RealLinearCausalRowObserver 2 1,
+        V13RealLinearUniformCausalRowSpanCountingBound
+          observer (0 : Fin 2)) ∧
+      (∀ observer : V13RealLinearCausalRowObserver 2 1,
+        v13RealLinearUniformCausalQRowSuccess observer (0 : Fin 2) ≤
+          (1 / 2 : Rat) + v13RealLinearQRowEpsilon 1 2) ∧
       V13RealLinearUniformFixedTargetRowOccurrenceCountingBound ∧
       V13RealLinearUniformRepresentativeFixedTargetRowOccurrenceCountingBound ∧
       (V13RealLinearUniformFixedTargetRowOccurrenceCountingBound →
@@ -1594,6 +1627,9 @@ theorem currentPNPV13RealRungOneQRowBound_node :
         v13RealLinear_uniform_adaptive_qrow_success_bound_of_spanCounting
           observer i₀ hcount,
       fun observer i₀ hcount =>
+        v13RealLinearUniformCausalRowSpanCountingBound_of_generated_counting
+          observer i₀ hcount,
+      fun observer i₀ hcount =>
         v13RealLinear_uniform_causal_qrow_success_bound_of_spanCounting
           observer i₀ hcount,
       fun observer i₀ =>
@@ -1649,6 +1685,11 @@ theorem currentPNPV13RealRungOneQRowBound_node :
       fun hpair {m} observer i₀ hm =>
         v13RealLinearUniformCausalOneRowGenerated_counting_of_activeRowPairExclusion
           hpair observer i₀ hm,
+      v13RealLinearUniformCausalOneRowActiveRowIndexBound_two_zero,
+      v13RealLinearUniformCausalOneRowActiveBitCylinderIndexBound_two_zero,
+      v13RealLinearUniformCausalOneRowGenerated_counting_two_zero,
+      v13RealLinearUniformCausalRowSpanCountingBound_one_two_zero,
+      v13RealLinear_uniform_causal_qrow_success_bound_one_two_zero,
       v13RealLinearUniformFixedTargetRowOccurrenceCountingBound_proved,
       v13RealLinearUniformRepresentativeFixedTargetRowOccurrenceCountingBound_proved,
       fun hcount {m} row i₀ =>
