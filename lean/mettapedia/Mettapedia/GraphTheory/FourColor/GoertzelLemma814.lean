@@ -1842,6 +1842,56 @@ theorem chainClosureStep_mem_of_seen (orients : List TauOrient)
         simp only [hfalse, Bool.false_eq_true, if_false]
         exact h
 
+theorem chainClosureStep_lift_property (orients : List TauOrient)
+    (fiber seen : List (List TauState)) (P : List TauState → Prop)
+    (hseen : ∀ x, x ∈ seen → P x)
+    (hstep : ∀ current target,
+      P current →
+      target ∈ fiber →
+      chainSingleKempeStep orients current target = true →
+      P target) :
+    ∀ x, x ∈ chainClosureStep orients fiber seen → P x := by
+  induction fiber generalizing seen with
+  | nil =>
+      intro x hx
+      simpa [chainClosureStep] using hseen x hx
+  | cons candidate rest ih =>
+      intro x hx
+      unfold chainClosureStep at hx
+      simp only [List.foldl_cons] at hx
+      let nextSeen :=
+        if (seen.any fun current =>
+            chainSingleKempeStep orients current candidate) then
+          addIfFresh seen candidate
+        else
+          seen
+      have hnextSeen : ∀ w, w ∈ nextSeen → P w := by
+        intro w hw
+        by_cases hany :
+            (seen.any fun current =>
+              chainSingleKempeStep orients current candidate) = true
+        · have hw' : w ∈ addIfFresh seen candidate := by
+            simpa [nextSeen, hany] using hw
+          rcases mem_addIfFresh_source_or_eq seen candidate w hw' with hwSeen | hwCandidate
+          ·
+              exact hseen w hwSeen
+          ·
+              subst hwCandidate
+              rw [List.any_eq_true] at hany
+              rcases hany with ⟨current, hcurrentSeen, hcurrentStep⟩
+              exact hstep current w (hseen current hcurrentSeen)
+                (by simp) hcurrentStep
+        · have hfalse :
+              (seen.any fun current =>
+                chainSingleKempeStep orients current candidate) = false :=
+            bool_false_of_not_true hany
+          exact hseen w (by simpa [nextSeen, hfalse] using hw)
+      exact ih nextSeen hnextSeen (by
+        intro current target hcurrent htarget hsingle
+        exact hstep current target hcurrent
+          (List.mem_cons_of_mem candidate htarget) hsingle)
+        x (by simpa [chainClosureStep, nextSeen] using hx)
+
 theorem chainClosureStep_nodup (orients : List TauOrient)
     (fiber seen : List (List TauState)) (hseen : seen.Nodup) :
     (chainClosureStep orients fiber seen).Nodup := by
@@ -2008,6 +2058,34 @@ theorem closeChainFiber_mem_of_seen (orients : List TauOrient)
           bool_false_of_not_true hstop
         simp only [seen', hfalse, Bool.false_eq_true, if_false]
         exact ih seen' hx'
+
+theorem closeChainFiber_lift_property (orients : List TauOrient)
+    (fiber : List (List TauState)) (n : Nat) (seen : List (List TauState))
+    (P : List TauState → Prop)
+    (hseen : ∀ x, x ∈ seen → P x)
+    (hstep : ∀ current target,
+      P current →
+      target ∈ fiber →
+      chainSingleKempeStep orients current target = true →
+      P target) :
+    ∀ x, x ∈ closeChainFiber orients fiber n seen → P x := by
+  induction n generalizing seen with
+  | zero =>
+      intro x hx
+      simpa [closeChainFiber] using hseen x hx
+  | succ n ih =>
+      intro x hx
+      simp only [closeChainFiber] at hx
+      let seen' := chainClosureStep orients fiber seen
+      have hseen' : ∀ y, y ∈ seen' → P y :=
+        chainClosureStep_lift_property orients fiber seen P hseen hstep
+      by_cases hstop : (seen'.length == seen.length) = true
+      · simp only [seen', hstop, if_true] at hx
+        exact hseen' x hx
+      · have hfalse : (seen'.length == seen.length) = false :=
+          bool_false_of_not_true hstop
+        simp only [seen', hfalse, Bool.false_eq_true, if_false] at hx
+        exact ih seen' hseen' x hx
 
 theorem closeChainFiber_mem_of_seen_step (orients : List TauOrient)
     (fiber : List (List TauState)) (n : Nat) (seen : List (List TauState))
