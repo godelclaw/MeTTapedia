@@ -261,6 +261,42 @@ theorem v13RealLinear_rowsGenerateTarget_singleton_iff {m : Nat}
     intro w
     simp [v13RealLinearRowCombinationEval, hrow w]
 
+/-- Rows whose public row functional is exactly the target coordinate. -/
+noncomputable def V13RealLinearTargetRows {m : Nat}
+    (A : V13F2LinearEquiv m) (i₀ : Fin m) : Finset (Fin m) := by
+  classical
+  exact Finset.univ.filter
+    (fun row : Fin m => ∀ w : F2Vec m, A.toEquiv w row = w i₀)
+
+theorem v13RealLinear_mem_targetRows_iff {m : Nat}
+    (A : V13F2LinearEquiv m) (i₀ row : Fin m) :
+    row ∈ V13RealLinearTargetRows A i₀ ↔
+      ∀ w : F2Vec m, A.toEquiv w row = w i₀ := by
+  classical
+  simp [V13RealLinearTargetRows]
+
+theorem v13RealLinear_targetRows_card_le_one {m : Nat}
+    (A : V13F2LinearEquiv m) (i₀ : Fin m) :
+    (V13RealLinearTargetRows A i₀).card ≤ 1 := by
+  classical
+  rw [Finset.card_le_one_iff]
+  intro row₀ row₁ hrow₀ hrow₁
+  have htarget₀ :=
+    (v13RealLinear_mem_targetRows_iff A i₀ row₀).1 hrow₀
+  have htarget₁ :=
+    (v13RealLinear_mem_targetRows_iff A i₀ row₁).1 hrow₁
+  by_contra hne
+  let w : F2Vec m := A.toEquiv.symm (v13RealLinearSingleBit row₀)
+  have hsame : A.toEquiv w row₀ = A.toEquiv w row₁ := by
+    rw [htarget₀ w, htarget₁ w]
+  have hrow₀val : A.toEquiv w row₀ = 1 := by
+    simp [w, v13RealLinearSingleBit]
+  have hrow₁val : A.toEquiv w row₁ = 0 := by
+    have hne₁₀ : row₁ ≠ row₀ := fun h => hne h.symm
+    simp [w, v13RealLinearSingleBit, hne₁₀]
+  rw [hrow₀val, hrow₁val] at hsame
+  norm_num at hsame
+
 theorem V13RealLinearAdaptiveQRowExperiment.blocked_iff_generated
     {m q : Nat} {Seed : Type*}
     (E : V13RealLinearAdaptiveQRowExperiment m q Seed) (i₀ : Fin m)
@@ -317,6 +353,19 @@ theorem V13RealLinearAdaptiveQRowExperiment.generated_one_budget_exists_target_r
     exact
       (v13RealLinear_rowsGenerateTarget_singleton_iff
         (E.sampleA omega.1) row i₀).1 hsingleton
+
+theorem V13RealLinearAdaptiveQRowExperiment.targetRows_nonempty_of_generated_one_budget
+    {m : Nat} {Seed : Type*}
+    (E : V13RealLinearAdaptiveQRowExperiment m 1 Seed) (i₀ : Fin m)
+    (omega : V13RealLinearAdaptiveQRowWorld m Seed)
+    (hgen : E.generated i₀ omega) :
+    (V13RealLinearTargetRows (E.sampleA omega.1) i₀).Nonempty := by
+  rcases E.generated_one_budget_exists_target_row i₀ omega hgen with
+    ⟨row, _hmem, htarget⟩
+  exact
+    ⟨row,
+      (v13RealLinear_mem_targetRows_iff
+        (E.sampleA omega.1) i₀ row).2 htarget⟩
 
 def V13RealLinearAdaptiveQRowExperiment.correct {m q : Nat} {Seed : Type*}
     (E : V13RealLinearAdaptiveQRowExperiment m q Seed) (i₀ : Fin m)
