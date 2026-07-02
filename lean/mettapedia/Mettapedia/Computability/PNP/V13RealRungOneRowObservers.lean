@@ -130,4 +130,96 @@ theorem v13RealLinear_opposite_targets_same_rowsTranscript_of_not_blocked
       (v13RealLinear_target_changes_after_kernel_hit
         A (f2ZeroVec m) w hwi).symm
 
+abbrev V13RealLinearFixedRowsTranscriptTargetFiber {m : Nat}
+    (A : V13F2LinearEquiv m) (rows : Finset (Fin m))
+    (i₀ : Fin m)
+    (transcript : {row : Fin m // row ∈ rows} → V13RealLinearRowView m)
+    (bit : ZMod 2) :=
+  {x : F2Vec m //
+    v13RealLinearRowsTranscript rows
+        (v13RealLinearPublicInput
+          ({ x := x, A := A } : V13RealLinearWorld m)) =
+      transcript ∧
+    x i₀ = bit}
+
+noncomputable def v13RealLinear_fixedRowsTranscriptTargetFlipEquiv
+    {m : Nat} (A : V13F2LinearEquiv m) (rows : Finset (Fin m))
+    (i₀ : Fin m)
+    (transcript : {row : Fin m // row ∈ rows} → V13RealLinearRowView m)
+    (hnot : ¬ V13RealLinearRowsBlockTarget A rows i₀) :
+    V13RealLinearFixedRowsTranscriptTargetFiber A rows i₀ transcript 0 ≃
+      V13RealLinearFixedRowsTranscriptTargetFiber A rows i₀ transcript 1 := by
+  classical
+  let w : F2Vec m :=
+    Classical.choose
+      (v13RealLinear_exists_kernel_hit_of_not_rowsBlockTarget
+        (A := A) (rows := rows) (i₀ := i₀) hnot)
+  have hw :=
+    Classical.choose_spec
+      (v13RealLinear_exists_kernel_hit_of_not_rowsBlockTarget
+        (A := A) (rows := rows) (i₀ := i₀) hnot)
+  have hwi : w i₀ = 1 := by
+    simpa [w] using hw.1
+  have hkernel :
+      ∀ row : Fin m, row ∈ rows → A.toEquiv w row = 0 := by
+    simpa [w] using hw.2
+  exact
+    { toFun := fun x =>
+        ⟨f2AddVec x.val w, by
+          constructor
+          · calc
+              v13RealLinearRowsTranscript rows
+                  (v13RealLinearPublicInput
+                    ({ x := f2AddVec x.val w, A := A } :
+                      V13RealLinearWorld m)) =
+                v13RealLinearRowsTranscript rows
+                  (v13RealLinearPublicInput
+                    ({ x := x.val, A := A } :
+                      V13RealLinearWorld m)) :=
+                  (v13RealLinear_same_rowsTranscript_after_kernel_add
+                    A x.val w rows hkernel).symm
+              _ = transcript := x.property.1
+          · simp [f2AddVec, hwi, x.property.2]⟩
+      invFun := fun x =>
+        ⟨f2AddVec x.val w, by
+          constructor
+          · calc
+              v13RealLinearRowsTranscript rows
+                  (v13RealLinearPublicInput
+                    ({ x := f2AddVec x.val w, A := A } :
+                      V13RealLinearWorld m)) =
+                v13RealLinearRowsTranscript rows
+                  (v13RealLinearPublicInput
+                    ({ x := x.val, A := A } :
+                      V13RealLinearWorld m)) :=
+                  (v13RealLinear_same_rowsTranscript_after_kernel_add
+                    A x.val w rows hkernel).symm
+              _ = transcript := x.property.1
+          · simp [f2AddVec, hwi, x.property.2, f2_one_add_one]⟩
+      left_inv := by
+        intro x
+        apply Subtype.ext
+        funext j
+        simp [f2AddVec, f2_add_right_self]
+      right_inv := by
+        intro x
+        apply Subtype.ext
+        funext j
+        simp [f2AddVec, f2_add_right_self] }
+
+theorem v13RealLinear_fixedRowsTranscriptTargetFiber_card_eq_of_not_blocked
+    {m : Nat} (A : V13F2LinearEquiv m) (rows : Finset (Fin m))
+    (i₀ : Fin m)
+    (transcript : {row : Fin m // row ∈ rows} → V13RealLinearRowView m)
+    (hnot : ¬ V13RealLinearRowsBlockTarget A rows i₀) :
+    Fintype.card
+        (V13RealLinearFixedRowsTranscriptTargetFiber
+          A rows i₀ transcript 0) =
+      Fintype.card
+        (V13RealLinearFixedRowsTranscriptTargetFiber
+          A rows i₀ transcript 1) :=
+  Fintype.card_congr
+    (v13RealLinear_fixedRowsTranscriptTargetFlipEquiv
+      A rows i₀ transcript hnot)
+
 end Mettapedia.Computability.PNP

@@ -1099,16 +1099,30 @@ theorem currentPNPV13RealRungOneRowObservers_node :
           ∃ omega₀ omega₁ : V13RealLinearWorld m,
             v13RealLinearRowsTranscript rows
                 (v13RealLinearPublicInput omega₀) =
-              v13RealLinearRowsTranscript rows
+            v13RealLinearRowsTranscript rows
                 (v13RealLinearPublicInput omega₁) ∧
             v13RealLinearTarget i₀ omega₀ ≠
-              v13RealLinearTarget i₀ omega₁) := by
+              v13RealLinearTarget i₀ omega₁) ∧
+      (∀ {m : Nat} (A : V13F2LinearEquiv m)
+        (rows : Finset (Fin m)) (i₀ : Fin m)
+        (transcript :
+          {row : Fin m // row ∈ rows} → V13RealLinearRowView m),
+        ¬ V13RealLinearRowsBlockTarget A rows i₀ →
+          Fintype.card
+              (V13RealLinearFixedRowsTranscriptTargetFiber
+                A rows i₀ transcript 0) =
+            Fintype.card
+              (V13RealLinearFixedRowsTranscriptTargetFiber
+                A rows i₀ transcript 1)) := by
   exact
     ⟨fun hnot =>
         v13RealLinear_exists_kernel_hit_of_not_rowsBlockTarget hnot,
       fun A rows i₀ hnot =>
         v13RealLinear_opposite_targets_same_rowsTranscript_of_not_blocked
-          A rows i₀ hnot⟩
+          A rows i₀ hnot,
+      fun A rows i₀ transcript hnot =>
+        v13RealLinear_fixedRowsTranscriptTargetFiber_card_eq_of_not_blocked
+          A rows i₀ transcript hnot⟩
 
 theorem currentPNPV13RealRungOneStaticRows_node :
     ∀ {m q : Nat} (observer : V13RealLinearStaticRowObserver m q)
