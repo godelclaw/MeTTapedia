@@ -198,10 +198,10 @@ def currentPNPRoadmap : List PNPRoadmapEntry :=
       proofNodeKey := "pnp.v13.real-rung-one.qrow-bound-assembly"
       status := .openBackground
       truthValue := ⟨100, 92⟩
-      progressPercent := 84
+      progressPercent := 86
       itvLowerPercent := 92
       itvUpperPercent := 100
-      obligation := "Assemble the explicit q-row success bound for the uniform certified-invertible sampler: the proved kernel-flip surcharge and proved row-combination space bound leave the single pinned span-hit mass obligation V13RealLinearUniformInvertibleRowSpanCountingBound, implying success at most 1/2 + 2^q/2^m." },
+      obligation := "Assemble the explicit q-row success bound for the uniform certified-invertible sampler: the proved kernel-flip surcharge, row-combination space bound, and block-iff-generate characterization leave the single pinned uniform row-span hit mass obligation V13RealLinearUniformInvertibleRowSpanCountingBound, implying success at most 1/2 + 2^q/2^m." },
     { stage := .v13ObserverLadder
       proofNodeKey := "pnp.v13.phase-e.observer-ladder-mark"
       status := .checked
@@ -473,11 +473,11 @@ theorem currentPNPRoadmap_records_v13_real_rung_one_qrow_bound :
        proofNodeKey := "pnp.v13.real-rung-one.qrow-bound-assembly"
        status := .openBackground
        truthValue := ⟨100, 92⟩
-       progressPercent := 84
+       progressPercent := 86
        itvLowerPercent := 92
        itvUpperPercent := 100
        obligation :=
-        "Assemble the explicit q-row success bound for the uniform certified-invertible sampler: the proved kernel-flip surcharge and proved row-combination space bound leave the single pinned span-hit mass obligation V13RealLinearUniformInvertibleRowSpanCountingBound, implying success at most 1/2 + 2^q/2^m." } :
+        "Assemble the explicit q-row success bound for the uniform certified-invertible sampler: the proved kernel-flip surcharge, row-combination space bound, and block-iff-generate characterization leave the single pinned uniform row-span hit mass obligation V13RealLinearUniformInvertibleRowSpanCountingBound, implying success at most 1/2 + 2^q/2^m." } :
       PNPRoadmapEntry) ∈ currentPNPRoadmap := by
   simp [currentPNPRoadmap]
 
