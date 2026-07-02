@@ -372,6 +372,22 @@ def v13RealLinearSingleRowStaticObserver {m : Nat} (row : Fin m) :
       congrFun hsame ⟨row, by simp⟩
     exact congrArg Prod.snd hrow
 
+def v13RealLinearCausalSingleRowObserver {m : Nat} (row : Fin m) :
+    V13RealLinearCausalRowObserver m 1 where
+  Branch := Unit
+  branch := fun _ => ()
+  rows := fun _ => {row}
+  decideFromTranscript := fun _ transcript =>
+    (transcript ⟨row, by simp⟩).2
+  readBudget := by
+    intro b
+    cases b
+    simp
+  branchCausal := by
+    intro public₀ public₁ b hbranch htranscript
+    cases b
+    rfl
+
 noncomputable def v13RealLinearTargetRowChoice {m : Nat}
     (A : V13F2LinearEquiv m) (i₀ : Fin m) : Fin m := by
   classical
@@ -1821,6 +1837,68 @@ theorem v13RealLinear_f2vec_card (m : Nat) :
     Fintype.card (F2Vec m) = 2 ^ m := by
   classical
   simp [F2Vec]
+
+noncomputable def v13RealLinearCausalSingleRowIdentityFiberEmbedding :
+    F2Vec 2 ↪
+      V13RealLinearAdaptiveQRowGeneratedCoefficientFiber
+        (v13RealLinearUniformCausalQRowExperiment
+          (v13RealLinearCausalSingleRowObserver (0 : Fin 2)))
+        (0 : Fin 2) (v13RealLinearIdentity 2) where
+  toFun x :=
+    ⟨⟨x, fun _ => 1⟩, by
+      intro w
+      simp [v13RealLinearUniformCausalQRowExperiment,
+        v13RealLinearUniformQRowExperiment,
+        V13RealLinearAdaptiveQRowExperiment.branchRows,
+        V13RealLinearAdaptiveQRowExperiment.branch,
+        V13RealLinearCausalRowObserver.toAdaptive,
+        V13RealLinearCausalRowObserver.staticBranch,
+        v13RealLinearCausalSingleRowObserver,
+        v13RealLinearRowCombinationEval, v13RealLinearIdentity]⟩
+  inj' := by
+    intro x y hxy
+    exact
+      congrArg
+        (fun cert :
+          V13RealLinearAdaptiveQRowGeneratedCoefficientFiber
+            (v13RealLinearUniformCausalQRowExperiment
+              (v13RealLinearCausalSingleRowObserver (0 : Fin 2)))
+            (0 : Fin 2) (v13RealLinearIdentity 2) =>
+          cert.val.1)
+        hxy
+
+theorem v13RealLinearCausalSingleRowIdentityFiber_card_four_le :
+    4 ≤
+      Fintype.card
+        (V13RealLinearAdaptiveQRowGeneratedCoefficientFiber
+          (v13RealLinearUniformCausalQRowExperiment
+            (v13RealLinearCausalSingleRowObserver (0 : Fin 2)))
+          (0 : Fin 2) (v13RealLinearIdentity 2)) := by
+  classical
+  have hle :
+      Fintype.card (F2Vec 2) ≤
+        Fintype.card
+          (V13RealLinearAdaptiveQRowGeneratedCoefficientFiber
+            (v13RealLinearUniformCausalQRowExperiment
+              (v13RealLinearCausalSingleRowObserver (0 : Fin 2)))
+            (0 : Fin 2) (v13RealLinearIdentity 2)) :=
+    Fintype.card_le_of_embedding
+      v13RealLinearCausalSingleRowIdentityFiberEmbedding
+  have hcard : Fintype.card (F2Vec 2) = 4 := by
+    rw [v13RealLinear_f2vec_card]
+    norm_num
+  simpa [hcard] using hle
+
+theorem v13RealLinearUniformCausalLowPositiveFiberCoefficientCountingBound_fails_two_identity :
+    ¬ V13RealLinearUniformCausalLowPositiveFiberCoefficientCountingBound := by
+  intro hcount
+  have hle :=
+    hcount (v13RealLinearCausalSingleRowObserver (0 : Fin 2))
+      (0 : Fin 2) (by norm_num) (by norm_num) (v13RealLinearIdentity 2)
+  have hfour :=
+    v13RealLinearCausalSingleRowIdentityFiber_card_four_le
+  norm_num at hle
+  omega
 
 theorem v13RealLinearUniformCausalLowPositiveCoefficientCountingBound_of_fiberCounting
     (hcount :
