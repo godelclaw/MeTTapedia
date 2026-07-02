@@ -233,6 +233,34 @@ theorem v13RealLinear_rowsBlockTarget_iff_rowsGenerateTarget {m : Nat}
   ⟨v13RealLinear_rowsGenerateTarget_of_rowsBlockTarget A rows i₀,
     v13RealLinear_rowsBlockTarget_of_rowsGenerateTarget A rows i₀⟩
 
+theorem v13RealLinear_rowsGenerateTarget_singleton_iff {m : Nat}
+    (A : V13F2LinearEquiv m) (row i₀ : Fin m) :
+    V13RealLinearRowsGenerateTarget A ({row} : Finset (Fin m)) i₀ ↔
+      ∀ w : F2Vec m, A.toEquiv w row = w i₀ := by
+  classical
+  constructor
+  · intro hgen
+    rcases hgen with ⟨coeff, hcoeff⟩
+    let c : ZMod 2 :=
+      coeff (default : {r : Fin m // r ∈ ({row} : Finset (Fin m))})
+    have hcoeffEval :
+        ∀ w : F2Vec m, c * A.toEquiv w row = w i₀ := by
+      intro w
+      have h := hcoeff w
+      simpa [v13RealLinearRowCombinationEval, c] using h
+    have hc : c = 1 := by
+      by_cases hc0 : c = 0
+      · have htarget := hcoeffEval (v13RealLinearSingleBit i₀)
+        simp [hc0, v13RealLinearSingleBit] at htarget
+      · exact v13_zmod2_eq_one_of_ne_zero c hc0
+    intro w
+    have h := hcoeffEval w
+    simpa [hc] using h
+  · intro hrow
+    refine ⟨fun _ => 1, ?_⟩
+    intro w
+    simp [v13RealLinearRowCombinationEval, hrow w]
+
 theorem V13RealLinearAdaptiveQRowExperiment.blocked_iff_generated
     {m q : Nat} {Seed : Type*}
     (E : V13RealLinearAdaptiveQRowExperiment m q Seed) (i₀ : Fin m)
@@ -262,6 +290,33 @@ theorem V13RealLinearAdaptiveQRowExperiment.not_generated_of_zero_budget
   have hrows : (E.branchRows omega).card = 0 :=
     Nat.eq_zero_of_le_zero (E.branchRows_card_le omega)
   exact E.not_generated_of_branchRows_card_zero i₀ omega hrows
+
+theorem V13RealLinearAdaptiveQRowExperiment.generated_one_budget_exists_target_row
+    {m : Nat} {Seed : Type*}
+    (E : V13RealLinearAdaptiveQRowExperiment m 1 Seed) (i₀ : Fin m)
+    (omega : V13RealLinearAdaptiveQRowWorld m Seed)
+    (hgen : E.generated i₀ omega) :
+    ∃ row : Fin m,
+      row ∈ E.branchRows omega ∧
+        ∀ w : F2Vec m, (E.sampleA omega.1).toEquiv w row = w i₀ := by
+  classical
+  have hcardLe : (E.branchRows omega).card ≤ 1 :=
+    E.branchRows_card_le omega
+  have hcardNe : (E.branchRows omega).card ≠ 0 := by
+    intro hzero
+    exact (E.not_generated_of_branchRows_card_zero i₀ omega hzero) hgen
+  have hcard : (E.branchRows omega).card = 1 := by
+    omega
+  rcases Finset.card_eq_one.mp hcard with ⟨row, hrows⟩
+  refine ⟨row, ?_, ?_⟩
+  · simp [hrows]
+  · have hsingleton :
+        V13RealLinearRowsGenerateTarget
+          (E.sampleA omega.1) ({row} : Finset (Fin m)) i₀ := by
+      simpa [V13RealLinearAdaptiveQRowExperiment.generated, hrows] using hgen
+    exact
+      (v13RealLinear_rowsGenerateTarget_singleton_iff
+        (E.sampleA omega.1) row i₀).1 hsingleton
 
 def V13RealLinearAdaptiveQRowExperiment.correct {m q : Nat} {Seed : Type*}
     (E : V13RealLinearAdaptiveQRowExperiment m q Seed) (i₀ : Fin m)

@@ -198,10 +198,10 @@ def currentPNPRoadmap : List PNPRoadmapEntry :=
       proofNodeKey := "pnp.v13.real-rung-one.qrow-bound-assembly"
       status := .openBackground
       truthValue := ⟨100, 92⟩
-      progressPercent := 89
+      progressPercent := 90
       itvLowerPercent := 92
       itvUpperPercent := 100
-      obligation := "Assemble the explicit q-row success bound for the uniform certified-invertible sampler: the proved kernel-flip surcharge, row-combination space bound, block-iff-generate characterization, blocked/generated mass equality, and closed zero-row plus high-budget cases leave the single pinned low-positive range 0 < q and q < m for V13RealLinearUniformInvertibleRowSpanCountingBound, implying success at most 1/2 + 2^q/2^m." },
+      obligation := "Assemble the explicit q-row success bound for the uniform certified-invertible sampler: the proved kernel-flip surcharge, row-combination space bound, block-iff-generate characterization, blocked/generated mass equality, closed zero-row plus high-budget cases, and one-row generated-target characterization leave the single pinned low-positive range 0 < q and q < m for V13RealLinearUniformInvertibleRowSpanCountingBound, implying success at most 1/2 + 2^q/2^m." },
     { stage := .v13ObserverLadder
       proofNodeKey := "pnp.v13.phase-e.observer-ladder-mark"
       status := .checked
@@ -473,11 +473,11 @@ theorem currentPNPRoadmap_records_v13_real_rung_one_qrow_bound :
        proofNodeKey := "pnp.v13.real-rung-one.qrow-bound-assembly"
        status := .openBackground
        truthValue := ⟨100, 92⟩
-       progressPercent := 89
+       progressPercent := 90
        itvLowerPercent := 92
        itvUpperPercent := 100
        obligation :=
-        "Assemble the explicit q-row success bound for the uniform certified-invertible sampler: the proved kernel-flip surcharge, row-combination space bound, block-iff-generate characterization, blocked/generated mass equality, and closed zero-row plus high-budget cases leave the single pinned low-positive range 0 < q and q < m for V13RealLinearUniformInvertibleRowSpanCountingBound, implying success at most 1/2 + 2^q/2^m." } :
+        "Assemble the explicit q-row success bound for the uniform certified-invertible sampler: the proved kernel-flip surcharge, row-combination space bound, block-iff-generate characterization, blocked/generated mass equality, closed zero-row plus high-budget cases, and one-row generated-target characterization leave the single pinned low-positive range 0 < q and q < m for V13RealLinearUniformInvertibleRowSpanCountingBound, implying success at most 1/2 + 2^q/2^m." } :
       PNPRoadmapEntry) ∈ currentPNPRoadmap := by
   simp [currentPNPRoadmap]
 

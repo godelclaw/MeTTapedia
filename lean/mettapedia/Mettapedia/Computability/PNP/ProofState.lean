@@ -1120,6 +1120,16 @@ theorem currentPNPV13RealRungOneQRowBound_node :
         (i₀ : Fin m),
         V13RealLinearRowsBlockTarget A rows i₀ ↔
           V13RealLinearRowsGenerateTarget A rows i₀) ∧
+      (∀ {m : Nat} (A : V13F2LinearEquiv m) (row i₀ : Fin m),
+        V13RealLinearRowsGenerateTarget A ({row} : Finset (Fin m)) i₀ ↔
+          ∀ w : F2Vec m, A.toEquiv w row = w i₀) ∧
+      (∀ {m : Nat} {Seed : Type*}
+        (E : V13RealLinearAdaptiveQRowExperiment m 1 Seed) (i₀ : Fin m)
+        (omega : V13RealLinearAdaptiveQRowWorld m Seed),
+        E.generated i₀ omega →
+          ∃ row : Fin m,
+            row ∈ E.branchRows omega ∧
+              ∀ w : F2Vec m, (E.sampleA omega.1).toEquiv w row = w i₀) ∧
       (∀ {m q : Nat} {Seed : Type*} [Fintype Seed]
         (E : V13RealLinearAdaptiveQRowExperiment m q Seed) (i₀ : Fin m),
         v13RealLinearAdaptiveQRowBlockedMass E i₀ =
@@ -1158,6 +1168,10 @@ theorem currentPNPV13RealRungOneQRowBound_node :
         E.branchRows_card_le omega,
       fun A rows i₀ =>
         v13RealLinear_rowsBlockTarget_iff_rowsGenerateTarget A rows i₀,
+      fun A row i₀ =>
+        v13RealLinear_rowsGenerateTarget_singleton_iff A row i₀,
+      fun E i₀ omega hgen =>
+        E.generated_one_budget_exists_target_row i₀ omega hgen,
       fun E i₀ =>
         v13RealLinearAdaptiveQRowBlockedMass_eq_generatedMass E i₀,
       fun E i₀ =>
