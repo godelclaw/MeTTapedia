@@ -24,6 +24,7 @@ inductive PNPRoadmapStage where
   | v13FaithfulnessAudit
   | v13PhaseEConcrete
   | v13PhaseEScaled
+  | v13RealRungOneLinear
   | v13ObserverLadder
   | weaknessCalculus
   | barrierObstruction
@@ -157,6 +158,14 @@ def currentPNPRoadmap : List PNPRoadmapEntry :=
       itvLowerPercent := 86
       itvUpperPercent := 100
       obligation := "Treat the parameterized Phase E family as inadmissible for the architecture: a single public targetLock coordinate determines the target, so its obligation map is re-tagged familyInadmissible." },
+    { stage := .v13RealRungOneLinear
+      proofNodeKey := "pnp.v13.real-rung-one.linear-public-surface"
+      status := .replacementOpened
+      truthValue := ⟨100, 88⟩
+      progressPercent := 60
+      itvLowerPercent := 88
+      itvUpperPercent := 100
+      obligation := "Use the certified invertible F2^m public surface `(A, A x)`: full public input decodes the target coordinate, and no elementary coordinate of A, A inverse, or the RHS determines it when a spare coordinate exists. The adaptive q-row bound remains open." },
     { stage := .v13ObserverLadder
       proofNodeKey := "pnp.v13.phase-e.observer-ladder-mark"
       status := .checked
@@ -368,6 +377,19 @@ theorem currentPNPRoadmap_records_v13_phase_e_scaled :
        itvUpperPercent := 100
        obligation :=
         "Treat the parameterized Phase E family as inadmissible for the architecture: a single public targetLock coordinate determines the target, so its obligation map is re-tagged familyInadmissible." } :
+      PNPRoadmapEntry) ∈ currentPNPRoadmap := by
+  simp [currentPNPRoadmap]
+
+theorem currentPNPRoadmap_records_v13_real_rung_one_linear :
+    ({ stage := PNPRoadmapStage.v13RealRungOneLinear
+       proofNodeKey := "pnp.v13.real-rung-one.linear-public-surface"
+       status := .replacementOpened
+       truthValue := ⟨100, 88⟩
+       progressPercent := 60
+       itvLowerPercent := 88
+       itvUpperPercent := 100
+       obligation :=
+        "Use the certified invertible F2^m public surface `(A, A x)`: full public input decodes the target coordinate, and no elementary coordinate of A, A inverse, or the RHS determines it when a spare coordinate exists. The adaptive q-row bound remains open." } :
       PNPRoadmapEntry) ∈ currentPNPRoadmap := by
   simp [currentPNPRoadmap]
 
