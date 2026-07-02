@@ -126,6 +126,25 @@ theorem V13RealLinearCausalRowObserver.branch_eq_of_same_branchRowsTranscript
     observer.branchCausal public₀ public₁ (observer.branch public₀) rfl
       hsame
 
+theorem V13RealLinearCausalRowObserver.decision_eq_of_same_branchRowsTranscript
+    {m q : Nat} (observer : V13RealLinearCausalRowObserver m q)
+    (public₀ public₁ : V13RealLinearPublic m)
+    (hsame :
+      v13RealLinearRowsTranscript
+          (observer.rows (observer.branch public₀)) public₀ =
+        v13RealLinearRowsTranscript
+          (observer.rows (observer.branch public₀)) public₁) :
+    observer.decideFromTranscript (observer.branch public₀)
+        (v13RealLinearRowsTranscript
+          (observer.rows (observer.branch public₀)) public₀) =
+      observer.decideFromTranscript (observer.branch public₁)
+        (v13RealLinearRowsTranscript
+          (observer.rows (observer.branch public₁)) public₁) := by
+  have hbranch :=
+    observer.branch_eq_of_same_branchRowsTranscript public₀ public₁ hsame
+  rw [hbranch]
+  exact congrArg (observer.decideFromTranscript (observer.branch public₀)) hsame
+
 noncomputable def v13RealLinearUniformCausalQRowExperiment {m q : Nat}
     (observer : V13RealLinearCausalRowObserver m q) :
     V13RealLinearAdaptiveQRowExperiment m q (V13F2LinearEquiv m) :=
@@ -2880,6 +2899,90 @@ theorem
     v13RealLinearRowsTargetCoefficient_target_eq_of_rowsTranscript_eq
       A rows i₀ coeff
   exact x.property.trans y.property.symm
+
+theorem
+    v13RealLinearUniformCausal_rowsetTranscriptCell_decision_eq
+    {m q : Nat} (observer : V13RealLinearCausalRowObserver m q)
+    (A : V13F2LinearEquiv m) (rows : Finset (Fin m))
+    (transcript : V13RealLinearRowsTranscriptSpace m rows)
+    (x y :
+      V13RealLinearAdaptiveQRowRowsetTranscriptCell
+        (v13RealLinearUniformCausalQRowExperiment observer) A rows
+        transcript) :
+    (v13RealLinearUniformCausalQRowExperiment observer).decision
+        (A, x.val.val) =
+      (v13RealLinearUniformCausalQRowExperiment observer).decision
+        (A, y.val.val) := by
+  let E := v13RealLinearUniformCausalQRowExperiment observer
+  let publicX :=
+    v13RealLinearPublicInput (E.world (A, x.val.val))
+  let publicY :=
+    v13RealLinearPublicInput (E.world (A, y.val.val))
+  have hrowsX :
+      observer.rows (observer.branch publicX) = rows := by
+    simpa [E, publicX, V13RealLinearAdaptiveQRowExperiment.branchRows,
+      V13RealLinearAdaptiveQRowExperiment.branch,
+      V13RealLinearAdaptiveQRowExperiment.world,
+      V13RealLinearCausalRowObserver.staticBranch,
+      V13RealLinearCausalRowObserver.toAdaptive,
+      v13RealLinearUniformCausalQRowExperiment,
+      v13RealLinearUniformQRowExperiment] using x.val.property
+  have htransRows :
+      v13RealLinearRowsTranscript rows publicX =
+        v13RealLinearRowsTranscript rows publicY := by
+    exact x.property.trans y.property.symm
+  have hsame :
+      v13RealLinearRowsTranscript
+          (observer.rows (observer.branch publicX)) publicX =
+        v13RealLinearRowsTranscript
+          (observer.rows (observer.branch publicX)) publicY := by
+    rw [hrowsX]
+    exact htransRows
+  have hdecision :=
+    observer.decision_eq_of_same_branchRowsTranscript publicX publicY hsame
+  simpa [E, publicX, publicY,
+    V13RealLinearAdaptiveQRowExperiment.decision,
+    V13RealLinearAdaptiveQRowExperiment.world,
+    V13RealLinearCausalRowObserver.toAdaptive,
+    v13RealLinearUniformCausalQRowExperiment,
+    v13RealLinearUniformQRowExperiment] using hdecision
+
+theorem
+    v13RealLinearUniformCausal_rowsetTranscriptCell_correct_iff_of_coefficient
+    {m q : Nat} (observer : V13RealLinearCausalRowObserver m q)
+    (i₀ : Fin m) (A : V13F2LinearEquiv m) (rows : Finset (Fin m))
+    (transcript : V13RealLinearRowsTranscriptSpace m rows)
+    (coeff : V13RealLinearRowsTargetCoefficient A rows i₀)
+    (x y :
+      V13RealLinearAdaptiveQRowRowsetTranscriptCell
+        (v13RealLinearUniformCausalQRowExperiment observer) A rows
+        transcript) :
+    (v13RealLinearUniformCausalQRowExperiment observer).correct i₀
+        (A, x.val.val) ↔
+      (v13RealLinearUniformCausalQRowExperiment observer).correct i₀
+        (A, y.val.val) := by
+  let E := v13RealLinearUniformCausalQRowExperiment observer
+  have hdecision :
+      E.decision (A, x.val.val) = E.decision (A, y.val.val) :=
+    v13RealLinearUniformCausal_rowsetTranscriptCell_decision_eq
+      observer A rows transcript x y
+  have htarget :
+      x.val.val i₀ = y.val.val i₀ :=
+    v13RealLinearUniformCausal_rowsetTranscriptCell_target_eq_of_coefficient
+      observer i₀ A rows transcript coeff x y
+  constructor
+  · intro hcorrect
+    rw [V13RealLinearAdaptiveQRowExperiment.correct] at hcorrect ⊢
+    rw [← hdecision, hcorrect]
+    simpa [E, V13RealLinearAdaptiveQRowExperiment.target,
+      V13RealLinearAdaptiveQRowExperiment.world, v13RealLinearTarget] using
+      htarget
+  · intro hcorrect
+    rw [V13RealLinearAdaptiveQRowExperiment.correct] at hcorrect ⊢
+    rw [hdecision, hcorrect]
+    simpa [E, V13RealLinearAdaptiveQRowExperiment.target,
+      V13RealLinearAdaptiveQRowExperiment.world, v13RealLinearTarget] using
+      htarget.symm
 
 noncomputable def
     v13RealLinearAdaptiveQRowGeneratedTargetCoefficientRowsetCellEquivProduct
