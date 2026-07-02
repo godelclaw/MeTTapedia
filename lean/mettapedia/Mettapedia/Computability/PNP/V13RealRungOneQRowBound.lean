@@ -3343,6 +3343,12 @@ abbrev V13RealLinearNoTargetRowsMap (m : Nat) (i₀ : Fin m) :=
 abbrev V13RealLinearNoTargetRowsWorld (m : Nat) (i₀ : Fin m) :=
   V13RealLinearNoTargetRowsMap m i₀ × F2Vec m
 
+def v13RealLinearNoTargetRowsPublicInput {m : Nat} {i₀ : Fin m}
+    (omega : V13RealLinearNoTargetRowsWorld m i₀) :
+    V13RealLinearPublic m :=
+  v13RealLinearPublicInput
+    ({ x := omega.2, A := omega.1.val } : V13RealLinearWorld m)
+
 abbrev V13RealLinearNoTargetRowsRhsTargetFiber {m : Nat}
     (i₀ row : Fin m) (rhs bit : ZMod 2) :=
   {omega : V13RealLinearNoTargetRowsWorld m i₀ //
@@ -3441,6 +3447,180 @@ theorem v13RealLinearNoTargetRowsRhsTargetFiber_card_eq
       Fintype.card (V13RealLinearNoTargetRowsRhsTargetFiber i₀ row rhs 1) :=
   Fintype.card_congr
     (v13RealLinearNoTargetRowsRhsTargetFlipEquiv i₀ row rhs)
+
+theorem v13RealLinearNoTargetRows_fullPublic_decodes_target {m : Nat}
+    (i₀ : Fin m) (omega : V13RealLinearNoTargetRowsWorld m i₀) :
+    v13RealLinearFullDecoder i₀
+        (v13RealLinearNoTargetRowsPublicInput omega) =
+      omega.2 i₀ := by
+  cases omega with
+  | mk A x =>
+      simp [v13RealLinearNoTargetRowsPublicInput,
+        v13RealLinearFullDecoder, v13RealLinearPublicInput]
+
+theorem v13RealLinearNoTargetRows_fullPublic_determines_target {m : Nat}
+    (i₀ : Fin m) :
+    ∀ omega₀ omega₁ : V13RealLinearNoTargetRowsWorld m i₀,
+      v13RealLinearNoTargetRowsPublicInput omega₀ =
+        v13RealLinearNoTargetRowsPublicInput omega₁ →
+      omega₀.2 i₀ = omega₁.2 i₀ := by
+  intro omega₀ omega₁ hpublic
+  rw [← v13RealLinearNoTargetRows_fullPublic_decodes_target i₀ omega₀,
+    ← v13RealLinearNoTargetRows_fullPublic_decodes_target i₀ omega₁,
+    hpublic]
+
+abbrev V13RealLinearNoTargetRowsCoordinateTargetFiber {m : Nat}
+    (i₀ : Fin m) (coordinate : V13RealLinearPublicCoordinate m)
+    (value bit : ZMod 2) :=
+  {omega : V13RealLinearNoTargetRowsWorld m i₀ //
+    v13RealLinearCoordinateValue coordinate
+        (v13RealLinearNoTargetRowsPublicInput omega) = value ∧
+      omega.2 i₀ = bit}
+
+noncomputable def v13RealLinearNoTargetRowsMapCoordinateTargetFlipEquiv
+    {m : Nat} (i₀ : Fin m) (probe : F2Vec m) (row : Fin m)
+    (value : ZMod 2) :
+    V13RealLinearNoTargetRowsCoordinateTargetFiber i₀
+        (.mapValue probe row) value 0 ≃
+      V13RealLinearNoTargetRowsCoordinateTargetFiber i₀
+        (.mapValue probe row) value 1 := by
+  classical
+  let e := v13RealLinearSingleBit i₀
+  exact
+    { toFun := fun omega =>
+        ⟨(omega.val.1, f2AddVec omega.val.2 e), by
+          constructor
+          · simpa [V13RealLinearNoTargetRowsCoordinateTargetFiber,
+              v13RealLinearNoTargetRowsPublicInput,
+              v13RealLinearCoordinateValue, v13RealLinearPublicInput]
+              using omega.property.1
+          · simp [e, f2AddVec, v13RealLinearSingleBit, omega.property.2]⟩
+      invFun := fun omega =>
+        ⟨(omega.val.1, f2AddVec omega.val.2 e), by
+          constructor
+          · simpa [V13RealLinearNoTargetRowsCoordinateTargetFiber,
+              v13RealLinearNoTargetRowsPublicInput,
+              v13RealLinearCoordinateValue, v13RealLinearPublicInput]
+              using omega.property.1
+          · simp [e, f2AddVec, v13RealLinearSingleBit, omega.property.2,
+              f2_one_add_one]⟩
+      left_inv := by
+        intro omega
+        apply Subtype.ext
+        apply Prod.ext
+        · rfl
+        · funext j
+          simp [e, f2AddVec, f2_add_right_self]
+      right_inv := by
+        intro omega
+        apply Subtype.ext
+        apply Prod.ext
+        · rfl
+        · funext j
+          simp [e, f2AddVec, f2_add_right_self] }
+
+noncomputable def v13RealLinearNoTargetRowsInverseCoordinateTargetFlipEquiv
+    {m : Nat} (i₀ : Fin m) (probe : F2Vec m) (row : Fin m)
+    (value : ZMod 2) :
+    V13RealLinearNoTargetRowsCoordinateTargetFiber i₀
+        (.inverseValue probe row) value 0 ≃
+      V13RealLinearNoTargetRowsCoordinateTargetFiber i₀
+        (.inverseValue probe row) value 1 := by
+  classical
+  let e := v13RealLinearSingleBit i₀
+  exact
+    { toFun := fun omega =>
+        ⟨(omega.val.1, f2AddVec omega.val.2 e), by
+          constructor
+          · simpa [V13RealLinearNoTargetRowsCoordinateTargetFiber,
+              v13RealLinearNoTargetRowsPublicInput,
+              v13RealLinearCoordinateValue, v13RealLinearPublicInput]
+              using omega.property.1
+          · simp [e, f2AddVec, v13RealLinearSingleBit, omega.property.2]⟩
+      invFun := fun omega =>
+        ⟨(omega.val.1, f2AddVec omega.val.2 e), by
+          constructor
+          · simpa [V13RealLinearNoTargetRowsCoordinateTargetFiber,
+              v13RealLinearNoTargetRowsPublicInput,
+              v13RealLinearCoordinateValue, v13RealLinearPublicInput]
+              using omega.property.1
+          · simp [e, f2AddVec, v13RealLinearSingleBit, omega.property.2,
+              f2_one_add_one]⟩
+      left_inv := by
+        intro omega
+        apply Subtype.ext
+        apply Prod.ext
+        · rfl
+        · funext j
+          simp [e, f2AddVec, f2_add_right_self]
+      right_inv := by
+        intro omega
+        apply Subtype.ext
+        apply Prod.ext
+        · rfl
+        · funext j
+          simp [e, f2AddVec, f2_add_right_self] }
+
+theorem v13RealLinearNoTargetRowsCoordinateTargetFiber_card_eq
+    {m : Nat} (i₀ : Fin m)
+    (coordinate : V13RealLinearPublicCoordinate m) (value : ZMod 2) :
+    Fintype.card
+        (V13RealLinearNoTargetRowsCoordinateTargetFiber i₀ coordinate value 0) =
+      Fintype.card
+        (V13RealLinearNoTargetRowsCoordinateTargetFiber i₀ coordinate value 1) := by
+  classical
+  cases coordinate with
+  | mapValue probe row =>
+      exact
+        Fintype.card_congr
+          (v13RealLinearNoTargetRowsMapCoordinateTargetFlipEquiv
+            i₀ probe row value)
+  | inverseValue probe row =>
+      exact
+        Fintype.card_congr
+          (v13RealLinearNoTargetRowsInverseCoordinateTargetFlipEquiv
+            i₀ probe row value)
+  | rhs row =>
+      change
+        Fintype.card
+            (V13RealLinearNoTargetRowsRhsTargetFiber i₀ row value 0) =
+          Fintype.card
+            (V13RealLinearNoTargetRowsRhsTargetFiber i₀ row value 1)
+      exact v13RealLinearNoTargetRowsRhsTargetFiber_card_eq i₀ row value
+
+structure V13RealLinearNoTargetRowsPublicSurfaceCertificate
+    (m : Nat) : Prop where
+  fullPublicDecodes :
+    ∀ i₀ : Fin m, ∀ omega : V13RealLinearNoTargetRowsWorld m i₀,
+      v13RealLinearFullDecoder i₀
+          (v13RealLinearNoTargetRowsPublicInput omega) =
+        omega.2 i₀
+  fullPublicDeterminesTarget :
+    ∀ i₀ : Fin m, ∀ omega₀ omega₁ : V13RealLinearNoTargetRowsWorld m i₀,
+      v13RealLinearNoTargetRowsPublicInput omega₀ =
+        v13RealLinearNoTargetRowsPublicInput omega₁ →
+      omega₀.2 i₀ = omega₁.2 i₀
+  coordinateTargetBalanced :
+    ∀ i₀ : Fin m, ∀ coordinate : V13RealLinearPublicCoordinate m,
+      ∀ value : ZMod 2,
+        Fintype.card
+            (V13RealLinearNoTargetRowsCoordinateTargetFiber
+              i₀ coordinate value 0) =
+          Fintype.card
+            (V13RealLinearNoTargetRowsCoordinateTargetFiber
+              i₀ coordinate value 1)
+
+theorem v13RealLinearNoTargetRows_publicSurfaceCertificate {m : Nat} :
+    V13RealLinearNoTargetRowsPublicSurfaceCertificate m := by
+  exact
+    { fullPublicDecodes := fun i₀ omega =>
+        v13RealLinearNoTargetRows_fullPublic_decodes_target i₀ omega
+      fullPublicDeterminesTarget := fun i₀ omega₀ omega₁ hpublic =>
+        v13RealLinearNoTargetRows_fullPublic_determines_target
+          i₀ omega₀ omega₁ hpublic
+      coordinateTargetBalanced := fun i₀ coordinate value =>
+        v13RealLinearNoTargetRowsCoordinateTargetFiber_card_eq
+          i₀ coordinate value }
 
 def v13RealLinearSingleRowStaticObserver {m : Nat} (row : Fin m) :
     V13RealLinearStaticRowObserver m 1 where
