@@ -1069,6 +1069,18 @@ theorem currentPNPV13RealRungOneRhsBalanceObstruction_node :
       Fintype.card (V13RealLinearRhsZeroTargetFiber 1) :=
   v13RealLinearRhsZeroTargetFiber_two_zero_not_balanced
 
+theorem currentPNPV13RealRungOneNoTargetRowsRhsBalance_node :
+    ∀ {m : Nat} (A : V13F2LinearEquiv m) (row i₀ : Fin m)
+      (rhs : ZMod 2),
+      row ∉ V13RealLinearTargetRows A i₀ →
+        Fintype.card (V13RealLinearFixedRhsTargetFiber A row i₀ rhs 0) =
+          Fintype.card
+            (V13RealLinearFixedRhsTargetFiber A row i₀ rhs 1) := by
+  intro m A row i₀ rhs hrow
+  exact
+    v13RealLinearFixedRhsTargetFiber_card_eq_of_row_not_mem_targetRows
+      A row i₀ rhs hrow
+
 theorem currentPNPV13RealRungOneRowObservers_node :
     (∀ {m : Nat} {A : V13F2LinearEquiv m}
       {rows : Finset (Fin m)} {i₀ : Fin m},

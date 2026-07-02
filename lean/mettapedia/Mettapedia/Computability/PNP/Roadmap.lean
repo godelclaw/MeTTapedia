@@ -178,6 +178,14 @@ def currentPNPRoadmap : List PNPRoadmapEntry :=
       itvLowerPercent := 97
       itvUpperPercent := 100
       obligation := "Record the dimension-two square-GL obstruction: the RHS coordinate fiber `b0 = 0` has unequal target-bit counts, so exact coordinate-balance admissibility requires a changed sampler or a different formal statement." },
+    { stage := .v13RealRungOneLinear
+      proofNodeKey := "pnp.v13.real-rung-one.no-target-rows-rhs-balance"
+      status := .replacementOpened
+      truthValue := ⟨100, 91⟩
+      progressPercent := 72
+      itvLowerPercent := 91
+      itvUpperPercent := 100
+      obligation := "Use the no-target-row sampler condition: if no public row functional is exactly the target coordinate, every fixed RHS coordinate fiber is target-bit balanced by adding a row-kernel vector with target bit one." },
     { stage := .v13RealRungOneRowObservers
       proofNodeKey := "pnp.v13.real-rung-one.row-observer-hard-core"
       status := .replacementOpened
