@@ -2073,6 +2073,56 @@ theorem v13RealLinear_causalSingleRowGeneratedCoefficient_card_eq
       row i₀)]
   simp [Fintype.card_prod]
 
+/-- Fixed-row occurrence form of the constant single-row causal count.  It
+asks that a specified public row equals the target row on at most a
+`2 / 2^m` fraction of certified invertible maps, stated without division. -/
+def V13RealLinearUniformFixedTargetRowOccurrenceCountingBound : Prop :=
+  ∀ {m : Nat} (row i₀ : Fin m),
+    Fintype.card (V13RealLinearUniformFixedTargetRowOccurrence row i₀) *
+        2 ^ m ≤
+      2 * Fintype.card (V13F2LinearEquiv m)
+
+theorem v13RealLinear_causalSingleRow_coefficientCounting_of_fixedTargetRowOccurrenceCounting
+    (hcount : V13RealLinearUniformFixedTargetRowOccurrenceCountingBound)
+    {m : Nat} (row i₀ : Fin m) :
+    Fintype.card
+        (V13RealLinearAdaptiveQRowGeneratedCoefficient
+          (v13RealLinearUniformCausalQRowExperiment
+            (v13RealLinearCausalSingleRowObserver row)) i₀) *
+        2 ^ m ≤
+      2 ^ 1 *
+        Fintype.card
+          (V13RealLinearAdaptiveQRowWorld m (V13F2LinearEquiv m)) := by
+  classical
+  rw [v13RealLinear_causalSingleRowGeneratedCoefficient_card_eq]
+  rw [Fintype.card_prod, v13RealLinear_f2vec_card]
+  let O := Fintype.card (V13RealLinearUniformFixedTargetRowOccurrence row i₀)
+  let A := Fintype.card (V13F2LinearEquiv m)
+  let X := 2 ^ m
+  have hfixed : O * X ≤ 2 * A := by
+    simpa [O, A, X] using hcount row i₀
+  change (O * X) * X ≤ 2 * (A * X)
+  nlinarith
+
+theorem v13RealLinear_fixedTargetRowOccurrence_zero_two_counting :
+    Fintype.card
+        (V13RealLinearUniformFixedTargetRowOccurrence
+          (0 : Fin 2) (0 : Fin 2)) *
+        2 ^ 2 ≤
+      2 * Fintype.card (V13F2LinearEquiv 2) := by
+  classical
+  let O :=
+    Fintype.card
+      (V13RealLinearUniformFixedTargetRowOccurrence
+        (0 : Fin 2) (0 : Fin 2))
+  let A := Fintype.card (V13F2LinearEquiv 2)
+  change O * 4 ≤ 2 * A
+  have hO : O ≤ 2 := by
+    exact v13RealLinearFixedTargetRowOccurrence_zero_card_le_two
+  have hA : 4 ≤ A := by
+    exact v13RealLinear_f2_equiv_two_card_four_le
+  nlinarith
+
 theorem v13RealLinear_causalSingleRow_zero_two_coefficientCounting :
     Fintype.card
         (V13RealLinearAdaptiveQRowGeneratedCoefficient
