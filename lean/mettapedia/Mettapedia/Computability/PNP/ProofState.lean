@@ -1243,6 +1243,8 @@ theorem currentPNPV13RealRungOneQRowBound_node :
             (V13RealLinearUniformFixedTargetRowOccurrence row i₀) *
             2 ^ 2 ≤
           2 * Fintype.card (V13F2LinearEquiv 2)) ∧
+      V13RealLinearUniformFixedTargetRowOccurrenceCountingBound ∧
+      V13RealLinearUniformRepresentativeFixedTargetRowOccurrenceCountingBound ∧
       (V13RealLinearUniformFixedTargetRowOccurrenceCountingBound →
         ∀ {m : Nat} (row i₀ : Fin m),
           Fintype.card
@@ -1257,6 +1259,15 @@ theorem currentPNPV13RealRungOneQRowBound_node :
         V13RealLinearUniformRepresentativeFixedTargetRowOccurrenceCountingBound) ∧
       (V13RealLinearUniformRepresentativeFixedTargetRowOccurrenceCountingBound →
         ∀ {m : Nat} (row i₀ : Fin m),
+          Fintype.card
+              (V13RealLinearAdaptiveQRowGeneratedCoefficient
+                (v13RealLinearUniformCausalQRowExperiment
+                  (v13RealLinearCausalSingleRowObserver row)) i₀) *
+              2 ^ m ≤
+            2 ^ 1 *
+              Fintype.card
+                (V13RealLinearAdaptiveQRowWorld m (V13F2LinearEquiv m))) ∧
+      (∀ {m : Nat} (row i₀ : Fin m),
           Fintype.card
               (V13RealLinearAdaptiveQRowGeneratedCoefficient
                 (v13RealLinearUniformCausalQRowExperiment
@@ -1369,6 +1380,8 @@ theorem currentPNPV13RealRungOneQRowBound_node :
       v13RealLinearFixedTargetRowOccurrence_two_card_le_two,
       v13RealLinear_fixedTargetRowOccurrence_zero_two_counting,
       v13RealLinear_fixedTargetRowOccurrence_two_counting,
+      v13RealLinearUniformFixedTargetRowOccurrenceCountingBound_proved,
+      v13RealLinearUniformRepresentativeFixedTargetRowOccurrenceCountingBound_proved,
       fun hcount {m} row i₀ =>
         v13RealLinear_causalSingleRow_coefficientCounting_of_fixedTargetRowOccurrenceCounting
           (m := m) hcount row i₀,
@@ -1376,6 +1389,9 @@ theorem currentPNPV13RealRungOneQRowBound_node :
       fun hcount {m} row i₀ =>
         v13RealLinear_causalSingleRow_coefficientCounting_of_representativeFixedTargetRowOccurrenceCounting
           (m := m) hcount row i₀,
+      fun {m} row i₀ =>
+        v13RealLinear_causalSingleRow_coefficientCounting
+          (m := m) row i₀,
       v13RealLinear_causalSingleRow_zero_two_coefficientCounting,
       v13RealLinear_causalSingleRow_two_coefficientCounting,
       fun hcount =>

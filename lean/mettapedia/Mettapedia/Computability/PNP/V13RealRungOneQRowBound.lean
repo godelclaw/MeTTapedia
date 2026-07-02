@@ -563,6 +563,197 @@ def V13RealLinearUniformFixedTargetRowOccurrence {m : Nat}
     (row i₀ : Fin m) :=
   {A : V13F2LinearEquiv m // row ∈ V13RealLinearTargetRows A i₀}
 
+noncomputable instance {m : Nat} (row i₀ : Fin m) :
+    Fintype (V13RealLinearUniformFixedTargetRowOccurrence row i₀) := by
+  classical
+  unfold V13RealLinearUniformFixedTargetRowOccurrence
+  infer_instance
+
+/-- Vectors whose selected coordinate is zero.  These index the elementary
+row transvections used to spread one fixed target row through a half-space of
+possible row functionals. -/
+def V13RealLinearZeroAt {m : Nat} (i₀ : Fin m) :=
+  {s : F2Vec m // s i₀ = 0}
+
+noncomputable instance {m : Nat} (i₀ : Fin m) :
+    Fintype (V13RealLinearZeroAt i₀) := by
+  classical
+  unfold V13RealLinearZeroAt
+  infer_instance
+
+noncomputable def v13RealLinearZeroAtProdBitEquiv {m : Nat} (i₀ : Fin m) :
+    V13RealLinearZeroAt i₀ × ZMod 2 ≃ F2Vec m where
+  toFun pair := fun j => if j = i₀ then pair.2 else pair.1.val j
+  invFun w :=
+    (⟨fun j => if j = i₀ then 0 else w j, by simp⟩, w i₀)
+  left_inv pair := by
+    apply Prod.ext
+    · apply Subtype.ext
+      funext j
+      by_cases hj : j = i₀
+      · simp [hj, pair.1.property]
+      · simp [hj]
+    · simp
+  right_inv w := by
+    funext j
+    by_cases hj : j = i₀ <;> simp [hj]
+
+theorem v13RealLinear_zeroAt_card_mul_two {m : Nat} (i₀ : Fin m) :
+    Fintype.card (V13RealLinearZeroAt i₀) * 2 = 2 ^ m := by
+  classical
+  have hcard :=
+    Fintype.card_congr (v13RealLinearZeroAtProdBitEquiv i₀)
+  rw [Fintype.card_prod] at hcard
+  have hzmod : Fintype.card (ZMod 2) = 2 := by
+    simp
+  have hf2 : Fintype.card (F2Vec m) = 2 ^ m := by
+    simp [F2Vec]
+  simpa [hzmod, hf2] using hcard
+
+def v13RealLinearZeroAtShearSum {m : Nat} (i₀ : Fin m)
+    (s : V13RealLinearZeroAt i₀) (w : F2Vec m) : ZMod 2 :=
+  (Finset.univ.erase i₀).sum (fun j => s.val j * w j)
+
+theorem v13RealLinearZeroAtShearSum_apply_shear {m : Nat} (i₀ : Fin m)
+    (s : V13RealLinearZeroAt i₀) (w : F2Vec m) :
+    v13RealLinearZeroAtShearSum i₀ s
+        (fun r => if r = i₀ then
+          w i₀ + v13RealLinearZeroAtShearSum i₀ s w else w r) =
+      v13RealLinearZeroAtShearSum i₀ s w := by
+  classical
+  unfold v13RealLinearZeroAtShearSum
+  apply Finset.sum_congr rfl
+  intro j hj
+  have hne : j ≠ i₀ := by
+    exact (Finset.mem_erase.mp hj).1
+  simp [hne]
+
+/-- A row transvection that changes the selected output row functional from
+`e_i` to `e_i + s`, where `s i = 0`, and fixes every other coordinate. -/
+def v13RealLinearZeroAtRowShear {m : Nat} (i₀ : Fin m)
+    (s : V13RealLinearZeroAt i₀) : V13F2LinearEquiv m where
+  toEquiv :=
+    { toFun := fun w r =>
+        if r = i₀ then w i₀ + v13RealLinearZeroAtShearSum i₀ s w else w r
+      invFun := fun w r =>
+        if r = i₀ then w i₀ + v13RealLinearZeroAtShearSum i₀ s w else w r
+      left_inv := by
+        intro w
+        funext r
+        by_cases hr : r = i₀
+        · subst r
+          simp [v13RealLinearZeroAtShearSum_apply_shear,
+            f2_add_right_self]
+        · simp [hr]
+      right_inv := by
+        intro w
+        funext r
+        by_cases hr : r = i₀
+        · subst r
+          simp [v13RealLinearZeroAtShearSum_apply_shear,
+            f2_add_right_self]
+        · simp [hr] }
+  map_add := by
+    intro x y
+    funext r
+    by_cases hr : r = i₀
+    · subst r
+      unfold v13RealLinearZeroAtShearSum
+      simp [f2AddVec, Finset.sum_add_distrib, mul_add]
+      ring
+    · simp [f2AddVec, hr]
+  map_zero := by
+    funext r
+    by_cases hr : r = i₀
+    · subst r
+      simp [f2ZeroVec, v13RealLinearZeroAtShearSum]
+    · simp [f2ZeroVec, hr]
+
+theorem v13RealLinearZeroAtRowShear_row_apply_singleBit_of_ne {m : Nat}
+    {i₀ j : Fin m} (s : V13RealLinearZeroAt i₀) (hne : j ≠ i₀) :
+    (v13RealLinearZeroAtRowShear i₀ s).toEquiv
+        (v13RealLinearSingleBit j) i₀ = s.val j := by
+  classical
+  have hne' : i₀ ≠ j := fun h => hne h.symm
+  simp [v13RealLinearZeroAtRowShear, v13RealLinearZeroAtShearSum,
+    v13RealLinearSingleBit, hne']
+
+noncomputable def v13RealLinearFixedTargetRowOccurrenceZeroAtEmbedding
+    {m : Nat} (row i₀ : Fin m) :
+    V13RealLinearUniformFixedTargetRowOccurrence row i₀ ×
+        V13RealLinearZeroAt i₀ ↪
+      V13F2LinearEquiv m where
+  toFun pair :=
+    v13RealLinearComp pair.1.val
+      (v13RealLinearZeroAtRowShear i₀ pair.2)
+  inj' := by
+    classical
+    intro pair₀ pair₁ hmap
+    rcases pair₀ with ⟨A₀, s₀⟩
+    rcases pair₁ with ⟨A₁, s₁⟩
+    have htarget₀ :
+        ∀ w : F2Vec m, A₀.val.toEquiv w row = w i₀ :=
+      (v13RealLinear_mem_targetRows_iff A₀.val i₀ row).1 A₀.property
+    have htarget₁ :
+        ∀ w : F2Vec m, A₁.val.toEquiv w row = w i₀ :=
+      (v13RealLinear_mem_targetRows_iff A₁.val i₀ row).1 A₁.property
+    have hs : s₀ = s₁ := by
+      apply Subtype.ext
+      funext j
+      by_cases hj : j = i₀
+      · subst j
+        rw [s₀.property, s₁.property]
+      · have hcoord :=
+          congrFun
+            (congrArg (fun A : V13F2LinearEquiv m =>
+              A.toEquiv (v13RealLinearSingleBit j)) hmap) row
+        simpa [v13RealLinearComp, htarget₀, htarget₁,
+          v13RealLinearZeroAtRowShear_row_apply_singleBit_of_ne
+            s₀ hj,
+          v13RealLinearZeroAtRowShear_row_apply_singleBit_of_ne
+            s₁ hj] using hcoord
+    subst s₁
+    have hA : A₀ = A₁ := by
+      apply Subtype.ext
+      apply v13RealLinearEquiv_ext
+      intro x
+      let K := v13RealLinearZeroAtRowShear i₀ s₀
+      have hcoord :=
+        congrArg (fun A : V13F2LinearEquiv m =>
+          A.toEquiv (K.toEquiv.symm x)) hmap
+      simpa [v13RealLinearComp, K] using hcoord
+    subst A₁
+    rfl
+
+theorem v13RealLinearFixedTargetRowOccurrence_mul_zeroAt_card_le
+    {m : Nat} (row i₀ : Fin m) :
+    Fintype.card (V13RealLinearUniformFixedTargetRowOccurrence row i₀) *
+        Fintype.card (V13RealLinearZeroAt i₀) ≤
+      Fintype.card (V13F2LinearEquiv m) := by
+  classical
+  simpa [Fintype.card_prod] using
+    Fintype.card_le_of_embedding
+      (v13RealLinearFixedTargetRowOccurrenceZeroAtEmbedding row i₀)
+
+theorem v13RealLinearFixedTargetRowOccurrence_counting
+    {m : Nat} (row i₀ : Fin m) :
+    Fintype.card (V13RealLinearUniformFixedTargetRowOccurrence row i₀) *
+        2 ^ m ≤
+      2 * Fintype.card (V13F2LinearEquiv m) := by
+  classical
+  let O := Fintype.card (V13RealLinearUniformFixedTargetRowOccurrence row i₀)
+  let Z := Fintype.card (V13RealLinearZeroAt i₀)
+  let A := Fintype.card (V13F2LinearEquiv m)
+  have hOZ : O * Z ≤ A := by
+    simpa [O, Z, A] using
+      v13RealLinearFixedTargetRowOccurrence_mul_zeroAt_card_le row i₀
+  have hZ : Z * 2 = 2 ^ m := by
+    simpa [Z] using v13RealLinear_zeroAt_card_mul_two i₀
+  calc
+    O * 2 ^ m = O * (Z * 2) := by rw [hZ]
+    _ = 2 * (O * Z) := by ring
+    _ ≤ 2 * A := by exact Nat.mul_le_mul_left 2 hOZ
+
 noncomputable def v13RealLinearFixedTargetRowOccurrenceSwapEquiv
     {m : Nat} (row row' i₀ i₀' : Fin m) :
     V13RealLinearUniformFixedTargetRowOccurrence row i₀ ≃
@@ -618,12 +809,6 @@ noncomputable instance {m : Nat} (i₀ : Fin m) :
     Fintype (V13RealLinearUniformTargetRowOccurrence i₀) := by
   classical
   unfold V13RealLinearUniformTargetRowOccurrence
-  infer_instance
-
-noncomputable instance {m : Nat} (row i₀ : Fin m) :
-    Fintype (V13RealLinearUniformFixedTargetRowOccurrence row i₀) := by
-  classical
-  unfold V13RealLinearUniformFixedTargetRowOccurrence
   infer_instance
 
 theorem v13RealLinearFixedTargetRowOccurrence_card_eq_of_swap
@@ -2429,6 +2614,11 @@ def V13RealLinearUniformFixedTargetRowOccurrenceCountingBound : Prop :=
         2 ^ m ≤
       2 * Fintype.card (V13F2LinearEquiv m)
 
+theorem v13RealLinearUniformFixedTargetRowOccurrenceCountingBound_proved :
+    V13RealLinearUniformFixedTargetRowOccurrenceCountingBound := by
+  intro m row i₀
+  exact v13RealLinearFixedTargetRowOccurrence_counting row i₀
+
 /-- Representative form of the constant single-row occurrence count.  Since
 fixed-row occurrence cardinalities are invariant under coordinate swaps, it is
 enough to prove the bound for one row/target pair in each nonempty dimension. -/
@@ -2472,6 +2662,12 @@ theorem V13RealLinearUniformFixedTargetRowOccurrenceCountingBound_iff_representa
   ⟨V13RealLinearUniformRepresentativeFixedTargetRowOccurrenceCountingBound_of_fixed,
     V13RealLinearUniformFixedTargetRowOccurrenceCountingBound_of_representative⟩
 
+theorem
+    v13RealLinearUniformRepresentativeFixedTargetRowOccurrenceCountingBound_proved :
+    V13RealLinearUniformRepresentativeFixedTargetRowOccurrenceCountingBound :=
+  V13RealLinearUniformRepresentativeFixedTargetRowOccurrenceCountingBound_of_fixed
+    v13RealLinearUniformFixedTargetRowOccurrenceCountingBound_proved
+
 theorem v13RealLinear_causalSingleRow_coefficientCounting_of_fixedTargetRowOccurrenceCounting
     (hcount : V13RealLinearUniformFixedTargetRowOccurrenceCountingBound)
     {m : Nat} (row i₀ : Fin m) :
@@ -2511,6 +2707,21 @@ theorem
     v13RealLinear_causalSingleRow_coefficientCounting_of_fixedTargetRowOccurrenceCounting
       (V13RealLinearUniformFixedTargetRowOccurrenceCountingBound_of_representative
         hcount)
+      row i₀
+
+theorem v13RealLinear_causalSingleRow_coefficientCounting
+    {m : Nat} (row i₀ : Fin m) :
+    Fintype.card
+        (V13RealLinearAdaptiveQRowGeneratedCoefficient
+          (v13RealLinearUniformCausalQRowExperiment
+            (v13RealLinearCausalSingleRowObserver row)) i₀) *
+        2 ^ m ≤
+      2 ^ 1 *
+        Fintype.card
+          (V13RealLinearAdaptiveQRowWorld m (V13F2LinearEquiv m)) := by
+  exact
+    v13RealLinear_causalSingleRow_coefficientCounting_of_fixedTargetRowOccurrenceCounting
+      v13RealLinearUniformFixedTargetRowOccurrenceCountingBound_proved
       row i₀
 
 theorem v13RealLinear_fixedTargetRowOccurrence_zero_two_counting :
