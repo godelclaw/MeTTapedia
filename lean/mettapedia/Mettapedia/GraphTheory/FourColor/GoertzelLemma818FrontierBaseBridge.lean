@@ -1,5 +1,10 @@
+import Mettapedia.GraphTheory.FourColor.GoertzelLemma814RealAudit
 import Mettapedia.GraphTheory.FourColor.GoertzelLemma818FrontierMode
 import Mettapedia.GraphTheory.FourColor.GoertzelLemma818LengthTwoBase
+import Mettapedia.GraphTheory.FourColor.GoertzelLemma818LengthTwoMMRealAudit
+import Mettapedia.GraphTheory.FourColor.GoertzelLemma818LengthTwoMTRealAudit
+import Mettapedia.GraphTheory.FourColor.GoertzelLemma818LengthTwoTMRealAudit
+import Mettapedia.GraphTheory.FourColor.GoertzelLemma818LengthTwoTTRealAudit
 
 namespace Mettapedia.GraphTheory.FourColor
 
@@ -69,10 +74,11 @@ theorem lengthTwoFrontierWordMode_ok
       some (lengthTwoFrontierMode w) := by
   cases w <;> rfl
 
-theorem lengthTwoFrontierMode_hasArchivedConnectivityEvidence
+theorem lengthTwoFrontierState_ok
     (w : GoertzelLemma818LengthTwoBase.LengthTwoOrientWord) :
-    GoertzelLemma818FrontierMode.modeHasArchivedConnectivityEvidence
-      (lengthTwoFrontierMode w) = true := by
+    GoertzelLemma818FrontierMode.frontierState (lengthTwoFrontierWord w) =
+      GoertzelLemma818FrontierMode.FrontierState.active
+        (lengthTwoFrontierMode w) := by
   cases w <;> decide
 
 def lengthTwoFrontierBaseAudit
@@ -81,8 +87,9 @@ def lengthTwoFrontierBaseAudit
     && (lengthTwoChainFrontierWord w == lengthTwoFrontierWord w)
     && (GoertzelLemma818FrontierMode.wordMode (lengthTwoFrontierWord w) ==
       some (lengthTwoFrontierMode w))
-    && GoertzelLemma818FrontierMode.modeHasArchivedConnectivityEvidence
-      (lengthTwoFrontierMode w)
+    && (GoertzelLemma818FrontierMode.frontierState (lengthTwoFrontierWord w) ==
+      GoertzelLemma818FrontierMode.FrontierState.active
+        (lengthTwoFrontierMode w))
 
 theorem lengthTwoFrontierBaseAudit_ok
     (w : GoertzelLemma818LengthTwoBase.LengthTwoOrientWord) :
@@ -178,32 +185,40 @@ def baseCertifiedFrontierMode :
   | BaseCertifiedWord.mt => GoertzelLemma818FrontierMode.FrontierMode.mode11
   | BaseCertifiedWord.mm => GoertzelLemma818FrontierMode.FrontierMode.mode04
 
+/--
+Base-word chain audit.  The one-gadget normal and mirror cases are checked
+against the actual `chainLKRInAudit`; the length-two cases now use their real
+`chainLKRInAudit` assemblies rather than only the generated direct certificate
+audits.
+-/
 def baseCertifiedChainCertificateAudit : BaseCertifiedWord → Bool
   | BaseCertifiedWord.t =>
-      GoertzelLemma814.tauSingleNormalAllFiberCertificateAudit
+      GoertzelLemma814.chainLKRInAudit [GoertzelLemma814.TauOrient.normal]
   | BaseCertifiedWord.m =>
-      GoertzelLemma814.tauSingleAllFiberCertificateAudit
-        GoertzelLemma814.TauOrient.mirror
+      GoertzelLemma814.chainLKRInAudit [GoertzelLemma814.TauOrient.mirror]
   | BaseCertifiedWord.tt =>
-      GoertzelLemma818LengthTwoBase.lengthTwoCertificateAudit
-        GoertzelLemma818LengthTwoBase.LengthTwoOrientWord.tt
+      GoertzelLemma814.chainLKRInAudit
+        GoertzelLemma818CompositeCertificate.ttWord
   | BaseCertifiedWord.tm =>
-      GoertzelLemma818LengthTwoBase.lengthTwoCertificateAudit
-        GoertzelLemma818LengthTwoBase.LengthTwoOrientWord.tm
+      GoertzelLemma814.chainLKRInAudit
+        GoertzelLemma818TauMirrorCertificate.tmWord
   | BaseCertifiedWord.mt =>
-      GoertzelLemma818LengthTwoBase.lengthTwoCertificateAudit
-        GoertzelLemma818LengthTwoBase.LengthTwoOrientWord.mt
+      GoertzelLemma814.chainLKRInAudit
+        GoertzelLemma818MirrorTauCertificate.mtWord
   | BaseCertifiedWord.mm =>
-      GoertzelLemma818LengthTwoBase.lengthTwoCertificateAudit
-        GoertzelLemma818LengthTwoBase.LengthTwoOrientWord.mm
+      GoertzelLemma814.chainLKRInAudit
+        GoertzelLemma818MirrorMirrorCertificate.mmWord
 
 theorem baseCertifiedChainCertificateAudit_ok (w : BaseCertifiedWord) :
     baseCertifiedChainCertificateAudit w = true := by
   cases w <;>
     simp [baseCertifiedChainCertificateAudit,
-      GoertzelLemma814.tauSingleNormalAllFiberCertificateAudit_ok,
-      GoertzelLemma814.tauSingleMirrorAllFiberCertificateAudit_ok,
-      GoertzelLemma818LengthTwoBase.lengthTwoCertificateAudit_ok]
+      GoertzelLemma814RealAudit.tauSingleNormalChainLKRInAudit_ok,
+      GoertzelLemma814RealAudit.tauSingleMirrorChainLKRInAudit_ok,
+      GoertzelLemma818LengthTwoTTRealAudit.ttChainLKRInAudit_ok,
+      GoertzelLemma818LengthTwoTMRealAudit.tmChainLKRInAudit_ok,
+      GoertzelLemma818LengthTwoMTRealAudit.mtChainLKRInAudit_ok,
+      GoertzelLemma818LengthTwoMMRealAudit.mmChainLKRInAudit_ok]
 
 theorem baseCertifiedChainFrontierWord_eq (w : BaseCertifiedWord) :
     baseCertifiedChainFrontierWord w = baseCertifiedFrontierWord w := by
@@ -214,10 +229,11 @@ theorem baseCertifiedFrontierWordMode_ok (w : BaseCertifiedWord) :
       some (baseCertifiedFrontierMode w) := by
   cases w <;> rfl
 
-theorem baseCertifiedFrontierMode_hasArchivedConnectivityEvidence
+theorem baseCertifiedFrontierState_ok
     (w : BaseCertifiedWord) :
-    GoertzelLemma818FrontierMode.modeHasArchivedConnectivityEvidence
-      (baseCertifiedFrontierMode w) = true := by
+    GoertzelLemma818FrontierMode.frontierState (baseCertifiedFrontierWord w) =
+      GoertzelLemma818FrontierMode.FrontierState.active
+        (baseCertifiedFrontierMode w) := by
   cases w <;> decide
 
 def baseCertifiedFrontierAudit (w : BaseCertifiedWord) : Bool :=
@@ -225,8 +241,9 @@ def baseCertifiedFrontierAudit (w : BaseCertifiedWord) : Bool :=
     && (baseCertifiedChainFrontierWord w == baseCertifiedFrontierWord w)
     && (GoertzelLemma818FrontierMode.wordMode (baseCertifiedFrontierWord w) ==
       some (baseCertifiedFrontierMode w))
-    && GoertzelLemma818FrontierMode.modeHasArchivedConnectivityEvidence
-      (baseCertifiedFrontierMode w)
+    && (GoertzelLemma818FrontierMode.frontierState (baseCertifiedFrontierWord w) ==
+      GoertzelLemma818FrontierMode.FrontierState.active
+        (baseCertifiedFrontierMode w))
 
 theorem baseCertifiedFrontierAudit_ok (w : BaseCertifiedWord) :
     baseCertifiedFrontierAudit w = true := by

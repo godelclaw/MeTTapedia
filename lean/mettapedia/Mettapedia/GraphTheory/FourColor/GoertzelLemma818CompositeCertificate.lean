@@ -38,6 +38,20 @@ def directRow (source parent sourceLeft sourceRight parentLeft parentRight : Nat
 def directStates (left right : Nat) : List TauState :=
   [stateAt left, stateAt right]
 
+def directChainFiberRow (row : DirectChainParentRow) : ChainFiberParentRow :=
+  { source := row.source, parent := row.parent, move := row.move }
+
+def directChainFiberRoot : List DirectChainParentRow → Nat
+  | [] => 0
+  | row :: _ => row.source
+
+def directChainFiberCertificate (key : List LColor) (maxDepth : Nat)
+    (rows : List DirectChainParentRow) : ChainFiberCertificate :=
+  { key := key
+    root := directChainFiberRoot rows
+    maxDepth := maxDepth
+    rows := rows.map directChainFiberRow }
+
 def directParentFromRows : List DirectChainParentRow → Nat → Nat
   | [], i => i
   | row :: rows, i =>
@@ -55,6 +69,39 @@ def directRowValid (key : List LColor) (expected : List Nat)
     compatibleChainStates ttWord s && compatibleChainStates ttWord t &&
       chainInputKey ttWord s == key && chainInputKey ttWord t == key &&
         (row.source == row.parent || chainSpecifiedKempeStep ttWord s t row.move)
+
+/--
+Reverse-direction row check for the parent-tree certificates.
+
+The generated rows point from a source state toward its parent.  A real
+`chainFiberConnected` proof grows the closure from the root outward, so a
+parent row also needs the reverse Kempe step from parent to source.  This
+checker records that missing direction as a small, row-local condition.
+-/
+def directRowReverseValid (key : List LColor) (expected : List Nat)
+    (row : DirectChainParentRow) : Bool :=
+  expected.contains row.source && expected.contains row.parent &&
+    let s := directStates row.sourceLeft row.sourceRight
+    let t := directStates row.parentLeft row.parentRight
+    compatibleChainStates ttWord s && compatibleChainStates ttWord t &&
+      chainInputKey ttWord s == key && chainInputKey ttWord t == key &&
+        (row.source == row.parent || chainSpecifiedKempeStep ttWord t s row.move)
+
+theorem directRowReverseValid_step_of_ne (key : List LColor) (expected : List Nat)
+    (row : DirectChainParentRow) (hne : row.source ≠ row.parent)
+    (h : directRowReverseValid key expected row = true) :
+    chainSpecifiedKempeStep ttWord
+      (directStates row.parentLeft row.parentRight)
+      (directStates row.sourceLeft row.sourceRight) row.move = true := by
+  simp [directRowReverseValid] at h
+  rcases h with ⟨_, hrest⟩
+  rcases hrest.2 with heq | hstep
+  · exact False.elim (hne heq)
+  · exact hstep
+
+def directRowsReverseAudit (key : List LColor) (expected : List Nat)
+    (rows : List DirectChainParentRow) : Bool :=
+  rows.all (directRowReverseValid key expected)
 
 def ttNonemptyFiberCount : Nat := 36
 def ttCompositeStateCount : Nat := 960
@@ -197,6 +244,40 @@ theorem ttFiber3Row_4_ok : ttFiber3RowCheck 4 = true := by decide
 theorem ttFiber3Row_5_ok : ttFiber3RowCheck 5 = true := by decide
 theorem ttFiber3Row_6_ok : ttFiber3RowCheck 6 = true := by decide
 theorem ttFiber3Row_7_ok : ttFiber3RowCheck 7 = true := by decide
+
+def ttFiber3ReverseRowCheck (i : Nat) : Bool :=
+  directRowReverseValid ttFiber3Key ttFiber3Expected (ttFiber3RowAt i)
+
+theorem ttFiber3ReverseRow_0_ok : ttFiber3ReverseRowCheck 0 = true := by decide
+theorem ttFiber3ReverseRow_1_ok : ttFiber3ReverseRowCheck 1 = true := by decide
+theorem ttFiber3ReverseRow_2_ok : ttFiber3ReverseRowCheck 2 = true := by decide
+theorem ttFiber3ReverseRow_3_ok : ttFiber3ReverseRowCheck 3 = true := by decide
+theorem ttFiber3ReverseRow_4_ok : ttFiber3ReverseRowCheck 4 = true := by decide
+theorem ttFiber3ReverseRow_5_ok : ttFiber3ReverseRowCheck 5 = true := by decide
+theorem ttFiber3ReverseRow_6_ok : ttFiber3ReverseRowCheck 6 = true := by decide
+theorem ttFiber3ReverseRow_7_ok : ttFiber3ReverseRowCheck 7 = true := by decide
+
+def ttFiber3ReverseCertificateAudit : Bool :=
+  ttFiber3ReverseRowCheck 0 &&
+    ttFiber3ReverseRowCheck 1 &&
+    ttFiber3ReverseRowCheck 2 &&
+    ttFiber3ReverseRowCheck 3 &&
+    ttFiber3ReverseRowCheck 4 &&
+    ttFiber3ReverseRowCheck 5 &&
+    ttFiber3ReverseRowCheck 6 &&
+    ttFiber3ReverseRowCheck 7
+
+theorem ttFiber3ReverseCertificateAudit_ok :
+    ttFiber3ReverseCertificateAudit = true := by
+  simp [ttFiber3ReverseCertificateAudit,
+    ttFiber3ReverseRow_0_ok,
+    ttFiber3ReverseRow_1_ok,
+    ttFiber3ReverseRow_2_ok,
+    ttFiber3ReverseRow_3_ok,
+    ttFiber3ReverseRow_4_ok,
+    ttFiber3ReverseRow_5_ok,
+    ttFiber3ReverseRow_6_ok,
+    ttFiber3ReverseRow_7_ok]
 
 def ttFiber3ParentCheck (i : Nat) : Bool :=
   directParentIter ttFiber3Rows ttMaxParentDepth (listGetD ttFiber3Expected i 0) == 560
@@ -9692,6 +9773,112 @@ theorem ttAllFiberCertificateAudit_ok :
     ttFiber78CertificateAudit_ok,
     ttFiber79CertificateAudit_ok,
     ttFiber80CertificateAudit_ok]
+
+def ttFiberRowsAt : Nat → List DirectChainParentRow
+  | 0 => ttFiber0Rows
+  | 1 => ttFiber1Rows
+  | 2 => ttFiber2Rows
+  | 3 => ttFiber3Rows
+  | 4 => ttFiber4Rows
+  | 5 => ttFiber5Rows
+  | 6 => ttFiber6Rows
+  | 7 => ttFiber7Rows
+  | 8 => ttFiber8Rows
+  | 9 => ttFiber9Rows
+  | 10 => ttFiber10Rows
+  | 11 => ttFiber11Rows
+  | 12 => ttFiber12Rows
+  | 13 => ttFiber13Rows
+  | 14 => ttFiber14Rows
+  | 15 => ttFiber15Rows
+  | 16 => ttFiber16Rows
+  | 17 => ttFiber17Rows
+  | 18 => ttFiber18Rows
+  | 19 => ttFiber19Rows
+  | 20 => ttFiber20Rows
+  | 21 => ttFiber21Rows
+  | 22 => ttFiber22Rows
+  | 23 => ttFiber23Rows
+  | 24 => ttFiber24Rows
+  | 25 => ttFiber25Rows
+  | 26 => ttFiber26Rows
+  | 27 => ttFiber27Rows
+  | 28 => ttFiber28Rows
+  | 29 => ttFiber29Rows
+  | 30 => ttFiber30Rows
+  | 31 => ttFiber31Rows
+  | 32 => ttFiber32Rows
+  | 33 => ttFiber33Rows
+  | 34 => ttFiber34Rows
+  | 35 => ttFiber35Rows
+  | 36 => ttFiber36Rows
+  | 37 => ttFiber37Rows
+  | 38 => ttFiber38Rows
+  | 39 => ttFiber39Rows
+  | 40 => ttFiber40Rows
+  | 41 => ttFiber41Rows
+  | 42 => ttFiber42Rows
+  | 43 => ttFiber43Rows
+  | 44 => ttFiber44Rows
+  | 45 => ttFiber45Rows
+  | 46 => ttFiber46Rows
+  | 47 => ttFiber47Rows
+  | 48 => ttFiber48Rows
+  | 49 => ttFiber49Rows
+  | 50 => ttFiber50Rows
+  | 51 => ttFiber51Rows
+  | 52 => ttFiber52Rows
+  | 53 => ttFiber53Rows
+  | 54 => ttFiber54Rows
+  | 55 => ttFiber55Rows
+  | 56 => ttFiber56Rows
+  | 57 => ttFiber57Rows
+  | 58 => ttFiber58Rows
+  | 59 => ttFiber59Rows
+  | 60 => ttFiber60Rows
+  | 61 => ttFiber61Rows
+  | 62 => ttFiber62Rows
+  | 63 => ttFiber63Rows
+  | 64 => ttFiber64Rows
+  | 65 => ttFiber65Rows
+  | 66 => ttFiber66Rows
+  | 67 => ttFiber67Rows
+  | 68 => ttFiber68Rows
+  | 69 => ttFiber69Rows
+  | 70 => ttFiber70Rows
+  | 71 => ttFiber71Rows
+  | 72 => ttFiber72Rows
+  | 73 => ttFiber73Rows
+  | 74 => ttFiber74Rows
+  | 75 => ttFiber75Rows
+  | 76 => ttFiber76Rows
+  | 77 => ttFiber77Rows
+  | 78 => ttFiber78Rows
+  | 79 => ttFiber79Rows
+  | 80 => ttFiber80Rows
+  | _ => []
+
+def ttRealFiberCertificateAt (i : Nat) : ChainFiberCertificate :=
+  directChainFiberCertificate (listGetD colorAssignments4 i []) ttMaxParentDepth
+    (ttFiberRowsAt i)
+
+def ttRealFiberCertificates : List ChainFiberCertificate :=
+  (List.range 81).map ttRealFiberCertificateAt
+
+def ttRealFiberCertificateKeysCheck : Bool :=
+  (ttRealFiberCertificates.map fun cert => cert.key) == colorAssignments4
+
+def ttRealFiberCertificateAuditAt (i : Nat) : Bool :=
+  chainFiberParentCertificateAudit ttWord (ttRealFiberCertificateAt i)
+
+def ttRealFiberSmokeAudit : Bool :=
+  ttRealFiberCertificateKeysCheck &&
+    ttRealFiberCertificateAuditAt 0 &&
+    ttRealFiberCertificateAuditAt 3
+
+theorem ttRealFiberCertificateKeysCheck_ok :
+    ttRealFiberCertificateKeysCheck = true := by
+  decide
 
 end GoertzelLemma818CompositeCertificate
 

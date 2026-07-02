@@ -239,6 +239,88 @@ def wordMode : List TauOrient → Option FrontierMode
   | [] => none
   | orient :: rest => some (rest.foldl step (initialMode orient))
 
+/-- A total finite frontier state, with an explicit empty-prefix state. -/
+inductive FrontierState
+  | empty
+  | active (mode : FrontierMode)
+  deriving DecidableEq, BEq, Repr, Inhabited
+
+def allFrontierStates : List FrontierState :=
+  FrontierState.empty :: allModes.map FrontierState.active
+
+/-- The one-gadget transfer map on the finite frontier state. -/
+def transfer : FrontierState → TauOrient → FrontierState
+  | FrontierState.empty, orient => FrontierState.active (initialMode orient)
+  | FrontierState.active mode, orient => FrontierState.active (step mode orient)
+
+def transferTau (state : FrontierState) : FrontierState :=
+  transfer state TauOrient.tau
+
+def transferMirror (state : FrontierState) : FrontierState :=
+  transfer state TauOrient.mirror
+
+/-- The finite frontier state of a word, computed by iterating the transfer map. -/
+def frontierState (word : List TauOrient) : FrontierState :=
+  word.foldl transfer FrontierState.empty
+
+theorem frontierState_nil :
+    frontierState [] = FrontierState.empty := by
+  rfl
+
+theorem frontierState_append_singleton
+    (word : List TauOrient) (orient : TauOrient) :
+    frontierState (word ++ [orient]) =
+      transfer (frontierState word) orient := by
+  simp [frontierState, List.foldl_append]
+
+theorem transferTau_eq_transfer :
+    transferTau = fun state => transfer state TauOrient.tau := by
+  rfl
+
+theorem transferMirror_eq_transfer :
+    transferMirror = fun state => transfer state TauOrient.mirror := by
+  rfl
+
+theorem foldl_transfer_active
+    (rest : List TauOrient) (mode : FrontierMode) :
+    rest.foldl transfer (FrontierState.active mode) =
+      FrontierState.active (rest.foldl step mode) := by
+  induction rest generalizing mode with
+  | nil =>
+      rfl
+  | cons orient rest ih =>
+      simpa [List.foldl, transfer] using ih (step mode orient)
+
+theorem frontierState_eq_wordMode (word : List TauOrient) :
+    frontierState word =
+      match wordMode word with
+      | none => FrontierState.empty
+      | some mode => FrontierState.active mode := by
+  cases word with
+  | nil =>
+      rfl
+  | cons orient rest =>
+      simp [frontierState, wordMode, transfer, foldl_transfer_active]
+
+def finiteFrontierTransferClosedAudit : Bool :=
+  allFrontierStates.length == 21
+    && allFrontierStates.all (fun state =>
+      allOrientations.all (fun orient =>
+        allFrontierStates.contains (transfer state orient)))
+
+theorem finiteFrontierTransferClosedAudit_ok :
+    finiteFrontierTransferClosedAudit = true := by
+  decide
+
+theorem transfer_mem_allFrontierStates
+    (state : FrontierState) (orient : TauOrient) :
+    allFrontierStates.contains (transfer state orient) = true := by
+  cases state with
+  | empty =>
+      cases orient <;> decide
+  | active mode =>
+      cases mode <;> cases orient <;> decide
+
 def representativeWords : FrontierMode → List (List TauOrient)
   | FrontierMode.mode00 => [[TauOrient.mirror, TauOrient.tau, TauOrient.mirror]]
   | FrontierMode.mode01 =>
@@ -462,12 +544,12 @@ inductive ConnectivitySource
   deriving DecidableEq, BEq, Repr, Inhabited
 
 /--
-A compact row from an archived finite connectivity report.
+A compact metadata row from an archived finite connectivity report.
 
-For `directLenLe4`, `connectedPerInput` is the report field
-`atom_graph_connected_per_input` and `failureCount` is
-`atom_input_failure_count`.  For the singleton length-5 rows, these are
-`quotient_connected_per_input` and `input_failure_count`.
+For `directLenLe4`, `failureCount` is `atom_input_failure_count`.  For the
+singleton length-5 rows, it is `input_failure_count`.  The report's connectivity
+Boolean is deliberately not represented here; the active proof path goes through
+the explicit finite frontier state and its sufficiency theorem.
 -/
 structure ConnectivityRow where
   word : List TauOrient
@@ -475,7 +557,6 @@ structure ConnectivityRow where
   signatureCount : Nat
   atomCount : Nat
   inputCount : Nat
-  connectedPerInput : Bool
   failureCount : Nat
   deriving DecidableEq, BEq, Repr
 
@@ -483,8 +564,7 @@ def connectivityRow
     (word : List TauOrient) (stateCount signatureCount atomCount : Nat) :
     ConnectivityRow :=
   { word := word, stateCount := stateCount, signatureCount := signatureCount,
-    atomCount := atomCount, inputCount := 36, connectedPerInput := true,
-    failureCount := 0 }
+    atomCount := atomCount, inputCount := 36, failureCount := 0 }
 
 def directLenLe4ConnectivityRows : List ConnectivityRow :=
   [ connectivityRow [TauOrient.tau] 192 192 192
@@ -623,21 +703,20 @@ def archivedConnectivityWitness : FrontierMode → ArchivedConnectivityWitness
           [TauOrient.tau, TauOrient.mirror, TauOrient.tau, TauOrient.mirror]
           55296 336 432 }
 
-def modeHasArchivedConnectivityEvidence (mode : FrontierMode) : Bool :=
+def modeHasArchivedConnectivityMetadata (mode : FrontierMode) : Bool :=
   let witness := archivedConnectivityWitness mode
   archivedConnectivitySourceCheck witness
     && (wordMode witness.row.word == some mode)
-    && witness.row.connectedPerInput
     && (witness.row.inputCount == 36)
     && (witness.row.failureCount == 0)
 
-def archivedConnectivityCoverageCheck : Bool :=
+def archivedConnectivityMetadataCoverageCheck : Bool :=
   allModes.length == 20
     && directLenLe4ConnectivityRows.length == 30
-    && allModes.all modeHasArchivedConnectivityEvidence
+    && allModes.all modeHasArchivedConnectivityMetadata
 
-theorem archivedConnectivityCoverageCheck_ok :
-    archivedConnectivityCoverageCheck = true := by
+theorem archivedConnectivityMetadataCoverageCheck_ok :
+    archivedConnectivityMetadataCoverageCheck = true := by
   decide
 
 def modeInTable (mode : FrontierMode) : Bool :=
@@ -721,32 +800,31 @@ theorem wordMode_bool_induction
     good mode = true :=
   wordMode_induction hInitial hStep hmode
 
-theorem archivedConnectivityEvidence_initial_ok (orient : TauOrient) :
-    modeHasArchivedConnectivityEvidence (initialMode orient) = true := by
+theorem archivedConnectivityMetadata_initial_ok (orient : TauOrient) :
+    modeHasArchivedConnectivityMetadata (initialMode orient) = true := by
   cases orient <;> decide
 
-theorem archivedConnectivityEvidence_step_ok
+theorem archivedConnectivityMetadata_step_ok
     (mode : FrontierMode) (orient : TauOrient)
-    (_hmode : modeHasArchivedConnectivityEvidence mode = true) :
-    modeHasArchivedConnectivityEvidence (step mode orient) = true := by
+    (_hmode : modeHasArchivedConnectivityMetadata mode = true) :
+    modeHasArchivedConnectivityMetadata (step mode orient) = true := by
   cases mode <;> cases orient <;> decide
 
 /--
-Every nonempty orientation word folds to a DFA mode with an archived
-atom-connectivity witness row.
+Every nonempty orientation word folds to a DFA mode with an archived report
+metadata row.
 
-This is still only evidence coverage for the finite mode table.  It is not the
-final all-chain `LKR_in` consequence: that requires a generated theorem tying
-these archived rows to actual per-fixed-input path certificates.
+This is only metadata coverage for the finite mode table.  It is not a
+connectivity theorem and does not participate in the active semantic bridge.
 -/
-theorem wordMode_hasArchivedConnectivityEvidence
+theorem wordMode_hasArchivedConnectivityMetadata
     {word : List TauOrient} {mode : FrontierMode}
     (hmode : wordMode word = some mode) :
-    modeHasArchivedConnectivityEvidence mode = true :=
+    modeHasArchivedConnectivityMetadata mode = true :=
   wordMode_bool_induction
-    modeHasArchivedConnectivityEvidence
-    archivedConnectivityEvidence_initial_ok
-    archivedConnectivityEvidence_step_ok
+    modeHasArchivedConnectivityMetadata
+    archivedConnectivityMetadata_initial_ok
+    archivedConnectivityMetadata_step_ok
     hmode
 
 end GoertzelLemma818FrontierMode
