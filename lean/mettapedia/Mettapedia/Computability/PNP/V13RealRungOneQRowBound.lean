@@ -2786,6 +2786,54 @@ def V13RealLinearUniformCausalRowSpanCountingBound {m q : Nat}
   V13RealLinearAdaptiveRowSpanCountingBound
     (v13RealLinearUniformCausalQRowExperiment observer) i₀
 
+theorem v13RealLinearUniformCausalRowSpanCountingBound_of_generated_counting
+    {m q : Nat} (observer : V13RealLinearCausalRowObserver m q)
+    (i₀ : Fin m)
+    (hcount :
+      Fintype.card
+          (V13RealLinearAdaptiveQRowGenerated
+            (v13RealLinearUniformCausalQRowExperiment observer) i₀) *
+        2 ^ m ≤
+      2 ^ q *
+        Fintype.card
+          (V13RealLinearAdaptiveQRowWorld m (V13F2LinearEquiv m))) :
+    V13RealLinearUniformCausalRowSpanCountingBound observer i₀ := by
+  unfold V13RealLinearUniformCausalRowSpanCountingBound
+  unfold V13RealLinearAdaptiveRowSpanCountingBound
+  unfold v13RealLinearAdaptiveQRowGeneratedMass
+  unfold v13RealLinearQRowEpsilon
+  let G := Fintype.card
+    (V13RealLinearAdaptiveQRowGenerated
+      (v13RealLinearUniformCausalQRowExperiment observer) i₀)
+  let T := Fintype.card
+    (V13RealLinearAdaptiveQRowWorld m (V13F2LinearEquiv m))
+  let Q := 2 ^ q
+  let M := 2 ^ m
+  have hcard : G * M ≤ Q * T := by
+    simpa [G, T, Q, M] using hcount
+  have hTposNat : 0 < T := by
+    dsimp [T]
+    exact Fintype.card_pos_iff.mpr ⟨(v13RealLinearIdentity m, f2ZeroVec m)⟩
+  have hMposNat : 0 < M := by
+    dsimp [M]
+    positivity
+  have hTpos : (0 : Rat) < (T : Rat) := by
+    exact_mod_cast hTposNat
+  have hMpos : (0 : Rat) < (M : Rat) := by
+    exact_mod_cast hMposNat
+  have hcardRat : (G : Rat) * (M : Rat) ≤ (Q : Rat) * (T : Rat) := by
+    exact_mod_cast hcard
+  have hQrat : (2 : Rat) ^ q = (Q : Rat) := by
+    dsimp [Q]
+    norm_num
+  have hMrat : (2 : Rat) ^ m = (M : Rat) := by
+    dsimp [M]
+    norm_num
+  rw [hQrat, hMrat]
+  change (G : Rat) / (T : Rat) ≤ (Q : Rat) / (M : Rat)
+  rw [div_le_div_iff₀ hTpos hMpos]
+  exact hcardRat
+
 theorem v13RealLinearUniformCausalRowSpanCountingBound_of_zero_budget
     {m : Nat} (observer : V13RealLinearCausalRowObserver m 0)
     (i₀ : Fin m) :
@@ -3668,6 +3716,72 @@ theorem
     (V13RealLinearUniformCausalOneRowActiveRowIndexBound_of_pairExclusion
       hpair)
     observer i₀ hm
+
+theorem
+    v13RealLinearUniformCausalOneRowActiveRowIndexBound_two_zero
+    (observer : V13RealLinearCausalRowObserver 2 1) :
+    Fintype.card
+        (V13RealLinearUniformOneRowGeneratedRowIndex
+          observer.toAdaptive (0 : Fin 2)) ≤ 1 := by
+  classical
+  rw [Fintype.card_le_one_iff]
+  intro row₀ row₁
+  apply Subtype.ext
+  exact
+    v13RealLinearUniformCausalOneRowActiveRowPairExclusion_two_zero
+      observer row₀ row₁
+
+theorem
+    v13RealLinearUniformCausalOneRowActiveBitCylinderIndexBound_two_zero
+    (observer : V13RealLinearCausalRowObserver 2 1) :
+    Fintype.card
+        (V13RealLinearUniformOneRowGeneratedCylinderIndex
+          observer.toAdaptive (0 : Fin 2)) ≤ 2 := by
+  let R :=
+    Fintype.card
+      (V13RealLinearUniformOneRowGeneratedRowIndex
+        observer.toAdaptive (0 : Fin 2))
+  calc
+    Fintype.card
+        (V13RealLinearUniformOneRowGeneratedCylinderIndex
+          observer.toAdaptive (0 : Fin 2)) ≤ R * 2 := by
+      simpa [R] using
+        v13RealLinearUniformOneRowGeneratedCylinderIndex_card_le_rowIndex_mul_two
+          observer.toAdaptive (0 : Fin 2)
+    _ ≤ 1 * 2 := Nat.mul_le_mul_right 2 (by
+      simpa [R] using
+        v13RealLinearUniformCausalOneRowActiveRowIndexBound_two_zero observer)
+    _ = 2 := by norm_num
+
+theorem
+    v13RealLinearUniformCausalOneRowGenerated_counting_two_zero
+    (observer : V13RealLinearCausalRowObserver 2 1) :
+    Fintype.card
+        (V13RealLinearAdaptiveQRowGenerated
+          (v13RealLinearUniformCausalQRowExperiment observer) (0 : Fin 2)) *
+        2 ^ 2 ≤
+      2 ^ 1 *
+        Fintype.card
+          (V13RealLinearAdaptiveQRowWorld 2 (V13F2LinearEquiv 2)) :=
+  v13RealLinearUniformCausalOneRowGenerated_counting_of_activeBitCylinderIndex_le_two
+    observer (0 : Fin 2)
+    (v13RealLinearUniformCausalOneRowActiveBitCylinderIndexBound_two_zero
+      observer)
+
+theorem v13RealLinearUniformCausalRowSpanCountingBound_one_two_zero
+    (observer : V13RealLinearCausalRowObserver 2 1) :
+    V13RealLinearUniformCausalRowSpanCountingBound observer (0 : Fin 2) :=
+  v13RealLinearUniformCausalRowSpanCountingBound_of_generated_counting
+    observer (0 : Fin 2)
+    (v13RealLinearUniformCausalOneRowGenerated_counting_two_zero observer)
+
+theorem v13RealLinear_uniform_causal_qrow_success_bound_one_two_zero
+    (observer : V13RealLinearCausalRowObserver 2 1) :
+    v13RealLinearUniformCausalQRowSuccess observer (0 : Fin 2) ≤
+      (1 / 2 : Rat) + v13RealLinearQRowEpsilon 1 2 :=
+  v13RealLinear_uniform_causal_qrow_success_bound_of_spanCounting
+    observer (0 : Fin 2)
+    (v13RealLinearUniformCausalRowSpanCountingBound_one_two_zero observer)
 
 noncomputable def v13RealLinearFixedTargetRowOccurrenceZeroEmbedding :
     V13RealLinearUniformFixedTargetRowOccurrence
