@@ -969,12 +969,61 @@ def V13RealLinearAdaptiveQRowGeneratedCoefficient {m q : Nat}
           (E.sampleA data.1.1) (E.branchRows data.1)
           data.2 w = w i₀}
 
+/-- The fixed-seed fiber of coefficient-certified generated worlds.  For the
+uniform sampler, the seed is the sampled certified invertible map `A`. -/
+def V13RealLinearAdaptiveQRowGeneratedCoefficientFiber {m q : Nat}
+    {Seed : Type*} (E : V13RealLinearAdaptiveQRowExperiment m q Seed)
+    (i₀ : Fin m) (seed : Seed) :=
+  {data :
+      (Σ x : F2Vec m,
+        V13RealLinearRowCombination (E.branchRows (seed, x))) //
+    ∀ w : F2Vec m,
+      v13RealLinearRowCombinationEval
+          (E.sampleA seed) (E.branchRows (seed, data.1))
+          data.2 w = w i₀}
+
 noncomputable instance {m q : Nat} {Seed : Type*} [Fintype Seed]
     (E : V13RealLinearAdaptiveQRowExperiment m q Seed) (i₀ : Fin m) :
     Fintype (V13RealLinearAdaptiveQRowGeneratedCoefficient E i₀) := by
   classical
   unfold V13RealLinearAdaptiveQRowGeneratedCoefficient
   infer_instance
+
+noncomputable instance {m q : Nat} {Seed : Type*} [Fintype Seed]
+    (E : V13RealLinearAdaptiveQRowExperiment m q Seed) (i₀ : Fin m)
+    (seed : Seed) :
+    Fintype (V13RealLinearAdaptiveQRowGeneratedCoefficientFiber E i₀ seed) := by
+  classical
+  unfold V13RealLinearAdaptiveQRowGeneratedCoefficientFiber
+  infer_instance
+
+noncomputable def v13RealLinearAdaptiveQRowGeneratedCoefficientEquivSigmaFiber
+    {m q : Nat} {Seed : Type*}
+    (E : V13RealLinearAdaptiveQRowExperiment m q Seed) (i₀ : Fin m) :
+    V13RealLinearAdaptiveQRowGeneratedCoefficient E i₀ ≃
+      (Σ seed : Seed,
+        V13RealLinearAdaptiveQRowGeneratedCoefficientFiber E i₀ seed) where
+  toFun cert :=
+    ⟨cert.val.1.1,
+      ⟨⟨cert.val.1.2, cert.val.2⟩, cert.property⟩⟩
+  invFun cert :=
+    ⟨⟨(cert.1, cert.2.val.1), cert.2.val.2⟩, cert.2.property⟩
+  left_inv cert := by
+    rfl
+  right_inv cert := by
+    rfl
+
+theorem v13RealLinearAdaptiveQRowGeneratedCoefficient_card_eq_sum_fibers
+    {m q : Nat} {Seed : Type*} [Fintype Seed]
+    (E : V13RealLinearAdaptiveQRowExperiment m q Seed) (i₀ : Fin m) :
+    Fintype.card (V13RealLinearAdaptiveQRowGeneratedCoefficient E i₀) =
+      ∑ seed : Seed,
+        Fintype.card
+          (V13RealLinearAdaptiveQRowGeneratedCoefficientFiber E i₀ seed) := by
+  classical
+  rw [Fintype.card_congr
+    (v13RealLinearAdaptiveQRowGeneratedCoefficientEquivSigmaFiber E i₀)]
+  rw [Fintype.card_sigma]
 
 noncomputable def v13RealLinearAdaptiveQRowGeneratedToCoefficient
     {m q : Nat} {Seed : Type*}
@@ -1753,6 +1802,73 @@ def V13RealLinearUniformCausalLowPositiveCoefficientCountingBound : Prop :=
       2 ^ q *
         Fintype.card
           (V13RealLinearAdaptiveQRowWorld m (V13F2LinearEquiv m))
+
+/-- Fixed-map fiber form of the low-positive causal counting problem.  It asks
+that after the sampled invertible map `A` is fixed, at most `2^q` hidden
+witness/coefficient pairs can certify that the realized causal branch generated
+the target. -/
+def V13RealLinearUniformCausalLowPositiveFiberCoefficientCountingBound : Prop :=
+  ∀ {m q : Nat} (observer : V13RealLinearCausalRowObserver m q)
+    (i₀ : Fin m),
+    0 < q → q < m →
+      ∀ A : V13F2LinearEquiv m,
+        Fintype.card
+            (V13RealLinearAdaptiveQRowGeneratedCoefficientFiber
+              (v13RealLinearUniformCausalQRowExperiment observer) i₀ A) ≤
+          2 ^ q
+
+theorem v13RealLinear_f2vec_card (m : Nat) :
+    Fintype.card (F2Vec m) = 2 ^ m := by
+  classical
+  simp [F2Vec]
+
+theorem v13RealLinearUniformCausalLowPositiveCoefficientCountingBound_of_fiberCounting
+    (hcount :
+      V13RealLinearUniformCausalLowPositiveFiberCoefficientCountingBound) :
+    V13RealLinearUniformCausalLowPositiveCoefficientCountingBound := by
+  intro m q observer i₀ hqpos hqm
+  let E := v13RealLinearUniformCausalQRowExperiment observer
+  let C :=
+    Fintype.card (V13RealLinearAdaptiveQRowGeneratedCoefficient E i₀)
+  let S := Fintype.card (V13F2LinearEquiv m)
+  let M := 2 ^ m
+  let Q := 2 ^ q
+  have hCeq :
+      C =
+        ∑ A : V13F2LinearEquiv m,
+          Fintype.card
+            (V13RealLinearAdaptiveQRowGeneratedCoefficientFiber E i₀ A) := by
+    simpa [C, E] using
+      v13RealLinearAdaptiveQRowGeneratedCoefficient_card_eq_sum_fibers
+        (v13RealLinearUniformCausalQRowExperiment observer) i₀
+  have hsum :
+      (∑ A : V13F2LinearEquiv m,
+          Fintype.card
+            (V13RealLinearAdaptiveQRowGeneratedCoefficientFiber E i₀ A)) ≤
+        ∑ _A : V13F2LinearEquiv m, Q := by
+    exact
+      Finset.sum_le_sum
+        (fun A _hA => by
+          dsimp [Q, E]
+          exact hcount observer i₀ hqpos hqm A)
+  have hsumConst :
+      (∑ _A : V13F2LinearEquiv m, Q) = S * Q := by
+    simp [S]
+  have hCbound : C ≤ S * Q := by
+    rw [hCeq]
+    exact hsum.trans_eq hsumConst
+  have hworld :
+      Fintype.card
+          (V13RealLinearAdaptiveQRowWorld m (V13F2LinearEquiv m)) =
+        S * M := by
+    dsimp [V13RealLinearAdaptiveQRowWorld, S, M]
+    rw [Fintype.card_prod]
+    rw [v13RealLinear_f2vec_card m]
+  have hmain : C * M ≤ Q * (S * M) := by
+    calc
+      C * M ≤ (S * Q) * M := Nat.mul_le_mul_right M hCbound
+      _ = Q * (S * M) := by ring
+  simpa [C, E, M, Q, hworld] using hmain
 
 theorem v13RealLinearUniformCausalLowPositiveCompletionCountingBound_of_coefficientCounting
     (hcount :
