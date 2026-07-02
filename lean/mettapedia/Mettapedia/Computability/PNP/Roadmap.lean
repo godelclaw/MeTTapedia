@@ -25,6 +25,7 @@ inductive PNPRoadmapStage where
   | v13PhaseEConcrete
   | v13PhaseEScaled
   | v13RealRungOneLinear
+  | v13RealRungOneRowObservers
   | v13ObserverLadder
   | weaknessCalculus
   | barrierObstruction
@@ -166,6 +167,14 @@ def currentPNPRoadmap : List PNPRoadmapEntry :=
       itvLowerPercent := 88
       itvUpperPercent := 100
       obligation := "Use the certified invertible F2^m public surface `(A, A x)`: full public input decodes the target coordinate, and no elementary coordinate of A, A inverse, or the RHS determines it when a spare coordinate exists. The adaptive q-row bound remains open." },
+    { stage := .v13RealRungOneRowObservers
+      proofNodeKey := "pnp.v13.real-rung-one.row-observer-hard-core"
+      status := .replacementOpened
+      truthValue := ⟨100, 89⟩
+      progressPercent := 70
+      itvLowerPercent := 89
+      itvUpperPercent := 100
+      obligation := "Use the conditioned row-kernel flip: whenever observed rows do not span-block the target coordinate, opposite-target worlds share the same row transcript. The remaining q-row theorem is exactly the adaptive row-span counting bound, about 2^(q-m)." },
     { stage := .v13ObserverLadder
       proofNodeKey := "pnp.v13.phase-e.observer-ladder-mark"
       status := .checked
@@ -390,6 +399,19 @@ theorem currentPNPRoadmap_records_v13_real_rung_one_linear :
        itvUpperPercent := 100
        obligation :=
         "Use the certified invertible F2^m public surface `(A, A x)`: full public input decodes the target coordinate, and no elementary coordinate of A, A inverse, or the RHS determines it when a spare coordinate exists. The adaptive q-row bound remains open." } :
+      PNPRoadmapEntry) ∈ currentPNPRoadmap := by
+  simp [currentPNPRoadmap]
+
+theorem currentPNPRoadmap_records_v13_real_rung_one_row_observers :
+    ({ stage := PNPRoadmapStage.v13RealRungOneRowObservers
+       proofNodeKey := "pnp.v13.real-rung-one.row-observer-hard-core"
+       status := .replacementOpened
+       truthValue := ⟨100, 89⟩
+       progressPercent := 70
+       itvLowerPercent := 89
+       itvUpperPercent := 100
+       obligation :=
+        "Use the conditioned row-kernel flip: whenever observed rows do not span-block the target coordinate, opposite-target worlds share the same row transcript. The remaining q-row theorem is exactly the adaptive row-span counting bound, about 2^(q-m)." } :
       PNPRoadmapEntry) ∈ currentPNPRoadmap := by
   simp [currentPNPRoadmap]
 
