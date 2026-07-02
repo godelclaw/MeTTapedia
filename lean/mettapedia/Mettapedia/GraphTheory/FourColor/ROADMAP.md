@@ -245,6 +245,10 @@ the local singleton target is known to embed as an appended fixed-input fiber
 member, so it remains only to prove that a local singleton Kempe step becomes
 the corresponding global Kempe step under `pref ++ [last]`, and that the global
 root closure is closed under such an embedded step.
+The Kempe-step side is further split by
+`concreteChainFiberAppendRelativeSingletonGlobalKempeStepLiftClosed_of_specified_step`:
+the Boolean local step is unpacked once into a specified color-pair/seed move,
+leaving the real geometric lift as a specified-move statement.
 The closure-under-step side is now reduced by
 `concreteChainFiberAppendRelativeSingletonGlobalStepClosureClosed_of_bounded_saturation`
 to the pure closure-iterator lemma
