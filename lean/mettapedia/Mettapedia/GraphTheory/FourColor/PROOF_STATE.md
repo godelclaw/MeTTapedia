@@ -131,6 +131,12 @@ shows that the existing semantic route follows from
 `concreteChainFiberAppendQuotientFibrationParentRowsNonSingletonPrefixBaseDataClosed`
 plus
 `concreteChainFiberAppendQuotientFibrationParentRowsNonSingletonPrefixStructuralClosed`.
+The same split now feeds the downstream assembly points directly through
+`concreteChainFiberFibrationNonemptyTransferClosed_of_append_quotient_parent_rows_base_data_and_structural`,
+`concreteChainAuditFibrationNonemptyTransferClosed_of_append_quotient_parent_rows_base_data_and_structural`,
+`chainAuditForFrontierWord_ok_of_append_quotient_parent_rows_base_data_and_structural`,
+and
+`chainAuditForFrontierWord_ok_of_targets_and_append_quotient_parent_rows_base_data_and_structural`.
 
 `GoertzelLemma818SemanticProgress.lean` now records the checked semantic
 frontier after the completed `TTT` target.  It proves
