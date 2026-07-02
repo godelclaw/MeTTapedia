@@ -297,6 +297,54 @@ theorem v13RealLinear_targetRows_card_le_one {m : Nat}
   rw [hrow₀val, hrow₁val] at hsame
   norm_num at hsame
 
+def v13RealLinearSingleRowStaticObserver {m : Nat} (row : Fin m) :
+    V13RealLinearStaticRowObserver m 1 where
+  rows := {row}
+  decide := fun omega => (v13RealLinearPublicInput omega).b row
+  readBudget := by simp
+  factorsThroughRows := by
+    intro omega₀ omega₁ hsame
+    have hrow :
+        v13RealLinearRowView row (v13RealLinearPublicInput omega₀) =
+          v13RealLinearRowView row (v13RealLinearPublicInput omega₁) :=
+      congrFun hsame ⟨row, by simp⟩
+    exact congrArg Prod.snd hrow
+
+noncomputable def v13RealLinearTargetRowChoice {m : Nat}
+    (A : V13F2LinearEquiv m) (i₀ : Fin m) : Fin m := by
+  classical
+  exact
+    if h : (V13RealLinearTargetRows A i₀).Nonempty then
+      h.choose
+    else
+      i₀
+
+theorem v13RealLinearTargetRowChoice_mem_of_nonempty {m : Nat}
+    (A : V13F2LinearEquiv m) (i₀ : Fin m)
+    (h : (V13RealLinearTargetRows A i₀).Nonempty) :
+    v13RealLinearTargetRowChoice A i₀ ∈ V13RealLinearTargetRows A i₀ := by
+  classical
+  unfold v13RealLinearTargetRowChoice
+  simpa [h] using h.choose_spec
+
+/-- The current adaptive-row interface permits choosing a target row from the
+sampled map before the row read.  This observer exposes the exact counting
+burden left in the `q = 1` low-positive case. -/
+noncomputable def v13RealLinearTargetRowObserver {m : Nat} (i₀ : Fin m) :
+    V13RealLinearAdaptiveRowObserver m 1 where
+  Branch := Fin m
+  branch := fun omega => v13RealLinearTargetRowChoice omega.A i₀
+  staticBranch := fun row => v13RealLinearSingleRowStaticObserver row
+  decide := fun omega =>
+    (v13RealLinearSingleRowStaticObserver
+      (v13RealLinearTargetRowChoice omega.A i₀)).decide omega
+  branchDecision := by
+    intro omega
+    rfl
+  branchStable := by
+    intro A x w b hbranch _hkernel
+    exact hbranch
+
 theorem V13RealLinearAdaptiveQRowExperiment.blocked_iff_generated
     {m q : Nat} {Seed : Type*}
     (E : V13RealLinearAdaptiveQRowExperiment m q Seed) (i₀ : Fin m)
@@ -366,6 +414,42 @@ theorem V13RealLinearAdaptiveQRowExperiment.targetRows_nonempty_of_generated_one
     ⟨row,
       (v13RealLinear_mem_targetRows_iff
         (E.sampleA omega.1) i₀ row).2 htarget⟩
+
+theorem v13RealLinear_targetRowObserver_generated_of_targetRows_nonempty
+    {m : Nat} (i₀ : Fin m) (A : V13F2LinearEquiv m) (x : F2Vec m)
+    (h : (V13RealLinearTargetRows A i₀).Nonempty) :
+    (v13RealLinearUniformQRowExperiment
+      (v13RealLinearTargetRowObserver i₀)).generated i₀ (A, x) := by
+  classical
+  have hmem :=
+    v13RealLinearTargetRowChoice_mem_of_nonempty A i₀ h
+  have htarget :
+      ∀ w : F2Vec m,
+        A.toEquiv w (v13RealLinearTargetRowChoice A i₀) = w i₀ :=
+    (v13RealLinear_mem_targetRows_iff
+      A i₀ (v13RealLinearTargetRowChoice A i₀)).1 hmem
+  change
+    V13RealLinearRowsGenerateTarget A
+      ({v13RealLinearTargetRowChoice A i₀} : Finset (Fin m)) i₀
+  exact
+    (v13RealLinear_rowsGenerateTarget_singleton_iff
+      A (v13RealLinearTargetRowChoice A i₀) i₀).2 htarget
+
+theorem v13RealLinear_targetRowObserver_generated_iff_targetRows_nonempty
+    {m : Nat} (i₀ : Fin m) (A : V13F2LinearEquiv m) (x : F2Vec m) :
+    (v13RealLinearUniformQRowExperiment
+      (v13RealLinearTargetRowObserver i₀)).generated i₀ (A, x) ↔
+      (V13RealLinearTargetRows A i₀).Nonempty := by
+  constructor
+  · intro hgen
+    exact
+      (v13RealLinearUniformQRowExperiment
+        (v13RealLinearTargetRowObserver i₀)).targetRows_nonempty_of_generated_one_budget
+          i₀ (A, x) hgen
+  · intro hnonempty
+    exact
+      v13RealLinear_targetRowObserver_generated_of_targetRows_nonempty
+        i₀ A x hnonempty
 
 def V13RealLinearAdaptiveQRowExperiment.correct {m q : Nat} {Seed : Type*}
     (E : V13RealLinearAdaptiveQRowExperiment m q Seed) (i₀ : Fin m)
