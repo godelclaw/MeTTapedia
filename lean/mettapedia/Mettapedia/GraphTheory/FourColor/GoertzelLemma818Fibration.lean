@@ -118,6 +118,39 @@ theorem connected (cert : SymmetricRootedConnectedCertificate step) :
 
 end SymmetricRootedConnectedCertificate
 
+/--
+A finite-list variant of a symmetric rooted certificate.
+
+Generated quotient-base checks can emit a concrete list of base nodes, a cover
+proof that every base node is on the list, and one root path for each listed
+node.  This wrapper converts that finite witness surface to the universal
+rooted certificate used by the fibration theorem.
+-/
+structure ListedSymmetricRootedConnectedCertificate
+    {α : Type u} (step : α → α → Prop) : Type u where
+  nodes : List α
+  root : α
+  stepSymmetric : StepSymmetric step
+  covers : ∀ x, x ∈ nodes
+  reachToRootOfMem : ∀ x, x ∈ nodes → Reach step x root
+
+namespace ListedSymmetricRootedConnectedCertificate
+
+variable {α : Type u} {step : α → α → Prop}
+
+def toSymmetricRooted
+    (cert : ListedSymmetricRootedConnectedCertificate step) :
+    SymmetricRootedConnectedCertificate step :=
+  { root := cert.root
+    stepSymmetric := cert.stepSymmetric
+    reachToRoot := fun x => cert.reachToRootOfMem x (cert.covers x) }
+
+theorem connected (cert : ListedSymmetricRootedConnectedCertificate step) :
+    Connected step :=
+  cert.toSymmetricRooted.connected
+
+end ListedSymmetricRootedConnectedCertificate
+
 theorem connected_of_root_reachable_and_stepSymmetric
     {α : Type u} {step : α → α → Prop}
     (hsym : StepSymmetric step)

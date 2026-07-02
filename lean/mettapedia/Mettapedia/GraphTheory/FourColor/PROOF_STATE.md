@@ -80,7 +80,13 @@ base-step symmetry and reachability from each base node to a root.  The theorem
 `semanticFrontierStateSufficientForChain_of_append_quotient_symmetric_root`
 proves final sufficiency from that surface.  The fixed-prefix route remains
 available as a sufficient stronger route, but the quotient route is the current
-surface for finite per-input interface or trace-pair mobility.
+surface for finite per-input interface or trace-pair mobility.  The listed
+variant
+`concreteChainFiberAppendQuotientFibrationListedSymmetricRootFieldsClosed` is
+the tighter generated artifact interface: a finite base-node list, a cover
+proof, reversible base steps, and a root path for each listed node imply final
+sufficiency through
+`semanticFrontierStateSufficientForChain_of_append_quotient_listed_symmetric_root`.
 
 `GoertzelLemma818SemanticProgress.lean` now records the checked semantic
 frontier after the completed `TTT` target.  It proves
