@@ -217,6 +217,11 @@ same-trace case, intended to be proved by reusing the checked Lemma 8.14
 gadget audit relative to the fixed interface boundary, and
 `concreteChainFiberAppendFixedPrefixInterfaceMobilityReachClosed` is the
 different-trace/base-mobility case, intended to be finite per representative.
+The same-trace case is now factored again:
+`concreteChainFiberAppendSameTraceRelativeSingletonReachClosed` isolates the
+single appended-gadget audit reach at the fixed local input trace and equal
+output trace, while `concreteChainFiberAppendRelativeSingletonLiftClosed` is
+the separate lift that prefixes that local reach with the frozen chain prefix.
 `concreteChainFiberAppendFixedPrefixLastReachClosed_of_interface_trace_cases`
 and `concreteChainFiberAppendRawPrefixReachClosed_of_interface_trace_cases`
 assemble those two cases back into the existing sufficiency route.
