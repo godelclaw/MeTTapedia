@@ -956,6 +956,53 @@ noncomputable instance {m q : Nat} {Seed : Type*} [Fintype Seed]
   unfold V13RealLinearAdaptiveQRowUnblockedCorrect
   infer_instance
 
+/-- Coefficient-certified generated worlds.  This expands the generated event
+by carrying an explicit row-combination witness for the realized branch. -/
+def V13RealLinearAdaptiveQRowGeneratedCoefficient {m q : Nat}
+    {Seed : Type*} (E : V13RealLinearAdaptiveQRowExperiment m q Seed)
+    (i₀ : Fin m) :=
+  {data :
+      (Σ omega : V13RealLinearAdaptiveQRowWorld m Seed,
+        V13RealLinearRowCombination (E.branchRows omega)) //
+    ∀ w : F2Vec m,
+      v13RealLinearRowCombinationEval
+          (E.sampleA data.1.1) (E.branchRows data.1)
+          data.2 w = w i₀}
+
+noncomputable instance {m q : Nat} {Seed : Type*} [Fintype Seed]
+    (E : V13RealLinearAdaptiveQRowExperiment m q Seed) (i₀ : Fin m) :
+    Fintype (V13RealLinearAdaptiveQRowGeneratedCoefficient E i₀) := by
+  classical
+  unfold V13RealLinearAdaptiveQRowGeneratedCoefficient
+  infer_instance
+
+noncomputable def v13RealLinearAdaptiveQRowGeneratedToCoefficient
+    {m q : Nat} {Seed : Type*}
+    (E : V13RealLinearAdaptiveQRowExperiment m q Seed) (i₀ : Fin m) :
+    V13RealLinearAdaptiveQRowGenerated E i₀ ↪
+      V13RealLinearAdaptiveQRowGeneratedCoefficient E i₀ where
+  toFun omega := by
+    classical
+    exact
+      ⟨⟨omega.val, Classical.choose omega.property⟩,
+        Classical.choose_spec omega.property⟩
+  inj' := by
+    intro omega₀ omega₁ hmap
+    apply Subtype.ext
+    exact
+      congrArg
+        (fun cert : V13RealLinearAdaptiveQRowGeneratedCoefficient E i₀ =>
+          cert.val.1)
+        hmap
+
+theorem v13RealLinearAdaptiveQRowGenerated_card_le_coefficient
+    {m q : Nat} {Seed : Type*} [Fintype Seed]
+    (E : V13RealLinearAdaptiveQRowExperiment m q Seed) (i₀ : Fin m) :
+    Fintype.card (V13RealLinearAdaptiveQRowGenerated E i₀) ≤
+      Fintype.card (V13RealLinearAdaptiveQRowGeneratedCoefficient E i₀) :=
+  Fintype.card_le_of_embedding
+    (v13RealLinearAdaptiveQRowGeneratedToCoefficient E i₀)
+
 noncomputable def v13RealLinear_targetRowObserverGeneratedEquivOccurrenceProd
     {m : Nat} (i₀ : Fin m) :
     V13RealLinearAdaptiveQRowGenerated
@@ -1692,6 +1739,45 @@ def V13RealLinearUniformCausalLowPositiveCompletionCountingBound : Prop :=
         Fintype.card
           (V13RealLinearAdaptiveQRowWorld m (V13F2LinearEquiv m))
 
+/-- Coefficient-certificate form of the low-positive causal counting problem.
+It bounds generated worlds after expanding each one by an explicit
+row-combination witness for the realized branch. -/
+def V13RealLinearUniformCausalLowPositiveCoefficientCountingBound : Prop :=
+  ∀ {m q : Nat} (observer : V13RealLinearCausalRowObserver m q)
+    (i₀ : Fin m),
+    0 < q → q < m →
+      Fintype.card
+          (V13RealLinearAdaptiveQRowGeneratedCoefficient
+            (v13RealLinearUniformCausalQRowExperiment observer) i₀) *
+        2 ^ m ≤
+      2 ^ q *
+        Fintype.card
+          (V13RealLinearAdaptiveQRowWorld m (V13F2LinearEquiv m))
+
+theorem v13RealLinearUniformCausalLowPositiveCompletionCountingBound_of_coefficientCounting
+    (hcount :
+      V13RealLinearUniformCausalLowPositiveCoefficientCountingBound) :
+    V13RealLinearUniformCausalLowPositiveCompletionCountingBound := by
+  intro m q observer i₀ hqpos hqm
+  let E := v13RealLinearUniformCausalQRowExperiment observer
+  let G := Fintype.card (V13RealLinearAdaptiveQRowGenerated E i₀)
+  let C :=
+    Fintype.card (V13RealLinearAdaptiveQRowGeneratedCoefficient E i₀)
+  let M := 2 ^ m
+  let Q := 2 ^ q
+  let T := Fintype.card
+    (V13RealLinearAdaptiveQRowWorld m (V13F2LinearEquiv m))
+  have hgenCoeff : G ≤ C := by
+    dsimp [G, C, E]
+    exact
+      v13RealLinearAdaptiveQRowGenerated_card_le_coefficient
+        (v13RealLinearUniformCausalQRowExperiment observer) i₀
+  have hmul : G * M ≤ C * M :=
+    Nat.mul_le_mul_right M hgenCoeff
+  have hcert : C * M ≤ Q * T := by
+    simpa [E, G, C, M, Q, T] using hcount observer i₀ hqpos hqm
+  exact hmul.trans hcert
+
 theorem v13RealLinearUniformCausalLowPositiveRowSpanCountingBound_of_completionCounting
     (hcount :
       V13RealLinearUniformCausalLowPositiveCompletionCountingBound) :
@@ -1761,6 +1847,18 @@ theorem v13RealLinear_uniform_causal_qrow_success_bound_of_completionCounting
       (1 / 2 : Rat) + v13RealLinearQRowEpsilon q m :=
   v13RealLinear_uniform_causal_qrow_success_bound_of_lowPositiveSpanCounting
     (v13RealLinearUniformCausalLowPositiveRowSpanCountingBound_of_completionCounting
+      hcount)
+    observer i₀
+
+theorem v13RealLinear_uniform_causal_qrow_success_bound_of_coefficientCounting
+    (hcount :
+      V13RealLinearUniformCausalLowPositiveCoefficientCountingBound)
+    {m q : Nat} (observer : V13RealLinearCausalRowObserver m q)
+    (i₀ : Fin m) :
+    v13RealLinearUniformCausalQRowSuccess observer i₀ ≤
+      (1 / 2 : Rat) + v13RealLinearQRowEpsilon q m :=
+  v13RealLinear_uniform_causal_qrow_success_bound_of_completionCounting
+    (v13RealLinearUniformCausalLowPositiveCompletionCountingBound_of_coefficientCounting
       hcount)
     observer i₀
 
