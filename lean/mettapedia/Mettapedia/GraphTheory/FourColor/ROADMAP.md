@@ -200,6 +200,11 @@ The row-list variant
 preferred emitted form: explicit parent rows plus row coverage derive the
 parent map and imply final sufficiency via
 `semanticFrontierStateSufficientForChain_of_append_quotient_parent_rows`.
+The path-row variant
+`concreteChainFiberAppendQuotientFibrationPathRowsFieldsClosed` also lets the
+same generated row format supply same-base fiber reachability and lifted
+base-step paths, implying final sufficiency via
+`semanticFrontierStateSufficientForChain_of_append_quotient_path_rows`.
 Thus finite per-input interface or trace-pair mobility can serve directly as
 base connectivity, while any necessary prefix motion is absorbed by the
 quotient base rather than forced through a fixed-prefix last-state invariant.

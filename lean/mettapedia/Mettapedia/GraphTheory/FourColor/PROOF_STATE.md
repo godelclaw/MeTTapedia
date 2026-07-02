@@ -99,6 +99,11 @@ The row-list variant
 preferred emitted form: explicit parent rows plus row coverage derive the
 parent map and imply final sufficiency through
 `semanticFrontierStateSufficientForChain_of_append_quotient_parent_rows`.
+The path-row variant
+`concreteChainFiberAppendQuotientFibrationPathRowsFieldsClosed` also uses
+explicit row witnesses for same-base fiber reachability and lifted base-step
+paths, then implies final sufficiency through
+`semanticFrontierStateSufficientForChain_of_append_quotient_path_rows`.
 
 `GoertzelLemma818SemanticProgress.lean` now records the checked semantic
 frontier after the completed `TTT` target.  It proves

@@ -360,6 +360,79 @@ theorem connected
 
 end ParentRowsSymmetricRootedConnectedCertificate
 
+/--
+A directed parent-row certificate for one reachability proof.
+
+This is the path-shaped counterpart of the symmetric rooted row certificate:
+rows describe a finite parent map on a listed subset, and iterating from the
+source reaches the named target.
+-/
+structure ParentRowsReachCertificate
+    {α : Type u} [DecidableEq α] (step : α → α → Prop)
+    (source target : α) : Type u where
+  nodes : List α
+  rows : List (ParentMapRow step)
+  maxDepth : Nat
+  sourceMem : source ∈ nodes
+  targetMem : target ∈ nodes
+  rowSourceMem : ∀ row, row ∈ rows → row.source ∈ nodes
+  rowParentMem : ∀ row, row ∈ rows → row.parent ∈ nodes
+  rowForNode : ∀ x, x ∈ nodes → ∃ row, row ∈ rows ∧ row.source = x
+  reachesTarget :
+    parentIter (parentFromRows target rows) maxDepth source = target
+
+namespace ParentRowsReachCertificate
+
+variable {α : Type u} [DecidableEq α] {step : α → α → Prop}
+variable {source target : α}
+
+theorem parentMemOfMem
+    (cert : ParentRowsReachCertificate step source target)
+    (x : α) (hmem : x ∈ cert.nodes) :
+    parentFromRows target cert.rows x ∈ cert.nodes :=
+  ParentMapRow.parentFromRows_mem_of_exists target cert.rows x
+    cert.rowParentMem (cert.rowForNode x hmem)
+
+theorem stepOrSelfOfMem
+    (cert : ParentRowsReachCertificate step source target)
+    (x : α) (hmem : x ∈ cert.nodes) :
+    parentFromRows target cert.rows x = x ∨
+      step x (parentFromRows target cert.rows x) :=
+  ParentMapRow.parentFromRows_stepOrSelf_of_exists target cert.rows x
+    (cert.rowForNode x hmem)
+
+theorem reachParentIterOfMem
+    (cert : ParentRowsReachCertificate step source target) :
+    ∀ (n : Nat) (x : α), x ∈ cert.nodes →
+      Reach step x (parentIter (parentFromRows target cert.rows) n x) := by
+  intro n
+  induction n with
+  | zero =>
+      intro x _hmem
+      exact Reach.refl x
+  | succ n ih =>
+      intro x hmem
+      have hfirst :
+          Reach step x (parentFromRows target cert.rows x) := by
+        rcases cert.stepOrSelfOfMem x hmem with hself | hstep
+        · simpa [hself] using (Reach.refl x : Reach step x x)
+        · exact Reach.single hstep
+      have htail :
+          Reach step (parentFromRows target cert.rows x)
+            (parentIter (parentFromRows target cert.rows) n
+              (parentFromRows target cert.rows x)) :=
+        ih (parentFromRows target cert.rows x) (cert.parentMemOfMem x hmem)
+      simpa [parentIter] using Reach.trans hfirst htail
+
+theorem reach
+    (cert : ParentRowsReachCertificate step source target) :
+    Reach step source target := by
+  have hreach :=
+    cert.reachParentIterOfMem cert.maxDepth source cert.sourceMem
+  simpa [cert.reachesTarget] using hreach
+
+end ParentRowsReachCertificate
+
 theorem connected_of_root_reachable_and_stepSymmetric
     {α : Type u} {step : α → α → Prop}
     (hsym : StepSymmetric step)
