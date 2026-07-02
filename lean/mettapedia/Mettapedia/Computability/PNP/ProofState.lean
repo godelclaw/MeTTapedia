@@ -1222,6 +1222,18 @@ theorem currentPNPV13RealRungOneQRowBound_node :
           (i₀ : Fin m),
           v13RealLinearUniformCausalQRowSuccess observer i₀ ≤
             (1 / 2 : Rat) + v13RealLinearQRowEpsilon q m) ∧
+      (Fintype.card
+          (V13RealLinearUniformFixedTargetRowOccurrence
+            (0 : Fin 2) (0 : Fin 2)) ≤ 2) ∧
+      (Fintype.card
+          (V13RealLinearAdaptiveQRowGeneratedCoefficient
+            (v13RealLinearUniformCausalQRowExperiment
+              (v13RealLinearCausalSingleRowObserver (0 : Fin 2)))
+            (0 : Fin 2)) *
+          2 ^ 2 ≤
+        2 ^ 1 *
+          Fintype.card
+            (V13RealLinearAdaptiveQRowWorld 2 (V13F2LinearEquiv 2))) ∧
       (V13RealLinearUniformCausalLowPositiveFiberCoefficientCountingBound →
         V13RealLinearUniformCausalLowPositiveCoefficientCountingBound) ∧
       (V13RealLinearUniformCausalLowPositiveFiberCoefficientCountingBound →
@@ -1301,6 +1313,8 @@ theorem currentPNPV13RealRungOneQRowBound_node :
       fun hcount {m q} observer i₀ =>
         v13RealLinear_uniform_causal_qrow_success_bound_of_coefficientCounting
           (m := m) (q := q) hcount observer i₀,
+      v13RealLinearFixedTargetRowOccurrence_zero_card_le_two,
+      v13RealLinear_causalSingleRow_zero_two_coefficientCounting,
       fun hcount =>
         v13RealLinearUniformCausalLowPositiveCoefficientCountingBound_of_fiberCounting
           hcount,

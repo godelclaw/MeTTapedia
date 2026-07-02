@@ -323,6 +323,33 @@ theorem v13RealLinear_rowsGenerateTarget_singleton_iff {m : Nat}
     intro w
     simp [v13RealLinearRowCombinationEval, hrow w]
 
+theorem v13RealLinear_singletonRowCombination_eq_one_of_generates {m : Nat}
+    (A : V13F2LinearEquiv m) (row i₀ : Fin m)
+    (coeff : V13RealLinearRowCombination ({row} : Finset (Fin m)))
+    (hcoeff : ∀ w : F2Vec m,
+      v13RealLinearRowCombinationEval A ({row} : Finset (Fin m))
+        coeff w = w i₀) :
+    coeff = fun _ => 1 := by
+  classical
+  let c : ZMod 2 :=
+    coeff (default : {r : Fin m // r ∈ ({row} : Finset (Fin m))})
+  have hcoeffEval :
+      ∀ w : F2Vec m, c * A.toEquiv w row = w i₀ := by
+    intro w
+    have h := hcoeff w
+    simpa [v13RealLinearRowCombinationEval, c] using h
+  have hc : c = 1 := by
+    by_cases hc0 : c = 0
+    · have htarget := hcoeffEval (v13RealLinearSingleBit i₀)
+      simp [hc0, v13RealLinearSingleBit] at htarget
+    · exact v13_zmod2_eq_one_of_ne_zero c hc0
+  funext r
+  have hr :
+      r = (default : {r : Fin m // r ∈ ({row} : Finset (Fin m))}) :=
+    Subsingleton.elim _ _
+  rw [hr]
+  exact hc
+
 /-- Rows whose public row functional is exactly the target coordinate. -/
 noncomputable def V13RealLinearTargetRows {m : Nat}
     (A : V13F2LinearEquiv m) (i₀ : Fin m) : Finset (Fin m) := by
@@ -532,10 +559,20 @@ theorem v13RealLinear_targetRowObserver_generated_iff_targetRows_nonempty
 def V13RealLinearUniformTargetRowOccurrence {m : Nat} (i₀ : Fin m) :=
   {A : V13F2LinearEquiv m // (V13RealLinearTargetRows A i₀).Nonempty}
 
+def V13RealLinearUniformFixedTargetRowOccurrence {m : Nat}
+    (row i₀ : Fin m) :=
+  {A : V13F2LinearEquiv m // row ∈ V13RealLinearTargetRows A i₀}
+
 noncomputable instance {m : Nat} (i₀ : Fin m) :
     Fintype (V13RealLinearUniformTargetRowOccurrence i₀) := by
   classical
   unfold V13RealLinearUniformTargetRowOccurrence
+  infer_instance
+
+noncomputable instance {m : Nat} (row i₀ : Fin m) :
+    Fintype (V13RealLinearUniformFixedTargetRowOccurrence row i₀) := by
+  classical
+  unfold V13RealLinearUniformFixedTargetRowOccurrence
   infer_instance
 
 noncomputable def v13RealLinearUniformTargetRowOccurrenceMass {m : Nat}
@@ -796,6 +833,18 @@ lemma v13RealLinear_f2vec2_cases (x : F2Vec 2) :
     funext r
     fin_cases r <;> simp [v13RealLinearSingleBit, f2AddVec, h01, h11]
 
+lemma v13RealLinear_f2vec2_eq_singleBit_one_of_ne_zero_of_coord_zero
+    (x : F2Vec 2) (hne : x ≠ f2ZeroVec 2)
+    (hcoord : x (0 : Fin 2) = 0) :
+    x = v13RealLinearSingleBit (1 : Fin 2) := by
+  rcases v13RealLinear_f2vec2_cases x with hx | hx | hx | hx
+  · exact False.elim (hne hx)
+  · subst x
+    simp [v13RealLinearSingleBit] at hcoord
+  · exact hx
+  · subst x
+    simp [v13RealLinearSingleBit, f2AddVec] at hcoord
+
 theorem v13RealLinear_equiv_two_ext
     (A B : V13F2LinearEquiv 2)
     (h0 : A.toEquiv (v13RealLinearSingleBit (0 : Fin 2)) =
@@ -904,6 +953,23 @@ theorem v13RealLinear_f2_equiv_two_card_le_six :
       { toFun := v13RealLinearTwoBasisImagePair
         inj' := v13RealLinearTwoBasisImagePair_injective }
   exact hleImage.trans v13RealLinearTwoBasisImagePairs_card_le_six
+
+theorem v13RealLinear_f2_equiv_two_card_four_le :
+    4 ≤ Fintype.card (V13F2LinearEquiv 2) := by
+  classical
+  have hsub :
+      Fintype.card (V13RealLinearUniformTargetRowOccurrence (0 : Fin 2)) ≤
+        Fintype.card (V13F2LinearEquiv 2) := by
+    change
+      Fintype.card
+          {A : V13F2LinearEquiv 2 //
+            (V13RealLinearTargetRows A (0 : Fin 2)).Nonempty} ≤
+        Fintype.card (V13F2LinearEquiv 2)
+    exact
+      Fintype.card_subtype_le
+        (fun A : V13F2LinearEquiv 2 =>
+          (V13RealLinearTargetRows A (0 : Fin 2)).Nonempty)
+  exact v13RealLinearUniformTargetRowOccurrence_card_four_le.trans hsub
 
 theorem v13RealLinearUniformTargetRowOccurrenceMass_two_zero_gt_half_unconditional :
     (1 / 2 : Rat) <
@@ -1837,6 +1903,200 @@ theorem v13RealLinear_f2vec_card (m : Nat) :
     Fintype.card (F2Vec m) = 2 ^ m := by
   classical
   simp [F2Vec]
+
+noncomputable def v13RealLinearFixedTargetRowOccurrenceZeroEmbedding :
+    V13RealLinearUniformFixedTargetRowOccurrence
+        (0 : Fin 2) (0 : Fin 2) ↪
+      {v : V13RealLinearNonzeroF2Vec2 //
+        v.val ≠ v13RealLinearSingleBit (1 : Fin 2)} where
+  toFun A := by
+    refine ⟨(v13RealLinearTwoBasisImagePair A.val).1, ?_⟩
+    have htarget :
+        ∀ w : F2Vec 2, A.val.toEquiv w (0 : Fin 2) = w (0 : Fin 2) :=
+      (v13RealLinear_mem_targetRows_iff A.val (0 : Fin 2) (0 : Fin 2)).1
+        A.property
+    have hcoord :
+        A.val.toEquiv (v13RealLinearSingleBit (0 : Fin 2)) (0 : Fin 2) = 1 := by
+      simpa [v13RealLinearSingleBit] using
+        htarget (v13RealLinearSingleBit (0 : Fin 2))
+    intro heq
+    have hcoordEq := congrFun heq (0 : Fin 2)
+    simp [v13RealLinearSingleBit] at hcoordEq
+    have hcoordEq' :
+        A.val.toEquiv (v13RealLinearSingleBit (0 : Fin 2)) (0 : Fin 2) = 0 := by
+      change
+        (v13RealLinearTwoBasisImagePair A.val).1.val (0 : Fin 2) = 0
+      exact hcoordEq
+    rw [hcoordEq'] at hcoord
+    norm_num at hcoord
+  inj' := by
+    intro A B hmap
+    apply Subtype.ext
+    apply v13RealLinear_equiv_two_ext A.val B.val
+    · exact congrArg (fun p =>
+        (p.val : V13RealLinearNonzeroF2Vec2).val) hmap
+    · have hA :
+          A.val.toEquiv (v13RealLinearSingleBit (1 : Fin 2)) =
+            v13RealLinearSingleBit (1 : Fin 2) := by
+        have htarget :
+            ∀ w : F2Vec 2, A.val.toEquiv w (0 : Fin 2) = w (0 : Fin 2) :=
+          (v13RealLinear_mem_targetRows_iff
+            A.val (0 : Fin 2) (0 : Fin 2)).1 A.property
+        have hcoord :
+            A.val.toEquiv (v13RealLinearSingleBit (1 : Fin 2))
+              (0 : Fin 2) = 0 := by
+          simpa [v13RealLinearSingleBit] using
+            htarget (v13RealLinearSingleBit (1 : Fin 2))
+        exact
+          v13RealLinear_f2vec2_eq_singleBit_one_of_ne_zero_of_coord_zero
+            (A.val.toEquiv (v13RealLinearSingleBit (1 : Fin 2)))
+            (v13RealLinearTwoBasisImagePair A.val).2.val.property hcoord
+      have hB :
+          B.val.toEquiv (v13RealLinearSingleBit (1 : Fin 2)) =
+            v13RealLinearSingleBit (1 : Fin 2) := by
+        have htarget :
+            ∀ w : F2Vec 2, B.val.toEquiv w (0 : Fin 2) = w (0 : Fin 2) :=
+          (v13RealLinear_mem_targetRows_iff
+            B.val (0 : Fin 2) (0 : Fin 2)).1 B.property
+        have hcoord :
+            B.val.toEquiv (v13RealLinearSingleBit (1 : Fin 2))
+              (0 : Fin 2) = 0 := by
+          simpa [v13RealLinearSingleBit] using
+            htarget (v13RealLinearSingleBit (1 : Fin 2))
+        exact
+          v13RealLinear_f2vec2_eq_singleBit_one_of_ne_zero_of_coord_zero
+            (B.val.toEquiv (v13RealLinearSingleBit (1 : Fin 2)))
+            (v13RealLinearTwoBasisImagePair B.val).2.val.property hcoord
+      exact hA.trans hB.symm
+
+theorem v13RealLinearFixedTargetRowOccurrence_zero_card_le_two :
+    Fintype.card
+        (V13RealLinearUniformFixedTargetRowOccurrence
+          (0 : Fin 2) (0 : Fin 2)) ≤ 2 := by
+  classical
+  have hone :
+      v13RealLinearSingleBit (1 : Fin 2) ≠ f2ZeroVec 2 := by
+    intro h
+    have hcoord := congrFun h (1 : Fin 2)
+    simp [v13RealLinearSingleBit, f2ZeroVec] at hcoord
+  have hle :
+      Fintype.card
+          (V13RealLinearUniformFixedTargetRowOccurrence
+            (0 : Fin 2) (0 : Fin 2)) ≤
+        Fintype.card
+          {v : V13RealLinearNonzeroF2Vec2 //
+            v.val ≠ v13RealLinearSingleBit (1 : Fin 2)} :=
+    Fintype.card_le_of_embedding
+      v13RealLinearFixedTargetRowOccurrenceZeroEmbedding
+  exact hle.trans
+    (v13RealLinearNonzeroF2Vec2_ne_card_le_two
+      ⟨v13RealLinearSingleBit (1 : Fin 2), hone⟩)
+
+noncomputable def
+    v13RealLinear_causalSingleRowGeneratedCoefficientEquivFixedOccurrenceProd
+    {m : Nat} (row i₀ : Fin m) :
+    V13RealLinearAdaptiveQRowGeneratedCoefficient
+        (v13RealLinearUniformCausalQRowExperiment
+          (v13RealLinearCausalSingleRowObserver row)) i₀ ≃
+      V13RealLinearUniformFixedTargetRowOccurrence row i₀ × F2Vec m where
+  toFun cert := by
+    refine ⟨⟨cert.val.1.1, ?_⟩, cert.val.1.2⟩
+    have hgen :
+        V13RealLinearRowsGenerateTarget cert.val.1.1
+          ({row} : Finset (Fin m)) i₀ := by
+      refine ⟨cert.val.2, ?_⟩
+      intro w
+      simpa [v13RealLinearUniformCausalQRowExperiment,
+        v13RealLinearUniformQRowExperiment,
+        V13RealLinearAdaptiveQRowExperiment.branchRows,
+        V13RealLinearAdaptiveQRowExperiment.branch,
+        V13RealLinearCausalRowObserver.toAdaptive,
+        V13RealLinearCausalRowObserver.staticBranch,
+        v13RealLinearCausalSingleRowObserver] using cert.property w
+    exact
+      (v13RealLinear_mem_targetRows_iff cert.val.1.1 i₀ row).2
+        ((v13RealLinear_rowsGenerateTarget_singleton_iff
+          cert.val.1.1 row i₀).1 hgen)
+  invFun pair := by
+    refine ⟨⟨(pair.1.val, pair.2), fun _ => 1⟩, ?_⟩
+    intro w
+    have htarget :
+        pair.1.val.toEquiv w row = w i₀ :=
+      (v13RealLinear_mem_targetRows_iff pair.1.val i₀ row).1
+        pair.1.property w
+    simp [v13RealLinearUniformCausalQRowExperiment,
+      v13RealLinearUniformQRowExperiment,
+      V13RealLinearAdaptiveQRowExperiment.branchRows,
+      V13RealLinearAdaptiveQRowExperiment.branch,
+      V13RealLinearCausalRowObserver.toAdaptive,
+      V13RealLinearCausalRowObserver.staticBranch,
+      v13RealLinearCausalSingleRowObserver,
+      v13RealLinearRowCombinationEval, htarget]
+  left_inv cert := by
+    apply Subtype.ext
+    apply Sigma.ext
+    · rfl
+    · simp
+      have hcoeff :
+          cert.val.2 = fun _ => 1 := by
+        apply
+          v13RealLinear_singletonRowCombination_eq_one_of_generates
+            cert.val.1.1 row i₀ cert.val.2
+        intro w
+        simpa [v13RealLinearUniformCausalQRowExperiment,
+          v13RealLinearUniformQRowExperiment,
+          V13RealLinearAdaptiveQRowExperiment.branchRows,
+          V13RealLinearAdaptiveQRowExperiment.branch,
+          V13RealLinearCausalRowObserver.toAdaptive,
+          V13RealLinearCausalRowObserver.staticBranch,
+          v13RealLinearCausalSingleRowObserver] using cert.property w
+      exact hcoeff.symm
+  right_inv pair := by
+    cases pair with
+    | mk occ x =>
+      apply Prod.ext
+      · apply Subtype.ext
+        rfl
+      · rfl
+
+theorem v13RealLinear_causalSingleRowGeneratedCoefficient_card_eq
+    {m : Nat} (row i₀ : Fin m) :
+    Fintype.card
+        (V13RealLinearAdaptiveQRowGeneratedCoefficient
+          (v13RealLinearUniformCausalQRowExperiment
+            (v13RealLinearCausalSingleRowObserver row)) i₀) =
+      Fintype.card (V13RealLinearUniformFixedTargetRowOccurrence row i₀) *
+        Fintype.card (F2Vec m) := by
+  classical
+  rw [Fintype.card_congr
+    (v13RealLinear_causalSingleRowGeneratedCoefficientEquivFixedOccurrenceProd
+      row i₀)]
+  simp [Fintype.card_prod]
+
+theorem v13RealLinear_causalSingleRow_zero_two_coefficientCounting :
+    Fintype.card
+        (V13RealLinearAdaptiveQRowGeneratedCoefficient
+          (v13RealLinearUniformCausalQRowExperiment
+            (v13RealLinearCausalSingleRowObserver (0 : Fin 2)))
+          (0 : Fin 2)) *
+        2 ^ 2 ≤
+      2 ^ 1 *
+        Fintype.card
+          (V13RealLinearAdaptiveQRowWorld 2 (V13F2LinearEquiv 2)) := by
+  classical
+  rw [v13RealLinear_causalSingleRowGeneratedCoefficient_card_eq]
+  rw [Fintype.card_prod, v13RealLinear_f2vec_card]
+  let O :=
+    Fintype.card
+      (V13RealLinearUniformFixedTargetRowOccurrence
+        (0 : Fin 2) (0 : Fin 2))
+  let A := Fintype.card (V13F2LinearEquiv 2)
+  change (O * 4) * 4 ≤ 2 * (A * 4)
+  have hO : O ≤ 2 := by
+    exact v13RealLinearFixedTargetRowOccurrence_zero_card_le_two
+  have hA : 4 ≤ A := by
+    exact v13RealLinear_f2_equiv_two_card_four_le
+  nlinarith
 
 noncomputable def v13RealLinearCausalSingleRowIdentityFiberEmbedding :
     F2Vec 2 ↪
