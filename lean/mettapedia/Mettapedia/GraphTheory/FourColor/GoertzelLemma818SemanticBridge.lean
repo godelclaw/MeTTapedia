@@ -4211,6 +4211,17 @@ def concreteChainFiberAppendQuotientFibrationParentRowsNonSingletonPrefixBaseDat
               ChainFiberAppendQuotientFibrationParentRowsStructuralFields
                 data))
 
+theorem concreteChainFiberAppendQuotientFibrationParentRowsNonSingletonPrefixBaseDataClosed_of_prefix_root_star :
+    concreteChainFiberAppendQuotientFibrationParentRowsNonSingletonPrefixBaseDataClosed := by
+  intro word orient _hlen hcert key hkey
+  cases hfiber : concreteChainFiber word key with
+  | nil =>
+      exact ⟨ChainFiberAppendQuotientFibrationParentRowsBaseData.unit⟩
+  | cons root rest =>
+      exact ⟨
+        ChainFiberAppendQuotientFibrationParentRowsBaseData.ofPrefixRootStar
+          hcert hkey hfiber⟩
+
 theorem concreteChainFiberAppendQuotientFibrationParentRowsNonSingletonPrefixFieldsClosed_of_base_data_and_structural
     (hData :
       concreteChainFiberAppendQuotientFibrationParentRowsNonSingletonPrefixBaseDataClosed)
@@ -4300,6 +4311,13 @@ theorem concreteChainFiberAppendQuotientFibrationParentRowsNonSingletonPrefixBas
           fiberReach := hfib.fiberReach
           liftStep := hfib.liftStep }
       exact ⟨⟨data, structural⟩⟩
+
+theorem concreteChainFiberAppendQuotientFibrationParentRowsNonSingletonPrefixFieldsClosed_of_prefix_fibration
+    (hFibration : concreteChainFiberAppendPrefixFibrationClosed) :
+    concreteChainFiberAppendQuotientFibrationParentRowsNonSingletonPrefixFieldsClosed :=
+  concreteChainFiberAppendQuotientFibrationParentRowsNonSingletonPrefixFieldsClosed_of_base_data_structural
+    (concreteChainFiberAppendQuotientFibrationParentRowsNonSingletonPrefixBaseDataStructuralClosed_of_prefix_fibration
+      hFibration)
 
 theorem concreteChainFiberAppendQuotientFibrationParentRowsFieldsClosed_of_length_two_seeds_and_non_singleton
     (hLengthTwo :
@@ -5209,6 +5227,14 @@ theorem semanticFrontierStateSufficientForChain_of_append_quotient_parent_rows_b
   semanticFrontierStateSufficientForChain_of_append_quotient_parent_rows
     (concreteChainFiberAppendQuotientFibrationParentRowsFieldsClosed_of_non_singleton_base_data_structural
       hPair)
+
+theorem semanticFrontierStateSufficientForChain_of_append_quotient_parent_rows_prefix_fibration
+    {targetAudit : RepresentativeSemanticTarget → Bool}
+    (hFibration : concreteChainFiberAppendPrefixFibrationClosed) :
+    semanticFrontierStateSufficientForChain targetAudit :=
+  semanticFrontierStateSufficientForChain_of_append_quotient_parent_rows_base_data_structural
+    (concreteChainFiberAppendQuotientFibrationParentRowsNonSingletonPrefixBaseDataStructuralClosed_of_prefix_fibration
+      hFibration)
 
 theorem semanticFrontierStateSufficientForChain_of_append_quotient_path_rows
     {targetAudit : RepresentativeSemanticTarget → Bool}
