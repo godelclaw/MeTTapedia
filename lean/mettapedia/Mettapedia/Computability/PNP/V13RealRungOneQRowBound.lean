@@ -465,6 +465,196 @@ noncomputable def v13RealLinearUniformTargetRowOccurrenceMass {m : Nat}
   (Fintype.card (V13RealLinearUniformTargetRowOccurrence i₀) : Rat) /
     (Fintype.card (V13F2LinearEquiv m) : Rat)
 
+def v13RealLinearShear01 : V13F2LinearEquiv 2 where
+  toEquiv :=
+    { toFun := fun x r => if r = 0 then x 0 else x 0 + x 1
+      invFun := fun x r => if r = 0 then x 0 else x 0 + x 1
+      left_inv := by
+        intro x
+        funext r
+        fin_cases r
+        · simp
+        · simp
+          calc
+            x 0 + (x 0 + x 1) = x 1 + x 0 + x 0 := by ac_rfl
+            _ = x 1 := f2_add_right_self (x 1) (x 0)
+      right_inv := by
+        intro x
+        funext r
+        fin_cases r
+        · simp
+        · simp
+          calc
+            x 0 + (x 0 + x 1) = x 1 + x 0 + x 0 := by ac_rfl
+            _ = x 1 := f2_add_right_self (x 1) (x 0) }
+  map_add := by
+    intro x y
+    funext r
+    fin_cases r <;>
+      simp [f2AddVec, add_assoc, add_left_comm, add_comm]
+  map_zero := by
+    funext r
+    fin_cases r <;> simp [f2ZeroVec]
+
+def v13RealLinearShear10 : V13F2LinearEquiv 2 where
+  toEquiv :=
+    { toFun := fun x r => if r = 0 then x 0 + x 1 else x 1
+      invFun := fun x r => if r = 0 then x 0 + x 1 else x 1
+      left_inv := by
+        intro x
+        funext r
+        fin_cases r
+        · simpa using f2_add_right_self (x 0) (x 1)
+        · simp
+      right_inv := by
+        intro x
+        funext r
+        fin_cases r
+        · simpa using f2_add_right_self (x 0) (x 1)
+        · simp }
+  map_add := by
+    intro x y
+    funext r
+    fin_cases r <;>
+      simp [f2AddVec, add_assoc, add_left_comm, add_comm]
+  map_zero := by
+    funext r
+    fin_cases r <;> simp [f2ZeroVec]
+
+def v13RealLinearShear01Swap : V13F2LinearEquiv 2 where
+  toEquiv :=
+    { toFun := fun x r => if r = 0 then x 0 + x 1 else x 0
+      invFun := fun x r => if r = 0 then x 1 else x 0 + x 1
+      left_inv := by
+        intro x
+        funext r
+        fin_cases r
+        · simp
+        · simp
+          calc
+            (x 0 + x 1) + x 0 = x 1 + x 0 + x 0 := by ac_rfl
+            _ = x 1 := f2_add_right_self (x 1) (x 0)
+      right_inv := by
+        intro x
+        funext r
+        fin_cases r
+        · calc
+            x 1 + (x 0 + x 1) = x 0 + x 1 + x 1 := by ac_rfl
+            _ = x 0 := f2_add_right_self (x 0) (x 1)
+        · simp }
+  map_add := by
+    intro x y
+    funext r
+    fin_cases r <;>
+      simp [f2AddVec, add_assoc, add_left_comm, add_comm]
+  map_zero := by
+    funext r
+    fin_cases r <;> simp [f2ZeroVec]
+
+theorem v13RealLinearIdentity_targetRows_zero_nonempty :
+    (V13RealLinearTargetRows (v13RealLinearIdentity 2) (0 : Fin 2)).Nonempty := by
+  refine ⟨0, ?_⟩
+  exact
+    (v13RealLinear_mem_targetRows_iff
+      (v13RealLinearIdentity 2) (0 : Fin 2) 0).2 (by
+        intro w
+        simp [v13RealLinearIdentity])
+
+theorem v13RealLinearSwap_targetRows_zero_nonempty :
+    (V13RealLinearTargetRows
+      (v13RealLinearPerm (Equiv.swap (0 : Fin 2) (1 : Fin 2)))
+      (0 : Fin 2)).Nonempty := by
+  refine ⟨1, ?_⟩
+  exact
+    (v13RealLinear_mem_targetRows_iff
+      (v13RealLinearPerm (Equiv.swap (0 : Fin 2) (1 : Fin 2)))
+      (0 : Fin 2) 1).2 (by
+        intro w
+        simp [v13RealLinearPerm])
+
+theorem v13RealLinearShear01_targetRows_zero_nonempty :
+    (V13RealLinearTargetRows v13RealLinearShear01 (0 : Fin 2)).Nonempty := by
+  refine ⟨0, ?_⟩
+  exact
+    (v13RealLinear_mem_targetRows_iff
+      v13RealLinearShear01 (0 : Fin 2) 0).2 (by
+        intro w
+        simp [v13RealLinearShear01])
+
+theorem v13RealLinearShear01Swap_targetRows_zero_nonempty :
+    (V13RealLinearTargetRows v13RealLinearShear01Swap (0 : Fin 2)).Nonempty := by
+  refine ⟨1, ?_⟩
+  exact
+    (v13RealLinear_mem_targetRows_iff
+      v13RealLinearShear01Swap (0 : Fin 2) 1).2 (by
+        intro w
+        simp [v13RealLinearShear01Swap])
+
+noncomputable def v13RealLinearTargetRowOccurrenceFour
+    (k : Fin 4) : V13RealLinearUniformTargetRowOccurrence (0 : Fin 2) :=
+  match k with
+  | ⟨0, _⟩ =>
+      ⟨v13RealLinearIdentity 2,
+        v13RealLinearIdentity_targetRows_zero_nonempty⟩
+  | ⟨1, _⟩ =>
+      ⟨v13RealLinearPerm (Equiv.swap (0 : Fin 2) (1 : Fin 2)),
+        v13RealLinearSwap_targetRows_zero_nonempty⟩
+  | ⟨2, _⟩ =>
+      ⟨v13RealLinearShear01,
+        v13RealLinearShear01_targetRows_zero_nonempty⟩
+  | ⟨3, _⟩ =>
+      ⟨v13RealLinearShear01Swap,
+        v13RealLinearShear01Swap_targetRows_zero_nonempty⟩
+  | ⟨n + 4, h⟩ => by omega
+
+theorem v13RealLinearTargetRowOccurrenceFour_injective :
+    Function.Injective v13RealLinearTargetRowOccurrenceFour := by
+  intro a b h
+  fin_cases a <;> fin_cases b
+  all_goals
+    simp [v13RealLinearTargetRowOccurrenceFour, v13RealLinearIdentity,
+      v13RealLinearPerm, v13RealLinearShear01, v13RealLinearShear01Swap] at h ⊢
+  all_goals
+    have hmatrix := congrArg
+      (fun A : V13RealLinearUniformTargetRowOccurrence (0 : Fin 2) =>
+        (A.val.toEquiv (v13RealLinearSingleBit (0 : Fin 2)) (0 : Fin 2),
+          A.val.toEquiv (v13RealLinearSingleBit (0 : Fin 2)) (1 : Fin 2),
+          A.val.toEquiv (v13RealLinearSingleBit (1 : Fin 2)) (0 : Fin 2),
+          A.val.toEquiv (v13RealLinearSingleBit (1 : Fin 2)) (1 : Fin 2))) h
+    norm_num [v13RealLinearIdentity, v13RealLinearPerm,
+      v13RealLinearShear01, v13RealLinearShear01Swap,
+      v13RealLinearSingleBit] at hmatrix
+
+theorem v13RealLinearUniformTargetRowOccurrence_card_four_le :
+    4 ≤
+      Fintype.card (V13RealLinearUniformTargetRowOccurrence (0 : Fin 2)) := by
+  classical
+  exact
+    Fintype.card_le_of_embedding
+      { toFun := v13RealLinearTargetRowOccurrenceFour
+        inj' := v13RealLinearTargetRowOccurrenceFour_injective }
+
+theorem v13RealLinearUniformTargetRowOccurrenceMass_two_zero_gt_half
+    (hcard : Fintype.card (V13F2LinearEquiv 2) ≤ 6) :
+    (1 / 2 : Rat) <
+      v13RealLinearUniformTargetRowOccurrenceMass (0 : Fin 2) := by
+  classical
+  unfold v13RealLinearUniformTargetRowOccurrenceMass
+  let O := Fintype.card (V13RealLinearUniformTargetRowOccurrence (0 : Fin 2))
+  let A := Fintype.card (V13F2LinearEquiv 2)
+  have hO : (4 : Rat) ≤ (O : Rat) := by
+    exact_mod_cast v13RealLinearUniformTargetRowOccurrence_card_four_le
+  have hA : (A : Rat) ≤ 6 := by
+    exact_mod_cast hcard
+  have hAposNat : 0 < A := by
+    dsimp [A]
+    exact Fintype.card_pos_iff.mpr ⟨v13RealLinearIdentity 2⟩
+  have hApos : (0 : Rat) < (A : Rat) := by
+    exact_mod_cast hAposNat
+  change (1 / 2 : Rat) < (O : Rat) / (A : Rat)
+  rw [lt_div_iff₀ hApos]
+  nlinarith
+
 def V13RealLinearAdaptiveQRowExperiment.correct {m q : Nat} {Seed : Type*}
     (E : V13RealLinearAdaptiveQRowExperiment m q Seed) (i₀ : Fin m)
     (omega : V13RealLinearAdaptiveQRowWorld m Seed) : Prop :=
@@ -1061,6 +1251,20 @@ theorem v13RealLinearUniformInvertibleRowSpanCountingBound_of_m_le_q
     V13RealLinearUniformInvertibleRowSpanCountingBound observer i₀ :=
   v13RealLinearAdaptiveRowSpanCountingBound_of_m_le_q
     (v13RealLinearUniformQRowExperiment observer) i₀ hmq
+
+theorem v13RealLinear_targetRowObserver_spanCountingBound_fails_two_zero
+    (hcard : Fintype.card (V13F2LinearEquiv 2) ≤ 6) :
+    ¬ V13RealLinearUniformInvertibleRowSpanCountingBound
+        (v13RealLinearTargetRowObserver (0 : Fin 2)) (0 : Fin 2) := by
+  intro hbound
+  unfold V13RealLinearUniformInvertibleRowSpanCountingBound at hbound
+  unfold V13RealLinearAdaptiveRowSpanCountingBound at hbound
+  rw [v13RealLinear_targetRowObserverGeneratedMass_eq_occurrenceMass] at hbound
+  unfold v13RealLinearQRowEpsilon at hbound
+  norm_num at hbound
+  exact
+    not_lt_of_ge hbound
+      (v13RealLinearUniformTargetRowOccurrenceMass_two_zero_gt_half hcard)
 
 noncomputable def v13RealLinearUniformAdaptiveQRowSuccess {m q : Nat}
     (observer : V13RealLinearAdaptiveRowObserver m q) (i₀ : Fin m) : Rat :=
