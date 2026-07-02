@@ -2960,6 +2960,48 @@ def V13RealLinearUniformCausalOneRowActiveRowIndexBound : Prop :=
           (V13RealLinearUniformOneRowGeneratedRowIndex
             observer.toAdaptive i₀) ≤ 1
 
+/-- Pairwise form of the active-row q = 1 hard core: any two active generated
+target rows for the same causal one-row observer are the same row. -/
+def V13RealLinearUniformCausalOneRowActiveRowPairExclusion : Prop :=
+  ∀ {m : Nat} (observer : V13RealLinearCausalRowObserver m 1)
+    (i₀ : Fin m),
+    1 < m →
+      ∀ row₀ row₁ :
+        V13RealLinearUniformOneRowGeneratedRowIndex
+          observer.toAdaptive i₀,
+        row₀.val = row₁.val
+
+theorem V13RealLinearUniformCausalOneRowActiveRowIndexBound_of_pairExclusion
+    (hpair :
+      V13RealLinearUniformCausalOneRowActiveRowPairExclusion) :
+    V13RealLinearUniformCausalOneRowActiveRowIndexBound := by
+  intro m observer i₀ hm
+  rw [Fintype.card_le_one_iff]
+  intro row₀ row₁
+  apply Subtype.ext
+  exact hpair observer i₀ hm row₀ row₁
+
+theorem V13RealLinearUniformCausalOneRowActiveRowPairExclusion_of_indexBound
+    (hrow :
+      V13RealLinearUniformCausalOneRowActiveRowIndexBound) :
+    V13RealLinearUniformCausalOneRowActiveRowPairExclusion := by
+  intro m observer i₀ hm row₀ row₁
+  have hcard :
+      Fintype.card
+          (V13RealLinearUniformOneRowGeneratedRowIndex
+            observer.toAdaptive i₀) ≤ 1 :=
+    hrow observer i₀ hm
+  have hsame : row₀ = row₁ := by
+    rw [Fintype.card_le_one_iff] at hcard
+    exact hcard row₀ row₁
+  exact congrArg Subtype.val hsame
+
+theorem V13RealLinearUniformCausalOneRowActiveRowIndexBound_iff_pairExclusion :
+    V13RealLinearUniformCausalOneRowActiveRowIndexBound ↔
+      V13RealLinearUniformCausalOneRowActiveRowPairExclusion :=
+  ⟨V13RealLinearUniformCausalOneRowActiveRowPairExclusion_of_indexBound,
+    V13RealLinearUniformCausalOneRowActiveRowIndexBound_of_pairExclusion⟩
+
 theorem
     V13RealLinearUniformCausalOneRowActiveBitCylinderIndexBound_of_rowIndexBound
     (hrow :
@@ -3046,6 +3088,24 @@ theorem
   v13RealLinearUniformCausalOneRowGenerated_counting_of_activeBitCylinderIndexBound
     (V13RealLinearUniformCausalOneRowActiveBitCylinderIndexBound_of_rowIndexBound
       hrow)
+    observer i₀ hm
+
+theorem
+    v13RealLinearUniformCausalOneRowGenerated_counting_of_activeRowPairExclusion
+    (hpair :
+      V13RealLinearUniformCausalOneRowActiveRowPairExclusion)
+    {m : Nat} (observer : V13RealLinearCausalRowObserver m 1)
+    (i₀ : Fin m) (hm : 1 < m) :
+    Fintype.card
+        (V13RealLinearAdaptiveQRowGenerated
+          (v13RealLinearUniformCausalQRowExperiment observer) i₀) *
+        2 ^ m ≤
+      2 ^ 1 *
+        Fintype.card
+          (V13RealLinearAdaptiveQRowWorld m (V13F2LinearEquiv m)) :=
+  v13RealLinearUniformCausalOneRowGenerated_counting_of_activeRowIndexBound
+    (V13RealLinearUniformCausalOneRowActiveRowIndexBound_of_pairExclusion
+      hpair)
     observer i₀ hm
 
 noncomputable def v13RealLinearFixedTargetRowOccurrenceZeroEmbedding :
