@@ -2647,6 +2647,21 @@ def V13RealLinearAdaptiveQRowRowsetFiber {m q : Nat}
 abbrev V13RealLinearBudgetedRowset (m q : Nat) :=
   {rows : Finset (Fin m) // rows.card ≤ q}
 
+/-- The finite transcript space for a fixed rowset. -/
+abbrev V13RealLinearRowsTranscriptSpace (m : Nat)
+    (rows : Finset (Fin m)) :=
+  {row : Fin m // row ∈ rows} → V13RealLinearRowView m
+
+/-- Hidden vectors in a fixed rowset fiber with a fixed row transcript. -/
+def V13RealLinearAdaptiveQRowRowsetTranscriptCell {m q : Nat}
+    {Seed : Type*} (E : V13RealLinearAdaptiveQRowExperiment m q Seed)
+    (seed : Seed) (rows : Finset (Fin m))
+    (transcript : V13RealLinearRowsTranscriptSpace m rows) :=
+  {x : V13RealLinearAdaptiveQRowRowsetFiber E seed rows //
+    v13RealLinearRowsTranscript rows
+        (v13RealLinearPublicInput (E.world (seed, x.val))) =
+      transcript}
+
 /-- Product form of a fixed-map rowset cell: choose the hidden vector landing in
 the rowset cell, then choose the rowset-local target coefficient. -/
 abbrev V13RealLinearAdaptiveQRowGeneratedTargetCoefficientRowsetProductCell
@@ -2698,6 +2713,17 @@ noncomputable instance {m q : Nat} {Seed : Type*} [Fintype Seed]
   unfold V13RealLinearAdaptiveQRowRowsetFiber
   infer_instance
 
+noncomputable instance {m q : Nat} {Seed : Type*} [Fintype Seed]
+    (E : V13RealLinearAdaptiveQRowExperiment m q Seed)
+    (seed : Seed) (rows : Finset (Fin m))
+    (transcript : V13RealLinearRowsTranscriptSpace m rows) :
+    Fintype
+      (V13RealLinearAdaptiveQRowRowsetTranscriptCell
+        E seed rows transcript) := by
+  classical
+  unfold V13RealLinearAdaptiveQRowRowsetTranscriptCell
+  infer_instance
+
 theorem v13RealLinearAdaptiveQRowRowsetFiber_card_eq_zero_of_q_lt_rows_card
     {m q : Nat} {Seed : Type*} [Fintype Seed]
     (E : V13RealLinearAdaptiveQRowExperiment m q Seed)
@@ -2710,6 +2736,65 @@ theorem v13RealLinearAdaptiveQRowRowsetFiber_card_eq_zero_of_q_lt_rows_card
       have hle : rows.card ≤ q := by
         simpa [x.property] using E.branchRows_card_le (seed, x.val)
       (Nat.not_le_of_gt hrows) hle⟩
+
+noncomputable def
+    v13RealLinearAdaptiveQRowRowsetFiberEquivSigmaTranscriptCell
+    {m q : Nat} {Seed : Type*}
+    (E : V13RealLinearAdaptiveQRowExperiment m q Seed)
+    (seed : Seed) (rows : Finset (Fin m)) :
+    V13RealLinearAdaptiveQRowRowsetFiber E seed rows ≃
+      (Σ transcript : V13RealLinearRowsTranscriptSpace m rows,
+        V13RealLinearAdaptiveQRowRowsetTranscriptCell
+          E seed rows transcript) where
+  toFun x :=
+    ⟨v13RealLinearRowsTranscript rows
+        (v13RealLinearPublicInput (E.world (seed, x.val))),
+      ⟨x, rfl⟩⟩
+  invFun cell := by
+    rcases cell with ⟨transcript, cell⟩
+    exact cell.val
+  left_inv x := by
+    rfl
+  right_inv cell := by
+    rcases cell with ⟨transcript, cell⟩
+    rcases cell with ⟨x, htranscript⟩
+    cases htranscript
+    rfl
+
+theorem v13RealLinearAdaptiveQRowRowsetFiber_card_eq_sum_transcriptCells
+    {m q : Nat} {Seed : Type*} [Fintype Seed]
+    (E : V13RealLinearAdaptiveQRowExperiment m q Seed)
+    (seed : Seed) (rows : Finset (Fin m)) :
+    Fintype.card (V13RealLinearAdaptiveQRowRowsetFiber E seed rows) =
+      ∑ transcript : V13RealLinearRowsTranscriptSpace m rows,
+        Fintype.card
+          (V13RealLinearAdaptiveQRowRowsetTranscriptCell
+            E seed rows transcript) := by
+  classical
+  rw [Fintype.card_congr
+    (v13RealLinearAdaptiveQRowRowsetFiberEquivSigmaTranscriptCell
+      E seed rows)]
+  rw [Fintype.card_sigma]
+
+theorem v13RealLinearAdaptiveQRow_rowsetProduct_eq_sum_transcriptCells
+    {m q : Nat} {Seed : Type*} [Fintype Seed]
+    (E : V13RealLinearAdaptiveQRowExperiment m q Seed) (i₀ : Fin m)
+    (seed : Seed) (rows : Finset (Fin m)) :
+    Fintype.card (V13RealLinearAdaptiveQRowRowsetFiber E seed rows) *
+        Fintype.card
+          (V13RealLinearRowsTargetCoefficient
+            (E.sampleA seed) rows i₀) =
+      ∑ transcript : V13RealLinearRowsTranscriptSpace m rows,
+        Fintype.card
+            (V13RealLinearAdaptiveQRowRowsetTranscriptCell
+              E seed rows transcript) *
+          Fintype.card
+            (V13RealLinearRowsTargetCoefficient
+              (E.sampleA seed) rows i₀) := by
+  classical
+  rw [v13RealLinearAdaptiveQRowRowsetFiber_card_eq_sum_transcriptCells
+    E seed rows]
+  rw [Finset.sum_mul]
 
 noncomputable def
     v13RealLinearAdaptiveQRowGeneratedTargetCoefficientRowsetCellEquivProduct
@@ -3868,6 +3953,26 @@ def
                 rows.val) *
             Fintype.card
               (V13RealLinearRowsTargetCoefficient A rows.val i₀)) ≤
+      2 ^ q * Fintype.card (V13F2LinearEquiv m)
+
+/-- Transcript-indexed budgeted product form of the residual hard core.  This
+exposes the finite transcript cells that the causal branch condition can
+actually distinguish inside each fixed map and rowset. -/
+def
+    V13RealLinearUniformCausalTwoOrMoreTargetCoefficientBudgetedRowsetTranscriptProductAverageBound :
+    Prop :=
+  ∀ {m q : Nat} (observer : V13RealLinearCausalRowObserver m q)
+    (i₀ : Fin m),
+    1 < q → q < m →
+      (∑ A : V13F2LinearEquiv m,
+        ∑ rows : V13RealLinearBudgetedRowset m q,
+          ∑ transcript : V13RealLinearRowsTranscriptSpace m rows.val,
+            Fintype.card
+                (V13RealLinearAdaptiveQRowRowsetTranscriptCell
+                  (v13RealLinearUniformCausalQRowExperiment observer) A
+                  rows.val transcript) *
+              Fintype.card
+                (V13RealLinearRowsTargetCoefficient A rows.val i₀)) ≤
       2 ^ q * Fintype.card (V13F2LinearEquiv m)
 
 theorem v13RealLinear_f2vec_card (m : Nat) :
@@ -7352,6 +7457,99 @@ theorem
     V13RealLinearUniformCausalTwoOrMoreTargetCoefficientRowsetProductAverageBound_of_budgetedRowsetProductAverage⟩
 
 theorem
+    V13RealLinearUniformCausalTwoOrMoreTargetCoefficientBudgetedRowsetTranscriptProductAverageBound_of_budgetedRowsetProductAverage
+    (hcount :
+      V13RealLinearUniformCausalTwoOrMoreTargetCoefficientBudgetedRowsetProductAverageBound) :
+    V13RealLinearUniformCausalTwoOrMoreTargetCoefficientBudgetedRowsetTranscriptProductAverageBound := by
+  intro m q observer i₀ hqgt hqm
+  let E := v13RealLinearUniformCausalQRowExperiment observer
+  let Q := 2 ^ q
+  let S := Fintype.card (V13F2LinearEquiv m)
+  have hsum :
+      (∑ A : V13F2LinearEquiv m,
+        ∑ rows : V13RealLinearBudgetedRowset m q,
+          Fintype.card
+              (V13RealLinearAdaptiveQRowRowsetFiber E A rows.val) *
+            Fintype.card
+              (V13RealLinearRowsTargetCoefficient A rows.val i₀)) ≤
+      Q * S := by
+    simpa [E, Q, S] using hcount observer i₀ hqgt hqm
+  calc
+    (∑ A : V13F2LinearEquiv m,
+        ∑ rows : V13RealLinearBudgetedRowset m q,
+          ∑ transcript : V13RealLinearRowsTranscriptSpace m rows.val,
+            Fintype.card
+                (V13RealLinearAdaptiveQRowRowsetTranscriptCell
+                  E A rows.val transcript) *
+              Fintype.card
+                (V13RealLinearRowsTargetCoefficient A rows.val i₀)) =
+        ∑ A : V13F2LinearEquiv m,
+          ∑ rows : V13RealLinearBudgetedRowset m q,
+            Fintype.card
+                (V13RealLinearAdaptiveQRowRowsetFiber E A rows.val) *
+              Fintype.card
+                (V13RealLinearRowsTargetCoefficient A rows.val i₀) := by
+      apply Finset.sum_congr rfl
+      intro A _
+      apply Finset.sum_congr rfl
+      intro rows _
+      exact
+        (v13RealLinearAdaptiveQRow_rowsetProduct_eq_sum_transcriptCells
+          E i₀ A rows.val).symm
+    _ ≤ Q * S := hsum
+
+theorem
+    V13RealLinearUniformCausalTwoOrMoreTargetCoefficientBudgetedRowsetProductAverageBound_of_budgetedRowsetTranscriptProductAverage
+    (hcount :
+      V13RealLinearUniformCausalTwoOrMoreTargetCoefficientBudgetedRowsetTranscriptProductAverageBound) :
+    V13RealLinearUniformCausalTwoOrMoreTargetCoefficientBudgetedRowsetProductAverageBound := by
+  intro m q observer i₀ hqgt hqm
+  let E := v13RealLinearUniformCausalQRowExperiment observer
+  let Q := 2 ^ q
+  let S := Fintype.card (V13F2LinearEquiv m)
+  have hsum :
+      (∑ A : V13F2LinearEquiv m,
+        ∑ rows : V13RealLinearBudgetedRowset m q,
+          ∑ transcript : V13RealLinearRowsTranscriptSpace m rows.val,
+            Fintype.card
+                (V13RealLinearAdaptiveQRowRowsetTranscriptCell
+                  E A rows.val transcript) *
+              Fintype.card
+                (V13RealLinearRowsTargetCoefficient A rows.val i₀)) ≤
+      Q * S := by
+    simpa [E, Q, S] using hcount observer i₀ hqgt hqm
+  calc
+    (∑ A : V13F2LinearEquiv m,
+        ∑ rows : V13RealLinearBudgetedRowset m q,
+          Fintype.card
+              (V13RealLinearAdaptiveQRowRowsetFiber E A rows.val) *
+            Fintype.card
+              (V13RealLinearRowsTargetCoefficient A rows.val i₀)) =
+        ∑ A : V13F2LinearEquiv m,
+          ∑ rows : V13RealLinearBudgetedRowset m q,
+            ∑ transcript : V13RealLinearRowsTranscriptSpace m rows.val,
+              Fintype.card
+                  (V13RealLinearAdaptiveQRowRowsetTranscriptCell
+                    E A rows.val transcript) *
+                Fintype.card
+                  (V13RealLinearRowsTargetCoefficient A rows.val i₀) := by
+      apply Finset.sum_congr rfl
+      intro A _
+      apply Finset.sum_congr rfl
+      intro rows _
+      exact
+        v13RealLinearAdaptiveQRow_rowsetProduct_eq_sum_transcriptCells
+          E i₀ A rows.val
+    _ ≤ Q * S := hsum
+
+theorem
+    V13RealLinearUniformCausalTwoOrMoreTargetCoefficientBudgetedRowsetProductAverageBound_iff_budgetedRowsetTranscriptProductAverage :
+    V13RealLinearUniformCausalTwoOrMoreTargetCoefficientBudgetedRowsetProductAverageBound ↔
+      V13RealLinearUniformCausalTwoOrMoreTargetCoefficientBudgetedRowsetTranscriptProductAverageBound :=
+  ⟨V13RealLinearUniformCausalTwoOrMoreTargetCoefficientBudgetedRowsetTranscriptProductAverageBound_of_budgetedRowsetProductAverage,
+    V13RealLinearUniformCausalTwoOrMoreTargetCoefficientBudgetedRowsetProductAverageBound_of_budgetedRowsetTranscriptProductAverage⟩
+
+theorem
     V13RealLinearUniformCausalTwoOrMoreCoefficientCompressionBound_of_targetCoefficientRowsetProductAverage
     (hcount :
       V13RealLinearUniformCausalTwoOrMoreTargetCoefficientRowsetProductAverageBound) :
@@ -7385,6 +7583,24 @@ theorem
     V13RealLinearUniformCausalTwoOrMoreCompletionCountingBound :=
   V13RealLinearUniformCausalTwoOrMoreCompletionCountingBound_of_targetCoefficientRowsetProductAverage
     (V13RealLinearUniformCausalTwoOrMoreTargetCoefficientRowsetProductAverageBound_of_budgetedRowsetProductAverage
+      hcount)
+
+theorem
+    V13RealLinearUniformCausalTwoOrMoreCoefficientCompressionBound_of_targetCoefficientBudgetedRowsetTranscriptProductAverage
+    (hcount :
+      V13RealLinearUniformCausalTwoOrMoreTargetCoefficientBudgetedRowsetTranscriptProductAverageBound) :
+    V13RealLinearUniformCausalTwoOrMoreCoefficientCompressionBound :=
+  V13RealLinearUniformCausalTwoOrMoreCoefficientCompressionBound_of_targetCoefficientBudgetedRowsetProductAverage
+    (V13RealLinearUniformCausalTwoOrMoreTargetCoefficientBudgetedRowsetProductAverageBound_of_budgetedRowsetTranscriptProductAverage
+      hcount)
+
+theorem
+    V13RealLinearUniformCausalTwoOrMoreCompletionCountingBound_of_targetCoefficientBudgetedRowsetTranscriptProductAverage
+    (hcount :
+      V13RealLinearUniformCausalTwoOrMoreTargetCoefficientBudgetedRowsetTranscriptProductAverageBound) :
+    V13RealLinearUniformCausalTwoOrMoreCompletionCountingBound :=
+  V13RealLinearUniformCausalTwoOrMoreCompletionCountingBound_of_targetCoefficientBudgetedRowsetProductAverage
+    (V13RealLinearUniformCausalTwoOrMoreTargetCoefficientBudgetedRowsetProductAverageBound_of_budgetedRowsetTranscriptProductAverage
       hcount)
 
 theorem
@@ -7591,6 +7807,19 @@ theorem
       (1 / 2 : Rat) + v13RealLinearQRowEpsilon q m :=
   v13RealLinear_uniform_causal_qrow_success_bound_of_twoOrMoreTargetCoefficientRowsetProductAverageBound
     (V13RealLinearUniformCausalTwoOrMoreTargetCoefficientRowsetProductAverageBound_of_budgetedRowsetProductAverage
+      hcount)
+    observer i₀
+
+theorem
+    v13RealLinear_uniform_causal_qrow_success_bound_of_twoOrMoreTargetCoefficientBudgetedRowsetTranscriptProductAverageBound
+    (hcount :
+      V13RealLinearUniformCausalTwoOrMoreTargetCoefficientBudgetedRowsetTranscriptProductAverageBound)
+    {m q : Nat} (observer : V13RealLinearCausalRowObserver m q)
+    (i₀ : Fin m) :
+    v13RealLinearUniformCausalQRowSuccess observer i₀ ≤
+      (1 / 2 : Rat) + v13RealLinearQRowEpsilon q m :=
+  v13RealLinear_uniform_causal_qrow_success_bound_of_twoOrMoreTargetCoefficientBudgetedRowsetProductAverageBound
+    (V13RealLinearUniformCausalTwoOrMoreTargetCoefficientBudgetedRowsetProductAverageBound_of_budgetedRowsetTranscriptProductAverage
       hcount)
     observer i₀
 
