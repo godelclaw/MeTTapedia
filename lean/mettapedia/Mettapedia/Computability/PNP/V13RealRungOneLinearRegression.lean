@@ -14,7 +14,9 @@ set_option autoImplicit false
 #check v13RealLinearComp
 #check V13RealLinearPublicCoordinate
 #check V13RealLinearCoordinateDeterminesTarget
+#check V13RealLinearPublicSurfaceCertificate
 #check v13RealLinear_no_single_public_coordinate_determines_target_of_spare
+#check v13RealLinear_publicSurfaceCertificate
 
 theorem v13RealLinearRegression_full_decoding_small :
     ∀ omega : V13RealLinearWorld 2,
@@ -29,12 +31,18 @@ theorem v13RealLinearRegression_no_single_coordinate_small :
     v13RealLinear_no_single_public_coordinate_determines_target_of_spare
       0 1 (by decide)
 
+theorem v13RealLinearRegression_publicSurfaceCertificate_small :
+    V13RealLinearPublicSurfaceCertificate 2 := by
+  exact v13RealLinear_publicSurfaceCertificate
+
 #print axioms v13RealLinear_fullPublic_decodes_target
 #print axioms v13RealLinear_fullPublic_determines_target
 #print axioms v13RealLinearEquiv_ext
 #print axioms v13RealLinearComp
 #print axioms v13RealLinear_no_single_public_coordinate_determines_target_of_spare
+#print axioms v13RealLinear_publicSurfaceCertificate
 #print axioms v13RealLinearRegression_full_decoding_small
 #print axioms v13RealLinearRegression_no_single_coordinate_small
+#print axioms v13RealLinearRegression_publicSurfaceCertificate_small
 
 end Mettapedia.Computability.PNP

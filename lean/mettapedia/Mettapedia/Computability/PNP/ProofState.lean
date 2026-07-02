@@ -1059,6 +1059,11 @@ theorem currentPNPV13RealRungOneLinear_node :
         v13RealLinear_no_single_public_coordinate_determines_target_of_spare
           i₀ spare hspare⟩
 
+theorem currentPNPV13RealRungOneLinear_certificate_node :
+    ∀ m : Nat, V13RealLinearPublicSurfaceCertificate m := by
+  intro m
+  exact v13RealLinear_publicSurfaceCertificate
+
 theorem currentPNPV13RealRungOneRowObservers_node :
     (∀ {m : Nat} {A : V13F2LinearEquiv m}
       {rows : Finset (Fin m)} {i₀ : Fin m},
@@ -1934,6 +1939,16 @@ theorem currentPNPV13RealRungOneQRowBound_node :
           observer i₀,
       v13RealLinearUniformCausalLowPositiveFiberCoefficientCountingBound_fails_two_identity,
       v13RealLinear_qrow_epsilon_nonnegative⟩
+
+theorem currentPNPV13RealRungOneSequentialQRowTransfer_node :
+    ∀ {m q : Nat} (observer : V13RealLinearSequentialRowObserver m q)
+      (i₀ : Fin m),
+      v13RealLinearUniformSequentialQRowSuccess observer i₀ ≤
+        (1 / 2 : Rat) +
+          (4 * ((2 : Rat) ^ q - 1)) / ((2 : Rat) ^ m) := by
+  intro m q observer i₀
+  exact v13RealLinear_uniform_sequential_qrow_success_bound_of_transfer
+    observer i₀
 
 theorem currentPNPV13ObserverLadder_node :
     PhaseEScaledObserverLadderMark ∧
