@@ -627,6 +627,107 @@ theorem v13RealLinearUniformCausalOneRowGenerated_exists_targetRow_cylinder
       observer.branch_eq_of_same_branchRowsTranscript
         public₀ public₁ hsameBranch
 
+theorem v13RealLinearUniformCausalOneRowGenerated_exists_generated_cylinder
+    {m : Nat} (observer : V13RealLinearCausalRowObserver m 1)
+    (i₀ : Fin m)
+    (omega : V13RealLinearAdaptiveQRowWorld m (V13F2LinearEquiv m))
+    (hgen :
+      (v13RealLinearUniformCausalQRowExperiment observer).generated
+        i₀ omega) :
+    ∃ row : Fin m,
+      (v13RealLinearUniformCausalQRowExperiment observer).branchRows omega =
+          ({row} : Finset (Fin m)) ∧
+        row ∈ V13RealLinearTargetRows omega.1 i₀ ∧
+          ∀ omega' : V13RealLinearAdaptiveQRowWorld m (V13F2LinearEquiv m),
+            v13RealLinearRowsTranscript ({row} : Finset (Fin m))
+                (v13RealLinearPublicInput
+                  ((v13RealLinearUniformCausalQRowExperiment observer).world
+                    omega)) =
+              v13RealLinearRowsTranscript ({row} : Finset (Fin m))
+                (v13RealLinearPublicInput
+                  ((v13RealLinearUniformCausalQRowExperiment observer).world
+                    omega')) →
+            (v13RealLinearUniformCausalQRowExperiment observer).generated
+              i₀ omega' := by
+  classical
+  let E := v13RealLinearUniformCausalQRowExperiment observer
+  rcases
+      v13RealLinearUniformCausalOneRowGenerated_exists_targetRow_cylinder
+        observer i₀ omega hgen with
+    ⟨row, hrows, htarget, hcylinder⟩
+  refine ⟨row, hrows, htarget, ?_⟩
+  intro omega' hsame
+  have hbranch :
+      observer.branch
+          (v13RealLinearPublicInput
+            ((v13RealLinearUniformCausalQRowExperiment observer).world
+              omega')) =
+        observer.branch
+          (v13RealLinearPublicInput
+            ((v13RealLinearUniformCausalQRowExperiment observer).world
+              omega)) :=
+    hcylinder omega' hsame
+  have hbranchRows' :
+      (v13RealLinearUniformCausalQRowExperiment observer).branchRows omega' =
+          ({row} : Finset (Fin m)) := by
+    have hrowsEq :=
+      congrArg observer.rows hbranch
+    have hrowsOmega :
+        observer.rows
+            (observer.branch
+              (v13RealLinearPublicInput
+                ((v13RealLinearUniformCausalQRowExperiment observer).world
+                  omega))) =
+          ({row} : Finset (Fin m)) := by
+      simpa [v13RealLinearUniformCausalQRowExperiment,
+        v13RealLinearUniformQRowExperiment,
+        V13RealLinearAdaptiveQRowExperiment.branchRows,
+        V13RealLinearAdaptiveQRowExperiment.branch,
+        V13RealLinearCausalRowObserver.toAdaptive,
+        V13RealLinearCausalRowObserver.staticBranch] using hrows
+    simpa [v13RealLinearUniformCausalQRowExperiment,
+      v13RealLinearUniformQRowExperiment,
+      V13RealLinearAdaptiveQRowExperiment.branchRows,
+      V13RealLinearAdaptiveQRowExperiment.branch,
+      V13RealLinearCausalRowObserver.toAdaptive,
+      V13RealLinearCausalRowObserver.staticBranch] using hrowsEq.trans hrowsOmega
+  have hview :
+      v13RealLinearRowView row
+          (v13RealLinearPublicInput
+            ((v13RealLinearUniformCausalQRowExperiment observer).world
+              omega)) =
+        v13RealLinearRowView row
+          (v13RealLinearPublicInput
+            ((v13RealLinearUniformCausalQRowExperiment observer).world
+              omega')) := by
+    simpa [v13RealLinearRowsTranscript] using
+      congrFun hsame ⟨row, by simp⟩
+  have hrowFunctional :
+      (fun probe : F2Vec m => omega.1.toEquiv probe row) =
+        (fun probe : F2Vec m => omega'.1.toEquiv probe row) := by
+    simpa [v13RealLinearRowView, v13RealLinearPublicInput,
+      V13RealLinearAdaptiveQRowExperiment.world,
+      v13RealLinearUniformCausalQRowExperiment,
+      v13RealLinearUniformQRowExperiment] using congrArg Prod.fst hview
+  have htarget' :
+      ∀ w : F2Vec m, omega'.1.toEquiv w row = w i₀ := by
+    intro w
+    have htargetFun :
+        ∀ probe : F2Vec m, omega.1.toEquiv probe row = probe i₀ :=
+      (v13RealLinear_mem_targetRows_iff omega.1 i₀ row).1 htarget
+    have hfunAt := congrFun hrowFunctional w
+    calc
+      omega'.1.toEquiv w row = omega.1.toEquiv w row := hfunAt.symm
+      _ = w i₀ := htargetFun w
+  change
+    V13RealLinearRowsGenerateTarget omega'.1
+      ((v13RealLinearUniformCausalQRowExperiment observer).branchRows omega')
+      i₀
+  rw [hbranchRows']
+  exact
+    (v13RealLinear_rowsGenerateTarget_singleton_iff omega'.1 row i₀).2
+      htarget'
+
 theorem v13RealLinear_targetRowObserver_generated_of_targetRows_nonempty
     {m : Nat} (i₀ : Fin m) (A : V13F2LinearEquiv m) (x : F2Vec m)
     (h : (V13RealLinearTargetRows A i₀).Nonempty) :
