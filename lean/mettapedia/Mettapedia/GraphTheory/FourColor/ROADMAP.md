@@ -259,6 +259,14 @@ the shifted seed must be present in the appended chain edge list
 (`concreteChainFiberAppendRelativeSingletonShiftedSeedPresentClosed`), and the
 shifted move must validate as the corresponding global specified Kempe step
 (`concreteChainFiberAppendRelativeSingletonShiftedSpecifiedStepClosed`).
+The seed-membership side is closed by
+`concreteChainFiberAppendRelativeSingletonShiftedSeedPresentClosed_of_local_specified`:
+a true local specified Kempe step cannot seed on an outer input edge, and
+`concreteChainFiberAppendShiftedEdgePresent_of_not_input` embeds any remaining
+last-gadget edge into the appended chain's representative edge list.  The
+Kempe-lift branch is now reduced to
+`concreteChainFiberAppendRelativeSingletonShiftedSpecifiedStepClosed` via
+`concreteChainFiberAppendRelativeSingletonGlobalKempeStepLiftClosed_of_shifted_step`.
 The closure-under-step side is now reduced by
 `concreteChainFiberAppendRelativeSingletonGlobalStepClosureClosed_of_bounded_saturation`
 to the pure closure-iterator lemma
