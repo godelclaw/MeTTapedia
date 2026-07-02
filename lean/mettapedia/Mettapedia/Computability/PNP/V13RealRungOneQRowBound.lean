@@ -3223,6 +3223,225 @@ theorem v13RealLinear_targetRows_card_le_one {m : Nat}
   rw [hrow₀val, hrow₁val] at hsame
   norm_num at hsame
 
+theorem
+    v13RealLinear_exists_rhsKernel_target_one_of_row_not_mem_targetRows
+    {m : Nat} (A : V13F2LinearEquiv m) (i₀ row : Fin m)
+    (hrow : row ∉ V13RealLinearTargetRows A i₀) :
+    ∃ w : F2Vec m, A.toEquiv w row = 0 ∧ w i₀ = 1 := by
+  classical
+  by_contra hnone
+  have htarget : ∀ w : F2Vec m, A.toEquiv w row = w i₀ := by
+    intro w
+    by_cases hwi : w i₀ = 1
+    · have hAw : A.toEquiv w row = 1 := by
+        by_cases hzero : A.toEquiv w row = 0
+        · exact False.elim (hnone ⟨w, hzero, hwi⟩)
+        · exact v13_zmod2_eq_one_of_ne_zero _ hzero
+      simpa [hwi] using hAw
+    · have hwi0 : w i₀ = 0 := by
+        by_cases hzero : w i₀ = 0
+        · exact hzero
+        · exact False.elim (hwi (v13_zmod2_eq_one_of_ne_zero _ hzero))
+      let e := v13RealLinearSingleBit i₀
+      have heTarget : e i₀ = 1 := by
+        simp [e, v13RealLinearSingleBit]
+      have heNonzero : A.toEquiv e row ≠ 0 := by
+        intro heZero
+        exact hnone ⟨e, heZero, heTarget⟩
+      have heOne : A.toEquiv e row = 1 :=
+        v13_zmod2_eq_one_of_ne_zero _ heNonzero
+      have hsumTarget : f2AddVec w e i₀ = 1 := by
+        simp [f2AddVec, e, v13RealLinearSingleBit, hwi0]
+      have hsumAw : A.toEquiv (f2AddVec w e) row = 1 := by
+        by_cases hzero : A.toEquiv (f2AddVec w e) row = 0
+        · exact False.elim (hnone ⟨f2AddVec w e, hzero, hsumTarget⟩)
+        · exact v13_zmod2_eq_one_of_ne_zero _ hzero
+      have hmapRow := congrFun (A.map_add w e) row
+      have hAwPlus : A.toEquiv w row + 1 = 1 := by
+        calc
+          A.toEquiv w row + 1 = A.toEquiv w row + A.toEquiv e row := by
+            rw [heOne]
+          _ = A.toEquiv (f2AddVec w e) row := by
+            simpa [f2AddVec] using hmapRow.symm
+          _ = 1 := hsumAw
+      have hAwZero : A.toEquiv w row = 0 := by
+        calc
+          A.toEquiv w row =
+              A.toEquiv w row + 1 + 1 :=
+            (f2_add_right_self (A.toEquiv w row) 1).symm
+          _ = 1 + 1 := by rw [hAwPlus]
+          _ = 0 := f2_one_add_one
+      simpa [hwi0] using hAwZero
+  exact hrow ((v13RealLinear_mem_targetRows_iff A i₀ row).2 htarget)
+
+abbrev V13RealLinearFixedRhsTargetFiber {m : Nat}
+    (A : V13F2LinearEquiv m) (row i₀ : Fin m)
+    (rhs bit : ZMod 2) :=
+  {x : F2Vec m // A.toEquiv x row = rhs ∧ x i₀ = bit}
+
+noncomputable def v13RealLinearFixedRhsTargetFlipEquiv {m : Nat}
+    (A : V13F2LinearEquiv m) (row i₀ : Fin m) (rhs : ZMod 2)
+    (hrow : row ∉ V13RealLinearTargetRows A i₀) :
+    V13RealLinearFixedRhsTargetFiber A row i₀ rhs 0 ≃
+      V13RealLinearFixedRhsTargetFiber A row i₀ rhs 1 := by
+  classical
+  let w : F2Vec m :=
+    Classical.choose
+      (v13RealLinear_exists_rhsKernel_target_one_of_row_not_mem_targetRows
+        A i₀ row hrow)
+  have hw :=
+    Classical.choose_spec
+      (v13RealLinear_exists_rhsKernel_target_one_of_row_not_mem_targetRows
+        A i₀ row hrow)
+  have hwrow : A.toEquiv w row = 0 := by
+    simpa [w] using hw.1
+  have hwi : w i₀ = 1 := by
+    simpa [w] using hw.2
+  exact
+    { toFun := fun x =>
+        ⟨f2AddVec x.val w, by
+          constructor
+          · calc
+              A.toEquiv (f2AddVec x.val w) row =
+                  f2AddVec (A.toEquiv x.val) (A.toEquiv w) row :=
+                congrFun (A.map_add x.val w) row
+              _ = rhs := by
+                simp [f2AddVec, x.property.1, hwrow]
+          · simp [f2AddVec, x.property.2, hwi]⟩
+      invFun := fun x =>
+        ⟨f2AddVec x.val w, by
+          constructor
+          · calc
+              A.toEquiv (f2AddVec x.val w) row =
+                  f2AddVec (A.toEquiv x.val) (A.toEquiv w) row :=
+                congrFun (A.map_add x.val w) row
+              _ = rhs := by
+                simp [f2AddVec, x.property.1, hwrow]
+          · simp [f2AddVec, x.property.2, hwi, f2_one_add_one]⟩
+      left_inv := by
+        intro x
+        apply Subtype.ext
+        funext j
+        simp [f2AddVec, f2_add_right_self]
+      right_inv := by
+        intro x
+        apply Subtype.ext
+        funext j
+        simp [f2AddVec, f2_add_right_self] }
+
+theorem v13RealLinearFixedRhsTargetFiber_card_eq_of_row_not_mem_targetRows
+    {m : Nat} (A : V13F2LinearEquiv m) (row i₀ : Fin m)
+    (rhs : ZMod 2) (hrow : row ∉ V13RealLinearTargetRows A i₀) :
+    Fintype.card (V13RealLinearFixedRhsTargetFiber A row i₀ rhs 0) =
+      Fintype.card (V13RealLinearFixedRhsTargetFiber A row i₀ rhs 1) :=
+  Fintype.card_congr
+    (v13RealLinearFixedRhsTargetFlipEquiv A row i₀ rhs hrow)
+
+abbrev V13RealLinearNoTargetRowsMap (m : Nat) (i₀ : Fin m) :=
+  {A : V13F2LinearEquiv m // V13RealLinearTargetRows A i₀ = ∅}
+
+abbrev V13RealLinearNoTargetRowsWorld (m : Nat) (i₀ : Fin m) :=
+  V13RealLinearNoTargetRowsMap m i₀ × F2Vec m
+
+abbrev V13RealLinearNoTargetRowsRhsTargetFiber {m : Nat}
+    (i₀ row : Fin m) (rhs bit : ZMod 2) :=
+  {omega : V13RealLinearNoTargetRowsWorld m i₀ //
+    omega.1.val.toEquiv omega.2 row = rhs ∧ omega.2 i₀ = bit}
+
+noncomputable def v13RealLinearNoTargetRowsKernelTargetOne {m : Nat}
+    {i₀ : Fin m} (A : V13RealLinearNoTargetRowsMap m i₀)
+    (row : Fin m) : F2Vec m :=
+  Classical.choose
+    (v13RealLinear_exists_rhsKernel_target_one_of_row_not_mem_targetRows
+      A.val i₀ row (by rw [A.property]; simp))
+
+theorem v13RealLinearNoTargetRowsKernelTargetOne_rhs_zero {m : Nat}
+    {i₀ : Fin m} (A : V13RealLinearNoTargetRowsMap m i₀)
+    (row : Fin m) :
+    A.val.toEquiv (v13RealLinearNoTargetRowsKernelTargetOne A row) row =
+      0 :=
+  (Classical.choose_spec
+    (v13RealLinear_exists_rhsKernel_target_one_of_row_not_mem_targetRows
+      A.val i₀ row (by rw [A.property]; simp))).1
+
+theorem v13RealLinearNoTargetRowsKernelTargetOne_target_one {m : Nat}
+    {i₀ : Fin m} (A : V13RealLinearNoTargetRowsMap m i₀)
+    (row : Fin m) :
+    v13RealLinearNoTargetRowsKernelTargetOne A row i₀ = 1 :=
+  (Classical.choose_spec
+    (v13RealLinear_exists_rhsKernel_target_one_of_row_not_mem_targetRows
+      A.val i₀ row (by rw [A.property]; simp))).2
+
+noncomputable def v13RealLinearNoTargetRowsRhsTargetFlipEquiv {m : Nat}
+    (i₀ row : Fin m) (rhs : ZMod 2) :
+    V13RealLinearNoTargetRowsRhsTargetFiber i₀ row rhs 0 ≃
+      V13RealLinearNoTargetRowsRhsTargetFiber i₀ row rhs 1 := by
+  classical
+  exact
+    { toFun := fun omega =>
+        let w := v13RealLinearNoTargetRowsKernelTargetOne omega.val.1 row
+        ⟨(omega.val.1, f2AddVec omega.val.2 w), by
+          have hwrow :=
+            v13RealLinearNoTargetRowsKernelTargetOne_rhs_zero omega.val.1 row
+          have hwi :=
+            v13RealLinearNoTargetRowsKernelTargetOne_target_one omega.val.1 row
+          have hwrow' : omega.val.1.val.toEquiv w row = 0 := by
+            simpa [w] using hwrow
+          have hwi' : w i₀ = 1 := by
+            simpa [w] using hwi
+          constructor
+          · calc
+              omega.val.1.val.toEquiv (f2AddVec omega.val.2 w) row =
+                  f2AddVec
+                    (omega.val.1.val.toEquiv omega.val.2)
+                    (omega.val.1.val.toEquiv w) row :=
+                congrFun (omega.val.1.val.map_add omega.val.2 w) row
+              _ = rhs := by
+                simp [f2AddVec, omega.property.1, hwrow']
+          · simp [f2AddVec, omega.property.2, hwi']⟩
+      invFun := fun omega =>
+        let w := v13RealLinearNoTargetRowsKernelTargetOne omega.val.1 row
+        ⟨(omega.val.1, f2AddVec omega.val.2 w), by
+          have hwrow :=
+            v13RealLinearNoTargetRowsKernelTargetOne_rhs_zero omega.val.1 row
+          have hwi :=
+            v13RealLinearNoTargetRowsKernelTargetOne_target_one omega.val.1 row
+          have hwrow' : omega.val.1.val.toEquiv w row = 0 := by
+            simpa [w] using hwrow
+          have hwi' : w i₀ = 1 := by
+            simpa [w] using hwi
+          constructor
+          · calc
+              omega.val.1.val.toEquiv (f2AddVec omega.val.2 w) row =
+                  f2AddVec
+                    (omega.val.1.val.toEquiv omega.val.2)
+                    (omega.val.1.val.toEquiv w) row :=
+                congrFun (omega.val.1.val.map_add omega.val.2 w) row
+              _ = rhs := by
+                simp [f2AddVec, omega.property.1, hwrow']
+          · simp [f2AddVec, omega.property.2, hwi', f2_one_add_one]⟩
+      left_inv := by
+        intro omega
+        apply Subtype.ext
+        apply Prod.ext
+        · rfl
+        · funext j
+          simp [f2AddVec, f2_add_right_self]
+      right_inv := by
+        intro omega
+        apply Subtype.ext
+        apply Prod.ext
+        · rfl
+        · funext j
+          simp [f2AddVec, f2_add_right_self] }
+
+theorem v13RealLinearNoTargetRowsRhsTargetFiber_card_eq
+    {m : Nat} (i₀ row : Fin m) (rhs : ZMod 2) :
+    Fintype.card (V13RealLinearNoTargetRowsRhsTargetFiber i₀ row rhs 0) =
+      Fintype.card (V13RealLinearNoTargetRowsRhsTargetFiber i₀ row rhs 1) :=
+  Fintype.card_congr
+    (v13RealLinearNoTargetRowsRhsTargetFlipEquiv i₀ row rhs)
+
 def v13RealLinearSingleRowStaticObserver {m : Nat} (row : Fin m) :
     V13RealLinearStaticRowObserver m 1 where
   rows := {row}
