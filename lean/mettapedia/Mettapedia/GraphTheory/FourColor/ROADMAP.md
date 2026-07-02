@@ -245,6 +245,11 @@ the local singleton target is known to embed as an appended fixed-input fiber
 member, so it remains only to prove that a local singleton Kempe step becomes
 the corresponding global Kempe step under `pref ++ [last]`, and that the global
 root closure is closed under such an embedded step.
+The closure-under-step side is now reduced by
+`concreteChainFiberAppendRelativeSingletonGlobalStepClosureClosed_of_bounded_saturation`
+to the pure closure-iterator lemma
+`GoertzelLemma814.closeChainFiberBoundedSaturationClosed`: after
+`fiber.length` rounds, one additional round cannot add a new member.
 `concreteChainFiberAppendFixedPrefixLastReachClosed_of_interface_trace_cases`
 and `concreteChainFiberAppendRawPrefixReachClosed_of_interface_trace_cases`
 assemble those two cases back into the existing sufficiency route.

@@ -2202,6 +2202,26 @@ theorem closeChainFiber_mem_step_of_close (orients : List TauOrient)
         simp only [seen', hfalse, Bool.false_eq_true, if_false] at hcurrent ⊢
         exact ih seen' (chainClosureStep_nodup orients fiber seen hseen) hcurrent
 
+def closeChainFiberBoundedSaturationClosed : Prop :=
+  ∀ (orients : List TauOrient) (fiber seen : List (List TauState)),
+    seen.Nodup →
+      ∀ (target : List TauState),
+        target ∈ closeChainFiber orients fiber (fiber.length + 1) seen →
+          target ∈ closeChainFiber orients fiber fiber.length seen
+
+theorem closeChainFiber_mem_step_of_close_at_length_of_bounded_saturation
+    (hSat : closeChainFiberBoundedSaturationClosed)
+    (orients : List TauOrient) (fiber seen : List (List TauState))
+    (current target : List TauState)
+    (hseen : seen.Nodup)
+    (hcurrent : current ∈ closeChainFiber orients fiber fiber.length seen)
+    (htarget : target ∈ fiber)
+    (hstep : chainSingleKempeStep orients current target = true) :
+    target ∈ closeChainFiber orients fiber fiber.length seen := by
+  exact hSat orients fiber seen hseen target
+    (closeChainFiber_mem_step_of_close orients fiber fiber.length seen
+      current target hseen hcurrent htarget hstep)
+
 theorem closeChainFiber_mem_mono_add (orients : List TauOrient)
     (fiber : List (List TauState)) (n m : Nat) (seen : List (List TauState))
     (x : List TauState)

@@ -1533,6 +1533,21 @@ theorem concreteChainFiberAppendRelativeSingletonClosureStepLiftClosed_of_global
     hcompatibleX hkeyLocal current target currentLast targetLast hcurrent
     htarget hcurrentEq htargetEq htargetGlobal hcurrentClose hglobalStep
 
+theorem concreteChainFiberAppendRelativeSingletonGlobalStepClosureClosed_of_bounded_saturation
+    (hSat : GoertzelLemma814.closeChainFiberBoundedSaturationClosed) :
+    concreteChainFiberAppendRelativeSingletonGlobalStepClosureClosed := by
+  intro word orient _hne _hcert key _hkey pref _lastX _hpref _hlastX
+    _hcompatibleX _hkeyLocal current target currentLast targetLast _hcurrent
+    _htarget _hcurrentEq _htargetEq htargetGlobal hcurrentClose hglobalStep
+  exact
+    GoertzelLemma814.closeChainFiber_mem_step_of_close_at_length_of_bounded_saturation
+      hSat
+      (frontierWordToChainWord (word ++ [orient]))
+      (concreteChainFiber (word ++ [orient]) key)
+      [chainFiberRootState (word ++ [orient]) key]
+      (pref ++ [currentLast]) (pref ++ [targetLast])
+      (by simp) hcurrentClose htargetGlobal hglobalStep
+
 theorem concreteChainFiberAppendRelativeSingletonClosureLiftClosed_of_root_and_step_lift
     (hRoot :
       concreteChainFiberAppendRelativeSingletonClosureRootLiftClosed)
