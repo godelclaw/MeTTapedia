@@ -1177,6 +1177,12 @@ theorem currentPNPV13RealRungOneQRowBound_node :
           (v13RealLinearUniformCausalQRowExperiment observer).branchRows
               (v13RealLinearNoTargetRowShear i₀ hm, x) =
             ({row} : Finset (Fin m))) ∧
+      (V13RealLinearUniformCausalOneRowNoTargetRestMismatchExclusion →
+        V13RealLinearUniformCausalOneRowActiveRowPairExclusion) ∧
+      (V13RealLinearUniformCausalOneRowNoTargetRestMismatchExclusion →
+        V13RealLinearUniformCausalOneRowActiveRowIndexBound) ∧
+      (V13RealLinearUniformCausalOneRowNoTargetRestMismatchExclusion →
+        V13RealLinearUniformCausalOneRowActiveBitCylinderIndexBound) ∧
       (∀ {m : Nat} {Seed : Type*}
         (E : V13RealLinearAdaptiveQRowExperiment m 1 Seed) (i₀ : Fin m)
         (omega : V13RealLinearAdaptiveQRowWorld m Seed),
@@ -1734,6 +1740,9 @@ theorem currentPNPV13RealRungOneQRowBound_node :
       fun observer i₀ hm x activeRow =>
         v13RealLinearNoTargetRowShear_branchRows_eq_singleton_of_activeRowIndex
           observer i₀ hm x activeRow,
+      V13RealLinearUniformCausalOneRowActiveRowPairExclusion_of_noTargetRestMismatch,
+      V13RealLinearUniformCausalOneRowActiveRowIndexBound_of_noTargetRestMismatch,
+      V13RealLinearUniformCausalOneRowActiveBitCylinderIndexBound_of_noTargetRestMismatch,
       fun E i₀ omega hgen =>
         E.generated_one_budget_exists_target_row i₀ omega hgen,
       fun E i₀ omega hgen =>
