@@ -36,6 +36,19 @@ def frontierWordToChainWord
     List GoertzelLemma814.TauOrient :=
   word.map frontierOrientToChain
 
+theorem tauOrientAt_frontierWordToChainWord_append_length
+    (word : List GoertzelLemma818FrontierMode.TauOrient)
+    (orient : GoertzelLemma818FrontierMode.TauOrient) :
+    GoertzelLemma814.tauOrientAt
+      (frontierWordToChainWord (word ++ [orient])) word.length =
+      frontierOrientToChain orient := by
+  unfold GoertzelLemma814.tauOrientAt frontierWordToChainWord
+  simp only [List.map_append, List.map_cons, List.map_nil]
+  rw [← List.length_map (f := frontierOrientToChain) (as := word)]
+  exact GoertzelLemma814.listGetD_append_length
+    (List.map frontierOrientToChain word) (frontierOrientToChain orient)
+    GoertzelLemma814.TauOrient.normal
+
 inductive SemanticModeWitness
   | base (w : BaseCertifiedWord)
   | target (t : RepresentativeSemanticTarget)
@@ -1010,6 +1023,127 @@ theorem concreteChainFiber_singleton_of_mem
           exact ⟨last, rfl⟩
       | cons next rest =>
           simp [frontierWordToChainWord] at hlen
+
+theorem concreteChainFiber_singleton_last_mem_allTauStates
+    (orient : GoertzelLemma818FrontierMode.TauOrient)
+    (key : List GoertzelLemma814.LColor)
+    {last : GoertzelLemma814.TauState}
+    (hstates : [last] ∈ concreteChainFiber [orient] key) :
+    last ∈ GoertzelLemma814.allTauStates := by
+  have hmemStates : [last] ∈ concreteChainStates [orient] := by
+    unfold concreteChainFiber GoertzelLemma814.chainFiberFrom at hstates
+    exact (List.mem_filter.mp hstates).1
+  cases orient <;>
+    simpa [concreteChainStates, frontierWordToChainWord, frontierOrientToChain,
+      GoertzelLemma814.allChainStates, GoertzelLemma814.buildChainStatesFrom]
+      using hmemStates
+
+theorem concreteChainFiber_singleton_input_trace_eq_of_mem
+    (orient : GoertzelLemma818FrontierMode.TauOrient)
+    (key : List GoertzelLemma814.LColor)
+    {last : GoertzelLemma814.TauState}
+    (hstates : [last] ∈ concreteChainFiber [orient] key) :
+    concreteChainFiberAppendLastInputTrace orient last = key := by
+  have hkeyBool :
+      (GoertzelLemma814.chainInputKey (frontierWordToChainWord [orient])
+        [last] == key) = true := by
+    unfold concreteChainFiber GoertzelLemma814.chainFiberFrom at hstates
+    exact (List.mem_filter.mp hstates).2
+  have hkeyEq :
+      GoertzelLemma814.chainInputKey (frontierWordToChainWord [orient])
+        [last] = key :=
+    beq_iff_eq.mp hkeyBool
+  rw [← hkeyEq]
+  cases orient <;>
+    simp [concreteChainFiberAppendLastInputTrace, frontierWordToChainWord,
+      frontierOrientToChain, GoertzelLemma814.chainInputKey,
+      GoertzelLemma814.chainInputOrder, GoertzelLemma814.tauOrientAt,
+      GoertzelLemma814.listGetD, GoertzelLemma814.tauOrientInputOrder,
+      GoertzelLemma814.chainStateAt, GoertzelLemma814.tauStateColorAt]
+
+theorem concreteChainFiberAppend_compatible_of_last_input_trace_eq
+    (left : GoertzelLemma814.TauOrient)
+    (orient : GoertzelLemma818FrontierMode.TauOrient)
+    (prev lastX lastY : GoertzelLemma814.TauState)
+    (hcompatibleX : GoertzelLemma814.compatibleAdjacent
+      left (frontierOrientToChain orient) prev lastX = true)
+    (hinput : concreteChainFiberAppendLastInputTrace orient lastY =
+      concreteChainFiberAppendLastInputTrace orient lastX) :
+    GoertzelLemma814.compatibleAdjacent
+      left (frontierOrientToChain orient) prev lastY = true := by
+  cases left <;> cases orient <;>
+    simp [concreteChainFiberAppendLastInputTrace, frontierOrientToChain,
+      GoertzelLemma814.compatibleAdjacent, GoertzelLemma814.colorEq,
+      GoertzelLemma814.tauOrientInputOrder,
+      GoertzelLemma814.tauOrientOutputOrder] at hcompatibleX hinput ⊢ <;>
+    aesop
+
+theorem concreteChainFiberAppend_mem_of_prefix_and_local_singleton
+    (word : List GoertzelLemma818FrontierMode.TauOrient)
+    (orient : GoertzelLemma818FrontierMode.TauOrient)
+    (hne : word ≠ [])
+    (key : List GoertzelLemma814.LColor)
+    {pref : List GoertzelLemma814.TauState}
+    {lastX targetLast : GoertzelLemma814.TauState}
+    {target : List GoertzelLemma814.TauState}
+    (hpref : pref ∈ concreteChainFiber word key)
+    (hcompatibleX : GoertzelLemma814.compatibleAdjacent
+      (GoertzelLemma814.tauOrientAt
+        (frontierWordToChainWord (word ++ [orient])) (word.length - 1))
+      (GoertzelLemma814.tauOrientAt
+        (frontierWordToChainWord (word ++ [orient])) word.length)
+      (GoertzelLemma814.chainStateAt pref (word.length - 1))
+      lastX = true)
+    (htarget : target ∈ concreteChainFiber [orient]
+      (concreteChainFiberAppendLastInputTrace orient lastX))
+    (htargetEq : target = [targetLast]) :
+    pref ++ [targetLast] ∈ concreteChainFiber (word ++ [orient]) key := by
+  have htargetMem :
+      [targetLast] ∈ concreteChainFiber [orient]
+        (concreteChainFiberAppendLastInputTrace orient lastX) := by
+    simpa [htargetEq] using htarget
+  have htargetAll :
+      targetLast ∈ GoertzelLemma814.allTauStates :=
+    concreteChainFiber_singleton_last_mem_allTauStates orient
+      (concreteChainFiberAppendLastInputTrace orient lastX) htargetMem
+  have hinputTarget :
+      concreteChainFiberAppendLastInputTrace orient targetLast =
+        concreteChainFiberAppendLastInputTrace orient lastX :=
+    concreteChainFiber_singleton_input_trace_eq_of_mem orient
+      (concreteChainFiberAppendLastInputTrace orient lastX) htargetMem
+  have hright :=
+    tauOrientAt_frontierWordToChainWord_append_length word orient
+  have hcompatibleX' :
+      GoertzelLemma814.compatibleAdjacent
+        (GoertzelLemma814.tauOrientAt
+          (frontierWordToChainWord (word ++ [orient])) (word.length - 1))
+        (frontierOrientToChain orient)
+        (GoertzelLemma814.chainStateAt pref (word.length - 1)) lastX =
+        true := by
+    simpa [hright] using hcompatibleX
+  have hcompatibleTarget' :
+      GoertzelLemma814.compatibleAdjacent
+        (GoertzelLemma814.tauOrientAt
+          (frontierWordToChainWord (word ++ [orient])) (word.length - 1))
+        (frontierOrientToChain orient)
+        (GoertzelLemma814.chainStateAt pref (word.length - 1)) targetLast =
+        true :=
+    concreteChainFiberAppend_compatible_of_last_input_trace_eq
+      (GoertzelLemma814.tauOrientAt
+        (frontierWordToChainWord (word ++ [orient])) (word.length - 1))
+      orient (GoertzelLemma814.chainStateAt pref (word.length - 1))
+      lastX targetLast hcompatibleX' hinputTarget
+  have hcompatibleTarget :
+      GoertzelLemma814.compatibleAdjacent
+        (GoertzelLemma814.tauOrientAt
+          (frontierWordToChainWord (word ++ [orient])) (word.length - 1))
+        (GoertzelLemma814.tauOrientAt
+          (frontierWordToChainWord (word ++ [orient])) word.length)
+        (GoertzelLemma814.chainStateAt pref (word.length - 1)) targetLast =
+        true := by
+    simpa [hright] using hcompatibleTarget'
+  exact concreteChainFiberAppend_mem_of_prefix_last
+    word orient hne key hpref htargetAll hcompatibleTarget
 
 def concreteChainFiberAppendFixedPrefixLastReachClosed : Prop :=
   ∀ (word : List GoertzelLemma818FrontierMode.TauOrient)
