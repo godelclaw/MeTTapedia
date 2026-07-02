@@ -26,6 +26,7 @@ inductive PNPRoadmapStage where
   | v13PhaseEScaled
   | v13RealRungOneAdaptiveRows
   | v13RealRungOneLinear
+  | v13RealRungOneQRowBound
   | v13RealRungOneRowObservers
   | v13RealRungOneStaticRows
   | v13ObserverLadder
@@ -193,6 +194,14 @@ def currentPNPRoadmap : List PNPRoadmapEntry :=
       itvLowerPercent := 91
       itvUpperPercent := 100
       obligation := "Use the adaptive branch-stability theorem: every realized non-blocked adaptive branch has paired correct and incorrect hidden witnesses. The remaining q-row theorem is the row-span counting bound for blocked branches." },
+    { stage := .v13RealRungOneQRowBound
+      proofNodeKey := "pnp.v13.real-rung-one.qrow-bound-assembly"
+      status := .openBackground
+      truthValue := ⟨100, 92⟩
+      progressPercent := 84
+      itvLowerPercent := 92
+      itvUpperPercent := 100
+      obligation := "Assemble the explicit q-row success bound: kernel-flip surcharge plus the single pinned span-counting obligation V13RealLinearAdaptiveRowSpanCountingBound imply success at most 1/2 + 2^q/2^m." },
     { stage := .v13ObserverLadder
       proofNodeKey := "pnp.v13.phase-e.observer-ladder-mark"
       status := .checked
@@ -456,6 +465,19 @@ theorem currentPNPRoadmap_records_v13_real_rung_one_adaptive_rows :
        itvUpperPercent := 100
        obligation :=
         "Use the adaptive branch-stability theorem: every realized non-blocked adaptive branch has paired correct and incorrect hidden witnesses. The remaining q-row theorem is the row-span counting bound for blocked branches." } :
+      PNPRoadmapEntry) ∈ currentPNPRoadmap := by
+  simp [currentPNPRoadmap]
+
+theorem currentPNPRoadmap_records_v13_real_rung_one_qrow_bound :
+    ({ stage := PNPRoadmapStage.v13RealRungOneQRowBound
+       proofNodeKey := "pnp.v13.real-rung-one.qrow-bound-assembly"
+       status := .openBackground
+       truthValue := ⟨100, 92⟩
+       progressPercent := 84
+       itvLowerPercent := 92
+       itvUpperPercent := 100
+       obligation :=
+        "Assemble the explicit q-row success bound: kernel-flip surcharge plus the single pinned span-counting obligation V13RealLinearAdaptiveRowSpanCountingBound imply success at most 1/2 + 2^q/2^m." } :
       PNPRoadmapEntry) ∈ currentPNPRoadmap := by
   simp [currentPNPRoadmap]
 

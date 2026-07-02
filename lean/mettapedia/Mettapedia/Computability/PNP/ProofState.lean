@@ -26,6 +26,7 @@ import Mettapedia.Computability.PNP.V13PhaseEConcrete
 import Mettapedia.Computability.PNP.V13PhaseEScaled
 import Mettapedia.Computability.PNP.V13RealRungOneAdaptiveRows
 import Mettapedia.Computability.PNP.V13RealRungOneLinear
+import Mettapedia.Computability.PNP.V13RealRungOneQRowBound
 import Mettapedia.Computability.PNP.V13RealRungOneRowObservers
 import Mettapedia.Computability.PNP.V13RealRungOneStaticRows
 import Mettapedia.Computability.PNP.WeaknessCalculus
@@ -1105,6 +1106,20 @@ theorem currentPNPV13RealRungOneAdaptiveRows_node :
   exact
     v13RealLinear_adaptiveBranch_correct_card_eq_incorrect_card_of_not_blocked
       observer A i₀ b hnot
+
+theorem currentPNPV13RealRungOneQRowBound_node :
+    (∀ {m q : Nat} {Seed : Type*} [Fintype Seed]
+      (E : V13RealLinearAdaptiveQRowExperiment m q Seed) (i₀ : Fin m),
+      V13RealLinearAdaptiveKernelFlipSurchargeBound E i₀ →
+        V13RealLinearAdaptiveRowSpanCountingBound E i₀ →
+          v13RealLinearAdaptiveQRowSuccess E i₀ ≤
+            (1 / 2 : Rat) + v13RealLinearQRowEpsilon q m) ∧
+      (∀ q m : Nat, 0 ≤ v13RealLinearQRowEpsilon q m) := by
+  exact
+    ⟨fun E i₀ hflip hcount =>
+        v13RealLinear_adaptive_qrow_success_bound_of_spanCounting
+          E i₀ hflip hcount,
+      v13RealLinear_qrow_epsilon_nonnegative⟩
 
 theorem currentPNPV13ObserverLadder_node :
     PhaseEScaledObserverLadderMark ∧

@@ -19,6 +19,7 @@ import Mettapedia.Computability.PNP.V13PhaseEConcreteRegression
 import Mettapedia.Computability.PNP.V13PhaseEScaledRegression
 import Mettapedia.Computability.PNP.V13RealRungOneAdaptiveRowsRegression
 import Mettapedia.Computability.PNP.V13RealRungOneLinearRegression
+import Mettapedia.Computability.PNP.V13RealRungOneQRowBoundRegression
 import Mettapedia.Computability.PNP.V13RealRungOneRowObserversRegression
 import Mettapedia.Computability.PNP.V13RealRungOneStaticRowsRegression
 import Mettapedia.Computability.PNP.WeaknessCalculusRegression
