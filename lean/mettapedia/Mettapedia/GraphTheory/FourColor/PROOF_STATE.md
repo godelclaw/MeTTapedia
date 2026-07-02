@@ -148,7 +148,12 @@ The standalone base-data half is now closed by
 `concreteChainFiberAppendQuotientFibrationParentRowsNonSingletonPrefixBaseDataClosed_of_prefix_root_star`:
 nonempty prefix fibers use the prefix fiber itself as the quotient base with a
 root-star parent-row certificate, and empty prefix fibers use the unit
-certificate.
+certificate.  Consequently
+`semanticFrontierStateSufficientForChain_of_append_quotient_parent_rows_structural`
+is the one-hypothesis split route from
+`concreteChainFiberAppendQuotientFibrationParentRowsNonSingletonPrefixStructuralClosed`
+to semantic sufficiency; the paired emitted-data route remains available when
+the structural fields are proved only for the matching emitted base data.
 A new prefix-fibration adapter,
 `concreteChainFiberAppendQuotientFibrationParentRowsNonSingletonPrefixBaseDataStructuralClosed_of_prefix_fibration`,
 builds that paired parent-row record from

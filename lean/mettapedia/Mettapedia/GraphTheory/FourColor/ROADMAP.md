@@ -256,8 +256,11 @@ the canonical prefix projection and a root-star parent-row certificate on the
 prefix fiber, while empty prefix fibers are handled vacuously.  The standalone
 base-data split is also closed directly by
 `concreteChainFiberAppendQuotientFibrationParentRowsNonSingletonPrefixBaseDataClosed_of_prefix_root_star`,
-so emitted finite data is no longer needed for that half of the split.  The
-semantic wrapper
+so emitted finite data is no longer needed for that half of the split.
+`semanticFrontierStateSufficientForChain_of_append_quotient_parent_rows_structural`
+is therefore the current one-hypothesis split route from
+`concreteChainFiberAppendQuotientFibrationParentRowsNonSingletonPrefixStructuralClosed`
+to semantic sufficiency.  The semantic wrapper
 `semanticFrontierStateSufficientForChain_of_append_quotient_parent_rows_prefix_fibration`
 records the same sufficient route through the parent-row quotient assembly.
 Do not force the full-prefix projection if it becomes the bottleneck:
