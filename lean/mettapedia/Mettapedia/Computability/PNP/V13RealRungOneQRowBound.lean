@@ -851,6 +851,18 @@ noncomputable instance v13RealLinearFunctionalFintype (m : Nat) :
         intro f g h
         exact DFunLike.ext f g (fun w => congrFun h w))
 
+theorem v13RealLinearFunctional_card (m : Nat) :
+    Fintype.card (F2Vec m →ₗ[ZMod 2] ZMod 2) = 2 ^ m := by
+  classical
+  calc
+    Fintype.card (F2Vec m →ₗ[ZMod 2] ZMod 2) =
+        Fintype.card (F2Vec m) := by
+      exact
+        Fintype.card_congr
+          ((Pi.basisFun (ZMod 2) (Fin m)).toDualEquiv.symm.toEquiv)
+    _ = 2 ^ m := by
+      simp [F2Vec]
+
 abbrev V13RealLinearRowFunctionalTable (m : Nat) :=
   Fin m → (F2Vec m →ₗ[ZMod 2] ZMod 2)
 
@@ -887,6 +899,38 @@ def V13RealLinearFunctionalTableTargetCosetHit {m : Nat}
     (rows : Finset (Fin m)) (i₀ row : Fin m) : Prop :=
   ∃ z ∈ V13RealLinearFunctionalTableRowsSpan table rows,
     v13RealLinearTargetFunctional i₀ = table row + z
+
+noncomputable instance {m : Nat}
+    (rows : Finset (Fin m)) (i₀ row : Fin m) :
+    Fintype
+      {table : V13RealLinearRowFunctionalTable m //
+        V13RealLinearFunctionalTableTargetCosetHit table rows i₀ row} := by
+  classical
+  infer_instance
+
+theorem v13RealLinearFunctionalTableRowsSpan_eq_of_eq_on_rows
+    {m : Nat} {table₀ table₁ : V13RealLinearRowFunctionalTable m}
+    {rows : Finset (Fin m)}
+    (heq : ∀ row : Fin m, row ∈ rows → table₀ row = table₁ row) :
+    V13RealLinearFunctionalTableRowsSpan table₀ rows =
+      V13RealLinearFunctionalTableRowsSpan table₁ rows := by
+  classical
+  unfold V13RealLinearFunctionalTableRowsSpan
+  congr 1
+  ext f
+  constructor
+  · intro hf
+    rcases hf with ⟨row, hrow⟩
+    refine ⟨row, ?_⟩
+    change table₁ row.1 = f
+    rw [← heq row.1 row.2]
+    exact hrow
+  · intro hf
+    rcases hf with ⟨row, hrow⟩
+    refine ⟨row, ?_⟩
+    change table₀ row.1 = f
+    rw [heq row.1 row.2]
+    exact hrow
 
 noncomputable def v13RealLinearFunctionalTableRowsSpanCombination
     {m : Nat} (table : V13RealLinearRowFunctionalTable m)
@@ -1019,6 +1063,178 @@ theorem v13RealLinearFunctionalTableTargetCoset_card_le
   (v13RealLinearFunctionalTableTargetCoset_card_le_span
     table rows i₀).trans
     (v13RealLinearFunctionalTableRowsSpan_card_le table rows)
+
+noncomputable def
+    v13RealLinearFunctionalTableFreshCosetHitSwitchToFun
+    {m : Nat} (rows : Finset (Fin m)) (i₀ row : Fin m)
+    (hrow : row ∉ rows)
+    (input :
+      {table : V13RealLinearRowFunctionalTable m //
+        V13RealLinearFunctionalTableTargetCosetHit table rows i₀ row} ×
+        (F2Vec m →ₗ[ZMod 2] ZMod 2)) :
+    (Σ table : V13RealLinearRowFunctionalTable m,
+      V13RealLinearFunctionalTableTargetCoset table rows i₀) := by
+  classical
+  let table : V13RealLinearRowFunctionalTable m := input.1.val
+  let replacement : F2Vec m →ₗ[ZMod 2] ZMod 2 := input.2
+  let table' : V13RealLinearRowFunctionalTable m :=
+    Function.update table row replacement
+  let z : F2Vec m →ₗ[ZMod 2] ZMod 2 :=
+    Classical.choose input.1.property
+  have hzspec := Classical.choose_spec input.1.property
+  have hzmem :
+      z ∈ V13RealLinearFunctionalTableRowsSpan table rows :=
+    hzspec.1
+  have htarget :
+      v13RealLinearTargetFunctional i₀ = table row + z :=
+    hzspec.2
+  have hspan :
+      V13RealLinearFunctionalTableRowsSpan table' rows =
+        V13RealLinearFunctionalTableRowsSpan table rows := by
+    apply v13RealLinearFunctionalTableRowsSpan_eq_of_eq_on_rows
+    intro r hr
+    have hne : r ≠ row := by
+      intro h
+      exact hrow (by simpa [h] using hr)
+    simp [table', hne]
+  let z' : V13RealLinearFunctionalTableRowsSpan table' rows :=
+    ⟨z, by
+      rw [hspan]
+      exact hzmem⟩
+  exact ⟨table', ⟨table row, ⟨z', htarget⟩⟩⟩
+
+noncomputable def
+    v13RealLinearFunctionalTableFreshCosetHitSwitch
+    {m : Nat} (rows : Finset (Fin m)) (i₀ row : Fin m)
+    (hrow : row ∉ rows) :
+    ({table : V13RealLinearRowFunctionalTable m //
+      V13RealLinearFunctionalTableTargetCosetHit table rows i₀ row} ×
+      (F2Vec m →ₗ[ZMod 2] ZMod 2)) ↪
+    (Σ table : V13RealLinearRowFunctionalTable m,
+      V13RealLinearFunctionalTableTargetCoset table rows i₀) where
+  toFun :=
+    v13RealLinearFunctionalTableFreshCosetHitSwitchToFun
+      rows i₀ row hrow
+  inj' := by
+    classical
+    intro input₀ input₁ h
+    rcases input₀ with ⟨hit₀, replacement₀⟩
+    rcases input₁ with ⟨hit₁, replacement₁⟩
+    have htable :
+        Function.update hit₀.val row replacement₀ =
+          Function.update hit₁.val row replacement₁ := by
+      simpa [v13RealLinearFunctionalTableFreshCosetHitSwitchToFun] using
+        congrArg Sigma.fst h
+    have hrowValue : hit₀.val row = hit₁.val row := by
+      simpa [v13RealLinearFunctionalTableFreshCosetHitSwitchToFun] using
+        congrArg
+          (fun out :
+            (Σ table : V13RealLinearRowFunctionalTable m,
+              V13RealLinearFunctionalTableTargetCoset table rows i₀) =>
+            (out.2.val : F2Vec m →ₗ[ZMod 2] ZMod 2))
+          h
+    apply Prod.ext
+    · apply Subtype.ext
+      funext r
+      by_cases hr : r = row
+      · subst r
+        exact hrowValue
+      · have happ := congrFun htable r
+        simpa [Function.update, hr] using happ
+    · have happ := congrFun htable row
+      simpa [Function.update] using happ
+
+theorem
+    v13RealLinearFunctionalTableTargetCosetHit_card_mul_functional_le
+    {m : Nat} (rows : Finset (Fin m)) (i₀ row : Fin m)
+    (hrow : row ∉ rows) :
+    Fintype.card
+        {table : V13RealLinearRowFunctionalTable m //
+          V13RealLinearFunctionalTableTargetCosetHit table rows i₀ row} *
+      Fintype.card (F2Vec m →ₗ[ZMod 2] ZMod 2) ≤
+    2 ^ rows.card * Fintype.card (V13RealLinearRowFunctionalTable m) := by
+  classical
+  let Hit :=
+    {table : V13RealLinearRowFunctionalTable m //
+      V13RealLinearFunctionalTableTargetCosetHit table rows i₀ row}
+  let TargetSigma :=
+    Σ table : V13RealLinearRowFunctionalTable m,
+      V13RealLinearFunctionalTableTargetCoset table rows i₀
+  have hleSwitch :
+      Fintype.card Hit *
+          Fintype.card (F2Vec m →ₗ[ZMod 2] ZMod 2) ≤
+        Fintype.card TargetSigma := by
+    have hle :=
+      Fintype.card_le_of_embedding
+        (v13RealLinearFunctionalTableFreshCosetHitSwitch
+          rows i₀ row hrow)
+    simpa [Hit, TargetSigma, Fintype.card_prod] using hle
+  have hsigma :
+      Fintype.card TargetSigma =
+        ∑ table : V13RealLinearRowFunctionalTable m,
+          Fintype.card
+            (V13RealLinearFunctionalTableTargetCoset table rows i₀) := by
+    rw [Fintype.card_sigma]
+  have hsum :
+      (∑ table : V13RealLinearRowFunctionalTable m,
+          Fintype.card
+            (V13RealLinearFunctionalTableTargetCoset table rows i₀)) ≤
+        ∑ _table : V13RealLinearRowFunctionalTable m, 2 ^ rows.card := by
+    apply Finset.sum_le_sum
+    intro table _htable
+    exact v13RealLinearFunctionalTableTargetCoset_card_le table rows i₀
+  calc
+    Fintype.card Hit *
+        Fintype.card (F2Vec m →ₗ[ZMod 2] ZMod 2) ≤
+        Fintype.card TargetSigma := hleSwitch
+    _ =
+        ∑ table : V13RealLinearRowFunctionalTable m,
+          Fintype.card
+            (V13RealLinearFunctionalTableTargetCoset table rows i₀) :=
+      hsigma
+    _ ≤ ∑ _table : V13RealLinearRowFunctionalTable m, 2 ^ rows.card :=
+      hsum
+    _ = Fintype.card (V13RealLinearRowFunctionalTable m) * 2 ^ rows.card := by
+      simp
+    _ = 2 ^ rows.card * Fintype.card (V13RealLinearRowFunctionalTable m) := by
+      rw [Nat.mul_comm]
+
+theorem
+    v13RealLinearFunctionalTableTargetCosetHit_card_mul_two_pow_le
+    {m : Nat} (rows : Finset (Fin m)) (i₀ row : Fin m)
+    (hrow : row ∉ rows) :
+    Fintype.card
+        {table : V13RealLinearRowFunctionalTable m //
+          V13RealLinearFunctionalTableTargetCosetHit table rows i₀ row} *
+      2 ^ m ≤
+    2 ^ rows.card * Fintype.card (V13RealLinearRowFunctionalTable m) := by
+  rw [← v13RealLinearFunctional_card m]
+  exact
+    v13RealLinearFunctionalTableTargetCosetHit_card_mul_functional_le
+      rows i₀ row hrow
+
+theorem
+    v13RealLinearFunctionalTableTargetCosetHit_card_mul_two_pow_le_of_rows_card_le
+    {m t : Nat} (rows : Finset (Fin m)) (i₀ row : Fin m)
+    (hrow : row ∉ rows) (hrows : rows.card ≤ t) :
+    Fintype.card
+        {table : V13RealLinearRowFunctionalTable m //
+          V13RealLinearFunctionalTableTargetCosetHit table rows i₀ row} *
+      2 ^ m ≤
+    2 ^ t * Fintype.card (V13RealLinearRowFunctionalTable m) := by
+  calc
+    Fintype.card
+        {table : V13RealLinearRowFunctionalTable m //
+          V13RealLinearFunctionalTableTargetCosetHit table rows i₀ row} *
+        2 ^ m ≤
+        2 ^ rows.card *
+          Fintype.card (V13RealLinearRowFunctionalTable m) :=
+      v13RealLinearFunctionalTableTargetCosetHit_card_mul_two_pow_le
+        rows i₀ row hrow
+    _ ≤ 2 ^ t * Fintype.card (V13RealLinearRowFunctionalTable m) :=
+      Nat.mul_le_mul_right
+        (Fintype.card (V13RealLinearRowFunctionalTable m))
+        (Nat.pow_le_pow_right (by norm_num : 0 < 2) hrows)
 
 noncomputable def V13RealLinearRowsFunctionalSpan {m : Nat}
     (A : V13F2LinearEquiv m) (rows : Finset (Fin m)) :
