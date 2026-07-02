@@ -728,6 +728,20 @@ structure ChainFiberAppendFibrationLift
       (chainFiberRootClosureStep word key)
       projection.prefixPoint
 
+structure ChainFiberAppendQuotientFibrationLift
+    (word : List GoertzelLemma818FrontierMode.TauOrient)
+    (orient : GoertzelLemma818FrontierMode.TauOrient)
+    (key : List GoertzelLemma814.LColor) : Type 1 where
+  Base : Type
+  baseStep : Base → Base → Prop
+  proj : ChainFiberPoint (word ++ [orient]) key → Base
+  fibration :
+    Fibration
+      (chainFiberRootClosureStep (word ++ [orient]) key)
+      baseStep
+      proj
+  baseConnected : Connected baseStep
+
 def concreteChainFiberAppendFibrationLiftClosed : Prop :=
   ∀ (word : List GoertzelLemma818FrontierMode.TauOrient)
     (orient : GoertzelLemma818FrontierMode.TauOrient),
@@ -758,6 +772,15 @@ def concreteChainFiberAppendFibrationOverProjectionClosed : Prop :=
               (chainFiberRootClosureStep (word ++ [orient]) key)
               (chainFiberRootClosureStep word key)
               projection.prefixPoint
+
+def concreteChainFiberAppendQuotientFibrationClosed : Prop :=
+  ∀ (word : List GoertzelLemma818FrontierMode.TauOrient)
+    (orient : GoertzelLemma818FrontierMode.TauOrient),
+    word ≠ [] →
+    Nonempty (ChainWordConcreteFibrationCertificate word) →
+      ∀ (key : List GoertzelLemma814.LColor),
+        key ∈ GoertzelLemma814.colorAssignments4 →
+          Nonempty (ChainFiberAppendQuotientFibrationLift word orient key)
 
 def concreteChainFiberAppendPrefixProjection
     (word : List GoertzelLemma818FrontierMode.TauOrient)
@@ -3156,6 +3179,18 @@ def ChainFiberFibrationCertificate.ofAppendLift
     fibration := lift.fibration
     baseConnected := prefixCert.connected }
 
+def ChainFiberFibrationCertificate.ofAppendQuotientLift
+    {word : List GoertzelLemma818FrontierMode.TauOrient}
+    {orient : GoertzelLemma818FrontierMode.TauOrient}
+    {key : List GoertzelLemma814.LColor}
+    (lift : ChainFiberAppendQuotientFibrationLift word orient key) :
+    ChainFiberFibrationCertificate (word ++ [orient]) key :=
+  { Base := lift.Base
+    baseStep := lift.baseStep
+    proj := lift.proj
+    fibration := lift.fibration
+    baseConnected := lift.baseConnected }
+
 theorem concreteChainFiberFibrationNonemptyTransferClosed_of_append_lift
     (hLift : concreteChainFiberAppendFibrationLiftClosed) :
     concreteChainFiberFibrationNonemptyTransferClosed := by
@@ -3164,6 +3199,13 @@ theorem concreteChainFiberFibrationNonemptyTransferClosed_of_append_lift
   rcases wordCert.fiberCertificate key hkey with ⟨prefixCert⟩
   rcases hLift word orient hne ⟨wordCert⟩ key hkey with ⟨lift⟩
   exact ⟨ChainFiberFibrationCertificate.ofAppendLift prefixCert lift⟩
+
+theorem concreteChainFiberFibrationNonemptyTransferClosed_of_append_quotient_fibration
+    (hLift : concreteChainFiberAppendQuotientFibrationClosed) :
+    concreteChainFiberFibrationNonemptyTransferClosed := by
+  intro word orient hne hcert key hkey
+  rcases hLift word orient hne hcert key hkey with ⟨lift⟩
+  exact ⟨ChainFiberFibrationCertificate.ofAppendQuotientLift lift⟩
 
 theorem concreteChainFiberFibrationNonemptyTransferClosed_of_projection_and_fibration
     (hProjection : concreteChainFiberAppendProjectionClosed)
@@ -3232,6 +3274,14 @@ theorem concreteChainAuditFibrationNonemptyTransferClosed_of_append_lift
   concreteChainAuditFibrationNonemptyTransferClosed_of_append_components
     concreteChainStatesGeneratedCompatible_ok
     (concreteChainFiberFibrationNonemptyTransferClosed_of_append_lift hLift)
+
+theorem concreteChainAuditFibrationNonemptyTransferClosed_of_append_quotient_fibration
+    (hLift : concreteChainFiberAppendQuotientFibrationClosed) :
+    concreteChainAuditFibrationNonemptyTransferClosed :=
+  concreteChainAuditFibrationNonemptyTransferClosed_of_append_components
+    concreteChainStatesGeneratedCompatible_ok
+    (concreteChainFiberFibrationNonemptyTransferClosed_of_append_quotient_fibration
+      hLift)
 
 theorem concreteChainAuditFibrationNonemptyTransferClosed_of_projection_and_fibration
     (hProjection : concreteChainFiberAppendProjectionClosed)
@@ -3429,6 +3479,17 @@ theorem chainAuditForFrontierWord_ok_of_append_lift
   chainAuditForFrontierWord_ok_of_concrete_singletons_and_nonempty_transfer
     hSeed
     (concreteChainAuditFibrationNonemptyTransferClosed_of_append_lift hLift)
+    word
+
+theorem chainAuditForFrontierWord_ok_of_append_quotient_fibration
+    (hSeed : concreteChainWordFibrationSingletonSeeds)
+    (hLift : concreteChainFiberAppendQuotientFibrationClosed)
+    (word : List GoertzelLemma818FrontierMode.TauOrient) :
+    chainAuditForFrontierWord word = true :=
+  chainAuditForFrontierWord_ok_of_concrete_singletons_and_nonempty_transfer
+    hSeed
+    (concreteChainAuditFibrationNonemptyTransferClosed_of_append_quotient_fibration
+      hLift)
     word
 
 theorem chainAuditForFrontierWord_ok_of_projection_and_fibration
@@ -3936,6 +3997,14 @@ theorem semanticFrontierStateSufficientForChain_of_append_lift
     semanticFrontierStateSufficientForChain targetAudit := by
   intro word _state _hstate _haudit
   exact chainAuditForFrontierWord_ok_of_append_lift
+    concreteChainWordFibrationSingletonSeeds_ok hLift word
+
+theorem semanticFrontierStateSufficientForChain_of_append_quotient_fibration
+    {targetAudit : RepresentativeSemanticTarget → Bool}
+    (hLift : concreteChainFiberAppendQuotientFibrationClosed) :
+    semanticFrontierStateSufficientForChain targetAudit := by
+  intro word _state _hstate _haudit
+  exact chainAuditForFrontierWord_ok_of_append_quotient_fibration
     concreteChainWordFibrationSingletonSeeds_ok hLift word
 
 theorem semanticFrontierStateSufficientForChain_of_prefix_fibration
