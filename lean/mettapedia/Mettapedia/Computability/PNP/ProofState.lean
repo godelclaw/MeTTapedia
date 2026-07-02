@@ -1316,11 +1316,32 @@ theorem currentPNPV13RealRungOneQRowBound_node :
               (v13RealLinearUniformCausalQRowExperiment observer) i₀) *
             2 ^ m ≤
           Fintype.card
-              (V13RealLinearUniformOneRowGeneratedCylinderIndex
+            (V13RealLinearUniformOneRowGeneratedCylinderIndex
                 observer.toAdaptive i₀) *
             Fintype.card
               (V13RealLinearAdaptiveQRowWorld m (V13F2LinearEquiv m))) ∧
+      (∀ {m : Nat} (observer : V13RealLinearAdaptiveRowObserver m 1)
+          (i₀ : Fin m),
+        Fintype.card
+            (V13RealLinearUniformOneRowGeneratedCylinderIndex
+              observer i₀) ≤
+          Fintype.card
+              (V13RealLinearUniformOneRowGeneratedRowIndex observer i₀) *
+            2) ∧
+      (V13RealLinearUniformCausalOneRowActiveRowIndexBound →
+        V13RealLinearUniformCausalOneRowActiveBitCylinderIndexBound) ∧
       (V13RealLinearUniformCausalOneRowActiveBitCylinderIndexBound →
+        ∀ {m : Nat} (observer : V13RealLinearCausalRowObserver m 1)
+          (i₀ : Fin m),
+          1 < m →
+            Fintype.card
+                (V13RealLinearAdaptiveQRowGenerated
+                  (v13RealLinearUniformCausalQRowExperiment observer) i₀) *
+                2 ^ m ≤
+              2 ^ 1 *
+                Fintype.card
+                  (V13RealLinearAdaptiveQRowWorld m (V13F2LinearEquiv m))) ∧
+      (V13RealLinearUniformCausalOneRowActiveRowIndexBound →
         ∀ {m : Nat} (observer : V13RealLinearCausalRowObserver m 1)
           (i₀ : Fin m),
           1 < m →
@@ -1514,9 +1535,16 @@ theorem currentPNPV13RealRungOneQRowBound_node :
       fun observer i₀ =>
         v13RealLinearUniformCausalOneRowGenerated_counting_by_activeBitCylinderIndex
           observer i₀,
+      fun observer i₀ =>
+        v13RealLinearUniformOneRowGeneratedCylinderIndex_card_le_rowIndex_mul_two
+          observer i₀,
+      V13RealLinearUniformCausalOneRowActiveBitCylinderIndexBound_of_rowIndexBound,
       fun hindex {m} observer i₀ hm =>
         v13RealLinearUniformCausalOneRowGenerated_counting_of_activeBitCylinderIndexBound
           hindex observer i₀ hm,
+      fun hrow {m} observer i₀ hm =>
+        v13RealLinearUniformCausalOneRowGenerated_counting_of_activeRowIndexBound
+          hrow observer i₀ hm,
       v13RealLinearUniformFixedTargetRowOccurrenceCountingBound_proved,
       v13RealLinearUniformRepresentativeFixedTargetRowOccurrenceCountingBound_proved,
       fun hcount {m} row i₀ =>
