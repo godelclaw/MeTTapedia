@@ -87,6 +87,13 @@ the tighter generated artifact interface: a finite base-node list, a cover
 proof, reversible base steps, and a root path for each listed node imply final
 sufficiency through
 `semanticFrontierStateSufficientForChain_of_append_quotient_listed_symmetric_root`.
+The parent-map variant
+`concreteChainFiberAppendQuotientFibrationParentMapFieldsClosed` is now the
+closest surface to the existing generated parent-tree audits: parent edges stay
+inside the listed quotient base, every row is stationary or a reversible base
+step, and a bounded parent iteration reaches the root.  It implies final
+sufficiency through
+`semanticFrontierStateSufficientForChain_of_append_quotient_parent_map`.
 
 `GoertzelLemma818SemanticProgress.lean` now records the checked semantic
 frontier after the completed `TTT` target.  It proves

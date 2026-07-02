@@ -189,6 +189,12 @@ matches generated spanning-forest output: a finite base-node list covers the
 quotient base, every listed node has a path to the root, and reversible base
 steps supply the reverse paths.  It implies final sufficiency via
 `semanticFrontierStateSufficientForChain_of_append_quotient_listed_symmetric_root`.
+The parent-map variant
+`concreteChainFiberAppendQuotientFibrationParentMapFieldsClosed` matches the
+existing generated parent-certificate style even more closely: parent edges
+stay within the listed quotient base, each row is stationary or a base step,
+and a bounded parent iteration reaches the root.  It implies final sufficiency via
+`semanticFrontierStateSufficientForChain_of_append_quotient_parent_map`.
 Thus finite per-input interface or trace-pair mobility can serve directly as
 base connectivity, while any necessary prefix motion is absorbed by the
 quotient base rather than forced through a fixed-prefix last-state invariant.
