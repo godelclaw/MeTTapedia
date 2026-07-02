@@ -1162,6 +1162,68 @@ theorem v13RealLinearNoTargetRowShear_rowFunctional_ne_activeTarget
     (v13RealLinear_mem_targetRows_iff A i₀ activeRow).1 htarget
   exact hw (hsame.trans (htargetFun w))
 
+theorem v13RealLinearRowsTranscript_singleton_eq_of_row_match
+    {m : Nat} (A B : V13F2LinearEquiv m) (x y : F2Vec m)
+    (row : Fin m)
+    (hfun : ∀ probe : F2Vec m, A.toEquiv probe row = B.toEquiv probe row)
+    (hbit : A.toEquiv x row = B.toEquiv y row) :
+    v13RealLinearRowsTranscript ({row} : Finset (Fin m))
+        (v13RealLinearPublicInput
+          ({ x := x, A := A } : V13RealLinearWorld m)) =
+      v13RealLinearRowsTranscript ({row} : Finset (Fin m))
+        (v13RealLinearPublicInput
+          ({ x := y, A := B } : V13RealLinearWorld m)) := by
+  classical
+  funext observed
+  rcases observed with ⟨observedRow, hobservedRow⟩
+  have hrow : observedRow = row := by
+    simpa using hobservedRow
+  subst observedRow
+  apply Prod.ext
+  · funext probe
+    exact hfun probe
+  · exact hbit
+
+theorem v13RealLinearNoTargetRowShear_bridgeTranscripts_of_row_matches
+    {m : Nat} (i₀ : Fin m) (hm : 1 < m)
+    (restX activeX bridgeX : F2Vec m)
+    (activeA bridgeA : V13F2LinearEquiv m)
+    (restRow activeRow : Fin m)
+    (hrestFun :
+      ∀ probe : F2Vec m,
+        (v13RealLinearNoTargetRowShear i₀ hm).toEquiv probe restRow =
+          bridgeA.toEquiv probe restRow)
+    (hrestBit :
+      (v13RealLinearNoTargetRowShear i₀ hm).toEquiv restX restRow =
+        bridgeA.toEquiv bridgeX restRow)
+    (hactiveFun :
+      ∀ probe : F2Vec m,
+        activeA.toEquiv probe activeRow = bridgeA.toEquiv probe activeRow)
+    (hactiveBit :
+      activeA.toEquiv activeX activeRow =
+        bridgeA.toEquiv bridgeX activeRow) :
+    v13RealLinearRowsTranscript ({restRow} : Finset (Fin m))
+        (v13RealLinearPublicInput
+          ({ x := restX, A := v13RealLinearNoTargetRowShear i₀ hm } :
+            V13RealLinearWorld m)) =
+      v13RealLinearRowsTranscript ({restRow} : Finset (Fin m))
+        (v13RealLinearPublicInput
+          ({ x := bridgeX, A := bridgeA } : V13RealLinearWorld m)) ∧
+    v13RealLinearRowsTranscript ({activeRow} : Finset (Fin m))
+        (v13RealLinearPublicInput
+          ({ x := activeX, A := activeA } : V13RealLinearWorld m)) =
+      v13RealLinearRowsTranscript ({activeRow} : Finset (Fin m))
+        (v13RealLinearPublicInput
+          ({ x := bridgeX, A := bridgeA } : V13RealLinearWorld m)) := by
+  constructor
+  · exact
+      v13RealLinearRowsTranscript_singleton_eq_of_row_match
+        (v13RealLinearNoTargetRowShear i₀ hm) bridgeA restX bridgeX
+        restRow hrestFun hrestBit
+  · exact
+      v13RealLinearRowsTranscript_singleton_eq_of_row_match
+        activeA bridgeA activeX bridgeX activeRow hactiveFun hactiveBit
+
 noncomputable def v13RealLinearFixedTargetRowOccurrenceZeroAtEmbedding
     {m : Nat} (row i₀ : Fin m) :
     V13RealLinearUniformFixedTargetRowOccurrence row i₀ ×
