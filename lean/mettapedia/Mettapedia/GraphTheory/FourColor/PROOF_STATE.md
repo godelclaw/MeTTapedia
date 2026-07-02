@@ -158,8 +158,13 @@ certificate over the prefix fiber; in the empty prefix-fiber case the structural
 fields are vacuous.  The wrapper
 `semanticFrontierStateSufficientForChain_of_append_quotient_parent_rows_prefix_fibration`
 names the resulting semantic route through the frozen parent-row quotient
-assembly.  This pins the remaining structural route to the existing
-prefix-fibration closure surface and keeps the parent-row quotient route frozen.
+assembly.  This is a sufficient adapter, but it should not replace the
+quotient-base route when the canonical full-prefix projection is too strong:
+the finite same-orientation successor check has 48 prefix tau states with no
+compatible next tau state in each same-orientation direction, while the mixed
+orientation directions have no such dead state.  Thus a final structural proof
+may need the generated or realized-prefix quotient base rather than a proof
+that every prefix point is liftable through the full-prefix projection.
 
 `GoertzelLemma818SemanticProgress.lean` now records the checked semantic
 frontier after the completed `TTT` target.  It proves

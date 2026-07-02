@@ -259,9 +259,12 @@ base-data split is also closed directly by
 so emitted finite data is no longer needed for that half of the split.  The
 semantic wrapper
 `semanticFrontierStateSufficientForChain_of_append_quotient_parent_rows_prefix_fibration`
-records the same route through the parent-row quotient assembly.  Thus the
-remaining structural work can stay focused on the existing prefix-fibration
-closure ingredients rather than opening another quotient route.
+records the same sufficient route through the parent-row quotient assembly.
+Do not force the full-prefix projection if it becomes the bottleneck:
+same-orientation appends have 48 tau states with no compatible next tau state
+in each same-orientation direction, while the mixed directions have none.  The
+generated or realized-prefix quotient base remains the right route when the
+full-prefix lift is too strong.
 The same-prefix closure side is now separated from prefix mobility:
 `concreteChainFiberAppendPrefixSelfLiftClosureClosed_of_lift` derives a closed
 appended representative over the current prefix from the lift-closure theorem
