@@ -2627,6 +2627,16 @@ def V13RealLinearAdaptiveQRowGeneratedTargetCoefficientFiber {m q : Nat}
     V13RealLinearRowsTargetCoefficient
       (E.sampleA seed) (E.branchRows (seed, x)) i₀
 
+/-- A fixed-map target-coefficient fiber cell after exposing the realized
+finite rowset.  The equality records that the hidden vector lands in this
+rowset cell for the causal branch actually selected by the public instance. -/
+def V13RealLinearAdaptiveQRowGeneratedTargetCoefficientRowsetCell {m q : Nat}
+    {Seed : Type*} (E : V13RealLinearAdaptiveQRowExperiment m q Seed)
+    (i₀ : Fin m) (seed : Seed) (rows : Finset (Fin m)) :=
+  {cert :
+      V13RealLinearAdaptiveQRowGeneratedTargetCoefficientFiber E i₀ seed //
+    E.branchRows (seed, cert.1) = rows}
+
 noncomputable instance {m q : Nat} {Seed : Type*} [Fintype Seed]
     (E : V13RealLinearAdaptiveQRowExperiment m q Seed) (i₀ : Fin m) :
     Fintype (V13RealLinearAdaptiveQRowGeneratedCoefficient E i₀) := by
@@ -2650,6 +2660,56 @@ noncomputable instance {m q : Nat} {Seed : Type*} [Fintype Seed]
   classical
   unfold V13RealLinearAdaptiveQRowGeneratedTargetCoefficientFiber
   infer_instance
+
+noncomputable instance {m q : Nat} {Seed : Type*} [Fintype Seed]
+    (E : V13RealLinearAdaptiveQRowExperiment m q Seed) (i₀ : Fin m)
+    (seed : Seed) (rows : Finset (Fin m)) :
+    Fintype
+      (V13RealLinearAdaptiveQRowGeneratedTargetCoefficientRowsetCell
+        E i₀ seed rows) := by
+  classical
+  unfold V13RealLinearAdaptiveQRowGeneratedTargetCoefficientRowsetCell
+  infer_instance
+
+noncomputable def
+    v13RealLinearAdaptiveQRowGeneratedTargetCoefficientFiberEquivSigmaRowsetCell
+    {m q : Nat} {Seed : Type*}
+    (E : V13RealLinearAdaptiveQRowExperiment m q Seed) (i₀ : Fin m)
+    (seed : Seed) :
+    V13RealLinearAdaptiveQRowGeneratedTargetCoefficientFiber E i₀ seed ≃
+      (Σ rows : Finset (Fin m),
+        V13RealLinearAdaptiveQRowGeneratedTargetCoefficientRowsetCell
+          E i₀ seed rows) where
+  toFun cert :=
+    ⟨E.branchRows (seed, cert.1), ⟨cert, rfl⟩⟩
+  invFun cell := by
+    rcases cell with ⟨rows, cell⟩
+    rcases cell with ⟨cert, hrows⟩
+    cases hrows
+    exact cert
+  left_inv cert := by
+    rfl
+  right_inv cell := by
+    rcases cell with ⟨rows, cell⟩
+    rcases cell with ⟨cert, hrows⟩
+    cases hrows
+    rfl
+
+theorem v13RealLinearAdaptiveQRowGeneratedTargetCoefficientFiber_card_eq_sum_rowsetCells
+    {m q : Nat} {Seed : Type*} [Fintype Seed]
+    (E : V13RealLinearAdaptiveQRowExperiment m q Seed) (i₀ : Fin m)
+    (seed : Seed) :
+    Fintype.card
+        (V13RealLinearAdaptiveQRowGeneratedTargetCoefficientFiber E i₀ seed) =
+      ∑ rows : Finset (Fin m),
+        Fintype.card
+          (V13RealLinearAdaptiveQRowGeneratedTargetCoefficientRowsetCell
+            E i₀ seed rows) := by
+  classical
+  rw [Fintype.card_congr
+    (v13RealLinearAdaptiveQRowGeneratedTargetCoefficientFiberEquivSigmaRowsetCell
+      E i₀ seed)]
+  rw [Fintype.card_sigma]
 
 noncomputable def
     v13RealLinearAdaptiveQRowGeneratedCoefficientFiberEquivTargetCoefficientFiber
@@ -3618,6 +3678,21 @@ def V13RealLinearUniformCausalTwoOrMoreTargetCoefficientFiberAverageBound :
         Fintype.card
           (V13RealLinearAdaptiveQRowGeneratedTargetCoefficientFiber
             (v13RealLinearUniformCausalQRowExperiment observer) i₀ A)) ≤
+      2 ^ q * Fintype.card (V13F2LinearEquiv m)
+
+/-- Rowset-cell version of the target-coefficient average hard core.  It
+keeps the branch type abstract and finite-splits only by the realized rowset,
+which is a finite value even when the causal branch type is not finite. -/
+def V13RealLinearUniformCausalTwoOrMoreTargetCoefficientRowsetAverageBound :
+    Prop :=
+  ∀ {m q : Nat} (observer : V13RealLinearCausalRowObserver m q)
+    (i₀ : Fin m),
+    1 < q → q < m →
+      (∑ A : V13F2LinearEquiv m,
+        ∑ rows : Finset (Fin m),
+          Fintype.card
+            (V13RealLinearAdaptiveQRowGeneratedTargetCoefficientRowsetCell
+              (v13RealLinearUniformCausalQRowExperiment observer) i₀ A rows)) ≤
       2 ^ q * Fintype.card (V13F2LinearEquiv m)
 
 theorem v13RealLinear_f2vec_card (m : Nat) :
@@ -6844,6 +6919,98 @@ theorem
       hcount)
 
 theorem
+    V13RealLinearUniformCausalTwoOrMoreTargetCoefficientRowsetAverageBound_of_targetCoefficientFiberAverage
+    (hcount :
+      V13RealLinearUniformCausalTwoOrMoreTargetCoefficientFiberAverageBound) :
+    V13RealLinearUniformCausalTwoOrMoreTargetCoefficientRowsetAverageBound := by
+  intro m q observer i₀ hqgt hqm
+  let E := v13RealLinearUniformCausalQRowExperiment observer
+  let Q := 2 ^ q
+  let S := Fintype.card (V13F2LinearEquiv m)
+  have hsum :
+      (∑ A : V13F2LinearEquiv m,
+        Fintype.card
+          (V13RealLinearAdaptiveQRowGeneratedTargetCoefficientFiber
+            E i₀ A)) ≤
+      Q * S := by
+    simpa [E, Q, S] using hcount observer i₀ hqgt hqm
+  calc
+    (∑ A : V13F2LinearEquiv m,
+        ∑ rows : Finset (Fin m),
+          Fintype.card
+            (V13RealLinearAdaptiveQRowGeneratedTargetCoefficientRowsetCell
+              E i₀ A rows)) =
+        ∑ A : V13F2LinearEquiv m,
+          Fintype.card
+            (V13RealLinearAdaptiveQRowGeneratedTargetCoefficientFiber
+              E i₀ A) := by
+      apply Finset.sum_congr rfl
+      intro A _
+      exact
+        (v13RealLinearAdaptiveQRowGeneratedTargetCoefficientFiber_card_eq_sum_rowsetCells
+          E i₀ A).symm
+    _ ≤ Q * S := hsum
+
+theorem
+    V13RealLinearUniformCausalTwoOrMoreTargetCoefficientFiberAverageBound_of_rowsetAverage
+    (hcount :
+      V13RealLinearUniformCausalTwoOrMoreTargetCoefficientRowsetAverageBound) :
+    V13RealLinearUniformCausalTwoOrMoreTargetCoefficientFiberAverageBound := by
+  intro m q observer i₀ hqgt hqm
+  let E := v13RealLinearUniformCausalQRowExperiment observer
+  let Q := 2 ^ q
+  let S := Fintype.card (V13F2LinearEquiv m)
+  have hsum :
+      (∑ A : V13F2LinearEquiv m,
+        ∑ rows : Finset (Fin m),
+          Fintype.card
+            (V13RealLinearAdaptiveQRowGeneratedTargetCoefficientRowsetCell
+              E i₀ A rows)) ≤
+      Q * S := by
+    simpa [E, Q, S] using hcount observer i₀ hqgt hqm
+  calc
+    (∑ A : V13F2LinearEquiv m,
+        Fintype.card
+          (V13RealLinearAdaptiveQRowGeneratedTargetCoefficientFiber
+            E i₀ A)) =
+        ∑ A : V13F2LinearEquiv m,
+          ∑ rows : Finset (Fin m),
+            Fintype.card
+              (V13RealLinearAdaptiveQRowGeneratedTargetCoefficientRowsetCell
+                E i₀ A rows) := by
+      apply Finset.sum_congr rfl
+      intro A _
+      exact
+        v13RealLinearAdaptiveQRowGeneratedTargetCoefficientFiber_card_eq_sum_rowsetCells
+          E i₀ A
+    _ ≤ Q * S := hsum
+
+theorem
+    V13RealLinearUniformCausalTwoOrMoreTargetCoefficientFiberAverageBound_iff_rowsetAverage :
+    V13RealLinearUniformCausalTwoOrMoreTargetCoefficientFiberAverageBound ↔
+      V13RealLinearUniformCausalTwoOrMoreTargetCoefficientRowsetAverageBound :=
+  ⟨V13RealLinearUniformCausalTwoOrMoreTargetCoefficientRowsetAverageBound_of_targetCoefficientFiberAverage,
+    V13RealLinearUniformCausalTwoOrMoreTargetCoefficientFiberAverageBound_of_rowsetAverage⟩
+
+theorem
+    V13RealLinearUniformCausalTwoOrMoreCoefficientCompressionBound_of_targetCoefficientRowsetAverage
+    (hcount :
+      V13RealLinearUniformCausalTwoOrMoreTargetCoefficientRowsetAverageBound) :
+    V13RealLinearUniformCausalTwoOrMoreCoefficientCompressionBound :=
+  V13RealLinearUniformCausalTwoOrMoreCoefficientCompressionBound_of_targetCoefficientFiberAverage
+    (V13RealLinearUniformCausalTwoOrMoreTargetCoefficientFiberAverageBound_of_rowsetAverage
+      hcount)
+
+theorem
+    V13RealLinearUniformCausalTwoOrMoreCompletionCountingBound_of_targetCoefficientRowsetAverage
+    (hcount :
+      V13RealLinearUniformCausalTwoOrMoreTargetCoefficientRowsetAverageBound) :
+    V13RealLinearUniformCausalTwoOrMoreCompletionCountingBound :=
+  V13RealLinearUniformCausalTwoOrMoreCompletionCountingBound_of_targetCoefficientFiberAverage
+    (V13RealLinearUniformCausalTwoOrMoreTargetCoefficientFiberAverageBound_of_rowsetAverage
+      hcount)
+
+theorem
     V13RealLinearUniformCausalTwoOrMoreCompletionCountingBound_of_fiberAverageCoefficient
     (hcount :
       V13RealLinearUniformCausalTwoOrMoreFiberAverageCoefficientBound) :
@@ -7008,6 +7175,19 @@ theorem
       (1 / 2 : Rat) + v13RealLinearQRowEpsilon q m :=
   v13RealLinear_uniform_causal_qrow_success_bound_of_twoOrMoreFiberAverageCoefficientBound
     (V13RealLinearUniformCausalTwoOrMoreFiberAverageCoefficientBound_of_targetCoefficientFiberAverage
+      hcount)
+    observer i₀
+
+theorem
+    v13RealLinear_uniform_causal_qrow_success_bound_of_twoOrMoreTargetCoefficientRowsetAverageBound
+    (hcount :
+      V13RealLinearUniformCausalTwoOrMoreTargetCoefficientRowsetAverageBound)
+    {m q : Nat} (observer : V13RealLinearCausalRowObserver m q)
+    (i₀ : Fin m) :
+    v13RealLinearUniformCausalQRowSuccess observer i₀ ≤
+      (1 / 2 : Rat) + v13RealLinearQRowEpsilon q m :=
+  v13RealLinear_uniform_causal_qrow_success_bound_of_twoOrMoreTargetCoefficientFiberAverageBound
+    (V13RealLinearUniformCausalTwoOrMoreTargetCoefficientFiberAverageBound_of_rowsetAverage
       hcount)
     observer i₀
 
