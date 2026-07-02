@@ -24,6 +24,7 @@ import Mettapedia.Computability.PNP.V13GaugeBufferedLockedInterface
 import Mettapedia.Computability.PNP.V13ObserverLadder
 import Mettapedia.Computability.PNP.V13PhaseEConcrete
 import Mettapedia.Computability.PNP.V13PhaseEScaled
+import Mettapedia.Computability.PNP.V13RealRungOneLinear
 import Mettapedia.Computability.PNP.WeaknessCalculus
 /-!
 # PNP proof state
@@ -1031,6 +1032,28 @@ theorem currentPNPV13PhaseEScaled_node :
       phaseEScaledObligationMap_all_familyInadmissible,
       phaseEScaled_familyInadmissible_publicTargetTag,
       phaseEScaled_all_mapped_obligations⟩
+
+theorem currentPNPV13RealRungOneLinear_node :
+    (∀ {m : Nat} (i₀ : Fin m) (omega : V13RealLinearWorld m),
+      v13RealLinearFullDecoder i₀ (v13RealLinearPublicInput omega) =
+        v13RealLinearTarget i₀ omega) ∧
+      (∀ {m : Nat} (i₀ : Fin m)
+        (omega₀ omega₁ : V13RealLinearWorld m),
+        v13RealLinearPublicInput omega₀ =
+          v13RealLinearPublicInput omega₁ →
+        v13RealLinearTarget i₀ omega₀ =
+          v13RealLinearTarget i₀ omega₁) ∧
+        (∀ {m : Nat} (i₀ spare : Fin m), spare ≠ i₀ →
+          ∀ coordinate : V13RealLinearPublicCoordinate m,
+            ¬ V13RealLinearCoordinateDeterminesTarget i₀ coordinate) := by
+  exact
+    ⟨fun i₀ omega =>
+        v13RealLinear_fullPublic_decodes_target i₀ omega,
+      fun i₀ omega₀ omega₁ hpublic =>
+        v13RealLinear_fullPublic_determines_target i₀ omega₀ omega₁ hpublic,
+      fun i₀ spare hspare =>
+        v13RealLinear_no_single_public_coordinate_determines_target_of_spare
+          i₀ spare hspare⟩
 
 theorem currentPNPV13ObserverLadder_node :
     PhaseEScaledObserverLadderMark ∧
