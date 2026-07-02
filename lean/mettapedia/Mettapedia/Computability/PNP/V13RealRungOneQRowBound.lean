@@ -115,6 +115,12 @@ def V13RealLinearRowsGenerateTarget {m : Nat}
     ∀ w : F2Vec m,
       v13RealLinearRowCombinationEval A rows coeff w = w i₀
 
+def V13RealLinearAdaptiveQRowExperiment.generated {m q : Nat}
+    {Seed : Type*} (E : V13RealLinearAdaptiveQRowExperiment m q Seed)
+    (i₀ : Fin m) (omega : V13RealLinearAdaptiveQRowWorld m Seed) : Prop :=
+  V13RealLinearRowsGenerateTarget
+    (E.sampleA omega.1) (E.branchRows omega) i₀
+
 def v13RealLinearRowFunctional {m : Nat}
     (A : V13F2LinearEquiv m) (row : Fin m) :
     F2Vec m →ₗ[ZMod 2] ZMod 2 :=
@@ -214,6 +220,16 @@ theorem v13RealLinear_rowsBlockTarget_iff_rowsGenerateTarget {m : Nat}
   ⟨v13RealLinear_rowsGenerateTarget_of_rowsBlockTarget A rows i₀,
     v13RealLinear_rowsBlockTarget_of_rowsGenerateTarget A rows i₀⟩
 
+theorem V13RealLinearAdaptiveQRowExperiment.blocked_iff_generated
+    {m q : Nat} {Seed : Type*}
+    (E : V13RealLinearAdaptiveQRowExperiment m q Seed) (i₀ : Fin m)
+    (omega : V13RealLinearAdaptiveQRowWorld m Seed) :
+    E.blocked i₀ omega ↔ E.generated i₀ omega := by
+  simpa [V13RealLinearAdaptiveQRowExperiment.blocked,
+    V13RealLinearAdaptiveQRowExperiment.generated] using
+    v13RealLinear_rowsBlockTarget_iff_rowsGenerateTarget
+      (E.sampleA omega.1) (E.branchRows omega) i₀
+
 def V13RealLinearAdaptiveQRowExperiment.correct {m q : Nat} {Seed : Type*}
     (E : V13RealLinearAdaptiveQRowExperiment m q Seed) (i₀ : Fin m)
     (omega : V13RealLinearAdaptiveQRowWorld m Seed) : Prop :=
@@ -226,6 +242,10 @@ def V13RealLinearAdaptiveQRowCorrect {m q : Nat} {Seed : Type*}
 def V13RealLinearAdaptiveQRowBlocked {m q : Nat} {Seed : Type*}
     (E : V13RealLinearAdaptiveQRowExperiment m q Seed) (i₀ : Fin m) :=
   {omega : V13RealLinearAdaptiveQRowWorld m Seed // E.blocked i₀ omega}
+
+def V13RealLinearAdaptiveQRowGenerated {m q : Nat} {Seed : Type*}
+    (E : V13RealLinearAdaptiveQRowExperiment m q Seed) (i₀ : Fin m) :=
+  {omega : V13RealLinearAdaptiveQRowWorld m Seed // E.generated i₀ omega}
 
 def V13RealLinearAdaptiveQRowIncorrect {m q : Nat} {Seed : Type*}
     (E : V13RealLinearAdaptiveQRowExperiment m q Seed) (i₀ : Fin m) :=
@@ -248,6 +268,13 @@ noncomputable instance {m q : Nat} {Seed : Type*} [Fintype Seed]
     Fintype (V13RealLinearAdaptiveQRowBlocked E i₀) := by
   classical
   unfold V13RealLinearAdaptiveQRowBlocked
+  infer_instance
+
+noncomputable instance {m q : Nat} {Seed : Type*} [Fintype Seed]
+    (E : V13RealLinearAdaptiveQRowExperiment m q Seed) (i₀ : Fin m) :
+    Fintype (V13RealLinearAdaptiveQRowGenerated E i₀) := by
+  classical
+  unfold V13RealLinearAdaptiveQRowGenerated
   infer_instance
 
 noncomputable instance {m q : Nat} {Seed : Type*} [Fintype Seed]
@@ -277,6 +304,39 @@ noncomputable def v13RealLinearAdaptiveQRowBlockedMass {m q : Nat}
     Rat :=
   (Fintype.card (V13RealLinearAdaptiveQRowBlocked E i₀) : Rat) /
     (Fintype.card (V13RealLinearAdaptiveQRowWorld m Seed) : Rat)
+
+noncomputable def v13RealLinearAdaptiveQRowGeneratedMass {m q : Nat}
+    {Seed : Type*} [Fintype Seed]
+    (E : V13RealLinearAdaptiveQRowExperiment m q Seed) (i₀ : Fin m) :
+    Rat :=
+  (Fintype.card (V13RealLinearAdaptiveQRowGenerated E i₀) : Rat) /
+    (Fintype.card (V13RealLinearAdaptiveQRowWorld m Seed) : Rat)
+
+noncomputable def v13RealLinearAdaptiveQRowBlockedGeneratedEquiv
+    {m q : Nat} {Seed : Type*}
+    (E : V13RealLinearAdaptiveQRowExperiment m q Seed) (i₀ : Fin m) :
+    V13RealLinearAdaptiveQRowBlocked E i₀ ≃
+      V13RealLinearAdaptiveQRowGenerated E i₀ where
+  toFun omega :=
+    ⟨omega.val,
+      (E.blocked_iff_generated i₀ omega.val).1 omega.property⟩
+  invFun omega :=
+    ⟨omega.val,
+      (E.blocked_iff_generated i₀ omega.val).2 omega.property⟩
+  left_inv omega := by
+    rfl
+  right_inv omega := by
+    rfl
+
+theorem v13RealLinearAdaptiveQRowBlockedMass_eq_generatedMass
+    {m q : Nat} {Seed : Type*} [Fintype Seed]
+    (E : V13RealLinearAdaptiveQRowExperiment m q Seed) (i₀ : Fin m) :
+    v13RealLinearAdaptiveQRowBlockedMass E i₀ =
+      v13RealLinearAdaptiveQRowGeneratedMass E i₀ := by
+  unfold v13RealLinearAdaptiveQRowBlockedMass
+  unfold v13RealLinearAdaptiveQRowGeneratedMass
+  rw [Fintype.card_congr
+    (v13RealLinearAdaptiveQRowBlockedGeneratedEquiv E i₀)]
 
 noncomputable def V13RealLinearAdaptiveQRowExperiment.branchFlipWitness
     {m q : Nat} {Seed : Type*}
@@ -600,12 +660,12 @@ def V13RealLinearAdaptiveRowSpanCountingBound {m q : Nat}
     {Seed : Type*} [Fintype Seed]
     (E : V13RealLinearAdaptiveQRowExperiment m q Seed) (i₀ : Fin m) :
     Prop :=
-  v13RealLinearAdaptiveQRowBlockedMass E i₀ ≤
+  v13RealLinearAdaptiveQRowGeneratedMass E i₀ ≤
     v13RealLinearQRowEpsilon q m
 
 /-- The single named pinned obligation: under the uniform sampler over all
-certified invertible maps, the realized branch is span-blocked with mass at
-most `2^q / 2^m`. -/
+certified invertible maps, the realized branch generates the target functional
+from its read rows with mass at most `2^q / 2^m`. -/
 def V13RealLinearUniformInvertibleRowSpanCountingBound {m q : Nat}
     (observer : V13RealLinearAdaptiveRowObserver m q) (i₀ : Fin m) : Prop :=
   V13RealLinearAdaptiveRowSpanCountingBound
@@ -666,6 +726,11 @@ theorem v13RealLinear_adaptive_qrow_success_bound_of_spanCounting
   unfold V13RealLinearAdaptiveRowSpanCountingBound at hcount
   have hflip := v13RealLinear_adaptiveKernelFlipSurchargeBound E i₀
   unfold V13RealLinearAdaptiveKernelFlipSurchargeBound at hflip
+  have hblocked :
+      v13RealLinearAdaptiveQRowBlockedMass E i₀ ≤
+        v13RealLinearQRowEpsilon q m := by
+    rw [v13RealLinearAdaptiveQRowBlockedMass_eq_generatedMass E i₀]
+    exact hcount
   linarith
 
 theorem v13RealLinear_uniform_adaptive_qrow_success_bound_of_spanCounting
