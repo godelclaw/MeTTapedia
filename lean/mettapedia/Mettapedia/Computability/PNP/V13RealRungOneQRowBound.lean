@@ -276,6 +276,19 @@ def v13RealLinearSequentialRowTraceOf {m q : Nat}
     V13RealLinearRowTrace m :=
   (v13RealLinearSequentialRowTranscriptOf observer publicInput).map Prod.fst
 
+def v13RealLinearSequentialRowPrefixTranscriptOf {m q : Nat}
+    (observer : V13RealLinearSequentialRowObserver m q)
+    (publicInput : V13RealLinearPublic m) (n : Nat) :
+    V13RealLinearSequentialRowTranscript m :=
+  v13RealLinearSequentialRowRunAux observer publicInput n []
+
+def v13RealLinearSequentialRowPrefixTraceOf {m q : Nat}
+    (observer : V13RealLinearSequentialRowObserver m q)
+    (publicInput : V13RealLinearPublic m) (n : Nat) :
+    V13RealLinearRowTrace m :=
+  (v13RealLinearSequentialRowPrefixTranscriptOf observer publicInput n).map
+    Prod.fst
+
 theorem v13RealLinearSequentialRowTranscriptRows_card_le_length
     {m : Nat} (transcript : V13RealLinearSequentialRowTranscript m) :
     (v13RealLinearSequentialRowTranscriptRows transcript).card ≤
@@ -299,6 +312,149 @@ theorem v13RealLinearSequentialRowRunAux_length
   | succ n ih =>
       simp [v13RealLinearSequentialRowRunAux, ih, Nat.add_assoc,
         Nat.add_comm]
+
+theorem v13RealLinearSequentialRowRunAux_add
+    {m q : Nat} (observer : V13RealLinearSequentialRowObserver m q)
+    (publicInput : V13RealLinearPublic m) (n k : Nat)
+    (transcript : V13RealLinearSequentialRowTranscript m) :
+    v13RealLinearSequentialRowRunAux observer publicInput (n + k)
+        transcript =
+      v13RealLinearSequentialRowRunAux observer publicInput k
+        (v13RealLinearSequentialRowRunAux observer publicInput n
+          transcript) := by
+  induction n generalizing transcript with
+  | zero =>
+      simp [v13RealLinearSequentialRowRunAux]
+  | succ n ih =>
+      have hnk : n + 1 + k = n + k + 1 := by omega
+      rw [hnk]
+      simp [v13RealLinearSequentialRowRunAux, ih]
+
+theorem v13RealLinearSequentialRowRunAux_eq_append
+    {m q : Nat} (observer : V13RealLinearSequentialRowObserver m q)
+    (publicInput : V13RealLinearPublic m) (n : Nat)
+    (transcript : V13RealLinearSequentialRowTranscript m) :
+    ∃ suffix : V13RealLinearSequentialRowTranscript m,
+      v13RealLinearSequentialRowRunAux observer publicInput n transcript =
+        transcript ++ suffix := by
+  induction n generalizing transcript with
+  | zero =>
+      exact ⟨[], by simp [v13RealLinearSequentialRowRunAux]⟩
+  | succ n ih =>
+      let row := observer.chooseRow transcript
+      rcases
+          ih (transcript ++
+            [(row, v13RealLinearRowView row publicInput)]) with
+        ⟨suffix, hsuffix⟩
+      refine
+        ⟨[(row, v13RealLinearRowView row publicInput)] ++ suffix, ?_⟩
+      simpa [v13RealLinearSequentialRowRunAux, row, List.append_assoc]
+        using hsuffix
+
+theorem v13RealLinearSequentialRowRunAux_take_initial
+    {m q : Nat} (observer : V13RealLinearSequentialRowObserver m q)
+    (publicInput : V13RealLinearPublic m) (n : Nat)
+    (transcript : V13RealLinearSequentialRowTranscript m) :
+    (v13RealLinearSequentialRowRunAux observer publicInput n transcript).take
+        transcript.length =
+      transcript := by
+  rcases
+      v13RealLinearSequentialRowRunAux_eq_append
+        observer publicInput n transcript with
+    ⟨suffix, hsuffix⟩
+  rw [hsuffix]
+  simp
+
+theorem v13RealLinearSequentialRowPrefixTranscriptOf_length
+    {m q : Nat} (observer : V13RealLinearSequentialRowObserver m q)
+    (publicInput : V13RealLinearPublic m) (n : Nat) :
+    (v13RealLinearSequentialRowPrefixTranscriptOf observer publicInput n).length =
+      n := by
+  simpa [v13RealLinearSequentialRowPrefixTranscriptOf] using
+    v13RealLinearSequentialRowRunAux_length observer publicInput n []
+
+theorem v13RealLinearSequentialRowPrefixTraceOf_length
+    {m q : Nat} (observer : V13RealLinearSequentialRowObserver m q)
+    (publicInput : V13RealLinearPublic m) (n : Nat) :
+    (v13RealLinearSequentialRowPrefixTraceOf observer publicInput n).length =
+      n := by
+  simp [v13RealLinearSequentialRowPrefixTraceOf,
+    v13RealLinearSequentialRowPrefixTranscriptOf_length]
+
+theorem v13RealLinearSequentialRowPrefixTranscriptRows_card_le
+    {m q : Nat} (observer : V13RealLinearSequentialRowObserver m q)
+    (publicInput : V13RealLinearPublic m) (n : Nat) :
+    (v13RealLinearSequentialRowTranscriptRows
+        (v13RealLinearSequentialRowPrefixTranscriptOf
+          observer publicInput n)).card ≤ n := by
+  simpa [v13RealLinearSequentialRowPrefixTranscriptOf_length] using
+    v13RealLinearSequentialRowTranscriptRows_card_le_length
+      (v13RealLinearSequentialRowPrefixTranscriptOf observer publicInput n)
+
+theorem v13RealLinearSequentialRowPrefixTranscriptOf_succ
+    {m q : Nat} (observer : V13RealLinearSequentialRowObserver m q)
+    (publicInput : V13RealLinearPublic m) (n : Nat) :
+    v13RealLinearSequentialRowPrefixTranscriptOf observer publicInput
+        (n + 1) =
+      v13RealLinearSequentialRowPrefixTranscriptOf observer publicInput n ++
+        [(observer.chooseRow
+            (v13RealLinearSequentialRowPrefixTranscriptOf
+              observer publicInput n),
+          v13RealLinearRowView
+            (observer.chooseRow
+              (v13RealLinearSequentialRowPrefixTranscriptOf
+                observer publicInput n))
+            publicInput)] := by
+  have hadd :=
+    v13RealLinearSequentialRowRunAux_add
+      observer publicInput n 1 []
+  simpa [v13RealLinearSequentialRowPrefixTranscriptOf,
+    v13RealLinearSequentialRowRunAux, Nat.add_comm] using hadd
+
+theorem v13RealLinearSequentialRowPrefixTraceOf_succ
+    {m q : Nat} (observer : V13RealLinearSequentialRowObserver m q)
+    (publicInput : V13RealLinearPublic m) (n : Nat) :
+    v13RealLinearSequentialRowPrefixTraceOf observer publicInput
+        (n + 1) =
+      v13RealLinearSequentialRowPrefixTraceOf observer publicInput n ++
+        [observer.chooseRow
+          (v13RealLinearSequentialRowPrefixTranscriptOf
+            observer publicInput n)] := by
+  simp [v13RealLinearSequentialRowPrefixTraceOf,
+    v13RealLinearSequentialRowPrefixTranscriptOf_succ]
+
+theorem v13RealLinearSequentialRowTranscriptOf_take_eq_prefix
+    {m q : Nat} (observer : V13RealLinearSequentialRowObserver m q)
+    (publicInput : V13RealLinearPublic m) {n : Nat} (hn : n ≤ q) :
+    (v13RealLinearSequentialRowTranscriptOf observer publicInput).take n =
+      v13RealLinearSequentialRowPrefixTranscriptOf
+        observer publicInput n := by
+  have hrun :
+      v13RealLinearSequentialRowRunAux observer publicInput q [] =
+        v13RealLinearSequentialRowRunAux observer publicInput (q - n)
+          (v13RealLinearSequentialRowRunAux observer publicInput n []) := by
+    have h :=
+      v13RealLinearSequentialRowRunAux_add
+        observer publicInput n (q - n) []
+    simpa [Nat.add_sub_of_le hn] using h
+  rw [v13RealLinearSequentialRowTranscriptOf,
+    v13RealLinearSequentialRowPrefixTranscriptOf, hrun]
+  simpa [v13RealLinearSequentialRowRunAux_length] using
+    v13RealLinearSequentialRowRunAux_take_initial
+      observer publicInput (q - n)
+      (v13RealLinearSequentialRowRunAux observer publicInput n [])
+
+theorem v13RealLinearSequentialRowTraceOf_take_eq_prefix
+    {m q : Nat} (observer : V13RealLinearSequentialRowObserver m q)
+    (publicInput : V13RealLinearPublic m) {n : Nat} (hn : n ≤ q) :
+    (v13RealLinearSequentialRowTraceOf observer publicInput).take n =
+      v13RealLinearSequentialRowPrefixTraceOf
+        observer publicInput n := by
+  rw [v13RealLinearSequentialRowTraceOf,
+    v13RealLinearSequentialRowPrefixTraceOf]
+  rw [← List.map_take]
+  rw [v13RealLinearSequentialRowTranscriptOf_take_eq_prefix observer
+    publicInput hn]
 
 theorem v13RealLinearSequentialRowTranscriptOf_length
     {m q : Nat} (observer : V13RealLinearSequentialRowObserver m q)
@@ -503,6 +659,20 @@ theorem v13RealLinearRowTracePrefixRows_card_le {m : Nat}
     _ ≤ n := by
       rw [List.length_take]
       exact Nat.min_le_left n trace.length
+
+theorem v13RealLinearSequentialRowTracePrefixRows_eq_prefixTranscriptRows
+    {m q : Nat} (observer : V13RealLinearSequentialRowObserver m q)
+    (publicInput : V13RealLinearPublic m) {n : Nat} (hn : n ≤ q) :
+    v13RealLinearRowTracePrefixRows
+        (v13RealLinearSequentialRowTraceOf observer publicInput) n =
+      v13RealLinearSequentialRowTranscriptRows
+        (v13RealLinearSequentialRowPrefixTranscriptOf
+          observer publicInput n) := by
+  unfold v13RealLinearRowTracePrefixRows
+  unfold v13RealLinearSequentialRowTranscriptRows
+  rw [v13RealLinearSequentialRowTraceOf_take_eq_prefix
+    observer publicInput hn]
+  rfl
 
 theorem v13RealLinearRowTracePrefixRows_succ {m : Nat}
     (trace : V13RealLinearRowTrace m) {t : Nat} (h : t < trace.length) :
