@@ -6337,6 +6337,46 @@ theorem V13RealLinearUniformCausalLowPositiveRowSpanCountingBound_iff_completion
   ⟨v13RealLinearUniformCausalLowPositiveCompletionCountingBound_of_rowSpanCounting,
     v13RealLinearUniformCausalLowPositiveRowSpanCountingBound_of_completionCounting⟩
 
+theorem
+    V13RealLinearUniformCausalLowPositiveRowSpanCountingBound_of_twoOrMore
+    (hcount :
+      ∀ {m q : Nat} (observer : V13RealLinearCausalRowObserver m q)
+        (i₀ : Fin m),
+        1 < q → q < m →
+          V13RealLinearUniformCausalRowSpanCountingBound observer i₀) :
+    V13RealLinearUniformCausalLowPositiveRowSpanCountingBound := by
+  intro m q observer i₀ hqpos hqm
+  by_cases hqle : q ≤ 1
+  · have hq : q = 1 := by omega
+    subst q
+    exact
+      v13RealLinearUniformCausalOneRowRowSpanCountingBound_proved
+        observer i₀ hqm
+  · exact hcount observer i₀ (by omega) hqm
+
+theorem
+    V13RealLinearUniformCausalLowPositiveCompletionCountingBound_of_twoOrMore
+    (hcount :
+      ∀ {m q : Nat} (observer : V13RealLinearCausalRowObserver m q)
+        (i₀ : Fin m),
+        1 < q → q < m →
+          Fintype.card
+              (V13RealLinearAdaptiveQRowGenerated
+                (v13RealLinearUniformCausalQRowExperiment observer) i₀) *
+            2 ^ m ≤
+          2 ^ q *
+            Fintype.card
+              (V13RealLinearAdaptiveQRowWorld m (V13F2LinearEquiv m))) :
+    V13RealLinearUniformCausalLowPositiveCompletionCountingBound := by
+  intro m q observer i₀ hqpos hqm
+  by_cases hqle : q ≤ 1
+  · have hq : q = 1 := by omega
+    subst q
+    exact
+      v13RealLinearUniformCausalOneRowGenerated_counting_proved
+        observer i₀ hqm
+  · exact hcount observer i₀ (by omega) hqm
+
 theorem v13RealLinear_uniform_causal_qrow_success_bound_of_lowPositiveSpanCounting
     (hcount : V13RealLinearUniformCausalLowPositiveRowSpanCountingBound)
     {m q : Nat} (observer : V13RealLinearCausalRowObserver m q)
@@ -6377,6 +6417,44 @@ theorem v13RealLinear_uniform_causal_qrow_success_bound_of_coefficientCounting
       (1 / 2 : Rat) + v13RealLinearQRowEpsilon q m :=
   v13RealLinear_uniform_causal_qrow_success_bound_of_completionCounting
     (v13RealLinearUniformCausalLowPositiveCompletionCountingBound_of_coefficientCounting
+      hcount)
+    observer i₀
+
+theorem
+    v13RealLinear_uniform_causal_qrow_success_bound_of_twoOrMoreSpanCounting
+    (hcount :
+      ∀ {m q : Nat} (observer : V13RealLinearCausalRowObserver m q)
+        (i₀ : Fin m),
+        1 < q → q < m →
+          V13RealLinearUniformCausalRowSpanCountingBound observer i₀)
+    {m q : Nat} (observer : V13RealLinearCausalRowObserver m q)
+    (i₀ : Fin m) :
+    v13RealLinearUniformCausalQRowSuccess observer i₀ ≤
+      (1 / 2 : Rat) + v13RealLinearQRowEpsilon q m :=
+  v13RealLinear_uniform_causal_qrow_success_bound_of_lowPositiveSpanCounting
+    (V13RealLinearUniformCausalLowPositiveRowSpanCountingBound_of_twoOrMore
+      hcount)
+    observer i₀
+
+theorem
+    v13RealLinear_uniform_causal_qrow_success_bound_of_twoOrMoreCompletionCounting
+    (hcount :
+      ∀ {m q : Nat} (observer : V13RealLinearCausalRowObserver m q)
+        (i₀ : Fin m),
+        1 < q → q < m →
+          Fintype.card
+              (V13RealLinearAdaptiveQRowGenerated
+                (v13RealLinearUniformCausalQRowExperiment observer) i₀) *
+            2 ^ m ≤
+          2 ^ q *
+            Fintype.card
+              (V13RealLinearAdaptiveQRowWorld m (V13F2LinearEquiv m)))
+    {m q : Nat} (observer : V13RealLinearCausalRowObserver m q)
+    (i₀ : Fin m) :
+    v13RealLinearUniformCausalQRowSuccess observer i₀ ≤
+      (1 / 2 : Rat) + v13RealLinearQRowEpsilon q m :=
+  v13RealLinear_uniform_causal_qrow_success_bound_of_completionCounting
+    (V13RealLinearUniformCausalLowPositiveCompletionCountingBound_of_twoOrMore
       hcount)
     observer i₀
 
