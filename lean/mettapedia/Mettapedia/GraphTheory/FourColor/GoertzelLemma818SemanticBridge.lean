@@ -467,6 +467,53 @@ structure ChainWordConcreteFibrationCertificate
       key ∈ GoertzelLemma814.colorAssignments4 →
       Nonempty (ChainFiberFibrationCertificate word key)
 
+def ChainWordConcreteFibrationCertificate.ofChainAudit
+    {word : List GoertzelLemma818FrontierMode.TauOrient}
+    (hAudit : chainAuditForFrontierWord word = true) :
+    ChainWordConcreteFibrationCertificate word := by
+  unfold chainAuditForFrontierWord GoertzelLemma814.chainLKRInAudit at hAudit
+  change ((concreteChainStates word).all
+      (GoertzelLemma814.compatibleChainStates (frontierWordToChainWord word)) &&
+    GoertzelLemma814.colorAssignments4.all (fun key =>
+      GoertzelLemma814.chainFiberConnected
+        (frontierWordToChainWord word) (concreteChainFiber word key))) = true
+    at hAudit
+  have hCompat :
+      (concreteChainStates word).all
+        (GoertzelLemma814.compatibleChainStates (frontierWordToChainWord word)) =
+          true := by
+    cases h :
+        (concreteChainStates word).all
+          (GoertzelLemma814.compatibleChainStates
+            (frontierWordToChainWord word)) with
+    | false =>
+        simp [h] at hAudit
+    | true =>
+        rfl
+  have hFiberAll :
+      GoertzelLemma814.colorAssignments4.all (fun key =>
+        GoertzelLemma814.chainFiberConnected
+          (frontierWordToChainWord word) (concreteChainFiber word key)) =
+        true := by
+    cases h :
+        (concreteChainStates word).all
+          (GoertzelLemma814.compatibleChainStates
+            (frontierWordToChainWord word)) with
+    | false =>
+        simp [h] at hAudit
+    | true =>
+        simpa [h] using hAudit
+  exact
+    { compatibleStates := hCompat
+      fiberCertificate := by
+        intro key hkey
+        have hFiber :
+            GoertzelLemma814.chainFiberConnected
+              (frontierWordToChainWord word) (concreteChainFiber word key) =
+              true :=
+          (List.all_eq_true.mp hFiberAll) key hkey
+        exact ⟨ChainFiberFibrationCertificate.ofChainFiberConnected hFiber⟩ }
+
 theorem chainFiberPoint_mem_rootClosure_of_concreteCertificate
     {word : List GoertzelLemma818FrontierMode.TauOrient}
     {key : List GoertzelLemma814.LColor}
@@ -907,6 +954,30 @@ def ChainFiberAppendQuotientFibrationParentRowsFields.ofPathRows
       rcases fields.liftStepRows x b hstep with ⟨y, cert⟩
       exact ⟨y.1, y.2, cert.reach⟩
     baseParentRowsSymmetricRooted := fields.baseParentRowsSymmetricRooted }
+
+def ChainFiberAppendQuotientFibrationParentRowsFields.ofConcreteAppend
+    {word : List GoertzelLemma818FrontierMode.TauOrient}
+    {orient : GoertzelLemma818FrontierMode.TauOrient}
+    {key : List GoertzelLemma814.LColor}
+    (hkey : key ∈ GoertzelLemma814.colorAssignments4)
+    (cert :
+      ChainWordConcreteFibrationCertificate (word ++ [orient])) :
+    ChainFiberAppendQuotientFibrationParentRowsFields word orient key :=
+  let baseStep : Unit → Unit → Prop := fun _ _ => True
+  { Base := Unit
+    baseDecidableEq := inferInstance
+    baseStep := baseStep
+    proj := fun _ => ()
+    fiberReach := by
+      intro x y _hproj
+      rcases cert.fiberCertificate key hkey with ⟨fiberCert⟩
+      exact fiberCert.connected x y
+    liftStep := by
+      intro x b _hstep
+      cases b
+      exact ⟨x, rfl, Reach.refl x⟩
+    baseParentRowsSymmetricRooted :=
+      unitParentRowsSymmetricRootedConnectedCertificate baseStep }
 
 def ChainFiberAppendQuotientFibrationParentMapFields.ofParentRows
     {word : List GoertzelLemma818FrontierMode.TauOrient}
@@ -3866,6 +3937,114 @@ theorem chainAuditForFrontierWord_ok_of_fiber_transfer
   chainAuditForFrontierWord_ok_of_concrete_transfer
     (concreteChainAuditFibrationTransferClosed_of_fiber hFiber)
     word
+
+theorem frontierWordToChainWord_baseCertifiedFrontierWord_eq
+    (w : BaseCertifiedWord) :
+    frontierWordToChainWord (baseCertifiedFrontierWord w) =
+      baseCertifiedChainWord w := by
+  cases w <;> rfl
+
+theorem chainAuditForBaseCertifiedFrontierWord_ok
+    (w : BaseCertifiedWord) :
+    chainAuditForFrontierWord (baseCertifiedFrontierWord w) = true := by
+  cases w
+  · simpa [chainAuditForFrontierWord, frontierWordToChainWord,
+      frontierOrientToChain, baseCertifiedFrontierWord,
+      baseCertifiedChainCertificateAudit] using
+      baseCertifiedChainCertificateAudit_ok BaseCertifiedWord.t
+  · simpa [chainAuditForFrontierWord, frontierWordToChainWord,
+      frontierOrientToChain, baseCertifiedFrontierWord,
+      baseCertifiedChainCertificateAudit] using
+      baseCertifiedChainCertificateAudit_ok BaseCertifiedWord.m
+  · simpa [chainAuditForFrontierWord, frontierWordToChainWord,
+      frontierOrientToChain, baseCertifiedFrontierWord,
+      baseCertifiedChainCertificateAudit,
+      GoertzelLemma818LengthTwoBase.lengthTwoOrientWord,
+      GoertzelLemma818CompositeCertificate.ttWord] using
+      baseCertifiedChainCertificateAudit_ok BaseCertifiedWord.tt
+  · simpa [chainAuditForFrontierWord, frontierWordToChainWord,
+      frontierOrientToChain, baseCertifiedFrontierWord,
+      baseCertifiedChainCertificateAudit,
+      GoertzelLemma818LengthTwoBase.lengthTwoOrientWord,
+      GoertzelLemma818TauMirrorCertificate.tmWord] using
+      baseCertifiedChainCertificateAudit_ok BaseCertifiedWord.tm
+  · simpa [chainAuditForFrontierWord, frontierWordToChainWord,
+      frontierOrientToChain, baseCertifiedFrontierWord,
+      baseCertifiedChainCertificateAudit,
+      GoertzelLemma818LengthTwoBase.lengthTwoOrientWord,
+      GoertzelLemma818MirrorTauCertificate.mtWord] using
+      baseCertifiedChainCertificateAudit_ok BaseCertifiedWord.mt
+  · simpa [chainAuditForFrontierWord, frontierWordToChainWord,
+      frontierOrientToChain, baseCertifiedFrontierWord,
+      baseCertifiedChainCertificateAudit,
+      GoertzelLemma818LengthTwoBase.lengthTwoOrientWord,
+      GoertzelLemma818MirrorMirrorCertificate.mmWord] using
+      baseCertifiedChainCertificateAudit_ok BaseCertifiedWord.mm
+
+def concreteChainWordFibrationBaseCertifiedSeeds : Prop :=
+  ∀ w : BaseCertifiedWord,
+    Nonempty
+      (ChainWordConcreteFibrationCertificate (baseCertifiedFrontierWord w))
+
+theorem concreteChainWordFibrationBaseCertifiedSeeds_ok :
+    concreteChainWordFibrationBaseCertifiedSeeds := by
+  intro w
+  exact ⟨ChainWordConcreteFibrationCertificate.ofChainAudit
+    (chainAuditForBaseCertifiedFrontierWord_ok w)⟩
+
+def concreteChainWordFibrationLengthTwoSeeds : Prop :=
+  ∀ w : GoertzelLemma818LengthTwoBase.LengthTwoOrientWord,
+    Nonempty
+      (ChainWordConcreteFibrationCertificate
+        (GoertzelLemma818FrontierBaseBridge.lengthTwoFrontierWord w))
+
+theorem concreteChainWordFibrationLengthTwoSeeds_ok :
+    concreteChainWordFibrationLengthTwoSeeds := by
+  intro w
+  cases w
+  · simpa [GoertzelLemma818FrontierBaseBridge.lengthTwoFrontierWord,
+      baseCertifiedFrontierWord] using
+      concreteChainWordFibrationBaseCertifiedSeeds_ok BaseCertifiedWord.tt
+  · simpa [GoertzelLemma818FrontierBaseBridge.lengthTwoFrontierWord,
+      baseCertifiedFrontierWord] using
+      concreteChainWordFibrationBaseCertifiedSeeds_ok BaseCertifiedWord.tm
+  · simpa [GoertzelLemma818FrontierBaseBridge.lengthTwoFrontierWord,
+      baseCertifiedFrontierWord] using
+      concreteChainWordFibrationBaseCertifiedSeeds_ok BaseCertifiedWord.mt
+  · simpa [GoertzelLemma818FrontierBaseBridge.lengthTwoFrontierWord,
+      baseCertifiedFrontierWord] using
+      concreteChainWordFibrationBaseCertifiedSeeds_ok BaseCertifiedWord.mm
+
+def concreteChainFiberAppendQuotientFibrationParentRowsLengthTwoSeeds : Prop :=
+  ∀ (orient next : GoertzelLemma818FrontierMode.TauOrient)
+    (key : List GoertzelLemma814.LColor),
+    key ∈ GoertzelLemma814.colorAssignments4 →
+      Nonempty
+        (ChainFiberAppendQuotientFibrationParentRowsFields
+          [orient] next key)
+
+theorem concreteChainFiberAppendQuotientFibrationParentRowsLengthTwoSeeds_ok :
+    concreteChainFiberAppendQuotientFibrationParentRowsLengthTwoSeeds := by
+  intro orient next key hkey
+  have hcert :
+      Nonempty
+        (ChainWordConcreteFibrationCertificate ([orient] ++ [next])) := by
+    cases orient <;> cases next
+    · simpa [GoertzelLemma818FrontierBaseBridge.lengthTwoFrontierWord] using
+        concreteChainWordFibrationLengthTwoSeeds_ok
+          GoertzelLemma818LengthTwoBase.LengthTwoOrientWord.tt
+    · simpa [GoertzelLemma818FrontierBaseBridge.lengthTwoFrontierWord] using
+        concreteChainWordFibrationLengthTwoSeeds_ok
+          GoertzelLemma818LengthTwoBase.LengthTwoOrientWord.tm
+    · simpa [GoertzelLemma818FrontierBaseBridge.lengthTwoFrontierWord] using
+        concreteChainWordFibrationLengthTwoSeeds_ok
+          GoertzelLemma818LengthTwoBase.LengthTwoOrientWord.mt
+    · simpa [GoertzelLemma818FrontierBaseBridge.lengthTwoFrontierWord] using
+        concreteChainWordFibrationLengthTwoSeeds_ok
+          GoertzelLemma818LengthTwoBase.LengthTwoOrientWord.mm
+  rcases hcert with ⟨cert⟩
+  exact ⟨ChainFiberAppendQuotientFibrationParentRowsFields.ofConcreteAppend
+    hkey cert⟩
 
 def concreteChainWordFibrationSingletonSeeds : Prop :=
   ∀ orient : GoertzelLemma818FrontierMode.TauOrient,
