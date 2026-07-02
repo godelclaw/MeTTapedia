@@ -1292,6 +1292,101 @@ theorem v13RealLinearNoTargetRowShear_exists_bridgeX_for_row_target_bits
         bridgeX, hrow]
     · simp [bridgeX]
 
+def v13RealLinearNoTargetHardBridgeMap {m : Nat}
+    (i₀ : Fin m) (hm : 1 < m) (activeRow : Fin m)
+    (hactive : activeRow ≠ i₀) : V13F2LinearEquiv m :=
+  let τ : Equiv.Perm (Fin m) :=
+    (Equiv.swap activeRow i₀).trans
+      (Equiv.swap activeRow (v13FinSpare i₀ hm))
+  let P : V13F2LinearEquiv m := v13RealLinearPerm τ.symm
+  let K : V13F2LinearEquiv m :=
+    v13RealLinearZeroAtRowShear i₀
+      ⟨v13RealLinearSingleBit activeRow, by
+        have hne : i₀ ≠ activeRow := fun h => hactive h.symm
+        simp [v13RealLinearSingleBit, hne]⟩
+  v13RealLinearComp K P
+
+theorem v13RealLinearNoTargetHardBridgeMap_activeRow
+    {m : Nat} (i₀ : Fin m) (hm : 1 < m) (activeRow : Fin m)
+    (hactive : activeRow ≠ i₀) (w : F2Vec m) :
+    (v13RealLinearNoTargetHardBridgeMap i₀ hm activeRow hactive).toEquiv
+        w activeRow =
+      w i₀ := by
+  have hiActive : i₀ ≠ activeRow := fun h => hactive h.symm
+  have hiSpare : i₀ ≠ v13FinSpare i₀ hm :=
+    fun h => v13FinSpare_ne i₀ hm h.symm
+  simp [v13RealLinearNoTargetHardBridgeMap, v13RealLinearComp,
+    v13RealLinearPerm, v13RealLinearZeroAtRowShear,
+    v13RealLinearZeroAtShearSum_singleBit, hactive, hiActive, hiSpare,
+    Equiv.swap_apply_def]
+
+theorem v13RealLinearNoTargetHardBridgeMap_targetRow
+    {m : Nat} (i₀ : Fin m) (hm : 1 < m) (activeRow : Fin m)
+    (hactive : activeRow ≠ i₀) (w : F2Vec m) :
+    (v13RealLinearNoTargetHardBridgeMap i₀ hm activeRow hactive).toEquiv
+        w i₀ =
+      (v13RealLinearNoTargetRowShear i₀ hm).toEquiv w i₀ := by
+  classical
+  let spare := v13FinSpare i₀ hm
+  have hspare : spare ≠ i₀ := by
+    simpa [spare] using v13FinSpare_ne i₀ hm
+  have hsum :
+      v13RealLinearZeroAtShearSum i₀
+          (⟨v13RealLinearSingleBit spare, by
+            have hne' : i₀ ≠ spare := fun h => hspare h.symm
+            simp [v13RealLinearSingleBit, hne']⟩ :
+            V13RealLinearZeroAt i₀) w =
+        w spare := by
+    exact v13RealLinearZeroAtShearSum_singleBit hspare w
+  have hiActive : i₀ ≠ activeRow := fun h => hactive h.symm
+  have hiSpare : i₀ ≠ v13FinSpare i₀ hm :=
+    fun h => v13FinSpare_ne i₀ hm h.symm
+  simp [v13RealLinearNoTargetHardBridgeMap, v13RealLinearNoTargetRowShear,
+    v13RealLinearComp, v13RealLinearPerm, v13RealLinearZeroAtRowShear,
+    v13RealLinearZeroAtShearSum_singleBit, hactive, hiActive, hiSpare,
+    spare, hsum, Equiv.swap_apply_def]
+  ring
+
+theorem v13RealLinearNoTargetRowShear_exists_bridgeMap_for_rows
+    {m : Nat} (i₀ : Fin m) (hm : 1 < m)
+    (restRow activeRow : Fin m) (hneq : activeRow ≠ restRow) :
+    ∃ bridgeA : V13F2LinearEquiv m,
+      (∀ probe : F2Vec m,
+        (v13RealLinearNoTargetRowShear i₀ hm).toEquiv probe restRow =
+          bridgeA.toEquiv probe restRow) ∧
+      (∀ probe : F2Vec m,
+        bridgeA.toEquiv probe activeRow = probe i₀) := by
+  classical
+  by_cases hrest : restRow = i₀
+  · subst restRow
+    have hactive : activeRow ≠ i₀ := hneq
+    refine
+      ⟨v13RealLinearNoTargetHardBridgeMap i₀ hm activeRow hactive, ?_, ?_⟩
+    · intro probe
+      exact
+        (v13RealLinearNoTargetHardBridgeMap_targetRow
+          i₀ hm activeRow hactive probe).symm
+    · intro probe
+      exact
+        v13RealLinearNoTargetHardBridgeMap_activeRow
+          i₀ hm activeRow hactive probe
+  · by_cases hactive : activeRow = i₀
+    · subst activeRow
+      refine ⟨v13RealLinearIdentity m, ?_, ?_⟩
+      · intro probe
+        simp [v13RealLinearNoTargetRowShear, v13RealLinearZeroAtRowShear,
+          v13RealLinearIdentity, hrest]
+      · intro probe
+        simp [v13RealLinearIdentity]
+    · refine
+        ⟨v13RealLinearPerm (Equiv.swap activeRow i₀), ?_, ?_⟩
+      · intro probe
+        have hrestActive : restRow ≠ activeRow := fun h => hneq h.symm
+        simp [v13RealLinearNoTargetRowShear, v13RealLinearZeroAtRowShear,
+          v13RealLinearPerm, hrest, hrestActive, Equiv.swap_apply_def]
+      · intro probe
+        simp [v13RealLinearPerm, Equiv.swap_apply_def]
+
 noncomputable def v13RealLinearFixedTargetRowOccurrenceZeroAtEmbedding
     {m : Nat} (row i₀ : Fin m) :
     V13RealLinearUniformFixedTargetRowOccurrence row i₀ ×
@@ -3955,6 +4050,56 @@ theorem v13RealLinearNoTargetRowShear_branchRows_ne_of_activeRowIndex_of_bridgeM
       i₀ hm x active.2 bridgeX active.1 bridgeA restRow activeRow.val
       hrestFun hrestBit hactiveFun hactiveBit
 
+theorem v13RealLinearNoTargetRowShear_branchRows_ne_of_activeRowIndex
+    {m : Nat} (observer : V13RealLinearCausalRowObserver m 1)
+    (i₀ : Fin m) (hm : 1 < m) (x : F2Vec m)
+    (activeRow :
+      V13RealLinearUniformOneRowGeneratedRowIndex observer.toAdaptive i₀)
+    (restRow : Fin m)
+    (hneq : activeRow.val ≠ restRow) :
+    (v13RealLinearUniformCausalQRowExperiment observer).branchRows
+        (v13RealLinearNoTargetRowShear i₀ hm, x) ≠
+      ({restRow} : Finset (Fin m)) := by
+  classical
+  refine
+    v13RealLinearNoTargetRowShear_branchRows_ne_of_activeRowIndex_of_bridgeMapFamily
+      observer i₀ hm x activeRow restRow hneq ?_
+  intro active _hactiveRows htarget
+  let bridgeExists :=
+    v13RealLinearNoTargetRowShear_exists_bridgeMap_for_rows
+      i₀ hm restRow activeRow.val hneq
+  let bridgeA : V13F2LinearEquiv m := Classical.choose bridgeExists
+  have hbridgeA :
+      (∀ probe : F2Vec m,
+        (v13RealLinearNoTargetRowShear i₀ hm).toEquiv probe restRow =
+          bridgeA.toEquiv probe restRow) ∧
+      (∀ probe : F2Vec m,
+        bridgeA.toEquiv probe activeRow.val = probe i₀) :=
+    Classical.choose_spec bridgeExists
+  have hrestFun :
+      ∀ probe : F2Vec m,
+        (v13RealLinearNoTargetRowShear i₀ hm).toEquiv probe restRow =
+          bridgeA.toEquiv probe restRow :=
+    hbridgeA.1
+  have hactiveTargetFun :
+      ∀ probe : F2Vec m,
+        bridgeA.toEquiv probe activeRow.val = probe i₀ :=
+    hbridgeA.2
+  refine ⟨bridgeA, hrestFun, ?_⟩
+  intro probe
+  have htargetFun :
+      active.1.toEquiv probe activeRow.val = probe i₀ :=
+    (v13RealLinear_mem_targetRows_iff active.1 i₀ activeRow.val).1
+      htarget probe
+  exact htargetFun.trans (hactiveTargetFun probe).symm
+
+theorem V13RealLinearUniformCausalOneRowNoTargetRestMismatchExclusion_proved :
+    V13RealLinearUniformCausalOneRowNoTargetRestMismatchExclusion := by
+  intro m observer i₀ hm x activeRow restRow hneq
+  exact
+    v13RealLinearNoTargetRowShear_branchRows_ne_of_activeRowIndex
+      observer i₀ hm x activeRow restRow hneq
+
 theorem v13RealLinearSwapShear10_branchRows_ne_empty_of_activeRowIndex
     (observer : V13RealLinearCausalRowObserver 2 1) (x : F2Vec 2)
     (activeRow :
@@ -5024,6 +5169,52 @@ theorem
   v13RealLinear_uniform_causal_one_row_success_bound_of_activeRowPairExclusion
     (V13RealLinearUniformCausalOneRowActiveRowPairExclusion_of_noTargetRestMismatch
       hmismatch)
+    observer i₀ hm
+
+theorem V13RealLinearUniformCausalOneRowActiveRowPairExclusion_proved :
+    V13RealLinearUniformCausalOneRowActiveRowPairExclusion :=
+  V13RealLinearUniformCausalOneRowActiveRowPairExclusion_of_noTargetRestMismatch
+    V13RealLinearUniformCausalOneRowNoTargetRestMismatchExclusion_proved
+
+theorem V13RealLinearUniformCausalOneRowActiveRowIndexBound_proved :
+    V13RealLinearUniformCausalOneRowActiveRowIndexBound :=
+  V13RealLinearUniformCausalOneRowActiveRowIndexBound_of_noTargetRestMismatch
+    V13RealLinearUniformCausalOneRowNoTargetRestMismatchExclusion_proved
+
+theorem V13RealLinearUniformCausalOneRowActiveBitCylinderIndexBound_proved :
+    V13RealLinearUniformCausalOneRowActiveBitCylinderIndexBound :=
+  V13RealLinearUniformCausalOneRowActiveBitCylinderIndexBound_of_noTargetRestMismatch
+    V13RealLinearUniformCausalOneRowNoTargetRestMismatchExclusion_proved
+
+theorem v13RealLinearUniformCausalOneRowGenerated_counting_proved
+    {m : Nat} (observer : V13RealLinearCausalRowObserver m 1)
+    (i₀ : Fin m) (hm : 1 < m) :
+    Fintype.card
+        (V13RealLinearAdaptiveQRowGenerated
+          (v13RealLinearUniformCausalQRowExperiment observer) i₀) *
+        2 ^ m ≤
+      2 ^ 1 *
+        Fintype.card
+          (V13RealLinearAdaptiveQRowWorld m (V13F2LinearEquiv m)) :=
+  v13RealLinearUniformCausalOneRowGenerated_counting_of_noTargetRestMismatch
+    V13RealLinearUniformCausalOneRowNoTargetRestMismatchExclusion_proved
+    observer i₀ hm
+
+theorem v13RealLinearUniformCausalOneRowRowSpanCountingBound_proved
+    {m : Nat} (observer : V13RealLinearCausalRowObserver m 1)
+    (i₀ : Fin m) (hm : 1 < m) :
+    V13RealLinearUniformCausalRowSpanCountingBound observer i₀ :=
+  v13RealLinearUniformCausalOneRowRowSpanCountingBound_of_noTargetRestMismatch
+    V13RealLinearUniformCausalOneRowNoTargetRestMismatchExclusion_proved
+    observer i₀ hm
+
+theorem v13RealLinear_uniform_causal_one_row_success_bound
+    {m : Nat} (observer : V13RealLinearCausalRowObserver m 1)
+    (i₀ : Fin m) (hm : 1 < m) :
+    v13RealLinearUniformCausalQRowSuccess observer i₀ ≤
+      (1 / 2 : Rat) + v13RealLinearQRowEpsilon 1 m :=
+  v13RealLinear_uniform_causal_one_row_success_bound_of_noTargetRestMismatch
+    V13RealLinearUniformCausalOneRowNoTargetRestMismatchExclusion_proved
     observer i₀ hm
 
 theorem
