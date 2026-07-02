@@ -3504,6 +3504,19 @@ def V13RealLinearUniformCausalTwoOrMoreCoefficientCompressionBound : Prop :=
             (v13RealLinearUniformCausalQRowExperiment observer) i₀) ≤
       2 ^ q * Fintype.card (V13F2LinearEquiv m)
 
+/-- Average-fiber residual coefficient form.  The pointwise fixed-map fiber
+bound is too strong, but the compressed hard core is exactly the statement that
+the fixed-map coefficient fibers have average size at most `2^q`. -/
+def V13RealLinearUniformCausalTwoOrMoreFiberAverageCoefficientBound : Prop :=
+  ∀ {m q : Nat} (observer : V13RealLinearCausalRowObserver m q)
+    (i₀ : Fin m),
+    1 < q → q < m →
+      (∑ A : V13F2LinearEquiv m,
+        Fintype.card
+          (V13RealLinearAdaptiveQRowGeneratedCoefficientFiber
+            (v13RealLinearUniformCausalQRowExperiment observer) i₀ A)) ≤
+      2 ^ q * Fintype.card (V13F2LinearEquiv m)
+
 theorem v13RealLinear_f2vec_card (m : Nat) :
     Fintype.card (F2Vec m) = 2 ^ m := by
   classical
@@ -6576,6 +6589,83 @@ theorem
     (V13RealLinearUniformCausalTwoOrMoreCoefficientCountingBound_of_compression
       hcount)
 
+theorem
+    V13RealLinearUniformCausalTwoOrMoreCoefficientCompressionBound_of_fiberAverage
+    (hcount :
+      V13RealLinearUniformCausalTwoOrMoreFiberAverageCoefficientBound) :
+    V13RealLinearUniformCausalTwoOrMoreCoefficientCompressionBound := by
+  intro m q observer i₀ hqgt hqm
+  let E := v13RealLinearUniformCausalQRowExperiment observer
+  let C :=
+    Fintype.card (V13RealLinearAdaptiveQRowGeneratedCoefficient E i₀)
+  let Q := 2 ^ q
+  let S := Fintype.card (V13F2LinearEquiv m)
+  have hCeq :
+      C =
+        ∑ A : V13F2LinearEquiv m,
+          Fintype.card
+            (V13RealLinearAdaptiveQRowGeneratedCoefficientFiber E i₀ A) := by
+    simpa [C, E] using
+      v13RealLinearAdaptiveQRowGeneratedCoefficient_card_eq_sum_fibers
+        (v13RealLinearUniformCausalQRowExperiment observer) i₀
+  have hsum :
+      (∑ A : V13F2LinearEquiv m,
+          Fintype.card
+            (V13RealLinearAdaptiveQRowGeneratedCoefficientFiber E i₀ A)) ≤
+        Q * S := by
+    simpa [E, Q, S] using hcount observer i₀ hqgt hqm
+  calc
+    C =
+        ∑ A : V13F2LinearEquiv m,
+          Fintype.card
+            (V13RealLinearAdaptiveQRowGeneratedCoefficientFiber E i₀ A) :=
+      hCeq
+    _ ≤ Q * S := hsum
+
+theorem
+    V13RealLinearUniformCausalTwoOrMoreFiberAverageCoefficientBound_of_compression
+    (hcount :
+      V13RealLinearUniformCausalTwoOrMoreCoefficientCompressionBound) :
+    V13RealLinearUniformCausalTwoOrMoreFiberAverageCoefficientBound := by
+  intro m q observer i₀ hqgt hqm
+  let E := v13RealLinearUniformCausalQRowExperiment observer
+  let C :=
+    Fintype.card (V13RealLinearAdaptiveQRowGeneratedCoefficient E i₀)
+  let Q := 2 ^ q
+  let S := Fintype.card (V13F2LinearEquiv m)
+  have hCeq :
+      C =
+        ∑ A : V13F2LinearEquiv m,
+          Fintype.card
+            (V13RealLinearAdaptiveQRowGeneratedCoefficientFiber E i₀ A) := by
+    simpa [C, E] using
+      v13RealLinearAdaptiveQRowGeneratedCoefficient_card_eq_sum_fibers
+        (v13RealLinearUniformCausalQRowExperiment observer) i₀
+  have hC : C ≤ Q * S := by
+    simpa [C, E, Q, S] using hcount observer i₀ hqgt hqm
+  calc
+    (∑ A : V13F2LinearEquiv m,
+        Fintype.card
+          (V13RealLinearAdaptiveQRowGeneratedCoefficientFiber E i₀ A)) =
+        C := hCeq.symm
+    _ ≤ Q * S := hC
+
+theorem
+    V13RealLinearUniformCausalTwoOrMoreCoefficientCompressionBound_iff_fiberAverage :
+    V13RealLinearUniformCausalTwoOrMoreCoefficientCompressionBound ↔
+      V13RealLinearUniformCausalTwoOrMoreFiberAverageCoefficientBound :=
+  ⟨V13RealLinearUniformCausalTwoOrMoreFiberAverageCoefficientBound_of_compression,
+    V13RealLinearUniformCausalTwoOrMoreCoefficientCompressionBound_of_fiberAverage⟩
+
+theorem
+    V13RealLinearUniformCausalTwoOrMoreCompletionCountingBound_of_fiberAverageCoefficient
+    (hcount :
+      V13RealLinearUniformCausalTwoOrMoreFiberAverageCoefficientBound) :
+    V13RealLinearUniformCausalTwoOrMoreCompletionCountingBound :=
+  V13RealLinearUniformCausalTwoOrMoreCompletionCountingBound_of_coefficientCompression
+    (V13RealLinearUniformCausalTwoOrMoreCoefficientCompressionBound_of_fiberAverage
+      hcount)
+
 theorem v13RealLinear_uniform_causal_qrow_success_bound_of_lowPositiveSpanCounting
     (hcount : V13RealLinearUniformCausalLowPositiveRowSpanCountingBound)
     {m q : Nat} (observer : V13RealLinearCausalRowObserver m q)
@@ -6706,6 +6796,19 @@ theorem
       (1 / 2 : Rat) + v13RealLinearQRowEpsilon q m :=
   v13RealLinear_uniform_causal_qrow_success_bound_of_twoOrMoreCoefficientCountingBound
     (V13RealLinearUniformCausalTwoOrMoreCoefficientCountingBound_of_compression
+      hcount)
+    observer i₀
+
+theorem
+    v13RealLinear_uniform_causal_qrow_success_bound_of_twoOrMoreFiberAverageCoefficientBound
+    (hcount :
+      V13RealLinearUniformCausalTwoOrMoreFiberAverageCoefficientBound)
+    {m q : Nat} (observer : V13RealLinearCausalRowObserver m q)
+    (i₀ : Fin m) :
+    v13RealLinearUniformCausalQRowSuccess observer i₀ ≤
+      (1 / 2 : Rat) + v13RealLinearQRowEpsilon q m :=
+  v13RealLinear_uniform_causal_qrow_success_bound_of_twoOrMoreCoefficientCompressionBound
+    (V13RealLinearUniformCausalTwoOrMoreCoefficientCompressionBound_of_fiberAverage
       hcount)
     observer i₀
 
