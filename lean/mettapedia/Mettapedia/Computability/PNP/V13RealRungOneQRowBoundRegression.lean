@@ -60,6 +60,7 @@ set_option autoImplicit false
 #check v13RealLinearRowTracePrefixRows_length
 #check v13RealLinearRowTracePrefixRows_card_le
 #check v13RealLinearSequentialRowTracePrefixRows_eq_prefixTranscriptRows
+#check v13RealLinearSequentialRowTraceOf_get_eq_chooseRow
 #check v13RealLinearRowTracePrefixRows_succ
 #check V13RealLinearRowTraceNewCapture
 #check v13RealLinearRowTrace_not_generate_at_zero
@@ -832,6 +833,7 @@ theorem
 #print axioms V13RealLinearSequentialRowObserver.toCausal
 #print axioms v13RealLinearUniformSequentialQRowTrace_realizesBranchRows
 #print axioms v13RealLinearSequentialRowTracePrefixRows_eq_prefixTranscriptRows
+#print axioms v13RealLinearSequentialRowTraceOf_get_eq_chooseRow
 #print axioms v13RealLinearRowTracePrefixRows_succ
 #print axioms v13RealLinearRowTraceNewCaptureCover
 #print axioms v13RealLinearRowTraceNewCaptureCover_of_traceRows
