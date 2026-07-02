@@ -1045,6 +1045,50 @@ def indexOfAux [BEq α] (needle : α) : List α → Nat → Option Nat
 def indexOf? [BEq α] (xs : List α) (needle : α) : Option Nat :=
   indexOfAux needle xs 0
 
+theorem indexOfAux_eq_none_of_contains_false {α : Type} [BEq α] [LawfulBEq α]
+    (needle : α) :
+    ∀ (xs : List α) (n : Nat), xs.contains needle = false →
+      indexOfAux needle xs n = none
+  | [], _, _ => rfl
+  | x :: xs, n, hcontains => by
+      unfold indexOfAux
+      by_cases hx : (x == needle) = true
+      · have hxEq : x = needle := beq_iff_eq.mp hx
+        have hmem : needle ∈ x :: xs := by
+          simp [hxEq]
+        have htrue : (x :: xs).contains needle = true :=
+          List.contains_iff_mem.mpr hmem
+        rw [hcontains] at htrue
+        cases htrue
+      · have htail : xs.contains needle = false := by
+          cases htailEq : xs.contains needle with
+          | false =>
+              rfl
+          | true =>
+              have hmemTail : needle ∈ xs :=
+                List.contains_iff_mem.mp htailEq
+              have hmem : needle ∈ x :: xs :=
+                List.mem_cons_of_mem x hmemTail
+              have htrue : (x :: xs).contains needle = true :=
+                List.contains_iff_mem.mpr hmem
+              rw [hcontains] at htrue
+              cases htrue
+        have hxFalse : (x == needle) = false := by
+          cases hxEq : x == needle with
+          | false =>
+              rfl
+          | true =>
+              exact False.elim (hx hxEq)
+        simp only [hxFalse, Bool.false_eq_true, ↓reduceIte]
+        exact indexOfAux_eq_none_of_contains_false needle xs (n + 1) htail
+
+theorem indexOf?_eq_none_of_contains_false {α : Type} [BEq α] [LawfulBEq α]
+    (xs : List α) (needle : α)
+    (hcontains : xs.contains needle = false) :
+    indexOf? xs needle = none := by
+  unfold indexOf?
+  exact indexOfAux_eq_none_of_contains_false needle xs 0 hcontains
+
 def tauOrientAt (orients : List TauOrient) (i : Nat) : TauOrient :=
   listGetD orients i TauOrient.normal
 

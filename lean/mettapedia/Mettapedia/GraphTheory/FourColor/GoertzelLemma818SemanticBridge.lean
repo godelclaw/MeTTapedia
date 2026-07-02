@@ -1568,6 +1568,111 @@ theorem concreteChainFiberAppendShiftComponent_contains_canonical_prefix_false
       (frontierWordToChainWord (word ++ [orient])) ge)
     hcanonicalPrefix
 
+theorem concreteChainFiberAppendShiftComponent_contains_last_eq
+    (word : List GoertzelLemma818FrontierMode.TauOrient)
+    (component : List GoertzelLemma814.ChainEdge)
+    (ge : GoertzelLemma814.ChainEdge)
+    (hlast : ge.occ = word.length) :
+    (concreteChainFiberAppendShiftComponent word component).contains ge =
+      component.contains
+        ({ occ := 0, edge := ge.edge } : GoertzelLemma814.ChainEdge) := by
+  let localGe : GoertzelLemma814.ChainEdge := { occ := 0, edge := ge.edge }
+  by_cases hshift :
+      (concreteChainFiberAppendShiftComponent word component).contains ge =
+        true
+  · have hmem : ge ∈ concreteChainFiberAppendShiftComponent word component :=
+      List.contains_iff_mem.mp hshift
+    unfold concreteChainFiberAppendShiftComponent at hmem
+    rcases List.mem_map.mp hmem with ⟨localEdge, hlocalMem, hshiftEq⟩
+    have hlocalEq : localEdge = localGe := by
+      cases localEdge with
+      | mk localOcc localTau =>
+          cases ge with
+          | mk geOcc geTau =>
+              have hocc : localOcc + word.length = geOcc := by
+                simpa [concreteChainFiberAppendShiftEdge] using
+                  congrArg GoertzelLemma814.ChainEdge.occ hshiftEq
+              have hedge : localTau = geTau := by
+                simpa [concreteChainFiberAppendShiftEdge] using
+                  congrArg GoertzelLemma814.ChainEdge.edge hshiftEq
+              have hzero : localOcc = 0 := by
+                simp at hlast
+                omega
+              subst localOcc
+              subst localTau
+              rfl
+    have hlocalContains :
+        component.contains localGe = true :=
+      List.contains_iff_mem.mpr (by simpa [hlocalEq] using hlocalMem)
+    rw [hshift, hlocalContains]
+  · have hshiftFalse :=
+      GoertzelLemma814.bool_false_of_not_true hshift
+    by_cases hlocal : component.contains localGe = true
+    · have hlocalMem : localGe ∈ component :=
+        List.contains_iff_mem.mp hlocal
+      have hshiftMem :
+          ge ∈ concreteChainFiberAppendShiftComponent word component := by
+        unfold concreteChainFiberAppendShiftComponent
+        rw [List.mem_map]
+        refine ⟨localGe, hlocalMem, ?_⟩
+        cases ge with
+        | mk geOcc geTau =>
+            simp at hlast
+            simp [localGe, concreteChainFiberAppendShiftEdge, hlast.symm]
+      exact False.elim (hshift (List.contains_iff_mem.mpr hshiftMem))
+    · have hlocalFalse :=
+        GoertzelLemma814.bool_false_of_not_true hlocal
+      rw [hshiftFalse, hlocalFalse]
+
+theorem concreteChainFiberAppend_chainEdgeColor_last
+    (word : List GoertzelLemma818FrontierMode.TauOrient)
+    (pref : List GoertzelLemma814.TauState)
+    (last : GoertzelLemma814.TauState)
+    (ge : GoertzelLemma814.ChainEdge)
+    (hprefLen : pref.length = word.length)
+    (hlast : ge.occ = word.length) :
+    GoertzelLemma814.chainEdgeColor (pref ++ [last]) ge =
+      GoertzelLemma814.chainEdgeColor [last]
+        ({ occ := 0, edge := ge.edge } : GoertzelLemma814.ChainEdge) := by
+  cases ge with
+  | mk occ edge =>
+      simp at hlast
+      subst occ
+      have hstate :
+          GoertzelLemma814.chainStateAt (pref ++ [last]) word.length = last :=
+        GoertzelLemma814.chainStateAt_append_length pref last word.length hprefLen
+      unfold GoertzelLemma814.chainEdgeColor GoertzelLemma814.tauStateColorAt
+      rw [hstate]
+      simp [GoertzelLemma814.chainStateAt, GoertzelLemma814.listGetD]
+
+theorem concreteChainFiberAppend_chainCanonicalEdge_last_non_glued
+    (word : List GoertzelLemma818FrontierMode.TauOrient)
+    (orient : GoertzelLemma818FrontierMode.TauOrient)
+    (ge : GoertzelLemma814.ChainEdge)
+    (hne : word ≠ [])
+    (hlast : ge.occ = word.length)
+    (hnonGlued : GoertzelLemma814.chainIsGluedInput
+      (frontierWordToChainWord (word ++ [orient])) ge.occ ge.edge = false) :
+    GoertzelLemma814.chainCanonicalEdge
+      (frontierWordToChainWord (word ++ [orient])) ge = ge := by
+  have hpos : ge.occ > 0 := by
+    rw [hlast]
+    cases word with
+    | nil =>
+        exact False.elim (hne rfl)
+    | cons _ _ =>
+        simp
+  have hinputFalse :
+      (GoertzelLemma814.tauOrientInputOrder
+        (GoertzelLemma814.tauOrientAt
+          (frontierWordToChainWord (word ++ [orient])) ge.occ)).contains
+        ge.edge = false := by
+    unfold GoertzelLemma814.chainIsGluedInput at hnonGlued
+    simpa [hpos] using hnonGlued
+  unfold GoertzelLemma814.chainCanonicalEdge
+  simp [hpos,
+    GoertzelLemma814.indexOf?_eq_none_of_contains_false _ _ hinputFalse]
+
 theorem concreteChainFiberAppendShiftedEdgePresent_of_not_input
     (word : List GoertzelLemma818FrontierMode.TauOrient)
     (orient : GoertzelLemma818FrontierMode.TauOrient)
