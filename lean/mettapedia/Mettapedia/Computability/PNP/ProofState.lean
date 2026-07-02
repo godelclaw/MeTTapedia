@@ -1587,6 +1587,22 @@ theorem currentPNPV13RealRungOneQRowBound_node :
             2 ^ 1 *
               Fintype.card
                 (V13RealLinearAdaptiveQRowWorld m (V13F2LinearEquiv m))) ∧
+      (∀ {m : Nat} (row i₀ : Fin m),
+          Fintype.card
+              (V13RealLinearAdaptiveQRowGenerated
+                (v13RealLinearUniformCausalQRowExperiment
+                  (v13RealLinearCausalSingleRowObserver row)) i₀) *
+              2 ^ m ≤
+            2 ^ 1 *
+              Fintype.card
+                (V13RealLinearAdaptiveQRowWorld m (V13F2LinearEquiv m))) ∧
+      (∀ {m : Nat} (row i₀ : Fin m),
+        V13RealLinearUniformCausalRowSpanCountingBound
+          (v13RealLinearCausalSingleRowObserver row) i₀) ∧
+      (∀ {m : Nat} (row i₀ : Fin m),
+        v13RealLinearUniformCausalQRowSuccess
+            (v13RealLinearCausalSingleRowObserver row) i₀ ≤
+          (1 / 2 : Rat) + v13RealLinearQRowEpsilon 1 m) ∧
       (∀ {m : Nat} (i₀ : Fin m),
         Fintype.card
             (V13RealLinearRowIndexedFixedTargetRowOccurrenceWorld m i₀) ≤
@@ -1812,6 +1828,15 @@ theorem currentPNPV13RealRungOneQRowBound_node :
           (m := m) hcount row i₀,
       fun {m} row i₀ =>
         v13RealLinear_causalSingleRow_coefficientCounting
+          (m := m) row i₀,
+      fun {m} row i₀ =>
+        v13RealLinear_causalSingleRow_generated_counting
+          (m := m) row i₀,
+      fun {m} row i₀ =>
+        v13RealLinear_causalSingleRow_rowSpanCountingBound
+          (m := m) row i₀,
+      fun {m} row i₀ =>
+        v13RealLinear_causalSingleRow_success_bound
           (m := m) row i₀,
       fun i₀ =>
         v13RealLinearRowIndexedFixedTargetRowOccurrenceWorld_card_le i₀,
