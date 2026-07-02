@@ -2702,6 +2702,18 @@ abbrev
   V13RealLinearAdaptiveQRowRowsetTranscriptCell E seed rows transcript ×
     V13RealLinearRowsTargetCoefficient (E.sampleA seed) rows i₀
 
+/-- Correct elements of a transcript product cell. -/
+abbrev
+    V13RealLinearAdaptiveQRowGeneratedTargetCoefficientRowsetTranscriptProductCellCorrect
+    {m q : Nat} {Seed : Type*}
+    (E : V13RealLinearAdaptiveQRowExperiment m q Seed)
+    (i₀ : Fin m) (seed : Seed) (rows : Finset (Fin m))
+    (transcript : V13RealLinearRowsTranscriptSpace m rows) :=
+  {z :
+      V13RealLinearAdaptiveQRowGeneratedTargetCoefficientRowsetTranscriptProductCell
+        E i₀ seed rows transcript //
+    E.correct i₀ (seed, z.1.val.val)}
+
 noncomputable instance {m q : Nat} {Seed : Type*} [Fintype Seed]
     (E : V13RealLinearAdaptiveQRowExperiment m q Seed) (i₀ : Fin m) :
     Fintype (V13RealLinearAdaptiveQRowGeneratedCoefficient E i₀) := by
@@ -2753,6 +2765,28 @@ noncomputable instance {m q : Nat} {Seed : Type*} [Fintype Seed]
         E seed rows transcript) := by
   classical
   unfold V13RealLinearAdaptiveQRowRowsetTranscriptCell
+  infer_instance
+
+noncomputable instance {m q : Nat} {Seed : Type*} [Fintype Seed]
+    (E : V13RealLinearAdaptiveQRowExperiment m q Seed) (i₀ : Fin m)
+    (seed : Seed) (rows : Finset (Fin m))
+    (transcript : V13RealLinearRowsTranscriptSpace m rows) :
+    Fintype
+      (V13RealLinearAdaptiveQRowGeneratedTargetCoefficientRowsetTranscriptProductCell
+        E i₀ seed rows transcript) := by
+  classical
+  dsimp [V13RealLinearAdaptiveQRowGeneratedTargetCoefficientRowsetTranscriptProductCell]
+  infer_instance
+
+noncomputable instance {m q : Nat} {Seed : Type*} [Fintype Seed]
+    (E : V13RealLinearAdaptiveQRowExperiment m q Seed) (i₀ : Fin m)
+    (seed : Seed) (rows : Finset (Fin m))
+    (transcript : V13RealLinearRowsTranscriptSpace m rows) :
+    Fintype
+      (V13RealLinearAdaptiveQRowGeneratedTargetCoefficientRowsetTranscriptProductCellCorrect
+        E i₀ seed rows transcript) := by
+  classical
+  dsimp [V13RealLinearAdaptiveQRowGeneratedTargetCoefficientRowsetTranscriptProductCellCorrect]
   infer_instance
 
 theorem v13RealLinearAdaptiveQRowRowsetFiber_card_eq_zero_of_q_lt_rows_card
@@ -2839,12 +2873,26 @@ theorem
       Fintype.card
           (V13RealLinearAdaptiveQRowRowsetTranscriptCell
             E seed rows transcript) *
-        Fintype.card
+      Fintype.card
           (V13RealLinearRowsTargetCoefficient
             (E.sampleA seed) rows i₀) := by
   classical
-  simp [V13RealLinearAdaptiveQRowGeneratedTargetCoefficientRowsetTranscriptProductCell,
-    Fintype.card_prod]
+  change
+    Fintype.card
+        (V13RealLinearAdaptiveQRowRowsetTranscriptCell
+            E seed rows transcript ×
+          V13RealLinearRowsTargetCoefficient
+            (E.sampleA seed) rows i₀) =
+      Fintype.card
+          (V13RealLinearAdaptiveQRowRowsetTranscriptCell
+            E seed rows transcript) *
+        Fintype.card
+          (V13RealLinearRowsTargetCoefficient
+            (E.sampleA seed) rows i₀)
+  exact
+    Fintype.card_prod
+      (V13RealLinearAdaptiveQRowRowsetTranscriptCell E seed rows transcript)
+      (V13RealLinearRowsTargetCoefficient (E.sampleA seed) rows i₀)
 
 theorem
     v13RealLinearAdaptiveQRow_rowsetProduct_eq_sum_transcriptProductCells
@@ -2867,6 +2915,20 @@ theorem
   rw [
     v13RealLinearAdaptiveQRowGeneratedTargetCoefficientRowsetTranscriptProductCell_card_eq_product
       E i₀ seed rows transcript]
+
+theorem
+    v13RealLinearAdaptiveQRowGeneratedTargetCoefficientRowsetTranscriptProductCell_generated
+    {m q : Nat} {Seed : Type*} [Fintype Seed]
+    (E : V13RealLinearAdaptiveQRowExperiment m q Seed) (i₀ : Fin m)
+    (seed : Seed) (rows : Finset (Fin m))
+    (transcript : V13RealLinearRowsTranscriptSpace m rows)
+    (x :
+      V13RealLinearAdaptiveQRowGeneratedTargetCoefficientRowsetTranscriptProductCell
+        E i₀ seed rows transcript) :
+    E.generated i₀ (seed, x.1.val.val) := by
+  unfold V13RealLinearAdaptiveQRowExperiment.generated
+  rw [x.1.val.property]
+  exact ⟨x.2.val, x.2.property⟩
 
 theorem
     v13RealLinearUniformCausal_rowsetTranscriptCell_branch_eq
@@ -3053,6 +3115,52 @@ theorem
   exact
     v13RealLinearUniformCausal_rowsetTranscriptCell_correct_iff_of_coefficient
       observer i₀ A rows transcript x.2 x.1 y.1
+
+theorem
+    v13RealLinearUniformCausal_rowsetTranscriptProductCell_correctCard_eq_zero_or_card
+    {m q : Nat} (observer : V13RealLinearCausalRowObserver m q)
+    (i₀ : Fin m) (A : V13F2LinearEquiv m) (rows : Finset (Fin m))
+    (transcript : V13RealLinearRowsTranscriptSpace m rows) :
+    Fintype.card
+        (V13RealLinearAdaptiveQRowGeneratedTargetCoefficientRowsetTranscriptProductCellCorrect
+          (v13RealLinearUniformCausalQRowExperiment observer) i₀ A rows
+          transcript) = 0 ∨
+      Fintype.card
+          (V13RealLinearAdaptiveQRowGeneratedTargetCoefficientRowsetTranscriptProductCellCorrect
+            (v13RealLinearUniformCausalQRowExperiment observer) i₀ A rows
+            transcript) =
+        Fintype.card
+          (V13RealLinearAdaptiveQRowGeneratedTargetCoefficientRowsetTranscriptProductCell
+            (v13RealLinearUniformCausalQRowExperiment observer) i₀ A rows
+            transcript) := by
+  classical
+  let E := v13RealLinearUniformCausalQRowExperiment observer
+  by_cases hcorrect :
+      ∃ z :
+        V13RealLinearAdaptiveQRowGeneratedTargetCoefficientRowsetTranscriptProductCell
+          E i₀ A rows transcript,
+        E.correct i₀ (A, z.1.val.val)
+  · right
+    rcases hcorrect with ⟨w, hw⟩
+    let equiv :
+        V13RealLinearAdaptiveQRowGeneratedTargetCoefficientRowsetTranscriptProductCellCorrect
+          E i₀ A rows transcript ≃
+        V13RealLinearAdaptiveQRowGeneratedTargetCoefficientRowsetTranscriptProductCell
+          E i₀ A rows transcript :=
+      {
+      toFun z := z.val
+      invFun z :=
+        ⟨z,
+          (v13RealLinearUniformCausal_rowsetTranscriptProductCell_correct_iff
+            observer i₀ A rows transcript z w).2 hw⟩
+      left_inv z := by
+        exact Subtype.ext rfl
+      right_inv z := rfl
+      }
+    simpa [E] using Fintype.card_congr equiv
+  · left
+    rw [Fintype.card_eq_zero_iff]
+    exact ⟨fun z => hcorrect ⟨z.val, z.property⟩⟩
 
 noncomputable def
     v13RealLinearAdaptiveQRowGeneratedTargetCoefficientRowsetCellEquivProduct
