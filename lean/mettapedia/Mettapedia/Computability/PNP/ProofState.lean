@@ -1225,11 +1225,19 @@ theorem currentPNPV13RealRungOneQRowBound_node :
       (Fintype.card
           (V13RealLinearUniformFixedTargetRowOccurrence
             (0 : Fin 2) (0 : Fin 2)) ≤ 2) ∧
+      (∀ row i₀ : Fin 2,
+        Fintype.card
+          (V13RealLinearUniformFixedTargetRowOccurrence row i₀) ≤ 2) ∧
       (Fintype.card
           (V13RealLinearUniformFixedTargetRowOccurrence
             (0 : Fin 2) (0 : Fin 2)) *
           2 ^ 2 ≤
         2 * Fintype.card (V13F2LinearEquiv 2)) ∧
+      (∀ row i₀ : Fin 2,
+        Fintype.card
+            (V13RealLinearUniformFixedTargetRowOccurrence row i₀) *
+            2 ^ 2 ≤
+          2 * Fintype.card (V13F2LinearEquiv 2)) ∧
       (V13RealLinearUniformFixedTargetRowOccurrenceCountingBound →
         ∀ {m : Nat} (row i₀ : Fin m),
           Fintype.card
@@ -1246,9 +1254,18 @@ theorem currentPNPV13RealRungOneQRowBound_node :
               (v13RealLinearCausalSingleRowObserver (0 : Fin 2)))
             (0 : Fin 2)) *
           2 ^ 2 ≤
-        2 ^ 1 *
+          2 ^ 1 *
           Fintype.card
             (V13RealLinearAdaptiveQRowWorld 2 (V13F2LinearEquiv 2))) ∧
+      (∀ row i₀ : Fin 2,
+        Fintype.card
+            (V13RealLinearAdaptiveQRowGeneratedCoefficient
+              (v13RealLinearUniformCausalQRowExperiment
+                (v13RealLinearCausalSingleRowObserver row)) i₀) *
+            2 ^ 2 ≤
+          2 ^ 1 *
+            Fintype.card
+              (V13RealLinearAdaptiveQRowWorld 2 (V13F2LinearEquiv 2))) ∧
       (V13RealLinearUniformCausalLowPositiveFiberCoefficientCountingBound →
         V13RealLinearUniformCausalLowPositiveCoefficientCountingBound) ∧
       (V13RealLinearUniformCausalLowPositiveFiberCoefficientCountingBound →
@@ -1329,11 +1346,14 @@ theorem currentPNPV13RealRungOneQRowBound_node :
         v13RealLinear_uniform_causal_qrow_success_bound_of_coefficientCounting
           (m := m) (q := q) hcount observer i₀,
       v13RealLinearFixedTargetRowOccurrence_zero_card_le_two,
+      v13RealLinearFixedTargetRowOccurrence_two_card_le_two,
       v13RealLinear_fixedTargetRowOccurrence_zero_two_counting,
+      v13RealLinear_fixedTargetRowOccurrence_two_counting,
       fun hcount {m} row i₀ =>
         v13RealLinear_causalSingleRow_coefficientCounting_of_fixedTargetRowOccurrenceCounting
           (m := m) hcount row i₀,
       v13RealLinear_causalSingleRow_zero_two_coefficientCounting,
+      v13RealLinear_causalSingleRow_two_coefficientCounting,
       fun hcount =>
         v13RealLinearUniformCausalLowPositiveCoefficientCountingBound_of_fiberCounting
           hcount,
