@@ -197,11 +197,11 @@ def currentPNPRoadmap : List PNPRoadmapEntry :=
     { stage := .v13RealRungOneQRowBound
       proofNodeKey := "pnp.v13.real-rung-one.qrow-bound-assembly"
       status := .openBackground
-      truthValue := ⟨100, 96⟩
-      progressPercent := 96
-      itvLowerPercent := 96
+      truthValue := ⟨100, 97⟩
+      progressPercent := 97
+      itvLowerPercent := 97
       itvUpperPercent := 100
-      obligation := "Assemble the explicit q-row success bound for the uniform certified-invertible sampler: the proved kernel-flip surcharge, row-combination space bound, block-iff-generate characterization, blocked/generated mass equality, closed zero-row plus high-budget cases, and target-row chooser mass equality identifies q = 1 exactly with uniform target-row occurrence mass. The proved two-dimensional GL2(F2) count bound turns the full-map branch-interface obstruction unconditional. The active theorem surface is now the causal row-query interface, where the single remaining pin is V13RealLinearUniformCausalRowSpanCountingBound." },
+      obligation := "Assemble the explicit q-row success bound for the uniform certified-invertible sampler: the proved kernel-flip surcharge, row-combination space bound, block-iff-generate characterization, blocked/generated mass equality, closed zero-row plus high-budget cases, and target-row chooser mass equality identifies q = 1 exactly with uniform target-row occurrence mass. The proved two-dimensional GL2(F2) count bound turns the full-map branch-interface obstruction unconditional. The active theorem surface is the causal row-query interface: zero-row and high-budget cases are closed, and the all-q theorem now depends only on the single low-positive pin V13RealLinearUniformCausalLowPositiveRowSpanCountingBound." },
     { stage := .v13ObserverLadder
       proofNodeKey := "pnp.v13.phase-e.observer-ladder-mark"
       status := .checked
@@ -472,12 +472,12 @@ theorem currentPNPRoadmap_records_v13_real_rung_one_qrow_bound :
     ({ stage := PNPRoadmapStage.v13RealRungOneQRowBound
        proofNodeKey := "pnp.v13.real-rung-one.qrow-bound-assembly"
        status := .openBackground
-       truthValue := ⟨100, 96⟩
-       progressPercent := 96
-       itvLowerPercent := 96
+       truthValue := ⟨100, 97⟩
+       progressPercent := 97
+       itvLowerPercent := 97
        itvUpperPercent := 100
        obligation :=
-        "Assemble the explicit q-row success bound for the uniform certified-invertible sampler: the proved kernel-flip surcharge, row-combination space bound, block-iff-generate characterization, blocked/generated mass equality, closed zero-row plus high-budget cases, and target-row chooser mass equality identifies q = 1 exactly with uniform target-row occurrence mass. The proved two-dimensional GL2(F2) count bound turns the full-map branch-interface obstruction unconditional. The active theorem surface is now the causal row-query interface, where the single remaining pin is V13RealLinearUniformCausalRowSpanCountingBound." } :
+        "Assemble the explicit q-row success bound for the uniform certified-invertible sampler: the proved kernel-flip surcharge, row-combination space bound, block-iff-generate characterization, blocked/generated mass equality, closed zero-row plus high-budget cases, and target-row chooser mass equality identifies q = 1 exactly with uniform target-row occurrence mass. The proved two-dimensional GL2(F2) count bound turns the full-map branch-interface obstruction unconditional. The active theorem surface is the causal row-query interface: zero-row and high-budget cases are closed, and the all-q theorem now depends only on the single low-positive pin V13RealLinearUniformCausalLowPositiveRowSpanCountingBound." } :
       PNPRoadmapEntry) ∈ currentPNPRoadmap := by
   simp [currentPNPRoadmap]
 

@@ -1668,6 +1668,34 @@ theorem v13RealLinear_uniform_causal_high_budget_success_bound
       (v13RealLinearUniformCausalRowSpanCountingBound_of_m_le_q
         observer i₀ hmq)
 
+/-- The sole low-positive counting input left for the causal row-query route.
+Zero-row and high-budget cases are already closed, so this statement is only
+asked for `0 < q` and `q < m`. -/
+def V13RealLinearUniformCausalLowPositiveRowSpanCountingBound : Prop :=
+  ∀ {m q : Nat} (observer : V13RealLinearCausalRowObserver m q)
+    (i₀ : Fin m),
+    0 < q → q < m →
+      V13RealLinearUniformCausalRowSpanCountingBound observer i₀
+
+theorem v13RealLinear_uniform_causal_qrow_success_bound_of_lowPositiveSpanCounting
+    (hcount : V13RealLinearUniformCausalLowPositiveRowSpanCountingBound)
+    {m q : Nat} (observer : V13RealLinearCausalRowObserver m q)
+    (i₀ : Fin m) :
+    v13RealLinearUniformCausalQRowSuccess observer i₀ ≤
+      (1 / 2 : Rat) + v13RealLinearQRowEpsilon q m := by
+  by_cases hqzero : q = 0
+  · subst q
+    exact v13RealLinear_uniform_causal_zero_row_success_bound observer i₀
+  · by_cases hmq : m ≤ q
+    · exact
+        v13RealLinear_uniform_causal_high_budget_success_bound
+          observer i₀ hmq
+    · have hqpos : 0 < q := Nat.pos_of_ne_zero hqzero
+      have hqm : q < m := by omega
+      exact
+        v13RealLinear_uniform_causal_qrow_success_bound_of_spanCounting
+          observer i₀ (hcount observer i₀ hqpos hqm)
+
 theorem v13RealLinear_qrow_epsilon_nonnegative (q m : Nat) :
     0 ≤ v13RealLinearQRowEpsilon q m := by
   unfold v13RealLinearQRowEpsilon
