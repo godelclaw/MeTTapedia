@@ -235,6 +235,10 @@ The lift is sharpened to the closure-level hook
 `concreteChainFiberAppendRelativeSingletonClosureLiftClosed`;
 `concreteChainFiberAppendRelativeSingletonLiftClosed_of_closure_lift` derives
 the reach-shaped lift from it by using the existing singleton seed closure.
+The closure lift now reduces by
+`concreteChainFiberAppendRelativeSingletonClosureLiftClosed_of_root_and_step_lift`
+to two concrete obligations: lift the local singleton root into the global
+closure, then lift one local fixed-input Kempe step through the frozen prefix.
 `concreteChainFiberAppendFixedPrefixLastReachClosed_of_interface_trace_cases`
 and `concreteChainFiberAppendRawPrefixReachClosed_of_interface_trace_cases`
 assemble those two cases back into the existing sufficiency route.
