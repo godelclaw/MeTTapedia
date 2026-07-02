@@ -44,6 +44,8 @@ set_option autoImplicit false
 #check v13RealLinearShear01
 #check v13RealLinearShear10
 #check v13RealLinearShear01Swap
+#check v13RealLinearSwapShear10
+#check v13RealLinearSwapShear10_targetRows_zero_empty
 #check v13RealLinearTargetRowOccurrenceFour
 #check v13RealLinearTargetRowOccurrenceFour_injective
 #check v13RealLinearUniformTargetRowOccurrence_card_four_le
@@ -309,6 +311,7 @@ theorem v13RealLinearQRowBoundRegression_causal_fiber_shape
 #print axioms v13RealLinear_targetRows_card_le_one
 #print axioms v13RealLinear_targetRowObserver_generated_iff_targetRows_nonempty
 #print axioms v13RealLinearUniformTargetRowOccurrence_card_four_le
+#print axioms v13RealLinearSwapShear10_targetRows_zero_empty
 #print axioms v13RealLinearUniformTargetRowOccurrenceMass_two_zero_gt_half
 #print axioms v13RealLinear_f2_equiv_two_card_le_six
 #print axioms v13RealLinearUniformTargetRowOccurrenceMass_two_zero_gt_half_unconditional
