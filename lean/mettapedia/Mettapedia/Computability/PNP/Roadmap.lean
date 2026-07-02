@@ -26,6 +26,7 @@ inductive PNPRoadmapStage where
   | v13PhaseEScaled
   | v13RealRungOneLinear
   | v13RealRungOneRowObservers
+  | v13RealRungOneStaticRows
   | v13ObserverLadder
   | weaknessCalculus
   | barrierObstruction
@@ -175,6 +176,14 @@ def currentPNPRoadmap : List PNPRoadmapEntry :=
       itvLowerPercent := 89
       itvUpperPercent := 100
       obligation := "Use the conditioned row-kernel flip: whenever observed rows do not span-block the target coordinate, opposite-target worlds share the same row transcript. The remaining q-row theorem is exactly the adaptive row-span counting bound, about 2^(q-m)." },
+    { stage := .v13RealRungOneStaticRows
+      proofNodeKey := "pnp.v13.real-rung-one.static-row-exact-half"
+      status := .replacementOpened
+      truthValue := ⟨100, 90⟩
+      progressPercent := 75
+      itvLowerPercent := 90
+      itvUpperPercent := 100
+      obligation := "Use the fixed-branch theorem: any static row observer whose rows do not block the target has exactly paired correct and incorrect hidden witnesses by kernel flip. The remaining q-row theorem is the adaptive row-span counting lift." },
     { stage := .v13ObserverLadder
       proofNodeKey := "pnp.v13.phase-e.observer-ladder-mark"
       status := .checked
@@ -412,6 +421,19 @@ theorem currentPNPRoadmap_records_v13_real_rung_one_row_observers :
        itvUpperPercent := 100
        obligation :=
         "Use the conditioned row-kernel flip: whenever observed rows do not span-block the target coordinate, opposite-target worlds share the same row transcript. The remaining q-row theorem is exactly the adaptive row-span counting bound, about 2^(q-m)." } :
+      PNPRoadmapEntry) ∈ currentPNPRoadmap := by
+  simp [currentPNPRoadmap]
+
+theorem currentPNPRoadmap_records_v13_real_rung_one_static_rows :
+    ({ stage := PNPRoadmapStage.v13RealRungOneStaticRows
+       proofNodeKey := "pnp.v13.real-rung-one.static-row-exact-half"
+       status := .replacementOpened
+       truthValue := ⟨100, 90⟩
+       progressPercent := 75
+       itvLowerPercent := 90
+       itvUpperPercent := 100
+       obligation :=
+        "Use the fixed-branch theorem: any static row observer whose rows do not block the target has exactly paired correct and incorrect hidden witnesses by kernel flip. The remaining q-row theorem is the adaptive row-span counting lift." } :
       PNPRoadmapEntry) ∈ currentPNPRoadmap := by
   simp [currentPNPRoadmap]
 
