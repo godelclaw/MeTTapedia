@@ -278,9 +278,14 @@ input-disjointness part is already handled by
 edge lives at occurrence `word.length`.
 The switch-agreement side has been peeled to local edges by
 `concreteChainFiberAppendRelativeSingletonShiftedSwitchAgreementClosed_of_pointwise`;
-the remaining pointwise hook is
-`concreteChainFiberAppendRelativeSingletonShiftedSwitchPointClosed`, ready to
-split into prefix edges, last-gadget non-glued edges, and glued-input edges.
+the pointwise hook is now split by
+`concreteChainFiberAppendRelativeSingletonShiftedSwitchPointClosed_of_edge_cases`
+into prefix edges
+(`concreteChainFiberAppendRelativeSingletonShiftedSwitchPrefixPointClosed`),
+last-gadget non-glued edges
+(`concreteChainFiberAppendRelativeSingletonShiftedSwitchLastNonGluedPointClosed`),
+and glued-input edges
+(`concreteChainFiberAppendRelativeSingletonShiftedSwitchLastGluedPointClosed`).
 The closure-under-step side is now reduced by
 `concreteChainFiberAppendRelativeSingletonGlobalStepClosureClosed_of_bounded_saturation`
 to the pure closure-iterator lemma
