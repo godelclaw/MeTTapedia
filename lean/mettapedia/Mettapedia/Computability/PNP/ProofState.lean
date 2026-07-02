@@ -1209,6 +1209,19 @@ theorem currentPNPV13RealRungOneQRowBound_node :
             (v13RealLinearUniformCausalQRowExperiment observer).branchRows
               (v13RealLinearSwapShear10, x) =
             ({(1 : Fin 2)} : Finset (Fin 2))) ∧
+      (∀ (observer : V13RealLinearCausalRowObserver 2 1) (x : F2Vec 2)
+        (omega : V13RealLinearAdaptiveQRowWorld 2 (V13F2LinearEquiv 2))
+        (row : Fin 2),
+        (v13RealLinearUniformCausalQRowExperiment observer).branchRows omega =
+          ({row} : Finset (Fin 2)) →
+        (v13RealLinearUniformCausalQRowExperiment observer).branchRows
+          (v13RealLinearSwapShear10, x) ≠ ∅) ∧
+      (∀ (observer : V13RealLinearCausalRowObserver 2 1) (x : F2Vec 2)
+        (_activeRow :
+          V13RealLinearUniformOneRowGeneratedRowIndex
+            observer.toAdaptive (0 : Fin 2)),
+        (v13RealLinearUniformCausalQRowExperiment observer).branchRows
+          (v13RealLinearSwapShear10, x) ≠ ∅) ∧
       (Fintype.card (V13F2LinearEquiv 2) ≤ 6 →
         (1 / 2 : Rat) <
           v13RealLinearUniformTargetRowOccurrenceMass (0 : Fin 2)) ∧
@@ -1508,6 +1521,8 @@ theorem currentPNPV13RealRungOneQRowBound_node :
       v13RealLinear_fin2_rows_card_le_one_cases,
       v13RealLinearSwapShear10_not_generated_one_budget,
       v13RealLinearSwapShear10_branchRows_cases,
+      v13RealLinearSwapShear10_branchRows_ne_empty_of_singletonWitness,
+      v13RealLinearSwapShear10_branchRows_ne_empty_of_activeRowIndex,
       fun hcard =>
         v13RealLinearUniformTargetRowOccurrenceMass_two_zero_gt_half hcard,
       fun hcard =>
