@@ -201,7 +201,7 @@ def currentPNPRoadmap : List PNPRoadmapEntry :=
       progressPercent := 70
       itvLowerPercent := 89
       itvUpperPercent := 100
-      obligation := "Use the conditioned row-kernel flip: whenever observed rows do not span-block the target coordinate, opposite-target worlds share the same row transcript. The remaining q-row theorem is exactly the adaptive row-span counting bound, about 2^(q-m)." },
+      obligation := "Use the conditioned row-kernel flip: whenever observed rows do not span-block the target coordinate, every fixed row-transcript fiber has exactly balanced target bits. The remaining q-row theorem is exactly the adaptive row-span counting bound, about 2^(q-m)." },
     { stage := .v13RealRungOneStaticRows
       proofNodeKey := "pnp.v13.real-rung-one.static-row-exact-half"
       status := .replacementOpened
@@ -483,7 +483,7 @@ theorem currentPNPRoadmap_records_v13_real_rung_one_row_observers :
        itvLowerPercent := 89
        itvUpperPercent := 100
        obligation :=
-        "Use the conditioned row-kernel flip: whenever observed rows do not span-block the target coordinate, opposite-target worlds share the same row transcript. The remaining q-row theorem is exactly the adaptive row-span counting bound, about 2^(q-m)." } :
+        "Use the conditioned row-kernel flip: whenever observed rows do not span-block the target coordinate, every fixed row-transcript fiber has exactly balanced target bits. The remaining q-row theorem is exactly the adaptive row-span counting bound, about 2^(q-m)." } :
       PNPRoadmapEntry) ∈ currentPNPRoadmap := by
   simp [currentPNPRoadmap]
 

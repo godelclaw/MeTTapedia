@@ -9,6 +9,9 @@ set_option autoImplicit false
 #check v13RealLinear_same_rowsTranscript_after_kernel_add
 #check v13RealLinear_target_changes_after_kernel_hit
 #check v13RealLinear_opposite_targets_same_rowsTranscript_of_not_blocked
+#check V13RealLinearFixedRowsTranscriptTargetFiber
+#check v13RealLinear_fixedRowsTranscriptTargetFlipEquiv
+#check v13RealLinear_fixedRowsTranscriptTargetFiber_card_eq_of_not_blocked
 
 theorem v13RealLinearRowObserversRegression_identity_empty_not_blocked :
     ¬ V13RealLinearRowsBlockTarget
@@ -36,6 +39,8 @@ theorem v13RealLinearRowObserversRegression_empty_collision :
 #print axioms v13RealLinear_same_rowsTranscript_after_kernel_add
 #print axioms v13RealLinear_target_changes_after_kernel_hit
 #print axioms v13RealLinear_opposite_targets_same_rowsTranscript_of_not_blocked
+#print axioms v13RealLinear_fixedRowsTranscriptTargetFlipEquiv
+#print axioms v13RealLinear_fixedRowsTranscriptTargetFiber_card_eq_of_not_blocked
 #print axioms v13RealLinearRowObserversRegression_empty_collision
 
 end Mettapedia.Computability.PNP
