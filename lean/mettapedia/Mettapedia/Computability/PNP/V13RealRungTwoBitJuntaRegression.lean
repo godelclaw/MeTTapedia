@@ -71,4 +71,12 @@ example (m : Nat) :
     V13RealLinearNoTargetBitJuntaSuccessBound m 0 :=
   v13RealLinearNoTargetBitJuntaSuccessBound_zeroBudget m
 
+example (m : Nat) :
+    V13RealLinearNoTargetBudgetedRowsetGenerationCountingBound m 1 :=
+  V13RealLinearNoTargetBudgetedRowsetGenerationCountingBound_oneBudget m
+
+example (m : Nat) :
+    V13RealLinearNoTargetBitJuntaSuccessBound m 1 :=
+  v13RealLinearNoTargetBitJuntaSuccessBound_oneBudget m
+
 end Mettapedia.Computability.PNP

@@ -422,6 +422,43 @@ theorem
   simp [hcard]
 
 theorem
+    V13RealLinearNoTargetBudgetedRowsetGenerationCountingBound_oneBudget
+    (m : Nat) :
+    V13RealLinearNoTargetBudgetedRowsetGenerationCountingBound m 1 := by
+  intro i₀ rows
+  have hcard :
+      Fintype.card
+          (V13RealLinearNoTargetBudgetedRowsetGeneratingMapSet i₀ rows) =
+        0 := by
+    rw [Fintype.card_eq_zero_iff]
+    refine ⟨?_⟩
+    intro A
+    rcases Nat.eq_zero_or_pos rows.1.card with hzero | hpos
+    · exact
+        v13RealLinear_not_rowsGenerateTarget_of_rows_card_zero
+          A.val.val i₀ hzero A.property
+    · have hone : rows.1.card = 1 :=
+        le_antisymm rows.2 (Nat.succ_le_of_lt hpos)
+      rcases Finset.card_eq_one.mp hone with ⟨row, hrowsEq⟩
+      have hgen :
+          V13RealLinearRowsGenerateTarget A.val.val
+            ({row} : Finset (Fin m)) i₀ := by
+        simpa [hrowsEq] using A.property
+      have htarget :
+          ∀ w : F2Vec m, A.val.val.toEquiv w row = w i₀ :=
+        (v13RealLinear_rowsGenerateTarget_singleton_iff
+          A.val.val row i₀).1 hgen
+      have hrowTarget :
+          row ∈ V13RealLinearTargetRows A.val.val i₀ :=
+        (v13RealLinear_mem_targetRows_iff A.val.val i₀ row).2 htarget
+      have hrowNotTarget :
+          row ∉ V13RealLinearTargetRows A.val.val i₀ := by
+        rw [A.val.property]
+        simp
+      exact hrowNotTarget hrowTarget
+  simp [hcard]
+
+theorem
     v13RealLinearNoTargetBitJunta_fixed_correct_card_eq_incorrect_card_of_not_blocked
     {m j : Nat} (i₀ : Fin m)
     (observer : V13RealLinearBitJuntaObserver m j)
@@ -956,6 +993,11 @@ theorem v13RealLinearNoTargetBitJuntaSuccessBound_zeroBudget (m : Nat) :
     V13RealLinearNoTargetBitJuntaSuccessBound m 0 :=
   v13RealLinearNoTargetBitJuntaSuccessBound_of_budgetedRowsetGeneration
     (V13RealLinearNoTargetBudgetedRowsetGenerationCountingBound_zeroBudget m)
+
+theorem v13RealLinearNoTargetBitJuntaSuccessBound_oneBudget (m : Nat) :
+    V13RealLinearNoTargetBitJuntaSuccessBound m 1 :=
+  v13RealLinearNoTargetBitJuntaSuccessBound_of_budgetedRowsetGeneration
+    (V13RealLinearNoTargetBudgetedRowsetGenerationCountingBound_oneBudget m)
 
 lemma v13_zmod2_eq_of_one_add_ne {a b : ZMod 2}
     (h : 1 + a ≠ b) : a = b := by
