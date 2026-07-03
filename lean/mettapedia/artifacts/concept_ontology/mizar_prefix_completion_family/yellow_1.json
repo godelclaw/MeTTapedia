@@ -486,5 +486,5 @@
       "preview": "definition let S,T be RelStr; func MonMaps (S,T) -> strict full SubRelStr of T|^the carrier of S means for f being Funct"
     }
   ],
-  "source_path": "/home/zar/claude/mizar/share/mml/yellow_1.miz"
+  "source_path": "~/claude/mizar/share/mml/yellow_1.miz"
 }

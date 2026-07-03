@@ -2,6 +2,7 @@ import Mettapedia.Computability.PNP.CruxKpolyBridgeCurrentStatus
 import Mettapedia.Computability.PNP.PairwiseCandidateBridge
 import Mettapedia.Computability.PNP.PairwiseColumnsObstruction
 import Mettapedia.Computability.PNP.PresentMomentShattering
+import Mettapedia.Computability.PNP.PostSwitchInputObstruction
 import Mettapedia.Computability.PNP.SymmetrizationObstruction
 import Mettapedia.Computability.PNP.TwoUniversalRhsIrrelevance
 

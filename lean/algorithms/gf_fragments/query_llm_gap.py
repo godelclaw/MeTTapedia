@@ -9,7 +9,7 @@ Output: {"suggestion":"...", "model":"...", "confidence":0.7, "trees":[{...}], "
 """
 import json, sys, os
 
-PGF_PATH = "/home/zar/claude/gf-wordnet/build/ParseEng.pgf"
+PGF_PATH = "~/claude/gf-wordnet/build/ParseEng.pgf"
 
 def mock_response(hypothesis, premises, gap):
     """Mock responses for known EntailmentBank examples."""

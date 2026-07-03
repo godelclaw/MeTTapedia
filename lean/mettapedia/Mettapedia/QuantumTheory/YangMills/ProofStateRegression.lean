@@ -23,6 +23,14 @@ theorem same_constant_lower_even_extraction_node_refuted_regression :
     yangMillsSameConstantLowerEvenExtractionNode.status = .refuted :=
   yangMillsSameConstantLowerEvenExtractionNode_refuted
 
+theorem extraction_constant_erratum_node_checked_regression :
+    yangMillsExtractionConstantErratumNode.status = .checked :=
+  yangMillsExtractionConstantErratumNode_checked
+
+theorem continuum_os_conditional_scaffold_node_checked_regression :
+    yangMillsContinuumOSConditionalScaffoldNode.status = .checked :=
+  yangMillsContinuumOSConditionalScaffoldNode_checked
+
 theorem current_rg_crux_same_constant_even_below_sixteen_route_refuted_regression
     {H : Type*} [NormedAddCommGroup H] [NormedSpace ℝ H]
     {A : LinearOperator H} {corr : SpatialCorrelation} {Δ : ℝ} :
@@ -39,6 +47,39 @@ theorem current_rg_crux_lower_even_extraction_arithmetic_packet_regression :
     HasExtendedExtractionContraction 2224 2 16 ∧
       ¬ HasExtendedExtractionContraction 2224 2 14 := by
   exact currentYangMillsRGCrux_lowerEvenExtraction_arithmetic_packet
+
+theorem current_extraction_constant_erratum_packet_regression :
+    benCauchyC1UpperBound ≤ (2224 : ℝ) ∧
+      benCauchyC1UpperBound * irrelevantScale 2 16 = (693 : ℝ) / 2560 ∧
+      benCauchyC1UpperBound * irrelevantScale 2 16 < 1 ∧
+      HasExtendedExtractionContraction benCauchyC1UpperBound 2 16 ∧
+      HasExtendedExtractionContraction 2224 2 16 := by
+  exact currentYangMillsExtractionConstantErratum_packet
+
+theorem current_extraction_constant_hypothetical_threshold_packet_regression :
+    ∀ {C : ℝ}, (8192 : ℝ) ≤ C →
+      ¬ HasExtendedExtractionContraction C 2 16 := by
+  exact currentYangMillsExtractionConstant_hypotheticalThreshold_packet
+
+theorem current_ben_route_reflection_positivity_open_input_regression :
+    currentYangMillsConstructiveWorldInterfaces.missingFor .reflectionPositivity =
+      [.reflectionPositiveFunctional, .reflectionPositiveCone] := by
+  exact currentYangMillsBenRoute_reflectionPositivityOpenInput
+
+theorem current_continuum_os_conditional_packet_regression
+    {H : Type*} [NormedAddCommGroup H] [NormedSpace ℝ H]
+    {A : LinearOperator H} {Δ : ℝ} {corr : SpatialCorrelation}
+    (D : BenYMContinuumOSConditional A Δ corr) :
+    BenStandingExtendedExtractionContraction ∧
+      HasSpectralMassGap A Δ ∧
+        0 < Δ ∧
+          currentYangMillsConstructiveWorldInterfaces.missingFor
+              .reflectionPositivity =
+            [.reflectionPositiveFunctional, .reflectionPositiveCone] ∧
+          preprints2025041268Verdict = .notRouteBlocking ∧
+          yangMillsContinuumOSConditionalScaffoldNode.status = .checked ∧
+          yangMillsMassGapEndpointNode.status = .openGoal := by
+  exact currentYangMillsContinuumOSConditional_packet D
 
 theorem current_constructive_status_unrepresented_checks_regression :
     currentYangMillsConstructiveStatus.unrepresentedChecks =

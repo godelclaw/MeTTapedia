@@ -17,7 +17,7 @@ other semantic values are represented by closed terms in the cumulative Henkin
 signature.
 
 It is intentionally lighter-weight than
-`/home/zar/claude/lean-projects/mettapedia/Mettapedia/Logic/HOL/Semantics/HeytingHenkin.lean`:
+`~/claude/lean-projects/mettapedia/Mettapedia/Logic/HOL/Semantics/HeytingHenkin.lean`:
 the current completeness path needs a typed canonical semantics first, and only
 later a clean bridge into the total-function `HeytingHenkinModel` interface.
 -/

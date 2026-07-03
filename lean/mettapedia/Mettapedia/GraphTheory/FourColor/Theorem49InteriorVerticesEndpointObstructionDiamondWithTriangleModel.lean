@@ -1208,6 +1208,71 @@ theorem
         diamondWithTriangleInnerBoundaryCycleSet,
         annulusBoundaryCyclePair_diamondWithTriangle⟩)
 
+/-- Fixed-graph universal obstruction for the witness-strengthened no-chord packet:
+even a closed-walk annulus source whose own boundary data admits a canonical witness choice,
+plus a cyclic outer/inner boundary edge pair, does not force selected-boundary chord-freedom. -/
+theorem
+    not_forall_closedWalkAnnulusBoundarySource_with_canonicalWitnessChoice_and_exists_boundaryCyclePair_implies_interiorEdgesNotSelectedBoundaryChords_diamondWithTriangleGraph :
+    ¬ ∀ {emb : PlaneEmbeddingWithBoundary diamondWithTriangleGraph},
+      (∃ source : PlanarBoundaryClosedWalkAnnulusBoundarySource emb,
+        Nonempty
+          (PlanarBoundaryCanonicalWitnessChoice
+            source.toPlanarBoundaryAnnulusBoundaryData)) →
+        (∃ outer inner : Finset diamondWithTriangleGraph.edgeSet,
+          AnnulusBoundaryCyclePair emb outer inner) →
+          InteriorEdgesNotSelectedBoundaryChords emb := by
+  intro h
+  exact not_interiorEdgesNotSelectedBoundaryChords_diamondWithTriangle
+    (h (emb := diamondWithTriangleEmbedding)
+      ⟨diamondWithTriangleClosedWalkAnnulusBoundarySource,
+        nonempty_planarBoundaryCanonicalWitnessChoice_diamondWithTriangle⟩
+      ⟨diamondWithTriangleOuterBoundaryCycleSet,
+        diamondWithTriangleInnerBoundaryCycleSet,
+        annulusBoundaryCyclePair_diamondWithTriangle⟩)
+
+/-- Fixed-graph universal obstruction for the witness-strengthened selected-boundary-induced
+packet.  The source-bound canonical witness choice does not repair the diamond interior chord. -/
+theorem
+    not_forall_closedWalkAnnulusBoundarySource_with_canonicalWitnessChoice_and_exists_boundaryCyclePair_implies_selectedBoundaryInducedSubgraph_diamondWithTriangleGraph :
+    ¬ ∀ {emb : PlaneEmbeddingWithBoundary diamondWithTriangleGraph},
+      (∃ source : PlanarBoundaryClosedWalkAnnulusBoundarySource emb,
+        Nonempty
+          (PlanarBoundaryCanonicalWitnessChoice
+            source.toPlanarBoundaryAnnulusBoundaryData)) →
+        (∃ outer inner : Finset diamondWithTriangleGraph.edgeSet,
+          AnnulusBoundaryCyclePair emb outer inner) →
+          SelectedBoundaryInducedSubgraph emb := by
+  intro h
+  exact not_selectedBoundaryInducedSubgraph_diamondWithTriangle
+    (h (emb := diamondWithTriangleEmbedding)
+      ⟨diamondWithTriangleClosedWalkAnnulusBoundarySource,
+        nonempty_planarBoundaryCanonicalWitnessChoice_diamondWithTriangle⟩
+      ⟨diamondWithTriangleOuterBoundaryCycleSet,
+        diamondWithTriangleInnerBoundaryCycleSet,
+        annulusBoundaryCyclePair_diamondWithTriangle⟩)
+
+/-- Fixed-graph universal obstruction for the witness-strengthened purified-carrier packet.
+The same honest source and witness choice still leave the selected-boundary-purified carrier
+empty. -/
+theorem
+    not_forall_closedWalkAnnulusBoundarySource_with_canonicalWitnessChoice_and_exists_boundaryCyclePair_implies_nonempty_selectedBoundaryInteriorEdgeEndpointVertices_diamondWithTriangleGraph :
+    ¬ ∀ {emb : PlaneEmbeddingWithBoundary diamondWithTriangleGraph},
+      (∃ source : PlanarBoundaryClosedWalkAnnulusBoundarySource emb,
+        Nonempty
+          (PlanarBoundaryCanonicalWitnessChoice
+            source.toPlanarBoundaryAnnulusBoundaryData)) →
+        (∃ outer inner : Finset diamondWithTriangleGraph.edgeSet,
+          AnnulusBoundaryCyclePair emb outer inner) →
+          (selectedBoundaryInteriorEdgeEndpointVertices emb).Nonempty := by
+  intro h
+  exact not_selectedBoundaryInteriorEdgeEndpointVertices_nonempty_diamondWithTriangle
+    (h (emb := diamondWithTriangleEmbedding)
+      ⟨diamondWithTriangleClosedWalkAnnulusBoundarySource,
+        nonempty_planarBoundaryCanonicalWitnessChoice_diamondWithTriangle⟩
+      ⟨diamondWithTriangleOuterBoundaryCycleSet,
+        diamondWithTriangleInnerBoundaryCycleSet,
+        annulusBoundaryCyclePair_diamondWithTriangle⟩)
+
 /-- The preceding boundary-source countermodel is deliberately not a countermodel to the peeled
 interior-dual annulus route.  In this embedding, covering the unique interior edge `dt12` would
 force a peeled witness face to be one of the two diamond triangles, but both such faces contain

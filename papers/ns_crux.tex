@@ -2134,7 +2134,7 @@ the same concrete one: the exact witness fails at
 identity.
 Cleanup note, 2026-05-05: this full-drift witness-layer file pair is now
 archived under
-\texttt{/home/zarclaw/automation/aihub/archive/mil-cleanup-20260505/}.  It is
+\texttt{~/automation/aihub/archive/mil-cleanup-20260505/}.  It is
 retained as a historical bounded-energy obstruction, but it is no longer an
 active route module: later residual-curl target compositions and the multi-mode
 BKM-data over-determination obstruction carry the route-relevant pressure and
@@ -4122,32 +4122,32 @@ NavierStokesFiniteModeBoundedEnergyRegression
 The pressure-integrable energy/continuation bridge step was checked with the
 project wrapper:
 \begin{verbatim}
-/home/zarclaw/automation/aihub/scripts/mettapedia-lean-task.sh build \
+~/automation/aihub/scripts/mettapedia-lean-task.sh build \
   Mettapedia.FluidDynamics.NavierStokes.\
 NavierStokesEnergyContinuationBridgeRegression
 \end{verbatim}
 Focused dependency reports were written to:
 \begin{verbatim}
-/home/zarclaw/automation/aihub/state/ns/deps/\
+~/automation/aihub/state/ns/deps/\
 DEPS-20260504T173145-energy-continuation-pressure-integrable.txt
-/home/zarclaw/automation/aihub/state/ns/deps/\
+~/automation/aihub/state/ns/deps/\
 DEPS-20260504T173145-energy-continuation-pressure-integrable-regression.txt
 \end{verbatim}
 Both reports record zero direct and zero recursive sorries for the checked
 bridge and regression declarations.
 The Schwartz-pressure-slice strengthening was then checked with:
 \begin{verbatim}
-/home/zarclaw/automation/aihub/scripts/mettapedia-lean-task.sh build \
+~/automation/aihub/scripts/mettapedia-lean-task.sh build \
   Mettapedia.FluidDynamics.NavierStokes.\
 NavierStokesEnergyContinuationBridgeRegression
 \end{verbatim}
 with focused dependency reports:
 \begin{verbatim}
-/home/zarclaw/automation/aihub/state/ns/deps/\
+~/automation/aihub/state/ns/deps/\
 DEPS-20260504T174530-energy-pressure-schwartz-slices.txt
-/home/zarclaw/automation/aihub/state/ns/deps/\
+~/automation/aihub/state/ns/deps/\
 DEPS-20260504T174531-energy-continuation-schwartz-pressure-slices.txt
-/home/zarclaw/automation/aihub/state/ns/deps/\
+~/automation/aihub/state/ns/deps/\
 DEPS-20260504T174531-energy-continuation-schwartz-pressure-slices-regression.txt
 \end{verbatim}
 These reports record zero direct and zero recursive sorries for the pressure
@@ -4155,66 +4155,66 @@ slice lemmas, the bridge theorem, and the regression theorem.
 The pressure-slice witness and finite-mode BKM-premise connection was then
 checked with:
 \begin{verbatim}
-/home/zarclaw/automation/aihub/scripts/mettapedia-lean-task.sh build \
+~/automation/aihub/scripts/mettapedia-lean-task.sh build \
   Mettapedia.FluidDynamics.NavierStokes.\
 NavierStokesEnergyContinuationBridgeRegression
-/home/zarclaw/automation/aihub/scripts/mettapedia-lean-task.sh build \
+~/automation/aihub/scripts/mettapedia-lean-task.sh build \
   Mettapedia.FluidDynamics.NavierStokes.\
 NavierStokesFiniteModeSchwartzBKMBridgeRegression
 \end{verbatim}
 with focused dependency reports:
 \begin{verbatim}
-/home/zarclaw/automation/aihub/state/ns/deps/\
+~/automation/aihub/state/ns/deps/\
 DEPS-20260504T175704-energy-continuation-schwartz-pressure-slice-witness.txt
-/home/zarclaw/automation/aihub/state/ns/deps/\
+~/automation/aihub/state/ns/deps/\
 DEPS-20260504T175709-energy-continuation-schwartz-pressure-slice-witness-regression.txt
-/home/zarclaw/automation/aihub/state/ns/deps/\
+~/automation/aihub/state/ns/deps/\
 DEPS-20260504T175959-finite-mode-schwartz-bkm-pressure-slice-premise-visible.txt
-/home/zarclaw/automation/aihub/state/ns/deps/\
+~/automation/aihub/state/ns/deps/\
 DEPS-20260504T175859-finite-mode-schwartz-bkm-pressure-slice-premise-regression.txt
 \end{verbatim}
 These reports record zero direct and zero recursive sorries for the new witness,
 finite-mode BKM-premise, and regression declarations.
 The explicit pressure-slice residual-closure bridge was then checked with:
 \begin{verbatim}
-/home/zarclaw/automation/aihub/scripts/mettapedia-lean-task.sh build \
+~/automation/aihub/scripts/mettapedia-lean-task.sh build \
   Mettapedia.FluidDynamics.NavierStokes.\
 NavierStokesFiniteModeBoundedEnergyRegression
-/home/zarclaw/automation/aihub/scripts/mettapedia-lean-task.sh build \
+~/automation/aihub/scripts/mettapedia-lean-task.sh build \
   Mettapedia.FluidDynamics.NavierStokes.\
 NavierStokesFiniteModeSchwartzBKMBridgeRegression
 \end{verbatim}
 with focused dependency reports:
 \begin{verbatim}
-/home/zarclaw/automation/aihub/state/ns/deps/\
+~/automation/aihub/state/ns/deps/\
 DEPS-20260504T181127-finite-mode-pressure-slice-explicit-closure.txt
-/home/zarclaw/automation/aihub/state/ns/deps/\
+~/automation/aihub/state/ns/deps/\
 DEPS-20260504T181132-finite-mode-pressure-slice-explicit-closure-regression.txt
-/home/zarclaw/automation/aihub/state/ns/deps/\
+~/automation/aihub/state/ns/deps/\
 DEPS-20260504T181135-finite-mode-pressure-slice-explicit-closure-bkm.txt
-/home/zarclaw/automation/aihub/state/ns/deps/\
+~/automation/aihub/state/ns/deps/\
 DEPS-20260504T181139-finite-mode-pressure-slice-explicit-closure-bkm-regression.txt
 \end{verbatim}
 These reports record zero direct and zero recursive sorries for the expanded
 momentum-closure theorem, its finite-mode BKM bridge, and their regressions.
 The pressure-slice anti-profile cancellation baseline was then checked with:
 \begin{verbatim}
-/home/zarclaw/automation/aihub/scripts/mettapedia-lean-task.sh build \
+~/automation/aihub/scripts/mettapedia-lean-task.sh build \
   Mettapedia.FluidDynamics.NavierStokes.\
 NavierStokesFiniteModeBoundedEnergyRegression
-/home/zarclaw/automation/aihub/scripts/mettapedia-lean-task.sh build \
+~/automation/aihub/scripts/mettapedia-lean-task.sh build \
   Mettapedia.FluidDynamics.NavierStokes.\
 NavierStokesFiniteModeSchwartzBKMBridgeRegression
 \end{verbatim}
 with focused dependency reports:
 \begin{verbatim}
-/home/zarclaw/automation/aihub/state/ns/deps/\
+~/automation/aihub/state/ns/deps/\
 DEPS-20260504T182427-finite-mode-pressure-slice-antiprofile-closure.txt
-/home/zarclaw/automation/aihub/state/ns/deps/\
+~/automation/aihub/state/ns/deps/\
 DEPS-20260504T182432-finite-mode-pressure-slice-antiprofile-closure-regression.txt
-/home/zarclaw/automation/aihub/state/ns/deps/\
+~/automation/aihub/state/ns/deps/\
 DEPS-20260504T182436-finite-mode-pressure-slice-antiprofile-bkm.txt
-/home/zarclaw/automation/aihub/state/ns/deps/\
+~/automation/aihub/state/ns/deps/\
 DEPS-20260504T182441-finite-mode-pressure-slice-antiprofile-bkm-regression.txt
 \end{verbatim}
 These reports record 49 bounded-energy declarations, 40 bounded-energy
@@ -4223,22 +4223,22 @@ regression declarations respectively, all with zero direct and zero recursive
 sorries.
 The equal-amplitude anti-profile strengthening was then checked with:
 \begin{verbatim}
-/home/zarclaw/automation/aihub/scripts/mettapedia-lean-task.sh build \
+~/automation/aihub/scripts/mettapedia-lean-task.sh build \
   Mettapedia.FluidDynamics.NavierStokes.\
 NavierStokesFiniteModeBoundedEnergyRegression
-/home/zarclaw/automation/aihub/scripts/mettapedia-lean-task.sh build \
+~/automation/aihub/scripts/mettapedia-lean-task.sh build \
   Mettapedia.FluidDynamics.NavierStokes.\
 NavierStokesFiniteModeSchwartzBKMBridgeRegression
 \end{verbatim}
 with focused dependency reports:
 \begin{verbatim}
-/home/zarclaw/automation/aihub/state/ns/deps/\
+~/automation/aihub/state/ns/deps/\
 DEPS-20260504T183449-finite-mode-pressure-slice-equal-antiprofile-closure.txt
-/home/zarclaw/automation/aihub/state/ns/deps/\
+~/automation/aihub/state/ns/deps/\
 DEPS-20260504T183449-finite-mode-pressure-slice-equal-antiprofile-closure-regression.txt
-/home/zarclaw/automation/aihub/state/ns/deps/\
+~/automation/aihub/state/ns/deps/\
 DEPS-20260504T183449-finite-mode-pressure-slice-equal-antiprofile-bkm.txt
-/home/zarclaw/automation/aihub/state/ns/deps/\
+~/automation/aihub/state/ns/deps/\
 DEPS-20260504T183449-finite-mode-pressure-slice-equal-antiprofile-bkm-regression.txt
 \end{verbatim}
 These reports record 53 bounded-energy declarations, 41 bounded-energy
@@ -4247,15 +4247,15 @@ regression declarations respectively, all with zero direct and zero recursive
 sorries.
 The anti-profile zero-flow exactness boundary was then checked with:
 \begin{verbatim}
-/home/zarclaw/automation/aihub/scripts/mettapedia-lean-task.sh build \
+~/automation/aihub/scripts/mettapedia-lean-task.sh build \
   Mettapedia.FluidDynamics.NavierStokes.\
 NavierStokesFiniteModeBoundedEnergyRegression
 \end{verbatim}
 with focused dependency reports:
 \begin{verbatim}
-/home/zarclaw/automation/aihub/state/ns/deps/\
+~/automation/aihub/state/ns/deps/\
 DEPS-20260504T184624-finite-mode-antiprofile-zero-exactness.txt
-/home/zarclaw/automation/aihub/state/ns/deps/\
+~/automation/aihub/state/ns/deps/\
 DEPS-20260504T184624-finite-mode-antiprofile-zero-exactness-regression.txt
 \end{verbatim}
 These reports record 56 bounded-energy declarations and 44 bounded-energy
@@ -4263,15 +4263,15 @@ regression declarations respectively, all with zero direct and zero recursive
 sorries.
 The witness-level zero-flow audit was then checked with:
 \begin{verbatim}
-/home/zarclaw/automation/aihub/scripts/mettapedia-lean-task.sh build \
+~/automation/aihub/scripts/mettapedia-lean-task.sh build \
   Mettapedia.FluidDynamics.NavierStokes.\
 NavierStokesFiniteModeSchwartzBKMBridgeRegression
 \end{verbatim}
 with focused dependency reports:
 \begin{verbatim}
-/home/zarclaw/automation/aihub/state/ns/deps/\
+~/automation/aihub/state/ns/deps/\
 DEPS-20260504T190035-finite-mode-equal-antiprofile-zero-witness.txt
-/home/zarclaw/automation/aihub/state/ns/deps/\
+~/automation/aihub/state/ns/deps/\
 DEPS-20260504T190034-finite-mode-equal-antiprofile-zero-witness-regression.txt
 \end{verbatim}
 These reports record 6 finite-mode BKM bridge declarations and 9 bridge
@@ -4280,9 +4280,9 @@ sorries.
 The zero-envelope refinement was checked with the same focused build and with
 focused dependency reports:
 \begin{verbatim}
-/home/zarclaw/automation/aihub/state/ns/deps/\
+~/automation/aihub/state/ns/deps/\
 DEPS-20260504T191246-finite-mode-equal-antiprofile-zero-envelope.txt
-/home/zarclaw/automation/aihub/state/ns/deps/\
+~/automation/aihub/state/ns/deps/\
 DEPS-20260504T191246-finite-mode-equal-antiprofile-zero-envelope-regression.txt
 \end{verbatim}
 These reports record 7 finite-mode BKM bridge declarations and 10 bridge
@@ -4290,9 +4290,9 @@ regression declarations respectively, again all with zero direct and zero
 recursive sorries.
 The canonical-zero-witness refinement was checked with:
 \begin{verbatim}
-/home/zarclaw/automation/aihub/state/ns/deps/\
+~/automation/aihub/state/ns/deps/\
 DEPS-20260504T192509-finite-mode-equal-antiprofile-canonical-zero-witness.txt
-/home/zarclaw/automation/aihub/state/ns/deps/\
+~/automation/aihub/state/ns/deps/\
 DEPS-20260504T192509-finite-mode-equal-antiprofile-canonical-zero-witness-regression.txt
 \end{verbatim}
 These reports record 8 finite-mode BKM bridge declarations and 11 bridge
@@ -4301,13 +4301,13 @@ sorries.
 The affine time-only pressure-gauge audit was checked with the lower
 finite-mode and BKM bridge builds and with:
 \begin{verbatim}
-/home/zarclaw/automation/aihub/state/ns/deps/\
+~/automation/aihub/state/ns/deps/\
 DEPS-20260504T194340-finite-mode-antiprofile-affine-time-only.txt
-/home/zarclaw/automation/aihub/state/ns/deps/\
+~/automation/aihub/state/ns/deps/\
 DEPS-20260504T194349-finite-mode-antiprofile-affine-time-only-regression.txt
-/home/zarclaw/automation/aihub/state/ns/deps/\
+~/automation/aihub/state/ns/deps/\
 DEPS-20260504T194355-finite-mode-antiprofile-affine-time-only-bkm.txt
-/home/zarclaw/automation/aihub/state/ns/deps/\
+~/automation/aihub/state/ns/deps/\
 DEPS-20260504T194359-finite-mode-antiprofile-affine-time-only-bkm-regression.txt
 \end{verbatim}
 These reports record 57 bounded-energy declarations, 45 bounded-energy
@@ -4316,9 +4316,9 @@ regression declarations respectively, all with zero direct and zero recursive
 sorries.
 The canonical-gauge witness refinement was checked with:
 \begin{verbatim}
-/home/zarclaw/automation/aihub/state/ns/deps/\
+~/automation/aihub/state/ns/deps/\
 DEPS-20260504T195624-finite-mode-antiprofile-affine-time-only-canonical-gauge.txt
-/home/zarclaw/automation/aihub/state/ns/deps/\
+~/automation/aihub/state/ns/deps/\
 DEPS-20260504T195628-finite-mode-antiprofile-affine-time-only-canonical-gauge-regression.txt
 \end{verbatim}
 These reports record 10 BKM bridge declarations and 13 BKM bridge regression
@@ -4326,11 +4326,11 @@ declarations respectively, again all with zero direct and zero recursive
 sorries.
 The spatial-affine pressure obstruction was checked with:
 \begin{verbatim}
-/home/zarclaw/automation/aihub/state/ns/deps/\
+~/automation/aihub/state/ns/deps/\
 DEPS-20260504T201255-finite-mode-antiprofile-spatial-affine-pressure-obstruction.txt
-/home/zarclaw/automation/aihub/state/ns/deps/\
+~/automation/aihub/state/ns/deps/\
 DEPS-20260504T201303-finite-mode-antiprofile-spatial-affine-pressure-obstruction-regression.txt
-/home/zarclaw/automation/aihub/state/ns/deps/\
+~/automation/aihub/state/ns/deps/\
 DEPS-20260504T201308-finite-mode-antiprofile-spatial-affine-pressure-obstruction-bkm-regression.txt
 \end{verbatim}
 These reports record 62 bounded-energy declarations, 50 bounded-energy
@@ -4338,36 +4338,36 @@ regression declarations, and 13 BKM bridge regression declarations respectively,
 all with zero direct and zero recursive sorries.
 The BKM-data lift was checked with:
 \begin{verbatim}
-/home/zarclaw/automation/aihub/state/ns/deps/\
+~/automation/aihub/state/ns/deps/\
 DEPS-20260504T202220-finite-mode-bkm-spatial-affine-pressure-obstruction.txt
-/home/zarclaw/automation/aihub/state/ns/deps/\
+~/automation/aihub/state/ns/deps/\
 DEPS-20260504T202220-finite-mode-bkm-spatial-affine-pressure-obstruction-regression.txt
 \end{verbatim}
 These reports record 11 BKM bridge declarations and 14 BKM bridge regression
 declarations respectively, all with zero direct and zero recursive sorries.
 The broader BKM pressure-gradient obstruction was checked with:
 \begin{verbatim}
-/home/zarclaw/automation/aihub/state/ns/deps/\
+~/automation/aihub/state/ns/deps/\
 DEPS-20260504T203139-finite-mode-bkm-pressure-gradient-obstruction.txt
-/home/zarclaw/automation/aihub/state/ns/deps/\
+~/automation/aihub/state/ns/deps/\
 DEPS-20260504T203143-finite-mode-bkm-pressure-gradient-obstruction-regression.txt
 \end{verbatim}
 These reports record 12 BKM bridge declarations and 15 BKM bridge regression
 declarations respectively, all with zero direct and zero recursive sorries.
 The zero-velocity BKM pressure-gradient classification was checked with:
 \begin{verbatim}
-/home/zarclaw/automation/aihub/state/ns/deps/\
+~/automation/aihub/state/ns/deps/\
 DEPS-20260504T203905-finite-mode-bkm-zero-velocity-pressure-gradient-classification.txt
-/home/zarclaw/automation/aihub/state/ns/deps/\
+~/automation/aihub/state/ns/deps/\
 DEPS-20260504T203909-finite-mode-bkm-zero-velocity-pressure-gradient-classification-regression.txt
 \end{verbatim}
 These reports record 13 BKM bridge declarations and 16 BKM bridge regression
 declarations respectively, all with zero direct and zero recursive sorries.
 The zero-velocity BKM initial-data obstruction was checked with:
 \begin{verbatim}
-/home/zarclaw/automation/aihub/state/ns/deps/\
+~/automation/aihub/state/ns/deps/\
 DEPS-20260504T204702-finite-mode-bkm-zero-velocity-initial-data-obstruction.txt
-/home/zarclaw/automation/aihub/state/ns/deps/\
+~/automation/aihub/state/ns/deps/\
 DEPS-20260504T204708-finite-mode-bkm-zero-velocity-initial-data-obstruction-regression.txt
 \end{verbatim}
 These reports record 15 BKM bridge declarations and 18 BKM bridge regression
@@ -4375,36 +4375,36 @@ declarations respectively, all with zero direct and zero recursive sorries.
 The combined zero-velocity BKM classification and disjunctive no-go theorem
 were checked with:
 \begin{verbatim}
-/home/zarclaw/automation/aihub/state/ns/deps/\
+~/automation/aihub/state/ns/deps/\
 DEPS-20260504T205836-finite-mode-bkm-zero-velocity-combined-classification-layout-fixed.txt
-/home/zarclaw/automation/aihub/state/ns/deps/\
+~/automation/aihub/state/ns/deps/\
 DEPS-20260504T205840-finite-mode-bkm-zero-velocity-combined-classification-layout-fixed-regression.txt
 \end{verbatim}
 These reports record 17 BKM bridge declarations and 20 BKM bridge regression
 declarations respectively, all with zero direct and zero recursive sorries.
 The exact zero-velocity BKM classification was checked with:
 \begin{verbatim}
-/home/zarclaw/automation/aihub/state/ns/deps/\
+~/automation/aihub/state/ns/deps/\
 DEPS-20260504T210805-finite-mode-bkm-zero-velocity-exact-classification.txt
-/home/zarclaw/automation/aihub/state/ns/deps/\
+~/automation/aihub/state/ns/deps/\
 DEPS-20260504T210805-finite-mode-bkm-zero-velocity-exact-classification-regression.txt
 \end{verbatim}
 These reports record 18 BKM bridge declarations and 22 BKM bridge regression
 declarations respectively, all with zero direct and zero recursive sorries.
 The time-only zero-velocity BKM gauge specialization was checked with:
 \begin{verbatim}
-/home/zarclaw/automation/aihub/state/ns/deps/\
+~/automation/aihub/state/ns/deps/\
 DEPS-20260504T211701-finite-mode-bkm-time-only-classification.txt
-/home/zarclaw/automation/aihub/state/ns/deps/\
+~/automation/aihub/state/ns/deps/\
 DEPS-20260504T211701-finite-mode-bkm-time-only-classification-regression.txt
 \end{verbatim}
 These reports record 21 BKM bridge declarations and 24 BKM bridge regression
 declarations respectively, all with zero direct and zero recursive sorries.
 The exact spatial-affine zero-velocity BKM classification was checked with:
 \begin{verbatim}
-/home/zarclaw/automation/aihub/state/ns/deps/\
+~/automation/aihub/state/ns/deps/\
 DEPS-20260504T212437-finite-mode-bkm-spatial-affine-exact-classification-layout-fixed.txt
-/home/zarclaw/automation/aihub/state/ns/deps/\
+~/automation/aihub/state/ns/deps/\
 DEPS-20260504T212437-finite-mode-bkm-spatial-affine-exact-classification-layout-fixed-regression.txt
 \end{verbatim}
 These reports record 24 BKM bridge declarations and 27 BKM bridge regression
@@ -4412,18 +4412,18 @@ declarations respectively, all with zero direct and zero recursive sorries.
 The exact full affine-plus-localized zero-velocity BKM classification was
 checked with:
 \begin{verbatim}
-/home/zarclaw/automation/aihub/state/ns/deps/\
+~/automation/aihub/state/ns/deps/\
 DEPS-20260504T213803-finite-mode-bkm-full-affine-localized-classification.txt
-/home/zarclaw/automation/aihub/state/ns/deps/\
+~/automation/aihub/state/ns/deps/\
 DEPS-20260504T213803-finite-mode-bkm-full-affine-localized-classification-regression.txt
 \end{verbatim}
 These reports record 30 BKM bridge declarations and 33 BKM bridge regression
 declarations respectively, all with zero direct and zero recursive sorries.
 The nonzero-amplitude constant-gradient consequence was checked with:
 \begin{verbatim}
-/home/zarclaw/automation/aihub/state/ns/deps/\
+~/automation/aihub/state/ns/deps/\
 DEPS-20260504T214530-finite-mode-bkm-nonzero-amplitude-constant-gradient.txt
-/home/zarclaw/automation/aihub/state/ns/deps/\
+~/automation/aihub/state/ns/deps/\
 DEPS-20260504T214533-finite-mode-bkm-nonzero-amplitude-constant-gradient-regression.txt
 \end{verbatim}
 These reports record 31 BKM bridge declarations and 34 BKM bridge regression
@@ -4431,18 +4431,18 @@ declarations respectively, all with zero direct and zero recursive sorries.
 The stronger Schwartz constant-gradient collapse and its BKM consequences were
 checked with:
 \begin{verbatim}
-/home/zarclaw/automation/aihub/state/ns/deps/\
+~/automation/aihub/state/ns/deps/\
 DEPS-20260504T215836-finite-mode-bkm-schwartz-constant-gradient-zero.txt
-/home/zarclaw/automation/aihub/state/ns/deps/\
+~/automation/aihub/state/ns/deps/\
 DEPS-20260504T215839-finite-mode-bkm-schwartz-constant-gradient-zero-regression.txt
 \end{verbatim}
 These reports record 34 BKM bridge declarations and 37 BKM bridge regression
 declarations respectively, all with zero direct and zero recursive sorries.
 The exact collapsed zero-flow classification was checked with:
 \begin{verbatim}
-/home/zarclaw/automation/aihub/state/ns/deps/\
+~/automation/aihub/state/ns/deps/\
 DEPS-20260504T220735-finite-mode-bkm-exact-collapsed-zero-flow.txt
-/home/zarclaw/automation/aihub/state/ns/deps/\
+~/automation/aihub/state/ns/deps/\
 DEPS-20260504T220735-finite-mode-bkm-exact-collapsed-zero-flow-regression.txt
 \end{verbatim}
 These reports record 35 BKM bridge declarations and 38 BKM bridge regression
@@ -4451,9 +4451,9 @@ The equal-amplitude anti-profile momentum-equation collapse for the full
 affine-plus-localized pressure class was checked with the same focused build
 and with:
 \begin{verbatim}
-/home/zarclaw/automation/aihub/state/ns/deps/\
+~/automation/aihub/state/ns/deps/\
 DEPS-20260504T221833-finite-mode-antiprofile-full-affine-localized-momentum-collapse.txt
-/home/zarclaw/automation/aihub/state/ns/deps/\
+~/automation/aihub/state/ns/deps/\
 DEPS-20260504T221833-finite-mode-antiprofile-full-affine-localized-momentum-collapse-regression.txt
 \end{verbatim}
 These reports record 36 BKM bridge declarations and 39 BKM bridge regression
@@ -4461,18 +4461,18 @@ declarations respectively, all with zero direct and zero recursive sorries.
 The matching BKM-data collapse for the same anti-profile pressure family was
 checked with:
 \begin{verbatim}
-/home/zarclaw/automation/aihub/state/ns/deps/\
+~/automation/aihub/state/ns/deps/\
 DEPS-20260504T222809-finite-mode-antiprofile-full-affine-localized-bkm-collapse.txt
-/home/zarclaw/automation/aihub/state/ns/deps/\
+~/automation/aihub/state/ns/deps/\
 DEPS-20260504T222809-finite-mode-antiprofile-full-affine-localized-bkm-collapse-regression.txt
 \end{verbatim}
 These reports record 37 BKM bridge declarations and 40 BKM bridge regression
 declarations respectively, all with zero direct and zero recursive sorries.
 The direct no-go corollary for the same BKM-data surface was checked with:
 \begin{verbatim}
-/home/zarclaw/automation/aihub/state/ns/deps/\
+~/automation/aihub/state/ns/deps/\
 DEPS-20260504T224212-finite-mode-antiprofile-full-affine-localized-bkm-no-go.txt
-/home/zarclaw/automation/aihub/state/ns/deps/\
+~/automation/aihub/state/ns/deps/\
 DEPS-20260504T224212-finite-mode-antiprofile-full-affine-localized-bkm-no-go-regression.txt
 \end{verbatim}
 These reports record 38 BKM bridge declarations and 41 BKM bridge regression
@@ -4480,9 +4480,9 @@ declarations respectively, all with zero direct and zero recursive sorries.
 The follow-up clause/data separation theorem for the same bad pressure surface
 was checked with:
 \begin{verbatim}
-/home/zarclaw/automation/aihub/state/ns/deps/\
+~/automation/aihub/state/ns/deps/\
 DEPS-20260504T224952-finite-mode-antiprofile-bare-bkm-clause-mismatch.txt
-/home/zarclaw/automation/aihub/state/ns/deps/\
+~/automation/aihub/state/ns/deps/\
 DEPS-20260504T224955-finite-mode-antiprofile-bare-bkm-clause-mismatch-regression.txt
 \end{verbatim}
 These reports record 39 BKM bridge declarations and 42 BKM bridge regression
@@ -4490,27 +4490,27 @@ declarations respectively, all with zero direct and zero recursive sorries.
 The constructor-input separation theorem for the same anti-profile pressure
 family was checked with:
 \begin{verbatim}
-/home/zarclaw/automation/aihub/state/ns/deps/\
+~/automation/aihub/state/ns/deps/\
 DEPS-20260504T225853-finite-mode-antiprofile-bkm-clause-momentum-input-mismatch.txt
-/home/zarclaw/automation/aihub/state/ns/deps/\
+~/automation/aihub/state/ns/deps/\
 DEPS-20260504T225857-finite-mode-antiprofile-bkm-clause-momentum-input-mismatch-regression.txt
 \end{verbatim}
 These reports record 40 BKM bridge declarations and 43 BKM bridge regression
 declarations respectively, all with zero direct and zero recursive sorries.
 The matching data-level anti-profile initial-datum no-go was checked with:
 \begin{verbatim}
-/home/zarclaw/automation/aihub/state/ns/deps/\
+~/automation/aihub/state/ns/deps/\
 DEPS-20260504T231542-finite-mode-antiprofile-initial-clause-data-mismatch.txt
-/home/zarclaw/automation/aihub/state/ns/deps/\
+~/automation/aihub/state/ns/deps/\
 DEPS-20260504T231542-finite-mode-antiprofile-initial-clause-data-mismatch-regression.txt
 \end{verbatim}
 These reports record 41 BKM bridge declarations and 44 BKM bridge regression
 declarations respectively, all with zero direct and zero recursive sorries.
 The exact initial-datum BKM-data collapse was checked with:
 \begin{verbatim}
-/home/zarclaw/automation/aihub/state/ns/deps/\
+~/automation/aihub/state/ns/deps/\
 DEPS-20260504T232245-finite-mode-antiprofile-initial-bkm-data-exact-collapse.txt
-/home/zarclaw/automation/aihub/state/ns/deps/\
+~/automation/aihub/state/ns/deps/\
 DEPS-20260504T232245-finite-mode-antiprofile-initial-bkm-data-exact-collapse-regression.txt
 \end{verbatim}
 These reports record 43 BKM bridge declarations and 46 BKM bridge regression
@@ -4518,9 +4518,9 @@ declarations respectively, all with zero direct and zero recursive sorries.
 The reusable pressure-independent anti-profile BKM-data normalizations were
 checked with:
 \begin{verbatim}
-/home/zarclaw/automation/aihub/state/ns/deps/\
+~/automation/aihub/state/ns/deps/\
 DEPS-20260504T233022-finite-mode-antiprofile-bkm-data-general-normalization.txt
-/home/zarclaw/automation/aihub/state/ns/deps/\
+~/automation/aihub/state/ns/deps/\
 DEPS-20260504T233022-finite-mode-antiprofile-bkm-data-general-normalization-regression.txt
 \end{verbatim}
 These reports record 45 BKM bridge declarations and 48 BKM bridge regression
@@ -4528,9 +4528,9 @@ declarations respectively, all with zero direct and zero recursive sorries.
 The arbitrary-pressure anti-profile BKM-data exact boundary and no-go forms
 were checked with:
 \begin{verbatim}
-/home/zarclaw/automation/aihub/state/ns/deps/\
+~/automation/aihub/state/ns/deps/\
 DEPS-20260504T233950-finite-mode-antiprofile-bkm-data-arbitrary-pressure.txt
-/home/zarclaw/automation/aihub/state/ns/deps/\
+~/automation/aihub/state/ns/deps/\
 DEPS-20260504T233950-finite-mode-antiprofile-bkm-data-arbitrary-pressure-regression.txt
 \end{verbatim}
 These reports record 49 BKM bridge declarations and 52 BKM bridge regression
@@ -4538,9 +4538,9 @@ declarations respectively, all with zero direct and zero recursive sorries.
 The corresponding arbitrary-pressure finite-energy clause/data separation was
 checked with:
 \begin{verbatim}
-/home/zarclaw/automation/aihub/state/ns/deps/\
+~/automation/aihub/state/ns/deps/\
 DEPS-20260504T234907-finite-mode-antiprofile-arbitrary-pressure-clause-data-separation.txt
-/home/zarclaw/automation/aihub/state/ns/deps/\
+~/automation/aihub/state/ns/deps/\
 DEPS-20260504T234907-finite-mode-antiprofile-arbitrary-pressure-clause-data-separation-regression.txt
 \end{verbatim}
 These reports record 51 BKM bridge declarations and 54 BKM bridge regression
@@ -4548,9 +4548,9 @@ declarations respectively, all with zero direct and zero recursive sorries.
 The exact arbitrary-pressure repaired-clause/BKM-data boundary was checked
 with:
 \begin{verbatim}
-/home/zarclaw/automation/aihub/state/ns/deps/\
+~/automation/aihub/state/ns/deps/\
 DEPS-20260504T235603-finite-mode-antiprofile-arbitrary-pressure-clause-data-exact.txt
-/home/zarclaw/automation/aihub/state/ns/deps/\
+~/automation/aihub/state/ns/deps/\
 DEPS-20260504T235606-finite-mode-antiprofile-arbitrary-pressure-clause-data-exact-regression.txt
 \end{verbatim}
 These reports record 53 BKM bridge declarations and 56 BKM bridge regression
@@ -4558,9 +4558,9 @@ declarations respectively, all with zero direct and zero recursive sorries.
 The arbitrary-pressure raw momentum-equation boundary and constructor-input
 separation were checked with:
 \begin{verbatim}
-/home/zarclaw/automation/aihub/state/ns/deps/\
+~/automation/aihub/state/ns/deps/\
 DEPS-20260505T001726-finite-mode-antiprofile-arbitrary-pressure-momentum-boundary.txt
-/home/zarclaw/automation/aihub/state/ns/deps/\
+~/automation/aihub/state/ns/deps/\
 DEPS-20260505T001744-finite-mode-antiprofile-arbitrary-pressure-momentum-boundary-regression.txt
 \end{verbatim}
 These reports record 57 BKM bridge declarations and 60 BKM bridge regression
@@ -4568,9 +4568,9 @@ declarations respectively, all with zero direct and zero recursive sorries.
 The exact arbitrary-pressure finite-energy clause/momentum-equation boundary
 was checked with:
 \begin{verbatim}
-/home/zarclaw/automation/aihub/state/ns/deps/\
+~/automation/aihub/state/ns/deps/\
 DEPS-20260505T003021-finite-mode-antiprofile-arbitrary-pressure-momentum-exact-boundary.txt
-/home/zarclaw/automation/aihub/state/ns/deps/\
+~/automation/aihub/state/ns/deps/\
 DEPS-20260505T003025-finite-mode-antiprofile-arbitrary-pressure-momentum-exact-boundary-regression.txt
 \end{verbatim}
 These reports record 58 BKM bridge declarations and 61 BKM bridge regression
@@ -4578,45 +4578,45 @@ declarations respectively, all with zero direct and zero recursive sorries.
 The exact arbitrary-pressure finite-energy clause/BKM-data/momentum-equation
 boundary was checked with:
 \begin{verbatim}
-/home/zarclaw/automation/aihub/state/ns/deps/\
+~/automation/aihub/state/ns/deps/\
 DEPS-20260505T003632-finite-mode-antiprofile-arbitrary-pressure-clause-data-momentum-exact.txt
-/home/zarclaw/automation/aihub/state/ns/deps/\
+~/automation/aihub/state/ns/deps/\
 DEPS-20260505T003636-finite-mode-antiprofile-arbitrary-pressure-clause-data-momentum-exact-regression.txt
 \end{verbatim}
 These reports record 59 BKM bridge declarations and 62 BKM bridge regression
 declarations respectively, all with zero direct and zero recursive sorries.
 The arbitrary-pressure finite-time witness boundary was checked with:
 \begin{verbatim}
-/home/zarclaw/automation/aihub/state/ns/deps/\
+~/automation/aihub/state/ns/deps/\
 DEPS-20260505T004723-finite-mode-antiprofile-arbitrary-pressure-witness-exact.txt
-/home/zarclaw/automation/aihub/state/ns/deps/\
+~/automation/aihub/state/ns/deps/\
 DEPS-20260505T004723-finite-mode-antiprofile-arbitrary-pressure-witness-exact-regression.txt
 \end{verbatim}
 These reports record 61 BKM bridge declarations and 64 BKM bridge regression
 declarations respectively, all with zero direct and zero recursive sorries.
 The internal-pressure finite-time witness obstruction was checked with:
 \begin{verbatim}
-/home/zarclaw/automation/aihub/state/ns/deps/\
+~/automation/aihub/state/ns/deps/\
 DEPS-20260505T005328-finite-mode-antiprofile-internal-witness-pressure-zero.txt
-/home/zarclaw/automation/aihub/state/ns/deps/\
+~/automation/aihub/state/ns/deps/\
 DEPS-20260505T005328-finite-mode-antiprofile-internal-witness-pressure-zero-regression.txt
 \end{verbatim}
 These reports record 62 BKM bridge declarations and 65 BKM bridge regression
 declarations respectively, all with zero direct and zero recursive sorries.
 The same-witness zero BKM-envelope theorem was checked with:
 \begin{verbatim}
-/home/zarclaw/automation/aihub/state/ns/deps/\
+~/automation/aihub/state/ns/deps/\
 DEPS-20260505T010739-finite-mode-antiprofile-same-witness-zero-bkm-envelope.txt
-/home/zarclaw/automation/aihub/state/ns/deps/\
+~/automation/aihub/state/ns/deps/\
 DEPS-20260505T010738-finite-mode-antiprofile-same-witness-zero-bkm-envelope-regression.txt
 \end{verbatim}
 These reports record 64 BKM bridge declarations and 67 BKM bridge regression
 declarations respectively, all with zero direct and zero recursive sorries.
 The zero-budget BKM-data normal form was checked with:
 \begin{verbatim}
-/home/zarclaw/automation/aihub/state/ns/deps/\
+~/automation/aihub/state/ns/deps/\
 DEPS-20260505T011620-finite-mode-antiprofile-bkm-zero-budget-normal-form.txt
-/home/zarclaw/automation/aihub/state/ns/deps/\
+~/automation/aihub/state/ns/deps/\
 DEPS-20260505T011620-finite-mode-antiprofile-bkm-zero-budget-normal-form-regression.txt
 \end{verbatim}
 These reports record 65 BKM bridge declarations and 68 BKM bridge regression
@@ -4624,9 +4624,9 @@ declarations respectively, all with zero direct and zero recursive sorries.
 The non-cancelling constant-one inviscid zero-pressure BKM premise was checked
 with:
 \begin{verbatim}
-/home/zarclaw/automation/aihub/state/ns/deps/\
+~/automation/aihub/state/ns/deps/\
 DEPS-20260505T012731-finite-mode-one-one-inviscid-nonzero-bkm-premise.txt
-/home/zarclaw/automation/aihub/state/ns/deps/\
+~/automation/aihub/state/ns/deps/\
 DEPS-20260505T012731-finite-mode-one-one-inviscid-nonzero-bkm-premise-regression.txt
 \end{verbatim}
 These reports record 66 BKM bridge declarations and 69 BKM bridge regression
@@ -4634,9 +4634,9 @@ declarations respectively, all with zero direct and zero recursive sorries.
 The positive-viscosity zero-pressure obstruction for the non-cancelling
 constant-one two-mode branch was checked with:
 \begin{verbatim}
-/home/zarclaw/automation/aihub/state/ns/deps/\
+~/automation/aihub/state/ns/deps/\
 DEPS-20260505T013850-finite-mode-one-one-positive-viscosity-zero-pressure-obstruction-20260504T233845Z.txt
-/home/zarclaw/automation/aihub/state/ns/deps/\
+~/automation/aihub/state/ns/deps/\
 DEPS-20260505T013854-finite-mode-one-one-positive-viscosity-zero-pressure-obstruction-regression-20260504T233845Z.txt
 \end{verbatim}
 These reports record 64 bounded-energy declarations and 52 bounded-energy
@@ -4645,13 +4645,13 @@ sorries.
 The exact pressure-gradient balance and positive-viscosity pressure-repaired
 BKM package for that same non-cancelling branch were checked with:
 \begin{verbatim}
-/home/zarclaw/automation/aihub/state/ns/deps/\
+~/automation/aihub/state/ns/deps/\
 DEPS-20260505T014937-finite-mode-one-one-pressure-gradient-lapsum-balance-20260504T234926Z.txt
-/home/zarclaw/automation/aihub/state/ns/deps/\
+~/automation/aihub/state/ns/deps/\
 DEPS-20260505T014937-finite-mode-one-one-pressure-gradient-lapsum-balance-regression-20260504T234926Z.txt
-/home/zarclaw/automation/aihub/state/ns/deps/\
+~/automation/aihub/state/ns/deps/\
 DEPS-20260505T014937-finite-mode-one-one-positive-viscosity-pressure-repaired-bkm-20260504T234926Z.txt
-/home/zarclaw/automation/aihub/state/ns/deps/\
+~/automation/aihub/state/ns/deps/\
 DEPS-20260505T014937-finite-mode-one-one-positive-viscosity-pressure-repaired-bkm-regression-20260504T234926Z.txt
 \end{verbatim}
 These reports record 66 bounded-energy declarations, 54 bounded-energy
@@ -4661,9 +4661,9 @@ sorries.
 The concrete affine-plus-localized pair-difference obstruction for that
 pressure-repaired non-cancelling branch was checked with:
 \begin{verbatim}
-/home/zarclaw/automation/aihub/state/ns/deps/\
+~/automation/aihub/state/ns/deps/\
 DEPS-20260505T020140-finite-mode-affine-pressure-pair-obstruction.txt
-/home/zarclaw/automation/aihub/state/ns/deps/\
+~/automation/aihub/state/ns/deps/\
 DEPS-20260505T020140-finite-mode-affine-pressure-pair-obstruction-regression.txt
 \end{verbatim}
 These reports record 69 BKM bridge declarations and 72 BKM bridge regression
@@ -4671,9 +4671,9 @@ declarations respectively, all with zero direct and zero recursive sorries.
 The scalar-amplitude-free and repeated-gradient affine-pressure obstructions
 for the same non-cancelling branch were checked with:
 \begin{verbatim}
-/home/zarclaw/automation/aihub/state/ns/deps/\
+~/automation/aihub/state/ns/deps/\
 DEPS-20260505T021801-finite-mode-affine-pressure-no-scalar-pair-fit.txt
-/home/zarclaw/automation/aihub/state/ns/deps/\
+~/automation/aihub/state/ns/deps/\
 DEPS-20260505T021801-finite-mode-affine-pressure-no-scalar-pair-fit-regression.txt
 \end{verbatim}
 These reports record 71 BKM bridge declarations and 74 BKM bridge regression
@@ -4681,18 +4681,18 @@ declarations respectively, all with zero direct and zero recursive sorries.
 The finite two-pair obstruction for the same scalar-amplitude repair route was
 checked with:
 \begin{verbatim}
-/home/zarclaw/automation/aihub/state/ns/deps/\
+~/automation/aihub/state/ns/deps/\
 DEPS-20260505T022633-finite-mode-affine-pressure-two-pair-obstruction.txt
-/home/zarclaw/automation/aihub/state/ns/deps/\
+~/automation/aihub/state/ns/deps/\
 DEPS-20260505T022637-finite-mode-affine-pressure-two-pair-obstruction-regression.txt
 \end{verbatim}
 These reports record 72 BKM bridge declarations and 75 BKM bridge regression
 declarations respectively, all with zero direct and zero recursive sorries.
 The BKM-data lift and route-level multi-mode composition were checked with:
 \begin{verbatim}
-/home/zarclaw/automation/aihub/state/ns/deps/\
+~/automation/aihub/state/ns/deps/\
 DEPS-20260505T045056-multi-mode-overdetermination-composition.txt
-/home/zarclaw/automation/aihub/state/ns/deps/\
+~/automation/aihub/state/ns/deps/\
 DEPS-20260505T045057-multi-mode-overdetermination-composition-regression.txt
 \end{verbatim}
 These reports record 74 BKM bridge declarations and 76 BKM bridge regression
@@ -4700,13 +4700,13 @@ declarations respectively, all with zero direct and zero recursive sorries.
 The pressure-family-independent finite-time residual-curl witness obstruction
 was checked with:
 \begin{verbatim}
-/home/zarclaw/automation/aihub/state/ns/deps/\
+~/automation/aihub/state/ns/deps/\
 DEPS-20260505T050309-witness-residual-curl-uniform.txt
-/home/zarclaw/automation/aihub/state/ns/deps/\
+~/automation/aihub/state/ns/deps/\
 DEPS-20260505T050404-witness-residual-curl-uniform-regression.txt
-/home/zarclaw/automation/aihub/state/ns/deps/\
+~/automation/aihub/state/ns/deps/\
 DEPS-20260505T050356-witness-residual-curl-bkm.txt
-/home/zarclaw/automation/aihub/state/ns/deps/\
+~/automation/aihub/state/ns/deps/\
 DEPS-20260505T050408-witness-residual-curl-bkm-regression.txt
 \end{verbatim}
 These reports record 532 uniform-continuation declarations, 66 uniform
@@ -4715,13 +4715,13 @@ regression declarations respectively, all with zero direct and zero recursive
 sorries.
 The positive residual-curl necessary-condition factorization was checked with:
 \begin{verbatim}
-/home/zarclaw/automation/aihub/state/ns/deps/\
+~/automation/aihub/state/ns/deps/\
 DEPS-20260505T052004-witness-residual-curl-zero-uniform.txt
-/home/zarclaw/automation/aihub/state/ns/deps/\
+~/automation/aihub/state/ns/deps/\
 DEPS-20260505T052036-witness-residual-curl-zero-uniform-regression.txt
-/home/zarclaw/automation/aihub/state/ns/deps/\
+~/automation/aihub/state/ns/deps/\
 DEPS-20260505T052039-witness-residual-curl-zero-bkm.txt
-/home/zarclaw/automation/aihub/state/ns/deps/\
+~/automation/aihub/state/ns/deps/\
 DEPS-20260505T052043-witness-residual-curl-zero-bkm-regression.txt
 \end{verbatim}
 These reports record 535 uniform-continuation declarations, 68 uniform
@@ -4730,9 +4730,9 @@ regression declarations respectively, all with zero direct and zero recursive
 sorries.
 The prescribed-velocity global-output residual-curl layer was checked with:
 \begin{verbatim}
-/home/zarclaw/automation/aihub/state/ns/deps/\
+~/automation/aihub/state/ns/deps/\
 DEPS-20260505T052826-global-output-residual-curl-velocity.txt
-/home/zarclaw/automation/aihub/state/ns/deps/\
+~/automation/aihub/state/ns/deps/\
 DEPS-20260505T052859-global-output-residual-curl-velocity-regression.txt
 \end{verbatim}
 These reports record 539 uniform-continuation declarations and 71 uniform
@@ -4740,18 +4740,18 @@ regression declarations respectively, both with zero direct and zero recursive
 sorries.
 The transported-shear residual-curl target composition was checked with:
 \begin{verbatim}
-/home/zarclaw/automation/aihub/state/ns/deps/\
+~/automation/aihub/state/ns/deps/\
 DEPS-20260505T053749-transported-shear-residual-curl-target-obstruction.txt
-/home/zarclaw/automation/aihub/state/ns/deps/\
+~/automation/aihub/state/ns/deps/\
 DEPS-20260505T053749-transported-shear-residual-curl-target-obstruction-regression.txt
 \end{verbatim}
 These reports record 3 obstruction declarations and 3 regression declarations
 respectively, all with zero direct and zero recursive sorries.
 The internal-pressure no-go form was checked with:
 \begin{verbatim}
-/home/zarclaw/automation/aihub/state/ns/deps/\
+~/automation/aihub/state/ns/deps/\
 DEPS-20260505T010113-finite-mode-antiprofile-internal-witness-pressure-no-go.txt
-/home/zarclaw/automation/aihub/state/ns/deps/\
+~/automation/aihub/state/ns/deps/\
 DEPS-20260505T010114-finite-mode-antiprofile-internal-witness-pressure-no-go-regression.txt
 \end{verbatim}
 These reports record 63 BKM bridge declarations and 66 BKM bridge regression
@@ -4759,9 +4759,9 @@ declarations respectively, all with zero direct and zero recursive sorries.
 The concrete affine-plus-localized repaired-clause/BKM-data exact boundary was
 checked with:
 \begin{verbatim}
-/home/zarclaw/automation/aihub/state/ns/deps/\
+~/automation/aihub/state/ns/deps/\
 DEPS-20260505T000829-finite-mode-antiprofile-affine-localized-clause-data-exact.txt
-/home/zarclaw/automation/aihub/state/ns/deps/\
+~/automation/aihub/state/ns/deps/\
 DEPS-20260505T000835-finite-mode-antiprofile-affine-localized-clause-data-exact-regression.txt
 \end{verbatim}
 These reports record 55 BKM bridge declarations and 58 BKM bridge regression
@@ -4769,18 +4769,18 @@ declarations respectively, all with zero direct and zero recursive sorries.
 The exact BKM-clause zero-normalization for the equal-amplitude anti-profile
 initial datum was checked with:
 \begin{verbatim}
-/home/zarclaw/automation/aihub/state/ns/deps/\
+~/automation/aihub/state/ns/deps/\
 DEPS-20260504T230610-finite-mode-antiprofile-bkm-clause-zero-normalization-v2.txt
-/home/zarclaw/automation/aihub/state/ns/deps/\
+~/automation/aihub/state/ns/deps/\
 DEPS-20260504T230614-finite-mode-antiprofile-bkm-clause-zero-normalization-regression-v2.txt
 \end{verbatim}
 These reports record 4 BKM clause declarations and 6 BKM clause regression
 declarations respectively, all with zero direct and zero recursive sorries.
 The concrete wrong-viscosity heat-shear residual obstruction was checked with:
 \begin{verbatim}
-/home/zarclaw/automation/aihub/state/ns/deps/\
+~/automation/aihub/state/ns/deps/\
 DEPS-20260505T032418-wrong-viscosity-heat-shear-residual.txt
-/home/zarclaw/automation/aihub/state/ns/deps/\
+~/automation/aihub/state/ns/deps/\
 DEPS-20260505T032424-wrong-viscosity-heat-shear-residual-regression.txt
 \end{verbatim}
 These reports record 287 vector-calculus declarations and 18 vector-calculus
@@ -4788,9 +4788,9 @@ regression declarations respectively, all with zero direct and zero recursive
 sorries.
 The arbitrary time-amplitude heat-ODE pressure obstruction was checked with:
 \begin{verbatim}
-/home/zarclaw/automation/aihub/state/ns/deps/\
+~/automation/aihub/state/ns/deps/\
 DEPS-20260505T034413-amplitude-shear-heat-ode-pressure-obstruction.txt
-/home/zarclaw/automation/aihub/state/ns/deps/\
+~/automation/aihub/state/ns/deps/\
 DEPS-20260505T034419-amplitude-shear-heat-ode-pressure-obstruction-regression.txt
 \end{verbatim}
 These reports record 305 vector-calculus declarations and 19 vector-calculus
@@ -4799,9 +4799,9 @@ sorries.
 The transported arbitrary-amplitude heat-ODE pressure obstruction was checked
 with:
 \begin{verbatim}
-/home/zarclaw/automation/aihub/state/ns/deps/\
+~/automation/aihub/state/ns/deps/\
 DEPS-20260505T040329-amplitude-transport-shear-heat-ode-pressure-obstruction.txt
-/home/zarclaw/automation/aihub/state/ns/deps/\
+~/automation/aihub/state/ns/deps/\
 DEPS-20260505T040335-amplitude-transport-shear-heat-ode-pressure-obstruction-regression.txt
 \end{verbatim}
 These reports record 317 vector-calculus declarations and 20 vector-calculus
@@ -4809,15 +4809,15 @@ regression declarations respectively, all with zero direct and zero recursive
 sorries.
 The finite-mode Galerkin ODE pivot was checked with:
 \begin{verbatim}
-/home/zarclaw/automation/aihub/scripts/mettapedia-lean-task.sh build \
+~/automation/aihub/scripts/mettapedia-lean-task.sh build \
   Mettapedia.FluidDynamics.NavierStokes.\
 NavierStokesFiniteModeGalerkinToyRegression
 \end{verbatim}
 with focused dependency reports:
 \begin{verbatim}
-/home/zarclaw/automation/aihub/state/ns/deps/\
+~/automation/aihub/state/ns/deps/\
 DEPS-20260505T041538-finite-mode-galerkin-pure-forcing-diagonal-linear.txt
-/home/zarclaw/automation/aihub/state/ns/deps/\
+~/automation/aihub/state/ns/deps/\
 DEPS-20260505T041541-finite-mode-galerkin-pure-forcing-diagonal-linear-regression.txt
 \end{verbatim}
 These reports record 28 finite-mode Galerkin toy declarations and 10
@@ -4826,9 +4826,9 @@ sorries.
 The equilibrium-centered diagonal-affine extension was then checked with the
 same focused regression build and the additional dependency reports:
 \begin{verbatim}
-/home/zarclaw/automation/aihub/state/ns/deps/\
+~/automation/aihub/state/ns/deps/\
 DEPS-20260505T042629-finite-mode-galerkin-diagonal-affine-equilibrium.txt
-/home/zarclaw/automation/aihub/state/ns/deps/\
+~/automation/aihub/state/ns/deps/\
 DEPS-20260505T042632-finite-mode-galerkin-diagonal-affine-equilibrium-regression.txt
 \end{verbatim}
 These reports record 34 finite-mode Galerkin toy declarations and 13
@@ -4838,9 +4838,9 @@ The finite-mode coefficient-energy identity and diagonal-linear dissipativity
 extension was then checked with the same focused regression build and the
 additional dependency reports:
 \begin{verbatim}
-/home/zarclaw/automation/aihub/state/ns/deps/\
+~/automation/aihub/state/ns/deps/\
 DEPS-20260505T043703-finite-mode-galerkin-energy-identity.txt
-/home/zarclaw/automation/aihub/state/ns/deps/\
+~/automation/aihub/state/ns/deps/\
 DEPS-20260505T043706-finite-mode-galerkin-energy-identity-regression.txt
 \end{verbatim}
 These reports record 42 finite-mode Galerkin toy declarations and 16

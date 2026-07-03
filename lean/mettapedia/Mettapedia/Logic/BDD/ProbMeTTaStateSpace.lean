@@ -4,7 +4,7 @@ import Mettapedia.Logic.BDD.ProbMeTTaSourceSurface
 # ProbMeTTa Literal State Space
 
 This file models the explicit mutable spaces used by
-`/home/zar/claude/ProbMeTTa/lib_prob.metta`:
+`~/claude/ProbMeTTa/lib_prob.metta`:
 
 - `&prob-facts`
 - `&prob-templates`

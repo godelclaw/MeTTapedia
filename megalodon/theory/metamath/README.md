@@ -85,7 +85,7 @@ Search for files containing:
 ### Verifying a theorem:
 
 ```bash
-cd /home/zar/claude/megalodon/theory/metamath/mmmg
+cd ~/claude/megalodon/theory/metamath/mmmg
 megalodon mmset30904_elprob.mg
 ```
 

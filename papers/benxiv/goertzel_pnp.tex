@@ -1,0 +1,553 @@
+\documentclass[11pt]{article}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern}
+\usepackage{geometry}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{amsthm}
+\usepackage{booktabs}
+\usepackage{hyperref}
+\usepackage{listings}
+\geometry{margin=1in}
+
+\lstdefinestyle{lean}{
+  basicstyle=\ttfamily\small,
+  breaklines=true,
+  columns=fullflexible,
+  keepspaces=true,
+  showstringspaces=false,
+  frame=single,
+  framesep=4pt,
+  xleftmargin=2pt,
+  aboveskip=8pt,
+  belowskip=8pt,
+  literate=
+    {⟨}{{$\langle$}}1
+    {⟩}{{$\rangle$}}1
+    {ℕ}{{$\mathbb{N}$}}1
+    {→}{{$\to$}}1
+    {×}{{$\times$}}1
+    {↔}{{$\leftrightarrow$}}1
+    {∧}{{$\wedge$}}1
+    {∀}{{$\forall$}}1
+    {¬}{{$\neg$}}1
+    {≠}{{$\neq$}}1
+    {≤}{{$\le$}}1,
+}
+\lstset{style=lean}
+
+\newtheorem{theorem}{Theorem}
+\newtheorem{proposition}{Proposition}
+\newtheorem{lemma}{Lemma}
+\newtheorem{corollary}{Corollary}
+\newtheorem{remark}{Remark}
+\theoremstyle{definition}
+\newtheorem{definition}{Definition}
+
+\newcommand{\Kpoly}{K^{\mathrm{poly}}}
+\newcommand{\Dm}{\mathcal{D}_m}
+\newcommand{\Ical}{\mathcal{I}}
+\newcommand{\uu}{\mathbf{u}}
+\newcommand{\zz}{\mathbf{z}}
+\newcommand{\Ti}{T_i}
+\newcommand{\Aei}{Ae_i}
+
+\title{A Machine-Checked Obstruction in the Calibration Step\\
+of the Switching-by-Weakness Route to\\
+$\mathrm{P}\neq\mathrm{NP}$}
+\author{The MeTTapedia formalization effort}
+\date{June 2026}
+
+\begin{document}
+\maketitle
+\sloppy
+
+\begin{abstract}
+Ben Goertzel's manuscript \emph{$\mathrm{P}\neq\mathrm{NP}$: A Non-Relativizing
+Proof via Quantale Weakness and Geometric Complexity} (v12) proposes to
+separate $\mathrm{P}$ from $\mathrm{NP}$ by an information-theoretic
+\emph{quantale} argument. On an efficiently samplable ensemble $\Dm$ of masked
+random Unique-SAT instances with a Valiant--Vazirani isolation layer, a
+\emph{Switching-by-Weakness} normal form (Theorem~4.2) reduces every short
+global decoder, after a short wrapper, to an $O(\log m)$-local per-block rule on
+the post-switch input $\uu_i=(\zz,a_i,b)$; sign-invariant neutrality (Theorem~5.1)
+and template sparsification (Theorem~5.10) then pin each local rule near $1/2$,
+independence across $\Theta(m)$ blocks yields per-program success
+$2^{-\Omega(t)}$, hence a distributional lower bound
+$\Kpoly\!\ge\!\eta\,t$, which clashes with the constant-length self-reduction
+upper bound under $\mathrm{P}=\mathrm{NP}$ (Proposition~7.2). The load-bearing
+step is the \emph{calibration}/success-domination link (Theorem~4.2,
+Corollary~4.6, Lemma~4.8; Appendix~A.5, Lemma~A.17), which derives the
+exchangeability of $(X_i,Y_i)$ at a fixed local input $\uu$ from the
+promise-preserving involution $T_i$. We record a machine-checked finding of the
+MeTTapedia formalization effort: the involution $T_i$ acts on the post-switch
+input $\uu_i=(\zz,a_i,b)$ by $b\mapsto b\oplus a_i$, so it preserves only the
+\emph{reduced projection} $(\zz,a_i)$, and preserves the \emph{full} input
+$(\zz,a_i,b)$ if and only if $a_i=0$. Consequently the exchangeability at a fixed
+$\uu$ that the calibration step requires holds only on the $a_i=0$ fiber --- a
+vanishing $2^{-k}=m^{-\Theta(1)}$ fraction of Valiant--Vazirani columns --- and
+the ``local comparator dominates the global decoder'' calibration is not valid as
+stated. The structural facts, together with a finite two-point success-domination
+counterexample, are formalized with no \texttt{sorry} in the Lean module
+\texttt{Mettapedia.Computability.PNP.PostSwitchInputObstruction}. We further
+machine-check that the natural repair --- re-deriving success domination on the
+$\Ti$-invariant reduced projection $(\zz,a_i)$ --- does not reduce the problem: on
+that neutral interface, success domination is logically equivalent to the
+average-case witness-bit hardness the route must prove, so it renames the target
+rather than weakening it (stated conditional on two explicit, unproven hypotheses).
+We state the scope exactly: what is machine-checked is the \emph{structural} input-preservation
+fact; the full claim that \emph{no} local comparator dominates a global decoder on
+this ensemble engages the genuine difficulty and is \emph{not} established by this
+work. We make no claim about $\mathrm{P}$ versus $\mathrm{NP}$, which remains open;
+the formalization asserts no separation.
+\end{abstract}
+
+\section{The problem and Ben's quantale / Switching-by-Weakness route}
+\label{sec:problem}
+
+\subsection{The quantale-weakness route}
+
+The question is whether $\mathrm{P}=\mathrm{NP}$. Ben Goertzel's manuscript
+\emph{$\mathrm{P}\neq\mathrm{NP}$: A Non-Relativizing Proof via Quantale Weakness
+and Geometric Complexity}, version~v12 (hereafter ``v12''), proposes a
+distributional separation built from three interacting ingredients: a
+compositional \emph{weakness} calculus measuring the shortness of algorithms, the
+symmetry and sparsity of masked random $3$-CNFs, and a genuine
+\emph{algorithmic switching} statement turning any short polynomial-time decoder
+into a local per-bit rule on a constant fraction of blocks.
+
+\paragraph{The weakness quantale.} v12 measures shortness by the
+polytime-capped conditional description length
+\[
+  \mathrm{weakness}(z\mid y) \;:=\; \Kpoly(z\mid y),
+\]
+used as the cost object of a quantale: costs add under composition and under
+independent block product (v12, Lemma~A.8). The strategy is to oppose a
+\emph{global budget} accrued by any short decoder across $t=\Theta(m)$
+independent blocks against the constant-length per-block encoder available under a
+$\mathrm{P}=\mathrm{NP}$ self-reduction.
+
+\paragraph{The masked-and-isolated ensemble.} For a fixed clause density
+$\alpha>0$ and $k=c_1\log m$, a block is sampled (v12, \S3.1) as
+$\Phi=(F^h,A,b)$, where: $F$ is a constant-density random $3$-CNF; a fresh mask
+$h=(\pi,\sigma)\in H_m=S_m\ltimes(\mathbb{Z}_2)^m$ permutes variable names and
+flips literal signs to give $F^h$; and a Valiant--Vazirani isolation layer adds a
+matrix $A\in\{0,1\}^{k\times m}$ with pairwise-independent columns and a
+$\delta$-biased right-hand side $b\in\{0,1\}^k$. The block distribution $\Dm$ is
+the law of $\Phi$ conditioned on the event $\mathsf{Unq}(\Phi)$ that $\Phi$ has a
+\emph{unique} satisfying assignment $X=x(\Phi)\in\{0,1\}^m$. Writing
+$a_i:=\Aei$ for the $i$-th column of $A$, the pair $(a_i,b)$ is the
+\emph{VV label} for bit $i$.
+
+\paragraph{Local inputs and the post-switch interface.} A sign-invariant SILS
+feature vector $\zz:=\mathrm{feat}(F^h)\in\{0,1\}^{r(m)}$ with $r(m)=O(\log m)$ is
+published, and v12 defines (Definition~3.10) the \emph{per-bit local input}
+\begin{equation}
+  \uu_i(\Phi) \;:=\; \bigl(\zz(F^h),\; a_i=\Aei,\; b\bigr)
+  \;\in\;\{0,1\}^{O(\log m)} ,
+  \label{eq:localinput}
+\end{equation}
+together with the local $\sigma$-field $\mathcal{L}_i$ it generates.
+
+\paragraph{Switching-by-Weakness.} The structural core (v12, Theorem~4.2) is a
+normal form: for every polynomial-time decoder $P$ of description length
+$\le\delta t$ there is a short wrapper $W$ with
+$|W|\le|P|+O(\log m+\log t)$ and a subset $S\subseteq[t]$ with $|S|\ge\gamma t$
+such that
+\begin{equation}
+  (P\circ W)(\Phi)_{j,i} \;=\; h_{j,i}\bigl(\uu_i(\Phi_j)\bigr),
+  \qquad j\in S,\ i\in[m],
+  \label{eq:switching}
+\end{equation}
+for Boolean maps $h_{j,i}:\{0,1\}^{O(\log m)}\to\{0,1\}$, each computable in time
+$\mathrm{poly}(\log m)$. The wrapper is constructed by ERM distillation
+(Proposition~A.5), trained on \emph{symmetrized, back-mapped} surrogate labels
+rather than on the truth $X$; the link from the surrogate labels back to truth is
+the \emph{calibration} Lemma~4.8.
+
+\paragraph{Neutrality, sparsification, and the clash.} Two orthogonal mechanisms
+then force near-randomness of every $\uu$-measurable per-bit rule on $\Theta(t)$
+blocks: a sign-invariant \emph{neutrality} lemma (Theorem~5.1),
+$\Pr[X_i=1\mid\Ical]=\tfrac12$ for any sign-invariant view $\Ical$; and a
+\emph{template sparsification} theorem (Theorem~5.10) showing that, at radius
+$r=c_3\log m$, any fixed local per-bit rule is $\varepsilon$-high-bias on at most
+$o(t)$ blocks. Combined with single-block lower bounds for tiny
+$\mathrm{ACC}^0$/streaming decoders and independence across blocks
+(Theorem~6.7), one obtains a per-program small-success bound
+$2^{-\Omega(t)}$, hence the tuple incompressibility
+$\Kpoly\bigl((X_1,\dots,X_t)\mid(\Phi_1,\dots,\Phi_t)\bigr)\ge\eta\,t$ with high
+probability (Theorem~6.8). Under $\mathrm{P}=\mathrm{NP}$, a uniform
+constant-length program recovers each witness by bit-fixing with a USAT decider,
+so the same quantity is $\le C$ (Proposition~7.2); for large $t$ the two are
+incompatible, which v12 reads as $\mathrm{P}\neq\mathrm{NP}$ (Theorem~7.4).
+
+\subsection{The calibration crux}
+\label{sec:crux}
+
+Every quantitative step downstream of \eqref{eq:switching} bounds the success of
+the \emph{comparator} $P\circ W$ and transfers that bound back to $P$ by
+\emph{success domination} (v12, Corollary~4.6):
+\begin{equation}
+  \Pr\bigl[P(\Phi)=X\bigr] \;\le\;
+  \Pr\bigl[(P\circ W)(\Phi)=X\bigr] \;+\; m^{-\Omega(1)} .
+  \label{eq:domination}
+\end{equation}
+The comparator is trained on symmetrized surrogate labels $Y_i$, so its analysis
+is only meaningful once one knows that the Bayes-optimal predictor for the
+surrogate $Y_i$ at a fixed local input $\uu$ is \emph{also} optimal for the truth
+$X_i$. This is the calibration Lemma~4.8, and its proof rests on a single
+exchangeability claim. In v12's words (the ``Calibration in one line'' of \S4.1,
+proved in Appendix~A.5):
+
+\begin{quote}
+\itshape
+Fix $\uu=(\zz,a_i,b)$. The promise-preserving involution $\Ti$ bijects
+$(X_i=0,Y_i=y)\leftrightarrow(X_i=1,Y_i=1-y)$ without changing $\uu$ or the
+measure. Thus $(X_i,Y_i)\mid\uu$ is exchangeable, so
+$\Pr[X_i=1\mid\uu]=\Pr[Y_i=1\mid\uu]=f_i(\uu)$, and the Bayes rule
+$h_i^\star(\uu)=\mathbf{1}[f_i(\uu)\ge\tfrac12]$ is optimal for both.
+\end{quote}
+
+The involution invoked here is the promise-preserving map of v12, Lemma~3.6,
+\begin{equation}
+  \Ti:\ (F^h,A,b)\ \longmapsto\ \bigl(F^{\tau_i h},\ A,\ b\oplus \Aei\bigr),
+  \label{eq:Ti}
+\end{equation}
+where $\tau_i\in H_m$ flips only variable $i$'s literal signs. It toggles the
+witness bit $X_i$ and fixes any sign-invariant view $\Ical$, which is exactly the
+content of neutrality. The calibration argument additionally asserts that $\Ti$
+acts on the \emph{local input} $\uu_i=(\zz,a_i,b)$ ``without changing $\uu$.''
+
+The detailed proof in Appendix~A.5 (Lemma~A.17) makes the action on each
+coordinate of $\uu$ explicit. Its Step~1 lists the properties of the same map
+\eqref{eq:Ti}: it ``preserves the SILS features $\zz$ (which are sign-invariant),''
+``preserves $a_i$ but \emph{flips $b$ by $a_i$},'' and ``preserves the uniqueness
+promise.'' Step~2 then conditions on a fixed $\uu=(\zz,a_i,b)$ --- a triple whose
+\emph{third} coordinate is $b$ --- and concludes exchangeability of $(X_i,Y_i)$
+``at fixed $\uu$.'' These two statements are in tension: a map that flips $b$ by
+$a_i$ does not fix the triple $(\zz,a_i,b)$ unless $a_i=0$. It is precisely this
+bridge point that we formalize.
+
+\section{The formalized obstruction}
+\label{sec:lean}
+
+We formalize the action of the involution \eqref{eq:Ti} on the post-switch input
+\eqref{eq:localinput}, isolating exactly which part of $\uu$ is invariant. The
+development is elementary and carries no \texttt{sorry}; it lives in the Lean
+module \texttt{Mettapedia.Computability.PNP.PostSwitchInputObstruction}, over a
+small bit-vector layer in which $\texttt{BitVec}\,n$ is a Boolean function on
+$\mathrm{Fin}\,n$, $\texttt{zeroVec}$ is the all-false vector, and the
+Valiant--Vazirani right-hand-side update is the coordinatewise exclusive-or
+\begin{lstlisting}[language={}]
+def vvToggle {n : Nat} (a b : BitVec n) : BitVec n :=
+  fun i => Bool.xor (b i) (a i)
+\end{lstlisting}
+which is the XOR $b\oplus a$ appearing in \eqref{eq:Ti}.
+
+\subsection{The post-switch input and the involution's action}
+
+The post-switch input $\uu=(\zz,a_i,b)$ of \eqref{eq:localinput} is the structure
+$\texttt{PostSwitchInput}$; the involution's induced action $\texttt{tiInputMap}$
+is exactly \eqref{eq:Ti} read on $\uu$ (the SILS coordinate $\zz$ held fixed by
+sign-invariance, the column $a$ held fixed, and the VV right-hand side $b$
+toggled); and $\texttt{invariantProjection}$ is the coordinate one obtains by
+\emph{dropping} $b$.
+
+\begin{lstlisting}[language={}]
+structure PostSwitchInput (Z : Type*) (k : ℕ) where
+  z : Z
+  a : BitVec k
+  b : BitVec k
+
+/-- The exact local-input action induced by the paper's involution `T_i`. -/
+def tiInputMap {Z : Type*} {k : ℕ} (u : PostSwitchInput Z k) : PostSwitchInput Z k :=
+  ⟨u.z, u.a, vvToggle u.a u.b⟩
+
+/-- The obvious `T_i`-invariant projection obtained by dropping the VV
+right-hand side. -/
+def invariantProjection {Z : Type*} {k : ℕ} (u : PostSwitchInput Z k) : Z × BitVec k :=
+  (u.z, u.a)
+\end{lstlisting}
+
+The reduced projection $(\zz,a_i)$ is always $\Ti$-invariant. This is the part of
+$\uu$ that the calibration argument may legitimately condition on.
+
+\begin{lstlisting}[language={}]
+@[simp] theorem invariantProjection_tiInputMap
+    {Z : Type*} {k : ℕ} (u : PostSwitchInput Z k) :
+    invariantProjection (tiInputMap u) = invariantProjection u := by
+  rfl
+\end{lstlisting}
+
+The full input $(\zz,a_i,b)$, however, is fixed by $\Ti$ exactly on the
+zero-column fiber. The pivot lemma is that toggling $b$ by $a$ returns $b$ iff
+$a$ is the zero vector,
+\begin{lstlisting}[language={}]
+lemma vvToggle_eq_self_iff_zero {n : ℕ} (a b : BitVec n) :
+    vvToggle a b = b ↔ a = zeroVec
+\end{lstlisting}
+from which the full-input preservation criterion follows immediately:
+\begin{lstlisting}[language={}]
+theorem tiInputMap_eq_self_iff_zeroColumn
+    {Z : Type*} {k : ℕ} (u : PostSwitchInput Z k) :
+    tiInputMap u = u ↔ u.a = zeroVec := by
+  cases u
+  simp [tiInputMap, vvToggle_eq_self_iff_zero]
+\end{lstlisting}
+
+\subsection{The bridge point, stated as a single theorem}
+
+Combining the two facts gives the exact obstruction at the calibration bridge:
+on every nonzero VV column the reduced projection is preserved, yet the full
+input is not, because $b$ moves.
+
+\begin{lstlisting}[language={}]
+/-- The exact calibration step cannot keep both the invariant projection and
+the full post-switch input fixed on a nonzero VV column: `(z, a)` is preserved,
+but `b` changes and hence the full input changes. -/
+theorem calibrationFullInputPreservation_fails_of_nonzeroColumn
+    {Z : Type*} {k : ℕ} (u : PostSwitchInput Z k)
+    (ha : nonzeroColumn u.a) :
+    invariantProjection (tiInputMap u) = invariantProjection u ∧
+      tiInputMap u ≠ u ∧ (tiInputMap u).b ≠ u.b := by
+  exact ⟨invariantProjection_tiInputMap u,
+    tiInputMap_ne_self_of_nonzeroColumn u ha,
+    tiInputMap_changes_b_of_nonzeroColumn u ha⟩
+\end{lstlisting}
+
+As a global no-go form: in every positive VV width and for every concrete
+$\zz$-value, the proposition that $\Ti$ preserves the \emph{full} local input on
+all nonzero columns is false.
+
+\begin{lstlisting}[language={}]
+theorem not_calibrationFullInputPreservation_on_nonzeroColumns
+    {Z : Type*} (z : Z) {k : ℕ} (hk : 0 < k) :
+    ¬ (∀ u : PostSwitchInput Z k, nonzeroColumn u.a -> tiInputMap u = u)
+\end{lstlisting}
+
+\paragraph{Why this voids the exchangeability at fixed $\uu$.} The calibration of
+\S\ref{sec:crux} derives the symmetry of the conditional law of $(X_i,Y_i)$
+\emph{at a fixed} $\uu=(\zz,a_i,b)$ from the bijection $\Ti$. But by
+\eqref{eq:Ti} and \texttt{tiInputMap}, $\Ti$ sends the local input $\uu=(\zz,a_i,b)$
+to $\uu'=(\zz,a_i,b\oplus a_i)$. When $a_i\neq0$ these are \emph{different} points
+of the local alphabet: the involution exchanges configurations across the two
+fibers $\{b\}$ and $\{b\oplus a_i\}$, not within the single fiber $\{b\}$ on which
+the calibration conditions. The symmetry it supplies is therefore a symmetry of
+the law conditioned on the reduced projection $(\zz,a_i)$ --- equivalently,
+averaged over the $b$-coordinate --- and not of the law at fixed full $\uu$. The
+exchangeability ``$(X_i,Y_i)\mid\uu$ is exchangeable'' holds, via this involution,
+only on the locus $a_i=0$.
+
+\paragraph{The $a_i=0$ fiber is vanishing.} The column $a_i=\Aei$ is the $i$-th
+column of the Valiant--Vazirani matrix $A$, whose columns are pairwise
+independent and marginally uniform in $\{0,1\}^k$ (v12, Definition~3.3). Hence
+$\Pr[a_i=0]=2^{-k}$, and with $k=c_1\log m$ this is $m^{-\Theta(1)}$ --- a
+polynomially vanishing fraction of columns. The promise-preserving exchangeability
+that the calibration step needs at fixed $\uu$ is thus available only on a
+vanishing fraction of the VV columns that index the per-bit rules, exactly the
+regime the lower bound must control.
+
+\subsection{A finite success-domination counterexample}
+
+The same module records, in the smallest nontrivial setting, why ``two instances
+that share a local input'' cannot be calibrated by a $\uu$-measurable rule: a
+global decoder that reads the full instance can strictly out-predict every rule
+that depends only on the shared local input. Take two equally weighted full
+instances (encoded by a Boolean) that map to the \emph{same} nonzero one-bit
+post-switch input. A global decoder recovers the witness on both; any local
+decoder, forced to use only the common input, is a fixed guess and is correct on
+at most one.
+
+\begin{lstlisting}[language={}]
+theorem twoPointGlobalSuccessCount_eq_two :
+    twoPointGlobalSuccessCount = 2 := by rfl
+
+theorem twoPointLocalSuccessCount_le_one (guess : Bool) :
+    twoPointLocalSuccessCount guess ≤ 1 := by
+  cases guess <;> decide
+
+/-- Finite domination counterexample: the global decoder succeeds on both
+full instances, while every decoder depending only on the shared local input
+succeeds on at most one. -/
+theorem finite_successDomination_counterexample :
+    twoPointGlobalSuccessCount = 2 ∧
+      (∀ guess : Bool, twoPointLocalSuccessCount guess ≤ 1) ∧
+      (∀ guess : Bool, twoPointLocalSuccessCount guess < twoPointGlobalSuccessCount)
+\end{lstlisting}
+
+This is a finite witness that success domination \eqref{eq:domination} cannot be
+obtained \emph{from sharing $\uu$ alone}: when two outcomes collapse to the same
+local input but differ in the truth, the comparator that is forced through $\uu$
+loses to the global decoder. It is the local, combinatorial shadow of the
+fiber-crossing exhibited above; the involution that would have justified
+calibration moves $\uu$ off the fiber rather than within it.
+
+\subsection{The reduced-projection repair is circular}
+\label{sec:coarse}
+
+The natural repair conditions the local rules on the $\Ti$-invariant projection
+$(\zz,a_i)$ --- the coordinate calibration may legitimately use --- rather than on
+the full $\uu$, hoping to trade the calibration gap for a coarser interface. We
+machine-check that this does not reduce the problem.
+
+Write $\mathrm{StarSW}$ for the half-bound success domination must deliver on a
+neutral interface: that every decoder scores at most $\tfrac12+\mathrm{slack}$ on
+the witness bit --- exactly the average-case witness-bit hardness of $\Dm$. If the
+reduced projection is neutral --- the property the repair itself asserts --- then
+the best $(\zz,a_i)$-measurable comparator scores exactly $\tfrac12$, and success
+domination on $(\zz,a_i)$ is \emph{logically equivalent} to $\mathrm{StarSW}$:
+
+\begin{lstlisting}[language={}]
+theorem bestLocalSuccess_eq_half_of_neutral (hN : Neutral u x) :
+    bestLocalSuccess u x = 1 / 2
+
+theorem coarseDominationAll_iff_starSW_of_neutral (hN : Neutral u x) :
+    CoarseDominationAll u x decoderSuccess slack
+      <-> StarSW decoderSuccess slack
+\end{lstlisting}
+
+Re-deriving domination on $(\zz,a_i)$ is thus re-deriving the hardness target, not
+reducing to anything weaker. A concrete two-point instance makes the failure
+explicit: two full instances that share the reduced projection but differ in $b$
+give a neutral projection on which a $b$-reading decoder wins on both, so
+domination fails ($1\le\tfrac12$):
+
+\begin{lstlisting}[language={}]
+theorem coarseProjectionToy_not_dominates :
+    not (Dominates coarseProjectionToyUCoarse coarseProjectionToyWitness ...)
+\end{lstlisting}
+
+This is an instance of a \emph{no-threading} impossibility: a neutral statistic
+cannot also be sufficient for a target that is a deterministic function of the
+instance (\texttt{neutral\_not\_sufficient}, from the general
+\texttt{noThreadingLemma}). Every coordinate dropped to gain $\Ti$-invariance is a
+coordinate the global decoder may still use; neutrality and sufficiency trade one
+for one.
+
+We are exact about scope. The conclusion that the repair is circular \emph{on the
+ensemble} is a theorem \emph{conditional on two explicit hypotheses we do not
+prove} --- that $(\zz,a_i)$ is neutral on $\Dm$, and that $\mathrm{StarSW}$ implies
+the separation --- both kept in the signature:
+
+\begin{lstlisting}[language={}]
+theorem coarseProjectionRepair_obstruction_conditional
+    (EnsembleCoarseNeutral : Neutral u x)
+    (StarSWImpliesSeparation : StarSW decoderSuccess slack -> pNeNPClaim) :
+    (CoarseDominationAll u x decoderSuccess slack <-> StarSW decoderSuccess slack)
+      /\ (CoarseDominationAll u x decoderSuccess slack -> pNeNPClaim)
+\end{lstlisting}
+
+The machine-checked content is the \emph{equivalence} and the \emph{finite
+counterexample}; together they show the reduced-projection repair renames the
+average-case hardness rather than reducing to it. The module is
+\texttt{Mettapedia.Computability.PNP.CoarseProjectionObstruction}, without
+\texttt{sorry}.
+
+\section{Status and scope}
+\label{sec:scope}
+
+We state the scope of this finding exactly.
+
+\paragraph{What is established.} The action of the promise-preserving involution
+$\Ti$ of \eqref{eq:Ti} on the post-switch input $\uu_i=(\zz,a_i,b)$ of
+\eqref{eq:localinput} is $b\mapsto b\oplus a_i$; it preserves the reduced
+projection $(\zz,a_i)$ (theorem \texttt{invariantProjection\_tiInputMap}) and
+preserves the full input $(\zz,a_i,b)$ \emph{if and only if} $a_i=0$ (theorems
+\texttt{tiInputMap\_eq\_self\_iff\_zeroColumn} and
+\texttt{calibrationFullInputPreservation\_fails\_of\_nonzeroColumn}); on every
+nonzero column the third coordinate $b$ genuinely moves, so the full-input
+preservation invoked by the calibration argument fails
+(\texttt{not\_calibrationFullInputPreservation\_on\_nonzeroColumns}). A finite
+two-point success-domination counterexample
+(\texttt{finite\_successDomination\_counterexample}) shows that a
+$\uu$-measurable comparator cannot dominate a global decoder merely because they
+share the local input. All of this is machine-checked, without \texttt{sorry}, in
+\texttt{Mettapedia.Computability.PNP.PostSwitchInputObstruction}. The consequence
+is precise: the exchangeability of $(X_i,Y_i)$ at a fixed $\uu$ that the
+calibration step (v12, Lemma~4.8 / Appendix~A.5, Lemma~A.17) derives from $\Ti$
+holds, via that involution, only on the $a_i=0$ fiber, a vanishing
+$2^{-k}=m^{-\Theta(1)}$ fraction of VV columns. The local-comparator-dominates-
+global-decoder calibration is therefore not valid as stated.
+
+\paragraph{What is not established.} This is an obstruction to the calibration
+\emph{as written}, not a refutation of its conclusion. We have machine-checked the
+\emph{structural} fact that the cited involution does not fix the full local input
+off the zero-column fiber; we have \emph{not} established that no $\uu$-measurable
+comparator can dominate a global decoder on the ensemble $\Dm$. That stronger,
+measure-theoretic statement --- a genuine anti-concentration / independence claim
+about the conditional law of $(X_i,Y_i)$ given the full $\uu$, integrated against
+the Valiant--Vazirani and masking laws --- is exactly the difficulty the proof
+must confront, and it is left open here. In particular, conditioning only on the
+invariant projection $(\zz,a_i)$ does not by itself help:
+\S\ref{sec:coarse} shows the domination bound one would re-derive there is
+equivalent to the average-case hardness it must prove, and a \emph{separate}
+neutral local mechanism for the $b$-coordinate is excluded by the same
+no-threading impossibility. What this work does \emph{not} rule out is a domination
+bound from genuinely new structure --- an exchangeability at fixed $\uu$ from a
+symmetry other than $\Ti$, or a direct anti-concentration of
+$(X_i,Y_i)\mid\uu$ against the masking and Valiant--Vazirani laws.
+
+\paragraph{$\mathrm{P}$ versus $\mathrm{NP}$ remains open.} We make no claim, in
+either direction, about $\mathrm{P}$ versus $\mathrm{NP}$. The finding concerns
+the validity of one step in one proposed route, not the truth of the separation.
+Consistent with this, the formalization itself asserts no separation: the
+project's route-status record carries the verdict
+$\texttt{claimsFinalSeparation} = \texttt{false}$, and the module above proves a
+property of the calibration bridge, not a circuit or complexity-class lower bound.
+
+\section{What remains}
+\label{sec:remains}
+
+The obstruction localizes the open question very precisely. The route's lower
+bound is sound \emph{given} the calibration link \eqref{eq:domination}; the
+calibration link is justified, in v12, by an exchangeability that the cited
+involution supplies only on a vanishing fraction of columns. Closing the route
+therefore requires one of the following, none of which is provided here.
+
+\begin{itemize}
+  \item \emph{Calibration on the reduced projection --- machine-checked to be
+        circular.} One might re-derive the success-domination bound conditioning
+        the local rules on the $\Ti$-invariant projection $(\zz,a_i)$ rather than
+        the full $\uu=(\zz,a_i,b)$. Section~\ref{sec:coarse} shows this is not a
+        genuine reduction: on the neutral reduced projection, success domination is
+        \emph{equivalent} to the average-case hardness $\mathrm{StarSW}$ the route
+        must prove (conditional on the two explicit hypotheses of
+        \S\ref{sec:coarse}), so it renames the target rather than weakening it. We
+        record it here only to mark this door closed.
+  \item \emph{Exchangeability at fixed $\uu$ from new structure.} Exhibit a
+        promise-preserving symmetry that genuinely fixes the full
+        $(\zz,a_i,b)$ while toggling $X_i$, or otherwise establish the
+        anti-concentration of $(X_i,Y_i)\mid\uu$ directly against the masking and
+        Valiant--Vazirani laws --- the measure-theoretic claim left open in
+        \S\ref{sec:scope}.
+  \item \emph{A quantitative $b$-marginal control.} Bound the contribution of the
+        $b$-coordinate to a global decoder's advantage, so that the
+        fiber-crossing of $\Ti$ costs only $m^{-\Omega(1)}$ and can be absorbed
+        into the slack of \eqref{eq:domination}.
+\end{itemize}
+
+The two latter items are substantive analytic tasks on the masked-and-isolated
+ensemble; the first is closed above, machine-checked to be circular rather than a
+reduction. Until one of the substantive tasks is carried out, the
+Switching-by-Weakness route does not, as written,
+establish its distributional lower bound, because the calibration step on which
+that bound depends is not valid at fixed $\uu$ on the bulk of the ensemble. The
+machine-checked content of this paper is exactly the boundary of that gap, and
+nothing beyond it.
+
+\section*{Provenance}
+The manuscript discussed is Ben Goertzel, \emph{$\mathrm{P}\neq\mathrm{NP}$: A
+Non-Relativizing Proof via Quantale Weakness and Geometric Complexity},
+version~v12. The formalization is work of the MeTTapedia formalization effort; the
+Lean development is the module
+\texttt{Mettapedia.Computability.PNP.PostSwitchInputObstruction} (the calibration
+obstruction), together with \texttt{CoarseProjectionObstruction} and the general
+\texttt{NoThreadingLemma} (the reduced-projection circularity of
+\S\ref{sec:coarse}); all carry no \texttt{sorry}. Notation in Sections~\ref{sec:problem}--\ref{sec:crux} follows
+v12 (the ensemble $\Dm$, the masks $H_m$, the Valiant--Vazirani labels
+$(a_i,b)$ with $a_i=\Aei$, the SILS features $\zz$, the post-switch input
+$\uu_i=(\zz,a_i,b)$, the involution $\Ti$, and the polytime-capped weakness
+$\Kpoly$).
+
+\end{document}

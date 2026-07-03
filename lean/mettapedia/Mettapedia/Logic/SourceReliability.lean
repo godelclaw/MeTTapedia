@@ -8,7 +8,7 @@ The MODEL (not the EM algorithm) for source-specific reliability:
 each evidence source has an accuracy profile that determines how much
 its contributions should be trusted.
 
-## Design (council consensus)
+## Design (consensus)
 
 This is EvidentialLedger Layer 2: the reliability layer that sits
 ABOVE the additive evidence composition (Layer 1). It does NOT

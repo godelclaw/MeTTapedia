@@ -24,9 +24,9 @@
     }
   ],
   "primary_gates": [
-    "/home/zar/claude/lean-projects/mettapedia/scripts/conformance/run_unified_conformance.sh",
-    "/home/zar/claude/lean-projects/mettapedia/scripts/conformance/run_he_io_conformance.sh",
-    "/home/zar/claude/lean-projects/algorithms/artifacts/strict_subset_targets",
-    "/home/zar/claude/lean-projects/algorithms/artifacts/strict_subset_heavy"
+    "~/claude/lean-projects/mettapedia/scripts/conformance/run_unified_conformance.sh",
+    "~/claude/lean-projects/mettapedia/scripts/conformance/run_he_io_conformance.sh",
+    "~/claude/lean-projects/algorithms/artifacts/strict_subset_targets",
+    "~/claude/lean-projects/algorithms/artifacts/strict_subset_heavy"
   ]
 }

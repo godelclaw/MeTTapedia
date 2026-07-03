@@ -721,5 +721,5 @@
       "preview": "theorem for L being Semilattice, D1, D2 being Subset of L holds uparrow (( uparrow D1) \"/\\\" (uparrow D2)) = uparrow (D1 "
     }
   ],
-  "source_path": "/home/zar/claude/mizar/share/mml/yellow_4.miz"
+  "source_path": "~/claude/mizar/share/mml/yellow_4.miz"
 }

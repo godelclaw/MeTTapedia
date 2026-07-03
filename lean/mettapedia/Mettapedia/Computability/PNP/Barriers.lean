@@ -1,4 +1,4 @@
-import Mettapedia.Computability.PNP.Barriers.ProperSubsetLabCanaries
+import Mettapedia.Computability.PNP.Barriers.ReplacementOpened
 
 /-!
 # PNP barrier layer

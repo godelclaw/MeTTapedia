@@ -23,7 +23,7 @@ Single-entry build target for the Chapter-9 positive (non-counterexample) path:
 Build command:
 
 ```bash
-cd /home/zar/claude/lean-projects/mettapedia
+cd ~/claude/lean-projects/mettapedia
 ulimit -Sv 6291456 && export LAKE_JOBS=3 && nice -n 19 \
   lake build Mettapedia.Logic.PLNSelectorRewriteThresholdRegression
 ```

@@ -89,6 +89,23 @@ theorem CAP5TransportedEdgeComponentCoverCore.not_forall_exceptionalAnnulusCross
     (fun e he => data.exceptionalAnnulusCrossingOutsideEdge_crosses
       (hcrossingOutside e he))
 
+/-- Finset-support form of the odd closed-walk obstruction for the normal-form outside-crossing
+CAP5 predicate.  This is the route-facing shape of the validation lab's odd-cycle side-cut
+counterexamples: any finite candidate support containing an odd closed walk cannot be wholly
+accepted by a single outside-crossing side predicate. -/
+theorem CAP5TransportedEdgeComponentCoverCore.not_forall_exceptionalAnnulusCrossingOutsideEdge_of_closed_walk_odd_length_subset
+    {G : SimpleGraph V}
+    {boundaryEdge : Fin 5 → G.edgeSet} {n : Nat}
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    {p0Inside p4Inside : Bool} {side : V → Prop} {u : V}
+    (p : G.Walk u u) (hodd : Odd p.length) {edges : Finset G.edgeSet}
+    (hsubset : ∀ e : G.edgeSet, (e : Sym2 V) ∈ p.edges → e ∈ edges) :
+    ¬ ∀ e : G.edgeSet, e ∈ edges →
+      data.ExceptionalAnnulusCrossingOutsideEdge p0Inside p4Inside side e := by
+  intro hcrossingOutside
+  exact data.not_forall_exceptionalAnnulusCrossingOutsideEdge_of_closed_walk_odd_length p hodd
+    (fun e he => hcrossingOutside e (hsubset e he))
+
 /-- The exceptional CAP5 one-edge counterexample predicate always emits a genuine
 side-crossing edge.  This keeps the algebraic lane connected to the raw cyclic-cut checker
 instead of treating the emitted edge as an opaque witness. -/
@@ -343,6 +360,49 @@ theorem familyPairing_separates_of_exceptionalAnnulusOneEdgeCounterexampleEdges
     (data.ExceptionalAnnulusOneEdgeCounterexampleEdge p0Inside p4Inside side)
     hcontrol hwitnessRed hwitnessBlue
 
+/-- Predicate-level algebraic target for the normal-form outside-crossing CAP5 counterexample
+bin.  If the raw outside-crossing edges control all selected-boundary-zero chains, then red/blue
+single-coordinate witnesses on those edges separate family pairings on the whole
+selected-boundary-zero subspace. -/
+theorem familyPairing_separates_of_exceptionalAnnulusCrossingOutsideEdges
+    {G : SimpleGraph V} [Fintype G.edgeSet]
+    {boundaryEdge : Fin 5 → G.edgeSet} {n : Nat}
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    {emb : PlaneEmbeddingWithBoundary G}
+    {colorings : Set (G.EdgeColoring Color)}
+    {κ : Type*}
+    (family : κ → projectedColoringGeneratorSubspace emb colorings)
+    (p0Inside p4Inside : Bool) (side : V → Prop)
+    (hcontrol :
+      ∀ ⦃z : G.edgeSet → Color⦄,
+        z ∈ planarBoundaryZeroSubmodule emb →
+        (∀ e : G.edgeSet,
+          data.ExceptionalAnnulusCrossingOutsideEdge p0Inside p4Inside side e →
+            z e = 0) →
+          z = 0)
+    (hwitnessRed :
+      ∀ e : G.edgeSet,
+        data.ExceptionalAnnulusCrossingOutsideEdge p0Inside p4Inside side e →
+          ∃ i : κ,
+            ((family i : projectedColoringGeneratorSubspace emb colorings) :
+                G.edgeSet → Color) =
+              Pi.single e red)
+    (hwitnessBlue :
+      ∀ e : G.edgeSet,
+        data.ExceptionalAnnulusCrossingOutsideEdge p0Inside p4Inside side e →
+          ∃ i : κ,
+            ((family i : projectedColoringGeneratorSubspace emb colorings) :
+                G.edgeSet → Color) =
+              Pi.single e blue) :
+    ∀ z : planarBoundaryZeroSubmodule emb,
+      (∀ i,
+        chainDotBilinForm G.edgeSet (family i : G.edgeSet → Color)
+          (z : G.edgeSet → Color) = 0) →
+        z = 0 :=
+  familyPairing_separates_of_edgePredicateWitnesses family
+    (data.ExceptionalAnnulusCrossingOutsideEdge p0Inside p4Inside side)
+    hcontrol hwitnessRed hwitnessBlue
+
 /-- Full Theorem 4.9 synthesis route from the exceptional CAP5 emitted-edge predicate.  The
 remaining finite-generator obligation is exactly the control hypothesis: every selected-
 boundary-zero chain is determined by its coordinates on the emitted counterexample edges. -/
@@ -382,6 +442,48 @@ theorem theorem49BoundaryRootSynthesis_of_exceptionalAnnulusCounterexampleEdgeCo
   theorem49BoundaryRootSynthesis_of_edgePredicateFamilyPairingSeparation
     emb C₀ colorings hsubset family
     (data.ExceptionalAnnulusOneEdgeCounterexampleEdge p0Inside p4Inside side)
+    hcontrol hwitnessRed hwitnessBlue
+
+/-- Full Theorem 4.9 synthesis route from the normal-form outside-crossing CAP5 predicate.  The
+remaining finite-generator obligation is the raw crossing-edge control statement: selected-
+boundary-zero chains are determined by their coordinates on crossing edges outside realized
+exceptional boundary-support candidates. -/
+theorem theorem49BoundaryRootSynthesis_of_exceptionalAnnulusCrossingOutsideEdgeControl
+    {G : SimpleGraph V}
+    [Fintype G.edgeSet] [FiniteDimensional F2 (G.edgeSet → Color)]
+    {boundaryEdge : Fin 5 → G.edgeSet} {n : Nat}
+    {data : CAP5TransportedEdgeComponentCoverCore boundaryEdge n}
+    (emb : PlaneEmbeddingWithBoundary G) (C₀ : G.EdgeColoring Color)
+    (colorings : Set (G.EdgeColoring Color))
+    (hsubset : colorings ⊆ G.EdgeKempeClosure C₀)
+    {κ : Type*}
+    (family : κ → projectedColoringGeneratorSubspace emb colorings)
+    (p0Inside p4Inside : Bool) (side : V → Prop)
+    (hcontrol :
+      ∀ ⦃z : G.edgeSet → Color⦄,
+        z ∈ planarBoundaryZeroSubmodule emb →
+        (∀ e : G.edgeSet,
+          data.ExceptionalAnnulusCrossingOutsideEdge p0Inside p4Inside side e →
+            z e = 0) →
+          z = 0)
+    (hwitnessRed :
+      ∀ e : G.edgeSet,
+        data.ExceptionalAnnulusCrossingOutsideEdge p0Inside p4Inside side e →
+          ∃ i : κ,
+            ((family i : projectedColoringGeneratorSubspace emb colorings) :
+                G.edgeSet → Color) =
+              Pi.single e red)
+    (hwitnessBlue :
+      ∀ e : G.edgeSet,
+        data.ExceptionalAnnulusCrossingOutsideEdge p0Inside p4Inside side e →
+          ∃ i : κ,
+            ((family i : projectedColoringGeneratorSubspace emb colorings) :
+                G.edgeSet → Color) =
+              Pi.single e blue) :
+    Theorem49BoundaryRootSynthesis emb C₀ :=
+  theorem49BoundaryRootSynthesis_of_edgePredicateFamilyPairingSeparation
+    emb C₀ colorings hsubset family
+    (data.ExceptionalAnnulusCrossingOutsideEdge p0Inside p4Inside side)
     hcontrol hwitnessRed hwitnessBlue
 
 /-- Witness-form equivalent of the CAP5 emitted-edge control obligation.  The algebraic finite

@@ -489,5 +489,5 @@
       "preview": "theorem for T being non empty TopSpace st T is locally-compact holds InclPoset the topology of T is continuous proof let"
     }
   ],
-  "source_path": "/home/zar/claude/mizar/share/mml/waybel_3.miz"
+  "source_path": "~/claude/mizar/share/mml/waybel_3.miz"
 }

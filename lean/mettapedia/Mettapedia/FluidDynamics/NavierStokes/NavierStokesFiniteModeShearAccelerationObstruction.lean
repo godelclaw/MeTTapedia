@@ -82,7 +82,7 @@ theorem finiteModeIdentityCoefficientCurve_hasDerivAt
   intro i
   cases i
   simpa [finiteModeIdentityCoefficientCurve, finiteModeProjectedNSRHS,
-    finiteModeUnitForcingCoefficients] using (hasDerivAt_id t)
+    finiteModeUnitForcingCoefficients] using (hasDerivAt_id' t)
 
 /-- The polynomial vector field `(X₁, 0, 0)`, matching
 `finiteModeShearAccelerationMode`. -/

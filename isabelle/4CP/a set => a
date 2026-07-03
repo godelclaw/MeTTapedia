@@ -1,4 +1,4 @@
-/home/zar/claude/Isabelle2025/src/Tools/jEdit/lib/Tools/jedit: illegal option -- e
+~/claude/Isabelle2025/src/Tools/jEdit/lib/Tools/jedit: illegal option -- e
 
 Usage: isabelle jedit [OPTIONS] [FILES ...]
 
@@ -22,5 +22,5 @@ Usage: isabelle jedit [OPTIONS] [FILES ...]
     -u           user build mode for session image (system_heaps=false)
 
   Start jEdit with Isabelle plugin setup and open FILES
-  (default "/home/zar/Scratch.thy" or ":" for empty buffer).
+  (default "~/Scratch.thy" or ":" for empty buffer).
 

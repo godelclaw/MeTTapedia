@@ -13,7 +13,7 @@ import Mettapedia.OSLF.Framework.PredFiniteSufficient
 Phase 1 of the HE ↔ PeTTa translation: prove that HE's evaluation
 is sound with respect to PeTTa's `MeTTaEval` on the **pure, no-grounded fragment**.
 
-## Reshaped Theorems (per council review)
+## Reshaped Theorems (per review review)
 
 The original `mettaCall_sound` overclaimed. This file provides three narrower,
 honest theorems:
@@ -65,7 +65,7 @@ theorem translatable_witness (a : Atom) (h : Translatable a) :
 
 /-! ## Hypothesis D: ExecGroundedOnly
 
-Council (Ritchie, Conway, Tang, Harper): Since `GroundedDispatch` is arbitrary,
+Review (Ritchie, Conway, Tang, Harper): Since `GroundedDispatch` is arbitrary,
 grounded elimination needs this constraint. Without it, the 5 grounded branches
 are NOT absurd — `dispatch.isExecutable` could return true on non-grounded atoms. -/
 
@@ -162,7 +162,7 @@ theorem atomToPattern_var (v : String) :
 
 /-! ## Theorem C: MettaCall Error Soundness
 
-Council (Knuth, Ritchie): Knock out the trivial case first. -/
+Review (Knuth, Ritchie): Knock out the trivial case first. -/
 
 /-- **MettaCall error soundness**: When HE's `MettaCall.error_passthrough` fires
     (atom is `(Error src msg)`), the PeTTa `errorPassThrough` constructor applies. -/
@@ -184,7 +184,7 @@ theorem mettaCall_error_sound
 
 /-! ## Theorem B: EvalAtom Leaf Soundness
 
-Council (Weirich, Wadler, SPJ, Brown): Narrow to what `MeTTaEval` can actually
+Review (Weirich, Wadler, SPJ, Brown): Narrow to what `MeTTaEval` can actually
 represent. Proved for: variables, errors. -/
 
 /-- **Variable leaf soundness**: HE's `EvalAtom` on a variable returns the variable
@@ -230,7 +230,7 @@ theorem evalAtom_error_sound
 
 /-! ## Theorem A: MettaCall Equation Step Soundness
 
-Council (McBride, Pfenning, Coquand, SPJ): Split by semantic layer. The one-step
+Review (McBride, Pfenning, Coquand, SPJ): Split by semantic layer. The one-step
 equation match IS the core claim. Recursion is a separate induction.
 
 The proof relies on a match correspondence lemma connecting HE's `simpleMatch`
@@ -380,7 +380,7 @@ theorem evalAtom_symbol_sound
 
 /-! ## Phase 2, Step 2: Match Correspondence (HE simpleMatch → PeTTa matchPattern)
 
-Council (Carneiro, Pfenning, McBride): prove existence of a PeTTa match, not exact
+Review (Carneiro, Pfenning, McBride): prove existence of a PeTTa match, not exact
 binding equality. `simpleMatch` success implies `matchPattern` nonemptiness. -/
 
 /-- `matchPattern` on an fvar (wildcard) always succeeds with a singleton binding. -/
@@ -484,7 +484,7 @@ private theorem atomToPattern_never_bvar (a : Atom) (n : Nat) :
           | grounded g => simp [atomToPattern]
           | expression xs => simp [atomToPattern]
 
-/-! ## Phase 2: Commutation Infrastructure (GPT-5.4 Pro architecture, council 87%)
+/-! ## Phase 2: Commutation Infrastructure (GPT-5.4 Pro architecture, review 87%)
 
 The key insight: prove `applyBindings (heBindingsToOSLF qb) pl = pa` (the commutation),
 then derive matchPattern nonemptiness via `matchPattern_applyBindings_complete`. -/
@@ -625,11 +625,11 @@ All imported: `isBound_false_of_lookup_none`, `lookup_assign_of_lookup_none`,
 
 /-! ### Step J+K: The commutation theorem (GPT-5.4 Pro architecture)
 
-Council (Martin-Löf, Tao, Carneiro, 87%): The right invariant is
+Review (Martin-Löf, Tao, Carneiro, 87%): The right invariant is
 `applyBindings (heBindingsToOSLF qb) pl = pa`, not "matchPattern nonempty".
 Then `matchPattern_applyBindings_complete` finishes the job. -/
 
-/-- **Part 2: The commutation theorem** (GPT-Pro architecture, council 87%). -/
+/-- **Part 2: The commutation theorem** (GPT-Pro architecture, review 87%). -/
 private theorem simpleMatch_applyBindings_all (fuel : Nat) :
     (∀ lhs target b qb,
       Mettapedia.Languages.MeTTa.HE.simpleMatch lhs target b fuel = some qb →

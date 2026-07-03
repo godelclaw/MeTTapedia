@@ -3,16 +3,33 @@ import Mettapedia.Computability.PNP.ClockedKpolyActualGapClosure
 import Mettapedia.Computability.PNP.CruxKpolyBridgeCurrentStatus
 import Mettapedia.Computability.PNP.CruxKpolyPromotedPacket
 import Mettapedia.Computability.PNP.CruxSynthesisRegression
+import Mettapedia.Computability.PNP.CoarseProjectionObstruction
 import Mettapedia.Computability.PNP.KpolyPolynomialFunctorAgreementObstruction
-import Mettapedia.Computability.PNP.KpolyQuantaleShortcutRemovalObstruction
-import Mettapedia.Computability.PNP.Barriers.ProperSubsetLabCanaries
+import Mettapedia.Computability.PNP.KpolyQuantaleShortcutRemovalCanary
+import Mettapedia.Computability.PNP.Barriers.ReplacementOpened
 import Mettapedia.Computability.PNP.PNPv13AtomicBudgetLedgerAuditorCanaries
 import Mettapedia.Computability.PNP.PNPv13CDENFNormalizerCanaries
 import Mettapedia.Computability.PNP.PNPv13FiniteGibbsDobrushinCanaries
 import Mettapedia.Computability.PNP.PNPv13LockedCoreLabCanaries
 import Mettapedia.Computability.PNP.PNPv13SwitchedHistoryProductAuditorCanaries
 import Mettapedia.Computability.PNP.PNPv13TraceFactorizationCanaries
+import Mettapedia.Computability.PNP.PNPSteelmanConditional
+import Mettapedia.Computability.PNP.PostSwitchInputObstruction
 import Mettapedia.Computability.PNP.SharedExactZABAffineDecisionListStructuralObstructionExactZAB
+import Mettapedia.Computability.PNP.V13CDENF
+import Mettapedia.Computability.PNP.V13ConditionalClash
+import Mettapedia.Computability.PNP.V13EvidenceSpine
+import Mettapedia.Computability.PNP.V13FaithfulnessAudit
+import Mettapedia.Computability.PNP.V13GaugeBufferedLockedInterface
+import Mettapedia.Computability.PNP.V13ObserverLadder
+import Mettapedia.Computability.PNP.V13PhaseEConcrete
+import Mettapedia.Computability.PNP.V13PhaseEScaled
+import Mettapedia.Computability.PNP.V13RealRungOneAdaptiveRows
+import Mettapedia.Computability.PNP.V13RealRungOneLinear
+import Mettapedia.Computability.PNP.V13RealRungOneQRowBound
+import Mettapedia.Computability.PNP.V13RealRungOneRowObservers
+import Mettapedia.Computability.PNP.V13RealRungOneStaticRows
+import Mettapedia.Computability.PNP.WeaknessCalculus
 /-!
 # PNP proof state
 
@@ -31,6 +48,7 @@ inductive PNPProofNodeStatus where
   | blockedByCounterexample
   | barrierBlocked
   | barrierUncleared
+  | replacementOpened
   | openBackground
 deriving DecidableEq, Repr
 
@@ -47,13 +65,13 @@ deriving Repr
 
 /-- Current source-map summary for `Mettapedia/Computability/PNP`. -/
 def currentPNPLaneSurveyCounts : PNPLaneSurveyCounts where
-  sourceFiles := 945
-  sourceLines := 125036
-  internalImportEdges := 2288
-  regressionFiles := 294
-  filesOverSevenHundredFiftyLines := 0
+  sourceFiles := 948
+  sourceLines := 125688
+  internalImportEdges := 2294
+  regressionFiles := 295
+  filesOverSevenHundredFiftyLines := 2
   zeroInternalImporterEntrypoints := 256
-  noDeclarationCompatibilityHubs := 126
+  noDeclarationCompatibilityHubs := 128
 
 /-- Simple PLN-style truth bookkeeping: support and confidence percentages. -/
 structure SimpleTruthValue where
@@ -76,7 +94,7 @@ def currentPNPProofNodes : List PNPProofNode := [
     key := "pnp.map.current-lane",
     status := .surveyed,
     truthValue := ⟨100, 94⟩,
-    evidence := "The lane currently has 945 Lean files, 125036 lines, 2288 internal import edges, and no files over the split threshold.",
+    evidence := "The lane currently has 948 Lean files, 125688 lines, 2294 internal import edges, and two files over the split threshold.",
     nextObligation := "Keep broad regression files separate from the live entrypoint unless a checked theorem needs them."
   },
   {
@@ -148,6 +166,76 @@ def currentPNPProofNodes : List PNPProofNode := [
     nextObligation := "Do not promote finite Gibbs boundary-law mixing claims unless the explicit max-qSSM row constant is strictly below scale for every row."
   },
   {
+    key := "pnp.goertzel-calibration-success-domination-break",
+    status := .blockedByCounterexample,
+    truthValue := ⟨100, 98⟩,
+    evidence := "calibrationFullInputPreservation_fails_of_nonzeroColumn proves that the post-switch involution preserves only `(z,a)` while changing `b` and the full `(z,a,b)` input on every nonzero VV column. finite_successDomination_counterexample proves a two-point finite local/global domination counterexample: the global decoder succeeds on both full instances, while every decoder depending only on the shared local input succeeds on at most one. Lab pnp-calibration-success-domination-break-lab-20260630.json tabulates the parity-USAT/VV instance where all nonzero columns move `b`, global exact success is 1, best local bit success is 1/2, and best local exact success falls as 2^(1-m).",
+    nextObligation := "Do not use Ben Goertzel's A.17 calibration or Proposition A.5 success-domination step as stated; any replacement must condition on an actually invariant input or supply a new domination theorem that survives global decoders."
+  },
+  {
+    key := "pnp.steelman.kernel-flip-no-threading-star-sw-conditional",
+    status := .checked,
+    truthValue := ⟨100, 92⟩,
+    evidence := "KernelFlipInvolution proves the finite ZMod 2 kernel-flip pairing `kernelFlip_exactNeutrality_card`, with `toyKernelFlip_exactNeutrality_card` as an inhabited model. NoThreadingLemma proves `noThreading_neutral_sufficient_blocks_nontrivial_bit`, showing a neutral local statistic cannot also be sufficient for a nontrivial deterministic witness bit. PNPSteelmanConditional proves `pnp_steelman_conditional`: KernelFlipNeutrality plus the explicit open StarSWAverageCaseWitnessBitHardness input implies the abstract PNP endpoint through the non-SW chain.",
+    nextObligation := "The exact remaining input is StarSWAverageCaseWitnessBitHardness for Ben's masked isolated ensemble; no concentration/log-Sobolev replacement and no unconditional separation is asserted by this node."
+  },
+  {
+    key := "pnp.coarse-projection-repair-obstruction",
+    status := .checked,
+    truthValue := ⟨100, 93⟩,
+    evidence := "CoarseProjectionObstruction proves `uCoarse_comp_T` and `uFull_T_moves_at`, the neutral-interface half-bound theorem `bestLocalSuccess_eq_half_of_neutral`, the domination equivalence `coarseDominationAll_iff_starSW_of_neutral`, the two-point failure `coarseProjectionToy_not_dominates`, the no-threading instance `coarseProjectionToy_not_sufficient`, and the conditional `coarseProjectionRepair_obstruction_conditional` with explicit hypotheses `EnsembleCoarseNeutral` and `StarSWImpliesSeparation`.",
+    nextObligation := "Do not treat the coarse `(z,a_i)` repair as an unconditional domination theorem: on a neutral interface it is exactly the StarSW half-bound, and neutrality on Ben's ensemble plus StarSW-to-separation remain open hypotheses."
+  },
+  {
+    key := "pnp.v13.phase-a.finite-evidence-spine",
+    status := .checked,
+    truthValue := ⟨100, 91⟩,
+    evidence := "V13EvidenceSpine defines finite rational laws, conditional target gaps, static pairwise-capture certificates, derivative-telescoping certificates, and the combined `phaseA_gap_le_half_derivative_sum`; `toyV13_phaseA_gap_le_half_derivative_sum` gives a two-point inhabited model.",
+    nextObligation := "Feed the finite derivative sum through CD-ENF safe/gauge normalization rather than treating observer output as an opaque atom."
+  },
+  {
+    key := "pnp.v13.phase-b.cd-enf-normalization",
+    status := .checked,
+    truthValue := ⟨100, 91⟩,
+    evidence := "V13CDENF defines RawEvidence without observer-output atoms, NormalEvidence with exactly neutral/safe/gauge leaf constructors, proves `CDENF_semantics`, and routes observers through `observerToEvidence_sat` plus `observerToCDENF_sat`; the toy observer interface inhabits the discipline.",
+    nextObligation := "Use the normalized safe/gauge leaves as the ledger surface for Phase C, including the joint nine-field inhabitation test."
+  },
+  {
+    key := "pnp.v13.phase-c.gauge-buffered-ledger",
+    status := .checked,
+    truthValue := ⟨100, 90⟩,
+    evidence := "V13GaugeBufferedLockedInterface packages the nine ledger fields as propositions over Phase A/B objects and proves red-team coherence theorems for admissible histories, boundary mixing, and neutral skeleton non-sufficiency. `toyLockedInterface_jointly_inhabits_all_nine` checks that a two-point toy jointly inhabits all nine fields.",
+    nextObligation := "Use every ledger field explicitly in the Phase D conditional upper/lower clash record; any unused field is an architectural finding."
+  },
+  {
+    key := "pnp.v13.phase-d.conditional-upper-lower-clash",
+    status := .checked,
+    truthValue := ⟨100, 89⟩,
+    evidence := "V13ConditionalClash defines `ParameterRecord`, `LedgerFieldUseCertificate`, and `UpperLowerClash`; `v13_upperLowerClash` consumes Phase A, observer CD-ENF normalization, and all nine GaugeBufferedLockedInterface fields. The second-round version derives the lower consequence by `compressionLower_of_budget_machine`, isolates the upper side as one `SelfReductionUpperHypothesis`, and records the seven-field parameter audit in `v13ParameterRecordAudit`.",
+    nextObligation := "Keep the concrete ensemble outside this artifact; any concrete instantiation must supply the external ParameterRecord rather than weakening the ledger fields."
+  },
+  {
+    key := "pnp.v13.faithfulness-audit",
+    status := .checked,
+    truthValue := ⟨100, 88⟩,
+    evidence := "V13FaithfulnessAudit records 20 rows mapping Phase A definitions, Phase B definitions, and all nine GaugeBufferedLockedInterface fields to v13 note sections, with explicit faithful/weaker/stronger mismatch verdicts and no reportable-finding row.",
+    nextObligation := "Use the weaker-than-note rows as Phase E obligations rather than treating the abstract ledger as a concrete ensemble proof."
+  },
+  {
+    key := "pnp.v13.phase-e.small-locked-sat-smoke",
+    status := .checked,
+    truthValue := ⟨100, 86⟩,
+    evidence := "V13PhaseEConcrete instantiates GaugeBufferedLockedInterface on a four-world one-variable locked CNF family with a VV-style isolation row and hidden gauge bit. It proves the locked-CNF uniqueness lemma, discharges the nine obligations individually in the requested order, and records a nine-row obligation map with no checked failures.",
+    nextObligation := "Do not generalize the zero-cost safeQSSM and Unit-pivot boundaryMixing smoke proofs to the scaled ensemble; those remain the hard scaled obligations."
+  },
+  {
+    key := "pnp.weakness-calculus.finite-spectrum-gap",
+    status := .checked,
+    truthValue := ⟨100, 93⟩,
+    evidence := "WeaknessCalculus proves the finite budget-lattice spectrum, the gap identity `spectrumGap_eq_zero_iff_domination`, budget monotonicity, data-processing monotonicity, no-threading-to-positive-gap, split-budget tensor additivity, independent-value tensor multiplicativity, sequential chain-rule availability with an explicit finite defect, additive gap laws for tensor/split sequential composition, and the product cross-term law for independent-value gaps. The two-point toy has local spectrum 1, poly spectrum 2, gap 1, additive tensor gap 2, multiplicative tensor gap 3, and sequential split gap 2.",
+    nextObligation := "Keep `StarSWDominationHypothesis` explicit: domination/average-case witness-bit hardness is not proved by the calculus, and no final separation is asserted."
+  },
+  {
     key := "pnp.kpoly-promoted-packet",
     status := .ledgerCovered,
     truthValue := ⟨100, 92⟩,
@@ -162,7 +250,7 @@ def currentPNPProofNodes : List PNPProofNode := [
     nextObligation := "Treat the promoted Kpoly bridge as a route refutation unless a new bridge supplies a stronger finite-cover theorem rather than product-bound or fielded-switching-only evidence."
   },
   { key := "pnp.kpoly.polynomial-functor-agreement", status := .blockedByCounterexample, truthValue := ⟨100, 99⟩, evidence := "polynomialFunctorSmallImageAgreement_obstruction_packet proves that a one-shape finite polynomial-container image and its two-code bit family do not force any strict pure-atom bad-code agreement bound.", nextObligation := "Do not derive Kpoly recovery or quantale weakness bounds from polynomial small-image evidence alone; require a separate support-disagreement or agreement-mass theorem." },
-  { key := "pnp.kpoly.feature-route-quantale-boundary", status := .barrierBlocked, truthValue := ⟨100, 99⟩, evidence := "kpolyQuantaleShortcutRemoval_obstruction_packet proves that any shortcut-removed route in this class must pay the exact-visible feature floor and Boolean-image floor, make the support/query map surjective, and resolve a positive-weight weakness pair; below-surface feature space, non-surjective support, or invariant weakness feature blocks the route class.", nextObligation := "A replacement route in this class must provide all three obligations together before its Kpoly or weakness evidence counts as central progress." },
+  { key := "pnp.kpoly.feature-route-quantale-boundary", status := .checked, truthValue := ⟨100, 99⟩, evidence := "kpolyQuantaleShortcutRemovalRoute_nonempty and kpolyQuantaleShortcutRemoval_positive_canary_packet prove a concrete singleton exact-visible and Bool-weakness inhabitant satisfying all four route obligations; kpolyQuantaleShortcutRemoval_obstruction_packet is therefore a non-vacuous necessary-condition boundary for this route class, not a global separation claim.", nextObligation := "Scale or replace the canary only with routes that satisfy all four obligations together; keep barrier-world and positive escape-witness obligations separate before any global promotion." },
   {
     key := "pnp.kpoly-promoted.barrier-clearance",
     status := .barrierBlocked,
@@ -284,10 +372,17 @@ def currentPNPProofNodes : List PNPProofNode := [
   },
   {
     key := "pnp.replacement-route.barrier-subset-lab-canaries",
-    status := .barrierBlocked,
+    status := .checked,
     truthValue := ⟨100, 98⟩,
     evidence := "pnpBarrierSubsetFrontierCanaries_guardrails records the finite lab-backed Boolean gate: a toy all-three-barrier route clears, every proper subset of the barrier layers fails promotion, and the current local Kpoly promotion gate remains blocked.",
-    nextObligation := "Do not begin a replacement global route unless the finite lab and Lean gate both show all three barrier layers represented."
+    nextObligation := "Use only the all-three represented barrier gate as the entry condition for the replacement route."
+  },
+  {
+    key := "pnp.replacement-route.opened-barrier-gate",
+    status := .replacementOpened,
+    truthValue := ⟨100, 99⟩,
+    evidence := "currentPNPBarrierRouteDecision_verdict_packet records the decided barrier verdict: the current local Kpoly promotion gate remains blocked, while currentPNPAllBarrierCandidatePromotionGate_clears represents the all-three replacement barrier gate with every required challenge-world interface and positive escape witness.",
+    nextObligation := "First concrete obligation: formalize the global complexity-class interface linking the barrier-cleared replacement gate to actual language, uniformity, reduction, and nonmembership data; no final separation theorem is asserted here."
   },
   {
     key := "pnp.replacement-route.promotion-layer-omissions",
@@ -322,7 +417,7 @@ def currentPNPProofNodes : List PNPProofNode := [
     status := .openBackground,
     truthValue := ⟨0, 99⟩,
     evidence := "The live PNP surface is a route audit; it does not assert a final P versus NP separation theorem.",
-    nextObligation := "Formalize the missing global complexity-class interface and barrier checks before introducing any final separation statement."
+    nextObligation := "Discharge currentPNPBarrierRouteDecision_first_obligation by formalizing the missing global complexity-class interface before introducing any final separation statement."
   },
   {
     key := "pnp.barrier-checks",
@@ -746,4 +841,1189 @@ theorem currentPNPBarrierSubsetFrontierLabCanaries_node :
       pnpBarrierSubsetNaturalProofAlgebrizationCanaryAudit.clearsGlobalPromotionGate =
         false := by
   exact pnpBarrierSubsetFrontierCanaries_guardrails
+
+theorem currentPNPReplacementRouteOpenedBarrierGate_node :
+    currentPNPKpolyCompressionBridgePromotedPacket.StopGrade ∧
+      ¬ currentPNPKpolyPromotedBarrierPromotionGate.ClearsAll ∧
+      currentPNPBarrierRouteDecision.barrierGate.ClearsAll ∧
+      currentPNPBarrierRouteDecision.firstObligation =
+        .globalComplexityClassInterface ∧
+      currentPNPBarrierRouteDecision.claimsFinalSeparation = false := by
+  exact currentPNPBarrierRouteDecision_verdict_packet
+
+theorem currentPNPGoertzelCalibrationBreak_node :
+    (∀ {Z : Type*} {k : Nat} (u : PostSwitchInput Z k),
+        nonzeroColumn u.a ->
+          invariantProjection (tiInputMap u) = invariantProjection u ∧
+            tiInputMap u ≠ u ∧ (tiInputMap u).b ≠ u.b) ∧
+      twoPointGlobalSuccessCount = 2 ∧
+        (∀ guess : Bool, twoPointLocalSuccessCount guess ≤ 1) ∧
+          (∀ guess : Bool, twoPointLocalSuccessCount guess < twoPointGlobalSuccessCount) := by
+  exact ⟨fun u ha => calibrationFullInputPreservation_fails_of_nonzeroColumn u ha,
+    finite_successDomination_counterexample⟩
+
+theorem currentPNPSteelmanConditional_node :
+    Nonempty
+        (KernelBitFiber toyKernelA toyKernelB 0 0 ≃
+          KernelBitFiber toyKernelA toyKernelB 0 1) ∧
+      ¬ (Neutral noThreadingToyStatistic noThreadingToyWitness ∧
+          Sufficient noThreadingToyStatistic noThreadingToyWitness) ∧
+      (∀ {F : PNPConditionalFramework},
+        KernelFlipNeutrality F ->
+          StarSWAverageCaseWitnessBitHardness F -> F.pNeNPClaim) ∧
+      toyPNPConditionalFramework.pNeNPClaim := by
+  exact
+    ⟨⟨kernelFlipZeroOneEquiv toyKernelW_isKernel toyKernelW_hits_zero⟩,
+      noThreadingToy_obstruction,
+      fun hKernel hSW => pnp_steelman_conditional hKernel hSW,
+      toy_pnp_steelman_conditional_nonvacuous⟩
+
+theorem currentPNPWeaknessCalculus_node :
+    toyWeaknessTask.localSpectrum = 1 ∧
+      toyWeaknessTask.polySpectrum = 2 ∧
+      toyWeaknessTask.spectrumGap = 1 ∧
+      0 < toyWeaknessTask.spectrumGap ∧
+      DataProcessing toyWeaknessTask toyWeaknessPostProcessedTask ∧
+      ¬ (Neutral noThreadingToyStatistic noThreadingToyWitness ∧
+          Sufficient noThreadingToyStatistic noThreadingToyWitness) ∧
+      (∀ {budgetTop : Nat} {T : WeaknessTask budgetTop},
+        StarSWDominationHypothesis T -> T.spectrumGap = 0) := by
+  exact
+    ⟨toyWeaknessTask_localSpectrum,
+      toyWeaknessTask_polySpectrum,
+      toyWeaknessTask_spectrumGap,
+      toyWeakness_noThreading_forces_gap,
+      toyWeakness_dataProcessing,
+      noThreadingToy_obstruction,
+      fun h => spectrumGap_zero_of_starSWDomination h⟩
+
+theorem currentPNPWeaknessCompositional_node :
+    tensorSpectrumGap toyWeaknessTask toyWeaknessTask = 2 ∧
+      tensorValueSpectrumGap toyWeaknessTask toyWeaknessTask = 3 ∧
+      sequentialSplitSpectrumGap toyWeaknessTask toyWeaknessTask = 2 ∧
+      sequentialSplitLocalSpectrum toyWeaknessTask toyWeaknessTask ≤
+        sequentialSpectrum toyWeaknessTask toyWeaknessTask toySequentialDefect
+          (sequentialSplitBudget toyWeaknessTask.localBudget
+            toyWeaknessTask.localBudget toySequentialDefect) ∧
+      sequentialSplitPolySpectrum toyWeaknessTask toyWeaknessTask ≤
+        sequentialSpectrum toyWeaknessTask toyWeaknessTask toySequentialDefect
+          (sequentialSplitBudget toyWeaknessTask.polyBudget
+            toyWeaknessTask.polyBudget toySequentialDefect) ∧
+      (∀ {leftTop rightTop : Nat}
+        {T : WeaknessTask leftTop} {U : WeaknessTask rightTop},
+        BudgetOrdered T -> BudgetOrdered U ->
+          tensorSpectrumGap T U = T.spectrumGap + U.spectrumGap) ∧
+      (∀ {leftTop rightTop : Nat}
+        {T : WeaknessTask leftTop} {U : WeaknessTask rightTop},
+        BudgetOrdered T -> BudgetOrdered U ->
+          tensorValueSpectrumGap T U =
+            T.spectrumGap * U.polySpectrum +
+              T.localSpectrum * U.spectrumGap) ∧
+      (∀ {leftTop rightTop : Nat}
+        {T : WeaknessTask leftTop} {U : WeaknessTask rightTop},
+        BudgetOrdered T -> BudgetOrdered U ->
+          sequentialSplitSpectrumGap T U =
+            T.spectrumGap + U.spectrumGap) := by
+  exact
+    ⟨toyWeakness_tensor_spectrumGap,
+      toyWeakness_tensorValue_spectrumGap,
+      toyWeakness_sequential_splitGap,
+      toyWeakness_sequential_local_chainRule,
+      toyWeakness_sequential_poly_chainRule,
+      fun hT hU => tensorSpectrumGap_eq_add hT hU,
+      fun hT hU => tensorValueSpectrumGap_eq_crossTerms hT hU,
+      fun hT hU => sequentialSplitSpectrumGap_eq_add hT hU⟩
+
+theorem currentPNPV13EvidenceSpine_node :
+    Gap toyV13Law toyV13Phase toyV13Transcript toyV13Observer =
+        (1 / 2 : Rat) ∧
+      toyV13StaticCapture.CapturesGap ∧
+      1 - toyV13Telescoping.finalWeight =
+        toyV13Telescoping.derivativeSum ∧
+      Gap toyV13Law toyV13Phase toyV13Transcript toyV13Observer ≤
+        (1 / 2 : Rat) * toyV13Telescoping.derivativeSum := by
+  exact
+    ⟨toyV13_gap_eq_half,
+      toyV13StaticCapture_capturesGap,
+      toyV13Telescoping.derivative_telescoping,
+      toyV13_phaseA_gap_le_half_derivative_sum⟩
+
+theorem currentPNPV13CDENF_node :
+    toyCDENFSemantics.SatNormal (CDENF toyCDENFRaw) =
+        toyCDENFSemantics.SatRaw toyCDENFRaw ∧
+      (∀ output : Bool,
+        toyObserverEvidenceInterface.semantics.SatNormal
+            (CDENF
+              (toyObserverEvidenceInterface.observerToEvidence () output)) =
+          fun omega =>
+            toyObserverEvidenceInterface.evalObserver ()
+              (toyObserverEvidenceInterface.publicInput omega) = output) := by
+  exact ⟨toyCDENF_semantics, toy_observerToCDENF_sat⟩
+
+theorem currentPNPV13GaugeBufferedLedger_node :
+    Nonempty
+        (GaugeBufferedLockedInterface
+          Bool Bool toyCDENFNeutral toyCDENFSafe toyCDENFGauge Bool Unit Unit
+          Unit Unit Unit Unit Bool Unit) ∧
+      ¬ MeasurableWrt toyLockedInterface.historyField toyLockedInterface.target ∧
+      ¬ ∃ h0 : Unit -> Bool,
+        ∀ omega, toyLockedInterface.target omega =
+          h0 (toyLockedInterface.pivotSummary omega) := by
+  exact
+    ⟨⟨toyLockedInterface⟩,
+      toyLockedInterface_history_not_target_measurable,
+      toyLockedInterface_pivot_not_sufficient⟩
+
+theorem currentPNPV13ConditionalClash_node :
+    (∀ P : ParameterRecord toyLockedInterface,
+      Nonempty (UpperLowerClash toyLockedInterface P)) ∧
+      (∀ P : ParameterRecord toyLockedInterface,
+        Nonempty (LedgerFieldUseCertificate toyLockedInterface P)) ∧
+      v13ParameterRecordAudit.length = 7 := by
+  constructor
+  · intro P
+    exact ⟨toyLockedInterface_conditional_clash P⟩
+  · constructor
+    · intro P
+      exact ⟨(toyLockedInterface_conditional_clash P).fieldUse⟩
+    · exact v13ParameterRecordAudit_length
+
+theorem currentPNPV13FaithfulnessAudit_node :
+    v13PhaseAFaithfulnessRows.length = 5 ∧
+      v13PhaseBFaithfulnessRows.length = 6 ∧
+        v13LedgerFaithfulnessRows.length = 9 ∧
+          v13FaithfulnessAudit.length = 20 ∧
+            (∀ row ∈ v13FaithfulnessAudit,
+              row.verdict ≠ .reportableFinding) := by
+  exact
+    ⟨v13PhaseAFaithfulnessRows_length,
+      v13PhaseBFaithfulnessRows_length,
+      v13LedgerFaithfulnessRows_length,
+      v13FaithfulnessAudit_length,
+      v13FaithfulnessAudit_has_no_reportable_findings⟩
+
+theorem currentPNPV13PhaseEConcrete_node :
+    Nonempty
+        (GaugeBufferedLockedInterface
+          PhaseEWorld PhaseEPublic PhaseENeutral PhaseESafe PhaseEGauge Bool
+          Bool Unit Unit Unit Unit Unit Unit Unit) ∧
+      phaseEObligationMap.length = 9 ∧
+        (∀ row ∈ phaseEObligationMap, row.status ≠ .failed) ∧
+          PhaseEAllNineObligations := by
+  exact
+    ⟨⟨phaseELockedInterface⟩,
+      phaseEObligationMap_length,
+      phaseEObligationMap_has_no_failures,
+      phaseE_all_nine_obligations⟩
+
+theorem currentPNPV13PhaseEScaled_node :
+    (∀ m k : Nat,
+      Nonempty
+        (GaugeBufferedLockedInterface
+          (PhaseEScaledWorld m k) (PhaseEScaledPublic m k)
+          PhaseEScaledNeutral (PhaseEScaledSafe m k) (PhaseEScaledGauge m)
+          Unit Unit Unit Unit Unit (PhaseEScaledPayload m k) Unit Unit Unit)) ∧
+      phaseEScaledObligationMap.length = 9 ∧
+        (∀ row ∈ phaseEScaledObligationMap, row.status ≠ .failed) ∧
+          (∀ row ∈ phaseEScaledObligationMap,
+            row.status = .familyInadmissible) ∧
+            (∀ m k : Nat, PhaseEScaledPublicTargetTagViolation m k) ∧
+              (∀ m k : Nat, PhaseEScaledAllMappedObligations m k) := by
+  exact
+    ⟨fun m k => ⟨phaseEScaledLockedInterface m k⟩,
+      phaseEScaledObligationMap_length,
+      phaseEScaledObligationMap_has_no_failures,
+      phaseEScaledObligationMap_all_familyInadmissible,
+      phaseEScaled_familyInadmissible_publicTargetTag,
+      phaseEScaled_all_mapped_obligations⟩
+
+theorem currentPNPV13RealRungOneLinear_node :
+    (∀ {m : Nat} (i₀ : Fin m) (omega : V13RealLinearWorld m),
+      v13RealLinearFullDecoder i₀ (v13RealLinearPublicInput omega) =
+        v13RealLinearTarget i₀ omega) ∧
+      (∀ {m : Nat} (i₀ : Fin m)
+        (omega₀ omega₁ : V13RealLinearWorld m),
+        v13RealLinearPublicInput omega₀ =
+          v13RealLinearPublicInput omega₁ →
+        v13RealLinearTarget i₀ omega₀ =
+          v13RealLinearTarget i₀ omega₁) ∧
+        (∀ {m : Nat} (i₀ spare : Fin m), spare ≠ i₀ →
+          ∀ coordinate : V13RealLinearPublicCoordinate m,
+            ¬ V13RealLinearCoordinateDeterminesTarget i₀ coordinate) := by
+  exact
+    ⟨fun i₀ omega =>
+        v13RealLinear_fullPublic_decodes_target i₀ omega,
+      fun i₀ omega₀ omega₁ hpublic =>
+        v13RealLinear_fullPublic_determines_target i₀ omega₀ omega₁ hpublic,
+      fun i₀ spare hspare =>
+        v13RealLinear_no_single_public_coordinate_determines_target_of_spare
+          i₀ spare hspare⟩
+
+theorem currentPNPV13RealRungOneLinear_certificate_node :
+    ∀ m : Nat, V13RealLinearPublicSurfaceCertificate m := by
+  intro m
+  exact v13RealLinear_publicSurfaceCertificate
+
+theorem currentPNPV13RealRungOneRhsBalanceObstruction_node :
+    Fintype.card (V13RealLinearRhsZeroTargetFiber 0) ≠
+      Fintype.card (V13RealLinearRhsZeroTargetFiber 1) :=
+  v13RealLinearRhsZeroTargetFiber_two_zero_not_balanced
+
+theorem currentPNPV13RealRungOneNoTargetRowsRhsBalance_node :
+    ∀ {m : Nat} (A : V13F2LinearEquiv m) (row i₀ : Fin m)
+      (rhs : ZMod 2),
+      row ∉ V13RealLinearTargetRows A i₀ →
+        Fintype.card (V13RealLinearFixedRhsTargetFiber A row i₀ rhs 0) =
+          Fintype.card
+            (V13RealLinearFixedRhsTargetFiber A row i₀ rhs 1) := by
+  intro m A row i₀ rhs hrow
+  exact
+    v13RealLinearFixedRhsTargetFiber_card_eq_of_row_not_mem_targetRows
+      A row i₀ rhs hrow
+
+theorem currentPNPV13RealRungOneNoTargetRowsPublicSurface_node :
+    ∀ m : Nat, V13RealLinearNoTargetRowsPublicSurfaceCertificate m := by
+  intro m
+  exact v13RealLinearNoTargetRows_publicSurfaceCertificate
+
+theorem currentPNPV13RealRungOneRowObservers_node :
+    (∀ {m : Nat} {A : V13F2LinearEquiv m}
+      {rows : Finset (Fin m)} {i₀ : Fin m},
+      ¬ V13RealLinearRowsBlockTarget A rows i₀ →
+        ∃ w : F2Vec m,
+          w i₀ = 1 ∧
+            ∀ row : Fin m, row ∈ rows → A.toEquiv w row = 0) ∧
+      (∀ {m : Nat} (A : V13F2LinearEquiv m)
+        (rows : Finset (Fin m)) (i₀ : Fin m),
+        ¬ V13RealLinearRowsBlockTarget A rows i₀ →
+          ∃ omega₀ omega₁ : V13RealLinearWorld m,
+            v13RealLinearRowsTranscript rows
+                (v13RealLinearPublicInput omega₀) =
+            v13RealLinearRowsTranscript rows
+                (v13RealLinearPublicInput omega₁) ∧
+            v13RealLinearTarget i₀ omega₀ ≠
+              v13RealLinearTarget i₀ omega₁) ∧
+      (∀ {m : Nat} (A : V13F2LinearEquiv m)
+        (rows : Finset (Fin m)) (i₀ : Fin m)
+        (transcript :
+          {row : Fin m // row ∈ rows} → V13RealLinearRowView m),
+        ¬ V13RealLinearRowsBlockTarget A rows i₀ →
+          Fintype.card
+              (V13RealLinearFixedRowsTranscriptTargetFiber
+                A rows i₀ transcript 0) =
+            Fintype.card
+              (V13RealLinearFixedRowsTranscriptTargetFiber
+                A rows i₀ transcript 1)) := by
+  exact
+    ⟨fun hnot =>
+        v13RealLinear_exists_kernel_hit_of_not_rowsBlockTarget hnot,
+      fun A rows i₀ hnot =>
+        v13RealLinear_opposite_targets_same_rowsTranscript_of_not_blocked
+          A rows i₀ hnot,
+      fun A rows i₀ transcript hnot =>
+        v13RealLinear_fixedRowsTranscriptTargetFiber_card_eq_of_not_blocked
+          A rows i₀ transcript hnot⟩
+
+theorem currentPNPV13RealRungOneStaticRows_node :
+    ∀ {m q : Nat} (observer : V13RealLinearStaticRowObserver m q)
+      (A : V13F2LinearEquiv m) (i₀ : Fin m),
+      ¬ V13RealLinearRowsBlockTarget A observer.rows i₀ →
+        Fintype.card (V13RealLinearFixedCorrect observer A i₀) =
+          Fintype.card (V13RealLinearFixedIncorrect observer A i₀) := by
+  intro m q observer A i₀ hnot
+  exact
+    v13RealLinear_staticRows_correct_card_eq_incorrect_card_of_not_blocked
+      observer A i₀ hnot
+
+theorem currentPNPV13RealRungOneAdaptiveRows_node :
+    ∀ {m q : Nat} (observer : V13RealLinearAdaptiveRowObserver m q)
+      (A : V13F2LinearEquiv m) (i₀ : Fin m) (b : observer.Branch),
+      ¬ V13RealLinearRowsBlockTarget A (observer.staticBranch b).rows i₀ →
+        Fintype.card
+            (V13RealLinearAdaptiveBranchCorrect observer A i₀ b) =
+          Fintype.card
+            (V13RealLinearAdaptiveBranchIncorrect observer A i₀ b) := by
+  intro m q observer A i₀ b hnot
+  exact
+    v13RealLinear_adaptiveBranch_correct_card_eq_incorrect_card_of_not_blocked
+      observer A i₀ b hnot
+
+theorem currentPNPV13RealRungOneQRowBound_node :
+    (∀ {m : Nat} (rows : Finset (Fin m)),
+      Fintype.card (V13RealLinearRowCombination rows) = 2 ^ rows.card) ∧
+      (∀ {m q : Nat} {rows : Finset (Fin m)}, rows.card ≤ q →
+        Fintype.card (V13RealLinearRowCombination rows) ≤ 2 ^ q) ∧
+      (∀ {m q : Nat} {Seed : Type*}
+        (E : V13RealLinearAdaptiveQRowExperiment m q Seed)
+        (omega : V13RealLinearAdaptiveQRowWorld m Seed),
+        (E.branchRows omega).card ≤ q) ∧
+      (∀ {m q : Nat} (observer : V13RealLinearCausalRowObserver m q)
+        (public₀ public₁ : V13RealLinearPublic m),
+        v13RealLinearRowsTranscript
+            (observer.rows (observer.branch public₀)) public₀ =
+          v13RealLinearRowsTranscript
+            (observer.rows (observer.branch public₀)) public₁ →
+          observer.branch public₁ = observer.branch public₀) ∧
+      (∀ {m : Nat} (A : V13F2LinearEquiv m) (rows : Finset (Fin m))
+        (i₀ : Fin m),
+        V13RealLinearRowsBlockTarget A rows i₀ ↔
+          V13RealLinearRowsGenerateTarget A rows i₀) ∧
+      (∀ {m : Nat} (A : V13F2LinearEquiv m) (row i₀ : Fin m),
+        V13RealLinearRowsGenerateTarget A ({row} : Finset (Fin m)) i₀ ↔
+          ∀ w : F2Vec m, A.toEquiv w row = w i₀) ∧
+      (∀ {m : Nat} (A : V13F2LinearEquiv m) (i₀ : Fin m),
+        (V13RealLinearTargetRows A i₀).card ≤ 1) ∧
+      (∀ {m : Nat} (i₀ : Fin m) (s : V13RealLinearZeroAt i₀),
+        (∃ j : Fin m, j ≠ i₀ ∧ s.val j = 1) →
+          V13RealLinearTargetRows
+            (v13RealLinearZeroAtRowShear i₀ s) i₀ = ∅) ∧
+      (∀ {m : Nat} (i₀ : Fin m) (hm : 1 < m),
+        v13FinSpare i₀ hm ≠ i₀) ∧
+      (∀ {m : Nat} (i₀ : Fin m) (hm : 1 < m),
+        V13RealLinearTargetRows
+          (v13RealLinearNoTargetRowShear i₀ hm) i₀ = ∅) ∧
+      (∀ {m : Nat} (observer : V13RealLinearCausalRowObserver m 1)
+        (rest omega : V13RealLinearAdaptiveQRowWorld m (V13F2LinearEquiv m))
+        (row : Fin m),
+        (v13RealLinearUniformCausalQRowExperiment observer).branchRows
+            omega =
+          ({row} : Finset (Fin m)) →
+        (v13RealLinearUniformCausalQRowExperiment observer).branchRows
+            rest ≠ ∅) ∧
+      (∀ {m : Nat} (observer : V13RealLinearCausalRowObserver m 1)
+        (i₀ : Fin m)
+        (rest : V13RealLinearAdaptiveQRowWorld m (V13F2LinearEquiv m))
+        (_activeRow :
+          V13RealLinearUniformOneRowGeneratedRowIndex observer.toAdaptive i₀),
+        (v13RealLinearUniformCausalQRowExperiment observer).branchRows
+            rest ≠ ∅) ∧
+      (∀ {m : Nat} (observer : V13RealLinearCausalRowObserver m 1)
+        (i₀ : Fin m)
+        (rest : V13RealLinearAdaptiveQRowWorld m (V13F2LinearEquiv m))
+        (_activeRow :
+          V13RealLinearUniformOneRowGeneratedRowIndex observer.toAdaptive i₀),
+        ∃ row : Fin m,
+          (v13RealLinearUniformCausalQRowExperiment observer).branchRows
+              rest =
+            ({row} : Finset (Fin m))) ∧
+      (∀ {m : Nat} (observer : V13RealLinearCausalRowObserver m 1)
+        (i₀ : Fin m) (hm : 1 < m) (x : F2Vec m),
+        ¬ (v13RealLinearUniformCausalQRowExperiment observer).generated i₀
+            (v13RealLinearNoTargetRowShear i₀ hm, x)) ∧
+      (∀ {m : Nat} (observer : V13RealLinearCausalRowObserver m 1)
+        (i₀ : Fin m) (hm : 1 < m) (x : F2Vec m)
+        (_activeRow :
+          V13RealLinearUniformOneRowGeneratedRowIndex observer.toAdaptive i₀),
+        ∃ row : Fin m,
+          (v13RealLinearUniformCausalQRowExperiment observer).branchRows
+              (v13RealLinearNoTargetRowShear i₀ hm, x) =
+            ({row} : Finset (Fin m))) ∧
+      (V13RealLinearUniformCausalOneRowNoTargetRestMismatchExclusion →
+        V13RealLinearUniformCausalOneRowActiveRowPairExclusion) ∧
+      (V13RealLinearUniformCausalOneRowNoTargetRestMismatchExclusion →
+        V13RealLinearUniformCausalOneRowActiveRowIndexBound) ∧
+      (V13RealLinearUniformCausalOneRowNoTargetRestMismatchExclusion →
+        V13RealLinearUniformCausalOneRowActiveBitCylinderIndexBound) ∧
+      (∀ {m : Nat} {Seed : Type*}
+        (E : V13RealLinearAdaptiveQRowExperiment m 1 Seed) (i₀ : Fin m)
+        (omega : V13RealLinearAdaptiveQRowWorld m Seed),
+        E.generated i₀ omega →
+          ∃ row : Fin m,
+            row ∈ E.branchRows omega ∧
+              ∀ w : F2Vec m, (E.sampleA omega.1).toEquiv w row = w i₀) ∧
+      (∀ {m : Nat} {Seed : Type*}
+        (E : V13RealLinearAdaptiveQRowExperiment m 1 Seed) (i₀ : Fin m)
+        (omega : V13RealLinearAdaptiveQRowWorld m Seed),
+        E.generated i₀ omega →
+          ∃ row : Fin m,
+            E.branchRows omega = ({row} : Finset (Fin m)) ∧
+              row ∈ V13RealLinearTargetRows (E.sampleA omega.1) i₀) ∧
+      (∀ {m : Nat} {Seed : Type*}
+        (E : V13RealLinearAdaptiveQRowExperiment m 1 Seed) (i₀ : Fin m)
+        (omega : V13RealLinearAdaptiveQRowWorld m Seed),
+        E.generated i₀ omega →
+          (V13RealLinearTargetRows (E.sampleA omega.1) i₀).Nonempty) ∧
+      (∀ {m : Nat} (observer : V13RealLinearCausalRowObserver m 1)
+        (i₀ : Fin m)
+        (omega : V13RealLinearAdaptiveQRowWorld m (V13F2LinearEquiv m)),
+        (v13RealLinearUniformCausalQRowExperiment observer).generated
+          i₀ omega →
+          ∃ row : Fin m,
+            (v13RealLinearUniformCausalQRowExperiment observer).branchRows
+                omega =
+              ({row} : Finset (Fin m)) ∧
+              row ∈ V13RealLinearTargetRows omega.1 i₀ ∧
+                ∀ omega' :
+                    V13RealLinearAdaptiveQRowWorld m (V13F2LinearEquiv m),
+                  v13RealLinearRowsTranscript ({row} : Finset (Fin m))
+                      (v13RealLinearPublicInput
+                        ((v13RealLinearUniformCausalQRowExperiment observer).world
+                          omega)) =
+                    v13RealLinearRowsTranscript ({row} : Finset (Fin m))
+                      (v13RealLinearPublicInput
+                        ((v13RealLinearUniformCausalQRowExperiment observer).world
+                          omega')) →
+                  (v13RealLinearUniformCausalQRowExperiment observer).generated
+                    i₀ omega') ∧
+      (∀ {m : Nat} (i₀ : Fin m) (A : V13F2LinearEquiv m) (x : F2Vec m),
+        (v13RealLinearUniformQRowExperiment
+          (v13RealLinearTargetRowObserver i₀)).generated i₀ (A, x) ↔
+          (V13RealLinearTargetRows A i₀).Nonempty) ∧
+      (∀ {m : Nat} (i₀ : Fin m),
+        v13RealLinearAdaptiveQRowGeneratedMass
+          (v13RealLinearUniformQRowExperiment
+            (v13RealLinearTargetRowObserver i₀)) i₀ =
+        v13RealLinearUniformTargetRowOccurrenceMass i₀) ∧
+      (4 ≤
+        Fintype.card
+          (V13RealLinearUniformTargetRowOccurrence (0 : Fin 2))) ∧
+      (V13RealLinearTargetRows
+          v13RealLinearSwapShear10 (0 : Fin 2) = ∅) ∧
+      (∀ {m : Nat} {Seed : Type}
+        (E : V13RealLinearAdaptiveQRowExperiment m 1 Seed)
+        (i₀ : Fin m) (omega : V13RealLinearAdaptiveQRowWorld m Seed),
+        V13RealLinearTargetRows (E.sampleA omega.1) i₀ = ∅ →
+          ¬ E.generated i₀ omega) ∧
+      (∀ rows : Finset (Fin 2),
+        rows.card ≤ 1 →
+          rows = ∅ ∨
+            rows = ({(0 : Fin 2)} : Finset (Fin 2)) ∨
+              rows = ({(1 : Fin 2)} : Finset (Fin 2))) ∧
+      (∀ (observer : V13RealLinearCausalRowObserver 2 1) (x : F2Vec 2),
+        ¬ (v13RealLinearUniformCausalQRowExperiment observer).generated
+          (0 : Fin 2) (v13RealLinearSwapShear10, x)) ∧
+      (∀ (observer : V13RealLinearCausalRowObserver 2 1) (x : F2Vec 2),
+        (v13RealLinearUniformCausalQRowExperiment observer).branchRows
+            (v13RealLinearSwapShear10, x) = ∅ ∨
+          (v13RealLinearUniformCausalQRowExperiment observer).branchRows
+              (v13RealLinearSwapShear10, x) =
+            ({(0 : Fin 2)} : Finset (Fin 2)) ∨
+            (v13RealLinearUniformCausalQRowExperiment observer).branchRows
+              (v13RealLinearSwapShear10, x) =
+            ({(1 : Fin 2)} : Finset (Fin 2))) ∧
+      (∀ (observer : V13RealLinearCausalRowObserver 2 1) (x : F2Vec 2)
+        (omega : V13RealLinearAdaptiveQRowWorld 2 (V13F2LinearEquiv 2))
+        (row : Fin 2),
+        (v13RealLinearUniformCausalQRowExperiment observer).branchRows omega =
+          ({row} : Finset (Fin 2)) →
+        (v13RealLinearUniformCausalQRowExperiment observer).branchRows
+          (v13RealLinearSwapShear10, x) ≠ ∅) ∧
+      (∀ (observer : V13RealLinearCausalRowObserver 2 1) (x : F2Vec 2)
+        (_activeRow :
+          V13RealLinearUniformOneRowGeneratedRowIndex
+            observer.toAdaptive (0 : Fin 2)),
+        (v13RealLinearUniformCausalQRowExperiment observer).branchRows
+          (v13RealLinearSwapShear10, x) ≠ ∅) ∧
+      (∀ (observer : V13RealLinearCausalRowObserver 2 1) (x : F2Vec 2)
+        (omega : V13RealLinearAdaptiveQRowWorld 2 (V13F2LinearEquiv 2)),
+        (v13RealLinearUniformCausalQRowExperiment observer).branchRows omega =
+          ({(1 : Fin 2)} : Finset (Fin 2)) →
+        (1 : Fin 2) ∈ V13RealLinearTargetRows omega.1 (0 : Fin 2) →
+        (v13RealLinearUniformCausalQRowExperiment observer).branchRows
+          (v13RealLinearSwapShear10, x) ≠
+          ({(0 : Fin 2)} : Finset (Fin 2))) ∧
+      (∀ (observer : V13RealLinearCausalRowObserver 2 1) (x : F2Vec 2)
+        (activeRow :
+          V13RealLinearUniformOneRowGeneratedRowIndex
+            observer.toAdaptive (0 : Fin 2)),
+        activeRow.val = (1 : Fin 2) →
+        (v13RealLinearUniformCausalQRowExperiment observer).branchRows
+          (v13RealLinearSwapShear10, x) ≠
+          ({(0 : Fin 2)} : Finset (Fin 2))) ∧
+      (∀ (observer : V13RealLinearCausalRowObserver 2 1) (x : F2Vec 2)
+        (omega : V13RealLinearAdaptiveQRowWorld 2 (V13F2LinearEquiv 2)),
+        (v13RealLinearUniformCausalQRowExperiment observer).branchRows omega =
+          ({(0 : Fin 2)} : Finset (Fin 2)) →
+        (0 : Fin 2) ∈ V13RealLinearTargetRows omega.1 (0 : Fin 2) →
+        (v13RealLinearUniformCausalQRowExperiment observer).branchRows
+          (v13RealLinearSwapShear10, x) ≠
+          ({(1 : Fin 2)} : Finset (Fin 2))) ∧
+      (∀ (observer : V13RealLinearCausalRowObserver 2 1) (x : F2Vec 2)
+        (activeRow :
+          V13RealLinearUniformOneRowGeneratedRowIndex
+            observer.toAdaptive (0 : Fin 2)),
+        activeRow.val = (0 : Fin 2) →
+        (v13RealLinearUniformCausalQRowExperiment observer).branchRows
+          (v13RealLinearSwapShear10, x) ≠
+          ({(1 : Fin 2)} : Finset (Fin 2))) ∧
+      (∀ (observer : V13RealLinearCausalRowObserver 2 1)
+        (row₀ row₁ :
+          V13RealLinearUniformOneRowGeneratedRowIndex
+            observer.toAdaptive (0 : Fin 2)),
+        row₀.val = row₁.val) ∧
+      (Fintype.card (V13F2LinearEquiv 2) ≤ 6 →
+        (1 / 2 : Rat) <
+          v13RealLinearUniformTargetRowOccurrenceMass (0 : Fin 2)) ∧
+      (Fintype.card (V13F2LinearEquiv 2) ≤ 6 →
+        ¬ V13RealLinearUniformInvertibleRowSpanCountingBound
+          (v13RealLinearTargetRowObserver (0 : Fin 2)) (0 : Fin 2)) ∧
+      (Fintype.card (V13F2LinearEquiv 2) ≤ 6) ∧
+      ((1 / 2 : Rat) <
+        v13RealLinearUniformTargetRowOccurrenceMass (0 : Fin 2)) ∧
+      (¬ V13RealLinearUniformInvertibleRowSpanCountingBound
+        (v13RealLinearTargetRowObserver (0 : Fin 2)) (0 : Fin 2)) ∧
+      (∀ {m : Nat} (row row' i₀ i₀' : Fin m),
+        Fintype.card
+            (V13RealLinearUniformFixedTargetRowOccurrence row i₀) =
+          Fintype.card
+            (V13RealLinearUniformFixedTargetRowOccurrence row' i₀')) ∧
+      (∀ {m q : Nat} {Seed : Type*} [Fintype Seed]
+        (E : V13RealLinearAdaptiveQRowExperiment m q Seed) (i₀ : Fin m),
+        v13RealLinearAdaptiveQRowBlockedMass E i₀ =
+          v13RealLinearAdaptiveQRowGeneratedMass E i₀) ∧
+      (∀ {m q : Nat} {Seed : Type*} [Fintype Seed]
+        (E : V13RealLinearAdaptiveQRowExperiment m q Seed) (i₀ : Fin m),
+        v13RealLinearAdaptiveQRowGeneratedMass E i₀ ≤ 1) ∧
+      (∀ {m q : Nat}, m ≤ q →
+        (1 : Rat) ≤ v13RealLinearQRowEpsilon q m) ∧
+      (∀ {m : Nat} {Seed : Type*} [Fintype Seed]
+        (E : V13RealLinearAdaptiveQRowExperiment m 0 Seed) (i₀ : Fin m),
+        V13RealLinearAdaptiveRowSpanCountingBound E i₀) ∧
+      (∀ {m q : Nat} {Seed : Type*} [Fintype Seed]
+        (E : V13RealLinearAdaptiveQRowExperiment m q Seed) (i₀ : Fin m),
+        m ≤ q →
+          V13RealLinearAdaptiveRowSpanCountingBound E i₀) ∧
+      (∀ {m q : Nat} {Seed : Type*} [Fintype Seed]
+      (E : V13RealLinearAdaptiveQRowExperiment m q Seed) (i₀ : Fin m),
+      V13RealLinearAdaptiveKernelFlipSurchargeBound E i₀) ∧
+      (∀ {m q : Nat} {Seed : Type*} [Fintype Seed]
+        (E : V13RealLinearAdaptiveQRowExperiment m q Seed) (i₀ : Fin m),
+        V13RealLinearAdaptiveRowSpanCountingBound E i₀ →
+            v13RealLinearAdaptiveQRowSuccess E i₀ ≤
+              (1 / 2 : Rat) + v13RealLinearQRowEpsilon q m) ∧
+      (∀ {m q : Nat} (observer : V13RealLinearAdaptiveRowObserver m q)
+        (i₀ : Fin m),
+        V13RealLinearUniformInvertibleRowSpanCountingBound observer i₀ →
+          v13RealLinearUniformAdaptiveQRowSuccess observer i₀ ≤
+            (1 / 2 : Rat) + v13RealLinearQRowEpsilon q m) ∧
+      (∀ {m q : Nat} (observer : V13RealLinearCausalRowObserver m q)
+        (i₀ : Fin m),
+        (Fintype.card
+            (V13RealLinearAdaptiveQRowGenerated
+              (v13RealLinearUniformCausalQRowExperiment observer) i₀) *
+          2 ^ m ≤
+        2 ^ q *
+          Fintype.card
+            (V13RealLinearAdaptiveQRowWorld m (V13F2LinearEquiv m))) →
+          V13RealLinearUniformCausalRowSpanCountingBound observer i₀) ∧
+      (∀ {m q : Nat} (observer : V13RealLinearCausalRowObserver m q)
+        (i₀ : Fin m),
+        V13RealLinearUniformCausalRowSpanCountingBound observer i₀ →
+          v13RealLinearUniformCausalQRowSuccess observer i₀ ≤
+            (1 / 2 : Rat) + v13RealLinearQRowEpsilon q m) ∧
+      (∀ {m : Nat} (observer : V13RealLinearCausalRowObserver m 0)
+        (i₀ : Fin m),
+        v13RealLinearUniformCausalQRowSuccess observer i₀ ≤
+          (1 / 2 : Rat) + v13RealLinearQRowEpsilon 0 m) ∧
+      (∀ {m q : Nat} (observer : V13RealLinearCausalRowObserver m q)
+        (i₀ : Fin m),
+        m ≤ q →
+          v13RealLinearUniformCausalQRowSuccess observer i₀ ≤
+            (1 / 2 : Rat) + v13RealLinearQRowEpsilon q m) ∧
+      (V13RealLinearUniformCausalLowPositiveRowSpanCountingBound →
+        ∀ {m q : Nat} (observer : V13RealLinearCausalRowObserver m q)
+          (i₀ : Fin m),
+          v13RealLinearUniformCausalQRowSuccess observer i₀ ≤
+            (1 / 2 : Rat) + v13RealLinearQRowEpsilon q m) ∧
+      (V13RealLinearUniformCausalLowPositiveCompletionCountingBound →
+        V13RealLinearUniformCausalLowPositiveRowSpanCountingBound) ∧
+      (V13RealLinearUniformCausalLowPositiveRowSpanCountingBound ↔
+        V13RealLinearUniformCausalLowPositiveCompletionCountingBound) ∧
+      (V13RealLinearUniformCausalLowPositiveCompletionCountingBound →
+        ∀ {m q : Nat} (observer : V13RealLinearCausalRowObserver m q)
+          (i₀ : Fin m),
+          v13RealLinearUniformCausalQRowSuccess observer i₀ ≤
+            (1 / 2 : Rat) + v13RealLinearQRowEpsilon q m) ∧
+      (V13RealLinearUniformCausalLowPositiveCoefficientCountingBound →
+        V13RealLinearUniformCausalLowPositiveCompletionCountingBound) ∧
+      (V13RealLinearUniformCausalLowPositiveCoefficientCountingBound →
+        ∀ {m q : Nat} (observer : V13RealLinearCausalRowObserver m q)
+          (i₀ : Fin m),
+          v13RealLinearUniformCausalQRowSuccess observer i₀ ≤
+            (1 / 2 : Rat) + v13RealLinearQRowEpsilon q m) ∧
+      (Fintype.card
+          (V13RealLinearUniformFixedTargetRowOccurrence
+            (0 : Fin 2) (0 : Fin 2)) ≤ 2) ∧
+      (∀ row i₀ : Fin 2,
+        Fintype.card
+          (V13RealLinearUniformFixedTargetRowOccurrence row i₀) ≤ 2) ∧
+      (Fintype.card
+          (V13RealLinearUniformFixedTargetRowOccurrence
+            (0 : Fin 2) (0 : Fin 2)) *
+          2 ^ 2 ≤
+        2 * Fintype.card (V13F2LinearEquiv 2)) ∧
+      (∀ row i₀ : Fin 2,
+        Fintype.card
+            (V13RealLinearUniformFixedTargetRowOccurrence row i₀) *
+            2 ^ 2 ≤
+          2 * Fintype.card (V13F2LinearEquiv 2)) ∧
+      (∀ {m : Nat} (i₀ : Fin m) (bit : ZMod 2),
+        Fintype.card (V13RealLinearBitAt i₀ bit) * 2 = 2 ^ m) ∧
+      (∀ {m : Nat} (row i₀ : Fin m) (bit : ZMod 2),
+        Fintype.card
+            (V13RealLinearUniformFixedTargetRowBitCylinder row i₀ bit) =
+          Fintype.card (V13RealLinearUniformFixedTargetRowOccurrence row i₀) *
+            Fintype.card (V13RealLinearBitAt i₀ bit)) ∧
+      (∀ {m : Nat} (row i₀ : Fin m) (bit : ZMod 2),
+        Fintype.card
+            (V13RealLinearUniformFixedTargetRowBitCylinder row i₀ bit) ≤
+          Fintype.card (V13F2LinearEquiv m)) ∧
+      (∀ {m : Nat} (row i₀ : Fin m) (bit : ZMod 2),
+        Fintype.card
+            (V13RealLinearUniformFixedTargetRowBitCylinder row i₀ bit) *
+            2 ^ m ≤
+          Fintype.card
+            (V13RealLinearAdaptiveQRowWorld m (V13F2LinearEquiv m))) ∧
+      (∀ {m : Nat} (observer : V13RealLinearAdaptiveRowObserver m 1)
+          (i₀ : Fin m),
+        Fintype.card
+            (V13RealLinearAdaptiveQRowGenerated
+              (v13RealLinearUniformQRowExperiment observer) i₀) *
+            2 ^ m ≤
+          Fintype.card
+              (V13RealLinearUniformOneRowGeneratedCylinderIndex
+                observer i₀) *
+            Fintype.card
+              (V13RealLinearAdaptiveQRowWorld m (V13F2LinearEquiv m))) ∧
+      (∀ {m : Nat} (observer : V13RealLinearCausalRowObserver m 1)
+          (i₀ : Fin m),
+        Fintype.card
+            (V13RealLinearAdaptiveQRowGenerated
+              (v13RealLinearUniformCausalQRowExperiment observer) i₀) *
+            2 ^ m ≤
+          Fintype.card
+            (V13RealLinearUniformOneRowGeneratedCylinderIndex
+                observer.toAdaptive i₀) *
+            Fintype.card
+              (V13RealLinearAdaptiveQRowWorld m (V13F2LinearEquiv m))) ∧
+      (∀ {m : Nat} (observer : V13RealLinearAdaptiveRowObserver m 1)
+          (i₀ : Fin m),
+        Fintype.card
+            (V13RealLinearUniformOneRowGeneratedCylinderIndex
+              observer i₀) ≤
+          Fintype.card
+              (V13RealLinearUniformOneRowGeneratedRowIndex observer i₀) *
+            2) ∧
+      (V13RealLinearUniformCausalOneRowActiveRowIndexBound →
+        V13RealLinearUniformCausalOneRowActiveBitCylinderIndexBound) ∧
+      (V13RealLinearUniformCausalOneRowActiveRowIndexBound ↔
+        V13RealLinearUniformCausalOneRowActiveRowPairExclusion) ∧
+      (V13RealLinearUniformCausalOneRowActiveBitCylinderIndexBound →
+        ∀ {m : Nat} (observer : V13RealLinearCausalRowObserver m 1)
+          (i₀ : Fin m),
+          1 < m →
+            Fintype.card
+                (V13RealLinearAdaptiveQRowGenerated
+                  (v13RealLinearUniformCausalQRowExperiment observer) i₀) *
+                2 ^ m ≤
+              2 ^ 1 *
+                Fintype.card
+                  (V13RealLinearAdaptiveQRowWorld m (V13F2LinearEquiv m))) ∧
+      (V13RealLinearUniformCausalOneRowActiveRowIndexBound →
+        ∀ {m : Nat} (observer : V13RealLinearCausalRowObserver m 1)
+          (i₀ : Fin m),
+          1 < m →
+            Fintype.card
+                (V13RealLinearAdaptiveQRowGenerated
+                  (v13RealLinearUniformCausalQRowExperiment observer) i₀) *
+                2 ^ m ≤
+              2 ^ 1 *
+                Fintype.card
+                  (V13RealLinearAdaptiveQRowWorld m (V13F2LinearEquiv m))) ∧
+      (V13RealLinearUniformCausalOneRowActiveRowPairExclusion →
+        ∀ {m : Nat} (observer : V13RealLinearCausalRowObserver m 1)
+          (i₀ : Fin m),
+          1 < m →
+            Fintype.card
+                (V13RealLinearAdaptiveQRowGenerated
+                  (v13RealLinearUniformCausalQRowExperiment observer) i₀) *
+                2 ^ m ≤
+              2 ^ 1 *
+                Fintype.card
+                  (V13RealLinearAdaptiveQRowWorld m (V13F2LinearEquiv m))) ∧
+      (V13RealLinearUniformCausalOneRowActiveBitCylinderIndexBound →
+        ∀ {m : Nat} (observer : V13RealLinearCausalRowObserver m 1)
+          (i₀ : Fin m),
+          1 < m →
+            V13RealLinearUniformCausalRowSpanCountingBound observer i₀) ∧
+      (V13RealLinearUniformCausalOneRowActiveRowIndexBound →
+        ∀ {m : Nat} (observer : V13RealLinearCausalRowObserver m 1)
+          (i₀ : Fin m),
+          1 < m →
+            V13RealLinearUniformCausalRowSpanCountingBound observer i₀) ∧
+      (V13RealLinearUniformCausalOneRowActiveRowPairExclusion →
+        ∀ {m : Nat} (observer : V13RealLinearCausalRowObserver m 1)
+          (i₀ : Fin m),
+          1 < m →
+            V13RealLinearUniformCausalRowSpanCountingBound observer i₀) ∧
+      (V13RealLinearUniformCausalOneRowActiveBitCylinderIndexBound →
+        ∀ {m : Nat} (observer : V13RealLinearCausalRowObserver m 1)
+          (i₀ : Fin m),
+          1 < m →
+            v13RealLinearUniformCausalQRowSuccess observer i₀ ≤
+              (1 / 2 : Rat) + v13RealLinearQRowEpsilon 1 m) ∧
+      (V13RealLinearUniformCausalOneRowActiveRowIndexBound →
+        ∀ {m : Nat} (observer : V13RealLinearCausalRowObserver m 1)
+          (i₀ : Fin m),
+          1 < m →
+            v13RealLinearUniformCausalQRowSuccess observer i₀ ≤
+              (1 / 2 : Rat) + v13RealLinearQRowEpsilon 1 m) ∧
+      (V13RealLinearUniformCausalOneRowActiveRowPairExclusion →
+        ∀ {m : Nat} (observer : V13RealLinearCausalRowObserver m 1)
+          (i₀ : Fin m),
+          1 < m →
+            v13RealLinearUniformCausalQRowSuccess observer i₀ ≤
+              (1 / 2 : Rat) + v13RealLinearQRowEpsilon 1 m) ∧
+      (∀ observer : V13RealLinearCausalRowObserver 2 1,
+        Fintype.card
+            (V13RealLinearUniformOneRowGeneratedRowIndex
+              observer.toAdaptive (0 : Fin 2)) ≤ 1) ∧
+      (∀ observer : V13RealLinearCausalRowObserver 2 1,
+        Fintype.card
+            (V13RealLinearUniformOneRowGeneratedCylinderIndex
+              observer.toAdaptive (0 : Fin 2)) ≤ 2) ∧
+      (∀ observer : V13RealLinearCausalRowObserver 2 1,
+        Fintype.card
+            (V13RealLinearAdaptiveQRowGenerated
+              (v13RealLinearUniformCausalQRowExperiment observer)
+              (0 : Fin 2)) *
+          2 ^ 2 ≤
+        2 ^ 1 *
+          Fintype.card
+            (V13RealLinearAdaptiveQRowWorld 2 (V13F2LinearEquiv 2))) ∧
+      (∀ observer : V13RealLinearCausalRowObserver 2 1,
+        V13RealLinearUniformCausalRowSpanCountingBound
+          observer (0 : Fin 2)) ∧
+      (∀ observer : V13RealLinearCausalRowObserver 2 1,
+        v13RealLinearUniformCausalQRowSuccess observer (0 : Fin 2) ≤
+          (1 / 2 : Rat) + v13RealLinearQRowEpsilon 1 2) ∧
+      (∀ observer : V13RealLinearCausalRowObserver 2 1,
+        Fintype.card
+            (V13RealLinearUniformOneRowGeneratedRowIndex
+              observer.toAdaptive (1 : Fin 2)) ≤ 1) ∧
+      (∀ observer : V13RealLinearCausalRowObserver 2 1,
+        Fintype.card
+            (V13RealLinearUniformOneRowGeneratedCylinderIndex
+              observer.toAdaptive (1 : Fin 2)) ≤ 2) ∧
+      (∀ observer : V13RealLinearCausalRowObserver 2 1,
+        Fintype.card
+            (V13RealLinearAdaptiveQRowGenerated
+              (v13RealLinearUniformCausalQRowExperiment observer)
+              (1 : Fin 2)) *
+          2 ^ 2 ≤
+        2 ^ 1 *
+          Fintype.card
+            (V13RealLinearAdaptiveQRowWorld 2 (V13F2LinearEquiv 2))) ∧
+      (∀ observer : V13RealLinearCausalRowObserver 2 1,
+        V13RealLinearUniformCausalRowSpanCountingBound
+          observer (1 : Fin 2)) ∧
+      (∀ observer : V13RealLinearCausalRowObserver 2 1,
+        v13RealLinearUniformCausalQRowSuccess observer (1 : Fin 2) ≤
+          (1 / 2 : Rat) + v13RealLinearQRowEpsilon 1 2) ∧
+      (∀ (observer : V13RealLinearCausalRowObserver 2 1) (i₀ : Fin 2)
+        (row₀ row₁ :
+          V13RealLinearUniformOneRowGeneratedRowIndex
+            observer.toAdaptive i₀),
+        row₀.val = row₁.val) ∧
+      (∀ (observer : V13RealLinearCausalRowObserver 2 1) (i₀ : Fin 2),
+        Fintype.card
+            (V13RealLinearUniformOneRowGeneratedRowIndex
+              observer.toAdaptive i₀) ≤ 1) ∧
+      (∀ (observer : V13RealLinearCausalRowObserver 2 1) (i₀ : Fin 2),
+        Fintype.card
+            (V13RealLinearUniformOneRowGeneratedCylinderIndex
+              observer.toAdaptive i₀) ≤ 2) ∧
+      (∀ (observer : V13RealLinearCausalRowObserver 2 1) (i₀ : Fin 2),
+        Fintype.card
+            (V13RealLinearAdaptiveQRowGenerated
+              (v13RealLinearUniformCausalQRowExperiment observer) i₀) *
+          2 ^ 2 ≤
+        2 ^ 1 *
+          Fintype.card
+            (V13RealLinearAdaptiveQRowWorld 2 (V13F2LinearEquiv 2))) ∧
+      (∀ (observer : V13RealLinearCausalRowObserver 2 1) (i₀ : Fin 2),
+        V13RealLinearUniformCausalRowSpanCountingBound observer i₀) ∧
+      (∀ (observer : V13RealLinearCausalRowObserver 2 1) (i₀ : Fin 2),
+        v13RealLinearUniformCausalQRowSuccess observer i₀ ≤
+          (1 / 2 : Rat) + v13RealLinearQRowEpsilon 1 2) ∧
+      V13RealLinearUniformFixedTargetRowOccurrenceCountingBound ∧
+      V13RealLinearUniformRepresentativeFixedTargetRowOccurrenceCountingBound ∧
+      (V13RealLinearUniformFixedTargetRowOccurrenceCountingBound →
+        ∀ {m : Nat} (row i₀ : Fin m),
+          Fintype.card
+              (V13RealLinearAdaptiveQRowGeneratedCoefficient
+                (v13RealLinearUniformCausalQRowExperiment
+                  (v13RealLinearCausalSingleRowObserver row)) i₀) *
+              2 ^ m ≤
+            2 ^ 1 *
+              Fintype.card
+                (V13RealLinearAdaptiveQRowWorld m (V13F2LinearEquiv m))) ∧
+      (V13RealLinearUniformFixedTargetRowOccurrenceCountingBound ↔
+        V13RealLinearUniformRepresentativeFixedTargetRowOccurrenceCountingBound) ∧
+      (V13RealLinearUniformRepresentativeFixedTargetRowOccurrenceCountingBound →
+        ∀ {m : Nat} (row i₀ : Fin m),
+          Fintype.card
+              (V13RealLinearAdaptiveQRowGeneratedCoefficient
+                (v13RealLinearUniformCausalQRowExperiment
+                  (v13RealLinearCausalSingleRowObserver row)) i₀) *
+              2 ^ m ≤
+            2 ^ 1 *
+              Fintype.card
+                (V13RealLinearAdaptiveQRowWorld m (V13F2LinearEquiv m))) ∧
+      (∀ {m : Nat} (row i₀ : Fin m),
+          Fintype.card
+              (V13RealLinearAdaptiveQRowGeneratedCoefficient
+                (v13RealLinearUniformCausalQRowExperiment
+                  (v13RealLinearCausalSingleRowObserver row)) i₀) *
+              2 ^ m ≤
+            2 ^ 1 *
+              Fintype.card
+                (V13RealLinearAdaptiveQRowWorld m (V13F2LinearEquiv m))) ∧
+      (∀ {m : Nat} (row i₀ : Fin m),
+          Fintype.card
+              (V13RealLinearAdaptiveQRowGenerated
+                (v13RealLinearUniformCausalQRowExperiment
+                  (v13RealLinearCausalSingleRowObserver row)) i₀) *
+              2 ^ m ≤
+            2 ^ 1 *
+              Fintype.card
+                (V13RealLinearAdaptiveQRowWorld m (V13F2LinearEquiv m))) ∧
+      (∀ {m : Nat} (row i₀ : Fin m),
+        V13RealLinearUniformCausalRowSpanCountingBound
+          (v13RealLinearCausalSingleRowObserver row) i₀) ∧
+      (∀ {m : Nat} (row i₀ : Fin m),
+        v13RealLinearUniformCausalQRowSuccess
+            (v13RealLinearCausalSingleRowObserver row) i₀ ≤
+          (1 / 2 : Rat) + v13RealLinearQRowEpsilon 1 m) ∧
+      (∀ {m : Nat} (i₀ : Fin m),
+        Fintype.card
+            (V13RealLinearRowIndexedFixedTargetRowOccurrenceWorld m i₀) ≤
+          Fintype.card (Fin m) *
+            (2 * Fintype.card (V13F2LinearEquiv m))) ∧
+      (∀ {m : Nat} (observer : V13RealLinearAdaptiveRowObserver m 1)
+        (i₀ : Fin m),
+        Fintype.card
+            (V13RealLinearAdaptiveQRowGenerated
+              (v13RealLinearUniformQRowExperiment observer) i₀) *
+            2 ^ m ≤
+          (2 * Fintype.card (Fin m)) *
+            Fintype.card
+              (V13RealLinearAdaptiveQRowWorld m (V13F2LinearEquiv m))) ∧
+      (∀ {m : Nat} (observer : V13RealLinearCausalRowObserver m 1)
+        (i₀ : Fin m),
+        Fintype.card
+            (V13RealLinearAdaptiveQRowGenerated
+              (v13RealLinearUniformCausalQRowExperiment observer) i₀) *
+            2 ^ m ≤
+          (2 * Fintype.card (Fin m)) *
+            Fintype.card
+              (V13RealLinearAdaptiveQRowWorld m (V13F2LinearEquiv m))) ∧
+      (Fintype.card
+          (V13RealLinearAdaptiveQRowGeneratedCoefficient
+            (v13RealLinearUniformCausalQRowExperiment
+              (v13RealLinearCausalSingleRowObserver (0 : Fin 2)))
+            (0 : Fin 2)) *
+          2 ^ 2 ≤
+          2 ^ 1 *
+          Fintype.card
+            (V13RealLinearAdaptiveQRowWorld 2 (V13F2LinearEquiv 2))) ∧
+      (∀ row i₀ : Fin 2,
+        Fintype.card
+            (V13RealLinearAdaptiveQRowGeneratedCoefficient
+              (v13RealLinearUniformCausalQRowExperiment
+                (v13RealLinearCausalSingleRowObserver row)) i₀) *
+            2 ^ 2 ≤
+          2 ^ 1 *
+            Fintype.card
+              (V13RealLinearAdaptiveQRowWorld 2 (V13F2LinearEquiv 2))) ∧
+      (V13RealLinearUniformCausalLowPositiveFiberCoefficientCountingBound →
+        V13RealLinearUniformCausalLowPositiveCoefficientCountingBound) ∧
+      (V13RealLinearUniformCausalLowPositiveFiberCoefficientCountingBound →
+        ∀ {m q : Nat} (observer : V13RealLinearCausalRowObserver m q)
+          (i₀ : Fin m),
+          v13RealLinearUniformCausalQRowSuccess observer i₀ ≤
+            (1 / 2 : Rat) + v13RealLinearQRowEpsilon q m) ∧
+      ¬ V13RealLinearUniformCausalLowPositiveFiberCoefficientCountingBound ∧
+      (∀ q m : Nat, 0 ≤ v13RealLinearQRowEpsilon q m) := by
+  exact
+    ⟨v13RealLinear_rowCombination_card,
+      fun hrows =>
+        v13RealLinear_rowCombination_card_le_of_rows_card_le hrows,
+      fun E omega =>
+        E.branchRows_card_le omega,
+      fun observer public₀ public₁ hsame =>
+        observer.branch_eq_of_same_branchRowsTranscript
+          public₀ public₁ hsame,
+      fun A rows i₀ =>
+        v13RealLinear_rowsBlockTarget_iff_rowsGenerateTarget A rows i₀,
+      fun A row i₀ =>
+        v13RealLinear_rowsGenerateTarget_singleton_iff A row i₀,
+      fun A i₀ =>
+        v13RealLinear_targetRows_card_le_one A i₀,
+      fun i₀ s hs =>
+        v13RealLinearZeroAtRowShear_targetRows_empty_of_nonzero i₀ s hs,
+      fun i₀ hm =>
+        v13FinSpare_ne i₀ hm,
+      fun i₀ hm =>
+        v13RealLinearNoTargetRowShear_targetRows_empty i₀ hm,
+      fun observer rest omega row homegaRows =>
+        v13RealLinearUniformCausalOneRow_branchRows_ne_empty_of_singletonWitness
+          observer rest omega row homegaRows,
+      fun observer i₀ rest activeRow =>
+        v13RealLinearUniformCausalOneRow_branchRows_ne_empty_of_activeRowIndex
+          observer i₀ rest activeRow,
+      fun observer i₀ rest activeRow =>
+        v13RealLinearUniformCausalOneRow_branchRows_eq_singleton_of_activeRowIndex
+          observer i₀ rest activeRow,
+      fun observer i₀ hm x =>
+        v13RealLinearNoTargetRowShear_not_generated_one_budget
+          observer i₀ hm x,
+      fun observer i₀ hm x activeRow =>
+        v13RealLinearNoTargetRowShear_branchRows_eq_singleton_of_activeRowIndex
+          observer i₀ hm x activeRow,
+      V13RealLinearUniformCausalOneRowActiveRowPairExclusion_of_noTargetRestMismatch,
+      V13RealLinearUniformCausalOneRowActiveRowIndexBound_of_noTargetRestMismatch,
+      V13RealLinearUniformCausalOneRowActiveBitCylinderIndexBound_of_noTargetRestMismatch,
+      fun E i₀ omega hgen =>
+        E.generated_one_budget_exists_target_row i₀ omega hgen,
+      fun E i₀ omega hgen =>
+        E.generated_one_budget_exists_singleton_target_row i₀ omega hgen,
+      fun E i₀ omega hgen =>
+        E.targetRows_nonempty_of_generated_one_budget i₀ omega hgen,
+      fun observer i₀ omega hgen =>
+        v13RealLinearUniformCausalOneRowGenerated_exists_generated_cylinder
+          observer i₀ omega hgen,
+      fun i₀ A x =>
+        v13RealLinear_targetRowObserver_generated_iff_targetRows_nonempty
+          i₀ A x,
+      fun i₀ =>
+        v13RealLinear_targetRowObserverGeneratedMass_eq_occurrenceMass i₀,
+      v13RealLinearUniformTargetRowOccurrence_card_four_le,
+      v13RealLinearSwapShear10_targetRows_zero_empty,
+      fun E i₀ omega hempty =>
+        E.not_generated_of_targetRows_empty i₀ omega hempty,
+      v13RealLinear_fin2_rows_card_le_one_cases,
+      v13RealLinearSwapShear10_not_generated_one_budget,
+      v13RealLinearSwapShear10_branchRows_cases,
+      v13RealLinearSwapShear10_branchRows_ne_empty_of_singletonWitness,
+      v13RealLinearSwapShear10_branchRows_ne_empty_of_activeRowIndex,
+      v13RealLinearSwapShear10_branchRows_ne_zero_of_singletonOneWitness,
+      v13RealLinearSwapShear10_branchRows_ne_zero_of_activeRowOne,
+      v13RealLinearSwapShear10_branchRows_ne_one_of_singletonZeroWitness,
+      v13RealLinearSwapShear10_branchRows_ne_one_of_activeRowZero,
+      v13RealLinearUniformCausalOneRowActiveRowPairExclusion_two_zero,
+      fun hcard =>
+        v13RealLinearUniformTargetRowOccurrenceMass_two_zero_gt_half hcard,
+      fun hcard =>
+        v13RealLinear_targetRowObserver_spanCountingBound_fails_two_zero hcard,
+      v13RealLinear_f2_equiv_two_card_le_six,
+      v13RealLinearUniformTargetRowOccurrenceMass_two_zero_gt_half_unconditional,
+      v13RealLinear_targetRowObserver_spanCountingBound_fails_two_zero_unconditional,
+      fun row row' i₀ i₀' =>
+        v13RealLinearFixedTargetRowOccurrence_card_eq_of_swap
+          row row' i₀ i₀',
+      fun E i₀ =>
+        v13RealLinearAdaptiveQRowBlockedMass_eq_generatedMass E i₀,
+      fun E i₀ =>
+        v13RealLinearAdaptiveQRowGeneratedMass_le_one E i₀,
+      fun hmq =>
+        v13RealLinear_qrow_one_le_epsilon_of_m_le_q hmq,
+      fun E i₀ =>
+        v13RealLinearAdaptiveRowSpanCountingBound_of_zero_budget E i₀,
+      fun E i₀ hmq =>
+        v13RealLinearAdaptiveRowSpanCountingBound_of_m_le_q E i₀ hmq,
+      fun E i₀ =>
+        v13RealLinear_adaptiveKernelFlipSurchargeBound E i₀,
+      fun E i₀ hcount =>
+        v13RealLinear_adaptive_qrow_success_bound_of_spanCounting
+          E i₀ hcount,
+      fun observer i₀ hcount =>
+        v13RealLinear_uniform_adaptive_qrow_success_bound_of_spanCounting
+          observer i₀ hcount,
+      fun observer i₀ hcount =>
+        v13RealLinearUniformCausalRowSpanCountingBound_of_generated_counting
+          observer i₀ hcount,
+      fun observer i₀ hcount =>
+        v13RealLinear_uniform_causal_qrow_success_bound_of_spanCounting
+          observer i₀ hcount,
+      fun observer i₀ =>
+        v13RealLinear_uniform_causal_zero_row_success_bound observer i₀,
+      fun observer i₀ hmq =>
+        v13RealLinear_uniform_causal_high_budget_success_bound
+          observer i₀ hmq,
+      fun hcount {m q} observer i₀ =>
+        v13RealLinear_uniform_causal_qrow_success_bound_of_lowPositiveSpanCounting
+          (m := m) (q := q) hcount observer i₀,
+      fun hcount =>
+        v13RealLinearUniformCausalLowPositiveRowSpanCountingBound_of_completionCounting
+          hcount,
+      V13RealLinearUniformCausalLowPositiveRowSpanCountingBound_iff_completionCounting,
+      fun hcount {m q} observer i₀ =>
+        v13RealLinear_uniform_causal_qrow_success_bound_of_completionCounting
+          (m := m) (q := q) hcount observer i₀,
+      fun hcount =>
+        v13RealLinearUniformCausalLowPositiveCompletionCountingBound_of_coefficientCounting
+          hcount,
+      fun hcount {m q} observer i₀ =>
+        v13RealLinear_uniform_causal_qrow_success_bound_of_coefficientCounting
+          (m := m) (q := q) hcount observer i₀,
+      v13RealLinearFixedTargetRowOccurrence_zero_card_le_two,
+      v13RealLinearFixedTargetRowOccurrence_two_card_le_two,
+      v13RealLinear_fixedTargetRowOccurrence_zero_two_counting,
+      v13RealLinear_fixedTargetRowOccurrence_two_counting,
+      fun i₀ bit =>
+        v13RealLinear_bitAt_card_mul_two i₀ bit,
+      fun row i₀ bit =>
+        v13RealLinearFixedTargetRowBitCylinder_card_eq row i₀ bit,
+      fun row i₀ bit =>
+        v13RealLinearFixedTargetRowBitCylinder_card_le_equiv row i₀ bit,
+      fun row i₀ bit =>
+        v13RealLinearFixedTargetRowBitCylinder_counting row i₀ bit,
+      fun observer i₀ =>
+        v13RealLinearUniformOneRowGenerated_counting_by_activeBitCylinderIndex
+          observer i₀,
+      fun observer i₀ =>
+        v13RealLinearUniformCausalOneRowGenerated_counting_by_activeBitCylinderIndex
+          observer i₀,
+      fun observer i₀ =>
+        v13RealLinearUniformOneRowGeneratedCylinderIndex_card_le_rowIndex_mul_two
+          observer i₀,
+      V13RealLinearUniformCausalOneRowActiveBitCylinderIndexBound_of_rowIndexBound,
+      V13RealLinearUniformCausalOneRowActiveRowIndexBound_iff_pairExclusion,
+      fun hindex {m} observer i₀ hm =>
+        v13RealLinearUniformCausalOneRowGenerated_counting_of_activeBitCylinderIndexBound
+          hindex observer i₀ hm,
+      fun hrow {m} observer i₀ hm =>
+        v13RealLinearUniformCausalOneRowGenerated_counting_of_activeRowIndexBound
+          hrow observer i₀ hm,
+      fun hpair {m} observer i₀ hm =>
+        v13RealLinearUniformCausalOneRowGenerated_counting_of_activeRowPairExclusion
+          hpair observer i₀ hm,
+      fun hindex {m} observer i₀ hm =>
+        v13RealLinearUniformCausalOneRowRowSpanCountingBound_of_activeBitCylinderIndexBound
+          hindex observer i₀ hm,
+      fun hrow {m} observer i₀ hm =>
+        v13RealLinearUniformCausalOneRowRowSpanCountingBound_of_activeRowIndexBound
+          hrow observer i₀ hm,
+      fun hpair {m} observer i₀ hm =>
+        v13RealLinearUniformCausalOneRowRowSpanCountingBound_of_activeRowPairExclusion
+          hpair observer i₀ hm,
+      fun hindex {m} observer i₀ hm =>
+        v13RealLinear_uniform_causal_one_row_success_bound_of_activeBitCylinderIndexBound
+          hindex observer i₀ hm,
+      fun hrow {m} observer i₀ hm =>
+        v13RealLinear_uniform_causal_one_row_success_bound_of_activeRowIndexBound
+          hrow observer i₀ hm,
+      fun hpair {m} observer i₀ hm =>
+        v13RealLinear_uniform_causal_one_row_success_bound_of_activeRowPairExclusion
+          hpair observer i₀ hm,
+      v13RealLinearUniformCausalOneRowActiveRowIndexBound_two_zero,
+      v13RealLinearUniformCausalOneRowActiveBitCylinderIndexBound_two_zero,
+      v13RealLinearUniformCausalOneRowGenerated_counting_two_zero,
+      v13RealLinearUniformCausalRowSpanCountingBound_one_two_zero,
+      v13RealLinear_uniform_causal_qrow_success_bound_one_two_zero,
+      v13RealLinearUniformCausalOneRowActiveRowIndexBound_two_one,
+      v13RealLinearUniformCausalOneRowActiveBitCylinderIndexBound_two_one,
+      v13RealLinearUniformCausalOneRowGenerated_counting_two_one,
+      v13RealLinearUniformCausalRowSpanCountingBound_one_two_one,
+      v13RealLinear_uniform_causal_qrow_success_bound_one_two_one,
+      v13RealLinearUniformCausalOneRowActiveRowPairExclusion_two,
+      v13RealLinearUniformCausalOneRowActiveRowIndexBound_one_two,
+      v13RealLinearUniformCausalOneRowActiveBitCylinderIndexBound_one_two,
+      v13RealLinearUniformCausalOneRowGenerated_counting_one_two,
+      v13RealLinearUniformCausalRowSpanCountingBound_one_two,
+      v13RealLinear_uniform_causal_qrow_success_bound_one_two,
+      v13RealLinearUniformFixedTargetRowOccurrenceCountingBound_proved,
+      v13RealLinearUniformRepresentativeFixedTargetRowOccurrenceCountingBound_proved,
+      fun hcount {m} row i₀ =>
+        v13RealLinear_causalSingleRow_coefficientCounting_of_fixedTargetRowOccurrenceCounting
+          (m := m) hcount row i₀,
+      V13RealLinearUniformFixedTargetRowOccurrenceCountingBound_iff_representative,
+      fun hcount {m} row i₀ =>
+        v13RealLinear_causalSingleRow_coefficientCounting_of_representativeFixedTargetRowOccurrenceCounting
+          (m := m) hcount row i₀,
+      fun {m} row i₀ =>
+        v13RealLinear_causalSingleRow_coefficientCounting
+          (m := m) row i₀,
+      fun {m} row i₀ =>
+        v13RealLinear_causalSingleRow_generated_counting
+          (m := m) row i₀,
+      fun {m} row i₀ =>
+        v13RealLinear_causalSingleRow_rowSpanCountingBound
+          (m := m) row i₀,
+      fun {m} row i₀ =>
+        v13RealLinear_causalSingleRow_success_bound
+          (m := m) row i₀,
+      fun i₀ =>
+        v13RealLinearRowIndexedFixedTargetRowOccurrenceWorld_card_le i₀,
+      fun observer i₀ =>
+        v13RealLinearUniformOneRowGenerated_counting_with_rowFactor
+          observer i₀,
+      fun observer i₀ =>
+        v13RealLinearUniformCausalOneRowGenerated_counting_with_rowFactor
+          observer i₀,
+      v13RealLinear_causalSingleRow_zero_two_coefficientCounting,
+      v13RealLinear_causalSingleRow_two_coefficientCounting,
+      fun hcount =>
+        v13RealLinearUniformCausalLowPositiveCoefficientCountingBound_of_fiberCounting
+          hcount,
+      fun hcount {m q} observer i₀ =>
+        v13RealLinear_uniform_causal_qrow_success_bound_of_coefficientCounting
+          (m := m) (q := q)
+          (v13RealLinearUniformCausalLowPositiveCoefficientCountingBound_of_fiberCounting
+            hcount)
+          observer i₀,
+      v13RealLinearUniformCausalLowPositiveFiberCoefficientCountingBound_fails_two_identity,
+      v13RealLinear_qrow_epsilon_nonnegative⟩
+
+theorem currentPNPV13RealRungOneSequentialQRowTransfer_node :
+    ∀ {m q : Nat} (observer : V13RealLinearSequentialRowObserver m q)
+      (i₀ : Fin m),
+      v13RealLinearUniformSequentialQRowSuccess observer i₀ ≤
+        (1 / 2 : Rat) +
+          (4 * ((2 : Rat) ^ q - 1)) / ((2 : Rat) ^ m) := by
+  intro m q observer i₀
+  exact v13RealLinear_uniform_sequential_qrow_success_bound_of_transfer
+    observer i₀
+
+theorem currentPNPV13RealRungOneSequentialQRowTransferCertificate_node :
+    V13RealLinearSequentialQRowTransferCertificate := by
+  exact v13RealLinear_sequentialQRowTransferCertificate
+
+theorem currentPNPV13RealRungOneNoTargetRowsSequentialQRowConditional_node :
+    V13RealLinearNoTargetRowsSequentialDeferredDecisionCountingBound →
+      ∀ {m q : Nat} (i₀ : Fin m)
+        (observer : V13RealLinearSequentialRowObserver m q),
+        v13RealLinearNoTargetRowsSequentialQRowSuccess i₀ observer ≤
+          (1 / 2 : Rat) +
+            (4 * ((2 : Rat) ^ q - 1)) / ((2 : Rat) ^ m) := by
+  intro hcount m q i₀ observer
+  exact
+    v13RealLinear_noTargetRows_sequential_qrow_success_bound_of_deferredDecisionCounting_explicit
+      hcount i₀ observer
+
+theorem currentPNPV13RealRungOneNoTargetRowsConditionalCertificate_node :
+    V13RealLinearNoTargetRowsRungOneConditionalCertificate := by
+  exact v13RealLinear_noTargetRows_rungOneConditionalCertificate
+
+theorem currentPNPV13RealRungOneConditionalCharge_node :
+    (∀ row ∈ phaseEScaledObligationMap,
+        row.status = .familyInadmissible) ∧
+      (∀ m k : Nat, PhaseEScaledPublicTargetTagViolation m k) ∧
+        V13RealLinearNoTargetRowsRungOneConditionalCertificate := by
+  exact
+    ⟨phaseEScaledObligationMap_all_familyInadmissible,
+      phaseEScaled_familyInadmissible_publicTargetTag,
+      v13RealLinear_noTargetRows_rungOneConditionalCertificate⟩
+
+theorem currentPNPV13ObserverLadder_node :
+    PhaseEScaledObserverLadderMark ∧
+      phaseEScaledObserverLadderMap.length = 4 ∧
+        (∀ row ∈ phaseEScaledObserverLadderMap,
+          row.status = .exactHalf ∨ row.status = .checkedCounterexample ∨
+            row.status = .pinnedHypothesis ∨ row.status = .iffHardCore) := by
+  exact
+    ⟨phaseEScaled_observer_ladder_mark,
+      phaseEScaledObserverLadderMap_length,
+      phaseEScaledObserverLadderMap_has_no_unlabeled_stop⟩
 end Mettapedia.Computability.PNP

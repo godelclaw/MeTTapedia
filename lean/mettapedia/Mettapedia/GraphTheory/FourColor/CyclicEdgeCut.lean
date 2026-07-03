@@ -101,6 +101,21 @@ theorem not_three_edgeCrossesVertexSide_triangle
   by_cases ha : side a <;> by_cases hb : side b <;> by_cases hc : side c <;>
     simp [ha, hb, hc] at hnotab hnotbc hnotac
 
+/-- Finset form of the triangle parity obstruction.  If a proposed side-cut support contains
+the three edges of a triangle, then no single vertex-side predicate can make every listed edge
+cross the side.  This is the finite-checker shape used to reject odd-cycle side-cut packets. -/
+theorem not_forall_edgeCrossesVertexSide_of_triangle_subset
+    {G : SimpleGraph V} {side : V → Prop} {a b c : V}
+    {eab ebc eac : G.edgeSet} {edges : Finset G.edgeSet}
+    (heab_pair : (eab : Sym2 V) = s(a, b))
+    (hebc_pair : (ebc : Sym2 V) = s(b, c))
+    (heac_pair : (eac : Sym2 V) = s(a, c))
+    (heab_mem : eab ∈ edges) (hebc_mem : ebc ∈ edges) (heac_mem : eac ∈ edges) :
+    ¬ ∀ e : G.edgeSet, e ∈ edges → EdgeCrossesVertexSide G side e := by
+  intro hcross
+  exact not_three_edgeCrossesVertexSide_triangle heab_pair hebc_pair heac_pair
+    ⟨hcross eab heab_mem, hcross ebc hebc_mem, hcross eac heac_mem⟩
+
 /-- If every edge of a walk crosses a fixed vertex-side predicate, then the endpoint sides are
 equal for even-length walks and opposite for odd-length walks. -/
 theorem walk_all_edges_cross_side_relation
@@ -181,6 +196,18 @@ theorem not_forall_edgeCrossesVertexSide_of_closed_walk_odd_length
       EdgeCrossesVertexSide G side e) := by
   intro hcross
   exact (not_side_iff_of_walk_all_edges_cross_odd p hcross hodd) Iff.rfl
+
+/-- Finset-support form of the odd closed-walk obstruction for vertex-side cuts.  If an odd
+closed walk is supported inside a proposed finite edge set, then no fixed side predicate can
+cross every edge in that finite set. -/
+theorem not_forall_edgeCrossesVertexSide_of_closed_walk_odd_length_subset
+    {G : SimpleGraph V} {side : V → Prop} {u : V}
+    (p : G.Walk u u) (hodd : Odd p.length) {edges : Finset G.edgeSet}
+    (hsubset : ∀ e : G.edgeSet, (e : Sym2 V) ∈ p.edges → e ∈ edges) :
+    ¬ ∀ e : G.edgeSet, e ∈ edges → EdgeCrossesVertexSide G side e := by
+  intro hcross
+  exact not_forall_edgeCrossesVertexSide_of_closed_walk_odd_length p hodd
+    (fun e he => hcross e (hsubset e he))
 
 /-- An unordered pair with two distinct listed members is exactly the unordered pair of those
 members. -/

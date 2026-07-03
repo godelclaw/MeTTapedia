@@ -369,7 +369,7 @@ theorem measure_start_inter_jointRowSuccEvent_eq
 When StrongRecurrence holds, we can lift ⋃upTo measure equality to JRE
 measure equality via the V/NV decomposition, without needing hne.
 
-Key insight (council quorum 95%): The `Exchangeable` definition uses
+Key insight (internal review 95%): The `Exchangeable` definition uses
 `Equiv.Perm (Fin n)` (not `Equiv.Perm ℕ`), so the test positions are
 ALWAYS in `range(n)` — same S. The carrier transport handles same-S
 value permutations without needing hne.
@@ -453,7 +453,7 @@ gives: swapping the required values at visits n and n+1 preserves
 start-restricted cylinder probabilities. This is the base case for
 per-row exchangeability.
 
-Key observation (council quorum 85%): swapping values at (n, n+1) in the
+Key observation (internal review 85%): swapping values at (n, n+1) in the
 carrier specification IS the same as applying transposition (n, n+1) to
 the visit indices. So the carrier equiv directly gives the permutation
 invariance for adjacent transpositions. -/
@@ -2090,7 +2090,7 @@ theorem exchangeable_rowProcess_of_rowRecurrence
 Uses guard marginalization (S = range(n'+2)) + V/NV decomposition +
 carrier_equiv_of_fin_perm to avoid the different-S and boundary bugs.
 
-Council quorum 87%: Exchangeable uses Perm(Fin n') → same S always.
+Internal review 87%: Exchangeable uses Perm(Fin n') → same S always.
 Guard positions n', n'+1 absorb the boundary; swap_induction restricted
 to Fin n' never touches guards. -/
 theorem exchangeable_rowProcess

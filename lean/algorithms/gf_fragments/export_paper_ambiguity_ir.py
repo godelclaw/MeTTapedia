@@ -5,7 +5,7 @@ import subprocess
 import sys
 from pathlib import Path
 
-GF_LD = '/home/zar/.local/gf-extract/usr/lib'
+GF_LD = '~/.local/gf-extract/usr/lib'
 
 def ensure_runtime_libs():
     cur = os.environ.get('LD_LIBRARY_PATH', '')
@@ -19,16 +19,16 @@ def ensure_runtime_libs():
 
 ensure_runtime_libs()
 
-GF_BIN = Path('/home/zar/claude/lean-projects/mettapedia/Mettapedia/Languages/GF/SUMO/eng/gf')
-GF_LIB = Path('/home/zar/claude/gf-rgl')
-PGF_PY_EGG = Path('/home/zar/.local/gf-extract/usr/local/lib/python3.12/dist-packages/pgf-1.1-py3.12-linux-x86_64.egg')
-ROOT = Path('/home/zar/claude/lean-projects/algorithms/gf_fragments')
+GF_BIN = Path('~/claude/lean-projects/mettapedia/Mettapedia/Languages/GF/SUMO/eng/gf')
+GF_LIB = Path('~/claude/gf-rgl')
+PGF_PY_EGG = Path('~/.local/gf-extract/usr/local/lib/python3.12/dist-packages/pgf-1.1-py3.12-linux-x86_64.egg')
+ROOT = Path('~/claude/lean-projects/algorithms/gf_fragments')
 GENERATED = ROOT / 'generated'
 JSON_EXPORT_DIR = ROOT / 'json_export'
 PGF_PATH = ROOT / 'PaperAmbiguity.pgf'
-METTAPEDIA_GENERATED = Path('/home/zar/claude/lean-projects/mettapedia/Mettapedia/Languages/GF/Generated')
+METTAPEDIA_GENERATED = Path('~/claude/lean-projects/mettapedia/Mettapedia/Languages/GF/Generated')
 LEAN_WITNESS_OUT = METTAPEDIA_GENERATED / 'PaperAmbiguityPGFWitnesses.lean'
-ALGORITHMS_GENERATED = Path('/home/zar/claude/lean-projects/algorithms/Algorithms/GF/Generated')
+ALGORITHMS_GENERATED = Path('~/claude/lean-projects/algorithms/Algorithms/GF/Generated')
 LEAN_IR_OUT = ALGORITHMS_GENERATED / 'PaperAmbiguityIR.lean'
 JSON_WITNESSES_OUT = GENERATED / 'paper_ambiguity_parse_witnesses.json'
 JSON_GRAMMAR_OUT = GENERATED / 'PaperAmbiguity.gf.json'

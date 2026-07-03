@@ -1254,5 +1254,5 @@
       "preview": "registration let C be FormalContext; cluster ConceptLattice(C) -> complete; coherence by Th44; end;"
     }
   ],
-  "source_path": "/home/zar/claude/mizar/share/mml/conlat_1.miz"
+  "source_path": "~/claude/mizar/share/mml/conlat_1.miz"
 }

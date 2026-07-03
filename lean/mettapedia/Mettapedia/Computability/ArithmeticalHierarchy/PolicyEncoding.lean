@@ -93,7 +93,7 @@ theorem decodeAction_encodeAction (a : Action) :
 
 /-! ## Deterministic Policies
 
-Following the expert council's recommendation, we start with deterministic policies.
+Following the expert review's recommendation, we start with deterministic policies.
 These are simpler than stochastic policies but sufficient for the Grain of Truth theorem.
 
 The stochastic case requires reflective oracle theory (Leike's thesis Chapter 7)

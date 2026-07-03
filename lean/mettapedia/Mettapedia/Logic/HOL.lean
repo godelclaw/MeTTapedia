@@ -79,7 +79,7 @@ Important status boundary:
 - the corrected intuitionistic-extensional HOL core, soundness layer, cumulative
   Henkinization infrastructure, world-level canonical truth machinery, and an
   internal cumulative-Henkin finite-context completeness theorem are real;
-- `/home/zar/claude/lean-projects/mettapedia/Mettapedia/Logic/HOL/PlainIntuitionistic.lean`
+- `~/claude/lean-projects/mettapedia/Mettapedia/Logic/HOL/PlainIntuitionistic.lean`
   is the intended public entrypoint for the plain intuitionistic metatheory;
 - the old constant-based original-signature reflection target is now formally
   known to fail against the current source semantics;

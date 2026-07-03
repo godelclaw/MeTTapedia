@@ -17,7 +17,7 @@
   "instances": [
     {
       "conjecture": "(! [A] : ( ( ~ (v2_struct_0(A)) & (v10_lattices(A) & l3_lattices(A)) ) => (v1_setwiseo(u2_lattices(A), u1_struct_0(A)) => k5_lattices(A)=k3_binop_1(u1_struct_0(A), u2_lattices(A))) ) )",
-      "path": "/home/zar/claude/atps/datasets/extended_mptp5k/chainy/train/lattice2__lattice2__t18_lattice2",
+      "path": "~/claude/atps/datasets/extended_mptp5k/chainy/train/lattice2__lattice2__t18_lattice2",
       "problem": "lattice2__lattice2__t18_lattice2",
       "record_name": "t18_lattice2",
       "selector_family": "encoded-u2-unity",
@@ -38,7 +38,7 @@
     },
     {
       "conjecture": "(! [A] : ( ( ~ (v2_struct_0(A)) & (v10_lattices(A) & l3_lattices(A)) ) => (v1_setwiseo(u1_lattices(A), u1_struct_0(A)) => k6_lattices(A)=k3_binop_1(u1_struct_0(A), u1_lattices(A))) ) )",
-      "path": "/home/zar/claude/atps/datasets/extended_mptp5k/chainy/train/lattice2__lattice2__t19_lattice2",
+      "path": "~/claude/atps/datasets/extended_mptp5k/chainy/train/lattice2__lattice2__t19_lattice2",
       "problem": "lattice2__lattice2__t19_lattice2",
       "record_name": "t19_lattice2",
       "selector_family": "encoded-u1-unity",

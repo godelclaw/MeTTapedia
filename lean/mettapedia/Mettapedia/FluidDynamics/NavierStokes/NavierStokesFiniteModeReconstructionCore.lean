@@ -147,7 +147,7 @@ theorem finiteModeReconstructedPressure_spatialPressureGradient
       ∀ k ∈ (Finset.univ : Finset κ),
         DifferentiableAt ℝ (fun y : NSSpace => b t k * pressureMode k y) x := by
     intro k _hk
-    simpa [smul_eq_mul] using (hmode k).const_smul (b t k)
+    exact (hmode k).const_mul (b t k)
   have hfderiv :
       fderiv ℝ (fun y : NSSpace => finiteModeReconstructedPressure pressureMode b t y) x =
         ∑ k : κ, fderiv ℝ (fun y : NSSpace => b t k * pressureMode k y) x := by
@@ -337,9 +337,15 @@ theorem finiteModeDiagonalQuadraticPressureMode_gradient
       (((2 : ℝ) * x j) • (EuclideanSpace.proj j : NSSpace →L[ℝ] ℝ)) x := by
     simpa using hproj.pow 2
   have hconst := hpow.const_mul (1 / 2 : ℝ)
-  convert hconst using 1
-  · ext y
-    simp [one_div, smul_smul]
+  have hscale :
+      (1 / 2 : ℝ) • ((2 : ℝ) * x j) •
+          (EuclideanSpace.proj j : NSSpace →L[ℝ] ℝ) =
+        x j • (EuclideanSpace.proj j : NSSpace →L[ℝ] ℝ) := by
+    ext y
+    simp [smul_eq_mul]
+    ring
+  rw [hscale] at hconst
+  simpa using hconst
 
 /-- Coefficients for diagonal quadratic pressure modes. -/
 def finiteModeDiagonalQuadraticPressureCoefficients

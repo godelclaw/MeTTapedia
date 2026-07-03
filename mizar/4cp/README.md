@@ -6,7 +6,7 @@
 > - **Claimed**: `X^f_{αβ}(C) ⊕ X^f_{αβ}(C^R) = γ · 1_R` (boundary)
 > - **Actual**: `X^f_{αβ}(C) ⊕ X^f_{αβ}(C^R) = γ · 1_{A∪A'}` (interior)
 >
-> **Verification**: Kernel-verified refutation in `/home/zar/claude/megalodon/4CT/`
+> **Verification**: Kernel-verified refutation in `~/claude/megalodon/4CT/`
 >
 > **Impact**: The Kempe purification mechanism (Lemmas 4.2-4.4) cannot work as claimed.
 > This formalization project is on hold pending alternative proof approaches.

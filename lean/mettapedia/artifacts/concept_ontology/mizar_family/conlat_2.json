@@ -306,5 +306,5 @@
       "preview": "theorem for C being FormalContext holds ConceptLattice(C.:),(ConceptLattice(C)).: are_isomorphic proof let C be FormalCo"
     }
   ],
-  "source_path": "/home/zar/claude/mizar/share/mml/conlat_2.miz"
+  "source_path": "~/claude/mizar/share/mml/conlat_2.miz"
 }

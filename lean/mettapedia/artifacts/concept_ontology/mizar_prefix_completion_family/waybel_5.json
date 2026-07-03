@@ -512,5 +512,5 @@
       "preview": "theorem ::Theorem 2.7 (iii) L is continuous implies for S being non empty Poset st ex g being Function of L, S st g is i"
     }
   ],
-  "source_path": "/home/zar/claude/mizar/share/mml/waybel_5.miz"
+  "source_path": "~/claude/mizar/share/mml/waybel_5.miz"
 }

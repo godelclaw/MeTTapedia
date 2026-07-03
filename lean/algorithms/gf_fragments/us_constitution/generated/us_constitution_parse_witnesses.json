@@ -1,7 +1,7 @@
 {
   "grammar": "Parse",
   "sourceHash": "11d54d0644a29fc587e839c6710ddd362cd2c0ad45f693487d0ce1840bed4d34",
-  "pgfPath": "/home/zar/claude/gf-wordnet/build/ParseEng.pgf",
+  "pgfPath": "~/claude/gf-wordnet/build/ParseEng.pgf",
   "sourceUrls": [
     "https://www.archives.gov/founding-docs/constitution-transcript",
     "https://constitution.congress.gov/constitution/"

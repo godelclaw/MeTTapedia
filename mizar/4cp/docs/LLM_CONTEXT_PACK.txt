@@ -9,8 +9,8 @@ Canonical docs (read these if you need details)
 - Error Zoo: docs/ERROR_ZOO.md
 
 Environment (always set before compiling)
-export MIZFILES=/home/zar/claude/mizar/share
-export MIZROOT=/home/zar/claude/mizar
+export MIZFILES=~/claude/mizar/share
+export MIZROOT=~/claude/mizar
 
 Where to run from
 - Root path: `mizf theories/<module>/text/<file>.miz` (dict/ visible by path)
