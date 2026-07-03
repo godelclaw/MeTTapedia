@@ -1990,6 +1990,18 @@ theorem currentPNPV13RealRungOneSequentialQRowTransferCertificate_node :
     V13RealLinearSequentialQRowTransferCertificate := by
   exact v13RealLinear_sequentialQRowTransferCertificate
 
+theorem currentPNPV13RealRungOneNoTargetRowsSequentialQRowConditional_node :
+    V13RealLinearNoTargetRowsSequentialDeferredDecisionCountingBound →
+      ∀ {m q : Nat} (i₀ : Fin m)
+        (observer : V13RealLinearSequentialRowObserver m q),
+        v13RealLinearNoTargetRowsSequentialQRowSuccess i₀ observer ≤
+          (1 / 2 : Rat) +
+            (4 * ((2 : Rat) ^ q - 1)) / ((2 : Rat) ^ m) := by
+  intro hcount m q i₀ observer
+  exact
+    v13RealLinear_noTargetRows_sequential_qrow_success_bound_of_deferredDecisionCounting_explicit
+      hcount i₀ observer
+
 theorem currentPNPV13ObserverLadder_node :
     PhaseEScaledObserverLadderMark ∧
       phaseEScaledObserverLadderMap.length = 4 ∧

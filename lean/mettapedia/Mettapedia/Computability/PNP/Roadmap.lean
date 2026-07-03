@@ -234,6 +234,14 @@ def currentPNPRoadmap : List PNPRoadmapEntry :=
       itvLowerPercent := 96
       itvUpperPercent := 100
       obligation := "Record the sequential adaptive row-query theorem as V13RealLinearSequentialQRowTransferCertificate: every sequential q-row observer over the uniform certified-invertible sampler has success at most 1/2 + 4*(2^q - 1)/2^m. The broader causal interface remains tracked by the row-span hard-core entry." },
+    { stage := .v13RealRungOneQRowBound
+      proofNodeKey := "pnp.v13.real-rung-one.no-target-rows-sequential-qrow-conditional"
+      status := .openBackground
+      truthValue := ⟨100, 94⟩
+      progressPercent := 82
+      itvLowerPercent := 94
+      itvUpperPercent := 100
+      obligation := "Connect the adjusted no-target-row sampler to the q-row experiment interface: if V13RealLinearNoTargetRowsSequentialDeferredDecisionCountingBound holds, then every sequential adaptive q-row observer on that sampler has success at most 1/2 + 4*(2^q - 1)/2^m. The remaining sampler-specific obligation is exactly that deferred-decision counting bound." },
     { stage := .v13ObserverLadder
       proofNodeKey := "pnp.v13.phase-e.observer-ladder-mark"
       status := .checked
@@ -536,6 +544,19 @@ theorem currentPNPRoadmap_records_v13_real_rung_one_sequential_qrow_transfer :
        itvUpperPercent := 100
        obligation :=
         "Record the sequential adaptive row-query theorem as V13RealLinearSequentialQRowTransferCertificate: every sequential q-row observer over the uniform certified-invertible sampler has success at most 1/2 + 4*(2^q - 1)/2^m. The broader causal interface remains tracked by the row-span hard-core entry." } :
+      PNPRoadmapEntry) ∈ currentPNPRoadmap := by
+  simp [currentPNPRoadmap]
+
+theorem currentPNPRoadmap_records_v13_real_rung_one_no_target_rows_sequential_qrow_conditional :
+    ({ stage := PNPRoadmapStage.v13RealRungOneQRowBound
+       proofNodeKey := "pnp.v13.real-rung-one.no-target-rows-sequential-qrow-conditional"
+       status := .openBackground
+       truthValue := ⟨100, 94⟩
+       progressPercent := 82
+       itvLowerPercent := 94
+       itvUpperPercent := 100
+       obligation :=
+        "Connect the adjusted no-target-row sampler to the q-row experiment interface: if V13RealLinearNoTargetRowsSequentialDeferredDecisionCountingBound holds, then every sequential adaptive q-row observer on that sampler has success at most 1/2 + 4*(2^q - 1)/2^m. The remaining sampler-specific obligation is exactly that deferred-decision counting bound." } :
       PNPRoadmapEntry) ∈ currentPNPRoadmap := by
   simp [currentPNPRoadmap]
 

@@ -7773,6 +7773,18 @@ theorem v13RealLinearQRowDeferredDecisionEpsilon_nonnegative
   unfold v13RealLinearQRowDeferredDecisionEpsilon
   positivity
 
+theorem v13RealLinearQRowDeferredDecisionEpsilon_eq
+    (q m : Nat) :
+    v13RealLinearQRowDeferredDecisionEpsilon q m =
+      (4 * ((2 : Rat) ^ q - 1)) / ((2 : Rat) ^ m) := by
+  unfold v13RealLinearQRowDeferredDecisionEpsilon
+  have hone : 1 ≤ 2 ^ q := by
+    have hpos : 0 < 2 ^ q := by
+      positivity
+    omega
+  rw [Nat.cast_mul, Nat.cast_sub hone]
+  norm_num
+
 theorem v13RealLinearQRowEpsilon_le_deferredDecisionEpsilon_of_pos
     {q m : Nat} (hq : 0 < q) :
     v13RealLinearQRowEpsilon q m ≤
@@ -9049,6 +9061,76 @@ theorem v13RealLinear_sequentialQRowTransferCertificate :
     { successBound := fun observer i₀ =>
         v13RealLinear_uniform_sequential_qrow_success_bound_of_transfer
           observer i₀ }
+
+/-- The adjusted no-target-row sampler as a q-row experiment surface.  The seed
+is a certified invertible map whose public rows exclude the target row. -/
+def v13RealLinearNoTargetRowsQRowExperiment {m q : Nat}
+    (i₀ : Fin m) (observer : V13RealLinearAdaptiveRowObserver m q) :
+    V13RealLinearAdaptiveQRowExperiment m q
+      (V13RealLinearNoTargetRowsMap m i₀) where
+  sampleA := fun A => A.val
+  observer := observer
+
+noncomputable def v13RealLinearNoTargetRowsCausalQRowExperiment
+    {m q : Nat} (i₀ : Fin m)
+    (observer : V13RealLinearCausalRowObserver m q) :
+    V13RealLinearAdaptiveQRowExperiment m q
+      (V13RealLinearNoTargetRowsMap m i₀) :=
+  v13RealLinearNoTargetRowsQRowExperiment i₀ observer.toAdaptive
+
+noncomputable def v13RealLinearNoTargetRowsSequentialQRowExperiment
+    {m q : Nat} (i₀ : Fin m)
+    (observer : V13RealLinearSequentialRowObserver m q) :
+    V13RealLinearAdaptiveQRowExperiment m q
+      (V13RealLinearNoTargetRowsMap m i₀) :=
+  v13RealLinearNoTargetRowsCausalQRowExperiment i₀ observer.toCausal
+
+noncomputable def v13RealLinearNoTargetRowsSequentialQRowSuccess
+    {m q : Nat} (i₀ : Fin m)
+    (observer : V13RealLinearSequentialRowObserver m q) : Rat := by
+  classical
+  exact
+    v13RealLinearAdaptiveQRowSuccess
+      (v13RealLinearNoTargetRowsSequentialQRowExperiment i₀ observer) i₀
+
+/-- The remaining sampler-specific q-row accounting obligation for the
+no-target-row admissible family. -/
+def V13RealLinearNoTargetRowsSequentialDeferredDecisionCountingBound : Prop := by
+  classical
+  exact
+    ∀ {m q : Nat} (i₀ : Fin m)
+      (observer : V13RealLinearSequentialRowObserver m q),
+      V13RealLinearAdaptiveDeferredDecisionCountingBound
+        (v13RealLinearNoTargetRowsSequentialQRowExperiment i₀ observer) i₀
+
+theorem
+    v13RealLinear_noTargetRows_sequential_qrow_success_bound_of_deferredDecisionCounting
+    (hcount :
+      V13RealLinearNoTargetRowsSequentialDeferredDecisionCountingBound)
+    {m q : Nat} (i₀ : Fin m)
+    (observer : V13RealLinearSequentialRowObserver m q) :
+    v13RealLinearNoTargetRowsSequentialQRowSuccess i₀ observer ≤
+      (1 / 2 : Rat) + v13RealLinearQRowDeferredDecisionEpsilon q m := by
+  classical
+  unfold v13RealLinearNoTargetRowsSequentialQRowSuccess
+  exact
+    v13RealLinear_adaptive_qrow_success_bound_of_deferredDecisionCounting
+      (v13RealLinearNoTargetRowsSequentialQRowExperiment i₀ observer) i₀
+      (hcount i₀ observer)
+
+theorem
+    v13RealLinear_noTargetRows_sequential_qrow_success_bound_of_deferredDecisionCounting_explicit
+    (hcount :
+      V13RealLinearNoTargetRowsSequentialDeferredDecisionCountingBound)
+    {m q : Nat} (i₀ : Fin m)
+    (observer : V13RealLinearSequentialRowObserver m q) :
+    v13RealLinearNoTargetRowsSequentialQRowSuccess i₀ observer ≤
+      (1 / 2 : Rat) +
+        (4 * ((2 : Rat) ^ q - 1)) / ((2 : Rat) ^ m) := by
+  rw [← v13RealLinearQRowDeferredDecisionEpsilon_eq q m]
+  exact
+    v13RealLinear_noTargetRows_sequential_qrow_success_bound_of_deferredDecisionCounting
+      hcount i₀ observer
 
 theorem
     v13RealLinear_uniform_sequential_qrow_success_bound_of_deferredDecisionTraceCosetHit
