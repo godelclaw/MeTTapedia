@@ -8360,6 +8360,30 @@ theorem appendedParentRowsProjectionFiniteSectionBody_of_target_cases
   subst key
   exact rowCase.rows root rest hfiber
 
+def representativeTargetAppendParentRowsProjectionFiniteSectionClosed : Prop :=
+  ∀ target : RepresentativeSemanticTarget,
+    Nonempty
+      (ChainWordConcreteFibrationCertificate (targetAppendPrefix target)) →
+      ∀ key : List GoertzelLemma814.LColor,
+        key ∈ GoertzelLemma814.colorAssignments4 →
+          ∀ (root : List GoertzelLemma814.TauState)
+            (rest : List (List GoertzelLemma814.TauState)),
+            concreteChainFiber (targetAppendPrefix target) key = root :: rest →
+              appendedParentRowsProjectionFiniteSectionBody
+                (targetAppendPrefix target) (targetAppendOrient target) key
+
+theorem representativeTargetAppendParentRowsProjectionFiniteSectionClosed_of_target_cases
+    {cases : List AppendedParentRowsProjectionFiniteSectionTargetCase}
+    (hcover : AppendedParentRowsProjectionFiniteSectionTargetCasesCover cases) :
+    representativeTargetAppendParentRowsProjectionFiniteSectionClosed := by
+  intro target hcert key hkey root rest hfiber
+  exact
+    appendedParentRowsProjectionFiniteSectionBody_of_target_cases
+      hcover
+      (targetFrontierWord_eq_targetAppendPrefix_append target)
+      (targetAppendPrefix_length_gt_one target)
+      hcert hkey root rest hfiber
+
 theorem concreteChainFiberAppendQuotientFibrationParentRowsNonSingletonPrefixAppendedParentRowsProjectionFiniteSectionClosed_of_cases
     {cases : List AppendedParentRowsProjectionFiniteSectionCase}
     (hcover : AppendedParentRowsProjectionFiniteSectionCasesCover cases) :

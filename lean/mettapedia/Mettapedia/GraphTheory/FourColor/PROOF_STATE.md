@@ -543,12 +543,18 @@ row-surface body from a covering target case list.
 `targetFrontierWord_eq_targetAppendPrefix_append`, and
 `targetAppendPrefix_length_gt_one` now give every representative target a
 canonical non-singleton final-append split for generated case dispatch.
+`representativeTargetAppendParentRowsProjectionFiniteSectionClosed` names the
+finite target-level collection predicate, and
+`representativeTargetAppendParentRowsProjectionFiniteSectionClosed_of_target_cases`
+builds it from a covering target case list.
 `ttFiber32AppendedParentRowsProjectionFiniteSectionTargetCase` registers the
 known `RepresentativeSemanticTarget.ttt`/key-32 local case and reduces back to
 `ttFiber32AppendedParentRowsProjectionFiniteSectionCase` by
-`ttFiber32AppendedParentRowsProjectionFiniteSectionTargetCase_toCase`.  This is
-the finite representative-target artifact shape only; it does not by itself
-turn representative cases into the globally quantified transfer predicate.
+`ttFiber32AppendedParentRowsProjectionFiniteSectionTargetCase_toCase`;
+`ttFiber32TargetAppendRowSurface` states the same local row surface directly in
+the canonical target-append shape.  This is the finite representative-target
+artifact shape only; it does not by itself turn representative cases into the
+globally quantified transfer predicate.
 The table-level diagnostic
 `tttFiber32Rows_length_eq_two_mul_ttFiber32Rows_length` records that the known
 `TT` obstruction key is the same generated fixed input as `TTT` light-fiber
