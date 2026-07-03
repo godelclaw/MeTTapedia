@@ -91,6 +91,11 @@ def sharedInteriorPairSecondClosureTaitEdgeColoring :
         rcases sharedInteriorPair_edge_mem_seven hf with rfl | rfl <;>
         simp [blue, purple] at hne hcolor)
 
+@[simp] private theorem sharedInteriorPairSecondClosureTaitEdgeColoring_apply
+    (e : sharedInteriorPairAnnulusGraph.edgeSet) :
+    sharedInteriorPairSecondClosureTaitEdgeColoring e = sharedInteriorPairSecondClosureEdgeColor e :=
+  rfl
+
 theorem sharedInteriorPairSecondClosureTaitEdgeColoring_isTait :
     IsTaitEdgeColoring sharedInteriorPairAnnulusGraph
       sharedInteriorPairSecondClosureTaitEdgeColoring := by
@@ -381,9 +386,17 @@ private theorem zero_on_sip01_of_boundaryZero_and_annihilator
           chainDot ({sip01, sip24} : Finset sharedInteriorPairAnnulusGraph.edgeSet) z
             (indicatorChain blue ({sip01, sip24} :
               Finset sharedInteriorPairAnnulusGraph.edgeSet)) = 0 := by
-        simpa [sharedInteriorPairSecondClosureTaitEdgeColoring,
-          sharedInteriorPairSecondClosureEdgeColor_sip01, face1_red_purple_support,
-          polarizedFaceGenerator_eq_indicatorChain_of_add_pair] using horth
+        rw [polarizedFaceGenerator_eq_indicatorChain_of_add_pair] at horth
+        have hsupport :
+            boundaryBicoloredEdges sharedInteriorPairSecondClosureTaitEdgeColoring
+              (sharedInteriorPairSecondClosureTaitEdgeColoring sip01)
+              (sharedInteriorPairSecondClosureTaitEdgeColoring sip01 + blue)
+              (sharedInteriorPairAnnulusEmbedding.faceBoundary (1 : SharedInteriorPairFace)) =
+              ({sip01, sip24} : Finset sharedInteriorPairAnnulusGraph.edgeSet) := by
+          simpa [sharedInteriorPairSecondClosureEdgeColor_sip01, red, blue, purple] using
+            face1_red_purple_support
+        rw [hsupport] at horth
+        simpa [blue] using horth
       rw [chainDot_indicatorChain_eq_colorDot_of_erase_zero (e := sip01) blue (by simp)] at hchain
       · exact hchain
       · intro e he
@@ -431,7 +444,7 @@ private theorem zero_on_sip01_of_boundaryZero_and_annihilator
               (red + purple)
               (sharedInteriorPairAnnulusEmbedding.faceBoundary (1 : SharedInteriorPairFace)) =
             ({sip01, sip24} : Finset sharedInteriorPairAnnulusGraph.edgeSet) := by
-        simpa [red, purple] using bluePurpleInnerNeighbor_face1_red_blue_support
+        simpa [red, blue, purple] using bluePurpleInnerNeighbor_face1_red_blue_support
       have hchain :
           chainDot ({sip01, sip24} : Finset sharedInteriorPairAnnulusGraph.edgeSet) z
             (indicatorChain purple ({sip01, sip24} :
@@ -482,9 +495,17 @@ private theorem zero_on_sip12_of_boundaryZero_and_annihilator
           chainDot ({sip12, sip24, sip40} : Finset sharedInteriorPairAnnulusGraph.edgeSet) z
             (indicatorChain red ({sip12, sip24, sip40} :
               Finset sharedInteriorPairAnnulusGraph.edgeSet)) = 0 := by
-        simpa [sharedInteriorPairSecondClosureTaitEdgeColoring,
-          sharedInteriorPairSecondClosureEdgeColor_sip12, face1_blue_purple_support,
-          polarizedFaceGenerator_eq_indicatorChain_of_add_pair] using horth
+        rw [polarizedFaceGenerator_eq_indicatorChain_of_add_pair] at horth
+        have hsupport :
+            boundaryBicoloredEdges sharedInteriorPairSecondClosureTaitEdgeColoring
+              (sharedInteriorPairSecondClosureTaitEdgeColoring sip12)
+              (sharedInteriorPairSecondClosureTaitEdgeColoring sip12 + red)
+              (sharedInteriorPairAnnulusEmbedding.faceBoundary (1 : SharedInteriorPairFace)) =
+              ({sip12, sip24, sip40} : Finset sharedInteriorPairAnnulusGraph.edgeSet) := by
+          simpa [sharedInteriorPairSecondClosureEdgeColor_sip12, red, blue, purple] using
+            face1_blue_purple_support
+        rw [hsupport] at horth
+        simpa [red] using horth
       rw [chainDot_indicatorChain_eq_colorDot_of_erase_zero (e := sip12) red (by simp)] at hchain
       · exact hchain
       · intro e he
@@ -512,9 +533,21 @@ private theorem zero_on_sip12_of_boundaryZero_and_annihilator
           chainDot ({sip01, sip12, sip40} : Finset sharedInteriorPairAnnulusGraph.edgeSet) z
             (indicatorChain purple ({sip01, sip12, sip40} :
               Finset sharedInteriorPairAnnulusGraph.edgeSet)) = 0 := by
-        simpa [sharedInteriorPairSecondClosureTaitEdgeColoring,
-          sharedInteriorPairSecondClosureEdgeColor_sip12, face1_red_blue_support,
-          polarizedFaceGenerator_eq_indicatorChain_of_add_pair] using horth
+        rw [polarizedFaceGenerator_eq_indicatorChain_of_add_pair] at horth
+        have hsupport :
+            boundaryBicoloredEdges sharedInteriorPairSecondClosureTaitEdgeColoring
+              (sharedInteriorPairSecondClosureTaitEdgeColoring sip12)
+              (sharedInteriorPairSecondClosureTaitEdgeColoring sip12 + purple)
+              (sharedInteriorPairAnnulusEmbedding.faceBoundary (1 : SharedInteriorPairFace)) =
+              ({sip01, sip12, sip40} : Finset sharedInteriorPairAnnulusGraph.edgeSet) := by
+          simpa [sharedInteriorPairSecondClosureEdgeColor_sip12, red, blue, purple] using
+            (boundaryBicoloredEdges_comm
+              (C := sharedInteriorPairSecondClosureTaitEdgeColoring) (a := red) (b := blue)
+              (faceBoundary :=
+                sharedInteriorPairAnnulusEmbedding.faceBoundary (1 : SharedInteriorPairFace))
+              |>.symm.trans face1_red_blue_support)
+        rw [hsupport] at horth
+        simpa [purple] using horth
       rw [chainDot_indicatorChain_eq_colorDot_of_erase_zero
         (e := sip12) purple (by simp)] at hchain
       · exact hchain

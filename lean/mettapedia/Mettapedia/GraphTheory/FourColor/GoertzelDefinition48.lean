@@ -70,6 +70,14 @@ omit [DecidableEq V] in
       e ∈ faceBoundary ∧ (C e = a ∨ C e = b) := by
   simp [boundaryBicoloredEdges]
 
+omit [DecidableEq V] in
+theorem boundaryBicoloredEdges_comm {G : SimpleGraph V} (C : G.EdgeColoring Color)
+    (a b : Color) (faceBoundary : Finset G.edgeSet) :
+    boundaryBicoloredEdges C a b faceBoundary =
+      boundaryBicoloredEdges C b a faceBoundary := by
+  ext e
+  simp [boundaryBicoloredEdges, or_comm]
+
 /-- The purified boundary-only generator produced after the exact v23 Step 2 cancellation.
 It records the full `(a,b)`-boundary support with coefficient `a + b`, rather than only the
 `a`-colored half tracked by the exact v23 Step 1 generator. -/

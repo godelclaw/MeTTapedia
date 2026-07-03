@@ -82,12 +82,12 @@ def f3 : CounterFace := ⟨3, by decide⟩
 def f4 : CounterFace := ⟨4, by decide⟩
 def f5 : CounterFace := ⟨5, by decide⟩
 
-def fa : AmbientFace counterEmbedding.faces := ⟨f0, by simp [counterEmbedding, counterFaces, f0]⟩
-def fbPrev : AmbientFace counterEmbedding.faces := ⟨f1, by simp [counterEmbedding, counterFaces, f1]⟩
-def fbBad : AmbientFace counterEmbedding.faces := ⟨f2, by simp [counterEmbedding, counterFaces, f2]⟩
-def fcq : AmbientFace counterEmbedding.faces := ⟨f3, by simp [counterEmbedding, counterFaces, f3]⟩
-def fcr1 : AmbientFace counterEmbedding.faces := ⟨f4, by simp [counterEmbedding, counterFaces, f4]⟩
-def fcr2 : AmbientFace counterEmbedding.faces := ⟨f5, by simp [counterEmbedding, counterFaces, f5]⟩
+def fa : AmbientFace counterEmbedding.faces := ⟨f0, by decide⟩
+def fbPrev : AmbientFace counterEmbedding.faces := ⟨f1, by decide⟩
+def fbBad : AmbientFace counterEmbedding.faces := ⟨f2, by decide⟩
+def fcq : AmbientFace counterEmbedding.faces := ⟨f3, by decide⟩
+def fcr1 : AmbientFace counterEmbedding.faces := ⟨f4, by decide⟩
+def fcr2 : AmbientFace counterEmbedding.faces := ⟨f5, by decide⟩
 
 theorem ambientFace_eq_cases (f : AmbientFace counterEmbedding.faces) :
     f = fa ∨ f = fbPrev ∨ f = fbBad ∨ f = fcq ∨ f = fcr1 ∨ f = fcr2 := by
@@ -365,13 +365,13 @@ def cwf1 : CanonicalWitnessCounterFace := ⟨1, by decide⟩
 def cwf2 : CanonicalWitnessCounterFace := ⟨2, by decide⟩
 
 def cwOuterFace : AmbientFace canonicalWitnessCounterEmbedding.faces :=
-  ⟨cwf0, by simp [canonicalWitnessCounterEmbedding, canonicalWitnessCounterFaces, cwf0]⟩
+  ⟨cwf0, by decide⟩
 
 def cwMiddleFace : AmbientFace canonicalWitnessCounterEmbedding.faces :=
-  ⟨cwf1, by simp [canonicalWitnessCounterEmbedding, canonicalWitnessCounterFaces, cwf1]⟩
+  ⟨cwf1, by decide⟩
 
 def cwInnerFace : AmbientFace canonicalWitnessCounterEmbedding.faces :=
-  ⟨cwf2, by simp [canonicalWitnessCounterEmbedding, canonicalWitnessCounterFaces, cwf2]⟩
+  ⟨cwf2, by decide⟩
 
 def canonicalWitnessCounterBoundaryData :
     PlanarBoundaryAnnulusBoundaryData canonicalWitnessCounterEmbedding := by
@@ -395,6 +395,7 @@ theorem cwMiddleFace_mem_canonicalWitnessCounterCanonicalDecomposition_collarFac
   simp [canonicalWitnessCounterCanonicalDecomposition,
     planarBoundaryAnnulusDecomposition_of_boundaryData, cwMiddleFace,
     canonicalWitnessCounterEmbedding, canonicalWitnessCounterFaces]
+  exact Finset.mem_attach _ _
 
 theorem exists_two_distinct_interior_edges_on_cwMiddleFace_boundary :
     ∃ e₁ ∈ canonicalWitnessCounterEmbedding.faceBoundary cwMiddleFace.1,

@@ -1163,13 +1163,21 @@ def wheelWithInnerTriangleForcingInteriorEdgeWitness :
     · refine ⟨wit12, ?_, wit12_mem_selectedBoundarySupport⟩
       simp [wheelWithInnerTriangleEmbedding, wheelWithInnerTriangleFaceBoundary]
     · exfalso
-      simp [wheelWithInnerTriangleEmbedding, wheelWithInnerTriangleFaceBoundary,
-        wheelWithInnerTriangleGraph, wit01, wit02, wit03, wit23] at hf
+      have hmem : wit01 ∈ ({wit02, wit03, wit23} :
+          Finset wheelWithInnerTriangleGraph.edgeSet) := by
+        simpa [wheelWithInnerTriangleEmbedding, wheelWithInnerTriangleFaceBoundary,
+          wheelWithInnerTriangleGraph, wit01, wit02, wit03, wit23] using hf
+      exact (by decide : wit01 ∉ ({wit02, wit03, wit23} :
+        Finset wheelWithInnerTriangleGraph.edgeSet)) hmem
     · refine ⟨wit31, ?_, wit31_mem_selectedBoundarySupport⟩
       simp [wheelWithInnerTriangleEmbedding, wheelWithInnerTriangleFaceBoundary]
     · exfalso
-      simp [wheelWithInnerTriangleEmbedding, wheelWithInnerTriangleFaceBoundary,
-        wheelWithInnerTriangleGraph, wit01, wit45, wit56, wit64] at hf
+      have hmem : wit01 ∈ ({wit45, wit56, wit64} :
+          Finset wheelWithInnerTriangleGraph.edgeSet) := by
+        simpa [wheelWithInnerTriangleEmbedding, wheelWithInnerTriangleFaceBoundary,
+          wheelWithInnerTriangleGraph, wit01, wit45, wit56, wit64] using hf
+      exact (by decide : wit01 ∉ ({wit45, wit56, wit64} :
+        Finset wheelWithInnerTriangleGraph.edgeSet)) hmem
 
 theorem nonempty_forcingInteriorEdgeWitness_wheelWithInnerTriangle :
     Nonempty (ForcingInteriorEdgeWitness wheelWithInnerTriangleEmbedding) :=

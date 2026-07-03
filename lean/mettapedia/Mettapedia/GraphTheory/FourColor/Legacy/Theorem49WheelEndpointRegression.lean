@@ -8,6 +8,11 @@ open Theorem49PlanarBoundaryAnnulusWheelWitnessRegression
 
 namespace Theorem49WheelEndpointRegression
 
+@[simp] private theorem wheelWithInnerTriangleTaitEdgeColoring_apply
+    (e : wheelWithInnerTriangleGraph.edgeSet) :
+    wheelWithInnerTriangleTaitEdgeColoring e = wheelWithInnerTriangleEdgeColor e :=
+  rfl
+
 private theorem face0_red_purple_support :
     boundaryBicoloredEdges wheelWithInnerTriangleTaitEdgeColoring red purple
       (wheelWithInnerTriangleEmbedding.faceBoundary (0 : WheelWithInnerTriangleFace)) =
@@ -120,9 +125,17 @@ private theorem zero_on_wit01_of_boundaryZero_and_annihilator
           chainDot ({wit01, wit12} : Finset wheelWithInnerTriangleGraph.edgeSet) z
             (indicatorChain blue ({wit01, wit12} : Finset wheelWithInnerTriangleGraph.edgeSet)) =
             0 := by
-        simpa [wheelWithInnerTriangleTaitEdgeColoring, wheelWithInnerTriangleEdgeColor_wit01,
-          face0_red_purple_support,
-          polarizedFaceGenerator_eq_indicatorChain_of_add_pair] using horth
+        rw [polarizedFaceGenerator_eq_indicatorChain_of_add_pair] at horth
+        have hsupport :
+            boundaryBicoloredEdges wheelWithInnerTriangleTaitEdgeColoring
+              (wheelWithInnerTriangleTaitEdgeColoring wit01)
+              (wheelWithInnerTriangleTaitEdgeColoring wit01 + blue)
+              (wheelWithInnerTriangleEmbedding.faceBoundary (0 : WheelWithInnerTriangleFace)) =
+              ({wit01, wit12} : Finset wheelWithInnerTriangleGraph.edgeSet) := by
+          simpa [wheelWithInnerTriangleEdgeColor_wit01, red, blue, purple] using
+            face0_red_purple_support
+        rw [hsupport] at horth
+        simpa [blue] using horth
       rw [chainDot_indicatorChain_eq_colorDot_of_erase_zero (e := wit01) blue (by simp)] at hchain
       · exact hchain
       · intro e he
@@ -146,9 +159,17 @@ private theorem zero_on_wit01_of_boundaryZero_and_annihilator
           chainDot ({wit01, wit31} : Finset wheelWithInnerTriangleGraph.edgeSet) z
             (indicatorChain purple ({wit01, wit31} : Finset wheelWithInnerTriangleGraph.edgeSet))
               = 0 := by
-        simpa [wheelWithInnerTriangleTaitEdgeColoring, wheelWithInnerTriangleEdgeColor_wit01,
-          face2_red_blue_support,
-          polarizedFaceGenerator_eq_indicatorChain_of_add_pair] using horth
+        rw [polarizedFaceGenerator_eq_indicatorChain_of_add_pair] at horth
+        have hsupport :
+            boundaryBicoloredEdges wheelWithInnerTriangleTaitEdgeColoring
+              (wheelWithInnerTriangleTaitEdgeColoring wit01)
+              (wheelWithInnerTriangleTaitEdgeColoring wit01 + purple)
+              (wheelWithInnerTriangleEmbedding.faceBoundary (2 : WheelWithInnerTriangleFace)) =
+              ({wit01, wit31} : Finset wheelWithInnerTriangleGraph.edgeSet) := by
+          simpa [wheelWithInnerTriangleEdgeColor_wit01, red, blue, purple] using
+            face2_red_blue_support
+        rw [hsupport] at horth
+        simpa [purple] using horth
       rw [chainDot_indicatorChain_eq_colorDot_of_erase_zero (e := wit01) purple (by simp)] at hchain
       · exact hchain
       · intro e he
@@ -186,9 +207,17 @@ private theorem zero_on_wit02_of_boundaryZero_and_annihilator
           chainDot ({wit02, wit12} : Finset wheelWithInnerTriangleGraph.edgeSet) z
             (indicatorChain red ({wit02, wit12} : Finset wheelWithInnerTriangleGraph.edgeSet)) =
             0 := by
-        simpa [wheelWithInnerTriangleTaitEdgeColoring, wheelWithInnerTriangleEdgeColor_wit02,
-          face0_blue_purple_support,
-          polarizedFaceGenerator_eq_indicatorChain_of_add_pair] using horth
+        rw [polarizedFaceGenerator_eq_indicatorChain_of_add_pair] at horth
+        have hsupport :
+            boundaryBicoloredEdges wheelWithInnerTriangleTaitEdgeColoring
+              (wheelWithInnerTriangleTaitEdgeColoring wit02)
+              (wheelWithInnerTriangleTaitEdgeColoring wit02 + red)
+              (wheelWithInnerTriangleEmbedding.faceBoundary (0 : WheelWithInnerTriangleFace)) =
+              ({wit02, wit12} : Finset wheelWithInnerTriangleGraph.edgeSet) := by
+          simpa [wheelWithInnerTriangleEdgeColor_wit02, red, blue, purple] using
+            face0_blue_purple_support
+        rw [hsupport] at horth
+        simpa [red] using horth
       rw [chainDot_indicatorChain_eq_colorDot_of_erase_zero (e := wit02) red (by simp)] at hchain
       · exact hchain
       · intro e he
@@ -213,9 +242,21 @@ private theorem zero_on_wit02_of_boundaryZero_and_annihilator
           chainDot ({wit02, wit23} : Finset wheelWithInnerTriangleGraph.edgeSet) z
             (indicatorChain purple ({wit02, wit23} : Finset wheelWithInnerTriangleGraph.edgeSet))
               = 0 := by
-        simpa [wheelWithInnerTriangleTaitEdgeColoring, wheelWithInnerTriangleEdgeColor_wit02,
-          face1_red_blue_support,
-          polarizedFaceGenerator_eq_indicatorChain_of_add_pair] using horth
+        rw [polarizedFaceGenerator_eq_indicatorChain_of_add_pair] at horth
+        have hsupport :
+            boundaryBicoloredEdges wheelWithInnerTriangleTaitEdgeColoring
+              (wheelWithInnerTriangleTaitEdgeColoring wit02)
+              (wheelWithInnerTriangleTaitEdgeColoring wit02 + purple)
+              (wheelWithInnerTriangleEmbedding.faceBoundary (1 : WheelWithInnerTriangleFace)) =
+              ({wit02, wit23} : Finset wheelWithInnerTriangleGraph.edgeSet) := by
+          simpa [wheelWithInnerTriangleEdgeColor_wit02, red, blue, purple] using
+            (boundaryBicoloredEdges_comm
+              (C := wheelWithInnerTriangleTaitEdgeColoring) (a := red) (b := blue)
+              (faceBoundary :=
+                wheelWithInnerTriangleEmbedding.faceBoundary (1 : WheelWithInnerTriangleFace))
+              |>.symm.trans face1_red_blue_support)
+        rw [hsupport] at horth
+        simpa [purple] using horth
       rw [chainDot_indicatorChain_eq_colorDot_of_erase_zero (e := wit02) purple (by simp)] at hchain
       · exact hchain
       · intro e he
@@ -253,9 +294,21 @@ private theorem zero_on_wit03_of_boundaryZero_and_annihilator
           chainDot ({wit03, wit31} : Finset wheelWithInnerTriangleGraph.edgeSet) z
             (indicatorChain red ({wit03, wit31} : Finset wheelWithInnerTriangleGraph.edgeSet)) =
             0 := by
-        simpa [wheelWithInnerTriangleTaitEdgeColoring, wheelWithInnerTriangleEdgeColor_wit03,
-          face2_blue_purple_support,
-          polarizedFaceGenerator_eq_indicatorChain_of_add_pair] using horth
+        rw [polarizedFaceGenerator_eq_indicatorChain_of_add_pair] at horth
+        have hsupport :
+            boundaryBicoloredEdges wheelWithInnerTriangleTaitEdgeColoring
+              (wheelWithInnerTriangleTaitEdgeColoring wit03)
+              (wheelWithInnerTriangleTaitEdgeColoring wit03 + red)
+              (wheelWithInnerTriangleEmbedding.faceBoundary (2 : WheelWithInnerTriangleFace)) =
+              ({wit03, wit31} : Finset wheelWithInnerTriangleGraph.edgeSet) := by
+          simpa [wheelWithInnerTriangleEdgeColor_wit03, red, blue, purple] using
+            (boundaryBicoloredEdges_comm
+              (C := wheelWithInnerTriangleTaitEdgeColoring) (a := blue) (b := purple)
+              (faceBoundary :=
+                wheelWithInnerTriangleEmbedding.faceBoundary (2 : WheelWithInnerTriangleFace))
+              |>.symm.trans face2_blue_purple_support)
+        rw [hsupport] at horth
+        simpa [red] using horth
       rw [chainDot_indicatorChain_eq_colorDot_of_erase_zero (e := wit03) red (by simp)] at hchain
       · exact hchain
       · intro e he
@@ -279,9 +332,21 @@ private theorem zero_on_wit03_of_boundaryZero_and_annihilator
           chainDot ({wit03, wit23} : Finset wheelWithInnerTriangleGraph.edgeSet) z
             (indicatorChain blue ({wit03, wit23} : Finset wheelWithInnerTriangleGraph.edgeSet)) =
             0 := by
-        simpa [wheelWithInnerTriangleTaitEdgeColoring, wheelWithInnerTriangleEdgeColor_wit03,
-          face1_red_purple_support,
-          polarizedFaceGenerator_eq_indicatorChain_of_add_pair] using horth
+        rw [polarizedFaceGenerator_eq_indicatorChain_of_add_pair] at horth
+        have hsupport :
+            boundaryBicoloredEdges wheelWithInnerTriangleTaitEdgeColoring
+              (wheelWithInnerTriangleTaitEdgeColoring wit03)
+              (wheelWithInnerTriangleTaitEdgeColoring wit03 + blue)
+              (wheelWithInnerTriangleEmbedding.faceBoundary (1 : WheelWithInnerTriangleFace)) =
+              ({wit03, wit23} : Finset wheelWithInnerTriangleGraph.edgeSet) := by
+          simpa [wheelWithInnerTriangleEdgeColor_wit03, red, blue, purple] using
+            (boundaryBicoloredEdges_comm
+              (C := wheelWithInnerTriangleTaitEdgeColoring) (a := red) (b := purple)
+              (faceBoundary :=
+                wheelWithInnerTriangleEmbedding.faceBoundary (1 : WheelWithInnerTriangleFace))
+              |>.symm.trans face1_red_purple_support)
+        rw [hsupport] at horth
+        simpa [blue] using horth
       rw [chainDot_indicatorChain_eq_colorDot_of_erase_zero (e := wit03) blue (by simp)] at hchain
       · exact hchain
       · intro e he

@@ -234,6 +234,12 @@ private def wheelWithInnerTriangleParametricTaitEdgeColoring
     intro e f hadj
     exact wheelWithInnerTriangleParametricEdgeColor_ne_of_adj hab huv hadj)
 
+@[simp] private theorem wheelWithInnerTriangleParametricTaitEdgeColoring_apply
+    (a b u v : Color) (hab : ValidColorPair a b) (huv : ValidColorPair u v)
+    (e : wheelWithInnerTriangleGraph.edgeSet) :
+    wheelWithInnerTriangleParametricTaitEdgeColoring a b u v hab huv e =
+      wheelWithInnerTriangleParametricEdgeColor a b u v e := rfl
+
 private theorem wheelWithInnerTriangleParametricTaitEdgeColoring_isTait
     {a b u v : Color} (hab : ValidColorPair a b) (huv : ValidColorPair u v) :
     IsTaitEdgeColoring wheelWithInnerTriangleGraph
@@ -243,15 +249,15 @@ private theorem wheelWithInnerTriangleParametricTaitEdgeColoring_isTait
   rcases third_color_properties huv.1 huv.2.1 huv.2.2 with ⟨huv0, _, _⟩
   rcases wheelWithInnerTriangle_edge_eq e with
     rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl
-  · simpa [wheelWithInnerTriangleParametricTaitEdgeColoring] using hab.1
-  · simpa [wheelWithInnerTriangleParametricTaitEdgeColoring] using hab.2.1
-  · simpa [wheelWithInnerTriangleParametricTaitEdgeColoring] using hab0
-  · simpa [wheelWithInnerTriangleParametricTaitEdgeColoring] using hab0
-  · simpa [wheelWithInnerTriangleParametricTaitEdgeColoring] using hab.1
-  · simpa [wheelWithInnerTriangleParametricTaitEdgeColoring] using hab.2.1
-  · simpa [wheelWithInnerTriangleParametricTaitEdgeColoring] using huv.1
-  · simpa [wheelWithInnerTriangleParametricTaitEdgeColoring] using huv.2.1
-  · simpa [wheelWithInnerTriangleParametricTaitEdgeColoring] using huv0
+  · simpa using hab.1
+  · simpa using hab.2.1
+  · simpa using hab0
+  · simpa using hab0
+  · simpa using hab.1
+  · simpa using hab.2.1
+  · simpa using huv.1
+  · simpa using huv.2.1
+  · simpa using huv0
 
 private theorem validColorPair_wheelSpokes_of_isTait
     (C : wheelWithInnerTriangleGraph.EdgeColoring Color)

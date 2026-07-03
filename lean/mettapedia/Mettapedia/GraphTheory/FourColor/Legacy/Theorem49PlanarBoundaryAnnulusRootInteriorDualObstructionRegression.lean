@@ -206,11 +206,11 @@ def twoBandAnnulusEmbedding : PlaneEmbeddingWithBoundary twoBandAnnulusGraph whe
 
 def twoBandOuterFace0 : AmbientFace twoBandAnnulusEmbedding.faces :=
   ⟨(0 : TwoBandAnnulusFace), by
-    simp [twoBandAnnulusEmbedding, twoBandAnnulusFaces]⟩
+    decide⟩
 
 def twoBandInnerFace0 : AmbientFace twoBandAnnulusEmbedding.faces :=
   ⟨(3 : TwoBandAnnulusFace), by
-    simp [twoBandAnnulusEmbedding, twoBandAnnulusFaces]⟩
+    decide⟩
 
 theorem tbaO01_mem_selectedBoundarySupport :
     tbaO01 ∈ selectedBoundarySupport
@@ -744,11 +744,11 @@ def twoBandAnnulusPureDartCycleGeometry :
 theorem twoBandAnnulusFace_cases
     (f : AmbientFace twoBandAnnulusEmbedding.faces) :
     f = twoBandOuterFace0 ∨
-      f = ⟨(1 : TwoBandAnnulusFace), by simp [twoBandAnnulusEmbedding, twoBandAnnulusFaces]⟩ ∨
-      f = ⟨(2 : TwoBandAnnulusFace), by simp [twoBandAnnulusEmbedding, twoBandAnnulusFaces]⟩ ∨
+      f = ⟨(1 : TwoBandAnnulusFace), by decide⟩ ∨
+      f = ⟨(2 : TwoBandAnnulusFace), by decide⟩ ∨
       f = twoBandInnerFace0 ∨
-      f = ⟨(4 : TwoBandAnnulusFace), by simp [twoBandAnnulusEmbedding, twoBandAnnulusFaces]⟩ ∨
-      f = ⟨(5 : TwoBandAnnulusFace), by simp [twoBandAnnulusEmbedding, twoBandAnnulusFaces]⟩ := by
+      f = ⟨(4 : TwoBandAnnulusFace), by decide⟩ ∨
+      f = ⟨(5 : TwoBandAnnulusFace), by decide⟩ := by
   rcases f with ⟨⟨n, hn⟩, hfmem⟩
   have hn_cases : n = 0 ∨ n = 1 ∨ n = 2 ∨ n = 3 ∨ n = 4 ∨ n = 5 := by omega
   rcases hn_cases with rfl | rfl | rfl | rfl | rfl | rfl
@@ -1155,14 +1155,18 @@ theorem twoBandInnerRoot_uniqueReachableRoot_eq :
 
 theorem tbaO01_mem_twoBandAnnulusOuterAmbientBoundary :
     tbaO01 ∈ twoBandAnnulusBoundaryData.outerAmbientBoundary := by
-  simpa [twoBandAnnulusBoundaryData, twoBandOuterRoot] using
+  simpa [twoBandAnnulusBoundaryData, twoBandClosedWalkAnnulusBoundarySource,
+    PlanarBoundaryClosedWalkAnnulusBoundarySource.toPlanarBoundaryAnnulusBoundaryData,
+    PlanarBoundaryClosedWalkAnnulusBoundarySource.ofFields, twoBandOuterRoot] using
     PlanarBoundaryAnnulusBoundaryReachabilityData.mem_outerAmbientBoundary_toPlanarBoundaryAnnulusBoundaryData
       (data := twoBandAnnulusBoundaryReachabilityData)
       (e := twoBandOuterRoot) twoBandOuterRoot_uniqueReachableRoot_eq
 
 theorem tbaI01_mem_twoBandAnnulusInnerAmbientBoundary :
     tbaI01 ∈ twoBandAnnulusBoundaryData.innerAmbientBoundary := by
-  simpa [twoBandAnnulusBoundaryData, twoBandInnerRoot] using
+  simpa [twoBandAnnulusBoundaryData, twoBandClosedWalkAnnulusBoundarySource,
+    PlanarBoundaryClosedWalkAnnulusBoundarySource.toPlanarBoundaryAnnulusBoundaryData,
+    PlanarBoundaryClosedWalkAnnulusBoundarySource.ofFields, twoBandInnerRoot] using
     PlanarBoundaryAnnulusBoundaryReachabilityData.mem_innerAmbientBoundary_toPlanarBoundaryAnnulusBoundaryData
       (data := twoBandAnnulusBoundaryReachabilityData)
       (e := twoBandInnerRoot) twoBandInnerRoot_uniqueReachableRoot_eq

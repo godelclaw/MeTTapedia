@@ -699,10 +699,10 @@ def doubleLeftFaceIdx : DoubleStarFace := ⟨0, by decide⟩
 def doubleRightFaceIdx : DoubleStarFace := ⟨1, by decide⟩
 
 def doubleLeftFace : AmbientFace doubleStarEmbedding.faces :=
-  ⟨doubleLeftFaceIdx, by simp [doubleStarEmbedding, doubleStarFaces, doubleLeftFaceIdx]⟩
+  ⟨doubleLeftFaceIdx, by decide⟩
 
 def doubleRightFace : AmbientFace doubleStarEmbedding.faces :=
-  ⟨doubleRightFaceIdx, by simp [doubleStarEmbedding, doubleStarFaces, doubleRightFaceIdx]⟩
+  ⟨doubleRightFaceIdx, by decide⟩
 
 theorem doubleStarFace_eq_cases (f : AmbientFace doubleStarEmbedding.faces) :
     f = doubleLeftFace ∨ f = doubleRightFace := by
@@ -1224,7 +1224,9 @@ theorem not_nonempty_planarBoundaryClosedWalkEmbeddingData_doubleStarEmbedding :
       simpa [leftWalk] using data.hnodup_edges
     simpa [SimpleGraph.Walk.isTrail_def] using hnodup
   have hpath : leftWalk.IsPath := (doubleStarLeftGraph_isAcyclic.isPath_iff_isTrail leftWalk).2 htrail
-  have hnil : leftWalk = .nil := (SimpleGraph.Walk.isPath_iff_eq_nil leftWalk).1 hpath
+  have hnil' : leftWalk.Nil := SimpleGraph.Walk.isPath_iff_nil.1 hpath
+  have hnil : leftWalk = .nil := by
+    simpa [SimpleGraph.Walk.Nil] using hnil'
   have hnonempty : 0 < leftWalk.length := by
     simpa [leftWalk] using data.hnonempty
   rw [hnil] at hnonempty

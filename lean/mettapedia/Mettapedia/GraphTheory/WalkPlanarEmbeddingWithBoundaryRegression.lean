@@ -79,7 +79,7 @@ def starEmbedding : PlaneEmbeddingWithBoundary starGraph where
     rcases star_edge_eq_s01_or_s02_or_s03 e with rfl | rfl | rfl <;>
       simp [starFaces, starFaceBoundary]
 
-def starOnlyFace : {f // f ∈ starEmbedding.faces} := ⟨(), by simp [starEmbedding, starFaces]⟩
+def starOnlyFace : {f // f ∈ starEmbedding.faces} := ⟨(), by decide⟩
 
 theorem planarEmbeddingBoundaryEdgeEndpointAdj_s01_s02 :
     planarEmbeddingBoundaryEdgeEndpointAdj s01 s02 := by
