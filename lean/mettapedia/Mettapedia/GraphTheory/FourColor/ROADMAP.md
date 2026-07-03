@@ -344,10 +344,16 @@ The known `TTT` fiber-32 rows now instantiate that local root-closure pattern:
 `tttFiber32SourceStatesList` names the generated row-source states,
 `tttFiber32Rows_mem_source_mem_concreteChainFiber` proves those row sources
 are semantic fiber points, and `tttFiber32Rows_mem_source_mem_rootClose` proves
-that every generated row source lies in the bounded root closure.  This is the
-local row-table root-close package; the remaining connectedness step is the
-coverage bridge from arbitrary appended fiber points to the generated rows,
-then the same pattern must be lifted beyond this key.
+that every generated row source lies in the bounded root closure.  The same key
+now also has local semantic coverage and connectedness: `tttAllChainStates_eq`
+splits `TTT` chain states by left state, `tttFiber32CoverAllLefts_ok` proves
+the chunked finite cover, `tttFiber32ConcreteFiber_subset_sourceStatesList`
+identifies every actual key-32 fiber state with a generated row source, and
+`tttFiber32ConcreteChainFiberConnected` plus
+`tttFiber32RootClosureConnected` prove local connectedness of the actual
+fiber and its root-closure graph.  This closes the local known-key
+coverage/root-close pattern; Gate-2 still needs the same pattern lifted beyond
+this key and fed into the global generated parent-row/projection predicate.
 The theorem
 `tttFiber32Rows_length_eq_two_mul_ttFiber32Rows_length` records the table-level
 alignment for the known `TT` obstruction key: the same generated key appears in

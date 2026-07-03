@@ -449,6 +449,28 @@ dependency-audit evidence is
 the row-source membership and root-close table theorems depend on `propext`,
 `Classical.choice`, and `Quot.sound`, while the root-row seed depends on
 `propext` and `Quot.sound`.
+That coverage bridge is now closed for the same known `TTT` fiber-32 key.
+`tttAllChainStates_eq` splits the generated chain-state list by the left
+state, `tttFiber32CoverAllLefts_ok` proves by chunks that every semantic state
+with key 32 appears in `tttFiber32SourceStatesList`, and
+`tttFiber32ConcreteFiber_subset_sourceStatesList` turns that finite coverage
+into semantic fiber inclusion.  Combining the inclusion with the root-close row
+package gives `tttFiber32ConcreteChainFiberConnected` and
+`tttFiber32RootClosureConnected`: the actual `TTT` fiber-32 concrete fiber and
+its root-closure graph are locally connected.  This still does not close
+Gate-2 or the global appended parent-row predicate; the remaining work is to
+lift this chunked coverage/root-close pattern beyond this key and feed it into
+the generated parent-row plus projection package.  Local connectedness build
+evidence is
+`fourcolor-ttt-fiber32-local-connectedness-build-20260703.log` (1110 jobs,
+SHA256
+`533583471beb7370ab7616d30759ba326e1980aa620684f7175311666fcbac90`), and
+dependency-audit evidence is
+`fourcolor-ttt-fiber32-local-connectedness-axioms-20260703.log` (SHA256
+`266bde51083976d58fbfb5d8ccf9941b09e33a3944c892f7c74650abf6c78493`);
+the coverage and local connectedness theorem surfaces depend only on
+`propext`, `Classical.choice`, and `Quot.sound`, with the finite coverage audit
+itself depending on `propext`.
 The table-level diagnostic
 `tttFiber32Rows_length_eq_two_mul_ttFiber32Rows_length` records that the known
 `TT` obstruction key is the same generated fixed input as `TTT` light-fiber

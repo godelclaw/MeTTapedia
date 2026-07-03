@@ -1734,6 +1734,169 @@ theorem tttFiber32SourceStatesList_mem_rootClose
     ⟨row, hrow, rfl⟩
   exact tttFiber32Rows_mem_source_mem_rootClose hrow
 
+theorem bindList_bindList {α β γ : Type} (xs : List α)
+    (f : α → List β) (g : β → List γ) :
+    bindList (bindList xs f) g = bindList xs (fun x => bindList (f x) g) := by
+  induction xs with
+  | nil => rfl
+  | cons x xs ih =>
+      change bindList (f x ++ bindList xs f) g =
+        bindList (f x) g ++ bindList xs (fun x => bindList (f x) g)
+      rw [GoertzelLemma818LengthTwoRealFiberBridgePrototype.bindList_append]
+      rw [ih]
+
+def tttStatesFromLeft
+    (word : List GoertzelLemma814.TauOrient) (left : TauState) :
+    List (List TauState) :=
+  bindList (allTauStates.filter fun middle =>
+    compatibleAdjacent (tauOrientAt word 0) (tauOrientAt word 1) left middle) fun middle =>
+      (allTauStates.filter fun right =>
+        compatibleAdjacent (tauOrientAt word 1) (tauOrientAt word 2) middle right).map fun right =>
+          [left, middle, right]
+
+theorem tttAllChainStates_eq :
+    allChainStates tttWord = bindList allTauStates fun left =>
+      tttStatesFromLeft tttWord left := by
+  simp [tttWord, allChainStates, buildChainStatesFrom, extendChainStates,
+    tttStatesFromLeft, chainStateAt, tauOrientAt, listGetD,
+    GoertzelLemma818LengthTwoRealFiberBridgePrototype.bindList_map,
+    bindList_bindList]
+
+def tttFiberCoverLeftState
+    (word : List GoertzelLemma814.TauOrient) (key : List LColor)
+    (direct : List (List TauState)) (left : TauState) : Bool :=
+  (tttStatesFromLeft word left).all fun states =>
+    !(chainInputKey word states == key) || direct.contains states
+
+def tttFiberCoverLeftStateList
+    (word : List GoertzelLemma814.TauOrient) (key : List LColor)
+    (direct : List (List TauState)) (lefts : List TauState) : Bool :=
+  lefts.all fun left => tttFiberCoverLeftState word key direct left
+
+def tttFiberCoverAllLefts
+    (word : List GoertzelLemma814.TauOrient) (key : List LColor)
+    (direct : List (List TauState)) : Bool :=
+  allTauStates.all fun left => tttFiberCoverLeftState word key direct left
+
+theorem tttFiberCoverAllLefts_of_chunks
+    (word : List GoertzelLemma814.TauOrient)
+    (key : List LColor) (direct : List (List TauState))
+    (h0 : tttFiberCoverLeftStateList word key direct
+      (GoertzelLemma818LengthTwoRealFiberBridgePrototype.tauStateChunk32 0) = true)
+    (h1 : tttFiberCoverLeftStateList word key direct
+      (GoertzelLemma818LengthTwoRealFiberBridgePrototype.tauStateChunk32 32) = true)
+    (h2 : tttFiberCoverLeftStateList word key direct
+      (GoertzelLemma818LengthTwoRealFiberBridgePrototype.tauStateChunk32 64) = true)
+    (h3 : tttFiberCoverLeftStateList word key direct
+      (GoertzelLemma818LengthTwoRealFiberBridgePrototype.tauStateChunk32 96) = true)
+    (h4 : tttFiberCoverLeftStateList word key direct
+      (GoertzelLemma818LengthTwoRealFiberBridgePrototype.tauStateChunk32 128) = true)
+    (h5 : tttFiberCoverLeftStateList word key direct
+      (GoertzelLemma818LengthTwoRealFiberBridgePrototype.tauStateChunk32 160) = true)
+    (h6 : tttFiberCoverLeftStateList word key direct
+      GoertzelLemma818LengthTwoRealFiberBridgePrototype.tauStateTail192 = true) :
+    tttFiberCoverAllLefts word key direct = true := by
+  unfold tttFiberCoverLeftStateList at h0 h1 h2 h3 h4 h5 h6
+  unfold tttFiberCoverAllLefts
+  rw [GoertzelLemma818LengthTwoRealFiberBridgePrototype.allTauStates_eq_chunks32]
+  simp only [List.all_append]
+  simp [h0, h1, h2, h3, h4, h5, h6]
+
+def tttFiber32CoverLeftChunk (start len : Nat) : Bool :=
+  tttFiberCoverLeftStateList tttWord tttFiber32Key tttFiber32SourceStatesList
+    ((allTauStates.drop start).take len)
+
+theorem tttFiber32CoverLeftChunk_0_ok :
+    tttFiber32CoverLeftChunk 0 32 = true := by
+  decide
+
+theorem tttFiber32CoverLeftChunk_32_ok :
+    tttFiber32CoverLeftChunk 32 32 = true := by
+  decide
+
+theorem tttFiber32CoverLeftChunk_64_ok :
+    tttFiber32CoverLeftChunk 64 32 = true := by
+  decide
+
+theorem tttFiber32CoverLeftChunk_96_ok :
+    tttFiber32CoverLeftChunk 96 32 = true := by
+  decide
+
+theorem tttFiber32CoverLeftChunk_128_ok :
+    tttFiber32CoverLeftChunk 128 32 = true := by
+  decide
+
+theorem tttFiber32CoverLeftChunk_160_ok :
+    tttFiber32CoverLeftChunk 160 32 = true := by
+  decide
+
+theorem tttFiber32CoverLeftTail_ok :
+    tttFiberCoverLeftStateList tttWord tttFiber32Key tttFiber32SourceStatesList
+      GoertzelLemma818LengthTwoRealFiberBridgePrototype.tauStateTail192 = true := by
+  decide
+
+theorem tttFiber32CoverAllLefts_ok :
+    tttFiberCoverAllLefts tttWord tttFiber32Key tttFiber32SourceStatesList = true := by
+  exact tttFiberCoverAllLefts_of_chunks tttWord tttFiber32Key tttFiber32SourceStatesList
+    tttFiber32CoverLeftChunk_0_ok tttFiber32CoverLeftChunk_32_ok
+    tttFiber32CoverLeftChunk_64_ok tttFiber32CoverLeftChunk_96_ok
+    tttFiber32CoverLeftChunk_128_ok tttFiber32CoverLeftChunk_160_ok
+    tttFiber32CoverLeftTail_ok
+
+theorem ttt_direct_contains_of_cover_all
+    {states : List TauState} {key : List LColor} {direct : List (List TauState)}
+    (hall : tttFiberCoverAllLefts tttWord key direct = true)
+    (hmem : states ∈ allChainStates tttWord)
+    (hkey : (chainInputKey tttWord states == key) = true) :
+    direct.contains states = true := by
+  unfold tttFiberCoverAllLefts at hall
+  rw [List.all_eq_true] at hall
+  rw [tttAllChainStates_eq] at hmem
+  rw [GoertzelLemma818LengthTwoRealFiberBridgePrototype.bindList_mem] at hmem
+  rcases hmem with ⟨left, hleft, hstates⟩
+  have hcover := hall left hleft
+  unfold tttFiberCoverLeftState at hcover
+  rw [List.all_eq_true] at hcover
+  have hrow := hcover states hstates
+  simpa [hkey] using hrow
+
+theorem tttFiber32RealFiber_subset_sourceStatesList
+    {states : List TauState}
+    (h : states ∈ chainFiberFrom tttWord (allChainStates tttWord) tttFiber32Key) :
+    states ∈ tttFiber32SourceStatesList := by
+  unfold chainFiberFrom at h
+  rw [List.mem_filter] at h
+  rcases h with ⟨hall, hkey⟩
+  exact List.contains_iff_mem.mp
+    (ttt_direct_contains_of_cover_all tttFiber32CoverAllLefts_ok hall hkey)
+
+theorem tttFiber32ConcreteFiber_subset_sourceStatesList
+    {states : List TauState}
+    (h : states ∈ concreteChainFiber tttFrontierWord tttFiber32Key) :
+    states ∈ tttFiber32SourceStatesList := by
+  simpa [concreteChainFiber, concreteChainStates, tttFrontierWord,
+    frontierWordToChainWord, frontierOrientToChain, tttWord] using
+    tttFiber32RealFiber_subset_sourceStatesList h
+
+theorem tttFiber32ConcreteChainFiberConnected :
+    chainFiberConnected (frontierWordToChainWord tttFrontierWord)
+      (concreteChainFiber tttFrontierWord tttFiber32Key) = true := by
+  apply chainFiberConnected_of_forall_mem_close
+  intro state hmem
+  cases hfiber : concreteChainFiber tttFrontierWord tttFiber32Key with
+  | nil =>
+      simp [hfiber] at hmem
+  | cons root rest =>
+      have hlist := tttFiber32ConcreteFiber_subset_sourceStatesList hmem
+      have hclose := tttFiber32SourceStatesList_mem_rootClose hlist
+      simpa [tttFiber32RootClose, chainFiberRootState, listGetD, hfiber] using hclose
+
+theorem tttFiber32RootClosureConnected :
+    GoertzelLemma818Fibration.Connected
+      (chainFiberRootClosureStep tttFrontierWord tttFiber32Key) :=
+  chainFiberRootClosureConnected_of_chainFiberConnected
+    tttFiber32ConcreteChainFiberConnected
+
 def tttPartialTargetCertificateAudit : Bool :=
   tttMode09WitnessAudit
     && tttTargetProgressCountsAudit
