@@ -3655,6 +3655,105 @@ def concreteChainFiberAppendLocalSingletonComponentOuterInputNextLayerClosed :
           localOrients [currentLast] move.a move.c localComponent →
           False
 
+theorem concreteChainFiberAppendLocalSingletonComponentOuterInputNextLayerClosed_ok :
+    concreteChainFiberAppendLocalSingletonComponentOuterInputNextLayerClosed := by
+  intro orient currentLast _target move inputEdge hseed _hspecified
+  dsimp
+  intro _houter hnext
+  exact GoertzelLemma814.chainComponent_nextLayer_empty
+    (frontierWordToChainWord [orient]) [currentLast] move.a move.c move.seed
+    (List.contains_iff_mem.mp hseed) hnext
+
+theorem concreteChainFiberAppend_boundary_output_ingress_contradiction
+    (word : List GoertzelLemma818FrontierMode.TauOrient)
+    (orient : GoertzelLemma818FrontierMode.TauOrient)
+    (leftOrient : GoertzelLemma814.TauOrient)
+    (pref : List GoertzelLemma814.TauState)
+    (lastX currentLast : GoertzelLemma814.TauState)
+    (move : GoertzelLemma814.ChainMove)
+    (localComponent : List GoertzelLemma814.ChainEdge)
+    (localEdge : GoertzelLemma814.ChainEdge)
+    (outputEdge inputEdge : GoertzelLemma814.TauEdge)
+    (target : List GoertzelLemma814.TauState)
+    (hne : word ≠ [])
+    (hprefLen : pref.length = word.length)
+    (hleft :
+      GoertzelLemma814.tauOrientAt
+        (frontierWordToChainWord (word ++ [orient])) (word.length - 1) =
+        leftOrient)
+    (hcompatibleX : GoertzelLemma814.compatibleAdjacent
+      leftOrient (frontierOrientToChain orient)
+      (GoertzelLemma814.chainStateAt pref (word.length - 1))
+      lastX = true)
+    (htrace :
+      concreteChainFiberAppendLastInputTrace orient currentLast =
+        concreteChainFiberAppendLastInputTrace orient lastX)
+    (hzip :
+      (outputEdge, inputEdge) ∈
+        (GoertzelLemma814.tauOrientOutputOrder leftOrient).zip
+          (GoertzelLemma814.tauOrientInputOrder
+            (frontierOrientToChain orient)))
+    (hlocalComponent :
+      localComponent = GoertzelLemma814.chainComponent
+        (frontierWordToChainWord [orient]) [currentLast]
+        move.a move.c move.seed)
+    (hlocalMem : localEdge ∈ localComponent)
+    (hlocalAvoid :
+      GoertzelLemma814.chainComponentAvoidsInputs
+        (frontierWordToChainWord [orient]) localComponent = true)
+    (hlocalOcc : localEdge.occ = 0)
+    (hlocalNotInput :
+      (GoertzelLemma814.tauOrientInputOrder
+        (frontierOrientToChain orient)).contains localEdge.edge = false)
+    (houtputPair :
+      GoertzelLemma814.chainEdgeInPair (pref ++ [currentLast])
+        move.a move.c
+        ({ occ := word.length - 1, edge := outputEdge } :
+          GoertzelLemma814.ChainEdge) = true)
+    (hshare :
+      GoertzelLemma814.chainEdgesShareEndpoint
+        (frontierWordToChainWord (word ++ [orient]))
+        ({ occ := word.length - 1, edge := outputEdge } :
+          GoertzelLemma814.ChainEdge)
+        (concreteChainFiberAppendShiftEdge word localEdge) = true)
+    (hseed :
+      (GoertzelLemma814.chainEdges (frontierWordToChainWord [orient])).contains
+        move.seed = true)
+    (hspecified :
+      GoertzelLemma814.chainSpecifiedKempeStep
+        (frontierWordToChainWord [orient]) [currentLast] target move = true) :
+    False := by
+  let inputLocal : GoertzelLemma814.ChainEdge := { occ := 0, edge := inputEdge }
+  have hnext : inputLocal ∈ GoertzelLemma814.nextChainComponentLayer
+      (frontierWordToChainWord [orient]) [currentLast]
+      move.a move.c localComponent := by
+    simpa [inputLocal] using
+      concreteChainFiberAppend_boundary_output_ingress_local_input_nextLayer
+        word orient leftOrient pref lastX currentLast move localComponent
+        localEdge outputEdge inputEdge hne hprefLen hleft hcompatibleX htrace
+        hzip hlocalMem hlocalAvoid hlocalOcc hlocalNotInput houtputPair hshare
+  have houter :
+      (GoertzelLemma814.chainOuterInputEdges
+        (frontierWordToChainWord [orient])).contains inputLocal = true := by
+    cases leftOrient <;> cases orient <;>
+      simp [GoertzelLemma814.tauOrientOutputOrder,
+        GoertzelLemma814.tauOrientInputOrder, frontierOrientToChain] at hzip
+    all_goals
+      rcases hzip with ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ <;>
+        simp [inputLocal, frontierWordToChainWord, frontierOrientToChain,
+          GoertzelLemma814.chainOuterInputEdges, GoertzelLemma814.chainInputOrder,
+          GoertzelLemma814.tauOrientAt, GoertzelLemma814.listGetD,
+          GoertzelLemma814.tauOrientInputOrder]
+  have hnextComponent : inputLocal ∈ GoertzelLemma814.nextChainComponentLayer
+      (frontierWordToChainWord [orient]) [currentLast]
+      move.a move.c
+      (GoertzelLemma814.chainComponent (frontierWordToChainWord [orient])
+        [currentLast] move.a move.c move.seed) := by
+    simpa [hlocalComponent] using hnext
+  exact concreteChainFiberAppendLocalSingletonComponentOuterInputNextLayerClosed_ok
+    orient currentLast target move inputEdge hseed hspecified houter
+    hnextComponent
+
 /--
 Pinned reverse/no-ingress component equality for the singleton append lift.
 
@@ -3663,14 +3762,18 @@ component is proved by
 `concreteChainFiberAppendLocalSingletonComponent_shift_globalComponent_mem`.
 The remaining direction is to show that the appended global component cannot
 grow a prefix or glued-boundary edge. The boundary transfer pieces are now
-isolated: pair-color transfer is
+isolated and wired to a contradiction: pair-color transfer is
 `concreteChainFiberAppend_boundary_output_pair_forces_input_pair`,
 endpoint-sharing transfer is
 `concreteChainFiberAppend_boundary_output_share_shift_forces_input_share`, and
 their combined next-layer ingress is
 `concreteChainFiberAppend_boundary_output_ingress_local_input_nextLayer`.
-What remains is the local singleton saturation pin
-`concreteChainFiberAppendLocalSingletonComponentOuterInputNextLayerClosed`.
+Local singleton saturation is proved by
+`concreteChainFiberAppendLocalSingletonComponentOuterInputNextLayerClosed_ok`,
+and glued-boundary output ingress is refuted by
+`concreteChainFiberAppend_boundary_output_ingress_contradiction`. What remains
+is the list-level induction that integrates these no-ingress facts into the
+exact component equality below.
 -/
 def concreteChainFiberAppendRelativeSingletonShiftedComponentClosed : Prop :=
   ∀ (word : List GoertzelLemma818FrontierMode.TauOrient)

@@ -2325,6 +2325,249 @@ theorem addIfFresh_nodup {α : Type} [BEq α] [LawfulBEq α]
     subst heq
     exact hxnot ha
 
+theorem addIfFresh_length_le {α : Type} [BEq α] [LawfulBEq α]
+    (xs : List α) (x : α) :
+    xs.length ≤ (addIfFresh xs x).length := by
+  by_cases hx : x ∈ xs <;> simp [addIfFresh, hx]
+
+theorem addIfFresh_length_lt_of_fresh {α : Type} [BEq α] [LawfulBEq α]
+    (xs : List α) (x : α) (hfresh : x ∉ xs) :
+    xs.length < (addIfFresh xs x).length := by
+  simp [addIfFresh, hfresh]
+
+theorem appendFresh_length_le {α : Type} [BEq α] [LawfulBEq α]
+    (xs ys : List α) :
+    xs.length ≤ (appendFresh xs ys).length := by
+  unfold appendFresh
+  induction ys generalizing xs with
+  | nil =>
+      simp
+  | cons y ys ih =>
+      simp only [List.foldl_cons]
+      exact Nat.le_trans (addIfFresh_length_le xs y)
+        (ih (addIfFresh xs y))
+
+theorem appendFresh_length_lt_of_mem_fresh {α : Type}
+    [BEq α] [LawfulBEq α]
+    {xs ys : List α} {x : α}
+    (hmem : x ∈ ys) (hfresh : x ∉ xs) :
+    xs.length < (appendFresh xs ys).length := by
+  unfold appendFresh
+  induction ys generalizing xs with
+  | nil =>
+      cases hmem
+  | cons y ys ih =>
+      simp only [List.foldl_cons]
+      simp only [List.mem_cons] at hmem
+      rcases hmem with hxy | htail
+      · subst y
+        exact Nat.lt_of_lt_of_le
+          (addIfFresh_length_lt_of_fresh xs x hfresh)
+          (appendFresh_length_le (addIfFresh xs x) ys)
+      · by_cases hxadd : x ∈ addIfFresh xs y
+        · rcases mem_addIfFresh_source_or_eq xs y x hxadd with hxsrc | hxeq
+          · exact False.elim (hfresh hxsrc)
+          · subst x
+            exact Nat.lt_of_lt_of_le
+              (addIfFresh_length_lt_of_fresh xs y (by
+                intro hy
+                exact hfresh hy))
+              (appendFresh_length_le (addIfFresh xs y) ys)
+        · exact Nat.lt_of_le_of_lt
+            (addIfFresh_length_le xs y)
+            (ih (xs := addIfFresh xs y) htail hxadd)
+
+theorem appendFresh_length_lt_of_mem_not_mem {α : Type}
+    [BEq α] [LawfulBEq α] {xs ys : List α} {x : α}
+    (hmem : x ∈ appendFresh xs ys) (hfresh : x ∉ xs) :
+    xs.length < (appendFresh xs ys).length := by
+  rcases mem_appendFresh_source_or_mem xs ys hmem with hxsrc | hxys
+  · exact False.elim (hfresh hxsrc)
+  · exact appendFresh_length_lt_of_mem_fresh hxys hfresh
+
+theorem appendFresh_nodup {α : Type} [BEq α] [LawfulBEq α]
+    {xs ys : List α} (hxs : xs.Nodup) :
+    (appendFresh xs ys).Nodup := by
+  unfold appendFresh
+  induction ys generalizing xs with
+  | nil =>
+      simpa using hxs
+  | cons y ys ih =>
+      simp only [List.foldl_cons]
+      exact ih (addIfFresh_nodup xs y hxs)
+
+theorem appendFresh_subset_of_subset_right {α : Type}
+    [BEq α] [LawfulBEq α] {xs ys zs : List α}
+    (hxs : xs ⊆ zs) (hys : ys ⊆ zs) :
+    appendFresh xs ys ⊆ zs := by
+  intro x hx
+  rcases mem_appendFresh_source_or_mem xs ys hx with hxsrc | hxys
+  · exact hxs hxsrc
+  · exact hys hxys
+
+theorem nextChainComponentLayer_subset_chainEdges
+    (orients : List TauOrient) (states : List TauState)
+    (a c : LColor) (seen : List ChainEdge) :
+    nextChainComponentLayer orients states a c seen ⊆ chainEdges orients := by
+  intro edge hmem
+  exact nextChainComponentLayer_mem_chainEdges orients states a c seen hmem
+
+theorem nextChainComponentLayer_mem_not_seen
+    (orients : List TauOrient) (states : List TauState)
+    (a c : LColor) {seen : List ChainEdge} {edge : ChainEdge}
+    (hmem : edge ∈ nextChainComponentLayer orients states a c seen) :
+    edge ∉ seen := by
+  intro hseen
+  unfold nextChainComponentLayer at hmem
+  rw [List.mem_filter] at hmem
+  rcases hmem with ⟨_hchain, hpred⟩
+  simp only [Bool.and_eq_true] at hpred
+  rcases hpred with ⟨⟨_hpair, hfresh⟩, _hshare⟩
+  have hcontains : seen.contains edge = true := List.contains_iff_mem.mpr hseen
+  rw [hcontains] at hfresh
+  cases hfresh
+
+theorem closeChainComponent_nodup
+    (orients : List TauOrient) (states : List TauState)
+    (a c : LColor) (n : Nat) {seen : List ChainEdge}
+    (hseen : seen.Nodup) :
+    (closeChainComponent orients states a c n seen).Nodup := by
+  induction n generalizing seen with
+  | zero =>
+      simpa [closeChainComponent] using hseen
+  | succ _ ih =>
+      simp only [closeChainComponent]
+      exact ih (appendFresh_nodup hseen)
+
+theorem closeChainComponent_subset_chainEdges
+    (orients : List TauOrient) (states : List TauState)
+    (a c : LColor) (n : Nat) {seen : List ChainEdge}
+    (hseen : seen ⊆ chainEdges orients) :
+    closeChainComponent orients states a c n seen ⊆ chainEdges orients := by
+  induction n generalizing seen with
+  | zero =>
+      intro edge hmem
+      exact hseen (by simpa [closeChainComponent] using hmem)
+  | succ _ ih =>
+      simp only [closeChainComponent]
+      apply ih
+      exact appendFresh_subset_of_subset_right hseen
+        (nextChainComponentLayer_subset_chainEdges orients states a c seen)
+
+theorem closeChainComponent_length_le_chainEdges
+    (orients : List TauOrient) (states : List TauState)
+    (a c : LColor) (n : Nat) {seen : List ChainEdge}
+    (hseenNodup : seen.Nodup)
+    (hseenSub : seen ⊆ chainEdges orients) :
+    (closeChainComponent orients states a c n seen).length ≤
+      (chainEdges orients).length := by
+  exact List.Subperm.length_le
+    (List.subperm_of_subset
+      (closeChainComponent_nodup orients states a c n hseenNodup)
+      (closeChainComponent_subset_chainEdges orients states a c n hseenSub))
+
+theorem closeChainComponent_length_ge_of_new
+    (orients : List TauOrient) (states : List TauState)
+    (a c : LColor) :
+    ∀ (n : Nat) (seen : List ChainEdge) {edge : ChainEdge},
+      edge ∈ closeChainComponent orients states a c (n + 1) seen →
+        edge ∉ closeChainComponent orients states a c n seen →
+          seen.length + (n + 1) ≤
+            (closeChainComponent orients states a c (n + 1) seen).length
+  | 0, seen, edge, hmem, hnot => by
+      have hmem' : edge ∈ appendFresh seen
+          (nextChainComponentLayer orients states a c seen) := by
+        simpa [closeChainComponent] using hmem
+      have hnot' : edge ∉ seen := by
+        intro hseen
+        exact hnot (by simpa [closeChainComponent] using hseen)
+      have hlt := appendFresh_length_lt_of_mem_not_mem hmem' hnot'
+      simpa [closeChainComponent] using (Nat.succ_le_iff.mpr hlt)
+  | n + 1, seen, edge, hmem, hnot => by
+      let layer := nextChainComponentLayer orients states a c seen
+      let seen' := appendFresh seen layer
+      have hmem' :
+          edge ∈ closeChainComponent orients states a c (n + 1) seen' := by
+        simpa [closeChainComponent, layer, seen'] using hmem
+      have hnot' :
+          edge ∉ closeChainComponent orients states a c n seen' := by
+        intro hedge
+        exact hnot (by simpa [closeChainComponent, layer, seen'] using hedge)
+      have ih := closeChainComponent_length_ge_of_new orients states a c
+        n seen' hmem' hnot'
+      have hLayerNe : layer ≠ [] := by
+        intro hnil
+        have hmemPrev :
+            edge ∈ closeChainComponent orients states a c (n + 1) seen := by
+          simpa [closeChainComponent, layer, seen', hnil, appendFresh]
+            using hmem
+        exact hnot hmemPrev
+      rcases List.exists_mem_of_ne_nil layer hLayerNe with ⟨z, hz⟩
+      have hnotSeen : z ∉ seen :=
+        nextChainComponentLayer_mem_not_seen orients states a c hz
+      have hgrow : seen.length + 1 ≤ seen'.length := by
+        have hlt := appendFresh_length_lt_of_mem_fresh (xs := seen)
+          (ys := layer) hz hnotSeen
+        have hle : seen.length + 1 ≤ (appendFresh seen layer).length :=
+          Nat.succ_le_iff.mpr hlt
+        simpa [seen'] using hle
+      have htarget :
+          seen.length + ((n + 1) + 1) ≤ seen'.length + (n + 1) := by
+        omega
+      exact Nat.le_trans htarget ih
+
+theorem closeChainComponent_bounded_saturation
+    (orients : List TauOrient) (states : List TauState)
+    (a c : LColor) {seen : List ChainEdge}
+    (hseenNodup : seen.Nodup)
+    (hseenSub : seen ⊆ chainEdges orients)
+    {edge : ChainEdge}
+    (hmem : edge ∈ closeChainComponent orients states a c
+      ((chainEdges orients).length + 1) seen) :
+    edge ∈ closeChainComponent orients states a c
+      (chainEdges orients).length seen := by
+  by_contra hnot
+  have hge := closeChainComponent_length_ge_of_new orients states a c
+    (chainEdges orients).length seen hmem hnot
+  have hle := closeChainComponent_length_le_chainEdges
+    orients states a c ((chainEdges orients).length + 1)
+    hseenNodup hseenSub
+  omega
+
+theorem chainComponent_nextLayer_empty
+    (orients : List TauOrient) (states : List TauState)
+    (a c : LColor) (seed : ChainEdge)
+    (hseed : seed ∈ chainEdges orients)
+    {edge : ChainEdge}
+    (hmem : edge ∈ nextChainComponentLayer orients states a c
+      (chainComponent orients states a c seed)) :
+    False := by
+  by_cases hpair : chainEdgeInPair states a c seed = true
+  · have hmemClose : edge ∈ nextChainComponentLayer orients states a c
+        (closeChainComponent orients states a c
+          (chainEdges orients).length [seed]) := by
+      simpa [chainComponent, hpair] using hmem
+    have hmemSucc : edge ∈ closeChainComponent orients states a c
+        ((chainEdges orients).length + 1) [seed] := by
+      exact closeChainComponent_mem_nextLayer_close orients states a c
+        (chainEdges orients).length [seed] hmemClose
+    have hmemSat : edge ∈ closeChainComponent orients states a c
+        (chainEdges orients).length [seed] := by
+      apply closeChainComponent_bounded_saturation
+      · simp
+      · intro x hx
+        simp at hx
+        subst x
+        exact hseed
+      · exact hmemSucc
+    exact nextChainComponentLayer_mem_not_seen orients states a c
+      hmemClose hmemSat
+  · have hempty : chainComponent orients states a c seed = [] := by
+      simp [chainComponent, hpair]
+    unfold nextChainComponentLayer at hmem
+    rw [hempty] at hmem
+    simp at hmem
+
 theorem list_length_beq_false_of_nodup_subset_new {α : Type} [DecidableEq α]
     (xs ys : List α) (y : α) (hxs : xs.Nodup) (hsub : xs ⊆ ys)
     (hy : y ∈ ys) (hnot : y ∉ xs) :
