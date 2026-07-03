@@ -9148,6 +9148,41 @@ noncomputable def v13RealLinearNoTargetRowsSequentialQRowExperiment
       (V13RealLinearNoTargetRowsMap m i₀) :=
   v13RealLinearNoTargetRowsCausalQRowExperiment i₀ observer.toCausal
 
+def v13RealLinearNoTargetRowsSequentialQRowTrace
+    {m q : Nat} (i₀ : Fin m)
+    (observer : V13RealLinearSequentialRowObserver m q) :
+    V13RealLinearAdaptiveQRowWorld m
+      (V13RealLinearNoTargetRowsMap m i₀) →
+      V13RealLinearRowTrace m :=
+  fun omega =>
+    v13RealLinearSequentialRowTraceOf observer
+      (v13RealLinearPublicInput
+        ({ x := omega.2, A := omega.1.val } : V13RealLinearWorld m))
+
+theorem
+    v13RealLinearNoTargetRowsSequentialQRowTrace_realizesBranchRows
+    {m q : Nat} (i₀ : Fin m)
+    (observer : V13RealLinearSequentialRowObserver m q) :
+    V13RealLinearAdaptiveQRowTraceRealizesBranchRows
+      (v13RealLinearNoTargetRowsSequentialQRowExperiment i₀ observer)
+      (v13RealLinearNoTargetRowsSequentialQRowTrace i₀ observer) := by
+  intro omega
+  constructor
+  · rw [v13RealLinearNoTargetRowsSequentialQRowTrace,
+      v13RealLinearSequentialRowTraceOf_length]
+  · simp [v13RealLinearNoTargetRowsSequentialQRowTrace,
+      v13RealLinearSequentialRowTraceOf, v13RealLinearRowTraceRows,
+      v13RealLinearSequentialRowTranscriptRows,
+      V13RealLinearAdaptiveQRowExperiment.branchRows,
+      V13RealLinearAdaptiveQRowExperiment.branch,
+      V13RealLinearAdaptiveQRowExperiment.world,
+      V13RealLinearCausalRowObserver.toAdaptive,
+      V13RealLinearCausalRowObserver.staticBranch,
+      V13RealLinearSequentialRowObserver.toCausal,
+      v13RealLinearNoTargetRowsSequentialQRowExperiment,
+      v13RealLinearNoTargetRowsCausalQRowExperiment,
+      v13RealLinearNoTargetRowsQRowExperiment]
+
 noncomputable def v13RealLinearNoTargetRowsSequentialQRowSuccess
     {m q : Nat} (i₀ : Fin m)
     (observer : V13RealLinearSequentialRowObserver m q) : Rat := by
@@ -9165,6 +9200,31 @@ def V13RealLinearNoTargetRowsSequentialDeferredDecisionCountingBound : Prop := b
       (observer : V13RealLinearSequentialRowObserver m q),
       V13RealLinearAdaptiveDeferredDecisionCountingBound
         (v13RealLinearNoTargetRowsSequentialQRowExperiment i₀ observer) i₀
+
+def V13RealLinearNoTargetRowsSequentialTraceCosetHitCountingBound
+    {m q : Nat} (i₀ : Fin m)
+    (observer : V13RealLinearSequentialRowObserver m q) : Prop :=
+  V13RealLinearAdaptiveQRowTraceCosetHitCountingBound
+    (v13RealLinearNoTargetRowsSequentialQRowExperiment i₀ observer)
+    i₀
+    (v13RealLinearNoTargetRowsSequentialQRowTrace i₀ observer)
+
+theorem
+    V13RealLinearNoTargetRowsSequentialDeferredDecisionCountingBound_of_traceCosetHit
+    {m q : Nat} (i₀ : Fin m)
+    (observer : V13RealLinearSequentialRowObserver m q)
+    (hcoset :
+      V13RealLinearNoTargetRowsSequentialTraceCosetHitCountingBound
+        i₀ observer) :
+    V13RealLinearAdaptiveDeferredDecisionCountingBound
+      (v13RealLinearNoTargetRowsSequentialQRowExperiment i₀ observer) i₀ :=
+  v13RealLinearAdaptiveDeferredDecisionCountingBound_of_rowTraceCosetHit
+    (v13RealLinearNoTargetRowsSequentialQRowExperiment i₀ observer)
+    i₀
+    (v13RealLinearNoTargetRowsSequentialQRowTrace i₀ observer)
+    (v13RealLinearNoTargetRowsSequentialQRowTrace_realizesBranchRows
+      i₀ observer)
+    hcoset
 
 theorem
     v13RealLinearNoTargetRowsSequentialDeferredDecisionCountingBound_of_zero_budget
@@ -9215,6 +9275,20 @@ theorem
           i₀ observer (Nat.le_of_not_gt hqm)
 
 theorem
+    V13RealLinearNoTargetRowsSequentialDeferredDecisionCountingBound_of_lowPositiveTraceCosetHit
+    (hlow :
+      ∀ {m q : Nat} (i₀ : Fin m)
+        (observer : V13RealLinearSequentialRowObserver m q),
+        0 < q → q < m →
+          V13RealLinearNoTargetRowsSequentialTraceCosetHitCountingBound
+            i₀ observer) :
+    V13RealLinearNoTargetRowsSequentialDeferredDecisionCountingBound :=
+  V13RealLinearNoTargetRowsSequentialDeferredDecisionCountingBound_of_lowPositive
+    (fun i₀ observer hqpos hqm =>
+      V13RealLinearNoTargetRowsSequentialDeferredDecisionCountingBound_of_traceCosetHit
+        i₀ observer (hlow i₀ observer hqpos hqm))
+
+theorem
     v13RealLinear_noTargetRows_sequential_qrow_success_bound_of_deferredDecisionCounting
     (hcount :
       V13RealLinearNoTargetRowsSequentialDeferredDecisionCountingBound)
@@ -9260,6 +9334,25 @@ theorem
   exact
     v13RealLinear_noTargetRows_sequential_qrow_success_bound_of_deferredDecisionCounting_explicit
       (V13RealLinearNoTargetRowsSequentialDeferredDecisionCountingBound_of_lowPositive
+        hlow)
+      i₀ observer
+
+theorem
+    v13RealLinear_noTargetRows_sequential_qrow_success_bound_of_lowPositiveTraceCosetHit
+    (hlow :
+      ∀ {m q : Nat} (i₀ : Fin m)
+        (observer : V13RealLinearSequentialRowObserver m q),
+        0 < q → q < m →
+          V13RealLinearNoTargetRowsSequentialTraceCosetHitCountingBound
+            i₀ observer)
+    {m q : Nat} (i₀ : Fin m)
+    (observer : V13RealLinearSequentialRowObserver m q) :
+    v13RealLinearNoTargetRowsSequentialQRowSuccess i₀ observer ≤
+      (1 / 2 : Rat) +
+        (4 * ((2 : Rat) ^ q - 1)) / ((2 : Rat) ^ m) := by
+  exact
+    v13RealLinear_noTargetRows_sequential_qrow_success_bound_of_deferredDecisionCounting_explicit
+      (V13RealLinearNoTargetRowsSequentialDeferredDecisionCountingBound_of_lowPositiveTraceCosetHit
         hlow)
       i₀ observer
 
