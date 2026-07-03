@@ -352,8 +352,11 @@ identifies every actual key-32 fiber state with a generated row source, and
 `tttFiber32ConcreteChainFiberConnected` plus
 `tttFiber32RootClosureConnected` prove local connectedness of the actual
 fiber and its root-closure graph.  This closes the local known-key
-coverage/root-close pattern; Gate-2 still needs the same pattern lifted beyond
-this key and fed into the global generated parent-row/projection predicate.
+coverage/root-close pattern, and
+`tttFiber32RootClosureParentRowsSymmetricRootedConnectedCertificate` packages
+it in the emitted parent-row certificate shape for this exact key.  Gate-2
+still needs the same pattern lifted beyond this key and fed into the global
+generated parent-row/projection predicate.
 The theorem
 `tttFiber32Rows_length_eq_two_mul_ttFiber32Rows_length` records the table-level
 alignment for the known `TT` obstruction key: the same generated key appears in

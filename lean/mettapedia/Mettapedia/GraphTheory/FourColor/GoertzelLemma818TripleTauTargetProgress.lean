@@ -1897,6 +1897,21 @@ theorem tttFiber32RootClosureConnected :
   chainFiberRootClosureConnected_of_chainFiberConnected
     tttFiber32ConcreteChainFiberConnected
 
+theorem tttFiber32RootClosureParentRowsSymmetricRootedConnectedCertificate :
+    ∃ totalDecidableEq : DecidableEq (ChainFiberPoint tttFrontierWord tttFiber32Key),
+      Nonempty
+        (@GoertzelLemma818Fibration.ParentRowsSymmetricRootedConnectedCertificate
+          (ChainFiberPoint tttFrontierWord tttFiber32Key)
+          totalDecidableEq
+          (chainFiberRootClosureStep tttFrontierWord tttFiber32Key)) := by
+  let rootPoint : ChainFiberPoint tttFrontierWord tttFiber32Key :=
+    ⟨tttFiber32SourceStates tttFiber32Row0,
+      tttFiber32Rows_mem_source_mem_concreteChainFiber
+        (row := tttFiber32Row0) (by simp [tttFiber32Rows])⟩
+  exact
+    chainFiberRootClosureParentRowsSymmetricRootedConnectedCertificate_of_connected_nonempty
+      tttFiber32RootClosureConnected ⟨rootPoint⟩
+
 def tttPartialTargetCertificateAudit : Bool :=
   tttMode09WitnessAudit
     && tttTargetProgressCountsAudit

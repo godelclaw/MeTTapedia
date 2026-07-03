@@ -471,6 +471,19 @@ dependency-audit evidence is
 the coverage and local connectedness theorem surfaces depend only on
 `propext`, `Classical.choice`, and `Quot.sound`, with the finite coverage audit
 itself depending on `propext`.
+The same local connectedness proof is now packaged in the emitted parent-row
+certificate shape:
+`tttFiber32RootClosureParentRowsSymmetricRootedConnectedCertificate` uses row 0
+as the nonempty appended-fiber witness and turns `tttFiber32RootClosureConnected`
+into a `ParentRowsSymmetricRootedConnectedCertificate` for this exact key.
+Parent-row certificate evidence is
+`fourcolor-ttt-fiber32-parent-row-certificate-build-20260703.log` (1110 jobs,
+SHA256
+`533583471beb7370ab7616d30759ba326e1980aa620684f7175311666fcbac90`) and
+`fourcolor-ttt-fiber32-parent-row-certificate-axioms-20260703.log` (SHA256
+`9074d18bc1b30585845ae4d7774c169903ad9724b037374a699dbec836e619d7`);
+the certificate theorem depends on `propext`, `Classical.choice`, and
+`Quot.sound`.
 The table-level diagnostic
 `tttFiber32Rows_length_eq_two_mul_ttFiber32Rows_length` records that the known
 `TT` obstruction key is the same generated fixed input as `TTT` light-fiber
