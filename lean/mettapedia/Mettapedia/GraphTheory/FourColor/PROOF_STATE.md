@@ -369,6 +369,25 @@ right-inverse projection/section surface for the same instance.  This is still
 local selector evidence; it does not claim the canonical prefix projection is
 surjective, and it is not yet the global generated projection function required
 by the paired route.
+The same local instance now also has finite-section row data:
+`ttFiber32PrefixPointList` enumerates the eight semantic prefix points,
+`ttFiber32AppendPreimageRows` lists their selected appended preimages, and
+`ttFiber32AppendPreimageRowOf` selects a finite row for each prefix point.
+The theorem `ttFiber32AppendProjectionFiniteSection` packages these rows as
+the local instance of the emitted projection finite-section surface.  This
+strengthens the known-key projection side only; appended root-closure
+connectedness and the global generated predicate remain open.  Focused build
+evidence is
+`fourcolor-tt-fiber32-local-projection-finite-section-build-20260703.log`
+(1110 jobs, SHA256
+`533583471beb7370ab7616d30759ba326e1980aa620684f7175311666fcbac90`), and
+dependency-audit evidence is
+`fourcolor-tt-fiber32-local-projection-finite-section-axioms-20260703.log`
+(SHA256
+`318c6e3a814049c339a73477928e8c5eb76f3928531fee06eb30ebf0222e0fbc`);
+`ttFiber32AppendPreimageRows_get_rowOf` and
+`ttFiber32AppendProjectionFiniteSection` depend on `propext`,
+`Classical.choice`, and `Quot.sound`.
 The standalone base-data half is now closed by
 `concreteChainFiberAppendQuotientFibrationParentRowsNonSingletonPrefixBaseDataClosed_of_prefix_root_star`:
 nonempty prefix fibers use the prefix fiber itself as the quotient base with a
