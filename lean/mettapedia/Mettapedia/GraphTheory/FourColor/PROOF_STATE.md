@@ -178,6 +178,15 @@ with
 `concreteChainFiberAppendQuotientFibrationParentRowsNonSingletonPrefixSurjectiveProjectionClosed_iff_appended_connected_and_projection_surjective`
 and the
 `_of_appended_connected_and_projection_surjective` wrappers recombining them.
+The projection-surjectivity half also has a finite-row emitted form,
+`concreteChainFiberAppendQuotientFibrationParentRowsNonSingletonPrefixProjectionFiniteSectionClosed`:
+for each nonempty prefix fiber it emits a projection, a finite list of appended
+preimage rows, and a row selector for every prefix fiber point; this proves
+`concreteChainFiberAppendQuotientFibrationParentRowsNonSingletonPrefixProjectionSurjectiveClosed`
+by taking the selected row as the preimage.  The
+`_of_appended_connected_and_projection_finite_section` wrappers carry this
+finite-section form through semantic sufficiency and the target-gated all-word
+audit.
 Focused Lake build evidence is
 `fourcolor-surjective-projection-split-lake-build-20260703.log` (607 jobs,
 SHA256
@@ -187,6 +196,16 @@ The axiom audit
 `b116f4d0c058e919d933fbd444abbbcbd8dc08210599d346c21b57a849be37a3`)
 reports the split combiner depends only on `propext`; the target-gated
 all-word wrapper depends on `propext`, `Classical.choice`, and `Quot.sound`.
+Finite-section evidence is
+`fourcolor-surjective-projection-finite-section-lake-build-20260703.log`
+(607 jobs, SHA256
+`42b85d3ce0d0a5e2641a558eef105dede1656f5f53987a856d85e2d497c34f9c`)
+and `fourcolor-surjective-projection-finite-section-axioms-20260703.log`
+(SHA256
+`9008006ee774b453fdbb4a8d7e9e31ef3712ff176a4839a361140fe2da1d3444`);
+the finite-section projection conversion and combined surjective-projection
+wrapper depend only on `propext`, while the target-gated all-word wrapper
+depends on `propext`, `Classical.choice`, and `Quot.sound`.
 The table-level diagnostic
 `tttFiber32Rows_length_eq_two_mul_ttFiber32Rows_length` records that the known
 `TT` obstruction key is the same generated fixed input as `TTT` light-fiber
