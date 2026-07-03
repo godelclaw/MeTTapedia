@@ -53,6 +53,16 @@ def PillarADetectorSubspaceEqualsRouteGeneratorSpan
   theorem49BoundaryZeroKirchhoffSubspace emb vertices =
     Submodule.span F2 (projectedKempeClosureGeneratorFamily emb C₀)
 
+/-- Corrected need-based Prop (1'): the detector subspace is contained in the
+projected route-generator span.  This is the direction the route consumer
+actually needs; equality with the projected family is too strong on
+shell-bearing embeddings. -/
+def PillarADetectorSubspaceContainedInRouteGeneratorSpan
+    [Fintype G.edgeSet] (emb : PlaneEmbeddingWithBoundary G)
+    (vertices : Finset V) (C₀ : G.EdgeColoring Color) : Prop :=
+  theorem49BoundaryZeroKirchhoffSubspace emb vertices ≤
+    Submodule.span F2 (projectedKempeClosureGeneratorFamily emb C₀)
+
 /-- Prop (2): a chosen Pillar-C execution step preserves membership in the
 existing Theorem-4.9 detector subspace. -/
 def PillarCExecutionStepPreservesDetectorSubspace
@@ -207,6 +217,75 @@ theorem needBasedPillarARequirement_of_detectorSpan_of_stepPreserves_of_routeDis
   rw [hspanEq] at hzU
   exact hzU
 
+/-- Inclusion-form Pillar-A assembly.  This is the need-based route endpoint:
+route-used discrepancies stay inside the detector under execution, and the
+detector is included in the projected route-generator span. -/
+theorem needBasedPillarARequirement_of_detector_le_span_of_stepPreserves_of_routeDiscrepancies
+    [Fintype G.edgeSet] {emb : PlaneEmbeddingWithBoundary G}
+    {vertices : Finset V} {C₀ : G.EdgeColoring Color}
+    {step : (G.edgeSet → Color) → (G.edgeSet → Color) → Prop}
+    (hle : PillarADetectorSubspaceContainedInRouteGeneratorSpan emb vertices C₀)
+    (hstep : PillarCExecutionStepPreservesDetectorSubspace emb vertices step)
+    (hdisc : RouteUsedDiscrepancyClassesLieInDetectorSubspace emb vertices) :
+    NeedBasedPillarARequirement emb vertices C₀ step := by
+  intro initial z hinitial hreach
+  have hinitialU := hdisc hinitial
+  have hzU :=
+    pillarCExecution_preserves_detectorSubspace_of_step
+      (G := G) (emb := emb) (vertices := vertices) hstep hinitialU hreach
+  exact hle hzU
+
+/-- Boundary-zero annihilator triviality supplies exactly the corrected
+inclusion needed by the need-based Pillar-A consumer. -/
+theorem pillarADetectorSubspaceContainedInRouteGeneratorSpan_of_boundaryZeroAnnihilatorTrivial
+    [Fintype G.edgeSet] [FiniteDimensional F2 (G.edgeSet → Color)]
+    (emb : PlaneEmbeddingWithBoundary G) (vertices : Finset V)
+    (C₀ : G.EdgeColoring Color)
+    (htrivial : BoundaryZeroAnnihilatorTrivialForEmbedding emb C₀) :
+    PillarADetectorSubspaceContainedInRouteGeneratorSpan emb vertices C₀ := by
+  intro z hz
+  have hzProjected :
+      z ∈ projectedKempeClosureGeneratorSubspace emb C₀ :=
+    theorem49BoundaryZeroKirchhoffSubspace_le_projectedKempeClosureGeneratorSubspace_of_boundaryZeroAnnihilatorTrivial
+      emb C₀ htrivial vertices hz
+  simpa [projectedKempeClosureGeneratorSubspace_eq_span_projectedKempeClosureGeneratorFamily]
+    using hzProjected
+
+/-- Need-based Pillar A assembled from boundary-zero annihilator triviality,
+step preservation, and the route-used discrepancy detector theorem. -/
+theorem needBasedPillarARequirement_of_boundaryZeroAnnihilatorTrivial_of_stepPreserves_of_routeDiscrepancies
+    [Fintype G.edgeSet] [FiniteDimensional F2 (G.edgeSet → Color)]
+    {emb : PlaneEmbeddingWithBoundary G}
+    {vertices : Finset V} {C₀ : G.EdgeColoring Color}
+    {step : (G.edgeSet → Color) → (G.edgeSet → Color) → Prop}
+    (htrivial : BoundaryZeroAnnihilatorTrivialForEmbedding emb C₀)
+    (hstep : PillarCExecutionStepPreservesDetectorSubspace emb vertices step)
+    (hdisc : RouteUsedDiscrepancyClassesLieInDetectorSubspace emb vertices) :
+    NeedBasedPillarARequirement emb vertices C₀ step :=
+  needBasedPillarARequirement_of_detector_le_span_of_stepPreserves_of_routeDiscrepancies
+    (G := G) (emb := emb) (vertices := vertices) (C₀ := C₀) (step := step)
+    (pillarADetectorSubspaceContainedInRouteGeneratorSpan_of_boundaryZeroAnnihilatorTrivial
+      (G := G) emb vertices C₀ htrivial)
+    hstep hdisc
+
+/-- Concrete need-based Pillar A for the route's Kempe-switch execution step,
+under the natural cubic hypothesis and the boundary-zero annihilator endpoint. -/
+theorem needBasedPillarARequirement_routeKempeSwitch_of_boundaryZeroAnnihilatorTrivial_of_hasCubicIncidentEdgeTriples
+    [Fintype G.edgeSet] [FiniteDimensional F2 (G.edgeSet → Color)]
+    (emb : PlaneEmbeddingWithBoundary G) (vertices : Finset V)
+    (C₀ : G.EdgeColoring Color)
+    (htrivial : BoundaryZeroAnnihilatorTrivialForEmbedding emb C₀)
+    (hG : HasCubicIncidentEdgeTriples G) :
+    NeedBasedPillarARequirement emb vertices C₀
+      (RouteKempeSwitchExecutionStep emb) :=
+  needBasedPillarARequirement_of_boundaryZeroAnnihilatorTrivial_of_stepPreserves_of_routeDiscrepancies
+    (G := G) (emb := emb) (vertices := vertices) (C₀ := C₀)
+    (step := RouteKempeSwitchExecutionStep emb)
+    htrivial
+    routeKempeSwitchExecutionStep_preserves_detectorSubspace
+    (routeUsedDiscrepancyClassesLieInDetectorSubspace_of_hasCubicIncidentEdgeTriples
+      (G := G) emb vertices hG)
+
 theorem closedWalkExactShell_needBasedPillarARequirement_of_detectorSpan_of_stepPreserves
     [Fintype G.edgeSet] {emb : PlaneEmbeddingWithBoundary G}
     (shell : ClosedWalkExactShell emb)
@@ -226,6 +305,20 @@ theorem closedWalkExactShell_needBasedPillarARequirement_of_detectorSpan_of_step
       (C₀ := shell.tait.coloring) hspan hstep
       (closedWalkExactShell_routeUsedDiscrepancyClassesLieInDetectorSubspace_of_hasCubicIncidentEdgeTriples
         (G := G) shell hG)
+
+/-- Closed-walk shell form of the corrected inclusion-based need-based Pillar A
+endpoint for the route's Kempe-switch execution step. -/
+theorem closedWalkExactShell_needBasedPillarARequirement_routeKempeSwitch_of_boundaryZeroAnnihilatorTrivial_of_hasCubicIncidentEdgeTriples
+    [Fintype G.edgeSet] [FiniteDimensional F2 (G.edgeSet → Color)]
+    {emb : PlaneEmbeddingWithBoundary G} (shell : ClosedWalkExactShell emb)
+    (htrivial : BoundaryZeroAnnihilatorTrivialForEmbedding emb shell.tait.coloring)
+    (hG : HasCubicIncidentEdgeTriples G) :
+    ClosedWalkExactShellNeedBasedPillarARequirement shell
+      (RouteKempeSwitchExecutionStep emb) := by
+  exact
+    needBasedPillarARequirement_routeKempeSwitch_of_boundaryZeroAnnihilatorTrivial_of_hasCubicIncidentEdgeTriples
+      (G := G) emb (selectedBoundaryInteriorEdgeEndpointVertices emb)
+      shell.tait.coloring htrivial hG
 
 /-- If the projected Definition 4.8 generator family spans the full selected
 boundary-zero submodule, then a strict detector/boundary-zero gap refutes Prop
