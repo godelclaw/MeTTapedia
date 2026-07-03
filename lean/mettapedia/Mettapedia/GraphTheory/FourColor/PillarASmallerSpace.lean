@@ -1,6 +1,7 @@
 import Mettapedia.GraphTheory.FourColor.CDLFlow
 import Mettapedia.GraphTheory.FourColor.ShellsCore
 import Mettapedia.GraphTheory.FourColor.Theorem49BoundaryProjection
+import Mettapedia.GraphTheory.FourColor.Theorem49DetectorStrength
 
 /-!
 # Pillar A: route-used discrepancies in the smaller detector space
@@ -72,6 +73,19 @@ def RouteUsedDiscrepancyClassesLieInDetectorSubspace
     RouteUsedDiscrepancyClass emb z →
       z ∈ theorem49BoundaryZeroKirchhoffSubspace emb vertices
 
+/-- The route's single Kempe-switch move, stated on the discrepancy/flow chain:
+add one fixed two-color delta on a Kirchhoff-neutral support disjoint from the
+selected boundary.  A genuine two-color component switch supplies exactly such
+support data. -/
+def RouteKempeSwitchExecutionStep
+    [Fintype G.edgeSet] (emb : PlaneEmbeddingWithBoundary G) :
+    (G.edgeSet → Color) → (G.edgeSet → Color) → Prop :=
+  fun x y =>
+    ∃ (C : Finset G.edgeSet) (g : Color),
+      IsKirchhoffNeutralMoveSupport G C ∧
+        (∀ e ∈ selectedBoundarySupport emb.faceBoundary emb.faces emb.faces, e ∉ C) ∧
+          y = cdlOneStepMoveOn G C g x
+
 /-- The smaller Pillar-A consumer: every route-used discrepancy, after any
 finite sequence of route execution steps, remains in the route generator span. -/
 def NeedBasedPillarARequirement
@@ -129,6 +143,36 @@ theorem closedWalkExactShell_routeUsedDiscrepancyClassesLieInDetectorSubspace_of
   routeUsedDiscrepancyClassesLieInDetectorSubspace_of_hasCubicIncidentEdgeTriples
     (G := G) emb (selectedBoundaryInteriorEdgeEndpointVertices emb) hG
 
+theorem cdlOneStepMoveOn_mem_theorem49BoundaryZeroKirchhoffSubspace_of_kirchhoffNeutral_of_selectedBoundaryDisjoint
+    [Fintype G.edgeSet] {emb : PlaneEmbeddingWithBoundary G}
+    {vertices : Finset V} {C : Finset G.edgeSet} {g : Color}
+    {x : G.edgeSet → Color}
+    (hx : x ∈ theorem49BoundaryZeroKirchhoffSubspace emb vertices)
+    (hC : IsKirchhoffNeutralMoveSupport G C)
+    (hboundary :
+      ∀ e ∈ selectedBoundarySupport emb.faceBoundary emb.faces emb.faces, e ∉ C) :
+    cdlOneStepMoveOn G C g x ∈ theorem49BoundaryZeroKirchhoffSubspace emb vertices := by
+  constructor
+  · intro v hv
+    rw [vertexKirchhoffSum_cdlOneStepMoveOn_eq]
+    rw [hx.1 v hv, nsmul_even_eq_zero (hC v)]
+    simp
+  · intro e he
+    rw [cdlOneStepMoveOn_apply_not_mem (hboundary e he)]
+    exact hx.2 e he
+
+theorem routeKempeSwitchExecutionStep_preserves_detectorSubspace
+    [Fintype G.edgeSet] {emb : PlaneEmbeddingWithBoundary G}
+    {vertices : Finset V} :
+    PillarCExecutionStepPreservesDetectorSubspace emb vertices
+      (RouteKempeSwitchExecutionStep emb) := by
+  intro x y hx hxy
+  rcases hxy with ⟨C, g, hC, hboundary, rfl⟩
+  exact
+    cdlOneStepMoveOn_mem_theorem49BoundaryZeroKirchhoffSubspace_of_kirchhoffNeutral_of_selectedBoundaryDisjoint
+      (G := G) (emb := emb) (vertices := vertices) (C := C) (g := g)
+      hx hC hboundary
+
 theorem pillarCExecution_preserves_detectorSubspace_of_step
     [Fintype G.edgeSet] {emb : PlaneEmbeddingWithBoundary G}
     {vertices : Finset V}
@@ -182,5 +226,65 @@ theorem closedWalkExactShell_needBasedPillarARequirement_of_detectorSpan_of_step
       (C₀ := shell.tait.coloring) hspan hstep
       (closedWalkExactShell_routeUsedDiscrepancyClassesLieInDetectorSubspace_of_hasCubicIncidentEdgeTriples
         (G := G) shell hG)
+
+/-- If the projected Definition 4.8 generator family spans the full selected
+boundary-zero submodule, then a strict detector/boundary-zero gap refutes Prop
+(1) for that same family. -/
+theorem not_pillarADetectorSubspaceEqualsRouteGeneratorSpan_of_span_eq_planarBoundaryZeroSubmodule_of_detector_lt
+    [Fintype G.edgeSet] {emb : PlaneEmbeddingWithBoundary G}
+    {vertices : Finset V} {C₀ : G.EdgeColoring Color}
+    (hspan :
+      Submodule.span F2 (projectedKempeClosureGeneratorFamily emb C₀) =
+        planarBoundaryZeroSubmodule emb)
+    (hlt :
+      theorem49BoundaryZeroKirchhoffSubspace emb vertices <
+        planarBoundaryZeroSubmodule emb) :
+    ¬ PillarADetectorSubspaceEqualsRouteGeneratorSpan emb vertices C₀ := by
+  intro hpillar
+  have htargetFull :
+      theorem49BoundaryZeroKirchhoffSubspace emb vertices =
+        planarBoundaryZeroSubmodule emb := by
+    calc
+      theorem49BoundaryZeroKirchhoffSubspace emb vertices =
+          Submodule.span F2 (projectedKempeClosureGeneratorFamily emb C₀) := by
+            simpa [PillarADetectorSubspaceEqualsRouteGeneratorSpan] using hpillar
+      _ = planarBoundaryZeroSubmodule emb := hspan
+  rw [htargetFull] at hlt
+  exact (lt_irrefl (planarBoundaryZeroSubmodule emb)) hlt
+
+/-- Closed-walk shell specialization of the same obstruction: on shell-bearing
+embeddings the detector is strictly smaller than full selected-boundary-zero,
+so any full boundary-zero spanning result for this projected family blocks Prop
+(1) rather than proving it. -/
+theorem not_pillarADetectorSubspaceEqualsRouteGeneratorSpan_of_closedWalkExactShell_of_span_eq_planarBoundaryZeroSubmodule
+    [Fintype G.edgeSet] {emb : PlaneEmbeddingWithBoundary G}
+    (shell : ClosedWalkExactShell emb) {C₀ : G.EdgeColoring Color}
+    (hspan :
+      Submodule.span F2 (projectedKempeClosureGeneratorFamily emb C₀) =
+        planarBoundaryZeroSubmodule emb) :
+    ¬ PillarADetectorSubspaceEqualsRouteGeneratorSpan emb
+      (selectedBoundaryInteriorEdgeEndpointVertices emb) C₀ :=
+  not_pillarADetectorSubspaceEqualsRouteGeneratorSpan_of_span_eq_planarBoundaryZeroSubmodule_of_detector_lt
+    (G := G) (emb := emb)
+    (vertices := selectedBoundaryInteriorEdgeEndpointVertices emb)
+    (C₀ := C₀) hspan
+    (theorem49BoundaryZeroKirchhoffSubspace_lt_planarBoundaryZeroSubmodule_of_hasUnblockedInteriorEndpoint
+      shell.endpoint)
+
+/-- Boundary-zero annihilator form of the closed-walk obstruction.  The
+manuscript-style annihilator endpoint for this projected family proves full
+selected-boundary-zero spanning; on shell-bearing embeddings that is too large
+to be equal to the detector subspace. -/
+theorem not_pillarADetectorSubspaceEqualsRouteGeneratorSpan_of_closedWalkExactShell_of_boundaryZeroAnnihilatorTrivial
+    [Fintype G.edgeSet] [FiniteDimensional F2 (G.edgeSet → Color)]
+    {emb : PlaneEmbeddingWithBoundary G} (shell : ClosedWalkExactShell emb)
+    {C₀ : G.EdgeColoring Color}
+    (htrivial : BoundaryZeroAnnihilatorTrivialForEmbedding emb C₀) :
+    ¬ PillarADetectorSubspaceEqualsRouteGeneratorSpan emb
+      (selectedBoundaryInteriorEdgeEndpointVertices emb) C₀ :=
+  not_pillarADetectorSubspaceEqualsRouteGeneratorSpan_of_closedWalkExactShell_of_span_eq_planarBoundaryZeroSubmodule
+    (G := G) shell
+    (span_projectedKempeClosureGeneratorFamily_eq_planarBoundaryZeroSubmodule_of_boundaryZeroAnnihilatorTrivial
+      emb C₀ htrivial)
 
 end Mettapedia.GraphTheory.FourColor
