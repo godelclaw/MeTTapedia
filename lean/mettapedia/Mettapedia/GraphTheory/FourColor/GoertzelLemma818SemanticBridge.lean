@@ -3278,6 +3278,19 @@ theorem concreteChainFiberAppendLocalSingletonComponent_shift_globalComponent_me
   simpa [GoertzelLemma814.chainComponent, globalOrients, globalLen, hglobalPair]
     using hglobalCloseLen
 
+/--
+Pinned reverse/no-ingress component equality for the singleton append lift.
+
+Forward membership from the local singleton component into the appended global
+component is proved by
+`concreteChainFiberAppendLocalSingletonComponent_shift_globalComponent_mem`.
+The remaining direction is to show that the appended global component cannot
+grow a prefix or glued-boundary edge. A pure endpoint separation argument is
+insufficient: a prefix output edge can share the glued boundary vertex with a
+shifted local edge. The missing step must use adjacent compatibility to
+transfer pair-color membership to the corresponding last input edge and then
+contradict local input avoidance.
+-/
 def concreteChainFiberAppendRelativeSingletonShiftedComponentClosed : Prop :=
   ∀ (word : List GoertzelLemma818FrontierMode.TauOrient)
     (orient : GoertzelLemma818FrontierMode.TauOrient)
