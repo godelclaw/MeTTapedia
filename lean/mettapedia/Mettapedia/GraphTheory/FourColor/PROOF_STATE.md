@@ -144,6 +144,16 @@ together with the matching structural fields.  This paired target feeds the same
 field, transfer, semantic sufficiency, and target-gated all-word wrappers
 through the `_base_data_structural` theorems, while the older `_base_data_and_structural`
 wrappers remain a stronger two-hypothesis variant.
+The paired route also has a smaller generated-witness surface:
+`concreteChainFiberAppendQuotientFibrationParentRowsNonSingletonPrefixConnectedLiftImageClosed`.
+It asks generated data to choose the paired base record and a projection, prove
+the appended root-closure graph connected, and prove every requested base move
+has a representative in the projection image.  The theorem
+`concreteChainFiberAppendQuotientFibrationParentRowsNonSingletonPrefixBaseDataStructuralClosed_of_connected_lift_image`
+turns that witness into the paired structural target, and
+`semanticFrontierStateSufficientForChain_of_append_quotient_parent_rows_connected_lift_image`
+carries it to semantic sufficiency without using the canonical prefix
+projection.
 The standalone base-data half is now closed by
 `concreteChainFiberAppendQuotientFibrationParentRowsNonSingletonPrefixBaseDataClosed_of_prefix_root_star`:
 nonempty prefix fibers use the prefix fiber itself as the quotient base with a

@@ -248,6 +248,14 @@ through field closure, transfer closure, semantic sufficiency, and the
 target-gated all-word audit.  The `_base_data_and_structural` wrappers remain a
 stronger split useful when finite base data and structural motion are proved as
 separate global facts.
+The current emitted-data shape is
+`concreteChainFiberAppendQuotientFibrationParentRowsNonSingletonPrefixConnectedLiftImageClosed`:
+for each non-singleton append, emit the paired base record, a projection from
+the appended fiber to that base, connectedness of the appended root-closure
+graph, and an image witness for every requested base move.  The
+`_of_connected_lift_image` wrappers convert this shape to the paired structural
+target and then to semantic sufficiency without requiring the canonical prefix
+projection.
 The prefix-fibration adapter
 `concreteChainFiberAppendQuotientFibrationParentRowsNonSingletonPrefixBaseDataStructuralClosed_of_prefix_fibration`
 now shows that `concreteChainFiberAppendPrefixFibrationClosed` is enough to
