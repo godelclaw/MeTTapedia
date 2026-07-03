@@ -4434,12 +4434,18 @@ Step 0 packing surface.  The fixed-prefix transcript sigma has already been
 identified with this active capacity sum; the remaining work is the genuine
 conditioned-basis counting bound.
 
-Current live pin: unlike the target-sampler telescope, the no-target sampler
-cannot freely resample the next row after a transcript prefix.  The remaining
-counting step is to show that the active fixed-map transcript cylinders created
-by the sequential observer collide with bounded multiplicity when charged to
-their generated no-target rowsets; equivalently, the active capacity sum below
-is at most the displayed per-step budget. -/
+Current live pin: the hard overcharge is the existing-row branch of
+`V13RealLinearRowTraceCosetHit`.  When `activeIdx.1.row ∈ activeIdx.1.rows`,
+`generatedQBudgetedRowset` does not add a fresh row, so a later repeated-row
+coset hit may be charged to an earlier target-support history already present
+in the prefix.  The unordered rowset transcript collapses distinct ordered
+support-occurrence histories: if a support row occurs more than once before
+`t`, choosing its first occurrence or a later occurrence gives two transcript
+histories that charge the same completed no-target map/world after forgetting
+occurrence positions.  A closure must encode the ordered support occurrence
+history and prove that these histories have total multiplicity at most
+`2 ^ (t : Nat)`, before composing with the factor-2 generated-rowset capacity
+reduction. -/
 def
     V13RealLinearNoTargetRowsSequentialTraceCosetHitActiveFixedMapTranscriptCylinderCapacityBound
     {m q : Nat} (i₀ : Fin m)
