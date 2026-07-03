@@ -1316,6 +1316,20 @@ example {m q : Nat} (i₀ : Fin m)
   v13RealLinearNoTargetSequentialTraceFirstCosetHitActiveGeneratedPrefixCellIncidence_card_le_worldSet
     i₀ observer t
 
+example {m q : Nat} (i₀ : Fin m)
+    (observer : V13RealLinearSequentialRowObserver m q) (t : Fin q) :
+    (∑ activeIdx :
+      V13RealLinearNoTargetSequentialTraceFirstCosetHitActiveFixedMapTranscriptCylinderIndex
+        i₀ observer t,
+      2 ^ (m -
+        (v13RealLinearNoTargetSequentialTraceFirstCosetHitActiveFixedMapTranscriptCylinder_generatedQBudgetedRowset
+          i₀ observer t activeIdx).1.card)) ≤
+      Fintype.card
+        (V13RealLinearNoTargetSequentialTraceFirstCosetHitWorldSet
+          i₀ observer t) :=
+  v13RealLinearNoTargetSequentialTraceFirstCosetHitActiveGeneratedPrefixCell_capacity_sum_le_worldSet_card
+    i₀ observer t
+
 #print axioms v13RealLinearNoTargetSequentialTraceFirstCosetHitFixedMapTranscriptCylinder_newCapture_or_priorNewCapture
 #print axioms v13RealLinearNoTargetSequentialTraceFirstCosetHitFixedMapTranscriptCylinder_existing_priorNewCapture
 #print axioms v13RealLinearNoTargetSequentialTraceFirstCosetHitActiveFixedMapTranscriptCylinder_generatedPrefix_rows_eq
@@ -1324,6 +1338,7 @@ example {m q : Nat} (i₀ : Fin m)
 #print axioms v13RealLinearNoTargetSequentialTraceFirstCosetHitFixedMapTranscriptCylinderSigmaEquivWorldSet
 #print axioms v13RealLinearNoTargetSequentialTraceFirstCosetHitActiveGeneratedPrefixCellIncidenceToWorldSet
 #print axioms v13RealLinearNoTargetSequentialTraceFirstCosetHitActiveGeneratedPrefixCellIncidence_card_le_worldSet
+#print axioms v13RealLinearNoTargetSequentialTraceFirstCosetHitActiveGeneratedPrefixCell_capacity_sum_le_worldSet_card
 #print axioms v13RealLinearNoTargetSequentialTraceFirstCosetHitGeneratedPrefixCell_capacity_le_card
 #print axioms v13RealLinearNoTargetSequentialTraceFirstCosetHitGeneratedPrefixCell_card_eq_capacity
 #print axioms v13RealLinearNoTargetSequentialTraceFirstCosetHitGeneratedPrefixCellToFixedMapTranscriptCylinder
