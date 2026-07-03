@@ -164,7 +164,13 @@ surjective projection from appended fiber points onto the prefix fiber whenever
 that prefix fiber is nonempty.  The theorem
 `concreteChainFiberAppendQuotientFibrationParentRowsNonSingletonPrefixConnectedLiftImageClosed_of_surjective_projection`
 handles empty prefix fibers by the proved prefix-closure projection and reduces
-the nonempty generated-data obligation to that surjective projection.
+the nonempty generated-data obligation to that surjective projection.  The
+wrappers
+`semanticFrontierStateSufficientForChain_of_append_quotient_parent_rows_surjective_projection`
+and
+`chainAuditForFrontierWord_ok_of_targets_and_append_quotient_parent_rows_surjective_projection`
+carry the same target directly to semantic sufficiency and the target-gated
+all-word audit.
 The standalone base-data half is now closed by
 `concreteChainFiberAppendQuotientFibrationParentRowsNonSingletonPrefixBaseDataClosed_of_prefix_root_star`:
 nonempty prefix fibers use the prefix fiber itself as the quotient base with a
