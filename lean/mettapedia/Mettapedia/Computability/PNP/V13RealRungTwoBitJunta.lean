@@ -5011,6 +5011,39 @@ theorem
   v13RealLinearBitJunta_correct_card_eq_incorrect_card_of_not_blocked
     observer A.val i₀ hnot
 
+theorem
+    v13RealLinearNoTargetBitJunta_fixed_correct_card_mul_two_eq_f2vec_card_of_not_blocked
+    {m j : Nat} (i₀ : Fin m)
+    (observer : V13RealLinearBitJuntaObserver m j)
+    (A : V13RealLinearNoTargetRowsMap m i₀)
+    (hnot : ¬ V13RealLinearNoTargetBitJuntaBlockedMap i₀ observer A) :
+    Fintype.card
+        (V13RealLinearNoTargetBitJuntaFixedCorrect i₀ observer A) * 2 =
+      Fintype.card (F2Vec m) := by
+  simpa [V13RealLinearNoTargetBitJuntaFixedCorrect,
+    V13RealLinearNoTargetBitJuntaBlockedMap] using
+    v13RealLinearBitJunta_fixed_correct_card_mul_two_eq_f2vec_card_of_not_blocked
+      observer A.val i₀ hnot
+
+noncomputable def v13RealLinearNoTargetBitJuntaFixedSuccess
+    {m j : Nat} (i₀ : Fin m)
+    (observer : V13RealLinearBitJuntaObserver m j)
+    (A : V13RealLinearNoTargetRowsMap m i₀) : Rat :=
+  v13RealLinearBitJuntaFixedSuccess observer A.val i₀
+
+theorem
+    v13RealLinearNoTargetBitJunta_fixedSuccess_eq_half_of_not_blocked
+    {m j : Nat} (i₀ : Fin m)
+    (observer : V13RealLinearBitJuntaObserver m j)
+    (A : V13RealLinearNoTargetRowsMap m i₀)
+    (hnot : ¬ V13RealLinearNoTargetBitJuntaBlockedMap i₀ observer A) :
+    v13RealLinearNoTargetBitJuntaFixedSuccess i₀ observer A =
+      (1 / 2 : Rat) := by
+  simpa [v13RealLinearNoTargetBitJuntaFixedSuccess,
+    V13RealLinearNoTargetBitJuntaBlockedMap] using
+    v13RealLinearBitJunta_fixedSuccess_eq_half_of_not_blocked
+      observer A.val i₀ hnot
+
 def V13RealLinearNoTargetBitJuntaCorrect {m j : Nat}
     (i₀ : Fin m) (observer : V13RealLinearBitJuntaObserver m j) :=
   {omega : V13RealLinearNoTargetRowsWorld m i₀ //
@@ -5380,6 +5413,28 @@ theorem
     Fintype.card_congr
       (v13RealLinearNoTargetBitJuntaWorldCorrectIncorrectEquiv
         i₀ observer)
+
+theorem
+    v13RealLinearNoTargetBitJunta_correct_card_mul_two_le_world_card_add_blocked_card
+    {m j : Nat} (i₀ : Fin m)
+    (observer : V13RealLinearBitJuntaObserver m j) :
+    Fintype.card (V13RealLinearNoTargetBitJuntaCorrect i₀ observer) * 2 ≤
+      Fintype.card (V13RealLinearNoTargetRowsWorld m i₀) +
+        Fintype.card
+          (V13RealLinearNoTargetBitJuntaBlockedWorld i₀ observer) := by
+  let C := Fintype.card (V13RealLinearNoTargetBitJuntaCorrect i₀ observer)
+  let I := Fintype.card (V13RealLinearNoTargetBitJuntaIncorrect i₀ observer)
+  let B := Fintype.card (V13RealLinearNoTargetBitJuntaBlockedWorld i₀ observer)
+  let T := Fintype.card (V13RealLinearNoTargetRowsWorld m i₀)
+  have hcardNat : C ≤ I + B := by
+    simpa [C, I, B] using
+      v13RealLinearNoTargetBitJunta_correct_card_le_incorrect_add_blocked
+        i₀ observer
+  have hworldNat : T = C + I := by
+    simpa [T, C, I] using
+      v13RealLinearNoTargetBitJunta_world_card_eq_correct_add_incorrect
+        i₀ observer
+  omega
 
 noncomputable def v13RealLinearNoTargetBitJuntaBlockedMass {m j : Nat}
     (i₀ : Fin m) (observer : V13RealLinearBitJuntaObserver m j) : Rat :=

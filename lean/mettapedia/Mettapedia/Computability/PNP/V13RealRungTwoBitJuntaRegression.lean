@@ -82,6 +82,25 @@ example {m j : Nat}
   v13RealLinearBitJunta_fixedSuccess_eq_half_of_not_blocked
     observer A i₀ hnot
 
+example {m j : Nat} (i₀ : Fin m)
+    (observer : V13RealLinearBitJuntaObserver m j)
+    (A : V13RealLinearNoTargetRowsMap m i₀)
+    (hnot : ¬ V13RealLinearNoTargetBitJuntaBlockedMap i₀ observer A) :
+    Fintype.card
+        (V13RealLinearNoTargetBitJuntaFixedCorrect i₀ observer A) * 2 =
+      Fintype.card (F2Vec m) :=
+  v13RealLinearNoTargetBitJunta_fixed_correct_card_mul_two_eq_f2vec_card_of_not_blocked
+    i₀ observer A hnot
+
+example {m j : Nat} (i₀ : Fin m)
+    (observer : V13RealLinearBitJuntaObserver m j)
+    (A : V13RealLinearNoTargetRowsMap m i₀)
+    (hnot : ¬ V13RealLinearNoTargetBitJuntaBlockedMap i₀ observer A) :
+    v13RealLinearNoTargetBitJuntaFixedSuccess i₀ observer A =
+      (1 / 2 : Rat) :=
+  v13RealLinearNoTargetBitJunta_fixedSuccess_eq_half_of_not_blocked
+    i₀ observer A hnot
+
 example {m j : Nat}
     (observer : V13RealLinearParityObserver m j)
     (A : V13F2LinearEquiv m) (x w : F2Vec m) :
@@ -155,6 +174,15 @@ example {m j : Nat}
     (hcount : V13RealLinearNoTargetBitJuntaBlockedCountingBound m j) :
     V13RealLinearNoTargetBitJuntaSuccessBound m j :=
   v13RealLinearNoTargetBitJuntaSuccessBound_of_blockedCounting hcount
+
+example {m j : Nat} (i₀ : Fin m)
+    (observer : V13RealLinearBitJuntaObserver m j) :
+    Fintype.card (V13RealLinearNoTargetBitJuntaCorrect i₀ observer) * 2 ≤
+      Fintype.card (V13RealLinearNoTargetRowsWorld m i₀) +
+        Fintype.card
+          (V13RealLinearNoTargetBitJuntaBlockedWorld i₀ observer) :=
+  v13RealLinearNoTargetBitJunta_correct_card_mul_two_le_world_card_add_blocked_card
+    i₀ observer
 
 example {m j : Nat}
     (hcount : V13RealLinearNoTargetBudgetedRowsetGenerationCountingBound m j) :
