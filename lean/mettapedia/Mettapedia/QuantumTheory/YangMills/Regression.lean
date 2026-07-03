@@ -13,6 +13,7 @@ import Mettapedia.QuantumTheory.YangMills.OSGateAuditRegression
 import Mettapedia.QuantumTheory.YangMills.ProofStateRegression
 import Mettapedia.QuantumTheory.YangMills.ReflectionPositivityGateCanariesRegression
 import Mettapedia.QuantumTheory.YangMills.RGBootstrapRegression
+import Mettapedia.QuantumTheory.YangMills.RGBootstrapSlackRegression
 import Mettapedia.QuantumTheory.YangMills.RGCruxRegression
 import Mettapedia.QuantumTheory.YangMills.Z2StrongCouplingGapRegression
 import Mettapedia.QuantumTheory.YangMills.Z3StrongCouplingGapRegression
