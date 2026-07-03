@@ -373,6 +373,11 @@ example {m q : Nat} (observer : V13RealLinearSequentialRowObserver m q)
   v13RealLinearSequentialPrefixTranscriptVectorOf_toList
     observer publicInput n
 
+example {m n : Nat}
+    (pref : V13RealLinearSequentialPrefixTranscriptVector m n) :
+    (v13RealLinearSequentialPrefixTranscriptVectorRows pref).card ≤ n :=
+  v13RealLinearSequentialPrefixTranscriptVectorRows_card_le pref
+
 noncomputable example {m q : Nat} (i₀ : Fin m)
     (observer : V13RealLinearSequentialRowObserver m q) (t : Fin q)
     (pref :
@@ -395,12 +400,52 @@ example {m q : Nat} (i₀ : Fin m)
         (V13RealLinearNoTargetSequentialTraceFirstCosetHitOrderedPrefixWorldSet
           i₀ observer t pref) *
       2 ^ m ≤
+    4 * 2 ^ (v13RealLinearSequentialPrefixTranscriptVectorRows pref).card *
+      Fintype.card
+        (V13RealLinearAdaptiveQRowWorld m
+          (V13RealLinearNoTargetRowsMap m i₀)) :=
+  v13RealLinearNoTargetSequentialTraceFirstCosetHitOrderedPrefixWorldSet_card_mul_two_pow_le_rows
+    i₀ observer t pref
+
+example {m q : Nat} (i₀ : Fin m)
+    (observer : V13RealLinearSequentialRowObserver m q) (t : Fin q)
+    (pref :
+      V13RealLinearSequentialPrefixTranscriptVector m (t : Nat)) :
+    Fintype.card
+        (V13RealLinearNoTargetSequentialTraceFirstCosetHitOrderedPrefixWorldSet
+          i₀ observer t pref) *
+      2 ^ m ≤
     4 * 2 ^ (t : Nat) *
       Fintype.card
         (V13RealLinearAdaptiveQRowWorld m
           (V13RealLinearNoTargetRowsMap m i₀)) :=
   v13RealLinearNoTargetSequentialTraceFirstCosetHitOrderedPrefixWorldSet_card_mul_two_pow_le_step
     i₀ observer t pref
+
+example {m q : Nat} (i₀ : Fin m)
+    (observer : V13RealLinearSequentialRowObserver m q) (t : Fin q) :
+    (∑ pref :
+        V13RealLinearSequentialPrefixTranscriptVector m (t : Nat),
+      Fintype.card
+        (V13RealLinearNoTargetSequentialTraceFirstCosetHitOrderedPrefixWorldSet
+          i₀ observer t pref)) ≤
+      ∑ rows : Finset (Fin m),
+        ∑ row : Fin m,
+          Fintype.card
+            (V13RealLinearNoTargetSequentialTraceFirstCosetHitFixedPrefixWorldSet
+              i₀ observer t rows row) :=
+  v13RealLinearNoTargetSequentialTraceFirstCosetHitOrderedPrefixWorldSet_sum_card_le_sum_fixedPrefix
+    i₀ observer t
+
+example {m q : Nat} (i₀ : Fin m)
+    (observer : V13RealLinearSequentialRowObserver m q)
+    (hpack :
+      V13RealLinearNoTargetRowsSequentialTraceCosetHitFixedPrefixPackingBound
+        i₀ observer) :
+    V13RealLinearNoTargetRowsSequentialTraceCosetHitOrderedPrefixPackingBound
+      i₀ observer :=
+  V13RealLinearNoTargetRowsSequentialTraceCosetHitOrderedPrefixPackingBound_of_fixedPrefixPacking
+    i₀ observer hpack
 
 example {m : Nat} (i₀ : Fin m)
     (rows : V13RealLinearBudgetedRowset m 2) :
