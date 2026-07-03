@@ -223,6 +223,16 @@ allows generated data to emit a projection together with a selected appended
 preimage for every prefix point; the `_of_projection_section` wrappers convert
 that selector form to projection surjectivity, finite-section data, and the
 combined predicate when paired with appended parent-row connectedness.
+The projection side also has an equivalent injective-selector surface,
+`concreteChainFiberAppendQuotientFibrationParentRowsNonSingletonPrefixProjectionInjectivePreimageClosed`.
+It asks generated data only for a selected appended preimage of each prefix
+point, with injectivity of that selector; Lean constructs the projection
+function and proves the section property.  The iff theorem
+`concreteChainFiberAppendQuotientFibrationParentRowsNonSingletonPrefixProjectionSectionClosed_iff_projection_injective_preimage`
+records equivalence with the projection-section surface, and the
+`_of_appended_connected_and_projection_injective_preimage` wrapper packages the
+combined predicate directly from appended connectedness plus this injective
+preimage selector.
 The parent-row half no longer has to be emitted separately when the appended
 root-closure graph is already proved connected:
 `concreteChainFiberAppendQuotientFibrationParentRowsNonSingletonPrefixAppendedParentRowsConnectedClosed_of_appended_connected_and_projection_finite_section`
@@ -295,6 +305,14 @@ the section-to-surjective wrapper depends on `propext`, the reverse
 surjective-to-section wrapper depends on `propext` and `Classical.choice`,
 and the finite-section and combined selector wrappers depend on `propext`,
 `Classical.choice`, and `Quot.sound`.
+Projection injective-preimage evidence is
+`fourcolor-projection-injective-preimage-build-20260703.log` (607 jobs,
+SHA256 `6a77393edba2930476ca0b5ad40517b0e541f5fa9c92cd6573574263916b2ada`)
+and `fourcolor-projection-injective-preimage-axioms-20260703.log` (SHA256
+`b7b69bca8d87dc0ec944136698f866494c399567fcbf87a7c885ab52e86fe1f2`);
+the section-from-injective-preimage conversion and combined wrapper depend on
+`propext`, `Classical.choice`, and `Quot.sound`, while the reverse conversion
+from projection section to injective preimage depends on `propext`.
 Appended-connected parent-row reduction evidence is
 `fourcolor-appended-connected-parent-rows-section-build-20260703.log`
 (607 jobs, SHA256
