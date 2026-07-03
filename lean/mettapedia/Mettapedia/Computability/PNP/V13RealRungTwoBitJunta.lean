@@ -2565,6 +2565,62 @@ noncomputable def v13RealLinearSequentialPrefixTranscriptVectorOf
       ⟨k.1, by
         simp [v13RealLinearSequentialRowPrefixTranscriptOf_length]⟩
 
+noncomputable def v13RealLinearSequentialPrefixTranscriptVectorToList
+    {m n : Nat} (pref : V13RealLinearSequentialPrefixTranscriptVector m n) :
+    V13RealLinearSequentialRowTranscript m :=
+  List.ofFn pref
+
+noncomputable def v13RealLinearSequentialPrefixTranscriptVectorRows
+    {m n : Nat} (pref : V13RealLinearSequentialPrefixTranscriptVector m n) :
+    Finset (Fin m) :=
+  v13RealLinearSequentialRowTranscriptRows
+    (v13RealLinearSequentialPrefixTranscriptVectorToList pref)
+
+noncomputable def v13RealLinearSequentialPrefixTranscriptVectorNextRow
+    {m q n : Nat} (observer : V13RealLinearSequentialRowObserver m q)
+    (pref : V13RealLinearSequentialPrefixTranscriptVector m n) : Fin m :=
+  observer.chooseRow
+    (v13RealLinearSequentialPrefixTranscriptVectorToList pref)
+
+theorem v13RealLinearSequentialPrefixTranscriptVectorOf_toList
+    {m q : Nat} (observer : V13RealLinearSequentialRowObserver m q)
+    (publicInput : V13RealLinearPublic m) (n : Nat) :
+    v13RealLinearSequentialPrefixTranscriptVectorToList
+        (v13RealLinearSequentialPrefixTranscriptVectorOf observer
+          publicInput n) =
+      v13RealLinearSequentialRowPrefixTranscriptOf observer publicInput n := by
+  unfold v13RealLinearSequentialPrefixTranscriptVectorToList
+  unfold v13RealLinearSequentialPrefixTranscriptVectorOf
+  simpa [v13RealLinearSequentialRowPrefixTranscriptOf_length] using
+    (List.ofFn_getElem
+      (xs :=
+        v13RealLinearSequentialRowPrefixTranscriptOf
+          observer publicInput n))
+
+theorem v13RealLinearSequentialPrefixTranscriptVectorOf_rows
+    {m q : Nat} (observer : V13RealLinearSequentialRowObserver m q)
+    (publicInput : V13RealLinearPublic m) (n : Nat) :
+    v13RealLinearSequentialPrefixTranscriptVectorRows
+        (v13RealLinearSequentialPrefixTranscriptVectorOf observer
+          publicInput n) =
+      v13RealLinearSequentialRowTranscriptRows
+        (v13RealLinearSequentialRowPrefixTranscriptOf
+          observer publicInput n) := by
+  simp [v13RealLinearSequentialPrefixTranscriptVectorRows,
+    v13RealLinearSequentialPrefixTranscriptVectorOf_toList]
+
+theorem v13RealLinearSequentialPrefixTranscriptVectorOf_nextRow
+    {m q : Nat} (observer : V13RealLinearSequentialRowObserver m q)
+    (publicInput : V13RealLinearPublic m) (n : Nat) :
+    v13RealLinearSequentialPrefixTranscriptVectorNextRow observer
+        (v13RealLinearSequentialPrefixTranscriptVectorOf observer
+          publicInput n) =
+      observer.chooseRow
+        (v13RealLinearSequentialRowPrefixTranscriptOf
+          observer publicInput n) := by
+  simp [v13RealLinearSequentialPrefixTranscriptVectorNextRow,
+    v13RealLinearSequentialPrefixTranscriptVectorOf_toList]
+
 /-- The full no-target first-hit event at step `t`, partitioned by the ordered
 prefix transcript actually seen by the sequential observer before that step. -/
 abbrev
@@ -2595,6 +2651,203 @@ noncomputable instance
   unfold
     V13RealLinearNoTargetSequentialTraceFirstCosetHitOrderedPrefixWorldSet
   infer_instance
+
+theorem
+    v13RealLinearNoTargetSequentialTraceFirstCosetHitOrderedPrefixWorldSet_prefixRows_eq
+    {m q : Nat} (i₀ : Fin m)
+    (observer : V13RealLinearSequentialRowObserver m q) (t : Fin q)
+    (pref :
+      V13RealLinearSequentialPrefixTranscriptVector m (t : Nat))
+    (omega :
+      V13RealLinearNoTargetSequentialTraceFirstCosetHitOrderedPrefixWorldSet
+        i₀ observer t pref) :
+    v13RealLinearRowTracePrefixRows
+        (v13RealLinearNoTargetRowsSequentialQRowTrace
+          i₀ observer omega.val.val)
+        (t : Nat) =
+      v13RealLinearSequentialPrefixTranscriptVectorRows pref := by
+  classical
+  let publicInput :=
+    v13RealLinearPublicInput
+      ({ x := omega.val.val.2, A := omega.val.val.1.val } :
+        V13RealLinearWorld m)
+  have htraceRows :
+      v13RealLinearRowTracePrefixRows
+          (v13RealLinearNoTargetRowsSequentialQRowTrace
+            i₀ observer omega.val.val)
+          (t : Nat) =
+        v13RealLinearSequentialRowTranscriptRows
+          (v13RealLinearSequentialRowPrefixTranscriptOf
+            observer publicInput (t : Nat)) := by
+    simpa [v13RealLinearNoTargetRowsSequentialQRowTrace, publicInput] using
+      (v13RealLinearSequentialRowTracePrefixRows_eq_prefixTranscriptRows
+        observer publicInput (Nat.le_of_lt t.isLt))
+  have hvectorRows :
+      v13RealLinearSequentialPrefixTranscriptVectorRows
+          (v13RealLinearSequentialPrefixTranscriptVectorOf observer
+            publicInput (t : Nat)) =
+        v13RealLinearSequentialRowTranscriptRows
+          (v13RealLinearSequentialRowPrefixTranscriptOf
+            observer publicInput (t : Nat)) :=
+    v13RealLinearSequentialPrefixTranscriptVectorOf_rows
+      observer publicInput (t : Nat)
+  calc
+    v13RealLinearRowTracePrefixRows
+        (v13RealLinearNoTargetRowsSequentialQRowTrace
+          i₀ observer omega.val.val)
+        (t : Nat) =
+      v13RealLinearSequentialRowTranscriptRows
+        (v13RealLinearSequentialRowPrefixTranscriptOf
+          observer publicInput (t : Nat)) := htraceRows
+    _ =
+      v13RealLinearSequentialPrefixTranscriptVectorRows
+        (v13RealLinearSequentialPrefixTranscriptVectorOf observer
+          publicInput (t : Nat)) := hvectorRows.symm
+    _ = v13RealLinearSequentialPrefixTranscriptVectorRows pref := by
+      rw [omega.property]
+
+theorem
+    v13RealLinearNoTargetSequentialTraceFirstCosetHitOrderedPrefixWorldSet_hitRow_eq
+    {m q : Nat} (i₀ : Fin m)
+    (observer : V13RealLinearSequentialRowObserver m q) (t : Fin q)
+    (pref :
+      V13RealLinearSequentialPrefixTranscriptVector m (t : Nat))
+    (omega :
+      V13RealLinearNoTargetSequentialTraceFirstCosetHitOrderedPrefixWorldSet
+        i₀ observer t pref) :
+    ∃ h : (t : Nat) <
+        (v13RealLinearNoTargetRowsSequentialQRowTrace
+          i₀ observer omega.val.val).length,
+      (v13RealLinearNoTargetRowsSequentialQRowTrace
+          i₀ observer omega.val.val).get ⟨(t : Nat), h⟩ =
+        v13RealLinearSequentialPrefixTranscriptVectorNextRow observer pref := by
+  classical
+  let publicInput :=
+    v13RealLinearPublicInput
+      ({ x := omega.val.val.2, A := omega.val.val.1.val } :
+        V13RealLinearWorld m)
+  have hlen : (t : Nat) <
+      (v13RealLinearNoTargetRowsSequentialQRowTrace
+        i₀ observer omega.val.val).length := by
+    simp [v13RealLinearNoTargetRowsSequentialQRowTrace,
+      v13RealLinearSequentialRowTraceOf_length]
+  refine ⟨hlen, ?_⟩
+  have hget :
+      (v13RealLinearNoTargetRowsSequentialQRowTrace
+          i₀ observer omega.val.val).get ⟨(t : Nat), hlen⟩ =
+        observer.chooseRow
+          (v13RealLinearSequentialRowPrefixTranscriptOf
+            observer publicInput (t : Nat)) := by
+    simpa [v13RealLinearNoTargetRowsSequentialQRowTrace, publicInput] using
+      (v13RealLinearSequentialRowTraceOf_get_eq_chooseRow
+        observer publicInput t.isLt)
+  have hnext :
+      v13RealLinearSequentialPrefixTranscriptVectorNextRow observer
+          (v13RealLinearSequentialPrefixTranscriptVectorOf observer
+            publicInput (t : Nat)) =
+        observer.chooseRow
+          (v13RealLinearSequentialRowPrefixTranscriptOf
+            observer publicInput (t : Nat)) :=
+    v13RealLinearSequentialPrefixTranscriptVectorOf_nextRow
+      observer publicInput (t : Nat)
+  calc
+    (v13RealLinearNoTargetRowsSequentialQRowTrace
+        i₀ observer omega.val.val).get ⟨(t : Nat), hlen⟩ =
+      observer.chooseRow
+        (v13RealLinearSequentialRowPrefixTranscriptOf
+          observer publicInput (t : Nat)) := hget
+    _ =
+      v13RealLinearSequentialPrefixTranscriptVectorNextRow observer
+        (v13RealLinearSequentialPrefixTranscriptVectorOf observer
+          publicInput (t : Nat)) := hnext.symm
+    _ = v13RealLinearSequentialPrefixTranscriptVectorNextRow observer pref := by
+      rw [omega.property]
+
+noncomputable def
+    v13RealLinearNoTargetSequentialTraceFirstCosetHitOrderedPrefixWorldSetToFixedPrefixWorldSet
+    {m q : Nat} (i₀ : Fin m)
+    (observer : V13RealLinearSequentialRowObserver m q) (t : Fin q)
+    (pref :
+      V13RealLinearSequentialPrefixTranscriptVector m (t : Nat)) :
+    V13RealLinearNoTargetSequentialTraceFirstCosetHitOrderedPrefixWorldSet
+        i₀ observer t pref ↪
+      V13RealLinearNoTargetSequentialTraceFirstCosetHitFixedPrefixWorldSet
+        i₀ observer t
+        (v13RealLinearSequentialPrefixTranscriptVectorRows pref)
+        (v13RealLinearSequentialPrefixTranscriptVectorNextRow observer
+          pref) where
+  toFun omega :=
+    ⟨omega.val.val,
+      ⟨omega.val.property,
+        v13RealLinearNoTargetSequentialTraceFirstCosetHitOrderedPrefixWorldSet_prefixRows_eq
+          i₀ observer t pref omega,
+        v13RealLinearNoTargetSequentialTraceFirstCosetHitOrderedPrefixWorldSet_hitRow_eq
+          i₀ observer t pref omega⟩⟩
+  inj' := by
+    intro omega₀ omega₁ h
+    apply Subtype.ext
+    apply Subtype.ext
+    exact
+      congrArg
+        (fun omega :
+          V13RealLinearNoTargetSequentialTraceFirstCosetHitFixedPrefixWorldSet
+            i₀ observer t
+            (v13RealLinearSequentialPrefixTranscriptVectorRows pref)
+            (v13RealLinearSequentialPrefixTranscriptVectorNextRow observer
+              pref) => omega.val)
+        h
+
+theorem
+    v13RealLinearNoTargetSequentialTraceFirstCosetHitOrderedPrefixWorldSet_card_le_fixedPrefix
+    {m q : Nat} (i₀ : Fin m)
+    (observer : V13RealLinearSequentialRowObserver m q) (t : Fin q)
+    (pref :
+      V13RealLinearSequentialPrefixTranscriptVector m (t : Nat)) :
+    Fintype.card
+        (V13RealLinearNoTargetSequentialTraceFirstCosetHitOrderedPrefixWorldSet
+          i₀ observer t pref) ≤
+      Fintype.card
+        (V13RealLinearNoTargetSequentialTraceFirstCosetHitFixedPrefixWorldSet
+          i₀ observer t
+          (v13RealLinearSequentialPrefixTranscriptVectorRows pref)
+          (v13RealLinearSequentialPrefixTranscriptVectorNextRow observer
+            pref)) :=
+  Fintype.card_le_of_embedding
+    (v13RealLinearNoTargetSequentialTraceFirstCosetHitOrderedPrefixWorldSetToFixedPrefixWorldSet
+      i₀ observer t pref)
+
+theorem
+    v13RealLinearNoTargetSequentialTraceFirstCosetHitOrderedPrefixWorldSet_card_mul_two_pow_le_step
+    {m q : Nat} (i₀ : Fin m)
+    (observer : V13RealLinearSequentialRowObserver m q) (t : Fin q)
+    (pref :
+      V13RealLinearSequentialPrefixTranscriptVector m (t : Nat)) :
+    Fintype.card
+        (V13RealLinearNoTargetSequentialTraceFirstCosetHitOrderedPrefixWorldSet
+          i₀ observer t pref) *
+      2 ^ m ≤
+    4 * 2 ^ (t : Nat) *
+      Fintype.card
+        (V13RealLinearAdaptiveQRowWorld m
+          (V13RealLinearNoTargetRowsMap m i₀)) := by
+  have hcard :
+      Fintype.card
+          (V13RealLinearNoTargetSequentialTraceFirstCosetHitOrderedPrefixWorldSet
+            i₀ observer t pref) ≤
+        Fintype.card
+          (V13RealLinearNoTargetSequentialTraceFirstCosetHitFixedPrefixWorldSet
+            i₀ observer t
+            (v13RealLinearSequentialPrefixTranscriptVectorRows pref)
+            (v13RealLinearSequentialPrefixTranscriptVectorNextRow observer
+              pref)) :=
+    v13RealLinearNoTargetSequentialTraceFirstCosetHitOrderedPrefixWorldSet_card_le_fixedPrefix
+      i₀ observer t pref
+  have hfixed :=
+    v13RealLinearNoTargetSequentialTraceFirstCosetHitFixedPrefixWorldSet_card_mul_two_pow_le_step
+      i₀ observer t
+      (v13RealLinearSequentialPrefixTranscriptVectorRows pref)
+      (v13RealLinearSequentialPrefixTranscriptVectorNextRow observer pref)
+  exact (Nat.mul_le_mul_right (2 ^ m) hcard).trans hfixed
 
 noncomputable def
     v13RealLinearNoTargetSequentialTraceFirstCosetHitWorldSetEquivSigmaOrderedPrefix
