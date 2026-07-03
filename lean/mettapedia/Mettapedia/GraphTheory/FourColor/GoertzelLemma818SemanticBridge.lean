@@ -2597,6 +2597,87 @@ theorem concreteChainFiberAppend_boundary_output_pair_forces_input_pair
         GoertzelLemma814.chainStateAt, GoertzelLemma814.listGetD, hcolor]
         using hpairOutput
 
+theorem concreteChainFiberAppend_boundary_output_share_shift_forces_input_share
+    (word : List GoertzelLemma818FrontierMode.TauOrient)
+    (orient : GoertzelLemma818FrontierMode.TauOrient)
+    (leftOrient : GoertzelLemma814.TauOrient)
+    (outputEdge inputEdge : GoertzelLemma814.TauEdge)
+    (localEdge : GoertzelLemma814.ChainEdge)
+    (hne : word ≠ [])
+    (hleft :
+      GoertzelLemma814.tauOrientAt
+        (frontierWordToChainWord (word ++ [orient])) (word.length - 1) =
+        leftOrient)
+    (hlocalOcc : localEdge.occ = 0)
+    (hlocalNotInput :
+      (GoertzelLemma814.tauOrientInputOrder
+        (frontierOrientToChain orient)).contains localEdge.edge = false)
+    (hzip :
+      (outputEdge, inputEdge) ∈
+        (GoertzelLemma814.tauOrientOutputOrder leftOrient).zip
+          (GoertzelLemma814.tauOrientInputOrder
+            (frontierOrientToChain orient)))
+    (hshare :
+      GoertzelLemma814.chainEdgesShareEndpoint
+        (frontierWordToChainWord (word ++ [orient]))
+        ({ occ := word.length - 1, edge := outputEdge } :
+          GoertzelLemma814.ChainEdge)
+        (concreteChainFiberAppendShiftEdge word localEdge) = true) :
+    GoertzelLemma814.chainEdgesShareEndpoint (frontierWordToChainWord [orient])
+      ({ occ := 0, edge := inputEdge } : GoertzelLemma814.ChainEdge)
+      localEdge = true := by
+  cases localEdge with
+  | mk localOcc localTau =>
+      simp at hlocalOcc
+      subst localOcc
+      cases word with
+      | nil =>
+          exact False.elim (hne rfl)
+      | cons head tail =>
+          have hleftAt :
+              GoertzelLemma814.listGetD
+                (frontierOrientToChain head ::
+                  (List.map frontierOrientToChain tail ++
+                    [frontierOrientToChain orient]))
+                tail.length GoertzelLemma814.TauOrient.normal =
+                leftOrient := by
+            simpa [GoertzelLemma814.tauOrientAt, frontierWordToChainWord] using
+              hleft
+          have hnextAt :
+              GoertzelLemma814.listGetD
+                (List.map frontierOrientToChain tail ++
+                  [frontierOrientToChain orient])
+                tail.length GoertzelLemma814.TauOrient.normal =
+                frontierOrientToChain orient := by
+            rw [← List.length_map (f := frontierOrientToChain) (as := tail)]
+            exact GoertzelLemma814.listGetD_append_length
+              (List.map frontierOrientToChain tail) (frontierOrientToChain orient)
+              GoertzelLemma814.TauOrient.normal
+          cases leftOrient <;> cases orient <;>
+            simp [GoertzelLemma814.tauOrientOutputOrder,
+              GoertzelLemma814.tauOrientInputOrder, frontierOrientToChain] at hzip
+          all_goals
+            simp [frontierOrientToChain] at hleftAt hnextAt
+            rcases hzip with
+              ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ <;>
+              cases localTau <;>
+              simp [concreteChainFiberAppendShiftEdge,
+                GoertzelLemma814.chainEdgesShareEndpoint,
+                GoertzelLemma814.chainEdgeEndpoints,
+                GoertzelLemma814.chainIsGluedOutput,
+                GoertzelLemma814.indexOf?,
+                GoertzelLemma814.indexOfAux,
+                GoertzelLemma814.tauOrientAt,
+                GoertzelLemma814.listGetD,
+                GoertzelLemma814.edgeEndpoints,
+                GoertzelLemma814.tauEndpointToChainEndpoint,
+                GoertzelLemma814.isInternalEndpoint,
+                GoertzelLemma814.tauStubInternalEndpoint,
+                GoertzelLemma814.tauOrientOutputOrder,
+                GoertzelLemma814.tauOrientInputOrder,
+                frontierWordToChainWord, frontierOrientToChain,
+                hleftAt, hnextAt] at hlocalNotInput hshare ⊢
+
 theorem concreteChainFiberAppend_chainCanonicalEdge_last_non_glued
     (word : List GoertzelLemma818FrontierMode.TauOrient)
     (orient : GoertzelLemma818FrontierMode.TauOrient)
