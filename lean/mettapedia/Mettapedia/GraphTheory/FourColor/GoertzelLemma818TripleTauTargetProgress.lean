@@ -2061,6 +2061,51 @@ def ttFiber32TargetAppendRowSurfaceSelectedKeys :
       [GoertzelLemma818CompositeCertificate.ttFiber32Key]
   | _ => []
 
+theorem ttFiber3Key_mem_colorAssignments4 :
+    GoertzelLemma818CompositeCertificate.ttFiber3Key ∈ colorAssignments4 := by
+  rw [GoertzelLemma818LengthTwoTTRealAudit.ttColorAssignments_eq_fiberKeys]
+  decide
+
+theorem ttFiber3TargetAppendPrefixFiber_nonempty :
+    ∃ root rest,
+      concreteChainFiber (targetAppendPrefix RepresentativeSemanticTarget.ttt)
+        GoertzelLemma818CompositeCertificate.ttFiber3Key = root :: rest := by
+  refine
+    ⟨GoertzelLemma818LengthTwoDirectClosurePrototype.ttFiber3StateAt 0,
+      [ GoertzelLemma818LengthTwoDirectClosurePrototype.ttFiber3StateAt 1
+      , GoertzelLemma818LengthTwoDirectClosurePrototype.ttFiber3StateAt 2
+      , GoertzelLemma818LengthTwoDirectClosurePrototype.ttFiber3StateAt 3
+      , GoertzelLemma818LengthTwoDirectClosurePrototype.ttFiber3StateAt 4
+      , GoertzelLemma818LengthTwoDirectClosurePrototype.ttFiber3StateAt 5
+      , GoertzelLemma818LengthTwoDirectClosurePrototype.ttFiber3StateAt 6
+      , GoertzelLemma818LengthTwoDirectClosurePrototype.ttFiber3StateAt 7
+      ], ?_⟩
+  unfold concreteChainFiber concreteChainStates targetAppendPrefix
+  change
+    chainFiberFrom GoertzelLemma818CompositeCertificate.ttWord
+      (allChainStates GoertzelLemma818CompositeCertificate.ttWord)
+      GoertzelLemma818CompositeCertificate.ttFiber3Key =
+        GoertzelLemma818LengthTwoDirectClosurePrototype.ttFiber3DirectStates
+  rw [GoertzelLemma818LengthTwoRealFiberBridgePrototype.ttFiber3RealFiber_eq_direct]
+
+theorem ttFiber3Key_not_mem_ttFiber32TargetAppendRowSurfaceSelectedKeys_ttt :
+    GoertzelLemma818CompositeCertificate.ttFiber3Key ∉
+      ttFiber32TargetAppendRowSurfaceSelectedKeys
+        RepresentativeSemanticTarget.ttt := by
+  decide
+
+theorem not_ttFiber32TargetAppendRowSurfaceSelectedKeys_cover :
+    ¬ RepresentativeTargetAppendSelectedKeysCover
+        ttFiber32TargetAppendRowSurfaceSelectedKeys := by
+  intro hcover
+  rcases ttFiber3TargetAppendPrefixFiber_nonempty with
+    ⟨root, rest, hfiber⟩
+  exact
+    ttFiber3Key_not_mem_ttFiber32TargetAppendRowSurfaceSelectedKeys_ttt
+      (hcover RepresentativeSemanticTarget.ttt
+        GoertzelLemma818CompositeCertificate.ttFiber3Key
+        ttFiber3Key_mem_colorAssignments4 root rest hfiber)
+
 def ttFiber32TargetAppendRowSurfaceCases :
     List AppendedParentRowsProjectionFiniteSectionTargetCase :=
   [ttFiber32AppendedParentRowsProjectionFiniteSectionTargetCase]

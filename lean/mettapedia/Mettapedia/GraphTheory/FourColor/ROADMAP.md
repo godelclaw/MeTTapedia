@@ -402,7 +402,11 @@ and
 This pins the remaining generated-data obligation precisely: prove that the
 selected key lists cover every nonempty canonical target-append prefix fiber,
 then the selected target cases can feed the existing full representative
-closure wrapper.
+closure wrapper.  The current one-key selected list is now formally guarded by
+`not_ttFiber32TargetAppendRowSurfaceSelectedKeys_cover`, using the nonempty
+`TTT` target-append prefix fiber for `ttFiber3Key` as a concrete missed
+obligation; do not use the current selected list as a full
+`RepresentativeTargetAppendSelectedKeysCover`.
 The theorem
 `tttFiber32Rows_length_eq_two_mul_ttFiber32Rows_length` records the table-level
 alignment for the known `TT` obstruction key: the same generated key appears in

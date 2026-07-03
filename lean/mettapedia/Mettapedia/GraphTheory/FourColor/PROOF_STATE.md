@@ -588,6 +588,18 @@ SHA256
 `fourcolor-selected-key-cover-upgrade-axioms-20260703.log` (SHA256
 `1836e5f8f4a57c3dd2d655190ba32dad0873666ac9cdaf8e67e61f9f579a718d`);
 both upgrade theorems depend on `propext`.
+The current one-key selected list is now also proved not to satisfy that full
+coverage hypothesis:
+`not_ttFiber32TargetAppendRowSurfaceSelectedKeys_cover` uses
+`ttFiber3TargetAppendPrefixFiber_nonempty` as a concrete missed
+`TTT` target-append prefix-fiber obligation.  Evidence is
+`fourcolor-selected-key-cover-negative-build-20260703.log` (1110 jobs,
+SHA256
+`533583471beb7370ab7616d30759ba326e1980aa620684f7175311666fcbac90`) and
+`fourcolor-selected-key-cover-negative-axioms-20260703.log` (SHA256
+`7bee4a5a2f70a91410aa3b3bf2e67b8e8f0f830f3555988b66883757def17faa`);
+the cover-negation theorem depends on `propext`, `Classical.choice`, and
+`Quot.sound`.
 The table-level diagnostic
 `tttFiber32Rows_length_eq_two_mul_ttFiber32Rows_length` records that the known
 `TT` obstruction key is the same generated fixed input as `TTT` light-fiber
