@@ -8234,6 +8234,69 @@ def concreteChainFiberAppendQuotientFibrationParentRowsNonSingletonPrefixAppende
                     ∀ b : ChainFiberPoint word key,
                       proj (preimageRows.get (rowOf b)) = b
 
+def appendedParentRowsProjectionFiniteSectionBody
+    (word : List GoertzelLemma818FrontierMode.TauOrient)
+    (orient : GoertzelLemma818FrontierMode.TauOrient)
+    (key : List GoertzelLemma814.LColor) : Prop :=
+  (∃ totalDecidableEq :
+    DecidableEq (ChainFiberPoint (word ++ [orient]) key),
+    Nonempty
+      (@ParentRowsSymmetricRootedConnectedCertificate
+        (ChainFiberPoint (word ++ [orient]) key)
+        totalDecidableEq
+        (chainFiberRootClosureStep (word ++ [orient]) key))) ∧
+  ∃ proj :
+    ChainFiberPoint (word ++ [orient]) key →
+      ChainFiberPoint word key,
+    ∃ preimageRows :
+      List (ChainFiberPoint (word ++ [orient]) key),
+      ∃ rowOf : ChainFiberPoint word key →
+          Fin preimageRows.length,
+        ∀ b : ChainFiberPoint word key,
+          proj (preimageRows.get (rowOf b)) = b
+
+structure AppendedParentRowsProjectionFiniteSectionCase where
+  word : List GoertzelLemma818FrontierMode.TauOrient
+  orient : GoertzelLemma818FrontierMode.TauOrient
+  key : List GoertzelLemma814.LColor
+  lengthGtOne : 1 < word.length
+  prefixCertificate : Nonempty (ChainWordConcreteFibrationCertificate word)
+  keyMem : key ∈ GoertzelLemma814.colorAssignments4
+  rows :
+    ∀ (root : List GoertzelLemma814.TauState)
+      (rest : List (List GoertzelLemma814.TauState)),
+      concreteChainFiber word key = root :: rest →
+        appendedParentRowsProjectionFiniteSectionBody word orient key
+
+def AppendedParentRowsProjectionFiniteSectionCasesCover
+    (cases : List AppendedParentRowsProjectionFiniteSectionCase) : Prop :=
+  ∀ (word : List GoertzelLemma818FrontierMode.TauOrient)
+    (orient : GoertzelLemma818FrontierMode.TauOrient),
+    1 < word.length →
+    Nonempty (ChainWordConcreteFibrationCertificate word) →
+      ∀ key : List GoertzelLemma814.LColor,
+        key ∈ GoertzelLemma814.colorAssignments4 →
+          ∀ (root : List GoertzelLemma814.TauState)
+            (rest : List (List GoertzelLemma814.TauState)),
+            concreteChainFiber word key = root :: rest →
+              ∃ rowCase,
+                rowCase ∈ cases ∧
+                  word = rowCase.word ∧
+                  orient = rowCase.orient ∧
+                  key = rowCase.key
+
+theorem concreteChainFiberAppendQuotientFibrationParentRowsNonSingletonPrefixAppendedParentRowsProjectionFiniteSectionClosed_of_cases
+    {cases : List AppendedParentRowsProjectionFiniteSectionCase}
+    (hcover : AppendedParentRowsProjectionFiniteSectionCasesCover cases) :
+    concreteChainFiberAppendQuotientFibrationParentRowsNonSingletonPrefixAppendedParentRowsProjectionFiniteSectionClosed := by
+  intro word orient hlen hcert key hkey root rest hfiber
+  rcases hcover word orient hlen hcert key hkey root rest hfiber with
+    ⟨rowCase, _hmem, hword, horient, hkeyEq⟩
+  subst word
+  subst orient
+  subst key
+  exact rowCase.rows root rest hfiber
+
 theorem concreteChainFiberAppendQuotientFibrationParentRowsNonSingletonPrefixAppendedParentRowsConnectedClosed_of_appended_parent_rows_projection_finite_section
     (hCombined :
       concreteChainFiberAppendQuotientFibrationParentRowsNonSingletonPrefixAppendedParentRowsProjectionFiniteSectionClosed) :

@@ -360,9 +360,12 @@ with the earlier projection finite-section rows,
 row-shaped halves for the exact `TT -> TTT` fiber-32 append.  The follow-up
 `ttFiber32AppendedParentRowsProjectionFiniteSection_of_eq` presents that same
 local package in the body shape expected by the global combined predicate under
-the exact word/orient/key equalities.  Gate-2 still needs the same pattern
-lifted beyond this key and fed into the global generated parent-row/projection
-predicate.
+the exact word/orient/key equalities.  The semantic bridge now exposes
+`AppendedParentRowsProjectionFiniteSectionCase` and
+`AppendedParentRowsProjectionFiniteSectionCasesCover`, plus the wrapper
+`concreteChainFiberAppendQuotientFibrationParentRowsNonSingletonPrefixAppendedParentRowsProjectionFiniteSectionClosed_of_cases`;
+`ttFiber32AppendedParentRowsProjectionFiniteSectionCase` is the first concrete
+case object.  Gate-2 still needs generated coverage for the full case list.
 The theorem
 `tttFiber32Rows_length_eq_two_mul_ttFiber32Rows_length` records the table-level
 alignment for the known `TT` obstruction key: the same generated key appears in

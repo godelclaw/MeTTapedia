@@ -517,6 +517,23 @@ SHA256
 `2ce4d6dbc513acba180cd96545a239e9b04aea571b68894d8de02e628d93a4cb`);
 the case theorem and prefix certificate theorem depend on `propext`,
 `Classical.choice`, and `Quot.sound`.
+The combined predicate now has a finite generated-case interface in
+`GoertzelLemma818SemanticBridge.lean`:
+`AppendedParentRowsProjectionFiniteSectionCase` stores one word/orient/key
+case, `AppendedParentRowsProjectionFiniteSectionCasesCover` states that a
+finite case list covers the global quantifier, and
+`concreteChainFiberAppendQuotientFibrationParentRowsNonSingletonPrefixAppendedParentRowsProjectionFiniteSectionClosed_of_cases`
+turns such a covering list into the existing global combined predicate.
+`ttFiber32AppendedParentRowsProjectionFiniteSectionCase` is the first concrete
+case object.  This is infrastructure for generated case assembly, not a
+coverage proof for the full list.  Case-list interface evidence is
+`fourcolor-parent-row-case-list-interface-build-20260703.log` (1110 jobs,
+SHA256
+`533583471beb7370ab7616d30759ba326e1980aa620684f7175311666fcbac90`) and
+`fourcolor-parent-row-case-list-interface-axioms-20260703.log` (SHA256
+`7f96af35b80b044f83baaeaaa4bd4ecfc4cf20e602a57b8e7f796ff9cdfe078c`);
+the generic case-list wrapper depends on `propext`, while the local case
+object depends on `propext`, `Classical.choice`, and `Quot.sound`.
 The table-level diagnostic
 `tttFiber32Rows_length_eq_two_mul_ttFiber32Rows_length` records that the known
 `TT` obstruction key is the same generated fixed input as `TTT` light-fiber
