@@ -1,5 +1,6 @@
 import Mettapedia.GraphTheory.FourColor.Goal
 import Mettapedia.GraphTheory.FourColor.FrontierRefutations
+import Mettapedia.GraphTheory.FourColor.PillarASmallerSpace
 
 /-!
 # Audit consequences for the FourColor goal
@@ -16,6 +17,20 @@ open Theorem49PlanarBoundaryAnnulusWheelWitnessRegression
 open Theorem49ForcingInteriorEdgeObstructionRegression
 open Theorem49PlanarBoundaryAnnulusHonestWitnessRegression
 open Theorem49PositiveGeometricSourceReplacementRegression
+
+/-! ## Corrected need-based Pillar-A audit hook -/
+
+theorem needBasedPillarARequirement_routeKempeSwitch_audit_of_boundaryZeroAnnihilatorTrivial
+    {V : Type*} [DecidableEq V] {G : SimpleGraph V}
+    [Fintype G.edgeSet] [FiniteDimensional F2 (G.edgeSet → Color)]
+    (emb : PlaneEmbeddingWithBoundary G) (vertices : Finset V)
+    (C₀ : G.EdgeColoring Color)
+    (htrivial : BoundaryZeroAnnihilatorTrivialForEmbedding emb C₀)
+    (hG : HasCubicIncidentEdgeTriples G) :
+    NeedBasedPillarARequirement emb vertices C₀
+      (RouteKempeSwitchExecutionStep emb) :=
+  needBasedPillarARequirement_routeKempeSwitch_of_boundaryZeroAnnihilatorTrivial_of_hasCubicIncidentEdgeTriples
+    (G := G) emb vertices C₀ htrivial hG
 
 /-! ## All four uniform geometric oracles are false -/
 
