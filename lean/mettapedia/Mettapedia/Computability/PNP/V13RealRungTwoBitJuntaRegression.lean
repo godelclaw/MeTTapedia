@@ -33,4 +33,9 @@ example {m j : Nat} (i₀ : Fin m)
           observer A i₀ :=
   v13RealLinearParityObserver_determinesTarget_iff observer A i₀
 
+example {m j : Nat}
+    (hcount : V13RealLinearNoTargetBitJuntaBlockedCountingBound m j) :
+    V13RealLinearNoTargetBitJuntaSuccessBound m j :=
+  v13RealLinearNoTargetBitJuntaSuccessBound_of_blockedCounting hcount
+
 end Mettapedia.Computability.PNP
