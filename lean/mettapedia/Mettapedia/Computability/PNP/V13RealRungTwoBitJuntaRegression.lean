@@ -277,6 +277,29 @@ example {m q : Nat} (i₀ : Fin m)
   v13RealLinearNoTargetSequentialTraceFirstCosetHitFixedPrefixWorldSet_card_mul_two_pow_le_step
     i₀ observer t rows row
 
+example {m q : Nat} (i₀ : Fin m)
+    (observer : V13RealLinearSequentialRowObserver m q) (t : Fin q) :
+    Fintype.card
+        (V13RealLinearNoTargetSequentialTraceFirstCosetHitWorldSet
+          i₀ observer t) ≤
+      ∑ rows : Finset (Fin m),
+        ∑ row : Fin m,
+          Fintype.card
+            (V13RealLinearNoTargetSequentialTraceFirstCosetHitFixedPrefixWorldSet
+              i₀ observer t rows row) :=
+  v13RealLinearNoTargetSequentialTraceFirstCosetHitWorldSet_card_le_sum_fixedPrefix
+    i₀ observer t
+
+example {m q : Nat} (i₀ : Fin m)
+    (observer : V13RealLinearSequentialRowObserver m q)
+    (hpack :
+      V13RealLinearNoTargetRowsSequentialTraceCosetHitFixedPrefixPackingBound
+        i₀ observer) :
+    V13RealLinearNoTargetRowsSequentialTraceCosetHitCountingBound
+      i₀ observer :=
+  V13RealLinearNoTargetRowsSequentialTraceCosetHitCountingBound_of_fixedPrefixPacking
+    i₀ observer hpack
+
 example {m : Nat} (i₀ : Fin m)
     (rows : V13RealLinearBudgetedRowset m 2) :
     Fintype.card
