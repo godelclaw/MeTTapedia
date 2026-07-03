@@ -3107,6 +3107,148 @@ theorem
             i₀ observer t,
           2 ^ (m - activeIdx.1.rows.card) := rfl
 
+theorem
+    v13RealLinearNoTargetSequentialTraceFirstCosetHitFixedPrefixWorldSet_cosetHit
+    {m q : Nat} (i₀ : Fin m)
+    (observer : V13RealLinearSequentialRowObserver m q) (t : Fin q)
+    (rows : Finset (Fin m)) (row : Fin m)
+    (omega :
+      V13RealLinearNoTargetSequentialTraceFirstCosetHitFixedPrefixWorldSet
+        i₀ observer t rows row) :
+    V13RealLinearRowFunctionalTargetCosetHit omega.val.1.val rows i₀ row := by
+  classical
+  let trace :=
+    v13RealLinearNoTargetRowsSequentialQRowTrace i₀ observer omega.val
+  rcases omega.property with ⟨hfirst, hrows, hrow⟩
+  rcases hfirst.2 with ⟨hhitIndex, hhit⟩
+  rcases hrow with ⟨hrowIndex, hget⟩
+  have hidx :
+      (⟨(t : Nat), hhitIndex⟩ : Fin trace.length) =
+        ⟨(t : Nat), hrowIndex⟩ := by
+    apply Fin.ext
+    rfl
+  have hhitRows :
+      V13RealLinearRowFunctionalTargetCosetHit
+        ((v13RealLinearNoTargetRowsSequentialQRowExperiment
+            i₀ observer).sampleA omega.val.1)
+        rows i₀ (trace.get ⟨(t : Nat), hhitIndex⟩) := by
+    simpa [trace, hrows] using hhit
+  have hgetHit : trace.get ⟨(t : Nat), hhitIndex⟩ = row := by
+    simpa [trace, hidx] using hget
+  rw [hgetHit] at hhitRows
+  simpa [v13RealLinearNoTargetRowsSequentialQRowExperiment,
+    v13RealLinearNoTargetRowsCausalQRowExperiment,
+    v13RealLinearNoTargetRowsQRowExperiment] using hhitRows
+
+noncomputable def
+    v13RealLinearNoTargetSequentialTraceFirstCosetHitFixedPrefixTranscriptSigmaEquivFixedMapCylinderSigma
+    {m q : Nat} (i₀ : Fin m)
+    (observer : V13RealLinearSequentialRowObserver m q) (t : Fin q) :
+    (Σ rows : Finset (Fin m),
+      Σ row : Fin m,
+        Σ transcript : V13RealLinearRowsTranscriptSpace m rows,
+          V13RealLinearNoTargetSequentialTraceFirstCosetHitFixedPrefixTranscriptWorldSet
+            i₀ observer t rows row transcript) ≃
+      (Σ idx :
+        V13RealLinearNoTargetSequentialTraceFirstCosetHitFixedMapTranscriptCylinderIndex
+          m q i₀ observer t,
+        V13RealLinearNoTargetSequentialTraceFirstCosetHitFixedMapTranscriptCylinder
+          i₀ observer t idx) where
+  toFun cell := by
+    rcases cell with ⟨rows, row, transcript, cell⟩
+    let idx :
+        V13RealLinearNoTargetSequentialTraceFirstCosetHitFixedMapTranscriptCylinderIndex
+          m q i₀ observer t :=
+      { A := cell.val.val.1
+        rows := rows
+        row := row
+        hit :=
+          v13RealLinearNoTargetSequentialTraceFirstCosetHitFixedPrefixWorldSet_cosetHit
+            i₀ observer t rows row cell.val
+        transcript := transcript }
+    exact
+      ⟨idx,
+        ⟨cell.val.val.2, by
+          dsimp [idx,
+            V13RealLinearNoTargetSequentialTraceFirstCosetHitFixedMapTranscriptCylinder]
+          exact
+            ⟨cell.val.property.1, cell.val.property.2.1,
+              cell.val.property.2.2, cell.property⟩⟩⟩
+  invFun cell := by
+    rcases cell with ⟨idx, cell⟩
+    exact
+      ⟨idx.rows, idx.row, idx.transcript,
+        ⟨⟨(idx.A, cell.val),
+          ⟨cell.property.1, cell.property.2.1,
+            cell.property.2.2.1⟩⟩,
+          cell.property.2.2.2⟩⟩
+  left_inv cell := by
+    rcases cell with ⟨rows, row, transcript, cell⟩
+    rcases cell with ⟨omega, htranscript⟩
+    cases htranscript
+    rfl
+  right_inv cell := by
+    rcases cell with ⟨idx, cell⟩
+    apply Sigma.ext
+    · cases idx
+      rfl
+    · simp
+
+theorem
+    v13RealLinearNoTargetSequentialTraceFirstCosetHitFixedPrefixTranscriptWorldSet_sum_card_eq_fixedMapCylinder_sum_card
+    {m q : Nat} (i₀ : Fin m)
+    (observer : V13RealLinearSequentialRowObserver m q) (t : Fin q) :
+    (∑ rows : Finset (Fin m),
+      ∑ row : Fin m,
+        ∑ transcript : V13RealLinearRowsTranscriptSpace m rows,
+          Fintype.card
+            (V13RealLinearNoTargetSequentialTraceFirstCosetHitFixedPrefixTranscriptWorldSet
+              i₀ observer t rows row transcript)) =
+      ∑ idx :
+        V13RealLinearNoTargetSequentialTraceFirstCosetHitFixedMapTranscriptCylinderIndex
+          m q i₀ observer t,
+        Fintype.card
+          (V13RealLinearNoTargetSequentialTraceFirstCosetHitFixedMapTranscriptCylinder
+            i₀ observer t idx) := by
+  classical
+  have hcard :
+      Fintype.card
+          (Σ rows : Finset (Fin m),
+            Σ row : Fin m,
+              Σ transcript : V13RealLinearRowsTranscriptSpace m rows,
+                V13RealLinearNoTargetSequentialTraceFirstCosetHitFixedPrefixTranscriptWorldSet
+                  i₀ observer t rows row transcript) =
+        Fintype.card
+          (Σ idx :
+            V13RealLinearNoTargetSequentialTraceFirstCosetHitFixedMapTranscriptCylinderIndex
+              m q i₀ observer t,
+            V13RealLinearNoTargetSequentialTraceFirstCosetHitFixedMapTranscriptCylinder
+              i₀ observer t idx) :=
+    Fintype.card_congr
+      (v13RealLinearNoTargetSequentialTraceFirstCosetHitFixedPrefixTranscriptSigmaEquivFixedMapCylinderSigma
+        i₀ observer t)
+  simpa [Fintype.card_sigma] using hcard
+
+theorem
+    v13RealLinearNoTargetSequentialTraceFirstCosetHitFixedPrefixTranscriptWorldSet_sum_card_eq_active_capacity
+    {m q : Nat} (i₀ : Fin m)
+    (observer : V13RealLinearSequentialRowObserver m q) (t : Fin q) :
+    (∑ rows : Finset (Fin m),
+      ∑ row : Fin m,
+        ∑ transcript : V13RealLinearRowsTranscriptSpace m rows,
+          Fintype.card
+            (V13RealLinearNoTargetSequentialTraceFirstCosetHitFixedPrefixTranscriptWorldSet
+              i₀ observer t rows row transcript)) =
+      ∑ activeIdx :
+        V13RealLinearNoTargetSequentialTraceFirstCosetHitActiveFixedMapTranscriptCylinderIndex
+          i₀ observer t,
+        2 ^ (m - activeIdx.1.rows.card) := by
+  rw [
+    v13RealLinearNoTargetSequentialTraceFirstCosetHitFixedPrefixTranscriptWorldSet_sum_card_eq_fixedMapCylinder_sum_card
+      i₀ observer t,
+    v13RealLinearNoTargetSequentialTraceFirstCosetHitFixedMapTranscriptCylinder_sum_card_eq_active_capacity
+      i₀ observer t]
+
 noncomputable def
     v13RealLinearNoTargetSequentialTraceFirstCosetHitFixedPrefixWorldSetEquivSigmaTranscript
     {m q : Nat} (i₀ : Fin m)
