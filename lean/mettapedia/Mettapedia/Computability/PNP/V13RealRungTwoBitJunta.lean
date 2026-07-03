@@ -2614,6 +2614,156 @@ theorem
       rw [hworld]
       ring
 
+/-- Fixed-map transcript-cylinder index for the no-target first-hit surface.
+It records the sampled no-target map, the realized prefix rowset, the chosen
+hit row, a proof that this row lies in the target coset of the prefix span, and
+the public row transcript on the prefix rowset. -/
+structure
+    V13RealLinearNoTargetSequentialTraceFirstCosetHitFixedMapTranscriptCylinderIndex
+    (m q : Nat) (i₀ : Fin m)
+    (_observer : V13RealLinearSequentialRowObserver m q) (_t : Fin q) where
+  A : V13RealLinearNoTargetRowsMap m i₀
+  rows : Finset (Fin m)
+  row : Fin m
+  hit : V13RealLinearRowFunctionalTargetCosetHit A.val rows i₀ row
+  transcript : V13RealLinearRowsTranscriptSpace m rows
+
+noncomputable instance
+    {m q : Nat} (i₀ : Fin m)
+    (observer : V13RealLinearSequentialRowObserver m q) (t : Fin q) :
+    Fintype
+      (V13RealLinearNoTargetSequentialTraceFirstCosetHitFixedMapTranscriptCylinderIndex
+        m q i₀ observer t) := by
+  classical
+  let Index :=
+    V13RealLinearNoTargetSequentialTraceFirstCosetHitFixedMapTranscriptCylinderIndex
+      m q i₀ observer t
+  let SigmaIndex :=
+    Σ A : V13RealLinearNoTargetRowsMap m i₀,
+      Σ rows : Finset (Fin m),
+        Σ row :
+          {row : Fin m //
+            V13RealLinearRowFunctionalTargetCosetHit A.val rows i₀ row},
+          V13RealLinearRowsTranscriptSpace m rows
+  exact
+    Fintype.ofEquiv SigmaIndex
+      { toFun := fun idx =>
+          { A := idx.1
+            rows := idx.2.1
+            row := idx.2.2.1.val
+            hit := idx.2.2.1.property
+            transcript := idx.2.2.2 }
+        invFun := fun idx =>
+          ⟨idx.A, idx.rows, ⟨idx.row, idx.hit⟩, idx.transcript⟩
+        left_inv := by
+          intro idx
+          rcases idx with ⟨A, rows, row, transcript⟩
+          cases row
+          rfl
+        right_inv := by
+          intro idx
+          cases idx
+          rfl }
+
+/-- Hidden-vector cylinder for a fixed no-target map and fixed transcript
+index.  The rowset, hit row, and transcript are fixed in the index; the only
+remaining choices are hidden vectors whose induced sequential trace lands in
+that cell. -/
+abbrev
+    V13RealLinearNoTargetSequentialTraceFirstCosetHitFixedMapTranscriptCylinder
+    {m q : Nat} (i₀ : Fin m)
+    (observer : V13RealLinearSequentialRowObserver m q) (t : Fin q)
+    (idx :
+      V13RealLinearNoTargetSequentialTraceFirstCosetHitFixedMapTranscriptCylinderIndex
+        m q i₀ observer t) :=
+  {x : F2Vec m //
+    let omega :
+        V13RealLinearAdaptiveQRowWorld m
+          (V13RealLinearNoTargetRowsMap m i₀) := (idx.A, x)
+    V13RealLinearAdaptiveQRowTraceFirstCosetHit
+      (v13RealLinearNoTargetRowsSequentialQRowExperiment i₀ observer)
+      i₀
+      (v13RealLinearNoTargetRowsSequentialQRowTrace i₀ observer)
+      t omega ∧
+    v13RealLinearRowTracePrefixRows
+      (v13RealLinearNoTargetRowsSequentialQRowTrace i₀ observer omega)
+      (t : Nat) = idx.rows ∧
+    (∃ h : (t : Nat) <
+        (v13RealLinearNoTargetRowsSequentialQRowTrace i₀ observer omega).length,
+      (v13RealLinearNoTargetRowsSequentialQRowTrace i₀ observer omega).get
+        ⟨(t : Nat), h⟩ = idx.row) ∧
+    v13RealLinearRowsTranscript idx.rows
+        (v13RealLinearPublicInput
+          ({ x := x, A := idx.A.val } : V13RealLinearWorld m)) =
+      idx.transcript}
+
+noncomputable instance
+    {m q : Nat} (i₀ : Fin m)
+    (observer : V13RealLinearSequentialRowObserver m q) (t : Fin q)
+    (idx :
+      V13RealLinearNoTargetSequentialTraceFirstCosetHitFixedMapTranscriptCylinderIndex
+        m q i₀ observer t) :
+    Fintype
+      (V13RealLinearNoTargetSequentialTraceFirstCosetHitFixedMapTranscriptCylinder
+        i₀ observer t idx) := by
+  classical
+  unfold
+    V13RealLinearNoTargetSequentialTraceFirstCosetHitFixedMapTranscriptCylinder
+  infer_instance
+
+noncomputable def
+    v13RealLinearNoTargetSequentialTraceFirstCosetHitFixedMapTranscriptCylinderToUnreadAssignment
+    {m q : Nat} (i₀ : Fin m)
+    (observer : V13RealLinearSequentialRowObserver m q) (t : Fin q)
+    (idx :
+      V13RealLinearNoTargetSequentialTraceFirstCosetHitFixedMapTranscriptCylinderIndex
+        m q i₀ observer t) :
+    V13RealLinearNoTargetSequentialTraceFirstCosetHitFixedMapTranscriptCylinder
+        i₀ observer t idx ↪
+      V13RealLinearRowsUnreadAssignment m idx.rows where
+  toFun x := fun unread => idx.A.val.toEquiv x.val unread.1
+  inj' := by
+    classical
+    intro x y hassign
+    apply Subtype.ext
+    apply idx.A.val.toEquiv.injective
+    funext row
+    by_cases hrow : row ∈ idx.rows
+    · have htranscript :
+          v13RealLinearRowsTranscript idx.rows
+              (v13RealLinearPublicInput
+                ({ x := x.val, A := idx.A.val } : V13RealLinearWorld m)) =
+            v13RealLinearRowsTranscript idx.rows
+              (v13RealLinearPublicInput
+                ({ x := y.val, A := idx.A.val } : V13RealLinearWorld m)) :=
+        x.property.2.2.2.trans y.property.2.2.2.symm
+      have hview := congrFun htranscript ⟨row, hrow⟩
+      simpa [v13RealLinearRowsTranscript, v13RealLinearRowView,
+        v13RealLinearPublicInput] using congrArg Prod.snd hview
+    · exact congrFun hassign ⟨row, hrow⟩
+
+theorem
+    v13RealLinearNoTargetSequentialTraceFirstCosetHitFixedMapTranscriptCylinder_card_le_capacity
+    {m q : Nat} (i₀ : Fin m)
+    (observer : V13RealLinearSequentialRowObserver m q) (t : Fin q)
+    (idx :
+      V13RealLinearNoTargetSequentialTraceFirstCosetHitFixedMapTranscriptCylinderIndex
+        m q i₀ observer t) :
+    Fintype.card
+        (V13RealLinearNoTargetSequentialTraceFirstCosetHitFixedMapTranscriptCylinder
+          i₀ observer t idx) ≤
+      2 ^ (m - idx.rows.card) := by
+  classical
+  have hle :
+      Fintype.card
+          (V13RealLinearNoTargetSequentialTraceFirstCosetHitFixedMapTranscriptCylinder
+            i₀ observer t idx) ≤
+        Fintype.card (V13RealLinearRowsUnreadAssignment m idx.rows) :=
+    Fintype.card_le_of_embedding
+      (v13RealLinearNoTargetSequentialTraceFirstCosetHitFixedMapTranscriptCylinderToUnreadAssignment
+        i₀ observer t idx)
+  exact hle.trans_eq (v13RealLinearRowsUnreadAssignment_card idx.rows)
+
 noncomputable def
     v13RealLinearNoTargetSequentialTraceFirstCosetHitFixedPrefixWorldSetEquivSigmaTranscript
     {m q : Nat} (i₀ : Fin m)
