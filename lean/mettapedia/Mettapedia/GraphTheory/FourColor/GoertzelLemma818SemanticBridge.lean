@@ -7817,6 +7817,82 @@ def concreteChainFiberAppendQuotientFibrationParentRowsNonSingletonPrefixSurject
                   ∃ y : ChainFiberPoint (word ++ [orient]) key,
                     proj y = b
 
+def concreteChainFiberAppendQuotientFibrationParentRowsNonSingletonPrefixAppendedConnectedClosed :
+    Prop :=
+  ∀ (word : List GoertzelLemma818FrontierMode.TauOrient)
+    (orient : GoertzelLemma818FrontierMode.TauOrient),
+    1 < word.length →
+    Nonempty (ChainWordConcreteFibrationCertificate word) →
+      ∀ key : List GoertzelLemma814.LColor,
+        key ∈ GoertzelLemma814.colorAssignments4 →
+          ∀ (root : List GoertzelLemma814.TauState)
+            (rest : List (List GoertzelLemma814.TauState)),
+            concreteChainFiber word key = root :: rest →
+              Connected
+                (chainFiberRootClosureStep (word ++ [orient]) key)
+
+def concreteChainFiberAppendQuotientFibrationParentRowsNonSingletonPrefixProjectionSurjectiveClosed :
+    Prop :=
+  ∀ (word : List GoertzelLemma818FrontierMode.TauOrient)
+    (orient : GoertzelLemma818FrontierMode.TauOrient),
+    1 < word.length →
+    Nonempty (ChainWordConcreteFibrationCertificate word) →
+      ∀ key : List GoertzelLemma814.LColor,
+        key ∈ GoertzelLemma814.colorAssignments4 →
+          ∀ (root : List GoertzelLemma814.TauState)
+            (rest : List (List GoertzelLemma814.TauState)),
+            concreteChainFiber word key = root :: rest →
+              ∃ proj :
+                ChainFiberPoint (word ++ [orient]) key →
+                  ChainFiberPoint word key,
+                ∀ b : ChainFiberPoint word key,
+                  ∃ y : ChainFiberPoint (word ++ [orient]) key,
+                    proj y = b
+
+theorem concreteChainFiberAppendQuotientFibrationParentRowsNonSingletonPrefixSurjectiveProjectionClosed_of_appended_connected_and_projection_surjective
+    (hConnected :
+      concreteChainFiberAppendQuotientFibrationParentRowsNonSingletonPrefixAppendedConnectedClosed)
+    (hSurjective :
+      concreteChainFiberAppendQuotientFibrationParentRowsNonSingletonPrefixProjectionSurjectiveClosed) :
+    concreteChainFiberAppendQuotientFibrationParentRowsNonSingletonPrefixSurjectiveProjectionClosed := by
+  intro word orient hlen hcert key hkey root rest hfiber
+  rcases hSurjective word orient hlen hcert key hkey root rest hfiber with
+    ⟨proj, hproj⟩
+  exact
+    ⟨proj, hConnected word orient hlen hcert key hkey root rest hfiber,
+      hproj⟩
+
+theorem concreteChainFiberAppendQuotientFibrationParentRowsNonSingletonPrefixAppendedConnectedClosed_of_surjective_projection
+    (hProjection :
+      concreteChainFiberAppendQuotientFibrationParentRowsNonSingletonPrefixSurjectiveProjectionClosed) :
+    concreteChainFiberAppendQuotientFibrationParentRowsNonSingletonPrefixAppendedConnectedClosed := by
+  intro word orient hlen hcert key hkey root rest hfiber
+  rcases hProjection word orient hlen hcert key hkey root rest hfiber with
+    ⟨_proj, hConnected, _hSurjective⟩
+  exact hConnected
+
+theorem concreteChainFiberAppendQuotientFibrationParentRowsNonSingletonPrefixProjectionSurjectiveClosed_of_surjective_projection
+    (hProjection :
+      concreteChainFiberAppendQuotientFibrationParentRowsNonSingletonPrefixSurjectiveProjectionClosed) :
+    concreteChainFiberAppendQuotientFibrationParentRowsNonSingletonPrefixProjectionSurjectiveClosed := by
+  intro word orient hlen hcert key hkey root rest hfiber
+  rcases hProjection word orient hlen hcert key hkey root rest hfiber with
+    ⟨proj, _hConnected, hSurjective⟩
+  exact ⟨proj, hSurjective⟩
+
+theorem concreteChainFiberAppendQuotientFibrationParentRowsNonSingletonPrefixSurjectiveProjectionClosed_iff_appended_connected_and_projection_surjective :
+    concreteChainFiberAppendQuotientFibrationParentRowsNonSingletonPrefixSurjectiveProjectionClosed ↔
+      concreteChainFiberAppendQuotientFibrationParentRowsNonSingletonPrefixAppendedConnectedClosed ∧
+        concreteChainFiberAppendQuotientFibrationParentRowsNonSingletonPrefixProjectionSurjectiveClosed :=
+  ⟨fun hProjection =>
+      ⟨concreteChainFiberAppendQuotientFibrationParentRowsNonSingletonPrefixAppendedConnectedClosed_of_surjective_projection
+          hProjection,
+        concreteChainFiberAppendQuotientFibrationParentRowsNonSingletonPrefixProjectionSurjectiveClosed_of_surjective_projection
+          hProjection⟩,
+    fun hSplit =>
+      concreteChainFiberAppendQuotientFibrationParentRowsNonSingletonPrefixSurjectiveProjectionClosed_of_appended_connected_and_projection_surjective
+        hSplit.1 hSplit.2⟩
+
 theorem concreteChainFiberAppendQuotientFibrationParentRowsConnectedLiftImageWitness_of_empty_prefix_fiber
     {word : List GoertzelLemma818FrontierMode.TauOrient}
     {orient : GoertzelLemma818FrontierMode.TauOrient}
@@ -7898,6 +7974,16 @@ theorem concreteChainFiberAppendQuotientFibrationParentRowsNonSingletonPrefixCon
           (word := word) (orient := orient) (key := key)
           hcert hkey hfiber proj hTotal hSurj
 
+theorem concreteChainFiberAppendQuotientFibrationParentRowsNonSingletonPrefixConnectedLiftImageClosed_of_appended_connected_and_projection_surjective
+    (hConnected :
+      concreteChainFiberAppendQuotientFibrationParentRowsNonSingletonPrefixAppendedConnectedClosed)
+    (hSurjective :
+      concreteChainFiberAppendQuotientFibrationParentRowsNonSingletonPrefixProjectionSurjectiveClosed) :
+    concreteChainFiberAppendQuotientFibrationParentRowsNonSingletonPrefixConnectedLiftImageClosed :=
+  concreteChainFiberAppendQuotientFibrationParentRowsNonSingletonPrefixConnectedLiftImageClosed_of_surjective_projection
+    (concreteChainFiberAppendQuotientFibrationParentRowsNonSingletonPrefixSurjectiveProjectionClosed_of_appended_connected_and_projection_surjective
+      hConnected hSurjective)
+
 theorem concreteChainFiberAppendQuotientFibrationParentRowsNonSingletonPrefixBaseDataStructuralClosed_of_connected_lift_image
     (hWitness :
       concreteChainFiberAppendQuotientFibrationParentRowsNonSingletonPrefixConnectedLiftImageClosed) :
@@ -7916,6 +8002,16 @@ theorem concreteChainFiberAppendQuotientFibrationParentRowsNonSingletonPrefixBas
   concreteChainFiberAppendQuotientFibrationParentRowsNonSingletonPrefixBaseDataStructuralClosed_of_connected_lift_image
     (concreteChainFiberAppendQuotientFibrationParentRowsNonSingletonPrefixConnectedLiftImageClosed_of_surjective_projection
       hProjection)
+
+theorem concreteChainFiberAppendQuotientFibrationParentRowsNonSingletonPrefixBaseDataStructuralClosed_of_appended_connected_and_projection_surjective
+    (hConnected :
+      concreteChainFiberAppendQuotientFibrationParentRowsNonSingletonPrefixAppendedConnectedClosed)
+    (hSurjective :
+      concreteChainFiberAppendQuotientFibrationParentRowsNonSingletonPrefixProjectionSurjectiveClosed) :
+    concreteChainFiberAppendQuotientFibrationParentRowsNonSingletonPrefixBaseDataStructuralClosed :=
+  concreteChainFiberAppendQuotientFibrationParentRowsNonSingletonPrefixBaseDataStructuralClosed_of_surjective_projection
+    (concreteChainFiberAppendQuotientFibrationParentRowsNonSingletonPrefixSurjectiveProjectionClosed_of_appended_connected_and_projection_surjective
+      hConnected hSurjective)
 
 theorem concreteChainFiberAppendQuotientFibrationParentRowsNonSingletonPrefixConnectedLiftImageClosed_of_base_data_structural
     (hPair :
@@ -8992,6 +9088,17 @@ theorem semanticFrontierStateSufficientForChain_of_append_quotient_parent_rows_s
     (concreteChainFiberAppendQuotientFibrationParentRowsNonSingletonPrefixBaseDataStructuralClosed_of_surjective_projection
       hProjection)
 
+theorem semanticFrontierStateSufficientForChain_of_append_quotient_parent_rows_appended_connected_and_projection_surjective
+    {targetAudit : RepresentativeSemanticTarget → Bool}
+    (hConnected :
+      concreteChainFiberAppendQuotientFibrationParentRowsNonSingletonPrefixAppendedConnectedClosed)
+    (hSurjective :
+      concreteChainFiberAppendQuotientFibrationParentRowsNonSingletonPrefixProjectionSurjectiveClosed) :
+    semanticFrontierStateSufficientForChain targetAudit :=
+  semanticFrontierStateSufficientForChain_of_append_quotient_parent_rows_surjective_projection
+    (concreteChainFiberAppendQuotientFibrationParentRowsNonSingletonPrefixSurjectiveProjectionClosed_of_appended_connected_and_projection_surjective
+      hConnected hSurjective)
+
 theorem semanticFrontierStateSufficientForChain_of_append_quotient_parent_rows_structural
     {targetAudit : RepresentativeSemanticTarget → Bool}
     (hStructural :
@@ -9239,6 +9346,21 @@ theorem chainAuditForFrontierWord_ok_of_targets_and_append_quotient_parent_rows_
     hTarget
     (semanticFrontierStateSufficientForChain_of_append_quotient_parent_rows_surjective_projection
       hProjection)
+    word
+
+theorem chainAuditForFrontierWord_ok_of_targets_and_append_quotient_parent_rows_appended_connected_and_projection_surjective
+    {targetAudit : RepresentativeSemanticTarget → Bool}
+    (hTarget : ∀ t, targetAudit t = true)
+    (hConnected :
+      concreteChainFiberAppendQuotientFibrationParentRowsNonSingletonPrefixAppendedConnectedClosed)
+    (hSurjective :
+      concreteChainFiberAppendQuotientFibrationParentRowsNonSingletonPrefixProjectionSurjectiveClosed)
+    (word : List GoertzelLemma818FrontierMode.TauOrient) :
+    chainAuditForFrontierWord word = true :=
+  chainAuditForFrontierWord_ok_of_targets_and_frontier_state_sufficiency
+    hTarget
+    (semanticFrontierStateSufficientForChain_of_append_quotient_parent_rows_appended_connected_and_projection_surjective
+      hConnected hSurjective)
     word
 
 end GoertzelLemma818SemanticBridge
