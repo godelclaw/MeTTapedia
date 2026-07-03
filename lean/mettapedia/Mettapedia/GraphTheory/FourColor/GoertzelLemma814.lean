@@ -41,6 +41,31 @@ def colorInPair (x a c : LColor) : Bool :=
 def swapColor (a c x : LColor) : LColor :=
   if x = a then c else if x = c then a else x
 
+theorem colorEq_eq_true_iff (x y : LColor) : colorEq x y = true ↔ x = y := by
+  unfold colorEq
+  by_cases h : x = y <;> simp [h]
+
+theorem swapColor_swapColor (a c x : LColor) :
+    swapColor a c (swapColor a c x) = x := by
+  cases a <;> cases c <;> cases x <;> rfl
+
+theorem colorInPair_swapColor (a c x : LColor) :
+    colorInPair (swapColor a c x) a c = colorInPair x a c := by
+  cases a <;> cases c <;> cases x <;> rfl
+
+theorem colorInPair_of_colorEq {x y a c : LColor}
+    (hxy : colorEq x y = true) (hy : colorInPair y a c = true) :
+    colorInPair x a c = true := by
+  rw [colorEq_eq_true_iff] at hxy
+  subst x
+  exact hy
+
+theorem colorEq_swapColor_swapColor (a c x y : LColor)
+    (h : colorEq y (swapColor a c x) = true) :
+    colorEq x (swapColor a c y) = true := by
+  rw [colorEq_eq_true_iff] at h ⊢
+  rw [h, swapColor_swapColor]
+
 /-- The ordered pair of the two colors different from `x`. -/
 def otherPair : LColor → LColor × LColor
   | LColor.r => (LColor.b, LColor.p)
@@ -1851,6 +1876,104 @@ theorem chainLocalEdges_mem_occ_lt
   rcases List.mem_map.mp hmap with ⟨edge, _hedge, hgeEq⟩
   rw [← hgeEq]
   exact hi
+
+theorem chainEdges_mem_chainLocalEdges
+    {orients : List TauOrient} {edge : ChainEdge}
+    (hmem : edge ∈ chainEdges orients) :
+    edge ∈ chainLocalEdges orients := by
+  unfold chainEdges at hmem
+  exact (List.mem_filter.mp hmem).1
+
+theorem chainIsRepresentativeEdge_eq_true_iff_not_glued_input
+    (orients : List TauOrient) (edge : ChainEdge) :
+    chainIsRepresentativeEdge orients edge = true ↔
+      chainIsGluedInput orients edge.occ edge.edge = false := by
+  unfold chainIsRepresentativeEdge
+  cases chainIsGluedInput orients edge.occ edge.edge <;> simp
+
+theorem chainCanonicalEdge_eq_self_of_mem_chainEdges
+    {orients : List TauOrient} {edge : ChainEdge}
+    (hmem : edge ∈ chainEdges orients) :
+    chainCanonicalEdge orients edge = edge := by
+  have hrep : chainIsRepresentativeEdge orients edge = true := by
+    unfold chainEdges at hmem
+    exact (List.mem_filter.mp hmem).2
+  have hglued : chainIsGluedInput orients edge.occ edge.edge = false :=
+    (chainIsRepresentativeEdge_eq_true_iff_not_glued_input orients edge).mp
+      hrep
+  cases edge with
+  | mk occ edge =>
+      by_cases hpos : occ > 0
+      · have hnotMem :
+            edge ∉ tauOrientInputOrder (tauOrientAt orients occ) := by
+          unfold chainIsGluedInput at hglued
+          simp [hpos] at hglued
+          exact hglued
+        have hcontains :
+            (tauOrientInputOrder (tauOrientAt orients occ)).contains edge =
+              false :=
+          bool_false_of_not_true (by
+            intro htrue
+            exact hnotMem (List.contains_iff_mem.mp htrue))
+        unfold chainCanonicalEdge
+        simp [hpos, indexOf?_eq_none_of_contains_false _ _ hcontains]
+      · unfold chainCanonicalEdge
+        simp [hpos]
+
+theorem chainAgreesWithSwitch_symm_of_canonical_colors
+    {orients : List TauOrient} {s t : List TauState}
+    {component : List ChainEdge} {a c : LColor}
+    (hs : ∀ ge, ge ∈ chainLocalEdges orients →
+      chainEdgeColor s (chainCanonicalEdge orients ge) = chainEdgeColor s ge)
+    (ht : ∀ ge, ge ∈ chainLocalEdges orients →
+      chainEdgeColor t (chainCanonicalEdge orients ge) = chainEdgeColor t ge)
+    (hagree : chainAgreesWithSwitch orients s t component a c = true) :
+    chainAgreesWithSwitch orients t s component a c = true := by
+  unfold chainAgreesWithSwitch at hagree ⊢
+  rw [List.all_eq_true] at hagree ⊢
+  intro ge hge
+  have hgeAgree := hagree ge hge
+  let canonical := chainCanonicalEdge orients ge
+  have hsCanon : chainEdgeColor s canonical = chainEdgeColor s ge :=
+    hs ge hge
+  have htCanon : chainEdgeColor t canonical = chainEdgeColor t ge :=
+    ht ge hge
+  change
+    colorEq (chainEdgeColor s ge)
+      (if component.contains canonical = true then
+        swapColor a c (chainEdgeColor t canonical)
+      else chainEdgeColor t canonical) = true
+  change
+    colorEq (chainEdgeColor t ge)
+      (if component.contains canonical = true then
+        swapColor a c (chainEdgeColor s canonical)
+      else chainEdgeColor s canonical) = true at hgeAgree
+  by_cases hcontains : component.contains canonical = true
+  · rw [hcontains, htCanon]
+    rw [hcontains, hsCanon] at hgeAgree
+    exact colorEq_swapColor_swapColor a c _ _ hgeAgree
+  · have hcontainsFalse : component.contains canonical = false :=
+      bool_false_of_not_true hcontains
+    rw [hcontainsFalse, htCanon]
+    rw [hcontainsFalse, hsCanon] at hgeAgree
+    rw [colorEq_eq_true_iff] at hgeAgree ⊢
+    exact hgeAgree.symm
+
+theorem chainAgreesWithSwitch_symm_of_compatible
+    {orients : List TauOrient} {s t : List TauState}
+    {component : List ChainEdge} {a c : LColor}
+    (hs : compatibleChainStates orients s = true)
+    (ht : compatibleChainStates orients t = true)
+    (hagree : chainAgreesWithSwitch orients s t component a c = true) :
+    chainAgreesWithSwitch orients t s component a c = true := by
+  apply chainAgreesWithSwitch_symm_of_canonical_colors
+  · intro ge hge
+    exact chainEdgeColor_chainCanonicalEdge_of_compatible hs ge
+      (chainLocalEdges_mem_occ_lt hge)
+  · intro ge hge
+    exact chainEdgeColor_chainCanonicalEdge_of_compatible ht ge
+      (chainLocalEdges_mem_occ_lt hge)
+  · exact hagree
 
 theorem chainEdges_contains_of_occ_edge_and_representative
     (orients : List TauOrient) (i : Nat) (edge : TauEdge)
