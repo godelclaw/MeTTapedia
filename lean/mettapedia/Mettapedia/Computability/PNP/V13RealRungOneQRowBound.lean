@@ -7,8 +7,9 @@ import Mathlib.LinearAlgebra.Matrix.GeneralLinearGroup.Card
 
 This file packages the finite sampled experiment for the real row-observer
 theorem.  The central public wrapper uses the uniform sampler over all
-certified invertible maps.  Its only remaining pinned counting obligation is
-`V13RealLinearUniformInvertibleRowSpanCountingBound`.
+certified invertible maps.  It also exposes the adjusted no-target-row sampler
+as a conditional certificate whose single remaining sampler-specific obligation
+is `V13RealLinearNoTargetRowsSequentialDeferredDecisionCountingBound`.
 -/
 
 namespace Mettapedia.Computability.PNP
@@ -9131,6 +9132,29 @@ theorem
   exact
     v13RealLinear_noTargetRows_sequential_qrow_success_bound_of_deferredDecisionCounting
       hcount i₀ observer
+
+/-- Conditional real-rung-one package for the adjusted no-target-row sampler:
+the public surface is admissible, and the sequential q-row success bound follows
+from the single sampler-specific deferred-decision counting obligation. -/
+structure V13RealLinearNoTargetRowsRungOneConditionalCertificate : Prop where
+  publicSurface :
+    ∀ m : Nat, V13RealLinearNoTargetRowsPublicSurfaceCertificate m
+  successBound :
+    V13RealLinearNoTargetRowsSequentialDeferredDecisionCountingBound →
+      ∀ {m q : Nat} (i₀ : Fin m)
+        (observer : V13RealLinearSequentialRowObserver m q),
+        v13RealLinearNoTargetRowsSequentialQRowSuccess i₀ observer ≤
+          (1 / 2 : Rat) +
+            (4 * ((2 : Rat) ^ q - 1)) / ((2 : Rat) ^ m)
+
+theorem v13RealLinear_noTargetRows_rungOneConditionalCertificate :
+    V13RealLinearNoTargetRowsRungOneConditionalCertificate := by
+  exact
+    { publicSurface := fun m =>
+        v13RealLinearNoTargetRows_publicSurfaceCertificate
+      successBound := fun hcount {m q} i₀ observer =>
+        v13RealLinear_noTargetRows_sequential_qrow_success_bound_of_deferredDecisionCounting_explicit
+          (m := m) (q := q) hcount i₀ observer }
 
 theorem
     v13RealLinear_uniform_sequential_qrow_success_bound_of_deferredDecisionTraceCosetHit

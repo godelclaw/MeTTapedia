@@ -238,10 +238,10 @@ def currentPNPRoadmap : List PNPRoadmapEntry :=
       proofNodeKey := "pnp.v13.real-rung-one.no-target-rows-sequential-qrow-conditional"
       status := .openBackground
       truthValue := ⟨100, 94⟩
-      progressPercent := 82
+      progressPercent := 84
       itvLowerPercent := 94
       itvUpperPercent := 100
-      obligation := "Connect the adjusted no-target-row sampler to the q-row experiment interface: if V13RealLinearNoTargetRowsSequentialDeferredDecisionCountingBound holds, then every sequential adaptive q-row observer on that sampler has success at most 1/2 + 4*(2^q - 1)/2^m. The remaining sampler-specific obligation is exactly that deferred-decision counting bound." },
+      obligation := "Record V13RealLinearNoTargetRowsRungOneConditionalCertificate: the adjusted no-target-row sampler has a theorem-packaged public surface, and if V13RealLinearNoTargetRowsSequentialDeferredDecisionCountingBound holds, then every sequential adaptive q-row observer on that sampler has success at most 1/2 + 4*(2^q - 1)/2^m. The remaining sampler-specific obligation is exactly that deferred-decision counting bound." },
     { stage := .v13ObserverLadder
       proofNodeKey := "pnp.v13.phase-e.observer-ladder-mark"
       status := .checked
@@ -552,11 +552,11 @@ theorem currentPNPRoadmap_records_v13_real_rung_one_no_target_rows_sequential_qr
        proofNodeKey := "pnp.v13.real-rung-one.no-target-rows-sequential-qrow-conditional"
        status := .openBackground
        truthValue := ⟨100, 94⟩
-       progressPercent := 82
+       progressPercent := 84
        itvLowerPercent := 94
        itvUpperPercent := 100
        obligation :=
-        "Connect the adjusted no-target-row sampler to the q-row experiment interface: if V13RealLinearNoTargetRowsSequentialDeferredDecisionCountingBound holds, then every sequential adaptive q-row observer on that sampler has success at most 1/2 + 4*(2^q - 1)/2^m. The remaining sampler-specific obligation is exactly that deferred-decision counting bound." } :
+        "Record V13RealLinearNoTargetRowsRungOneConditionalCertificate: the adjusted no-target-row sampler has a theorem-packaged public surface, and if V13RealLinearNoTargetRowsSequentialDeferredDecisionCountingBound holds, then every sequential adaptive q-row observer on that sampler has success at most 1/2 + 4*(2^q - 1)/2^m. The remaining sampler-specific obligation is exactly that deferred-decision counting bound." } :
       PNPRoadmapEntry) ∈ currentPNPRoadmap := by
   simp [currentPNPRoadmap]
 
