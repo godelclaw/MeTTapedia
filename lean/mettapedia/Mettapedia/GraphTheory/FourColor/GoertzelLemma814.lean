@@ -2127,6 +2127,38 @@ theorem closeChainComponent_lift_property
         · exact hstep seen other hseen hlayer
       exact ih (appendFresh seen layer) hseen' edge hmem
 
+theorem closeChainComponent_mem_comp
+    (orients : List TauOrient) (states : List TauState)
+    (a c : LColor) (m n : Nat) (seen : List ChainEdge)
+    {edge : ChainEdge}
+    (h : edge ∈ closeChainComponent orients states a c n
+      (closeChainComponent orients states a c m seen)) :
+    edge ∈ closeChainComponent orients states a c (m + n) seen := by
+  induction m generalizing seen with
+  | zero =>
+      simpa [closeChainComponent] using h
+  | succ m ih =>
+      simp only [closeChainComponent] at h
+      have hrec := ih (seen := appendFresh seen
+        (nextChainComponentLayer orients states a c seen)) h
+      have hnat : m + 1 + n = (m + n) + 1 := by omega
+      rw [hnat]
+      simp only [closeChainComponent]
+      exact hrec
+
+theorem closeChainComponent_mem_nextLayer_close
+    (orients : List TauOrient) (states : List TauState)
+    (a c : LColor) (m : Nat) (seen : List ChainEdge)
+    {edge : ChainEdge}
+    (h : edge ∈ nextChainComponentLayer orients states a c
+      (closeChainComponent orients states a c m seen)) :
+    edge ∈ closeChainComponent orients states a c (m + 1) seen := by
+  apply closeChainComponent_mem_comp
+    (orients := orients) (states := states) (a := a) (c := c)
+    (m := m) (n := 1) (seen := seen)
+  simp only [closeChainComponent]
+  exact mem_appendFresh_right h
+
 theorem contains_map_injective_eq {α β : Type}
     [BEq α] [LawfulBEq α] [BEq β] [LawfulBEq β]
     (f : α → β) (hinj : Function.Injective f) (xs : List α) (x : α) :
