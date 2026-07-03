@@ -324,9 +324,10 @@ The selector is now lifted to local semantic points for this key:
 selected `TTT` `ChainFiberPoint`s, with real-fiber membership and `Nodup`
 state-list checks.  The row-indexed prefix points are also proved surjective
 onto the real `TT` fiber-32 prefix fiber by
-`ttFiber32PrefixPoint_surjective`.  This is not a canonical prefix-projection
-claim; it is a row-index semantic selector that still has to be generalized
-into the global generated projection witness.
+`ttFiber32PrefixPoint_surjective`, with `ttFiber32PrefixPointIndex_spec`
+choosing a row index for each semantic prefix point.  This is not a canonical
+prefix-projection claim; it is a row-index semantic selector that still has to
+be generalized into the global generated projection witness.
 The prefix-fibration adapter
 `concreteChainFiberAppendQuotientFibrationParentRowsNonSingletonPrefixBaseDataStructuralClosed_of_prefix_fibration`
 now shows that `concreteChainFiberAppendPrefixFibrationClosed` is enough to
