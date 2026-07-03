@@ -182,6 +182,17 @@ and
 `concreteChainFiberAppendRelativeSingletonGlobalKempeStepLiftClosed_of_component_and_glued`
 make the prefix case automatic for the remaining component and glued-edge
 obligations.
+The glued last-edge switched-color case is also closed locally by
+`concreteChainFiberAppendRelativeSingletonShiftedSwitchLastGluedPointClosed_of_input_trace`.
+This does not close Gate-2: the exact remaining parent-row pin is
+`concreteChainFiberAppendQuotientFibrationParentRowsNonSingletonPrefixStructuralClosed`.
+It asks, for every non-singleton prefix and supplied parent-row base-data
+record, for the projection, same-projection reachability, and lifted base-step
+motion fields.  The nearby `_base_data_structural` wrappers only derive
+semantic sufficiency from this structural hypothesis or from an equivalent
+paired structural record; there is no unconditional
+`semanticFrontierStateSufficientForChain` or `chainAuditForFrontierWord`
+theorem yet.
 
 `GoertzelLemma818SemanticProgress.lean` now records the checked semantic
 frontier after the completed `TTT` target.  It proves

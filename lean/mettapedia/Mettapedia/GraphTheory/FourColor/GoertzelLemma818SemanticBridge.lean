@@ -2965,6 +2965,175 @@ theorem concreteChainFiberAppendRelativeSingletonShiftedSwitchLastNonGluedPointC
   simpa [GoertzelLemma814.chainSwitchedColor, component, localGe, hcanon,
     hcontainsIff, htargetColor, hcurrentColor] using hlocalPointRaw
 
+theorem concreteChainFiberAppendRelativeSingletonShiftedSwitchLastGluedPointClosed_of_input_trace :
+    concreteChainFiberAppendRelativeSingletonShiftedSwitchLastGluedPointClosed := by
+  intro word orient hne _hcert key _hkey pref lastX hpref _hlastX
+    hcompatibleX _hkeyLocal current target currentLast targetLast hcurrent
+    htarget hcurrentEq htargetEq move _hpair _hseed _hspecified ge _hge hlast
+    hglued
+  subst current
+  subst target
+  let localComponent :=
+    GoertzelLemma814.chainComponent (frontierWordToChainWord [orient])
+      [currentLast] move.a move.c move.seed
+  let shiftedComponent := concreteChainFiberAppendShiftComponent word localComponent
+  have hprefLen : pref.length = word.length := by
+    have hprefRaw := hpref
+    unfold concreteChainFiber GoertzelLemma814.chainFiberFrom at hprefRaw
+    have hprefStates : pref ∈ concreteChainStates word :=
+      (List.mem_filter.mp hprefRaw).1
+    have hlen :=
+      GoertzelLemma814.allChainStates_mem_length
+        (orients := frontierWordToChainWord word)
+        (by simpa [concreteChainStates] using hprefStates)
+    simpa [frontierWordToChainWord] using hlen
+  have hcurrentGlobal :
+      pref ++ [currentLast] ∈ concreteChainFiber (word ++ [orient]) key :=
+    concreteChainFiberAppend_mem_of_prefix_and_local_singleton
+      word orient hne key hpref hcompatibleX hcurrent rfl
+  have hcurrentStates :
+      pref ++ [currentLast] ∈ concreteChainStates (word ++ [orient]) := by
+    unfold concreteChainFiber GoertzelLemma814.chainFiberFrom at hcurrentGlobal
+    exact (List.mem_filter.mp hcurrentGlobal).1
+  have hcurrentCompatible :
+      GoertzelLemma814.compatibleChainStates
+        (frontierWordToChainWord (word ++ [orient]))
+        (pref ++ [currentLast]) = true := by
+    have hAll :=
+      GoertzelLemma814.allChainStates_compatible
+        (frontierWordToChainWord (word ++ [orient]))
+    rw [List.all_eq_true] at hAll
+    exact hAll (pref ++ [currentLast])
+      (by simpa [concreteChainStates] using hcurrentStates)
+  have hglobalOcc :
+      ge.occ < (frontierWordToChainWord (word ++ [orient])).length := by
+    rw [hlast]
+    simp [frontierWordToChainWord]
+  have hcanonicalColor :
+      GoertzelLemma814.chainEdgeColor (pref ++ [currentLast])
+          (GoertzelLemma814.chainCanonicalEdge
+            (frontierWordToChainWord (word ++ [orient])) ge) =
+        GoertzelLemma814.chainEdgeColor (pref ++ [currentLast]) ge :=
+    GoertzelLemma814.chainEdgeColor_chainCanonicalEdge_of_compatible
+      hcurrentCompatible ge hglobalOcc
+  have htargetTrace :
+      concreteChainFiberAppendLastInputTrace orient targetLast =
+        concreteChainFiberAppendLastInputTrace orient lastX :=
+    concreteChainFiber_singleton_input_trace_eq_of_mem orient
+      (concreteChainFiberAppendLastInputTrace orient lastX) htarget
+  have hcurrentTrace :
+      concreteChainFiberAppendLastInputTrace orient currentLast =
+        concreteChainFiberAppendLastInputTrace orient lastX :=
+    concreteChainFiber_singleton_input_trace_eq_of_mem orient
+      (concreteChainFiberAppendLastInputTrace orient lastX) hcurrent
+  have htargetCurrentColor :
+      GoertzelLemma814.chainEdgeColor (pref ++ [targetLast]) ge =
+        GoertzelLemma814.chainEdgeColor (pref ++ [currentLast]) ge := by
+    cases ge with
+    | mk occ edge =>
+        simp at hlast
+        subst occ
+        have htargetState :
+            GoertzelLemma814.chainStateAt (pref ++ [targetLast]) word.length =
+              targetLast :=
+          GoertzelLemma814.chainStateAt_append_length pref targetLast
+            word.length hprefLen
+        have hcurrentState :
+            GoertzelLemma814.chainStateAt (pref ++ [currentLast]) word.length =
+              currentLast :=
+          GoertzelLemma814.chainStateAt_append_length pref currentLast
+            word.length hprefLen
+        cases orient <;> cases edge <;>
+          simp [GoertzelLemma814.chainIsGluedInput,
+            tauOrientAt_frontierWordToChainWord_append_length,
+            concreteChainFiberAppendLastInputTrace, frontierOrientToChain,
+            GoertzelLemma814.tauOrientInputOrder,
+            GoertzelLemma814.chainEdgeColor, GoertzelLemma814.tauStateColorAt,
+            htargetState, hcurrentState] at hglued htargetTrace hcurrentTrace ⊢ <;>
+          aesop
+  have hlastOrient :
+      GoertzelLemma814.tauOrientAt
+        (frontierWordToChainWord (word ++ [orient])) word.length =
+        frontierOrientToChain orient :=
+    tauOrientAt_frontierWordToChainWord_append_length word orient
+  have hcanonicalPrefix :
+      (GoertzelLemma814.chainCanonicalEdge
+        (frontierWordToChainWord (word ++ [orient])) ge).occ < word.length := by
+    cases ge with
+    | mk occ edge =>
+        simp at hlast
+        subst occ
+        have hpos : word.length > 0 := by
+          cases word with
+          | nil =>
+              exact False.elim (hne rfl)
+          | cons _ _ =>
+              simp
+        have hinputAt :
+            (GoertzelLemma814.tauOrientInputOrder
+              (GoertzelLemma814.tauOrientAt
+                (frontierWordToChainWord (word ++ [orient]))
+                word.length)).contains edge = true := by
+          unfold GoertzelLemma814.chainIsGluedInput at hglued
+          simpa [hpos] using hglued
+        have hinput :
+            (GoertzelLemma814.tauOrientInputOrder
+              (frontierOrientToChain orient)).contains edge = true := by
+          simpa [hlastOrient] using hinputAt
+        unfold GoertzelLemma814.chainCanonicalEdge
+        cases orient <;> cases edge <;>
+          simp [hpos, hlastOrient, frontierOrientToChain,
+            GoertzelLemma814.tauOrientInputOrder,
+            GoertzelLemma814.indexOf?, GoertzelLemma814.indexOfAux] at hinput ⊢ <;>
+          omega
+  have hcontainsFalse :
+      shiftedComponent.contains
+          (GoertzelLemma814.chainCanonicalEdge
+            (frontierWordToChainWord (word ++ [orient])) ge) = false := by
+    exact concreteChainFiberAppendShiftComponent_contains_prefix_false
+      word localComponent
+      (GoertzelLemma814.chainCanonicalEdge
+        (frontierWordToChainWord (word ++ [orient])) ge)
+      hcanonicalPrefix
+  have hcontainsFalseRaw :
+      (concreteChainFiberAppendShiftComponent word
+          (GoertzelLemma814.chainComponent (frontierWordToChainWord [orient])
+            [currentLast] move.a move.c move.seed)).contains
+          (GoertzelLemma814.chainCanonicalEdge
+            (frontierWordToChainWord (word ++ [orient])) ge) = false := by
+    simpa [shiftedComponent, localComponent] using hcontainsFalse
+  have hcanonicalNotMemRaw :
+      GoertzelLemma814.chainCanonicalEdge
+          (frontierWordToChainWord (word ++ [orient])) ge ∉
+        concreteChainFiberAppendShiftComponent word
+          (GoertzelLemma814.chainComponent (frontierWordToChainWord [orient])
+            [currentLast] move.a move.c move.seed) := by
+    intro hmem
+    have hcontainsTrue :
+        (concreteChainFiberAppendShiftComponent word
+            (GoertzelLemma814.chainComponent (frontierWordToChainWord [orient])
+              [currentLast] move.a move.c move.seed)).contains
+            (GoertzelLemma814.chainCanonicalEdge
+              (frontierWordToChainWord (word ++ [orient])) ge) = true :=
+      List.contains_iff_mem.mpr hmem
+    rw [hcontainsFalseRaw] at hcontainsTrue
+    cases hcontainsTrue
+  have hswitch :
+      GoertzelLemma814.chainSwitchedColor
+          (frontierWordToChainWord (word ++ [orient]))
+          (pref ++ [currentLast])
+          (concreteChainFiberAppendShiftComponent word
+            (GoertzelLemma814.chainComponent (frontierWordToChainWord [orient])
+              [currentLast] move.a move.c move.seed))
+          move.a move.c ge =
+        GoertzelLemma814.chainEdgeColor (pref ++ [currentLast])
+          (GoertzelLemma814.chainCanonicalEdge
+            (frontierWordToChainWord (word ++ [orient])) ge) := by
+    simp [GoertzelLemma814.chainSwitchedColor, hcanonicalNotMemRaw]
+  unfold concreteChainFiberAppendRelativeSingletonShiftedSwitchPointGoal
+  simp [hswitch, hcanonicalColor, htargetCurrentColor,
+    GoertzelLemma814.colorEq]
+
 theorem concreteChainFiberAppendRelativeSingletonShiftedSwitchPointClosed_of_prefix_and_glued
     (hPrefix :
       concreteChainFiberAppendRelativeSingletonShiftedSwitchPrefixPointClosed)
@@ -4341,6 +4510,22 @@ def concreteChainFiberAppendQuotientFibrationParentRowsNonSingletonPrefixBaseDat
             (ChainFiberAppendQuotientFibrationParentRowsBaseData
               word orient key)
 
+/--
+The remaining parent-row structural pin for the non-singleton append route.
+
+For every non-singleton prefix `word`, append orientation `orient`, audited
+prefix certificate, fixed input `key`, and supplied parent-row base-data record
+`data`, this asks for the structural glue: a projection from the appended
+concrete fiber to `data.Base`, reachability between appended points with the
+same projection, and a lifted appended-fiber reachability witness for every
+`data.baseStep` out of a projected point.
+
+The base-data half is theorem-supplied separately by
+`concreteChainFiberAppendQuotientFibrationParentRowsNonSingletonPrefixBaseDataClosed_of_prefix_root_star`.
+The downstream parent-row sufficiency theorems remain conditional until this
+structural pin, or an equivalent paired base-data/structural record for the
+chosen base data, is proved.
+-/
 def concreteChainFiberAppendQuotientFibrationParentRowsNonSingletonPrefixStructuralClosed :
     Prop :=
   ∀ (word : List GoertzelLemma818FrontierMode.TauOrient)
