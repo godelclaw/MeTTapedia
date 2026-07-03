@@ -5,6 +5,7 @@ import Mettapedia.QuantumTheory.YangMills.ContinuumMeasureGateCanaries
 import Mettapedia.QuantumTheory.YangMills.EuclideanCovarianceGateCanaries
 import Mettapedia.QuantumTheory.YangMills.ExtractionObservable
 import Mettapedia.QuantumTheory.YangMills.ExtractionConstantBreak
+import Mettapedia.QuantumTheory.YangMills.ExtractionMajorant
 import Mettapedia.QuantumTheory.YangMills.ExtractionOddCutoff
 import Mettapedia.QuantumTheory.YangMills.ExtractionProjection
 import Mettapedia.QuantumTheory.YangMills.ExtractionRemainder
