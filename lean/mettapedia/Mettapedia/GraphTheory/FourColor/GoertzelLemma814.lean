@@ -1887,6 +1887,35 @@ theorem closeChainComponent_mem_of_seen
       simp only [closeChainComponent]
       exact ih (mem_appendFresh_left h)
 
+theorem closeChainComponent_mem_mono_succ
+    (orients : List TauOrient) (states : List TauState)
+    (a c : LColor) (n : Nat) (seen : List ChainEdge)
+    {edge : ChainEdge}
+    (h : edge ∈ closeChainComponent orients states a c n seen) :
+    edge ∈ closeChainComponent orients states a c (n + 1) seen := by
+  induction n generalizing seen with
+  | zero =>
+      exact closeChainComponent_mem_of_seen orients states a c 1
+        (by simpa [closeChainComponent] using h)
+  | succ n ih =>
+      simp only [closeChainComponent] at h ⊢
+      exact ih (appendFresh seen
+        (nextChainComponentLayer orients states a c seen)) h
+
+theorem closeChainComponent_mem_mono_add
+    (orients : List TauOrient) (states : List TauState)
+    (a c : LColor) (n m : Nat) (seen : List ChainEdge)
+    {edge : ChainEdge}
+    (h : edge ∈ closeChainComponent orients states a c n seen) :
+    edge ∈ closeChainComponent orients states a c (n + m) seen := by
+  induction m with
+  | zero =>
+      simpa using h
+  | succ m ih =>
+      change edge ∈ closeChainComponent orients states a c ((n + m) + 1) seen
+      exact closeChainComponent_mem_mono_succ
+        orients states a c (n + m) seen ih
+
 theorem chainComponent_seed_mem_of_nonempty
     (orients : List TauOrient) (states : List TauState)
     (move : ChainMove)
