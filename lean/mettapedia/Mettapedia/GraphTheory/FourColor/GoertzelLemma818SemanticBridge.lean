@@ -8384,6 +8384,66 @@ theorem representativeTargetAppendParentRowsProjectionFiniteSectionClosed_of_tar
       (targetAppendPrefix_length_gt_one target)
       hcert hkey root rest hfiber
 
+/--
+Partial canonical target-append coverage for selected generated keys.
+
+This is the scalable surface for generated artifacts while coverage is being
+assembled: it records only the target/key pairs already emitted, and therefore
+does not claim the full representative target predicate.
+-/
+def AppendedParentRowsProjectionFiniteSectionTargetAppendCasesCoverOn
+    (cases : List AppendedParentRowsProjectionFiniteSectionTargetCase)
+    (selectedKeys : RepresentativeSemanticTarget →
+      List (List GoertzelLemma814.LColor)) : Prop :=
+  ∀ target : RepresentativeSemanticTarget,
+    Nonempty
+      (ChainWordConcreteFibrationCertificate (targetAppendPrefix target)) →
+      ∀ key : List GoertzelLemma814.LColor,
+        key ∈ selectedKeys target →
+        key ∈ GoertzelLemma814.colorAssignments4 →
+          ∀ (root : List GoertzelLemma814.TauState)
+            (rest : List (List GoertzelLemma814.TauState)),
+            concreteChainFiber (targetAppendPrefix target) key = root :: rest →
+              ∃ rowCase,
+                rowCase ∈ cases ∧
+                  rowCase.target = target ∧
+                  rowCase.prefixWord = targetAppendPrefix target ∧
+                  rowCase.orient = targetAppendOrient target ∧
+                  rowCase.key = key
+
+def representativeTargetAppendParentRowsProjectionFiniteSectionClosedOn
+    (selectedKeys : RepresentativeSemanticTarget →
+      List (List GoertzelLemma814.LColor)) : Prop :=
+  ∀ target : RepresentativeSemanticTarget,
+    Nonempty
+      (ChainWordConcreteFibrationCertificate (targetAppendPrefix target)) →
+      ∀ key : List GoertzelLemma814.LColor,
+        key ∈ selectedKeys target →
+        key ∈ GoertzelLemma814.colorAssignments4 →
+          ∀ (root : List GoertzelLemma814.TauState)
+            (rest : List (List GoertzelLemma814.TauState)),
+            concreteChainFiber (targetAppendPrefix target) key = root :: rest →
+              appendedParentRowsProjectionFiniteSectionBody
+                (targetAppendPrefix target) (targetAppendOrient target) key
+
+theorem representativeTargetAppendParentRowsProjectionFiniteSectionClosedOn_of_target_append_cases
+    {cases : List AppendedParentRowsProjectionFiniteSectionTargetCase}
+    {selectedKeys : RepresentativeSemanticTarget →
+      List (List GoertzelLemma814.LColor)}
+    (hcover :
+      AppendedParentRowsProjectionFiniteSectionTargetAppendCasesCoverOn
+        cases selectedKeys) :
+    representativeTargetAppendParentRowsProjectionFiniteSectionClosedOn
+      selectedKeys := by
+  intro target hcert key hselected hkey root rest hfiber
+  rcases hcover target hcert key hselected hkey root rest hfiber with
+    ⟨rowCase, _hmem, _htarget, hprefix, horient, hkeyEq⟩
+  have hrowFiber :
+      concreteChainFiber rowCase.prefixWord rowCase.key = root :: rest := by
+    simpa [hprefix, hkeyEq] using hfiber
+  have hbody := rowCase.rows root rest hrowFiber
+  simpa [hprefix, horient, hkeyEq] using hbody
+
 theorem concreteChainFiberAppendQuotientFibrationParentRowsNonSingletonPrefixAppendedParentRowsProjectionFiniteSectionClosed_of_cases
     {cases : List AppendedParentRowsProjectionFiniteSectionCase}
     (hcover : AppendedParentRowsProjectionFiniteSectionCasesCover cases) :

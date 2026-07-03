@@ -381,6 +381,19 @@ available from a covering target case list.  The known
 surface is also stated as `ttFiber32TargetAppendRowSurface` in canonical target
 append form.  This is a finite target-artifact interface, not a proof that
 representative cases cover the globally quantified transfer predicate.
+For incremental generated coverage, the bridge now also has
+`AppendedParentRowsProjectionFiniteSectionTargetAppendCasesCoverOn` and
+`representativeTargetAppendParentRowsProjectionFiniteSectionClosedOn`.
+`representativeTargetAppendParentRowsProjectionFiniteSectionClosedOn_of_target_append_cases`
+turns a selected target/key cover into a selected-key closure.  The first
+selected cover is
+`ttFiber32TargetAppendRowSurfaceCases_cover_on`, with
+`ttFiber32TargetAppendRowSurfaceSelectedKeys` selecting only
+`RepresentativeSemanticTarget.ttt`/key-32 and
+`ttFiber32TargetAppendRowSurfaceCases` containing the corresponding generated
+target case.  This is the appendable partial-cover surface for generated rows;
+Gate-2 still requires expanding it to every needed target/key before invoking
+the full representative or global predicates.
 The theorem
 `tttFiber32Rows_length_eq_two_mul_ttFiber32Rows_length` records the table-level
 alignment for the known `TT` obstruction key: the same generated key appears in
