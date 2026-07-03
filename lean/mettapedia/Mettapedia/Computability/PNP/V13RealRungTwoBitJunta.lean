@@ -267,6 +267,18 @@ def V13RealLinearNoTargetBitJuntaBlockedMap {m j : Nat}
     (A : V13RealLinearNoTargetRowsMap m i₀) : Prop :=
   V13RealLinearBitJuntaBlocked observer A.val i₀
 
+abbrev V13RealLinearNoTargetBitJuntaBlockedMapSet {m j : Nat}
+    (i₀ : Fin m) (observer : V13RealLinearBitJuntaObserver m j) :=
+  {A : V13RealLinearNoTargetRowsMap m i₀ //
+    V13RealLinearNoTargetBitJuntaBlockedMap i₀ observer A}
+
+noncomputable instance {m j : Nat}
+    (i₀ : Fin m) (observer : V13RealLinearBitJuntaObserver m j) :
+    Fintype (V13RealLinearNoTargetBitJuntaBlockedMapSet i₀ observer) := by
+  classical
+  unfold V13RealLinearNoTargetBitJuntaBlockedMapSet
+  infer_instance
+
 theorem v13RealLinearNoTargetBitJunta_blockedMap_iff_kernel
     {m j : Nat} (i₀ : Fin m)
     (observer : V13RealLinearBitJuntaObserver m j)
@@ -345,8 +357,7 @@ def V13RealLinearNoTargetBitJuntaBlockedCountingBound
     ∀ (i₀ : Fin m) (observer : V13RealLinearBitJuntaObserver m j),
       (2 ^ m) *
           Fintype.card
-            {A : V13RealLinearNoTargetRowsMap m i₀ //
-              V13RealLinearNoTargetBitJuntaBlockedMap i₀ observer A} ≤
+            (V13RealLinearNoTargetBitJuntaBlockedMapSet i₀ observer) ≤
         4 * (2 ^ j) *
           Fintype.card (V13RealLinearNoTargetRowsMap m i₀)
 
@@ -355,6 +366,440 @@ def V13RealLinearNoTargetBitJuntaSuccessBound
   ∀ (i₀ : Fin m) (observer : V13RealLinearBitJuntaObserver m j),
     v13RealLinearNoTargetBitJuntaSuccess i₀ observer ≤
       (1 / 2 : Rat) + v13RealLinearBitJuntaEpsilon2 j m
+
+def V13RealLinearNoTargetBitJuntaUnblockedCorrect {m j : Nat}
+    (i₀ : Fin m) (observer : V13RealLinearBitJuntaObserver m j) :=
+  {omega : V13RealLinearNoTargetRowsWorld m i₀ //
+    observer.decide (v13RealLinearNoTargetRowsPublicInput omega) =
+      omega.2 i₀ ∧
+    ¬ V13RealLinearNoTargetBitJuntaBlockedMap i₀ observer omega.1}
+
+noncomputable instance {m j : Nat}
+    (i₀ : Fin m) (observer : V13RealLinearBitJuntaObserver m j) :
+    Fintype (V13RealLinearNoTargetBitJuntaUnblockedCorrect i₀ observer) := by
+  classical
+  unfold V13RealLinearNoTargetBitJuntaUnblockedCorrect
+  infer_instance
+
+noncomputable def v13RealLinearNoTargetBitJuntaFlipWitness
+    {m j : Nat} (i₀ : Fin m)
+    (observer : V13RealLinearBitJuntaObserver m j)
+    (A : V13RealLinearNoTargetRowsMap m i₀) : F2Vec m := by
+  classical
+  exact
+    if hnot :
+        ¬ V13RealLinearNoTargetBitJuntaBlockedMap i₀ observer A then
+      Classical.choose
+        (v13RealLinear_exists_kernel_hit_of_not_rowsBlockTarget
+          (A := A.val) (rows := v13RealLinearBitJuntaRhsRows observer)
+          (i₀ := i₀) hnot)
+    else
+      f2ZeroVec m
+
+lemma v13RealLinearNoTargetBitJuntaFlipWitness_target
+    {m j : Nat} (i₀ : Fin m)
+    (observer : V13RealLinearBitJuntaObserver m j)
+    (A : V13RealLinearNoTargetRowsMap m i₀)
+    (hnot :
+      ¬ V13RealLinearNoTargetBitJuntaBlockedMap i₀ observer A) :
+    v13RealLinearNoTargetBitJuntaFlipWitness i₀ observer A i₀ = 1 := by
+  unfold v13RealLinearNoTargetBitJuntaFlipWitness
+  classical
+  simpa [hnot] using
+    (Classical.choose_spec
+      (v13RealLinear_exists_kernel_hit_of_not_rowsBlockTarget
+        (A := A.val) (rows := v13RealLinearBitJuntaRhsRows observer)
+        (i₀ := i₀) hnot)).1
+
+lemma v13RealLinearNoTargetBitJuntaFlipWitness_kernel
+    {m j : Nat} (i₀ : Fin m)
+    (observer : V13RealLinearBitJuntaObserver m j)
+    (A : V13RealLinearNoTargetRowsMap m i₀)
+    (hnot :
+      ¬ V13RealLinearNoTargetBitJuntaBlockedMap i₀ observer A) :
+    ∀ row : Fin m, row ∈ v13RealLinearBitJuntaRhsRows observer →
+      A.val.toEquiv
+          (v13RealLinearNoTargetBitJuntaFlipWitness i₀ observer A) row =
+        0 := by
+  unfold v13RealLinearNoTargetBitJuntaFlipWitness
+  classical
+  simpa [hnot] using
+    (Classical.choose_spec
+      (v13RealLinear_exists_kernel_hit_of_not_rowsBlockTarget
+        (A := A.val) (rows := v13RealLinearBitJuntaRhsRows observer)
+        (i₀ := i₀) hnot)).2
+
+noncomputable def
+    v13RealLinearNoTargetBitJuntaUnblockedCorrectToIncorrect
+    {m j : Nat} (i₀ : Fin m)
+    (observer : V13RealLinearBitJuntaObserver m j) :
+    V13RealLinearNoTargetBitJuntaUnblockedCorrect i₀ observer ↪
+      V13RealLinearNoTargetBitJuntaIncorrect i₀ observer where
+  toFun omega :=
+    let A := omega.val.1
+    let w := v13RealLinearNoTargetBitJuntaFlipWitness i₀ observer A
+    ⟨(A, f2AddVec omega.val.2 w), by
+      have hnot :
+          ¬ V13RealLinearNoTargetBitJuntaBlockedMap i₀ observer A :=
+        omega.property.2
+      have hkernel :
+          ∀ row : Fin m, row ∈ v13RealLinearBitJuntaRhsRows observer →
+            A.val.toEquiv w row = 0 :=
+        v13RealLinearNoTargetBitJuntaFlipWitness_kernel
+          i₀ observer A hnot
+      have hdec :=
+        v13RealLinearBitJunta_decide_same_after_kernel_add
+          observer A.val omega.val.2 w hkernel
+      have htargetNe :
+          v13RealLinearTarget i₀
+              ({ x := f2AddVec omega.val.2 w, A := A.val } :
+                V13RealLinearWorld m) ≠
+            v13RealLinearTarget i₀
+              ({ x := omega.val.2, A := A.val } :
+                V13RealLinearWorld m) :=
+        v13RealLinear_target_changes_after_kernel_hit
+          A.val omega.val.2 w
+          (v13RealLinearNoTargetBitJuntaFlipWitness_target
+            i₀ observer A hnot)
+      intro hbad
+      apply htargetNe
+      calc
+        v13RealLinearTarget i₀
+            ({ x := f2AddVec omega.val.2 w, A := A.val } :
+              V13RealLinearWorld m) =
+          observer.decide
+            (v13RealLinearNoTargetRowsPublicInput
+              (A, f2AddVec omega.val.2 w)) := hbad.symm
+        _ = observer.decide
+            (v13RealLinearNoTargetRowsPublicInput omega.val) := by
+              simpa [v13RealLinearNoTargetRowsPublicInput] using hdec.symm
+        _ = v13RealLinearTarget i₀
+            ({ x := omega.val.2, A := A.val } :
+              V13RealLinearWorld m) := by
+              simpa [v13RealLinearTarget] using omega.property.1⟩
+  inj' := by
+    intro omega₀ omega₁ hmap
+    apply Subtype.ext
+    let A₀ := omega₀.val.1
+    let A₁ := omega₁.val.1
+    let w₀ := v13RealLinearNoTargetBitJuntaFlipWitness i₀ observer A₀
+    let w₁ := v13RealLinearNoTargetBitJuntaFlipWitness i₀ observer A₁
+    have hpair :
+        (A₀, f2AddVec omega₀.val.2 w₀) =
+          (A₁, f2AddVec omega₁.val.2 w₁) := by
+      exact congrArg Subtype.val hmap
+    have hA : A₀ = A₁ := by
+      injection hpair
+    have hxflip :
+        f2AddVec omega₀.val.2 w₀ =
+          f2AddVec omega₁.val.2 w₁ := by
+      injection hpair
+    have hw : w₀ = w₁ := by
+      dsimp [w₀, w₁]
+      rw [hA]
+    apply Prod.ext
+    · exact hA
+    · funext row
+      have hxpoint := congrFun hxflip row
+      rw [hw] at hxpoint
+      simp [f2AddVec] at hxpoint ⊢
+      calc
+        omega₀.val.2 row =
+            omega₀.val.2 row + w₁ row + w₁ row := by
+              rw [f2_add_right_self]
+        _ = omega₁.val.2 row + w₁ row + w₁ row := by
+              rw [hxpoint]
+        _ = omega₁.val.2 row := by
+              rw [f2_add_right_self]
+
+noncomputable def
+    v13RealLinearNoTargetBitJuntaCorrectToUnblockedOrBlocked
+    {m j : Nat} (i₀ : Fin m)
+    (observer : V13RealLinearBitJuntaObserver m j) :
+    V13RealLinearNoTargetBitJuntaCorrect i₀ observer ↪
+      V13RealLinearNoTargetBitJuntaUnblockedCorrect i₀ observer ⊕
+        V13RealLinearNoTargetBitJuntaBlockedWorld i₀ observer where
+  toFun omega := by
+    classical
+    by_cases hblocked :
+        V13RealLinearNoTargetBitJuntaBlockedMap i₀ observer omega.val.1
+    · exact Sum.inr ⟨omega.val, hblocked⟩
+    · exact Sum.inl ⟨omega.val, omega.property, hblocked⟩
+  inj' := by
+    intro omega₀ omega₁ hmap
+    classical
+    by_cases hblocked₀ :
+        V13RealLinearNoTargetBitJuntaBlockedMap i₀ observer omega₀.val.1 <;>
+      by_cases hblocked₁ :
+        V13RealLinearNoTargetBitJuntaBlockedMap i₀ observer omega₁.val.1 <;>
+      simp [hblocked₀, hblocked₁] at hmap
+    · exact
+        Subtype.ext
+          (congrArg
+            (fun omega :
+              V13RealLinearNoTargetBitJuntaBlockedWorld i₀ observer =>
+                omega.val)
+            hmap)
+    · exact
+        Subtype.ext
+          (congrArg
+            (fun omega :
+              V13RealLinearNoTargetBitJuntaUnblockedCorrect i₀ observer =>
+                omega.val)
+            hmap)
+
+noncomputable def
+    v13RealLinearNoTargetBitJuntaWorldCorrectIncorrectEquiv
+    {m j : Nat} (i₀ : Fin m)
+    (observer : V13RealLinearBitJuntaObserver m j) :
+    V13RealLinearNoTargetRowsWorld m i₀ ≃
+      V13RealLinearNoTargetBitJuntaCorrect i₀ observer ⊕
+        V13RealLinearNoTargetBitJuntaIncorrect i₀ observer where
+  toFun omega := by
+    classical
+    by_cases hcorrect :
+        observer.decide (v13RealLinearNoTargetRowsPublicInput omega) =
+          omega.2 i₀
+    · exact Sum.inl ⟨omega, hcorrect⟩
+    · exact Sum.inr ⟨omega, hcorrect⟩
+  invFun y :=
+    Sum.elim
+      (fun omega : V13RealLinearNoTargetBitJuntaCorrect i₀ observer =>
+        omega.val)
+      (fun omega : V13RealLinearNoTargetBitJuntaIncorrect i₀ observer =>
+        omega.val)
+      y
+  left_inv omega := by
+    classical
+    by_cases hcorrect :
+        observer.decide (v13RealLinearNoTargetRowsPublicInput omega) =
+          omega.2 i₀ <;> simp [hcorrect]
+  right_inv y := by
+    classical
+    cases y with
+    | inl omega =>
+        change
+          (if hcorrect :
+              observer.decide
+                  (v13RealLinearNoTargetRowsPublicInput omega.val) =
+                omega.val.2 i₀ then
+              Sum.inl
+                (⟨omega.val, hcorrect⟩ :
+                  V13RealLinearNoTargetBitJuntaCorrect i₀ observer)
+            else
+              Sum.inr
+                (⟨omega.val, hcorrect⟩ :
+                  V13RealLinearNoTargetBitJuntaIncorrect i₀ observer)) =
+            Sum.inl omega
+        rw [dif_pos omega.property]
+        rfl
+    | inr omega =>
+        change
+          (if hcorrect :
+              observer.decide
+                  (v13RealLinearNoTargetRowsPublicInput omega.val) =
+                omega.val.2 i₀ then
+              Sum.inl
+                (⟨omega.val, hcorrect⟩ :
+                  V13RealLinearNoTargetBitJuntaCorrect i₀ observer)
+            else
+              Sum.inr
+                (⟨omega.val, hcorrect⟩ :
+                  V13RealLinearNoTargetBitJuntaIncorrect i₀ observer)) =
+            Sum.inr omega
+        rw [dif_neg omega.property]
+        rfl
+
+theorem
+    v13RealLinearNoTargetBitJunta_unblockedCorrect_card_le_incorrect
+    {m j : Nat} (i₀ : Fin m)
+    (observer : V13RealLinearBitJuntaObserver m j) :
+    Fintype.card
+        (V13RealLinearNoTargetBitJuntaUnblockedCorrect i₀ observer) ≤
+      Fintype.card
+        (V13RealLinearNoTargetBitJuntaIncorrect i₀ observer) :=
+  Fintype.card_le_of_embedding
+    (v13RealLinearNoTargetBitJuntaUnblockedCorrectToIncorrect
+      i₀ observer)
+
+theorem
+    v13RealLinearNoTargetBitJunta_correct_card_le_incorrect_add_blocked
+    {m j : Nat} (i₀ : Fin m)
+    (observer : V13RealLinearBitJuntaObserver m j) :
+    Fintype.card
+        (V13RealLinearNoTargetBitJuntaCorrect i₀ observer) ≤
+      Fintype.card
+          (V13RealLinearNoTargetBitJuntaIncorrect i₀ observer) +
+        Fintype.card
+          (V13RealLinearNoTargetBitJuntaBlockedWorld i₀ observer) := by
+  have hsplit :
+      Fintype.card
+          (V13RealLinearNoTargetBitJuntaCorrect i₀ observer) ≤
+        Fintype.card
+          (V13RealLinearNoTargetBitJuntaUnblockedCorrect i₀ observer ⊕
+            V13RealLinearNoTargetBitJuntaBlockedWorld i₀ observer) :=
+    Fintype.card_le_of_embedding
+      (v13RealLinearNoTargetBitJuntaCorrectToUnblockedOrBlocked
+        i₀ observer)
+  rw [Fintype.card_sum] at hsplit
+  have hunblocked :=
+    v13RealLinearNoTargetBitJunta_unblockedCorrect_card_le_incorrect
+      i₀ observer
+  omega
+
+theorem
+    v13RealLinearNoTargetBitJunta_world_card_eq_correct_add_incorrect
+    {m j : Nat} (i₀ : Fin m)
+    (observer : V13RealLinearBitJuntaObserver m j) :
+    Fintype.card (V13RealLinearNoTargetRowsWorld m i₀) =
+      Fintype.card
+          (V13RealLinearNoTargetBitJuntaCorrect i₀ observer) +
+        Fintype.card
+          (V13RealLinearNoTargetBitJuntaIncorrect i₀ observer) := by
+  simpa [Fintype.card_sum] using
+    Fintype.card_congr
+      (v13RealLinearNoTargetBitJuntaWorldCorrectIncorrectEquiv
+        i₀ observer)
+
+noncomputable def v13RealLinearNoTargetBitJuntaBlockedMass {m j : Nat}
+    (i₀ : Fin m) (observer : V13RealLinearBitJuntaObserver m j) : Rat :=
+  (Fintype.card
+      (V13RealLinearNoTargetBitJuntaBlockedWorld i₀ observer) : Rat) /
+    (Fintype.card (V13RealLinearNoTargetRowsWorld m i₀) : Rat)
+
+def V13RealLinearNoTargetBitJuntaKernelFlipSurchargeBound
+    (m j : Nat) : Prop :=
+  ∀ (i₀ : Fin m) (observer : V13RealLinearBitJuntaObserver m j),
+    v13RealLinearNoTargetBitJuntaSuccess i₀ observer ≤
+      (1 / 2 : Rat) +
+        v13RealLinearNoTargetBitJuntaBlockedMass i₀ observer
+
+theorem v13RealLinearNoTargetBitJunta_kernelFlipSurchargeBound
+    (m j : Nat) :
+    V13RealLinearNoTargetBitJuntaKernelFlipSurchargeBound m j := by
+  classical
+  intro i₀ observer
+  unfold v13RealLinearNoTargetBitJuntaSuccess
+  unfold v13RealLinearNoTargetBitJuntaBlockedMass
+  let C := Fintype.card (V13RealLinearNoTargetBitJuntaCorrect i₀ observer)
+  let I := Fintype.card (V13RealLinearNoTargetBitJuntaIncorrect i₀ observer)
+  let B := Fintype.card (V13RealLinearNoTargetBitJuntaBlockedWorld i₀ observer)
+  let T := Fintype.card (V13RealLinearNoTargetRowsWorld m i₀)
+  have hcardNat : C ≤ I + B := by
+    simpa [C, I, B] using
+      v13RealLinearNoTargetBitJunta_correct_card_le_incorrect_add_blocked
+        i₀ observer
+  have hworldNat : T = C + I := by
+    simpa [T, C, I] using
+      v13RealLinearNoTargetBitJunta_world_card_eq_correct_add_incorrect
+        i₀ observer
+  change (C : Rat) / (T : Rat) ≤ (1 / 2 : Rat) + (B : Rat) / (T : Rat)
+  by_cases hTzero : T = 0
+  · simp [hTzero]
+  · have hTposNat : 0 < T := Nat.pos_of_ne_zero hTzero
+    have hTpos : (0 : Rat) < (T : Rat) := by exact_mod_cast hTposNat
+    have hcardRat : (C : Rat) ≤ (I : Rat) + (B : Rat) := by
+      exact_mod_cast hcardNat
+    have hworldRat : (T : Rat) = (C : Rat) + (I : Rat) := by
+      exact_mod_cast hworldNat
+    rw [div_le_iff₀ hTpos]
+    field_simp [hTpos.ne']
+    linarith [hcardRat, hworldRat]
+
+noncomputable def
+    v13RealLinearNoTargetBitJuntaBlockedWorldEquivBlockedMapProd
+    {m j : Nat} (i₀ : Fin m)
+    (observer : V13RealLinearBitJuntaObserver m j) :
+    V13RealLinearNoTargetBitJuntaBlockedWorld i₀ observer ≃
+      V13RealLinearNoTargetBitJuntaBlockedMapSet i₀ observer ×
+        F2Vec m where
+  toFun omega := ⟨⟨omega.val.1, omega.property⟩, omega.val.2⟩
+  invFun omega := ⟨(omega.1.val, omega.2), omega.1.property⟩
+  left_inv omega := by
+    rfl
+  right_inv omega := by
+    rfl
+
+theorem v13RealLinearNoTargetBitJuntaBlockedWorld_card_eq
+    {m j : Nat} (i₀ : Fin m)
+    (observer : V13RealLinearBitJuntaObserver m j) :
+    Fintype.card
+        (V13RealLinearNoTargetBitJuntaBlockedWorld i₀ observer) =
+      Fintype.card
+          (V13RealLinearNoTargetBitJuntaBlockedMapSet i₀ observer) *
+        Fintype.card (F2Vec m) := by
+  classical
+  rw [Fintype.card_congr
+    (v13RealLinearNoTargetBitJuntaBlockedWorldEquivBlockedMapProd
+      i₀ observer)]
+  simp [Fintype.card_prod]
+
+theorem
+    v13RealLinearNoTargetBitJuntaBlockedMass_le_epsilon2_of_counting
+    {m j : Nat}
+    (hcount : V13RealLinearNoTargetBitJuntaBlockedCountingBound m j)
+    (i₀ : Fin m) (observer : V13RealLinearBitJuntaObserver m j) :
+    v13RealLinearNoTargetBitJuntaBlockedMass i₀ observer ≤
+      v13RealLinearBitJuntaEpsilon2 j m := by
+  classical
+  unfold v13RealLinearNoTargetBitJuntaBlockedMass
+  unfold v13RealLinearBitJuntaEpsilon2
+  rw [v13RealLinearNoTargetBitJuntaBlockedWorld_card_eq i₀ observer]
+  rw [Fintype.card_prod, v13RealLinear_f2vec_card]
+  let B := Fintype.card
+    (V13RealLinearNoTargetBitJuntaBlockedMapSet i₀ observer)
+  let T := Fintype.card (V13RealLinearNoTargetRowsMap m i₀)
+  let M := 2 ^ m
+  let Q := 4 * 2 ^ j
+  have hcard : M * B ≤ Q * T := by
+    simpa [B, T, M, Q, Nat.mul_comm, Nat.mul_left_comm, Nat.mul_assoc]
+      using hcount i₀ observer
+  have hMposNat : 0 < M := by
+    dsimp [M]
+    positivity
+  have hMpos : (0 : Rat) < (M : Rat) := by
+    exact_mod_cast hMposNat
+  have hcardRat : (M : Rat) * (B : Rat) ≤ (Q : Rat) * (T : Rat) := by
+    exact_mod_cast hcard
+  have hQrat : (4 : Rat) * (2 : Rat) ^ j = (Q : Rat) := by
+    dsimp [Q]
+    norm_num
+  have hMrat : (2 : Rat) ^ m = (M : Rat) := by
+    dsimp [M]
+    norm_num
+  rw [hQrat, hMrat]
+  change ((B * M : Nat) : Rat) / ((T * M : Nat) : Rat) ≤
+    (Q : Rat) / (M : Rat)
+  rw [Nat.cast_mul, Nat.cast_mul]
+  by_cases hTzero : T = 0
+  · have hB_le_T : B ≤ T := by
+      dsimp [B, T]
+      exact
+        Fintype.card_subtype_le
+          (fun A : V13RealLinearNoTargetRowsMap m i₀ =>
+            V13RealLinearNoTargetBitJuntaBlockedMap i₀ observer A)
+    have hBzero : B = 0 :=
+      Nat.eq_zero_of_le_zero (by simpa [hTzero] using hB_le_T)
+    have hnonneg : 0 ≤ (Q : Rat) / (M : Rat) := by
+      positivity
+    simpa [hBzero, hTzero] using hnonneg
+  · have hTposNat : 0 < T := Nat.pos_of_ne_zero hTzero
+    have hTpos : (0 : Rat) < (T : Rat) := by
+      exact_mod_cast hTposNat
+    field_simp [hTpos.ne', hMpos.ne']
+    simpa [mul_comm, mul_left_comm, mul_assoc] using hcardRat
+
+theorem v13RealLinearNoTargetBitJuntaSuccessBound_of_blockedCounting
+    {m j : Nat}
+    (hcount : V13RealLinearNoTargetBitJuntaBlockedCountingBound m j) :
+    V13RealLinearNoTargetBitJuntaSuccessBound m j := by
+  intro i₀ observer
+  have hflip :=
+    v13RealLinearNoTargetBitJunta_kernelFlipSurchargeBound m j i₀ observer
+  have hblocked :=
+    v13RealLinearNoTargetBitJuntaBlockedMass_le_epsilon2_of_counting
+      hcount i₀ observer
+  linarith
 
 lemma v13_zmod2_eq_of_one_add_ne {a b : ZMod 2}
     (h : 1 + a ≠ b) : a = b := by
