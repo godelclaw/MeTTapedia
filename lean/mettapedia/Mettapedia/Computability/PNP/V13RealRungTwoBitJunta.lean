@@ -2764,6 +2764,280 @@ theorem
         i₀ observer t idx)
   exact hle.trans_eq (v13RealLinearRowsUnreadAssignment_card idx.rows)
 
+/-- Active fixed-map transcript cylinders are the inhabited cylinders.  Charging
+capacity only to active cylinders matches the target-case packing interface and
+avoids spending capacity on syntactic transcripts that no hidden vector
+realizes. -/
+abbrev
+    V13RealLinearNoTargetSequentialTraceFirstCosetHitActiveFixedMapTranscriptCylinderIndex
+    {m q : Nat} (i₀ : Fin m)
+    (observer : V13RealLinearSequentialRowObserver m q) (t : Fin q) :=
+  {idx :
+    V13RealLinearNoTargetSequentialTraceFirstCosetHitFixedMapTranscriptCylinderIndex
+      m q i₀ observer t //
+    Nonempty
+      (V13RealLinearNoTargetSequentialTraceFirstCosetHitFixedMapTranscriptCylinder
+        i₀ observer t idx)}
+
+noncomputable instance
+    {m q : Nat} (i₀ : Fin m)
+    (observer : V13RealLinearSequentialRowObserver m q) (t : Fin q) :
+    Fintype
+      (V13RealLinearNoTargetSequentialTraceFirstCosetHitActiveFixedMapTranscriptCylinderIndex
+        i₀ observer t) := by
+  classical
+  unfold
+    V13RealLinearNoTargetSequentialTraceFirstCosetHitActiveFixedMapTranscriptCylinderIndex
+  infer_instance
+
+noncomputable def
+    v13RealLinearRowsUnreadAssignmentToActiveNoTargetSequentialTraceFirstCosetHitFixedMapTranscriptCylinder
+    {m q : Nat} (i₀ : Fin m)
+    (observer : V13RealLinearSequentialRowObserver m q) (t : Fin q)
+    (activeIdx :
+      V13RealLinearNoTargetSequentialTraceFirstCosetHitActiveFixedMapTranscriptCylinderIndex
+        i₀ observer t) :
+    V13RealLinearRowsUnreadAssignment m activeIdx.1.rows ↪
+      V13RealLinearNoTargetSequentialTraceFirstCosetHitFixedMapTranscriptCylinder
+        i₀ observer t activeIdx.1 where
+  toFun assignment := by
+    classical
+    let idx := activeIdx.1
+    let witness :
+        V13RealLinearNoTargetSequentialTraceFirstCosetHitFixedMapTranscriptCylinder
+          i₀ observer t idx :=
+      Classical.choice activeIdx.2
+    let publicW :=
+      v13RealLinearPublicInput
+        ({ x := witness.val, A := idx.A.val } : V13RealLinearWorld m)
+    let b : F2Vec m :=
+      v13RealLinearRowsTranscriptCompletion idx.transcript assignment
+    let z : F2Vec m := idx.A.val.toEquiv.symm b
+    let publicZ :=
+      v13RealLinearPublicInput
+        ({ x := z, A := idx.A.val } : V13RealLinearWorld m)
+    let traceW :=
+      v13RealLinearNoTargetRowsSequentialQRowTrace i₀ observer
+        (idx.A, witness.val)
+    let traceZ :=
+      v13RealLinearNoTargetRowsSequentialQRowTrace i₀ observer
+        (idx.A, z)
+    have htranscriptZ :
+        v13RealLinearRowsTranscript idx.rows publicZ = idx.transcript := by
+      funext row
+      apply Prod.ext
+      · have hwitnessView := congrFun witness.property.2.2.2 row
+        simpa [publicW, publicZ, v13RealLinearRowsTranscript,
+          v13RealLinearRowView, v13RealLinearPublicInput] using
+          congrArg Prod.fst hwitnessView
+      · change idx.A.val.toEquiv z row.1 = (idx.transcript row).2
+        calc
+          idx.A.val.toEquiv z row.1 =
+              v13RealLinearRowsTranscriptCompletion idx.transcript
+                assignment row.1 := by
+            simp [z, b]
+          _ = (idx.transcript row).2 :=
+            v13RealLinearRowsTranscriptCompletion_of_mem
+              idx.transcript assignment row.property
+    have htraceRowsW :
+        v13RealLinearRowTracePrefixRows traceW (t : Nat) = idx.rows := by
+      simpa [traceW, idx] using witness.property.2.1
+    have hprefixRowsW :
+        v13RealLinearSequentialRowTranscriptRows
+            (v13RealLinearSequentialRowPrefixTranscriptOf
+              observer publicW (t : Nat)) =
+          idx.rows := by
+      have htraceToTranscript :
+          v13RealLinearRowTracePrefixRows traceW (t : Nat) =
+            v13RealLinearSequentialRowTranscriptRows
+              (v13RealLinearSequentialRowPrefixTranscriptOf
+                observer publicW (t : Nat)) := by
+        simpa [traceW, publicW,
+          v13RealLinearNoTargetRowsSequentialQRowTrace] using
+          v13RealLinearSequentialRowTracePrefixRows_eq_prefixTranscriptRows
+            observer publicW (Nat.le_of_lt t.isLt)
+      exact htraceToTranscript.symm.trans htraceRowsW
+    have hsameRows :
+        v13RealLinearRowsTranscript
+            (v13RealLinearSequentialRowTranscriptRows
+              (v13RealLinearSequentialRowPrefixTranscriptOf
+                observer publicW (t : Nat))) publicW =
+          v13RealLinearRowsTranscript
+            (v13RealLinearSequentialRowTranscriptRows
+              (v13RealLinearSequentialRowPrefixTranscriptOf
+                observer publicW (t : Nat))) publicZ := by
+      rw [hprefixRowsW]
+      exact witness.property.2.2.2.trans htranscriptZ.symm
+    have hprefixTranscript :
+        v13RealLinearSequentialRowPrefixTranscriptOf
+            observer publicZ (t : Nat) =
+          v13RealLinearSequentialRowPrefixTranscriptOf
+            observer publicW (t : Nat) := by
+      simpa [v13RealLinearSequentialRowPrefixTranscriptOf] using
+        v13RealLinearSequentialRowRunAux_eq_of_final_rowsTranscript_eq
+          observer publicW publicZ (t : Nat) [] hsameRows
+    have htraceRowsZ :
+        v13RealLinearRowTracePrefixRows traceZ (t : Nat) = idx.rows := by
+      have htraceToTranscript :
+          v13RealLinearRowTracePrefixRows traceZ (t : Nat) =
+            v13RealLinearSequentialRowTranscriptRows
+              (v13RealLinearSequentialRowPrefixTranscriptOf
+                observer publicZ (t : Nat)) := by
+        simpa [traceZ, publicZ,
+          v13RealLinearNoTargetRowsSequentialQRowTrace] using
+          v13RealLinearSequentialRowTracePrefixRows_eq_prefixTranscriptRows
+            observer publicZ (Nat.le_of_lt t.isLt)
+      calc
+        v13RealLinearRowTracePrefixRows traceZ (t : Nat) =
+            v13RealLinearSequentialRowTranscriptRows
+              (v13RealLinearSequentialRowPrefixTranscriptOf
+                observer publicZ (t : Nat)) := htraceToTranscript
+        _ =
+            v13RealLinearSequentialRowTranscriptRows
+              (v13RealLinearSequentialRowPrefixTranscriptOf
+                observer publicW (t : Nat)) := by rw [hprefixTranscript]
+        _ = idx.rows := hprefixRowsW
+    have hgetZ :
+        ∃ h : (t : Nat) < traceZ.length,
+          traceZ.get ⟨(t : Nat), h⟩ = idx.row := by
+      rcases witness.property.2.2.1 with ⟨hlenW, hgetW⟩
+      have hlenZ : (t : Nat) < traceZ.length := by
+        simp [traceZ, v13RealLinearNoTargetRowsSequentialQRowTrace,
+          v13RealLinearSequentialRowTraceOf_length]
+      refine ⟨hlenZ, ?_⟩
+      have hchooseZ :
+          traceZ.get ⟨(t : Nat), hlenZ⟩ =
+            observer.chooseRow
+              (v13RealLinearSequentialRowPrefixTranscriptOf
+                observer publicZ (t : Nat)) := by
+        simpa [traceZ, publicZ,
+          v13RealLinearNoTargetRowsSequentialQRowTrace] using
+          v13RealLinearSequentialRowTraceOf_get_eq_chooseRow
+            observer publicZ t.isLt
+      have hchooseW :
+          traceW.get ⟨(t : Nat), hlenW⟩ =
+            observer.chooseRow
+              (v13RealLinearSequentialRowPrefixTranscriptOf
+                observer publicW (t : Nat)) := by
+        simpa [traceW, publicW,
+          v13RealLinearNoTargetRowsSequentialQRowTrace] using
+          v13RealLinearSequentialRowTraceOf_get_eq_chooseRow
+            observer publicW t.isLt
+      calc
+        traceZ.get ⟨(t : Nat), hlenZ⟩ =
+            observer.chooseRow
+              (v13RealLinearSequentialRowPrefixTranscriptOf
+                observer publicZ (t : Nat)) := hchooseZ
+        _ =
+            observer.chooseRow
+              (v13RealLinearSequentialRowPrefixTranscriptOf
+                observer publicW (t : Nat)) := by rw [hprefixTranscript]
+        _ = traceW.get ⟨(t : Nat), hlenW⟩ := hchooseW.symm
+        _ = idx.row := hgetW
+    have hfirstZ :
+        V13RealLinearAdaptiveQRowTraceFirstCosetHit
+          (v13RealLinearNoTargetRowsSequentialQRowExperiment i₀ observer)
+          i₀
+          (v13RealLinearNoTargetRowsSequentialQRowTrace i₀ observer)
+          t (idx.A, z) := by
+      have hlenZ : (t : Nat) < traceZ.length := by
+        simp [traceZ, v13RealLinearNoTargetRowsSequentialQRowTrace,
+          v13RealLinearSequentialRowTraceOf_length]
+      constructor
+      · simpa [traceZ] using hlenZ
+      · rcases hgetZ with ⟨hlenGet, hget⟩
+        refine ⟨hlenGet, ?_⟩
+        have hhit :
+            V13RealLinearRowFunctionalTargetCosetHit idx.A.val idx.rows i₀
+              (traceZ.get ⟨(t : Nat), hlenGet⟩) := by
+          rw [hget]
+          exact idx.hit
+        simpa [traceZ, htraceRowsZ,
+          v13RealLinearNoTargetRowsSequentialQRowExperiment,
+          v13RealLinearNoTargetRowsCausalQRowExperiment,
+          v13RealLinearNoTargetRowsQRowExperiment] using hhit
+    exact
+      ⟨z, by
+        exact ⟨hfirstZ, htraceRowsZ, hgetZ, htranscriptZ⟩⟩
+  inj' := by
+    classical
+    intro assignment₀ assignment₁ hcell
+    let idx := activeIdx.1
+    funext row
+    have hz :
+        idx.A.val.toEquiv.symm
+            (v13RealLinearRowsTranscriptCompletion
+              idx.transcript assignment₀) =
+          idx.A.val.toEquiv.symm
+            (v13RealLinearRowsTranscriptCompletion
+              idx.transcript assignment₁) := by
+      simpa [idx] using
+        congrArg
+          (fun cell :
+            V13RealLinearNoTargetSequentialTraceFirstCosetHitFixedMapTranscriptCylinder
+              i₀ observer t activeIdx.1 => cell.val)
+          hcell
+    have hAraw := congrFun (congrArg idx.A.val.toEquiv hz) row.1
+    have hA :
+        v13RealLinearRowsTranscriptCompletion idx.transcript
+            assignment₀ row.1 =
+          v13RealLinearRowsTranscriptCompletion idx.transcript
+            assignment₁ row.1 := by
+      simpa using hAraw
+    calc
+      assignment₀ row =
+          v13RealLinearRowsTranscriptCompletion idx.transcript
+            assignment₀ row.1 := by
+        exact
+          (v13RealLinearRowsTranscriptCompletion_of_not_mem
+            idx.transcript assignment₀ row).symm
+      _ =
+          v13RealLinearRowsTranscriptCompletion idx.transcript
+            assignment₁ row.1 := hA
+      _ = assignment₁ row :=
+          v13RealLinearRowsTranscriptCompletion_of_not_mem
+            idx.transcript assignment₁ row
+
+theorem
+    v13RealLinearNoTargetSequentialTraceFirstCosetHitActiveFixedMapTranscriptCylinder_capacity_le_card
+    {m q : Nat} (i₀ : Fin m)
+    (observer : V13RealLinearSequentialRowObserver m q) (t : Fin q)
+    (activeIdx :
+      V13RealLinearNoTargetSequentialTraceFirstCosetHitActiveFixedMapTranscriptCylinderIndex
+        i₀ observer t) :
+    2 ^ (m - activeIdx.1.rows.card) ≤
+      Fintype.card
+        (V13RealLinearNoTargetSequentialTraceFirstCosetHitFixedMapTranscriptCylinder
+          i₀ observer t activeIdx.1) := by
+  classical
+  have hle :
+      Fintype.card (V13RealLinearRowsUnreadAssignment m activeIdx.1.rows) ≤
+        Fintype.card
+          (V13RealLinearNoTargetSequentialTraceFirstCosetHitFixedMapTranscriptCylinder
+            i₀ observer t activeIdx.1) :=
+    Fintype.card_le_of_embedding
+      (v13RealLinearRowsUnreadAssignmentToActiveNoTargetSequentialTraceFirstCosetHitFixedMapTranscriptCylinder
+        i₀ observer t activeIdx)
+  simpa [v13RealLinearRowsUnreadAssignment_card] using hle
+
+theorem
+    v13RealLinearNoTargetSequentialTraceFirstCosetHitActiveFixedMapTranscriptCylinder_card_eq_capacity
+    {m q : Nat} (i₀ : Fin m)
+    (observer : V13RealLinearSequentialRowObserver m q) (t : Fin q)
+    (activeIdx :
+      V13RealLinearNoTargetSequentialTraceFirstCosetHitActiveFixedMapTranscriptCylinderIndex
+        i₀ observer t) :
+    Fintype.card
+        (V13RealLinearNoTargetSequentialTraceFirstCosetHitFixedMapTranscriptCylinder
+          i₀ observer t activeIdx.1) =
+      2 ^ (m - activeIdx.1.rows.card) := by
+  exact
+    le_antisymm
+      (v13RealLinearNoTargetSequentialTraceFirstCosetHitFixedMapTranscriptCylinder_card_le_capacity
+        i₀ observer t activeIdx.1)
+      (v13RealLinearNoTargetSequentialTraceFirstCosetHitActiveFixedMapTranscriptCylinder_capacity_le_card
+        i₀ observer t activeIdx)
+
 noncomputable def
     v13RealLinearNoTargetSequentialTraceFirstCosetHitFixedPrefixWorldSetEquivSigmaTranscript
     {m q : Nat} (i₀ : Fin m)
