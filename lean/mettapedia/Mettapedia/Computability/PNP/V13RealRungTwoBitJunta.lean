@@ -3104,6 +3104,101 @@ theorem
       i₀ observer t activeIdx)
 
 theorem
+    v13RealLinearNoTargetSequentialTraceFirstCosetHitActiveFixedMapTranscriptCylinder_insert_rowsGenerateTarget
+    {m q : Nat} (i₀ : Fin m)
+    (observer : V13RealLinearSequentialRowObserver m q) (t : Fin q)
+    (activeIdx :
+      V13RealLinearNoTargetSequentialTraceFirstCosetHitActiveFixedMapTranscriptCylinderIndex
+        i₀ observer t) :
+    V13RealLinearRowsGenerateTarget activeIdx.1.A.val
+      (insert activeIdx.1.row activeIdx.1.rows) i₀ :=
+  v13RealLinear_rowsGenerateTarget_insert_of_rowFunctionalTargetCosetHit
+    activeIdx.1.A.val activeIdx.1.rows i₀ activeIdx.1.row activeIdx.1.hit
+
+theorem
+    v13RealLinearNoTargetSequentialTraceFirstCosetHitActiveFixedMapTranscriptCylinder_insert_rows_card_le_step_succ
+    {m q : Nat} (i₀ : Fin m)
+    (observer : V13RealLinearSequentialRowObserver m q) (t : Fin q)
+    (activeIdx :
+      V13RealLinearNoTargetSequentialTraceFirstCosetHitActiveFixedMapTranscriptCylinderIndex
+        i₀ observer t) :
+    (insert activeIdx.1.row activeIdx.1.rows).card ≤ (t : Nat) + 1 := by
+  classical
+  have hrows :=
+    v13RealLinearNoTargetSequentialTraceFirstCosetHitActiveFixedMapTranscriptCylinder_rows_card_le_step
+      i₀ observer t activeIdx
+  by_cases hrow : activeIdx.1.row ∈ activeIdx.1.rows
+  · rw [Finset.insert_eq_of_mem hrow]
+    omega
+  · rw [Finset.card_insert_of_notMem hrow]
+    omega
+
+def
+    v13RealLinearNoTargetSequentialTraceFirstCosetHitActiveFixedMapTranscriptCylinder_generatedBudgetedRowset
+    {m q : Nat} (i₀ : Fin m)
+    (observer : V13RealLinearSequentialRowObserver m q) (t : Fin q)
+    (activeIdx :
+      V13RealLinearNoTargetSequentialTraceFirstCosetHitActiveFixedMapTranscriptCylinderIndex
+        i₀ observer t) :
+    V13RealLinearBudgetedRowset m ((t : Nat) + 1) :=
+  ⟨insert activeIdx.1.row activeIdx.1.rows,
+    v13RealLinearNoTargetSequentialTraceFirstCosetHitActiveFixedMapTranscriptCylinder_insert_rows_card_le_step_succ
+      i₀ observer t activeIdx⟩
+
+def
+    v13RealLinearNoTargetSequentialTraceFirstCosetHitActiveFixedMapTranscriptCylinder_generatedMap
+    {m q : Nat} (i₀ : Fin m)
+    (observer : V13RealLinearSequentialRowObserver m q) (t : Fin q)
+    (activeIdx :
+      V13RealLinearNoTargetSequentialTraceFirstCosetHitActiveFixedMapTranscriptCylinderIndex
+        i₀ observer t) :
+    V13RealLinearNoTargetBudgetedRowsetGeneratingMapSet i₀
+      (v13RealLinearNoTargetSequentialTraceFirstCosetHitActiveFixedMapTranscriptCylinder_generatedBudgetedRowset
+        i₀ observer t activeIdx) :=
+  ⟨activeIdx.1.A,
+    v13RealLinearNoTargetSequentialTraceFirstCosetHitActiveFixedMapTranscriptCylinder_insert_rowsGenerateTarget
+      i₀ observer t activeIdx⟩
+
+theorem
+    v13RealLinearNoTargetSequentialTraceFirstCosetHitActiveFixedMapTranscriptCylinder_existing_rowsGenerateTarget
+    {m q : Nat} (i₀ : Fin m)
+    (observer : V13RealLinearSequentialRowObserver m q) (t : Fin q)
+    (activeIdx :
+      V13RealLinearNoTargetSequentialTraceFirstCosetHitActiveFixedMapTranscriptCylinderIndex
+        i₀ observer t)
+    (hrow : activeIdx.1.row ∈ activeIdx.1.rows) :
+    V13RealLinearRowsGenerateTarget activeIdx.1.A.val activeIdx.1.rows i₀ :=
+  v13RealLinear_rowsGenerateTarget_of_rowFunctionalTargetCosetHit_of_mem
+    activeIdx.1.A.val i₀ activeIdx.1.row hrow activeIdx.1.hit
+
+theorem
+    v13RealLinearNoTargetSequentialTraceFirstCosetHitActiveFixedMapTranscriptCylinder_fresh_not_rowsGenerateTarget
+    {m q : Nat} (i₀ : Fin m)
+    (observer : V13RealLinearSequentialRowObserver m q) (t : Fin q)
+    (activeIdx :
+      V13RealLinearNoTargetSequentialTraceFirstCosetHitActiveFixedMapTranscriptCylinderIndex
+        i₀ observer t)
+    (hrow : activeIdx.1.row ∉ activeIdx.1.rows) :
+    ¬ V13RealLinearRowsGenerateTarget activeIdx.1.A.val activeIdx.1.rows i₀ :=
+  v13RealLinear_not_rowsGenerateTarget_of_rowFunctionalTargetCosetHit_of_not_mem
+    activeIdx.1.A.val i₀ activeIdx.1.row hrow activeIdx.1.hit
+
+theorem
+    v13RealLinearNoTargetSequentialTraceFirstCosetHitActiveFixedMapTranscriptCylinder_fresh_insert_rows_card_two_le
+    {m q : Nat} (i₀ : Fin m)
+    (observer : V13RealLinearSequentialRowObserver m q) (t : Fin q)
+    (activeIdx :
+      V13RealLinearNoTargetSequentialTraceFirstCosetHitActiveFixedMapTranscriptCylinderIndex
+        i₀ observer t)
+    (hrow : activeIdx.1.row ∉ activeIdx.1.rows) :
+    2 ≤ (insert activeIdx.1.row activeIdx.1.rows).card := by
+  have hpos :=
+    v13RealLinearNoTargetSequentialTraceFirstCosetHitActiveFixedMapTranscriptCylinder_rows_card_pos
+      i₀ observer t activeIdx
+  rw [Finset.card_insert_of_notMem hrow]
+  omega
+
+theorem
     v13RealLinearNoTargetSequentialTraceFirstCosetHitFixedMapTranscriptCylinder_sum_card_eq_active_capacity
     {m q : Nat} (i₀ : Fin m)
     (observer : V13RealLinearSequentialRowObserver m q) (t : Fin q) :
