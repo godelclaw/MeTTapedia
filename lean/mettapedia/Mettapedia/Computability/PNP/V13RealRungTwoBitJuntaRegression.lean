@@ -479,6 +479,53 @@ example {m q : Nat} (i₀ : Fin m)
     i₀ observer t
 
 noncomputable example {m q : Nat} (i₀ : Fin m)
+    (observer : V13RealLinearSequentialRowObserver m q) (t : Fin q) :
+    (Σ rows : Finset (Fin m),
+      Σ row : Fin m,
+        Σ transcript : V13RealLinearRowsTranscriptSpace m rows,
+          V13RealLinearNoTargetSequentialTraceFirstCosetHitFixedPrefixTranscriptWorldSet
+            i₀ observer t rows row transcript) ≃
+      (Σ idx :
+        V13RealLinearNoTargetSequentialTraceFirstCosetHitFixedMapTranscriptCylinderIndex
+          m q i₀ observer t,
+        V13RealLinearNoTargetSequentialTraceFirstCosetHitFixedMapTranscriptCylinder
+          i₀ observer t idx) :=
+  v13RealLinearNoTargetSequentialTraceFirstCosetHitFixedPrefixTranscriptSigmaEquivFixedMapCylinderSigma
+    i₀ observer t
+
+example {m q : Nat} (i₀ : Fin m)
+    (observer : V13RealLinearSequentialRowObserver m q) (t : Fin q) :
+    (∑ rows : Finset (Fin m),
+      ∑ row : Fin m,
+        ∑ transcript : V13RealLinearRowsTranscriptSpace m rows,
+          Fintype.card
+            (V13RealLinearNoTargetSequentialTraceFirstCosetHitFixedPrefixTranscriptWorldSet
+              i₀ observer t rows row transcript)) =
+      ∑ idx :
+        V13RealLinearNoTargetSequentialTraceFirstCosetHitFixedMapTranscriptCylinderIndex
+          m q i₀ observer t,
+        Fintype.card
+          (V13RealLinearNoTargetSequentialTraceFirstCosetHitFixedMapTranscriptCylinder
+            i₀ observer t idx) :=
+  v13RealLinearNoTargetSequentialTraceFirstCosetHitFixedPrefixTranscriptWorldSet_sum_card_eq_fixedMapCylinder_sum_card
+    i₀ observer t
+
+example {m q : Nat} (i₀ : Fin m)
+    (observer : V13RealLinearSequentialRowObserver m q) (t : Fin q) :
+    (∑ rows : Finset (Fin m),
+      ∑ row : Fin m,
+        ∑ transcript : V13RealLinearRowsTranscriptSpace m rows,
+          Fintype.card
+            (V13RealLinearNoTargetSequentialTraceFirstCosetHitFixedPrefixTranscriptWorldSet
+              i₀ observer t rows row transcript)) =
+      ∑ activeIdx :
+        V13RealLinearNoTargetSequentialTraceFirstCosetHitActiveFixedMapTranscriptCylinderIndex
+          i₀ observer t,
+        2 ^ (m - activeIdx.1.rows.card) :=
+  v13RealLinearNoTargetSequentialTraceFirstCosetHitFixedPrefixTranscriptWorldSet_sum_card_eq_active_capacity
+    i₀ observer t
+
+noncomputable example {m q : Nat} (i₀ : Fin m)
     (observer : V13RealLinearSequentialRowObserver m q) (t : Fin q)
     (pref :
       V13RealLinearSequentialPrefixTranscriptVector m (t : Nat)) :
