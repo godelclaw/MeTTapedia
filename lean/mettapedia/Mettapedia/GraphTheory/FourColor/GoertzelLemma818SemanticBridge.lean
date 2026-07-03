@@ -7792,6 +7792,33 @@ theorem concreteChainFiberAppendQuotientFibrationParentRowsNonSingletonPrefixBas
     ChainFiberAppendQuotientFibrationParentRowsStructuralFields.ofTotalConnectedAndLiftImage
       proj hTotal hImage⟩⟩
 
+theorem concreteChainFiberAppendQuotientFibrationParentRowsNonSingletonPrefixConnectedLiftImageClosed_of_base_data_structural
+    (hPair :
+      concreteChainFiberAppendQuotientFibrationParentRowsNonSingletonPrefixBaseDataStructuralClosed) :
+    concreteChainFiberAppendQuotientFibrationParentRowsNonSingletonPrefixConnectedLiftImageClosed := by
+  intro word orient hlen hcert key hkey
+  rcases hPair word orient hlen hcert key hkey with
+    ⟨⟨data, structural⟩⟩
+  refine ⟨data, structural.proj, ?_, ?_⟩
+  · let fibration :
+        Fibration
+          (chainFiberRootClosureStep (word ++ [orient]) key)
+          data.baseStep structural.proj :=
+      { fiberReach := structural.fiberReach
+        liftStep := structural.liftStep }
+    letI := data.baseDecidableEq
+    exact fibration.totalConnected_of_baseConnected
+      data.baseParentRowsSymmetricRooted.connected
+  · intro x b hstep
+    rcases structural.liftStep x b hstep with ⟨y, hy, _hreach⟩
+    exact ⟨y, hy⟩
+
+theorem concreteChainFiberAppendQuotientFibrationParentRowsNonSingletonPrefixBaseDataStructuralClosed_iff_connected_lift_image :
+    concreteChainFiberAppendQuotientFibrationParentRowsNonSingletonPrefixBaseDataStructuralClosed ↔
+      concreteChainFiberAppendQuotientFibrationParentRowsNonSingletonPrefixConnectedLiftImageClosed :=
+  ⟨concreteChainFiberAppendQuotientFibrationParentRowsNonSingletonPrefixConnectedLiftImageClosed_of_base_data_structural,
+    concreteChainFiberAppendQuotientFibrationParentRowsNonSingletonPrefixBaseDataStructuralClosed_of_connected_lift_image⟩
+
 theorem concreteChainFiberAppendQuotientFibrationParentRowsNonSingletonPrefixBaseDataStructuralClosed_of_structural
     (hStructural :
       concreteChainFiberAppendQuotientFibrationParentRowsNonSingletonPrefixStructuralClosed) :
