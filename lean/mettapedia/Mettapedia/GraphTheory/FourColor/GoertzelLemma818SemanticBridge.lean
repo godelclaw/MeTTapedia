@@ -2605,6 +2605,119 @@ def concreteChainFiberAppendRelativeSingletonShiftedSwitchPrefixPointClosed :
                     concreteChainFiberAppendRelativeSingletonShiftedSwitchPointGoal
                       word orient pref current currentLast targetLast move ge
 
+theorem concreteChainFiberAppendRelativeSingletonShiftedSwitchPrefixPointClosed_of_compatible_prefix :
+    concreteChainFiberAppendRelativeSingletonShiftedSwitchPrefixPointClosed := by
+  intro word orient hne _hcert key _hkey pref lastX hpref _hlastX
+    hcompatibleX _hkeyLocal current target currentLast targetLast hcurrent
+    htarget hcurrentEq htargetEq move _hpair _hseed _hspecified ge _hge
+    hprefix
+  subst current
+  subst target
+  let localComponent :=
+    GoertzelLemma814.chainComponent (frontierWordToChainWord [orient])
+      [currentLast] move.a move.c move.seed
+  let shiftedComponent := concreteChainFiberAppendShiftComponent word localComponent
+  have hprefLen : pref.length = word.length := by
+    have hprefRaw := hpref
+    unfold concreteChainFiber GoertzelLemma814.chainFiberFrom at hprefRaw
+    have hprefStates : pref ∈ concreteChainStates word :=
+      (List.mem_filter.mp hprefRaw).1
+    have hlen :=
+      GoertzelLemma814.allChainStates_mem_length
+        (orients := frontierWordToChainWord word)
+        (by simpa [concreteChainStates] using hprefStates)
+    simpa [frontierWordToChainWord] using hlen
+  have hcurrentGlobal :
+      pref ++ [currentLast] ∈ concreteChainFiber (word ++ [orient]) key :=
+    concreteChainFiberAppend_mem_of_prefix_and_local_singleton
+      word orient hne key hpref hcompatibleX hcurrent rfl
+  have hcurrentStates :
+      pref ++ [currentLast] ∈ concreteChainStates (word ++ [orient]) := by
+    unfold concreteChainFiber GoertzelLemma814.chainFiberFrom at hcurrentGlobal
+    exact (List.mem_filter.mp hcurrentGlobal).1
+  have hcurrentCompatible :
+      GoertzelLemma814.compatibleChainStates
+        (frontierWordToChainWord (word ++ [orient]))
+        (pref ++ [currentLast]) = true := by
+    have hAll :=
+      GoertzelLemma814.allChainStates_compatible
+        (frontierWordToChainWord (word ++ [orient]))
+    rw [List.all_eq_true] at hAll
+    exact hAll (pref ++ [currentLast])
+      (by simpa [concreteChainStates] using hcurrentStates)
+  have htargetColor :
+      GoertzelLemma814.chainEdgeColor (pref ++ [targetLast]) ge =
+        GoertzelLemma814.chainEdgeColor pref ge := by
+    cases ge with
+    | mk occ edge =>
+        have hocc : occ < pref.length := by
+          simpa [hprefLen] using hprefix
+        simp [GoertzelLemma814.chainEdgeColor, GoertzelLemma814.tauStateColorAt,
+          GoertzelLemma814.chainStateAt_append_left pref targetLast hocc]
+  have hcurrentColor :
+      GoertzelLemma814.chainEdgeColor (pref ++ [currentLast]) ge =
+        GoertzelLemma814.chainEdgeColor pref ge := by
+    cases ge with
+    | mk occ edge =>
+        have hocc : occ < pref.length := by
+          simpa [hprefLen] using hprefix
+        simp [GoertzelLemma814.chainEdgeColor, GoertzelLemma814.tauStateColorAt,
+          GoertzelLemma814.chainStateAt_append_left pref currentLast hocc]
+  have hglobalOcc :
+      ge.occ < (frontierWordToChainWord (word ++ [orient])).length := by
+    simp [frontierWordToChainWord]
+    omega
+  have hcanonicalColor :
+      GoertzelLemma814.chainEdgeColor (pref ++ [currentLast])
+          (GoertzelLemma814.chainCanonicalEdge
+            (frontierWordToChainWord (word ++ [orient])) ge) =
+        GoertzelLemma814.chainEdgeColor (pref ++ [currentLast]) ge :=
+    GoertzelLemma814.chainEdgeColor_chainCanonicalEdge_of_compatible
+      hcurrentCompatible ge hglobalOcc
+  have hcontainsFalse :
+      shiftedComponent.contains
+          (GoertzelLemma814.chainCanonicalEdge
+            (frontierWordToChainWord (word ++ [orient])) ge) = false := by
+    simpa [shiftedComponent, localComponent] using
+      concreteChainFiberAppendShiftComponent_contains_canonical_prefix_false
+        word orient localComponent ge hprefix
+  have hcontainsFalseRaw :
+      (concreteChainFiberAppendShiftComponent word
+          (GoertzelLemma814.chainComponent (frontierWordToChainWord [orient])
+            [currentLast] move.a move.c move.seed)).contains
+          (GoertzelLemma814.chainCanonicalEdge
+            (frontierWordToChainWord (word ++ [orient])) ge) = false := by
+    simpa [shiftedComponent, localComponent] using hcontainsFalse
+  have hcanonicalNotMemRaw :
+      GoertzelLemma814.chainCanonicalEdge
+          (frontierWordToChainWord (word ++ [orient])) ge ∉
+        concreteChainFiberAppendShiftComponent word
+          (GoertzelLemma814.chainComponent (frontierWordToChainWord [orient])
+            [currentLast] move.a move.c move.seed) := by
+    intro hmem
+    have hcontainsTrue :
+        (concreteChainFiberAppendShiftComponent word
+            (GoertzelLemma814.chainComponent (frontierWordToChainWord [orient])
+              [currentLast] move.a move.c move.seed)).contains
+            (GoertzelLemma814.chainCanonicalEdge
+              (frontierWordToChainWord (word ++ [orient])) ge) = true :=
+      List.contains_iff_mem.mpr hmem
+    rw [hcontainsFalseRaw] at hcontainsTrue
+    cases hcontainsTrue
+  have hswitch :
+      GoertzelLemma814.chainSwitchedColor
+          (frontierWordToChainWord (word ++ [orient]))
+          (pref ++ [currentLast])
+          (concreteChainFiberAppendShiftComponent word
+            (GoertzelLemma814.chainComponent (frontierWordToChainWord [orient])
+              [currentLast] move.a move.c move.seed))
+          move.a move.c ge =
+        GoertzelLemma814.chainEdgeColor pref ge := by
+    simp [GoertzelLemma814.chainSwitchedColor, hcanonicalNotMemRaw,
+      hcanonicalColor, hcurrentColor]
+  unfold concreteChainFiberAppendRelativeSingletonShiftedSwitchPointGoal
+  simp [hswitch, htargetColor, GoertzelLemma814.colorEq]
+
 def concreteChainFiberAppendRelativeSingletonShiftedSwitchLastNonGluedPointClosed :
     Prop :=
   ∀ (word : List GoertzelLemma818FrontierMode.TauOrient)
@@ -2863,6 +2976,14 @@ theorem concreteChainFiberAppendRelativeSingletonShiftedSwitchPointClosed_of_pre
     concreteChainFiberAppendRelativeSingletonShiftedSwitchLastNonGluedPointClosed_of_local_specified
     hLastGlued
 
+theorem concreteChainFiberAppendRelativeSingletonShiftedSwitchPointClosed_of_compatible_prefix_and_glued
+    (hLastGlued :
+      concreteChainFiberAppendRelativeSingletonShiftedSwitchLastGluedPointClosed) :
+    concreteChainFiberAppendRelativeSingletonShiftedSwitchPointClosed :=
+  concreteChainFiberAppendRelativeSingletonShiftedSwitchPointClosed_of_prefix_and_glued
+    concreteChainFiberAppendRelativeSingletonShiftedSwitchPrefixPointClosed_of_compatible_prefix
+    hLastGlued
+
 theorem concreteChainFiberAppendRelativeSingletonShiftedSwitchAgreementClosed_of_pointwise
     (hPoint :
       concreteChainFiberAppendRelativeSingletonShiftedSwitchPointClosed) :
@@ -2886,6 +3007,14 @@ theorem concreteChainFiberAppendRelativeSingletonShiftedSwitchAgreementClosed_of
   concreteChainFiberAppendRelativeSingletonShiftedSwitchAgreementClosed_of_pointwise
     (concreteChainFiberAppendRelativeSingletonShiftedSwitchPointClosed_of_prefix_and_glued
       hPrefix hLastGlued)
+
+theorem concreteChainFiberAppendRelativeSingletonShiftedSwitchAgreementClosed_of_compatible_prefix_and_glued
+    (hLastGlued :
+      concreteChainFiberAppendRelativeSingletonShiftedSwitchLastGluedPointClosed) :
+    concreteChainFiberAppendRelativeSingletonShiftedSwitchAgreementClosed :=
+  concreteChainFiberAppendRelativeSingletonShiftedSwitchAgreementClosed_of_pointwise
+    (concreteChainFiberAppendRelativeSingletonShiftedSwitchPointClosed_of_compatible_prefix_and_glued
+      hLastGlued)
 
 def concreteChainFiberAppendRelativeSingletonShiftedSpecifiedStepClosed : Prop :=
   ∀ (word : List GoertzelLemma818FrontierMode.TauOrient)
@@ -3009,6 +3138,17 @@ theorem concreteChainFiberAppendRelativeSingletonShiftedSpecifiedStepClosed_of_c
     (concreteChainFiberAppendRelativeSingletonShiftedSwitchAgreementClosed_of_prefix_and_glued
       hPrefix hLastGlued)
 
+theorem concreteChainFiberAppendRelativeSingletonShiftedSpecifiedStepClosed_of_component_and_glued
+    (hComponent :
+      concreteChainFiberAppendRelativeSingletonShiftedComponentClosed)
+    (hLastGlued :
+      concreteChainFiberAppendRelativeSingletonShiftedSwitchLastGluedPointClosed) :
+    concreteChainFiberAppendRelativeSingletonShiftedSpecifiedStepClosed :=
+  concreteChainFiberAppendRelativeSingletonShiftedSpecifiedStepClosed_of_component_and_switch
+    hComponent
+    (concreteChainFiberAppendRelativeSingletonShiftedSwitchAgreementClosed_of_compatible_prefix_and_glued
+      hLastGlued)
+
 def concreteChainFiberAppendRelativeSingletonShiftedSpecifiedKempeStepClosed : Prop :=
   ∀ (word : List GoertzelLemma818FrontierMode.TauOrient)
     (orient : GoertzelLemma818FrontierMode.TauOrient)
@@ -3102,6 +3242,16 @@ theorem concreteChainFiberAppendRelativeSingletonSpecifiedKempeStepLiftClosed_of
     (concreteChainFiberAppendRelativeSingletonShiftedSpecifiedKempeStepClosed_of_shifted_step
       hStep)
 
+theorem concreteChainFiberAppendRelativeSingletonSpecifiedKempeStepLiftClosed_of_component_and_glued
+    (hComponent :
+      concreteChainFiberAppendRelativeSingletonShiftedComponentClosed)
+    (hLastGlued :
+      concreteChainFiberAppendRelativeSingletonShiftedSwitchLastGluedPointClosed) :
+    concreteChainFiberAppendRelativeSingletonSpecifiedKempeStepLiftClosed :=
+  concreteChainFiberAppendRelativeSingletonSpecifiedKempeStepLiftClosed_of_shifted_step
+    (concreteChainFiberAppendRelativeSingletonShiftedSpecifiedStepClosed_of_component_and_glued
+      hComponent hLastGlued)
+
 theorem concreteChainFiberAppendRelativeSingletonGlobalKempeStepLiftClosed_of_specified_step
     (hSpecified :
       concreteChainFiberAppendRelativeSingletonSpecifiedKempeStepLiftClosed) :
@@ -3130,6 +3280,16 @@ theorem concreteChainFiberAppendRelativeSingletonGlobalKempeStepLiftClosed_of_sh
   concreteChainFiberAppendRelativeSingletonGlobalKempeStepLiftClosed_of_specified_step
     (concreteChainFiberAppendRelativeSingletonSpecifiedKempeStepLiftClosed_of_shifted_step
       hStep)
+
+theorem concreteChainFiberAppendRelativeSingletonGlobalKempeStepLiftClosed_of_component_and_glued
+    (hComponent :
+      concreteChainFiberAppendRelativeSingletonShiftedComponentClosed)
+    (hLastGlued :
+      concreteChainFiberAppendRelativeSingletonShiftedSwitchLastGluedPointClosed) :
+    concreteChainFiberAppendRelativeSingletonGlobalKempeStepLiftClosed :=
+  concreteChainFiberAppendRelativeSingletonGlobalKempeStepLiftClosed_of_shifted_step
+    (concreteChainFiberAppendRelativeSingletonShiftedSpecifiedStepClosed_of_component_and_glued
+      hComponent hLastGlued)
 
 def concreteChainFiberAppendRelativeSingletonGlobalStepClosureClosed : Prop :=
   ∀ (word : List GoertzelLemma818FrontierMode.TauOrient)

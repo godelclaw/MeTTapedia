@@ -268,6 +268,14 @@ same-orientation appends have 48 tau states with no compatible next tau state
 in each same-orientation direction, while the mixed directions have none.  The
 generated or realized-prefix quotient base remains the right route when the
 full-prefix lift is too strong.
+The prefix-edge switched-color case for the relative singleton lift is now
+closed by
+`concreteChainFiberAppendRelativeSingletonShiftedSwitchPrefixPointClosed_of_compatible_prefix`.
+The helper `chainEdgeColor_chainCanonicalEdge_of_compatible` identifies the
+canonicalized glued edge color in any compatible chain, so shifted local
+switches are color-stable on prefix edges.  Downstream wrappers now consume
+this prefix closure automatically, reducing the remaining shifted-step route to
+component equality and the glued-edge switch case.
 The same-prefix closure side is now separated from prefix mobility:
 `concreteChainFiberAppendPrefixSelfLiftClosureClosed_of_lift` derives a closed
 appended representative over the current prefix from the lift-closure theorem

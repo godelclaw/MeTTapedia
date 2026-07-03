@@ -1253,6 +1253,48 @@ def compatibleChainStates (orients : List TauOrient) (states : List TauState) : 
       compatibleAdjacent (tauOrientAt orients i) (tauOrientAt orients (i + 1))
         (chainStateAt states i) (chainStateAt states (i + 1))
 
+theorem chainEdgeColor_chainCanonicalEdge_of_compatible
+    {orients : List TauOrient} {states : List TauState}
+    (hcompatible : compatibleChainStates orients states = true)
+    (ge : ChainEdge)
+    (hocc : ge.occ < orients.length) :
+    chainEdgeColor states (chainCanonicalEdge orients ge) =
+      chainEdgeColor states ge := by
+  cases ge with
+  | mk occ edge =>
+      have hoccNat : occ < orients.length := by
+        simpa using hocc
+      by_cases hpos : occ > 0
+      · have hAdjAll :
+            (List.range (orients.length - 1)).all (fun i =>
+              compatibleAdjacent (tauOrientAt orients i)
+                (tauOrientAt orients (i + 1))
+                (chainStateAt states i) (chainStateAt states (i + 1))) =
+                true := by
+          unfold compatibleChainStates at hcompatible
+          simp only [Bool.and_eq_true] at hcompatible
+          exact hcompatible.2
+        have hprevMem : occ - 1 ∈ List.range (orients.length - 1) := by
+          simp
+          omega
+        have hstep :
+            compatibleAdjacent (tauOrientAt orients (occ - 1))
+              (tauOrientAt orients ((occ - 1) + 1))
+              (chainStateAt states (occ - 1))
+              (chainStateAt states ((occ - 1) + 1)) = true :=
+          (List.all_eq_true.mp hAdjAll) (occ - 1) hprevMem
+        have hsucc : (occ - 1) + 1 = occ := by omega
+        cases hleft : tauOrientAt orients (occ - 1) <;>
+          cases hright : tauOrientAt orients occ <;>
+          cases edge <;>
+          simp [chainCanonicalEdge, chainEdgeColor, chainOutputOrder,
+            tauStateColorAt, listGetD, hpos, hsucc, hleft, hright,
+            indexOf?, indexOfAux, tauOrientInputOrder,
+            tauOrientOutputOrder, compatibleAdjacent, colorEq] at hstep ⊢ <;>
+          tauto
+      · have hzero : occ = 0 := by omega
+        simp [chainCanonicalEdge, hzero]
+
 def extendChainStates (orients : List TauOrient) (prefixes : List (List TauState))
     (nextIndex : Nat) : List (List TauState) :=
   bindList prefixes fun accStates =>
