@@ -32,6 +32,18 @@ theorem needBasedPillarARequirement_routeKempeSwitch_audit_of_boundaryZeroAnnihi
   needBasedPillarARequirement_routeKempeSwitch_of_boundaryZeroAnnihilatorTrivial_of_hasCubicIncidentEdgeTriples
     (G := G) emb vertices C₀ htrivial hG
 
+theorem needBasedPillarARequirement_routeKempeSwitch_audit_of_planarBoundaryHeightOrderedFacePeelWitnessData
+    {V : Type*} [DecidableEq V] {G : SimpleGraph V}
+    [Fintype G.edgeSet] [FiniteDimensional F2 (G.edgeSet → Color)]
+    (emb : PlaneEmbeddingWithBoundary G) (vertices : Finset V)
+    (data : PlanarBoundaryHeightOrderedFacePeelWitnessData emb)
+    (C₀ : G.EdgeColoring Color) (hC₀ : IsTaitEdgeColoring G C₀)
+    (hG : HasCubicIncidentEdgeTriples G) :
+    NeedBasedPillarARequirement emb vertices C₀
+      (RouteKempeSwitchExecutionStep emb) :=
+  needBasedPillarARequirement_routeKempeSwitch_of_planarBoundaryHeightOrderedFacePeelWitnessData_of_hasCubicIncidentEdgeTriples
+    (G := G) emb vertices data C₀ hC₀ hG
+
 /-! ## All four uniform geometric oracles are false -/
 
 theorem not_interiorDualPeelOracle : ¬ InteriorDualPeelOracle := by
