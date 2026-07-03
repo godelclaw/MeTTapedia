@@ -8353,6 +8353,14 @@ theorem concreteChainFiberAppendQuotientFibrationParentRowsFieldsClosed_of_non_s
     (concreteChainFiberAppendQuotientFibrationParentRowsNonSingletonPrefixBaseDataStructuralClosed_of_structural
       hStructural)
 
+theorem concreteChainFiberAppendQuotientFibrationParentRowsFieldsClosed_of_non_singleton_appended_parent_rows_projection_finite_section
+    (hCombined :
+      concreteChainFiberAppendQuotientFibrationParentRowsNonSingletonPrefixAppendedParentRowsProjectionFiniteSectionClosed) :
+    concreteChainFiberAppendQuotientFibrationParentRowsFieldsClosed :=
+  concreteChainFiberAppendQuotientFibrationParentRowsFieldsClosed_of_non_singleton_base_data_structural
+    (concreteChainFiberAppendQuotientFibrationParentRowsNonSingletonPrefixBaseDataStructuralClosed_of_appended_parent_rows_projection_finite_section
+      hCombined)
+
 theorem concreteChainFiberFibrationNonemptyTransferClosed_of_append_quotient_parent_rows_base_data_and_structural
     (hData :
       concreteChainFiberAppendQuotientFibrationParentRowsNonSingletonPrefixBaseDataClosed)
@@ -8371,6 +8379,14 @@ theorem concreteChainFiberFibrationNonemptyTransferClosed_of_append_quotient_par
     (concreteChainFiberAppendQuotientFibrationParentRowsFieldsClosed_of_non_singleton_base_data_structural
       hPair)
 
+theorem concreteChainFiberFibrationNonemptyTransferClosed_of_append_quotient_parent_rows_appended_parent_rows_projection_finite_section
+    (hCombined :
+      concreteChainFiberAppendQuotientFibrationParentRowsNonSingletonPrefixAppendedParentRowsProjectionFiniteSectionClosed) :
+    concreteChainFiberFibrationNonemptyTransferClosed :=
+  concreteChainFiberFibrationNonemptyTransferClosed_of_append_quotient_parent_rows
+    (concreteChainFiberAppendQuotientFibrationParentRowsFieldsClosed_of_non_singleton_appended_parent_rows_projection_finite_section
+      hCombined)
+
 theorem concreteChainAuditFibrationNonemptyTransferClosed_of_append_quotient_parent_rows_base_data_and_structural
     (hData :
       concreteChainFiberAppendQuotientFibrationParentRowsNonSingletonPrefixBaseDataClosed)
@@ -8388,6 +8404,14 @@ theorem concreteChainAuditFibrationNonemptyTransferClosed_of_append_quotient_par
   concreteChainAuditFibrationNonemptyTransferClosed_of_append_quotient_parent_rows
     (concreteChainFiberAppendQuotientFibrationParentRowsFieldsClosed_of_non_singleton_base_data_structural
       hPair)
+
+theorem concreteChainAuditFibrationNonemptyTransferClosed_of_append_quotient_parent_rows_appended_parent_rows_projection_finite_section
+    (hCombined :
+      concreteChainFiberAppendQuotientFibrationParentRowsNonSingletonPrefixAppendedParentRowsProjectionFiniteSectionClosed) :
+    concreteChainAuditFibrationNonemptyTransferClosed :=
+  concreteChainAuditFibrationNonemptyTransferClosed_of_append_quotient_parent_rows
+    (concreteChainFiberAppendQuotientFibrationParentRowsFieldsClosed_of_non_singleton_appended_parent_rows_projection_finite_section
+      hCombined)
 
 def concreteChainWordFibrationSingletonSeeds : Prop :=
   ∀ orient : GoertzelLemma818FrontierMode.TauOrient,
@@ -8607,6 +8631,18 @@ theorem chainAuditForFrontierWord_ok_of_append_quotient_parent_rows_base_data_st
     hSeed
     (concreteChainFiberAppendQuotientFibrationParentRowsFieldsClosed_of_non_singleton_base_data_structural
       hPair)
+    word
+
+theorem chainAuditForFrontierWord_ok_of_append_quotient_parent_rows_appended_parent_rows_projection_finite_section
+    (hSeed : concreteChainWordFibrationSingletonSeeds)
+    (hCombined :
+      concreteChainFiberAppendQuotientFibrationParentRowsNonSingletonPrefixAppendedParentRowsProjectionFiniteSectionClosed)
+    (word : List GoertzelLemma818FrontierMode.TauOrient) :
+    chainAuditForFrontierWord word = true :=
+  chainAuditForFrontierWord_ok_of_append_quotient_parent_rows
+    hSeed
+    (concreteChainFiberAppendQuotientFibrationParentRowsFieldsClosed_of_non_singleton_appended_parent_rows_projection_finite_section
+      hCombined)
     word
 
 theorem chainAuditForFrontierWord_ok_of_append_quotient_path_rows
