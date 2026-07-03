@@ -362,10 +362,13 @@ points cover the actual `TT` fiber-32 prefix fiber, with
 point.  The same data now has an explicit finite appended-point list and
 `ttFiber32AppendProjectionInjectivePreimage`, giving an injective selected
 preimage from every semantic point in this `TT` fiber-32 prefix fiber into the
-matching selected `TTT` appended fiber points.  This is still local selector
-evidence; it does not claim the canonical prefix projection is surjective, and
-it is not yet the global generated projection function required by the paired
-route.
+matching selected `TTT` appended fiber points.  The local selector now also has
+`ttFiber32AppendProjection`, `ttFiber32AppendProjection_section`, and
+`ttFiber32AppendProjection_surjective`, which explicitly package the local
+right-inverse projection/section surface for the same instance.  This is still
+local selector evidence; it does not claim the canonical prefix projection is
+surjective, and it is not yet the global generated projection function required
+by the paired route.
 The standalone base-data half is now closed by
 `concreteChainFiberAppendQuotientFibrationParentRowsNonSingletonPrefixBaseDataClosed_of_prefix_root_star`:
 nonempty prefix fibers use the prefix fiber itself as the quotient base with a

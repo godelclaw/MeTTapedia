@@ -1268,6 +1268,97 @@ theorem ttFiber32AppendProjectionInjectivePreimage :
     GoertzelLemma818TripleTauLightComponentCertificate.tttFiber32Key] using
     ttFiber32ProjectionInjectivePreimage
 
+noncomputable def ttFiber32AppendSelectedPreimage :
+    ChainFiberPoint ttFiber32FrontierWord
+      GoertzelLemma818CompositeCertificate.ttFiber32Key →
+      ChainFiberPoint
+        (ttFiber32FrontierWord ++
+          [GoertzelLemma818FrontierMode.TauOrient.tau])
+        GoertzelLemma818CompositeCertificate.ttFiber32Key :=
+  Classical.choose ttFiber32AppendProjectionInjectivePreimage
+
+theorem ttFiber32AppendSelectedPreimage_injective :
+    Function.Injective ttFiber32AppendSelectedPreimage :=
+  Classical.choose_spec ttFiber32AppendProjectionInjectivePreimage
+
+noncomputable def ttFiber32AppendProjection
+    (point :
+      ChainFiberPoint
+        (ttFiber32FrontierWord ++
+          [GoertzelLemma818FrontierMode.TauOrient.tau])
+        GoertzelLemma818CompositeCertificate.ttFiber32Key) :
+    ChainFiberPoint ttFiber32FrontierWord
+      GoertzelLemma818CompositeCertificate.ttFiber32Key :=
+  by
+    classical
+    exact
+      if h : ∃ b :
+          ChainFiberPoint ttFiber32FrontierWord
+            GoertzelLemma818CompositeCertificate.ttFiber32Key,
+          ttFiber32AppendSelectedPreimage b = point then
+        Classical.choose h
+      else
+        ttFiber32PrefixPoint ⟨0, by decide⟩
+
+theorem ttFiber32AppendProjection_section
+    (point : ChainFiberPoint ttFiber32FrontierWord
+      GoertzelLemma818CompositeCertificate.ttFiber32Key) :
+    ttFiber32AppendProjection
+        (ttFiber32AppendSelectedPreimage point) = point := by
+  classical
+  change
+    (if h : ∃ b : ChainFiberPoint ttFiber32FrontierWord
+        GoertzelLemma818CompositeCertificate.ttFiber32Key,
+        ttFiber32AppendSelectedPreimage b =
+          ttFiber32AppendSelectedPreimage point then
+        Classical.choose h
+      else
+        ttFiber32PrefixPoint ⟨0, by decide⟩) = point
+  let witness :
+      ∃ b : ChainFiberPoint ttFiber32FrontierWord
+        GoertzelLemma818CompositeCertificate.ttFiber32Key,
+        ttFiber32AppendSelectedPreimage b =
+          ttFiber32AppendSelectedPreimage point :=
+    ⟨point, rfl⟩
+  have hchoose : Classical.choose witness = point :=
+    ttFiber32AppendSelectedPreimage_injective
+      (Classical.choose_spec witness)
+  rw [dif_pos witness]
+  exact hchoose
+
+theorem ttFiber32AppendProjection_surjective :
+    ∀ point : ChainFiberPoint ttFiber32FrontierWord
+        GoertzelLemma818CompositeCertificate.ttFiber32Key,
+      ∃ y : ChainFiberPoint
+          (ttFiber32FrontierWord ++
+            [GoertzelLemma818FrontierMode.TauOrient.tau])
+          GoertzelLemma818CompositeCertificate.ttFiber32Key,
+        ttFiber32AppendProjection y = point := by
+  intro point
+  exact ⟨ttFiber32AppendSelectedPreimage point,
+    ttFiber32AppendProjection_section point⟩
+
+theorem ttFiber32AppendProjectionSection :
+    ∃ proj :
+      ChainFiberPoint
+        (ttFiber32FrontierWord ++
+          [GoertzelLemma818FrontierMode.TauOrient.tau])
+        GoertzelLemma818CompositeCertificate.ttFiber32Key →
+        ChainFiberPoint ttFiber32FrontierWord
+          GoertzelLemma818CompositeCertificate.ttFiber32Key,
+      ∃ preimageOf :
+        ChainFiberPoint ttFiber32FrontierWord
+          GoertzelLemma818CompositeCertificate.ttFiber32Key →
+          ChainFiberPoint
+            (ttFiber32FrontierWord ++
+              [GoertzelLemma818FrontierMode.TauOrient.tau])
+            GoertzelLemma818CompositeCertificate.ttFiber32Key,
+        ∀ point : ChainFiberPoint ttFiber32FrontierWord
+            GoertzelLemma818CompositeCertificate.ttFiber32Key,
+          proj (preimageOf point) = point :=
+  ⟨ttFiber32AppendProjection, ttFiber32AppendSelectedPreimage,
+    ttFiber32AppendProjection_section⟩
+
 def ttFiber32SelectedTttFiber32StatesList : List (List TauState) :=
   [ ttFiber32SelectedTttFiber32States ⟨0, by decide⟩
   , ttFiber32SelectedTttFiber32States ⟨1, by decide⟩
