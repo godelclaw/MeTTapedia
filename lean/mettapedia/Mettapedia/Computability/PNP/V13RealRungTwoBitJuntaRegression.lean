@@ -47,6 +47,55 @@ example {m j : Nat} (i₀ : Fin m)
           observer A i₀ :=
   v13RealLinearParityObserver_determinesTarget_iff observer A i₀
 
+example {m j : Nat} (i₀ : Fin m)
+    (observer : V13RealLinearParityObserver m j)
+    (A : V13F2LinearEquiv m) :
+    V13RealLinearParityObserverDeterminesTargetComplement observer A i₀ ↔
+      v13RealLinearParityObserverConstant observer A = 1 ∧
+        V13RealLinearParityObserverRhsParityMatchesTarget
+          observer A i₀ :=
+  v13RealLinearParityObserver_determinesTargetComplement_iff observer A i₀
+
+example {m j : Nat}
+    (observer : V13RealLinearBitJuntaObserver m j)
+    (A : V13F2LinearEquiv m) (i₀ : Fin m) :
+    Fintype.card (F2Vec m) =
+      Fintype.card (V13RealLinearBitJuntaFixedCorrect observer A i₀) +
+        Fintype.card (V13RealLinearBitJuntaFixedIncorrect observer A i₀) :=
+  v13RealLinearBitJuntaFixedWorld_card_eq_correct_add_incorrect
+    observer A i₀
+
+example {m j : Nat}
+    (observer : V13RealLinearParityObserver m j)
+    (A : V13F2LinearEquiv m) (x w : F2Vec m) :
+    v13RealLinearParityObserverRhsParity observer A (f2AddVec x w) =
+      v13RealLinearParityObserverRhsParity observer A x +
+        v13RealLinearParityObserverRhsParity observer A w :=
+  v13RealLinearParityObserver_rhsParity_add observer A x w
+
+example {m j : Nat}
+    (observer : V13RealLinearParityObserver m j)
+    (A : V13F2LinearEquiv m) (i₀ : Fin m)
+    (hnot :
+      ¬ V13RealLinearParityObserverRhsParityMatchesTarget observer A i₀) :
+    Fintype.card
+        (V13RealLinearBitJuntaFixedCorrect observer.toBitJunta A i₀) =
+      Fintype.card
+        (V13RealLinearBitJuntaFixedIncorrect observer.toBitJunta A i₀) :=
+  v13RealLinearParityObserver_fixed_correct_card_eq_incorrect_card_of_not_rhsParityMatchesTarget
+    observer A i₀ hnot
+
+example {m j : Nat}
+    (observer : V13RealLinearParityObserver m j)
+    (A : V13F2LinearEquiv m) (i₀ : Fin m)
+    (hnot :
+      ¬ V13RealLinearParityObserverRhsParityMatchesTarget observer A i₀) :
+    Fintype.card
+        (V13RealLinearBitJuntaFixedCorrect observer.toBitJunta A i₀) * 2 =
+      Fintype.card (F2Vec m) :=
+  v13RealLinearParityObserver_fixed_correct_card_mul_two_eq_f2vec_card_of_not_rhsParityMatchesTarget
+    observer A i₀ hnot
+
 example {m j : Nat}
     (hcount : V13RealLinearNoTargetBitJuntaBlockedCountingBound m j) :
     V13RealLinearNoTargetBitJuntaSuccessBound m j :=
