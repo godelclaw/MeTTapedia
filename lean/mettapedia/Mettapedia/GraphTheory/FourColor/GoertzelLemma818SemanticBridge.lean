@@ -2114,6 +2114,83 @@ def concreteChainFiberAppendShiftEdge
   { occ := edge.occ + word.length
     edge := edge.edge }
 
+theorem concreteChainFiberAppend_chainEdgeColor_shift_occ_zero
+    (word : List GoertzelLemma818FrontierMode.TauOrient)
+    (pref : List GoertzelLemma814.TauState)
+    (last : GoertzelLemma814.TauState)
+    (edge : GoertzelLemma814.ChainEdge)
+    (hprefLen : pref.length = word.length)
+    (hocc : edge.occ = 0) :
+    GoertzelLemma814.chainEdgeColor (pref ++ [last])
+        (concreteChainFiberAppendShiftEdge word edge) =
+      GoertzelLemma814.chainEdgeColor [last] edge := by
+  cases edge with
+  | mk occ tauEdge =>
+      simp at hocc
+      subst occ
+      have hstate :
+          GoertzelLemma814.chainStateAt (pref ++ [last]) word.length = last :=
+        GoertzelLemma814.chainStateAt_append_length pref last word.length hprefLen
+      calc
+        GoertzelLemma814.chainEdgeColor (pref ++ [last])
+            (concreteChainFiberAppendShiftEdge word
+              ({ occ := 0, edge := tauEdge } : GoertzelLemma814.ChainEdge)) =
+          (GoertzelLemma814.chainStateAt (pref ++ [last]) word.length).color
+            tauEdge := by
+              simp [concreteChainFiberAppendShiftEdge,
+                GoertzelLemma814.chainEdgeColor,
+                GoertzelLemma814.tauStateColorAt]
+        _ = last.color tauEdge := by
+              rw [hstate]
+        _ =
+          GoertzelLemma814.chainEdgeColor [last]
+            ({ occ := 0, edge := tauEdge } : GoertzelLemma814.ChainEdge) := by
+              simp [GoertzelLemma814.chainEdgeColor,
+                GoertzelLemma814.tauStateColorAt,
+                GoertzelLemma814.chainStateAt, GoertzelLemma814.listGetD]
+
+theorem concreteChainFiberAppend_chainEdgesShareEndpoint_shift_occ_zero
+    (word : List GoertzelLemma818FrontierMode.TauOrient)
+    (orient : GoertzelLemma818FrontierMode.TauOrient)
+    (edge other : GoertzelLemma814.ChainEdge)
+    (hedgeOcc : edge.occ = 0)
+    (hotherOcc : other.occ = 0)
+    (hedgeNotInput :
+      (GoertzelLemma814.tauOrientInputOrder (frontierOrientToChain orient)).contains
+        edge.edge = false)
+    (hotherNotInput :
+      (GoertzelLemma814.tauOrientInputOrder (frontierOrientToChain orient)).contains
+        other.edge = false) :
+    GoertzelLemma814.chainEdgesShareEndpoint
+        (frontierWordToChainWord (word ++ [orient]))
+        (concreteChainFiberAppendShiftEdge word edge)
+        (concreteChainFiberAppendShiftEdge word other) =
+      GoertzelLemma814.chainEdgesShareEndpoint
+        (frontierWordToChainWord [orient]) edge other := by
+  cases edge with
+  | mk edgeOcc edgeTau =>
+      cases other with
+      | mk otherOcc otherTau =>
+          simp at hedgeOcc hotherOcc
+          subst edgeOcc
+          subst otherOcc
+          generalize hlen : word.length = n
+          cases n <;>
+          cases orient <;> cases edgeTau <;> cases otherTau <;>
+            simp [concreteChainFiberAppendShiftEdge,
+              GoertzelLemma814.chainEdgesShareEndpoint,
+              GoertzelLemma814.chainEdgeEndpoints,
+              GoertzelLemma814.chainIsGluedOutput,
+              GoertzelLemma814.tauOrientAt,
+              GoertzelLemma814.tauOrientInputOrder,
+              frontierWordToChainWord, frontierOrientToChain,
+              hlen,
+              GoertzelLemma814.listGetD,
+              GoertzelLemma814.edgeEndpoints,
+              GoertzelLemma814.tauEndpointToChainEndpoint,
+              GoertzelLemma814.isInternalEndpoint,
+              Bool.beq_eq_decide_eq] at hedgeNotInput hotherNotInput ⊢
+
 def concreteChainFiberAppendShiftComponent
     (word : List GoertzelLemma818FrontierMode.TauOrient)
     (component : List GoertzelLemma814.ChainEdge) :
