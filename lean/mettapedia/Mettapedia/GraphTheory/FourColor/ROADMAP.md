@@ -264,7 +264,9 @@ for nonempty prefix fibers, prove appended root-closure connectedness and emit a
 surjective projection from appended fiber points onto prefix fiber points.  The
 `_of_surjective_projection` theorem supplies the connected-lift-image witness,
 while empty prefix fibers are discharged by the already proved prefix-closure
-projection.
+projection.  The matching semantic and target-gated all-word wrappers route
+this target directly to `semanticFrontierStateSufficientForChain` and
+`chainAuditForFrontierWord`.
 The prefix-fibration adapter
 `concreteChainFiberAppendQuotientFibrationParentRowsNonSingletonPrefixBaseDataStructuralClosed_of_prefix_fibration`
 now shows that `concreteChainFiberAppendPrefixFibrationClosed` is enough to
