@@ -2449,6 +2449,154 @@ theorem concreteChainFiberAppend_chainEdgeColor_last
       rw [hstate]
       simp [GoertzelLemma814.chainStateAt, GoertzelLemma814.listGetD]
 
+theorem concreteChainFiberAppend_boundary_output_pair_forces_input_pair
+    (word : List GoertzelLemma818FrontierMode.TauOrient)
+    (orient : GoertzelLemma818FrontierMode.TauOrient)
+    (leftOrient : GoertzelLemma814.TauOrient)
+    (pref : List GoertzelLemma814.TauState)
+    (lastX currentLast : GoertzelLemma814.TauState)
+    (a c : GoertzelLemma814.LColor)
+    (outputEdge inputEdge : GoertzelLemma814.TauEdge)
+    (hne : word ≠ [])
+    (hprefLen : pref.length = word.length)
+    (hcompatibleX : GoertzelLemma814.compatibleAdjacent
+      leftOrient (frontierOrientToChain orient)
+      (GoertzelLemma814.chainStateAt pref (word.length - 1))
+      lastX = true)
+    (htrace :
+      concreteChainFiberAppendLastInputTrace orient currentLast =
+        concreteChainFiberAppendLastInputTrace orient lastX)
+    (hzip :
+      (outputEdge, inputEdge) ∈
+        (GoertzelLemma814.tauOrientOutputOrder leftOrient).zip
+          (GoertzelLemma814.tauOrientInputOrder
+            (frontierOrientToChain orient)))
+    (hpairOutput :
+      GoertzelLemma814.chainEdgeInPair (pref ++ [currentLast]) a c
+        ({ occ := word.length - 1, edge := outputEdge } :
+          GoertzelLemma814.ChainEdge) = true) :
+    GoertzelLemma814.chainEdgeInPair [currentLast] a c
+      ({ occ := 0, edge := inputEdge } : GoertzelLemma814.ChainEdge) =
+        true := by
+  have hprevState :
+      GoertzelLemma814.chainStateAt (pref ++ [currentLast])
+          (word.length - 1) =
+        GoertzelLemma814.chainStateAt pref (word.length - 1) :=
+    GoertzelLemma814.chainStateAt_append_left pref currentLast
+      (by
+        rw [hprefLen]
+        cases word with
+        | nil => contradiction
+        | cons _ _ => simp)
+  unfold GoertzelLemma814.chainEdgeInPair GoertzelLemma814.chainEdgeColor
+    GoertzelLemma814.tauStateColorAt at hpairOutput
+  rw [hprevState] at hpairOutput
+  cases leftOrient <;> cases orient <;>
+    simp [GoertzelLemma814.tauOrientOutputOrder,
+      GoertzelLemma814.tauOrientInputOrder, frontierOrientToChain] at hzip
+  all_goals
+    rcases hzip with hzip | hzip | hzip | hzip <;> cases hzip
+    · have hcompatColor :
+          (GoertzelLemma814.chainStateAt pref (word.length - 1)).color
+              outputEdge =
+            lastX.color inputEdge := by
+        have h := hcompatibleX
+        simp [GoertzelLemma814.compatibleAdjacent,
+          GoertzelLemma814.tauOrientOutputOrder,
+          GoertzelLemma814.tauOrientInputOrder, GoertzelLemma814.colorEq,
+          frontierOrientToChain] at h
+        aesop
+      have htraceColor :
+          currentLast.color inputEdge = lastX.color inputEdge := by
+        have h := htrace
+        simp [concreteChainFiberAppendLastInputTrace, frontierOrientToChain,
+          GoertzelLemma814.tauOrientInputOrder] at h
+        aesop
+      have hcolor :
+          currentLast.color inputEdge =
+            (GoertzelLemma814.chainStateAt pref (word.length - 1)).color
+              outputEdge := by
+        rw [htraceColor, ← hcompatColor]
+      simpa [GoertzelLemma814.chainEdgeInPair,
+        GoertzelLemma814.chainEdgeColor, GoertzelLemma814.tauStateColorAt,
+        GoertzelLemma814.chainStateAt, GoertzelLemma814.listGetD, hcolor]
+        using hpairOutput
+    · have hcompatColor :
+          (GoertzelLemma814.chainStateAt pref (word.length - 1)).color
+              outputEdge =
+            lastX.color inputEdge := by
+        have h := hcompatibleX
+        simp [GoertzelLemma814.compatibleAdjacent,
+          GoertzelLemma814.tauOrientOutputOrder,
+          GoertzelLemma814.tauOrientInputOrder, GoertzelLemma814.colorEq,
+          frontierOrientToChain] at h
+        aesop
+      have htraceColor :
+          currentLast.color inputEdge = lastX.color inputEdge := by
+        have h := htrace
+        simp [concreteChainFiberAppendLastInputTrace, frontierOrientToChain,
+          GoertzelLemma814.tauOrientInputOrder] at h
+        aesop
+      have hcolor :
+          currentLast.color inputEdge =
+            (GoertzelLemma814.chainStateAt pref (word.length - 1)).color
+              outputEdge := by
+        rw [htraceColor, ← hcompatColor]
+      simpa [GoertzelLemma814.chainEdgeInPair,
+        GoertzelLemma814.chainEdgeColor, GoertzelLemma814.tauStateColorAt,
+        GoertzelLemma814.chainStateAt, GoertzelLemma814.listGetD, hcolor]
+        using hpairOutput
+    · have hcompatColor :
+          (GoertzelLemma814.chainStateAt pref (word.length - 1)).color
+              outputEdge =
+            lastX.color inputEdge := by
+        have h := hcompatibleX
+        simp [GoertzelLemma814.compatibleAdjacent,
+          GoertzelLemma814.tauOrientOutputOrder,
+          GoertzelLemma814.tauOrientInputOrder, GoertzelLemma814.colorEq,
+          frontierOrientToChain] at h
+        aesop
+      have htraceColor :
+          currentLast.color inputEdge = lastX.color inputEdge := by
+        have h := htrace
+        simp [concreteChainFiberAppendLastInputTrace, frontierOrientToChain,
+          GoertzelLemma814.tauOrientInputOrder] at h
+        aesop
+      have hcolor :
+          currentLast.color inputEdge =
+            (GoertzelLemma814.chainStateAt pref (word.length - 1)).color
+              outputEdge := by
+        rw [htraceColor, ← hcompatColor]
+      simpa [GoertzelLemma814.chainEdgeInPair,
+        GoertzelLemma814.chainEdgeColor, GoertzelLemma814.tauStateColorAt,
+        GoertzelLemma814.chainStateAt, GoertzelLemma814.listGetD, hcolor]
+        using hpairOutput
+    · have hcompatColor :
+          (GoertzelLemma814.chainStateAt pref (word.length - 1)).color
+              outputEdge =
+            lastX.color inputEdge := by
+        have h := hcompatibleX
+        simp [GoertzelLemma814.compatibleAdjacent,
+          GoertzelLemma814.tauOrientOutputOrder,
+          GoertzelLemma814.tauOrientInputOrder, GoertzelLemma814.colorEq,
+          frontierOrientToChain] at h
+        aesop
+      have htraceColor :
+          currentLast.color inputEdge = lastX.color inputEdge := by
+        have h := htrace
+        simp [concreteChainFiberAppendLastInputTrace, frontierOrientToChain,
+          GoertzelLemma814.tauOrientInputOrder] at h
+        aesop
+      have hcolor :
+          currentLast.color inputEdge =
+            (GoertzelLemma814.chainStateAt pref (word.length - 1)).color
+              outputEdge := by
+        rw [htraceColor, ← hcompatColor]
+      simpa [GoertzelLemma814.chainEdgeInPair,
+        GoertzelLemma814.chainEdgeColor, GoertzelLemma814.tauStateColorAt,
+        GoertzelLemma814.chainStateAt, GoertzelLemma814.listGetD, hcolor]
+        using hpairOutput
+
 theorem concreteChainFiberAppend_chainCanonicalEdge_last_non_glued
     (word : List GoertzelLemma818FrontierMode.TauOrient)
     (orient : GoertzelLemma818FrontierMode.TauOrient)
