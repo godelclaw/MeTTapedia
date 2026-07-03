@@ -2749,6 +2749,59 @@ theorem v13RealLinearRowTraceCosetHit_of_newCapture {m : Nat}
   · exact hcapture.1
   · simpa [v13RealLinearRowTracePrefixRows_succ trace h] using hcapture.2
 
+theorem v13RealLinearRowTraceNewCapture_of_fresh_cosetHit {m : Nat}
+    (A : V13F2LinearEquiv m) (i₀ : Fin m)
+    (trace : V13RealLinearRowTrace m) {t : Nat} (h : t < trace.length)
+    (hhit :
+      V13RealLinearRowFunctionalTargetCosetHit A
+        (v13RealLinearRowTracePrefixRows trace t) i₀
+        (trace.get ⟨t, h⟩))
+    (hfresh :
+      trace.get ⟨t, h⟩ ∉ v13RealLinearRowTracePrefixRows trace t) :
+    V13RealLinearRowTraceNewCapture A i₀ trace t := by
+  constructor
+  · exact
+      v13RealLinear_not_rowsGenerateTarget_of_rowFunctionalTargetCosetHit_of_not_mem
+        A i₀ (trace.get ⟨t, h⟩) hfresh hhit
+  · rw [v13RealLinearRowTracePrefixRows_succ trace h]
+    exact
+      v13RealLinear_rowsGenerateTarget_insert_of_rowFunctionalTargetCosetHit
+        A (v13RealLinearRowTracePrefixRows trace t) i₀
+        (trace.get ⟨t, h⟩) hhit
+
+theorem v13RealLinearRowTracePrefixRowsGenerateTarget_of_existing_cosetHit
+    {m : Nat} (A : V13F2LinearEquiv m) (i₀ : Fin m)
+    (trace : V13RealLinearRowTrace m) {t : Nat} (h : t < trace.length)
+    (hhit :
+      V13RealLinearRowFunctionalTargetCosetHit A
+        (v13RealLinearRowTracePrefixRows trace t) i₀
+        (trace.get ⟨t, h⟩))
+    (hexisting :
+      trace.get ⟨t, h⟩ ∈ v13RealLinearRowTracePrefixRows trace t) :
+    V13RealLinearRowsGenerateTarget A
+      (v13RealLinearRowTracePrefixRows trace t) i₀ :=
+  v13RealLinear_rowsGenerateTarget_of_rowFunctionalTargetCosetHit_of_mem
+    A i₀ (trace.get ⟨t, h⟩) hexisting hhit
+
+theorem v13RealLinearRowTraceCosetHit_newCapture_or_prefixRowsGenerateTarget
+    {m : Nat} (A : V13F2LinearEquiv m) (i₀ : Fin m)
+    (trace : V13RealLinearRowTrace m) {t : Nat}
+    (hcoset : V13RealLinearRowTraceCosetHit A i₀ trace t) :
+    V13RealLinearRowTraceNewCapture A i₀ trace t ∨
+      V13RealLinearRowsGenerateTarget A
+        (v13RealLinearRowTracePrefixRows trace t) i₀ := by
+  rcases hcoset with ⟨h, hhit⟩
+  by_cases hmem :
+      trace.get ⟨t, h⟩ ∈ v13RealLinearRowTracePrefixRows trace t
+  · right
+    exact
+      v13RealLinearRowTracePrefixRowsGenerateTarget_of_existing_cosetHit
+        A i₀ trace h hhit hmem
+  · left
+    exact
+      v13RealLinearRowTraceNewCapture_of_fresh_cosetHit
+        A i₀ trace h hhit hmem
+
 theorem v13RealLinearRowTraceNewCapture_get_not_mem {m : Nat}
     (A : V13F2LinearEquiv m) (i₀ : Fin m)
     (trace : V13RealLinearRowTrace m) {t : Nat}
