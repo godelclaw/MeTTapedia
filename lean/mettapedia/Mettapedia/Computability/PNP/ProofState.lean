@@ -2002,6 +2002,20 @@ theorem currentPNPV13RealRungOneNoTargetRowsSequentialQRowConditional_node :
     v13RealLinear_noTargetRows_sequential_qrow_success_bound_of_deferredDecisionCounting_explicit
       hcount i₀ observer
 
+theorem currentPNPV13RealRungOneNoTargetRowsConditionalCertificate_node :
+    V13RealLinearNoTargetRowsRungOneConditionalCertificate := by
+  exact v13RealLinear_noTargetRows_rungOneConditionalCertificate
+
+theorem currentPNPV13RealRungOneConditionalCharge_node :
+    (∀ row ∈ phaseEScaledObligationMap,
+        row.status = .familyInadmissible) ∧
+      (∀ m k : Nat, PhaseEScaledPublicTargetTagViolation m k) ∧
+        V13RealLinearNoTargetRowsRungOneConditionalCertificate := by
+  exact
+    ⟨phaseEScaledObligationMap_all_familyInadmissible,
+      phaseEScaled_familyInadmissible_publicTargetTag,
+      v13RealLinear_noTargetRows_rungOneConditionalCertificate⟩
+
 theorem currentPNPV13ObserverLadder_node :
     PhaseEScaledObserverLadderMark ∧
       phaseEScaledObserverLadderMap.length = 4 ∧
