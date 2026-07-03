@@ -349,6 +349,15 @@ in the sixteen-row `TTT` fiber-32 table, with
 selected source rows.  This is still table-level evidence; it is the local
 shape expected by `ProjectionInjectivePreimageClosed`, not the global semantic
 projection witness.
+That selector now has a local semantic lift:
+`ttFiber32PrefixPoint` gives actual `ChainFiberPoint`s for the eight generated
+`TT` fiber-32 rows, and `ttFiber32SelectedTttFiber32Point` gives actual
+`ChainFiberPoint`s for the eight selected `TTT` fiber-32 rows.
+`ttFiber32SelectedTttFiber32States_mem_concreteChainFiber` proves membership in
+the real appended fiber, while the prefix and selected state lists are both
+proved `Nodup`.  This is still local row-index selector evidence; it does not
+claim the canonical prefix projection is surjective, and it is not yet the
+global generated projection function required by the paired route.
 The standalone base-data half is now closed by
 `concreteChainFiberAppendQuotientFibrationParentRowsNonSingletonPrefixBaseDataClosed_of_prefix_root_star`:
 nonempty prefix fibers use the prefix fiber itself as the quotient base with a
