@@ -89,6 +89,64 @@ def targetFrontierWord :
   | RepresentativeSemanticTarget.tmtm =>
       [TauOrient.tau, TauOrient.mirror, TauOrient.tau, TauOrient.mirror]
 
+def targetAppendPrefix :
+    RepresentativeSemanticTarget → List TauOrient
+  | RepresentativeSemanticTarget.mtm =>
+      [TauOrient.mirror, TauOrient.tau]
+  | RepresentativeSemanticTarget.mmt =>
+      [TauOrient.mirror, TauOrient.mirror]
+  | RepresentativeSemanticTarget.mmmt =>
+      [TauOrient.mirror, TauOrient.mirror, TauOrient.mirror]
+  | RepresentativeSemanticTarget.tmt =>
+      [TauOrient.tau, TauOrient.mirror]
+  | RepresentativeSemanticTarget.mmm =>
+      [TauOrient.mirror, TauOrient.mirror]
+  | RepresentativeSemanticTarget.tmm =>
+      [TauOrient.tau, TauOrient.mirror]
+  | RepresentativeSemanticTarget.mtmt =>
+      [TauOrient.mirror, TauOrient.tau, TauOrient.mirror]
+  | RepresentativeSemanticTarget.ttt =>
+      [TauOrient.tau, TauOrient.tau]
+  | RepresentativeSemanticTarget.tmmt =>
+      [TauOrient.tau, TauOrient.mirror, TauOrient.mirror]
+  | RepresentativeSemanticTarget.ttttm =>
+      [TauOrient.tau, TauOrient.tau, TauOrient.tau, TauOrient.tau]
+  | RepresentativeSemanticTarget.tmmm =>
+      [TauOrient.tau, TauOrient.mirror, TauOrient.mirror]
+  | RepresentativeSemanticTarget.mtttt =>
+      [TauOrient.mirror, TauOrient.tau, TauOrient.tau, TauOrient.tau]
+  | RepresentativeSemanticTarget.mmmm =>
+      [TauOrient.mirror, TauOrient.mirror, TauOrient.mirror]
+  | RepresentativeSemanticTarget.tmtm =>
+      [TauOrient.tau, TauOrient.mirror, TauOrient.tau]
+
+def targetAppendOrient :
+    RepresentativeSemanticTarget → TauOrient
+  | RepresentativeSemanticTarget.mtm => TauOrient.mirror
+  | RepresentativeSemanticTarget.mmt => TauOrient.tau
+  | RepresentativeSemanticTarget.mmmt => TauOrient.tau
+  | RepresentativeSemanticTarget.tmt => TauOrient.tau
+  | RepresentativeSemanticTarget.mmm => TauOrient.mirror
+  | RepresentativeSemanticTarget.tmm => TauOrient.mirror
+  | RepresentativeSemanticTarget.mtmt => TauOrient.tau
+  | RepresentativeSemanticTarget.ttt => TauOrient.tau
+  | RepresentativeSemanticTarget.tmmt => TauOrient.tau
+  | RepresentativeSemanticTarget.ttttm => TauOrient.mirror
+  | RepresentativeSemanticTarget.tmmm => TauOrient.mirror
+  | RepresentativeSemanticTarget.mtttt => TauOrient.tau
+  | RepresentativeSemanticTarget.mmmm => TauOrient.mirror
+  | RepresentativeSemanticTarget.tmtm => TauOrient.mirror
+
+theorem targetFrontierWord_eq_targetAppendPrefix_append
+    (t : RepresentativeSemanticTarget) :
+    targetFrontierWord t = targetAppendPrefix t ++ [targetAppendOrient t] := by
+  cases t <;> rfl
+
+theorem targetAppendPrefix_length_gt_one
+    (t : RepresentativeSemanticTarget) :
+    1 < (targetAppendPrefix t).length := by
+  cases t <;> decide
+
 def targetFrontierMode :
     RepresentativeSemanticTarget → FrontierMode
   | RepresentativeSemanticTarget.mtm => FrontierMode.mode00

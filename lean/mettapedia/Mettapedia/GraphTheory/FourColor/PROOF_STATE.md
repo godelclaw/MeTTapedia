@@ -539,6 +539,10 @@ The same surface now has a representative-target-tied variant:
 final append together with the word append equality, and
 `appendedParentRowsProjectionFiniteSectionBody_of_target_cases` extracts the
 row-surface body from a covering target case list.
+`targetAppendPrefix`, `targetAppendOrient`,
+`targetFrontierWord_eq_targetAppendPrefix_append`, and
+`targetAppendPrefix_length_gt_one` now give every representative target a
+canonical non-singleton final-append split for generated case dispatch.
 `ttFiber32AppendedParentRowsProjectionFiniteSectionTargetCase` registers the
 known `RepresentativeSemanticTarget.ttt`/key-32 local case and reduces back to
 `ttFiber32AppendedParentRowsProjectionFiniteSectionCase` by
