@@ -373,6 +373,57 @@ theorem v13RealLinearBitJunta_correct_card_eq_incorrect_card_of_not_blocked
     v13RealLinearBitJunta_correct_card_eq_incorrect_card_of_kernel_hit
       observer A i₀ w hwi hkernel
 
+theorem
+    v13RealLinearBitJunta_fixed_correct_card_mul_two_eq_f2vec_card_of_not_blocked
+    {m j : Nat} (observer : V13RealLinearBitJuntaObserver m j)
+    (A : V13F2LinearEquiv m) (i₀ : Fin m)
+    (hnot : ¬ V13RealLinearBitJuntaBlocked observer A i₀) :
+    Fintype.card (V13RealLinearBitJuntaFixedCorrect observer A i₀) * 2 =
+      Fintype.card (F2Vec m) := by
+  let C := Fintype.card (V13RealLinearBitJuntaFixedCorrect observer A i₀)
+  let I := Fintype.card (V13RealLinearBitJuntaFixedIncorrect observer A i₀)
+  have hci : C = I := by
+    simpa [C, I] using
+      v13RealLinearBitJunta_correct_card_eq_incorrect_card_of_not_blocked
+        observer A i₀ hnot
+  have hworld :
+      Fintype.card (F2Vec m) = C + I := by
+    simpa [C, I] using
+      v13RealLinearBitJuntaFixedWorld_card_eq_correct_add_incorrect
+        observer A i₀
+  omega
+
+noncomputable def v13RealLinearBitJuntaFixedSuccess
+    {m j : Nat} (observer : V13RealLinearBitJuntaObserver m j)
+    (A : V13F2LinearEquiv m) (i₀ : Fin m) : Rat :=
+  (Fintype.card (V13RealLinearBitJuntaFixedCorrect observer A i₀) : Rat) /
+    (Fintype.card (F2Vec m) : Rat)
+
+theorem v13RealLinearBitJunta_fixedSuccess_eq_half_of_not_blocked
+    {m j : Nat} (observer : V13RealLinearBitJuntaObserver m j)
+    (A : V13F2LinearEquiv m) (i₀ : Fin m)
+    (hnot : ¬ V13RealLinearBitJuntaBlocked observer A i₀) :
+    v13RealLinearBitJuntaFixedSuccess observer A i₀ = (1 / 2 : Rat) := by
+  classical
+  unfold v13RealLinearBitJuntaFixedSuccess
+  let C := Fintype.card (V13RealLinearBitJuntaFixedCorrect observer A i₀)
+  let T := Fintype.card (F2Vec m)
+  have hcardNat : C * 2 = T := by
+    simpa [C, T] using
+      v13RealLinearBitJunta_fixed_correct_card_mul_two_eq_f2vec_card_of_not_blocked
+        observer A i₀ hnot
+  have hcardRat : (C : Rat) * 2 = (T : Rat) := by
+    exact_mod_cast hcardNat
+  have hTposNat : 0 < T := by
+    dsimp [T]
+    rw [v13RealLinear_f2vec_card]
+    positivity
+  have hTpos : (0 : Rat) < (T : Rat) := by
+    exact_mod_cast hTposNat
+  change (C : Rat) / (T : Rat) = (1 / 2 : Rat)
+  field_simp [hTpos.ne']
+  linarith
+
 /-- Fixed no-target fiber for a map satisfying the no-target admissibility
 condition. -/
 abbrev V13RealLinearNoTargetBitJuntaFixedCorrect {m j : Nat}
