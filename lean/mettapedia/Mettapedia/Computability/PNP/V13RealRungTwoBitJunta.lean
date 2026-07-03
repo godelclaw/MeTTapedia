@@ -458,6 +458,115 @@ theorem
       exact hrowNotTarget hrowTarget
   simp [hcard]
 
+/-- The nonzero coefficients of a row-combination, recorded in the rowset
+subtype so no extra row-membership transport is needed. -/
+noncomputable def v13RealLinearRowCombinationSupport {m : Nat}
+    {rows : Finset (Fin m)} (coeff : V13RealLinearRowCombination rows) :
+    Finset {row : Fin m // row ∈ rows} := by
+  classical
+  exact Finset.univ.filter (fun row => coeff row ≠ 0)
+
+theorem v13RealLinearRowCombinationSupport_mem {m : Nat}
+    {rows : Finset (Fin m)} (coeff : V13RealLinearRowCombination rows)
+    (row : {row : Fin m // row ∈ rows}) :
+    row ∈ v13RealLinearRowCombinationSupport coeff ↔ coeff row ≠ 0 := by
+  classical
+  simp [v13RealLinearRowCombinationSupport]
+
+theorem
+    v13RealLinearNoTargetRowsTargetCoefficient_support_card_two_le
+    {m : Nat} {rows : Finset (Fin m)} (i₀ : Fin m)
+    (A : V13RealLinearNoTargetRowsMap m i₀)
+    (coeff : V13RealLinearRowsTargetCoefficient A.val rows i₀) :
+    2 ≤ (v13RealLinearRowCombinationSupport coeff.val).card := by
+  classical
+  let support := v13RealLinearRowCombinationSupport coeff.val
+  change 2 ≤ support.card
+  by_contra htwo
+  have hlt : support.card < 2 := Nat.lt_of_not_ge htwo
+  rcases Nat.eq_zero_or_pos support.card with hzero | hpos
+  · have hsupportEmpty : support = ∅ := Finset.card_eq_zero.mp hzero
+    have hcoeffZero : ∀ row : {row : Fin m // row ∈ rows},
+        coeff.val row = 0 := by
+      intro row
+      by_contra hne
+      have hmem : row ∈ support := by
+        simpa [support] using
+          (v13RealLinearRowCombinationSupport_mem coeff.val row).2 hne
+      rw [hsupportEmpty] at hmem
+      simp at hmem
+    have hzeroEval :
+        v13RealLinearRowCombinationEval A.val rows coeff.val
+            (v13RealLinearSingleBit i₀) = 0 := by
+      unfold v13RealLinearRowCombinationEval
+      simp [hcoeffZero]
+    have htarget := coeff.property (v13RealLinearSingleBit i₀)
+    rw [hzeroEval] at htarget
+    norm_num [v13RealLinearSingleBit] at htarget
+  · have hleOne : support.card ≤ 1 := by
+      exact Nat.lt_succ_iff.mp (by simpa using hlt)
+    have hone : support.card = 1 :=
+      le_antisymm hleOne (Nat.succ_le_of_lt hpos)
+    rcases Finset.card_eq_one.mp hone with ⟨supportRow, hsupportEq⟩
+    have hsupportMem : supportRow ∈ support := by
+      simp [hsupportEq]
+    have hsupportCoeffNonzero : coeff.val supportRow ≠ 0 := by
+      simpa [support] using
+        (v13RealLinearRowCombinationSupport_mem coeff.val supportRow).1
+          hsupportMem
+    have hsupportCoeffOne : coeff.val supportRow = 1 :=
+      v13_zmod2_eq_one_of_ne_zero _ hsupportCoeffNonzero
+    have hcoeffZero :
+        ∀ row : {row : Fin m // row ∈ rows},
+          row ≠ supportRow → coeff.val row = 0 := by
+      intro row hne
+      by_contra hnonzero
+      have hmem : row ∈ support := by
+        simpa [support] using
+          (v13RealLinearRowCombinationSupport_mem coeff.val row).2 hnonzero
+      have heq : row = supportRow := by
+        simpa [hsupportEq] using hmem
+      exact hne heq
+    have htarget :
+        ∀ w : F2Vec m, A.val.toEquiv w supportRow.val = w i₀ := by
+      intro w
+      have hsum :
+          v13RealLinearRowCombinationEval A.val rows coeff.val w =
+            coeff.val supportRow * A.val.toEquiv w supportRow.val := by
+        unfold v13RealLinearRowCombinationEval
+        refine Finset.sum_eq_single supportRow ?_ ?_
+        · intro row _hrow hne
+          simp [hcoeffZero row hne]
+        · intro hnot
+          exact False.elim (hnot (Finset.mem_univ supportRow))
+      calc
+        A.val.toEquiv w supportRow.val =
+            coeff.val supportRow * A.val.toEquiv w supportRow.val := by
+          rw [hsupportCoeffOne]
+          simp
+        _ = v13RealLinearRowCombinationEval A.val rows coeff.val w := hsum.symm
+        _ = w i₀ := coeff.property w
+    have hrowTarget :
+        supportRow.val ∈ V13RealLinearTargetRows A.val i₀ :=
+      (v13RealLinear_mem_targetRows_iff A.val i₀ supportRow.val).2 htarget
+    have hrowNotTarget :
+        supportRow.val ∉ V13RealLinearTargetRows A.val i₀ := by
+      rw [A.property]
+      simp
+    exact hrowNotTarget hrowTarget
+
+theorem
+    v13RealLinearNoTargetBudgetedRowsetGeneratingMapSet_exists_twoSupport
+    {m j : Nat} {i₀ : Fin m} {rows : V13RealLinearBudgetedRowset m j}
+    (A : V13RealLinearNoTargetBudgetedRowsetGeneratingMapSet i₀ rows) :
+    ∃ coeff : V13RealLinearRowsTargetCoefficient A.val.val rows.1 i₀,
+      2 ≤ (v13RealLinearRowCombinationSupport coeff.val).card := by
+  rcases A.property with ⟨coeff, hcoeff⟩
+  refine ⟨⟨coeff, hcoeff⟩, ?_⟩
+  exact
+    v13RealLinearNoTargetRowsTargetCoefficient_support_card_two_le
+      i₀ A.val ⟨coeff, hcoeff⟩
+
 theorem
     v13RealLinearNoTargetBitJunta_fixed_correct_card_eq_incorrect_card_of_not_blocked
     {m j : Nat} (i₀ : Fin m)

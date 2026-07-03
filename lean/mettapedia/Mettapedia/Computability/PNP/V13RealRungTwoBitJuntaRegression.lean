@@ -79,4 +79,17 @@ example (m : Nat) :
     V13RealLinearNoTargetBitJuntaSuccessBound m 1 :=
   v13RealLinearNoTargetBitJuntaSuccessBound_oneBudget m
 
+example {m : Nat} {rows : Finset (Fin m)} (i₀ : Fin m)
+    (A : V13RealLinearNoTargetRowsMap m i₀)
+    (coeff : V13RealLinearRowsTargetCoefficient A.val rows i₀) :
+    2 ≤ (v13RealLinearRowCombinationSupport coeff.val).card :=
+  v13RealLinearNoTargetRowsTargetCoefficient_support_card_two_le
+    i₀ A coeff
+
+example {m j : Nat} {i₀ : Fin m} {rows : V13RealLinearBudgetedRowset m j}
+    (A : V13RealLinearNoTargetBudgetedRowsetGeneratingMapSet i₀ rows) :
+    ∃ coeff : V13RealLinearRowsTargetCoefficient A.val.val rows.1 i₀,
+      2 ≤ (v13RealLinearRowCombinationSupport coeff.val).card :=
+  v13RealLinearNoTargetBudgetedRowsetGeneratingMapSet_exists_twoSupport A
+
 end Mettapedia.Computability.PNP
