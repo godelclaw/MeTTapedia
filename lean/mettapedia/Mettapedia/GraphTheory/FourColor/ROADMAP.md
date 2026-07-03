@@ -366,6 +366,15 @@ the exact word/orient/key equalities.  The semantic bridge now exposes
 `concreteChainFiberAppendQuotientFibrationParentRowsNonSingletonPrefixAppendedParentRowsProjectionFiniteSectionClosed_of_cases`;
 `ttFiber32AppendedParentRowsProjectionFiniteSectionCase` is the first concrete
 case object.  Gate-2 still needs generated coverage for the full case list.
+The bridge also has a representative-target-tied case surface:
+`AppendedParentRowsProjectionFiniteSectionTargetCase`,
+`AppendedParentRowsProjectionFiniteSectionTargetCasesCover`, and
+`appendedParentRowsProjectionFiniteSectionBody_of_target_cases`.  The known
+`TTT`/key-32 local row surface is registered as
+`ttFiber32AppendedParentRowsProjectionFiniteSectionTargetCase`, and its
+`toCase` theorem reduces it back to the exact word/orient/key case.  This is a
+finite target-artifact interface, not a proof that representative cases cover
+the globally quantified transfer predicate.
 The theorem
 `tttFiber32Rows_length_eq_two_mul_ttFiber32Rows_length` records the table-level
 alignment for the known `TT` obstruction key: the same generated key appears in

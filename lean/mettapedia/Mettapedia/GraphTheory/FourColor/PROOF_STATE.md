@@ -534,6 +534,17 @@ SHA256
 `7f96af35b80b044f83baaeaaa4bd4ecfc4cf20e602a57b8e7f796ff9cdfe078c`);
 the generic case-list wrapper depends on `propext`, while the local case
 object depends on `propext`, `Classical.choice`, and `Quot.sound`.
+The same surface now has a representative-target-tied variant:
+`AppendedParentRowsProjectionFiniteSectionTargetCase` records one target's
+final append together with the word append equality, and
+`appendedParentRowsProjectionFiniteSectionBody_of_target_cases` extracts the
+row-surface body from a covering target case list.
+`ttFiber32AppendedParentRowsProjectionFiniteSectionTargetCase` registers the
+known `RepresentativeSemanticTarget.ttt`/key-32 local case and reduces back to
+`ttFiber32AppendedParentRowsProjectionFiniteSectionCase` by
+`ttFiber32AppendedParentRowsProjectionFiniteSectionTargetCase_toCase`.  This is
+the finite representative-target artifact shape only; it does not by itself
+turn representative cases into the globally quantified transfer predicate.
 The table-level diagnostic
 `tttFiber32Rows_length_eq_two_mul_ttFiber32Rows_length` records that the known
 `TT` obstruction key is the same generated fixed input as `TTT` light-fiber
