@@ -2988,12 +2988,158 @@ theorem closeChainFiber_mem_step_of_close (orients : List TauOrient)
         simp only [seen', hfalse, Bool.false_eq_true, if_false] at hcurrent ⊢
         exact ih seen' (chainClosureStep_nodup orients fiber seen hseen) hcurrent
 
+theorem closeChainFiber_nodup
+    (orients : List TauOrient) (fiber : List (List TauState))
+    (n : Nat) {seen : List (List TauState)}
+    (hseen : seen.Nodup) :
+    (closeChainFiber orients fiber n seen).Nodup := by
+  induction n generalizing seen with
+  | zero =>
+      simpa [closeChainFiber] using hseen
+  | succ _ ih =>
+      simp only [closeChainFiber]
+      let seen' := chainClosureStep orients fiber seen
+      have hseen' : seen'.Nodup := chainClosureStep_nodup orients fiber seen hseen
+      by_cases hstop : (seen'.length == seen.length) = true
+      · simp only [seen', hstop, if_true]
+        exact hseen'
+      · have hfalse : (seen'.length == seen.length) = false :=
+          bool_false_of_not_true hstop
+        simp only [seen', hfalse, Bool.false_eq_true, if_false]
+        exact ih hseen'
+
+theorem closeChainFiber_mem_seen_or_fiber
+    (orients : List TauOrient) (fiber : List (List TauState))
+    (n : Nat) (seen : List (List TauState)) {x : List TauState}
+    (hmem : x ∈ closeChainFiber orients fiber n seen) :
+    x ∈ seen ∨ x ∈ fiber := by
+  induction n generalizing seen with
+  | zero =>
+      exact Or.inl (by simpa [closeChainFiber] using hmem)
+  | succ _ ih =>
+      simp only [closeChainFiber] at hmem
+      let seen' := chainClosureStep orients fiber seen
+      by_cases hstop : (seen'.length == seen.length) = true
+      · simp only [seen', hstop, if_true] at hmem
+        exact chainClosureStep_mem_seen_or_fiber orients fiber seen x hmem
+      · have hfalse : (seen'.length == seen.length) = false :=
+          bool_false_of_not_true hstop
+        simp only [seen', hfalse, Bool.false_eq_true, if_false] at hmem
+        rcases ih seen' hmem with hxseen' | hxfiber
+        · exact chainClosureStep_mem_seen_or_fiber orients fiber seen x hxseen'
+        · exact Or.inr hxfiber
+
+theorem closeChainFiber_length_le_seen_add_fiber
+    (orients : List TauOrient) (fiber : List (List TauState))
+    (n : Nat) {seen : List (List TauState)}
+    (hseen : seen.Nodup) :
+    (closeChainFiber orients fiber n seen).length ≤
+      seen.length + fiber.length := by
+  have hnodup : (closeChainFiber orients fiber n seen).Nodup :=
+    closeChainFiber_nodup orients fiber n hseen
+  have hsub : closeChainFiber orients fiber n seen ⊆ seen ++ fiber := by
+    intro x hx
+    rcases closeChainFiber_mem_seen_or_fiber orients fiber n seen hx with
+      hxseen | hxfiber
+    · exact List.mem_append.mpr (Or.inl hxseen)
+    · exact List.mem_append.mpr (Or.inr hxfiber)
+  have hsp : List.Subperm (closeChainFiber orients fiber n seen) (seen ++ fiber) :=
+    List.subperm_of_subset hnodup hsub
+  have hle := List.Subperm.length_le hsp
+  simpa [List.length_append] using hle
+
+theorem chainClosureStep_length_growth_of_new
+    (orients : List TauOrient) (fiber seen : List (List TauState))
+    (hseen : seen.Nodup) {x : List TauState}
+    (hx : x ∈ chainClosureStep orients fiber seen) (hnot : x ∉ seen) :
+    seen.length + 1 ≤ (chainClosureStep orients fiber seen).length := by
+  have hsub : seen ⊆ chainClosureStep orients fiber seen := by
+    intro y hy
+    exact chainClosureStep_mem_of_seen orients fiber seen y hy
+  have hsp : List.Subperm seen (chainClosureStep orients fiber seen) :=
+    List.subperm_of_subset hseen hsub
+  have hle := List.Subperm.length_le hsp
+  have hne : (chainClosureStep orients fiber seen).length ≠ seen.length := by
+    intro hlen
+    have hperm : List.Perm seen (chainClosureStep orients fiber seen) :=
+      List.Subperm.perm_of_length_le hsp (by simp [hlen])
+    exact hnot ((List.Perm.mem_iff hperm).mpr hx)
+  omega
+
+theorem closeChainFiber_length_ge_of_new
+    (orients : List TauOrient) (fiber : List (List TauState)) :
+    ∀ (n : Nat) (seen : List (List TauState)) {x : List TauState},
+      seen.Nodup →
+      x ∈ closeChainFiber orients fiber (n + 1) seen →
+      x ∉ closeChainFiber orients fiber n seen →
+      seen.length + (n + 1) ≤
+        (closeChainFiber orients fiber (n + 1) seen).length
+  | 0, seen, x, hseen, hmem, hnot => by
+      simp only [closeChainFiber] at hmem hnot ⊢
+      let seen' := chainClosureStep orients fiber seen
+      by_cases hstop : (seen'.length == seen.length) = true
+      · simp only [seen', hstop, if_true] at hmem
+        have hxseen : x ∈ seen :=
+          chainClosureStep_mem_seen_of_stop orients fiber seen x hseen
+            (by simpa [seen'] using hstop) (by simpa [seen'] using hmem)
+        exact False.elim (hnot hxseen)
+      · have hfalse : (seen'.length == seen.length) = false :=
+          bool_false_of_not_true hstop
+        simp only [seen', hfalse, Bool.false_eq_true, if_false] at hmem ⊢
+        exact chainClosureStep_length_growth_of_new
+          orients fiber seen hseen (by simpa [seen'] using hmem) hnot
+  | n + 1, seen, x, hseen, hmem, hnot => by
+      let seen' := chainClosureStep orients fiber seen
+      have hseen' : seen'.Nodup := chainClosureStep_nodup orients fiber seen hseen
+      have hgrowth_of_false :
+          (seen'.length == seen.length) = false →
+          seen.length + 1 ≤ seen'.length := by
+        intro hfalse
+        have hsub : seen ⊆ seen' := by
+          intro y hy
+          exact chainClosureStep_mem_of_seen orients fiber seen y hy
+        have hsp : List.Subperm seen seen' := List.subperm_of_subset hseen hsub
+        have hle := List.Subperm.length_le hsp
+        have hne : seen'.length ≠ seen.length := by
+          intro hlen
+          have hbeq : (seen'.length == seen.length) = true := by
+            simp [hlen]
+          rw [hbeq] at hfalse
+          cases hfalse
+        omega
+      simp only [closeChainFiber] at hmem hnot
+      by_cases hstop : (seen'.length == seen.length) = true
+      · simp only [seen', hstop, if_true] at hmem hnot
+        exact False.elim (hnot hmem)
+      · have hfalse : (seen'.length == seen.length) = false :=
+          bool_false_of_not_true hstop
+        simp only [seen', hfalse, Bool.false_eq_true, if_false] at hmem hnot
+        have hgrowth := hgrowth_of_false hfalse
+        have hrec := closeChainFiber_length_ge_of_new orients fiber n seen'
+          hseen' hmem hnot
+        simp only [closeChainFiber]
+        simp only [seen', hfalse, Bool.false_eq_true, if_false]
+        change seen.length + ((n + 1) + 1) ≤
+          (closeChainFiber orients fiber (n + 1) seen').length
+        omega
+
 def closeChainFiberBoundedSaturationClosed : Prop :=
   ∀ (orients : List TauOrient) (fiber seen : List (List TauState)),
     seen.Nodup →
       ∀ (target : List TauState),
         target ∈ closeChainFiber orients fiber (fiber.length + 1) seen →
           target ∈ closeChainFiber orients fiber fiber.length seen
+
+theorem closeChainFiberBoundedSaturationClosed_ok :
+    closeChainFiberBoundedSaturationClosed := by
+  intro orients fiber seen hseen target hmem
+  by_cases htarget : target ∈ closeChainFiber orients fiber fiber.length seen
+  · exact htarget
+  · have hge := closeChainFiber_length_ge_of_new orients fiber fiber.length
+      seen hseen hmem htarget
+    have hle := closeChainFiber_length_le_seen_add_fiber orients fiber
+      (fiber.length + 1) hseen
+    omega
 
 theorem closeChainFiber_mem_step_of_close_at_length_of_bounded_saturation
     (hSat : closeChainFiberBoundedSaturationClosed)
