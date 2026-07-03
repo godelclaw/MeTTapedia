@@ -92,4 +92,26 @@ example {m j : Nat} {i₀ : Fin m} {rows : V13RealLinearBudgetedRowset m j}
       2 ≤ (v13RealLinearRowCombinationSupport coeff.val).card :=
   v13RealLinearNoTargetBudgetedRowsetGeneratingMapSet_exists_twoSupport A
 
+example {m : Nat} {rows : Finset (Fin m)} (A : V13F2LinearEquiv m)
+    (i₀ : Fin m)
+    (coeff : V13RealLinearRowsTargetCoefficient A rows i₀)
+    (hsupport :
+      (v13RealLinearRowCombinationSupport coeff.val).card = 2) :
+    ∃ row₀ row₁ : {row : Fin m // row ∈ rows},
+      row₀ ≠ row₁ ∧
+        ∀ w : F2Vec m,
+          A.toEquiv w row₀.val + A.toEquiv w row₁.val = w i₀ :=
+  v13RealLinearRowsTargetCoefficient_twoSupport_exists_pair_sum_target
+    A i₀ coeff hsupport
+
+example {m : Nat} {i₀ : Fin m}
+    {rows : V13RealLinearBudgetedRowset m 2}
+    (A : V13RealLinearNoTargetBudgetedRowsetGeneratingMapSet i₀ rows) :
+    ∃ row₀ row₁ : {row : Fin m // row ∈ rows.1},
+      row₀ ≠ row₁ ∧
+        ∀ w : F2Vec m,
+          A.val.val.toEquiv w row₀.val +
+            A.val.val.toEquiv w row₁.val = w i₀ :=
+  v13RealLinearNoTargetTwoBudgetGeneratingMapSet_exists_pair_sum_target A
+
 end Mettapedia.Computability.PNP
