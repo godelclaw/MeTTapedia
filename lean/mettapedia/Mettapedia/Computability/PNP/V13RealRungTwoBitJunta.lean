@@ -4828,6 +4828,58 @@ theorem
     (v13RealLinearNoTargetSequentialTraceFirstCosetHitActiveGeneratedPrefixCellIncidenceToWorldSet
       i₀ observer t)
 
+theorem
+    v13RealLinearNoTargetSequentialTraceFirstCosetHitActiveGeneratedPrefixCell_capacity_sum_le_worldSet_card
+    {m q : Nat} (i₀ : Fin m)
+    (observer : V13RealLinearSequentialRowObserver m q) (t : Fin q) :
+    (∑ activeIdx :
+      V13RealLinearNoTargetSequentialTraceFirstCosetHitActiveFixedMapTranscriptCylinderIndex
+        i₀ observer t,
+      2 ^ (m -
+        (v13RealLinearNoTargetSequentialTraceFirstCosetHitActiveFixedMapTranscriptCylinder_generatedQBudgetedRowset
+          i₀ observer t activeIdx).1.card)) ≤
+      Fintype.card
+        (V13RealLinearNoTargetSequentialTraceFirstCosetHitWorldSet
+          i₀ observer t) := by
+  classical
+  calc
+    (∑ activeIdx :
+      V13RealLinearNoTargetSequentialTraceFirstCosetHitActiveFixedMapTranscriptCylinderIndex
+        i₀ observer t,
+      2 ^ (m -
+        (v13RealLinearNoTargetSequentialTraceFirstCosetHitActiveFixedMapTranscriptCylinder_generatedQBudgetedRowset
+          i₀ observer t activeIdx).1.card)) =
+        ∑ activeIdx :
+          V13RealLinearNoTargetSequentialTraceFirstCosetHitActiveFixedMapTranscriptCylinderIndex
+            i₀ observer t,
+          Fintype.card
+            (V13RealLinearNoTargetSequentialTraceFirstCosetHitActiveFixedMapTranscriptCylinderGeneratedPrefixCell
+              i₀ observer t activeIdx) := by
+          apply Finset.sum_congr rfl
+          intro activeIdx _hactiveIdx
+          rw [
+            v13RealLinearNoTargetSequentialTraceFirstCosetHitGeneratedPrefixCell_card_eq_capacity
+              i₀ observer t activeIdx]
+    _ =
+        Fintype.card
+          (V13RealLinearNoTargetSequentialTraceFirstCosetHitActiveGeneratedPrefixCellIncidence
+            i₀ observer t) := by
+          unfold
+            V13RealLinearNoTargetSequentialTraceFirstCosetHitActiveGeneratedPrefixCellIncidence
+          exact
+            (Fintype.card_sigma
+              (α := fun activeIdx :
+                V13RealLinearNoTargetSequentialTraceFirstCosetHitActiveFixedMapTranscriptCylinderIndex
+                  i₀ observer t =>
+                V13RealLinearNoTargetSequentialTraceFirstCosetHitActiveFixedMapTranscriptCylinderGeneratedPrefixCell
+                  i₀ observer t activeIdx)).symm
+    _ ≤
+        Fintype.card
+          (V13RealLinearNoTargetSequentialTraceFirstCosetHitWorldSet
+            i₀ observer t) :=
+          v13RealLinearNoTargetSequentialTraceFirstCosetHitActiveGeneratedPrefixCellIncidence_card_le_worldSet
+            i₀ observer t
+
 /-- The full no-target first-hit event at step `t`, partitioned by the ordered
 prefix transcript actually seen by the sequential observer before that step. -/
 abbrev
