@@ -4392,6 +4392,76 @@ theorem
       v13RealLinearNoTargetSequentialTraceFirstCosetHitActiveFixedMapTranscriptCylinder_generatedPrefix]
       using hrhs
 
+abbrev
+    V13RealLinearNoTargetSequentialTraceFirstCosetHitActiveGeneratedPrefixForMap
+    {m q : Nat} (i₀ : Fin m)
+    (observer : V13RealLinearSequentialRowObserver m q) (t : Fin q)
+    (A : V13RealLinearNoTargetRowsMap m i₀) :=
+  {pref : V13RealLinearSequentialPrefixTranscriptVector m ((t : Nat) + 1) //
+    ∃ activeIdx :
+      V13RealLinearNoTargetSequentialTraceFirstCosetHitActiveFixedMapTranscriptCylinderIndex
+        i₀ observer t,
+      activeIdx.1.A = A ∧
+        v13RealLinearNoTargetSequentialTraceFirstCosetHitActiveFixedMapTranscriptCylinder_generatedPrefix
+          i₀ observer t activeIdx = pref}
+
+noncomputable instance
+    {m q : Nat} (i₀ : Fin m)
+    (observer : V13RealLinearSequentialRowObserver m q) (t : Fin q)
+    (A : V13RealLinearNoTargetRowsMap m i₀) :
+    Fintype
+      (V13RealLinearNoTargetSequentialTraceFirstCosetHitActiveGeneratedPrefixForMap
+        i₀ observer t A) := by
+  classical
+  unfold
+    V13RealLinearNoTargetSequentialTraceFirstCosetHitActiveGeneratedPrefixForMap
+  infer_instance
+
+noncomputable def
+    v13RealLinearNoTargetSequentialTraceFirstCosetHitActiveGeneratedPrefixForMapToRhsHistory
+    {m q : Nat} (i₀ : Fin m)
+    (observer : V13RealLinearSequentialRowObserver m q) (t : Fin q)
+    (A : V13RealLinearNoTargetRowsMap m i₀) :
+    V13RealLinearNoTargetSequentialTraceFirstCosetHitActiveGeneratedPrefixForMap
+        i₀ observer t A ↪
+      V13RealLinearSequentialPrefixRhsHistory ((t : Nat) + 1) where
+  toFun pref := v13RealLinearSequentialPrefixTranscriptVectorRhs pref.val
+  inj' := by
+    classical
+    intro pref₀ pref₁ hrhs
+    apply Subtype.ext
+    rcases pref₀.property with ⟨activeIdx₀, hA₀, hpref₀⟩
+    rcases pref₁.property with ⟨activeIdx₁, hA₁, hpref₁⟩
+    have hA : activeIdx₀.1.A = activeIdx₁.1.A := hA₀.trans hA₁.symm
+    have hprefix :=
+      v13RealLinearNoTargetSequentialTraceFirstCosetHitActiveFixedMapTranscriptCylinder_generatedPrefix_eq_of_sameMap_rhs
+        i₀ observer t activeIdx₀ activeIdx₁ hA
+        (by
+          simpa [hpref₀, hpref₁] using hrhs)
+    exact hpref₀ ▸ hpref₁ ▸ hprefix
+
+theorem
+    v13RealLinearNoTargetSequentialTraceFirstCosetHitActiveGeneratedPrefixForMap_card_le_rhsHistory
+    {m q : Nat} (i₀ : Fin m)
+    (observer : V13RealLinearSequentialRowObserver m q) (t : Fin q)
+    (A : V13RealLinearNoTargetRowsMap m i₀) :
+    Fintype.card
+        (V13RealLinearNoTargetSequentialTraceFirstCosetHitActiveGeneratedPrefixForMap
+          i₀ observer t A) ≤
+      2 ^ ((t : Nat) + 1) := by
+  classical
+  calc
+    Fintype.card
+        (V13RealLinearNoTargetSequentialTraceFirstCosetHitActiveGeneratedPrefixForMap
+          i₀ observer t A) ≤
+      Fintype.card
+        (V13RealLinearSequentialPrefixRhsHistory ((t : Nat) + 1)) :=
+        Fintype.card_le_of_embedding
+          (v13RealLinearNoTargetSequentialTraceFirstCosetHitActiveGeneratedPrefixForMapToRhsHistory
+            i₀ observer t A)
+    _ = 2 ^ ((t : Nat) + 1) :=
+        v13RealLinearSequentialPrefixRhsHistory_card ((t : Nat) + 1)
+
 noncomputable def
     v13RealLinearNoTargetSequentialTraceFirstCosetHitActiveFixedMapTranscriptCylinder_generatedTranscript
     {m q : Nat} (i₀ : Fin m)
