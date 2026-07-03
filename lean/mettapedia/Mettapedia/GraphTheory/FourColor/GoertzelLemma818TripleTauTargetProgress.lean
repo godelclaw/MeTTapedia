@@ -1007,6 +1007,18 @@ theorem ttFiber32PrefixPoint_surjective :
     exact h.symm
   · cases h
 
+noncomputable def ttFiber32PrefixPointIndex
+    (point : ChainFiberPoint ttFiber32FrontierWord
+      GoertzelLemma818CompositeCertificate.ttFiber32Key) :
+    Fin GoertzelLemma818CompositeCertificate.ttFiber32Rows.length :=
+  Classical.choose (ttFiber32PrefixPoint_surjective point)
+
+theorem ttFiber32PrefixPointIndex_spec
+    (point : ChainFiberPoint ttFiber32FrontierWord
+      GoertzelLemma818CompositeCertificate.ttFiber32Key) :
+    ttFiber32PrefixPoint (ttFiber32PrefixPointIndex point) = point :=
+  Classical.choose_spec (ttFiber32PrefixPoint_surjective point)
+
 def ttFiber32SelectedTttFiber32States
     (i : Fin GoertzelLemma818CompositeCertificate.ttFiber32Rows.length) :
     List TauState :=
