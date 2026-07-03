@@ -66,6 +66,23 @@ example {m j : Nat}
     observer A i₀
 
 example {m j : Nat}
+    (observer : V13RealLinearBitJuntaObserver m j)
+    (A : V13F2LinearEquiv m) (i₀ : Fin m)
+    (hnot : ¬ V13RealLinearBitJuntaBlocked observer A i₀) :
+    Fintype.card (V13RealLinearBitJuntaFixedCorrect observer A i₀) * 2 =
+      Fintype.card (F2Vec m) :=
+  v13RealLinearBitJunta_fixed_correct_card_mul_two_eq_f2vec_card_of_not_blocked
+    observer A i₀ hnot
+
+example {m j : Nat}
+    (observer : V13RealLinearBitJuntaObserver m j)
+    (A : V13F2LinearEquiv m) (i₀ : Fin m)
+    (hnot : ¬ V13RealLinearBitJuntaBlocked observer A i₀) :
+    v13RealLinearBitJuntaFixedSuccess observer A i₀ = (1 / 2 : Rat) :=
+  v13RealLinearBitJunta_fixedSuccess_eq_half_of_not_blocked
+    observer A i₀ hnot
+
+example {m j : Nat}
     (observer : V13RealLinearParityObserver m j)
     (A : V13F2LinearEquiv m) (x w : F2Vec m) :
     v13RealLinearParityObserverRhsParity observer A (f2AddVec x w) =
