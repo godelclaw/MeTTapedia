@@ -4362,6 +4362,36 @@ theorem
         i₀ observer t activeIdx).1 := by
         rfl
 
+theorem
+    v13RealLinearNoTargetSequentialTraceFirstCosetHitActiveFixedMapTranscriptCylinder_generatedPrefix_eq_of_sameMap_rhs
+    {m q : Nat} (i₀ : Fin m)
+    (observer : V13RealLinearSequentialRowObserver m q) (t : Fin q)
+    (activeIdx₀ activeIdx₁ :
+      V13RealLinearNoTargetSequentialTraceFirstCosetHitActiveFixedMapTranscriptCylinderIndex
+        i₀ observer t)
+    (hA : activeIdx₀.1.A = activeIdx₁.1.A)
+    (hrhs :
+      v13RealLinearSequentialPrefixTranscriptVectorRhs
+          (v13RealLinearNoTargetSequentialTraceFirstCosetHitActiveFixedMapTranscriptCylinder_generatedPrefix
+            i₀ observer t activeIdx₀) =
+        v13RealLinearSequentialPrefixTranscriptVectorRhs
+          (v13RealLinearNoTargetSequentialTraceFirstCosetHitActiveFixedMapTranscriptCylinder_generatedPrefix
+            i₀ observer t activeIdx₁)) :
+    v13RealLinearNoTargetSequentialTraceFirstCosetHitActiveFixedMapTranscriptCylinder_generatedPrefix
+        i₀ observer t activeIdx₀ =
+      v13RealLinearNoTargetSequentialTraceFirstCosetHitActiveFixedMapTranscriptCylinder_generatedPrefix
+        i₀ observer t activeIdx₁ := by
+  classical
+  unfold
+    v13RealLinearNoTargetSequentialTraceFirstCosetHitActiveFixedMapTranscriptCylinder_generatedPrefix
+  apply
+    v13RealLinearSequentialPrefixTranscriptVectorOf_eq_of_A_eq_rhs
+      observer ((t : Nat) + 1)
+  · simpa [v13RealLinearPublicInput] using congrArg Subtype.val hA
+  · simpa [
+      v13RealLinearNoTargetSequentialTraceFirstCosetHitActiveFixedMapTranscriptCylinder_generatedPrefix]
+      using hrhs
+
 noncomputable def
     v13RealLinearNoTargetSequentialTraceFirstCosetHitActiveFixedMapTranscriptCylinder_generatedTranscript
     {m q : Nat} (i₀ : Fin m)

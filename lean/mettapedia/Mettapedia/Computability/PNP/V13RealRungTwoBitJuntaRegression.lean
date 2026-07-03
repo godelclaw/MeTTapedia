@@ -1329,6 +1329,26 @@ example {m q : Nat} (i₀ : Fin m)
     i₀ observer t activeIdx cell
 
 example {m q : Nat} (i₀ : Fin m)
+    (observer : V13RealLinearSequentialRowObserver m q) (t : Fin q)
+    (activeIdx₀ activeIdx₁ :
+      V13RealLinearNoTargetSequentialTraceFirstCosetHitActiveFixedMapTranscriptCylinderIndex
+        i₀ observer t)
+    (hA : activeIdx₀.1.A = activeIdx₁.1.A)
+    (hrhs :
+      v13RealLinearSequentialPrefixTranscriptVectorRhs
+          (v13RealLinearNoTargetSequentialTraceFirstCosetHitActiveFixedMapTranscriptCylinder_generatedPrefix
+            i₀ observer t activeIdx₀) =
+        v13RealLinearSequentialPrefixTranscriptVectorRhs
+          (v13RealLinearNoTargetSequentialTraceFirstCosetHitActiveFixedMapTranscriptCylinder_generatedPrefix
+            i₀ observer t activeIdx₁)) :
+    v13RealLinearNoTargetSequentialTraceFirstCosetHitActiveFixedMapTranscriptCylinder_generatedPrefix
+        i₀ observer t activeIdx₀ =
+      v13RealLinearNoTargetSequentialTraceFirstCosetHitActiveFixedMapTranscriptCylinder_generatedPrefix
+        i₀ observer t activeIdx₁ :=
+  v13RealLinearNoTargetSequentialTraceFirstCosetHitActiveFixedMapTranscriptCylinder_generatedPrefix_eq_of_sameMap_rhs
+    i₀ observer t activeIdx₀ activeIdx₁ hA hrhs
+
+example {m q : Nat} (i₀ : Fin m)
     (observer : V13RealLinearSequentialRowObserver m q) (t : Fin q) :
     Fintype.card
         (V13RealLinearNoTargetSequentialTraceFirstCosetHitActiveGeneratedPrefixCellIncidence
@@ -1360,6 +1380,7 @@ example {m q : Nat} (i₀ : Fin m)
 #print axioms v13RealLinearRowView_eq_of_A_eq_rhs_eq
 #print axioms v13RealLinearSequentialPrefixTranscriptVectorOf_eq_of_A_eq_rhs
 #print axioms v13RealLinearNoTargetSequentialTraceFirstCosetHitGeneratedPrefixCell_rhs_eq
+#print axioms v13RealLinearNoTargetSequentialTraceFirstCosetHitActiveFixedMapTranscriptCylinder_generatedPrefix_eq_of_sameMap_rhs
 #print axioms v13RealLinearNoTargetSequentialTraceFirstCosetHitFixedMapTranscriptCylinderSigmaEquivWorldSet
 #print axioms v13RealLinearNoTargetSequentialTraceFirstCosetHitActiveGeneratedPrefixCellIncidenceToWorldSet
 #print axioms v13RealLinearNoTargetSequentialTraceFirstCosetHitActiveGeneratedPrefixCellIncidence_card_le_worldSet
