@@ -1978,6 +1978,116 @@ theorem list_any_false_of_forall_mem {α : Type} {xs : List α} {p : α → Bool
   rw [hfalse] at hp
   cases hp
 
+theorem mem_appendFresh_source_or_mem {α : Type} [BEq α] [LawfulBEq α]
+    (xs ys : List α) {x : α} (h : x ∈ appendFresh xs ys) :
+    x ∈ xs ∨ x ∈ ys := by
+  unfold appendFresh at h
+  induction ys generalizing xs with
+  | nil =>
+      simp at h
+      exact Or.inl h
+  | cons y ys ih =>
+      simp only [List.foldl_cons] at h
+      rcases ih (addIfFresh xs y) h with hsource | htail
+      · rcases mem_addIfFresh_source_or_eq xs y x hsource with hxs | hxy
+        · exact Or.inl hxs
+        · subst hxy
+          exact Or.inr (by simp)
+      · exact Or.inr (by simp [htail])
+
+theorem nextChainComponentLayer_mem_chainEdges
+    (orients : List TauOrient) (states : List TauState)
+    (a c : LColor) (seen : List ChainEdge)
+    {edge : ChainEdge}
+    (hmem : edge ∈ nextChainComponentLayer orients states a c seen) :
+    edge ∈ chainEdges orients := by
+  unfold nextChainComponentLayer at hmem
+  exact (List.mem_filter.mp hmem).1
+
+theorem closeChainComponent_mem_seen_or_chainEdges
+    (orients : List TauOrient) (states : List TauState)
+    (a c : LColor) (n : Nat) (seen : List ChainEdge)
+    {edge : ChainEdge}
+    (hmem : edge ∈ closeChainComponent orients states a c n seen) :
+    edge ∈ seen ∨ edge ∈ chainEdges orients := by
+  induction n generalizing seen with
+  | zero =>
+      simpa [closeChainComponent] using (Or.inl hmem)
+  | succ _ ih =>
+      simp only [closeChainComponent] at hmem
+      let layer := nextChainComponentLayer orients states a c seen
+      have hrec :
+          edge ∈ appendFresh seen layer ∨ edge ∈ chainEdges orients :=
+        ih (appendFresh seen layer) hmem
+      rcases hrec with hseenLayer | hchain
+      · rcases mem_appendFresh_source_or_mem seen layer hseenLayer with
+          hseen | hlayer
+        · exact Or.inl hseen
+        · exact Or.inr
+            (nextChainComponentLayer_mem_chainEdges
+              orients states a c seen hlayer)
+      · exact Or.inr hchain
+
+theorem chainComponent_mem_chainEdges
+    (orients : List TauOrient) (states : List TauState)
+    (a c : LColor) (seed : ChainEdge)
+    (hseed : seed ∈ chainEdges orients)
+    {edge : ChainEdge}
+    (hmem : edge ∈ chainComponent orients states a c seed) :
+    edge ∈ chainEdges orients := by
+  by_cases hpair : chainEdgeInPair states a c seed = true
+  · have hmem' :
+        edge ∈ closeChainComponent orients states a c
+          (chainEdges orients).length [seed] := by
+      simpa [chainComponent, hpair] using hmem
+    rcases closeChainComponent_mem_seen_or_chainEdges
+        orients states a c (chainEdges orients).length [seed] hmem' with
+      hseen | hchain
+    · simp at hseen
+      subst hseen
+      exact hseed
+    · exact hchain
+  · have hempty :
+        chainComponent orients states a c seed = [] := by
+      simp [chainComponent, hpair]
+    rw [hempty] at hmem
+    cases hmem
+
+theorem chainComponent_mem_occ_zero_of_singleton
+    (orient : TauOrient) (states : List TauState)
+    (a c : LColor) (seed edge : ChainEdge)
+    (hseed : (chainEdges [orient]).contains seed = true)
+    (hmem : edge ∈ chainComponent [orient] states a c seed) :
+    edge.occ = 0 := by
+  have hseedMem : seed ∈ chainEdges [orient] :=
+    List.contains_iff_mem.mp hseed
+  have hedgeMem :
+      edge ∈ chainEdges [orient] :=
+    chainComponent_mem_chainEdges [orient] states a c seed hseedMem hmem
+  unfold chainEdges at hedgeMem
+  have hlocal : edge ∈ chainLocalEdges [orient] :=
+    (List.mem_filter.mp hedgeMem).1
+  have hoccLt := chainLocalEdges_mem_occ_lt hlocal
+  have hoccLtOne : edge.occ < 1 := by
+    simpa using hoccLt
+  omega
+
+theorem chainComponentAvoidsInputs_contains_false
+    (orients : List TauOrient) (component : List ChainEdge)
+    {edge : ChainEdge}
+    (hAvoid : chainComponentAvoidsInputs orients component = true)
+    (hmem : edge ∈ component) :
+    (chainOuterInputEdges orients).contains edge = false := by
+  by_cases hcontains : (chainOuterInputEdges orients).contains edge = true
+  · have hany :
+        component.any (fun e => (chainOuterInputEdges orients).contains e) =
+          true :=
+      list_any_true_of_mem hmem hcontains
+    unfold chainComponentAvoidsInputs at hAvoid
+    rw [hany] at hAvoid
+    cases hAvoid
+  · exact bool_false_of_not_true hcontains
+
 theorem addIfFresh_nodup {α : Type} [BEq α] [LawfulBEq α]
     (xs : List α) (x : α) (hxs : xs.Nodup) :
     (addIfFresh xs x).Nodup := by

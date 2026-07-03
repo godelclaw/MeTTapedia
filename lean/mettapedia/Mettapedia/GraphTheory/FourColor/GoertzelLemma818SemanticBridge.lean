@@ -2602,6 +2602,55 @@ theorem concreteChainFiberAppendShiftComponent_avoids_inputs
   rw [hany]
   rfl
 
+theorem concreteChainFiberAppendLocalSingletonComponent_edge_occ_zero_not_input
+    (orient : GoertzelLemma818FrontierMode.TauOrient)
+    (current target : List GoertzelLemma814.TauState)
+    (move : GoertzelLemma814.ChainMove)
+    (hseed :
+      (GoertzelLemma814.chainEdges (frontierWordToChainWord [orient])).contains
+        move.seed = true)
+    (hspecified :
+      GoertzelLemma814.chainSpecifiedKempeStep
+        (frontierWordToChainWord [orient]) current target move = true)
+    {edge : GoertzelLemma814.ChainEdge}
+    (hmem :
+      edge ∈ GoertzelLemma814.chainComponent
+        (frontierWordToChainWord [orient]) current move.a move.c move.seed) :
+    edge.occ = 0 ∧
+      (GoertzelLemma814.tauOrientInputOrder
+        (frontierOrientToChain orient)).contains edge.edge = false := by
+  let localComponent :=
+    GoertzelLemma814.chainComponent (frontierWordToChainWord [orient])
+      current move.a move.c move.seed
+  have hspecifiedParts := hspecified
+  unfold GoertzelLemma814.chainSpecifiedKempeStep at hspecifiedParts
+  change (!localComponent.isEmpty &&
+      GoertzelLemma814.chainComponentAvoidsInputs
+        (frontierWordToChainWord [orient]) localComponent &&
+      GoertzelLemma814.chainAgreesWithSwitch
+        (frontierWordToChainWord [orient]) current target localComponent
+        move.a move.c) = true at hspecifiedParts
+  simp only [Bool.and_eq_true] at hspecifiedParts
+  rcases hspecifiedParts with ⟨⟨_hNonempty, hAvoid⟩, _hAgree⟩
+  have hocc : edge.occ = 0 :=
+    GoertzelLemma814.chainComponent_mem_occ_zero_of_singleton
+      (frontierOrientToChain orient) current move.a move.c move.seed edge
+      (by simpa [frontierWordToChainWord] using hseed)
+      (by simpa [frontierWordToChainWord, localComponent] using hmem)
+  have houter :
+      (GoertzelLemma814.chainOuterInputEdges
+        (frontierWordToChainWord [orient])).contains edge = false :=
+    GoertzelLemma814.chainComponentAvoidsInputs_contains_false
+      (frontierWordToChainWord [orient]) localComponent hAvoid
+      (by simpa [localComponent] using hmem)
+  have hnotInput :
+      (GoertzelLemma814.tauOrientInputOrder
+        (frontierOrientToChain orient)).contains edge.edge = false :=
+    GoertzelLemma814.tauOrientInputOrder_contains_edge_false_of_chainOuterInput_false_singleton
+      (frontierOrientToChain orient) edge hocc
+      (by simpa [frontierWordToChainWord] using houter)
+  exact ⟨hocc, hnotInput⟩
+
 def concreteChainFiberAppendRelativeSingletonShiftedComponentClosed : Prop :=
   ∀ (word : List GoertzelLemma818FrontierMode.TauOrient)
     (orient : GoertzelLemma818FrontierMode.TauOrient)
@@ -4718,9 +4767,12 @@ same projection, and a lifted appended-fiber reachability witness for every
 
 The base-data half is theorem-supplied separately by
 `concreteChainFiberAppendQuotientFibrationParentRowsNonSingletonPrefixBaseDataClosed_of_prefix_root_star`.
-The downstream parent-row sufficiency theorems remain conditional until this
-structural pin, or an equivalent paired base-data/structural record for the
-chosen base data, is proved.
+This Prop is stronger than the paired
+`concreteChainFiberAppendQuotientFibrationParentRowsNonSingletonPrefixBaseDataStructuralClosed`
+route: it quantifies over every supplied `data`, not only the generated
+prefix-root-star base data. The downstream parent-row sufficiency theorems
+remain conditional until this structural pin, or an equivalent paired
+base-data/structural record for the chosen base data, is proved.
 -/
 def concreteChainFiberAppendQuotientFibrationParentRowsNonSingletonPrefixStructuralClosed :
     Prop :=
