@@ -2231,6 +2231,18 @@ def concreteChainFiberAppendShiftComponent
     List GoertzelLemma814.ChainEdge :=
   component.map (concreteChainFiberAppendShiftEdge word)
 
+theorem concreteChainFiberAppendShiftComponent_appendFresh
+    (word : List GoertzelLemma818FrontierMode.TauOrient)
+    (xs ys : List GoertzelLemma814.ChainEdge) :
+    concreteChainFiberAppendShiftComponent word
+        (GoertzelLemma814.appendFresh xs ys) =
+      GoertzelLemma814.appendFresh
+        (concreteChainFiberAppendShiftComponent word xs)
+        (concreteChainFiberAppendShiftComponent word ys) := by
+  exact GoertzelLemma814.map_appendFresh_injective
+    (concreteChainFiberAppendShiftEdge word)
+    (concreteChainFiberAppendShiftEdge_injective word) xs ys
+
 theorem concreteChainFiberAppendShiftComponent_contains_shift_eq
     (word : List GoertzelLemma818FrontierMode.TauOrient)
     (component : List GoertzelLemma814.ChainEdge)
@@ -2650,6 +2662,32 @@ theorem concreteChainFiberAppendLocalSingletonComponent_edge_occ_zero_not_input
       (frontierOrientToChain orient) edge hocc
       (by simpa [frontierWordToChainWord] using houter)
   exact ⟨hocc, hnotInput⟩
+
+theorem concreteChainFiberAppendLocalSingletonComponent_shift_edge_present
+    (word : List GoertzelLemma818FrontierMode.TauOrient)
+    (orient : GoertzelLemma818FrontierMode.TauOrient)
+    (current target : List GoertzelLemma814.TauState)
+    (move : GoertzelLemma814.ChainMove)
+    (hseed :
+      (GoertzelLemma814.chainEdges (frontierWordToChainWord [orient])).contains
+        move.seed = true)
+    (hspecified :
+      GoertzelLemma814.chainSpecifiedKempeStep
+        (frontierWordToChainWord [orient]) current target move = true)
+    {edge : GoertzelLemma814.ChainEdge}
+    (hmem :
+      edge ∈ GoertzelLemma814.chainComponent
+        (frontierWordToChainWord [orient]) current move.a move.c move.seed) :
+    (GoertzelLemma814.chainEdges
+      (frontierWordToChainWord (word ++ [orient]))).contains
+        (concreteChainFiberAppendShiftEdge word edge) = true := by
+  have hedge :=
+    concreteChainFiberAppendLocalSingletonComponent_edge_occ_zero_not_input
+      orient current target move hseed hspecified hmem
+  have hshift :=
+    concreteChainFiberAppendShiftedEdgePresent_of_not_input
+      word orient edge.edge hedge.2
+  simpa [concreteChainFiberAppendShiftEdge, hedge.1] using hshift
 
 def concreteChainFiberAppendRelativeSingletonShiftedComponentClosed : Prop :=
   ∀ (word : List GoertzelLemma818FrontierMode.TauOrient)
