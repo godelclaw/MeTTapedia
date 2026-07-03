@@ -294,6 +294,13 @@ right-inverse selector surface
 `concreteChainFiberAppendQuotientFibrationParentRowsNonSingletonPrefixProjectionSectionClosed`;
 the `_of_projection_section` wrappers convert it to the same combined
 predicate when paired with appended parent-row connectedness.
+The row-connectedness side is also reduced: the new
+`_of_appended_connected_and_projection_finite_section` wrappers construct the
+parent-row certificate from appended root-closure connectedness plus projection
+finite-section data, with selector and surjectivity variants.  Thus the live
+generated-data obligations can be stated as appended connectedness plus either
+projection surjectivity or an explicit projection section; a separate appended
+parent-row table is no longer required when those two facts are available.
 The theorem
 `tttFiber32Rows_length_eq_two_mul_ttFiber32Rows_length` records the table-level
 alignment for the known `TT` obstruction key: the same generated key appears in
