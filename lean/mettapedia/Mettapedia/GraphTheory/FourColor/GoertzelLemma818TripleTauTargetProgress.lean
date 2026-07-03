@@ -3528,6 +3528,107 @@ theorem ttFiber3Key_mem_colorAssignments4 :
   rw [GoertzelLemma818LengthTwoTTRealAudit.ttColorAssignments_eq_fiberKeys]
   decide
 
+theorem ttFiber3FrontierWord_length_gt_one :
+    1 < ttFiber3FrontierWord.length := by
+  decide
+
+theorem ttFiber3FrontierWord_fibrationCertificate :
+    Nonempty (ChainWordConcreteFibrationCertificate ttFiber3FrontierWord) := by
+  simpa [ttFiber3FrontierWord,
+    GoertzelLemma818FrontierBaseBridge.lengthTwoFrontierWord] using
+    concreteChainWordFibrationLengthTwoSeeds_ok
+      GoertzelLemma818LengthTwoBase.LengthTwoOrientWord.tt
+
+theorem ttFiber3AppendedParentRowsProjectionFiniteSection_of_eq
+    {word : List GoertzelLemma818FrontierMode.TauOrient}
+    {orient : GoertzelLemma818FrontierMode.TauOrient}
+    {key : List LColor}
+    (hword : word = ttFiber3FrontierWord)
+    (horient : orient = GoertzelLemma818FrontierMode.TauOrient.tau)
+    (hkey : key = GoertzelLemma818CompositeCertificate.ttFiber3Key)
+    (root : List TauState) (rest : List (List TauState))
+    (_hfiber : concreteChainFiber word key = root :: rest) :
+    (∃ totalDecidableEq :
+      DecidableEq (ChainFiberPoint (word ++ [orient]) key),
+      Nonempty
+        (@GoertzelLemma818Fibration.ParentRowsSymmetricRootedConnectedCertificate
+          (ChainFiberPoint (word ++ [orient]) key)
+          totalDecidableEq
+          (chainFiberRootClosureStep (word ++ [orient]) key))) ∧
+    ∃ proj :
+      ChainFiberPoint (word ++ [orient]) key →
+        ChainFiberPoint word key,
+      ∃ preimageRows :
+        List (ChainFiberPoint (word ++ [orient]) key),
+        ∃ rowOf :
+          ChainFiberPoint word key → Fin preimageRows.length,
+          ∀ point : ChainFiberPoint word key,
+            proj (preimageRows.get (rowOf point)) = point := by
+  subst word
+  subst orient
+  subst key
+  exact
+    appendedParentRowsProjectionFiniteSectionBody_of_connected_injective_preimage
+      _hfiber
+      (by
+        simpa [ttFiber3FrontierWord,
+          GoertzelLemma818TripleTauLightComponentCertificate.tttFrontierWord,
+          GoertzelLemma818CompositeCertificate.ttFiber3Key,
+          GoertzelLemma818TripleTauLightComponentCertificate.tttFiber3Key] using
+          tttFiber3RootClosureConnected)
+      ttFiber3AppendProjectionInjectivePreimage
+
+def ttFiber3AppendedParentRowsProjectionFiniteSectionCase :
+    AppendedParentRowsProjectionFiniteSectionCase :=
+  { word := ttFiber3FrontierWord
+    orient := GoertzelLemma818FrontierMode.TauOrient.tau
+    key := GoertzelLemma818CompositeCertificate.ttFiber3Key
+    lengthGtOne := ttFiber3FrontierWord_length_gt_one
+    prefixCertificate := ttFiber3FrontierWord_fibrationCertificate
+    keyMem := ttFiber3Key_mem_colorAssignments4
+    rows := fun root rest hfiber =>
+      ttFiber3AppendedParentRowsProjectionFiniteSection_of_eq
+        rfl rfl rfl root rest hfiber }
+
+theorem tttTargetFrontierWord_eq_ttFiber3FrontierWord_append :
+    targetFrontierWord RepresentativeSemanticTarget.ttt =
+      ttFiber3FrontierWord ++
+        [GoertzelLemma818FrontierMode.TauOrient.tau] := by
+  rfl
+
+def ttFiber3AppendedParentRowsProjectionFiniteSectionTargetCase :
+    AppendedParentRowsProjectionFiniteSectionTargetCase :=
+  { target := RepresentativeSemanticTarget.ttt
+    prefixWord := ttFiber3FrontierWord
+    orient := GoertzelLemma818FrontierMode.TauOrient.tau
+    key := GoertzelLemma818CompositeCertificate.ttFiber3Key
+    targetWord_eq := tttTargetFrontierWord_eq_ttFiber3FrontierWord_append
+    lengthGtOne := ttFiber3FrontierWord_length_gt_one
+    prefixCertificate := ttFiber3FrontierWord_fibrationCertificate
+    keyMem := ttFiber3Key_mem_colorAssignments4
+    rows := fun root rest hfiber =>
+      ttFiber3AppendedParentRowsProjectionFiniteSection_of_eq
+        rfl rfl rfl root rest hfiber }
+
+theorem ttFiber3AppendedParentRowsProjectionFiniteSectionTargetCase_toCase :
+    ttFiber3AppendedParentRowsProjectionFiniteSectionTargetCase.toCase =
+      ttFiber3AppendedParentRowsProjectionFiniteSectionCase := by
+  rfl
+
+theorem ttFiber3TargetAppendRowSurface
+    (root : List TauState) (rest : List (List TauState))
+    (hfiber :
+      concreteChainFiber (targetAppendPrefix RepresentativeSemanticTarget.ttt)
+        GoertzelLemma818CompositeCertificate.ttFiber3Key = root :: rest) :
+    appendedParentRowsProjectionFiniteSectionBody
+      (targetAppendPrefix RepresentativeSemanticTarget.ttt)
+      (targetAppendOrient RepresentativeSemanticTarget.ttt)
+      GoertzelLemma818CompositeCertificate.ttFiber3Key := by
+  simpa [targetAppendPrefix, targetAppendOrient, ttFiber3FrontierWord,
+    appendedParentRowsProjectionFiniteSectionBody] using
+    ttFiber3AppendedParentRowsProjectionFiniteSection_of_eq
+      rfl rfl rfl root rest hfiber
+
 theorem ttFiber3TargetAppendPrefixFiber_nonempty :
     ∃ root rest,
       concreteChainFiber (targetAppendPrefix RepresentativeSemanticTarget.ttt)
@@ -3617,6 +3718,87 @@ theorem ttFiber32TargetAppendRowSurfaceClosedOn :
       ttFiber32TargetAppendRowSurfaceSelectedKeys :=
   representativeTargetAppendParentRowsProjectionFiniteSectionClosedOn_of_target_append_cases
     ttFiber32TargetAppendRowSurfaceCases_cover_on
+
+def ttFiber32Key3TargetAppendRowSurfaceSelectedKeys :
+    RepresentativeSemanticTarget → List (List LColor)
+  | RepresentativeSemanticTarget.ttt =>
+      [ GoertzelLemma818CompositeCertificate.ttFiber32Key
+      , GoertzelLemma818CompositeCertificate.ttFiber3Key
+      ]
+  | _ => []
+
+def ttFiber32Key3TargetAppendRowSurfaceCases :
+    List AppendedParentRowsProjectionFiniteSectionTargetCase :=
+  [ ttFiber32AppendedParentRowsProjectionFiniteSectionTargetCase
+  , ttFiber3AppendedParentRowsProjectionFiniteSectionTargetCase
+  ]
+
+def ttFiber32Key3TargetAppendRowSurfaceCasesAudit : Bool :=
+  ttFiber32Key3TargetAppendRowSurfaceCases.length == 2
+    && ttFiber32Key3TargetAppendRowSurfaceSelectedKeys
+        RepresentativeSemanticTarget.ttt ==
+      [ GoertzelLemma818CompositeCertificate.ttFiber32Key
+      , GoertzelLemma818CompositeCertificate.ttFiber3Key
+      ]
+    && ttFiber32Key3TargetAppendRowSurfaceCases.map
+        (fun rowCase => rowCase.target) ==
+      [RepresentativeSemanticTarget.ttt, RepresentativeSemanticTarget.ttt]
+    && ttFiber32Key3TargetAppendRowSurfaceCases.map
+        (fun rowCase => rowCase.prefixWord) ==
+      [ targetAppendPrefix RepresentativeSemanticTarget.ttt
+      , targetAppendPrefix RepresentativeSemanticTarget.ttt
+      ]
+    && ttFiber32Key3TargetAppendRowSurfaceCases.map
+        (fun rowCase => rowCase.orient) ==
+      [ targetAppendOrient RepresentativeSemanticTarget.ttt
+      , targetAppendOrient RepresentativeSemanticTarget.ttt
+      ]
+    && ttFiber32Key3TargetAppendRowSurfaceCases.map
+        (fun rowCase => rowCase.key) ==
+      [ GoertzelLemma818CompositeCertificate.ttFiber32Key
+      , GoertzelLemma818CompositeCertificate.ttFiber3Key
+      ]
+
+theorem ttFiber32Key3TargetAppendRowSurfaceCasesAudit_ok :
+    ttFiber32Key3TargetAppendRowSurfaceCasesAudit = true := by
+  decide
+
+theorem ttFiber32Key3TargetAppendRowSurfaceCases_cover_on :
+    AppendedParentRowsProjectionFiniteSectionTargetAppendCasesCoverOn
+      ttFiber32Key3TargetAppendRowSurfaceCases
+      ttFiber32Key3TargetAppendRowSurfaceSelectedKeys := by
+  intro target _hcert key hselected _hkey _root _rest _hfiber
+  cases target <;>
+    simp [ttFiber32Key3TargetAppendRowSurfaceSelectedKeys] at hselected
+  rcases hselected with hkey | hkey
+  · subst key
+    refine
+      ⟨ttFiber32AppendedParentRowsProjectionFiniteSectionTargetCase, ?_, ?_,
+        ?_, ?_, ?_⟩
+    · simp [ttFiber32Key3TargetAppendRowSurfaceCases]
+    · rfl
+    · simp [ttFiber32AppendedParentRowsProjectionFiniteSectionTargetCase,
+        targetAppendPrefix, ttFiber32FrontierWord]
+    · simp [ttFiber32AppendedParentRowsProjectionFiniteSectionTargetCase,
+        targetAppendOrient]
+    · rfl
+  · subst key
+    refine
+      ⟨ttFiber3AppendedParentRowsProjectionFiniteSectionTargetCase, ?_, ?_,
+        ?_, ?_, ?_⟩
+    · simp [ttFiber32Key3TargetAppendRowSurfaceCases]
+    · rfl
+    · simp [ttFiber3AppendedParentRowsProjectionFiniteSectionTargetCase,
+        targetAppendPrefix, ttFiber3FrontierWord]
+    · simp [ttFiber3AppendedParentRowsProjectionFiniteSectionTargetCase,
+        targetAppendOrient]
+    · rfl
+
+theorem ttFiber32Key3TargetAppendRowSurfaceClosedOn :
+    representativeTargetAppendParentRowsProjectionFiniteSectionClosedOn
+      ttFiber32Key3TargetAppendRowSurfaceSelectedKeys :=
+  representativeTargetAppendParentRowsProjectionFiniteSectionClosedOn_of_target_append_cases
+    ttFiber32Key3TargetAppendRowSurfaceCases_cover_on
 
 def tttPartialTargetCertificateAudit : Bool :=
   tttMode09WitnessAudit
