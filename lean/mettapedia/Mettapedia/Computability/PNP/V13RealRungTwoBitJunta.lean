@@ -4083,6 +4083,24 @@ theorem v13RealLinearSequentialPrefixTranscriptVectorRows_card_le
     v13RealLinearSequentialRowTranscriptRows_card_le_length
       (v13RealLinearSequentialPrefixTranscriptVectorToList pref)
 
+/-- The ordered RHS-bit history carried by a length-`n` sequential prefix. -/
+abbrev V13RealLinearSequentialPrefixRhsHistory (n : Nat) :=
+  Fin n → ZMod 2
+
+noncomputable def v13RealLinearSequentialPrefixTranscriptVectorRhs
+    {m n : Nat} (pref : V13RealLinearSequentialPrefixTranscriptVector m n) :
+    V13RealLinearSequentialPrefixRhsHistory n :=
+  fun k => (pref k).2.2
+
+theorem v13RealLinearSequentialPrefixRhsHistory_card (n : Nat) :
+    Fintype.card (V13RealLinearSequentialPrefixRhsHistory n) = 2 ^ n := by
+  classical
+  unfold V13RealLinearSequentialPrefixRhsHistory
+  rw [Fintype.card_fun, Fintype.card_fin]
+  have hzmod : Fintype.card (ZMod 2) = 2 := by
+    norm_num
+  rw [hzmod]
+
 noncomputable def
     v13RealLinearNoTargetSequentialTraceFirstCosetHitActiveFixedMapTranscriptCylinder_witness
     {m q : Nat} (i₀ : Fin m)
@@ -4236,6 +4254,27 @@ noncomputable instance
   unfold
     V13RealLinearNoTargetSequentialTraceFirstCosetHitActiveFixedMapTranscriptCylinderGeneratedPrefixCell
   infer_instance
+
+theorem
+    v13RealLinearNoTargetSequentialTraceFirstCosetHitGeneratedPrefixCell_rhs_eq
+    {m q : Nat} (i₀ : Fin m)
+    (observer : V13RealLinearSequentialRowObserver m q) (t : Fin q)
+    (activeIdx :
+      V13RealLinearNoTargetSequentialTraceFirstCosetHitActiveFixedMapTranscriptCylinderIndex
+        i₀ observer t)
+    (cell :
+      V13RealLinearNoTargetSequentialTraceFirstCosetHitActiveFixedMapTranscriptCylinderGeneratedPrefixCell
+        i₀ observer t activeIdx) :
+    v13RealLinearSequentialPrefixTranscriptVectorRhs
+        (v13RealLinearSequentialPrefixTranscriptVectorOf observer
+          (v13RealLinearPublicInput
+            ({ x := cell.val, A := activeIdx.1.A.val } :
+              V13RealLinearWorld m))
+          ((t : Nat) + 1)) =
+      v13RealLinearSequentialPrefixTranscriptVectorRhs
+        (v13RealLinearNoTargetSequentialTraceFirstCosetHitActiveFixedMapTranscriptCylinder_generatedPrefix
+          i₀ observer t activeIdx) := by
+  exact congrArg v13RealLinearSequentialPrefixTranscriptVectorRhs cell.property.1
 
 noncomputable def
     v13RealLinearRowsUnreadAssignmentToActiveNoTargetSequentialTraceFirstCosetHitGeneratedPrefixCell
