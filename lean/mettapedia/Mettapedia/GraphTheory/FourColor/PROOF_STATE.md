@@ -192,7 +192,14 @@ The combined emitted predicate
 packages both row-shaped obligations for each nonempty prefix fiber and is the
 tightest single generated-data surface currently exposed; its wrappers split it
 back into the parent-row and finite-section halves, then route it to semantic
-sufficiency and the target-gated all-word audit.
+sufficiency and the target-gated all-word audit.  It now also feeds the
+parent-row field closure, concrete fiber/audit nonempty-transfer closures, and
+the non-target all-word audit wrapper directly through
+`concreteChainFiberAppendQuotientFibrationParentRowsFieldsClosed_of_non_singleton_appended_parent_rows_projection_finite_section`,
+`concreteChainFiberFibrationNonemptyTransferClosed_of_append_quotient_parent_rows_appended_parent_rows_projection_finite_section`,
+`concreteChainAuditFibrationNonemptyTransferClosed_of_append_quotient_parent_rows_appended_parent_rows_projection_finite_section`,
+and
+`chainAuditForFrontierWord_ok_of_append_quotient_parent_rows_appended_parent_rows_projection_finite_section`.
 The projection-surjectivity half also has a finite-row emitted form,
 `concreteChainFiberAppendQuotientFibrationParentRowsNonSingletonPrefixProjectionFiniteSectionClosed`:
 for each nonempty prefix fiber it emits a projection, a finite list of appended
@@ -240,6 +247,16 @@ and `fourcolor-combined-parent-rows-projection-section-axioms-20260703.log`
 the combined-to-surjective-projection wrapper depends only on `propext`, while
 the semantic and target-gated all-word wrappers depend on `propext`,
 `Classical.choice`, and `Quot.sound`.
+Combined transfer/composition wrapper evidence is
+`fourcolor-combined-parent-rows-transfer-composition-build-20260703.log`
+(607 jobs, SHA256
+`e50abc34143593300203495aa1da81a14cca758a40bc13026267fc40d4e75d08`)
+and
+`fourcolor-combined-parent-rows-transfer-composition-axioms-20260703.log`
+(SHA256
+`acc4f0c5063805cccb6996560eb8df15c36b993e7221ed67fd9e16112e36b252`);
+the new direct field, concrete transfer, and non-target all-word wrappers
+depend on `propext`, `Classical.choice`, and `Quot.sound`.
 The table-level diagnostic
 `tttFiber32Rows_length_eq_two_mul_ttFiber32Rows_length` records that the known
 `TT` obstruction key is the same generated fixed input as `TTT` light-fiber
