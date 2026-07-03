@@ -958,6 +958,55 @@ theorem ttFiber32PrefixStatesList_nodup :
     ttFiber32PrefixStatesList.Nodup := by
   decide
 
+theorem ttFiber32PrefixStatesList_eq_concreteChainFiber :
+    ttFiber32PrefixStatesList =
+      concreteChainFiber ttFiber32FrontierWord
+        GoertzelLemma818CompositeCertificate.ttFiber32Key := by
+  unfold concreteChainFiber concreteChainStates ttFiber32FrontierWord
+  change ttFiber32PrefixStatesList =
+    chainFiberFrom GoertzelLemma818CompositeCertificate.ttWord
+      (allChainStates GoertzelLemma818CompositeCertificate.ttWord)
+      GoertzelLemma818CompositeCertificate.ttFiber32Key
+  rw [GoertzelLemma818LengthTwoRealFiberBridgePrototype.ttFiber32RealFiber_eq_direct]
+  decide
+
+theorem ttFiber32PrefixPoint_surjective :
+    ∀ point : ChainFiberPoint ttFiber32FrontierWord
+        GoertzelLemma818CompositeCertificate.ttFiber32Key,
+      ∃ i : Fin GoertzelLemma818CompositeCertificate.ttFiber32Rows.length,
+        ttFiber32PrefixPoint i = point := by
+  intro point
+  have hmem : point.1 ∈ ttFiber32PrefixStatesList := by
+    rw [ttFiber32PrefixStatesList_eq_concreteChainFiber]
+    exact point.2
+  simp only [ttFiber32PrefixStatesList, List.mem_cons, List.not_mem_nil] at hmem
+  rcases hmem with h | h | h | h | h | h | h | h | h
+  · refine ⟨⟨0, by decide⟩, ?_⟩
+    apply Subtype.ext
+    exact h.symm
+  · refine ⟨⟨1, by decide⟩, ?_⟩
+    apply Subtype.ext
+    exact h.symm
+  · refine ⟨⟨2, by decide⟩, ?_⟩
+    apply Subtype.ext
+    exact h.symm
+  · refine ⟨⟨3, by decide⟩, ?_⟩
+    apply Subtype.ext
+    exact h.symm
+  · refine ⟨⟨4, by decide⟩, ?_⟩
+    apply Subtype.ext
+    exact h.symm
+  · refine ⟨⟨5, by decide⟩, ?_⟩
+    apply Subtype.ext
+    exact h.symm
+  · refine ⟨⟨6, by decide⟩, ?_⟩
+    apply Subtype.ext
+    exact h.symm
+  · refine ⟨⟨7, by decide⟩, ?_⟩
+    apply Subtype.ext
+    exact h.symm
+  · cases h
+
 def ttFiber32SelectedTttFiber32States
     (i : Fin GoertzelLemma818CompositeCertificate.ttFiber32Rows.length) :
     List TauState :=
