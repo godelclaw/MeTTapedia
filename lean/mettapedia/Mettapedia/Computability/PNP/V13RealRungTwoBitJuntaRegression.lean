@@ -160,6 +160,16 @@ example {m j : Nat}
 
 example {m j : Nat}
     (observer : V13RealLinearParityObserver m j)
+    (i₀ : Fin m) (A : V13RealLinearNoTargetRowsMap m i₀)
+    (hnot :
+      ¬ V13RealLinearParityObserverRhsParityMatchesTarget observer A.val i₀) :
+    v13RealLinearNoTargetBitJuntaFixedSuccess i₀ observer.toBitJunta A =
+      (1 / 2 : Rat) :=
+  realLinearNoTargetParityObserver_fixedSuccess_eq_half_of_not_rhsParityMatchesTarget
+    observer i₀ A hnot
+
+example {m j : Nat}
+    (observer : V13RealLinearParityObserver m j)
     (A : V13F2LinearEquiv m) (i₀ : Fin m) :
     (V13RealLinearParityObserverDeterminesTarget observer A i₀ ∧
         v13RealLinearParityObserverFixedSuccess observer A i₀ = 1) ∨
@@ -182,6 +192,16 @@ example {m j : Nat} (i₀ : Fin m)
         Fintype.card
           (V13RealLinearNoTargetBitJuntaBlockedWorld i₀ observer) :=
   v13RealLinearNoTargetBitJunta_correct_card_mul_two_le_world_card_add_blocked_card
+    i₀ observer
+
+example {m j : Nat} (i₀ : Fin m)
+    (observer : V13RealLinearBitJuntaObserver m j) :
+    Fintype.card
+        (V13RealLinearNoTargetBitJuntaBlockedWorld i₀ observer) *
+      2 ^ m ≤
+    4 * 2 ^ j *
+      Fintype.card (V13RealLinearNoTargetRowsWorld m i₀) :=
+  realLinearNoTargetBitJuntaBlockedWorld_card_mul_two_pow_le_world
     i₀ observer
 
 example {m j : Nat}
@@ -226,6 +246,12 @@ example (m j : Nat) :
 example (m j : Nat) :
     V13RealLinearNoTargetBitJuntaSuccessBound m j :=
   v13RealLinearNoTargetBitJuntaSuccessBound_allBudget m j
+
+example {m j : Nat} (i₀ : Fin m)
+    (observer : V13RealLinearBitJuntaObserver m j) :
+    v13RealLinearNoTargetBitJuntaSuccess i₀ observer ≤
+      (1 / 2 : Rat) + v13RealLinearBitJuntaEpsilon2 j m :=
+  realLinearNoTargetBitJunta_success_le_half_add_epsilon2 i₀ observer
 
 example {m : Nat} {rows : Finset (Fin m)} (i₀ : Fin m)
     (A : V13RealLinearNoTargetRowsMap m i₀)
