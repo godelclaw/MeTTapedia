@@ -3039,6 +3039,26 @@ theorem
         i₀ observer t activeIdx)
 
 theorem
+    v13RealLinearNoTargetSequentialTraceFirstCosetHitActiveFixedMapTranscriptCylinder_rows_card_le_step
+    {m q : Nat} (i₀ : Fin m)
+    (observer : V13RealLinearSequentialRowObserver m q) (t : Fin q)
+    (activeIdx :
+      V13RealLinearNoTargetSequentialTraceFirstCosetHitActiveFixedMapTranscriptCylinderIndex
+        i₀ observer t) :
+    activeIdx.1.rows.card ≤ (t : Nat) := by
+  classical
+  rcases activeIdx.2 with ⟨x⟩
+  let trace :=
+    v13RealLinearNoTargetRowsSequentialQRowTrace i₀ observer
+      (activeIdx.1.A, x.val)
+  have hprefix :
+      v13RealLinearRowTracePrefixRows trace (t : Nat) =
+        activeIdx.1.rows := by
+    simpa [trace] using x.property.2.1
+  rw [← hprefix]
+  exact v13RealLinearRowTracePrefixRows_card_le trace (t : Nat)
+
+theorem
     v13RealLinearNoTargetSequentialTraceFirstCosetHitFixedMapTranscriptCylinder_sum_card_eq_active_capacity
     {m q : Nat} (i₀ : Fin m)
     (observer : V13RealLinearSequentialRowObserver m q) (t : Fin q) :
@@ -4238,6 +4258,55 @@ theorem
       i₀ observer,
     V13RealLinearNoTargetRowsSequentialTraceCosetHitActiveFixedMapTranscriptCylinderCapacityBound_of_counting
       i₀ observer⟩
+
+theorem
+    v13RealLinearNoTargetSequentialTraceFirstCosetHitActiveFixedMapTranscriptCylinder_sum_eq_zero_of_zero_index
+    {m q : Nat} (i₀ : Fin m)
+    (observer : V13RealLinearSequentialRowObserver m q) (t : Fin q)
+    (ht : (t : Nat) = 0) :
+    (∑ activeIdx :
+      V13RealLinearNoTargetSequentialTraceFirstCosetHitActiveFixedMapTranscriptCylinderIndex
+        i₀ observer t,
+      2 ^ (m - activeIdx.1.rows.card)) = 0 := by
+  classical
+  rw [←
+    v13RealLinearNoTargetSequentialTraceFirstCosetHitWorldSet_card_eq_active_capacity
+      i₀ observer t]
+  exact
+    v13RealLinearNoTargetRowsSequentialTraceFirstCosetHit_card_eq_zero_of_zero_index
+      i₀ observer t ht
+
+theorem
+    v13RealLinearNoTargetRowsSequentialTraceCosetHitActiveFixedMapTranscriptCylinderCapacityBound_zeroIndex
+    {m q : Nat} (i₀ : Fin m)
+    (observer : V13RealLinearSequentialRowObserver m q) (t : Fin q)
+    (ht : (t : Nat) = 0) :
+    (∑ activeIdx :
+      V13RealLinearNoTargetSequentialTraceFirstCosetHitActiveFixedMapTranscriptCylinderIndex
+        i₀ observer t,
+      2 ^ (m - activeIdx.1.rows.card)) *
+      2 ^ m ≤
+    (4 * 2 ^ (t : Nat)) *
+      Fintype.card
+        (V13RealLinearAdaptiveQRowWorld m
+          (V13RealLinearNoTargetRowsMap m i₀)) := by
+  rw [
+    v13RealLinearNoTargetSequentialTraceFirstCosetHitActiveFixedMapTranscriptCylinder_sum_eq_zero_of_zero_index
+      i₀ observer t ht]
+  simp
+
+theorem
+    V13RealLinearNoTargetRowsSequentialTraceCosetHitActiveFixedMapTranscriptCylinderCapacityBound_oneBudget
+    {m : Nat} (i₀ : Fin m)
+    (observer : V13RealLinearSequentialRowObserver m 1) :
+    V13RealLinearNoTargetRowsSequentialTraceCosetHitActiveFixedMapTranscriptCylinderCapacityBound
+      i₀ observer := by
+  intro t
+  have ht : (t : Nat) = 0 := by
+    omega
+  exact
+    v13RealLinearNoTargetRowsSequentialTraceCosetHitActiveFixedMapTranscriptCylinderCapacityBound_zeroIndex
+      i₀ observer t ht
 
 theorem
     V13RealLinearNoTargetRowsSequentialTraceCosetHitCountingBound_of_orderedPrefixPacking
