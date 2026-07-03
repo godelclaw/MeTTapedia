@@ -294,6 +294,12 @@ right-inverse selector surface
 `concreteChainFiberAppendQuotientFibrationParentRowsNonSingletonPrefixProjectionSectionClosed`;
 the `_of_projection_section` wrappers convert it to the same combined
 predicate when paired with appended parent-row connectedness.
+The projection surface is further reduced to the injective-selector form
+`concreteChainFiberAppendQuotientFibrationParentRowsNonSingletonPrefixProjectionInjectivePreimageClosed`:
+emit one selected appended preimage for every prefix point and prove the
+selector injective.  Lean then constructs the projection function and converts
+the result back to `ProjectionSectionClosed`, so generated tables do not need
+to define the projection map itself.
 The row-connectedness side is also reduced: the new
 `_of_appended_connected_and_projection_finite_section` wrappers construct the
 parent-row certificate from appended root-closure connectedness plus projection
