@@ -1875,6 +1875,21 @@ theorem mem_appendFresh_left {α : Type} [BEq α]
       simp only [List.foldl_cons]
       exact ih (mem_addIfFresh_of_mem h)
 
+theorem mem_appendFresh_right {α : Type} [BEq α] [LawfulBEq α]
+    {xs ys : List α} {x : α} (h : x ∈ ys) :
+    x ∈ appendFresh xs ys := by
+  unfold appendFresh
+  induction ys generalizing xs with
+  | nil =>
+      cases h
+  | cons z zs ih =>
+      simp only [List.foldl_cons]
+      simp only [List.mem_cons] at h
+      rcases h with hx | htail
+      · subst z
+        exact mem_appendFresh_left (mem_addIfFresh_self xs x)
+      · exact ih (xs := addIfFresh xs z) htail
+
 theorem closeChainComponent_mem_of_seen
     (orients : List TauOrient) (states : List TauState)
     (a c : LColor) (n : Nat) {seen : List ChainEdge} {edge : ChainEdge}
@@ -2023,6 +2038,94 @@ theorem mem_appendFresh_source_or_mem {α : Type} [BEq α] [LawfulBEq α]
         · subst hxy
           exact Or.inr (by simp)
       · exact Or.inr (by simp [htail])
+
+theorem nextChainComponentLayer_mem_mono_seen
+    (orients : List TauOrient) (states : List TauState)
+    (a c : LColor) {seen₁ seen₂ : List ChainEdge}
+    (hsub : ∀ edge, edge ∈ seen₁ → edge ∈ seen₂)
+    {edge : ChainEdge}
+    (hmem : edge ∈ nextChainComponentLayer orients states a c seen₁) :
+    edge ∈ seen₂ ∨
+      edge ∈ nextChainComponentLayer orients states a c seen₂ := by
+  have hfilter := hmem
+  unfold nextChainComponentLayer at hfilter
+  rw [List.mem_filter] at hfilter
+  rcases hfilter with ⟨hchain, hpred⟩
+  simp only [Bool.and_eq_true] at hpred
+  rcases hpred with ⟨⟨hpair, _hfresh₁⟩, hshare₁⟩
+  by_cases hseen₂ : edge ∈ seen₂
+  · exact Or.inl hseen₂
+  · have hcontains₂ : seen₂.contains edge = false :=
+      bool_false_of_not_true (by
+        intro hcontains
+        exact hseen₂ (List.contains_iff_mem.mp hcontains))
+    have hfresh₂ : (!seen₂.contains edge) = true := by
+      rw [hcontains₂]
+      rfl
+    have hshare₂ :
+        seen₂.any (chainEdgesShareEndpoint orients edge) = true := by
+      rw [List.any_eq_true] at hshare₁
+      rcases hshare₁ with ⟨other, hother, hshare⟩
+      exact list_any_true_of_mem (hsub other hother) hshare
+    exact Or.inr (by
+      unfold nextChainComponentLayer
+      rw [List.mem_filter]
+      exact ⟨hchain, by
+        rw [hpair, hfresh₂, hshare₂]
+        rfl⟩)
+
+theorem closeChainComponent_mem_mono_seen
+    (orients : List TauOrient) (states : List TauState)
+    (a c : LColor) (n : Nat) {seen₁ seen₂ : List ChainEdge}
+    (hsub : ∀ edge, edge ∈ seen₁ → edge ∈ seen₂)
+    {edge : ChainEdge}
+    (hmem : edge ∈ closeChainComponent orients states a c n seen₁) :
+    edge ∈ closeChainComponent orients states a c n seen₂ := by
+  induction n generalizing seen₁ seen₂ with
+  | zero =>
+      exact hsub edge (by simpa [closeChainComponent] using hmem)
+  | succ n ih =>
+      simp only [closeChainComponent] at hmem ⊢
+      apply ih
+      · intro other hother
+        rcases mem_appendFresh_source_or_mem seen₁
+            (nextChainComponentLayer orients states a c seen₁) hother with
+          hseen | hlayer
+        · exact mem_appendFresh_left (hsub other hseen)
+        · rcases nextChainComponentLayer_mem_mono_seen
+              orients states a c (seen₁ := seen₁) (seen₂ := seen₂)
+              hsub hlayer with
+            hseen₂ | hlayer₂
+          · exact mem_appendFresh_left hseen₂
+          · exact mem_appendFresh_right hlayer₂
+      · exact hmem
+
+theorem closeChainComponent_lift_property
+    (orients : List TauOrient) (states : List TauState)
+    (a c : LColor) (n : Nat) (seen : List ChainEdge)
+    (P : ChainEdge → Prop)
+    (hseen : ∀ edge, edge ∈ seen → P edge)
+    (hstep : ∀ seen' edge,
+      (∀ other, other ∈ seen' → P other) →
+      edge ∈ nextChainComponentLayer orients states a c seen' →
+      P edge) :
+    ∀ edge,
+      edge ∈ closeChainComponent orients states a c n seen → P edge := by
+  induction n generalizing seen with
+  | zero =>
+      intro edge hmem
+      exact hseen edge (by simpa [closeChainComponent] using hmem)
+  | succ n ih =>
+      intro edge hmem
+      simp only [closeChainComponent] at hmem
+      let layer := nextChainComponentLayer orients states a c seen
+      have hseen' : ∀ edge, edge ∈ appendFresh seen layer → P edge := by
+        intro other hother
+        rcases mem_appendFresh_source_or_mem seen layer hother with
+          hold | hlayer
+        · exact hseen other hold
+        · exact hstep seen other hseen hlayer
+      exact ih (appendFresh seen layer) hseen' edge hmem
 
 theorem contains_map_injective_eq {α β : Type}
     [BEq α] [LawfulBEq α] [BEq β] [LawfulBEq β]
