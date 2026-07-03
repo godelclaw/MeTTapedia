@@ -178,6 +178,15 @@ with
 `concreteChainFiberAppendQuotientFibrationParentRowsNonSingletonPrefixSurjectiveProjectionClosed_iff_appended_connected_and_projection_surjective`
 and the
 `_of_appended_connected_and_projection_surjective` wrappers recombining them.
+The appended-connectedness half also has a parent-row emitted form,
+`concreteChainFiberAppendQuotientFibrationParentRowsNonSingletonPrefixAppendedParentRowsConnectedClosed`:
+for each nonempty prefix fiber it emits a
+`ParentRowsSymmetricRootedConnectedCertificate` for the appended root-closure
+graph.  The theorem
+`concreteChainFiberAppendQuotientFibrationParentRowsNonSingletonPrefixAppendedConnectedClosed_of_appended_parent_rows_connected`
+turns that row certificate into appended connectedness, and the
+`_of_appended_parent_rows_connected_and_projection_finite_section` wrappers
+combine appended parent rows with the finite projection-section target.
 The projection-surjectivity half also has a finite-row emitted form,
 `concreteChainFiberAppendQuotientFibrationParentRowsNonSingletonPrefixProjectionFiniteSectionClosed`:
 for each nonempty prefix fiber it emits a projection, a finite list of appended
@@ -206,6 +215,15 @@ and `fourcolor-surjective-projection-finite-section-axioms-20260703.log`
 the finite-section projection conversion and combined surjective-projection
 wrapper depend only on `propext`, while the target-gated all-word wrapper
 depends on `propext`, `Classical.choice`, and `Quot.sound`.
+Appended parent-row evidence is
+`fourcolor-appended-parent-rows-connected-lake-build-20260703.log` (607 jobs,
+SHA256
+`e50abc34143593300203495aa1da81a14cca758a40bc13026267fc40d4e75d08`)
+and `fourcolor-appended-parent-rows-connected-axioms-20260703.log` (SHA256
+`6e2c2d7a1ab065a416e456d1e3b056ccf7adf04801729b8b7d3b647d832ad7ff`);
+the appended parent-row connectedness conversion and combined
+surjective-projection wrapper depend only on `propext`, while the target-gated
+all-word wrapper depends on `propext`, `Classical.choice`, and `Quot.sound`.
 The table-level diagnostic
 `tttFiber32Rows_length_eq_two_mul_ttFiber32Rows_length` records that the known
 `TT` obstruction key is the same generated fixed input as `TTT` light-fiber
