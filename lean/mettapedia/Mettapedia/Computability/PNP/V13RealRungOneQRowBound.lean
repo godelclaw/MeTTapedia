@@ -9224,6 +9224,116 @@ def V13RealLinearNoTargetRowsSequentialTraceCosetHitCountingBound
     (v13RealLinearNoTargetRowsSequentialQRowTrace i₀ observer)
 
 theorem
+    v13RealLinearNoTargetRows_rowFunctionalTargetCosetHit_empty_false
+    {m : Nat} (i₀ row : Fin m)
+    (A : V13RealLinearNoTargetRowsMap m i₀) :
+    ¬ V13RealLinearRowFunctionalTargetCosetHit A.val
+        (∅ : Finset (Fin m)) i₀ row := by
+  classical
+  intro hhit
+  rcases hhit with ⟨z, hz, htarget⟩
+  have hzZero : z = 0 := by
+    have hzBot :
+        z ∈
+          (⊥ : Submodule (ZMod 2)
+            (F2Vec m →ₗ[ZMod 2] ZMod 2)) := by
+      simpa [V13RealLinearRowsFunctionalSpan, Set.range_eq_empty,
+        Submodule.span_empty] using hz
+    exact (Submodule.mem_bot (R := ZMod 2)).mp hzBot
+  have htargetRow :
+      row ∈ V13RealLinearTargetRows A.val i₀ := by
+    rw [v13RealLinear_mem_targetRows_iff]
+    intro w
+    have hpoint := LinearMap.congr_fun htarget w
+    simpa [v13RealLinearTargetFunctional, v13RealLinearRowFunctional,
+      hzZero] using hpoint.symm
+  have hnotTarget :
+      row ∉ V13RealLinearTargetRows A.val i₀ := by
+    rw [A.property]
+    simp
+  exact hnotTarget htargetRow
+
+theorem v13RealLinearNoTargetRows_rowTraceCosetHit_zero_false
+    {m : Nat} (i₀ : Fin m) (A : V13RealLinearNoTargetRowsMap m i₀)
+    (trace : V13RealLinearRowTrace m) :
+    ¬ V13RealLinearRowTraceCosetHit A.val i₀ trace 0 := by
+  intro hhit
+  rcases hhit with ⟨h, hrowHit⟩
+  exact
+    v13RealLinearNoTargetRows_rowFunctionalTargetCosetHit_empty_false
+      i₀ (trace.get ⟨0, h⟩) A
+      (by simpa [v13RealLinearRowTracePrefixRows_zero] using hrowHit)
+
+theorem
+    v13RealLinearNoTargetRowsSequentialTraceFirstCosetHit_card_eq_zero_of_zero_index
+    {m q : Nat} (i₀ : Fin m)
+    (observer : V13RealLinearSequentialRowObserver m q) (t : Fin q)
+    (ht : (t : Nat) = 0) :
+    letI : DecidablePred
+        (V13RealLinearAdaptiveQRowTraceFirstCosetHit
+          (v13RealLinearNoTargetRowsSequentialQRowExperiment i₀ observer)
+          i₀
+          (v13RealLinearNoTargetRowsSequentialQRowTrace i₀ observer)
+          t) := Classical.decPred _
+    Fintype.card
+        {omega :
+          V13RealLinearAdaptiveQRowWorld m
+            (V13RealLinearNoTargetRowsMap m i₀) //
+          V13RealLinearAdaptiveQRowTraceFirstCosetHit
+            (v13RealLinearNoTargetRowsSequentialQRowExperiment i₀ observer)
+            i₀
+            (v13RealLinearNoTargetRowsSequentialQRowTrace i₀ observer)
+            t omega} =
+      0 := by
+  classical
+  rw [Fintype.card_eq_zero_iff]
+  refine ⟨?_⟩
+  intro omega
+  have hhit :
+      V13RealLinearRowTraceCosetHit omega.val.1.val i₀
+        (v13RealLinearNoTargetRowsSequentialQRowTrace i₀ observer omega.val)
+        (t : Nat) := by
+    simpa [V13RealLinearAdaptiveQRowTraceFirstCosetHit,
+      v13RealLinearNoTargetRowsSequentialQRowExperiment,
+      v13RealLinearNoTargetRowsCausalQRowExperiment,
+      v13RealLinearNoTargetRowsQRowExperiment] using omega.property.2
+  have hhitZero :
+      V13RealLinearRowTraceCosetHit omega.val.1.val i₀
+        (v13RealLinearNoTargetRowsSequentialQRowTrace i₀ observer omega.val)
+        0 := by
+    simpa [ht] using hhit
+  exact
+    v13RealLinearNoTargetRows_rowTraceCosetHit_zero_false
+      i₀ omega.val.1
+      (v13RealLinearNoTargetRowsSequentialQRowTrace i₀ observer omega.val)
+      hhitZero
+
+theorem
+    V13RealLinearNoTargetRowsSequentialTraceCosetHitCountingBound_oneBudget
+    {m : Nat} (i₀ : Fin m)
+    (observer : V13RealLinearSequentialRowObserver m 1) :
+    V13RealLinearNoTargetRowsSequentialTraceCosetHitCountingBound
+      i₀ observer := by
+  classical
+  unfold V13RealLinearNoTargetRowsSequentialTraceCosetHitCountingBound
+  unfold V13RealLinearAdaptiveQRowTraceCosetHitCountingBound
+  unfold V13RealLinearAdaptiveDeferredDecisionNewCaptureCountingBound
+  intro t
+  letI : DecidablePred
+      (V13RealLinearAdaptiveQRowTraceFirstCosetHit
+        (v13RealLinearNoTargetRowsSequentialQRowExperiment i₀ observer)
+        i₀
+        (v13RealLinearNoTargetRowsSequentialQRowTrace i₀ observer)
+        t) := Classical.decPred _
+  have ht : (t : Nat) = 0 := by
+    omega
+  have hcard :=
+    v13RealLinearNoTargetRowsSequentialTraceFirstCosetHit_card_eq_zero_of_zero_index
+      i₀ observer t ht
+  rw [hcard]
+  simp
+
+theorem
     V13RealLinearNoTargetRowsSequentialDeferredDecisionCountingBound_of_traceCosetHit
     {m q : Nat} (i₀ : Fin m)
     (observer : V13RealLinearSequentialRowObserver m q)
