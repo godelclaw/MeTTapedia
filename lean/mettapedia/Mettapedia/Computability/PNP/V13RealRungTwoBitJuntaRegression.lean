@@ -97,6 +97,44 @@ example {m j : Nat}
     observer A i₀ hnot
 
 example {m j : Nat}
+    (observer : V13RealLinearParityObserver m j)
+    (A : V13F2LinearEquiv m) (i₀ : Fin m)
+    (hdet : V13RealLinearParityObserverDeterminesTarget observer A i₀) :
+    v13RealLinearParityObserverFixedSuccess observer A i₀ = 1 :=
+  v13RealLinearParityObserver_fixedSuccess_eq_one_of_determinesTarget
+    observer A i₀ hdet
+
+example {m j : Nat}
+    (observer : V13RealLinearParityObserver m j)
+    (A : V13F2LinearEquiv m) (i₀ : Fin m)
+    (hcomp :
+      V13RealLinearParityObserverDeterminesTargetComplement observer A i₀) :
+    v13RealLinearParityObserverFixedSuccess observer A i₀ = 0 :=
+  v13RealLinearParityObserver_fixedSuccess_eq_zero_of_determinesTargetComplement
+    observer A i₀ hcomp
+
+example {m j : Nat}
+    (observer : V13RealLinearParityObserver m j)
+    (A : V13F2LinearEquiv m) (i₀ : Fin m)
+    (hnot :
+      ¬ V13RealLinearParityObserverRhsParityMatchesTarget observer A i₀) :
+    v13RealLinearParityObserverFixedSuccess observer A i₀ = (1 / 2 : Rat) :=
+  v13RealLinearParityObserver_fixedSuccess_eq_half_of_not_rhsParityMatchesTarget
+    observer A i₀ hnot
+
+example {m j : Nat}
+    (observer : V13RealLinearParityObserver m j)
+    (A : V13F2LinearEquiv m) (i₀ : Fin m) :
+    (V13RealLinearParityObserverDeterminesTarget observer A i₀ ∧
+        v13RealLinearParityObserverFixedSuccess observer A i₀ = 1) ∨
+      (V13RealLinearParityObserverDeterminesTargetComplement observer A i₀ ∧
+        v13RealLinearParityObserverFixedSuccess observer A i₀ = 0) ∨
+      (¬ V13RealLinearParityObserverRhsParityMatchesTarget observer A i₀ ∧
+        v13RealLinearParityObserverFixedSuccess observer A i₀ =
+          (1 / 2 : Rat)) :=
+  v13RealLinearParityObserver_fixedSuccess_trichotomy observer A i₀
+
+example {m j : Nat}
     (hcount : V13RealLinearNoTargetBitJuntaBlockedCountingBound m j) :
     V13RealLinearNoTargetBitJuntaSuccessBound m j :=
   v13RealLinearNoTargetBitJuntaSuccessBound_of_blockedCounting hcount
