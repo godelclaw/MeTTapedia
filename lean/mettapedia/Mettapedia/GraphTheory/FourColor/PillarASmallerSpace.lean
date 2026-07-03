@@ -251,6 +251,52 @@ theorem pillarADetectorSubspaceContainedInRouteGeneratorSpan_of_boundaryZeroAnni
   simpa [projectedKempeClosureGeneratorSubspace_eq_span_projectedKempeClosureGeneratorFamily]
     using hzProjected
 
+/-- Boundary-rooted interior-dual peel data supplies the corrected need-based
+Prop (1') inclusion directly. -/
+theorem pillarADetectorSubspaceContainedInRouteGeneratorSpan_of_planarBoundaryInteriorDualBoundaryRootAdjDistancePeelData
+    [Fintype G.edgeSet] [FiniteDimensional F2 (G.edgeSet → Color)]
+    (emb : PlaneEmbeddingWithBoundary G) (vertices : Finset V)
+    (data : PlanarBoundaryInteriorDualBoundaryRootAdjDistancePeelData emb)
+    (C₀ : G.EdgeColoring Color) (hC₀ : IsTaitEdgeColoring G C₀) :
+    PillarADetectorSubspaceContainedInRouteGeneratorSpan emb vertices C₀ :=
+  theorem49BoundaryZeroKirchhoffSubspace_le_span_projectedKempeClosureGeneratorFamily_of_planarBoundaryInteriorDualBoundaryRootAdjDistancePeelData
+    (G := G) emb data C₀ hC₀ vertices
+
+/-- Height-ordered same-embedding peel data supplies the corrected need-based
+Prop (1') inclusion directly. -/
+theorem pillarADetectorSubspaceContainedInRouteGeneratorSpan_of_planarBoundaryHeightOrderedFacePeelWitnessData
+    [Fintype G.edgeSet] [FiniteDimensional F2 (G.edgeSet → Color)]
+    (emb : PlaneEmbeddingWithBoundary G) (vertices : Finset V)
+    (data : PlanarBoundaryHeightOrderedFacePeelWitnessData emb)
+    (C₀ : G.EdgeColoring Color) (hC₀ : IsTaitEdgeColoring G C₀) :
+    PillarADetectorSubspaceContainedInRouteGeneratorSpan emb vertices C₀ :=
+  theorem49BoundaryZeroKirchhoffSubspace_le_span_projectedKempeClosureGeneratorFamily_of_planarBoundaryHeightOrderedFacePeelWitnessData
+    (G := G) emb data C₀ hC₀ vertices
+
+/-- Finite collar-layer peel data supplies the corrected need-based Prop (1')
+inclusion directly. -/
+theorem pillarADetectorSubspaceContainedInRouteGeneratorSpan_of_planarBoundaryCollarLayerFacePeelWitnessData
+    [Fintype G.edgeSet] [FiniteDimensional F2 (G.edgeSet → Color)]
+    (emb : PlaneEmbeddingWithBoundary G) (vertices : Finset V)
+    (data : PlanarBoundaryCollarLayerFacePeelWitnessData emb)
+    (C₀ : G.EdgeColoring Color) (hC₀ : IsTaitEdgeColoring G C₀) :
+    PillarADetectorSubspaceContainedInRouteGeneratorSpan emb vertices C₀ :=
+  theorem49BoundaryZeroKirchhoffSubspace_le_span_projectedKempeClosureGeneratorFamily_of_planarBoundaryCollarLayerFacePeelWitnessData
+    (G := G) emb data C₀ hC₀ vertices
+
+/-- Local-remainder collar peel data supplies the corrected need-based Prop
+(1') inclusion through the same annihilator endpoint. -/
+theorem pillarADetectorSubspaceContainedInRouteGeneratorSpan_of_planarBoundaryLocalRemainderBoundaryCollarLayerFacePeelWitnessData
+    [Fintype G.edgeSet] [FiniteDimensional F2 (G.edgeSet → Color)]
+    (emb : PlaneEmbeddingWithBoundary G) (vertices : Finset V)
+    (data : PlanarBoundaryLocalRemainderBoundaryCollarLayerFacePeelWitnessData emb)
+    (C₀ : G.EdgeColoring Color) (hC₀ : IsTaitEdgeColoring G C₀) :
+    PillarADetectorSubspaceContainedInRouteGeneratorSpan emb vertices C₀ :=
+  pillarADetectorSubspaceContainedInRouteGeneratorSpan_of_boundaryZeroAnnihilatorTrivial
+    (G := G) emb vertices C₀
+    (boundaryZeroAnnihilatorTrivialForEmbedding_of_planarBoundaryLocalRemainderBoundaryCollarLayerFacePeelWitnessData
+      emb data C₀ hC₀)
+
 /-- Need-based Pillar A assembled from boundary-zero annihilator triviality,
 step preservation, and the route-used discrepancy detector theorem. -/
 theorem needBasedPillarARequirement_of_boundaryZeroAnnihilatorTrivial_of_stepPreserves_of_routeDiscrepancies
@@ -282,6 +328,82 @@ theorem needBasedPillarARequirement_routeKempeSwitch_of_boundaryZeroAnnihilatorT
     (G := G) (emb := emb) (vertices := vertices) (C₀ := C₀)
     (step := RouteKempeSwitchExecutionStep emb)
     htrivial
+    routeKempeSwitchExecutionStep_preserves_detectorSubspace
+    (routeUsedDiscrepancyClassesLieInDetectorSubspace_of_hasCubicIncidentEdgeTriples
+      (G := G) emb vertices hG)
+
+/-- Concrete need-based Pillar A for the route's Kempe-switch execution step
+from boundary-rooted interior-dual peel data and the natural cubic hypothesis. -/
+theorem needBasedPillarARequirement_routeKempeSwitch_of_planarBoundaryInteriorDualBoundaryRootAdjDistancePeelData_of_hasCubicIncidentEdgeTriples
+    [Fintype G.edgeSet] [FiniteDimensional F2 (G.edgeSet → Color)]
+    (emb : PlaneEmbeddingWithBoundary G) (vertices : Finset V)
+    (data : PlanarBoundaryInteriorDualBoundaryRootAdjDistancePeelData emb)
+    (C₀ : G.EdgeColoring Color) (hC₀ : IsTaitEdgeColoring G C₀)
+    (hG : HasCubicIncidentEdgeTriples G) :
+    NeedBasedPillarARequirement emb vertices C₀
+      (RouteKempeSwitchExecutionStep emb) :=
+  needBasedPillarARequirement_of_detector_le_span_of_stepPreserves_of_routeDiscrepancies
+    (G := G) (emb := emb) (vertices := vertices) (C₀ := C₀)
+    (step := RouteKempeSwitchExecutionStep emb)
+    (pillarADetectorSubspaceContainedInRouteGeneratorSpan_of_planarBoundaryInteriorDualBoundaryRootAdjDistancePeelData
+      (G := G) emb vertices data C₀ hC₀)
+    routeKempeSwitchExecutionStep_preserves_detectorSubspace
+    (routeUsedDiscrepancyClassesLieInDetectorSubspace_of_hasCubicIncidentEdgeTriples
+      (G := G) emb vertices hG)
+
+/-- Concrete need-based Pillar A for the route's Kempe-switch execution step
+from height-ordered peel data and the natural cubic hypothesis. -/
+theorem needBasedPillarARequirement_routeKempeSwitch_of_planarBoundaryHeightOrderedFacePeelWitnessData_of_hasCubicIncidentEdgeTriples
+    [Fintype G.edgeSet] [FiniteDimensional F2 (G.edgeSet → Color)]
+    (emb : PlaneEmbeddingWithBoundary G) (vertices : Finset V)
+    (data : PlanarBoundaryHeightOrderedFacePeelWitnessData emb)
+    (C₀ : G.EdgeColoring Color) (hC₀ : IsTaitEdgeColoring G C₀)
+    (hG : HasCubicIncidentEdgeTriples G) :
+    NeedBasedPillarARequirement emb vertices C₀
+      (RouteKempeSwitchExecutionStep emb) :=
+  needBasedPillarARequirement_of_detector_le_span_of_stepPreserves_of_routeDiscrepancies
+    (G := G) (emb := emb) (vertices := vertices) (C₀ := C₀)
+    (step := RouteKempeSwitchExecutionStep emb)
+    (pillarADetectorSubspaceContainedInRouteGeneratorSpan_of_planarBoundaryHeightOrderedFacePeelWitnessData
+      (G := G) emb vertices data C₀ hC₀)
+    routeKempeSwitchExecutionStep_preserves_detectorSubspace
+    (routeUsedDiscrepancyClassesLieInDetectorSubspace_of_hasCubicIncidentEdgeTriples
+      (G := G) emb vertices hG)
+
+/-- Concrete need-based Pillar A for the route's Kempe-switch execution step
+from finite collar-layer peel data and the natural cubic hypothesis. -/
+theorem needBasedPillarARequirement_routeKempeSwitch_of_planarBoundaryCollarLayerFacePeelWitnessData_of_hasCubicIncidentEdgeTriples
+    [Fintype G.edgeSet] [FiniteDimensional F2 (G.edgeSet → Color)]
+    (emb : PlaneEmbeddingWithBoundary G) (vertices : Finset V)
+    (data : PlanarBoundaryCollarLayerFacePeelWitnessData emb)
+    (C₀ : G.EdgeColoring Color) (hC₀ : IsTaitEdgeColoring G C₀)
+    (hG : HasCubicIncidentEdgeTriples G) :
+    NeedBasedPillarARequirement emb vertices C₀
+      (RouteKempeSwitchExecutionStep emb) :=
+  needBasedPillarARequirement_of_detector_le_span_of_stepPreserves_of_routeDiscrepancies
+    (G := G) (emb := emb) (vertices := vertices) (C₀ := C₀)
+    (step := RouteKempeSwitchExecutionStep emb)
+    (pillarADetectorSubspaceContainedInRouteGeneratorSpan_of_planarBoundaryCollarLayerFacePeelWitnessData
+      (G := G) emb vertices data C₀ hC₀)
+    routeKempeSwitchExecutionStep_preserves_detectorSubspace
+    (routeUsedDiscrepancyClassesLieInDetectorSubspace_of_hasCubicIncidentEdgeTriples
+      (G := G) emb vertices hG)
+
+/-- Concrete need-based Pillar A for the route's Kempe-switch execution step
+from local-remainder collar peel data and the natural cubic hypothesis. -/
+theorem needBasedPillarARequirement_routeKempeSwitch_of_planarBoundaryLocalRemainderBoundaryCollarLayerFacePeelWitnessData_of_hasCubicIncidentEdgeTriples
+    [Fintype G.edgeSet] [FiniteDimensional F2 (G.edgeSet → Color)]
+    (emb : PlaneEmbeddingWithBoundary G) (vertices : Finset V)
+    (data : PlanarBoundaryLocalRemainderBoundaryCollarLayerFacePeelWitnessData emb)
+    (C₀ : G.EdgeColoring Color) (hC₀ : IsTaitEdgeColoring G C₀)
+    (hG : HasCubicIncidentEdgeTriples G) :
+    NeedBasedPillarARequirement emb vertices C₀
+      (RouteKempeSwitchExecutionStep emb) :=
+  needBasedPillarARequirement_of_detector_le_span_of_stepPreserves_of_routeDiscrepancies
+    (G := G) (emb := emb) (vertices := vertices) (C₀ := C₀)
+    (step := RouteKempeSwitchExecutionStep emb)
+    (pillarADetectorSubspaceContainedInRouteGeneratorSpan_of_planarBoundaryLocalRemainderBoundaryCollarLayerFacePeelWitnessData
+      (G := G) emb vertices data C₀ hC₀)
     routeKempeSwitchExecutionStep_preserves_detectorSubspace
     (routeUsedDiscrepancyClassesLieInDetectorSubspace_of_hasCubicIncidentEdgeTriples
       (G := G) emb vertices hG)
