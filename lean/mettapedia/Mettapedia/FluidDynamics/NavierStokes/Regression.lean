@@ -29,6 +29,7 @@ import Mettapedia.FluidDynamics.NavierStokes.OneFormFrameCalculusRegression
 import Mettapedia.FluidDynamics.NavierStokes.FrozenStrainModelRegression
 import Mettapedia.FluidDynamics.NavierStokes.StochasticLagrangian.StochasticLagrangianRegression
 import Mettapedia.FluidDynamics.NavierStokes.StochasticLagrangian.DyadicPancakeClosureRegression
+import Mettapedia.FluidDynamics.NavierStokes.StochasticLagrangian.BlockwisePancakeDecompositionRegression
 
 /-!
 # Navier-Stokes regression aggregator
