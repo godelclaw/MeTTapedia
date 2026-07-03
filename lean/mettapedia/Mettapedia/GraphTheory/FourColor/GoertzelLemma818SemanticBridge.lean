@@ -3624,17 +3624,53 @@ theorem concreteChainFiberAppendLocalSingletonComponent_shift_globalComponent_me
     using hglobalCloseLen
 
 /--
+Local singleton saturation pin for the remaining reverse/no-ingress direction.
+
+For a specified singleton Kempe step, let `localComponent` be the component
+closed for the singleton gadget.  The remaining local fact is that no outer
+input edge can still be present in the next component layer of that already
+closed component.  This is the exact local saturation/avoidance statement
+needed after the boundary pair-color and endpoint-sharing transfers reduce a
+glued-boundary prefix ingress to a singleton input-edge ingress.
+-/
+def concreteChainFiberAppendLocalSingletonComponentOuterInputNextLayerClosed :
+    Prop :=
+  ∀ (orient : GoertzelLemma818FrontierMode.TauOrient)
+    (currentLast : GoertzelLemma814.TauState)
+    (target : List GoertzelLemma814.TauState)
+    (move : GoertzelLemma814.ChainMove)
+    (inputEdge : GoertzelLemma814.TauEdge),
+    (GoertzelLemma814.chainEdges (frontierWordToChainWord [orient])).contains
+        move.seed = true →
+      GoertzelLemma814.chainSpecifiedKempeStep
+        (frontierWordToChainWord [orient]) [currentLast] target move = true →
+      let inputLocal : GoertzelLemma814.ChainEdge := { occ := 0, edge := inputEdge }
+      let localOrients := frontierWordToChainWord [orient]
+      let localComponent :=
+        GoertzelLemma814.chainComponent localOrients [currentLast]
+          move.a move.c move.seed
+      (GoertzelLemma814.chainOuterInputEdges localOrients).contains
+          inputLocal = true →
+        inputLocal ∈ GoertzelLemma814.nextChainComponentLayer
+          localOrients [currentLast] move.a move.c localComponent →
+          False
+
+/--
 Pinned reverse/no-ingress component equality for the singleton append lift.
 
 Forward membership from the local singleton component into the appended global
 component is proved by
 `concreteChainFiberAppendLocalSingletonComponent_shift_globalComponent_mem`.
 The remaining direction is to show that the appended global component cannot
-grow a prefix or glued-boundary edge. A pure endpoint separation argument is
-insufficient: a prefix output edge can share the glued boundary vertex with a
-shifted local edge. The missing step must use adjacent compatibility to
-transfer pair-color membership to the corresponding last input edge and then
-contradict local input avoidance.
+grow a prefix or glued-boundary edge. The boundary transfer pieces are now
+isolated: pair-color transfer is
+`concreteChainFiberAppend_boundary_output_pair_forces_input_pair`,
+endpoint-sharing transfer is
+`concreteChainFiberAppend_boundary_output_share_shift_forces_input_share`, and
+their combined next-layer ingress is
+`concreteChainFiberAppend_boundary_output_ingress_local_input_nextLayer`.
+What remains is the local singleton saturation pin
+`concreteChainFiberAppendLocalSingletonComponentOuterInputNextLayerClosed`.
 -/
 def concreteChainFiberAppendRelativeSingletonShiftedComponentClosed : Prop :=
   ∀ (word : List GoertzelLemma818FrontierMode.TauOrient)
