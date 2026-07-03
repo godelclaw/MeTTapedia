@@ -8444,6 +8444,43 @@ theorem representativeTargetAppendParentRowsProjectionFiniteSectionClosedOn_of_t
   have hbody := rowCase.rows root rest hrowFiber
   simpa [hprefix, horient, hkeyEq] using hbody
 
+def RepresentativeTargetAppendSelectedKeysCover
+    (selectedKeys : RepresentativeSemanticTarget →
+      List (List GoertzelLemma814.LColor)) : Prop :=
+  ∀ target : RepresentativeSemanticTarget,
+    ∀ key : List GoertzelLemma814.LColor,
+      key ∈ GoertzelLemma814.colorAssignments4 →
+        ∀ (root : List GoertzelLemma814.TauState)
+          (rest : List (List GoertzelLemma814.TauState)),
+          concreteChainFiber (targetAppendPrefix target) key = root :: rest →
+            key ∈ selectedKeys target
+
+theorem representativeTargetAppendParentRowsProjectionFiniteSectionClosed_of_closed_on_selected_keys
+    {selectedKeys : RepresentativeSemanticTarget →
+      List (List GoertzelLemma814.LColor)}
+    (hkeys : RepresentativeTargetAppendSelectedKeysCover selectedKeys)
+    (hclosed :
+      representativeTargetAppendParentRowsProjectionFiniteSectionClosedOn
+        selectedKeys) :
+    representativeTargetAppendParentRowsProjectionFiniteSectionClosed := by
+  intro target hcert key hkey root rest hfiber
+  exact hclosed target hcert key
+    (hkeys target key hkey root rest hfiber) hkey root rest hfiber
+
+theorem representativeTargetAppendParentRowsProjectionFiniteSectionClosed_of_target_append_cases_on_selected_keys
+    {cases : List AppendedParentRowsProjectionFiniteSectionTargetCase}
+    {selectedKeys : RepresentativeSemanticTarget →
+      List (List GoertzelLemma814.LColor)}
+    (hkeys : RepresentativeTargetAppendSelectedKeysCover selectedKeys)
+    (hcover :
+      AppendedParentRowsProjectionFiniteSectionTargetAppendCasesCoverOn
+        cases selectedKeys) :
+    representativeTargetAppendParentRowsProjectionFiniteSectionClosed :=
+  representativeTargetAppendParentRowsProjectionFiniteSectionClosed_of_closed_on_selected_keys
+    hkeys
+    (representativeTargetAppendParentRowsProjectionFiniteSectionClosedOn_of_target_append_cases
+      hcover)
+
 theorem concreteChainFiberAppendQuotientFibrationParentRowsNonSingletonPrefixAppendedParentRowsProjectionFiniteSectionClosed_of_cases
     {cases : List AppendedParentRowsProjectionFiniteSectionCase}
     (hcover : AppendedParentRowsProjectionFiniteSectionCasesCover cases) :
