@@ -2114,6 +2114,25 @@ def concreteChainFiberAppendShiftEdge
   { occ := edge.occ + word.length
     edge := edge.edge }
 
+theorem concreteChainFiberAppendShiftEdge_injective
+    (word : List GoertzelLemma818FrontierMode.TauOrient) :
+    Function.Injective (concreteChainFiberAppendShiftEdge word) := by
+  intro edge other h
+  cases edge with
+  | mk edgeOcc edgeTau =>
+      cases other with
+      | mk otherOcc otherTau =>
+          have hocc : edgeOcc + word.length = otherOcc + word.length := by
+            simpa [concreteChainFiberAppendShiftEdge] using
+              congrArg GoertzelLemma814.ChainEdge.occ h
+          have htau : edgeTau = otherTau := by
+            simpa [concreteChainFiberAppendShiftEdge] using
+              congrArg GoertzelLemma814.ChainEdge.edge h
+          subst htau
+          have : edgeOcc = otherOcc := by omega
+          subst this
+          rfl
+
 theorem concreteChainFiberAppend_chainEdgeColor_shift_occ_zero
     (word : List GoertzelLemma818FrontierMode.TauOrient)
     (pref : List GoertzelLemma814.TauState)
@@ -2211,6 +2230,91 @@ def concreteChainFiberAppendShiftComponent
     (component : List GoertzelLemma814.ChainEdge) :
     List GoertzelLemma814.ChainEdge :=
   component.map (concreteChainFiberAppendShiftEdge word)
+
+theorem concreteChainFiberAppendShiftComponent_contains_shift_eq
+    (word : List GoertzelLemma818FrontierMode.TauOrient)
+    (component : List GoertzelLemma814.ChainEdge)
+    (edge : GoertzelLemma814.ChainEdge) :
+    (concreteChainFiberAppendShiftComponent word component).contains
+        (concreteChainFiberAppendShiftEdge word edge) =
+      component.contains edge := by
+  by_cases hshift :
+      (concreteChainFiberAppendShiftComponent word component).contains
+        (concreteChainFiberAppendShiftEdge word edge) = true
+  · have hmem :
+        concreteChainFiberAppendShiftEdge word edge ∈
+          concreteChainFiberAppendShiftComponent word component :=
+      List.contains_iff_mem.mp hshift
+    unfold concreteChainFiberAppendShiftComponent at hmem
+    rcases List.mem_map.mp hmem with ⟨localEdge, hlocalMem, hlocalEq⟩
+    have hlocalEdge : localEdge = edge :=
+      concreteChainFiberAppendShiftEdge_injective word hlocalEq
+    have hlocalContains : component.contains edge = true :=
+      List.contains_iff_mem.mpr (by simpa [hlocalEdge] using hlocalMem)
+    rw [hshift, hlocalContains]
+  · have hshiftFalse := GoertzelLemma814.bool_false_of_not_true hshift
+    by_cases hlocal : component.contains edge = true
+    · have hlocalMem : edge ∈ component := List.contains_iff_mem.mp hlocal
+      have hshiftMem :
+          concreteChainFiberAppendShiftEdge word edge ∈
+            concreteChainFiberAppendShiftComponent word component := by
+        unfold concreteChainFiberAppendShiftComponent
+        exact List.mem_map.mpr ⟨edge, hlocalMem, rfl⟩
+      exact False.elim (hshift (List.contains_iff_mem.mpr hshiftMem))
+    · have hlocalFalse := GoertzelLemma814.bool_false_of_not_true hlocal
+      rw [hshiftFalse, hlocalFalse]
+
+theorem concreteChainFiberAppendShiftComponent_any_shareEndpoint_shift_occ_zero
+    (word : List GoertzelLemma818FrontierMode.TauOrient)
+    (orient : GoertzelLemma818FrontierMode.TauOrient)
+    (component : List GoertzelLemma814.ChainEdge)
+    (edge : GoertzelLemma814.ChainEdge)
+    (hedgeOcc : edge.occ = 0)
+    (hedgeNotInput :
+      (GoertzelLemma814.tauOrientInputOrder (frontierOrientToChain orient)).contains
+        edge.edge = false)
+    (hcomponent :
+      ∀ other, other ∈ component →
+        other.occ = 0 ∧
+          (GoertzelLemma814.tauOrientInputOrder
+            (frontierOrientToChain orient)).contains other.edge = false) :
+    (concreteChainFiberAppendShiftComponent word component).any
+        (fun other => GoertzelLemma814.chainEdgesShareEndpoint
+          (frontierWordToChainWord (word ++ [orient]))
+          (concreteChainFiberAppendShiftEdge word edge) other) =
+      component.any (fun other => GoertzelLemma814.chainEdgesShareEndpoint
+        (frontierWordToChainWord [orient]) edge other) := by
+  induction component with
+  | nil =>
+      simp [concreteChainFiberAppendShiftComponent]
+  | cons head tail ih =>
+      have hhead := hcomponent head (by simp)
+      have htail :
+          ∀ other, other ∈ tail →
+            other.occ = 0 ∧
+              (GoertzelLemma814.tauOrientInputOrder
+                (frontierOrientToChain orient)).contains other.edge = false := by
+        intro other hmem
+        exact hcomponent other (by simp [hmem])
+      have hheadShare :
+          GoertzelLemma814.chainEdgesShareEndpoint
+              (frontierWordToChainWord (word ++ [orient]))
+              (concreteChainFiberAppendShiftEdge word edge)
+              (concreteChainFiberAppendShiftEdge word head) =
+            GoertzelLemma814.chainEdgesShareEndpoint
+              (frontierWordToChainWord [orient]) edge head :=
+        concreteChainFiberAppend_chainEdgesShareEndpoint_shift_occ_zero
+          word orient edge head hedgeOcc hhead.1 hedgeNotInput hhead.2
+      have htailAny :
+          tail.any
+              ((fun other => GoertzelLemma814.chainEdgesShareEndpoint
+                (frontierWordToChainWord (word ++ [orient]))
+                (concreteChainFiberAppendShiftEdge word edge) other) ∘
+                  concreteChainFiberAppendShiftEdge word) =
+            tail.any (fun other => GoertzelLemma814.chainEdgesShareEndpoint
+              (frontierWordToChainWord [orient]) edge other) := by
+        simpa [concreteChainFiberAppendShiftComponent] using ih htail
+      simp [concreteChainFiberAppendShiftComponent, hheadShare, htailAny]
 
 theorem concreteChainFiberAppendShiftComponent_contains_prefix_false
     (word : List GoertzelLemma818FrontierMode.TauOrient)
