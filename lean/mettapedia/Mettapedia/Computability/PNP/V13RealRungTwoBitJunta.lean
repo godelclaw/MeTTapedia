@@ -3386,6 +3386,92 @@ theorem
     activeIdx.1.A.val i₀ activeIdx.1.row hrow activeIdx.1.hit
 
 theorem
+    v13RealLinearNoTargetSequentialTraceFirstCosetHitFixedMapTranscriptCylinder_newCapture_or_priorNewCapture
+    {m q : Nat} (i₀ : Fin m)
+    (observer : V13RealLinearSequentialRowObserver m q) (t : Fin q)
+    (idx :
+      V13RealLinearNoTargetSequentialTraceFirstCosetHitFixedMapTranscriptCylinderIndex
+        m q i₀ observer t)
+    (cell :
+      V13RealLinearNoTargetSequentialTraceFirstCosetHitFixedMapTranscriptCylinder
+        i₀ observer t idx) :
+    V13RealLinearRowTraceNewCapture idx.A.val i₀
+        (v13RealLinearNoTargetRowsSequentialQRowTrace i₀ observer
+          (idx.A, cell.val))
+        (t : Nat) ∨
+      ∃ s : Fin (t : Nat),
+        V13RealLinearRowTraceNewCapture idx.A.val i₀
+          (v13RealLinearNoTargetRowsSequentialQRowTrace i₀ observer
+            (idx.A, cell.val))
+          s := by
+  let trace :=
+    v13RealLinearNoTargetRowsSequentialQRowTrace i₀ observer
+      (idx.A, cell.val)
+  have hcoset :
+      V13RealLinearRowTraceCosetHit idx.A.val i₀ trace (t : Nat) := by
+    simpa [trace, v13RealLinearNoTargetRowsSequentialQRowExperiment,
+      v13RealLinearNoTargetRowsCausalQRowExperiment,
+      v13RealLinearNoTargetRowsQRowExperiment] using cell.property.1.2
+  simpa [trace] using
+    v13RealLinearRowTraceCosetHit_newCapture_or_priorNewCapture
+      idx.A.val i₀ trace hcoset
+
+theorem
+    v13RealLinearNoTargetSequentialTraceFirstCosetHitFixedMapTranscriptCylinder_existing_priorNewCapture
+    {m q : Nat} (i₀ : Fin m)
+    (observer : V13RealLinearSequentialRowObserver m q) (t : Fin q)
+    (idx :
+      V13RealLinearNoTargetSequentialTraceFirstCosetHitFixedMapTranscriptCylinderIndex
+        m q i₀ observer t)
+    (cell :
+      V13RealLinearNoTargetSequentialTraceFirstCosetHitFixedMapTranscriptCylinder
+        i₀ observer t idx)
+    (hrow : idx.row ∈ idx.rows) :
+    ∃ s : Fin (t : Nat),
+      V13RealLinearRowTraceNewCapture idx.A.val i₀
+        (v13RealLinearNoTargetRowsSequentialQRowTrace i₀ observer
+          (idx.A, cell.val))
+        s := by
+  let trace :=
+    v13RealLinearNoTargetRowsSequentialQRowTrace i₀ observer
+      (idx.A, cell.val)
+  have hsplit :=
+    v13RealLinearNoTargetSequentialTraceFirstCosetHitFixedMapTranscriptCylinder_newCapture_or_priorNewCapture
+      i₀ observer t idx cell
+  cases hsplit with
+  | inr hprior => exact hprior
+  | inl hnew =>
+      have hlen : (t : Nat) < trace.length := by
+        simpa [trace] using cell.property.1.1
+      have hnotMem :
+          trace.get ⟨(t : Nat), hlen⟩ ∉
+            v13RealLinearRowTracePrefixRows trace (t : Nat) :=
+        v13RealLinearRowTraceNewCapture_get_not_mem
+          idx.A.val i₀ trace hlen (by simpa [trace] using hnew)
+      have hgetEq :
+          trace.get ⟨(t : Nat), hlen⟩ = idx.row := by
+        rcases cell.property.2.2.1 with ⟨hrowLen, hget⟩
+        have hidx :
+            (⟨(t : Nat), hlen⟩ : Fin trace.length) =
+              ⟨(t : Nat), by simpa [trace] using hrowLen⟩ := by
+          apply Fin.ext
+          rfl
+        calc
+          trace.get ⟨(t : Nat), hlen⟩ =
+              trace.get ⟨(t : Nat), by simpa [trace] using hrowLen⟩ := by
+                rw [hidx]
+          _ = idx.row := by simpa [trace] using hget
+      have hmem :
+          trace.get ⟨(t : Nat), hlen⟩ ∈
+            v13RealLinearRowTracePrefixRows trace (t : Nat) := by
+        have hprefix :
+            v13RealLinearRowTracePrefixRows trace (t : Nat) = idx.rows := by
+          simpa [trace] using cell.property.2.1
+        rw [hgetEq, hprefix]
+        exact hrow
+      exact False.elim (hnotMem hmem)
+
+theorem
     v13RealLinearNoTargetSequentialTraceFirstCosetHitActiveFixedMapTranscriptCylinder_fresh_insert_rows_card_two_le
     {m q : Nat} (i₀ : Fin m)
     (observer : V13RealLinearSequentialRowObserver m q) (t : Fin q)

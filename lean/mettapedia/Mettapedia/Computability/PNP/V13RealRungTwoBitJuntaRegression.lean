@@ -882,6 +882,43 @@ example {m q : Nat} (i₀ : Fin m)
 
 example {m q : Nat} (i₀ : Fin m)
     (observer : V13RealLinearSequentialRowObserver m q) (t : Fin q)
+    (idx :
+      V13RealLinearNoTargetSequentialTraceFirstCosetHitFixedMapTranscriptCylinderIndex
+        m q i₀ observer t)
+    (cell :
+      V13RealLinearNoTargetSequentialTraceFirstCosetHitFixedMapTranscriptCylinder
+        i₀ observer t idx) :
+    V13RealLinearRowTraceNewCapture idx.A.val i₀
+        (v13RealLinearNoTargetRowsSequentialQRowTrace i₀ observer
+          (idx.A, cell.val))
+        (t : Nat) ∨
+      ∃ s : Fin (t : Nat),
+        V13RealLinearRowTraceNewCapture idx.A.val i₀
+          (v13RealLinearNoTargetRowsSequentialQRowTrace i₀ observer
+            (idx.A, cell.val))
+          s :=
+  v13RealLinearNoTargetSequentialTraceFirstCosetHitFixedMapTranscriptCylinder_newCapture_or_priorNewCapture
+    i₀ observer t idx cell
+
+example {m q : Nat} (i₀ : Fin m)
+    (observer : V13RealLinearSequentialRowObserver m q) (t : Fin q)
+    (idx :
+      V13RealLinearNoTargetSequentialTraceFirstCosetHitFixedMapTranscriptCylinderIndex
+        m q i₀ observer t)
+    (cell :
+      V13RealLinearNoTargetSequentialTraceFirstCosetHitFixedMapTranscriptCylinder
+        i₀ observer t idx)
+    (hrow : idx.row ∈ idx.rows) :
+    ∃ s : Fin (t : Nat),
+      V13RealLinearRowTraceNewCapture idx.A.val i₀
+        (v13RealLinearNoTargetRowsSequentialQRowTrace i₀ observer
+          (idx.A, cell.val))
+        s :=
+  v13RealLinearNoTargetSequentialTraceFirstCosetHitFixedMapTranscriptCylinder_existing_priorNewCapture
+    i₀ observer t idx cell hrow
+
+example {m q : Nat} (i₀ : Fin m)
+    (observer : V13RealLinearSequentialRowObserver m q) (t : Fin q)
     (activeIdx :
       V13RealLinearNoTargetSequentialTraceFirstCosetHitActiveFixedMapTranscriptCylinderIndex
         i₀ observer t)
@@ -1125,5 +1162,8 @@ example {m : Nat} (i₀ row₀ row₁ : Fin m)
     4 * Fintype.card (V13RealLinearNoTargetRowsMap m i₀) :=
   v13RealLinearNoTargetFixedPairCosetHitMapSet_card_mul_two_pow_le_noTarget
     i₀ row₀ row₁ hrow
+
+#print axioms v13RealLinearNoTargetSequentialTraceFirstCosetHitFixedMapTranscriptCylinder_newCapture_or_priorNewCapture
+#print axioms v13RealLinearNoTargetSequentialTraceFirstCosetHitFixedMapTranscriptCylinder_existing_priorNewCapture
 
 end Mettapedia.Computability.PNP
