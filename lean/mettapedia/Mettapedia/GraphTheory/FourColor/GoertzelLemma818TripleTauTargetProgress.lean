@@ -1912,6 +1912,52 @@ theorem tttFiber32RootClosureParentRowsSymmetricRootedConnectedCertificate :
     chainFiberRootClosureParentRowsSymmetricRootedConnectedCertificate_of_connected_nonempty
       tttFiber32RootClosureConnected ⟨rootPoint⟩
 
+theorem ttFiber32AppendedParentRowsProjectionFiniteSection :
+    (∃ totalDecidableEq :
+      DecidableEq
+        (ChainFiberPoint
+          (ttFiber32FrontierWord ++
+            [GoertzelLemma818FrontierMode.TauOrient.tau])
+          GoertzelLemma818CompositeCertificate.ttFiber32Key),
+      Nonempty
+        (@GoertzelLemma818Fibration.ParentRowsSymmetricRootedConnectedCertificate
+          (ChainFiberPoint
+            (ttFiber32FrontierWord ++
+              [GoertzelLemma818FrontierMode.TauOrient.tau])
+            GoertzelLemma818CompositeCertificate.ttFiber32Key)
+          totalDecidableEq
+          (chainFiberRootClosureStep
+            (ttFiber32FrontierWord ++
+              [GoertzelLemma818FrontierMode.TauOrient.tau])
+            GoertzelLemma818CompositeCertificate.ttFiber32Key))) ∧
+    ∃ proj :
+      ChainFiberPoint
+        (ttFiber32FrontierWord ++
+          [GoertzelLemma818FrontierMode.TauOrient.tau])
+        GoertzelLemma818CompositeCertificate.ttFiber32Key →
+        ChainFiberPoint ttFiber32FrontierWord
+          GoertzelLemma818CompositeCertificate.ttFiber32Key,
+      ∃ preimageRows :
+        List
+          (ChainFiberPoint
+            (ttFiber32FrontierWord ++
+              [GoertzelLemma818FrontierMode.TauOrient.tau])
+            GoertzelLemma818CompositeCertificate.ttFiber32Key),
+        ∃ rowOf :
+          ChainFiberPoint ttFiber32FrontierWord
+            GoertzelLemma818CompositeCertificate.ttFiber32Key →
+            Fin preimageRows.length,
+          ∀ point : ChainFiberPoint ttFiber32FrontierWord
+              GoertzelLemma818CompositeCertificate.ttFiber32Key,
+            proj (preimageRows.get (rowOf point)) = point := by
+  constructor
+  · simpa [ttFiber32FrontierWord,
+      GoertzelLemma818TripleTauLightComponentCertificate.tttFrontierWord,
+      GoertzelLemma818CompositeCertificate.ttFiber32Key,
+      GoertzelLemma818TripleTauLightComponentCertificate.tttFiber32Key] using
+      tttFiber32RootClosureParentRowsSymmetricRootedConnectedCertificate
+  · exact ttFiber32AppendProjectionFiniteSection
+
 def tttPartialTargetCertificateAudit : Bool :=
   tttMode09WitnessAudit
     && tttTargetProgressCountsAudit

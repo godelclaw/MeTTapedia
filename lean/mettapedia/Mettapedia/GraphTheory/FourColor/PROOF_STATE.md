@@ -484,6 +484,22 @@ SHA256
 `9074d18bc1b30585845ae4d7774c169903ad9724b037374a699dbec836e619d7`);
 the certificate theorem depends on `propext`, `Classical.choice`, and
 `Quot.sound`.
+The exact known `TT -> TTT` instance now has both emitted row-shaped halves in
+one local package:
+`ttFiber32AppendedParentRowsProjectionFiniteSection` combines the appended
+parent-row connectedness certificate with the earlier
+`ttFiber32AppendProjectionFiniteSection` projection rows.  This is the local
+combined parent-row/projection shape for `TT` fiber 32 appended by `T`; it is
+not the global quantified generated predicate.  Combined local row-surface
+evidence is
+`fourcolor-tt-fiber32-combined-parent-rows-projection-build-20260703.log`
+(1110 jobs, SHA256
+`533583471beb7370ab7616d30759ba326e1980aa620684f7175311666fcbac90`) and
+`fourcolor-tt-fiber32-combined-parent-rows-projection-axioms-20260703.log`
+(SHA256
+`ca7fd79ff0b51aeaf23e482dd55470c8a6ac6236d221db4a790c1a6e994e86ff`);
+the combined theorem depends on `propext`, `Classical.choice`, and
+`Quot.sound`.
 The table-level diagnostic
 `tttFiber32Rows_length_eq_two_mul_ttFiber32Rows_length` records that the known
 `TT` obstruction key is the same generated fixed input as `TTT` light-fiber
