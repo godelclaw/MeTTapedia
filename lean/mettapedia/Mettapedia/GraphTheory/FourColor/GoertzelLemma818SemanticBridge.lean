@@ -3771,9 +3771,19 @@ their combined next-layer ingress is
 Local singleton saturation is proved by
 `concreteChainFiberAppendLocalSingletonComponentOuterInputNextLayerClosed_ok`,
 and glued-boundary output ingress is refuted by
-`concreteChainFiberAppend_boundary_output_ingress_contradiction`. What remains
-is the list-level induction that integrates these no-ingress facts into the
-exact component equality below.
+`concreteChainFiberAppend_boundary_output_ingress_contradiction`.
+
+The remaining list-level pin is the order-preserving next-layer commutation
+needed by the closure induction: for every shifted seen list `seen` whose
+members lie in the singleton local component, the appended-chain
+`nextChainComponentLayer` from
+`concreteChainFiberAppendShiftComponent word seen` must be exactly
+`concreteChainFiberAppendShiftComponent word` applied to the singleton local
+`nextChainComponentLayer`.  The shifted-local candidate direction is
+`concreteChainFiberAppendLocalSingletonComponent_shift_nextLayer_contains`;
+the reverse direction must classify every appended-chain candidate sharing a
+shifted local endpoint as either a shifted local edge or a glued-boundary
+prefix output, then use the boundary-ingress contradiction above.
 -/
 def concreteChainFiberAppendRelativeSingletonShiftedComponentClosed : Prop :=
   ∀ (word : List GoertzelLemma818FrontierMode.TauOrient)
