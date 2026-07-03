@@ -390,6 +390,25 @@ dependency-audit evidence is
 `d7b3fd387d9e75d708bebd467e227370a4f12932922eed9128ff4a469eba0d53`);
 the table readiness audit depends on `propext`, and the ready-to-step and
 membership theorems depend on `propext`, `Classical.choice`, and `Quot.sound`.
+The semantic bridge now exposes the root-closure adapter needed by generated
+row packages:
+`chainFiberRootClosureStep_of_source_mem_chainSingleKempeStep` turns a real
+single Kempe step whose source is already in the bounded root closure into a
+`chainFiberRootClosureStep`, and
+`chainFiberRootClosureStep_or_self_of_source_mem_and_single_step_or_self`
+packages the same fact in the `ParentMapRow.stepOrSelf` shape.  This connects
+the row-table single-step layer to root-closure parent-row packaging; it still
+requires generated packages to prove the parent/source node is already in root
+closure and to supply the reverse direction when parent rows point toward the
+root.  Adapter build evidence is
+`fourcolor-root-closure-single-step-adapter-build-20260703.log` (1110 jobs,
+SHA256
+`b802f212e815760d81e350b4a93a77e3b2553f578ed0d7d8815c598406b6f0d4`), and
+dependency-audit evidence is
+`fourcolor-root-closure-single-step-adapter-axioms-20260703.log` (SHA256
+`d293a3cd4c4f893dc28f5cb3786305e5a68cd766d160e56ab8bb989aa19be1e2`);
+both adapter theorems depend on `propext`, `Classical.choice`, and
+`Quot.sound`.
 The table-level diagnostic
 `tttFiber32Rows_length_eq_two_mul_ttFiber32Rows_length` records that the known
 `TT` obstruction key is the same generated fixed input as `TTT` light-fiber

@@ -299,6 +299,50 @@ def chainFiberRootClosureStep
     (concreteChainFiber word key).length
     [chainFiberRootState word key]
 
+theorem chainFiberRootClosureStep_of_source_mem_chainSingleKempeStep
+    {word : List GoertzelLemma818FrontierMode.TauOrient}
+    {key : List GoertzelLemma814.LColor}
+    {source target : ChainFiberPoint word key}
+    (hsource :
+      source.1 ∈ GoertzelLemma814.closeChainFiber
+        (frontierWordToChainWord word)
+        (concreteChainFiber word key)
+        (concreteChainFiber word key).length
+        [chainFiberRootState word key])
+    (hstep :
+      GoertzelLemma814.chainSingleKempeStep (frontierWordToChainWord word)
+        source.1 target.1 = true) :
+    chainFiberRootClosureStep word key source target :=
+  GoertzelLemma814.closeChainFiber_mem_step_of_close_at_length_of_bounded_saturation
+    GoertzelLemma814.closeChainFiberBoundedSaturationClosed_ok
+    (frontierWordToChainWord word)
+    (concreteChainFiber word key)
+    [chainFiberRootState word key]
+    source.1 target.1
+    (by simp)
+    hsource target.2 hstep
+
+theorem chainFiberRootClosureStep_or_self_of_source_mem_and_single_step_or_self
+    {word : List GoertzelLemma818FrontierMode.TauOrient}
+    {key : List GoertzelLemma814.LColor}
+    {source target : ChainFiberPoint word key}
+    (hsource :
+      source.1 ∈ GoertzelLemma814.closeChainFiber
+        (frontierWordToChainWord word)
+        (concreteChainFiber word key)
+        (concreteChainFiber word key).length
+        [chainFiberRootState word key])
+    (hstepOrSelf :
+      target = source ∨
+        GoertzelLemma814.chainSingleKempeStep (frontierWordToChainWord word)
+          source.1 target.1 = true) :
+    target = source ∨ chainFiberRootClosureStep word key source target := by
+  rcases hstepOrSelf with hself | hstep
+  · exact Or.inl hself
+  · exact Or.inr
+      (chainFiberRootClosureStep_of_source_mem_chainSingleKempeStep
+        hsource hstep)
+
 structure ChainFiberFibrationCertificate
     (word : List GoertzelLemma818FrontierMode.TauOrient)
     (key : List GoertzelLemma814.LColor) : Type 1 where
