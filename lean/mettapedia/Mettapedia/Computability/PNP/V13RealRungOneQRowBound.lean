@@ -1155,6 +1155,23 @@ theorem v13RealLinearRowTracePrefixRows_card_le {m : Nat}
       rw [List.length_take]
       exact Nat.min_le_left n trace.length
 
+theorem v13RealLinearRowTracePrefixRows_take_eq {m : Nat}
+    (trace : V13RealLinearRowTrace m) {n k : Nat} (hk : k ≤ n) :
+    v13RealLinearRowTracePrefixRows (trace.take n) k =
+      v13RealLinearRowTracePrefixRows trace k := by
+  simp [v13RealLinearRowTracePrefixRows, List.take_take,
+    Nat.min_eq_left hk]
+
+theorem v13RealLinearRowTracePrefixRows_take_length_eq {m : Nat}
+    (trace : V13RealLinearRowTrace m) {n : Nat}
+    (hn : n ≤ trace.length) :
+    v13RealLinearRowTracePrefixRows (trace.take n) (trace.take n).length =
+      v13RealLinearRowTracePrefixRows trace n := by
+  have hlen : (trace.take n).length = n := by
+    rw [List.length_take, Nat.min_eq_left hn]
+  rw [hlen]
+  exact v13RealLinearRowTracePrefixRows_take_eq trace le_rfl
+
 theorem v13RealLinearSequentialRowTracePrefixRows_eq_prefixTranscriptRows
     {m q : Nat} (observer : V13RealLinearSequentialRowObserver m q)
     (publicInput : V13RealLinearPublic m) {n : Nat} (hn : n ≤ q) :
@@ -2801,6 +2818,63 @@ theorem v13RealLinearRowTraceCosetHit_newCapture_or_prefixRowsGenerateTarget
     exact
       v13RealLinearRowTraceNewCapture_of_fresh_cosetHit
         A i₀ trace h hhit hmem
+
+theorem v13RealLinearRowTraceNewCapture_exists_lt_of_prefixRowsGenerateTarget
+    {m : Nat} (A : V13F2LinearEquiv m) (i₀ : Fin m)
+    (trace : V13RealLinearRowTrace m) {t : Nat}
+    (ht : t ≤ trace.length)
+    (hgen :
+      V13RealLinearRowsGenerateTarget A
+        (v13RealLinearRowTracePrefixRows trace t) i₀) :
+    ∃ s : Fin t, V13RealLinearRowTraceNewCapture A i₀ trace s := by
+  classical
+  have hfinal :
+      V13RealLinearRowsGenerateTarget A
+        (v13RealLinearRowTracePrefixRows (trace.take t)
+          (trace.take t).length) i₀ := by
+    rw [v13RealLinearRowTracePrefixRows_take_length_eq trace ht]
+    exact hgen
+  rcases
+      v13RealLinearRowTraceNewCaptureCover A i₀ (trace.take t) hfinal with
+    ⟨s, hs⟩
+  have htakeLen : (trace.take t).length = t := by
+    rw [List.length_take, Nat.min_eq_left ht]
+  have hsLtT : (s : Nat) < t := by
+    simpa [htakeLen] using s.isLt
+  refine ⟨⟨s, hsLtT⟩, ?_⟩
+  have hsLe : (s : Nat) ≤ t := le_of_lt hsLtT
+  have hsSuccLe : (s : Nat) + 1 ≤ t := Nat.succ_le_of_lt hsLtT
+  constructor
+  · intro hprefix
+    exact hs.1
+      (by
+        simpa [v13RealLinearRowTracePrefixRows_take_eq trace hsLe]
+          using hprefix)
+  · have hsucc := hs.2
+    simpa [v13RealLinearRowTracePrefixRows_take_eq trace hsSuccLe]
+      using hsucc
+
+theorem v13RealLinearRowTraceCosetHit_newCapture_or_priorNewCapture
+    {m : Nat} (A : V13F2LinearEquiv m) (i₀ : Fin m)
+    (trace : V13RealLinearRowTrace m) {t : Nat}
+    (hcoset : V13RealLinearRowTraceCosetHit A i₀ trace t) :
+    V13RealLinearRowTraceNewCapture A i₀ trace t ∨
+      ∃ s : Fin t, V13RealLinearRowTraceNewCapture A i₀ trace s := by
+  rcases hcoset with ⟨h, hhit⟩
+  have hsplit :
+      V13RealLinearRowTraceNewCapture A i₀ trace t ∨
+        V13RealLinearRowsGenerateTarget A
+          (v13RealLinearRowTracePrefixRows trace t) i₀ := by
+    exact
+      v13RealLinearRowTraceCosetHit_newCapture_or_prefixRowsGenerateTarget
+        A i₀ trace ⟨h, hhit⟩
+  cases hsplit with
+  | inl hnew => exact Or.inl hnew
+  | inr hgen =>
+      exact
+        Or.inr
+          (v13RealLinearRowTraceNewCapture_exists_lt_of_prefixRowsGenerateTarget
+            A i₀ trace (Nat.le_of_lt h) hgen)
 
 theorem v13RealLinearRowTraceNewCapture_get_not_mem {m : Nat}
     (A : V13F2LinearEquiv m) (i₀ : Fin m)
