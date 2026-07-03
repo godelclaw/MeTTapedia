@@ -241,7 +241,7 @@ def currentPNPRoadmap : List PNPRoadmapEntry :=
       progressPercent := 84
       itvLowerPercent := 94
       itvUpperPercent := 100
-      obligation := "Record V13RealLinearNoTargetRowsRungOneConditionalCertificate: the adjusted no-target-row sampler has a theorem-packaged public surface, and if V13RealLinearNoTargetRowsSequentialDeferredDecisionCountingBound holds, then every sequential adaptive q-row observer on that sampler has success at most 1/2 + 4*(2^q - 1)/2^m. The remaining sampler-specific obligation is exactly that deferred-decision counting bound." },
+      obligation := "Record V13RealLinearNoTargetRowsRungOneConditionalCertificate: the adjusted no-target-row sampler has a theorem-packaged public surface, and if V13RealLinearNoTargetRowsSequentialDeferredDecisionCountingBound holds, then every sequential adaptive q-row observer on that sampler has success at most 1/2 + 4*(2^q - 1)/2^m. Zero-query and high-budget no-target counting are closed; the full sampler-specific obligation now reduces to the low-positive interval `0 < q` and `q < m`." },
     { stage := .v13ObserverLadder
       proofNodeKey := "pnp.v13.phase-e.observer-ladder-mark"
       status := .checked
@@ -556,7 +556,7 @@ theorem currentPNPRoadmap_records_v13_real_rung_one_no_target_rows_sequential_qr
        itvLowerPercent := 94
        itvUpperPercent := 100
        obligation :=
-        "Record V13RealLinearNoTargetRowsRungOneConditionalCertificate: the adjusted no-target-row sampler has a theorem-packaged public surface, and if V13RealLinearNoTargetRowsSequentialDeferredDecisionCountingBound holds, then every sequential adaptive q-row observer on that sampler has success at most 1/2 + 4*(2^q - 1)/2^m. The remaining sampler-specific obligation is exactly that deferred-decision counting bound." } :
+        "Record V13RealLinearNoTargetRowsRungOneConditionalCertificate: the adjusted no-target-row sampler has a theorem-packaged public surface, and if V13RealLinearNoTargetRowsSequentialDeferredDecisionCountingBound holds, then every sequential adaptive q-row observer on that sampler has success at most 1/2 + 4*(2^q - 1)/2^m. Zero-query and high-budget no-target counting are closed; the full sampler-specific obligation now reduces to the low-positive interval `0 < q` and `q < m`." } :
       PNPRoadmapEntry) ∈ currentPNPRoadmap := by
   simp [currentPNPRoadmap]
 

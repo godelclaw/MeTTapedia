@@ -7829,6 +7829,68 @@ def V13RealLinearAdaptiveDeferredDecisionCountingBound
       Fintype.card (V13RealLinearAdaptiveQRowWorld m Seed)
 
 theorem
+    v13RealLinearAdaptiveDeferredDecisionCountingBound_of_zero_budget
+    {m : Nat} {Seed : Type*} [Fintype Seed]
+    (E : V13RealLinearAdaptiveQRowExperiment m 0 Seed)
+    (i₀ : Fin m) :
+    V13RealLinearAdaptiveDeferredDecisionCountingBound E i₀ := by
+  unfold V13RealLinearAdaptiveDeferredDecisionCountingBound
+  rw [v13RealLinearAdaptiveQRowGenerated_card_eq_zero_of_zero_budget E i₀]
+  simp
+
+theorem
+    v13RealLinear_deferredDecisionWeight_ge_two_pow_of_pos_m_le_q
+    {m q : Nat} (hq : 0 < q) (hmq : m ≤ q) :
+    2 ^ m ≤ 4 * (2 ^ q - 1) := by
+  have hpowmq : 2 ^ m ≤ 2 ^ q :=
+    Nat.pow_le_pow_right (by norm_num : 0 < 2) hmq
+  have htwoq : 2 ≤ 2 ^ q := by
+    simpa using
+      (Nat.pow_le_pow_right (by norm_num : 1 ≤ 2)
+        (Nat.succ_le_of_lt hq) : 2 ^ 1 ≤ 2 ^ q)
+  have hweight : 2 ^ q ≤ 4 * (2 ^ q - 1) := by
+    omega
+  exact hpowmq.trans hweight
+
+theorem
+    v13RealLinearAdaptiveDeferredDecisionCountingBound_of_m_le_q
+    {m q : Nat} {Seed : Type*} [Fintype Seed]
+    (E : V13RealLinearAdaptiveQRowExperiment m q Seed)
+    (i₀ : Fin m) (hmq : m ≤ q) :
+    V13RealLinearAdaptiveDeferredDecisionCountingBound E i₀ := by
+  classical
+  by_cases hqzero : q = 0
+  · subst q
+    exact
+      v13RealLinearAdaptiveDeferredDecisionCountingBound_of_zero_budget
+        E i₀
+  · have hqpos : 0 < q := Nat.pos_of_ne_zero hqzero
+    unfold V13RealLinearAdaptiveDeferredDecisionCountingBound
+    let G := Fintype.card (V13RealLinearAdaptiveQRowGenerated E i₀)
+    let T := Fintype.card (V13RealLinearAdaptiveQRowWorld m Seed)
+    let W := 4 * (2 ^ q - 1)
+    have hGleT : G ≤ T := by
+      dsimp [G, T, V13RealLinearAdaptiveQRowGenerated]
+      change
+        Fintype.card
+            {omega : V13RealLinearAdaptiveQRowWorld m Seed //
+              E.generated i₀ omega} ≤
+          Fintype.card (V13RealLinearAdaptiveQRowWorld m Seed)
+      exact
+        Fintype.card_subtype_le
+          (fun omega : V13RealLinearAdaptiveQRowWorld m Seed =>
+            E.generated i₀ omega)
+    have hweight : 2 ^ m ≤ W := by
+      dsimp [W]
+      exact
+        v13RealLinear_deferredDecisionWeight_ge_two_pow_of_pos_m_le_q
+          hqpos hmq
+    have hmul : G * 2 ^ m ≤ T * W :=
+      Nat.mul_le_mul hGleT hweight
+    simpa [G, T, W, Nat.mul_comm, Nat.mul_left_comm, Nat.mul_assoc]
+      using hmul
+
+theorem
     v13RealLinearAdaptiveDeferredDecisionGeneratedMassBound_of_counting
     {m q : Nat} {Seed : Type*} [Fintype Seed]
     (E : V13RealLinearAdaptiveQRowExperiment m q Seed)
@@ -9105,6 +9167,54 @@ def V13RealLinearNoTargetRowsSequentialDeferredDecisionCountingBound : Prop := b
         (v13RealLinearNoTargetRowsSequentialQRowExperiment i₀ observer) i₀
 
 theorem
+    v13RealLinearNoTargetRowsSequentialDeferredDecisionCountingBound_of_zero_budget
+    {m : Nat} (i₀ : Fin m)
+    (observer : V13RealLinearSequentialRowObserver m 0) :
+    V13RealLinearAdaptiveDeferredDecisionCountingBound
+      (v13RealLinearNoTargetRowsSequentialQRowExperiment i₀ observer) i₀ := by
+  classical
+  exact
+    v13RealLinearAdaptiveDeferredDecisionCountingBound_of_zero_budget
+      (v13RealLinearNoTargetRowsSequentialQRowExperiment i₀ observer) i₀
+
+theorem
+    v13RealLinearNoTargetRowsSequentialDeferredDecisionCountingBound_of_m_le_q
+    {m q : Nat} (i₀ : Fin m)
+    (observer : V13RealLinearSequentialRowObserver m q)
+    (hmq : m ≤ q) :
+    V13RealLinearAdaptiveDeferredDecisionCountingBound
+      (v13RealLinearNoTargetRowsSequentialQRowExperiment i₀ observer) i₀ := by
+  classical
+  exact
+    v13RealLinearAdaptiveDeferredDecisionCountingBound_of_m_le_q
+      (v13RealLinearNoTargetRowsSequentialQRowExperiment i₀ observer)
+      i₀ hmq
+
+theorem
+    V13RealLinearNoTargetRowsSequentialDeferredDecisionCountingBound_of_lowPositive
+    (hlow :
+      ∀ {m q : Nat} (i₀ : Fin m)
+        (observer : V13RealLinearSequentialRowObserver m q),
+        0 < q → q < m →
+          V13RealLinearAdaptiveDeferredDecisionCountingBound
+            (v13RealLinearNoTargetRowsSequentialQRowExperiment i₀ observer)
+            i₀) :
+    V13RealLinearNoTargetRowsSequentialDeferredDecisionCountingBound := by
+  unfold V13RealLinearNoTargetRowsSequentialDeferredDecisionCountingBound
+  intro m q i₀ observer
+  by_cases hqzero : q = 0
+  · subst q
+    exact
+      v13RealLinearNoTargetRowsSequentialDeferredDecisionCountingBound_of_zero_budget
+        i₀ observer
+  · have hqpos : 0 < q := Nat.pos_of_ne_zero hqzero
+    by_cases hqm : q < m
+    · exact hlow i₀ observer hqpos hqm
+    · exact
+        v13RealLinearNoTargetRowsSequentialDeferredDecisionCountingBound_of_m_le_q
+          i₀ observer (Nat.le_of_not_gt hqm)
+
+theorem
     v13RealLinear_noTargetRows_sequential_qrow_success_bound_of_deferredDecisionCounting
     (hcount :
       V13RealLinearNoTargetRowsSequentialDeferredDecisionCountingBound)
@@ -9132,6 +9242,26 @@ theorem
   exact
     v13RealLinear_noTargetRows_sequential_qrow_success_bound_of_deferredDecisionCounting
       hcount i₀ observer
+
+theorem
+    v13RealLinear_noTargetRows_sequential_qrow_success_bound_of_lowPositive
+    (hlow :
+      ∀ {m q : Nat} (i₀ : Fin m)
+        (observer : V13RealLinearSequentialRowObserver m q),
+        0 < q → q < m →
+          V13RealLinearAdaptiveDeferredDecisionCountingBound
+            (v13RealLinearNoTargetRowsSequentialQRowExperiment i₀ observer)
+            i₀)
+    {m q : Nat} (i₀ : Fin m)
+    (observer : V13RealLinearSequentialRowObserver m q) :
+    v13RealLinearNoTargetRowsSequentialQRowSuccess i₀ observer ≤
+      (1 / 2 : Rat) +
+        (4 * ((2 : Rat) ^ q - 1)) / ((2 : Rat) ^ m) := by
+  exact
+    v13RealLinear_noTargetRows_sequential_qrow_success_bound_of_deferredDecisionCounting_explicit
+      (V13RealLinearNoTargetRowsSequentialDeferredDecisionCountingBound_of_lowPositive
+        hlow)
+      i₀ observer
 
 /-- Conditional real-rung-one package for the adjusted no-target-row sampler:
 the public surface is admissible, and the sequential q-row success bound follows
