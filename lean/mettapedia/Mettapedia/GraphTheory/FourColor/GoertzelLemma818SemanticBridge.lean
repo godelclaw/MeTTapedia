@@ -2210,6 +2210,190 @@ theorem concreteChainFiberAppend_chainEdgesShareEndpoint_shift_occ_zero
               GoertzelLemma814.isInternalEndpoint,
               Bool.beq_eq_decide_eq] at hedgeNotInput hotherNotInput ⊢
 
+def chainEndpointOcc : GoertzelLemma814.ChainEndpoint → Nat
+  | GoertzelLemma814.ChainEndpoint.internal occ _ => occ
+  | GoertzelLemma814.ChainEndpoint.boundary occ _ => occ
+
+theorem chainEndpointOcc_tauEndpointToChainEndpoint
+    (i : Nat) (v : GoertzelLemma814.TauEndpoint) :
+    chainEndpointOcc (GoertzelLemma814.tauEndpointToChainEndpoint i v) =
+      i := by
+  unfold GoertzelLemma814.tauEndpointToChainEndpoint
+  by_cases h : GoertzelLemma814.isInternalEndpoint v = true <;>
+    simp [h, chainEndpointOcc]
+
+theorem chainEdgeEndpoints_fst_occ
+    (orients : List GoertzelLemma814.TauOrient)
+    (ge : GoertzelLemma814.ChainEdge) :
+    chainEndpointOcc
+        (GoertzelLemma814.chainEdgeEndpoints orients ge).1 =
+      ge.occ := by
+  unfold GoertzelLemma814.chainEdgeEndpoints
+  split
+  · split
+    · simp [chainEndpointOcc]
+    · exact chainEndpointOcc_tauEndpointToChainEndpoint ge.occ
+        (GoertzelLemma814.edgeEndpoints ge.edge).1
+  · exact chainEndpointOcc_tauEndpointToChainEndpoint ge.occ
+      (GoertzelLemma814.edgeEndpoints ge.edge).1
+
+theorem chainEdgeEndpoints_snd_occ_eq_or_succ
+    (orients : List GoertzelLemma814.TauOrient)
+    (ge : GoertzelLemma814.ChainEdge) :
+    chainEndpointOcc
+          (GoertzelLemma814.chainEdgeEndpoints orients ge).2 =
+        ge.occ ∨
+      chainEndpointOcc
+          (GoertzelLemma814.chainEdgeEndpoints orients ge).2 =
+        ge.occ + 1 := by
+  unfold GoertzelLemma814.chainEdgeEndpoints
+  split
+  · split
+    · exact Or.inr (by simp [chainEndpointOcc])
+    · exact Or.inl (chainEndpointOcc_tauEndpointToChainEndpoint ge.occ
+        (GoertzelLemma814.edgeEndpoints ge.edge).2)
+  · exact Or.inl (chainEndpointOcc_tauEndpointToChainEndpoint ge.occ
+      (GoertzelLemma814.edgeEndpoints ge.edge).2)
+
+theorem concreteChainFiberAppend_shift_endpoint_occs
+    (word : List GoertzelLemma818FrontierMode.TauOrient)
+    (orient : GoertzelLemma818FrontierMode.TauOrient)
+    (localEdge : GoertzelLemma814.ChainEdge)
+    (hlocalOcc : localEdge.occ = 0) :
+    let shifted := concreteChainFiberAppendShiftEdge word localEdge
+    chainEndpointOcc
+        (GoertzelLemma814.chainEdgeEndpoints
+          (frontierWordToChainWord (word ++ [orient])) shifted).1 =
+        word.length ∧
+      chainEndpointOcc
+        (GoertzelLemma814.chainEdgeEndpoints
+          (frontierWordToChainWord (word ++ [orient])) shifted).2 =
+        word.length := by
+  cases localEdge with
+  | mk occ edge =>
+      simp at hlocalOcc
+      subst occ
+      simp [concreteChainFiberAppendShiftEdge,
+        GoertzelLemma814.chainEdgeEndpoints,
+        GoertzelLemma814.chainIsGluedOutput, frontierWordToChainWord,
+        chainEndpointOcc_tauEndpointToChainEndpoint]
+
+theorem concreteChainFiberAppend_prefix_share_shift_occ_succ
+    (word : List GoertzelLemma818FrontierMode.TauOrient)
+    (orient : GoertzelLemma818FrontierMode.TauOrient)
+    (ge localEdge : GoertzelLemma814.ChainEdge)
+    (hprefix : ge.occ < word.length)
+    (hlocalOcc : localEdge.occ = 0)
+    (hshare :
+      GoertzelLemma814.chainEdgesShareEndpoint
+        (frontierWordToChainWord (word ++ [orient])) ge
+        (concreteChainFiberAppendShiftEdge word localEdge) = true) :
+    ge.occ + 1 = word.length := by
+  let globalOrients := frontierWordToChainWord (word ++ [orient])
+  let shifted := concreteChainFiberAppendShiftEdge word localEdge
+  have hshiftOccs :=
+    concreteChainFiberAppend_shift_endpoint_occs word orient localEdge
+      hlocalOcc
+  have hshiftFst :
+      chainEndpointOcc
+          (GoertzelLemma814.chainEdgeEndpoints globalOrients shifted).1 =
+        word.length := by
+    simpa [globalOrients, shifted] using hshiftOccs.1
+  have hshiftSnd :
+      chainEndpointOcc
+          (GoertzelLemma814.chainEdgeEndpoints globalOrients shifted).2 =
+        word.length := by
+    simpa [globalOrients, shifted] using hshiftOccs.2
+  by_cases hsame : (ge == shifted) = true
+  · have hfalse : False := by
+      unfold GoertzelLemma814.chainEdgesShareEndpoint at hshare
+      rw [hsame] at hshare
+      cases hshare
+    exact False.elim hfalse
+  · have hsameFalse := GoertzelLemma814.bool_false_of_not_true hsame
+    have hshare' := hshare
+    unfold GoertzelLemma814.chainEdgesShareEndpoint at hshare'
+    simp [shifted, hsameFalse, Bool.beq_eq_decide_eq] at hshare'
+    rcases hshare' with ((h | h) | h) | h
+    · have hocc : ge.occ = word.length := by
+        calc
+          ge.occ =
+              chainEndpointOcc
+                (GoertzelLemma814.chainEdgeEndpoints globalOrients ge).1 := by
+            exact (chainEdgeEndpoints_fst_occ globalOrients ge).symm
+          _ =
+              chainEndpointOcc
+                (GoertzelLemma814.chainEdgeEndpoints globalOrients
+                  shifted).1 := by
+            rw [h]
+          _ = word.length := hshiftFst
+      omega
+    · have hocc : ge.occ = word.length := by
+        calc
+          ge.occ =
+              chainEndpointOcc
+                (GoertzelLemma814.chainEdgeEndpoints globalOrients ge).1 := by
+            exact (chainEdgeEndpoints_fst_occ globalOrients ge).symm
+          _ =
+              chainEndpointOcc
+                (GoertzelLemma814.chainEdgeEndpoints globalOrients
+                  shifted).2 := by
+            rw [h]
+          _ = word.length := hshiftSnd
+      omega
+    · rcases chainEdgeEndpoints_snd_occ_eq_or_succ globalOrients ge with
+        hsnd | hsnd
+      · have hocc : ge.occ = word.length := by
+          calc
+            ge.occ =
+                chainEndpointOcc
+                  (GoertzelLemma814.chainEdgeEndpoints globalOrients ge).2 := by
+              exact hsnd.symm
+            _ =
+                chainEndpointOcc
+                  (GoertzelLemma814.chainEdgeEndpoints globalOrients
+                    shifted).1 := by
+              rw [h]
+            _ = word.length := hshiftFst
+        omega
+      · calc
+          ge.occ + 1 =
+              chainEndpointOcc
+                (GoertzelLemma814.chainEdgeEndpoints globalOrients ge).2 := by
+            exact hsnd.symm
+          _ =
+              chainEndpointOcc
+                (GoertzelLemma814.chainEdgeEndpoints globalOrients
+                  shifted).1 := by
+            rw [h]
+          _ = word.length := hshiftFst
+    · rcases chainEdgeEndpoints_snd_occ_eq_or_succ globalOrients ge with
+        hsnd | hsnd
+      · have hocc : ge.occ = word.length := by
+          calc
+            ge.occ =
+                chainEndpointOcc
+                  (GoertzelLemma814.chainEdgeEndpoints globalOrients ge).2 := by
+              exact hsnd.symm
+            _ =
+                chainEndpointOcc
+                  (GoertzelLemma814.chainEdgeEndpoints globalOrients
+                    shifted).2 := by
+              rw [h]
+            _ = word.length := hshiftSnd
+        omega
+      · calc
+          ge.occ + 1 =
+              chainEndpointOcc
+                (GoertzelLemma814.chainEdgeEndpoints globalOrients ge).2 := by
+            exact hsnd.symm
+          _ =
+              chainEndpointOcc
+                (GoertzelLemma814.chainEdgeEndpoints globalOrients
+                  shifted).2 := by
+            rw [h]
+          _ = word.length := hshiftSnd
+
 theorem concreteChainFiberAppend_chainEdgeInPair_shift_occ_zero
     (word : List GoertzelLemma818FrontierMode.TauOrient)
     (pref : List GoertzelLemma814.TauState)
