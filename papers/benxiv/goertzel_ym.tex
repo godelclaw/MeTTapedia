@@ -481,22 +481,112 @@ the constructive-QFT prerequisites are all marked unrepresented. The
 formalization makes no claim, in either direction, about the existence of a
 continuum Yang--Mills mass gap.
 
-\section{What remains}
+\section{What remains, exactly}\label{sec:remains}
 
-To turn this lane into evidence about the route's central claim rather than its
-bookkeeping, the decisive next step is to formalize, or independently bound, the
-extraction-projection operator norm $\|\Pleq\|_{\mathrm{op}}$ as a function of
-$\dmax$, and thereby determine whether the recombination constant $C_1$ is
-genuinely $O(1)\cdot b^4$ or grows with the extraction depth. Until that input is
-established, the checked contraction arithmetic --- correct as it is --- rests on
-an assumed value. Beyond it lie the genuinely infinite-dimensional layers the
-route requires and the present ledger leaves unrepresented: the KP polymer
-expansion and tree-decay clustering at the stopping scale, the glue /
-back-propagation transfer of clustering from the coarse to the fine scale, the
-thermodynamic and continuum OS limits, rotation restoration, the
-transfer-matrix spectral gap, and the nontriviality witness. Each is an
-analytic theorem, not an arithmetic comparison, and none is currently
-machine-checked. The Yang--Mills mass gap remains open.
+\subsection*{Machine-checked since the first version of this report}
+
+A second formalization round closed several items that the first version listed
+as open, and sharpened others into theorems:
+
+\begin{itemize}
+  \item \textbf{The two-source bootstrap threshold.} Linear contraction
+    ($\Lambda<1$) is \emph{not} sufficient for the manuscript's bootstrap; the
+    scalar induction closes iff $a = C\,b^{\,3-\dmax} \leq 1/3$
+    (\texttt{scalar\_bootstrap\_two\_sources}). At $C=2224$, $b=2$: depth $14$
+    fails even linear contraction, depth $15$ contracts linearly but the
+    bootstrap \emph{fails}
+    (\texttt{not\_twoSourceBootstrapSlack\_2224\_two\_fifteen}), depth $16$
+    closes. The true reason for $\dmax=16$ is the $1/3$ threshold, not parity of
+    the depth --- and the threshold is \emph{dynamical}: an explicit nonlinear
+    toy orbit realizes the recursion with equality and exits the
+    $\varepsilon^{*}$-ball in one step at depth 15
+    (\texttt{toyRG\_ball\_escape\_two\_fifteen},
+    \texttt{benToyRGBootstrapRealization}).
+  \item \textbf{The extraction norm, settled at the level of the written
+    expressions.} The manuscript's literal displayed sum is $\geq 3$ for every
+    $n\geq 1$ and never $\leq 2$
+    (\texttt{three\_le\_literalExtractionOperatorSum},
+    \texttt{not\_literalExtractionOperatorSum\_le\_two}); a
+    coefficient-majorant (weighted $\ell^{1}$) norm repairs the argument
+    cleanly, with monomial truncation contractive ($C_{\mathrm{extract}}\leq 1$)
+    and tail gain $(r_1/r_0)^{\dmax+1}$ (module \texttt{ExtractionMajorant}).
+  \item \textbf{The support-growth dichotomy.} The two collar-growth statements
+    the manuscript makes are inequivalent, and both branches are now tight
+    theorems: a coarsen-then-thicken recurrence $r_{j+1}\leq r_j/b + A$ yields
+    the uniform bound $r_0/b^{J} + Ab/(b-1)$, while a thicken-only recurrence
+    $r_{j+1}\leq r_j + A$ yields exactly $r_0 + AJ$
+    (\texttt{support\_growth\_dichotomy}).
+  \item \textbf{Gap $\Leftrightarrow$ clustering, finite class.} Reflection
+    positivity, self-adjointness, and a $q$-contraction on the vacuum
+    complement give exponential decay of truncated two-point functions at rate
+    $-\log q$ (\texttt{abs\_truncatedTwoPoint\_le\_exp}); conversely, RP plus
+    per-vector moment decay $\langle v, T^{n}v\rangle \leq C_v q^{n}$ on a
+    dense subset gives the gap
+    (\texttt{eigenvalue\_abs\_le\_of\_moment\_decay}) --- note the
+    \emph{per-vector} constants: only the rate must be uniform, which weakens
+    what the manuscript's Assumptions K.7/M.5 need to supply. A regression
+    records that an additive $t$-independent tail defeats the conclusion
+    (\texttt{moment\_decay\_additive\_defeat}), so large-field remainders must
+    decay, not merely be small.
+  \item \textbf{A non-abelian instance.} The quaternion group
+    $Q_8\subset SU(2)$ single-link model: machine-checked non-commutativity
+    ($ij=k\neq -k=ji$), reflection positivity, spectral gap carried by the
+    four-dimensional spin isotypic component, and clustering; together with the
+    $\mathbb{Z}_2$ instance this discharges the lattice-side inputs
+    (\texttt{massGap}, \texttt{reflectionPositive}, \texttt{clustering}) of the
+    finite continuum-gate conditional
+    (\texttt{z2\_continuumMassGap\_of\_reconstructionMachine}).
+\end{itemize}
+
+\subsection*{The remaining inputs}
+
+With the arithmetic and structural skeleton closed, the route now rests on the
+following inputs --- listed with their exact status in v14, since these are
+three different situations.
+
+\begin{enumerate}
+  \item \textbf{One derivation of the recombination constant.}
+    \emph{Status: derived in v14, with an internal inconsistency.} The
+    manuscript carries two factorizations of $C_1$ (the main text's and
+    Computation~O.7's $1.65\times 3b^{4}\times 14\times 2\approx 139\,b^{4}$);
+    they do not agree. \emph{What settles it:} fix one derivation. Any supplied
+    $C$ is then machine-checkable instantly against the feasibility condition
+    $C\,b^{\,3-\dmax}\leq 1/3$; e.g.\ $C\approx 3.3\times 10^{4}$ would simply
+    move the required depth to $\dmax=20$. If extraction uses a non-orthogonal
+    gauge-invariant operator basis, the honest constant includes a finite
+    matrix-conditioning factor $M_A(r,\dmax)$ that must be computed and fed
+    back into the depth selection.
+  \item \textbf{Which support recurrence the glue satisfies.}
+    \emph{Status: v14 asserts both branches of a now-proven dichotomy in
+    different places.} \emph{What settles it:} one paragraph identifying the
+    recurrence. If coarsen-then-thicken, the uniform bound is already a
+    theorem; if thicken-only, the $O(J)$ growth breaks uniform tree decay and
+    the step needs a new argument.
+  \item \textbf{The two-marked correlation identity.}
+    \emph{Status: missing.} The glue / back-propagation step requires a
+    \emph{two}-marked transport identity of the shape
+    $\langle A;\tau B\rangle_{\mu_0} = \langle QA;\tau' QB\rangle_{\mu_J}$;
+    v14 states the one-marked pushforward duality, and the two-marked version
+    does not follow from it (conditional expectations do not factor).
+    \emph{What settles it:} state it precisely and prove it, or carry it as an
+    explicit named assumption; once stated, its formalization is immediate.
+  \item \textbf{KP convergence at the stopping scale and Wilson-measure
+    reflection positivity.} \emph{Status: invoked in v14 via the classical
+    literature (Koteck\'y--Preiss; Osterwalder--Seiler), correctly.} These are
+    established mathematics; machine-checking them is mechanical work with no
+    research risk, and does not require anything further from the manuscript.
+  \item \textbf{The real RG map satisfies the recursion.}
+    \emph{Status: the central claimed content of v14's RG analysis; not
+    independently verified here.} Everything above shows the surrounding
+    machine is consistent and sharp; whether the actual Yang--Mills RG map, with
+    its actual constants, satisfies the two-source recursion inside the
+    $1/3$-threshold is the mathematical core of the route --- the one input
+    that is neither bookkeeping, nor a clarification, nor classical.
+\end{enumerate}
+
+Items (1)--(3) are short clarifications at the manuscript level; item (4) is
+mechanical formalization; item (5) is where the proof lives. The Yang--Mills
+mass gap remains open.
 
 \paragraph{Lean modules.}
 The results reported here are in
@@ -509,7 +599,17 @@ route obstruction),
 \texttt{Mettapedia.QuantumTheory.YangMills.Z3StrongCouplingGap} (the finite OS
 reconstruction and strong-coupling gaps), and
 \texttt{Mettapedia.QuantumTheory.YangMills.ProofState} (the continuum-open
-gating). The primary mathematical source is Ben Goertzel's manuscript
+gating); and, from the second round,
+\texttt{RGBootstrapSlack} (two-source bootstrap and depth trichotomy),
+\texttt{ExtractionMajorant} (displayed-sum audit and majorant repair),
+\texttt{SupportGrowth} (the recurrence dichotomy),
+\texttt{TransferGapClustering} and \texttt{Z2TransferClustering}
+(gap $\Leftrightarrow$ clustering and the discharged finite continuum gate),
+\texttt{ToyRGMap} (the dynamical realization and depth-15 escape), and
+\texttt{Q8StrongCouplingGap} / \texttt{Q8TransferClustering} (the non-abelian
+instance) --- all in the same namespace, all axiom-guarded to
+$\{\texttt{propext}, \texttt{Classical.choice}, \texttt{Quot.sound}\}$ with no
+\texttt{sorry}. The primary mathematical source is Ben Goertzel's manuscript
 \emph{Yang--Mills Mass Gap in 4D: RG Bootstrap, Polymer Expansion, OS
 Reconstruction} (v14).
 
