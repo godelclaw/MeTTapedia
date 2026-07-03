@@ -2678,6 +2678,122 @@ theorem concreteChainFiberAppend_boundary_output_share_shift_forces_input_share
                 frontierWordToChainWord, frontierOrientToChain,
                 hleftAt, hnextAt] at hlocalNotInput hshare ⊢
 
+theorem concreteChainFiberAppend_boundary_output_ingress_local_input_nextLayer
+    (word : List GoertzelLemma818FrontierMode.TauOrient)
+    (orient : GoertzelLemma818FrontierMode.TauOrient)
+    (leftOrient : GoertzelLemma814.TauOrient)
+    (pref : List GoertzelLemma814.TauState)
+    (lastX currentLast : GoertzelLemma814.TauState)
+    (move : GoertzelLemma814.ChainMove)
+    (localComponent : List GoertzelLemma814.ChainEdge)
+    (localEdge : GoertzelLemma814.ChainEdge)
+    (outputEdge inputEdge : GoertzelLemma814.TauEdge)
+    (hne : word ≠ [])
+    (hprefLen : pref.length = word.length)
+    (hleft :
+      GoertzelLemma814.tauOrientAt
+        (frontierWordToChainWord (word ++ [orient])) (word.length - 1) =
+        leftOrient)
+    (hcompatibleX : GoertzelLemma814.compatibleAdjacent
+      leftOrient (frontierOrientToChain orient)
+      (GoertzelLemma814.chainStateAt pref (word.length - 1))
+      lastX = true)
+    (htrace :
+      concreteChainFiberAppendLastInputTrace orient currentLast =
+        concreteChainFiberAppendLastInputTrace orient lastX)
+    (hzip :
+      (outputEdge, inputEdge) ∈
+        (GoertzelLemma814.tauOrientOutputOrder leftOrient).zip
+          (GoertzelLemma814.tauOrientInputOrder
+            (frontierOrientToChain orient)))
+    (hlocalMem : localEdge ∈ localComponent)
+    (hlocalAvoid :
+      GoertzelLemma814.chainComponentAvoidsInputs
+        (frontierWordToChainWord [orient]) localComponent = true)
+    (hlocalOcc : localEdge.occ = 0)
+    (hlocalNotInput :
+      (GoertzelLemma814.tauOrientInputOrder
+        (frontierOrientToChain orient)).contains localEdge.edge = false)
+    (houtputPair :
+      GoertzelLemma814.chainEdgeInPair (pref ++ [currentLast])
+        move.a move.c
+        ({ occ := word.length - 1, edge := outputEdge } :
+          GoertzelLemma814.ChainEdge) = true)
+    (hshare :
+      GoertzelLemma814.chainEdgesShareEndpoint
+        (frontierWordToChainWord (word ++ [orient]))
+        ({ occ := word.length - 1, edge := outputEdge } :
+          GoertzelLemma814.ChainEdge)
+        (concreteChainFiberAppendShiftEdge word localEdge) = true) :
+    ({ occ := 0, edge := inputEdge } : GoertzelLemma814.ChainEdge) ∈
+      GoertzelLemma814.nextChainComponentLayer
+        (frontierWordToChainWord [orient]) [currentLast]
+        move.a move.c localComponent := by
+  let inputLocal : GoertzelLemma814.ChainEdge :=
+    { occ := 0, edge := inputEdge }
+  have hinputPair :
+      GoertzelLemma814.chainEdgeInPair [currentLast] move.a move.c
+        inputLocal = true := by
+    simpa [inputLocal] using
+      concreteChainFiberAppend_boundary_output_pair_forces_input_pair
+        word orient leftOrient pref lastX currentLast move.a move.c
+        outputEdge inputEdge hne hprefLen hcompatibleX htrace hzip
+        houtputPair
+  have hinputShare :
+      GoertzelLemma814.chainEdgesShareEndpoint
+        (frontierWordToChainWord [orient]) inputLocal localEdge = true := by
+    simpa [inputLocal] using
+      concreteChainFiberAppend_boundary_output_share_shift_forces_input_share
+        word orient leftOrient outputEdge inputEdge localEdge hne hleft
+        hlocalOcc hlocalNotInput hzip hshare
+  have hinputChain :
+      inputLocal ∈ GoertzelLemma814.chainEdges
+        (frontierWordToChainWord [orient]) := by
+    cases leftOrient <;> cases orient <;>
+      simp [GoertzelLemma814.tauOrientOutputOrder,
+        GoertzelLemma814.tauOrientInputOrder, frontierOrientToChain] at hzip
+    all_goals
+      rcases hzip with ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ <;>
+        simp [inputLocal, frontierWordToChainWord, frontierOrientToChain,
+          GoertzelLemma814.chainEdges, GoertzelLemma814.chainLocalEdges,
+          GoertzelLemma814.bindList, GoertzelLemma814.chainIsRepresentativeEdge,
+          GoertzelLemma814.chainIsGluedInput, GoertzelLemma814.tauOrientAt,
+          GoertzelLemma814.listGetD, GoertzelLemma814.tauOrientInputOrder,
+          GoertzelLemma814.tauEdges]
+  have hinputOuter :
+      (GoertzelLemma814.chainOuterInputEdges
+        (frontierWordToChainWord [orient])).contains inputLocal = true := by
+    cases leftOrient <;> cases orient <;>
+      simp [GoertzelLemma814.tauOrientOutputOrder,
+        GoertzelLemma814.tauOrientInputOrder, frontierOrientToChain] at hzip
+    all_goals
+      rcases hzip with ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ <;>
+        simp [inputLocal, frontierWordToChainWord, frontierOrientToChain,
+          GoertzelLemma814.chainOuterInputEdges, GoertzelLemma814.chainInputOrder,
+          GoertzelLemma814.tauOrientAt, GoertzelLemma814.listGetD,
+          GoertzelLemma814.tauOrientInputOrder]
+  have hinputNotMem : inputLocal ∉ localComponent := by
+    intro hmem
+    have houterFalse :
+        (GoertzelLemma814.chainOuterInputEdges
+          (frontierWordToChainWord [orient])).contains inputLocal = false :=
+      GoertzelLemma814.chainComponentAvoidsInputs_contains_false
+        (frontierWordToChainWord [orient]) localComponent hlocalAvoid hmem
+    rw [hinputOuter] at houterFalse
+    cases houterFalse
+  have hinputFresh : (!localComponent.contains inputLocal) = true := by
+    simpa using hinputNotMem
+  have hinputAny :
+      localComponent.any
+        (GoertzelLemma814.chainEdgesShareEndpoint
+          (frontierWordToChainWord [orient]) inputLocal) = true :=
+    GoertzelLemma814.list_any_true_of_mem hlocalMem hinputShare
+  unfold GoertzelLemma814.nextChainComponentLayer
+  rw [List.mem_filter]
+  exact ⟨hinputChain, by
+    rw [hinputPair, hinputFresh, hinputAny]
+    rfl⟩
+
 theorem concreteChainFiberAppend_chainCanonicalEdge_last_non_glued
     (word : List GoertzelLemma818FrontierMode.TauOrient)
     (orient : GoertzelLemma818FrontierMode.TauOrient)
