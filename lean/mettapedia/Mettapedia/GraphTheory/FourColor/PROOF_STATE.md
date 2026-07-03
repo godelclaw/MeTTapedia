@@ -171,6 +171,12 @@ and
 `chainAuditForFrontierWord_ok_of_targets_and_append_quotient_parent_rows_surjective_projection`
 carry the same target directly to semantic sufficiency and the target-gated
 all-word audit.
+The table-level diagnostic
+`tttFiber32Rows_length_eq_two_mul_ttFiber32Rows_length` records that the known
+`TT` obstruction key is the same generated fixed input as `TTT` light-fiber
+index 32, with generated row tables growing from 8 to 16 rows.  This is only
+generated-table cardinality evidence; it does not construct the required
+surjective projection.
 The standalone base-data half is now closed by
 `concreteChainFiberAppendQuotientFibrationParentRowsNonSingletonPrefixBaseDataClosed_of_prefix_root_star`:
 nonempty prefix fibers use the prefix fiber itself as the quotient base with a
