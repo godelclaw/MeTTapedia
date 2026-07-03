@@ -373,6 +373,23 @@ the generic certified-step extractor depends on `propext` and `Quot.sound`,
 while the single-step extractor, source-or-step disjunction, and concrete
 fiber-32 row theorem depend on `propext`, `Classical.choice`, and
 `Quot.sound`.
+The same local row table now has a list-level extraction theorem:
+`tttFiber32RowsSingleStepReadyCheck_ok` checks that every row in
+`tttFiber32Rows` is valid and either stationary or carries the side conditions
+needed for real-step extraction, while
+`tttFiber32Rows_mem_source_eq_or_chainSingleKempeStep` proves that every row
+member is stationary or yields a real `chainSingleKempeStep`.  This lifts the
+single-row bridge over the full known `TTT` fiber-32 emitted table; it is still
+local row-table evidence, not appended root-closure connectedness.  Row-table
+build evidence is
+`fourcolor-ttt-fiber32-row-table-single-step-build-20260703.log` (1110 jobs,
+SHA256
+`7e248b4bb24f135331b9b3c734f1f3568151a412e17e5217fbc753dbceaaa2fc`), and
+dependency-audit evidence is
+`fourcolor-ttt-fiber32-row-table-single-step-axioms-20260703.log` (SHA256
+`d7b3fd387d9e75d708bebd467e227370a4f12932922eed9128ff4a469eba0d53`);
+the table readiness audit depends on `propext`, and the ready-to-step and
+membership theorems depend on `propext`, `Classical.choice`, and `Quot.sound`.
 The table-level diagnostic
 `tttFiber32Rows_length_eq_two_mul_ttFiber32Rows_length` records that the known
 `TT` obstruction key is the same generated fixed input as `TTT` light-fiber

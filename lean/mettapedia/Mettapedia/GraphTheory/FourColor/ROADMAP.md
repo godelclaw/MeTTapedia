@@ -320,10 +320,13 @@ generic extraction lemmas
 `tripleComponentRowValid_chainSingleKempeStep_of_source_beq_false`, and
 `tripleComponentRowValid_source_eq_or_chainSingleKempeStep`; the concrete
 theorem `tttFiber32Row1_chainSingleKempeStep` applies them to the first
-non-root generated row in the known `TTT` fiber-32 table.  The next
-connectedness pass should lift this from individual generated rows to full
-parent-row audit packages and feed the resulting real single steps into
-root-closure membership.
+non-root generated row in the known `TTT` fiber-32 table.  The same local table
+now has `tttFiber32RowsSingleStepReadyCheck_ok` and
+`tttFiber32Rows_mem_source_eq_or_chainSingleKempeStep`, which lift the bridge
+from one row to every member of `tttFiber32Rows` through a `List.all` readiness
+check.  The next connectedness pass should lift this pattern from the local
+fiber-32 table to the full generated parent-row audit packages and feed the
+resulting real single steps into root-closure membership.
 The theorem
 `tttFiber32Rows_length_eq_two_mul_ttFiber32Rows_length` records the table-level
 alignment for the known `TT` obstruction key: the same generated key appears in
