@@ -170,6 +170,18 @@ compatible next tau state in each same-orientation direction, while the mixed
 orientation directions have no such dead state.  Thus a final structural proof
 may need the generated or realized-prefix quotient base rather than a proof
 that every prefix point is liftable through the full-prefix projection.
+The prefix-edge switched-color side of the relative singleton lift is now
+closed.  `chainEdgeColor_chainCanonicalEdge_of_compatible` proves that a
+canonicalized glued edge has the same color along any compatible chain, and
+`concreteChainFiberAppendRelativeSingletonShiftedSwitchPrefixPointClosed_of_compatible_prefix`
+uses it to discharge the prefix-edge case for shifted local switches.  The
+wrappers
+`concreteChainFiberAppendRelativeSingletonShiftedSwitchPointClosed_of_compatible_prefix_and_glued`,
+`concreteChainFiberAppendRelativeSingletonShiftedSpecifiedStepClosed_of_component_and_glued`,
+and
+`concreteChainFiberAppendRelativeSingletonGlobalKempeStepLiftClosed_of_component_and_glued`
+make the prefix case automatic for the remaining component and glued-edge
+obligations.
 
 `GoertzelLemma818SemanticProgress.lean` now records the checked semantic
 frontier after the completed `TTT` target.  It proves
