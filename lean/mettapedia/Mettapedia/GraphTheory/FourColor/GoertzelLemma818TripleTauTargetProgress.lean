@@ -2370,6 +2370,851 @@ theorem ttFiber3AppendProjectionInjectivePreimage :
     GoertzelLemma818TripleTauLightComponentCertificate.tttFiber3Key] using
     ttFiber3ProjectionInjectivePreimage
 
+def tttFiber3SourceStates
+    (row : TripleComponentParentRow) : List TauState :=
+  tripleStates row.sourceLeft row.sourceMiddle row.sourceRight
+
+def tttFiber3ParentStates
+    (row : TripleComponentParentRow) : List TauState :=
+  tripleStates row.parentLeft row.parentMiddle row.parentRight
+
+def tttFiber3SourceStatesList : List (List TauState) :=
+  tttFiber3Rows.map tttFiber3SourceStates
+
+theorem tttFiber3SourceStatesList_nodup :
+    tttFiber3SourceStatesList.Nodup := by
+  decide
+
+private theorem tttFiber3TripleStates_mem_concreteChainFiber
+    {left middle right : Nat}
+    (hall : tripleStates left middle right ∈ allChainStates tttWord)
+    (hkey :
+      (chainInputKey tttWord (tripleStates left middle right) ==
+        tttFiber3Key) = true) :
+    tripleStates left middle right ∈
+      concreteChainFiber tttFrontierWord tttFiber3Key := by
+  unfold concreteChainFiber concreteChainStates chainFiberFrom
+  rw [List.mem_filter]
+  constructor
+  · simpa [tttFrontierWord, frontierWordToChainWord,
+      frontierOrientToChain, tttWord] using hall
+  · exact hkey
+
+theorem tttFiber3Rows_mem_source_mem_concreteChainFiber
+    {row : TripleComponentParentRow} (hmem : row ∈ tttFiber3Rows) :
+    tttFiber3SourceStates row ∈
+      concreteChainFiber tttFrontierWord tttFiber3Key := by
+  simp [tttFiber3Rows] at hmem
+  rcases hmem with rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl |
+    rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl
+  · simpa [tttFiber3SourceStates, tttFiber3Row0, tripleRow] using
+      tttFiber3TripleStates_mem_concreteChainFiber
+        (tripleStates_mem_tttAllChainStates_of_indices
+          (by decide) (by decide) (by decide) (by decide) (by decide))
+        (by decide)
+  · simpa [tttFiber3SourceStates, tttFiber3Row1, tripleRow] using
+      tttFiber3TripleStates_mem_concreteChainFiber
+        (tripleStates_mem_tttAllChainStates_of_indices
+          (by decide) (by decide) (by decide) (by decide) (by decide))
+        (by decide)
+  · simpa [tttFiber3SourceStates, tttFiber3Row2, tripleRow] using
+      tttFiber3TripleStates_mem_concreteChainFiber
+        (tripleStates_mem_tttAllChainStates_of_indices
+          (by decide) (by decide) (by decide) (by decide) (by decide))
+        (by decide)
+  · simpa [tttFiber3SourceStates, tttFiber3Row3, tripleRow] using
+      tttFiber3TripleStates_mem_concreteChainFiber
+        (tripleStates_mem_tttAllChainStates_of_indices
+          (by decide) (by decide) (by decide) (by decide) (by decide))
+        (by decide)
+  · simpa [tttFiber3SourceStates, tttFiber3Row4, tripleRow] using
+      tttFiber3TripleStates_mem_concreteChainFiber
+        (tripleStates_mem_tttAllChainStates_of_indices
+          (by decide) (by decide) (by decide) (by decide) (by decide))
+        (by decide)
+  · simpa [tttFiber3SourceStates, tttFiber3Row5, tripleRow] using
+      tttFiber3TripleStates_mem_concreteChainFiber
+        (tripleStates_mem_tttAllChainStates_of_indices
+          (by decide) (by decide) (by decide) (by decide) (by decide))
+        (by decide)
+  · simpa [tttFiber3SourceStates, tttFiber3Row6, tripleRow] using
+      tttFiber3TripleStates_mem_concreteChainFiber
+        (tripleStates_mem_tttAllChainStates_of_indices
+          (by decide) (by decide) (by decide) (by decide) (by decide))
+        (by decide)
+  · simpa [tttFiber3SourceStates, tttFiber3Row7, tripleRow] using
+      tttFiber3TripleStates_mem_concreteChainFiber
+        (tripleStates_mem_tttAllChainStates_of_indices
+          (by decide) (by decide) (by decide) (by decide) (by decide))
+        (by decide)
+  · simpa [tttFiber3SourceStates, tttFiber3Row8, tripleRow] using
+      tttFiber3TripleStates_mem_concreteChainFiber
+        (tripleStates_mem_tttAllChainStates_of_indices
+          (by decide) (by decide) (by decide) (by decide) (by decide))
+        (by decide)
+  · simpa [tttFiber3SourceStates, tttFiber3Row9, tripleRow] using
+      tttFiber3TripleStates_mem_concreteChainFiber
+        (tripleStates_mem_tttAllChainStates_of_indices
+          (by decide) (by decide) (by decide) (by decide) (by decide))
+        (by decide)
+  · simpa [tttFiber3SourceStates, tttFiber3Row10, tripleRow] using
+      tttFiber3TripleStates_mem_concreteChainFiber
+        (tripleStates_mem_tttAllChainStates_of_indices
+          (by decide) (by decide) (by decide) (by decide) (by decide))
+        (by decide)
+  · simpa [tttFiber3SourceStates, tttFiber3Row11, tripleRow] using
+      tttFiber3TripleStates_mem_concreteChainFiber
+        (tripleStates_mem_tttAllChainStates_of_indices
+          (by decide) (by decide) (by decide) (by decide) (by decide))
+        (by decide)
+  · simpa [tttFiber3SourceStates, tttFiber3Row12, tripleRow] using
+      tttFiber3TripleStates_mem_concreteChainFiber
+        (tripleStates_mem_tttAllChainStates_of_indices
+          (by decide) (by decide) (by decide) (by decide) (by decide))
+        (by decide)
+  · simpa [tttFiber3SourceStates, tttFiber3Row13, tripleRow] using
+      tttFiber3TripleStates_mem_concreteChainFiber
+        (tripleStates_mem_tttAllChainStates_of_indices
+          (by decide) (by decide) (by decide) (by decide) (by decide))
+        (by decide)
+  · simpa [tttFiber3SourceStates, tttFiber3Row14, tripleRow] using
+      tttFiber3TripleStates_mem_concreteChainFiber
+        (tripleStates_mem_tttAllChainStates_of_indices
+          (by decide) (by decide) (by decide) (by decide) (by decide))
+        (by decide)
+  · simpa [tttFiber3SourceStates, tttFiber3Row15, tripleRow] using
+      tttFiber3TripleStates_mem_concreteChainFiber
+        (tripleStates_mem_tttAllChainStates_of_indices
+          (by decide) (by decide) (by decide) (by decide) (by decide))
+        (by decide)
+
+theorem tttFiber3SourceStatesList_mem_concreteChainFiber
+    {states : List TauState} (hmem : states ∈ tttFiber3SourceStatesList) :
+    states ∈ concreteChainFiber tttFrontierWord tttFiber3Key := by
+  rcases List.mem_map.mp (by simpa [tttFiber3SourceStatesList] using hmem) with
+    ⟨row, hrow, rfl⟩
+  exact tttFiber3Rows_mem_source_mem_concreteChainFiber hrow
+
+theorem tttFiber3Rows_mem_parent_mem_concreteChainFiber
+    {row : TripleComponentParentRow} (hmem : row ∈ tttFiber3Rows) :
+    tttFiber3ParentStates row ∈
+      concreteChainFiber tttFrontierWord tttFiber3Key := by
+  simp [tttFiber3Rows] at hmem
+  rcases hmem with rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl |
+    rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl
+  · simpa [tttFiber3ParentStates, tttFiber3SourceStates,
+      tttFiber3Row0, tripleRow] using
+      tttFiber3Rows_mem_source_mem_concreteChainFiber
+        (row := tttFiber3Row0) (by simp [tttFiber3Rows])
+  · simpa [tttFiber3ParentStates, tttFiber3SourceStates,
+      tttFiber3Row0, tttFiber3Row1, tripleRow] using
+      tttFiber3Rows_mem_source_mem_concreteChainFiber
+        (row := tttFiber3Row0) (by simp [tttFiber3Rows])
+  · simpa [tttFiber3ParentStates, tttFiber3SourceStates,
+      tttFiber3Row0, tttFiber3Row2, tripleRow] using
+      tttFiber3Rows_mem_source_mem_concreteChainFiber
+        (row := tttFiber3Row0) (by simp [tttFiber3Rows])
+  · simpa [tttFiber3ParentStates, tttFiber3SourceStates,
+      tttFiber3Row1, tttFiber3Row3, tripleRow] using
+      tttFiber3Rows_mem_source_mem_concreteChainFiber
+        (row := tttFiber3Row1) (by simp [tttFiber3Rows])
+  · simpa [tttFiber3ParentStates, tttFiber3SourceStates,
+      tttFiber3Row0, tttFiber3Row4, tripleRow] using
+      tttFiber3Rows_mem_source_mem_concreteChainFiber
+        (row := tttFiber3Row0) (by simp [tttFiber3Rows])
+  · simpa [tttFiber3ParentStates, tttFiber3SourceStates,
+      tttFiber3Row1, tttFiber3Row5, tripleRow] using
+      tttFiber3Rows_mem_source_mem_concreteChainFiber
+        (row := tttFiber3Row1) (by simp [tttFiber3Rows])
+  · simpa [tttFiber3ParentStates, tttFiber3SourceStates,
+      tttFiber3Row2, tttFiber3Row6, tripleRow] using
+      tttFiber3Rows_mem_source_mem_concreteChainFiber
+        (row := tttFiber3Row2) (by simp [tttFiber3Rows])
+  · simpa [tttFiber3ParentStates, tttFiber3SourceStates,
+      tttFiber3Row3, tttFiber3Row7, tripleRow] using
+      tttFiber3Rows_mem_source_mem_concreteChainFiber
+        (row := tttFiber3Row3) (by simp [tttFiber3Rows])
+  · simpa [tttFiber3ParentStates, tttFiber3SourceStates,
+      tttFiber3Row0, tttFiber3Row8, tripleRow] using
+      tttFiber3Rows_mem_source_mem_concreteChainFiber
+        (row := tttFiber3Row0) (by simp [tttFiber3Rows])
+  · simpa [tttFiber3ParentStates, tttFiber3SourceStates,
+      tttFiber3Row1, tttFiber3Row9, tripleRow] using
+      tttFiber3Rows_mem_source_mem_concreteChainFiber
+        (row := tttFiber3Row1) (by simp [tttFiber3Rows])
+  · simpa [tttFiber3ParentStates, tttFiber3SourceStates,
+      tttFiber3Row2, tttFiber3Row10, tripleRow] using
+      tttFiber3Rows_mem_source_mem_concreteChainFiber
+        (row := tttFiber3Row2) (by simp [tttFiber3Rows])
+  · simpa [tttFiber3ParentStates, tttFiber3SourceStates,
+      tttFiber3Row3, tttFiber3Row11, tripleRow] using
+      tttFiber3Rows_mem_source_mem_concreteChainFiber
+        (row := tttFiber3Row3) (by simp [tttFiber3Rows])
+  · simpa [tttFiber3ParentStates, tttFiber3SourceStates,
+      tttFiber3Row4, tttFiber3Row12, tripleRow] using
+      tttFiber3Rows_mem_source_mem_concreteChainFiber
+        (row := tttFiber3Row4) (by simp [tttFiber3Rows])
+  · simpa [tttFiber3ParentStates, tttFiber3SourceStates,
+      tttFiber3Row5, tttFiber3Row13, tripleRow] using
+      tttFiber3Rows_mem_source_mem_concreteChainFiber
+        (row := tttFiber3Row5) (by simp [tttFiber3Rows])
+  · simpa [tttFiber3ParentStates, tttFiber3SourceStates,
+      tttFiber3Row6, tttFiber3Row14, tripleRow] using
+      tttFiber3Rows_mem_source_mem_concreteChainFiber
+        (row := tttFiber3Row6) (by simp [tttFiber3Rows])
+  · simpa [tttFiber3ParentStates, tttFiber3SourceStates,
+      tttFiber3Row7, tttFiber3Row15, tripleRow] using
+      tttFiber3Rows_mem_source_mem_concreteChainFiber
+        (row := tttFiber3Row7) (by simp [tttFiber3Rows])
+
+def tttFiber3CoverLeftState (left : TauState) : Bool :=
+  (tttStatesFromLeft tttWord left).all fun states =>
+    !(chainInputKey tttWord states == tttFiber3Key) ||
+      tttFiber3SourceStatesList.contains states
+
+def tttFiber3CoverLeftStateList (lefts : List TauState) : Bool :=
+  lefts.all tttFiber3CoverLeftState
+
+def tttFiber3CoverAllLefts : Bool :=
+  allTauStates.all tttFiber3CoverLeftState
+
+def tttFiber3CoverLeftChunk (start len : Nat) : Bool :=
+  tttFiber3CoverLeftStateList ((allTauStates.drop start).take len)
+
+theorem tttFiber3CoverLeftChunk_0_ok :
+    tttFiber3CoverLeftChunk 0 32 = true := by
+  decide
+
+theorem tttFiber3CoverLeftChunk_32_ok :
+    tttFiber3CoverLeftChunk 32 32 = true := by
+  decide
+
+theorem tttFiber3CoverLeftChunk_64_ok :
+    tttFiber3CoverLeftChunk 64 32 = true := by
+  decide
+
+theorem tttFiber3CoverLeftChunk_96_ok :
+    tttFiber3CoverLeftChunk 96 32 = true := by
+  decide
+
+theorem tttFiber3CoverLeftChunk_128_ok :
+    tttFiber3CoverLeftChunk 128 32 = true := by
+  decide
+
+theorem tttFiber3CoverLeftChunk_160_ok :
+    tttFiber3CoverLeftChunk 160 32 = true := by
+  decide
+
+theorem tttFiber3CoverLeftTail_ok :
+    tttFiber3CoverLeftStateList
+      GoertzelLemma818LengthTwoRealFiberBridgePrototype.tauStateTail192 =
+        true := by
+  decide
+
+theorem tttFiber3CoverAllLefts_ok :
+    tttFiber3CoverAllLefts = true := by
+  have h0 :
+      tttFiber3CoverLeftStateList
+        (GoertzelLemma818LengthTwoRealFiberBridgePrototype.tauStateChunk32 0) =
+          true := by
+    simpa [tttFiber3CoverLeftChunk,
+      GoertzelLemma818LengthTwoRealFiberBridgePrototype.tauStateChunk32] using
+      tttFiber3CoverLeftChunk_0_ok
+  have h1 :
+      tttFiber3CoverLeftStateList
+        (GoertzelLemma818LengthTwoRealFiberBridgePrototype.tauStateChunk32 32) =
+          true := by
+    simpa [tttFiber3CoverLeftChunk,
+      GoertzelLemma818LengthTwoRealFiberBridgePrototype.tauStateChunk32] using
+      tttFiber3CoverLeftChunk_32_ok
+  have h2 :
+      tttFiber3CoverLeftStateList
+        (GoertzelLemma818LengthTwoRealFiberBridgePrototype.tauStateChunk32 64) =
+          true := by
+    simpa [tttFiber3CoverLeftChunk,
+      GoertzelLemma818LengthTwoRealFiberBridgePrototype.tauStateChunk32] using
+      tttFiber3CoverLeftChunk_64_ok
+  have h3 :
+      tttFiber3CoverLeftStateList
+        (GoertzelLemma818LengthTwoRealFiberBridgePrototype.tauStateChunk32 96) =
+          true := by
+    simpa [tttFiber3CoverLeftChunk,
+      GoertzelLemma818LengthTwoRealFiberBridgePrototype.tauStateChunk32] using
+      tttFiber3CoverLeftChunk_96_ok
+  have h4 :
+      tttFiber3CoverLeftStateList
+        (GoertzelLemma818LengthTwoRealFiberBridgePrototype.tauStateChunk32 128) =
+          true := by
+    simpa [tttFiber3CoverLeftChunk,
+      GoertzelLemma818LengthTwoRealFiberBridgePrototype.tauStateChunk32] using
+      tttFiber3CoverLeftChunk_128_ok
+  have h5 :
+      tttFiber3CoverLeftStateList
+        (GoertzelLemma818LengthTwoRealFiberBridgePrototype.tauStateChunk32 160) =
+          true := by
+    simpa [tttFiber3CoverLeftChunk,
+      GoertzelLemma818LengthTwoRealFiberBridgePrototype.tauStateChunk32] using
+      tttFiber3CoverLeftChunk_160_ok
+  have h6 :
+      GoertzelLemma818LengthTwoRealFiberBridgePrototype.tauStateTail192.all
+        tttFiber3CoverLeftState = true := by
+    simpa [tttFiber3CoverLeftStateList] using tttFiber3CoverLeftTail_ok
+  unfold tttFiber3CoverLeftStateList at h0 h1 h2 h3 h4 h5
+  unfold tttFiber3CoverAllLefts
+  rw [GoertzelLemma818LengthTwoRealFiberBridgePrototype.allTauStates_eq_chunks32]
+  simp only [List.all_append]
+  simp [h0, h1, h2, h3, h4, h5, h6]
+
+theorem tttFiber3_direct_contains_of_cover_all
+    {states : List TauState}
+    (hall : tttFiber3CoverAllLefts = true)
+    (hmem : states ∈ allChainStates tttWord)
+    (hkey : (chainInputKey tttWord states == tttFiber3Key) = true) :
+    tttFiber3SourceStatesList.contains states = true := by
+  unfold tttFiber3CoverAllLefts at hall
+  rw [List.all_eq_true] at hall
+  rw [tttAllChainStates_eq] at hmem
+  rw [GoertzelLemma818LengthTwoRealFiberBridgePrototype.bindList_mem] at hmem
+  rcases hmem with ⟨left, hleft, hstates⟩
+  have hcover := hall left hleft
+  unfold tttFiber3CoverLeftState at hcover
+  rw [List.all_eq_true] at hcover
+  have hrow := hcover states hstates
+  simpa [hkey] using hrow
+
+theorem tttFiber3RealFiber_subset_sourceStatesList
+    {states : List TauState}
+    (h : states ∈ chainFiberFrom tttWord (allChainStates tttWord) tttFiber3Key) :
+    states ∈ tttFiber3SourceStatesList := by
+  unfold chainFiberFrom at h
+  rw [List.mem_filter] at h
+  rcases h with ⟨hall, hkey⟩
+  exact List.contains_iff_mem.mp
+    (tttFiber3_direct_contains_of_cover_all
+      tttFiber3CoverAllLefts_ok hall hkey)
+
+theorem tttFiber3ConcreteFiber_subset_sourceStatesList
+    {states : List TauState}
+    (h : states ∈ concreteChainFiber tttFrontierWord tttFiber3Key) :
+    states ∈ tttFiber3SourceStatesList := by
+  simpa [concreteChainFiber, concreteChainStates, tttFrontierWord,
+    frontierWordToChainWord, frontierOrientToChain, tttWord] using
+    tttFiber3RealFiber_subset_sourceStatesList h
+
+def tttFiber3CloseFrom (seed : List TauState) : List (List TauState) :=
+  closeChainFiber (frontierWordToChainWord tttFrontierWord)
+    (concreteChainFiber tttFrontierWord tttFiber3Key)
+    (concreteChainFiber tttFrontierWord tttFiber3Key).length
+    [seed]
+
+def tttFiber3RowsSingleStepReadyCheck : Bool :=
+  tttFiber3Rows.all
+    (tripleComponentRowValidWithSingleStepReady
+      tttFiber3Key tttFiber3Expected)
+
+theorem tttFiber3RowsSingleStepReadyCheck_ok :
+    tttFiber3RowsSingleStepReadyCheck = true := by
+  decide
+
+theorem tttFiber3Rows_mem_source_eq_or_chainSingleKempeStep
+    {row : TripleComponentParentRow} (hmem : row ∈ tttFiber3Rows) :
+    row.source = row.parent ∨
+      chainSingleKempeStep tttWord
+        (tripleStates row.sourceLeft row.sourceMiddle row.sourceRight)
+        (tripleStates row.parentLeft row.parentMiddle row.parentRight) =
+          true := by
+  have hrowReady :
+      tripleComponentRowValidWithSingleStepReady
+        tttFiber3Key tttFiber3Expected row = true :=
+    (List.all_eq_true.mp tttFiber3RowsSingleStepReadyCheck_ok) row hmem
+  rw [tripleComponentRowValidWithSingleStepReady, Bool.and_eq_true]
+    at hrowReady
+  exact
+    tripleComponentRowValid_source_eq_or_chainSingleKempeStep_of_ready
+      hrowReady.1 hrowReady.2
+
+theorem tttFiber3Rows_mem_source_eq_or_reverse_chainSingleKempeStep
+    {row : TripleComponentParentRow} (hmem : row ∈ tttFiber3Rows) :
+    row.source = row.parent ∨
+      chainSingleKempeStep tttWord
+        (tripleStates row.parentLeft row.parentMiddle row.parentRight)
+        (tripleStates row.sourceLeft row.sourceMiddle row.sourceRight) =
+          true := by
+  have hrowReady :
+      tripleComponentRowValidWithSingleStepReady
+        tttFiber3Key tttFiber3Expected row = true :=
+    (List.all_eq_true.mp tttFiber3RowsSingleStepReadyCheck_ok) row hmem
+  rw [tripleComponentRowValidWithSingleStepReady, Bool.and_eq_true]
+    at hrowReady
+  exact
+    tripleComponentRowValid_source_eq_or_reverse_chainSingleKempeStep_of_ready
+      hrowReady.1 hrowReady.2
+
+private theorem tttFiber3Source_mem_closeFrom_of_seed_eq
+    {seed : List TauState} {row : TripleComponentParentRow}
+    (hseed : seed = tttFiber3SourceStates row) :
+    tttFiber3SourceStates row ∈ tttFiber3CloseFrom seed := by
+  subst seed
+  unfold tttFiber3CloseFrom
+  exact closeChainFiber_mem_of_seen _ _ _ _ _ (by simp)
+
+private theorem tttFiber3Row_parent_mem_closeFrom_of_source_mem
+    {seed : List TauState} {row : TripleComponentParentRow}
+    (hmem : row ∈ tttFiber3Rows)
+    (hne : row.source ≠ row.parent)
+    (hsource : tttFiber3SourceStates row ∈ tttFiber3CloseFrom seed) :
+    tttFiber3ParentStates row ∈ tttFiber3CloseFrom seed := by
+  have hstepOr := tttFiber3Rows_mem_source_eq_or_chainSingleKempeStep hmem
+  rcases hstepOr with hsame | hstep
+  · exact False.elim (hne hsame)
+  · unfold tttFiber3CloseFrom at hsource ⊢
+    unfold tttFiber3SourceStates at hsource
+    unfold tttFiber3ParentStates
+    exact closeChainFiber_mem_step_of_close_at_length_of_bounded_saturation
+      closeChainFiberBoundedSaturationClosed_ok
+      (frontierWordToChainWord tttFrontierWord)
+      (concreteChainFiber tttFrontierWord tttFiber3Key)
+      [seed]
+      (tripleStates row.sourceLeft row.sourceMiddle row.sourceRight)
+      (tripleStates row.parentLeft row.parentMiddle row.parentRight)
+      (by simp)
+      hsource
+      (by
+        simpa [tttFiber3ParentStates] using
+          tttFiber3Rows_mem_parent_mem_concreteChainFiber hmem)
+      (by
+        simpa [tttWord, tttFrontierWord, frontierWordToChainWord,
+          frontierOrientToChain] using hstep)
+
+private theorem tttFiber3Row_source_mem_closeFrom_of_parent_mem
+    {seed : List TauState}
+    {row : TripleComponentParentRow}
+    (hmem : row ∈ tttFiber3Rows)
+    (hne : row.source ≠ row.parent)
+    (hparent : tttFiber3ParentStates row ∈ tttFiber3CloseFrom seed) :
+    tttFiber3SourceStates row ∈ tttFiber3CloseFrom seed := by
+  have hstepOr := tttFiber3Rows_mem_source_eq_or_reverse_chainSingleKempeStep hmem
+  rcases hstepOr with hsame | hstep
+  · exact False.elim (hne hsame)
+  · unfold tttFiber3CloseFrom at hparent ⊢
+    unfold tttFiber3ParentStates at hparent
+    unfold tttFiber3SourceStates
+    exact closeChainFiber_mem_step_of_close_at_length_of_bounded_saturation
+      closeChainFiberBoundedSaturationClosed_ok
+      (frontierWordToChainWord tttFrontierWord)
+      (concreteChainFiber tttFrontierWord tttFiber3Key)
+      [seed]
+      (tripleStates row.parentLeft row.parentMiddle row.parentRight)
+      (tripleStates row.sourceLeft row.sourceMiddle row.sourceRight)
+      (by simp)
+      hparent
+      (by
+        simpa [tttFiber3SourceStates] using
+          tttFiber3Rows_mem_source_mem_concreteChainFiber hmem)
+      (by
+        simpa [tttWord, tttFrontierWord, frontierWordToChainWord,
+          frontierOrientToChain] using hstep)
+
+private theorem tttFiber3Row1_parent_mem_closeFrom
+    {seed : List TauState}
+    (hrow : tttFiber3SourceStates tttFiber3Row1 ∈ tttFiber3CloseFrom seed) :
+    tttFiber3SourceStates tttFiber3Row0 ∈ tttFiber3CloseFrom seed := by
+  simpa [tttFiber3ParentStates, tttFiber3SourceStates,
+      tttFiber3Row0, tttFiber3Row1, tripleRow] using
+    tttFiber3Row_parent_mem_closeFrom_of_source_mem
+      (row := tttFiber3Row1) (by simp [tttFiber3Rows]) (by decide) hrow
+
+private theorem tttFiber3Row2_parent_mem_closeFrom
+    {seed : List TauState}
+    (hrow : tttFiber3SourceStates tttFiber3Row2 ∈ tttFiber3CloseFrom seed) :
+    tttFiber3SourceStates tttFiber3Row0 ∈ tttFiber3CloseFrom seed := by
+  simpa [tttFiber3ParentStates, tttFiber3SourceStates,
+      tttFiber3Row0, tttFiber3Row2, tripleRow] using
+    tttFiber3Row_parent_mem_closeFrom_of_source_mem
+      (row := tttFiber3Row2) (by simp [tttFiber3Rows]) (by decide) hrow
+
+private theorem tttFiber3Row3_parent_mem_closeFrom
+    {seed : List TauState}
+    (hrow : tttFiber3SourceStates tttFiber3Row3 ∈ tttFiber3CloseFrom seed) :
+    tttFiber3SourceStates tttFiber3Row1 ∈ tttFiber3CloseFrom seed := by
+  simpa [tttFiber3ParentStates, tttFiber3SourceStates,
+      tttFiber3Row1, tttFiber3Row3, tripleRow] using
+    tttFiber3Row_parent_mem_closeFrom_of_source_mem
+      (row := tttFiber3Row3) (by simp [tttFiber3Rows]) (by decide) hrow
+
+private theorem tttFiber3Row4_parent_mem_closeFrom
+    {seed : List TauState}
+    (hrow : tttFiber3SourceStates tttFiber3Row4 ∈ tttFiber3CloseFrom seed) :
+    tttFiber3SourceStates tttFiber3Row0 ∈ tttFiber3CloseFrom seed := by
+  simpa [tttFiber3ParentStates, tttFiber3SourceStates,
+      tttFiber3Row0, tttFiber3Row4, tripleRow] using
+    tttFiber3Row_parent_mem_closeFrom_of_source_mem
+      (row := tttFiber3Row4) (by simp [tttFiber3Rows]) (by decide) hrow
+
+private theorem tttFiber3Row5_parent_mem_closeFrom
+    {seed : List TauState}
+    (hrow : tttFiber3SourceStates tttFiber3Row5 ∈ tttFiber3CloseFrom seed) :
+    tttFiber3SourceStates tttFiber3Row1 ∈ tttFiber3CloseFrom seed := by
+  simpa [tttFiber3ParentStates, tttFiber3SourceStates,
+      tttFiber3Row1, tttFiber3Row5, tripleRow] using
+    tttFiber3Row_parent_mem_closeFrom_of_source_mem
+      (row := tttFiber3Row5) (by simp [tttFiber3Rows]) (by decide) hrow
+
+private theorem tttFiber3Row6_parent_mem_closeFrom
+    {seed : List TauState}
+    (hrow : tttFiber3SourceStates tttFiber3Row6 ∈ tttFiber3CloseFrom seed) :
+    tttFiber3SourceStates tttFiber3Row2 ∈ tttFiber3CloseFrom seed := by
+  simpa [tttFiber3ParentStates, tttFiber3SourceStates,
+      tttFiber3Row2, tttFiber3Row6, tripleRow] using
+    tttFiber3Row_parent_mem_closeFrom_of_source_mem
+      (row := tttFiber3Row6) (by simp [tttFiber3Rows]) (by decide) hrow
+
+private theorem tttFiber3Row7_parent_mem_closeFrom
+    {seed : List TauState}
+    (hrow : tttFiber3SourceStates tttFiber3Row7 ∈ tttFiber3CloseFrom seed) :
+    tttFiber3SourceStates tttFiber3Row3 ∈ tttFiber3CloseFrom seed := by
+  simpa [tttFiber3ParentStates, tttFiber3SourceStates,
+      tttFiber3Row3, tttFiber3Row7, tripleRow] using
+    tttFiber3Row_parent_mem_closeFrom_of_source_mem
+      (row := tttFiber3Row7) (by simp [tttFiber3Rows]) (by decide) hrow
+
+private theorem tttFiber3Row8_parent_mem_closeFrom
+    {seed : List TauState}
+    (hrow : tttFiber3SourceStates tttFiber3Row8 ∈ tttFiber3CloseFrom seed) :
+    tttFiber3SourceStates tttFiber3Row0 ∈ tttFiber3CloseFrom seed := by
+  simpa [tttFiber3ParentStates, tttFiber3SourceStates,
+      tttFiber3Row0, tttFiber3Row8, tripleRow] using
+    tttFiber3Row_parent_mem_closeFrom_of_source_mem
+      (row := tttFiber3Row8) (by simp [tttFiber3Rows]) (by decide) hrow
+
+private theorem tttFiber3Row9_parent_mem_closeFrom
+    {seed : List TauState}
+    (hrow : tttFiber3SourceStates tttFiber3Row9 ∈ tttFiber3CloseFrom seed) :
+    tttFiber3SourceStates tttFiber3Row1 ∈ tttFiber3CloseFrom seed := by
+  simpa [tttFiber3ParentStates, tttFiber3SourceStates,
+      tttFiber3Row1, tttFiber3Row9, tripleRow] using
+    tttFiber3Row_parent_mem_closeFrom_of_source_mem
+      (row := tttFiber3Row9) (by simp [tttFiber3Rows]) (by decide) hrow
+
+private theorem tttFiber3Row10_parent_mem_closeFrom
+    {seed : List TauState}
+    (hrow : tttFiber3SourceStates tttFiber3Row10 ∈ tttFiber3CloseFrom seed) :
+    tttFiber3SourceStates tttFiber3Row2 ∈ tttFiber3CloseFrom seed := by
+  simpa [tttFiber3ParentStates, tttFiber3SourceStates,
+      tttFiber3Row2, tttFiber3Row10, tripleRow] using
+    tttFiber3Row_parent_mem_closeFrom_of_source_mem
+      (row := tttFiber3Row10) (by simp [tttFiber3Rows]) (by decide) hrow
+
+private theorem tttFiber3Row11_parent_mem_closeFrom
+    {seed : List TauState}
+    (hrow : tttFiber3SourceStates tttFiber3Row11 ∈ tttFiber3CloseFrom seed) :
+    tttFiber3SourceStates tttFiber3Row3 ∈ tttFiber3CloseFrom seed := by
+  simpa [tttFiber3ParentStates, tttFiber3SourceStates,
+      tttFiber3Row3, tttFiber3Row11, tripleRow] using
+    tttFiber3Row_parent_mem_closeFrom_of_source_mem
+      (row := tttFiber3Row11) (by simp [tttFiber3Rows]) (by decide) hrow
+
+private theorem tttFiber3Row12_parent_mem_closeFrom
+    {seed : List TauState}
+    (hrow : tttFiber3SourceStates tttFiber3Row12 ∈ tttFiber3CloseFrom seed) :
+    tttFiber3SourceStates tttFiber3Row4 ∈ tttFiber3CloseFrom seed := by
+  simpa [tttFiber3ParentStates, tttFiber3SourceStates,
+      tttFiber3Row4, tttFiber3Row12, tripleRow] using
+    tttFiber3Row_parent_mem_closeFrom_of_source_mem
+      (row := tttFiber3Row12) (by simp [tttFiber3Rows]) (by decide) hrow
+
+private theorem tttFiber3Row13_parent_mem_closeFrom
+    {seed : List TauState}
+    (hrow : tttFiber3SourceStates tttFiber3Row13 ∈ tttFiber3CloseFrom seed) :
+    tttFiber3SourceStates tttFiber3Row5 ∈ tttFiber3CloseFrom seed := by
+  simpa [tttFiber3ParentStates, tttFiber3SourceStates,
+      tttFiber3Row5, tttFiber3Row13, tripleRow] using
+    tttFiber3Row_parent_mem_closeFrom_of_source_mem
+      (row := tttFiber3Row13) (by simp [tttFiber3Rows]) (by decide) hrow
+
+private theorem tttFiber3Row14_parent_mem_closeFrom
+    {seed : List TauState}
+    (hrow : tttFiber3SourceStates tttFiber3Row14 ∈ tttFiber3CloseFrom seed) :
+    tttFiber3SourceStates tttFiber3Row6 ∈ tttFiber3CloseFrom seed := by
+  simpa [tttFiber3ParentStates, tttFiber3SourceStates,
+      tttFiber3Row6, tttFiber3Row14, tripleRow] using
+    tttFiber3Row_parent_mem_closeFrom_of_source_mem
+      (row := tttFiber3Row14) (by simp [tttFiber3Rows]) (by decide) hrow
+
+private theorem tttFiber3Row15_parent_mem_closeFrom
+    {seed : List TauState}
+    (hrow : tttFiber3SourceStates tttFiber3Row15 ∈ tttFiber3CloseFrom seed) :
+    tttFiber3SourceStates tttFiber3Row7 ∈ tttFiber3CloseFrom seed := by
+  simpa [tttFiber3ParentStates, tttFiber3SourceStates,
+      tttFiber3Row7, tttFiber3Row15, tripleRow] using
+    tttFiber3Row_parent_mem_closeFrom_of_source_mem
+      (row := tttFiber3Row15) (by simp [tttFiber3Rows]) (by decide) hrow
+
+theorem tttFiber3Row0_source_mem_closeFrom_of_sourceStatesList_mem
+    {seed : List TauState} (hseed : seed ∈ tttFiber3SourceStatesList) :
+    tttFiber3SourceStates tttFiber3Row0 ∈ tttFiber3CloseFrom seed := by
+  simp [tttFiber3SourceStatesList, tttFiber3Rows] at hseed
+  rcases hseed with h0 | h1 | h2 | h3 | h4 | h5 | h6 | h7 |
+    h8 | h9 | h10 | h11 | h12 | h13 | h14 | h15
+  · exact tttFiber3Source_mem_closeFrom_of_seed_eq h0
+  · exact tttFiber3Row1_parent_mem_closeFrom
+      (tttFiber3Source_mem_closeFrom_of_seed_eq h1)
+  · exact tttFiber3Row2_parent_mem_closeFrom
+      (tttFiber3Source_mem_closeFrom_of_seed_eq h2)
+  · exact tttFiber3Row1_parent_mem_closeFrom
+      (tttFiber3Row3_parent_mem_closeFrom
+        (tttFiber3Source_mem_closeFrom_of_seed_eq h3))
+  · exact tttFiber3Row4_parent_mem_closeFrom
+      (tttFiber3Source_mem_closeFrom_of_seed_eq h4)
+  · exact tttFiber3Row1_parent_mem_closeFrom
+      (tttFiber3Row5_parent_mem_closeFrom
+        (tttFiber3Source_mem_closeFrom_of_seed_eq h5))
+  · exact tttFiber3Row2_parent_mem_closeFrom
+      (tttFiber3Row6_parent_mem_closeFrom
+        (tttFiber3Source_mem_closeFrom_of_seed_eq h6))
+  · exact tttFiber3Row1_parent_mem_closeFrom
+      (tttFiber3Row3_parent_mem_closeFrom
+        (tttFiber3Row7_parent_mem_closeFrom
+          (tttFiber3Source_mem_closeFrom_of_seed_eq h7)))
+  · exact tttFiber3Row8_parent_mem_closeFrom
+      (tttFiber3Source_mem_closeFrom_of_seed_eq h8)
+  · exact tttFiber3Row1_parent_mem_closeFrom
+      (tttFiber3Row9_parent_mem_closeFrom
+        (tttFiber3Source_mem_closeFrom_of_seed_eq h9))
+  · exact tttFiber3Row2_parent_mem_closeFrom
+      (tttFiber3Row10_parent_mem_closeFrom
+        (tttFiber3Source_mem_closeFrom_of_seed_eq h10))
+  · exact tttFiber3Row1_parent_mem_closeFrom
+      (tttFiber3Row3_parent_mem_closeFrom
+        (tttFiber3Row11_parent_mem_closeFrom
+          (tttFiber3Source_mem_closeFrom_of_seed_eq h11)))
+  · exact tttFiber3Row4_parent_mem_closeFrom
+      (tttFiber3Row12_parent_mem_closeFrom
+        (tttFiber3Source_mem_closeFrom_of_seed_eq h12))
+  · exact tttFiber3Row1_parent_mem_closeFrom
+      (tttFiber3Row5_parent_mem_closeFrom
+        (tttFiber3Row13_parent_mem_closeFrom
+          (tttFiber3Source_mem_closeFrom_of_seed_eq h13)))
+  · exact tttFiber3Row2_parent_mem_closeFrom
+      (tttFiber3Row6_parent_mem_closeFrom
+        (tttFiber3Row14_parent_mem_closeFrom
+          (tttFiber3Source_mem_closeFrom_of_seed_eq h14)))
+  · exact tttFiber3Row1_parent_mem_closeFrom
+      (tttFiber3Row3_parent_mem_closeFrom
+        (tttFiber3Row7_parent_mem_closeFrom
+          (tttFiber3Row15_parent_mem_closeFrom
+            (tttFiber3Source_mem_closeFrom_of_seed_eq h15))))
+
+private theorem tttFiber3Row1_source_mem_closeFrom_of_row0_mem
+    {seed : List TauState}
+    (hrow0 : tttFiber3SourceStates tttFiber3Row0 ∈ tttFiber3CloseFrom seed) :
+    tttFiber3SourceStates tttFiber3Row1 ∈ tttFiber3CloseFrom seed := by
+  exact tttFiber3Row_source_mem_closeFrom_of_parent_mem
+    (row := tttFiber3Row1) (by simp [tttFiber3Rows]) (by decide)
+    (by simpa [tttFiber3ParentStates, tttFiber3SourceStates,
+      tttFiber3Row0, tttFiber3Row1, tripleRow] using
+        hrow0)
+
+private theorem tttFiber3Row2_source_mem_closeFrom_of_row0_mem
+    {seed : List TauState}
+    (hrow0 : tttFiber3SourceStates tttFiber3Row0 ∈ tttFiber3CloseFrom seed) :
+    tttFiber3SourceStates tttFiber3Row2 ∈ tttFiber3CloseFrom seed := by
+  exact tttFiber3Row_source_mem_closeFrom_of_parent_mem
+    (row := tttFiber3Row2) (by simp [tttFiber3Rows]) (by decide)
+    (by simpa [tttFiber3ParentStates, tttFiber3SourceStates,
+      tttFiber3Row0, tttFiber3Row2, tripleRow] using
+        hrow0)
+
+private theorem tttFiber3Row3_source_mem_closeFrom_of_row0_mem
+    {seed : List TauState}
+    (hrow0 : tttFiber3SourceStates tttFiber3Row0 ∈ tttFiber3CloseFrom seed) :
+    tttFiber3SourceStates tttFiber3Row3 ∈ tttFiber3CloseFrom seed := by
+  exact tttFiber3Row_source_mem_closeFrom_of_parent_mem
+    (row := tttFiber3Row3) (by simp [tttFiber3Rows]) (by decide)
+    (by simpa [tttFiber3ParentStates, tttFiber3SourceStates,
+      tttFiber3Row1, tttFiber3Row3, tripleRow] using
+        tttFiber3Row1_source_mem_closeFrom_of_row0_mem hrow0)
+
+private theorem tttFiber3Row4_source_mem_closeFrom_of_row0_mem
+    {seed : List TauState}
+    (hrow0 : tttFiber3SourceStates tttFiber3Row0 ∈ tttFiber3CloseFrom seed) :
+    tttFiber3SourceStates tttFiber3Row4 ∈ tttFiber3CloseFrom seed := by
+  exact tttFiber3Row_source_mem_closeFrom_of_parent_mem
+    (row := tttFiber3Row4) (by simp [tttFiber3Rows]) (by decide)
+    (by simpa [tttFiber3ParentStates, tttFiber3SourceStates,
+      tttFiber3Row0, tttFiber3Row4, tripleRow] using
+        hrow0)
+
+private theorem tttFiber3Row5_source_mem_closeFrom_of_row0_mem
+    {seed : List TauState}
+    (hrow0 : tttFiber3SourceStates tttFiber3Row0 ∈ tttFiber3CloseFrom seed) :
+    tttFiber3SourceStates tttFiber3Row5 ∈ tttFiber3CloseFrom seed := by
+  exact tttFiber3Row_source_mem_closeFrom_of_parent_mem
+    (row := tttFiber3Row5) (by simp [tttFiber3Rows]) (by decide)
+    (by simpa [tttFiber3ParentStates, tttFiber3SourceStates,
+      tttFiber3Row1, tttFiber3Row5, tripleRow] using
+        tttFiber3Row1_source_mem_closeFrom_of_row0_mem hrow0)
+
+private theorem tttFiber3Row6_source_mem_closeFrom_of_row0_mem
+    {seed : List TauState}
+    (hrow0 : tttFiber3SourceStates tttFiber3Row0 ∈ tttFiber3CloseFrom seed) :
+    tttFiber3SourceStates tttFiber3Row6 ∈ tttFiber3CloseFrom seed := by
+  exact tttFiber3Row_source_mem_closeFrom_of_parent_mem
+    (row := tttFiber3Row6) (by simp [tttFiber3Rows]) (by decide)
+    (by simpa [tttFiber3ParentStates, tttFiber3SourceStates,
+      tttFiber3Row2, tttFiber3Row6, tripleRow] using
+        tttFiber3Row2_source_mem_closeFrom_of_row0_mem hrow0)
+
+private theorem tttFiber3Row7_source_mem_closeFrom_of_row0_mem
+    {seed : List TauState}
+    (hrow0 : tttFiber3SourceStates tttFiber3Row0 ∈ tttFiber3CloseFrom seed) :
+    tttFiber3SourceStates tttFiber3Row7 ∈ tttFiber3CloseFrom seed := by
+  exact tttFiber3Row_source_mem_closeFrom_of_parent_mem
+    (row := tttFiber3Row7) (by simp [tttFiber3Rows]) (by decide)
+    (by simpa [tttFiber3ParentStates, tttFiber3SourceStates,
+      tttFiber3Row3, tttFiber3Row7, tripleRow] using
+        tttFiber3Row3_source_mem_closeFrom_of_row0_mem hrow0)
+
+private theorem tttFiber3Row8_source_mem_closeFrom_of_row0_mem
+    {seed : List TauState}
+    (hrow0 : tttFiber3SourceStates tttFiber3Row0 ∈ tttFiber3CloseFrom seed) :
+    tttFiber3SourceStates tttFiber3Row8 ∈ tttFiber3CloseFrom seed := by
+  exact tttFiber3Row_source_mem_closeFrom_of_parent_mem
+    (row := tttFiber3Row8) (by simp [tttFiber3Rows]) (by decide)
+    (by simpa [tttFiber3ParentStates, tttFiber3SourceStates,
+      tttFiber3Row0, tttFiber3Row8, tripleRow] using
+        hrow0)
+
+private theorem tttFiber3Row9_source_mem_closeFrom_of_row0_mem
+    {seed : List TauState}
+    (hrow0 : tttFiber3SourceStates tttFiber3Row0 ∈ tttFiber3CloseFrom seed) :
+    tttFiber3SourceStates tttFiber3Row9 ∈ tttFiber3CloseFrom seed := by
+  exact tttFiber3Row_source_mem_closeFrom_of_parent_mem
+    (row := tttFiber3Row9) (by simp [tttFiber3Rows]) (by decide)
+    (by simpa [tttFiber3ParentStates, tttFiber3SourceStates,
+      tttFiber3Row1, tttFiber3Row9, tripleRow] using
+        tttFiber3Row1_source_mem_closeFrom_of_row0_mem hrow0)
+
+private theorem tttFiber3Row10_source_mem_closeFrom_of_row0_mem
+    {seed : List TauState}
+    (hrow0 : tttFiber3SourceStates tttFiber3Row0 ∈ tttFiber3CloseFrom seed) :
+    tttFiber3SourceStates tttFiber3Row10 ∈ tttFiber3CloseFrom seed := by
+  exact tttFiber3Row_source_mem_closeFrom_of_parent_mem
+    (row := tttFiber3Row10) (by simp [tttFiber3Rows]) (by decide)
+    (by simpa [tttFiber3ParentStates, tttFiber3SourceStates,
+      tttFiber3Row2, tttFiber3Row10, tripleRow] using
+        tttFiber3Row2_source_mem_closeFrom_of_row0_mem hrow0)
+
+private theorem tttFiber3Row11_source_mem_closeFrom_of_row0_mem
+    {seed : List TauState}
+    (hrow0 : tttFiber3SourceStates tttFiber3Row0 ∈ tttFiber3CloseFrom seed) :
+    tttFiber3SourceStates tttFiber3Row11 ∈ tttFiber3CloseFrom seed := by
+  exact tttFiber3Row_source_mem_closeFrom_of_parent_mem
+    (row := tttFiber3Row11) (by simp [tttFiber3Rows]) (by decide)
+    (by simpa [tttFiber3ParentStates, tttFiber3SourceStates,
+      tttFiber3Row3, tttFiber3Row11, tripleRow] using
+        tttFiber3Row3_source_mem_closeFrom_of_row0_mem hrow0)
+
+private theorem tttFiber3Row12_source_mem_closeFrom_of_row0_mem
+    {seed : List TauState}
+    (hrow0 : tttFiber3SourceStates tttFiber3Row0 ∈ tttFiber3CloseFrom seed) :
+    tttFiber3SourceStates tttFiber3Row12 ∈ tttFiber3CloseFrom seed := by
+  exact tttFiber3Row_source_mem_closeFrom_of_parent_mem
+    (row := tttFiber3Row12) (by simp [tttFiber3Rows]) (by decide)
+    (by simpa [tttFiber3ParentStates, tttFiber3SourceStates,
+      tttFiber3Row4, tttFiber3Row12, tripleRow] using
+        tttFiber3Row4_source_mem_closeFrom_of_row0_mem hrow0)
+
+private theorem tttFiber3Row13_source_mem_closeFrom_of_row0_mem
+    {seed : List TauState}
+    (hrow0 : tttFiber3SourceStates tttFiber3Row0 ∈ tttFiber3CloseFrom seed) :
+    tttFiber3SourceStates tttFiber3Row13 ∈ tttFiber3CloseFrom seed := by
+  exact tttFiber3Row_source_mem_closeFrom_of_parent_mem
+    (row := tttFiber3Row13) (by simp [tttFiber3Rows]) (by decide)
+    (by simpa [tttFiber3ParentStates, tttFiber3SourceStates,
+      tttFiber3Row5, tttFiber3Row13, tripleRow] using
+        tttFiber3Row5_source_mem_closeFrom_of_row0_mem hrow0)
+
+private theorem tttFiber3Row14_source_mem_closeFrom_of_row0_mem
+    {seed : List TauState}
+    (hrow0 : tttFiber3SourceStates tttFiber3Row0 ∈ tttFiber3CloseFrom seed) :
+    tttFiber3SourceStates tttFiber3Row14 ∈ tttFiber3CloseFrom seed := by
+  exact tttFiber3Row_source_mem_closeFrom_of_parent_mem
+    (row := tttFiber3Row14) (by simp [tttFiber3Rows]) (by decide)
+    (by simpa [tttFiber3ParentStates, tttFiber3SourceStates,
+      tttFiber3Row6, tttFiber3Row14, tripleRow] using
+        tttFiber3Row6_source_mem_closeFrom_of_row0_mem hrow0)
+
+private theorem tttFiber3Row15_source_mem_closeFrom_of_row0_mem
+    {seed : List TauState}
+    (hrow0 : tttFiber3SourceStates tttFiber3Row0 ∈ tttFiber3CloseFrom seed) :
+    tttFiber3SourceStates tttFiber3Row15 ∈ tttFiber3CloseFrom seed := by
+  exact tttFiber3Row_source_mem_closeFrom_of_parent_mem
+    (row := tttFiber3Row15) (by simp [tttFiber3Rows]) (by decide)
+    (by simpa [tttFiber3ParentStates, tttFiber3SourceStates,
+      tttFiber3Row7, tttFiber3Row15, tripleRow] using
+        tttFiber3Row7_source_mem_closeFrom_of_row0_mem hrow0)
+
+theorem tttFiber3Rows_mem_source_mem_closeFrom_of_row0_mem
+    {seed : List TauState}
+    (hrow0 : tttFiber3SourceStates tttFiber3Row0 ∈ tttFiber3CloseFrom seed)
+    {row : TripleComponentParentRow} (hmem : row ∈ tttFiber3Rows) :
+    tttFiber3SourceStates row ∈ tttFiber3CloseFrom seed := by
+  simp [tttFiber3Rows] at hmem
+  rcases hmem with rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl |
+    rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl
+  · exact hrow0
+  · exact tttFiber3Row1_source_mem_closeFrom_of_row0_mem hrow0
+  · exact tttFiber3Row2_source_mem_closeFrom_of_row0_mem hrow0
+  · exact tttFiber3Row3_source_mem_closeFrom_of_row0_mem hrow0
+  · exact tttFiber3Row4_source_mem_closeFrom_of_row0_mem hrow0
+  · exact tttFiber3Row5_source_mem_closeFrom_of_row0_mem hrow0
+  · exact tttFiber3Row6_source_mem_closeFrom_of_row0_mem hrow0
+  · exact tttFiber3Row7_source_mem_closeFrom_of_row0_mem hrow0
+  · exact tttFiber3Row8_source_mem_closeFrom_of_row0_mem hrow0
+  · exact tttFiber3Row9_source_mem_closeFrom_of_row0_mem hrow0
+  · exact tttFiber3Row10_source_mem_closeFrom_of_row0_mem hrow0
+  · exact tttFiber3Row11_source_mem_closeFrom_of_row0_mem hrow0
+  · exact tttFiber3Row12_source_mem_closeFrom_of_row0_mem hrow0
+  · exact tttFiber3Row13_source_mem_closeFrom_of_row0_mem hrow0
+  · exact tttFiber3Row14_source_mem_closeFrom_of_row0_mem hrow0
+  · exact tttFiber3Row15_source_mem_closeFrom_of_row0_mem hrow0
+
+theorem tttFiber3SourceStatesList_mem_closeFrom_of_row0_mem
+    {seed : List TauState}
+    (hrow0 : tttFiber3SourceStates tttFiber3Row0 ∈ tttFiber3CloseFrom seed)
+    {states : List TauState} (hmem : states ∈ tttFiber3SourceStatesList) :
+    states ∈ tttFiber3CloseFrom seed := by
+  rcases List.mem_map.mp (by simpa [tttFiber3SourceStatesList] using hmem) with
+    ⟨row, hrow, rfl⟩
+  exact tttFiber3Rows_mem_source_mem_closeFrom_of_row0_mem hrow0 hrow
+
+theorem tttFiber3ConcreteChainFiberConnected :
+    chainFiberConnected (frontierWordToChainWord tttFrontierWord)
+      (concreteChainFiber tttFrontierWord tttFiber3Key) = true := by
+  apply chainFiberConnected_of_forall_mem_close
+  intro state hmem
+  cases hfiber : concreteChainFiber tttFrontierWord tttFiber3Key with
+  | nil =>
+      simp [hfiber] at hmem
+  | cons root rest =>
+      have hrootMem :
+          root ∈ concreteChainFiber tttFrontierWord tttFiber3Key := by
+        simp [hfiber]
+      have hrootList := tttFiber3ConcreteFiber_subset_sourceStatesList hrootMem
+      have hrow0 :=
+        tttFiber3Row0_source_mem_closeFrom_of_sourceStatesList_mem hrootList
+      have hstateList := tttFiber3ConcreteFiber_subset_sourceStatesList hmem
+      have hstateClose :=
+        tttFiber3SourceStatesList_mem_closeFrom_of_row0_mem hrow0 hstateList
+      simpa [tttFiber3CloseFrom, hfiber] using hstateClose
+
+theorem tttFiber3RootClosureConnected :
+    GoertzelLemma818Fibration.Connected
+      (chainFiberRootClosureStep tttFrontierWord tttFiber3Key) :=
+  chainFiberRootClosureConnected_of_chainFiberConnected
+    tttFiber3ConcreteChainFiberConnected
+
 def tttFiberCoverLeftState
     (word : List GoertzelLemma814.TauOrient) (key : List LColor)
     (direct : List (List TauState)) (left : TauState) : Bool :=
