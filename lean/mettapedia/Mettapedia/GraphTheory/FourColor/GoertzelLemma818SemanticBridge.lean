@@ -1,4 +1,5 @@
 import Mettapedia.GraphTheory.FourColor.GoertzelLemma818Fibration
+import Mettapedia.GraphTheory.FourColor.GoertzelLemma818LengthTwoTTRealAuditBase
 import Mettapedia.GraphTheory.FourColor.GoertzelLemma818RepresentativeTargets
 
 namespace Mettapedia.GraphTheory.FourColor
@@ -7334,6 +7335,274 @@ theorem concreteChainFiberAppendQuotientFibrationParentRowsLengthTwoSeeds_ok :
   rcases hcert with ⟨cert⟩
   exact ⟨ChainFiberAppendQuotientFibrationParentRowsFields.ofConcreteAppend
     hkey cert⟩
+
+private def prefixFibrationObstructionPrev :
+    GoertzelLemma814.TauState :=
+  GoertzelLemma814.mkTauState
+    GoertzelLemma814.f2_rbp false false true true false
+
+private def prefixFibrationObstructionDeadLast :
+    GoertzelLemma814.TauState :=
+  GoertzelLemma814.mkTauState
+    GoertzelLemma814.f2_pbr true false false true false
+
+private def prefixFibrationObstructionSourceMid :
+    GoertzelLemma814.TauState :=
+  GoertzelLemma814.mkTauState
+    GoertzelLemma814.f2_pbr true false false false false
+
+private def prefixFibrationObstructionSourceLast :
+    GoertzelLemma814.TauState :=
+  GoertzelLemma814.mkTauState
+    GoertzelLemma814.f2_rbp true false true false false
+
+private def prefixFibrationObstructionWord :
+    List GoertzelLemma818FrontierMode.TauOrient :=
+  [ GoertzelLemma818FrontierMode.TauOrient.tau
+  , GoertzelLemma818FrontierMode.TauOrient.tau
+  ]
+
+private def prefixFibrationObstructionOrient :
+    GoertzelLemma818FrontierMode.TauOrient :=
+  GoertzelLemma818FrontierMode.TauOrient.tau
+
+private def prefixFibrationObstructionPrefixStates :
+    List GoertzelLemma814.TauState :=
+  [prefixFibrationObstructionPrev, prefixFibrationObstructionDeadLast]
+
+private def prefixFibrationObstructionSourceStates :
+    List GoertzelLemma814.TauState :=
+  [ prefixFibrationObstructionPrev
+  , prefixFibrationObstructionSourceMid
+  , prefixFibrationObstructionSourceLast
+  ]
+
+private def prefixFibrationObstructionKey :
+    List GoertzelLemma814.LColor :=
+  GoertzelLemma814.chainInputKey
+    (frontierWordToChainWord prefixFibrationObstructionWord)
+    prefixFibrationObstructionPrefixStates
+
+private theorem prefixFibrationObstruction_key_mem :
+    prefixFibrationObstructionKey ∈ GoertzelLemma814.colorAssignments4 := by
+  decide
+
+private theorem prefixFibrationObstruction_prefix_mem :
+    prefixFibrationObstructionPrefixStates ∈
+      concreteChainFiber prefixFibrationObstructionWord
+        prefixFibrationObstructionKey := by
+  decide
+
+private theorem prefixFibrationObstruction_source_mem :
+    prefixFibrationObstructionSourceStates ∈
+      concreteChainFiber
+        (prefixFibrationObstructionWord ++ [prefixFibrationObstructionOrient])
+        prefixFibrationObstructionKey := by
+  decide
+
+private theorem prefixFibrationObstruction_key_eq_ttFiber32 :
+    prefixFibrationObstructionKey =
+      GoertzelLemma818CompositeCertificate.ttFiber32Key := by
+  decide
+
+private theorem prefixFibrationObstruction_prefix_eq_ttFiber32StateAt2 :
+    prefixFibrationObstructionPrefixStates =
+      GoertzelLemma818LengthTwoShapeBBridge.ttFiber32StateAt 2 := by
+  decide
+
+private theorem prefixFibrationObstruction_fiber_length :
+    (concreteChainFiber prefixFibrationObstructionWord
+      prefixFibrationObstructionKey).length = 8 := by
+  rw [prefixFibrationObstruction_key_eq_ttFiber32]
+  unfold concreteChainFiber concreteChainStates
+  change
+    (GoertzelLemma814.chainFiberFrom
+      GoertzelLemma818CompositeCertificate.ttWord
+      (GoertzelLemma814.allChainStates
+        GoertzelLemma818CompositeCertificate.ttWord)
+      GoertzelLemma818CompositeCertificate.ttFiber32Key).length = 8
+  rw [GoertzelLemma818LengthTwoRealFiberBridgePrototype.ttFiber32RealFiber_eq_direct]
+  decide
+
+private theorem prefixFibrationObstruction_root_eq_ttFiber32StateAt0 :
+    chainFiberRootState prefixFibrationObstructionWord
+      prefixFibrationObstructionKey =
+      GoertzelLemma818LengthTwoShapeBBridge.ttFiber32StateAt 0 := by
+  rw [prefixFibrationObstruction_key_eq_ttFiber32]
+  unfold chainFiberRootState concreteChainFiber concreteChainStates
+  change
+    GoertzelLemma814.listGetD
+      (GoertzelLemma814.chainFiberFrom
+        GoertzelLemma818CompositeCertificate.ttWord
+        (GoertzelLemma814.allChainStates
+          GoertzelLemma818CompositeCertificate.ttWord)
+        GoertzelLemma818CompositeCertificate.ttFiber32Key)
+      0 [] =
+      GoertzelLemma818LengthTwoShapeBBridge.ttFiber32StateAt 0
+  rw [GoertzelLemma818LengthTwoRealFiberBridgePrototype.ttFiber32RealFiber_eq_direct]
+  rfl
+
+private theorem prefixFibrationObstruction_root_step :
+    GoertzelLemma814.chainSingleKempeStep
+      (frontierWordToChainWord prefixFibrationObstructionWord)
+      (chainFiberRootState prefixFibrationObstructionWord
+        prefixFibrationObstructionKey)
+      prefixFibrationObstructionPrefixStates = true := by
+  rw [prefixFibrationObstruction_root_eq_ttFiber32StateAt0,
+    prefixFibrationObstruction_prefix_eq_ttFiber32StateAt2]
+  simpa [prefixFibrationObstructionWord, frontierWordToChainWord,
+    frontierOrientToChain, GoertzelLemma818CompositeCertificate.ttWord] using
+    GoertzelLemma818LengthTwoShapeBBridge.ttFiber32ReverseSingleStep2
+
+private theorem prefixFibrationObstruction_prefix_close :
+    prefixFibrationObstructionPrefixStates ∈
+      GoertzelLemma814.closeChainFiber
+        (frontierWordToChainWord prefixFibrationObstructionWord)
+        (concreteChainFiber prefixFibrationObstructionWord
+          prefixFibrationObstructionKey)
+        (concreteChainFiber prefixFibrationObstructionWord
+          prefixFibrationObstructionKey).length
+        [chainFiberRootState prefixFibrationObstructionWord
+          prefixFibrationObstructionKey] := by
+  let fiber :=
+    concreteChainFiber prefixFibrationObstructionWord
+      prefixFibrationObstructionKey
+  let root :=
+    chainFiberRootState prefixFibrationObstructionWord
+      prefixFibrationObstructionKey
+  let orients := frontierWordToChainWord prefixFibrationObstructionWord
+  have hstepOne :
+      prefixFibrationObstructionPrefixStates ∈
+        GoertzelLemma814.closeChainFiber orients fiber 1 [root] := by
+    exact GoertzelLemma814.closeChainFiber_mem_of_seen_step
+      orients fiber 0 [root] root
+      prefixFibrationObstructionPrefixStates
+      (by simpa [fiber] using prefixFibrationObstruction_prefix_mem)
+      (by simp [root])
+      (by simpa [orients, root] using prefixFibrationObstruction_root_step)
+  have hstepEight :
+      prefixFibrationObstructionPrefixStates ∈
+        GoertzelLemma814.closeChainFiber orients fiber (1 + 7) [root] :=
+    GoertzelLemma814.closeChainFiber_mem_mono_add
+      orients fiber 1 7 [root] prefixFibrationObstructionPrefixStates
+      hstepOne
+  simpa [fiber, root, orients, prefixFibrationObstruction_fiber_length] using
+    hstepEight
+
+private theorem prefixFibrationObstruction_no_compatible_next
+    (last : GoertzelLemma814.TauState)
+    (hlast : last ∈ GoertzelLemma814.allTauStates) :
+    GoertzelLemma814.compatibleAdjacent
+      GoertzelLemma814.TauOrient.normal
+      GoertzelLemma814.TauOrient.normal
+      prefixFibrationObstructionDeadLast last = false := by
+  unfold GoertzelLemma814.allTauStates at hlast
+  rw [GoertzelLemma814.mem_bindList_iff] at hlast
+  rcases hlast with ⟨f2, hf2, hlast⟩
+  rw [GoertzelLemma814.mem_bindList_iff] at hlast
+  rcases hlast with ⟨e10UsesE23, he10UsesE23, hlast⟩
+  rw [GoertzelLemma814.mem_bindList_iff] at hlast
+  rcases hlast with ⟨b1b2Swap, hb1b2Swap, hlast⟩
+  rw [GoertzelLemma814.mem_bindList_iff] at hlast
+  rcases hlast with ⟨b3b4Swap, hb3b4Swap, hlast⟩
+  rw [GoertzelLemma814.mem_bindList_iff] at hlast
+  rcases hlast with ⟨f4Swap, hf4Swap, hlast⟩
+  rw [List.mem_map] at hlast
+  rcases hlast with ⟨b5b6Swap, hb5b6Swap, rfl⟩
+  simp [GoertzelLemma814.f2Triples] at hf2
+  rcases hf2 with
+    rfl | rfl | rfl | rfl | rfl | rfl <;>
+  cases e10UsesE23 <;>
+  cases b1b2Swap <;>
+  cases b3b4Swap <;>
+  cases f4Swap <;>
+  cases b5b6Swap <;>
+  decide
+
+private theorem prefixFibrationObstruction_no_extension
+    (point : ChainFiberPoint
+      (prefixFibrationObstructionWord ++ [prefixFibrationObstructionOrient])
+      prefixFibrationObstructionKey)
+    (htake :
+      point.1.take prefixFibrationObstructionWord.length =
+        prefixFibrationObstructionPrefixStates) :
+    False := by
+  have hne : prefixFibrationObstructionWord ≠ [] := by
+    simp [prefixFibrationObstructionWord]
+  rcases concreteChainFiberAppendPoint_mem_split
+      prefixFibrationObstructionWord prefixFibrationObstructionOrient hne
+      prefixFibrationObstructionKey point with
+    ⟨pref, last, _hpref, hlast, hcompatible, _hpoint, hprefTake⟩
+  have hpref : pref = prefixFibrationObstructionPrefixStates :=
+    hprefTake.trans htake
+  subst pref
+  have htail :
+      GoertzelLemma814.chainStateAt
+        (point.1.take prefixFibrationObstructionWord.length) 1 =
+        prefixFibrationObstructionDeadLast := by
+    have htakeAt :=
+      congrArg (fun states => GoertzelLemma814.chainStateAt states 1)
+        htake
+    simpa [prefixFibrationObstructionWord,
+      prefixFibrationObstructionPrefixStates,
+      prefixFibrationObstructionDeadLast,
+      GoertzelLemma814.chainStateAt, GoertzelLemma814.listGetD] using
+      htakeAt
+  have htailIdx :
+      GoertzelLemma814.chainStateAt
+        (point.1.take prefixFibrationObstructionWord.length)
+        (prefixFibrationObstructionWord.length - 1) =
+        prefixFibrationObstructionDeadLast := by
+    simpa [prefixFibrationObstructionWord] using htail
+  have hcompatibleNormal :
+      GoertzelLemma814.compatibleAdjacent
+        GoertzelLemma814.TauOrient.normal
+        GoertzelLemma814.TauOrient.normal
+        prefixFibrationObstructionDeadLast last = true := by
+    have hcompat := hcompatible
+    rw [htailIdx] at hcompat
+    simpa [prefixFibrationObstructionWord,
+      prefixFibrationObstructionOrient,
+      frontierWordToChainWord, frontierOrientToChain,
+      GoertzelLemma814.tauOrientAt, GoertzelLemma814.listGetD] using hcompat
+  have hfalse :=
+    prefixFibrationObstruction_no_compatible_next last hlast
+  rw [hcompatibleNormal] at hfalse
+  cases hfalse
+
+theorem not_concreteChainFiberAppendPrefixFibrationClosed :
+    ¬ concreteChainFiberAppendPrefixFibrationClosed := by
+  intro hclosed
+  let word := prefixFibrationObstructionWord
+  let orient := prefixFibrationObstructionOrient
+  let key := prefixFibrationObstructionKey
+  have hne : word ≠ [] := by
+    simp [word, prefixFibrationObstructionWord]
+  have hcert : Nonempty (ChainWordConcreteFibrationCertificate word) := by
+    simpa [word, prefixFibrationObstructionWord,
+      GoertzelLemma818FrontierBaseBridge.lengthTwoFrontierWord] using
+      concreteChainWordFibrationLengthTwoSeeds_ok
+        GoertzelLemma818LengthTwoBase.LengthTwoOrientWord.tt
+  let x : ChainFiberPoint (word ++ [orient]) key :=
+    ⟨prefixFibrationObstructionSourceStates,
+      by simpa [word, orient, key] using prefixFibrationObstruction_source_mem⟩
+  let b : ChainFiberPoint word key :=
+    ⟨prefixFibrationObstructionPrefixStates,
+      by simpa [word, key] using prefixFibrationObstruction_prefix_mem⟩
+  have hbase : chainFiberRootClosureStep word key
+      ((concreteChainFiberAppendPrefixProjection word orient hne key).prefixPoint x)
+      b := by
+    simpa [chainFiberRootClosureStep, b, word, key] using
+      prefixFibrationObstruction_prefix_close
+  have hfib := hclosed word orient hne hcert key
+    (by simpa [key] using prefixFibrationObstruction_key_mem)
+  rcases hfib.liftStep x b hbase with ⟨y, hyproj, _hyreach⟩
+  have htake :
+      y.1.take word.length = prefixFibrationObstructionPrefixStates := by
+    have hval := congrArg Subtype.val hyproj
+    simpa [concreteChainFiberAppendPrefixProjection, b] using hval
+  exact prefixFibrationObstruction_no_extension y
+    (by simpa [word, orient, key] using htake)
 
 def concreteChainFiberAppendQuotientFibrationParentRowsNonSingletonPrefixFieldsClosed :
     Prop :=
