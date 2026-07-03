@@ -430,6 +430,41 @@ example {m q : Nat} (i₀ : Fin m)
 
 noncomputable example {m q : Nat} (i₀ : Fin m)
     (observer : V13RealLinearSequentialRowObserver m q) (t : Fin q)
+    (activeIdx :
+      V13RealLinearNoTargetSequentialTraceFirstCosetHitActiveFixedMapTranscriptCylinderIndex
+        i₀ observer t) :
+    V13RealLinearRowsUnreadAssignment m activeIdx.1.rows ↪
+      V13RealLinearNoTargetSequentialTraceFirstCosetHitFixedMapTranscriptCylinder
+        i₀ observer t activeIdx.1 :=
+  v13RealLinearRowsUnreadAssignmentToActiveNoTargetSequentialTraceFirstCosetHitFixedMapTranscriptCylinder
+    i₀ observer t activeIdx
+
+example {m q : Nat} (i₀ : Fin m)
+    (observer : V13RealLinearSequentialRowObserver m q) (t : Fin q)
+    (activeIdx :
+      V13RealLinearNoTargetSequentialTraceFirstCosetHitActiveFixedMapTranscriptCylinderIndex
+        i₀ observer t) :
+    2 ^ (m - activeIdx.1.rows.card) ≤
+      Fintype.card
+        (V13RealLinearNoTargetSequentialTraceFirstCosetHitFixedMapTranscriptCylinder
+          i₀ observer t activeIdx.1) :=
+  v13RealLinearNoTargetSequentialTraceFirstCosetHitActiveFixedMapTranscriptCylinder_capacity_le_card
+    i₀ observer t activeIdx
+
+example {m q : Nat} (i₀ : Fin m)
+    (observer : V13RealLinearSequentialRowObserver m q) (t : Fin q)
+    (activeIdx :
+      V13RealLinearNoTargetSequentialTraceFirstCosetHitActiveFixedMapTranscriptCylinderIndex
+        i₀ observer t) :
+    Fintype.card
+        (V13RealLinearNoTargetSequentialTraceFirstCosetHitFixedMapTranscriptCylinder
+          i₀ observer t activeIdx.1) =
+      2 ^ (m - activeIdx.1.rows.card) :=
+  v13RealLinearNoTargetSequentialTraceFirstCosetHitActiveFixedMapTranscriptCylinder_card_eq_capacity
+    i₀ observer t activeIdx
+
+noncomputable example {m q : Nat} (i₀ : Fin m)
+    (observer : V13RealLinearSequentialRowObserver m q) (t : Fin q)
     (pref :
       V13RealLinearSequentialPrefixTranscriptVector m (t : Nat)) :
     V13RealLinearNoTargetSequentialTraceFirstCosetHitOrderedPrefixWorldSet
