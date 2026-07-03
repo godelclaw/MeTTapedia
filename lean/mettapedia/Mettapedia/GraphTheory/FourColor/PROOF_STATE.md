@@ -216,7 +216,13 @@ row.  Thus
 `concreteChainFiberAppendQuotientFibrationParentRowsNonSingletonPrefixAppendedParentRowsProjectionFiniteSectionClosed_of_appended_parent_rows_connected_and_projection_surjective`
 packages the current combined predicate from appended parent-row connectedness
 plus projection surjectivity; generated files do not need to emit the selector
-as independent data if they can prove surjectivity.
+as independent data if they can prove surjectivity.  The equivalent right-
+inverse surface
+`concreteChainFiberAppendQuotientFibrationParentRowsNonSingletonPrefixProjectionSectionClosed`
+allows generated data to emit a projection together with a selected appended
+preimage for every prefix point; the `_of_projection_section` wrappers convert
+that selector form to projection surjectivity, finite-section data, and the
+combined predicate when paired with appended parent-row connectedness.
 Focused Lake build evidence is
 `fourcolor-surjective-projection-split-lake-build-20260703.log` (607 jobs,
 SHA256
@@ -266,6 +272,16 @@ and
 the projection-surjective finite-section conversion and the parent-rows plus
 projection-surjective combiner depend on `propext`, `Classical.choice`, and
 `Quot.sound`.
+Projection-section surface evidence is
+`fourcolor-projection-section-surface-build-20260703.log`
+(607 jobs, SHA256
+`42b85d3ce0d0a5e2641a558eef105dede1656f5f53987a856d85e2d497c34f9c`)
+and `fourcolor-projection-section-surface-axioms-20260703.log` (SHA256
+`f68f30580cd5517bc15b0c6f1ca4c2cc410e918a38e16e5d97fbb6182f69df56`);
+the section-to-surjective wrapper depends on `propext`, the reverse
+surjective-to-section wrapper depends on `propext` and `Classical.choice`,
+and the finite-section and combined selector wrappers depend on `propext`,
+`Classical.choice`, and `Quot.sound`.
 Combined transfer/composition wrapper evidence is
 `fourcolor-combined-parent-rows-transfer-composition-build-20260703.log`
 (607 jobs, SHA256
