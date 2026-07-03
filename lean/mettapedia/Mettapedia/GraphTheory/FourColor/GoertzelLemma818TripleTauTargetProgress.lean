@@ -2016,6 +2016,31 @@ def ttFiber32AppendedParentRowsProjectionFiniteSectionCase :
       ttFiber32AppendedParentRowsProjectionFiniteSection_of_eq
         rfl rfl rfl root rest hfiber }
 
+theorem tttTargetFrontierWord_eq_ttFiber32FrontierWord_append :
+    targetFrontierWord RepresentativeSemanticTarget.ttt =
+      ttFiber32FrontierWord ++
+        [GoertzelLemma818FrontierMode.TauOrient.tau] := by
+  rfl
+
+def ttFiber32AppendedParentRowsProjectionFiniteSectionTargetCase :
+    AppendedParentRowsProjectionFiniteSectionTargetCase :=
+  { target := RepresentativeSemanticTarget.ttt
+    prefixWord := ttFiber32FrontierWord
+    orient := GoertzelLemma818FrontierMode.TauOrient.tau
+    key := GoertzelLemma818CompositeCertificate.ttFiber32Key
+    targetWord_eq := tttTargetFrontierWord_eq_ttFiber32FrontierWord_append
+    lengthGtOne := ttFiber32FrontierWord_length_gt_one
+    prefixCertificate := ttFiber32FrontierWord_fibrationCertificate
+    keyMem := ttFiber32Key_mem_colorAssignments4
+    rows := fun root rest hfiber =>
+      ttFiber32AppendedParentRowsProjectionFiniteSection_of_eq
+        rfl rfl rfl root rest hfiber }
+
+theorem ttFiber32AppendedParentRowsProjectionFiniteSectionTargetCase_toCase :
+    ttFiber32AppendedParentRowsProjectionFiniteSectionTargetCase.toCase =
+      ttFiber32AppendedParentRowsProjectionFiniteSectionCase := by
+  rfl
+
 def tttPartialTargetCertificateAudit : Bool :=
   tttMode09WitnessAudit
     && tttTargetProgressCountsAudit
