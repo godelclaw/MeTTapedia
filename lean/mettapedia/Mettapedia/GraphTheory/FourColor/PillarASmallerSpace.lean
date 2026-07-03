@@ -442,6 +442,62 @@ theorem closedWalkExactShell_needBasedPillarARequirement_routeKempeSwitch_of_bou
       (G := G) emb (selectedBoundaryInteriorEdgeEndpointVertices emb)
       shell.tait.coloring htrivial hG
 
+/-- Closed-walk shell form of the need-based route endpoint from
+boundary-rooted interior-dual peel data. -/
+theorem closedWalkExactShell_needBasedPillarARequirement_routeKempeSwitch_of_planarBoundaryInteriorDualBoundaryRootAdjDistancePeelData_of_hasCubicIncidentEdgeTriples
+    [Fintype G.edgeSet] [FiniteDimensional F2 (G.edgeSet → Color)]
+    {emb : PlaneEmbeddingWithBoundary G} (shell : ClosedWalkExactShell emb)
+    (data : PlanarBoundaryInteriorDualBoundaryRootAdjDistancePeelData emb)
+    (hG : HasCubicIncidentEdgeTriples G) :
+    ClosedWalkExactShellNeedBasedPillarARequirement shell
+      (RouteKempeSwitchExecutionStep emb) := by
+  exact
+    needBasedPillarARequirement_routeKempeSwitch_of_planarBoundaryInteriorDualBoundaryRootAdjDistancePeelData_of_hasCubicIncidentEdgeTriples
+      (G := G) emb (selectedBoundaryInteriorEdgeEndpointVertices emb) data
+      shell.tait.coloring shell.tait.isTait hG
+
+/-- Closed-walk shell form of the need-based route endpoint from
+height-ordered peel data. -/
+theorem closedWalkExactShell_needBasedPillarARequirement_routeKempeSwitch_of_planarBoundaryHeightOrderedFacePeelWitnessData_of_hasCubicIncidentEdgeTriples
+    [Fintype G.edgeSet] [FiniteDimensional F2 (G.edgeSet → Color)]
+    {emb : PlaneEmbeddingWithBoundary G} (shell : ClosedWalkExactShell emb)
+    (data : PlanarBoundaryHeightOrderedFacePeelWitnessData emb)
+    (hG : HasCubicIncidentEdgeTriples G) :
+    ClosedWalkExactShellNeedBasedPillarARequirement shell
+      (RouteKempeSwitchExecutionStep emb) := by
+  exact
+    needBasedPillarARequirement_routeKempeSwitch_of_planarBoundaryHeightOrderedFacePeelWitnessData_of_hasCubicIncidentEdgeTriples
+      (G := G) emb (selectedBoundaryInteriorEdgeEndpointVertices emb) data
+      shell.tait.coloring shell.tait.isTait hG
+
+/-- Closed-walk shell form of the need-based route endpoint from finite
+collar-layer peel data. -/
+theorem closedWalkExactShell_needBasedPillarARequirement_routeKempeSwitch_of_planarBoundaryCollarLayerFacePeelWitnessData_of_hasCubicIncidentEdgeTriples
+    [Fintype G.edgeSet] [FiniteDimensional F2 (G.edgeSet → Color)]
+    {emb : PlaneEmbeddingWithBoundary G} (shell : ClosedWalkExactShell emb)
+    (data : PlanarBoundaryCollarLayerFacePeelWitnessData emb)
+    (hG : HasCubicIncidentEdgeTriples G) :
+    ClosedWalkExactShellNeedBasedPillarARequirement shell
+      (RouteKempeSwitchExecutionStep emb) := by
+  exact
+    needBasedPillarARequirement_routeKempeSwitch_of_planarBoundaryCollarLayerFacePeelWitnessData_of_hasCubicIncidentEdgeTriples
+      (G := G) emb (selectedBoundaryInteriorEdgeEndpointVertices emb) data
+      shell.tait.coloring shell.tait.isTait hG
+
+/-- Closed-walk shell form of the need-based route endpoint from local-remainder
+collar peel data. -/
+theorem closedWalkExactShell_needBasedPillarARequirement_routeKempeSwitch_of_planarBoundaryLocalRemainderBoundaryCollarLayerFacePeelWitnessData_of_hasCubicIncidentEdgeTriples
+    [Fintype G.edgeSet] [FiniteDimensional F2 (G.edgeSet → Color)]
+    {emb : PlaneEmbeddingWithBoundary G} (shell : ClosedWalkExactShell emb)
+    (data : PlanarBoundaryLocalRemainderBoundaryCollarLayerFacePeelWitnessData emb)
+    (hG : HasCubicIncidentEdgeTriples G) :
+    ClosedWalkExactShellNeedBasedPillarARequirement shell
+      (RouteKempeSwitchExecutionStep emb) := by
+  exact
+    needBasedPillarARequirement_routeKempeSwitch_of_planarBoundaryLocalRemainderBoundaryCollarLayerFacePeelWitnessData_of_hasCubicIncidentEdgeTriples
+      (G := G) emb (selectedBoundaryInteriorEdgeEndpointVertices emb) data
+      shell.tait.coloring shell.tait.isTait hG
+
 /-- On shell-bearing embeddings, the projected generator span contains an
 explicit direction outside the detector whenever the manuscript-style
 annihilator endpoint makes that projected family span all selected-boundary-zero
