@@ -1359,6 +1359,110 @@ theorem ttFiber32AppendProjectionSection :
   ⟨ttFiber32AppendProjection, ttFiber32AppendSelectedPreimage,
     ttFiber32AppendProjection_section⟩
 
+def ttFiber32PrefixPointList :
+    List (ChainFiberPoint ttFiber32FrontierWord
+      GoertzelLemma818CompositeCertificate.ttFiber32Key) :=
+  [ ttFiber32PrefixPoint ⟨0, by decide⟩
+  , ttFiber32PrefixPoint ⟨1, by decide⟩
+  , ttFiber32PrefixPoint ⟨2, by decide⟩
+  , ttFiber32PrefixPoint ⟨3, by decide⟩
+  , ttFiber32PrefixPoint ⟨4, by decide⟩
+  , ttFiber32PrefixPoint ⟨5, by decide⟩
+  , ttFiber32PrefixPoint ⟨6, by decide⟩
+  , ttFiber32PrefixPoint ⟨7, by decide⟩
+  ]
+
+theorem ttFiber32PrefixPointList_mem
+    (point : ChainFiberPoint ttFiber32FrontierWord
+      GoertzelLemma818CompositeCertificate.ttFiber32Key) :
+    point ∈ ttFiber32PrefixPointList := by
+  rcases ttFiber32PrefixPoint_surjective point with ⟨i, rfl⟩
+  rcases i with ⟨n, hn⟩
+  have hn8 : n < 8 := by
+    simpa [GoertzelLemma818CompositeCertificate.ttFiber32Rows] using hn
+  by_cases h0 : n = 0
+  · subst n
+    simp [ttFiber32PrefixPointList]
+  by_cases h1 : n = 1
+  · subst n
+    simp [ttFiber32PrefixPointList]
+  by_cases h2 : n = 2
+  · subst n
+    simp [ttFiber32PrefixPointList]
+  by_cases h3 : n = 3
+  · subst n
+    simp [ttFiber32PrefixPointList]
+  by_cases h4 : n = 4
+  · subst n
+    simp [ttFiber32PrefixPointList]
+  by_cases h5 : n = 5
+  · subst n
+    simp [ttFiber32PrefixPointList]
+  by_cases h6 : n = 6
+  · subst n
+    simp [ttFiber32PrefixPointList]
+  have h7 : n = 7 := by omega
+  subst n
+  simp [ttFiber32PrefixPointList]
+
+noncomputable def ttFiber32AppendPreimageRows :
+    List
+      (ChainFiberPoint
+        (ttFiber32FrontierWord ++
+          [GoertzelLemma818FrontierMode.TauOrient.tau])
+        GoertzelLemma818CompositeCertificate.ttFiber32Key) :=
+  ttFiber32PrefixPointList.map ttFiber32AppendSelectedPreimage
+
+theorem ttFiber32AppendSelectedPreimage_mem_rows
+    (point : ChainFiberPoint ttFiber32FrontierWord
+      GoertzelLemma818CompositeCertificate.ttFiber32Key) :
+    ttFiber32AppendSelectedPreimage point ∈
+      ttFiber32AppendPreimageRows :=
+  List.mem_map.mpr ⟨point, ttFiber32PrefixPointList_mem point, rfl⟩
+
+noncomputable def ttFiber32AppendPreimageRowOf
+    (point : ChainFiberPoint ttFiber32FrontierWord
+      GoertzelLemma818CompositeCertificate.ttFiber32Key) :
+    Fin ttFiber32AppendPreimageRows.length :=
+  Classical.choose
+    (List.get_of_mem (ttFiber32AppendSelectedPreimage_mem_rows point))
+
+theorem ttFiber32AppendPreimageRows_get_rowOf
+    (point : ChainFiberPoint ttFiber32FrontierWord
+      GoertzelLemma818CompositeCertificate.ttFiber32Key) :
+    ttFiber32AppendPreimageRows.get
+        (ttFiber32AppendPreimageRowOf point) =
+      ttFiber32AppendSelectedPreimage point :=
+  Classical.choose_spec
+    (List.get_of_mem (ttFiber32AppendSelectedPreimage_mem_rows point))
+
+theorem ttFiber32AppendProjectionFiniteSection :
+    ∃ proj :
+      ChainFiberPoint
+        (ttFiber32FrontierWord ++
+          [GoertzelLemma818FrontierMode.TauOrient.tau])
+        GoertzelLemma818CompositeCertificate.ttFiber32Key →
+        ChainFiberPoint ttFiber32FrontierWord
+          GoertzelLemma818CompositeCertificate.ttFiber32Key,
+      ∃ preimageRows :
+        List
+          (ChainFiberPoint
+            (ttFiber32FrontierWord ++
+              [GoertzelLemma818FrontierMode.TauOrient.tau])
+            GoertzelLemma818CompositeCertificate.ttFiber32Key),
+        ∃ rowOf :
+          ChainFiberPoint ttFiber32FrontierWord
+            GoertzelLemma818CompositeCertificate.ttFiber32Key →
+            Fin preimageRows.length,
+          ∀ point : ChainFiberPoint ttFiber32FrontierWord
+              GoertzelLemma818CompositeCertificate.ttFiber32Key,
+            proj (preimageRows.get (rowOf point)) = point := by
+  refine ⟨ttFiber32AppendProjection, ttFiber32AppendPreimageRows,
+    ttFiber32AppendPreimageRowOf, ?_⟩
+  intro point
+  rw [ttFiber32AppendPreimageRows_get_rowOf]
+  exact ttFiber32AppendProjection_section point
+
 def ttFiber32SelectedTttFiber32StatesList : List (List TauState) :=
   [ ttFiber32SelectedTttFiber32States ⟨0, by decide⟩
   , ttFiber32SelectedTttFiber32States ⟨1, by decide⟩

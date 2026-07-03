@@ -330,9 +330,13 @@ also includes `ttFiber32AppendProjectionInjectivePreimage`, an injective
 selected preimage from semantic `TT` fiber-32 prefix points to the chosen `TTT`
 appended points, plus `ttFiber32AppendProjection_section` and
 `ttFiber32AppendProjection_surjective`, which expose the corresponding local
-projection/section surface.  This is not a canonical prefix-projection claim;
-it is a row-index semantic selector that still has to be generalized into the
-global generated projection witness.
+projection/section surface.  The same local instance now has the finite-row
+selector package `ttFiber32AppendProjectionFiniteSection`, using
+`ttFiber32AppendPreimageRows` and `ttFiber32AppendPreimageRowOf` to match the
+emitted projection finite-section surface.  This is not a canonical
+prefix-projection claim; it is a row-index semantic selector that still has to
+be generalized into the global generated projection witness, and it does not
+prove appended root-closure connectedness.
 The prefix-fibration adapter
 `concreteChainFiberAppendQuotientFibrationParentRowsNonSingletonPrefixBaseDataStructuralClosed_of_prefix_fibration`
 now shows that `concreteChainFiberAppendPrefixFibrationClosed` is enough to
