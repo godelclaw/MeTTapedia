@@ -17,6 +17,8 @@ import Mettapedia.QuantumTheory.YangMills.OSGateAudit
 import Mettapedia.QuantumTheory.YangMills.ProofState
 import Mettapedia.QuantumTheory.YangMills.ProofStateZ2StrongCoupling
 import Mettapedia.QuantumTheory.YangMills.ProofStateZ3StrongCoupling
+import Mettapedia.QuantumTheory.YangMills.Q8StrongCouplingGap
+import Mettapedia.QuantumTheory.YangMills.Q8TransferClustering
 import Mettapedia.QuantumTheory.YangMills.ReflectionPositivityGateCanaries
 import Mettapedia.QuantumTheory.YangMills.RGBootstrap
 import Mettapedia.QuantumTheory.YangMills.RGBootstrapSlack
