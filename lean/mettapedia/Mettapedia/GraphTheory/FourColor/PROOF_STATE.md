@@ -555,6 +555,20 @@ known `RepresentativeSemanticTarget.ttt`/key-32 local case and reduces back to
 the canonical target-append shape.  This is the finite representative-target
 artifact shape only; it does not by itself turn representative cases into the
 globally quantified transfer predicate.
+The row-surface body now has a reusable local constructor,
+`appendedParentRowsProjectionFiniteSectionBody_of_connected_injective_preimage`:
+for a fixed nonempty prefix fiber, appended root-closure connectedness plus an
+injective selected appended preimage for every prefix point produce the finite
+projection-section body.  The known key-32 exact wrapper
+`ttFiber32AppendedParentRowsProjectionFiniteSection_of_eq` now uses this
+helper, so generated target cases can aim at the smaller connectedness plus
+injective-preimage interface.  Evidence is
+`fourcolor-projection-body-helper-build-20260703.log` (1110 jobs, SHA256
+`533583471beb7370ab7616d30759ba326e1980aa620684f7175311666fcbac90`) and
+`fourcolor-projection-body-helper-axioms-20260703.log` (SHA256
+`51ef93e7dd9b86365e4f1deb6b8ac69eb566080dc8496f461dc5933cf8e3bae5`);
+both audited theorems depend on `propext`, `Classical.choice`, and
+`Quot.sound`.
 The bridge also exposes the partial selected-key variant
 `AppendedParentRowsProjectionFiniteSectionTargetAppendCasesCoverOn` and
 `representativeTargetAppendParentRowsProjectionFiniteSectionClosedOn`, with

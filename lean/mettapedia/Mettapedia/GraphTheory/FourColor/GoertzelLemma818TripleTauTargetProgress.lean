@@ -2002,7 +2002,16 @@ theorem ttFiber32AppendedParentRowsProjectionFiniteSection_of_eq
   subst word
   subst orient
   subst key
-  exact ttFiber32AppendedParentRowsProjectionFiniteSection
+  exact
+    appendedParentRowsProjectionFiniteSectionBody_of_connected_injective_preimage
+      _hfiber
+      (by
+        simpa [ttFiber32FrontierWord,
+          GoertzelLemma818TripleTauLightComponentCertificate.tttFrontierWord,
+          GoertzelLemma818CompositeCertificate.ttFiber32Key,
+          GoertzelLemma818TripleTauLightComponentCertificate.tttFiber32Key] using
+          tttFiber32RootClosureConnected)
+      ttFiber32AppendProjectionInjectivePreimage
 
 def ttFiber32AppendedParentRowsProjectionFiniteSectionCase :
     AppendedParentRowsProjectionFiniteSectionCase :=
