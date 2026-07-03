@@ -284,7 +284,12 @@ each prefix fiber point to one selected row.  The combined emitted predicate
 packages both row-shaped certificates for generated files.  Its direct wrappers
 now carry that single predicate through parent-row field closure, the concrete
 fiber/audit nonempty-transfer closures, semantic sufficiency, the non-target
-all-word audit, and the target-gated all-word audit.
+all-word audit, and the target-gated all-word audit.  The finite-section half
+now follows from projection surjectivity by enumerating the finite prefix fiber,
+so generated files may prove appended parent-row connectedness plus projection
+surjectivity and use
+`concreteChainFiberAppendQuotientFibrationParentRowsNonSingletonPrefixAppendedParentRowsProjectionFiniteSectionClosed_of_appended_parent_rows_connected_and_projection_surjective`
+to package the combined predicate.
 The theorem
 `tttFiber32Rows_length_eq_two_mul_ttFiber32Rows_length` records the table-level
 alignment for the known `TT` obstruction key: the same generated key appears in
