@@ -4101,6 +4101,168 @@ theorem v13RealLinearSequentialPrefixRhsHistory_card (n : Nat) :
     norm_num
   rw [hzmod]
 
+theorem v13RealLinearSequentialPrefixTranscriptVectorOf_castSucc
+    {m q : Nat} (observer : V13RealLinearSequentialRowObserver m q)
+    (publicInput : V13RealLinearPublic m) (n : Nat) (k : Fin n) :
+    v13RealLinearSequentialPrefixTranscriptVectorOf observer publicInput
+        (n + 1) k.castSucc =
+      v13RealLinearSequentialPrefixTranscriptVectorOf observer publicInput
+        n k := by
+  change
+    (v13RealLinearSequentialRowPrefixTranscriptOf observer publicInput
+      (n + 1))[k.castSucc]'(by
+        simp [v13RealLinearSequentialRowPrefixTranscriptOf_length]) =
+    (v13RealLinearSequentialRowPrefixTranscriptOf observer publicInput n)[k]'(by
+        simp [v13RealLinearSequentialRowPrefixTranscriptOf_length])
+  simp [v13RealLinearSequentialRowPrefixTranscriptOf_succ,
+    v13RealLinearSequentialRowPrefixTranscriptOf_length]
+
+theorem v13RealLinearSequentialPrefixTranscriptVectorOf_last
+    {m q : Nat} (observer : V13RealLinearSequentialRowObserver m q)
+    (publicInput : V13RealLinearPublic m) (n : Nat) :
+    v13RealLinearSequentialPrefixTranscriptVectorOf observer publicInput
+        (n + 1) ⟨n, Nat.lt_succ_self n⟩ =
+      (observer.chooseRow
+          (v13RealLinearSequentialRowPrefixTranscriptOf
+            observer publicInput n),
+        v13RealLinearRowView
+          (observer.chooseRow
+            (v13RealLinearSequentialRowPrefixTranscriptOf
+              observer publicInput n))
+          publicInput) := by
+  change
+    (v13RealLinearSequentialRowPrefixTranscriptOf observer publicInput
+      (n + 1))[n]'(by
+        simp [v13RealLinearSequentialRowPrefixTranscriptOf_length]) =
+      (observer.chooseRow
+          (v13RealLinearSequentialRowPrefixTranscriptOf
+            observer publicInput n),
+        v13RealLinearRowView
+          (observer.chooseRow
+            (v13RealLinearSequentialRowPrefixTranscriptOf
+              observer publicInput n))
+          publicInput)
+  simp [v13RealLinearSequentialRowPrefixTranscriptOf_succ,
+    v13RealLinearSequentialRowPrefixTranscriptOf_length]
+
+theorem v13RealLinearRowView_eq_of_A_eq_rhs_eq
+    {m : Nat} {public₀ public₁ : V13RealLinearPublic m}
+    {row : Fin m} (hA : public₀.A = public₁.A)
+    (hrhs : public₀.b row = public₁.b row) :
+    v13RealLinearRowView row public₀ =
+      v13RealLinearRowView row public₁ := by
+  rcases public₀ with ⟨A₀, b₀⟩
+  rcases public₁ with ⟨A₁, b₁⟩
+  dsimp at hA hrhs ⊢
+  subst A₁
+  exact Prod.ext (by funext probe; rfl) hrhs
+
+theorem
+    v13RealLinearSequentialPrefixTranscriptVectorOf_eq_of_A_eq_rhs
+    {m q : Nat} (observer : V13RealLinearSequentialRowObserver m q)
+    {public₀ public₁ : V13RealLinearPublic m} (n : Nat)
+    (hA : public₀.A = public₁.A)
+    (hrhs :
+      v13RealLinearSequentialPrefixTranscriptVectorRhs
+          (v13RealLinearSequentialPrefixTranscriptVectorOf observer
+            public₀ n) =
+        v13RealLinearSequentialPrefixTranscriptVectorRhs
+          (v13RealLinearSequentialPrefixTranscriptVectorOf observer
+            public₁ n)) :
+    v13RealLinearSequentialPrefixTranscriptVectorOf observer public₀ n =
+      v13RealLinearSequentialPrefixTranscriptVectorOf observer public₁ n := by
+  induction n with
+  | zero =>
+      funext k
+      exact Fin.elim0 k
+  | succ n ih =>
+      have hrhsPrev :
+          v13RealLinearSequentialPrefixTranscriptVectorRhs
+              (v13RealLinearSequentialPrefixTranscriptVectorOf observer
+                public₀ n) =
+            v13RealLinearSequentialPrefixTranscriptVectorRhs
+              (v13RealLinearSequentialPrefixTranscriptVectorOf observer
+                public₁ n) := by
+        funext k
+        have h := congrFun hrhs k.castSucc
+        simpa [v13RealLinearSequentialPrefixTranscriptVectorRhs,
+          v13RealLinearSequentialPrefixTranscriptVectorOf_castSucc]
+          using h
+      have hpref := ih hrhsPrev
+      have hprefixList :
+          v13RealLinearSequentialRowPrefixTranscriptOf
+              observer public₀ n =
+            v13RealLinearSequentialRowPrefixTranscriptOf
+              observer public₁ n := by
+        have hlist :=
+          congrArg v13RealLinearSequentialPrefixTranscriptVectorToList hpref
+        simpa [v13RealLinearSequentialPrefixTranscriptVectorOf_toList]
+          using hlist
+      funext k
+      by_cases hk : (k : Nat) < n
+      · let k' : Fin n := ⟨k.1, hk⟩
+        have hkEq : k = k'.castSucc := by
+          apply Fin.ext
+          rfl
+        calc
+          v13RealLinearSequentialPrefixTranscriptVectorOf observer public₀
+              (n + 1) k =
+            v13RealLinearSequentialPrefixTranscriptVectorOf observer public₀
+              (n + 1) k'.castSucc := by rw [hkEq]
+          _ =
+            v13RealLinearSequentialPrefixTranscriptVectorOf observer public₀
+              n k' :=
+            v13RealLinearSequentialPrefixTranscriptVectorOf_castSucc
+              observer public₀ n k'
+          _ =
+            v13RealLinearSequentialPrefixTranscriptVectorOf observer public₁
+              n k' := by rw [hpref]
+          _ =
+            v13RealLinearSequentialPrefixTranscriptVectorOf observer public₁
+              (n + 1) k'.castSucc :=
+            (v13RealLinearSequentialPrefixTranscriptVectorOf_castSucc
+              observer public₁ n k').symm
+          _ =
+            v13RealLinearSequentialPrefixTranscriptVectorOf observer public₁
+              (n + 1) k := by rw [hkEq]
+      · have hkLast : k = ⟨n, Nat.lt_succ_self n⟩ := by
+          apply Fin.ext
+          exact
+            le_antisymm
+              (Nat.le_of_lt_succ k.2)
+              (Nat.le_of_not_gt hk)
+        subst k
+        have hchoose :
+            observer.chooseRow
+                (v13RealLinearSequentialRowPrefixTranscriptOf
+                  observer public₀ n) =
+              observer.chooseRow
+                (v13RealLinearSequentialRowPrefixTranscriptOf
+                  observer public₁ n) := by
+          rw [hprefixList]
+        have hrhsLast :
+            (v13RealLinearRowView
+                (observer.chooseRow
+                  (v13RealLinearSequentialRowPrefixTranscriptOf
+                    observer public₀ n))
+                public₀).2 =
+              (v13RealLinearRowView
+                (observer.chooseRow
+                  (v13RealLinearSequentialRowPrefixTranscriptOf
+                    observer public₀ n))
+                public₁).2 := by
+          have h := congrFun hrhs ⟨n, Nat.lt_succ_self n⟩
+          simpa [v13RealLinearSequentialPrefixTranscriptVectorRhs,
+            v13RealLinearSequentialPrefixTranscriptVectorOf_last,
+            hprefixList] using h
+        rw [v13RealLinearSequentialPrefixTranscriptVectorOf_last,
+          v13RealLinearSequentialPrefixTranscriptVectorOf_last]
+        apply Prod.ext
+        · exact hchoose
+        · simpa [hchoose] using
+            v13RealLinearRowView_eq_of_A_eq_rhs_eq
+              hA hrhsLast
+
 noncomputable def
     v13RealLinearNoTargetSequentialTraceFirstCosetHitActiveFixedMapTranscriptCylinder_witness
     {m q : Nat} (i₀ : Fin m)
