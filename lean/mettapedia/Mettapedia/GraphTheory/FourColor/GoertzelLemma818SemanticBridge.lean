@@ -3213,6 +3213,79 @@ theorem concreteChainFiberAppendLocalSingletonComponent_shift_nextLayer_contains
     rw [hlocalFalse] at hlocalTrue
     cases hlocalTrue
 
+theorem concreteChainFiberAppendLocalSingletonComponent_nextLayer_mem_component
+    (orient : GoertzelLemma818FrontierMode.TauOrient)
+    (currentLast : GoertzelLemma814.TauState)
+    (move : GoertzelLemma814.ChainMove)
+    (seen : List GoertzelLemma814.ChainEdge)
+    (hseed :
+      (GoertzelLemma814.chainEdges (frontierWordToChainWord [orient])).contains
+        move.seed = true)
+    (hseen :
+      ∀ edge, edge ∈ seen →
+        edge ∈ GoertzelLemma814.chainComponent
+          (frontierWordToChainWord [orient]) [currentLast]
+          move.a move.c move.seed)
+    {edge : GoertzelLemma814.ChainEdge}
+    (hmem :
+      edge ∈ GoertzelLemma814.nextChainComponentLayer
+        (frontierWordToChainWord [orient]) [currentLast] move.a move.c seen) :
+    edge ∈ GoertzelLemma814.chainComponent
+      (frontierWordToChainWord [orient]) [currentLast]
+      move.a move.c move.seed := by
+  let localOrients := frontierWordToChainWord [orient]
+  let localComponent :=
+    GoertzelLemma814.chainComponent localOrients [currentLast]
+      move.a move.c move.seed
+  have hseedMem : move.seed ∈ GoertzelLemma814.chainEdges localOrients :=
+    List.contains_iff_mem.mp (by simpa [localOrients] using hseed)
+  have hseenLocal :
+      ∀ edge, edge ∈ seen → edge ∈ localComponent := by
+    intro edge hmemSeen
+    simpa [localOrients, localComponent] using hseen edge hmemSeen
+  rcases GoertzelLemma814.nextChainComponentLayer_mem_mono_seen
+      localOrients [currentLast] move.a move.c
+      (seen₁ := seen) (seen₂ := localComponent)
+      hseenLocal (by simpa [localOrients] using hmem) with
+    hcomponent | hnext
+  · simpa [localOrients, localComponent] using hcomponent
+  · exact False.elim
+      (GoertzelLemma814.chainComponent_nextLayer_empty
+        localOrients [currentLast] move.a move.c move.seed hseedMem hnext)
+
+theorem concreteChainFiberAppendLocalSingletonComponent_nextLayer_edge_occ_zero_not_input
+    (orient : GoertzelLemma818FrontierMode.TauOrient)
+    (target : List GoertzelLemma814.TauState)
+    (currentLast : GoertzelLemma814.TauState)
+    (move : GoertzelLemma814.ChainMove)
+    (seen : List GoertzelLemma814.ChainEdge)
+    (hseed :
+      (GoertzelLemma814.chainEdges (frontierWordToChainWord [orient])).contains
+        move.seed = true)
+    (hspecified :
+      GoertzelLemma814.chainSpecifiedKempeStep
+        (frontierWordToChainWord [orient]) [currentLast] target move = true)
+    (hseen :
+      ∀ edge, edge ∈ seen →
+        edge ∈ GoertzelLemma814.chainComponent
+          (frontierWordToChainWord [orient]) [currentLast]
+          move.a move.c move.seed)
+    {edge : GoertzelLemma814.ChainEdge}
+    (hmem :
+      edge ∈ GoertzelLemma814.nextChainComponentLayer
+        (frontierWordToChainWord [orient]) [currentLast] move.a move.c seen) :
+    edge.occ = 0 ∧
+      (GoertzelLemma814.tauOrientInputOrder
+        (frontierOrientToChain orient)).contains edge.edge = false := by
+  have hcomponent :
+      edge ∈ GoertzelLemma814.chainComponent
+        (frontierWordToChainWord [orient]) [currentLast]
+        move.a move.c move.seed :=
+    concreteChainFiberAppendLocalSingletonComponent_nextLayer_mem_component
+      orient currentLast move seen hseed hseen hmem
+  exact concreteChainFiberAppendLocalSingletonComponent_edge_occ_zero_not_input
+    orient [currentLast] target move hseed hspecified hcomponent
+
 theorem concreteChainFiberAppendSingletonChainEdges_length_le
     (word : List GoertzelLemma818FrontierMode.TauOrient)
     (orient : GoertzelLemma818FrontierMode.TauOrient) :
