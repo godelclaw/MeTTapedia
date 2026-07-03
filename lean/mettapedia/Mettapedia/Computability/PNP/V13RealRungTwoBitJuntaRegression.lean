@@ -249,6 +249,34 @@ example {m : Nat} (i₀ : Fin m) (rows : Finset (Fin m)) (row : Fin m) :
   v13RealLinearNoTargetFixedRowsetCosetHitMapSet_card_mul_two_pow_le
     i₀ rows row
 
+example {m q : Nat} (i₀ : Fin m)
+    (observer : V13RealLinearSequentialRowObserver m q) (t : Fin q)
+    (rows : Finset (Fin m)) (row : Fin m) :
+    Fintype.card
+        (V13RealLinearNoTargetSequentialTraceFirstCosetHitFixedPrefixWorldSet
+          i₀ observer t rows row) *
+      2 ^ m ≤
+    4 * 2 ^ rows.card *
+      Fintype.card
+        (V13RealLinearAdaptiveQRowWorld m
+          (V13RealLinearNoTargetRowsMap m i₀)) :=
+  v13RealLinearNoTargetSequentialTraceFirstCosetHitFixedPrefixWorldSet_card_mul_two_pow_le_rows
+    i₀ observer t rows row
+
+example {m q : Nat} (i₀ : Fin m)
+    (observer : V13RealLinearSequentialRowObserver m q) (t : Fin q)
+    (rows : Finset (Fin m)) (row : Fin m) :
+    Fintype.card
+        (V13RealLinearNoTargetSequentialTraceFirstCosetHitFixedPrefixWorldSet
+          i₀ observer t rows row) *
+      2 ^ m ≤
+    4 * 2 ^ (t : Nat) *
+      Fintype.card
+        (V13RealLinearAdaptiveQRowWorld m
+          (V13RealLinearNoTargetRowsMap m i₀)) :=
+  v13RealLinearNoTargetSequentialTraceFirstCosetHitFixedPrefixWorldSet_card_mul_two_pow_le_step
+    i₀ observer t rows row
+
 example {m : Nat} (i₀ : Fin m)
     (rows : V13RealLinearBudgetedRowset m 2) :
     Fintype.card

@@ -2260,6 +2260,194 @@ theorem
       v13RealLinearNoTargetFreshRowCosetHitMapSet_card_mul_two_pow_le
         i₀ rows row hrow
 
+/-- Worlds whose sequential no-target trace has a coset hit at a fixed step
+and whose realized prefix rowset and next row are the specified fixed data.
+This is the world-space fiber of the fixed-prefix map count above. -/
+abbrev V13RealLinearNoTargetSequentialTraceFirstCosetHitFixedPrefixWorldSet
+    {m q : Nat} (i₀ : Fin m)
+    (observer : V13RealLinearSequentialRowObserver m q) (t : Fin q)
+    (rows : Finset (Fin m)) (row : Fin m) :=
+  {omega :
+      V13RealLinearAdaptiveQRowWorld m
+        (V13RealLinearNoTargetRowsMap m i₀) //
+    V13RealLinearAdaptiveQRowTraceFirstCosetHit
+      (v13RealLinearNoTargetRowsSequentialQRowExperiment i₀ observer)
+      i₀
+      (v13RealLinearNoTargetRowsSequentialQRowTrace i₀ observer)
+      t omega ∧
+    v13RealLinearRowTracePrefixRows
+      (v13RealLinearNoTargetRowsSequentialQRowTrace i₀ observer omega)
+      (t : Nat) = rows ∧
+    ∃ h : (t : Nat) <
+        (v13RealLinearNoTargetRowsSequentialQRowTrace i₀ observer omega).length,
+      (v13RealLinearNoTargetRowsSequentialQRowTrace i₀ observer omega).get
+        ⟨(t : Nat), h⟩ = row}
+
+noncomputable instance
+    {m q : Nat} (i₀ : Fin m)
+    (observer : V13RealLinearSequentialRowObserver m q) (t : Fin q)
+    (rows : Finset (Fin m)) (row : Fin m) :
+    Fintype
+      (V13RealLinearNoTargetSequentialTraceFirstCosetHitFixedPrefixWorldSet
+        i₀ observer t rows row) := by
+  classical
+  unfold V13RealLinearNoTargetSequentialTraceFirstCosetHitFixedPrefixWorldSet
+  infer_instance
+
+noncomputable def
+    v13RealLinearNoTargetSequentialTraceFirstCosetHitFixedPrefixWorldSetToMapTimesVector
+    {m q : Nat} (i₀ : Fin m)
+    (observer : V13RealLinearSequentialRowObserver m q) (t : Fin q)
+    (rows : Finset (Fin m)) (row : Fin m) :
+    V13RealLinearNoTargetSequentialTraceFirstCosetHitFixedPrefixWorldSet
+        i₀ observer t rows row ↪
+      ({A : V13RealLinearNoTargetRowsMap m i₀ //
+          V13RealLinearRowFunctionalTargetCosetHit A.val rows i₀ row} ×
+        F2Vec m) where
+  toFun omega := by
+    classical
+    let trace :=
+      v13RealLinearNoTargetRowsSequentialQRowTrace i₀ observer omega.val
+    have hcoset :
+        V13RealLinearRowFunctionalTargetCosetHit omega.val.1.val
+          rows i₀ row := by
+      rcases omega.property with ⟨hfirst, hrows, hrow⟩
+      rcases hfirst.2 with ⟨hhitIndex, hhit⟩
+      rcases hrow with ⟨hrowIndex, hget⟩
+      have hidx :
+          (⟨(t : Nat), hhitIndex⟩ : Fin trace.length) =
+            ⟨(t : Nat), hrowIndex⟩ := by
+        apply Fin.ext
+        rfl
+      have hhitRows :
+          V13RealLinearRowFunctionalTargetCosetHit
+            ((v13RealLinearNoTargetRowsSequentialQRowExperiment
+                i₀ observer).sampleA omega.val.1)
+            rows i₀ (trace.get ⟨(t : Nat), hhitIndex⟩) := by
+        simpa [trace, hrows] using hhit
+      have hgetHit : trace.get ⟨(t : Nat), hhitIndex⟩ = row := by
+        simpa [trace, hidx] using hget
+      rw [hgetHit] at hhitRows
+      simpa [v13RealLinearNoTargetRowsSequentialQRowExperiment,
+        v13RealLinearNoTargetRowsCausalQRowExperiment,
+        v13RealLinearNoTargetRowsQRowExperiment] using hhitRows
+    exact (⟨omega.val.1, hcoset⟩, omega.val.2)
+  inj' := by
+    intro omega₀ omega₁ h
+    apply Subtype.ext
+    apply Prod.ext
+    · exact
+        congrArg
+          (fun z :
+            ({A : V13RealLinearNoTargetRowsMap m i₀ //
+                V13RealLinearRowFunctionalTargetCosetHit A.val rows i₀ row} ×
+              F2Vec m) => z.1.val)
+          h
+    · exact
+        congrArg
+          (fun z :
+            ({A : V13RealLinearNoTargetRowsMap m i₀ //
+                V13RealLinearRowFunctionalTargetCosetHit A.val rows i₀ row} ×
+              F2Vec m) => z.2)
+          h
+
+theorem
+    v13RealLinearNoTargetSequentialTraceFirstCosetHitFixedPrefixWorldSet_card_mul_two_pow_le_rows
+    {m q : Nat} (i₀ : Fin m)
+    (observer : V13RealLinearSequentialRowObserver m q) (t : Fin q)
+    (rows : Finset (Fin m)) (row : Fin m) :
+    Fintype.card
+        (V13RealLinearNoTargetSequentialTraceFirstCosetHitFixedPrefixWorldSet
+          i₀ observer t rows row) *
+      2 ^ m ≤
+    4 * 2 ^ rows.card *
+      Fintype.card
+        (V13RealLinearAdaptiveQRowWorld m
+          (V13RealLinearNoTargetRowsMap m i₀)) := by
+  classical
+  let S :=
+    {A : V13RealLinearNoTargetRowsMap m i₀ //
+      V13RealLinearRowFunctionalTargetCosetHit A.val rows i₀ row}
+  let W :=
+    V13RealLinearNoTargetSequentialTraceFirstCosetHitFixedPrefixWorldSet
+      i₀ observer t rows row
+  let N := Fintype.card (V13RealLinearNoTargetRowsMap m i₀)
+  let M := 2 ^ m
+  have hW :
+      Fintype.card W ≤ Fintype.card (S × F2Vec m) :=
+    Fintype.card_le_of_embedding
+      (v13RealLinearNoTargetSequentialTraceFirstCosetHitFixedPrefixWorldSetToMapTimesVector
+        i₀ observer t rows row)
+  have hWprod : Fintype.card W ≤ Fintype.card S * M := by
+    simpa [S, M, Fintype.card_prod, v13RealLinear_f2vec_card] using hW
+  have hfixed :
+      Fintype.card S * M ≤ 4 * 2 ^ rows.card * N := by
+    simpa [S, M, N] using
+      v13RealLinearNoTargetFixedRowsetCosetHitMapSet_card_mul_two_pow_le
+        i₀ rows row
+  have hmul :
+      Fintype.card W * M ≤ (4 * 2 ^ rows.card * N) * M := by
+    exact
+      (Nat.mul_le_mul_right M hWprod).trans
+        (Nat.mul_le_mul_right M hfixed)
+  have hworld :
+      Fintype.card
+          (V13RealLinearAdaptiveQRowWorld m
+            (V13RealLinearNoTargetRowsMap m i₀)) =
+        N * M := by
+    dsimp [V13RealLinearAdaptiveQRowWorld, N, M]
+    rw [Fintype.card_prod, v13RealLinear_f2vec_card]
+  simpa [W, M, hworld, Nat.mul_assoc, Nat.mul_left_comm, Nat.mul_comm] using
+    hmul
+
+theorem
+    v13RealLinearNoTargetSequentialTraceFirstCosetHitFixedPrefixWorldSet_card_mul_two_pow_le_step
+    {m q : Nat} (i₀ : Fin m)
+    (observer : V13RealLinearSequentialRowObserver m q) (t : Fin q)
+    (rows : Finset (Fin m)) (row : Fin m) :
+    Fintype.card
+        (V13RealLinearNoTargetSequentialTraceFirstCosetHitFixedPrefixWorldSet
+          i₀ observer t rows row) *
+      2 ^ m ≤
+    4 * 2 ^ (t : Nat) *
+      Fintype.card
+        (V13RealLinearAdaptiveQRowWorld m
+          (V13RealLinearNoTargetRowsMap m i₀)) := by
+  classical
+  let W :=
+    V13RealLinearNoTargetSequentialTraceFirstCosetHitFixedPrefixWorldSet
+      i₀ observer t rows row
+  by_cases hnonempty : Nonempty W
+  · rcases hnonempty with ⟨omega⟩
+    have hrowsLe : rows.card ≤ (t : Nat) := by
+      let trace :=
+        v13RealLinearNoTargetRowsSequentialQRowTrace i₀ observer omega.val
+      have hprefix :
+          (v13RealLinearRowTracePrefixRows trace (t : Nat)).card ≤
+            (t : Nat) :=
+        v13RealLinearRowTracePrefixRows_card_le trace (t : Nat)
+      exact omega.property.2.1 ▸ hprefix
+    have hbase :=
+      v13RealLinearNoTargetSequentialTraceFirstCosetHitFixedPrefixWorldSet_card_mul_two_pow_le_rows
+        i₀ observer t rows row
+    have hpow : 2 ^ rows.card ≤ 2 ^ (t : Nat) :=
+      Nat.pow_le_pow_right (by norm_num : 0 < 2) hrowsLe
+    have hmono :
+        4 * 2 ^ rows.card *
+            Fintype.card
+              (V13RealLinearAdaptiveQRowWorld m
+                (V13RealLinearNoTargetRowsMap m i₀)) ≤
+          4 * 2 ^ (t : Nat) *
+            Fintype.card
+              (V13RealLinearAdaptiveQRowWorld m
+                (V13RealLinearNoTargetRowsMap m i₀)) := by
+      exact Nat.mul_le_mul_right _ (Nat.mul_le_mul_left 4 hpow)
+    exact hbase.trans hmono
+  · have hcard : Fintype.card W = 0 := by
+      rw [Fintype.card_eq_zero_iff]
+      exact ⟨fun omega => hnonempty ⟨omega⟩⟩
+    simp [W, hcard]
+
 abbrev V13RealLinearNoTargetFixedPairCosetHitMapSet {m : Nat}
     (i₀ row₀ row₁ : Fin m) :=
   {A : V13RealLinearNoTargetRowsMap m i₀ //
