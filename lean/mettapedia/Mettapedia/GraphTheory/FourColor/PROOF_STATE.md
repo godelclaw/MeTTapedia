@@ -170,7 +170,23 @@ wrappers
 and
 `chainAuditForFrontierWord_ok_of_targets_and_append_quotient_parent_rows_surjective_projection`
 carry the same target directly to semantic sufficiency and the target-gated
-all-word audit.
+all-word audit.  This target is now split into the two generated-data hooks
+`concreteChainFiberAppendQuotientFibrationParentRowsNonSingletonPrefixAppendedConnectedClosed`
+and
+`concreteChainFiberAppendQuotientFibrationParentRowsNonSingletonPrefixProjectionSurjectiveClosed`,
+with
+`concreteChainFiberAppendQuotientFibrationParentRowsNonSingletonPrefixSurjectiveProjectionClosed_iff_appended_connected_and_projection_surjective`
+and the
+`_of_appended_connected_and_projection_surjective` wrappers recombining them.
+Focused Lake build evidence is
+`fourcolor-surjective-projection-split-lake-build-20260703.log` (607 jobs,
+SHA256
+`674c882ae5c3799dd4d7303e498764035f3ab0ab1a505591f1984973e6c027eb`).
+The axiom audit
+`fourcolor-surjective-projection-split-axioms-20260703.log` (SHA256
+`b116f4d0c058e919d933fbd444abbbcbd8dc08210599d346c21b57a849be37a3`)
+reports the split combiner depends only on `propext`; the target-gated
+all-word wrapper depends on `propext`, `Classical.choice`, and `Quot.sound`.
 The table-level diagnostic
 `tttFiber32Rows_length_eq_two_mul_ttFiber32Rows_length` records that the known
 `TT` obstruction key is the same generated fixed input as `TTT` light-fiber

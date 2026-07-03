@@ -266,7 +266,13 @@ surjective projection from appended fiber points onto prefix fiber points.  The
 while empty prefix fibers are discharged by the already proved prefix-closure
 projection.  The matching semantic and target-gated all-word wrappers route
 this target directly to `semanticFrontierStateSufficientForChain` and
-`chainAuditForFrontierWord`.
+`chainAuditForFrontierWord`.  The target is also exposed as the conjunction of
+`concreteChainFiberAppendQuotientFibrationParentRowsNonSingletonPrefixAppendedConnectedClosed`
+and
+`concreteChainFiberAppendQuotientFibrationParentRowsNonSingletonPrefixProjectionSurjectiveClosed`,
+with direct `_of_appended_connected_and_projection_surjective` wrappers.  This
+lets generated data prove total appended connectedness separately from the
+surjective projection table.
 The theorem
 `tttFiber32Rows_length_eq_two_mul_ttFiber32Rows_length` records the table-level
 alignment for the known `TT` obstruction key: the same generated key appears in
