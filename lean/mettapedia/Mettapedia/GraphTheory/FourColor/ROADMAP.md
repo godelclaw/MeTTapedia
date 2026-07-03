@@ -256,7 +256,12 @@ the canonical prefix projection and a root-star parent-row certificate on the
 prefix fiber, while empty prefix fibers are handled vacuously.  The standalone
 base-data split is also closed directly by
 `concreteChainFiberAppendQuotientFibrationParentRowsNonSingletonPrefixBaseDataClosed_of_prefix_root_star`,
-so emitted finite data is no longer needed for that half of the split.
+so emitted finite data is no longer needed for that half of the split.  The
+adapter remains only a sufficient implication: `not_concreteChainFiberAppendPrefixFibrationClosed`
+proves the full prefix fibration false, and
+`not_concreteChainFiberAppendRelativeSingletonPrefixFibrationRoute` retires the
+relative-singleton route assumptions.  Continue through the paired
+generated-data/structural quotient target instead.
 `semanticFrontierStateSufficientForChain_of_append_quotient_parent_rows_structural`
 is therefore the current one-hypothesis split route from
 `concreteChainFiberAppendQuotientFibrationParentRowsNonSingletonPrefixStructuralClosed`

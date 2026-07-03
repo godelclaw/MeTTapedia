@@ -8423,6 +8423,11 @@ theorem concreteChainFiberAppendPrefixFiberReachClosed_of_singleton_closure_lift
       hClosureLift)
     hMobility
 
+/--
+Superseded by `not_concreteChainFiberAppendRelativeSingletonPrefixFibrationRoute`
+(2026-07-03): the three route assumptions below cannot all hold. This theorem
+is retained only as the implication used by the obstruction proof.
+-/
 theorem concreteChainFiberAppendPrefixFibrationClosed_of_relative_singleton_route
     (hPrefixRoot : concreteChainFiberAppendPrefixRootClosureLiftClosed)
     (hRelativeRoot : concreteChainFiberAppendRelativeSingletonClosureRootLiftClosed)
@@ -8438,6 +8443,10 @@ theorem concreteChainFiberAppendPrefixFibrationClosed_of_relative_singleton_rout
           concreteChainFiberAppendRelativeSingletonGlobalStepClosureClosed_of_bounded_saturation))
       hMobility)
 
+/--
+Superseded by `not_concreteChainFiberAppendRelativeSingletonPrefixFibrationRoute`
+(2026-07-03): this adapter depends on the inconsistent relative-singleton route.
+-/
 theorem concreteChainFiberAppendQuotientFibrationParentRowsNonSingletonPrefixBaseDataStructuralClosed_of_relative_singleton_route
     (hPrefixRoot : concreteChainFiberAppendPrefixRootClosureLiftClosed)
     (hRelativeRoot : concreteChainFiberAppendRelativeSingletonClosureRootLiftClosed)
@@ -8756,6 +8765,11 @@ theorem semanticFrontierStateSufficientForChain_of_append_quotient_parent_rows_s
     (concreteChainFiberAppendQuotientFibrationParentRowsNonSingletonPrefixBaseDataStructuralClosed_of_structural
       hStructural)
 
+/--
+Superseded by `not_concreteChainFiberAppendPrefixFibrationClosed` (2026-07-03)
+as a live Gate-2 route: the adapter is a valid sufficient implication, but its
+prefix-fibration hypothesis is false globally.
+-/
 theorem semanticFrontierStateSufficientForChain_of_append_quotient_parent_rows_prefix_fibration
     {targetAudit : RepresentativeSemanticTarget → Bool}
     (hFibration : concreteChainFiberAppendPrefixFibrationClosed) :
@@ -8780,6 +8794,11 @@ theorem semanticFrontierStateSufficientForChain_of_prefix_fibration
   semanticFrontierStateSufficientForChain_of_append_lift
     (concreteChainFiberAppendFibrationLiftClosed_of_prefix_fibration hFibration)
 
+/--
+Superseded by `not_concreteChainFiberAppendRelativeSingletonPrefixFibrationRoute`
+(2026-07-03): retained only as an implication from the inconsistent route
+assumptions.
+-/
 theorem semanticFrontierStateSufficientForChain_of_relative_singleton_route
     {targetAudit : RepresentativeSemanticTarget → Bool}
     (hPrefixRoot : concreteChainFiberAppendPrefixRootClosureLiftClosed)

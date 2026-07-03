@@ -165,11 +165,12 @@ fields are vacuous.  The wrapper
 names the resulting semantic route through the frozen parent-row quotient
 assembly.  This is a sufficient adapter, but it should not replace the
 quotient-base route when the canonical full-prefix projection is too strong:
-the finite same-orientation successor check has 48 prefix tau states with no
-compatible next tau state in each same-orientation direction, while the mixed
-orientation directions have no such dead state.  Thus a final structural proof
-may need the generated or realized-prefix quotient base rather than a proof
-that every prefix point is liftable through the full-prefix projection.
+the formal theorem
+`not_concreteChainFiberAppendPrefixFibrationClosed` proves the full prefix
+fibration false.  The relative-singleton adapter is likewise retired by
+`not_concreteChainFiberAppendRelativeSingletonPrefixFibrationRoute`.  The live
+surface is therefore the paired generated-data/structural quotient target,
+not the full-prefix projection.
 The prefix-edge switched-color side of the relative singleton lift is now
 closed.  `chainEdgeColor_chainCanonicalEdge_of_compatible` proves that a
 canonicalized glued edge has the same color along any compatible chain, and
