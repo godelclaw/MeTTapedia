@@ -327,6 +327,13 @@ from one row to every member of `tttFiber32Rows` through a `List.all` readiness
 check.  The next connectedness pass should lift this pattern from the local
 fiber-32 table to the full generated parent-row audit packages and feed the
 resulting real single steps into root-closure membership.
+The semantic bridge also has the general adapter
+`chainFiberRootClosureStep_of_source_mem_chainSingleKempeStep`, plus the
+`ParentMapRow.stepOrSelf`-shaped wrapper
+`chainFiberRootClosureStep_or_self_of_source_mem_and_single_step_or_self`.
+Once a generated package proves the row source is already in root closure and
+supplies the needed real single-step direction, this adapter produces the
+root-closure edge needed by parent-row connectedness certificates.
 The theorem
 `tttFiber32Rows_length_eq_two_mul_ttFiber32Rows_length` records the table-level
 alignment for the known `TT` obstruction key: the same generated key appears in
