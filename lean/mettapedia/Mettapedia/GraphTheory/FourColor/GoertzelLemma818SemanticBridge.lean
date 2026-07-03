@@ -7909,6 +7909,14 @@ theorem concreteChainFiberAppendQuotientFibrationParentRowsNonSingletonPrefixBas
     ChainFiberAppendQuotientFibrationParentRowsStructuralFields.ofTotalConnectedAndLiftImage
       proj hTotal hImage⟩⟩
 
+theorem concreteChainFiberAppendQuotientFibrationParentRowsNonSingletonPrefixBaseDataStructuralClosed_of_surjective_projection
+    (hProjection :
+      concreteChainFiberAppendQuotientFibrationParentRowsNonSingletonPrefixSurjectiveProjectionClosed) :
+    concreteChainFiberAppendQuotientFibrationParentRowsNonSingletonPrefixBaseDataStructuralClosed :=
+  concreteChainFiberAppendQuotientFibrationParentRowsNonSingletonPrefixBaseDataStructuralClosed_of_connected_lift_image
+    (concreteChainFiberAppendQuotientFibrationParentRowsNonSingletonPrefixConnectedLiftImageClosed_of_surjective_projection
+      hProjection)
+
 theorem concreteChainFiberAppendQuotientFibrationParentRowsNonSingletonPrefixConnectedLiftImageClosed_of_base_data_structural
     (hPair :
       concreteChainFiberAppendQuotientFibrationParentRowsNonSingletonPrefixBaseDataStructuralClosed) :
@@ -8975,6 +8983,15 @@ theorem semanticFrontierStateSufficientForChain_of_append_quotient_parent_rows_c
     (concreteChainFiberAppendQuotientFibrationParentRowsNonSingletonPrefixBaseDataStructuralClosed_of_connected_lift_image
       hWitness)
 
+theorem semanticFrontierStateSufficientForChain_of_append_quotient_parent_rows_surjective_projection
+    {targetAudit : RepresentativeSemanticTarget → Bool}
+    (hProjection :
+      concreteChainFiberAppendQuotientFibrationParentRowsNonSingletonPrefixSurjectiveProjectionClosed) :
+    semanticFrontierStateSufficientForChain targetAudit :=
+  semanticFrontierStateSufficientForChain_of_append_quotient_parent_rows_base_data_structural
+    (concreteChainFiberAppendQuotientFibrationParentRowsNonSingletonPrefixBaseDataStructuralClosed_of_surjective_projection
+      hProjection)
+
 theorem semanticFrontierStateSufficientForChain_of_append_quotient_parent_rows_structural
     {targetAudit : RepresentativeSemanticTarget → Bool}
     (hStructural :
@@ -9209,6 +9226,19 @@ theorem chainAuditForFrontierWord_ok_of_targets_and_append_quotient_parent_rows_
     hTarget
     (semanticFrontierStateSufficientForChain_of_append_quotient_parent_rows_connected_lift_image
       hWitness)
+    word
+
+theorem chainAuditForFrontierWord_ok_of_targets_and_append_quotient_parent_rows_surjective_projection
+    {targetAudit : RepresentativeSemanticTarget → Bool}
+    (hTarget : ∀ t, targetAudit t = true)
+    (hProjection :
+      concreteChainFiberAppendQuotientFibrationParentRowsNonSingletonPrefixSurjectiveProjectionClosed)
+    (word : List GoertzelLemma818FrontierMode.TauOrient) :
+    chainAuditForFrontierWord word = true :=
+  chainAuditForFrontierWord_ok_of_targets_and_frontier_state_sufficiency
+    hTarget
+    (semanticFrontierStateSufficientForChain_of_append_quotient_parent_rows_surjective_projection
+      hProjection)
     word
 
 end GoertzelLemma818SemanticBridge
