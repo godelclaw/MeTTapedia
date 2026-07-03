@@ -17,5 +17,7 @@ import Mettapedia.QuantumTheory.YangMills.RGBootstrapRegression
 import Mettapedia.QuantumTheory.YangMills.RGBootstrapSlackRegression
 import Mettapedia.QuantumTheory.YangMills.RGCruxRegression
 import Mettapedia.QuantumTheory.YangMills.SupportGrowthRegression
+import Mettapedia.QuantumTheory.YangMills.TransferGapClusteringRegression
 import Mettapedia.QuantumTheory.YangMills.Z2StrongCouplingGapRegression
+import Mettapedia.QuantumTheory.YangMills.Z2TransferClusteringRegression
 import Mettapedia.QuantumTheory.YangMills.Z3StrongCouplingGapRegression
