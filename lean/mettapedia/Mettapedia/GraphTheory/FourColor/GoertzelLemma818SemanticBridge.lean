@@ -7751,26 +7751,39 @@ theorem concreteChainFiberAppendQuotientFibrationParentRowsNonSingletonPrefixBas
   rcases hStructural word orient hlen hcert key hkey data with ⟨structural⟩
   exact ⟨⟨data, structural⟩⟩
 
+/--
+Generated-pair witness shape for the paired parent-row route.
+
+For each non-singleton append, choose the base data, choose a projection from
+the appended concrete fiber to that base, prove the appended root-closure graph
+is connected, and prove every requested base move lands in the projection
+image.  This is enough to build the structural fields without assuming prefix
+projection fibration.
+-/
+def concreteChainFiberAppendQuotientFibrationParentRowsNonSingletonPrefixConnectedLiftImageClosed :
+    Prop :=
+  ∀ (word : List GoertzelLemma818FrontierMode.TauOrient)
+    (orient : GoertzelLemma818FrontierMode.TauOrient),
+    1 < word.length →
+    Nonempty (ChainWordConcreteFibrationCertificate word) →
+      ∀ key : List GoertzelLemma814.LColor,
+        key ∈ GoertzelLemma814.colorAssignments4 →
+          ∃ data :
+            ChainFiberAppendQuotientFibrationParentRowsBaseData
+              word orient key,
+            ∃ proj :
+              ChainFiberPoint (word ++ [orient]) key → data.Base,
+              Connected
+                (chainFiberRootClosureStep (word ++ [orient]) key) ∧
+              ∀ (x : ChainFiberPoint (word ++ [orient]) key)
+                (b : data.Base),
+                data.baseStep (proj x) b →
+                  ∃ y : ChainFiberPoint (word ++ [orient]) key,
+                    proj y = b
+
 theorem concreteChainFiberAppendQuotientFibrationParentRowsNonSingletonPrefixBaseDataStructuralClosed_of_connected_lift_image
     (hWitness :
-      ∀ (word : List GoertzelLemma818FrontierMode.TauOrient)
-        (orient : GoertzelLemma818FrontierMode.TauOrient),
-        1 < word.length →
-        Nonempty (ChainWordConcreteFibrationCertificate word) →
-          ∀ key : List GoertzelLemma814.LColor,
-            key ∈ GoertzelLemma814.colorAssignments4 →
-              ∃ data :
-                ChainFiberAppendQuotientFibrationParentRowsBaseData
-                  word orient key,
-                ∃ proj :
-                  ChainFiberPoint (word ++ [orient]) key → data.Base,
-                  Connected
-                    (chainFiberRootClosureStep (word ++ [orient]) key) ∧
-                  ∀ (x : ChainFiberPoint (word ++ [orient]) key)
-                    (b : data.Base),
-                    data.baseStep (proj x) b →
-                      ∃ y : ChainFiberPoint (word ++ [orient]) key,
-                        proj y = b) :
+      concreteChainFiberAppendQuotientFibrationParentRowsNonSingletonPrefixConnectedLiftImageClosed) :
     concreteChainFiberAppendQuotientFibrationParentRowsNonSingletonPrefixBaseDataStructuralClosed := by
   intro word orient hlen hcert key hkey
   rcases hWitness word orient hlen hcert key hkey with
@@ -8809,6 +8822,15 @@ theorem semanticFrontierStateSufficientForChain_of_append_quotient_parent_rows_b
     (concreteChainFiberAppendQuotientFibrationParentRowsFieldsClosed_of_non_singleton_base_data_structural
       hPair)
 
+theorem semanticFrontierStateSufficientForChain_of_append_quotient_parent_rows_connected_lift_image
+    {targetAudit : RepresentativeSemanticTarget → Bool}
+    (hWitness :
+      concreteChainFiberAppendQuotientFibrationParentRowsNonSingletonPrefixConnectedLiftImageClosed) :
+    semanticFrontierStateSufficientForChain targetAudit :=
+  semanticFrontierStateSufficientForChain_of_append_quotient_parent_rows_base_data_structural
+    (concreteChainFiberAppendQuotientFibrationParentRowsNonSingletonPrefixBaseDataStructuralClosed_of_connected_lift_image
+      hWitness)
+
 theorem semanticFrontierStateSufficientForChain_of_append_quotient_parent_rows_structural
     {targetAudit : RepresentativeSemanticTarget → Bool}
     (hStructural :
@@ -9030,6 +9052,19 @@ theorem chainAuditForFrontierWord_ok_of_targets_and_append_quotient_parent_rows_
     hTarget
     (semanticFrontierStateSufficientForChain_of_append_quotient_parent_rows_base_data_structural
       hPair)
+    word
+
+theorem chainAuditForFrontierWord_ok_of_targets_and_append_quotient_parent_rows_connected_lift_image
+    {targetAudit : RepresentativeSemanticTarget → Bool}
+    (hTarget : ∀ t, targetAudit t = true)
+    (hWitness :
+      concreteChainFiberAppendQuotientFibrationParentRowsNonSingletonPrefixConnectedLiftImageClosed)
+    (word : List GoertzelLemma818FrontierMode.TauOrient) :
+    chainAuditForFrontierWord word = true :=
+  chainAuditForFrontierWord_ok_of_targets_and_frontier_state_sufficiency
+    hTarget
+    (semanticFrontierStateSufficientForChain_of_append_quotient_parent_rows_connected_lift_image
+      hWitness)
     word
 
 end GoertzelLemma818SemanticBridge
