@@ -1,6 +1,6 @@
 {
   "failure_kind": "timeout",
-  "input_file": "/home/zar/claude/Mettapedia/lean/mettapedia/artifacts/concept_ontology/exploration/lattice2_t18_t19_operator_ablation/inputs/drop_u1_lattices_support/lattice2__lattice2__t19_lattice2",
+  "input_file": "~/claude/Mettapedia/lean/mettapedia/artifacts/concept_ontology/exploration/lattice2_t18_t19_operator_ablation/inputs/drop_u1_lattices_support/lattice2__lattice2__t19_lattice2",
   "interpolant": null,
   "interpolant_features": null,
   "interpolant_found": false,

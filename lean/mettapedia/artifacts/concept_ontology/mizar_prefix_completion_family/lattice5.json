@@ -976,5 +976,5 @@
       "preview": "theorem ex A being non empty set, f being Homomorphism of L,EqRelLATT A st f is one-to-one & type_of Image f <= 3 proof "
     }
   ],
-  "source_path": "/home/zar/claude/mizar/share/mml/lattice5.miz"
+  "source_path": "~/claude/mizar/share/mml/lattice5.miz"
 }

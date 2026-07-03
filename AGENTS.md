@@ -8,15 +8,15 @@ systems. Anything committed here is public.
 Never place any of the following in public-facing content — code comments, commit
 messages, documentation, `papers/`, or any tracked file:
 
-- **The project's private advisory "council":** do not include its membership, or
+- **The project's private advisory "review":** do not include its membership, or
   attribute opinions, judgments, recommendations, or quotes to named individuals
-  (real people) who did not actually state them. Council-style reasoning stays in
+  (real people) who did not actually state them. Review-style reasoning stays in
   private, untracked notes only.
 - **Personal details** about the maintainer or their collaborators, friends, or
   family.
 - **Secrets** of any kind (API keys, tokens, SSH keys, credentials).
 
-When integrating older or migrated work, **scrub any pre-existing council
+When integrating older or migrated work, **scrub any pre-existing review
 attributions, personal details, or secrets before committing.** Normal scholarly
 citation of published work by its authors is fine; fabricated attributions and
 private advisory reasoning are not.

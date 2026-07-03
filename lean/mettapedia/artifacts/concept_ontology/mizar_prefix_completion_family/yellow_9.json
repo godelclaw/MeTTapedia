@@ -635,5 +635,5 @@
       "preview": "theorem for L being non empty RelStr for T1,T2 being correct TopAugmentation of L for T be Refinement of T1, T2 holds IN"
     }
   ],
-  "source_path": "/home/zar/claude/mizar/share/mml/yellow_9.miz"
+  "source_path": "~/claude/mizar/share/mml/yellow_9.miz"
 }

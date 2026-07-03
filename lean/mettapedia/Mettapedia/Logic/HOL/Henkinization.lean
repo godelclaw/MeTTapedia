@@ -136,7 +136,7 @@ def ExactHenkinAxioms : ClosedTheorySet (OneStepHenkinConst Base Const) :=
 /--
 Generic one-step conservativity target.
 
-This is the theorem boundary the council now prefers for fresh-parameter
+This is the theorem boundary review now prefers for fresh-parameter
 elimination: if a closed source formula is provable after a single witness
 extension using only lifted old assumptions and the exact one-step Henkin axioms,
 then it was already provable over the source signature.
@@ -214,7 +214,7 @@ Under the assumption that `Const Ï„` is nonempty at every type, maps `.base c â†
 and fresh constants to an arbitrary value via `Classical.choice`. The fresh-constant
 values are never encountered when retracting derivations whose constants are all `.base`.
 
-Council notes (Brown, Buzzard, Carneiro, Henkin):
+Review notes (Brown, Buzzard, Carneiro, Henkin):
   This assumption is trivially satisfied in Henkin-saturated signatures (the intended
   application). A future `substConst` infrastructure would remove it.
 -/

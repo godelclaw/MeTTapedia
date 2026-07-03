@@ -2,7 +2,6 @@
   "schemaVersion": 1,
   "title": "Shared Parser Artifact Schema for MeTTaIL-C",
   "description": "Common artifact structure for language parser/syntax authority across all mettail-c language targets. Each language exports these artifacts; mettail-c consumes them generically.",
-  "council": "Meredith (abstraction), Stay (shared contracts), Tang (single-sourced), Russell (honest boundaries)",
   "requiredArtifacts": {
     "syntax_spec": {
       "description": "Primary syntax specification: lexical tokens, statement kinds, comment syntax.",

@@ -3,13 +3,13 @@ import json
 import subprocess
 from pathlib import Path
 
-ROOT = Path('/home/zar/claude/lean-projects/algorithms/gf_fragments')
+ROOT = Path('~/claude/lean-projects/algorithms/gf_fragments')
 GENERATED = ROOT / 'generated'
-METTAPEDIA = Path('/home/zar/claude/lean-projects/mettapedia')
+METTAPEDIA = Path('~/claude/lean-projects/mettapedia')
 LEAN_SCOPE_SCRIPT = METTAPEDIA / 'scripts' / 'export_gf_project_core_names.lean'
 OUT = GENERATED / 'project_core_manifest.json'
 
-GF_RGL = Path('/home/zar/claude/gf-rgl')
+GF_RGL = Path('~/claude/gf-rgl')
 
 
 def run_scope_export() -> tuple[list[str], list[str]]:

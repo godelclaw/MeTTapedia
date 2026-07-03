@@ -1,7 +1,7 @@
 {
   "generated_at_utc": "2026-03-05T13:17:39.372327+00:00",
-  "source_snapshot": "/home/zar/claude/Mettapedia/lean/mettapedia/Mettapedia/Languages/MeTTa/SpecProfiles/sources/he-core-spec-source.txt",
-  "hyperon_repo": "/home/zar/claude/hyperon/hyperon-experimental",
+  "source_snapshot": "~/claude/Mettapedia/lean/mettapedia/Mettapedia/Languages/MeTTa/SpecProfiles/sources/he-core-spec-source.txt",
+  "hyperon_repo": "~/claude/hyperon/hyperon-experimental",
   "hyperon_version": {
     "head": "22970b195c368c7de94d08e3b66981108f1fc284",
     "upstream_main": "3f76dc460da6961f57f69f6c3e550c59c74ada83",
@@ -19,9 +19,9 @@
     "extension_runtime_only": 131
   },
   "outputs": {
-    "core_inventory_csv": "/home/zar/claude/Mettapedia/lean/mettapedia/Mettapedia/Languages/MeTTa/SpecProfiles/he-core-feature-inventory.csv",
-    "runtime_inventory_csv": "/home/zar/claude/Mettapedia/lean/mettapedia/Mettapedia/Languages/MeTTa/SpecProfiles/he-runtime-feature-inventory.csv",
-    "extension_inventory_csv": "/home/zar/claude/Mettapedia/lean/mettapedia/Mettapedia/Languages/MeTTa/SpecProfiles/he-0.2.10-extension-feature-inventory.csv",
-    "coverage_matrix_csv": "/home/zar/claude/Mettapedia/lean/mettapedia/Mettapedia/Languages/MeTTa/SpecProfiles/he-0.2.10-feature-coverage-matrix.csv"
+    "core_inventory_csv": "~/claude/Mettapedia/lean/mettapedia/Mettapedia/Languages/MeTTa/SpecProfiles/he-core-feature-inventory.csv",
+    "runtime_inventory_csv": "~/claude/Mettapedia/lean/mettapedia/Mettapedia/Languages/MeTTa/SpecProfiles/he-runtime-feature-inventory.csv",
+    "extension_inventory_csv": "~/claude/Mettapedia/lean/mettapedia/Mettapedia/Languages/MeTTa/SpecProfiles/he-0.2.10-extension-feature-inventory.csv",
+    "coverage_matrix_csv": "~/claude/Mettapedia/lean/mettapedia/Mettapedia/Languages/MeTTa/SpecProfiles/he-0.2.10-feature-coverage-matrix.csv"
   }
 }

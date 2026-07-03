@@ -150,5 +150,5 @@
       "preview": "theorem Th3: for C being FormalContext for O1,O2 being Subset of the carrier of C holds O1 c= O2 implies (ObjectDerivati"
     }
   ],
-  "source_path": "/home/zar/claude/mizar/share/mml/conlat_1.miz"
+  "source_path": "~/claude/mizar/share/mml/conlat_1.miz"
 }

@@ -9,7 +9,7 @@ import KnuthSkilling.Core.Basic
 # TOGL: Theory of Generating Languages (Greg Meredith)
 
 Formalization of Greg Meredith's "Notes on a formal theory of graphs"
-from `/home/zar/claude/literature/Hyperon Study Materials/Rho and OSLF/togl.pdf`
+from `~/claude/literature/Hyperon Study Materials/Rho and OSLF/togl.pdf`
 
 ## Key Ideas
 

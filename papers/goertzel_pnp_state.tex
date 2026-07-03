@@ -1,0 +1,199 @@
+\section{P vs NP via Quantale-Weakness and the $K_{\mathrm{poly}}$ Functor}
+\label{sec:goertzel-pnp-state}
+
+This section is a research-program lens on Goertzel's route toward separating
+P and NP through observational \emph{quantale weakness} composed with a
+polynomial-functor compression target ($K_{\mathrm{poly}}$). It is written to
+direct creative effort. The route does \emph{not} claim P~$\neq$~NP; what is
+machine-checked is a precisely localized \emph{conditional} structure --- an
+obstruction packet --- plus several proved boundaries showing why the naive
+shortcuts cannot work. Every conjecture below is labelled. Lean identifiers cite
+the live \texttt{Computability/PNP} development.
+
+\subsection{The creative bet}
+
+The bet has two halves that must meet in the middle.
+
+\emph{First, the quantale-weakness bridge.} Operational distinguishability ---
+the observational calculus of which environments a machine can tell apart ---
+is lifted into a quantale lattice encoding the observational closure of an
+environment. The hope is that ``how weak'' a polynomial-time learner is at
+distinguishing states becomes an algebraic invariant. The hard lesson already
+formalized: a predictor that factors through a \emph{single global} weakness
+scalar collapses to a constant
+(\verb|FactorsThroughDistinctionWeakness|,
+\verb|not_surjective_familyFactorsThroughDistinctionWeakness_of_nontrivial|,
+\verb|GlobalWeaknessObstruction|). So global weakness data alone is provably
+insufficient; the route needs richer per-state observable semantics.
+
+\emph{Second, the $K_{\mathrm{poly}}$ compression target.} After a switching
+construction the inputs factor through an exact visible surface
+$u=(z,a_i,b)$ (\verb|ExactVisiblePostSwitchSurface|,
+\verb|ActualSwitchedLocalInterface|). The claim that would close the route is
+that the family of local Boolean rules on that surface admits a finite predictor
+cover of size at most $2^s$ for polynomial $s$ ---
+\verb|ExactVisibleCompressionTarget| $\equiv$ \verb|HasBitBudget| $\equiv$
+\verb|FinitePredictorCover (2^s)|, an equivalence proved by
+\verb|clockedKpolyFiniteLearningPayload_iff_finitePredictorCover| and
+\verb|exactVisibleCompressionTarget_iff_finitePredictorCover|. If the switched
+family really is so compressible, the clocked finite-learning payload exists and,
+fed into the ERM recovery backbone, drives a contradiction with the assumed
+fast algorithm.
+
+The genius of the framing is its honesty about the barrier wall: instead of an
+unconditional lower bound (which would crash into relativization, natural
+proofs, and algebrization), the route isolates the \emph{exact minimal floor}
+that the switching strategy needs --- and proves, separately, that without that
+floor there is no route.
+
+\subsection{The obstruction packet (proved, but CONDITIONAL)}
+
+What is machine-checked is a two-way conditional, not an impossibility:
+\begin{quote}
+\emph{Route $\Longrightarrow$ necessary floors; and missing floor
+$\Longrightarrow$ no route.}
+\end{quote}
+Concretely the packet proves that several tempting shortcuts \emph{cannot}
+supply the floor by themselves:
+\begin{itemize}\itemsep1pt
+  \item locality alone (output $=$ a local rule on the visible input) permits
+    the full Boolean rule class, so it cannot force a small cover ---
+    \verb|fullRuleActualSwitchedLocalInterface_not_clockedKpolyFiniteLearningPayload_of_lt_surfaceCard|,
+    \verb|actualSwitchedLocalInterface_not_forall_clockedKpolyFiniteLearningPayload_of_lt_surfaceCard|;
+  \item plugin / hash-table lookup endpoints are still full-rule expressive ---
+    \verb|pluginLookupActualSwitchedLocalInterface_not_finitePredictorCover_of_lt_surfaceCard|;
+  \item a fully expressive family below the truth-table threshold has no payload
+    --- \verb|not_clockedKpolyFiniteLearningPayload_of_surjective_predict_of_lt_predictorCard|;
+  \item balanced-fiber source erasure neutralizes every output predicate, so it
+    cannot carry compression ---
+    \verb|finiteCoinRecodingFiberBalanced_iff_outputPredicateErasing|,
+    \verb|finiteCoinOutputPredicateNeutral_iff_countIndependentWithin_trueSource|.
+\end{itemize}
+Each result peels away one false hope and sharpens what the genuine floor must
+provide. Two \emph{sufficient} closure conditions are also formalized as the
+floor's positive face: \verb|BitCodeData| (a bounded per-index code) and
+\verb|ZABDecisionListData| (realization by a shared
+$(\mathrm{zfeat}(z),a,b)$ decision-list family), with explicit budgets
+$r+2k+1$ (exact ZAB) and the affine/sparse variants, closed by
+\verb|exactZABCodeConstruction| and \verb|exactZABDecisionListERMConstruction|.
+
+\subsection{The open crux: are the floors attainable?}
+
+The route reduces to one question: \emph{is the actual switched local family
+realized by a polynomial-budget code?} Equivalently, does
+\verb|HasBitBudget G s| hold for the real switched family on
+$u=(z,a_i,b)$, with $s$ polynomial? Two concrete roads are open:
+\begin{enumerate}\itemsep1pt
+  \item \textbf{ERM equality.} Show the switched family equals
+    \verb|exactZABDecisionListERMFamily (zfeat, samples)| for some feature
+    extractor $\mathrm{zfeat}:Z\to\mathrm{BitVec}\,r$
+    (\verb|clockedKpolyFiniteLearningPayload_of_eq_exactZABDecisionListERMFamily|).
+  \item \textbf{Code witness.} Supply explicit per-index codes
+    $\mathrm{codes}:I\to \verb|SharedAffineDecisionListCode|(r+2k)$ realizing
+    the local rules.
+\end{enumerate}
+This crux is \emph{exactly where the barrier wall stands}. Relativization,
+natural proofs, and algebrization all forbid certain generic routes to
+lower bounds. The packet's value is that it does not pretend to walk through the
+wall: it stays finite and finite-count
+(\verb|CountIndependentWithinDefect|,
+\verb|countIndependentWithinTolerance_iff_defect_le|), works per-state via the
+local visible input rather than a global uniformity argument, and uses concrete
+ERM / decision-list constructions rather than diagonalization. The open question
+is whether the switched family's structure --- which is dictated by the NP
+problem and the switching construction, not chosen freely --- happens to land
+inside the polynomial-budget cover. If it does, the route closes; if it
+provably does not, that non-realizability is itself a structured lower-bound
+statement.
+
+\subsection{Conjectured workarounds for the barrier wall}
+
+\begin{conjecture}[Speculative --- Cross-completion message rigidity]
+\label{conj:pnp-rigidity}
+There is a ``message rigidity'' invariant of the switched family: across the
+completions of a hard NP instance, the visible surface $u=(z,a_i,b)$ must carry
+strictly more than $s$ bits of mutual information with the output for any
+polynomial $s$. If formalized, rigidity is precisely the statement that the
+floor is \emph{not} attainable --- and, crucially, it is a property that does
+\emph{not} relativize, because it is computed from the concrete combinatorics of
+the switching construction, not from oracle-blind machine behavior.
+\end{conjecture}
+
+\noindent\emph{Why it might evade the wall.} The barriers bite against proof
+techniques that are insensitive to the internal structure of the family
+(relativizing or naturalizable). The finite-count independence machinery already
+in Lean is family-specific: \verb|CountIndependentWithin| is a counting identity
+on the actual fibers, not an oracle-relative statement. Rigidity would be a
+quantitative refinement of that counting. \emph{Why it might fail.} If rigidity
+is a ``large'' / ``constructive'' property in the natural-proofs sense, it
+re-enters the wall; the conjecture is only responsible if the rigidity invariant
+is shown to be neither natural (it must fail on a random family) nor
+relativizing.
+
+\begin{conjecture}[Speculative --- Per-state quantale semantics]
+\label{conj:pnp-quantale}
+The global-weakness collapse
+(\verb|GlobalWeaknessObstruction|) is repaired by a \emph{per-state} quantale
+observable: assign to each state a quantale element recording its local
+observational closure, so that the predictor factors through a tensor of local
+elements rather than one global scalar. The tensor's rank lower-bounds the bit
+budget, converting quantale weakness directly into a
+\verb|FinitePredictorCover| obstruction.
+\end{conjecture}
+
+\noindent\emph{Why it might hold.} The quantale tensor $\otimes$ is exactly the
+algebra of joint evidence; a high tensor rank is the algebraic shadow of an
+incompressible family. \emph{Why it might fail.} Building the per-state semantics
+without secretly assuming the answer (high rank) is the whole difficulty; the
+conjecture is a target, not a method.
+
+\subsection{Where to point creative effort next}
+
+The single highest-leverage target is
+\textbf{Conjecture~\ref{conj:pnp-rigidity} (cross-completion message rigidity)},
+attacked through the existing finite-count independence layer. The reason: the
+obstruction packet has already shown that \emph{every} structure-blind shortcut
+fails, which means the remaining live information must be a structure-\emph{aware}
+invariant of the switched family --- and rigidity is the most natural candidate
+that is both finite (so it is checkable against the existing
+\verb|CountIndependentWithin| API) and plausibly non-relativizing (so it has a
+chance against the barrier wall). The recommended push: formalize a candidate
+rigidity quantity as a counting lower bound on
+\verb|ExactVisiblePostSwitchSurface|, test it on small switched families where
+the floor is known to be unattainable, and check whether it survives the
+random-family stress test that natural proofs would demand it fail. A positive
+result would be the first floor-unattainability witness; a negative result would
+sharply locate which barrier the route actually hits.
+
+\subsection*{PLN lens}
+
+\begin{table}[h]
+\centering
+\small
+\begin{tabular}{lcccc}
+\toprule
+Central node & STV $\langle s,c\rangle$ & ITV $[L,U]$ & Progress & Status \\
+\midrule
+Floor attainable ($K_{\mathrm{poly}}$ cover for real family) & $\langle 0.06, 0.20\rangle$ & $[0.012,\,0.812]$ & --- & open crux \\
+Cross-completion message rigidity & $\langle 0.10, 0.18\rangle$ & $[0.018,\,0.838]$ & --- & open crux \\
+Obstruction packet (conditional) & $\langle 0.92, 0.80\rangle$ & $[0.736,\,0.936]$ & --- & proved (conditional) \\
+\midrule
+\textbf{Route (through)} & $\langle 0.04, 0.23\rangle$ & $[0.0092,\,0.7792]$ & $\sim$45\% & \\
+\bottomrule
+\end{tabular}
+\caption{PLN summary for the P-vs-NP route. The obstruction packet is
+high-strength because it is a proved conditional; the through-route is very
+low-strength and low-confidence because attainability of the floor sits squarely
+on the relativization / natural-proofs / algebrization barrier wall, where wide
+indefinite intervals are honest.}
+\end{table}
+
+\noindent Through-route: $\langle 0.04, 0.23\rangle$, ITV
+$[0.04\cdot 0.23,\;0.04\cdot 0.23+(1-0.23)] = [0.0092,\,0.7792]$,
+PROGRESS $\sim 45\%$. The very low strength is deliberate intellectual honesty:
+a separation through this route would resolve a problem guarded by three formal
+barriers, and nothing yet shows the floor is attainable or unattainable. The
+wide interval encodes that we genuinely do not know which side of the wall the
+switched family lies on. Progress is moderate because the conditional structure
+and its boundaries are thoroughly mapped, even though the decisive crux is
+untouched.

@@ -175,9 +175,9 @@ noncomputable def didacticWitnessProfile : DidacticWitnessProfile where
   goldilocksCarrier := goldilocks_phase_carrier_ablation
   poolVsChain := pool_vs_chain_lr3
   peTTaPath :=
-    "/home/zar/claude/hyperon/PeTTa/examples/pln_didactic_witnesses.metta"
+    "~/claude/hyperon/PeTTa/examples/pln_didactic_witnesses.metta"
   ceTTaPath :=
-    "/home/zar/claude/hyperon/CeTTa/tests/test_wmpln_didactic_witnesses.metta"
+    "~/claude/hyperon/CeTTa/tests/test_wmpln_didactic_witnesses.metta"
   expectedChecks := 23
 
 end Mettapedia.Logic.PLNDidacticWitnesses

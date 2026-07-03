@@ -5,7 +5,7 @@ import Mathlib.Data.String.Basic
 # MeTTaIL Language Definition Syntax (Locally Nameless)
 
 Formalization of the MeTTaIL `language!` macro structure from
-`/home/zar/claude/hyperon/mettail-rust/`.
+`~/claude/hyperon/mettail-rust/`.
 
 Uses **locally nameless** representation: bound variables are de Bruijn indices
 (`.bvar n`), free variables / metavariables are named (`.fvar x`). Binders
@@ -13,7 +13,7 @@ carry no names — α-equivalent patterns are syntactically identical.
 
 ## References
 
-- `/home/zar/claude/hyperon/mettail-rust/macros/src/ast/`
+- `~/claude/hyperon/mettail-rust/macros/src/ast/`
 - Williams & Stay, "Native Type Theory" (ACT 2021)
 - Meredith & Stay, "Operational Semantics in Logical Form"
 - Aydemir et al., "Engineering Formal Metatheory" (POPL 2008)

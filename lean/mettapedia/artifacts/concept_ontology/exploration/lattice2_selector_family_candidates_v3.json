@@ -6,7 +6,7 @@
     "min_support": 2,
     "name": "lattice2_selector_family_context_v2",
     "object_count": 10,
-    "source_context": "/home/zar/claude/Mettapedia/lean/mettapedia/artifacts/concept_ontology/exploration/lattice2_selector_family_context_v2.json",
+    "source_context": "~/claude/Mettapedia/lean/mettapedia/artifacts/concept_ontology/exploration/lattice2_selector_family_context_v2.json",
     "top_k": 12,
     "track": "mizar-semantic-candidates"
   },
@@ -806,10 +806,10 @@
   ],
   "context_metadata": {
     "artifact_files": [
-      "/home/zar/claude/Mettapedia/lean/mettapedia/artifacts/concept_ontology/exploration/lattice2_selector_extremum_bridge_schema.json",
-      "/home/zar/claude/Mettapedia/lean/mettapedia/artifacts/concept_ontology/exploration/lattice2_t20_t25_synthesized_schema.json",
-      "/home/zar/claude/Mettapedia/lean/mettapedia/artifacts/concept_ontology/exploration/lattice2_t21_t23_synthesized_schema.json",
-      "/home/zar/claude/Mettapedia/lean/mettapedia/artifacts/concept_ontology/exploration/lattice2_t22_t24_synthesized_schema.json"
+      "~/claude/Mettapedia/lean/mettapedia/artifacts/concept_ontology/exploration/lattice2_selector_extremum_bridge_schema.json",
+      "~/claude/Mettapedia/lean/mettapedia/artifacts/concept_ontology/exploration/lattice2_t20_t25_synthesized_schema.json",
+      "~/claude/Mettapedia/lean/mettapedia/artifacts/concept_ontology/exploration/lattice2_t21_t23_synthesized_schema.json",
+      "~/claude/Mettapedia/lean/mettapedia/artifacts/concept_ontology/exploration/lattice2_t22_t24_synthesized_schema.json"
     ],
     "attribute_presence": {
       "family:encoded-u1-left-identity": 1,
@@ -892,12 +892,12 @@
       "oracle": {
         "broader_search_equivalence_hits": [],
         "broader_search_roots": [
-          "/home/zar/claude/atps/datasets/extended_mptp5k/chainy/train",
-          "/home/zar/claude/atps/datasets/mml_8.1.15_fof/problems_small/lattice2",
-          "/home/zar/claude/atps/datasets/mml_8.1.15_fof/problems_small/lattice4",
-          "/home/zar/claude/atps/datasets/mml_8.1.15_fof/problems_small/filter_1",
-          "/home/zar/claude/atps/datasets/mml_8.1.15_fof/problems_small/fvsum_1",
-          "/home/zar/claude/atps/datasets/mml_8.1.15_fof/problems_small/prvect_1"
+          "~/claude/atps/datasets/extended_mptp5k/chainy/train",
+          "~/claude/atps/datasets/mml_8.1.15_fof/problems_small/lattice2",
+          "~/claude/atps/datasets/mml_8.1.15_fof/problems_small/lattice4",
+          "~/claude/atps/datasets/mml_8.1.15_fof/problems_small/filter_1",
+          "~/claude/atps/datasets/mml_8.1.15_fof/problems_small/fvsum_1",
+          "~/claude/atps/datasets/mml_8.1.15_fof/problems_small/prvect_1"
         ],
         "kind": "paired_existing_theorems",
         "library_packaging_candidate": true,

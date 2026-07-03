@@ -1,0 +1,213 @@
+% fourcolor_proofstate.tex — Proof-state ledger for the Four-Color route corpus.
+% Clean section content for \input; relies on amsmath/amssymb. No \documentclass.
+%
+% Verified directly against the Lean source under
+%   lean/mettapedia/Mettapedia/GraphTheory/FourColor (read-only).
+% Goal/GoalAlgebraic/GoalAudit were read and quoted from source.
+
+\section{Four-Color via the Algebraic Route: Proof-State Ledger}
+\label{sec:fourcolor-proofstate}
+
+This is the honest accounting of the Four-Color corpus along Goertzel's specific
+algebraic route ($\mathbb{F}_2$ color-algebra / boundary-word / Definition~4.8 /
+Theorem~4.9 machinery). The headline finding: the Four Color Theorem is
+\textbf{not} proven, is \textbf{not even stated as the top-level goal}, and the
+single manuscript step under attack (Theorem~4.9) is proven \emph{only
+conditionally} on an unproven \texttt{AlgebraicCancellationOracle}---while every
+concrete \emph{geometric} route to discharge it is proven \emph{false}, and the
+topological cyclic-separator (``Sublemma~6.8'') is an undischarged hypothesis
+whose naive graph realization is also refuted. The corpus is, accurately, a
+rigorous audit that localizes and partially walls off the open crux, with genuine
+positive content in the small-case classifications and a few unconditional
+algebra lemmas.
+
+\subsection{What is machine-checked}
+\label{sec:fc-checked}
+
+\paragraph{Axiom and \texttt{sorry} hygiene.}
+\textbf{Zero} real \texttt{sorry} (the only standalone token is in a Markdown
+roadmap note), \textbf{zero} \texttt{admit} tactic (matches are the substring
+inside identifiers like \texttt{admitsPlanarBoundary}$\dots$), \textbf{zero}
+\texttt{axiom} declarations, \textbf{zero} \texttt{native\_decide} (small cases
+use ordinary kernel \texttt{decide}). Consistent with the seal
+$\text{axioms}\subseteq\{\texttt{propext},\texttt{Classical.choice},
+\texttt{Quot.sound}\}$; no \texttt{\#print axioms} self-seal (reported, not
+independently sealed).
+
+\paragraph{Top-level goal status} \;[\textsc{Conditional / Open}].
+\texttt{TaitColorable} is a \texttt{def}, not a theorem
+(\texttt{Goal.lean}); the comment notes the Four Color Theorem is equivalent to
+it ``by Tait's reduction (\emph{not formalized here}).'' The actual target is
+\texttt{Theorem49ShellClaim}, also a \texttt{def : Prop}. \emph{Every} proof of
+it is conditional---the named forms are
+\texttt{theorem49ShellClaim\_of\_<X>Oracle}
+(\texttt{Goal.lean}, \texttt{GoalAlgebraic.lean}); there is no bare
+\texttt{theorem $\_$ : Theorem49ShellClaim}. The synthesis endpoint is reached
+only from an assumed oracle.
+
+\paragraph{Genuine unconditional content (the plumbing).}
+\begin{itemize}
+  \item \textbf{Lemma~44} (\texttt{GoertzelLemma44.lean},
+  \texttt{v23\_single\_component\_purification}) \;[\textsc{Unconditional}]: the
+  exact Step-2 Kempe-switch XOR identity
+  $\texttt{gen}(C)+\texttt{gen}(\texttt{swap})=\texttt{componentBoundarySlice}$.
+  Real algebraic content, fully proven.
+  \item \textbf{Lemma~47} (\texttt{GoertzelLemma47.lean})
+  \;[\textsc{Unconditional}]: cut-parity / incidence-count lemmas.
+  \item \textbf{Definition~4.8} (\texttt{GoertzelDefinition48.lean}):
+  definitional (polarized face generators, Kempe-closure family) with proven
+  \texttt{simp}-lemmas.
+  \item \texttt{ColorAlgebra.lean} ($\mathbb{F}_2=\texttt{ZMod }2$, $\text{Color}
+  =\mathbb{F}_2\times\mathbb{F}_2$): elementary algebra fully proven by
+  \texttt{decide}/\texttt{ring}/\texttt{fin\_cases}.
+  \item \textbf{Detector-strength strictness}
+  (\texttt{Theorem49DetectorStrength.lean},
+  \texttt{theorem49BoundaryZeroKirchhoffSubspace\_lt\_planarBoundaryZeroSubmodule\_of\_hasUnblockedInteriorEndpoint})
+  \;[\textsc{Unconditional}]: the manuscript target $W_0(H)$ is a \emph{proper}
+  subspace of the full boundary-zero space---an honest result confirming the
+  surviving oracle is strictly \emph{stronger} than Theorem~4.9 (closing it is
+  harder, not a restatement).
+\end{itemize}
+
+\paragraph{Small-case finite classifications (independent positive content).}
+The \texttt{Curriculum/Actual/} tree (5-, 6-, 7-vertex) is $\sim 68$ files of
+genuine, fully-proven finite combinatorics, \texttt{sorry}/\texttt{axiom}-free
+and importing \emph{none} of the Theorem49/Goertzel/oracle machinery. Verbatim
+headline results: \texttt{top\_not\_colorable\_four\_of\_card\_eq\_five} ($K_5$
+is not $4$-colorable) and the unique $5$-vertex critical graph is $K_5$
+(\texttt{FiveVertexClassification.lean}); the $7$-vertex $K_5$-free incidence-
+critical non-$4$-colorable graphs are exactly $K_2\bowtie C_5$ ($16$ edges) up to
+isomorphism (\texttt{SevenVertexSixteenCharacterization.lean}, with witness
+\texttt{$\dots$\_not\_colorable\_four}). These are real machine-checked
+finite four-coloring facts, entirely distinct from and independent of the open
+algebraic crux.
+
+\subsection{What it scopes out}
+\label{sec:fc-scopes}
+
+\begin{itemize}
+  \item \textbf{Tait's reduction is not formalized at all}---the bridge from the
+  Four Color Theorem to the edge-coloring statement actually studied is absent.
+  \item \textbf{The Theorem~49 family ($\sim 120$ files) is detector / evader /
+  boundary-projection / peeling scaffolding}, and \emph{every} route to the
+  endpoint is conditional. Representative signatures: \;[all
+  \textsc{Conditional}]
+  \begin{itemize}
+    \item \texttt{$\dots$\_of\_boundaryZeroProjectedColoringGeneratorDetector}
+    (requires a detector hypothesis \texttt{hdet});
+    \item \texttt{$\dots$\_of\_familyPairingKerEqBot}
+    (requires $\ker(\dots)=\bot$);
+    \item \texttt{Theorem49PositiveGeometricSourceImpossibility}:
+    \texttt{selectedBoundary$\dots$\_eq\_empty\_of\_closedWalkAnnulusBoundarySource$\dots$}
+    --- an \emph{impossibility} result: the positive-geometry package forces an
+    \emph{empty} carrier, killing that route.
+  \end{itemize}
+  \item \textbf{The CAP5 algebra bridge does not close.} In
+  \texttt{CAP5AlgebraBridge.lean}, the three top theorems conclude
+  \texttt{Theorem49BoundaryRootSynthesis} \emph{only} from open inputs (an
+  algebraic control/non-vanishing hypothesis, single-coordinate witness families,
+  and the \texttt{HasCycleOnSide} topological hypotheses). The bridge bottoms out
+  in assumed inputs; it produces no unconditional coloring/reducibility result.
+  Detectors and boundary-words (\texttt{CAP5PathXorDetector.lean},
+  \texttt{CAP5BoundaryWord.lean}) are fully \emph{defined} but are objects to be
+  \emph{supplied}, not proven to exist.
+\end{itemize}
+
+\subsection{Blocks and obstructions}
+\label{sec:fc-blocks}
+
+\paragraph{The open crux (confirmed).}
+\begin{itemize}
+  \item \textbf{Algebraic-cancellation oracle = assumed, never proven.}
+  \texttt{GoalAlgebraic.lean} defines \texttt{AlgebraicCancellationOracle :
+  Prop} (and two weaker lab-faithful variants), only ever \emph{consumed as a
+  hypothesis} (\texttt{theorem49ShellClaim\_of\_algebraicCancellationOracle}).
+  No theorem proves one as a conclusion; unlike the geometric oracles it is
+  \emph{not} refuted---it is genuinely open.
+  \item \textbf{The four geometric oracles are proven false.}
+  \texttt{GoalAudit.lean}: \texttt{not\_interiorDualPeelOracle},
+  \texttt{not\_wellFoundedPeelOracle},
+  \texttt{not\_previousBoundaryGeometryOracle},
+  \texttt{not\_residualBoundaryGeometryOracle}. The manuscript's intended
+  geometric route to the synthesis is formally dead; only the unproven algebraic
+  oracle survives.
+  \item \textbf{Sublemma~6.8 / Jordan cyclic-separator = undischarged
+  hypothesis, naive realization refuted.} In \texttt{CAP5Reducibility.lean} the
+  planar/Jordan ``supply a side'' requirement is an explicit obligation; its
+  graph-facing target is shown unsatisfiable as stated under cyclic
+  $5$-edge-connectivity:
+  \texttt{false\_of\_cyclicallyFiveEdgeConnected\_of\_portal\_no\_counterexample\_walk}
+  and
+  \texttt{false\_of\_cyclicallyFiveEdgeConnected\_of\_cyclicSeparatorCandidate}.
+  The Jordan input (\texttt{HasCycleOnSide} on both sides) is a defined predicate
+  taken as a hypothesis, \emph{not} derived from planarity---a clean, explicit,
+  undischarged topological hypothesis whose naive graph realization is refuted.
+\end{itemize}
+
+\paragraph{Refutations / counterexamples.}
+\texttt{Counterexamples.lean} (naive bridge/walk approaches fail),
+\texttt{NoDigonsCounterexample.lean} (rotation-system data alone does not force
+no-interior-digons; theta-graph refutation), and
+\texttt{FrontierRefutations.lean} / \texttt{GoalAudit.lean} (the
+wheel-with-inner-triangle and shared-interior-pair benchmarks inhabit the full
+exact shell while refuting all four geometric oracles)---i.e.\ no uniform
+derivation from the manuscript's stated hypotheses to the geometry its argument
+consumes can exist.
+
+\begin{center}
+\begin{tabular}{lll}
+\hline
+Block & Status & Proven-intrinsic? \\
+\hline
+Small-case finite classifications & \textsc{Proven} & yes (genuine, independent) \\
+Lemma 44 / 47, color algebra & \textsc{Proven} & yes (plumbing) \\
+Detector-strength strictness $W_0(H)\subsetneq$ full & \textsc{Proven} & yes; makes oracle \emph{harder} \\
+Four geometric peel oracles & \textsc{Refuted (proven false)} & yes (route killed) \\
+Cyclic-separator graph realization & \textsc{Refuted under cyc-5-conn} & yes (naive realization dead) \\
+Algebraic-cancellation oracle & \textsc{Assumed, open} & no; the live crux \\
+Theorem 4.9 synthesis endpoint & \textsc{Conditional on the oracle} & open \\
+Tait reduction (FCT $\Leftrightarrow$ edge-coloring) & \textsc{Not formalized} & absent \\
+\hline
+\end{tabular}
+\end{center}
+
+\subsection{PLN ledger}
+\label{sec:fc-pln}
+
+$\mathrm{ITV}=[L,U]=[\,s\cdot c,\ s\cdot c+(1-c)\,]$.
+
+\begin{center}
+\begin{tabular}{lcccc}
+\hline
+Node & $\langle s,c\rangle$ & $\mathrm{ITV}=[L,U]$ & PROGRESS & reading \\
+\hline
+Small-case classifications (5/6/7-vertex) & $\langle 1.00,0.95\rangle$ & $[0.95,1.00]$ & $100\%$ & genuine, scoped \\
+Lemma 44/47, algebra plumbing & $\langle 1.00,0.90\rangle$ & $[0.90,1.00]$ & --- & unconditional \\
+Theorem 4.9 via algebraic route (outcome) & $\langle 0.25,0.66\rangle$ & $[0.165,0.505]$ & $\sim 55\%$ & headline step \\
+\hline
+\end{tabular}
+\end{center}
+
+\noindent\textbf{Outcome vs progress.} The outcome node carries \emph{higher}
+PROGRESS ($\sim 55\%$) than the other three problems precisely because the route
+boundaries are sharp: four candidate geometric oracles are proven false, the
+cyclic-separator's naive realization is refuted, the surviving algebraic oracle is
+isolated, and the detector-strength result proves it is strictly stronger than
+Theorem~4.9 (so the difficulty is correctly located, not understated). Outcome
+confidence ($0.66$) is moderate---more than the analysis problems because the
+crux is a single, sharply-stated algebraic obligation rather than an open ocean,
+but well short of a proof because that obligation is genuinely unproven and the
+Tait reduction is entirely absent. Strength ($0.25$) stays low and honest: the
+central reduction is open.
+
+\paragraph{Single honesty correction.}
+Summarizing this as ``a Lean proof (or near-proof) of the Four Color Theorem''
+is wrong on two compounding levels: (1) Tait's reduction---the bridge from the
+Four Color Theorem to the edge-coloring statement actually studied---is not
+formalized at all; and (2) even the single manuscript step being attacked
+(Theorem~4.9) is proven only conditionally on an unproven
+\texttt{AlgebraicCancellationOracle}, while every concrete geometric route to
+discharge it is proven false and the topological cyclic-separator is an
+undischarged hypothesis whose naive graph realization is also refuted. The
+codebase's own \texttt{Goal.lean} states this correctly; what it does not yet do
+is seal the axiom set with a checked \texttt{\#print axioms}.

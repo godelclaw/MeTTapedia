@@ -10,7 +10,7 @@ parallel-bag algebra and the inactive process law.
 
 Aligned with the structural `equiv` clauses in:
 
-- `/home/zar/claude/hyperon/rho4u/metta-calculus/metta-calculus.core.tex`
+- `~/claude/hyperon/rho4u/metta-calculus/metta-calculus.core.tex`
 
 including:
 

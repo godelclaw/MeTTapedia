@@ -4,7 +4,7 @@ import Mettapedia.Logic.BDD.ProbMeTTaSourceSurface
 # ProbMeTTa AD Runtime Core
 
 This file formalizes the source-level annotated-disjunction builders from
-`/home/zar/claude/ProbMeTTa/lib_prob.metta`:
+`~/claude/ProbMeTTa/lib_prob.metta`:
 
 - `new-id`
 - `build-ad-helper`

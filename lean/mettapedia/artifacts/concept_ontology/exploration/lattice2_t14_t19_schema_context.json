@@ -62,8 +62,8 @@
     "kind": "schema-combined-context",
     "object_count": 6,
     "schema_files": [
-      "/home/zar/claude/Mettapedia/lean/mettapedia/artifacts/concept_ontology/exploration/lattice2_t14_t17_extremum_schema.json",
-      "/home/zar/claude/Mettapedia/lean/mettapedia/artifacts/concept_ontology/exploration/lattice2_t18_t19_unity_schema.json"
+      "~/claude/Mettapedia/lean/mettapedia/artifacts/concept_ontology/exploration/lattice2_t14_t17_extremum_schema.json",
+      "~/claude/Mettapedia/lean/mettapedia/artifacts/concept_ontology/exploration/lattice2_t18_t19_unity_schema.json"
     ]
   },
   "rows": [
@@ -84,7 +84,7 @@
       },
       "metadata": {
         "family": "direct-k3-left-identity",
-        "schema_file": "/home/zar/claude/Mettapedia/lean/mettapedia/artifacts/concept_ontology/exploration/lattice2_t14_t17_extremum_schema.json",
+        "schema_file": "~/claude/Mettapedia/lean/mettapedia/artifacts/concept_ontology/exploration/lattice2_t14_t17_extremum_schema.json",
         "schema_kind": "left_identity_extremum_uniqueness",
         "target_family": "k5-extremum"
       },
@@ -108,7 +108,7 @@
       },
       "metadata": {
         "family": "encoded-u2-left-identity",
-        "schema_file": "/home/zar/claude/Mettapedia/lean/mettapedia/artifacts/concept_ontology/exploration/lattice2_t14_t17_extremum_schema.json",
+        "schema_file": "~/claude/Mettapedia/lean/mettapedia/artifacts/concept_ontology/exploration/lattice2_t14_t17_extremum_schema.json",
         "schema_kind": "left_identity_extremum_uniqueness",
         "target_family": "k5-extremum"
       },
@@ -131,7 +131,7 @@
       },
       "metadata": {
         "family": "direct-k4-left-identity",
-        "schema_file": "/home/zar/claude/Mettapedia/lean/mettapedia/artifacts/concept_ontology/exploration/lattice2_t14_t17_extremum_schema.json",
+        "schema_file": "~/claude/Mettapedia/lean/mettapedia/artifacts/concept_ontology/exploration/lattice2_t14_t17_extremum_schema.json",
         "schema_kind": "left_identity_extremum_uniqueness",
         "target_family": "k6-extremum"
       },
@@ -155,7 +155,7 @@
       },
       "metadata": {
         "family": "encoded-u1-left-identity",
-        "schema_file": "/home/zar/claude/Mettapedia/lean/mettapedia/artifacts/concept_ontology/exploration/lattice2_t14_t17_extremum_schema.json",
+        "schema_file": "~/claude/Mettapedia/lean/mettapedia/artifacts/concept_ontology/exploration/lattice2_t14_t17_extremum_schema.json",
         "schema_kind": "left_identity_extremum_uniqueness",
         "target_family": "k6-extremum"
       },
@@ -178,7 +178,7 @@
       },
       "metadata": {
         "family": "encoded-u2-unity",
-        "schema_file": "/home/zar/claude/Mettapedia/lean/mettapedia/artifacts/concept_ontology/exploration/lattice2_t18_t19_unity_schema.json",
+        "schema_file": "~/claude/Mettapedia/lean/mettapedia/artifacts/concept_ontology/exploration/lattice2_t18_t19_unity_schema.json",
         "schema_kind": "unity_extremum_identification",
         "target_family": "k5-extremum"
       },
@@ -201,7 +201,7 @@
       },
       "metadata": {
         "family": "encoded-u1-unity",
-        "schema_file": "/home/zar/claude/Mettapedia/lean/mettapedia/artifacts/concept_ontology/exploration/lattice2_t18_t19_unity_schema.json",
+        "schema_file": "~/claude/Mettapedia/lean/mettapedia/artifacts/concept_ontology/exploration/lattice2_t18_t19_unity_schema.json",
         "schema_kind": "unity_extremum_identification",
         "target_family": "k6-extremum"
       },

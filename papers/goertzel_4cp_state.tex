@@ -1,0 +1,201 @@
+\section{Four Color via the Algebraic $\mathbb{F}_2$ / Jordan Route}
+\label{sec:goertzel-4cp-state}
+
+This section is a research-program lens on Goertzel's algebraic route to the
+Four Color Theorem (the v23/v24 lineage). It is written to point creative
+effort, not to claim a proof. Every conjecture below is labelled. The Lean
+identifiers cited are live surfaces in the \texttt{GraphTheory/FourColor}
+development; the verbal claims about what is proved versus open track that tree.
+
+\subsection{The creative bet}
+
+The route reframes four-colorability as a single statement of \emph{algebraic
+control over a chain space} $\mathbb{F}_2$. Color edges with a Tait edge
+coloring (the nonzero elements of $\mathbb{F}_2^2$), read every chain as an
+$\mathbb{F}_2$-vector on edges, and let path-xor (symmetric difference) be the
+vector addition. In this language the obstruction to a proper coloring lives in
+the \emph{boundary-zero Kirchhoff subspace}
+\[
+  W_0(H) \;=\; \verb|theorem49BoundaryZeroKirchhoffSubspace|,
+\]
+the intersection of the cycles vanishing on the selected boundary
+(\verb|planarBoundaryZeroSubmodule|) with the Kirchhoff (vertex-degree-zero)
+relations at the purified interior vertices (\verb|kirchhoffSubmodule|).
+
+The bet is that this subspace is exactly \emph{spanned and detected} by the
+projections of Kempe-closure generators (Definition 4.8,
+\verb|kempeClosureGeneratorFamily|, projected via
+\verb|projectedKempeClosureGeneratorSubspace|). If a single
+\emph{boundary-zero projected-generator detector} works --- every nonzero
+boundary-zero chain pairs nontrivially, under the $\mathbb{F}_2$ form
+\verb|chainDot|, with some projected generator --- then the synthesis endpoint
+\verb|theorem49BoundaryRootSynthesis| (manuscript Theorem~4.9) closes and the
+coloring follows. The genius of the framing is that it converts a global
+topological fact (planarity) into a finite linear-algebra detection question:
+the cycle space is small, the generator family is explicit, and the pairing is
+computable.
+
+What is genuinely built and machine-checked:
+\begin{itemize}\itemsep1pt
+  \item the F$_2$ path-xor / boundary-zero detector machinery
+    (\verb|chainDot|, \verb|BoundaryZeroProjectedGeneratorDetector|),
+  \item the boundary-zero Kirchhoff subspace and its purified interior-vertex
+    discharge (\verb|theorem49BoundaryZeroKirchhoffSubspace|,
+    \verb|selectedBoundaryInteriorEdgeEndpointVertices|),
+  \item the exact v23 Step~2 single-component purification
+    \(X_f^{ab}(C)\oplus X_f^{ab}(C^D)=c\cdot 1_{D\cap\partial f}\)
+    (\verb|v23_single_component_purification|) and its sum to the
+    boundary-only generator,
+  \item the edge-cardinality / finrank bound that turns a rank deficit into a
+    forced nonzero chain
+    (\verb|theorem49BoundaryZeroKirchhoffScalarConstraintSpace_finrank_eq|,
+    \verb|exists_nonzero_f2ScalarChain_mem_ker_of_finrank_lt_card|),
+  \item the cross-component bridge counterexample and the
+    \emph{detector-strength} theorem that $W_0(H)$ is a \emph{proper} subspace
+    of the full boundary-zero space on every shell-bearing embedding
+    (\verb|theorem49BoundaryZeroKirchhoffSubspace_lt_planarBoundaryZeroSubmodule_of_hasUnblockedInteriorEndpoint|).
+\end{itemize}
+
+The last point is the sobering one and the generative one at once. ``Evaders''
+--- nonzero boundary-zero chains invisible to every \emph{forced} edge --- exist
+because the Kirchhoff target sits strictly inside the cycle space. So the
+detector cannot be a cheap dimension count; it must be a genuine claim about the
+geometry of Kempe components. That is precisely where the open crux lives.
+
+\subsection{Possible avenues still open}
+
+\paragraph{A1. The explicit-family detector ladder.} The v24 work proved that
+the synthesis depends only on the underlying edge-Kempe closure class, and that
+\emph{any} detecting coloring family inside the base closure already upgrades to
+the full Theorem~4.9 endpoint
+(\verb|theorem49BoundaryRootSynthesis_of_familyPairingSeparates| and the
+coordinate/edge-predicate variants). This means the live obligation no longer
+has to be stated on the whole closure. The avenue: scale finite detector
+certificates by \emph{neighborhood enlargement} (radius-$0$, radius-$1$, $\dots$)
+rather than by enumerating the closure. The two minimal certificates
+(wheel radius-$0$, shared-interior-pair radius-$1$) are already kernel-checked;
+the next step is a parametrized radius-$k$ certificate generator.
+
+\paragraph{A2. A computable $\mathbb{F}_2$ elimination layer.} The honest v24
+status note flags this as the unblocking move: build a Lean-computable finite
+search over the chain space so the benchmark discharge widens safely beyond the
+wheel/shared family. Avenue: a verified Gaussian-elimination kernel over
+\verb|F2| edge-chains, certified against \verb|chainDot| nondegeneracy, that
+either exhibits an evader or certifies its absence on a given embedding.
+
+\paragraph{A3. Residual / live-boundary peeling (v23.5).} The ambient IDBRAD
+terminal-peeling interface is \emph{provably impossible} on honest closed-walk
+geometry with interior support
+(\verb|not_nonempty_interiorDualBoundaryRootAdjDistancePeelData_of_interiorEdgeSupport_nonempty_of_faceBoundaryClosedWalkGeometry|).
+The repair is to chase the \emph{moving} frontier $B_k$ of the surviving
+residual $\mathcal{R}_k$ rather than the frozen ambient annulus boundary. Avenue:
+formalize the residual equation object and prove a live-boundary terminal
+theorem. Caution: Lean already shows the present residual wrapper is
+\emph{equivalent} to the collar-layer and height-ordered surfaces, so a naive
+re-encoding will be rejected by the regression guard. The avenue is only live if
+the live-boundary certificate is genuinely new.
+
+\subsection{Conjectured workarounds for the known blocks}
+
+The two named blocks are (i)~the algebraic-cancellation oracle and (ii)~the
+planar/Jordan cyclic-separator (Sublemma~6.8). Both are stated below as targets
+for genius, not as results.
+
+\begin{conjecture}[Speculative --- Local Kempe detector]
+\label{conj:4cp-local-detector}
+There is a constant $k$ (independent of the graph) such that on every
+shell-bearing planar embedding, the radius-$k$ projected-generator detector
+already separates every nonzero boundary-zero Kirchhoff chain: no evader
+survives within distance $k$ of a forced edge. If true, the
+\verb|BoundaryZeroProjectedGeneratorDetector| reduces to a \emph{finite local}
+check, and A1's radius-$k$ certificate generator closes the oracle uniformly.
+\end{conjecture}
+
+\noindent\emph{Why it might hold.} The detector-strength theorem says the gap
+$W_0(H)\subsetneq$ cycle space is nonempty exactly when an interior endpoint is
+unblocked; that endpoint is a \emph{local} feature. The conjecture asserts the
+\emph{cause} of every evader is itself local, hence detectable at bounded
+radius. \emph{Why it might fail.} Evaders could be globally entangled across the
+embedding; a single bad cross-component bridge already breaks the naive count.
+The conjecture is the bet that planarity forbids such global entanglement of
+boundary-zero chains.
+
+\begin{conjecture}[Speculative --- Jordan separator as an $\mathbb{F}_2$ duality]
+\label{conj:4cp-jordan}
+Sublemma~6.8 (a planar/Jordan cyclic-separator extracting the annulus
+decomposition from boundary-order data) can be replaced by a purely algebraic
+$\mathbb{F}_2$ statement: the boundary-zero subspace admits an orthogonal
+splitting, under \verb|chainDotBilinForm|, into an ``inside'' and ``outside''
+block whenever the embedding carries an honest closed-walk source. The Jordan
+curve theorem then enters only through the \emph{nondegeneracy} of the form, not
+through an explicit topological separator.
+\end{conjecture}
+
+\noindent\emph{Why it might hold.} The honest closed-walk source already encodes
+the cyclic order needed for separation; \verb|chainDotBilinForm| is proved
+nondegenerate, so an orthogonal Hodge-style splitting of the cycle space is
+plausible. \emph{Why it might fail.} The current development shows the unordered
+face-incidence API is strictly weaker than ordered/cyclic/closed-walk data; the
+algebraic splitting may secretly re-import the very ordered data it claims to
+avoid. The conjecture is responsible only if the splitting is derived from
+\verb|FaceBoundaryClosedWalkGeometry| and never from a smuggled ambient order.
+
+\begin{conjecture}[Speculative --- Purification entry point]
+\label{conj:4cp-purification}
+The exact Step~2 purification
+(\verb|v23_single_component_purification|, summed to the boundary-only
+generator) is the \emph{correct} algebraic entry point: given
+Conjecture~\ref{conj:4cp-local-detector}, the boundary-only generator already
+spans $W_0(H)$ on every shell-bearing embedding, so no ambient peel theorem is
+needed at all. The blocked IDBRAD lane was solving a problem the local detector
+makes vanish.
+\end{conjecture}
+
+\subsection{Where to point creative effort next}
+
+The single highest-leverage target is
+\textbf{Conjecture~\ref{conj:4cp-local-detector} via avenue A1+A2}: a
+parametrized radius-$k$ detector certificate generator backed by a verified
+computable $\mathbb{F}_2$ elimination layer. Everything else in the route is
+either proved (the algebra, the purification, the cardinality bound) or is a
+re-statement that the regression guard will reject. The whole edifice rests on
+one question --- \emph{do evaders exist at unbounded radius, or can a local
+Kempe detector see them all?} --- and that question is now phrased finitely
+enough to attack by machine search before betting a human proof on it. The
+recommended creative push: enlarge the certificate radius on adversarially
+chosen shell-bearing benchmarks (wheel-with-inner-triangle, shared-interior-pair,
+cross-component bridge) and watch whether the detector ever needs unbounded
+neighborhoods. If it does not, Conjecture~\ref{conj:4cp-local-detector} becomes
+a credible human-proof target; if it does, the evader at the boundary of
+detection is itself the new mathematical object worth naming.
+
+\subsection*{PLN lens}
+
+\begin{table}[h]
+\centering
+\small
+\begin{tabular}{lcccc}
+\toprule
+Central node & STV $\langle s,c\rangle$ & ITV $[L,U]$ & Progress & Status \\
+\midrule
+Algebraic-cancellation oracle (detector) & $\langle 0.30, 0.55\rangle$ & $[0.17,\,0.62]$ & --- & open crux \\
+Jordan / cyclic-separator (Sublemma 6.8) & $\langle 0.30, 0.45\rangle$ & $[0.14,\,0.69]$ & --- & open crux \\
+F$_2$ algebra + purification + finrank   & $\langle 0.95, 0.85\rangle$ & $[0.81,\,0.96]$ & --- & built \\
+\midrule
+\textbf{Route (through)} & $\langle 0.25, 0.66\rangle$ & $[0.165,\,0.505]$ & $\sim$55\% & \\
+\bottomrule
+\end{tabular}
+\caption{PLN summary for the 4CP algebraic route. $s$ = expectation the route
+closes; $c$ = evidential confidence; indefinite interval $[L,U]=[s\cdot c,\,
+s\cdot c+(1-c)]$. Progress is route-exploration completeness. The built-algebra
+node is high; the two open cruxes carry the residual risk, so the through-route
+expectation $0.25$ sits below the algebra node and reflects the unresolved
+detector/separator questions.}
+\end{table}
+
+\noindent Through-route: $\langle 0.25, 0.66\rangle$, ITV
+$[0.25\cdot 0.66,\;0.25\cdot 0.66+(1-0.66)] = [0.165,\,0.505]$,
+PROGRESS $\sim 55\%$. The relatively high progress reflects how much of the
+algebraic spine is machine-checked; the modest strength reflects that both
+remaining cruxes are genuinely open and the detector-strength theorem proves the
+target is strictly nontrivial on every shell.

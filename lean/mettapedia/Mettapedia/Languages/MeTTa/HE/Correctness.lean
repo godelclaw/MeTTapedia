@@ -4091,7 +4091,7 @@ private theorem evalAtomFiltered_reaches_complete_of_interpretExpression_complet
 
 /-! ### Eventual aligned reachability for the simple trio
 
-These lemmas are the council-approved replacement for the earlier failed
+These lemmas are the agreed replacement for the earlier failed
 monotonicity detour. Instead of proving that evaluator results persist by a
 global monotonicity theorem, we prove a stronger completeness shape directly:
 once an aligned derivation becomes reachable, it remains reachable at every

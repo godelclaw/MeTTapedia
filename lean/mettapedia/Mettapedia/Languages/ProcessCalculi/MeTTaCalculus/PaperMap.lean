@@ -5,7 +5,7 @@ import Mettapedia.Languages.ProcessCalculi.MeTTaCalculus.Interoperability
 
 Theorem-level index mapping clauses in:
 
-- `/home/zar/claude/hyperon/rho4u/metta-calculus/metta-calculus.core.tex`
+- `~/claude/hyperon/rho4u/metta-calculus/metta-calculus.core.tex`
 
 to concrete Lean theorem names in this repository.
 -/
