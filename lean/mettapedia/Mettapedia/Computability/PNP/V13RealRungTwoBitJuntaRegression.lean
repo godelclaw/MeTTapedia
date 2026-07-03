@@ -1285,6 +1285,29 @@ example (n : Nat) :
     Fintype.card (V13RealLinearSequentialPrefixRhsHistory n) = 2 ^ n :=
   v13RealLinearSequentialPrefixRhsHistory_card n
 
+example {m : Nat} {public₀ public₁ : V13RealLinearPublic m}
+    {row : Fin m} (hA : public₀.A = public₁.A)
+    (hrhs : public₀.b row = public₁.b row) :
+    v13RealLinearRowView row public₀ =
+      v13RealLinearRowView row public₁ :=
+  v13RealLinearRowView_eq_of_A_eq_rhs_eq hA hrhs
+
+example {m q : Nat}
+    (observer : V13RealLinearSequentialRowObserver m q)
+    {public₀ public₁ : V13RealLinearPublic m} (n : Nat)
+    (hA : public₀.A = public₁.A)
+    (hrhs :
+      v13RealLinearSequentialPrefixTranscriptVectorRhs
+          (v13RealLinearSequentialPrefixTranscriptVectorOf observer
+            public₀ n) =
+        v13RealLinearSequentialPrefixTranscriptVectorRhs
+          (v13RealLinearSequentialPrefixTranscriptVectorOf observer
+            public₁ n)) :
+    v13RealLinearSequentialPrefixTranscriptVectorOf observer public₀ n =
+      v13RealLinearSequentialPrefixTranscriptVectorOf observer public₁ n :=
+  v13RealLinearSequentialPrefixTranscriptVectorOf_eq_of_A_eq_rhs
+    observer n hA hrhs
+
 example {m q : Nat} (i₀ : Fin m)
     (observer : V13RealLinearSequentialRowObserver m q) (t : Fin q)
     (activeIdx :
@@ -1334,6 +1357,8 @@ example {m q : Nat} (i₀ : Fin m)
 #print axioms v13RealLinearNoTargetSequentialTraceFirstCosetHitFixedMapTranscriptCylinder_existing_priorNewCapture
 #print axioms v13RealLinearNoTargetSequentialTraceFirstCosetHitActiveFixedMapTranscriptCylinder_generatedPrefix_rows_eq
 #print axioms v13RealLinearSequentialPrefixRhsHistory_card
+#print axioms v13RealLinearRowView_eq_of_A_eq_rhs_eq
+#print axioms v13RealLinearSequentialPrefixTranscriptVectorOf_eq_of_A_eq_rhs
 #print axioms v13RealLinearNoTargetSequentialTraceFirstCosetHitGeneratedPrefixCell_rhs_eq
 #print axioms v13RealLinearNoTargetSequentialTraceFirstCosetHitFixedMapTranscriptCylinderSigmaEquivWorldSet
 #print axioms v13RealLinearNoTargetSequentialTraceFirstCosetHitActiveGeneratedPrefixCellIncidenceToWorldSet
