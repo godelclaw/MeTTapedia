@@ -53,10 +53,10 @@ def fOuter : CounterFace := ⟨0, by decide⟩
 def fInner : CounterFace := ⟨1, by decide⟩
 
 def outerFace : AmbientFace counterEmbedding.faces :=
-  ⟨fOuter, by simp [counterEmbedding, counterFaces, fOuter]⟩
+  ⟨fOuter, by decide⟩
 
 def innerFace : AmbientFace counterEmbedding.faces :=
-  ⟨fInner, by simp [counterEmbedding, counterFaces, fInner]⟩
+  ⟨fInner, by decide⟩
 
 def counterOuterAmbientBoundary : Finset counterGraph.edgeSet := {eo}
 def counterInnerAmbientBoundary : Finset counterGraph.edgeSet := {ei}

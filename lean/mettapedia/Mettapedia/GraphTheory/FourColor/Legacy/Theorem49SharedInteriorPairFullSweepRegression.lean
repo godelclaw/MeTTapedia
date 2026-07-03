@@ -77,18 +77,31 @@ private theorem closure_eq_base_of_swap_ab_swap_aThird
       K a b hab = K (a + b) b (validColorPair_third_left hab))
     {a b : Color} (hab : ValidColorPair a b) :
     K a b hab = K red blue validColorPair_red_blue := by
-  change K a b hab = K red blue validColorPair_red_blue
+  have hproof : ∀ {x y : Color} (h₁ h₂ : ValidColorPair x y),
+      K x y h₁ = K x y h₂ := by
+    intro _ _ h₁ h₂
+    rw [show h₁ = h₂ from Subsingleton.elim h₁ h₂]
+  have h_aThird_symm_to :
+      ∀ {x y z : Color} (hz : z = x + y) (hxy : ValidColorPair x y)
+        (hzy : ValidColorPair z y), K z y hzy = K x y hxy := by
+    intro x y z hz hxy hzy
+    subst z
+    calc
+      K (x + y) y hzy = K (x + y) y (validColorPair_third_left hxy) := hproof hzy _
+      _ = K x y hxy := (h_aThird hxy).symm
   rcases eq_red_or_eq_blue_or_eq_purple_of_ne_zero a hab.1 with rfl | rfl | rfl
   · rcases eq_red_or_eq_blue_or_eq_purple_of_ne_zero b hab.2.1 with rfl | rfl | rfl
     · exact False.elim (hab.2.2 rfl)
     · rfl
     · calc
         K red purple hab = K blue purple validColorPair_blue_purple := by
-          simpa using (h_aThird (a := blue) (b := purple) validColorPair_blue_purple).symm
+          exact h_aThird_symm_to (x := blue) (y := purple) (z := red) (by simp)
+            validColorPair_blue_purple hab
         _ = K purple blue validColorPair_purple_blue := by
           simpa using (h_ab (a := purple) (b := blue) validColorPair_purple_blue).symm
         _ = K red blue validColorPair_red_blue := by
-          simpa using (h_aThird (a := red) (b := blue) validColorPair_red_blue).symm
+          exact h_aThird_symm_to (x := red) (y := blue) (z := purple) (by simp)
+            validColorPair_red_blue validColorPair_purple_blue
   · rcases eq_red_or_eq_blue_or_eq_purple_of_ne_zero b hab.2.1 with rfl | rfl | rfl
     · simpa using (h_ab (a := red) (b := blue) validColorPair_red_blue).symm
     · exact False.elim (hab.2.2 rfl)
@@ -96,14 +109,17 @@ private theorem closure_eq_base_of_swap_ab_swap_aThird
         K blue purple hab = K purple blue validColorPair_purple_blue := by
           simpa using (h_ab (a := purple) (b := blue) validColorPair_purple_blue).symm
         _ = K red blue validColorPair_red_blue := by
-          simpa using (h_aThird (a := red) (b := blue) validColorPair_red_blue).symm
+          exact h_aThird_symm_to (x := red) (y := blue) (z := purple) (by simp)
+            validColorPair_red_blue validColorPair_purple_blue
   · rcases eq_red_or_eq_blue_or_eq_purple_of_ne_zero b hab.2.1 with rfl | rfl | rfl
     · calc
         K purple red hab = K blue red validColorPair_blue_red := by
-          simpa using (h_aThird (a := blue) (b := red) validColorPair_blue_red).symm
+          exact h_aThird_symm_to (x := blue) (y := red) (z := purple) (by simp)
+            validColorPair_blue_red hab
         _ = K red blue validColorPair_red_blue := by
           simpa using (h_ab (a := red) (b := blue) validColorPair_red_blue).symm
-    · simpa using (h_aThird (a := red) (b := blue) validColorPair_red_blue).symm
+    · exact h_aThird_symm_to (x := red) (y := blue) (z := purple) (by simp)
+        validColorPair_red_blue hab
     · exact False.elim (hab.2.2 rfl)
 
 private theorem sip01_adj_sip12 :
@@ -459,6 +475,12 @@ private def sharedInteriorPairFirstClassParametricTaitEdgeColoring
     intro e f hadj
     exact sharedInteriorPairFirstClassParametricEdgeColor_ne_of_adj hab huv hadj)
 
+@[simp] private theorem sharedInteriorPairFirstClassParametricTaitEdgeColoring_apply
+    (a b u v : Color) (hab : ValidColorPair a b) (huv : ValidColorPair u v)
+    (e : sharedInteriorPairAnnulusGraph.edgeSet) :
+    sharedInteriorPairFirstClassParametricTaitEdgeColoring a b u v hab huv e =
+      sharedInteriorPairFirstClassParametricEdgeColor a b u v e := rfl
+
 private theorem sharedInteriorPairFirstClassParametricTaitEdgeColoring_isTait
     {a b u v : Color} (hab : ValidColorPair a b) (huv : ValidColorPair u v) :
     IsTaitEdgeColoring sharedInteriorPairAnnulusGraph
@@ -469,12 +491,12 @@ private theorem sharedInteriorPairFirstClassParametricTaitEdgeColoring_isTait
   rcases sharedInteriorPairAnnulus_edge_eq e with
     rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl <;>
     first
-    | simpa [sharedInteriorPairFirstClassParametricTaitEdgeColoring] using hab.1
-    | simpa [sharedInteriorPairFirstClassParametricTaitEdgeColoring] using hab.2.1
-    | simpa [sharedInteriorPairFirstClassParametricTaitEdgeColoring] using hab0
-    | simpa [sharedInteriorPairFirstClassParametricTaitEdgeColoring] using huv.1
-    | simpa [sharedInteriorPairFirstClassParametricTaitEdgeColoring] using huv.2.1
-    | simpa [sharedInteriorPairFirstClassParametricTaitEdgeColoring] using huv0
+    | simpa using hab.1
+    | simpa using hab.2.1
+    | simpa using hab0
+    | simpa using huv.1
+    | simpa using huv.2.1
+    | simpa using huv0
 
 private def sharedInteriorPairSecondClassParametricEdgeColor
     (a b u v : Color) (e : sharedInteriorPairAnnulusGraph.edgeSet) : Color :=
@@ -614,6 +636,12 @@ private def sharedInteriorPairSecondClassParametricTaitEdgeColoring
     intro e f hadj
     exact sharedInteriorPairSecondClassParametricEdgeColor_ne_of_adj hab huv hadj)
 
+@[simp] private theorem sharedInteriorPairSecondClassParametricTaitEdgeColoring_apply
+    (a b u v : Color) (hab : ValidColorPair a b) (huv : ValidColorPair u v)
+    (e : sharedInteriorPairAnnulusGraph.edgeSet) :
+    sharedInteriorPairSecondClassParametricTaitEdgeColoring a b u v hab huv e =
+      sharedInteriorPairSecondClassParametricEdgeColor a b u v e := rfl
+
 private theorem sharedInteriorPairSecondClassParametricTaitEdgeColoring_isTait
     {a b u v : Color} (hab : ValidColorPair a b) (huv : ValidColorPair u v) :
     IsTaitEdgeColoring sharedInteriorPairAnnulusGraph
@@ -624,12 +652,12 @@ private theorem sharedInteriorPairSecondClassParametricTaitEdgeColoring_isTait
   rcases sharedInteriorPairAnnulus_edge_eq e with
     rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl <;>
     first
-    | simpa [sharedInteriorPairSecondClassParametricTaitEdgeColoring] using hab.1
-    | simpa [sharedInteriorPairSecondClassParametricTaitEdgeColoring] using hab.2.1
-    | simpa [sharedInteriorPairSecondClassParametricTaitEdgeColoring] using hab0
-    | simpa [sharedInteriorPairSecondClassParametricTaitEdgeColoring] using huv.1
-    | simpa [sharedInteriorPairSecondClassParametricTaitEdgeColoring] using huv.2.1
-    | simpa [sharedInteriorPairSecondClassParametricTaitEdgeColoring] using huv0
+    | simpa using hab.1
+    | simpa using hab.2.1
+    | simpa using hab0
+    | simpa using huv.1
+    | simpa using huv.2.1
+    | simpa using huv0
 
 private theorem sharedInteriorPairTaitEdgeColoring_eq_firstClassParametric :
     sharedInteriorPairTaitEdgeColoring =

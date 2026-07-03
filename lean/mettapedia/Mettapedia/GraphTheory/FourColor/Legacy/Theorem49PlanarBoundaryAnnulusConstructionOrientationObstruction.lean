@@ -66,11 +66,11 @@ def f2 : CounterFace := ⟨2, by decide⟩
 def f3 : CounterFace := ⟨3, by decide⟩
 def f4 : CounterFace := ⟨4, by decide⟩
 
-def fo : AmbientFace counterEmbedding.faces := ⟨f0, by simp [counterEmbedding, counterFaces, f0]⟩
-def fg : AmbientFace counterEmbedding.faces := ⟨f1, by simp [counterEmbedding, counterFaces, f1]⟩
-def fh : AmbientFace counterEmbedding.faces := ⟨f2, by simp [counterEmbedding, counterFaces, f2]⟩
-def fd : AmbientFace counterEmbedding.faces := ⟨f3, by simp [counterEmbedding, counterFaces, f3]⟩
-def fi : AmbientFace counterEmbedding.faces := ⟨f4, by simp [counterEmbedding, counterFaces, f4]⟩
+def fo : AmbientFace counterEmbedding.faces := ⟨f0, by decide⟩
+def fg : AmbientFace counterEmbedding.faces := ⟨f1, by decide⟩
+def fh : AmbientFace counterEmbedding.faces := ⟨f2, by decide⟩
+def fd : AmbientFace counterEmbedding.faces := ⟨f3, by decide⟩
+def fi : AmbientFace counterEmbedding.faces := ⟨f4, by decide⟩
 
 /-- The construction-side annulus object. The peeled faces form two strata:
 `fg` at height `0`, and `fh`, `fd` at height `1`. The bad witness is `eqEdge` on `fg`, which lies

@@ -104,12 +104,10 @@ def twoTriangleAnnulusEmbedding : PlaneEmbeddingWithBoundary twoTriangleAnnulusG
       decide
 
 def twoTriangleOuterFace : AmbientFace twoTriangleAnnulusEmbedding.faces :=
-  ⟨(0 : TwoTriangleAnnulusFace), by
-    simp [twoTriangleAnnulusEmbedding, twoTriangleAnnulusFaces]⟩
+  ⟨(0 : TwoTriangleAnnulusFace), by decide⟩
 
 def twoTriangleInnerFace : AmbientFace twoTriangleAnnulusEmbedding.faces :=
-  ⟨(1 : TwoTriangleAnnulusFace), by
-    simp [twoTriangleAnnulusEmbedding, twoTriangleAnnulusFaces]⟩
+  ⟨(1 : TwoTriangleAnnulusFace), by decide⟩
 
 theorem twoTriangleAnnulusFace_cases
     (f : AmbientFace twoTriangleAnnulusEmbedding.faces) :

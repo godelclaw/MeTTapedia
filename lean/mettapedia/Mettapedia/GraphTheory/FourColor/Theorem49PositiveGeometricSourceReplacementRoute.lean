@@ -2750,7 +2750,8 @@ theorem theorem49BoundaryRootNonemptyProjectedSynthesis_of_boundaryReachabilityD
     theorem49BoundaryRootNonemptyProjectedSynthesis_of_closedWalkAnnulusBoundarySource_and_interiorDualBoundaryRootAdjDistancePeelData_of_rootDistance_peelFaces_endpoint_disjoint_selectedBoundarySupport
       source interiorData
       (by
-        simpa [source] using hPeelNoTouch)
+        simpa [source, PlanarBoundaryClosedWalkAnnulusBoundarySource.ofDartSuccessorCycleFields,
+          PlanarBoundaryClosedWalkAnnulusBoundarySource.ofFields] using hPeelNoTouch)
       hRawCarrier C0 hC0
 
 /-- Successor-cycle source data, generic boundary-root interior-dual adjacency-distance data,

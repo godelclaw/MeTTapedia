@@ -147,7 +147,8 @@ theorem
       ∃ e ∈ emb.faceBoundary r.1,
         e ∈ source.toPlanarBoundaryAnnulusBoundaryData.outerAmbientBoundary := by
     intro r hr
-    simpa using hrootsOuterBoundary r hr
+    simpa [PlanarBoundaryClosedWalkAnnulusBoundarySource.toPlanarBoundaryAnnulusBoundaryData]
+      using hrootsOuterBoundary r hr
   exact
     false_of_closedWalkAnnulusBoundarySource_and_interiorDualBoundaryRootAdjDistancePeelData_of_rootsOuterBoundary
       source interiorData hrootsOuterBoundary'

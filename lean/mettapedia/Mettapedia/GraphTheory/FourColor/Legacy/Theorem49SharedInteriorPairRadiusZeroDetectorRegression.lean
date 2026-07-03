@@ -28,7 +28,7 @@ private def sharedInteriorPairRadiusZeroColorings :
     Set (sharedInteriorPairAnnulusGraph.EdgeColoring Color) :=
   {sharedInteriorPairTaitEdgeColoring}
 
-private def sharedInteriorPairSelectedBoundaryProjection :
+private abbrev sharedInteriorPairSelectedBoundaryProjection :
     (sharedInteriorPairAnnulusGraph.edgeSet → Color) →ₗ[F2]
       (sharedInteriorPairAnnulusGraph.edgeSet → Color) :=
   boundaryZeroProjection
@@ -66,7 +66,7 @@ private theorem validColorPair_cases {a b : Color} (hab : ValidColorPair a b) :
   rcases a with ⟨a₀, a₁⟩
   rcases b with ⟨b₀, b₁⟩
   fin_cases a₀ <;> fin_cases a₁ <;> fin_cases b₀ <;> fin_cases b₁ <;>
-    simp [ValidColorPair, red, blue, purple] at hab ⊢
+    simp [ValidColorPair, red, blue, purple] at hab ⊢ <;> tauto
 
 private theorem face0_red_blue_support :
     boundaryBicoloredEdges sharedInteriorPairTaitEdgeColoring red blue
