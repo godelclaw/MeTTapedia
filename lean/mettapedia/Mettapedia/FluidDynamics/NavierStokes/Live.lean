@@ -51,6 +51,15 @@ This module is a non-regression import target for the active
 Navier-Stokes route-audit work. It imports the named target/continuation
 surfaces plus the non-regression reverse-root modules found by the 2026-06-21
 import map.
+import Mettapedia.FluidDynamics.NavierStokes.OneFormFrameCalculus
+import Mettapedia.FluidDynamics.NavierStokes.OneFormExactness
+import Mettapedia.FluidDynamics.NavierStokes.GradientOneForm
+import Mettapedia.FluidDynamics.NavierStokes.FrozenStrainModel
+import Mettapedia.FluidDynamics.NavierStokes.StochasticLagrangian.PullbackOneForm
+import Mettapedia.FluidDynamics.NavierStokes.StochasticLagrangian.ShearJacobianBounds
+import Mettapedia.FluidDynamics.NavierStokes.StochasticLagrangian.ConstantinIyerRepresentation
+import Mettapedia.FluidDynamics.NavierStokes.StochasticLagrangian.VorticityStretchingGate
+import Mettapedia.FluidDynamics.NavierStokes.StochasticLagrangian.DecayingShearInstance
 
 It is not a proof of the Millennium Navier-Stokes problem.
 -/

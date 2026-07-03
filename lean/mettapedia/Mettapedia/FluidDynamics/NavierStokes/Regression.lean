@@ -25,6 +25,9 @@ import Mettapedia.FluidDynamics.NavierStokes.NavierStokesSchwartzRankOneShearObs
 import Mettapedia.FluidDynamics.NavierStokes.NavierStokesSchwartzSymmetricShearObstructionRegression
 import Mettapedia.FluidDynamics.NavierStokes.NavierStokesFiniteModeBoundedEnergyRegression
 import Mettapedia.FluidDynamics.NavierStokes.Scaling.Regression
+import Mettapedia.FluidDynamics.NavierStokes.OneFormFrameCalculusRegression
+import Mettapedia.FluidDynamics.NavierStokes.FrozenStrainModelRegression
+import Mettapedia.FluidDynamics.NavierStokes.StochasticLagrangian.StochasticLagrangianRegression
 
 /-!
 # Navier-Stokes regression aggregator
