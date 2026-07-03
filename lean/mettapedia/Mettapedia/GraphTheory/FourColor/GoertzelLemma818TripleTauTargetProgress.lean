@@ -3800,6 +3800,39 @@ theorem ttFiber32Key3TargetAppendRowSurfaceClosedOn :
   representativeTargetAppendParentRowsProjectionFiniteSectionClosedOn_of_target_append_cases
     ttFiber32Key3TargetAppendRowSurfaceCases_cover_on
 
+structure ChainFiberAppendParentRowsCertifiedTriple
+    (word : List GoertzelLemma818FrontierMode.TauOrient)
+    (orient : GoertzelLemma818FrontierMode.TauOrient)
+    (key : List LColor) : Prop where
+  lengthGtOne : 1 < word.length
+  prefixCertificate : Nonempty (ChainWordConcreteFibrationCertificate word)
+  keyMem : key ∈ colorAssignments4
+  appendedConnected :
+    ∀ (root : List TauState) (rest : List (List TauState)),
+      concreteChainFiber word key = root :: rest →
+        GoertzelLemma818Fibration.Connected
+          (chainFiberRootClosureStep (word ++ [orient]) key)
+  projectionInjectivePreimage :
+    ∀ (root : List TauState) (rest : List (List TauState)),
+      concreteChainFiber word key = root :: rest →
+        ∃ preimageOf :
+          ChainFiberPoint word key →
+            ChainFiberPoint (word ++ [orient]) key,
+          Function.Injective preimageOf
+
+theorem chainFiberAppendParentRowsCertifiedTriple_projectionFiniteSectionBody
+    {word : List GoertzelLemma818FrontierMode.TauOrient}
+    {orient : GoertzelLemma818FrontierMode.TauOrient}
+    {key : List LColor}
+    (cert : ChainFiberAppendParentRowsCertifiedTriple word orient key)
+    (root : List TauState) (rest : List (List TauState))
+    (hfiber : concreteChainFiber word key = root :: rest) :
+    appendedParentRowsProjectionFiniteSectionBody word orient key :=
+  appendedParentRowsProjectionFiniteSectionBody_of_connected_injective_preimage
+    hfiber
+    (cert.appendedConnected root rest hfiber)
+    (cert.projectionInjectivePreimage root rest hfiber)
+
 theorem appendedParentRowsProjectionFiniteSectionCase_baseDataStructural
     (rowCase : AppendedParentRowsProjectionFiniteSectionCase) :
     Nonempty
@@ -3846,6 +3879,48 @@ theorem appendedParentRowsProjectionFiniteSectionCase_baseDataStructural
         ChainFiberAppendQuotientFibrationParentRowsStructuralFields.ofTotalConnectedAndLiftImage
           proj' hTotal hImage⟩⟩
 
+theorem chainFiberAppendParentRowsCertifiedTriple_baseDataStructural
+    {word : List GoertzelLemma818FrontierMode.TauOrient}
+    {orient : GoertzelLemma818FrontierMode.TauOrient}
+    {key : List LColor}
+    (cert : ChainFiberAppendParentRowsCertifiedTriple word orient key) :
+    Nonempty
+      (Sigma (fun data :
+        ChainFiberAppendQuotientFibrationParentRowsBaseData
+          word orient key =>
+        ChainFiberAppendQuotientFibrationParentRowsStructuralFields data)) := by
+  let rowCase : AppendedParentRowsProjectionFiniteSectionCase :=
+    { word := word
+      orient := orient
+      key := key
+      lengthGtOne := cert.lengthGtOne
+      prefixCertificate := cert.prefixCertificate
+      keyMem := cert.keyMem
+      rows := fun root rest hfiber =>
+        chainFiberAppendParentRowsCertifiedTriple_projectionFiniteSectionBody
+          cert root rest hfiber }
+  simpa [rowCase] using
+    appendedParentRowsProjectionFiniteSectionCase_baseDataStructural rowCase
+
+theorem ttFiber32AppendParentRowsCertifiedTriple :
+    ChainFiberAppendParentRowsCertifiedTriple
+      ttFiber32FrontierWord GoertzelLemma818FrontierMode.TauOrient.tau
+      GoertzelLemma818CompositeCertificate.ttFiber32Key := by
+  refine
+    { lengthGtOne := ttFiber32FrontierWord_length_gt_one
+      prefixCertificate := ttFiber32FrontierWord_fibrationCertificate
+      keyMem := ttFiber32Key_mem_colorAssignments4
+      appendedConnected := ?_
+      projectionInjectivePreimage := ?_ }
+  · intro root rest hfiber
+    simpa [ttFiber32FrontierWord,
+      GoertzelLemma818TripleTauLightComponentCertificate.tttFrontierWord,
+      GoertzelLemma818CompositeCertificate.ttFiber32Key,
+      GoertzelLemma818TripleTauLightComponentCertificate.tttFiber32Key] using
+      tttFiber32RootClosureConnected
+  · intro root rest hfiber
+    exact ttFiber32AppendProjectionInjectivePreimage
+
 theorem ttFiber32AppendParentRowsBaseDataStructural :
     Nonempty
       (Sigma (fun data :
@@ -3853,9 +3928,28 @@ theorem ttFiber32AppendParentRowsBaseDataStructural :
           ttFiber32FrontierWord GoertzelLemma818FrontierMode.TauOrient.tau
           GoertzelLemma818CompositeCertificate.ttFiber32Key =>
         ChainFiberAppendQuotientFibrationParentRowsStructuralFields data)) := by
-  simpa [ttFiber32AppendedParentRowsProjectionFiniteSectionCase] using
-    appendedParentRowsProjectionFiniteSectionCase_baseDataStructural
-      ttFiber32AppendedParentRowsProjectionFiniteSectionCase
+  exact
+    chainFiberAppendParentRowsCertifiedTriple_baseDataStructural
+      ttFiber32AppendParentRowsCertifiedTriple
+
+theorem ttFiber3AppendParentRowsCertifiedTriple :
+    ChainFiberAppendParentRowsCertifiedTriple
+      ttFiber3FrontierWord GoertzelLemma818FrontierMode.TauOrient.tau
+      GoertzelLemma818CompositeCertificate.ttFiber3Key := by
+  refine
+    { lengthGtOne := ttFiber3FrontierWord_length_gt_one
+      prefixCertificate := ttFiber3FrontierWord_fibrationCertificate
+      keyMem := ttFiber3Key_mem_colorAssignments4
+      appendedConnected := ?_
+      projectionInjectivePreimage := ?_ }
+  · intro root rest hfiber
+    simpa [ttFiber3FrontierWord,
+      GoertzelLemma818TripleTauLightComponentCertificate.tttFrontierWord,
+      GoertzelLemma818CompositeCertificate.ttFiber3Key,
+      GoertzelLemma818TripleTauLightComponentCertificate.tttFiber3Key] using
+      tttFiber3RootClosureConnected
+  · intro root rest hfiber
+    exact ttFiber3AppendProjectionInjectivePreimage
 
 theorem ttFiber3AppendParentRowsBaseDataStructural :
     Nonempty
@@ -3864,10 +3958,30 @@ theorem ttFiber3AppendParentRowsBaseDataStructural :
           ttFiber3FrontierWord GoertzelLemma818FrontierMode.TauOrient.tau
           GoertzelLemma818CompositeCertificate.ttFiber3Key =>
         ChainFiberAppendQuotientFibrationParentRowsStructuralFields data)) := by
-  simpa [ttFiber3AppendedParentRowsProjectionFiniteSectionCase] using
-    appendedParentRowsProjectionFiniteSectionCase_baseDataStructural
-      ttFiber3AppendedParentRowsProjectionFiniteSectionCase
+  exact
+    chainFiberAppendParentRowsCertifiedTriple_baseDataStructural
+      ttFiber3AppendParentRowsCertifiedTriple
 
+def ttFiber32Key3AppendParentRowsBaseDataStructuralCertifiedRemainderPin :
+    Prop :=
+  ∀ (word : List GoertzelLemma818FrontierMode.TauOrient)
+    (orient : GoertzelLemma818FrontierMode.TauOrient),
+    1 < word.length →
+    Nonempty (ChainWordConcreteFibrationCertificate word) →
+      ∀ key : List LColor,
+        key ∈ colorAssignments4 →
+          ¬ ChainFiberAppendParentRowsCertifiedTriple word orient key →
+            Nonempty
+              (Sigma (fun data :
+                ChainFiberAppendQuotientFibrationParentRowsBaseData
+                  word orient key =>
+                ChainFiberAppendQuotientFibrationParentRowsStructuralFields
+                  data))
+
+/-- Superseded by
+`ttFiber32Key3AppendParentRowsBaseDataStructuralCertifiedRemainderPin`, which
+removes every triple carrying an append-parent-row structural certificate from
+the remainder rather than only the two current concrete key cases. -/
 def ttFiber32Key3AppendParentRowsBaseDataStructuralRemainderPin : Prop :=
   ∀ (word : List GoertzelLemma818FrontierMode.TauOrient)
     (orient : GoertzelLemma818FrontierMode.TauOrient),
@@ -3888,11 +4002,20 @@ def ttFiber32Key3AppendParentRowsBaseDataStructuralRemainderPin : Prop :=
                 ChainFiberAppendQuotientFibrationParentRowsStructuralFields
                   data))
 
-theorem ttFiber32Key3AppendParentRowsBaseDataStructuralClosed_of_remainder_pin
+theorem ttFiber32Key3AppendParentRowsBaseDataStructuralClosed_of_certified_remainder_pin
     (hRemainder :
-      ttFiber32Key3AppendParentRowsBaseDataStructuralRemainderPin) :
+      ttFiber32Key3AppendParentRowsBaseDataStructuralCertifiedRemainderPin) :
     concreteChainFiberAppendQuotientFibrationParentRowsNonSingletonPrefixBaseDataStructuralClosed := by
   intro word orient hlen hcert key hkey
+  by_cases hCertified : ChainFiberAppendParentRowsCertifiedTriple word orient key
+  · exact chainFiberAppendParentRowsCertifiedTriple_baseDataStructural hCertified
+  · exact hRemainder word orient hlen hcert key hkey hCertified
+
+theorem ttFiber32Key3AppendParentRowsBaseDataStructuralCertifiedRemainderPin_of_remainder_pin
+    (hRemainder :
+      ttFiber32Key3AppendParentRowsBaseDataStructuralRemainderPin) :
+    ttFiber32Key3AppendParentRowsBaseDataStructuralCertifiedRemainderPin := by
+  intro word orient hlen hcert key hkey hnotCertified
   by_cases hhandled :
       (word = ttFiber32FrontierWord ∧
           orient = GoertzelLemma818FrontierMode.TauOrient.tau ∧
@@ -3905,21 +4028,38 @@ theorem ttFiber32Key3AppendParentRowsBaseDataStructuralClosed_of_remainder_pin
       subst word
       subst orient
       subst key
-      exact ttFiber32AppendParentRowsBaseDataStructural
+      exact False.elim (hnotCertified ttFiber32AppendParentRowsCertifiedTriple)
     · rcases h3 with ⟨hword, horient, hkeyEq⟩
       subst word
       subst orient
       subst key
-      exact ttFiber3AppendParentRowsBaseDataStructural
+      exact False.elim (hnotCertified ttFiber3AppendParentRowsCertifiedTriple)
   · exact hRemainder word orient hlen hcert key hkey hhandled
+
+theorem ttFiber32Key3AppendParentRowsBaseDataStructuralClosed_of_remainder_pin
+    (hRemainder :
+      ttFiber32Key3AppendParentRowsBaseDataStructuralRemainderPin) :
+    concreteChainFiberAppendQuotientFibrationParentRowsNonSingletonPrefixBaseDataStructuralClosed :=
+  ttFiber32Key3AppendParentRowsBaseDataStructuralClosed_of_certified_remainder_pin
+    (ttFiber32Key3AppendParentRowsBaseDataStructuralCertifiedRemainderPin_of_remainder_pin
+      hRemainder)
+
+theorem semanticFrontierStateSufficientForChain_of_ttFiber32Key3_append_parent_rows_certified_remainder_pin
+    {targetAudit : RepresentativeSemanticTarget → Bool}
+    (hRemainder :
+      ttFiber32Key3AppendParentRowsBaseDataStructuralCertifiedRemainderPin) :
+    semanticFrontierStateSufficientForChain targetAudit :=
+  semanticFrontierStateSufficientForChain_of_append_quotient_parent_rows_base_data_structural
+    (ttFiber32Key3AppendParentRowsBaseDataStructuralClosed_of_certified_remainder_pin
+      hRemainder)
 
 theorem semanticFrontierStateSufficientForChain_of_ttFiber32Key3_append_parent_rows_remainder_pin
     {targetAudit : RepresentativeSemanticTarget → Bool}
     (hRemainder :
       ttFiber32Key3AppendParentRowsBaseDataStructuralRemainderPin) :
     semanticFrontierStateSufficientForChain targetAudit :=
-  semanticFrontierStateSufficientForChain_of_append_quotient_parent_rows_base_data_structural
-    (ttFiber32Key3AppendParentRowsBaseDataStructuralClosed_of_remainder_pin
+  semanticFrontierStateSufficientForChain_of_ttFiber32Key3_append_parent_rows_certified_remainder_pin
+    (ttFiber32Key3AppendParentRowsBaseDataStructuralCertifiedRemainderPin_of_remainder_pin
       hRemainder)
 
 def tttPartialTargetCertificateAudit : Bool :=
