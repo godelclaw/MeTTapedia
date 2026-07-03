@@ -289,7 +289,11 @@ now follows from projection surjectivity by enumerating the finite prefix fiber,
 so generated files may prove appended parent-row connectedness plus projection
 surjectivity and use
 `concreteChainFiberAppendQuotientFibrationParentRowsNonSingletonPrefixAppendedParentRowsProjectionFiniteSectionClosed_of_appended_parent_rows_connected_and_projection_surjective`
-to package the combined predicate.
+to package the combined predicate.  Equivalently, generated files may emit the
+right-inverse selector surface
+`concreteChainFiberAppendQuotientFibrationParentRowsNonSingletonPrefixProjectionSectionClosed`;
+the `_of_projection_section` wrappers convert it to the same combined
+predicate when paired with appended parent-row connectedness.
 The theorem
 `tttFiber32Rows_length_eq_two_mul_ttFiber32Rows_length` records the table-level
 alignment for the known `TT` obstruction key: the same generated key appears in
