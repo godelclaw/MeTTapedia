@@ -246,6 +246,91 @@ theorem tripleComponentRowValid_source_eq_or_chainSingleKempeStep_of_ready
       (tripleComponentRowValid_chainSingleKempeStep_of_source_beq_false
         hrow hsourceFalse hside.1 (of_decide_eq_true hside.2))
 
+theorem tripleComponentRowValid_chainCertifiedKempeStep_reverse_of_source_beq_false
+    {key : List LColor} {expected : List Nat}
+    {row : TripleComponentParentRow}
+    (hrow : tripleComponentRowValid key expected row = true)
+    (hsource : (row.source == row.parent) = false) :
+    chainCertifiedKempeStep tttWord
+      (tripleStates row.parentLeft row.parentMiddle row.parentRight)
+      (tripleStates row.sourceLeft row.sourceMiddle row.sourceRight)
+      row.cert = true := by
+  have hforward :=
+    tripleComponentRowValid_chainCertifiedKempeStep_of_source_beq_false
+      hrow hsource
+  have hrowFields := hrow
+  unfold tripleComponentRowValid at hrowFields
+  simp only [Bool.and_eq_true] at hrowFields
+  have hsourceCompat :
+      compatibleChainStates tttWord
+        (tripleStates row.sourceLeft row.sourceMiddle row.sourceRight) =
+          true := hrowFields.2.1.1.1.1
+  have hparentCompat :
+      compatibleChainStates tttWord
+        (tripleStates row.parentLeft row.parentMiddle row.parentRight) =
+          true := hrowFields.2.1.1.1.2
+  exact chainCertifiedKempeStep_symm_of_compatible hsourceCompat
+    hparentCompat hforward
+
+theorem tripleComponentRowValid_reverse_chainSingleKempeStep_of_source_beq_false
+    {key : List LColor} {expected : List Nat}
+    {row : TripleComponentParentRow}
+    (hrow : tripleComponentRowValid key expected row = true)
+    (hsource : (row.source == row.parent) = false)
+    (hcolorPair :
+      colorPairs.contains (row.cert.move.a, row.cert.move.c) = true)
+    (hnodup : row.cert.component.Nodup) :
+    chainSingleKempeStep tttWord
+      (tripleStates row.parentLeft row.parentMiddle row.parentRight)
+      (tripleStates row.sourceLeft row.sourceMiddle row.sourceRight) =
+        true :=
+  chainCertifiedKempeStep_implies_single tttWord
+    (tripleStates row.parentLeft row.parentMiddle row.parentRight)
+    (tripleStates row.sourceLeft row.sourceMiddle row.sourceRight)
+    row.cert hcolorPair hnodup
+    (tripleComponentRowValid_chainCertifiedKempeStep_reverse_of_source_beq_false
+      hrow hsource)
+
+theorem tripleComponentRowValid_source_eq_or_reverse_chainSingleKempeStep
+    {key : List LColor} {expected : List Nat}
+    {row : TripleComponentParentRow}
+    (hrow : tripleComponentRowValid key expected row = true)
+    (hcolorPair :
+      colorPairs.contains (row.cert.move.a, row.cert.move.c) = true)
+    (hnodup : row.cert.component.Nodup) :
+    row.source = row.parent ∨
+      chainSingleKempeStep tttWord
+        (tripleStates row.parentLeft row.parentMiddle row.parentRight)
+        (tripleStates row.sourceLeft row.sourceMiddle row.sourceRight) =
+          true := by
+  by_cases hsourceTrue : (row.source == row.parent) = true
+  · exact Or.inl (by simpa using hsourceTrue)
+  · exact Or.inr
+      (tripleComponentRowValid_reverse_chainSingleKempeStep_of_source_beq_false
+        hrow (bool_false_of_not_true hsourceTrue) hcolorPair hnodup)
+
+theorem tripleComponentRowValid_source_eq_or_reverse_chainSingleKempeStep_of_ready
+    {key : List LColor} {expected : List Nat}
+    {row : TripleComponentParentRow}
+    (hrow : tripleComponentRowValid key expected row = true)
+    (hready : tripleComponentRowSingleStepReady row = true) :
+    row.source = row.parent ∨
+      chainSingleKempeStep tttWord
+        (tripleStates row.parentLeft row.parentMiddle row.parentRight)
+        (tripleStates row.sourceLeft row.sourceMiddle row.sourceRight) =
+          true := by
+  by_cases hsourceTrue : (row.source == row.parent) = true
+  · exact Or.inl (by simpa using hsourceTrue)
+  · have hsourceFalse : (row.source == row.parent) = false :=
+      bool_false_of_not_true hsourceTrue
+    have hside :
+        tripleComponentRowSingleStepSideConditions row = true := by
+      simpa [tripleComponentRowSingleStepReady, hsourceFalse] using hready
+    rw [tripleComponentRowSingleStepSideConditions, Bool.and_eq_true] at hside
+    exact Or.inr
+      (tripleComponentRowValid_reverse_chainSingleKempeStep_of_source_beq_false
+        hrow hsourceFalse hside.1 (of_decide_eq_true hside.2))
+
 def tripleParentFromRows : List TripleComponentParentRow -> Nat -> Nat
   | [], i => i
   | row :: rows, i =>
@@ -3527,6 +3612,23 @@ theorem tttFiber32Rows_mem_source_eq_or_chainSingleKempeStep
     at hrowReady
   exact tripleComponentRowValid_source_eq_or_chainSingleKempeStep_of_ready
     hrowReady.1 hrowReady.2
+
+theorem tttFiber32Rows_mem_source_eq_or_reverse_chainSingleKempeStep
+    {row : TripleComponentParentRow} (hmem : row ∈ tttFiber32Rows) :
+    row.source = row.parent ∨
+      chainSingleKempeStep tttWord
+        (tripleStates row.parentLeft row.parentMiddle row.parentRight)
+        (tripleStates row.sourceLeft row.sourceMiddle row.sourceRight) =
+          true := by
+  have hrowReady :
+      tripleComponentRowValidWithSingleStepReady
+        tttFiber32Key tttFiber32Expected row = true :=
+    (List.all_eq_true.mp tttFiber32RowsSingleStepReadyCheck_ok) row hmem
+  rw [tripleComponentRowValidWithSingleStepReady, Bool.and_eq_true]
+    at hrowReady
+  exact
+    tripleComponentRowValid_source_eq_or_reverse_chainSingleKempeStep_of_ready
+      hrowReady.1 hrowReady.2
 
 def tttFiber32ParentCheck (i : Nat) : Bool :=
   tripleParentIter tttFiber32Rows tttLightMaxParentDepth

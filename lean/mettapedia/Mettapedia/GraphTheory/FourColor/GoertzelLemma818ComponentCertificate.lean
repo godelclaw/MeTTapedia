@@ -441,6 +441,134 @@ theorem chainCertifiedKempeStep_implies_single
       hcolorPair hnodup hnonempty hseedChain hseedMem hpair hconnected
       hclosed havoid hagree
 
+theorem certifiedComponentPairColored_of_chainAgreesWithSwitch
+    {orients : List TauOrient} {s t : List TauState}
+    {a c : LColor} {component : List ChainEdge}
+    (hpair : certifiedComponentPairColored orients s a c component = true)
+    (hagree : chainAgreesWithSwitch orients s t component a c = true) :
+    certifiedComponentPairColored orients t a c component = true := by
+  unfold certifiedComponentPairColored at hpair ⊢
+  rw [List.all_eq_true] at hpair ⊢
+  intro edge hmem
+  have hedge := hpair edge hmem
+  simp only [Bool.and_eq_true] at hedge
+  have hchainMem : edge ∈ chainEdges orients :=
+    List.contains_iff_mem.mp hedge.1
+  have hlocal : edge ∈ chainLocalEdges orients :=
+    chainEdges_mem_chainLocalEdges hchainMem
+  have hcanonical : chainCanonicalEdge orients edge = edge :=
+    chainCanonicalEdge_eq_self_of_mem_chainEdges hchainMem
+  have hcontains : component.contains edge = true :=
+    List.contains_iff_mem.mpr hmem
+  unfold chainAgreesWithSwitch at hagree
+  rw [List.all_eq_true] at hagree
+  have hstep := hagree edge hlocal
+  change
+    colorEq (chainEdgeColor t edge)
+      (if component.contains (chainCanonicalEdge orients edge) = true then
+        swapColor a c (chainEdgeColor s (chainCanonicalEdge orients edge))
+      else chainEdgeColor s (chainCanonicalEdge orients edge)) = true
+    at hstep
+  rw [hcanonical, hcontains] at hstep
+  have hswapPair :
+      colorInPair (swapColor a c (chainEdgeColor s edge)) a c = true := by
+    rw [colorInPair_swapColor]
+    exact hedge.2
+  have htargetPair : chainEdgeInPair t a c edge = true := by
+    unfold chainEdgeInPair
+    exact colorInPair_of_colorEq hstep hswapPair
+  rw [List.contains_iff_mem.mpr hchainMem, htargetPair]
+  rfl
+
+theorem certifiedComponentClosed_of_chainAgreesWithSwitch
+    {orients : List TauOrient} {s t : List TauState}
+    {a c : LColor} {component : List ChainEdge}
+    (hclosed : certifiedComponentClosed orients s a c component = true)
+    (hagree : chainAgreesWithSwitch orients s t component a c = true) :
+    certifiedComponentClosed orients t a c component = true := by
+  unfold certifiedComponentClosed at hclosed ⊢
+  rw [List.all_eq_true] at hclosed ⊢
+  intro edge hchain
+  by_cases hpairTarget : chainEdgeInPair t a c edge = true
+  · by_cases hcontains : component.contains edge = true
+    · rw [hpairTarget, hcontains]
+      cases component.any (chainEdgesShareEndpoint orients edge) <;> rfl
+    · have hcontainsFalse : component.contains edge = false :=
+        bool_false_of_not_true hcontains
+      by_cases hshare :
+          component.any (chainEdgesShareEndpoint orients edge) = true
+      · have hchainMem : edge ∈ chainEdges orients := hchain
+        have hlocal : edge ∈ chainLocalEdges orients :=
+          chainEdges_mem_chainLocalEdges hchainMem
+        have hcanonical : chainCanonicalEdge orients edge = edge :=
+          chainCanonicalEdge_eq_self_of_mem_chainEdges hchainMem
+        unfold chainAgreesWithSwitch at hagree
+        rw [List.all_eq_true] at hagree
+        have hstep := hagree edge hlocal
+        change
+          colorEq (chainEdgeColor t edge)
+            (if component.contains (chainCanonicalEdge orients edge) = true then
+              swapColor a c (chainEdgeColor s (chainCanonicalEdge orients edge))
+            else chainEdgeColor s (chainCanonicalEdge orients edge)) = true
+          at hstep
+        rw [hcanonical, hcontainsFalse] at hstep
+        have hcolorEq : chainEdgeColor t edge = chainEdgeColor s edge := by
+          rw [colorEq_eq_true_iff] at hstep
+          exact hstep
+        have hpairSource : chainEdgeInPair s a c edge = true := by
+          unfold chainEdgeInPair at hpairTarget ⊢
+          rw [← hcolorEq]
+          exact hpairTarget
+        have hclosedEdge := hclosed edge hchain
+        simp [hpairSource, hshare] at hclosedEdge
+        have hcontainsTrue : component.contains edge = true :=
+          List.contains_iff_mem.mpr hclosedEdge
+        rw [hcontainsFalse] at hcontainsTrue
+        cases hcontainsTrue
+      · have hshareFalse :
+            component.any (chainEdgesShareEndpoint orients edge) = false :=
+          bool_false_of_not_true hshare
+        rw [hpairTarget, hshareFalse]
+        rfl
+  · have hpairFalse : chainEdgeInPair t a c edge = false :=
+      bool_false_of_not_true hpairTarget
+    rw [hpairFalse]
+    rfl
+
+theorem certifiedComponentMoveAudit_of_chainAgreesWithSwitch
+    {orients : List TauOrient} {s t : List TauState}
+    {cert : ChainComponentMoveCertificate}
+    (haudit : certifiedComponentMoveAudit orients s cert = true)
+    (hagree : chainAgreesWithSwitch orients s t cert.component
+      cert.move.a cert.move.c = true) :
+    certifiedComponentMoveAudit orients t cert = true := by
+  unfold certifiedComponentMoveAudit at haudit ⊢
+  simp only [Bool.and_eq_true] at haudit ⊢
+  rcases haudit with
+    ⟨⟨⟨⟨⟨⟨hnonempty, hseedChain⟩, hseedMem⟩, hpair⟩,
+      hconnected⟩, hclosed⟩, havoid⟩
+  exact
+    ⟨⟨⟨⟨⟨⟨hnonempty, hseedChain⟩, hseedMem⟩,
+      certifiedComponentPairColored_of_chainAgreesWithSwitch hpair
+        hagree⟩,
+      hconnected⟩,
+      certifiedComponentClosed_of_chainAgreesWithSwitch hclosed hagree⟩,
+      havoid⟩
+
+theorem chainCertifiedKempeStep_symm_of_compatible
+    {orients : List TauOrient} {s t : List TauState}
+    {cert : ChainComponentMoveCertificate}
+    (hs : compatibleChainStates orients s = true)
+    (ht : compatibleChainStates orients t = true)
+    (hstep : chainCertifiedKempeStep orients s t cert = true) :
+    chainCertifiedKempeStep orients t s cert = true := by
+  unfold chainCertifiedKempeStep at hstep ⊢
+  simp only [Bool.and_eq_true] at hstep ⊢
+  rcases hstep with ⟨haudit, hagree⟩
+  exact
+    ⟨certifiedComponentMoveAudit_of_chainAgreesWithSwitch haudit hagree,
+      chainAgreesWithSwitch_symm_of_compatible hs ht hagree⟩
+
 structure ChainFiberCertifiedParentRow where
   source : Nat
   parent : Nat

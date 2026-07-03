@@ -390,6 +390,27 @@ dependency-audit evidence is
 `d7b3fd387d9e75d708bebd467e227370a4f12932922eed9128ff4a469eba0d53`);
 the table readiness audit depends on `propext`, and the ready-to-step and
 membership theorems depend on `propext`, `Classical.choice`, and `Quot.sound`.
+The same certified-component data now supplies the reverse row direction.
+`GoertzelLemma814.chainAgreesWithSwitch_symm_of_compatible` packages the
+involutive color switch for compatible chain states, and
+`chainCertifiedKempeStep_symm_of_compatible` lifts it to explicit component
+certificates by preserving the pair-colored and closed-component audit fields.
+The triple-row layer now has
+`tripleComponentRowValid_chainCertifiedKempeStep_reverse_of_source_beq_false`,
+`tripleComponentRowValid_reverse_chainSingleKempeStep_of_source_beq_false`, and
+`tttFiber32Rows_mem_source_eq_or_reverse_chainSingleKempeStep`, proving that
+every member of the known `TTT` fiber-32 row table is stationary or yields a
+real parent-to-source `chainSingleKempeStep`.  This supplies the row direction
+needed when parent rows point toward the root; appended root-closure
+connectedness still has to package these reverse steps into the global
+generated parent-row certificate.  Reverse-row build evidence is
+`fourcolor-certified-reverse-row-steps-build-20260703.log` (1110 jobs, SHA256
+`c73e974e444d90cd005f9bffecacf4a46684f70377ac5136fe409905ca11d9fd`), and
+dependency-audit evidence is
+`fourcolor-certified-reverse-row-steps-axioms-20260703.log` (SHA256
+`9f2fd8cecec01b69054a46e86895902425f7c312d7d48ade1d08a9b46d8e0db9`);
+the audited reverse/symmetry theorem surfaces depend on `propext`,
+`Classical.choice`, and `Quot.sound`.
 The semantic bridge now exposes the root-closure adapter needed by generated
 row packages:
 `chainFiberRootClosureStep_of_source_mem_chainSingleKempeStep` turns a real

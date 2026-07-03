@@ -326,7 +326,13 @@ now has `tttFiber32RowsSingleStepReadyCheck_ok` and
 from one row to every member of `tttFiber32Rows` through a `List.all` readiness
 check.  The next connectedness pass should lift this pattern from the local
 fiber-32 table to the full generated parent-row audit packages and feed the
-resulting real single steps into root-closure membership.
+resulting real single steps into root-closure membership.  The same row data
+now also runs backward: `chainCertifiedKempeStep_symm_of_compatible` reverses
+explicit component certificates between compatible states, and
+`tttFiber32Rows_mem_source_eq_or_reverse_chainSingleKempeStep` proves every
+known `TTT` fiber-32 row is stationary or gives a real parent-to-source
+`chainSingleKempeStep`.  The next connectedness pass should lift those reverse
+steps from the local table into the generated root-closure package.
 The semantic bridge also has the general adapter
 `chainFiberRootClosureStep_of_source_mem_chainSingleKempeStep`, plus the
 `ParentMapRow.stepOrSelf`-shaped wrapper
