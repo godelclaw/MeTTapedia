@@ -3319,6 +3319,96 @@ noncomputable instance
   unfold V13RealLinearNoTargetSequentialTraceFirstCosetHitWorldSet
   infer_instance
 
+noncomputable def
+    v13RealLinearNoTargetSequentialTraceFirstCosetHitWorldSetEquivSigmaFixedPrefixTranscript
+    {m q : Nat} (i₀ : Fin m)
+    (observer : V13RealLinearSequentialRowObserver m q) (t : Fin q) :
+    V13RealLinearNoTargetSequentialTraceFirstCosetHitWorldSet
+        i₀ observer t ≃
+      (Σ rows : Finset (Fin m),
+        Σ row : Fin m,
+          Σ transcript : V13RealLinearRowsTranscriptSpace m rows,
+            V13RealLinearNoTargetSequentialTraceFirstCosetHitFixedPrefixTranscriptWorldSet
+              i₀ observer t rows row transcript) where
+  toFun omega := by
+    classical
+    let trace :=
+      v13RealLinearNoTargetRowsSequentialQRowTrace i₀ observer omega.val
+    let rows := v13RealLinearRowTracePrefixRows trace (t : Nat)
+    let row := trace.get ⟨(t : Nat), omega.property.1⟩
+    let transcript :=
+      v13RealLinearRowsTranscript rows
+        (v13RealLinearPublicInput
+          ({ x := omega.val.2, A := omega.val.1.val } :
+            V13RealLinearWorld m))
+    exact
+      ⟨rows, row, transcript,
+        ⟨⟨omega.val,
+          ⟨omega.property, rfl, ⟨omega.property.1, rfl⟩⟩⟩,
+          rfl⟩⟩
+  invFun cell := by
+    rcases cell with ⟨_rows, _row, _transcript, cell⟩
+    exact ⟨cell.val.val, cell.val.property.1⟩
+  left_inv _omega := by
+    rfl
+  right_inv cell := by
+    rcases cell with ⟨rows, row, transcript, cell⟩
+    rcases cell with ⟨omegaFixed, htranscript⟩
+    rcases omegaFixed with ⟨omega, hfirst, hrows, hrow⟩
+    let trace :=
+      v13RealLinearNoTargetRowsSequentialQRowTrace i₀ observer omega
+    cases hrows
+    cases htranscript
+    rcases hrow with ⟨hrowLen, hget⟩
+    have hidx :
+        (⟨(t : Nat), hfirst.1⟩ : Fin trace.length) =
+          ⟨(t : Nat), hrowLen⟩ := by
+      apply Fin.ext
+      rfl
+    have hrowEq : trace.get ⟨(t : Nat), hfirst.1⟩ = row := by
+      calc
+        trace.get ⟨(t : Nat), hfirst.1⟩ =
+            trace.get ⟨(t : Nat), hrowLen⟩ := by rw [hidx]
+        _ = row := hget
+    cases hrowEq
+    rfl
+
+theorem
+    v13RealLinearNoTargetSequentialTraceFirstCosetHitWorldSet_card_eq_sum_fixedPrefixTranscript
+    {m q : Nat} (i₀ : Fin m)
+    (observer : V13RealLinearSequentialRowObserver m q) (t : Fin q) :
+    Fintype.card
+        (V13RealLinearNoTargetSequentialTraceFirstCosetHitWorldSet
+          i₀ observer t) =
+      ∑ rows : Finset (Fin m),
+        ∑ row : Fin m,
+          ∑ transcript : V13RealLinearRowsTranscriptSpace m rows,
+            Fintype.card
+              (V13RealLinearNoTargetSequentialTraceFirstCosetHitFixedPrefixTranscriptWorldSet
+                i₀ observer t rows row transcript) := by
+  classical
+  rw [Fintype.card_congr
+    (v13RealLinearNoTargetSequentialTraceFirstCosetHitWorldSetEquivSigmaFixedPrefixTranscript
+      i₀ observer t)]
+  simp [Fintype.card_sigma]
+
+theorem
+    v13RealLinearNoTargetSequentialTraceFirstCosetHitWorldSet_card_eq_active_capacity
+    {m q : Nat} (i₀ : Fin m)
+    (observer : V13RealLinearSequentialRowObserver m q) (t : Fin q) :
+    Fintype.card
+        (V13RealLinearNoTargetSequentialTraceFirstCosetHitWorldSet
+          i₀ observer t) =
+      ∑ activeIdx :
+        V13RealLinearNoTargetSequentialTraceFirstCosetHitActiveFixedMapTranscriptCylinderIndex
+          i₀ observer t,
+        2 ^ (m - activeIdx.1.rows.card) := by
+  rw [
+    v13RealLinearNoTargetSequentialTraceFirstCosetHitWorldSet_card_eq_sum_fixedPrefixTranscript
+      i₀ observer t,
+    v13RealLinearNoTargetSequentialTraceFirstCosetHitFixedPrefixTranscriptWorldSet_sum_card_eq_active_capacity
+      i₀ observer t]
+
 /-- A finite vector presentation of an ordered sequential row transcript
 prefix.  Unlike rowset transcripts, this preserves order and repeated reads,
 which is exactly the data used by `chooseRow`. -/
@@ -4106,6 +4196,48 @@ theorem
     i₀ observer
     (V13RealLinearNoTargetRowsSequentialTraceCosetHitFixedPrefixTranscriptPackingBound_of_activeFixedMapTranscriptCylinderCapacity
       i₀ observer hcapacity)
+
+theorem
+    V13RealLinearNoTargetRowsSequentialTraceCosetHitActiveFixedMapTranscriptCylinderCapacityBound_of_counting
+    {m q : Nat} (i₀ : Fin m)
+    (observer : V13RealLinearSequentialRowObserver m q)
+    (hcount :
+      V13RealLinearNoTargetRowsSequentialTraceCosetHitCountingBound
+        i₀ observer) :
+    V13RealLinearNoTargetRowsSequentialTraceCosetHitActiveFixedMapTranscriptCylinderCapacityBound
+      i₀ observer := by
+  classical
+  intro t
+  unfold V13RealLinearNoTargetRowsSequentialTraceCosetHitCountingBound at hcount
+  unfold V13RealLinearAdaptiveQRowTraceCosetHitCountingBound at hcount
+  unfold V13RealLinearAdaptiveDeferredDecisionNewCaptureCountingBound at hcount
+  have hstep := hcount t
+  change
+    Fintype.card
+        (V13RealLinearNoTargetSequentialTraceFirstCosetHitWorldSet
+          i₀ observer t) *
+      2 ^ m ≤
+    (4 * 2 ^ (t : Nat)) *
+      Fintype.card
+        (V13RealLinearAdaptiveQRowWorld m
+          (V13RealLinearNoTargetRowsMap m i₀)) at hstep
+  rw [
+    v13RealLinearNoTargetSequentialTraceFirstCosetHitWorldSet_card_eq_active_capacity
+      i₀ observer t] at hstep
+  exact hstep
+
+theorem
+    V13RealLinearNoTargetRowsSequentialTraceCosetHitActiveFixedMapTranscriptCylinderCapacityBound_iff_counting
+    {m q : Nat} (i₀ : Fin m)
+    (observer : V13RealLinearSequentialRowObserver m q) :
+    V13RealLinearNoTargetRowsSequentialTraceCosetHitActiveFixedMapTranscriptCylinderCapacityBound
+      i₀ observer ↔
+    V13RealLinearNoTargetRowsSequentialTraceCosetHitCountingBound
+      i₀ observer :=
+  ⟨V13RealLinearNoTargetRowsSequentialTraceCosetHitCountingBound_of_activeFixedMapTranscriptCylinderCapacity
+      i₀ observer,
+    V13RealLinearNoTargetRowsSequentialTraceCosetHitActiveFixedMapTranscriptCylinderCapacityBound_of_counting
+      i₀ observer⟩
 
 theorem
     V13RealLinearNoTargetRowsSequentialTraceCosetHitCountingBound_of_orderedPrefixPacking
