@@ -2191,6 +2191,21 @@ theorem concreteChainFiberAppend_chainEdgesShareEndpoint_shift_occ_zero
               GoertzelLemma814.isInternalEndpoint,
               Bool.beq_eq_decide_eq] at hedgeNotInput hotherNotInput ⊢
 
+theorem concreteChainFiberAppend_chainEdgeInPair_shift_occ_zero
+    (word : List GoertzelLemma818FrontierMode.TauOrient)
+    (pref : List GoertzelLemma814.TauState)
+    (last : GoertzelLemma814.TauState)
+    (a c : GoertzelLemma814.LColor)
+    (edge : GoertzelLemma814.ChainEdge)
+    (hprefLen : pref.length = word.length)
+    (hocc : edge.occ = 0) :
+    GoertzelLemma814.chainEdgeInPair (pref ++ [last]) a c
+        (concreteChainFiberAppendShiftEdge word edge) =
+      GoertzelLemma814.chainEdgeInPair [last] a c edge := by
+  unfold GoertzelLemma814.chainEdgeInPair
+  rw [concreteChainFiberAppend_chainEdgeColor_shift_occ_zero
+    word pref last edge hprefLen hocc]
+
 def concreteChainFiberAppendShiftComponent
     (word : List GoertzelLemma818FrontierMode.TauOrient)
     (component : List GoertzelLemma814.ChainEdge) :
