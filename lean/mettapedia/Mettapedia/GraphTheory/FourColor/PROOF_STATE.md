@@ -208,7 +208,15 @@ preimage rows, and a row selector for every prefix fiber point; this proves
 by taking the selected row as the preimage.  The
 `_of_appended_connected_and_projection_finite_section` wrappers carry this
 finite-section form through semantic sufficiency and the target-gated all-word
-audit.
+audit.  Conversely,
+`concreteChainFiberAppendQuotientFibrationParentRowsNonSingletonPrefixProjectionFiniteSectionClosed_of_projection_surjective`
+builds the finite section from any surjective projection by enumerating the
+finite prefix fiber and choosing one appended preimage for each listed prefix
+row.  Thus
+`concreteChainFiberAppendQuotientFibrationParentRowsNonSingletonPrefixAppendedParentRowsProjectionFiniteSectionClosed_of_appended_parent_rows_connected_and_projection_surjective`
+packages the current combined predicate from appended parent-row connectedness
+plus projection surjectivity; generated files do not need to emit the selector
+as independent data if they can prove surjectivity.
 Focused Lake build evidence is
 `fourcolor-surjective-projection-split-lake-build-20260703.log` (607 jobs,
 SHA256
@@ -247,6 +255,17 @@ and `fourcolor-combined-parent-rows-projection-section-axioms-20260703.log`
 the combined-to-surjective-projection wrapper depends only on `propext`, while
 the semantic and target-gated all-word wrappers depend on `propext`,
 `Classical.choice`, and `Quot.sound`.
+Projection-surjective to finite-section evidence is
+`fourcolor-projection-surjective-finite-section-build-20260703.log`
+(607 jobs, SHA256
+`42b85d3ce0d0a5e2641a558eef105dede1656f5f53987a856d85e2d497c34f9c`)
+and
+`fourcolor-projection-surjective-finite-section-axioms-20260703.log`
+(SHA256
+`48ebd7773d5693c5c4f87c2f6c6f99afc08e0c23815804c6d08992439ddfda96`);
+the projection-surjective finite-section conversion and the parent-rows plus
+projection-surjective combiner depend on `propext`, `Classical.choice`, and
+`Quot.sound`.
 Combined transfer/composition wrapper evidence is
 `fourcolor-combined-parent-rows-transfer-composition-build-20260703.log`
 (607 jobs, SHA256

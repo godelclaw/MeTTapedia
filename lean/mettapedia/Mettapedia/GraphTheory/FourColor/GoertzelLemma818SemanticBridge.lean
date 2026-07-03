@@ -7899,6 +7899,44 @@ def concreteChainFiberAppendQuotientFibrationParentRowsNonSingletonPrefixProject
                     ∀ b : ChainFiberPoint word key,
                       proj (preimageRows.get (rowOf b)) = b
 
+theorem concreteChainFiberAppendQuotientFibrationParentRowsNonSingletonPrefixProjectionFiniteSectionClosed_of_projection_surjective
+    (hSurjective :
+      concreteChainFiberAppendQuotientFibrationParentRowsNonSingletonPrefixProjectionSurjectiveClosed) :
+    concreteChainFiberAppendQuotientFibrationParentRowsNonSingletonPrefixProjectionFiniteSectionClosed := by
+  intro word orient hlen hcert key hkey root rest hfiber
+  rcases hSurjective word orient hlen hcert key hkey root rest hfiber with
+    ⟨proj, hproj⟩
+  let prefixRows : List (ChainFiberPoint word key) :=
+    (root :: rest).attach.map fun row =>
+      (⟨row.1, by simpa [hfiber] using row.2⟩ :
+        ChainFiberPoint word key)
+  have hprefixRows : ∀ b : ChainFiberPoint word key, b ∈ prefixRows := by
+    intro b
+    refine List.mem_map.mpr ?_
+    refine ⟨⟨b.1, ?_⟩, List.mem_attach _ _, ?_⟩
+    · simpa [hfiber] using b.2
+    · apply Subtype.ext
+      rfl
+  let selected : ChainFiberPoint word key →
+      ChainFiberPoint (word ++ [orient]) key :=
+    fun b => Classical.choose (hproj b)
+  let preimageRows : List (ChainFiberPoint (word ++ [orient]) key) :=
+    prefixRows.map selected
+  have hselectedMem :
+      ∀ b : ChainFiberPoint word key,
+        selected b ∈ preimageRows := by
+    intro b
+    exact List.mem_map.mpr ⟨b, hprefixRows b, rfl⟩
+  let rowOf : ChainFiberPoint word key → Fin preimageRows.length :=
+    fun b => Classical.choose (List.get_of_mem (hselectedMem b))
+  refine ⟨proj, preimageRows, rowOf, ?_⟩
+  intro b
+  have hget :
+      preimageRows.get (rowOf b) = selected b :=
+    Classical.choose_spec (List.get_of_mem (hselectedMem b))
+  rw [hget]
+  exact Classical.choose_spec (hproj b)
+
 def concreteChainFiberAppendQuotientFibrationParentRowsNonSingletonPrefixAppendedParentRowsProjectionFiniteSectionClosed :
     Prop :=
   ∀ (word : List GoertzelLemma818FrontierMode.TauOrient)
@@ -7940,6 +7978,18 @@ theorem concreteChainFiberAppendQuotientFibrationParentRowsNonSingletonPrefixPro
     concreteChainFiberAppendQuotientFibrationParentRowsNonSingletonPrefixProjectionFiniteSectionClosed := by
   intro word orient hlen hcert key hkey root rest hfiber
   exact (hCombined word orient hlen hcert key hkey root rest hfiber).2
+
+theorem concreteChainFiberAppendQuotientFibrationParentRowsNonSingletonPrefixAppendedParentRowsProjectionFiniteSectionClosed_of_appended_parent_rows_connected_and_projection_surjective
+    (hRows :
+      concreteChainFiberAppendQuotientFibrationParentRowsNonSingletonPrefixAppendedParentRowsConnectedClosed)
+    (hSurjective :
+      concreteChainFiberAppendQuotientFibrationParentRowsNonSingletonPrefixProjectionSurjectiveClosed) :
+    concreteChainFiberAppendQuotientFibrationParentRowsNonSingletonPrefixAppendedParentRowsProjectionFiniteSectionClosed := by
+  intro word orient hlen hcert key hkey root rest hfiber
+  exact
+    ⟨hRows word orient hlen hcert key hkey root rest hfiber,
+      concreteChainFiberAppendQuotientFibrationParentRowsNonSingletonPrefixProjectionFiniteSectionClosed_of_projection_surjective
+        hSurjective word orient hlen hcert key hkey root rest hfiber⟩
 
 theorem concreteChainFiberAppendQuotientFibrationParentRowsNonSingletonPrefixProjectionSurjectiveClosed_of_projection_finite_section
     (hSection :
