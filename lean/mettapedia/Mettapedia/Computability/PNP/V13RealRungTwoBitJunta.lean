@@ -3059,6 +3059,51 @@ theorem
   exact v13RealLinearRowTracePrefixRows_card_le trace (t : Nat)
 
 theorem
+    v13RealLinearNoTargetSequentialTraceFirstCosetHitActiveFixedMapTranscriptCylinder_rows_nonempty
+    {m q : Nat} (i₀ : Fin m)
+    (observer : V13RealLinearSequentialRowObserver m q) (t : Fin q)
+    (activeIdx :
+      V13RealLinearNoTargetSequentialTraceFirstCosetHitActiveFixedMapTranscriptCylinderIndex
+        i₀ observer t) :
+    activeIdx.1.rows.Nonempty := by
+  classical
+  by_contra hrows
+  have hrowsEmpty : activeIdx.1.rows = ∅ :=
+    Finset.not_nonempty_iff_eq_empty.mp hrows
+  have hhit : V13RealLinearRowFunctionalTargetCosetHit
+      activeIdx.1.A.val ∅ i₀ activeIdx.1.row := by
+    simpa [hrowsEmpty] using activeIdx.1.hit
+  exact
+    v13RealLinearNoTargetRows_rowFunctionalTargetCosetHit_empty_false
+      i₀ activeIdx.1.row activeIdx.1.A hhit
+
+theorem
+    v13RealLinearNoTargetSequentialTraceFirstCosetHitActiveFixedMapTranscriptCylinder_rows_card_pos
+    {m q : Nat} (i₀ : Fin m)
+    (observer : V13RealLinearSequentialRowObserver m q) (t : Fin q)
+    (activeIdx :
+      V13RealLinearNoTargetSequentialTraceFirstCosetHitActiveFixedMapTranscriptCylinderIndex
+        i₀ observer t) :
+    0 < activeIdx.1.rows.card := by
+  exact
+    Finset.card_pos.mpr
+      (v13RealLinearNoTargetSequentialTraceFirstCosetHitActiveFixedMapTranscriptCylinder_rows_nonempty
+        i₀ observer t activeIdx)
+
+theorem
+    v13RealLinearNoTargetSequentialTraceFirstCosetHitActiveFixedMapTranscriptCylinder_step_pos
+    {m q : Nat} (i₀ : Fin m)
+    (observer : V13RealLinearSequentialRowObserver m q) (t : Fin q)
+    (activeIdx :
+      V13RealLinearNoTargetSequentialTraceFirstCosetHitActiveFixedMapTranscriptCylinderIndex
+        i₀ observer t) :
+    0 < (t : Nat) :=
+  (v13RealLinearNoTargetSequentialTraceFirstCosetHitActiveFixedMapTranscriptCylinder_rows_card_pos
+      i₀ observer t activeIdx).trans_le
+    (v13RealLinearNoTargetSequentialTraceFirstCosetHitActiveFixedMapTranscriptCylinder_rows_card_le_step
+      i₀ observer t activeIdx)
+
+theorem
     v13RealLinearNoTargetSequentialTraceFirstCosetHitFixedMapTranscriptCylinder_sum_card_eq_active_capacity
     {m q : Nat} (i₀ : Fin m)
     (observer : V13RealLinearSequentialRowObserver m q) (t : Fin q) :
