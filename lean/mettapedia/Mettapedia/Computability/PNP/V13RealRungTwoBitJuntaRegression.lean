@@ -114,4 +114,30 @@ example {m : Nat} {i₀ : Fin m}
             A.val.val.toEquiv w row₁.val = w i₀ :=
   v13RealLinearNoTargetTwoBudgetGeneratingMapSet_exists_pair_sum_target A
 
+example {m : Nat} (A : V13F2LinearEquiv m) (i₀ row₀ row₁ : Fin m)
+    (hpair : ∀ w : F2Vec m,
+      A.toEquiv w row₀ + A.toEquiv w row₁ = w i₀) :
+    V13RealLinearRowFunctionalTargetCosetHit A
+      ({row₀} : Finset (Fin m)) i₀ row₁ :=
+  v13RealLinearRowFunctionalTargetCosetHit_of_pair_sum_target
+    A i₀ row₀ row₁ hpair
+
+example {m : Nat} {i₀ : Fin m}
+    {rows : V13RealLinearBudgetedRowset m 2}
+    (A : V13RealLinearNoTargetBudgetedRowsetGeneratingMapSet i₀ rows) :
+    ∃ row₀ row₁ : {row : Fin m // row ∈ rows.1},
+      row₀ ≠ row₁ ∧ row₁.val ∉ ({row₀.val} : Finset (Fin m)) ∧
+        V13RealLinearRowFunctionalTargetCosetHit A.val.val
+          ({row₀.val} : Finset (Fin m)) i₀ row₁.val :=
+  v13RealLinearNoTargetTwoBudgetGeneratingMapSet_exists_pair_cosetHit A
+
+example {m : Nat} (i₀ row₀ row₁ : Fin m)
+    (hrow : row₁ ∉ ({row₀} : Finset (Fin m))) :
+    Fintype.card
+        (V13RealLinearNoTargetFixedPairCosetHitMapSet i₀ row₀ row₁) *
+      2 ^ m ≤
+    8 * Fintype.card (V13F2LinearEquiv m) :=
+  v13RealLinearNoTargetFixedPairCosetHitMapSet_card_mul_two_pow_le_equiv
+    i₀ row₀ row₁ hrow
+
 end Mettapedia.Computability.PNP

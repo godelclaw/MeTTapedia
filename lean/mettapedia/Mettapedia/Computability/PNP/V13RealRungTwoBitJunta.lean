@@ -674,6 +674,125 @@ theorem
       A.val.val i₀ targetCoeff (by simpa [support] using hsupportEq)
 
 theorem
+    v13RealLinearRowFunctionalTargetCosetHit_of_pair_sum_target
+    {m : Nat} (A : V13F2LinearEquiv m) (i₀ row₀ row₁ : Fin m)
+    (hpair : ∀ w : F2Vec m,
+      A.toEquiv w row₀ + A.toEquiv w row₁ = w i₀) :
+    V13RealLinearRowFunctionalTargetCosetHit A
+      ({row₀} : Finset (Fin m)) i₀ row₁ := by
+  classical
+  refine ⟨v13RealLinearRowFunctional A row₀, ?_, ?_⟩
+  · apply Submodule.subset_span
+    exact ⟨⟨row₀, by simp⟩, rfl⟩
+  · apply LinearMap.ext
+    intro w
+    have h := hpair w
+    simpa [v13RealLinearTargetFunctional, v13RealLinearRowFunctional,
+      add_comm] using h.symm
+
+theorem
+    v13RealLinearNoTargetTwoBudgetGeneratingMapSet_exists_pair_cosetHit
+    {m : Nat} {i₀ : Fin m} {rows : V13RealLinearBudgetedRowset m 2}
+    (A : V13RealLinearNoTargetBudgetedRowsetGeneratingMapSet i₀ rows) :
+    ∃ row₀ row₁ : {row : Fin m // row ∈ rows.1},
+      row₀ ≠ row₁ ∧ row₁.val ∉ ({row₀.val} : Finset (Fin m)) ∧
+        V13RealLinearRowFunctionalTargetCosetHit A.val.val
+          ({row₀.val} : Finset (Fin m)) i₀ row₁.val := by
+  rcases
+      v13RealLinearNoTargetTwoBudgetGeneratingMapSet_exists_pair_sum_target
+        A with
+    ⟨row₀, row₁, hne, hpair⟩
+  have hrow₁NotMem : row₁.val ∉ ({row₀.val} : Finset (Fin m)) := by
+    intro hmem
+    have hval : row₁.val = row₀.val := by
+      simpa using hmem
+    exact hne.symm (Subtype.ext hval)
+  exact
+    ⟨row₀, row₁, hne, hrow₁NotMem,
+      v13RealLinearRowFunctionalTargetCosetHit_of_pair_sum_target
+        A.val.val i₀ row₀.val row₁.val hpair⟩
+
+abbrev V13RealLinearNoTargetFixedPairCosetHitMapSet {m : Nat}
+    (i₀ row₀ row₁ : Fin m) :=
+  {A : V13RealLinearNoTargetRowsMap m i₀ //
+    V13RealLinearRowFunctionalTargetCosetHit A.val
+      ({row₀} : Finset (Fin m)) i₀ row₁}
+
+noncomputable instance {m : Nat} (i₀ row₀ row₁ : Fin m) :
+    Fintype (V13RealLinearNoTargetFixedPairCosetHitMapSet
+      i₀ row₀ row₁) := by
+  classical
+  unfold V13RealLinearNoTargetFixedPairCosetHitMapSet
+  infer_instance
+
+noncomputable def
+    v13RealLinearNoTargetFixedPairCosetHitMapSetEmbeddingFunctionalTableHit
+    {m : Nat} (i₀ row₀ row₁ : Fin m) :
+    V13RealLinearNoTargetFixedPairCosetHitMapSet i₀ row₀ row₁ ↪
+      {table : V13RealLinearRowFunctionalTable m //
+        V13RealLinearFunctionalTableTargetCosetHit table
+          ({row₀} : Finset (Fin m)) i₀ row₁} where
+  toFun A :=
+    ⟨v13RealLinearRowFunctionalTableOfEquiv A.val.val,
+      v13RealLinearFunctionalTableTargetCosetHit_of_rowFunctionalTargetCosetHit
+        A.property⟩
+  inj' := by
+    intro A₀ A₁ h
+    apply Subtype.ext
+    apply Subtype.ext
+    apply v13RealLinearRowFunctionalTableOfEquiv_injective
+    exact congrArg Subtype.val h
+
+theorem
+    v13RealLinearNoTargetFixedPairCosetHitMapSet_card_mul_two_pow_le_table
+    {m : Nat} (i₀ row₀ row₁ : Fin m)
+    (hrow : row₁ ∉ ({row₀} : Finset (Fin m))) :
+    Fintype.card
+        (V13RealLinearNoTargetFixedPairCosetHitMapSet i₀ row₀ row₁) *
+      2 ^ m ≤
+    2 * Fintype.card (V13RealLinearRowFunctionalTable m) := by
+  classical
+  let S := V13RealLinearNoTargetFixedPairCosetHitMapSet i₀ row₀ row₁
+  let H :=
+    {table : V13RealLinearRowFunctionalTable m //
+      V13RealLinearFunctionalTableTargetCosetHit table
+        ({row₀} : Finset (Fin m)) i₀ row₁}
+  have hSle : Fintype.card S ≤ Fintype.card H :=
+    Fintype.card_le_of_embedding
+      (v13RealLinearNoTargetFixedPairCosetHitMapSetEmbeddingFunctionalTableHit
+        i₀ row₀ row₁)
+  have hH :
+      Fintype.card H * 2 ^ m ≤
+        2 * Fintype.card (V13RealLinearRowFunctionalTable m) := by
+    simpa [H] using
+      (v13RealLinearFunctionalTableTargetCosetHit_card_mul_two_pow_le
+        ({row₀} : Finset (Fin m)) i₀ row₁ hrow)
+  exact (Nat.mul_le_mul_right (2 ^ m) hSle).trans hH
+
+theorem
+    v13RealLinearNoTargetFixedPairCosetHitMapSet_card_mul_two_pow_le_equiv
+    {m : Nat} (i₀ row₀ row₁ : Fin m)
+    (hrow : row₁ ∉ ({row₀} : Finset (Fin m))) :
+    Fintype.card
+        (V13RealLinearNoTargetFixedPairCosetHitMapSet i₀ row₀ row₁) *
+      2 ^ m ≤
+    8 * Fintype.card (V13F2LinearEquiv m) := by
+  classical
+  let S := Fintype.card
+    (V13RealLinearNoTargetFixedPairCosetHitMapSet i₀ row₀ row₁)
+  let T := Fintype.card (V13RealLinearRowFunctionalTable m)
+  let E := Fintype.card (V13F2LinearEquiv m)
+  have htable : S * 2 ^ m ≤ 2 * T := by
+    simpa [S, T] using
+      v13RealLinearNoTargetFixedPairCosetHitMapSet_card_mul_two_pow_le_table
+        i₀ row₀ row₁ hrow
+  have hT : T ≤ 4 * E := by
+    exact v13RealLinearRowFunctionalTable_card_le_four_mul_equiv m
+  have hright : 2 * T ≤ 8 * E := by
+    nlinarith
+  simpa [S, E] using htable.trans hright
+
+theorem
     v13RealLinearNoTargetBitJunta_fixed_correct_card_eq_incorrect_card_of_not_blocked
     {m j : Nat} (i₀ : Fin m)
     (observer : V13RealLinearBitJuntaObserver m j)
