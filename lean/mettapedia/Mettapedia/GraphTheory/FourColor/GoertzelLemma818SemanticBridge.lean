@@ -2428,6 +2428,95 @@ theorem concreteChainFiberAppendShiftComponent_contains_last_eq
         GoertzelLemma814.bool_false_of_not_true hlocal
       rw [hshiftFalse, hlocalFalse]
 
+theorem concreteChainFiberAppend_chainLocalEdges_append_singleton
+    (word : List GoertzelLemma818FrontierMode.TauOrient)
+    (orient : GoertzelLemma818FrontierMode.TauOrient) :
+    GoertzelLemma814.chainLocalEdges (frontierWordToChainWord (word ++ [orient])) =
+      GoertzelLemma814.chainLocalEdges (frontierWordToChainWord word) ++
+        (GoertzelLemma814.tauEdges.map fun e =>
+          ({ occ := word.length, edge := e } : GoertzelLemma814.ChainEdge)) := by
+  unfold GoertzelLemma814.chainLocalEdges GoertzelLemma814.bindList
+    frontierWordToChainWord
+  simp only [List.map_append, List.map_cons, List.map_nil, List.length_append,
+    List.length_map, List.length_cons, List.length_nil, Nat.add_one]
+  rw [List.range_succ]
+  simp [List.foldr_append]
+
+theorem concreteChainFiberAppend_chainIsRepresentativeEdge_prefix
+    (word : List GoertzelLemma818FrontierMode.TauOrient)
+    (orient : GoertzelLemma818FrontierMode.TauOrient)
+    (ge : GoertzelLemma814.ChainEdge)
+    (hmem :
+      ge ∈ GoertzelLemma814.chainLocalEdges (frontierWordToChainWord word)) :
+    GoertzelLemma814.chainIsRepresentativeEdge
+        (frontierWordToChainWord (word ++ [orient])) ge =
+      GoertzelLemma814.chainIsRepresentativeEdge
+        (frontierWordToChainWord word) ge := by
+  have hocc : ge.occ < (frontierWordToChainWord word).length :=
+    GoertzelLemma814.chainLocalEdges_mem_occ_lt hmem
+  unfold GoertzelLemma814.chainIsRepresentativeEdge
+    GoertzelLemma814.chainIsGluedInput
+  have horient :
+      GoertzelLemma814.tauOrientAt
+          (frontierWordToChainWord (word ++ [orient])) ge.occ =
+        GoertzelLemma814.tauOrientAt
+          (frontierWordToChainWord word) ge.occ := by
+    simpa [frontierWordToChainWord] using
+      GoertzelLemma814.tauOrientAt_append_left
+        (frontierWordToChainWord word) [frontierOrientToChain orient] hocc
+  rw [horient]
+
+theorem concreteChainFiberAppend_chainEdges_append_singleton_non_input
+    (word : List GoertzelLemma818FrontierMode.TauOrient)
+    (orient : GoertzelLemma818FrontierMode.TauOrient)
+    (hne : word ≠ []) :
+    GoertzelLemma814.chainEdges (frontierWordToChainWord (word ++ [orient])) =
+      GoertzelLemma814.chainEdges (frontierWordToChainWord word) ++
+        ((GoertzelLemma814.tauEdges.filter fun e =>
+          !(GoertzelLemma814.tauOrientInputOrder
+            (frontierOrientToChain orient)).contains e).map fun e =>
+            ({ occ := word.length, edge := e } :
+              GoertzelLemma814.ChainEdge)) := by
+  unfold GoertzelLemma814.chainEdges
+  rw [concreteChainFiberAppend_chainLocalEdges_append_singleton word orient]
+  rw [List.filter_append]
+  have hprefix :
+      List.filter
+          (GoertzelLemma814.chainIsRepresentativeEdge
+            (frontierWordToChainWord (word ++ [orient])))
+          (GoertzelLemma814.chainLocalEdges (frontierWordToChainWord word)) =
+        List.filter
+          (GoertzelLemma814.chainIsRepresentativeEdge
+            (frontierWordToChainWord word))
+          (GoertzelLemma814.chainLocalEdges (frontierWordToChainWord word)) := by
+    apply List.filter_congr
+    intro ge hmem
+    exact concreteChainFiberAppend_chainIsRepresentativeEdge_prefix
+      word orient ge hmem
+  rw [hprefix]
+  rw [List.filter_map]
+  apply congrArg (fun xs =>
+    List.filter
+        (GoertzelLemma814.chainIsRepresentativeEdge
+          (frontierWordToChainWord word))
+        (GoertzelLemma814.chainLocalEdges (frontierWordToChainWord word)) ++
+      List.map (fun e =>
+        ({ occ := word.length, edge := e } : GoertzelLemma814.ChainEdge)) xs)
+  apply List.filter_congr
+  intro e _he
+  unfold Function.comp GoertzelLemma814.chainIsRepresentativeEdge
+    GoertzelLemma814.chainIsGluedInput
+  have hpos : word.length > 0 := by
+    cases word with
+    | nil => contradiction
+    | cons _ _ => simp
+  have horient :
+      GoertzelLemma814.tauOrientAt
+          (frontierWordToChainWord (word ++ [orient])) word.length =
+        frontierOrientToChain orient :=
+    tauOrientAt_frontierWordToChainWord_append_length word orient
+  simp [hpos, horient]
+
 theorem concreteChainFiberAppend_chainEdgeColor_last
     (word : List GoertzelLemma818FrontierMode.TauOrient)
     (pref : List GoertzelLemma814.TauState)
