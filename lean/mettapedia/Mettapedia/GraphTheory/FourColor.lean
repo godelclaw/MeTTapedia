@@ -444,3 +444,4 @@ import Mettapedia.GraphTheory.FourColor.Theorem49BoundaryZeroForcedEdgeF2FocusRe
 import Mettapedia.GraphTheory.FourColor.Theorem49BoundaryZeroForcedEdgePositiveGeometryRegression
 import Mettapedia.GraphTheory.FourColor.CDLFlow
 import Mettapedia.GraphTheory.FourColor.Goal
+import Mettapedia.GraphTheory.FourColor.PillarASmallerSpace
