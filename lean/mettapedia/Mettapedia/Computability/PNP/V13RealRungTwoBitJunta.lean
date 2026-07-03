@@ -4214,6 +4214,13 @@ abbrev
           ({ x := x, A := activeIdx.1.A.val } : V13RealLinearWorld m))
         ((t : Nat) + 1) =
       v13RealLinearNoTargetSequentialTraceFirstCosetHitActiveFixedMapTranscriptCylinder_generatedPrefix
+        i₀ observer t activeIdx ∧
+    v13RealLinearRowsTranscript
+        (v13RealLinearNoTargetSequentialTraceFirstCosetHitActiveFixedMapTranscriptCylinder_generatedQBudgetedRowset
+          i₀ observer t activeIdx).1
+        (v13RealLinearPublicInput
+          ({ x := x, A := activeIdx.1.A.val } : V13RealLinearWorld m)) =
+      v13RealLinearNoTargetSequentialTraceFirstCosetHitActiveFixedMapTranscriptCylinder_generatedTranscript
         i₀ observer t activeIdx}
 
 noncomputable instance
@@ -4325,12 +4332,12 @@ noncomputable def
             v13RealLinearSequentialPrefixTranscriptVectorOf_toList,
             v13RealLinearNoTargetSequentialTraceFirstCosetHitActiveFixedMapTranscriptCylinder_generatedPrefix,
             witness, publicW, publicZ] using hprefixTranscript
-        exact List.ofFn_inj.mp (by
+        exact ⟨List.ofFn_inj.mp (by
           simpa [
             v13RealLinearSequentialPrefixTranscriptVectorToList,
             v13RealLinearSequentialPrefixTranscriptVectorOf,
             v13RealLinearNoTargetSequentialTraceFirstCosetHitActiveFixedMapTranscriptCylinder_generatedPrefix,
-            witness, publicW, publicZ] using hlist)⟩
+            witness, publicW, publicZ] using hlist), htranscriptZ⟩⟩
   inj' := by
     classical
     intro assignment₀ assignment₁ hcell
@@ -4396,6 +4403,94 @@ theorem
       (v13RealLinearRowsUnreadAssignmentToActiveNoTargetSequentialTraceFirstCosetHitGeneratedPrefixCell
         i₀ observer t activeIdx)
   simpa [v13RealLinearRowsUnreadAssignment_card] using hle
+
+noncomputable def
+    v13RealLinearNoTargetSequentialTraceFirstCosetHitGeneratedPrefixCellToUnreadAssignment
+    {m q : Nat} (i₀ : Fin m)
+    (observer : V13RealLinearSequentialRowObserver m q) (t : Fin q)
+    (activeIdx :
+      V13RealLinearNoTargetSequentialTraceFirstCosetHitActiveFixedMapTranscriptCylinderIndex
+        i₀ observer t) :
+    V13RealLinearNoTargetSequentialTraceFirstCosetHitActiveFixedMapTranscriptCylinderGeneratedPrefixCell
+        i₀ observer t activeIdx ↪
+      V13RealLinearRowsUnreadAssignment m
+        (v13RealLinearNoTargetSequentialTraceFirstCosetHitActiveFixedMapTranscriptCylinder_generatedQBudgetedRowset
+          i₀ observer t activeIdx).1 where
+  toFun cell := fun unread => activeIdx.1.A.val.toEquiv cell.val unread.1
+  inj' := by
+    classical
+    intro cell₀ cell₁ hassign
+    apply Subtype.ext
+    apply activeIdx.1.A.val.toEquiv.injective
+    funext row
+    let G :=
+      (v13RealLinearNoTargetSequentialTraceFirstCosetHitActiveFixedMapTranscriptCylinder_generatedQBudgetedRowset
+        i₀ observer t activeIdx).1
+    by_cases hrow : row ∈ G
+    · have htranscript :
+          v13RealLinearRowsTranscript G
+              (v13RealLinearPublicInput
+                ({ x := cell₀.val, A := activeIdx.1.A.val } :
+                  V13RealLinearWorld m)) =
+            v13RealLinearRowsTranscript G
+              (v13RealLinearPublicInput
+                ({ x := cell₁.val, A := activeIdx.1.A.val } :
+                  V13RealLinearWorld m)) := by
+        exact cell₀.property.2.trans cell₁.property.2.symm
+      have hview := congrFun htranscript ⟨row, hrow⟩
+      simpa [G, v13RealLinearRowsTranscript, v13RealLinearRowView,
+        v13RealLinearPublicInput] using congrArg Prod.snd hview
+    · exact congrFun hassign ⟨row, hrow⟩
+
+theorem
+    v13RealLinearNoTargetSequentialTraceFirstCosetHitGeneratedPrefixCell_card_le_capacity
+    {m q : Nat} (i₀ : Fin m)
+    (observer : V13RealLinearSequentialRowObserver m q) (t : Fin q)
+    (activeIdx :
+      V13RealLinearNoTargetSequentialTraceFirstCosetHitActiveFixedMapTranscriptCylinderIndex
+        i₀ observer t) :
+    Fintype.card
+        (V13RealLinearNoTargetSequentialTraceFirstCosetHitActiveFixedMapTranscriptCylinderGeneratedPrefixCell
+          i₀ observer t activeIdx) ≤
+      2 ^ (m -
+        (v13RealLinearNoTargetSequentialTraceFirstCosetHitActiveFixedMapTranscriptCylinder_generatedQBudgetedRowset
+          i₀ observer t activeIdx).1.card) := by
+  classical
+  have hle :
+      Fintype.card
+          (V13RealLinearNoTargetSequentialTraceFirstCosetHitActiveFixedMapTranscriptCylinderGeneratedPrefixCell
+            i₀ observer t activeIdx) ≤
+        Fintype.card
+          (V13RealLinearRowsUnreadAssignment m
+            (v13RealLinearNoTargetSequentialTraceFirstCosetHitActiveFixedMapTranscriptCylinder_generatedQBudgetedRowset
+              i₀ observer t activeIdx).1) :=
+    Fintype.card_le_of_embedding
+      (v13RealLinearNoTargetSequentialTraceFirstCosetHitGeneratedPrefixCellToUnreadAssignment
+        i₀ observer t activeIdx)
+  exact hle.trans_eq
+    (v13RealLinearRowsUnreadAssignment_card
+      (v13RealLinearNoTargetSequentialTraceFirstCosetHitActiveFixedMapTranscriptCylinder_generatedQBudgetedRowset
+        i₀ observer t activeIdx).1)
+
+theorem
+    v13RealLinearNoTargetSequentialTraceFirstCosetHitGeneratedPrefixCell_card_eq_capacity
+    {m q : Nat} (i₀ : Fin m)
+    (observer : V13RealLinearSequentialRowObserver m q) (t : Fin q)
+    (activeIdx :
+      V13RealLinearNoTargetSequentialTraceFirstCosetHitActiveFixedMapTranscriptCylinderIndex
+        i₀ observer t) :
+    Fintype.card
+        (V13RealLinearNoTargetSequentialTraceFirstCosetHitActiveFixedMapTranscriptCylinderGeneratedPrefixCell
+          i₀ observer t activeIdx) =
+      2 ^ (m -
+        (v13RealLinearNoTargetSequentialTraceFirstCosetHitActiveFixedMapTranscriptCylinder_generatedQBudgetedRowset
+          i₀ observer t activeIdx).1.card) := by
+  exact
+    le_antisymm
+      (v13RealLinearNoTargetSequentialTraceFirstCosetHitGeneratedPrefixCell_card_le_capacity
+        i₀ observer t activeIdx)
+      (v13RealLinearNoTargetSequentialTraceFirstCosetHitGeneratedPrefixCell_capacity_le_card
+        i₀ observer t activeIdx)
 
 /-- The full no-target first-hit event at step `t`, partitioned by the ordered
 prefix transcript actually seen by the sequential observer before that step. -/
