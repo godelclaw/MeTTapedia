@@ -6,7 +6,7 @@ import subprocess
 import sys
 from pathlib import Path
 
-GF_LD = '/home/zar/.local/gf-extract/usr/lib'
+GF_LD = '~/.local/gf-extract/usr/lib'
 
 
 def ensure_runtime_libs():
@@ -21,11 +21,11 @@ def ensure_runtime_libs():
 
 ensure_runtime_libs()
 
-ROOT = Path('/home/zar/claude/lean-projects/algorithms/gf_fragments')
+ROOT = Path('~/claude/lean-projects/algorithms/gf_fragments')
 GENERATED = ROOT / 'generated'
 TEMP = ROOT / 'project_core_json_export'
-GF_LIB = Path('/home/zar/claude/gf-rgl')
-GF_BIN = Path('/home/zar/claude/lean-projects/mettapedia/Mettapedia/Languages/GF/SUMO/eng/gf')
+GF_LIB = Path('~/claude/gf-rgl')
+GF_BIN = Path('~/claude/lean-projects/mettapedia/Mettapedia/Languages/GF/SUMO/eng/gf')
 MANIFEST_PATH = GENERATED / 'project_core_manifest.json'
 
 TARGETS = [

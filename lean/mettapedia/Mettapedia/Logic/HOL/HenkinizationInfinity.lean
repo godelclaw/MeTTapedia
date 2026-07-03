@@ -1227,7 +1227,7 @@ def stageJudgement :
 /--
 A finite-stage presentation of a cumulative-signature derivation.
 
-This is the generic derivation-carrying staging object the council wants as the
+This is the generic derivation-carrying staging object review wants as the
 real induction engine: unlike the original-lift-specific wrappers downstream,
 it works for arbitrary variable contexts and arbitrary cumulative judgements.
 -/

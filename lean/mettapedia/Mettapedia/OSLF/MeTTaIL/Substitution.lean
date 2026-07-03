@@ -19,7 +19,7 @@ no environment filtering needed.
 ## References
 
 - Aydemir et al., "Engineering Formal Metatheory" (POPL 2008)
-- `/home/zar/claude/hyperon/mettail-rust/macros/src/gen/term_ops/subst.rs`
+- `~/claude/hyperon/mettail-rust/macros/src/gen/term_ops/subst.rs`
 -/
 
 namespace Mettapedia.OSLF.MeTTaIL.Substitution

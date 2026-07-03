@@ -1015,5 +1015,5 @@
       "preview": "theorem for T be non empty 1-sorted, C be Convergence-Class of T holds Convergence ConvergenceSpace C = C iff C is topol"
     }
   ],
-  "source_path": "/home/zar/claude/mizar/share/mml/yellow_6.miz"
+  "source_path": "~/claude/mizar/share/mml/yellow_6.miz"
 }

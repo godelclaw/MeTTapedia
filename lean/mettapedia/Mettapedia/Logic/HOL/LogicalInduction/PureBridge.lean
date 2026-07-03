@@ -14,7 +14,7 @@ Following Garrabrant, Benson-Tilsen, Critch, Soares, and Taylor,
 uncertainty will eventually want canonical coding/quoting of closed formulas.
 
 In the current repository state, theorem transport into the MeTTa Pure kernel is
-**not** open yet.  What *is* open, by the council-gated contract, is the
+**not** open yet.  What *is* open, by review-gated contract, is the
 artifact-only phase-1 boundary:
 
 - encode closed HOL formulas into closed Pure terms,

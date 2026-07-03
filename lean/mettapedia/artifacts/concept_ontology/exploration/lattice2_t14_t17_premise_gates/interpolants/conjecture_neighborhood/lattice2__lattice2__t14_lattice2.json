@@ -1,6 +1,6 @@
 {
   "failure_kind": null,
-  "input_file": "/home/zar/claude/Mettapedia/lean/mettapedia/artifacts/concept_ontology/exploration/lattice2_t14_t17_premise_gates/inputs/conjecture_neighborhood/lattice2__lattice2__t14_lattice2",
+  "input_file": "~/claude/Mettapedia/lean/mettapedia/artifacts/concept_ontology/exploration/lattice2_t14_t17_premise_gates/inputs/conjecture_neighborhood/lattice2__lattice2__t14_lattice2",
   "interpolant": "(! [X2] : (~m1_subset_1(X2,u1_struct_0(sK8)) | k3_lattices(sK8,sK9,X2) = X2) & sK9 != k5_lattices(sK8) & m1_subset_1(sK9,u1_struct_0(sK8)) & ~v2_struct_0(sK8) & v10_lattices(sK8) & l3_lattices(sK8)) => ((131 => $false) & ~l3_lattices(sK8))",
   "interpolant_features": {
     "avatar_component_count": 1,

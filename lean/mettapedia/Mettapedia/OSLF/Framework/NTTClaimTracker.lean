@@ -8,7 +8,7 @@ import Mettapedia.OSLF.Framework.BeckChevalleyOSLF
 # Native Type Theory Strict Claim Tracker
 
 This tracker is keyed to endpoint-claim anchors in:
-`/home/zar/claude/literature/Hyperon Study Materials/Rho and OSLF/Native_Type_Theory.pdf`.
+`~/claude/literature/Hyperon Study Materials/Rho and OSLF/Native_Type_Theory.pdf`.
 
 It tracks theorem-level endpoint anchors only. Semantic adequacy of the
 operational modal route is tracked separately in canonical bridge modules

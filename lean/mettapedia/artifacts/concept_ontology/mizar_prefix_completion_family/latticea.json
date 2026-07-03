@@ -335,5 +335,5 @@
       "preview": "registration let L be Boolean Lattice; cluster Spectrum L -> unordered; coherence by NachSpec; end;"
     }
   ],
-  "source_path": "/home/zar/claude/mizar/share/mml/latticea.miz"
+  "source_path": "~/claude/mizar/share/mml/latticea.miz"
 }

@@ -497,5 +497,5 @@
       "preview": "theorem for F being Function of J, the carrier of L holds (for j holds a <= F. j) implies a <= Inf F proof let F be Func"
     }
   ],
-  "source_path": "/home/zar/claude/mizar/share/mml/yellow_2.miz"
+  "source_path": "~/claude/mizar/share/mml/yellow_2.miz"
 }

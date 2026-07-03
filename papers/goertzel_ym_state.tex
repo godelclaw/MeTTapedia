@@ -1,0 +1,219 @@
+\section{Yang--Mills Mass Gap via Lattice $\to$ OS $\to$ Spectral Gap}
+\label{sec:goertzel-ym-state}
+
+This section is a research-program lens on Goertzel's route to the Yang--Mills
+mass gap: build a lattice gauge theory, pass through Osterwalder--Schrader (OS)
+reconstruction, and extract a spectral gap that survives the continuum limit. It
+is written to direct creative effort. The route now has a genuine
+\emph{finite-lattice landmark} --- a fully machine-checked spectral-gap lower
+bound for a finite $\mathbb{Z}_2$ strong-coupling model --- and a sharply
+identified open crux: continuum gap-uniformity, i.e.\ the asymptotic-freedom
+wall. Every conjecture below is labelled. Lean identifiers cite the live
+\texttt{QuantumTheory/YangMills} development.
+
+\subsection{The creative bet}
+
+The Clay statement, in spectral terms, is that the Hamiltonian has no spectrum in
+an interval $(0,\Delta)$ above the vacuum. The route's bet is the standard
+constructive-QFT strategy made fully constructive and auditable: (i)~define a
+finite lattice gauge model with a reflection-positive action; (ii)~run OS
+reconstruction to get a transfer operator and a Hilbert space; (iii)~prove a
+\emph{transfer-matrix spectral gap} on the lattice; (iv)~prove that gap survives,
+uniformly, as the lattice spacing $a\to 0$. The bet is that strong-coupling
+expansions give step~(iii) cleanly, and that a renormalization-group (RG)
+contraction controls step~(iv).
+
+The genuinely new, machine-checked result is the finite-lattice endpoint of
+steps (i)--(iii) for the abelian toy $\mathbb{Z}_2$:
+\[
+  \verb|z2StrongCoupling_latticeYangMills_massGap_landmark|.
+\]
+This packages an explicit $\mathbb{Z}_2$ strong-coupling model with a nontrivial
+configuration, reflection positivity, an OS transfer operator, and a
+dimensionless transfer gap $\ge 1$. Supporting it:
+\begin{itemize}\itemsep1pt
+  \item \verb|z2StrongCouplingGap_eq_one| and
+    \verb|z2StrongCouplingGap_lower_bound_one| --- the gap equals $1$ and is
+    bounded below by $1$ (with $\lambda_1=1$, $\lambda_2=e^{-1}$, gap
+    $=-\log(\lambda_2/\lambda_1)=1$);
+  \item \verb|z2StrongCouplingKernel_reflectionPositive| and the OS bundle
+    \verb|FiniteOSReconstruction| (\verb|OSReflectionPositive|,
+    \verb|OSSymmetric|, \verb|OSTransferSelfAdjoint|) --- the finite OS
+    interface really holds for this model;
+  \item the explicit canary \verb|z2StrongCouplingPositiveCanary| and proof node
+    \verb|yangMillsZ2StrongCouplingGapNode|.
+\end{itemize}
+This is the first of the four routes to carry a positive, end-to-end finite
+construction with a strictly positive gap. That is a real foothold.
+
+\subsection{The OS-gate canaries (why we cannot overclaim)}
+
+The development pairs the landmark with a battery of \emph{canaries} that block
+premature promotion of a finite result to a continuum claim. Each canary is a
+positive/negative pair showing that an interface is necessary but not
+sufficient:
+\begin{itemize}\itemsep1pt
+  \item OS interfaces alone do not clear the continuum gate ---
+    \verb|currentYangMillsOSGateCanaryAuditPacket|,
+    \verb|toyYangMillsOSOnlyWorldInterfaces| (blocked) vs
+    \verb|toyYangMillsCompletePromotionGate| (cleared);
+  \item the continuum measure needs \emph{both} tightness and a limit ---
+    \verb|currentYangMillsContinuumMeasureCanaryAuditPacket|, with sampler-only,
+    tightness-without-limit, and limit-without-tightness all blocked;
+  \item Euclidean covariance needs action \emph{and} preservation, and needs the
+    continuum measure upstream ---
+    \verb|currentYangMillsEuclideanCovarianceCanaryAuditPacket|;
+  \item reflection positivity at the continuum needs functional \emph{and} cone
+    interfaces, not a sample flag ---
+    \verb|currentYangMillsReflectionPositivityCanaryAuditPacket|.
+\end{itemize}
+These canaries are the route's honesty mechanism: they enumerate, finitely,
+everything the continuum endpoint still requires.
+
+\subsection{The open crux: continuum gap-uniformity (asymptotic freedom)}
+
+The finite gap is dimensionless. The physical gap is
+$\Delta_{\mathrm{phys}}(a)=\Delta_{\mathrm{dimless}}/a$
+(\verb|z2HeatTimePhysicalGap|), so naively the gap diverges as $a\to0$ unless the
+dimensionless gap shrinks on a tuned schedule. Lean already exhibits a schedule
+where the physical gap \emph{closes}:
+\verb|z2QuadraticHeatTime_physicalGap_closes| (with $t(a)=a^2$, for every
+$\varepsilon>0$ there is $a$ with $\Delta_{\mathrm{phys}}<\varepsilon$). The
+crux is the opposite-direction, much harder statement:
+
+\begin{quote}
+prove a \emph{uniform positive lower bound} on the physical gap along the
+continuum limit of the non-abelian theory, where asymptotic freedom forces the
+coupling to run and the strong-coupling expansion that gave the finite gap is no
+longer valid.
+\end{quote}
+
+\noindent This is the asymptotic-freedom wall: strong coupling (large $a$) gives
+the gap easily; the continuum lives at weak coupling (small $a$), reached only
+through the RG flow, and the strong-coupling control does not extend there. The
+RG-bootstrap audit layer (\verb|RGBootstrap.lean|,
+\verb|AffineRGStepBound.bound_by_invariant_interval|,
+\verb|HasExtendedExtractionContraction|) isolates exactly which arithmetic and
+contraction facts any RG proof must instantiate, and the same-constant
+lower-extraction crux (\verb|not_sameConstantLowerExtractionRGCertificate| and
+its even-cutoff / threshold variants) already refutes one tempting repair
+corridor --- keeping the advertised constant while lowering the extraction depth.
+The continuum endpoint remains the open node:
+\verb|yangMillsContinuumMassGapEndpointRoadmapEntry| (0\% continuum progress).
+
+\subsection{Possible avenues still open}
+
+\paragraph{Y1. Non-abelian finite landmark.} The $\mathbb{Z}_2$ landmark is
+abelian. The cleanest next foothold is to repeat
+\verb|z2StrongCoupling_latticeYangMills_massGap_landmark| for a genuinely
+non-abelian finite group ($S_3$, then $SU(2)$ truncations): an explicit
+strong-coupling transfer matrix, reflection positivity, and a positive gap.
+This generalizes the construction without yet touching the continuum.
+
+\paragraph{Y2. Make the RG bootstrap analytic, not just arithmetic.} The RG
+layer currently proves the \emph{finite arithmetic} of contraction
+(\verb|AffineRGStepBound|, the exact $2224\cdot2^{-13}<1/3$ gain). The avenue is
+to instantiate \verb|AffineRGStepBound| with an \emph{actual polymer norm
+recurrence} --- the one-step RG estimate with real constants --- so the
+bootstrap controls a genuine gap quantity rather than a placeholder.
+
+\paragraph{Y3. Clustering bridge from decay to gap.} The clustering audit
+(\verb|SpectralGapClusteringBridge|,
+\verb|not_exists_hasSpectralMassGap_of_positiveLongRangeLowerBound|) shows that a
+persistent long-range correlation tail kills the gap. The avenue is to supply,
+on the lattice family, a proved exponential-decay estimate for centered
+correlations that is \emph{uniform} in $a$ --- this is the clustering face of
+gap-uniformity.
+
+\subsection{Conjectured workarounds for the asymptotic-freedom wall}
+
+\begin{conjecture}[Speculative --- Gap-uniformity from a uniform RG contraction]
+\label{conj:ym-rg}
+There is a single contraction constant $\kappa<1$ and an invariant interval $B$
+such that the polymer norm recurrence
+$a_{n+1}\le\kappa a_n+\varepsilon$ holds at \emph{every} RG step from strong
+toward weak coupling, with $\varepsilon\le(1-\kappa)B$. By
+\verb|AffineRGStepBound.bound_by_invariant_interval| this bounds every finite
+iterate, and a uniform-in-$a$ version yields a continuum gap lower bound. The
+content is that asymptotic freedom makes the irrelevant couplings contract fast
+enough that the gap does not collapse.
+\end{conjecture}
+
+\noindent\emph{Why it might hold.} Asymptotic freedom is a contraction
+statement: the coupling flows to zero, so the dangerous operators are
+\emph{irrelevant} (the \verb|irrelevantScale| $b^{3-d_{\max}}<1$ arithmetic is
+exactly this). \emph{Why it might fail.} A uniform $\kappa<1$ across the whole
+flow is precisely the hard analytic estimate; the same-constant crux already
+shows that cheap versions of this contraction are formally refuted, so any
+workable $\kappa$ must come from a genuine multiscale estimate, not a constant
+reused from strong coupling.
+
+\begin{conjecture}[Speculative --- Reflection positivity is preserved by the
+limit]
+\label{conj:ym-rp-limit}
+The finite reflection positivity (\verb|z2StrongCouplingKernel_reflectionPositive|,
+\verb|OSReflectionPositive|) passes to the continuum measure provided the
+lattice family is tight, so that the continuum-measure and reflection-positivity
+gate canaries clear simultaneously. Tightness $+$ reflection positivity
+$+$ Euclidean covariance then deliver an OS continuum theory whose transfer
+operator inherits the lattice gap as a lower bound.
+\end{conjecture}
+
+\noindent\emph{Why it might hold.} Reflection positivity is a closed condition;
+limits of reflection-positive measures are reflection-positive when the limit
+exists. \emph{Why it might fail.} The limit's \emph{existence} (tightness) is the
+unproved part, and the canaries
+(\verb|toyYangMillsContinuumMeasureTightnessWithoutLimitAudit| etc.) prove that
+no single sub-interface suffices; the conjecture is responsible only if tightness
+is established independently.
+
+\subsection{Where to point creative effort next}
+
+The single highest-leverage target is
+\textbf{Conjecture~\ref{conj:ym-rg} (uniform RG contraction), entered through
+avenue Y2}. Reason: the $\mathbb{Z}_2$ landmark already proves a positive gap
+exists at strong coupling; the \emph{only} thing standing between that and the
+continuum is gap-uniformity, and the RG bootstrap layer has already reduced
+gap-uniformity to a single recurrence with an explicit invariant-interval
+bootstrap lemma. The recommended push: instantiate
+\verb|AffineRGStepBound| with a concrete polymer-norm recurrence carrying real
+constants and search for a uniform $\kappa<1$ valid across the strong-to-weak
+flow, using the same-constant crux theorems as a guard against contractions that
+merely reuse the strong-coupling constant. If a uniform $\kappa$ is found, the
+finite landmark upgrades toward a continuum lower bound; if every candidate
+$\kappa$ fails the same-constant guard, the failure isolates the precise
+multiscale estimate that asymptotic freedom must supply --- the true heart of the
+problem, now named and bounded rather than diffuse.
+
+\subsection*{PLN lens}
+
+\begin{table}[h]
+\centering
+\small
+\begin{tabular}{lcccc}
+\toprule
+Central node & STV $\langle s,c\rangle$ & ITV $[L,U]$ & Progress & Status \\
+\midrule
+Finite $\mathbb{Z}_2$ strong-coupling lattice gap & $\langle 0.55, 0.30\rangle$ & $[0.165,\,0.865]$ & --- & built (landmark) \\
+Continuum gap-uniformity (asymptotic freedom) & $\langle 0.05, 0.16\rangle$ & $[0.008,\,0.848]$ & --- & open crux \\
+OS-gate / canary audit layer & $\langle 0.95, 0.80\rangle$ & $[0.76,\,0.96]$ & --- & built \\
+\midrule
+\textbf{Route (through, to continuum)} & $\langle 0.05, 0.16\rangle$ & $[0.008,\,0.848]$ & $\sim$30\% & \\
+\bottomrule
+\end{tabular}
+\caption{PLN summary for the lattice-OS-spectral-gap route. The finite
+$\mathbb{Z}_2$ lattice gap node is genuinely positive
+($\langle 0.55,0.30\rangle$): a strictly positive gap is machine-checked for that
+finite model. The through-route to the continuum inherits the continuum crux's
+low strength, because the asymptotic-freedom wall is untouched.}
+\end{table}
+
+\noindent Lattice-gap node: $\langle 0.55, 0.30\rangle$, ITV
+$[0.55\cdot 0.30,\;0.55\cdot 0.30+(1-0.30)] = [0.165,\,0.865]$.
+Continuum node and through-route: $\langle 0.05, 0.16\rangle$, ITV
+$[0.05\cdot 0.16,\;0.05\cdot 0.16+(1-0.16)] = [0.008,\,0.848]$,
+PROGRESS $\sim 30\%$. The split is the point: the finite construction is a real,
+checked success worth building on, while the continuum endpoint remains a
+genuine open problem guarded by asymptotic freedom. Progress is dominated by how
+much of the continuum machinery is unbuilt, not by the strength of the finite
+landmark.

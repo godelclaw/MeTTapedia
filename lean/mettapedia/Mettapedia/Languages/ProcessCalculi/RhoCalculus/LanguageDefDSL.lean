@@ -6,7 +6,7 @@ import Mettapedia.OSLF.MeTTaIL.CoreSyntaxBridge
 # RhoCalc Process Fragment in `languageDef!` Form
 
 This module is the honest Lean `languageDef!` pressure test against the Rust
-`language!` definition in `/home/zar/claude/hyperon/mettail-rust/languages/src/rhocalc.rs`.
+`language!` definition in `~/claude/hyperon/mettail-rust/languages/src/rhocalc.rs`.
 
 Positive example:
 - the direct process fragment terms and process-calculus equations/rewrites are

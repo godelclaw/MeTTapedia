@@ -2,14 +2,14 @@
 
 **Goal**: Prove R(3,6) = 18 to claim 800 bar ProofGold bounty at address `TMbJ1MogStdKCGN3J3j1hThprkcWjA8ggEB`.
 
-**Source**: Complete Lean 4 proof (15,021 lines, zero sorries) at `/home/zar/claude/lean-projects/ramsey36/`
+**Source**: Complete Lean 4 proof (15,021 lines, zero sorries) at `~/claude/lean-projects/ramsey36/`
 
-**Plan**: `/home/zar/.claude/plans/mighty-greeting-gizmo.md` (16 weeks, ~5,700 lines estimated)
+**Plan**: `~/.claude/plans/mighty-greeting-gizmo.md` (16 weeks, ~5,700 lines estimated)
 
 ## Phase 1: COMPLETE ✅ (2025-12-18)
 
 **Deliverables**:
-- ✅ Workspace set up at `/home/zar/claude/megalodon/ramsey36/`
+- ✅ Workspace set up at `~/claude/megalodon/ramsey36/`
 - ✅ `preamble.mgs` (6107 lines) - Full Egal theory foundation
 - ✅ `r36_definitions.mg` (27 lines) - Graph theory foundations, compiles successfully
 
@@ -127,4 +127,4 @@
 **References**:
 - Chad Brown's R(3,3)=6: `Megalodon/examples/egal/Ramsey_3_3_6.mg`
 - Bounty specification: `Megalodon/examples/pfgbounties/RamseyConjsWithBounties.mg:61`
-- Full plan: `/home/zar/.claude/plans/mighty-greeting-gizmo.md`
+- Full plan: `~/.claude/plans/mighty-greeting-gizmo.md`

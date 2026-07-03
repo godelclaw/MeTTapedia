@@ -1,0 +1,192 @@
+% pnp_proofstate.tex — Proof-state ledger for the P vs NP route corpus.
+% Clean section content for \input; relies on amsmath/amssymb. No \documentclass.
+%
+% Rigorous, skeptical accounting verified directly against the Lean source under
+%   lean/mettapedia/Mettapedia/Computability/PNP
+% (read-only). Every theorem cited was opened and read; commit/summary language is
+% NOT trusted. Where a claim could not be confirmed from source it is marked
+% "reported, not independently verified."
+
+\section{P vs NP: Proof-State Ledger}
+\label{sec:pnp-proofstate}
+
+This section is the honest accounting of what the P-vs-NP corpus
+\emph{actually} machine-checks. The corpus is large
+(${\sim}900$ Lean files of route-class obstruction mining). The headline
+finding is blunt and the corpus's own bookkeeping agrees with it: \textbf{no
+file states any P-vs-NP separation, conditional or unconditional.} What is
+machine-checked is a dense lattice of \emph{conditional} ``route $\Rightarrow$
+floors'' and contrapositive ``$\lnot$floors $\Rightarrow \lnot$route''
+lemmas over restricted computational models, together with a few genuine finite
+combinatorial facts. The work establishes \emph{boundaries of specific naive
+routes}, not a separation and not a model-independent impossibility.
+
+\subsection{What is machine-checked}
+\label{sec:pnp-checked}
+
+\paragraph{Axiom and \texttt{sorry} hygiene.}
+Across the directory there are \textbf{zero} real \texttt{sorry}, \texttt{admit},
+\texttt{axiom}, \texttt{sorryAx}, or \texttt{native\_decide} occurrences; the
+only string matches are the English word ``admits'' in doc-comments. The proofs
+use \texttt{classical} / \texttt{Classical.choose} in the ordinary Mathlib way,
+which is consistent with the goal seal
+$\text{axioms} \subseteq \{\texttt{propext},\ \texttt{Classical.choice},\
+\texttt{Quot.sound}\}$. There is, however, \textbf{no} \texttt{\#print axioms}
+directive anywhere in the corpus, so the seal is \emph{consistent with static
+inspection but not self-verified} by a checked command (reported, not
+independently sealed).
+
+\paragraph{The flagship ``obstruction'' (the most-misread result).}
+File \texttt{KpolyQuantaleShortcutRemovalObstruction.lean}. Its own module
+docstring states ``No final complexity-class separation is asserted here.'' It
+defines a bundle \texttt{KpolyQuantaleShortcutRemovalRoute} (a
+\texttt{structure $\dots$ : Prop} carrying four obligation fields:
+\texttt{fullRuleFeatureRepair}, \texttt{finiteFeatureCover},
+\texttt{allSupportPointQueries}, \texttt{positiveWeaknessAdvantage}) and proves
+three theorems.
+
+\begin{itemize}
+  \item \texttt{kpolyQuantaleShortcutRemovalRoute\_necessary\_obligations}
+  \;[\textsc{Conditional}]. Hypotheses: $\tau$ involutive
+  (\texttt{h$\tau$}), target flips under $\tau$ (\texttt{htarget}), weight
+  $\tau$-invariant (\texttt{hweight}), \emph{and the route bundle itself}
+  (\texttt{route}). Conclusion: the surface-card feature floor
+  $\#(\text{ExactVisiblePostSwitchSurface }Z\,k)\le \#\,\text{SurfaceFeature}$,
+  the Boolean-image floor $2^{\#(\dots)}\le N$, surjectivity of
+  \texttt{visibleOf}, and \texttt{FeatureResolvesPositivePair}. This is exactly
+  ``route $\Rightarrow$ floors.''
+  \item \texttt{not\_kpolyQuantaleShortcutRemovalRoute\_of\_missing\_obligation}
+  \;[\textsc{Conditional}]. Same $\tau$-hypotheses plus \texttt{hblocked} (a
+  disjunction: feature space below surface, \emph{or} \texttt{visibleOf} not
+  surjective, \emph{or} the weakness feature support-invariant). Conclusion:
+  $\lnot\,\texttt{KpolyQuantaleShortcutRemovalRoute}\,\dots$. This is the
+  contrapositive ``$\lnot$floors $\Rightarrow \lnot$route.''
+  \item \texttt{kpolyQuantaleShortcutRemoval\_obstruction\_packet}
+  \;[\textsc{Conditional}]. The conjunction of the two above, under the same
+  hypotheses including \texttt{hblocked}.
+\end{itemize}
+
+These are valid, cleanly proved finite combinatorics (pigeonhole: a feature
+space smaller than the surface cannot realize all Boolean rules). They are
+statements about \emph{self-imposed floors of a single naive route}, not about
+any natural computational model.
+
+\paragraph{The general pattern.}
+The corpus is overwhelmingly contrapositive route-refutation over restricted
+models---decision lists, switched-local families, AB-visible / exact-visible
+compression, approximate decorrelation, sparse-threshold ERM. Representative
+\emph{verbatim} signatures (all \textsc{Conditional} on a route/data structure):
+\begin{itemize}
+  \item \texttt{SharedExactZABSparseThresholdERMData.not\_surjective\_predict\_of\_lt\_surfaceCard}
+  (concludes $\lnot\,\texttt{Function.Surjective}\,T.\texttt{predictorFamily.predict}$
+  from the ERM-data structure);
+  \item \texttt{exists\_pos\_mass\_disagreement\_of\_abFiberInvariantRule\_of\_abFiberSeparation}
+  (invariant predictor $+$ separated fiber $\Rightarrow$ positive-mass
+  disagreement);
+  \item \texttt{not\_featureReadoutFamily\_surjective\_of\_featureCard\_lt\_surfaceCard}
+  ($\#\text{Feature}<\#\text{Input} \Rightarrow$ readout family not surjective).
+\end{itemize}
+Where a theorem is labelled ``unconditional half-width ceiling'' the
+``unconditional'' qualifies a \emph{width bound} (it holds regardless of which
+extractor is chosen), not an impossibility for an algorithm; the conclusion is
+still of the shape ``no route data exists below the floor'' and the route
+property is a hypothesis.
+
+\subsection{What it scopes out}
+\label{sec:pnp-scopes}
+
+\begin{itemize}
+  \item \textbf{No separation.} \texttt{grep} for
+  \texttt{P\_neq\_NP}, \texttt{PvsNP}, \texttt{separation},
+  \texttt{MainTheorem} finds no complexity-class separation; ``separation''
+  only ever means combinatorial AB-fiber / range separation. The aggregator
+  node \texttt{pnp.global-separation} in \texttt{ProofState.lean} carries
+  $\langle s,c\rangle=\langle 0,99\rangle$ ($0\%$ support) with text ``does not
+  assert a final P versus NP separation theorem.''
+  \item \textbf{No natural-model impossibility.} Every ``intrinsic'' phrasing
+  (``intrinsic lightest-point threshold,'' etc.) labels a width/threshold below
+  which a \emph{chosen} route's surjectivity hypothesis becomes contradictory.
+  It is gated on a route/data hypothesis (\texttt{hsurj} or the ERM-data
+  structure); it is \emph{not} an unconditional lower bound over all algorithms.
+  \item \textbf{Non-vacuity gap (the central honesty issue).}
+  \texttt{KpolyQuantaleShortcutRemovalRoute} is \emph{never inhabited} by any
+  constructed witness anywhere in the corpus: the identifier appears only in its
+  defining file and as a bookkeeping string in \texttt{ProofState.lean}; no
+  \texttt{def}/\texttt{instance}/\texttt{example}/\texttt{Nonempty} ever builds
+  one. Consequently the negative half ($\lnot\,\texttt{route}$) and the
+  $\forall\,\texttt{route}$ clause can be \emph{vacuously true} whenever the
+  provided hypothesis \texttt{hblocked} holds. The packet exhibits no parameter
+  setting in which the route is inhabited, so the conditional's non-vacuity is
+  \emph{not established} in-tree. (Positive ``canary'' inhabitants exist
+  elsewhere in the corpus, e.g.\ the \texttt{PNPv13$\dots$Canaries} files, but
+  none inhabit \emph{this} route.)
+\end{itemize}
+
+\subsection{Blocks and obstructions}
+\label{sec:pnp-blocks}
+
+The corpus is candid that the standard barriers remain unbroken: in
+\texttt{ProofState.lean} the relativization, natural-proofs, and algebrization
+nodes are recorded \texttt{.blocked}/\texttt{barrierUncleared} for the current
+route shape, and the ``escape-witness'' ledger
+(\texttt{pnp.kpoly-promoted.escape-witness}) is empty. The node text reads that
+the route ``lacks $\dots$ witnesses'' for a non-relativizing /
+non-natural / non-algebrizing escape---i.e.\ the corpus knows it has
+\emph{not} produced an intrinsic separation.
+
+\begin{center}
+\begin{tabular}{lll}
+\hline
+Block & Status & Proven-intrinsic? \\
+\hline
+Pigeonhole floors of the naive route & \textsc{Established} & N/A (route-local) \\
+Relativization barrier        & \textsc{Uncleared} & not an escape; merely unbroken \\
+Natural-proofs barrier        & \textsc{Uncleared} & not an escape; merely unbroken \\
+Algebrization barrier         & \textsc{Uncleared} & not an escape; merely unbroken \\
+\hline
+\end{tabular}
+\end{center}
+
+\noindent Every block here is of the form ``\emph{this naive route fails its own
+floors (conditionally), and the standard barriers remain unbroken.}'' None is a
+proven-intrinsic impossibility for a natural computational model.
+
+\subsection{PLN ledger}
+\label{sec:pnp-pln}
+
+We record, per central node, a simple truth value $\langle s,c\rangle$, the
+induced interval $\mathrm{ITV}=[L,U]=[\,s\cdot c,\ s\cdot c+(1-c)\,]$, and a
+PROGRESS estimate. We sharply distinguish two readings of the corpus's many
+$\langle 100,\,c\rangle$ entries: that ``$100$'' is support that the
+\emph{obstruction lemma is checked}, \textbf{not} support for a separation. The
+\emph{outcome} node for P vs NP is the relevant one for the headline ambition,
+and it is honestly flat.
+
+\begin{center}
+\begin{tabular}{lcccc}
+\hline
+Node & $\langle s,c\rangle$ & $\mathrm{ITV}=[L,U]$ & PROGRESS & reading \\
+\hline
+Obstruction lemma checked (\texttt{kpoly} packet) & $\langle 1.00,0.99\rangle$ & $[0.99,1.00]$ & --- & lemma-level only \\
+P-vs-NP separation (outcome) & $\langle 0.04,0.23\rangle$ & $[0.009,0.779]$ & $\sim 45\%$ & headline goal \\
+\hline
+\end{tabular}
+\end{center}
+
+\noindent\textbf{Outcome vs progress.} The outcome confidence is low and
+\emph{flat} because the crux---an actual lower bound for a natural model---is
+untouched; flatness here is honest, not pessimistic. PROGRESS ($\sim 45\%$)
+measures route-exploration completeness: a large family of naive routes has been
+walled off with checked floor lemmas, and the standard barriers are correctly
+recorded as still blocking. The wide ITV $[0.009,0.779]$ reflects that low
+confidence leaves the upper bound near-uninformative---the route map is
+detailed, the destination is not in view.
+
+\paragraph{Single honesty correction.}
+\texttt{kpolyQuantaleShortcutRemoval\_obstruction\_packet} is routinely
+mis-summarized as a ``fundamental obstruction to P vs NP.'' It is neither: it is
+(i) \textsc{conditional} (route $\Rightarrow$ floors; $\lnot$floors
+$\Rightarrow \lnot$route), and (ii) of \emph{unverified non-vacuity}, since the
+route structure is never inhabited, so the negative half may be vacuously true.
+The corpus's own \texttt{ProofState.lean} ($0\%$ support, ``does not assert a
+final P versus NP separation theorem'') is the accurate characterization.

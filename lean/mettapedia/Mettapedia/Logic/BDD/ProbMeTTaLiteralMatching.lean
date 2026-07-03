@@ -8,7 +8,7 @@ This file formalizes the literal source-level nonground fallback
 
 `(match &self (rule $goal $_) $goal)`
 
-from `/home/zar/claude/ProbMeTTa/lib_prob.metta`.
+from `~/claude/ProbMeTTa/lib_prob.metta`.
 
 The key design choice is to model the fallback as a **list of matching ground
 heads**, not as a single arbitrary witness. That matches the source `match`

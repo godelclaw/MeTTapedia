@@ -122,7 +122,7 @@
       "positive_count": null
     }
   ],
-  "input_file": "/home/zar/claude/atps/datasets/extended_mptp5k/chainy/train/lattice2__lattice2__t13_lattice2",
+  "input_file": "~/claude/atps/datasets/extended_mptp5k/chainy/train/lattice2__lattice2__t13_lattice2",
   "original_role_counts": {
     "axiom": 104,
     "conjecture": 1

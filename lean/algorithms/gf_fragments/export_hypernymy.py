@@ -9,7 +9,7 @@ Usage: cd lean-projects/algorithms && python3 gf_fragments/export_hypernymy.py
 import json, sys
 
 def main():
-    taxonomy_path = "/home/zar/claude/gf-wordnet/taxonomy.txt"
+    taxonomy_path = "~/claude/gf-wordnet/taxonomy.txt"
     grounding_path = "gf_fragments/concept_grounding.json"
     output_path = "gf_fragments/hypernymy.json"
 

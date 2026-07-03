@@ -813,5 +813,5 @@
       "preview": "theorem for L being Lattice, S being initial final non empty Subset of L holds S = [#]L proof let L be Lattice, S be ini"
     }
   ],
-  "source_path": "/home/zar/claude/mizar/share/mml/lattices.miz"
+  "source_path": "~/claude/mizar/share/mml/lattices.miz"
 }

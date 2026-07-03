@@ -19,5 +19,5 @@ This module is intentionally small and shares:
 - generic reflexive-transitive closure (`ProcessCalculi.Common.Star`)
 
 Source alignment:
-`/home/zar/claude/hyperon/rho4u/metta-calculus/metta-calculus.core.tex`
+`~/claude/hyperon/rho4u/metta-calculus/metta-calculus.core.tex`
 -/

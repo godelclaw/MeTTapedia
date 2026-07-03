@@ -135,13 +135,13 @@ Complete formalization of PLN first-order quantifiers via:
 ## Build
 
 ```bash
-cd /home/zar/claude/lean-projects/mettapedia
+cd ~/claude/lean-projects/mettapedia
 ulimit -v 6291456 && lake build Mettapedia.Logic.PLNFirstOrder
 ```
 
 ## References
 
-- Plan file: /home/zar/.claude/plans/hashed-baking-bumblebee.md
+- Plan file: ~/.claude/plans/hashed-baking-bumblebee.md
 - Goertzel, "Weakness and Its Quantale"
 - QuantaleWeakness.lean (820+ proven lines)
 - EvidenceQuantale.lean (BinaryEvidence with Frame structure)

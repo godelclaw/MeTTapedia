@@ -15,7 +15,7 @@
   "instances": [
     {
       "conjecture": "(! [A] : ( ( ~ (v2_struct_0(A)) & (v10_lattices(A) & l3_lattices(A)) ) => r6_binop_1(u1_struct_0(A), u2_lattices(A), u2_lattices(A))) )",
-      "path": "/home/zar/claude/atps/datasets/extended_mptp5k/chainy/train/lattice2__lattice2__t20_lattice2",
+      "path": "~/claude/atps/datasets/extended_mptp5k/chainy/train/lattice2__lattice2__t20_lattice2",
       "problem": "lattice2__lattice2__t20_lattice2",
       "record_name": "t20_lattice2",
       "relation_term": "r6_binop_1(u1_struct_0(A), u2_lattices(A), u2_lattices(A))",
@@ -32,7 +32,7 @@
     },
     {
       "conjecture": "(! [A] : ( ( ~ (v2_struct_0(A)) & (v10_lattices(A) & l3_lattices(A)) ) => r6_binop_1(u1_struct_0(A), u1_lattices(A), u1_lattices(A))) )",
-      "path": "/home/zar/claude/atps/datasets/extended_mptp5k/chainy/train/lattice2__lattice2__t25_lattice2",
+      "path": "~/claude/atps/datasets/extended_mptp5k/chainy/train/lattice2__lattice2__t25_lattice2",
       "problem": "lattice2__lattice2__t25_lattice2",
       "record_name": "t25_lattice2",
       "relation_term": "r6_binop_1(u1_struct_0(A), u1_lattices(A), u1_lattices(A))",

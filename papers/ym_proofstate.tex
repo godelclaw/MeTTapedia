@@ -1,0 +1,183 @@
+% ym_proofstate.tex — Proof-state ledger for the Yang-Mills mass-gap corpus.
+% Clean section content for \input; relies on amsmath/amssymb. No \documentclass.
+%
+% Verified directly against the Lean source under
+%   lean/mettapedia/Mettapedia/QuantumTheory/YangMills (read-only).
+% The Z2 strong-coupling gap file was read in full and quoted from source.
+
+\section{Yang--Mills Mass Gap: Proof-State Ledger}
+\label{sec:ym-proofstate}
+
+This is the honest accounting of the Yang--Mills (Clay mass-gap) corpus. The
+headline finding: the latest landmark, \emph{``prove finite $\mathbb{Z}_2$
+strong-coupling gap,''} is \textbf{accurate and unusually disciplined}---it
+proves a real, explicit, unconditional, non-vacuous spectral gap of a concrete
+finite transfer operator, and the corpus repeatedly and correctly disclaims any
+continuum implication. The entire continuum / renormalization-group / OS-
+reconstruction-in-the-large endpoint is open, and is recorded at $0\%$ support.
+
+\subsection{What is machine-checked}
+\label{sec:ym-checked}
+
+\paragraph{Axiom and \texttt{sorry} hygiene.}
+Across the directory: \textbf{zero} \texttt{sorry}, \texttt{admit},
+\texttt{axiom}, \texttt{native\_decide}, \texttt{sorryAx}, \texttt{unsafe}. The
+only \texttt{decide} uses are plain kernel \texttt{decide} on small
+arithmetic/list goals (kernel-checked, not \texttt{native\_decide}). This is
+consistent with the seal
+$\text{axioms}\subseteq\{\texttt{propext},\texttt{Classical.choice},
+\texttt{Quot.sound}\}$; no \texttt{\#print axioms} is present, so the seal is
+reported, not independently sealed.
+
+\paragraph{The finite $\mathbb{Z}_2$ gap (read in full from
+\texttt{Z2StrongCouplingGap.lean}).}
+\;[\textsc{Unconditional}, \textsc{Inhabited}, \textsc{Real operator}].
+The one-link configuration type is concrete: \texttt{Z2OneLinkConfig := Fin 2}.
+There is a genuine $2\times 2$ transfer object:
+\[
+K(x,y)=\tfrac{1}{2}\bigl(1+e^{-1}\,\chi(x)\,\chi(y)\bigr),\qquad
+(Tf)(x)=\sum_{y} K(x,y)\,f(y),
+\]
+with $\chi$ the nontrivial $\mathbb{Z}_2$ character. The spectral structure is
+\emph{proven}, not asserted: constant eigenvector at eigenvalue
+$\lambda_1=1$ (\texttt{z2StrongCouplingTransfer\_constant\_eigen}), sign
+eigenvector at $\lambda_2=e^{-1}$ (\texttt{z2StrongCouplingTransfer\_sign\_eigen}),
+these two span all observables (\texttt{z2Observable\_eigenbasis}), with
+reflection positivity (\texttt{z2StrongCouplingKernel\_reflectionPositive}) and
+transfer self-adjointness (\texttt{z2StrongCouplingTransfer\_selfAdjoint}). The
+gap is
+\[
+\texttt{z2StrongCouplingGap} := -\log\!\bigl(\lambda_2/\lambda_1\bigr)
+= -\log(e^{-1}) = 1,
+\]
+proven $=1$ via \texttt{Real.log\_exp} (\texttt{z2StrongCouplingGap\_eq\_one}),
+with $\ge 1$ and $>0$ corollaries. The end-to-end theorem (verbatim conclusion):
+\begin{quote}\small
+\texttt{z2StrongCoupling\_latticeYangMills\_massGap\_landmark} :\\
+\hspace*{1em}$\exists\,\_:\texttt{Z2StrongCouplingGapCanary},\
+(\exists\,x\,y:\texttt{Z2OneLinkConfig},\ x\neq y)\ \wedge$\\
+\hspace*{2em}$\texttt{OSReflectionPositive } K\ \wedge\
+\texttt{z2StrongCouplingGap}=1\ \wedge\ 1\le\texttt{z2StrongCouplingGap}\
+\wedge\ 0<\texttt{z2StrongCouplingGap}.$
+\end{quote}
+It is unconditional (no hypotheses) and \textbf{non-vacuous}: it is discharged
+with a concrete witness, \texttt{z2StrongCouplingPositiveCanary :
+Z2StrongCouplingGapCanary}, that bundles the proven reflection positivity, finite
+OS reconstruction, both eigenvectors, the eigenbasis, and the numeric gap; and
+nontriviality of the configuration space is itself proven
+(\texttt{z2OneLinkConfig\_nontrivial}, witness $\langle 0,1\rangle$). The gap is a
+genuine \emph{spectral} quantity ($-\log$ of an eigenvalue ratio of an
+explicitly diagonalised operator), not a bare scalar field.
+
+\subsection{What it scopes out}
+\label{sec:ym-scopes}
+
+\begin{itemize}
+  \item \textbf{One link, not a lattice family, let alone a continuum.} The
+  ``gap'' is the dimensionless transfer-matrix gap $-\log(\lambda_2/\lambda_1)$
+  of a single $\mathbb{Z}_2$ link. It is \emph{never} connected to
+  \texttt{HasSpectralMassGap} of a Yang--Mills Hamiltonian.
+  \item \textbf{\texttt{MassGap.lean} proves no concrete gap.} It is an abstract
+  spectral-theory audit layer: \texttt{HasSpectralMassGap }$A\,\Delta := 0<\Delta
+  \wedge \texttt{SpectrumAvoidsOpenInterval }A\,0\,\Delta$ over an abstract
+  operator, with $\sim 40$ bookkeeping lemmas. \emph{Every}
+  \texttt{HasSpectralMassGap} occurrence is a definition or a hypothesis; no
+  theorem asserts any operator has a gap, and no continuum statement is made.
+  \item \textbf{The finite model explicitly does not survive the continuum
+  limit.} The same file proves a \emph{gap-closing} diagnostic: under the
+  heat-time scaling $t(a)=a^2$, the physical gap
+  \texttt{z2HeatTimePhysicalGap}$\,a\,(a^2)=a$
+  (\texttt{z2QuadraticHeatTime\_physicalGap\_eq}) and
+  \texttt{z2QuadraticHeatTime\_physicalGap\_closes} shows it falls below any
+  $\varepsilon>0$ as $a\to 0$. The corpus thus proves, in-tree, that this finite
+  gap is \emph{not} a continuum witness. The file comment: ``This is a scaling
+  diagnostic, not a continuum mass-gap theorem.''
+  \item \textbf{OS reconstruction is finite only.}
+  \texttt{FiniteOSReconstruction.lean} proves the finite algebraic core (a
+  reflection-positive finite kernel gives a positive pairing; a self-adjoint
+  transfer descends to the \texttt{Quot} quotient). No Hilbert-space completion,
+  no infinite volume, no continuum measure; the file states ``No continuum
+  Yang-Mills measure or mass gap is asserted here.''
+\end{itemize}
+
+\subsection{Blocks and obstructions}
+\label{sec:ym-blocks}
+
+\paragraph{Continuum disclaimers (verbatim).}
+\texttt{Z2StrongCouplingGap.lean}: ``The theorem is finite-lattice only. The
+continuum Yang-Mills mass gap is not claimed.''
+\texttt{ProofStateZ2StrongCoupling.lean}: ``The finite theorem is unconditional
+and non-vacuous; the continuum endpoint remains open.''
+\texttt{ProofState.lean}: ``an audit surface for the active formalization lane,
+not a solution of the Millennium problem.''
+
+\paragraph{The RG / continuum crux is refuted-route bookkeeping, not a
+construction.} \texttt{RGCrux.lean} proves the \emph{negation} of proposed
+repair routes
+(\texttt{not\_sameConstantEvenBelowSixteenGapRouteCertificate},
+\texttt{not\_atLeast2048EvenBelowSixteenGapRouteCertificate}); the ``RG
+contraction'' is an arithmetic predicate
+$\texttt{HasRGContraction }C\,s := 0\le C \wedge 0\le s \wedge C\cdot s<1$
+(\texttt{RGBootstrap.lean}), with no flow on measures or operators.
+\texttt{ExtractionStateRGCrux.lean} shows the odd-cutoff $d_{\max}=15$ repair
+collapses to the already-blocked $d_{\max}=14$ route. The named wall: in
+\texttt{ProofState.lean}, \texttt{currentYangMillsConstructiveStatus} marks all
+five constructive-QFT checks \texttt{.notRepresented}---\texttt{continuumMeasure},
+\texttt{euclideanCovariance}, \texttt{reflectionPositivity} (in the large),
+\texttt{osReconstruction} (in the large), \texttt{hamiltonianMassGapTransfer}---
+the route supplying only \texttt{.finiteRGExtractionLedger}. The
+\texttt{*GateCanaries} files are abstract \texttt{Bool}/enum audits (a positive
+canary just sets every flag \texttt{.cleared}); the only genuine mathematical
+positive witness in the corpus is the $\mathbb{Z}_2$ transfer matrix above.
+
+\begin{center}
+\begin{tabular}{lll}
+\hline
+Block & Status & Proven-intrinsic? \\
+\hline
+Finite $\mathbb{Z}_2$ transfer gap & \textsc{Proven} ($=1$, inhabited) & yes (finite, real operator) \\
+Continuum / infinite-volume measure & \textsc{Not represented} (open) & open goal, $0\%$ support \\
+Euclidean covariance, RP \& OS in the large & \textsc{Not represented} (open) & open goal \\
+Uniform gap across scales (RG) & \textsc{Refuted-route} / open & proposed repairs refuted; crux open \\
+\hline
+\end{tabular}
+\end{center}
+
+\subsection{PLN ledger}
+\label{sec:ym-pln}
+
+$\mathrm{ITV}=[L,U]=[\,s\cdot c,\ s\cdot c+(1-c)\,]$. The corpus correctly
+records the finite landmark at $100\%$ \emph{scoped to the finite lattice}, while
+the continuum endpoint sits at $0\%$.
+
+\begin{center}
+\begin{tabular}{lcccc}
+\hline
+Node & $\langle s,c\rangle$ & $\mathrm{ITV}=[L,U]$ & PROGRESS & reading \\
+\hline
+Finite $\mathbb{Z}_2$ lattice gap (landmark) & $\langle 1.00,0.99\rangle$ & $[0.99,1.00]$ & $100\%$ & finite, scoped \\
+Lattice-gap programme (general) & $\langle 0.55,0.30\rangle$ & $[0.165,0.865]$ & $\sim 30\%$ & one link done; family open \\
+Continuum mass gap (outcome) & $\langle 0.05,0.16\rangle$ & $[0.008,0.848]$ & $\sim 30\%$ & headline goal \\
+\hline
+\end{tabular}
+\end{center}
+
+\noindent\textbf{Outcome vs progress.} The finite landmark is a true $100\%$
+result \emph{within its scope}; promoting that $1.00$ to the continuum is exactly
+the move the corpus warns against (its \texttt{nextObligation}: ``do not promote
+the finite gap to a continuum mass-gap endpoint''). The lattice-gap programme
+$\langle 0.55,0.30\rangle$ has moderate support (a real gap exists, with the
+right OS / reflection-positivity scaffolding) but low confidence (one link, and
+an explicit gap-closing diagnostic under naive scaling). The continuum outcome
+$\langle 0.05,0.16\rangle$ is flat and honest: the RG step and the
+infinite-volume OS reconstruction---the crux---are untouched, with proposed
+repair routes already refuted. PROGRESS ($\sim 30\%$) credits the genuine finite
+construction and the clean walling-off of dead repair routes.
+
+\paragraph{Single honesty correction.}
+The one place an outside reader could be misled is the \emph{name}
+\texttt{z2StrongCoupling\_latticeYangMills\_massGap\_landmark}: the substring
+``massGap'' must not be read in isolation as a Yang--Mills mass-gap result. In
+context---the \texttt{\_lattice$\dots$} qualifier, the in-file disclaimers, the
+proven gap-closing diagnostic, and the $0\%$-support continuum nodes---the claim
+is honest and correctly scoped to a single finite $\mathbb{Z}_2$ link.

@@ -290,5 +290,5 @@
       "preview": "theorem Th31: :: EXAMPLES 4.11.(1b) for X be set holds BoolePoset X is algebraic proof let X be set; now let x be Elemen"
     }
   ],
-  "source_path": "/home/zar/claude/mizar/share/mml/waybel_8.miz"
+  "source_path": "~/claude/mizar/share/mml/waybel_8.miz"
 }

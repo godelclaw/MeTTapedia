@@ -3,7 +3,7 @@ import Mettapedia.OSLF.MeTTaIL.LanguageDefDSL
 /-!
 # GF Semantic Kernel in `languageDef!` Form
 
-This module captures the **council-clear** GF semantic kernel as a directly
+This module captures the **review-clear** GF semantic kernel as a directly
 authored `languageDef!` fragment:
 
 - 1 equation: `UseN(x) = x`

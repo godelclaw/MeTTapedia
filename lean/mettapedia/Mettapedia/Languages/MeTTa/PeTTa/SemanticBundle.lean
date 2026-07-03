@@ -90,7 +90,7 @@ open Mettapedia.Languages.MeTTa.ElaboratedCore (RuntimeResourceClass)
 /-- The canonical PeTTa semantic bundle: a single typed record from which
     all proof-side and runtime-side views are derived.
 
-    This is the semantic object that the council recommends freezing as the
+    This is the semantic object that review recommends freezing as the
     ownership point for PeTTa's GSLT → OSLF → NTT pipeline. -/
 structure PeTTaSemanticBundle where
   /-- The PeTTa stage this bundle represents. -/

@@ -2,7 +2,7 @@
   "domain_sizes": {},
   "finite_model_found": false,
   "function_summaries": [],
-  "input_file": "/home/zar/claude/atps/datasets/mml_8.1.15_fof/problems_small/conlat_2/conlat_2__t18_conlat_2",
+  "input_file": "~/claude/atps/datasets/mml_8.1.15_fof/problems_small/conlat_2/conlat_2__t18_conlat_2",
   "original_role_counts": {
     "axiom": 139,
     "conjecture": 1

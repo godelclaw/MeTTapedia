@@ -1,0 +1,175 @@
+\section{Navier--Stokes via the Averaged-Equation Route}
+\label{sec:goertzel-ns-state}
+
+This section is a research-program lens on Goertzel's averaged-equation route to
+3D Navier--Stokes global regularity. It is written to direct creative effort and
+is candid about the current verdict: the route is, in Lean, \emph{provably
+scaling-uncleared} --- it does not prove regularity, and the obstruction is the
+supercritical-scaling wall. Every conjecture below is labelled. Lean identifiers
+cite the live \texttt{FluidDynamics/NavierStokes} development.
+
+\subsection{The creative bet}
+
+The classical energy method controls $\int|u|^2\,dx$ and tries to close the
+Beale--Kato--Majda (BKM) vorticity criterion from there. It fails at the
+critical scaling: under the parabolic rescaling $(t,x)\mapsto(\lambda^2 t,
+\lambda x)$ the $L^2$ energy is \emph{supercritical} in 3D, so it cannot dominate
+the nonlinearity at small scales. The route's bet is to sidestep this by working
+with \emph{averaged} (mean-field) equations: replace pointwise velocity norms
+with smoother averaged quantities, prove the averaged momentum equation,
+represent the Reynolds-stress closure, and transport the energy inequality and
+the critical scaling through the average. If averaging buys enough regularity to
+upgrade the diagnostic from supercritical $L^2$ to critical $L^3$, the BKM
+criterion could close.
+
+The Lean development encodes this bet as a structured \emph{promotion gate}
+rather than as prose. A route is allowed to claim regularity only after clearing
+three layers: the scaling verdicts (\verb|NavierScalingCheck|: criticalNorm,
+supercriticalUpgrade, averagedEquationCompatibility), the challenge-world
+interfaces (\verb|NavierScalingWorldInterface|, the ten required witnesses), and
+the four averaged-equation obligations (\verb|NavierAveragedEquationObligation|:
+averagedMomentumEquation, reynoldsStressClosure, energyInequalityCompatibility,
+criticalScalingCompatibility). This is the generative contribution: the route is
+turned into a finite, auditable list of obligations, so progress is measurable
+and overclaiming is mechanically blocked.
+
+\subsection{Why the route is provably scaling-uncleared}
+
+The current energy/BKM route supplies only the supercritical $L^2$ diagnostic
+and none of the upgrade machinery. Lean proves this exactly:
+\begin{itemize}\itemsep1pt
+  \item the diagnostic index is $2$ and $L^2$ is supercritical in 3D ---
+    \verb|finiteEnergyVelocityLpIndex| $=2$,
+    \verb|velocityLpScalingRegime 2 = .supercritical|, while the critical index
+    is $3$ (\verb|criticalVelocityLpIndex|);
+  \item the critical-norm gate is blocked and the supercritical-upgrade gate is
+    blocked --- \verb|currentNavierEnergyBKMScalingStatus| with
+    \verb|criticalNorm = .blocked|,
+    \verb|supercriticalUpgrade = .blocked|,
+    \verb|averagedEquationCompatibility = .notRepresented|;
+  \item all four averaged-equation obligations are missing ---
+    \verb|currentNavierEnergyBKMAveragedEquationCompatibilityStatus| has
+    \verb|represented = []|;
+  \item the three-layer gate does not clear ---
+    \verb|currentNavierEnergyBKMRoute_regularityPromotionGate_refuted|,
+    \verb|NavierRegularityPromotionGate.ClearsAll| false for the current route;
+  \item the route node is marked \verb|.scalingUncleared|
+    (\verb|navierSupercriticalScalingNode|,
+    \verb|navierAveragedEquationAllObstructionsNode|), and the roadmap forces the
+    averaged-equation obstruction to be examined before any replacement route
+    (\verb|currentNavierRoadmap_orders_averaged_obstruction_before_replacement|).
+\end{itemize}
+So nothing here is a regularity theorem; what is proved is a precise inventory of
+\emph{exactly which obligations are unmet}. That inventory is the route's real
+asset.
+
+\subsection{Possible avenues still open}
+
+\paragraph{N1. Supply a critical-norm control witness.} The most direct missing
+witness is a proof that the $L^3$ (or $\dot H^{1/2}$) critical norm is
+controlled from finite energy plus the dissipation budget
+(\verb|criticalInitialDataFamily| $+$ \verb|criticalNormControlWitness|). This is
+the single witness that flips \verb|criticalNorm| from \verb|.blocked| toward
+\verb|.cleared|.
+
+\paragraph{N2. A scale-invariant upgrade witness.} Independently, supply a
+\verb|scaleInvariantUpgradeWitness| against the
+\verb|supercriticalConcentrationFamily| --- a quantitative statement that
+concentration at small scales cannot outrun dissipation. This is the analytic
+heart and the place the supercritical wall is felt most sharply.
+
+\paragraph{N3. Represent the averaged-equation obligations honestly.} Each of the
+four obligations maps to a required witness
+(\verb|NavierAveragedEquationObligation.requiredWorldInterface|). The avenue is
+to represent them one at a time --- averaged momentum, Reynolds-stress closure,
+energy-inequality transport, critical-scaling transport --- so that
+\verb|represented| grows from $[]$ toward the full list. Each representation is a
+finite, checkable target rather than a leap to regularity.
+
+\subsection{Conjectured workarounds for the supercritical wall}
+
+\begin{conjecture}[Speculative --- Averaging as a critical-norm gain]
+\label{conj:ns-averaging-gain}
+The averaging operator, applied to the divergence-free velocity, gains exactly
+the half-derivative needed to move the controlled diagnostic from the
+supercritical $L^2$ regime to the critical $L^3$ / $\dot H^{1/2}$ regime, with a
+constant that is uniform under the parabolic rescaling. Formally, this would
+supply both \verb|criticalNormControlWitness| and
+\verb|scaleInvariantUpgradeWitness| from a single averaging estimate.
+\end{conjecture}
+
+\noindent\emph{Why it might hold.} Averaging is a smoothing operation; if the
+Reynolds-stress closure can be written so that the averaged nonlinearity is
+strictly subcritical, the gate's two blocked layers could clear together.
+\emph{Why it might fail.} The supercritical scaling is scale-invariant: a
+smoothing that helps at one scale generically loses exactly as much at the dual
+scale. Tao's averaged-Navier--Stokes blowup constructions are the cautionary
+tale --- a sufficiently general averaged equation can blow up, so the conjecture
+is responsible only if the specific averaging here is shown to respect a sign or
+structure that the blowup constructions violate.
+
+\begin{conjecture}[Speculative --- Reynolds closure with a coercive remainder]
+\label{conj:ns-reynolds}
+The Reynolds-stress closure (\verb|reynoldsStressClosureWitness|) can be chosen
+so that its remainder term is \emph{coercive} in the critical norm: the
+averaged-equation energy identity gains a strictly positive critical-norm
+dissipation absent from the unaveraged identity. This coercivity, if uniform
+under rescaling, is precisely the
+\verb|criticalScalingCompatibility| obligation.
+\end{conjecture}
+
+\noindent\emph{Why it might hold.} Closures are not unique; a closure tuned for
+coercivity rather than physical fidelity is a legitimate proof device.
+\emph{Why it might fail.} Coercivity in the critical norm is essentially the
+problem itself; the conjecture risks assuming the conclusion unless the
+coercive remainder is derived from a genuinely new estimate.
+
+\subsection{Where to point creative effort next}
+
+The single highest-leverage target is
+\textbf{the scale-invariant upgrade witness (avenue N2), pursued via
+Conjecture~\ref{conj:ns-averaging-gain}}. Reason: the Lean gate makes plain that
+the route's verdict hinges on exactly one analytic fact --- whether anything in
+the averaged formulation beats supercritical concentration uniformly under
+rescaling. Every other obligation is downstream bookkeeping that becomes
+tractable once that estimate exists, and is provably blocked while it does not.
+The recommended push: write the candidate averaging estimate as a Lean
+\verb|scaleInvariantUpgradeWitness| against a concrete
+\verb|supercriticalConcentrationFamily|, and stress-test it against a discretized
+analogue of Tao's averaged blowup --- if the estimate survives the family that is
+designed to make averaged Navier--Stokes blow up, it is a genuine candidate; if
+it fails on that family, the failure pinpoints which structural sign the real
+Navier--Stokes nonlinearity must supply that the abstract averaged equation
+lacks. Either outcome converts a vague ``supercriticality'' into a specific,
+checkable obstacle.
+
+\subsection*{PLN lens}
+
+\begin{table}[h]
+\centering
+\small
+\begin{tabular}{lcccc}
+\toprule
+Central node & STV $\langle s,c\rangle$ & ITV $[L,U]$ & Progress & Status \\
+\midrule
+Scale-invariant upgrade ($L^2\!\to\!L^3$ uniform) & $\langle 0.05, 0.18\rangle$ & $[0.009,\,0.829]$ & --- & open crux (supercritical wall) \\
+Averaged-equation obligations represented & $\langle 0.10, 0.25\rangle$ & $[0.025,\,0.775]$ & --- & all missing \\
+Promotion-gate / obligation audit (the asset) & $\langle 0.97, 0.85\rangle$ & $[0.8245,\,0.9745]$ & --- & built \\
+\midrule
+\textbf{Route (through)} & $\langle 0.04, 0.21\rangle$ & $[0.0084,\,0.7984]$ & $\sim$30\% & \\
+\bottomrule
+\end{tabular}
+\caption{PLN summary for the averaged-equation Navier--Stokes route. The audit
+layer is high-strength (it is fully built and machine-checked); the route's own
+expectation is very low because it is provably scaling-uncleared and the decisive
+estimate confronts the supercritical-scaling wall.}
+\end{table}
+
+\noindent Through-route: $\langle 0.04, 0.21\rangle$, ITV
+$[0.04\cdot 0.21,\;0.04\cdot 0.21+(1-0.21)] = [0.0084,\,0.7984]$,
+PROGRESS $\sim 30\%$. The low strength reflects the proved scaling-uncleared
+status: as it stands the route does not prove regularity, and the supercritical
+wall is exactly the place every known energy-method route also stalls. Progress
+is lower than 4CP/PNP because the analytic obligations are not merely unproved
+but largely unrepresented --- the route has mapped \emph{that} they are missing,
+not yet \emph{how} to supply them.

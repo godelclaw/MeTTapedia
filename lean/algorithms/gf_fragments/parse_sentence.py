@@ -14,7 +14,7 @@ def main():
         sys.exit(1)
 
     sentence = sys.argv[1]
-    pgf_path = "/home/zar/claude/gf-wordnet/build/ParseEng.pgf"
+    pgf_path = "~/claude/gf-wordnet/build/ParseEng.pgf"
 
     try:
         import pgf

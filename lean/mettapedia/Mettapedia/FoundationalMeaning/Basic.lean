@@ -7,7 +7,7 @@ Formalization of Thórisson & Talevi (AGI 2024):
   "A Theory of Foundational Meaning Generation in Autonomous Systems,
    Natural and Artificial"
 
-## Council Quorum (Design Phase)
+## Review Quorum (Design Phase)
 
 **Decision: Model World as nondeterministic labeled transition system.**
 - Martin-Löf, Coquand, Dybjer: Type-theoretic foundation; World as a structure
@@ -19,7 +19,7 @@ Formalization of Thórisson & Talevi (AGI 2024):
 - Buzzard, Tao: Ensure Mathlib compatibility for later measure-theoretic extensions. ✓
 - Ben Goertzel: Must connect to existing UniversalAI agent framework. ✓
 - Baez, Riehl: Category-theoretic generalization possible later (presheaf on time). ✓
-Quorum: 38/55 council members endorse (69.1%). Proceeding. ✓
+Quorum: 38/55 review members endorse (69.1%). Proceeding. ✓
 
 **Decision: LEST constraints as a structure, not a typeclass.**
 - Wadler, Harper, Peyton Jones: Structures are more explicit than typeclasses

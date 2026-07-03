@@ -13,7 +13,7 @@ It is **not** the final ethics ontology.  It is the adapter/kernel layer that
 keeps the current WM meta-stability theorems green while the richer FOET
 semantic core is being ported into mettapedia.
 
-## Four-axis kernel (GPT-5.4 Pro / council redesign)
+## Four-axis kernel (GPT-5.4 Pro / review redesign)
 
 Following Parfit, Scanlon, Korsgaard (analytic), Weinbaum, Levinas
 (continental), and Noddings, Held (care ethics), ethical claims are

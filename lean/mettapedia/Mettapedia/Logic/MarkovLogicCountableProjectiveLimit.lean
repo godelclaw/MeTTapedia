@@ -13,7 +13,7 @@ Given a projective family of probability measures on the Boolean prefixes
 `condDistrib`, build the corresponding `trajMeasure`, and prove that its prefix
 marginals are exactly the original family.
 
-This is the council-backed high-confidence route to the first honest global
+This is the agreed high-confidence route to the first honest global
 measure theorem: prove the generic countable Boolean extension layer first, then
 instantiate it for the MLN limit-family.
 -/

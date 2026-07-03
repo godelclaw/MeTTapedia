@@ -149,4 +149,4 @@ rg -n "sorry" Mettapedia/
 - the policy keeps external checkouts untracked in ai-agents.
 - the policy references EXTERNAL_REPOS.md for exact clone and sync commands.
 
-Accountability trace: the CertifyingDatalog bridge at `/home/zar/claude/lean-projects/mettapedia/Mettapedia/Logic/LP/CertifyingDatalogBridge.lean` was reviewed by Codex 5.4 and Claude Code Opus 4.6.
+Accountability trace: the CertifyingDatalog bridge at `~/claude/lean-projects/mettapedia/Mettapedia/Logic/LP/CertifyingDatalogBridge.lean` was reviewed by Codex 5.4 and Claude Code Opus 4.6.

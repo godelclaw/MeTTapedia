@@ -1,0 +1,208 @@
+% ns_proofstate.tex — Proof-state ledger for the Navier-Stokes route corpus.
+% Clean section content for \input; relies on amsmath/amssymb. No \documentclass.
+%
+% Verified directly against the Lean source under
+%   lean/mettapedia/Mettapedia/FluidDynamics/NavierStokes (read-only).
+% Theorems cited were opened and read; commit/summary language is not trusted.
+
+\section{Navier--Stokes: Proof-State Ledger}
+\label{sec:ns-proofstate}
+
+This is the honest accounting of the Navier--Stokes (Clay / Fefferman global
+regularity) corpus. The PDE is genuinely formalised---\texttt{NSSpace} $:=
+\texttt{EuclideanSpace }\mathbb{R}\,(\texttt{Fin }3)$, with real Mathlib
+\texttt{fderiv}/$\Delta$/\texttt{gradient} operators and a Bochner-integral
+kinetic energy in \texttt{NavierStokesEquationCore.lean}. The headline finding:
+\textbf{there is no unconditional global-regularity theorem, and the corpus does
+not claim one.} The real Millennium target is a \texttt{def : Prop} that is
+never proven as a theorem; the only \emph{resolved} truth value about it
+\emph{refutes} an over-broad surrogate. Everything load-bearing is either a
+conditional transfer lemma (target as a hypothesis), a finite-energy no-go
+refutation of a specific candidate family, or honestly self-labelled
+``scaling-uncleared'' bookkeeping.
+
+\subsection{What is machine-checked}
+\label{sec:ns-checked}
+
+\paragraph{Axiom and \texttt{sorry} hygiene.}
+\textbf{Zero} real \texttt{sorry}/\texttt{admit} (all matches are the prose word
+``admits''), \textbf{zero} custom \texttt{axiom}, \textbf{zero}
+\texttt{native\_decide}. The seal
+$\text{axioms}\subseteq\{\texttt{propext},\texttt{Classical.choice},\texttt{Quot.sound}\}$
+is consistent with static inspection; there is no \texttt{\#print axioms}
+self-seal (reported, not independently sealed).
+
+\paragraph{Conditional transfer lemmas (target as a hypothesis)}
+\;[\textsc{Conditional}]. Every theorem naming the real target carries it on the
+\emph{left}: form
+$(h:\texttt{ExplicitFiniteEnergyAdmissibleNavierStokesMillenniumTarget})
+\to \text{consequence}$. Examples:
+\texttt{NavierStokesBKMTargetTransfersMillennium.lean},
+\texttt{NavierStokesUniformVorticityTargetSurfaceTransfers.lean},
+\texttt{NavierStokesSchwartzData.lean}. These prove ``\emph{if} you assume global
+regularity, \emph{then} BKM / vorticity-continuation / Schwartz consequences
+follow''---i.e.\ they assume the hard thing. The target itself
+(\texttt{ExplicitFiniteEnergyAdmissible$\dots$}, and
+\texttt{FiniteEnergyConcrete$\dots$}) is a \texttt{def : Prop}; \emph{no theorem
+has either as its bare conclusion}.
+
+\paragraph{The only resolved truth value is a refutation of a strawman}
+\;[\textsc{Unconditional, negative}]. In
+\texttt{NavierStokesUniformVorticityConcreteWitnesses.lean}:
+\[
+\texttt{not\_ExplicitConcreteNavierStokesMillenniumTarget}
+:\ \lnot\,\texttt{ExplicitConcreteNavierStokesMillenniumTarget}.
+\]
+The \emph{naive} ``$\forall\,\nu\,u_0$ (no finite-energy hypothesis)'' target is
+\emph{false}, because nonzero linear-shear data is admitted as smooth and
+divergence-free input but has infinite energy and cannot meet the bounded-energy
+output. The in-file comment keeps it as ``a regression guard against
+reintroducing that theorem-shape bug.'' This refutes a strawman, not the real
+problem.
+
+\paragraph{Finite-energy no-go refutations}
+\;[\textsc{Unconditional, negative, narrow}]. In
+\texttt{NavierStokesEnergyBKMBridge.lean},
+\[
+\texttt{not\_exists\_energyBKMBridge\_kineticIntegrabilityOnSlab\_constantInitialVelocity}
+\]
+(and a heat-shear analogue): for $c\neq 0$, $0\le T$, there is \emph{no}
+velocity field matching constant initial data with kinetic energy integrable on
+the slab---because a nonzero constant / heat-shear field on $\mathbb{R}^3$ has
+infinite initial kinetic energy. Genuine, sound, but narrow: it excludes
+specific non-finite-energy candidates.
+
+\subsection{What it scopes out}
+\label{sec:ns-scopes}
+
+\begin{itemize}
+  \item \textbf{No global regularity.} The corpus's own headers say so:
+  \texttt{ProofState.lean} ``an audit surface $\dots$ not a solution of the
+  Millennium problem''; \texttt{Live.lean} ``It is not a proof of the Millennium
+  Navier-Stokes problem.''
+  \item \textbf{The Fefferman ``global regularity clause'' is a tautology over
+  abstract predicates.} In \texttt{FeffermanTargetBack.lean},
+  \texttt{FeffermanGlobalRegularityClause }$K := \texttt{Nonempty
+  (FeffermanGlobalRegularityOutput }K)$, where $K$'s physical content
+  (\texttt{SmoothVelocity}, \texttt{MomentumEquation}, \texttt{Incompressible},
+  \texttt{BoundedEnergy}, $\dots$) is an \emph{arbitrary abstract
+  \texttt{Prop}-valued field} \emph{not wired to the formalised
+  $\mathbb{R}^3$ NS PDE}. Every ``realizes\_clause'' theorem takes obligations
+  that \emph{already bundle proofs of all output properties as hypotheses} and
+  returns the bundle---an $A\to A$ shape, not a reduction.
+  \item \textbf{Cole--Hopf is scalar, not vector NS.}
+  \texttt{ColeHopfInterface.lean} states explicitly it ``does \emph{not} attempt
+  to formalize the actual SG diffusion or semigroup laws''; it records
+  hypotheses (uniform positivity of $\Phi$, an identity-energy bound, a
+  frame-curl bound) and derives a pointwise $|\text{vorticity}|\le$ envelope
+  bound. \texttt{ColeHopfPositiveLowerBound.lean} works with the scalar
+  $W=-2\nu\log\Phi$ on a scalar heat field---Burgers/heat algebra used as a
+  uniform-vorticity-envelope generator, \emph{not} a solution of vector NS. The
+  corpus is candid that reaching the Fefferman target from the resulting
+  ``vorticity tendril'' still requires a separate lift supplying velocity,
+  pressure, the PDE, incompressibility, initial condition, bounded energy, and
+  the relation tying vorticity to velocity.
+\end{itemize}
+
+\subsection{Blocks and obstructions}
+\label{sec:ns-blocks}
+
+\paragraph{The averaged-equation / supercritical-scaling route is recorded
+``scaling-uncleared'' with missing obligations (confirmed).}
+\texttt{ProofState.lean} node \texttt{navier.supercritical-scaling} has
+\texttt{status := .scalingUncleared}, $\langle s,c\rangle=\langle
+0,98\rangle$, with explicit blocker text: ``Do not promote this route to global
+regularity unless the critical-norm and supercritical-upgrade blocks are
+replaced by checked clearance theorems, the averaged-equation obligation packet
+is represented, and the required challenge-world interfaces are supplied.''
+Supporting (verbatim) records in \texttt{Scaling/Basic.lean} and
+\texttt{Scaling/AveragedEquationObstruction.lean}:
+\begin{itemize}
+  \item \texttt{currentNavierEnergyBKMRoute\_regularityPromotionGate\_refuted}:
+  a conjunction asserting $\lnot$ClearsAll on the scaling status, the world
+  interfaces, the averaged-equation compatibility, and the promotion gate, plus
+  \texttt{velocityLpScalingRegime finiteEnergyVelocityLpIndex = .supercritical};
+  \item \texttt{currentNavierEnergyBKMRoute\_averagedMomentumEquation\_obstruction}:
+  records that \texttt{averagedMomentumEquation} is in the status's
+  \texttt{missingObligations} and not represented;
+  \item \texttt{currentNavierEnergyBKMRoute\_allAveragedEquationObstructions}.
+\end{itemize}
+
+\paragraph{Caveat: these are bookkeeping over hand-set data, not analysis.} The
+``status'' being tested is a manually authored record whose fields are literally
+typed in (\texttt{criticalNorm := .blocked}, \texttt{represented := []},
+\texttt{supplied := [.finiteEnergyL2Diagnostic]}). The theorems prove, by
+\texttt{rfl}/\texttt{simp}/\texttt{decide} over finite enumerations, that a
+record whose \texttt{represented} field is \texttt{[]} fails a list-membership
+predicate. This is a sound \emph{guardrail} asserting the route has not been
+done, not a proof it cannot be. The one genuine scaling fact is
+\texttt{velocityLpScalingRegime}\;$2=\texttt{.supercritical}$,
+$3=\texttt{.critical}$: the $L^2$ (finite-energy) diagnostic is supercritical
+against the $L^3$ critical index---the real supercriticality barrier encoded as
+a fact about index $2$ vs $3$, not a proof of a no-go.
+
+\paragraph{Gates are two-sided (non-vacuous), but contentless.} Positive
+canaries exist---\texttt{exampleNavierAveragedEquationCompatibilityClearedStatus.Clears}
+and \texttt{navierAveragedEquationFullInterface\_lab\_positive\_canary} prove
+that an all-obligations-supplied record \emph{does} clear the gate---so the
+obstructions are not vacuous. But the canaries are
+\texttt{structure $\dots$ \{ $\dots$ : Bool \}} records with \texttt{rfl}-provable
+predicates, carrying zero PDE content.
+
+\begin{center}
+\begin{tabular}{lll}
+\hline
+Block & Status & Proven-intrinsic? \\
+\hline
+Supercriticality ($L^2$ vs $L^3$ index) & \textsc{Encoded as arithmetic fact} & encodes, does not prove a no-go \\
+Critical-norm gate & \textsc{Blocked} (hand-set) & no; route bookkeeping \\
+Supercritical-upgrade gate & \textsc{Blocked} (hand-set) & no; route bookkeeping \\
+Averaged-equation barrier (4 obligations) & \textsc{Not represented} & no; route bookkeeping \\
+\hline
+\end{tabular}
+\end{center}
+
+\noindent None of these blocks is proven-intrinsic in Lean. There is no theorem
+``any finite-energy route necessarily fails'' and no formalised averaging-method
+no-go; they mark that the current naive finite-energy/BKM route fails its own
+bookkeeping floors.
+
+\subsection{PLN ledger}
+\label{sec:ns-pln}
+
+$\mathrm{ITV}=[L,U]=[\,s\cdot c,\ s\cdot c+(1-c)\,]$.
+
+\begin{center}
+\begin{tabular}{lcccc}
+\hline
+Node & $\langle s,c\rangle$ & $\mathrm{ITV}=[L,U]$ & PROGRESS & reading \\
+\hline
+Conditional transfer lemmas checked & $\langle 1.00,0.95\rangle$ & $[0.95,1.00]$ & --- & lemma-level only \\
+Supercritical-scaling node (route) & $\langle 0.00,0.98\rangle$ & $[0.00,0.02]$ & --- & honest ``not done'' \\
+Global regularity (outcome) & $\langle 0.04,0.21\rangle$ & $[0.008,0.798]$ & $\sim 30\%$ & headline goal \\
+\hline
+\end{tabular}
+\end{center}
+
+\noindent\textbf{Outcome vs progress.} Outcome confidence is low and flat: the
+supercriticality crux is untouched (the only ``scaling math'' is the index-2-is-
+supercritical arithmetic fact). PROGRESS ($\sim 30\%$) reflects that the PDE is
+genuinely formalised, a clean set of conditional consequences of regularity is
+proven, a strawman target was caught and refuted, and the averaged-equation
+route's missing obligations are explicitly enumerated. The supercritical-scaling
+node's $\langle 0,0.98\rangle$ is the right way to record ``a step we have
+\emph{confidently determined is not done},'' distinct from the outcome's
+$\langle 0.04,0.21\rangle$ ``we do not know.''
+
+\paragraph{Single honesty correction.}
+A summary saying the corpus ``reaches the Fefferman target conditionally on a
+clean compatibility hypothesis'' overstates by hiding that the Fefferman $K$
+predicates are abstract, unconstrained \texttt{Prop} fields disconnected from the
+formalised $\mathbb{R}^3$ NS PDE: the ``global regularity clause'' is
+\texttt{Nonempty} of a structure whose entire physical content is opaque
+parameters, realised only after every such predicate is assumed proven as
+input---an $A\to A$ shape, not a reduction of NS to something easier. The
+genuinely load-bearing analytic theorems are all \emph{negative} (finite-energy
+no-go refutations) or \emph{conditional transfers}; the scaling/averaged-equation
+layer is sound \texttt{Bool}/enumeration bookkeeping. To its credit, the corpus's
+own headers and the $0\%$-support scaling nodes state all of this plainly.
