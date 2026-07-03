@@ -4727,6 +4727,107 @@ noncomputable def
             i₀ observer t activeIdx.1 => cell.val)
         hcell
 
+noncomputable def
+    v13RealLinearNoTargetSequentialTraceFirstCosetHitFixedMapTranscriptCylinderSigmaEquivWorldSet
+    {m q : Nat} (i₀ : Fin m)
+    (observer : V13RealLinearSequentialRowObserver m q) (t : Fin q) :
+    (Σ idx :
+      V13RealLinearNoTargetSequentialTraceFirstCosetHitFixedMapTranscriptCylinderIndex
+        m q i₀ observer t,
+      V13RealLinearNoTargetSequentialTraceFirstCosetHitFixedMapTranscriptCylinder
+        i₀ observer t idx) ≃
+      V13RealLinearNoTargetSequentialTraceFirstCosetHitWorldSet
+        i₀ observer t :=
+  (v13RealLinearNoTargetSequentialTraceFirstCosetHitFixedPrefixTranscriptSigmaEquivFixedMapCylinderSigma
+      i₀ observer t).symm.trans
+    (v13RealLinearNoTargetSequentialTraceFirstCosetHitWorldSetEquivSigmaFixedPrefixTranscript
+      i₀ observer t).symm
+
+abbrev
+    V13RealLinearNoTargetSequentialTraceFirstCosetHitActiveGeneratedPrefixCellIncidence
+    {m q : Nat} (i₀ : Fin m)
+    (observer : V13RealLinearSequentialRowObserver m q) (t : Fin q) :=
+  Σ activeIdx :
+    V13RealLinearNoTargetSequentialTraceFirstCosetHitActiveFixedMapTranscriptCylinderIndex
+      i₀ observer t,
+    V13RealLinearNoTargetSequentialTraceFirstCosetHitActiveFixedMapTranscriptCylinderGeneratedPrefixCell
+      i₀ observer t activeIdx
+
+noncomputable instance
+    {m q : Nat} (i₀ : Fin m)
+    (observer : V13RealLinearSequentialRowObserver m q) (t : Fin q) :
+    Fintype
+      (V13RealLinearNoTargetSequentialTraceFirstCosetHitActiveGeneratedPrefixCellIncidence
+        i₀ observer t) := by
+  classical
+  unfold
+    V13RealLinearNoTargetSequentialTraceFirstCosetHitActiveGeneratedPrefixCellIncidence
+  infer_instance
+
+noncomputable def
+    v13RealLinearNoTargetSequentialTraceFirstCosetHitActiveGeneratedPrefixCellIncidenceToWorldSet
+    {m q : Nat} (i₀ : Fin m)
+    (observer : V13RealLinearSequentialRowObserver m q) (t : Fin q) :
+    V13RealLinearNoTargetSequentialTraceFirstCosetHitActiveGeneratedPrefixCellIncidence
+        i₀ observer t ↪
+      V13RealLinearNoTargetSequentialTraceFirstCosetHitWorldSet
+        i₀ observer t where
+  toFun incidence :=
+    (v13RealLinearNoTargetSequentialTraceFirstCosetHitFixedMapTranscriptCylinderSigmaEquivWorldSet
+        i₀ observer t)
+      ⟨incidence.1.1,
+        v13RealLinearNoTargetSequentialTraceFirstCosetHitGeneratedPrefixCellToFixedMapTranscriptCylinder
+          i₀ observer t incidence.1 incidence.2⟩
+  inj' := by
+    classical
+    rintro ⟨activeIdx₀, cell₀⟩ ⟨activeIdx₁, cell₁⟩ hworld
+    let E :=
+      v13RealLinearNoTargetSequentialTraceFirstCosetHitFixedMapTranscriptCylinderSigmaEquivWorldSet
+        i₀ observer t
+    have hsigma :
+        (⟨activeIdx₀.1,
+          v13RealLinearNoTargetSequentialTraceFirstCosetHitGeneratedPrefixCellToFixedMapTranscriptCylinder
+            i₀ observer t activeIdx₀ cell₀⟩ :
+          Σ idx :
+            V13RealLinearNoTargetSequentialTraceFirstCosetHitFixedMapTranscriptCylinderIndex
+              m q i₀ observer t,
+            V13RealLinearNoTargetSequentialTraceFirstCosetHitFixedMapTranscriptCylinder
+              i₀ observer t idx) =
+        ⟨activeIdx₁.1,
+          v13RealLinearNoTargetSequentialTraceFirstCosetHitGeneratedPrefixCellToFixedMapTranscriptCylinder
+            i₀ observer t activeIdx₁ cell₁⟩ := by
+      exact E.injective hworld
+    have hactive : activeIdx₀ = activeIdx₁ := by
+      apply Subtype.ext
+      exact congrArg Sigma.fst hsigma
+    cases hactive
+    have hfixed :
+        v13RealLinearNoTargetSequentialTraceFirstCosetHitGeneratedPrefixCellToFixedMapTranscriptCylinder
+            i₀ observer t activeIdx₀ cell₀ =
+          v13RealLinearNoTargetSequentialTraceFirstCosetHitGeneratedPrefixCellToFixedMapTranscriptCylinder
+            i₀ observer t activeIdx₀ cell₁ := by
+      simpa using hsigma
+    have hcell : cell₀ = cell₁ := by
+      exact
+        (v13RealLinearNoTargetSequentialTraceFirstCosetHitGeneratedPrefixCellToFixedMapTranscriptCylinder
+          i₀ observer t activeIdx₀).injective hfixed
+    cases hcell
+    rfl
+
+theorem
+    v13RealLinearNoTargetSequentialTraceFirstCosetHitActiveGeneratedPrefixCellIncidence_card_le_worldSet
+    {m q : Nat} (i₀ : Fin m)
+    (observer : V13RealLinearSequentialRowObserver m q) (t : Fin q) :
+    Fintype.card
+        (V13RealLinearNoTargetSequentialTraceFirstCosetHitActiveGeneratedPrefixCellIncidence
+          i₀ observer t) ≤
+      Fintype.card
+        (V13RealLinearNoTargetSequentialTraceFirstCosetHitWorldSet
+          i₀ observer t) :=
+  Fintype.card_le_of_embedding
+    (v13RealLinearNoTargetSequentialTraceFirstCosetHitActiveGeneratedPrefixCellIncidenceToWorldSet
+      i₀ observer t)
+
 /-- The full no-target first-hit event at step `t`, partitioned by the ordered
 prefix transcript actually seen by the sequential observer before that step. -/
 abbrev
