@@ -4047,6 +4047,120 @@ def v13RealLinearSequentialPrefixTranscriptVectorLastRow
     Fin m :=
   (pref ⟨n, Nat.lt_succ_self n⟩).1
 
+theorem v13RealLinearSequentialRowRunAuxWithRowView_mem_view
+    {m q : Nat} (observer : V13RealLinearSequentialRowObserver m q)
+    (rowView : Fin m → V13RealLinearRowView m) (n : Nat)
+    (transcript : V13RealLinearSequentialRowTranscript m)
+    (htranscript :
+      ∀ entry : Fin m × V13RealLinearRowView m,
+        entry ∈ transcript → entry.2 = rowView entry.1)
+    {entry : Fin m × V13RealLinearRowView m}
+    (hentry :
+      entry ∈
+        v13RealLinearSequentialRowRunAuxWithRowView
+          observer rowView n transcript) :
+    entry.2 = rowView entry.1 := by
+  induction n generalizing transcript with
+  | zero =>
+      simpa [v13RealLinearSequentialRowRunAuxWithRowView] using
+        htranscript entry hentry
+  | succ n ih =>
+      let row := observer.chooseRow transcript
+      exact
+        ih (transcript ++ [(row, rowView row)])
+          (by
+            intro entry hentry
+            simp [row] at hentry
+            rcases hentry with hentry | hentry
+            · exact htranscript entry hentry
+            · cases hentry
+              rfl)
+          (by
+            simpa [v13RealLinearSequentialRowRunAuxWithRowView, row] using
+              hentry)
+
+theorem v13RealLinearSequentialRowPrefixTranscriptOf_mem_view
+    {m q : Nat} (observer : V13RealLinearSequentialRowObserver m q)
+    (publicInput : V13RealLinearPublic m) (n : Nat)
+    {entry : Fin m × V13RealLinearRowView m}
+    (hentry :
+      entry ∈
+        v13RealLinearSequentialRowPrefixTranscriptOf
+          observer publicInput n) :
+    entry.2 = v13RealLinearRowView entry.1 publicInput := by
+  have hentryWith :
+      entry ∈
+        v13RealLinearSequentialRowPrefixTranscriptOfWithRowView
+          observer (fun row => v13RealLinearRowView row publicInput) n := by
+    simpa [v13RealLinearSequentialRowPrefixTranscriptOf_eq_withRowView]
+      using hentry
+  simpa [v13RealLinearSequentialRowPrefixTranscriptOfWithRowView] using
+    v13RealLinearSequentialRowRunAuxWithRowView_mem_view
+      observer (fun row => v13RealLinearRowView row publicInput) n []
+      (by
+        intro entry hentry
+        simp at hentry)
+      hentryWith
+
+theorem v13RealLinearRowsTranscript_eq_of_sequentialPrefixTranscript_eq
+    {m q : Nat} (observer : V13RealLinearSequentialRowObserver m q)
+    (public₀ public₁ : V13RealLinearPublic m) (n : Nat)
+    (hpref :
+      v13RealLinearSequentialRowPrefixTranscriptOf observer public₀ n =
+        v13RealLinearSequentialRowPrefixTranscriptOf observer public₁ n) :
+    v13RealLinearRowsTranscript
+        (v13RealLinearSequentialRowTranscriptRows
+          (v13RealLinearSequentialRowPrefixTranscriptOf observer public₀ n))
+        public₀ =
+      v13RealLinearRowsTranscript
+        (v13RealLinearSequentialRowTranscriptRows
+          (v13RealLinearSequentialRowPrefixTranscriptOf observer public₀ n))
+        public₁ := by
+  funext row
+  have hrowExists :
+      ∃ entry : Fin m × V13RealLinearRowView m,
+        entry ∈
+            v13RealLinearSequentialRowPrefixTranscriptOf
+              observer public₀ n ∧
+          entry.1 = row.1 := by
+    have hrowMem :
+        row.1 ∈
+          (v13RealLinearSequentialRowPrefixTranscriptOf
+            observer public₀ n).map Prod.fst := by
+      simpa only [v13RealLinearSequentialRowTranscriptRows, List.mem_toFinset]
+        using row.property
+    rcases List.mem_map.mp hrowMem with ⟨entry, hentry, hfst⟩
+    exact ⟨entry, hentry, hfst⟩
+  rcases hrowExists with ⟨entry, hentry₀, hfst⟩
+  have hentry₁ :
+      entry ∈
+        v13RealLinearSequentialRowPrefixTranscriptOf
+          observer public₁ n := by
+    simpa [hpref] using hentry₀
+  have hview₀ :
+      entry.2 = v13RealLinearRowView entry.1 public₀ :=
+    v13RealLinearSequentialRowPrefixTranscriptOf_mem_view
+      observer public₀ n hentry₀
+  have hview₁ :
+      entry.2 = v13RealLinearRowView entry.1 public₁ :=
+    v13RealLinearSequentialRowPrefixTranscriptOf_mem_view
+      observer public₁ n hentry₁
+  calc
+    v13RealLinearRowsTranscript
+        (v13RealLinearSequentialRowTranscriptRows
+          (v13RealLinearSequentialRowPrefixTranscriptOf observer public₀ n))
+        public₀ row =
+      v13RealLinearRowView row.1 public₀ := rfl
+    _ = v13RealLinearRowView entry.1 public₀ := by rw [hfst]
+    _ = entry.2 := hview₀.symm
+    _ = v13RealLinearRowView entry.1 public₁ := hview₁
+    _ = v13RealLinearRowView row.1 public₁ := by rw [hfst]
+    _ =
+      v13RealLinearRowsTranscript
+        (v13RealLinearSequentialRowTranscriptRows
+          (v13RealLinearSequentialRowPrefixTranscriptOf observer public₀ n))
+        public₁ row := rfl
+
 theorem v13RealLinearSequentialPrefixTranscriptVectorOf_toList
     {m q : Nat} (observer : V13RealLinearSequentialRowObserver m q)
     (publicInput : V13RealLinearPublic m) (n : Nat) :
@@ -4510,6 +4624,135 @@ theorem
     _ = activeIdx.1.row := hget
 
 theorem
+    v13RealLinearNoTargetSequentialTraceFirstCosetHitActiveFixedMapTranscriptCylinderIndex_eq_of_sameMap_generatedPrefix
+    {m q : Nat} (i₀ : Fin m)
+    (observer : V13RealLinearSequentialRowObserver m q) (t : Fin q)
+    (activeIdx₀ activeIdx₁ :
+      V13RealLinearNoTargetSequentialTraceFirstCosetHitActiveFixedMapTranscriptCylinderIndex
+        i₀ observer t)
+    (hA : activeIdx₀.1.A = activeIdx₁.1.A)
+    (hpref :
+      v13RealLinearNoTargetSequentialTraceFirstCosetHitActiveFixedMapTranscriptCylinder_generatedPrefix
+          i₀ observer t activeIdx₀ =
+        v13RealLinearNoTargetSequentialTraceFirstCosetHitActiveFixedMapTranscriptCylinder_generatedPrefix
+          i₀ observer t activeIdx₁) :
+    activeIdx₀ = activeIdx₁ := by
+  classical
+  let witness₀ :=
+    v13RealLinearNoTargetSequentialTraceFirstCosetHitActiveFixedMapTranscriptCylinder_witness
+      i₀ observer t activeIdx₀
+  let witness₁ :=
+    v13RealLinearNoTargetSequentialTraceFirstCosetHitActiveFixedMapTranscriptCylinder_witness
+      i₀ observer t activeIdx₁
+  let public₀ :=
+    v13RealLinearPublicInput
+      ({ x := witness₀.val, A := activeIdx₀.1.A.val } :
+        V13RealLinearWorld m)
+  let public₁ :=
+    v13RealLinearPublicInput
+      ({ x := witness₁.val, A := activeIdx₁.1.A.val } :
+        V13RealLinearWorld m)
+  have hinitVec :
+      v13RealLinearSequentialPrefixTranscriptVectorInit
+          (v13RealLinearNoTargetSequentialTraceFirstCosetHitActiveFixedMapTranscriptCylinder_generatedPrefix
+            i₀ observer t activeIdx₀) =
+        v13RealLinearSequentialPrefixTranscriptVectorInit
+          (v13RealLinearNoTargetSequentialTraceFirstCosetHitActiveFixedMapTranscriptCylinder_generatedPrefix
+            i₀ observer t activeIdx₁) := by
+    exact congrArg
+      (fun pref :
+        V13RealLinearSequentialPrefixTranscriptVector m ((t : Nat) + 1) =>
+        v13RealLinearSequentialPrefixTranscriptVectorInit pref)
+      hpref
+  have hrows :
+      activeIdx₀.1.rows = activeIdx₁.1.rows := by
+    have hrowsVec :=
+      congrArg v13RealLinearSequentialPrefixTranscriptVectorRows hinitVec
+    simpa [
+      v13RealLinearNoTargetSequentialTraceFirstCosetHitActiveFixedMapTranscriptCylinder_generatedPrefix_init_rows_eq]
+      using hrowsVec
+  have hrow :
+      activeIdx₀.1.row = activeIdx₁.1.row := by
+    have hlast :=
+      congrArg v13RealLinearSequentialPrefixTranscriptVectorLastRow hpref
+    simpa [
+      v13RealLinearNoTargetSequentialTraceFirstCosetHitActiveFixedMapTranscriptCylinder_generatedPrefix_lastRow_eq]
+      using hlast
+  have hprefixList :
+      v13RealLinearSequentialRowPrefixTranscriptOf
+          observer public₀ (t : Nat) =
+        v13RealLinearSequentialRowPrefixTranscriptOf
+          observer public₁ (t : Nat) := by
+    have hlist :=
+      congrArg v13RealLinearSequentialPrefixTranscriptVectorToList hinitVec
+    simpa [
+      v13RealLinearNoTargetSequentialTraceFirstCosetHitActiveFixedMapTranscriptCylinder_generatedPrefix,
+      witness₀, witness₁, public₀, public₁,
+      v13RealLinearSequentialPrefixTranscriptVectorOf_init,
+      v13RealLinearSequentialPrefixTranscriptVectorOf_toList]
+      using hlist
+  have hprefixRows₀ :
+      v13RealLinearSequentialRowTranscriptRows
+          (v13RealLinearSequentialRowPrefixTranscriptOf
+            observer public₀ (t : Nat)) =
+        activeIdx₀.1.rows := by
+    have hinitRows :=
+      v13RealLinearNoTargetSequentialTraceFirstCosetHitActiveFixedMapTranscriptCylinder_generatedPrefix_init_rows_eq
+        i₀ observer t activeIdx₀
+    simpa [
+      v13RealLinearNoTargetSequentialTraceFirstCosetHitActiveFixedMapTranscriptCylinder_generatedPrefix,
+      witness₀, public₀,
+      v13RealLinearSequentialPrefixTranscriptVectorOf_init,
+      v13RealLinearSequentialPrefixTranscriptVectorOf_rows]
+      using hinitRows
+  have hrowsTranscript :
+      v13RealLinearRowsTranscript activeIdx₀.1.rows public₀ =
+        v13RealLinearRowsTranscript activeIdx₀.1.rows public₁ := by
+    have hprefixTranscript :=
+      v13RealLinearRowsTranscript_eq_of_sequentialPrefixTranscript_eq
+        observer public₀ public₁ (t : Nat) hprefixList
+    rw [hprefixRows₀] at hprefixTranscript
+    exact hprefixTranscript
+  have htranscript₀ :
+      v13RealLinearRowsTranscript activeIdx₀.1.rows public₀ =
+        activeIdx₀.1.transcript := by
+    simpa [witness₀, public₀] using witness₀.property.2.2.2
+  have htranscript₁ :
+      v13RealLinearRowsTranscript activeIdx₁.1.rows public₁ =
+        activeIdx₁.1.transcript := by
+    simpa [witness₁, public₁] using witness₁.property.2.2.2
+  apply Subtype.ext
+  cases activeIdx₀ with
+  | mk idx₀ hactive₀ =>
+      cases activeIdx₁ with
+      | mk idx₁ hactive₁ =>
+          dsimp at hA hrows hrow htranscript₀ htranscript₁ hrowsTranscript ⊢
+          cases idx₀ with
+          | mk A₀ rows₀ row₀ hit₀ transcript₀ =>
+              cases idx₁ with
+              | mk A₁ rows₁ row₁ hit₁ transcript₁ =>
+                  dsimp at hA hrows hrow htranscript₀ htranscript₁ hrowsTranscript ⊢
+                  subst A₁
+                  subst rows₁
+                  subst row₁
+                  have htranscript :
+                      transcript₀ = transcript₁ := by
+                    calc
+                      transcript₀ =
+                          v13RealLinearRowsTranscript rows₀ public₀ :=
+                        htranscript₀.symm
+                      _ = v13RealLinearRowsTranscript rows₀ public₁ :=
+                        hrowsTranscript
+                      _ = transcript₁ := htranscript₁
+                  clear hpref hinitVec hprefixList hprefixRows₀
+                  clear hrowsTranscript htranscript₀ htranscript₁
+                  clear witness₀ witness₁ public₀ public₁ hactive₀ hactive₁
+                  subst transcript₁
+                  have hhit : hit₀ = hit₁ := Subsingleton.elim _ _
+                  subst hit₁
+                  rfl
+
+theorem
     v13RealLinearNoTargetSequentialTraceFirstCosetHitActiveFixedMapTranscriptCylinder_generatedPrefix_eq_of_sameMap_rhs
     {m q : Nat} (i₀ : Fin m)
     (observer : V13RealLinearSequentialRowObserver m q) (t : Fin q)
@@ -4608,6 +4851,74 @@ theorem
             i₀ observer t A)
     _ = 2 ^ ((t : Nat) + 1) :=
         v13RealLinearSequentialPrefixRhsHistory_card ((t : Nat) + 1)
+
+abbrev
+    V13RealLinearNoTargetSequentialTraceFirstCosetHitActiveFixedMapTranscriptCylinderIndexForMap
+    {m q : Nat} (i₀ : Fin m)
+    (observer : V13RealLinearSequentialRowObserver m q) (t : Fin q)
+    (A : V13RealLinearNoTargetRowsMap m i₀) :=
+  {activeIdx :
+      V13RealLinearNoTargetSequentialTraceFirstCosetHitActiveFixedMapTranscriptCylinderIndex
+        i₀ observer t //
+    activeIdx.1.A = A}
+
+noncomputable instance
+    {m q : Nat} (i₀ : Fin m)
+    (observer : V13RealLinearSequentialRowObserver m q) (t : Fin q)
+    (A : V13RealLinearNoTargetRowsMap m i₀) :
+    Fintype
+      (V13RealLinearNoTargetSequentialTraceFirstCosetHitActiveFixedMapTranscriptCylinderIndexForMap
+        i₀ observer t A) := by
+  classical
+  unfold
+    V13RealLinearNoTargetSequentialTraceFirstCosetHitActiveFixedMapTranscriptCylinderIndexForMap
+  infer_instance
+
+noncomputable def
+    v13RealLinearNoTargetSequentialTraceFirstCosetHitActiveFixedMapTranscriptCylinderIndexForMapToGeneratedPrefixForMap
+    {m q : Nat} (i₀ : Fin m)
+    (observer : V13RealLinearSequentialRowObserver m q) (t : Fin q)
+    (A : V13RealLinearNoTargetRowsMap m i₀) :
+    V13RealLinearNoTargetSequentialTraceFirstCosetHitActiveFixedMapTranscriptCylinderIndexForMap
+        i₀ observer t A ↪
+      V13RealLinearNoTargetSequentialTraceFirstCosetHitActiveGeneratedPrefixForMap
+        i₀ observer t A where
+  toFun activeIdx :=
+    ⟨v13RealLinearNoTargetSequentialTraceFirstCosetHitActiveFixedMapTranscriptCylinder_generatedPrefix
+        i₀ observer t activeIdx.val,
+      ⟨activeIdx.val, activeIdx.property, rfl⟩⟩
+  inj' := by
+    intro activeIdx₀ activeIdx₁ hpref
+    apply Subtype.ext
+    exact
+      v13RealLinearNoTargetSequentialTraceFirstCosetHitActiveFixedMapTranscriptCylinderIndex_eq_of_sameMap_generatedPrefix
+        i₀ observer t activeIdx₀.val activeIdx₁.val
+        (activeIdx₀.property.trans activeIdx₁.property.symm)
+        (congrArg Subtype.val hpref)
+
+theorem
+    v13RealLinearNoTargetSequentialTraceFirstCosetHitActiveFixedMapTranscriptCylinderIndexForMap_card_le_rhsHistory
+    {m q : Nat} (i₀ : Fin m)
+    (observer : V13RealLinearSequentialRowObserver m q) (t : Fin q)
+    (A : V13RealLinearNoTargetRowsMap m i₀) :
+    Fintype.card
+        (V13RealLinearNoTargetSequentialTraceFirstCosetHitActiveFixedMapTranscriptCylinderIndexForMap
+          i₀ observer t A) ≤
+      2 ^ ((t : Nat) + 1) := by
+  classical
+  calc
+    Fintype.card
+        (V13RealLinearNoTargetSequentialTraceFirstCosetHitActiveFixedMapTranscriptCylinderIndexForMap
+          i₀ observer t A) ≤
+      Fintype.card
+        (V13RealLinearNoTargetSequentialTraceFirstCosetHitActiveGeneratedPrefixForMap
+          i₀ observer t A) :=
+        Fintype.card_le_of_embedding
+          (v13RealLinearNoTargetSequentialTraceFirstCosetHitActiveFixedMapTranscriptCylinderIndexForMapToGeneratedPrefixForMap
+            i₀ observer t A)
+    _ ≤ 2 ^ ((t : Nat) + 1) :=
+        v13RealLinearNoTargetSequentialTraceFirstCosetHitActiveGeneratedPrefixForMap_card_le_rhsHistory
+          i₀ observer t A
 
 noncomputable def
     v13RealLinearNoTargetSequentialTraceFirstCosetHitActiveFixedMapTranscriptCylinder_generatedTranscript
