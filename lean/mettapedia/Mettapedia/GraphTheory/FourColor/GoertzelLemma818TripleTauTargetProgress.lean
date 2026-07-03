@@ -2004,6 +2004,18 @@ theorem ttFiber32AppendedParentRowsProjectionFiniteSection_of_eq
   subst key
   exact ttFiber32AppendedParentRowsProjectionFiniteSection
 
+def ttFiber32AppendedParentRowsProjectionFiniteSectionCase :
+    AppendedParentRowsProjectionFiniteSectionCase :=
+  { word := ttFiber32FrontierWord
+    orient := GoertzelLemma818FrontierMode.TauOrient.tau
+    key := GoertzelLemma818CompositeCertificate.ttFiber32Key
+    lengthGtOne := ttFiber32FrontierWord_length_gt_one
+    prefixCertificate := ttFiber32FrontierWord_fibrationCertificate
+    keyMem := ttFiber32Key_mem_colorAssignments4
+    rows := fun root rest hfiber =>
+      ttFiber32AppendedParentRowsProjectionFiniteSection_of_eq
+        rfl rfl rfl root rest hfiber }
+
 def tttPartialTargetCertificateAudit : Bool :=
   tttMode09WitnessAudit
     && tttTargetProgressCountsAudit
