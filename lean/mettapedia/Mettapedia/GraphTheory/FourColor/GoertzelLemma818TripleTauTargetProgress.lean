@@ -3800,6 +3800,128 @@ theorem ttFiber32Key3TargetAppendRowSurfaceClosedOn :
   representativeTargetAppendParentRowsProjectionFiniteSectionClosedOn_of_target_append_cases
     ttFiber32Key3TargetAppendRowSurfaceCases_cover_on
 
+theorem appendedParentRowsProjectionFiniteSectionCase_baseDataStructural
+    (rowCase : AppendedParentRowsProjectionFiniteSectionCase) :
+    Nonempty
+      (Sigma (fun data :
+        ChainFiberAppendQuotientFibrationParentRowsBaseData
+          rowCase.word rowCase.orient rowCase.key =>
+        ChainFiberAppendQuotientFibrationParentRowsStructuralFields data)) := by
+  have hne : rowCase.word ≠ [] := by
+    intro hnil
+    have hlen := rowCase.lengthGtOne
+    rw [hnil] at hlen
+    simp at hlen
+  cases hfiber : concreteChainFiber rowCase.word rowCase.key with
+  | nil =>
+      rcases
+          concreteChainFiberAppendQuotientFibrationParentRowsConnectedLiftImageWitness_of_empty_prefix_fiber
+            (word := rowCase.word) (orient := rowCase.orient)
+            (key := rowCase.key) hne hfiber with
+        ⟨data, proj, hTotal, hImage⟩
+      exact ⟨⟨data,
+        ChainFiberAppendQuotientFibrationParentRowsStructuralFields.ofTotalConnectedAndLiftImage
+          proj hTotal hImage⟩⟩
+  | cons root rest =>
+      have hbody := rowCase.rows root rest hfiber
+      rcases hbody with ⟨hParentRows, hFiniteSection⟩
+      rcases hParentRows with ⟨totalDecidableEq, ⟨rowsCert⟩⟩
+      letI := totalDecidableEq
+      rcases hFiniteSection with ⟨proj, preimageRows, rowOf, hrow⟩
+      have hSurj :
+          ∀ b : ChainFiberPoint rowCase.word rowCase.key,
+            ∃ y : ChainFiberPoint (rowCase.word ++ [rowCase.orient])
+                rowCase.key,
+              proj y = b := by
+        intro b
+        exact ⟨preimageRows.get (rowOf b), hrow b⟩
+      rcases
+          concreteChainFiberAppendQuotientFibrationParentRowsConnectedLiftImageWitness_of_prefix_root_star_surjective
+            (word := rowCase.word) (orient := rowCase.orient)
+            (key := rowCase.key)
+            rowCase.prefixCertificate rowCase.keyMem hfiber
+            proj rowsCert.connected hSurj with
+        ⟨data, proj', hTotal, hImage⟩
+      exact ⟨⟨data,
+        ChainFiberAppendQuotientFibrationParentRowsStructuralFields.ofTotalConnectedAndLiftImage
+          proj' hTotal hImage⟩⟩
+
+theorem ttFiber32AppendParentRowsBaseDataStructural :
+    Nonempty
+      (Sigma (fun data :
+        ChainFiberAppendQuotientFibrationParentRowsBaseData
+          ttFiber32FrontierWord GoertzelLemma818FrontierMode.TauOrient.tau
+          GoertzelLemma818CompositeCertificate.ttFiber32Key =>
+        ChainFiberAppendQuotientFibrationParentRowsStructuralFields data)) := by
+  simpa [ttFiber32AppendedParentRowsProjectionFiniteSectionCase] using
+    appendedParentRowsProjectionFiniteSectionCase_baseDataStructural
+      ttFiber32AppendedParentRowsProjectionFiniteSectionCase
+
+theorem ttFiber3AppendParentRowsBaseDataStructural :
+    Nonempty
+      (Sigma (fun data :
+        ChainFiberAppendQuotientFibrationParentRowsBaseData
+          ttFiber3FrontierWord GoertzelLemma818FrontierMode.TauOrient.tau
+          GoertzelLemma818CompositeCertificate.ttFiber3Key =>
+        ChainFiberAppendQuotientFibrationParentRowsStructuralFields data)) := by
+  simpa [ttFiber3AppendedParentRowsProjectionFiniteSectionCase] using
+    appendedParentRowsProjectionFiniteSectionCase_baseDataStructural
+      ttFiber3AppendedParentRowsProjectionFiniteSectionCase
+
+def ttFiber32Key3AppendParentRowsBaseDataStructuralRemainderPin : Prop :=
+  ∀ (word : List GoertzelLemma818FrontierMode.TauOrient)
+    (orient : GoertzelLemma818FrontierMode.TauOrient),
+    1 < word.length →
+    Nonempty (ChainWordConcreteFibrationCertificate word) →
+      ∀ key : List LColor,
+        key ∈ colorAssignments4 →
+          ¬ ((word = ttFiber32FrontierWord ∧
+                orient = GoertzelLemma818FrontierMode.TauOrient.tau ∧
+                key = GoertzelLemma818CompositeCertificate.ttFiber32Key) ∨
+              (word = ttFiber3FrontierWord ∧
+                orient = GoertzelLemma818FrontierMode.TauOrient.tau ∧
+                key = GoertzelLemma818CompositeCertificate.ttFiber3Key)) →
+            Nonempty
+              (Sigma (fun data :
+                ChainFiberAppendQuotientFibrationParentRowsBaseData
+                  word orient key =>
+                ChainFiberAppendQuotientFibrationParentRowsStructuralFields
+                  data))
+
+theorem ttFiber32Key3AppendParentRowsBaseDataStructuralClosed_of_remainder_pin
+    (hRemainder :
+      ttFiber32Key3AppendParentRowsBaseDataStructuralRemainderPin) :
+    concreteChainFiberAppendQuotientFibrationParentRowsNonSingletonPrefixBaseDataStructuralClosed := by
+  intro word orient hlen hcert key hkey
+  by_cases hhandled :
+      (word = ttFiber32FrontierWord ∧
+          orient = GoertzelLemma818FrontierMode.TauOrient.tau ∧
+          key = GoertzelLemma818CompositeCertificate.ttFiber32Key) ∨
+        (word = ttFiber3FrontierWord ∧
+          orient = GoertzelLemma818FrontierMode.TauOrient.tau ∧
+          key = GoertzelLemma818CompositeCertificate.ttFiber3Key)
+  · rcases hhandled with h32 | h3
+    · rcases h32 with ⟨hword, horient, hkeyEq⟩
+      subst word
+      subst orient
+      subst key
+      exact ttFiber32AppendParentRowsBaseDataStructural
+    · rcases h3 with ⟨hword, horient, hkeyEq⟩
+      subst word
+      subst orient
+      subst key
+      exact ttFiber3AppendParentRowsBaseDataStructural
+  · exact hRemainder word orient hlen hcert key hkey hhandled
+
+theorem semanticFrontierStateSufficientForChain_of_ttFiber32Key3_append_parent_rows_remainder_pin
+    {targetAudit : RepresentativeSemanticTarget → Bool}
+    (hRemainder :
+      ttFiber32Key3AppendParentRowsBaseDataStructuralRemainderPin) :
+    semanticFrontierStateSufficientForChain targetAudit :=
+  semanticFrontierStateSufficientForChain_of_append_quotient_parent_rows_base_data_structural
+    (ttFiber32Key3AppendParentRowsBaseDataStructuralClosed_of_remainder_pin
+      hRemainder)
+
 def tttPartialTargetCertificateAudit : Bool :=
   tttMode09WitnessAudit
     && tttTargetProgressCountsAudit
