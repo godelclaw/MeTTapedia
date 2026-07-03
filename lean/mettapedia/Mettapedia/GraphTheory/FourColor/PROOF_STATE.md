@@ -334,6 +334,27 @@ and
 `acc4f0c5063805cccb6996560eb8df15c36b993e7221ed67fd9e16112e36b252`);
 the new direct field, concrete transfer, and non-target all-word wrappers
 depend on `propext`, `Classical.choice`, and `Quot.sound`.
+The explicit component-row checker now has a structural bridge to real Kempe
+steps.  In `GoertzelLemma818ComponentCertificate.lean`,
+`chainComponent_subset_certifiedComponent` proves that a closed certified
+component contains the real `chainComponent`, while
+`certifiedComponent_subset_chainComponent` proves the reverse containment when
+the supplied component is duplicate-free.  The theorem
+`chainCertifiedKempeStep_implies_single` then converts a certified component
+step into `chainSingleKempeStep`, assuming the move color pair is in
+`colorPairs` and the supplied component is `Nodup`.  This removes the need to
+compute `chainComponent` directly for generated rows, but row-field extraction
+and parent-row/root-closure packaging still remain before appended
+connectedness closes.  Focused target-progress build evidence is
+`fourcolor-certified-component-single-step-bridge-build-20260703.log`
+(1110 jobs, SHA256
+`533583471beb7370ab7616d30759ba326e1980aa620684f7175311666fcbac90`), and
+dependency-audit evidence is
+`fourcolor-certified-component-single-step-bridge-axioms-20260703.log`
+(SHA256
+`9409d135f97a12cb0694a4d79f5ab01902883937d3ab01ae24e2a57e2673c685`);
+the two containment theorems and `chainCertifiedKempeStep_implies_single`
+depend on `propext`, `Classical.choice`, and `Quot.sound`.
 The table-level diagnostic
 `tttFiber32Rows_length_eq_two_mul_ttFiber32Rows_length` records that the known
 `TT` obstruction key is the same generated fixed input as `TTT` light-fiber

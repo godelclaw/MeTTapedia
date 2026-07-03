@@ -307,6 +307,16 @@ finite-section data, with selector and surjectivity variants.  Thus the live
 generated-data obligations can be stated as appended connectedness plus either
 projection surjectivity or an explicit projection section; a separate appended
 parent-row table is no longer required when those two facts are available.
+The explicit component-row certificates now have a structural bridge into the
+real Kempe-step relation:
+`chainCertifiedKempeStep_implies_single` converts a certified component row to
+`chainSingleKempeStep` when the row's move color pair is valid and the supplied
+component is `Nodup`.  The proof factors through the two containment lemmas
+`chainComponent_subset_certifiedComponent` and
+`certifiedComponent_subset_chainComponent`, so generated rows no longer need to
+force `chainComponent` reduction.  The next connectedness pass should extract
+those row fields from generated parent-row audits and feed the resulting real
+single steps into root-closure membership.
 The theorem
 `tttFiber32Rows_length_eq_two_mul_ttFiber32Rows_length` records the table-level
 alignment for the known `TT` obstruction key: the same generated key appears in
