@@ -324,6 +324,35 @@ example {m q : Nat} (i₀ : Fin m)
 
 example {m q : Nat} (i₀ : Fin m)
     (observer : V13RealLinearSequentialRowObserver m q)
+    (hcapacity :
+      V13RealLinearNoTargetRowsSequentialTraceCosetHitActiveFixedMapTranscriptCylinderCapacityBound
+        i₀ observer) :
+    V13RealLinearNoTargetRowsSequentialTraceCosetHitFixedPrefixTranscriptPackingBound
+      i₀ observer :=
+  V13RealLinearNoTargetRowsSequentialTraceCosetHitFixedPrefixTranscriptPackingBound_of_activeFixedMapTranscriptCylinderCapacity
+    i₀ observer hcapacity
+
+example {m q : Nat} (i₀ : Fin m)
+    (observer : V13RealLinearSequentialRowObserver m q)
+    (hpack :
+      V13RealLinearNoTargetRowsSequentialTraceCosetHitFixedPrefixTranscriptPackingBound
+        i₀ observer) :
+    V13RealLinearNoTargetRowsSequentialTraceCosetHitActiveFixedMapTranscriptCylinderCapacityBound
+      i₀ observer :=
+  V13RealLinearNoTargetRowsSequentialTraceCosetHitActiveFixedMapTranscriptCylinderCapacityBound_of_fixedPrefixTranscriptPacking
+    i₀ observer hpack
+
+example {m q : Nat} (i₀ : Fin m)
+    (observer : V13RealLinearSequentialRowObserver m q) :
+    V13RealLinearNoTargetRowsSequentialTraceCosetHitActiveFixedMapTranscriptCylinderCapacityBound
+      i₀ observer ↔
+    V13RealLinearNoTargetRowsSequentialTraceCosetHitFixedPrefixTranscriptPackingBound
+      i₀ observer :=
+  V13RealLinearNoTargetRowsSequentialTraceCosetHitActiveFixedMapTranscriptCylinderCapacityBound_iff_fixedPrefixTranscriptPacking
+    i₀ observer
+
+example {m q : Nat} (i₀ : Fin m)
+    (observer : V13RealLinearSequentialRowObserver m q)
     (hpack :
       V13RealLinearNoTargetRowsSequentialTraceCosetHitFixedPrefixTranscriptPackingBound
         i₀ observer) :
@@ -331,6 +360,16 @@ example {m q : Nat} (i₀ : Fin m)
       i₀ observer :=
   V13RealLinearNoTargetRowsSequentialTraceCosetHitCountingBound_of_fixedPrefixTranscriptPacking
     i₀ observer hpack
+
+example {m q : Nat} (i₀ : Fin m)
+    (observer : V13RealLinearSequentialRowObserver m q)
+    (hcapacity :
+      V13RealLinearNoTargetRowsSequentialTraceCosetHitActiveFixedMapTranscriptCylinderCapacityBound
+        i₀ observer) :
+    V13RealLinearNoTargetRowsSequentialTraceCosetHitCountingBound
+      i₀ observer :=
+  V13RealLinearNoTargetRowsSequentialTraceCosetHitCountingBound_of_activeFixedMapTranscriptCylinderCapacity
+    i₀ observer hcapacity
 
 example {m q : Nat} (i₀ : Fin m)
     (observer : V13RealLinearSequentialRowObserver m q) (t : Fin q) :
