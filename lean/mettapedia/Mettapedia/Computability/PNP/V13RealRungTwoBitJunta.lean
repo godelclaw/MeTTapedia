@@ -458,6 +458,36 @@ theorem
       exact hrowNotTarget hrowTarget
   simp [hcard]
 
+theorem
+    v13RealLinearNoTargetRows_not_rowsGenerateTarget_of_rows_card_le_one
+    {m : Nat} (i₀ : Fin m) (A : V13RealLinearNoTargetRowsMap m i₀)
+    {rows : Finset (Fin m)} (hrows : rows.card ≤ 1) :
+    ¬ V13RealLinearRowsGenerateTarget A.val rows i₀ := by
+  classical
+  intro hgen
+  rcases Nat.eq_zero_or_pos rows.card with hzero | hpos
+  · exact
+      v13RealLinear_not_rowsGenerateTarget_of_rows_card_zero
+        A.val i₀ hzero hgen
+  · have hone : rows.card = 1 := le_antisymm hrows (Nat.succ_le_of_lt hpos)
+    rcases Finset.card_eq_one.mp hone with ⟨row, hrowsEq⟩
+    have hgenSingleton :
+        V13RealLinearRowsGenerateTarget A.val
+          ({row} : Finset (Fin m)) i₀ := by
+      simpa [hrowsEq] using hgen
+    have htarget :
+        ∀ w : F2Vec m, A.val.toEquiv w row = w i₀ :=
+      (v13RealLinear_rowsGenerateTarget_singleton_iff
+        A.val row i₀).1 hgenSingleton
+    have hrowTarget :
+        row ∈ V13RealLinearTargetRows A.val i₀ :=
+      (v13RealLinear_mem_targetRows_iff A.val i₀ row).2 htarget
+    have hrowNotTarget :
+        row ∉ V13RealLinearTargetRows A.val i₀ := by
+      rw [A.property]
+      simp
+    exact hrowNotTarget hrowTarget
+
 /-- The nonzero coefficients of a row-combination, recorded in the rowset
 subtype so no extra row-membership transport is needed. -/
 noncomputable def v13RealLinearRowCombinationSupport {m : Nat}
@@ -3197,6 +3227,73 @@ theorem
       i₀ observer t activeIdx
   rw [Finset.card_insert_of_notMem hrow]
   omega
+
+theorem
+    v13RealLinearNoTargetSequentialTraceFirstCosetHitActiveFixedMapTranscriptCylinder_existing_rows_card_two_le
+    {m q : Nat} (i₀ : Fin m)
+    (observer : V13RealLinearSequentialRowObserver m q) (t : Fin q)
+    (activeIdx :
+      V13RealLinearNoTargetSequentialTraceFirstCosetHitActiveFixedMapTranscriptCylinderIndex
+        i₀ observer t)
+    (hrow : activeIdx.1.row ∈ activeIdx.1.rows) :
+    2 ≤ activeIdx.1.rows.card := by
+  have hgen :=
+    v13RealLinearNoTargetSequentialTraceFirstCosetHitActiveFixedMapTranscriptCylinder_existing_rowsGenerateTarget
+      i₀ observer t activeIdx hrow
+  have hnotOne :
+      ¬ activeIdx.1.rows.card ≤ 1 := by
+    intro hle
+    exact
+      (v13RealLinearNoTargetRows_not_rowsGenerateTarget_of_rows_card_le_one
+        i₀ activeIdx.1.A hle) hgen
+  omega
+
+theorem
+    v13RealLinearNoTargetSequentialTraceFirstCosetHitActiveFixedMapTranscriptCylinder_insert_rows_card_two_le
+    {m q : Nat} (i₀ : Fin m)
+    (observer : V13RealLinearSequentialRowObserver m q) (t : Fin q)
+    (activeIdx :
+      V13RealLinearNoTargetSequentialTraceFirstCosetHitActiveFixedMapTranscriptCylinderIndex
+        i₀ observer t) :
+    2 ≤ (insert activeIdx.1.row activeIdx.1.rows).card := by
+  classical
+  by_cases hrow : activeIdx.1.row ∈ activeIdx.1.rows
+  · rw [Finset.insert_eq_of_mem hrow]
+    exact
+      v13RealLinearNoTargetSequentialTraceFirstCosetHitActiveFixedMapTranscriptCylinder_existing_rows_card_two_le
+        i₀ observer t activeIdx hrow
+  · exact
+      v13RealLinearNoTargetSequentialTraceFirstCosetHitActiveFixedMapTranscriptCylinder_fresh_insert_rows_card_two_le
+        i₀ observer t activeIdx hrow
+
+theorem
+    v13RealLinearNoTargetSequentialTraceFirstCosetHitActiveFixedMapTranscriptCylinder_capacity_le_two_mul_insert_capacity
+    {m q : Nat} (i₀ : Fin m)
+    (observer : V13RealLinearSequentialRowObserver m q) (t : Fin q)
+    (activeIdx :
+      V13RealLinearNoTargetSequentialTraceFirstCosetHitActiveFixedMapTranscriptCylinderIndex
+        i₀ observer t) :
+    2 ^ (m - activeIdx.1.rows.card) ≤
+      2 * 2 ^ (m - (insert activeIdx.1.row activeIdx.1.rows).card) := by
+  classical
+  by_cases hrow : activeIdx.1.row ∈ activeIdx.1.rows
+  · rw [Finset.insert_eq_of_mem hrow]
+    nlinarith [show 0 < 2 ^ (m - activeIdx.1.rows.card) by positivity]
+  · have hcardLe :
+        (insert activeIdx.1.row activeIdx.1.rows).card ≤ m := by
+      have hcardLeUniv :
+          (insert activeIdx.1.row activeIdx.1.rows : Finset (Fin m)).card ≤
+            Fintype.card (Fin m) :=
+        Finset.card_le_univ _
+      simpa using hcardLeUniv
+    have hsuccLe : activeIdx.1.rows.card + 1 ≤ m := by
+      simpa [Finset.card_insert_of_notMem hrow] using hcardLe
+    have hsub :
+        m - activeIdx.1.rows.card =
+          (m - (activeIdx.1.rows.card + 1)) + 1 := by
+      omega
+    rw [Finset.card_insert_of_notMem hrow, hsub, pow_succ]
+    rw [Nat.mul_comm (2 ^ (m - (activeIdx.1.rows.card + 1))) 2]
 
 theorem
     v13RealLinearNoTargetSequentialTraceFirstCosetHitFixedMapTranscriptCylinder_sum_card_eq_active_capacity

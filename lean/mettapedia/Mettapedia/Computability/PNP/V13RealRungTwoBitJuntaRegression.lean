@@ -97,6 +97,13 @@ example (m j : Nat) :
 
 example {m : Nat} {rows : Finset (Fin m)} (i₀ : Fin m)
     (A : V13RealLinearNoTargetRowsMap m i₀)
+    (hrows : rows.card ≤ 1) :
+    ¬ V13RealLinearRowsGenerateTarget A.val rows i₀ :=
+  v13RealLinearNoTargetRows_not_rowsGenerateTarget_of_rows_card_le_one
+    i₀ A hrows
+
+example {m : Nat} {rows : Finset (Fin m)} (i₀ : Fin m)
+    (A : V13RealLinearNoTargetRowsMap m i₀)
     (coeff : V13RealLinearRowsTargetCoefficient A.val rows i₀) :
     2 ≤ (v13RealLinearRowCombinationSupport coeff.val).card :=
   v13RealLinearNoTargetRowsTargetCoefficient_support_card_two_le
@@ -695,6 +702,35 @@ example {m q : Nat} (i₀ : Fin m)
     2 ≤ (insert activeIdx.1.row activeIdx.1.rows).card :=
   v13RealLinearNoTargetSequentialTraceFirstCosetHitActiveFixedMapTranscriptCylinder_fresh_insert_rows_card_two_le
     i₀ observer t activeIdx hrow
+
+example {m q : Nat} (i₀ : Fin m)
+    (observer : V13RealLinearSequentialRowObserver m q) (t : Fin q)
+    (activeIdx :
+      V13RealLinearNoTargetSequentialTraceFirstCosetHitActiveFixedMapTranscriptCylinderIndex
+        i₀ observer t)
+    (hrow : activeIdx.1.row ∈ activeIdx.1.rows) :
+    2 ≤ activeIdx.1.rows.card :=
+  v13RealLinearNoTargetSequentialTraceFirstCosetHitActiveFixedMapTranscriptCylinder_existing_rows_card_two_le
+    i₀ observer t activeIdx hrow
+
+example {m q : Nat} (i₀ : Fin m)
+    (observer : V13RealLinearSequentialRowObserver m q) (t : Fin q)
+    (activeIdx :
+      V13RealLinearNoTargetSequentialTraceFirstCosetHitActiveFixedMapTranscriptCylinderIndex
+        i₀ observer t) :
+    2 ≤ (insert activeIdx.1.row activeIdx.1.rows).card :=
+  v13RealLinearNoTargetSequentialTraceFirstCosetHitActiveFixedMapTranscriptCylinder_insert_rows_card_two_le
+    i₀ observer t activeIdx
+
+example {m q : Nat} (i₀ : Fin m)
+    (observer : V13RealLinearSequentialRowObserver m q) (t : Fin q)
+    (activeIdx :
+      V13RealLinearNoTargetSequentialTraceFirstCosetHitActiveFixedMapTranscriptCylinderIndex
+        i₀ observer t) :
+    2 ^ (m - activeIdx.1.rows.card) ≤
+      2 * 2 ^ (m - (insert activeIdx.1.row activeIdx.1.rows).card) :=
+  v13RealLinearNoTargetSequentialTraceFirstCosetHitActiveFixedMapTranscriptCylinder_capacity_le_two_mul_insert_capacity
+    i₀ observer t activeIdx
 
 example {m q : Nat} (i₀ : Fin m)
     (observer : V13RealLinearSequentialRowObserver m q) (t : Fin q) :
