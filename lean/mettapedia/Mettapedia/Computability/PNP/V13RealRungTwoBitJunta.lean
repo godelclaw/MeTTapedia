@@ -1640,6 +1640,376 @@ theorem
     _ = 4 * (S * Z) := by ring
     _ ≤ 4 * N := Nat.mul_le_mul_left 4 hSZ
 
+def v13RealLinearInsertRowsEmbedding {m : Nat}
+    (rows : Finset (Fin m)) (row : Fin m) :
+    {r : Fin m // r ∈ rows} ↪
+      {r : Fin m // r ∈ insert row rows} where
+  toFun r := ⟨r.1, Finset.mem_insert_of_mem r.2⟩
+  inj' := by
+    intro r₀ r₁ h
+    exact Subtype.ext
+      (congrArg
+        (fun r : {r : Fin m // r ∈ insert row rows} => r.1) h)
+
+noncomputable def v13RealLinearFreshFullSupport {m : Nat}
+    (rows : Finset (Fin m)) (row : Fin m)
+    (support : Finset {r : Fin m // r ∈ rows}) :
+    Finset {r : Fin m // r ∈ insert row rows} :=
+  insert ⟨row, Finset.mem_insert_self row rows⟩
+    (support.map (v13RealLinearInsertRowsEmbedding rows row))
+
+theorem v13RealLinearFreshFullSupport_card
+    {m : Nat} {rows : Finset (Fin m)} {row : Fin m}
+    (hrow : row ∉ rows) (support : Finset {r : Fin m // r ∈ rows}) :
+    (v13RealLinearFreshFullSupport rows row support).card =
+      support.card + 1 := by
+  classical
+  let newRow : {r : Fin m // r ∈ insert row rows} :=
+    ⟨row, Finset.mem_insert_self row rows⟩
+  let emb := v13RealLinearInsertRowsEmbedding rows row
+  have hnewNot : newRow ∉ support.map emb := by
+    intro hmem
+    rcases (Finset.mem_map.mp hmem) with ⟨oldRow, _hold, hEq⟩
+    have hval : oldRow.1 = row := by
+      simpa [newRow, emb, v13RealLinearInsertRowsEmbedding] using
+        congrArg
+          (fun r : {r : Fin m // r ∈ insert row rows} => r.1) hEq
+    exact hrow (by simpa [hval] using oldRow.2)
+  simp [v13RealLinearFreshFullSupport, newRow, emb, hnewNot]
+
+theorem v13RealLinearFreshFullSupport_sum
+    {m : Nat} {rows : Finset (Fin m)} {row : Fin m}
+    (A : V13F2LinearEquiv m) (hrow : row ∉ rows)
+    (support : Finset {r : Fin m // r ∈ rows}) (w : F2Vec m) :
+    (v13RealLinearFreshFullSupport rows row support).sum
+        (fun r => A.toEquiv w r.1) =
+      A.toEquiv w row +
+        support.sum (fun r => A.toEquiv w r.1) := by
+  classical
+  let newRow : {r : Fin m // r ∈ insert row rows} :=
+    ⟨row, Finset.mem_insert_self row rows⟩
+  let emb := v13RealLinearInsertRowsEmbedding rows row
+  have hnewNot : newRow ∉ support.map emb := by
+    intro hmem
+    rcases (Finset.mem_map.mp hmem) with ⟨oldRow, _hold, hEq⟩
+    have hval : oldRow.1 = row := by
+      simpa [newRow, emb, v13RealLinearInsertRowsEmbedding] using
+        congrArg
+          (fun r : {r : Fin m // r ∈ insert row rows} => r.1) hEq
+    exact hrow (by simpa [hval] using oldRow.2)
+  rw [v13RealLinearFreshFullSupport, Finset.sum_insert hnewNot]
+  simp [newRow, emb, v13RealLinearInsertRowsEmbedding]
+
+theorem
+    v13RealLinearNoTargetRows_freshRowFunctionalTargetCosetHit_exists_support_sum
+    {m : Nat} {i₀ : Fin m} {rows : Finset (Fin m)} {row : Fin m}
+    (A : V13RealLinearNoTargetRowsMap m i₀) (hrow : row ∉ rows)
+    (hhit :
+      V13RealLinearRowFunctionalTargetCosetHit A.val rows i₀ row) :
+    ∃ support : Finset {r : Fin m // r ∈ rows},
+      0 < support.card ∧
+        ∀ w : F2Vec m,
+          (v13RealLinearFreshFullSupport rows row support).sum
+              (fun r => A.val.toEquiv w r.1) =
+            w i₀ := by
+  classical
+  rcases hhit with ⟨z, hz, htarget⟩
+  rcases
+      (Submodule.mem_span_range_iff_exists_fun (R := ZMod 2)).1
+        (by simpa [V13RealLinearRowsFunctionalSpan] using hz) with
+    ⟨coeff, hcoeff⟩
+  let support := v13RealLinearRowCombinationSupport coeff
+  have hcoeffOne :
+      ∀ r : {r : Fin m // r ∈ rows},
+        r ∈ support → coeff r = 1 := by
+    intro r hr
+    exact
+      v13_zmod2_eq_one_of_ne_zero _
+        ((v13RealLinearRowCombinationSupport_mem coeff r).1
+          (by simpa [support] using hr))
+  have hcoeffZero :
+      ∀ r : {r : Fin m // r ∈ rows},
+        r ∉ support → coeff r = 0 := by
+    intro r hr
+    by_contra hne
+    exact hr
+      (by
+        simpa [support] using
+          (v13RealLinearRowCombinationSupport_mem coeff r).2 hne)
+  have hz_eval :
+      ∀ w : F2Vec m,
+        z w = support.sum (fun r => A.val.toEquiv w r.1) := by
+    intro w
+    have hpoint := LinearMap.congr_fun hcoeff w
+    let term : {r : Fin m // r ∈ rows} → ZMod 2 :=
+      fun r => coeff r * A.val.toEquiv w r.1
+    have hsumSupport :
+        (∑ r : {r : Fin m // r ∈ rows},
+          (coeff r • v13RealLinearRowFunctional A.val r.1) w) =
+          support.sum term := by
+      symm
+      refine Finset.sum_subset (by intro r _hr; simp) ?_
+      intro r _hr hnot
+      simp [hcoeffZero r hnot]
+    have hsupportTerm :
+        support.sum (fun r => A.val.toEquiv w r.1) =
+          support.sum term := by
+      apply Finset.sum_congr rfl
+      intro r hr
+      simp [term, hcoeffOne r hr]
+    calc
+      z w =
+          (∑ r : {r : Fin m // r ∈ rows},
+            (coeff r • v13RealLinearRowFunctional A.val r.1) w) := by
+            simpa using hpoint.symm
+      _ = support.sum term := hsumSupport
+      _ = support.sum (fun r => A.val.toEquiv w r.1) := hsupportTerm.symm
+  have hsupportPos : 0 < support.card := by
+    by_contra hnot
+    have hsupportEmpty : support = ∅ := by
+      exact Finset.card_eq_zero.mp (Nat.eq_zero_of_not_pos hnot)
+    have hzZero : z = 0 := by
+      apply LinearMap.ext
+      intro w
+      rw [hz_eval w, hsupportEmpty]
+      simp
+    have htargetRow :
+        row ∈ V13RealLinearTargetRows A.val i₀ := by
+      rw [v13RealLinear_mem_targetRows_iff]
+      intro w
+      have hpoint := LinearMap.congr_fun htarget w
+      simpa [v13RealLinearTargetFunctional, v13RealLinearRowFunctional,
+        hzZero] using hpoint.symm
+    have hrowNotTarget :
+        row ∉ V13RealLinearTargetRows A.val i₀ := by
+      rw [A.property]
+      simp
+    exact hrowNotTarget htargetRow
+  refine ⟨support, hsupportPos, ?_⟩
+  intro w
+  have hpoint := LinearMap.congr_fun htarget w
+  calc
+    (v13RealLinearFreshFullSupport rows row support).sum
+        (fun r => A.val.toEquiv w r.1) =
+        A.val.toEquiv w row +
+          support.sum (fun r => A.val.toEquiv w r.1) :=
+      v13RealLinearFreshFullSupport_sum A.val hrow support w
+    _ = A.val.toEquiv w row + z w := by rw [hz_eval w]
+    _ = w i₀ := by
+      simpa [v13RealLinearTargetFunctional, v13RealLinearRowFunctional]
+        using hpoint.symm
+
+abbrev V13RealLinearNoTargetFreshRowCosetHitSupportSigma
+    {m : Nat} (i₀ : Fin m) (rows : Finset (Fin m)) (row : Fin m) :=
+  Σ support :
+      {support : Finset {r : Fin m // r ∈ rows} //
+        0 < support.card},
+    V13RealLinearNoTargetFixedSupportSumTargetMapSet i₀
+      (v13RealLinearFreshFullSupport rows row support.val)
+
+noncomputable instance {m : Nat} (i₀ : Fin m)
+    (rows : Finset (Fin m)) (row : Fin m) :
+    Fintype
+      (V13RealLinearNoTargetFreshRowCosetHitSupportSigma
+        i₀ rows row) := by
+  classical
+  unfold V13RealLinearNoTargetFreshRowCosetHitSupportSigma
+  infer_instance
+
+noncomputable def
+    v13RealLinearNoTargetFreshRowCosetHitEmbeddingSupportSigma
+    {m : Nat} (i₀ : Fin m) (rows : Finset (Fin m)) (row : Fin m)
+    (hrow : row ∉ rows) :
+    {A : V13RealLinearNoTargetRowsMap m i₀ //
+      V13RealLinearRowFunctionalTargetCosetHit A.val rows i₀ row} ↪
+      V13RealLinearNoTargetFreshRowCosetHitSupportSigma
+        i₀ rows row where
+  toFun A := by
+    classical
+    let ex :=
+      v13RealLinearNoTargetRows_freshRowFunctionalTargetCosetHit_exists_support_sum
+        A.val hrow A.property
+    let support := Classical.choose ex
+    let spec := Classical.choose_spec ex
+    exact ⟨⟨support, spec.1⟩, ⟨A.val, spec.2⟩⟩
+  inj' := by
+    intro A₀ A₁ h
+    apply Subtype.ext
+    exact
+      congrArg
+        (fun data :
+          V13RealLinearNoTargetFreshRowCosetHitSupportSigma
+            i₀ rows row =>
+          data.2.val)
+        h
+
+noncomputable instance {m : Nat} (i₀ : Fin m)
+    (rows : Finset (Fin m)) (row : Fin m) :
+    Fintype
+      {A : V13RealLinearNoTargetRowsMap m i₀ //
+        V13RealLinearRowFunctionalTargetCosetHit A.val rows i₀ row} := by
+  classical
+  infer_instance
+
+theorem
+    v13RealLinearNoTargetFreshRowCosetHitSupportSigma_card_mul_two_pow_le
+    {m : Nat} (i₀ : Fin m) (rows : Finset (Fin m)) (row : Fin m)
+    (hrow : row ∉ rows) :
+    Fintype.card
+        (V13RealLinearNoTargetFreshRowCosetHitSupportSigma i₀ rows row) *
+      2 ^ m ≤
+    4 * 2 ^ rows.card *
+      Fintype.card (V13RealLinearNoTargetRowsMap m i₀) := by
+  classical
+  let N := Fintype.card (V13RealLinearNoTargetRowsMap m i₀)
+  let M := 2 ^ m
+  have hSupportLe :
+      Fintype.card
+          {support : Finset {r : Fin m // r ∈ rows} //
+            0 < support.card} ≤
+        2 ^ rows.card := by
+    calc
+      Fintype.card
+          {support : Finset {r : Fin m // r ∈ rows} //
+            0 < support.card} ≤
+          Fintype.card (Finset {r : Fin m // r ∈ rows}) := by
+        exact Fintype.card_subtype_le
+          (fun support : Finset {r : Fin m // r ∈ rows} =>
+            0 < support.card)
+      _ = 2 ^ Fintype.card {r : Fin m // r ∈ rows} :=
+        Fintype.card_finset
+      _ = 2 ^ rows.card := by simp
+  have hterm :
+      ∀ support :
+          {support : Finset {r : Fin m // r ∈ rows} //
+            0 < support.card},
+        Fintype.card
+            (V13RealLinearNoTargetFixedSupportSumTargetMapSet i₀
+              (v13RealLinearFreshFullSupport rows row support.val)) *
+          M ≤ 4 * N := by
+    intro support
+    have htwo :
+        2 ≤ (v13RealLinearFreshFullSupport rows row support.val).card := by
+      rw [v13RealLinearFreshFullSupport_card hrow support.val]
+      omega
+    simpa [M, N] using
+      v13RealLinearNoTargetFixedSupportSumTargetMapSet_card_mul_two_pow_le_noTarget
+        i₀ (v13RealLinearFreshFullSupport rows row support.val) htwo
+  change
+    Fintype.card
+        ((support :
+            {support : Finset {r : Fin m // r ∈ rows} //
+              0 < support.card}) ×
+          V13RealLinearNoTargetFixedSupportSumTargetMapSet i₀
+            (v13RealLinearFreshFullSupport rows row support.val)) *
+      M ≤ 4 * 2 ^ rows.card * N
+  have hcardSigma :
+      Fintype.card
+          ((support :
+              {support : Finset {r : Fin m // r ∈ rows} //
+                0 < support.card}) ×
+            V13RealLinearNoTargetFixedSupportSumTargetMapSet i₀
+              (v13RealLinearFreshFullSupport rows row support.val)) =
+        ∑ support :
+            {support : Finset {r : Fin m // r ∈ rows} //
+              0 < support.card},
+          Fintype.card
+            (V13RealLinearNoTargetFixedSupportSumTargetMapSet i₀
+              (v13RealLinearFreshFullSupport rows row support.val)) := by
+    let sigmaFinset :
+        Finset
+          ((support :
+              {support : Finset {r : Fin m // r ∈ rows} //
+                0 < support.card}) ×
+            V13RealLinearNoTargetFixedSupportSumTargetMapSet i₀
+              (v13RealLinearFreshFullSupport rows row support.val)) :=
+      Finset.univ.sigma
+        (fun support :
+            {support : Finset {r : Fin m // r ∈ rows} //
+              0 < support.card} =>
+          (Finset.univ :
+            Finset
+              (V13RealLinearNoTargetFixedSupportSumTargetMapSet i₀
+                (v13RealLinearFreshFullSupport rows row support.val))))
+    have hcard :
+        Fintype.card
+            ((support :
+                {support : Finset {r : Fin m // r ∈ rows} //
+                  0 < support.card}) ×
+              V13RealLinearNoTargetFixedSupportSumTargetMapSet i₀
+                (v13RealLinearFreshFullSupport rows row support.val)) =
+          sigmaFinset.card := by
+      have hsigUniv : sigmaFinset = Finset.univ := by
+        dsimp [sigmaFinset]
+        exact Finset.univ_sigma_univ
+      rw [← Finset.card_univ, ← hsigUniv]
+    have hsigma :
+        sigmaFinset.card =
+          ∑ support :
+              {support : Finset {r : Fin m // r ∈ rows} //
+                0 < support.card},
+            Fintype.card
+              (V13RealLinearNoTargetFixedSupportSumTargetMapSet i₀
+                (v13RealLinearFreshFullSupport rows row support.val)) := by
+      simp [sigmaFinset]
+    exact hcard.trans hsigma
+  rw [hcardSigma]
+  rw [Finset.sum_mul]
+  calc
+    (∑ support :
+        {support : Finset {r : Fin m // r ∈ rows} //
+          0 < support.card},
+        Fintype.card
+            (V13RealLinearNoTargetFixedSupportSumTargetMapSet i₀
+              (v13RealLinearFreshFullSupport rows row support.val)) *
+          M) ≤
+        ∑ _support :
+            {support : Finset {r : Fin m // r ∈ rows} //
+              0 < support.card}, 4 * N := by
+          apply Finset.sum_le_sum
+          intro support _hsupport
+          exact hterm support
+    _ =
+        Fintype.card
+          {support : Finset {r : Fin m // r ∈ rows} //
+            0 < support.card} *
+          (4 * N) := by
+      rw [Finset.sum_const]
+      simp
+    _ ≤ 2 ^ rows.card * (4 * N) := by
+      exact Nat.mul_le_mul_right (4 * N) hSupportLe
+    _ = 4 * 2 ^ rows.card * N := by ring
+
+theorem
+    v13RealLinearNoTargetFreshRowCosetHitMapSet_card_mul_two_pow_le
+    {m : Nat} (i₀ : Fin m) (rows : Finset (Fin m)) (row : Fin m)
+    (hrow : row ∉ rows) :
+    Fintype.card
+        {A : V13RealLinearNoTargetRowsMap m i₀ //
+          V13RealLinearRowFunctionalTargetCosetHit A.val rows i₀ row} *
+      2 ^ m ≤
+    4 * 2 ^ rows.card *
+      Fintype.card (V13RealLinearNoTargetRowsMap m i₀) := by
+  classical
+  let S :=
+    {A : V13RealLinearNoTargetRowsMap m i₀ //
+      V13RealLinearRowFunctionalTargetCosetHit A.val rows i₀ row}
+  let W := V13RealLinearNoTargetFreshRowCosetHitSupportSigma i₀ rows row
+  let N := Fintype.card (V13RealLinearNoTargetRowsMap m i₀)
+  let M := 2 ^ m
+  have hS : Fintype.card S ≤ Fintype.card W :=
+    Fintype.card_le_of_embedding
+      (v13RealLinearNoTargetFreshRowCosetHitEmbeddingSupportSigma
+        i₀ rows row hrow)
+  have hW : Fintype.card W * M ≤ 4 * 2 ^ rows.card * N := by
+    simpa [W, M, N] using
+      v13RealLinearNoTargetFreshRowCosetHitSupportSigma_card_mul_two_pow_le
+        i₀ rows row hrow
+  calc
+    Fintype.card S * M ≤ Fintype.card W * M :=
+      Nat.mul_le_mul_right M hS
+    _ ≤ 4 * 2 ^ rows.card * N := hW
+
 abbrev V13RealLinearNoTargetSupportSumWitnessSigma
     {m j : Nat} (i₀ : Fin m) (rows : V13RealLinearBudgetedRowset m j) :=
   Σ support :
@@ -1823,6 +2193,72 @@ theorem
     M * Fintype.card G = Fintype.card G * M := by ring
     _ ≤ Fintype.card W * M := Nat.mul_le_mul_right M hG
     _ ≤ 4 * 2 ^ j * N := hW
+
+theorem
+    v13RealLinearNoTargetExistingRowCosetHitMapSet_card_mul_two_pow_le
+    {m : Nat} (i₀ : Fin m) (rows : Finset (Fin m)) (row : Fin m)
+    (hrow : row ∈ rows) :
+    Fintype.card
+        {A : V13RealLinearNoTargetRowsMap m i₀ //
+          V13RealLinearRowFunctionalTargetCosetHit A.val rows i₀ row} *
+      2 ^ m ≤
+    4 * 2 ^ rows.card *
+      Fintype.card (V13RealLinearNoTargetRowsMap m i₀) := by
+  classical
+  let S :=
+    {A : V13RealLinearNoTargetRowsMap m i₀ //
+      V13RealLinearRowFunctionalTargetCosetHit A.val rows i₀ row}
+  let budgetRows : V13RealLinearBudgetedRowset m rows.card :=
+    ⟨rows, le_rfl⟩
+  let G := V13RealLinearNoTargetBudgetedRowsetGeneratingMapSet i₀ budgetRows
+  let N := Fintype.card (V13RealLinearNoTargetRowsMap m i₀)
+  let M := 2 ^ m
+  have hS : Fintype.card S ≤ Fintype.card G := by
+    dsimp [S, G, budgetRows,
+      V13RealLinearNoTargetBudgetedRowsetGeneratingMapSet]
+    exact
+      Fintype.card_le_of_embedding
+        { toFun := fun A =>
+            ⟨A.val,
+              v13RealLinear_rowsGenerateTarget_of_rowFunctionalTargetCosetHit_of_mem
+                A.val.val i₀ row hrow A.property⟩
+          inj' := by
+            intro A₀ A₁ h
+            apply Subtype.ext
+            exact
+              congrArg
+                (fun A :
+                  {A : V13RealLinearNoTargetRowsMap m i₀ //
+                    V13RealLinearRowsGenerateTarget A.val rows i₀} =>
+                  A.val)
+                h }
+  have hG :
+      M * Fintype.card G ≤ 4 * 2 ^ rows.card * N := by
+    simpa [M, G, N, budgetRows] using
+      (V13RealLinearNoTargetBudgetedRowsetGenerationCountingBound_allBudget
+        m rows.card i₀ budgetRows)
+  calc
+    Fintype.card S * M = M * Fintype.card S := by ring
+    _ ≤ M * Fintype.card G := Nat.mul_le_mul_left M hS
+    _ ≤ 4 * 2 ^ rows.card * N := hG
+
+theorem
+    v13RealLinearNoTargetFixedRowsetCosetHitMapSet_card_mul_two_pow_le
+    {m : Nat} (i₀ : Fin m) (rows : Finset (Fin m)) (row : Fin m) :
+    Fintype.card
+        {A : V13RealLinearNoTargetRowsMap m i₀ //
+          V13RealLinearRowFunctionalTargetCosetHit A.val rows i₀ row} *
+      2 ^ m ≤
+    4 * 2 ^ rows.card *
+      Fintype.card (V13RealLinearNoTargetRowsMap m i₀) := by
+  classical
+  by_cases hrow : row ∈ rows
+  · exact
+      v13RealLinearNoTargetExistingRowCosetHitMapSet_card_mul_two_pow_le
+        i₀ rows row hrow
+  · exact
+      v13RealLinearNoTargetFreshRowCosetHitMapSet_card_mul_two_pow_le
+        i₀ rows row hrow
 
 abbrev V13RealLinearNoTargetFixedPairCosetHitMapSet {m : Nat}
     (i₀ row₀ row₁ : Fin m) :=

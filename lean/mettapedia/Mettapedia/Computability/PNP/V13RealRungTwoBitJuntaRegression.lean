@@ -188,6 +188,67 @@ example {m : Nat} {rows : Finset (Fin m)} (i₀ : Fin m)
   v13RealLinearNoTargetFixedSupportSumTargetMapSet_card_mul_two_pow_le_noTarget
     i₀ support hsupport
 
+example {m : Nat} {rows : Finset (Fin m)} {row : Fin m}
+    (hrow : row ∉ rows) (support : Finset {r : Fin m // r ∈ rows}) :
+    (v13RealLinearFreshFullSupport rows row support).card =
+      support.card + 1 :=
+  v13RealLinearFreshFullSupport_card hrow support
+
+example {m : Nat} {i₀ : Fin m} {rows : Finset (Fin m)} {row : Fin m}
+    (A : V13RealLinearNoTargetRowsMap m i₀) (hrow : row ∉ rows)
+    (hhit :
+      V13RealLinearRowFunctionalTargetCosetHit A.val rows i₀ row) :
+    ∃ support : Finset {r : Fin m // r ∈ rows},
+      0 < support.card ∧
+        ∀ w : F2Vec m,
+          (v13RealLinearFreshFullSupport rows row support).sum
+              (fun r => A.val.toEquiv w r.1) =
+            w i₀ :=
+  v13RealLinearNoTargetRows_freshRowFunctionalTargetCosetHit_exists_support_sum
+    A hrow hhit
+
+example {m : Nat} (i₀ : Fin m) (rows : Finset (Fin m)) (row : Fin m)
+    (hrow : row ∉ rows) :
+    Fintype.card
+        (V13RealLinearNoTargetFreshRowCosetHitSupportSigma i₀ rows row) *
+      2 ^ m ≤
+    4 * 2 ^ rows.card *
+      Fintype.card (V13RealLinearNoTargetRowsMap m i₀) :=
+  v13RealLinearNoTargetFreshRowCosetHitSupportSigma_card_mul_two_pow_le
+    i₀ rows row hrow
+
+example {m : Nat} (i₀ : Fin m) (rows : Finset (Fin m)) (row : Fin m)
+    (hrow : row ∉ rows) :
+    Fintype.card
+        {A : V13RealLinearNoTargetRowsMap m i₀ //
+          V13RealLinearRowFunctionalTargetCosetHit A.val rows i₀ row} *
+      2 ^ m ≤
+    4 * 2 ^ rows.card *
+      Fintype.card (V13RealLinearNoTargetRowsMap m i₀) :=
+  v13RealLinearNoTargetFreshRowCosetHitMapSet_card_mul_two_pow_le
+    i₀ rows row hrow
+
+example {m : Nat} (i₀ : Fin m) (rows : Finset (Fin m)) (row : Fin m)
+    (hrow : row ∈ rows) :
+    Fintype.card
+        {A : V13RealLinearNoTargetRowsMap m i₀ //
+          V13RealLinearRowFunctionalTargetCosetHit A.val rows i₀ row} *
+      2 ^ m ≤
+    4 * 2 ^ rows.card *
+      Fintype.card (V13RealLinearNoTargetRowsMap m i₀) :=
+  v13RealLinearNoTargetExistingRowCosetHitMapSet_card_mul_two_pow_le
+    i₀ rows row hrow
+
+example {m : Nat} (i₀ : Fin m) (rows : Finset (Fin m)) (row : Fin m) :
+    Fintype.card
+        {A : V13RealLinearNoTargetRowsMap m i₀ //
+          V13RealLinearRowFunctionalTargetCosetHit A.val rows i₀ row} *
+      2 ^ m ≤
+    4 * 2 ^ rows.card *
+      Fintype.card (V13RealLinearNoTargetRowsMap m i₀) :=
+  v13RealLinearNoTargetFixedRowsetCosetHitMapSet_card_mul_two_pow_le
+    i₀ rows row
+
 example {m : Nat} (i₀ : Fin m)
     (rows : V13RealLinearBudgetedRowset m 2) :
     Fintype.card
