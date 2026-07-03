@@ -22,5 +22,6 @@ import Mettapedia.QuantumTheory.YangMills.RGBootstrap
 import Mettapedia.QuantumTheory.YangMills.RGBootstrapSlack
 import Mettapedia.QuantumTheory.YangMills.RGCrux
 import Mettapedia.QuantumTheory.YangMills.Roadmap
+import Mettapedia.QuantumTheory.YangMills.SupportGrowth
 import Mettapedia.QuantumTheory.YangMills.Z2StrongCouplingGap
 import Mettapedia.QuantumTheory.YangMills.Z3StrongCouplingGap
