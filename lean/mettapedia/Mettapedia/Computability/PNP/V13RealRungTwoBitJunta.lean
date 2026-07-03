@@ -189,6 +189,86 @@ noncomputable instance {m j : Nat}
   unfold V13RealLinearBitJuntaFixedIncorrect
   infer_instance
 
+noncomputable def v13RealLinearBitJuntaFixedWorldCorrectIncorrectEquiv
+    {m j : Nat} (observer : V13RealLinearBitJuntaObserver m j)
+    (A : V13F2LinearEquiv m) (i₀ : Fin m) :
+    F2Vec m ≃
+      V13RealLinearBitJuntaFixedCorrect observer A i₀ ⊕
+        V13RealLinearBitJuntaFixedIncorrect observer A i₀ where
+  toFun x := by
+    classical
+    by_cases hcorrect :
+        observer.decide
+            (v13RealLinearPublicInput
+              ({ x := x, A := A } : V13RealLinearWorld m)) =
+          v13RealLinearTarget i₀
+            ({ x := x, A := A } : V13RealLinearWorld m)
+    · exact Sum.inl ⟨x, hcorrect⟩
+    · exact Sum.inr ⟨x, hcorrect⟩
+  invFun y :=
+    Sum.elim
+      (fun x : V13RealLinearBitJuntaFixedCorrect observer A i₀ => x.val)
+      (fun x : V13RealLinearBitJuntaFixedIncorrect observer A i₀ => x.val)
+      y
+  left_inv x := by
+    classical
+    by_cases hcorrect :
+        observer.decide
+            (v13RealLinearPublicInput
+              ({ x := x, A := A } : V13RealLinearWorld m)) =
+          v13RealLinearTarget i₀
+            ({ x := x, A := A } : V13RealLinearWorld m) <;>
+      simp [hcorrect]
+  right_inv y := by
+    classical
+    cases y with
+    | inl x =>
+        change
+          (if hcorrect :
+              observer.decide
+                  (v13RealLinearPublicInput
+                    ({ x := x.val, A := A } : V13RealLinearWorld m)) =
+                v13RealLinearTarget i₀
+                  ({ x := x.val, A := A } : V13RealLinearWorld m) then
+              Sum.inl
+                (⟨x.val, hcorrect⟩ :
+                  V13RealLinearBitJuntaFixedCorrect observer A i₀)
+            else
+              Sum.inr
+                (⟨x.val, hcorrect⟩ :
+                  V13RealLinearBitJuntaFixedIncorrect observer A i₀)) =
+            Sum.inl x
+        rw [dif_pos x.property]
+        rfl
+    | inr x =>
+        change
+          (if hcorrect :
+              observer.decide
+                  (v13RealLinearPublicInput
+                    ({ x := x.val, A := A } : V13RealLinearWorld m)) =
+                v13RealLinearTarget i₀
+                  ({ x := x.val, A := A } : V13RealLinearWorld m) then
+              Sum.inl
+                (⟨x.val, hcorrect⟩ :
+                  V13RealLinearBitJuntaFixedCorrect observer A i₀)
+            else
+              Sum.inr
+                (⟨x.val, hcorrect⟩ :
+                  V13RealLinearBitJuntaFixedIncorrect observer A i₀)) =
+            Sum.inr x
+        rw [dif_neg x.property]
+        rfl
+
+theorem v13RealLinearBitJuntaFixedWorld_card_eq_correct_add_incorrect
+    {m j : Nat} (observer : V13RealLinearBitJuntaObserver m j)
+    (A : V13F2LinearEquiv m) (i₀ : Fin m) :
+    Fintype.card (F2Vec m) =
+      Fintype.card (V13RealLinearBitJuntaFixedCorrect observer A i₀) +
+        Fintype.card (V13RealLinearBitJuntaFixedIncorrect observer A i₀) := by
+  simpa [Fintype.card_sum] using
+    Fintype.card_congr
+      (v13RealLinearBitJuntaFixedWorldCorrectIncorrectEquiv observer A i₀)
+
 noncomputable def v13RealLinearBitJunta_fixedCorrectIncorrectEquiv
     {m j : Nat} (observer : V13RealLinearBitJuntaObserver m j)
     (A : V13F2LinearEquiv m) (i₀ : Fin m)
@@ -5432,6 +5512,23 @@ lemma v13_zmod2_eq_of_one_add_ne {a b : ZMod 2}
         _ = a := ha.symm
     exact v13_zmod2_add_one_ne_self a hself
 
+lemma v13_zmod2_add_eq_zero_iff_eq {a b : ZMod 2} :
+    a + b = 0 ↔ a = b := by
+  constructor
+  · intro h
+    rcases v13_zmod2_cases a with ha | ha <;>
+      rcases v13_zmod2_cases b with hb | hb <;>
+        simp [ha, hb] at h ⊢
+  · intro h
+    rw [h]
+    exact f2_add_self b
+
+lemma v13_zmod2_add_eq_one_of_ne {a b : ZMod 2}
+    (h : a ≠ b) : a + b = 1 := by
+  rcases v13_zmod2_cases a with ha | ha <;>
+    rcases v13_zmod2_cases b with hb | hb <;>
+      simp [ha, hb] at h ⊢
+
 /-- A parity observer is the XOR of the listed elementary public coordinates. -/
 structure V13RealLinearParityObserver (m j : Nat) where
   coordinate : Fin j → Option (V13RealLinearPublicCoordinate m)
@@ -5529,6 +5626,87 @@ theorem v13RealLinearParityObserver_rhsParity_zero
       cases coord <;>
         simp [v13RealLinearParityObserverRhsTerm, A.map_zero,
           f2ZeroVec]
+
+theorem v13RealLinearParityObserver_rhsParity_add
+    {m j : Nat} (observer : V13RealLinearParityObserver m j)
+    (A : V13F2LinearEquiv m) (x w : F2Vec m) :
+    v13RealLinearParityObserverRhsParity observer A (f2AddVec x w) =
+      v13RealLinearParityObserverRhsParity observer A x +
+        v13RealLinearParityObserverRhsParity observer A w := by
+  classical
+  unfold v13RealLinearParityObserverRhsParity
+  rw [← Finset.sum_add_distrib]
+  apply Finset.sum_congr rfl
+  intro k _hk
+  cases hcoord : observer.coordinate k with
+  | none =>
+      simp [v13RealLinearParityObserverRhsTerm]
+  | some coord =>
+      cases coord with
+      | rhs row =>
+          simpa [v13RealLinearParityObserverRhsTerm, f2AddVec]
+            using congrFun (A.map_add x w) row
+      | mapValue probe row =>
+          simp [v13RealLinearParityObserverRhsTerm]
+      | inverseValue probe row =>
+          simp [v13RealLinearParityObserverRhsTerm]
+
+theorem v13RealLinearParityObserver_value_after_add
+    {m j : Nat} (observer : V13RealLinearParityObserver m j)
+    (A : V13F2LinearEquiv m) (x w : F2Vec m) :
+    observer.value
+        (v13RealLinearPublicInput
+          ({ x := f2AddVec x w, A := A } : V13RealLinearWorld m)) =
+      observer.value
+          (v13RealLinearPublicInput
+            ({ x := x, A := A } : V13RealLinearWorld m)) +
+        v13RealLinearParityObserverRhsParity observer A w := by
+  have hflip :=
+    v13RealLinearParityObserver_value_publicInput_eq
+      observer A (f2AddVec x w)
+  have hx :=
+    v13RealLinearParityObserver_value_publicInput_eq observer A x
+  have hlin :=
+    v13RealLinearParityObserver_rhsParity_add observer A x w
+  calc
+    observer.value
+        (v13RealLinearPublicInput
+          ({ x := f2AddVec x w, A := A } : V13RealLinearWorld m)) =
+        v13RealLinearParityObserverConstant observer A +
+          v13RealLinearParityObserverRhsParity observer A (f2AddVec x w) :=
+          hflip
+    _ =
+        v13RealLinearParityObserverConstant observer A +
+          (v13RealLinearParityObserverRhsParity observer A x +
+            v13RealLinearParityObserverRhsParity observer A w) := by
+          rw [hlin]
+    _ =
+        (v13RealLinearParityObserverConstant observer A +
+          v13RealLinearParityObserverRhsParity observer A x) +
+            v13RealLinearParityObserverRhsParity observer A w := by
+          rw [add_assoc]
+    _ =
+        observer.value
+          (v13RealLinearPublicInput
+            ({ x := x, A := A } : V13RealLinearWorld m)) +
+          v13RealLinearParityObserverRhsParity observer A w := by
+          rw [← hx]
+
+theorem v13RealLinearParityObserver_value_target_delta_after_add
+    {m j : Nat} (observer : V13RealLinearParityObserver m j)
+    (A : V13F2LinearEquiv m) (i₀ : Fin m) (x w : F2Vec m) :
+    observer.value
+        (v13RealLinearPublicInput
+          ({ x := f2AddVec x w, A := A } : V13RealLinearWorld m)) +
+      (f2AddVec x w) i₀ =
+        (observer.value
+          (v13RealLinearPublicInput
+            ({ x := x, A := A } : V13RealLinearWorld m)) +
+          x i₀) +
+        (v13RealLinearParityObserverRhsParity observer A w + w i₀) := by
+  rw [v13RealLinearParityObserver_value_after_add observer A x w]
+  simp [f2AddVec]
+  ring
 
 def V13RealLinearParityObserverRhsParityMatchesTarget {m j : Nat}
     (observer : V13RealLinearParityObserver m j)
@@ -5676,6 +5854,153 @@ theorem v13RealLinearParityObserver_determinesTargetComplement_iff
                 ({ x := x, A := A } : V13RealLinearWorld m)) := hdx.symm
         _ = x i₀ := hbad
     exact v13_zmod2_add_one_ne_self (x i₀) htarget
+
+noncomputable def
+    v13RealLinearParityObserver_fixedCorrectIncorrectEquiv_of_rhsParity_ne_target
+    {m j : Nat} (observer : V13RealLinearParityObserver m j)
+    (A : V13F2LinearEquiv m) (i₀ : Fin m) (w : F2Vec m)
+    (hdiff :
+      v13RealLinearParityObserverRhsParity observer A w ≠ w i₀) :
+    V13RealLinearBitJuntaFixedCorrect observer.toBitJunta A i₀ ≃
+      V13RealLinearBitJuntaFixedIncorrect observer.toBitJunta A i₀ where
+  toFun x :=
+    ⟨f2AddVec x.val w, by
+      intro hflipCorrect
+      have hxCorrect :
+          observer.value
+              (v13RealLinearPublicInput
+                ({ x := x.val, A := A } : V13RealLinearWorld m)) =
+            x.val i₀ := by
+        simpa [V13RealLinearParityObserver.toBitJunta,
+          v13RealLinearTarget] using x.property
+      have hflipCorrect' :
+          observer.value
+              (v13RealLinearPublicInput
+                ({ x := f2AddVec x.val w, A := A } :
+                  V13RealLinearWorld m)) =
+            (f2AddVec x.val w) i₀ := by
+        simpa [V13RealLinearParityObserver.toBitJunta,
+          v13RealLinearTarget] using hflipCorrect
+      have hxDelta :
+          observer.value
+              (v13RealLinearPublicInput
+                ({ x := x.val, A := A } : V13RealLinearWorld m)) +
+            x.val i₀ = 0 :=
+        (v13_zmod2_add_eq_zero_iff_eq).2 hxCorrect
+      have hflipDelta :
+          observer.value
+              (v13RealLinearPublicInput
+                ({ x := f2AddVec x.val w, A := A } :
+                  V13RealLinearWorld m)) +
+            (f2AddVec x.val w) i₀ = 0 :=
+        (v13_zmod2_add_eq_zero_iff_eq).2 hflipCorrect'
+      have hstep :=
+        v13RealLinearParityObserver_value_target_delta_after_add
+          observer A i₀ x.val w
+      have hdeltaOne :
+          v13RealLinearParityObserverRhsParity observer A w + w i₀ = 1 :=
+        v13_zmod2_add_eq_one_of_ne hdiff
+      have hflipOne :
+          observer.value
+              (v13RealLinearPublicInput
+                ({ x := f2AddVec x.val w, A := A } :
+                  V13RealLinearWorld m)) +
+            (f2AddVec x.val w) i₀ = 1 := by
+        rw [hstep, hxDelta, hdeltaOne]
+        norm_num
+      rw [hflipDelta] at hflipOne
+      norm_num at hflipOne⟩
+  invFun x :=
+    ⟨f2AddVec x.val w, by
+      have hxIncorrect :
+          observer.value
+              (v13RealLinearPublicInput
+                ({ x := x.val, A := A } : V13RealLinearWorld m)) ≠
+            x.val i₀ := by
+        simpa [V13RealLinearParityObserver.toBitJunta,
+          v13RealLinearTarget] using x.property
+      have hxDeltaOne :
+          observer.value
+              (v13RealLinearPublicInput
+                ({ x := x.val, A := A } : V13RealLinearWorld m)) +
+            x.val i₀ = 1 :=
+        v13_zmod2_add_eq_one_of_ne hxIncorrect
+      have hstep :=
+        v13RealLinearParityObserver_value_target_delta_after_add
+          observer A i₀ x.val w
+      have hdeltaOne :
+          v13RealLinearParityObserverRhsParity observer A w + w i₀ = 1 :=
+        v13_zmod2_add_eq_one_of_ne hdiff
+      have hflipDelta :
+          observer.value
+              (v13RealLinearPublicInput
+                ({ x := f2AddVec x.val w, A := A } :
+                  V13RealLinearWorld m)) +
+            (f2AddVec x.val w) i₀ = 0 := by
+        rw [hstep, hxDeltaOne, hdeltaOne]
+        exact f2_one_add_one
+      have hflipCorrect :
+          observer.value
+              (v13RealLinearPublicInput
+                ({ x := f2AddVec x.val w, A := A } :
+                  V13RealLinearWorld m)) =
+            (f2AddVec x.val w) i₀ :=
+        (v13_zmod2_add_eq_zero_iff_eq).1 hflipDelta
+      simpa [V13RealLinearParityObserver.toBitJunta,
+        v13RealLinearTarget] using hflipCorrect⟩
+  left_inv x := by
+    apply Subtype.ext
+    funext row
+    simp [f2AddVec, add_assoc, f2_add_self]
+  right_inv x := by
+    apply Subtype.ext
+    funext row
+    simp [f2AddVec, add_assoc, f2_add_self]
+
+theorem
+    v13RealLinearParityObserver_fixed_correct_card_eq_incorrect_card_of_not_rhsParityMatchesTarget
+    {m j : Nat} (observer : V13RealLinearParityObserver m j)
+    (A : V13F2LinearEquiv m) (i₀ : Fin m)
+    (hnot :
+      ¬ V13RealLinearParityObserverRhsParityMatchesTarget observer A i₀) :
+    Fintype.card
+        (V13RealLinearBitJuntaFixedCorrect observer.toBitJunta A i₀) =
+      Fintype.card
+        (V13RealLinearBitJuntaFixedIncorrect observer.toBitJunta A i₀) := by
+  classical
+  rw [V13RealLinearParityObserverRhsParityMatchesTarget] at hnot
+  rw [not_forall] at hnot
+  rcases hnot with ⟨w, hdiff⟩
+  exact
+    Fintype.card_congr
+      (v13RealLinearParityObserver_fixedCorrectIncorrectEquiv_of_rhsParity_ne_target
+        observer A i₀ w hdiff)
+
+theorem
+    v13RealLinearParityObserver_fixed_correct_card_mul_two_eq_f2vec_card_of_not_rhsParityMatchesTarget
+    {m j : Nat} (observer : V13RealLinearParityObserver m j)
+    (A : V13F2LinearEquiv m) (i₀ : Fin m)
+    (hnot :
+      ¬ V13RealLinearParityObserverRhsParityMatchesTarget observer A i₀) :
+    Fintype.card
+        (V13RealLinearBitJuntaFixedCorrect observer.toBitJunta A i₀) * 2 =
+      Fintype.card (F2Vec m) := by
+  let C :=
+    Fintype.card
+      (V13RealLinearBitJuntaFixedCorrect observer.toBitJunta A i₀)
+  let I :=
+    Fintype.card
+      (V13RealLinearBitJuntaFixedIncorrect observer.toBitJunta A i₀)
+  have hci : C = I := by
+    simpa [C, I] using
+      v13RealLinearParityObserver_fixed_correct_card_eq_incorrect_card_of_not_rhsParityMatchesTarget
+        observer A i₀ hnot
+  have hworld :
+      Fintype.card (F2Vec m) = C + I := by
+    simpa [C, I] using
+      v13RealLinearBitJuntaFixedWorld_card_eq_correct_add_incorrect
+        observer.toBitJunta A i₀
+  omega
 
 theorem v13RealLinearParityObserver_correct_card_eq_incorrect_card_of_not_blocked
     {m j : Nat} (observer : V13RealLinearParityObserver m j)
