@@ -370,6 +370,9 @@ The bridge also has a representative-target-tied case surface:
 `AppendedParentRowsProjectionFiniteSectionTargetCase`,
 `AppendedParentRowsProjectionFiniteSectionTargetCasesCover`, and
 `appendedParentRowsProjectionFiniteSectionBody_of_target_cases`.  The known
+`targetAppendPrefix`/`targetAppendOrient` split in the representative-target
+module gives each target a canonical non-singleton final append for generated
+dispatch.  The known
 `TTT`/key-32 local row surface is registered as
 `ttFiber32AppendedParentRowsProjectionFiniteSectionTargetCase`, and its
 `toCase` theorem reduces it back to the exact word/orient/key case.  This is a
