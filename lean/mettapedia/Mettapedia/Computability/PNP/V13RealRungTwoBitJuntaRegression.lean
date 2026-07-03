@@ -87,6 +87,14 @@ example (m : Nat) :
     V13RealLinearNoTargetBitJuntaSuccessBound m 2 :=
   v13RealLinearNoTargetBitJuntaSuccessBound_twoBudget m
 
+example (m j : Nat) :
+    V13RealLinearNoTargetBudgetedRowsetGenerationCountingBound m j :=
+  V13RealLinearNoTargetBudgetedRowsetGenerationCountingBound_allBudget m j
+
+example (m j : Nat) :
+    V13RealLinearNoTargetBitJuntaSuccessBound m j :=
+  v13RealLinearNoTargetBitJuntaSuccessBound_allBudget m j
+
 example {m : Nat} {rows : Finset (Fin m)} (i₀ : Fin m)
     (A : V13RealLinearNoTargetRowsMap m i₀)
     (coeff : V13RealLinearRowsTargetCoefficient A.val rows i₀) :
@@ -99,6 +107,24 @@ example {m j : Nat} {i₀ : Fin m} {rows : V13RealLinearBudgetedRowset m j}
     ∃ coeff : V13RealLinearRowsTargetCoefficient A.val.val rows.1 i₀,
       2 ≤ (v13RealLinearRowCombinationSupport coeff.val).card :=
   v13RealLinearNoTargetBudgetedRowsetGeneratingMapSet_exists_twoSupport A
+
+example {m : Nat} {rows : Finset (Fin m)} (A : V13F2LinearEquiv m)
+    (i₀ : Fin m)
+    (coeff : V13RealLinearRowsTargetCoefficient A rows i₀) :
+    ∀ w : F2Vec m,
+      (v13RealLinearRowCombinationSupport coeff.val).sum
+          (fun row => A.toEquiv w row.val) =
+        w i₀ :=
+  v13RealLinearRowsTargetCoefficient_support_sum_target A i₀ coeff
+
+example {m j : Nat} {i₀ : Fin m} {rows : V13RealLinearBudgetedRowset m j}
+    (A : V13RealLinearNoTargetBudgetedRowsetGeneratingMapSet i₀ rows) :
+    ∃ support : Finset {row : Fin m // row ∈ rows.1},
+      2 ≤ support.card ∧ support.card ≤ j ∧
+        ∀ w : F2Vec m,
+          support.sum (fun row => A.val.val.toEquiv w row.val) = w i₀ :=
+  v13RealLinearNoTargetBudgetedRowsetGeneratingMapSet_exists_support_sum_target
+    A
 
 example {m : Nat} {rows : Finset (Fin m)} (A : V13F2LinearEquiv m)
     (i₀ : Fin m)
@@ -152,6 +178,16 @@ example {m : Nat} (i₀ row₀ row₁ : Fin m) (hneq : row₀ ≠ row₁) :
   v13RealLinearNoTargetFixedPairSumTargetMapSet_card_mul_two_pow_le_noTarget
     i₀ row₀ row₁ hneq
 
+example {m : Nat} {rows : Finset (Fin m)} (i₀ : Fin m)
+    (support : Finset {row : Fin m // row ∈ rows})
+    (hsupport : 2 ≤ support.card) :
+    Fintype.card
+        (V13RealLinearNoTargetFixedSupportSumTargetMapSet i₀ support) *
+      2 ^ m ≤
+    4 * Fintype.card (V13RealLinearNoTargetRowsMap m i₀) :=
+  v13RealLinearNoTargetFixedSupportSumTargetMapSet_card_mul_two_pow_le_noTarget
+    i₀ support hsupport
+
 example {m : Nat} (i₀ : Fin m)
     (rows : V13RealLinearBudgetedRowset m 2) :
     Fintype.card
@@ -160,6 +196,15 @@ example {m : Nat} (i₀ : Fin m)
     16 * Fintype.card (V13RealLinearNoTargetRowsMap m i₀) :=
   v13RealLinearNoTargetTwoBudgetPairSumWitnessSigma_card_mul_two_pow_le
     i₀ rows
+
+example {m j : Nat} (i₀ : Fin m)
+    (rows : V13RealLinearBudgetedRowset m j) :
+    Fintype.card
+        (V13RealLinearNoTargetSupportSumWitnessSigma i₀ rows) *
+      2 ^ m ≤
+    4 * 2 ^ j *
+      Fintype.card (V13RealLinearNoTargetRowsMap m i₀) :=
+  v13RealLinearNoTargetSupportSumWitnessSigma_card_mul_two_pow_le i₀ rows
 
 example {m : Nat} (i₀ row₀ row₁ : Fin m)
     (hrow : row₁ ∉ ({row₀} : Finset (Fin m))) :
