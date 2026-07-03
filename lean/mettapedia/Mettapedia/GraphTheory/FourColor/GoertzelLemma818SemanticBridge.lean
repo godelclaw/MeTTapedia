@@ -939,6 +939,31 @@ structure ChainFiberAppendQuotientFibrationParentRowsStructuralFields
           proj y = b ∧
             Reach (chainFiberRootClosureStep (word ++ [orient]) key) x y
 
+def ChainFiberAppendQuotientFibrationParentRowsStructuralFields.ofTotalConnectedAndLiftImage
+    {word : List GoertzelLemma818FrontierMode.TauOrient}
+    {orient : GoertzelLemma818FrontierMode.TauOrient}
+    {key : List GoertzelLemma814.LColor}
+    {data :
+      ChainFiberAppendQuotientFibrationParentRowsBaseData
+        word orient key}
+    (proj : ChainFiberPoint (word ++ [orient]) key → data.Base)
+    (hTotal :
+      Connected (chainFiberRootClosureStep (word ++ [orient]) key))
+    (hImage :
+      ∀ (x : ChainFiberPoint (word ++ [orient]) key) (b : data.Base),
+        data.baseStep (proj x) b →
+          ∃ y : ChainFiberPoint (word ++ [orient]) key,
+            proj y = b) :
+    ChainFiberAppendQuotientFibrationParentRowsStructuralFields data :=
+  { proj := proj
+    fiberReach := by
+      intro x y _hproj
+      exact hTotal x y
+    liftStep := by
+      intro x b hstep
+      rcases hImage x b hstep with ⟨y, hy⟩
+      exact ⟨y, hy, hTotal x y⟩ }
+
 structure ChainFiberAppendQuotientFibrationPathRowsFields
     (word : List GoertzelLemma818FrontierMode.TauOrient)
     (orient : GoertzelLemma818FrontierMode.TauOrient)
@@ -7725,6 +7750,34 @@ theorem concreteChainFiberAppendQuotientFibrationParentRowsNonSingletonPrefixBas
   rcases hData word orient hlen hcert key hkey with ⟨data⟩
   rcases hStructural word orient hlen hcert key hkey data with ⟨structural⟩
   exact ⟨⟨data, structural⟩⟩
+
+theorem concreteChainFiberAppendQuotientFibrationParentRowsNonSingletonPrefixBaseDataStructuralClosed_of_connected_lift_image
+    (hWitness :
+      ∀ (word : List GoertzelLemma818FrontierMode.TauOrient)
+        (orient : GoertzelLemma818FrontierMode.TauOrient),
+        1 < word.length →
+        Nonempty (ChainWordConcreteFibrationCertificate word) →
+          ∀ key : List GoertzelLemma814.LColor,
+            key ∈ GoertzelLemma814.colorAssignments4 →
+              ∃ data :
+                ChainFiberAppendQuotientFibrationParentRowsBaseData
+                  word orient key,
+                ∃ proj :
+                  ChainFiberPoint (word ++ [orient]) key → data.Base,
+                  Connected
+                    (chainFiberRootClosureStep (word ++ [orient]) key) ∧
+                  ∀ (x : ChainFiberPoint (word ++ [orient]) key)
+                    (b : data.Base),
+                    data.baseStep (proj x) b →
+                      ∃ y : ChainFiberPoint (word ++ [orient]) key,
+                        proj y = b) :
+    concreteChainFiberAppendQuotientFibrationParentRowsNonSingletonPrefixBaseDataStructuralClosed := by
+  intro word orient hlen hcert key hkey
+  rcases hWitness word orient hlen hcert key hkey with
+    ⟨data, proj, hTotal, hImage⟩
+  exact ⟨⟨data,
+    ChainFiberAppendQuotientFibrationParentRowsStructuralFields.ofTotalConnectedAndLiftImage
+      proj hTotal hImage⟩⟩
 
 theorem concreteChainFiberAppendQuotientFibrationParentRowsNonSingletonPrefixBaseDataStructuralClosed_of_structural
     (hStructural :
