@@ -1995,6 +1995,62 @@ theorem mem_appendFresh_source_or_mem {α : Type} [BEq α] [LawfulBEq α]
           exact Or.inr (by simp)
       · exact Or.inr (by simp [htail])
 
+theorem contains_map_injective_eq {α β : Type}
+    [BEq α] [LawfulBEq α] [BEq β] [LawfulBEq β]
+    (f : α → β) (hinj : Function.Injective f) (xs : List α) (x : α) :
+    (xs.map f).contains (f x) = xs.contains x := by
+  by_cases hx : x ∈ xs
+  · have hxs : xs.contains x = true := List.contains_iff_mem.mpr hx
+    have hmap : (xs.map f).contains (f x) = true :=
+      List.contains_iff_mem.mpr (List.mem_map.mpr ⟨x, hx, rfl⟩)
+    rw [hmap, hxs]
+  · have hxs : xs.contains x = false :=
+      bool_false_of_not_true (by
+        intro hcontains
+        exact hx (List.contains_iff_mem.mp hcontains))
+    have hnotMap : ¬ f x ∈ xs.map f := by
+      intro hmem
+      rcases List.mem_map.mp hmem with ⟨y, hy, hfy⟩
+      exact hx (by simpa [hinj hfy] using hy)
+    have hmap : (xs.map f).contains (f x) = false :=
+      bool_false_of_not_true (by
+        intro hcontains
+        exact hnotMap (List.contains_iff_mem.mp hcontains))
+    rw [hmap, hxs]
+
+theorem map_addIfFresh_injective {α β : Type}
+    [BEq α] [LawfulBEq α] [BEq β] [LawfulBEq β]
+    (f : α → β) (hinj : Function.Injective f)
+    (xs : List α) (x : α) :
+    (addIfFresh xs x).map f = addIfFresh (xs.map f) (f x) := by
+  unfold addIfFresh
+  by_cases hx : x ∈ xs
+  · have hmap : f x ∈ xs.map f := List.mem_map.mpr ⟨x, hx, rfl⟩
+    simp [hx, hmap]
+  · have hnotMap : ¬ f x ∈ xs.map f := by
+      intro hmem
+      rcases List.mem_map.mp hmem with ⟨y, hy, hfy⟩
+      exact hx (by simpa [hinj hfy] using hy)
+    simp [hx, hnotMap]
+
+theorem map_appendFresh_injective {α β : Type}
+    [BEq α] [LawfulBEq α] [BEq β] [LawfulBEq β]
+    (f : α → β) (hinj : Function.Injective f)
+    (xs ys : List α) :
+    (appendFresh xs ys).map f = appendFresh (xs.map f) (ys.map f) := by
+  unfold appendFresh
+  induction ys generalizing xs with
+  | nil =>
+      simp
+  | cons y ys ih =>
+      simp only [List.foldl_cons, List.map_cons]
+      calc
+        (List.foldl addIfFresh (addIfFresh xs y) ys).map f =
+            List.foldl addIfFresh ((addIfFresh xs y).map f) (ys.map f) := by
+              exact ih (addIfFresh xs y)
+        _ = List.foldl addIfFresh (addIfFresh (xs.map f) (f y)) (ys.map f) := by
+              rw [map_addIfFresh_injective f hinj xs y]
+
 theorem nextChainComponentLayer_mem_chainEdges
     (orients : List TauOrient) (states : List TauState)
     (a c : LColor) (seen : List ChainEdge)
