@@ -2517,6 +2517,17 @@ theorem concreteChainFiberAppend_chainEdges_append_singleton_non_input
     tauOrientAt_frontierWordToChainWord_append_length word orient
   simp [hpos, horient]
 
+theorem concreteChainFiberAppend_chainEdges_singleton
+    (orient : GoertzelLemma818FrontierMode.TauOrient) :
+    GoertzelLemma814.chainEdges (frontierWordToChainWord [orient]) =
+      GoertzelLemma814.tauEdges.map fun e =>
+        ({ occ := 0, edge := e } : GoertzelLemma814.ChainEdge) := by
+  cases orient <;>
+    simp [frontierWordToChainWord, frontierOrientToChain,
+      GoertzelLemma814.chainEdges, GoertzelLemma814.chainLocalEdges,
+      GoertzelLemma814.bindList, GoertzelLemma814.chainIsRepresentativeEdge,
+      GoertzelLemma814.chainIsGluedInput]
+
 theorem concreteChainFiberAppend_chainEdgeColor_last
     (word : List GoertzelLemma818FrontierMode.TauOrient)
     (pref : List GoertzelLemma814.TauState)
@@ -3115,13 +3126,174 @@ theorem concreteChainFiberAppendLocalSingletonComponent_shift_edge_present
     (GoertzelLemma814.chainEdges
       (frontierWordToChainWord (word ++ [orient]))).contains
         (concreteChainFiberAppendShiftEdge word edge) = true := by
-  have hedge :=
+  have hedge :
+      edge.occ = 0 ∧
+        (GoertzelLemma814.tauOrientInputOrder
+          (frontierOrientToChain orient)).contains edge.edge = false :=
     concreteChainFiberAppendLocalSingletonComponent_edge_occ_zero_not_input
-      orient current target move hseed hspecified hmem
+      orient current target move hseed hspecified (edge := edge) hmem
   have hshift :=
     concreteChainFiberAppendShiftedEdgePresent_of_not_input
       word orient edge.edge hedge.2
   simpa [concreteChainFiberAppendShiftEdge, hedge.1] using hshift
+
+theorem concreteChainFiberAppendLocalNonInputEdge_shift_nextLayer_contains
+    (word : List GoertzelLemma818FrontierMode.TauOrient)
+    (orient : GoertzelLemma818FrontierMode.TauOrient)
+    (pref : List GoertzelLemma814.TauState)
+    (currentLast : GoertzelLemma814.TauState)
+    (move : GoertzelLemma814.ChainMove)
+    (seen : List GoertzelLemma814.ChainEdge)
+    (edge : GoertzelLemma814.ChainEdge)
+    (hprefLen : pref.length = word.length)
+    (hedgeOcc : edge.occ = 0)
+    (hedgeNotInput :
+      (GoertzelLemma814.tauOrientInputOrder
+        (frontierOrientToChain orient)).contains edge.edge = false)
+    (hseenParts :
+      ∀ other, other ∈ seen →
+        other.occ = 0 ∧
+          (GoertzelLemma814.tauOrientInputOrder
+            (frontierOrientToChain orient)).contains other.edge = false) :
+    (GoertzelLemma814.nextChainComponentLayer
+        (frontierWordToChainWord (word ++ [orient]))
+        (pref ++ [currentLast]) move.a move.c
+        (concreteChainFiberAppendShiftComponent word seen)).contains
+        (concreteChainFiberAppendShiftEdge word edge) =
+      (GoertzelLemma814.nextChainComponentLayer
+        (frontierWordToChainWord [orient]) [currentLast] move.a move.c
+        seen).contains edge := by
+  let localOrients := frontierWordToChainWord [orient]
+  let globalOrients := frontierWordToChainWord (word ++ [orient])
+  let shiftedSeen := concreteChainFiberAppendShiftComponent word seen
+  let shiftedEdge := concreteChainFiberAppendShiftEdge word edge
+  change
+    (GoertzelLemma814.nextChainComponentLayer globalOrients
+      (pref ++ [currentLast]) move.a move.c shiftedSeen).contains
+        shiftedEdge =
+      (GoertzelLemma814.nextChainComponentLayer localOrients
+        [currentLast] move.a move.c seen).contains edge
+  have hedgeLocalEdges :
+      edge ∈ GoertzelLemma814.chainEdges localOrients := by
+    have hcontains :
+        (GoertzelLemma814.chainEdges localOrients).contains edge = true := by
+      cases edge with
+      | mk occ tauEdge =>
+          simp at hedgeOcc
+          subst occ
+          rw [concreteChainFiberAppend_chainEdges_singleton orient]
+          exact List.contains_iff_mem.mpr
+            (List.mem_map.mpr ⟨tauEdge, GoertzelLemma814.tauEdges_mem tauEdge, rfl⟩)
+    exact List.contains_iff_mem.mp hcontains
+  have hglobalEdgeContains :
+      (GoertzelLemma814.chainEdges globalOrients).contains shiftedEdge = true := by
+    have hshift :=
+      concreteChainFiberAppendShiftedEdgePresent_of_not_input
+        word orient edge.edge hedgeNotInput
+    simpa [globalOrients, shiftedEdge, concreteChainFiberAppendShiftEdge,
+      hedgeOcc] using hshift
+  have hpair :
+      GoertzelLemma814.chainEdgeInPair (pref ++ [currentLast])
+          move.a move.c shiftedEdge =
+        GoertzelLemma814.chainEdgeInPair [currentLast] move.a move.c edge := by
+    simpa [shiftedEdge] using
+      concreteChainFiberAppend_chainEdgeInPair_shift_occ_zero
+        word pref currentLast move.a move.c edge hprefLen hedgeOcc
+  have hfresh :
+      shiftedSeen.contains shiftedEdge = seen.contains edge := by
+    simpa [shiftedSeen, shiftedEdge] using
+      concreteChainFiberAppendShiftComponent_contains_shift_eq word seen edge
+  have hshiftedMemIff : shiftedEdge ∈ shiftedSeen ↔ edge ∈ seen := by
+    constructor
+    · intro hmem
+      have hcontains : shiftedSeen.contains shiftedEdge = true :=
+        List.contains_iff_mem.mpr hmem
+      have hlocalContains : seen.contains edge = true := by
+        rw [← hfresh]
+        exact hcontains
+      exact List.contains_iff_mem.mp hlocalContains
+    · intro hmem
+      have hlocalContains : seen.contains edge = true :=
+        List.contains_iff_mem.mpr hmem
+      have hcontains : shiftedSeen.contains shiftedEdge = true := by
+        rw [hfresh]
+        exact hlocalContains
+      exact List.contains_iff_mem.mp hcontains
+  have hshare :
+      shiftedSeen.any
+          (fun other => GoertzelLemma814.chainEdgesShareEndpoint
+            globalOrients shiftedEdge other) =
+        seen.any (fun other => GoertzelLemma814.chainEdgesShareEndpoint
+          localOrients edge other) := by
+    simpa [shiftedSeen, shiftedEdge, globalOrients, localOrients] using
+      concreteChainFiberAppendShiftComponent_any_shareEndpoint_shift_occ_zero
+        word orient seen edge hedgeOcc hedgeNotInput hseenParts
+  by_cases hlocal :
+      (GoertzelLemma814.nextChainComponentLayer localOrients [currentLast]
+        move.a move.c seen).contains edge = true
+  · have hlocalMem :
+        edge ∈ GoertzelLemma814.nextChainComponentLayer localOrients
+          [currentLast] move.a move.c seen :=
+      List.contains_iff_mem.mp hlocal
+    have hlocalFilter := hlocalMem
+    unfold GoertzelLemma814.nextChainComponentLayer at hlocalFilter
+    rw [List.mem_filter] at hlocalFilter
+    rcases hlocalFilter with ⟨_hedgeChain, hlocalPred⟩
+    have hglobalPred :
+        (GoertzelLemma814.chainEdgeInPair (pref ++ [currentLast])
+            move.a move.c shiftedEdge &&
+          !shiftedSeen.contains shiftedEdge &&
+          shiftedSeen.any
+            (fun other => GoertzelLemma814.chainEdgesShareEndpoint
+              globalOrients shiftedEdge other)) = true := by
+      simpa [hpair, hfresh, hshiftedMemIff, hshare,
+        globalOrients, localOrients] using
+        hlocalPred
+    have hglobalMem :
+        shiftedEdge ∈ GoertzelLemma814.nextChainComponentLayer globalOrients
+          (pref ++ [currentLast]) move.a move.c shiftedSeen := by
+      unfold GoertzelLemma814.nextChainComponentLayer
+      rw [List.mem_filter]
+      exact ⟨List.contains_iff_mem.mp hglobalEdgeContains, hglobalPred⟩
+    have hglobal :
+        (GoertzelLemma814.nextChainComponentLayer globalOrients
+          (pref ++ [currentLast]) move.a move.c shiftedSeen).contains
+          shiftedEdge = true :=
+      List.contains_iff_mem.mpr hglobalMem
+    rw [hlocal]
+    exact hglobal
+  · have hlocalFalse := GoertzelLemma814.bool_false_of_not_true hlocal
+    rw [hlocalFalse]
+    apply GoertzelLemma814.bool_false_of_not_true
+    intro hglobal
+    have hglobalMem :
+        shiftedEdge ∈ GoertzelLemma814.nextChainComponentLayer globalOrients
+          (pref ++ [currentLast]) move.a move.c shiftedSeen :=
+      List.contains_iff_mem.mp hglobal
+    have hglobalFilter := hglobalMem
+    unfold GoertzelLemma814.nextChainComponentLayer at hglobalFilter
+    rw [List.mem_filter] at hglobalFilter
+    rcases hglobalFilter with ⟨_hglobalChain, hglobalPred⟩
+    have hlocalPred :
+        (GoertzelLemma814.chainEdgeInPair [currentLast] move.a move.c edge &&
+          !seen.contains edge &&
+          seen.any (fun other => GoertzelLemma814.chainEdgesShareEndpoint
+            localOrients edge other)) = true := by
+      simpa [hpair, hfresh, hshiftedMemIff, hshare,
+        globalOrients, localOrients] using
+        hglobalPred
+    have hlocalMem :
+        edge ∈ GoertzelLemma814.nextChainComponentLayer localOrients
+          [currentLast] move.a move.c seen := by
+      unfold GoertzelLemma814.nextChainComponentLayer
+      rw [List.mem_filter]
+      exact ⟨hedgeLocalEdges, hlocalPred⟩
+    have hlocalTrue :
+        (GoertzelLemma814.nextChainComponentLayer localOrients
+          [currentLast] move.a move.c seen).contains edge = true :=
+      List.contains_iff_mem.mpr hlocalMem
+    rw [hlocalFalse] at hlocalTrue
+    cases hlocalTrue
 
 theorem concreteChainFiberAppendLocalSingletonComponent_shift_nextLayer_contains
     (word : List GoertzelLemma818FrontierMode.TauOrient)
