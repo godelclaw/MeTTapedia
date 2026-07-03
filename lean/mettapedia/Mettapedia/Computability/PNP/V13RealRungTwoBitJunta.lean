@@ -41,6 +41,39 @@ theorem v13RealLinearBitJuntaRhsRows_mem {m j : Nat}
   classical
   simp [v13RealLinearBitJuntaRhsRows]
 
+theorem v13RealLinearBitJuntaRhsRows_card_le {m j : Nat}
+    (observer : V13RealLinearBitJuntaObserver m j) :
+    (v13RealLinearBitJuntaRhsRows observer).card ≤ j := by
+  classical
+  let rows := v13RealLinearBitJuntaRhsRows observer
+  let slot : {row : Fin m // row ∈ rows} → Fin j := fun row =>
+    Classical.choose ((v13RealLinearBitJuntaRhsRows_mem observer).1 row.property)
+  have hslot :
+      ∀ row : {row : Fin m // row ∈ rows},
+        observer.coordinate (slot row) = some (.rhs row.val) := by
+    intro row
+    exact Classical.choose_spec
+      ((v13RealLinearBitJuntaRhsRows_mem observer).1 row.property)
+  have hinj : Function.Injective slot := by
+    intro row₀ row₁ h
+    apply Subtype.ext
+    have hcoord :
+        some (V13RealLinearPublicCoordinate.rhs row₀.val) =
+          some (V13RealLinearPublicCoordinate.rhs row₁.val) := by
+      rw [← hslot row₀, h, hslot row₁]
+    simpa using hcoord
+  have hcard :
+      Fintype.card {row : Fin m // row ∈ rows} ≤ Fintype.card (Fin j) :=
+    Fintype.card_le_of_injective slot hinj
+  simpa [rows] using hcard
+
+/-- The RHS-row footprint as a rowset inside the junta read budget. -/
+noncomputable def v13RealLinearBitJuntaRhsBudgetedRowset {m j : Nat}
+    (observer : V13RealLinearBitJuntaObserver m j) :
+    V13RealLinearBudgetedRowset m j :=
+  ⟨v13RealLinearBitJuntaRhsRows observer,
+    v13RealLinearBitJuntaRhsRows_card_le observer⟩
+
 /-- A bit-junta is blocked for `(A, i₀)` exactly when the kernel common to all
 RHS rows it reads forces the target bit to vanish. -/
 def V13RealLinearBitJuntaBlocked {m j : Nat}
@@ -59,6 +92,16 @@ theorem v13RealLinearBitJunta_blocked_iff_kernel {m j : Nat}
             A.toEquiv w row = 0) →
           w i₀ = 0 :=
   Iff.rfl
+
+theorem v13RealLinearBitJunta_blocked_iff_rowsGenerateTarget {m j : Nat}
+    (observer : V13RealLinearBitJuntaObserver m j)
+    (A : V13F2LinearEquiv m) (i₀ : Fin m) :
+    V13RealLinearBitJuntaBlocked observer A i₀ ↔
+      V13RealLinearRowsGenerateTarget A
+        (v13RealLinearBitJuntaRhsRows observer) i₀ := by
+  simpa [V13RealLinearBitJuntaBlocked] using
+    (v13RealLinear_rowsBlockTarget_iff_rowsGenerateTarget A
+      (v13RealLinearBitJuntaRhsRows observer) i₀)
 
 /-- Explicit second-rung blocked-map allowance for `j` public-coordinate reads. -/
 noncomputable def v13RealLinearBitJuntaEpsilon2 (j m : Nat) : Rat :=
@@ -291,6 +334,93 @@ theorem v13RealLinearNoTargetBitJunta_blockedMap_iff_kernel
           w i₀ = 0 :=
   Iff.rfl
 
+theorem v13RealLinearNoTargetBitJunta_blockedMap_iff_rowsGenerateTarget
+    {m j : Nat} (i₀ : Fin m)
+    (observer : V13RealLinearBitJuntaObserver m j)
+    (A : V13RealLinearNoTargetRowsMap m i₀) :
+    V13RealLinearNoTargetBitJuntaBlockedMap i₀ observer A ↔
+      V13RealLinearRowsGenerateTarget A.val
+        (v13RealLinearBitJuntaRhsBudgetedRowset observer).1 i₀ := by
+  simpa [V13RealLinearNoTargetBitJuntaBlockedMap,
+    v13RealLinearBitJuntaRhsBudgetedRowset] using
+    (v13RealLinearBitJunta_blocked_iff_rowsGenerateTarget
+      observer A.val i₀)
+
+abbrev V13RealLinearNoTargetBudgetedRowsetGeneratingMapSet {m j : Nat}
+    (i₀ : Fin m) (rows : V13RealLinearBudgetedRowset m j) :=
+  {A : V13RealLinearNoTargetRowsMap m i₀ //
+    V13RealLinearRowsGenerateTarget A.val rows.1 i₀}
+
+noncomputable instance {m j : Nat} (i₀ : Fin m)
+    (rows : V13RealLinearBudgetedRowset m j) :
+    Fintype
+      (V13RealLinearNoTargetBudgetedRowsetGeneratingMapSet i₀ rows) := by
+  classical
+  unfold V13RealLinearNoTargetBudgetedRowsetGeneratingMapSet
+  infer_instance
+
+noncomputable def
+    v13RealLinearNoTargetBitJuntaBlockedMapSetEquivBudgetedGeneratingMapSet
+    {m j : Nat} (i₀ : Fin m)
+    (observer : V13RealLinearBitJuntaObserver m j) :
+    V13RealLinearNoTargetBitJuntaBlockedMapSet i₀ observer ≃
+      V13RealLinearNoTargetBudgetedRowsetGeneratingMapSet i₀
+        (v13RealLinearBitJuntaRhsBudgetedRowset observer) where
+  toFun A :=
+    ⟨A.val,
+      (v13RealLinearNoTargetBitJunta_blockedMap_iff_rowsGenerateTarget
+        i₀ observer A.val).1 A.property⟩
+  invFun A :=
+    ⟨A.val,
+      (v13RealLinearNoTargetBitJunta_blockedMap_iff_rowsGenerateTarget
+        i₀ observer A.val).2 A.property⟩
+  left_inv A := by
+    apply Subtype.ext
+    rfl
+  right_inv A := by
+    apply Subtype.ext
+    rfl
+
+theorem
+    v13RealLinearNoTargetBitJuntaBlockedMapSet_card_eq_budgetedGeneratingMapSet
+    {m j : Nat} (i₀ : Fin m)
+    (observer : V13RealLinearBitJuntaObserver m j) :
+    Fintype.card (V13RealLinearNoTargetBitJuntaBlockedMapSet i₀ observer) =
+      Fintype.card
+        (V13RealLinearNoTargetBudgetedRowsetGeneratingMapSet i₀
+          (v13RealLinearBitJuntaRhsBudgetedRowset observer)) :=
+  Fintype.card_congr
+    (v13RealLinearNoTargetBitJuntaBlockedMapSetEquivBudgetedGeneratingMapSet
+      i₀ observer)
+
+/-- Rowset-counting form of the remaining bit-junta blocked-map obligation. -/
+def V13RealLinearNoTargetBudgetedRowsetGenerationCountingBound
+    (m j : Nat) : Prop :=
+  ∀ i₀ : Fin m, ∀ rows : V13RealLinearBudgetedRowset m j,
+    ((2 : Nat) ^ m) *
+        Fintype.card
+          (V13RealLinearNoTargetBudgetedRowsetGeneratingMapSet i₀ rows) ≤
+      4 * ((2 : Nat) ^ j) *
+        Fintype.card (V13RealLinearNoTargetRowsMap m i₀)
+
+theorem
+    V13RealLinearNoTargetBudgetedRowsetGenerationCountingBound_zeroBudget
+    (m : Nat) :
+    V13RealLinearNoTargetBudgetedRowsetGenerationCountingBound m 0 := by
+  intro i₀ rows
+  have hrows : rows.1.card = 0 := Nat.eq_zero_of_le_zero rows.2
+  have hcard :
+      Fintype.card
+          (V13RealLinearNoTargetBudgetedRowsetGeneratingMapSet i₀ rows) =
+        0 := by
+    rw [Fintype.card_eq_zero_iff]
+    refine ⟨?_⟩
+    intro A
+    exact
+      v13RealLinear_not_rowsGenerateTarget_of_rows_card_zero
+        A.val.val i₀ hrows A.property
+  simp [hcard]
+
 theorem
     v13RealLinearNoTargetBitJunta_fixed_correct_card_eq_incorrect_card_of_not_blocked
     {m j : Nat} (i₀ : Fin m)
@@ -360,6 +490,19 @@ def V13RealLinearNoTargetBitJuntaBlockedCountingBound
             (V13RealLinearNoTargetBitJuntaBlockedMapSet i₀ observer) ≤
         4 * (2 ^ j) *
           Fintype.card (V13RealLinearNoTargetRowsMap m i₀)
+
+theorem
+    V13RealLinearNoTargetBitJuntaBlockedCountingBound_of_budgetedRowsetGeneration
+    {m j : Nat}
+    (hcount : V13RealLinearNoTargetBudgetedRowsetGenerationCountingBound m j) :
+    V13RealLinearNoTargetBitJuntaBlockedCountingBound m j := by
+  intro i₀ observer
+  have h :=
+    hcount i₀ (v13RealLinearBitJuntaRhsBudgetedRowset observer)
+  rw [
+    v13RealLinearNoTargetBitJuntaBlockedMapSet_card_eq_budgetedGeneratingMapSet
+      i₀ observer]
+  exact h
 
 def V13RealLinearNoTargetBitJuntaSuccessBound
     (m j : Nat) : Prop :=
@@ -800,6 +943,19 @@ theorem v13RealLinearNoTargetBitJuntaSuccessBound_of_blockedCounting
     v13RealLinearNoTargetBitJuntaBlockedMass_le_epsilon2_of_counting
       hcount i₀ observer
   linarith
+
+theorem v13RealLinearNoTargetBitJuntaSuccessBound_of_budgetedRowsetGeneration
+    {m j : Nat}
+    (hcount : V13RealLinearNoTargetBudgetedRowsetGenerationCountingBound m j) :
+    V13RealLinearNoTargetBitJuntaSuccessBound m j :=
+  v13RealLinearNoTargetBitJuntaSuccessBound_of_blockedCounting
+    (V13RealLinearNoTargetBitJuntaBlockedCountingBound_of_budgetedRowsetGeneration
+      hcount)
+
+theorem v13RealLinearNoTargetBitJuntaSuccessBound_zeroBudget (m : Nat) :
+    V13RealLinearNoTargetBitJuntaSuccessBound m 0 :=
+  v13RealLinearNoTargetBitJuntaSuccessBound_of_budgetedRowsetGeneration
+    (V13RealLinearNoTargetBudgetedRowsetGenerationCountingBound_zeroBudget m)
 
 lemma v13_zmod2_eq_of_one_add_ne {a b : ZMod 2}
     (h : 1 + a ≠ b) : a = b := by
