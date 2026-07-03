@@ -276,6 +276,14 @@ canonicalized glued edge color in any compatible chain, so shifted local
 switches are color-stable on prefix edges.  Downstream wrappers now consume
 this prefix closure automatically, reducing the remaining shifted-step route to
 component equality and the glued-edge switch case.
+The glued last-edge switch case is now closed by
+`concreteChainFiberAppendRelativeSingletonShiftedSwitchLastGluedPointClosed_of_input_trace`,
+so the local shifted-switch proof is down to component equality.  The global
+parent-row route still has one exact open pin:
+`concreteChainFiberAppendQuotientFibrationParentRowsNonSingletonPrefixStructuralClosed`.
+The wrappers around `BaseDataStructuralClosed` are conditional plumbing; they
+do not produce an unconditional semantic sufficiency theorem without that
+structural field theorem or an equivalent paired structural record.
 The same-prefix closure side is now separated from prefix mobility:
 `concreteChainFiberAppendPrefixSelfLiftClosureClosed_of_lift` derives a closed
 appended representative over the current prefix from the lift-closure theorem
