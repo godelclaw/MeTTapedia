@@ -9201,6 +9201,20 @@ def V13RealLinearNoTargetRowsSequentialDeferredDecisionCountingBound : Prop := b
       V13RealLinearAdaptiveDeferredDecisionCountingBound
         (v13RealLinearNoTargetRowsSequentialQRowExperiment i₀ observer) i₀
 
+/-- Low-positive no-target trace-coset counting pin.
+
+The closed table telescope switches the next row functional freely, which
+proves the required fresh-hit count for arbitrary functional tables and then
+uses the one-time GL density transfer.  The no-target sampler is stricter:
+the seed is a certified invertible map conditioned by
+`V13RealLinearTargetRows A i₀ = ∅`.  The existing switch does not preserve
+invertibility or this no-target condition, while the fixed-map row-trace coset
+bound only says that the possible hit rows lie in a coset of size at most
+`2^t`.  The missing step is the conditioned-basis count: after a sequential
+prefix has been fixed, among no-target certified bases the chosen unread row
+must land in `target + span(previous rows)` with mass at most
+`4 * 2^t / 2^m`, stated in division-free cardinal form by the bit-junta
+blocked-counting surface. -/
 def V13RealLinearNoTargetRowsSequentialTraceCosetHitCountingBound
     {m q : Nat} (i₀ : Fin m)
     (observer : V13RealLinearSequentialRowObserver m q) : Prop :=
