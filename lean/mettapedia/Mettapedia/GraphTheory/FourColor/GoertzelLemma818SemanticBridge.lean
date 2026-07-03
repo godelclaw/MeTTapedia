@@ -4707,6 +4707,142 @@ theorem concreteChainFiberAppend_boundary_output_ingress_contradiction
     orient currentLast target move inputEdge hseed hspecified houter
     hnextComponent
 
+theorem concreteChainFiberAppendLocalSingletonComponent_shift_nextLayer_prefix_empty
+    (word : List GoertzelLemma818FrontierMode.TauOrient)
+    (orient : GoertzelLemma818FrontierMode.TauOrient)
+    (pref target : List GoertzelLemma814.TauState)
+    (lastX currentLast : GoertzelLemma814.TauState)
+    (move : GoertzelLemma814.ChainMove)
+    (seen : List GoertzelLemma814.ChainEdge)
+    (hne : word ≠ [])
+    (hprefLen : pref.length = word.length)
+    (hcompatibleX : GoertzelLemma814.compatibleAdjacent
+      (GoertzelLemma814.tauOrientAt
+        (frontierWordToChainWord (word ++ [orient])) (word.length - 1))
+      (frontierOrientToChain orient)
+      (GoertzelLemma814.chainStateAt pref (word.length - 1))
+      lastX = true)
+    (htrace :
+      concreteChainFiberAppendLastInputTrace orient currentLast =
+        concreteChainFiberAppendLastInputTrace orient lastX)
+    (hseed :
+      (GoertzelLemma814.chainEdges (frontierWordToChainWord [orient])).contains
+        move.seed = true)
+    (hspecified :
+      GoertzelLemma814.chainSpecifiedKempeStep
+        (frontierWordToChainWord [orient]) [currentLast] target move = true)
+    (hseen :
+      ∀ edge, edge ∈ seen →
+        edge ∈ GoertzelLemma814.chainComponent
+          (frontierWordToChainWord [orient]) [currentLast]
+          move.a move.c move.seed) :
+    let globalOrients := frontierWordToChainWord (word ++ [orient])
+    let shiftedSeen := concreteChainFiberAppendShiftComponent word seen
+    List.filter
+        (fun ge =>
+          GoertzelLemma814.chainEdgeInPair (pref ++ [currentLast])
+              move.a move.c ge &&
+            !shiftedSeen.contains ge &&
+            shiftedSeen.any
+              (fun other => GoertzelLemma814.chainEdgesShareEndpoint
+                globalOrients ge other))
+        (GoertzelLemma814.chainEdges (frontierWordToChainWord word)) =
+      [] := by
+  let localOrients := frontierWordToChainWord [orient]
+  let globalOrients := frontierWordToChainWord (word ++ [orient])
+  let shiftedSeen := concreteChainFiberAppendShiftComponent word seen
+  let localComponent :=
+    GoertzelLemma814.chainComponent localOrients [currentLast]
+      move.a move.c move.seed
+  let globalPred : GoertzelLemma814.ChainEdge → Bool := fun ge =>
+    GoertzelLemma814.chainEdgeInPair (pref ++ [currentLast])
+        move.a move.c ge &&
+      !shiftedSeen.contains ge &&
+      shiftedSeen.any (fun other =>
+        GoertzelLemma814.chainEdgesShareEndpoint globalOrients ge other)
+  have hspecifiedParts := hspecified
+  unfold GoertzelLemma814.chainSpecifiedKempeStep at hspecifiedParts
+  change (!localComponent.isEmpty &&
+      GoertzelLemma814.chainComponentAvoidsInputs localOrients localComponent &&
+      GoertzelLemma814.chainAgreesWithSwitch localOrients [currentLast] target
+        localComponent move.a move.c) = true at hspecifiedParts
+  simp only [Bool.and_eq_true] at hspecifiedParts
+  rcases hspecifiedParts with
+    ⟨⟨_hLocalNonempty, hlocalAvoid⟩, _hLocalAgree⟩
+  change List.filter globalPred
+      (GoertzelLemma814.chainEdges (frontierWordToChainWord word)) = []
+  apply List.eq_nil_iff_forall_not_mem.2
+  intro ge hgeFilter
+  rw [List.mem_filter] at hgeFilter
+  rcases hgeFilter with ⟨hgeChain, hpred⟩
+  have hgeChainFilter := hgeChain
+  unfold GoertzelLemma814.chainEdges at hgeChainFilter
+  rw [List.mem_filter] at hgeChainFilter
+  rcases hgeChainFilter with ⟨hgeLocal, _hgeRep⟩
+  have hprefixRaw :
+      ge.occ < (frontierWordToChainWord word).length :=
+    GoertzelLemma814.chainLocalEdges_mem_occ_lt hgeLocal
+  have hprefix : ge.occ < word.length := by
+    simpa [frontierWordToChainWord] using hprefixRaw
+  have hpredParts := hpred
+  simp only [globalPred, Bool.and_eq_true] at hpredParts
+  rcases hpredParts with ⟨⟨hpair, _hfresh⟩, hany⟩
+  rw [List.any_eq_true] at hany
+  rcases hany with ⟨other, hotherMem, hshareOther⟩
+  unfold shiftedSeen concreteChainFiberAppendShiftComponent at hotherMem
+  rcases List.mem_map.mp hotherMem with
+    ⟨localEdge, hlocalSeen, hotherEq⟩
+  subst other
+  have hlocalMem : localEdge ∈ localComponent := by
+    simpa [localOrients, localComponent] using hseen localEdge hlocalSeen
+  have hlocalParts :=
+    concreteChainFiberAppendLocalSingletonComponent_edge_occ_zero_not_input
+      orient [currentLast] target move hseed hspecified
+      (by simpa [localOrients, localComponent] using hlocalMem)
+  have hlocalOcc : localEdge.occ = 0 := hlocalParts.1
+  have hlocalNotInput :
+      (GoertzelLemma814.tauOrientInputOrder
+        (frontierOrientToChain orient)).contains localEdge.edge = false :=
+    hlocalParts.2
+  have hshareShift :
+      GoertzelLemma814.chainEdgesShareEndpoint globalOrients ge
+        (concreteChainFiberAppendShiftEdge word localEdge) = true := by
+    simpa [globalOrients] using hshareOther
+  have hoccSucc : ge.occ + 1 = word.length :=
+    concreteChainFiberAppend_prefix_share_shift_occ_succ
+      word orient ge localEdge hprefix hlocalOcc
+      (by simpa [globalOrients] using hshareShift)
+  let leftOrient :=
+    GoertzelLemma814.tauOrientAt globalOrients (word.length - 1)
+  have hleft :
+      GoertzelLemma814.tauOrientAt globalOrients (word.length - 1) =
+        leftOrient := rfl
+  rcases concreteChainFiberAppend_prefix_share_shift_output_zip
+      word orient leftOrient ge localEdge
+      (by simpa [globalOrients] using hleft) hprefix hoccSucc hlocalOcc
+      (by simpa [globalOrients] using hshareShift) with
+    ⟨outputEdge, inputEdge, hzip, hgeEq⟩
+  have houtputPair :
+      GoertzelLemma814.chainEdgeInPair (pref ++ [currentLast])
+        move.a move.c
+        ({ occ := word.length - 1, edge := outputEdge } :
+          GoertzelLemma814.ChainEdge) = true := by
+    simpa [← hgeEq] using hpair
+  have hshareOutput :
+      GoertzelLemma814.chainEdgesShareEndpoint globalOrients
+        ({ occ := word.length - 1, edge := outputEdge } :
+          GoertzelLemma814.ChainEdge)
+        (concreteChainFiberAppendShiftEdge word localEdge) = true := by
+    simpa [← hgeEq] using hshareShift
+  exact concreteChainFiberAppend_boundary_output_ingress_contradiction
+    word orient leftOrient pref lastX currentLast move localComponent localEdge
+    outputEdge inputEdge target hne hprefLen
+    (by simpa [globalOrients] using hleft)
+    (by simpa [globalOrients, leftOrient] using hcompatibleX)
+    htrace hzip rfl hlocalMem hlocalAvoid hlocalOcc hlocalNotInput
+    houtputPair (by simpa [globalOrients] using hshareOutput)
+    hseed hspecified
+
 /--
 Pinned reverse/no-ingress component equality for the singleton append lift.
 
