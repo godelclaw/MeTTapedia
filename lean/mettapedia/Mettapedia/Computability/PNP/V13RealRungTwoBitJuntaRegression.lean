@@ -1281,9 +1281,35 @@ example {m : Nat} (i₀ row₀ row₁ : Fin m)
   v13RealLinearNoTargetFixedPairCosetHitMapSet_card_mul_two_pow_le_noTarget
     i₀ row₀ row₁ hrow
 
+example (n : Nat) :
+    Fintype.card (V13RealLinearSequentialPrefixRhsHistory n) = 2 ^ n :=
+  v13RealLinearSequentialPrefixRhsHistory_card n
+
+example {m q : Nat} (i₀ : Fin m)
+    (observer : V13RealLinearSequentialRowObserver m q) (t : Fin q)
+    (activeIdx :
+      V13RealLinearNoTargetSequentialTraceFirstCosetHitActiveFixedMapTranscriptCylinderIndex
+        i₀ observer t)
+    (cell :
+      V13RealLinearNoTargetSequentialTraceFirstCosetHitActiveFixedMapTranscriptCylinderGeneratedPrefixCell
+        i₀ observer t activeIdx) :
+    v13RealLinearSequentialPrefixTranscriptVectorRhs
+        (v13RealLinearSequentialPrefixTranscriptVectorOf observer
+          (v13RealLinearPublicInput
+            ({ x := cell.val, A := activeIdx.1.A.val } :
+              V13RealLinearWorld m))
+          ((t : Nat) + 1)) =
+      v13RealLinearSequentialPrefixTranscriptVectorRhs
+        (v13RealLinearNoTargetSequentialTraceFirstCosetHitActiveFixedMapTranscriptCylinder_generatedPrefix
+          i₀ observer t activeIdx) :=
+  v13RealLinearNoTargetSequentialTraceFirstCosetHitGeneratedPrefixCell_rhs_eq
+    i₀ observer t activeIdx cell
+
 #print axioms v13RealLinearNoTargetSequentialTraceFirstCosetHitFixedMapTranscriptCylinder_newCapture_or_priorNewCapture
 #print axioms v13RealLinearNoTargetSequentialTraceFirstCosetHitFixedMapTranscriptCylinder_existing_priorNewCapture
 #print axioms v13RealLinearNoTargetSequentialTraceFirstCosetHitActiveFixedMapTranscriptCylinder_generatedPrefix_rows_eq
+#print axioms v13RealLinearSequentialPrefixRhsHistory_card
+#print axioms v13RealLinearNoTargetSequentialTraceFirstCosetHitGeneratedPrefixCell_rhs_eq
 #print axioms v13RealLinearNoTargetSequentialTraceFirstCosetHitGeneratedPrefixCell_capacity_le_card
 #print axioms v13RealLinearNoTargetSequentialTraceFirstCosetHitGeneratedPrefixCell_card_eq_capacity
 #print axioms v13RealLinearNoTargetSequentialTraceFirstCosetHitGeneratedPrefixCellToFixedMapTranscriptCylinder
