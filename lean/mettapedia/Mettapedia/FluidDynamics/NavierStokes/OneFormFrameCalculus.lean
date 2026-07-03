@@ -392,6 +392,70 @@ theorem frameLaplacian_oneForm_normalized
 
 end FrameLaplacian
 
+section ProfileModeDerivatives
+
+variable {φ dφ ddφ : ℝ → ℝ} {k e : EuclideanSpace ℝ ι}
+
+omit [DecidableEq ι] in
+/-- The directional derivative of a profile mode, as a function of the base
+point, is itself a profile mode: the profile picks up the factor `⟪k, v⟫`
+and differentiates. -/
+lemma fderiv_profileMode_eval (hφ : ∀ t, HasDerivAt φ (dφ t) t)
+    (v : EuclideanSpace ℝ ι) :
+    (fun y => fderiv ℝ (profileMode φ k e) y v) =
+      profileMode (fun t => ⟪k, v⟫ * dφ t) k e := by
+  funext y
+  rw [(hasFDerivAt_profileMode hφ k e y).fderiv]
+  rw [ContinuousLinearMap.smulRight_apply]
+  unfold profileMode
+  rw [smul_apply, innerSL_apply_apply, smul_eq_mul]
+  simp [mul_comm]
+
+omit [DecidableEq ι] in
+/-- Second directional derivative of a profile mode:
+`D_v² (φ(⟪k,·⟫) e) = ddφ(⟪k,x⟫) ⟪k, v⟫² • e`. -/
+lemma dirDeriv2_profileMode (hφ : ∀ t, HasDerivAt φ (dφ t) t)
+    (hdφ : ∀ t, HasDerivAt dφ (ddφ t) t) (v x : EuclideanSpace ℝ ι) :
+    dirDeriv2 v (profileMode φ k e) x = (ddφ ⟪k, x⟫ * ⟪k, v⟫ ^ 2) • e := by
+  unfold dirDeriv2
+  rw [fderiv_profileMode_eval hφ v]
+  have hmode := hasFDerivAt_profileMode
+    (φ := fun t => ⟪k, v⟫ * dφ t) (dφ := fun t => ⟪k, v⟫ * ddφ t)
+    (fun t => (hdφ t).const_mul ⟪k, v⟫) k e x
+  rw [hmode.fderiv]
+  rw [ContinuousLinearMap.smulRight_apply, smul_apply, innerSL_apply_apply,
+    smul_eq_mul]
+  match_scalars
+  ring
+
+/-- Laplacian of a profile mode:
+`Δ (φ(⟪k,·⟫) e) = ddφ(⟪k,x⟫) ⟪k, k⟫ • e`. -/
+lemma coordLaplacian_profileMode (hφ : ∀ t, HasDerivAt φ (dφ t) t)
+    (hdφ : ∀ t, HasDerivAt dφ (ddφ t) t) (x : EuclideanSpace ℝ ι) :
+    coordLaplacian (profileMode φ k e) x = (ddφ ⟪k, x⟫ * ⟪k, k⟫) • e := by
+  unfold coordLaplacian
+  have hterm : ∀ p : ι,
+      dirDeriv2 (EuclideanSpace.single p 1) (profileMode φ k e) x =
+        (ddφ ⟪k, x⟫ * k p ^ 2) • e := by
+    intro p
+    rw [dirDeriv2_profileMode hφ hdφ]
+    have hkp : ⟪k, (EuclideanSpace.single p 1 : EuclideanSpace ℝ ι)⟫ = k p := by
+      simp [EuclideanSpace.inner_single_right]
+    rw [hkp]
+  calc ∑ p, dirDeriv2 (EuclideanSpace.single p 1) (profileMode φ k e) x
+      = ∑ p, (ddφ ⟪k, x⟫ * k p ^ 2) • e :=
+        Finset.sum_congr rfl fun p _ => hterm p
+    _ = (∑ p, ddφ ⟪k, x⟫ * k p ^ 2) • e := by rw [Finset.sum_smul]
+    _ = (ddφ ⟪k, x⟫ * ⟪k, k⟫) • e := by
+        have hkk : ⟪k, k⟫ = ∑ p, k p ^ 2 := by
+          rw [PiLp.inner_apply]
+          exact Finset.sum_congr rfl fun p _ => by
+            simp [pow_two]
+        rw [← Finset.mul_sum, hkk]
+
+end ProfileModeDerivatives
+
+
 end NavierStokes
 end FluidDynamics
 end Mettapedia
