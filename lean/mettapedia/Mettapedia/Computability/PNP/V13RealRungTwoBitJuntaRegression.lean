@@ -692,6 +692,33 @@ example {m q : Nat} (observer : V13RealLinearSequentialRowObserver m q)
   v13RealLinearSequentialPrefixTranscriptVectorOf_lastRow
     observer publicInput n
 
+example {m q : Nat} (observer : V13RealLinearSequentialRowObserver m q)
+    (publicInput : V13RealLinearPublic m) (n : Nat)
+    {entry : Fin m × V13RealLinearRowView m}
+    (hentry :
+      entry ∈
+        v13RealLinearSequentialRowPrefixTranscriptOf
+          observer publicInput n) :
+    entry.2 = v13RealLinearRowView entry.1 publicInput :=
+  v13RealLinearSequentialRowPrefixTranscriptOf_mem_view
+    observer publicInput n hentry
+
+example {m q : Nat} (observer : V13RealLinearSequentialRowObserver m q)
+    (public₀ public₁ : V13RealLinearPublic m) (n : Nat)
+    (hpref :
+      v13RealLinearSequentialRowPrefixTranscriptOf observer public₀ n =
+        v13RealLinearSequentialRowPrefixTranscriptOf observer public₁ n) :
+    v13RealLinearRowsTranscript
+        (v13RealLinearSequentialRowTranscriptRows
+          (v13RealLinearSequentialRowPrefixTranscriptOf observer public₀ n))
+        public₀ =
+      v13RealLinearRowsTranscript
+        (v13RealLinearSequentialRowTranscriptRows
+          (v13RealLinearSequentialRowPrefixTranscriptOf observer public₀ n))
+        public₁ :=
+  v13RealLinearRowsTranscript_eq_of_sequentialPrefixTranscript_eq
+    observer public₀ public₁ n hpref
+
 noncomputable example {m q : Nat} (i₀ : Fin m)
     (observer : V13RealLinearSequentialRowObserver m q) (t : Fin q)
     (rows : Finset (Fin m)) (row : Fin m)
@@ -937,6 +964,41 @@ example {m q : Nat} (i₀ : Fin m)
       activeIdx.1.row :=
   v13RealLinearNoTargetSequentialTraceFirstCosetHitActiveFixedMapTranscriptCylinder_generatedPrefix_lastRow_eq
     i₀ observer t activeIdx
+
+example {m q : Nat} (i₀ : Fin m)
+    (observer : V13RealLinearSequentialRowObserver m q) (t : Fin q)
+    (activeIdx₀ activeIdx₁ :
+      V13RealLinearNoTargetSequentialTraceFirstCosetHitActiveFixedMapTranscriptCylinderIndex
+        i₀ observer t)
+    (hA : activeIdx₀.1.A = activeIdx₁.1.A)
+    (hpref :
+      v13RealLinearNoTargetSequentialTraceFirstCosetHitActiveFixedMapTranscriptCylinder_generatedPrefix
+          i₀ observer t activeIdx₀ =
+        v13RealLinearNoTargetSequentialTraceFirstCosetHitActiveFixedMapTranscriptCylinder_generatedPrefix
+          i₀ observer t activeIdx₁) :
+    activeIdx₀ = activeIdx₁ :=
+  v13RealLinearNoTargetSequentialTraceFirstCosetHitActiveFixedMapTranscriptCylinderIndex_eq_of_sameMap_generatedPrefix
+    i₀ observer t activeIdx₀ activeIdx₁ hA hpref
+
+noncomputable example {m q : Nat} (i₀ : Fin m)
+    (observer : V13RealLinearSequentialRowObserver m q) (t : Fin q)
+    (A : V13RealLinearNoTargetRowsMap m i₀) :
+    V13RealLinearNoTargetSequentialTraceFirstCosetHitActiveFixedMapTranscriptCylinderIndexForMap
+        i₀ observer t A ↪
+      V13RealLinearNoTargetSequentialTraceFirstCosetHitActiveGeneratedPrefixForMap
+        i₀ observer t A :=
+  v13RealLinearNoTargetSequentialTraceFirstCosetHitActiveFixedMapTranscriptCylinderIndexForMapToGeneratedPrefixForMap
+    i₀ observer t A
+
+example {m q : Nat} (i₀ : Fin m)
+    (observer : V13RealLinearSequentialRowObserver m q) (t : Fin q)
+    (A : V13RealLinearNoTargetRowsMap m i₀) :
+    Fintype.card
+        (V13RealLinearNoTargetSequentialTraceFirstCosetHitActiveFixedMapTranscriptCylinderIndexForMap
+          i₀ observer t A) ≤
+      2 ^ ((t : Nat) + 1) :=
+  v13RealLinearNoTargetSequentialTraceFirstCosetHitActiveFixedMapTranscriptCylinderIndexForMap_card_le_rhsHistory
+    i₀ observer t A
 
 noncomputable example {m q : Nat} (i₀ : Fin m)
     (observer : V13RealLinearSequentialRowObserver m q) (t : Fin q)
@@ -1434,8 +1496,13 @@ example {m q : Nat} (i₀ : Fin m)
 #print axioms v13RealLinearNoTargetSequentialTraceFirstCosetHitActiveFixedMapTranscriptCylinder_generatedPrefix_rows_eq
 #print axioms v13RealLinearSequentialPrefixTranscriptVectorOf_init
 #print axioms v13RealLinearSequentialPrefixTranscriptVectorOf_lastRow
+#print axioms v13RealLinearSequentialRowPrefixTranscriptOf_mem_view
+#print axioms v13RealLinearRowsTranscript_eq_of_sequentialPrefixTranscript_eq
 #print axioms v13RealLinearNoTargetSequentialTraceFirstCosetHitActiveFixedMapTranscriptCylinder_generatedPrefix_init_rows_eq
 #print axioms v13RealLinearNoTargetSequentialTraceFirstCosetHitActiveFixedMapTranscriptCylinder_generatedPrefix_lastRow_eq
+#print axioms v13RealLinearNoTargetSequentialTraceFirstCosetHitActiveFixedMapTranscriptCylinderIndex_eq_of_sameMap_generatedPrefix
+#print axioms v13RealLinearNoTargetSequentialTraceFirstCosetHitActiveFixedMapTranscriptCylinderIndexForMapToGeneratedPrefixForMap
+#print axioms v13RealLinearNoTargetSequentialTraceFirstCosetHitActiveFixedMapTranscriptCylinderIndexForMap_card_le_rhsHistory
 #print axioms v13RealLinearSequentialPrefixRhsHistory_card
 #print axioms v13RealLinearRowView_eq_of_A_eq_rhs_eq
 #print axioms v13RealLinearSequentialPrefixTranscriptVectorOf_eq_of_A_eq_rhs
