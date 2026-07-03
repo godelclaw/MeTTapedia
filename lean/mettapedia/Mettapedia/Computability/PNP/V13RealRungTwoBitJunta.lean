@@ -5125,18 +5125,19 @@ Step 0 packing surface.  The fixed-prefix transcript sigma has already been
 identified with this active capacity sum; the remaining work is the genuine
 conditioned-basis counting bound.
 
-Current live pin: the hard overcharge is the existing-row branch of
-`V13RealLinearRowTraceCosetHit`.  When `activeIdx.1.row ∈ activeIdx.1.rows`,
-`generatedQBudgetedRowset` does not add a fresh row, so a later repeated-row
-coset hit may be charged to an earlier target-support history already present
-in the prefix.  The unordered rowset transcript collapses distinct ordered
-support-occurrence histories: if a support row occurs more than once before
-`t`, choosing its first occurrence or a later occurrence gives two transcript
-histories that charge the same completed no-target map/world after forgetting
-occurrence positions.  A closure must encode the ordered support occurrence
-history and prove that these histories have total multiplicity at most
-`2 ^ (t : Nat)`, before composing with the factor-2 generated-rowset capacity
-reduction. -/
+Current live pin: generated-prefix cells now have exact hidden-vector
+completion count and embed back into their original active fixed-map
+transcript cylinder.  The remaining overcharge is the map-normalized summation
+over those generated cells.  In the existing-row branch of
+`V13RealLinearRowTraceCosetHit`, two ordered prefix histories can have the same
+fixed map, the same generated rowset transcript, and the same target-support
+rows after quotienting to an unordered rowset, but differ only by which
+occurrence of a repeated support row is used before `t`.  After that
+occurrence position is forgotten, both histories charge the same no-target
+support-sum witness and the rowset-generation count sees one unordered
+rowset.  A closure must keep the ordered support-occurrence history through
+the charge and prove total multiplicity at most `2 ^ ((t : Nat) + 1)` before
+using the factor-2 generated-rowset capacity reduction. -/
 def
     V13RealLinearNoTargetRowsSequentialTraceCosetHitActiveFixedMapTranscriptCylinderCapacityBound
     {m q : Nat} (i₀ : Fin m)
