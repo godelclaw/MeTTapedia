@@ -6379,15 +6379,14 @@ theorem concreteChainFiberAppendRelativeSingletonClosureStepLiftClosed_of_global
     hcompatibleX hkeyLocal current target currentLast targetLast hcurrent
     htarget hcurrentEq htargetEq htargetGlobal hcurrentClose hglobalStep
 
-theorem concreteChainFiberAppendRelativeSingletonGlobalStepClosureClosed_of_bounded_saturation
-    (hSat : GoertzelLemma814.closeChainFiberBoundedSaturationClosed) :
+theorem concreteChainFiberAppendRelativeSingletonGlobalStepClosureClosed_of_bounded_saturation :
     concreteChainFiberAppendRelativeSingletonGlobalStepClosureClosed := by
   intro word orient _hne _hcert key _hkey pref _lastX _hpref _hlastX
     _hcompatibleX _hkeyLocal current target currentLast targetLast _hcurrent
     _htarget _hcurrentEq _htargetEq htargetGlobal hcurrentClose hglobalStep
   exact
     GoertzelLemma814.closeChainFiber_mem_step_of_close_at_length_of_bounded_saturation
-      hSat
+      GoertzelLemma814.closeChainFiberBoundedSaturationClosed_ok
       (frontierWordToChainWord (word ++ [orient]))
       (concreteChainFiber (word ++ [orient]) key)
       [chainFiberRootState (word ++ [orient]) key]
@@ -8158,7 +8157,6 @@ theorem concreteChainFiberAppendPrefixFiberReachClosed_of_singleton_closure_lift
 theorem concreteChainFiberAppendPrefixFibrationClosed_of_relative_singleton_route
     (hPrefixRoot : concreteChainFiberAppendPrefixRootClosureLiftClosed)
     (hRelativeRoot : concreteChainFiberAppendRelativeSingletonClosureRootLiftClosed)
-    (hSat : GoertzelLemma814.closeChainFiberBoundedSaturationClosed)
     (hMobility : concreteChainFiberAppendFixedPrefixInterfaceMobilityReachClosed) :
     concreteChainFiberAppendPrefixFibrationClosed :=
   concreteChainFiberAppendPrefixFibrationClosed_of_root_lift_and_raw_prefix_reach
@@ -8168,19 +8166,17 @@ theorem concreteChainFiberAppendPrefixFibrationClosed_of_relative_singleton_rout
         hRelativeRoot
         (concreteChainFiberAppendRelativeSingletonClosureStepLiftClosed_of_global_step
           concreteChainFiberAppendRelativeSingletonGlobalKempeStepLiftClosed_ok
-          (concreteChainFiberAppendRelativeSingletonGlobalStepClosureClosed_of_bounded_saturation
-            hSat)))
+          concreteChainFiberAppendRelativeSingletonGlobalStepClosureClosed_of_bounded_saturation))
       hMobility)
 
 theorem concreteChainFiberAppendQuotientFibrationParentRowsNonSingletonPrefixBaseDataStructuralClosed_of_relative_singleton_route
     (hPrefixRoot : concreteChainFiberAppendPrefixRootClosureLiftClosed)
     (hRelativeRoot : concreteChainFiberAppendRelativeSingletonClosureRootLiftClosed)
-    (hSat : GoertzelLemma814.closeChainFiberBoundedSaturationClosed)
     (hMobility : concreteChainFiberAppendFixedPrefixInterfaceMobilityReachClosed) :
     concreteChainFiberAppendQuotientFibrationParentRowsNonSingletonPrefixBaseDataStructuralClosed :=
   concreteChainFiberAppendQuotientFibrationParentRowsNonSingletonPrefixBaseDataStructuralClosed_of_prefix_fibration
     (concreteChainFiberAppendPrefixFibrationClosed_of_relative_singleton_route
-      hPrefixRoot hRelativeRoot hSat hMobility)
+      hPrefixRoot hRelativeRoot hMobility)
 
 def chainAuditFibrationTransferClosed : Prop :=
   ∀ (word : List GoertzelLemma818FrontierMode.TauOrient)
@@ -8510,12 +8506,11 @@ theorem semanticFrontierStateSufficientForChain_of_relative_singleton_route
     {targetAudit : RepresentativeSemanticTarget → Bool}
     (hPrefixRoot : concreteChainFiberAppendPrefixRootClosureLiftClosed)
     (hRelativeRoot : concreteChainFiberAppendRelativeSingletonClosureRootLiftClosed)
-    (hSat : GoertzelLemma814.closeChainFiberBoundedSaturationClosed)
     (hMobility : concreteChainFiberAppendFixedPrefixInterfaceMobilityReachClosed) :
     semanticFrontierStateSufficientForChain targetAudit :=
   semanticFrontierStateSufficientForChain_of_prefix_fibration
     (concreteChainFiberAppendPrefixFibrationClosed_of_relative_singleton_route
-      hPrefixRoot hRelativeRoot hSat hMobility)
+      hPrefixRoot hRelativeRoot hMobility)
 
 theorem semanticFrontierStateSufficientForChain_of_prefix_fibration_fields
     {targetAudit : RepresentativeSemanticTarget → Bool}
