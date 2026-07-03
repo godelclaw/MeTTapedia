@@ -500,6 +500,23 @@ evidence is
 `ca7fd79ff0b51aeaf23e482dd55470c8a6ac6236d221db4a790c1a6e994e86ff`);
 the combined theorem depends on `propext`, `Classical.choice`, and
 `Quot.sound`.
+The same package is now exposed in a dispatcher-ready case form:
+`ttFiber32FrontierWord_length_gt_one`,
+`ttFiber32FrontierWord_fibrationCertificate`,
+`ttFiber32Key_mem_colorAssignments4`, and
+`ttFiber32AppendedParentRowsProjectionFiniteSection_of_eq` match the exact
+body of the global combined predicate when the non-singleton prefix is this
+`TT` word, the appended orientation is `T`, and the fixed input is key 32.
+This is still one finite case, but it is shaped for a future generated
+case-split theorem rather than only as a standalone local witness.  Case-ready
+evidence is
+`fourcolor-tt-fiber32-case-ready-row-surface-build-20260703.log` (1110 jobs,
+SHA256
+`533583471beb7370ab7616d30759ba326e1980aa620684f7175311666fcbac90`) and
+`fourcolor-tt-fiber32-case-ready-row-surface-axioms-20260703.log` (SHA256
+`2ce4d6dbc513acba180cd96545a239e9b04aea571b68894d8de02e628d93a4cb`);
+the case theorem and prefix certificate theorem depend on `propext`,
+`Classical.choice`, and `Quot.sound`.
 The table-level diagnostic
 `tttFiber32Rows_length_eq_two_mul_ttFiber32Rows_length` records that the known
 `TT` obstruction key is the same generated fixed input as `TTT` light-fiber

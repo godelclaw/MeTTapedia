@@ -357,9 +357,12 @@ coverage/root-close pattern, and
 it in the emitted parent-row certificate shape for this exact key.  Together
 with the earlier projection finite-section rows,
 `ttFiber32AppendedParentRowsProjectionFiniteSection` now packages both local
-row-shaped halves for the exact `TT -> TTT` fiber-32 append.  Gate-2 still
-needs the same pattern lifted beyond this key and fed into the global
-generated parent-row/projection predicate.
+row-shaped halves for the exact `TT -> TTT` fiber-32 append.  The follow-up
+`ttFiber32AppendedParentRowsProjectionFiniteSection_of_eq` presents that same
+local package in the body shape expected by the global combined predicate under
+the exact word/orient/key equalities.  Gate-2 still needs the same pattern
+lifted beyond this key and fed into the global generated parent-row/projection
+predicate.
 The theorem
 `tttFiber32Rows_length_eq_two_mul_ttFiber32Rows_length` records the table-level
 alignment for the known `TT` obstruction key: the same generated key appears in

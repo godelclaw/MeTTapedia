@@ -1958,6 +1958,52 @@ theorem ttFiber32AppendedParentRowsProjectionFiniteSection :
       tttFiber32RootClosureParentRowsSymmetricRootedConnectedCertificate
   · exact ttFiber32AppendProjectionFiniteSection
 
+theorem ttFiber32FrontierWord_length_gt_one :
+    1 < ttFiber32FrontierWord.length := by
+  decide
+
+theorem ttFiber32FrontierWord_fibrationCertificate :
+    Nonempty (ChainWordConcreteFibrationCertificate ttFiber32FrontierWord) := by
+  simpa [ttFiber32FrontierWord,
+    GoertzelLemma818FrontierBaseBridge.lengthTwoFrontierWord] using
+    concreteChainWordFibrationLengthTwoSeeds_ok
+      GoertzelLemma818LengthTwoBase.LengthTwoOrientWord.tt
+
+theorem ttFiber32Key_mem_colorAssignments4 :
+    GoertzelLemma818CompositeCertificate.ttFiber32Key ∈
+      GoertzelLemma814.colorAssignments4 := by
+  decide
+
+theorem ttFiber32AppendedParentRowsProjectionFiniteSection_of_eq
+    {word : List GoertzelLemma818FrontierMode.TauOrient}
+    {orient : GoertzelLemma818FrontierMode.TauOrient}
+    {key : List LColor}
+    (hword : word = ttFiber32FrontierWord)
+    (horient : orient = GoertzelLemma818FrontierMode.TauOrient.tau)
+    (hkey : key = GoertzelLemma818CompositeCertificate.ttFiber32Key)
+    (root : List TauState) (rest : List (List TauState))
+    (_hfiber : concreteChainFiber word key = root :: rest) :
+    (∃ totalDecidableEq :
+      DecidableEq (ChainFiberPoint (word ++ [orient]) key),
+      Nonempty
+        (@GoertzelLemma818Fibration.ParentRowsSymmetricRootedConnectedCertificate
+          (ChainFiberPoint (word ++ [orient]) key)
+          totalDecidableEq
+          (chainFiberRootClosureStep (word ++ [orient]) key))) ∧
+    ∃ proj :
+      ChainFiberPoint (word ++ [orient]) key →
+        ChainFiberPoint word key,
+      ∃ preimageRows :
+        List (ChainFiberPoint (word ++ [orient]) key),
+        ∃ rowOf :
+          ChainFiberPoint word key → Fin preimageRows.length,
+          ∀ point : ChainFiberPoint word key,
+            proj (preimageRows.get (rowOf point)) = point := by
+  subst word
+  subst orient
+  subst key
+  exact ttFiber32AppendedParentRowsProjectionFiniteSection
+
 def tttPartialTargetCertificateAudit : Bool :=
   tttMode09WitnessAudit
     && tttTargetProgressCountsAudit
