@@ -5904,9 +5904,13 @@ The base-data half is theorem-supplied separately by
 This Prop is stronger than the paired
 `concreteChainFiberAppendQuotientFibrationParentRowsNonSingletonPrefixBaseDataStructuralClosed`
 route: it quantifies over every supplied `data`, not only the generated
-prefix-root-star base data. The downstream parent-row sufficiency theorems
-remain conditional until this structural pin, or an equivalent paired
-base-data/structural record for the chosen base data, is proved.
+prefix-root-star base data. Since `ChainFiberAppendQuotientFibrationParentRowsBaseData`
+is an unrestricted structure with public `mk`, this is not a case split over
+`unit` and `ofPrefixRootStar`: an all-data proof must work for any finite
+parent-row base record and provide a projection whose image supports every
+`data.baseStep` lift. The downstream parent-row sufficiency theorems remain
+conditional until this structural pin, or an equivalent paired
+base-data/structural record for the chosen generated base data, is proved.
 -/
 def concreteChainFiberAppendQuotientFibrationParentRowsNonSingletonPrefixStructuralClosed :
     Prop :=
