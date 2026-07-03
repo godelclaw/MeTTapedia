@@ -6147,6 +6147,12 @@ theorem concreteChainFiberAppendRelativeSingletonShiftedSpecifiedStepClosed_of_c
     (concreteChainFiberAppendRelativeSingletonShiftedSwitchAgreementClosed_of_compatible_prefix_and_glued
       hLastGlued)
 
+theorem concreteChainFiberAppendRelativeSingletonShiftedSpecifiedStepClosed_ok :
+    concreteChainFiberAppendRelativeSingletonShiftedSpecifiedStepClosed :=
+  concreteChainFiberAppendRelativeSingletonShiftedSpecifiedStepClosed_of_component_and_glued
+    concreteChainFiberAppendRelativeSingletonShiftedComponentClosed_ok
+    concreteChainFiberAppendRelativeSingletonShiftedSwitchLastGluedPointClosed_of_input_trace
+
 def concreteChainFiberAppendRelativeSingletonShiftedSpecifiedKempeStepClosed : Prop :=
   ∀ (word : List GoertzelLemma818FrontierMode.TauOrient)
     (orient : GoertzelLemma818FrontierMode.TauOrient)
@@ -6215,6 +6221,11 @@ theorem concreteChainFiberAppendRelativeSingletonShiftedSpecifiedKempeStepClosed
     concreteChainFiberAppendRelativeSingletonShiftedSeedPresentClosed_of_local_specified
     hStep
 
+theorem concreteChainFiberAppendRelativeSingletonShiftedSpecifiedKempeStepClosed_ok :
+    concreteChainFiberAppendRelativeSingletonShiftedSpecifiedKempeStepClosed :=
+  concreteChainFiberAppendRelativeSingletonShiftedSpecifiedKempeStepClosed_of_shifted_step
+    concreteChainFiberAppendRelativeSingletonShiftedSpecifiedStepClosed_ok
+
 theorem concreteChainFiberAppendRelativeSingletonSpecifiedKempeStepLiftClosed_of_shifted
     (hShift :
       concreteChainFiberAppendRelativeSingletonShiftedSpecifiedKempeStepClosed) :
@@ -6239,6 +6250,11 @@ theorem concreteChainFiberAppendRelativeSingletonSpecifiedKempeStepLiftClosed_of
   concreteChainFiberAppendRelativeSingletonSpecifiedKempeStepLiftClosed_of_shifted
     (concreteChainFiberAppendRelativeSingletonShiftedSpecifiedKempeStepClosed_of_shifted_step
       hStep)
+
+theorem concreteChainFiberAppendRelativeSingletonSpecifiedKempeStepLiftClosed_ok :
+    concreteChainFiberAppendRelativeSingletonSpecifiedKempeStepLiftClosed :=
+  concreteChainFiberAppendRelativeSingletonSpecifiedKempeStepLiftClosed_of_shifted
+    concreteChainFiberAppendRelativeSingletonShiftedSpecifiedKempeStepClosed_ok
 
 theorem concreteChainFiberAppendRelativeSingletonSpecifiedKempeStepLiftClosed_of_component_and_glued
     (hComponent :
@@ -6278,6 +6294,11 @@ theorem concreteChainFiberAppendRelativeSingletonGlobalKempeStepLiftClosed_of_sh
   concreteChainFiberAppendRelativeSingletonGlobalKempeStepLiftClosed_of_specified_step
     (concreteChainFiberAppendRelativeSingletonSpecifiedKempeStepLiftClosed_of_shifted_step
       hStep)
+
+theorem concreteChainFiberAppendRelativeSingletonGlobalKempeStepLiftClosed_ok :
+    concreteChainFiberAppendRelativeSingletonGlobalKempeStepLiftClosed :=
+  concreteChainFiberAppendRelativeSingletonGlobalKempeStepLiftClosed_of_specified_step
+    concreteChainFiberAppendRelativeSingletonSpecifiedKempeStepLiftClosed_ok
 
 theorem concreteChainFiberAppendRelativeSingletonGlobalKempeStepLiftClosed_of_component_and_glued
     (hComponent :
@@ -8133,6 +8154,23 @@ theorem concreteChainFiberAppendPrefixFiberReachClosed_of_singleton_closure_lift
     (concreteChainFiberAppendRelativeSingletonLiftClosed_of_closure_lift
       hClosureLift)
     hMobility
+
+theorem concreteChainFiberAppendPrefixFibrationClosed_of_relative_singleton_route
+    (hPrefixRoot : concreteChainFiberAppendPrefixRootClosureLiftClosed)
+    (hRelativeRoot : concreteChainFiberAppendRelativeSingletonClosureRootLiftClosed)
+    (hSat : GoertzelLemma814.closeChainFiberBoundedSaturationClosed)
+    (hMobility : concreteChainFiberAppendFixedPrefixInterfaceMobilityReachClosed) :
+    concreteChainFiberAppendPrefixFibrationClosed :=
+  concreteChainFiberAppendPrefixFibrationClosed_of_root_lift_and_raw_prefix_reach
+    hPrefixRoot
+    (concreteChainFiberAppendRawPrefixReachClosed_of_singleton_closure_lift_and_mobility
+      (concreteChainFiberAppendRelativeSingletonClosureLiftClosed_of_root_and_step_lift
+        hRelativeRoot
+        (concreteChainFiberAppendRelativeSingletonClosureStepLiftClosed_of_global_step
+          concreteChainFiberAppendRelativeSingletonGlobalKempeStepLiftClosed_ok
+          (concreteChainFiberAppendRelativeSingletonGlobalStepClosureClosed_of_bounded_saturation
+            hSat)))
+      hMobility)
 
 def chainAuditFibrationTransferClosed : Prop :=
   ∀ (word : List GoertzelLemma818FrontierMode.TauOrient)
