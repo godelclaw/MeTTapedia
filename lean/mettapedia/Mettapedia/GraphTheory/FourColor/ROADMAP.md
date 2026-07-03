@@ -272,7 +272,10 @@ and
 `concreteChainFiberAppendQuotientFibrationParentRowsNonSingletonPrefixProjectionSurjectiveClosed`,
 with direct `_of_appended_connected_and_projection_surjective` wrappers.  This
 lets generated data prove total appended connectedness separately from the
-surjective projection table.
+surjective projection table.  The projection half has the finite emitted form
+`concreteChainFiberAppendQuotientFibrationParentRowsNonSingletonPrefixProjectionFiniteSectionClosed`:
+emit a projection, a finite list of appended preimage rows, and a selector from
+each prefix fiber point to one selected row.
 The theorem
 `tttFiber32Rows_length_eq_two_mul_ttFiber32Rows_length` records the table-level
 alignment for the known `TT` obstruction key: the same generated key appears in
