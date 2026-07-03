@@ -170,4 +170,13 @@ example {m : Nat} (i₀ row₀ row₁ : Fin m)
   v13RealLinearNoTargetFixedPairCosetHitMapSet_card_mul_two_pow_le_equiv
     i₀ row₀ row₁ hrow
 
+example {m : Nat} (i₀ row₀ row₁ : Fin m)
+    (hrow : row₁ ∉ ({row₀} : Finset (Fin m))) :
+    Fintype.card
+        (V13RealLinearNoTargetFixedPairCosetHitMapSet i₀ row₀ row₁) *
+      2 ^ m ≤
+    4 * Fintype.card (V13RealLinearNoTargetRowsMap m i₀) :=
+  v13RealLinearNoTargetFixedPairCosetHitMapSet_card_mul_two_pow_le_noTarget
+    i₀ row₀ row₁ hrow
+
 end Mettapedia.Computability.PNP
