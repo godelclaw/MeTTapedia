@@ -555,6 +555,25 @@ known `RepresentativeSemanticTarget.ttt`/key-32 local case and reduces back to
 the canonical target-append shape.  This is the finite representative-target
 artifact shape only; it does not by itself turn representative cases into the
 globally quantified transfer predicate.
+The bridge also exposes the partial selected-key variant
+`AppendedParentRowsProjectionFiniteSectionTargetAppendCasesCoverOn` and
+`representativeTargetAppendParentRowsProjectionFiniteSectionClosedOn`, with
+`representativeTargetAppendParentRowsProjectionFiniteSectionClosedOn_of_target_append_cases`
+turning a generated selected-key cover into a selected-key closure.  The first
+instance is
+`ttFiber32TargetAppendRowSurfaceCases_cover_on`, over
+`ttFiber32TargetAppendRowSurfaceSelectedKeys` and
+`ttFiber32TargetAppendRowSurfaceCases`; it records only the known
+`TTT`/key-32 target append row surface and is intentionally not a full
+target/key cover.  Evidence is
+`fourcolor-selected-target-row-surface-cover-build-20260703.log` (1110 jobs,
+SHA256
+`533583471beb7370ab7616d30759ba326e1980aa620684f7175311666fcbac90`) and
+`fourcolor-selected-target-row-surface-cover-axioms-20260703.log` (SHA256
+`cf80a85efaf770bd7d079272e665dcfc8d2b007a763158d7a140f4c143733730`);
+the generic selected-key wrapper depends on `propext`, while the local
+selected cover and closed-on theorem depend on `propext`, `Classical.choice`,
+and `Quot.sound`.
 The table-level diagnostic
 `tttFiber32Rows_length_eq_two_mul_ttFiber32Rows_length` records that the known
 `TT` obstruction key is the same generated fixed input as `TTT` light-fiber

@@ -2055,6 +2055,62 @@ theorem ttFiber32TargetAppendRowSurface
     ttFiber32AppendedParentRowsProjectionFiniteSection_of_eq
       rfl rfl rfl root rest hfiber
 
+def ttFiber32TargetAppendRowSurfaceSelectedKeys :
+    RepresentativeSemanticTarget → List (List LColor)
+  | RepresentativeSemanticTarget.ttt =>
+      [GoertzelLemma818CompositeCertificate.ttFiber32Key]
+  | _ => []
+
+def ttFiber32TargetAppendRowSurfaceCases :
+    List AppendedParentRowsProjectionFiniteSectionTargetCase :=
+  [ttFiber32AppendedParentRowsProjectionFiniteSectionTargetCase]
+
+def ttFiber32TargetAppendRowSurfaceCasesAudit : Bool :=
+  ttFiber32TargetAppendRowSurfaceCases.length == 1
+    && ttFiber32TargetAppendRowSurfaceSelectedKeys
+        RepresentativeSemanticTarget.ttt ==
+      [GoertzelLemma818CompositeCertificate.ttFiber32Key]
+    && ttFiber32TargetAppendRowSurfaceCases.map
+        (fun rowCase => rowCase.target) ==
+      [RepresentativeSemanticTarget.ttt]
+    && ttFiber32TargetAppendRowSurfaceCases.map
+        (fun rowCase => rowCase.prefixWord) ==
+      [targetAppendPrefix RepresentativeSemanticTarget.ttt]
+    && ttFiber32TargetAppendRowSurfaceCases.map
+        (fun rowCase => rowCase.orient) ==
+      [targetAppendOrient RepresentativeSemanticTarget.ttt]
+    && ttFiber32TargetAppendRowSurfaceCases.map
+        (fun rowCase => rowCase.key) ==
+      [GoertzelLemma818CompositeCertificate.ttFiber32Key]
+
+theorem ttFiber32TargetAppendRowSurfaceCasesAudit_ok :
+    ttFiber32TargetAppendRowSurfaceCasesAudit = true := by
+  decide
+
+theorem ttFiber32TargetAppendRowSurfaceCases_cover_on :
+    AppendedParentRowsProjectionFiniteSectionTargetAppendCasesCoverOn
+      ttFiber32TargetAppendRowSurfaceCases
+      ttFiber32TargetAppendRowSurfaceSelectedKeys := by
+  intro target _hcert key hselected _hkey _root _rest _hfiber
+  cases target <;> simp [ttFiber32TargetAppendRowSurfaceSelectedKeys] at hselected
+  subst key
+  refine
+    ⟨ttFiber32AppendedParentRowsProjectionFiniteSectionTargetCase, ?_, ?_,
+      ?_, ?_, ?_⟩
+  · simp [ttFiber32TargetAppendRowSurfaceCases]
+  · rfl
+  · simp [ttFiber32AppendedParentRowsProjectionFiniteSectionTargetCase,
+      targetAppendPrefix, ttFiber32FrontierWord]
+  · simp [ttFiber32AppendedParentRowsProjectionFiniteSectionTargetCase,
+      targetAppendOrient]
+  · rfl
+
+theorem ttFiber32TargetAppendRowSurfaceClosedOn :
+    representativeTargetAppendParentRowsProjectionFiniteSectionClosedOn
+      ttFiber32TargetAppendRowSurfaceSelectedKeys :=
+  representativeTargetAppendParentRowsProjectionFiniteSectionClosedOn_of_target_append_cases
+    ttFiber32TargetAppendRowSurfaceCases_cover_on
+
 def tttPartialTargetCertificateAudit : Bool :=
   tttMode09WitnessAudit
     && tttTargetProgressCountsAudit
