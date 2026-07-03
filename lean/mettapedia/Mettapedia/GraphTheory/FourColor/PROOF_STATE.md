@@ -153,7 +153,10 @@ has a representative in the projection image.  The theorem
 turns that witness into the paired structural target, and
 `semanticFrontierStateSufficientForChain_of_append_quotient_parent_rows_connected_lift_image`
 carries it to semantic sufficiency without using the canonical prefix
-projection.
+projection.  The iff theorem
+`concreteChainFiberAppendQuotientFibrationParentRowsNonSingletonPrefixBaseDataStructuralClosed_iff_connected_lift_image`
+shows this is just a generated-friendly presentation of the paired structural
+target.
 The standalone base-data half is now closed by
 `concreteChainFiberAppendQuotientFibrationParentRowsNonSingletonPrefixBaseDataClosed_of_prefix_root_star`:
 nonempty prefix fibers use the prefix fiber itself as the quotient base with a

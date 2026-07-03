@@ -255,7 +255,9 @@ the appended fiber to that base, connectedness of the appended root-closure
 graph, and an image witness for every requested base move.  The
 `_of_connected_lift_image` wrappers convert this shape to the paired structural
 target and then to semantic sufficiency without requiring the canonical prefix
-projection.
+projection, and
+`concreteChainFiberAppendQuotientFibrationParentRowsNonSingletonPrefixBaseDataStructuralClosed_iff_connected_lift_image`
+proves this witness is equivalent to the paired structural target.
 The prefix-fibration adapter
 `concreteChainFiberAppendQuotientFibrationParentRowsNonSingletonPrefixBaseDataStructuralClosed_of_prefix_fibration`
 now shows that `concreteChainFiberAppendPrefixFibrationClosed` is enough to
