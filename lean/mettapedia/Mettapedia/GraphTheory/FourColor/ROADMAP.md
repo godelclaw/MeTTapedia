@@ -313,6 +313,12 @@ alignment for the known `TT` obstruction key: the same generated key appears in
 the `TTT` light-fiber table at index 32, and generated rows grow from 8 to 16.
 This is not the missing projection witness; it only says the obstruction is not
 explained by a generated-table row-count shortage in that local case.
+The same local table has a generated row-index selector:
+`ttFiber32RowIndexToTttFiber32RowIndex` injects the eight `TT` fiber-32 row
+indices into distinct even rows of the sixteen-row `TTT` fiber-32 table.  This
+is the concrete finite shape wanted by the injective-preimage projection
+surface, but it remains local table evidence until lifted to semantic
+`ChainFiberPoint`s and generalized beyond this key.
 The prefix-fibration adapter
 `concreteChainFiberAppendQuotientFibrationParentRowsNonSingletonPrefixBaseDataStructuralClosed_of_prefix_fibration`
 now shows that `concreteChainFiberAppendPrefixFibrationClosed` is enough to

@@ -340,6 +340,15 @@ The table-level diagnostic
 index 32, with generated row tables growing from 8 to 16 rows.  This is only
 generated-table cardinality evidence; it does not construct the required
 surjective projection.
+The same local table now exposes an injective generated selector:
+`GoertzelLemma818TripleTauTargetProgress.ttFiber32RowIndexToTttFiber32RowIndex`
+maps the eight generated `TT` fiber-32 row indices to distinct even row indices
+in the sixteen-row `TTT` fiber-32 table, with
+`ttFiber32RowIndexToTttFiber32RowIndex_injective` and
+`ttFiber32SelectedTttFiber32Row_source_eq` proving the finite selector and
+selected source rows.  This is still table-level evidence; it is the local
+shape expected by `ProjectionInjectivePreimageClosed`, not the global semantic
+projection witness.
 The standalone base-data half is now closed by
 `concreteChainFiberAppendQuotientFibrationParentRowsNonSingletonPrefixBaseDataClosed_of_prefix_root_star`:
 nonempty prefix fibers use the prefix fiber itself as the quotient base with a

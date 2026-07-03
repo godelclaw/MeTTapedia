@@ -871,6 +871,55 @@ theorem tttFiber32Rows_length_eq_two_mul_ttFiber32Rows_length :
       2 * GoertzelLemma818CompositeCertificate.ttFiber32Rows.length := by
   decide
 
+def ttFiber32RowIndexToTttFiber32RowIndexCore (i : Fin 8) : Fin 16 :=
+  ⟨2 * i.1, by
+    have hlt : 2 * i.1 < 2 * 8 :=
+      Nat.mul_lt_mul_of_pos_left i.2 (by decide)
+    simpa using hlt⟩
+
+theorem ttFiber32RowIndexToTttFiber32RowIndexCore_injective :
+    Function.Injective ttFiber32RowIndexToTttFiber32RowIndexCore := by
+  intro i j h
+  apply Fin.ext
+  have hval := congrArg Fin.val h
+  exact Nat.eq_of_mul_eq_mul_left (by decide : 0 < 2)
+    (by simpa [ttFiber32RowIndexToTttFiber32RowIndexCore] using hval)
+
+def ttFiber32RowIndexToTttFiber32RowIndex
+    (i : Fin GoertzelLemma818CompositeCertificate.ttFiber32Rows.length) :
+    Fin GoertzelLemma818TripleTauLightComponentCertificate.tttFiber32Rows.length :=
+  Fin.cast (by decide :
+      16 =
+        GoertzelLemma818TripleTauLightComponentCertificate.tttFiber32Rows.length)
+    (ttFiber32RowIndexToTttFiber32RowIndexCore
+      (Fin.cast (by decide :
+          GoertzelLemma818CompositeCertificate.ttFiber32Rows.length = 8) i))
+
+theorem ttFiber32RowIndexToTttFiber32RowIndex_injective :
+    Function.Injective ttFiber32RowIndexToTttFiber32RowIndex := by
+  intro i j h
+  apply Fin.ext
+  have hval := congrArg Fin.val h
+  have hcore :
+      ttFiber32RowIndexToTttFiber32RowIndexCore
+          (Fin.cast (by decide :
+            GoertzelLemma818CompositeCertificate.ttFiber32Rows.length = 8) i) =
+        ttFiber32RowIndexToTttFiber32RowIndexCore
+          (Fin.cast (by decide :
+            GoertzelLemma818CompositeCertificate.ttFiber32Rows.length = 8) j) := by
+    apply Fin.ext
+    simpa [ttFiber32RowIndexToTttFiber32RowIndex] using hval
+  have hcast :=
+    ttFiber32RowIndexToTttFiber32RowIndexCore_injective hcore
+  exact congrArg Fin.val hcast
+
+theorem ttFiber32SelectedTttFiber32Row_source_eq :
+    ∀ i : Fin GoertzelLemma818CompositeCertificate.ttFiber32Rows.length,
+      (GoertzelLemma818TripleTauLightComponentCertificate.tttFiber32Rows.get
+        (ttFiber32RowIndexToTttFiber32RowIndex i)).source =
+        256 + 2 * i.1 := by
+  decide
+
 def tttPartialTargetCertificateAudit : Bool :=
   tttMode09WitnessAudit
     && tttTargetProgressCountsAudit
