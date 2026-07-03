@@ -23,6 +23,7 @@ inductive YangMillsRoadmapStage where
   | continuumScalingDiagnostic
   | extractionConstantErratum
   | continuumOSReconstructionConditional
+  | fiveInputCompletionSteelman
   | continuumMassGapEndpoint
 deriving DecidableEq, Repr
 
@@ -113,6 +114,19 @@ def yangMillsContinuumOSConditionalRoadmapEntry : YangMillsRoadmapEntry where
   evidence := "BenYMContinuumOSConditional.continuumMassGap proves the conditional OS/Kirk endpoint: standing Lambda<1 contraction plus an explicit bridge to lattice gap/clustering, OS reflection positivity, and the carried OS reconstruction machine imply HasSpectralMassGap for the continuum Hamiltonian."
   nextObligation := "Do not treat the conditional as a mass-gap theorem until Ben's Lambda<1-to-clustering bridge, Wilson-measure reflection positivity, and OS reconstruction/subsequential-limit inputs are supplied."
 
+/-- Five-input completion steelman: one arithmetic input verified, the rest
+made into named theorem/API obligations. -/
+def yangMillsCompletionSteelmanRoadmapEntry : YangMillsRoadmapEntry where
+  stage := .fiveInputCompletionSteelman
+  nodeId := yangMillsCompletionSteelmanNode.id
+  status := .checked
+  truthValue := ⟨100, 94⟩
+  itvLowerPercent := 94
+  itvUpperPercent := 100
+  progressPercent := 100
+  evidence := "currentYangMillsCompletionSteelman_packet records the five-input steelman: recombination is verified for C=11088/5, b=2, dmax=16 with gain 693/2560 <= 1/3 and dmax<=15 excluded; support, two-marked correlation, KP/RP, and actual Wilson RG recursion are reduced to named APIs/assumptions."
+  nextObligation := "Prove FirstLoadBearingYangMillsCompletionInput for the actual Wilson Yang-Mills RG map, instantiating the named support, two-marked, KP, and Wilson reflection-positivity inputs."
+
 /-- The continuum Yang-Mills mass-gap endpoint remains open. -/
 def yangMillsContinuumMassGapEndpointRoadmapEntry : YangMillsRoadmapEntry where
   stage := .continuumMassGapEndpoint
@@ -133,6 +147,7 @@ def currentYangMillsRoadmap : List YangMillsRoadmapEntry :=
   , z3HalfScaleLinearRGStepRoadmapEntry
   , yangMillsExtractionConstantErratumRoadmapEntry
   , yangMillsContinuumOSConditionalRoadmapEntry
+  , yangMillsCompletionSteelmanRoadmapEntry
   , yangMillsContinuumMassGapEndpointRoadmapEntry
   ]
 
@@ -227,6 +242,27 @@ theorem currentYangMillsRoadmap_records_continuum_os_conditional :
       benStandingExtendedExtractionContraction_checked,
       preprints2025041268Verdict_notRouteBlocking,
       yangMillsMassGapEndpointNode_open⟩
+
+theorem currentYangMillsRoadmap_records_completion_steelman :
+    ∃ entry : YangMillsRoadmapEntry,
+      entry.nodeId = yangMillsCompletionSteelmanNode.id ∧
+        entry.status = .checked ∧
+        entry.progressPercent = 100 ∧
+        recombinationConstantSteelmanRow.verdict = .verified ∧
+        supportRecurrenceSteelmanRow.verdict = .reducedToNamedAssumption ∧
+        twoMarkedIdentitySteelmanRow.verdict = .reducedToNamedAssumption ∧
+        kpWilsonSteelmanRow.verdict = .reducedToNamedAssumption ∧
+        realRGRecursionSteelmanRow.verdict = .reducedToNamedAssumption := by
+  refine ⟨yangMillsCompletionSteelmanRoadmapEntry, ?_⟩
+  exact
+    ⟨rfl,
+      rfl,
+      rfl,
+      recombinationConstantSteelman_verified,
+      supportRecurrenceSteelman_reduced,
+      twoMarkedIdentitySteelman_reduced,
+      kpWilsonSteelman_reduced,
+      realRGRecursionSteelman_reduced⟩
 
 theorem currentYangMillsRoadmap_keeps_continuum_endpoint_open :
     yangMillsContinuumMassGapEndpointRoadmapEntry.status = .openGoal ∧

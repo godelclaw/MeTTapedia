@@ -2,6 +2,7 @@ import Mettapedia.QuantumTheory.YangMills.MassGap
 import Mettapedia.QuantumTheory.YangMills.RGBootstrap
 import Mettapedia.QuantumTheory.YangMills.RGCrux
 import Mettapedia.QuantumTheory.YangMills.ContinuumOSReconstruction
+import Mettapedia.QuantumTheory.YangMills.CompletionSteelman
 import Mettapedia.QuantumTheory.YangMills.ExtractionConstantBreak
 import Mettapedia.QuantumTheory.YangMills.ExtractionStateRouteCollapse
 
@@ -537,6 +538,14 @@ def yangMillsContinuumOSConditionalScaffoldNode : YangMillsProofNode where
   evidence := "BenYMContinuumOSConditional.continuumMassGap proves the conditional endpoint: the standing corrected Lambda<1 contraction feeds an explicit open bridge to lattice mass gap and exponential clustering, then OS reflection positivity and a Kirk-style OS reconstruction machine yield HasSpectralMassGap for the continuum Hamiltonian."
   nextObligation := "Discharge the open bridge from Ben's Lambda<1 contraction to lattice gap/clustering, prove Wilson-measure OS reflection positivity for the same lattice family, and supply the OS reconstruction/subsequential-limit machinery; until then the continuum mass gap remains unclaimed."
 
+/-- Five-input completion steelman for Ben's current Yang-Mills route. -/
+def yangMillsCompletionSteelmanNode : YangMillsProofNode where
+  id := "yang-mills.completion-steelman"
+  status := .checked
+  truthValue := ⟨100, 94⟩
+  evidence := "currentYangMillsCompletionSteelmanRows classifies the five completion inputs. The favorable recombination branch is verified at C=11088/5, b=2, dmax=16; support, two-marked identity, KP/RP, and actual Wilson RG recursion are reduced to named APIs/assumptions; the Pro blueprint artifact is recorded separately as unreadable."
+  nextObligation := "Prove FirstLoadBearingYangMillsCompletionInput for the actual Wilson Yang-Mills RG map, with the support branch, two-marked identity, KP convergence, and Wilson reflection-positivity APIs instantiated."
+
 /-- The current route audit does not construct the full continuum object. -/
 def yangMillsConstructiveQFTNode : YangMillsProofNode where
   id := "yang-mills.constructive-qft"
@@ -600,6 +609,7 @@ def currentYangMillsProofNodes : List YangMillsProofNode :=
   , yangMillsSameConstantLowerEvenExtractionNode
   , yangMillsExtractionConstantErratumNode
   , yangMillsContinuumOSConditionalScaffoldNode
+  , yangMillsCompletionSteelmanNode
   , yangMillsConstructiveQFTNode
   , yangMillsContinuumMeasureCanaryNode
   , yangMillsEuclideanCovarianceCanaryNode
@@ -626,6 +636,10 @@ theorem yangMillsExtractionConstantErratumNode_checked :
 
 theorem yangMillsContinuumOSConditionalScaffoldNode_checked :
     yangMillsContinuumOSConditionalScaffoldNode.status = .checked := by
+  rfl
+
+theorem yangMillsCompletionSteelmanNode_checked :
+    yangMillsCompletionSteelmanNode.status = .checked := by
   rfl
 
 theorem yangMillsMassGapPromotionGateNode_constructiveGateUncleared :
@@ -714,6 +728,32 @@ theorem currentYangMillsContinuumOSConditional_packet
       preprints2025041268Verdict_notRouteBlocking,
       yangMillsContinuumOSConditionalScaffoldNode_checked,
       yangMillsMassGapEndpointNode_open⟩
+
+theorem currentYangMillsCompletionSteelman_packet :
+    recombinationConstantSteelmanRow.verdict = .verified ∧
+      supportRecurrenceSteelmanRow.verdict = .reducedToNamedAssumption ∧
+      twoMarkedIdentitySteelmanRow.verdict = .reducedToNamedAssumption ∧
+      kpWilsonSteelmanRow.verdict = .reducedToNamedAssumption ∧
+      realRGRecursionSteelmanRow.verdict = .reducedToNamedAssumption ∧
+      proBlueprintSteelmanRow.verdict = .blockedByUnreadableArtifact ∧
+      HasTwoSourceBootstrapSlack benFavorableRecombinationConstant 2 16 ∧
+      rgGain benFavorableRecombinationConstant 2 16 = (693 : ℝ) / 2560 ∧
+      (∀ dmax : ℕ, dmax ≤ 15 →
+        ¬ HasTwoSourceBootstrapSlack benFavorableRecombinationConstant 2 dmax) ∧
+      yangMillsCompletionSteelmanNode.status = .checked := by
+  exact
+    ⟨recombinationConstantSteelman_verified,
+      supportRecurrenceSteelman_reduced,
+      twoMarkedIdentitySteelman_reduced,
+      kpWilsonSteelman_reduced,
+      realRGRecursionSteelman_reduced,
+      proBlueprintSteelman_blocked,
+      benFavorableRecombination_twoSourceSlack_two_sixteen,
+      benFavorableRecombination_gain_two_sixteen_eq,
+      fun dmax hdmax =>
+        not_benFavorableRecombination_twoSourceSlack_two_of_dmax_le_fifteen
+          hdmax,
+      yangMillsCompletionSteelmanNode_checked⟩
 
 theorem currentYangMillsConstructiveDependency_packet :
     currentYangMillsConstructiveStatus.representedChecks = [] ∧

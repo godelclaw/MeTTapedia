@@ -1,4 +1,5 @@
 import Mettapedia.QuantumTheory.YangMills.Clustering
+import Mettapedia.QuantumTheory.YangMills.CompletionSteelman
 import Mettapedia.QuantumTheory.YangMills.ContinuumOSReconstruction
 import Mettapedia.QuantumTheory.YangMills.ConstructiveGateObstruction
 import Mettapedia.QuantumTheory.YangMills.ContinuumMeasureGateCanaries
