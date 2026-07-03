@@ -463,6 +463,21 @@ example {m q : Nat} (i₀ : Fin m)
   v13RealLinearNoTargetSequentialTraceFirstCosetHitActiveFixedMapTranscriptCylinder_card_eq_capacity
     i₀ observer t activeIdx
 
+example {m q : Nat} (i₀ : Fin m)
+    (observer : V13RealLinearSequentialRowObserver m q) (t : Fin q) :
+    (∑ idx :
+      V13RealLinearNoTargetSequentialTraceFirstCosetHitFixedMapTranscriptCylinderIndex
+        m q i₀ observer t,
+      Fintype.card
+        (V13RealLinearNoTargetSequentialTraceFirstCosetHitFixedMapTranscriptCylinder
+          i₀ observer t idx)) =
+      ∑ activeIdx :
+        V13RealLinearNoTargetSequentialTraceFirstCosetHitActiveFixedMapTranscriptCylinderIndex
+          i₀ observer t,
+        2 ^ (m - activeIdx.1.rows.card) :=
+  v13RealLinearNoTargetSequentialTraceFirstCosetHitFixedMapTranscriptCylinder_sum_card_eq_active_capacity
+    i₀ observer t
+
 noncomputable example {m q : Nat} (i₀ : Fin m)
     (observer : V13RealLinearSequentialRowObserver m q) (t : Fin q)
     (pref :

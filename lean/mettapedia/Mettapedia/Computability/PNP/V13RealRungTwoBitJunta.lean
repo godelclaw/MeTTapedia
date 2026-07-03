@@ -3038,6 +3038,75 @@ theorem
       (v13RealLinearNoTargetSequentialTraceFirstCosetHitActiveFixedMapTranscriptCylinder_capacity_le_card
         i₀ observer t activeIdx)
 
+theorem
+    v13RealLinearNoTargetSequentialTraceFirstCosetHitFixedMapTranscriptCylinder_sum_card_eq_active_capacity
+    {m q : Nat} (i₀ : Fin m)
+    (observer : V13RealLinearSequentialRowObserver m q) (t : Fin q) :
+    (∑ idx :
+      V13RealLinearNoTargetSequentialTraceFirstCosetHitFixedMapTranscriptCylinderIndex
+        m q i₀ observer t,
+      Fintype.card
+        (V13RealLinearNoTargetSequentialTraceFirstCosetHitFixedMapTranscriptCylinder
+          i₀ observer t idx)) =
+      ∑ activeIdx :
+        V13RealLinearNoTargetSequentialTraceFirstCosetHitActiveFixedMapTranscriptCylinderIndex
+          i₀ observer t,
+        2 ^ (m - activeIdx.1.rows.card) := by
+  classical
+  let Index :=
+    V13RealLinearNoTargetSequentialTraceFirstCosetHitFixedMapTranscriptCylinderIndex
+      m q i₀ observer t
+  let Cell : Index → Type := fun idx =>
+    V13RealLinearNoTargetSequentialTraceFirstCosetHitFixedMapTranscriptCylinder
+      i₀ observer t idx
+  let active : Index → Prop := fun idx => Nonempty (Cell idx)
+  let mass : Index → Nat := fun idx => Fintype.card (Cell idx)
+  let capacity : Index → Nat := fun idx => 2 ^ (m - idx.rows.card)
+  have hsplit :
+      (∑ idx : Index, mass idx) =
+        (∑ idx : {idx : Index // active idx}, mass idx.1) +
+          ∑ idx : {idx : Index // ¬ active idx}, mass idx.1 := by
+    exact (Fintype.sum_subtype_add_sum_subtype active mass).symm
+  have hinactive :
+      (∑ idx : {idx : Index // ¬ active idx}, mass idx.1) = 0 := by
+    apply Finset.sum_eq_zero
+    intro idx _hidx
+    dsimp [mass, Cell, active] at *
+    rw [Fintype.card_eq_zero_iff]
+    exact ⟨fun x => idx.property ⟨x⟩⟩
+  have hactiveEq :
+      (∑ idx : {idx : Index // active idx}, mass idx.1) =
+        ∑ idx : {idx : Index // active idx}, capacity idx.1 := by
+    apply Finset.sum_congr rfl
+    intro idx _hidx
+    dsimp [mass, capacity, Cell, active]
+    exact
+      v13RealLinearNoTargetSequentialTraceFirstCosetHitActiveFixedMapTranscriptCylinder_card_eq_capacity
+        i₀ observer t idx
+  calc
+    (∑ idx :
+      V13RealLinearNoTargetSequentialTraceFirstCosetHitFixedMapTranscriptCylinderIndex
+        m q i₀ observer t,
+      Fintype.card
+        (V13RealLinearNoTargetSequentialTraceFirstCosetHitFixedMapTranscriptCylinder
+          i₀ observer t idx)) =
+        ∑ idx : Index, mass idx := rfl
+    _ =
+        (∑ idx : {idx : Index // active idx}, mass idx.1) +
+          ∑ idx : {idx : Index // ¬ active idx}, mass idx.1 := hsplit
+    _ =
+        (∑ idx : {idx : Index // active idx}, mass idx.1) + 0 := by
+          rw [hinactive]
+    _ =
+        ∑ idx : {idx : Index // active idx}, mass idx.1 := by simp
+    _ =
+        ∑ idx : {idx : Index // active idx}, capacity idx.1 := hactiveEq
+    _ =
+        ∑ activeIdx :
+          V13RealLinearNoTargetSequentialTraceFirstCosetHitActiveFixedMapTranscriptCylinderIndex
+            i₀ observer t,
+          2 ^ (m - activeIdx.1.rows.card) := rfl
+
 noncomputable def
     v13RealLinearNoTargetSequentialTraceFirstCosetHitFixedPrefixWorldSetEquivSigmaTranscript
     {m q : Nat} (i₀ : Fin m)
