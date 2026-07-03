@@ -568,6 +568,112 @@ theorem
       i₀ A.val ⟨coeff, hcoeff⟩
 
 theorem
+    v13RealLinearRowsTargetCoefficient_twoSupport_exists_pair_sum_target
+    {m : Nat} {rows : Finset (Fin m)} (A : V13F2LinearEquiv m)
+    (i₀ : Fin m)
+    (coeff : V13RealLinearRowsTargetCoefficient A rows i₀)
+    (hsupport :
+      (v13RealLinearRowCombinationSupport coeff.val).card = 2) :
+    ∃ row₀ row₁ : {row : Fin m // row ∈ rows},
+      row₀ ≠ row₁ ∧
+        ∀ w : F2Vec m,
+          A.toEquiv w row₀.val + A.toEquiv w row₁.val = w i₀ := by
+  classical
+  let support := v13RealLinearRowCombinationSupport coeff.val
+  have hsupportPos : 0 < support.card := by
+    rw [hsupport]
+    norm_num
+  rcases Finset.card_pos.mp hsupportPos with ⟨row₀, hrow₀mem⟩
+  let rest := support.erase row₀
+  have hrestCard : rest.card = 1 := by
+    dsimp [rest]
+    rw [Finset.card_erase_of_mem hrow₀mem, hsupport]
+  rcases Finset.card_eq_one.mp hrestCard with ⟨row₁, hrestEq⟩
+  have hrow₁memRest : row₁ ∈ rest := by
+    simp [rest, hrestEq]
+  have hrow₁memSupport : row₁ ∈ support :=
+    (Finset.mem_erase.mp hrow₁memRest).2
+  have hrow₁ne₀ : row₁ ≠ row₀ :=
+    (Finset.mem_erase.mp hrow₁memRest).1
+  have hrow₀ne₁ : row₀ ≠ row₁ := hrow₁ne₀.symm
+  have hcoeff₀Nonzero : coeff.val row₀ ≠ 0 := by
+    simpa [support] using
+      (v13RealLinearRowCombinationSupport_mem coeff.val row₀).1
+        hrow₀mem
+  have hcoeff₁Nonzero : coeff.val row₁ ≠ 0 := by
+    simpa [support] using
+      (v13RealLinearRowCombinationSupport_mem coeff.val row₁).1
+        hrow₁memSupport
+  have hcoeff₀ : coeff.val row₀ = 1 :=
+    v13_zmod2_eq_one_of_ne_zero _ hcoeff₀Nonzero
+  have hcoeff₁ : coeff.val row₁ = 1 :=
+    v13_zmod2_eq_one_of_ne_zero _ hcoeff₁Nonzero
+  have hcoeffZeroOfNotMem :
+      ∀ row : {row : Fin m // row ∈ rows},
+        row ∉ support → coeff.val row = 0 := by
+    intro row hnot
+    by_contra hnonzero
+    exact hnot ((v13RealLinearRowCombinationSupport_mem coeff.val row).2
+      hnonzero)
+  refine ⟨row₀, row₁, hrow₀ne₁, ?_⟩
+  intro w
+  let term : {row : Fin m // row ∈ rows} → ZMod 2 :=
+    fun row => coeff.val row * A.toEquiv w row.val
+  have hsumSupport :
+      v13RealLinearRowCombinationEval A rows coeff.val w =
+        support.sum term := by
+    unfold v13RealLinearRowCombinationEval
+    symm
+    refine Finset.sum_subset (by intro row _hrow; simp) ?_
+    intro row _hrow hrowNotSupport
+    simp [hcoeffZeroOfNotMem row hrowNotSupport]
+  have hsumPair :
+      support.sum term = A.toEquiv w row₀.val + A.toEquiv w row₁.val := by
+    rw [← Finset.sum_erase_add (s := support) (a := row₀)
+      (f := term) hrow₀mem]
+    change rest.sum term + term row₀ =
+      A.toEquiv w row₀.val + A.toEquiv w row₁.val
+    rw [hrestEq]
+    simp [term, hcoeff₀, hcoeff₁, add_comm]
+  calc
+    A.toEquiv w row₀.val + A.toEquiv w row₁.val =
+        support.sum term := hsumPair.symm
+    _ = v13RealLinearRowCombinationEval A rows coeff.val w :=
+      hsumSupport.symm
+    _ = w i₀ := coeff.property w
+
+theorem
+    v13RealLinearNoTargetTwoBudgetGeneratingMapSet_exists_pair_sum_target
+    {m : Nat} {i₀ : Fin m} {rows : V13RealLinearBudgetedRowset m 2}
+    (A : V13RealLinearNoTargetBudgetedRowsetGeneratingMapSet i₀ rows) :
+    ∃ row₀ row₁ : {row : Fin m // row ∈ rows.1},
+      row₀ ≠ row₁ ∧
+        ∀ w : F2Vec m,
+          A.val.val.toEquiv w row₀.val +
+            A.val.val.toEquiv w row₁.val = w i₀ := by
+  classical
+  rcases A.property with ⟨coeff, hcoeff⟩
+  let targetCoeff : V13RealLinearRowsTargetCoefficient A.val.val rows.1 i₀ :=
+    ⟨coeff, hcoeff⟩
+  let support := v13RealLinearRowCombinationSupport targetCoeff.val
+  have hsupportTwoLe : 2 ≤ support.card := by
+    simpa [support, targetCoeff] using
+      (v13RealLinearNoTargetRowsTargetCoefficient_support_card_two_le
+        i₀ A.val targetCoeff)
+  have hsupportLeSubtype :
+      support.card ≤ Fintype.card {row : Fin m // row ∈ rows.1} :=
+    Finset.card_le_univ support
+  have hsupportLeRows : support.card ≤ rows.1.card := by
+    simpa using hsupportLeSubtype
+  have hsupportLeTwo : support.card ≤ 2 :=
+    hsupportLeRows.trans rows.2
+  have hsupportEq : support.card = 2 :=
+    le_antisymm hsupportLeTwo hsupportTwoLe
+  exact
+    v13RealLinearRowsTargetCoefficient_twoSupport_exists_pair_sum_target
+      A.val.val i₀ targetCoeff (by simpa [support] using hsupportEq)
+
+theorem
     v13RealLinearNoTargetBitJunta_fixed_correct_card_eq_incorrect_card_of_not_blocked
     {m j : Nat} (i₀ : Fin m)
     (observer : V13RealLinearBitJuntaObserver m j)
