@@ -857,6 +857,20 @@ theorem tttMode09WitnessAudit_ok :
     tttMode09WitnessAudit = true := by
   rfl
 
+/--
+The length-two `TT` obstruction key is the same fixed input as the generated
+`TTT` light-fiber row table at index 32.  The table has twice as many generated
+rows after appending `T`; this is a table-level cardinality check, not the
+surjective projection witness required by the append parent-row route.
+-/
+theorem tttFiber32Rows_length_eq_two_mul_ttFiber32Rows_length :
+    GoertzelLemma818TripleTauLightComponentCertificate.tttFiber32Key =
+      GoertzelLemma818CompositeCertificate.ttFiber32Key ∧
+    GoertzelLemma818CompositeCertificate.ttFiber32Rows.length = 8 ∧
+    GoertzelLemma818TripleTauLightComponentCertificate.tttFiber32Rows.length =
+      2 * GoertzelLemma818CompositeCertificate.ttFiber32Rows.length := by
+  decide
+
 def tttPartialTargetCertificateAudit : Bool :=
   tttMode09WitnessAudit
     && tttTargetProgressCountsAudit

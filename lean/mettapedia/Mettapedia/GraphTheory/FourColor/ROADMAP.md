@@ -267,6 +267,12 @@ while empty prefix fibers are discharged by the already proved prefix-closure
 projection.  The matching semantic and target-gated all-word wrappers route
 this target directly to `semanticFrontierStateSufficientForChain` and
 `chainAuditForFrontierWord`.
+The theorem
+`tttFiber32Rows_length_eq_two_mul_ttFiber32Rows_length` records the table-level
+alignment for the known `TT` obstruction key: the same generated key appears in
+the `TTT` light-fiber table at index 32, and generated rows grow from 8 to 16.
+This is not the missing projection witness; it only says the obstruction is not
+explained by a generated-table row-count shortage in that local case.
 The prefix-fibration adapter
 `concreteChainFiberAppendQuotientFibrationParentRowsNonSingletonPrefixBaseDataStructuralClosed_of_prefix_fibration`
 now shows that `concreteChainFiberAppendPrefixFibrationClosed` is enough to
