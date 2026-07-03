@@ -140,7 +140,15 @@ expected Jacobian envelope is interval-integrable on `[0, T]`,
 criterion of the stochastic-Lagrangian representation; with the `∇u` drift
 in the Jacobian evolution it is the three-dimensional vorticity-stretching
 problem, open for general data.  Nothing in this repository proves it for
-any data class beyond explicit bounded envelopes. -/
+any data class beyond explicit bounded envelopes.
+
+A sharper geometric input reaching the same Beale–Kato–Majda endpoint —
+the scale-local pancake strain budget isolated from the 2026-07-03 dyadic
+repair analysis — is `ScaleLocalPancakeStrainBudget` in
+`DyadicPancakeClosure.lean`, with the conditional chain
+`stochasticLagrangian_conditional_route_of_pancakeBudget`.  This gate is
+not superseded: the two are open inputs at different levels of the same
+route (coarse Jacobian envelope vs. isolated stretching geometry). -/
 def StochasticStretchingEstimate {Ω : Type*} [Fintype Ω]
     (D : StochasticCauchyVorticityData Ω) (T : ℝ) : Prop :=
   IntervalIntegrable D.expectedJacobianBound MeasureTheory.volume 0 T

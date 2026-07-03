@@ -43,6 +43,18 @@ import Mettapedia.FluidDynamics.NavierStokes.BenH1Break
 import Mettapedia.FluidDynamics.NavierStokes.BakryEmeryConditionalReduction
 import Mettapedia.FluidDynamics.NavierStokes.GalerkinBakryEmeryCurvature
 import Mettapedia.FluidDynamics.NavierStokes.SuNSineBracketCurvature
+import Mettapedia.FluidDynamics.NavierStokes.OneFormFrameCalculus
+import Mettapedia.FluidDynamics.NavierStokes.OneFormExactness
+import Mettapedia.FluidDynamics.NavierStokes.GradientOneForm
+import Mettapedia.FluidDynamics.NavierStokes.FrozenStrainModel
+import Mettapedia.FluidDynamics.NavierStokes.ApertureCoverageDichotomy
+import Mettapedia.FluidDynamics.NavierStokes.PlaneWaveSelfStrain
+import Mettapedia.FluidDynamics.NavierStokes.StochasticLagrangian.PullbackOneForm
+import Mettapedia.FluidDynamics.NavierStokes.StochasticLagrangian.ShearJacobianBounds
+import Mettapedia.FluidDynamics.NavierStokes.StochasticLagrangian.ConstantinIyerRepresentation
+import Mettapedia.FluidDynamics.NavierStokes.StochasticLagrangian.VorticityStretchingGate
+import Mettapedia.FluidDynamics.NavierStokes.StochasticLagrangian.DecayingShearInstance
+import Mettapedia.FluidDynamics.NavierStokes.StochasticLagrangian.DyadicPancakeClosure
 
 /-!
 # Navier-Stokes live surface
@@ -50,16 +62,10 @@ import Mettapedia.FluidDynamics.NavierStokes.SuNSineBracketCurvature
 This module is a non-regression import target for the active
 Navier-Stokes route-audit work. It imports the named target/continuation
 surfaces plus the non-regression reverse-root modules found by the 2026-06-21
-import map.
-import Mettapedia.FluidDynamics.NavierStokes.OneFormFrameCalculus
-import Mettapedia.FluidDynamics.NavierStokes.OneFormExactness
-import Mettapedia.FluidDynamics.NavierStokes.GradientOneForm
-import Mettapedia.FluidDynamics.NavierStokes.FrozenStrainModel
-import Mettapedia.FluidDynamics.NavierStokes.StochasticLagrangian.PullbackOneForm
-import Mettapedia.FluidDynamics.NavierStokes.StochasticLagrangian.ShearJacobianBounds
-import Mettapedia.FluidDynamics.NavierStokes.StochasticLagrangian.ConstantinIyerRepresentation
-import Mettapedia.FluidDynamics.NavierStokes.StochasticLagrangian.VorticityStretchingGate
-import Mettapedia.FluidDynamics.NavierStokes.StochasticLagrangian.DecayingShearInstance
+import map, the one-form/frozen-strain/stochastic-Lagrangian layer, and the
+dyadic pancake-closure skeleton (2026-07-03).  A prior revision listed the
+2026-07-03 layer's imports inside this doc-comment instead of the import
+block; they are real imports as of the pancake-closure commit.
 
 It is not a proof of the Millennium Navier-Stokes problem.
 -/
