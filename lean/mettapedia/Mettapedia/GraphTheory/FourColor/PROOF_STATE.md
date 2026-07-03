@@ -223,6 +223,19 @@ allows generated data to emit a projection together with a selected appended
 preimage for every prefix point; the `_of_projection_section` wrappers convert
 that selector form to projection surjectivity, finite-section data, and the
 combined predicate when paired with appended parent-row connectedness.
+The parent-row half no longer has to be emitted separately when the appended
+root-closure graph is already proved connected:
+`concreteChainFiberAppendQuotientFibrationParentRowsNonSingletonPrefixAppendedParentRowsConnectedClosed_of_appended_connected_and_projection_finite_section`
+constructs the parent-row certificate from appended connectedness plus any
+projection finite-section witness, using the selected appended preimage to
+inhabit the appended fiber and connectedness to obtain symmetry of the
+root-closure step.  The corresponding section and surjectivity variants package
+the combined predicate from
+`concreteChainFiberAppendQuotientFibrationParentRowsNonSingletonPrefixAppendedConnectedClosed`
+plus either
+`concreteChainFiberAppendQuotientFibrationParentRowsNonSingletonPrefixProjectionSectionClosed`
+or
+`concreteChainFiberAppendQuotientFibrationParentRowsNonSingletonPrefixProjectionSurjectiveClosed`.
 Focused Lake build evidence is
 `fourcolor-surjective-projection-split-lake-build-20260703.log` (607 jobs,
 SHA256
@@ -282,6 +295,17 @@ the section-to-surjective wrapper depends on `propext`, the reverse
 surjective-to-section wrapper depends on `propext` and `Classical.choice`,
 and the finite-section and combined selector wrappers depend on `propext`,
 `Classical.choice`, and `Quot.sound`.
+Appended-connected parent-row reduction evidence is
+`fourcolor-appended-connected-parent-rows-section-build-20260703.log`
+(607 jobs, SHA256
+`42b85d3ce0d0a5e2641a558eef105dede1656f5f53987a856d85e2d497c34f9c`)
+and
+`fourcolor-appended-connected-parent-rows-section-axioms-20260703.log`
+(SHA256
+`7e70eec0693325d97cadc81b08d2c8ffbeb5166a07be82097e7d92134ea0e0f7`);
+the root-closure symmetry helper depends on `propext`, while the parent-row
+constructor and combined appended-connected/projection wrappers depend on
+`propext`, `Classical.choice`, and `Quot.sound`.
 Combined transfer/composition wrapper evidence is
 `fourcolor-combined-parent-rows-transfer-composition-build-20260703.log`
 (607 jobs, SHA256
