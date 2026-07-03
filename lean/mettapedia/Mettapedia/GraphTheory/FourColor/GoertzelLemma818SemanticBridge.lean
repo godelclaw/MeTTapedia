@@ -1104,6 +1104,22 @@ noncomputable def ChainFiberAppendQuotientFibrationParentRowsBaseData.ofPrefixRo
           intro _x
           simpa [baseStep, chainFiberRootClosureStep] using rootClose) }
 
+theorem ChainFiberAppendQuotientFibrationParentRowsBaseData.ofPrefixRootStar_baseStep
+    {word : List GoertzelLemma818FrontierMode.TauOrient}
+    {orient : GoertzelLemma818FrontierMode.TauOrient}
+    {key : List GoertzelLemma814.LColor}
+    (hcert : Nonempty (ChainWordConcreteFibrationCertificate word))
+    (hkey : key ∈ GoertzelLemma814.colorAssignments4)
+    {root : List GoertzelLemma814.TauState}
+    {rest : List (List GoertzelLemma814.TauState)}
+    (hfiber : concreteChainFiber word key = root :: rest)
+    (x y : ChainFiberPoint word key) :
+    (ChainFiberAppendQuotientFibrationParentRowsBaseData.ofPrefixRootStar
+      (orient := orient) hcert hkey hfiber).baseStep x y := by
+  simpa [ChainFiberAppendQuotientFibrationParentRowsBaseData.ofPrefixRootStar,
+    chainFiberRootClosureStep] using
+    chainFiberPoint_mem_rootClosure_of_concreteCertificate hcert hkey y
+
 def ChainFiberAppendQuotientFibrationParentRowsBaseData.unit
     {word : List GoertzelLemma818FrontierMode.TauOrient}
     {orient : GoertzelLemma818FrontierMode.TauOrient}
@@ -7780,6 +7796,107 @@ def concreteChainFiberAppendQuotientFibrationParentRowsNonSingletonPrefixConnect
                 data.baseStep (proj x) b →
                   ∃ y : ChainFiberPoint (word ++ [orient]) key,
                     proj y = b
+
+def concreteChainFiberAppendQuotientFibrationParentRowsNonSingletonPrefixSurjectiveProjectionClosed :
+    Prop :=
+  ∀ (word : List GoertzelLemma818FrontierMode.TauOrient)
+    (orient : GoertzelLemma818FrontierMode.TauOrient),
+    1 < word.length →
+    Nonempty (ChainWordConcreteFibrationCertificate word) →
+      ∀ key : List GoertzelLemma814.LColor,
+        key ∈ GoertzelLemma814.colorAssignments4 →
+          ∀ (root : List GoertzelLemma814.TauState)
+            (rest : List (List GoertzelLemma814.TauState)),
+            concreteChainFiber word key = root :: rest →
+              ∃ proj :
+                ChainFiberPoint (word ++ [orient]) key →
+                  ChainFiberPoint word key,
+                Connected
+                  (chainFiberRootClosureStep (word ++ [orient]) key) ∧
+                ∀ b : ChainFiberPoint word key,
+                  ∃ y : ChainFiberPoint (word ++ [orient]) key,
+                    proj y = b
+
+theorem concreteChainFiberAppendQuotientFibrationParentRowsConnectedLiftImageWitness_of_empty_prefix_fiber
+    {word : List GoertzelLemma818FrontierMode.TauOrient}
+    {orient : GoertzelLemma818FrontierMode.TauOrient}
+    {key : List GoertzelLemma814.LColor}
+    (hne : word ≠ [])
+    (hfiber : concreteChainFiber word key = []) :
+    ∃ data :
+      ChainFiberAppendQuotientFibrationParentRowsBaseData word orient key,
+      ∃ proj : ChainFiberPoint (word ++ [orient]) key → data.Base,
+        Connected (chainFiberRootClosureStep (word ++ [orient]) key) ∧
+        ∀ (x : ChainFiberPoint (word ++ [orient]) key) (b : data.Base),
+          data.baseStep (proj x) b →
+            ∃ y : ChainFiberPoint (word ++ [orient]) key, proj y = b := by
+  let data :
+      ChainFiberAppendQuotientFibrationParentRowsBaseData word orient key :=
+    ChainFiberAppendQuotientFibrationParentRowsBaseData.unit
+  let proj : ChainFiberPoint (word ++ [orient]) key → data.Base := fun _ => ()
+  refine ⟨data, proj, ?_, ?_⟩
+  · intro x _y
+    have hxPrefix :
+        x.1.take word.length ∈ concreteChainFiber word key :=
+      concreteChainFiberAppendPrefixClosed_ok word orient hne key x.1 x.2
+    rw [hfiber] at hxPrefix
+    cases hxPrefix
+  · intro x b _hstep
+    cases b
+    exact ⟨x, rfl⟩
+
+theorem concreteChainFiberAppendQuotientFibrationParentRowsConnectedLiftImageWitness_of_prefix_root_star_surjective
+    {word : List GoertzelLemma818FrontierMode.TauOrient}
+    {orient : GoertzelLemma818FrontierMode.TauOrient}
+    {key : List GoertzelLemma814.LColor}
+    (hcert : Nonempty (ChainWordConcreteFibrationCertificate word))
+    (hkey : key ∈ GoertzelLemma814.colorAssignments4)
+    {root : List GoertzelLemma814.TauState}
+    {rest : List (List GoertzelLemma814.TauState)}
+    (hfiber : concreteChainFiber word key = root :: rest)
+    (proj :
+      ChainFiberPoint (word ++ [orient]) key → ChainFiberPoint word key)
+    (hTotal :
+      Connected (chainFiberRootClosureStep (word ++ [orient]) key))
+    (hSurj :
+      ∀ b : ChainFiberPoint word key,
+        ∃ y : ChainFiberPoint (word ++ [orient]) key, proj y = b) :
+    ∃ data :
+      ChainFiberAppendQuotientFibrationParentRowsBaseData word orient key,
+      ∃ proj' : ChainFiberPoint (word ++ [orient]) key → data.Base,
+        Connected (chainFiberRootClosureStep (word ++ [orient]) key) ∧
+        ∀ (x : ChainFiberPoint (word ++ [orient]) key) (b : data.Base),
+          data.baseStep (proj' x) b →
+            ∃ y : ChainFiberPoint (word ++ [orient]) key, proj' y = b := by
+  let data :
+      ChainFiberAppendQuotientFibrationParentRowsBaseData word orient key :=
+    ChainFiberAppendQuotientFibrationParentRowsBaseData.ofPrefixRootStar
+      hcert hkey hfiber
+  refine ⟨data, proj, hTotal, ?_⟩
+  intro _x b _hstep
+  exact hSurj b
+
+theorem concreteChainFiberAppendQuotientFibrationParentRowsNonSingletonPrefixConnectedLiftImageClosed_of_surjective_projection
+    (hProjection :
+      concreteChainFiberAppendQuotientFibrationParentRowsNonSingletonPrefixSurjectiveProjectionClosed) :
+    concreteChainFiberAppendQuotientFibrationParentRowsNonSingletonPrefixConnectedLiftImageClosed := by
+  intro word orient hlen hcert key hkey
+  have hne : word ≠ [] := by
+    intro hnil
+    subst word
+    simp at hlen
+  cases hfiber : concreteChainFiber word key with
+  | nil =>
+      exact
+        concreteChainFiberAppendQuotientFibrationParentRowsConnectedLiftImageWitness_of_empty_prefix_fiber
+          (word := word) (orient := orient) (key := key) hne hfiber
+  | cons root rest =>
+      rcases hProjection word orient hlen hcert key hkey root rest hfiber with
+        ⟨proj, hTotal, hSurj⟩
+      exact
+        concreteChainFiberAppendQuotientFibrationParentRowsConnectedLiftImageWitness_of_prefix_root_star_surjective
+          (word := word) (orient := orient) (key := key)
+          hcert hkey hfiber proj hTotal hSurj
 
 theorem concreteChainFiberAppendQuotientFibrationParentRowsNonSingletonPrefixBaseDataStructuralClosed_of_connected_lift_image
     (hWitness :
