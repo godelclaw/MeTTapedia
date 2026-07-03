@@ -272,7 +272,11 @@ and
 `concreteChainFiberAppendQuotientFibrationParentRowsNonSingletonPrefixProjectionSurjectiveClosed`,
 with direct `_of_appended_connected_and_projection_surjective` wrappers.  This
 lets generated data prove total appended connectedness separately from the
-surjective projection table.  The projection half has the finite emitted form
+surjective projection table.  The appended-connectedness half has the parent-row
+emitted form
+`concreteChainFiberAppendQuotientFibrationParentRowsNonSingletonPrefixAppendedParentRowsConnectedClosed`:
+emit a `ParentRowsSymmetricRootedConnectedCertificate` for the appended
+root-closure graph.  The projection half has the finite emitted form
 `concreteChainFiberAppendQuotientFibrationParentRowsNonSingletonPrefixProjectionFiniteSectionClosed`:
 emit a projection, a finite list of appended preimage rows, and a selector from
 each prefix fiber point to one selected row.
