@@ -574,6 +574,20 @@ SHA256
 the generic selected-key wrapper depends on `propext`, while the local
 selected cover and closed-on theorem depend on `propext`, `Classical.choice`,
 and `Quot.sound`.
+The selected-key layer now has its explicit promotion condition:
+`RepresentativeTargetAppendSelectedKeysCover` says the selected keys include
+every color assignment whose canonical target-append prefix fiber is nonempty.
+`representativeTargetAppendParentRowsProjectionFiniteSectionClosed_of_closed_on_selected_keys`
+and
+`representativeTargetAppendParentRowsProjectionFiniteSectionClosed_of_target_append_cases_on_selected_keys`
+upgrade selected-key closure or selected target cases to the full
+representative-target predicate only under that coverage hypothesis.  Evidence
+is `fourcolor-selected-key-cover-upgrade-build-20260703.log` (1110 jobs,
+SHA256
+`533583471beb7370ab7616d30759ba326e1980aa620684f7175311666fcbac90`) and
+`fourcolor-selected-key-cover-upgrade-axioms-20260703.log` (SHA256
+`1836e5f8f4a57c3dd2d655190ba32dad0873666ac9cdaf8e67e61f9f579a718d`);
+both upgrade theorems depend on `propext`.
 The table-level diagnostic
 `tttFiber32Rows_length_eq_two_mul_ttFiber32Rows_length` records that the known
 `TT` obstruction key is the same generated fixed input as `TTT` light-fiber

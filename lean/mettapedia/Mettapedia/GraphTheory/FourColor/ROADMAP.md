@@ -394,6 +394,15 @@ selected cover is
 target case.  This is the appendable partial-cover surface for generated rows;
 Gate-2 still requires expanding it to every needed target/key before invoking
 the full representative or global predicates.
+The upgrade from selected coverage back to the full representative predicate
+is now named by `RepresentativeTargetAppendSelectedKeysCover` plus
+`representativeTargetAppendParentRowsProjectionFiniteSectionClosed_of_closed_on_selected_keys`
+and
+`representativeTargetAppendParentRowsProjectionFiniteSectionClosed_of_target_append_cases_on_selected_keys`.
+This pins the remaining generated-data obligation precisely: prove that the
+selected key lists cover every nonempty canonical target-append prefix fiber,
+then the selected target cases can feed the existing full representative
+closure wrapper.
 The theorem
 `tttFiber32Rows_length_eq_two_mul_ttFiber32Rows_length` records the table-level
 alignment for the known `TT` obstruction key: the same generated key appears in
