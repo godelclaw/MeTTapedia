@@ -2611,6 +2611,123 @@ theorem v13RealLinear_rowFunctionalTargetCosetHit_of_insert_generates
   refine ⟨z, hz, ?_⟩
   simpa [ha] using htarget
 
+theorem v13RealLinearRowFunctional_not_mem_rowsFunctionalSpan_of_not_mem
+    {m : Nat} (A : V13F2LinearEquiv m) {rows : Finset (Fin m)}
+    {row : Fin m} (hrow : row ∉ rows) :
+    v13RealLinearRowFunctional A row ∉
+      V13RealLinearRowsFunctionalSpan A rows := by
+  classical
+  intro hspan
+  rcases
+      (Submodule.mem_span_range_iff_exists_fun (R := ZMod 2)).1
+        (by simpa [V13RealLinearRowsFunctionalSpan] using hspan) with
+    ⟨coeff, hcoeff⟩
+  let w : F2Vec m := A.toEquiv.symm (v13RealLinearSingleBit row)
+  have hpoint := LinearMap.congr_fun hcoeff w
+  have hleft : v13RealLinearRowFunctional A row w = 1 := by
+    simp [v13RealLinearRowFunctional, w, v13RealLinearSingleBit]
+  have hright :
+      (∑ r : {r : Fin m // r ∈ rows},
+        (coeff r • v13RealLinearRowFunctional A r.1) w) = 0 := by
+    apply Finset.sum_eq_zero
+    intro r _hr
+    have hne : r.1 ≠ row := by
+      intro hrEq
+      exact hrow (by simpa [hrEq] using r.2)
+    simp [v13RealLinearRowFunctional, w, v13RealLinearSingleBit, hne]
+  have hpoint' :
+      (∑ r : {r : Fin m // r ∈ rows},
+        (coeff r • v13RealLinearRowFunctional A r.1) w) =
+        v13RealLinearRowFunctional A row w := by
+    simpa using hpoint
+  rw [hright, hleft] at hpoint'
+  norm_num at hpoint'
+
+theorem
+    v13RealLinear_rowsGenerateTarget_of_rowFunctionalTargetCosetHit_of_mem
+    {m : Nat} (A : V13F2LinearEquiv m) {rows : Finset (Fin m)}
+    (i₀ row : Fin m) (hrow : row ∈ rows)
+    (hhit : V13RealLinearRowFunctionalTargetCosetHit A rows i₀ row) :
+    V13RealLinearRowsGenerateTarget A rows i₀ := by
+  classical
+  rcases hhit with ⟨z, hz, htarget⟩
+  rw [v13RealLinearRowsGenerateTarget_iff_targetFunctional_mem_span]
+  have hrowSpan :
+      v13RealLinearRowFunctional A row ∈
+        V13RealLinearRowsFunctionalSpan A rows := by
+    unfold V13RealLinearRowsFunctionalSpan
+    exact Submodule.subset_span ⟨⟨row, hrow⟩, rfl⟩
+  exact by
+    rw [htarget]
+    exact Submodule.add_mem _ hrowSpan hz
+
+theorem
+    v13RealLinear_rowsGenerateTarget_insert_of_rowFunctionalTargetCosetHit
+    {m : Nat} (A : V13F2LinearEquiv m) (rows : Finset (Fin m))
+    (i₀ row : Fin m)
+    (hhit : V13RealLinearRowFunctionalTargetCosetHit A rows i₀ row) :
+    V13RealLinearRowsGenerateTarget A (insert row rows) i₀ := by
+  classical
+  rcases hhit with ⟨z, hz, htarget⟩
+  rw [v13RealLinearRowsGenerateTarget_iff_targetFunctional_mem_span]
+  have hrowSpan :
+      v13RealLinearRowFunctional A row ∈
+        V13RealLinearRowsFunctionalSpan A (insert row rows) := by
+    unfold V13RealLinearRowsFunctionalSpan
+    exact
+      Submodule.subset_span
+        ⟨⟨row, Finset.mem_insert_self row rows⟩, rfl⟩
+  have hsubset :
+      Set.range (fun r : {r : Fin m // r ∈ rows} =>
+          v13RealLinearRowFunctional A r.1) ⊆
+        Set.range (fun r : {r : Fin m // r ∈ insert row rows} =>
+          v13RealLinearRowFunctional A r.1) := by
+    intro f hf
+    rcases hf with ⟨r, rfl⟩
+    exact ⟨⟨r.1, Finset.mem_insert_of_mem r.2⟩, rfl⟩
+  have hzInsert :
+      z ∈ V13RealLinearRowsFunctionalSpan A (insert row rows) := by
+    simpa [V13RealLinearRowsFunctionalSpan] using
+      (Submodule.span_mono hsubset hz)
+  exact by
+    rw [htarget]
+    exact Submodule.add_mem _ hrowSpan hzInsert
+
+theorem
+    v13RealLinear_not_rowsGenerateTarget_of_rowFunctionalTargetCosetHit_of_not_mem
+    {m : Nat} (A : V13F2LinearEquiv m) {rows : Finset (Fin m)}
+    (i₀ row : Fin m) (hrow : row ∉ rows)
+    (hhit : V13RealLinearRowFunctionalTargetCosetHit A rows i₀ row) :
+    ¬ V13RealLinearRowsGenerateTarget A rows i₀ := by
+  classical
+  intro hgen
+  rcases hhit with ⟨z, hz, htarget⟩
+  have htargetSpan :
+      v13RealLinearTargetFunctional i₀ ∈
+        V13RealLinearRowsFunctionalSpan A rows :=
+    (v13RealLinearRowsGenerateTarget_iff_targetFunctional_mem_span
+      A rows i₀).1 hgen
+  have hrowEq :
+      v13RealLinearRowFunctional A row =
+        v13RealLinearTargetFunctional i₀ + z := by
+    apply LinearMap.ext
+    intro w
+    have hpoint := LinearMap.congr_fun htarget w
+    change
+      v13RealLinearRowFunctional A row w =
+        v13RealLinearTargetFunctional i₀ w + z w
+    rw [hpoint]
+    simp only [LinearMap.add_apply]
+    exact (f2_add_right_self (v13RealLinearRowFunctional A row w) (z w)).symm
+  have hrowSpan :
+      v13RealLinearRowFunctional A row ∈
+        V13RealLinearRowsFunctionalSpan A rows := by
+    rw [hrowEq]
+    exact Submodule.add_mem _ htargetSpan hz
+  exact
+    v13RealLinearRowFunctional_not_mem_rowsFunctionalSpan_of_not_mem
+      A hrow hrowSpan
+
 def V13RealLinearRowTraceCosetHit {m : Nat}
     (A : V13F2LinearEquiv m) (i₀ : Fin m)
     (trace : V13RealLinearRowTrace m) (t : Nat) : Prop :=
