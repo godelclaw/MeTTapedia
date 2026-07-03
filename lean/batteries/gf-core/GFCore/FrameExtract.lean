@@ -1,7 +1,7 @@
 /-
 # GFCore.FrameExtract — Extract semantic Frames from RGLView
 
-Two-function approach (council recommendation):
+Two-function approach (review recommendation):
   1. extractEntity : RGLView → Option GroundedLexeme  (NP → entity)
   2. extractFrame  : RGLView → Frame                  (sentence → relation)
 

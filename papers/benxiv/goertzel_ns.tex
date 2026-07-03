@@ -1,0 +1,441 @@
+\documentclass[11pt]{article}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern}
+\usepackage{geometry}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{amsthm}
+\usepackage{booktabs}
+\usepackage{hyperref}
+\usepackage{listings}
+\geometry{margin=1in}
+
+\lstdefinestyle{lean}{
+  basicstyle=\ttfamily\small,
+  breaklines=true,
+  columns=fullflexible,
+  keepspaces=true,
+  showstringspaces=false,
+  frame=single,
+  framesep=4pt,
+  xleftmargin=2pt,
+  aboveskip=8pt,
+  belowskip=8pt,
+  literate=
+    {⟨}{{$\langle$}}1
+    {⟩}{{$\rangle$}}1,
+}
+\lstset{style=lean}
+
+\newtheorem{theorem}{Theorem}
+\newtheorem{proposition}{Proposition}
+\newtheorem{lemma}{Lemma}
+\newtheorem{remark}{Remark}
+\theoremstyle{definition}
+\newtheorem{definition}{Definition}
+
+\newcommand{\SDiff}{\mathrm{SDiff}}
+\newcommand{\SG}{\mathrm{SG}}
+\newcommand{\Ad}{\mathrm{Ad}}
+\newcommand{\Hm}{H^m}
+\newcommand{\Hms}{H^m_\sigma}
+\newcommand{\CAd}{C_{\mathrm{Ad}}}
+\newcommand{\Cphi}{C_\varphi}
+
+\title{A Machine-Checked Obstruction to Hypothesis~(H1)\\
+in the SG--Cole--Hopf Route to\\
+3D Navier--Stokes Global Regularity}
+\author{The MeTTapedia formalization effort}
+\date{June 2026}
+
+\begin{document}
+\maketitle
+\sloppy
+
+\begin{abstract}
+Ben Goertzel's manuscript \emph{Global Regularity of 3D Navier--Stokes via
+SG--Cole--Hopf Program} (v7) reduces global regularity of the 3D incompressible
+Navier--Stokes equation on $\mathbb{T}^3$ to a single uniform-in-time
+identity-energy bound on the volume-preserving diffeomorphism group
+$\SG = \SDiff(\mathbb{T}^3)$. That bound is in turn obtained from two purely
+\emph{local} hypotheses on a chart-cutoff region $K$, the first of which,
+hypothesis~(H1), asks that the adjoint / push-forward operator $\Ad_g$ be
+uniformly bounded as a map $\Hm \to \Hm$ for all $g$ in an $\Hm$
+chart-neighborhood of the identity. We record a machine-checked finding of the
+MeTTapedia formalization effort: hypothesis~(H1) is \emph{false} in a clean
+Fourier-mode shear model. On the normalized two-torus we exhibit a one-parameter
+family of area-preserving shear displacements of \emph{fixed} $\Hm$ size
+$\varepsilon$ (hence inside any prescribed chart radius), whose adjoint operator
+ratio equals $\sqrt{1+(\varepsilon k)^2}$ and therefore exceeds every finite
+constant as the wavenumber $k\to\infty$. The statement and three supporting
+theorems are formalized with no \texttt{sorry} in the Lean module
+\texttt{Mettapedia.FluidDynamics.NavierStokes.BenH1Break}; an accompanying
+numeric lab \emph{derives} the relevant Sobolev norms from the weight structure
+rather than assuming them, isolating the Ebin--Marsden derivative-loss mechanism
+($\Ad_g$ loses one derivative: $\Ad_g v = (Dg)\,(v\circ g^{-1})$, and
+$g\in\Hm \Rightarrow Dg\in H^{m-1}$). We emphasize the exact scope: this is a
+refutation \emph{of (H1) within a model}, not a from-first-principles Sobolev
+theorem, and it says nothing about Navier--Stokes regularity itself, which
+remains open. The consequence for the route is precise and limited: the
+SG--Cole--Hopf program does not establish global regularity, because the single
+hypothesis on which it rests does not hold as stated.
+\end{abstract}
+
+\section{The problem and the role of hypothesis (H1)}
+\label{sec:problem}
+
+\subsection{The SG--Cole--Hopf route}
+
+We work on the flat three-torus $\mathbb{T}^3$ with smooth divergence-free
+initial data $u_0$. Ben Goertzel's manuscript \emph{Global Regularity of 3D
+Navier--Stokes via SG--Cole--Hopf Program}, version~v7 (hereafter ``v7''), lifts
+the incompressible Navier--Stokes equation to a diffusion on the
+volume-preserving diffeomorphism group
+\[
+  \SG := \SDiff(\mathbb{T}^3),
+\]
+equipped with a right-invariant Fourier frame $\{D_i\}_{i\ge 1}$ induced by a
+divergence-free frame $\{E_i\}_{i\ge 1}$ on $\mathbb{T}^3$. The generator and
+carré du champ are
+\[
+  L := \sum_{i\ge 1} D_i^2,
+  \qquad
+  \Gamma(F) := \sum_{i\ge 1} (D_i F)^2 .
+\]
+One solves the SG heat equation $\partial_t \Phi = \nu L\Phi$ with a strictly
+positive datum $\varphi = \exp(-W_0/(2\nu))$, applies the Cole--Hopf transform
+$W = -2\nu \log \Phi$ to obtain an SG Hamilton--Jacobi--Bellman potential, and
+pushes the $\Gamma$-gradient down at the identity to a projected
+Navier--Stokes solution $u(t)$ on $\mathbb{T}^3$.
+
+The analytic content is concentrated entirely in closing the
+Beale--Kato--Majda (BKM) vorticity criterion. With $u(t)=\mathrm{Ev}(W(t))$ and
+$\omega(t)=\operatorname{curl}u(t)$, the push-down identity and Cauchy--Schwarz
+give a frame constant $C_{\mathrm{curl}E}<\infty$ with
+\begin{equation}
+  \|\omega(t)\|_{L^\infty(\mathbb{T}^3)}
+    \le \sqrt{C_{\mathrm{curl}E}}\,\sqrt{\Gamma(W(t))(\mathrm{id})},
+  \label{eq:vort}
+\end{equation}
+so that a uniform-in-time bound on $\Gamma(W(t))(\mathrm{id})$ makes the BKM
+integral $\int_0^T \|\omega(t)\|_{L^\infty}\,dt$ finite on every finite interval.
+By the log chain rule $\Gamma(\log\Phi)=\Gamma(\Phi)/\Phi^2$ and the maximum
+principle $\Phi(t,\mathrm{id})\ge m_\varphi$ (v7, Prop.~7.1),
+\begin{equation}
+  \Gamma(W(t))(\mathrm{id})
+    = 4\nu^2\,\Gamma(\log\Phi(t))(\mathrm{id})
+    \le \frac{4\nu^2}{m_\varphi^2}\,\Gamma(P_t\varphi)(\mathrm{id}),
+  \label{eq:logbound}
+\end{equation}
+which reduces the whole program to a single uniform bound on
+$\Gamma(P_t\varphi)(\mathrm{id})$.
+
+\subsection{Reduction to a local energy bound, and hypothesis (H1)}
+
+Rather than invoking a global Bakry--\'Emery $\Gamma_2$ curvature lower bound,
+v7 obtains that single bound from a \emph{local} package. Let
+$\kappa : U \to V \subset \Hms(\mathbb{T}^3)$ be the chart of a small
+$\SDiff^m$ neighborhood of the identity ($m\ge 5$ integer, with the
+$\Gamma$-Hilbert structure at $\mathrm{id}$ equivalent to the $\Hms$ norm), let
+$\chi$ be the cutoff defining $W_0$ and $\varphi$, and set the cutoff region
+\[
+  K := \kappa^{-1}(\operatorname{supp}\chi)\subset U .
+\]
+Outside $K$ one has $W_0\equiv 0$, hence $\varphi\equiv 1$ and
+$\Gamma(\varphi)\equiv 0$. On $K$, v7 assumes two local hypotheses (v7,
+\S5.3 and \S6, displayed at Lemma~D.18):
+\begin{align}
+  \text{(H1) Adjoint bounded on support:} \quad
+    & \exists\,\CAd<\infty : \;
+      \|\Ad_g\|_{\Hm\to\Hm}\le \CAd \quad \text{for all } g\in K,
+      \label{eq:H1}\\[2pt]
+  \text{(H2) Finite cutoff energy:} \quad
+    & \exists\,\Cphi<\infty : \;
+      \Gamma(\varphi)(g)\le \Cphi^2 \quad \text{for all } g\in K.
+      \label{eq:H2}
+\end{align}
+From \eqref{eq:H1}--\eqref{eq:H2} v7 derives the key estimate via a conjugation
+differentiation identity (v7, Prop.~6.5, proved as Lemma~F.7): for all $t\ge 0$,
+\begin{equation}
+  \Gamma(P_t\varphi)(\mathrm{id}) \;\le\; \CAd^2\,\Cphi^2 .
+  \label{eq:prop65}
+\end{equation}
+The mechanism is transparent. In the flow representation
+$P_t F(g)=\mathbb{E}[F(G_t\circ g)]$, differentiating along a conjugation curve
+$C_{t,i}(\varepsilon)=g\circ\exp(\varepsilon E_i)\circ g^{-1}$ produces the
+direction $\Ad_g E_i$, and Cauchy--Schwarz in the $\Gamma$-Hilbert structure
+gives the pointwise bound
+\begin{equation}
+  \bigl|D_{\Ad_g E_i}\varphi(g)\bigr|^2
+    \le \|\Ad_g\|_{\mathrm{op}}^2\,\Gamma(\varphi)(g)
+    \le \CAd^2\,\Cphi^2\,\mathbf{1}_{\{g\in K\}} ,
+  \label{eq:cauchyschwarz}
+\end{equation}
+after which a Jensen/energy reduction yields \eqref{eq:prop65}. Chaining
+\eqref{eq:prop65} through \eqref{eq:logbound} and \eqref{eq:vort} closes BKM.
+Hypothesis~(H1) is therefore the single load-bearing analytic input of the
+route: \emph{every} subsequent estimate inherits the constant $\CAd$ from
+\eqref{eq:H1}, and the program establishes global regularity if and only if
+\eqref{eq:H1} holds.
+
+\subsection{How v7 attempts to verify (H1)}
+
+v7 verifies~(H1) at Lemma~6.1 (and again at Lemma~D.18). The adjoint /
+push-forward action is written, for $g\in\SDiff^m$ and $v\in\Hms$, as
+\begin{equation}
+  \Ad_g v := (Dg)\,\bigl(v\circ g^{-1}\bigr),
+  \label{eq:adg}
+\end{equation}
+and the argument is that, for $m>5/2$, composition and inversion are continuous
+(indeed smooth) operations on $\SDiff^m$, so the map $(g,v)\mapsto \Ad_g v$ is
+continuous from $\SDiff^m\times\Hms$ into $\Hms$; hence
+$g\mapsto\|\Ad_g\|_{\mathrm{op};\,\Hm\to\Hm}$ is locally bounded near
+$\mathrm{id}$, and one shrinks $K$ until \eqref{eq:H1} holds.
+
+The gap is in \eqref{eq:adg} itself. The factor $Dg$ is the Jacobian of $g$, and
+a map $g\in\Hm$ has Jacobian $Dg\in H^{m-1}$ only. The adjoint thus carries a
+\emph{derivative loss}: $\Ad_g$ maps $\Hm$ into $H^{m-1}$, and there is no
+uniform $\Hm\to\Hm$ operator bound near the identity in the $\Hm$ topology.
+This is the classical Ebin--Marsden phenomenon: right translation on
+$\SDiff^m$ is smooth, but the adjoint of the right-invariant frame is not a
+bounded $\Hm$ operator uniformly over an $\Hm$-neighborhood. The
+local-boundedness argument conflates topological-group continuity of
+composition with the operator-norm estimate \eqref{eq:H1} that the route
+actually needs.
+
+\section{The Fourier-mode shear model and the checked $\neg$(H1) theorems}
+\label{sec:lean}
+
+We make the derivative-loss obstruction precise and machine-checkable in a clean
+analytic model, on the normalized two-torus, of an area-preserving shear family
+\[
+  g_k(x,y) = \bigl(x,\; y + a_k \sin(kx)\bigr),
+  \qquad
+  \delta_k := g_k - \mathrm{id} = \bigl(0,\; a_k\sin(kx)\bigr).
+\]
+The amplitude $a_k$ is chosen so that the displacement has \emph{fixed} $\Hm$
+size $\varepsilon$ for every wavenumber $k$; thus the whole family sits inside
+any prescribed chart radius. Applying the push-forward \eqref{eq:adg} to the
+constant horizontal field $v=(1,0)$ gives
+\[
+  \Ad_{g_k} v = \bigl(1,\; a_k\, k\, \cos(kx)\bigr),
+\]
+and, with the same $\Hm$ normalization, the operator ratio is
+\[
+  \frac{\|\Ad_{g_k}v\|_{\Hm}}{\|v\|_{\Hm}}
+    = \sqrt{1+(\varepsilon k)^2}.
+\]
+The displacement stays at size $\varepsilon$ while the ratio grows without bound:
+no finite $\CAd$ can dominate it on any positive chart radius.
+
+This is formalized, with no \texttt{sorry} and by elementary means, in the Lean
+module \texttt{Mettapedia.FluidDynamics.NavierStokes.BenH1Break}. The model
+quantities are defined as follows.
+
+\begin{lstlisting}[language={}]
+/-- In the normalized two-torus shear family, every selected displacement has
+fixed `H^m` size `epsilon`. -/
+def benH1ModeDisplacementHNorm (epsilon : Real) (_k : Nat) : Real :=
+  epsilon
+
+/-- Lower-bound ratio obtained by applying the shear push-forward to the
+constant horizontal vector field. -/
+def benH1ModeAdjointRatio (epsilon : Real) (k : Nat) : Real :=
+  Real.sqrt (1 + (epsilon * (k : Real)) ^ 2)
+
+/-- The linearized commutator part alone grows like `epsilon * k`. -/
+def benH1ModeCommutatorRatio (epsilon : Real) (k : Nat) : Real :=
+  epsilon * (k : Real)
+\end{lstlisting}
+
+Hypothesis~(H1), restricted to this normalized family inside a chart radius
+$\rho$ (taking $\varepsilon=\rho/2$ so the family is strictly inside the ball),
+is the predicate:
+
+\begin{lstlisting}[language={}]
+/-- H1 restricted to the normalized Fourier-mode shear family inside chart
+radius `rho`. -/
+def benH1FourierModeUniformBoundWithinRadius (rho C : Real) : Prop :=
+  forall k : Nat,
+    benH1ModeDisplacementHNorm (rho / 2) k <= rho ->
+      benH1ModeAdjointRatio (rho / 2) k <= C
+\end{lstlisting}
+
+The core fact is that the adjoint ratio dominates the linear commutator part
+$\varepsilon k$, which is unbounded over $k$. The proof is fully elementary: it
+picks $k>C/\varepsilon$, lower-bounds $\sqrt{1+(\varepsilon k)^2}$ by
+$\varepsilon k$, and derives a contradiction.
+
+\begin{lstlisting}[language={}]
+theorem benH1ModeAdjointRatio_unbounded {epsilon C : Real}
+    (hepsilon : 0 < epsilon) :
+    Not (forall k : Nat, benH1ModeAdjointRatio epsilon k <= C) := by
+  intro hbound
+  obtain ⟨k, hk⟩ := exists_nat_gt (C / epsilon)
+  have hC_lt : C < epsilon * (k : Real) := by
+    have hmul := mul_lt_mul_of_pos_left hk hepsilon
+    field_simp [ne_of_gt hepsilon] at hmul
+    exact hmul
+  have hnonneg : 0 <= epsilon * (k : Real) := by positivity
+  have hlinear_le_ratio :
+      epsilon * (k : Real) <= benH1ModeAdjointRatio epsilon k := by
+    unfold benH1ModeAdjointRatio
+    have hsquare :
+        (epsilon * (k : Real)) ^ 2 <= 1 + (epsilon * (k : Real)) ^ 2 := by
+      linarith
+    calc
+      epsilon * (k : Real)
+          = Real.sqrt ((epsilon * (k : Real)) ^ 2) := by
+              rw [Real.sqrt_sq_eq_abs, abs_of_nonneg hnonneg]
+      _ <= Real.sqrt (1 + (epsilon * (k : Real)) ^ 2) :=
+              Real.sqrt_le_sqrt hsquare
+  exact not_lt_of_ge (le_trans hlinear_le_ratio (hbound k)) hC_lt
+\end{lstlisting}
+
+From this the refutation of~(H1) on the model follows directly. Any positive
+chart radius $\rho$ admits the normalized family at $\varepsilon=\rho/2$ (whose
+displacements all have $\Hm$ size $\rho/2\le\rho$), and its adjoint ratios are
+unbounded, contradicting any proposed finite $C$.
+
+\begin{lstlisting}[language={}]
+/-- Any positive chart radius contains the normalized shear family with
+`epsilon = rho / 2`, and its adjoint ratios are unbounded. -/
+theorem not_benH1FourierModeUniformBoundWithinRadius {rho C : Real}
+    (hrho : 0 < rho) :
+    Not (benH1FourierModeUniformBoundWithinRadius rho C) := by
+  intro hbound
+  have hepsilon : 0 < rho / 2 := by positivity
+  have hmode_bound : forall k : Nat, benH1ModeAdjointRatio (rho / 2) k <= C := by
+    intro k
+    apply hbound k
+    unfold benH1ModeDisplacementHNorm
+    linarith
+  exact benH1ModeAdjointRatio_unbounded hepsilon hmode_bound
+
+/-- Compact public verdict: Ben's H1, as a uniform `H^m -> H^m` adjoint bound,
+is false on the normalized Fourier-mode shear model for every positive chart
+radius and every proposed finite constant. -/
+theorem benGoertzelH1_false_in_fourierModeShearModel :
+    forall rho C : Real,
+      0 < rho -> Not (benH1FourierModeUniformBoundWithinRadius rho C) := by
+  intro rho C hrho
+  exact not_benH1FourierModeUniformBoundWithinRadius (rho := rho) (C := C) hrho
+\end{lstlisting}
+
+The three checked statements are
+\texttt{benH1ModeAdjointRatio\_unbounded},
+\texttt{not\_benH1FourierModeUniformBoundWithinRadius}, and the compact verdict
+\texttt{benGoertzelH1\_false\_in\_fourierModeShearModel}: for every positive
+chart radius and every proposed finite constant, the modeled (H1) uniform
+$\Hm\to\Hm$ adjoint bound fails. (A companion lemma
+\texttt{benH1ModeCommutatorRatio\_unbounded} records that the linearized
+commutator part $\varepsilon k$ is already unbounded on its own.)
+
+\section{The numeric lab: the norms are derived, not assumed}
+\label{sec:lab}
+
+The Lean development encodes the two normalized quantities
+$\|\delta_k\|_{\Hm}=\varepsilon$ and
+$\|\Ad_{g_k}v\|_{\Hm}/\|v\|_{\Hm}=\sqrt{1+(\varepsilon k)^2}$ as definitions. To
+confirm that these are not circular --- that the factor $k$ in the adjoint ratio
+is a genuine consequence of the Sobolev-weight structure and the derivative in
+\eqref{eq:adg}, rather than an assumption --- a companion numeric lab
+(\texttt{ns\_ben\_h1\_fourier\_mode\_lab.py}, in the MeTTapedia validation lab)
+\emph{computes} the norms from first quantities. With $\Hm$ Fourier weight
+$w_k = (1+k^2)^{m/2}$:
+\begin{itemize}
+  \item the amplitude is set to $a_k = \sqrt{2}\,\varepsilon / w_k$, so the
+        displacement norm is
+        $\|\delta_k\|_{\Hm} = |a_k|\,w_k/\sqrt{2} = \varepsilon$
+        (the $\sqrt2$ is the $L^2$ normalization of $\sin(kx)$);
+  \item differentiating, $\partial_x\bigl(a_k\sin(kx)\bigr)=a_k k\cos(kx)$, whose
+        $\Hm$ norm is $|a_k|\,k\,w_k/\sqrt{2} = \varepsilon k$. The weight $w_k$
+        \emph{cancels} the amplitude, leaving $\varepsilon$; the surviving factor
+        $k$ is the one derivative gained by $D g_k$;
+  \item the constant field has $\|v\|_{\Hm}=1$, so the adjoint norm is
+        $\sqrt{1^2+(\varepsilon k)^2}$ and the ratio is
+        $\sqrt{1+(\varepsilon k)^2}$.
+\end{itemize}
+This is exactly the Ebin--Marsden derivative loss of \eqref{eq:adg} made
+quantitative: $g_k\in\Hm$ has $Dg_k\in H^{m-1}$, and the action of $Dg_k$
+multiplies the mode's high-frequency content by its wavenumber. Table~\ref{tab:lab}
+lists the lab output for $\varepsilon=0.01$, $m=3$. The displacement norm stays
+fixed at $\varepsilon$ across four decades of $k$ while the adjoint ratio grows.
+
+\begin{table}[h]
+\centering
+\begin{tabular}{rcccc}
+\toprule
+$k$ & amplitude $a_k$ & $\|\delta_k\|_{\Hm}$ & commutator $\varepsilon k$ & ratio $\sqrt{1+(\varepsilon k)^2}$ \\
+\midrule
+$8$    & $2.699\times10^{-5}$ & $0.0100$ & $0.080$ & $1.0032$ \\
+$16$   & $3.433\times10^{-6}$ & $0.0100$ & $0.160$ & $1.0127$ \\
+$32$   & $4.310\times10^{-7}$ & $0.0100$ & $0.320$ & $1.0500$ \\
+$64$   & $5.393\times10^{-8}$ & $0.0100$ & $0.640$ & $1.1873$ \\
+$128$  & $6.743\times10^{-9}$ & $0.0100$ & $1.280$ & $1.6243$ \\
+$256$  & $8.429\times10^{-10}$ & $0.0100$ & $2.560$ & $2.7484$ \\
+$512$  & $1.054\times10^{-10}$ & $0.0100$ & $5.120$ & $5.2167$ \\
+$1024$ & $1.317\times10^{-11}$ & $0.0100$ & $10.240$ & $10.2887$ \\
+\bottomrule
+\end{tabular}
+\caption{Fourier-mode lab output ($\varepsilon=0.01$, $m=3$). The displacement
+$\Hm$ norm is pinned at $\varepsilon$ for every wavenumber, while the adjoint
+operator ratio $\sqrt{1+(\varepsilon k)^2}$ grows without bound. For any
+proposed constant $C$ the ratio first exceeds it near
+$k\approx\sqrt{C^2-1}/\varepsilon$ (e.g.\ $C=2$ at $k=174$, $C=10$ at $k=995$,
+$C=100$ at $k=10000$): no finite $\CAd$ survives.}
+\label{tab:lab}
+\end{table}
+
+\section{Status and scope}
+\label{sec:scope}
+
+We state the scope of this finding exactly.
+
+\paragraph{What is established.} Hypothesis~(H1) of v7 --- a uniform
+$\Hm\to\Hm$ operator bound \eqref{eq:H1} on the adjoint / push-forward $\Ad_g$
+over an $\Hm$ chart-neighborhood of the identity --- is \emph{false} in the
+normalized Fourier-mode shear model of Section~\ref{sec:lean}. The refutation is
+machine-checked (no \texttt{sorry}, elementary) in
+\texttt{Mettapedia.FluidDynamics.NavierStokes.BenH1Break}, and the underlying
+norms are independently derived from the Sobolev-weight structure in the
+companion numeric lab. The model faithfully captures the mechanism that defeats
+v7's local-boundedness argument: the adjoint \eqref{eq:adg} loses one derivative
+($g\in\Hm\Rightarrow Dg\in H^{m-1}$), so on a fixed-radius $\Hm$ chart the
+operator norm is unbounded along high-wavenumber shears.
+
+\paragraph{What is not established.} This is a refutation of (H1)
+\emph{in a model} --- a single analytic Fourier-mode family together with the
+linearized commutator action --- not a from-Mathlib-Sobolev-first-principles
+theorem about $\SDiff^m(\mathbb{T}^3)$. The model uses the exact push-forward
+formula \eqref{eq:adg} on an explicit shear family and the standard Fourier
+$\Hm$ norm; it does not formalize the full diffeomorphism-group functional
+analysis. The mechanism (derivative loss) is captured faithfully, but the
+strength of the conclusion is ``checked in this model,'' not ``checked over the
+entire chart from Mathlib's Sobolev theory.''
+
+\paragraph{Consequence for the route.} Because every quantitative step of the
+SG--Cole--Hopf program inherits the constant $\CAd$ from \eqref{eq:H1} ---
+through \eqref{eq:prop65}, \eqref{eq:logbound}, and \eqref{eq:vort} --- the
+falsity of~(H1) as stated means the route does \emph{not}, as written, establish
+global regularity. v7 reduces 3D Navier--Stokes global regularity to~(H1)
+(equivalently, to a uniform curvature / Bakry--\'Emery-type bound), and that
+reduction target does not hold uniformly in the form required.
+
+\paragraph{What remains open.} We make no claim about Navier--Stokes itself.
+Global regularity of the 3D incompressible Navier--Stokes equation remains an
+open problem; the finding here concerns only the viability of one particular
+proof route. Whether a repaired hypothesis --- for instance an
+$\Hm\to H^{m-1}$ adjoint bound combined with a separate mechanism to recover the
+lost derivative --- could resurrect a version of the argument is left as a
+question for future work.
+
+\section*{Provenance}
+The manuscript discussed is Ben Goertzel, \emph{Global Regularity of 3D
+Navier--Stokes via SG--Cole--Hopf Program}, version v7. The formalization,
+Fourier-mode model, and numeric lab are work of the MeTTapedia formalization
+effort; the Lean development is the module
+\texttt{Mettapedia.FluidDynamics.NavierStokes.BenH1Break}.
+
+\end{document}

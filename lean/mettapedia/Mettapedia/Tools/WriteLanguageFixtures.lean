@@ -11,7 +11,7 @@ open Mettapedia.OSLF.MeTTaIL
 namespace Mettapedia.Tools.WriteLanguageFixtures
 
 private def fixtureBase :=
-  "/home/zar/claude/hyperon/mettail-rust/macros/tests/fixtures/lean_export"
+  "~/claude/hyperon/mettail-rust/macros/tests/fixtures/lean_export"
 
 private def gfPaperSyntaxLang :=
   Mettapedia.Languages.GF.GFCoreOSLFBridge.gfSyntaxLanguageDef

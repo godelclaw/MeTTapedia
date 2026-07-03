@@ -43,6 +43,13 @@ theorem mem_edgeKempeClosure_of_mem_of_step {C₀ C : G.EdgeColoring α}
     C.swapOnKempeComponent a b K ∈ G.EdgeKempeClosure C₀ :=
   G.mem_edgeKempeClosure_of_step hC (G.edgeKempeStep_swapOnKempeComponent C a b K)
 
+theorem lineGraph_adj_of_edgeSet_common_vertex
+    {V : Type*} {G : SimpleGraph V} {e f : G.edgeSet} {v : V}
+    (hne : e ≠ f) (he : v ∈ (e : Sym2 V)) (hf : v ∈ (f : Sym2 V)) :
+    G.lineGraph.Adj e f := by
+  rw [SimpleGraph.lineGraph_adj_iff_exists]
+  exact ⟨hne, ⟨v, he, hf⟩⟩
+
 theorem edgeKempeClosure_subset_of_mem {C₀ C₁ : G.EdgeColoring α}
     (hC₁ : C₁ ∈ G.EdgeKempeClosure C₀) :
     G.EdgeKempeClosure C₁ ⊆ G.EdgeKempeClosure C₀ :=

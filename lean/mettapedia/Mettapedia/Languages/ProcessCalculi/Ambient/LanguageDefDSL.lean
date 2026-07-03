@@ -6,7 +6,7 @@ import Mettapedia.OSLF.MeTTaIL.Export
 
 This module is the Lean `languageDef!` acceptance test corresponding to the
 Rust `language!` definition in
-`/home/zar/claude/hyperon/mettail-rust/languages/src/ambient.rs`.
+`~/claude/hyperon/mettail-rust/languages/src/ambient.rs`.
 
 Positive example:
 - single-binder `PNew`, collection-rest freshness, and nested process rewrite

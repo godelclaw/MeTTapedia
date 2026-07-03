@@ -28,7 +28,7 @@ private def emptyBundle : SpecBundle := {
 
 def main : IO Unit := do
   let s0 := Session.new emptyBundle
-  let s1 ← loadFile s0 "/home/zar/claude/hyperon/PeTTa/examples/invertpeanoplus.metta"
+  let s1 ← loadFile s0 "~/claude/hyperon/PeTTa/examples/invertpeanoplus.metta"
   IO.println s!"errors={s1.diag.errors} parsed={s1.diag.parsedLines} applied={s1.diag.appliedStmts} eval={s1.diag.evalCalls}"
   for m in s1.diag.messages.reverse do
     if m.contains "test failed" || m.contains "test passed" then

@@ -1178,5 +1178,5 @@
       "preview": "registration let L; cluster satisfying_INT -> satisfying_SI for approximating auxiliary Relation of L; coherence by Th61"
     }
   ],
-  "source_path": "/home/zar/claude/mizar/share/mml/waybel_4.miz"
+  "source_path": "~/claude/mizar/share/mml/waybel_4.miz"
 }

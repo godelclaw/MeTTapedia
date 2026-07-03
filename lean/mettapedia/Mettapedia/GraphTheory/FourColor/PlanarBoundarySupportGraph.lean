@@ -112,6 +112,20 @@ def BoundaryEdgeSetCrossComponentChordFree {G : SimpleGraph V}
     (∃ v : V, v ∈ (e : Sym2 V) ∧ v ∈ boundaryEdgeSetEndpointSupport right) →
       e ∈ left ∪ right
 
+theorem not_boundaryEdgeSetCrossComponentChordFree_of_edge_not_mem_of_endpoint_supports
+    {G : SimpleGraph V} {left right : Finset G.edgeSet} {e : G.edgeSet}
+    (heNot : e ∉ left ∪ right)
+    (hEndpoints :
+      ∀ v : V, v ∈ (e : Sym2 V) →
+        v ∈ boundaryEdgeSetEndpointSupport (left ∪ right))
+    (hLeft :
+      ∃ v : V, v ∈ (e : Sym2 V) ∧ v ∈ boundaryEdgeSetEndpointSupport left)
+    (hRight :
+      ∃ v : V, v ∈ (e : Sym2 V) ∧ v ∈ boundaryEdgeSetEndpointSupport right) :
+    ¬ BoundaryEdgeSetCrossComponentChordFree left right := by
+  intro hCross
+  exact heNot (hCross e hEndpoints hLeft hRight)
+
 theorem boundaryEdgeSetInducedSubgraph_union_of_induced_of_crossComponentChordFree
     {G : SimpleGraph V} {left right : Finset G.edgeSet}
     (hLeft : BoundaryEdgeSetInducedSubgraph left)

@@ -25,7 +25,7 @@ contains all remaining work.
 
 ## Connection to CeTTa
 
-In `/home/zar/claude/c-projects/CeTTa-mork/src/eval.c`, both `let` and `chain`
+In `~/claude/c-projects/CeTTa-mork/src/eval.c`, both `let` and `chain`
 currently evaluate the source expression eagerly into an `OutcomeSet`, then
 iterate those results to evaluate bodies. This file proves that the same
 observable behavior can be recovered by a resumable source/body frame split.

@@ -46,6 +46,22 @@ def momentumPressureResidual (ν : ℝ) (u : NSVelocityField) : NSVelocityField 
     ν • spatialLaplacian u t x - timeVelocityDerivative u t x -
       spatialConvection u t x
 
+/-- The curl of the pressure residual only depends on the velocity slice and
+the time-derivative slice at the sampled time. -/
+theorem spatialVorticity_momentumPressureResidual_congr_at
+    {ν : ℝ} {u v : NSVelocityField} {t : NSTime} {x : NSSpace}
+    (hslice : ∀ y : NSSpace, u t y = v t y)
+    (htime : ∀ y : NSSpace,
+      timeVelocityDerivative u t y = timeVelocityDerivative v t y) :
+    spatialVorticity (momentumPressureResidual ν u) t x =
+      spatialVorticity (momentumPressureResidual ν v) t x := by
+  refine spatialVorticity_congr_at ?_
+  intro y
+  unfold momentumPressureResidual
+  rw [spatialLaplacian_congr_at hslice,
+    spatialConvection_congr_at hslice,
+    htime y]
+
 /-- A coordinate derivative of the gradient of a smooth scalar field is the
 corresponding second Fréchet derivative. -/
 theorem fderiv_gradient_component_eq_second_fderiv

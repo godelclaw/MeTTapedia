@@ -41,7 +41,7 @@ by a `relEnv : RelationEnv` encoding which conditions hold for the token pair.
 
 - Meredith & Stay, "Operational Semantics in Logical Form"
 - Williams & Stay, "Native Type Theory" (ACT 2021)
-- PathMap `ring.rs`: `/home/zar/claude/hyperon/PathMap/src/ring.rs`
+- PathMap `ring.rs`: `~/claude/hyperon/PathMap/src/ring.rs`
 -/
 
 namespace Mettapedia.OSLF.PathMap.OSLFInstance

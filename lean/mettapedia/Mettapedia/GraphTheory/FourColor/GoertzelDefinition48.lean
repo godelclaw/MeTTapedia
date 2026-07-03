@@ -16,6 +16,47 @@ Goertzel v23 Definition 4.8. -/
 def IsTaitEdgeColoring (G : SimpleGraph V) (C : G.EdgeColoring Color) : Prop :=
   ∀ e, C e ≠ 0
 
+theorem false_of_four_pairwise_distinct_nonzero_colors
+    {a b c d : Color} (ha : a ≠ 0) (hb : b ≠ 0) (hc : c ≠ 0) (hd : d ≠ 0)
+    (hab : a ≠ b) (hac : a ≠ c) (had : a ≠ d) (hbc : b ≠ c) (hbd : b ≠ d)
+    (hcd : c ≠ d) : False := by
+  fin_cases a <;> fin_cases b <;> fin_cases c <;> fin_cases d
+  all_goals
+    first
+    | exact ha rfl
+    | exact hb rfl
+    | exact hc rfl
+    | exact hd rfl
+    | exact hab rfl
+    | exact hac rfl
+    | exact had rfl
+    | exact hbc rfl
+    | exact hbd rfl
+    | exact hcd rfl
+
+omit [DecidableEq V] in
+theorem IsTaitEdgeColoring.false_of_four_pairwise_adjacent_edges
+    {G : SimpleGraph V} {C : G.EdgeColoring Color}
+    (hC : IsTaitEdgeColoring G C) {e₁ e₂ e₃ e₄ : G.edgeSet}
+    (h₁₂ : G.lineGraph.Adj e₁ e₂) (h₁₃ : G.lineGraph.Adj e₁ e₃)
+    (h₁₄ : G.lineGraph.Adj e₁ e₄) (h₂₃ : G.lineGraph.Adj e₂ e₃)
+    (h₂₄ : G.lineGraph.Adj e₂ e₄) (h₃₄ : G.lineGraph.Adj e₃ e₄) :
+    False :=
+  false_of_four_pairwise_distinct_nonzero_colors
+    (hC e₁) (hC e₂) (hC e₃) (hC e₄)
+    (C.valid h₁₂) (C.valid h₁₃) (C.valid h₁₄)
+    (C.valid h₂₃) (C.valid h₂₄) (C.valid h₃₄)
+
+omit [DecidableEq V] in
+theorem not_exists_taitEdgeColoring_of_four_pairwise_adjacent_edges
+    {G : SimpleGraph V} {e₁ e₂ e₃ e₄ : G.edgeSet}
+    (h₁₂ : G.lineGraph.Adj e₁ e₂) (h₁₃ : G.lineGraph.Adj e₁ e₃)
+    (h₁₄ : G.lineGraph.Adj e₁ e₄) (h₂₃ : G.lineGraph.Adj e₂ e₃)
+    (h₂₄ : G.lineGraph.Adj e₂ e₄) (h₃₄ : G.lineGraph.Adj e₃ e₄) :
+    ¬ ∃ C : G.EdgeColoring Color, IsTaitEdgeColoring G C := by
+  rintro ⟨C, hC⟩
+  exact hC.false_of_four_pairwise_adjacent_edges h₁₂ h₁₃ h₁₄ h₂₃ h₂₄ h₃₄
+
 /-- The boundary edges of a face carrying one of the selected colors.
 This is the boundary support of the `(a,b)`-Kempe components meeting that face boundary. -/
 def boundaryBicoloredEdges {G : SimpleGraph V} (C : G.EdgeColoring Color)

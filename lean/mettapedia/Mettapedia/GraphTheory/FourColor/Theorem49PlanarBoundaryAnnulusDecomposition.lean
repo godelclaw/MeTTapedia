@@ -317,6 +317,27 @@ theorem PlanarBoundaryAnnulusDecomposition.boundaryCycle_intermediate_nonempty
     (data.boundaryCycle (Fin.succ i)).Nonempty :=
   data.hintermediateBoundaryNonempty i hi
 
+/-- Any nonempty intermediate annulus boundary cycle supplies a live interior face-incidence
+edge.  This is the finite geometry bridge needed by purified-carrier arguments: boundary
+chord-freeness alone is vacuous unless the annulus decomposition has an actual intermediate
+interior support. -/
+theorem PlanarBoundaryAnnulusDecomposition.interiorEdgeSupport_nonempty_of_intermediate
+    {G : SimpleGraph V} {emb : PlaneEmbeddingWithBoundary G}
+    (data : PlanarBoundaryAnnulusDecomposition emb) (i : Fin data.numCollars)
+    (hi : i.1 + 1 < data.numCollars) :
+    (interiorEdgeSupport emb.faceBoundary emb.faces).Nonempty := by
+  rcases data.boundaryCycle_intermediate_nonempty i hi with ⟨e, he⟩
+  exact ⟨e, data.boundaryCycle_intermediate_subset_interiorEdgeSupport i hi he⟩
+
+/-- A decomposition with at least two collars has a nonempty interior face-incidence support,
+because its first intermediate boundary cycle is nonempty and lies inside `interiorEdgeSupport`. -/
+theorem PlanarBoundaryAnnulusDecomposition.interiorEdgeSupport_nonempty_of_one_lt_numCollars
+    {G : SimpleGraph V} {emb : PlaneEmbeddingWithBoundary G}
+    (data : PlanarBoundaryAnnulusDecomposition emb)
+    (hnum : 1 < data.numCollars) :
+    (interiorEdgeSupport emb.faceBoundary emb.faces).Nonempty := by
+  exact data.interiorEdgeSupport_nonempty_of_intermediate ⟨0, by omega⟩ (by omega)
+
 theorem PlanarBoundaryAnnulusDecomposition.boundaryCycle_intermediate_disjoint_selectedBoundarySupport
     {G : SimpleGraph V} {emb : PlaneEmbeddingWithBoundary G}
     (data : PlanarBoundaryAnnulusDecomposition emb) (i : Fin data.numCollars)

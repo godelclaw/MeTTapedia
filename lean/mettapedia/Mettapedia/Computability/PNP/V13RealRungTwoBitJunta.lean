@@ -1,0 +1,5135 @@
+import Mettapedia.Computability.PNP.V13RealRungOneQRowBound
+
+/-!
+# PNP v13 real rung two: bit-junta and parity observers
+
+This module opens the bit-level observer surface on the same linear public
+instance `(A, A x)`.  It separates the kernel-flip half, which is already
+available at bit level, from the remaining finite counting problem: bound the
+maps for which the read RHS rows span-block the target coordinate.
+-/
+
+namespace Mettapedia.Computability.PNP
+
+set_option autoImplicit false
+
+/-- A `j`-junta over elementary public coordinates.  The decision may read at
+most the listed coordinates, with repeated or unused slots allowed. -/
+structure V13RealLinearBitJuntaObserver (m j : Nat) where
+  coordinate : Fin j → Option (V13RealLinearPublicCoordinate m)
+  decide : V13RealLinearPublic m → ZMod 2
+  factorsThrough :
+    ∀ public₀ public₁ : V13RealLinearPublic m,
+      (∀ k : Fin j, ∀ coord : V13RealLinearPublicCoordinate m,
+        coordinate k = some coord →
+          v13RealLinearCoordinateValue coord public₀ =
+            v13RealLinearCoordinateValue coord public₁) →
+      decide public₀ = decide public₁
+
+/-- RHS rows whose bits may affect a bit-junta under hidden-vector flips. -/
+noncomputable def v13RealLinearBitJuntaRhsRows {m j : Nat}
+    (observer : V13RealLinearBitJuntaObserver m j) : Finset (Fin m) := by
+  classical
+  exact Finset.univ.filter
+    (fun row : Fin m =>
+      ∃ k : Fin j, observer.coordinate k = some (.rhs row))
+
+theorem v13RealLinearBitJuntaRhsRows_mem {m j : Nat}
+    (observer : V13RealLinearBitJuntaObserver m j) {row : Fin m} :
+    row ∈ v13RealLinearBitJuntaRhsRows observer ↔
+      ∃ k : Fin j, observer.coordinate k = some (.rhs row) := by
+  classical
+  simp [v13RealLinearBitJuntaRhsRows]
+
+theorem v13RealLinearBitJuntaRhsRows_card_le {m j : Nat}
+    (observer : V13RealLinearBitJuntaObserver m j) :
+    (v13RealLinearBitJuntaRhsRows observer).card ≤ j := by
+  classical
+  let rows := v13RealLinearBitJuntaRhsRows observer
+  let slot : {row : Fin m // row ∈ rows} → Fin j := fun row =>
+    Classical.choose ((v13RealLinearBitJuntaRhsRows_mem observer).1 row.property)
+  have hslot :
+      ∀ row : {row : Fin m // row ∈ rows},
+        observer.coordinate (slot row) = some (.rhs row.val) := by
+    intro row
+    exact Classical.choose_spec
+      ((v13RealLinearBitJuntaRhsRows_mem observer).1 row.property)
+  have hinj : Function.Injective slot := by
+    intro row₀ row₁ h
+    apply Subtype.ext
+    have hcoord :
+        some (V13RealLinearPublicCoordinate.rhs row₀.val) =
+          some (V13RealLinearPublicCoordinate.rhs row₁.val) := by
+      rw [← hslot row₀, h, hslot row₁]
+    simpa using hcoord
+  have hcard :
+      Fintype.card {row : Fin m // row ∈ rows} ≤ Fintype.card (Fin j) :=
+    Fintype.card_le_of_injective slot hinj
+  simpa [rows] using hcard
+
+/-- The RHS-row footprint as a rowset inside the junta read budget. -/
+noncomputable def v13RealLinearBitJuntaRhsBudgetedRowset {m j : Nat}
+    (observer : V13RealLinearBitJuntaObserver m j) :
+    V13RealLinearBudgetedRowset m j :=
+  ⟨v13RealLinearBitJuntaRhsRows observer,
+    v13RealLinearBitJuntaRhsRows_card_le observer⟩
+
+/-- A bit-junta is blocked for `(A, i₀)` exactly when the kernel common to all
+RHS rows it reads forces the target bit to vanish. -/
+def V13RealLinearBitJuntaBlocked {m j : Nat}
+    (observer : V13RealLinearBitJuntaObserver m j)
+    (A : V13F2LinearEquiv m) (i₀ : Fin m) : Prop :=
+  V13RealLinearRowsBlockTarget A
+    (v13RealLinearBitJuntaRhsRows observer) i₀
+
+theorem v13RealLinearBitJunta_blocked_iff_kernel {m j : Nat}
+    (observer : V13RealLinearBitJuntaObserver m j)
+    (A : V13F2LinearEquiv m) (i₀ : Fin m) :
+    V13RealLinearBitJuntaBlocked observer A i₀ ↔
+      ∀ w : F2Vec m,
+        (∀ row : Fin m,
+          row ∈ v13RealLinearBitJuntaRhsRows observer →
+            A.toEquiv w row = 0) →
+          w i₀ = 0 :=
+  Iff.rfl
+
+theorem v13RealLinearBitJunta_blocked_iff_rowsGenerateTarget {m j : Nat}
+    (observer : V13RealLinearBitJuntaObserver m j)
+    (A : V13F2LinearEquiv m) (i₀ : Fin m) :
+    V13RealLinearBitJuntaBlocked observer A i₀ ↔
+      V13RealLinearRowsGenerateTarget A
+        (v13RealLinearBitJuntaRhsRows observer) i₀ := by
+  simpa [V13RealLinearBitJuntaBlocked] using
+    (v13RealLinear_rowsBlockTarget_iff_rowsGenerateTarget A
+      (v13RealLinearBitJuntaRhsRows observer) i₀)
+
+/-- Explicit second-rung blocked-map allowance for `j` public-coordinate reads. -/
+noncomputable def v13RealLinearBitJuntaEpsilon2 (j m : Nat) : Rat :=
+  (4 * (2 : Rat) ^ j) / ((2 : Rat) ^ m)
+
+theorem v13RealLinearBitJunta_coordinateValue_same_after_kernel_add
+    {m j : Nat} (observer : V13RealLinearBitJuntaObserver m j)
+    (A : V13F2LinearEquiv m) (x w : F2Vec m)
+    (hkernel :
+      ∀ row : Fin m, row ∈ v13RealLinearBitJuntaRhsRows observer →
+        A.toEquiv w row = 0)
+    {k : Fin j} {coord : V13RealLinearPublicCoordinate m}
+    (hcoord : observer.coordinate k = some coord) :
+    v13RealLinearCoordinateValue coord
+        (v13RealLinearPublicInput
+          ({ x := x, A := A } : V13RealLinearWorld m)) =
+      v13RealLinearCoordinateValue coord
+        (v13RealLinearPublicInput
+          ({ x := f2AddVec x w, A := A } : V13RealLinearWorld m)) := by
+  classical
+  cases coord with
+  | mapValue probe row =>
+      simp [v13RealLinearCoordinateValue, v13RealLinearPublicInput]
+  | inverseValue probe row =>
+      simp [v13RealLinearCoordinateValue, v13RealLinearPublicInput]
+  | rhs row =>
+      have hmem : row ∈ v13RealLinearBitJuntaRhsRows observer := by
+        rw [v13RealLinearBitJuntaRhsRows_mem observer]
+        exact ⟨k, hcoord⟩
+      have hrow : A.toEquiv w row = 0 := hkernel row hmem
+      have hmap := congrFun (A.map_add x w) row
+      simpa [v13RealLinearCoordinateValue, v13RealLinearPublicInput,
+        f2AddVec, hrow] using hmap.symm
+
+theorem v13RealLinearBitJunta_decide_same_after_kernel_add
+    {m j : Nat} (observer : V13RealLinearBitJuntaObserver m j)
+    (A : V13F2LinearEquiv m) (x w : F2Vec m)
+    (hkernel :
+      ∀ row : Fin m, row ∈ v13RealLinearBitJuntaRhsRows observer →
+        A.toEquiv w row = 0) :
+    observer.decide
+        (v13RealLinearPublicInput
+          ({ x := x, A := A } : V13RealLinearWorld m)) =
+      observer.decide
+        (v13RealLinearPublicInput
+          ({ x := f2AddVec x w, A := A } : V13RealLinearWorld m)) := by
+  exact observer.factorsThrough _ _
+    (fun k coord hcoord =>
+      v13RealLinearBitJunta_coordinateValue_same_after_kernel_add
+        observer A x w hkernel hcoord)
+
+def V13RealLinearBitJuntaFixedCorrect {m j : Nat}
+    (observer : V13RealLinearBitJuntaObserver m j)
+    (A : V13F2LinearEquiv m) (i₀ : Fin m) :=
+  {x : F2Vec m //
+    observer.decide
+        (v13RealLinearPublicInput
+          ({ x := x, A := A } : V13RealLinearWorld m)) =
+      v13RealLinearTarget i₀
+        ({ x := x, A := A } : V13RealLinearWorld m)}
+
+def V13RealLinearBitJuntaFixedIncorrect {m j : Nat}
+    (observer : V13RealLinearBitJuntaObserver m j)
+    (A : V13F2LinearEquiv m) (i₀ : Fin m) :=
+  {x : F2Vec m //
+    observer.decide
+        (v13RealLinearPublicInput
+          ({ x := x, A := A } : V13RealLinearWorld m)) ≠
+      v13RealLinearTarget i₀
+        ({ x := x, A := A } : V13RealLinearWorld m)}
+
+noncomputable instance {m j : Nat}
+    (observer : V13RealLinearBitJuntaObserver m j)
+    (A : V13F2LinearEquiv m) (i₀ : Fin m) :
+    Fintype (V13RealLinearBitJuntaFixedCorrect observer A i₀) := by
+  classical
+  unfold V13RealLinearBitJuntaFixedCorrect
+  infer_instance
+
+noncomputable instance {m j : Nat}
+    (observer : V13RealLinearBitJuntaObserver m j)
+    (A : V13F2LinearEquiv m) (i₀ : Fin m) :
+    Fintype (V13RealLinearBitJuntaFixedIncorrect observer A i₀) := by
+  classical
+  unfold V13RealLinearBitJuntaFixedIncorrect
+  infer_instance
+
+noncomputable def v13RealLinearBitJunta_fixedCorrectIncorrectEquiv
+    {m j : Nat} (observer : V13RealLinearBitJuntaObserver m j)
+    (A : V13F2LinearEquiv m) (i₀ : Fin m)
+    (w : F2Vec m) (hwi : w i₀ = 1)
+    (hkernel :
+      ∀ row : Fin m, row ∈ v13RealLinearBitJuntaRhsRows observer →
+        A.toEquiv w row = 0) :
+    V13RealLinearBitJuntaFixedCorrect observer A i₀ ≃
+      V13RealLinearBitJuntaFixedIncorrect observer A i₀ where
+  toFun x :=
+    ⟨f2AddVec x.val w, by
+      have hdec :=
+        v13RealLinearBitJunta_decide_same_after_kernel_add
+          observer A x.val w hkernel
+      have htargetNe :
+          v13RealLinearTarget i₀
+              ({ x := f2AddVec x.val w, A := A } :
+                V13RealLinearWorld m) ≠
+            v13RealLinearTarget i₀
+              ({ x := x.val, A := A } : V13RealLinearWorld m) :=
+        v13RealLinear_target_changes_after_kernel_hit A x.val w hwi
+      intro hbad
+      apply htargetNe
+      calc
+        v13RealLinearTarget i₀
+            ({ x := f2AddVec x.val w, A := A } :
+              V13RealLinearWorld m) =
+          observer.decide
+            (v13RealLinearPublicInput
+              ({ x := f2AddVec x.val w, A := A } :
+                V13RealLinearWorld m)) := hbad.symm
+        _ = observer.decide
+            (v13RealLinearPublicInput
+              ({ x := x.val, A := A } : V13RealLinearWorld m)) := hdec.symm
+        _ = v13RealLinearTarget i₀
+            ({ x := x.val, A := A } : V13RealLinearWorld m) := x.property⟩
+  invFun x :=
+    ⟨f2AddVec x.val w, by
+      have hdec :=
+        v13RealLinearBitJunta_decide_same_after_kernel_add
+          observer A x.val w hkernel
+      have htargetNe :
+          v13RealLinearTarget i₀
+              ({ x := f2AddVec x.val w, A := A } :
+                V13RealLinearWorld m) ≠
+            v13RealLinearTarget i₀
+              ({ x := x.val, A := A } : V13RealLinearWorld m) :=
+        v13RealLinear_target_changes_after_kernel_hit A x.val w hwi
+      have hdecFlipped :
+          observer.decide
+              (v13RealLinearPublicInput
+                ({ x := f2AddVec x.val w, A := A } :
+                  V13RealLinearWorld m)) =
+            observer.decide
+              (v13RealLinearPublicInput
+                ({ x := x.val, A := A } : V13RealLinearWorld m)) :=
+        hdec.symm
+      have hdecFlip_ne_targetOrig :
+          observer.decide
+              (v13RealLinearPublicInput
+                ({ x := f2AddVec x.val w, A := A } :
+                  V13RealLinearWorld m)) ≠
+            v13RealLinearTarget i₀
+              ({ x := x.val, A := A } : V13RealLinearWorld m) := by
+        intro hbad
+        exact x.property (hdecFlipped.symm.trans hbad)
+      exact
+        v13_zmod2_eq_of_ne_left htargetNe hdecFlip_ne_targetOrig⟩
+  left_inv x := by
+    apply Subtype.ext
+    funext row
+    exact f2_add_right_self (x.val row) (w row)
+  right_inv x := by
+    apply Subtype.ext
+    funext row
+    exact f2_add_right_self (x.val row) (w row)
+
+theorem v13RealLinearBitJunta_correct_card_eq_incorrect_card_of_kernel_hit
+    {m j : Nat} (observer : V13RealLinearBitJuntaObserver m j)
+    (A : V13F2LinearEquiv m) (i₀ : Fin m)
+    (w : F2Vec m) (hwi : w i₀ = 1)
+    (hkernel :
+      ∀ row : Fin m, row ∈ v13RealLinearBitJuntaRhsRows observer →
+        A.toEquiv w row = 0) :
+    Fintype.card (V13RealLinearBitJuntaFixedCorrect observer A i₀) =
+      Fintype.card (V13RealLinearBitJuntaFixedIncorrect observer A i₀) :=
+  Fintype.card_congr
+    (v13RealLinearBitJunta_fixedCorrectIncorrectEquiv
+      observer A i₀ w hwi hkernel)
+
+theorem v13RealLinearBitJunta_correct_card_eq_incorrect_card_of_not_blocked
+    {m j : Nat} (observer : V13RealLinearBitJuntaObserver m j)
+    (A : V13F2LinearEquiv m) (i₀ : Fin m)
+    (hnot : ¬ V13RealLinearBitJuntaBlocked observer A i₀) :
+    Fintype.card (V13RealLinearBitJuntaFixedCorrect observer A i₀) =
+      Fintype.card (V13RealLinearBitJuntaFixedIncorrect observer A i₀) := by
+  rcases v13RealLinear_exists_kernel_hit_of_not_rowsBlockTarget
+      (A := A) (rows := v13RealLinearBitJuntaRhsRows observer)
+      (i₀ := i₀) hnot with
+    ⟨w, hwi, hkernel⟩
+  exact
+    v13RealLinearBitJunta_correct_card_eq_incorrect_card_of_kernel_hit
+      observer A i₀ w hwi hkernel
+
+/-- Fixed no-target fiber for a map satisfying the no-target admissibility
+condition. -/
+abbrev V13RealLinearNoTargetBitJuntaFixedCorrect {m j : Nat}
+    (i₀ : Fin m) (observer : V13RealLinearBitJuntaObserver m j)
+    (A : V13RealLinearNoTargetRowsMap m i₀) :=
+  V13RealLinearBitJuntaFixedCorrect observer A.val i₀
+
+abbrev V13RealLinearNoTargetBitJuntaFixedIncorrect {m j : Nat}
+    (i₀ : Fin m) (observer : V13RealLinearBitJuntaObserver m j)
+    (A : V13RealLinearNoTargetRowsMap m i₀) :=
+  V13RealLinearBitJuntaFixedIncorrect observer A.val i₀
+
+def V13RealLinearNoTargetBitJuntaBlockedMap {m j : Nat}
+    (i₀ : Fin m) (observer : V13RealLinearBitJuntaObserver m j)
+    (A : V13RealLinearNoTargetRowsMap m i₀) : Prop :=
+  V13RealLinearBitJuntaBlocked observer A.val i₀
+
+abbrev V13RealLinearNoTargetBitJuntaBlockedMapSet {m j : Nat}
+    (i₀ : Fin m) (observer : V13RealLinearBitJuntaObserver m j) :=
+  {A : V13RealLinearNoTargetRowsMap m i₀ //
+    V13RealLinearNoTargetBitJuntaBlockedMap i₀ observer A}
+
+noncomputable instance {m j : Nat}
+    (i₀ : Fin m) (observer : V13RealLinearBitJuntaObserver m j) :
+    Fintype (V13RealLinearNoTargetBitJuntaBlockedMapSet i₀ observer) := by
+  classical
+  unfold V13RealLinearNoTargetBitJuntaBlockedMapSet
+  infer_instance
+
+theorem v13RealLinearNoTargetBitJunta_blockedMap_iff_kernel
+    {m j : Nat} (i₀ : Fin m)
+    (observer : V13RealLinearBitJuntaObserver m j)
+    (A : V13RealLinearNoTargetRowsMap m i₀) :
+    V13RealLinearNoTargetBitJuntaBlockedMap i₀ observer A ↔
+      ∀ w : F2Vec m,
+        (∀ row : Fin m,
+          row ∈ v13RealLinearBitJuntaRhsRows observer →
+            A.val.toEquiv w row = 0) →
+          w i₀ = 0 :=
+  Iff.rfl
+
+theorem v13RealLinearNoTargetBitJunta_blockedMap_iff_rowsGenerateTarget
+    {m j : Nat} (i₀ : Fin m)
+    (observer : V13RealLinearBitJuntaObserver m j)
+    (A : V13RealLinearNoTargetRowsMap m i₀) :
+    V13RealLinearNoTargetBitJuntaBlockedMap i₀ observer A ↔
+      V13RealLinearRowsGenerateTarget A.val
+        (v13RealLinearBitJuntaRhsBudgetedRowset observer).1 i₀ := by
+  simpa [V13RealLinearNoTargetBitJuntaBlockedMap,
+    v13RealLinearBitJuntaRhsBudgetedRowset] using
+    (v13RealLinearBitJunta_blocked_iff_rowsGenerateTarget
+      observer A.val i₀)
+
+abbrev V13RealLinearNoTargetBudgetedRowsetGeneratingMapSet {m j : Nat}
+    (i₀ : Fin m) (rows : V13RealLinearBudgetedRowset m j) :=
+  {A : V13RealLinearNoTargetRowsMap m i₀ //
+    V13RealLinearRowsGenerateTarget A.val rows.1 i₀}
+
+noncomputable instance {m j : Nat} (i₀ : Fin m)
+    (rows : V13RealLinearBudgetedRowset m j) :
+    Fintype
+      (V13RealLinearNoTargetBudgetedRowsetGeneratingMapSet i₀ rows) := by
+  classical
+  unfold V13RealLinearNoTargetBudgetedRowsetGeneratingMapSet
+  infer_instance
+
+noncomputable def
+    v13RealLinearNoTargetBitJuntaBlockedMapSetEquivBudgetedGeneratingMapSet
+    {m j : Nat} (i₀ : Fin m)
+    (observer : V13RealLinearBitJuntaObserver m j) :
+    V13RealLinearNoTargetBitJuntaBlockedMapSet i₀ observer ≃
+      V13RealLinearNoTargetBudgetedRowsetGeneratingMapSet i₀
+        (v13RealLinearBitJuntaRhsBudgetedRowset observer) where
+  toFun A :=
+    ⟨A.val,
+      (v13RealLinearNoTargetBitJunta_blockedMap_iff_rowsGenerateTarget
+        i₀ observer A.val).1 A.property⟩
+  invFun A :=
+    ⟨A.val,
+      (v13RealLinearNoTargetBitJunta_blockedMap_iff_rowsGenerateTarget
+        i₀ observer A.val).2 A.property⟩
+  left_inv A := by
+    apply Subtype.ext
+    rfl
+  right_inv A := by
+    apply Subtype.ext
+    rfl
+
+theorem
+    v13RealLinearNoTargetBitJuntaBlockedMapSet_card_eq_budgetedGeneratingMapSet
+    {m j : Nat} (i₀ : Fin m)
+    (observer : V13RealLinearBitJuntaObserver m j) :
+    Fintype.card (V13RealLinearNoTargetBitJuntaBlockedMapSet i₀ observer) =
+      Fintype.card
+        (V13RealLinearNoTargetBudgetedRowsetGeneratingMapSet i₀
+          (v13RealLinearBitJuntaRhsBudgetedRowset observer)) :=
+  Fintype.card_congr
+    (v13RealLinearNoTargetBitJuntaBlockedMapSetEquivBudgetedGeneratingMapSet
+      i₀ observer)
+
+/-- Rowset-counting form of the remaining bit-junta blocked-map obligation. -/
+def V13RealLinearNoTargetBudgetedRowsetGenerationCountingBound
+    (m j : Nat) : Prop :=
+  ∀ i₀ : Fin m, ∀ rows : V13RealLinearBudgetedRowset m j,
+    ((2 : Nat) ^ m) *
+        Fintype.card
+          (V13RealLinearNoTargetBudgetedRowsetGeneratingMapSet i₀ rows) ≤
+      4 * ((2 : Nat) ^ j) *
+        Fintype.card (V13RealLinearNoTargetRowsMap m i₀)
+
+theorem
+    V13RealLinearNoTargetBudgetedRowsetGenerationCountingBound_zeroBudget
+    (m : Nat) :
+    V13RealLinearNoTargetBudgetedRowsetGenerationCountingBound m 0 := by
+  intro i₀ rows
+  have hrows : rows.1.card = 0 := Nat.eq_zero_of_le_zero rows.2
+  have hcard :
+      Fintype.card
+          (V13RealLinearNoTargetBudgetedRowsetGeneratingMapSet i₀ rows) =
+        0 := by
+    rw [Fintype.card_eq_zero_iff]
+    refine ⟨?_⟩
+    intro A
+    exact
+      v13RealLinear_not_rowsGenerateTarget_of_rows_card_zero
+        A.val.val i₀ hrows A.property
+  simp [hcard]
+
+theorem
+    V13RealLinearNoTargetBudgetedRowsetGenerationCountingBound_oneBudget
+    (m : Nat) :
+    V13RealLinearNoTargetBudgetedRowsetGenerationCountingBound m 1 := by
+  intro i₀ rows
+  have hcard :
+      Fintype.card
+          (V13RealLinearNoTargetBudgetedRowsetGeneratingMapSet i₀ rows) =
+        0 := by
+    rw [Fintype.card_eq_zero_iff]
+    refine ⟨?_⟩
+    intro A
+    rcases Nat.eq_zero_or_pos rows.1.card with hzero | hpos
+    · exact
+        v13RealLinear_not_rowsGenerateTarget_of_rows_card_zero
+          A.val.val i₀ hzero A.property
+    · have hone : rows.1.card = 1 :=
+        le_antisymm rows.2 (Nat.succ_le_of_lt hpos)
+      rcases Finset.card_eq_one.mp hone with ⟨row, hrowsEq⟩
+      have hgen :
+          V13RealLinearRowsGenerateTarget A.val.val
+            ({row} : Finset (Fin m)) i₀ := by
+        simpa [hrowsEq] using A.property
+      have htarget :
+          ∀ w : F2Vec m, A.val.val.toEquiv w row = w i₀ :=
+        (v13RealLinear_rowsGenerateTarget_singleton_iff
+          A.val.val row i₀).1 hgen
+      have hrowTarget :
+          row ∈ V13RealLinearTargetRows A.val.val i₀ :=
+        (v13RealLinear_mem_targetRows_iff A.val.val i₀ row).2 htarget
+      have hrowNotTarget :
+          row ∉ V13RealLinearTargetRows A.val.val i₀ := by
+        rw [A.val.property]
+        simp
+      exact hrowNotTarget hrowTarget
+  simp [hcard]
+
+/-- The nonzero coefficients of a row-combination, recorded in the rowset
+subtype so no extra row-membership transport is needed. -/
+noncomputable def v13RealLinearRowCombinationSupport {m : Nat}
+    {rows : Finset (Fin m)} (coeff : V13RealLinearRowCombination rows) :
+    Finset {row : Fin m // row ∈ rows} := by
+  classical
+  exact Finset.univ.filter (fun row => coeff row ≠ 0)
+
+theorem v13RealLinearRowCombinationSupport_mem {m : Nat}
+    {rows : Finset (Fin m)} (coeff : V13RealLinearRowCombination rows)
+    (row : {row : Fin m // row ∈ rows}) :
+    row ∈ v13RealLinearRowCombinationSupport coeff ↔ coeff row ≠ 0 := by
+  classical
+  simp [v13RealLinearRowCombinationSupport]
+
+theorem
+    v13RealLinearNoTargetRowsTargetCoefficient_support_card_two_le
+    {m : Nat} {rows : Finset (Fin m)} (i₀ : Fin m)
+    (A : V13RealLinearNoTargetRowsMap m i₀)
+    (coeff : V13RealLinearRowsTargetCoefficient A.val rows i₀) :
+    2 ≤ (v13RealLinearRowCombinationSupport coeff.val).card := by
+  classical
+  let support := v13RealLinearRowCombinationSupport coeff.val
+  change 2 ≤ support.card
+  by_contra htwo
+  have hlt : support.card < 2 := Nat.lt_of_not_ge htwo
+  rcases Nat.eq_zero_or_pos support.card with hzero | hpos
+  · have hsupportEmpty : support = ∅ := Finset.card_eq_zero.mp hzero
+    have hcoeffZero : ∀ row : {row : Fin m // row ∈ rows},
+        coeff.val row = 0 := by
+      intro row
+      by_contra hne
+      have hmem : row ∈ support := by
+        simpa [support] using
+          (v13RealLinearRowCombinationSupport_mem coeff.val row).2 hne
+      rw [hsupportEmpty] at hmem
+      simp at hmem
+    have hzeroEval :
+        v13RealLinearRowCombinationEval A.val rows coeff.val
+            (v13RealLinearSingleBit i₀) = 0 := by
+      unfold v13RealLinearRowCombinationEval
+      simp [hcoeffZero]
+    have htarget := coeff.property (v13RealLinearSingleBit i₀)
+    rw [hzeroEval] at htarget
+    norm_num [v13RealLinearSingleBit] at htarget
+  · have hleOne : support.card ≤ 1 := by
+      exact Nat.lt_succ_iff.mp (by simpa using hlt)
+    have hone : support.card = 1 :=
+      le_antisymm hleOne (Nat.succ_le_of_lt hpos)
+    rcases Finset.card_eq_one.mp hone with ⟨supportRow, hsupportEq⟩
+    have hsupportMem : supportRow ∈ support := by
+      simp [hsupportEq]
+    have hsupportCoeffNonzero : coeff.val supportRow ≠ 0 := by
+      simpa [support] using
+        (v13RealLinearRowCombinationSupport_mem coeff.val supportRow).1
+          hsupportMem
+    have hsupportCoeffOne : coeff.val supportRow = 1 :=
+      v13_zmod2_eq_one_of_ne_zero _ hsupportCoeffNonzero
+    have hcoeffZero :
+        ∀ row : {row : Fin m // row ∈ rows},
+          row ≠ supportRow → coeff.val row = 0 := by
+      intro row hne
+      by_contra hnonzero
+      have hmem : row ∈ support := by
+        simpa [support] using
+          (v13RealLinearRowCombinationSupport_mem coeff.val row).2 hnonzero
+      have heq : row = supportRow := by
+        simpa [hsupportEq] using hmem
+      exact hne heq
+    have htarget :
+        ∀ w : F2Vec m, A.val.toEquiv w supportRow.val = w i₀ := by
+      intro w
+      have hsum :
+          v13RealLinearRowCombinationEval A.val rows coeff.val w =
+            coeff.val supportRow * A.val.toEquiv w supportRow.val := by
+        unfold v13RealLinearRowCombinationEval
+        refine Finset.sum_eq_single supportRow ?_ ?_
+        · intro row _hrow hne
+          simp [hcoeffZero row hne]
+        · intro hnot
+          exact False.elim (hnot (Finset.mem_univ supportRow))
+      calc
+        A.val.toEquiv w supportRow.val =
+            coeff.val supportRow * A.val.toEquiv w supportRow.val := by
+          rw [hsupportCoeffOne]
+          simp
+        _ = v13RealLinearRowCombinationEval A.val rows coeff.val w := hsum.symm
+        _ = w i₀ := coeff.property w
+    have hrowTarget :
+        supportRow.val ∈ V13RealLinearTargetRows A.val i₀ :=
+      (v13RealLinear_mem_targetRows_iff A.val i₀ supportRow.val).2 htarget
+    have hrowNotTarget :
+        supportRow.val ∉ V13RealLinearTargetRows A.val i₀ := by
+      rw [A.property]
+      simp
+    exact hrowNotTarget hrowTarget
+
+theorem
+    v13RealLinearNoTargetBudgetedRowsetGeneratingMapSet_exists_twoSupport
+    {m j : Nat} {i₀ : Fin m} {rows : V13RealLinearBudgetedRowset m j}
+    (A : V13RealLinearNoTargetBudgetedRowsetGeneratingMapSet i₀ rows) :
+    ∃ coeff : V13RealLinearRowsTargetCoefficient A.val.val rows.1 i₀,
+      2 ≤ (v13RealLinearRowCombinationSupport coeff.val).card := by
+  rcases A.property with ⟨coeff, hcoeff⟩
+  refine ⟨⟨coeff, hcoeff⟩, ?_⟩
+  exact
+    v13RealLinearNoTargetRowsTargetCoefficient_support_card_two_le
+      i₀ A.val ⟨coeff, hcoeff⟩
+
+theorem
+    v13RealLinearRowsTargetCoefficient_support_sum_target
+    {m : Nat} {rows : Finset (Fin m)} (A : V13F2LinearEquiv m)
+    (i₀ : Fin m)
+    (coeff : V13RealLinearRowsTargetCoefficient A rows i₀) :
+    ∀ w : F2Vec m,
+      (v13RealLinearRowCombinationSupport coeff.val).sum
+          (fun row => A.toEquiv w row.val) =
+        w i₀ := by
+  classical
+  intro w
+  let support := v13RealLinearRowCombinationSupport coeff.val
+  let term : {row : Fin m // row ∈ rows} → ZMod 2 :=
+    fun row => coeff.val row * A.toEquiv w row.val
+  have hcoeffOne :
+      ∀ row : {row : Fin m // row ∈ rows},
+        row ∈ support → coeff.val row = 1 := by
+    intro row hrow
+    exact
+      v13_zmod2_eq_one_of_ne_zero _
+        ((v13RealLinearRowCombinationSupport_mem coeff.val row).1 hrow)
+  have hcoeffZeroOfNotMem :
+      ∀ row : {row : Fin m // row ∈ rows},
+        row ∉ support → coeff.val row = 0 := by
+    intro row hnot
+    by_contra hnonzero
+    exact hnot
+      ((v13RealLinearRowCombinationSupport_mem coeff.val row).2 hnonzero)
+  have hsumSupport :
+      v13RealLinearRowCombinationEval A rows coeff.val w =
+        support.sum term := by
+    unfold v13RealLinearRowCombinationEval
+    symm
+    refine Finset.sum_subset (by intro row _hrow; simp) ?_
+    intro row _hrow hrowNotSupport
+    simp [hcoeffZeroOfNotMem row hrowNotSupport]
+  have hsupportTerm :
+      support.sum (fun row => A.toEquiv w row.val) =
+        support.sum term := by
+    apply Finset.sum_congr rfl
+    intro row hrow
+    simp [term, hcoeffOne row hrow]
+  calc
+    support.sum (fun row => A.toEquiv w row.val) =
+        support.sum term := hsupportTerm
+    _ = v13RealLinearRowCombinationEval A rows coeff.val w :=
+      hsumSupport.symm
+    _ = w i₀ := coeff.property w
+
+theorem
+    v13RealLinearNoTargetBudgetedRowsetGeneratingMapSet_exists_support_sum_target
+    {m j : Nat} {i₀ : Fin m} {rows : V13RealLinearBudgetedRowset m j}
+    (A : V13RealLinearNoTargetBudgetedRowsetGeneratingMapSet i₀ rows) :
+    ∃ support : Finset {row : Fin m // row ∈ rows.1},
+      2 ≤ support.card ∧ support.card ≤ j ∧
+        ∀ w : F2Vec m,
+          support.sum (fun row => A.val.val.toEquiv w row.val) = w i₀ := by
+  classical
+  rcases A.property with ⟨coeff, hcoeff⟩
+  let targetCoeff : V13RealLinearRowsTargetCoefficient A.val.val rows.1 i₀ :=
+    ⟨coeff, hcoeff⟩
+  let support := v13RealLinearRowCombinationSupport targetCoeff.val
+  have htwo : 2 ≤ support.card := by
+    simpa [support, targetCoeff] using
+      v13RealLinearNoTargetRowsTargetCoefficient_support_card_two_le
+        i₀ A.val targetCoeff
+  have hsupportLeSubtype :
+      support.card ≤ Fintype.card {row : Fin m // row ∈ rows.1} :=
+    Finset.card_le_univ support
+  have hsupportLeRows : support.card ≤ rows.1.card := by
+    simpa using hsupportLeSubtype
+  refine ⟨support, htwo, hsupportLeRows.trans rows.2, ?_⟩
+  exact
+    v13RealLinearRowsTargetCoefficient_support_sum_target
+      A.val.val i₀ targetCoeff
+
+theorem
+    v13RealLinearRowsTargetCoefficient_twoSupport_exists_pair_sum_target
+    {m : Nat} {rows : Finset (Fin m)} (A : V13F2LinearEquiv m)
+    (i₀ : Fin m)
+    (coeff : V13RealLinearRowsTargetCoefficient A rows i₀)
+    (hsupport :
+      (v13RealLinearRowCombinationSupport coeff.val).card = 2) :
+    ∃ row₀ row₁ : {row : Fin m // row ∈ rows},
+      row₀ ≠ row₁ ∧
+        ∀ w : F2Vec m,
+          A.toEquiv w row₀.val + A.toEquiv w row₁.val = w i₀ := by
+  classical
+  let support := v13RealLinearRowCombinationSupport coeff.val
+  have hsupportPos : 0 < support.card := by
+    rw [hsupport]
+    norm_num
+  rcases Finset.card_pos.mp hsupportPos with ⟨row₀, hrow₀mem⟩
+  let rest := support.erase row₀
+  have hrestCard : rest.card = 1 := by
+    dsimp [rest]
+    rw [Finset.card_erase_of_mem hrow₀mem, hsupport]
+  rcases Finset.card_eq_one.mp hrestCard with ⟨row₁, hrestEq⟩
+  have hrow₁memRest : row₁ ∈ rest := by
+    simp [rest, hrestEq]
+  have hrow₁memSupport : row₁ ∈ support :=
+    (Finset.mem_erase.mp hrow₁memRest).2
+  have hrow₁ne₀ : row₁ ≠ row₀ :=
+    (Finset.mem_erase.mp hrow₁memRest).1
+  have hrow₀ne₁ : row₀ ≠ row₁ := hrow₁ne₀.symm
+  have hcoeff₀Nonzero : coeff.val row₀ ≠ 0 := by
+    simpa [support] using
+      (v13RealLinearRowCombinationSupport_mem coeff.val row₀).1
+        hrow₀mem
+  have hcoeff₁Nonzero : coeff.val row₁ ≠ 0 := by
+    simpa [support] using
+      (v13RealLinearRowCombinationSupport_mem coeff.val row₁).1
+        hrow₁memSupport
+  have hcoeff₀ : coeff.val row₀ = 1 :=
+    v13_zmod2_eq_one_of_ne_zero _ hcoeff₀Nonzero
+  have hcoeff₁ : coeff.val row₁ = 1 :=
+    v13_zmod2_eq_one_of_ne_zero _ hcoeff₁Nonzero
+  have hcoeffZeroOfNotMem :
+      ∀ row : {row : Fin m // row ∈ rows},
+        row ∉ support → coeff.val row = 0 := by
+    intro row hnot
+    by_contra hnonzero
+    exact hnot ((v13RealLinearRowCombinationSupport_mem coeff.val row).2
+      hnonzero)
+  refine ⟨row₀, row₁, hrow₀ne₁, ?_⟩
+  intro w
+  let term : {row : Fin m // row ∈ rows} → ZMod 2 :=
+    fun row => coeff.val row * A.toEquiv w row.val
+  have hsumSupport :
+      v13RealLinearRowCombinationEval A rows coeff.val w =
+        support.sum term := by
+    unfold v13RealLinearRowCombinationEval
+    symm
+    refine Finset.sum_subset (by intro row _hrow; simp) ?_
+    intro row _hrow hrowNotSupport
+    simp [hcoeffZeroOfNotMem row hrowNotSupport]
+  have hsumPair :
+      support.sum term = A.toEquiv w row₀.val + A.toEquiv w row₁.val := by
+    rw [← Finset.sum_erase_add (s := support) (a := row₀)
+      (f := term) hrow₀mem]
+    change rest.sum term + term row₀ =
+      A.toEquiv w row₀.val + A.toEquiv w row₁.val
+    rw [hrestEq]
+    simp [term, hcoeff₀, hcoeff₁, add_comm]
+  calc
+    A.toEquiv w row₀.val + A.toEquiv w row₁.val =
+        support.sum term := hsumPair.symm
+    _ = v13RealLinearRowCombinationEval A rows coeff.val w :=
+      hsumSupport.symm
+    _ = w i₀ := coeff.property w
+
+theorem
+    v13RealLinearNoTargetTwoBudgetGeneratingMapSet_exists_pair_sum_target
+    {m : Nat} {i₀ : Fin m} {rows : V13RealLinearBudgetedRowset m 2}
+    (A : V13RealLinearNoTargetBudgetedRowsetGeneratingMapSet i₀ rows) :
+    ∃ row₀ row₁ : {row : Fin m // row ∈ rows.1},
+      row₀ ≠ row₁ ∧
+        ∀ w : F2Vec m,
+          A.val.val.toEquiv w row₀.val +
+            A.val.val.toEquiv w row₁.val = w i₀ := by
+  classical
+  rcases A.property with ⟨coeff, hcoeff⟩
+  let targetCoeff : V13RealLinearRowsTargetCoefficient A.val.val rows.1 i₀ :=
+    ⟨coeff, hcoeff⟩
+  let support := v13RealLinearRowCombinationSupport targetCoeff.val
+  have hsupportTwoLe : 2 ≤ support.card := by
+    simpa [support, targetCoeff] using
+      (v13RealLinearNoTargetRowsTargetCoefficient_support_card_two_le
+        i₀ A.val targetCoeff)
+  have hsupportLeSubtype :
+      support.card ≤ Fintype.card {row : Fin m // row ∈ rows.1} :=
+    Finset.card_le_univ support
+  have hsupportLeRows : support.card ≤ rows.1.card := by
+    simpa using hsupportLeSubtype
+  have hsupportLeTwo : support.card ≤ 2 :=
+    hsupportLeRows.trans rows.2
+  have hsupportEq : support.card = 2 :=
+    le_antisymm hsupportLeTwo hsupportTwoLe
+  exact
+    v13RealLinearRowsTargetCoefficient_twoSupport_exists_pair_sum_target
+      A.val.val i₀ targetCoeff (by simpa [support] using hsupportEq)
+
+theorem
+    v13RealLinearRowFunctionalTargetCosetHit_of_pair_sum_target
+    {m : Nat} (A : V13F2LinearEquiv m) (i₀ row₀ row₁ : Fin m)
+    (hpair : ∀ w : F2Vec m,
+      A.toEquiv w row₀ + A.toEquiv w row₁ = w i₀) :
+    V13RealLinearRowFunctionalTargetCosetHit A
+      ({row₀} : Finset (Fin m)) i₀ row₁ := by
+  classical
+  refine ⟨v13RealLinearRowFunctional A row₀, ?_, ?_⟩
+  · apply Submodule.subset_span
+    exact ⟨⟨row₀, by simp⟩, rfl⟩
+  · apply LinearMap.ext
+    intro w
+    have h := hpair w
+    simpa [v13RealLinearTargetFunctional, v13RealLinearRowFunctional,
+      add_comm] using h.symm
+
+theorem
+    v13RealLinearNoTargetTwoBudgetGeneratingMapSet_exists_pair_cosetHit
+    {m : Nat} {i₀ : Fin m} {rows : V13RealLinearBudgetedRowset m 2}
+    (A : V13RealLinearNoTargetBudgetedRowsetGeneratingMapSet i₀ rows) :
+    ∃ row₀ row₁ : {row : Fin m // row ∈ rows.1},
+      row₀ ≠ row₁ ∧ row₁.val ∉ ({row₀.val} : Finset (Fin m)) ∧
+        V13RealLinearRowFunctionalTargetCosetHit A.val.val
+          ({row₀.val} : Finset (Fin m)) i₀ row₁.val := by
+  rcases
+      v13RealLinearNoTargetTwoBudgetGeneratingMapSet_exists_pair_sum_target
+        A with
+    ⟨row₀, row₁, hne, hpair⟩
+  have hrow₁NotMem : row₁.val ∉ ({row₀.val} : Finset (Fin m)) := by
+    intro hmem
+    have hval : row₁.val = row₀.val := by
+      simpa using hmem
+    exact hne.symm (Subtype.ext hval)
+  exact
+    ⟨row₀, row₁, hne, hrow₁NotMem,
+      v13RealLinearRowFunctionalTargetCosetHit_of_pair_sum_target
+        A.val.val i₀ row₀.val row₁.val hpair⟩
+
+abbrev V13RealLinearNoTargetFixedPairSumTargetMapSet {m : Nat}
+    (i₀ row₀ row₁ : Fin m) :=
+  {A : V13RealLinearNoTargetRowsMap m i₀ //
+    ∀ w : F2Vec m,
+      A.val.toEquiv w row₀ + A.val.toEquiv w row₁ = w i₀}
+
+noncomputable instance {m : Nat} (i₀ row₀ row₁ : Fin m) :
+    Fintype (V13RealLinearNoTargetFixedPairSumTargetMapSet
+      i₀ row₀ row₁) := by
+  classical
+  unfold V13RealLinearNoTargetFixedPairSumTargetMapSet
+  infer_instance
+
+abbrev V13RealLinearTwoRowZeroAt {m : Nat} (row₀ row₁ : Fin m) :=
+  {s : F2Vec m // s row₀ = 0 ∧ s row₁ = 0}
+
+noncomputable instance {m : Nat} (row₀ row₁ : Fin m) :
+    Fintype (V13RealLinearTwoRowZeroAt row₀ row₁) := by
+  classical
+  unfold V13RealLinearTwoRowZeroAt
+  infer_instance
+
+noncomputable def v13RealLinearTwoRowZeroAtProdBitsEquiv {m : Nat}
+    (row₀ row₁ : Fin m) (hneq : row₀ ≠ row₁) :
+    V13RealLinearTwoRowZeroAt row₀ row₁ × (ZMod 2 × ZMod 2) ≃
+      F2Vec m where
+  toFun data :=
+    fun row =>
+      if row = row₀ then data.2.1
+      else if row = row₁ then data.2.2
+      else data.1.val row
+  invFun w :=
+    (⟨fun row =>
+        if row = row₀ then 0 else if row = row₁ then 0 else w row,
+      by
+        constructor
+        · simp
+        · simp [hneq.symm]⟩,
+      (w row₀, w row₁))
+  left_inv data := by
+    apply Prod.ext
+    · apply Subtype.ext
+      funext row
+      by_cases hrow₀ : row = row₀
+      · subst row
+        simpa using data.1.property.1.symm
+      · by_cases hrow₁ : row = row₁
+        · subst row
+          simpa using data.1.property.2.symm
+        · simp [hrow₀, hrow₁]
+    · apply Prod.ext
+      · simp
+      · simp [hneq.symm]
+  right_inv w := by
+    funext row
+    by_cases hrow₀ : row = row₀
+    · simp [hrow₀]
+    · by_cases hrow₁ : row = row₁
+      · subst row
+        simp [hrow₀]
+      · simp [hrow₀, hrow₁]
+
+theorem v13RealLinearTwoRowZeroAt_card_mul_four {m : Nat}
+    (row₀ row₁ : Fin m) (hneq : row₀ ≠ row₁) :
+    Fintype.card (V13RealLinearTwoRowZeroAt row₀ row₁) * 4 =
+      2 ^ m := by
+  classical
+  have hcard :=
+    Fintype.card_congr
+      (v13RealLinearTwoRowZeroAtProdBitsEquiv row₀ row₁ hneq)
+  rw [Fintype.card_prod, Fintype.card_prod] at hcard
+  simpa [F2Vec, Nat.mul_assoc] using hcard
+
+def v13RealLinearTwoRowZeroShearSum {m : Nat}
+    (row₀ row₁ : Fin m) (s : V13RealLinearTwoRowZeroAt row₀ row₁)
+    (w : F2Vec m) : ZMod 2 :=
+  (Finset.univ.erase row₁).sum (fun row => s.val row * w row)
+
+theorem v13RealLinearTwoRowZeroShearSum_apply_shear {m : Nat}
+    (row₀ row₁ : Fin m) (s : V13RealLinearTwoRowZeroAt row₀ row₁)
+    (w : F2Vec m) :
+    v13RealLinearTwoRowZeroShearSum row₀ row₁ s
+        (fun row => if row = row₁ then
+          w row₁ + v13RealLinearTwoRowZeroShearSum row₀ row₁ s w
+        else w row) =
+      v13RealLinearTwoRowZeroShearSum row₀ row₁ s w := by
+  classical
+  unfold v13RealLinearTwoRowZeroShearSum
+  apply Finset.sum_congr rfl
+  intro row hrow
+  have hne : row ≠ row₁ := (Finset.mem_erase.mp hrow).1
+  simp [hne]
+
+def v13RealLinearTwoRowZeroShear {m : Nat}
+    (row₀ row₁ : Fin m) (s : V13RealLinearTwoRowZeroAt row₀ row₁) :
+    V13F2LinearEquiv m where
+  toEquiv :=
+    { toFun := fun w row =>
+        if row = row₁ then
+          w row₁ + v13RealLinearTwoRowZeroShearSum row₀ row₁ s w
+        else w row
+      invFun := fun w row =>
+        if row = row₁ then
+          w row₁ + v13RealLinearTwoRowZeroShearSum row₀ row₁ s w
+        else w row
+      left_inv := by
+        intro w
+        funext row
+        by_cases hrow : row = row₁
+        · subst row
+          simp [v13RealLinearTwoRowZeroShearSum_apply_shear,
+            f2_add_right_self]
+        · simp [hrow]
+      right_inv := by
+        intro w
+        funext row
+        by_cases hrow : row = row₁
+        · subst row
+          simp [v13RealLinearTwoRowZeroShearSum_apply_shear,
+            f2_add_right_self]
+        · simp [hrow] }
+  map_add := by
+    intro x y
+    funext row
+    by_cases hrow : row = row₁
+    · subst row
+      unfold v13RealLinearTwoRowZeroShearSum
+      simp [f2AddVec, Finset.sum_add_distrib, mul_add]
+      ring
+    · simp [f2AddVec, hrow]
+  map_zero := by
+    funext row
+    by_cases hrow : row = row₁
+    · subst row
+      simp [f2ZeroVec, v13RealLinearTwoRowZeroShearSum]
+    · simp [f2ZeroVec, hrow]
+
+theorem v13RealLinearTwoRowZeroShear_apply_of_ne {m : Nat}
+    (row₀ row₁ : Fin m) (s : V13RealLinearTwoRowZeroAt row₀ row₁)
+    (w : F2Vec m) {row : Fin m} (hrow : row ≠ row₁) :
+    (v13RealLinearTwoRowZeroShear row₀ row₁ s).toEquiv w row =
+      w row := by
+  simp [v13RealLinearTwoRowZeroShear, hrow]
+
+theorem v13RealLinearTwoRowZeroShear_apply_row₁ {m : Nat}
+    (row₀ row₁ : Fin m) (s : V13RealLinearTwoRowZeroAt row₀ row₁)
+    (w : F2Vec m) :
+    (v13RealLinearTwoRowZeroShear row₀ row₁ s).toEquiv w row₁ =
+      w row₁ + v13RealLinearTwoRowZeroShearSum row₀ row₁ s w := by
+  simp [v13RealLinearTwoRowZeroShear]
+
+theorem v13RealLinearTwoRowZeroShearSum_singleBit
+    {m : Nat} (row₀ row₁ : Fin m)
+    (s : V13RealLinearTwoRowZeroAt row₀ row₁)
+    {row : Fin m} (hrow : row ≠ row₁) :
+    v13RealLinearTwoRowZeroShearSum row₀ row₁ s
+        (v13RealLinearSingleBit row) =
+      s.val row := by
+  classical
+  unfold v13RealLinearTwoRowZeroShearSum
+  calc
+    (Finset.univ.erase row₁).sum
+        (fun j => s.val j * v13RealLinearSingleBit row j) =
+      s.val row * v13RealLinearSingleBit row row := by
+        refine Finset.sum_eq_single row ?_ ?_
+        · intro j _hj hjne
+          simp [v13RealLinearSingleBit, hjne]
+        · intro hnot
+          exact False.elim (hnot (by simp [hrow]))
+    _ = s.val row := by simp [v13RealLinearSingleBit]
+
+theorem v13RealLinearNoTargetFixedPairSumTarget_shear_targetRows_empty
+    {m : Nat} (i₀ row₀ row₁ : Fin m) (hneq : row₀ ≠ row₁)
+    (A : V13RealLinearNoTargetFixedPairSumTargetMapSet i₀ row₀ row₁)
+    (s : V13RealLinearTwoRowZeroAt row₀ row₁) :
+    V13RealLinearTargetRows
+        (v13RealLinearComp
+          (v13RealLinearTwoRowZeroShear row₀ row₁ s) A.val.val) i₀ =
+      ∅ := by
+  classical
+  ext row
+  constructor
+  · intro htargetRow
+    have htarget :
+        ∀ w : F2Vec m,
+          (v13RealLinearComp
+              (v13RealLinearTwoRowZeroShear row₀ row₁ s) A.val.val).toEquiv
+              w row = w i₀ :=
+      (v13RealLinear_mem_targetRows_iff
+        (v13RealLinearComp
+          (v13RealLinearTwoRowZeroShear row₀ row₁ s) A.val.val)
+        i₀ row).1 htargetRow
+    by_cases hrow : row = row₁
+    · subst row
+      let probe : F2Vec m :=
+        A.val.val.toEquiv.symm (v13RealLinearSingleBit row₀)
+      have hArow₀ : A.val.val.toEquiv probe row₀ = 1 := by
+        simp [probe, v13RealLinearSingleBit]
+      have hArow₁ : A.val.val.toEquiv probe row₁ = 0 := by
+        simp [probe, v13RealLinearSingleBit, hneq.symm]
+      have hsum :
+          v13RealLinearTwoRowZeroShearSum row₀ row₁ s
+              (A.val.val.toEquiv probe) = 0 := by
+        simpa [probe, s.property.1] using
+          (v13RealLinearTwoRowZeroShearSum_singleBit
+            row₀ row₁ s hneq)
+      have hleft :
+          (v13RealLinearComp
+              (v13RealLinearTwoRowZeroShear row₀ row₁ s) A.val.val).toEquiv
+              probe row₁ = 0 := by
+        simp [v13RealLinearComp,
+          v13RealLinearTwoRowZeroShear_apply_row₁, hArow₁, hsum]
+      have htargetBit : probe i₀ = 1 := by
+        have hpair := A.property probe
+        simpa [hArow₀, hArow₁] using hpair.symm
+      have hbad := htarget probe
+      rw [hleft, htargetBit] at hbad
+      norm_num at hbad
+    · have htargetA : row ∈ V13RealLinearTargetRows A.val.val i₀ := by
+        rw [v13RealLinear_mem_targetRows_iff]
+        intro w
+        have h := htarget w
+        simpa [v13RealLinearComp,
+          v13RealLinearTwoRowZeroShear_apply_of_ne row₀ row₁ s
+            (A.val.val.toEquiv w) hrow] using h
+      have hnot : row ∉ V13RealLinearTargetRows A.val.val i₀ := by
+        rw [A.val.property]
+        simp
+      exact False.elim (hnot htargetA)
+  · intro hrow
+    simp at hrow
+
+noncomputable def v13RealLinearNoTargetFixedPairSumTargetShear
+    {m : Nat} (i₀ row₀ row₁ : Fin m) (hneq : row₀ ≠ row₁)
+    (A : V13RealLinearNoTargetFixedPairSumTargetMapSet i₀ row₀ row₁)
+    (s : V13RealLinearTwoRowZeroAt row₀ row₁) :
+    V13RealLinearNoTargetRowsMap m i₀ :=
+  ⟨v13RealLinearComp
+      (v13RealLinearTwoRowZeroShear row₀ row₁ s) A.val.val,
+    v13RealLinearNoTargetFixedPairSumTarget_shear_targetRows_empty
+      i₀ row₀ row₁ hneq A s⟩
+
+noncomputable def
+    v13RealLinearNoTargetFixedPairSumTargetMapSetShearEmbedding
+    {m : Nat} (i₀ row₀ row₁ : Fin m) (hneq : row₀ ≠ row₁) :
+    V13RealLinearNoTargetFixedPairSumTargetMapSet i₀ row₀ row₁ ×
+        V13RealLinearTwoRowZeroAt row₀ row₁ ↪
+      V13RealLinearNoTargetRowsMap m i₀ where
+  toFun pair :=
+    v13RealLinearNoTargetFixedPairSumTargetShear
+      i₀ row₀ row₁ hneq pair.1 pair.2
+  inj' := by
+    classical
+    intro pair₀ pair₁ hmap
+    rcases pair₀ with ⟨A₀, s₀⟩
+    rcases pair₁ with ⟨A₁, s₁⟩
+    have hB :
+        v13RealLinearComp
+            (v13RealLinearTwoRowZeroShear row₀ row₁ s₀) A₀.val.val =
+          v13RealLinearComp
+            (v13RealLinearTwoRowZeroShear row₀ row₁ s₁) A₁.val.val :=
+      congrArg Subtype.val hmap
+    have hrow_ne : row₀ ≠ row₁ := hneq
+    have hrow₀Eq :
+        ∀ w : F2Vec m,
+          A₀.val.val.toEquiv w row₀ = A₁.val.val.toEquiv w row₀ := by
+      intro w
+      have h := congrFun (congrArg
+        (fun A : V13F2LinearEquiv m => A.toEquiv w) hB) row₀
+      simpa [v13RealLinearComp,
+        v13RealLinearTwoRowZeroShear_apply_of_ne row₀ row₁ s₀
+          (A₀.val.val.toEquiv w) hrow_ne,
+        v13RealLinearTwoRowZeroShear_apply_of_ne row₀ row₁ s₁
+          (A₁.val.val.toEquiv w) hrow_ne] using h
+    have hrow₁Eq :
+        ∀ w : F2Vec m,
+          A₀.val.val.toEquiv w row₁ = A₁.val.val.toEquiv w row₁ := by
+      intro w
+      have hpair₀ := A₀.property w
+      have hpair₁ := A₁.property w
+      have h0 := hrow₀Eq w
+      calc
+        A₀.val.val.toEquiv w row₁ =
+            A₀.val.val.toEquiv w row₀ +
+              (A₀.val.val.toEquiv w row₀ +
+                A₀.val.val.toEquiv w row₁) := by
+                  calc
+                    A₀.val.val.toEquiv w row₁ =
+                        A₀.val.val.toEquiv w row₁ +
+                          A₀.val.val.toEquiv w row₀ +
+                          A₀.val.val.toEquiv w row₀ :=
+                      (f2_add_right_self
+                        (A₀.val.val.toEquiv w row₁)
+                        (A₀.val.val.toEquiv w row₀)).symm
+                    _ = A₀.val.val.toEquiv w row₀ +
+                          (A₀.val.val.toEquiv w row₀ +
+                            A₀.val.val.toEquiv w row₁) := by ring
+        _ = A₀.val.val.toEquiv w row₀ + w i₀ := by rw [hpair₀]
+        _ = A₁.val.val.toEquiv w row₀ + w i₀ := by rw [h0]
+        _ = A₁.val.val.toEquiv w row₀ +
+              (A₁.val.val.toEquiv w row₀ +
+                A₁.val.val.toEquiv w row₁) := by rw [hpair₁]
+        _ = A₁.val.val.toEquiv w row₁ := by
+          calc
+            A₁.val.val.toEquiv w row₀ +
+                (A₁.val.val.toEquiv w row₀ +
+                  A₁.val.val.toEquiv w row₁) =
+              A₁.val.val.toEquiv w row₁ +
+                A₁.val.val.toEquiv w row₀ +
+                A₁.val.val.toEquiv w row₀ := by ring
+            _ = A₁.val.val.toEquiv w row₁ :=
+              f2_add_right_self
+                (A₁.val.val.toEquiv w row₁)
+                (A₁.val.val.toEquiv w row₀)
+    have hAEq : A₀ = A₁ := by
+      apply Subtype.ext
+      apply Subtype.ext
+      apply v13RealLinearEquiv_ext
+      intro w
+      funext row
+      by_cases hrow : row = row₁
+      · subst row
+        exact hrow₁Eq w
+      · have h := congrFun (congrArg
+          (fun A : V13F2LinearEquiv m => A.toEquiv w) hB) row
+        simpa [v13RealLinearComp,
+          v13RealLinearTwoRowZeroShear_apply_of_ne row₀ row₁ s₀
+            (A₀.val.val.toEquiv w) hrow,
+          v13RealLinearTwoRowZeroShear_apply_of_ne row₀ row₁ s₁
+            (A₁.val.val.toEquiv w) hrow] using h
+    subst A₁
+    have hs : s₀ = s₁ := by
+      apply Subtype.ext
+      funext row
+      by_cases hrow₀ : row = row₀
+      · subst row
+        rw [s₀.property.1, s₁.property.1]
+      · by_cases hrow₁ : row = row₁
+        · subst row
+          rw [s₀.property.2, s₁.property.2]
+        · let probe : F2Vec m :=
+            A₀.val.val.toEquiv.symm (v13RealLinearSingleBit row)
+          have h := congrFun (congrArg
+            (fun A : V13F2LinearEquiv m => A.toEquiv probe) hB) row₁
+          have hsum₀ :
+              v13RealLinearTwoRowZeroShearSum row₀ row₁ s₀
+                  (A₀.val.val.toEquiv probe) = s₀.val row := by
+            simpa [probe] using
+              (v13RealLinearTwoRowZeroShearSum_singleBit
+                row₀ row₁ s₀ hrow₁)
+          have hsum₁ :
+              v13RealLinearTwoRowZeroShearSum row₀ row₁ s₁
+                  (A₀.val.val.toEquiv probe) = s₁.val row := by
+            simpa [probe] using
+              (v13RealLinearTwoRowZeroShearSum_singleBit
+                row₀ row₁ s₁ hrow₁)
+          simpa [v13RealLinearComp,
+            v13RealLinearTwoRowZeroShear_apply_row₁,
+            hsum₀, hsum₁] using h
+    subst s₁
+    rfl
+
+theorem
+    v13RealLinearNoTargetFixedPairSumTargetMapSet_card_mul_two_pow_le_noTarget
+    {m : Nat} (i₀ row₀ row₁ : Fin m) (hneq : row₀ ≠ row₁) :
+    Fintype.card
+        (V13RealLinearNoTargetFixedPairSumTargetMapSet i₀ row₀ row₁) *
+      2 ^ m ≤
+    4 * Fintype.card (V13RealLinearNoTargetRowsMap m i₀) := by
+  classical
+  let S :=
+    Fintype.card
+      (V13RealLinearNoTargetFixedPairSumTargetMapSet i₀ row₀ row₁)
+  let Z := Fintype.card (V13RealLinearTwoRowZeroAt row₀ row₁)
+  let N := Fintype.card (V13RealLinearNoTargetRowsMap m i₀)
+  have hSZ : S * Z ≤ N := by
+    simpa [S, Z, N, Fintype.card_prod] using
+      Fintype.card_le_of_embedding
+        (v13RealLinearNoTargetFixedPairSumTargetMapSetShearEmbedding
+          i₀ row₀ row₁ hneq)
+  have hZ : Z * 4 = 2 ^ m := by
+    simpa [Z] using
+      v13RealLinearTwoRowZeroAt_card_mul_four row₀ row₁ hneq
+  calc
+    S * 2 ^ m = S * (Z * 4) := by rw [hZ]
+    _ = 4 * (S * Z) := by ring
+    _ ≤ 4 * N := Nat.mul_le_mul_left 4 hSZ
+
+abbrev V13RealLinearNoTargetTwoBudgetPairSumWitnessSigma {m : Nat}
+    (i₀ : Fin m) (rows : V13RealLinearBudgetedRowset m 2) :=
+  Σ row₀ : {row : Fin m // row ∈ rows.1},
+    Σ row₁ : {row : Fin m // row ∈ rows.1},
+      {_A : V13RealLinearNoTargetFixedPairSumTargetMapSet
+          i₀ row₀.val row₁.val // row₀ ≠ row₁}
+
+noncomputable instance {m : Nat} (i₀ : Fin m)
+    (rows : V13RealLinearBudgetedRowset m 2) :
+    Fintype
+      (V13RealLinearNoTargetTwoBudgetPairSumWitnessSigma i₀ rows) := by
+  classical
+  unfold V13RealLinearNoTargetTwoBudgetPairSumWitnessSigma
+  infer_instance
+
+noncomputable def
+    v13RealLinearNoTargetTwoBudgetGeneratingMapSetEmbeddingPairSumSigma
+    {m : Nat} (i₀ : Fin m) (rows : V13RealLinearBudgetedRowset m 2) :
+    V13RealLinearNoTargetBudgetedRowsetGeneratingMapSet i₀ rows ↪
+      V13RealLinearNoTargetTwoBudgetPairSumWitnessSigma i₀ rows where
+  toFun A := by
+    classical
+    let ex :=
+      v13RealLinearNoTargetTwoBudgetGeneratingMapSet_exists_pair_sum_target
+        A
+    let row₀ := Classical.choose ex
+    let ex₁ := Classical.choose_spec ex
+    let row₁ := Classical.choose ex₁
+    let spec := Classical.choose_spec ex₁
+    exact ⟨row₀, ⟨row₁, ⟨⟨A.val, spec.2⟩, spec.1⟩⟩⟩
+  inj' := by
+    intro A₀ A₁ h
+    apply Subtype.ext
+    exact congrArg
+      (fun data : V13RealLinearNoTargetTwoBudgetPairSumWitnessSigma i₀ rows =>
+        data.2.2.val.val) h
+
+theorem
+    v13RealLinearNoTargetTwoBudgetPairSumWitnessSigma_card_mul_two_pow_le
+    {m : Nat} (i₀ : Fin m) (rows : V13RealLinearBudgetedRowset m 2) :
+    Fintype.card
+        (V13RealLinearNoTargetTwoBudgetPairSumWitnessSigma i₀ rows) *
+      2 ^ m ≤
+    16 * Fintype.card (V13RealLinearNoTargetRowsMap m i₀) := by
+  classical
+  let Row := {row : Fin m // row ∈ rows.1}
+  let R := Fintype.card Row
+  let N := Fintype.card (V13RealLinearNoTargetRowsMap m i₀)
+  let M := 2 ^ m
+  have hRle : R ≤ 2 := by
+    simpa [R, Row] using rows.2
+  have hterm :
+      ∀ row₀ row₁ : Row,
+        Fintype.card
+            {A : V13RealLinearNoTargetFixedPairSumTargetMapSet
+                i₀ row₀.val row₁.val // row₀ ≠ row₁} *
+          M ≤ 4 * N := by
+    intro row₀ row₁
+    by_cases hneq : row₀ ≠ row₁
+    · have hsub :
+        Fintype.card
+              {A : V13RealLinearNoTargetFixedPairSumTargetMapSet
+                  i₀ row₀.val row₁.val // row₀ ≠ row₁} ≤
+            Fintype.card
+              (V13RealLinearNoTargetFixedPairSumTargetMapSet
+                i₀ row₀.val row₁.val) :=
+        Fintype.card_subtype_le
+          (fun _A : V13RealLinearNoTargetFixedPairSumTargetMapSet
+              i₀ row₀.val row₁.val => row₀ ≠ row₁)
+      have hfixed :
+          Fintype.card
+              (V13RealLinearNoTargetFixedPairSumTargetMapSet
+                i₀ row₀.val row₁.val) *
+            M ≤ 4 * N := by
+        have hval : row₀.val ≠ row₁.val := fun h =>
+          hneq (Subtype.ext h)
+        simpa [M, N] using
+          v13RealLinearNoTargetFixedPairSumTargetMapSet_card_mul_two_pow_le_noTarget
+            i₀ row₀.val row₁.val hval
+      exact (Nat.mul_le_mul_right M hsub).trans hfixed
+    · have hzero :
+          Fintype.card
+              {A : V13RealLinearNoTargetFixedPairSumTargetMapSet
+                  i₀ row₀.val row₁.val // row₀ ≠ row₁} = 0 := by
+        rw [Fintype.card_eq_zero_iff]
+        refine ⟨?_⟩
+        intro A
+        exact hneq A.property
+      simp [hzero]
+  have hinner :
+      ∀ row₀ : Row,
+        Fintype.card
+            (Σ row₁ : Row,
+              {A : V13RealLinearNoTargetFixedPairSumTargetMapSet
+                  i₀ row₀.val row₁.val // row₀ ≠ row₁}) *
+          M ≤ R * (4 * N) := by
+    intro row₀
+    rw [Fintype.card_sigma]
+    rw [Finset.sum_mul]
+    calc
+      (∑ row₁ : Row,
+          Fintype.card
+              {A : V13RealLinearNoTargetFixedPairSumTargetMapSet
+                  i₀ row₀.val row₁.val // row₀ ≠ row₁} *
+            M) ≤
+          ∑ _row₁ : Row, 4 * N := by
+            apply Finset.sum_le_sum
+            intro row₁ _hrow₁
+            exact hterm row₀ row₁
+      _ = R * (4 * N) := by
+        rw [Finset.sum_const]
+        simp [R]
+  change
+    Fintype.card
+        (Σ row₀ : Row,
+          Σ row₁ : Row,
+            {A : V13RealLinearNoTargetFixedPairSumTargetMapSet
+                i₀ row₀.val row₁.val // row₀ ≠ row₁}) *
+      M ≤ 16 * N
+  let W :=
+    Σ row₀ : Row,
+      Σ row₁ : Row,
+        {A : V13RealLinearNoTargetFixedPairSumTargetMapSet
+            i₀ row₀.val row₁.val // row₀ ≠ row₁}
+  change Fintype.card W * M ≤ 16 * N
+  have hcardW :
+      Fintype.card W =
+        ∑ row₀ : Row,
+          Fintype.card
+            (Σ row₁ : Row,
+              {A : V13RealLinearNoTargetFixedPairSumTargetMapSet
+                  i₀ row₀.val row₁.val // row₀ ≠ row₁}) := by
+    dsimp [W]
+    exact Fintype.card_sigma
+  rw [hcardW]
+  rw [Finset.sum_mul]
+  calc
+    (∑ row₀ : Row,
+        Fintype.card
+            (Σ row₁ : Row,
+              {A : V13RealLinearNoTargetFixedPairSumTargetMapSet
+                  i₀ row₀.val row₁.val // row₀ ≠ row₁}) *
+          M) ≤
+        ∑ _row₀ : Row, R * (4 * N) := by
+          apply Finset.sum_le_sum
+          intro row₀ _hrow₀
+          exact hinner row₀
+    _ = R * (R * (4 * N)) := by
+      rw [Finset.sum_const]
+      simp [R]
+    _ = (R * R) * (4 * N) := by ring
+    _ ≤ 4 * (4 * N) := by
+      exact Nat.mul_le_mul_right (4 * N)
+        (Nat.mul_le_mul hRle hRle)
+    _ = 16 * N := by ring
+
+theorem
+    V13RealLinearNoTargetBudgetedRowsetGenerationCountingBound_twoBudget
+    (m : Nat) :
+    V13RealLinearNoTargetBudgetedRowsetGenerationCountingBound m 2 := by
+  intro i₀ rows
+  let G := V13RealLinearNoTargetBudgetedRowsetGeneratingMapSet i₀ rows
+  let W := V13RealLinearNoTargetTwoBudgetPairSumWitnessSigma i₀ rows
+  let N := Fintype.card (V13RealLinearNoTargetRowsMap m i₀)
+  let M := 2 ^ m
+  have hG : Fintype.card G ≤ Fintype.card W :=
+    Fintype.card_le_of_embedding
+      (v13RealLinearNoTargetTwoBudgetGeneratingMapSetEmbeddingPairSumSigma
+        i₀ rows)
+  have hW : Fintype.card W * M ≤ 16 * N := by
+    simpa [W, M, N] using
+      v13RealLinearNoTargetTwoBudgetPairSumWitnessSigma_card_mul_two_pow_le
+        i₀ rows
+  calc
+    M * Fintype.card G = Fintype.card G * M := by ring
+    _ ≤ Fintype.card W * M := Nat.mul_le_mul_right M hG
+    _ ≤ 16 * N := hW
+    _ = 4 * 2 ^ 2 * N := by norm_num
+
+abbrev V13RealLinearNoTargetFixedSupportSumTargetMapSet
+    {m : Nat} {rows : Finset (Fin m)} (i₀ : Fin m)
+    (support : Finset {row : Fin m // row ∈ rows}) :=
+  {A : V13RealLinearNoTargetRowsMap m i₀ //
+    ∀ w : F2Vec m,
+      support.sum (fun row => A.val.toEquiv w row.val) = w i₀}
+
+noncomputable instance {m : Nat} {rows : Finset (Fin m)}
+    (i₀ : Fin m) (support : Finset {row : Fin m // row ∈ rows}) :
+    Fintype
+      (V13RealLinearNoTargetFixedSupportSumTargetMapSet i₀ support) := by
+  classical
+  unfold V13RealLinearNoTargetFixedSupportSumTargetMapSet
+  infer_instance
+
+theorem
+    v13RealLinearNoTargetFixedSupportSumTarget_shear_targetRows_empty
+    {m : Nat} {rows : Finset (Fin m)} (i₀ : Fin m)
+    {support : Finset {row : Fin m // row ∈ rows}}
+    (row₀ row₁ : {row : Fin m // row ∈ rows})
+    (hrow₀ : row₀ ∈ support) (_hrow₁ : row₁ ∈ support)
+    (hneq : row₀ ≠ row₁)
+    (A : V13RealLinearNoTargetFixedSupportSumTargetMapSet i₀ support)
+    (s : V13RealLinearTwoRowZeroAt row₀.val row₁.val) :
+    V13RealLinearTargetRows
+        (v13RealLinearComp
+          (v13RealLinearTwoRowZeroShear row₀.val row₁.val s)
+          A.val.val) i₀ =
+      ∅ := by
+  classical
+  have hneqVal : row₀.val ≠ row₁.val := fun h => hneq (Subtype.ext h)
+  ext row
+  constructor
+  · intro htargetRow
+    have htarget :
+        ∀ w : F2Vec m,
+          (v13RealLinearComp
+              (v13RealLinearTwoRowZeroShear row₀.val row₁.val s)
+              A.val.val).toEquiv w row = w i₀ :=
+      (v13RealLinear_mem_targetRows_iff
+        (v13RealLinearComp
+          (v13RealLinearTwoRowZeroShear row₀.val row₁.val s)
+          A.val.val)
+        i₀ row).1 htargetRow
+    by_cases hrow : row = row₁.val
+    · subst row
+      let probe : F2Vec m :=
+        A.val.val.toEquiv.symm (v13RealLinearSingleBit row₀.val)
+      have hArow₀ : A.val.val.toEquiv probe row₀.val = 1 := by
+        simp [probe, v13RealLinearSingleBit]
+      have hArow₁ : A.val.val.toEquiv probe row₁.val = 0 := by
+        simp [probe, v13RealLinearSingleBit, hneqVal.symm]
+      have hsum :
+          v13RealLinearTwoRowZeroShearSum row₀.val row₁.val s
+              (A.val.val.toEquiv probe) = 0 := by
+        simpa [probe, s.property.1] using
+          (v13RealLinearTwoRowZeroShearSum_singleBit
+            row₀.val row₁.val s hneqVal)
+      have hleft :
+          (v13RealLinearComp
+              (v13RealLinearTwoRowZeroShear row₀.val row₁.val s)
+              A.val.val).toEquiv probe row₁.val = 0 := by
+        simp [v13RealLinearComp,
+          v13RealLinearTwoRowZeroShear_apply_row₁, hArow₁, hsum]
+      have hsupportSumOne :
+          support.sum
+              (fun r => A.val.val.toEquiv probe r.val) = 1 := by
+        calc
+          support.sum
+              (fun r => A.val.val.toEquiv probe r.val) =
+            A.val.val.toEquiv probe row₀.val := by
+              refine
+                Finset.sum_eq_single
+                  (s := support)
+                  (f := fun r : {row : Fin m // row ∈ rows} =>
+                    A.val.val.toEquiv probe r.val)
+                  row₀ ?_ ?_
+              · intro r _hr hrne
+                have hval : r.val ≠ row₀.val := by
+                  intro h
+                  exact hrne (Subtype.ext h)
+                simp [probe, v13RealLinearSingleBit, hval]
+              · intro hnot
+                exact False.elim (hnot hrow₀)
+          _ = 1 := hArow₀
+      have htargetBit : probe i₀ = 1 := by
+        calc
+          probe i₀ =
+              support.sum
+                (fun r => A.val.val.toEquiv probe r.val) :=
+                (A.property probe).symm
+          _ = 1 := hsupportSumOne
+      have hbad := htarget probe
+      rw [hleft, htargetBit] at hbad
+      norm_num at hbad
+    · have htargetA : row ∈ V13RealLinearTargetRows A.val.val i₀ := by
+        rw [v13RealLinear_mem_targetRows_iff]
+        intro w
+        have h := htarget w
+        simpa [v13RealLinearComp,
+          v13RealLinearTwoRowZeroShear_apply_of_ne row₀.val row₁.val s
+            (A.val.val.toEquiv w) hrow] using h
+      have hnot : row ∉ V13RealLinearTargetRows A.val.val i₀ := by
+        rw [A.val.property]
+        simp
+      exact False.elim (hnot htargetA)
+  · intro hrow
+    simp at hrow
+
+noncomputable def v13RealLinearNoTargetFixedSupportSumTargetShear
+    {m : Nat} {rows : Finset (Fin m)} (i₀ : Fin m)
+    {support : Finset {row : Fin m // row ∈ rows}}
+    (row₀ row₁ : {row : Fin m // row ∈ rows})
+    (hrow₀ : row₀ ∈ support) (hrow₁ : row₁ ∈ support)
+    (hneq : row₀ ≠ row₁)
+    (A : V13RealLinearNoTargetFixedSupportSumTargetMapSet i₀ support)
+    (s : V13RealLinearTwoRowZeroAt row₀.val row₁.val) :
+    V13RealLinearNoTargetRowsMap m i₀ :=
+  ⟨v13RealLinearComp
+      (v13RealLinearTwoRowZeroShear row₀.val row₁.val s) A.val.val,
+    v13RealLinearNoTargetFixedSupportSumTarget_shear_targetRows_empty
+      i₀ row₀ row₁ hrow₀ hrow₁ hneq A s⟩
+
+noncomputable def
+    v13RealLinearNoTargetFixedSupportSumTargetMapSetShearEmbedding
+    {m : Nat} {rows : Finset (Fin m)} (i₀ : Fin m)
+    {support : Finset {row : Fin m // row ∈ rows}}
+    (row₀ row₁ : {row : Fin m // row ∈ rows})
+    (hrow₀ : row₀ ∈ support) (hrow₁ : row₁ ∈ support)
+    (hneq : row₀ ≠ row₁) :
+    V13RealLinearNoTargetFixedSupportSumTargetMapSet i₀ support ×
+        V13RealLinearTwoRowZeroAt row₀.val row₁.val ↪
+      V13RealLinearNoTargetRowsMap m i₀ where
+  toFun pair :=
+    v13RealLinearNoTargetFixedSupportSumTargetShear
+      i₀ row₀ row₁ hrow₀ hrow₁ hneq pair.1 pair.2
+  inj' := by
+    classical
+    intro pair₀ pair₁ hmap
+    rcases pair₀ with ⟨A₀, s₀⟩
+    rcases pair₁ with ⟨A₁, s₁⟩
+    have hB :
+        v13RealLinearComp
+            (v13RealLinearTwoRowZeroShear row₀.val row₁.val s₀)
+            A₀.val.val =
+          v13RealLinearComp
+            (v13RealLinearTwoRowZeroShear row₀.val row₁.val s₁)
+            A₁.val.val :=
+      congrArg Subtype.val hmap
+    have hneqVal : row₀.val ≠ row₁.val := fun h => hneq (Subtype.ext h)
+    have hrowEqOfNe :
+        ∀ (row : Fin m), row ≠ row₁.val →
+          ∀ w : F2Vec m,
+            A₀.val.val.toEquiv w row = A₁.val.val.toEquiv w row := by
+      intro row hrow w
+      have h := congrFun (congrArg
+        (fun A : V13F2LinearEquiv m => A.toEquiv w) hB) row
+      simpa [v13RealLinearComp,
+        v13RealLinearTwoRowZeroShear_apply_of_ne row₀.val row₁.val s₀
+          (A₀.val.val.toEquiv w) hrow,
+        v13RealLinearTwoRowZeroShear_apply_of_ne row₀.val row₁.val s₁
+          (A₁.val.val.toEquiv w) hrow] using h
+    have hrow₁Eq :
+        ∀ w : F2Vec m,
+          A₀.val.val.toEquiv w row₁.val =
+            A₁.val.val.toEquiv w row₁.val := by
+      intro w
+      have herase :
+          (support.erase row₁).sum
+              (fun r => A₀.val.val.toEquiv w r.val) =
+            (support.erase row₁).sum
+              (fun r => A₁.val.val.toEquiv w r.val) := by
+        apply Finset.sum_congr rfl
+        intro r hr
+        have hneSubtype : r ≠ row₁ := (Finset.mem_erase.mp hr).1
+        have hneVal : r.val ≠ row₁.val := by
+          intro h
+          exact hneSubtype (Subtype.ext h)
+        exact hrowEqOfNe r.val hneVal w
+      have hsum₀ := A₀.property w
+      have hsum₁ := A₁.property w
+      rw [← Finset.sum_erase_add support
+        (fun r => A₀.val.val.toEquiv w r.val) hrow₁] at hsum₀
+      rw [← Finset.sum_erase_add support
+        (fun r => A₁.val.val.toEquiv w r.val) hrow₁] at hsum₁
+      let e₀ := (support.erase row₁).sum
+        (fun r => A₀.val.val.toEquiv w r.val)
+      let e₁ := (support.erase row₁).sum
+        (fun r => A₁.val.val.toEquiv w r.val)
+      let x₀ := A₀.val.val.toEquiv w row₁.val
+      let x₁ := A₁.val.val.toEquiv w row₁.val
+      have he : e₀ = e₁ := by simpa [e₀, e₁] using herase
+      have hx₀ : e₀ + x₀ = w i₀ := by simpa [e₀, x₀] using hsum₀
+      have hx₁ : e₁ + x₁ = w i₀ := by simpa [e₁, x₁] using hsum₁
+      calc
+        x₀ = x₀ + e₀ + e₀ := by
+          exact (f2_add_right_self x₀ e₀).symm
+        _ = (e₀ + x₀) + e₀ := by ring
+        _ = w i₀ + e₀ := by rw [hx₀]
+        _ = w i₀ + e₁ := by rw [he]
+        _ = (e₁ + x₁) + e₁ := by rw [hx₁]
+        _ = x₁ + e₁ + e₁ := by ring
+        _ = x₁ := by
+          exact f2_add_right_self x₁ e₁
+    have hAEq : A₀ = A₁ := by
+      apply Subtype.ext
+      apply Subtype.ext
+      apply v13RealLinearEquiv_ext
+      intro w
+      funext row
+      by_cases hrow : row = row₁.val
+      · subst row
+        exact hrow₁Eq w
+      · exact hrowEqOfNe row hrow w
+    subst A₁
+    have hs : s₀ = s₁ := by
+      apply Subtype.ext
+      funext row
+      by_cases hrow₀val : row = row₀.val
+      · subst row
+        rw [s₀.property.1, s₁.property.1]
+      · by_cases hrow₁val : row = row₁.val
+        · subst row
+          rw [s₀.property.2, s₁.property.2]
+        · let probe : F2Vec m :=
+            A₀.val.val.toEquiv.symm (v13RealLinearSingleBit row)
+          have h := congrFun (congrArg
+            (fun A : V13F2LinearEquiv m => A.toEquiv probe) hB) row₁.val
+          have hsum₀ :
+              v13RealLinearTwoRowZeroShearSum row₀.val row₁.val s₀
+                  (A₀.val.val.toEquiv probe) = s₀.val row := by
+            simpa [probe] using
+              (v13RealLinearTwoRowZeroShearSum_singleBit
+                row₀.val row₁.val s₀ hrow₁val)
+          have hsum₁ :
+              v13RealLinearTwoRowZeroShearSum row₀.val row₁.val s₁
+                  (A₀.val.val.toEquiv probe) = s₁.val row := by
+            simpa [probe] using
+              (v13RealLinearTwoRowZeroShearSum_singleBit
+                row₀.val row₁.val s₁ hrow₁val)
+          simpa [v13RealLinearComp,
+            v13RealLinearTwoRowZeroShear_apply_row₁,
+            hsum₀, hsum₁] using h
+    subst s₁
+    rfl
+
+theorem
+    v13RealLinearNoTargetFixedSupportSumTargetMapSet_card_mul_two_pow_le_noTarget
+    {m : Nat} {rows : Finset (Fin m)} (i₀ : Fin m)
+    (support : Finset {row : Fin m // row ∈ rows})
+    (hsupport : 2 ≤ support.card) :
+    Fintype.card
+        (V13RealLinearNoTargetFixedSupportSumTargetMapSet i₀ support) *
+      2 ^ m ≤
+    4 * Fintype.card (V13RealLinearNoTargetRowsMap m i₀) := by
+  classical
+  have hsupportPos : 0 < support.card := by omega
+  rcases Finset.card_pos.mp hsupportPos with ⟨row₀, hrow₀⟩
+  let rest := support.erase row₀
+  have hrestPos : 0 < rest.card := by
+    dsimp [rest]
+    rw [Finset.card_erase_of_mem hrow₀]
+    omega
+  rcases Finset.card_pos.mp hrestPos with ⟨row₁, hrow₁Rest⟩
+  have hrow₁ : row₁ ∈ support := (Finset.mem_erase.mp hrow₁Rest).2
+  have hneq : row₀ ≠ row₁ := (Finset.mem_erase.mp hrow₁Rest).1.symm
+  have hneqVal : row₀.val ≠ row₁.val := fun h => hneq (Subtype.ext h)
+  let S :=
+    Fintype.card
+      (V13RealLinearNoTargetFixedSupportSumTargetMapSet i₀ support)
+  let Z := Fintype.card (V13RealLinearTwoRowZeroAt row₀.val row₁.val)
+  let N := Fintype.card (V13RealLinearNoTargetRowsMap m i₀)
+  have hSZ : S * Z ≤ N := by
+    simpa [S, Z, N, Fintype.card_prod] using
+      Fintype.card_le_of_embedding
+        (v13RealLinearNoTargetFixedSupportSumTargetMapSetShearEmbedding
+          i₀ row₀ row₁ hrow₀ hrow₁ hneq)
+  have hZ : Z * 4 = 2 ^ m := by
+    simpa [Z] using
+      v13RealLinearTwoRowZeroAt_card_mul_four row₀.val row₁.val hneqVal
+  calc
+    S * 2 ^ m = S * (Z * 4) := by rw [hZ]
+    _ = 4 * (S * Z) := by ring
+    _ ≤ 4 * N := Nat.mul_le_mul_left 4 hSZ
+
+def v13RealLinearInsertRowsEmbedding {m : Nat}
+    (rows : Finset (Fin m)) (row : Fin m) :
+    {r : Fin m // r ∈ rows} ↪
+      {r : Fin m // r ∈ insert row rows} where
+  toFun r := ⟨r.1, Finset.mem_insert_of_mem r.2⟩
+  inj' := by
+    intro r₀ r₁ h
+    exact Subtype.ext
+      (congrArg
+        (fun r : {r : Fin m // r ∈ insert row rows} => r.1) h)
+
+noncomputable def v13RealLinearFreshFullSupport {m : Nat}
+    (rows : Finset (Fin m)) (row : Fin m)
+    (support : Finset {r : Fin m // r ∈ rows}) :
+    Finset {r : Fin m // r ∈ insert row rows} :=
+  insert ⟨row, Finset.mem_insert_self row rows⟩
+    (support.map (v13RealLinearInsertRowsEmbedding rows row))
+
+theorem v13RealLinearFreshFullSupport_card
+    {m : Nat} {rows : Finset (Fin m)} {row : Fin m}
+    (hrow : row ∉ rows) (support : Finset {r : Fin m // r ∈ rows}) :
+    (v13RealLinearFreshFullSupport rows row support).card =
+      support.card + 1 := by
+  classical
+  let newRow : {r : Fin m // r ∈ insert row rows} :=
+    ⟨row, Finset.mem_insert_self row rows⟩
+  let emb := v13RealLinearInsertRowsEmbedding rows row
+  have hnewNot : newRow ∉ support.map emb := by
+    intro hmem
+    rcases (Finset.mem_map.mp hmem) with ⟨oldRow, _hold, hEq⟩
+    have hval : oldRow.1 = row := by
+      simpa [newRow, emb, v13RealLinearInsertRowsEmbedding] using
+        congrArg
+          (fun r : {r : Fin m // r ∈ insert row rows} => r.1) hEq
+    exact hrow (by simpa [hval] using oldRow.2)
+  simp [v13RealLinearFreshFullSupport, newRow, emb, hnewNot]
+
+theorem v13RealLinearFreshFullSupport_sum
+    {m : Nat} {rows : Finset (Fin m)} {row : Fin m}
+    (A : V13F2LinearEquiv m) (hrow : row ∉ rows)
+    (support : Finset {r : Fin m // r ∈ rows}) (w : F2Vec m) :
+    (v13RealLinearFreshFullSupport rows row support).sum
+        (fun r => A.toEquiv w r.1) =
+      A.toEquiv w row +
+        support.sum (fun r => A.toEquiv w r.1) := by
+  classical
+  let newRow : {r : Fin m // r ∈ insert row rows} :=
+    ⟨row, Finset.mem_insert_self row rows⟩
+  let emb := v13RealLinearInsertRowsEmbedding rows row
+  have hnewNot : newRow ∉ support.map emb := by
+    intro hmem
+    rcases (Finset.mem_map.mp hmem) with ⟨oldRow, _hold, hEq⟩
+    have hval : oldRow.1 = row := by
+      simpa [newRow, emb, v13RealLinearInsertRowsEmbedding] using
+        congrArg
+          (fun r : {r : Fin m // r ∈ insert row rows} => r.1) hEq
+    exact hrow (by simpa [hval] using oldRow.2)
+  rw [v13RealLinearFreshFullSupport, Finset.sum_insert hnewNot]
+  simp [newRow, emb, v13RealLinearInsertRowsEmbedding]
+
+theorem
+    v13RealLinearNoTargetRows_freshRowFunctionalTargetCosetHit_exists_support_sum
+    {m : Nat} {i₀ : Fin m} {rows : Finset (Fin m)} {row : Fin m}
+    (A : V13RealLinearNoTargetRowsMap m i₀) (hrow : row ∉ rows)
+    (hhit :
+      V13RealLinearRowFunctionalTargetCosetHit A.val rows i₀ row) :
+    ∃ support : Finset {r : Fin m // r ∈ rows},
+      0 < support.card ∧
+        ∀ w : F2Vec m,
+          (v13RealLinearFreshFullSupport rows row support).sum
+              (fun r => A.val.toEquiv w r.1) =
+            w i₀ := by
+  classical
+  rcases hhit with ⟨z, hz, htarget⟩
+  rcases
+      (Submodule.mem_span_range_iff_exists_fun (R := ZMod 2)).1
+        (by simpa [V13RealLinearRowsFunctionalSpan] using hz) with
+    ⟨coeff, hcoeff⟩
+  let support := v13RealLinearRowCombinationSupport coeff
+  have hcoeffOne :
+      ∀ r : {r : Fin m // r ∈ rows},
+        r ∈ support → coeff r = 1 := by
+    intro r hr
+    exact
+      v13_zmod2_eq_one_of_ne_zero _
+        ((v13RealLinearRowCombinationSupport_mem coeff r).1
+          (by simpa [support] using hr))
+  have hcoeffZero :
+      ∀ r : {r : Fin m // r ∈ rows},
+        r ∉ support → coeff r = 0 := by
+    intro r hr
+    by_contra hne
+    exact hr
+      (by
+        simpa [support] using
+          (v13RealLinearRowCombinationSupport_mem coeff r).2 hne)
+  have hz_eval :
+      ∀ w : F2Vec m,
+        z w = support.sum (fun r => A.val.toEquiv w r.1) := by
+    intro w
+    have hpoint := LinearMap.congr_fun hcoeff w
+    let term : {r : Fin m // r ∈ rows} → ZMod 2 :=
+      fun r => coeff r * A.val.toEquiv w r.1
+    have hsumSupport :
+        (∑ r : {r : Fin m // r ∈ rows},
+          (coeff r • v13RealLinearRowFunctional A.val r.1) w) =
+          support.sum term := by
+      symm
+      refine Finset.sum_subset (by intro r _hr; simp) ?_
+      intro r _hr hnot
+      simp [hcoeffZero r hnot]
+    have hsupportTerm :
+        support.sum (fun r => A.val.toEquiv w r.1) =
+          support.sum term := by
+      apply Finset.sum_congr rfl
+      intro r hr
+      simp [term, hcoeffOne r hr]
+    calc
+      z w =
+          (∑ r : {r : Fin m // r ∈ rows},
+            (coeff r • v13RealLinearRowFunctional A.val r.1) w) := by
+            simpa using hpoint.symm
+      _ = support.sum term := hsumSupport
+      _ = support.sum (fun r => A.val.toEquiv w r.1) := hsupportTerm.symm
+  have hsupportPos : 0 < support.card := by
+    by_contra hnot
+    have hsupportEmpty : support = ∅ := by
+      exact Finset.card_eq_zero.mp (Nat.eq_zero_of_not_pos hnot)
+    have hzZero : z = 0 := by
+      apply LinearMap.ext
+      intro w
+      rw [hz_eval w, hsupportEmpty]
+      simp
+    have htargetRow :
+        row ∈ V13RealLinearTargetRows A.val i₀ := by
+      rw [v13RealLinear_mem_targetRows_iff]
+      intro w
+      have hpoint := LinearMap.congr_fun htarget w
+      simpa [v13RealLinearTargetFunctional, v13RealLinearRowFunctional,
+        hzZero] using hpoint.symm
+    have hrowNotTarget :
+        row ∉ V13RealLinearTargetRows A.val i₀ := by
+      rw [A.property]
+      simp
+    exact hrowNotTarget htargetRow
+  refine ⟨support, hsupportPos, ?_⟩
+  intro w
+  have hpoint := LinearMap.congr_fun htarget w
+  calc
+    (v13RealLinearFreshFullSupport rows row support).sum
+        (fun r => A.val.toEquiv w r.1) =
+        A.val.toEquiv w row +
+          support.sum (fun r => A.val.toEquiv w r.1) :=
+      v13RealLinearFreshFullSupport_sum A.val hrow support w
+    _ = A.val.toEquiv w row + z w := by rw [hz_eval w]
+    _ = w i₀ := by
+      simpa [v13RealLinearTargetFunctional, v13RealLinearRowFunctional]
+        using hpoint.symm
+
+abbrev V13RealLinearNoTargetFreshRowCosetHitSupportSigma
+    {m : Nat} (i₀ : Fin m) (rows : Finset (Fin m)) (row : Fin m) :=
+  Σ support :
+      {support : Finset {r : Fin m // r ∈ rows} //
+        0 < support.card},
+    V13RealLinearNoTargetFixedSupportSumTargetMapSet i₀
+      (v13RealLinearFreshFullSupport rows row support.val)
+
+noncomputable instance {m : Nat} (i₀ : Fin m)
+    (rows : Finset (Fin m)) (row : Fin m) :
+    Fintype
+      (V13RealLinearNoTargetFreshRowCosetHitSupportSigma
+        i₀ rows row) := by
+  classical
+  unfold V13RealLinearNoTargetFreshRowCosetHitSupportSigma
+  infer_instance
+
+noncomputable def
+    v13RealLinearNoTargetFreshRowCosetHitEmbeddingSupportSigma
+    {m : Nat} (i₀ : Fin m) (rows : Finset (Fin m)) (row : Fin m)
+    (hrow : row ∉ rows) :
+    {A : V13RealLinearNoTargetRowsMap m i₀ //
+      V13RealLinearRowFunctionalTargetCosetHit A.val rows i₀ row} ↪
+      V13RealLinearNoTargetFreshRowCosetHitSupportSigma
+        i₀ rows row where
+  toFun A := by
+    classical
+    let ex :=
+      v13RealLinearNoTargetRows_freshRowFunctionalTargetCosetHit_exists_support_sum
+        A.val hrow A.property
+    let support := Classical.choose ex
+    let spec := Classical.choose_spec ex
+    exact ⟨⟨support, spec.1⟩, ⟨A.val, spec.2⟩⟩
+  inj' := by
+    intro A₀ A₁ h
+    apply Subtype.ext
+    exact
+      congrArg
+        (fun data :
+          V13RealLinearNoTargetFreshRowCosetHitSupportSigma
+            i₀ rows row =>
+          data.2.val)
+        h
+
+noncomputable instance {m : Nat} (i₀ : Fin m)
+    (rows : Finset (Fin m)) (row : Fin m) :
+    Fintype
+      {A : V13RealLinearNoTargetRowsMap m i₀ //
+        V13RealLinearRowFunctionalTargetCosetHit A.val rows i₀ row} := by
+  classical
+  infer_instance
+
+theorem
+    v13RealLinearNoTargetFreshRowCosetHitSupportSigma_card_mul_two_pow_le
+    {m : Nat} (i₀ : Fin m) (rows : Finset (Fin m)) (row : Fin m)
+    (hrow : row ∉ rows) :
+    Fintype.card
+        (V13RealLinearNoTargetFreshRowCosetHitSupportSigma i₀ rows row) *
+      2 ^ m ≤
+    4 * 2 ^ rows.card *
+      Fintype.card (V13RealLinearNoTargetRowsMap m i₀) := by
+  classical
+  let N := Fintype.card (V13RealLinearNoTargetRowsMap m i₀)
+  let M := 2 ^ m
+  have hSupportLe :
+      Fintype.card
+          {support : Finset {r : Fin m // r ∈ rows} //
+            0 < support.card} ≤
+        2 ^ rows.card := by
+    calc
+      Fintype.card
+          {support : Finset {r : Fin m // r ∈ rows} //
+            0 < support.card} ≤
+          Fintype.card (Finset {r : Fin m // r ∈ rows}) := by
+        exact Fintype.card_subtype_le
+          (fun support : Finset {r : Fin m // r ∈ rows} =>
+            0 < support.card)
+      _ = 2 ^ Fintype.card {r : Fin m // r ∈ rows} :=
+        Fintype.card_finset
+      _ = 2 ^ rows.card := by simp
+  have hterm :
+      ∀ support :
+          {support : Finset {r : Fin m // r ∈ rows} //
+            0 < support.card},
+        Fintype.card
+            (V13RealLinearNoTargetFixedSupportSumTargetMapSet i₀
+              (v13RealLinearFreshFullSupport rows row support.val)) *
+          M ≤ 4 * N := by
+    intro support
+    have htwo :
+        2 ≤ (v13RealLinearFreshFullSupport rows row support.val).card := by
+      rw [v13RealLinearFreshFullSupport_card hrow support.val]
+      omega
+    simpa [M, N] using
+      v13RealLinearNoTargetFixedSupportSumTargetMapSet_card_mul_two_pow_le_noTarget
+        i₀ (v13RealLinearFreshFullSupport rows row support.val) htwo
+  change
+    Fintype.card
+        ((support :
+            {support : Finset {r : Fin m // r ∈ rows} //
+              0 < support.card}) ×
+          V13RealLinearNoTargetFixedSupportSumTargetMapSet i₀
+            (v13RealLinearFreshFullSupport rows row support.val)) *
+      M ≤ 4 * 2 ^ rows.card * N
+  have hcardSigma :
+      Fintype.card
+          ((support :
+              {support : Finset {r : Fin m // r ∈ rows} //
+                0 < support.card}) ×
+            V13RealLinearNoTargetFixedSupportSumTargetMapSet i₀
+              (v13RealLinearFreshFullSupport rows row support.val)) =
+        ∑ support :
+            {support : Finset {r : Fin m // r ∈ rows} //
+              0 < support.card},
+          Fintype.card
+            (V13RealLinearNoTargetFixedSupportSumTargetMapSet i₀
+              (v13RealLinearFreshFullSupport rows row support.val)) := by
+    let sigmaFinset :
+        Finset
+          ((support :
+              {support : Finset {r : Fin m // r ∈ rows} //
+                0 < support.card}) ×
+            V13RealLinearNoTargetFixedSupportSumTargetMapSet i₀
+              (v13RealLinearFreshFullSupport rows row support.val)) :=
+      Finset.univ.sigma
+        (fun support :
+            {support : Finset {r : Fin m // r ∈ rows} //
+              0 < support.card} =>
+          (Finset.univ :
+            Finset
+              (V13RealLinearNoTargetFixedSupportSumTargetMapSet i₀
+                (v13RealLinearFreshFullSupport rows row support.val))))
+    have hcard :
+        Fintype.card
+            ((support :
+                {support : Finset {r : Fin m // r ∈ rows} //
+                  0 < support.card}) ×
+              V13RealLinearNoTargetFixedSupportSumTargetMapSet i₀
+                (v13RealLinearFreshFullSupport rows row support.val)) =
+          sigmaFinset.card := by
+      have hsigUniv : sigmaFinset = Finset.univ := by
+        dsimp [sigmaFinset]
+        exact Finset.univ_sigma_univ
+      rw [← Finset.card_univ, ← hsigUniv]
+    have hsigma :
+        sigmaFinset.card =
+          ∑ support :
+              {support : Finset {r : Fin m // r ∈ rows} //
+                0 < support.card},
+            Fintype.card
+              (V13RealLinearNoTargetFixedSupportSumTargetMapSet i₀
+                (v13RealLinearFreshFullSupport rows row support.val)) := by
+      simp [sigmaFinset]
+    exact hcard.trans hsigma
+  rw [hcardSigma]
+  rw [Finset.sum_mul]
+  calc
+    (∑ support :
+        {support : Finset {r : Fin m // r ∈ rows} //
+          0 < support.card},
+        Fintype.card
+            (V13RealLinearNoTargetFixedSupportSumTargetMapSet i₀
+              (v13RealLinearFreshFullSupport rows row support.val)) *
+          M) ≤
+        ∑ _support :
+            {support : Finset {r : Fin m // r ∈ rows} //
+              0 < support.card}, 4 * N := by
+          apply Finset.sum_le_sum
+          intro support _hsupport
+          exact hterm support
+    _ =
+        Fintype.card
+          {support : Finset {r : Fin m // r ∈ rows} //
+            0 < support.card} *
+          (4 * N) := by
+      rw [Finset.sum_const]
+      simp
+    _ ≤ 2 ^ rows.card * (4 * N) := by
+      exact Nat.mul_le_mul_right (4 * N) hSupportLe
+    _ = 4 * 2 ^ rows.card * N := by ring
+
+theorem
+    v13RealLinearNoTargetFreshRowCosetHitMapSet_card_mul_two_pow_le
+    {m : Nat} (i₀ : Fin m) (rows : Finset (Fin m)) (row : Fin m)
+    (hrow : row ∉ rows) :
+    Fintype.card
+        {A : V13RealLinearNoTargetRowsMap m i₀ //
+          V13RealLinearRowFunctionalTargetCosetHit A.val rows i₀ row} *
+      2 ^ m ≤
+    4 * 2 ^ rows.card *
+      Fintype.card (V13RealLinearNoTargetRowsMap m i₀) := by
+  classical
+  let S :=
+    {A : V13RealLinearNoTargetRowsMap m i₀ //
+      V13RealLinearRowFunctionalTargetCosetHit A.val rows i₀ row}
+  let W := V13RealLinearNoTargetFreshRowCosetHitSupportSigma i₀ rows row
+  let N := Fintype.card (V13RealLinearNoTargetRowsMap m i₀)
+  let M := 2 ^ m
+  have hS : Fintype.card S ≤ Fintype.card W :=
+    Fintype.card_le_of_embedding
+      (v13RealLinearNoTargetFreshRowCosetHitEmbeddingSupportSigma
+        i₀ rows row hrow)
+  have hW : Fintype.card W * M ≤ 4 * 2 ^ rows.card * N := by
+    simpa [W, M, N] using
+      v13RealLinearNoTargetFreshRowCosetHitSupportSigma_card_mul_two_pow_le
+        i₀ rows row hrow
+  calc
+    Fintype.card S * M ≤ Fintype.card W * M :=
+      Nat.mul_le_mul_right M hS
+    _ ≤ 4 * 2 ^ rows.card * N := hW
+
+abbrev V13RealLinearNoTargetSupportSumWitnessSigma
+    {m j : Nat} (i₀ : Fin m) (rows : V13RealLinearBudgetedRowset m j) :=
+  Σ support :
+      {support : Finset {row : Fin m // row ∈ rows.1} //
+        2 ≤ support.card},
+    V13RealLinearNoTargetFixedSupportSumTargetMapSet i₀ support.val
+
+noncomputable instance {m j : Nat} (i₀ : Fin m)
+    (rows : V13RealLinearBudgetedRowset m j) :
+    Fintype (V13RealLinearNoTargetSupportSumWitnessSigma i₀ rows) := by
+  classical
+  unfold V13RealLinearNoTargetSupportSumWitnessSigma
+  infer_instance
+
+noncomputable def
+    v13RealLinearNoTargetBudgetedRowsetGeneratingMapSetEmbeddingSupportSumSigma
+    {m j : Nat} (i₀ : Fin m) (rows : V13RealLinearBudgetedRowset m j) :
+    V13RealLinearNoTargetBudgetedRowsetGeneratingMapSet i₀ rows ↪
+      V13RealLinearNoTargetSupportSumWitnessSigma i₀ rows where
+  toFun A := by
+    classical
+    let ex :=
+      v13RealLinearNoTargetBudgetedRowsetGeneratingMapSet_exists_support_sum_target
+        A
+    let support := Classical.choose ex
+    let spec := Classical.choose_spec ex
+    exact ⟨⟨support, spec.1⟩, ⟨A.val, spec.2.2⟩⟩
+  inj' := by
+    intro A₀ A₁ h
+    apply Subtype.ext
+    exact
+      congrArg
+        (fun data :
+          V13RealLinearNoTargetSupportSumWitnessSigma i₀ rows =>
+          data.2.val)
+        h
+
+theorem
+    v13RealLinearNoTargetSupportSumWitnessSigma_card_mul_two_pow_le
+    {m j : Nat} (i₀ : Fin m) (rows : V13RealLinearBudgetedRowset m j) :
+    Fintype.card
+        (V13RealLinearNoTargetSupportSumWitnessSigma i₀ rows) *
+      2 ^ m ≤
+  4 * 2 ^ j * Fintype.card (V13RealLinearNoTargetRowsMap m i₀) := by
+  classical
+  let N := Fintype.card (V13RealLinearNoTargetRowsMap m i₀)
+  let M := 2 ^ m
+  have hRowLe : Fintype.card {row : Fin m // row ∈ rows.1} ≤ j := by
+    simpa using rows.2
+  have hSupportLe :
+      Fintype.card
+          {support : Finset {row : Fin m // row ∈ rows.1} //
+            2 ≤ support.card} ≤
+        2 ^ j := by
+    calc
+      Fintype.card
+          {support : Finset {row : Fin m // row ∈ rows.1} //
+            2 ≤ support.card} ≤
+          Fintype.card (Finset {row : Fin m // row ∈ rows.1}) := by
+        exact Fintype.card_subtype_le
+          (fun support :
+            Finset {row : Fin m // row ∈ rows.1} =>
+              2 ≤ support.card)
+      _ = 2 ^ Fintype.card {row : Fin m // row ∈ rows.1} :=
+        Fintype.card_finset
+      _ ≤ 2 ^ j := by
+        exact Nat.pow_le_pow_right (by norm_num : 0 < 2) hRowLe
+  have hterm :
+      ∀ support :
+          {support : Finset {row : Fin m // row ∈ rows.1} //
+            2 ≤ support.card},
+        Fintype.card
+            (V13RealLinearNoTargetFixedSupportSumTargetMapSet
+              i₀ support.val) *
+          M ≤ 4 * N := by
+    intro support
+    simpa [M, N] using
+      v13RealLinearNoTargetFixedSupportSumTargetMapSet_card_mul_two_pow_le_noTarget
+        i₀ support.val support.property
+  change
+    Fintype.card
+        ((support :
+            {support : Finset {row : Fin m // row ∈ rows.1} //
+              2 ≤ support.card}) ×
+          V13RealLinearNoTargetFixedSupportSumTargetMapSet i₀ support.val) *
+      M ≤ 4 * 2 ^ j * N
+  have hcardSigma :
+      Fintype.card
+          ((support :
+              {support : Finset {row : Fin m // row ∈ rows.1} //
+                2 ≤ support.card}) ×
+            V13RealLinearNoTargetFixedSupportSumTargetMapSet i₀ support.val) =
+        ∑ support :
+            {support : Finset {row : Fin m // row ∈ rows.1} //
+              2 ≤ support.card},
+          Fintype.card
+            (V13RealLinearNoTargetFixedSupportSumTargetMapSet
+              i₀ support.val) := by
+    let sigmaFinset :
+        Finset
+          ((support :
+              {support : Finset {row : Fin m // row ∈ rows.1} //
+                2 ≤ support.card}) ×
+            V13RealLinearNoTargetFixedSupportSumTargetMapSet
+              i₀ support.val) :=
+      Finset.univ.sigma
+        (fun support :
+            {support : Finset {row : Fin m // row ∈ rows.1} //
+              2 ≤ support.card} =>
+          (Finset.univ :
+            Finset
+              (V13RealLinearNoTargetFixedSupportSumTargetMapSet
+                i₀ support.val)))
+    have hcard :
+        Fintype.card
+            ((support :
+                {support : Finset {row : Fin m // row ∈ rows.1} //
+                  2 ≤ support.card}) ×
+              V13RealLinearNoTargetFixedSupportSumTargetMapSet
+                i₀ support.val) =
+          sigmaFinset.card := by
+      have hsigUniv : sigmaFinset = Finset.univ := by
+        dsimp [sigmaFinset]
+        exact Finset.univ_sigma_univ
+      rw [← Finset.card_univ, ← hsigUniv]
+    have hsigma :
+        sigmaFinset.card =
+          ∑ support :
+              {support : Finset {row : Fin m // row ∈ rows.1} //
+                2 ≤ support.card},
+            Fintype.card
+              (V13RealLinearNoTargetFixedSupportSumTargetMapSet
+                i₀ support.val) := by
+      simp [sigmaFinset]
+    exact hcard.trans hsigma
+  rw [hcardSigma]
+  rw [Finset.sum_mul]
+  calc
+    (∑ support :
+        {support : Finset {row : Fin m // row ∈ rows.1} //
+          2 ≤ support.card},
+        Fintype.card
+            (V13RealLinearNoTargetFixedSupportSumTargetMapSet
+              i₀ support.val) *
+          M) ≤
+        ∑ _support :
+            {support : Finset {row : Fin m // row ∈ rows.1} //
+              2 ≤ support.card}, 4 * N := by
+          apply Finset.sum_le_sum
+          intro support _hsupport
+          exact hterm support
+    _ =
+        Fintype.card
+          {support : Finset {row : Fin m // row ∈ rows.1} //
+            2 ≤ support.card} *
+          (4 * N) := by
+      rw [Finset.sum_const]
+      simp
+    _ ≤ 2 ^ j * (4 * N) := by
+      exact Nat.mul_le_mul_right (4 * N) hSupportLe
+    _ = 4 * 2 ^ j * N := by ring
+
+theorem
+    V13RealLinearNoTargetBudgetedRowsetGenerationCountingBound_allBudget
+    (m j : Nat) :
+    V13RealLinearNoTargetBudgetedRowsetGenerationCountingBound m j := by
+  intro i₀ rows
+  let G := V13RealLinearNoTargetBudgetedRowsetGeneratingMapSet i₀ rows
+  let W := V13RealLinearNoTargetSupportSumWitnessSigma i₀ rows
+  let N := Fintype.card (V13RealLinearNoTargetRowsMap m i₀)
+  let M := 2 ^ m
+  have hG : Fintype.card G ≤ Fintype.card W :=
+    Fintype.card_le_of_embedding
+      (v13RealLinearNoTargetBudgetedRowsetGeneratingMapSetEmbeddingSupportSumSigma
+        i₀ rows)
+  have hW : Fintype.card W * M ≤ 4 * 2 ^ j * N := by
+    simpa [W, M, N] using
+      v13RealLinearNoTargetSupportSumWitnessSigma_card_mul_two_pow_le
+        i₀ rows
+  calc
+    M * Fintype.card G = Fintype.card G * M := by ring
+    _ ≤ Fintype.card W * M := Nat.mul_le_mul_right M hG
+    _ ≤ 4 * 2 ^ j * N := hW
+
+theorem
+    v13RealLinearNoTargetExistingRowCosetHitMapSet_card_mul_two_pow_le
+    {m : Nat} (i₀ : Fin m) (rows : Finset (Fin m)) (row : Fin m)
+    (hrow : row ∈ rows) :
+    Fintype.card
+        {A : V13RealLinearNoTargetRowsMap m i₀ //
+          V13RealLinearRowFunctionalTargetCosetHit A.val rows i₀ row} *
+      2 ^ m ≤
+    4 * 2 ^ rows.card *
+      Fintype.card (V13RealLinearNoTargetRowsMap m i₀) := by
+  classical
+  let S :=
+    {A : V13RealLinearNoTargetRowsMap m i₀ //
+      V13RealLinearRowFunctionalTargetCosetHit A.val rows i₀ row}
+  let budgetRows : V13RealLinearBudgetedRowset m rows.card :=
+    ⟨rows, le_rfl⟩
+  let G := V13RealLinearNoTargetBudgetedRowsetGeneratingMapSet i₀ budgetRows
+  let N := Fintype.card (V13RealLinearNoTargetRowsMap m i₀)
+  let M := 2 ^ m
+  have hS : Fintype.card S ≤ Fintype.card G := by
+    dsimp [S, G, budgetRows,
+      V13RealLinearNoTargetBudgetedRowsetGeneratingMapSet]
+    exact
+      Fintype.card_le_of_embedding
+        { toFun := fun A =>
+            ⟨A.val,
+              v13RealLinear_rowsGenerateTarget_of_rowFunctionalTargetCosetHit_of_mem
+                A.val.val i₀ row hrow A.property⟩
+          inj' := by
+            intro A₀ A₁ h
+            apply Subtype.ext
+            exact
+              congrArg
+                (fun A :
+                  {A : V13RealLinearNoTargetRowsMap m i₀ //
+                    V13RealLinearRowsGenerateTarget A.val rows i₀} =>
+                  A.val)
+                h }
+  have hG :
+      M * Fintype.card G ≤ 4 * 2 ^ rows.card * N := by
+    simpa [M, G, N, budgetRows] using
+      (V13RealLinearNoTargetBudgetedRowsetGenerationCountingBound_allBudget
+        m rows.card i₀ budgetRows)
+  calc
+    Fintype.card S * M = M * Fintype.card S := by ring
+    _ ≤ M * Fintype.card G := Nat.mul_le_mul_left M hS
+    _ ≤ 4 * 2 ^ rows.card * N := hG
+
+theorem
+    v13RealLinearNoTargetFixedRowsetCosetHitMapSet_card_mul_two_pow_le
+    {m : Nat} (i₀ : Fin m) (rows : Finset (Fin m)) (row : Fin m) :
+    Fintype.card
+        {A : V13RealLinearNoTargetRowsMap m i₀ //
+          V13RealLinearRowFunctionalTargetCosetHit A.val rows i₀ row} *
+      2 ^ m ≤
+    4 * 2 ^ rows.card *
+      Fintype.card (V13RealLinearNoTargetRowsMap m i₀) := by
+  classical
+  by_cases hrow : row ∈ rows
+  · exact
+      v13RealLinearNoTargetExistingRowCosetHitMapSet_card_mul_two_pow_le
+        i₀ rows row hrow
+  · exact
+      v13RealLinearNoTargetFreshRowCosetHitMapSet_card_mul_two_pow_le
+        i₀ rows row hrow
+
+/-- Worlds whose sequential no-target trace has a coset hit at a fixed step
+and whose realized prefix rowset and next row are the specified fixed data.
+This is the world-space fiber of the fixed-prefix map count above. -/
+abbrev V13RealLinearNoTargetSequentialTraceFirstCosetHitFixedPrefixWorldSet
+    {m q : Nat} (i₀ : Fin m)
+    (observer : V13RealLinearSequentialRowObserver m q) (t : Fin q)
+    (rows : Finset (Fin m)) (row : Fin m) :=
+  {omega :
+      V13RealLinearAdaptiveQRowWorld m
+        (V13RealLinearNoTargetRowsMap m i₀) //
+    V13RealLinearAdaptiveQRowTraceFirstCosetHit
+      (v13RealLinearNoTargetRowsSequentialQRowExperiment i₀ observer)
+      i₀
+      (v13RealLinearNoTargetRowsSequentialQRowTrace i₀ observer)
+      t omega ∧
+    v13RealLinearRowTracePrefixRows
+      (v13RealLinearNoTargetRowsSequentialQRowTrace i₀ observer omega)
+      (t : Nat) = rows ∧
+    ∃ h : (t : Nat) <
+        (v13RealLinearNoTargetRowsSequentialQRowTrace i₀ observer omega).length,
+      (v13RealLinearNoTargetRowsSequentialQRowTrace i₀ observer omega).get
+        ⟨(t : Nat), h⟩ = row}
+
+noncomputable instance
+    {m q : Nat} (i₀ : Fin m)
+    (observer : V13RealLinearSequentialRowObserver m q) (t : Fin q)
+    (rows : Finset (Fin m)) (row : Fin m) :
+    Fintype
+      (V13RealLinearNoTargetSequentialTraceFirstCosetHitFixedPrefixWorldSet
+        i₀ observer t rows row) := by
+  classical
+  unfold V13RealLinearNoTargetSequentialTraceFirstCosetHitFixedPrefixWorldSet
+  infer_instance
+
+noncomputable def
+    v13RealLinearNoTargetSequentialTraceFirstCosetHitFixedPrefixWorldSetToMapTimesVector
+    {m q : Nat} (i₀ : Fin m)
+    (observer : V13RealLinearSequentialRowObserver m q) (t : Fin q)
+    (rows : Finset (Fin m)) (row : Fin m) :
+    V13RealLinearNoTargetSequentialTraceFirstCosetHitFixedPrefixWorldSet
+        i₀ observer t rows row ↪
+      ({A : V13RealLinearNoTargetRowsMap m i₀ //
+          V13RealLinearRowFunctionalTargetCosetHit A.val rows i₀ row} ×
+        F2Vec m) where
+  toFun omega := by
+    classical
+    let trace :=
+      v13RealLinearNoTargetRowsSequentialQRowTrace i₀ observer omega.val
+    have hcoset :
+        V13RealLinearRowFunctionalTargetCosetHit omega.val.1.val
+          rows i₀ row := by
+      rcases omega.property with ⟨hfirst, hrows, hrow⟩
+      rcases hfirst.2 with ⟨hhitIndex, hhit⟩
+      rcases hrow with ⟨hrowIndex, hget⟩
+      have hidx :
+          (⟨(t : Nat), hhitIndex⟩ : Fin trace.length) =
+            ⟨(t : Nat), hrowIndex⟩ := by
+        apply Fin.ext
+        rfl
+      have hhitRows :
+          V13RealLinearRowFunctionalTargetCosetHit
+            ((v13RealLinearNoTargetRowsSequentialQRowExperiment
+                i₀ observer).sampleA omega.val.1)
+            rows i₀ (trace.get ⟨(t : Nat), hhitIndex⟩) := by
+        simpa [trace, hrows] using hhit
+      have hgetHit : trace.get ⟨(t : Nat), hhitIndex⟩ = row := by
+        simpa [trace, hidx] using hget
+      rw [hgetHit] at hhitRows
+      simpa [v13RealLinearNoTargetRowsSequentialQRowExperiment,
+        v13RealLinearNoTargetRowsCausalQRowExperiment,
+        v13RealLinearNoTargetRowsQRowExperiment] using hhitRows
+    exact (⟨omega.val.1, hcoset⟩, omega.val.2)
+  inj' := by
+    intro omega₀ omega₁ h
+    apply Subtype.ext
+    apply Prod.ext
+    · exact
+        congrArg
+          (fun z :
+            ({A : V13RealLinearNoTargetRowsMap m i₀ //
+                V13RealLinearRowFunctionalTargetCosetHit A.val rows i₀ row} ×
+              F2Vec m) => z.1.val)
+          h
+    · exact
+        congrArg
+          (fun z :
+            ({A : V13RealLinearNoTargetRowsMap m i₀ //
+                V13RealLinearRowFunctionalTargetCosetHit A.val rows i₀ row} ×
+              F2Vec m) => z.2)
+          h
+
+theorem
+    v13RealLinearNoTargetSequentialTraceFirstCosetHitFixedPrefixWorldSet_card_mul_two_pow_le_rows
+    {m q : Nat} (i₀ : Fin m)
+    (observer : V13RealLinearSequentialRowObserver m q) (t : Fin q)
+    (rows : Finset (Fin m)) (row : Fin m) :
+    Fintype.card
+        (V13RealLinearNoTargetSequentialTraceFirstCosetHitFixedPrefixWorldSet
+          i₀ observer t rows row) *
+      2 ^ m ≤
+    4 * 2 ^ rows.card *
+      Fintype.card
+        (V13RealLinearAdaptiveQRowWorld m
+          (V13RealLinearNoTargetRowsMap m i₀)) := by
+  classical
+  let S :=
+    {A : V13RealLinearNoTargetRowsMap m i₀ //
+      V13RealLinearRowFunctionalTargetCosetHit A.val rows i₀ row}
+  let W :=
+    V13RealLinearNoTargetSequentialTraceFirstCosetHitFixedPrefixWorldSet
+      i₀ observer t rows row
+  let N := Fintype.card (V13RealLinearNoTargetRowsMap m i₀)
+  let M := 2 ^ m
+  have hW :
+      Fintype.card W ≤ Fintype.card (S × F2Vec m) :=
+    Fintype.card_le_of_embedding
+      (v13RealLinearNoTargetSequentialTraceFirstCosetHitFixedPrefixWorldSetToMapTimesVector
+        i₀ observer t rows row)
+  have hWprod : Fintype.card W ≤ Fintype.card S * M := by
+    simpa [S, M, Fintype.card_prod, v13RealLinear_f2vec_card] using hW
+  have hfixed :
+      Fintype.card S * M ≤ 4 * 2 ^ rows.card * N := by
+    simpa [S, M, N] using
+      v13RealLinearNoTargetFixedRowsetCosetHitMapSet_card_mul_two_pow_le
+        i₀ rows row
+  have hmul :
+      Fintype.card W * M ≤ (4 * 2 ^ rows.card * N) * M := by
+    exact
+      (Nat.mul_le_mul_right M hWprod).trans
+        (Nat.mul_le_mul_right M hfixed)
+  have hworld :
+      Fintype.card
+          (V13RealLinearAdaptiveQRowWorld m
+            (V13RealLinearNoTargetRowsMap m i₀)) =
+        N * M := by
+    dsimp [V13RealLinearAdaptiveQRowWorld, N, M]
+    rw [Fintype.card_prod, v13RealLinear_f2vec_card]
+  simpa [W, M, hworld, Nat.mul_assoc, Nat.mul_left_comm, Nat.mul_comm] using
+    hmul
+
+theorem
+    v13RealLinearNoTargetSequentialTraceFirstCosetHitFixedPrefixWorldSet_card_mul_two_pow_le_step
+    {m q : Nat} (i₀ : Fin m)
+    (observer : V13RealLinearSequentialRowObserver m q) (t : Fin q)
+    (rows : Finset (Fin m)) (row : Fin m) :
+    Fintype.card
+        (V13RealLinearNoTargetSequentialTraceFirstCosetHitFixedPrefixWorldSet
+          i₀ observer t rows row) *
+      2 ^ m ≤
+    4 * 2 ^ (t : Nat) *
+      Fintype.card
+        (V13RealLinearAdaptiveQRowWorld m
+          (V13RealLinearNoTargetRowsMap m i₀)) := by
+  classical
+  let W :=
+    V13RealLinearNoTargetSequentialTraceFirstCosetHitFixedPrefixWorldSet
+      i₀ observer t rows row
+  by_cases hnonempty : Nonempty W
+  · rcases hnonempty with ⟨omega⟩
+    have hrowsLe : rows.card ≤ (t : Nat) := by
+      let trace :=
+        v13RealLinearNoTargetRowsSequentialQRowTrace i₀ observer omega.val
+      have hprefix :
+          (v13RealLinearRowTracePrefixRows trace (t : Nat)).card ≤
+            (t : Nat) :=
+        v13RealLinearRowTracePrefixRows_card_le trace (t : Nat)
+      exact omega.property.2.1 ▸ hprefix
+    have hbase :=
+      v13RealLinearNoTargetSequentialTraceFirstCosetHitFixedPrefixWorldSet_card_mul_two_pow_le_rows
+        i₀ observer t rows row
+    have hpow : 2 ^ rows.card ≤ 2 ^ (t : Nat) :=
+      Nat.pow_le_pow_right (by norm_num : 0 < 2) hrowsLe
+    have hmono :
+        4 * 2 ^ rows.card *
+            Fintype.card
+              (V13RealLinearAdaptiveQRowWorld m
+                (V13RealLinearNoTargetRowsMap m i₀)) ≤
+          4 * 2 ^ (t : Nat) *
+            Fintype.card
+              (V13RealLinearAdaptiveQRowWorld m
+                (V13RealLinearNoTargetRowsMap m i₀)) := by
+      exact Nat.mul_le_mul_right _ (Nat.mul_le_mul_left 4 hpow)
+    exact hbase.trans hmono
+  · have hcard : Fintype.card W = 0 := by
+      rw [Fintype.card_eq_zero_iff]
+      exact ⟨fun omega => hnonempty ⟨omega⟩⟩
+    simp [W, hcard]
+
+/-- A fixed-prefix trace-hit world fiber refined by the row transcript observed
+on the realized prefix rowset. -/
+abbrev
+    V13RealLinearNoTargetSequentialTraceFirstCosetHitFixedPrefixTranscriptWorldSet
+    {m q : Nat} (i₀ : Fin m)
+    (observer : V13RealLinearSequentialRowObserver m q) (t : Fin q)
+    (rows : Finset (Fin m)) (row : Fin m)
+    (transcript : V13RealLinearRowsTranscriptSpace m rows) :=
+  {omega :
+      V13RealLinearNoTargetSequentialTraceFirstCosetHitFixedPrefixWorldSet
+        i₀ observer t rows row //
+    v13RealLinearRowsTranscript rows
+        (v13RealLinearPublicInput
+          ({ x := omega.val.2, A := omega.val.1.val } :
+            V13RealLinearWorld m)) =
+      transcript}
+
+noncomputable instance
+    {m q : Nat} (i₀ : Fin m)
+    (observer : V13RealLinearSequentialRowObserver m q) (t : Fin q)
+    (rows : Finset (Fin m)) (row : Fin m)
+    (transcript : V13RealLinearRowsTranscriptSpace m rows) :
+    Fintype
+      (V13RealLinearNoTargetSequentialTraceFirstCosetHitFixedPrefixTranscriptWorldSet
+        i₀ observer t rows row transcript) := by
+  classical
+  unfold
+    V13RealLinearNoTargetSequentialTraceFirstCosetHitFixedPrefixTranscriptWorldSet
+  infer_instance
+
+noncomputable def
+    v13RealLinearNoTargetSequentialTraceFirstCosetHitFixedPrefixTranscriptWorldSetToMapTimesUnreadAssignment
+    {m q : Nat} (i₀ : Fin m)
+    (observer : V13RealLinearSequentialRowObserver m q) (t : Fin q)
+    (rows : Finset (Fin m)) (row : Fin m)
+    (transcript : V13RealLinearRowsTranscriptSpace m rows) :
+    V13RealLinearNoTargetSequentialTraceFirstCosetHitFixedPrefixTranscriptWorldSet
+        i₀ observer t rows row transcript ↪
+      ({A : V13RealLinearNoTargetRowsMap m i₀ //
+          V13RealLinearRowFunctionalTargetCosetHit A.val rows i₀ row} ×
+        V13RealLinearRowsUnreadAssignment m rows) where
+  toFun omega := by
+    classical
+    let mapVector :=
+      v13RealLinearNoTargetSequentialTraceFirstCosetHitFixedPrefixWorldSetToMapTimesVector
+        i₀ observer t rows row omega.val
+    exact
+      (mapVector.1,
+        fun unread => omega.val.val.1.val.toEquiv omega.val.val.2 unread.1)
+  inj' := by
+    classical
+    intro omega₀ omega₁ h
+    apply Subtype.ext
+    apply Subtype.ext
+    let mapVector₀ :=
+      v13RealLinearNoTargetSequentialTraceFirstCosetHitFixedPrefixWorldSetToMapTimesVector
+        i₀ observer t rows row omega₀.val
+    let mapVector₁ :=
+      v13RealLinearNoTargetSequentialTraceFirstCosetHitFixedPrefixWorldSetToMapTimesVector
+        i₀ observer t rows row omega₁.val
+    have hmap :
+        mapVector₀.1 = mapVector₁.1 := by
+      simpa [mapVector₀, mapVector₁] using congrArg Prod.fst h
+    have hA : omega₀.val.val.1 = omega₁.val.val.1 := by
+      exact congrArg Subtype.val hmap
+    apply Prod.ext
+    · exact hA
+    · apply omega₀.val.val.1.val.toEquiv.injective
+      funext r
+      by_cases hr : r ∈ rows
+      · have htranscript :
+            v13RealLinearRowsTranscript rows
+                (v13RealLinearPublicInput
+                  ({ x := omega₀.val.val.2, A := omega₀.val.val.1.val } :
+                    V13RealLinearWorld m)) =
+              v13RealLinearRowsTranscript rows
+                (v13RealLinearPublicInput
+                  ({ x := omega₁.val.val.2, A := omega₁.val.val.1.val } :
+                    V13RealLinearWorld m)) :=
+          omega₀.property.trans omega₁.property.symm
+        have hview := congrFun htranscript ⟨r, hr⟩
+        have hbit :
+            omega₀.val.val.1.val.toEquiv omega₀.val.val.2 r =
+              omega₁.val.val.1.val.toEquiv omega₁.val.val.2 r := by
+          simpa [v13RealLinearRowsTranscript, v13RealLinearRowView,
+            v13RealLinearPublicInput] using congrArg Prod.snd hview
+        simpa [hA] using hbit
+      · have hassign :
+            (fun unread : {row : Fin m // row ∉ rows} =>
+                omega₀.val.val.1.val.toEquiv omega₀.val.val.2 unread.1)
+              =
+            (fun unread : {row : Fin m // row ∉ rows} =>
+                omega₁.val.val.1.val.toEquiv omega₁.val.val.2 unread.1) := by
+          simpa [mapVector₀, mapVector₁] using congrArg Prod.snd h
+        have hbit := congrFun hassign ⟨r, hr⟩
+        simpa [hA] using hbit
+
+theorem
+    v13RealLinearNoTargetSequentialTraceFirstCosetHitFixedPrefixTranscriptWorldSet_card_mul_two_pow_le_world
+    {m q : Nat} (i₀ : Fin m)
+    (observer : V13RealLinearSequentialRowObserver m q) (t : Fin q)
+    (rows : Finset (Fin m)) (row : Fin m)
+    (transcript : V13RealLinearRowsTranscriptSpace m rows) :
+    Fintype.card
+        (V13RealLinearNoTargetSequentialTraceFirstCosetHitFixedPrefixTranscriptWorldSet
+          i₀ observer t rows row transcript) *
+      2 ^ m ≤
+    4 *
+      Fintype.card
+        (V13RealLinearAdaptiveQRowWorld m
+          (V13RealLinearNoTargetRowsMap m i₀)) := by
+  classical
+  let Cell :=
+    V13RealLinearNoTargetSequentialTraceFirstCosetHitFixedPrefixTranscriptWorldSet
+      i₀ observer t rows row transcript
+  let S :=
+    {A : V13RealLinearNoTargetRowsMap m i₀ //
+      V13RealLinearRowFunctionalTargetCosetHit A.val rows i₀ row}
+  let U := V13RealLinearRowsUnreadAssignment m rows
+  let N := Fintype.card (V13RealLinearNoTargetRowsMap m i₀)
+  let M := 2 ^ m
+  let R := 2 ^ rows.card
+  let Ucard := 2 ^ (m - rows.card)
+  have hcell :
+      Fintype.card Cell ≤ Fintype.card (S × U) :=
+    Fintype.card_le_of_embedding
+      (v13RealLinearNoTargetSequentialTraceFirstCosetHitFixedPrefixTranscriptWorldSetToMapTimesUnreadAssignment
+        i₀ observer t rows row transcript)
+  have hcellProd :
+      Fintype.card Cell ≤ Fintype.card S * Ucard := by
+    simpa [Cell, S, U, Ucard, Fintype.card_prod,
+      v13RealLinearRowsUnreadAssignment_card rows] using hcell
+  have hmap :
+      Fintype.card S * M ≤ 4 * R * N := by
+    simpa [S, M, R, N] using
+      v13RealLinearNoTargetFixedRowsetCosetHitMapSet_card_mul_two_pow_le
+        i₀ rows row
+  have hrowsLe : rows.card ≤ m := by
+    have h := Finset.card_le_univ rows
+    simpa using h
+  have hpowMul : R * Ucard = M := by
+    dsimp [R, Ucard, M]
+    rw [← pow_add]
+    rw [Nat.add_sub_of_le hrowsLe]
+  have hworld :
+      Fintype.card
+          (V13RealLinearAdaptiveQRowWorld m
+            (V13RealLinearNoTargetRowsMap m i₀)) =
+        N * M := by
+    dsimp [V13RealLinearAdaptiveQRowWorld, N, M]
+    rw [Fintype.card_prod, v13RealLinear_f2vec_card]
+  calc
+    Fintype.card Cell * M ≤ (Fintype.card S * Ucard) * M := by
+      exact Nat.mul_le_mul_right M hcellProd
+    _ = (Fintype.card S * M) * Ucard := by ring
+    _ ≤ (4 * R * N) * Ucard := by
+      exact Nat.mul_le_mul_right Ucard hmap
+    _ = 4 * N * (R * Ucard) := by ring
+    _ = 4 * N * M := by rw [hpowMul]
+    _ = 4 *
+        Fintype.card
+          (V13RealLinearAdaptiveQRowWorld m
+            (V13RealLinearNoTargetRowsMap m i₀)) := by
+      rw [hworld]
+      ring
+
+/-- Fixed-map transcript-cylinder index for the no-target first-hit surface.
+It records the sampled no-target map, the realized prefix rowset, the chosen
+hit row, a proof that this row lies in the target coset of the prefix span, and
+the public row transcript on the prefix rowset. -/
+structure
+    V13RealLinearNoTargetSequentialTraceFirstCosetHitFixedMapTranscriptCylinderIndex
+    (m q : Nat) (i₀ : Fin m)
+    (_observer : V13RealLinearSequentialRowObserver m q) (_t : Fin q) where
+  A : V13RealLinearNoTargetRowsMap m i₀
+  rows : Finset (Fin m)
+  row : Fin m
+  hit : V13RealLinearRowFunctionalTargetCosetHit A.val rows i₀ row
+  transcript : V13RealLinearRowsTranscriptSpace m rows
+
+noncomputable instance
+    {m q : Nat} (i₀ : Fin m)
+    (observer : V13RealLinearSequentialRowObserver m q) (t : Fin q) :
+    Fintype
+      (V13RealLinearNoTargetSequentialTraceFirstCosetHitFixedMapTranscriptCylinderIndex
+        m q i₀ observer t) := by
+  classical
+  let Index :=
+    V13RealLinearNoTargetSequentialTraceFirstCosetHitFixedMapTranscriptCylinderIndex
+      m q i₀ observer t
+  let SigmaIndex :=
+    Σ A : V13RealLinearNoTargetRowsMap m i₀,
+      Σ rows : Finset (Fin m),
+        Σ row :
+          {row : Fin m //
+            V13RealLinearRowFunctionalTargetCosetHit A.val rows i₀ row},
+          V13RealLinearRowsTranscriptSpace m rows
+  exact
+    Fintype.ofEquiv SigmaIndex
+      { toFun := fun idx =>
+          { A := idx.1
+            rows := idx.2.1
+            row := idx.2.2.1.val
+            hit := idx.2.2.1.property
+            transcript := idx.2.2.2 }
+        invFun := fun idx =>
+          ⟨idx.A, idx.rows, ⟨idx.row, idx.hit⟩, idx.transcript⟩
+        left_inv := by
+          intro idx
+          rcases idx with ⟨A, rows, row, transcript⟩
+          cases row
+          rfl
+        right_inv := by
+          intro idx
+          cases idx
+          rfl }
+
+/-- Hidden-vector cylinder for a fixed no-target map and fixed transcript
+index.  The rowset, hit row, and transcript are fixed in the index; the only
+remaining choices are hidden vectors whose induced sequential trace lands in
+that cell. -/
+abbrev
+    V13RealLinearNoTargetSequentialTraceFirstCosetHitFixedMapTranscriptCylinder
+    {m q : Nat} (i₀ : Fin m)
+    (observer : V13RealLinearSequentialRowObserver m q) (t : Fin q)
+    (idx :
+      V13RealLinearNoTargetSequentialTraceFirstCosetHitFixedMapTranscriptCylinderIndex
+        m q i₀ observer t) :=
+  {x : F2Vec m //
+    let omega :
+        V13RealLinearAdaptiveQRowWorld m
+          (V13RealLinearNoTargetRowsMap m i₀) := (idx.A, x)
+    V13RealLinearAdaptiveQRowTraceFirstCosetHit
+      (v13RealLinearNoTargetRowsSequentialQRowExperiment i₀ observer)
+      i₀
+      (v13RealLinearNoTargetRowsSequentialQRowTrace i₀ observer)
+      t omega ∧
+    v13RealLinearRowTracePrefixRows
+      (v13RealLinearNoTargetRowsSequentialQRowTrace i₀ observer omega)
+      (t : Nat) = idx.rows ∧
+    (∃ h : (t : Nat) <
+        (v13RealLinearNoTargetRowsSequentialQRowTrace i₀ observer omega).length,
+      (v13RealLinearNoTargetRowsSequentialQRowTrace i₀ observer omega).get
+        ⟨(t : Nat), h⟩ = idx.row) ∧
+    v13RealLinearRowsTranscript idx.rows
+        (v13RealLinearPublicInput
+          ({ x := x, A := idx.A.val } : V13RealLinearWorld m)) =
+      idx.transcript}
+
+noncomputable instance
+    {m q : Nat} (i₀ : Fin m)
+    (observer : V13RealLinearSequentialRowObserver m q) (t : Fin q)
+    (idx :
+      V13RealLinearNoTargetSequentialTraceFirstCosetHitFixedMapTranscriptCylinderIndex
+        m q i₀ observer t) :
+    Fintype
+      (V13RealLinearNoTargetSequentialTraceFirstCosetHitFixedMapTranscriptCylinder
+        i₀ observer t idx) := by
+  classical
+  unfold
+    V13RealLinearNoTargetSequentialTraceFirstCosetHitFixedMapTranscriptCylinder
+  infer_instance
+
+noncomputable def
+    v13RealLinearNoTargetSequentialTraceFirstCosetHitFixedMapTranscriptCylinderToUnreadAssignment
+    {m q : Nat} (i₀ : Fin m)
+    (observer : V13RealLinearSequentialRowObserver m q) (t : Fin q)
+    (idx :
+      V13RealLinearNoTargetSequentialTraceFirstCosetHitFixedMapTranscriptCylinderIndex
+        m q i₀ observer t) :
+    V13RealLinearNoTargetSequentialTraceFirstCosetHitFixedMapTranscriptCylinder
+        i₀ observer t idx ↪
+      V13RealLinearRowsUnreadAssignment m idx.rows where
+  toFun x := fun unread => idx.A.val.toEquiv x.val unread.1
+  inj' := by
+    classical
+    intro x y hassign
+    apply Subtype.ext
+    apply idx.A.val.toEquiv.injective
+    funext row
+    by_cases hrow : row ∈ idx.rows
+    · have htranscript :
+          v13RealLinearRowsTranscript idx.rows
+              (v13RealLinearPublicInput
+                ({ x := x.val, A := idx.A.val } : V13RealLinearWorld m)) =
+            v13RealLinearRowsTranscript idx.rows
+              (v13RealLinearPublicInput
+                ({ x := y.val, A := idx.A.val } : V13RealLinearWorld m)) :=
+        x.property.2.2.2.trans y.property.2.2.2.symm
+      have hview := congrFun htranscript ⟨row, hrow⟩
+      simpa [v13RealLinearRowsTranscript, v13RealLinearRowView,
+        v13RealLinearPublicInput] using congrArg Prod.snd hview
+    · exact congrFun hassign ⟨row, hrow⟩
+
+theorem
+    v13RealLinearNoTargetSequentialTraceFirstCosetHitFixedMapTranscriptCylinder_card_le_capacity
+    {m q : Nat} (i₀ : Fin m)
+    (observer : V13RealLinearSequentialRowObserver m q) (t : Fin q)
+    (idx :
+      V13RealLinearNoTargetSequentialTraceFirstCosetHitFixedMapTranscriptCylinderIndex
+        m q i₀ observer t) :
+    Fintype.card
+        (V13RealLinearNoTargetSequentialTraceFirstCosetHitFixedMapTranscriptCylinder
+          i₀ observer t idx) ≤
+      2 ^ (m - idx.rows.card) := by
+  classical
+  have hle :
+      Fintype.card
+          (V13RealLinearNoTargetSequentialTraceFirstCosetHitFixedMapTranscriptCylinder
+            i₀ observer t idx) ≤
+        Fintype.card (V13RealLinearRowsUnreadAssignment m idx.rows) :=
+    Fintype.card_le_of_embedding
+      (v13RealLinearNoTargetSequentialTraceFirstCosetHitFixedMapTranscriptCylinderToUnreadAssignment
+        i₀ observer t idx)
+  exact hle.trans_eq (v13RealLinearRowsUnreadAssignment_card idx.rows)
+
+/-- Active fixed-map transcript cylinders are the inhabited cylinders.  Charging
+capacity only to active cylinders matches the target-case packing interface and
+avoids spending capacity on syntactic transcripts that no hidden vector
+realizes. -/
+abbrev
+    V13RealLinearNoTargetSequentialTraceFirstCosetHitActiveFixedMapTranscriptCylinderIndex
+    {m q : Nat} (i₀ : Fin m)
+    (observer : V13RealLinearSequentialRowObserver m q) (t : Fin q) :=
+  {idx :
+    V13RealLinearNoTargetSequentialTraceFirstCosetHitFixedMapTranscriptCylinderIndex
+      m q i₀ observer t //
+    Nonempty
+      (V13RealLinearNoTargetSequentialTraceFirstCosetHitFixedMapTranscriptCylinder
+        i₀ observer t idx)}
+
+noncomputable instance
+    {m q : Nat} (i₀ : Fin m)
+    (observer : V13RealLinearSequentialRowObserver m q) (t : Fin q) :
+    Fintype
+      (V13RealLinearNoTargetSequentialTraceFirstCosetHitActiveFixedMapTranscriptCylinderIndex
+        i₀ observer t) := by
+  classical
+  unfold
+    V13RealLinearNoTargetSequentialTraceFirstCosetHitActiveFixedMapTranscriptCylinderIndex
+  infer_instance
+
+noncomputable def
+    v13RealLinearRowsUnreadAssignmentToActiveNoTargetSequentialTraceFirstCosetHitFixedMapTranscriptCylinder
+    {m q : Nat} (i₀ : Fin m)
+    (observer : V13RealLinearSequentialRowObserver m q) (t : Fin q)
+    (activeIdx :
+      V13RealLinearNoTargetSequentialTraceFirstCosetHitActiveFixedMapTranscriptCylinderIndex
+        i₀ observer t) :
+    V13RealLinearRowsUnreadAssignment m activeIdx.1.rows ↪
+      V13RealLinearNoTargetSequentialTraceFirstCosetHitFixedMapTranscriptCylinder
+        i₀ observer t activeIdx.1 where
+  toFun assignment := by
+    classical
+    let idx := activeIdx.1
+    let witness :
+        V13RealLinearNoTargetSequentialTraceFirstCosetHitFixedMapTranscriptCylinder
+          i₀ observer t idx :=
+      Classical.choice activeIdx.2
+    let publicW :=
+      v13RealLinearPublicInput
+        ({ x := witness.val, A := idx.A.val } : V13RealLinearWorld m)
+    let b : F2Vec m :=
+      v13RealLinearRowsTranscriptCompletion idx.transcript assignment
+    let z : F2Vec m := idx.A.val.toEquiv.symm b
+    let publicZ :=
+      v13RealLinearPublicInput
+        ({ x := z, A := idx.A.val } : V13RealLinearWorld m)
+    let traceW :=
+      v13RealLinearNoTargetRowsSequentialQRowTrace i₀ observer
+        (idx.A, witness.val)
+    let traceZ :=
+      v13RealLinearNoTargetRowsSequentialQRowTrace i₀ observer
+        (idx.A, z)
+    have htranscriptZ :
+        v13RealLinearRowsTranscript idx.rows publicZ = idx.transcript := by
+      funext row
+      apply Prod.ext
+      · have hwitnessView := congrFun witness.property.2.2.2 row
+        simpa [publicW, publicZ, v13RealLinearRowsTranscript,
+          v13RealLinearRowView, v13RealLinearPublicInput] using
+          congrArg Prod.fst hwitnessView
+      · change idx.A.val.toEquiv z row.1 = (idx.transcript row).2
+        calc
+          idx.A.val.toEquiv z row.1 =
+              v13RealLinearRowsTranscriptCompletion idx.transcript
+                assignment row.1 := by
+            simp [z, b]
+          _ = (idx.transcript row).2 :=
+            v13RealLinearRowsTranscriptCompletion_of_mem
+              idx.transcript assignment row.property
+    have htraceRowsW :
+        v13RealLinearRowTracePrefixRows traceW (t : Nat) = idx.rows := by
+      simpa [traceW, idx] using witness.property.2.1
+    have hprefixRowsW :
+        v13RealLinearSequentialRowTranscriptRows
+            (v13RealLinearSequentialRowPrefixTranscriptOf
+              observer publicW (t : Nat)) =
+          idx.rows := by
+      have htraceToTranscript :
+          v13RealLinearRowTracePrefixRows traceW (t : Nat) =
+            v13RealLinearSequentialRowTranscriptRows
+              (v13RealLinearSequentialRowPrefixTranscriptOf
+                observer publicW (t : Nat)) := by
+        simpa [traceW, publicW,
+          v13RealLinearNoTargetRowsSequentialQRowTrace] using
+          v13RealLinearSequentialRowTracePrefixRows_eq_prefixTranscriptRows
+            observer publicW (Nat.le_of_lt t.isLt)
+      exact htraceToTranscript.symm.trans htraceRowsW
+    have hsameRows :
+        v13RealLinearRowsTranscript
+            (v13RealLinearSequentialRowTranscriptRows
+              (v13RealLinearSequentialRowPrefixTranscriptOf
+                observer publicW (t : Nat))) publicW =
+          v13RealLinearRowsTranscript
+            (v13RealLinearSequentialRowTranscriptRows
+              (v13RealLinearSequentialRowPrefixTranscriptOf
+                observer publicW (t : Nat))) publicZ := by
+      rw [hprefixRowsW]
+      exact witness.property.2.2.2.trans htranscriptZ.symm
+    have hprefixTranscript :
+        v13RealLinearSequentialRowPrefixTranscriptOf
+            observer publicZ (t : Nat) =
+          v13RealLinearSequentialRowPrefixTranscriptOf
+            observer publicW (t : Nat) := by
+      simpa [v13RealLinearSequentialRowPrefixTranscriptOf] using
+        v13RealLinearSequentialRowRunAux_eq_of_final_rowsTranscript_eq
+          observer publicW publicZ (t : Nat) [] hsameRows
+    have htraceRowsZ :
+        v13RealLinearRowTracePrefixRows traceZ (t : Nat) = idx.rows := by
+      have htraceToTranscript :
+          v13RealLinearRowTracePrefixRows traceZ (t : Nat) =
+            v13RealLinearSequentialRowTranscriptRows
+              (v13RealLinearSequentialRowPrefixTranscriptOf
+                observer publicZ (t : Nat)) := by
+        simpa [traceZ, publicZ,
+          v13RealLinearNoTargetRowsSequentialQRowTrace] using
+          v13RealLinearSequentialRowTracePrefixRows_eq_prefixTranscriptRows
+            observer publicZ (Nat.le_of_lt t.isLt)
+      calc
+        v13RealLinearRowTracePrefixRows traceZ (t : Nat) =
+            v13RealLinearSequentialRowTranscriptRows
+              (v13RealLinearSequentialRowPrefixTranscriptOf
+                observer publicZ (t : Nat)) := htraceToTranscript
+        _ =
+            v13RealLinearSequentialRowTranscriptRows
+              (v13RealLinearSequentialRowPrefixTranscriptOf
+                observer publicW (t : Nat)) := by rw [hprefixTranscript]
+        _ = idx.rows := hprefixRowsW
+    have hgetZ :
+        ∃ h : (t : Nat) < traceZ.length,
+          traceZ.get ⟨(t : Nat), h⟩ = idx.row := by
+      rcases witness.property.2.2.1 with ⟨hlenW, hgetW⟩
+      have hlenZ : (t : Nat) < traceZ.length := by
+        simp [traceZ, v13RealLinearNoTargetRowsSequentialQRowTrace,
+          v13RealLinearSequentialRowTraceOf_length]
+      refine ⟨hlenZ, ?_⟩
+      have hchooseZ :
+          traceZ.get ⟨(t : Nat), hlenZ⟩ =
+            observer.chooseRow
+              (v13RealLinearSequentialRowPrefixTranscriptOf
+                observer publicZ (t : Nat)) := by
+        simpa [traceZ, publicZ,
+          v13RealLinearNoTargetRowsSequentialQRowTrace] using
+          v13RealLinearSequentialRowTraceOf_get_eq_chooseRow
+            observer publicZ t.isLt
+      have hchooseW :
+          traceW.get ⟨(t : Nat), hlenW⟩ =
+            observer.chooseRow
+              (v13RealLinearSequentialRowPrefixTranscriptOf
+                observer publicW (t : Nat)) := by
+        simpa [traceW, publicW,
+          v13RealLinearNoTargetRowsSequentialQRowTrace] using
+          v13RealLinearSequentialRowTraceOf_get_eq_chooseRow
+            observer publicW t.isLt
+      calc
+        traceZ.get ⟨(t : Nat), hlenZ⟩ =
+            observer.chooseRow
+              (v13RealLinearSequentialRowPrefixTranscriptOf
+                observer publicZ (t : Nat)) := hchooseZ
+        _ =
+            observer.chooseRow
+              (v13RealLinearSequentialRowPrefixTranscriptOf
+                observer publicW (t : Nat)) := by rw [hprefixTranscript]
+        _ = traceW.get ⟨(t : Nat), hlenW⟩ := hchooseW.symm
+        _ = idx.row := hgetW
+    have hfirstZ :
+        V13RealLinearAdaptiveQRowTraceFirstCosetHit
+          (v13RealLinearNoTargetRowsSequentialQRowExperiment i₀ observer)
+          i₀
+          (v13RealLinearNoTargetRowsSequentialQRowTrace i₀ observer)
+          t (idx.A, z) := by
+      have hlenZ : (t : Nat) < traceZ.length := by
+        simp [traceZ, v13RealLinearNoTargetRowsSequentialQRowTrace,
+          v13RealLinearSequentialRowTraceOf_length]
+      constructor
+      · simpa [traceZ] using hlenZ
+      · rcases hgetZ with ⟨hlenGet, hget⟩
+        refine ⟨hlenGet, ?_⟩
+        have hhit :
+            V13RealLinearRowFunctionalTargetCosetHit idx.A.val idx.rows i₀
+              (traceZ.get ⟨(t : Nat), hlenGet⟩) := by
+          rw [hget]
+          exact idx.hit
+        simpa [traceZ, htraceRowsZ,
+          v13RealLinearNoTargetRowsSequentialQRowExperiment,
+          v13RealLinearNoTargetRowsCausalQRowExperiment,
+          v13RealLinearNoTargetRowsQRowExperiment] using hhit
+    exact
+      ⟨z, by
+        exact ⟨hfirstZ, htraceRowsZ, hgetZ, htranscriptZ⟩⟩
+  inj' := by
+    classical
+    intro assignment₀ assignment₁ hcell
+    let idx := activeIdx.1
+    funext row
+    have hz :
+        idx.A.val.toEquiv.symm
+            (v13RealLinearRowsTranscriptCompletion
+              idx.transcript assignment₀) =
+          idx.A.val.toEquiv.symm
+            (v13RealLinearRowsTranscriptCompletion
+              idx.transcript assignment₁) := by
+      simpa [idx] using
+        congrArg
+          (fun cell :
+            V13RealLinearNoTargetSequentialTraceFirstCosetHitFixedMapTranscriptCylinder
+              i₀ observer t activeIdx.1 => cell.val)
+          hcell
+    have hAraw := congrFun (congrArg idx.A.val.toEquiv hz) row.1
+    have hA :
+        v13RealLinearRowsTranscriptCompletion idx.transcript
+            assignment₀ row.1 =
+          v13RealLinearRowsTranscriptCompletion idx.transcript
+            assignment₁ row.1 := by
+      simpa using hAraw
+    calc
+      assignment₀ row =
+          v13RealLinearRowsTranscriptCompletion idx.transcript
+            assignment₀ row.1 := by
+        exact
+          (v13RealLinearRowsTranscriptCompletion_of_not_mem
+            idx.transcript assignment₀ row).symm
+      _ =
+          v13RealLinearRowsTranscriptCompletion idx.transcript
+            assignment₁ row.1 := hA
+      _ = assignment₁ row :=
+          v13RealLinearRowsTranscriptCompletion_of_not_mem
+            idx.transcript assignment₁ row
+
+theorem
+    v13RealLinearNoTargetSequentialTraceFirstCosetHitActiveFixedMapTranscriptCylinder_capacity_le_card
+    {m q : Nat} (i₀ : Fin m)
+    (observer : V13RealLinearSequentialRowObserver m q) (t : Fin q)
+    (activeIdx :
+      V13RealLinearNoTargetSequentialTraceFirstCosetHitActiveFixedMapTranscriptCylinderIndex
+        i₀ observer t) :
+    2 ^ (m - activeIdx.1.rows.card) ≤
+      Fintype.card
+        (V13RealLinearNoTargetSequentialTraceFirstCosetHitFixedMapTranscriptCylinder
+          i₀ observer t activeIdx.1) := by
+  classical
+  have hle :
+      Fintype.card (V13RealLinearRowsUnreadAssignment m activeIdx.1.rows) ≤
+        Fintype.card
+          (V13RealLinearNoTargetSequentialTraceFirstCosetHitFixedMapTranscriptCylinder
+            i₀ observer t activeIdx.1) :=
+    Fintype.card_le_of_embedding
+      (v13RealLinearRowsUnreadAssignmentToActiveNoTargetSequentialTraceFirstCosetHitFixedMapTranscriptCylinder
+        i₀ observer t activeIdx)
+  simpa [v13RealLinearRowsUnreadAssignment_card] using hle
+
+theorem
+    v13RealLinearNoTargetSequentialTraceFirstCosetHitActiveFixedMapTranscriptCylinder_card_eq_capacity
+    {m q : Nat} (i₀ : Fin m)
+    (observer : V13RealLinearSequentialRowObserver m q) (t : Fin q)
+    (activeIdx :
+      V13RealLinearNoTargetSequentialTraceFirstCosetHitActiveFixedMapTranscriptCylinderIndex
+        i₀ observer t) :
+    Fintype.card
+        (V13RealLinearNoTargetSequentialTraceFirstCosetHitFixedMapTranscriptCylinder
+          i₀ observer t activeIdx.1) =
+      2 ^ (m - activeIdx.1.rows.card) := by
+  exact
+    le_antisymm
+      (v13RealLinearNoTargetSequentialTraceFirstCosetHitFixedMapTranscriptCylinder_card_le_capacity
+        i₀ observer t activeIdx.1)
+      (v13RealLinearNoTargetSequentialTraceFirstCosetHitActiveFixedMapTranscriptCylinder_capacity_le_card
+        i₀ observer t activeIdx)
+
+theorem
+    v13RealLinearNoTargetSequentialTraceFirstCosetHitFixedMapTranscriptCylinder_sum_card_eq_active_capacity
+    {m q : Nat} (i₀ : Fin m)
+    (observer : V13RealLinearSequentialRowObserver m q) (t : Fin q) :
+    (∑ idx :
+      V13RealLinearNoTargetSequentialTraceFirstCosetHitFixedMapTranscriptCylinderIndex
+        m q i₀ observer t,
+      Fintype.card
+        (V13RealLinearNoTargetSequentialTraceFirstCosetHitFixedMapTranscriptCylinder
+          i₀ observer t idx)) =
+      ∑ activeIdx :
+        V13RealLinearNoTargetSequentialTraceFirstCosetHitActiveFixedMapTranscriptCylinderIndex
+          i₀ observer t,
+        2 ^ (m - activeIdx.1.rows.card) := by
+  classical
+  let Index :=
+    V13RealLinearNoTargetSequentialTraceFirstCosetHitFixedMapTranscriptCylinderIndex
+      m q i₀ observer t
+  let Cell : Index → Type := fun idx =>
+    V13RealLinearNoTargetSequentialTraceFirstCosetHitFixedMapTranscriptCylinder
+      i₀ observer t idx
+  let active : Index → Prop := fun idx => Nonempty (Cell idx)
+  let mass : Index → Nat := fun idx => Fintype.card (Cell idx)
+  let capacity : Index → Nat := fun idx => 2 ^ (m - idx.rows.card)
+  have hsplit :
+      (∑ idx : Index, mass idx) =
+        (∑ idx : {idx : Index // active idx}, mass idx.1) +
+          ∑ idx : {idx : Index // ¬ active idx}, mass idx.1 := by
+    exact (Fintype.sum_subtype_add_sum_subtype active mass).symm
+  have hinactive :
+      (∑ idx : {idx : Index // ¬ active idx}, mass idx.1) = 0 := by
+    apply Finset.sum_eq_zero
+    intro idx _hidx
+    dsimp [mass, Cell, active] at *
+    rw [Fintype.card_eq_zero_iff]
+    exact ⟨fun x => idx.property ⟨x⟩⟩
+  have hactiveEq :
+      (∑ idx : {idx : Index // active idx}, mass idx.1) =
+        ∑ idx : {idx : Index // active idx}, capacity idx.1 := by
+    apply Finset.sum_congr rfl
+    intro idx _hidx
+    dsimp [mass, capacity, Cell, active]
+    exact
+      v13RealLinearNoTargetSequentialTraceFirstCosetHitActiveFixedMapTranscriptCylinder_card_eq_capacity
+        i₀ observer t idx
+  calc
+    (∑ idx :
+      V13RealLinearNoTargetSequentialTraceFirstCosetHitFixedMapTranscriptCylinderIndex
+        m q i₀ observer t,
+      Fintype.card
+        (V13RealLinearNoTargetSequentialTraceFirstCosetHitFixedMapTranscriptCylinder
+          i₀ observer t idx)) =
+        ∑ idx : Index, mass idx := rfl
+    _ =
+        (∑ idx : {idx : Index // active idx}, mass idx.1) +
+          ∑ idx : {idx : Index // ¬ active idx}, mass idx.1 := hsplit
+    _ =
+        (∑ idx : {idx : Index // active idx}, mass idx.1) + 0 := by
+          rw [hinactive]
+    _ =
+        ∑ idx : {idx : Index // active idx}, mass idx.1 := by simp
+    _ =
+        ∑ idx : {idx : Index // active idx}, capacity idx.1 := hactiveEq
+    _ =
+        ∑ activeIdx :
+          V13RealLinearNoTargetSequentialTraceFirstCosetHitActiveFixedMapTranscriptCylinderIndex
+            i₀ observer t,
+          2 ^ (m - activeIdx.1.rows.card) := rfl
+
+theorem
+    v13RealLinearNoTargetSequentialTraceFirstCosetHitFixedPrefixWorldSet_cosetHit
+    {m q : Nat} (i₀ : Fin m)
+    (observer : V13RealLinearSequentialRowObserver m q) (t : Fin q)
+    (rows : Finset (Fin m)) (row : Fin m)
+    (omega :
+      V13RealLinearNoTargetSequentialTraceFirstCosetHitFixedPrefixWorldSet
+        i₀ observer t rows row) :
+    V13RealLinearRowFunctionalTargetCosetHit omega.val.1.val rows i₀ row := by
+  classical
+  let trace :=
+    v13RealLinearNoTargetRowsSequentialQRowTrace i₀ observer omega.val
+  rcases omega.property with ⟨hfirst, hrows, hrow⟩
+  rcases hfirst.2 with ⟨hhitIndex, hhit⟩
+  rcases hrow with ⟨hrowIndex, hget⟩
+  have hidx :
+      (⟨(t : Nat), hhitIndex⟩ : Fin trace.length) =
+        ⟨(t : Nat), hrowIndex⟩ := by
+    apply Fin.ext
+    rfl
+  have hhitRows :
+      V13RealLinearRowFunctionalTargetCosetHit
+        ((v13RealLinearNoTargetRowsSequentialQRowExperiment
+            i₀ observer).sampleA omega.val.1)
+        rows i₀ (trace.get ⟨(t : Nat), hhitIndex⟩) := by
+    simpa [trace, hrows] using hhit
+  have hgetHit : trace.get ⟨(t : Nat), hhitIndex⟩ = row := by
+    simpa [trace, hidx] using hget
+  rw [hgetHit] at hhitRows
+  simpa [v13RealLinearNoTargetRowsSequentialQRowExperiment,
+    v13RealLinearNoTargetRowsCausalQRowExperiment,
+    v13RealLinearNoTargetRowsQRowExperiment] using hhitRows
+
+noncomputable def
+    v13RealLinearNoTargetSequentialTraceFirstCosetHitFixedPrefixTranscriptSigmaEquivFixedMapCylinderSigma
+    {m q : Nat} (i₀ : Fin m)
+    (observer : V13RealLinearSequentialRowObserver m q) (t : Fin q) :
+    (Σ rows : Finset (Fin m),
+      Σ row : Fin m,
+        Σ transcript : V13RealLinearRowsTranscriptSpace m rows,
+          V13RealLinearNoTargetSequentialTraceFirstCosetHitFixedPrefixTranscriptWorldSet
+            i₀ observer t rows row transcript) ≃
+      (Σ idx :
+        V13RealLinearNoTargetSequentialTraceFirstCosetHitFixedMapTranscriptCylinderIndex
+          m q i₀ observer t,
+        V13RealLinearNoTargetSequentialTraceFirstCosetHitFixedMapTranscriptCylinder
+          i₀ observer t idx) where
+  toFun cell := by
+    rcases cell with ⟨rows, row, transcript, cell⟩
+    let idx :
+        V13RealLinearNoTargetSequentialTraceFirstCosetHitFixedMapTranscriptCylinderIndex
+          m q i₀ observer t :=
+      { A := cell.val.val.1
+        rows := rows
+        row := row
+        hit :=
+          v13RealLinearNoTargetSequentialTraceFirstCosetHitFixedPrefixWorldSet_cosetHit
+            i₀ observer t rows row cell.val
+        transcript := transcript }
+    exact
+      ⟨idx,
+        ⟨cell.val.val.2, by
+          dsimp [idx,
+            V13RealLinearNoTargetSequentialTraceFirstCosetHitFixedMapTranscriptCylinder]
+          exact
+            ⟨cell.val.property.1, cell.val.property.2.1,
+              cell.val.property.2.2, cell.property⟩⟩⟩
+  invFun cell := by
+    rcases cell with ⟨idx, cell⟩
+    exact
+      ⟨idx.rows, idx.row, idx.transcript,
+        ⟨⟨(idx.A, cell.val),
+          ⟨cell.property.1, cell.property.2.1,
+            cell.property.2.2.1⟩⟩,
+          cell.property.2.2.2⟩⟩
+  left_inv cell := by
+    rcases cell with ⟨rows, row, transcript, cell⟩
+    rcases cell with ⟨omega, htranscript⟩
+    cases htranscript
+    rfl
+  right_inv cell := by
+    rcases cell with ⟨idx, cell⟩
+    apply Sigma.ext
+    · cases idx
+      rfl
+    · simp
+
+theorem
+    v13RealLinearNoTargetSequentialTraceFirstCosetHitFixedPrefixTranscriptWorldSet_sum_card_eq_fixedMapCylinder_sum_card
+    {m q : Nat} (i₀ : Fin m)
+    (observer : V13RealLinearSequentialRowObserver m q) (t : Fin q) :
+    (∑ rows : Finset (Fin m),
+      ∑ row : Fin m,
+        ∑ transcript : V13RealLinearRowsTranscriptSpace m rows,
+          Fintype.card
+            (V13RealLinearNoTargetSequentialTraceFirstCosetHitFixedPrefixTranscriptWorldSet
+              i₀ observer t rows row transcript)) =
+      ∑ idx :
+        V13RealLinearNoTargetSequentialTraceFirstCosetHitFixedMapTranscriptCylinderIndex
+          m q i₀ observer t,
+        Fintype.card
+          (V13RealLinearNoTargetSequentialTraceFirstCosetHitFixedMapTranscriptCylinder
+            i₀ observer t idx) := by
+  classical
+  have hcard :
+      Fintype.card
+          (Σ rows : Finset (Fin m),
+            Σ row : Fin m,
+              Σ transcript : V13RealLinearRowsTranscriptSpace m rows,
+                V13RealLinearNoTargetSequentialTraceFirstCosetHitFixedPrefixTranscriptWorldSet
+                  i₀ observer t rows row transcript) =
+        Fintype.card
+          (Σ idx :
+            V13RealLinearNoTargetSequentialTraceFirstCosetHitFixedMapTranscriptCylinderIndex
+              m q i₀ observer t,
+            V13RealLinearNoTargetSequentialTraceFirstCosetHitFixedMapTranscriptCylinder
+              i₀ observer t idx) :=
+    Fintype.card_congr
+      (v13RealLinearNoTargetSequentialTraceFirstCosetHitFixedPrefixTranscriptSigmaEquivFixedMapCylinderSigma
+        i₀ observer t)
+  simpa [Fintype.card_sigma] using hcard
+
+theorem
+    v13RealLinearNoTargetSequentialTraceFirstCosetHitFixedPrefixTranscriptWorldSet_sum_card_eq_active_capacity
+    {m q : Nat} (i₀ : Fin m)
+    (observer : V13RealLinearSequentialRowObserver m q) (t : Fin q) :
+    (∑ rows : Finset (Fin m),
+      ∑ row : Fin m,
+        ∑ transcript : V13RealLinearRowsTranscriptSpace m rows,
+          Fintype.card
+            (V13RealLinearNoTargetSequentialTraceFirstCosetHitFixedPrefixTranscriptWorldSet
+              i₀ observer t rows row transcript)) =
+      ∑ activeIdx :
+        V13RealLinearNoTargetSequentialTraceFirstCosetHitActiveFixedMapTranscriptCylinderIndex
+          i₀ observer t,
+        2 ^ (m - activeIdx.1.rows.card) := by
+  rw [
+    v13RealLinearNoTargetSequentialTraceFirstCosetHitFixedPrefixTranscriptWorldSet_sum_card_eq_fixedMapCylinder_sum_card
+      i₀ observer t,
+    v13RealLinearNoTargetSequentialTraceFirstCosetHitFixedMapTranscriptCylinder_sum_card_eq_active_capacity
+      i₀ observer t]
+
+noncomputable def
+    v13RealLinearNoTargetSequentialTraceFirstCosetHitFixedPrefixWorldSetEquivSigmaTranscript
+    {m q : Nat} (i₀ : Fin m)
+    (observer : V13RealLinearSequentialRowObserver m q) (t : Fin q)
+    (rows : Finset (Fin m)) (row : Fin m) :
+    V13RealLinearNoTargetSequentialTraceFirstCosetHitFixedPrefixWorldSet
+        i₀ observer t rows row ≃
+      (Σ transcript : V13RealLinearRowsTranscriptSpace m rows,
+        V13RealLinearNoTargetSequentialTraceFirstCosetHitFixedPrefixTranscriptWorldSet
+          i₀ observer t rows row transcript) where
+  toFun omega := by
+    classical
+    exact
+      ⟨v13RealLinearRowsTranscript rows
+          (v13RealLinearPublicInput
+            ({ x := omega.val.2, A := omega.val.1.val } :
+              V13RealLinearWorld m)),
+        ⟨omega, rfl⟩⟩
+  invFun cell := by
+    rcases cell with ⟨_transcript, cell⟩
+    exact cell.val
+  left_inv _omega := by
+    rfl
+  right_inv cell := by
+    rcases cell with ⟨transcript, cell⟩
+    rcases cell with ⟨omega, htranscript⟩
+    cases htranscript
+    rfl
+
+theorem
+    v13RealLinearNoTargetSequentialTraceFirstCosetHitFixedPrefixWorldSet_card_eq_sum_transcripts
+    {m q : Nat} (i₀ : Fin m)
+    (observer : V13RealLinearSequentialRowObserver m q) (t : Fin q)
+    (rows : Finset (Fin m)) (row : Fin m) :
+    Fintype.card
+        (V13RealLinearNoTargetSequentialTraceFirstCosetHitFixedPrefixWorldSet
+          i₀ observer t rows row) =
+      ∑ transcript : V13RealLinearRowsTranscriptSpace m rows,
+        Fintype.card
+          (V13RealLinearNoTargetSequentialTraceFirstCosetHitFixedPrefixTranscriptWorldSet
+            i₀ observer t rows row transcript) := by
+  classical
+  rw [Fintype.card_congr
+    (v13RealLinearNoTargetSequentialTraceFirstCosetHitFixedPrefixWorldSetEquivSigmaTranscript
+      i₀ observer t rows row)]
+  rw [Fintype.card_sigma]
+
+/-- The full no-target sequential trace-coset hit event at one step. -/
+abbrev V13RealLinearNoTargetSequentialTraceFirstCosetHitWorldSet
+    {m q : Nat} (i₀ : Fin m)
+    (observer : V13RealLinearSequentialRowObserver m q) (t : Fin q) :=
+  {omega :
+      V13RealLinearAdaptiveQRowWorld m
+        (V13RealLinearNoTargetRowsMap m i₀) //
+    V13RealLinearAdaptiveQRowTraceFirstCosetHit
+      (v13RealLinearNoTargetRowsSequentialQRowExperiment i₀ observer)
+      i₀
+      (v13RealLinearNoTargetRowsSequentialQRowTrace i₀ observer)
+      t omega}
+
+noncomputable instance
+    {m q : Nat} (i₀ : Fin m)
+    (observer : V13RealLinearSequentialRowObserver m q) (t : Fin q) :
+    Fintype
+      (V13RealLinearNoTargetSequentialTraceFirstCosetHitWorldSet
+        i₀ observer t) := by
+  classical
+  unfold V13RealLinearNoTargetSequentialTraceFirstCosetHitWorldSet
+  infer_instance
+
+/-- A finite vector presentation of an ordered sequential row transcript
+prefix.  Unlike rowset transcripts, this preserves order and repeated reads,
+which is exactly the data used by `chooseRow`. -/
+abbrev V13RealLinearSequentialPrefixTranscriptVector
+    (m n : Nat) :=
+  Fin n → Fin m × V13RealLinearRowView m
+
+noncomputable def v13RealLinearSequentialPrefixTranscriptVectorOf
+    {m q : Nat} (observer : V13RealLinearSequentialRowObserver m q)
+    (publicInput : V13RealLinearPublic m) (n : Nat) :
+    V13RealLinearSequentialPrefixTranscriptVector m n :=
+  fun k =>
+    (v13RealLinearSequentialRowPrefixTranscriptOf
+      observer publicInput n).get
+      ⟨k.1, by
+        simp [v13RealLinearSequentialRowPrefixTranscriptOf_length]⟩
+
+noncomputable def v13RealLinearSequentialPrefixTranscriptVectorToList
+    {m n : Nat} (pref : V13RealLinearSequentialPrefixTranscriptVector m n) :
+    V13RealLinearSequentialRowTranscript m :=
+  List.ofFn pref
+
+noncomputable def v13RealLinearSequentialPrefixTranscriptVectorRows
+    {m n : Nat} (pref : V13RealLinearSequentialPrefixTranscriptVector m n) :
+    Finset (Fin m) :=
+  v13RealLinearSequentialRowTranscriptRows
+    (v13RealLinearSequentialPrefixTranscriptVectorToList pref)
+
+noncomputable def v13RealLinearSequentialPrefixTranscriptVectorNextRow
+    {m q n : Nat} (observer : V13RealLinearSequentialRowObserver m q)
+    (pref : V13RealLinearSequentialPrefixTranscriptVector m n) : Fin m :=
+  observer.chooseRow
+    (v13RealLinearSequentialPrefixTranscriptVectorToList pref)
+
+theorem v13RealLinearSequentialPrefixTranscriptVectorOf_toList
+    {m q : Nat} (observer : V13RealLinearSequentialRowObserver m q)
+    (publicInput : V13RealLinearPublic m) (n : Nat) :
+    v13RealLinearSequentialPrefixTranscriptVectorToList
+        (v13RealLinearSequentialPrefixTranscriptVectorOf observer
+          publicInput n) =
+      v13RealLinearSequentialRowPrefixTranscriptOf observer publicInput n := by
+  unfold v13RealLinearSequentialPrefixTranscriptVectorToList
+  unfold v13RealLinearSequentialPrefixTranscriptVectorOf
+  simpa [v13RealLinearSequentialRowPrefixTranscriptOf_length] using
+    (List.ofFn_getElem
+      (xs :=
+        v13RealLinearSequentialRowPrefixTranscriptOf
+          observer publicInput n))
+
+theorem v13RealLinearSequentialPrefixTranscriptVectorOf_rows
+    {m q : Nat} (observer : V13RealLinearSequentialRowObserver m q)
+    (publicInput : V13RealLinearPublic m) (n : Nat) :
+    v13RealLinearSequentialPrefixTranscriptVectorRows
+        (v13RealLinearSequentialPrefixTranscriptVectorOf observer
+          publicInput n) =
+      v13RealLinearSequentialRowTranscriptRows
+        (v13RealLinearSequentialRowPrefixTranscriptOf
+          observer publicInput n) := by
+  simp [v13RealLinearSequentialPrefixTranscriptVectorRows,
+    v13RealLinearSequentialPrefixTranscriptVectorOf_toList]
+
+theorem v13RealLinearSequentialPrefixTranscriptVectorOf_nextRow
+    {m q : Nat} (observer : V13RealLinearSequentialRowObserver m q)
+    (publicInput : V13RealLinearPublic m) (n : Nat) :
+    v13RealLinearSequentialPrefixTranscriptVectorNextRow observer
+        (v13RealLinearSequentialPrefixTranscriptVectorOf observer
+          publicInput n) =
+      observer.chooseRow
+        (v13RealLinearSequentialRowPrefixTranscriptOf
+          observer publicInput n) := by
+  simp [v13RealLinearSequentialPrefixTranscriptVectorNextRow,
+    v13RealLinearSequentialPrefixTranscriptVectorOf_toList]
+
+theorem v13RealLinearSequentialPrefixTranscriptVectorRows_card_le
+    {m n : Nat}
+    (pref : V13RealLinearSequentialPrefixTranscriptVector m n) :
+    (v13RealLinearSequentialPrefixTranscriptVectorRows pref).card ≤ n := by
+  simpa [v13RealLinearSequentialPrefixTranscriptVectorRows,
+    v13RealLinearSequentialPrefixTranscriptVectorToList] using
+    v13RealLinearSequentialRowTranscriptRows_card_le_length
+      (v13RealLinearSequentialPrefixTranscriptVectorToList pref)
+
+/-- The full no-target first-hit event at step `t`, partitioned by the ordered
+prefix transcript actually seen by the sequential observer before that step. -/
+abbrev
+    V13RealLinearNoTargetSequentialTraceFirstCosetHitOrderedPrefixWorldSet
+    {m q : Nat} (i₀ : Fin m)
+    (observer : V13RealLinearSequentialRowObserver m q) (t : Fin q)
+    (pref :
+      V13RealLinearSequentialPrefixTranscriptVector m (t : Nat)) :=
+  {omega :
+      V13RealLinearNoTargetSequentialTraceFirstCosetHitWorldSet
+        i₀ observer t //
+    v13RealLinearSequentialPrefixTranscriptVectorOf observer
+        (v13RealLinearPublicInput
+          ({ x := omega.val.2, A := omega.val.1.val } :
+            V13RealLinearWorld m))
+        (t : Nat) =
+      pref}
+
+noncomputable instance
+    {m q : Nat} (i₀ : Fin m)
+    (observer : V13RealLinearSequentialRowObserver m q) (t : Fin q)
+    (pref :
+      V13RealLinearSequentialPrefixTranscriptVector m (t : Nat)) :
+    Fintype
+      (V13RealLinearNoTargetSequentialTraceFirstCosetHitOrderedPrefixWorldSet
+        i₀ observer t pref) := by
+  classical
+  unfold
+    V13RealLinearNoTargetSequentialTraceFirstCosetHitOrderedPrefixWorldSet
+  infer_instance
+
+theorem
+    v13RealLinearNoTargetSequentialTraceFirstCosetHitOrderedPrefixWorldSet_prefixRows_eq
+    {m q : Nat} (i₀ : Fin m)
+    (observer : V13RealLinearSequentialRowObserver m q) (t : Fin q)
+    (pref :
+      V13RealLinearSequentialPrefixTranscriptVector m (t : Nat))
+    (omega :
+      V13RealLinearNoTargetSequentialTraceFirstCosetHitOrderedPrefixWorldSet
+        i₀ observer t pref) :
+    v13RealLinearRowTracePrefixRows
+        (v13RealLinearNoTargetRowsSequentialQRowTrace
+          i₀ observer omega.val.val)
+        (t : Nat) =
+      v13RealLinearSequentialPrefixTranscriptVectorRows pref := by
+  classical
+  let publicInput :=
+    v13RealLinearPublicInput
+      ({ x := omega.val.val.2, A := omega.val.val.1.val } :
+        V13RealLinearWorld m)
+  have htraceRows :
+      v13RealLinearRowTracePrefixRows
+          (v13RealLinearNoTargetRowsSequentialQRowTrace
+            i₀ observer omega.val.val)
+          (t : Nat) =
+        v13RealLinearSequentialRowTranscriptRows
+          (v13RealLinearSequentialRowPrefixTranscriptOf
+            observer publicInput (t : Nat)) := by
+    simpa [v13RealLinearNoTargetRowsSequentialQRowTrace, publicInput] using
+      (v13RealLinearSequentialRowTracePrefixRows_eq_prefixTranscriptRows
+        observer publicInput (Nat.le_of_lt t.isLt))
+  have hvectorRows :
+      v13RealLinearSequentialPrefixTranscriptVectorRows
+          (v13RealLinearSequentialPrefixTranscriptVectorOf observer
+            publicInput (t : Nat)) =
+        v13RealLinearSequentialRowTranscriptRows
+          (v13RealLinearSequentialRowPrefixTranscriptOf
+            observer publicInput (t : Nat)) :=
+    v13RealLinearSequentialPrefixTranscriptVectorOf_rows
+      observer publicInput (t : Nat)
+  calc
+    v13RealLinearRowTracePrefixRows
+        (v13RealLinearNoTargetRowsSequentialQRowTrace
+          i₀ observer omega.val.val)
+        (t : Nat) =
+      v13RealLinearSequentialRowTranscriptRows
+        (v13RealLinearSequentialRowPrefixTranscriptOf
+          observer publicInput (t : Nat)) := htraceRows
+    _ =
+      v13RealLinearSequentialPrefixTranscriptVectorRows
+        (v13RealLinearSequentialPrefixTranscriptVectorOf observer
+          publicInput (t : Nat)) := hvectorRows.symm
+    _ = v13RealLinearSequentialPrefixTranscriptVectorRows pref := by
+      rw [omega.property]
+
+theorem
+    v13RealLinearNoTargetSequentialTraceFirstCosetHitOrderedPrefixWorldSet_hitRow_eq
+    {m q : Nat} (i₀ : Fin m)
+    (observer : V13RealLinearSequentialRowObserver m q) (t : Fin q)
+    (pref :
+      V13RealLinearSequentialPrefixTranscriptVector m (t : Nat))
+    (omega :
+      V13RealLinearNoTargetSequentialTraceFirstCosetHitOrderedPrefixWorldSet
+        i₀ observer t pref) :
+    ∃ h : (t : Nat) <
+        (v13RealLinearNoTargetRowsSequentialQRowTrace
+          i₀ observer omega.val.val).length,
+      (v13RealLinearNoTargetRowsSequentialQRowTrace
+          i₀ observer omega.val.val).get ⟨(t : Nat), h⟩ =
+        v13RealLinearSequentialPrefixTranscriptVectorNextRow observer pref := by
+  classical
+  let publicInput :=
+    v13RealLinearPublicInput
+      ({ x := omega.val.val.2, A := omega.val.val.1.val } :
+        V13RealLinearWorld m)
+  have hlen : (t : Nat) <
+      (v13RealLinearNoTargetRowsSequentialQRowTrace
+        i₀ observer omega.val.val).length := by
+    simp [v13RealLinearNoTargetRowsSequentialQRowTrace,
+      v13RealLinearSequentialRowTraceOf_length]
+  refine ⟨hlen, ?_⟩
+  have hget :
+      (v13RealLinearNoTargetRowsSequentialQRowTrace
+          i₀ observer omega.val.val).get ⟨(t : Nat), hlen⟩ =
+        observer.chooseRow
+          (v13RealLinearSequentialRowPrefixTranscriptOf
+            observer publicInput (t : Nat)) := by
+    simpa [v13RealLinearNoTargetRowsSequentialQRowTrace, publicInput] using
+      (v13RealLinearSequentialRowTraceOf_get_eq_chooseRow
+        observer publicInput t.isLt)
+  have hnext :
+      v13RealLinearSequentialPrefixTranscriptVectorNextRow observer
+          (v13RealLinearSequentialPrefixTranscriptVectorOf observer
+            publicInput (t : Nat)) =
+        observer.chooseRow
+          (v13RealLinearSequentialRowPrefixTranscriptOf
+            observer publicInput (t : Nat)) :=
+    v13RealLinearSequentialPrefixTranscriptVectorOf_nextRow
+      observer publicInput (t : Nat)
+  calc
+    (v13RealLinearNoTargetRowsSequentialQRowTrace
+        i₀ observer omega.val.val).get ⟨(t : Nat), hlen⟩ =
+      observer.chooseRow
+        (v13RealLinearSequentialRowPrefixTranscriptOf
+          observer publicInput (t : Nat)) := hget
+    _ =
+      v13RealLinearSequentialPrefixTranscriptVectorNextRow observer
+        (v13RealLinearSequentialPrefixTranscriptVectorOf observer
+          publicInput (t : Nat)) := hnext.symm
+    _ = v13RealLinearSequentialPrefixTranscriptVectorNextRow observer pref := by
+      rw [omega.property]
+
+noncomputable def
+    v13RealLinearNoTargetSequentialTraceFirstCosetHitOrderedPrefixWorldSetToFixedPrefixWorldSet
+    {m q : Nat} (i₀ : Fin m)
+    (observer : V13RealLinearSequentialRowObserver m q) (t : Fin q)
+    (pref :
+      V13RealLinearSequentialPrefixTranscriptVector m (t : Nat)) :
+    V13RealLinearNoTargetSequentialTraceFirstCosetHitOrderedPrefixWorldSet
+        i₀ observer t pref ↪
+      V13RealLinearNoTargetSequentialTraceFirstCosetHitFixedPrefixWorldSet
+        i₀ observer t
+        (v13RealLinearSequentialPrefixTranscriptVectorRows pref)
+        (v13RealLinearSequentialPrefixTranscriptVectorNextRow observer
+          pref) where
+  toFun omega :=
+    ⟨omega.val.val,
+      ⟨omega.val.property,
+        v13RealLinearNoTargetSequentialTraceFirstCosetHitOrderedPrefixWorldSet_prefixRows_eq
+          i₀ observer t pref omega,
+        v13RealLinearNoTargetSequentialTraceFirstCosetHitOrderedPrefixWorldSet_hitRow_eq
+          i₀ observer t pref omega⟩⟩
+  inj' := by
+    intro omega₀ omega₁ h
+    apply Subtype.ext
+    apply Subtype.ext
+    exact
+      congrArg
+        (fun omega :
+          V13RealLinearNoTargetSequentialTraceFirstCosetHitFixedPrefixWorldSet
+            i₀ observer t
+            (v13RealLinearSequentialPrefixTranscriptVectorRows pref)
+            (v13RealLinearSequentialPrefixTranscriptVectorNextRow observer
+              pref) => omega.val)
+        h
+
+theorem
+    v13RealLinearNoTargetSequentialTraceFirstCosetHitOrderedPrefixWorldSet_card_le_fixedPrefix
+    {m q : Nat} (i₀ : Fin m)
+    (observer : V13RealLinearSequentialRowObserver m q) (t : Fin q)
+    (pref :
+      V13RealLinearSequentialPrefixTranscriptVector m (t : Nat)) :
+    Fintype.card
+        (V13RealLinearNoTargetSequentialTraceFirstCosetHitOrderedPrefixWorldSet
+          i₀ observer t pref) ≤
+      Fintype.card
+        (V13RealLinearNoTargetSequentialTraceFirstCosetHitFixedPrefixWorldSet
+          i₀ observer t
+          (v13RealLinearSequentialPrefixTranscriptVectorRows pref)
+          (v13RealLinearSequentialPrefixTranscriptVectorNextRow observer
+            pref)) :=
+  Fintype.card_le_of_embedding
+    (v13RealLinearNoTargetSequentialTraceFirstCosetHitOrderedPrefixWorldSetToFixedPrefixWorldSet
+      i₀ observer t pref)
+
+theorem
+    v13RealLinearNoTargetSequentialTraceFirstCosetHitOrderedPrefixWorldSet_card_mul_two_pow_le_rows
+    {m q : Nat} (i₀ : Fin m)
+    (observer : V13RealLinearSequentialRowObserver m q) (t : Fin q)
+    (pref :
+      V13RealLinearSequentialPrefixTranscriptVector m (t : Nat)) :
+    Fintype.card
+        (V13RealLinearNoTargetSequentialTraceFirstCosetHitOrderedPrefixWorldSet
+          i₀ observer t pref) *
+      2 ^ m ≤
+    4 * 2 ^ (v13RealLinearSequentialPrefixTranscriptVectorRows pref).card *
+      Fintype.card
+        (V13RealLinearAdaptiveQRowWorld m
+          (V13RealLinearNoTargetRowsMap m i₀)) := by
+  have hcard :
+      Fintype.card
+          (V13RealLinearNoTargetSequentialTraceFirstCosetHitOrderedPrefixWorldSet
+            i₀ observer t pref) ≤
+        Fintype.card
+          (V13RealLinearNoTargetSequentialTraceFirstCosetHitFixedPrefixWorldSet
+            i₀ observer t
+            (v13RealLinearSequentialPrefixTranscriptVectorRows pref)
+            (v13RealLinearSequentialPrefixTranscriptVectorNextRow observer
+              pref)) :=
+    v13RealLinearNoTargetSequentialTraceFirstCosetHitOrderedPrefixWorldSet_card_le_fixedPrefix
+      i₀ observer t pref
+  have hfixed :=
+    v13RealLinearNoTargetSequentialTraceFirstCosetHitFixedPrefixWorldSet_card_mul_two_pow_le_rows
+      i₀ observer t
+      (v13RealLinearSequentialPrefixTranscriptVectorRows pref)
+      (v13RealLinearSequentialPrefixTranscriptVectorNextRow observer pref)
+  exact (Nat.mul_le_mul_right (2 ^ m) hcard).trans hfixed
+
+theorem
+    v13RealLinearNoTargetSequentialTraceFirstCosetHitOrderedPrefixWorldSet_card_mul_two_pow_le_step
+    {m q : Nat} (i₀ : Fin m)
+    (observer : V13RealLinearSequentialRowObserver m q) (t : Fin q)
+    (pref :
+      V13RealLinearSequentialPrefixTranscriptVector m (t : Nat)) :
+    Fintype.card
+        (V13RealLinearNoTargetSequentialTraceFirstCosetHitOrderedPrefixWorldSet
+          i₀ observer t pref) *
+      2 ^ m ≤
+    4 * 2 ^ (t : Nat) *
+      Fintype.card
+        (V13RealLinearAdaptiveQRowWorld m
+          (V13RealLinearNoTargetRowsMap m i₀)) := by
+  have hbase :=
+    v13RealLinearNoTargetSequentialTraceFirstCosetHitOrderedPrefixWorldSet_card_mul_two_pow_le_rows
+      i₀ observer t pref
+  have hrows :
+      (v13RealLinearSequentialPrefixTranscriptVectorRows pref).card ≤
+        (t : Nat) :=
+    v13RealLinearSequentialPrefixTranscriptVectorRows_card_le pref
+  have hpow :
+      2 ^ (v13RealLinearSequentialPrefixTranscriptVectorRows pref).card ≤
+        2 ^ (t : Nat) :=
+    Nat.pow_le_pow_right (by norm_num : 0 < 2) hrows
+  have hmono :
+      4 * 2 ^ (v13RealLinearSequentialPrefixTranscriptVectorRows pref).card *
+          Fintype.card
+            (V13RealLinearAdaptiveQRowWorld m
+              (V13RealLinearNoTargetRowsMap m i₀)) ≤
+        4 * 2 ^ (t : Nat) *
+          Fintype.card
+            (V13RealLinearAdaptiveQRowWorld m
+              (V13RealLinearNoTargetRowsMap m i₀)) := by
+    exact Nat.mul_le_mul_right _ (Nat.mul_le_mul_left 4 hpow)
+  exact hbase.trans hmono
+
+noncomputable def
+    v13RealLinearNoTargetSequentialTraceFirstCosetHitWorldSetEquivSigmaOrderedPrefix
+    {m q : Nat} (i₀ : Fin m)
+    (observer : V13RealLinearSequentialRowObserver m q) (t : Fin q) :
+    V13RealLinearNoTargetSequentialTraceFirstCosetHitWorldSet
+        i₀ observer t ≃
+      (Σ pref :
+          V13RealLinearSequentialPrefixTranscriptVector m (t : Nat),
+        V13RealLinearNoTargetSequentialTraceFirstCosetHitOrderedPrefixWorldSet
+          i₀ observer t pref) where
+  toFun omega := by
+    classical
+    exact
+      ⟨v13RealLinearSequentialPrefixTranscriptVectorOf observer
+          (v13RealLinearPublicInput
+            ({ x := omega.val.2, A := omega.val.1.val } :
+              V13RealLinearWorld m))
+          (t : Nat),
+        ⟨omega, rfl⟩⟩
+  invFun cell := by
+    rcases cell with ⟨_prefix, cell⟩
+    exact cell.val
+  left_inv _omega := by
+    rfl
+  right_inv cell := by
+    rcases cell with ⟨pref, cell⟩
+    rcases cell with ⟨omega, hpref⟩
+    cases hpref
+    rfl
+
+theorem
+    v13RealLinearNoTargetSequentialTraceFirstCosetHitWorldSet_card_eq_sum_orderedPrefix
+    {m q : Nat} (i₀ : Fin m)
+    (observer : V13RealLinearSequentialRowObserver m q) (t : Fin q) :
+    Fintype.card
+        (V13RealLinearNoTargetSequentialTraceFirstCosetHitWorldSet
+          i₀ observer t) =
+      ∑ pref :
+          V13RealLinearSequentialPrefixTranscriptVector m (t : Nat),
+        Fintype.card
+          (V13RealLinearNoTargetSequentialTraceFirstCosetHitOrderedPrefixWorldSet
+            i₀ observer t pref) := by
+  classical
+  rw [Fintype.card_congr
+    (v13RealLinearNoTargetSequentialTraceFirstCosetHitWorldSetEquivSigmaOrderedPrefix
+      i₀ observer t)]
+  rw [Fintype.card_sigma]
+
+noncomputable def
+    v13RealLinearNoTargetSequentialTraceFirstCosetHitWorldSetToFixedPrefixSigma
+    {m q : Nat} (i₀ : Fin m)
+    (observer : V13RealLinearSequentialRowObserver m q) (t : Fin q) :
+    V13RealLinearNoTargetSequentialTraceFirstCosetHitWorldSet
+        i₀ observer t ↪
+      (Σ rows : Finset (Fin m),
+        Σ row : Fin m,
+          V13RealLinearNoTargetSequentialTraceFirstCosetHitFixedPrefixWorldSet
+            i₀ observer t rows row) where
+  toFun omega := by
+    classical
+    let trace :=
+      v13RealLinearNoTargetRowsSequentialQRowTrace i₀ observer omega.val
+    exact
+      ⟨v13RealLinearRowTracePrefixRows trace (t : Nat),
+        ⟨trace.get ⟨(t : Nat), omega.property.1⟩,
+          ⟨omega.val,
+            ⟨omega.property, rfl,
+              ⟨omega.property.1, rfl⟩⟩⟩⟩⟩
+  inj' := by
+    intro omega₀ omega₁ h
+    apply Subtype.ext
+    exact
+      congrArg
+        (fun z :
+          (Σ rows : Finset (Fin m),
+            Σ row : Fin m,
+              V13RealLinearNoTargetSequentialTraceFirstCosetHitFixedPrefixWorldSet
+                i₀ observer t rows row) => z.2.2.val)
+        h
+
+theorem
+    v13RealLinearNoTargetSequentialTraceFirstCosetHitWorldSet_card_le_sum_fixedPrefix
+    {m q : Nat} (i₀ : Fin m)
+    (observer : V13RealLinearSequentialRowObserver m q) (t : Fin q) :
+    Fintype.card
+        (V13RealLinearNoTargetSequentialTraceFirstCosetHitWorldSet
+          i₀ observer t) ≤
+      ∑ rows : Finset (Fin m),
+        ∑ row : Fin m,
+          Fintype.card
+            (V13RealLinearNoTargetSequentialTraceFirstCosetHitFixedPrefixWorldSet
+              i₀ observer t rows row) := by
+  classical
+  have hle :
+      Fintype.card
+          (V13RealLinearNoTargetSequentialTraceFirstCosetHitWorldSet
+            i₀ observer t) ≤
+        Fintype.card
+          (Σ rows : Finset (Fin m),
+            Σ row : Fin m,
+              V13RealLinearNoTargetSequentialTraceFirstCosetHitFixedPrefixWorldSet
+                i₀ observer t rows row) :=
+    Fintype.card_le_of_embedding
+      (v13RealLinearNoTargetSequentialTraceFirstCosetHitWorldSetToFixedPrefixSigma
+        i₀ observer t)
+  simpa [Fintype.card_sigma] using hle
+
+theorem
+    v13RealLinearNoTargetSequentialTraceFirstCosetHitOrderedPrefixWorldSet_sum_card_le_sum_fixedPrefix
+    {m q : Nat} (i₀ : Fin m)
+    (observer : V13RealLinearSequentialRowObserver m q) (t : Fin q) :
+    (∑ pref :
+        V13RealLinearSequentialPrefixTranscriptVector m (t : Nat),
+      Fintype.card
+        (V13RealLinearNoTargetSequentialTraceFirstCosetHitOrderedPrefixWorldSet
+          i₀ observer t pref)) ≤
+      ∑ rows : Finset (Fin m),
+        ∑ row : Fin m,
+          Fintype.card
+            (V13RealLinearNoTargetSequentialTraceFirstCosetHitFixedPrefixWorldSet
+              i₀ observer t rows row) := by
+  rw [←
+    v13RealLinearNoTargetSequentialTraceFirstCosetHitWorldSet_card_eq_sum_orderedPrefix
+      i₀ observer t]
+  exact
+    v13RealLinearNoTargetSequentialTraceFirstCosetHitWorldSet_card_le_sum_fixedPrefix
+      i₀ observer t
+
+/-- The exact remaining adaptive summation surface for Step 0: after splitting
+one step's trace-coset hit event by the realized prefix rowset and next row,
+the total fixed-prefix fiber mass must fit the same per-step bound. -/
+def
+    V13RealLinearNoTargetRowsSequentialTraceCosetHitFixedPrefixPackingBound
+    {m q : Nat} (i₀ : Fin m)
+    (observer : V13RealLinearSequentialRowObserver m q) : Prop :=
+  ∀ t : Fin q,
+    (∑ rows : Finset (Fin m),
+      ∑ row : Fin m,
+        Fintype.card
+          (V13RealLinearNoTargetSequentialTraceFirstCosetHitFixedPrefixWorldSet
+            i₀ observer t rows row)) *
+      2 ^ m ≤
+    (4 * 2 ^ (t : Nat)) *
+      Fintype.card
+        (V13RealLinearAdaptiveQRowWorld m
+          (V13RealLinearNoTargetRowsMap m i₀))
+
+/-- Transcript-cylinder refinement of the fixed-prefix packing surface.  This
+is equivalent to fixed-prefix packing, but exposes the row-transcript cells
+where the remaining no-target adaptive packing argument should act. -/
+def
+    V13RealLinearNoTargetRowsSequentialTraceCosetHitFixedPrefixTranscriptPackingBound
+    {m q : Nat} (i₀ : Fin m)
+    (observer : V13RealLinearSequentialRowObserver m q) : Prop :=
+  ∀ t : Fin q,
+    (∑ rows : Finset (Fin m),
+      ∑ row : Fin m,
+        ∑ transcript : V13RealLinearRowsTranscriptSpace m rows,
+          Fintype.card
+            (V13RealLinearNoTargetSequentialTraceFirstCosetHitFixedPrefixTranscriptWorldSet
+              i₀ observer t rows row transcript)) *
+      2 ^ m ≤
+    (4 * 2 ^ (t : Nat)) *
+      Fintype.card
+        (V13RealLinearAdaptiveQRowWorld m
+          (V13RealLinearNoTargetRowsMap m i₀))
+
+/-- Active fixed-map transcript-cylinder capacity form of the remaining
+Step 0 packing surface.  The fixed-prefix transcript sigma has already been
+identified with this active capacity sum; the remaining work is the genuine
+conditioned-basis counting bound. -/
+def
+    V13RealLinearNoTargetRowsSequentialTraceCosetHitActiveFixedMapTranscriptCylinderCapacityBound
+    {m q : Nat} (i₀ : Fin m)
+    (observer : V13RealLinearSequentialRowObserver m q) : Prop :=
+  ∀ t : Fin q,
+    (∑ activeIdx :
+      V13RealLinearNoTargetSequentialTraceFirstCosetHitActiveFixedMapTranscriptCylinderIndex
+        i₀ observer t,
+      2 ^ (m - activeIdx.1.rows.card)) *
+      2 ^ m ≤
+    (4 * 2 ^ (t : Nat)) *
+      Fintype.card
+        (V13RealLinearAdaptiveQRowWorld m
+          (V13RealLinearNoTargetRowsMap m i₀))
+
+/-- Ordered-prefix packing surface for Step 0.  This partitions the first-hit
+event by the exact ordered transcript prefix used by the sequential observer,
+so the remaining capacity argument can work on deterministic next-row
+cylinders rather than unordered rowsets. -/
+def
+    V13RealLinearNoTargetRowsSequentialTraceCosetHitOrderedPrefixPackingBound
+    {m q : Nat} (i₀ : Fin m)
+    (observer : V13RealLinearSequentialRowObserver m q) : Prop :=
+  ∀ t : Fin q,
+    (∑ pref :
+        V13RealLinearSequentialPrefixTranscriptVector m (t : Nat),
+      Fintype.card
+        (V13RealLinearNoTargetSequentialTraceFirstCosetHitOrderedPrefixWorldSet
+          i₀ observer t pref)) *
+      2 ^ m ≤
+    (4 * 2 ^ (t : Nat)) *
+      Fintype.card
+        (V13RealLinearAdaptiveQRowWorld m
+          (V13RealLinearNoTargetRowsMap m i₀))
+
+theorem
+    V13RealLinearNoTargetRowsSequentialTraceCosetHitFixedPrefixPackingBound_of_transcriptPacking
+    {m q : Nat} (i₀ : Fin m)
+    (observer : V13RealLinearSequentialRowObserver m q)
+    (hpack :
+      V13RealLinearNoTargetRowsSequentialTraceCosetHitFixedPrefixTranscriptPackingBound
+        i₀ observer) :
+    V13RealLinearNoTargetRowsSequentialTraceCosetHitFixedPrefixPackingBound
+      i₀ observer := by
+  classical
+  intro t
+  have hsum :
+      (∑ rows : Finset (Fin m),
+        ∑ row : Fin m,
+          Fintype.card
+            (V13RealLinearNoTargetSequentialTraceFirstCosetHitFixedPrefixWorldSet
+              i₀ observer t rows row)) =
+        ∑ rows : Finset (Fin m),
+          ∑ row : Fin m,
+            ∑ transcript : V13RealLinearRowsTranscriptSpace m rows,
+              Fintype.card
+                (V13RealLinearNoTargetSequentialTraceFirstCosetHitFixedPrefixTranscriptWorldSet
+                  i₀ observer t rows row transcript) := by
+    apply Finset.sum_congr rfl
+    intro rows _hrows
+    apply Finset.sum_congr rfl
+    intro row _hrow
+    exact
+      v13RealLinearNoTargetSequentialTraceFirstCosetHitFixedPrefixWorldSet_card_eq_sum_transcripts
+        i₀ observer t rows row
+  simpa [V13RealLinearNoTargetRowsSequentialTraceCosetHitFixedPrefixPackingBound,
+    V13RealLinearNoTargetRowsSequentialTraceCosetHitFixedPrefixTranscriptPackingBound,
+    hsum] using hpack t
+
+theorem
+    V13RealLinearNoTargetRowsSequentialTraceCosetHitFixedPrefixTranscriptPackingBound_of_activeFixedMapTranscriptCylinderCapacity
+    {m q : Nat} (i₀ : Fin m)
+    (observer : V13RealLinearSequentialRowObserver m q)
+    (hcapacity :
+      V13RealLinearNoTargetRowsSequentialTraceCosetHitActiveFixedMapTranscriptCylinderCapacityBound
+        i₀ observer) :
+    V13RealLinearNoTargetRowsSequentialTraceCosetHitFixedPrefixTranscriptPackingBound
+      i₀ observer := by
+  classical
+  intro t
+  rw [
+    v13RealLinearNoTargetSequentialTraceFirstCosetHitFixedPrefixTranscriptWorldSet_sum_card_eq_active_capacity
+      i₀ observer t]
+  exact hcapacity t
+
+theorem
+    V13RealLinearNoTargetRowsSequentialTraceCosetHitActiveFixedMapTranscriptCylinderCapacityBound_of_fixedPrefixTranscriptPacking
+    {m q : Nat} (i₀ : Fin m)
+    (observer : V13RealLinearSequentialRowObserver m q)
+    (hpack :
+      V13RealLinearNoTargetRowsSequentialTraceCosetHitFixedPrefixTranscriptPackingBound
+        i₀ observer) :
+    V13RealLinearNoTargetRowsSequentialTraceCosetHitActiveFixedMapTranscriptCylinderCapacityBound
+      i₀ observer := by
+  classical
+  intro t
+  have hstep := hpack t
+  rw [
+    v13RealLinearNoTargetSequentialTraceFirstCosetHitFixedPrefixTranscriptWorldSet_sum_card_eq_active_capacity
+      i₀ observer t] at hstep
+  exact hstep
+
+theorem
+    V13RealLinearNoTargetRowsSequentialTraceCosetHitActiveFixedMapTranscriptCylinderCapacityBound_iff_fixedPrefixTranscriptPacking
+    {m q : Nat} (i₀ : Fin m)
+    (observer : V13RealLinearSequentialRowObserver m q) :
+    V13RealLinearNoTargetRowsSequentialTraceCosetHitActiveFixedMapTranscriptCylinderCapacityBound
+      i₀ observer ↔
+    V13RealLinearNoTargetRowsSequentialTraceCosetHitFixedPrefixTranscriptPackingBound
+      i₀ observer :=
+  ⟨V13RealLinearNoTargetRowsSequentialTraceCosetHitFixedPrefixTranscriptPackingBound_of_activeFixedMapTranscriptCylinderCapacity
+      i₀ observer,
+    V13RealLinearNoTargetRowsSequentialTraceCosetHitActiveFixedMapTranscriptCylinderCapacityBound_of_fixedPrefixTranscriptPacking
+      i₀ observer⟩
+
+theorem
+    V13RealLinearNoTargetRowsSequentialTraceCosetHitOrderedPrefixPackingBound_of_fixedPrefixPacking
+    {m q : Nat} (i₀ : Fin m)
+    (observer : V13RealLinearSequentialRowObserver m q)
+    (hpack :
+      V13RealLinearNoTargetRowsSequentialTraceCosetHitFixedPrefixPackingBound
+        i₀ observer) :
+    V13RealLinearNoTargetRowsSequentialTraceCosetHitOrderedPrefixPackingBound
+      i₀ observer := by
+  classical
+  intro t
+  let orderedSum :=
+    ∑ pref :
+      V13RealLinearSequentialPrefixTranscriptVector m (t : Nat),
+      Fintype.card
+        (V13RealLinearNoTargetSequentialTraceFirstCosetHitOrderedPrefixWorldSet
+          i₀ observer t pref)
+  let fixedSum :=
+    ∑ rows : Finset (Fin m),
+      ∑ row : Fin m,
+        Fintype.card
+          (V13RealLinearNoTargetSequentialTraceFirstCosetHitFixedPrefixWorldSet
+            i₀ observer t rows row)
+  have hle : orderedSum ≤ fixedSum := by
+    simpa [orderedSum, fixedSum] using
+      v13RealLinearNoTargetSequentialTraceFirstCosetHitOrderedPrefixWorldSet_sum_card_le_sum_fixedPrefix
+        i₀ observer t
+  have hmul : orderedSum * 2 ^ m ≤ fixedSum * 2 ^ m :=
+    Nat.mul_le_mul_right (2 ^ m) hle
+  have hfixed :
+      fixedSum * 2 ^ m ≤
+        (4 * 2 ^ (t : Nat)) *
+          Fintype.card
+            (V13RealLinearAdaptiveQRowWorld m
+              (V13RealLinearNoTargetRowsMap m i₀)) := by
+    simpa [fixedSum,
+      V13RealLinearNoTargetRowsSequentialTraceCosetHitFixedPrefixPackingBound]
+      using hpack t
+  exact hmul.trans hfixed
+
+theorem
+    V13RealLinearNoTargetRowsSequentialTraceCosetHitFixedPrefixTranscriptPackingBound_of_fixedPrefixPacking
+    {m q : Nat} (i₀ : Fin m)
+    (observer : V13RealLinearSequentialRowObserver m q)
+    (hpack :
+      V13RealLinearNoTargetRowsSequentialTraceCosetHitFixedPrefixPackingBound
+        i₀ observer) :
+    V13RealLinearNoTargetRowsSequentialTraceCosetHitFixedPrefixTranscriptPackingBound
+      i₀ observer := by
+  classical
+  intro t
+  have hsum :
+      (∑ rows : Finset (Fin m),
+        ∑ row : Fin m,
+          Fintype.card
+            (V13RealLinearNoTargetSequentialTraceFirstCosetHitFixedPrefixWorldSet
+              i₀ observer t rows row)) =
+        ∑ rows : Finset (Fin m),
+          ∑ row : Fin m,
+            ∑ transcript : V13RealLinearRowsTranscriptSpace m rows,
+              Fintype.card
+                (V13RealLinearNoTargetSequentialTraceFirstCosetHitFixedPrefixTranscriptWorldSet
+                  i₀ observer t rows row transcript) := by
+    apply Finset.sum_congr rfl
+    intro rows _hrows
+    apply Finset.sum_congr rfl
+    intro row _hrow
+    exact
+      v13RealLinearNoTargetSequentialTraceFirstCosetHitFixedPrefixWorldSet_card_eq_sum_transcripts
+        i₀ observer t rows row
+  simpa [V13RealLinearNoTargetRowsSequentialTraceCosetHitFixedPrefixPackingBound,
+    V13RealLinearNoTargetRowsSequentialTraceCosetHitFixedPrefixTranscriptPackingBound,
+    hsum] using hpack t
+
+theorem
+    V13RealLinearNoTargetRowsSequentialTraceCosetHitFixedPrefixPackingBound_iff_transcriptPacking
+    {m q : Nat} (i₀ : Fin m)
+    (observer : V13RealLinearSequentialRowObserver m q) :
+    V13RealLinearNoTargetRowsSequentialTraceCosetHitFixedPrefixPackingBound
+      i₀ observer ↔
+    V13RealLinearNoTargetRowsSequentialTraceCosetHitFixedPrefixTranscriptPackingBound
+      i₀ observer :=
+  ⟨V13RealLinearNoTargetRowsSequentialTraceCosetHitFixedPrefixTranscriptPackingBound_of_fixedPrefixPacking
+      i₀ observer,
+    V13RealLinearNoTargetRowsSequentialTraceCosetHitFixedPrefixPackingBound_of_transcriptPacking
+      i₀ observer⟩
+
+theorem
+    V13RealLinearNoTargetRowsSequentialTraceCosetHitCountingBound_of_fixedPrefixPacking
+    {m q : Nat} (i₀ : Fin m)
+    (observer : V13RealLinearSequentialRowObserver m q)
+    (hpack :
+      V13RealLinearNoTargetRowsSequentialTraceCosetHitFixedPrefixPackingBound
+        i₀ observer) :
+    V13RealLinearNoTargetRowsSequentialTraceCosetHitCountingBound
+      i₀ observer := by
+  classical
+  unfold V13RealLinearNoTargetRowsSequentialTraceCosetHitCountingBound
+  unfold V13RealLinearAdaptiveQRowTraceCosetHitCountingBound
+  unfold V13RealLinearAdaptiveDeferredDecisionNewCaptureCountingBound
+  intro t
+  let Full :=
+    V13RealLinearNoTargetSequentialTraceFirstCosetHitWorldSet
+      i₀ observer t
+  let FiberSum :=
+    ∑ rows : Finset (Fin m),
+      ∑ row : Fin m,
+        Fintype.card
+          (V13RealLinearNoTargetSequentialTraceFirstCosetHitFixedPrefixWorldSet
+            i₀ observer t rows row)
+  have hfullLe : Fintype.card Full ≤ FiberSum := by
+    simpa [Full, FiberSum] using
+      v13RealLinearNoTargetSequentialTraceFirstCosetHitWorldSet_card_le_sum_fixedPrefix
+        i₀ observer t
+  have hmul :
+      Fintype.card Full * 2 ^ m ≤ FiberSum * 2 ^ m :=
+    Nat.mul_le_mul_right (2 ^ m) hfullLe
+  have hpackStep :
+      FiberSum * 2 ^ m ≤
+        (4 * 2 ^ (t : Nat)) *
+          Fintype.card
+            (V13RealLinearAdaptiveQRowWorld m
+              (V13RealLinearNoTargetRowsMap m i₀)) := by
+    simpa [V13RealLinearNoTargetRowsSequentialTraceCosetHitFixedPrefixPackingBound,
+      FiberSum] using hpack t
+  exact hmul.trans hpackStep
+
+theorem
+    V13RealLinearNoTargetRowsSequentialTraceCosetHitCountingBound_of_fixedPrefixTranscriptPacking
+    {m q : Nat} (i₀ : Fin m)
+    (observer : V13RealLinearSequentialRowObserver m q)
+    (hpack :
+      V13RealLinearNoTargetRowsSequentialTraceCosetHitFixedPrefixTranscriptPackingBound
+        i₀ observer) :
+    V13RealLinearNoTargetRowsSequentialTraceCosetHitCountingBound
+      i₀ observer :=
+  V13RealLinearNoTargetRowsSequentialTraceCosetHitCountingBound_of_fixedPrefixPacking
+    i₀ observer
+    (V13RealLinearNoTargetRowsSequentialTraceCosetHitFixedPrefixPackingBound_of_transcriptPacking
+      i₀ observer hpack)
+
+theorem
+    V13RealLinearNoTargetRowsSequentialTraceCosetHitCountingBound_of_activeFixedMapTranscriptCylinderCapacity
+    {m q : Nat} (i₀ : Fin m)
+    (observer : V13RealLinearSequentialRowObserver m q)
+    (hcapacity :
+      V13RealLinearNoTargetRowsSequentialTraceCosetHitActiveFixedMapTranscriptCylinderCapacityBound
+        i₀ observer) :
+    V13RealLinearNoTargetRowsSequentialTraceCosetHitCountingBound
+      i₀ observer :=
+  V13RealLinearNoTargetRowsSequentialTraceCosetHitCountingBound_of_fixedPrefixTranscriptPacking
+    i₀ observer
+    (V13RealLinearNoTargetRowsSequentialTraceCosetHitFixedPrefixTranscriptPackingBound_of_activeFixedMapTranscriptCylinderCapacity
+      i₀ observer hcapacity)
+
+theorem
+    V13RealLinearNoTargetRowsSequentialTraceCosetHitCountingBound_of_orderedPrefixPacking
+    {m q : Nat} (i₀ : Fin m)
+    (observer : V13RealLinearSequentialRowObserver m q)
+    (hpack :
+      V13RealLinearNoTargetRowsSequentialTraceCosetHitOrderedPrefixPackingBound
+        i₀ observer) :
+    V13RealLinearNoTargetRowsSequentialTraceCosetHitCountingBound
+      i₀ observer := by
+  classical
+  unfold V13RealLinearNoTargetRowsSequentialTraceCosetHitCountingBound
+  unfold V13RealLinearAdaptiveQRowTraceCosetHitCountingBound
+  unfold V13RealLinearAdaptiveDeferredDecisionNewCaptureCountingBound
+  intro t
+  change
+    Fintype.card
+        (V13RealLinearNoTargetSequentialTraceFirstCosetHitWorldSet
+          i₀ observer t) *
+      2 ^ m ≤
+    (4 * 2 ^ (t : Nat)) *
+      Fintype.card
+        (V13RealLinearAdaptiveQRowWorld m
+          (V13RealLinearNoTargetRowsMap m i₀))
+  rw [
+    v13RealLinearNoTargetSequentialTraceFirstCosetHitWorldSet_card_eq_sum_orderedPrefix
+      i₀ observer t]
+  simpa
+    [V13RealLinearNoTargetRowsSequentialTraceCosetHitOrderedPrefixPackingBound]
+    using hpack t
+
+theorem
+    V13RealLinearNoTargetRowsSequentialTraceCosetHitOrderedPrefixPackingBound_of_counting
+    {m q : Nat} (i₀ : Fin m)
+    (observer : V13RealLinearSequentialRowObserver m q)
+    (hcount :
+      V13RealLinearNoTargetRowsSequentialTraceCosetHitCountingBound
+        i₀ observer) :
+    V13RealLinearNoTargetRowsSequentialTraceCosetHitOrderedPrefixPackingBound
+      i₀ observer := by
+  classical
+  intro t
+  unfold V13RealLinearNoTargetRowsSequentialTraceCosetHitCountingBound at hcount
+  unfold V13RealLinearAdaptiveQRowTraceCosetHitCountingBound at hcount
+  unfold V13RealLinearAdaptiveDeferredDecisionNewCaptureCountingBound at hcount
+  have hstep := hcount t
+  change
+    Fintype.card
+        (V13RealLinearNoTargetSequentialTraceFirstCosetHitWorldSet
+          i₀ observer t) *
+      2 ^ m ≤
+    (4 * 2 ^ (t : Nat)) *
+      Fintype.card
+        (V13RealLinearAdaptiveQRowWorld m
+          (V13RealLinearNoTargetRowsMap m i₀)) at hstep
+  rw [
+    v13RealLinearNoTargetSequentialTraceFirstCosetHitWorldSet_card_eq_sum_orderedPrefix
+      i₀ observer t] at hstep
+  simpa
+    [V13RealLinearNoTargetRowsSequentialTraceCosetHitOrderedPrefixPackingBound]
+    using hstep
+
+theorem
+    V13RealLinearNoTargetRowsSequentialTraceCosetHitOrderedPrefixPackingBound_iff_counting
+    {m q : Nat} (i₀ : Fin m)
+    (observer : V13RealLinearSequentialRowObserver m q) :
+    V13RealLinearNoTargetRowsSequentialTraceCosetHitOrderedPrefixPackingBound
+      i₀ observer ↔
+    V13RealLinearNoTargetRowsSequentialTraceCosetHitCountingBound
+      i₀ observer :=
+  ⟨V13RealLinearNoTargetRowsSequentialTraceCosetHitCountingBound_of_orderedPrefixPacking
+      i₀ observer,
+    V13RealLinearNoTargetRowsSequentialTraceCosetHitOrderedPrefixPackingBound_of_counting
+      i₀ observer⟩
+
+abbrev V13RealLinearNoTargetFixedPairCosetHitMapSet {m : Nat}
+    (i₀ row₀ row₁ : Fin m) :=
+  {A : V13RealLinearNoTargetRowsMap m i₀ //
+    V13RealLinearRowFunctionalTargetCosetHit A.val
+      ({row₀} : Finset (Fin m)) i₀ row₁}
+
+noncomputable instance {m : Nat} (i₀ row₀ row₁ : Fin m) :
+    Fintype (V13RealLinearNoTargetFixedPairCosetHitMapSet
+      i₀ row₀ row₁) := by
+  classical
+  unfold V13RealLinearNoTargetFixedPairCosetHitMapSet
+  infer_instance
+
+noncomputable def
+    v13RealLinearNoTargetFixedPairCosetHitMapSetEmbeddingFunctionalTableHit
+    {m : Nat} (i₀ row₀ row₁ : Fin m) :
+    V13RealLinearNoTargetFixedPairCosetHitMapSet i₀ row₀ row₁ ↪
+      {table : V13RealLinearRowFunctionalTable m //
+        V13RealLinearFunctionalTableTargetCosetHit table
+          ({row₀} : Finset (Fin m)) i₀ row₁} where
+  toFun A :=
+    ⟨v13RealLinearRowFunctionalTableOfEquiv A.val.val,
+      v13RealLinearFunctionalTableTargetCosetHit_of_rowFunctionalTargetCosetHit
+        A.property⟩
+  inj' := by
+    intro A₀ A₁ h
+    apply Subtype.ext
+    apply Subtype.ext
+    apply v13RealLinearRowFunctionalTableOfEquiv_injective
+    exact congrArg Subtype.val h
+
+theorem
+    v13RealLinearNoTargetFixedPairCosetHitMapSet_card_mul_two_pow_le_table
+    {m : Nat} (i₀ row₀ row₁ : Fin m)
+    (hrow : row₁ ∉ ({row₀} : Finset (Fin m))) :
+    Fintype.card
+        (V13RealLinearNoTargetFixedPairCosetHitMapSet i₀ row₀ row₁) *
+      2 ^ m ≤
+    2 * Fintype.card (V13RealLinearRowFunctionalTable m) := by
+  classical
+  let S := V13RealLinearNoTargetFixedPairCosetHitMapSet i₀ row₀ row₁
+  let H :=
+    {table : V13RealLinearRowFunctionalTable m //
+      V13RealLinearFunctionalTableTargetCosetHit table
+        ({row₀} : Finset (Fin m)) i₀ row₁}
+  have hSle : Fintype.card S ≤ Fintype.card H :=
+    Fintype.card_le_of_embedding
+      (v13RealLinearNoTargetFixedPairCosetHitMapSetEmbeddingFunctionalTableHit
+        i₀ row₀ row₁)
+  have hH :
+      Fintype.card H * 2 ^ m ≤
+        2 * Fintype.card (V13RealLinearRowFunctionalTable m) := by
+    simpa [H] using
+      (v13RealLinearFunctionalTableTargetCosetHit_card_mul_two_pow_le
+        ({row₀} : Finset (Fin m)) i₀ row₁ hrow)
+  exact (Nat.mul_le_mul_right (2 ^ m) hSle).trans hH
+
+theorem
+    v13RealLinearNoTargetFixedPairCosetHitMapSet_card_mul_two_pow_le_equiv
+    {m : Nat} (i₀ row₀ row₁ : Fin m)
+    (hrow : row₁ ∉ ({row₀} : Finset (Fin m))) :
+    Fintype.card
+        (V13RealLinearNoTargetFixedPairCosetHitMapSet i₀ row₀ row₁) *
+      2 ^ m ≤
+    8 * Fintype.card (V13F2LinearEquiv m) := by
+  classical
+  let S := Fintype.card
+    (V13RealLinearNoTargetFixedPairCosetHitMapSet i₀ row₀ row₁)
+  let T := Fintype.card (V13RealLinearRowFunctionalTable m)
+  let E := Fintype.card (V13F2LinearEquiv m)
+  have htable : S * 2 ^ m ≤ 2 * T := by
+    simpa [S, T] using
+      v13RealLinearNoTargetFixedPairCosetHitMapSet_card_mul_two_pow_le_table
+        i₀ row₀ row₁ hrow
+  have hT : T ≤ 4 * E := by
+    exact v13RealLinearRowFunctionalTable_card_le_four_mul_equiv m
+  have hright : 2 * T ≤ 8 * E := by
+    nlinarith
+  simpa [S, E] using htable.trans hright
+
+noncomputable def
+    v13RealLinearNoTargetFixedPairCosetHitMapSetEmbeddingPairSumTarget
+    {m : Nat} (i₀ row₀ row₁ : Fin m) :
+    V13RealLinearNoTargetFixedPairCosetHitMapSet i₀ row₀ row₁ ↪
+      V13RealLinearNoTargetFixedPairSumTargetMapSet i₀ row₀ row₁ where
+  toFun A :=
+    ⟨A.val,
+      (v13RealLinearNoTargetRows_rowFunctionalTargetCosetHit_singleton_pair_sum
+        i₀ row₀ row₁ A.val A.property).2⟩
+  inj' := by
+    intro A₀ A₁ h
+    apply Subtype.ext
+    exact
+      congrArg
+        (fun A :
+          V13RealLinearNoTargetFixedPairSumTargetMapSet i₀ row₀ row₁ =>
+          A.val)
+        h
+
+theorem
+    v13RealLinearNoTargetFixedPairCosetHitMapSet_card_mul_two_pow_le_noTarget
+    {m : Nat} (i₀ row₀ row₁ : Fin m)
+    (hrow : row₁ ∉ ({row₀} : Finset (Fin m))) :
+    Fintype.card
+        (V13RealLinearNoTargetFixedPairCosetHitMapSet i₀ row₀ row₁) *
+      2 ^ m ≤
+    4 * Fintype.card (V13RealLinearNoTargetRowsMap m i₀) := by
+  classical
+  let S :=
+    Fintype.card
+      (V13RealLinearNoTargetFixedPairCosetHitMapSet i₀ row₀ row₁)
+  let P :=
+    Fintype.card
+      (V13RealLinearNoTargetFixedPairSumTargetMapSet i₀ row₀ row₁)
+  let N := Fintype.card (V13RealLinearNoTargetRowsMap m i₀)
+  have hneq : row₀ ≠ row₁ := by
+    intro h
+    exact hrow (by simp [h])
+  have hSle : S ≤ P := by
+    dsimp [S, P]
+    exact
+      Fintype.card_le_of_embedding
+        (v13RealLinearNoTargetFixedPairCosetHitMapSetEmbeddingPairSumTarget
+          i₀ row₀ row₁)
+  have hP : P * 2 ^ m ≤ 4 * N := by
+    simpa [P, N] using
+      v13RealLinearNoTargetFixedPairSumTargetMapSet_card_mul_two_pow_le_noTarget
+        i₀ row₀ row₁ hneq
+  exact (Nat.mul_le_mul_right (2 ^ m) hSle).trans hP
+
+theorem
+    v13RealLinearNoTargetBitJunta_fixed_correct_card_eq_incorrect_card_of_not_blocked
+    {m j : Nat} (i₀ : Fin m)
+    (observer : V13RealLinearBitJuntaObserver m j)
+    (A : V13RealLinearNoTargetRowsMap m i₀)
+    (hnot : ¬ V13RealLinearNoTargetBitJuntaBlockedMap i₀ observer A) :
+    Fintype.card
+        (V13RealLinearNoTargetBitJuntaFixedCorrect i₀ observer A) =
+      Fintype.card
+        (V13RealLinearNoTargetBitJuntaFixedIncorrect i₀ observer A) :=
+  v13RealLinearBitJunta_correct_card_eq_incorrect_card_of_not_blocked
+    observer A.val i₀ hnot
+
+def V13RealLinearNoTargetBitJuntaCorrect {m j : Nat}
+    (i₀ : Fin m) (observer : V13RealLinearBitJuntaObserver m j) :=
+  {omega : V13RealLinearNoTargetRowsWorld m i₀ //
+    observer.decide (v13RealLinearNoTargetRowsPublicInput omega) =
+      omega.2 i₀}
+
+def V13RealLinearNoTargetBitJuntaIncorrect {m j : Nat}
+    (i₀ : Fin m) (observer : V13RealLinearBitJuntaObserver m j) :=
+  {omega : V13RealLinearNoTargetRowsWorld m i₀ //
+    observer.decide (v13RealLinearNoTargetRowsPublicInput omega) ≠
+      omega.2 i₀}
+
+def V13RealLinearNoTargetBitJuntaBlockedWorld {m j : Nat}
+    (i₀ : Fin m) (observer : V13RealLinearBitJuntaObserver m j) :=
+  {omega : V13RealLinearNoTargetRowsWorld m i₀ //
+    V13RealLinearNoTargetBitJuntaBlockedMap i₀ observer omega.1}
+
+noncomputable instance {m j : Nat}
+    (i₀ : Fin m) (observer : V13RealLinearBitJuntaObserver m j) :
+    Fintype (V13RealLinearNoTargetBitJuntaCorrect i₀ observer) := by
+  classical
+  unfold V13RealLinearNoTargetBitJuntaCorrect
+  infer_instance
+
+noncomputable instance {m j : Nat}
+    (i₀ : Fin m) (observer : V13RealLinearBitJuntaObserver m j) :
+    Fintype (V13RealLinearNoTargetBitJuntaIncorrect i₀ observer) := by
+  classical
+  unfold V13RealLinearNoTargetBitJuntaIncorrect
+  infer_instance
+
+noncomputable instance {m j : Nat}
+    (i₀ : Fin m) (observer : V13RealLinearBitJuntaObserver m j) :
+    Fintype (V13RealLinearNoTargetBitJuntaBlockedWorld i₀ observer) := by
+  classical
+  unfold V13RealLinearNoTargetBitJuntaBlockedWorld
+  infer_instance
+
+noncomputable def v13RealLinearNoTargetBitJuntaSuccess {m j : Nat}
+    (i₀ : Fin m) (observer : V13RealLinearBitJuntaObserver m j) : Rat :=
+  (Fintype.card (V13RealLinearNoTargetBitJuntaCorrect i₀ observer) : Rat) /
+    (Fintype.card (V13RealLinearNoTargetRowsWorld m i₀) : Rat)
+
+/-- Division-free form of the second-rung counting target.  It says the
+fraction of no-target maps whose RHS-read rows block the target is at most
+`eps2(j,m) = 4 * 2^j / 2^m`. -/
+def V13RealLinearNoTargetBitJuntaBlockedCountingBound
+    (m j : Nat) : Prop := by
+  classical
+  exact
+    ∀ (i₀ : Fin m) (observer : V13RealLinearBitJuntaObserver m j),
+      (2 ^ m) *
+          Fintype.card
+            (V13RealLinearNoTargetBitJuntaBlockedMapSet i₀ observer) ≤
+        4 * (2 ^ j) *
+          Fintype.card (V13RealLinearNoTargetRowsMap m i₀)
+
+theorem
+    V13RealLinearNoTargetBitJuntaBlockedCountingBound_of_budgetedRowsetGeneration
+    {m j : Nat}
+    (hcount : V13RealLinearNoTargetBudgetedRowsetGenerationCountingBound m j) :
+    V13RealLinearNoTargetBitJuntaBlockedCountingBound m j := by
+  intro i₀ observer
+  have h :=
+    hcount i₀ (v13RealLinearBitJuntaRhsBudgetedRowset observer)
+  rw [
+    v13RealLinearNoTargetBitJuntaBlockedMapSet_card_eq_budgetedGeneratingMapSet
+      i₀ observer]
+  exact h
+
+def V13RealLinearNoTargetBitJuntaSuccessBound
+    (m j : Nat) : Prop :=
+  ∀ (i₀ : Fin m) (observer : V13RealLinearBitJuntaObserver m j),
+    v13RealLinearNoTargetBitJuntaSuccess i₀ observer ≤
+      (1 / 2 : Rat) + v13RealLinearBitJuntaEpsilon2 j m
+
+def V13RealLinearNoTargetBitJuntaUnblockedCorrect {m j : Nat}
+    (i₀ : Fin m) (observer : V13RealLinearBitJuntaObserver m j) :=
+  {omega : V13RealLinearNoTargetRowsWorld m i₀ //
+    observer.decide (v13RealLinearNoTargetRowsPublicInput omega) =
+      omega.2 i₀ ∧
+    ¬ V13RealLinearNoTargetBitJuntaBlockedMap i₀ observer omega.1}
+
+noncomputable instance {m j : Nat}
+    (i₀ : Fin m) (observer : V13RealLinearBitJuntaObserver m j) :
+    Fintype (V13RealLinearNoTargetBitJuntaUnblockedCorrect i₀ observer) := by
+  classical
+  unfold V13RealLinearNoTargetBitJuntaUnblockedCorrect
+  infer_instance
+
+noncomputable def v13RealLinearNoTargetBitJuntaFlipWitness
+    {m j : Nat} (i₀ : Fin m)
+    (observer : V13RealLinearBitJuntaObserver m j)
+    (A : V13RealLinearNoTargetRowsMap m i₀) : F2Vec m := by
+  classical
+  exact
+    if hnot :
+        ¬ V13RealLinearNoTargetBitJuntaBlockedMap i₀ observer A then
+      Classical.choose
+        (v13RealLinear_exists_kernel_hit_of_not_rowsBlockTarget
+          (A := A.val) (rows := v13RealLinearBitJuntaRhsRows observer)
+          (i₀ := i₀) hnot)
+    else
+      f2ZeroVec m
+
+lemma v13RealLinearNoTargetBitJuntaFlipWitness_target
+    {m j : Nat} (i₀ : Fin m)
+    (observer : V13RealLinearBitJuntaObserver m j)
+    (A : V13RealLinearNoTargetRowsMap m i₀)
+    (hnot :
+      ¬ V13RealLinearNoTargetBitJuntaBlockedMap i₀ observer A) :
+    v13RealLinearNoTargetBitJuntaFlipWitness i₀ observer A i₀ = 1 := by
+  unfold v13RealLinearNoTargetBitJuntaFlipWitness
+  classical
+  simpa [hnot] using
+    (Classical.choose_spec
+      (v13RealLinear_exists_kernel_hit_of_not_rowsBlockTarget
+        (A := A.val) (rows := v13RealLinearBitJuntaRhsRows observer)
+        (i₀ := i₀) hnot)).1
+
+lemma v13RealLinearNoTargetBitJuntaFlipWitness_kernel
+    {m j : Nat} (i₀ : Fin m)
+    (observer : V13RealLinearBitJuntaObserver m j)
+    (A : V13RealLinearNoTargetRowsMap m i₀)
+    (hnot :
+      ¬ V13RealLinearNoTargetBitJuntaBlockedMap i₀ observer A) :
+    ∀ row : Fin m, row ∈ v13RealLinearBitJuntaRhsRows observer →
+      A.val.toEquiv
+          (v13RealLinearNoTargetBitJuntaFlipWitness i₀ observer A) row =
+        0 := by
+  unfold v13RealLinearNoTargetBitJuntaFlipWitness
+  classical
+  simpa [hnot] using
+    (Classical.choose_spec
+      (v13RealLinear_exists_kernel_hit_of_not_rowsBlockTarget
+        (A := A.val) (rows := v13RealLinearBitJuntaRhsRows observer)
+        (i₀ := i₀) hnot)).2
+
+noncomputable def
+    v13RealLinearNoTargetBitJuntaUnblockedCorrectToIncorrect
+    {m j : Nat} (i₀ : Fin m)
+    (observer : V13RealLinearBitJuntaObserver m j) :
+    V13RealLinearNoTargetBitJuntaUnblockedCorrect i₀ observer ↪
+      V13RealLinearNoTargetBitJuntaIncorrect i₀ observer where
+  toFun omega :=
+    let A := omega.val.1
+    let w := v13RealLinearNoTargetBitJuntaFlipWitness i₀ observer A
+    ⟨(A, f2AddVec omega.val.2 w), by
+      have hnot :
+          ¬ V13RealLinearNoTargetBitJuntaBlockedMap i₀ observer A :=
+        omega.property.2
+      have hkernel :
+          ∀ row : Fin m, row ∈ v13RealLinearBitJuntaRhsRows observer →
+            A.val.toEquiv w row = 0 :=
+        v13RealLinearNoTargetBitJuntaFlipWitness_kernel
+          i₀ observer A hnot
+      have hdec :=
+        v13RealLinearBitJunta_decide_same_after_kernel_add
+          observer A.val omega.val.2 w hkernel
+      have htargetNe :
+          v13RealLinearTarget i₀
+              ({ x := f2AddVec omega.val.2 w, A := A.val } :
+                V13RealLinearWorld m) ≠
+            v13RealLinearTarget i₀
+              ({ x := omega.val.2, A := A.val } :
+                V13RealLinearWorld m) :=
+        v13RealLinear_target_changes_after_kernel_hit
+          A.val omega.val.2 w
+          (v13RealLinearNoTargetBitJuntaFlipWitness_target
+            i₀ observer A hnot)
+      intro hbad
+      apply htargetNe
+      calc
+        v13RealLinearTarget i₀
+            ({ x := f2AddVec omega.val.2 w, A := A.val } :
+              V13RealLinearWorld m) =
+          observer.decide
+            (v13RealLinearNoTargetRowsPublicInput
+              (A, f2AddVec omega.val.2 w)) := hbad.symm
+        _ = observer.decide
+            (v13RealLinearNoTargetRowsPublicInput omega.val) := by
+              simpa [v13RealLinearNoTargetRowsPublicInput] using hdec.symm
+        _ = v13RealLinearTarget i₀
+            ({ x := omega.val.2, A := A.val } :
+              V13RealLinearWorld m) := by
+              simpa [v13RealLinearTarget] using omega.property.1⟩
+  inj' := by
+    intro omega₀ omega₁ hmap
+    apply Subtype.ext
+    let A₀ := omega₀.val.1
+    let A₁ := omega₁.val.1
+    let w₀ := v13RealLinearNoTargetBitJuntaFlipWitness i₀ observer A₀
+    let w₁ := v13RealLinearNoTargetBitJuntaFlipWitness i₀ observer A₁
+    have hpair :
+        (A₀, f2AddVec omega₀.val.2 w₀) =
+          (A₁, f2AddVec omega₁.val.2 w₁) := by
+      exact congrArg Subtype.val hmap
+    have hA : A₀ = A₁ := by
+      injection hpair
+    have hxflip :
+        f2AddVec omega₀.val.2 w₀ =
+          f2AddVec omega₁.val.2 w₁ := by
+      injection hpair
+    have hw : w₀ = w₁ := by
+      dsimp [w₀, w₁]
+      rw [hA]
+    apply Prod.ext
+    · exact hA
+    · funext row
+      have hxpoint := congrFun hxflip row
+      rw [hw] at hxpoint
+      simp [f2AddVec] at hxpoint ⊢
+      calc
+        omega₀.val.2 row =
+            omega₀.val.2 row + w₁ row + w₁ row := by
+              rw [f2_add_right_self]
+        _ = omega₁.val.2 row + w₁ row + w₁ row := by
+              rw [hxpoint]
+        _ = omega₁.val.2 row := by
+              rw [f2_add_right_self]
+
+noncomputable def
+    v13RealLinearNoTargetBitJuntaCorrectToUnblockedOrBlocked
+    {m j : Nat} (i₀ : Fin m)
+    (observer : V13RealLinearBitJuntaObserver m j) :
+    V13RealLinearNoTargetBitJuntaCorrect i₀ observer ↪
+      V13RealLinearNoTargetBitJuntaUnblockedCorrect i₀ observer ⊕
+        V13RealLinearNoTargetBitJuntaBlockedWorld i₀ observer where
+  toFun omega := by
+    classical
+    by_cases hblocked :
+        V13RealLinearNoTargetBitJuntaBlockedMap i₀ observer omega.val.1
+    · exact Sum.inr ⟨omega.val, hblocked⟩
+    · exact Sum.inl ⟨omega.val, omega.property, hblocked⟩
+  inj' := by
+    intro omega₀ omega₁ hmap
+    classical
+    by_cases hblocked₀ :
+        V13RealLinearNoTargetBitJuntaBlockedMap i₀ observer omega₀.val.1 <;>
+      by_cases hblocked₁ :
+        V13RealLinearNoTargetBitJuntaBlockedMap i₀ observer omega₁.val.1 <;>
+      simp [hblocked₀, hblocked₁] at hmap
+    · exact
+        Subtype.ext
+          (congrArg
+            (fun omega :
+              V13RealLinearNoTargetBitJuntaBlockedWorld i₀ observer =>
+                omega.val)
+            hmap)
+    · exact
+        Subtype.ext
+          (congrArg
+            (fun omega :
+              V13RealLinearNoTargetBitJuntaUnblockedCorrect i₀ observer =>
+                omega.val)
+            hmap)
+
+noncomputable def
+    v13RealLinearNoTargetBitJuntaWorldCorrectIncorrectEquiv
+    {m j : Nat} (i₀ : Fin m)
+    (observer : V13RealLinearBitJuntaObserver m j) :
+    V13RealLinearNoTargetRowsWorld m i₀ ≃
+      V13RealLinearNoTargetBitJuntaCorrect i₀ observer ⊕
+        V13RealLinearNoTargetBitJuntaIncorrect i₀ observer where
+  toFun omega := by
+    classical
+    by_cases hcorrect :
+        observer.decide (v13RealLinearNoTargetRowsPublicInput omega) =
+          omega.2 i₀
+    · exact Sum.inl ⟨omega, hcorrect⟩
+    · exact Sum.inr ⟨omega, hcorrect⟩
+  invFun y :=
+    Sum.elim
+      (fun omega : V13RealLinearNoTargetBitJuntaCorrect i₀ observer =>
+        omega.val)
+      (fun omega : V13RealLinearNoTargetBitJuntaIncorrect i₀ observer =>
+        omega.val)
+      y
+  left_inv omega := by
+    classical
+    by_cases hcorrect :
+        observer.decide (v13RealLinearNoTargetRowsPublicInput omega) =
+          omega.2 i₀ <;> simp [hcorrect]
+  right_inv y := by
+    classical
+    cases y with
+    | inl omega =>
+        change
+          (if hcorrect :
+              observer.decide
+                  (v13RealLinearNoTargetRowsPublicInput omega.val) =
+                omega.val.2 i₀ then
+              Sum.inl
+                (⟨omega.val, hcorrect⟩ :
+                  V13RealLinearNoTargetBitJuntaCorrect i₀ observer)
+            else
+              Sum.inr
+                (⟨omega.val, hcorrect⟩ :
+                  V13RealLinearNoTargetBitJuntaIncorrect i₀ observer)) =
+            Sum.inl omega
+        rw [dif_pos omega.property]
+        rfl
+    | inr omega =>
+        change
+          (if hcorrect :
+              observer.decide
+                  (v13RealLinearNoTargetRowsPublicInput omega.val) =
+                omega.val.2 i₀ then
+              Sum.inl
+                (⟨omega.val, hcorrect⟩ :
+                  V13RealLinearNoTargetBitJuntaCorrect i₀ observer)
+            else
+              Sum.inr
+                (⟨omega.val, hcorrect⟩ :
+                  V13RealLinearNoTargetBitJuntaIncorrect i₀ observer)) =
+            Sum.inr omega
+        rw [dif_neg omega.property]
+        rfl
+
+theorem
+    v13RealLinearNoTargetBitJunta_unblockedCorrect_card_le_incorrect
+    {m j : Nat} (i₀ : Fin m)
+    (observer : V13RealLinearBitJuntaObserver m j) :
+    Fintype.card
+        (V13RealLinearNoTargetBitJuntaUnblockedCorrect i₀ observer) ≤
+      Fintype.card
+        (V13RealLinearNoTargetBitJuntaIncorrect i₀ observer) :=
+  Fintype.card_le_of_embedding
+    (v13RealLinearNoTargetBitJuntaUnblockedCorrectToIncorrect
+      i₀ observer)
+
+theorem
+    v13RealLinearNoTargetBitJunta_correct_card_le_incorrect_add_blocked
+    {m j : Nat} (i₀ : Fin m)
+    (observer : V13RealLinearBitJuntaObserver m j) :
+    Fintype.card
+        (V13RealLinearNoTargetBitJuntaCorrect i₀ observer) ≤
+      Fintype.card
+          (V13RealLinearNoTargetBitJuntaIncorrect i₀ observer) +
+        Fintype.card
+          (V13RealLinearNoTargetBitJuntaBlockedWorld i₀ observer) := by
+  have hsplit :
+      Fintype.card
+          (V13RealLinearNoTargetBitJuntaCorrect i₀ observer) ≤
+        Fintype.card
+          (V13RealLinearNoTargetBitJuntaUnblockedCorrect i₀ observer ⊕
+            V13RealLinearNoTargetBitJuntaBlockedWorld i₀ observer) :=
+    Fintype.card_le_of_embedding
+      (v13RealLinearNoTargetBitJuntaCorrectToUnblockedOrBlocked
+        i₀ observer)
+  rw [Fintype.card_sum] at hsplit
+  have hunblocked :=
+    v13RealLinearNoTargetBitJunta_unblockedCorrect_card_le_incorrect
+      i₀ observer
+  omega
+
+theorem
+    v13RealLinearNoTargetBitJunta_world_card_eq_correct_add_incorrect
+    {m j : Nat} (i₀ : Fin m)
+    (observer : V13RealLinearBitJuntaObserver m j) :
+    Fintype.card (V13RealLinearNoTargetRowsWorld m i₀) =
+      Fintype.card
+          (V13RealLinearNoTargetBitJuntaCorrect i₀ observer) +
+        Fintype.card
+          (V13RealLinearNoTargetBitJuntaIncorrect i₀ observer) := by
+  simpa [Fintype.card_sum] using
+    Fintype.card_congr
+      (v13RealLinearNoTargetBitJuntaWorldCorrectIncorrectEquiv
+        i₀ observer)
+
+noncomputable def v13RealLinearNoTargetBitJuntaBlockedMass {m j : Nat}
+    (i₀ : Fin m) (observer : V13RealLinearBitJuntaObserver m j) : Rat :=
+  (Fintype.card
+      (V13RealLinearNoTargetBitJuntaBlockedWorld i₀ observer) : Rat) /
+    (Fintype.card (V13RealLinearNoTargetRowsWorld m i₀) : Rat)
+
+def V13RealLinearNoTargetBitJuntaKernelFlipSurchargeBound
+    (m j : Nat) : Prop :=
+  ∀ (i₀ : Fin m) (observer : V13RealLinearBitJuntaObserver m j),
+    v13RealLinearNoTargetBitJuntaSuccess i₀ observer ≤
+      (1 / 2 : Rat) +
+        v13RealLinearNoTargetBitJuntaBlockedMass i₀ observer
+
+theorem v13RealLinearNoTargetBitJunta_kernelFlipSurchargeBound
+    (m j : Nat) :
+    V13RealLinearNoTargetBitJuntaKernelFlipSurchargeBound m j := by
+  classical
+  intro i₀ observer
+  unfold v13RealLinearNoTargetBitJuntaSuccess
+  unfold v13RealLinearNoTargetBitJuntaBlockedMass
+  let C := Fintype.card (V13RealLinearNoTargetBitJuntaCorrect i₀ observer)
+  let I := Fintype.card (V13RealLinearNoTargetBitJuntaIncorrect i₀ observer)
+  let B := Fintype.card (V13RealLinearNoTargetBitJuntaBlockedWorld i₀ observer)
+  let T := Fintype.card (V13RealLinearNoTargetRowsWorld m i₀)
+  have hcardNat : C ≤ I + B := by
+    simpa [C, I, B] using
+      v13RealLinearNoTargetBitJunta_correct_card_le_incorrect_add_blocked
+        i₀ observer
+  have hworldNat : T = C + I := by
+    simpa [T, C, I] using
+      v13RealLinearNoTargetBitJunta_world_card_eq_correct_add_incorrect
+        i₀ observer
+  change (C : Rat) / (T : Rat) ≤ (1 / 2 : Rat) + (B : Rat) / (T : Rat)
+  by_cases hTzero : T = 0
+  · simp [hTzero]
+  · have hTposNat : 0 < T := Nat.pos_of_ne_zero hTzero
+    have hTpos : (0 : Rat) < (T : Rat) := by exact_mod_cast hTposNat
+    have hcardRat : (C : Rat) ≤ (I : Rat) + (B : Rat) := by
+      exact_mod_cast hcardNat
+    have hworldRat : (T : Rat) = (C : Rat) + (I : Rat) := by
+      exact_mod_cast hworldNat
+    rw [div_le_iff₀ hTpos]
+    field_simp [hTpos.ne']
+    linarith [hcardRat, hworldRat]
+
+noncomputable def
+    v13RealLinearNoTargetBitJuntaBlockedWorldEquivBlockedMapProd
+    {m j : Nat} (i₀ : Fin m)
+    (observer : V13RealLinearBitJuntaObserver m j) :
+    V13RealLinearNoTargetBitJuntaBlockedWorld i₀ observer ≃
+      V13RealLinearNoTargetBitJuntaBlockedMapSet i₀ observer ×
+        F2Vec m where
+  toFun omega := ⟨⟨omega.val.1, omega.property⟩, omega.val.2⟩
+  invFun omega := ⟨(omega.1.val, omega.2), omega.1.property⟩
+  left_inv omega := by
+    rfl
+  right_inv omega := by
+    rfl
+
+theorem v13RealLinearNoTargetBitJuntaBlockedWorld_card_eq
+    {m j : Nat} (i₀ : Fin m)
+    (observer : V13RealLinearBitJuntaObserver m j) :
+    Fintype.card
+        (V13RealLinearNoTargetBitJuntaBlockedWorld i₀ observer) =
+      Fintype.card
+          (V13RealLinearNoTargetBitJuntaBlockedMapSet i₀ observer) *
+        Fintype.card (F2Vec m) := by
+  classical
+  rw [Fintype.card_congr
+    (v13RealLinearNoTargetBitJuntaBlockedWorldEquivBlockedMapProd
+      i₀ observer)]
+  simp [Fintype.card_prod]
+
+theorem
+    v13RealLinearNoTargetBitJuntaBlockedMass_le_epsilon2_of_counting
+    {m j : Nat}
+    (hcount : V13RealLinearNoTargetBitJuntaBlockedCountingBound m j)
+    (i₀ : Fin m) (observer : V13RealLinearBitJuntaObserver m j) :
+    v13RealLinearNoTargetBitJuntaBlockedMass i₀ observer ≤
+      v13RealLinearBitJuntaEpsilon2 j m := by
+  classical
+  unfold v13RealLinearNoTargetBitJuntaBlockedMass
+  unfold v13RealLinearBitJuntaEpsilon2
+  rw [v13RealLinearNoTargetBitJuntaBlockedWorld_card_eq i₀ observer]
+  rw [Fintype.card_prod, v13RealLinear_f2vec_card]
+  let B := Fintype.card
+    (V13RealLinearNoTargetBitJuntaBlockedMapSet i₀ observer)
+  let T := Fintype.card (V13RealLinearNoTargetRowsMap m i₀)
+  let M := 2 ^ m
+  let Q := 4 * 2 ^ j
+  have hcard : M * B ≤ Q * T := by
+    simpa [B, T, M, Q, Nat.mul_comm, Nat.mul_left_comm, Nat.mul_assoc]
+      using hcount i₀ observer
+  have hMposNat : 0 < M := by
+    dsimp [M]
+    positivity
+  have hMpos : (0 : Rat) < (M : Rat) := by
+    exact_mod_cast hMposNat
+  have hcardRat : (M : Rat) * (B : Rat) ≤ (Q : Rat) * (T : Rat) := by
+    exact_mod_cast hcard
+  have hQrat : (4 : Rat) * (2 : Rat) ^ j = (Q : Rat) := by
+    dsimp [Q]
+    norm_num
+  have hMrat : (2 : Rat) ^ m = (M : Rat) := by
+    dsimp [M]
+    norm_num
+  rw [hQrat, hMrat]
+  change ((B * M : Nat) : Rat) / ((T * M : Nat) : Rat) ≤
+    (Q : Rat) / (M : Rat)
+  rw [Nat.cast_mul, Nat.cast_mul]
+  by_cases hTzero : T = 0
+  · have hB_le_T : B ≤ T := by
+      dsimp [B, T]
+      exact
+        Fintype.card_subtype_le
+          (fun A : V13RealLinearNoTargetRowsMap m i₀ =>
+            V13RealLinearNoTargetBitJuntaBlockedMap i₀ observer A)
+    have hBzero : B = 0 :=
+      Nat.eq_zero_of_le_zero (by simpa [hTzero] using hB_le_T)
+    have hnonneg : 0 ≤ (Q : Rat) / (M : Rat) := by
+      positivity
+    simpa [hBzero, hTzero] using hnonneg
+  · have hTposNat : 0 < T := Nat.pos_of_ne_zero hTzero
+    have hTpos : (0 : Rat) < (T : Rat) := by
+      exact_mod_cast hTposNat
+    field_simp [hTpos.ne', hMpos.ne']
+    simpa [mul_comm, mul_left_comm, mul_assoc] using hcardRat
+
+theorem v13RealLinearNoTargetBitJuntaSuccessBound_of_blockedCounting
+    {m j : Nat}
+    (hcount : V13RealLinearNoTargetBitJuntaBlockedCountingBound m j) :
+    V13RealLinearNoTargetBitJuntaSuccessBound m j := by
+  intro i₀ observer
+  have hflip :=
+    v13RealLinearNoTargetBitJunta_kernelFlipSurchargeBound m j i₀ observer
+  have hblocked :=
+    v13RealLinearNoTargetBitJuntaBlockedMass_le_epsilon2_of_counting
+      hcount i₀ observer
+  linarith
+
+theorem v13RealLinearNoTargetBitJuntaSuccessBound_of_budgetedRowsetGeneration
+    {m j : Nat}
+    (hcount : V13RealLinearNoTargetBudgetedRowsetGenerationCountingBound m j) :
+    V13RealLinearNoTargetBitJuntaSuccessBound m j :=
+  v13RealLinearNoTargetBitJuntaSuccessBound_of_blockedCounting
+    (V13RealLinearNoTargetBitJuntaBlockedCountingBound_of_budgetedRowsetGeneration
+      hcount)
+
+theorem v13RealLinearNoTargetBitJuntaSuccessBound_zeroBudget (m : Nat) :
+    V13RealLinearNoTargetBitJuntaSuccessBound m 0 :=
+  v13RealLinearNoTargetBitJuntaSuccessBound_of_budgetedRowsetGeneration
+    (V13RealLinearNoTargetBudgetedRowsetGenerationCountingBound_zeroBudget m)
+
+theorem v13RealLinearNoTargetBitJuntaSuccessBound_oneBudget (m : Nat) :
+    V13RealLinearNoTargetBitJuntaSuccessBound m 1 :=
+  v13RealLinearNoTargetBitJuntaSuccessBound_of_budgetedRowsetGeneration
+    (V13RealLinearNoTargetBudgetedRowsetGenerationCountingBound_oneBudget m)
+
+theorem v13RealLinearNoTargetBitJuntaSuccessBound_twoBudget (m : Nat) :
+    V13RealLinearNoTargetBitJuntaSuccessBound m 2 :=
+  v13RealLinearNoTargetBitJuntaSuccessBound_of_budgetedRowsetGeneration
+    (V13RealLinearNoTargetBudgetedRowsetGenerationCountingBound_twoBudget m)
+
+theorem v13RealLinearNoTargetBitJuntaSuccessBound_allBudget (m j : Nat) :
+    V13RealLinearNoTargetBitJuntaSuccessBound m j :=
+  v13RealLinearNoTargetBitJuntaSuccessBound_of_budgetedRowsetGeneration
+    (V13RealLinearNoTargetBudgetedRowsetGenerationCountingBound_allBudget m j)
+
+lemma v13_zmod2_eq_of_one_add_ne {a b : ZMod 2}
+    (h : 1 + a ≠ b) : a = b := by
+  refine
+    v13_zmod2_eq_of_ne_left
+      (a := a) (b := 1 + a) (c := b) ?_ ?_
+  · intro hb
+    exact h hb.symm
+  · intro ha
+    have hself : a + 1 = a := by
+      calc
+        a + 1 = 1 + a := by rw [add_comm]
+        _ = a := ha.symm
+    exact v13_zmod2_add_one_ne_self a hself
+
+/-- A parity observer is the XOR of the listed elementary public coordinates. -/
+structure V13RealLinearParityObserver (m j : Nat) where
+  coordinate : Fin j → Option (V13RealLinearPublicCoordinate m)
+
+noncomputable def V13RealLinearParityObserver.value {m j : Nat}
+    (observer : V13RealLinearParityObserver m j)
+    (publicInput : V13RealLinearPublic m) : ZMod 2 :=
+  ∑ k : Fin j,
+    match observer.coordinate k with
+    | none => 0
+    | some coord => v13RealLinearCoordinateValue coord publicInput
+
+noncomputable def V13RealLinearParityObserver.toBitJunta {m j : Nat}
+    (observer : V13RealLinearParityObserver m j) :
+    V13RealLinearBitJuntaObserver m j where
+  coordinate := observer.coordinate
+  decide := observer.value
+  factorsThrough := by
+    intro public₀ public₁ hsame
+    unfold V13RealLinearParityObserver.value
+    apply Finset.sum_congr rfl
+    intro k _hk
+    cases hcoord : observer.coordinate k with
+    | none => rfl
+    | some coord =>
+        simpa [hcoord] using hsame k coord hcoord
+
+noncomputable def v13RealLinearParityObserverConstantTerm {m : Nat}
+    (A : V13F2LinearEquiv m)
+    (coord : Option (V13RealLinearPublicCoordinate m)) : ZMod 2 :=
+  match coord with
+  | some (.mapValue probe row) => A.toEquiv probe row
+  | some (.inverseValue probe row) => A.toEquiv.symm probe row
+  | some (.rhs _row) => 0
+  | none => 0
+
+noncomputable def v13RealLinearParityObserverRhsTerm {m : Nat}
+    (A : V13F2LinearEquiv m) (x : F2Vec m)
+    (coord : Option (V13RealLinearPublicCoordinate m)) : ZMod 2 :=
+  match coord with
+  | some (.rhs row) => A.toEquiv x row
+  | some (.mapValue _probe _row) => 0
+  | some (.inverseValue _probe _row) => 0
+  | none => 0
+
+noncomputable def v13RealLinearParityObserverConstant {m j : Nat}
+    (observer : V13RealLinearParityObserver m j)
+    (A : V13F2LinearEquiv m) : ZMod 2 :=
+  ∑ k : Fin j,
+    v13RealLinearParityObserverConstantTerm A (observer.coordinate k)
+
+noncomputable def v13RealLinearParityObserverRhsParity {m j : Nat}
+    (observer : V13RealLinearParityObserver m j)
+    (A : V13F2LinearEquiv m) (x : F2Vec m) : ZMod 2 :=
+  ∑ k : Fin j,
+    v13RealLinearParityObserverRhsTerm A x (observer.coordinate k)
+
+theorem v13RealLinearParityObserver_value_publicInput_eq
+    {m j : Nat} (observer : V13RealLinearParityObserver m j)
+    (A : V13F2LinearEquiv m) (x : F2Vec m) :
+    observer.value
+        (v13RealLinearPublicInput
+          ({ x := x, A := A } : V13RealLinearWorld m)) =
+      v13RealLinearParityObserverConstant observer A +
+        v13RealLinearParityObserverRhsParity observer A x := by
+  classical
+  unfold V13RealLinearParityObserver.value
+    v13RealLinearParityObserverConstant
+    v13RealLinearParityObserverRhsParity
+  rw [← Finset.sum_add_distrib]
+  apply Finset.sum_congr rfl
+  intro k _hk
+  cases hcoord : observer.coordinate k with
+  | none =>
+      simp [v13RealLinearParityObserverConstantTerm,
+        v13RealLinearParityObserverRhsTerm]
+  | some coord =>
+      cases coord <;>
+        simp [v13RealLinearParityObserverConstantTerm,
+          v13RealLinearParityObserverRhsTerm, v13RealLinearCoordinateValue,
+          v13RealLinearPublicInput]
+
+theorem v13RealLinearParityObserver_rhsParity_zero
+    {m j : Nat} (observer : V13RealLinearParityObserver m j)
+    (A : V13F2LinearEquiv m) :
+    v13RealLinearParityObserverRhsParity observer A (f2ZeroVec m) = 0 := by
+  classical
+  unfold v13RealLinearParityObserverRhsParity
+  apply Finset.sum_eq_zero
+  intro k _hk
+  cases hcoord : observer.coordinate k with
+  | none =>
+      simp [v13RealLinearParityObserverRhsTerm]
+  | some coord =>
+      cases coord <;>
+        simp [v13RealLinearParityObserverRhsTerm, A.map_zero,
+          f2ZeroVec]
+
+def V13RealLinearParityObserverRhsParityMatchesTarget {m j : Nat}
+    (observer : V13RealLinearParityObserver m j)
+    (A : V13F2LinearEquiv m) (i₀ : Fin m) : Prop :=
+  ∀ x : F2Vec m,
+    v13RealLinearParityObserverRhsParity observer A x = x i₀
+
+def V13RealLinearParityObserverDeterminesTarget {m j : Nat}
+    (observer : V13RealLinearParityObserver m j)
+    (A : V13F2LinearEquiv m) (i₀ : Fin m) : Prop :=
+  ∀ x : F2Vec m,
+    observer.value
+        (v13RealLinearPublicInput
+          ({ x := x, A := A } : V13RealLinearWorld m)) =
+      x i₀
+
+def V13RealLinearParityObserverDeterminesTargetComplement {m j : Nat}
+    (observer : V13RealLinearParityObserver m j)
+    (A : V13F2LinearEquiv m) (i₀ : Fin m) : Prop :=
+  ∀ x : F2Vec m,
+    observer.value
+        (v13RealLinearPublicInput
+          ({ x := x, A := A } : V13RealLinearWorld m)) ≠
+      x i₀
+
+theorem v13RealLinearParityObserver_determinesTarget_iff
+    {m j : Nat} (observer : V13RealLinearParityObserver m j)
+    (A : V13F2LinearEquiv m) (i₀ : Fin m) :
+    V13RealLinearParityObserverDeterminesTarget observer A i₀ ↔
+      v13RealLinearParityObserverConstant observer A = 0 ∧
+        V13RealLinearParityObserverRhsParityMatchesTarget
+          observer A i₀ := by
+  constructor
+  · intro h
+    have hzeroValue := h (f2ZeroVec m)
+    have hdecomp :=
+      v13RealLinearParityObserver_value_publicInput_eq
+        observer A (f2ZeroVec m)
+    have hrhsZero :=
+      v13RealLinearParityObserver_rhsParity_zero observer A
+    have hconst : v13RealLinearParityObserverConstant observer A = 0 := by
+      calc
+        v13RealLinearParityObserverConstant observer A =
+            v13RealLinearParityObserverConstant observer A +
+              v13RealLinearParityObserverRhsParity
+                observer A (f2ZeroVec m) := by
+              rw [hrhsZero, add_zero]
+        _ = observer.value
+              (v13RealLinearPublicInput
+                ({ x := f2ZeroVec m, A := A } :
+                  V13RealLinearWorld m)) := hdecomp.symm
+        _ = (f2ZeroVec m) i₀ := hzeroValue
+        _ = 0 := by simp [f2ZeroVec]
+    refine ⟨hconst, ?_⟩
+    intro x
+    have hx := h x
+    have hdx :=
+      v13RealLinearParityObserver_value_publicInput_eq observer A x
+    calc
+      v13RealLinearParityObserverRhsParity observer A x =
+          v13RealLinearParityObserverConstant observer A +
+            v13RealLinearParityObserverRhsParity observer A x := by
+            rw [hconst, zero_add]
+      _ = observer.value
+            (v13RealLinearPublicInput
+              ({ x := x, A := A } : V13RealLinearWorld m)) := hdx.symm
+      _ = x i₀ := hx
+  · rintro ⟨hconst, hmatch⟩ x
+    have hdx :=
+      v13RealLinearParityObserver_value_publicInput_eq observer A x
+    calc
+      observer.value
+          (v13RealLinearPublicInput
+            ({ x := x, A := A } : V13RealLinearWorld m)) =
+          v13RealLinearParityObserverConstant observer A +
+            v13RealLinearParityObserverRhsParity observer A x := hdx
+      _ = x i₀ := by rw [hconst, zero_add, hmatch x]
+
+theorem v13RealLinearParityObserver_determinesTargetComplement_iff
+    {m j : Nat} (observer : V13RealLinearParityObserver m j)
+    (A : V13F2LinearEquiv m) (i₀ : Fin m) :
+    V13RealLinearParityObserverDeterminesTargetComplement observer A i₀ ↔
+      v13RealLinearParityObserverConstant observer A = 1 ∧
+        V13RealLinearParityObserverRhsParityMatchesTarget
+          observer A i₀ := by
+  constructor
+  · intro h
+    have hzeroNe := h (f2ZeroVec m)
+    have hdecomp :=
+      v13RealLinearParityObserver_value_publicInput_eq
+        observer A (f2ZeroVec m)
+    have hrhsZero :=
+      v13RealLinearParityObserver_rhsParity_zero observer A
+    have hconstNe :
+        v13RealLinearParityObserverConstant observer A ≠ 0 := by
+      intro hzero
+      apply hzeroNe
+      calc
+        observer.value
+            (v13RealLinearPublicInput
+              ({ x := f2ZeroVec m, A := A } :
+                V13RealLinearWorld m)) =
+            v13RealLinearParityObserverConstant observer A +
+              v13RealLinearParityObserverRhsParity
+                observer A (f2ZeroVec m) := hdecomp
+        _ = 0 := by rw [hzero, hrhsZero, zero_add]
+        _ = (f2ZeroVec m) i₀ := by simp [f2ZeroVec]
+    have hconst :
+        v13RealLinearParityObserverConstant observer A = 1 :=
+      v13_zmod2_eq_one_of_ne_zero _ hconstNe
+    refine ⟨hconst, ?_⟩
+    intro x
+    have hxne := h x
+    have hdx :=
+      v13RealLinearParityObserver_value_publicInput_eq observer A x
+    have honeAddNe :
+        1 + v13RealLinearParityObserverRhsParity observer A x ≠
+          x i₀ := by
+      intro hbad
+      apply hxne
+      calc
+        observer.value
+            (v13RealLinearPublicInput
+              ({ x := x, A := A } : V13RealLinearWorld m)) =
+            v13RealLinearParityObserverConstant observer A +
+              v13RealLinearParityObserverRhsParity observer A x := hdx
+        _ = 1 + v13RealLinearParityObserverRhsParity observer A x := by
+          rw [hconst]
+        _ = x i₀ := hbad
+    exact v13_zmod2_eq_of_one_add_ne honeAddNe
+  · rintro ⟨hconst, hmatch⟩ x
+    have hdx :=
+      v13RealLinearParityObserver_value_publicInput_eq observer A x
+    intro hbad
+    have htarget : x i₀ + 1 = x i₀ := by
+      calc
+        x i₀ + 1 = 1 + x i₀ := by rw [add_comm]
+        _ = 1 + v13RealLinearParityObserverRhsParity observer A x := by
+          rw [← hmatch x]
+        _ = v13RealLinearParityObserverConstant observer A +
+              v13RealLinearParityObserverRhsParity observer A x := by
+          rw [hconst]
+        _ = observer.value
+              (v13RealLinearPublicInput
+                ({ x := x, A := A } : V13RealLinearWorld m)) := hdx.symm
+        _ = x i₀ := hbad
+    exact v13_zmod2_add_one_ne_self (x i₀) htarget
+
+theorem v13RealLinearParityObserver_correct_card_eq_incorrect_card_of_not_blocked
+    {m j : Nat} (observer : V13RealLinearParityObserver m j)
+    (A : V13F2LinearEquiv m) (i₀ : Fin m)
+    (hnot : ¬ V13RealLinearBitJuntaBlocked observer.toBitJunta A i₀) :
+    Fintype.card
+        (V13RealLinearBitJuntaFixedCorrect observer.toBitJunta A i₀) =
+      Fintype.card
+        (V13RealLinearBitJuntaFixedIncorrect observer.toBitJunta A i₀) :=
+  v13RealLinearBitJunta_correct_card_eq_incorrect_card_of_not_blocked
+    observer.toBitJunta A i₀ hnot
+
+end Mettapedia.Computability.PNP

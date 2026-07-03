@@ -1,0 +1,330 @@
+import Mettapedia.FluidDynamics.NavierStokes.NavierStokesEnergySchwartzNoUniformDissipation
+
+/-!
+# Regression checks for no-uniform past dissipation obstructions
+-/
+
+set_option autoImplicit false
+
+noncomputable section
+
+namespace Mettapedia
+namespace FluidDynamics
+namespace NavierStokes
+
+open scoped ContDiff Laplacian RealInnerProductSpace LineDeriv SchwartzMap Topology
+
+namespace Regression
+
+theorem stokes_positive_viscosity_profile_gap_obstruction_regression
+    {ν : ℝ} (hν : 0 < ν)
+    (S : NonzeroSchwartzConcreteNavierStokesSolution ν)
+    (hconv : ∀ t x, spatialConvection S.velocity t x = 0)
+    (hpressure : ∀ t x, spatialPressureGradient S.pressure t x = 0)
+    {lam T : NSTime} (hlam : 0 < lam)
+    (hneT : ∃ xT : NSSpace, S.velocity T xT ≠ 0) :
+    NonzeroSchwartzStokesFlowKernel ν S.velocity S.pressure ∧
+      (¬ ∀ t : NSTime, t ≤ T →
+        lam * normalizedKineticEnergy S.velocity t ≤
+          coordinateEnergyDissipationRate S.velocity ν t) ∧
+      (¬ ∀ t : NSTime, t ≤ T →
+        lam * normalizedKineticEnergy S.velocity t ≤
+          coordinateEnstrophyAt S.velocity t) ∧
+      (¬ ∀ t : NSTime, t ≤ T →
+        lam ≤
+          coordinateEnstrophyAt S.velocity t /
+            normalizedKineticEnergy S.velocity t) ∧
+      ∃ t : NSTime,
+        t ≤ T ∧
+          (∃ x : NSSpace, S.velocity t x ≠ 0) ∧
+            0 < coordinateEnstrophyAt S.velocity t ∧
+              0 < normalizedKineticEnergy S.velocity t ∧
+                0 <
+                  coordinateEnstrophyAt S.velocity t /
+                    normalizedKineticEnergy S.velocity t ∧
+                  coordinateEnstrophyAt S.velocity t /
+                      normalizedKineticEnergy S.velocity t < lam := by
+  exact
+    S.stokesFlow_positiveViscosity_profileGapObstruction_packet
+      hν hconv hpressure hlam hneT
+
+theorem stokes_endpoint_strict_energy_low_rayleigh_regression
+    {ν : ℝ} (hν : 0 < ν)
+    (S : NonzeroSchwartzConcreteNavierStokesSolution ν)
+    (hconv : ∀ t x, spatialConvection S.velocity t x = 0)
+    (hpressure : ∀ t x, spatialPressureGradient S.pressure t x = 0)
+    {T : NSTime} (hneT : ∃ xT : NSSpace, S.velocity T xT ≠ 0) :
+    NonzeroSchwartzStokesFlowKernel ν S.velocity S.pressure ∧
+      SchwartzNonzeroTimeSupportKernel ν S.velocity S.pressure ∧
+      (∀ {s t : NSTime}, s < t → t ≤ T →
+        normalizedKineticEnergy S.velocity t <
+          normalizedKineticEnergy S.velocity s) ∧
+      ∀ lam : NSTime, 0 < lam →
+        ∃ t : NSTime,
+          t ≤ T ∧
+            (∃ x : NSSpace, S.velocity t x ≠ 0) ∧
+              0 < coordinateEnstrophyAt S.velocity t ∧
+                0 < normalizedKineticEnergy S.velocity t ∧
+                  0 <
+                    coordinateEnstrophyAt S.velocity t /
+                      normalizedKineticEnergy S.velocity t ∧
+                    coordinateEnstrophyAt S.velocity t /
+                        normalizedKineticEnergy S.velocity t < lam := by
+  exact
+    S.stokesFlow_endpointStrictEnergy_and_smallPastCoordinateEnstrophyRatio_packet
+      hν hconv hpressure hneT
+
+theorem stokes_endpoint_no_repeated_velocity_slice_regression
+    {ν : ℝ} (hν : 0 < ν)
+    (S : NonzeroSchwartzConcreteNavierStokesSolution ν)
+    (hconv : ∀ t x, spatialConvection S.velocity t x = 0)
+    (hpressure : ∀ t x, spatialPressureGradient S.pressure t x = 0)
+    {T : NSTime} (hneT : ∃ xT : NSSpace, S.velocity T xT ≠ 0) :
+    NonzeroSchwartzStokesFlowKernel ν S.velocity S.pressure ∧
+      SchwartzNonzeroTimeSupportKernel ν S.velocity S.pressure ∧
+      ∀ {s t : NSTime}, s < t → t ≤ T →
+        ¬ ∀ x : NSSpace, S.velocity t x = S.velocity s x := by
+  exact
+    S.stokesFlow_endpoint_noRepeatedVelocitySlice_packet
+      hν hconv hpressure hneT
+
+theorem future_coordinate_dissipation_no_uniform_gap_regression
+    {ν κ T : ℝ} (hκ : 0 < κ)
+    (S : SchwartzConcreteNavierStokesSolution ν) :
+    ¬ ∀ t : NSTime, T ≤ t →
+      κ ≤ coordinateEnergyDissipationRate S.velocity ν t := by
+  exact S.not_forall_future_coordinateEnergyDissipationRate_ge hκ
+
+theorem future_coordinate_dissipation_small_sample_regression
+    {ν κ T : ℝ} (hκ : 0 < κ)
+    (S : SchwartzConcreteNavierStokesSolution ν) :
+    ∃ t : NSTime,
+      T ≤ t ∧ coordinateEnergyDissipationRate S.velocity ν t < κ := by
+  exact S.exists_future_coordinateEnergyDissipationRate_lt hκ
+
+theorem stokes_future_no_uniform_dissipation_packet_regression
+    {ν κ T : ℝ} (hκ : 0 < κ)
+    (S : NonzeroSchwartzConcreteNavierStokesSolution ν)
+    (hconv : ∀ t x, spatialConvection S.velocity t x = 0)
+    (hpressure : ∀ t x, spatialPressureGradient S.pressure t x = 0) :
+    NonzeroSchwartzStokesFlowKernel ν S.velocity S.pressure ∧
+      ∃ t : NSTime,
+        T ≤ t ∧ coordinateEnergyDissipationRate S.velocity ν t < κ := by
+  exact S.stokesFlow_noUniformFutureDissipation_packet hconv hpressure hκ
+
+theorem not_exists_nonzero_future_uniform_dissipation_gap_regression
+    {ν κ : ℝ} (hκ : 0 < κ) :
+    ¬ ∃ S : NonzeroSchwartzConcreteNavierStokesSolution ν,
+      ∃ T : NSTime,
+        ∀ t : NSTime, T ≤ t →
+          κ ≤ coordinateEnergyDissipationRate S.velocity ν t := by
+  exact not_exists_nonzeroSchwartzConcreteSolution_uniform_future_dissipation_gap hκ
+
+theorem not_exists_stokes_future_uniform_dissipation_gap_regression
+    {ν κ : ℝ} (hκ : 0 < κ) :
+    ¬ ∃ S : NonzeroSchwartzConcreteNavierStokesSolution ν,
+      (∀ t x, spatialConvection S.velocity t x = 0) ∧
+        (∀ t x, spatialPressureGradient S.pressure t x = 0) ∧
+          ∃ T : NSTime,
+            ∀ t : NSTime, T ≤ t →
+              κ ≤ coordinateEnergyDissipationRate S.velocity ν t := by
+  exact not_exists_nonzeroSchwartzStokesFlow_uniform_future_dissipation_gap hκ
+
+theorem not_exists_stokes_coordinate_enstrophy_floor_regression
+    {ν lam : ℝ} (hν : 0 < ν) (hlam : 0 < lam) :
+    ¬ ∃ S : NonzeroSchwartzConcreteNavierStokesSolution ν,
+      (∀ t x, spatialConvection S.velocity t x = 0) ∧
+        (∀ t x, spatialPressureGradient S.pressure t x = 0) ∧
+          ∃ T : NSTime,
+            (∃ xT : NSSpace, S.velocity T xT ≠ 0) ∧
+              ∀ t : NSTime, t ≤ T →
+                lam * normalizedKineticEnergy S.velocity t ≤
+                  coordinateEnstrophyAt S.velocity t := by
+  exact
+    not_exists_nonzeroSchwartzStokesFlow_past_coordinateEnstrophy_floor_of_posViscosity
+      hν hlam
+
+theorem not_exists_stokes_coordinate_enstrophy_ratio_floor_regression
+    {ν lam : ℝ} (hν : 0 < ν) (hlam : 0 < lam) :
+    ¬ ∃ S : NonzeroSchwartzConcreteNavierStokesSolution ν,
+      (∀ t x, spatialConvection S.velocity t x = 0) ∧
+        (∀ t x, spatialPressureGradient S.pressure t x = 0) ∧
+          ∃ T : NSTime,
+            (∃ xT : NSSpace, S.velocity T xT ≠ 0) ∧
+              ∀ t : NSTime, t ≤ T →
+                lam ≤
+                  coordinateEnstrophyAt S.velocity t /
+                    normalizedKineticEnergy S.velocity t := by
+  exact
+    not_exists_nonzeroSchwartzStokesFlow_past_coordinateEnstrophy_ratio_floor_of_posViscosity
+      hν hlam
+
+theorem stokes_exists_nonzero_endpoint_strict_past_energy_drop_regression
+    {ν : ℝ} (hν : 0 < ν)
+    (S : NonzeroSchwartzConcreteNavierStokesSolution ν)
+    (hconv : ∀ t x, spatialConvection S.velocity t x = 0)
+    (hpressure : ∀ t x, spatialPressureGradient S.pressure t x = 0) :
+    NonzeroSchwartzStokesFlowKernel ν S.velocity S.pressure ∧
+      SchwartzNonzeroTimeSupportKernel ν S.velocity S.pressure ∧
+      ∃ T xT,
+        S.velocity T xT ≠ 0 ∧
+          ∀ {s t : NSTime}, s < t → t ≤ T →
+            normalizedKineticEnergy S.velocity t <
+              normalizedKineticEnergy S.velocity s := by
+  exact
+    S.stokesFlow_exists_nonzero_endpoint_with_strict_past_energy_drop_packet
+      hν hconv hpressure
+
+theorem not_exists_stokes_energy_nondecrease_before_endpoint_regression
+    {ν : ℝ} (hν : 0 < ν) :
+    ¬ ∃ S : NonzeroSchwartzConcreteNavierStokesSolution ν,
+      (∀ t x, spatialConvection S.velocity t x = 0) ∧
+        (∀ t x, spatialPressureGradient S.pressure t x = 0) ∧
+          ∃ s t T : NSTime,
+            s < t ∧ t ≤ T ∧
+              (∃ xT : NSSpace, S.velocity T xT ≠ 0) ∧
+                normalizedKineticEnergy S.velocity s ≤
+                  normalizedKineticEnergy S.velocity t := by
+  exact
+    not_exists_nonzeroSchwartzStokesFlow_energy_nondecrease_before_nonzero_endpoint_of_pos_viscosity
+      hν
+
+theorem not_exists_stokes_repeated_velocity_slice_before_endpoint_regression
+    {ν : ℝ} (hν : 0 < ν) :
+    ¬ ∃ S : NonzeroSchwartzConcreteNavierStokesSolution ν,
+      (∀ t x, spatialConvection S.velocity t x = 0) ∧
+        (∀ t x, spatialPressureGradient S.pressure t x = 0) ∧
+          ∃ s t T : NSTime,
+            s < t ∧ t ≤ T ∧
+              (∃ xT : NSSpace, S.velocity T xT ≠ 0) ∧
+                ∀ x : NSSpace, S.velocity t x = S.velocity s x := by
+  exact
+    not_exists_nonzeroSchwartzStokesFlow_repeated_velocity_slice_before_nonzero_endpoint_of_pos_viscosity
+      hν
+
+theorem not_exists_stokes_exact_coordinate_enstrophy_rayleigh_regression
+    {ν lam : ℝ} (hν : 0 < ν) (hlam : 0 < lam) :
+    ¬ ∃ S : NonzeroSchwartzConcreteNavierStokesSolution ν,
+      (∀ t x, spatialConvection S.velocity t x = 0) ∧
+        (∀ t x, spatialPressureGradient S.pressure t x = 0) ∧
+          ∃ T : NSTime,
+            (∃ xT : NSSpace, S.velocity T xT ≠ 0) ∧
+              ∀ t : NSTime, t ≤ T →
+                coordinateEnstrophyAt S.velocity t =
+                  lam * normalizedKineticEnergy S.velocity t := by
+  exact
+    not_exists_nonzeroSchwartzStokesFlow_past_exact_coordinateEnstrophyRayleigh_of_posViscosity
+      hν hlam
+
+theorem not_exists_stokes_exact_coordinate_enstrophy_ratio_rayleigh_regression
+    {ν lam : ℝ} (hν : 0 < ν) (hlam : 0 < lam) :
+    ¬ ∃ S : NonzeroSchwartzConcreteNavierStokesSolution ν,
+      (∀ t x, spatialConvection S.velocity t x = 0) ∧
+        (∀ t x, spatialPressureGradient S.pressure t x = 0) ∧
+          ∃ T : NSTime,
+            (∃ xT : NSSpace, S.velocity T xT ≠ 0) ∧
+              ∀ t : NSTime, t ≤ T →
+                coordinateEnstrophyAt S.velocity t /
+                  normalizedKineticEnergy S.velocity t = lam := by
+  exact
+    not_exists_nonzeroSchwartzStokesFlow_past_exact_coordinateEnstrophyRatioRayleigh_of_posViscosity
+      hν hlam
+
+theorem no_past_exact_coordinate_enstrophy_rayleigh_packet_regression
+    {ν lam T : ℝ} (hν : 0 < ν) (hlam : 0 < lam)
+    (S : NonzeroSchwartzConcreteNavierStokesSolution ν)
+    (hneT : ∃ xT : NSSpace, S.velocity T xT ≠ 0) :
+    ¬ ∀ t : NSTime, t ≤ T →
+      coordinateEnstrophyAt S.velocity t =
+        lam * normalizedKineticEnergy S.velocity t := by
+  exact S.noPastExactCoordinateEnstrophyRayleigh_packet hν hlam hneT
+
+theorem no_past_exact_coordinate_enstrophy_ratio_rayleigh_packet_regression
+    {ν lam T : ℝ} (hν : 0 < ν) (hlam : 0 < lam)
+    (S : NonzeroSchwartzConcreteNavierStokesSolution ν)
+    (hneT : ∃ xT : NSSpace, S.velocity T xT ≠ 0) :
+    ¬ ∀ t : NSTime, t ≤ T →
+      coordinateEnstrophyAt S.velocity t /
+        normalizedKineticEnergy S.velocity t = lam := by
+  exact S.noPastExactCoordinateEnstrophyRatioRayleigh_packet hν hlam hneT
+
+theorem not_exists_exact_coordinate_enstrophy_rayleigh_regression
+    {ν lam : ℝ} (hν : 0 < ν) (hlam : 0 < lam) :
+    ¬ ∃ S : NonzeroSchwartzConcreteNavierStokesSolution ν,
+      ∃ T : NSTime,
+        (∃ xT : NSSpace, S.velocity T xT ≠ 0) ∧
+          ∀ t : NSTime, t ≤ T →
+            coordinateEnstrophyAt S.velocity t =
+              lam * normalizedKineticEnergy S.velocity t := by
+  exact
+    not_exists_nonzeroSchwartzConcreteSolution_past_exact_coordinateEnstrophyRayleigh_of_posViscosity
+      hν hlam
+
+theorem not_exists_exact_coordinate_enstrophy_ratio_rayleigh_regression
+    {ν lam : ℝ} (hν : 0 < ν) (hlam : 0 < lam) :
+    ¬ ∃ S : NonzeroSchwartzConcreteNavierStokesSolution ν,
+      ∃ T : NSTime,
+        (∃ xT : NSSpace, S.velocity T xT ≠ 0) ∧
+          ∀ t : NSTime, t ≤ T →
+            coordinateEnstrophyAt S.velocity t /
+              normalizedKineticEnergy S.velocity t = lam := by
+  exact
+    not_exists_nonzeroSchwartzConcreteSolution_past_exact_coordinateEnstrophyRatioRayleigh_of_posViscosity
+      hν hlam
+
+theorem not_exists_one_profile_exact_coordinate_enstrophy_rayleigh_regression
+    {ν lam : ℝ} (hν : 0 < ν) (hlam : 0 < lam) :
+    ¬ ∃ S : NonzeroSchwartzConcreteNavierStokesSolution ν,
+      ∃ (a : NSTime → ℝ) (f : NSSchwartzInitialVelocity) (T : NSTime),
+        S.velocity = (fun r y => a r • f y) ∧
+          (∃ xT : NSSpace, S.velocity T xT ≠ 0) ∧
+            ∀ t : NSTime, t ≤ T →
+              coordinateEnstrophyAt (fun r y => a r • f y) t =
+                lam * normalizedKineticEnergy (fun r y => a r • f y) t := by
+  exact
+    not_exists_nonzeroSchwartzConcreteSolution_oneProfile_past_exact_coordinateEnstrophyRayleigh_of_posViscosity
+      hν hlam
+
+theorem not_exists_one_profile_exact_coordinate_enstrophy_ratio_rayleigh_regression
+    {ν lam : ℝ} (hν : 0 < ν) (hlam : 0 < lam) :
+    ¬ ∃ S : NonzeroSchwartzConcreteNavierStokesSolution ν,
+      ∃ (a : NSTime → ℝ) (f : NSSchwartzInitialVelocity) (T : NSTime),
+        S.velocity = (fun r y => a r • f y) ∧
+          (∃ xT : NSSpace, S.velocity T xT ≠ 0) ∧
+            ∀ t : NSTime, t ≤ T →
+              coordinateEnstrophyAt (fun r y => a r • f y) t /
+                  normalizedKineticEnergy (fun r y => a r • f y) t =
+                lam := by
+  exact
+    not_exists_nonzeroSchwartzConcreteSolution_oneProfile_past_exact_coordinateEnstrophyRatioRayleigh_of_posViscosity
+      hν hlam
+
+theorem coordinate_enstrophy_scalar_smul_schwartz_regression
+    (a : NSTime → ℝ) (f : NSSchwartzInitialVelocity) :
+    coordinateEnstrophyAt (fun t x => a t • f x) =
+      fun t =>
+        (a t) ^ (2 : ℕ) *
+          coordinateEnstrophyAt (timeIndependentVelocity (f : NSInitialVelocity)) 0 := by
+  exact coordinateEnstrophyAt_scalar_smul_schwartz a f
+
+theorem not_exists_one_profile_positive_viscosity_regression
+    {ν : ℝ} (hν : 0 < ν) :
+    ¬ ∃ S : NonzeroSchwartzConcreteNavierStokesSolution ν,
+      ∃ (a : NSTime → ℝ) (f : NSSchwartzInitialVelocity),
+        S.velocity = fun r y => a r • f y := by
+  exact not_exists_nonzeroSchwartzConcreteSolution_oneProfile_of_posViscosity hν
+
+theorem not_exists_stokes_one_profile_positive_viscosity_regression
+    {ν : ℝ} (hν : 0 < ν) :
+    ¬ ∃ S : NonzeroSchwartzConcreteNavierStokesSolution ν,
+      (∀ t x, spatialConvection S.velocity t x = 0) ∧
+        (∀ t x, spatialPressureGradient S.pressure t x = 0) ∧
+          ∃ (a : NSTime → ℝ) (f : NSSchwartzInitialVelocity),
+            S.velocity = fun r y => a r • f y := by
+  exact not_exists_nonzeroSchwartzStokesFlow_oneProfile_of_posViscosity hν
+
+end Regression
+
+end NavierStokes
+end FluidDynamics
+end Mettapedia

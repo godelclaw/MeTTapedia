@@ -1,6 +1,6 @@
 {
   "failure_kind": null,
-  "input_file": "/home/zar/claude/atps/datasets/extended_mptp5k/chainy/train/lattice2__lattice2__t6_lattice2",
+  "input_file": "~/claude/atps/datasets/extended_mptp5k/chainy/train/lattice2__lattice2__t6_lattice2",
   "interpolant": "((sK15 = k9_funct_4(sK12,sK13,sK15,k2_partfun1(sK12,sK13,sK15,sK14))) | ~v1_funct_1(sK15) | ~m1_subset_1(sK15,k1_zfmisc_1(k2_zfmisc_1(sK12,sK13))))",
   "interpolant_features": {
     "char_length": 147,

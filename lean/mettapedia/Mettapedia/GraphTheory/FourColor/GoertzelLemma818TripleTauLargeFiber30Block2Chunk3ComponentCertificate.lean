@@ -1,0 +1,736 @@
+import Mettapedia.GraphTheory.FourColor.GoertzelLemma818TripleTauLargeFiber30Data
+
+namespace Mettapedia.GraphTheory.FourColor
+
+/-!
+# Goertzel Lemma 8.18: large `TTT` fiber 30, block 2 chunk 3
+
+This generated module checks 16 explicit-component rows for one
+size-512 fixed-input fiber of the `TTT`/`mode09` representative target.
+It uses interval membership and explicit bounded parent paths.
+-/
+
+namespace GoertzelLemma818TripleTauLargeFiber30Block2Chunk3ComponentCertificate
+
+open GoertzelLemma814
+open GoertzelLemma818ComponentCertificate
+open GoertzelLemma818TripleTauLightComponentCertificate
+open GoertzelLemma818TripleTauLargeFiber30Data
+
+def tttLargeFiber30Block2Chunk3Sources : List Nat :=
+  [   176, 177, 178, 179, 180, 181, 182, 183,
+   184, 185, 186, 187, 188, 189, 190, 191]
+
+def tttLargeFiber30Row176 : TripleComponentParentRow :=
+  tripleRow 176 48 2 34 0 0 102 64
+    (chainMove LColor.r LColor.b 0 TauEdge.F4F5)
+    [ chainEdge 0 TauEdge.F4F5
+    , chainEdge 0 TauEdge.B5
+    , chainEdge 0 TauEdge.B7
+    , chainEdge 1 TauEdge.F1F0
+    , chainEdge 1 TauEdge.B4
+    , chainEdge 1 TauEdge.F0F2
+    , chainEdge 2 TauEdge.F0F2
+    , chainEdge 1 TauEdge.F2F4
+    , chainEdge 2 TauEdge.F2F3
+    , chainEdge 1 TauEdge.B7
+    ]
+
+def tttLargeFiber30Row177 : TripleComponentParentRow :=
+  tripleRow 177 49 2 34 1 0 102 65
+    (chainMove LColor.r LColor.b 0 TauEdge.F4F5)
+    [ chainEdge 0 TauEdge.F4F5
+    , chainEdge 0 TauEdge.B5
+    , chainEdge 0 TauEdge.B7
+    , chainEdge 1 TauEdge.F1F0
+    , chainEdge 1 TauEdge.B4
+    , chainEdge 1 TauEdge.F0F2
+    , chainEdge 2 TauEdge.F0F2
+    , chainEdge 1 TauEdge.F2F4
+    , chainEdge 2 TauEdge.F2F3
+    , chainEdge 1 TauEdge.B7
+    ]
+
+def tttLargeFiber30Row178 : TripleComponentParentRow :=
+  tripleRow 178 50 2 34 2 0 102 66
+    (chainMove LColor.r LColor.b 0 TauEdge.F4F5)
+    [ chainEdge 0 TauEdge.F4F5
+    , chainEdge 0 TauEdge.B5
+    , chainEdge 0 TauEdge.B7
+    , chainEdge 1 TauEdge.F1F0
+    , chainEdge 1 TauEdge.B4
+    , chainEdge 1 TauEdge.F0F2
+    , chainEdge 2 TauEdge.F0F2
+    , chainEdge 1 TauEdge.F2F4
+    , chainEdge 2 TauEdge.F2F3
+    , chainEdge 1 TauEdge.B7
+    ]
+
+def tttLargeFiber30Row179 : TripleComponentParentRow :=
+  tripleRow 179 51 2 34 3 0 102 67
+    (chainMove LColor.r LColor.b 0 TauEdge.F4F5)
+    [ chainEdge 0 TauEdge.F4F5
+    , chainEdge 0 TauEdge.B5
+    , chainEdge 0 TauEdge.B7
+    , chainEdge 1 TauEdge.F1F0
+    , chainEdge 1 TauEdge.B4
+    , chainEdge 1 TauEdge.F0F2
+    , chainEdge 2 TauEdge.F0F2
+    , chainEdge 1 TauEdge.F2F4
+    , chainEdge 2 TauEdge.F2F3
+    , chainEdge 1 TauEdge.B7
+    ]
+
+def tttLargeFiber30Row180 : TripleComponentParentRow :=
+  tripleRow 180 176 2 34 48 2 34 0
+    (chainMove LColor.b LColor.p 2 TauEdge.F2F3)
+    [ chainEdge 2 TauEdge.F2F3
+    , chainEdge 2 TauEdge.F2F4
+    , chainEdge 2 TauEdge.B4
+    , chainEdge 2 TauEdge.B7
+    ]
+
+def tttLargeFiber30Row181 : TripleComponentParentRow :=
+  tripleRow 181 177 2 34 49 2 34 1
+    (chainMove LColor.b LColor.p 2 TauEdge.F2F3)
+    [ chainEdge 2 TauEdge.F2F3
+    , chainEdge 2 TauEdge.F2F4
+    , chainEdge 2 TauEdge.B4
+    , chainEdge 2 TauEdge.B7
+    ]
+
+def tttLargeFiber30Row182 : TripleComponentParentRow :=
+  tripleRow 182 54 2 34 50 0 102 118
+    (chainMove LColor.r LColor.b 0 TauEdge.F4F5)
+    [ chainEdge 0 TauEdge.F4F5
+    , chainEdge 0 TauEdge.B5
+    , chainEdge 0 TauEdge.B7
+    , chainEdge 1 TauEdge.F1F0
+    , chainEdge 1 TauEdge.B4
+    , chainEdge 1 TauEdge.F0F2
+    , chainEdge 2 TauEdge.F0F2
+    , chainEdge 1 TauEdge.F2F4
+    , chainEdge 2 TauEdge.F2F4
+    , chainEdge 1 TauEdge.B7
+    , chainEdge 2 TauEdge.B7
+    , chainEdge 2 TauEdge.B4
+    ]
+
+def tttLargeFiber30Row183 : TripleComponentParentRow :=
+  tripleRow 183 55 2 34 51 0 102 119
+    (chainMove LColor.r LColor.b 0 TauEdge.F4F5)
+    [ chainEdge 0 TauEdge.F4F5
+    , chainEdge 0 TauEdge.B5
+    , chainEdge 0 TauEdge.B7
+    , chainEdge 1 TauEdge.F1F0
+    , chainEdge 1 TauEdge.B4
+    , chainEdge 1 TauEdge.F0F2
+    , chainEdge 2 TauEdge.F0F2
+    , chainEdge 1 TauEdge.F2F4
+    , chainEdge 2 TauEdge.F2F4
+    , chainEdge 1 TauEdge.B7
+    , chainEdge 2 TauEdge.B7
+    , chainEdge 2 TauEdge.B4
+    ]
+
+def tttLargeFiber30Row184 : TripleComponentParentRow :=
+  tripleRow 184 56 2 35 8 0 103 72
+    (chainMove LColor.r LColor.b 0 TauEdge.F4F5)
+    [ chainEdge 0 TauEdge.F4F5
+    , chainEdge 0 TauEdge.B5
+    , chainEdge 0 TauEdge.B7
+    , chainEdge 1 TauEdge.F1F0
+    , chainEdge 1 TauEdge.B4
+    , chainEdge 1 TauEdge.F0F2
+    , chainEdge 2 TauEdge.F0F2
+    , chainEdge 1 TauEdge.F2F4
+    , chainEdge 2 TauEdge.F2F3
+    , chainEdge 1 TauEdge.B7
+    ]
+
+def tttLargeFiber30Row185 : TripleComponentParentRow :=
+  tripleRow 185 57 2 35 9 0 103 73
+    (chainMove LColor.r LColor.b 0 TauEdge.F4F5)
+    [ chainEdge 0 TauEdge.F4F5
+    , chainEdge 0 TauEdge.B5
+    , chainEdge 0 TauEdge.B7
+    , chainEdge 1 TauEdge.F1F0
+    , chainEdge 1 TauEdge.B4
+    , chainEdge 1 TauEdge.F0F2
+    , chainEdge 2 TauEdge.F0F2
+    , chainEdge 1 TauEdge.F2F4
+    , chainEdge 2 TauEdge.F2F3
+    , chainEdge 1 TauEdge.B7
+    ]
+
+def tttLargeFiber30Row186 : TripleComponentParentRow :=
+  tripleRow 186 58 2 35 10 0 103 74
+    (chainMove LColor.r LColor.b 0 TauEdge.F4F5)
+    [ chainEdge 0 TauEdge.F4F5
+    , chainEdge 0 TauEdge.B5
+    , chainEdge 0 TauEdge.B7
+    , chainEdge 1 TauEdge.F1F0
+    , chainEdge 1 TauEdge.B4
+    , chainEdge 1 TauEdge.F0F2
+    , chainEdge 2 TauEdge.F0F2
+    , chainEdge 1 TauEdge.F2F4
+    , chainEdge 2 TauEdge.F2F3
+    , chainEdge 1 TauEdge.B7
+    ]
+
+def tttLargeFiber30Row187 : TripleComponentParentRow :=
+  tripleRow 187 59 2 35 11 0 103 75
+    (chainMove LColor.r LColor.b 0 TauEdge.F4F5)
+    [ chainEdge 0 TauEdge.F4F5
+    , chainEdge 0 TauEdge.B5
+    , chainEdge 0 TauEdge.B7
+    , chainEdge 1 TauEdge.F1F0
+    , chainEdge 1 TauEdge.B4
+    , chainEdge 1 TauEdge.F0F2
+    , chainEdge 2 TauEdge.F0F2
+    , chainEdge 1 TauEdge.F2F4
+    , chainEdge 2 TauEdge.F2F3
+    , chainEdge 1 TauEdge.B7
+    ]
+
+def tttLargeFiber30Row188 : TripleComponentParentRow :=
+  tripleRow 188 184 2 35 56 2 35 8
+    (chainMove LColor.b LColor.p 2 TauEdge.F2F3)
+    [ chainEdge 2 TauEdge.F2F3
+    , chainEdge 2 TauEdge.F2F4
+    , chainEdge 2 TauEdge.B4
+    , chainEdge 2 TauEdge.B7
+    ]
+
+def tttLargeFiber30Row189 : TripleComponentParentRow :=
+  tripleRow 189 185 2 35 57 2 35 9
+    (chainMove LColor.b LColor.p 2 TauEdge.F2F3)
+    [ chainEdge 2 TauEdge.F2F3
+    , chainEdge 2 TauEdge.F2F4
+    , chainEdge 2 TauEdge.B4
+    , chainEdge 2 TauEdge.B7
+    ]
+
+def tttLargeFiber30Row190 : TripleComponentParentRow :=
+  tripleRow 190 62 2 35 58 0 103 126
+    (chainMove LColor.r LColor.b 0 TauEdge.F4F5)
+    [ chainEdge 0 TauEdge.F4F5
+    , chainEdge 0 TauEdge.B5
+    , chainEdge 0 TauEdge.B7
+    , chainEdge 1 TauEdge.F1F0
+    , chainEdge 1 TauEdge.B4
+    , chainEdge 1 TauEdge.F0F2
+    , chainEdge 2 TauEdge.F0F2
+    , chainEdge 1 TauEdge.F2F4
+    , chainEdge 2 TauEdge.F2F4
+    , chainEdge 1 TauEdge.B7
+    , chainEdge 2 TauEdge.B7
+    , chainEdge 2 TauEdge.B4
+    ]
+
+def tttLargeFiber30Row191 : TripleComponentParentRow :=
+  tripleRow 191 63 2 35 59 0 103 127
+    (chainMove LColor.r LColor.b 0 TauEdge.F4F5)
+    [ chainEdge 0 TauEdge.F4F5
+    , chainEdge 0 TauEdge.B5
+    , chainEdge 0 TauEdge.B7
+    , chainEdge 1 TauEdge.F1F0
+    , chainEdge 1 TauEdge.B4
+    , chainEdge 1 TauEdge.F0F2
+    , chainEdge 2 TauEdge.F0F2
+    , chainEdge 1 TauEdge.F2F4
+    , chainEdge 2 TauEdge.F2F4
+    , chainEdge 1 TauEdge.B7
+    , chainEdge 2 TauEdge.B7
+    , chainEdge 2 TauEdge.B4
+    ]
+
+def tttLargeFiber30Block2Chunk3Rows : List TripleComponentParentRow :=
+  [ tttLargeFiber30Row176
+  , tttLargeFiber30Row177
+  , tttLargeFiber30Row178
+  , tttLargeFiber30Row179
+  , tttLargeFiber30Row180
+  , tttLargeFiber30Row181
+  , tttLargeFiber30Row182
+  , tttLargeFiber30Row183
+  , tttLargeFiber30Row184
+  , tttLargeFiber30Row185
+  , tttLargeFiber30Row186
+  , tttLargeFiber30Row187
+  , tttLargeFiber30Row188
+  , tttLargeFiber30Row189
+  , tttLargeFiber30Row190
+  , tttLargeFiber30Row191
+  ]
+
+def tttLargeFiber30Block2Chunk3ExpectedContains (i : Nat) : Bool :=
+  (decide (0 <= i) && decide (i < 256)) ||
+    (decide (1632 <= i) && decide (i < 1888))
+
+def tttLargeFiber30Block2Chunk3RowValid
+    (row : TripleComponentParentRow) : Bool :=
+  tttLargeFiber30Block2Chunk3ExpectedContains row.source &&
+    tttLargeFiber30Block2Chunk3ExpectedContains row.parent &&
+      let s := tripleStates row.sourceLeft row.sourceMiddle row.sourceRight
+      let t := tripleStates row.parentLeft row.parentMiddle row.parentRight
+      compatibleChainStates tttWord s && compatibleChainStates tttWord t &&
+        chainInputKey tttWord s == tttLargeFiber30Key &&
+          chainInputKey tttWord t == tttLargeFiber30Key &&
+            (row.source == row.parent ||
+              chainCertifiedKempeStep tttWord s t row.cert)
+
+def tttLargeFiber30Block2Chunk3SourcesCheck : Bool :=
+  (tttLargeFiber30Block2Chunk3Rows.map fun row => row.source) ==
+    tttLargeFiber30Block2Chunk3Sources
+
+theorem tttLargeFiber30Block2Chunk3SourcesCheck_ok :
+    tttLargeFiber30Block2Chunk3SourcesCheck = true := by
+  decide
+
+def tttLargeFiber30Block2Chunk3RowCheck (i : Nat) : Bool :=
+  tttLargeFiber30Block2Chunk3RowValid
+    (listGetD tttLargeFiber30Block2Chunk3Rows i default)
+
+def tttLargeFiber30Block2Chunk3ParentMapCheck (i : Nat) : Bool :=
+  let row := listGetD tttLargeFiber30Block2Chunk3Rows i default
+  row.parent == tttLargeFiber30ParentOf row.source
+
+def tttLargeFiber30Block2Chunk3ParentPathCheck : Nat -> Bool
+  | 0 => listGetD tttLargeFiber30Block2Chunk3Sources 0 0 == 176
+      && tttLargeFiber30ParentOf 176 == 48
+      && tttLargeFiber30ParentOf 48 == 8
+      && tttLargeFiber30ParentOf 8 == 0
+      && 0 == tttLargeFiber30Root
+      && decide (3 <= tttLargeFiber30MaxParentDepth)
+  | 1 => listGetD tttLargeFiber30Block2Chunk3Sources 1 0 == 177
+      && tttLargeFiber30ParentOf 177 == 49
+      && tttLargeFiber30ParentOf 49 == 9
+      && tttLargeFiber30ParentOf 9 == 1
+      && tttLargeFiber30ParentOf 1 == 0
+      && 0 == tttLargeFiber30Root
+      && decide (4 <= tttLargeFiber30MaxParentDepth)
+  | 2 => listGetD tttLargeFiber30Block2Chunk3Sources 2 0 == 178
+      && tttLargeFiber30ParentOf 178 == 50
+      && tttLargeFiber30ParentOf 50 == 10
+      && tttLargeFiber30ParentOf 10 == 2
+      && tttLargeFiber30ParentOf 2 == 0
+      && 0 == tttLargeFiber30Root
+      && decide (4 <= tttLargeFiber30MaxParentDepth)
+  | 3 => listGetD tttLargeFiber30Block2Chunk3Sources 3 0 == 179
+      && tttLargeFiber30ParentOf 179 == 51
+      && tttLargeFiber30ParentOf 51 == 11
+      && tttLargeFiber30ParentOf 11 == 3
+      && tttLargeFiber30ParentOf 3 == 1
+      && tttLargeFiber30ParentOf 1 == 0
+      && 0 == tttLargeFiber30Root
+      && decide (5 <= tttLargeFiber30MaxParentDepth)
+  | 4 => listGetD tttLargeFiber30Block2Chunk3Sources 4 0 == 180
+      && tttLargeFiber30ParentOf 180 == 176
+      && tttLargeFiber30ParentOf 176 == 48
+      && tttLargeFiber30ParentOf 48 == 8
+      && tttLargeFiber30ParentOf 8 == 0
+      && 0 == tttLargeFiber30Root
+      && decide (4 <= tttLargeFiber30MaxParentDepth)
+  | 5 => listGetD tttLargeFiber30Block2Chunk3Sources 5 0 == 181
+      && tttLargeFiber30ParentOf 181 == 177
+      && tttLargeFiber30ParentOf 177 == 49
+      && tttLargeFiber30ParentOf 49 == 9
+      && tttLargeFiber30ParentOf 9 == 1
+      && tttLargeFiber30ParentOf 1 == 0
+      && 0 == tttLargeFiber30Root
+      && decide (5 <= tttLargeFiber30MaxParentDepth)
+  | 6 => listGetD tttLargeFiber30Block2Chunk3Sources 6 0 == 182
+      && tttLargeFiber30ParentOf 182 == 54
+      && tttLargeFiber30ParentOf 54 == 14
+      && tttLargeFiber30ParentOf 14 == 6
+      && tttLargeFiber30ParentOf 6 == 1
+      && tttLargeFiber30ParentOf 1 == 0
+      && 0 == tttLargeFiber30Root
+      && decide (5 <= tttLargeFiber30MaxParentDepth)
+  | 7 => listGetD tttLargeFiber30Block2Chunk3Sources 7 0 == 183
+      && tttLargeFiber30ParentOf 183 == 55
+      && tttLargeFiber30ParentOf 55 == 15
+      && tttLargeFiber30ParentOf 15 == 7
+      && tttLargeFiber30ParentOf 7 == 0
+      && 0 == tttLargeFiber30Root
+      && decide (4 <= tttLargeFiber30MaxParentDepth)
+  | 8 => listGetD tttLargeFiber30Block2Chunk3Sources 8 0 == 184
+      && tttLargeFiber30ParentOf 184 == 56
+      && tttLargeFiber30ParentOf 56 == 0
+      && 0 == tttLargeFiber30Root
+      && decide (2 <= tttLargeFiber30MaxParentDepth)
+  | 9 => listGetD tttLargeFiber30Block2Chunk3Sources 9 0 == 185
+      && tttLargeFiber30ParentOf 185 == 57
+      && tttLargeFiber30ParentOf 57 == 1
+      && tttLargeFiber30ParentOf 1 == 0
+      && 0 == tttLargeFiber30Root
+      && decide (3 <= tttLargeFiber30MaxParentDepth)
+  | 10 => listGetD tttLargeFiber30Block2Chunk3Sources 10 0 == 186
+      && tttLargeFiber30ParentOf 186 == 58
+      && tttLargeFiber30ParentOf 58 == 2
+      && tttLargeFiber30ParentOf 2 == 0
+      && 0 == tttLargeFiber30Root
+      && decide (3 <= tttLargeFiber30MaxParentDepth)
+  | 11 => listGetD tttLargeFiber30Block2Chunk3Sources 11 0 == 187
+      && tttLargeFiber30ParentOf 187 == 59
+      && tttLargeFiber30ParentOf 59 == 3
+      && tttLargeFiber30ParentOf 3 == 1
+      && tttLargeFiber30ParentOf 1 == 0
+      && 0 == tttLargeFiber30Root
+      && decide (4 <= tttLargeFiber30MaxParentDepth)
+  | 12 => listGetD tttLargeFiber30Block2Chunk3Sources 12 0 == 188
+      && tttLargeFiber30ParentOf 188 == 184
+      && tttLargeFiber30ParentOf 184 == 56
+      && tttLargeFiber30ParentOf 56 == 0
+      && 0 == tttLargeFiber30Root
+      && decide (3 <= tttLargeFiber30MaxParentDepth)
+  | 13 => listGetD tttLargeFiber30Block2Chunk3Sources 13 0 == 189
+      && tttLargeFiber30ParentOf 189 == 185
+      && tttLargeFiber30ParentOf 185 == 57
+      && tttLargeFiber30ParentOf 57 == 1
+      && tttLargeFiber30ParentOf 1 == 0
+      && 0 == tttLargeFiber30Root
+      && decide (4 <= tttLargeFiber30MaxParentDepth)
+  | 14 => listGetD tttLargeFiber30Block2Chunk3Sources 14 0 == 190
+      && tttLargeFiber30ParentOf 190 == 62
+      && tttLargeFiber30ParentOf 62 == 6
+      && tttLargeFiber30ParentOf 6 == 1
+      && tttLargeFiber30ParentOf 1 == 0
+      && 0 == tttLargeFiber30Root
+      && decide (4 <= tttLargeFiber30MaxParentDepth)
+  | 15 => listGetD tttLargeFiber30Block2Chunk3Sources 15 0 == 191
+      && tttLargeFiber30ParentOf 191 == 63
+      && tttLargeFiber30ParentOf 63 == 7
+      && tttLargeFiber30ParentOf 7 == 0
+      && 0 == tttLargeFiber30Root
+      && decide (3 <= tttLargeFiber30MaxParentDepth)
+  | _ => false
+
+theorem tttLargeFiber30Block2Chunk3Row_0_ok :
+    tttLargeFiber30Block2Chunk3RowCheck 0 = true := by
+  decide
+
+theorem tttLargeFiber30Block2Chunk3Row_1_ok :
+    tttLargeFiber30Block2Chunk3RowCheck 1 = true := by
+  decide
+
+theorem tttLargeFiber30Block2Chunk3Row_2_ok :
+    tttLargeFiber30Block2Chunk3RowCheck 2 = true := by
+  decide
+
+theorem tttLargeFiber30Block2Chunk3Row_3_ok :
+    tttLargeFiber30Block2Chunk3RowCheck 3 = true := by
+  decide
+
+theorem tttLargeFiber30Block2Chunk3Row_4_ok :
+    tttLargeFiber30Block2Chunk3RowCheck 4 = true := by
+  decide
+
+theorem tttLargeFiber30Block2Chunk3Row_5_ok :
+    tttLargeFiber30Block2Chunk3RowCheck 5 = true := by
+  decide
+
+theorem tttLargeFiber30Block2Chunk3Row_6_ok :
+    tttLargeFiber30Block2Chunk3RowCheck 6 = true := by
+  decide
+
+theorem tttLargeFiber30Block2Chunk3Row_7_ok :
+    tttLargeFiber30Block2Chunk3RowCheck 7 = true := by
+  decide
+
+theorem tttLargeFiber30Block2Chunk3Row_8_ok :
+    tttLargeFiber30Block2Chunk3RowCheck 8 = true := by
+  decide
+
+theorem tttLargeFiber30Block2Chunk3Row_9_ok :
+    tttLargeFiber30Block2Chunk3RowCheck 9 = true := by
+  decide
+
+theorem tttLargeFiber30Block2Chunk3Row_10_ok :
+    tttLargeFiber30Block2Chunk3RowCheck 10 = true := by
+  decide
+
+theorem tttLargeFiber30Block2Chunk3Row_11_ok :
+    tttLargeFiber30Block2Chunk3RowCheck 11 = true := by
+  decide
+
+theorem tttLargeFiber30Block2Chunk3Row_12_ok :
+    tttLargeFiber30Block2Chunk3RowCheck 12 = true := by
+  decide
+
+theorem tttLargeFiber30Block2Chunk3Row_13_ok :
+    tttLargeFiber30Block2Chunk3RowCheck 13 = true := by
+  decide
+
+theorem tttLargeFiber30Block2Chunk3Row_14_ok :
+    tttLargeFiber30Block2Chunk3RowCheck 14 = true := by
+  decide
+
+theorem tttLargeFiber30Block2Chunk3Row_15_ok :
+    tttLargeFiber30Block2Chunk3RowCheck 15 = true := by
+  decide
+
+theorem tttLargeFiber30Block2Chunk3ParentMap_0_ok :
+    tttLargeFiber30Block2Chunk3ParentMapCheck 0 = true := by
+  decide
+
+theorem tttLargeFiber30Block2Chunk3ParentMap_1_ok :
+    tttLargeFiber30Block2Chunk3ParentMapCheck 1 = true := by
+  decide
+
+theorem tttLargeFiber30Block2Chunk3ParentMap_2_ok :
+    tttLargeFiber30Block2Chunk3ParentMapCheck 2 = true := by
+  decide
+
+theorem tttLargeFiber30Block2Chunk3ParentMap_3_ok :
+    tttLargeFiber30Block2Chunk3ParentMapCheck 3 = true := by
+  decide
+
+theorem tttLargeFiber30Block2Chunk3ParentMap_4_ok :
+    tttLargeFiber30Block2Chunk3ParentMapCheck 4 = true := by
+  decide
+
+theorem tttLargeFiber30Block2Chunk3ParentMap_5_ok :
+    tttLargeFiber30Block2Chunk3ParentMapCheck 5 = true := by
+  decide
+
+theorem tttLargeFiber30Block2Chunk3ParentMap_6_ok :
+    tttLargeFiber30Block2Chunk3ParentMapCheck 6 = true := by
+  decide
+
+theorem tttLargeFiber30Block2Chunk3ParentMap_7_ok :
+    tttLargeFiber30Block2Chunk3ParentMapCheck 7 = true := by
+  decide
+
+theorem tttLargeFiber30Block2Chunk3ParentMap_8_ok :
+    tttLargeFiber30Block2Chunk3ParentMapCheck 8 = true := by
+  decide
+
+theorem tttLargeFiber30Block2Chunk3ParentMap_9_ok :
+    tttLargeFiber30Block2Chunk3ParentMapCheck 9 = true := by
+  decide
+
+theorem tttLargeFiber30Block2Chunk3ParentMap_10_ok :
+    tttLargeFiber30Block2Chunk3ParentMapCheck 10 = true := by
+  decide
+
+theorem tttLargeFiber30Block2Chunk3ParentMap_11_ok :
+    tttLargeFiber30Block2Chunk3ParentMapCheck 11 = true := by
+  decide
+
+theorem tttLargeFiber30Block2Chunk3ParentMap_12_ok :
+    tttLargeFiber30Block2Chunk3ParentMapCheck 12 = true := by
+  decide
+
+theorem tttLargeFiber30Block2Chunk3ParentMap_13_ok :
+    tttLargeFiber30Block2Chunk3ParentMapCheck 13 = true := by
+  decide
+
+theorem tttLargeFiber30Block2Chunk3ParentMap_14_ok :
+    tttLargeFiber30Block2Chunk3ParentMapCheck 14 = true := by
+  decide
+
+theorem tttLargeFiber30Block2Chunk3ParentMap_15_ok :
+    tttLargeFiber30Block2Chunk3ParentMapCheck 15 = true := by
+  decide
+
+theorem tttLargeFiber30Block2Chunk3ParentPath_0_ok :
+    tttLargeFiber30Block2Chunk3ParentPathCheck 0 = true := by
+  decide
+
+theorem tttLargeFiber30Block2Chunk3ParentPath_1_ok :
+    tttLargeFiber30Block2Chunk3ParentPathCheck 1 = true := by
+  decide
+
+theorem tttLargeFiber30Block2Chunk3ParentPath_2_ok :
+    tttLargeFiber30Block2Chunk3ParentPathCheck 2 = true := by
+  decide
+
+theorem tttLargeFiber30Block2Chunk3ParentPath_3_ok :
+    tttLargeFiber30Block2Chunk3ParentPathCheck 3 = true := by
+  decide
+
+theorem tttLargeFiber30Block2Chunk3ParentPath_4_ok :
+    tttLargeFiber30Block2Chunk3ParentPathCheck 4 = true := by
+  decide
+
+theorem tttLargeFiber30Block2Chunk3ParentPath_5_ok :
+    tttLargeFiber30Block2Chunk3ParentPathCheck 5 = true := by
+  decide
+
+theorem tttLargeFiber30Block2Chunk3ParentPath_6_ok :
+    tttLargeFiber30Block2Chunk3ParentPathCheck 6 = true := by
+  decide
+
+theorem tttLargeFiber30Block2Chunk3ParentPath_7_ok :
+    tttLargeFiber30Block2Chunk3ParentPathCheck 7 = true := by
+  decide
+
+theorem tttLargeFiber30Block2Chunk3ParentPath_8_ok :
+    tttLargeFiber30Block2Chunk3ParentPathCheck 8 = true := by
+  decide
+
+theorem tttLargeFiber30Block2Chunk3ParentPath_9_ok :
+    tttLargeFiber30Block2Chunk3ParentPathCheck 9 = true := by
+  decide
+
+theorem tttLargeFiber30Block2Chunk3ParentPath_10_ok :
+    tttLargeFiber30Block2Chunk3ParentPathCheck 10 = true := by
+  decide
+
+theorem tttLargeFiber30Block2Chunk3ParentPath_11_ok :
+    tttLargeFiber30Block2Chunk3ParentPathCheck 11 = true := by
+  decide
+
+theorem tttLargeFiber30Block2Chunk3ParentPath_12_ok :
+    tttLargeFiber30Block2Chunk3ParentPathCheck 12 = true := by
+  decide
+
+theorem tttLargeFiber30Block2Chunk3ParentPath_13_ok :
+    tttLargeFiber30Block2Chunk3ParentPathCheck 13 = true := by
+  decide
+
+theorem tttLargeFiber30Block2Chunk3ParentPath_14_ok :
+    tttLargeFiber30Block2Chunk3ParentPathCheck 14 = true := by
+  decide
+
+theorem tttLargeFiber30Block2Chunk3ParentPath_15_ok :
+    tttLargeFiber30Block2Chunk3ParentPathCheck 15 = true := by
+  decide
+
+def tttLargeFiber30Block2Chunk3RowsAudit : Bool :=
+  tttLargeFiber30Block2Chunk3RowCheck 0
+    && tttLargeFiber30Block2Chunk3RowCheck 1
+    && tttLargeFiber30Block2Chunk3RowCheck 2
+    && tttLargeFiber30Block2Chunk3RowCheck 3
+    && tttLargeFiber30Block2Chunk3RowCheck 4
+    && tttLargeFiber30Block2Chunk3RowCheck 5
+    && tttLargeFiber30Block2Chunk3RowCheck 6
+    && tttLargeFiber30Block2Chunk3RowCheck 7
+    && tttLargeFiber30Block2Chunk3RowCheck 8
+    && tttLargeFiber30Block2Chunk3RowCheck 9
+    && tttLargeFiber30Block2Chunk3RowCheck 10
+    && tttLargeFiber30Block2Chunk3RowCheck 11
+    && tttLargeFiber30Block2Chunk3RowCheck 12
+    && tttLargeFiber30Block2Chunk3RowCheck 13
+    && tttLargeFiber30Block2Chunk3RowCheck 14
+    && tttLargeFiber30Block2Chunk3RowCheck 15
+
+theorem tttLargeFiber30Block2Chunk3RowsAudit_ok :
+    tttLargeFiber30Block2Chunk3RowsAudit = true := by
+  simp [tttLargeFiber30Block2Chunk3RowsAudit,
+    tttLargeFiber30Block2Chunk3Row_0_ok,
+    tttLargeFiber30Block2Chunk3Row_1_ok,
+    tttLargeFiber30Block2Chunk3Row_2_ok,
+    tttLargeFiber30Block2Chunk3Row_3_ok,
+    tttLargeFiber30Block2Chunk3Row_4_ok,
+    tttLargeFiber30Block2Chunk3Row_5_ok,
+    tttLargeFiber30Block2Chunk3Row_6_ok,
+    tttLargeFiber30Block2Chunk3Row_7_ok,
+    tttLargeFiber30Block2Chunk3Row_8_ok,
+    tttLargeFiber30Block2Chunk3Row_9_ok,
+    tttLargeFiber30Block2Chunk3Row_10_ok,
+    tttLargeFiber30Block2Chunk3Row_11_ok,
+    tttLargeFiber30Block2Chunk3Row_12_ok,
+    tttLargeFiber30Block2Chunk3Row_13_ok,
+    tttLargeFiber30Block2Chunk3Row_14_ok,
+    tttLargeFiber30Block2Chunk3Row_15_ok]
+
+def tttLargeFiber30Block2Chunk3ParentMapAudit : Bool :=
+  tttLargeFiber30Block2Chunk3ParentMapCheck 0
+    && tttLargeFiber30Block2Chunk3ParentMapCheck 1
+    && tttLargeFiber30Block2Chunk3ParentMapCheck 2
+    && tttLargeFiber30Block2Chunk3ParentMapCheck 3
+    && tttLargeFiber30Block2Chunk3ParentMapCheck 4
+    && tttLargeFiber30Block2Chunk3ParentMapCheck 5
+    && tttLargeFiber30Block2Chunk3ParentMapCheck 6
+    && tttLargeFiber30Block2Chunk3ParentMapCheck 7
+    && tttLargeFiber30Block2Chunk3ParentMapCheck 8
+    && tttLargeFiber30Block2Chunk3ParentMapCheck 9
+    && tttLargeFiber30Block2Chunk3ParentMapCheck 10
+    && tttLargeFiber30Block2Chunk3ParentMapCheck 11
+    && tttLargeFiber30Block2Chunk3ParentMapCheck 12
+    && tttLargeFiber30Block2Chunk3ParentMapCheck 13
+    && tttLargeFiber30Block2Chunk3ParentMapCheck 14
+    && tttLargeFiber30Block2Chunk3ParentMapCheck 15
+
+theorem tttLargeFiber30Block2Chunk3ParentMapAudit_ok :
+    tttLargeFiber30Block2Chunk3ParentMapAudit = true := by
+  simp [tttLargeFiber30Block2Chunk3ParentMapAudit,
+    tttLargeFiber30Block2Chunk3ParentMap_0_ok,
+    tttLargeFiber30Block2Chunk3ParentMap_1_ok,
+    tttLargeFiber30Block2Chunk3ParentMap_2_ok,
+    tttLargeFiber30Block2Chunk3ParentMap_3_ok,
+    tttLargeFiber30Block2Chunk3ParentMap_4_ok,
+    tttLargeFiber30Block2Chunk3ParentMap_5_ok,
+    tttLargeFiber30Block2Chunk3ParentMap_6_ok,
+    tttLargeFiber30Block2Chunk3ParentMap_7_ok,
+    tttLargeFiber30Block2Chunk3ParentMap_8_ok,
+    tttLargeFiber30Block2Chunk3ParentMap_9_ok,
+    tttLargeFiber30Block2Chunk3ParentMap_10_ok,
+    tttLargeFiber30Block2Chunk3ParentMap_11_ok,
+    tttLargeFiber30Block2Chunk3ParentMap_12_ok,
+    tttLargeFiber30Block2Chunk3ParentMap_13_ok,
+    tttLargeFiber30Block2Chunk3ParentMap_14_ok,
+    tttLargeFiber30Block2Chunk3ParentMap_15_ok]
+
+def tttLargeFiber30Block2Chunk3ParentsAudit : Bool :=
+  tttLargeFiber30Block2Chunk3ParentPathCheck 0
+    && tttLargeFiber30Block2Chunk3ParentPathCheck 1
+    && tttLargeFiber30Block2Chunk3ParentPathCheck 2
+    && tttLargeFiber30Block2Chunk3ParentPathCheck 3
+    && tttLargeFiber30Block2Chunk3ParentPathCheck 4
+    && tttLargeFiber30Block2Chunk3ParentPathCheck 5
+    && tttLargeFiber30Block2Chunk3ParentPathCheck 6
+    && tttLargeFiber30Block2Chunk3ParentPathCheck 7
+    && tttLargeFiber30Block2Chunk3ParentPathCheck 8
+    && tttLargeFiber30Block2Chunk3ParentPathCheck 9
+    && tttLargeFiber30Block2Chunk3ParentPathCheck 10
+    && tttLargeFiber30Block2Chunk3ParentPathCheck 11
+    && tttLargeFiber30Block2Chunk3ParentPathCheck 12
+    && tttLargeFiber30Block2Chunk3ParentPathCheck 13
+    && tttLargeFiber30Block2Chunk3ParentPathCheck 14
+    && tttLargeFiber30Block2Chunk3ParentPathCheck 15
+
+theorem tttLargeFiber30Block2Chunk3ParentsAudit_ok :
+    tttLargeFiber30Block2Chunk3ParentsAudit = true := by
+  simp [tttLargeFiber30Block2Chunk3ParentsAudit,
+    tttLargeFiber30Block2Chunk3ParentPath_0_ok,
+    tttLargeFiber30Block2Chunk3ParentPath_1_ok,
+    tttLargeFiber30Block2Chunk3ParentPath_2_ok,
+    tttLargeFiber30Block2Chunk3ParentPath_3_ok,
+    tttLargeFiber30Block2Chunk3ParentPath_4_ok,
+    tttLargeFiber30Block2Chunk3ParentPath_5_ok,
+    tttLargeFiber30Block2Chunk3ParentPath_6_ok,
+    tttLargeFiber30Block2Chunk3ParentPath_7_ok,
+    tttLargeFiber30Block2Chunk3ParentPath_8_ok,
+    tttLargeFiber30Block2Chunk3ParentPath_9_ok,
+    tttLargeFiber30Block2Chunk3ParentPath_10_ok,
+    tttLargeFiber30Block2Chunk3ParentPath_11_ok,
+    tttLargeFiber30Block2Chunk3ParentPath_12_ok,
+    tttLargeFiber30Block2Chunk3ParentPath_13_ok,
+    tttLargeFiber30Block2Chunk3ParentPath_14_ok,
+    tttLargeFiber30Block2Chunk3ParentPath_15_ok]
+
+def tttLargeFiber30Block2Chunk3ComponentCertificateAudit : Bool :=
+  tttRepresentativeModeAudit &&
+    tttLargeFiber30CountsAudit &&
+    tttLargeFiber30Block2Chunk3SourcesCheck &&
+    tttLargeFiber30Block2Chunk3RowsAudit &&
+    tttLargeFiber30Block2Chunk3ParentMapAudit &&
+    tttLargeFiber30Block2Chunk3ParentsAudit
+
+theorem tttLargeFiber30Block2Chunk3ComponentCertificateAudit_ok :
+    tttLargeFiber30Block2Chunk3ComponentCertificateAudit = true := by
+  simp [tttLargeFiber30Block2Chunk3ComponentCertificateAudit,
+    tttRepresentativeModeAudit_ok,
+    tttLargeFiber30CountsAudit_ok,
+    tttLargeFiber30Block2Chunk3SourcesCheck_ok,
+    tttLargeFiber30Block2Chunk3RowsAudit_ok,
+    tttLargeFiber30Block2Chunk3ParentMapAudit_ok,
+    tttLargeFiber30Block2Chunk3ParentsAudit_ok]
+
+end GoertzelLemma818TripleTauLargeFiber30Block2Chunk3ComponentCertificate
+
+end Mettapedia.GraphTheory.FourColor

@@ -577,5 +577,5 @@
       "preview": "theorem for L be lower-bounded LATTICE holds L has_a_representation_of_type<= 2 iff L is modular by Th9,Th35;"
     }
   ],
-  "source_path": "/home/zar/claude/mizar/share/mml/lattice8.miz"
+  "source_path": "~/claude/mizar/share/mml/lattice8.miz"
 }

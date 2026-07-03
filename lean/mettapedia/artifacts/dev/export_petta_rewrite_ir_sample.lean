@@ -4,7 +4,7 @@ open Mettapedia.Languages.MeTTa.PeTTa
 open Mettapedia.Languages.MeTTa.PeTTa.RewriteIR
 
 private def defaultOutDir : System.FilePath :=
-  "/home/zar/claude/lean-projects/mettapedia/.artifacts/petta_rewrite_ir_sample"
+  "~/claude/lean-projects/mettapedia/.artifacts/petta_rewrite_ir_sample"
 
 private def sampleSpace : PeTTaSpace :=
   { facts := []

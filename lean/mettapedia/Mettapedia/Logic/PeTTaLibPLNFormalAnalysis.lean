@@ -110,31 +110,31 @@ theorem capConf_eq_self_of_mem_core (c : ℝ) (h0 : 0 ≤ c) (h1 : c ≤ MAX_CON
 
 namespace CanonicalUpstream
 
-/-- Upstream canonical deduction confidence from `/home/zar/claude/hyperon/PLN/lib_pln.metta`. -/
+/-- Upstream canonical deduction confidence from `~/claude/hyperon/PLN/lib_pln.metta`. -/
 noncomputable def truthDeductionConf (pq qr : TV) : ℝ :=
   pq.s * qr.s * pq.c * qr.c
 
-/-- Upstream canonical induction confidence from `/home/zar/claude/hyperon/PLN/lib_pln.metta`. -/
+/-- Upstream canonical induction confidence from `~/claude/hyperon/PLN/lib_pln.metta`. -/
 noncomputable def truthInductionConf (ba bc : TV) : ℝ :=
   Mettapedia.Logic.PeTTaLibPLNTruthFunctions.w2c (bc.s * bc.c * ba.c)
 
-/-- Upstream canonical abduction confidence from `/home/zar/claude/hyperon/PLN/lib_pln.metta`. -/
+/-- Upstream canonical abduction confidence from `~/claude/hyperon/PLN/lib_pln.metta`. -/
 noncomputable def truthAbductionConf (ab cb : TV) : ℝ :=
   Mettapedia.Logic.PeTTaLibPLNTruthFunctions.w2c (ab.s * ab.c * cb.c)
 
-/-- Upstream canonical modus-ponens confidence from `/home/zar/claude/hyperon/PLN/lib_pln.metta`. -/
+/-- Upstream canonical modus-ponens confidence from `~/claude/hyperon/PLN/lib_pln.metta`. -/
 noncomputable def truthModusPonensConf (p pq : TV) : ℝ :=
   p.s * pq.s * p.c * pq.c
 
-/-- Upstream canonical disjunction helper from `/home/zar/claude/hyperon/PLN/lib_pln.metta`. -/
+/-- Upstream canonical disjunction helper from `~/claude/hyperon/PLN/lib_pln.metta`. -/
 noncomputable def truthOr (a b : ℝ) : ℝ :=
   1 - (1 - a) * (1 - b)
 
-/-- Upstream canonical symmetric-modus-ponens confidence from `/home/zar/claude/hyperon/PLN/lib_pln.metta`. -/
+/-- Upstream canonical symmetric-modus-ponens confidence from `~/claude/hyperon/PLN/lib_pln.metta`. -/
 noncomputable def truthSymmetricModusPonensConf (a ab : TV) : ℝ :=
   a.c * ab.c * truthOr a.s ab.s
 
-/-- Upstream canonical transitive-similarity confidence from `/home/zar/claude/hyperon/PLN/lib_pln.metta`. -/
+/-- Upstream canonical transitive-similarity confidence from `~/claude/hyperon/PLN/lib_pln.metta`. -/
 noncomputable def truthTransitiveSimilarityConf (ab bc : TV) : ℝ :=
   ab.c * bc.c * truthOr ab.s bc.s
 

@@ -25,8 +25,8 @@ The WM-PLN lesson is not merely "refuse to answer".  It is:
 
 The accompanying PeTTa runtime probes are:
 
-* `/home/zar/claude/hyperon/PeTTa/examples/nars_temporal_sequence_probe.metta`
-* `/home/zar/claude/hyperon/PeTTa/examples/pln_temporal_sequence_probe.metta`
+* `~/claude/hyperon/PeTTa/examples/nars_temporal_sequence_probe.metta`
+* `~/claude/hyperon/PeTTa/examples/pln_temporal_sequence_probe.metta`
 
 Those probes check the floating-point runtime formulas.  This Lean file records
 the exact rational values and the WM/provenance condition that the scalar probes

@@ -60,7 +60,7 @@ private def heBaseSession : Session :=
 private def defaultHELibPath : IO System.FilePath := do
   match (← IO.getEnv "HE_LIB_FILE") with
   | some p => pure (System.FilePath.mk p)
-  | none => pure (System.FilePath.mk "/home/zar/claude/hyperon/PeTTa/lib/lib_he.metta")
+  | none => pure (System.FilePath.mk "~/claude/hyperon/PeTTa/lib/lib_he.metta")
 
 private def loadDefaultHELibrary (s : Session) : IO Session := do
   let libPath ← defaultHELibPath
@@ -106,7 +106,7 @@ def runHEFileCommand (path : System.FilePath) : IO UInt32 := do
 def defaultCettaTestDir : IO System.FilePath := do
   match (← IO.getEnv "CETTA_TEST_DIR") with
   | some p => pure (System.FilePath.mk p)
-  | none => pure (System.FilePath.mk "/home/zar/claude/c-projects/cetta/tests")
+  | none => pure (System.FilePath.mk "~/claude/c-projects/cetta/tests")
 
 def resolveCoreFile (name : String) : IO System.FilePath := do
   pure ((← defaultCettaTestDir) / name)

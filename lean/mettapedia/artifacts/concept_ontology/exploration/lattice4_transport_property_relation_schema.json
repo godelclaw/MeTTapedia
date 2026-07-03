@@ -27,7 +27,7 @@
   "instances": [
     {
       "conjecture": "(! [A] : ( ( ~ (v2_struct_0(A)) & (v10_lattices(A) & l3_lattices(A)) ) => (! [B] : ( ( ~ (v2_struct_0(B)) & (v10_lattices(B) & (v13_lattices(B) & l3_lattices(B)) ) ) => (! [C] : ( (v1_funct_1(C) & (v1_funct_2(C, u1_struct_0(B), u1_struct_0(A)) & (v1_lattice4(C, B, A) & (v2_lattice4(C, B, A) & m1_subset_1(C, k1_zfmisc_1(k2_zfmisc_1(u1_struct_0(B), u1_struct_0(A))))) ) ) ) => (v2_funct_2(C, u1_struct_0(A)) => (v13_lattices(A) & r3_lattice4(B, A, C)) ) ) ) ) ) ) )",
-      "path": "/home/zar/claude/atps/datasets/mml_8.1.15_fof/problems_small/lattice4/lattice4__t12_lattice4",
+      "path": "~/claude/atps/datasets/mml_8.1.15_fof/problems_small/lattice4/lattice4__t12_lattice4",
       "problem": "lattice4__t12_lattice4",
       "record_name": "t12_lattice4",
       "relation_term": "r3_lattice4(B, A, C)",
@@ -54,7 +54,7 @@
     },
     {
       "conjecture": "(! [A] : ( ( ~ (v2_struct_0(A)) & (v10_lattices(A) & l3_lattices(A)) ) => (! [B] : ( ( ~ (v2_struct_0(B)) & (v10_lattices(B) & (v14_lattices(B) & l3_lattices(B)) ) ) => (! [C] : ( (v1_funct_1(C) & (v1_funct_2(C, u1_struct_0(B), u1_struct_0(A)) & (v1_lattice4(C, B, A) & (v2_lattice4(C, B, A) & m1_subset_1(C, k1_zfmisc_1(k2_zfmisc_1(u1_struct_0(B), u1_struct_0(A))))) ) ) ) => (v2_funct_2(C, u1_struct_0(A)) => (v14_lattices(A) & r2_lattice4(B, A, C)) ) ) ) ) ) ) )",
-      "path": "/home/zar/claude/atps/datasets/mml_8.1.15_fof/problems_small/lattice4/lattice4__t18_lattice4",
+      "path": "~/claude/atps/datasets/mml_8.1.15_fof/problems_small/lattice4/lattice4__t18_lattice4",
       "problem": "lattice4__t18_lattice4",
       "record_name": "t18_lattice4",
       "relation_term": "r2_lattice4(B, A, C)",
@@ -81,7 +81,7 @@
     },
     {
       "conjecture": "(! [A] : ( ( ~ (v2_struct_0(A)) & (v10_lattices(A) & (v15_lattices(A) & (v16_lattices(A) & l3_lattices(A)) ) ) ) => (! [B] : ( ( ~ (v2_struct_0(B)) & (v10_lattices(B) & (v3_filter_0(B) & l3_lattices(B)) ) ) => (! [C] : ( (v1_funct_1(C) & (v1_funct_2(C, u1_struct_0(B), u1_struct_0(A)) & (v1_lattice4(C, B, A) & (v2_lattice4(C, B, A) & m1_subset_1(C, k1_zfmisc_1(k2_zfmisc_1(u1_struct_0(B), u1_struct_0(A))))) ) ) ) => (v3_funct_2(C, u1_struct_0(B), u1_struct_0(A)) => (v3_filter_0(A) & r1_lattice4(B, A, C)) ) ) ) ) ) ) )",
-      "path": "/home/zar/claude/atps/datasets/mml_8.1.15_fof/problems_small/lattice4/lattice4__t28_lattice4",
+      "path": "~/claude/atps/datasets/mml_8.1.15_fof/problems_small/lattice4/lattice4__t28_lattice4",
       "problem": "lattice4__t28_lattice4",
       "record_name": "t28_lattice4",
       "relation_term": "r1_lattice4(B, A, C)",
@@ -110,7 +110,7 @@
     },
     {
       "conjecture": "(! [A] : ( ( ~ (v2_struct_0(A)) & (v10_lattices(A) & (v15_lattices(A) & (v16_lattices(A) & l3_lattices(A)) ) ) ) => (! [B] : ( ( ~ (v2_struct_0(B)) & (v10_lattices(B) & (v17_lattices(B) & l3_lattices(B)) ) ) => (! [C] : ( (v1_funct_1(C) & (v1_funct_2(C, u1_struct_0(B), u1_struct_0(A)) & (v1_lattice4(C, B, A) & (v2_lattice4(C, B, A) & m1_subset_1(C, k1_zfmisc_1(k2_zfmisc_1(u1_struct_0(B), u1_struct_0(A))))) ) ) ) => (v2_funct_2(C, u1_struct_0(A)) => (v17_lattices(A) & r4_lattice4(B, A, C)) ) ) ) ) ) ) )",
-      "path": "/home/zar/claude/atps/datasets/mml_8.1.15_fof/problems_small/lattice4/lattice4__t31_lattice4",
+      "path": "~/claude/atps/datasets/mml_8.1.15_fof/problems_small/lattice4/lattice4__t31_lattice4",
       "problem": "lattice4__t31_lattice4",
       "record_name": "t31_lattice4",
       "relation_term": "r4_lattice4(B, A, C)",
