@@ -157,6 +157,14 @@ projection.  The iff theorem
 `concreteChainFiberAppendQuotientFibrationParentRowsNonSingletonPrefixBaseDataStructuralClosed_iff_connected_lift_image`
 shows this is just a generated-friendly presentation of the paired structural
 target.
+The even smaller nonempty-prefix target
+`concreteChainFiberAppendQuotientFibrationParentRowsNonSingletonPrefixSurjectiveProjectionClosed`
+asks generated data for connectedness of the appended root-closure graph and a
+surjective projection from appended fiber points onto the prefix fiber whenever
+that prefix fiber is nonempty.  The theorem
+`concreteChainFiberAppendQuotientFibrationParentRowsNonSingletonPrefixConnectedLiftImageClosed_of_surjective_projection`
+handles empty prefix fibers by the proved prefix-closure projection and reduces
+the nonempty generated-data obligation to that surjective projection.
 The standalone base-data half is now closed by
 `concreteChainFiberAppendQuotientFibrationParentRowsNonSingletonPrefixBaseDataClosed_of_prefix_root_star`:
 nonempty prefix fibers use the prefix fiber itself as the quotient base with a

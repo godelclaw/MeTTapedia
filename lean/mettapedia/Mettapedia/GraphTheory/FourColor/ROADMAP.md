@@ -258,6 +258,13 @@ target and then to semantic sufficiency without requiring the canonical prefix
 projection, and
 `concreteChainFiberAppendQuotientFibrationParentRowsNonSingletonPrefixBaseDataStructuralClosed_iff_connected_lift_image`
 proves this witness is equivalent to the paired structural target.
+The narrower generated target is
+`concreteChainFiberAppendQuotientFibrationParentRowsNonSingletonPrefixSurjectiveProjectionClosed`:
+for nonempty prefix fibers, prove appended root-closure connectedness and emit a
+surjective projection from appended fiber points onto prefix fiber points.  The
+`_of_surjective_projection` theorem supplies the connected-lift-image witness,
+while empty prefix fibers are discharged by the already proved prefix-closure
+projection.
 The prefix-fibration adapter
 `concreteChainFiberAppendQuotientFibrationParentRowsNonSingletonPrefixBaseDataStructuralClosed_of_prefix_fibration`
 now shows that `concreteChainFiberAppendPrefixFibrationClosed` is enough to
