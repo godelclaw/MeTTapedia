@@ -269,6 +269,13 @@ lemma hasDerivAt_amp_neg_sin (a t : ℝ) :
   simpa [mul_comm, mul_assoc, neg_mul, mul_neg] using
     (((Real.hasDerivAt_sin t).neg).const_mul a)
 
+/-- Everywhere-derivative data for the negated-cosine profile of amplitude
+`a`. -/
+lemma hasDerivAt_amp_neg_cos (a t : ℝ) :
+    HasDerivAt (fun s => a * -Real.cos s) (a * Real.sin t) t := by
+  simpa [mul_comm, mul_assoc, neg_mul, mul_neg] using
+    (((Real.hasDerivAt_cos t).neg).const_mul a)
+
 /-- The cosine/sine pair collapse: for a wave vector `k` orthogonal to the
 polarization `e`, the squared Lie derivatives along the amplitude-`a`
 cosine and sine modes sum to `a² • D_e² μ` — the phase-dependent

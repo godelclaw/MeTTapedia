@@ -192,6 +192,34 @@ theorem gradField_sub (h₁ : DifferentiableAt ℝ V₁ x)
   ext b
   by_cases hba : b = a <;> simp [hba]
 
+section ScalarProfile
+
+variable {φ dφ : ℝ → ℝ}
+
+/-- Gradient of a scalar profile of a linear phase:
+`∇(φ ⟪K, ·⟫) = φ'(⟪K, x⟫) • K`. -/
+theorem gradField_scalarProfile (hφ : ∀ t, HasDerivAt φ (dφ t) t)
+    (K x : EuclideanSpace ℝ ι) :
+    gradField (fun y => φ ⟪K, y⟫) x = dφ ⟪K, x⟫ • K := by
+  have hs : HasFDerivAt (fun y : EuclideanSpace ℝ ι => φ ⟪K, y⟫)
+      (dφ ⟪K, x⟫ • innerSL ℝ K) x :=
+    (hφ ⟪K, x⟫).comp_hasFDerivAt x (hasFDerivAt_inner_left K x)
+  unfold gradField
+  rw [hs.fderiv]
+  have hterm : ∀ a : ι,
+      (EuclideanSpace.single a
+        ((dφ ⟪K, x⟫ • innerSL ℝ K) (EuclideanSpace.single a 1)) :
+          EuclideanSpace ℝ ι) =
+      EuclideanSpace.single a (dφ ⟪K, x⟫ * K a) := by
+    intro a
+    congr 1
+    rw [smul_apply, innerSL_apply_apply, smul_eq_mul]
+    congr 1
+    simp [EuclideanSpace.inner_single_right]
+  rw [Finset.sum_congr rfl fun a _ => hterm a, sum_single_mul_apply]
+
+end ScalarProfile
+
 end GradientAlgebra
 
 section LieIdentities
