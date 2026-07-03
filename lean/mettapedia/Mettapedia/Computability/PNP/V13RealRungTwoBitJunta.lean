@@ -6002,6 +6002,158 @@ theorem
         observer.toBitJunta A i₀
   omega
 
+noncomputable def v13RealLinearParityObserverFixedSuccess
+    {m j : Nat} (observer : V13RealLinearParityObserver m j)
+    (A : V13F2LinearEquiv m) (i₀ : Fin m) : Rat :=
+  (Fintype.card
+      (V13RealLinearBitJuntaFixedCorrect observer.toBitJunta A i₀) : Rat) /
+    (Fintype.card (F2Vec m) : Rat)
+
+noncomputable def
+    v13RealLinearParityObserver_fixedCorrectEquiv_of_determinesTarget
+    {m j : Nat} (observer : V13RealLinearParityObserver m j)
+    (A : V13F2LinearEquiv m) (i₀ : Fin m)
+    (hdet : V13RealLinearParityObserverDeterminesTarget observer A i₀) :
+    F2Vec m ≃
+      V13RealLinearBitJuntaFixedCorrect observer.toBitJunta A i₀ where
+  toFun x :=
+    ⟨x, by
+      simpa [V13RealLinearParityObserver.toBitJunta,
+        v13RealLinearTarget] using hdet x⟩
+  invFun x := x.val
+  left_inv x := rfl
+  right_inv x := by
+    apply Subtype.ext
+    rfl
+
+theorem
+    v13RealLinearParityObserver_fixed_correct_card_eq_f2vec_card_of_determinesTarget
+    {m j : Nat} (observer : V13RealLinearParityObserver m j)
+    (A : V13F2LinearEquiv m) (i₀ : Fin m)
+    (hdet : V13RealLinearParityObserverDeterminesTarget observer A i₀) :
+    Fintype.card
+        (V13RealLinearBitJuntaFixedCorrect observer.toBitJunta A i₀) =
+      Fintype.card (F2Vec m) := by
+  simpa using
+    (Fintype.card_congr
+      (v13RealLinearParityObserver_fixedCorrectEquiv_of_determinesTarget
+        observer A i₀ hdet)).symm
+
+theorem
+    v13RealLinearParityObserver_fixed_correct_card_eq_zero_of_determinesTargetComplement
+    {m j : Nat} (observer : V13RealLinearParityObserver m j)
+    (A : V13F2LinearEquiv m) (i₀ : Fin m)
+    (hcomp :
+      V13RealLinearParityObserverDeterminesTargetComplement observer A i₀) :
+    Fintype.card
+        (V13RealLinearBitJuntaFixedCorrect observer.toBitJunta A i₀) = 0 := by
+  rw [Fintype.card_eq_zero_iff]
+  exact
+    ⟨fun x =>
+      hcomp x.val
+        (by
+          simpa [V13RealLinearParityObserver.toBitJunta,
+            v13RealLinearTarget] using x.property)⟩
+
+theorem v13RealLinearParityObserver_fixedSuccess_eq_one_of_determinesTarget
+    {m j : Nat} (observer : V13RealLinearParityObserver m j)
+    (A : V13F2LinearEquiv m) (i₀ : Fin m)
+    (hdet : V13RealLinearParityObserverDeterminesTarget observer A i₀) :
+    v13RealLinearParityObserverFixedSuccess observer A i₀ = 1 := by
+  classical
+  unfold v13RealLinearParityObserverFixedSuccess
+  rw [
+    v13RealLinearParityObserver_fixed_correct_card_eq_f2vec_card_of_determinesTarget
+      observer A i₀ hdet]
+  have hcardPosNat : 0 < Fintype.card (F2Vec m) := by
+    rw [v13RealLinear_f2vec_card]
+    positivity
+  have hcardPos : (0 : Rat) < (Fintype.card (F2Vec m) : Rat) := by
+    exact_mod_cast hcardPosNat
+  field_simp [hcardPos.ne']
+
+theorem
+    v13RealLinearParityObserver_fixedSuccess_eq_zero_of_determinesTargetComplement
+    {m j : Nat} (observer : V13RealLinearParityObserver m j)
+    (A : V13F2LinearEquiv m) (i₀ : Fin m)
+    (hcomp :
+      V13RealLinearParityObserverDeterminesTargetComplement observer A i₀) :
+    v13RealLinearParityObserverFixedSuccess observer A i₀ = 0 := by
+  unfold v13RealLinearParityObserverFixedSuccess
+  rw [
+    v13RealLinearParityObserver_fixed_correct_card_eq_zero_of_determinesTargetComplement
+      observer A i₀ hcomp]
+  simp
+
+theorem
+    v13RealLinearParityObserver_fixedSuccess_eq_half_of_not_rhsParityMatchesTarget
+    {m j : Nat} (observer : V13RealLinearParityObserver m j)
+    (A : V13F2LinearEquiv m) (i₀ : Fin m)
+    (hnot :
+      ¬ V13RealLinearParityObserverRhsParityMatchesTarget observer A i₀) :
+    v13RealLinearParityObserverFixedSuccess observer A i₀ = (1 / 2 : Rat) := by
+  classical
+  unfold v13RealLinearParityObserverFixedSuccess
+  let C :=
+    Fintype.card
+      (V13RealLinearBitJuntaFixedCorrect observer.toBitJunta A i₀)
+  let T := Fintype.card (F2Vec m)
+  have hcardNat : C * 2 = T := by
+    simpa [C, T] using
+      v13RealLinearParityObserver_fixed_correct_card_mul_two_eq_f2vec_card_of_not_rhsParityMatchesTarget
+        observer A i₀ hnot
+  have hcardRat : (C : Rat) * 2 = (T : Rat) := by
+    exact_mod_cast hcardNat
+  have hTposNat : 0 < T := by
+    dsimp [T]
+    rw [v13RealLinear_f2vec_card]
+    positivity
+  have hTpos : (0 : Rat) < (T : Rat) := by
+    exact_mod_cast hTposNat
+  change (C : Rat) / (T : Rat) = (1 / 2 : Rat)
+  field_simp [hTpos.ne']
+  linarith
+
+theorem v13RealLinearParityObserver_fixedSuccess_trichotomy
+    {m j : Nat} (observer : V13RealLinearParityObserver m j)
+    (A : V13F2LinearEquiv m) (i₀ : Fin m) :
+    (V13RealLinearParityObserverDeterminesTarget observer A i₀ ∧
+        v13RealLinearParityObserverFixedSuccess observer A i₀ = 1) ∨
+      (V13RealLinearParityObserverDeterminesTargetComplement observer A i₀ ∧
+        v13RealLinearParityObserverFixedSuccess observer A i₀ = 0) ∨
+      (¬ V13RealLinearParityObserverRhsParityMatchesTarget observer A i₀ ∧
+        v13RealLinearParityObserverFixedSuccess observer A i₀ =
+          (1 / 2 : Rat)) := by
+  by_cases hmatch :
+      V13RealLinearParityObserverRhsParityMatchesTarget observer A i₀
+  · rcases v13_zmod2_cases
+        (v13RealLinearParityObserverConstant observer A) with hconst | hconst
+    · left
+      have hdet :
+          V13RealLinearParityObserverDeterminesTarget observer A i₀ :=
+        (v13RealLinearParityObserver_determinesTarget_iff
+          observer A i₀).2 ⟨hconst, hmatch⟩
+      exact
+        ⟨hdet,
+          v13RealLinearParityObserver_fixedSuccess_eq_one_of_determinesTarget
+            observer A i₀ hdet⟩
+    · right
+      left
+      have hcomp :
+          V13RealLinearParityObserverDeterminesTargetComplement observer A i₀ :=
+        (v13RealLinearParityObserver_determinesTargetComplement_iff
+          observer A i₀).2 ⟨hconst, hmatch⟩
+      exact
+        ⟨hcomp,
+          v13RealLinearParityObserver_fixedSuccess_eq_zero_of_determinesTargetComplement
+            observer A i₀ hcomp⟩
+  · right
+    right
+    exact
+      ⟨hmatch,
+        v13RealLinearParityObserver_fixedSuccess_eq_half_of_not_rhsParityMatchesTarget
+          observer A i₀ hmatch⟩
+
 theorem v13RealLinearParityObserver_correct_card_eq_incorrect_card_of_not_blocked
     {m j : Nat} (observer : V13RealLinearParityObserver m j)
     (A : V13F2LinearEquiv m) (i₀ : Fin m)
