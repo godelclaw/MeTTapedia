@@ -314,9 +314,16 @@ real Kempe-step relation:
 component is `Nodup`.  The proof factors through the two containment lemmas
 `chainComponent_subset_certifiedComponent` and
 `certifiedComponent_subset_chainComponent`, so generated rows no longer need to
-force `chainComponent` reduction.  The next connectedness pass should extract
-those row fields from generated parent-row audits and feed the resulting real
-single steps into root-closure membership.
+force `chainComponent` reduction.  The row-validity checker now exposes the
+generic extraction lemmas
+`tripleComponentRowValid_chainCertifiedKempeStep_of_source_beq_false`,
+`tripleComponentRowValid_chainSingleKempeStep_of_source_beq_false`, and
+`tripleComponentRowValid_source_eq_or_chainSingleKempeStep`; the concrete
+theorem `tttFiber32Row1_chainSingleKempeStep` applies them to the first
+non-root generated row in the known `TTT` fiber-32 table.  The next
+connectedness pass should lift this from individual generated rows to full
+parent-row audit packages and feed the resulting real single steps into
+root-closure membership.
 The theorem
 `tttFiber32Rows_length_eq_two_mul_ttFiber32Rows_length` records the table-level
 alignment for the known `TT` obstruction key: the same generated key appears in

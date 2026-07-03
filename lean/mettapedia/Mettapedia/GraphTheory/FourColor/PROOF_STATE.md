@@ -343,9 +343,17 @@ the supplied component is duplicate-free.  The theorem
 `chainCertifiedKempeStep_implies_single` then converts a certified component
 step into `chainSingleKempeStep`, assuming the move color pair is in
 `colorPairs` and the supplied component is `Nodup`.  This removes the need to
-compute `chainComponent` directly for generated rows, but row-field extraction
-and parent-row/root-closure packaging still remain before appended
-connectedness closes.  Focused target-progress build evidence is
+compute `chainComponent` directly for generated rows.  The row checker now has
+generic extraction lemmas
+`tripleComponentRowValid_chainCertifiedKempeStep_of_source_beq_false`,
+`tripleComponentRowValid_chainSingleKempeStep_of_source_beq_false`, and
+`tripleComponentRowValid_source_eq_or_chainSingleKempeStep`, which turn a
+nonstationary valid `TripleComponentParentRow` plus the small row side
+conditions into a real `chainSingleKempeStep`.  The local generated instance
+`tttFiber32Row1_chainSingleKempeStep` exercises this against the first
+non-root row of the `TTT` fiber-32 table.  Bulk parent-row/root-closure
+packaging still remains before appended connectedness closes.  Focused
+target-progress build evidence is
 `fourcolor-certified-component-single-step-bridge-build-20260703.log`
 (1110 jobs, SHA256
 `533583471beb7370ab7616d30759ba326e1980aa620684f7175311666fcbac90`), and
@@ -355,6 +363,16 @@ dependency-audit evidence is
 `9409d135f97a12cb0694a4d79f5ab01902883937d3ab01ae24e2a57e2673c685`);
 the two containment theorems and `chainCertifiedKempeStep_implies_single`
 depend on `propext`, `Classical.choice`, and `Quot.sound`.
+The row-field extraction build evidence is
+`fourcolor-triple-row-field-extraction-build-20260703.log` (1110 jobs, SHA256
+`04f3e5fe707add504d1e09fc8f5333cd1d1a03fead02dbe484541e654988b676`), and
+the dependency audit is
+`fourcolor-triple-row-field-extraction-axioms-20260703.log` (SHA256
+`2f615e828054477daee1952487bdb7ab9acd9faa0ba8c6bae43f5a3ad2bd91c0`);
+the generic certified-step extractor depends on `propext` and `Quot.sound`,
+while the single-step extractor, source-or-step disjunction, and concrete
+fiber-32 row theorem depend on `propext`, `Classical.choice`, and
+`Quot.sound`.
 The table-level diagnostic
 `tttFiber32Rows_length_eq_two_mul_ttFiber32Rows_length` records that the known
 `TT` obstruction key is the same generated fixed input as `TTT` light-fiber
