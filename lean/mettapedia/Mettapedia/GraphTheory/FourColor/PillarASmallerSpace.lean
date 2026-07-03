@@ -442,6 +442,45 @@ theorem closedWalkExactShell_needBasedPillarARequirement_routeKempeSwitch_of_bou
       (G := G) emb (selectedBoundaryInteriorEdgeEndpointVertices emb)
       shell.tait.coloring htrivial hG
 
+/-- On shell-bearing embeddings, the projected generator span contains an
+explicit direction outside the detector whenever the manuscript-style
+annihilator endpoint makes that projected family span all selected-boundary-zero
+chains. -/
+theorem exists_mem_projectedKempeClosureGeneratorSpan_not_mem_theorem49BoundaryZeroKirchhoffSubspace_of_closedWalkExactShell_of_boundaryZeroAnnihilatorTrivial
+    [Fintype G.edgeSet] [FiniteDimensional F2 (G.edgeSet → Color)]
+    {emb : PlaneEmbeddingWithBoundary G} (shell : ClosedWalkExactShell emb)
+    {C₀ : G.EdgeColoring Color}
+    (htrivial : BoundaryZeroAnnihilatorTrivialForEmbedding emb C₀) :
+    ∃ z : G.edgeSet → Color,
+      z ∈ Submodule.span F2 (projectedKempeClosureGeneratorFamily emb C₀) ∧
+        z ∉ theorem49BoundaryZeroKirchhoffSubspace emb
+          (selectedBoundaryInteriorEdgeEndpointVertices emb) := by
+  rcases
+    exists_mem_planarBoundaryZeroSubmodule_not_mem_theorem49BoundaryZeroKirchhoffSubspace_of_hasUnblockedInteriorEndpoint
+      shell.endpoint with
+    ⟨z, hzBoundary, hzNotDetector⟩
+  refine ⟨z, ?_, hzNotDetector⟩
+  rw [span_projectedKempeClosureGeneratorFamily_eq_planarBoundaryZeroSubmodule_of_boundaryZeroAnnihilatorTrivial
+    emb C₀ htrivial]
+  exact hzBoundary
+
+/-- The escaping direction is precisely the failed inclusion
+`span(projected family) ≤ detector` on shell-bearing embeddings. -/
+theorem not_projectedKempeClosureGeneratorSpan_le_theorem49BoundaryZeroKirchhoffSubspace_of_closedWalkExactShell_of_boundaryZeroAnnihilatorTrivial
+    [Fintype G.edgeSet] [FiniteDimensional F2 (G.edgeSet → Color)]
+    {emb : PlaneEmbeddingWithBoundary G} (shell : ClosedWalkExactShell emb)
+    {C₀ : G.EdgeColoring Color}
+    (htrivial : BoundaryZeroAnnihilatorTrivialForEmbedding emb C₀) :
+    ¬ Submodule.span F2 (projectedKempeClosureGeneratorFamily emb C₀) ≤
+        theorem49BoundaryZeroKirchhoffSubspace emb
+          (selectedBoundaryInteriorEdgeEndpointVertices emb) := by
+  intro hle
+  rcases
+    exists_mem_projectedKempeClosureGeneratorSpan_not_mem_theorem49BoundaryZeroKirchhoffSubspace_of_closedWalkExactShell_of_boundaryZeroAnnihilatorTrivial
+      (G := G) shell htrivial with
+    ⟨z, hzSpan, hzNotDetector⟩
+  exact hzNotDetector (hle hzSpan)
+
 /-- If the projected Definition 4.8 generator family spans the full selected
 boundary-zero submodule, then a strict detector/boundary-zero gap refutes Prop
 (1) for that same family. -/
