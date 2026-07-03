@@ -1478,6 +1478,262 @@ theorem ttFiber32SelectedTttFiber32StatesList_nodup :
     ttFiber32SelectedTttFiber32StatesList.Nodup := by
   decide
 
+def tttFiber32SourceStates
+    (row : TripleComponentParentRow) : List TauState :=
+  tripleStates row.sourceLeft row.sourceMiddle row.sourceRight
+
+def tttFiber32ParentStates
+    (row : TripleComponentParentRow) : List TauState :=
+  tripleStates row.parentLeft row.parentMiddle row.parentRight
+
+def tttFiber32RootClose : List (List TauState) :=
+  closeChainFiber (frontierWordToChainWord tttFrontierWord)
+    (concreteChainFiber tttFrontierWord tttFiber32Key)
+    (concreteChainFiber tttFrontierWord tttFiber32Key).length
+    [chainFiberRootState tttFrontierWord tttFiber32Key]
+
+def tttFiber32SourceStatesList : List (List TauState) :=
+  tttFiber32Rows.map tttFiber32SourceStates
+
+theorem tttFiber32SourceStatesList_nodup :
+    tttFiber32SourceStatesList.Nodup := by
+  decide
+
+theorem tttFiber32Rows_mem_source_mem_concreteChainFiber
+    {row : TripleComponentParentRow} (hmem : row ∈ tttFiber32Rows) :
+    tttFiber32SourceStates row ∈
+      concreteChainFiber tttFrontierWord tttFiber32Key := by
+  simp [tttFiber32Rows] at hmem
+  rcases hmem with rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl |
+    rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl
+  · decide
+  · decide
+  · decide
+  · decide
+  · decide
+  · decide
+  · decide
+  · decide
+  · decide
+  · decide
+  · decide
+  · decide
+  · decide
+  · decide
+  · decide
+  · decide
+
+theorem tttFiber32SourceStatesList_mem_concreteChainFiber
+    {states : List TauState} (hmem : states ∈ tttFiber32SourceStatesList) :
+    states ∈ concreteChainFiber tttFrontierWord tttFiber32Key := by
+  rcases List.mem_map.mp (by simpa [tttFiber32SourceStatesList] using hmem) with
+    ⟨row, hrow, rfl⟩
+  exact tttFiber32Rows_mem_source_mem_concreteChainFiber hrow
+
+theorem tttFiber32Row0_source_eq_root :
+    tttFiber32SourceStates tttFiber32Row0 =
+      chainFiberRootState tttFrontierWord tttFiber32Key := by
+  decide
+
+theorem tttFiber32Row0_source_mem_rootClose :
+    tttFiber32SourceStates tttFiber32Row0 ∈ tttFiber32RootClose := by
+  rw [tttFiber32Row0_source_eq_root]
+  unfold tttFiber32RootClose
+  exact closeChainFiber_mem_of_seen _ _ _ _ _ (by simp)
+
+private theorem tttFiber32Row_source_mem_rootClose_of_parent_mem
+    {row : TripleComponentParentRow}
+    (hmem : row ∈ tttFiber32Rows)
+    (hne : row.source ≠ row.parent)
+    (hparent : tttFiber32ParentStates row ∈ tttFiber32RootClose)
+    (hsource :
+      tttFiber32SourceStates row ∈
+        concreteChainFiber tttFrontierWord tttFiber32Key) :
+    tttFiber32SourceStates row ∈ tttFiber32RootClose := by
+  have hstepOr := tttFiber32Rows_mem_source_eq_or_reverse_chainSingleKempeStep hmem
+  rcases hstepOr with hsame | hstep
+  · exact False.elim (hne hsame)
+  · unfold tttFiber32RootClose at hparent ⊢
+    unfold tttFiber32ParentStates at hparent
+    unfold tttFiber32SourceStates at hsource ⊢
+    exact closeChainFiber_mem_step_of_close_at_length_of_bounded_saturation
+      closeChainFiberBoundedSaturationClosed_ok
+      (frontierWordToChainWord tttFrontierWord)
+      (concreteChainFiber tttFrontierWord tttFiber32Key)
+      [chainFiberRootState tttFrontierWord tttFiber32Key]
+      (tripleStates row.parentLeft row.parentMiddle row.parentRight)
+      (tripleStates row.sourceLeft row.sourceMiddle row.sourceRight)
+      (by simp)
+      hparent hsource
+      (by
+        simpa [tttWord, tttFrontierWord, frontierWordToChainWord,
+          frontierOrientToChain] using hstep)
+
+theorem tttFiber32Row1_source_mem_rootClose :
+    tttFiber32SourceStates tttFiber32Row1 ∈ tttFiber32RootClose := by
+  exact tttFiber32Row_source_mem_rootClose_of_parent_mem
+    (row := tttFiber32Row1) (by simp [tttFiber32Rows]) (by decide)
+    (by simpa [tttFiber32ParentStates, tttFiber32SourceStates,
+      tttFiber32Row0, tttFiber32Row1, tripleRow] using
+        tttFiber32Row0_source_mem_rootClose)
+    (by decide)
+
+theorem tttFiber32Row2_source_mem_rootClose :
+    tttFiber32SourceStates tttFiber32Row2 ∈ tttFiber32RootClose := by
+  exact tttFiber32Row_source_mem_rootClose_of_parent_mem
+    (row := tttFiber32Row2) (by simp [tttFiber32Rows]) (by decide)
+    (by simpa [tttFiber32ParentStates, tttFiber32SourceStates,
+      tttFiber32Row0, tttFiber32Row2, tripleRow] using
+        tttFiber32Row0_source_mem_rootClose)
+    (by decide)
+
+theorem tttFiber32Row3_source_mem_rootClose :
+    tttFiber32SourceStates tttFiber32Row3 ∈ tttFiber32RootClose := by
+  exact tttFiber32Row_source_mem_rootClose_of_parent_mem
+    (row := tttFiber32Row3) (by simp [tttFiber32Rows]) (by decide)
+    (by simpa [tttFiber32ParentStates, tttFiber32SourceStates,
+      tttFiber32Row1, tttFiber32Row3, tripleRow] using
+        tttFiber32Row1_source_mem_rootClose)
+    (by decide)
+
+theorem tttFiber32Row4_source_mem_rootClose :
+    tttFiber32SourceStates tttFiber32Row4 ∈ tttFiber32RootClose := by
+  exact tttFiber32Row_source_mem_rootClose_of_parent_mem
+    (row := tttFiber32Row4) (by simp [tttFiber32Rows]) (by decide)
+    (by simpa [tttFiber32ParentStates, tttFiber32SourceStates,
+      tttFiber32Row0, tttFiber32Row4, tripleRow] using
+        tttFiber32Row0_source_mem_rootClose)
+    (by decide)
+
+theorem tttFiber32Row5_source_mem_rootClose :
+    tttFiber32SourceStates tttFiber32Row5 ∈ tttFiber32RootClose := by
+  exact tttFiber32Row_source_mem_rootClose_of_parent_mem
+    (row := tttFiber32Row5) (by simp [tttFiber32Rows]) (by decide)
+    (by simpa [tttFiber32ParentStates, tttFiber32SourceStates,
+      tttFiber32Row1, tttFiber32Row5, tripleRow] using
+        tttFiber32Row1_source_mem_rootClose)
+    (by decide)
+
+theorem tttFiber32Row6_source_mem_rootClose :
+    tttFiber32SourceStates tttFiber32Row6 ∈ tttFiber32RootClose := by
+  exact tttFiber32Row_source_mem_rootClose_of_parent_mem
+    (row := tttFiber32Row6) (by simp [tttFiber32Rows]) (by decide)
+    (by simpa [tttFiber32ParentStates, tttFiber32SourceStates,
+      tttFiber32Row2, tttFiber32Row6, tripleRow] using
+        tttFiber32Row2_source_mem_rootClose)
+    (by decide)
+
+theorem tttFiber32Row7_source_mem_rootClose :
+    tttFiber32SourceStates tttFiber32Row7 ∈ tttFiber32RootClose := by
+  exact tttFiber32Row_source_mem_rootClose_of_parent_mem
+    (row := tttFiber32Row7) (by simp [tttFiber32Rows]) (by decide)
+    (by simpa [tttFiber32ParentStates, tttFiber32SourceStates,
+      tttFiber32Row3, tttFiber32Row7, tripleRow] using
+        tttFiber32Row3_source_mem_rootClose)
+    (by decide)
+
+theorem tttFiber32Row8_source_mem_rootClose :
+    tttFiber32SourceStates tttFiber32Row8 ∈ tttFiber32RootClose := by
+  exact tttFiber32Row_source_mem_rootClose_of_parent_mem
+    (row := tttFiber32Row8) (by simp [tttFiber32Rows]) (by decide)
+    (by simpa [tttFiber32ParentStates, tttFiber32SourceStates,
+      tttFiber32Row0, tttFiber32Row8, tripleRow] using
+        tttFiber32Row0_source_mem_rootClose)
+    (by decide)
+
+theorem tttFiber32Row9_source_mem_rootClose :
+    tttFiber32SourceStates tttFiber32Row9 ∈ tttFiber32RootClose := by
+  exact tttFiber32Row_source_mem_rootClose_of_parent_mem
+    (row := tttFiber32Row9) (by simp [tttFiber32Rows]) (by decide)
+    (by simpa [tttFiber32ParentStates, tttFiber32SourceStates,
+      tttFiber32Row1, tttFiber32Row9, tripleRow] using
+        tttFiber32Row1_source_mem_rootClose)
+    (by decide)
+
+theorem tttFiber32Row10_source_mem_rootClose :
+    tttFiber32SourceStates tttFiber32Row10 ∈ tttFiber32RootClose := by
+  exact tttFiber32Row_source_mem_rootClose_of_parent_mem
+    (row := tttFiber32Row10) (by simp [tttFiber32Rows]) (by decide)
+    (by simpa [tttFiber32ParentStates, tttFiber32SourceStates,
+      tttFiber32Row2, tttFiber32Row10, tripleRow] using
+        tttFiber32Row2_source_mem_rootClose)
+    (by decide)
+
+theorem tttFiber32Row11_source_mem_rootClose :
+    tttFiber32SourceStates tttFiber32Row11 ∈ tttFiber32RootClose := by
+  exact tttFiber32Row_source_mem_rootClose_of_parent_mem
+    (row := tttFiber32Row11) (by simp [tttFiber32Rows]) (by decide)
+    (by simpa [tttFiber32ParentStates, tttFiber32SourceStates,
+      tttFiber32Row3, tttFiber32Row11, tripleRow] using
+        tttFiber32Row3_source_mem_rootClose)
+    (by decide)
+
+theorem tttFiber32Row12_source_mem_rootClose :
+    tttFiber32SourceStates tttFiber32Row12 ∈ tttFiber32RootClose := by
+  exact tttFiber32Row_source_mem_rootClose_of_parent_mem
+    (row := tttFiber32Row12) (by simp [tttFiber32Rows]) (by decide)
+    (by simpa [tttFiber32ParentStates, tttFiber32SourceStates,
+      tttFiber32Row4, tttFiber32Row12, tripleRow] using
+        tttFiber32Row4_source_mem_rootClose)
+    (by decide)
+
+theorem tttFiber32Row13_source_mem_rootClose :
+    tttFiber32SourceStates tttFiber32Row13 ∈ tttFiber32RootClose := by
+  exact tttFiber32Row_source_mem_rootClose_of_parent_mem
+    (row := tttFiber32Row13) (by simp [tttFiber32Rows]) (by decide)
+    (by simpa [tttFiber32ParentStates, tttFiber32SourceStates,
+      tttFiber32Row5, tttFiber32Row13, tripleRow] using
+        tttFiber32Row5_source_mem_rootClose)
+    (by decide)
+
+theorem tttFiber32Row14_source_mem_rootClose :
+    tttFiber32SourceStates tttFiber32Row14 ∈ tttFiber32RootClose := by
+  exact tttFiber32Row_source_mem_rootClose_of_parent_mem
+    (row := tttFiber32Row14) (by simp [tttFiber32Rows]) (by decide)
+    (by simpa [tttFiber32ParentStates, tttFiber32SourceStates,
+      tttFiber32Row6, tttFiber32Row14, tripleRow] using
+        tttFiber32Row6_source_mem_rootClose)
+    (by decide)
+
+theorem tttFiber32Row15_source_mem_rootClose :
+    tttFiber32SourceStates tttFiber32Row15 ∈ tttFiber32RootClose := by
+  exact tttFiber32Row_source_mem_rootClose_of_parent_mem
+    (row := tttFiber32Row15) (by simp [tttFiber32Rows]) (by decide)
+    (by simpa [tttFiber32ParentStates, tttFiber32SourceStates,
+      tttFiber32Row7, tttFiber32Row15, tripleRow] using
+        tttFiber32Row7_source_mem_rootClose)
+    (by decide)
+
+theorem tttFiber32Rows_mem_source_mem_rootClose
+    {row : TripleComponentParentRow} (hmem : row ∈ tttFiber32Rows) :
+    tttFiber32SourceStates row ∈ tttFiber32RootClose := by
+  simp [tttFiber32Rows] at hmem
+  rcases hmem with rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl |
+    rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl
+  · exact tttFiber32Row0_source_mem_rootClose
+  · exact tttFiber32Row1_source_mem_rootClose
+  · exact tttFiber32Row2_source_mem_rootClose
+  · exact tttFiber32Row3_source_mem_rootClose
+  · exact tttFiber32Row4_source_mem_rootClose
+  · exact tttFiber32Row5_source_mem_rootClose
+  · exact tttFiber32Row6_source_mem_rootClose
+  · exact tttFiber32Row7_source_mem_rootClose
+  · exact tttFiber32Row8_source_mem_rootClose
+  · exact tttFiber32Row9_source_mem_rootClose
+  · exact tttFiber32Row10_source_mem_rootClose
+  · exact tttFiber32Row11_source_mem_rootClose
+  · exact tttFiber32Row12_source_mem_rootClose
+  · exact tttFiber32Row13_source_mem_rootClose
+  · exact tttFiber32Row14_source_mem_rootClose
+  · exact tttFiber32Row15_source_mem_rootClose
+
+theorem tttFiber32SourceStatesList_mem_rootClose
+    {states : List TauState} (hmem : states ∈ tttFiber32SourceStatesList) :
+    states ∈ tttFiber32RootClose := by
+  rcases List.mem_map.mp (by simpa [tttFiber32SourceStatesList] using hmem) with
+    ⟨row, hrow, rfl⟩
+  exact tttFiber32Rows_mem_source_mem_rootClose hrow
+
 def tttPartialTargetCertificateAudit : Bool :=
   tttMode09WitnessAudit
     && tttTargetProgressCountsAudit

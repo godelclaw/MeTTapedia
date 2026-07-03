@@ -430,6 +430,25 @@ dependency-audit evidence is
 `d293a3cd4c4f893dc28f5cb3786305e5a68cd766d160e56ab8bb989aa19be1e2`);
 both adapter theorems depend on `propext`, `Classical.choice`, and
 `Quot.sound`.
+The known `TTT` fiber-32 row table now has a local root-closure package.
+`tttFiber32SourceStates` and `tttFiber32SourceStatesList` name the row-source
+state lists, `tttFiber32Rows_mem_source_mem_concreteChainFiber` proves each
+row source is an actual semantic fiber point, and
+`tttFiber32Rows_mem_source_mem_rootClose` proves each row source lies in the
+bounded root closure by following the parent-to-source reverse row steps from
+the root row.  This closes local root-close membership for the emitted row
+table; full appended connectedness still needs a coverage bridge from arbitrary
+semantic fiber points to the generated rows.  Root-close row-package build
+evidence is
+`fourcolor-ttt-fiber32-root-close-row-package-build-20260703.log` (1110 jobs,
+SHA256
+`533583471beb7370ab7616d30759ba326e1980aa620684f7175311666fcbac90`), and
+dependency-audit evidence is
+`fourcolor-ttt-fiber32-root-close-row-package-axioms-20260703.log` (SHA256
+`504336892253fd041447ffdae6901f49667a29d2590820314b1868caac109025`);
+the row-source membership and root-close table theorems depend on `propext`,
+`Classical.choice`, and `Quot.sound`, while the root-row seed depends on
+`propext` and `Quot.sound`.
 The table-level diagnostic
 `tttFiber32Rows_length_eq_two_mul_ttFiber32Rows_length` records that the known
 `TT` obstruction key is the same generated fixed input as `TTT` light-fiber

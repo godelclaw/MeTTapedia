@@ -1,6 +1,6 @@
 # FourColor: goal, status, and how to approach it
 
-*Last restructured: 2026-06-10.  Last proof-state update: 2026-07-02.  This file replaces the 3,577-line
+*Last restructured: 2026-06-10.  Last proof-state update: 2026-07-03.  This file replaces the 3,577-line
 `Theorem49NextHardProblemSummary.lean` prose (now in `Legacy/`) as the
 entry point.*
 
@@ -340,6 +340,14 @@ The semantic bridge also has the general adapter
 Once a generated package proves the row source is already in root closure and
 supplies the needed real single-step direction, this adapter produces the
 root-closure edge needed by parent-row connectedness certificates.
+The known `TTT` fiber-32 rows now instantiate that local root-closure pattern:
+`tttFiber32SourceStatesList` names the generated row-source states,
+`tttFiber32Rows_mem_source_mem_concreteChainFiber` proves those row sources
+are semantic fiber points, and `tttFiber32Rows_mem_source_mem_rootClose` proves
+that every generated row source lies in the bounded root closure.  This is the
+local row-table root-close package; the remaining connectedness step is the
+coverage bridge from arbitrary appended fiber points to the generated rows,
+then the same pattern must be lifted beyond this key.
 The theorem
 `tttFiber32Rows_length_eq_two_mul_ttFiber32Rows_length` records the table-level
 alignment for the known `TT` obstruction key: the same generated key appears in
