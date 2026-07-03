@@ -8447,6 +8447,15 @@ theorem concreteChainFiberAppendQuotientFibrationParentRowsNonSingletonPrefixBas
     (concreteChainFiberAppendPrefixFibrationClosed_of_relative_singleton_route
       hPrefixRoot hRelativeRoot hMobility)
 
+theorem not_concreteChainFiberAppendRelativeSingletonPrefixFibrationRoute :
+    ¬ (concreteChainFiberAppendPrefixRootClosureLiftClosed ∧
+      concreteChainFiberAppendRelativeSingletonClosureRootLiftClosed ∧
+      concreteChainFiberAppendFixedPrefixInterfaceMobilityReachClosed) := by
+  intro hroute
+  exact not_concreteChainFiberAppendPrefixFibrationClosed
+    (concreteChainFiberAppendPrefixFibrationClosed_of_relative_singleton_route
+      hroute.1 hroute.2.1 hroute.2.2)
+
 def chainAuditFibrationTransferClosed : Prop :=
   ∀ (word : List GoertzelLemma818FrontierMode.TauOrient)
     (orient : GoertzelLemma818FrontierMode.TauOrient),
