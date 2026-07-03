@@ -55,6 +55,7 @@ import Mettapedia.FluidDynamics.NavierStokes.StochasticLagrangian.ConstantinIyer
 import Mettapedia.FluidDynamics.NavierStokes.StochasticLagrangian.VorticityStretchingGate
 import Mettapedia.FluidDynamics.NavierStokes.StochasticLagrangian.DecayingShearInstance
 import Mettapedia.FluidDynamics.NavierStokes.StochasticLagrangian.DyadicPancakeClosure
+import Mettapedia.FluidDynamics.NavierStokes.StochasticLagrangian.BlockwisePancakeDecomposition
 
 /-!
 # Navier-Stokes live surface

@@ -225,7 +225,11 @@ integrable constant part and small `D_Q`-gain, via a genuinely
 Navier–Stokes-specific mechanism (pressure/Hessian feedback, multi-scale
 Biot–Savart self-depletion, or frequency-cascade accounting, in the source
 analysis's own taxonomy).  Nothing in this repository proves it for any
-data class. -/
+data class.
+
+A sufficient blockwise interface separating the three candidate mechanisms
+(pressure/Hessian, Biot–Savart self-depletion, cascade accounting) is
+`BlockwisePancakeDecomposition`; see `BlockwisePancakeDecomposition.lean`. -/
 def ScaleLocalPancakeStrainBudget (D : DyadicVorticityStretchingData)
     (B ε : ℝ) : Prop :=
   ∃ budget : ℝ → ℝ,
