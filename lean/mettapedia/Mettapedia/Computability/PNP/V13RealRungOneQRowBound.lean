@@ -9265,6 +9265,95 @@ theorem v13RealLinearNoTargetRows_rowTraceCosetHit_zero_false
       (by simpa [v13RealLinearRowTracePrefixRows_zero] using hrowHit)
 
 theorem
+    v13RealLinearNoTargetRows_rowFunctionalTargetCosetHit_singleton_pair_sum
+    {m : Nat} (i₀ row₀ row₁ : Fin m)
+    (A : V13RealLinearNoTargetRowsMap m i₀)
+    (hhit :
+      V13RealLinearRowFunctionalTargetCosetHit A.val
+        ({row₀} : Finset (Fin m)) i₀ row₁) :
+    row₀ ≠ row₁ ∧
+      ∀ w : F2Vec m,
+        A.val.toEquiv w row₀ + A.val.toEquiv w row₁ = w i₀ := by
+  classical
+  rcases hhit with ⟨z, hz, htarget⟩
+  let row₀' : {row : Fin m // row ∈ ({row₀} : Finset (Fin m))} :=
+    ⟨row₀, by simp⟩
+  have hrowEq :
+      ∀ row : {row : Fin m // row ∈ ({row₀} : Finset (Fin m))},
+        row = row₀' := by
+    intro row
+    apply Subtype.ext
+    exact Finset.mem_singleton.mp row.property
+  rcases
+      (Submodule.mem_span_range_iff_exists_fun (R := ZMod 2)).1
+        (by
+          simpa [V13RealLinearRowsFunctionalSpan] using hz) with
+    ⟨coeff, hcoeff⟩
+  have hz_eval :
+      ∀ w : F2Vec m,
+        z w = coeff row₀' * A.val.toEquiv w row₀ := by
+    intro w
+    have hpoint := LinearMap.congr_fun hcoeff w
+    have hsum :
+        (∑ row : {row : Fin m // row ∈ ({row₀} : Finset (Fin m))},
+          (coeff row • v13RealLinearRowFunctional A.val row.1) w) =
+          (coeff row₀' • v13RealLinearRowFunctional A.val row₀) w := by
+      refine Finset.sum_eq_single row₀' ?_ ?_
+      · intro row _hrow hne
+        exact False.elim (hne (hrowEq row))
+      · intro hnot
+        exact False.elim (hnot (Finset.mem_univ row₀'))
+    calc
+      z w =
+          (∑ row : {row : Fin m // row ∈ ({row₀} : Finset (Fin m))},
+            (coeff row • v13RealLinearRowFunctional A.val row.1) w) := by
+            exact hpoint.symm
+      _ = (coeff row₀' • v13RealLinearRowFunctional A.val row₀) w := hsum
+      _ = coeff row₀' * A.val.toEquiv w row₀ := by
+            simp [v13RealLinearRowFunctional]
+  by_cases hcoeffZero : coeff row₀' = 0
+  · have hzZero : z = 0 := by
+      apply LinearMap.ext
+      intro w
+      simp [hz_eval w, hcoeffZero]
+    have htargetRow :
+        row₁ ∈ V13RealLinearTargetRows A.val i₀ := by
+      rw [v13RealLinear_mem_targetRows_iff]
+      intro w
+      have hpoint := LinearMap.congr_fun htarget w
+      simpa [v13RealLinearTargetFunctional, v13RealLinearRowFunctional,
+        hzZero] using hpoint.symm
+    have hnotTarget :
+        row₁ ∉ V13RealLinearTargetRows A.val i₀ := by
+      rw [A.property]
+      simp
+    exact False.elim (hnotTarget htargetRow)
+  · have hcoeffOne : coeff row₀' = 1 :=
+      v13_zmod2_eq_one_of_ne_zero _ hcoeffZero
+    have hzEqRow₀ : z = v13RealLinearRowFunctional A.val row₀ := by
+      apply LinearMap.ext
+      intro w
+      simp [hz_eval w, hcoeffOne, v13RealLinearRowFunctional]
+    have htargetEq :
+        v13RealLinearTargetFunctional i₀ =
+          v13RealLinearRowFunctional A.val row₁ +
+            v13RealLinearRowFunctional A.val row₀ := by
+      simpa [hzEqRow₀] using htarget
+    have hpair :
+        ∀ w : F2Vec m,
+          A.val.toEquiv w row₀ + A.val.toEquiv w row₁ = w i₀ := by
+      intro w
+      have hpoint := LinearMap.congr_fun htargetEq w
+      simpa [v13RealLinearTargetFunctional, v13RealLinearRowFunctional,
+        add_comm] using hpoint.symm
+    have hneq : row₀ ≠ row₁ := by
+      intro hrow
+      have h := hpair (v13RealLinearSingleBit i₀)
+      rw [hrow, f2_add_self] at h
+      simp [v13RealLinearSingleBit] at h
+    exact ⟨hneq, hpair⟩
+
+theorem
     v13RealLinearNoTargetRowsSequentialTraceFirstCosetHit_card_eq_zero_of_zero_index
     {m q : Nat} (i₀ : Fin m)
     (observer : V13RealLinearSequentialRowObserver m q) (t : Fin q)

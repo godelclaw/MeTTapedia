@@ -1359,6 +1359,56 @@ theorem
     nlinarith
   simpa [S, E] using htable.trans hright
 
+noncomputable def
+    v13RealLinearNoTargetFixedPairCosetHitMapSetEmbeddingPairSumTarget
+    {m : Nat} (i₀ row₀ row₁ : Fin m) :
+    V13RealLinearNoTargetFixedPairCosetHitMapSet i₀ row₀ row₁ ↪
+      V13RealLinearNoTargetFixedPairSumTargetMapSet i₀ row₀ row₁ where
+  toFun A :=
+    ⟨A.val,
+      (v13RealLinearNoTargetRows_rowFunctionalTargetCosetHit_singleton_pair_sum
+        i₀ row₀ row₁ A.val A.property).2⟩
+  inj' := by
+    intro A₀ A₁ h
+    apply Subtype.ext
+    exact
+      congrArg
+        (fun A :
+          V13RealLinearNoTargetFixedPairSumTargetMapSet i₀ row₀ row₁ =>
+          A.val)
+        h
+
+theorem
+    v13RealLinearNoTargetFixedPairCosetHitMapSet_card_mul_two_pow_le_noTarget
+    {m : Nat} (i₀ row₀ row₁ : Fin m)
+    (hrow : row₁ ∉ ({row₀} : Finset (Fin m))) :
+    Fintype.card
+        (V13RealLinearNoTargetFixedPairCosetHitMapSet i₀ row₀ row₁) *
+      2 ^ m ≤
+    4 * Fintype.card (V13RealLinearNoTargetRowsMap m i₀) := by
+  classical
+  let S :=
+    Fintype.card
+      (V13RealLinearNoTargetFixedPairCosetHitMapSet i₀ row₀ row₁)
+  let P :=
+    Fintype.card
+      (V13RealLinearNoTargetFixedPairSumTargetMapSet i₀ row₀ row₁)
+  let N := Fintype.card (V13RealLinearNoTargetRowsMap m i₀)
+  have hneq : row₀ ≠ row₁ := by
+    intro h
+    exact hrow (by simp [h])
+  have hSle : S ≤ P := by
+    dsimp [S, P]
+    exact
+      Fintype.card_le_of_embedding
+        (v13RealLinearNoTargetFixedPairCosetHitMapSetEmbeddingPairSumTarget
+          i₀ row₀ row₁)
+  have hP : P * 2 ^ m ≤ 4 * N := by
+    simpa [P, N] using
+      v13RealLinearNoTargetFixedPairSumTargetMapSet_card_mul_two_pow_le_noTarget
+        i₀ row₀ row₁ hneq
+  exact (Nat.mul_le_mul_right (2 ^ m) hSle).trans hP
+
 theorem
     v13RealLinearNoTargetBitJunta_fixed_correct_card_eq_incorrect_card_of_not_blocked
     {m j : Nat} (i₀ : Fin m)
