@@ -372,12 +372,15 @@ The bridge also has a representative-target-tied case surface:
 `appendedParentRowsProjectionFiniteSectionBody_of_target_cases`.  The known
 `targetAppendPrefix`/`targetAppendOrient` split in the representative-target
 module gives each target a canonical non-singleton final append for generated
-dispatch.  The known
+dispatch.  The target-level collection predicate
+`representativeTargetAppendParentRowsProjectionFiniteSectionClosed` is now
+available from a covering target case list.  The known
 `TTT`/key-32 local row surface is registered as
 `ttFiber32AppendedParentRowsProjectionFiniteSectionTargetCase`, and its
-`toCase` theorem reduces it back to the exact word/orient/key case.  This is a
-finite target-artifact interface, not a proof that representative cases cover
-the globally quantified transfer predicate.
+`toCase` theorem reduces it back to the exact word/orient/key case; the same
+surface is also stated as `ttFiber32TargetAppendRowSurface` in canonical target
+append form.  This is a finite target-artifact interface, not a proof that
+representative cases cover the globally quantified transfer predicate.
 The theorem
 `tttFiber32Rows_length_eq_two_mul_ttFiber32Rows_length` records the table-level
 alignment for the known `TT` obstruction key: the same generated key appears in

@@ -2041,6 +2041,20 @@ theorem ttFiber32AppendedParentRowsProjectionFiniteSectionTargetCase_toCase :
       ttFiber32AppendedParentRowsProjectionFiniteSectionCase := by
   rfl
 
+theorem ttFiber32TargetAppendRowSurface
+    (root : List TauState) (rest : List (List TauState))
+    (hfiber :
+      concreteChainFiber (targetAppendPrefix RepresentativeSemanticTarget.ttt)
+        GoertzelLemma818CompositeCertificate.ttFiber32Key = root :: rest) :
+    appendedParentRowsProjectionFiniteSectionBody
+      (targetAppendPrefix RepresentativeSemanticTarget.ttt)
+      (targetAppendOrient RepresentativeSemanticTarget.ttt)
+      GoertzelLemma818CompositeCertificate.ttFiber32Key := by
+  simpa [targetAppendPrefix, targetAppendOrient, ttFiber32FrontierWord,
+    appendedParentRowsProjectionFiniteSectionBody] using
+    ttFiber32AppendedParentRowsProjectionFiniteSection_of_eq
+      rfl rfl rfl root rest hfiber
+
 def tttPartialTargetCertificateAudit : Bool :=
   tttMode09WitnessAudit
     && tttTargetProgressCountsAudit
