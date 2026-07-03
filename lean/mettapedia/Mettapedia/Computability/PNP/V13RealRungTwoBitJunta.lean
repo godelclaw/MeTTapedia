@@ -2479,6 +2479,142 @@ noncomputable instance
   infer_instance
 
 noncomputable def
+    v13RealLinearNoTargetSequentialTraceFirstCosetHitFixedPrefixTranscriptWorldSetToMapTimesUnreadAssignment
+    {m q : Nat} (i₀ : Fin m)
+    (observer : V13RealLinearSequentialRowObserver m q) (t : Fin q)
+    (rows : Finset (Fin m)) (row : Fin m)
+    (transcript : V13RealLinearRowsTranscriptSpace m rows) :
+    V13RealLinearNoTargetSequentialTraceFirstCosetHitFixedPrefixTranscriptWorldSet
+        i₀ observer t rows row transcript ↪
+      ({A : V13RealLinearNoTargetRowsMap m i₀ //
+          V13RealLinearRowFunctionalTargetCosetHit A.val rows i₀ row} ×
+        V13RealLinearRowsUnreadAssignment m rows) where
+  toFun omega := by
+    classical
+    let mapVector :=
+      v13RealLinearNoTargetSequentialTraceFirstCosetHitFixedPrefixWorldSetToMapTimesVector
+        i₀ observer t rows row omega.val
+    exact
+      (mapVector.1,
+        fun unread => omega.val.val.1.val.toEquiv omega.val.val.2 unread.1)
+  inj' := by
+    classical
+    intro omega₀ omega₁ h
+    apply Subtype.ext
+    apply Subtype.ext
+    let mapVector₀ :=
+      v13RealLinearNoTargetSequentialTraceFirstCosetHitFixedPrefixWorldSetToMapTimesVector
+        i₀ observer t rows row omega₀.val
+    let mapVector₁ :=
+      v13RealLinearNoTargetSequentialTraceFirstCosetHitFixedPrefixWorldSetToMapTimesVector
+        i₀ observer t rows row omega₁.val
+    have hmap :
+        mapVector₀.1 = mapVector₁.1 := by
+      simpa [mapVector₀, mapVector₁] using congrArg Prod.fst h
+    have hA : omega₀.val.val.1 = omega₁.val.val.1 := by
+      exact congrArg Subtype.val hmap
+    apply Prod.ext
+    · exact hA
+    · apply omega₀.val.val.1.val.toEquiv.injective
+      funext r
+      by_cases hr : r ∈ rows
+      · have htranscript :
+            v13RealLinearRowsTranscript rows
+                (v13RealLinearPublicInput
+                  ({ x := omega₀.val.val.2, A := omega₀.val.val.1.val } :
+                    V13RealLinearWorld m)) =
+              v13RealLinearRowsTranscript rows
+                (v13RealLinearPublicInput
+                  ({ x := omega₁.val.val.2, A := omega₁.val.val.1.val } :
+                    V13RealLinearWorld m)) :=
+          omega₀.property.trans omega₁.property.symm
+        have hview := congrFun htranscript ⟨r, hr⟩
+        have hbit :
+            omega₀.val.val.1.val.toEquiv omega₀.val.val.2 r =
+              omega₁.val.val.1.val.toEquiv omega₁.val.val.2 r := by
+          simpa [v13RealLinearRowsTranscript, v13RealLinearRowView,
+            v13RealLinearPublicInput] using congrArg Prod.snd hview
+        simpa [hA] using hbit
+      · have hassign :
+            (fun unread : {row : Fin m // row ∉ rows} =>
+                omega₀.val.val.1.val.toEquiv omega₀.val.val.2 unread.1)
+              =
+            (fun unread : {row : Fin m // row ∉ rows} =>
+                omega₁.val.val.1.val.toEquiv omega₁.val.val.2 unread.1) := by
+          simpa [mapVector₀, mapVector₁] using congrArg Prod.snd h
+        have hbit := congrFun hassign ⟨r, hr⟩
+        simpa [hA] using hbit
+
+theorem
+    v13RealLinearNoTargetSequentialTraceFirstCosetHitFixedPrefixTranscriptWorldSet_card_mul_two_pow_le_world
+    {m q : Nat} (i₀ : Fin m)
+    (observer : V13RealLinearSequentialRowObserver m q) (t : Fin q)
+    (rows : Finset (Fin m)) (row : Fin m)
+    (transcript : V13RealLinearRowsTranscriptSpace m rows) :
+    Fintype.card
+        (V13RealLinearNoTargetSequentialTraceFirstCosetHitFixedPrefixTranscriptWorldSet
+          i₀ observer t rows row transcript) *
+      2 ^ m ≤
+    4 *
+      Fintype.card
+        (V13RealLinearAdaptiveQRowWorld m
+          (V13RealLinearNoTargetRowsMap m i₀)) := by
+  classical
+  let Cell :=
+    V13RealLinearNoTargetSequentialTraceFirstCosetHitFixedPrefixTranscriptWorldSet
+      i₀ observer t rows row transcript
+  let S :=
+    {A : V13RealLinearNoTargetRowsMap m i₀ //
+      V13RealLinearRowFunctionalTargetCosetHit A.val rows i₀ row}
+  let U := V13RealLinearRowsUnreadAssignment m rows
+  let N := Fintype.card (V13RealLinearNoTargetRowsMap m i₀)
+  let M := 2 ^ m
+  let R := 2 ^ rows.card
+  let Ucard := 2 ^ (m - rows.card)
+  have hcell :
+      Fintype.card Cell ≤ Fintype.card (S × U) :=
+    Fintype.card_le_of_embedding
+      (v13RealLinearNoTargetSequentialTraceFirstCosetHitFixedPrefixTranscriptWorldSetToMapTimesUnreadAssignment
+        i₀ observer t rows row transcript)
+  have hcellProd :
+      Fintype.card Cell ≤ Fintype.card S * Ucard := by
+    simpa [Cell, S, U, Ucard, Fintype.card_prod,
+      v13RealLinearRowsUnreadAssignment_card rows] using hcell
+  have hmap :
+      Fintype.card S * M ≤ 4 * R * N := by
+    simpa [S, M, R, N] using
+      v13RealLinearNoTargetFixedRowsetCosetHitMapSet_card_mul_two_pow_le
+        i₀ rows row
+  have hrowsLe : rows.card ≤ m := by
+    have h := Finset.card_le_univ rows
+    simpa using h
+  have hpowMul : R * Ucard = M := by
+    dsimp [R, Ucard, M]
+    rw [← pow_add]
+    rw [Nat.add_sub_of_le hrowsLe]
+  have hworld :
+      Fintype.card
+          (V13RealLinearAdaptiveQRowWorld m
+            (V13RealLinearNoTargetRowsMap m i₀)) =
+        N * M := by
+    dsimp [V13RealLinearAdaptiveQRowWorld, N, M]
+    rw [Fintype.card_prod, v13RealLinear_f2vec_card]
+  calc
+    Fintype.card Cell * M ≤ (Fintype.card S * Ucard) * M := by
+      exact Nat.mul_le_mul_right M hcellProd
+    _ = (Fintype.card S * M) * Ucard := by ring
+    _ ≤ (4 * R * N) * Ucard := by
+      exact Nat.mul_le_mul_right Ucard hmap
+    _ = 4 * N * (R * Ucard) := by ring
+    _ = 4 * N * M := by rw [hpowMul]
+    _ = 4 *
+        Fintype.card
+          (V13RealLinearAdaptiveQRowWorld m
+            (V13RealLinearNoTargetRowsMap m i₀)) := by
+      rw [hworld]
+      ring
+
+noncomputable def
     v13RealLinearNoTargetSequentialTraceFirstCosetHitFixedPrefixWorldSetEquivSigmaTranscript
     {m q : Nat} (i₀ : Fin m)
     (observer : V13RealLinearSequentialRowObserver m q) (t : Fin q)

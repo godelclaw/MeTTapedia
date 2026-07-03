@@ -380,6 +380,33 @@ example {m n : Nat}
 
 noncomputable example {m q : Nat} (i₀ : Fin m)
     (observer : V13RealLinearSequentialRowObserver m q) (t : Fin q)
+    (rows : Finset (Fin m)) (row : Fin m)
+    (transcript : V13RealLinearRowsTranscriptSpace m rows) :
+    V13RealLinearNoTargetSequentialTraceFirstCosetHitFixedPrefixTranscriptWorldSet
+        i₀ observer t rows row transcript ↪
+      ({A : V13RealLinearNoTargetRowsMap m i₀ //
+          V13RealLinearRowFunctionalTargetCosetHit A.val rows i₀ row} ×
+        V13RealLinearRowsUnreadAssignment m rows) :=
+  v13RealLinearNoTargetSequentialTraceFirstCosetHitFixedPrefixTranscriptWorldSetToMapTimesUnreadAssignment
+    i₀ observer t rows row transcript
+
+example {m q : Nat} (i₀ : Fin m)
+    (observer : V13RealLinearSequentialRowObserver m q) (t : Fin q)
+    (rows : Finset (Fin m)) (row : Fin m)
+    (transcript : V13RealLinearRowsTranscriptSpace m rows) :
+    Fintype.card
+        (V13RealLinearNoTargetSequentialTraceFirstCosetHitFixedPrefixTranscriptWorldSet
+          i₀ observer t rows row transcript) *
+      2 ^ m ≤
+    4 *
+      Fintype.card
+        (V13RealLinearAdaptiveQRowWorld m
+          (V13RealLinearNoTargetRowsMap m i₀)) :=
+  v13RealLinearNoTargetSequentialTraceFirstCosetHitFixedPrefixTranscriptWorldSet_card_mul_two_pow_le_world
+    i₀ observer t rows row transcript
+
+noncomputable example {m q : Nat} (i₀ : Fin m)
+    (observer : V13RealLinearSequentialRowObserver m q) (t : Fin q)
     (pref :
       V13RealLinearSequentialPrefixTranscriptVector m (t : Nat)) :
     V13RealLinearNoTargetSequentialTraceFirstCosetHitOrderedPrefixWorldSet
