@@ -381,6 +381,11 @@ available from a covering target case list.  The known
 surface is also stated as `ttFiber32TargetAppendRowSurface` in canonical target
 append form.  This is a finite target-artifact interface, not a proof that
 representative cases cover the globally quantified transfer predicate.
+The helper
+`appendedParentRowsProjectionFiniteSectionBody_of_connected_injective_preimage`
+now factors the local body proof to appended connectedness plus an injective
+selected appended preimage for the prefix fiber; the known key-32 wrapper uses
+that helper, and generated cases should target the same smaller interface.
 For incremental generated coverage, the bridge now also has
 `AppendedParentRowsProjectionFiniteSectionTargetAppendCasesCoverOn` and
 `representativeTargetAppendParentRowsProjectionFiniteSectionClosedOn`.

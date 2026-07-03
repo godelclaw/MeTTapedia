@@ -8255,6 +8255,80 @@ def appendedParentRowsProjectionFiniteSectionBody
         ∀ b : ChainFiberPoint word key,
           proj (preimageRows.get (rowOf b)) = b
 
+theorem appendedParentRowsProjectionFiniteSectionBody_of_connected_injective_preimage
+    {word : List GoertzelLemma818FrontierMode.TauOrient}
+    {orient : GoertzelLemma818FrontierMode.TauOrient}
+    {key : List GoertzelLemma814.LColor}
+    {root : List GoertzelLemma814.TauState}
+    {rest : List (List GoertzelLemma814.TauState)}
+    (hfiber : concreteChainFiber word key = root :: rest)
+    (hConnected : Connected (chainFiberRootClosureStep (word ++ [orient]) key))
+    (hPreimage :
+      ∃ preimageOf :
+        ChainFiberPoint word key →
+          ChainFiberPoint (word ++ [orient]) key,
+        Function.Injective preimageOf) :
+    appendedParentRowsProjectionFiniteSectionBody word orient key := by
+  classical
+  rcases hPreimage with ⟨preimageOf, hInjective⟩
+  let prefixRoot : ChainFiberPoint word key :=
+    ⟨root, by simp [hfiber]⟩
+  let proj : ChainFiberPoint (word ++ [orient]) key →
+      ChainFiberPoint word key :=
+    fun y =>
+      if h : ∃ b : ChainFiberPoint word key, preimageOf b = y then
+        Classical.choose h
+      else
+        prefixRoot
+  have hprojPreimage :
+      ∀ b : ChainFiberPoint word key, proj (preimageOf b) = b := by
+    intro b
+    change
+      (if h : ∃ b' : ChainFiberPoint word key,
+          preimageOf b' = preimageOf b then
+          Classical.choose h
+        else
+          prefixRoot) = b
+    let witness :
+        ∃ b' : ChainFiberPoint word key, preimageOf b' = preimageOf b :=
+      ⟨b, rfl⟩
+    have hchoose : Classical.choose witness = b :=
+      hInjective (Classical.choose_spec witness)
+    rw [dif_pos witness]
+    exact hchoose
+  let prefixRows : List (ChainFiberPoint word key) :=
+    (root :: rest).attach.map fun row =>
+      (⟨row.1, by simpa [hfiber] using row.2⟩ :
+        ChainFiberPoint word key)
+  have hprefixRows : ∀ b : ChainFiberPoint word key, b ∈ prefixRows := by
+    intro b
+    refine List.mem_map.mpr ?_
+    refine ⟨⟨b.1, ?_⟩, List.mem_attach _ _, ?_⟩
+    · simpa [hfiber] using b.2
+    · apply Subtype.ext
+      rfl
+  let preimageRows : List (ChainFiberPoint (word ++ [orient]) key) :=
+    prefixRows.map preimageOf
+  have hpreimageMem :
+      ∀ b : ChainFiberPoint word key, preimageOf b ∈ preimageRows := by
+    intro b
+    exact List.mem_map.mpr ⟨b, hprefixRows b, rfl⟩
+  let rowOf : ChainFiberPoint word key → Fin preimageRows.length :=
+    fun b => Classical.choose (List.get_of_mem (hpreimageMem b))
+  have hget :
+      ∀ b : ChainFiberPoint word key,
+        preimageRows.get (rowOf b) = preimageOf b := by
+    intro b
+    exact Classical.choose_spec (List.get_of_mem (hpreimageMem b))
+  constructor
+  · exact
+      chainFiberRootClosureParentRowsSymmetricRootedConnectedCertificate_of_connected_nonempty
+        hConnected ⟨preimageOf prefixRoot⟩
+  · refine ⟨proj, preimageRows, rowOf, ?_⟩
+    intro b
+    rw [hget b]
+    exact hprojPreimage b
+
 structure AppendedParentRowsProjectionFiniteSectionCase where
   word : List GoertzelLemma818FrontierMode.TauOrient
   orient : GoertzelLemma818FrontierMode.TauOrient
