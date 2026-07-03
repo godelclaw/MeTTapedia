@@ -4432,7 +4432,14 @@ def
 /-- Active fixed-map transcript-cylinder capacity form of the remaining
 Step 0 packing surface.  The fixed-prefix transcript sigma has already been
 identified with this active capacity sum; the remaining work is the genuine
-conditioned-basis counting bound. -/
+conditioned-basis counting bound.
+
+Current live pin: unlike the target-sampler telescope, the no-target sampler
+cannot freely resample the next row after a transcript prefix.  The remaining
+counting step is to show that the active fixed-map transcript cylinders created
+by the sequential observer collide with bounded multiplicity when charged to
+their generated no-target rowsets; equivalently, the active capacity sum below
+is at most the displayed per-step budget. -/
 def
     V13RealLinearNoTargetRowsSequentialTraceCosetHitActiveFixedMapTranscriptCylinderCapacityBound
     {m q : Nat} (i₀ : Fin m)
@@ -5510,6 +5517,45 @@ theorem v13RealLinearNoTargetBitJuntaBlockedWorld_card_eq
   simp [Fintype.card_prod]
 
 theorem
+    realLinearNoTargetBitJuntaBlockedWorld_card_mul_two_pow_le_world
+    {m j : Nat} (i₀ : Fin m)
+    (observer : V13RealLinearBitJuntaObserver m j) :
+    Fintype.card
+        (V13RealLinearNoTargetBitJuntaBlockedWorld i₀ observer) *
+      2 ^ m ≤
+    4 * 2 ^ j *
+      Fintype.card (V13RealLinearNoTargetRowsWorld m i₀) := by
+  classical
+  rw [v13RealLinearNoTargetBitJuntaBlockedWorld_card_eq i₀ observer]
+  rw [v13RealLinear_f2vec_card]
+  let B := Fintype.card
+    (V13RealLinearNoTargetBitJuntaBlockedMapSet i₀ observer)
+  let N := Fintype.card (V13RealLinearNoTargetRowsMap m i₀)
+  let M := 2 ^ m
+  let Q := 4 * 2 ^ j
+  have hcount :
+      M * B ≤ Q * N := by
+    have hblocked :
+        V13RealLinearNoTargetBitJuntaBlockedCountingBound m j :=
+      V13RealLinearNoTargetBitJuntaBlockedCountingBound_of_budgetedRowsetGeneration
+        (V13RealLinearNoTargetBudgetedRowsetGenerationCountingBound_allBudget m j)
+    simpa [B, N, M, Q, Nat.mul_comm, Nat.mul_left_comm, Nat.mul_assoc]
+      using hblocked i₀ observer
+  have hmul :
+      (B * M) * M ≤ (Q * N) * M := by
+    exact
+      Nat.mul_le_mul_right M
+        (by
+          simpa [Nat.mul_comm, Nat.mul_left_comm, Nat.mul_assoc] using
+            hcount)
+  have hworld :
+      Fintype.card (V13RealLinearNoTargetRowsWorld m i₀) = N * M := by
+    dsimp [V13RealLinearNoTargetRowsWorld, N, M]
+    rw [Fintype.card_prod, v13RealLinear_f2vec_card]
+  simpa [B, N, M, Q, hworld, Nat.mul_comm, Nat.mul_left_comm,
+    Nat.mul_assoc] using hmul
+
+theorem
     v13RealLinearNoTargetBitJuntaBlockedMass_le_epsilon2_of_counting
     {m j : Nat}
     (hcount : V13RealLinearNoTargetBitJuntaBlockedCountingBound m j)
@@ -5603,6 +5649,13 @@ theorem v13RealLinearNoTargetBitJuntaSuccessBound_allBudget (m j : Nat) :
     V13RealLinearNoTargetBitJuntaSuccessBound m j :=
   v13RealLinearNoTargetBitJuntaSuccessBound_of_budgetedRowsetGeneration
     (V13RealLinearNoTargetBudgetedRowsetGenerationCountingBound_allBudget m j)
+
+theorem realLinearNoTargetBitJunta_success_le_half_add_epsilon2
+    {m j : Nat} (i₀ : Fin m)
+    (observer : V13RealLinearBitJuntaObserver m j) :
+    v13RealLinearNoTargetBitJuntaSuccess i₀ observer ≤
+      (1 / 2 : Rat) + v13RealLinearBitJuntaEpsilon2 j m :=
+  v13RealLinearNoTargetBitJuntaSuccessBound_allBudget m j i₀ observer
 
 lemma v13_zmod2_eq_of_one_add_ne {a b : ZMod 2}
     (h : 1 + a ≠ b) : a = b := by
@@ -6219,6 +6272,20 @@ theorem
   change (C : Rat) / (T : Rat) = (1 / 2 : Rat)
   field_simp [hTpos.ne']
   linarith
+
+theorem
+    realLinearNoTargetParityObserver_fixedSuccess_eq_half_of_not_rhsParityMatchesTarget
+    {m j : Nat} (observer : V13RealLinearParityObserver m j)
+    (i₀ : Fin m) (A : V13RealLinearNoTargetRowsMap m i₀)
+    (hnot :
+      ¬ V13RealLinearParityObserverRhsParityMatchesTarget observer A.val i₀) :
+    v13RealLinearNoTargetBitJuntaFixedSuccess i₀ observer.toBitJunta A =
+      (1 / 2 : Rat) := by
+  simpa [v13RealLinearNoTargetBitJuntaFixedSuccess,
+    v13RealLinearParityObserverFixedSuccess,
+    v13RealLinearBitJuntaFixedSuccess, v13RealLinear_f2vec_card] using
+    v13RealLinearParityObserver_fixedSuccess_eq_half_of_not_rhsParityMatchesTarget
+      observer A.val i₀ hnot
 
 theorem v13RealLinearParityObserver_fixedSuccess_trichotomy
     {m j : Nat} (observer : V13RealLinearParityObserver m j)
