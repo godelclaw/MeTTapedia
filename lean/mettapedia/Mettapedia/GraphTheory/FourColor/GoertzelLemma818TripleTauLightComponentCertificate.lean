@@ -208,6 +208,44 @@ theorem tripleComponentRowValid_source_eq_or_chainSingleKempeStep
       (tripleComponentRowValid_chainSingleKempeStep_of_source_beq_false
         hrow (bool_false_of_not_true hsourceTrue) hcolorPair hnodup)
 
+def tripleComponentRowSingleStepSideConditions
+    (row : TripleComponentParentRow) : Bool :=
+  colorPairs.contains (row.cert.move.a, row.cert.move.c)
+    && decide row.cert.component.Nodup
+
+def tripleComponentRowSingleStepReady
+    (row : TripleComponentParentRow) : Bool :=
+  (row.source == row.parent)
+    || tripleComponentRowSingleStepSideConditions row
+
+def tripleComponentRowValidWithSingleStepReady
+    (key : List LColor) (expected : List Nat)
+    (row : TripleComponentParentRow) : Bool :=
+  tripleComponentRowValid key expected row
+    && tripleComponentRowSingleStepReady row
+
+theorem tripleComponentRowValid_source_eq_or_chainSingleKempeStep_of_ready
+    {key : List LColor} {expected : List Nat}
+    {row : TripleComponentParentRow}
+    (hrow : tripleComponentRowValid key expected row = true)
+    (hready : tripleComponentRowSingleStepReady row = true) :
+    row.source = row.parent ∨
+      chainSingleKempeStep tttWord
+        (tripleStates row.sourceLeft row.sourceMiddle row.sourceRight)
+        (tripleStates row.parentLeft row.parentMiddle row.parentRight) =
+          true := by
+  by_cases hsourceTrue : (row.source == row.parent) = true
+  · exact Or.inl (by simpa using hsourceTrue)
+  · have hsourceFalse : (row.source == row.parent) = false :=
+      bool_false_of_not_true hsourceTrue
+    have hside :
+        tripleComponentRowSingleStepSideConditions row = true := by
+      simpa [tripleComponentRowSingleStepReady, hsourceFalse] using hready
+    rw [tripleComponentRowSingleStepSideConditions, Bool.and_eq_true] at hside
+    exact Or.inr
+      (tripleComponentRowValid_chainSingleKempeStep_of_source_beq_false
+        hrow hsourceFalse hside.1 (of_decide_eq_true hside.2))
+
 def tripleParentFromRows : List TripleComponentParentRow -> Nat -> Nat
   | [], i => i
   | row :: rows, i =>
@@ -3464,6 +3502,31 @@ theorem tttFiber32Row1_chainSingleKempeStep :
       (by decide)
       (by decide)
       (by decide)
+
+def tttFiber32RowsSingleStepReadyCheck : Bool :=
+  tttFiber32Rows.all
+    (tripleComponentRowValidWithSingleStepReady
+      tttFiber32Key tttFiber32Expected)
+
+theorem tttFiber32RowsSingleStepReadyCheck_ok :
+    tttFiber32RowsSingleStepReadyCheck = true := by
+  decide
+
+theorem tttFiber32Rows_mem_source_eq_or_chainSingleKempeStep
+    {row : TripleComponentParentRow} (hmem : row ∈ tttFiber32Rows) :
+    row.source = row.parent ∨
+      chainSingleKempeStep tttWord
+        (tripleStates row.sourceLeft row.sourceMiddle row.sourceRight)
+        (tripleStates row.parentLeft row.parentMiddle row.parentRight) =
+          true := by
+  have hrowReady :
+      tripleComponentRowValidWithSingleStepReady
+        tttFiber32Key tttFiber32Expected row = true :=
+    (List.all_eq_true.mp tttFiber32RowsSingleStepReadyCheck_ok) row hmem
+  rw [tripleComponentRowValidWithSingleStepReady, Bool.and_eq_true]
+    at hrowReady
+  exact tripleComponentRowValid_source_eq_or_chainSingleKempeStep_of_ready
+    hrowReady.1 hrowReady.2
 
 def tttFiber32ParentCheck (i : Nat) : Bool :=
   tripleParentIter tttFiber32Rows tttLightMaxParentDepth
