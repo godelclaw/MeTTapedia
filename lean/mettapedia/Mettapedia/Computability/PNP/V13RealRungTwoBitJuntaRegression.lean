@@ -79,6 +79,14 @@ example (m : Nat) :
     V13RealLinearNoTargetBitJuntaSuccessBound m 1 :=
   v13RealLinearNoTargetBitJuntaSuccessBound_oneBudget m
 
+example (m : Nat) :
+    V13RealLinearNoTargetBudgetedRowsetGenerationCountingBound m 2 :=
+  V13RealLinearNoTargetBudgetedRowsetGenerationCountingBound_twoBudget m
+
+example (m : Nat) :
+    V13RealLinearNoTargetBitJuntaSuccessBound m 2 :=
+  v13RealLinearNoTargetBitJuntaSuccessBound_twoBudget m
+
 example {m : Nat} {rows : Finset (Fin m)} (i₀ : Fin m)
     (A : V13RealLinearNoTargetRowsMap m i₀)
     (coeff : V13RealLinearRowsTargetCoefficient A.val rows i₀) :
@@ -130,6 +138,28 @@ example {m : Nat} {i₀ : Fin m}
         V13RealLinearRowFunctionalTargetCosetHit A.val.val
           ({row₀.val} : Finset (Fin m)) i₀ row₁.val :=
   v13RealLinearNoTargetTwoBudgetGeneratingMapSet_exists_pair_cosetHit A
+
+example {m : Nat} (row₀ row₁ : Fin m) (hneq : row₀ ≠ row₁) :
+    Fintype.card (V13RealLinearTwoRowZeroAt row₀ row₁) * 4 =
+      2 ^ m :=
+  v13RealLinearTwoRowZeroAt_card_mul_four row₀ row₁ hneq
+
+example {m : Nat} (i₀ row₀ row₁ : Fin m) (hneq : row₀ ≠ row₁) :
+    Fintype.card
+        (V13RealLinearNoTargetFixedPairSumTargetMapSet i₀ row₀ row₁) *
+      2 ^ m ≤
+    4 * Fintype.card (V13RealLinearNoTargetRowsMap m i₀) :=
+  v13RealLinearNoTargetFixedPairSumTargetMapSet_card_mul_two_pow_le_noTarget
+    i₀ row₀ row₁ hneq
+
+example {m : Nat} (i₀ : Fin m)
+    (rows : V13RealLinearBudgetedRowset m 2) :
+    Fintype.card
+        (V13RealLinearNoTargetTwoBudgetPairSumWitnessSigma i₀ rows) *
+      2 ^ m ≤
+    16 * Fintype.card (V13RealLinearNoTargetRowsMap m i₀) :=
+  v13RealLinearNoTargetTwoBudgetPairSumWitnessSigma_card_mul_two_pow_le
+    i₀ rows
 
 example {m : Nat} (i₀ row₀ row₁ : Fin m)
     (hrow : row₁ ∉ ({row₀} : Finset (Fin m))) :
