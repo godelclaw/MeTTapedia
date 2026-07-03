@@ -1762,6 +1762,614 @@ theorem tttAllChainStates_eq :
     GoertzelLemma818LengthTwoRealFiberBridgePrototype.bindList_map,
     bindList_bindList]
 
+theorem tripleStates_mem_tttAllChainStates_of_indices
+    {left middle right : Nat}
+    (hleft : stateAt left ∈ allTauStates)
+    (hmiddle : stateAt middle ∈ allTauStates)
+    (hleftMiddle :
+      compatibleAdjacent (tauOrientAt tttWord 0) (tauOrientAt tttWord 1)
+        (stateAt left) (stateAt middle) = true)
+    (hright : stateAt right ∈ allTauStates)
+    (hmiddleRight :
+      compatibleAdjacent (tauOrientAt tttWord 1) (tauOrientAt tttWord 2)
+        (stateAt middle) (stateAt right) = true) :
+    tripleStates left middle right ∈ allChainStates tttWord := by
+  rw [tttAllChainStates_eq]
+  rw [GoertzelLemma818LengthTwoRealFiberBridgePrototype.bindList_mem]
+  refine ⟨stateAt left, hleft, ?_⟩
+  unfold tttStatesFromLeft
+  rw [GoertzelLemma818LengthTwoRealFiberBridgePrototype.bindList_mem]
+  refine ⟨stateAt middle, ?_, ?_⟩
+  · rw [List.mem_filter]
+    exact ⟨hmiddle, hleftMiddle⟩
+  · rw [List.mem_map]
+    refine ⟨stateAt right, ?_, rfl⟩
+    rw [List.mem_filter]
+    exact ⟨hright, hmiddleRight⟩
+
+theorem tttFiber3Rows_length_eq_two_mul_ttFiber3Rows_length :
+    GoertzelLemma818TripleTauLightComponentCertificate.tttFiber3Key =
+      GoertzelLemma818CompositeCertificate.ttFiber3Key ∧
+    GoertzelLemma818CompositeCertificate.ttFiber3Rows.length = 8 ∧
+    GoertzelLemma818TripleTauLightComponentCertificate.tttFiber3Rows.length =
+      2 * GoertzelLemma818CompositeCertificate.ttFiber3Rows.length := by
+  decide
+
+def ttFiber3RowIndexToTttFiber3RowIndexCore (i : Fin 8) : Fin 16 :=
+  ⟨i.1, by omega⟩
+
+theorem ttFiber3RowIndexToTttFiber3RowIndexCore_injective :
+    Function.Injective ttFiber3RowIndexToTttFiber3RowIndexCore := by
+  intro i j h
+  apply Fin.ext
+  have hval := congrArg Fin.val h
+  simpa [ttFiber3RowIndexToTttFiber3RowIndexCore] using hval
+
+def ttFiber3RowIndexToTttFiber3RowIndex
+    (i : Fin GoertzelLemma818CompositeCertificate.ttFiber3Rows.length) :
+    Fin GoertzelLemma818TripleTauLightComponentCertificate.tttFiber3Rows.length :=
+  Fin.cast (by decide :
+      16 =
+        GoertzelLemma818TripleTauLightComponentCertificate.tttFiber3Rows.length)
+    (ttFiber3RowIndexToTttFiber3RowIndexCore
+      (Fin.cast (by decide :
+          GoertzelLemma818CompositeCertificate.ttFiber3Rows.length = 8) i))
+
+theorem ttFiber3RowIndexToTttFiber3RowIndex_injective :
+    Function.Injective ttFiber3RowIndexToTttFiber3RowIndex := by
+  intro i j h
+  apply Fin.ext
+  have hval := congrArg Fin.val h
+  have hcore :
+      ttFiber3RowIndexToTttFiber3RowIndexCore
+          (Fin.cast (by decide :
+            GoertzelLemma818CompositeCertificate.ttFiber3Rows.length = 8) i) =
+        ttFiber3RowIndexToTttFiber3RowIndexCore
+          (Fin.cast (by decide :
+            GoertzelLemma818CompositeCertificate.ttFiber3Rows.length = 8) j) := by
+    apply Fin.ext
+    simpa [ttFiber3RowIndexToTttFiber3RowIndex] using hval
+  have hcast :=
+    ttFiber3RowIndexToTttFiber3RowIndexCore_injective hcore
+  exact congrArg Fin.val hcast
+
+theorem ttFiber3SelectedTttFiber3Row_source_eq :
+    ∀ i : Fin GoertzelLemma818CompositeCertificate.ttFiber3Rows.length,
+      (GoertzelLemma818TripleTauLightComponentCertificate.tttFiber3Rows.get
+        (ttFiber3RowIndexToTttFiber3RowIndex i)).source =
+        3808 + i.1 := by
+  decide
+
+def ttFiber3FrontierWord : List GoertzelLemma818FrontierMode.TauOrient :=
+  [ GoertzelLemma818FrontierMode.TauOrient.tau
+  , GoertzelLemma818FrontierMode.TauOrient.tau
+  ]
+
+def ttFiber3PrefixStates
+    (i : Fin GoertzelLemma818CompositeCertificate.ttFiber3Rows.length) :
+    List TauState :=
+  GoertzelLemma818LengthTwoDirectClosurePrototype.ttFiber3StateAt i.1
+
+def ttFiber3PrefixStatesList : List (List TauState) :=
+  [ ttFiber3PrefixStates ⟨0, by decide⟩
+  , ttFiber3PrefixStates ⟨1, by decide⟩
+  , ttFiber3PrefixStates ⟨2, by decide⟩
+  , ttFiber3PrefixStates ⟨3, by decide⟩
+  , ttFiber3PrefixStates ⟨4, by decide⟩
+  , ttFiber3PrefixStates ⟨5, by decide⟩
+  , ttFiber3PrefixStates ⟨6, by decide⟩
+  , ttFiber3PrefixStates ⟨7, by decide⟩
+  ]
+
+theorem ttFiber3PrefixStatesList_nodup :
+    ttFiber3PrefixStatesList.Nodup := by
+  decide
+
+theorem ttFiber3PrefixStatesList_eq_concreteChainFiber :
+    ttFiber3PrefixStatesList =
+      concreteChainFiber ttFiber3FrontierWord
+        GoertzelLemma818CompositeCertificate.ttFiber3Key := by
+  unfold concreteChainFiber concreteChainStates ttFiber3FrontierWord
+  change ttFiber3PrefixStatesList =
+    chainFiberFrom GoertzelLemma818CompositeCertificate.ttWord
+      (allChainStates GoertzelLemma818CompositeCertificate.ttWord)
+      GoertzelLemma818CompositeCertificate.ttFiber3Key
+  rw [GoertzelLemma818LengthTwoRealFiberBridgePrototype.ttFiber3RealFiber_eq_direct]
+  decide
+
+theorem ttFiber3PrefixStates_mem_concreteChainFiber :
+    ∀ i : Fin GoertzelLemma818CompositeCertificate.ttFiber3Rows.length,
+      ttFiber3PrefixStates i ∈
+        concreteChainFiber ttFiber3FrontierWord
+          GoertzelLemma818CompositeCertificate.ttFiber3Key := by
+  intro i
+  have hmem : ttFiber3PrefixStates i ∈ ttFiber3PrefixStatesList := by
+    rcases i with ⟨n, hn⟩
+    have hn8 : n < 8 := by
+      simpa [GoertzelLemma818CompositeCertificate.ttFiber3Rows] using hn
+    by_cases h0 : n = 0
+    · subst n
+      have hfin :
+          (⟨0, hn⟩ : Fin GoertzelLemma818CompositeCertificate.ttFiber3Rows.length) =
+            ⟨0, by decide⟩ := by
+        apply Fin.ext
+        rfl
+      rw [hfin]
+      simp [ttFiber3PrefixStatesList]
+    by_cases h1 : n = 1
+    · subst n
+      have hfin :
+          (⟨1, hn⟩ : Fin GoertzelLemma818CompositeCertificate.ttFiber3Rows.length) =
+            ⟨1, by decide⟩ := by
+        apply Fin.ext
+        rfl
+      rw [hfin]
+      simp [ttFiber3PrefixStatesList]
+    by_cases h2 : n = 2
+    · subst n
+      have hfin :
+          (⟨2, hn⟩ : Fin GoertzelLemma818CompositeCertificate.ttFiber3Rows.length) =
+            ⟨2, by decide⟩ := by
+        apply Fin.ext
+        rfl
+      rw [hfin]
+      simp [ttFiber3PrefixStatesList]
+    by_cases h3 : n = 3
+    · subst n
+      have hfin :
+          (⟨3, hn⟩ : Fin GoertzelLemma818CompositeCertificate.ttFiber3Rows.length) =
+            ⟨3, by decide⟩ := by
+        apply Fin.ext
+        rfl
+      rw [hfin]
+      simp [ttFiber3PrefixStatesList]
+    by_cases h4 : n = 4
+    · subst n
+      have hfin :
+          (⟨4, hn⟩ : Fin GoertzelLemma818CompositeCertificate.ttFiber3Rows.length) =
+            ⟨4, by decide⟩ := by
+        apply Fin.ext
+        rfl
+      rw [hfin]
+      simp [ttFiber3PrefixStatesList]
+    by_cases h5 : n = 5
+    · subst n
+      have hfin :
+          (⟨5, hn⟩ : Fin GoertzelLemma818CompositeCertificate.ttFiber3Rows.length) =
+            ⟨5, by decide⟩ := by
+        apply Fin.ext
+        rfl
+      rw [hfin]
+      simp [ttFiber3PrefixStatesList]
+    by_cases h6 : n = 6
+    · subst n
+      have hfin :
+          (⟨6, hn⟩ : Fin GoertzelLemma818CompositeCertificate.ttFiber3Rows.length) =
+            ⟨6, by decide⟩ := by
+        apply Fin.ext
+        rfl
+      rw [hfin]
+      simp [ttFiber3PrefixStatesList]
+    have h7 : n = 7 := by omega
+    subst n
+    have hfin :
+        (⟨7, hn⟩ : Fin GoertzelLemma818CompositeCertificate.ttFiber3Rows.length) =
+          ⟨7, by decide⟩ := by
+      apply Fin.ext
+      rfl
+    rw [hfin]
+    simp [ttFiber3PrefixStatesList]
+  rw [ttFiber3PrefixStatesList_eq_concreteChainFiber] at hmem
+  exact hmem
+
+def ttFiber3PrefixPoint
+    (i : Fin GoertzelLemma818CompositeCertificate.ttFiber3Rows.length) :
+    ChainFiberPoint ttFiber3FrontierWord
+      GoertzelLemma818CompositeCertificate.ttFiber3Key :=
+  ⟨ttFiber3PrefixStates i, ttFiber3PrefixStates_mem_concreteChainFiber i⟩
+
+theorem ttFiber3PrefixPoint_surjective :
+    ∀ point : ChainFiberPoint ttFiber3FrontierWord
+        GoertzelLemma818CompositeCertificate.ttFiber3Key,
+      ∃ i : Fin GoertzelLemma818CompositeCertificate.ttFiber3Rows.length,
+        ttFiber3PrefixPoint i = point := by
+  intro point
+  have hmem : point.1 ∈ ttFiber3PrefixStatesList := by
+    rw [ttFiber3PrefixStatesList_eq_concreteChainFiber]
+    exact point.2
+  simp only [ttFiber3PrefixStatesList, List.mem_cons, List.not_mem_nil] at hmem
+  rcases hmem with h | h | h | h | h | h | h | h | h
+  · refine ⟨⟨0, by decide⟩, ?_⟩
+    apply Subtype.ext
+    exact h.symm
+  · refine ⟨⟨1, by decide⟩, ?_⟩
+    apply Subtype.ext
+    exact h.symm
+  · refine ⟨⟨2, by decide⟩, ?_⟩
+    apply Subtype.ext
+    exact h.symm
+  · refine ⟨⟨3, by decide⟩, ?_⟩
+    apply Subtype.ext
+    exact h.symm
+  · refine ⟨⟨4, by decide⟩, ?_⟩
+    apply Subtype.ext
+    exact h.symm
+  · refine ⟨⟨5, by decide⟩, ?_⟩
+    apply Subtype.ext
+    exact h.symm
+  · refine ⟨⟨6, by decide⟩, ?_⟩
+    apply Subtype.ext
+    exact h.symm
+  · refine ⟨⟨7, by decide⟩, ?_⟩
+    apply Subtype.ext
+    exact h.symm
+  · cases h
+
+noncomputable def ttFiber3PrefixPointIndex
+    (point : ChainFiberPoint ttFiber3FrontierWord
+      GoertzelLemma818CompositeCertificate.ttFiber3Key) :
+    Fin GoertzelLemma818CompositeCertificate.ttFiber3Rows.length :=
+  Classical.choose (ttFiber3PrefixPoint_surjective point)
+
+theorem ttFiber3PrefixPointIndex_spec
+    (point : ChainFiberPoint ttFiber3FrontierWord
+      GoertzelLemma818CompositeCertificate.ttFiber3Key) :
+    ttFiber3PrefixPoint (ttFiber3PrefixPointIndex point) = point :=
+  Classical.choose_spec (ttFiber3PrefixPoint_surjective point)
+
+def ttFiber3SelectedTttFiber3States
+    (i : Fin GoertzelLemma818CompositeCertificate.ttFiber3Rows.length) :
+    List TauState :=
+  let row :=
+    GoertzelLemma818TripleTauLightComponentCertificate.tttFiber3Rows.get
+      (ttFiber3RowIndexToTttFiber3RowIndex i)
+  tripleStates row.sourceLeft row.sourceMiddle row.sourceRight
+
+theorem ttFiber3SelectedTttFiber3States_0_mem_concreteChainFiber :
+    ttFiber3SelectedTttFiber3States ⟨0, by decide⟩ ∈
+      concreteChainFiber tttFrontierWord tttFiber3Key := by
+  have hall : tripleStates 114 54 112 ∈ allChainStates tttWord :=
+    tripleStates_mem_tttAllChainStates_of_indices
+      (by decide) (by decide) (by decide) (by decide) (by decide)
+  have hstates :
+      ttFiber3SelectedTttFiber3States ⟨0, by decide⟩ =
+        tripleStates 114 54 112 := by
+    decide
+  rw [hstates]
+  unfold concreteChainFiber concreteChainStates chainFiberFrom
+  rw [List.mem_filter]
+  constructor
+  · simpa [tttFrontierWord, frontierWordToChainWord, frontierOrientToChain,
+      tttWord] using hall
+  · decide
+
+theorem ttFiber3SelectedTttFiber3States_1_mem_concreteChainFiber :
+    ttFiber3SelectedTttFiber3States ⟨1, by decide⟩ ∈
+      concreteChainFiber tttFrontierWord tttFiber3Key := by
+  have hall : tripleStates 114 54 113 ∈ allChainStates tttWord :=
+    tripleStates_mem_tttAllChainStates_of_indices
+      (by decide) (by decide) (by decide) (by decide) (by decide)
+  have hstates :
+      ttFiber3SelectedTttFiber3States ⟨1, by decide⟩ =
+        tripleStates 114 54 113 := by
+    decide
+  rw [hstates]
+  unfold concreteChainFiber concreteChainStates chainFiberFrom
+  rw [List.mem_filter]
+  constructor
+  · simpa [tttFrontierWord, frontierWordToChainWord, frontierOrientToChain,
+      tttWord] using hall
+  · decide
+
+theorem ttFiber3SelectedTttFiber3States_2_mem_concreteChainFiber :
+    ttFiber3SelectedTttFiber3States ⟨2, by decide⟩ ∈
+      concreteChainFiber tttFrontierWord tttFiber3Key := by
+  have hall : tripleStates 114 54 114 ∈ allChainStates tttWord :=
+    tripleStates_mem_tttAllChainStates_of_indices
+      (by decide) (by decide) (by decide) (by decide) (by decide)
+  have hstates :
+      ttFiber3SelectedTttFiber3States ⟨2, by decide⟩ =
+        tripleStates 114 54 114 := by
+    decide
+  rw [hstates]
+  unfold concreteChainFiber concreteChainStates chainFiberFrom
+  rw [List.mem_filter]
+  constructor
+  · simpa [tttFrontierWord, frontierWordToChainWord, frontierOrientToChain,
+      tttWord] using hall
+  · decide
+
+theorem ttFiber3SelectedTttFiber3States_3_mem_concreteChainFiber :
+    ttFiber3SelectedTttFiber3States ⟨3, by decide⟩ ∈
+      concreteChainFiber tttFrontierWord tttFiber3Key := by
+  have hall : tripleStates 114 54 115 ∈ allChainStates tttWord :=
+    tripleStates_mem_tttAllChainStates_of_indices
+      (by decide) (by decide) (by decide) (by decide) (by decide)
+  have hstates :
+      ttFiber3SelectedTttFiber3States ⟨3, by decide⟩ =
+        tripleStates 114 54 115 := by
+    decide
+  rw [hstates]
+  unfold concreteChainFiber concreteChainStates chainFiberFrom
+  rw [List.mem_filter]
+  constructor
+  · simpa [tttFrontierWord, frontierWordToChainWord, frontierOrientToChain,
+      tttWord] using hall
+  · decide
+
+theorem ttFiber3SelectedTttFiber3States_4_mem_concreteChainFiber :
+    ttFiber3SelectedTttFiber3States ⟨4, by decide⟩ ∈
+      concreteChainFiber tttFrontierWord tttFiber3Key := by
+  have hall : tripleStates 114 55 120 ∈ allChainStates tttWord :=
+    tripleStates_mem_tttAllChainStates_of_indices
+      (by decide) (by decide) (by decide) (by decide) (by decide)
+  have hstates :
+      ttFiber3SelectedTttFiber3States ⟨4, by decide⟩ =
+        tripleStates 114 55 120 := by
+    decide
+  rw [hstates]
+  unfold concreteChainFiber concreteChainStates chainFiberFrom
+  rw [List.mem_filter]
+  constructor
+  · simpa [tttFrontierWord, frontierWordToChainWord, frontierOrientToChain,
+      tttWord] using hall
+  · decide
+
+theorem ttFiber3SelectedTttFiber3States_5_mem_concreteChainFiber :
+    ttFiber3SelectedTttFiber3States ⟨5, by decide⟩ ∈
+      concreteChainFiber tttFrontierWord tttFiber3Key := by
+  have hall : tripleStates 114 55 121 ∈ allChainStates tttWord :=
+    tripleStates_mem_tttAllChainStates_of_indices
+      (by decide) (by decide) (by decide) (by decide) (by decide)
+  have hstates :
+      ttFiber3SelectedTttFiber3States ⟨5, by decide⟩ =
+        tripleStates 114 55 121 := by
+    decide
+  rw [hstates]
+  unfold concreteChainFiber concreteChainStates chainFiberFrom
+  rw [List.mem_filter]
+  constructor
+  · simpa [tttFrontierWord, frontierWordToChainWord, frontierOrientToChain,
+      tttWord] using hall
+  · decide
+
+theorem ttFiber3SelectedTttFiber3States_6_mem_concreteChainFiber :
+    ttFiber3SelectedTttFiber3States ⟨6, by decide⟩ ∈
+      concreteChainFiber tttFrontierWord tttFiber3Key := by
+  have hall : tripleStates 114 55 122 ∈ allChainStates tttWord :=
+    tripleStates_mem_tttAllChainStates_of_indices
+      (by decide) (by decide) (by decide) (by decide) (by decide)
+  have hstates :
+      ttFiber3SelectedTttFiber3States ⟨6, by decide⟩ =
+        tripleStates 114 55 122 := by
+    decide
+  rw [hstates]
+  unfold concreteChainFiber concreteChainStates chainFiberFrom
+  rw [List.mem_filter]
+  constructor
+  · simpa [tttFrontierWord, frontierWordToChainWord, frontierOrientToChain,
+      tttWord] using hall
+  · decide
+
+theorem ttFiber3SelectedTttFiber3States_7_mem_concreteChainFiber :
+    ttFiber3SelectedTttFiber3States ⟨7, by decide⟩ ∈
+      concreteChainFiber tttFrontierWord tttFiber3Key := by
+  have hall : tripleStates 114 55 123 ∈ allChainStates tttWord :=
+    tripleStates_mem_tttAllChainStates_of_indices
+      (by decide) (by decide) (by decide) (by decide) (by decide)
+  have hstates :
+      ttFiber3SelectedTttFiber3States ⟨7, by decide⟩ =
+        tripleStates 114 55 123 := by
+    decide
+  rw [hstates]
+  unfold concreteChainFiber concreteChainStates chainFiberFrom
+  rw [List.mem_filter]
+  constructor
+  · simpa [tttFrontierWord, frontierWordToChainWord, frontierOrientToChain,
+      tttWord] using hall
+  · decide
+
+theorem ttFiber3SelectedTttFiber3States_mem_concreteChainFiber :
+    ∀ i : Fin GoertzelLemma818CompositeCertificate.ttFiber3Rows.length,
+      ttFiber3SelectedTttFiber3States i ∈
+        concreteChainFiber tttFrontierWord tttFiber3Key := by
+  intro i
+  rcases i with ⟨n, hn⟩
+  have hn8 : n < 8 := by
+    simpa [GoertzelLemma818CompositeCertificate.ttFiber3Rows] using hn
+  by_cases h0 : n = 0
+  · subst n
+    have hfin :
+        (⟨0, hn⟩ : Fin GoertzelLemma818CompositeCertificate.ttFiber3Rows.length) =
+          ⟨0, by decide⟩ := by
+      apply Fin.ext
+      rfl
+    rw [hfin]
+    exact ttFiber3SelectedTttFiber3States_0_mem_concreteChainFiber
+  by_cases h1 : n = 1
+  · subst n
+    have hfin :
+        (⟨1, hn⟩ : Fin GoertzelLemma818CompositeCertificate.ttFiber3Rows.length) =
+          ⟨1, by decide⟩ := by
+      apply Fin.ext
+      rfl
+    rw [hfin]
+    exact ttFiber3SelectedTttFiber3States_1_mem_concreteChainFiber
+  by_cases h2 : n = 2
+  · subst n
+    have hfin :
+        (⟨2, hn⟩ : Fin GoertzelLemma818CompositeCertificate.ttFiber3Rows.length) =
+          ⟨2, by decide⟩ := by
+      apply Fin.ext
+      rfl
+    rw [hfin]
+    exact ttFiber3SelectedTttFiber3States_2_mem_concreteChainFiber
+  by_cases h3 : n = 3
+  · subst n
+    have hfin :
+        (⟨3, hn⟩ : Fin GoertzelLemma818CompositeCertificate.ttFiber3Rows.length) =
+          ⟨3, by decide⟩ := by
+      apply Fin.ext
+      rfl
+    rw [hfin]
+    exact ttFiber3SelectedTttFiber3States_3_mem_concreteChainFiber
+  by_cases h4 : n = 4
+  · subst n
+    have hfin :
+        (⟨4, hn⟩ : Fin GoertzelLemma818CompositeCertificate.ttFiber3Rows.length) =
+          ⟨4, by decide⟩ := by
+      apply Fin.ext
+      rfl
+    rw [hfin]
+    exact ttFiber3SelectedTttFiber3States_4_mem_concreteChainFiber
+  by_cases h5 : n = 5
+  · subst n
+    have hfin :
+        (⟨5, hn⟩ : Fin GoertzelLemma818CompositeCertificate.ttFiber3Rows.length) =
+          ⟨5, by decide⟩ := by
+      apply Fin.ext
+      rfl
+    rw [hfin]
+    exact ttFiber3SelectedTttFiber3States_5_mem_concreteChainFiber
+  by_cases h6 : n = 6
+  · subst n
+    have hfin :
+        (⟨6, hn⟩ : Fin GoertzelLemma818CompositeCertificate.ttFiber3Rows.length) =
+          ⟨6, by decide⟩ := by
+      apply Fin.ext
+      rfl
+    rw [hfin]
+    exact ttFiber3SelectedTttFiber3States_6_mem_concreteChainFiber
+  have h7 : n = 7 := by omega
+  subst n
+  have hfin :
+      (⟨7, hn⟩ : Fin GoertzelLemma818CompositeCertificate.ttFiber3Rows.length) =
+        ⟨7, by decide⟩ := by
+    apply Fin.ext
+    rfl
+  rw [hfin]
+  exact ttFiber3SelectedTttFiber3States_7_mem_concreteChainFiber
+
+def ttFiber3SelectedTttFiber3Point
+    (i : Fin GoertzelLemma818CompositeCertificate.ttFiber3Rows.length) :
+    ChainFiberPoint tttFrontierWord tttFiber3Key :=
+  ⟨ttFiber3SelectedTttFiber3States i,
+    ttFiber3SelectedTttFiber3States_mem_concreteChainFiber i⟩
+
+def ttFiber3SelectedTttFiber3PointList :
+    List (ChainFiberPoint tttFrontierWord tttFiber3Key) :=
+  [ ⟨ttFiber3SelectedTttFiber3States ⟨0, by decide⟩,
+      ttFiber3SelectedTttFiber3States_0_mem_concreteChainFiber⟩
+  , ⟨ttFiber3SelectedTttFiber3States ⟨1, by decide⟩,
+      ttFiber3SelectedTttFiber3States_1_mem_concreteChainFiber⟩
+  , ⟨ttFiber3SelectedTttFiber3States ⟨2, by decide⟩,
+      ttFiber3SelectedTttFiber3States_2_mem_concreteChainFiber⟩
+  , ⟨ttFiber3SelectedTttFiber3States ⟨3, by decide⟩,
+      ttFiber3SelectedTttFiber3States_3_mem_concreteChainFiber⟩
+  , ⟨ttFiber3SelectedTttFiber3States ⟨4, by decide⟩,
+      ttFiber3SelectedTttFiber3States_4_mem_concreteChainFiber⟩
+  , ⟨ttFiber3SelectedTttFiber3States ⟨5, by decide⟩,
+      ttFiber3SelectedTttFiber3States_5_mem_concreteChainFiber⟩
+  , ⟨ttFiber3SelectedTttFiber3States ⟨6, by decide⟩,
+      ttFiber3SelectedTttFiber3States_6_mem_concreteChainFiber⟩
+  , ⟨ttFiber3SelectedTttFiber3States ⟨7, by decide⟩,
+      ttFiber3SelectedTttFiber3States_7_mem_concreteChainFiber⟩
+  ]
+
+def ttFiber3SelectedTttFiber3PointAt
+    (i : Fin GoertzelLemma818CompositeCertificate.ttFiber3Rows.length) :
+    ChainFiberPoint tttFrontierWord tttFiber3Key :=
+  ttFiber3SelectedTttFiber3PointList.get
+    (Fin.cast (by decide :
+        GoertzelLemma818CompositeCertificate.ttFiber3Rows.length =
+          ttFiber3SelectedTttFiber3PointList.length) i)
+
+theorem ttFiber3SelectedTttFiber3PointAt_value_eq :
+    ∀ i : Fin GoertzelLemma818CompositeCertificate.ttFiber3Rows.length,
+      (ttFiber3SelectedTttFiber3PointAt i).1 =
+        ttFiber3SelectedTttFiber3States i := by
+  decide
+
+def ttFiber3SelectedTttFiber3StatesIndex
+    (states : List TauState) : Nat :=
+  if states = ttFiber3SelectedTttFiber3States ⟨0, by decide⟩ then 0
+  else if states = ttFiber3SelectedTttFiber3States ⟨1, by decide⟩ then 1
+  else if states = ttFiber3SelectedTttFiber3States ⟨2, by decide⟩ then 2
+  else if states = ttFiber3SelectedTttFiber3States ⟨3, by decide⟩ then 3
+  else if states = ttFiber3SelectedTttFiber3States ⟨4, by decide⟩ then 4
+  else if states = ttFiber3SelectedTttFiber3States ⟨5, by decide⟩ then 5
+  else if states = ttFiber3SelectedTttFiber3States ⟨6, by decide⟩ then 6
+  else if states = ttFiber3SelectedTttFiber3States ⟨7, by decide⟩ then 7
+  else 8
+
+theorem ttFiber3SelectedTttFiber3StatesIndex_selected :
+    ∀ i : Fin GoertzelLemma818CompositeCertificate.ttFiber3Rows.length,
+      ttFiber3SelectedTttFiber3StatesIndex
+        (ttFiber3SelectedTttFiber3States i) = i.1 := by
+  decide
+
+theorem ttFiber3SelectedTttFiber3States_injective :
+    Function.Injective ttFiber3SelectedTttFiber3States := by
+  intro i j h
+  have hindex := congrArg ttFiber3SelectedTttFiber3StatesIndex h
+  rw [ttFiber3SelectedTttFiber3StatesIndex_selected i,
+    ttFiber3SelectedTttFiber3StatesIndex_selected j] at hindex
+  exact Fin.ext hindex
+
+theorem ttFiber3SelectedTttFiber3PointAt_injective :
+    Function.Injective ttFiber3SelectedTttFiber3PointAt := by
+  intro i j h
+  have hstates :
+      ttFiber3SelectedTttFiber3States i =
+        ttFiber3SelectedTttFiber3States j := by
+    have hval := congrArg Subtype.val h
+    simpa [ttFiber3SelectedTttFiber3PointAt_value_eq] using hval
+  exact ttFiber3SelectedTttFiber3States_injective hstates
+
+noncomputable def ttFiber3SelectedTttFiber3PointOfPrefixPoint
+    (point : ChainFiberPoint ttFiber3FrontierWord
+      GoertzelLemma818CompositeCertificate.ttFiber3Key) :
+    ChainFiberPoint tttFrontierWord tttFiber3Key :=
+  ttFiber3SelectedTttFiber3PointAt (ttFiber3PrefixPointIndex point)
+
+theorem ttFiber3SelectedTttFiber3PointOfPrefixPoint_injective :
+    Function.Injective ttFiber3SelectedTttFiber3PointOfPrefixPoint := by
+  intro a b h
+  have hindex :
+      ttFiber3PrefixPointIndex a = ttFiber3PrefixPointIndex b :=
+    ttFiber3SelectedTttFiber3PointAt_injective h
+  calc
+    a = ttFiber3PrefixPoint (ttFiber3PrefixPointIndex a) :=
+      (ttFiber3PrefixPointIndex_spec a).symm
+    _ = ttFiber3PrefixPoint (ttFiber3PrefixPointIndex b) := by
+      rw [hindex]
+    _ = b :=
+      ttFiber3PrefixPointIndex_spec b
+
+theorem ttFiber3ProjectionInjectivePreimage :
+    ∃ preimageOf :
+      ChainFiberPoint ttFiber3FrontierWord
+        GoertzelLemma818CompositeCertificate.ttFiber3Key →
+        ChainFiberPoint tttFrontierWord tttFiber3Key,
+      Function.Injective preimageOf :=
+  ⟨ttFiber3SelectedTttFiber3PointOfPrefixPoint,
+    ttFiber3SelectedTttFiber3PointOfPrefixPoint_injective⟩
+
+theorem ttFiber3AppendProjectionInjectivePreimage :
+    ∃ preimageOf :
+      ChainFiberPoint ttFiber3FrontierWord
+        GoertzelLemma818CompositeCertificate.ttFiber3Key →
+        ChainFiberPoint
+          (ttFiber3FrontierWord ++
+            [GoertzelLemma818FrontierMode.TauOrient.tau])
+          GoertzelLemma818CompositeCertificate.ttFiber3Key,
+      Function.Injective preimageOf := by
+  simpa [ttFiber3FrontierWord,
+    GoertzelLemma818TripleTauLightComponentCertificate.tttFrontierWord,
+    GoertzelLemma818CompositeCertificate.ttFiber3Key,
+    GoertzelLemma818TripleTauLightComponentCertificate.tttFiber3Key] using
+    ttFiber3ProjectionInjectivePreimage
+
 def tttFiberCoverLeftState
     (word : List GoertzelLemma814.TauOrient) (key : List LColor)
     (direct : List (List TauState)) (left : TauState) : Bool :=

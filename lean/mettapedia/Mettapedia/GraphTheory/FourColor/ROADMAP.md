@@ -442,6 +442,18 @@ emitted projection finite-section surface.  This is not a canonical
 prefix-projection claim; it is a row-index semantic selector that still has to
 be generalized into the global generated projection witness, and it does not
 prove appended root-closure connectedness.
+The concrete missed selected-cover key now has its selector half too:
+`ttFiber3PrefixStatesList_eq_concreteChainFiber`,
+`ttFiber3PrefixPoint_surjective`,
+`ttFiber3SelectedTttFiber3States_mem_concreteChainFiber`, and
+`ttFiber3AppendProjectionInjectivePreimage` lift `TTT`/`ttFiber3Key` from the
+eight length-two prefix rows to an injective selected appended preimage into
+the first eight generated `TTT` rows.  The appended membership proof uses the
+structural helper `tripleStates_mem_tttAllChainStates_of_indices` instead of a
+direct whole-fiber decision.  This supplies the projection-selector half for
+the key that disproved the one-key selected cover; Gate-2 still needs appended
+root-closure connectedness for this key and selected-key coverage for every
+nonempty target/key obligation.
 The prefix-fibration adapter
 `concreteChainFiberAppendQuotientFibrationParentRowsNonSingletonPrefixBaseDataStructuralClosed_of_prefix_fibration`
 now shows that `concreteChainFiberAppendPrefixFibrationClosed` is enough to

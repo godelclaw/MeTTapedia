@@ -668,6 +668,27 @@ dependency-audit evidence is
 `ttFiber32AppendPreimageRows_get_rowOf` and
 `ttFiber32AppendProjectionFiniteSection` depend on `propext`,
 `Classical.choice`, and `Quot.sound`.
+The missed key named by the selected-cover guard now has the same injective
+selected-preimage half.  For `TTT`/`ttFiber3Key`,
+`tripleStates_mem_tttAllChainStates_of_indices` gives a structural membership
+route for explicit generated triple states, avoiding the recursion-heavy direct
+membership decision.  `ttFiber3PrefixStatesList_eq_concreteChainFiber`,
+`ttFiber3PrefixPoint_surjective`, and
+`ttFiber3SelectedTttFiber3States_mem_concreteChainFiber` lift the eight
+length-two prefix rows and the first eight selected appended rows to real
+semantic `ChainFiberPoint`s, and `ttFiber3AppendProjectionInjectivePreimage`
+packages an injective selected appended preimage from every semantic `TT`
+prefix point for this key into the selected `TTT` appended points.  This closes
+the projection-selector half for the concrete missed key only; it does not
+prove appended root-closure connectedness and it does not make the current
+selected key list a full `RepresentativeTargetAppendSelectedKeysCover`.
+Evidence is `fourcolor-key3-append-preimage-build-20260703.log` (1110 jobs,
+SHA256
+`d0e0261d8b13eb38f48f5c09244cb0be8b1db5261d73644ff72b82273368d165`) and
+`fourcolor-key3-append-preimage-axioms-20260703.log` (SHA256
+`8939639bb7a167335b877dea4504b152fdbbd400e5e51c512bb8dec1970b89a9`);
+the new key-3 append injective-preimage theorem depends on `propext`,
+`Classical.choice`, and `Quot.sound`.
 The standalone base-data half is now closed by
 `concreteChainFiberAppendQuotientFibrationParentRowsNonSingletonPrefixBaseDataClosed_of_prefix_root_star`:
 nonempty prefix fibers use the prefix fiber itself as the quotient base with a
