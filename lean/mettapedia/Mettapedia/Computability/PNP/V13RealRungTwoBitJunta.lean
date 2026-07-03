@@ -4216,6 +4216,187 @@ abbrev
       v13RealLinearNoTargetSequentialTraceFirstCosetHitActiveFixedMapTranscriptCylinder_generatedPrefix
         i₀ observer t activeIdx}
 
+noncomputable instance
+    {m q : Nat} (i₀ : Fin m)
+    (observer : V13RealLinearSequentialRowObserver m q) (t : Fin q)
+    (activeIdx :
+      V13RealLinearNoTargetSequentialTraceFirstCosetHitActiveFixedMapTranscriptCylinderIndex
+        i₀ observer t) :
+    Fintype
+      (V13RealLinearNoTargetSequentialTraceFirstCosetHitActiveFixedMapTranscriptCylinderGeneratedPrefixCell
+        i₀ observer t activeIdx) := by
+  classical
+  unfold
+    V13RealLinearNoTargetSequentialTraceFirstCosetHitActiveFixedMapTranscriptCylinderGeneratedPrefixCell
+  infer_instance
+
+noncomputable def
+    v13RealLinearRowsUnreadAssignmentToActiveNoTargetSequentialTraceFirstCosetHitGeneratedPrefixCell
+    {m q : Nat} (i₀ : Fin m)
+    (observer : V13RealLinearSequentialRowObserver m q) (t : Fin q)
+    (activeIdx :
+      V13RealLinearNoTargetSequentialTraceFirstCosetHitActiveFixedMapTranscriptCylinderIndex
+        i₀ observer t) :
+    V13RealLinearRowsUnreadAssignment m
+        (v13RealLinearNoTargetSequentialTraceFirstCosetHitActiveFixedMapTranscriptCylinder_generatedQBudgetedRowset
+          i₀ observer t activeIdx).1 ↪
+      V13RealLinearNoTargetSequentialTraceFirstCosetHitActiveFixedMapTranscriptCylinderGeneratedPrefixCell
+        i₀ observer t activeIdx where
+  toFun assignment := by
+    classical
+    let witness :=
+      v13RealLinearNoTargetSequentialTraceFirstCosetHitActiveFixedMapTranscriptCylinder_witness
+        i₀ observer t activeIdx
+    let G :=
+      (v13RealLinearNoTargetSequentialTraceFirstCosetHitActiveFixedMapTranscriptCylinder_generatedQBudgetedRowset
+        i₀ observer t activeIdx).1
+    let transcript :=
+      v13RealLinearNoTargetSequentialTraceFirstCosetHitActiveFixedMapTranscriptCylinder_generatedTranscript
+        i₀ observer t activeIdx
+    let publicW :=
+      v13RealLinearPublicInput
+        ({ x := witness.val, A := activeIdx.1.A.val } : V13RealLinearWorld m)
+    let b : F2Vec m :=
+      v13RealLinearRowsTranscriptCompletion transcript assignment
+    let z : F2Vec m := activeIdx.1.A.val.toEquiv.symm b
+    let publicZ :=
+      v13RealLinearPublicInput
+        ({ x := z, A := activeIdx.1.A.val } : V13RealLinearWorld m)
+    have htranscriptZ :
+        v13RealLinearRowsTranscript G publicZ = transcript := by
+      funext row
+      apply Prod.ext
+      · funext probe
+        rfl
+      · change activeIdx.1.A.val.toEquiv z row.1 = (transcript row).2
+        calc
+          activeIdx.1.A.val.toEquiv z row.1 =
+              v13RealLinearRowsTranscriptCompletion transcript assignment row.1 := by
+            simp [z, b]
+          _ = (transcript row).2 :=
+            v13RealLinearRowsTranscriptCompletion_of_mem
+              transcript assignment row.property
+    have hsameG :
+        v13RealLinearRowsTranscript G publicW =
+          v13RealLinearRowsTranscript G publicZ := by
+      rw [htranscriptZ]
+      rfl
+    have hprefixRowsW :
+        v13RealLinearSequentialRowTranscriptRows
+            (v13RealLinearSequentialRowPrefixTranscriptOf
+              observer publicW ((t : Nat) + 1)) =
+          G := by
+      have hrows :=
+        v13RealLinearNoTargetSequentialTraceFirstCosetHitActiveFixedMapTranscriptCylinder_generatedPrefix_rows_eq
+          i₀ observer t activeIdx
+      simpa [
+        v13RealLinearNoTargetSequentialTraceFirstCosetHitActiveFixedMapTranscriptCylinder_generatedPrefix,
+        witness, publicW, G,
+        v13RealLinearSequentialPrefixTranscriptVectorOf_rows] using hrows
+    have hsameRows :
+        v13RealLinearRowsTranscript
+            (v13RealLinearSequentialRowTranscriptRows
+              (v13RealLinearSequentialRowPrefixTranscriptOf
+                observer publicW ((t : Nat) + 1))) publicW =
+          v13RealLinearRowsTranscript
+            (v13RealLinearSequentialRowTranscriptRows
+              (v13RealLinearSequentialRowPrefixTranscriptOf
+                observer publicW ((t : Nat) + 1))) publicZ := by
+      rw [hprefixRowsW]
+      exact hsameG
+    have hprefixTranscript :
+        v13RealLinearSequentialRowPrefixTranscriptOf
+            observer publicZ ((t : Nat) + 1) =
+          v13RealLinearSequentialRowPrefixTranscriptOf
+            observer publicW ((t : Nat) + 1) := by
+      simpa [v13RealLinearSequentialRowPrefixTranscriptOf] using
+        v13RealLinearSequentialRowRunAux_eq_of_final_rowsTranscript_eq
+          observer publicW publicZ ((t : Nat) + 1) [] hsameRows
+    exact
+      ⟨z, by
+        have hlist :
+            v13RealLinearSequentialPrefixTranscriptVectorToList
+                (v13RealLinearSequentialPrefixTranscriptVectorOf observer
+                  publicZ ((t : Nat) + 1)) =
+              v13RealLinearSequentialPrefixTranscriptVectorToList
+                (v13RealLinearNoTargetSequentialTraceFirstCosetHitActiveFixedMapTranscriptCylinder_generatedPrefix
+                  i₀ observer t activeIdx) := by
+          simpa [
+            v13RealLinearSequentialPrefixTranscriptVectorOf_toList,
+            v13RealLinearNoTargetSequentialTraceFirstCosetHitActiveFixedMapTranscriptCylinder_generatedPrefix,
+            witness, publicW, publicZ] using hprefixTranscript
+        exact List.ofFn_inj.mp (by
+          simpa [
+            v13RealLinearSequentialPrefixTranscriptVectorToList,
+            v13RealLinearSequentialPrefixTranscriptVectorOf,
+            v13RealLinearNoTargetSequentialTraceFirstCosetHitActiveFixedMapTranscriptCylinder_generatedPrefix,
+            witness, publicW, publicZ] using hlist)⟩
+  inj' := by
+    classical
+    intro assignment₀ assignment₁ hcell
+    let G :=
+      (v13RealLinearNoTargetSequentialTraceFirstCosetHitActiveFixedMapTranscriptCylinder_generatedQBudgetedRowset
+        i₀ observer t activeIdx).1
+    let transcript :=
+      v13RealLinearNoTargetSequentialTraceFirstCosetHitActiveFixedMapTranscriptCylinder_generatedTranscript
+        i₀ observer t activeIdx
+    let complete : V13RealLinearRowsUnreadAssignment m G → F2Vec m :=
+      fun assignment =>
+        activeIdx.1.A.val.toEquiv.symm
+          (v13RealLinearRowsTranscriptCompletion transcript assignment)
+    have hz : complete assignment₀ = complete assignment₁ := by
+      simpa [complete, G, transcript] using
+        congrArg
+          (fun cell :
+            V13RealLinearNoTargetSequentialTraceFirstCosetHitActiveFixedMapTranscriptCylinderGeneratedPrefixCell
+              i₀ observer t activeIdx => cell.val)
+          hcell
+    funext row
+    have hAraw :=
+      congrFun (congrArg activeIdx.1.A.val.toEquiv hz) row.1
+    have hA :
+        v13RealLinearRowsTranscriptCompletion transcript assignment₀ row.1 =
+          v13RealLinearRowsTranscriptCompletion transcript assignment₁ row.1 := by
+      simpa [complete] using hAraw
+    calc
+      assignment₀ row =
+          v13RealLinearRowsTranscriptCompletion transcript assignment₀ row.1 := by
+        exact
+          (v13RealLinearRowsTranscriptCompletion_of_not_mem
+            transcript assignment₀ row).symm
+      _ =
+          v13RealLinearRowsTranscriptCompletion transcript assignment₁ row.1 := hA
+      _ = assignment₁ row :=
+          v13RealLinearRowsTranscriptCompletion_of_not_mem
+            transcript assignment₁ row
+
+theorem
+    v13RealLinearNoTargetSequentialTraceFirstCosetHitGeneratedPrefixCell_capacity_le_card
+    {m q : Nat} (i₀ : Fin m)
+    (observer : V13RealLinearSequentialRowObserver m q) (t : Fin q)
+    (activeIdx :
+      V13RealLinearNoTargetSequentialTraceFirstCosetHitActiveFixedMapTranscriptCylinderIndex
+        i₀ observer t) :
+    2 ^ (m -
+        (v13RealLinearNoTargetSequentialTraceFirstCosetHitActiveFixedMapTranscriptCylinder_generatedQBudgetedRowset
+          i₀ observer t activeIdx).1.card) ≤
+      Fintype.card
+        (V13RealLinearNoTargetSequentialTraceFirstCosetHitActiveFixedMapTranscriptCylinderGeneratedPrefixCell
+          i₀ observer t activeIdx) := by
+  classical
+  have hle :
+      Fintype.card
+          (V13RealLinearRowsUnreadAssignment m
+            (v13RealLinearNoTargetSequentialTraceFirstCosetHitActiveFixedMapTranscriptCylinder_generatedQBudgetedRowset
+              i₀ observer t activeIdx).1) ≤
+        Fintype.card
+          (V13RealLinearNoTargetSequentialTraceFirstCosetHitActiveFixedMapTranscriptCylinderGeneratedPrefixCell
+            i₀ observer t activeIdx) :=
+    Fintype.card_le_of_embedding
+      (v13RealLinearRowsUnreadAssignmentToActiveNoTargetSequentialTraceFirstCosetHitGeneratedPrefixCell
+        i₀ observer t activeIdx)
+  simpa [v13RealLinearRowsUnreadAssignment_card] using hle
+
 /-- The full no-target first-hit event at step `t`, partitioned by the ordered
 prefix transcript actually seen by the sequential observer before that step. -/
 abbrev
