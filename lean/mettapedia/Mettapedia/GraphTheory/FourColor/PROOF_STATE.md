@@ -187,6 +187,12 @@ graph.  The theorem
 turns that row certificate into appended connectedness, and the
 `_of_appended_parent_rows_connected_and_projection_finite_section` wrappers
 combine appended parent rows with the finite projection-section target.
+The combined emitted predicate
+`concreteChainFiberAppendQuotientFibrationParentRowsNonSingletonPrefixAppendedParentRowsProjectionFiniteSectionClosed`
+packages both row-shaped obligations for each nonempty prefix fiber and is the
+tightest single generated-data surface currently exposed; its wrappers split it
+back into the parent-row and finite-section halves, then route it to semantic
+sufficiency and the target-gated all-word audit.
 The projection-surjectivity half also has a finite-row emitted form,
 `concreteChainFiberAppendQuotientFibrationParentRowsNonSingletonPrefixProjectionFiniteSectionClosed`:
 for each nonempty prefix fiber it emits a projection, a finite list of appended
@@ -224,6 +230,16 @@ and `fourcolor-appended-parent-rows-connected-axioms-20260703.log` (SHA256
 the appended parent-row connectedness conversion and combined
 surjective-projection wrapper depend only on `propext`, while the target-gated
 all-word wrapper depends on `propext`, `Classical.choice`, and `Quot.sound`.
+Combined row-surface evidence is
+`fourcolor-combined-parent-rows-projection-section-lake-build-20260703.log`
+(607 jobs, SHA256
+`bf4c7a46cf0c2d83885931f76c7e45988be6ca401303c789eb1f3e254dce3eda`)
+and `fourcolor-combined-parent-rows-projection-section-axioms-20260703.log`
+(SHA256
+`b54b8fb58672934161a47b1e7fc820bb147bdb68391340e49bd78253a146450c`);
+the combined-to-surjective-projection wrapper depends only on `propext`, while
+the semantic and target-gated all-word wrappers depend on `propext`,
+`Classical.choice`, and `Quot.sound`.
 The table-level diagnostic
 `tttFiber32Rows_length_eq_two_mul_ttFiber32Rows_length` records that the known
 `TT` obstruction key is the same generated fixed input as `TTT` light-fiber
