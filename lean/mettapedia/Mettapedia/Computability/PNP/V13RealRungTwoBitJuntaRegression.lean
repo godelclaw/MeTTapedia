@@ -1074,6 +1074,18 @@ example {m q : Nat} (i₀ : Fin m)
   v13RealLinearNoTargetSequentialTraceFirstCosetHitGeneratedPrefixCell_card_eq_capacity
     i₀ observer t activeIdx
 
+example {m q : Nat} (i₀ : Fin m)
+    (observer : V13RealLinearSequentialRowObserver m q) (t : Fin q)
+    (omega :
+      V13RealLinearAdaptiveQRowWorld m
+        (V13RealLinearNoTargetRowsMap m i₀)) :
+    Fintype.card
+        (V13RealLinearNoTargetSequentialTraceFirstCosetHitActiveGeneratedPrefixCellIndexForWorld
+          i₀ observer t omega) ≤
+      2 ^ ((t : Nat) + 1) :=
+  v13RealLinearNoTargetSequentialTraceFirstCosetHitActiveGeneratedPrefixCellIndexForWorld_card_le_rhsHistory
+    i₀ observer t omega
+
 noncomputable example {m q : Nat} (i₀ : Fin m)
     (observer : V13RealLinearSequentialRowObserver m q) (t : Fin q)
     (activeIdx :
@@ -1503,6 +1515,7 @@ example {m q : Nat} (i₀ : Fin m)
 #print axioms v13RealLinearNoTargetSequentialTraceFirstCosetHitActiveFixedMapTranscriptCylinderIndex_eq_of_sameMap_generatedPrefix
 #print axioms v13RealLinearNoTargetSequentialTraceFirstCosetHitActiveFixedMapTranscriptCylinderIndexForMapToGeneratedPrefixForMap
 #print axioms v13RealLinearNoTargetSequentialTraceFirstCosetHitActiveFixedMapTranscriptCylinderIndexForMap_card_le_rhsHistory
+#print axioms v13RealLinearNoTargetSequentialTraceFirstCosetHitActiveGeneratedPrefixCellIndexForWorld_card_le_rhsHistory
 #print axioms v13RealLinearSequentialPrefixRhsHistory_card
 #print axioms v13RealLinearRowView_eq_of_A_eq_rhs_eq
 #print axioms v13RealLinearSequentialPrefixTranscriptVectorOf_eq_of_A_eq_rhs
