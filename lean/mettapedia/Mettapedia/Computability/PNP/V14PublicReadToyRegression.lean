@@ -20,6 +20,22 @@ set_option autoImplicit false
 #check v14ToyVerifier_singleMessage
 #check v14ToyGaugeEquation_preserved
 #check v14ToyHiddenGaugeProduct
+#check V14ToyRestrictedFormula
+#check V14ToyPNPSATDecider
+#check v14ToyRestricted_withRawHiddenQuotient_satisfiable_iff
+#check v14ToyRestricted_complete_satisfiable_iff
+#check v14ToyBitFixQuotient_satisfiable
+#check v14ToyBitFixMessage_satisfiable
+#check v14ToySelfReductionWitness_satisfies
+#check v14ToySelfReduction_readout_eq_message
+#check v14ToySelfReduction_readout_eq_validWitness_readout
+#check v14ToySelfReductionDecoderCost
+#check v14ToyConstantDecoderKpolyAt
+#check v14ToyLinearEtaTimes
+#check v14ToyConstantDecoderKpolyAt_eq
+#check v14Toy_constantDecoder_lt_linearFloor
+#check V14ToyConstantDecoderRegime
+#check v14Toy_selfReductionUpperHypothesis_givenPNP
 #check v14ToyQuotientRead_exposes_rawGaugeSupport
 #check v14ToyNoPublicCoordinateDeterminesTarget
 #check v14ToyNoPublicTargetTags
@@ -39,12 +55,14 @@ set_option autoImplicit false
 #check v14Toy_structuralFields_constructed
 #check V14ToyAnalyticFieldsCarried
 #check v14Toy_analyticFields_carried
-#check V14ToyOpenGlobalInputs
-#check v14Toy_openGlobalInputs
+#check V14ToyResidualOpenInputs
+#check v14Toy_residualOpenInputs
 #check V14ToyParameterPayloadAudited
 #check v14Toy_parameterPayload_audited
+#check v14ToyParameterRecordWithPNPUpper
 #check V14ToyExactFrontierUse
 #check v14Toy_reduction_uses_exact_analytic_frontier
+#check v14Toy_reduction_uses_exact_analytic_frontier_givenPNP
 #check v14ToyReductionStatement
 #check safeQSSM_weakened_frontier_insufficient
 #check boundedGaugeIncidence_weakened_frontier_insufficient
@@ -56,7 +74,8 @@ set_option autoImplicit false
 #check v14ToyExactUseLedger_length
 #check v14ToyExactUseLedger_structural_proved
 #check v14ToyExactUseLedger_analytic_carried
-#check v14ToyExactUseLedger_open_global_inputs
+#check v14ToyExactUseLedger_selfReduction_upper_constructed_givenPNP
+#check v14ToyExactUseLedger_residual_open_inputs
 
 #print axioms v14ToyPublicRead_neutralOnly_targetBlind
 #print axioms v14ToyPublicRead_decomposes
@@ -70,6 +89,16 @@ set_option autoImplicit false
 #print axioms v14ToyVerifier_singleMessage
 #print axioms v14ToyGaugeEquation_preserved
 #print axioms v14ToyHiddenGaugeProduct
+#print axioms v14ToyRestricted_withRawHiddenQuotient_satisfiable_iff
+#print axioms v14ToyRestricted_complete_satisfiable_iff
+#print axioms v14ToyBitFixQuotient_satisfiable
+#print axioms v14ToyBitFixMessage_satisfiable
+#print axioms v14ToySelfReductionWitness_satisfies
+#print axioms v14ToySelfReduction_readout_eq_message
+#print axioms v14ToySelfReduction_readout_eq_validWitness_readout
+#print axioms v14ToyConstantDecoderKpolyAt_eq
+#print axioms v14Toy_constantDecoder_lt_linearFloor
+#print axioms v14Toy_selfReductionUpperHypothesis_givenPNP
 #print axioms v14ToyQuotientRead_exposes_rawGaugeSupport
 #print axioms v14ToyNoPublicCoordinateDeterminesTarget
 #print axioms v14ToyNoPublicTargetTags
@@ -83,9 +112,10 @@ set_option autoImplicit false
 #print axioms v14Toy_structuralReduction
 #print axioms v14Toy_structuralFields_constructed
 #print axioms v14Toy_analyticFields_carried
-#print axioms v14Toy_openGlobalInputs
+#print axioms v14Toy_residualOpenInputs
 #print axioms v14Toy_parameterPayload_audited
 #print axioms v14Toy_reduction_uses_exact_analytic_frontier
+#print axioms v14Toy_reduction_uses_exact_analytic_frontier_givenPNP
 #print axioms safeQSSM_weakened_frontier_insufficient
 #print axioms boundedGaugeIncidence_weakened_frontier_insufficient
 #print axioms boundaryMixing_weakened_frontier_insufficient
@@ -96,6 +126,7 @@ set_option autoImplicit false
 #print axioms v14ToyExactUseLedger_length
 #print axioms v14ToyExactUseLedger_structural_proved
 #print axioms v14ToyExactUseLedger_analytic_carried
-#print axioms v14ToyExactUseLedger_open_global_inputs
+#print axioms v14ToyExactUseLedger_selfReduction_upper_constructed_givenPNP
+#print axioms v14ToyExactUseLedger_residual_open_inputs
 
 end Mettapedia.Computability.PNP
