@@ -2892,6 +2892,31 @@ theorem v13RealLinearRowTraceNewCapture_get_not_mem {m : Nat}
     exact Finset.insert_eq_of_mem hmem
   simpa [hprefixSucc] using hcapture.2
 
+theorem v13RealLinearRowTraceCosetHit_get_not_mem_of_noPrior {m : Nat}
+    (A : V13F2LinearEquiv m) (i₀ : Fin m)
+    (trace : V13RealLinearRowTrace m) {t : Nat}
+    (hprior :
+      ∀ s : Fin t, ¬ V13RealLinearRowTraceCosetHit A i₀ trace s)
+    (hhit : V13RealLinearRowTraceCosetHit A i₀ trace t)
+    (h : t < trace.length) :
+    trace.get ⟨t, h⟩ ∉
+      v13RealLinearRowTracePrefixRows trace t := by
+  intro hmem
+  have hsplit :=
+    v13RealLinearRowTraceCosetHit_newCapture_or_priorNewCapture
+      A i₀ trace hhit
+  cases hsplit with
+  | inl hnew =>
+      exact
+        (v13RealLinearRowTraceNewCapture_get_not_mem
+          A i₀ trace h hnew) hmem
+  | inr hpriorNew =>
+      rcases hpriorNew with ⟨s, hsnew⟩
+      exact
+        hprior s
+          (v13RealLinearRowTraceCosetHit_of_newCapture
+            A i₀ trace (lt_trans s.isLt h) hsnew)
+
 theorem
     v13RealLinearFunctionalTableTargetCosetHit_of_rowTraceNewCapture
     {m : Nat} (A : V13F2LinearEquiv m) (i₀ : Fin m)
