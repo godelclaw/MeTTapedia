@@ -7269,6 +7269,46 @@ theorem
       (v13RealLinearNoTargetSequentialTraceFirstCosetHitOrderedPrefixWorldSet_cosetHit
         i₀ observer t pref omega)
 
+theorem
+    v13RealLinearNoTargetSequentialTraceFirstCosetHitOrderedPrefixWorldSet_priorCosetHit_of_nextRow_mem
+    {m q : Nat} (i₀ : Fin m)
+    (observer : V13RealLinearSequentialRowObserver m q) (t : Fin q)
+    (pref :
+      V13RealLinearSequentialPrefixTranscriptVector m (t : Nat))
+    (omega :
+      V13RealLinearNoTargetSequentialTraceFirstCosetHitOrderedPrefixWorldSet
+        i₀ observer t pref)
+    (hmem :
+      v13RealLinearSequentialPrefixTranscriptVectorNextRow observer pref ∈
+        v13RealLinearSequentialPrefixTranscriptVectorRows pref) :
+    ∃ s : Fin (t : Nat),
+      V13RealLinearRowTraceCosetHit omega.val.val.1.val i₀
+        (v13RealLinearNoTargetRowsSequentialQRowTrace
+          i₀ observer omega.val.val) s := by
+  classical
+  let trace :=
+    v13RealLinearNoTargetRowsSequentialQRowTrace i₀ observer omega.val.val
+  have hrows :=
+    v13RealLinearNoTargetSequentialTraceFirstCosetHitOrderedPrefixWorldSet_prefixRows_eq
+      i₀ observer t pref omega
+  have hgenPref :=
+    v13RealLinearNoTargetSequentialTraceFirstCosetHitOrderedPrefixWorldSet_prefixRowsGenerateTarget_of_nextRow_mem
+      i₀ observer t pref omega hmem
+  have hgenTrace :
+      V13RealLinearRowsGenerateTarget omega.val.val.1.val
+        (v13RealLinearRowTracePrefixRows trace (t : Nat)) i₀ := by
+    simpa [trace, hrows] using hgenPref
+  rcases
+      v13RealLinearRowTraceNewCapture_exists_lt_of_prefixRowsGenerateTarget
+        omega.val.val.1.val i₀ trace
+        (Nat.le_of_lt omega.val.property.1) hgenTrace with
+    ⟨s, hsnew⟩
+  exact
+    ⟨s,
+      v13RealLinearRowTraceCosetHit_of_newCapture
+        omega.val.val.1.val i₀ trace
+        (lt_trans s.isLt omega.val.property.1) hsnew⟩
+
 /-- L0 freshness bridge for conditioned ordered-prefix counting.  It states
 that every counted ordered-prefix hit reads a row outside the realized prefix
 rowset.  This is exactly the first-hit/freshness step needed before the
