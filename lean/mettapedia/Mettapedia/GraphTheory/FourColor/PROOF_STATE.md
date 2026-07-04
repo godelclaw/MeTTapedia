@@ -129,14 +129,23 @@ while `ChainFiberAppendQuotientFibrationParentRowsStructuralFields` carries
 `semanticFrontierStateSufficientForChain_of_append_quotient_parent_rows_base_data_and_structural`
 shows that the existing semantic route follows from
 `concreteChainFiberAppendQuotientFibrationParentRowsNonSingletonPrefixBaseDataClosed`
-plus
+plus the legacy all-data structural hypothesis
 `concreteChainFiberAppendQuotientFibrationParentRowsNonSingletonPrefixStructuralClosed`.
-The same split now feeds the downstream assembly points directly through
-`concreteChainFiberFibrationNonemptyTransferClosed_of_append_quotient_parent_rows_base_data_and_structural`,
-`concreteChainAuditFibrationNonemptyTransferClosed_of_append_quotient_parent_rows_base_data_and_structural`,
-`chainAuditForFrontierWord_ok_of_append_quotient_parent_rows_base_data_and_structural`,
-and
-`chainAuditForFrontierWord_ok_of_targets_and_append_quotient_parent_rows_base_data_and_structural`.
+That all-data hypothesis is now superseded as the live Gate-2 remainder: it
+asks for structural fields for every supplied parent-row base-data record,
+whereas the current route only needs one paired base-data/structural witness
+for each append.  The newer live one-pin route is
+`concreteChainFiberAppendQuotientFibrationParentRowsNonSingletonPrefixCertifiedParentRowsRemainderClosed`.
+It removes every triple carrying a `ChainFiberAppendCertifiedParentRowsTriple`
+(appended root-closure connectedness plus an injective prefix-to-append
+selector) and asks for the paired base-data/structural witness only on the
+uncertified remainder.  The direct wrappers are
+`concreteChainFiberAppendQuotientFibrationParentRowsFieldsClosed_of_non_singleton_certified_parent_rows_remainder`,
+`concreteChainFiberFibrationNonemptyTransferClosed_of_append_quotient_parent_rows_certified_parent_rows_remainder`,
+`concreteChainAuditFibrationNonemptyTransferClosed_of_append_quotient_parent_rows_certified_parent_rows_remainder`,
+`chainAuditForFrontierWord_ok_of_append_quotient_parent_rows_certified_parent_rows_remainder`,
+`semanticFrontierStateSufficientForChain_of_append_quotient_parent_rows_certified_parent_rows_remainder`, and
+`chainAuditForFrontierWord_ok_of_targets_and_append_quotient_parent_rows_certified_parent_rows_remainder`.
 The preferred generated-certificate surface is the paired form
 `concreteChainFiberAppendQuotientFibrationParentRowsNonSingletonPrefixBaseDataStructuralClosed`:
 for each non-singleton prefix and fixed input it emits one base-data record
@@ -730,15 +739,17 @@ make the prefix case automatic for the remaining component and glued-edge
 obligations.
 The glued last-edge switched-color case is also closed locally by
 `concreteChainFiberAppendRelativeSingletonShiftedSwitchLastGluedPointClosed_of_input_trace`.
-This does not close Gate-2: the exact remaining parent-row pin is
-`concreteChainFiberAppendQuotientFibrationParentRowsNonSingletonPrefixStructuralClosed`.
-It asks, for every non-singleton prefix and supplied parent-row base-data
-record, for the projection, same-projection reachability, and lifted base-step
-motion fields.  The nearby `_base_data_structural` wrappers only derive
-semantic sufficiency from this structural hypothesis or from an equivalent
-paired structural record; there is no unconditional
-`semanticFrontierStateSufficientForChain` or `chainAuditForFrontierWord`
-theorem yet.
+The all-data structural route
+`concreteChainFiberAppendQuotientFibrationParentRowsNonSingletonPrefixStructuralClosed`
+is now retired as the live Gate-2 pin and retained only as a stronger legacy
+sufficient hypothesis.  The current exact one-pin remainder is
+`concreteChainFiberAppendQuotientFibrationParentRowsNonSingletonPrefixCertifiedParentRowsRemainderClosed`.
+It discharges every append triple with a
+`ChainFiberAppendCertifiedParentRowsTriple`; the remaining work is the paired
+base-data/structural witness only for non-certified triples.  Thus there is
+still no unconditional `semanticFrontierStateSufficientForChain` or
+`chainAuditForFrontierWord` theorem, but the old all-supplied-base-data pin is
+no longer the live obligation.
 
 `GoertzelLemma818SemanticProgress.lean` now records the checked semantic
 frontier after the completed `TTT` target.  It proves

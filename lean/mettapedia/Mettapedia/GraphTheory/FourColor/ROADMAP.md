@@ -229,17 +229,22 @@ certificate, while
 `ChainFiberAppendQuotientFibrationParentRowsStructuralFields` supplies `proj`,
 same-base `fiberReach`, and lifted `baseStep` motion.  Proving
 `concreteChainFiberAppendQuotientFibrationParentRowsNonSingletonPrefixBaseDataClosed`
-and
+and the legacy all-data structural hypothesis
 `concreteChainFiberAppendQuotientFibrationParentRowsNonSingletonPrefixStructuralClosed`
-is now enough via
+is enough via
 `semanticFrontierStateSufficientForChain_of_append_quotient_parent_rows_base_data_and_structural`.
-That exact pair of hypotheses also has direct transfer and all-word audit
-wrappers:
-`concreteChainFiberFibrationNonemptyTransferClosed_of_append_quotient_parent_rows_base_data_and_structural`,
-`concreteChainAuditFibrationNonemptyTransferClosed_of_append_quotient_parent_rows_base_data_and_structural`,
-`chainAuditForFrontierWord_ok_of_append_quotient_parent_rows_base_data_and_structural`,
-and
-`chainAuditForFrontierWord_ok_of_targets_and_append_quotient_parent_rows_base_data_and_structural`.
+That all-data route is now superseded as the live Gate-2 pin.  The current
+one-pin route is
+`concreteChainFiberAppendQuotientFibrationParentRowsNonSingletonPrefixCertifiedParentRowsRemainderClosed`:
+any triple with a `ChainFiberAppendCertifiedParentRowsTriple` is discharged
+automatically, and only non-certified triples still require a paired
+base-data/structural witness.  Its direct wrappers include
+`concreteChainFiberAppendQuotientFibrationParentRowsFieldsClosed_of_non_singleton_certified_parent_rows_remainder`,
+`concreteChainFiberFibrationNonemptyTransferClosed_of_append_quotient_parent_rows_certified_parent_rows_remainder`,
+`concreteChainAuditFibrationNonemptyTransferClosed_of_append_quotient_parent_rows_certified_parent_rows_remainder`,
+`chainAuditForFrontierWord_ok_of_append_quotient_parent_rows_certified_parent_rows_remainder`,
+`semanticFrontierStateSufficientForChain_of_append_quotient_parent_rows_certified_parent_rows_remainder`, and
+`chainAuditForFrontierWord_ok_of_targets_and_append_quotient_parent_rows_certified_parent_rows_remainder`.
 For generated output, prefer the paired target
 `concreteChainFiberAppendQuotientFibrationParentRowsNonSingletonPrefixBaseDataStructuralClosed`:
 it supplies one emitted base-data record together with its structural fields for
@@ -469,9 +474,13 @@ proves the full prefix fibration false, and
 relative-singleton route assumptions.  Continue through the paired
 generated-data/structural quotient target instead.
 `semanticFrontierStateSufficientForChain_of_append_quotient_parent_rows_structural`
-is therefore the current one-hypothesis split route from
+is now only the stronger legacy one-hypothesis split route from
 `concreteChainFiberAppendQuotientFibrationParentRowsNonSingletonPrefixStructuralClosed`
-to semantic sufficiency.  The semantic wrapper
+to semantic sufficiency.  The live one-pin route is
+`semanticFrontierStateSufficientForChain_of_append_quotient_parent_rows_certified_parent_rows_remainder`,
+which removes any append triple carrying a
+`ChainFiberAppendCertifiedParentRowsTriple` before asking for the paired
+base-data/structural witness on the uncertified remainder.  The semantic wrapper
 `semanticFrontierStateSufficientForChain_of_append_quotient_parent_rows_prefix_fibration`
 records the same sufficient route through the parent-row quotient assembly.
 Do not force the full-prefix projection if it becomes the bottleneck:
@@ -491,10 +500,10 @@ The glued last-edge switch case is now closed by
 `concreteChainFiberAppendRelativeSingletonShiftedSwitchLastGluedPointClosed_of_input_trace`,
 so the local shifted-switch proof is down to component equality.  The global
 parent-row route still has one exact open pin:
-`concreteChainFiberAppendQuotientFibrationParentRowsNonSingletonPrefixStructuralClosed`.
+`concreteChainFiberAppendQuotientFibrationParentRowsNonSingletonPrefixCertifiedParentRowsRemainderClosed`.
 The wrappers around `BaseDataStructuralClosed` are conditional plumbing; they
 do not produce an unconditional semantic sufficiency theorem without that
-structural field theorem or an equivalent paired structural record.
+certified-remainder theorem or an equivalent paired structural record.
 The same-prefix closure side is now separated from prefix mobility:
 `concreteChainFiberAppendPrefixSelfLiftClosureClosed_of_lift` derives a closed
 appended representative over the current prefix from the lift-closure theorem

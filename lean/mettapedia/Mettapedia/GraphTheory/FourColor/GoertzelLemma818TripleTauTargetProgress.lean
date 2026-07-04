@@ -3800,25 +3800,11 @@ theorem ttFiber32Key3TargetAppendRowSurfaceClosedOn :
   representativeTargetAppendParentRowsProjectionFiniteSectionClosedOn_of_target_append_cases
     ttFiber32Key3TargetAppendRowSurfaceCases_cover_on
 
-structure ChainFiberAppendParentRowsCertifiedTriple
+abbrev ChainFiberAppendParentRowsCertifiedTriple
     (word : List GoertzelLemma818FrontierMode.TauOrient)
     (orient : GoertzelLemma818FrontierMode.TauOrient)
-    (key : List LColor) : Prop where
-  lengthGtOne : 1 < word.length
-  prefixCertificate : Nonempty (ChainWordConcreteFibrationCertificate word)
-  keyMem : key ∈ colorAssignments4
-  appendedConnected :
-    ∀ (root : List TauState) (rest : List (List TauState)),
-      concreteChainFiber word key = root :: rest →
-        GoertzelLemma818Fibration.Connected
-          (chainFiberRootClosureStep (word ++ [orient]) key)
-  projectionInjectivePreimage :
-    ∀ (root : List TauState) (rest : List (List TauState)),
-      concreteChainFiber word key = root :: rest →
-        ∃ preimageOf :
-          ChainFiberPoint word key →
-            ChainFiberPoint (word ++ [orient]) key,
-          Function.Injective preimageOf
+    (key : List LColor) : Prop :=
+  ChainFiberAppendCertifiedParentRowsTriple word orient key
 
 theorem chainFiberAppendParentRowsCertifiedTriple_projectionFiniteSectionBody
     {word : List GoertzelLemma818FrontierMode.TauOrient}
