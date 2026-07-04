@@ -26,6 +26,12 @@ set_option autoImplicit false
 #check v13RealLinearNoTargetRowsTargetBit
 #check v13RealLinearBit_eq_true_iff
 #check v13RealLinearBit_eq_false_iff
+#check v13RealLinearNoTargetRowsTargetFlipEquiv
+#check v13RealLinearNoTargetRowsTarget_false_card_eq_true
+#check v13RealLinearNoTargetRows_constantTrue_correct_card_eq_true
+#check v13RealLinearNoTargetRows_world_card_eq_two_mul_target_true
+#check v13RealLinearNoTargetRowsTarget_true_card_pos
+#check v13RealLinearNoTargetRows_target_balanced
 #check v13RealLinearNoTargetRowsNeutralSkeleton
 #check v13RealLinearNoTargetRowsOppositeSupport
 #check v13RealLinearNoTargetRows_pairNeutral
@@ -33,6 +39,7 @@ set_option autoImplicit false
 #check v13RealLinearNoTargetRows_noPublicTargetTags
 #check v13RealLinearNoTargetRowsHistoryField
 #check v13RealLinearNoTargetRows_historyField_balancedConditioning
+#check v13RealLinearNoTargetRows_historyField_admissible
 #check RealM4LockedCoreWorld
 #check RealM4LockedCoreWitness
 #check RealM4LockedCoreWorld.toWitness
@@ -185,6 +192,12 @@ set_option autoImplicit false
 #print axioms v13RealLinearNoTargetRowsTargetBit
 #print axioms v13RealLinearBit_eq_true_iff
 #print axioms v13RealLinearBit_eq_false_iff
+#print axioms v13RealLinearNoTargetRowsTargetFlipEquiv
+#print axioms v13RealLinearNoTargetRowsTarget_false_card_eq_true
+#print axioms v13RealLinearNoTargetRows_constantTrue_correct_card_eq_true
+#print axioms v13RealLinearNoTargetRows_world_card_eq_two_mul_target_true
+#print axioms v13RealLinearNoTargetRowsTarget_true_card_pos
+#print axioms v13RealLinearNoTargetRows_target_balanced
 #print axioms v13RealLinearNoTargetRowsNeutralSkeleton
 #print axioms v13RealLinearNoTargetRowsOppositeSupport
 #print axioms v13RealLinearNoTargetRows_pairNeutral
@@ -192,6 +205,7 @@ set_option autoImplicit false
 #print axioms v13RealLinearNoTargetRows_noPublicTargetTags
 #print axioms v13RealLinearNoTargetRowsHistoryField
 #print axioms v13RealLinearNoTargetRows_historyField_balancedConditioning
+#print axioms v13RealLinearNoTargetRows_historyField_admissible
 #print axioms RealM4LockedCoreWorld
 #print axioms RealM4LockedCoreWitness
 #print axioms RealM4LockedCoreWorld.toWitness

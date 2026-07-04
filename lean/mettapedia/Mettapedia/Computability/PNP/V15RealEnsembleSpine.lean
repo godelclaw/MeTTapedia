@@ -187,6 +187,156 @@ def v13RealLinearNoTargetRowsTargetBit {m : Nat} {i₀ : Fin m}
   · intro hzero
     simp [v13RealLinearBit, hzero]
 
+noncomputable def v13RealLinearNoTargetRowsTargetFlipEquiv
+    {m : Nat} {i₀ : Fin m} :
+    {omega : V13RealLinearNoTargetRowsWorld m i₀ //
+      v13RealLinearNoTargetRowsTargetBit omega = false} ≃
+      {omega : V13RealLinearNoTargetRowsWorld m i₀ //
+        v13RealLinearNoTargetRowsTargetBit omega = true} := by
+  classical
+  let e := v13RealLinearSingleBit i₀
+  exact
+    { toFun := fun omega =>
+        ⟨(omega.val.1, f2AddVec omega.val.2 e), by
+          have hx : omega.val.2 i₀ = 0 :=
+            (v13RealLinearBit_eq_false_iff _).mp omega.property
+          simp [v13RealLinearNoTargetRowsTargetBit, v13RealLinearBit,
+            e, f2AddVec, v13RealLinearSingleBit, hx]⟩
+      invFun := fun omega =>
+        ⟨(omega.val.1, f2AddVec omega.val.2 e), by
+          have hx : omega.val.2 i₀ = 1 :=
+            (v13RealLinearBit_eq_true_iff _).mp omega.property
+          simp [v13RealLinearNoTargetRowsTargetBit, v13RealLinearBit,
+            e, f2AddVec, v13RealLinearSingleBit, hx, f2_one_add_one]⟩
+      left_inv := by
+        intro omega
+        apply Subtype.ext
+        apply Prod.ext
+        · rfl
+        · funext j
+          simp [e, f2AddVec, f2_add_right_self]
+      right_inv := by
+        intro omega
+        apply Subtype.ext
+        apply Prod.ext
+        · rfl
+        · funext j
+          simp [e, f2AddVec, f2_add_right_self] }
+
+theorem v13RealLinearNoTargetRowsTarget_false_card_eq_true
+    {m : Nat} {i₀ : Fin m} :
+    Fintype.card
+        {omega : V13RealLinearNoTargetRowsWorld m i₀ //
+          v13RealLinearNoTargetRowsTargetBit omega = false} =
+      Fintype.card
+        {omega : V13RealLinearNoTargetRowsWorld m i₀ //
+          v13RealLinearNoTargetRowsTargetBit omega = true} :=
+  Fintype.card_congr
+    (@v13RealLinearNoTargetRowsTargetFlipEquiv m i₀)
+
+theorem v13RealLinearNoTargetRows_constantTrue_correct_card_eq_true
+    {m : Nat} {i₀ : Fin m} :
+    Fintype.card
+        {omega : V13RealLinearNoTargetRowsWorld m i₀ //
+          (fun _ : V13RealLinearNoTargetRowsWorld m i₀ => true) omega =
+            v13RealLinearNoTargetRowsTargetBit omega} =
+      Fintype.card
+        {omega : V13RealLinearNoTargetRowsWorld m i₀ //
+          v13RealLinearNoTargetRowsTargetBit omega = true} := by
+  let e :
+      {omega : V13RealLinearNoTargetRowsWorld m i₀ //
+        (fun _ : V13RealLinearNoTargetRowsWorld m i₀ => true) omega =
+          v13RealLinearNoTargetRowsTargetBit omega} ≃
+        {omega : V13RealLinearNoTargetRowsWorld m i₀ //
+          v13RealLinearNoTargetRowsTargetBit omega = true} :=
+    { toFun := fun omega => ⟨omega.val, omega.property.symm⟩
+      invFun := fun omega => ⟨omega.val, omega.property.symm⟩
+      left_inv := by
+        intro omega
+        cases omega
+        rfl
+      right_inv := by
+        intro omega
+        cases omega
+        rfl }
+  exact Fintype.card_congr e
+
+theorem v13RealLinearNoTargetRows_world_card_eq_two_mul_target_true
+    {m : Nat} (i₀ : Fin m) :
+    Fintype.card (V13RealLinearNoTargetRowsWorld m i₀) =
+      2 * Fintype.card
+        {omega : V13RealLinearNoTargetRowsWorld m i₀ //
+          v13RealLinearNoTargetRowsTargetBit omega = true} := by
+  set a : Nat :=
+    Fintype.card
+      {omega : V13RealLinearNoTargetRowsWorld m i₀ //
+        v13RealLinearNoTargetRowsTargetBit omega = true}
+  have hcomp :
+      Fintype.card
+          {omega : V13RealLinearNoTargetRowsWorld m i₀ //
+            v13RealLinearNoTargetRowsTargetBit omega = false} =
+        Fintype.card (V13RealLinearNoTargetRowsWorld m i₀) - a := by
+    simpa [a] using
+      (Fintype.card_subtype_compl
+        (fun omega : V13RealLinearNoTargetRowsWorld m i₀ =>
+          v13RealLinearNoTargetRowsTargetBit omega = true))
+  have heq :
+      a =
+        Fintype.card
+          {omega : V13RealLinearNoTargetRowsWorld m i₀ //
+            v13RealLinearNoTargetRowsTargetBit omega = false} := by
+    simpa [a] using
+      (@v13RealLinearNoTargetRowsTarget_false_card_eq_true m i₀).symm
+  have hsub :
+      Fintype.card (V13RealLinearNoTargetRowsWorld m i₀) - a = a := by
+    simpa [heq] using hcomp.symm
+  have hle :
+      a ≤ Fintype.card (V13RealLinearNoTargetRowsWorld m i₀) := by
+    simpa [a] using
+      Fintype.card_subtype_le
+        (fun omega : V13RealLinearNoTargetRowsWorld m i₀ =>
+          v13RealLinearNoTargetRowsTargetBit omega = true)
+  have hsum :
+      Fintype.card (V13RealLinearNoTargetRowsWorld m i₀) = a + a :=
+    Nat.eq_add_of_sub_eq hle hsub
+  simpa [a, two_mul, Nat.add_comm] using hsum
+
+theorem v13RealLinearNoTargetRowsTarget_true_card_pos
+    {m : Nat} (i₀ : Fin m) (hm : 1 < m) :
+    0 <
+      Fintype.card
+        {omega : V13RealLinearNoTargetRowsWorld m i₀ //
+          v13RealLinearNoTargetRowsTargetBit omega = true} := by
+  let A : V13RealLinearNoTargetRowsMap m i₀ :=
+    ⟨v13RealLinearNoTargetRowShear i₀ hm,
+      v13RealLinearNoTargetRowShear_targetRows_empty i₀ hm⟩
+  let omega : V13RealLinearNoTargetRowsWorld m i₀ :=
+    (A, v13RealLinearSingleBit i₀)
+  exact
+    Fintype.card_pos_iff.mpr
+      ⟨⟨omega, by
+        simp [omega, v13RealLinearNoTargetRowsTargetBit,
+          v13RealLinearBit, v13RealLinearSingleBit]⟩⟩
+
+theorem v13RealLinearNoTargetRows_target_balanced
+    {m : Nat} (i₀ : Fin m) (hm : 1 < m) :
+    BalancedBit (@v13RealLinearNoTargetRowsTargetBit m i₀) := by
+  unfold BalancedBit globalDecoderSuccess
+  rw [v13RealLinearNoTargetRows_constantTrue_correct_card_eq_true]
+  rw [v13RealLinearNoTargetRows_world_card_eq_two_mul_target_true i₀]
+  set a : Nat :=
+    Fintype.card
+      {omega : V13RealLinearNoTargetRowsWorld m i₀ //
+        v13RealLinearNoTargetRowsTargetBit omega = true}
+  have hpos : 0 < a := by
+    simpa [a] using
+      v13RealLinearNoTargetRowsTarget_true_card_pos i₀ hm
+  have hne : (a : Rat) ≠ 0 := by
+    exact_mod_cast (Nat.ne_of_gt hpos)
+  rw [Nat.cast_mul]
+  field_simp [hne]
+  norm_num
+
 def v13RealLinearNoTargetRowsNeutralSkeleton {m : Nat} {i₀ : Fin m}
     (omega : V13RealLinearNoTargetRowsWorld m i₀) :
     V13RealLinearNoTargetRowsMap m i₀ :=
@@ -264,10 +414,10 @@ def v13RealLinearNoTargetRowsHistoryField {m : Nat} {i₀ : Fin m}
   atom := fun omega => omega.1.val.toEquiv omega.2 row
 
 /-- For the adjusted real no-target-rows surface, conditioning on one public
-right-hand-side row remains balanced for the target bit.  This proves the
-`BalancedConditioning` half of the v13 `admissibleHistories` field for this
-real public surface; the full M4 history-field package still has to identify
-the manuscript history atoms and prove the paired `BalancedBit` component. -/
+right-hand-side row remains balanced for the target bit.  Together with
+`v13RealLinearNoTargetRows_target_balanced`, this gives an admissible row
+history field for this real public surface; the full M4 history-field package
+still has to identify the manuscript history atoms. -/
 theorem v13RealLinearNoTargetRows_historyField_balancedConditioning
     {m : Nat} (i₀ row : Fin m) :
     BalancedConditioning
@@ -283,6 +433,19 @@ theorem v13RealLinearNoTargetRows_historyField_balancedConditioning
     v13RealLinearNoTargetRowsTargetBit,
     V13RealLinearNoTargetRowsRhsTargetFiber,
     FiberTrue, FiberFalse] using h.symm
+
+/-- The adjusted real no-target-rows row-history field satisfies the v13
+`admissibleHistories` balance pair in dimensions with an explicit no-target
+map.  This is still a public-surface construction theorem, not the full M4
+manuscript-history identification. -/
+theorem v13RealLinearNoTargetRows_historyField_admissible
+    {m : Nat} (i₀ row : Fin m) (hm : 1 < m) :
+    BalancedBit (@v13RealLinearNoTargetRowsTargetBit m i₀) ∧
+      BalancedConditioning
+        (v13RealLinearNoTargetRowsHistoryField (i₀ := i₀) row)
+        (@v13RealLinearNoTargetRowsTargetBit m i₀) :=
+  ⟨v13RealLinearNoTargetRows_target_balanced i₀ hm,
+    v13RealLinearNoTargetRows_historyField_balancedConditioning i₀ row⟩
 
 /-! ## Appendix D locked-core adapter for the real spine -/
 
@@ -2148,8 +2311,8 @@ def realM4LiftLedger : List RealM4LiftLedgerRow := [
   {
     item := "admissibleHistories"
     status := .partialConstructionTransferred
-    checkedName := "v13RealLinearNoTargetRows_historyField_balancedConditioning"
-    note := "The adjusted real no-target-rows row history field has balanced conditioning for the target bit; full M4 histories still need manuscript-history atoms and the paired balance proof."
+    checkedName := "v13RealLinearNoTargetRows_historyField_admissible"
+    note := "The adjusted real no-target-rows row history field has the balanced-bit and balanced-conditioning pair; full M4 histories still need manuscript-history atom identification and connection."
   },
   {
     item := "realCompressionLowerFramework"
