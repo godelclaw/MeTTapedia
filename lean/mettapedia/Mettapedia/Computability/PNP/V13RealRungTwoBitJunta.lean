@@ -5810,6 +5810,182 @@ noncomputable instance
   unfold V13RealLinearNoTargetSequentialPrefixWorldSet
   infer_instance
 
+/-- A canonical row view extracted from an ordered prefix for a row that occurs
+in that prefix.  Repeated reads are coherent on realized prefixes; this choice
+only fixes a representative occurrence for the conditioned map class below. -/
+noncomputable def v13RealLinearSequentialPrefixTranscriptVectorRowView
+    {m n : Nat} (pref : V13RealLinearSequentialPrefixTranscriptVector m n)
+    (row :
+      {row : Fin m //
+        row ∈ v13RealLinearSequentialPrefixTranscriptVectorRows pref}) :
+    V13RealLinearRowView m := by
+  classical
+  let transcript := v13RealLinearSequentialPrefixTranscriptVectorToList pref
+  have hrowFinset : row.1 ∈ (transcript.map Prod.fst).toFinset := by
+    exact row.2
+  have hrowMap : row.1 ∈ transcript.map Prod.fst :=
+    List.mem_toFinset.mp hrowFinset
+  let entry := Classical.choose (List.mem_map.mp hrowMap)
+  exact entry.2
+
+theorem v13RealLinearSequentialPrefixTranscriptVectorRowView_spec
+    {m n : Nat} (pref : V13RealLinearSequentialPrefixTranscriptVector m n)
+    (row :
+      {row : Fin m //
+        row ∈ v13RealLinearSequentialPrefixTranscriptVectorRows pref}) :
+    ∃ entry : Fin m × V13RealLinearRowView m,
+      entry ∈ v13RealLinearSequentialPrefixTranscriptVectorToList pref ∧
+        entry.1 = row.1 ∧
+        v13RealLinearSequentialPrefixTranscriptVectorRowView pref row =
+          entry.2 := by
+  classical
+  let transcript := v13RealLinearSequentialPrefixTranscriptVectorToList pref
+  have hrowFinset : row.1 ∈ (transcript.map Prod.fst).toFinset := by
+    exact row.2
+  have hrowMap : row.1 ∈ transcript.map Prod.fst :=
+    List.mem_toFinset.mp hrowFinset
+  let entry := Classical.choose (List.mem_map.mp hrowMap)
+  have hentry := Classical.choose_spec (List.mem_map.mp hrowMap)
+  exact ⟨entry, hentry.1, hentry.2, rfl⟩
+
+/-- Projection of a fixed ordered-prefix world class to its no-target maps. -/
+abbrev V13RealLinearNoTargetSequentialPrefixMapClass
+    {m q : Nat} (i₀ : Fin m)
+    (observer : V13RealLinearSequentialRowObserver m q) (t : Fin q)
+    (pref :
+      V13RealLinearSequentialPrefixTranscriptVector m (t : Nat)) :=
+  {A : V13RealLinearNoTargetRowsMap m i₀ //
+    ∃ x : F2Vec m,
+      v13RealLinearSequentialPrefixTranscriptVectorOf observer
+          (v13RealLinearPublicInput
+            ({ x := x, A := A.val } : V13RealLinearWorld m))
+          (t : Nat) =
+        pref}
+
+noncomputable instance
+    {m q : Nat} (i₀ : Fin m)
+    (observer : V13RealLinearSequentialRowObserver m q) (t : Fin q)
+    (pref :
+      V13RealLinearSequentialPrefixTranscriptVector m (t : Nat)) :
+    Fintype
+      (V13RealLinearNoTargetSequentialPrefixMapClass
+        i₀ observer t pref) := by
+  classical
+  unfold V13RealLinearNoTargetSequentialPrefixMapClass
+  infer_instance
+
+noncomputable def v13RealLinearNoTargetSequentialPrefixMapClassWitness
+    {m q : Nat} {i₀ : Fin m}
+    {observer : V13RealLinearSequentialRowObserver m q} {t : Fin q}
+    {pref :
+      V13RealLinearSequentialPrefixTranscriptVector m (t : Nat)}
+    (A :
+      V13RealLinearNoTargetSequentialPrefixMapClass
+        i₀ observer t pref) : F2Vec m :=
+  Classical.choose A.property
+
+theorem v13RealLinearNoTargetSequentialPrefixMapClassWitness_property
+    {m q : Nat} {i₀ : Fin m}
+    {observer : V13RealLinearSequentialRowObserver m q} {t : Fin q}
+    {pref :
+      V13RealLinearSequentialPrefixTranscriptVector m (t : Nat)}
+    (A :
+      V13RealLinearNoTargetSequentialPrefixMapClass
+        i₀ observer t pref) :
+    v13RealLinearSequentialPrefixTranscriptVectorOf observer
+        (v13RealLinearPublicInput
+          ({ x := v13RealLinearNoTargetSequentialPrefixMapClassWitness A,
+             A := A.val.val } : V13RealLinearWorld m))
+        (t : Nat) =
+      pref :=
+  Classical.choose_spec A.property
+
+theorem
+    v13RealLinearNoTargetSequentialPrefixMapClass_rowView_eq
+    {m q : Nat} {i₀ : Fin m}
+    {observer : V13RealLinearSequentialRowObserver m q} {t : Fin q}
+    {pref :
+      V13RealLinearSequentialPrefixTranscriptVector m (t : Nat)}
+    (A :
+      V13RealLinearNoTargetSequentialPrefixMapClass
+        i₀ observer t pref)
+    (row :
+      {row : Fin m //
+        row ∈ v13RealLinearSequentialPrefixTranscriptVectorRows pref}) :
+    v13RealLinearSequentialPrefixTranscriptVectorRowView pref row =
+      v13RealLinearRowView row.1
+        (v13RealLinearPublicInput
+          ({ x := v13RealLinearNoTargetSequentialPrefixMapClassWitness A,
+             A := A.val.val } : V13RealLinearWorld m)) := by
+  classical
+  rcases
+      v13RealLinearSequentialPrefixTranscriptVectorRowView_spec pref row with
+    ⟨entry, hentry, hentryRow, hrowView⟩
+  have hpref :=
+    v13RealLinearNoTargetSequentialPrefixMapClassWitness_property A
+  have hlist :
+      v13RealLinearSequentialPrefixTranscriptVectorToList pref =
+        v13RealLinearSequentialRowPrefixTranscriptOf observer
+          (v13RealLinearPublicInput
+            ({ x := v13RealLinearNoTargetSequentialPrefixMapClassWitness A,
+               A := A.val.val } : V13RealLinearWorld m))
+          (t : Nat) := by
+    have h :=
+      congrArg v13RealLinearSequentialPrefixTranscriptVectorToList
+        hpref.symm
+    simpa [v13RealLinearSequentialPrefixTranscriptVectorOf_toList]
+      using h
+  have hentryActual :
+      entry ∈
+        v13RealLinearSequentialRowPrefixTranscriptOf observer
+          (v13RealLinearPublicInput
+            ({ x := v13RealLinearNoTargetSequentialPrefixMapClassWitness A,
+               A := A.val.val } : V13RealLinearWorld m))
+          (t : Nat) := by
+    simpa [hlist] using hentry
+  have hviewActual :=
+    v13RealLinearSequentialRowPrefixTranscriptOf_mem_view
+      observer
+      (v13RealLinearPublicInput
+        ({ x := v13RealLinearNoTargetSequentialPrefixMapClassWitness A,
+           A := A.val.val } : V13RealLinearWorld m))
+      (t : Nat) hentryActual
+  calc
+    v13RealLinearSequentialPrefixTranscriptVectorRowView pref row =
+        entry.2 := hrowView
+    _ =
+        v13RealLinearRowView entry.1
+          (v13RealLinearPublicInput
+            ({ x := v13RealLinearNoTargetSequentialPrefixMapClassWitness A,
+               A := A.val.val } : V13RealLinearWorld m)) := hviewActual
+    _ =
+        v13RealLinearRowView row.1
+          (v13RealLinearPublicInput
+            ({ x := v13RealLinearNoTargetSequentialPrefixMapClassWitness A,
+               A := A.val.val } : V13RealLinearWorld m)) := by
+          rw [hentryRow]
+
+theorem
+    v13RealLinearNoTargetSequentialPrefixMapClass_rowFunctional_eq
+    {m q : Nat} {i₀ : Fin m}
+    {observer : V13RealLinearSequentialRowObserver m q} {t : Fin q}
+    {pref :
+      V13RealLinearSequentialPrefixTranscriptVector m (t : Nat)}
+    (A :
+      V13RealLinearNoTargetSequentialPrefixMapClass
+        i₀ observer t pref)
+    (row :
+      {row : Fin m //
+        row ∈ v13RealLinearSequentialPrefixTranscriptVectorRows pref})
+    (w : F2Vec m) :
+    A.val.val.toEquiv w row.1 =
+      (v13RealLinearSequentialPrefixTranscriptVectorRowView pref row).1 w := by
+  have hview :=
+    v13RealLinearNoTargetSequentialPrefixMapClass_rowView_eq A row
+  have hfirst := congrArg Prod.fst hview
+  simpa [v13RealLinearRowView, v13RealLinearPublicInput] using
+    (congrFun hfirst w).symm
+
 noncomputable def
     v13RealLinearNoTargetSequentialWorldEquivSigmaPrefixWorldSet
     {m q : Nat} (i₀ : Fin m)
