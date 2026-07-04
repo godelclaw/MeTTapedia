@@ -7774,6 +7774,20 @@ abbrev
         (v13RealLinearNoTargetRowsSequentialQRowTrace
           i₀ observer omega.val.val) s}
 
+/-- Global corrected true-first hit event.  This is the step-indexed hit world
+set filtered by the local absence of earlier trace-coset hits. -/
+abbrev
+    V13RealLinearNoTargetSequentialTraceTrueFirstCosetHitWorldSet
+    {m q : Nat} (i₀ : Fin m)
+    (observer : V13RealLinearSequentialRowObserver m q) (t : Fin q) :=
+  {omega :
+      V13RealLinearNoTargetSequentialTraceFirstCosetHitWorldSet
+        i₀ observer t //
+    ∀ s : Fin (t : Nat),
+      ¬ V13RealLinearRowTraceCosetHit omega.val.1.val i₀
+        (v13RealLinearNoTargetRowsSequentialQRowTrace
+          i₀ observer omega.val) s}
+
 noncomputable instance
     {m q : Nat} (i₀ : Fin m)
     (observer : V13RealLinearSequentialRowObserver m q) (t : Fin q)
@@ -7785,6 +7799,17 @@ noncomputable instance
   classical
   unfold
     V13RealLinearNoTargetSequentialTraceTrueFirstCosetHitOrderedPrefixWorldSet
+  infer_instance
+
+noncomputable instance
+    {m q : Nat} (i₀ : Fin m)
+    (observer : V13RealLinearSequentialRowObserver m q) (t : Fin q) :
+    Fintype
+      (V13RealLinearNoTargetSequentialTraceTrueFirstCosetHitWorldSet
+        i₀ observer t) := by
+  classical
+  unfold
+    V13RealLinearNoTargetSequentialTraceTrueFirstCosetHitWorldSet
   infer_instance
 
 noncomputable def
@@ -7831,6 +7856,57 @@ theorem
       v13RealLinearSequentialPrefixTranscriptVectorRows pref :=
   v13RealLinearNoTargetSequentialTraceFirstCosetHitOrderedPrefixWorldSet_hitRow_not_mem_of_noPrior
     i₀ observer t pref omega.val omega.property
+
+noncomputable def
+    v13RealLinearNoTargetSequentialTraceTrueFirstCosetHitWorldSetEquivSigmaOrderedPrefix
+    {m q : Nat} (i₀ : Fin m)
+    (observer : V13RealLinearSequentialRowObserver m q) (t : Fin q) :
+    V13RealLinearNoTargetSequentialTraceTrueFirstCosetHitWorldSet
+        i₀ observer t ≃
+      (Σ pref :
+          V13RealLinearSequentialPrefixTranscriptVector m (t : Nat),
+        V13RealLinearNoTargetSequentialTraceTrueFirstCosetHitOrderedPrefixWorldSet
+          i₀ observer t pref) where
+  toFun omega := by
+    classical
+    let pref :=
+      v13RealLinearSequentialPrefixTranscriptVectorOf observer
+        (v13RealLinearPublicInput
+          ({ x := omega.val.val.2, A := omega.val.val.1.val } :
+            V13RealLinearWorld m))
+        (t : Nat)
+    exact ⟨pref, ⟨⟨omega.val, rfl⟩, omega.property⟩⟩
+  invFun cell := by
+    rcases cell with ⟨_pref, omega⟩
+    exact ⟨omega.val.val, omega.property⟩
+  left_inv _omega := by
+    rfl
+  right_inv cell := by
+    rcases cell with ⟨pref, omega⟩
+    rcases omega with ⟨omega, hprior⟩
+    rcases omega with ⟨omega, hpref⟩
+    cases hpref
+    rfl
+
+theorem
+    v13RealLinearNoTargetSequentialTraceTrueFirstCosetHitWorldSet_card_eq_sum_orderedPrefix
+    {m q : Nat} (i₀ : Fin m)
+    (observer : V13RealLinearSequentialRowObserver m q) (t : Fin q) :
+    Fintype.card
+        (V13RealLinearNoTargetSequentialTraceTrueFirstCosetHitWorldSet
+          i₀ observer t) =
+      ∑ pref :
+          V13RealLinearSequentialPrefixTranscriptVector m (t : Nat),
+        Fintype.card
+          (V13RealLinearNoTargetSequentialTraceTrueFirstCosetHitOrderedPrefixWorldSet
+            i₀ observer t pref) := by
+  classical
+  have hcard :=
+    Fintype.card_congr
+      (v13RealLinearNoTargetSequentialTraceTrueFirstCosetHitWorldSetEquivSigmaOrderedPrefix
+        i₀ observer t)
+  rw [Fintype.card_sigma] at hcard
+  exact hcard
 
 theorem
     V13RealLinearNoTargetRowsSequentialTraceCosetHitOrderedPrefixFreshnessBridge_not_of_generated_reread_prefix
@@ -8513,6 +8589,194 @@ theorem
   exact
     v13RealLinearNoTargetSequentialTraceTrueFirstCosetHitOrderedPrefixWorldSet_card_mul_two_pow_le_prefixWorldSet
       i₀ observer t pref
+
+/-- Ordered-prefix packing surface for the corrected true-first event. -/
+def
+    V13RealLinearNoTargetRowsSequentialTraceTrueFirstCosetHitOrderedPrefixPackingBound
+    {m q : Nat} (i₀ : Fin m)
+    (observer : V13RealLinearSequentialRowObserver m q) : Prop :=
+  ∀ t : Fin q,
+    (∑ pref :
+        V13RealLinearSequentialPrefixTranscriptVector m (t : Nat),
+      Fintype.card
+        (V13RealLinearNoTargetSequentialTraceTrueFirstCosetHitOrderedPrefixWorldSet
+          i₀ observer t pref)) *
+      2 ^ m ≤
+    (4 * 2 ^ (t : Nat)) *
+      Fintype.card
+        (V13RealLinearAdaptiveQRowWorld m
+          (V13RealLinearNoTargetRowsMap m i₀))
+
+theorem
+    V13RealLinearNoTargetRowsSequentialTraceTrueFirstCosetHitOrderedPrefixPackingBound_of_conditionedCounting
+    {m q : Nat} (i₀ : Fin m)
+    (observer : V13RealLinearSequentialRowObserver m q)
+    (hconditioned :
+      V13RealLinearNoTargetRowsSequentialTraceTrueFirstCosetHitOrderedPrefixConditionedCountingBound
+        i₀ observer) :
+    V13RealLinearNoTargetRowsSequentialTraceTrueFirstCosetHitOrderedPrefixPackingBound
+      i₀ observer := by
+  classical
+  intro t
+  let Hit := fun pref :
+      V13RealLinearSequentialPrefixTranscriptVector m (t : Nat) =>
+    Fintype.card
+      (V13RealLinearNoTargetSequentialTraceTrueFirstCosetHitOrderedPrefixWorldSet
+        i₀ observer t pref)
+  let Class := fun pref :
+      V13RealLinearSequentialPrefixTranscriptVector m (t : Nat) =>
+    Fintype.card
+      (V13RealLinearNoTargetSequentialPrefixWorldSet
+        i₀ observer t pref)
+  let Q := 4 * 2 ^ (t : Nat)
+  have hconditionedSum :
+      (∑ pref :
+          V13RealLinearSequentialPrefixTranscriptVector m (t : Nat),
+        Hit pref) *
+        2 ^ m ≤
+      ∑ pref :
+          V13RealLinearSequentialPrefixTranscriptVector m (t : Nat),
+        (4 *
+            2 ^ (v13RealLinearSequentialPrefixTranscriptVectorRows pref).card) *
+          Class pref := by
+    calc
+      (∑ pref :
+          V13RealLinearSequentialPrefixTranscriptVector m (t : Nat),
+        Hit pref) *
+        2 ^ m =
+          ∑ pref :
+              V13RealLinearSequentialPrefixTranscriptVector m (t : Nat),
+            Hit pref * 2 ^ m := by
+            rw [Finset.sum_mul]
+      _ ≤
+          ∑ pref :
+              V13RealLinearSequentialPrefixTranscriptVector m (t : Nat),
+            (4 *
+                2 ^ (v13RealLinearSequentialPrefixTranscriptVectorRows pref).card) *
+              Class pref := by
+            apply Finset.sum_le_sum
+            intro pref _hpref
+            simpa [Hit, Class] using hconditioned t pref
+  have htoStep :
+      (∑ pref :
+          V13RealLinearSequentialPrefixTranscriptVector m (t : Nat),
+        (4 *
+            2 ^ (v13RealLinearSequentialPrefixTranscriptVectorRows pref).card) *
+          Class pref) ≤
+      ∑ pref :
+          V13RealLinearSequentialPrefixTranscriptVector m (t : Nat),
+        Q * Class pref := by
+    apply Finset.sum_le_sum
+    intro pref _hpref
+    have hrows :
+        (v13RealLinearSequentialPrefixTranscriptVectorRows pref).card ≤
+          (t : Nat) :=
+      v13RealLinearSequentialPrefixTranscriptVectorRows_card_le pref
+    have hpow :
+        2 ^ (v13RealLinearSequentialPrefixTranscriptVectorRows pref).card ≤
+          2 ^ (t : Nat) :=
+      Nat.pow_le_pow_right (by norm_num : 0 < 2) hrows
+    have hcoef :
+        4 *
+            2 ^ (v13RealLinearSequentialPrefixTranscriptVectorRows pref).card ≤
+          Q := by
+      exact Nat.mul_le_mul_left 4 hpow
+    exact Nat.mul_le_mul_right (Class pref) hcoef
+  have hclassSum :
+      (∑ pref :
+          V13RealLinearSequentialPrefixTranscriptVector m (t : Nat),
+        Q * Class pref) =
+      Q *
+        Fintype.card
+          (V13RealLinearAdaptiveQRowWorld m
+            (V13RealLinearNoTargetRowsMap m i₀)) := by
+    calc
+      (∑ pref :
+          V13RealLinearSequentialPrefixTranscriptVector m (t : Nat),
+        Q * Class pref) =
+          Q *
+            ∑ pref :
+                V13RealLinearSequentialPrefixTranscriptVector m (t : Nat),
+              Class pref := by
+            rw [← Finset.mul_sum]
+      _ =
+          Q *
+            Fintype.card
+              (V13RealLinearAdaptiveQRowWorld m
+                (V13RealLinearNoTargetRowsMap m i₀)) := by
+            rw [
+              v13RealLinearNoTargetSequentialPrefixWorldSet_sum_card_eq_world
+                i₀ observer t]
+  exact
+    (hconditionedSum.trans htoStep).trans_eq
+      (by
+        simpa [Hit, Class, Q,
+          V13RealLinearNoTargetRowsSequentialTraceTrueFirstCosetHitOrderedPrefixPackingBound]
+          using hclassSum)
+
+theorem
+    V13RealLinearNoTargetRowsSequentialTraceTrueFirstCosetHitOrderedPrefixPackingBound_unconditional
+    {m q : Nat} (i₀ : Fin m)
+    (observer : V13RealLinearSequentialRowObserver m q) :
+    V13RealLinearNoTargetRowsSequentialTraceTrueFirstCosetHitOrderedPrefixPackingBound
+      i₀ observer :=
+  V13RealLinearNoTargetRowsSequentialTraceTrueFirstCosetHitOrderedPrefixPackingBound_of_conditionedCounting
+    i₀ observer
+    (V13RealLinearNoTargetRowsSequentialTraceTrueFirstCosetHitOrderedPrefixConditionedCountingBound_unconditional
+      i₀ observer)
+
+/-- Global counting surface for the corrected true-first event. -/
+def
+    V13RealLinearNoTargetRowsSequentialTraceTrueFirstCosetHitCountingBound
+    {m q : Nat} (i₀ : Fin m)
+    (observer : V13RealLinearSequentialRowObserver m q) : Prop :=
+  ∀ t : Fin q,
+    Fintype.card
+        (V13RealLinearNoTargetSequentialTraceTrueFirstCosetHitWorldSet
+          i₀ observer t) *
+      2 ^ m ≤
+    (4 * 2 ^ (t : Nat)) *
+      Fintype.card
+        (V13RealLinearAdaptiveQRowWorld m
+          (V13RealLinearNoTargetRowsMap m i₀))
+
+theorem
+    V13RealLinearNoTargetRowsSequentialTraceTrueFirstCosetHitCountingBound_of_orderedPrefixPacking
+    {m q : Nat} (i₀ : Fin m)
+    (observer : V13RealLinearSequentialRowObserver m q)
+    (hpack :
+      V13RealLinearNoTargetRowsSequentialTraceTrueFirstCosetHitOrderedPrefixPackingBound
+        i₀ observer) :
+    V13RealLinearNoTargetRowsSequentialTraceTrueFirstCosetHitCountingBound
+      i₀ observer := by
+  classical
+  intro t
+  change
+    Fintype.card
+        (V13RealLinearNoTargetSequentialTraceTrueFirstCosetHitWorldSet
+          i₀ observer t) *
+      2 ^ m ≤
+    (4 * 2 ^ (t : Nat)) *
+      Fintype.card
+        (V13RealLinearAdaptiveQRowWorld m
+          (V13RealLinearNoTargetRowsMap m i₀))
+  rw [
+    v13RealLinearNoTargetSequentialTraceTrueFirstCosetHitWorldSet_card_eq_sum_orderedPrefix
+      i₀ observer t]
+  simpa
+    [V13RealLinearNoTargetRowsSequentialTraceTrueFirstCosetHitOrderedPrefixPackingBound]
+    using hpack t
+
+theorem
+    V13RealLinearNoTargetRowsSequentialTraceTrueFirstCosetHitCountingBound_unconditional
+    {m q : Nat} (i₀ : Fin m)
+    (observer : V13RealLinearSequentialRowObserver m q) :
+    V13RealLinearNoTargetRowsSequentialTraceTrueFirstCosetHitCountingBound
+      i₀ observer :=
+  V13RealLinearNoTargetRowsSequentialTraceTrueFirstCosetHitCountingBound_of_orderedPrefixPacking
+    i₀ observer
+    (V13RealLinearNoTargetRowsSequentialTraceTrueFirstCosetHitOrderedPrefixPackingBound_unconditional
+      i₀ observer)
 
 theorem
     V13RealLinearNoTargetRowsSequentialTraceCosetHitOrderedPrefixConditionedCountingBound_not_of_generated_reread_prefix_gap
