@@ -1568,6 +1568,20 @@ example {m q : Nat} (i₀ : Fin m)
   V13RealLinearNoTargetRowsSequentialTraceCosetHitActiveFixedMapTranscriptCylinderCapacityBound_of_orderedPrefixConditionedCounting
     i₀ observer hconditioned
 
+example {m : Nat} (i₀ : Fin m) (hm : 1 < m) :
+    V13RealLinearRowsGenerateTarget
+      (v13RealLinearNoTargetRowShear i₀ hm)
+      ({i₀, v13FinSpare i₀ hm} : Finset (Fin m)) i₀ :=
+  v13RealLinearNoTargetRowShear_pairRowsGenerateTarget i₀ hm
+
+example {m : Nat} (i₀ : Fin m) (hm : 4 < m) :
+    ¬ V13RealLinearNoTargetRowsSequentialTraceCosetHitOrderedPrefixConditionedCountingBound
+      i₀
+      (v13RealLinearNoTargetRowShearGeneratedRereadObserver i₀
+        (Nat.lt_trans (by norm_num : 1 < 4) hm)) :=
+  V13RealLinearNoTargetRowsSequentialTraceCosetHitOrderedPrefixConditionedCountingBound_not_of_rowShear_generated_reread
+    i₀ hm
+
 #print axioms v13RealLinearNoTargetSequentialTraceFirstCosetHitFixedMapTranscriptCylinder_newCapture_or_priorNewCapture
 #print axioms v13RealLinearNoTargetSequentialTraceFirstCosetHitFixedMapTranscriptCylinder_existing_priorNewCapture
 #print axioms v13RealLinearRowTraceCosetHit_get_not_mem_of_noPrior
@@ -1587,6 +1601,10 @@ example {m q : Nat} (i₀ : Fin m)
 #print axioms V13RealLinearNoTargetRowsSequentialTraceCosetHitNoPriorBridge_not_of_generated_reread_prefix
 #print axioms V13RealLinearNoTargetRowsSequentialTraceCosetHitOrderedPrefixFreshnessBridge_of_noPrior
 #print axioms V13RealLinearNoTargetRowsSequentialTraceCosetHitOrderedPrefixConditionedCountingBound_not_of_generated_reread_prefix_gap
+#print axioms v13RealLinearNoTargetRowShear_pairRowsGenerateTarget
+#print axioms v13RealLinearNoTargetRowShearGeneratedRereadObserver_prefixRows_two
+#print axioms v13RealLinearNoTargetRowShearGeneratedRereadObserver_nextRow_two
+#print axioms V13RealLinearNoTargetRowsSequentialTraceCosetHitOrderedPrefixConditionedCountingBound_not_of_rowShear_generated_reread
 #print axioms v13RealLinearNoTargetSequentialPrefixWorldSet_sum_card_eq_world
 #print axioms v13RealLinearNoTargetSequentialPrefixPinnedSupportMapClass_card_mul_two_pow_le_prefixMapClass
 #print axioms v13RealLinearNoTargetSequentialPrefixHitMapClass_card_mul_two_pow_le_prefixMapClass

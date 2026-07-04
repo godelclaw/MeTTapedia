@@ -8372,6 +8372,171 @@ theorem
   exact (not_lt_of_ge hPM_le_CP) hCP_lt_PM
 
 theorem
+    v13RealLinearNoTargetRowShear_pairRowsGenerateTarget
+    {m : Nat} (i₀ : Fin m) (hm : 1 < m) :
+    V13RealLinearRowsGenerateTarget
+      (v13RealLinearNoTargetRowShear i₀ hm)
+      ({i₀, v13FinSpare i₀ hm} : Finset (Fin m)) i₀ := by
+  classical
+  let spare := v13FinSpare i₀ hm
+  have hspare : spare ≠ i₀ := by
+    simpa [spare] using v13FinSpare_ne i₀ hm
+  rw [v13RealLinearRowsGenerateTarget_iff_targetFunctional_mem_span]
+  have hi₀ :
+      v13RealLinearRowFunctional (v13RealLinearNoTargetRowShear i₀ hm) i₀ ∈
+        V13RealLinearRowsFunctionalSpan
+          (v13RealLinearNoTargetRowShear i₀ hm)
+          ({i₀, spare} : Finset (Fin m)) := by
+    unfold V13RealLinearRowsFunctionalSpan
+    exact Submodule.subset_span
+      ⟨⟨i₀, by simp⟩, by simp⟩
+  have hsp :
+      v13RealLinearRowFunctional (v13RealLinearNoTargetRowShear i₀ hm) spare ∈
+        V13RealLinearRowsFunctionalSpan
+          (v13RealLinearNoTargetRowShear i₀ hm)
+          ({i₀, spare} : Finset (Fin m)) := by
+    unfold V13RealLinearRowsFunctionalSpan
+    exact Submodule.subset_span
+      ⟨⟨spare, by simp⟩, by simp [spare]⟩
+  have hsum :
+      v13RealLinearRowFunctional (v13RealLinearNoTargetRowShear i₀ hm) i₀ +
+          v13RealLinearRowFunctional (v13RealLinearNoTargetRowShear i₀ hm) spare =
+        v13RealLinearTargetFunctional i₀ := by
+    apply LinearMap.ext
+    intro w
+    have hzeroAt :
+        v13RealLinearZeroAtShearSum i₀
+            (⟨v13RealLinearSingleBit spare, by
+              have hne : i₀ ≠ spare := fun h => hspare h.symm
+              simp [v13RealLinearSingleBit, hne]⟩ :
+              V13RealLinearZeroAt i₀) w =
+          w spare :=
+      v13RealLinearZeroAtShearSum_singleBit hspare w
+    simp [v13RealLinearRowFunctional, v13RealLinearTargetFunctional,
+      v13RealLinearNoTargetRowShear, v13RealLinearZeroAtRowShear,
+      hspare, hzeroAt, spare]
+    exact f2_add_right_self (w i₀) (w (v13FinSpare i₀ hm))
+  rw [← hsum]
+  exact Submodule.add_mem _ hi₀ hsp
+
+noncomputable def
+    v13RealLinearNoTargetRowShearGeneratedRereadObserver
+    {m : Nat} (i₀ : Fin m) (hm : 1 < m) :
+    V13RealLinearSequentialRowObserver m 3 where
+  chooseRow transcript :=
+    match transcript.length with
+    | 0 => i₀
+    | 1 => v13FinSpare i₀ hm
+    | _ + 2 => i₀
+  decideFromTranscript := fun _ => 0
+
+theorem
+    v13RealLinearNoTargetRowShearGeneratedRereadObserver_prefixRows_two
+    {m : Nat} (i₀ : Fin m) (hm : 1 < m)
+    (publicInput : V13RealLinearPublic m) :
+    v13RealLinearSequentialPrefixTranscriptVectorRows
+        (v13RealLinearSequentialPrefixTranscriptVectorOf
+          (v13RealLinearNoTargetRowShearGeneratedRereadObserver i₀ hm)
+          publicInput 2) =
+      ({i₀, v13FinSpare i₀ hm} : Finset (Fin m)) := by
+  classical
+  ext row
+  simp [v13RealLinearSequentialPrefixTranscriptVectorRows,
+    v13RealLinearSequentialPrefixTranscriptVectorToList,
+    v13RealLinearSequentialPrefixTranscriptVectorOf,
+    v13RealLinearSequentialRowTranscriptRows,
+    v13RealLinearSequentialRowPrefixTranscriptOf,
+    v13RealLinearSequentialRowRunAux,
+    v13RealLinearNoTargetRowShearGeneratedRereadObserver]
+
+theorem
+    v13RealLinearNoTargetRowShearGeneratedRereadObserver_nextRow_two
+    {m : Nat} (i₀ : Fin m) (hm : 1 < m)
+    (publicInput : V13RealLinearPublic m) :
+    v13RealLinearSequentialPrefixTranscriptVectorNextRow
+        (v13RealLinearNoTargetRowShearGeneratedRereadObserver i₀ hm)
+        (v13RealLinearSequentialPrefixTranscriptVectorOf
+          (v13RealLinearNoTargetRowShearGeneratedRereadObserver i₀ hm)
+          publicInput 2) =
+      i₀ := by
+  classical
+  simp [v13RealLinearSequentialPrefixTranscriptVectorNextRow,
+    v13RealLinearSequentialPrefixTranscriptVectorOf_toList,
+    v13RealLinearSequentialRowPrefixTranscriptOf,
+    v13RealLinearSequentialRowRunAux,
+    v13RealLinearNoTargetRowShearGeneratedRereadObserver]
+
+theorem
+    V13RealLinearNoTargetRowsSequentialTraceCosetHitOrderedPrefixConditionedCountingBound_not_of_rowShear_generated_reread
+    {m : Nat} (i₀ : Fin m) (hm : 4 < m) :
+    ¬ V13RealLinearNoTargetRowsSequentialTraceCosetHitOrderedPrefixConditionedCountingBound
+      i₀
+      (v13RealLinearNoTargetRowShearGeneratedRereadObserver i₀
+        (Nat.lt_trans (by norm_num : 1 < 4) hm)) := by
+  classical
+  let hm₁ : 1 < m := Nat.lt_trans (by norm_num : 1 < 4) hm
+  let observer :=
+    v13RealLinearNoTargetRowShearGeneratedRereadObserver i₀ hm₁
+  let A : V13RealLinearNoTargetRowsMap m i₀ :=
+    ⟨v13RealLinearNoTargetRowShear i₀ hm₁,
+      v13RealLinearNoTargetRowShear_targetRows_empty i₀ hm₁⟩
+  let x : F2Vec m := f2ZeroVec m
+  let publicInput :=
+    v13RealLinearPublicInput
+      ({ x := x, A := A.val } : V13RealLinearWorld m)
+  let t : Fin 3 := ⟨2, by norm_num⟩
+  let pref : V13RealLinearSequentialPrefixTranscriptVector m (t : Nat) :=
+    v13RealLinearSequentialPrefixTranscriptVectorOf observer publicInput
+      (t : Nat)
+  let omega :
+      V13RealLinearNoTargetSequentialPrefixWorldSet i₀ observer t pref :=
+    ⟨(A, x), by rfl⟩
+  have hrows :
+      v13RealLinearSequentialPrefixTranscriptVectorRows pref =
+        ({i₀, v13FinSpare i₀ hm₁} : Finset (Fin m)) := by
+    simpa [pref, t, observer] using
+      v13RealLinearNoTargetRowShearGeneratedRereadObserver_prefixRows_two
+        i₀ hm₁ publicInput
+  have hnext :
+      v13RealLinearSequentialPrefixTranscriptVectorNextRow observer pref =
+        i₀ := by
+    simpa [pref, t, observer] using
+      v13RealLinearNoTargetRowShearGeneratedRereadObserver_nextRow_two
+        i₀ hm₁ publicInput
+  have hmem :
+      v13RealLinearSequentialPrefixTranscriptVectorNextRow observer pref ∈
+        v13RealLinearSequentialPrefixTranscriptVectorRows pref := by
+    rw [hnext, hrows]
+    simp
+  have hgen :
+      V13RealLinearRowsGenerateTarget omega.val.1.val
+        (v13RealLinearSequentialPrefixTranscriptVectorRows pref) i₀ := by
+    simpa [omega, A, hrows] using
+      v13RealLinearNoTargetRowShear_pairRowsGenerateTarget i₀ hm₁
+  have hcard :
+      (v13RealLinearSequentialPrefixTranscriptVectorRows pref).card = 2 := by
+    rw [hrows]
+    have hi₀ :
+        i₀ ∉ ({v13FinSpare i₀ hm₁} : Finset (Fin m)) := by
+      intro hmem
+      have heq : i₀ = v13FinSpare i₀ hm₁ := by simpa using hmem
+      exact v13FinSpare_ne i₀ hm₁ heq.symm
+    change
+      (insert i₀ ({v13FinSpare i₀ hm₁} : Finset (Fin m))).card = 2
+    rw [Finset.card_insert_of_notMem hi₀]
+    simp
+  have hgap :
+      4 *
+          2 ^ (v13RealLinearSequentialPrefixTranscriptVectorRows pref).card <
+        2 ^ m := by
+    have hpow : 2 ^ 4 < 2 ^ m :=
+      Nat.pow_lt_pow_right (by norm_num : 1 < 2) hm
+    simpa [hcard] using hpow
+  exact
+    V13RealLinearNoTargetRowsSequentialTraceCosetHitOrderedPrefixConditionedCountingBound_not_of_generated_reread_prefix_gap
+      i₀ observer t pref omega hmem hgen hgap
+
+theorem
     V13RealLinearNoTargetRowsSequentialTraceCosetHitOrderedPrefixConditionedCountingBound_of_freshnessBridge
     {m q : Nat} (i₀ : Fin m)
     (observer : V13RealLinearSequentialRowObserver m q)
