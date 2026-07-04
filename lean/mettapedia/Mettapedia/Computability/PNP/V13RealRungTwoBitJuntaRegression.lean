@@ -1574,6 +1574,33 @@ example {m q : Nat} (i₀ : Fin m)
     i₀ observer
 
 example {m q : Nat} (i₀ : Fin m)
+    (observer : V13RealLinearSequentialRowObserver m q) (t : Fin q) :
+    Fintype.card
+        (V13RealLinearNoTargetSequentialTraceTrueFirstCosetHitWorldSet
+          i₀ observer t) =
+      ∑ pref :
+          V13RealLinearSequentialPrefixTranscriptVector m (t : Nat),
+        Fintype.card
+          (V13RealLinearNoTargetSequentialTraceTrueFirstCosetHitOrderedPrefixWorldSet
+            i₀ observer t pref) :=
+  v13RealLinearNoTargetSequentialTraceTrueFirstCosetHitWorldSet_card_eq_sum_orderedPrefix
+    i₀ observer t
+
+example {m q : Nat} (i₀ : Fin m)
+    (observer : V13RealLinearSequentialRowObserver m q) :
+    V13RealLinearNoTargetRowsSequentialTraceTrueFirstCosetHitOrderedPrefixPackingBound
+      i₀ observer :=
+  V13RealLinearNoTargetRowsSequentialTraceTrueFirstCosetHitOrderedPrefixPackingBound_unconditional
+    i₀ observer
+
+example {m q : Nat} (i₀ : Fin m)
+    (observer : V13RealLinearSequentialRowObserver m q) :
+    V13RealLinearNoTargetRowsSequentialTraceTrueFirstCosetHitCountingBound
+      i₀ observer :=
+  V13RealLinearNoTargetRowsSequentialTraceTrueFirstCosetHitCountingBound_unconditional
+    i₀ observer
+
+example {m q : Nat} (i₀ : Fin m)
     (observer : V13RealLinearSequentialRowObserver m q)
     (hconditioned :
       V13RealLinearNoTargetRowsSequentialTraceCosetHitOrderedPrefixConditionedCountingBound
@@ -1720,6 +1747,9 @@ example {m : Nat} (i₀ : Fin m) (hm : 4 < m) :
 #print axioms v13RealLinearNoTargetSequentialTraceTrueFirstCosetHitOrderedPrefixWorldSet_hitRow_not_mem
 #print axioms v13RealLinearNoTargetSequentialTraceTrueFirstCosetHitOrderedPrefixWorldSet_card_mul_two_pow_le_prefixWorldSet
 #print axioms V13RealLinearNoTargetRowsSequentialTraceTrueFirstCosetHitOrderedPrefixConditionedCountingBound_unconditional
+#print axioms v13RealLinearNoTargetSequentialTraceTrueFirstCosetHitWorldSet_card_eq_sum_orderedPrefix
+#print axioms V13RealLinearNoTargetRowsSequentialTraceTrueFirstCosetHitOrderedPrefixPackingBound_unconditional
+#print axioms V13RealLinearNoTargetRowsSequentialTraceTrueFirstCosetHitCountingBound_unconditional
 #print axioms v13RealLinearNoTargetSequentialTraceFirstCosetHitActiveFixedMapTranscriptCylinder_generatedPrefix_rows_eq
 #print axioms v13RealLinearSequentialPrefixTranscriptVectorOf_init
 #print axioms v13RealLinearSequentialPrefixTranscriptVectorOf_lastRow
