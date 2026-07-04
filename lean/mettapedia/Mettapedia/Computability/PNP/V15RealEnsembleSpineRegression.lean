@@ -36,6 +36,8 @@ set_option autoImplicit false
 #check realM4_lockedMessageRigidity_of_publicMessageInvariant
 #check realM4_cnfSingleMessageReadout_of_publicMessageInvariant
 #check realM4_semanticI26_of_publicMessageInvariant
+#check realM4_exists_correctForAllSatSearchOutputs_of_publicMessageInvariant
+#check realM4_supportedArbitraryOutputSATSearchCorrect_of_publicMessageInvariant
 #check RealM4CNFWorld
 #check RealM4CNFWitness
 #check RealM4CNFWorld.toWitness
@@ -85,6 +87,8 @@ set_option autoImplicit false
 #print axioms realM4_lockedMessageRigidity_of_publicMessageInvariant
 #print axioms realM4_cnfSingleMessageReadout_of_publicMessageInvariant
 #print axioms realM4_semanticI26_of_publicMessageInvariant
+#print axioms realM4_exists_correctForAllSatSearchOutputs_of_publicMessageInvariant
+#print axioms realM4_supportedArbitraryOutputSATSearchCorrect_of_publicMessageInvariant
 #print axioms RealM4CNFWorld
 #print axioms RealM4CNFWitness
 #print axioms RealM4CNFWorld.toWitness

@@ -336,6 +336,37 @@ theorem realM4_semanticI26_of_publicMessageInvariant
   D.semantic_i26_items_of_lockedMessageRigidity
     (D.core.lockedMessageRigidity_of_publicMessageInvariant hinvariant) hY
 
+theorem realM4_exists_correctForAllSatSearchOutputs_of_publicMessageInvariant
+    {PublicLock : Type u} {Quotient : Type v}
+    {LockAux : Type w} {Message : Type z}
+    {Public : Type x} {Var : Public -> Type y}
+    {Witness : Public -> Type y}
+    (D : AppendixICNFReadoutData
+      PublicLock Quotient LockAux Message Public Var Witness)
+    {publicMessage : PublicLock -> Message}
+    (hinvariant : D.core.PublicMessageInvariant publicMessage)
+    {Y : Public} (hY : D.support Y) :
+    ∃ msg : Message,
+      CorrectForAllSatSearchOutputs
+        (ConcreteCNF.IsSatFormula (D.formula Y)) (D.projection Y) msg :=
+  D.exists_correctForAllSatSearchOutputs_of_lockedMessageRigidity
+    (D.core.lockedMessageRigidity_of_publicMessageInvariant hinvariant) hY
+
+theorem realM4_supportedArbitraryOutputSATSearchCorrect_of_publicMessageInvariant
+    {PublicLock : Type u} {Quotient : Type v}
+    {LockAux : Type w} {Message : Type z}
+    {Public : Type x} {Var : Public -> Type y}
+    {Witness : Public -> Type y}
+    (D : AppendixICNFReadoutData
+      PublicLock Quotient LockAux Message Public Var Witness)
+    {publicMessage : PublicLock -> Message}
+    (hinvariant : D.core.PublicMessageInvariant publicMessage) :
+    D.toManuscriptCNFReadoutData.SupportedArbitraryOutputSATSearchCorrect := by
+  intro Y hY
+  exact
+    realM4_exists_correctForAllSatSearchOutputs_of_publicMessageInvariant
+      D hinvariant hY
+
 /-! ## Appendix I CNF adapter for the real spine -/
 
 /-- A supported public CNF instance together with a satisfying assignment. -/
@@ -559,6 +590,12 @@ def realM4LiftLedger : List RealM4LiftLedgerRow := [
     note := "Given the same public-message invariant, satisfying Appendix I CNF assignments form the real single-message SAT spine."
   },
   {
+    item := "appendixISATSearchReadoutAdapter"
+    status := .constructionTransferred
+    checkedName := "realM4_supportedArbitraryOutputSATSearchCorrect_of_publicMessageInvariant"
+    note := "Given the same public-message invariant, the Appendix I projection is correct for every satisfying assignment that SAT search may return."
+  },
+  {
     item := "deterministicReadoutOnly"
     status := .blockedByCounterexample
     checkedName := "lockedCoreIdentityReadoutFamily_lab_refutation"
@@ -647,6 +684,7 @@ def realM4LiftLedger : List RealM4LiftLedgerRow := [
 theorem realM4LiftLedger_statuses_exact :
     List.map (fun row => row.status) realM4LiftLedger =
       [ RealM4LiftStatus.constructionTransferred,
+        RealM4LiftStatus.constructionTransferred,
         RealM4LiftStatus.constructionTransferred,
         RealM4LiftStatus.constructionTransferred,
         RealM4LiftStatus.blockedByCounterexample,
