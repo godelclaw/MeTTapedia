@@ -63,6 +63,10 @@ theorem closedCollarWindingFreedomSimplePatchN6First150000BlockedByPlanarityEvid
     ClosedCollarWindingFreedomSimplePatchN6First150000BlockedByPlanarityEvidence :=
   closedCollarWindingFreedomSimplePatchN6First150000BlockedByPlanarityEvidence
 
+theorem closedCollarWindingFreedomSimplePatchN6First300000BlockedByPlanarityEvidence_audit :
+    ClosedCollarWindingFreedomSimplePatchN6First300000BlockedByPlanarityEvidence :=
+  closedCollarWindingFreedomSimplePatchN6First300000BlockedByPlanarityEvidence
+
 /-! ## Section 9.2 two-layer ambient execution obstruction -/
 
 theorem section92Step4TwoLayerCounterexampleClass_audit :

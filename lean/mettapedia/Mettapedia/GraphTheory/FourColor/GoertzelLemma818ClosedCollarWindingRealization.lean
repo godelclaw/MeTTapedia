@@ -309,6 +309,95 @@ theorem closedCollarWindingFreedomSimplePatchN6First150000BlockedByPlanarityEvid
     ⟨closedCollarWindingFreedomWitnessRealizationData,
       ?_, ?_, ?_, ?_, ?_, ?_⟩ <;> decide
 
+def closedCollarSimplePatchN6Slice150000_200000Counts :
+    ClosedCollarSimplePatchSliceCounts where
+  internalVertexCount := 6
+  patchStartIndex := 150000
+  patchTopologyLimit := 50000
+  nextPatchStartIndex := 200000
+  processedPatchTopologyCount := 50000
+  radialOrderCaseCount := 100000
+  profilePreservingCaseCount := 3900
+  normalFormPrefixPassingProfileCaseCount := 0
+  planarFirstBlockerCount := 3900
+
+def closedCollarSimplePatchN6Slice200000_250000Counts :
+    ClosedCollarSimplePatchSliceCounts where
+  internalVertexCount := 6
+  patchStartIndex := 200000
+  patchTopologyLimit := 50000
+  nextPatchStartIndex := 250000
+  processedPatchTopologyCount := 50000
+  radialOrderCaseCount := 100000
+  profilePreservingCaseCount := 3776
+  normalFormPrefixPassingProfileCaseCount := 0
+  planarFirstBlockerCount := 3776
+
+def closedCollarSimplePatchN6Slice250000_300000Counts :
+    ClosedCollarSimplePatchSliceCounts where
+  internalVertexCount := 6
+  patchStartIndex := 250000
+  patchTopologyLimit := 50000
+  nextPatchStartIndex := 300000
+  processedPatchTopologyCount := 50000
+  radialOrderCaseCount := 100000
+  profilePreservingCaseCount := 3120
+  normalFormPrefixPassingProfileCaseCount := 0
+  planarFirstBlockerCount := 3120
+
+def closedCollarSimplePatchN6First300000ProcessedCount : Nat :=
+  closedCollarSimplePatchN6First150000ProcessedCount +
+    closedCollarSimplePatchN6Slice150000_200000Counts.processedPatchTopologyCount +
+      closedCollarSimplePatchN6Slice200000_250000Counts.processedPatchTopologyCount +
+        closedCollarSimplePatchN6Slice250000_300000Counts.processedPatchTopologyCount
+
+def closedCollarSimplePatchN6First300000RadialOrderCount : Nat :=
+  closedCollarSimplePatchN6First150000RadialOrderCount +
+    closedCollarSimplePatchN6Slice150000_200000Counts.radialOrderCaseCount +
+      closedCollarSimplePatchN6Slice200000_250000Counts.radialOrderCaseCount +
+        closedCollarSimplePatchN6Slice250000_300000Counts.radialOrderCaseCount
+
+def closedCollarSimplePatchN6First300000ProfilePreservingCount : Nat :=
+  closedCollarSimplePatchN6First150000ProfilePreservingCount +
+    closedCollarSimplePatchN6Slice150000_200000Counts.profilePreservingCaseCount +
+      closedCollarSimplePatchN6Slice200000_250000Counts.profilePreservingCaseCount +
+        closedCollarSimplePatchN6Slice250000_300000Counts.profilePreservingCaseCount
+
+def closedCollarSimplePatchN6First300000NormalFormPrefixPassingCount : Nat :=
+  closedCollarSimplePatchN6First150000NormalFormPrefixPassingCount +
+    closedCollarSimplePatchN6Slice150000_200000Counts.normalFormPrefixPassingProfileCaseCount +
+      closedCollarSimplePatchN6Slice200000_250000Counts.normalFormPrefixPassingProfileCaseCount +
+        closedCollarSimplePatchN6Slice250000_300000Counts.normalFormPrefixPassingProfileCaseCount
+
+def closedCollarSimplePatchN6First300000PlanarFirstBlockerCount : Nat :=
+  closedCollarSimplePatchN6First150000PlanarFirstBlockerCount +
+    closedCollarSimplePatchN6Slice150000_200000Counts.planarFirstBlockerCount +
+      closedCollarSimplePatchN6Slice200000_250000Counts.planarFirstBlockerCount +
+        closedCollarSimplePatchN6Slice250000_300000Counts.planarFirstBlockerCount
+
+/--
+Expanded resumable-slice evidence for the six-internal simple-patch search.
+In the first 300000 exact-size topologies, 18720 radial-order cases preserve
+the full winding profile.  None passes the tested normal-form prefix, and
+every profile-preserving case in these slices fails first at planarity.
+-/
+def ClosedCollarWindingFreedomSimplePatchN6First300000BlockedByPlanarityEvidence :
+    Prop :=
+  ClosedCollarWindingFreedomWitnessRealizationData ∧
+    closedCollarSimplePatchN6First300000ProcessedCount = 300000 ∧
+    closedCollarSimplePatchN6First300000RadialOrderCount = 600000 ∧
+    closedCollarSimplePatchN6First300000ProfilePreservingCount = 18720 ∧
+    closedCollarSimplePatchN6First300000NormalFormPrefixPassingCount = 0 ∧
+    closedCollarSimplePatchN6First300000PlanarFirstBlockerCount = 18720 ∧
+    closedCollarSimplePatchN6First300000PlanarFirstBlockerCount =
+      closedCollarSimplePatchN6First300000ProfilePreservingCount
+
+theorem closedCollarWindingFreedomSimplePatchN6First300000BlockedByPlanarityEvidence :
+    ClosedCollarWindingFreedomSimplePatchN6First300000BlockedByPlanarityEvidence := by
+  refine
+    ⟨closedCollarWindingFreedomWitnessRealizationData,
+      ?_, ?_, ?_, ?_, ?_, ?_⟩ <;> decide
+
 end GoertzelLemma818ClosedCollarWindingRealization
 
 end Mettapedia.GraphTheory.FourColor
