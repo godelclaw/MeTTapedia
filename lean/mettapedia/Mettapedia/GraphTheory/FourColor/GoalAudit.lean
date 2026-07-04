@@ -71,6 +71,10 @@ theorem closedCollarWindingFreedomSimplePatchN6First900000BlockedByPlanarityOrCy
     ClosedCollarWindingFreedomSimplePatchN6First900000BlockedByPlanarityOrCyclicCutsEvidence :=
   closedCollarWindingFreedomSimplePatchN6First900000BlockedByPlanarityOrCyclicCutsEvidence
 
+theorem closedCollarWindingFreedomSimplePatchN6PlanarCyclicCutSamplesEvidence_audit :
+    ClosedCollarWindingFreedomSimplePatchN6PlanarCyclicCutSamplesEvidence :=
+  closedCollarWindingFreedomSimplePatchN6PlanarCyclicCutSamplesEvidence
+
 /-! ## Section 9.2 two-layer ambient execution obstruction -/
 
 theorem section92Step4TwoLayerCounterexampleClass_audit :
