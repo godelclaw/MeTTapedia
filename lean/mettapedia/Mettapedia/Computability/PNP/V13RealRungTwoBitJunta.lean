@@ -6115,19 +6115,18 @@ Step 0 packing surface.  The fixed-prefix transcript sigma has already been
 identified with this active capacity sum; the remaining work is the genuine
 conditioned-basis counting bound.
 
-Current live pin: generated-prefix cells now have exact hidden-vector
-completion count and embed back into their original active fixed-map
-transcript cylinder.  The remaining overcharge is the map-normalized summation
-over those generated cells.  In the existing-row branch of
-`V13RealLinearRowTraceCosetHit`, two ordered prefix histories can have the same
-fixed map, the same generated rowset transcript, and the same target-support
-rows after quotienting to an unordered rowset, but differ only by which
-occurrence of a repeated support row is used before `t`.  After that
-occurrence position is forgotten, both histories charge the same no-target
-support-sum witness and the rowset-generation count sees one unordered
-rowset.  A closure must keep the ordered support-occurrence history through
-the charge and prove total multiplicity at most `2 ^ ((t : Nat) + 1)` before
-using the factor-2 generated-rowset capacity reduction. -/
+Current live pin: generated-prefix cells have exact hidden-vector completion
+count, and the active generated-prefix cells containing any fixed full world
+are bounded by the `2 ^ ((t : Nat) + 1)` ordered RHS histories.  The remaining
+overcharge is the normalized summation needed by this capacity statement:
+after a generated-prefix cell completion is projected to its full world
+`(A, x)`, the extra `2 ^ m` normalizer in the division-free count is forgotten.
+Thus a fixed world and transcript history can be charged once as an active
+cell, while the proof still needs to distinguish the additional normalizer
+completions and route them through the no-target map-conditioning count.  A
+closure must carry that unread-assignment/normalizer data into an injective
+no-target map charge, or prove an equivalent normalized generated-cell
+summation before applying the factor-2 generated-rowset capacity reduction. -/
 def
     V13RealLinearNoTargetRowsSequentialTraceCosetHitActiveFixedMapTranscriptCylinderCapacityBound
     {m q : Nat} (i₀ : Fin m)
