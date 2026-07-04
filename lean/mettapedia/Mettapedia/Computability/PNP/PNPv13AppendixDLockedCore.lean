@@ -265,6 +265,28 @@ def WitnessExistsOnSupport
     Prop :=
   ∀ {Y : Public}, D.support Y → ∃ W : Witness Y, D.validWitness Y W
 
+/-- Every supported public lock syntax is represented by some supported public
+instance.  This is the exact coverage condition needed to turn witness-level
+existence into Appendix D.7 lock satisfiability. -/
+def PublicLockCoveredBySupportedInstances
+    (D : AppendixDWitnessData PublicLock Quotient LockAux Message Public Witness) :
+    Prop :=
+  ∀ {Ylock : PublicLock}, D.core.support Ylock →
+    ∃ Y : Public, D.support Y ∧ D.publicLock Y = Ylock
+
+/-- Supported witness existence plus public-lock coverage gives Appendix D.7
+lock satisfiability for the underlying locked core. -/
+theorem core_lockSatisfiable_of_witnessExistsOnSupport_of_publicLockCovered
+    (D : AppendixDWitnessData PublicLock Quotient LockAux Message Public Witness)
+    (hwit : D.WitnessExistsOnSupport)
+    (hcover : D.PublicLockCoveredBySupportedInstances) :
+    D.core.LockSatisfiable := by
+  intro Ylock hYlock
+  rcases hcover hYlock with ⟨Y, hY, hPublicLock⟩
+  rcases hwit hY with ⟨W, hW⟩
+  exact ⟨by
+    simpa [hPublicLock] using D.witnessCompletion W hW⟩
+
 /-- Appendix D.42 proposition-level public message specification. -/
 def PublicMessageSpec
     (D : AppendixDWitnessData PublicLock Quotient LockAux Message Public Witness)
@@ -368,6 +390,28 @@ theorem exists_projectedMessageSpec_of_lockedMessageRigidity
   refine ⟨D.projection Y α₀, ?_⟩
   intro α hα
   exact D.singleMessageReadout_of_lockedMessageRigidity hrigid hY α α₀ hα hα₀
+
+/-- Appendix I satisfiability on support supplies witness existence for the
+underlying Appendix D witness layer. -/
+theorem witnessExistsOnSupport
+    (D : AppendixICNFReadoutData
+      PublicLock Quotient LockAux Message Public Var Witness) :
+    D.toAppendixDWitnessData.WitnessExistsOnSupport := by
+  intro Y hY
+  rcases D.satOnSupport hY with ⟨α, hα⟩
+  exact ⟨D.extract Y α, D.cnfSound hα⟩
+
+/-- Appendix I support plus public-lock coverage gives Appendix D.7 lock
+satisfiability for the underlying locked core. -/
+theorem core_lockSatisfiable_of_publicLockCovered
+    (D : AppendixICNFReadoutData
+      PublicLock Quotient LockAux Message Public Var Witness)
+    (hcover :
+      D.toAppendixDWitnessData.PublicLockCoveredBySupportedInstances) :
+    D.core.LockSatisfiable :=
+  D.toAppendixDWitnessData
+    |>.core_lockSatisfiable_of_witnessExistsOnSupport_of_publicLockCovered
+      D.witnessExistsOnSupport hcover
 
 /-- Appendix I.26(i)--(iii): satisfiability, sound extraction, and fixed
 projection readout, omitting only the separate polynomial-uniformity item. -/

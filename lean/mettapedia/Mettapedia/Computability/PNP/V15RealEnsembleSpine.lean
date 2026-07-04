@@ -1703,6 +1703,27 @@ noncomputable def ofLockedRigidity
   pnpDeciderFamily := pnpDeciderFamily
   constantDecoderRegime := constantDecoderRegime
 
+/-- Build the explicit-P=NP upper discharge package from Appendix I support
+coverage and D.8 rigidity.  Appendix I satisfiability on support supplies D.7
+once every supported public lock is represented by a supported public
+instance. -/
+noncomputable def ofCoveredLocksAndRigidity
+    (defaultMessage : Message)
+    (publicLockCoverage :
+      D.toAppendixDWitnessData.PublicLockCoveredBySupportedInstances)
+    (lockedMessageRigidity : D.core.LockedMessageRigidity)
+    (uniformSupport : RealM4CNFUniformSupportData D)
+    (pnpDeciderFamily : RealM4ExplicitPNPDeciderFamily D)
+    (constantDecoderRegime :
+      RealM4UniformConstantDecoderRegime F
+        (uniformSupport.withPNPDecider pnpDeciderFamily)) :
+    RealM4SelfReductionUpperExplicitPNPDischarge D F :=
+  ofLockedRigidity
+    defaultMessage
+    (D.core_lockSatisfiable_of_publicLockCovered publicLockCoverage)
+    lockedMessageRigidity
+    uniformSupport pnpDeciderFamily constantDecoderRegime
+
 def uniformBitFixing
     (S : RealM4SelfReductionUpperExplicitPNPDischarge D F) :
     RealM4CNFUniformBitFixingData D :=
@@ -1833,8 +1854,19 @@ theorem realM4PublicMessageInvariantConstructionInputs_exact :
         "lockedMessageRigidity" ] := by
   rfl
 
+def realM4LockSatisfiableConstructionInputs : List String := [
+  "publicLockSupportCoverage",
+  "appendixISatOnSupport"
+]
+
+theorem realM4LockSatisfiableConstructionInputs_exact :
+    realM4LockSatisfiableConstructionInputs =
+      [ "publicLockSupportCoverage",
+        "appendixISatOnSupport" ] := by
+  rfl
+
 def realM4SelfReductionUpperDischargePrerequisites : List String := [
-  "lockSatisfiable",
+  "publicLockSupportCoverage",
   "lockedMessageRigidity",
   "uniformCNFBitFixingPackage",
   "realCompressionLowerFramework"
@@ -1842,7 +1874,7 @@ def realM4SelfReductionUpperDischargePrerequisites : List String := [
 
 theorem realM4SelfReductionUpperDischargePrerequisites_exact :
     realM4SelfReductionUpperDischargePrerequisites =
-      [ "lockSatisfiable",
+      [ "publicLockSupportCoverage",
         "lockedMessageRigidity",
         "uniformCNFBitFixingPackage",
         "realCompressionLowerFramework" ] := by
@@ -1858,7 +1890,7 @@ theorem realM4SelfReductionUpperConditionalInputs_exact :
   rfl
 
 def realM4SelfReductionUpperExplicitPNPConstructionInputs : List String := [
-  "lockSatisfiable",
+  "publicLockSupportCoverage",
   "lockedMessageRigidity",
   "uniformCNFSupportData",
   "realCompressionLowerFramework"
@@ -1866,7 +1898,7 @@ def realM4SelfReductionUpperExplicitPNPConstructionInputs : List String := [
 
 theorem realM4SelfReductionUpperExplicitPNPConstructionInputs_exact :
     realM4SelfReductionUpperExplicitPNPConstructionInputs =
-      [ "lockSatisfiable",
+      [ "publicLockSupportCoverage",
         "lockedMessageRigidity",
         "uniformCNFSupportData",
         "realCompressionLowerFramework" ] := by
@@ -2355,8 +2387,8 @@ def realM4LiftLedger : List RealM4LiftLedgerRow := [
   {
     item := "selfReductionUpperDischargePackage"
     status := .partialConstructionTransferred
-    checkedName := "RealM4SelfReductionUpperExplicitPNPDischarge.ofLockedRigidity"
-    note := "D.7 and D.8 construct the public-message invariant inside the explicit-P=NP upper package; the package still needs uniform CNF support and the constant decoder regime."
+    checkedName := "RealM4SelfReductionUpperExplicitPNPDischarge.ofCoveredLocksAndRigidity"
+    note := "Appendix I support plus public-lock coverage supplies D.7; D.8 then constructs the public-message invariant inside the explicit-P=NP upper package."
   },
   {
     item := "deterministicReadoutOnly"
@@ -2368,13 +2400,19 @@ def realM4LiftLedger : List RealM4LiftLedgerRow := [
     item := "publicMessageInvariant"
     status := .partialConstructionTransferred
     checkedName := "AppendixDLockedCore.publicMessageInvariant_of_lockSatisfiable_of_lockedMessageRigidity"
-    note := "D.7 lock satisfiability plus D.8 locked-message rigidity construct the public-message invariant; real M4 still has to prove D.7 and D.8 for its locked core."
+    note := "D.7 lock satisfiability plus D.8 locked-message rigidity construct the public-message invariant; D.7 is transferred from Appendix I support once public-lock coverage is supplied."
+  },
+  {
+    item := "publicLockSupportCoverage"
+    status := .openConstruction
+    checkedName := "AppendixDWitnessData.PublicLockCoveredBySupportedInstances"
+    note := "The real M4 Appendix I public instances must cover every supported public lock syntax."
   },
   {
     item := "lockSatisfiable"
-    status := .openConstruction
-    checkedName := "AppendixDLockedCore.LockSatisfiable"
-    note := "The real M4 locked core still has to prove Appendix D.7: every supported public lock has an accepted locked completion."
+    status := .partialConstructionTransferred
+    checkedName := "AppendixICNFReadoutData.core_lockSatisfiable_of_publicLockCovered"
+    note := "Appendix I satisfiability on supported public instances gives D.7 once public-lock support coverage is supplied."
   },
   {
     item := "lockedMessageRigidity"
@@ -2487,6 +2525,7 @@ theorem realM4LiftLedger_statuses_exact :
         RealM4LiftStatus.blockedByCounterexample,
         RealM4LiftStatus.partialConstructionTransferred,
         RealM4LiftStatus.openConstruction,
+        RealM4LiftStatus.partialConstructionTransferred,
         RealM4LiftStatus.openConstruction,
         RealM4LiftStatus.partialConstructionTransferred,
         RealM4LiftStatus.openConstruction,
@@ -2506,7 +2545,7 @@ theorem realM4LiftLedger_statuses_exact :
   rfl
 
 def realM4OpenConstructionItems : List String := [
-  "lockSatisfiable",
+  "publicLockSupportCoverage",
   "lockedMessageRigidity",
   "noPublicTargetTags",
   "atomCompleteness",
@@ -2520,7 +2559,7 @@ def realM4OpenConstructionItems : List String := [
 
 theorem realM4OpenConstructionItems_exact :
     realM4OpenConstructionItems =
-      [ "lockSatisfiable",
+      [ "publicLockSupportCoverage",
         "lockedMessageRigidity",
         "noPublicTargetTags",
         "atomCompleteness",
