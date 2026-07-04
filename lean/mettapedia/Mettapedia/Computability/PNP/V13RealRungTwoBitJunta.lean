@@ -7617,6 +7617,56 @@ theorem
     v13RealLinearNoTargetSequentialTraceFirstCosetHitOrderedPrefixWorldSet_hitRow_not_mem_of_noPrior
       i₀ observer t pref omega (hprior t omega.val)
 
+theorem
+    V13RealLinearNoTargetRowsSequentialTraceCosetHitOrderedPrefixFreshnessBridge_not_of_generated_reread_prefix
+    {m q : Nat} (i₀ : Fin m)
+    (observer : V13RealLinearSequentialRowObserver m q) (t : Fin q)
+    (pref :
+      V13RealLinearSequentialPrefixTranscriptVector m (t : Nat))
+    (omega :
+      V13RealLinearNoTargetSequentialPrefixWorldSet
+        i₀ observer t pref)
+    (hmem :
+      v13RealLinearSequentialPrefixTranscriptVectorNextRow observer pref ∈
+        v13RealLinearSequentialPrefixTranscriptVectorRows pref)
+    (hgen :
+      V13RealLinearRowsGenerateTarget omega.val.1.val
+        (v13RealLinearSequentialPrefixTranscriptVectorRows pref) i₀) :
+    ¬ V13RealLinearNoTargetRowsSequentialTraceCosetHitOrderedPrefixFreshnessBridge
+      i₀ observer := by
+  intro hfresh
+  let hitOmega :=
+    v13RealLinearNoTargetSequentialPrefixWorldSetToOrderedPrefixHitOfNextRowMemOfPrefixRowsGenerateTarget
+      i₀ observer t pref omega hmem hgen
+  exact hfresh t pref hitOmega hmem
+
+theorem
+    V13RealLinearNoTargetRowsSequentialTraceCosetHitNoPriorBridge_not_of_generated_reread_prefix
+    {m q : Nat} (i₀ : Fin m)
+    (observer : V13RealLinearSequentialRowObserver m q) (t : Fin q)
+    (pref :
+      V13RealLinearSequentialPrefixTranscriptVector m (t : Nat))
+    (omega :
+      V13RealLinearNoTargetSequentialPrefixWorldSet
+        i₀ observer t pref)
+    (hmem :
+      v13RealLinearSequentialPrefixTranscriptVectorNextRow observer pref ∈
+        v13RealLinearSequentialPrefixTranscriptVectorRows pref)
+    (hgen :
+      V13RealLinearRowsGenerateTarget omega.val.1.val
+        (v13RealLinearSequentialPrefixTranscriptVectorRows pref) i₀) :
+    ¬ V13RealLinearNoTargetRowsSequentialTraceCosetHitNoPriorBridge
+      i₀ observer := by
+  intro hprior
+  let hitOmega :=
+    v13RealLinearNoTargetSequentialPrefixWorldSetToOrderedPrefixHitOfNextRowMemOfPrefixRowsGenerateTarget
+      i₀ observer t pref omega hmem hgen
+  rcases
+      v13RealLinearNoTargetSequentialTraceFirstCosetHitOrderedPrefixWorldSet_priorCosetHit_of_nextRow_mem
+        i₀ observer t pref hitOmega hmem with
+    ⟨s, hs⟩
+  exact hprior t hitOmega.val s hs
+
 noncomputable def
     v13RealLinearNoTargetSequentialTraceFirstCosetHitOrderedPrefixWorldSetToHitMapClassTimesUnreadAssignment
     {m q : Nat} (i₀ : Fin m)
