@@ -7202,6 +7202,73 @@ theorem
     _ = v13RealLinearSequentialPrefixTranscriptVectorNextRow observer pref := by
       rw [omega.property]
 
+theorem
+    v13RealLinearNoTargetSequentialTraceFirstCosetHitOrderedPrefixWorldSet_cosetHit
+    {m q : Nat} (i₀ : Fin m)
+    (observer : V13RealLinearSequentialRowObserver m q) (t : Fin q)
+    (pref :
+      V13RealLinearSequentialPrefixTranscriptVector m (t : Nat))
+    (omega :
+      V13RealLinearNoTargetSequentialTraceFirstCosetHitOrderedPrefixWorldSet
+        i₀ observer t pref) :
+    V13RealLinearRowFunctionalTargetCosetHit omega.val.val.1.val
+      (v13RealLinearSequentialPrefixTranscriptVectorRows pref) i₀
+      (v13RealLinearSequentialPrefixTranscriptVectorNextRow observer
+        pref) := by
+  classical
+  let rows := v13RealLinearSequentialPrefixTranscriptVectorRows pref
+  let row₁ := v13RealLinearSequentialPrefixTranscriptVectorNextRow observer pref
+  let trace :=
+    v13RealLinearNoTargetRowsSequentialQRowTrace i₀ observer omega.val.val
+  rcases omega.val.property with ⟨_hlenHit, hhit⟩
+  rcases
+      v13RealLinearNoTargetSequentialTraceFirstCosetHitOrderedPrefixWorldSet_hitRow_eq
+        i₀ observer t pref omega with
+    ⟨hrowIndex, hget⟩
+  rcases hhit with ⟨hhitIndex, hhitRows⟩
+  have hidx :
+      (⟨(t : Nat), hhitIndex⟩ : Fin trace.length) =
+        ⟨(t : Nat), hrowIndex⟩ := by
+    apply Fin.ext
+    rfl
+  have hrows :=
+    v13RealLinearNoTargetSequentialTraceFirstCosetHitOrderedPrefixWorldSet_prefixRows_eq
+      i₀ observer t pref omega
+  have hhitRows' :
+      V13RealLinearRowFunctionalTargetCosetHit omega.val.val.1.val
+        rows i₀ (trace.get ⟨(t : Nat), hhitIndex⟩) := by
+    simpa [trace, rows, hrows,
+      v13RealLinearNoTargetRowsSequentialQRowExperiment,
+      v13RealLinearNoTargetRowsCausalQRowExperiment,
+      v13RealLinearNoTargetRowsQRowExperiment] using hhitRows
+  have hgetHit :
+      trace.get ⟨(t : Nat), hhitIndex⟩ = row₁ := by
+    simpa [trace, row₁, hidx] using hget
+  rw [hgetHit] at hhitRows'
+  simpa [rows, row₁] using hhitRows'
+
+theorem
+    v13RealLinearNoTargetSequentialTraceFirstCosetHitOrderedPrefixWorldSet_prefixRowsGenerateTarget_of_nextRow_mem
+    {m q : Nat} (i₀ : Fin m)
+    (observer : V13RealLinearSequentialRowObserver m q) (t : Fin q)
+    (pref :
+      V13RealLinearSequentialPrefixTranscriptVector m (t : Nat))
+    (omega :
+      V13RealLinearNoTargetSequentialTraceFirstCosetHitOrderedPrefixWorldSet
+        i₀ observer t pref)
+    (hmem :
+      v13RealLinearSequentialPrefixTranscriptVectorNextRow observer pref ∈
+        v13RealLinearSequentialPrefixTranscriptVectorRows pref) :
+    V13RealLinearRowsGenerateTarget omega.val.val.1.val
+      (v13RealLinearSequentialPrefixTranscriptVectorRows pref) i₀ := by
+  exact
+    v13RealLinear_rowsGenerateTarget_of_rowFunctionalTargetCosetHit_of_mem
+      omega.val.val.1.val i₀
+      (v13RealLinearSequentialPrefixTranscriptVectorNextRow observer pref)
+      hmem
+      (v13RealLinearNoTargetSequentialTraceFirstCosetHitOrderedPrefixWorldSet_cosetHit
+        i₀ observer t pref omega)
+
 /-- L0 freshness bridge for conditioned ordered-prefix counting.  It states
 that every counted ordered-prefix hit reads a row outside the realized prefix
 rowset.  This is exactly the first-hit/freshness step needed before the
