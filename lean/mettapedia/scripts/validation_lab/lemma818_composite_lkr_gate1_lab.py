@@ -12,7 +12,7 @@ from __future__ import annotations
 
 from collections import Counter, deque
 from dataclasses import dataclass
-from itertools import product
+from itertools import combinations, product
 from pathlib import Path
 import argparse
 import json
@@ -873,6 +873,355 @@ def audit_closed_collar_winding_fiber(
     }
 
 
+def multigraph_vertices_and_edges(
+    model: CompositeModel,
+) -> tuple[list[str], list[tuple[str, str, str]]]:
+    vertices = sorted({v for endpoints in model.gadget.endpoints.values() for v in endpoints})
+    edges = [
+        (edge, endpoints[0], endpoints[1])
+        for edge, endpoints in model.gadget.endpoints.items()
+    ]
+    return vertices, edges
+
+
+def multigraph_connected_after_removing(
+    vertices: list[str],
+    edges: list[tuple[str, str, str]],
+    removed_edges: set[str],
+    vertex_subset: set[str] | None = None,
+) -> bool:
+    active_vertices = set(vertices) if vertex_subset is None else set(vertex_subset)
+    if not active_vertices:
+        return True
+    adj: dict[str, set[str]] = {v: set() for v in active_vertices}
+    for edge, u, v in edges:
+        if edge in removed_edges or u not in active_vertices or v not in active_vertices:
+            continue
+        adj[u].add(v)
+        adj[v].add(u)
+    root = next(iter(active_vertices))
+    seen = {root}
+    todo = [root]
+    while todo:
+        current = todo.pop()
+        for nxt in adj[current]:
+            if nxt not in seen:
+                seen.add(nxt)
+                todo.append(nxt)
+    return seen == active_vertices
+
+
+def multigraph_component_count(
+    vertices: set[str],
+    edges: list[tuple[str, str, str]],
+) -> int:
+    if not vertices:
+        return 0
+    adj: dict[str, set[str]] = {v: set() for v in vertices}
+    for _edge, u, v in edges:
+        if u in vertices and v in vertices:
+            adj[u].add(v)
+            adj[v].add(u)
+    remaining = set(vertices)
+    count = 0
+    while remaining:
+        count += 1
+        root = remaining.pop()
+        todo = [root]
+        while todo:
+            current = todo.pop()
+            for nxt in adj[current]:
+                if nxt in remaining:
+                    remaining.remove(nxt)
+                    todo.append(nxt)
+    return count
+
+
+def multigraph_has_cycle(
+    vertices: set[str],
+    edges: list[tuple[str, str, str]],
+) -> bool:
+    if not vertices:
+        return False
+    internal_edge_count = sum(
+        1 for _edge, u, v in edges if u in vertices and v in vertices
+    )
+    component_count = multigraph_component_count(vertices, edges)
+    return internal_edge_count - len(vertices) + component_count > 0
+
+
+def cyclic_cut_payloads(
+    vertices: list[str],
+    edges: list[tuple[str, str, str]],
+    max_cut_size: int,
+) -> list[dict[str, object]]:
+    payloads: list[dict[str, object]] = []
+    vertex_set = frozenset(vertices)
+    seen: set[tuple[str, ...]] = set()
+    for size in range(1, len(vertices)):
+        for subset_tuple in combinations(vertices, size):
+            side = frozenset(subset_tuple)
+            other = vertex_set - side
+            canonical = min(tuple(sorted(side)), tuple(sorted(other)))
+            if canonical in seen:
+                continue
+            seen.add(canonical)
+            cut_edges = [
+                edge for edge, u, v in edges if (u in side) != (v in side)
+            ]
+            if (
+                len(cut_edges) <= max_cut_size
+                and multigraph_has_cycle(set(side), edges)
+                and multigraph_has_cycle(set(other), edges)
+            ):
+                payloads.append(
+                    {
+                        "cut_size": len(cut_edges),
+                        "side_vertices": sorted(side),
+                        "other_side_vertices": sorted(other),
+                        "cut_edges": cut_edges,
+                    }
+                )
+    payloads.sort(
+        key=lambda payload: (
+            int(payload["cut_size"]),
+            len(payload["side_vertices"]),
+            payload["side_vertices"],
+        )
+    )
+    return payloads
+
+
+def literal_cycle_side(
+    side: set[str],
+    edges: list[tuple[str, str, str]],
+) -> bool:
+    if len(side) != 5:
+        return False
+    internal_edges = [
+        (edge, u, v) for edge, u, v in edges if u in side and v in side
+    ]
+    if len(internal_edges) != 5:
+        return False
+    degree = {v: 0 for v in side}
+    for _edge, u, v in internal_edges:
+        degree[u] += 1
+        degree[v] += 1
+    return all(count == 2 for count in degree.values()) and multigraph_connected_after_removing(
+        sorted(side), internal_edges, set()
+    )
+
+
+def cap5_like_payloads(
+    vertices: list[str],
+    edges: list[tuple[str, str, str]],
+) -> list[dict[str, object]]:
+    payloads: list[dict[str, object]] = []
+    vertex_set = frozenset(vertices)
+    for subset_tuple in combinations(vertices, 5):
+        side = frozenset(subset_tuple)
+        other = vertex_set - side
+        cut_edges = [edge for edge, u, v in edges if (u in side) != (v in side)]
+        if (
+            len(cut_edges) == 5
+            and literal_cycle_side(set(side), edges)
+            and multigraph_has_cycle(set(other), edges)
+        ):
+            payloads.append(
+                {
+                    "cap_vertices": sorted(side),
+                    "outside_vertices": sorted(other),
+                    "boundary_edges": cut_edges,
+                }
+            )
+    payloads.sort(key=lambda payload: payload["cap_vertices"])
+    return payloads
+
+
+def closed_collar_multigraph_audit(model: CompositeModel) -> dict[str, object]:
+    vertices, edges = multigraph_vertices_and_edges(model)
+    endpoint_pair_buckets: dict[tuple[str, str], list[str]] = {}
+    degree = {vertex: 0 for vertex in vertices}
+    loop_edges: list[str] = []
+    for edge, u, v in edges:
+        endpoint_pair = tuple(sorted((u, v)))
+        endpoint_pair_buckets.setdefault(endpoint_pair, []).append(edge)
+        degree[u] += 1
+        degree[v] += 1
+        if u == v:
+            loop_edges.append(edge)
+    parallel_bundles = [
+        {
+            "endpoints": list(endpoint_pair),
+            "edges": edge_names,
+        }
+        for endpoint_pair, edge_names in sorted(endpoint_pair_buckets.items())
+        if len(edge_names) > 1
+    ]
+    bridges = [
+        edge for edge, _u, _v in edges
+        if not multigraph_connected_after_removing(vertices, edges, {edge})
+    ]
+    small_cuts = cyclic_cut_payloads(vertices, edges, 4)
+    cap5_like = cap5_like_payloads(vertices, edges)
+
+    planar_payload: dict[str, object]
+    try:
+        import networkx as nx
+
+        graph = nx.MultiGraph()
+        graph.add_nodes_from(vertices)
+        for edge, u, v in edges:
+            graph.add_edge(u, v, key=edge)
+        planar_payload = {
+            "checked": True,
+            "planar_multigraph": bool(nx.check_planarity(graph)[0]),
+        }
+    except Exception as exc:  # pragma: no cover - environment fallback
+        planar_payload = {
+            "checked": False,
+            "planar_multigraph": None,
+            "error": repr(exc),
+        }
+
+    connected = multigraph_connected_after_removing(vertices, edges, set())
+    cubic = all(count == 3 for count in degree.values())
+    simple_endpoint_realization = not loop_edges and not parallel_bundles
+    no_small_cyclic_cut_le4 = not small_cuts
+    cap5_free_literal_cycle_test = not cap5_like
+    planar_ok = planar_payload.get("planar_multigraph") is True
+
+    normal_form_tests = [
+        {
+            "name": "connected_multigraph",
+            "passes": connected,
+            "evidence": {"vertex_count": len(vertices), "edge_count": len(edges)},
+        },
+        {
+            "name": "cubic_multigraph",
+            "passes": cubic,
+            "evidence": {"degrees": degree},
+        },
+        {
+            "name": "bridgeless_multigraph",
+            "passes": not bridges,
+            "evidence": {"bridges": bridges},
+        },
+        {
+            "name": "planar_multigraph",
+            "passes": planar_ok,
+            "evidence": planar_payload,
+        },
+        {
+            "name": "simple_endpoint_realization",
+            "passes": simple_endpoint_realization,
+            "evidence": {
+                "loop_edges": loop_edges,
+                "parallel_edge_bundles": parallel_bundles,
+            },
+        },
+        {
+            "name": "no_cyclic_edge_cut_of_size_at_most_four",
+            "passes": no_small_cyclic_cut_le4,
+            "evidence": {
+                "small_cyclic_cut_count": len(small_cuts),
+                "small_cyclic_cuts": small_cuts,
+            },
+        },
+        {
+            "name": "cap5_free_literal_five_cycle_test",
+            "passes": cap5_free_literal_cycle_test,
+            "evidence": {
+                "cap5_like_cut_count": len(cap5_like),
+                "cap5_like_cuts": cap5_like,
+            },
+        },
+    ]
+    first_blocker = next(
+        (test for test in normal_form_tests if not bool(test["passes"])),
+        None,
+    )
+    return {
+        "vertices": vertices,
+        "edges": [
+            {"edge": edge, "endpoints": [u, v]} for edge, u, v in edges
+        ],
+        "vertex_count": len(vertices),
+        "edge_count": len(edges),
+        "unique_endpoint_pair_count": len(endpoint_pair_buckets),
+        "degree": degree,
+        "parallel_edge_bundles": parallel_bundles,
+        "loop_edges": loop_edges,
+        "bridges": bridges,
+        "small_cyclic_cuts": small_cuts,
+        "cap5_like_cuts": cap5_like,
+        "normal_form_tests": normal_form_tests,
+        "first_failed_normal_form_test": first_blocker,
+    }
+
+
+def audit_closed_collar_winding_realization_witness(
+    tau_states: list[tuple[str, ...]],
+) -> dict[str, object]:
+    word = (TAU_TYPE, TAU_TYPE)
+    fixed_outer_key = ("r", "r", "b", "b")
+    model = build_closed_collar_model(word)
+    winding_fiber = audit_closed_collar_winding_fiber(
+        word,
+        fixed_outer_key,
+        tau_states,
+        include_all_components=True,
+    )
+    graph_audit = closed_collar_multigraph_audit(model)
+    witness_preserved = (
+        not bool(winding_fiber["winding_data_boundary_determined"])
+        and winding_fiber["proper_colorings"] > 0
+    )
+    first_blocker = graph_audit["first_failed_normal_form_test"]
+    verdict = (
+        "direct_witness_passes_tested_normal_form_prefix"
+        if first_blocker is None
+        else f"direct_witness_blocked_by_{first_blocker['name']}"
+    )
+    return {
+        "schema": "fourcolor-section-9-2-closed-collar-winding-realization-witness-v1",
+        "source": "Section 9.2 direct geometric realization audit for the closed-collar winding-freedom witness",
+        "run_id": f"{word_key(word)}::{fixed_key_id(fixed_outer_key)}",
+        "word": list(word_names(word)),
+        "fixed_outer_key": list(fixed_outer_key),
+        "model": {
+            "tau_inputs": list(TAU_INPUT_ORDER),
+            "tau_outputs": list(TAU_OUTPUT_ORDER),
+            "closed_collar_rule": (
+                "compose tau,tau cyclically by identifying the final ordered "
+                "output stubs with the first ordered input stubs"
+            ),
+            "realization_scope": (
+                "direct finite closed-collar witness graph; no filler expansion "
+                "or subdivision search is claimed in this audit"
+            ),
+        },
+        "winding_fiber": winding_fiber,
+        "witness_profile_preserved": witness_preserved,
+        "graph_audit": graph_audit,
+        "summary": {
+            "verdict": verdict,
+            "witness_profile_preserved": witness_preserved,
+            "first_failed_normal_form_test": first_blocker["name"] if first_blocker else None,
+            "tested_normal_form_prefix_passed": [
+                test["name"]
+                for test in graph_audit["normal_form_tests"]
+                if bool(test["passes"])
+            ],
+            "blocked_normal_form_tests": [
+                test["name"]
+                for test in graph_audit["normal_form_tests"]
+                if not bool(test["passes"])
+            ],
+        },
+    }
+
+
 def closed_collar_l1_words() -> list[tuple[GadgetType, ...]]:
     return [word for n in (2, 3) for word in words_of_length(n)]
 
@@ -1288,6 +1637,19 @@ def run_closed_collar_winding_l1(
     return report
 
 
+def run_closed_collar_winding_realization_witness(
+    output: Path | None,
+    resume: bool,
+) -> dict[str, object]:
+    if resume and output is not None and output.exists():
+        return json.loads(output.read_text())
+
+    report = audit_closed_collar_winding_realization_witness(proper_states(TAU))
+    if output is not None:
+        write_json_report(output, report)
+    return report
+
+
 def words_of_length(n: int) -> Iterable[tuple[GadgetType, ...]]:
     yield from product(GADGET_TYPES, repeat=n)
 
@@ -1318,6 +1680,11 @@ def main() -> None:
         "--closed-collar-winding-l1",
         action="store_true",
         help="run the cyclic length-2/3 closed-collar winding-invariant lab",
+    )
+    parser.add_argument(
+        "--closed-collar-winding-realization-witness",
+        action="store_true",
+        help="audit the direct tau,tau::rrbb winding-freedom witness against geometric normal-form tests",
     )
     parser.add_argument(
         "--output",
@@ -1396,6 +1763,14 @@ def main() -> None:
         summary = report.get("summary", {})
         if isinstance(summary, dict) and summary.get("winding_freedom_fiber_count"):
             raise SystemExit(2)
+        return
+
+    if args.closed_collar_winding_realization_witness:
+        report = run_closed_collar_winding_realization_witness(
+            output=args.output,
+            resume=args.resume,
+        )
+        print(json.dumps(report, indent=2, sort_keys=True))
         return
 
     tau_states = proper_states(TAU)
