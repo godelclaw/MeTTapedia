@@ -1539,6 +1539,41 @@ example {m q : Nat} (i₀ : Fin m)
     i₀ observer t
 
 example {m q : Nat} (i₀ : Fin m)
+    (observer : V13RealLinearSequentialRowObserver m q) (t : Fin q)
+    (pref :
+      V13RealLinearSequentialPrefixTranscriptVector m (t : Nat))
+    (omega :
+      V13RealLinearNoTargetSequentialTraceTrueFirstCosetHitOrderedPrefixWorldSet
+        i₀ observer t pref) :
+    v13RealLinearSequentialPrefixTranscriptVectorNextRow observer pref ∉
+      v13RealLinearSequentialPrefixTranscriptVectorRows pref :=
+  v13RealLinearNoTargetSequentialTraceTrueFirstCosetHitOrderedPrefixWorldSet_hitRow_not_mem
+    i₀ observer t pref omega
+
+example {m q : Nat} (i₀ : Fin m)
+    (observer : V13RealLinearSequentialRowObserver m q) (t : Fin q)
+    (pref :
+      V13RealLinearSequentialPrefixTranscriptVector m (t : Nat)) :
+    Fintype.card
+        (V13RealLinearNoTargetSequentialTraceTrueFirstCosetHitOrderedPrefixWorldSet
+          i₀ observer t pref) *
+      2 ^ m ≤
+    (4 *
+        2 ^ (v13RealLinearSequentialPrefixTranscriptVectorRows pref).card) *
+      Fintype.card
+        (V13RealLinearNoTargetSequentialPrefixWorldSet
+          i₀ observer t pref) :=
+  v13RealLinearNoTargetSequentialTraceTrueFirstCosetHitOrderedPrefixWorldSet_card_mul_two_pow_le_prefixWorldSet
+    i₀ observer t pref
+
+example {m q : Nat} (i₀ : Fin m)
+    (observer : V13RealLinearSequentialRowObserver m q) :
+    V13RealLinearNoTargetRowsSequentialTraceTrueFirstCosetHitOrderedPrefixConditionedCountingBound
+      i₀ observer :=
+  V13RealLinearNoTargetRowsSequentialTraceTrueFirstCosetHitOrderedPrefixConditionedCountingBound_unconditional
+    i₀ observer
+
+example {m q : Nat} (i₀ : Fin m)
     (observer : V13RealLinearSequentialRowObserver m q)
     (hconditioned :
       V13RealLinearNoTargetRowsSequentialTraceCosetHitOrderedPrefixConditionedCountingBound
@@ -1681,6 +1716,10 @@ example {m : Nat} (i₀ : Fin m) (hm : 4 < m) :
 #print axioms V13RealLinearNoTargetRowsSequentialTraceCosetHitCountingBound_of_noPriorBridge
 #print axioms V13RealLinearNoTargetRowsSequentialTraceCosetHitActiveFixedMapTranscriptCylinderCapacityBound_of_freshnessBridge
 #print axioms V13RealLinearNoTargetRowsSequentialTraceCosetHitActiveFixedMapTranscriptCylinderCapacityBound_of_noPriorBridge
+#print axioms v13RealLinearNoTargetSequentialTraceTrueFirstCosetHitOrderedPrefixWorldSet_card_le_orderedPrefixWorldSet
+#print axioms v13RealLinearNoTargetSequentialTraceTrueFirstCosetHitOrderedPrefixWorldSet_hitRow_not_mem
+#print axioms v13RealLinearNoTargetSequentialTraceTrueFirstCosetHitOrderedPrefixWorldSet_card_mul_two_pow_le_prefixWorldSet
+#print axioms V13RealLinearNoTargetRowsSequentialTraceTrueFirstCosetHitOrderedPrefixConditionedCountingBound_unconditional
 #print axioms v13RealLinearNoTargetSequentialTraceFirstCosetHitActiveFixedMapTranscriptCylinder_generatedPrefix_rows_eq
 #print axioms v13RealLinearSequentialPrefixTranscriptVectorOf_init
 #print axioms v13RealLinearSequentialPrefixTranscriptVectorOf_lastRow
