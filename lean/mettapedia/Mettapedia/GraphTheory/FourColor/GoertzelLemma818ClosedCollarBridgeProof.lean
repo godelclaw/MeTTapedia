@@ -462,13 +462,18 @@ def closedCollarSpineParentsReachRoot (fiber : List (List TauState))
   (List.range fiber.length).all fun i =>
     closedCollarParentIter cert.parents cert.maxDepth i == cert.root
 
-def closedCollarSpineCertificateAudit
-    (orients : List TauOrient) (cert : ClosedCollarSpineCertificate) : Bool :=
-  let fiber := closedCollarFiber orients cert.key
+def closedCollarSpineCertificateAuditFrom
+    (orients : List TauOrient) (statesList : List (List TauState))
+    (cert : ClosedCollarSpineCertificate) : Bool :=
+  let fiber := closedCollarFiberFrom orients statesList cert.key
   cert.parents.length == fiber.length &&
     (if fiber.isEmpty then cert.parents == [] else decide (cert.root < fiber.length)) &&
       closedCollarSpineRowsValid orients fiber cert.parents &&
         closedCollarSpineParentsReachRoot fiber cert
+
+def closedCollarSpineCertificateAudit
+    (orients : List TauOrient) (cert : ClosedCollarSpineCertificate) : Bool :=
+  closedCollarSpineCertificateAuditFrom orients (allClosedCollarStates orients) cert
 
 theorem closedCollarParentIndexValid_parent_lt
     {orients : List TauOrient} {fiber : List (List TauState)}
@@ -639,7 +644,8 @@ theorem closedCollarFiberKempeConnected_of_spineCertificateAudit
     simpa [i] using List.idxOf_lt_length_of_mem hx
   have hj : j < fiber.length := by
     simpa [j] using List.idxOf_lt_length_of_mem hy
-  unfold closedCollarSpineCertificateAudit at haudit
+  unfold closedCollarSpineCertificateAudit
+    closedCollarSpineCertificateAuditFrom at haudit
   simp only [Bool.and_eq_true] at haudit
   rcases haudit with ⟨⟨⟨_hlen, _hrootBound⟩, hrows⟩, hroot⟩
   have hreachI :=
@@ -681,6 +687,16 @@ theorem closedCollarFiberKempeConnected_of_spineCertificateAudit
       (fun a b : ClosedCollarFiberPoint orients cert.key =>
         closedCollarSingleKempeStep orients a.1 b.1 = true) x y
   simpa [fiber, ClosedCollarFiberPoint, hstart, hend] using hpath
+
+theorem closedCollarFiberKempeConnected_of_spineCertificateAuditFrom
+    {orients : List TauOrient} {statesList : List (List TauState)}
+    (cert : ClosedCollarSpineCertificate)
+    (hstates : allClosedCollarStates orients = statesList)
+    (haudit :
+      closedCollarSpineCertificateAuditFrom orients statesList cert = true) :
+    closedCollarFiberKempeConnected orients cert.key := by
+  apply closedCollarFiberKempeConnected_of_spineCertificateAudit cert
+  simpa [closedCollarSpineCertificateAudit, hstates] using haudit
 
 theorem closedCollarFiberKempeConnected_of_pairwiseConnectedCheck
     {orients : List TauOrient} {key : List LColor}
