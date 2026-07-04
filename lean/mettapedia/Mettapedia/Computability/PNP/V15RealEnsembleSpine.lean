@@ -963,6 +963,64 @@ structure RealM4CNFUniformBitFixingData
   satDecider_programLength_le :
     ∀ Y : Public, (satDecider Y).programLength ≤ programLengthBound
 
+/-- Construction-side portion of the real Appendix I uniform CNF data.  It
+contains the finite variable cover and decidable equality needed to run
+bit-fixing, but deliberately excludes the P=NP SAT decider family. -/
+structure RealM4CNFUniformSupportData
+    {PublicLock : Type u} {Quotient : Type v}
+    {LockAux : Type w} {Message : Type z}
+    {Public : Type x} {Var : Public -> Type y}
+    {Witness : Public -> Type y}
+    (D : AppendixICNFReadoutData
+      PublicLock Quotient LockAux Message Public Var Witness) where
+  varDecidable : (Y : Public) -> DecidableEq (Var Y)
+  varOrder : (Y : Public) -> List (Var Y)
+  varOrder_nodup : ∀ Y : Public, (varOrder Y).Nodup
+  formulaUsesOnly :
+    ∀ {Y : Public}, D.support Y ->
+      ConcreteCNF.FormulaUsesOnly (D.formula Y) (varOrder Y)
+
+/-- Explicit P=NP-side SAT-decider family for the real Appendix I formulas.
+This is the conditional upper-side input; it is not construction data and is
+not an unconditional algorithm for SAT. -/
+structure RealM4ExplicitPNPDeciderFamily
+    {PublicLock : Type u} {Quotient : Type v}
+    {LockAux : Type w} {Message : Type z}
+    {Public : Type x} {Var : Public -> Type y}
+    {Witness : Public -> Type y}
+    (D : AppendixICNFReadoutData
+      PublicLock Quotient LockAux Message Public Var Witness) where
+  satDecider : (Y : Public) -> RealCNFPNPSATDecider (Var Y)
+  programLengthBound : Nat
+  satDecider_programLength_le :
+    ∀ Y : Public, (satDecider Y).programLength ≤ programLengthBound
+
+namespace RealM4CNFUniformSupportData
+
+variable {PublicLock : Type u} {Quotient : Type v}
+variable {LockAux : Type w} {Message : Type z}
+variable {Public : Type x} {Var : Public -> Type y}
+variable {Witness : Public -> Type y}
+variable
+  {D : AppendixICNFReadoutData
+    PublicLock Quotient LockAux Message Public Var Witness}
+
+/-- Combine construction-side uniform support with the explicit P=NP SAT
+decider family to recover the older bundled bit-fixing package. -/
+def withPNPDecider
+    (B : RealM4CNFUniformSupportData D)
+    (A : RealM4ExplicitPNPDeciderFamily D) :
+    RealM4CNFUniformBitFixingData D where
+  varDecidable := B.varDecidable
+  varOrder := B.varOrder
+  varOrder_nodup := B.varOrder_nodup
+  formulaUsesOnly := B.formulaUsesOnly
+  satDecider := A.satDecider
+  programLengthBound := A.programLengthBound
+  satDecider_programLength_le := A.satDecider_programLength_le
+
+end RealM4CNFUniformSupportData
+
 namespace RealM4CNFUniformBitFixingData
 
 variable {PublicLock : Type u} {Quotient : Type v}
@@ -1025,6 +1083,38 @@ theorem realM4_uniformBitFixingReadout_eq_publicMessage_of_publicMessageInvarian
     realM4_bitFixingReadout_eq_publicMessage_of_publicMessageInvariant
       D hinvariant hY (U.satDecider Y) (U.varOrder Y)
       (U.formulaUsesOnly hY) (U.varOrder_nodup Y)
+
+theorem realM4_uniformSupportWithPNPDecider_assignment_satisfies
+    {PublicLock : Type u} {Quotient : Type v}
+    {LockAux : Type w} {Message : Type z}
+    {Public : Type x} {Var : Public -> Type y}
+    {Witness : Public -> Type y}
+    {D : AppendixICNFReadoutData
+      PublicLock Quotient LockAux Message Public Var Witness}
+    (B : RealM4CNFUniformSupportData D)
+    (A : RealM4ExplicitPNPDeciderFamily D)
+    {Y : Public} (hY : D.support Y) :
+    ConcreteCNF.IsSatFormula (D.formula Y)
+      ((B.withPNPDecider A).bitFixingAssignment Y) :=
+  realM4_uniformBitFixingAssignment_satisfies
+    D (B.withPNPDecider A) hY
+
+theorem realM4_uniformSupportWithPNPDecider_readout_eq_publicMessage
+    {PublicLock : Type u} {Quotient : Type v}
+    {LockAux : Type w} {Message : Type z}
+    {Public : Type x} {Var : Public -> Type y}
+    {Witness : Public -> Type y}
+    {D : AppendixICNFReadoutData
+      PublicLock Quotient LockAux Message Public Var Witness}
+    (B : RealM4CNFUniformSupportData D)
+    (A : RealM4ExplicitPNPDeciderFamily D)
+    {publicMessage : PublicLock -> Message}
+    (hinvariant : D.core.PublicMessageInvariant publicMessage)
+    {Y : Public} (hY : D.support Y) :
+    D.projection Y ((B.withPNPDecider A).bitFixingAssignment Y) =
+      publicMessage (D.publicLock Y) :=
+  realM4_uniformBitFixingReadout_eq_publicMessage_of_publicMessageInvariant
+    D (B.withPNPDecider A) hinvariant hY
 
 def realCNFRestrictedFormulaCompilerProgramLength : Nat :=
   1
@@ -1187,6 +1277,26 @@ structure RealM4SelfReductionUpperDischarge
   constantDecoderRegime :
     RealM4UniformConstantDecoderRegime F uniformBitFixing
 
+/-- Same real upper-side discharge, but with the construction-side CNF support
+and the P=NP SAT decider family split into separate fields.  This is the
+preferred package for the real endgame audit because the conditional
+assumption is a visible object. -/
+structure RealM4SelfReductionUpperExplicitPNPDischarge
+    {PublicLock : Type u} {Quotient : Type v}
+    {LockAux : Type w} {Message : Type z}
+    {Public : Type x} {Var : Public -> Type y}
+    {Witness : Public -> Type y}
+    (D : AppendixICNFReadoutData
+      PublicLock Quotient LockAux Message Public Var Witness)
+    (F : CompressionLowerFramework) where
+  publicMessage : PublicLock -> Message
+  publicMessageInvariant : D.core.PublicMessageInvariant publicMessage
+  uniformSupport : RealM4CNFUniformSupportData D
+  pnpDeciderFamily : RealM4ExplicitPNPDeciderFamily D
+  constantDecoderRegime :
+    RealM4UniformConstantDecoderRegime F
+      (uniformSupport.withPNPDecider pnpDeciderFamily)
+
 namespace RealM4SelfReductionUpperDischarge
 
 variable {PublicLock : Type u} {Quotient : Type v}
@@ -1229,6 +1339,65 @@ theorem instanceDecoderCost_le_uniform
 
 end RealM4SelfReductionUpperDischarge
 
+namespace RealM4SelfReductionUpperExplicitPNPDischarge
+
+variable {PublicLock : Type u} {Quotient : Type v}
+variable {LockAux : Type w} {Message : Type z}
+variable {Public : Type x} {Var : Public -> Type y}
+variable {Witness : Public -> Type y}
+variable
+  {D : AppendixICNFReadoutData
+    PublicLock Quotient LockAux Message Public Var Witness}
+variable {F : CompressionLowerFramework}
+
+def uniformBitFixing
+    (S : RealM4SelfReductionUpperExplicitPNPDischarge D F) :
+    RealM4CNFUniformBitFixingData D :=
+  S.uniformSupport.withPNPDecider S.pnpDeciderFamily
+
+def toDischarge
+    (S : RealM4SelfReductionUpperExplicitPNPDischarge D F) :
+    RealM4SelfReductionUpperDischarge D F where
+  publicMessage := S.publicMessage
+  publicMessageInvariant := S.publicMessageInvariant
+  uniformBitFixing := S.uniformBitFixing
+  constantDecoderRegime := by
+    dsimp [uniformBitFixing]
+    exact S.constantDecoderRegime
+
+def selfReductionUpper
+    (S : RealM4SelfReductionUpperExplicitPNPDischarge D F) :
+    SelfReductionUpperHypothesis F :=
+  S.toDischarge.selfReductionUpper
+
+theorem bitFixingAssignment_satisfies
+    (S : RealM4SelfReductionUpperExplicitPNPDischarge D F)
+    {Y : Public} (hY : D.support Y) :
+    ConcreteCNF.IsSatFormula (D.formula Y)
+      (S.uniformBitFixing.bitFixingAssignment Y) := by
+  simpa [uniformBitFixing] using
+    realM4_uniformSupportWithPNPDecider_assignment_satisfies
+      S.uniformSupport S.pnpDeciderFamily hY
+
+theorem bitFixingReadout_eq_publicMessage
+    (S : RealM4SelfReductionUpperExplicitPNPDischarge D F)
+    {Y : Public} (hY : D.support Y) :
+    D.projection Y (S.uniformBitFixing.bitFixingAssignment Y) =
+      S.publicMessage (D.publicLock Y) := by
+  simpa [uniformBitFixing] using
+    realM4_uniformSupportWithPNPDecider_readout_eq_publicMessage
+      S.uniformSupport S.pnpDeciderFamily S.publicMessageInvariant hY
+
+theorem instanceDecoderCost_le_uniform
+    (S : RealM4SelfReductionUpperExplicitPNPDischarge D F) (Y : Public) :
+    realCNFSelfReductionDecoderCost (S.uniformBitFixing.satDecider Y) ≤
+      realM4UniformSelfReductionDecoderCost S.uniformBitFixing := by
+  simpa [uniformBitFixing] using
+    realM4UniformSelfReductionDecoderCost_bounds_instance
+      (S.uniformSupport.withPNPDecider S.pnpDeciderFamily) Y
+
+end RealM4SelfReductionUpperExplicitPNPDischarge
+
 /-- Combined checked output of the real Appendix I self-reduction package:
 bit-fixing yields a satisfying assignment, its readout is the public message,
 each instance decoder is bounded by the uniform constant decoder, and the
@@ -1264,6 +1433,40 @@ theorem realM4_selfReductionUpperDischarge_assignment_readout_cost_and_upper
           S Y,
       RealM4SelfReductionUpperDischarge.selfReductionUpper S⟩
 
+/-- Combined checked output of the explicit-P=NP real Appendix I
+self-reduction package.  The SAT decider family is exposed as
+`S.pnpDeciderFamily`; the result remains conditional on that object. -/
+theorem realM4_selfReductionUpperExplicitPNPDischarge_assignment_readout_cost_and_upper
+    {PublicLock : Type u} {Quotient : Type v}
+    {LockAux : Type w} {Message : Type z}
+    {Public : Type x} {Var : Public -> Type y}
+    {Witness : Public -> Type y}
+    {D : AppendixICNFReadoutData
+      PublicLock Quotient LockAux Message Public Var Witness}
+    {F : CompressionLowerFramework}
+    (S : RealM4SelfReductionUpperExplicitPNPDischarge D F) :
+    (∀ {Y : Public}, D.support Y ->
+      ConcreteCNF.IsSatFormula (D.formula Y)
+        (S.uniformBitFixing.bitFixingAssignment Y)) ∧
+    (∀ {Y : Public}, D.support Y ->
+      D.projection Y (S.uniformBitFixing.bitFixingAssignment Y) =
+        S.publicMessage (D.publicLock Y)) ∧
+    (∀ Y : Public,
+      realCNFSelfReductionDecoderCost (S.uniformBitFixing.satDecider Y) ≤
+        realM4UniformSelfReductionDecoderCost S.uniformBitFixing) ∧
+    SelfReductionUpperHypothesis F := by
+  exact
+    ⟨fun {Y} hY =>
+        RealM4SelfReductionUpperExplicitPNPDischarge.bitFixingAssignment_satisfies
+          S hY,
+      fun {Y} hY =>
+        RealM4SelfReductionUpperExplicitPNPDischarge.bitFixingReadout_eq_publicMessage
+          S hY,
+      fun Y =>
+        RealM4SelfReductionUpperExplicitPNPDischarge.instanceDecoderCost_le_uniform
+          S Y,
+      RealM4SelfReductionUpperExplicitPNPDischarge.selfReductionUpper S⟩
+
 def realM4SelfReductionUpperDischargePrerequisites : List String := [
   "publicMessageInvariant",
   "uniformCNFBitFixingPackage",
@@ -1283,6 +1486,28 @@ def realM4SelfReductionUpperConditionalInputs : List String := [
 
 theorem realM4SelfReductionUpperConditionalInputs_exact :
     realM4SelfReductionUpperConditionalInputs =
+      [ "pnpDeciderFamily" ] := by
+  rfl
+
+def realM4SelfReductionUpperExplicitPNPConstructionInputs : List String := [
+  "publicMessageInvariant",
+  "uniformCNFSupportData",
+  "realCompressionLowerFramework"
+]
+
+theorem realM4SelfReductionUpperExplicitPNPConstructionInputs_exact :
+    realM4SelfReductionUpperExplicitPNPConstructionInputs =
+      [ "publicMessageInvariant",
+        "uniformCNFSupportData",
+        "realCompressionLowerFramework" ] := by
+  rfl
+
+def realM4SelfReductionUpperExplicitPNPConditionalInputs : List String := [
+  "pnpDeciderFamily"
+]
+
+theorem realM4SelfReductionUpperExplicitPNPConditionalInputs_exact :
+    realM4SelfReductionUpperExplicitPNPConditionalInputs =
       [ "pnpDeciderFamily" ] := by
   rfl
 
@@ -1498,6 +1723,33 @@ def parameterRecord
     (RealM4SelfReductionUpperDischarge.selfReductionUpper S)
     starSWHardness safeQSSM boundedGaugeIncidence boundaryMixing
 
+def parameterRecordExplicitPNP
+    (C : RealM4EndgameMechanicalData Omega Public Neutral Safe Gauge
+      Transcript Pair Stage Branch HistoryAtom Pivot Observer Output Skeleton)
+    {PublicLock : Type g} {Quotient : Type h}
+    {LockAux : Type i} {Message : Type j}
+    {CNFPublic : Type k} {Var : CNFPublic -> Type l}
+    {Witness : CNFPublic -> Type l}
+    {D : AppendixICNFReadoutData
+      PublicLock Quotient LockAux Message CNFPublic Var Witness}
+    (S : RealM4SelfReductionUpperExplicitPNPDischarge D C.lowerFramework)
+    (starSWHardness : CompressionStarSWHardness C.lowerFramework)
+    (safeQSSM :
+      ∀ q : Safe, 0 ≤ C.interfaceData.safeCost q ∧
+        C.interfaceData.safeCost q ≤ C.interfaceData.safeBudget)
+    (boundedGaugeIncidence :
+      ∀ gamma : Gauge,
+        C.interfaceData.gaugeIncidence gamma ≤ C.interfaceData.gaugeBound)
+    (boundaryMixing :
+      BoundaryMixingBound C.interfaceData.target C.interfaceData.pivotSummary
+        C.interfaceData.epsMix) :
+    ParameterRecord
+      (C.interfaceWithAnalyticFrontier
+        safeQSSM boundedGaugeIncidence boundaryMixing) :=
+  C.parameterRecordWithUpper
+    (RealM4SelfReductionUpperExplicitPNPDischarge.selfReductionUpper S)
+    starSWHardness safeQSSM boundedGaugeIncidence boundaryMixing
+
 end RealM4EndgameMechanicalData
 
 /--
@@ -1548,6 +1800,54 @@ theorem realM4_conditionalClash_from_endgameMechanicalData
     (C.parameterRecord S starSWHardness
       safeQSSM boundedGaugeIncidence boundaryMixing)
 
+/--
+Explicit-P=NP version of the real-ensemble conditional endgame staging
+theorem.  The self-reduction upper side is supplied by a package whose SAT
+decider family is a named P=NP-side field, while the lower content remains
+StarSW hardness plus the three analytic frontier fields.
+
+This is not a proof of `P != NP`, and it does not yet construct the manuscript
+M4 ensemble.  It records the conditional wiring to be used once the real M4
+construction certificates are supplied.
+-/
+theorem realM4_conditionalClash_from_endgameMechanicalData_explicitPNP
+    {Omega : Type u} [Fintype Omega] [Nonempty Omega]
+    {Public : Type v} {Neutral : Type w} {Safe : Type x}
+    {Gauge : Type y} {Transcript : Type z} [DecidableEq Transcript]
+    {Pair : Type a} [Fintype Pair]
+    {Stage : Type b} {Branch : Type c}
+    {HistoryAtom : Type d} {Pivot : Type e}
+    {Observer : Type f} {Output : Type f} {Skeleton : Type w}
+    {PublicLock : Type g} {Quotient : Type h}
+    {LockAux : Type i} {Message : Type j}
+    {CNFPublic : Type k} {Var : CNFPublic -> Type l}
+    {Witness : CNFPublic -> Type l}
+    {D : AppendixICNFReadoutData
+      PublicLock Quotient LockAux Message CNFPublic Var Witness}
+    (C : RealM4EndgameMechanicalData Omega Public Neutral Safe Gauge
+      Transcript Pair Stage Branch HistoryAtom Pivot Observer Output Skeleton)
+    (S : RealM4SelfReductionUpperExplicitPNPDischarge D C.lowerFramework)
+    (starSWHardness : CompressionStarSWHardness C.lowerFramework)
+    (safeQSSM :
+      ∀ q : Safe, 0 ≤ C.interfaceData.safeCost q ∧
+        C.interfaceData.safeCost q ≤ C.interfaceData.safeBudget)
+    (boundedGaugeIncidence :
+      ∀ gamma : Gauge,
+        C.interfaceData.gaugeIncidence gamma ≤ C.interfaceData.gaugeBound)
+    (boundaryMixing :
+      BoundaryMixingBound C.interfaceData.target C.interfaceData.pivotSummary
+        C.interfaceData.epsMix) :
+    UpperLowerClash
+      (C.interfaceWithAnalyticFrontier
+        safeQSSM boundedGaugeIncidence boundaryMixing)
+      (C.parameterRecordExplicitPNP S starSWHardness
+        safeQSSM boundedGaugeIncidence boundaryMixing) :=
+  v13_upperLowerClash
+    (C.interfaceWithAnalyticFrontier
+      safeQSSM boundedGaugeIncidence boundaryMixing)
+    (C.parameterRecordExplicitPNP S starSWHardness
+      safeQSSM boundedGaugeIncidence boundaryMixing)
+
 def realM4EndgameStagingConstructionInputs : List String := [
   "realM4EndgameMechanicalData",
   "realM4SelfReductionUpperDischarge"
@@ -1576,6 +1876,46 @@ theorem realM4EndgameStagingIrreducibleInputs_exact :
 
 def realM4EndgameStagingStatement : String :=
   "For the real v15/M4 staging layer, UpperLowerClash follows from real construction data, the explicit P=NP-side self-reduction discharge, StarSW hardness, and the three analytic fields safeQSSM / boundedGaugeIncidence / boundaryMixing.  After the construction data is proved for M4, the irreducible mathematical content is exactly StarSW plus those three analytic fields."
+
+def realM4EndgameStagingConstructionInputsExplicitPNP : List String := [
+  "realM4EndgameMechanicalData",
+  "realM4SelfReductionUpperExplicitPNPDischarge"
+]
+
+theorem realM4EndgameStagingConstructionInputsExplicitPNP_exact :
+    realM4EndgameStagingConstructionInputsExplicitPNP =
+      [ "realM4EndgameMechanicalData",
+        "realM4SelfReductionUpperExplicitPNPDischarge" ] := by
+  rfl
+
+def realM4EndgameStagingConditionalInputsExplicitPNP : List String := [
+  "pnpDeciderFamily"
+]
+
+theorem realM4EndgameStagingConditionalInputsExplicitPNP_exact :
+    realM4EndgameStagingConditionalInputsExplicitPNP =
+      [ "pnpDeciderFamily" ] := by
+  rfl
+
+def realM4EndgameStagingHypothesisAuditExplicitPNP : List String := [
+  "starSWHardness",
+  "safeQSSM",
+  "boundedGaugeIncidence",
+  "boundaryMixing",
+  "pnpDeciderFamily"
+]
+
+theorem realM4EndgameStagingHypothesisAuditExplicitPNP_exact :
+    realM4EndgameStagingHypothesisAuditExplicitPNP =
+      [ "starSWHardness",
+        "safeQSSM",
+        "boundedGaugeIncidence",
+        "boundaryMixing",
+        "pnpDeciderFamily" ] := by
+  rfl
+
+def realM4EndgameStagingStatementExplicitPNP : String :=
+  "For the real v15/M4 staging layer, UpperLowerClash follows from real construction data, StarSW hardness, and the three analytic fields safeQSSM / boundedGaugeIncidence / boundaryMixing, with the self-reduction upper side discharged conditionally from the explicit P=NP decider family."
 
 /-! ## Real-M4 lift ledger -/
 
@@ -1631,22 +1971,22 @@ def realM4LiftLedger : List RealM4LiftLedgerRow := [
     note := "Given a public-message invariant, a finite variable cover, and an explicit SAT decider, CNF bit-fixing produces a satisfying assignment whose projection is the public message."
   },
   {
-    item := "uniformCNFBitFixingPackage"
+    item := "uniformCNFSupportData"
     status := .partialConstructionTransferred
-    checkedName := "realM4_uniformBitFixingReadout_eq_publicMessage_of_publicMessageInvariant"
-    note := "The family-level adapter is checked once Appendix I supplies variable orders, formula coverage, explicit SAT deciders, and a uniform program-length bound."
+    checkedName := "RealM4CNFUniformSupportData.withPNPDecider"
+    note := "The construction-side family adapter is split from the P=NP decider family; with that conditional decider it reconstructs the uniform bit-fixing package."
   },
   {
     item := "constantDecoderUpperInequality"
     status := .partialConstructionTransferred
     checkedName := "realM4_uniformSelfReductionUpperHypothesis_givenPNP"
-    note := "The uniform CNF bit-fixing decoder gives the formal upper inequality once the real lower framework identifies kpolyAt with this constant decoder cost."
+    note := "The uniform CNF bit-fixing decoder gives the formal upper inequality once the real lower framework identifies kpolyAt with this constant decoder cost, conditional on the explicit P=NP decider family."
   },
   {
     item := "selfReductionUpperDischargePackage"
     status := .partialConstructionTransferred
-    checkedName := "realM4_selfReductionUpperDischarge_assignment_readout_cost_and_upper"
-    note := "Bundles the public-message invariant, uniform bit-fixing data, and constant decoder regime into the real upper-side discharge package; constructing those ingredients remains open."
+    checkedName := "realM4_selfReductionUpperExplicitPNPDischarge_assignment_readout_cost_and_upper"
+    note := "Bundles the public-message invariant, construction-side uniform support, explicit P=NP decider family, and constant decoder regime into the real upper-side discharge package."
   },
   {
     item := "deterministicReadoutOnly"
@@ -1699,8 +2039,8 @@ def realM4LiftLedger : List RealM4LiftLedgerRow := [
   {
     item := "selfReductionUpper"
     status := .partialConstructionTransferred
-    checkedName := "realM4_selfReductionUpperDischarge_assignment_readout_cost_and_upper"
-    note := "No longer a standalone global input: the real upper side follows from the audited discharge package, whose construction prerequisites and P=NP-side decider input are listed separately."
+    checkedName := "realM4_selfReductionUpperExplicitPNPDischarge_assignment_readout_cost_and_upper"
+    note := "No longer a standalone global input: the real upper side follows from the explicit-P=NP discharge package, whose construction prerequisites and conditional decider input are listed separately."
   },
   {
     item := "realEndgameMechanicalInterfaceSplit"
@@ -1717,13 +2057,13 @@ def realM4LiftLedger : List RealM4LiftLedgerRow := [
   {
     item := "realConditionalClashStaging"
     status := .partialConstructionTransferred
-    checkedName := "realM4_conditionalClash_from_endgameMechanicalData"
-    note := "Given real endgame mechanical data, the explicit upper discharge package, StarSW, and the three analytic fields, the v13 UpperLowerClash wiring is checked."
+    checkedName := "realM4_conditionalClash_from_endgameMechanicalData_explicitPNP"
+    note := "Given real endgame mechanical data, the explicit-P=NP upper discharge package, StarSW, and the three analytic fields, the v13 UpperLowerClash wiring is checked."
   },
   {
     item := "pnpDecider"
     status := .pnpConditionalInput
-    checkedName := "explicit SAT decider object"
+    checkedName := "RealM4ExplicitPNPDeciderFamily"
     note := "This is the P=NP-side conditional object for the upper self-reduction, not irreducible lower-bound content."
   },
   {
@@ -1788,7 +2128,7 @@ def realM4OpenConstructionItems : List String := [
   "gaugeFaithfulness",
   "hiddenGaugeProduct",
   "admissibleHistories",
-  "uniformCNFBitFixingPackage",
+  "uniformCNFSupportData",
   "realCompressionLowerFramework",
   "realM4EndgameMechanicalData"
 ]
@@ -1801,7 +2141,7 @@ theorem realM4OpenConstructionItems_exact :
         "gaugeFaithfulness",
         "hiddenGaugeProduct",
         "admissibleHistories",
-        "uniformCNFBitFixingPackage",
+        "uniformCNFSupportData",
         "realCompressionLowerFramework",
         "realM4EndgameMechanicalData" ] := by
   rfl
