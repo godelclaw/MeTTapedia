@@ -1,6 +1,7 @@
 import Mettapedia.GraphTheory.FourColor.Goal
 import Mettapedia.GraphTheory.FourColor.FrontierRefutations
 import Mettapedia.GraphTheory.FourColor.GoertzelLemma818ClosedCollarS2Bridge
+import Mettapedia.GraphTheory.FourColor.GoertzelLemma818TwoLayerEscape
 import Mettapedia.GraphTheory.FourColor.PillarASmallerSpace
 
 /-!
@@ -20,6 +21,7 @@ open Theorem49PlanarBoundaryAnnulusHonestWitnessRegression
 open Theorem49PositiveGeometricSourceReplacementRegression
 open GoertzelLemma818ClosedCollarBridgeTarget
 open GoertzelLemma818ClosedCollarS2Bridge
+open GoertzelLemma818TwoLayerEscape
 
 /-! ## Section 9.2 closed-collar bridge -/
 
@@ -30,6 +32,12 @@ theorem closedCollarS2BridgeTarget_audit :
 theorem section92S2BridgeLemmaTarget_audit :
     section92S2BridgeLemmaTarget :=
   section92S2BridgeLemmaTarget_proved
+
+/-! ## Section 9.2 two-layer ambient execution obstruction -/
+
+theorem section92Step4TwoLayerCounterexampleClass_audit :
+    Section92Step4TwoLayerCounterexampleClass :=
+  section92Step4TwoLayerCounterexampleClass
 
 /-! ## Corrected need-based Pillar-A audit hook -/
 
