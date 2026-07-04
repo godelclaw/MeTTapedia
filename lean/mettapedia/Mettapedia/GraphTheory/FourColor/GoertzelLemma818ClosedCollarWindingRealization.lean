@@ -458,6 +458,50 @@ theorem closedCollarWindingFreedomSimplePatchN6First900000BlockedByPlanarityOrCy
     ⟨closedCollarWindingFreedomWitnessRealizationData,
       ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩ <;> decide
 
+def closedCollarSimplePatchN6First950000Counts :
+    ClosedCollarSimplePatchPrefixBlockerCounts where
+  internalVertexCount := 6
+  processedPatchTopologyCount := 950000
+  radialOrderCaseCount := 1900000
+  profilePreservingCaseCount := 20208
+  normalFormPrefixPassingProfileCaseCount := 0
+  planarFirstBlockerCount := 19920
+  cyclicCutFirstBlockerCount := 288
+  minimumCyclicCutSizeTwoCount := 264
+  minimumCyclicCutSizeThreeCount := 24
+
+/--
+Resumable-slice evidence through the first 950000 six-internal simple-patch
+topologies.  The additional 900000-950000 slice again finds planar
+profile-preserving cases, but every profile-preserving case still fails the
+tested normal-form prefix by planarity or by a cyclic edge cut of size at most
+four.
+-/
+def ClosedCollarWindingFreedomSimplePatchN6First950000BlockedByPlanarityOrCyclicCutsEvidence :
+    Prop :=
+  ClosedCollarWindingFreedomWitnessRealizationData ∧
+    closedCollarSimplePatchN6First950000Counts.internalVertexCount = 6 ∧
+    closedCollarSimplePatchN6First950000Counts.processedPatchTopologyCount = 950000 ∧
+    closedCollarSimplePatchN6First950000Counts.radialOrderCaseCount = 1900000 ∧
+    closedCollarSimplePatchN6First950000Counts.profilePreservingCaseCount = 20208 ∧
+    closedCollarSimplePatchN6First950000Counts.normalFormPrefixPassingProfileCaseCount = 0 ∧
+    closedCollarSimplePatchN6First950000Counts.planarFirstBlockerCount = 19920 ∧
+    closedCollarSimplePatchN6First950000Counts.cyclicCutFirstBlockerCount = 288 ∧
+    closedCollarSimplePatchN6First950000Counts.minimumCyclicCutSizeTwoCount = 264 ∧
+    closedCollarSimplePatchN6First950000Counts.minimumCyclicCutSizeThreeCount = 24 ∧
+    closedCollarSimplePatchN6First950000Counts.planarFirstBlockerCount +
+        closedCollarSimplePatchN6First950000Counts.cyclicCutFirstBlockerCount =
+      closedCollarSimplePatchN6First950000Counts.profilePreservingCaseCount ∧
+    closedCollarSimplePatchN6First950000Counts.minimumCyclicCutSizeTwoCount +
+        closedCollarSimplePatchN6First950000Counts.minimumCyclicCutSizeThreeCount =
+      closedCollarSimplePatchN6First950000Counts.cyclicCutFirstBlockerCount
+
+theorem closedCollarWindingFreedomSimplePatchN6First950000BlockedByPlanarityOrCyclicCutsEvidence :
+    ClosedCollarWindingFreedomSimplePatchN6First950000BlockedByPlanarityOrCyclicCutsEvidence := by
+  refine
+    ⟨closedCollarWindingFreedomWitnessRealizationData,
+      ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩ <;> decide
+
 /--
 Representative planar profile-preserving samples from the six-internal
 simple-patch search.  These are not exhaustive certificates; they pin the first
