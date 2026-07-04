@@ -14,6 +14,7 @@ import Mettapedia.Computability.PNP.V13PhaseEConcrete
 import Mettapedia.Computability.PNP.V13PhaseEScaled
 import Mettapedia.Computability.PNP.V13RealRungThreeGaugeSwitch
 import Mettapedia.Computability.PNP.V13RealRungTwoBitJunta
+import Mettapedia.Computability.PNP.V15RealEnsembleSpine
 import Mettapedia.Computability.PNP.WeaknessCalculus
 
 /-!

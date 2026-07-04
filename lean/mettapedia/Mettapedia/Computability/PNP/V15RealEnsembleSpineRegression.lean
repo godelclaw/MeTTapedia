@@ -1,0 +1,63 @@
+import Mettapedia.Computability.PNP.V15RealEnsembleSpine
+
+/-!
+# Regression seal for the v15 real ensemble spine
+-/
+
+namespace Mettapedia.Computability.PNP
+
+set_option autoImplicit false
+
+#check RealSingleMessageSATSpine
+#check RealSingleMessageSATSpine.singleMessage
+#check RealSingleMessageSATSpine.readout_eq_of_valid
+#check RealSingleMessageSATSpine.worldWitness_readout_eq_target
+#check v13RealLinearBit
+#check v13RealLinearVerifier
+#check v13RealLinearWitnessReadout
+#check v13RealLinearMessageOfPublic
+#check v13RealLinearTargetBit
+#check v13RealLinearVerifier_readout_eq_message
+#check v13RealLinear_worldWitness_valid
+#check v13RealLinearTargetBit_eq_messageOfPublic
+#check v13RealLinearSingleMessageSATSpine
+#check v13RealLinearSingleMessageSATSpine_singleMessage
+#check v13RealLinear_validWitness_readout_eq_publicMessage
+#check RealM4LiftStatus
+#check RealM4LiftLedgerRow
+#check realM4LiftLedger
+#check realM4LiftLedger_statuses_exact
+#check realM4OpenConstructionItems
+#check realM4OpenConstructionItems_exact
+#check realM4AfterConstructionIrreducibleInputs
+#check realM4AfterConstructionIrreducibleInputs_exact
+#check realM4_deterministicReadoutOnly_counterexample
+#check realM4_publicMessageInvariant_guardrails
+
+#print axioms RealSingleMessageSATSpine
+#print axioms RealSingleMessageSATSpine.singleMessage
+#print axioms RealSingleMessageSATSpine.readout_eq_of_valid
+#print axioms RealSingleMessageSATSpine.worldWitness_readout_eq_target
+#print axioms v13RealLinearBit
+#print axioms v13RealLinearVerifier
+#print axioms v13RealLinearWitnessReadout
+#print axioms v13RealLinearMessageOfPublic
+#print axioms v13RealLinearTargetBit
+#print axioms v13RealLinearVerifier_readout_eq_message
+#print axioms v13RealLinear_worldWitness_valid
+#print axioms v13RealLinearTargetBit_eq_messageOfPublic
+#print axioms v13RealLinearSingleMessageSATSpine
+#print axioms v13RealLinearSingleMessageSATSpine_singleMessage
+#print axioms v13RealLinear_validWitness_readout_eq_publicMessage
+#print axioms RealM4LiftStatus
+#print axioms RealM4LiftLedgerRow
+#print axioms realM4LiftLedger
+#print axioms realM4LiftLedger_statuses_exact
+#print axioms realM4OpenConstructionItems
+#print axioms realM4OpenConstructionItems_exact
+#print axioms realM4AfterConstructionIrreducibleInputs
+#print axioms realM4AfterConstructionIrreducibleInputs_exact
+#print axioms realM4_deterministicReadoutOnly_counterexample
+#print axioms realM4_publicMessageInvariant_guardrails
+
+end Mettapedia.Computability.PNP
