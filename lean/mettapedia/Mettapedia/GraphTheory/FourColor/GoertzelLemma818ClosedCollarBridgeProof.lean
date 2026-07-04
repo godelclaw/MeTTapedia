@@ -474,6 +474,87 @@ theorem listGetD_mem_of_lt {α : Type} (xs : List α) (fallback : α)
   rw [listGetD_eq_getD, List.getD_eq_getElem xs fallback hi]
   exact List.getElem_mem hi
 
+theorem bindList_eq_flatMap {α β : Type}
+    (xs : List α) (f : α → List β) :
+    bindList xs f = xs.flatMap f := by
+  induction xs with
+  | nil =>
+      simp [bindList]
+  | cons _ _ _ =>
+      simp [bindList, List.flatMap]
+
+theorem filter_bindList_bool {α β : Type}
+    (xs : List α) (f : α → List β) (p : β → Bool) :
+    (bindList xs f).filter p =
+      bindList xs (fun x => (f x).filter p) := by
+  simp [bindList_eq_flatMap, List.filter_flatMap]
+
+theorem filter_map_bool {α β : Type}
+    (xs : List α) (f : α → β) (p : β → Bool) :
+    (xs.map f).filter p = (xs.filter fun x => p (f x)).map f := by
+  induction xs with
+  | nil =>
+      rfl
+  | cons x xs ih =>
+      simp only [List.map_cons, List.filter_cons]
+      by_cases hp : p (f x) = true
+      · simp [hp, ih]
+      · have hf : p (f x) = false := bool_false_of_not_true hp
+        simp [hf, ih]
+
+theorem bindList_map {α β γ : Type}
+    (xs : List α) (f : α → β) (g : β → List γ) :
+    bindList (xs.map f) g = bindList xs (fun x => g (f x)) := by
+  simp [bindList_eq_flatMap, List.flatMap_map]
+
+theorem bindList_assoc {α β γ : Type}
+    (xs : List α) (f : α → List β) (g : β → List γ) :
+    bindList (bindList xs f) g =
+      bindList xs (fun x => bindList (f x) g) := by
+  simp [bindList_eq_flatMap, List.flatMap_assoc]
+
+theorem bindList_flatten {α β : Type}
+    (xss : List (List α)) (f : α → List β) :
+    bindList xss.flatten f = bindList xss (fun xs => bindList xs f) := by
+  simpa [bindList_eq_flatMap, List.flatMap_assoc]
+    using (List.flatMap_assoc (l := xss) (f := id) (g := f))
+
+theorem bindList_eq_flatten_of_getD {α β : Type}
+    (xs : List α) (chunks : List (List β)) (f : α → List β)
+    (fallback : α)
+    (hlen : xs.length = chunks.length)
+    (hget :
+      ∀ i, i < xs.length →
+        f (listGetD xs i fallback) = listGetD chunks i []) :
+    bindList xs f = chunks.flatten := by
+  induction xs generalizing chunks with
+  | nil =>
+      cases chunks with
+      | nil =>
+          rfl
+      | cons _ _ =>
+          simp at hlen
+  | cons x xs ih =>
+      cases chunks with
+      | nil =>
+          simp at hlen
+      | cons chunk chunks =>
+          have hhead := hget 0 (by simp)
+          simp [listGetD] at hhead
+          have hlenTail : xs.length = chunks.length :=
+            Nat.succ.inj hlen
+          have htail :
+              bindList xs f = chunks.flatten := by
+            apply ih chunks hlenTail
+            intro i hi
+            have h := hget (i + 1) (by simp [hi])
+            simpa [listGetD] using h
+          calc
+            bindList (x :: xs) f = f x ++ bindList xs f := by
+              simp [bindList]
+            _ = chunk ++ chunks.flatten := by rw [hhead, htail]
+            _ = (chunk :: chunks).flatten := rfl
+
 theorem list_eq_join_chunks_of_drop_take {α : Type}
     (xs : List α) (chunkSize : Nat) (chunks : List (List α))
     (hchunks :
@@ -501,6 +582,152 @@ theorem list_eq_join_chunks_of_drop_take {α : Type}
           exact (List.take_append_drop chunkSize xs).symm
         _ = chunk ++ chunks.flatten := by rw [hhead, htail]
         _ = (chunk :: chunks).flatten := rfl
+
+def closedCollarFiber3Prefix
+    (orients : List TauOrient) (key : List LColor) :
+    List (List TauState) :=
+  bindList allTauStates fun s0 =>
+  bindList (allTauStates.filter fun s1 =>
+      compatibleAdjacent (tauOrientAt orients 0) (tauOrientAt orients 1)
+        s0 s1) fun s1 =>
+  (allTauStates.filter fun s2 =>
+      closedCollarKey orients [s0, s1, s2] == key &&
+      (compatibleAdjacent (tauOrientAt orients 2) (tauOrientAt orients 0)
+          s2 s0 &&
+        compatibleAdjacent (tauOrientAt orients 1) (tauOrientAt orients 2)
+          s1 s2)).map fun s2 =>
+    [s0, s1, s2]
+
+def closedCollarFiber3Keyed
+    (orients : List TauOrient) (key : List LColor) :
+    List (List TauState) :=
+  let keyedLast := allTauStates.filter fun s2 =>
+    closedCollarKey orients [default, default, s2] == key
+  bindList allTauStates fun s0 =>
+  bindList (allTauStates.filter fun s1 =>
+      compatibleAdjacent (tauOrientAt orients 0) (tauOrientAt orients 1)
+        s0 s1) fun s1 =>
+  (keyedLast.filter fun s2 =>
+      compatibleAdjacent (tauOrientAt orients 1) (tauOrientAt orients 2)
+        s1 s2 &&
+      compatibleAdjacent (tauOrientAt orients 2) (tauOrientAt orients 0)
+        s2 s0).map fun s2 =>
+    [s0, s1, s2]
+
+def closedCollarFiber3KeyedFromFirsts
+    (orients : List TauOrient) (keyedLast firsts : List TauState) :
+    List (List TauState) :=
+  bindList firsts fun s0 =>
+  bindList (allTauStates.filter fun s1 =>
+      compatibleAdjacent (tauOrientAt orients 0) (tauOrientAt orients 1)
+        s0 s1) fun s1 =>
+  (keyedLast.filter fun s2 =>
+      compatibleAdjacent (tauOrientAt orients 1) (tauOrientAt orients 2)
+        s1 s2 &&
+      compatibleAdjacent (tauOrientAt orients 2) (tauOrientAt orients 0)
+        s2 s0).map fun s2 =>
+    [s0, s1, s2]
+
+def closedCollarFiber3KeyedFrom
+    (orients : List TauOrient) (keyedLast : List TauState) :
+    List (List TauState) :=
+  closedCollarFiber3KeyedFromFirsts orients keyedLast allTauStates
+
+theorem closedCollarFiber3Keyed_eq_from
+    (orients : List TauOrient) (key : List LColor)
+    {keyedLast : List TauState}
+    (hkeyed :
+      (allTauStates.filter fun s2 =>
+        closedCollarKey orients [default, default, s2] == key) =
+        keyedLast) :
+    closedCollarFiber3Keyed orients key =
+      closedCollarFiber3KeyedFrom orients keyedLast := by
+  simp [closedCollarFiber3Keyed, closedCollarFiber3KeyedFrom,
+    closedCollarFiber3KeyedFromFirsts, hkeyed]
+
+theorem closedCollarFiber3KeyedFrom_eq_chunks
+    (orients : List TauOrient) (keyedLast : List TauState)
+    (firstChunks : List (List TauState))
+    (fiberChunks : List (List (List TauState)))
+    (hfirst : allTauStates = firstChunks.flatten)
+    (hlen : firstChunks.length = fiberChunks.length)
+    (hchunks :
+      ∀ i, i < firstChunks.length →
+        closedCollarFiber3KeyedFromFirsts orients keyedLast
+            (listGetD firstChunks i []) =
+          listGetD fiberChunks i []) :
+    closedCollarFiber3KeyedFrom orients keyedLast = fiberChunks.flatten := by
+  unfold closedCollarFiber3KeyedFrom
+  rw [hfirst]
+  unfold closedCollarFiber3KeyedFromFirsts
+  rw [bindList_flatten]
+  change
+    bindList firstChunks
+        (fun firsts =>
+          closedCollarFiber3KeyedFromFirsts orients keyedLast firsts) =
+      fiberChunks.flatten
+  exact
+    bindList_eq_flatten_of_getD firstChunks fiberChunks
+      (fun firsts =>
+        closedCollarFiber3KeyedFromFirsts orients keyedLast firsts)
+      ([] : List TauState) hlen hchunks
+
+theorem closedCollarFiber3KeyedFrom_nil
+    (orients : List TauOrient) :
+    closedCollarFiber3KeyedFrom orients [] = [] := by
+  simp [closedCollarFiber3KeyedFrom, closedCollarFiber3KeyedFromFirsts,
+    bindList_eq_flatMap]
+
+theorem closedCollarFiber_three_eq_prefix
+    (o0 o1 o2 : TauOrient) (key : List LColor) :
+    closedCollarFiber [o0, o1, o2] key =
+      closedCollarFiber3Prefix [o0, o1, o2] key := by
+  unfold closedCollarFiber closedCollarFiberFrom allClosedCollarStates
+    allChainStates
+  simp only [List.length_cons, List.length_nil]
+  rw [buildChainStatesFrom.eq_2, buildChainStatesFrom.eq_2,
+    buildChainStatesFrom.eq_1]
+  unfold extendChainStates closedCollarFiber3Prefix
+    closedCollarClosureCompatible
+  rw [filter_bindList_bool]
+  simp only [filter_map_bool, filter_bindList_bool, bindList_assoc,
+    bindList_map]
+  simp [List.filter_filter, chainStateAt, listGetD]
+
+theorem closedCollarKey_three_last
+    (o0 o1 o2 : TauOrient) (s0 s1 s2 : TauState)
+    (key : List LColor) :
+    (closedCollarKey [o0, o1, o2] [s0, s1, s2] == key) =
+      (closedCollarKey [o0, o1, o2] [default, default, s2] == key) := by
+  cases o2 <;>
+    simp [closedCollarKey, closedCollarClosingEdges, chainEdgeColor,
+      tauStateColorAt, chainStateAt, listGetD, chainOutputOrder,
+      tauOrientOutputOrder, tauOrientAt]
+
+theorem closedCollarFiber3Prefix_eq_keyed
+    (o0 o1 o2 : TauOrient) (key : List LColor) :
+    closedCollarFiber3Prefix [o0, o1, o2] key =
+      closedCollarFiber3Keyed [o0, o1, o2] key := by
+  unfold closedCollarFiber3Prefix closedCollarFiber3Keyed
+  apply congrArg (bindList allTauStates)
+  funext s0
+  apply congrArg (bindList (List.filter
+    (fun s1 => compatibleAdjacent (tauOrientAt [o0, o1, o2] 0)
+      (tauOrientAt [o0, o1, o2] 1) s0 s1) allTauStates))
+  funext s1
+  apply congrArg (List.map fun s2 => [s0, s1, s2])
+  rw [List.filter_filter]
+  apply List.filter_congr
+  intro s2 _hs2
+  rw [closedCollarKey_three_last o0 o1 o2 s0 s1 s2 key]
+  simp [Bool.and_assoc, Bool.and_comm]
+
+theorem closedCollarFiber_three_eq_keyed
+    (o0 o1 o2 : TauOrient) (key : List LColor) :
+    closedCollarFiber [o0, o1, o2] key =
+      closedCollarFiber3Keyed [o0, o1, o2] key := by
+  rw [closedCollarFiber_three_eq_prefix,
+    closedCollarFiber3Prefix_eq_keyed]
 
 theorem listGetD_idxOf_eq_of_mem {α : Type} [BEq α] [LawfulBEq α]
     (xs : List α) (fallback : α) {x : α} (hx : x ∈ xs) :
@@ -898,6 +1125,16 @@ theorem closedCollarFiberKempeConnected_of_spineRowsForFiber
     simpa [hstart, hend] using hpath
   simpa [closedCollarKempeStep] using hpathXY
 
+theorem closedCollarFiberKempeConnected_of_spineRowsForClosedFiber
+    {orients : List TauOrient} {fiber : List (List TauState)}
+    (cert : ClosedCollarSpineCertificate)
+    (hfiber : closedCollarFiber orients cert.key = fiber)
+    (hrows : closedCollarSpineRowsValid orients fiber cert.parents = true)
+    (hroot : closedCollarSpineParentsReachRoot fiber cert = true) :
+    closedCollarFiberKempeConnected orients cert.key :=
+  closedCollarFiberKempeConnected_of_spineRowsForFiber cert rfl
+    (by simpa [closedCollarFiber] using hfiber) hrows hroot
+
 theorem closedCollarFiberKempeConnected_of_spineCertificateAuditForFiber
     {orients : List TauOrient} {statesList fiber : List (List TauState)}
     (cert : ClosedCollarSpineCertificate)
@@ -980,6 +1217,14 @@ theorem closedCollarFiberKempeConnected_of_fiberFrom_eq_nil
     rw [hempty] at hxFiber
     exact hxFiber
   cases hxEmpty
+
+theorem closedCollarFiberKempeConnected_of_closedFiber_eq_nil
+    {orients : List TauOrient} {key : List LColor}
+    (hempty : closedCollarFiber orients key = []) :
+    closedCollarFiberKempeConnected orients key :=
+  closedCollarFiberKempeConnected_of_fiberFrom_eq_nil
+    (orients := orients) (statesList := allClosedCollarStates orients)
+    (key := key) rfl (by simpa [closedCollarFiber] using hempty)
 
 theorem closedCollarFiberKempeConnected_of_pairwiseConnectedCheck
     {orients : List TauOrient} {key : List LColor}
