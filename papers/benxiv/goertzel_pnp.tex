@@ -22,18 +22,6 @@
   xleftmargin=2pt,
   aboveskip=8pt,
   belowskip=8pt,
-  literate=
-    {⟨}{{$\langle$}}1
-    {⟩}{{$\rangle$}}1
-    {ℕ}{{$\mathbb{N}$}}1
-    {→}{{$\to$}}1
-    {×}{{$\times$}}1
-    {↔}{{$\leftrightarrow$}}1
-    {∧}{{$\wedge$}}1
-    {∀}{{$\forall$}}1
-    {¬}{{$\neg$}}1
-    {≠}{{$\neq$}}1
-    {≤}{{$\le$}}1,
 }
 \lstset{style=lean}
 
@@ -46,508 +34,707 @@
 \newtheorem{definition}{Definition}
 
 \newcommand{\Kpoly}{K^{\mathrm{poly}}}
-\newcommand{\Dm}{\mathcal{D}_m}
-\newcommand{\Ical}{\mathcal{I}}
-\newcommand{\uu}{\mathbf{u}}
-\newcommand{\zz}{\mathbf{z}}
-\newcommand{\Ti}{T_i}
-\newcommand{\Aei}{Ae_i}
+\newcommand{\MY}{M(Y)}
+\newcommand{\FF}{\mathbb{F}_2}
+\newcommand{\Gap}{\mathrm{Gap}}
+\newcommand{\StarSW}{(\star_{\mathrm{SW}})}
 
-\title{A Machine-Checked Obstruction in the Calibration Step\\
-of the Switching-by-Weakness Route to\\
-$\mathrm{P}\neq\mathrm{NP}$}
+\title{A Quantale-Weakness Route to $\mathrm{P}\neq\mathrm{NP}$\\
+via CD Evidence Normalization and\\
+Gauge-Buffered Locked Ensembles:\\
+\large A Machine-Checked Formalization Companion}
 \author{The MeTTapedia formalization effort}
-\date{June 2026}
+\date{July 2026}
 
 \begin{document}
 \maketitle
 \sloppy
 
 \begin{abstract}
-Ben Goertzel's manuscript \emph{$\mathrm{P}\neq\mathrm{NP}$: A Non-Relativizing
-Proof via Quantale Weakness and Geometric Complexity} (v12) proposes to
-separate $\mathrm{P}$ from $\mathrm{NP}$ by an information-theoretic
-\emph{quantale} argument. On an efficiently samplable ensemble $\Dm$ of masked
-random Unique-SAT instances with a Valiant--Vazirani isolation layer, a
-\emph{Switching-by-Weakness} normal form (Theorem~4.2) reduces every short
-global decoder, after a short wrapper, to an $O(\log m)$-local per-block rule on
-the post-switch input $\uu_i=(\zz,a_i,b)$; sign-invariant neutrality (Theorem~5.1)
-and template sparsification (Theorem~5.10) then pin each local rule near $1/2$,
-independence across $\Theta(m)$ blocks yields per-program success
-$2^{-\Omega(t)}$, hence a distributional lower bound
-$\Kpoly\!\ge\!\eta\,t$, which clashes with the constant-length self-reduction
-upper bound under $\mathrm{P}=\mathrm{NP}$ (Proposition~7.2). The load-bearing
-step is the \emph{calibration}/success-domination link (Theorem~4.2,
-Corollary~4.6, Lemma~4.8; Appendix~A.5, Lemma~A.17), which derives the
-exchangeability of $(X_i,Y_i)$ at a fixed local input $\uu$ from the
-promise-preserving involution $T_i$. We record a machine-checked finding of the
-MeTTapedia formalization effort: the involution $T_i$ acts on the post-switch
-input $\uu_i=(\zz,a_i,b)$ by $b\mapsto b\oplus a_i$, so it preserves only the
-\emph{reduced projection} $(\zz,a_i)$, and preserves the \emph{full} input
-$(\zz,a_i,b)$ if and only if $a_i=0$. Consequently the exchangeability at a fixed
-$\uu$ that the calibration step requires holds only on the $a_i=0$ fiber --- a
-vanishing $2^{-k}=m^{-\Theta(1)}$ fraction of Valiant--Vazirani columns --- and
-the ``local comparator dominates the global decoder'' calibration is not valid as
-stated. The structural facts, together with a finite two-point success-domination
-counterexample, are formalized with no \texttt{sorry} in the Lean module
-\texttt{Mettapedia.Computability.PNP.PostSwitchInputObstruction}. We further
-machine-check that the natural repair --- re-deriving success domination on the
-$\Ti$-invariant reduced projection $(\zz,a_i)$ --- does not reduce the problem: on
-that neutral interface, success domination is logically equivalent to the
-average-case witness-bit hardness the route must prove, so it renames the target
-rather than weakening it (stated conditional on two explicit, unproven hypotheses).
-We state the scope exactly: what is machine-checked is the \emph{structural} input-preservation
-fact; the full claim that \emph{no} local comparator dominates a global decoder on
-this ensemble engages the genuine difficulty and is \emph{not} established by this
-work. We make no claim about $\mathrm{P}$ versus $\mathrm{NP}$, which remains open;
-the formalization asserts no separation.
+This is a living formalization companion to Ben Goertzel's current-best
+$\mathrm{P}$ versus $\mathrm{NP}$ manuscript, \emph{A Quantale-Weakness Route to
+$\mathrm{P}\neq\mathrm{NP}$ via CD Evidence Normalization and Gauge-Buffered
+Locked Ensembles} (v13, April 2026). That manuscript is a re-architecture of the
+earlier Switching-by-Weakness route (v12): it discards the ``short computation is
+local'' midpoint and replaces it with an \emph{evidence-accounting} one. The
+proof is a single clash in polytime-capped conditional description length
+$\Kpoly(\MY\mid Y)$ on an efficiently samplable family of SAT instances $Y$ whose
+every witness carries the same global readout message $\MY$: under
+$\mathrm{P}=\mathrm{NP}$ a self-reduction gives $\Kpoly(\MY\mid Y)=O(1)$, while an
+unconditional lower bound argues $\Kpoly(\MY\mid Y)\ge\eta t$. The lower bound
+treats computation as an evidence-producing process: predictive advantage becomes
+constructible-dual (CD) evidence skew, then pairwise distinctions between
+message-opposite worlds; a normalization theorem forces every target-relevant
+non-neutral trace leaf to be a safe-buffer or a hidden-gauge observation; an
+\emph{atomic evidence budget} then caps the total advantage at $o(t)$ across the
+selected coordinates, which with boundary-law mixing yields product small-success
+$2^{-\Omega(t)}$ and, by compression-from-success, the linear incompressibility.
+
+We record what the MeTTapedia Lean development has machine-checked of this route,
+and we are scrupulous about a distinction that a naive axiom audit would blur:
+the development contains \emph{no} \texttt{sorry}, \texttt{axiom},
+\texttt{native\_decide}, or placeholder in its proof terms, and every headline
+reduces to Lean's standard base
+$\{\texttt{propext},\allowbreak\ \texttt{Classical.choice},\allowbreak\
+\texttt{Quot.sound}\}$; but the \emph{open} content of the route is carried
+\emph{in the types}, as interface-hypothesis fields of structures and as named
+\texttt{Prop} obligations passed as hypotheses. Consequently a clean
+\texttt{\#print axioms} on the central clash theorem certifies \emph{the
+implication, not the conclusion}. We label every result as unconditional,
+conditional on Ben's named interface hypotheses, or open, and we foreground the
+places where the formalization \emph{refutes} a stated step (including one of the
+manuscript's own scaled constructions, proved inadmissible) rather than
+discharging it. We make no claim about $\mathrm{P}$ versus $\mathrm{NP}$, which
+remains open; the formalization's terminal separation node is open, at
+$0\%$. Appendices record the superseded v12 route --- whose calibration step this
+companion's predecessor was devoted to obstructing --- and a graveyard of
+disproven sub-routes, with their history.
 \end{abstract}
 
-\section{The problem and Ben's quantale / Switching-by-Weakness route}
-\label{sec:problem}
+\tableofcontents
 
-\subsection{The quantale-weakness route}
+\section{Orientation: what this document is}
+\label{sec:orientation}
 
-The question is whether $\mathrm{P}=\mathrm{NP}$. Ben Goertzel's manuscript
-\emph{$\mathrm{P}\neq\mathrm{NP}$: A Non-Relativizing Proof via Quantale Weakness
-and Geometric Complexity}, version~v12 (hereafter ``v12''), proposes a
-distributional separation built from three interacting ingredients: a
-compositional \emph{weakness} calculus measuring the shortness of algorithms, the
-symmetry and sparsity of masked random $3$-CNFs, and a genuine
-\emph{algorithmic switching} statement turning any short polynomial-time decoder
-into a local per-bit rule on a constant fraction of blocks.
+A companion of this kind exists to grow alongside a formalization, not to freeze a
+single verdict. It has three jobs. First, to distill the \emph{current-best}
+version of Ben Goertzel's proof --- the v13 evidence-accounting route --- as a
+faithful mathematical spine (\S\ref{sec:route}). Second, to record what the Lean
+development has actually checked of that spine, with an honest ledger separating
+what holds unconditionally from what holds only modulo the manuscript's interface
+hypotheses (\S\S\ref{sec:honesty}--\ref{sec:instantiation}). Third, to keep the
+history of obstructions and reroutings --- the counterexamples the formalization
+found and how the route moved around them --- both inline where they bear on the
+argument (\S\ref{sec:obstructions}) and, for wholly superseded paths, in
+appendices (Appendices~\ref{app:v12}--\ref{app:graveyard}).
 
-\paragraph{The weakness quantale.} v12 measures shortness by the
-polytime-capped conditional description length
+The reader should keep one structural fact in view throughout. The manuscript's
+proof is abstract-then-concrete: an evidence calculus and a budget theorem are
+proved \emph{from} a stated interface that a concrete ensemble must satisfy, and
+the concrete gauge-buffered locked ensemble is the object that must satisfy all of
+those interface hypotheses at once. The formalization mirrors exactly this shape.
+Its strongest verified content is therefore of two kinds: genuinely unconditional
+theorems about the calculus (normalization, bookkeeping, and a battery of
+counterexamples that kill specific over-strong readings), and conditional
+\emph{implications} that assemble the interface into the clash. The genuine open
+mathematics --- the concentration and hardness inputs the ensemble must supply ---
+is named precisely and left open.
+
+\section{The current-best route (v13)}
+\label{sec:route}
+
+We follow the manuscript's own notation and numbering. What is preserved from v12
+is only the outer skeleton --- the polytime-capped weakness object $\Kpoly$, the
+Compression-from-Success bridge, and the self-reduction upper bound under
+$\mathrm{P}=\mathrm{NP}$; everything between them is new.
+
+\subsection{The $\Kpoly$ upper--lower clash}
+\label{sec:clash}
+
+The cost object (v13 \S2.1--2.2, Def.~2.2) is polytime-capped conditional
+description length $\Kpoly(x\mid y)$: the length of the shortest program that
+outputs $x$ from $y$ within a fixed polynomial time bound. The construction builds
+an efficiently samplable family of public SAT instances $Y$ with a polynomial-time
+witness relation $R(Y,W)$; every satisfying witness carries a \emph{readout
+message} $M(W)\in\{0,1\}^{r_t}$, $r_t=\Omega(t)$, $t=\Theta(m)$, and the ensemble
+enforces the \emph{single-message promise} (v13 \S1.1, Prop.~4.10):
 \[
-  \mathrm{weakness}(z\mid y) \;:=\; \Kpoly(z\mid y),
+  R(Y,W)=1 \ \wedge\ R(Y,W')=1 \ \Longrightarrow\ M(W)=M(W'),
 \]
-used as the cost object of a quantale: costs add under composition and under
-independent block product (v12, Lemma~A.8). The strategy is to oppose a
-\emph{global budget} accrued by any short decoder across $t=\Theta(m)$
-independent blocks against the constant-length per-block encoder available under a
-$\mathrm{P}=\mathrm{NP}$ self-reduction.
+so $\MY$ is well-defined on the support even though the witness is \emph{not}
+unique. The proof is the clash of two bounds on $\Kpoly(\MY\mid Y)$:
+\begin{itemize}
+  \item \textbf{Upper bound, conditional on $\mathrm{P}=\mathrm{NP}$}
+        (v13 \S11 / Prop.~2.17, Thm.~11.10): if $\mathrm{P}=\mathrm{NP}$, the
+        bit-fixing SAT self-reduction finds \emph{some} satisfying $W$ in
+        polynomial time, and the fixed readout returns $M(W)=\MY$; this is one
+        fixed constant-length program, so $\Kpoly(\MY\mid Y)=O(1)$ pointwise on
+        the support. Uniqueness of witness is not needed --- the single-message
+        promise makes any witness sufficient (Rmk.~11.17).
+  \item \textbf{Lower bound, unconditional over the ensemble}
+        (v13 \S10 / Thm.~10.9): for every fixed polynomial clock exponent $D$,
+        after choosing ensemble parameters for that $D$, there are constants
+        $\eta,\kappa>0$ with
+        $\Pr[\,\Kpoly_{(D)}(\MY\mid Y)\ge\eta t\,]\ge 1-2^{-\kappa t}$.
+  \item \textbf{The clash} (v13 Thm.~11.14 / Cor.~11.15): assume
+        $\mathrm{P}=\mathrm{NP}$; it supplies a fixed solver exponent $D^\ast$.
+        Instantiate the ensemble at $D^\ast$. For large $t$,
+        $\eta^\ast t > c_{\mathrm{up}}$, yet the same instance must satisfy both
+        $\Kpoly\ge\eta^\ast t$ and $\Kpoly\le c_{\mathrm{up}}$: contradiction,
+        hence $\mathrm{P}\neq\mathrm{NP}$.
+\end{itemize}
+The clocked constants (e.g.\ a safe radius $R_{\mathrm{safe}}=c(D^\ast)\log m$) are
+allowed to depend on the alleged solver's exponent $D^\ast$; the manuscript
+defends this (Rmks.~11.16--11.19) on the ground that under $\mathrm{P}=\mathrm{NP}$
+the exponent $D^\ast$ is one fixed finite constant, instantiated before
+$m,t\to\infty$.
 
-\paragraph{The masked-and-isolated ensemble.} For a fixed clause density
-$\alpha>0$ and $k=c_1\log m$, a block is sampled (v12, \S3.1) as
-$\Phi=(F^h,A,b)$, where: $F$ is a constant-density random $3$-CNF; a fresh mask
-$h=(\pi,\sigma)\in H_m=S_m\ltimes(\mathbb{Z}_2)^m$ permutes variable names and
-flips literal signs to give $F^h$; and a Valiant--Vazirani isolation layer adds a
-matrix $A\in\{0,1\}^{k\times m}$ with pairwise-independent columns and a
-$\delta$-biased right-hand side $b\in\{0,1\}^k$. The block distribution $\Dm$ is
-the law of $\Phi$ conditioned on the event $\mathsf{Unq}(\Phi)$ that $\Phi$ has a
-\emph{unique} satisfying assignment $X=x(\Phi)\in\{0,1\}^m$. Writing
-$a_i:=\Aei$ for the $i$-th column of $A$, the pair $(a_i,b)$ is the
-\emph{VV label} for bit $i$.
+\subsection{The gauge-buffered locked ensemble}
+\label{sec:ensemble}
 
-\paragraph{Local inputs and the post-switch interface.} A sign-invariant SILS
-feature vector $\zz:=\mathrm{feat}(F^h)\in\{0,1\}^{r(m)}$ with $r(m)=O(\log m)$ is
-published, and v12 defines (Definition~3.10) the \emph{per-bit local input}
-\begin{equation}
-  \uu_i(\Phi) \;:=\; \bigl(\zz(F^h),\; a_i=\Aei,\; b\bigr)
-  \;\in\;\{0,1\}^{O(\log m)} ,
-  \label{eq:localinput}
-\end{equation}
-together with the local $\sigma$-field $\mathcal{L}_i$ it generates.
+The ensemble (v13 \S4) replaces v12's masked-and-isolated USAT / Valiant--Vazirani
+construction. A regioned public geometry $G_m$ (Def.~4.1) partitions sites into
+neutral, buffer, locked, gauge, and readout regions. The public instance
+$Y=(Y_{\mathrm{neu}},Y_{\mathrm{buf}},Y_{\mathrm{lock}})$ (Def.~4.2) exposes
+neutral template syntax, the public law of a strictly-positive high-temperature
+\emph{buffer}, and the public template of the locked global-message layer --- and
+crucially contains \emph{no} raw witness values, no hidden gauge values, and
+\emph{no} public atom of the form $M_a=b$ (no planted message tag). Hidden sites
+(Def.~4.3) carry a raw representative $x$, a hidden \emph{gauge} vector $g$, and
+the gauge-invariant quotient $z$, tied by $z_v=x_v\oplus g_v$. The verifier
+(Def.~4.8) conjoins locked-layer acceptance, the gauge equations, buffer
+acceptance, readout consistency, and the Tseitin/CNF gadgets; it has a uniform
+poly-size CNF realization $F_Y$ (Thm.~4.13). The gauge group $(\FF)^V$ acts by
+$s\cdot(x,g,z,\xi,M)=(x\oplus s,\,g\oplus s,\,z,\,\xi,\,M)$, fixing $Y$, $R$, and
+$M$ (Lemma~4.15); the \emph{hidden-gauge product law} (Hyp.~4.17) keeps unexposed
+gauge coordinates independent fair bits, giving the guessing bound
+$\Pr[\hat g_J=g_J\mid Y,h]\le 2^{-|J|}$ (Cor.~4.19). A \emph{legal safe probe}
+reads few buffer sites far from the locked/gauge/readout regions (Def.~4.25);
+under buffer contraction / Dobrushin uniqueness (Hyp.~4.27) the soft-buffer
+max-qSSM bound (Thm.~4.29) makes polynomially many probes leak only $o(1)$
+(Cor.~4.30). Thm.~4.31 exports the interface: samplable $Y/F_Y$; poly-time $R$;
+message $M\in\{0,1\}^{r_t}$; single-message promise; gauge action; hidden-gauge
+product law; atom completeness (Hyp.~4.22); and max-qSSM.
 
-\paragraph{Switching-by-Weakness.} The structural core (v12, Theorem~4.2) is a
-normal form: for every polynomial-time decoder $P$ of description length
-$\le\delta t$ there is a short wrapper $W$ with
-$|W|\le|P|+O(\log m+\log t)$ and a subset $S\subseteq[t]$ with $|S|\ge\gamma t$
-such that
-\begin{equation}
-  (P\circ W)(\Phi)_{j,i} \;=\; h_{j,i}\bigl(\uu_i(\Phi_j)\bigr),
-  \qquad j\in S,\ i\in[m],
-  \label{eq:switching}
-\end{equation}
-for Boolean maps $h_{j,i}:\{0,1\}^{O(\log m)}\to\{0,1\}$, each computable in time
-$\mathrm{poly}(\log m)$. The wrapper is constructed by ERM distillation
-(Proposition~A.5), trained on \emph{symmetrized, back-mapped} surrogate labels
-rather than on the truth $X$; the link from the surrogate labels back to truth is
-the \emph{calibration} Lemma~4.8.
+\subsection{The evidence-accounting midpoint}
+\label{sec:midpoint}
 
-\paragraph{Neutrality, sparsification, and the clash.} Two orthogonal mechanisms
-then force near-randomness of every $\uu$-measurable per-bit rule on $\Theta(t)$
-blocks: a sign-invariant \emph{neutrality} lemma (Theorem~5.1),
-$\Pr[X_i=1\mid\Ical]=\tfrac12$ for any sign-invariant view $\Ical$; and a
-\emph{template sparsification} theorem (Theorem~5.10) showing that, at radius
-$r=c_3\log m$, any fixed local per-bit rule is $\varepsilon$-high-bias on at most
-$o(t)$ blocks. Combined with single-block lower bounds for tiny
-$\mathrm{ACC}^0$/streaming decoders and independence across blocks
-(Theorem~6.7), one obtains a per-program small-success bound
-$2^{-\Omega(t)}$, hence the tuple incompressibility
-$\Kpoly\bigl((X_1,\dots,X_t)\mid(\Phi_1,\dots,\Phi_t)\bigr)\ge\eta\,t$ with high
-probability (Theorem~6.8). Under $\mathrm{P}=\mathrm{NP}$, a uniform
-constant-length program recovers each witness by bit-fixing with a USAT decider,
-so the same quantity is $\le C$ (Proposition~7.2); for large $t$ the two are
-incompatible, which v12 reads as $\mathrm{P}\neq\mathrm{NP}$ (Theorem~7.4).
+The weight of the proof sits on a new midpoint (v13 \S1.2):
+\[
+  \text{advantage}\ \Longrightarrow\ \text{CD evidence skew}\ \Longrightarrow\
+  \text{atomic pair-distinctions}\ \Longrightarrow\ \text{safe leakage}+\text{gauge rank}.
+\]
+Its components, in order: \textbf{(\S3)} for a target bit $B_j$ with opposite
+fibers, a transcript's positive/negative masses encode predictive advantage as
+\emph{evidence skew}, and the phase gap
+$\Gap_j(A_j)=\tfrac12\bigl|\Pr[A_j=1\mid B_j=1]-\Pr[A_j=1\mid B_j=0]\bigr|$ equals
+the CD skew (Lemma~3.20). \textbf{(\S5)} the CD evidence normal form (CD-ENF,
+Thm.~5.17) leaves only three non-neutral leaf classes --- neutral, safe-buffer,
+hidden-gauge --- and gauge faithfulness (Thm.~5.20, Cor.~5.21) forbids using the
+quotient identity $z_v=x_v\oplus g_v$ as a canonical-gauge shortcut: any
+target-relevant use normalizes to raw gauge support and is \emph{charged}. This is
+the technical heart that replaces v12's calibration/involution step.
+\textbf{(\S6)} CD trace capture (Thm.~6.15) telescopes an observer's evidence
+trace, bounding the output phase gap by half the total atomic derivative along the
+trace: internal computation creates no new pair-distinctions; advantage enters
+only when a primitive atom separates two previously undistinguished opposite
+worlds. \textbf{(\S7.7)} the \emph{Atomic Evidence Budget} (Thm.~7.23) combines
+these with atom-level bounds --- neutral leaves contribute $0$, safe leaves are
+bounded by $Q_{\mathrm{tot}}\,\varepsilon_{\mathrm{step}}(m)$ (max-qSSM), gauge
+leaves by a gauge-rank entropy $\mathrm{rank}_G$ --- to give
+$\sum_{j\in S}\Gap_j(A_j)=o(|S|)$ (Cor.~7.26). \textbf{(\S8)} boundary-law mixing
+(Thm.~8.10) makes the pivot-visible surface near-random. \textbf{(\S9)} combining
+the budget with mixing yields product small-success
+$\Pr[A_S=B_S]\le 2^{-\Omega(t)}$ over the $\Omega(t)$ switched coordinates
+(Thms.~9.18/9.19) --- the average-case unpredictability of the message
+coordinates that the whole route reduces to. \textbf{(\S2.2 / App.~A.17)}
+Compression-from-Success turns that exponential small-success into the linear
+$\Kpoly\ge\Omega(t)$ lower bound of \S10.
 
-\subsection{The calibration crux}
-\label{sec:crux}
+A self-imposed correctness check (Rmk.~13.11), ``no hidden use of locality,''
+forbids any module from re-importing the very step --- v12's
+Switching-by-Weakness / calibration via the involution $T_i$ --- that the v13
+pivot was designed to eliminate. This is a candid signal of where the earlier
+route was fragile; Appendix~\ref{app:v12} records what the formalization found
+there.
 
-Every quantitative step downstream of \eqref{eq:switching} bounds the success of
-the \emph{comparator} $P\circ W$ and transfers that bound back to $P$ by
-\emph{success domination} (v12, Corollary~4.6):
-\begin{equation}
-  \Pr\bigl[P(\Phi)=X\bigr] \;\le\;
-  \Pr\bigl[(P\circ W)(\Phi)=X\bigr] \;+\; m^{-\Omega(1)} .
-  \label{eq:domination}
-\end{equation}
-The comparator is trained on symmetrized surrogate labels $Y_i$, so its analysis
-is only meaningful once one knows that the Bayes-optimal predictor for the
-surrogate $Y_i$ at a fixed local input $\uu$ is \emph{also} optimal for the truth
-$X_i$. This is the calibration Lemma~4.8, and its proof rests on a single
-exchangeability claim. In v12's words (the ``Calibration in one line'' of \S4.1,
-proved in Appendix~A.5):
+\subsection{What the manuscript claims, and what it leaves open}
+The manuscript claims $\mathrm{P}\neq\mathrm{NP}$ unconditionally by contradiction
+(Thm.~1.1). $\mathrm{P}=\mathrm{NP}$ is assumed only for contradiction, supplying
+the fixed exponent $D^\ast$. Everything else is discharged \emph{from} the
+ensemble-interface hypotheses of Thm.~4.31, which a concrete construction must
+satisfy simultaneously; the manuscript is explicit (Rmk.~13.6, milestone M4) that
+exhibiting one concrete gauge-buffered locked ensemble satisfying all of them at
+once --- single-message promise, SAT realization, atom completeness, gauge
+faithfulness, hidden-gauge product law, max-qSSM, bounded gauge incidence,
+\emph{and} boundary-law mixing --- is the remaining weight of the proof. Two
+contraction hypotheses (boundary posterior contraction, Hyp.~8.5; buffer
+contraction, Hyp.~4.27) are offered explicitly as ``prove-or-import.'' The
+public-input/neutrality tension is acknowledged as the pivot's pressure point
+(Rmk.~4.5): the observer may read the entire public $Y$, and on the single-message
+support the target bit is a mathematical function of $Y$, so the claim that
+full public-input access normalizes to \emph{neutral} context --- with any
+target-relevant use \emph{charged} --- is a genuine structural assumption of the
+ensemble, not a cosmetic restriction.
 
-\begin{quote}
-\itshape
-Fix $\uu=(\zz,a_i,b)$. The promise-preserving involution $\Ti$ bijects
-$(X_i=0,Y_i=y)\leftrightarrow(X_i=1,Y_i=1-y)$ without changing $\uu$ or the
-measure. Thus $(X_i,Y_i)\mid\uu$ is exchangeable, so
-$\Pr[X_i=1\mid\uu]=\Pr[Y_i=1\mid\uu]=f_i(\uu)$, and the Bayes rule
-$h_i^\star(\uu)=\mathbf{1}[f_i(\uu)\ge\tfrac12]$ is optimal for both.
-\end{quote}
+\section{How honesty is encoded in the formalization}
+\label{sec:honesty}
 
-The involution invoked here is the promise-preserving map of v12, Lemma~3.6,
-\begin{equation}
-  \Ti:\ (F^h,A,b)\ \longmapsto\ \bigl(F^{\tau_i h},\ A,\ b\oplus \Aei\bigr),
-  \label{eq:Ti}
-\end{equation}
-where $\tau_i\in H_m$ flips only variable $i$'s literal signs. It toggles the
-witness bit $X_i$ and fixes any sign-invariant view $\Ical$, which is exactly the
-content of neutrality. The calibration argument additionally asserts that $\Ti$
-acts on the \emph{local input} $\uu_i=(\zz,a_i,b)$ ``without changing $\uu$.''
+Before listing results we fix the reading protocol, because it is the crux of an
+honest audit of this route.
 
-The detailed proof in Appendix~A.5 (Lemma~A.17) makes the action on each
-coordinate of $\uu$ explicit. Its Step~1 lists the properties of the same map
-\eqref{eq:Ti}: it ``preserves the SILS features $\zz$ (which are sign-invariant),''
-``preserves $a_i$ but \emph{flips $b$ by $a_i$},'' and ``preserves the uniqueness
-promise.'' Step~2 then conditions on a fixed $\uu=(\zz,a_i,b)$ --- a triple whose
-\emph{third} coordinate is $b$ --- and concludes exchangeability of $(X_i,Y_i)$
-``at fixed $\uu$.'' These two statements are in tension: a map that flips $b$ by
-$a_i$ does not fix the triple $(\zz,a_i,b)$ unless $a_i=0$. It is precisely this
-bridge point that we formalize.
+\paragraph{No placeholders in proof terms.} A scan of the entire PNP development
+finds \emph{no} \texttt{axiom}, \texttt{sorry}, \texttt{admit},
+\texttt{native\_decide}, \texttt{opaque}, or \texttt{:= True} placeholder in code.
+Every headline theorem we cite was checked with \texttt{\#print axioms} and
+reduces to a subset of Lean's standard base
+$\{\texttt{propext},\ \texttt{Classical.choice},\ \texttt{Quot.sound}\}$ --- some
+to just $\{\texttt{propext}\}$ or $\{\texttt{propext},\ \texttt{Quot.sound}\}$.
 
-\section{The formalized obstruction}
-\label{sec:lean}
+\paragraph{The open content lives in the types.} The route's open steps are
+carried not as Lean axioms but as \emph{hypotheses}: as assumption fields of a
+\texttt{structure}, and as named \texttt{def \dots : Prop} obligations passed in as
+arguments. Consequently, a clean axiom print on a \emph{conditional} theorem
+certifies that the \emph{implication} is validly proved, and says nothing about
+whether the hypotheses hold. Throughout this document we therefore tag each result
+with one of four statuses:
+\begin{description}
+  \item[\textnormal{(a) unconditional}] proved outright (standard axioms, no
+        interface hypotheses);
+  \item[\textnormal{(b) conditional}] a proved implication from named interface
+        hypotheses, or a theorem over a \texttt{structure} carrying assumption
+        fields --- ``machine-checked modulo Ben's interface hypotheses'';
+  \item[\textnormal{(c) asserted \texttt{Prop}}] a named \texttt{Prop} obligation
+        used only as a hypothesis --- no Lean axiom, but analytically open;
+  \item[\textnormal{(d) open frontier}] named in doc-comments, not yet a Lean
+        statement.
+\end{description}
+The route's own itinerary is recorded as data in \texttt{Roadmap.lean}, whose
+terminal node \texttt{pnp.global-separation} is \texttt{openBackground} at
+progress $0\%$: \emph{no final separation theorem is asserted}. Several earlier
+nodes are marked \texttt{blockedByCounterexample} --- the formalization
+\emph{refutes} the stated step rather than overclaiming it; those refutations are
+themselves unconditional theorems (\S\ref{sec:instantiation},
+Appendix~\ref{app:graveyard}).
 
-We formalize the action of the involution \eqref{eq:Ti} on the post-switch input
-\eqref{eq:localinput}, isolating exactly which part of $\uu$ is invariant. The
-development is elementary and carries no \texttt{sorry}; it lives in the Lean
-module \texttt{Mettapedia.Computability.PNP.PostSwitchInputObstruction}, over a
-small bit-vector layer in which $\texttt{BitVec}\,n$ is a Boolean function on
-$\mathrm{Fin}\,n$, $\texttt{zeroVec}$ is the all-false vector, and the
-Valiant--Vazirani right-hand-side update is the coordinatewise exclusive-or
-\begin{lstlisting}[language={}]
-def vvToggle {n : Nat} (a b : BitVec n) : BitVec n :=
-  fun i => Bool.xor (b i) (a i)
+\section{The evidence spine, formalized (Phases A--D)}
+\label{sec:spine}
+
+The four phases below are all present in the settled core of the formalization. We give the
+load-bearing statement of each and its status.
+
+\subsection{Phase B: the CD evidence normal form (unconditional)}
+The cleanest genuine win of the spine. \texttt{V13CDENF} defines a raw evidence
+syntax whose leaves are exactly neutral / safe-buffer / hidden-gauge, with
+\emph{no} observer-output constructor, and proves that the recursive normalizer
+preserves semantics (v13 \S5--6, App.~C.7).
+\begin{lstlisting}
+theorem CDENF_semantics
+    (S : EvidenceSemantics Omega Neutral Safe Gauge)
+    (E : RawEvidence Neutral Safe Gauge) :
+    S.SatNormal (CDENF E) = S.SatRaw E
 \end{lstlisting}
-which is the XOR $b\oplus a$ appearing in \eqref{eq:Ti}.
+\textbf{Status (a), unconditional}, axioms $\{\texttt{propext},\
+\texttt{Quot.sound}\}$ (it does not even need \texttt{Classical.choice}). That the
+raw syntax has no opaque observer-output atom is a structural design choice that
+makes the three-leaf classification exhaustive by construction; observer outputs
+must be expanded through an interface carrying its own semantics theorem
+(\texttt{observerToCDENF\_sat}, status (b)).
 
-\subsection{The post-switch input and the involution's action}
-
-The post-switch input $\uu=(\zz,a_i,b)$ of \eqref{eq:localinput} is the structure
-$\texttt{PostSwitchInput}$; the involution's induced action $\texttt{tiInputMap}$
-is exactly \eqref{eq:Ti} read on $\uu$ (the SILS coordinate $\zz$ held fixed by
-sign-invariance, the column $a$ held fixed, and the VV right-hand side $b$
-toggled); and $\texttt{invariantProjection}$ is the coordinate one obtains by
-\emph{dropping} $b$.
-
-\begin{lstlisting}[language={}]
-structure PostSwitchInput (Z : Type*) (k : ℕ) where
-  z : Z
-  a : BitVec k
-  b : BitVec k
-
-/-- The exact local-input action induced by the paper's involution `T_i`. -/
-def tiInputMap {Z : Type*} {k : ℕ} (u : PostSwitchInput Z k) : PostSwitchInput Z k :=
-  ⟨u.z, u.a, vvToggle u.a u.b⟩
-
-/-- The obvious `T_i`-invariant projection obtained by dropping the VV
-right-hand side. -/
-def invariantProjection {Z : Type*} {k : ℕ} (u : PostSwitchInput Z k) : Z × BitVec k :=
-  (u.z, u.a)
+\subsection{Phase A: the finite evidence spine (conditional)}
+\texttt{V13EvidenceSpine} works over a finite rational law (no measure theory),
+defines the target \texttt{Gap} of an observer, and bounds it by half a
+derivative sum.
+\begin{lstlisting}
+theorem phaseA_gap_le_half_derivative_sum
+    (C : EvidenceSpineBound mu B T g Pair Stage Branch) :
+    Gap mu B T g <= (1/2 : Rat) * C.telescoping.derivativeSum
 \end{lstlisting}
+\textbf{Status (b), conditional}: the \texttt{EvidenceSpineBound} structure carries
+the capture inequality (\texttt{capturesGap}) and the telescoping bound
+(\texttt{sep\_le\_derivativeSum}) as \emph{assumption fields}; the theorem
+assembles them. The two-point toy witnesses are unconditional but trivial. This is
+the \S3/\S6 telescoping architecture in place, not a concrete-ensemble estimate.
 
-The reduced projection $(\zz,a_i)$ is always $\Ti$-invariant. This is the part of
-$\uu$ that the calibration argument may legitimately condition on.
+\subsection{Phase C: the gauge-buffered locked interface (conditional)}
+\texttt{V13GaugeBufferedLockedInterface} states the ensemble interface as a
+nine-field structure over the Phase-A/B objects --- single-message promise,
+hidden-gauge product, no public target tags, atom completeness, gauge
+faithfulness, safe-qSSM, bounded gauge incidence, boundary mixing, admissible
+histories --- and proves three ledger-coherence consequences (e.g.\ that an
+admissible history is not target-measurable, and that boundary mixing blocks pivot
+sufficiency). \textbf{Status (b)}: all three are derived \emph{from} the nine
+assumption fields. A two-point toy jointly inhabits all nine fields (status (a),
+but trivial): it certifies the interface is \emph{consistent / non-vacuous}, not
+that any scaled ensemble satisfies it. The manuscript's quantitative estimates
+(max-qSSM, gauge-rank) appear here only as abstract budget fields.
 
-\begin{lstlisting}[language={}]
-@[simp] theorem invariantProjection_tiInputMap
-    {Z : Type*} {k : ℕ} (u : PostSwitchInput Z k) :
-    invariantProjection (tiInputMap u) = invariantProjection u := by
-  rfl
+\subsection{Phase D: the upper--lower clash, as a conditional object}
+\label{sec:phaseD}
+\texttt{V13ConditionalClash} assembles Phases~A--D into the clash \emph{as an
+implication}. It reuses the checked lower-bound plumbing and isolates the two
+genuinely open analytic inputs as their own structures: a
+\texttt{CompressionStarSWHardness} field (the average-case witness-bit hardness
+transfer, $\StarSW$) and a \texttt{SelfReductionUpperHypothesis} field (the
+$\mathrm{P}=\mathrm{NP}$ constant-length decoder).
+\begin{lstlisting}
+theorem v13_upperLowerClash
+    (L : GaugeBufferedLockedInterface ...)
+    (P : ParameterRecord L) :
+    UpperLowerClash L P
 \end{lstlisting}
+\textbf{Status (b), conditional --- and this is the crux of the whole audit.} The
+theorem is a proved implication from the nine-field ledger $L$ plus a
+\texttt{ParameterRecord} that \emph{bundles the two explicitly self-flagged open
+inputs}. Its own audit tags exactly those two of seven fields \texttt{.openInput}.
+Because the lower chain forces $\eta\le\Kpoly$ while the upper hypothesis asserts
+$\Kpoly<\eta$, a \texttt{ParameterRecord} is jointly contradictory --- so the
+theorem encodes the \emph{clash architecture}, not an unconditional falsehood or a
+separation. Its clean axiom print certifies the implication is valid; it does
+\emph{not} certify $\mathrm{P}\neq\mathrm{NP}$.
 
-The full input $(\zz,a_i,b)$, however, is fixed by $\Ti$ exactly on the
-zero-column fiber. The pivot lemma is that toggling $b$ by $a$ returns $b$ iff
-$a$ is the zero vector,
-\begin{lstlisting}[language={}]
-lemma vvToggle_eq_self_iff_zero {n : ℕ} (a b : BitVec n) :
-    vvToggle a b = b ↔ a = zeroVec
+\paragraph{A naming caution.} The module \texttt{PNPv13AtomicEvidenceBudget}
+formalizes the \emph{charged-occurrence bookkeeping} that the \S7.9 interface
+export demands --- the no-double-counting / no-omission discipline that any such
+coordinate sum must obey --- together with concrete obstruction countermodels. It
+does \emph{not} prove the manuscript's quantitative Theorem~7.23 ($o(t)$ budget);
+the safe-leakage and gauge-rank estimates live only as abstract interface fields.
+The bookkeeping algebra itself is unconditional:
+\begin{lstlisting}
+theorem coordinateSummedCost_le_atomBudget_of_noDoubleCounting
+    (hno : S.NoDoubleCounting) : S.coordinateSummedCost <= S.atomBudget
+theorem noDoubleCounting_iff_allPositiveCostAtomsCharged_of_coordinateSummedCost_eq_atomBudget
+    (heq : S.coordinateSummedCost = S.atomBudget) :
+    S.NoDoubleCounting <-> S.AllPositiveCostAtomsCharged
 \end{lstlisting}
-from which the full-input preservation criterion follows immediately:
-\begin{lstlisting}[language={}]
-theorem tiInputMap_eq_self_iff_zeroColumn
-    {Z : Type*} {k : ℕ} (u : PostSwitchInput Z k) :
-    tiInputMap u = u ↔ u.a = zeroVec := by
-  cases u
-  simp [tiInputMap, vvToggle_eq_self_iff_zero]
+and a companion module exhibits a finite surface where a double-counted atom and
+an omitted atom \emph{cancel}, so aggregate budget equality holds while both
+structural failures persist --- a machine-checked warning that the aggregate
+budget alone certifies neither side condition.
+
+\subsection{The interface as a finite consistency suite}
+\label{sec:interface}
+The manuscript itself flags the pressure point (Rmk.~4.5): on the single-message
+support the target bit $B_j=\ell_j(\MY)$ is a mathematical function of the full
+public instance $Y$, so $B_j=f_j(Y)$. The full public input therefore
+\emph{cannot} be classified neutral; only a target-blind public skeleton
+$Y_{\mathrm{neu}}$ can, and every target-relevant use of the remaining
+$Y_{\mathrm{chg}}$ must normalize to charged safe-buffer or hidden-gauge evidence.
+This is the decisive soundness condition of the whole route --- and it is the one
+a formalization can pin down finitely, before any concentration estimate. The
+development enforces it as a suite of finite consistency lemmas over the interface,
+each an unconditional theorem:
+\begin{itemize}
+  \item message-opposite coupled pairs must agree on a target-blind skeleton, not
+        on the full $Y$: same-full-$Y$ opposite pairs are empty (single-message),
+        so any statement pairing opposite messages at fixed $Y$ is vacuous;
+  \item a pair-neutral atom family cannot generate the target
+        ($B_j=g(N(\omega))$ with $N$ pair-neutral forbids a nontrivial
+        message-opposite coupling) --- the neutral skeleton must be target-blind;
+  \item the full public input carries derivative mass: if $B_j=f_j(Y)$ then every
+        message-opposite coupling puts unit mass on public-bit disagreements, so
+        $Y$ cannot be folded into the neutral class;
+  \item the full $\sigma$-field $\sigma(Y)$ is not admissible conditioning for the
+        current coordinate: a $C$-measurable balanced bit cannot have
+        $\Pr[B_j=1\mid C]=\tfrac12$ on positive-probability atoms, so an
+        admissible history may contain only a target-blind projection of $Y$;
+  \item a boundary summary that is \emph{sufficient} for $B_j$ forces mixing error
+        $\ge\tfrac12$, so the pivot summary must be genuinely non-sufficient;
+  \item no opaque run-atom: the raw evidence syntax has \emph{no}
+        observer-output constructor, so an arbitrary polynomial-time computation
+        cannot be inserted as one uncharged primitive --- it must expand through
+        the interface and be normalized by CD-ENF (\S\ref{sec:spine}).
+\end{itemize}
+These are the finite obligations a concrete ensemble must satisfy, and they are the
+checkable core of the interface: they say precisely where the scaled Phase-E family
+failed (\S\ref{sec:inadmissible}), and they are what a candidate ensemble must
+pass rather than assume. What they do \emph{not} supply are the quantitative
+estimates --- max-qSSM, gauge-rank entropy, boundary-law mixing --- which remain
+interface hypotheses (\S\ref{sec:scope}).
+
+\section{The concrete instantiation: Phase E, the observer ladder, and a
+refuted family}
+\label{sec:instantiation}
+
+The manuscript's remaining weight is the concrete ensemble. The formalization's
+Phase-E work is where it is most valuably \emph{negative}, and the honesty
+protocol of \S\ref{sec:honesty} earns its keep.
+
+\subsection{A concrete smoke test that works}
+\texttt{V13PhaseEConcrete} builds a genuine four-world locked unit-CNF instance
+with an isolation row, proves it has a unique witness, and exhibits a real nonzero
+target gap $\Gap=\tfrac12$ (a finite \texttt{norm\_num} fact over the four
+worlds). All nine interface obligations are discharged one by one on this instance
+--- \textbf{status (a)}, but explicitly a smoke test: the caveats note that scaled
+max-qSSM and scaled boundary-law mixing remain separate obligations.
+
+\subsection{A scaled family, proved inadmissible}
+\label{sec:inadmissible}
+\texttt{V13PhaseEScaled} attempts a parameterized hard family --- and proves its
+own construction broken. The public input sets the locked target tag equal to the
+target itself, so a single public coordinate determines the target:
+\begin{lstlisting}
+theorem phaseEScaled_familyInadmissible_publicTargetTag (m k : Nat) :
+    exists coordinate : PhaseEScaledPublic m k -> Bool,
+      forall omega,
+        coordinate (phaseEScaledPublicInput omega) = phaseEScaledTarget omega
 \end{lstlisting}
+\textbf{Status (a), unconditional} (axioms $\{\texttt{propext}\}$). This violates
+the manuscript's own ``no public target tags'' requirement (Hyp.~4.21), so the
+family's obligation map re-tags all nine fields \emph{inadmissible}. The lesson,
+carried forward as a design rule: a candidate ensemble must be pinned by theorem to
+carry no uncharged target-bearing public atom, or it silently prints the answer.
 
-\subsection{The bridge point, stated as a single theorem}
-
-Combining the two facts gives the exact obstruction at the calibration bridge:
-on every nonzero VV column the reduced projection is preserved, yet the full
-input is not, because $b$ moves.
-
-\begin{lstlisting}[language={}]
-/-- The exact calibration step cannot keep both the invariant projection and
-the full post-switch input fixed on a nonzero VV column: `(z, a)` is preserved,
-but `b` changes and hence the full input changes. -/
-theorem calibrationFullInputPreservation_fails_of_nonzeroColumn
-    {Z : Type*} {k : ℕ} (u : PostSwitchInput Z k)
-    (ha : nonzeroColumn u.a) :
-    invariantProjection (tiInputMap u) = invariantProjection u ∧
-      tiInputMap u ≠ u ∧ (tiInputMap u).b ≠ u.b := by
-  exact ⟨invariantProjection_tiInputMap u,
-    tiInputMap_ne_self_of_nonzeroColumn u ha,
-    tiInputMap_changes_b_of_nonzeroColumn u ha⟩
-\end{lstlisting}
-
-As a global no-go form: in every positive VV width and for every concrete
-$\zz$-value, the proposition that $\Ti$ preserves the \emph{full} local input on
-all nonzero columns is false.
-
-\begin{lstlisting}[language={}]
-theorem not_calibrationFullInputPreservation_on_nonzeroColumns
-    {Z : Type*} (z : Z) {k : ℕ} (hk : 0 < k) :
-    ¬ (∀ u : PostSwitchInput Z k, nonzeroColumn u.a -> tiInputMap u = u)
-\end{lstlisting}
-
-\paragraph{Why this voids the exchangeability at fixed $\uu$.} The calibration of
-\S\ref{sec:crux} derives the symmetry of the conditional law of $(X_i,Y_i)$
-\emph{at a fixed} $\uu=(\zz,a_i,b)$ from the bijection $\Ti$. But by
-\eqref{eq:Ti} and \texttt{tiInputMap}, $\Ti$ sends the local input $\uu=(\zz,a_i,b)$
-to $\uu'=(\zz,a_i,b\oplus a_i)$. When $a_i\neq0$ these are \emph{different} points
-of the local alphabet: the involution exchanges configurations across the two
-fibers $\{b\}$ and $\{b\oplus a_i\}$, not within the single fiber $\{b\}$ on which
-the calibration conditions. The symmetry it supplies is therefore a symmetry of
-the law conditioned on the reduced projection $(\zz,a_i)$ --- equivalently,
-averaged over the $b$-coordinate --- and not of the law at fixed full $\uu$. The
-exchangeability ``$(X_i,Y_i)\mid\uu$ is exchangeable'' holds, via this involution,
-only on the locus $a_i=0$.
-
-\paragraph{The $a_i=0$ fiber is vanishing.} The column $a_i=\Aei$ is the $i$-th
-column of the Valiant--Vazirani matrix $A$, whose columns are pairwise
-independent and marginally uniform in $\{0,1\}^k$ (v12, Definition~3.3). Hence
-$\Pr[a_i=0]=2^{-k}$, and with $k=c_1\log m$ this is $m^{-\Theta(1)}$ --- a
-polynomially vanishing fraction of columns. The promise-preserving exchangeability
-that the calibration step needs at fixed $\uu$ is thus available only on a
-vanishing fraction of the VV columns that index the per-bit rules, exactly the
-regime the lower bound must control.
-
-\subsection{A finite success-domination counterexample}
-
-The same module records, in the smallest nontrivial setting, why ``two instances
-that share a local input'' cannot be calibrated by a $\uu$-measurable rule: a
-global decoder that reads the full instance can strictly out-predict every rule
-that depends only on the shared local input. Take two equally weighted full
-instances (encoded by a Boolean) that map to the \emph{same} nonzero one-bit
-post-switch input. A global decoder recovers the witness on both; any local
-decoder, forced to use only the common input, is a fixed guess and is correct on
-at most one.
-
-\begin{lstlisting}[language={}]
-theorem twoPointGlobalSuccessCount_eq_two :
-    twoPointGlobalSuccessCount = 2 := by rfl
-
-theorem twoPointLocalSuccessCount_le_one (guess : Bool) :
-    twoPointLocalSuccessCount guess ≤ 1 := by
-  cases guess <;> decide
-
-/-- Finite domination counterexample: the global decoder succeeds on both
-full instances, while every decoder depending only on the shared local input
-succeeds on at most one. -/
-theorem finite_successDomination_counterexample :
-    twoPointGlobalSuccessCount = 2 ∧
-      (∀ guess : Bool, twoPointLocalSuccessCount guess ≤ 1) ∧
-      (∀ guess : Bool, twoPointLocalSuccessCount guess < twoPointGlobalSuccessCount)
-\end{lstlisting}
-
-This is a finite witness that success domination \eqref{eq:domination} cannot be
-obtained \emph{from sharing $\uu$ alone}: when two outcomes collapse to the same
-local input but differ in the truth, the comparator that is forced through $\uu$
-loses to the global decoder. It is the local, combinatorial shadow of the
-fiber-crossing exhibited above; the involution that would have justified
-calibration moves $\uu$ off the fiber rather than within it.
-
-\subsection{The reduced-projection repair is circular}
-\label{sec:coarse}
-
-The natural repair conditions the local rules on the $\Ti$-invariant projection
-$(\zz,a_i)$ --- the coordinate calibration may legitimately use --- rather than on
-the full $\uu$, hoping to trade the calibration gap for a coarser interface. We
-machine-check that this does not reduce the problem.
-
-Write $\mathrm{StarSW}$ for the half-bound success domination must deliver on a
-neutral interface: that every decoder scores at most $\tfrac12+\mathrm{slack}$ on
-the witness bit --- exactly the average-case witness-bit hardness of $\Dm$. If the
-reduced projection is neutral --- the property the repair itself asserts --- then
-the best $(\zz,a_i)$-measurable comparator scores exactly $\tfrac12$, and success
-domination on $(\zz,a_i)$ is \emph{logically equivalent} to $\mathrm{StarSW}$:
-
-\begin{lstlisting}[language={}]
-theorem bestLocalSuccess_eq_half_of_neutral (hN : Neutral u x) :
-    bestLocalSuccess u x = 1 / 2
-
-theorem coarseDominationAll_iff_starSW_of_neutral (hN : Neutral u x) :
-    CoarseDominationAll u x decoderSuccess slack
+\subsection{The observer ladder}
+\texttt{V13ObserverLadder} climbs the scaled family and records, at each rung, a
+machine-checked fact --- most of them negative. A $q=1$ observer that reads the
+public target-lock wins with probability $1$
+(\texttt{phaseEScaled\_targetLockObserver\_success\_eq\_one}); target-blind juntas
+and parities sit at exactly $\tfrac12$; the full random-switching lift is
+\emph{pinned, not proved}, as \texttt{PhaseEScaledSwitchingStatementNeeded}
+(status (c)); and hardness is proved \emph{equivalent} to the open $\StarSW$
+half-bound:
+\begin{lstlisting}
+theorem phaseEScaled_payloadDomination_iff_starSW ... :
+    CoarseDominationAll payloadSummary target decoderSuccess slack
       <-> StarSW decoderSuccess slack
 \end{lstlisting}
+This equivalence is the honest localization: on this family, ``a local rule
+dominates every decoder'' is not weaker than the average-case hardness one is
+trying to prove --- it is the same statement.
 
-Re-deriving domination on $(\zz,a_i)$ is thus re-deriving the hardness target, not
-reducing to anything weaker. A concrete two-point instance makes the failure
-explicit: two full instances that share the reduced projection but differ in $b$
-give a neutral projection on which a $b$-reading decoder wins on both, so
-domination fails ($1\le\tfrac12$):
-
-\begin{lstlisting}[language={}]
-theorem coarseProjectionToy_not_dominates :
-    not (Dominates coarseProjectionToyUCoarse coarseProjectionToyWitness ...)
+\subsection{The linear replacement route, and a lesson from formalization}
+\label{sec:truefirst}
+After the scaled family was proved inadmissible, a concrete linear-algebra testbed
+was opened (the Roadmap ties it under \texttt{v13RealRungOne*} /
+\texttt{v13ObserverLadder}): public instance $(A,\,Ax)$ over $\FF^m$ with $A$ a
+certified invertible linear map, and a family of row-query observers on it. Two
+success bounds hold \textbf{unconditionally} on this route (axioms
+$\{\texttt{propext},\ \texttt{Classical.choice},\ \texttt{Quot.sound}\}$), using a
+crude one-time union-bound constant:
+\begin{lstlisting}
+-- sequential q-row observers:
+--   uniformSequentialQRowSuccess observer i0 <= 1/2 + 4*(2^q - 1)/2^m
+-- no-target bit-junta observers:
+--   NoTargetBitJuntaSuccess i0 observer <= 1/2 + 4*2^j/2^m
 \end{lstlisting}
+A fixed-map parity observer's success obeys an exact trichotomy --- $1$, $0$, or
+exactly $\tfrac12$ (status (a)). The \emph{sharp} $1/2+2^q/2^m$ bound for general
+causal row queries is open for $q\ge 2$ (a fan of asserted \texttt{Prop} counting
+obligations, status (c)/(d)); the $q\le 1$ cases are discharged, and a
+machine-checked \emph{negative} shows the sharp bound is \emph{false} for a
+target-row-reading observer at $m=2$, which is exactly why the construction restricts to
+the no-target event.
 
-This is an instance of a \emph{no-threading} impossibility: a neutral statistic
-cannot also be sufficient for a target that is a deterministic function of the
-instance (\texttt{neutral\_not\_sufficient}, from the general
-\texttt{noThreadingLemma}). Every coordinate dropped to gain $\Ti$-invariance is a
-coordinate the global decoder may still use; neutrality and sufficiency trade one
-for one.
-
-We are exact about scope. The conclusion that the repair is circular \emph{on the
-ensemble} is a theorem \emph{conditional on two explicit hypotheses we do not
-prove} --- that $(\zz,a_i)$ is neutral on $\Dm$, and that $\mathrm{StarSW}$ implies
-the separation --- both kept in the signature:
-
-\begin{lstlisting}[language={}]
-theorem coarseProjectionRepair_obstruction_conditional
-    (EnsembleCoarseNeutral : Neutral u x)
-    (StarSWImpliesSeparation : StarSW decoderSuccess slack -> pNeNPClaim) :
-    (CoarseDominationAll u x decoderSuccess slack <-> StarSW decoderSuccess slack)
-      /\ (CoarseDominationAll u x decoderSuccess slack -> pNeNPClaim)
+This route is also where the formalization taught us something about
+\emph{stating} events. The natural step-indexed ``first coset hit at step $t$''
+event, used as a counting target, turned out to be \emph{false as stated}: it
+carried no ``no earlier hit'' clause, so an observer that re-reads a row over a
+prefix that already generates the target makes \emph{every} world in the prefix
+class hit. The refutation is an explicit constructed observer, not an abstract
+objection:
+\begin{lstlisting}
+def rowShearGeneratedRereadObserver (i0 : Fin m) (hm : 1 < m) :
+    SequentialRowObserver m 3 where
+  chooseRow transcript :=
+    match transcript.length with
+    | 0 => i0
+    | 1 => finSpare i0 hm
+    | _ + 2 => i0
+  decideFromTranscript := fun _ => 0
+-- ...ConditionedCountingBound_not_of_generated_reread_prefix_gap :
+--   not (ConditionedCountingBound i0 observer)     -- status (a), a refutation
 \end{lstlisting}
+The repair restores the missing minimality: the corrected \emph{true-first} event
+adds ``no coset hit at any earlier step,'' and with that clause the conditioned,
+packing, and counting bounds all close \emph{unconditionally}. The crown counting
+lemma is a conditioned replay of a two-row shear embedding applied at the hit row;
+because the shear fixes the already-read rows, the conditioning is free and the
+constants land exactly. The refuted step-indexed surfaces are kept in the
+development, documented against their refuting theorems, because a refutation of a
+plausible statement is itself a finding. With the corrected event, these bounds
+assemble into an unconditional closure of ``rung one'' on both samplers --- a
+unified success $\le\tfrac12+\varepsilon$ headline with an explicit rung ledger ---
+and the route's separation endpoint follows from an $\StarSW$ hardness input by an
+implication whose axiom print is \emph{empty}: pure plumbing, asserting no
+separation. (This is the concrete-instantiation frontier; the evidence spine of
+\S\ref{sec:spine} is the more settled core.)
 
-The machine-checked content is the \emph{equivalence} and the \emph{finite
-counterexample}; together they show the reduced-projection repair renames the
-average-case hardness rather than reducing to it. The module is
-\texttt{Mettapedia.Computability.PNP.CoarseProjectionObstruction}, without
-\texttt{sorry}.
+\section{Obstructions and reroutings}
+\label{sec:obstructions}
 
-\section{Status and scope}
+The move from v12 to v13 was not cosmetic; it routed around a specific, now
+machine-checked obstruction. We record the live reroutings here; the superseded
+v12 route in full is Appendix~\ref{app:v12}.
+
+\paragraph{The calibration defect, and the kernel-flip repair.} v12's calibration
+(Lemma~4.8 / App.~A.17) needed, at a fixed local input, exchangeability of the
+witness bit under a promise-preserving involution $T_i$. \texttt{tiInputMap} sends
+the third coordinate $b\mapsto b\oplus a_i$, so it fixes the full input
+\emph{iff} the column $a_i$ is zero
+(\texttt{tiInputMap\_eq\_self\_iff\_zeroColumn}), a vanishing $m^{-\Theta(1)}$
+fraction of columns (\texttt{not\_calibrationFullInputPreservation\_on\_nonzeroColumns},
+status (a)). The repair that strengthens the step is a \emph{kernel-flip}
+involution: flip the witness by a kernel vector $w\in\ker(A)$ with $w_i=1$; this
+toggles the target bit while fixing $b$ (since $Aw=0$) and the rest of the local
+statistic, giving \emph{exact} neutrality, expressed as a cardinality-preserving
+pairing of the two witness-bit fibers:
+\begin{lstlisting}
+theorem kernelFlip_exactNeutrality_card
+    (hw : IsKernelVector A w) (hwi : w i = 1) :
+    Fintype.card (KernelBitFiber A b i 0)
+      = Fintype.card (KernelBitFiber A b i 1)
+\end{lstlisting}
+Exact neutrality removes the broken calibration lemma outright and makes the
+associated sparsification stack unnecessary.
+
+\paragraph{The No-Threading impossibility.} Any hope of \emph{enriching} a single
+local statistic to be simultaneously neutral and sufficient is blocked, and for a
+logical rather than analytic reason: the target bit is a deterministic function of
+the instance, so a sufficient statistic pins it to $\{0,1\}$, which neutrality
+forbids from equalling $\tfrac12$.
+\begin{lstlisting}
+theorem noThreadingLemma (phi : Phi) :
+    not (Neutral u x /\ Sufficient u x)
+\end{lstlisting}
+\textbf{Status (a).} Because the obstruction is logical, no concentration or
+log-Sobolev inequality can ever supply the missing domination; this is the
+structural reason the hardness input $\StarSW$ cannot be made a free lemma, and
+part of why v13 abandons the locality midpoint entirely.
+
+\paragraph{The steelman conditional.} The non-hardness plumbing of the repaired
+route assembles into a clean conditional: exact kernel-flip neutrality
+\emph{plus} the open $\StarSW$ hardness input implies the abstract separation
+endpoint.
+\begin{lstlisting}
+theorem pnp_steelman_conditional
+    (hKernel : KernelFlipNeutrality F)
+    (hSW : StarSWAverageCaseWitnessBitHardness F) :
+    F.pNeNPClaim
+\end{lstlisting}
+\textbf{Status (b), conditional} --- and notably its axiom print is \emph{empty}
+(``does not depend on any axioms''): pure implication plumbing. It asserts no
+unconditional separation. $\StarSW$ is not weaker than the target: it is
+contradicted in the $\mathrm{P}=\mathrm{NP}$ regime and is equivalent, on the
+ensemble, to the separation itself --- which is exactly why No-Threading forbids
+deriving it for free.
+
+\section{Status, scope, and the open frontier}
 \label{sec:scope}
 
-We state the scope of this finding exactly.
+\paragraph{Machine-checked unconditionally.} The CD-ENF normalization
+(\S\ref{sec:spine}); the atomic-evidence \emph{bookkeeping} algebra and its
+cancellation/exactness countermodels; non-vacuity of the nine-field interface; the
+Phase-E \emph{negatives} (the scaled family is inadmissible; the observer ladder
+stops at a $q=1$ target-lock counterexample; hardness $\Leftrightarrow\StarSW$);
+the Roadmap-node refutations of stated readout and calibration steps; and, on the
+linear route, the two crude-constant success bounds, the parity trichotomy, the
+public-surface certificate, the $q\le1$ causal cases, and the true-first counting
+close.
 
-\paragraph{What is established.} The action of the promise-preserving involution
-$\Ti$ of \eqref{eq:Ti} on the post-switch input $\uu_i=(\zz,a_i,b)$ of
-\eqref{eq:localinput} is $b\mapsto b\oplus a_i$; it preserves the reduced
-projection $(\zz,a_i)$ (theorem \texttt{invariantProjection\_tiInputMap}) and
-preserves the full input $(\zz,a_i,b)$ \emph{if and only if} $a_i=0$ (theorems
-\texttt{tiInputMap\_eq\_self\_iff\_zeroColumn} and
-\texttt{calibrationFullInputPreservation\_fails\_of\_nonzeroColumn}); on every
-nonzero column the third coordinate $b$ genuinely moves, so the full-input
-preservation invoked by the calibration argument fails
-(\texttt{not\_calibrationFullInputPreservation\_on\_nonzeroColumns}). A finite
-two-point success-domination counterexample
-(\texttt{finite\_successDomination\_counterexample}) shows that a
-$\uu$-measurable comparator cannot dominate a global decoder merely because they
-share the local input. All of this is machine-checked, without \texttt{sorry}, in
-\texttt{Mettapedia.Computability.PNP.PostSwitchInputObstruction}. The consequence
-is precise: the exchangeability of $(X_i,Y_i)$ at a fixed $\uu$ that the
-calibration step (v12, Lemma~4.8 / Appendix~A.5, Lemma~A.17) derives from $\Ti$
-holds, via that involution, only on the $a_i=0$ fiber, a vanishing
-$2^{-k}=m^{-\Theta(1)}$ fraction of VV columns. The local-comparator-dominates-
-global-decoder calibration is therefore not valid as stated.
+\paragraph{Machine-checked only modulo Ben's interface hypotheses.} The Phase-A
+gap bound; the Phase-C ledger-coherence lemmas; the \textbf{Phase-D upper--lower
+clash} (from the nine-field ledger plus a \texttt{ParameterRecord} bundling the two
+flagged open inputs); and the no-target sequential certificate (modulo a pinned
+counting \texttt{Prop}). These are the reduction skeleton toward \S11, not a
+separation.
 
-\paragraph{What is not established.} This is an obstruction to the calibration
-\emph{as written}, not a refutation of its conclusion. We have machine-checked the
-\emph{structural} fact that the cited involution does not fix the full local input
-off the zero-column fiber; we have \emph{not} established that no $\uu$-measurable
-comparator can dominate a global decoder on the ensemble $\Dm$. That stronger,
-measure-theoretic statement --- a genuine anti-concentration / independence claim
-about the conditional law of $(X_i,Y_i)$ given the full $\uu$, integrated against
-the Valiant--Vazirani and masking laws --- is exactly the difficulty the proof
-must confront, and it is left open here. In particular, conditioning only on the
-invariant projection $(\zz,a_i)$ does not by itself help:
-\S\ref{sec:coarse} shows the domination bound one would re-derive there is
-equivalent to the average-case hardness it must prove, and a \emph{separate}
-neutral local mechanism for the $b$-coordinate is excluded by the same
-no-threading impossibility. What this work does \emph{not} rule out is a domination
-bound from genuinely new structure --- an exchangeability at fixed $\uu$ from a
-symmetry other than $\Ti$, or a direct anti-concentration of
-$(X_i,Y_i)\mid\uu$ against the masking and Valiant--Vazirani laws.
+\paragraph{Open.} The sharp $2^q/2^m$ causal counting bounds for $q\ge2$; the
+random-switching lift \texttt{PhaseEScaledSwitchingStatementNeeded}; the $\StarSW$
+average-case hardness input; the two ``prove-or-import'' contraction hypotheses
+(boundary posterior contraction, buffer contraction); and --- per the Roadmap's
+terminal node --- the entire global complexity-class interface and the final
+separation, at $0\%$.
 
-\paragraph{$\mathrm{P}$ versus $\mathrm{NP}$ remains open.} We make no claim, in
-either direction, about $\mathrm{P}$ versus $\mathrm{NP}$. The finding concerns
-the validity of one step in one proposed route, not the truth of the separation.
-Consistent with this, the formalization itself asserts no separation: the
-project's route-status record carries the verdict
-$\texttt{claimsFinalSeparation} = \texttt{false}$, and the module above proves a
-property of the calibration bridge, not a circuit or complexity-class lower bound.
-
-\section{What remains}
-\label{sec:remains}
-
-The obstruction localizes the open question very precisely. The route's lower
-bound is sound \emph{given} the calibration link \eqref{eq:domination}; the
-calibration link is justified, in v12, by an exchangeability that the cited
-involution supplies only on a vanishing fraction of columns. Closing the route
-therefore requires one of the following, none of which is provided here.
-
-\begin{itemize}
-  \item \emph{Calibration on the reduced projection --- machine-checked to be
-        circular.} One might re-derive the success-domination bound conditioning
-        the local rules on the $\Ti$-invariant projection $(\zz,a_i)$ rather than
-        the full $\uu=(\zz,a_i,b)$. Section~\ref{sec:coarse} shows this is not a
-        genuine reduction: on the neutral reduced projection, success domination is
-        \emph{equivalent} to the average-case hardness $\mathrm{StarSW}$ the route
-        must prove (conditional on the two explicit hypotheses of
-        \S\ref{sec:coarse}), so it renames the target rather than weakening it. We
-        record it here only to mark this door closed.
-  \item \emph{Exchangeability at fixed $\uu$ from new structure.} Exhibit a
-        promise-preserving symmetry that genuinely fixes the full
-        $(\zz,a_i,b)$ while toggling $X_i$, or otherwise establish the
-        anti-concentration of $(X_i,Y_i)\mid\uu$ directly against the masking and
-        Valiant--Vazirani laws --- the measure-theoretic claim left open in
-        \S\ref{sec:scope}.
-  \item \emph{A quantitative $b$-marginal control.} Bound the contribution of the
-        $b$-coordinate to a global decoder's advantage, so that the
-        fiber-crossing of $\Ti$ costs only $m^{-\Omega(1)}$ and can be absorbed
-        into the slack of \eqref{eq:domination}.
-\end{itemize}
-
-The two latter items are substantive analytic tasks on the masked-and-isolated
-ensemble; the first is closed above, machine-checked to be circular rather than a
-reduction. Until one of the substantive tasks is carried out, the
-Switching-by-Weakness route does not, as written,
-establish its distributional lower bound, because the calibration step on which
-that bound depends is not valid at fixed $\uu$ on the bulk of the ensemble. The
-machine-checked content of this paper is exactly the boundary of that gap, and
-nothing beyond it.
+\paragraph{$\mathrm{P}$ versus $\mathrm{NP}$ remains open.} We make no claim in
+either direction. The value of the formalization is the verified plumbing and the
+exact localization of the open inputs, together with a body of machine-checked
+counterexamples that keep specific over-strong readings of the route honest. The
+concrete gauge-buffered locked ensemble that would simultaneously satisfy every
+interface hypothesis --- the manuscript's own stated remaining obligation --- is
+not exhibited here.
 
 \section*{Provenance}
-The manuscript discussed is Ben Goertzel, \emph{$\mathrm{P}\neq\mathrm{NP}$: A
-Non-Relativizing Proof via Quantale Weakness and Geometric Complexity},
-version~v12. The formalization is work of the MeTTapedia formalization effort; the
-Lean development is the module
-\texttt{Mettapedia.Computability.PNP.PostSwitchInputObstruction} (the calibration
-obstruction), together with \texttt{CoarseProjectionObstruction} and the general
-\texttt{NoThreadingLemma} (the reduced-projection circularity of
-\S\ref{sec:coarse}); all carry no \texttt{sorry}. Notation in Sections~\ref{sec:problem}--\ref{sec:crux} follows
-v12 (the ensemble $\Dm$, the masks $H_m$, the Valiant--Vazirani labels
-$(a_i,b)$ with $a_i=\Aei$, the SILS features $\zz$, the post-switch input
-$\uu_i=(\zz,a_i,b)$, the involution $\Ti$, and the polytime-capped weakness
-$\Kpoly$).
+\addcontentsline{toc}{section}{Provenance}
+The manuscript distilled in \S\ref{sec:route} is Ben Goertzel, \emph{A
+Quantale-Weakness Route to $\mathrm{P}\neq\mathrm{NP}$ via CD Evidence
+Normalization and Gauge-Buffered Locked Ensembles} (v13, 20 April 2026), which
+supersedes the earlier \emph{$\mathrm{P}\neq\mathrm{NP}$: A Non-Relativizing Proof
+via Quantale Weakness and Geometric Complexity} (v12, 9 October 2025) discussed in
+Appendix~\ref{app:v12}. The formalization is work of the MeTTapedia formalization
+effort. The v13 evidence spine (Phases~A--D), Phase-E instantiation, and observer
+ladder are the modules \texttt{V13EvidenceSpine}, \texttt{V13CDENF},
+\texttt{V13GaugeBufferedLockedInterface}, \texttt{PNPv13AtomicEvidenceBudget},
+\texttt{V13ConditionalClash}, \texttt{V13PhaseEConcrete},
+\texttt{V13PhaseEScaled}, and \texttt{V13ObserverLadder}, with the itinerary in
+\texttt{Roadmap.lean}; the v12 obstruction is \texttt{PostSwitchInputObstruction};
+the steelman conditional and its inputs are \texttt{PNPSteelmanConditional},
+\texttt{KernelFlipInvolution}, and \texttt{NoThreadingLemma}; the linear
+replacement route is the \texttt{V13RealRungOne*} / \texttt{V13RealRungTwoBitJunta}
+family. Lean listings are ASCII transliterations of the source declarations
+(the sources are normative); every headline was checked with \texttt{\#print
+axioms}. Per-declaration source links are omitted pending publication of the
+development tree.
+
+\appendix
+
+\section{The superseded v12 route: a machine-checked obstruction in the
+calibration step}
+\label{app:v12}
+
+The v12 manuscript separated $\mathrm{P}$ from $\mathrm{NP}$ by a
+Switching-by-Weakness normal form (Thm.~4.2) that reduces every short global
+decoder, after a short wrapper, to an $O(\log m)$-local per-block rule on the
+post-switch input $u_i=(z,a_i,b)$ --- $z$ a sign-invariant feature, $(a_i,b)$
+Valiant--Vazirani labels with $a_i=Ae_i$ --- on a masked-random Unique-SAT
+ensemble; neutrality (Thm.~5.1) and template sparsification (Thm.~5.10) pin each
+local rule near $\tfrac12$; independence across $\Theta(m)$ blocks gives per-program
+success $2^{-\Omega(t)}$ and hence $\Kpoly\ge\eta t$, clashing with a constant
+self-reduction upper bound under $\mathrm{P}=\mathrm{NP}$. The load-bearing step
+was the \emph{calibration}/success-domination link (Lemma~4.8; App.~A.5,
+Lemma~A.17), which derived exchangeability of the witness bit at a fixed $u$ from a
+promise-preserving involution $T_i$.
+
+The formalization (\texttt{PostSwitchInputObstruction}) found that $T_i$ acts by
+$b\mapsto b\oplus a_i$: it preserves the reduced projection $(z,a_i)$ always
+(\texttt{invariantProjection\_tiInputMap}) but the full input $(z,a_i,b)$
+\emph{iff} $a_i=0$ (\texttt{tiInputMap\_eq\_self\_iff\_zeroColumn}), so the
+fixed-$u$ exchangeability holds only on a vanishing $2^{-k}=m^{-\Theta(1)}$
+fraction of columns. A finite two-point success-domination counterexample
+(\texttt{finite\_successDomination\_counterexample}, axioms
+$\{\texttt{propext},\ \texttt{Quot.sound}\}$) shows a $u$-measurable comparator
+cannot dominate a global decoder merely by sharing the local input. The natural
+repair --- coarsening to the $T_i$-invariant projection $(z,a_i)$ --- was proved
+\emph{circular}: on that neutral interface, success domination is equivalent to the
+average-case hardness it must prove (it renames the target). These are the
+findings the v13 re-architecture routes around by discarding the locality midpoint;
+the kernel-flip repair and the No-Threading impossibility of \S\ref{sec:obstructions}
+are the constructive residue that carries into the v13 steelman conditional.
+
+\section{A graveyard of disproven sub-routes}
+\label{app:graveyard}
+
+Each entry is a route or reading that was tried and closed; several are themselves
+machine-checked theorems (that a stated property \emph{fails}).
+
+\begin{description}
+  \item[Fixed-input calibration via $T_i$ (v12).] Dead as stated: the involution
+        moves $b$ off the fixed fiber on every nonzero column
+        (Appendix~\ref{app:v12}). Superseded by the kernel-flip involution, which
+        gives exact neutrality.
+  \item[Coarse / reduced-projection repair.] Circular: on a neutral interface,
+        ``every decoder is dominated by the best local rule'' is equivalent to
+        $\StarSW$ (a two-point witness makes coarse-domination demonstrably fail).
+        A closed door, not a weakening.
+  \item[Analytic-concentration closure.] Retired by No-Threading: the obstruction
+        to a neutral-and-sufficient statistic is logical, so no hypercontractivity
+        or log-Sobolev device can close it.
+  \item[Per-map capacity counting.] Arithmetically dead: a single adversarial map
+        can host a constant fraction of hitting worlds, so the required smallness
+        lives in the map \emph{ensemble}, not in any one map; the closure runs
+        through a per-prefix partition and a \emph{conditioned} one-row density
+        instead.
+  \item[Surrogate-ERM ``distillation'' of domination.] Relativizes, hence (by
+        Baker--Gill--Solovay) cannot establish a class-separating switching step;
+        symmetrization projects onto an $\approx m$-bit invariant algebra, far
+        richer than the $O(\log m)$-bit local statistic where neutrality lives.
+  \item[H{\aa}stad-style $p$-random bit restriction.] Wrong tool for this family:
+        the public bits are parities of hidden bits at a fixed witness, so random
+        bit-fixing leaves live parities and the switching-lemma hypothesis fails;
+        rerouted to gauge-compensation.
+  \item[The naive $2^q/2^m$ row-observer constant.] Refuted at $m=2$ by a
+        target-row observer; repaired to the honest
+        $\tfrac12+4(2^q-1)/2^m$ crude-constant bound.
+  \item[The scaled Phase-E hard family.] Proved \emph{inadmissible} --- a single
+        public coordinate determines the target (\S\ref{sec:inadmissible}); the
+        family prints the answer. Retained as a design rule: pin no-public-target-tag
+        by theorem, or the ensemble is void.
+  \item[Token-ledger false starts.] An early formalization tracked the argument as
+        status \emph{tokens} with no representation of the actual SAT / Kolmogorov
+        / measure objects; disavowed as proof content and replaced by the finite
+        evidence calculus grounded in the manuscript's objects. Lesson carried
+        forward: never let a family be chosen that carries the answer as a public
+        tag, and demand admissibility by theorem.
+\end{description}
 
 \end{document}
