@@ -548,6 +548,448 @@ theorem realM4CNF_readout_eq_of_valid_of_publicMessageInvariant
     D publicMessage messageBit hinvariant).readout_eq_of_valid
       (W := W) (W' := W') hW hW'
 
+/-! ## Real CNF bit-fixing self-reduction core -/
+
+namespace ConcreteCNF
+
+variable {Var : Type u}
+
+def Literal.var : Literal Var -> Var
+  | .pos v => v
+  | .neg v => v
+
+def unitLiteral (v : Var) (value : Bool) : Literal Var :=
+  if value then Literal.pos v else Literal.neg v
+
+def unitClause (v : Var) (value : Bool) : Clause Var :=
+  [unitLiteral v value]
+
+def prefixClauses (pre : List (Var × Bool)) : Formula Var :=
+  pre.map (fun fixed => unitClause fixed.1 fixed.2)
+
+def restrictWithPrefix
+    (formula : Formula Var) (pre : List (Var × Bool)) :
+    Formula Var :=
+  formula ++ prefixClauses pre
+
+def FormulaUsesOnly (formula : Formula Var) (vars : List Var) : Prop :=
+  ∀ {clause}, clause ∈ formula ->
+    ∀ {lit}, lit ∈ clause -> lit.var ∈ vars
+
+theorem isSatClause_unitClause_iff
+    (σ : Assignment Var) (v : Var) (value : Bool) :
+    IsSatClause (unitClause v value) σ ↔ σ v = value := by
+  cases value <;>
+    simp [unitClause, unitLiteral, IsSatClause, Literal.eval]
+
+theorem isSatFormula_append_iff
+    (formula extra : Formula Var) (σ : Assignment Var) :
+    IsSatFormula (formula ++ extra) σ ↔
+      IsSatFormula formula σ ∧ IsSatFormula extra σ := by
+  constructor
+  · intro h
+    constructor
+    · intro clause hclause
+      exact h clause (List.mem_append_left extra hclause)
+    · intro clause hclause
+      exact h clause (List.mem_append_right formula hclause)
+  · intro h clause hclause
+    rcases List.mem_append.mp hclause with hformula | hextra
+    · exact h.1 clause hformula
+    · exact h.2 clause hextra
+
+end ConcreteCNF
+
+namespace CNFPrefix
+
+variable {Var : Type u}
+
+def Satisfied (σ : ConcreteCNF.Assignment Var)
+    (pre : List (Var × Bool)) : Prop :=
+  ∀ {v value}, (v, value) ∈ pre -> σ v = value
+
+def value [DecidableEq Var] : List (Var × Bool) -> Var -> Bool
+  | [], _ => false
+  | (u, bit) :: rest, v => if v = u then bit else value rest v
+
+def assignment [DecidableEq Var]
+    (pre : List (Var × Bool)) : ConcreteCNF.Assignment Var :=
+  fun v => value pre v
+
+theorem satisfied_nil (σ : ConcreteCNF.Assignment Var) :
+    Satisfied σ [] := by
+  intro v value hmem
+  cases hmem
+
+theorem satisfied_append_single
+    {σ : ConcreteCNF.Assignment Var} {pre : List (Var × Bool)}
+    {v : Var} {value : Bool}
+    (hprefix : Satisfied σ pre) (hvalue : σ v = value) :
+    Satisfied σ (pre ++ [(v, value)]) := by
+  intro u bit hmem
+  rcases List.mem_append.mp hmem with hprefixMem | hsingle
+  · exact hprefix hprefixMem
+  · have hpair : (u, bit) = (v, value) := by
+      simpa using hsingle
+    cases hpair
+    exact hvalue
+
+theorem exists_pair_of_mem_keys
+    {pre : List (Var × Bool)} {v : Var}
+    (hmem : v ∈ pre.map Prod.fst) :
+    ∃ value, (v, value) ∈ pre := by
+  induction pre with
+  | nil =>
+      cases hmem
+  | cons head tail ih =>
+      rcases head with ⟨u, bit⟩
+      simp only [List.map_cons, List.mem_cons] at hmem
+      rcases hmem with hhead | htail
+      · exact ⟨bit, by simp [hhead]⟩
+      · rcases ih htail with ⟨value, hvalue⟩
+        exact ⟨value, by simp [hvalue]⟩
+
+theorem value_eq_of_mem [DecidableEq Var]
+    {pre : List (Var × Bool)}
+    (hnodup : (pre.map Prod.fst).Nodup)
+    {v : Var} {bit : Bool} (hmem : (v, bit) ∈ pre) :
+    value pre v = bit := by
+  induction pre with
+  | nil =>
+      cases hmem
+  | cons head tail ih =>
+      rcases head with ⟨u, headBit⟩
+      simp only [List.map_cons, List.nodup_cons] at hnodup
+      rcases hnodup with ⟨hnotMem, htailNodup⟩
+      simp only [List.mem_cons] at hmem
+      rcases hmem with hhead | htail
+      · cases hhead
+        simp [value]
+      · have hv_ne_u : v ≠ u := by
+          intro hv_eq_u
+          apply hnotMem
+          have hv_in_tail_keys : v ∈ tail.map Prod.fst := by
+            exact List.mem_map.mpr ⟨(v, bit), htail, rfl⟩
+          simpa [hv_eq_u] using hv_in_tail_keys
+        simp [value, hv_ne_u]
+        exact ih htailNodup htail
+
+theorem assignment_eq_of_mem [DecidableEq Var]
+    {pre : List (Var × Bool)}
+    (hnodup : (pre.map Prod.fst).Nodup)
+    {v : Var} {bit : Bool} (hmem : (v, bit) ∈ pre) :
+    assignment pre v = bit :=
+  value_eq_of_mem hnodup hmem
+
+end CNFPrefix
+
+namespace ConcreteCNF
+
+variable {Var : Type u}
+
+theorem isSatFormula_prefixClauses_iff
+    (pre : List (Var × Bool)) (σ : Assignment Var) :
+    IsSatFormula (prefixClauses pre) σ ↔
+      CNFPrefix.Satisfied σ pre := by
+  constructor
+  · intro h v value hmem
+    have hclause :
+        unitClause v value ∈ prefixClauses pre := by
+      exact List.mem_map.mpr ⟨(v, value), hmem, rfl⟩
+    exact (isSatClause_unitClause_iff σ v value).mp (h _ hclause)
+  · intro hprefix clause hclause
+    rcases List.mem_map.mp hclause with ⟨fixed, hfixed, hclauseEq⟩
+    rcases fixed with ⟨v, value⟩
+    cases hclauseEq
+    exact (isSatClause_unitClause_iff σ v value).mpr (hprefix hfixed)
+
+theorem isSatFormula_restrictWithPrefix_iff
+    (formula : Formula Var) (pre : List (Var × Bool))
+    (σ : Assignment Var) :
+    IsSatFormula (restrictWithPrefix formula pre) σ ↔
+      IsSatFormula formula σ ∧ CNFPrefix.Satisfied σ pre := by
+  rw [restrictWithPrefix, isSatFormula_append_iff,
+    isSatFormula_prefixClauses_iff]
+
+theorem isSatFormula_of_agree_on_formulaUsesOnly
+    {formula : Formula Var} {vars : List Var}
+    {σ τ : Assignment Var}
+    (hvars : FormulaUsesOnly formula vars)
+    (hσ : IsSatFormula formula σ)
+    (hagree : ∀ {v : Var}, v ∈ vars -> τ v = σ v) :
+    IsSatFormula formula τ := by
+  intro clause hclause
+  rcases hσ clause hclause with ⟨lit, hlit, heval⟩
+  refine ⟨lit, hlit, ?_⟩
+  have hvar : lit.var ∈ vars := hvars hclause hlit
+  cases lit with
+  | pos v =>
+      have hag : τ v = σ v := hagree (by simpa [Literal.var] using hvar)
+      simpa [Literal.eval, hag] using heval
+  | neg v =>
+      have hag : τ v = σ v := hagree (by simpa [Literal.var] using hvar)
+      simpa [Literal.eval, hag] using heval
+
+end ConcreteCNF
+
+def RealCNFRestrictedSatisfiable
+    {Var : Type u} (formula : ConcreteCNF.Formula Var)
+    (pre : List (Var × Bool)) : Prop :=
+  ∃ σ : ConcreteCNF.Assignment Var,
+    ConcreteCNF.IsSatFormula formula σ ∧ CNFPrefix.Satisfied σ pre
+
+/-- Explicit P=NP-side SAT decider object for real CNF formulas at a fixed
+variable type.  The program and clock fields are charged by the constant
+decoder cost model below; the theorem remains conditional on this object. -/
+structure RealCNFPNPSATDecider (Var : Type u) where
+  decideSat : ConcreteCNF.Formula Var -> Bool
+  decidesSat :
+    ∀ formula, decideSat formula = true ↔
+      ∃ σ : ConcreteCNF.Assignment Var,
+        ConcreteCNF.IsSatFormula formula σ
+  programLength : Nat
+  clockExponent : Nat
+  clockExponent_pos : 0 < clockExponent
+
+theorem realCNFRestricted_decideSat_true_iff
+    {Var : Type u} (D : RealCNFPNPSATDecider Var)
+    (formula : ConcreteCNF.Formula Var)
+    (pre : List (Var × Bool)) :
+    D.decideSat (ConcreteCNF.restrictWithPrefix formula pre) = true ↔
+      RealCNFRestrictedSatisfiable formula pre := by
+  constructor
+  · intro hdec
+    rcases (D.decidesSat _).mp hdec with ⟨σ, hσ⟩
+    exact
+      ⟨σ, (ConcreteCNF.isSatFormula_restrictWithPrefix_iff
+        formula pre σ).mp hσ⟩
+  · intro hsat
+    rcases hsat with ⟨σ, hσ⟩
+    exact
+      (D.decidesSat _).mpr
+        ⟨σ, (ConcreteCNF.isSatFormula_restrictWithPrefix_iff
+          formula pre σ).mpr hσ⟩
+
+def realCNFBitFixPrefixAux
+    {Var : Type u} (D : RealCNFPNPSATDecider Var)
+    (formula : ConcreteCNF.Formula Var) :
+    List (Var × Bool) -> List Var -> List (Var × Bool)
+  | pre, [] => pre
+  | pre, v :: vars =>
+      let falsePrefix := pre ++ [(v, false)]
+      if D.decideSat (ConcreteCNF.restrictWithPrefix formula falsePrefix) then
+        realCNFBitFixPrefixAux D formula falsePrefix vars
+      else
+        realCNFBitFixPrefixAux D formula (pre ++ [(v, true)]) vars
+
+def realCNFBitFixPrefix
+    {Var : Type u} (D : RealCNFPNPSATDecider Var)
+    (formula : ConcreteCNF.Formula Var) (vars : List Var) :
+    List (Var × Bool) :=
+  realCNFBitFixPrefixAux D formula [] vars
+
+def realCNFBitFixAssignment
+    {Var : Type u} [DecidableEq Var]
+    (D : RealCNFPNPSATDecider Var)
+    (formula : ConcreteCNF.Formula Var) (vars : List Var) :
+    ConcreteCNF.Assignment Var :=
+  CNFPrefix.assignment (realCNFBitFixPrefix D formula vars)
+
+theorem realCNFBitFixPrefixAux_keys
+    {Var : Type u} (D : RealCNFPNPSATDecider Var)
+    (formula : ConcreteCNF.Formula Var)
+    (pre : List (Var × Bool)) (vars : List Var) :
+    (realCNFBitFixPrefixAux D formula pre vars).map Prod.fst =
+      pre.map Prod.fst ++ vars := by
+  induction vars generalizing pre with
+  | nil =>
+      simp [realCNFBitFixPrefixAux]
+  | cons v vars ih =>
+      unfold realCNFBitFixPrefixAux
+      by_cases hdec :
+          D.decideSat
+            (ConcreteCNF.restrictWithPrefix formula
+              (pre ++ [(v, false)])) = true
+      · simp [hdec, ih, List.map_append, List.append_assoc]
+      · simp [hdec, ih, List.map_append, List.append_assoc]
+
+theorem realCNFBitFixPrefixAux_satisfiable
+    {Var : Type u} (D : RealCNFPNPSATDecider Var)
+    {formula : ConcreteCNF.Formula Var}
+    {pre : List (Var × Bool)} {vars : List Var}
+    (hSat : RealCNFRestrictedSatisfiable formula pre) :
+    RealCNFRestrictedSatisfiable formula
+      (realCNFBitFixPrefixAux D formula pre vars) := by
+  induction vars generalizing pre with
+  | nil =>
+      simpa [realCNFBitFixPrefixAux] using hSat
+  | cons v vars ih =>
+      unfold realCNFBitFixPrefixAux
+      by_cases hdec :
+          D.decideSat
+            (ConcreteCNF.restrictWithPrefix formula
+              (pre ++ [(v, false)])) = true
+      · simp [hdec]
+        exact ih ((realCNFRestricted_decideSat_true_iff
+          D formula (pre ++ [(v, false)])).mp hdec)
+      · simp [hdec]
+        apply ih
+        rcases hSat with ⟨σ, hformula, hprefix⟩
+        by_cases hvFalse : σ v = false
+        · have hFalseSat :
+            RealCNFRestrictedSatisfiable formula
+              (pre ++ [(v, false)]) :=
+            ⟨σ, hformula,
+              CNFPrefix.satisfied_append_single hprefix hvFalse⟩
+          exact False.elim
+            (hdec ((realCNFRestricted_decideSat_true_iff
+              D formula (pre ++ [(v, false)])).mpr hFalseSat))
+        · have hvTrue : σ v = true := by
+            cases hσv : σ v <;> simp [hσv] at hvFalse ⊢
+          exact
+            ⟨σ, hformula,
+              CNFPrefix.satisfied_append_single hprefix hvTrue⟩
+
+theorem realCNFBitFixAssignment_satisfies
+    {Var : Type u} [DecidableEq Var]
+    (D : RealCNFPNPSATDecider Var)
+    {formula : ConcreteCNF.Formula Var} {vars : List Var}
+    (hvars : ConcreteCNF.FormulaUsesOnly formula vars)
+    (hnodup : vars.Nodup)
+    (hSat : ∃ σ : ConcreteCNF.Assignment Var,
+      ConcreteCNF.IsSatFormula formula σ) :
+    ConcreteCNF.IsSatFormula formula
+      (realCNFBitFixAssignment D formula vars) := by
+  have hStart : RealCNFRestrictedSatisfiable formula [] := by
+    rcases hSat with ⟨σ, hσ⟩
+    exact ⟨σ, hσ, CNFPrefix.satisfied_nil σ⟩
+  have hFinal :
+      RealCNFRestrictedSatisfiable formula
+        (realCNFBitFixPrefix D formula vars) := by
+    simpa [realCNFBitFixPrefix] using
+      (realCNFBitFixPrefixAux_satisfiable
+        D (formula := formula) (pre := []) (vars := vars) hStart)
+  rcases hFinal with ⟨σ, hσformula, hσpre⟩
+  apply ConcreteCNF.isSatFormula_of_agree_on_formulaUsesOnly
+    hvars hσformula
+  intro v hv
+  let finalPrefix := realCNFBitFixPrefix D formula vars
+  have hkeys : finalPrefix.map Prod.fst = vars := by
+    simpa [finalPrefix, realCNFBitFixPrefix] using
+      (realCNFBitFixPrefixAux_keys
+        D formula ([] : List (Var × Bool)) vars)
+  have hprefixNodup : (finalPrefix.map Prod.fst).Nodup := by
+    simpa [hkeys] using hnodup
+  have hvKey : v ∈ finalPrefix.map Prod.fst := by
+    simpa [hkeys] using hv
+  rcases CNFPrefix.exists_pair_of_mem_keys hvKey with ⟨bit, hbit⟩
+  have hAssignment :
+      realCNFBitFixAssignment D formula vars v = bit := by
+    simpa [realCNFBitFixAssignment, finalPrefix] using
+      (CNFPrefix.assignment_eq_of_mem hprefixNodup hbit)
+  have hSigma : σ v = bit := hσpre hbit
+  exact hAssignment.trans hSigma.symm
+
+theorem realM4_bitFixingAssignment_satisfies
+    {PublicLock : Type u} {Quotient : Type v}
+    {LockAux : Type w} {Message : Type z}
+    {Public : Type x} {Var : Public -> Type y}
+    {Witness : Public -> Type y}
+    (D : AppendixICNFReadoutData
+      PublicLock Quotient LockAux Message Public Var Witness)
+    {Y : Public} (hY : D.support Y)
+    [DecidableEq (Var Y)]
+    (A : RealCNFPNPSATDecider (Var Y))
+    (vars : List (Var Y))
+    (hvars : ConcreteCNF.FormulaUsesOnly (D.formula Y) vars)
+    (hnodup : vars.Nodup) :
+    ConcreteCNF.IsSatFormula (D.formula Y)
+      (realCNFBitFixAssignment A (D.formula Y) vars) :=
+  realCNFBitFixAssignment_satisfies A hvars hnodup (D.satOnSupport hY)
+
+theorem realM4_bitFixingReadout_eq_publicMessage_of_publicMessageInvariant
+    {PublicLock : Type u} {Quotient : Type v}
+    {LockAux : Type w} {Message : Type z}
+    {Public : Type x} {Var : Public -> Type y}
+    {Witness : Public -> Type y}
+    (D : AppendixICNFReadoutData
+      PublicLock Quotient LockAux Message Public Var Witness)
+    {publicMessage : PublicLock -> Message}
+    (hinvariant : D.core.PublicMessageInvariant publicMessage)
+    {Y : Public} (hY : D.support Y)
+    [DecidableEq (Var Y)]
+    (A : RealCNFPNPSATDecider (Var Y))
+    (vars : List (Var Y))
+    (hvars : ConcreteCNF.FormulaUsesOnly (D.formula Y) vars)
+    (hnodup : vars.Nodup) :
+    D.projection Y (realCNFBitFixAssignment A (D.formula Y) vars) =
+      publicMessage (D.publicLock Y) := by
+  let α := realCNFBitFixAssignment A (D.formula Y) vars
+  have hα :
+      ConcreteCNF.IsSatFormula (D.formula Y) α :=
+    realM4_bitFixingAssignment_satisfies
+      D hY A vars hvars hnodup
+  have hValid : D.validWitness Y (D.extract Y α) :=
+    D.cnfSound hα
+  calc
+    D.projection Y α = D.witnessMessage Y (D.extract Y α) :=
+      D.projection_eq_witnessMessage hα
+    _ = (D.witnessCompletion (D.extract Y α) hValid).message :=
+      D.witnessMessage_eq_completionMessage hValid
+    _ = publicMessage (D.publicLock Y) :=
+      hinvariant (D.support_publicLock hY)
+        (D.witnessCompletion (D.extract Y α) hValid)
+
+def realCNFRestrictedFormulaCompilerProgramLength : Nat :=
+  1
+
+def realCNFBitFixingDriverProgramLength : Nat :=
+  1
+
+def realCNFReadoutProgramLength : Nat :=
+  1
+
+def realCNFSelfReductionDecoderCost
+    {Var : Type u} (D : RealCNFPNPSATDecider Var) : Nat :=
+  D.programLength +
+    realCNFRestrictedFormulaCompilerProgramLength +
+      realCNFBitFixingDriverProgramLength +
+        realCNFReadoutProgramLength
+
+def realCNFConstantDecoderKpolyAt
+    {Var : Type u} (D : RealCNFPNPSATDecider Var) : Nat -> Nat :=
+  fun _targetBlocks => realCNFSelfReductionDecoderCost D
+
+def realCNFLinearEtaTimes (eta : Nat) : Nat -> Nat :=
+  fun targetBlocks => eta * targetBlocks
+
+theorem realCNFConstantDecoderKpolyAt_eq
+    {Var : Type u} (D : RealCNFPNPSATDecider Var) (targetBlocks : Nat) :
+    realCNFConstantDecoderKpolyAt D targetBlocks =
+      realCNFSelfReductionDecoderCost D :=
+  rfl
+
+structure RealCNFConstantDecoderRegime
+    {Var : Type u} (F : CompressionLowerFramework)
+    (D : RealCNFPNPSATDecider Var) where
+  eta : Nat
+  kpolyAt_eq : F.kpolyAt = realCNFConstantDecoderKpolyAt D
+  etaTimes_eq : F.etaTimes = realCNFLinearEtaTimes eta
+  floor_dominates_decoder :
+    realCNFSelfReductionDecoderCost D < eta * F.targetBlocks
+
+/-- Construction-side discharge of the upper inequality once the real lower
+framework's `kpolyAt` is identified with the fixed CNF bit-fixing decoder.
+The theorem is conditional on the explicit P=NP SAT decider object. -/
+theorem realCNF_selfReductionUpperHypothesis_givenPNP
+    {Var : Type u} {F : CompressionLowerFramework}
+    (D : RealCNFPNPSATDecider Var)
+    (R : RealCNFConstantDecoderRegime F D) :
+    SelfReductionUpperHypothesis F where
+  upperStrictlyBelowCompressionFloor := by
+    rw [R.kpolyAt_eq, R.etaTimes_eq]
+    exact R.floor_dominates_decoder
+
 /-! ## Real-M4 lift ledger -/
 
 inductive RealM4LiftStatus where
@@ -594,6 +1036,18 @@ def realM4LiftLedger : List RealM4LiftLedgerRow := [
     status := .constructionTransferred
     checkedName := "realM4_supportedArbitraryOutputSATSearchCorrect_of_publicMessageInvariant"
     note := "Given the same public-message invariant, the Appendix I projection is correct for every satisfying assignment that SAT search may return."
+  },
+  {
+    item := "cnfBitFixingSelfReduction"
+    status := .constructionTransferred
+    checkedName := "realM4_bitFixingReadout_eq_publicMessage_of_publicMessageInvariant"
+    note := "Given a public-message invariant, a finite variable cover, and an explicit SAT decider, CNF bit-fixing produces a satisfying assignment whose projection is the public message."
+  },
+  {
+    item := "constantDecoderUpperInequality"
+    status := .partialConstructionTransferred
+    checkedName := "realCNF_selfReductionUpperHypothesis_givenPNP"
+    note := "The fixed CNF bit-fixing decoder gives the formal upper inequality once the real lower framework identifies kpolyAt with this constant decoder cost."
   },
   {
     item := "deterministicReadoutOnly"
@@ -687,6 +1141,8 @@ theorem realM4LiftLedger_statuses_exact :
         RealM4LiftStatus.constructionTransferred,
         RealM4LiftStatus.constructionTransferred,
         RealM4LiftStatus.constructionTransferred,
+        RealM4LiftStatus.constructionTransferred,
+        RealM4LiftStatus.partialConstructionTransferred,
         RealM4LiftStatus.blockedByCounterexample,
         RealM4LiftStatus.openConstruction,
         RealM4LiftStatus.partialConstructionTransferred,
