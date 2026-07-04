@@ -11,21 +11,59 @@ set_option autoImplicit false
 #check v14ToyPublicRead_neutralOnly_targetBlind
 #check v14ToyPublicRead_decomposes
 #check v14ToyPublicRead_skeleton_is_neutral_targetBlind
+#check v14ToyPublicRead_lockLeft_is_neutral_targetBlind
+#check v14ToyPublicRead_lockRight_is_neutral_targetBlind
 #check v14ToyPublicRead_safeBuffer_has_charged_leaf
 #check v14ToyPublicRead_quotient_has_charged_leaf
+#check v14ToyPublicMessage_eq_target
+#check v14ToySingleMessage
+#check v14ToyVerifier_singleMessage
+#check v14ToyGaugeEquation_preserved
+#check v14ToyHiddenGaugeProduct
+#check v14ToyQuotientRead_exposes_rawGaugeSupport
+#check v14ToyNoPublicCoordinateDeterminesTarget
+#check v14ToyNoPublicTargetTags
+#check v14ToyHistory_admissible
+#check V14ToyAnalyticFrontier
+#check v14ToyAtomCompleteness
+#check v14ToyGaugeFaithfulness
+#check v14ToyInterfaceHiddenGaugeProduct
+#check v14ToyLockedInterface
 #check v14ToyInterfaceBattery
 #check v14ToyInterfaceBattery_test8
+#check v14Toy_structuralReduction
+#check v14ToyReductionStatement
 #check v14ToyConstructionLedger_length
+#check v14ToyConstructionLedger_structural_fields_proved
+#check v14ToyConstructionLedger_analytic_frontier_carried
 #check v14ToyConstructionLedger_test8_proved
 
 #print axioms v14ToyPublicRead_neutralOnly_targetBlind
 #print axioms v14ToyPublicRead_decomposes
 #print axioms v14ToyPublicRead_skeleton_is_neutral_targetBlind
+#print axioms v14ToyPublicRead_lockLeft_is_neutral_targetBlind
+#print axioms v14ToyPublicRead_lockRight_is_neutral_targetBlind
 #print axioms v14ToyPublicRead_safeBuffer_has_charged_leaf
 #print axioms v14ToyPublicRead_quotient_has_charged_leaf
+#print axioms v14ToyPublicMessage_eq_target
+#print axioms v14ToySingleMessage
+#print axioms v14ToyVerifier_singleMessage
+#print axioms v14ToyGaugeEquation_preserved
+#print axioms v14ToyHiddenGaugeProduct
+#print axioms v14ToyQuotientRead_exposes_rawGaugeSupport
+#print axioms v14ToyNoPublicCoordinateDeterminesTarget
+#print axioms v14ToyNoPublicTargetTags
+#print axioms v14ToyHistory_admissible
+#print axioms v14ToyAtomCompleteness
+#print axioms v14ToyGaugeFaithfulness
+#print axioms v14ToyInterfaceHiddenGaugeProduct
+#print axioms v14ToyLockedInterface
 #print axioms v14ToyInterfaceBattery
 #print axioms v14ToyInterfaceBattery_test8
+#print axioms v14Toy_structuralReduction
 #print axioms v14ToyConstructionLedger_length
+#print axioms v14ToyConstructionLedger_structural_fields_proved
+#print axioms v14ToyConstructionLedger_analytic_frontier_carried
 #print axioms v14ToyConstructionLedger_test8_proved
 
 end Mettapedia.Computability.PNP
