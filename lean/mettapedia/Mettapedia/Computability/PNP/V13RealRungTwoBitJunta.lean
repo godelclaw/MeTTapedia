@@ -5329,6 +5329,78 @@ theorem
         v13RealLinearNoTargetSequentialTraceFirstCosetHitActiveFixedMapTranscriptCylinderIndexForMap_card_le_rhsHistory
           i₀ observer t omega.1
 
+theorem
+    v13RealLinearNoTargetSequentialTraceFirstCosetHitActiveGeneratedPrefixCellIndexForWorld_subsingleton
+    {m q : Nat} (i₀ : Fin m)
+    (observer : V13RealLinearSequentialRowObserver m q) (t : Fin q)
+    (omega :
+      V13RealLinearAdaptiveQRowWorld m
+        (V13RealLinearNoTargetRowsMap m i₀)) :
+    Subsingleton
+      (V13RealLinearNoTargetSequentialTraceFirstCosetHitActiveGeneratedPrefixCellIndexForWorld
+        i₀ observer t omega) := by
+  classical
+  refine ⟨?_⟩
+  intro activeIdx₀ activeIdx₁
+  rcases activeIdx₀.property with ⟨hA₀, hcell₀⟩
+  rcases activeIdx₁.property with ⟨hA₁, hcell₁⟩
+  rcases hcell₀ with ⟨cell₀, hcellVal₀⟩
+  rcases hcell₁ with ⟨cell₁, hcellVal₁⟩
+  have hA : activeIdx₀.val.1.A = activeIdx₁.val.1.A := hA₀.trans hA₁.symm
+  have hpref :
+      v13RealLinearNoTargetSequentialTraceFirstCosetHitActiveFixedMapTranscriptCylinder_generatedPrefix
+          i₀ observer t activeIdx₀.val =
+        v13RealLinearNoTargetSequentialTraceFirstCosetHitActiveFixedMapTranscriptCylinder_generatedPrefix
+          i₀ observer t activeIdx₁.val := by
+    calc
+      v13RealLinearNoTargetSequentialTraceFirstCosetHitActiveFixedMapTranscriptCylinder_generatedPrefix
+          i₀ observer t activeIdx₀.val =
+        v13RealLinearSequentialPrefixTranscriptVectorOf observer
+          (v13RealLinearPublicInput
+            ({ x := omega.2, A := activeIdx₀.val.1.A.val } :
+              V13RealLinearWorld m))
+          ((t : Nat) + 1) := by
+          rw [← cell₀.property.1, hcellVal₀]
+      _ =
+        v13RealLinearSequentialPrefixTranscriptVectorOf observer
+          (v13RealLinearPublicInput
+            ({ x := omega.2, A := omega.1.val } :
+              V13RealLinearWorld m))
+          ((t : Nat) + 1) := by
+          rw [hA₀]
+      _ =
+        v13RealLinearSequentialPrefixTranscriptVectorOf observer
+          (v13RealLinearPublicInput
+            ({ x := omega.2, A := activeIdx₁.val.1.A.val } :
+              V13RealLinearWorld m))
+          ((t : Nat) + 1) := by
+          rw [hA₁]
+      _ =
+        v13RealLinearNoTargetSequentialTraceFirstCosetHitActiveFixedMapTranscriptCylinder_generatedPrefix
+          i₀ observer t activeIdx₁.val := by
+          rw [← cell₁.property.1, hcellVal₁]
+  apply Subtype.ext
+  exact
+    v13RealLinearNoTargetSequentialTraceFirstCosetHitActiveFixedMapTranscriptCylinderIndex_eq_of_sameMap_generatedPrefix
+      i₀ observer t activeIdx₀.val activeIdx₁.val hA hpref
+
+theorem
+    v13RealLinearNoTargetSequentialTraceFirstCosetHitActiveGeneratedPrefixCellIndexForWorld_card_le_one
+    {m q : Nat} (i₀ : Fin m)
+    (observer : V13RealLinearSequentialRowObserver m q) (t : Fin q)
+    (omega :
+      V13RealLinearAdaptiveQRowWorld m
+        (V13RealLinearNoTargetRowsMap m i₀)) :
+    Fintype.card
+        (V13RealLinearNoTargetSequentialTraceFirstCosetHitActiveGeneratedPrefixCellIndexForWorld
+          i₀ observer t omega) ≤
+      1 := by
+  classical
+  letI :=
+    v13RealLinearNoTargetSequentialTraceFirstCosetHitActiveGeneratedPrefixCellIndexForWorld_subsingleton
+      i₀ observer t omega
+  exact Fintype.card_le_one_iff_subsingleton.mpr inferInstance
+
 noncomputable def
     v13RealLinearNoTargetSequentialTraceFirstCosetHitGeneratedPrefixCellToFixedMapTranscriptCylinder
     {m q : Nat} (i₀ : Fin m)
