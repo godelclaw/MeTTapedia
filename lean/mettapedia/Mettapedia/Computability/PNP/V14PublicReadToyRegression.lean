@@ -1,0 +1,31 @@
+import Mettapedia.Computability.PNP.V14PublicReadToy
+
+/-!
+# Regression checks for the v14 construction-side public-read toy
+-/
+
+namespace Mettapedia.Computability.PNP
+
+set_option autoImplicit false
+
+#check v14ToyPublicRead_neutralOnly_targetBlind
+#check v14ToyPublicRead_decomposes
+#check v14ToyPublicRead_skeleton_is_neutral_targetBlind
+#check v14ToyPublicRead_safeBuffer_has_charged_leaf
+#check v14ToyPublicRead_quotient_has_charged_leaf
+#check v14ToyInterfaceBattery
+#check v14ToyInterfaceBattery_test8
+#check v14ToyConstructionLedger_length
+#check v14ToyConstructionLedger_test8_proved
+
+#print axioms v14ToyPublicRead_neutralOnly_targetBlind
+#print axioms v14ToyPublicRead_decomposes
+#print axioms v14ToyPublicRead_skeleton_is_neutral_targetBlind
+#print axioms v14ToyPublicRead_safeBuffer_has_charged_leaf
+#print axioms v14ToyPublicRead_quotient_has_charged_leaf
+#print axioms v14ToyInterfaceBattery
+#print axioms v14ToyInterfaceBattery_test8
+#print axioms v14ToyConstructionLedger_length
+#print axioms v14ToyConstructionLedger_test8_proved
+
+end Mettapedia.Computability.PNP

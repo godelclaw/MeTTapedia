@@ -25,6 +25,7 @@ import Mettapedia.Computability.PNP.V13RealRungOneRowObserversRegression
 import Mettapedia.Computability.PNP.V13RealRungOneStaticRowsRegression
 import Mettapedia.Computability.PNP.V13RealRungThreeGaugeSwitchRegression
 import Mettapedia.Computability.PNP.V13RealRungTwoBitJuntaRegression
+import Mettapedia.Computability.PNP.V14PublicReadToyRegression
 import Mettapedia.Computability.PNP.WeaknessCalculusRegression
 import Mettapedia.Computability.PNP.Barriers.Regression
 
