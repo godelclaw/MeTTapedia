@@ -1,4 +1,5 @@
 import Mettapedia.Computability.PNP.V13RealRungOneQRowBound
+import Mettapedia.Computability.PNP.PNPSteelmanConditional
 
 /-!
 # PNP v13 real rung two: bit-junta and parity observers
@@ -11328,6 +11329,134 @@ theorem
     v13RealLinearBitJuntaFixedSuccess, v13RealLinear_f2vec_card] using
     v13RealLinearParityObserver_fixedSuccess_eq_half_of_not_rhsParityMatchesTarget
       observer A.val i₀ hnot
+
+/-- Unified Crux-2 rung-one certificate: both no-target samplers satisfy their
+explicit half-plus-epsilon success bounds, and the parity exact-half theorem is
+available as the tightness witness for the bit-level surface. -/
+structure V13RealLinearNoTargetCrux2RungOneCertificate : Prop where
+  sequentialSuccess :
+    ∀ {m q : Nat} (i₀ : Fin m)
+      (observer : V13RealLinearSequentialRowObserver m q),
+      v13RealLinearNoTargetRowsSequentialQRowSuccess i₀ observer ≤
+        (1 / 2 : Rat) + v13RealLinearSequentialEpsilon1 q m
+  bitJuntaSuccess :
+    ∀ {m j : Nat} (i₀ : Fin m)
+      (observer : V13RealLinearBitJuntaObserver m j),
+      v13RealLinearNoTargetBitJuntaSuccess i₀ observer ≤
+        (1 / 2 : Rat) + v13RealLinearBitJuntaEpsilon2 j m
+  parityExactHalf :
+    ∀ {m j : Nat} (observer : V13RealLinearParityObserver m j)
+      (i₀ : Fin m) (A : V13RealLinearNoTargetRowsMap m i₀),
+      ¬ V13RealLinearParityObserverRhsParityMatchesTarget observer A.val i₀ →
+        v13RealLinearNoTargetBitJuntaFixedSuccess i₀ observer.toBitJunta A =
+          (1 / 2 : Rat)
+
+/-- Crux-2 headline for the two rung-one samplers. -/
+theorem realLinearNoTargetCrux2_success_le_half_add_epsilon :
+    V13RealLinearNoTargetCrux2RungOneCertificate := by
+  exact
+    { sequentialSuccess := fun i₀ observer =>
+        realLinearNoTargetSequential_success_le_half_add_epsilon1 i₀ observer
+      bitJuntaSuccess := fun i₀ observer =>
+        realLinearNoTargetBitJunta_success_le_half_add_epsilon2 i₀ observer
+      parityExactHalf := fun observer i₀ A hnot =>
+        realLinearNoTargetParityObserver_fixedSuccess_eq_half_of_not_rhsParityMatchesTarget
+          observer i₀ A hnot }
+
+/-- Rung-one sequential sampler, closed unconditionally with the explicit
+deferred-decision epsilon. -/
+def V13RealLinearNoTargetRungOneSequentialSamplerUnconditional : Prop :=
+  ∀ {m q : Nat} (i₀ : Fin m)
+    (observer : V13RealLinearSequentialRowObserver m q),
+    v13RealLinearNoTargetRowsSequentialQRowSuccess i₀ observer ≤
+      (1 / 2 : Rat) + v13RealLinearSequentialEpsilon1 q m
+
+/-- Rung-one bit-junta sampler, closed unconditionally with the explicit
+bit-junta epsilon. -/
+def V13RealLinearNoTargetRungOneBitJuntaSamplerUnconditional : Prop :=
+  ∀ {m j : Nat} (i₀ : Fin m)
+    (observer : V13RealLinearBitJuntaObserver m j),
+    v13RealLinearNoTargetBitJuntaSuccess i₀ observer ≤
+      (1 / 2 : Rat) + v13RealLinearBitJuntaEpsilon2 j m
+
+/-- Rung one is closed for both live no-target samplers. -/
+def V13RealLinearNoTargetRungOneBothSamplersUnconditional : Prop :=
+  V13RealLinearNoTargetRungOneSequentialSamplerUnconditional ∧
+    V13RealLinearNoTargetRungOneBitJuntaSamplerUnconditional
+
+/-- Crux-2 is the unified unconditional half-plus-epsilon certificate for the
+two rung-one samplers, with parity exact-half tightness. -/
+def V13RealLinearNoTargetCrux2Unconditional : Prop :=
+  V13RealLinearNoTargetCrux2RungOneCertificate
+
+/-- Kernel-flip-clean route hypothesis for the conditional endgame interface. -/
+def V13RealLinearKernelFlipCleanRoute (F : PNPConditionalFramework) : Prop :=
+  KernelFlipNeutrality F
+
+/-- `(star_SW)`: average-case witness-bit hardness for the masked-USAT ensemble,
+represented through the conditional PNP framework. -/
+def V13MaskedUSATStarSW (F : PNPConditionalFramework) : Prop :=
+  StarSWAverageCaseWitnessBitHardness F
+
+/-- Conditional StarSW endgame: `star_SW` plus the kernel-flip-clean route
+implies the framework's separation endpoint. -/
+def V13RealLinearStarSWEndgameConditional : Prop :=
+  ∀ {F : PNPConditionalFramework},
+    V13RealLinearKernelFlipCleanRoute F →
+      V13MaskedUSATStarSW F → F.pNeNPClaim
+
+/-- Honest converse scope note: any reverse use of the endpoint must be supplied
+as a separate hypothesis; the ledger proves only this explicit-hypothesis form. -/
+def V13RealLinearStarSWConverseScopeExplicit : Prop :=
+  ∀ {F : PNPConditionalFramework},
+    (F.pNeNPClaim → V13MaskedUSATStarSW F) →
+      F.pNeNPClaim → V13MaskedUSATStarSW F
+
+/-- StarSW implies the separation endpoint through the existing conditional
+framework and the kernel-flip-clean route. -/
+theorem V13MaskedUSATStarSW_implies_separation_via_kernelFlipClean
+    {F : PNPConditionalFramework}
+    (hKernel : V13RealLinearKernelFlipCleanRoute F)
+    (hSW : V13MaskedUSATStarSW F) :
+    F.pNeNPClaim := by
+  simpa [V13RealLinearKernelFlipCleanRoute, V13MaskedUSATStarSW] using
+    pnp_steelman_conditional hKernel hSW
+
+/-- Compact ledger of the current rung status. -/
+structure V13RealLinearRungLedger : Prop where
+  sequentialSampler :
+    V13RealLinearNoTargetRungOneSequentialSamplerUnconditional
+  bitJuntaSampler :
+    V13RealLinearNoTargetRungOneBitJuntaSamplerUnconditional
+  bothSamplers :
+    V13RealLinearNoTargetRungOneBothSamplersUnconditional
+  crux2 :
+    V13RealLinearNoTargetCrux2Unconditional
+  starSWEndgame :
+    V13RealLinearStarSWEndgameConditional
+  converseScope :
+    V13RealLinearStarSWConverseScopeExplicit
+
+/-- Current rung ledger: rung one and Crux-2 are unconditional; the StarSW
+endgame remains explicitly conditional on `star_SW`. -/
+theorem V13RealLinear_rungLedger : V13RealLinearRungLedger := by
+  exact
+    { sequentialSampler := fun i₀ observer =>
+        realLinearNoTargetSequential_success_le_half_add_epsilon1 i₀ observer
+      bitJuntaSampler := fun i₀ observer =>
+        realLinearNoTargetBitJunta_success_le_half_add_epsilon2 i₀ observer
+      bothSamplers :=
+        ⟨fun i₀ observer =>
+            realLinearNoTargetSequential_success_le_half_add_epsilon1
+              i₀ observer,
+          fun i₀ observer =>
+            realLinearNoTargetBitJunta_success_le_half_add_epsilon2
+              i₀ observer⟩
+      crux2 := realLinearNoTargetCrux2_success_le_half_add_epsilon
+      starSWEndgame := fun hKernel hSW =>
+        V13MaskedUSATStarSW_implies_separation_via_kernelFlipClean
+          hKernel hSW
+      converseScope := fun hConverse hpnp => hConverse hpnp }
 
 theorem v13RealLinearParityObserver_fixedSuccess_trichotomy
     {m j : Nat} (observer : V13RealLinearParityObserver m j)
