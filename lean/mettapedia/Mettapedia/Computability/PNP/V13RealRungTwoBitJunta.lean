@@ -8429,10 +8429,14 @@ def
         (V13RealLinearAdaptiveQRowWorld m
           (V13RealLinearNoTargetRowsMap m i₀))
 
-/-- Ordered-prefix packing surface for Step 0.  This partitions the first-hit
-event by the exact ordered transcript prefix used by the sequential observer,
-so the remaining capacity argument can work on deterministic next-row
-cylinders rather than unordered rowsets. -/
+/-- Retired unfiltered ordered-prefix packing surface for the step-indexed hit
+event.  It remains as a compatibility/finding surface, but it is not an
+unconditional pin: generated reread prefixes refute the corresponding
+conditioned surface in
+`V13RealLinearNoTargetRowsSequentialTraceCosetHitOrderedPrefixConditionedCountingBound_not_of_generated_reread_prefix_gap`
+and
+`V13RealLinearNoTargetRowsSequentialTraceCosetHitOrderedPrefixConditionedCountingBound_not_of_rowShear_generated_reread`.
+Use the true-first ordered-prefix packing surface below for the live route. -/
 def
     V13RealLinearNoTargetRowsSequentialTraceCosetHitOrderedPrefixPackingBound
     {m q : Nat} (i₀ : Fin m)
@@ -8449,11 +8453,14 @@ def
         (V13RealLinearAdaptiveQRowWorld m
           (V13RealLinearNoTargetRowsMap m i₀))
 
-/-- Conditioned ordered-prefix counting pin for Step 0.  Once a prefix
-transcript is fixed, the hit fiber must have normalized mass at most
-`4 * 2^k / 2^m`, where `k` is the number of distinct rows in that prefix.  The
-ambient class on the right is the full set of no-target worlds realizing the
-same ordered prefix. -/
+/-- Retired unfiltered conditioned ordered-prefix counting surface for the
+step-indexed hit event.  The statement is kept because its refutations are
+useful findings:
+`V13RealLinearNoTargetRowsSequentialTraceCosetHitOrderedPrefixConditionedCountingBound_not_of_generated_reread_prefix_gap`
+and
+`V13RealLinearNoTargetRowsSequentialTraceCosetHitOrderedPrefixConditionedCountingBound_not_of_rowShear_generated_reread`.
+The live conditioned count is the true-first filtered version below, with the
+same `4 * 2^k` budget. -/
 def
     V13RealLinearNoTargetRowsSequentialTraceCosetHitOrderedPrefixConditionedCountingBound
     {m q : Nat} (i₀ : Fin m)
@@ -8777,6 +8784,193 @@ theorem
     i₀ observer
     (V13RealLinearNoTargetRowsSequentialTraceTrueFirstCosetHitOrderedPrefixPackingBound_unconditional
       i₀ observer)
+
+/-- World-level cover event used by the true-first deferred-decision union
+bound.  It records that a world belongs to the true-first hit class at step
+`t`, forgetting only the proof wrapper around the world. -/
+def V13RealLinearNoTargetSequentialTraceTrueFirstCosetHitCoverEvent
+    {m q : Nat} (i₀ : Fin m)
+    (observer : V13RealLinearSequentialRowObserver m q) (t : Fin q)
+    (omega :
+      V13RealLinearAdaptiveQRowWorld m
+        (V13RealLinearNoTargetRowsMap m i₀)) : Prop :=
+  ∃ omegaTrue :
+    V13RealLinearNoTargetSequentialTraceTrueFirstCosetHitWorldSet
+      i₀ observer t,
+    omegaTrue.val.val = omega
+
+/-- Any step-indexed hit has a least hit time, and that least hit is a
+true-first hit for the same world. -/
+theorem
+    v13RealLinearNoTargetSequentialTraceFirstCosetHit_minimal_trueFirst
+    {m q : Nat} (i₀ : Fin m)
+    (observer : V13RealLinearSequentialRowObserver m q) (t : Fin q)
+    (omega :
+      V13RealLinearNoTargetSequentialTraceFirstCosetHitWorldSet
+        i₀ observer t) :
+    ∃ s : Fin q,
+      (s : Nat) ≤ (t : Nat) ∧
+        ∃ omegaTrue :
+          V13RealLinearNoTargetSequentialTraceTrueFirstCosetHitWorldSet
+            i₀ observer s,
+          omegaTrue.val.val = omega.val := by
+  classical
+  let trace :=
+    v13RealLinearNoTargetRowsSequentialQRowTrace i₀ observer omega.val
+  let P : Nat → Prop := fun n =>
+    n ≤ (t : Nat) ∧
+      V13RealLinearRowTraceCosetHit omega.val.1.val i₀ trace n
+  have htLen : (t : Nat) < trace.length := by
+    simpa [trace,
+      V13RealLinearAdaptiveQRowTraceFirstCosetHit,
+      v13RealLinearNoTargetRowsSequentialQRowExperiment,
+      v13RealLinearNoTargetRowsCausalQRowExperiment,
+      v13RealLinearNoTargetRowsQRowExperiment] using omega.property.1
+  have hhitT :
+      V13RealLinearRowTraceCosetHit omega.val.1.val i₀ trace (t : Nat) := by
+    simpa [trace,
+      V13RealLinearAdaptiveQRowTraceFirstCosetHit,
+      v13RealLinearNoTargetRowsSequentialQRowExperiment,
+      v13RealLinearNoTargetRowsCausalQRowExperiment,
+      v13RealLinearNoTargetRowsQRowExperiment] using omega.property.2
+  have hex : ∃ n : Nat, P n := ⟨(t : Nat), le_rfl, hhitT⟩
+  let sNat := Nat.find hex
+  have hsSpec : P sNat := Nat.find_spec hex
+  have hsLeT : sNat ≤ (t : Nat) := hsSpec.1
+  have hsLtQ : sNat < q := lt_of_le_of_lt hsLeT t.isLt
+  let s : Fin q := ⟨sNat, hsLtQ⟩
+  have hsLen : (s : Nat) < trace.length := by
+    exact lt_of_le_of_lt hsLeT htLen
+  have hsHit :
+      V13RealLinearRowTraceCosetHit omega.val.1.val i₀ trace (s : Nat) := by
+    simpa [s] using hsSpec.2
+  have hfirst :
+      V13RealLinearAdaptiveQRowTraceFirstCosetHit
+        (v13RealLinearNoTargetRowsSequentialQRowExperiment i₀ observer)
+        i₀
+        (v13RealLinearNoTargetRowsSequentialQRowTrace i₀ observer)
+        s omega.val := by
+    exact
+      ⟨by simpa [trace] using hsLen,
+        by
+          simpa [trace, v13RealLinearNoTargetRowsSequentialQRowExperiment,
+            v13RealLinearNoTargetRowsCausalQRowExperiment,
+            v13RealLinearNoTargetRowsQRowExperiment] using hsHit⟩
+  have hprior :
+      ∀ r : Fin (s : Nat),
+        ¬ V13RealLinearRowTraceCosetHit omega.val.1.val i₀ trace r := by
+    intro r hr
+    have hrLt : (r : Nat) < sNat := by
+      simp [s]
+    have hrLeT : (r : Nat) ≤ (t : Nat) :=
+      le_trans (le_of_lt hrLt) hsLeT
+    exact Nat.find_min hex hrLt ⟨hrLeT, by simpa [trace] using hr⟩
+  refine ⟨s, by simpa [s] using hsLeT, ?_⟩
+  refine ⟨⟨⟨omega.val, hfirst⟩, ?_⟩, rfl⟩
+  intro r
+  simpa [trace] using hprior r
+
+/-- Generated worlds for the no-target sequential sampler are covered by
+true-first trace-coset hits.  The cover is obtained by taking a first
+new-capture hit and then minimizing over all earlier coset hits. -/
+theorem
+    v13RealLinearNoTargetRowsSequentialTrueFirstCosetHitCover
+    {m q : Nat} (i₀ : Fin m)
+    (observer : V13RealLinearSequentialRowObserver m q) :
+    V13RealLinearAdaptiveDeferredDecisionNewCaptureCover
+      (v13RealLinearNoTargetRowsSequentialQRowExperiment i₀ observer) i₀
+      (V13RealLinearNoTargetSequentialTraceTrueFirstCosetHitCoverEvent
+        i₀ observer) := by
+  classical
+  let E := v13RealLinearNoTargetRowsSequentialQRowExperiment i₀ observer
+  let traceOf := v13RealLinearNoTargetRowsSequentialQRowTrace i₀ observer
+  have hcover :
+      V13RealLinearAdaptiveDeferredDecisionNewCaptureCover E i₀
+        (V13RealLinearAdaptiveQRowTraceFirstNewCapture E i₀ traceOf) :=
+    v13RealLinearAdaptiveDeferredDecisionNewCaptureCover_of_rowTrace
+      E i₀ traceOf
+      (v13RealLinearNoTargetRowsSequentialQRowTrace_realizesBranchRows
+        i₀ observer)
+  intro omega hgen
+  rcases hcover omega hgen with ⟨t, hnew⟩
+  have hcoset :
+      V13RealLinearAdaptiveQRowTraceFirstCosetHit E i₀ traceOf t omega :=
+    v13RealLinearAdaptiveQRowTraceFirstNewCapture_imp_cosetHit
+      E i₀ traceOf hnew
+  let omegaHit :
+      V13RealLinearNoTargetSequentialTraceFirstCosetHitWorldSet
+        i₀ observer t := ⟨omega, by simpa [E, traceOf] using hcoset⟩
+  rcases
+      v13RealLinearNoTargetSequentialTraceFirstCosetHit_minimal_trueFirst
+        i₀ observer t omegaHit with
+    ⟨s, _hsle, omegaTrue, hsame⟩
+  exact ⟨s, omegaTrue, by simpa [omegaHit] using hsame⟩
+
+/-- Per-step deferred-decision counting for the true-first cover follows from
+the true-first trace-coset hit counting bound. -/
+theorem
+    V13RealLinearNoTargetRowsSequentialDeferredDecisionTrueFirstCountingBound_of_trueFirstCosetHitCounting
+    {m q : Nat} (i₀ : Fin m)
+    (observer : V13RealLinearSequentialRowObserver m q)
+    (htrue :
+      V13RealLinearNoTargetRowsSequentialTraceTrueFirstCosetHitCountingBound
+        i₀ observer) :
+    V13RealLinearAdaptiveDeferredDecisionNewCaptureCountingBound
+      (v13RealLinearNoTargetRowsSequentialQRowExperiment i₀ observer)
+      (V13RealLinearNoTargetSequentialTraceTrueFirstCosetHitCoverEvent
+        i₀ observer) := by
+  classical
+  intro t
+  let World :=
+    V13RealLinearAdaptiveQRowWorld m (V13RealLinearNoTargetRowsMap m i₀)
+  let TrueW :=
+    V13RealLinearNoTargetSequentialTraceTrueFirstCosetHitWorldSet
+      i₀ observer t
+  let CoverW :=
+    {omega : World //
+      V13RealLinearNoTargetSequentialTraceTrueFirstCosetHitCoverEvent
+        i₀ observer t omega}
+  have hcard : Fintype.card CoverW ≤ Fintype.card TrueW := by
+    exact
+      Fintype.card_le_of_embedding
+        { toFun := fun omega => Classical.choose omega.property
+          inj' := by
+            intro omega₀ omega₁ h
+            apply Subtype.ext
+            have h₀ := Classical.choose_spec omega₀.property
+            have h₁ := Classical.choose_spec omega₁.property
+            calc
+              omega₀.val = (Classical.choose omega₀.property).val.val := h₀.symm
+              _ = (Classical.choose omega₁.property).val.val := by
+                    exact congrArg (fun z : TrueW => z.val.val) h
+              _ = omega₁.val := h₁ }
+  have hmul :
+      Fintype.card CoverW * 2 ^ m ≤ Fintype.card TrueW * 2 ^ m :=
+    Nat.mul_le_mul_right (2 ^ m) hcard
+  have hstep := htrue t
+  exact hmul.trans (by simpa [TrueW, World] using hstep)
+
+/-- Rewired deferred-decision counting chain for the no-target sequential sampler:
+the counted per-step events are true-first hits, not the retired unfiltered
+step-indexed hit surface. -/
+theorem
+    V13RealLinearNoTargetRowsSequentialDeferredDecisionCountingBound_of_trueFirstCosetHitCounting
+    {m q : Nat} (i₀ : Fin m)
+    (observer : V13RealLinearSequentialRowObserver m q)
+    (htrue :
+      V13RealLinearNoTargetRowsSequentialTraceTrueFirstCosetHitCountingBound
+        i₀ observer) :
+    V13RealLinearAdaptiveDeferredDecisionCountingBound
+      (v13RealLinearNoTargetRowsSequentialQRowExperiment i₀ observer) i₀ := by
+  classical
+  exact
+    v13RealLinearAdaptiveDeferredDecisionCountingBound_of_newCapture
+      (v13RealLinearNoTargetRowsSequentialQRowExperiment i₀ observer) i₀
+      ⟨V13RealLinearNoTargetSequentialTraceTrueFirstCosetHitCoverEvent
+          i₀ observer,
+        v13RealLinearNoTargetRowsSequentialTrueFirstCosetHitCover i₀ observer,
+        V13RealLinearNoTargetRowsSequentialDeferredDecisionTrueFirstCountingBound_of_trueFirstCosetHitCounting
+          i₀ observer htrue⟩
 
 theorem
     V13RealLinearNoTargetRowsSequentialTraceCosetHitOrderedPrefixConditionedCountingBound_not_of_generated_reread_prefix_gap
