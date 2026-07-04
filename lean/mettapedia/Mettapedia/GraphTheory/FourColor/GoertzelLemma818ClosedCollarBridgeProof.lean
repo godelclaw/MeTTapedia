@@ -1,0 +1,362 @@
+import Mettapedia.GraphTheory.FourColor.GoertzelLemma818ClosedCollarBridgeTarget
+
+namespace Mettapedia.GraphTheory.FourColor
+
+/-!
+# Goertzel Lemma 8.18: closed-collar bridge proof support
+
+This module contains the reusable finite-certificate machinery for the
+closed-collar section-9.2 bridge.  The generated per-word files only need to
+prove small Boolean root-closure checks; the theorems here turn those checks
+into the executable Kempe-connectedness target.
+-/
+
+namespace GoertzelLemma818ClosedCollarBridgeProof
+
+open GoertzelLemma814
+open GoertzelLemma818ClosedCollarBridgeTarget
+
+def addIfFreshDec {α : Type} [DecidableEq α] (xs : List α) (x : α) :
+    List α :=
+  if x ∈ xs then xs else xs ++ [x]
+
+theorem mem_addIfFreshDec_of_mem {α : Type} [DecidableEq α]
+    {xs : List α} {x y : α} (h : x ∈ xs) :
+    x ∈ addIfFreshDec xs y := by
+  unfold addIfFreshDec
+  by_cases hy : y ∈ xs
+  · simp [hy, h]
+  · simp [hy, h]
+
+theorem mem_addIfFreshDec_self {α : Type} [DecidableEq α]
+    (xs : List α) (x : α) :
+    x ∈ addIfFreshDec xs x := by
+  unfold addIfFreshDec
+  by_cases hx : x ∈ xs
+  · simp [hx]
+  · simp [hx]
+
+theorem mem_addIfFreshDec_source_or_eq {α : Type} [DecidableEq α]
+    (xs : List α) (candidate x : α)
+    (h : x ∈ addIfFreshDec xs candidate) :
+    x ∈ xs ∨ x = candidate := by
+  unfold addIfFreshDec at h
+  by_cases hc : candidate ∈ xs
+  · exact Or.inl (by simpa [hc] using h)
+  · have hx : x ∈ xs ∨ x ∈ [candidate] := by
+      have h' : x ∈ xs ++ [candidate] := by
+        simpa [hc] using h
+      exact List.mem_append.mp h'
+    rcases hx with hx | hx
+    · exact Or.inl hx
+    · simp at hx
+      exact Or.inr hx
+
+def boolClosureStep {α : Type} [DecidableEq α]
+    (step : α → α → Bool) (fiber seen : List α) : List α :=
+  fiber.foldl
+    (fun acc candidate =>
+      if acc.any (fun current => step current candidate) then
+        addIfFreshDec acc candidate
+      else
+        acc)
+    seen
+
+def closeBoolFiber {α : Type} [DecidableEq α]
+    (step : α → α → Bool) (fiber : List α) :
+    Nat → List α → List α
+  | 0, seen => seen
+  | n + 1, seen =>
+      let seen' := boolClosureStep step fiber seen
+      if seen'.length == seen.length then seen' else closeBoolFiber step fiber n seen'
+
+def boolFiberRootConnected {α : Type} [DecidableEq α]
+    (step : α → α → Bool) (fiber : List α) : Bool :=
+  match fiber with
+  | [] => true
+  | root :: _ =>
+      let closure := closeBoolFiber step fiber fiber.length [root]
+      fiber.all fun state => closure.contains state
+
+theorem boolClosureStep_mem_of_seen {α : Type} [DecidableEq α]
+    (step : α → α → Bool) (fiber seen : List α) (x : α)
+    (h : x ∈ seen) :
+    x ∈ boolClosureStep step fiber seen := by
+  unfold boolClosureStep
+  induction fiber generalizing seen with
+  | nil =>
+      simpa using h
+  | cons candidate rest ih =>
+      simp only [List.foldl_cons]
+      apply ih
+      by_cases hc : (seen.any fun current => step current candidate) = true
+      · simp [hc, mem_addIfFreshDec_of_mem h]
+      · have hfalse :
+            (seen.any fun current => step current candidate) = false :=
+          bool_false_of_not_true hc
+        simp [hfalse, h]
+
+theorem boolClosureStep_lift_property {α : Type} [DecidableEq α]
+    (step : α → α → Bool) (fiber seen : List α) (P : α → Prop)
+    (hseen : ∀ x, x ∈ seen → P x)
+    (hstep : ∀ current target,
+      P current →
+      target ∈ fiber →
+      step current target = true →
+      P target) :
+    ∀ x, x ∈ boolClosureStep step fiber seen → P x := by
+  induction fiber generalizing seen with
+  | nil =>
+      intro x hx
+      simpa [boolClosureStep] using hseen x hx
+  | cons candidate rest ih =>
+      intro x hx
+      unfold boolClosureStep at hx
+      simp only [List.foldl_cons] at hx
+      let nextSeen :=
+        if (seen.any fun current => step current candidate) then
+          addIfFreshDec seen candidate
+        else
+          seen
+      have hnextSeen : ∀ w, w ∈ nextSeen → P w := by
+        intro w hw
+        by_cases hany : (seen.any fun current => step current candidate) = true
+        · have hw' : w ∈ addIfFreshDec seen candidate := by
+            simpa [nextSeen, hany] using hw
+          rcases mem_addIfFreshDec_source_or_eq seen candidate w hw' with
+            hwSeen | hwCandidate
+          · exact hseen w hwSeen
+          · subst hwCandidate
+            rw [List.any_eq_true] at hany
+            rcases hany with ⟨current, hcurrentSeen, hcurrentStep⟩
+            exact hstep current w (hseen current hcurrentSeen) (by simp)
+              hcurrentStep
+        · have hfalse :
+              (seen.any fun current => step current candidate) = false :=
+            bool_false_of_not_true hany
+          exact hseen w (by simpa [nextSeen, hfalse] using hw)
+      exact ih nextSeen hnextSeen (by
+        intro current target hcurrent htarget hsingle
+        exact hstep current target hcurrent
+          (List.mem_cons_of_mem candidate htarget) hsingle)
+        x (by simpa [boolClosureStep, nextSeen] using hx)
+
+theorem closeBoolFiber_mem_of_seen {α : Type} [DecidableEq α]
+    (step : α → α → Bool) (fiber : List α) (n : Nat)
+    (seen : List α) (x : α) (h : x ∈ seen) :
+    x ∈ closeBoolFiber step fiber n seen := by
+  induction n generalizing seen with
+  | zero =>
+      simpa [closeBoolFiber] using h
+  | succ n ih =>
+      simp only [closeBoolFiber]
+      let seen' := boolClosureStep step fiber seen
+      have hx' : x ∈ seen' := boolClosureStep_mem_of_seen step fiber seen x h
+      by_cases hstop : ((seen'.length == seen.length) = true)
+      · simp [seen', hstop, hx']
+      · have hfalse : (seen'.length == seen.length) = false :=
+          bool_false_of_not_true hstop
+        simp only [seen', hfalse, Bool.false_eq_true, if_false]
+        exact ih seen' hx'
+
+theorem closeBoolFiber_lift_property {α : Type} [DecidableEq α]
+    (step : α → α → Bool) (fiber : List α) (n : Nat) (seen : List α)
+    (P : α → Prop)
+    (hseen : ∀ x, x ∈ seen → P x)
+    (hstep : ∀ current target,
+      P current →
+      target ∈ fiber →
+      step current target = true →
+      P target) :
+    ∀ x, x ∈ closeBoolFiber step fiber n seen → P x := by
+  induction n generalizing seen with
+  | zero =>
+      intro x hx
+      simpa [closeBoolFiber] using hseen x hx
+  | succ n ih =>
+      intro x hx
+      simp only [closeBoolFiber] at hx
+      let seen' := boolClosureStep step fiber seen
+      have hseen' : ∀ y, y ∈ seen' → P y :=
+        boolClosureStep_lift_property step fiber seen P hseen hstep
+      by_cases hstop : (seen'.length == seen.length) = true
+      · simp only [seen', hstop, if_true] at hx
+        exact hseen' x hx
+      · have hfalse : (seen'.length == seen.length) = false :=
+          bool_false_of_not_true hstop
+        simp only [seen', hfalse, Bool.false_eq_true, if_false] at hx
+        exact ih seen' hseen' x hx
+
+theorem reflTransGen_reverse_of_stepSymmetric {α : Type}
+    {R : α → α → Prop}
+    (hsym : ∀ {x y}, R x y → R y x) :
+    ∀ {x y}, Relation.ReflTransGen R x y →
+      Relation.ReflTransGen R y x := by
+  intro x y hxy
+  induction hxy with
+  | refl =>
+      exact Relation.ReflTransGen.refl
+  | tail hpre hstep ih =>
+      exact Relation.ReflTransGen.trans
+        (Relation.ReflTransGen.single (hsym hstep)) ih
+
+theorem boolFiberRootConnected_pairwise {α : Type} [DecidableEq α]
+    (step : α → α → Bool)
+    (hsym : ∀ {x y}, step x y = true → step y x = true)
+    (fiber : List α)
+    (hconn : boolFiberRootConnected step fiber = true) :
+    ∀ x, x ∈ fiber →
+      ∀ y, y ∈ fiber →
+        Relation.ReflTransGen (fun a b => step a b = true) x y := by
+  intro x hx y hy
+  cases fiber with
+  | nil =>
+      cases hx
+  | cons root rest =>
+      unfold boolFiberRootConnected at hconn
+      rw [List.all_eq_true] at hconn
+      let closure := closeBoolFiber step (root :: rest) (root :: rest).length [root]
+      have hRootReach :
+          ∀ state, state ∈ closure →
+            Relation.ReflTransGen (fun a b => step a b = true) root state := by
+        apply closeBoolFiber_lift_property
+        · intro state hstate
+          simp at hstate
+          subst state
+          exact Relation.ReflTransGen.refl
+        · intro current target hcurrent _htarget hstep
+          exact Relation.ReflTransGen.tail hcurrent hstep
+      have hxClosure : x ∈ closure :=
+        List.contains_iff_mem.mp (hconn x hx)
+      have hyClosure : y ∈ closure :=
+        List.contains_iff_mem.mp (hconn y hy)
+      exact Relation.ReflTransGen.trans
+        (reflTransGen_reverse_of_stepSymmetric
+          (R := fun a b => step a b = true) (by
+            intro a b hstep
+            exact hsym hstep)
+          (hRootReach x hxClosure))
+        (hRootReach y hyClosure)
+
+def boolReachableCheck {α : Type} [DecidableEq α]
+    (step : α → α → Bool) (fiber : List α) (source target : α) : Bool :=
+  (closeBoolFiber step fiber fiber.length [source]).contains target
+
+def boolFiberPairwiseConnected {α : Type} [DecidableEq α]
+    (step : α → α → Bool) (fiber : List α) : Bool :=
+  fiber.all fun source =>
+    fiber.all fun target => boolReachableCheck step fiber source target
+
+theorem boolReachableCheck_sound {α : Type} [DecidableEq α]
+    (step : α → α → Bool) (fiber : List α) {source target : α}
+    (hcheck : boolReachableCheck step fiber source target = true) :
+    Relation.ReflTransGen (fun a b => step a b = true) source target := by
+  unfold boolReachableCheck at hcheck
+  have htarget :
+      target ∈ closeBoolFiber step fiber fiber.length [source] :=
+    List.contains_iff_mem.mp hcheck
+  exact
+    closeBoolFiber_lift_property step fiber fiber.length [source]
+      (fun state =>
+        Relation.ReflTransGen (fun a b => step a b = true) source state)
+      (by
+        intro state hstate
+        simp at hstate
+        subst state
+        exact Relation.ReflTransGen.refl)
+      (by
+        intro current target hcurrent _htarget hstep
+        exact Relation.ReflTransGen.tail hcurrent hstep)
+      target htarget
+
+theorem boolFiberPairwiseConnected_pairwise {α : Type} [DecidableEq α]
+    (step : α → α → Bool) (fiber : List α)
+    (hconn : boolFiberPairwiseConnected step fiber = true) :
+    ∀ x, x ∈ fiber →
+      ∀ y, y ∈ fiber →
+        Relation.ReflTransGen (fun a b => step a b = true) x y := by
+  unfold boolFiberPairwiseConnected at hconn
+  rw [List.all_eq_true] at hconn
+  intro x hx y hy
+  have hxAll := hconn x hx
+  rw [List.all_eq_true] at hxAll
+  exact boolReachableCheck_sound step fiber (hxAll y hy)
+
+def closedCollarFiberPoints (orients : List TauOrient) (key : List LColor) :
+    List (ClosedCollarFiberPoint orients key) :=
+  (closedCollarFiber orients key).attach
+
+instance closedCollarFiberPointDecidableEq
+    (orients : List TauOrient) (key : List LColor) :
+    DecidableEq (ClosedCollarFiberPoint orients key) := by
+  intro x y
+  by_cases hxy : x.1 = y.1
+  · exact isTrue (Subtype.ext hxy)
+  · exact isFalse (by
+      intro h
+      exact hxy (congrArg Subtype.val h))
+
+theorem mem_closedCollarFiberPoints
+    (orients : List TauOrient) (key : List LColor)
+    (x : ClosedCollarFiberPoint orients key) :
+    x ∈ closedCollarFiberPoints orients key := by
+  exact List.mem_attach (closedCollarFiber orients key) x
+
+def closedCollarFiberRootConnectedCheck
+    (orients : List TauOrient) (key : List LColor) : Bool :=
+  boolFiberRootConnected
+    (fun x y : ClosedCollarFiberPoint orients key =>
+      closedCollarSingleKempeStep orients x.1 y.1)
+    (closedCollarFiberPoints orients key)
+
+def closedCollarFiberPairwiseConnectedCheck
+    (orients : List TauOrient) (key : List LColor) : Bool :=
+  boolFiberPairwiseConnected
+    (fun x y : ClosedCollarFiberPoint orients key =>
+      closedCollarSingleKempeStep orients x.1 y.1)
+    (closedCollarFiberPoints orients key)
+
+theorem closedCollarAgreesWithSwitch_symm
+    {orients : List TauOrient} {s t : List TauState}
+    {component : List ChainEdge} {a c : LColor}
+    (hagree :
+      closedCollarAgreesWithSwitch orients s t component a c = true) :
+    closedCollarAgreesWithSwitch orients t s component a c = true := by
+  unfold closedCollarAgreesWithSwitch closedCollarSwitchedColor at hagree ⊢
+  rw [List.all_eq_true] at hagree ⊢
+  intro ge hge
+  have hgeAgree := hagree ge hge
+  by_cases hcontains : component.contains ge = true
+  · rw [hcontains]
+    rw [hcontains] at hgeAgree
+    exact colorEq_swapColor_swapColor a c _ _ hgeAgree
+  · have hcontainsFalse : component.contains ge = false :=
+      bool_false_of_not_true hcontains
+    rw [hcontainsFalse]
+    rw [hcontainsFalse] at hgeAgree
+    rw [colorEq_eq_true_iff] at hgeAgree ⊢
+    exact hgeAgree.symm
+
+theorem closedCollarFiberKempeConnected_of_pairwiseConnectedCheck
+    {orients : List TauOrient} {key : List LColor}
+    (hcheck : closedCollarFiberPairwiseConnectedCheck orients key = true) :
+    closedCollarFiberKempeConnected orients key := by
+  intro x y
+  have hpair :=
+    boolFiberPairwiseConnected_pairwise
+      (fun x y : ClosedCollarFiberPoint orients key =>
+        closedCollarSingleKempeStep orients x.1 y.1)
+      (fiber := closedCollarFiberPoints orients key)
+      (by
+        simpa [closedCollarFiberPairwiseConnectedCheck] using hcheck)
+      x (mem_closedCollarFiberPoints orients key x)
+      y (mem_closedCollarFiberPoints orients key y)
+  change
+    Relation.ReflTransGen
+      (fun a b : ClosedCollarFiberPoint orients key =>
+        closedCollarSingleKempeStep orients a.1 b.1 = true) x y
+  exact hpair
+
+end GoertzelLemma818ClosedCollarBridgeProof
+
+end Mettapedia.GraphTheory.FourColor
