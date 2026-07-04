@@ -40,6 +40,9 @@ set_option autoImplicit false
 #check v13RealLinearNoTargetRowsHistoryField
 #check v13RealLinearNoTargetRows_historyField_balancedConditioning
 #check v13RealLinearNoTargetRows_historyField_admissible
+#check v13RealLinearNoTargetRowsPublicCoordinateField
+#check v13RealLinearNoTargetRows_publicCoordinate_balancedConditioning
+#check v13RealLinearNoTargetRows_publicCoordinate_admissible
 #check RealM4LockedCoreWorld
 #check RealM4LockedCoreWitness
 #check RealM4LockedCoreWorld.toWitness
@@ -206,6 +209,9 @@ set_option autoImplicit false
 #print axioms v13RealLinearNoTargetRowsHistoryField
 #print axioms v13RealLinearNoTargetRows_historyField_balancedConditioning
 #print axioms v13RealLinearNoTargetRows_historyField_admissible
+#print axioms v13RealLinearNoTargetRowsPublicCoordinateField
+#print axioms v13RealLinearNoTargetRows_publicCoordinate_balancedConditioning
+#print axioms v13RealLinearNoTargetRows_publicCoordinate_admissible
 #print axioms RealM4LockedCoreWorld
 #print axioms RealM4LockedCoreWitness
 #print axioms RealM4LockedCoreWorld.toWitness

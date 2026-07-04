@@ -447,6 +447,51 @@ theorem v13RealLinearNoTargetRows_historyField_admissible
   ⟨v13RealLinearNoTargetRows_target_balanced i₀ hm,
     v13RealLinearNoTargetRows_historyField_balancedConditioning i₀ row⟩
 
+def v13RealLinearNoTargetRowsPublicCoordinateField {m : Nat}
+    {i₀ : Fin m} (coordinate : V13RealLinearPublicCoordinate m) :
+    FiniteSigmaField (V13RealLinearNoTargetRowsWorld m i₀) where
+  Atom := ZMod 2
+  atomDecidable := inferInstance
+  atom := fun omega =>
+    v13RealLinearCoordinateValue coordinate
+      (v13RealLinearNoTargetRowsPublicInput omega)
+
+/-- Every single public coordinate of the adjusted real no-target-rows surface
+has balanced target fibers.  This packages the rung-one public-surface
+cardinality theorem as a v13 `BalancedConditioning` statement. -/
+theorem v13RealLinearNoTargetRows_publicCoordinate_balancedConditioning
+    {m : Nat} (i₀ : Fin m)
+    (coordinate : V13RealLinearPublicCoordinate m) :
+    BalancedConditioning
+      (v13RealLinearNoTargetRowsPublicCoordinateField (i₀ := i₀) coordinate)
+      (@v13RealLinearNoTargetRowsTargetBit m i₀) := by
+  classical
+  unfold BalancedConditioning Neutral
+  intro value
+  have h :=
+    v13RealLinearNoTargetRowsCoordinateTargetFiber_card_eq
+      i₀ coordinate value
+  simpa [v13RealLinearNoTargetRowsPublicCoordinateField,
+    v13RealLinearNoTargetRowsTargetBit,
+    V13RealLinearNoTargetRowsCoordinateTargetFiber,
+    FiberTrue, FiberFalse] using h.symm
+
+/-- The adjusted real no-target-rows public-coordinate field satisfies the v13
+`admissibleHistories` balance pair for every public coordinate.  This is still
+a public-surface construction theorem; full M4 must identify the manuscript
+history atoms and connect them to this surface. -/
+theorem v13RealLinearNoTargetRows_publicCoordinate_admissible
+    {m : Nat} (i₀ : Fin m)
+    (coordinate : V13RealLinearPublicCoordinate m) (hm : 1 < m) :
+    BalancedBit (@v13RealLinearNoTargetRowsTargetBit m i₀) ∧
+      BalancedConditioning
+        (v13RealLinearNoTargetRowsPublicCoordinateField (i₀ := i₀)
+          coordinate)
+        (@v13RealLinearNoTargetRowsTargetBit m i₀) :=
+  ⟨v13RealLinearNoTargetRows_target_balanced i₀ hm,
+    v13RealLinearNoTargetRows_publicCoordinate_balancedConditioning
+      i₀ coordinate⟩
+
 /-! ## Appendix D locked-core adapter for the real spine -/
 
 /-- A supported public lock together with one locked completion.  This is the
@@ -2311,8 +2356,8 @@ def realM4LiftLedger : List RealM4LiftLedgerRow := [
   {
     item := "admissibleHistories"
     status := .partialConstructionTransferred
-    checkedName := "v13RealLinearNoTargetRows_historyField_admissible"
-    note := "The adjusted real no-target-rows row history field has the balanced-bit and balanced-conditioning pair; full M4 histories still need manuscript-history atom identification and connection."
+    checkedName := "v13RealLinearNoTargetRows_publicCoordinate_admissible"
+    note := "Every single public coordinate of the adjusted real no-target-rows surface has the balanced-bit and balanced-conditioning pair; full M4 histories still need manuscript-history atom identification and connection."
   },
   {
     item := "realCompressionLowerFramework"
