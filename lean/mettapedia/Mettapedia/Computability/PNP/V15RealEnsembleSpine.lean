@@ -1166,6 +1166,126 @@ theorem realM4_uniformSelfReductionUpperHypothesis_givenPNP
     rw [R.kpolyAt_eq, R.etaTimes_eq]
     exact R.floor_dominates_decoder
 
+/-! ## Real-M4 self-reduction upper discharge package -/
+
+/-- Real Appendix I package that discharges the upper self-reduction side once
+the public-message invariant, uniform bit-fixing data, and real constant
+decoder regime have all been constructed.  The SAT decider family remains an
+explicit P=NP-side input inside `uniformBitFixing`; this is not an
+unconditional upper bound. -/
+structure RealM4SelfReductionUpperDischarge
+    {PublicLock : Type u} {Quotient : Type v}
+    {LockAux : Type w} {Message : Type z}
+    {Public : Type x} {Var : Public -> Type y}
+    {Witness : Public -> Type y}
+    (D : AppendixICNFReadoutData
+      PublicLock Quotient LockAux Message Public Var Witness)
+    (F : CompressionLowerFramework) where
+  publicMessage : PublicLock -> Message
+  publicMessageInvariant : D.core.PublicMessageInvariant publicMessage
+  uniformBitFixing : RealM4CNFUniformBitFixingData D
+  constantDecoderRegime :
+    RealM4UniformConstantDecoderRegime F uniformBitFixing
+
+namespace RealM4SelfReductionUpperDischarge
+
+variable {PublicLock : Type u} {Quotient : Type v}
+variable {LockAux : Type w} {Message : Type z}
+variable {Public : Type x} {Var : Public -> Type y}
+variable {Witness : Public -> Type y}
+variable
+  {D : AppendixICNFReadoutData
+    PublicLock Quotient LockAux Message Public Var Witness}
+variable {F : CompressionLowerFramework}
+
+def selfReductionUpper
+    (S : RealM4SelfReductionUpperDischarge D F) :
+    SelfReductionUpperHypothesis F :=
+  realM4_uniformSelfReductionUpperHypothesis_givenPNP
+    S.uniformBitFixing S.constantDecoderRegime
+
+theorem bitFixingAssignment_satisfies
+    (S : RealM4SelfReductionUpperDischarge D F)
+    {Y : Public} (hY : D.support Y) :
+    ConcreteCNF.IsSatFormula (D.formula Y)
+      (S.uniformBitFixing.bitFixingAssignment Y) :=
+  realM4_uniformBitFixingAssignment_satisfies
+    D S.uniformBitFixing hY
+
+theorem bitFixingReadout_eq_publicMessage
+    (S : RealM4SelfReductionUpperDischarge D F)
+    {Y : Public} (hY : D.support Y) :
+    D.projection Y (S.uniformBitFixing.bitFixingAssignment Y) =
+      S.publicMessage (D.publicLock Y) :=
+  realM4_uniformBitFixingReadout_eq_publicMessage_of_publicMessageInvariant
+    D S.uniformBitFixing S.publicMessageInvariant hY
+
+theorem instanceDecoderCost_le_uniform
+    (S : RealM4SelfReductionUpperDischarge D F) (Y : Public) :
+    realCNFSelfReductionDecoderCost (S.uniformBitFixing.satDecider Y) ≤
+      realM4UniformSelfReductionDecoderCost S.uniformBitFixing :=
+  realM4UniformSelfReductionDecoderCost_bounds_instance
+    S.uniformBitFixing Y
+
+end RealM4SelfReductionUpperDischarge
+
+/-- Combined checked output of the real Appendix I self-reduction package:
+bit-fixing yields a satisfying assignment, its readout is the public message,
+each instance decoder is bounded by the uniform constant decoder, and the
+`SelfReductionUpperHypothesis` follows for the real lower framework. -/
+theorem realM4_selfReductionUpperDischarge_assignment_readout_cost_and_upper
+    {PublicLock : Type u} {Quotient : Type v}
+    {LockAux : Type w} {Message : Type z}
+    {Public : Type x} {Var : Public -> Type y}
+    {Witness : Public -> Type y}
+    {D : AppendixICNFReadoutData
+      PublicLock Quotient LockAux Message Public Var Witness}
+    {F : CompressionLowerFramework}
+    (S : RealM4SelfReductionUpperDischarge D F) :
+    (∀ {Y : Public}, D.support Y ->
+      ConcreteCNF.IsSatFormula (D.formula Y)
+        (S.uniformBitFixing.bitFixingAssignment Y)) ∧
+    (∀ {Y : Public}, D.support Y ->
+      D.projection Y (S.uniformBitFixing.bitFixingAssignment Y) =
+        S.publicMessage (D.publicLock Y)) ∧
+    (∀ Y : Public,
+      realCNFSelfReductionDecoderCost (S.uniformBitFixing.satDecider Y) ≤
+        realM4UniformSelfReductionDecoderCost S.uniformBitFixing) ∧
+    SelfReductionUpperHypothesis F := by
+  exact
+    ⟨fun {Y} hY =>
+        RealM4SelfReductionUpperDischarge.bitFixingAssignment_satisfies
+          S hY,
+      fun {Y} hY =>
+        RealM4SelfReductionUpperDischarge.bitFixingReadout_eq_publicMessage
+          S hY,
+      fun Y =>
+        RealM4SelfReductionUpperDischarge.instanceDecoderCost_le_uniform
+          S Y,
+      RealM4SelfReductionUpperDischarge.selfReductionUpper S⟩
+
+def realM4SelfReductionUpperDischargePrerequisites : List String := [
+  "publicMessageInvariant",
+  "uniformCNFBitFixingPackage",
+  "realCompressionLowerFramework"
+]
+
+theorem realM4SelfReductionUpperDischargePrerequisites_exact :
+    realM4SelfReductionUpperDischargePrerequisites =
+      [ "publicMessageInvariant",
+        "uniformCNFBitFixingPackage",
+        "realCompressionLowerFramework" ] := by
+  rfl
+
+def realM4SelfReductionUpperConditionalInputs : List String := [
+  "pnpDeciderFamily"
+]
+
+theorem realM4SelfReductionUpperConditionalInputs_exact :
+    realM4SelfReductionUpperConditionalInputs =
+      [ "pnpDeciderFamily" ] := by
+  rfl
+
 /-! ## Real-M4 lift ledger -/
 
 inductive RealM4LiftStatus where
@@ -1232,6 +1352,12 @@ def realM4LiftLedger : List RealM4LiftLedgerRow := [
     note := "The uniform CNF bit-fixing decoder gives the formal upper inequality once the real lower framework identifies kpolyAt with this constant decoder cost."
   },
   {
+    item := "selfReductionUpperDischargePackage"
+    status := .partialConstructionTransferred
+    checkedName := "realM4_selfReductionUpperDischarge_assignment_readout_cost_and_upper"
+    note := "Bundles the public-message invariant, uniform bit-fixing data, and constant decoder regime into the real upper-side discharge package; constructing those ingredients remains open."
+  },
+  {
     item := "deterministicReadoutOnly"
     status := .blockedByCounterexample
     checkedName := "lockedCoreIdentityReadoutFamily_lab_refutation"
@@ -1281,9 +1407,9 @@ def realM4LiftLedger : List RealM4LiftLedgerRow := [
   },
   {
     item := "selfReductionUpper"
-    status := .openConstruction
-    checkedName := "SelfReductionUpperHypothesis"
-    note := "The real SAT bit-fixing decoder should be construction-proved from an explicit P=NP decider once the M4 restricted formulas and program model exist."
+    status := .partialConstructionTransferred
+    checkedName := "realM4_selfReductionUpperDischarge_assignment_readout_cost_and_upper"
+    note := "No longer a standalone global input: the real upper side follows from the audited discharge package, whose construction prerequisites and P=NP-side decider input are listed separately."
   },
   {
     item := "pnpDecider"
@@ -1326,6 +1452,7 @@ theorem realM4LiftLedger_statuses_exact :
         RealM4LiftStatus.constructionTransferred,
         RealM4LiftStatus.partialConstructionTransferred,
         RealM4LiftStatus.partialConstructionTransferred,
+        RealM4LiftStatus.partialConstructionTransferred,
         RealM4LiftStatus.blockedByCounterexample,
         RealM4LiftStatus.openConstruction,
         RealM4LiftStatus.partialConstructionTransferred,
@@ -1334,7 +1461,7 @@ theorem realM4LiftLedger_statuses_exact :
         RealM4LiftStatus.openConstruction,
         RealM4LiftStatus.openConstruction,
         RealM4LiftStatus.openConstruction,
-        RealM4LiftStatus.openConstruction,
+        RealM4LiftStatus.partialConstructionTransferred,
         RealM4LiftStatus.pnpConditionalInput,
         RealM4LiftStatus.irreducibleInput,
         RealM4LiftStatus.irreducibleInput,
@@ -1349,8 +1476,8 @@ def realM4OpenConstructionItems : List String := [
   "gaugeFaithfulness",
   "hiddenGaugeProduct",
   "admissibleHistories",
-  "realCompressionLowerFramework",
-  "selfReductionUpper"
+  "uniformCNFBitFixingPackage",
+  "realCompressionLowerFramework"
 ]
 
 theorem realM4OpenConstructionItems_exact :
@@ -1361,8 +1488,8 @@ theorem realM4OpenConstructionItems_exact :
         "gaugeFaithfulness",
         "hiddenGaugeProduct",
         "admissibleHistories",
-        "realCompressionLowerFramework",
-        "selfReductionUpper" ] := by
+        "uniformCNFBitFixingPackage",
+        "realCompressionLowerFramework" ] := by
   rfl
 
 def realM4AfterConstructionIrreducibleInputs : List String := [
