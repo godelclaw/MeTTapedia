@@ -471,6 +471,14 @@ def closedCollarSpineCertificateAuditFrom
       closedCollarSpineRowsValid orients fiber cert.parents &&
         closedCollarSpineParentsReachRoot fiber cert
 
+def closedCollarSpineCertificateAuditForFiber
+    (orients : List TauOrient) (fiber : List (List TauState))
+    (cert : ClosedCollarSpineCertificate) : Bool :=
+  cert.parents.length == fiber.length &&
+    (if fiber.isEmpty then cert.parents == [] else decide (cert.root < fiber.length)) &&
+      closedCollarSpineRowsValid orients fiber cert.parents &&
+        closedCollarSpineParentsReachRoot fiber cert
+
 def closedCollarSpineCertificateAudit
     (orients : List TauOrient) (cert : ClosedCollarSpineCertificate) : Bool :=
   closedCollarSpineCertificateAuditFrom orients (allClosedCollarStates orients) cert
@@ -697,6 +705,89 @@ theorem closedCollarFiberKempeConnected_of_spineCertificateAuditFrom
     closedCollarFiberKempeConnected orients cert.key := by
   apply closedCollarFiberKempeConnected_of_spineCertificateAudit cert
   simpa [closedCollarSpineCertificateAudit, hstates] using haudit
+
+theorem closedCollarFiberKempeConnected_of_spineCertificateAuditForFiber
+    {orients : List TauOrient} {statesList fiber : List (List TauState)}
+    (cert : ClosedCollarSpineCertificate)
+    (hstates : allClosedCollarStates orients = statesList)
+    (hfiber : closedCollarFiberFrom orients statesList cert.key = fiber)
+    (haudit :
+      closedCollarSpineCertificateAuditForFiber orients fiber cert = true) :
+    closedCollarFiberKempeConnected orients cert.key := by
+  have hclosed : closedCollarFiber orients cert.key = fiber := by
+    unfold closedCollarFiber
+    rw [hstates, hfiber]
+  unfold closedCollarFiberKempeConnected closedCollarKempeStep ClosedCollarFiberPoint
+  rw [hclosed]
+  intro x y
+  have hx : x.1 ∈ fiber := x.2
+  have hy : y.1 ∈ fiber := y.2
+  let i := fiber.idxOf x.1
+  let j := fiber.idxOf y.1
+  have hi : i < fiber.length := by
+    simpa [i] using List.idxOf_lt_length_of_mem hx
+  have hj : j < fiber.length := by
+    simpa [j] using List.idxOf_lt_length_of_mem hy
+  unfold closedCollarSpineCertificateAuditForFiber at haudit
+  simp only [Bool.and_eq_true] at haudit
+  rcases haudit with ⟨⟨⟨_hlen, _hrootBound⟩, hrows⟩, hroot⟩
+  have hreachI :=
+    closedCollarSpineReachParentIter (orients := orients)
+      (fiber := fiber) (parents := cert.parents) hrows cert.maxDepth i hi
+  have hreachJ :=
+    closedCollarSpineReachParentIter_reverse (orients := orients)
+      (fiber := fiber) (parents := cert.parents) hrows cert.maxDepth j hj
+  rcases hreachI with ⟨hiTarget, hpathI⟩
+  rcases hreachJ with ⟨hjTarget, hpathJ⟩
+  have hiRoot :
+      closedCollarParentIter cert.parents cert.maxDepth i = cert.root :=
+    closedCollarSpineParentsReachRoot_index hroot hi
+  have hjRoot :
+      closedCollarParentIter cert.parents cert.maxDepth j = cert.root :=
+    closedCollarSpineParentsReachRoot_index hroot hj
+  have hstart :
+      (⟨listGetD fiber i [], listGetD_mem_of_lt fiber [] hi⟩ :
+        {state // state ∈ fiber}) = ⟨x.1, hx⟩ := by
+    apply Subtype.ext
+    simpa [i] using listGetD_idxOf_eq_of_mem fiber [] hx
+  have hend :
+      (⟨listGetD fiber j [], listGetD_mem_of_lt fiber [] hj⟩ :
+        {state // state ∈ fiber}) = ⟨y.1, hy⟩ := by
+    apply Subtype.ext
+    simpa [j] using listGetD_idxOf_eq_of_mem fiber [] hy
+  have hmid :
+      (⟨listGetD fiber (closedCollarParentIter cert.parents cert.maxDepth i) [],
+          listGetD_mem_of_lt fiber [] hiTarget⟩ :
+        {state // state ∈ fiber}) =
+      ⟨listGetD fiber (closedCollarParentIter cert.parents cert.maxDepth j) [],
+          listGetD_mem_of_lt fiber [] hjTarget⟩ := by
+    apply Subtype.ext
+    simp [hiRoot, hjRoot]
+  have hpath := Relation.ReflTransGen.trans hpathI (by
+    simpa [hmid] using hpathJ)
+  have hpathXY :
+      Relation.ReflTransGen
+        (fun a b : {state // state ∈ fiber} =>
+          closedCollarSingleKempeStep orients a.1 b.1 = true)
+        ⟨x.1, hx⟩ ⟨y.1, hy⟩ := by
+    simpa [hstart, hend] using hpath
+  simpa [closedCollarKempeStep] using hpathXY
+
+theorem closedCollarFiberKempeConnected_of_fiberFrom_eq_nil
+    {orients : List TauOrient} {statesList : List (List TauState)}
+    {key : List LColor}
+    (hstates : allClosedCollarStates orients = statesList)
+    (hempty : closedCollarFiberFrom orients statesList key = []) :
+    closedCollarFiberKempeConnected orients key := by
+  intro x _y
+  have hxFiber : x.1 ∈ closedCollarFiberFrom orients statesList key := by
+    have hx : x.1 ∈ closedCollarFiber orients key := x.2
+    unfold closedCollarFiber at hx
+    simpa [hstates] using hx
+  have hxEmpty : x.1 ∈ ([] : List (List TauState)) := by
+    rw [hempty] at hxFiber
+    exact hxFiber
+  cases hxEmpty
 
 theorem closedCollarFiberKempeConnected_of_pairwiseConnectedCheck
     {orients : List TauOrient} {key : List LColor}
