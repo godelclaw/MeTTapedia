@@ -169,6 +169,24 @@ def v13RealLinearNoTargetRowsTargetBit {m : Nat} {i₀ : Fin m}
     (omega : V13RealLinearNoTargetRowsWorld m i₀) : Bool :=
   v13RealLinearBit (omega.2 i₀)
 
+@[simp] theorem v13RealLinearBit_eq_true_iff (a : ZMod 2) :
+    v13RealLinearBit a = true ↔ a = 1 := by
+  unfold v13RealLinearBit
+  by_cases h : a = 1 <;> simp [h]
+
+@[simp] theorem v13RealLinearBit_eq_false_iff (a : ZMod 2) :
+    v13RealLinearBit a = false ↔ a = 0 := by
+  constructor
+  · intro hfalse
+    have hne : a ≠ 1 := by
+      intro hone
+      simp [v13RealLinearBit, hone] at hfalse
+    fin_cases a
+    · rfl
+    · exact False.elim (hne rfl)
+  · intro hzero
+    simp [v13RealLinearBit, hzero]
+
 def v13RealLinearNoTargetRowsNeutralSkeleton {m : Nat} {i₀ : Fin m}
     (omega : V13RealLinearNoTargetRowsWorld m i₀) :
     V13RealLinearNoTargetRowsMap m i₀ :=
@@ -237,6 +255,34 @@ theorem v13RealLinearNoTargetRows_noPublicTargetTags
         (@v13RealLinearNoTargetRowsNeutralSkeleton m i₀)
         (@v13RealLinearNoTargetRowsTargetBit m i₀)
         hPair hOpp⟩
+
+def v13RealLinearNoTargetRowsHistoryField {m : Nat} {i₀ : Fin m}
+    (row : Fin m) :
+    FiniteSigmaField (V13RealLinearNoTargetRowsWorld m i₀) where
+  Atom := ZMod 2
+  atomDecidable := inferInstance
+  atom := fun omega => omega.1.val.toEquiv omega.2 row
+
+/-- For the adjusted real no-target-rows surface, conditioning on one public
+right-hand-side row remains balanced for the target bit.  This proves the
+`BalancedConditioning` half of the v13 `admissibleHistories` field for this
+real public surface; the full M4 history-field package still has to identify
+the manuscript history atoms and prove the paired `BalancedBit` component. -/
+theorem v13RealLinearNoTargetRows_historyField_balancedConditioning
+    {m : Nat} (i₀ row : Fin m) :
+    BalancedConditioning
+      (v13RealLinearNoTargetRowsHistoryField (i₀ := i₀) row)
+      (@v13RealLinearNoTargetRowsTargetBit m i₀) := by
+  classical
+  unfold BalancedConditioning Neutral
+  intro rhs
+  have h :=
+    v13RealLinearNoTargetRowsRhsTargetFiber_card_eq
+      i₀ row rhs
+  simpa [v13RealLinearNoTargetRowsHistoryField,
+    v13RealLinearNoTargetRowsTargetBit,
+    V13RealLinearNoTargetRowsRhsTargetFiber,
+    FiberTrue, FiberFalse] using h.symm
 
 /-! ## Appendix D locked-core adapter for the real spine -/
 
@@ -2101,9 +2147,9 @@ def realM4LiftLedger : List RealM4LiftLedgerRow := [
   },
   {
     item := "admissibleHistories"
-    status := .openConstruction
-    checkedName := "GaugeBufferedLockedInterface.admissibleHistories"
-    note := "The M4 history field still needs balance and balanced-conditioning proofs."
+    status := .partialConstructionTransferred
+    checkedName := "v13RealLinearNoTargetRows_historyField_balancedConditioning"
+    note := "The adjusted real no-target-rows row history field has balanced conditioning for the target bit; full M4 histories still need manuscript-history atoms and the paired balance proof."
   },
   {
     item := "realCompressionLowerFramework"
@@ -2183,7 +2229,7 @@ theorem realM4LiftLedger_statuses_exact :
         RealM4LiftStatus.openConstruction,
         RealM4LiftStatus.openConstruction,
         RealM4LiftStatus.openConstruction,
-        RealM4LiftStatus.openConstruction,
+        RealM4LiftStatus.partialConstructionTransferred,
         RealM4LiftStatus.openConstruction,
         RealM4LiftStatus.partialConstructionTransferred,
         RealM4LiftStatus.partialConstructionTransferred,
