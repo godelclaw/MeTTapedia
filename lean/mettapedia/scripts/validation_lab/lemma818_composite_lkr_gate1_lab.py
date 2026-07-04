@@ -1044,6 +1044,68 @@ def cyclic_cut_payload_samples(
     return payloads
 
 
+def closed_collar_edge_kind(edge: str) -> str:
+    if edge.startswith("P"):
+        return "patch"
+    if edge.startswith("g0:") or edge.startswith("g1:"):
+        return "collar"
+    if edge.startswith("C"):
+        return "closing"
+    if edge.startswith("I"):
+        return "interface"
+    return "other"
+
+
+def closed_collar_vertex_kind(vertex: str) -> str:
+    if vertex.startswith("N"):
+        return "patch_internal"
+    if vertex.startswith("g0:") or vertex.startswith("g1:"):
+        return "collar"
+    return "other"
+
+
+def closed_collar_cut_shape_payload(
+    cut: dict[str, object],
+) -> dict[str, object]:
+    cut_edges = [str(edge) for edge in cut.get("cut_edges", [])]
+    side_vertices = [str(vertex) for vertex in cut.get("side_vertices", [])]
+    other_vertices = [str(vertex) for vertex in cut.get("other_side_vertices", [])]
+    edge_kind_counter = Counter(closed_collar_edge_kind(edge) for edge in cut_edges)
+    side_kind_counter = Counter(closed_collar_vertex_kind(vertex) for vertex in side_vertices)
+    other_kind_counter = Counter(closed_collar_vertex_kind(vertex) for vertex in other_vertices)
+    return {
+        "cut_size": int(cut["cut_size"]),
+        "side_vertex_count": len(side_vertices),
+        "other_side_vertex_count": len(other_vertices),
+        "edge_kind_histogram": dict(sorted(edge_kind_counter.items())),
+        "side_vertex_kind_histogram": dict(sorted(side_kind_counter.items())),
+        "other_side_vertex_kind_histogram": dict(sorted(other_kind_counter.items())),
+        "cut_edges": cut_edges,
+        "side_vertices": side_vertices,
+    }
+
+
+def closed_collar_cut_shape_key(
+    cut: dict[str, object],
+) -> str:
+    payload = closed_collar_cut_shape_payload(cut)
+
+    def counts_key(histogram: dict[str, object]) -> str:
+        return ",".join(
+            f"{key}:{histogram[key]}"
+            for key in sorted(histogram)
+        )
+
+    return "|".join(
+        (
+            f"cut:{payload['cut_size']}",
+            f"side:{payload['side_vertex_count']}",
+            f"edges:{counts_key(payload['edge_kind_histogram'])}",
+            f"sideKinds:{counts_key(payload['side_vertex_kind_histogram'])}",
+        )
+    )
+
+
 def literal_cycle_side(
     side: set[str],
     edges: list[tuple[str, str, str]],
@@ -2107,6 +2169,193 @@ def audit_closed_collar_winding_simple_patch_slice(
     }
 
 
+def audit_closed_collar_winding_simple_patch_cyclic_cut_shapes(
+    tau_states: list[tuple[str, ...]],
+    internal_vertex_count: int,
+    patch_start_index: int,
+    patch_topology_limit: int,
+    sample_limit: int,
+) -> dict[str, object]:
+    word = (TAU_TYPE, TAU_TYPE)
+    fixed_outer_key = ("r", "r", "b", "b")
+    base_model = build_closed_collar_model(word)
+    base_fiber = audit_closed_collar_winding_fiber(
+        word,
+        fixed_outer_key,
+        tau_states,
+        include_all_components=True,
+    )
+    base_states = base_fiber.get("states", [])
+    assert isinstance(base_states, list)
+    if internal_vertex_count < 0 or internal_vertex_count % 2:
+        raise ValueError("patch internal vertex count must be a nonnegative even number")
+    if patch_start_index < 0:
+        raise ValueError("patch start index must be nonnegative")
+    if patch_topology_limit <= 0:
+        raise ValueError("patch topology limit must be positive")
+
+    processed_patch_topology_count = 0
+    radial_order_case_count = 0
+    profile_preserving_case_count = 0
+    cyclic_cut_blocker_case_count = 0
+    first_blocker_histogram: Counter[str] = Counter()
+    minimum_small_cut_histogram: Counter[str] = Counter()
+    first_cut_shape_histogram: Counter[str] = Counter()
+    first_cut_edge_kind_histogram: Counter[str] = Counter()
+    first_cut_side_kind_histogram: Counter[str] = Counter()
+    shape_samples: list[dict[str, object]] = []
+    last_seen_patch_index: int | None = None
+    exhausted = True
+
+    for patch_index, patch_edges in enumerate(
+        iter_simple_patch_edge_sets(internal_vertex_count)
+    ):
+        if patch_index < patch_start_index:
+            continue
+        if processed_patch_topology_count >= patch_topology_limit:
+            exhausted = False
+            break
+        last_seen_patch_index = patch_index
+        processed_patch_topology_count += 1
+
+        model0, _patch_edge_names0, radial_edges0 = simple_patch_model(
+            base_model,
+            patch_edges,
+        )
+        radial_orders = (radial_edges0, tuple(reversed(radial_edges0)))
+        for radial_order in radial_orders:
+            radial_order_case_count += 1
+            model, patch_edge_names, radial_edges = simple_patch_model(
+                base_model,
+                patch_edges,
+                radial_order,
+            )
+            state_extensions: list[dict[str, object]] = []
+            for state_payload in base_states:
+                assert isinstance(state_payload, dict)
+                raw_state = state_payload.get("state", {})
+                desired_profile = state_payload.get("winding_profile", [])
+                assert isinstance(raw_state, dict)
+                assert isinstance(desired_profile, list)
+                fixed_edge_colors = {
+                    edge: str(raw_state[edge])
+                    for edge in base_model.gadget.edges
+                    if edge not in PATCH_REMOVED_PARALLEL_EDGES
+                }
+                extension = simple_patch_profile_preserving_extension(
+                    model,
+                    patch_edge_names,
+                    radial_edges,
+                    fixed_edge_colors,
+                    desired_profile,
+                )
+                if extension is None:
+                    break
+                state_extensions.append(
+                    {
+                        "state_index": state_payload.get("state_index"),
+                        "profile_preserved": True,
+                    }
+                )
+            else:
+                profile_preserving_case_count += 1
+                graph_audit = closed_collar_multigraph_prefix_audit(
+                    model,
+                    sample_limit=sample_limit,
+                )
+                first_blocker = graph_audit["first_failed_normal_form_test"]
+                first_blocker_name = first_blocker["name"] if first_blocker else "none"
+                first_blocker_histogram[first_blocker_name] += 1
+                if first_blocker_name != "no_cyclic_edge_cut_of_size_at_most_four":
+                    continue
+
+                cyclic_cut_blocker_case_count += 1
+                small_cuts = graph_audit["small_cyclic_cuts"]
+                minimum_small_cut = graph_audit["minimum_small_cyclic_cut_size"]
+                minimum_small_cut_histogram[
+                    str(minimum_small_cut)
+                    if minimum_small_cut is not None
+                    else "none"
+                ] += 1
+                if not small_cuts:
+                    continue
+                first_cut = small_cuts[0]
+                shape = closed_collar_cut_shape_payload(first_cut)
+                shape_key = closed_collar_cut_shape_key(first_cut)
+                first_cut_shape_histogram[shape_key] += 1
+                for key, count in shape["edge_kind_histogram"].items():
+                    first_cut_edge_kind_histogram[f"{key}:{count}"] += 1
+                for key, count in shape["side_vertex_kind_histogram"].items():
+                    first_cut_side_kind_histogram[f"{key}:{count}"] += 1
+                if len(shape_samples) < sample_limit:
+                    shape_samples.append(
+                        {
+                            "patch_index": patch_index,
+                            "radial_order": list(radial_edges),
+                            "state_extensions": state_extensions,
+                            "first_cut_shape_key": shape_key,
+                            "first_cut_shape": shape,
+                            "minimum_small_cyclic_cut_size": minimum_small_cut,
+                            "small_cyclic_cut_sample_count":
+                                graph_audit["small_cyclic_cut_sample_count"],
+                            "patch_edges": [
+                                list(edge_pair) for edge_pair in patch_edges
+                            ],
+                        }
+                    )
+
+    next_patch_start_index = patch_start_index + processed_patch_topology_count
+    if exhausted and last_seen_patch_index is not None:
+        next_patch_start_index = last_seen_patch_index + 1
+    return {
+        "schema": "fourcolor-section-9-2-closed-collar-winding-simple-patch-cyclic-cut-shapes-v1",
+        "source": (
+            "Cyclic-cut shape audit for profile-preserving simple patches in "
+            "the closed-collar winding-freedom realization lab"
+        ),
+        "run_id": (
+            f"{word_key(word)}::{fixed_key_id(fixed_outer_key)}::"
+            f"simple_patch_{internal_vertex_count}_cyclic_cut_shapes_from_"
+            f"{patch_start_index}_limit_{patch_topology_limit}"
+        ),
+        "word": list(word_names(word)),
+        "fixed_outer_key": list(fixed_outer_key),
+        "search": {
+            "internal_vertex_count": internal_vertex_count,
+            "patch_start_index": patch_start_index,
+            "patch_topology_limit": patch_topology_limit,
+            "next_patch_start_index": next_patch_start_index,
+            "slice_exhausted_exact_size_space": exhausted,
+            "patch_terminals": dict(PATCH_TERMINAL_VERTICES),
+            "removed_parallel_edges": sorted(PATCH_REMOVED_PARALLEL_EDGES),
+            "classification": (
+                "for each profile-preserving case whose first blocker is "
+                "no_cyclic_edge_cut_of_size_at_most_four, classify the first "
+                "sampled cyclic cut by cut size, side size, edge kinds, and "
+                "side vertex kinds"
+            ),
+        },
+        "base_winding_profile_histogram": base_fiber["winding_profile_histogram"],
+        "shape_samples": shape_samples,
+        "summary": {
+            "processed_patch_topology_count": processed_patch_topology_count,
+            "radial_order_case_count": radial_order_case_count,
+            "profile_preserving_case_count": profile_preserving_case_count,
+            "cyclic_cut_blocker_case_count": cyclic_cut_blocker_case_count,
+            "first_failed_normal_form_histogram":
+                dict(sorted(first_blocker_histogram.items())),
+            "minimum_small_cyclic_cut_size_histogram":
+                dict(sorted(minimum_small_cut_histogram.items())),
+            "first_cut_shape_histogram":
+                dict(sorted(first_cut_shape_histogram.items())),
+            "first_cut_edge_kind_histogram":
+                dict(sorted(first_cut_edge_kind_histogram.items())),
+            "first_cut_side_vertex_kind_histogram":
+                dict(sorted(first_cut_side_kind_histogram.items())),
+        },
+    }
+
+
 def audit_closed_collar_winding_k4_desingularization_witness(
     tau_states: list[tuple[str, ...]],
 ) -> dict[str, object]:
@@ -2754,6 +3003,29 @@ def run_closed_collar_winding_simple_patch_slice(
     return report
 
 
+def run_closed_collar_winding_simple_patch_cyclic_cut_shapes(
+    output: Path | None,
+    resume: bool,
+    internal_vertex_count: int,
+    patch_start_index: int,
+    patch_topology_limit: int,
+    sample_limit: int,
+) -> dict[str, object]:
+    if resume and output is not None and output.exists():
+        return json.loads(output.read_text())
+
+    report = audit_closed_collar_winding_simple_patch_cyclic_cut_shapes(
+        proper_states(TAU),
+        internal_vertex_count=internal_vertex_count,
+        patch_start_index=patch_start_index,
+        patch_topology_limit=patch_topology_limit,
+        sample_limit=sample_limit,
+    )
+    if output is not None:
+        write_json_report(output, report)
+    return report
+
+
 def words_of_length(n: int) -> Iterable[tuple[GadgetType, ...]]:
     yield from product(GADGET_TYPES, repeat=n)
 
@@ -2809,6 +3081,14 @@ def main() -> None:
         help=(
             "run one exact-size slice of the simple cubic four-terminal patch "
             "search for the tau,tau::rrbb winding-freedom witness"
+        ),
+    )
+    parser.add_argument(
+        "--closed-collar-winding-simple-patch-cyclic-cut-shapes",
+        action="store_true",
+        help=(
+            "run one exact-size slice and classify first cyclic-cut blockers "
+            "among profile-preserving simple patches"
         ),
     )
     parser.add_argument(
@@ -2948,6 +3228,18 @@ def main() -> None:
 
     if args.closed_collar_winding_simple_patch_slice:
         report = run_closed_collar_winding_simple_patch_slice(
+            output=args.output,
+            resume=args.resume,
+            internal_vertex_count=args.patch_internal_vertices,
+            patch_start_index=args.patch_start_index,
+            patch_topology_limit=args.patch_topology_limit,
+            sample_limit=args.patch_candidate_sample_limit,
+        )
+        print(json.dumps(report, indent=2, sort_keys=True))
+        return
+
+    if args.closed_collar_winding_simple_patch_cyclic_cut_shapes:
+        report = run_closed_collar_winding_simple_patch_cyclic_cut_shapes(
             output=args.output,
             resume=args.resume,
             internal_vertex_count=args.patch_internal_vertices,
