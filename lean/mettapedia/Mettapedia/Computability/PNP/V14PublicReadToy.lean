@@ -908,28 +908,21 @@ theorem v14Toy_analyticFields_carried
   boundedGaugeIncidence := A.boundedGaugeIncidence
   boundaryMixing := A.boundaryMixing
 
-structure V14ToyOpenGlobalInputs
+structure V14ToyResidualOpenInputs
     {A : V14ToyAnalyticFrontier}
     (P : ParameterRecord (v14ToyLockedInterface A)) : Prop where
   starSWHardness_audited :
     (v13ParameterRecordAudit.get ⟨5, by decide⟩).status =
       ParameterFieldStatus.openInput
   starSWHardness : CompressionStarSWHardness P.lowerFramework
-  selfReductionUpper_audited :
-    (v13ParameterRecordAudit.get ⟨6, by decide⟩).status =
-      ParameterFieldStatus.openInput
-  selfReductionUpper : SelfReductionUpperHypothesis P.lowerFramework
 
-theorem v14Toy_openGlobalInputs
+theorem v14Toy_residualOpenInputs
     {A : V14ToyAnalyticFrontier}
     (P : ParameterRecord (v14ToyLockedInterface A)) :
-    V14ToyOpenGlobalInputs P where
+    V14ToyResidualOpenInputs P where
   starSWHardness_audited := by
     simp [v13ParameterRecordAudit]
   starSWHardness := P.starSWHardness
-  selfReductionUpper_audited := by
-    simp [v13ParameterRecordAudit]
-  selfReductionUpper := P.selfReductionUpper
 
 structure V14ToyParameterPayloadAudited
     {A : V14ToyAnalyticFrontier}
@@ -974,13 +967,24 @@ theorem v14Toy_parameterPayload_audited
     simp [v13ParameterRecordAudit]
   kernelNeutrality := P.kernelNeutrality
 
+def v14ToyParameterRecordWithPNPUpper
+    {A : V14ToyAnalyticFrontier}
+    (P : ParameterRecord (v14ToyLockedInterface A))
+    (D : V14ToyPNPSATDecider)
+    (R : V14ToyConstantDecoderRegime P.lowerFramework D) :
+    ParameterRecord (v14ToyLockedInterface A) :=
+  { P with
+    selfReductionUpper :=
+      v14Toy_selfReductionUpperHypothesis_givenPNP D R }
+
 structure V14ToyExactFrontierUse
     (A : V14ToyAnalyticFrontier)
     (P : ParameterRecord (v14ToyLockedInterface A)) : Prop where
   structural : V14ToyStructuralFieldsConstructed
   analytic : V14ToyAnalyticFieldsCarried A
   parameterPayload : V14ToyParameterPayloadAudited P
-  openGlobal : V14ToyOpenGlobalInputs P
+  residualOpen : V14ToyResidualOpenInputs P
+  selfReductionUpper : SelfReductionUpperHypothesis P.lowerFramework
   conclusion : UpperLowerClash (v14ToyLockedInterface A) P
 
 theorem v14Toy_reduction_uses_exact_analytic_frontier
@@ -990,11 +994,33 @@ theorem v14Toy_reduction_uses_exact_analytic_frontier
   structural := v14Toy_structuralFields_constructed
   analytic := v14Toy_analyticFields_carried A
   parameterPayload := v14Toy_parameterPayload_audited P
-  openGlobal := v14Toy_openGlobalInputs P
+  residualOpen := v14Toy_residualOpenInputs P
+  selfReductionUpper := P.selfReductionUpper
   conclusion := v14Toy_structuralReduction A P
 
+theorem v14Toy_reduction_uses_exact_analytic_frontier_givenPNP
+    (A : V14ToyAnalyticFrontier)
+    (P : ParameterRecord (v14ToyLockedInterface A))
+    (D : V14ToyPNPSATDecider)
+    (R : V14ToyConstantDecoderRegime P.lowerFramework D) :
+    V14ToyExactFrontierUse A
+      (v14ToyParameterRecordWithPNPUpper P D R) where
+  structural := v14Toy_structuralFields_constructed
+  analytic := v14Toy_analyticFields_carried A
+  parameterPayload :=
+    v14Toy_parameterPayload_audited
+      (v14ToyParameterRecordWithPNPUpper P D R)
+  residualOpen :=
+    v14Toy_residualOpenInputs
+      (v14ToyParameterRecordWithPNPUpper P D R)
+  selfReductionUpper :=
+    v14Toy_selfReductionUpperHypothesis_givenPNP D R
+  conclusion :=
+    v14Toy_structuralReduction A
+      (v14ToyParameterRecordWithPNPUpper P D R)
+
 def v14ToyReductionStatement : String :=
-  "With singleMessage, noPublicTargetTags, atomCompleteness, gaugeFaithfulness, hiddenGaugeProduct, and admissibleHistories construction-proved for the v14 toy, the interface analytic frontier is exactly SafeQSSMFrontier.safeQSSM, BoundedGaugeIncidenceFrontier.boundedGaugeIncidence, and BoundaryMixingFrontier.boundaryMixing. The remaining ParameterRecord payload is the v13-audited numeric/derived finite-budget data, plus ParameterRecord.starSWHardness and ParameterRecord.selfReductionUpper as the two open global inputs; the Lean conclusion is UpperLowerClash."
+  "With singleMessage, noPublicTargetTags, atomCompleteness, gaugeFaithfulness, hiddenGaugeProduct, and admissibleHistories construction-proved for the v14 toy, and with SelfReductionUpperHypothesis construction-proved given an explicit V14ToyPNPSATDecider plus the constant-decoder regime, the residual open inputs are ParameterRecord.starSWHardness together with SafeQSSMFrontier.safeQSSM, BoundedGaugeIncidenceFrontier.boundedGaugeIncidence, and BoundaryMixingFrontier.boundaryMixing; the Lean conclusion remains UpperLowerClash for the ParameterRecord whose selfReductionUpper field is v14Toy_selfReductionUpperHypothesis_givenPNP."
 
 /-! ## Weak-frontier canaries -/
 
@@ -1239,7 +1265,8 @@ theorem v14ToyConstructionLedger_test8_proved :
 inductive V14ExactUseLedgerStatus where
   | structuralProved
   | analyticCarried
-  | openGlobalInput
+  | constructionProvedGivenPNP
+  | residualOpenInput
 deriving DecidableEq, Repr
 
 structure V14ExactUseLedgerRow where
@@ -1295,14 +1322,14 @@ def v14ToyExactUseLedger : List V14ExactUseLedgerRow := [
     checkedName := "BoundaryMixingFrontier.boundaryMixing"
   },
   {
-    item := "starSWHardness"
-    status := .openGlobalInput
-    checkedName := "ParameterRecord.starSWHardness"
+    item := "selfReductionUpper"
+    status := .constructionProvedGivenPNP
+    checkedName := "v14Toy_selfReductionUpperHypothesis_givenPNP"
   },
   {
-    item := "selfReductionUpper"
-    status := .openGlobalInput
-    checkedName := "ParameterRecord.selfReductionUpper"
+    item := "starSWHardness"
+    status := .residualOpenInput
+    checkedName := "ParameterRecord.starSWHardness"
   }
 ]
 
@@ -1334,11 +1361,20 @@ theorem v14ToyExactUseLedger_analytic_carried :
         V14ExactUseLedgerStatus.analyticCarried := by
   simp [v14ToyExactUseLedger]
 
-theorem v14ToyExactUseLedger_open_global_inputs :
+theorem v14ToyExactUseLedger_selfReduction_upper_constructed_givenPNP :
     (v14ToyExactUseLedger.get ⟨9, by decide⟩).status =
-        V14ExactUseLedgerStatus.openGlobalInput ∧
+      V14ExactUseLedgerStatus.constructionProvedGivenPNP := by
+  rfl
+
+theorem v14ToyExactUseLedger_residual_open_inputs :
+    (v14ToyExactUseLedger.get ⟨6, by decide⟩).status =
+        V14ExactUseLedgerStatus.analyticCarried ∧
+      (v14ToyExactUseLedger.get ⟨7, by decide⟩).status =
+        V14ExactUseLedgerStatus.analyticCarried ∧
+      (v14ToyExactUseLedger.get ⟨8, by decide⟩).status =
+        V14ExactUseLedgerStatus.analyticCarried ∧
       (v14ToyExactUseLedger.get ⟨10, by decide⟩).status =
-        V14ExactUseLedgerStatus.openGlobalInput := by
+        V14ExactUseLedgerStatus.residualOpenInput := by
   simp [v14ToyExactUseLedger]
 
 end Mettapedia.Computability.PNP
