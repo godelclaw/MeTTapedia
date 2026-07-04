@@ -458,6 +458,112 @@ theorem closedCollarWindingFreedomSimplePatchN6First900000BlockedByPlanarityOrCy
     ⟨closedCollarWindingFreedomWitnessRealizationData,
       ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩ <;> decide
 
+/--
+Representative planar profile-preserving samples from the six-internal
+simple-patch search.  These are not exhaustive certificates; they pin the first
+normal-form blocker after planarity has been passed.
+-/
+structure ClosedCollarSimplePatchPlanarCyclicCutSample where
+  patchIndex : Nat
+  radialOrderAFirst : Bool
+  profilePreservingStateCount : Nat
+  vertexCount : Nat
+  edgeCount : Nat
+  passedConnectedMultigraph : Bool
+  passedCubicMultigraph : Bool
+  passedBridgelessMultigraph : Bool
+  passedPlanarMultigraph : Bool
+  passedSimpleEndpointRealization : Bool
+  firstFailedByCyclicEdgeCutLe4 : Bool
+  minimumSmallCyclicCutSize : Nat
+  sampledSmallCyclicCutCount : Nat
+  firstCutSize : Nat
+  firstCutEdges : List String
+  firstCutSideVertices : List String
+
+def closedCollarSimplePatchN6PlanarSizeTwoCyclicCutSample :
+    ClosedCollarSimplePatchPlanarCyclicCutSample where
+  patchIndex := 821205
+  radialOrderAFirst := true
+  profilePreservingStateCount := 6
+  vertexCount := 18
+  edgeCount := 27
+  passedConnectedMultigraph := true
+  passedCubicMultigraph := true
+  passedBridgelessMultigraph := true
+  passedPlanarMultigraph := true
+  passedSimpleEndpointRealization := true
+  firstFailedByCyclicEdgeCutLe4 := true
+  minimumSmallCyclicCutSize := 2
+  sampledSmallCyclicCutCount := 12
+  firstCutSize := 2
+  firstCutEdges := ["g0:F1F0", "g1:F4F5"]
+  firstCutSideVertices := ["N0", "N1", "g0:F1", "g1:F5"]
+
+def closedCollarSimplePatchN6PlanarSizeThreeCyclicCutSample :
+    ClosedCollarSimplePatchPlanarCyclicCutSample where
+  patchIndex := 852969
+  radialOrderAFirst := true
+  profilePreservingStateCount := 6
+  vertexCount := 18
+  edgeCount := 27
+  passedConnectedMultigraph := true
+  passedCubicMultigraph := true
+  passedBridgelessMultigraph := true
+  passedPlanarMultigraph := true
+  passedSimpleEndpointRealization := true
+  firstFailedByCyclicEdgeCutLe4 := true
+  minimumSmallCyclicCutSize := 3
+  sampledSmallCyclicCutCount := 12
+  firstCutSize := 3
+  firstCutEdges := ["g1:F4F5", "P9:N0-N2", "P10:N1-N5"]
+  firstCutSideVertices := ["N0", "N1", "g1:F5"]
+
+/--
+Named evidence that the first six-internal planar profile-preserving samples
+seen by the lab are not planarity failures.  They pass the tested connected,
+cubic, bridgeless, planar, and simple-endpoint checks, then fail at the
+no-small-cyclic-cut normal-form condition.
+-/
+def ClosedCollarWindingFreedomSimplePatchN6PlanarCyclicCutSamplesEvidence :
+    Prop :=
+  ClosedCollarWindingFreedomWitnessRealizationData ∧
+    closedCollarSimplePatchN6PlanarSizeTwoCyclicCutSample.patchIndex = 821205 ∧
+    closedCollarSimplePatchN6PlanarSizeTwoCyclicCutSample.profilePreservingStateCount = 6 ∧
+    closedCollarSimplePatchN6PlanarSizeTwoCyclicCutSample.passedConnectedMultigraph = true ∧
+    closedCollarSimplePatchN6PlanarSizeTwoCyclicCutSample.passedCubicMultigraph = true ∧
+    closedCollarSimplePatchN6PlanarSizeTwoCyclicCutSample.passedBridgelessMultigraph = true ∧
+    closedCollarSimplePatchN6PlanarSizeTwoCyclicCutSample.passedPlanarMultigraph = true ∧
+    closedCollarSimplePatchN6PlanarSizeTwoCyclicCutSample.passedSimpleEndpointRealization = true ∧
+    closedCollarSimplePatchN6PlanarSizeTwoCyclicCutSample.firstFailedByCyclicEdgeCutLe4 = true ∧
+    closedCollarSimplePatchN6PlanarSizeTwoCyclicCutSample.minimumSmallCyclicCutSize = 2 ∧
+    closedCollarSimplePatchN6PlanarSizeTwoCyclicCutSample.firstCutSize = 2 ∧
+    closedCollarSimplePatchN6PlanarSizeTwoCyclicCutSample.firstCutEdges =
+      ["g0:F1F0", "g1:F4F5"] ∧
+    closedCollarSimplePatchN6PlanarSizeTwoCyclicCutSample.firstCutSideVertices =
+      ["N0", "N1", "g0:F1", "g1:F5"] ∧
+    closedCollarSimplePatchN6PlanarSizeThreeCyclicCutSample.patchIndex = 852969 ∧
+    closedCollarSimplePatchN6PlanarSizeThreeCyclicCutSample.profilePreservingStateCount = 6 ∧
+    closedCollarSimplePatchN6PlanarSizeThreeCyclicCutSample.passedConnectedMultigraph = true ∧
+    closedCollarSimplePatchN6PlanarSizeThreeCyclicCutSample.passedCubicMultigraph = true ∧
+    closedCollarSimplePatchN6PlanarSizeThreeCyclicCutSample.passedBridgelessMultigraph = true ∧
+    closedCollarSimplePatchN6PlanarSizeThreeCyclicCutSample.passedPlanarMultigraph = true ∧
+    closedCollarSimplePatchN6PlanarSizeThreeCyclicCutSample.passedSimpleEndpointRealization = true ∧
+    closedCollarSimplePatchN6PlanarSizeThreeCyclicCutSample.firstFailedByCyclicEdgeCutLe4 = true ∧
+    closedCollarSimplePatchN6PlanarSizeThreeCyclicCutSample.minimumSmallCyclicCutSize = 3 ∧
+    closedCollarSimplePatchN6PlanarSizeThreeCyclicCutSample.firstCutSize = 3 ∧
+    closedCollarSimplePatchN6PlanarSizeThreeCyclicCutSample.firstCutEdges =
+      ["g1:F4F5", "P9:N0-N2", "P10:N1-N5"] ∧
+    closedCollarSimplePatchN6PlanarSizeThreeCyclicCutSample.firstCutSideVertices =
+      ["N0", "N1", "g1:F5"]
+
+theorem closedCollarWindingFreedomSimplePatchN6PlanarCyclicCutSamplesEvidence :
+    ClosedCollarWindingFreedomSimplePatchN6PlanarCyclicCutSamplesEvidence := by
+  refine
+    ⟨closedCollarWindingFreedomWitnessRealizationData,
+      ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_,
+      ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩ <;> decide
+
 end GoertzelLemma818ClosedCollarWindingRealization
 
 end Mettapedia.GraphTheory.FourColor
