@@ -1160,6 +1160,256 @@ def closed_collar_multigraph_audit(model: CompositeModel) -> dict[str, object]:
     }
 
 
+def third_color(c0: str, c1: str) -> str:
+    remaining = [color for color in COLORS if color not in (c0, c1)]
+    if len(remaining) != 1:
+        raise ValueError(f"expected two distinct colors, got {c0!r}, {c1!r}")
+    return remaining[0]
+
+
+def proper_state_check(gadget: Gadget, state: tuple[str, ...]) -> dict[str, object]:
+    idx = gadget.edge_index
+    failures = []
+    for vertex, incident_edges in gadget.incident.items():
+        colors = [state[idx[edge]] for edge in incident_edges]
+        if len(incident_edges) != 3 or len(set(colors)) != len(colors):
+            failures.append(
+                {
+                    "vertex": vertex,
+                    "incident_edges": list(incident_edges),
+                    "colors": colors,
+                }
+            )
+    return {
+        "proper": not failures,
+        "failures": failures,
+    }
+
+
+def k4_desingularized_model_and_state(
+    model: CompositeModel,
+    state: tuple[str, ...],
+) -> tuple[CompositeModel, tuple[str, ...], list[dict[str, object]]]:
+    idx = model.gadget.edge_index
+    endpoint_pair_buckets: dict[tuple[str, str], list[str]] = {}
+    for edge, endpoints in model.gadget.endpoints.items():
+        endpoint_pair_buckets.setdefault(tuple(sorted(endpoints)), []).append(edge)
+    replacement_bundles = {
+        endpoint_pair: edge_names
+        for endpoint_pair, edge_names in endpoint_pair_buckets.items()
+        if len(edge_names) == 2
+    }
+
+    new_edges: list[str] = []
+    new_endpoints: dict[str, tuple[str, str]] = {}
+    new_colors: dict[str, str] = {}
+    radial_cut_edges: list[str] = []
+    original_radial_cut = set(model.closing_edges)
+    replacement_payloads: list[dict[str, object]] = []
+
+    for edge in model.gadget.edges:
+        endpoint_pair = tuple(sorted(model.gadget.endpoints[edge]))
+        if endpoint_pair in replacement_bundles:
+            continue
+        new_edges.append(edge)
+        new_endpoints[edge] = model.gadget.endpoints[edge]
+        new_colors[edge] = state[idx[edge]]
+        if edge in original_radial_cut:
+            radial_cut_edges.append(edge)
+
+    for bundle_index, (endpoint_pair, edge_names) in enumerate(
+        sorted(replacement_bundles.items())
+    ):
+        e0, e1 = edge_names
+        u, v = model.gadget.endpoints[e0]
+        a = f"K{bundle_index}:a"
+        b = f"K{bundle_index}:b"
+        c0 = state[idx[e0]]
+        c1 = state[idx[e1]]
+        c2 = third_color(c0, c1)
+        replacement_edges = [
+            (
+                f"K{bundle_index}:{e0}:u-a",
+                (u, a),
+                c0,
+                e0 in original_radial_cut,
+            ),
+            (
+                f"K{bundle_index}:{e1}:u-b",
+                (u, b),
+                c1,
+                e1 in original_radial_cut,
+            ),
+            (
+                f"K{bundle_index}:{e1}:v-a",
+                (v, a),
+                c1,
+                False,
+            ),
+            (
+                f"K{bundle_index}:{e0}:v-b",
+                (v, b),
+                c0,
+                False,
+            ),
+            (
+                f"K{bundle_index}:cross",
+                (a, b),
+                c2,
+                False,
+            ),
+        ]
+        for edge, endpoints, color, is_radial in replacement_edges:
+            new_edges.append(edge)
+            new_endpoints[edge] = endpoints
+            new_colors[edge] = color
+            if is_radial:
+                radial_cut_edges.append(edge)
+        replacement_payloads.append(
+            {
+                "original_endpoint_pair": list(endpoint_pair),
+                "original_edges": edge_names,
+                "replacement_vertices": [a, b],
+                "replacement_edges": [
+                    {
+                        "edge": edge,
+                        "endpoints": list(endpoints),
+                        "inherits_radial_cut": is_radial,
+                    }
+                    for edge, endpoints, _color, is_radial in replacement_edges
+                ],
+            }
+        )
+
+    vertices = sorted({v for endpoints in new_endpoints.values() for v in endpoints})
+    gadget = Gadget(
+        name=f"{model.gadget.name}_k4_desingularized",
+        edges=tuple(new_edges),
+        endpoints=new_endpoints,
+        internal_vertices=tuple(vertices),
+        inputs=tuple(radial_cut_edges),
+    )
+    desingularized_model = CompositeModel(
+        gadget=gadget,
+        edge_sources=(),
+        output_edges=(),
+        interface_edges=(),
+        closing_edges=tuple(radial_cut_edges),
+    )
+    desingularized_state = tuple(new_colors[edge] for edge in new_edges)
+    return desingularized_model, desingularized_state, replacement_payloads
+
+
+def closed_collar_profile_payload_for_model(
+    model: CompositeModel,
+    state: tuple[str, ...],
+) -> list[dict[str, object]]:
+    profile, _payload = closed_collar_state_winding_data(model, state)
+    return winding_profile_payload(profile)
+
+
+def audit_closed_collar_winding_k4_desingularization_witness(
+    tau_states: list[tuple[str, ...]],
+) -> dict[str, object]:
+    word = (TAU_TYPE, TAU_TYPE)
+    fixed_outer_key = ("r", "r", "b", "b")
+    base_model = build_closed_collar_model(word)
+    base_fiber = audit_closed_collar_winding_fiber(
+        word,
+        fixed_outer_key,
+        tau_states,
+        include_all_components=True,
+    )
+    states_payload = base_fiber.get("states", [])
+    assert isinstance(states_payload, list)
+
+    state_audits: list[dict[str, object]] = []
+    graph_audit: dict[str, object] | None = None
+    replacements: list[dict[str, object]] | None = None
+    for state_payload in states_payload:
+        assert isinstance(state_payload, dict)
+        raw_state = state_payload.get("state", {})
+        assert isinstance(raw_state, dict)
+        state = tuple(str(raw_state[edge]) for edge in base_model.gadget.edges)
+        desing_model, desing_state, replacement_payloads = (
+            k4_desingularized_model_and_state(base_model, state)
+        )
+        if graph_audit is None:
+            graph_audit = closed_collar_multigraph_audit(desing_model)
+        if replacements is None:
+            replacements = replacement_payloads
+        original_profile = state_payload.get("winding_profile")
+        desing_profile = closed_collar_profile_payload_for_model(
+            desing_model,
+            desing_state,
+        )
+        proper_payload = proper_state_check(desing_model.gadget, desing_state)
+        state_audits.append(
+            {
+                "state_index": state_payload.get("state_index"),
+                "proper_desingularized_coloring": proper_payload,
+                "original_winding_profile": original_profile,
+                "desingularized_winding_profile": desing_profile,
+                "winding_profile_preserved": original_profile == desing_profile,
+            }
+        )
+
+    assert graph_audit is not None
+    assert replacements is not None
+    first_blocker = graph_audit["first_failed_normal_form_test"]
+    all_profiles_preserved = all(
+        bool(state_audit["winding_profile_preserved"])
+        for state_audit in state_audits
+    )
+    all_colorings_proper = all(
+        bool(state_audit["proper_desingularized_coloring"]["proper"])
+        for state_audit in state_audits
+    )
+    verdict = (
+        "k4_desingularized_witness_passes_tested_normal_form_prefix"
+        if first_blocker is None
+        else f"k4_desingularized_witness_blocked_by_{first_blocker['name']}"
+    )
+    return {
+        "schema": "fourcolor-section-9-2-closed-collar-winding-k4-desingularization-v1",
+        "source": "Section 9.2 K4-two-pole desingularization audit for the closed-collar winding-freedom witness",
+        "run_id": f"{word_key(word)}::{fixed_key_id(fixed_outer_key)}",
+        "word": list(word_names(word)),
+        "fixed_outer_key": list(fixed_outer_key),
+        "desingularization": {
+            "rule": (
+                "each two-edge parallel endpoint bundle is replaced by a "
+                "simple cubic K4-minus-terminal-edge two-pole; terminal colors "
+                "cross through the pole and the internal edge receives the third color"
+            ),
+            "radial_cut_lift": (
+                "unreplaced closing edges remain on the radial cut; a replaced "
+                "closing-edge pair lifts to the two terminal-side replacement edges"
+            ),
+            "replacement_bundles": replacements,
+        },
+        "base_winding_profile_histogram": base_fiber["winding_profile_histogram"],
+        "state_audits": state_audits,
+        "graph_audit": graph_audit,
+        "summary": {
+            "verdict": verdict,
+            "all_desingularized_colorings_proper": all_colorings_proper,
+            "all_winding_profiles_preserved": all_profiles_preserved,
+            "first_failed_normal_form_test": first_blocker["name"] if first_blocker else None,
+            "tested_normal_form_prefix_passed": [
+                test["name"]
+                for test in graph_audit["normal_form_tests"]
+                if bool(test["passes"])
+            ],
+            "blocked_normal_form_tests": [
+                test["name"]
+                for test in graph_audit["normal_form_tests"]
+                if not bool(test["passes"])
+            ],
+        },
+    }
+
+
 def audit_closed_collar_winding_realization_witness(
     tau_states: list[tuple[str, ...]],
 ) -> dict[str, object]:
@@ -1650,6 +1900,19 @@ def run_closed_collar_winding_realization_witness(
     return report
 
 
+def run_closed_collar_winding_k4_desingularization_witness(
+    output: Path | None,
+    resume: bool,
+) -> dict[str, object]:
+    if resume and output is not None and output.exists():
+        return json.loads(output.read_text())
+
+    report = audit_closed_collar_winding_k4_desingularization_witness(proper_states(TAU))
+    if output is not None:
+        write_json_report(output, report)
+    return report
+
+
 def words_of_length(n: int) -> Iterable[tuple[GadgetType, ...]]:
     yield from product(GADGET_TYPES, repeat=n)
 
@@ -1685,6 +1948,11 @@ def main() -> None:
         "--closed-collar-winding-realization-witness",
         action="store_true",
         help="audit the direct tau,tau::rrbb winding-freedom witness against geometric normal-form tests",
+    )
+    parser.add_argument(
+        "--closed-collar-winding-k4-desingularization-witness",
+        action="store_true",
+        help="audit the K4-two-pole desingularized tau,tau::rrbb winding-freedom witness",
     )
     parser.add_argument(
         "--output",
@@ -1767,6 +2035,14 @@ def main() -> None:
 
     if args.closed_collar_winding_realization_witness:
         report = run_closed_collar_winding_realization_witness(
+            output=args.output,
+            resume=args.resume,
+        )
+        print(json.dumps(report, indent=2, sort_keys=True))
+        return
+
+    if args.closed_collar_winding_k4_desingularization_witness:
+        report = run_closed_collar_winding_k4_desingularization_witness(
             output=args.output,
             resume=args.resume,
         )
