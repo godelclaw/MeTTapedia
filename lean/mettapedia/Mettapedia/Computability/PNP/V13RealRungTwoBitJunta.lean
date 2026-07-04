@@ -9153,6 +9153,90 @@ theorem
     (V13RealLinearNoTargetRowsSequentialTraceCosetHitCountingBound_of_orderedPrefixConditionedCounting
       i₀ observer hconditioned)
 
+theorem
+    V13RealLinearNoTargetRowsSequentialTraceCosetHitOrderedPrefixPackingBound_of_freshnessBridge
+    {m q : Nat} (i₀ : Fin m)
+    (observer : V13RealLinearSequentialRowObserver m q)
+    (hfreshBridge :
+      V13RealLinearNoTargetRowsSequentialTraceCosetHitOrderedPrefixFreshnessBridge
+        i₀ observer) :
+    V13RealLinearNoTargetRowsSequentialTraceCosetHitOrderedPrefixPackingBound
+      i₀ observer :=
+  V13RealLinearNoTargetRowsSequentialTraceCosetHitOrderedPrefixPackingBound_of_conditionedCounting
+    i₀ observer
+    (V13RealLinearNoTargetRowsSequentialTraceCosetHitOrderedPrefixConditionedCountingBound_of_freshnessBridge
+      i₀ observer hfreshBridge)
+
+theorem
+    V13RealLinearNoTargetRowsSequentialTraceCosetHitOrderedPrefixPackingBound_of_noPriorBridge
+    {m q : Nat} (i₀ : Fin m)
+    (observer : V13RealLinearSequentialRowObserver m q)
+    (hprior :
+      V13RealLinearNoTargetRowsSequentialTraceCosetHitNoPriorBridge
+        i₀ observer) :
+    V13RealLinearNoTargetRowsSequentialTraceCosetHitOrderedPrefixPackingBound
+      i₀ observer :=
+  V13RealLinearNoTargetRowsSequentialTraceCosetHitOrderedPrefixPackingBound_of_freshnessBridge
+    i₀ observer
+    (V13RealLinearNoTargetRowsSequentialTraceCosetHitOrderedPrefixFreshnessBridge_of_noPrior
+      i₀ observer hprior)
+
+theorem
+    V13RealLinearNoTargetRowsSequentialTraceCosetHitCountingBound_of_freshnessBridge
+    {m q : Nat} (i₀ : Fin m)
+    (observer : V13RealLinearSequentialRowObserver m q)
+    (hfreshBridge :
+      V13RealLinearNoTargetRowsSequentialTraceCosetHitOrderedPrefixFreshnessBridge
+        i₀ observer) :
+    V13RealLinearNoTargetRowsSequentialTraceCosetHitCountingBound
+      i₀ observer :=
+  V13RealLinearNoTargetRowsSequentialTraceCosetHitCountingBound_of_orderedPrefixConditionedCounting
+    i₀ observer
+    (V13RealLinearNoTargetRowsSequentialTraceCosetHitOrderedPrefixConditionedCountingBound_of_freshnessBridge
+      i₀ observer hfreshBridge)
+
+theorem
+    V13RealLinearNoTargetRowsSequentialTraceCosetHitCountingBound_of_noPriorBridge
+    {m q : Nat} (i₀ : Fin m)
+    (observer : V13RealLinearSequentialRowObserver m q)
+    (hprior :
+      V13RealLinearNoTargetRowsSequentialTraceCosetHitNoPriorBridge
+        i₀ observer) :
+    V13RealLinearNoTargetRowsSequentialTraceCosetHitCountingBound
+      i₀ observer :=
+  V13RealLinearNoTargetRowsSequentialTraceCosetHitCountingBound_of_freshnessBridge
+    i₀ observer
+    (V13RealLinearNoTargetRowsSequentialTraceCosetHitOrderedPrefixFreshnessBridge_of_noPrior
+      i₀ observer hprior)
+
+theorem
+    V13RealLinearNoTargetRowsSequentialTraceCosetHitActiveFixedMapTranscriptCylinderCapacityBound_of_freshnessBridge
+    {m q : Nat} (i₀ : Fin m)
+    (observer : V13RealLinearSequentialRowObserver m q)
+    (hfreshBridge :
+      V13RealLinearNoTargetRowsSequentialTraceCosetHitOrderedPrefixFreshnessBridge
+        i₀ observer) :
+    V13RealLinearNoTargetRowsSequentialTraceCosetHitActiveFixedMapTranscriptCylinderCapacityBound
+      i₀ observer :=
+  V13RealLinearNoTargetRowsSequentialTraceCosetHitActiveFixedMapTranscriptCylinderCapacityBound_of_orderedPrefixConditionedCounting
+    i₀ observer
+    (V13RealLinearNoTargetRowsSequentialTraceCosetHitOrderedPrefixConditionedCountingBound_of_freshnessBridge
+      i₀ observer hfreshBridge)
+
+theorem
+    V13RealLinearNoTargetRowsSequentialTraceCosetHitActiveFixedMapTranscriptCylinderCapacityBound_of_noPriorBridge
+    {m q : Nat} (i₀ : Fin m)
+    (observer : V13RealLinearSequentialRowObserver m q)
+    (hprior :
+      V13RealLinearNoTargetRowsSequentialTraceCosetHitNoPriorBridge
+        i₀ observer) :
+    V13RealLinearNoTargetRowsSequentialTraceCosetHitActiveFixedMapTranscriptCylinderCapacityBound
+      i₀ observer :=
+  V13RealLinearNoTargetRowsSequentialTraceCosetHitActiveFixedMapTranscriptCylinderCapacityBound_of_freshnessBridge
+    i₀ observer
+    (V13RealLinearNoTargetRowsSequentialTraceCosetHitOrderedPrefixFreshnessBridge_of_noPrior
+      i₀ observer hprior)
+
 abbrev V13RealLinearNoTargetFixedPairCosetHitMapSet {m : Nat}
     (i₀ row₀ row₁ : Fin m) :=
   {A : V13RealLinearNoTargetRowsMap m i₀ //
