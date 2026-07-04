@@ -1568,6 +1568,66 @@ example {m q : Nat} (i₀ : Fin m)
   V13RealLinearNoTargetRowsSequentialTraceCosetHitActiveFixedMapTranscriptCylinderCapacityBound_of_orderedPrefixConditionedCounting
     i₀ observer hconditioned
 
+example {m q : Nat} (i₀ : Fin m)
+    (observer : V13RealLinearSequentialRowObserver m q)
+    (hfresh :
+      V13RealLinearNoTargetRowsSequentialTraceCosetHitOrderedPrefixFreshnessBridge
+        i₀ observer) :
+    V13RealLinearNoTargetRowsSequentialTraceCosetHitOrderedPrefixPackingBound
+      i₀ observer :=
+  V13RealLinearNoTargetRowsSequentialTraceCosetHitOrderedPrefixPackingBound_of_freshnessBridge
+    i₀ observer hfresh
+
+example {m q : Nat} (i₀ : Fin m)
+    (observer : V13RealLinearSequentialRowObserver m q)
+    (hprior :
+      V13RealLinearNoTargetRowsSequentialTraceCosetHitNoPriorBridge
+        i₀ observer) :
+    V13RealLinearNoTargetRowsSequentialTraceCosetHitOrderedPrefixPackingBound
+      i₀ observer :=
+  V13RealLinearNoTargetRowsSequentialTraceCosetHitOrderedPrefixPackingBound_of_noPriorBridge
+    i₀ observer hprior
+
+example {m q : Nat} (i₀ : Fin m)
+    (observer : V13RealLinearSequentialRowObserver m q)
+    (hfresh :
+      V13RealLinearNoTargetRowsSequentialTraceCosetHitOrderedPrefixFreshnessBridge
+        i₀ observer) :
+    V13RealLinearNoTargetRowsSequentialTraceCosetHitCountingBound
+      i₀ observer :=
+  V13RealLinearNoTargetRowsSequentialTraceCosetHitCountingBound_of_freshnessBridge
+    i₀ observer hfresh
+
+example {m q : Nat} (i₀ : Fin m)
+    (observer : V13RealLinearSequentialRowObserver m q)
+    (hprior :
+      V13RealLinearNoTargetRowsSequentialTraceCosetHitNoPriorBridge
+        i₀ observer) :
+    V13RealLinearNoTargetRowsSequentialTraceCosetHitCountingBound
+      i₀ observer :=
+  V13RealLinearNoTargetRowsSequentialTraceCosetHitCountingBound_of_noPriorBridge
+    i₀ observer hprior
+
+example {m q : Nat} (i₀ : Fin m)
+    (observer : V13RealLinearSequentialRowObserver m q)
+    (hfresh :
+      V13RealLinearNoTargetRowsSequentialTraceCosetHitOrderedPrefixFreshnessBridge
+        i₀ observer) :
+    V13RealLinearNoTargetRowsSequentialTraceCosetHitActiveFixedMapTranscriptCylinderCapacityBound
+      i₀ observer :=
+  V13RealLinearNoTargetRowsSequentialTraceCosetHitActiveFixedMapTranscriptCylinderCapacityBound_of_freshnessBridge
+    i₀ observer hfresh
+
+example {m q : Nat} (i₀ : Fin m)
+    (observer : V13RealLinearSequentialRowObserver m q)
+    (hprior :
+      V13RealLinearNoTargetRowsSequentialTraceCosetHitNoPriorBridge
+        i₀ observer) :
+    V13RealLinearNoTargetRowsSequentialTraceCosetHitActiveFixedMapTranscriptCylinderCapacityBound
+      i₀ observer :=
+  V13RealLinearNoTargetRowsSequentialTraceCosetHitActiveFixedMapTranscriptCylinderCapacityBound_of_noPriorBridge
+    i₀ observer hprior
+
 example {m : Nat} (i₀ : Fin m) (hm : 1 < m) :
     V13RealLinearRowsGenerateTarget
       (v13RealLinearNoTargetRowShear i₀ hm)
@@ -1615,6 +1675,12 @@ example {m : Nat} (i₀ : Fin m) (hm : 4 < m) :
 #print axioms V13RealLinearNoTargetRowsSequentialTraceCosetHitOrderedPrefixPackingBound_of_conditionedCounting
 #print axioms V13RealLinearNoTargetRowsSequentialTraceCosetHitCountingBound_of_orderedPrefixConditionedCounting
 #print axioms V13RealLinearNoTargetRowsSequentialTraceCosetHitActiveFixedMapTranscriptCylinderCapacityBound_of_orderedPrefixConditionedCounting
+#print axioms V13RealLinearNoTargetRowsSequentialTraceCosetHitOrderedPrefixPackingBound_of_freshnessBridge
+#print axioms V13RealLinearNoTargetRowsSequentialTraceCosetHitOrderedPrefixPackingBound_of_noPriorBridge
+#print axioms V13RealLinearNoTargetRowsSequentialTraceCosetHitCountingBound_of_freshnessBridge
+#print axioms V13RealLinearNoTargetRowsSequentialTraceCosetHitCountingBound_of_noPriorBridge
+#print axioms V13RealLinearNoTargetRowsSequentialTraceCosetHitActiveFixedMapTranscriptCylinderCapacityBound_of_freshnessBridge
+#print axioms V13RealLinearNoTargetRowsSequentialTraceCosetHitActiveFixedMapTranscriptCylinderCapacityBound_of_noPriorBridge
 #print axioms v13RealLinearNoTargetSequentialTraceFirstCosetHitActiveFixedMapTranscriptCylinder_generatedPrefix_rows_eq
 #print axioms v13RealLinearSequentialPrefixTranscriptVectorOf_init
 #print axioms v13RealLinearSequentialPrefixTranscriptVectorOf_lastRow
