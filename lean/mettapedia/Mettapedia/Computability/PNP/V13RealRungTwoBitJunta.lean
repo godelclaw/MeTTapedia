@@ -5892,6 +5892,96 @@ theorem
     _ = v13RealLinearSequentialPrefixTranscriptVectorNextRow observer pref := by
       rw [omega.property]
 
+/-- L0 freshness bridge for conditioned ordered-prefix counting.  It states
+that every counted ordered-prefix hit reads a row outside the realized prefix
+rowset.  This is exactly the first-hit/freshness step needed before the
+conditioned shear count can act on the next row. -/
+def
+    V13RealLinearNoTargetRowsSequentialTraceCosetHitOrderedPrefixFreshnessBridge
+    {m q : Nat} (i₀ : Fin m)
+    (observer : V13RealLinearSequentialRowObserver m q) : Prop :=
+  ∀ t : Fin q,
+    ∀ pref :
+      V13RealLinearSequentialPrefixTranscriptVector m (t : Nat),
+    ∀ _omega :
+      V13RealLinearNoTargetSequentialTraceFirstCosetHitOrderedPrefixWorldSet
+        i₀ observer t pref,
+      v13RealLinearSequentialPrefixTranscriptVectorNextRow observer pref ∉
+        v13RealLinearSequentialPrefixTranscriptVectorRows pref
+
+/-- No-prior-hit bridge for the current step-indexed hit surface.  The present
+`TraceFirstCosetHit` event records a hit at step `t`; this bridge is the
+additional data that makes that hit a true first hit. -/
+def
+    V13RealLinearNoTargetRowsSequentialTraceCosetHitNoPriorBridge
+    {m q : Nat} (i₀ : Fin m)
+    (observer : V13RealLinearSequentialRowObserver m q) : Prop :=
+  ∀ t : Fin q,
+    ∀ omega :
+      V13RealLinearNoTargetSequentialTraceFirstCosetHitWorldSet
+        i₀ observer t,
+    ∀ s : Fin (t : Nat),
+      ¬ V13RealLinearRowTraceCosetHit omega.val.1.val i₀
+        (v13RealLinearNoTargetRowsSequentialQRowTrace i₀ observer omega.val) s
+
+theorem
+    v13RealLinearNoTargetSequentialTraceFirstCosetHitOrderedPrefixWorldSet_hitRow_not_mem_of_noPrior
+    {m q : Nat} (i₀ : Fin m)
+    (observer : V13RealLinearSequentialRowObserver m q) (t : Fin q)
+    (pref :
+      V13RealLinearSequentialPrefixTranscriptVector m (t : Nat))
+    (omega :
+      V13RealLinearNoTargetSequentialTraceFirstCosetHitOrderedPrefixWorldSet
+        i₀ observer t pref)
+    (hprior :
+      ∀ s : Fin (t : Nat),
+        ¬ V13RealLinearRowTraceCosetHit omega.val.val.1.val i₀
+          (v13RealLinearNoTargetRowsSequentialQRowTrace
+            i₀ observer omega.val.val) s) :
+    v13RealLinearSequentialPrefixTranscriptVectorNextRow observer pref ∉
+      v13RealLinearSequentialPrefixTranscriptVectorRows pref := by
+  classical
+  let trace :=
+    v13RealLinearNoTargetRowsSequentialQRowTrace i₀ observer omega.val.val
+  rcases
+      v13RealLinearNoTargetSequentialTraceFirstCosetHitOrderedPrefixWorldSet_hitRow_eq
+        i₀ observer t pref omega with
+    ⟨hlen, hget⟩
+  have hhit : V13RealLinearRowTraceCosetHit omega.val.val.1.val i₀
+      trace (t : Nat) := by
+    simpa [trace, v13RealLinearNoTargetRowsSequentialQRowExperiment,
+      v13RealLinearNoTargetRowsCausalQRowExperiment,
+      v13RealLinearNoTargetRowsQRowExperiment] using omega.val.property.2
+  have hfresh :
+      trace.get ⟨(t : Nat), hlen⟩ ∉
+        v13RealLinearRowTracePrefixRows trace (t : Nat) := by
+    exact
+      v13RealLinearRowTraceCosetHit_get_not_mem_of_noPrior
+        omega.val.val.1.val i₀ trace hprior hhit hlen
+  have hrows :=
+    v13RealLinearNoTargetSequentialTraceFirstCosetHitOrderedPrefixWorldSet_prefixRows_eq
+      i₀ observer t pref omega
+  intro hmem
+  exact
+    hfresh
+      (by
+        rw [hget, hrows]
+        exact hmem)
+
+theorem
+    V13RealLinearNoTargetRowsSequentialTraceCosetHitOrderedPrefixFreshnessBridge_of_noPrior
+    {m q : Nat} (i₀ : Fin m)
+    (observer : V13RealLinearSequentialRowObserver m q)
+    (hprior :
+      V13RealLinearNoTargetRowsSequentialTraceCosetHitNoPriorBridge
+        i₀ observer) :
+    V13RealLinearNoTargetRowsSequentialTraceCosetHitOrderedPrefixFreshnessBridge
+      i₀ observer := by
+  intro t pref omega
+  exact
+    v13RealLinearNoTargetSequentialTraceFirstCosetHitOrderedPrefixWorldSet_hitRow_not_mem_of_noPrior
+      i₀ observer t pref omega (hprior t omega.val)
+
 noncomputable def
     v13RealLinearNoTargetSequentialTraceFirstCosetHitOrderedPrefixWorldSetToFixedPrefixWorldSet
     {m q : Nat} (i₀ : Fin m)
