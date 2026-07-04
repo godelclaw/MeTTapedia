@@ -55,6 +55,10 @@ theorem localTwoPoleDesingularizationCannotRemoveCyclicTwoCut_audit :
     LocalTwoPoleDesingularizationCannotRemoveCyclicTwoCut :=
   localTwoPoleDesingularizationCannotRemoveCyclicTwoCut
 
+theorem closedCollarWindingFreedomSimplePatchSearchLe4BlockedByNormalFormPrefix_audit :
+    ClosedCollarWindingFreedomSimplePatchSearchLe4BlockedByNormalFormPrefix :=
+  closedCollarWindingFreedomSimplePatchSearchLe4BlockedByNormalFormPrefix
+
 /-! ## Section 9.2 two-layer ambient execution obstruction -/
 
 theorem section92Step4TwoLayerCounterexampleClass_audit :
