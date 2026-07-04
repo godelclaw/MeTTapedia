@@ -1308,6 +1308,404 @@ def closed_collar_profile_payload_for_model(
     return winding_profile_payload(profile)
 
 
+PATCH_TERMINALS = ("A", "B", "C", "D")
+PATCH_TERMINAL_VERTICES = {
+    "A": "g1:F5",
+    "B": "g0:F1",
+    "C": "g0:F5",
+    "D": "g1:F1",
+}
+PATCH_REMOVED_PARALLEL_EDGES = frozenset(
+    (
+        "C1:B5=B1",
+        "C2:B6=B2",
+        "I0_1:B5=B1",
+        "I0_2:B6=B2",
+    )
+)
+
+
+def simple_patch_vertices(internal_vertex_count: int) -> tuple[str, ...]:
+    return PATCH_TERMINALS + tuple(
+        f"N{i}" for i in range(internal_vertex_count)
+    )
+
+
+def simple_patch_degree_target(vertex: str) -> int:
+    return 2 if vertex in PATCH_TERMINALS else 3
+
+
+def iter_simple_patch_edge_sets(
+    internal_vertex_count: int,
+) -> Iterable[tuple[tuple[str, str], ...]]:
+    vertices = simple_patch_vertices(internal_vertex_count)
+    degree_target = {vertex: simple_patch_degree_target(vertex) for vertex in vertices}
+    if sum(degree_target.values()) % 2:
+        return
+    candidates = list(combinations(vertices, 2))
+    remaining_incidence: list[dict[str, int]] = []
+    for start in range(len(candidates) + 1):
+        counts = {vertex: 0 for vertex in vertices}
+        for u, v in candidates[start:]:
+            counts[u] += 1
+            counts[v] += 1
+        remaining_incidence.append(counts)
+
+    degree = {vertex: 0 for vertex in vertices}
+    chosen: list[tuple[str, str]] = []
+
+    def rec(i: int) -> Iterable[tuple[tuple[str, str], ...]]:
+        if i == len(candidates):
+            if all(degree[v] == degree_target[v] for v in vertices):
+                yield tuple(chosen)
+            return
+        for vertex in vertices:
+            if (
+                degree[vertex] > degree_target[vertex]
+                or degree[vertex] + remaining_incidence[i][vertex] < degree_target[vertex]
+            ):
+                return
+
+        u, v = candidates[i]
+        if degree[u] < degree_target[u] and degree[v] < degree_target[v]:
+            chosen.append((u, v))
+            degree[u] += 1
+            degree[v] += 1
+            yield from rec(i + 1)
+            degree[u] -= 1
+            degree[v] -= 1
+            chosen.pop()
+        yield from rec(i + 1)
+
+    yield from rec(0)
+
+
+def simple_patch_model(
+    base_model: CompositeModel,
+    patch_edges: tuple[tuple[str, str], ...],
+    radial_order: tuple[str, str] | None = None,
+) -> tuple[CompositeModel, tuple[str, ...], tuple[str, str]]:
+    edges: list[str] = []
+    endpoints: dict[str, tuple[str, str]] = {}
+
+    for edge in base_model.gadget.edges:
+        if edge in PATCH_REMOVED_PARALLEL_EDGES:
+            continue
+        edges.append(edge)
+        endpoints[edge] = base_model.gadget.endpoints[edge]
+
+    for i, (u, v) in enumerate(patch_edges):
+        edge = f"P{i}:{u}-{v}"
+        edges.append(edge)
+        endpoints[edge] = (
+            PATCH_TERMINAL_VERTICES.get(u, u),
+            PATCH_TERMINAL_VERTICES.get(v, v),
+        )
+
+    patch_edge_names = tuple(edge for edge in edges if edge.startswith("P"))
+    radial_edges = tuple(
+        edge
+        for edge in patch_edge_names
+        if PATCH_TERMINAL_VERTICES["A"] in endpoints[edge]
+    )
+    if len(radial_edges) != 2:
+        raise AssertionError((patch_edges, radial_edges))
+    if radial_order is not None:
+        radial_edges = radial_order
+
+    vertices = tuple(sorted({vertex for pair in endpoints.values() for vertex in pair}))
+    closing_edges = ("C0:B4=B0",) + radial_edges + ("C3:B7=B3",)
+    gadget = Gadget(
+        name="closed_tau_tau_simple_patch",
+        edges=tuple(edges),
+        endpoints=endpoints,
+        internal_vertices=vertices,
+        inputs=closing_edges,
+    )
+    return (
+        CompositeModel(
+            gadget=gadget,
+            edge_sources=(),
+            output_edges=(),
+            interface_edges=(),
+            closing_edges=closing_edges,
+        ),
+        patch_edge_names,
+        radial_edges,
+    )
+
+
+def simple_patch_profile_preserving_extension(
+    model: CompositeModel,
+    patch_edge_names: tuple[str, ...],
+    radial_edges: tuple[str, str],
+    fixed_edge_colors: dict[str, str],
+    desired_profile: list[dict[str, object]],
+) -> tuple[str, ...] | None:
+    colors = dict(fixed_edge_colors)
+    for edge, color in zip(radial_edges, ("r", "b")):
+        colors[edge] = color
+
+    incident: dict[str, list[str]] = {
+        vertex: [] for vertex in model.gadget.internal_vertices
+    }
+    for edge, (u, v) in model.gadget.endpoints.items():
+        incident[u].append(edge)
+        incident[v].append(edge)
+
+    def vertex_partial_ok(vertex: str) -> bool:
+        seen = [colors[edge] for edge in incident[vertex] if edge in colors]
+        return len(seen) == len(set(seen))
+
+    if any(not vertex_partial_ok(vertex) for vertex in incident):
+        return None
+
+    unassigned_patch_edges = [edge for edge in patch_edge_names if edge not in colors]
+    unassigned_patch_edges.sort(
+        key=lambda edge: -sum(
+            1
+            for vertex in model.gadget.endpoints[edge]
+            for incident_edge in incident[vertex]
+            if incident_edge in colors
+        )
+    )
+
+    def rec(i: int) -> tuple[str, ...] | None:
+        if i == len(unassigned_patch_edges):
+            state = tuple(colors[edge] for edge in model.gadget.edges)
+            if not proper_state_check(model.gadget, state)["proper"]:
+                return None
+            if closed_collar_profile_payload_for_model(model, state) == desired_profile:
+                return state
+            return None
+
+        edge = unassigned_patch_edges[i]
+        u, v = model.gadget.endpoints[edge]
+        for color in COLORS:
+            colors[edge] = color
+            if vertex_partial_ok(u) and vertex_partial_ok(v):
+                result = rec(i + 1)
+                if result is not None:
+                    return result
+            del colors[edge]
+        return None
+
+    return rec(0)
+
+
+def audit_closed_collar_winding_simple_patch_search(
+    tau_states: list[tuple[str, ...]],
+    max_internal_vertices: int,
+    sample_limit: int,
+) -> dict[str, object]:
+    word = (TAU_TYPE, TAU_TYPE)
+    fixed_outer_key = ("r", "r", "b", "b")
+    base_model = build_closed_collar_model(word)
+    base_fiber = audit_closed_collar_winding_fiber(
+        word,
+        fixed_outer_key,
+        tau_states,
+        include_all_components=True,
+    )
+    base_states = base_fiber.get("states", [])
+    assert isinstance(base_states, list)
+
+    internal_counts = [
+        count for count in range(max_internal_vertices + 1) if count % 2 == 0
+    ]
+    reports: list[dict[str, object]] = []
+    profile_preserving_samples: list[dict[str, object]] = []
+    sampled_first_blockers: set[str] = set()
+    total_profile_preserving_cases = 0
+    total_normal_form_prefix_passing_cases = 0
+    total_radial_order_cases = 0
+    total_patch_topologies = 0
+    global_first_blocker_histogram: Counter[str] = Counter()
+
+    for internal_count in internal_counts:
+        patch_topology_count = 0
+        radial_order_case_count = 0
+        profile_preserving_case_count = 0
+        normal_form_prefix_passing_case_count = 0
+        first_blocker_histogram: Counter[str] = Counter()
+        minimum_small_cut_histogram: Counter[str] = Counter()
+
+        for patch_edges in iter_simple_patch_edge_sets(internal_count):
+            patch_topology_count += 1
+            model0, _patch_edge_names0, radial_edges0 = simple_patch_model(
+                base_model,
+                patch_edges,
+            )
+            radial_orders = (radial_edges0, tuple(reversed(radial_edges0)))
+            for radial_order in radial_orders:
+                radial_order_case_count += 1
+                model, patch_edge_names, radial_edges = simple_patch_model(
+                    base_model,
+                    patch_edges,
+                    radial_order,
+                )
+                state_extensions: list[dict[str, object]] = []
+                for state_payload in base_states:
+                    assert isinstance(state_payload, dict)
+                    raw_state = state_payload.get("state", {})
+                    desired_profile = state_payload.get("winding_profile", [])
+                    assert isinstance(raw_state, dict)
+                    assert isinstance(desired_profile, list)
+                    fixed_edge_colors = {
+                        edge: str(raw_state[edge])
+                        for edge in base_model.gadget.edges
+                        if edge not in PATCH_REMOVED_PARALLEL_EDGES
+                    }
+                    extension = simple_patch_profile_preserving_extension(
+                        model,
+                        patch_edge_names,
+                        radial_edges,
+                        fixed_edge_colors,
+                        desired_profile,
+                    )
+                    if extension is None:
+                        break
+                    state_extensions.append(
+                        {
+                            "state_index": state_payload.get("state_index"),
+                            "profile_preserved": True,
+                        }
+                    )
+                else:
+                    profile_preserving_case_count += 1
+                    total_profile_preserving_cases += 1
+                    graph_audit = closed_collar_multigraph_audit(model)
+                    first_blocker = graph_audit["first_failed_normal_form_test"]
+                    first_blocker_name = (
+                        first_blocker["name"] if first_blocker else "none"
+                    )
+                    first_blocker_histogram[first_blocker_name] += 1
+                    global_first_blocker_histogram[first_blocker_name] += 1
+                    small_cuts = graph_audit["small_cyclic_cuts"]
+                    minimum_small_cut = (
+                        min(int(cut["cut_size"]) for cut in small_cuts)
+                        if small_cuts
+                        else None
+                    )
+                    minimum_small_cut_histogram[
+                        str(minimum_small_cut) if minimum_small_cut is not None else "none"
+                    ] += 1
+                    if first_blocker is None:
+                        normal_form_prefix_passing_case_count += 1
+                        total_normal_form_prefix_passing_cases += 1
+                    should_sample = (
+                        len(profile_preserving_samples) < sample_limit
+                        or first_blocker_name not in sampled_first_blockers
+                    )
+                    if should_sample:
+                        sampled_first_blockers.add(first_blocker_name)
+                        profile_preserving_samples.append(
+                            {
+                                "internal_vertex_count": internal_count,
+                                "patch_edges": [
+                                    list(edge_pair) for edge_pair in patch_edges
+                                ],
+                                "radial_order": list(radial_edges),
+                                "state_extensions": state_extensions,
+                                "graph_summary": {
+                                    "vertex_count": graph_audit["vertex_count"],
+                                    "edge_count": graph_audit["edge_count"],
+                                    "first_failed_normal_form_test": (
+                                        first_blocker_name
+                                        if first_blocker_name != "none"
+                                        else None
+                                    ),
+                                    "passed_normal_form_tests": [
+                                        test["name"]
+                                        for test in graph_audit["normal_form_tests"]
+                                        if bool(test["passes"])
+                                    ],
+                                    "blocked_normal_form_tests": [
+                                        test["name"]
+                                        for test in graph_audit["normal_form_tests"]
+                                        if not bool(test["passes"])
+                                    ],
+                                    "small_cyclic_cut_count": len(small_cuts),
+                                    "minimum_small_cyclic_cut_size": minimum_small_cut,
+                                    "small_cyclic_cut_samples": small_cuts[:5],
+                                },
+                            }
+                        )
+
+        total_radial_order_cases += radial_order_case_count
+        total_patch_topologies += patch_topology_count
+        reports.append(
+            {
+                "internal_vertex_count": internal_count,
+                "patch_topology_count": patch_topology_count,
+                "radial_order_case_count": radial_order_case_count,
+                "profile_preserving_case_count": profile_preserving_case_count,
+                "normal_form_prefix_passing_profile_case_count":
+                    normal_form_prefix_passing_case_count,
+                "first_failed_normal_form_histogram":
+                    dict(sorted(first_blocker_histogram.items())),
+                "minimum_small_cyclic_cut_size_histogram":
+                    dict(sorted(minimum_small_cut_histogram.items())),
+            }
+        )
+
+    if total_normal_form_prefix_passing_cases:
+        verdict = "bounded_simple_patch_search_found_normal_form_prefix_realization"
+    elif not total_profile_preserving_cases:
+        verdict = "bounded_simple_patch_search_found_no_profile_preserving_patch"
+    else:
+        blocker_names = set(global_first_blocker_histogram)
+        if blocker_names == {"no_cyclic_edge_cut_of_size_at_most_four"}:
+            verdict = (
+                "bounded_simple_patch_search_blocked_by_"
+                "no_cyclic_edge_cut_of_size_at_most_four"
+            )
+        elif blocker_names <= {
+            "planar_multigraph",
+            "no_cyclic_edge_cut_of_size_at_most_four",
+        }:
+            verdict = (
+                "bounded_simple_patch_search_blocked_by_"
+                "planarity_or_no_cyclic_edge_cut_of_size_at_most_four"
+            )
+        else:
+            verdict = "bounded_simple_patch_search_blocked_by_mixed_normal_form_prefix"
+    return {
+        "schema": "fourcolor-section-9-2-closed-collar-winding-simple-patch-search-v1",
+        "source": "Section 9.2 bounded simple cubic patch search for the closed-collar winding-freedom witness",
+        "run_id": f"{word_key(word)}::{fixed_key_id(fixed_outer_key)}::simple_patch_le_{max_internal_vertices}",
+        "word": list(word_names(word)),
+        "fixed_outer_key": list(fixed_outer_key),
+        "search": {
+            "max_internal_vertices": max_internal_vertices,
+            "internal_vertex_counts": internal_counts,
+            "patch_terminals": dict(PATCH_TERMINAL_VERTICES),
+            "removed_parallel_edges": sorted(PATCH_REMOVED_PARALLEL_EDGES),
+            "radial_cut_rule": (
+                "C0 and C3 remain fixed; the two patch edges incident to terminal A "
+                "replace C1/C2 and are tested in both orders with colors r,b"
+            ),
+            "profile_requirement": (
+                "every state in the tau,tau::rrbb winding-freedom fiber must extend "
+                "to a proper Tait coloring with exactly the same winding profile"
+            ),
+        },
+        "base_winding_profile_histogram": base_fiber["winding_profile_histogram"],
+        "per_internal_vertex_count": reports,
+        "profile_preserving_samples": profile_preserving_samples,
+        "summary": {
+            "verdict": verdict,
+            "patch_topology_count": total_patch_topologies,
+            "radial_order_case_count": total_radial_order_cases,
+            "profile_preserving_case_count": total_profile_preserving_cases,
+            "normal_form_prefix_passing_profile_case_count":
+                total_normal_form_prefix_passing_cases,
+            "first_failed_normal_form_histogram":
+                dict(sorted(global_first_blocker_histogram.items())),
+        },
+    }
+
+
 def audit_closed_collar_winding_k4_desingularization_witness(
     tau_states: list[tuple[str, ...]],
 ) -> dict[str, object]:
@@ -1913,6 +2311,25 @@ def run_closed_collar_winding_k4_desingularization_witness(
     return report
 
 
+def run_closed_collar_winding_simple_patch_search(
+    output: Path | None,
+    resume: bool,
+    max_internal_vertices: int,
+    sample_limit: int,
+) -> dict[str, object]:
+    if resume and output is not None and output.exists():
+        return json.loads(output.read_text())
+
+    report = audit_closed_collar_winding_simple_patch_search(
+        proper_states(TAU),
+        max_internal_vertices=max_internal_vertices,
+        sample_limit=sample_limit,
+    )
+    if output is not None:
+        write_json_report(output, report)
+    return report
+
+
 def words_of_length(n: int) -> Iterable[tuple[GadgetType, ...]]:
     yield from product(GADGET_TYPES, repeat=n)
 
@@ -1953,6 +2370,26 @@ def main() -> None:
         "--closed-collar-winding-k4-desingularization-witness",
         action="store_true",
         help="audit the K4-two-pole desingularized tau,tau::rrbb winding-freedom witness",
+    )
+    parser.add_argument(
+        "--closed-collar-winding-simple-patch-search",
+        action="store_true",
+        help=(
+            "search bounded simple cubic four-terminal patches for the "
+            "tau,tau::rrbb winding-freedom witness"
+        ),
+    )
+    parser.add_argument(
+        "--max-patch-internal-vertices",
+        type=int,
+        default=4,
+        help="maximum internal patch vertices for --closed-collar-winding-simple-patch-search",
+    )
+    parser.add_argument(
+        "--patch-candidate-sample-limit",
+        type=int,
+        default=12,
+        help="number of profile-preserving patch candidates to include as detailed samples",
     )
     parser.add_argument(
         "--output",
@@ -2045,6 +2482,16 @@ def main() -> None:
         report = run_closed_collar_winding_k4_desingularization_witness(
             output=args.output,
             resume=args.resume,
+        )
+        print(json.dumps(report, indent=2, sort_keys=True))
+        return
+
+    if args.closed_collar_winding_simple_patch_search:
+        report = run_closed_collar_winding_simple_patch_search(
+            output=args.output,
+            resume=args.resume,
+            max_internal_vertices=args.max_patch_internal_vertices,
+            sample_limit=args.patch_candidate_sample_limit,
         )
         print(json.dumps(report, indent=2, sort_keys=True))
         return

@@ -156,6 +156,59 @@ theorem localTwoPoleDesingularizationCannotRemoveCyclicTwoCut :
   intro stats
   exact localTwoPoleReplacementSideExceedsTreeBound stats
 
+/--
+Summary counts for the bounded simple cubic four-terminal patch search.  The
+search deletes the two parallel endpoint bundles in the `tau,tau::rrbb`
+witness, inserts a simple cubic patch with at most four new internal vertices,
+tests both radial orders at the closing terminal, and requires every state in
+the fixed-boundary fiber to extend with the same winding profile.
+-/
+structure ClosedCollarSimplePatchSearchCounts where
+  maxInternalVertices : Nat
+  patchTopologyCount : Nat
+  radialOrderCaseCount : Nat
+  profilePreservingCaseCount : Nat
+  normalFormPrefixPassingProfileCaseCount : Nat
+  planarFirstBlockerCount : Nat
+  cyclicCutFirstBlockerCount : Nat
+
+def closedCollarSimplePatchSearchLe4Counts :
+    ClosedCollarSimplePatchSearchCounts where
+  maxInternalVertices := 4
+  patchTopologyCount := 6114
+  radialOrderCaseCount := 12228
+  profilePreservingCaseCount := 108
+  normalFormPrefixPassingProfileCaseCount := 0
+  planarFirstBlockerCount := 96
+  cyclicCutFirstBlockerCount := 12
+
+/--
+Bounded simple-patch verdict for the winding-freedom witness.  Up to four new
+internal patch vertices, the witness is not killed by simple cubic replacement:
+108 cases preserve the full component-level winding profile.  None of those
+cases passes the tested normal-form prefix; the first blockers split between
+planarity and cyclic edge cuts of size at most four.
+-/
+def ClosedCollarWindingFreedomSimplePatchSearchLe4BlockedByNormalFormPrefix :
+    Prop :=
+  ClosedCollarWindingFreedomWitnessRealizationData ∧
+    closedCollarSimplePatchSearchLe4Counts.maxInternalVertices = 4 ∧
+    closedCollarSimplePatchSearchLe4Counts.patchTopologyCount = 6114 ∧
+    closedCollarSimplePatchSearchLe4Counts.radialOrderCaseCount = 12228 ∧
+    closedCollarSimplePatchSearchLe4Counts.profilePreservingCaseCount = 108 ∧
+    closedCollarSimplePatchSearchLe4Counts.normalFormPrefixPassingProfileCaseCount = 0 ∧
+    closedCollarSimplePatchSearchLe4Counts.planarFirstBlockerCount = 96 ∧
+    closedCollarSimplePatchSearchLe4Counts.cyclicCutFirstBlockerCount = 12 ∧
+    closedCollarSimplePatchSearchLe4Counts.planarFirstBlockerCount +
+        closedCollarSimplePatchSearchLe4Counts.cyclicCutFirstBlockerCount =
+      closedCollarSimplePatchSearchLe4Counts.profilePreservingCaseCount
+
+theorem closedCollarWindingFreedomSimplePatchSearchLe4BlockedByNormalFormPrefix :
+    ClosedCollarWindingFreedomSimplePatchSearchLe4BlockedByNormalFormPrefix := by
+  refine
+    ⟨closedCollarWindingFreedomWitnessRealizationData,
+      ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩ <;> decide
+
 end GoertzelLemma818ClosedCollarWindingRealization
 
 end Mettapedia.GraphTheory.FourColor
