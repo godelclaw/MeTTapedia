@@ -474,6 +474,34 @@ theorem listGetD_mem_of_lt {α : Type} (xs : List α) (fallback : α)
   rw [listGetD_eq_getD, List.getD_eq_getElem xs fallback hi]
   exact List.getElem_mem hi
 
+theorem list_eq_join_chunks_of_drop_take {α : Type}
+    (xs : List α) (chunkSize : Nat) (chunks : List (List α))
+    (hchunks :
+      ∀ i, i < chunks.length →
+        (xs.drop (i * chunkSize)).take chunkSize = listGetD chunks i [])
+    (hterminal : xs.drop (chunks.length * chunkSize) = []) :
+    xs = chunks.flatten := by
+  induction chunks generalizing xs with
+  | nil =>
+      simpa using hterminal
+  | cons chunk chunks ih =>
+      have hhead : xs.take chunkSize = chunk := by
+        have h := hchunks 0 (by simp)
+        simpa [listGetD] using h
+      have htail : xs.drop chunkSize = chunks.flatten := by
+        apply ih (xs.drop chunkSize)
+        · intro i hi
+          have h := hchunks (i + 1) (by simp [hi])
+          simpa [listGetD, List.drop_drop, Nat.succ_mul,
+            Nat.add_comm, Nat.add_left_comm, Nat.add_assoc] using h
+        · simpa [List.drop_drop, Nat.succ_mul, Nat.add_comm,
+            Nat.add_left_comm, Nat.add_assoc] using hterminal
+      calc
+        xs = xs.take chunkSize ++ xs.drop chunkSize := by
+          exact (List.take_append_drop chunkSize xs).symm
+        _ = chunk ++ chunks.flatten := by rw [hhead, htail]
+        _ = (chunk :: chunks).flatten := rfl
+
 theorem listGetD_idxOf_eq_of_mem {α : Type} [BEq α] [LawfulBEq α]
     (xs : List α) (fallback : α) {x : α} (hx : x ∈ xs) :
     listGetD xs (xs.idxOf x) fallback = x := by
