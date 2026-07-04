@@ -107,6 +107,10 @@ theorem v13RealLinearBitJunta_blocked_iff_rowsGenerateTarget {m j : Nat}
 noncomputable def v13RealLinearBitJuntaEpsilon2 (j m : Nat) : Rat :=
   (4 * (2 : Rat) ^ j) / ((2 : Rat) ^ m)
 
+/-- Explicit first-rung deferred-decision allowance for `q` sequential row reads. -/
+noncomputable def v13RealLinearSequentialEpsilon1 (q m : Nat) : Rat :=
+  (4 * ((2 : Rat) ^ q - 1)) / ((2 : Rat) ^ m)
+
 theorem v13RealLinearBitJunta_coordinateValue_same_after_kernel_add
     {m j : Nat} (observer : V13RealLinearBitJuntaObserver m j)
     (A : V13F2LinearEquiv m) (x w : F2Vec m)
@@ -8971,6 +8975,30 @@ theorem
         v13RealLinearNoTargetRowsSequentialTrueFirstCosetHitCover i₀ observer,
         V13RealLinearNoTargetRowsSequentialDeferredDecisionTrueFirstCountingBound_of_trueFirstCosetHitCounting
           i₀ observer htrue⟩
+
+/-- Unconditional deferred-decision counting for the no-target sequential sampler,
+obtained by summing the true-first per-step counting bound. -/
+theorem
+    V13RealLinearNoTargetRowsSequentialDeferredDecisionCountingBound_unconditional :
+    V13RealLinearNoTargetRowsSequentialDeferredDecisionCountingBound := by
+  intro m q i₀ observer
+  exact
+    V13RealLinearNoTargetRowsSequentialDeferredDecisionCountingBound_of_trueFirstCosetHitCounting
+      i₀ observer
+      (V13RealLinearNoTargetRowsSequentialTraceTrueFirstCosetHitCountingBound_unconditional
+        i₀ observer)
+
+/-- Unconditional no-target sequential sampler success headline. -/
+theorem realLinearNoTargetSequential_success_le_half_add_epsilon1
+    {m q : Nat} (i₀ : Fin m)
+    (observer : V13RealLinearSequentialRowObserver m q) :
+    v13RealLinearNoTargetRowsSequentialQRowSuccess i₀ observer ≤
+      (1 / 2 : Rat) + v13RealLinearSequentialEpsilon1 q m := by
+  unfold v13RealLinearSequentialEpsilon1
+  exact
+    v13RealLinear_noTargetRows_sequential_qrow_success_bound_of_deferredDecisionCounting_explicit
+      V13RealLinearNoTargetRowsSequentialDeferredDecisionCountingBound_unconditional
+      i₀ observer
 
 theorem
     V13RealLinearNoTargetRowsSequentialTraceCosetHitOrderedPrefixConditionedCountingBound_not_of_generated_reread_prefix_gap
