@@ -23,6 +23,19 @@ set_option autoImplicit false
 #check v13RealLinearSingleMessageSATSpine
 #check v13RealLinearSingleMessageSATSpine_singleMessage
 #check v13RealLinear_validWitness_readout_eq_publicMessage
+#check RealM4LockedCoreWorld
+#check RealM4LockedCoreWitness
+#check RealM4LockedCoreWorld.toWitness
+#check realM4LockedCoreVerifier
+#check realM4LockedCoreWitnessReadout
+#check realM4LockedCoreMessageOfPublic
+#check realM4LockedCoreWitness_readout_eq_publicMessage
+#check realM4LockedCoreSingleMessageSATSpine
+#check realM4LockedCore_singleMessage_of_publicMessageInvariant
+#check realM4LockedCore_readout_eq_of_valid_of_publicMessageInvariant
+#check realM4_lockedMessageRigidity_of_publicMessageInvariant
+#check realM4_cnfSingleMessageReadout_of_publicMessageInvariant
+#check realM4_semanticI26_of_publicMessageInvariant
 #check RealM4LiftStatus
 #check RealM4LiftLedgerRow
 #check realM4LiftLedger
@@ -49,6 +62,19 @@ set_option autoImplicit false
 #print axioms v13RealLinearSingleMessageSATSpine
 #print axioms v13RealLinearSingleMessageSATSpine_singleMessage
 #print axioms v13RealLinear_validWitness_readout_eq_publicMessage
+#print axioms RealM4LockedCoreWorld
+#print axioms RealM4LockedCoreWitness
+#print axioms RealM4LockedCoreWorld.toWitness
+#print axioms realM4LockedCoreVerifier
+#print axioms realM4LockedCoreWitnessReadout
+#print axioms realM4LockedCoreMessageOfPublic
+#print axioms realM4LockedCoreWitness_readout_eq_publicMessage
+#print axioms realM4LockedCoreSingleMessageSATSpine
+#print axioms realM4LockedCore_singleMessage_of_publicMessageInvariant
+#print axioms realM4LockedCore_readout_eq_of_valid_of_publicMessageInvariant
+#print axioms realM4_lockedMessageRigidity_of_publicMessageInvariant
+#print axioms realM4_cnfSingleMessageReadout_of_publicMessageInvariant
+#print axioms realM4_semanticI26_of_publicMessageInvariant
 #print axioms RealM4LiftStatus
 #print axioms RealM4LiftLedgerRow
 #print axioms realM4LiftLedger

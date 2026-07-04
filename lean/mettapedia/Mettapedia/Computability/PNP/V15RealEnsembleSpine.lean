@@ -21,7 +21,7 @@ namespace Mettapedia.Computability.PNP
 
 set_option autoImplicit false
 
-universe u v w
+universe u v w x y z
 
 /-- Real single-message SAT spine: every supported world supplies a public
 instance and a hidden witness; every verifier-valid witness reads the fixed
@@ -163,6 +163,179 @@ theorem v13RealLinear_validWitness_readout_eq_publicMessage {m : Nat}
       v13RealLinearMessageOfPublic i₀ Y :=
   (v13RealLinearSingleMessageSATSpine i₀).readout_eq_message_of_valid hW
 
+/-! ## Appendix D locked-core adapter for the real spine -/
+
+/-- A supported public lock together with one locked completion.  This is the
+world shape used to adapt Appendix D locked cores to the real single-message
+spine. -/
+structure RealM4LockedCoreWorld
+    {PublicLock : Type u} {Quotient : Type v}
+    {LockAux : Type w} {Message : Type z}
+    (C : AppendixDLockedCore PublicLock Quotient LockAux Message) where
+  publicLock : PublicLock
+  support : C.support publicLock
+  completion : C.LockedCompletion publicLock
+
+/-- Hidden witness package for one Appendix D locked completion. -/
+structure RealM4LockedCoreWitness
+    {PublicLock : Type u} {Quotient : Type v}
+    {LockAux : Type w} {Message : Type z}
+    (C : AppendixDLockedCore PublicLock Quotient LockAux Message) where
+  publicLock : PublicLock
+  completion : C.LockedCompletion publicLock
+
+def RealM4LockedCoreWorld.toWitness
+    {PublicLock : Type u} {Quotient : Type v}
+    {LockAux : Type w} {Message : Type z}
+    {C : AppendixDLockedCore PublicLock Quotient LockAux Message}
+    (omega : RealM4LockedCoreWorld C) :
+    RealM4LockedCoreWitness C where
+  publicLock := omega.publicLock
+  completion := omega.completion
+
+def realM4LockedCoreVerifier
+    {PublicLock : Type u} {Quotient : Type v}
+    {LockAux : Type w} {Message : Type z}
+    (C : AppendixDLockedCore PublicLock Quotient LockAux Message)
+    (Y : PublicLock) (W : RealM4LockedCoreWitness C) : Prop :=
+  W.publicLock = Y ∧ C.support Y
+
+def realM4LockedCoreWitnessReadout
+    {PublicLock : Type u} {Quotient : Type v}
+    {LockAux : Type w} {Message : Type z}
+    {C : AppendixDLockedCore PublicLock Quotient LockAux Message}
+    (messageBit : Message -> Bool)
+    (W : RealM4LockedCoreWitness C) : Bool :=
+  messageBit W.completion.message
+
+def realM4LockedCoreMessageOfPublic
+    {PublicLock : Type u} {Message : Type z}
+    (publicMessage : PublicLock -> Message)
+    (messageBit : Message -> Bool)
+    (Y : PublicLock) : Bool :=
+  messageBit (publicMessage Y)
+
+theorem realM4LockedCoreWitness_readout_eq_publicMessage
+    {PublicLock : Type u} {Quotient : Type v}
+    {LockAux : Type w} {Message : Type z}
+    (C : AppendixDLockedCore PublicLock Quotient LockAux Message)
+    (publicMessage : PublicLock -> Message)
+    (messageBit : Message -> Bool)
+    (hinvariant : C.PublicMessageInvariant publicMessage)
+    {Y : PublicLock} {W : RealM4LockedCoreWitness C}
+    (hW : realM4LockedCoreVerifier C Y W) :
+    realM4LockedCoreWitnessReadout messageBit W =
+      realM4LockedCoreMessageOfPublic publicMessage messageBit Y := by
+  rcases hW with ⟨hPublic, hSupportY⟩
+  have hSupportW : C.support W.publicLock := by
+    simpa [hPublic] using hSupportY
+  have hMessage : W.completion.message = publicMessage W.publicLock :=
+    hinvariant hSupportW W.completion
+  unfold realM4LockedCoreWitnessReadout realM4LockedCoreMessageOfPublic
+  rw [hMessage, hPublic]
+
+/-- A public-message invariant adapts an Appendix D locked core to the real
+single-message spine.  This proves the wiring from the invariant to the
+single-message interface; it does not construct the invariant for M4. -/
+def realM4LockedCoreSingleMessageSATSpine
+    {PublicLock : Type u} {Quotient : Type v}
+    {LockAux : Type w} {Message : Type z}
+    (C : AppendixDLockedCore PublicLock Quotient LockAux Message)
+    (publicMessage : PublicLock -> Message)
+    (messageBit : Message -> Bool)
+    (hinvariant : C.PublicMessageInvariant publicMessage) :
+    RealSingleMessageSATSpine
+      (RealM4LockedCoreWorld C) PublicLock (RealM4LockedCoreWitness C) where
+  publicInput := fun omega => omega.publicLock
+  witnessOfWorld := fun omega => omega.toWitness
+  verifier := realM4LockedCoreVerifier C
+  messageOfPublic := realM4LockedCoreMessageOfPublic publicMessage messageBit
+  witnessReadout := realM4LockedCoreWitnessReadout messageBit
+  target := fun omega =>
+    realM4LockedCoreMessageOfPublic publicMessage messageBit omega.publicLock
+  worldWitnessValid := by
+    intro omega
+    exact ⟨rfl, omega.support⟩
+  readout_eq_message_of_valid :=
+    realM4LockedCoreWitness_readout_eq_publicMessage
+      C publicMessage messageBit hinvariant
+  target_eq_message := by
+    intro omega
+    rfl
+
+theorem realM4LockedCore_singleMessage_of_publicMessageInvariant
+    {PublicLock : Type u} {Quotient : Type v}
+    {LockAux : Type w} {Message : Type z}
+    (C : AppendixDLockedCore PublicLock Quotient LockAux Message)
+    (publicMessage : PublicLock -> Message)
+    (messageBit : Message -> Bool)
+    (hinvariant : C.PublicMessageInvariant publicMessage) :
+    ∀ w0 w1 : RealM4LockedCoreWorld C,
+      w0.publicLock = w1.publicLock ->
+        realM4LockedCoreMessageOfPublic publicMessage messageBit w0.publicLock =
+          realM4LockedCoreMessageOfPublic publicMessage messageBit w1.publicLock :=
+  (realM4LockedCoreSingleMessageSATSpine
+    C publicMessage messageBit hinvariant).singleMessage
+
+theorem realM4LockedCore_readout_eq_of_valid_of_publicMessageInvariant
+    {PublicLock : Type u} {Quotient : Type v}
+    {LockAux : Type w} {Message : Type z}
+    (C : AppendixDLockedCore PublicLock Quotient LockAux Message)
+    (publicMessage : PublicLock -> Message)
+    (messageBit : Message -> Bool)
+    (hinvariant : C.PublicMessageInvariant publicMessage)
+    {Y : PublicLock} {W W' : RealM4LockedCoreWitness C}
+    (hW : realM4LockedCoreVerifier C Y W)
+    (hW' : realM4LockedCoreVerifier C Y W') :
+    realM4LockedCoreWitnessReadout messageBit W =
+      realM4LockedCoreWitnessReadout messageBit W' :=
+  (realM4LockedCoreSingleMessageSATSpine
+    C publicMessage messageBit hinvariant).readout_eq_of_valid hW hW'
+
+theorem realM4_lockedMessageRigidity_of_publicMessageInvariant
+    {PublicLock : Type u} {Quotient : Type v}
+    {LockAux : Type w} {Message : Type z}
+    (C : AppendixDLockedCore PublicLock Quotient LockAux Message)
+    {publicMessage : PublicLock -> Message}
+    (hinvariant : C.PublicMessageInvariant publicMessage) :
+    C.LockedMessageRigidity :=
+  C.lockedMessageRigidity_of_publicMessageInvariant hinvariant
+
+theorem realM4_cnfSingleMessageReadout_of_publicMessageInvariant
+    {PublicLock : Type u} {Quotient : Type v}
+    {LockAux : Type w} {Message : Type z}
+    {Public : Type x} {Var : Public -> Type y}
+    {Witness : Public -> Type y}
+    (D : AppendixICNFReadoutData
+      PublicLock Quotient LockAux Message Public Var Witness)
+    {publicMessage : PublicLock -> Message}
+    (hinvariant : D.core.PublicMessageInvariant publicMessage)
+    {Y : Public} (hY : D.support Y) :
+    SingleMessageReadout
+      (ConcreteCNF.IsSatFormula (D.formula Y)) (D.projection Y) :=
+  D.singleMessageReadout_of_lockedMessageRigidity
+    (D.core.lockedMessageRigidity_of_publicMessageInvariant hinvariant) hY
+
+theorem realM4_semanticI26_of_publicMessageInvariant
+    {PublicLock : Type u} {Quotient : Type v}
+    {LockAux : Type w} {Message : Type z}
+    {Public : Type x} {Var : Public -> Type y}
+    {Witness : Public -> Type y}
+    (D : AppendixICNFReadoutData
+      PublicLock Quotient LockAux Message Public Var Witness)
+    {publicMessage : PublicLock -> Message}
+    (hinvariant : D.core.PublicMessageInvariant publicMessage)
+    {Y : Public} (hY : D.support Y) :
+    (∃ α : ConcreteCNF.Assignment (Var Y),
+      ConcreteCNF.IsSatFormula (D.formula Y) α) ∧
+    (∀ α : ConcreteCNF.Assignment (Var Y),
+      ConcreteCNF.IsSatFormula (D.formula Y) α ->
+        D.validWitness Y (D.extract Y α)) ∧
+    SingleMessageReadout
+      (ConcreteCNF.IsSatFormula (D.formula Y)) (D.projection Y) :=
+  D.semantic_i26_items_of_lockedMessageRigidity
+    (D.core.lockedMessageRigidity_of_publicMessageInvariant hinvariant) hY
+
 /-! ## Real-M4 lift ledger -/
 
 inductive RealM4LiftStatus where
@@ -191,6 +364,12 @@ def realM4LiftLedger : List RealM4LiftLedgerRow := [
     status := .constructionTransferred
     checkedName := "v13RealLinearSingleMessageSATSpine_singleMessage"
     note := "The real linear public instance fixes the target bit and valid witnesses read the same public message."
+  },
+  {
+    item := "publicMessageInvariantAdapter"
+    status := .constructionTransferred
+    checkedName := "realM4LockedCoreSingleMessageSATSpine"
+    note := "Given a public-message invariant, the Appendix D locked core maps into the real single-message spine and Appendix I CNF readout."
   },
   {
     item := "deterministicReadoutOnly"
@@ -281,6 +460,7 @@ def realM4LiftLedger : List RealM4LiftLedgerRow := [
 theorem realM4LiftLedger_statuses_exact :
     List.map (fun row => row.status) realM4LiftLedger =
       [ RealM4LiftStatus.constructionTransferred,
+        RealM4LiftStatus.constructionTransferred,
         RealM4LiftStatus.blockedByCounterexample,
         RealM4LiftStatus.openConstruction,
         RealM4LiftStatus.partialConstructionTransferred,
