@@ -5251,6 +5251,84 @@ theorem
       (v13RealLinearNoTargetSequentialTraceFirstCosetHitGeneratedPrefixCell_capacity_le_card
         i₀ observer t activeIdx)
 
+abbrev
+    V13RealLinearNoTargetSequentialTraceFirstCosetHitActiveGeneratedPrefixCellIndexForWorld
+    {m q : Nat} (i₀ : Fin m)
+    (observer : V13RealLinearSequentialRowObserver m q) (t : Fin q)
+    (omega :
+      V13RealLinearAdaptiveQRowWorld m
+        (V13RealLinearNoTargetRowsMap m i₀)) :=
+  {activeIdx :
+      V13RealLinearNoTargetSequentialTraceFirstCosetHitActiveFixedMapTranscriptCylinderIndex
+        i₀ observer t //
+    activeIdx.1.A = omega.1 ∧
+      ∃ cell :
+        V13RealLinearNoTargetSequentialTraceFirstCosetHitActiveFixedMapTranscriptCylinderGeneratedPrefixCell
+          i₀ observer t activeIdx,
+        cell.val = omega.2}
+
+noncomputable instance
+    {m q : Nat} (i₀ : Fin m)
+    (observer : V13RealLinearSequentialRowObserver m q) (t : Fin q)
+    (omega :
+      V13RealLinearAdaptiveQRowWorld m
+        (V13RealLinearNoTargetRowsMap m i₀)) :
+    Fintype
+      (V13RealLinearNoTargetSequentialTraceFirstCosetHitActiveGeneratedPrefixCellIndexForWorld
+        i₀ observer t omega) := by
+  classical
+  unfold
+    V13RealLinearNoTargetSequentialTraceFirstCosetHitActiveGeneratedPrefixCellIndexForWorld
+  infer_instance
+
+noncomputable def
+    v13RealLinearNoTargetSequentialTraceFirstCosetHitActiveGeneratedPrefixCellIndexForWorldToIndexForMap
+    {m q : Nat} (i₀ : Fin m)
+    (observer : V13RealLinearSequentialRowObserver m q) (t : Fin q)
+    (omega :
+      V13RealLinearAdaptiveQRowWorld m
+        (V13RealLinearNoTargetRowsMap m i₀)) :
+    V13RealLinearNoTargetSequentialTraceFirstCosetHitActiveGeneratedPrefixCellIndexForWorld
+        i₀ observer t omega ↪
+      V13RealLinearNoTargetSequentialTraceFirstCosetHitActiveFixedMapTranscriptCylinderIndexForMap
+        i₀ observer t omega.1 where
+  toFun activeIdx := ⟨activeIdx.val, activeIdx.property.1⟩
+  inj' := by
+    intro activeIdx₀ activeIdx₁ h
+    apply Subtype.ext
+    exact
+      congrArg
+        (fun activeIdx :
+          V13RealLinearNoTargetSequentialTraceFirstCosetHitActiveFixedMapTranscriptCylinderIndexForMap
+            i₀ observer t omega.1 => activeIdx.val)
+        h
+
+theorem
+    v13RealLinearNoTargetSequentialTraceFirstCosetHitActiveGeneratedPrefixCellIndexForWorld_card_le_rhsHistory
+    {m q : Nat} (i₀ : Fin m)
+    (observer : V13RealLinearSequentialRowObserver m q) (t : Fin q)
+    (omega :
+      V13RealLinearAdaptiveQRowWorld m
+        (V13RealLinearNoTargetRowsMap m i₀)) :
+    Fintype.card
+        (V13RealLinearNoTargetSequentialTraceFirstCosetHitActiveGeneratedPrefixCellIndexForWorld
+          i₀ observer t omega) ≤
+      2 ^ ((t : Nat) + 1) := by
+  classical
+  calc
+    Fintype.card
+        (V13RealLinearNoTargetSequentialTraceFirstCosetHitActiveGeneratedPrefixCellIndexForWorld
+          i₀ observer t omega) ≤
+      Fintype.card
+        (V13RealLinearNoTargetSequentialTraceFirstCosetHitActiveFixedMapTranscriptCylinderIndexForMap
+          i₀ observer t omega.1) :=
+        Fintype.card_le_of_embedding
+          (v13RealLinearNoTargetSequentialTraceFirstCosetHitActiveGeneratedPrefixCellIndexForWorldToIndexForMap
+            i₀ observer t omega)
+    _ ≤ 2 ^ ((t : Nat) + 1) :=
+        v13RealLinearNoTargetSequentialTraceFirstCosetHitActiveFixedMapTranscriptCylinderIndexForMap_card_le_rhsHistory
+          i₀ observer t omega.1
+
 noncomputable def
     v13RealLinearNoTargetSequentialTraceFirstCosetHitGeneratedPrefixCellToFixedMapTranscriptCylinder
     {m q : Nat} (i₀ : Fin m)
