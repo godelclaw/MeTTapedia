@@ -15,6 +15,7 @@ import Mettapedia.Computability.PNP.V13ConditionalClashRegression
 import Mettapedia.Computability.PNP.V13EvidenceSpineRegression
 import Mettapedia.Computability.PNP.V13FaithfulnessAuditRegression
 import Mettapedia.Computability.PNP.V13GaugeBufferedLockedInterfaceRegression
+import Mettapedia.Computability.PNP.V13InterfaceBatteryRegression
 import Mettapedia.Computability.PNP.V13PhaseEConcreteRegression
 import Mettapedia.Computability.PNP.V13PhaseEScaledRegression
 import Mettapedia.Computability.PNP.V13RealRungOneAdaptiveRowsRegression
