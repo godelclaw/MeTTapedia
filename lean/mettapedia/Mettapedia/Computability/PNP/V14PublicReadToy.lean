@@ -462,15 +462,24 @@ def v14ToyGaugeBound : Nat :=
 def v14ToyEpsMix : Rat :=
   0
 
-structure V14ToyAnalyticFrontier : Prop where
+structure SafeQSSMFrontier : Prop where
   safeQSSM :
     ∀ q : V14ToySafe,
       0 ≤ v14ToySafeCost q ∧ v14ToySafeCost q ≤ v14ToySafeBudget
+
+structure BoundedGaugeIncidenceFrontier : Prop where
   boundedGaugeIncidence :
     ∀ gamma : V14ToyGauge,
       v14ToyGaugeIncidence gamma ≤ v14ToyGaugeBound
+
+structure BoundaryMixingFrontier : Prop where
   boundaryMixing :
     BoundaryMixingBound v14ToyTarget v14ToyPivot v14ToyEpsMix
+
+structure V14ToyAnalyticFrontier : Prop where
+  safeQSSM : SafeQSSMFrontier
+  boundedGaugeIncidence : BoundedGaugeIncidenceFrontier
+  boundaryMixing : BoundaryMixingFrontier
 
 theorem v14ToyAtomCompleteness :
     ∀ E : RawEvidence V14ToyNeutral V14ToySafe V14ToyGauge,
@@ -516,9 +525,9 @@ def v14ToyLockedInterface (A : V14ToyAnalyticFrontier) :
   noPublicTargetTags := v14ToyNoPublicTargetTags
   atomCompleteness := v14ToyAtomCompleteness
   gaugeFaithfulness := v14ToyGaugeFaithfulness
-  safeQSSM := A.safeQSSM
-  boundedGaugeIncidence := A.boundedGaugeIncidence
-  boundaryMixing := A.boundaryMixing
+  safeQSSM := A.safeQSSM.safeQSSM
+  boundedGaugeIncidence := A.boundedGaugeIncidence.boundedGaugeIncidence
+  boundaryMixing := A.boundaryMixing.boundaryMixing
   admissibleHistories := v14ToyHistory_admissible
 
 def v14ToyInterfaceBattery (A : V14ToyAnalyticFrontier) :
@@ -542,8 +551,222 @@ theorem v14Toy_structuralReduction
     UpperLowerClash (v14ToyLockedInterface A) P :=
   v13_upperLowerClash (v14ToyLockedInterface A) P
 
+structure V14ToyStructuralFieldsConstructed : Prop where
+  singleMessage :
+    ∀ w0 w1 : V14ToyWorld,
+      v14ToyPublicInput w0 = v14ToyPublicInput w1 ->
+        v14ToyTarget w0 = v14ToyTarget w1
+  hiddenGaugeProduct :
+    ∀ gamma omega, v14ToySemantics.gaugeSat gamma omega
+  noPublicTargetTags :
+    PairNeutral v14ToyOppositeSupport v14ToyNeutralSkeleton ∧
+      HasMessageOppositePair v14ToyOppositeSupport v14ToyTarget ∧
+        ¬ ∃ f : Unit -> Bool,
+          ∀ omega, v14ToyTarget omega = f (v14ToyNeutralSkeleton omega)
+  atomCompleteness :
+    ∀ E : RawEvidence V14ToyNeutral V14ToySafe V14ToyGauge,
+      v14ToySemantics.SatNormal (CDENF E) = v14ToySemantics.SatRaw E
+  gaugeFaithfulness :
+    ∀ gamma : V14ToyGauge,
+      v14ToySemantics.SatNormal (CDENF (.gauge gamma)) =
+        v14ToySemantics.gaugeSat gamma
+  admissibleHistories :
+    BalancedBit v14ToyTarget ∧
+      BalancedConditioning v14ToyHistoryField v14ToyTarget
+
+theorem v14Toy_structuralFields_constructed :
+    V14ToyStructuralFieldsConstructed where
+  singleMessage := v14ToySingleMessage
+  hiddenGaugeProduct := v14ToyInterfaceHiddenGaugeProduct
+  noPublicTargetTags := v14ToyNoPublicTargetTags
+  atomCompleteness := v14ToyAtomCompleteness
+  gaugeFaithfulness := v14ToyGaugeFaithfulness
+  admissibleHistories := v14ToyHistory_admissible
+
+structure V14ToyAnalyticFieldsCarried
+    (A : V14ToyAnalyticFrontier) : Prop where
+  safeQSSM : SafeQSSMFrontier
+  boundedGaugeIncidence : BoundedGaugeIncidenceFrontier
+  boundaryMixing : BoundaryMixingFrontier
+
+theorem v14Toy_analyticFields_carried
+    (A : V14ToyAnalyticFrontier) :
+    V14ToyAnalyticFieldsCarried A where
+  safeQSSM := A.safeQSSM
+  boundedGaugeIncidence := A.boundedGaugeIncidence
+  boundaryMixing := A.boundaryMixing
+
+structure V14ToyOpenGlobalInputs
+    {A : V14ToyAnalyticFrontier}
+    (P : ParameterRecord (v14ToyLockedInterface A)) : Prop where
+  starSWHardness_audited :
+    (v13ParameterRecordAudit.get ⟨5, by decide⟩).status =
+      ParameterFieldStatus.openInput
+  starSWHardness : CompressionStarSWHardness P.lowerFramework
+  selfReductionUpper_audited :
+    (v13ParameterRecordAudit.get ⟨6, by decide⟩).status =
+      ParameterFieldStatus.openInput
+  selfReductionUpper : SelfReductionUpperHypothesis P.lowerFramework
+
+theorem v14Toy_openGlobalInputs
+    {A : V14ToyAnalyticFrontier}
+    (P : ParameterRecord (v14ToyLockedInterface A)) :
+    V14ToyOpenGlobalInputs P where
+  starSWHardness_audited := by
+    simp [v13ParameterRecordAudit]
+  starSWHardness := P.starSWHardness
+  selfReductionUpper_audited := by
+    simp [v13ParameterRecordAudit]
+  selfReductionUpper := P.selfReductionUpper
+
+structure V14ToyParameterPayloadAudited
+    {A : V14ToyAnalyticFrontier}
+    (P : ParameterRecord (v14ToyLockedInterface A)) : Prop where
+  fixedGapBudget_audited :
+    (v13ParameterRecordAudit.get ⟨0, by decide⟩).status =
+      ParameterFieldStatus.numeric
+  phaseABudget_audited :
+    (v13ParameterRecordAudit.get ⟨1, by decide⟩).status =
+      ParameterFieldStatus.numeric
+  phaseABudget :
+    (1 / 2 : Rat) *
+        (v14ToyLockedInterface A).phaseA.telescoping.derivativeSum ≤
+      P.fixedGapBudget
+  epsSmall_audited :
+    (v13ParameterRecordAudit.get ⟨2, by decide⟩).status =
+      ParameterFieldStatus.numeric
+  epsSmall : (v14ToyLockedInterface A).epsMix < (1 / 2 : Rat)
+  lowerFramework_audited :
+    (v13ParameterRecordAudit.get ⟨3, by decide⟩).status =
+      ParameterFieldStatus.derived
+  kernelNeutrality_audited :
+    (v13ParameterRecordAudit.get ⟨4, by decide⟩).status =
+      ParameterFieldStatus.derived
+  kernelNeutrality : CompressionKernelNeutrality P.lowerFramework
+
+theorem v14Toy_parameterPayload_audited
+    {A : V14ToyAnalyticFrontier}
+    (P : ParameterRecord (v14ToyLockedInterface A)) :
+    V14ToyParameterPayloadAudited P where
+  fixedGapBudget_audited := by
+    simp [v13ParameterRecordAudit]
+  phaseABudget_audited := by
+    simp [v13ParameterRecordAudit]
+  phaseABudget := P.phaseABudget
+  epsSmall_audited := by
+    simp [v13ParameterRecordAudit]
+  epsSmall := P.epsSmall
+  lowerFramework_audited := by
+    simp [v13ParameterRecordAudit]
+  kernelNeutrality_audited := by
+    simp [v13ParameterRecordAudit]
+  kernelNeutrality := P.kernelNeutrality
+
+structure V14ToyExactFrontierUse
+    (A : V14ToyAnalyticFrontier)
+    (P : ParameterRecord (v14ToyLockedInterface A)) : Prop where
+  structural : V14ToyStructuralFieldsConstructed
+  analytic : V14ToyAnalyticFieldsCarried A
+  parameterPayload : V14ToyParameterPayloadAudited P
+  openGlobal : V14ToyOpenGlobalInputs P
+  conclusion : UpperLowerClash (v14ToyLockedInterface A) P
+
+theorem v14Toy_reduction_uses_exact_analytic_frontier
+    (A : V14ToyAnalyticFrontier)
+    (P : ParameterRecord (v14ToyLockedInterface A)) :
+    V14ToyExactFrontierUse A P where
+  structural := v14Toy_structuralFields_constructed
+  analytic := v14Toy_analyticFields_carried A
+  parameterPayload := v14Toy_parameterPayload_audited P
+  openGlobal := v14Toy_openGlobalInputs P
+  conclusion := v14Toy_structuralReduction A P
+
 def v14ToyReductionStatement : String :=
-  "With singleMessage, noPublicTargetTags, atomCompleteness, gaugeFaithfulness, hiddenGaugeProduct, and admissibleHistories construction-proved for the v14 toy, the conditional separation reduces to exactly V14ToyAnalyticFrontier.safeQSSM, V14ToyAnalyticFrontier.boundedGaugeIncidence, V14ToyAnalyticFrontier.boundaryMixing, plus ParameterRecord.starSWHardness and ParameterRecord.selfReductionUpper; the Lean conclusion is UpperLowerClash."
+  "With singleMessage, noPublicTargetTags, atomCompleteness, gaugeFaithfulness, hiddenGaugeProduct, and admissibleHistories construction-proved for the v14 toy, the interface analytic frontier is exactly SafeQSSMFrontier.safeQSSM, BoundedGaugeIncidenceFrontier.boundedGaugeIncidence, and BoundaryMixingFrontier.boundaryMixing. The remaining ParameterRecord payload is the v13-audited numeric/derived finite-budget data, plus ParameterRecord.starSWHardness and ParameterRecord.selfReductionUpper as the two open global inputs; the Lean conclusion is UpperLowerClash."
+
+/-! ## Weak-frontier canaries -/
+
+structure SafeQSSMFull
+    (Probe : Type) (cost : Probe -> Rat) (budget : Rat) : Prop where
+  safeQSSM : ∀ q : Probe, 0 ≤ cost q ∧ cost q ≤ budget
+
+structure SafeQSSMNonnegativeOnly
+    (Probe : Type) (cost : Probe -> Rat) : Prop where
+  nonnegative : ∀ q : Probe, 0 ≤ cost q
+
+inductive SafeQSSMCanaryProbe where
+  | q
+deriving DecidableEq, Repr
+
+def safeQSSMCanaryCost (_q : SafeQSSMCanaryProbe) : Rat :=
+  1
+
+def safeQSSMCanaryBudget : Rat :=
+  0
+
+theorem safeQSSM_weakened_frontier_insufficient :
+    SafeQSSMNonnegativeOnly SafeQSSMCanaryProbe safeQSSMCanaryCost ∧
+      ¬ SafeQSSMFull SafeQSSMCanaryProbe safeQSSMCanaryCost
+        safeQSSMCanaryBudget := by
+  constructor
+  · exact
+      { nonnegative := by
+          intro probe
+          cases probe
+          norm_num [safeQSSMCanaryCost] }
+  · intro hFull
+    have hq := hFull.safeQSSM SafeQSSMCanaryProbe.q
+    norm_num [safeQSSMCanaryCost, safeQSSMCanaryBudget] at hq
+
+structure GaugeIncidenceFull
+    (Gauge : Type) (incidence : Gauge -> Nat) (bound : Nat) : Prop where
+  boundedGaugeIncidence : ∀ gamma : Gauge, incidence gamma ≤ bound
+
+structure GaugeIncidenceSelfBoundOnly
+    (Gauge : Type) (incidence : Gauge -> Nat) : Prop where
+  selfBound : ∀ gamma : Gauge, incidence gamma ≤ incidence gamma
+
+inductive GaugeIncidenceCanary where
+  | gamma
+deriving DecidableEq, Repr
+
+def gaugeIncidenceCanaryIncidence (_gamma : GaugeIncidenceCanary) : Nat :=
+  1
+
+def gaugeIncidenceCanaryBound : Nat :=
+  0
+
+theorem boundedGaugeIncidence_weakened_frontier_insufficient :
+    GaugeIncidenceSelfBoundOnly GaugeIncidenceCanary
+        gaugeIncidenceCanaryIncidence ∧
+      ¬ GaugeIncidenceFull GaugeIncidenceCanary
+        gaugeIncidenceCanaryIncidence gaugeIncidenceCanaryBound := by
+  constructor
+  · exact
+      { selfBound := by
+          intro charge
+          rfl }
+  · intro hFull
+    have hgamma := hFull.boundedGaugeIncidence GaugeIncidenceCanary.gamma
+    norm_num [gaugeIncidenceCanaryIncidence, gaugeIncidenceCanaryBound] at hgamma
+
+def BoundaryMixingBalancedOnly
+    {Omega : Type} [Fintype Omega] (target : Omega -> Bool) : Prop :=
+  BalancedBit target
+
+theorem boundaryMixing_weakened_frontier_insufficient :
+    BoundaryMixingBalancedOnly v14ToyTarget ∧
+      ¬ BoundaryMixingBound v14ToyTarget v14ToyTarget 0 := by
+  constructor
+  · exact v14ToyTarget_balanced
+  · intro hMix
+    have hHalf : (1 / 2 : Rat) ≤ 0 :=
+      sufficient_boundary_feature_forces_eps_ge_half
+        v14ToyTarget v14ToyTarget
+        v14ToyTarget_balanced
+        ⟨fun z => z, by intro omega; rfl⟩
+        hMix
+    norm_num at hHalf
 
 /-! ## Construction-side ledger -/
 
@@ -595,19 +818,19 @@ def v14ToyConstructionLedger : List V14ConstructionLedgerRow := [
   {
     item := "field safeQSSM"
     status := .carriedAnalyticFrontier
-    checkedName := "V14ToyAnalyticFrontier.safeQSSM"
+    checkedName := "SafeQSSMFrontier.safeQSSM"
     note := "Quantitative safe-buffer leakage is intentionally carried."
   },
   {
     item := "field boundedGaugeIncidence"
     status := .carriedAnalyticFrontier
-    checkedName := "V14ToyAnalyticFrontier.boundedGaugeIncidence"
+    checkedName := "BoundedGaugeIncidenceFrontier.boundedGaugeIncidence"
     note := "Gauge-incidence/rank control is intentionally carried."
   },
   {
     item := "field boundaryMixing"
     status := .carriedAnalyticFrontier
-    checkedName := "V14ToyAnalyticFrontier.boundaryMixing"
+    checkedName := "BoundaryMixingFrontier.boundaryMixing"
     note := "Boundary-law mixing is intentionally carried."
   },
   {
@@ -698,5 +921,112 @@ theorem v14ToyConstructionLedger_test8_proved :
     (v14ToyConstructionLedger.get ⟨16, by decide⟩).status =
       V14ConstructionLedgerStatus.constructionProved := by
   rfl
+
+/-! ## Exact-use ledger -/
+
+inductive V14ExactUseLedgerStatus where
+  | structuralProved
+  | analyticCarried
+  | openGlobalInput
+deriving DecidableEq, Repr
+
+structure V14ExactUseLedgerRow where
+  item : String
+  status : V14ExactUseLedgerStatus
+  checkedName : String
+deriving Repr
+
+def v14ToyExactUseLedger : List V14ExactUseLedgerRow := [
+  {
+    item := "singleMessage"
+    status := .structuralProved
+    checkedName := "V14ToyStructuralFieldsConstructed.singleMessage"
+  },
+  {
+    item := "hiddenGaugeProduct"
+    status := .structuralProved
+    checkedName := "V14ToyStructuralFieldsConstructed.hiddenGaugeProduct"
+  },
+  {
+    item := "noPublicTargetTags"
+    status := .structuralProved
+    checkedName := "V14ToyStructuralFieldsConstructed.noPublicTargetTags"
+  },
+  {
+    item := "atomCompleteness"
+    status := .structuralProved
+    checkedName := "V14ToyStructuralFieldsConstructed.atomCompleteness"
+  },
+  {
+    item := "gaugeFaithfulness"
+    status := .structuralProved
+    checkedName := "V14ToyStructuralFieldsConstructed.gaugeFaithfulness"
+  },
+  {
+    item := "admissibleHistories"
+    status := .structuralProved
+    checkedName := "V14ToyStructuralFieldsConstructed.admissibleHistories"
+  },
+  {
+    item := "safeQSSM"
+    status := .analyticCarried
+    checkedName := "SafeQSSMFrontier.safeQSSM"
+  },
+  {
+    item := "boundedGaugeIncidence"
+    status := .analyticCarried
+    checkedName := "BoundedGaugeIncidenceFrontier.boundedGaugeIncidence"
+  },
+  {
+    item := "boundaryMixing"
+    status := .analyticCarried
+    checkedName := "BoundaryMixingFrontier.boundaryMixing"
+  },
+  {
+    item := "starSWHardness"
+    status := .openGlobalInput
+    checkedName := "ParameterRecord.starSWHardness"
+  },
+  {
+    item := "selfReductionUpper"
+    status := .openGlobalInput
+    checkedName := "ParameterRecord.selfReductionUpper"
+  }
+]
+
+theorem v14ToyExactUseLedger_length :
+    v14ToyExactUseLedger.length = 11 := by
+  rfl
+
+theorem v14ToyExactUseLedger_structural_proved :
+    (v14ToyExactUseLedger.get ⟨0, by decide⟩).status =
+        V14ExactUseLedgerStatus.structuralProved ∧
+      (v14ToyExactUseLedger.get ⟨1, by decide⟩).status =
+        V14ExactUseLedgerStatus.structuralProved ∧
+      (v14ToyExactUseLedger.get ⟨2, by decide⟩).status =
+        V14ExactUseLedgerStatus.structuralProved ∧
+      (v14ToyExactUseLedger.get ⟨3, by decide⟩).status =
+        V14ExactUseLedgerStatus.structuralProved ∧
+      (v14ToyExactUseLedger.get ⟨4, by decide⟩).status =
+        V14ExactUseLedgerStatus.structuralProved ∧
+      (v14ToyExactUseLedger.get ⟨5, by decide⟩).status =
+        V14ExactUseLedgerStatus.structuralProved := by
+  simp [v14ToyExactUseLedger]
+
+theorem v14ToyExactUseLedger_analytic_carried :
+    (v14ToyExactUseLedger.get ⟨6, by decide⟩).status =
+        V14ExactUseLedgerStatus.analyticCarried ∧
+      (v14ToyExactUseLedger.get ⟨7, by decide⟩).status =
+        V14ExactUseLedgerStatus.analyticCarried ∧
+      (v14ToyExactUseLedger.get ⟨8, by decide⟩).status =
+        V14ExactUseLedgerStatus.analyticCarried := by
+  simp [v14ToyExactUseLedger]
+
+theorem v14ToyExactUseLedger_open_global_inputs :
+    (v14ToyExactUseLedger.get ⟨9, by decide⟩).status =
+        V14ExactUseLedgerStatus.openGlobalInput ∧
+      (v14ToyExactUseLedger.get ⟨10, by decide⟩).status =
+        V14ExactUseLedgerStatus.openGlobalInput := by
+  simp [v14ToyExactUseLedger]
 
 end Mettapedia.Computability.PNP
