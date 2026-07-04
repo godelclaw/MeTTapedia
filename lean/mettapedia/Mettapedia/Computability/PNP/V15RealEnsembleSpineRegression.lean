@@ -48,6 +48,45 @@ set_option autoImplicit false
 #check realM4CNFSingleMessageSATSpine
 #check realM4CNF_singleMessage_of_publicMessageInvariant
 #check realM4CNF_readout_eq_of_valid_of_publicMessageInvariant
+#check ConcreteCNF.Literal.var
+#check ConcreteCNF.unitLiteral
+#check ConcreteCNF.unitClause
+#check ConcreteCNF.prefixClauses
+#check ConcreteCNF.restrictWithPrefix
+#check ConcreteCNF.FormulaUsesOnly
+#check ConcreteCNF.isSatClause_unitClause_iff
+#check ConcreteCNF.isSatFormula_append_iff
+#check CNFPrefix.Satisfied
+#check CNFPrefix.value
+#check CNFPrefix.assignment
+#check CNFPrefix.satisfied_nil
+#check CNFPrefix.satisfied_append_single
+#check CNFPrefix.exists_pair_of_mem_keys
+#check CNFPrefix.value_eq_of_mem
+#check CNFPrefix.assignment_eq_of_mem
+#check ConcreteCNF.isSatFormula_prefixClauses_iff
+#check ConcreteCNF.isSatFormula_restrictWithPrefix_iff
+#check ConcreteCNF.isSatFormula_of_agree_on_formulaUsesOnly
+#check RealCNFRestrictedSatisfiable
+#check RealCNFPNPSATDecider
+#check realCNFRestricted_decideSat_true_iff
+#check realCNFBitFixPrefixAux
+#check realCNFBitFixPrefix
+#check realCNFBitFixAssignment
+#check realCNFBitFixPrefixAux_keys
+#check realCNFBitFixPrefixAux_satisfiable
+#check realCNFBitFixAssignment_satisfies
+#check realM4_bitFixingAssignment_satisfies
+#check realM4_bitFixingReadout_eq_publicMessage_of_publicMessageInvariant
+#check realCNFRestrictedFormulaCompilerProgramLength
+#check realCNFBitFixingDriverProgramLength
+#check realCNFReadoutProgramLength
+#check realCNFSelfReductionDecoderCost
+#check realCNFConstantDecoderKpolyAt
+#check realCNFLinearEtaTimes
+#check realCNFConstantDecoderKpolyAt_eq
+#check RealCNFConstantDecoderRegime
+#check realCNF_selfReductionUpperHypothesis_givenPNP
 #check RealM4LiftStatus
 #check RealM4LiftLedgerRow
 #check realM4LiftLedger
@@ -99,6 +138,45 @@ set_option autoImplicit false
 #print axioms realM4CNFSingleMessageSATSpine
 #print axioms realM4CNF_singleMessage_of_publicMessageInvariant
 #print axioms realM4CNF_readout_eq_of_valid_of_publicMessageInvariant
+#print axioms ConcreteCNF.Literal.var
+#print axioms ConcreteCNF.unitLiteral
+#print axioms ConcreteCNF.unitClause
+#print axioms ConcreteCNF.prefixClauses
+#print axioms ConcreteCNF.restrictWithPrefix
+#print axioms ConcreteCNF.FormulaUsesOnly
+#print axioms ConcreteCNF.isSatClause_unitClause_iff
+#print axioms ConcreteCNF.isSatFormula_append_iff
+#print axioms CNFPrefix.Satisfied
+#print axioms CNFPrefix.value
+#print axioms CNFPrefix.assignment
+#print axioms CNFPrefix.satisfied_nil
+#print axioms CNFPrefix.satisfied_append_single
+#print axioms CNFPrefix.exists_pair_of_mem_keys
+#print axioms CNFPrefix.value_eq_of_mem
+#print axioms CNFPrefix.assignment_eq_of_mem
+#print axioms ConcreteCNF.isSatFormula_prefixClauses_iff
+#print axioms ConcreteCNF.isSatFormula_restrictWithPrefix_iff
+#print axioms ConcreteCNF.isSatFormula_of_agree_on_formulaUsesOnly
+#print axioms RealCNFRestrictedSatisfiable
+#print axioms RealCNFPNPSATDecider
+#print axioms realCNFRestricted_decideSat_true_iff
+#print axioms realCNFBitFixPrefixAux
+#print axioms realCNFBitFixPrefix
+#print axioms realCNFBitFixAssignment
+#print axioms realCNFBitFixPrefixAux_keys
+#print axioms realCNFBitFixPrefixAux_satisfiable
+#print axioms realCNFBitFixAssignment_satisfies
+#print axioms realM4_bitFixingAssignment_satisfies
+#print axioms realM4_bitFixingReadout_eq_publicMessage_of_publicMessageInvariant
+#print axioms realCNFRestrictedFormulaCompilerProgramLength
+#print axioms realCNFBitFixingDriverProgramLength
+#print axioms realCNFReadoutProgramLength
+#print axioms realCNFSelfReductionDecoderCost
+#print axioms realCNFConstantDecoderKpolyAt
+#print axioms realCNFLinearEtaTimes
+#print axioms realCNFConstantDecoderKpolyAt_eq
+#print axioms RealCNFConstantDecoderRegime
+#print axioms realCNF_selfReductionUpperHypothesis_givenPNP
 #print axioms RealM4LiftStatus
 #print axioms RealM4LiftLedgerRow
 #print axioms realM4LiftLedger
