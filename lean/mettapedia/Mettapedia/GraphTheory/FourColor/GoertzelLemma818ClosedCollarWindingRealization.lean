@@ -502,6 +502,49 @@ theorem closedCollarWindingFreedomSimplePatchN6First950000BlockedByPlanarityOrCy
     ⟨closedCollarWindingFreedomWitnessRealizationData,
       ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩ <;> decide
 
+def closedCollarSimplePatchN6First1000000Counts :
+    ClosedCollarSimplePatchPrefixBlockerCounts where
+  internalVertexCount := 6
+  processedPatchTopologyCount := 1000000
+  radialOrderCaseCount := 2000000
+  profilePreservingCaseCount := 20870
+  normalFormPrefixPassingProfileCaseCount := 0
+  planarFirstBlockerCount := 20454
+  cyclicCutFirstBlockerCount := 416
+  minimumCyclicCutSizeTwoCount := 380
+  minimumCyclicCutSizeThreeCount := 36
+
+/--
+Resumable-slice evidence through the first 1000000 six-internal simple-patch
+topologies.  No profile-preserving case passes the tested normal-form prefix;
+the profile-preserving cases fail first at planarity or at a cyclic edge cut of
+size at most four.
+-/
+def ClosedCollarWindingFreedomSimplePatchN6First1000000BlockedByPlanarityOrCyclicCutsEvidence :
+    Prop :=
+  ClosedCollarWindingFreedomWitnessRealizationData ∧
+    closedCollarSimplePatchN6First1000000Counts.internalVertexCount = 6 ∧
+    closedCollarSimplePatchN6First1000000Counts.processedPatchTopologyCount = 1000000 ∧
+    closedCollarSimplePatchN6First1000000Counts.radialOrderCaseCount = 2000000 ∧
+    closedCollarSimplePatchN6First1000000Counts.profilePreservingCaseCount = 20870 ∧
+    closedCollarSimplePatchN6First1000000Counts.normalFormPrefixPassingProfileCaseCount = 0 ∧
+    closedCollarSimplePatchN6First1000000Counts.planarFirstBlockerCount = 20454 ∧
+    closedCollarSimplePatchN6First1000000Counts.cyclicCutFirstBlockerCount = 416 ∧
+    closedCollarSimplePatchN6First1000000Counts.minimumCyclicCutSizeTwoCount = 380 ∧
+    closedCollarSimplePatchN6First1000000Counts.minimumCyclicCutSizeThreeCount = 36 ∧
+    closedCollarSimplePatchN6First1000000Counts.planarFirstBlockerCount +
+        closedCollarSimplePatchN6First1000000Counts.cyclicCutFirstBlockerCount =
+      closedCollarSimplePatchN6First1000000Counts.profilePreservingCaseCount ∧
+    closedCollarSimplePatchN6First1000000Counts.minimumCyclicCutSizeTwoCount +
+        closedCollarSimplePatchN6First1000000Counts.minimumCyclicCutSizeThreeCount =
+      closedCollarSimplePatchN6First1000000Counts.cyclicCutFirstBlockerCount
+
+theorem closedCollarWindingFreedomSimplePatchN6First1000000BlockedByPlanarityOrCyclicCutsEvidence :
+    ClosedCollarWindingFreedomSimplePatchN6First1000000BlockedByPlanarityOrCyclicCutsEvidence := by
+  refine
+    ⟨closedCollarWindingFreedomWitnessRealizationData,
+      ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩ <;> decide
+
 /--
 Shape-classification counts for a single resumable simple-patch slice.  This
 records a second-pass classifier over the cyclic-cut blockers; it is separate
@@ -586,6 +629,38 @@ def closedCollarSimplePatchN6Slices800000_950000CyclicCutShapeCounts :
   firstCutUsesTwoCollarEdgesCount := 288
   firstCutSideHasFourVerticesCount := 288
   firstCutSideHasTwoCollarAndTwoPatchInternalVerticesCount := 288
+
+def closedCollarSimplePatchN6Slice950000_1000000CyclicCutShapeCounts :
+    ClosedCollarSimplePatchCyclicCutShapeSliceCounts where
+  internalVertexCount := 6
+  patchStartIndex := 950000
+  patchTopologyLimit := 50000
+  sampledCyclicCutLimit := 24
+  processedPatchTopologyCount := 50000
+  radialOrderCaseCount := 100000
+  profilePreservingCaseCount := 662
+  planarFirstBlockerCount := 534
+  cyclicCutFirstBlockerCount := 128
+  firstCutSizeTwoCount := 128
+  firstCutUsesTwoCollarEdgesCount := 128
+  firstCutSideHasFourVerticesCount := 128
+  firstCutSideHasTwoCollarAndTwoPatchInternalVerticesCount := 128
+
+def closedCollarSimplePatchN6Slices800000_1000000CyclicCutShapeCounts :
+    ClosedCollarSimplePatchCyclicCutShapeSliceCounts where
+  internalVertexCount := 6
+  patchStartIndex := 800000
+  patchTopologyLimit := 200000
+  sampledCyclicCutLimit := 24
+  processedPatchTopologyCount := 200000
+  radialOrderCaseCount := 400000
+  profilePreservingCaseCount := 2150
+  planarFirstBlockerCount := 1734
+  cyclicCutFirstBlockerCount := 416
+  firstCutSizeTwoCount := 416
+  firstCutUsesTwoCollarEdgesCount := 416
+  firstCutSideHasFourVerticesCount := 416
+  firstCutSideHasTwoCollarAndTwoPatchInternalVerticesCount := 416
 
 /--
 Second-pass cyclic-cut shape evidence for the 900000-950000 six-internal
@@ -683,6 +758,66 @@ theorem closedCollarWindingFreedomSimplePatchN6Slices800000_950000UniformCollarT
   refine
     ⟨closedCollarWindingFreedomWitnessRealizationData,
       ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩ <;>
+    decide
+
+/--
+Cumulative second-pass cyclic-cut shape evidence for the 800000-1000000
+six-internal simple-patch slices.  Across these four slices, every cyclic-cut
+blocker has a first sampled cut of size two, with two collar cut edges and a
+four-vertex small side made of two collar vertices and two patch-internal
+vertices.
+-/
+def ClosedCollarWindingFreedomSimplePatchN6Slices800000_1000000UniformCollarTwoCutShapeEvidence :
+    Prop :=
+  ClosedCollarWindingFreedomWitnessRealizationData ∧
+    closedCollarSimplePatchN6Slice800000_850000CyclicCutShapeCounts.cyclicCutFirstBlockerCount =
+      128 ∧
+    closedCollarSimplePatchN6Slice850000_900000CyclicCutShapeCounts.cyclicCutFirstBlockerCount =
+      106 ∧
+    closedCollarSimplePatchN6Slice900000_950000CyclicCutShapeCounts.cyclicCutFirstBlockerCount =
+      54 ∧
+    closedCollarSimplePatchN6Slice950000_1000000CyclicCutShapeCounts.cyclicCutFirstBlockerCount =
+      128 ∧
+    closedCollarSimplePatchN6Slices800000_1000000CyclicCutShapeCounts.internalVertexCount =
+      6 ∧
+    closedCollarSimplePatchN6Slices800000_1000000CyclicCutShapeCounts.patchStartIndex =
+      800000 ∧
+    closedCollarSimplePatchN6Slices800000_1000000CyclicCutShapeCounts.patchTopologyLimit =
+      200000 ∧
+    closedCollarSimplePatchN6Slices800000_1000000CyclicCutShapeCounts.sampledCyclicCutLimit =
+      24 ∧
+    closedCollarSimplePatchN6Slices800000_1000000CyclicCutShapeCounts.processedPatchTopologyCount =
+      200000 ∧
+    closedCollarSimplePatchN6Slices800000_1000000CyclicCutShapeCounts.radialOrderCaseCount =
+      400000 ∧
+    closedCollarSimplePatchN6Slices800000_1000000CyclicCutShapeCounts.profilePreservingCaseCount =
+      2150 ∧
+    closedCollarSimplePatchN6Slices800000_1000000CyclicCutShapeCounts.planarFirstBlockerCount =
+      1734 ∧
+    closedCollarSimplePatchN6Slices800000_1000000CyclicCutShapeCounts.cyclicCutFirstBlockerCount =
+      416 ∧
+    closedCollarSimplePatchN6Slices800000_1000000CyclicCutShapeCounts.firstCutSizeTwoCount =
+      closedCollarSimplePatchN6Slices800000_1000000CyclicCutShapeCounts.cyclicCutFirstBlockerCount ∧
+    closedCollarSimplePatchN6Slices800000_1000000CyclicCutShapeCounts.firstCutUsesTwoCollarEdgesCount =
+      closedCollarSimplePatchN6Slices800000_1000000CyclicCutShapeCounts.cyclicCutFirstBlockerCount ∧
+    closedCollarSimplePatchN6Slices800000_1000000CyclicCutShapeCounts.firstCutSideHasFourVerticesCount =
+      closedCollarSimplePatchN6Slices800000_1000000CyclicCutShapeCounts.cyclicCutFirstBlockerCount ∧
+    closedCollarSimplePatchN6Slices800000_1000000CyclicCutShapeCounts.firstCutSideHasTwoCollarAndTwoPatchInternalVerticesCount =
+      closedCollarSimplePatchN6Slices800000_1000000CyclicCutShapeCounts.cyclicCutFirstBlockerCount ∧
+    closedCollarSimplePatchN6Slices800000_1000000CyclicCutShapeCounts.planarFirstBlockerCount +
+        closedCollarSimplePatchN6Slices800000_1000000CyclicCutShapeCounts.cyclicCutFirstBlockerCount =
+      closedCollarSimplePatchN6Slices800000_1000000CyclicCutShapeCounts.profilePreservingCaseCount ∧
+    closedCollarSimplePatchN6Slice800000_850000CyclicCutShapeCounts.cyclicCutFirstBlockerCount +
+        closedCollarSimplePatchN6Slice850000_900000CyclicCutShapeCounts.cyclicCutFirstBlockerCount +
+          closedCollarSimplePatchN6Slice900000_950000CyclicCutShapeCounts.cyclicCutFirstBlockerCount +
+            closedCollarSimplePatchN6Slice950000_1000000CyclicCutShapeCounts.cyclicCutFirstBlockerCount =
+      closedCollarSimplePatchN6Slices800000_1000000CyclicCutShapeCounts.cyclicCutFirstBlockerCount
+
+theorem closedCollarWindingFreedomSimplePatchN6Slices800000_1000000UniformCollarTwoCutShapeEvidence :
+    ClosedCollarWindingFreedomSimplePatchN6Slices800000_1000000UniformCollarTwoCutShapeEvidence := by
+  refine
+    ⟨closedCollarWindingFreedomWitnessRealizationData,
+      ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩ <;>
     decide
 
 /--
