@@ -821,6 +821,118 @@ theorem closedCollarWindingFreedomSimplePatchN6Slices800000_1000000UniformCollar
     decide
 
 /--
+Exact-template classifier for the first sampled cyclic-cut blockers in a
+resumable simple-patch slice.  The two named templates are the two diagonal
+collar two-poles seen by the lab; they refine the coarser "two collar edges
+and a four-vertex side" shape.
+-/
+structure ClosedCollarSimplePatchCyclicCutExactTemplateCounts where
+  internalVertexCount : Nat
+  patchStartIndex : Nat
+  patchTopologyLimit : Nat
+  sampledCyclicCutLimit : Nat
+  processedPatchTopologyCount : Nat
+  radialOrderCaseCount : Nat
+  profilePreservingCaseCount : Nat
+  planarFirstBlockerCount : Nat
+  cyclicCutFirstBlockerCount : Nat
+  firstCutSizeTwoCount : Nat
+  firstCutUsesTwoCollarEdgesCount : Nat
+  firstCutSideHasFourVerticesCount : Nat
+  firstCutSideHasTwoCollarAndTwoPatchInternalVerticesCount : Nat
+  diagonalForwardCutEdges : List String
+  diagonalForwardSideCollarVertices : List String
+  diagonalForwardTemplateCount : Nat
+  diagonalReverseCutEdges : List String
+  diagonalReverseSideCollarVertices : List String
+  diagonalReverseTemplateCount : Nat
+
+def closedCollarSimplePatchN6Slices800000_1000000CyclicCutExactTemplateCounts :
+    ClosedCollarSimplePatchCyclicCutExactTemplateCounts where
+  internalVertexCount := 6
+  patchStartIndex := 800000
+  patchTopologyLimit := 200000
+  sampledCyclicCutLimit := 24
+  processedPatchTopologyCount := 200000
+  radialOrderCaseCount := 400000
+  profilePreservingCaseCount := 2150
+  planarFirstBlockerCount := 1734
+  cyclicCutFirstBlockerCount := 416
+  firstCutSizeTwoCount := 416
+  firstCutUsesTwoCollarEdgesCount := 416
+  firstCutSideHasFourVerticesCount := 416
+  firstCutSideHasTwoCollarAndTwoPatchInternalVerticesCount := 416
+  diagonalForwardCutEdges := ["g0:F1F0", "g1:F4F5"]
+  diagonalForwardSideCollarVertices := ["g0:F1", "g1:F5"]
+  diagonalForwardTemplateCount := 216
+  diagonalReverseCutEdges := ["g0:F4F5", "g1:F1F0"]
+  diagonalReverseSideCollarVertices := ["g0:F5", "g1:F1"]
+  diagonalReverseTemplateCount := 200
+
+/--
+Exact-template evidence for the 800000-1000000 six-internal simple-patch
+window.  Every cyclic-cut blocker in the window has a first sampled cut of
+size two and belongs to one of the two diagonal collar two-pole templates.
+-/
+def ClosedCollarWindingFreedomSimplePatchN6Slices800000_1000000ExactCollarTwoPoleTemplateEvidence :
+    Prop :=
+  ClosedCollarWindingFreedomWitnessRealizationData ∧
+    closedCollarSimplePatchN6Slices800000_1000000CyclicCutExactTemplateCounts.internalVertexCount =
+      6 ∧
+    closedCollarSimplePatchN6Slices800000_1000000CyclicCutExactTemplateCounts.patchStartIndex =
+      800000 ∧
+    closedCollarSimplePatchN6Slices800000_1000000CyclicCutExactTemplateCounts.patchTopologyLimit =
+      200000 ∧
+    closedCollarSimplePatchN6Slices800000_1000000CyclicCutExactTemplateCounts.sampledCyclicCutLimit =
+      24 ∧
+    closedCollarSimplePatchN6Slices800000_1000000CyclicCutExactTemplateCounts.processedPatchTopologyCount =
+      200000 ∧
+    closedCollarSimplePatchN6Slices800000_1000000CyclicCutExactTemplateCounts.radialOrderCaseCount =
+      400000 ∧
+    closedCollarSimplePatchN6Slices800000_1000000CyclicCutExactTemplateCounts.profilePreservingCaseCount =
+      2150 ∧
+    closedCollarSimplePatchN6Slices800000_1000000CyclicCutExactTemplateCounts.planarFirstBlockerCount =
+      1734 ∧
+    closedCollarSimplePatchN6Slices800000_1000000CyclicCutExactTemplateCounts.cyclicCutFirstBlockerCount =
+      416 ∧
+    closedCollarSimplePatchN6Slices800000_1000000CyclicCutExactTemplateCounts.cyclicCutFirstBlockerCount =
+      closedCollarSimplePatchN6Slices800000_1000000CyclicCutShapeCounts.cyclicCutFirstBlockerCount ∧
+    closedCollarSimplePatchN6Slices800000_1000000CyclicCutExactTemplateCounts.firstCutSizeTwoCount =
+      closedCollarSimplePatchN6Slices800000_1000000CyclicCutExactTemplateCounts.cyclicCutFirstBlockerCount ∧
+    closedCollarSimplePatchN6Slices800000_1000000CyclicCutExactTemplateCounts.firstCutUsesTwoCollarEdgesCount =
+      closedCollarSimplePatchN6Slices800000_1000000CyclicCutExactTemplateCounts.cyclicCutFirstBlockerCount ∧
+    closedCollarSimplePatchN6Slices800000_1000000CyclicCutExactTemplateCounts.firstCutSideHasFourVerticesCount =
+      closedCollarSimplePatchN6Slices800000_1000000CyclicCutExactTemplateCounts.cyclicCutFirstBlockerCount ∧
+    closedCollarSimplePatchN6Slices800000_1000000CyclicCutExactTemplateCounts.firstCutSideHasTwoCollarAndTwoPatchInternalVerticesCount =
+      closedCollarSimplePatchN6Slices800000_1000000CyclicCutExactTemplateCounts.cyclicCutFirstBlockerCount ∧
+    closedCollarSimplePatchN6Slices800000_1000000CyclicCutExactTemplateCounts.diagonalForwardCutEdges =
+      ["g0:F1F0", "g1:F4F5"] ∧
+    closedCollarSimplePatchN6Slices800000_1000000CyclicCutExactTemplateCounts.diagonalForwardSideCollarVertices =
+      ["g0:F1", "g1:F5"] ∧
+    closedCollarSimplePatchN6Slices800000_1000000CyclicCutExactTemplateCounts.diagonalForwardTemplateCount =
+      216 ∧
+    closedCollarSimplePatchN6Slices800000_1000000CyclicCutExactTemplateCounts.diagonalReverseCutEdges =
+      ["g0:F4F5", "g1:F1F0"] ∧
+    closedCollarSimplePatchN6Slices800000_1000000CyclicCutExactTemplateCounts.diagonalReverseSideCollarVertices =
+      ["g0:F5", "g1:F1"] ∧
+    closedCollarSimplePatchN6Slices800000_1000000CyclicCutExactTemplateCounts.diagonalReverseTemplateCount =
+      200 ∧
+    closedCollarSimplePatchN6Slices800000_1000000CyclicCutExactTemplateCounts.diagonalForwardTemplateCount +
+        closedCollarSimplePatchN6Slices800000_1000000CyclicCutExactTemplateCounts.diagonalReverseTemplateCount =
+      closedCollarSimplePatchN6Slices800000_1000000CyclicCutExactTemplateCounts.cyclicCutFirstBlockerCount ∧
+    closedCollarSimplePatchN6Slices800000_1000000CyclicCutExactTemplateCounts.planarFirstBlockerCount +
+        closedCollarSimplePatchN6Slices800000_1000000CyclicCutExactTemplateCounts.cyclicCutFirstBlockerCount =
+      closedCollarSimplePatchN6Slices800000_1000000CyclicCutExactTemplateCounts.profilePreservingCaseCount
+
+theorem closedCollarWindingFreedomSimplePatchN6Slices800000_1000000ExactCollarTwoPoleTemplateEvidence :
+    ClosedCollarWindingFreedomSimplePatchN6Slices800000_1000000ExactCollarTwoPoleTemplateEvidence := by
+  refine
+    ⟨closedCollarWindingFreedomWitnessRealizationData,
+      ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_,
+      ?_, ?_, ?_⟩ <;>
+    decide
+
+/--
 Representative planar profile-preserving samples from the six-internal
 simple-patch search.  These are not exhaustive certificates; they pin the first
 normal-form blocker after planarity has been passed.

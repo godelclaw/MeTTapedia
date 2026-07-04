@@ -2203,6 +2203,9 @@ def audit_closed_collar_winding_simple_patch_cyclic_cut_shapes(
     first_cut_shape_histogram: Counter[str] = Counter()
     first_cut_edge_kind_histogram: Counter[str] = Counter()
     first_cut_side_kind_histogram: Counter[str] = Counter()
+    first_cut_edge_tuple_histogram: Counter[str] = Counter()
+    first_cut_side_collar_vertices_histogram: Counter[str] = Counter()
+    first_cut_template_histogram: Counter[str] = Counter()
     shape_samples: list[dict[str, object]] = []
     last_seen_patch_index: int | None = None
     exhausted = True
@@ -2282,7 +2285,18 @@ def audit_closed_collar_winding_simple_patch_cyclic_cut_shapes(
                 first_cut = small_cuts[0]
                 shape = closed_collar_cut_shape_payload(first_cut)
                 shape_key = closed_collar_cut_shape_key(first_cut)
+                cut_edges_key = ",".join(sorted(str(edge) for edge in shape["cut_edges"]))
+                side_collar_vertices = sorted(
+                    str(vertex)
+                    for vertex in shape["side_vertices"]
+                    if closed_collar_vertex_kind(str(vertex)) == "collar"
+                )
+                side_collar_key = ",".join(side_collar_vertices)
+                template_key = f"edges:{cut_edges_key}|sideCollar:{side_collar_key}"
                 first_cut_shape_histogram[shape_key] += 1
+                first_cut_edge_tuple_histogram[cut_edges_key] += 1
+                first_cut_side_collar_vertices_histogram[side_collar_key] += 1
+                first_cut_template_histogram[template_key] += 1
                 for key, count in shape["edge_kind_histogram"].items():
                     first_cut_edge_kind_histogram[f"{key}:{count}"] += 1
                 for key, count in shape["side_vertex_kind_histogram"].items():
@@ -2295,6 +2309,7 @@ def audit_closed_collar_winding_simple_patch_cyclic_cut_shapes(
                             "state_extensions": state_extensions,
                             "first_cut_shape_key": shape_key,
                             "first_cut_shape": shape,
+                            "first_cut_template_key": template_key,
                             "minimum_small_cyclic_cut_size": minimum_small_cut,
                             "small_cyclic_cut_sample_count":
                                 graph_audit["small_cyclic_cut_sample_count"],
@@ -2352,6 +2367,12 @@ def audit_closed_collar_winding_simple_patch_cyclic_cut_shapes(
                 dict(sorted(first_cut_edge_kind_histogram.items())),
             "first_cut_side_vertex_kind_histogram":
                 dict(sorted(first_cut_side_kind_histogram.items())),
+            "first_cut_edge_tuple_histogram":
+                dict(sorted(first_cut_edge_tuple_histogram.items())),
+            "first_cut_side_collar_vertices_histogram":
+                dict(sorted(first_cut_side_collar_vertices_histogram.items())),
+            "first_cut_template_histogram":
+                dict(sorted(first_cut_template_histogram.items())),
         },
     }
 
