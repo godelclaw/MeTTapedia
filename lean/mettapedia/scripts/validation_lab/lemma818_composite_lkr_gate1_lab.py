@@ -687,6 +687,192 @@ def audit_closed_collar_full_interface_fiber(
     }
 
 
+def sorted_edges_for_model(model: CompositeModel, edges: Iterable[str]) -> list[str]:
+    order = model.gadget.edge_index
+    return sorted(edges, key=lambda edge: order[edge])
+
+
+def pair_winding_components(
+    model: CompositeModel,
+    state: tuple[str, ...],
+    pair: tuple[str, str],
+    radial_cut_edges: set[str],
+) -> list[dict[str, object]]:
+    adj = edge_adjacency(model.gadget)
+    idx = model.gadget.edge_index
+    pair_set = set(pair)
+    unused = {edge for edge in model.gadget.edges if state[idx[edge]] in pair_set}
+    components: list[dict[str, object]] = []
+    while unused:
+        seed = min(unused, key=lambda edge: idx[edge])
+        comp = set(component(model.gadget, adj, state, pair, seed))
+        unused -= comp
+        cut_edges = comp & radial_cut_edges
+        crossing_count = len(cut_edges)
+        components.append(
+            {
+                "seed": seed,
+                "size": len(comp),
+                "crossing_count": crossing_count,
+                "winding_parity": crossing_count % 2,
+                "radial_cut_edges": sorted_edges_for_model(model, cut_edges),
+                "component": sorted_edges_for_model(model, comp),
+            }
+        )
+    return components
+
+
+def closed_collar_state_winding_data(
+    model: CompositeModel,
+    state: tuple[str, ...],
+) -> tuple[tuple[tuple[str, int, int], ...], dict[str, object]]:
+    idx = model.gadget.edge_index
+    radial_cut_edges = set(model.closing_edges)
+    profile: list[tuple[str, int, int]] = []
+    pair_payloads: list[dict[str, object]] = []
+    for pair in COLOR_PAIRS:
+        components = pair_winding_components(model, state, pair, radial_cut_edges)
+        winding0 = sum(
+            1 for component_payload in components
+            if int(component_payload["winding_parity"]) == 0
+        )
+        winding1 = sum(
+            1 for component_payload in components
+            if int(component_payload["winding_parity"]) == 1
+        )
+        pair_name = "".join(pair)
+        cut_parity = (
+            sum(1 for edge in radial_cut_edges if state[idx[edge]] in set(pair)) % 2
+        )
+        component_parity_sum = (
+            sum(int(component_payload["winding_parity"]) for component_payload in components) % 2
+        )
+        if cut_parity != component_parity_sum:
+            raise AssertionError((model.gadget.name, pair, cut_parity, component_parity_sum))
+        profile.append((pair_name, winding0, winding1))
+        pair_payloads.append(
+            {
+                "pair": list(pair),
+                "component_count": len(components),
+                "winding0_component_count": winding0,
+                "winding1_component_count": winding1,
+                "aggregate_f2_cut_parity": cut_parity,
+                "components": components,
+            }
+        )
+    profile_tuple = tuple(profile)
+    payload = {
+        "winding_profile": [
+            {
+                "pair": pair_name,
+                "winding0_component_count": winding0,
+                "winding1_component_count": winding1,
+            }
+            for pair_name, winding0, winding1 in profile_tuple
+        ],
+        "pairs": pair_payloads,
+    }
+    return profile_tuple, payload
+
+
+def winding_profile_payload(profile: tuple[tuple[str, int, int], ...]) -> list[dict[str, object]]:
+    return [
+        {
+            "pair": pair_name,
+            "winding0_component_count": winding0,
+            "winding1_component_count": winding1,
+        }
+        for pair_name, winding0, winding1 in profile
+    ]
+
+
+def profile_json_key(profile: tuple[tuple[str, int, int], ...]) -> str:
+    return json.dumps(winding_profile_payload(profile), sort_keys=True)
+
+
+def audit_closed_collar_winding_fiber(
+    word: tuple[GadgetType, ...],
+    fixed_outer_key: tuple[str, ...],
+    tau_states: list[tuple[str, ...]],
+    include_all_components: bool,
+) -> dict[str, object]:
+    model = build_closed_collar_model(word)
+    sequences = compatible_closed_local_sequences_for_outer_key(
+        word, tau_states, fixed_outer_key
+    )
+    states = [global_state_from_sequence(model, seq) for seq in sequences]
+    deduped = list(dict.fromkeys(states))
+    if len(deduped) != len(states):
+        raise AssertionError((model.gadget.name, fixed_outer_key, len(states), len(deduped)))
+    states = deduped
+
+    profile_counts: Counter[str] = Counter()
+    profile_payloads: dict[str, list[dict[str, object]]] = {}
+    first_state_for_profile: dict[str, dict[str, object]] = {}
+    state_winding_profiles: list[dict[str, object]] = []
+    full_state_payloads: list[dict[str, object]] = []
+    for state_index, state in enumerate(states):
+        profile, winding_payload = closed_collar_state_winding_data(model, state)
+        profile_key = profile_json_key(profile)
+        profile_counts[profile_key] += 1
+        profile_payloads.setdefault(profile_key, winding_profile_payload(profile))
+        state_payload = {
+            "state_index": state_index,
+            "state": dict(zip(model.gadget.edges, state)),
+            **winding_payload,
+        }
+        state_winding_profiles.append(
+            {
+                "state_index": state_index,
+                "winding_profile": winding_profile_payload(profile),
+            }
+        )
+        if include_all_components:
+            full_state_payloads.append(state_payload)
+        first_state_for_profile.setdefault(profile_key, state_payload)
+
+    profile_keys = list(profile_counts)
+    witness = None
+    if len(profile_keys) > 1:
+        witness = {
+            "profiles": [
+                {
+                    "state_count": profile_counts[key],
+                    "profile": profile_payloads[key],
+                    "state": first_state_for_profile[key],
+                }
+                for key in profile_keys[:2]
+            ]
+        }
+
+    return {
+        "run_id": f"{word_key(word)}::{fixed_key_id(fixed_outer_key)}",
+        "word": list(word_names(word)),
+        "name": model.gadget.name,
+        "length": len(word),
+        "fixed_outer_key": list(fixed_outer_key),
+        "fixed_outer_edges": list(model.closing_edges),
+        "radial_cut_edges": list(model.closing_edges),
+        "edge_count": len(model.gadget.edges),
+        "internal_vertex_count": len(model.gadget.internal_vertices),
+        "interface_edges": list(model.interface_edges),
+        "proper_colorings": len(states),
+        "empty_fiber": len(states) == 0,
+        "winding_profile_count": len(profile_counts),
+        "winding_data_boundary_determined": len(profile_counts) <= 1,
+        "winding_profile_histogram": [
+            {
+                "state_count": count,
+                "profile": profile_payloads[key],
+            }
+            for key, count in profile_counts.items()
+        ],
+        "state_winding_profiles": state_winding_profiles,
+        **({"states": full_state_payloads} if include_all_components else {}),
+        "first_winding_freedom_witness": witness,
+    }
+
+
 def closed_collar_l1_words() -> list[tuple[GadgetType, ...]]:
     return [word for n in (2, 3) for word in words_of_length(n)]
 
@@ -738,6 +924,41 @@ def refresh_full_interface_summary(report: dict[str, object]) -> None:
             "disconnected"
             if disconnected
             else ("connected" if len(fibers) == planned else "incomplete")
+        ),
+    }
+
+
+def refresh_winding_summary(report: dict[str, object]) -> None:
+    fibers = report.get("fibers", [])
+    assert isinstance(fibers, list)
+    planned = report.get("planned_fiber_count", 0)
+    assert isinstance(planned, int)
+    freedom = [
+        fiber for fiber in fibers
+        if not fiber.get("winding_data_boundary_determined")
+    ]
+    first = freedom[0] if freedom else None
+    report["summary"] = {
+        "planned_fiber_count": planned,
+        "completed_fiber_count": len(fibers),
+        "remaining_fiber_count": max(0, planned - len(fibers)),
+        "word_count": len({tuple(fiber.get("word", [])) for fiber in fibers}),
+        "nonempty_fiber_count": sum(1 for fiber in fibers if not fiber.get("empty_fiber")),
+        "empty_fiber_count": sum(1 for fiber in fibers if fiber.get("empty_fiber")),
+        "boundary_determined_fiber_count": sum(
+            1 for fiber in fibers if fiber.get("winding_data_boundary_determined")
+        ),
+        "winding_freedom_fiber_count": len(freedom),
+        "all_completed_fibers_boundary_determined": not freedom,
+        "complete": len(fibers) == planned,
+        "first_winding_freedom_run_id": first.get("run_id") if isinstance(first, dict) else None,
+        "first_winding_freedom_witness": (
+            first.get("first_winding_freedom_witness") if isinstance(first, dict) else None
+        ),
+        "verdict": (
+            "not_boundary_determined"
+            if freedom
+            else ("boundary_determined" if len(fibers) == planned else "incomplete")
         ),
     }
 
@@ -847,6 +1068,47 @@ def new_closed_collar_full_interface_report(
         tau_state_count=tau_state_count,
         check_rank=check_rank,
     )
+
+
+def new_closed_collar_winding_report(
+    tau_state_count: int,
+    include_all_components: bool,
+) -> dict[str, object]:
+    words = closed_collar_l1_words()
+    planned_fiber_count = sum(3 ** 4 for _ in words)
+    report: dict[str, object] = {
+        "schema": "fourcolor-section-9-2-closed-collar-winding-l1-v2",
+        "source": "Section 9.2 closed-collar length-2/3 winding-invariant lab",
+        "model": {
+            "tau_inputs": list(TAU_INPUT_ORDER),
+            "tau_outputs": list(TAU_OUTPUT_ORDER),
+            "mirror_tau_inputs": list(MIRROR_TAU_TYPE.input_order),
+            "mirror_tau_outputs": list(MIRROR_TAU_TYPE.output_order),
+            "closed_collar_rule": (
+                "compose a length-2 or length-3 word cyclically by identifying "
+                "the final ordered output stubs with the first ordered input stubs"
+            ),
+            "fixed_outer_fiber": "one four-color key on the closing edges is fixed per run",
+            "radial_cut": "the same closing edges, used as the fixed radial cut",
+            "winding_rule": (
+                "for each two-color component, take the crossing count with the "
+                "radial cut modulo 2"
+            ),
+            "tested_boundary_datum": (
+                "the per-color-pair multiset of component winding classes, recorded "
+                "as winding0 and winding1 component counts"
+            ),
+        },
+        "local_tau_state_count": tau_state_count,
+        "word_lengths": [2, 3],
+        "planned_words": [list(word_names(word)) for word in words],
+        "planned_word_count": len(words),
+        "planned_fiber_count": planned_fiber_count,
+        "include_all_state_component_payloads": include_all_components,
+        "fibers": [],
+    }
+    refresh_winding_summary(report)
+    return report
 
 
 def write_json_report(path: Path, report: dict[str, object]) -> None:
@@ -976,6 +1238,56 @@ def run_closed_collar_full_interface_l1(
     return report
 
 
+def run_closed_collar_winding_l1(
+    output: Path | None,
+    resume: bool,
+    continue_after_freedom: bool,
+    include_all_components: bool,
+) -> dict[str, object]:
+    tau_states = proper_states(TAU)
+    if resume and output is not None and output.exists():
+        report = json.loads(output.read_text())
+        report.setdefault("fibers", [])
+    else:
+        report = new_closed_collar_winding_report(
+            len(tau_states),
+            include_all_components,
+        )
+
+    fibers = report["fibers"]
+    assert isinstance(fibers, list)
+    done = {fiber.get("run_id") for fiber in fibers if isinstance(fiber, dict)}
+
+    for word in closed_collar_l1_words():
+        model = build_closed_collar_model(word)
+        for fixed_outer_key in product(COLORS, repeat=len(model.gadget.inputs)):
+            key = tuple(fixed_outer_key)
+            run_id = f"{word_key(word)}::{fixed_key_id(key)}"
+            if run_id in done:
+                continue
+            fiber = audit_closed_collar_winding_fiber(
+                word,
+                key,
+                tau_states,
+                include_all_components,
+            )
+            fibers.append(fiber)
+            done.add(run_id)
+            refresh_winding_summary(report)
+            if output is not None:
+                write_json_report(output, report)
+            if (
+                not fiber["winding_data_boundary_determined"]
+                and not continue_after_freedom
+            ):
+                return report
+
+    refresh_winding_summary(report)
+    if output is not None:
+        write_json_report(output, report)
+    return report
+
+
 def words_of_length(n: int) -> Iterable[tuple[GadgetType, ...]]:
     yield from product(GADGET_TYPES, repeat=n)
 
@@ -1003,6 +1315,11 @@ def main() -> None:
         help="run the cyclic length-2/3 closed-collar lab with every output representative blocked",
     )
     parser.add_argument(
+        "--closed-collar-winding-l1",
+        action="store_true",
+        help="run the cyclic length-2/3 closed-collar winding-invariant lab",
+    )
+    parser.add_argument(
         "--output",
         type=Path,
         help="write a resumable JSON verdict for --closed-collar-l1",
@@ -1016,6 +1333,16 @@ def main() -> None:
         "--continue-after-disconnected",
         action="store_true",
         help="continue --closed-collar-l1 after the first disconnected fiber",
+    )
+    parser.add_argument(
+        "--continue-after-winding-freedom",
+        action="store_true",
+        help="continue --closed-collar-winding-l1 after the first non-boundary-determined fiber",
+    )
+    parser.add_argument(
+        "--include-winding-components",
+        action="store_true",
+        help="include full component payloads for every state in --closed-collar-winding-l1",
     )
     args = parser.parse_args()
 
@@ -1055,6 +1382,19 @@ def main() -> None:
         print(json.dumps(report, indent=2, sort_keys=True))
         summary = report.get("summary", {})
         if isinstance(summary, dict) and summary.get("disconnected_fiber_count"):
+            raise SystemExit(2)
+        return
+
+    if args.closed_collar_winding_l1:
+        report = run_closed_collar_winding_l1(
+            output=args.output,
+            resume=args.resume,
+            continue_after_freedom=args.continue_after_winding_freedom,
+            include_all_components=args.include_winding_components,
+        )
+        print(json.dumps(report, indent=2, sort_keys=True))
+        summary = report.get("summary", {})
+        if isinstance(summary, dict) and summary.get("winding_freedom_fiber_count"):
             raise SystemExit(2)
         return
 
