@@ -7093,6 +7093,146 @@ theorem
   ⟨v13RealLinearNoTargetSequentialPrefixWorldSetToOrderedPrefixHitOfNextRowMemOfPrefixRowsGenerateTarget
     i₀ observer t pref omega hmem hgen⟩
 
+theorem
+    v13RealLinearNoTargetSequentialPrefixWorldSet_rowsGenerateTarget_of_same_prefix
+    {m q : Nat} (i₀ : Fin m)
+    (observer : V13RealLinearSequentialRowObserver m q) (t : Fin q)
+    (pref :
+      V13RealLinearSequentialPrefixTranscriptVector m (t : Nat))
+    (omega₀ omega₁ :
+      V13RealLinearNoTargetSequentialPrefixWorldSet
+        i₀ observer t pref)
+    (hgen :
+      V13RealLinearRowsGenerateTarget omega₀.val.1.val
+        (v13RealLinearSequentialPrefixTranscriptVectorRows pref) i₀) :
+    V13RealLinearRowsGenerateTarget omega₁.val.1.val
+      (v13RealLinearSequentialPrefixTranscriptVectorRows pref) i₀ := by
+  classical
+  let rows := v13RealLinearSequentialPrefixTranscriptVectorRows pref
+  have hrange :
+      Set.range (fun row : {row : Fin m // row ∈ rows} =>
+          v13RealLinearRowFunctional omega₀.val.1.val row.1) =
+        Set.range (fun row : {row : Fin m // row ∈ rows} =>
+          v13RealLinearRowFunctional omega₁.val.1.val row.1) := by
+    ext f
+    constructor
+    · intro hf
+      rcases hf with ⟨row, rfl⟩
+      refine ⟨row, ?_⟩
+      apply LinearMap.ext
+      intro w
+      have hview₀ :=
+        v13RealLinearNoTargetSequentialPrefixWorldSet_rowView_eq
+          omega₀ row
+      have hview₁ :=
+        v13RealLinearNoTargetSequentialPrefixWorldSet_rowView_eq
+          omega₁ row
+      have hview :
+          v13RealLinearRowView row.1
+              (v13RealLinearPublicInput
+                ({ x := omega₀.val.2, A := omega₀.val.1.val } :
+                  V13RealLinearWorld m)) =
+            v13RealLinearRowView row.1
+              (v13RealLinearPublicInput
+                ({ x := omega₁.val.2, A := omega₁.val.1.val } :
+                  V13RealLinearWorld m)) := hview₀.symm.trans hview₁
+      have hfirst := congrArg Prod.fst hview
+      simpa [v13RealLinearRowFunctional, v13RealLinearRowView,
+        v13RealLinearPublicInput] using (congrFun hfirst w).symm
+    · intro hf
+      rcases hf with ⟨row, rfl⟩
+      refine ⟨row, ?_⟩
+      apply LinearMap.ext
+      intro w
+      have hview₀ :=
+        v13RealLinearNoTargetSequentialPrefixWorldSet_rowView_eq
+          omega₀ row
+      have hview₁ :=
+        v13RealLinearNoTargetSequentialPrefixWorldSet_rowView_eq
+          omega₁ row
+      have hview :
+          v13RealLinearRowView row.1
+              (v13RealLinearPublicInput
+                ({ x := omega₁.val.2, A := omega₁.val.1.val } :
+                  V13RealLinearWorld m)) =
+            v13RealLinearRowView row.1
+              (v13RealLinearPublicInput
+                ({ x := omega₀.val.2, A := omega₀.val.1.val } :
+                  V13RealLinearWorld m)) := hview₁.symm.trans hview₀
+      have hfirst := congrArg Prod.fst hview
+      simpa [v13RealLinearRowFunctional, v13RealLinearRowView,
+        v13RealLinearPublicInput] using (congrFun hfirst w).symm
+  have hspan₀ :
+      v13RealLinearTargetFunctional i₀ ∈
+        V13RealLinearRowsFunctionalSpan omega₀.val.1.val rows :=
+    (v13RealLinearRowsGenerateTarget_iff_targetFunctional_mem_span
+      omega₀.val.1.val rows i₀).1 (by simpa [rows] using hgen)
+  have hspan₁ :
+      v13RealLinearTargetFunctional i₀ ∈
+        V13RealLinearRowsFunctionalSpan omega₁.val.1.val rows := by
+    simpa [V13RealLinearRowsFunctionalSpan, hrange] using hspan₀
+  exact
+    (v13RealLinearRowsGenerateTarget_iff_targetFunctional_mem_span
+      omega₁.val.1.val rows i₀).2 hspan₁
+
+noncomputable def
+    v13RealLinearNoTargetSequentialPrefixWorldSetToOrderedPrefixHitEmbeddingOfGeneratedRereadPrefix
+    {m q : Nat} (i₀ : Fin m)
+    (observer : V13RealLinearSequentialRowObserver m q) (t : Fin q)
+    (pref :
+      V13RealLinearSequentialPrefixTranscriptVector m (t : Nat))
+    (omega₀ :
+      V13RealLinearNoTargetSequentialPrefixWorldSet
+        i₀ observer t pref)
+    (hmem :
+      v13RealLinearSequentialPrefixTranscriptVectorNextRow observer pref ∈
+        v13RealLinearSequentialPrefixTranscriptVectorRows pref)
+    (hgen :
+      V13RealLinearRowsGenerateTarget omega₀.val.1.val
+        (v13RealLinearSequentialPrefixTranscriptVectorRows pref) i₀) :
+    V13RealLinearNoTargetSequentialPrefixWorldSet i₀ observer t pref ↪
+      V13RealLinearNoTargetSequentialTraceFirstCosetHitOrderedPrefixWorldSet
+        i₀ observer t pref where
+  toFun omega :=
+    v13RealLinearNoTargetSequentialPrefixWorldSetToOrderedPrefixHitOfNextRowMemOfPrefixRowsGenerateTarget
+      i₀ observer t pref omega hmem
+      (v13RealLinearNoTargetSequentialPrefixWorldSet_rowsGenerateTarget_of_same_prefix
+        i₀ observer t pref omega₀ omega hgen)
+  inj' := by
+    intro omega₁ omega₂ h
+    apply Subtype.ext
+    exact
+      congrArg
+        (fun hit :
+          V13RealLinearNoTargetSequentialTraceFirstCosetHitOrderedPrefixWorldSet
+            i₀ observer t pref => hit.val.val)
+        h
+
+theorem
+    v13RealLinearNoTargetSequentialPrefixWorldSet_card_le_orderedPrefixHitWorldSet_of_generated_reread_prefix
+    {m q : Nat} (i₀ : Fin m)
+    (observer : V13RealLinearSequentialRowObserver m q) (t : Fin q)
+    (pref :
+      V13RealLinearSequentialPrefixTranscriptVector m (t : Nat))
+    (omega₀ :
+      V13RealLinearNoTargetSequentialPrefixWorldSet
+        i₀ observer t pref)
+    (hmem :
+      v13RealLinearSequentialPrefixTranscriptVectorNextRow observer pref ∈
+        v13RealLinearSequentialPrefixTranscriptVectorRows pref)
+    (hgen :
+      V13RealLinearRowsGenerateTarget omega₀.val.1.val
+        (v13RealLinearSequentialPrefixTranscriptVectorRows pref) i₀) :
+    Fintype.card
+        (V13RealLinearNoTargetSequentialPrefixWorldSet
+          i₀ observer t pref) ≤
+      Fintype.card
+        (V13RealLinearNoTargetSequentialTraceFirstCosetHitOrderedPrefixWorldSet
+          i₀ observer t pref) :=
+  Fintype.card_le_of_embedding
+    (v13RealLinearNoTargetSequentialPrefixWorldSetToOrderedPrefixHitEmbeddingOfGeneratedRereadPrefix
+      i₀ observer t pref omega₀ hmem hgen)
+
 noncomputable def
     v13RealLinearNoTargetSequentialPrefixMapClassTimesUnreadAssignmentToPrefixWorldSet
     {m q : Nat} (i₀ : Fin m)
@@ -8179,6 +8319,57 @@ def
         Fintype.card
           (V13RealLinearNoTargetSequentialPrefixWorldSet
             i₀ observer t pref)
+
+theorem
+    V13RealLinearNoTargetRowsSequentialTraceCosetHitOrderedPrefixConditionedCountingBound_not_of_generated_reread_prefix_gap
+    {m q : Nat} (i₀ : Fin m)
+    (observer : V13RealLinearSequentialRowObserver m q) (t : Fin q)
+    (pref :
+      V13RealLinearSequentialPrefixTranscriptVector m (t : Nat))
+    (omega :
+      V13RealLinearNoTargetSequentialPrefixWorldSet
+        i₀ observer t pref)
+    (hmem :
+      v13RealLinearSequentialPrefixTranscriptVectorNextRow observer pref ∈
+        v13RealLinearSequentialPrefixTranscriptVectorRows pref)
+    (hgen :
+      V13RealLinearRowsGenerateTarget omega.val.1.val
+        (v13RealLinearSequentialPrefixTranscriptVectorRows pref) i₀)
+    (hgap :
+      4 *
+          2 ^ (v13RealLinearSequentialPrefixTranscriptVectorRows pref).card <
+        2 ^ m) :
+    ¬ V13RealLinearNoTargetRowsSequentialTraceCosetHitOrderedPrefixConditionedCountingBound
+      i₀ observer := by
+  classical
+  intro hconditioned
+  let HitW :=
+    V13RealLinearNoTargetSequentialTraceFirstCosetHitOrderedPrefixWorldSet
+      i₀ observer t pref
+  let PrefW :=
+    V13RealLinearNoTargetSequentialPrefixWorldSet i₀ observer t pref
+  let P := Fintype.card PrefW
+  let H := Fintype.card HitW
+  let M := 2 ^ m
+  let C :=
+    4 * 2 ^ (v13RealLinearSequentialPrefixTranscriptVectorRows pref).card
+  have hPpos : 0 < P := by
+    dsimp [P, PrefW]
+    exact Fintype.card_pos_iff.mpr ⟨omega⟩
+  have hPH : P ≤ H := by
+    simpa [P, H, PrefW, HitW] using
+      v13RealLinearNoTargetSequentialPrefixWorldSet_card_le_orderedPrefixHitWorldSet_of_generated_reread_prefix
+        i₀ observer t pref omega hmem hgen
+  have hcond :
+      H * M ≤ C * P := by
+    simpa [H, M, C, P, HitW, PrefW] using hconditioned t pref
+  have hPM_le_CP : P * M ≤ C * P := by
+    exact (Nat.mul_le_mul_right M hPH).trans hcond
+  have hCP_lt_PM : C * P < P * M := by
+    have hCP_lt_MP : C * P < M * P := by
+      exact Nat.mul_lt_mul_of_pos_right (by simpa [C, M] using hgap) hPpos
+    simpa [Nat.mul_comm] using hCP_lt_MP
+  exact (not_lt_of_ge hPM_le_CP) hCP_lt_PM
 
 theorem
     V13RealLinearNoTargetRowsSequentialTraceCosetHitOrderedPrefixConditionedCountingBound_of_freshnessBridge
