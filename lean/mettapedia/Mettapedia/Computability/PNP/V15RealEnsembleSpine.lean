@@ -940,6 +940,92 @@ theorem realM4_bitFixingReadout_eq_publicMessage_of_publicMessageInvariant
       hinvariant (D.support_publicLock hY)
         (D.witnessCompletion (D.extract Y α) hValid)
 
+/-- Family-level packaging of the real Appendix I data needed by the CNF
+bit-fixing self-reduction.  It records, for each public instance, an ordered
+finite variable cover for the CNF formula and an explicit P=NP-side SAT
+decider, together with a uniform program-length bound for that decider family.
+-/
+structure RealM4CNFUniformBitFixingData
+    {PublicLock : Type u} {Quotient : Type v}
+    {LockAux : Type w} {Message : Type z}
+    {Public : Type x} {Var : Public -> Type y}
+    {Witness : Public -> Type y}
+    (D : AppendixICNFReadoutData
+      PublicLock Quotient LockAux Message Public Var Witness) where
+  varDecidable : (Y : Public) -> DecidableEq (Var Y)
+  varOrder : (Y : Public) -> List (Var Y)
+  varOrder_nodup : ∀ Y : Public, (varOrder Y).Nodup
+  formulaUsesOnly :
+    ∀ {Y : Public}, D.support Y ->
+      ConcreteCNF.FormulaUsesOnly (D.formula Y) (varOrder Y)
+  satDecider : (Y : Public) -> RealCNFPNPSATDecider (Var Y)
+  programLengthBound : Nat
+  satDecider_programLength_le :
+    ∀ Y : Public, (satDecider Y).programLength ≤ programLengthBound
+
+namespace RealM4CNFUniformBitFixingData
+
+variable {PublicLock : Type u} {Quotient : Type v}
+variable {LockAux : Type w} {Message : Type z}
+variable {Public : Type x} {Var : Public -> Type y}
+variable {Witness : Public -> Type y}
+variable
+  {D : AppendixICNFReadoutData
+    PublicLock Quotient LockAux Message Public Var Witness}
+
+def bitFixingAssignment
+    (U : RealM4CNFUniformBitFixingData D) (Y : Public) :
+    ConcreteCNF.Assignment (Var Y) := by
+  letI := U.varDecidable Y
+  exact realCNFBitFixAssignment (U.satDecider Y) (D.formula Y) (U.varOrder Y)
+
+theorem bitFixingAssignment_satisfies
+    (U : RealM4CNFUniformBitFixingData D)
+    {Y : Public} (hY : D.support Y) :
+    ConcreteCNF.IsSatFormula (D.formula Y)
+      (U.bitFixingAssignment Y) := by
+  dsimp [bitFixingAssignment]
+  letI := U.varDecidable Y
+  exact
+    realM4_bitFixingAssignment_satisfies
+      D hY (U.satDecider Y) (U.varOrder Y)
+      (U.formulaUsesOnly hY) (U.varOrder_nodup Y)
+
+end RealM4CNFUniformBitFixingData
+
+theorem realM4_uniformBitFixingAssignment_satisfies
+    {PublicLock : Type u} {Quotient : Type v}
+    {LockAux : Type w} {Message : Type z}
+    {Public : Type x} {Var : Public -> Type y}
+    {Witness : Public -> Type y}
+    (D : AppendixICNFReadoutData
+      PublicLock Quotient LockAux Message Public Var Witness)
+    (U : RealM4CNFUniformBitFixingData D)
+    {Y : Public} (hY : D.support Y) :
+    ConcreteCNF.IsSatFormula (D.formula Y)
+      (U.bitFixingAssignment Y) :=
+  U.bitFixingAssignment_satisfies hY
+
+theorem realM4_uniformBitFixingReadout_eq_publicMessage_of_publicMessageInvariant
+    {PublicLock : Type u} {Quotient : Type v}
+    {LockAux : Type w} {Message : Type z}
+    {Public : Type x} {Var : Public -> Type y}
+    {Witness : Public -> Type y}
+    (D : AppendixICNFReadoutData
+      PublicLock Quotient LockAux Message Public Var Witness)
+    (U : RealM4CNFUniformBitFixingData D)
+    {publicMessage : PublicLock -> Message}
+    (hinvariant : D.core.PublicMessageInvariant publicMessage)
+    {Y : Public} (hY : D.support Y) :
+    D.projection Y (U.bitFixingAssignment Y) =
+      publicMessage (D.publicLock Y) := by
+  dsimp [RealM4CNFUniformBitFixingData.bitFixingAssignment]
+  letI := U.varDecidable Y
+  exact
+    realM4_bitFixingReadout_eq_publicMessage_of_publicMessageInvariant
+      D hinvariant hY (U.satDecider Y) (U.varOrder Y)
+      (U.formulaUsesOnly hY) (U.varOrder_nodup Y)
+
 def realCNFRestrictedFormulaCompilerProgramLength : Nat :=
   1
 
@@ -969,6 +1055,62 @@ theorem realCNFConstantDecoderKpolyAt_eq
       realCNFSelfReductionDecoderCost D :=
   rfl
 
+def realM4UniformSelfReductionDecoderCost
+    {PublicLock : Type u} {Quotient : Type v}
+    {LockAux : Type w} {Message : Type z}
+    {Public : Type x} {Var : Public -> Type y}
+    {Witness : Public -> Type y}
+    {D : AppendixICNFReadoutData
+      PublicLock Quotient LockAux Message Public Var Witness}
+    (U : RealM4CNFUniformBitFixingData D) : Nat :=
+  U.programLengthBound +
+    realCNFRestrictedFormulaCompilerProgramLength +
+      realCNFBitFixingDriverProgramLength +
+        realCNFReadoutProgramLength
+
+theorem realM4UniformSelfReductionDecoderCost_bounds_instance
+    {PublicLock : Type u} {Quotient : Type v}
+    {LockAux : Type w} {Message : Type z}
+    {Public : Type x} {Var : Public -> Type y}
+    {Witness : Public -> Type y}
+    {D : AppendixICNFReadoutData
+      PublicLock Quotient LockAux Message Public Var Witness}
+    (U : RealM4CNFUniformBitFixingData D) (Y : Public) :
+    realCNFSelfReductionDecoderCost (U.satDecider Y) ≤
+      realM4UniformSelfReductionDecoderCost U := by
+  unfold realCNFSelfReductionDecoderCost
+    realM4UniformSelfReductionDecoderCost
+  exact
+    Nat.add_le_add_right
+      (Nat.add_le_add_right
+        (Nat.add_le_add_right
+          (U.satDecider_programLength_le Y)
+          realCNFRestrictedFormulaCompilerProgramLength)
+        realCNFBitFixingDriverProgramLength)
+      realCNFReadoutProgramLength
+
+def realM4UniformConstantDecoderKpolyAt
+    {PublicLock : Type u} {Quotient : Type v}
+    {LockAux : Type w} {Message : Type z}
+    {Public : Type x} {Var : Public -> Type y}
+    {Witness : Public -> Type y}
+    {D : AppendixICNFReadoutData
+      PublicLock Quotient LockAux Message Public Var Witness}
+    (U : RealM4CNFUniformBitFixingData D) : Nat -> Nat :=
+  fun _targetBlocks => realM4UniformSelfReductionDecoderCost U
+
+theorem realM4UniformConstantDecoderKpolyAt_eq
+    {PublicLock : Type u} {Quotient : Type v}
+    {LockAux : Type w} {Message : Type z}
+    {Public : Type x} {Var : Public -> Type y}
+    {Witness : Public -> Type y}
+    {D : AppendixICNFReadoutData
+      PublicLock Quotient LockAux Message Public Var Witness}
+    (U : RealM4CNFUniformBitFixingData D) (targetBlocks : Nat) :
+    realM4UniformConstantDecoderKpolyAt U targetBlocks =
+      realM4UniformSelfReductionDecoderCost U :=
+  rfl
+
 structure RealCNFConstantDecoderRegime
     {Var : Type u} (F : CompressionLowerFramework)
     (D : RealCNFPNPSATDecider Var) where
@@ -985,6 +1127,40 @@ theorem realCNF_selfReductionUpperHypothesis_givenPNP
     {Var : Type u} {F : CompressionLowerFramework}
     (D : RealCNFPNPSATDecider Var)
     (R : RealCNFConstantDecoderRegime F D) :
+    SelfReductionUpperHypothesis F where
+  upperStrictlyBelowCompressionFloor := by
+    rw [R.kpolyAt_eq, R.etaTimes_eq]
+    exact R.floor_dominates_decoder
+
+structure RealM4UniformConstantDecoderRegime
+    {PublicLock : Type u} {Quotient : Type v}
+    {LockAux : Type w} {Message : Type z}
+    {Public : Type x} {Var : Public -> Type y}
+    {Witness : Public -> Type y}
+    {D : AppendixICNFReadoutData
+      PublicLock Quotient LockAux Message Public Var Witness}
+    (F : CompressionLowerFramework)
+    (U : RealM4CNFUniformBitFixingData D) where
+  eta : Nat
+  kpolyAt_eq : F.kpolyAt = realM4UniformConstantDecoderKpolyAt U
+  etaTimes_eq : F.etaTimes = realCNFLinearEtaTimes eta
+  floor_dominates_decoder :
+    realM4UniformSelfReductionDecoderCost U < eta * F.targetBlocks
+
+/-- Family-level real upper-side discharge, conditional on explicit P=NP SAT
+deciders and a uniform program-length bound for the Appendix I bit-fixing
+decoder family.  The real lower framework must still identify its `kpolyAt`
+with this uniform constant decoder cost. -/
+theorem realM4_uniformSelfReductionUpperHypothesis_givenPNP
+    {PublicLock : Type u} {Quotient : Type v}
+    {LockAux : Type w} {Message : Type z}
+    {Public : Type x} {Var : Public -> Type y}
+    {Witness : Public -> Type y}
+    {D : AppendixICNFReadoutData
+      PublicLock Quotient LockAux Message Public Var Witness}
+    {F : CompressionLowerFramework}
+    (U : RealM4CNFUniformBitFixingData D)
+    (R : RealM4UniformConstantDecoderRegime F U) :
     SelfReductionUpperHypothesis F where
   upperStrictlyBelowCompressionFloor := by
     rw [R.kpolyAt_eq, R.etaTimes_eq]
@@ -1044,10 +1220,16 @@ def realM4LiftLedger : List RealM4LiftLedgerRow := [
     note := "Given a public-message invariant, a finite variable cover, and an explicit SAT decider, CNF bit-fixing produces a satisfying assignment whose projection is the public message."
   },
   {
+    item := "uniformCNFBitFixingPackage"
+    status := .partialConstructionTransferred
+    checkedName := "realM4_uniformBitFixingReadout_eq_publicMessage_of_publicMessageInvariant"
+    note := "The family-level adapter is checked once Appendix I supplies variable orders, formula coverage, explicit SAT deciders, and a uniform program-length bound."
+  },
+  {
     item := "constantDecoderUpperInequality"
     status := .partialConstructionTransferred
-    checkedName := "realCNF_selfReductionUpperHypothesis_givenPNP"
-    note := "The fixed CNF bit-fixing decoder gives the formal upper inequality once the real lower framework identifies kpolyAt with this constant decoder cost."
+    checkedName := "realM4_uniformSelfReductionUpperHypothesis_givenPNP"
+    note := "The uniform CNF bit-fixing decoder gives the formal upper inequality once the real lower framework identifies kpolyAt with this constant decoder cost."
   },
   {
     item := "deterministicReadoutOnly"
@@ -1142,6 +1324,7 @@ theorem realM4LiftLedger_statuses_exact :
         RealM4LiftStatus.constructionTransferred,
         RealM4LiftStatus.constructionTransferred,
         RealM4LiftStatus.constructionTransferred,
+        RealM4LiftStatus.partialConstructionTransferred,
         RealM4LiftStatus.partialConstructionTransferred,
         RealM4LiftStatus.blockedByCounterexample,
         RealM4LiftStatus.openConstruction,
