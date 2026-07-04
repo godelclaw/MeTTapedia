@@ -78,6 +78,11 @@ set_option autoImplicit false
 #check realCNFBitFixAssignment_satisfies
 #check realM4_bitFixingAssignment_satisfies
 #check realM4_bitFixingReadout_eq_publicMessage_of_publicMessageInvariant
+#check RealM4CNFUniformBitFixingData
+#check RealM4CNFUniformBitFixingData.bitFixingAssignment
+#check RealM4CNFUniformBitFixingData.bitFixingAssignment_satisfies
+#check realM4_uniformBitFixingAssignment_satisfies
+#check realM4_uniformBitFixingReadout_eq_publicMessage_of_publicMessageInvariant
 #check realCNFRestrictedFormulaCompilerProgramLength
 #check realCNFBitFixingDriverProgramLength
 #check realCNFReadoutProgramLength
@@ -85,8 +90,14 @@ set_option autoImplicit false
 #check realCNFConstantDecoderKpolyAt
 #check realCNFLinearEtaTimes
 #check realCNFConstantDecoderKpolyAt_eq
+#check realM4UniformSelfReductionDecoderCost
+#check realM4UniformSelfReductionDecoderCost_bounds_instance
+#check realM4UniformConstantDecoderKpolyAt
+#check realM4UniformConstantDecoderKpolyAt_eq
 #check RealCNFConstantDecoderRegime
 #check realCNF_selfReductionUpperHypothesis_givenPNP
+#check RealM4UniformConstantDecoderRegime
+#check realM4_uniformSelfReductionUpperHypothesis_givenPNP
 #check RealM4LiftStatus
 #check RealM4LiftLedgerRow
 #check realM4LiftLedger
@@ -168,6 +179,11 @@ set_option autoImplicit false
 #print axioms realCNFBitFixAssignment_satisfies
 #print axioms realM4_bitFixingAssignment_satisfies
 #print axioms realM4_bitFixingReadout_eq_publicMessage_of_publicMessageInvariant
+#print axioms RealM4CNFUniformBitFixingData
+#print axioms RealM4CNFUniformBitFixingData.bitFixingAssignment
+#print axioms RealM4CNFUniformBitFixingData.bitFixingAssignment_satisfies
+#print axioms realM4_uniformBitFixingAssignment_satisfies
+#print axioms realM4_uniformBitFixingReadout_eq_publicMessage_of_publicMessageInvariant
 #print axioms realCNFRestrictedFormulaCompilerProgramLength
 #print axioms realCNFBitFixingDriverProgramLength
 #print axioms realCNFReadoutProgramLength
@@ -175,8 +191,14 @@ set_option autoImplicit false
 #print axioms realCNFConstantDecoderKpolyAt
 #print axioms realCNFLinearEtaTimes
 #print axioms realCNFConstantDecoderKpolyAt_eq
+#print axioms realM4UniformSelfReductionDecoderCost
+#print axioms realM4UniformSelfReductionDecoderCost_bounds_instance
+#print axioms realM4UniformConstantDecoderKpolyAt
+#print axioms realM4UniformConstantDecoderKpolyAt_eq
 #print axioms RealCNFConstantDecoderRegime
 #print axioms realCNF_selfReductionUpperHypothesis_givenPNP
+#print axioms RealM4UniformConstantDecoderRegime
+#print axioms realM4_uniformSelfReductionUpperHypothesis_givenPNP
 #print axioms RealM4LiftStatus
 #print axioms RealM4LiftLedgerRow
 #print axioms realM4LiftLedger
