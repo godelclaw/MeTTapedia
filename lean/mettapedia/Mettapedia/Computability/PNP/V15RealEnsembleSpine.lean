@@ -1679,6 +1679,30 @@ variable
     PublicLock Quotient LockAux Message Public Var Witness}
 variable {F : CompressionLowerFramework}
 
+/-- Build the explicit-P=NP upper discharge package from the real Appendix D
+D.7/D.8 locked-core obligations, instead of assuming a public-message
+invariant as an extra construction input.  The default message is used only on
+unsupported public locks. -/
+noncomputable def ofLockedRigidity
+    (defaultMessage : Message)
+    (lockSatisfiable : D.core.LockSatisfiable)
+    (lockedMessageRigidity : D.core.LockedMessageRigidity)
+    (uniformSupport : RealM4CNFUniformSupportData D)
+    (pnpDeciderFamily : RealM4ExplicitPNPDeciderFamily D)
+    (constantDecoderRegime :
+      RealM4UniformConstantDecoderRegime F
+        (uniformSupport.withPNPDecider pnpDeciderFamily)) :
+    RealM4SelfReductionUpperExplicitPNPDischarge D F where
+  publicMessage :=
+    D.core.publicMessageOfLockedRigidity
+      defaultMessage lockSatisfiable lockedMessageRigidity
+  publicMessageInvariant :=
+    D.core.publicMessageInvariant_of_lockSatisfiable_of_lockedMessageRigidity
+      defaultMessage lockSatisfiable lockedMessageRigidity
+  uniformSupport := uniformSupport
+  pnpDeciderFamily := pnpDeciderFamily
+  constantDecoderRegime := constantDecoderRegime
+
 def uniformBitFixing
     (S : RealM4SelfReductionUpperExplicitPNPDischarge D F) :
     RealM4CNFUniformBitFixingData D :=
@@ -1796,15 +1820,30 @@ theorem realM4_selfReductionUpperExplicitPNPDischarge_assignment_readout_cost_an
           S Y,
       RealM4SelfReductionUpperExplicitPNPDischarge.selfReductionUpper S⟩
 
+def realM4PublicMessageInvariantConstructionInputs : List String := [
+  "defaultMessageForUnsupportedLocks",
+  "lockSatisfiable",
+  "lockedMessageRigidity"
+]
+
+theorem realM4PublicMessageInvariantConstructionInputs_exact :
+    realM4PublicMessageInvariantConstructionInputs =
+      [ "defaultMessageForUnsupportedLocks",
+        "lockSatisfiable",
+        "lockedMessageRigidity" ] := by
+  rfl
+
 def realM4SelfReductionUpperDischargePrerequisites : List String := [
-  "publicMessageInvariant",
+  "lockSatisfiable",
+  "lockedMessageRigidity",
   "uniformCNFBitFixingPackage",
   "realCompressionLowerFramework"
 ]
 
 theorem realM4SelfReductionUpperDischargePrerequisites_exact :
     realM4SelfReductionUpperDischargePrerequisites =
-      [ "publicMessageInvariant",
+      [ "lockSatisfiable",
+        "lockedMessageRigidity",
         "uniformCNFBitFixingPackage",
         "realCompressionLowerFramework" ] := by
   rfl
@@ -1819,14 +1858,16 @@ theorem realM4SelfReductionUpperConditionalInputs_exact :
   rfl
 
 def realM4SelfReductionUpperExplicitPNPConstructionInputs : List String := [
-  "publicMessageInvariant",
+  "lockSatisfiable",
+  "lockedMessageRigidity",
   "uniformCNFSupportData",
   "realCompressionLowerFramework"
 ]
 
 theorem realM4SelfReductionUpperExplicitPNPConstructionInputs_exact :
     realM4SelfReductionUpperExplicitPNPConstructionInputs =
-      [ "publicMessageInvariant",
+      [ "lockSatisfiable",
+        "lockedMessageRigidity",
         "uniformCNFSupportData",
         "realCompressionLowerFramework" ] := by
   rfl
@@ -2314,8 +2355,8 @@ def realM4LiftLedger : List RealM4LiftLedgerRow := [
   {
     item := "selfReductionUpperDischargePackage"
     status := .partialConstructionTransferred
-    checkedName := "realM4_selfReductionUpperExplicitPNPDischarge_assignment_readout_cost_and_upper"
-    note := "Bundles the public-message invariant, construction-side uniform support, explicit P=NP decider family, and constant decoder regime into the real upper-side discharge package."
+    checkedName := "RealM4SelfReductionUpperExplicitPNPDischarge.ofLockedRigidity"
+    note := "D.7 and D.8 construct the public-message invariant inside the explicit-P=NP upper package; the package still needs uniform CNF support and the constant decoder regime."
   },
   {
     item := "deterministicReadoutOnly"
@@ -2325,9 +2366,21 @@ def realM4LiftLedger : List RealM4LiftLedgerRow := [
   },
   {
     item := "publicMessageInvariant"
+    status := .partialConstructionTransferred
+    checkedName := "AppendixDLockedCore.publicMessageInvariant_of_lockSatisfiable_of_lockedMessageRigidity"
+    note := "D.7 lock satisfiability plus D.8 locked-message rigidity construct the public-message invariant; real M4 still has to prove D.7 and D.8 for its locked core."
+  },
+  {
+    item := "lockSatisfiable"
     status := .openConstruction
-    checkedName := "lockedCorePublicMessageInvariant_lab_guardrails"
-    note := "A real M4 lock needs a public-message invariant or equivalent cross-completion rigidity theorem."
+    checkedName := "AppendixDLockedCore.LockSatisfiable"
+    note := "The real M4 locked core still has to prove Appendix D.7: every supported public lock has an accepted locked completion."
+  },
+  {
+    item := "lockedMessageRigidity"
+    status := .openConstruction
+    checkedName := "AppendixDLockedCore.LockedMessageRigidity"
+    note := "The real M4 locked core still has to prove Appendix D.8: all accepted completions over one supported public lock carry the same message."
   },
   {
     item := "noPublicTargetTags"
@@ -2432,6 +2485,8 @@ theorem realM4LiftLedger_statuses_exact :
         RealM4LiftStatus.partialConstructionTransferred,
         RealM4LiftStatus.partialConstructionTransferred,
         RealM4LiftStatus.blockedByCounterexample,
+        RealM4LiftStatus.partialConstructionTransferred,
+        RealM4LiftStatus.openConstruction,
         RealM4LiftStatus.openConstruction,
         RealM4LiftStatus.partialConstructionTransferred,
         RealM4LiftStatus.openConstruction,
@@ -2451,7 +2506,8 @@ theorem realM4LiftLedger_statuses_exact :
   rfl
 
 def realM4OpenConstructionItems : List String := [
-  "publicMessageInvariant",
+  "lockSatisfiable",
+  "lockedMessageRigidity",
   "noPublicTargetTags",
   "atomCompleteness",
   "gaugeFaithfulness",
@@ -2464,7 +2520,8 @@ def realM4OpenConstructionItems : List String := [
 
 theorem realM4OpenConstructionItems_exact :
     realM4OpenConstructionItems =
-      [ "publicMessageInvariant",
+      [ "lockSatisfiable",
+        "lockedMessageRigidity",
         "noPublicTargetTags",
         "atomCompleteness",
         "gaugeFaithfulness",

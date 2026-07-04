@@ -143,6 +143,43 @@ theorem lockedMessageSpec_unique_of_lockSatisfiable
   rcases hsat hY with ⟨L⟩
   exact (hmsg L).symm.trans (hmsg' L)
 
+/-- Public message selected from D.7 satisfiability and D.8 rigidity.
+Unsupported locks receive the supplied default value; the invariant below only
+uses supported locks. -/
+noncomputable def publicMessageOfLockedRigidity
+    (C : AppendixDLockedCore PublicLock Quotient LockAux Message)
+    (defaultMessage : Message)
+    (hsat : C.LockSatisfiable)
+    (hrigid : C.LockedMessageRigidity) :
+    PublicLock → Message := by
+  classical
+  exact fun Y =>
+    if hY : C.support Y then
+      Classical.choose
+        (C.exists_lockedMessageSpec_of_lockSatisfiable_of_lockedMessageRigidity
+          hsat hrigid hY)
+    else
+      defaultMessage
+
+/-- D.7 plus D.8 constructs the public-message invariant used by the real
+single-message and SAT-search adapters.  The theorem does not prove D.8; for
+M4, locked-message rigidity remains the construction obligation. -/
+theorem publicMessageInvariant_of_lockSatisfiable_of_lockedMessageRigidity
+    (C : AppendixDLockedCore PublicLock Quotient LockAux Message)
+    (defaultMessage : Message)
+    (hsat : C.LockSatisfiable)
+    (hrigid : C.LockedMessageRigidity) :
+    C.PublicMessageInvariant
+      (C.publicMessageOfLockedRigidity defaultMessage hsat hrigid) := by
+  intro Y hY L
+  classical
+  unfold publicMessageOfLockedRigidity
+  rw [dif_pos hY]
+  exact
+    Classical.choose_spec
+      (C.exists_lockedMessageSpec_of_lockSatisfiable_of_lockedMessageRigidity
+        hsat hrigid hY) L
+
 /-- Exact D.8 obstruction: two locked completions with different messages refute
 locked-message rigidity. -/
 theorem not_lockedMessageRigidity_of_distinct_completions
