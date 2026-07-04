@@ -2,6 +2,7 @@ import Mettapedia.GraphTheory.FourColor.Goal
 import Mettapedia.GraphTheory.FourColor.FrontierRefutations
 import Mettapedia.GraphTheory.FourColor.GoertzelLemma818ClosedCollarS2Bridge
 import Mettapedia.GraphTheory.FourColor.GoertzelLemma818TwoLayerEscape
+import Mettapedia.GraphTheory.FourColor.GoertzelLemma818TwoSidedAvoidance
 import Mettapedia.GraphTheory.FourColor.PillarASmallerSpace
 
 /-!
@@ -22,6 +23,7 @@ open Theorem49PositiveGeometricSourceReplacementRegression
 open GoertzelLemma818ClosedCollarBridgeTarget
 open GoertzelLemma818ClosedCollarS2Bridge
 open GoertzelLemma818TwoLayerEscape
+open GoertzelLemma818TwoSidedAvoidance
 
 /-! ## Section 9.2 closed-collar bridge -/
 
@@ -38,6 +40,10 @@ theorem section92S2BridgeLemmaTarget_audit :
 theorem section92Step4TwoLayerCounterexampleClass_audit :
     Section92Step4TwoLayerCounterexampleClass :=
   section92Step4TwoLayerCounterexampleClass
+
+theorem section92Step4TwoSidedAvoidanceCounterexampleClass_audit :
+    Section92Step4TwoSidedAvoidanceCounterexampleClass :=
+  section92Step4TwoSidedAvoidanceCounterexampleClass
 
 /-! ## Corrected need-based Pillar-A audit hook -/
 

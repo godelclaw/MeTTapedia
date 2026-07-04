@@ -144,6 +144,7 @@ def audit_input_fiber(
     inner_word: tuple[GadgetType, ...],
     input_key: tuple[str, ...],
     tau_states: list[tuple[str, ...]],
+    require_two_sided_avoidance: bool,
 ) -> dict[str, object]:
     outer_sequences = lab.compatible_local_sequences_for_input(
         outer_word, tau_states, input_key
@@ -160,6 +161,8 @@ def audit_input_fiber(
     ambient_word = outer_word + inner_word
 
     certified_outer_moves = 0
+    certified_outer_moves_touching_inner_boundary = 0
+    certified_outer_moves_avoiding_full_interface = 0
     ambient_lifts = 0
     strict_escapes = 0
     outer_boundary_violations = 0
@@ -173,8 +176,15 @@ def audit_input_fiber(
             for component in lab.chain_pair_components(outer_word, outer_sequence, pair):
                 if component & input_refs:
                     continue
-                if not component & output_refs:
-                    continue
+                touches_output = bool(component & output_refs)
+                if require_two_sided_avoidance:
+                    if touches_output:
+                        continue
+                    certified_outer_moves_avoiding_full_interface += 1
+                else:
+                    if not touches_output:
+                        continue
+                    certified_outer_moves_touching_inner_boundary += 1
                 target_outer_colors = switched_outer_tuple_from_component(
                     outer_word, outer_colors, pair, component
                 )
@@ -268,7 +278,13 @@ def audit_input_fiber(
         "inner_word": list(word_names(inner_word)),
         "outer_input_key": list(input_key),
         "outer_state_count": len(outer_sequences),
-        "certified_outer_moves_touching_inner_boundary": certified_outer_moves,
+        "certified_outer_moves_tested": certified_outer_moves,
+        "certified_outer_moves_touching_inner_boundary": (
+            certified_outer_moves_touching_inner_boundary
+        ),
+        "certified_outer_moves_avoiding_full_interface": (
+            certified_outer_moves_avoiding_full_interface
+        ),
         "ambient_lifts_tested": ambient_lifts,
         "strict_escape_count": strict_escapes,
         "outer_boundary_violation_count": outer_boundary_violations,
@@ -307,8 +323,16 @@ def refresh_summary(report: dict[str, object]) -> None:
         "remaining_fiber_count": max(0, planned - len(fibers)),
         "complete": len(fibers) == planned,
         "outer_state_count": sum(int(fiber.get("outer_state_count", 0)) for fiber in fibers),
+        "certified_outer_moves_tested": sum(
+            int(fiber.get("certified_outer_moves_tested", 0))
+            for fiber in fibers
+        ),
         "certified_outer_moves_touching_inner_boundary": sum(
             int(fiber.get("certified_outer_moves_touching_inner_boundary", 0))
+            for fiber in fibers
+        ),
+        "certified_outer_moves_avoiding_full_interface": sum(
+            int(fiber.get("certified_outer_moves_avoiding_full_interface", 0))
             for fiber in fibers
         ),
         "ambient_lifts_tested": sum(
@@ -334,19 +358,31 @@ def new_report(
     outer_lengths: list[int],
     inner_lengths: list[int],
     tau_state_count: int,
+    require_two_sided_avoidance: bool,
 ) -> dict[str, object]:
     outer_words = slice_words(outer_lengths)
     inner_words = slice_words(inner_lengths)
     planned = len(outer_words) * len(inner_words) * (len(COLORS) ** 4)
     report: dict[str, object] = {
-        "schema": "fourcolor-section-9-2-two-layer-escape-l2-v1",
-        "source": "Section 9.2 Step 4 two-layer ambient execution probe",
+        "schema": (
+            "fourcolor-section-9-2-two-layer-full-interface-l2-v1"
+            if require_two_sided_avoidance
+            else "fourcolor-section-9-2-two-layer-escape-l2-v1"
+        ),
+        "source": (
+            "Section 9.2 Step 4 two-layer full-interface ambient execution probe"
+            if require_two_sided_avoidance
+            else "Section 9.2 Step 4 two-layer ambient execution probe"
+        ),
         "model": {
             "outer_layer": "tau/mirror chain used as the collar under test",
             "inner_layer": "one downstream tau/mirror chain sharing the outer layer output interface",
             "ambient_rule": "serial composition of outer and inner chains",
             "certified_move_rule": (
-                "single outer-chain Kempe component disjoint from the outer input stubs "
+                "single outer-chain Kempe component disjoint from both the outer input "
+                "stubs and shared output interface"
+                if require_two_sided_avoidance
+                else "single outer-chain Kempe component disjoint from the outer input stubs "
                 "and touching the shared output interface"
             ),
             "ambient_execution_rule": (
@@ -385,13 +421,19 @@ def run_two_layer_l2(
     outer_lengths: list[int],
     inner_lengths: list[int],
     continue_after_counterexample: bool,
+    require_two_sided_avoidance: bool,
 ) -> dict[str, object]:
     tau_states = proper_states(TAU)
     if resume and output is not None and output.exists():
         report = json.loads(output.read_text())
         report.setdefault("fibers", [])
     else:
-        report = new_report(outer_lengths, inner_lengths, len(tau_states))
+        report = new_report(
+            outer_lengths,
+            inner_lengths,
+            len(tau_states),
+            require_two_sided_avoidance,
+        )
 
     fibers = report["fibers"]
     assert isinstance(fibers, list)
@@ -404,7 +446,13 @@ def run_two_layer_l2(
                 run_id = run_id_for(outer_word, inner_word, input_key)
                 if run_id in done:
                     continue
-                fiber = audit_input_fiber(outer_word, inner_word, input_key, tau_states)
+                fiber = audit_input_fiber(
+                    outer_word,
+                    inner_word,
+                    input_key,
+                    tau_states,
+                    require_two_sided_avoidance,
+                )
                 fibers.append(fiber)
                 done.add(run_id)
                 refresh_summary(report)
@@ -445,6 +493,11 @@ def main() -> None:
         action="store_true",
         help="finish the selected finite slice after the first counterexample",
     )
+    parser.add_argument(
+        "--two-sided",
+        action="store_true",
+        help="test only certified outer moves avoiding both input and output stubs",
+    )
     args = parser.parse_args()
 
     report = run_two_layer_l2(
@@ -453,6 +506,7 @@ def main() -> None:
         outer_lengths=args.outer_lengths,
         inner_lengths=args.inner_lengths,
         continue_after_counterexample=args.continue_after_counterexample,
+        require_two_sided_avoidance=args.two_sided,
     )
     print(json.dumps(report, indent=2, sort_keys=True))
     summary = report.get("summary", {})
