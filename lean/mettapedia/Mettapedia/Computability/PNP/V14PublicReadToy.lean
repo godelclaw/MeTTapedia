@@ -65,7 +65,7 @@ structure V14ToyWitness where
 deriving DecidableEq, Repr
 
 def v14ToyGaugeEq (W : V14ToyWitness) : Prop :=
-  W.quotient = W.rawWitness ^^ W.hiddenGauge
+  W.quotient = (W.rawWitness ^^ W.hiddenGauge)
 
 def v14ToyLockedVerifier (Y : V14ToyPublic) (W : V14ToyWitness) : Prop :=
   v14ToyGaugeEq W ∧ W.message = v14ToyMessageOfPublic Y
@@ -103,6 +103,318 @@ theorem v14ToyHiddenGaugeProduct
     (gamma : Bool) :
     v14ToyGaugeProbability (fun g => g = gamma) = (1 / 2 : Rat) := by
   cases gamma <;> norm_num [v14ToyGaugeProbability]
+
+/-! ## P=NP-conditional self-reduction model for the toy -/
+
+/--
+Restricted SAT instances for the toy bit-fixing search.  This is the toy
+analogue of the manuscript's restricted CNF formulas `F[a]`: each constructor
+fixes a longer prefix in the canonical witness-variable order
+`rawWitness, hiddenGauge, quotient, message`.
+-/
+inductive V14ToyRestrictedFormula where
+  | unrestricted (Y : V14ToyPublic)
+  | withRaw (Y : V14ToyPublic) (rawWitness : Bool)
+  | withRawHidden
+      (Y : V14ToyPublic) (rawWitness hiddenGauge : Bool)
+  | withRawHiddenQuotient
+      (Y : V14ToyPublic) (rawWitness hiddenGauge quotient : Bool)
+  | complete
+      (Y : V14ToyPublic)
+      (rawWitness hiddenGauge quotient message : Bool)
+deriving DecidableEq, Repr
+
+def v14ToyRestrictedFormulaSatisfiable :
+    V14ToyRestrictedFormula -> Prop
+  | .unrestricted Y =>
+      ∃ W, v14ToyLockedVerifier Y W
+  | .withRaw Y rawWitness =>
+      ∃ W,
+        v14ToyLockedVerifier Y W ∧
+          W.rawWitness = rawWitness
+  | .withRawHidden Y rawWitness hiddenGauge =>
+      ∃ W,
+        v14ToyLockedVerifier Y W ∧
+          W.rawWitness = rawWitness ∧
+            W.hiddenGauge = hiddenGauge
+  | .withRawHiddenQuotient Y rawWitness hiddenGauge quotient =>
+      ∃ W,
+        v14ToyLockedVerifier Y W ∧
+          W.rawWitness = rawWitness ∧
+            W.hiddenGauge = hiddenGauge ∧
+              W.quotient = quotient
+  | .complete Y rawWitness hiddenGauge quotient message =>
+      ∃ W,
+        v14ToyLockedVerifier Y W ∧
+          W.rawWitness = rawWitness ∧
+            W.hiddenGauge = hiddenGauge ∧
+              W.quotient = quotient ∧
+                W.message = message
+
+/--
+Explicit P=NP-side hypothesis object for the toy.  It records a fixed
+polynomial-time SAT decider for all restricted toy instances, together with
+the source length and clock exponent that are charged to the constant decoder.
+The generic universal-machine semantics of `Kpoly` is not formalized here;
+the toy uses these two natural-number fields as its concrete constant decoder
+cost model.
+-/
+structure V14ToyPNPSATDecider where
+  decideSat : V14ToyRestrictedFormula -> Bool
+  decidesSat :
+    ∀ F, decideSat F = true ↔ v14ToyRestrictedFormulaSatisfiable F
+  programLength : Nat
+  clockExponent : Nat
+  clockExponent_pos : 0 < clockExponent
+
+theorem v14ToyRestricted_withRawHiddenQuotient_satisfiable_iff
+    (Y : V14ToyPublic) (rawWitness hiddenGauge quotient : Bool) :
+    v14ToyRestrictedFormulaSatisfiable
+        (.withRawHiddenQuotient Y rawWitness hiddenGauge quotient) ↔
+      quotient = (rawWitness ^^ hiddenGauge) := by
+  constructor
+  · intro hSat
+    rcases hSat with ⟨W, hVerifier, hRaw, hHidden, hQuotient⟩
+    rcases hVerifier with ⟨hGauge, _hMessage⟩
+    rw [← hQuotient, hGauge, hRaw, hHidden]
+  · intro hQuotient
+    refine
+      ⟨{ rawWitness := rawWitness
+         hiddenGauge := hiddenGauge
+         quotient := quotient
+         message := v14ToyMessageOfPublic Y },
+        ?_⟩
+    simp [v14ToyLockedVerifier, v14ToyGaugeEq, hQuotient]
+
+theorem v14ToyRestricted_complete_satisfiable_iff
+    (Y : V14ToyPublic)
+    (rawWitness hiddenGauge quotient message : Bool) :
+    v14ToyRestrictedFormulaSatisfiable
+        (.complete Y rawWitness hiddenGauge quotient message) ↔
+      quotient = (rawWitness ^^ hiddenGauge) ∧
+        message = v14ToyMessageOfPublic Y := by
+  constructor
+  · intro hSat
+    rcases hSat with
+      ⟨W, hVerifier, hRaw, hHidden, hQuotient, hMessageFixed⟩
+    rcases hVerifier with ⟨hGauge, hMessage⟩
+    constructor
+    · rw [← hQuotient, hGauge, hRaw, hHidden]
+    · rw [← hMessageFixed, hMessage]
+  · intro h
+    refine
+      ⟨{ rawWitness := rawWitness
+         hiddenGauge := hiddenGauge
+         quotient := quotient
+         message := message },
+        ?_⟩
+    simp [v14ToyLockedVerifier, v14ToyGaugeEq, h.1, h.2]
+
+def v14ToyBitFixRaw
+    (D : V14ToyPNPSATDecider) (Y : V14ToyPublic) : Bool :=
+  if D.decideSat (.withRaw Y false) then false else true
+
+def v14ToyBitFixHidden
+    (D : V14ToyPNPSATDecider) (Y : V14ToyPublic)
+    (rawWitness : Bool) : Bool :=
+  if D.decideSat (.withRawHidden Y rawWitness false) then false else true
+
+def v14ToyBitFixQuotient
+    (D : V14ToyPNPSATDecider) (Y : V14ToyPublic)
+    (rawWitness hiddenGauge : Bool) : Bool :=
+  if D.decideSat
+      (.withRawHiddenQuotient Y rawWitness hiddenGauge false)
+    then false
+    else true
+
+def v14ToyBitFixMessage
+    (D : V14ToyPNPSATDecider) (Y : V14ToyPublic)
+    (rawWitness hiddenGauge quotient : Bool) : Bool :=
+  if D.decideSat
+      (.complete Y rawWitness hiddenGauge quotient false)
+    then false
+    else true
+
+theorem v14ToyBitFixQuotient_satisfiable
+    (D : V14ToyPNPSATDecider) (Y : V14ToyPublic)
+    (rawWitness hiddenGauge : Bool) :
+    v14ToyRestrictedFormulaSatisfiable
+      (.withRawHiddenQuotient Y rawWitness hiddenGauge
+        (v14ToyBitFixQuotient D Y rawWitness hiddenGauge)) := by
+  unfold v14ToyBitFixQuotient
+  by_cases hDec :
+      D.decideSat
+          (.withRawHiddenQuotient Y rawWitness hiddenGauge false) =
+        true
+  · simp [hDec]
+    exact (D.decidesSat _).mp hDec
+  · simp [hDec]
+    rw [v14ToyRestricted_withRawHiddenQuotient_satisfiable_iff]
+    have hNotSat :
+        ¬ v14ToyRestrictedFormulaSatisfiable
+          (.withRawHiddenQuotient Y rawWitness hiddenGauge false) := by
+      intro hSat
+      exact hDec ((D.decidesSat _).mpr hSat)
+    rw [v14ToyRestricted_withRawHiddenQuotient_satisfiable_iff] at hNotSat
+    cases rawWitness <;> cases hiddenGauge <;> simp at hNotSat ⊢
+
+theorem v14ToyBitFixMessage_satisfiable
+    (D : V14ToyPNPSATDecider) (Y : V14ToyPublic)
+    (rawWitness hiddenGauge quotient : Bool)
+    (hPrefix :
+      v14ToyRestrictedFormulaSatisfiable
+        (.withRawHiddenQuotient Y rawWitness hiddenGauge quotient)) :
+    v14ToyRestrictedFormulaSatisfiable
+      (.complete Y rawWitness hiddenGauge quotient
+        (v14ToyBitFixMessage D Y rawWitness hiddenGauge quotient)) := by
+  unfold v14ToyBitFixMessage
+  by_cases hDec :
+      D.decideSat
+          (.complete Y rawWitness hiddenGauge quotient false) =
+        true
+  · simp [hDec]
+    exact (D.decidesSat _).mp hDec
+  · simp [hDec]
+    rw [v14ToyRestricted_complete_satisfiable_iff]
+    have hNotSat :
+        ¬ v14ToyRestrictedFormulaSatisfiable
+          (.complete Y rawWitness hiddenGauge quotient false) := by
+      intro hSat
+      exact hDec ((D.decidesSat _).mpr hSat)
+    have hQuotient :
+        quotient = (rawWitness ^^ hiddenGauge) :=
+      (v14ToyRestricted_withRawHiddenQuotient_satisfiable_iff
+        Y rawWitness hiddenGauge quotient).mp hPrefix
+    have hMessageNotFalse :
+        ¬ false = v14ToyMessageOfPublic Y := by
+      intro hMessageFalse
+      exact hNotSat
+        ((v14ToyRestricted_complete_satisfiable_iff
+          Y rawWitness hiddenGauge quotient false).mpr
+          ⟨hQuotient, hMessageFalse⟩)
+    constructor
+    · exact hQuotient
+    · cases hMessage : v14ToyMessageOfPublic Y
+      · exact False.elim (hMessageNotFalse (by simp [hMessage]))
+      · rfl
+
+def v14ToySelfReductionWitness
+    (D : V14ToyPNPSATDecider) (Y : V14ToyPublic) : V14ToyWitness :=
+  let rawWitness := v14ToyBitFixRaw D Y
+  let hiddenGauge := v14ToyBitFixHidden D Y rawWitness
+  let quotient := v14ToyBitFixQuotient D Y rawWitness hiddenGauge
+  let message := v14ToyBitFixMessage D Y rawWitness hiddenGauge quotient
+  { rawWitness := rawWitness
+    hiddenGauge := hiddenGauge
+    quotient := quotient
+    message := message }
+
+theorem v14ToySelfReductionWitness_satisfies
+    (D : V14ToyPNPSATDecider) (Y : V14ToyPublic) :
+    v14ToyLockedVerifier Y (v14ToySelfReductionWitness D Y) := by
+  let rawWitness := v14ToyBitFixRaw D Y
+  let hiddenGauge := v14ToyBitFixHidden D Y rawWitness
+  let quotient := v14ToyBitFixQuotient D Y rawWitness hiddenGauge
+  let message := v14ToyBitFixMessage D Y rawWitness hiddenGauge quotient
+  have hPrefix :
+      v14ToyRestrictedFormulaSatisfiable
+        (.withRawHiddenQuotient Y rawWitness hiddenGauge quotient) :=
+    v14ToyBitFixQuotient_satisfiable D Y rawWitness hiddenGauge
+  have hComplete :
+      v14ToyRestrictedFormulaSatisfiable
+        (.complete Y rawWitness hiddenGauge quotient message) :=
+    v14ToyBitFixMessage_satisfiable
+      D Y rawWitness hiddenGauge quotient hPrefix
+  have hFields :
+      quotient = (rawWitness ^^ hiddenGauge) ∧
+        message = v14ToyMessageOfPublic Y :=
+    (v14ToyRestricted_complete_satisfiable_iff
+      Y rawWitness hiddenGauge quotient message).mp hComplete
+  change
+    v14ToyLockedVerifier Y
+      { rawWitness := rawWitness
+        hiddenGauge := hiddenGauge
+        quotient := quotient
+        message := message }
+  exact hFields
+
+theorem v14ToySelfReduction_readout_eq_message
+    (D : V14ToyPNPSATDecider) (Y : V14ToyPublic) :
+    v14ToyMessageReadout (v14ToySelfReductionWitness D Y) =
+      v14ToyMessageOfPublic Y :=
+  (v14ToySelfReductionWitness_satisfies D Y).2
+
+theorem v14ToySelfReduction_readout_eq_validWitness_readout
+    (D : V14ToyPNPSATDecider) (Y : V14ToyPublic) (W : V14ToyWitness)
+    (hW : v14ToyLockedVerifier Y W) :
+    v14ToyMessageReadout (v14ToySelfReductionWitness D Y) =
+      v14ToyMessageReadout W :=
+  v14ToyVerifier_singleMessage Y
+    (v14ToySelfReductionWitness D Y) W
+    (v14ToySelfReductionWitness_satisfies D Y) hW
+
+def v14ToyRestrictedFormulaCompilerProgramLength : Nat :=
+  1
+
+def v14ToySelfReductionDriverProgramLength : Nat :=
+  1
+
+def v14ToyReadoutProgramLength : Nat :=
+  1
+
+def v14ToySelfReductionDecoderCost
+    (D : V14ToyPNPSATDecider) : Nat :=
+  D.programLength +
+    v14ToyRestrictedFormulaCompilerProgramLength +
+      v14ToySelfReductionDriverProgramLength +
+        v14ToyReadoutProgramLength
+
+def v14ToyConstantDecoderKpolyAt
+    (D : V14ToyPNPSATDecider) : Nat -> Nat :=
+  fun _targetBlocks => v14ToySelfReductionDecoderCost D
+
+def v14ToyLinearEtaTimes (eta : Nat) : Nat -> Nat :=
+  fun targetBlocks => eta * targetBlocks
+
+theorem v14ToyConstantDecoderKpolyAt_eq
+    (D : V14ToyPNPSATDecider) (targetBlocks : Nat) :
+    v14ToyConstantDecoderKpolyAt D targetBlocks =
+      v14ToySelfReductionDecoderCost D :=
+  rfl
+
+theorem v14Toy_constantDecoder_lt_linearFloor
+    (D : V14ToyPNPSATDecider) {eta targetBlocks : Nat}
+    (hFloor :
+      v14ToySelfReductionDecoderCost D < eta * targetBlocks) :
+    v14ToyConstantDecoderKpolyAt D targetBlocks <
+      v14ToyLinearEtaTimes eta targetBlocks := by
+  simpa [v14ToyConstantDecoderKpolyAt, v14ToyLinearEtaTimes] using hFloor
+
+/--
+Concrete target-block regime for the toy upper side: the lower framework's
+abstract `kpolyAt` is identified with the constant self-reduction decoder cost,
+and its abstract `etaTimes` is identified with the linear floor `eta * t`.
+-/
+structure V14ToyConstantDecoderRegime
+    (F : CompressionLowerFramework) (D : V14ToyPNPSATDecider) where
+  eta : Nat
+  kpolyAt_eq : F.kpolyAt = v14ToyConstantDecoderKpolyAt D
+  etaTimes_eq : F.etaTimes = v14ToyLinearEtaTimes eta
+  floor_dominates_decoder :
+    v14ToySelfReductionDecoderCost D < eta * F.targetBlocks
+
+/--
+The construction-side discharge of `SelfReductionUpperHypothesis` for the toy,
+given the explicit P=NP SAT decider object and the concrete constant-vs-linear
+target-block regime.  This is only the P=NP-conditional upper side.
+-/
+theorem v14Toy_selfReductionUpperHypothesis_givenPNP
+    {F : CompressionLowerFramework} (D : V14ToyPNPSATDecider)
+    (R : V14ToyConstantDecoderRegime F D) :
+    SelfReductionUpperHypothesis F where
+  upperStrictlyBelowCompressionFloor := by
+    rw [R.kpolyAt_eq, R.etaTimes_eq]
+    exact R.floor_dominates_decoder
 
 /-! ## Public-read vocabulary and quotient gauge faithfulness -/
 
