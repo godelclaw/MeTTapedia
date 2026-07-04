@@ -1,0 +1,356 @@
+import Mettapedia.Computability.PNP.PNPv13LockedCoreLabCanaries
+import Mettapedia.Computability.PNP.V13ConditionalClash
+import Mettapedia.Computability.PNP.V13RealRungOneLinear
+
+/-!
+# PNP v15 real ensemble spine
+
+This module starts the real-ensemble lift beyond the v14 toy endpoint.  It
+records the manuscript-facing single-message SAT spine as an interface over a
+public instance, hidden witness, verifier, fixed public message, and witness
+readout.  The checked inhabitant below is the real v13 linear public surface:
+the full public instance `(A, A x)` fixes the target coordinate and any valid
+witness reads the same message.
+
+This is not yet the full M4 SAT ensemble.  The ledger at the end records the
+remaining construction obligations separately from the four irreducible
+mathematical inputs.
+-/
+
+namespace Mettapedia.Computability.PNP
+
+set_option autoImplicit false
+
+universe u v w
+
+/-- Real single-message SAT spine: every supported world supplies a public
+instance and a hidden witness; every verifier-valid witness reads the fixed
+message of that public instance. -/
+structure RealSingleMessageSATSpine
+    (World : Type u) (Public : Type v) (Witness : Type w) where
+  publicInput : World -> Public
+  witnessOfWorld : World -> Witness
+  verifier : Public -> Witness -> Prop
+  messageOfPublic : Public -> Bool
+  witnessReadout : Witness -> Bool
+  target : World -> Bool
+  worldWitnessValid :
+    ∀ omega, verifier (publicInput omega) (witnessOfWorld omega)
+  readout_eq_message_of_valid :
+    ∀ {Y W}, verifier Y W -> witnessReadout W = messageOfPublic Y
+  target_eq_message :
+    ∀ omega, target omega = messageOfPublic (publicInput omega)
+
+namespace RealSingleMessageSATSpine
+
+variable {World : Type u} {Public : Type v} {Witness : Type w}
+
+/-- The fixed public message makes the target single-valued over the full
+public instance. -/
+theorem singleMessage
+    (S : RealSingleMessageSATSpine World Public Witness) :
+    ∀ w0 w1, S.publicInput w0 = S.publicInput w1 ->
+      S.target w0 = S.target w1 := by
+  intro w0 w1 hPublic
+  calc
+    S.target w0 = S.messageOfPublic (S.publicInput w0) :=
+      S.target_eq_message w0
+    _ = S.messageOfPublic (S.publicInput w1) := by rw [hPublic]
+    _ = S.target w1 := (S.target_eq_message w1).symm
+
+/-- Any two verifier-valid hidden witnesses over one public instance have the
+same readout. -/
+theorem readout_eq_of_valid
+    (S : RealSingleMessageSATSpine World Public Witness)
+    {Y : Public} {W W' : Witness}
+    (hW : S.verifier Y W) (hW' : S.verifier Y W') :
+    S.witnessReadout W = S.witnessReadout W' := by
+  calc
+    S.witnessReadout W = S.messageOfPublic Y :=
+      S.readout_eq_message_of_valid hW
+    _ = S.witnessReadout W' :=
+      (S.readout_eq_message_of_valid hW').symm
+
+/-- The canonical hidden witness attached to a world reads the target bit. -/
+theorem worldWitness_readout_eq_target
+    (S : RealSingleMessageSATSpine World Public Witness)
+    (omega : World) :
+    S.witnessReadout (S.witnessOfWorld omega) = S.target omega := by
+  calc
+    S.witnessReadout (S.witnessOfWorld omega) =
+        S.messageOfPublic (S.publicInput omega) :=
+      S.readout_eq_message_of_valid (S.worldWitnessValid omega)
+    _ = S.target omega := (S.target_eq_message omega).symm
+
+end RealSingleMessageSATSpine
+
+/-! ## Real v13 linear surface as a single-message spine -/
+
+def v13RealLinearBit (a : ZMod 2) : Bool :=
+  decide (a = 1)
+
+def v13RealLinearVerifier {m : Nat}
+    (Y : V13RealLinearPublic m) (W : F2Vec m) : Prop :=
+  Y.A.toEquiv W = Y.b
+
+def v13RealLinearWitnessReadout {m : Nat}
+    (i₀ : Fin m) (W : F2Vec m) : Bool :=
+  v13RealLinearBit (W i₀)
+
+def v13RealLinearMessageOfPublic {m : Nat}
+    (i₀ : Fin m) (Y : V13RealLinearPublic m) : Bool :=
+  v13RealLinearBit (Y.A.toEquiv.symm Y.b i₀)
+
+def v13RealLinearTargetBit {m : Nat}
+    (i₀ : Fin m) (omega : V13RealLinearWorld m) : Bool :=
+  v13RealLinearBit (v13RealLinearTarget i₀ omega)
+
+theorem v13RealLinearVerifier_readout_eq_message {m : Nat}
+    (i₀ : Fin m) {Y : V13RealLinearPublic m} {W : F2Vec m}
+    (hW : v13RealLinearVerifier Y W) :
+    v13RealLinearWitnessReadout i₀ W =
+      v13RealLinearMessageOfPublic i₀ Y := by
+  have hWitness : W = Y.A.toEquiv.symm Y.b := by
+    calc
+      W = Y.A.toEquiv.symm (Y.A.toEquiv W) := by simp
+      _ = Y.A.toEquiv.symm Y.b := by rw [hW]
+  unfold v13RealLinearWitnessReadout v13RealLinearMessageOfPublic
+  rw [hWitness]
+
+theorem v13RealLinear_worldWitness_valid {m : Nat}
+    (omega : V13RealLinearWorld m) :
+    v13RealLinearVerifier (v13RealLinearPublicInput omega) omega.x := by
+  rfl
+
+theorem v13RealLinearTargetBit_eq_messageOfPublic {m : Nat}
+    (i₀ : Fin m) (omega : V13RealLinearWorld m) :
+    v13RealLinearTargetBit i₀ omega =
+      v13RealLinearMessageOfPublic i₀ (v13RealLinearPublicInput omega) := by
+  unfold v13RealLinearTargetBit v13RealLinearMessageOfPublic
+  change
+    v13RealLinearBit (v13RealLinearTarget i₀ omega) =
+      v13RealLinearBit
+        (v13RealLinearFullDecoder i₀ (v13RealLinearPublicInput omega))
+  rw [v13RealLinear_fullPublic_decodes_target]
+
+/-- The real linear public surface supplies the readout/single-message spine:
+valid hidden witnesses over `(A, A x)` all read the public message
+`(A^{-1} b)_{i₀}`. -/
+def v13RealLinearSingleMessageSATSpine {m : Nat} (i₀ : Fin m) :
+    RealSingleMessageSATSpine
+      (V13RealLinearWorld m) (V13RealLinearPublic m) (F2Vec m) where
+  publicInput := v13RealLinearPublicInput
+  witnessOfWorld := fun omega => omega.x
+  verifier := v13RealLinearVerifier
+  messageOfPublic := v13RealLinearMessageOfPublic i₀
+  witnessReadout := v13RealLinearWitnessReadout i₀
+  target := v13RealLinearTargetBit i₀
+  worldWitnessValid := v13RealLinear_worldWitness_valid
+  readout_eq_message_of_valid := v13RealLinearVerifier_readout_eq_message i₀
+  target_eq_message := v13RealLinearTargetBit_eq_messageOfPublic i₀
+
+theorem v13RealLinearSingleMessageSATSpine_singleMessage {m : Nat}
+    (i₀ : Fin m) :
+    ∀ w0 w1 : V13RealLinearWorld m,
+      v13RealLinearPublicInput w0 = v13RealLinearPublicInput w1 ->
+        v13RealLinearTargetBit i₀ w0 = v13RealLinearTargetBit i₀ w1 :=
+  (v13RealLinearSingleMessageSATSpine i₀).singleMessage
+
+theorem v13RealLinear_validWitness_readout_eq_publicMessage {m : Nat}
+    (i₀ : Fin m) {Y : V13RealLinearPublic m} {W : F2Vec m}
+    (hW : v13RealLinearVerifier Y W) :
+    v13RealLinearWitnessReadout i₀ W =
+      v13RealLinearMessageOfPublic i₀ Y :=
+  (v13RealLinearSingleMessageSATSpine i₀).readout_eq_message_of_valid hW
+
+/-! ## Real-M4 lift ledger -/
+
+inductive RealM4LiftStatus where
+  | constructionTransferred
+  | partialConstructionTransferred
+  | openConstruction
+  | blockedByCounterexample
+  | irreducibleInput
+  | pnpConditionalInput
+deriving DecidableEq, Repr
+
+structure RealM4LiftLedgerRow where
+  item : String
+  status : RealM4LiftStatus
+  checkedName : String
+  note : String
+deriving Repr
+
+/-- Current real-ensemble lift ledger.  The theorem above transfers the
+single-message readout spine to the real linear public surface.  The remaining
+M4 construction obligations are deliberately not collapsed into the four
+irreducible mathematical inputs. -/
+def realM4LiftLedger : List RealM4LiftLedgerRow := [
+  {
+    item := "singleMessageSpine"
+    status := .constructionTransferred
+    checkedName := "v13RealLinearSingleMessageSATSpine_singleMessage"
+    note := "The real linear public instance fixes the target bit and valid witnesses read the same public message."
+  },
+  {
+    item := "deterministicReadoutOnly"
+    status := .blockedByCounterexample
+    checkedName := "lockedCoreIdentityReadoutFamily_lab_refutation"
+    note := "Deterministic per-state readout alone does not supply cross-completion message rigidity."
+  },
+  {
+    item := "publicMessageInvariant"
+    status := .openConstruction
+    checkedName := "lockedCorePublicMessageInvariant_lab_guardrails"
+    note := "A real M4 lock needs a public-message invariant or equivalent cross-completion rigidity theorem."
+  },
+  {
+    item := "noPublicTargetTags"
+    status := .partialConstructionTransferred
+    checkedName := "v13RealLinear_publicSurfaceCertificate"
+    note := "The real linear surface proves no elementary public coordinate determines the target; the full neutral-skeleton/opposite-pair field remains to be packaged for M4."
+  },
+  {
+    item := "atomCompleteness"
+    status := .openConstruction
+    checkedName := "GaugeBufferedLockedInterface.atomCompleteness"
+    note := "The M4 raw evidence atoms still need a concrete CD-ENF completeness proof."
+  },
+  {
+    item := "gaugeFaithfulness"
+    status := .openConstruction
+    checkedName := "GaugeBufferedLockedInterface.gaugeFaithfulness"
+    note := "The M4 hidden-gauge leaves still need a concrete faithfulness proof."
+  },
+  {
+    item := "hiddenGaugeProduct"
+    status := .openConstruction
+    checkedName := "GaugeBufferedLockedInterface.hiddenGaugeProduct"
+    note := "The M4 hidden-gauge product law is not yet constructed."
+  },
+  {
+    item := "admissibleHistories"
+    status := .openConstruction
+    checkedName := "GaugeBufferedLockedInterface.admissibleHistories"
+    note := "The M4 history field still needs balance and balanced-conditioning proofs."
+  },
+  {
+    item := "realCompressionLowerFramework"
+    status := .openConstruction
+    checkedName := "CompressionLowerFramework"
+    note := "The real lower framework must use manuscript compression-from-success data, not toy dummy budgets."
+  },
+  {
+    item := "selfReductionUpper"
+    status := .openConstruction
+    checkedName := "SelfReductionUpperHypothesis"
+    note := "The real SAT bit-fixing decoder should be construction-proved from an explicit P=NP decider once the M4 restricted formulas and program model exist."
+  },
+  {
+    item := "pnpDecider"
+    status := .pnpConditionalInput
+    checkedName := "explicit SAT decider object"
+    note := "This is the P=NP-side conditional object for the upper self-reduction, not irreducible lower-bound content."
+  },
+  {
+    item := "starSWHardness"
+    status := .irreducibleInput
+    checkedName := "CompressionStarSWHardness"
+    note := "Irreducible SW-shaped hardness input after the construction layer is real."
+  },
+  {
+    item := "safeQSSM"
+    status := .irreducibleInput
+    checkedName := "SafeQSSMFrontier"
+    note := "Irreducible analytic input after the construction layer is real."
+  },
+  {
+    item := "boundedGaugeIncidence"
+    status := .irreducibleInput
+    checkedName := "BoundedGaugeIncidenceFrontier"
+    note := "Irreducible analytic input after the construction layer is real."
+  },
+  {
+    item := "boundaryMixing"
+    status := .irreducibleInput
+    checkedName := "BoundaryMixingFrontier"
+    note := "Irreducible analytic input after the construction layer is real."
+  }
+]
+
+theorem realM4LiftLedger_statuses_exact :
+    List.map (fun row => row.status) realM4LiftLedger =
+      [ RealM4LiftStatus.constructionTransferred,
+        RealM4LiftStatus.blockedByCounterexample,
+        RealM4LiftStatus.openConstruction,
+        RealM4LiftStatus.partialConstructionTransferred,
+        RealM4LiftStatus.openConstruction,
+        RealM4LiftStatus.openConstruction,
+        RealM4LiftStatus.openConstruction,
+        RealM4LiftStatus.openConstruction,
+        RealM4LiftStatus.openConstruction,
+        RealM4LiftStatus.openConstruction,
+        RealM4LiftStatus.pnpConditionalInput,
+        RealM4LiftStatus.irreducibleInput,
+        RealM4LiftStatus.irreducibleInput,
+        RealM4LiftStatus.irreducibleInput,
+        RealM4LiftStatus.irreducibleInput] := by
+  rfl
+
+def realM4OpenConstructionItems : List String := [
+  "publicMessageInvariant",
+  "noPublicTargetTags",
+  "atomCompleteness",
+  "gaugeFaithfulness",
+  "hiddenGaugeProduct",
+  "admissibleHistories",
+  "realCompressionLowerFramework",
+  "selfReductionUpper"
+]
+
+theorem realM4OpenConstructionItems_exact :
+    realM4OpenConstructionItems =
+      [ "publicMessageInvariant",
+        "noPublicTargetTags",
+        "atomCompleteness",
+        "gaugeFaithfulness",
+        "hiddenGaugeProduct",
+        "admissibleHistories",
+        "realCompressionLowerFramework",
+        "selfReductionUpper" ] := by
+  rfl
+
+def realM4AfterConstructionIrreducibleInputs : List String := [
+  "starSWHardness",
+  "safeQSSM",
+  "boundedGaugeIncidence",
+  "boundaryMixing"
+]
+
+theorem realM4AfterConstructionIrreducibleInputs_exact :
+    realM4AfterConstructionIrreducibleInputs =
+      [ "starSWHardness",
+        "safeQSSM",
+        "boundedGaugeIncidence",
+        "boundaryMixing" ] := by
+  rfl
+
+/-- Guardrail imported into the real lift: deterministic readout by itself has
+a checked finite counterexample, so M4 must provide public-message invariance
+or an equivalent cross-completion rigidity theorem before SAT-search promotion. -/
+theorem realM4_deterministicReadoutOnly_counterexample :
+    ∃ C : AppendixDLockedCore Unit Bool Unit Bool,
+      C.LockSatisfiable ∧ C.ReadDeterministic ∧
+        ¬ C.LockedMessageRigidity :=
+  lockedCoreLabCanaries_separate_readDeterministic_from_lockedMessageRigidity.2
+
+theorem realM4_publicMessageInvariant_guardrails :
+    (rigidAppendixDLockedCore.PublicMessageInvariant
+        rigidAppendixDLockedCore_publicMessage ∧
+      rigidAppendixDLockedCore.LockedMessageRigidity) ∧
+      (∀ publicMessage : Unit -> Bool,
+        ¬ ambiguousAppendixDLockedCore.PublicMessageInvariant publicMessage) ∧
+      ¬ ambiguousAppendixDLockedCore.LockedMessageRigidity :=
+  lockedCorePublicMessageInvariant_lab_guardrails
+
+end Mettapedia.Computability.PNP
