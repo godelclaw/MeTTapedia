@@ -398,6 +398,66 @@ theorem closedCollarWindingFreedomSimplePatchN6First300000BlockedByPlanarityEvid
     ⟨closedCollarWindingFreedomWitnessRealizationData,
       ?_, ?_, ?_, ?_, ?_, ?_⟩ <;> decide
 
+/--
+Expanded cumulative counts for the six-internal simple-patch search.  This
+record is used once the search reaches planar profile-preserving cases, so the
+first blocker is no longer only planarity.
+-/
+structure ClosedCollarSimplePatchPrefixBlockerCounts where
+  internalVertexCount : Nat
+  processedPatchTopologyCount : Nat
+  radialOrderCaseCount : Nat
+  profilePreservingCaseCount : Nat
+  normalFormPrefixPassingProfileCaseCount : Nat
+  planarFirstBlockerCount : Nat
+  cyclicCutFirstBlockerCount : Nat
+  minimumCyclicCutSizeTwoCount : Nat
+  minimumCyclicCutSizeThreeCount : Nat
+
+def closedCollarSimplePatchN6First900000Counts :
+    ClosedCollarSimplePatchPrefixBlockerCounts where
+  internalVertexCount := 6
+  processedPatchTopologyCount := 900000
+  radialOrderCaseCount := 1800000
+  profilePreservingCaseCount := 19810
+  normalFormPrefixPassingProfileCaseCount := 0
+  planarFirstBlockerCount := 19576
+  cyclicCutFirstBlockerCount := 234
+  minimumCyclicCutSizeTwoCount := 222
+  minimumCyclicCutSizeThreeCount := 12
+
+/--
+Resumable-slice evidence for the first 900000 six-internal simple-patch
+topologies.  Profile-preserving patches do include planar cases in this range,
+but no profile-preserving case passes the tested normal-form prefix: 19576 fail
+first at planarity, and 234 planar cases fail first at cyclic edge cuts of size
+at most four.
+-/
+def ClosedCollarWindingFreedomSimplePatchN6First900000BlockedByPlanarityOrCyclicCutsEvidence :
+    Prop :=
+  ClosedCollarWindingFreedomWitnessRealizationData ∧
+    closedCollarSimplePatchN6First900000Counts.internalVertexCount = 6 ∧
+    closedCollarSimplePatchN6First900000Counts.processedPatchTopologyCount = 900000 ∧
+    closedCollarSimplePatchN6First900000Counts.radialOrderCaseCount = 1800000 ∧
+    closedCollarSimplePatchN6First900000Counts.profilePreservingCaseCount = 19810 ∧
+    closedCollarSimplePatchN6First900000Counts.normalFormPrefixPassingProfileCaseCount = 0 ∧
+    closedCollarSimplePatchN6First900000Counts.planarFirstBlockerCount = 19576 ∧
+    closedCollarSimplePatchN6First900000Counts.cyclicCutFirstBlockerCount = 234 ∧
+    closedCollarSimplePatchN6First900000Counts.minimumCyclicCutSizeTwoCount = 222 ∧
+    closedCollarSimplePatchN6First900000Counts.minimumCyclicCutSizeThreeCount = 12 ∧
+    closedCollarSimplePatchN6First900000Counts.planarFirstBlockerCount +
+        closedCollarSimplePatchN6First900000Counts.cyclicCutFirstBlockerCount =
+      closedCollarSimplePatchN6First900000Counts.profilePreservingCaseCount ∧
+    closedCollarSimplePatchN6First900000Counts.minimumCyclicCutSizeTwoCount +
+        closedCollarSimplePatchN6First900000Counts.minimumCyclicCutSizeThreeCount =
+      closedCollarSimplePatchN6First900000Counts.cyclicCutFirstBlockerCount
+
+theorem closedCollarWindingFreedomSimplePatchN6First900000BlockedByPlanarityOrCyclicCutsEvidence :
+    ClosedCollarWindingFreedomSimplePatchN6First900000BlockedByPlanarityOrCyclicCutsEvidence := by
+  refine
+    ⟨closedCollarWindingFreedomWitnessRealizationData,
+      ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩ <;> decide
+
 end GoertzelLemma818ClosedCollarWindingRealization
 
 end Mettapedia.GraphTheory.FourColor
