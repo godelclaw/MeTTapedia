@@ -24,6 +24,9 @@ set_option autoImplicit false
 #check v14ToyNoPublicCoordinateDeterminesTarget
 #check v14ToyNoPublicTargetTags
 #check v14ToyHistory_admissible
+#check SafeQSSMFrontier
+#check BoundedGaugeIncidenceFrontier
+#check BoundaryMixingFrontier
 #check V14ToyAnalyticFrontier
 #check v14ToyAtomCompleteness
 #check v14ToyGaugeFaithfulness
@@ -32,11 +35,28 @@ set_option autoImplicit false
 #check v14ToyInterfaceBattery
 #check v14ToyInterfaceBattery_test8
 #check v14Toy_structuralReduction
+#check V14ToyStructuralFieldsConstructed
+#check v14Toy_structuralFields_constructed
+#check V14ToyAnalyticFieldsCarried
+#check v14Toy_analyticFields_carried
+#check V14ToyOpenGlobalInputs
+#check v14Toy_openGlobalInputs
+#check V14ToyParameterPayloadAudited
+#check v14Toy_parameterPayload_audited
+#check V14ToyExactFrontierUse
+#check v14Toy_reduction_uses_exact_analytic_frontier
 #check v14ToyReductionStatement
+#check safeQSSM_weakened_frontier_insufficient
+#check boundedGaugeIncidence_weakened_frontier_insufficient
+#check boundaryMixing_weakened_frontier_insufficient
 #check v14ToyConstructionLedger_length
 #check v14ToyConstructionLedger_structural_fields_proved
 #check v14ToyConstructionLedger_analytic_frontier_carried
 #check v14ToyConstructionLedger_test8_proved
+#check v14ToyExactUseLedger_length
+#check v14ToyExactUseLedger_structural_proved
+#check v14ToyExactUseLedger_analytic_carried
+#check v14ToyExactUseLedger_open_global_inputs
 
 #print axioms v14ToyPublicRead_neutralOnly_targetBlind
 #print axioms v14ToyPublicRead_decomposes
@@ -61,9 +81,21 @@ set_option autoImplicit false
 #print axioms v14ToyInterfaceBattery
 #print axioms v14ToyInterfaceBattery_test8
 #print axioms v14Toy_structuralReduction
+#print axioms v14Toy_structuralFields_constructed
+#print axioms v14Toy_analyticFields_carried
+#print axioms v14Toy_openGlobalInputs
+#print axioms v14Toy_parameterPayload_audited
+#print axioms v14Toy_reduction_uses_exact_analytic_frontier
+#print axioms safeQSSM_weakened_frontier_insufficient
+#print axioms boundedGaugeIncidence_weakened_frontier_insufficient
+#print axioms boundaryMixing_weakened_frontier_insufficient
 #print axioms v14ToyConstructionLedger_length
 #print axioms v14ToyConstructionLedger_structural_fields_proved
 #print axioms v14ToyConstructionLedger_analytic_frontier_carried
 #print axioms v14ToyConstructionLedger_test8_proved
+#print axioms v14ToyExactUseLedger_length
+#print axioms v14ToyExactUseLedger_structural_proved
+#print axioms v14ToyExactUseLedger_analytic_carried
+#print axioms v14ToyExactUseLedger_open_global_inputs
 
 end Mettapedia.Computability.PNP
