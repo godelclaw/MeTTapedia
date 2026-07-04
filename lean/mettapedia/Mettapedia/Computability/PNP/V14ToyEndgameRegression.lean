@@ -1,0 +1,45 @@
+import Mettapedia.Computability.PNP.V14ToyEndgame
+
+/-!
+# Regression seal for the v14 toy conditional endgame
+-/
+
+namespace Mettapedia.Computability.PNP
+
+set_option autoImplicit false
+
+#check v14ToyEndgameAnalyticFrontier
+#check v14ToyEndgameTargetBlocks
+#check v14ToyEndgameLowerFramework
+#check v14ToyEndgameKernelNeutrality
+#check v14ToyEndgameConstantDecoderRegime
+#check v14ToyEndgameParameterRecord
+#check v14Toy_conditionalSeparation_of_starSW_and_analyticFrontier
+#check V14ToyEndgameLedgerStatus
+#check V14ToyEndgameLedgerRow
+#check v14ToyEndgameHypothesisLedger
+#check v14ToyEndgameHypothesisLedger_exact
+#check v14ToyEndgameMechanicalLedger
+#check v14ToyEndgameMechanicalLedger_discharged
+#check v14ToyEndgameLedger
+#check v14ToyEndgameLedger_length
+#check v14ToyEndgameStatement
+
+#print axioms v14ToyEndgameAnalyticFrontier
+#print axioms v14ToyEndgameTargetBlocks
+#print axioms v14ToyEndgameLowerFramework
+#print axioms v14ToyEndgameKernelNeutrality
+#print axioms v14ToyEndgameConstantDecoderRegime
+#print axioms v14ToyEndgameParameterRecord
+#print axioms v14Toy_conditionalSeparation_of_starSW_and_analyticFrontier
+#print axioms V14ToyEndgameLedgerStatus
+#print axioms V14ToyEndgameLedgerRow
+#print axioms v14ToyEndgameHypothesisLedger
+#print axioms v14ToyEndgameHypothesisLedger_exact
+#print axioms v14ToyEndgameMechanicalLedger
+#print axioms v14ToyEndgameMechanicalLedger_discharged
+#print axioms v14ToyEndgameLedger
+#print axioms v14ToyEndgameLedger_length
+#print axioms v14ToyEndgameStatement
+
+end Mettapedia.Computability.PNP
