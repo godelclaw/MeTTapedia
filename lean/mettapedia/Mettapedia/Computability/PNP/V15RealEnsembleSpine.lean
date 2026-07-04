@@ -21,7 +21,7 @@ namespace Mettapedia.Computability.PNP
 
 set_option autoImplicit false
 
-universe u v w x y z
+universe u v w x y z a b c d e f g h i j k l
 
 /-- Real single-message SAT spine: every supported world supplies a public
 instance and a hidden witness; every verifier-valid witness reads the fixed
@@ -1286,6 +1286,297 @@ theorem realM4SelfReductionUpperConditionalInputs_exact :
       [ "pnpDeciderFamily" ] := by
   rfl
 
+/-! ## Real-M4 endgame staging without toy parameters -/
+
+/-- Mechanical real-interface data for the v13 clash interface, deliberately
+excluding the three analytic frontier fields.  Constructing this data for the
+real M4 ensemble is a construction obligation; it is not an irreducible
+mathematical input. -/
+structure RealM4MechanicalInterfaceData
+    (Omega : Type u) [Fintype Omega] [Nonempty Omega]
+    (Public : Type v) (Neutral : Type w) (Safe : Type x) (Gauge : Type y)
+    (Transcript : Type z) [DecidableEq Transcript]
+    (Pair : Type a) [Fintype Pair]
+    (Stage : Type b) (Branch : Type c)
+    (HistoryAtom : Type d) (Pivot : Type e)
+    (Observer : Type f) (Output : Type f) (Skeleton : Type w) where
+  law : FiniteRationalLaw Omega
+  target : Omega -> Bool
+  publicInput : Omega -> Public
+  neutralSkeleton : Omega -> Skeleton
+  oppositeSupport : Omega -> Omega -> Prop
+  transcript : Omega -> Transcript
+  observerBit : Transcript -> Bool
+  phaseA :
+    EvidenceSpineBound law target transcript observerBit Pair Stage Branch
+  semantics : EvidenceSemantics Omega Neutral Safe Gauge
+  observerEvidence :
+    ObserverEvidenceInterface Omega Public Observer Output Neutral Safe Gauge
+  historyField : FiniteSigmaField.{u, d} Omega
+  pivotSummary : Omega -> Pivot
+  epsMix : Rat
+  safeCost : Safe -> Rat
+  safeBudget : Rat
+  gaugeIncidence : Gauge -> Nat
+  gaugeBound : Nat
+  singleMessage :
+    ∀ w0 w1, publicInput w0 = publicInput w1 -> target w0 = target w1
+  hiddenGaugeProduct :
+    ∀ gamma omega, semantics.gaugeSat gamma omega
+  noPublicTargetTags :
+    PairNeutral oppositeSupport neutralSkeleton ∧
+      HasMessageOppositePair oppositeSupport target ∧
+        ¬ ∃ f : Skeleton -> Bool, ∀ omega, target omega = f (neutralSkeleton omega)
+  atomCompleteness :
+    ∀ E : RawEvidence Neutral Safe Gauge,
+      semantics.SatNormal (CDENF E) = semantics.SatRaw E
+  gaugeFaithfulness :
+    ∀ gamma : Gauge,
+      semantics.SatNormal (CDENF (.gauge gamma)) =
+        semantics.gaugeSat gamma
+  admissibleHistories :
+    BalancedBit target ∧
+      BalancedConditioning (Omega := Omega) historyField target
+
+namespace RealM4MechanicalInterfaceData
+
+variable {Omega : Type u} [Fintype Omega] [Nonempty Omega]
+variable {Public : Type v} {Neutral : Type w} {Safe : Type x}
+variable {Gauge : Type y} {Transcript : Type z} [DecidableEq Transcript]
+variable {Pair : Type a} [Fintype Pair] {Stage : Type b} {Branch : Type c}
+variable {HistoryAtom : Type d} {Pivot : Type e}
+variable {Observer : Type f} {Output : Type f} {Skeleton : Type w}
+
+/-- Fill the real mechanical interface with the three analytic frontier
+fields.  This is the exact point where safe-QSSM, bounded gauge incidence, and
+boundary mixing enter the v13 `GaugeBufferedLockedInterface`. -/
+def withAnalyticFrontier
+    (M : RealM4MechanicalInterfaceData Omega Public Neutral Safe Gauge
+      Transcript Pair Stage Branch HistoryAtom Pivot Observer Output Skeleton)
+    (safeQSSM :
+      ∀ q : Safe, 0 ≤ M.safeCost q ∧ M.safeCost q ≤ M.safeBudget)
+    (boundedGaugeIncidence :
+      ∀ gamma : Gauge, M.gaugeIncidence gamma ≤ M.gaugeBound)
+    (boundaryMixing :
+      BoundaryMixingBound M.target M.pivotSummary M.epsMix) :
+    GaugeBufferedLockedInterface Omega Public Neutral Safe Gauge Transcript
+      Pair Stage Branch HistoryAtom Pivot Observer Output Skeleton where
+  law := M.law
+  target := M.target
+  publicInput := M.publicInput
+  neutralSkeleton := M.neutralSkeleton
+  oppositeSupport := M.oppositeSupport
+  transcript := M.transcript
+  observerBit := M.observerBit
+  phaseA := M.phaseA
+  semantics := M.semantics
+  observerEvidence := M.observerEvidence
+  historyField := M.historyField
+  pivotSummary := M.pivotSummary
+  epsMix := M.epsMix
+  safeCost := M.safeCost
+  safeBudget := M.safeBudget
+  gaugeIncidence := M.gaugeIncidence
+  gaugeBound := M.gaugeBound
+  singleMessage := M.singleMessage
+  hiddenGaugeProduct := M.hiddenGaugeProduct
+  noPublicTargetTags := M.noPublicTargetTags
+  atomCompleteness := M.atomCompleteness
+  gaugeFaithfulness := M.gaugeFaithfulness
+  safeQSSM := safeQSSM
+  boundedGaugeIncidence := boundedGaugeIncidence
+  boundaryMixing := boundaryMixing
+  admissibleHistories := M.admissibleHistories
+
+end RealM4MechanicalInterfaceData
+
+/-- Mechanical data needed to assemble the real conditional endgame once the
+three analytic fields and the P=NP-side self-reduction package are supplied.
+This still does not construct the real M4 ensemble; it names the construction
+certificate that must be produced before the final theorem can expose only the
+four irreducible mathematical inputs. -/
+structure RealM4EndgameMechanicalData
+    (Omega : Type u) [Fintype Omega] [Nonempty Omega]
+    (Public : Type v) (Neutral : Type w) (Safe : Type x) (Gauge : Type y)
+    (Transcript : Type z) [DecidableEq Transcript]
+    (Pair : Type a) [Fintype Pair]
+    (Stage : Type b) (Branch : Type c)
+    (HistoryAtom : Type d) (Pivot : Type e)
+    (Observer : Type f) (Output : Type f) (Skeleton : Type w) where
+  interfaceData :
+    RealM4MechanicalInterfaceData Omega Public Neutral Safe Gauge Transcript
+      Pair Stage Branch HistoryAtom Pivot Observer Output Skeleton
+  fixedGapBudget : Rat
+  phaseABudget :
+    (1 / 2 : Rat) * interfaceData.phaseA.telescoping.derivativeSum ≤
+      fixedGapBudget
+  epsSmall : interfaceData.epsMix < (1 / 2 : Rat)
+  lowerFramework : CompressionLowerFramework
+  kernelNeutrality : CompressionKernelNeutrality lowerFramework
+
+namespace RealM4EndgameMechanicalData
+
+variable {Omega : Type u} [Fintype Omega] [Nonempty Omega]
+variable {Public : Type v} {Neutral : Type w} {Safe : Type x}
+variable {Gauge : Type y} {Transcript : Type z} [DecidableEq Transcript]
+variable {Pair : Type a} [Fintype Pair] {Stage : Type b} {Branch : Type c}
+variable {HistoryAtom : Type d} {Pivot : Type e}
+variable {Observer : Type f} {Output : Type f} {Skeleton : Type w}
+
+def interfaceWithAnalyticFrontier
+    (C : RealM4EndgameMechanicalData Omega Public Neutral Safe Gauge
+      Transcript Pair Stage Branch HistoryAtom Pivot Observer Output Skeleton)
+    (safeQSSM :
+      ∀ q : Safe, 0 ≤ C.interfaceData.safeCost q ∧
+        C.interfaceData.safeCost q ≤ C.interfaceData.safeBudget)
+    (boundedGaugeIncidence :
+      ∀ gamma : Gauge,
+        C.interfaceData.gaugeIncidence gamma ≤ C.interfaceData.gaugeBound)
+    (boundaryMixing :
+      BoundaryMixingBound C.interfaceData.target C.interfaceData.pivotSummary
+        C.interfaceData.epsMix) :
+    GaugeBufferedLockedInterface Omega Public Neutral Safe Gauge Transcript
+      Pair Stage Branch HistoryAtom Pivot Observer Output Skeleton :=
+  C.interfaceData.withAnalyticFrontier
+    safeQSSM boundedGaugeIncidence boundaryMixing
+
+def parameterRecordWithUpper
+    (C : RealM4EndgameMechanicalData Omega Public Neutral Safe Gauge
+      Transcript Pair Stage Branch HistoryAtom Pivot Observer Output Skeleton)
+    (upper : SelfReductionUpperHypothesis C.lowerFramework)
+    (starSWHardness : CompressionStarSWHardness C.lowerFramework)
+    (safeQSSM :
+      ∀ q : Safe, 0 ≤ C.interfaceData.safeCost q ∧
+        C.interfaceData.safeCost q ≤ C.interfaceData.safeBudget)
+    (boundedGaugeIncidence :
+      ∀ gamma : Gauge,
+        C.interfaceData.gaugeIncidence gamma ≤ C.interfaceData.gaugeBound)
+    (boundaryMixing :
+      BoundaryMixingBound C.interfaceData.target C.interfaceData.pivotSummary
+        C.interfaceData.epsMix) :
+    ParameterRecord
+      (C.interfaceWithAnalyticFrontier
+        safeQSSM boundedGaugeIncidence boundaryMixing) where
+  fixedGapBudget := C.fixedGapBudget
+  phaseABudget := by
+    simpa [interfaceWithAnalyticFrontier,
+      RealM4MechanicalInterfaceData.withAnalyticFrontier] using
+      C.phaseABudget
+  epsSmall := by
+    simpa [interfaceWithAnalyticFrontier,
+      RealM4MechanicalInterfaceData.withAnalyticFrontier] using
+      C.epsSmall
+  lowerFramework := C.lowerFramework
+  kernelNeutrality := C.kernelNeutrality
+  starSWHardness := starSWHardness
+  selfReductionUpper := upper
+
+def parameterRecord
+    (C : RealM4EndgameMechanicalData Omega Public Neutral Safe Gauge
+      Transcript Pair Stage Branch HistoryAtom Pivot Observer Output Skeleton)
+    {PublicLock : Type g} {Quotient : Type h}
+    {LockAux : Type i} {Message : Type j}
+    {CNFPublic : Type k} {Var : CNFPublic -> Type l}
+    {Witness : CNFPublic -> Type l}
+    {D : AppendixICNFReadoutData
+      PublicLock Quotient LockAux Message CNFPublic Var Witness}
+    (S : RealM4SelfReductionUpperDischarge D C.lowerFramework)
+    (starSWHardness : CompressionStarSWHardness C.lowerFramework)
+    (safeQSSM :
+      ∀ q : Safe, 0 ≤ C.interfaceData.safeCost q ∧
+        C.interfaceData.safeCost q ≤ C.interfaceData.safeBudget)
+    (boundedGaugeIncidence :
+      ∀ gamma : Gauge,
+        C.interfaceData.gaugeIncidence gamma ≤ C.interfaceData.gaugeBound)
+    (boundaryMixing :
+      BoundaryMixingBound C.interfaceData.target C.interfaceData.pivotSummary
+        C.interfaceData.epsMix) :
+    ParameterRecord
+      (C.interfaceWithAnalyticFrontier
+        safeQSSM boundedGaugeIncidence boundaryMixing) :=
+  C.parameterRecordWithUpper
+    (RealM4SelfReductionUpperDischarge.selfReductionUpper S)
+    starSWHardness safeQSSM boundedGaugeIncidence boundaryMixing
+
+end RealM4EndgameMechanicalData
+
+/--
+Real-ensemble conditional endgame staging theorem.  Given a construction
+certificate for the real mechanical interface/lower framework, the explicit
+P=NP-side self-reduction discharge package, StarSW hardness, and the three
+analytic frontier fields, the v13 `UpperLowerClash` follows.
+
+This is not a proof of `P != NP`, and it does not yet construct the manuscript
+M4 ensemble.  It records the wiring that will become the top-level theorem
+once the construction certificate is supplied by real M4 proofs.
+-/
+theorem realM4_conditionalClash_from_endgameMechanicalData
+    {Omega : Type u} [Fintype Omega] [Nonempty Omega]
+    {Public : Type v} {Neutral : Type w} {Safe : Type x}
+    {Gauge : Type y} {Transcript : Type z} [DecidableEq Transcript]
+    {Pair : Type a} [Fintype Pair]
+    {Stage : Type b} {Branch : Type c}
+    {HistoryAtom : Type d} {Pivot : Type e}
+    {Observer : Type f} {Output : Type f} {Skeleton : Type w}
+    {PublicLock : Type g} {Quotient : Type h}
+    {LockAux : Type i} {Message : Type j}
+    {CNFPublic : Type k} {Var : CNFPublic -> Type l}
+    {Witness : CNFPublic -> Type l}
+    {D : AppendixICNFReadoutData
+      PublicLock Quotient LockAux Message CNFPublic Var Witness}
+    (C : RealM4EndgameMechanicalData Omega Public Neutral Safe Gauge
+      Transcript Pair Stage Branch HistoryAtom Pivot Observer Output Skeleton)
+    (S : RealM4SelfReductionUpperDischarge D C.lowerFramework)
+    (starSWHardness : CompressionStarSWHardness C.lowerFramework)
+    (safeQSSM :
+      ∀ q : Safe, 0 ≤ C.interfaceData.safeCost q ∧
+        C.interfaceData.safeCost q ≤ C.interfaceData.safeBudget)
+    (boundedGaugeIncidence :
+      ∀ gamma : Gauge,
+        C.interfaceData.gaugeIncidence gamma ≤ C.interfaceData.gaugeBound)
+    (boundaryMixing :
+      BoundaryMixingBound C.interfaceData.target C.interfaceData.pivotSummary
+        C.interfaceData.epsMix) :
+    UpperLowerClash
+      (C.interfaceWithAnalyticFrontier
+        safeQSSM boundedGaugeIncidence boundaryMixing)
+      (C.parameterRecord S starSWHardness
+        safeQSSM boundedGaugeIncidence boundaryMixing) :=
+  v13_upperLowerClash
+    (C.interfaceWithAnalyticFrontier
+      safeQSSM boundedGaugeIncidence boundaryMixing)
+    (C.parameterRecord S starSWHardness
+      safeQSSM boundedGaugeIncidence boundaryMixing)
+
+def realM4EndgameStagingConstructionInputs : List String := [
+  "realM4EndgameMechanicalData",
+  "realM4SelfReductionUpperDischarge"
+]
+
+theorem realM4EndgameStagingConstructionInputs_exact :
+    realM4EndgameStagingConstructionInputs =
+      [ "realM4EndgameMechanicalData",
+        "realM4SelfReductionUpperDischarge" ] := by
+  rfl
+
+def realM4EndgameStagingIrreducibleInputs : List String := [
+  "starSWHardness",
+  "safeQSSM",
+  "boundedGaugeIncidence",
+  "boundaryMixing"
+]
+
+theorem realM4EndgameStagingIrreducibleInputs_exact :
+    realM4EndgameStagingIrreducibleInputs =
+      [ "starSWHardness",
+        "safeQSSM",
+        "boundedGaugeIncidence",
+        "boundaryMixing" ] := by
+  rfl
+
+def realM4EndgameStagingStatement : String :=
+  "For the real v15/M4 staging layer, UpperLowerClash follows from real construction data, the explicit P=NP-side self-reduction discharge, StarSW hardness, and the three analytic fields safeQSSM / boundedGaugeIncidence / boundaryMixing.  After the construction data is proved for M4, the irreducible mathematical content is exactly StarSW plus those three analytic fields."
+
 /-! ## Real-M4 lift ledger -/
 
 inductive RealM4LiftStatus where
@@ -1412,6 +1703,24 @@ def realM4LiftLedger : List RealM4LiftLedgerRow := [
     note := "No longer a standalone global input: the real upper side follows from the audited discharge package, whose construction prerequisites and P=NP-side decider input are listed separately."
   },
   {
+    item := "realEndgameMechanicalInterfaceSplit"
+    status := .partialConstructionTransferred
+    checkedName := "RealM4MechanicalInterfaceData.withAnalyticFrontier"
+    note := "Separates construction-level interface fields from the three analytic frontier fields before constructing the v13 clash interface."
+  },
+  {
+    item := "realM4EndgameMechanicalData"
+    status := .openConstruction
+    checkedName := "RealM4EndgameMechanicalData"
+    note := "The real M4 construction still has to supply the mechanical interface data, phase-A budget, eps-small bound, lower framework, and kernel-neutrality payload."
+  },
+  {
+    item := "realConditionalClashStaging"
+    status := .partialConstructionTransferred
+    checkedName := "realM4_conditionalClash_from_endgameMechanicalData"
+    note := "Given real endgame mechanical data, the explicit upper discharge package, StarSW, and the three analytic fields, the v13 UpperLowerClash wiring is checked."
+  },
+  {
     item := "pnpDecider"
     status := .pnpConditionalInput
     checkedName := "explicit SAT decider object"
@@ -1462,6 +1771,9 @@ theorem realM4LiftLedger_statuses_exact :
         RealM4LiftStatus.openConstruction,
         RealM4LiftStatus.openConstruction,
         RealM4LiftStatus.partialConstructionTransferred,
+        RealM4LiftStatus.partialConstructionTransferred,
+        RealM4LiftStatus.openConstruction,
+        RealM4LiftStatus.partialConstructionTransferred,
         RealM4LiftStatus.pnpConditionalInput,
         RealM4LiftStatus.irreducibleInput,
         RealM4LiftStatus.irreducibleInput,
@@ -1477,7 +1789,8 @@ def realM4OpenConstructionItems : List String := [
   "hiddenGaugeProduct",
   "admissibleHistories",
   "uniformCNFBitFixingPackage",
-  "realCompressionLowerFramework"
+  "realCompressionLowerFramework",
+  "realM4EndgameMechanicalData"
 ]
 
 theorem realM4OpenConstructionItems_exact :
@@ -1489,7 +1802,8 @@ theorem realM4OpenConstructionItems_exact :
         "hiddenGaugeProduct",
         "admissibleHistories",
         "uniformCNFBitFixingPackage",
-        "realCompressionLowerFramework" ] := by
+        "realCompressionLowerFramework",
+        "realM4EndgameMechanicalData" ] := by
   rfl
 
 def realM4AfterConstructionIrreducibleInputs : List String := [
