@@ -115,6 +115,47 @@ theorem closedCollarWindingFreedomDirectWitnessBlockedBySimpleNormalForm :
       windingFreedomWord_hasParallelEndpointEdges,
       windingFreedomWord_not_simpleEndpointRealization⟩
 
+/--
+Numerical interface for a local cubic two-pole replacement of a parallel
+bundle.  The two old endpoint vertices contribute two side-internal incident
+edges each, every new internal vertex is cubic, and all those incidences are
+counted by the side-internal edge count.
+-/
+structure LocalTwoPoleReplacementStats where
+  internalVertexCount : Nat
+  sideEdgeCount : Nat
+  handshaking :
+    2 * sideEdgeCount = 3 * internalVertexCount + 4
+
+/--
+The tree bound for the side of a local two-pole replacement with two terminal
+vertices and `internalVertexCount` new vertices.  Exceeding this bound is the
+rank-count certificate that a connected side contains a cycle.
+-/
+def LocalTwoPoleReplacementSideExceedsTreeBound
+    (stats : LocalTwoPoleReplacementStats) : Prop :=
+  stats.internalVertexCount + 1 < stats.sideEdgeCount
+
+theorem localTwoPoleReplacementSideExceedsTreeBound
+    (stats : LocalTwoPoleReplacementStats) :
+    LocalTwoPoleReplacementSideExceedsTreeBound stats := by
+  unfold LocalTwoPoleReplacementSideExceedsTreeBound
+  have htwice :
+      2 * (stats.internalVertexCount + 1) <
+        2 * stats.sideEdgeCount := by
+    have hhand := stats.handshaking
+    omega
+  exact Nat.lt_of_mul_lt_mul_left htwice
+
+def LocalTwoPoleDesingularizationCannotRemoveCyclicTwoCut : Prop :=
+  ∀ stats : LocalTwoPoleReplacementStats,
+    LocalTwoPoleReplacementSideExceedsTreeBound stats
+
+theorem localTwoPoleDesingularizationCannotRemoveCyclicTwoCut :
+    LocalTwoPoleDesingularizationCannotRemoveCyclicTwoCut := by
+  intro stats
+  exact localTwoPoleReplacementSideExceedsTreeBound stats
+
 end GoertzelLemma818ClosedCollarWindingRealization
 
 end Mettapedia.GraphTheory.FourColor

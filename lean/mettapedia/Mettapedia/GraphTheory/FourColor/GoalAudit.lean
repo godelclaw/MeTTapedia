@@ -51,6 +51,10 @@ theorem closedCollarWindingFreedomDirectWitnessBlockedBySimpleNormalForm_audit :
     ClosedCollarWindingFreedomDirectWitnessBlockedBySimpleNormalForm :=
   closedCollarWindingFreedomDirectWitnessBlockedBySimpleNormalForm
 
+theorem localTwoPoleDesingularizationCannotRemoveCyclicTwoCut_audit :
+    LocalTwoPoleDesingularizationCannotRemoveCyclicTwoCut :=
+  localTwoPoleDesingularizationCannotRemoveCyclicTwoCut
+
 /-! ## Section 9.2 two-layer ambient execution obstruction -/
 
 theorem section92Step4TwoLayerCounterexampleClass_audit :
