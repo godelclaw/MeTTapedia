@@ -336,6 +336,187 @@ theorem realM4_semanticI26_of_publicMessageInvariant
   D.semantic_i26_items_of_lockedMessageRigidity
     (D.core.lockedMessageRigidity_of_publicMessageInvariant hinvariant) hY
 
+/-! ## Appendix I CNF adapter for the real spine -/
+
+/-- A supported public CNF instance together with a satisfying assignment. -/
+structure RealM4CNFWorld
+    {PublicLock : Type u} {Quotient : Type v}
+    {LockAux : Type w} {Message : Type z}
+    {Public : Type x} {Var : Public -> Type y}
+    {Witness : Public -> Type y}
+    (D : AppendixICNFReadoutData
+      PublicLock Quotient LockAux Message Public Var Witness) where
+  publicInstance : Public
+  support : D.support publicInstance
+  assignment : ConcreteCNF.Assignment (Var publicInstance)
+  sat : ConcreteCNF.IsSatFormula (D.formula publicInstance) assignment
+
+/-- Hidden CNF witness package for the real Appendix I spine. -/
+structure RealM4CNFWitness
+    {PublicLock : Type u} {Quotient : Type v}
+    {LockAux : Type w} {Message : Type z}
+    {Public : Type x} {Var : Public -> Type y}
+    {Witness : Public -> Type y}
+    (D : AppendixICNFReadoutData
+      PublicLock Quotient LockAux Message Public Var Witness) where
+  publicInstance : Public
+  assignment : ConcreteCNF.Assignment (Var publicInstance)
+
+def RealM4CNFWorld.toWitness
+    {PublicLock : Type u} {Quotient : Type v}
+    {LockAux : Type w} {Message : Type z}
+    {Public : Type x} {Var : Public -> Type y}
+    {Witness : Public -> Type y}
+    {D : AppendixICNFReadoutData
+      PublicLock Quotient LockAux Message Public Var Witness}
+    (omega : RealM4CNFWorld D) :
+    RealM4CNFWitness D where
+  publicInstance := omega.publicInstance
+  assignment := omega.assignment
+
+def realM4CNFVerifier
+    {PublicLock : Type u} {Quotient : Type v}
+    {LockAux : Type w} {Message : Type z}
+    {Public : Type x} {Var : Public -> Type y}
+    {Witness : Public -> Type y}
+    (D : AppendixICNFReadoutData
+      PublicLock Quotient LockAux Message Public Var Witness)
+    (Y : Public) (W : RealM4CNFWitness D) : Prop :=
+  D.support Y ∧
+    ∃ _hPublic : W.publicInstance = Y,
+      ConcreteCNF.IsSatFormula (D.formula W.publicInstance) W.assignment
+
+def realM4CNFWitnessReadout
+    {PublicLock : Type u} {Quotient : Type v}
+    {LockAux : Type w} {Message : Type z}
+    {Public : Type x} {Var : Public -> Type y}
+    {Witness : Public -> Type y}
+    {D : AppendixICNFReadoutData
+      PublicLock Quotient LockAux Message Public Var Witness}
+    (messageBit : Message -> Bool)
+    (W : RealM4CNFWitness D) : Bool :=
+  messageBit (D.projection W.publicInstance W.assignment)
+
+def realM4CNFMessageOfPublic
+    {PublicLock : Type u} {Quotient : Type v}
+    {LockAux : Type w} {Message : Type z}
+    {Public : Type x} {Var : Public -> Type y}
+    {Witness : Public -> Type y}
+    (D : AppendixICNFReadoutData
+      PublicLock Quotient LockAux Message Public Var Witness)
+    (publicMessage : PublicLock -> Message)
+    (messageBit : Message -> Bool)
+    (Y : Public) : Bool :=
+  messageBit (publicMessage (D.publicLock Y))
+
+theorem realM4CNFWitness_readout_eq_publicMessage
+    {PublicLock : Type u} {Quotient : Type v}
+    {LockAux : Type w} {Message : Type z}
+    {Public : Type x} {Var : Public -> Type y}
+    {Witness : Public -> Type y}
+    (D : AppendixICNFReadoutData
+      PublicLock Quotient LockAux Message Public Var Witness)
+    (publicMessage : PublicLock -> Message)
+    (messageBit : Message -> Bool)
+    (hinvariant : D.core.PublicMessageInvariant publicMessage)
+    {Y : Public} {W : RealM4CNFWitness D}
+    (hW : realM4CNFVerifier D Y W) :
+    realM4CNFWitnessReadout messageBit W =
+      realM4CNFMessageOfPublic D publicMessage messageBit Y := by
+  rcases W with ⟨YW, α⟩
+  change D.support Y ∧
+    ∃ hPublic : YW = Y,
+      ConcreteCNF.IsSatFormula (D.formula YW) α at hW
+  rcases hW with ⟨hSupportY, ⟨hPublic, hSat⟩⟩
+  have hSupportYW : D.support YW := by
+    rw [hPublic]
+    exact hSupportY
+  have hCompletionMessage :
+      (D.witnessCompletion (D.extract YW α) (D.cnfSound hSat)).message =
+        publicMessage (D.publicLock YW) :=
+    hinvariant (D.support_publicLock hSupportYW)
+      (D.witnessCompletion (D.extract YW α) (D.cnfSound hSat))
+  have hProjection :
+      D.projection YW α = publicMessage (D.publicLock Y) := by
+    calc
+      D.projection YW α =
+          D.witnessMessage YW (D.extract YW α) :=
+        D.projection_eq_witnessMessage hSat
+      _ = (D.witnessCompletion (D.extract YW α) (D.cnfSound hSat)).message :=
+        D.witnessMessage_eq_completionMessage (D.cnfSound hSat)
+      _ = publicMessage (D.publicLock YW) :=
+        hCompletionMessage
+      _ = publicMessage (D.publicLock Y) := by rw [hPublic]
+  exact congrArg messageBit hProjection
+
+/-- Appendix I CNF assignments form the real single-message SAT spine once the
+locked core supplies a public-message invariant.  This is the SAT-assignment
+spine; it does not construct the invariant or the polynomial uniformity data. -/
+def realM4CNFSingleMessageSATSpine
+    {PublicLock : Type u} {Quotient : Type v}
+    {LockAux : Type w} {Message : Type z}
+    {Public : Type x} {Var : Public -> Type y}
+    {Witness : Public -> Type y}
+    (D : AppendixICNFReadoutData
+      PublicLock Quotient LockAux Message Public Var Witness)
+    (publicMessage : PublicLock -> Message)
+    (messageBit : Message -> Bool)
+    (hinvariant : D.core.PublicMessageInvariant publicMessage) :
+    RealSingleMessageSATSpine
+      (RealM4CNFWorld D) Public (RealM4CNFWitness D) where
+  publicInput := fun omega => omega.publicInstance
+  witnessOfWorld := fun omega => omega.toWitness
+  verifier := realM4CNFVerifier D
+  messageOfPublic := realM4CNFMessageOfPublic D publicMessage messageBit
+  witnessReadout := realM4CNFWitnessReadout messageBit
+  target := fun omega =>
+    realM4CNFMessageOfPublic D publicMessage messageBit omega.publicInstance
+  worldWitnessValid := by
+    intro omega
+    exact ⟨omega.support, ⟨rfl, omega.sat⟩⟩
+  readout_eq_message_of_valid :=
+    realM4CNFWitness_readout_eq_publicMessage
+      D publicMessage messageBit hinvariant
+  target_eq_message := by
+    intro omega
+    rfl
+
+theorem realM4CNF_singleMessage_of_publicMessageInvariant
+    {PublicLock : Type u} {Quotient : Type v}
+    {LockAux : Type w} {Message : Type z}
+    {Public : Type x} {Var : Public -> Type y}
+    {Witness : Public -> Type y}
+    (D : AppendixICNFReadoutData
+      PublicLock Quotient LockAux Message Public Var Witness)
+    (publicMessage : PublicLock -> Message)
+    (messageBit : Message -> Bool)
+    (hinvariant : D.core.PublicMessageInvariant publicMessage) :
+    ∀ w0 w1 : RealM4CNFWorld D,
+      w0.publicInstance = w1.publicInstance ->
+        realM4CNFMessageOfPublic D publicMessage messageBit w0.publicInstance =
+          realM4CNFMessageOfPublic D publicMessage messageBit w1.publicInstance :=
+  (realM4CNFSingleMessageSATSpine
+    D publicMessage messageBit hinvariant).singleMessage
+
+theorem realM4CNF_readout_eq_of_valid_of_publicMessageInvariant
+    {PublicLock : Type u} {Quotient : Type v}
+    {LockAux : Type w} {Message : Type z}
+    {Public : Type x} {Var : Public -> Type y}
+    {Witness : Public -> Type y}
+    (D : AppendixICNFReadoutData
+      PublicLock Quotient LockAux Message Public Var Witness)
+    (publicMessage : PublicLock -> Message)
+    (messageBit : Message -> Bool)
+    (hinvariant : D.core.PublicMessageInvariant publicMessage)
+    {Y : Public} {W W' : RealM4CNFWitness D}
+    (hW : realM4CNFVerifier D Y W)
+    (hW' : realM4CNFVerifier D Y W') :
+    realM4CNFWitnessReadout messageBit W =
+      realM4CNFWitnessReadout messageBit W' :=
+  (realM4CNFSingleMessageSATSpine
+    D publicMessage messageBit hinvariant).readout_eq_of_valid
+      (W := W) (W' := W') hW hW'
+
 /-! ## Real-M4 lift ledger -/
 
 inductive RealM4LiftStatus where
@@ -370,6 +551,12 @@ def realM4LiftLedger : List RealM4LiftLedgerRow := [
     status := .constructionTransferred
     checkedName := "realM4LockedCoreSingleMessageSATSpine"
     note := "Given a public-message invariant, the Appendix D locked core maps into the real single-message spine and Appendix I CNF readout."
+  },
+  {
+    item := "appendixICNFSpineAdapter"
+    status := .constructionTransferred
+    checkedName := "realM4CNFSingleMessageSATSpine"
+    note := "Given the same public-message invariant, satisfying Appendix I CNF assignments form the real single-message SAT spine."
   },
   {
     item := "deterministicReadoutOnly"
@@ -460,6 +647,7 @@ def realM4LiftLedger : List RealM4LiftLedgerRow := [
 theorem realM4LiftLedger_statuses_exact :
     List.map (fun row => row.status) realM4LiftLedger =
       [ RealM4LiftStatus.constructionTransferred,
+        RealM4LiftStatus.constructionTransferred,
         RealM4LiftStatus.constructionTransferred,
         RealM4LiftStatus.blockedByCounterexample,
         RealM4LiftStatus.openConstruction,

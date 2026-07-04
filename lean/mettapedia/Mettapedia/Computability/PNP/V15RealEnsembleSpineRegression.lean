@@ -36,6 +36,16 @@ set_option autoImplicit false
 #check realM4_lockedMessageRigidity_of_publicMessageInvariant
 #check realM4_cnfSingleMessageReadout_of_publicMessageInvariant
 #check realM4_semanticI26_of_publicMessageInvariant
+#check RealM4CNFWorld
+#check RealM4CNFWitness
+#check RealM4CNFWorld.toWitness
+#check realM4CNFVerifier
+#check realM4CNFWitnessReadout
+#check realM4CNFMessageOfPublic
+#check realM4CNFWitness_readout_eq_publicMessage
+#check realM4CNFSingleMessageSATSpine
+#check realM4CNF_singleMessage_of_publicMessageInvariant
+#check realM4CNF_readout_eq_of_valid_of_publicMessageInvariant
 #check RealM4LiftStatus
 #check RealM4LiftLedgerRow
 #check realM4LiftLedger
@@ -75,6 +85,16 @@ set_option autoImplicit false
 #print axioms realM4_lockedMessageRigidity_of_publicMessageInvariant
 #print axioms realM4_cnfSingleMessageReadout_of_publicMessageInvariant
 #print axioms realM4_semanticI26_of_publicMessageInvariant
+#print axioms RealM4CNFWorld
+#print axioms RealM4CNFWitness
+#print axioms RealM4CNFWorld.toWitness
+#print axioms realM4CNFVerifier
+#print axioms realM4CNFWitnessReadout
+#print axioms realM4CNFMessageOfPublic
+#print axioms realM4CNFWitness_readout_eq_publicMessage
+#print axioms realM4CNFSingleMessageSATSpine
+#print axioms realM4CNF_singleMessage_of_publicMessageInvariant
+#print axioms realM4CNF_readout_eq_of_valid_of_publicMessageInvariant
 #print axioms RealM4LiftStatus
 #print axioms RealM4LiftLedgerRow
 #print axioms realM4LiftLedger
