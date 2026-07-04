@@ -108,6 +108,18 @@ set_option autoImplicit false
 #check realM4SelfReductionUpperDischargePrerequisites_exact
 #check realM4SelfReductionUpperConditionalInputs
 #check realM4SelfReductionUpperConditionalInputs_exact
+#check RealM4MechanicalInterfaceData
+#check RealM4MechanicalInterfaceData.withAnalyticFrontier
+#check RealM4EndgameMechanicalData
+#check RealM4EndgameMechanicalData.interfaceWithAnalyticFrontier
+#check RealM4EndgameMechanicalData.parameterRecordWithUpper
+#check RealM4EndgameMechanicalData.parameterRecord
+#check realM4_conditionalClash_from_endgameMechanicalData
+#check realM4EndgameStagingConstructionInputs
+#check realM4EndgameStagingConstructionInputs_exact
+#check realM4EndgameStagingIrreducibleInputs
+#check realM4EndgameStagingIrreducibleInputs_exact
+#check realM4EndgameStagingStatement
 #check RealM4LiftStatus
 #check RealM4LiftLedgerRow
 #check realM4LiftLedger
@@ -219,6 +231,18 @@ set_option autoImplicit false
 #print axioms realM4SelfReductionUpperDischargePrerequisites_exact
 #print axioms realM4SelfReductionUpperConditionalInputs
 #print axioms realM4SelfReductionUpperConditionalInputs_exact
+#print axioms RealM4MechanicalInterfaceData
+#print axioms RealM4MechanicalInterfaceData.withAnalyticFrontier
+#print axioms RealM4EndgameMechanicalData
+#print axioms RealM4EndgameMechanicalData.interfaceWithAnalyticFrontier
+#print axioms RealM4EndgameMechanicalData.parameterRecordWithUpper
+#print axioms RealM4EndgameMechanicalData.parameterRecord
+#print axioms realM4_conditionalClash_from_endgameMechanicalData
+#print axioms realM4EndgameStagingConstructionInputs
+#print axioms realM4EndgameStagingConstructionInputs_exact
+#print axioms realM4EndgameStagingIrreducibleInputs
+#print axioms realM4EndgameStagingIrreducibleInputs_exact
+#print axioms realM4EndgameStagingStatement
 #print axioms RealM4LiftStatus
 #print axioms RealM4LiftLedgerRow
 #print axioms realM4LiftLedger
