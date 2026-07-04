@@ -209,6 +209,106 @@ theorem closedCollarWindingFreedomSimplePatchSearchLe4BlockedByNormalFormPrefix 
     ⟨closedCollarWindingFreedomWitnessRealizationData,
       ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩ <;> decide
 
+/--
+Counts for a resumable exact-size simple-patch search slice.  These are not
+exhaustive verdicts for the whole exact-size space; they pin archived slices
+with explicit start and next-start indices.
+-/
+structure ClosedCollarSimplePatchSliceCounts where
+  internalVertexCount : Nat
+  patchStartIndex : Nat
+  patchTopologyLimit : Nat
+  nextPatchStartIndex : Nat
+  processedPatchTopologyCount : Nat
+  radialOrderCaseCount : Nat
+  profilePreservingCaseCount : Nat
+  normalFormPrefixPassingProfileCaseCount : Nat
+  planarFirstBlockerCount : Nat
+
+def closedCollarSimplePatchN6Slice0_50000Counts :
+    ClosedCollarSimplePatchSliceCounts where
+  internalVertexCount := 6
+  patchStartIndex := 0
+  patchTopologyLimit := 50000
+  nextPatchStartIndex := 50000
+  processedPatchTopologyCount := 50000
+  radialOrderCaseCount := 100000
+  profilePreservingCaseCount := 0
+  normalFormPrefixPassingProfileCaseCount := 0
+  planarFirstBlockerCount := 0
+
+def closedCollarSimplePatchN6Slice50000_100000Counts :
+    ClosedCollarSimplePatchSliceCounts where
+  internalVertexCount := 6
+  patchStartIndex := 50000
+  patchTopologyLimit := 50000
+  nextPatchStartIndex := 100000
+  processedPatchTopologyCount := 50000
+  radialOrderCaseCount := 100000
+  profilePreservingCaseCount := 3744
+  normalFormPrefixPassingProfileCaseCount := 0
+  planarFirstBlockerCount := 3744
+
+def closedCollarSimplePatchN6Slice100000_150000Counts :
+    ClosedCollarSimplePatchSliceCounts where
+  internalVertexCount := 6
+  patchStartIndex := 100000
+  patchTopologyLimit := 50000
+  nextPatchStartIndex := 150000
+  processedPatchTopologyCount := 50000
+  radialOrderCaseCount := 100000
+  profilePreservingCaseCount := 4180
+  normalFormPrefixPassingProfileCaseCount := 0
+  planarFirstBlockerCount := 4180
+
+def closedCollarSimplePatchN6First150000ProcessedCount : Nat :=
+  closedCollarSimplePatchN6Slice0_50000Counts.processedPatchTopologyCount +
+    closedCollarSimplePatchN6Slice50000_100000Counts.processedPatchTopologyCount +
+      closedCollarSimplePatchN6Slice100000_150000Counts.processedPatchTopologyCount
+
+def closedCollarSimplePatchN6First150000RadialOrderCount : Nat :=
+  closedCollarSimplePatchN6Slice0_50000Counts.radialOrderCaseCount +
+    closedCollarSimplePatchN6Slice50000_100000Counts.radialOrderCaseCount +
+      closedCollarSimplePatchN6Slice100000_150000Counts.radialOrderCaseCount
+
+def closedCollarSimplePatchN6First150000ProfilePreservingCount : Nat :=
+  closedCollarSimplePatchN6Slice0_50000Counts.profilePreservingCaseCount +
+    closedCollarSimplePatchN6Slice50000_100000Counts.profilePreservingCaseCount +
+      closedCollarSimplePatchN6Slice100000_150000Counts.profilePreservingCaseCount
+
+def closedCollarSimplePatchN6First150000NormalFormPrefixPassingCount : Nat :=
+  closedCollarSimplePatchN6Slice0_50000Counts.normalFormPrefixPassingProfileCaseCount +
+    closedCollarSimplePatchN6Slice50000_100000Counts.normalFormPrefixPassingProfileCaseCount +
+      closedCollarSimplePatchN6Slice100000_150000Counts.normalFormPrefixPassingProfileCaseCount
+
+def closedCollarSimplePatchN6First150000PlanarFirstBlockerCount : Nat :=
+  closedCollarSimplePatchN6Slice0_50000Counts.planarFirstBlockerCount +
+    closedCollarSimplePatchN6Slice50000_100000Counts.planarFirstBlockerCount +
+      closedCollarSimplePatchN6Slice100000_150000Counts.planarFirstBlockerCount
+
+/--
+Resumable-slice evidence for the six-internal simple-patch search.  In the
+first 150000 exact-size topologies, 7924 radial-order cases preserve the full
+winding profile.  None passes the tested normal-form prefix, and every
+profile-preserving case in these slices fails first at planarity.
+-/
+def ClosedCollarWindingFreedomSimplePatchN6First150000BlockedByPlanarityEvidence :
+    Prop :=
+  ClosedCollarWindingFreedomWitnessRealizationData ∧
+    closedCollarSimplePatchN6First150000ProcessedCount = 150000 ∧
+    closedCollarSimplePatchN6First150000RadialOrderCount = 300000 ∧
+    closedCollarSimplePatchN6First150000ProfilePreservingCount = 7924 ∧
+    closedCollarSimplePatchN6First150000NormalFormPrefixPassingCount = 0 ∧
+    closedCollarSimplePatchN6First150000PlanarFirstBlockerCount = 7924 ∧
+    closedCollarSimplePatchN6First150000PlanarFirstBlockerCount =
+      closedCollarSimplePatchN6First150000ProfilePreservingCount
+
+theorem closedCollarWindingFreedomSimplePatchN6First150000BlockedByPlanarityEvidence :
+    ClosedCollarWindingFreedomSimplePatchN6First150000BlockedByPlanarityEvidence := by
+  refine
+    ⟨closedCollarWindingFreedomWitnessRealizationData,
+      ?_, ?_, ?_, ?_, ?_, ?_⟩ <;> decide
+
 end GoertzelLemma818ClosedCollarWindingRealization
 
 end Mettapedia.GraphTheory.FourColor

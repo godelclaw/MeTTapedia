@@ -59,6 +59,10 @@ theorem closedCollarWindingFreedomSimplePatchSearchLe4BlockedByNormalFormPrefix_
     ClosedCollarWindingFreedomSimplePatchSearchLe4BlockedByNormalFormPrefix :=
   closedCollarWindingFreedomSimplePatchSearchLe4BlockedByNormalFormPrefix
 
+theorem closedCollarWindingFreedomSimplePatchN6First150000BlockedByPlanarityEvidence_audit :
+    ClosedCollarWindingFreedomSimplePatchN6First150000BlockedByPlanarityEvidence :=
+  closedCollarWindingFreedomSimplePatchN6First150000BlockedByPlanarityEvidence
+
 /-! ## Section 9.2 two-layer ambient execution obstruction -/
 
 theorem section92Step4TwoLayerCounterexampleClass_audit :
