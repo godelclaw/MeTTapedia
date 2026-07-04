@@ -6527,6 +6527,253 @@ theorem
     _ = 4 * (S * Z) := by ring
     _ ≤ 4 * N := Nat.mul_le_mul_left 4 hSZ
 
+abbrev V13RealLinearNoTargetSequentialPrefixHitMapClass
+    {m q : Nat} (i₀ : Fin m)
+    (observer : V13RealLinearSequentialRowObserver m q) (t : Fin q)
+    (pref :
+      V13RealLinearSequentialPrefixTranscriptVector m (t : Nat))
+    (row₁ : Fin m) :=
+  {A :
+      V13RealLinearNoTargetSequentialPrefixMapClass
+        i₀ observer t pref //
+    V13RealLinearRowFunctionalTargetCosetHit A.val.val
+      (v13RealLinearSequentialPrefixTranscriptVectorRows pref) i₀ row₁}
+
+noncomputable instance
+    {m q : Nat} (i₀ : Fin m)
+    (observer : V13RealLinearSequentialRowObserver m q) (t : Fin q)
+    (pref :
+      V13RealLinearSequentialPrefixTranscriptVector m (t : Nat))
+    (row₁ : Fin m) :
+    Fintype
+      (V13RealLinearNoTargetSequentialPrefixHitMapClass
+        i₀ observer t pref row₁) := by
+  classical
+  unfold V13RealLinearNoTargetSequentialPrefixHitMapClass
+  infer_instance
+
+abbrev V13RealLinearNoTargetSequentialPrefixHitSupportSigma
+    {m q : Nat} (i₀ : Fin m)
+    (observer : V13RealLinearSequentialRowObserver m q) (t : Fin q)
+    (pref :
+      V13RealLinearSequentialPrefixTranscriptVector m (t : Nat))
+    (row₁ : Fin m) :=
+  Σ support :
+      {support :
+        Finset
+          {row : Fin m //
+            row ∈ v13RealLinearSequentialPrefixTranscriptVectorRows pref} //
+        0 < support.card},
+    V13RealLinearNoTargetSequentialPrefixPinnedSupportMapClass
+      i₀ observer t pref row₁ support.val
+
+noncomputable instance
+    {m q : Nat} (i₀ : Fin m)
+    (observer : V13RealLinearSequentialRowObserver m q) (t : Fin q)
+    (pref :
+      V13RealLinearSequentialPrefixTranscriptVector m (t : Nat))
+    (row₁ : Fin m) :
+    Fintype
+      (V13RealLinearNoTargetSequentialPrefixHitSupportSigma
+        i₀ observer t pref row₁) := by
+  classical
+  unfold V13RealLinearNoTargetSequentialPrefixHitSupportSigma
+  infer_instance
+
+noncomputable def
+    v13RealLinearNoTargetSequentialPrefixHitMapClassToSupportSigma
+    {m q : Nat} (i₀ : Fin m)
+    (observer : V13RealLinearSequentialRowObserver m q) (t : Fin q)
+    (pref :
+      V13RealLinearSequentialPrefixTranscriptVector m (t : Nat))
+    {row₁ : Fin m}
+    (hrow₁ :
+      row₁ ∉ v13RealLinearSequentialPrefixTranscriptVectorRows pref) :
+    V13RealLinearNoTargetSequentialPrefixHitMapClass
+        i₀ observer t pref row₁ ↪
+      V13RealLinearNoTargetSequentialPrefixHitSupportSigma
+        i₀ observer t pref row₁ where
+  toFun A := by
+    classical
+    let rows := v13RealLinearSequentialPrefixTranscriptVectorRows pref
+    let ex :=
+      v13RealLinearNoTargetRows_freshRowFunctionalTargetCosetHit_exists_support_sum
+        A.val.val hrow₁ A.property
+    let support := Classical.choose ex
+    have hspec := Classical.choose_spec ex
+    refine ⟨⟨support, hspec.1⟩, ⟨A.val, ?_⟩⟩
+    intro w
+    have hsupport :
+        support.sum (fun row => A.val.val.val.toEquiv w row.1) =
+          support.sum
+            (fun row =>
+              (v13RealLinearSequentialPrefixTranscriptVectorRowView
+                pref row).1 w) := by
+      apply Finset.sum_congr rfl
+      intro row _hrow
+      exact
+        v13RealLinearNoTargetSequentialPrefixMapClass_rowFunctional_eq
+          A.val row w
+    have hfresh :=
+      v13RealLinearFreshFullSupport_sum
+        A.val.val.val hrow₁ support w
+    have hfull := hspec.2 w
+    have hrowPlus :
+        A.val.val.val.toEquiv w row₁ +
+          support.sum
+            (fun row =>
+              (v13RealLinearSequentialPrefixTranscriptVectorRowView
+                pref row).1 w) =
+        w i₀ := by
+      rw [← hfull]
+      rw [hfresh]
+      rw [hsupport]
+    calc
+      A.val.val.val.toEquiv w row₁ =
+          (A.val.val.val.toEquiv w row₁ +
+            support.sum
+              (fun row =>
+                (v13RealLinearSequentialPrefixTranscriptVectorRowView
+                  pref row).1 w)) +
+            support.sum
+              (fun row =>
+                (v13RealLinearSequentialPrefixTranscriptVectorRowView
+                  pref row).1 w) := by
+            exact
+              (f2_add_right_self
+                (A.val.val.val.toEquiv w row₁)
+                (support.sum
+                  (fun row =>
+                    (v13RealLinearSequentialPrefixTranscriptVectorRowView
+                      pref row).1 w))).symm
+      _ =
+          w i₀ +
+            support.sum
+              (fun row =>
+                (v13RealLinearSequentialPrefixTranscriptVectorRowView
+                  pref row).1 w) := by
+            rw [hrowPlus]
+  inj' := by
+    intro A₀ A₁ h
+    apply Subtype.ext
+    exact congrArg (fun z :
+      V13RealLinearNoTargetSequentialPrefixHitSupportSigma
+        i₀ observer t pref row₁ => z.2.val) h
+
+theorem
+    v13RealLinearNoTargetSequentialPrefixHitMapClass_card_mul_two_pow_le_prefixMapClass
+    {m q : Nat} (i₀ : Fin m)
+    (observer : V13RealLinearSequentialRowObserver m q) (t : Fin q)
+    (pref :
+      V13RealLinearSequentialPrefixTranscriptVector m (t : Nat))
+    {row₁ : Fin m}
+    (hrow₁ :
+      row₁ ∉ v13RealLinearSequentialPrefixTranscriptVectorRows pref) :
+    Fintype.card
+        (V13RealLinearNoTargetSequentialPrefixHitMapClass
+          i₀ observer t pref row₁) *
+      2 ^ m ≤
+    4 *
+      2 ^ (v13RealLinearSequentialPrefixTranscriptVectorRows pref).card *
+      Fintype.card
+        (V13RealLinearNoTargetSequentialPrefixMapClass
+          i₀ observer t pref) := by
+  classical
+  let rows := v13RealLinearSequentialPrefixTranscriptVectorRows pref
+  let Hit :=
+    V13RealLinearNoTargetSequentialPrefixHitMapClass
+      i₀ observer t pref row₁
+  let Sigma :=
+    V13RealLinearNoTargetSequentialPrefixHitSupportSigma
+      i₀ observer t pref row₁
+  let N :=
+    Fintype.card
+      (V13RealLinearNoTargetSequentialPrefixMapClass
+        i₀ observer t pref)
+  let M := 2 ^ m
+  have hHitLe :
+      Fintype.card Hit ≤ Fintype.card Sigma :=
+    Fintype.card_le_of_embedding
+      (v13RealLinearNoTargetSequentialPrefixHitMapClassToSupportSigma
+        i₀ observer t pref hrow₁)
+  have hSupportLe :
+      Fintype.card
+          {support : Finset {row : Fin m // row ∈ rows} //
+            0 < support.card} ≤
+        2 ^ rows.card := by
+    calc
+      Fintype.card
+          {support : Finset {row : Fin m // row ∈ rows} //
+            0 < support.card} ≤
+          Fintype.card (Finset {row : Fin m // row ∈ rows}) := by
+        exact Fintype.card_subtype_le
+          (fun support : Finset {row : Fin m // row ∈ rows} =>
+            0 < support.card)
+      _ = 2 ^ Fintype.card {row : Fin m // row ∈ rows} :=
+        Fintype.card_finset
+      _ = 2 ^ rows.card := by simp
+  have hterm :
+      ∀ support :
+          {support : Finset {row : Fin m // row ∈ rows} //
+            0 < support.card},
+        Fintype.card
+            (V13RealLinearNoTargetSequentialPrefixPinnedSupportMapClass
+              i₀ observer t pref row₁ support.val) *
+          M ≤ 4 * N := by
+    intro support
+    rcases Finset.card_pos.mp support.property with ⟨row₀, hrow₀⟩
+    simpa [M, N, rows] using
+      v13RealLinearNoTargetSequentialPrefixPinnedSupportMapClass_card_mul_two_pow_le_prefixMapClass
+        i₀ observer t pref hrow₁ row₀ hrow₀
+  have hSigma :
+      Fintype.card Sigma * M ≤ 4 * 2 ^ rows.card * N := by
+    have hcardSigma :
+        Fintype.card Sigma =
+          ∑ support :
+              {support : Finset {row : Fin m // row ∈ rows} //
+                0 < support.card},
+            Fintype.card
+              (V13RealLinearNoTargetSequentialPrefixPinnedSupportMapClass
+                i₀ observer t pref row₁ support.val) := by
+      dsimp [Sigma, V13RealLinearNoTargetSequentialPrefixHitSupportSigma, rows]
+      exact Fintype.card_sigma
+    rw [hcardSigma]
+    rw [Finset.sum_mul]
+    calc
+      (∑ support :
+          {support : Finset {row : Fin m // row ∈ rows} //
+            0 < support.card},
+          Fintype.card
+              (V13RealLinearNoTargetSequentialPrefixPinnedSupportMapClass
+                i₀ observer t pref row₁ support.val) *
+            M) ≤
+          ∑ _support :
+              {support : Finset {row : Fin m // row ∈ rows} //
+                0 < support.card}, 4 * N := by
+            apply Finset.sum_le_sum
+            intro support _hsupport
+            exact hterm support
+      _ =
+          Fintype.card
+              {support : Finset {row : Fin m // row ∈ rows} //
+                0 < support.card} *
+            (4 * N) := by
+        rw [Finset.sum_const]
+        simp
+      _ ≤ 2 ^ rows.card * (4 * N) := by
+        exact Nat.mul_le_mul_right (4 * N) hSupportLe
+      _ = 4 * 2 ^ rows.card * N := by ring
+  calc
+    Fintype.card Hit * M ≤ Fintype.card Sigma * M :=
+      Nat.mul_le_mul_right M hHitLe
+    _ ≤ 4 * 2 ^ rows.card * N := hSigma
+    _ =
+      4 * 2 ^ (v13RealLinearSequentialPrefixTranscriptVectorRows pref).card *
+        Fintype.card
+          (V13RealLinearNoTargetSequentialPrefixMapClass
+            i₀ observer t pref) := by
+        simp [rows, N]
+
 noncomputable def
     v13RealLinearNoTargetSequentialWorldEquivSigmaPrefixWorldSet
     {m q : Nat} (i₀ : Fin m)
