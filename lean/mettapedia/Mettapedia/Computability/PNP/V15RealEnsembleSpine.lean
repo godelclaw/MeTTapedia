@@ -1,6 +1,6 @@
 import Mettapedia.Computability.PNP.PNPv13LockedCoreLabCanaries
 import Mettapedia.Computability.PNP.V13ConditionalClash
-import Mettapedia.Computability.PNP.V13RealRungOneLinear
+import Mettapedia.Computability.PNP.V13RealRungOneQRowBound
 
 /-!
 # PNP v15 real ensemble spine
@@ -162,6 +162,81 @@ theorem v13RealLinear_validWitness_readout_eq_publicMessage {m : Nat}
     v13RealLinearWitnessReadout i₀ W =
       v13RealLinearMessageOfPublic i₀ Y :=
   (v13RealLinearSingleMessageSATSpine i₀).readout_eq_message_of_valid hW
+
+/-! ## Real no-target-rows public neutrality package -/
+
+def v13RealLinearNoTargetRowsTargetBit {m : Nat} {i₀ : Fin m}
+    (omega : V13RealLinearNoTargetRowsWorld m i₀) : Bool :=
+  v13RealLinearBit (omega.2 i₀)
+
+def v13RealLinearNoTargetRowsNeutralSkeleton {m : Nat} {i₀ : Fin m}
+    (omega : V13RealLinearNoTargetRowsWorld m i₀) :
+    V13RealLinearNoTargetRowsMap m i₀ :=
+  omega.1
+
+def v13RealLinearNoTargetRowsOppositeSupport {m : Nat} {i₀ : Fin m}
+    (omega₀ omega₁ : V13RealLinearNoTargetRowsWorld m i₀) : Prop :=
+  omega₀.1 = omega₁.1
+
+theorem v13RealLinearNoTargetRows_pairNeutral {m : Nat} {i₀ : Fin m} :
+    PairNeutral
+      (@v13RealLinearNoTargetRowsOppositeSupport m i₀)
+      (@v13RealLinearNoTargetRowsNeutralSkeleton m i₀) := by
+  intro omega₀ omega₁ hSupport
+  exact hSupport
+
+theorem v13RealLinearNoTargetRows_hasMessageOppositePair
+    {m : Nat} (i₀ : Fin m) (hm : 1 < m) :
+    HasMessageOppositePair
+      (@v13RealLinearNoTargetRowsOppositeSupport m i₀)
+      (@v13RealLinearNoTargetRowsTargetBit m i₀) := by
+  let A : V13RealLinearNoTargetRowsMap m i₀ :=
+    ⟨v13RealLinearNoTargetRowShear i₀ hm,
+      v13RealLinearNoTargetRowShear_targetRows_empty i₀ hm⟩
+  let omega₀ : V13RealLinearNoTargetRowsWorld m i₀ :=
+    (A, f2ZeroVec m)
+  let omega₁ : V13RealLinearNoTargetRowsWorld m i₀ :=
+    (A, v13RealLinearSingleBit i₀)
+  refine ⟨omega₀, omega₁, rfl, ?_, ?_⟩
+  · simp [omega₀, v13RealLinearNoTargetRowsTargetBit,
+      v13RealLinearBit, f2ZeroVec]
+  · simp [omega₁, v13RealLinearNoTargetRowsTargetBit,
+      v13RealLinearBit, v13RealLinearSingleBit]
+
+/-- The adjusted real linear no-target-rows surface has the v13
+`noPublicTargetTags` shape: the neutral skeleton is constant across an
+opposite pair, the pair crosses the target bit, and therefore the neutral
+skeleton alone cannot determine the target.  This is a real public-surface
+construction theorem, not the full M4 mechanical interface certificate. -/
+theorem v13RealLinearNoTargetRows_noPublicTargetTags
+    {m : Nat} (i₀ : Fin m) (hm : 1 < m) :
+    PairNeutral
+        (@v13RealLinearNoTargetRowsOppositeSupport m i₀)
+        (@v13RealLinearNoTargetRowsNeutralSkeleton m i₀) ∧
+      HasMessageOppositePair
+        (@v13RealLinearNoTargetRowsOppositeSupport m i₀)
+        (@v13RealLinearNoTargetRowsTargetBit m i₀) ∧
+        ¬ ∃ f : V13RealLinearNoTargetRowsMap m i₀ -> Bool,
+          ∀ omega : V13RealLinearNoTargetRowsWorld m i₀,
+            v13RealLinearNoTargetRowsTargetBit omega =
+              f (v13RealLinearNoTargetRowsNeutralSkeleton omega) := by
+  have hPair :
+      PairNeutral
+        (@v13RealLinearNoTargetRowsOppositeSupport m i₀)
+        (@v13RealLinearNoTargetRowsNeutralSkeleton m i₀) :=
+    v13RealLinearNoTargetRows_pairNeutral
+  have hOpp :
+      HasMessageOppositePair
+        (@v13RealLinearNoTargetRowsOppositeSupport m i₀)
+        (@v13RealLinearNoTargetRowsTargetBit m i₀) :=
+    v13RealLinearNoTargetRows_hasMessageOppositePair i₀ hm
+  exact
+    ⟨hPair, hOpp,
+      neutralSkeleton_not_sufficient
+        (@v13RealLinearNoTargetRowsOppositeSupport m i₀)
+        (@v13RealLinearNoTargetRowsNeutralSkeleton m i₀)
+        (@v13RealLinearNoTargetRowsTargetBit m i₀)
+        hPair hOpp⟩
 
 /-! ## Appendix D locked-core adapter for the real spine -/
 
@@ -2003,8 +2078,8 @@ def realM4LiftLedger : List RealM4LiftLedgerRow := [
   {
     item := "noPublicTargetTags"
     status := .partialConstructionTransferred
-    checkedName := "v13RealLinear_publicSurfaceCertificate"
-    note := "The real linear surface proves no elementary public coordinate determines the target; the full neutral-skeleton/opposite-pair field remains to be packaged for M4."
+    checkedName := "v13RealLinearNoTargetRows_noPublicTargetTags"
+    note := "The adjusted real no-target-rows linear surface proves the v13 neutral-skeleton/opposite-pair shape; the full M4 mechanical interface still has to connect this surface to its neutral skeleton."
   },
   {
     item := "atomCompleteness"

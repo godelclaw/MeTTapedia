@@ -23,6 +23,12 @@ set_option autoImplicit false
 #check v13RealLinearSingleMessageSATSpine
 #check v13RealLinearSingleMessageSATSpine_singleMessage
 #check v13RealLinear_validWitness_readout_eq_publicMessage
+#check v13RealLinearNoTargetRowsTargetBit
+#check v13RealLinearNoTargetRowsNeutralSkeleton
+#check v13RealLinearNoTargetRowsOppositeSupport
+#check v13RealLinearNoTargetRows_pairNeutral
+#check v13RealLinearNoTargetRows_hasMessageOppositePair
+#check v13RealLinearNoTargetRows_noPublicTargetTags
 #check RealM4LockedCoreWorld
 #check RealM4LockedCoreWitness
 #check RealM4LockedCoreWorld.toWitness
@@ -172,6 +178,12 @@ set_option autoImplicit false
 #print axioms v13RealLinearSingleMessageSATSpine
 #print axioms v13RealLinearSingleMessageSATSpine_singleMessage
 #print axioms v13RealLinear_validWitness_readout_eq_publicMessage
+#print axioms v13RealLinearNoTargetRowsTargetBit
+#print axioms v13RealLinearNoTargetRowsNeutralSkeleton
+#print axioms v13RealLinearNoTargetRowsOppositeSupport
+#print axioms v13RealLinearNoTargetRows_pairNeutral
+#print axioms v13RealLinearNoTargetRows_hasMessageOppositePair
+#print axioms v13RealLinearNoTargetRows_noPublicTargetTags
 #print axioms RealM4LockedCoreWorld
 #print axioms RealM4LockedCoreWitness
 #print axioms RealM4LockedCoreWorld.toWitness
