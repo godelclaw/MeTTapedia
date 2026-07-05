@@ -11689,6 +11689,107 @@ theorem closedCollarWindingFreedomNonrealizableInNormalForm_of_currentFiniteFron
     hrows
 
 /--
+Factored-bridge exact criterion for the finite side of the current frontier.
+The max-cut row artifact is recorded in the frontier evidence; this criterion
+keeps the remaining semantic link explicit: once the factored bridge is
+available, audited row coverage kills the witness, and any failure of
+nonrealizability under that bridge must be a failure of audited row coverage.
+-/
+def Section92Step4CurrentFiniteFrontierFactoredBridgeAuditedRowCoverageExactCriterion :
+    Prop :=
+  ClosedCollarWindingFreedomCurrentFiniteRealizationFrontierEvidence ∧
+    (ClosedCollarWindingFreedomCurrentFiniteFrontierRemainingFactoredBridge →
+      ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceAuditedRowsCoveredByLab →
+        ClosedCollarWindingFreedomNonrealizableInNormalForm) ∧
+      (ClosedCollarWindingFreedomCurrentFiniteFrontierRemainingFactoredBridge →
+        ¬ ClosedCollarWindingFreedomNonrealizableInNormalForm →
+          ¬ ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceAuditedRowsCoveredByLab)
+
+theorem section92Step4CurrentFiniteFrontierFactoredBridgeAuditedRowCoverageExactCriterion :
+    Section92Step4CurrentFiniteFrontierFactoredBridgeAuditedRowCoverageExactCriterion := by
+  refine
+    ⟨closedCollarWindingFreedomCurrentFiniteRealizationFrontierEvidence,
+      closedCollarWindingFreedomNonrealizableInNormalForm_of_currentFiniteFrontierRemainingFactoredBridge_of_auditedRows,
+      ?_⟩
+  intro hbridge hnot hrows
+  exact
+    hnot
+      (closedCollarWindingFreedomNonrealizableInNormalForm_of_currentFiniteFrontierRemainingFactoredBridge_of_auditedRows
+        hbridge hrows)
+
+/--
+Current-boundary version of the audited-row coverage exact criterion.  It
+separates the corrected witness-placement bridge from the finite semantic
+coverage obligation produced by the radial-face lab interface.
+-/
+def Section92Step4CurrentFiniteFrontierCurrentBoundaryBridgeAuditedRowCoverageExactCriterion :
+    Prop :=
+  ClosedCollarWindingFreedomCurrentFiniteRealizationFrontierEvidence ∧
+    (ClosedCollarWindingFreedomCurrentFiniteFrontierRemainingCurrentBoundaryBridge →
+      ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceAuditedRowsCoveredByLab →
+        ClosedCollarWindingFreedomNonrealizableInNormalForm) ∧
+      (ClosedCollarWindingFreedomCurrentFiniteFrontierRemainingCurrentBoundaryBridge →
+        ¬ ClosedCollarWindingFreedomNonrealizableInNormalForm →
+          ¬ ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceAuditedRowsCoveredByLab)
+
+theorem section92Step4CurrentFiniteFrontierCurrentBoundaryBridgeAuditedRowCoverageExactCriterion :
+    Section92Step4CurrentFiniteFrontierCurrentBoundaryBridgeAuditedRowCoverageExactCriterion := by
+  refine
+    ⟨closedCollarWindingFreedomCurrentFiniteRealizationFrontierEvidence,
+      closedCollarWindingFreedomNonrealizableInNormalForm_of_currentFiniteFrontierRemainingCurrentBoundaryBridge_of_auditedRows,
+      ?_⟩
+  intro hbridge hnot hrows
+  exact
+    hnot
+      (closedCollarWindingFreedomNonrealizableInNormalForm_of_currentFiniteFrontierRemainingCurrentBoundaryBridge_of_auditedRows
+        hbridge hrows)
+
+/--
+One-collar version of the audited-row coverage exact criterion.  If the
+stronger one-collar extraction supplies the current-boundary bridge, the
+finite-side coverage obligation is still exactly the audited-row semantic
+link, not a weakened winding invariant.
+-/
+def Section92Step4CurrentFiniteFrontierOneCollarBridgeAuditedRowCoverageExactCriterion :
+    Prop :=
+  ClosedCollarWindingFreedomCurrentFiniteRealizationFrontierEvidence ∧
+    (ClosedCollarWindingFreedomCurrentFiniteFrontierRemainingOneCollarBridge →
+      ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceAuditedRowsCoveredByLab →
+        ClosedCollarWindingFreedomNonrealizableInNormalForm) ∧
+      (ClosedCollarWindingFreedomCurrentFiniteFrontierRemainingOneCollarBridge →
+        ¬ ClosedCollarWindingFreedomNonrealizableInNormalForm →
+          ¬ ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceAuditedRowsCoveredByLab)
+
+theorem section92Step4CurrentFiniteFrontierOneCollarBridgeAuditedRowCoverageExactCriterion :
+    Section92Step4CurrentFiniteFrontierOneCollarBridgeAuditedRowCoverageExactCriterion := by
+  refine
+    ⟨closedCollarWindingFreedomCurrentFiniteRealizationFrontierEvidence,
+      closedCollarWindingFreedomNonrealizableInNormalForm_of_currentFiniteFrontierRemainingOneCollarBridge_of_auditedRows,
+      ?_⟩
+  intro hbridge hnot hrows
+  exact
+    hnot
+      (closedCollarWindingFreedomNonrealizableInNormalForm_of_currentFiniteFrontierRemainingOneCollarBridge_of_auditedRows
+        hbridge hrows)
+
+/--
+Bundled current-frontier exact criteria: for the factored, current-boundary,
+and one-collar bridges, the serious remaining finite-side link is precisely
+audited row coverage of the radial-face lab rows.
+-/
+def Section92Step4CurrentFiniteFrontierAuditedRowCoverageExactCriteria :
+    Prop :=
+  Section92Step4CurrentFiniteFrontierFactoredBridgeAuditedRowCoverageExactCriterion ∧
+    Section92Step4CurrentFiniteFrontierCurrentBoundaryBridgeAuditedRowCoverageExactCriterion ∧
+      Section92Step4CurrentFiniteFrontierOneCollarBridgeAuditedRowCoverageExactCriterion
+
+theorem section92Step4CurrentFiniteFrontierAuditedRowCoverageExactCriteria :
+    Section92Step4CurrentFiniteFrontierAuditedRowCoverageExactCriteria :=
+  ⟨section92Step4CurrentFiniteFrontierFactoredBridgeAuditedRowCoverageExactCriterion,
+    section92Step4CurrentFiniteFrontierCurrentBoundaryBridgeAuditedRowCoverageExactCriterion,
+    section92Step4CurrentFiniteFrontierOneCollarBridgeAuditedRowCoverageExactCriterion⟩
+
+/--
 Current finite-frontier fork with the remaining bridge stated explicitly.  The
 finite evidence is on record; if the five factored normal-form obligations are
 proved, the audited rows kill the winding-freedom witness.  If audited rows are
