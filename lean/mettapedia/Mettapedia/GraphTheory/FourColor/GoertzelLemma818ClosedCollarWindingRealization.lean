@@ -3032,6 +3032,42 @@ theorem closedCollarWindingFreedomEveryNormalFormHasEmbeddedCollarRealization_of
       normalForm_eq := rfl
     }⟩
 
+theorem closedCollarWindingFreedomEveryNormalFormHasRadialFace_of_embeddedCollarExtraction
+    (hextract :
+      ClosedCollarWindingFreedomEveryNormalFormHasEmbeddedCollarRealization) :
+    ClosedCollarWindingFreedomEveryNormalFormHasRadialFace := by
+  classical
+  intro V G normalForm
+  rcases hextract normalForm with ⟨extraction⟩
+  let normalFormRadialFace :=
+    extraction.embedded.toNormalFormRadialFaceRealization
+  exact
+    ⟨{
+      normalFormRadialFace := normalFormRadialFace
+      normalForm_eq := extraction.normalForm_eq
+    }⟩
+
+theorem closedCollarWindingFreedomEveryNormalFormHasRadialFace_of_embeddedGeometryExtraction_of_radialFace
+    (hextract :
+      ClosedCollarWindingFreedomEveryNormalFormHasEmbeddedGeometryRealization)
+    (hradial :
+      ClosedCollarWindingFreedomActualCollarGeometrySuppliesRadialFaceExtraction) :
+    ClosedCollarWindingFreedomEveryNormalFormHasRadialFace :=
+  closedCollarWindingFreedomEveryNormalFormHasRadialFace_of_embeddedCollarExtraction
+    (closedCollarWindingFreedomEveryNormalFormHasEmbeddedCollarRealization_of_geometryExtraction_of_radialFace
+      hextract hradial)
+
+theorem closedCollarWindingFreedomEveryNormalFormHasRadialFace_of_geometryData_of_radialFaceExtraction
+    (hgeometry :
+      ClosedCollarWindingFreedomActualCollarEmbeddingSuppliesGeometryData)
+    (hradial :
+      ClosedCollarWindingFreedomActualCollarGeometrySuppliesRadialFaceExtraction) :
+    ClosedCollarWindingFreedomEveryNormalFormHasRadialFace :=
+  closedCollarWindingFreedomEveryNormalFormHasRadialFace_of_embeddedGeometryExtraction_of_radialFace
+    (closedCollarWindingFreedomEveryNormalFormHasEmbeddedGeometryRealization_of_suppliesGeometryData
+      hgeometry)
+    hradial
+
 theorem closedCollarWindingFreedomEmbeddedCollarNormalFormRealization_false_of_radialFaceN6_of_classification
     (hn6 :
       ClosedCollarWindingFreedomEveryRadialFaceNormalFormHasN6Representation)
@@ -6713,6 +6749,100 @@ theorem section92Step4RepairedByRadialFaceN6ExtractionAuditedKeysAndRowCoverageT
   exact
     closedCollarWindingFreedomNonrealizableInNormalForm_of_radialFaceN6AuditedArchiveKey_of_rowCoverage
       hradial hn6 hkeys hartifact hsampleRows hslice1000302Rows hslice1001289Rows
+
+theorem closedCollarWindingFreedomNonrealizableInNormalForm_of_embeddedGeometryN6AuditedArchiveKey_of_rowCoverage
+    (hextract :
+      ClosedCollarWindingFreedomEveryNormalFormHasEmbeddedGeometryRealization)
+    (hradial :
+      ClosedCollarWindingFreedomActualCollarGeometrySuppliesRadialFaceExtraction)
+    (hn6 :
+      ClosedCollarWindingFreedomEveryRadialFaceNormalFormHasN6Representation)
+    (hkeys :
+      ClosedCollarWindingFreedomEveryRadialFaceN6RepresentationHasAuditedArchiveKey)
+    (hartifact :
+      ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceRowCoverageArtifactEvidence)
+    (hsampleRows :
+      ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSampleRadialFaceRowsCoveredByLab)
+    (hslice1000302Rows :
+      ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSlice1000302RadialFaceRowsCoveredByLab)
+    (hslice1001289Rows :
+      ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSlice1001289RadialFaceRowsCoveredByLab) :
+    ClosedCollarWindingFreedomNonrealizableInNormalForm :=
+  closedCollarWindingFreedomNonrealizableInNormalForm_of_radialFaceN6AuditedArchiveKey_of_rowCoverage
+    (closedCollarWindingFreedomEveryNormalFormHasRadialFace_of_embeddedGeometryExtraction_of_radialFace
+      hextract hradial)
+    hn6 hkeys hartifact hsampleRows hslice1000302Rows hslice1001289Rows
+
+/--
+Repaired Section 9.2 Step 4 target with the geometric side exposed as
+embedded collar geometry plus cut-open radial-face extraction.  The remaining
+finite side is the exact ten-row archive coverage and audited key spectrum.
+-/
+def Section92Step4RepairedByEmbeddedGeometryExtractionN6AuditedKeysAndRowCoverageTarget :
+    Prop :=
+  ClosedCollarWindingFreedomEveryNormalFormHasEmbeddedGeometryRealization →
+    ClosedCollarWindingFreedomActualCollarGeometrySuppliesRadialFaceExtraction →
+      ClosedCollarWindingFreedomEveryRadialFaceNormalFormHasN6Representation →
+        ClosedCollarWindingFreedomEveryRadialFaceN6RepresentationHasAuditedArchiveKey →
+          ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceRowCoverageArtifactEvidence →
+            ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSampleRadialFaceRowsCoveredByLab →
+              ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSlice1000302RadialFaceRowsCoveredByLab →
+                ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSlice1001289RadialFaceRowsCoveredByLab →
+                  ClosedCollarWindingFreedomNonrealizableInNormalForm
+
+theorem section92Step4RepairedByEmbeddedGeometryExtractionN6AuditedKeysAndRowCoverageTarget :
+    Section92Step4RepairedByEmbeddedGeometryExtractionN6AuditedKeysAndRowCoverageTarget := by
+  intro hextract hradial hn6 hkeys hartifact hsampleRows hslice1000302Rows hslice1001289Rows
+  exact
+    closedCollarWindingFreedomNonrealizableInNormalForm_of_embeddedGeometryN6AuditedArchiveKey_of_rowCoverage
+      hextract hradial hn6 hkeys hartifact hsampleRows hslice1000302Rows hslice1001289Rows
+
+theorem closedCollarWindingFreedomNonrealizableInNormalForm_of_geometryN6AuditedArchiveKey_of_rowCoverage
+    (hgeometry :
+      ClosedCollarWindingFreedomActualCollarEmbeddingSuppliesGeometryData)
+    (hradial :
+      ClosedCollarWindingFreedomActualCollarGeometrySuppliesRadialFaceExtraction)
+    (hn6 :
+      ClosedCollarWindingFreedomEveryRadialFaceNormalFormHasN6Representation)
+    (hkeys :
+      ClosedCollarWindingFreedomEveryRadialFaceN6RepresentationHasAuditedArchiveKey)
+    (hartifact :
+      ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceRowCoverageArtifactEvidence)
+    (hsampleRows :
+      ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSampleRadialFaceRowsCoveredByLab)
+    (hslice1000302Rows :
+      ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSlice1000302RadialFaceRowsCoveredByLab)
+    (hslice1001289Rows :
+      ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSlice1001289RadialFaceRowsCoveredByLab) :
+    ClosedCollarWindingFreedomNonrealizableInNormalForm :=
+  closedCollarWindingFreedomNonrealizableInNormalForm_of_embeddedGeometryN6AuditedArchiveKey_of_rowCoverage
+    (closedCollarWindingFreedomEveryNormalFormHasEmbeddedGeometryRealization_of_suppliesGeometryData
+      hgeometry)
+    hradial hn6 hkeys hartifact hsampleRows hslice1000302Rows hslice1001289Rows
+
+/--
+Repaired Section 9.2 Step 4 target with the actual-collar geometry side split
+into embedded geometry data and radial-face extraction, and the finite side
+split into n6 extraction, audited key spectrum, and exact ten-row coverage.
+-/
+def Section92Step4RepairedByGeometryRadialFaceExtractionN6AuditedKeysAndRowCoverageTarget :
+    Prop :=
+  ClosedCollarWindingFreedomActualCollarEmbeddingSuppliesGeometryData →
+    ClosedCollarWindingFreedomActualCollarGeometrySuppliesRadialFaceExtraction →
+      ClosedCollarWindingFreedomEveryRadialFaceNormalFormHasN6Representation →
+        ClosedCollarWindingFreedomEveryRadialFaceN6RepresentationHasAuditedArchiveKey →
+          ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceRowCoverageArtifactEvidence →
+            ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSampleRadialFaceRowsCoveredByLab →
+              ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSlice1000302RadialFaceRowsCoveredByLab →
+                ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSlice1001289RadialFaceRowsCoveredByLab →
+                  ClosedCollarWindingFreedomNonrealizableInNormalForm
+
+theorem section92Step4RepairedByGeometryRadialFaceExtractionN6AuditedKeysAndRowCoverageTarget :
+    Section92Step4RepairedByGeometryRadialFaceExtractionN6AuditedKeysAndRowCoverageTarget := by
+  intro hgeometry hradial hn6 hkeys hartifact hsampleRows hslice1000302Rows hslice1001289Rows
+  exact
+    closedCollarWindingFreedomNonrealizableInNormalForm_of_geometryN6AuditedArchiveKey_of_rowCoverage
+      hgeometry hradial hn6 hkeys hartifact hsampleRows hslice1000302Rows hslice1001289Rows
 
 end GoertzelLemma818ClosedCollarWindingRealization
 
