@@ -204,6 +204,13 @@ theorem closedCollarWindingFreedomEveryNormalFormHasRadialFace_of_actualCollarEm
   closedCollarWindingFreedomEveryNormalFormHasRadialFace_of_actualCollarEmbeddingForcesRadialFace
     hactual
 
+theorem closedCollarWindingFreedomActualCollarEmbeddingForcesRadialFace_of_suppliesRadialFaceData_audit
+    (hdata :
+      ClosedCollarWindingFreedomActualCollarEmbeddingSuppliesRadialFaceData) :
+    ClosedCollarWindingFreedomActualCollarEmbeddingForcesRadialFace :=
+  closedCollarWindingFreedomActualCollarEmbeddingForcesRadialFace_of_suppliesRadialFaceData
+    hdata
+
 theorem section92Step4RepairedByRadialFaceN6ExtractionAndTaxonomyTarget_audit :
     Section92Step4RepairedByRadialFaceN6ExtractionAndTaxonomyTarget :=
   section92Step4RepairedByRadialFaceN6ExtractionAndTaxonomyTarget
@@ -211,6 +218,10 @@ theorem section92Step4RepairedByRadialFaceN6ExtractionAndTaxonomyTarget_audit :
 theorem section92Step4RepairedByActualCollarEmbeddingN6TaxonomyTarget_audit :
     Section92Step4RepairedByActualCollarEmbeddingN6TaxonomyTarget :=
   section92Step4RepairedByActualCollarEmbeddingN6TaxonomyTarget
+
+theorem section92Step4RepairedByEmbeddedCollarN6TaxonomyTarget_audit :
+    Section92Step4RepairedByEmbeddedCollarN6TaxonomyTarget :=
+  section92Step4RepairedByEmbeddedCollarN6TaxonomyTarget
 
 theorem closedCollarWindingFreedomSimplePatchTemplateBlockerArchiveEvidence_audit :
     ClosedCollarWindingFreedomSimplePatchTemplateBlockerArchiveEvidence :=
