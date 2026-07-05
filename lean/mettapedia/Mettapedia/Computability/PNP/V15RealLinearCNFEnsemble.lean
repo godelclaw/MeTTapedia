@@ -1094,6 +1094,50 @@ theorem v13RealLinearSmallNoTargetRowsCNF_singleMessage
     _ = v13RealLinearSmallNoTargetRowsCNFReadout W' :=
       (v13RealLinearSmallNoTargetRowsCNFReadout_eq_message_of_valid hW').symm
 
+/-! ## Global small no-target-row CNF SAT-world surface -/
+
+/-- Global SAT worlds for the concrete no-target-row CNF ensemble: the public
+row data varies, and the witness is any verifier-valid satisfying assignment,
+not just the canonical representative. -/
+structure V13RealLinearSmallNoTargetRowsCNFSATWorld where
+  publicInput : V13RealLinearSmallNoTargetRowsCNFPublic
+  assignment : V13RealLinearSmallNoTargetRowsCNFWitness
+  sat : v13RealLinearSmallNoTargetRowsCNFVerifier publicInput assignment
+
+/-- Public input for the global no-target-row SAT-world surface. -/
+def v13RealLinearSmallNoTargetRowsCNFSATWorldPublicInput
+    (omega : V13RealLinearSmallNoTargetRowsCNFSATWorld) :
+    V13RealLinearSmallNoTargetRowsCNFPublic :=
+  omega.publicInput
+
+/-- Target readout on global no-target-row SAT worlds, computed from the
+carried satisfying witness. -/
+def v13RealLinearSmallNoTargetRowsCNFSATWorldTarget
+    (omega : V13RealLinearSmallNoTargetRowsCNFSATWorld) : Bool :=
+  v13RealLinearSmallNoTargetRowsCNFReadout omega.assignment
+
+/-- Every global no-target-row SAT world reads the fixed public message of
+its CNF instance. -/
+theorem v13RealLinearSmallNoTargetRowsCNFSATWorldTarget_eq_message
+    (omega : V13RealLinearSmallNoTargetRowsCNFSATWorld) :
+    v13RealLinearSmallNoTargetRowsCNFSATWorldTarget omega =
+      v13RealLinearSmallNoTargetRowsCNFMessage omega.publicInput :=
+  v13RealLinearSmallNoTargetRowsCNFReadout_eq_message_of_valid omega.sat
+
+/-- Structural `singleMessage` transfer for the global no-target-row SAT
+surface: inside one public row-equation CNF instance, all verifier-valid
+satisfying witnesses have the same fixed message readout. -/
+theorem v13RealLinearSmallNoTargetRowsCNFSATWorld_singleMessage :
+    ∀ omega₀ omega₁ : V13RealLinearSmallNoTargetRowsCNFSATWorld,
+      v13RealLinearSmallNoTargetRowsCNFSATWorldPublicInput omega₀ =
+        v13RealLinearSmallNoTargetRowsCNFSATWorldPublicInput omega₁ ->
+        v13RealLinearSmallNoTargetRowsCNFSATWorldTarget omega₀ =
+          v13RealLinearSmallNoTargetRowsCNFSATWorldTarget omega₁ := by
+  intro omega₀ omega₁ hPublic
+  rw [v13RealLinearSmallNoTargetRowsCNFSATWorldTarget_eq_message omega₀,
+    v13RealLinearSmallNoTargetRowsCNFSATWorldTarget_eq_message omega₁]
+  exact congrArg v13RealLinearSmallNoTargetRowsCNFMessage hPublic
+
 /-- Semantic verifier for the explicit small gauge-CNF instance. -/
 def v13RealLinearSmallGaugeCNFVerifier
     (msg : Bool) (W : V13RealLinearSmallGaugeCNFWitness) : Prop :=
