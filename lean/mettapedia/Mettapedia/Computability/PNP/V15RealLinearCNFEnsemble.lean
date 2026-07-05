@@ -893,6 +893,50 @@ theorem v13RealLinearSmallGaugeCNF_singleMessage
     _ = v13RealLinearSmallGaugeCNFReadout W' :=
       (v13RealLinearSmallGaugeCNFReadout_eq_message_of_valid hW').symm
 
+/-! ## Global small real-linear gauge-CNF SAT-world surface -/
+
+/-- Global SAT worlds for the explicit small real-linear gauge-CNF ensemble:
+the public message bit varies, and the witness is any verifier-valid
+satisfying assignment, not just the canonical representative. -/
+structure V13RealLinearSmallGaugeCNFSATWorld where
+  msg : Bool
+  assignment : V13RealLinearSmallGaugeCNFWitness
+  sat : v13RealLinearSmallGaugeCNFVerifier msg assignment
+
+/-- Public input for the global SAT-world surface: the concrete public
+message bit selecting the small CNF instance. -/
+def v13RealLinearSmallGaugeCNFSATWorldPublicInput
+    (omega : V13RealLinearSmallGaugeCNFSATWorld) : Bool :=
+  omega.msg
+
+/-- Target readout on global SAT worlds, computed from the carried satisfying
+witness. -/
+def v13RealLinearSmallGaugeCNFSATWorldTarget
+    (omega : V13RealLinearSmallGaugeCNFSATWorld) : Bool :=
+  v13RealLinearSmallGaugeCNFReadout omega.assignment
+
+/-- Every global SAT world reads the fixed public message of its CNF
+instance. -/
+theorem v13RealLinearSmallGaugeCNFSATWorldTarget_eq_message
+    (omega : V13RealLinearSmallGaugeCNFSATWorld) :
+    v13RealLinearSmallGaugeCNFSATWorldTarget omega =
+      v13RealLinearSmallGaugeCNFMessage omega.msg :=
+  v13RealLinearSmallGaugeCNFReadout_eq_message_of_valid omega.sat
+
+/-- Structural `singleMessage` transfer for the global SAT-world surface:
+inside one public small CNF instance, all verifier-valid satisfying witnesses
+have the same fixed message readout. -/
+theorem v13RealLinearSmallGaugeCNFSATWorld_singleMessage :
+    ∀ omega₀ omega₁ : V13RealLinearSmallGaugeCNFSATWorld,
+      v13RealLinearSmallGaugeCNFSATWorldPublicInput omega₀ =
+        v13RealLinearSmallGaugeCNFSATWorldPublicInput omega₁ ->
+        v13RealLinearSmallGaugeCNFSATWorldTarget omega₀ =
+          v13RealLinearSmallGaugeCNFSATWorldTarget omega₁ := by
+  intro omega₀ omega₁ hPublic
+  rw [v13RealLinearSmallGaugeCNFSATWorldTarget_eq_message omega₀,
+    v13RealLinearSmallGaugeCNFSATWorldTarget_eq_message omega₁]
+  exact congrArg v13RealLinearSmallGaugeCNFMessage hPublic
+
 /-- Hidden gauge readout for the explicit small real-linear gauge-CNF
 instance. -/
 def v13RealLinearSmallGaugeCNFHiddenGauge
