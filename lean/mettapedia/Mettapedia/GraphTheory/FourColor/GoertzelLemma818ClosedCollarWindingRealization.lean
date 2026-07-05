@@ -1162,6 +1162,9 @@ structure ClosedCollarSimplePatchTemplateBlockerSliceCounts where
 def closedCollarSimplePatchN6ExactPatchTopologyCount : Nat :=
   1858980
 
+def closedCollarSimplePatchN8ExactPatchTopologyCount : Nat :=
+  1189087725
+
 def closedCollarSimplePatchN6First800000StructuralCounts :
     ClosedCollarSimplePatchTemplateBlockerSliceCounts where
   internalVertexCount := 6
@@ -1673,6 +1676,33 @@ theorem closedCollarWindingFreedomSimplePatchN8First2000000_noProfilePreservingC
         0 := rfl
   have hpos := candidate.hprofileCountPositive
   omega
+
+/--
+Scope certificate for the current eight-internal simple-patch lab: the checked
+first-2000000 prefix is strict, leaves 1187087725 generated topologies outside
+the prefix, and covers less than one five-hundredth of the exact n8 labelled
+simple-patch topology space.
+-/
+def ClosedCollarWindingFreedomSimplePatchN8First2000000CoverageEvidence : Prop :=
+  ClosedCollarWindingFreedomSimplePatchN8First2000000NoProfilePreservingEvidence ∧
+    closedCollarSimplePatchN8ExactPatchTopologyCount = 1189087725 ∧
+    closedCollarSimplePatchN8First2000000TemplateBlockerCounts.processedPatchTopologyCount =
+      2000000 ∧
+    closedCollarSimplePatchN8First2000000TemplateBlockerCounts.processedPatchTopologyCount <
+      closedCollarSimplePatchN8ExactPatchTopologyCount ∧
+    closedCollarSimplePatchN8ExactPatchTopologyCount -
+        closedCollarSimplePatchN8First2000000TemplateBlockerCounts.processedPatchTopologyCount =
+      1187087725 ∧
+    500 *
+        closedCollarSimplePatchN8First2000000TemplateBlockerCounts.processedPatchTopologyCount <
+      closedCollarSimplePatchN8ExactPatchTopologyCount
+
+theorem closedCollarWindingFreedomSimplePatchN8First2000000CoverageEvidence :
+    ClosedCollarWindingFreedomSimplePatchN8First2000000CoverageEvidence := by
+  refine
+    ⟨closedCollarWindingFreedomSimplePatchN8First2000000NoProfilePreservingEvidence,
+      ?_, ?_, ?_, ?_, ?_⟩ <;>
+    decide
 
 /--
 Graph-facing hook for the finite six-internal simple-patch subclass tested by
