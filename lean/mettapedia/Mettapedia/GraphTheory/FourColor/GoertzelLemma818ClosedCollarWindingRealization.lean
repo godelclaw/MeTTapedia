@@ -1159,6 +1159,18 @@ structure ClosedCollarSimplePatchTemplateBlockerSliceCounts where
   cap5LikeBlockerCount : Nat
   normalFormAfterTemplateExclusionPassingCount : Nat
 
+structure ClosedCollarSimplePatchTemplateBlockerIndexSampleCounts where
+  internalVertexCount : Nat
+  exactPatchTopologyCount : Nat
+  sampledPatchTopologyCount : Nat
+  radialOrderCaseCount : Nat
+  profilePreservingCaseCount : Nat
+  structuralFirstBlockerCount : Nat
+  exactTemplateBlockerCount : Nat
+  nonTemplateCyclicCutBlockerCount : Nat
+  cap5LikeBlockerCount : Nat
+  normalFormAfterTemplateExclusionPassingCount : Nat
+
 def closedCollarSimplePatchN6ExactPatchTopologyCount : Nat :=
   1858980
 
@@ -1372,6 +1384,25 @@ def closedCollarSimplePatchN8First2000000TemplateBlockerCounts :
   nonTemplateCyclicCutBlockerCount := 0
   cap5LikeBlockerCount := 0
   normalFormAfterTemplateExclusionPassingCount := 0
+
+def closedCollarSimplePatchN8Stratified33TemplateBlockerIndexSampleCounts :
+    ClosedCollarSimplePatchTemplateBlockerIndexSampleCounts where
+  internalVertexCount := 8
+  exactPatchTopologyCount := 1189087725
+  sampledPatchTopologyCount := 33
+  radialOrderCaseCount := 66
+  profilePreservingCaseCount := 0
+  structuralFirstBlockerCount := 0
+  exactTemplateBlockerCount := 0
+  nonTemplateCyclicCutBlockerCount := 0
+  cap5LikeBlockerCount := 0
+  normalFormAfterTemplateExclusionPassingCount := 0
+
+def closedCollarSimplePatchN8Stratified33FirstIndex : Nat :=
+  0
+
+def closedCollarSimplePatchN8Stratified33LastIndex : Nat :=
+  1189087724
 
 /--
 Template-exclusion evidence through the 800000-1200000 six-internal
@@ -1703,6 +1734,67 @@ theorem closedCollarWindingFreedomSimplePatchN8First2000000CoverageEvidence :
     ⟨closedCollarWindingFreedomSimplePatchN8First2000000NoProfilePreservingEvidence,
       ?_, ?_, ?_, ?_, ?_⟩ <;>
     decide
+
+/--
+Stratified-sample evidence for the eight-internal simple-patch space.  The lab
+unranked 33 evenly spaced exact topology indices, including the first and last
+generated topology, tested both radial orders, and found no profile-preserving
+candidate for the closed-collar winding-freedom witness.  This is distribution
+coverage evidence, not an exhaustion certificate.
+-/
+def ClosedCollarWindingFreedomSimplePatchN8Stratified33NoProfilePreservingEvidence :
+    Prop :=
+  ClosedCollarWindingFreedomWitnessRealizationData ∧
+    closedCollarSimplePatchN8Stratified33TemplateBlockerIndexSampleCounts.internalVertexCount =
+      8 ∧
+    closedCollarSimplePatchN8Stratified33TemplateBlockerIndexSampleCounts.exactPatchTopologyCount =
+      closedCollarSimplePatchN8ExactPatchTopologyCount ∧
+    closedCollarSimplePatchN8Stratified33TemplateBlockerIndexSampleCounts.exactPatchTopologyCount =
+      1189087725 ∧
+    closedCollarSimplePatchN8Stratified33TemplateBlockerIndexSampleCounts.sampledPatchTopologyCount =
+      33 ∧
+    closedCollarSimplePatchN8Stratified33TemplateBlockerIndexSampleCounts.radialOrderCaseCount =
+      66 ∧
+    closedCollarSimplePatchN8Stratified33TemplateBlockerIndexSampleCounts.profilePreservingCaseCount =
+      0 ∧
+    closedCollarSimplePatchN8Stratified33TemplateBlockerIndexSampleCounts.structuralFirstBlockerCount =
+      0 ∧
+    closedCollarSimplePatchN8Stratified33TemplateBlockerIndexSampleCounts.exactTemplateBlockerCount =
+      0 ∧
+    closedCollarSimplePatchN8Stratified33TemplateBlockerIndexSampleCounts.nonTemplateCyclicCutBlockerCount =
+      0 ∧
+    closedCollarSimplePatchN8Stratified33TemplateBlockerIndexSampleCounts.cap5LikeBlockerCount =
+      0 ∧
+    closedCollarSimplePatchN8Stratified33TemplateBlockerIndexSampleCounts.normalFormAfterTemplateExclusionPassingCount =
+      0 ∧
+    closedCollarSimplePatchN8Stratified33TemplateBlockerIndexSampleCounts.radialOrderCaseCount =
+      2 *
+        closedCollarSimplePatchN8Stratified33TemplateBlockerIndexSampleCounts.sampledPatchTopologyCount ∧
+    closedCollarSimplePatchN8Stratified33FirstIndex = 0 ∧
+    closedCollarSimplePatchN8Stratified33LastIndex + 1 =
+      closedCollarSimplePatchN8ExactPatchTopologyCount
+
+theorem closedCollarWindingFreedomSimplePatchN8Stratified33NoProfilePreservingEvidence :
+    ClosedCollarWindingFreedomSimplePatchN8Stratified33NoProfilePreservingEvidence := by
+  refine ⟨closedCollarWindingFreedomWitnessRealizationData, ?_⟩
+  decide
+
+/-- Lab-side impossibility of a profile-preserving candidate in the 33-point
+stratified eight-internal simple-patch sample. -/
+structure ClosedCollarWindingFreedomSimplePatchN8Stratified33ProfilePreservingCandidate where
+  hprofileCountPositive :
+    0 <
+      closedCollarSimplePatchN8Stratified33TemplateBlockerIndexSampleCounts.profilePreservingCaseCount
+
+theorem closedCollarWindingFreedomSimplePatchN8Stratified33_noProfilePreservingCandidate
+    (candidate :
+      ClosedCollarWindingFreedomSimplePatchN8Stratified33ProfilePreservingCandidate) :
+    False := by
+  have hzero :
+      closedCollarSimplePatchN8Stratified33TemplateBlockerIndexSampleCounts.profilePreservingCaseCount =
+        0 := rfl
+  have hpos := candidate.hprofileCountPositive
+  omega
 
 /--
 Graph-facing hook for the finite six-internal simple-patch subclass tested by

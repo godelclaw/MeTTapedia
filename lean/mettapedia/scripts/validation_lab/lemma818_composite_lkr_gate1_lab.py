@@ -12,6 +12,7 @@ from __future__ import annotations
 
 from collections import Counter, deque
 from dataclasses import dataclass
+from functools import lru_cache
 from itertools import combinations, product
 from pathlib import Path
 import argparse
@@ -1704,6 +1705,126 @@ def iter_simple_patch_edge_sets(
     yield from rec(0)
 
 
+class SimplePatchIndexer:
+    def __init__(self, internal_vertex_count: int) -> None:
+        self.vertices = simple_patch_vertices(internal_vertex_count)
+        self.degree_target = tuple(
+            simple_patch_degree_target(vertex) for vertex in self.vertices
+        )
+        self.candidates = tuple(combinations(range(len(self.vertices)), 2))
+        remaining_incidence: list[tuple[int, ...]] = [
+            (0,) * len(self.vertices) for _ in range(len(self.candidates) + 1)
+        ]
+        running = [0 for _ in self.vertices]
+        remaining_incidence[len(self.candidates)] = tuple(running)
+        for i in range(len(self.candidates) - 1, -1, -1):
+            u, v = self.candidates[i]
+            running = list(remaining_incidence[i + 1])
+            running[u] += 1
+            running[v] += 1
+            remaining_incidence[i] = tuple(running)
+        self.remaining_incidence = tuple(remaining_incidence)
+
+    @lru_cache(maxsize=None)
+    def count_from(self, i: int, remaining: tuple[int, ...]) -> int:
+        if i == len(self.candidates):
+            return 1 if all(value == 0 for value in remaining) else 0
+        available = self.remaining_incidence[i]
+        for need, possible in zip(remaining, available):
+            if need < 0 or need > possible:
+                return 0
+        u, v = self.candidates[i]
+        total = self.count_from(i + 1, remaining)
+        if remaining[u] > 0 and remaining[v] > 0:
+            next_remaining = list(remaining)
+            next_remaining[u] -= 1
+            next_remaining[v] -= 1
+            total += self.count_from(i + 1, tuple(next_remaining))
+        return total
+
+    def count(self) -> int:
+        return self.count_from(0, self.degree_target)
+
+    def edge_set_at_index(self, patch_index: int) -> tuple[tuple[str, str], ...]:
+        total_count = self.count()
+        if patch_index < 0 or patch_index >= total_count:
+            raise ValueError(
+                f"patch index {patch_index} is outside [0, {total_count})"
+            )
+
+        remaining = self.degree_target
+        chosen: list[tuple[str, str]] = []
+        index = patch_index
+        for i, (u, v) in enumerate(self.candidates):
+            include_count = 0
+            include_remaining: tuple[int, ...] | None = None
+            if remaining[u] > 0 and remaining[v] > 0:
+                next_remaining = list(remaining)
+                next_remaining[u] -= 1
+                next_remaining[v] -= 1
+                include_remaining = tuple(next_remaining)
+                include_count = self.count_from(i + 1, include_remaining)
+            if index < include_count:
+                chosen.append((self.vertices[u], self.vertices[v]))
+                assert include_remaining is not None
+                remaining = include_remaining
+            else:
+                index -= include_count
+        if any(value != 0 for value in remaining):
+            raise AssertionError((patch_index, remaining))
+        return tuple(chosen)
+
+
+SIMPLE_PATCH_INDEXERS: dict[int, SimplePatchIndexer] = {}
+
+
+def simple_patch_indexer(internal_vertex_count: int) -> SimplePatchIndexer:
+    if internal_vertex_count < 0 or internal_vertex_count % 2:
+        raise ValueError("patch internal vertex count must be a nonnegative even number")
+    if internal_vertex_count not in SIMPLE_PATCH_INDEXERS:
+        SIMPLE_PATCH_INDEXERS[internal_vertex_count] = SimplePatchIndexer(
+            internal_vertex_count
+        )
+    return SIMPLE_PATCH_INDEXERS[internal_vertex_count]
+
+
+def simple_patch_edge_set_count(internal_vertex_count: int) -> int:
+    return simple_patch_indexer(internal_vertex_count).count()
+
+
+def simple_patch_edge_set_at_index(
+    internal_vertex_count: int,
+    patch_index: int,
+) -> tuple[tuple[str, str], ...]:
+    return simple_patch_indexer(internal_vertex_count).edge_set_at_index(patch_index)
+
+
+def stratified_patch_indices(total_count: int, sample_count: int) -> tuple[int, ...]:
+    if total_count <= 0:
+        raise ValueError("total patch count must be positive")
+    if sample_count <= 0:
+        raise ValueError("stratified sample count must be positive")
+    if sample_count == 1:
+        return (0,)
+    indices = [
+        (i * (total_count - 1)) // (sample_count - 1)
+        for i in range(sample_count)
+    ]
+    return tuple(dict.fromkeys(indices))
+
+
+def parse_patch_index_list(raw: str) -> tuple[int, ...]:
+    indices = []
+    for part in raw.split(","):
+        text = part.strip()
+        if not text:
+            continue
+        indices.append(int(text))
+    if not indices:
+        raise ValueError("patch index list must contain at least one integer")
+    return tuple(dict.fromkeys(indices))
+
+
 def simple_patch_model(
     base_model: CompositeModel,
     patch_edges: tuple[tuple[str, str], ...],
@@ -2736,6 +2857,298 @@ def audit_closed_collar_winding_simple_patch_template_blockers(
     }
 
 
+def audit_closed_collar_winding_simple_patch_template_blocker_index_sample(
+    tau_states: list[tuple[str, ...]],
+    internal_vertex_count: int,
+    patch_indices: tuple[int, ...],
+    sample_limit: int,
+) -> dict[str, object]:
+    word = (TAU_TYPE, TAU_TYPE)
+    fixed_outer_key = ("r", "r", "b", "b")
+    base_model = build_closed_collar_model(word)
+    base_fiber = audit_closed_collar_winding_fiber(
+        word,
+        fixed_outer_key,
+        tau_states,
+        include_all_components=True,
+    )
+    base_states = base_fiber.get("states", [])
+    assert isinstance(base_states, list)
+    exact_patch_topology_count = simple_patch_edge_set_count(internal_vertex_count)
+    if not patch_indices:
+        raise ValueError("patch index sample must be nonempty")
+    for patch_index in patch_indices:
+        if patch_index < 0 or patch_index >= exact_patch_topology_count:
+            raise ValueError(
+                f"patch index {patch_index} is outside "
+                f"[0, {exact_patch_topology_count})"
+            )
+
+    structural_blockers = {
+        "connected_multigraph",
+        "cubic_multigraph",
+        "bridgeless_multigraph",
+        "planar_multigraph",
+        "simple_endpoint_realization",
+    }
+    sampled_patch_topology_count = len(patch_indices)
+    radial_order_case_count = 0
+    profile_preserving_case_count = 0
+    structural_first_blocker_count = 0
+    exact_template_blocker_count = 0
+    non_template_cyclic_cut_blocker_count = 0
+    cap5_like_blocker_count = 0
+    normal_form_after_template_exclusion_passing_count = 0
+    first_blocker_histogram: Counter[str] = Counter()
+    exact_template_histogram: Counter[str] = Counter()
+    non_template_minimum_small_cut_histogram: Counter[str] = Counter()
+    samples: list[dict[str, object]] = []
+    sampled_blockers: set[str] = set()
+
+    def add_sample(
+        blocker_name: str,
+        patch_index: int,
+        patch_edges: tuple[tuple[str, str], ...],
+        radial_edges: tuple[str, str],
+        state_extensions: list[dict[str, object]],
+        payload: dict[str, object],
+    ) -> None:
+        if len(samples) >= sample_limit and blocker_name in sampled_blockers:
+            return
+        sampled_blockers.add(blocker_name)
+        samples.append(
+            {
+                "patch_index": patch_index,
+                "patch_edges": [list(edge_pair) for edge_pair in patch_edges],
+                "radial_order": list(radial_edges),
+                "state_extensions": state_extensions,
+                "template_exclusion_blocker": blocker_name,
+                **payload,
+            }
+        )
+
+    for patch_index in patch_indices:
+        patch_edges = simple_patch_edge_set_at_index(
+            internal_vertex_count,
+            patch_index,
+        )
+        model0, _patch_edge_names0, radial_edges0 = simple_patch_model(
+            base_model,
+            patch_edges,
+        )
+        radial_orders = (radial_edges0, tuple(reversed(radial_edges0)))
+        for radial_order in radial_orders:
+            radial_order_case_count += 1
+            model, patch_edge_names, radial_edges = simple_patch_model(
+                base_model,
+                patch_edges,
+                radial_order,
+            )
+            state_extensions: list[dict[str, object]] = []
+            for state_payload in base_states:
+                assert isinstance(state_payload, dict)
+                raw_state = state_payload.get("state", {})
+                desired_profile = state_payload.get("winding_profile", [])
+                assert isinstance(raw_state, dict)
+                assert isinstance(desired_profile, list)
+                fixed_edge_colors = {
+                    edge: str(raw_state[edge])
+                    for edge in base_model.gadget.edges
+                    if edge not in PATCH_REMOVED_PARALLEL_EDGES
+                }
+                extension = simple_patch_profile_preserving_extension(
+                    model,
+                    patch_edge_names,
+                    radial_edges,
+                    fixed_edge_colors,
+                    desired_profile,
+                )
+                if extension is None:
+                    break
+                state_extensions.append(
+                    {
+                        "state_index": state_payload.get("state_index"),
+                        "profile_preserved": True,
+                    }
+                )
+            else:
+                profile_preserving_case_count += 1
+                graph_audit = closed_collar_multigraph_prefix_audit(
+                    model,
+                    sample_limit=sample_limit,
+                )
+                first_blocker = graph_audit["first_failed_normal_form_test"]
+                first_blocker_name = first_blocker["name"] if first_blocker else "none"
+                if first_blocker_name in structural_blockers:
+                    structural_first_blocker_count += 1
+                    first_blocker_histogram[first_blocker_name] += 1
+                    add_sample(
+                        first_blocker_name,
+                        patch_index,
+                        patch_edges,
+                        radial_edges,
+                        state_extensions,
+                        {
+                            "graph_summary": {
+                                "vertex_count": graph_audit["vertex_count"],
+                                "edge_count": graph_audit["edge_count"],
+                                "first_failed_normal_form_test": first_blocker_name,
+                            }
+                        },
+                    )
+                    continue
+
+                vertices, edges = multigraph_vertices_and_edges(model)
+                template_cut = first_matching_cyclic_cut_payload(
+                    vertices,
+                    edges,
+                    4,
+                    closed_collar_cut_is_exact_diagonal_template,
+                )
+                if template_cut is not None:
+                    blocker_name = "excluded_exact_diagonal_two_pole_template"
+                    template_key = closed_collar_cut_template_key(template_cut)
+                    exact_template_blocker_count += 1
+                    exact_template_histogram[template_key] += 1
+                    first_blocker_histogram[blocker_name] += 1
+                    add_sample(
+                        blocker_name,
+                        patch_index,
+                        patch_edges,
+                        radial_edges,
+                        state_extensions,
+                        {
+                            "exact_template_key": template_key,
+                            "exact_template_cut":
+                                closed_collar_cut_shape_payload(template_cut),
+                        },
+                    )
+                    continue
+
+                small_cuts = cyclic_cut_payloads(vertices, edges, 4)
+                if small_cuts:
+                    blocker_name = "non_template_cyclic_edge_cut_of_size_at_most_four"
+                    minimum_small_cut = min(int(cut["cut_size"]) for cut in small_cuts)
+                    non_template_cyclic_cut_blocker_count += 1
+                    non_template_minimum_small_cut_histogram[
+                        str(minimum_small_cut)
+                    ] += 1
+                    first_blocker_histogram[blocker_name] += 1
+                    add_sample(
+                        blocker_name,
+                        patch_index,
+                        patch_edges,
+                        radial_edges,
+                        state_extensions,
+                        {
+                            "minimum_small_cyclic_cut_size": minimum_small_cut,
+                            "small_cyclic_cut_count": len(small_cuts),
+                            "first_small_cyclic_cut":
+                                closed_collar_cut_shape_payload(small_cuts[0]),
+                        },
+                    )
+                    continue
+
+                cap5_like = cap5_like_payloads(vertices, edges)
+                if cap5_like:
+                    blocker_name = "cap5_free_literal_five_cycle_test"
+                    cap5_like_blocker_count += 1
+                    first_blocker_histogram[blocker_name] += 1
+                    add_sample(
+                        blocker_name,
+                        patch_index,
+                        patch_edges,
+                        radial_edges,
+                        state_extensions,
+                        {
+                            "cap5_like_cut_count": len(cap5_like),
+                            "cap5_like_cut_sample": cap5_like[:sample_limit],
+                        },
+                    )
+                    continue
+
+                blocker_name = "none_after_template_exclusion"
+                normal_form_after_template_exclusion_passing_count += 1
+                first_blocker_histogram[blocker_name] += 1
+                add_sample(
+                    blocker_name,
+                    patch_index,
+                    patch_edges,
+                    radial_edges,
+                    state_extensions,
+                    {
+                        "graph_summary": {
+                            "vertex_count": graph_audit["vertex_count"],
+                            "edge_count": graph_audit["edge_count"],
+                        }
+                    },
+                )
+
+    verdict = (
+        "template_exclusion_index_sample_found_normal_form_prefix_realization"
+        if normal_form_after_template_exclusion_passing_count
+        else "template_exclusion_index_sample_found_non_template_cyclic_cut_blockers"
+        if non_template_cyclic_cut_blocker_count
+        else "template_exclusion_index_sample_blocked_by_structural_or_exact_template"
+        if profile_preserving_case_count
+        else "template_exclusion_index_sample_found_no_profile_preserving_patch"
+    )
+    return {
+        "schema": (
+            "fourcolor-section-9-2-closed-collar-winding-simple-patch-"
+            "template-blocker-index-sample-v1"
+        ),
+        "source": (
+            "Indexed-sample template-exclusion audit for profile-preserving "
+            "simple patches in the closed-collar winding-freedom realization lab"
+        ),
+        "run_id": (
+            f"{word_key(word)}::{fixed_key_id(fixed_outer_key)}::"
+            f"simple_patch_{internal_vertex_count}_template_blockers_"
+            f"indexed_{sampled_patch_topology_count}"
+        ),
+        "word": list(word_names(word)),
+        "fixed_outer_key": list(fixed_outer_key),
+        "search": {
+            "internal_vertex_count": internal_vertex_count,
+            "exact_patch_topology_count": exact_patch_topology_count,
+            "sampled_patch_indices": list(patch_indices),
+            "sampled_patch_topology_count": sampled_patch_topology_count,
+            "patch_terminals": dict(PATCH_TERMINAL_VERTICES),
+            "removed_parallel_edges": sorted(PATCH_REMOVED_PARALLEL_EDGES),
+            "excluded_template_keys": sorted(
+                EXACT_DIAGONAL_COLLAR_TWO_POLE_TEMPLATE_KEYS
+            ),
+            "classification": (
+                "for selected exact topology indices, unrank the simple cubic "
+                "four-terminal patch and use the same template-exclusion "
+                "classifier as the resumable slice audit"
+            ),
+        },
+        "base_winding_profile_histogram": base_fiber["winding_profile_histogram"],
+        "samples": samples,
+        "summary": {
+            "verdict": verdict,
+            "sampled_patch_topology_count": sampled_patch_topology_count,
+            "radial_order_case_count": radial_order_case_count,
+            "profile_preserving_case_count": profile_preserving_case_count,
+            "structural_first_blocker_count": structural_first_blocker_count,
+            "exact_template_blocker_count": exact_template_blocker_count,
+            "non_template_cyclic_cut_blocker_count":
+                non_template_cyclic_cut_blocker_count,
+            "cap5_like_blocker_count": cap5_like_blocker_count,
+            "normal_form_after_template_exclusion_passing_count":
+                normal_form_after_template_exclusion_passing_count,
+            "first_failed_after_template_exclusion_histogram":
+                dict(sorted(first_blocker_histogram.items())),
+            "exact_template_histogram":
+                dict(sorted(exact_template_histogram.items())),
+            "non_template_minimum_small_cyclic_cut_size_histogram":
+                dict(sorted(non_template_minimum_small_cut_histogram.items())),
+        },
+    }
+
+
 def audit_closed_collar_winding_k4_desingularization_witness(
     tau_states: list[tuple[str, ...]],
 ) -> dict[str, object]:
@@ -3429,6 +3842,27 @@ def run_closed_collar_winding_simple_patch_template_blockers(
     return report
 
 
+def run_closed_collar_winding_simple_patch_template_blocker_index_sample(
+    output: Path | None,
+    resume: bool,
+    internal_vertex_count: int,
+    patch_indices: tuple[int, ...],
+    sample_limit: int,
+) -> dict[str, object]:
+    if resume and output is not None and output.exists():
+        return json.loads(output.read_text())
+
+    report = audit_closed_collar_winding_simple_patch_template_blocker_index_sample(
+        proper_states(TAU),
+        internal_vertex_count=internal_vertex_count,
+        patch_indices=patch_indices,
+        sample_limit=sample_limit,
+    )
+    if output is not None:
+        write_json_report(output, report)
+    return report
+
+
 def words_of_length(n: int) -> Iterable[tuple[GadgetType, ...]]:
     yield from product(GADGET_TYPES, repeat=n)
 
@@ -3504,6 +3938,14 @@ def main() -> None:
         ),
     )
     parser.add_argument(
+        "--closed-collar-winding-simple-patch-template-blocker-index-sample",
+        action="store_true",
+        help=(
+            "run an indexed sample of exact-size simple patches through the "
+            "same template-exclusion classifier"
+        ),
+    )
+    parser.add_argument(
         "--max-patch-internal-vertices",
         type=int,
         default=4,
@@ -3532,6 +3974,22 @@ def main() -> None:
         type=int,
         default=12,
         help="number of profile-preserving patch candidates to include as detailed samples",
+    )
+    parser.add_argument(
+        "--patch-indices",
+        help=(
+            "comma-separated exact topology indices for "
+            "--closed-collar-winding-simple-patch-template-blocker-index-sample"
+        ),
+    )
+    parser.add_argument(
+        "--patch-stratified-sample-count",
+        type=int,
+        default=33,
+        help=(
+            "number of evenly stratified exact topology indices to sample when "
+            "--patch-indices is omitted"
+        ),
     )
     parser.add_argument(
         "--output",
@@ -3669,6 +4127,25 @@ def main() -> None:
             internal_vertex_count=args.patch_internal_vertices,
             patch_start_index=args.patch_start_index,
             patch_topology_limit=args.patch_topology_limit,
+            sample_limit=args.patch_candidate_sample_limit,
+        )
+        print(json.dumps(report, indent=2, sort_keys=True))
+        return
+
+    if args.closed_collar_winding_simple_patch_template_blocker_index_sample:
+        if args.patch_indices:
+            patch_indices = parse_patch_index_list(args.patch_indices)
+        else:
+            exact_count = simple_patch_edge_set_count(args.patch_internal_vertices)
+            patch_indices = stratified_patch_indices(
+                exact_count,
+                args.patch_stratified_sample_count,
+            )
+        report = run_closed_collar_winding_simple_patch_template_blocker_index_sample(
+            output=args.output,
+            resume=args.resume,
+            internal_vertex_count=args.patch_internal_vertices,
+            patch_indices=patch_indices,
             sample_limit=args.patch_candidate_sample_limit,
         )
         print(json.dumps(report, indent=2, sort_keys=True))
