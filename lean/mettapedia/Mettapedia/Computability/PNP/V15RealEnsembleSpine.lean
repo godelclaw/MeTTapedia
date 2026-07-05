@@ -17957,6 +17957,98 @@ theorem
         starSWHardness safeQSSM boundedGaugeIncidence boundaryMixing
 
 /--
+Full lock-in audit from the CNF-anchored manuscript-M4 realization gate.
+The same construction object supplies the Appendix-I CNF SAT/readout
+identification, the six structural transfer fields, and the strict
+named-language official endpoint package.  The theorem-level mathematical
+frontier remains exactly StarSW hardness plus safeQSSM /
+boundedGaugeIncidence / boundaryMixing.
+
+This is still conditional staging: the CNF-anchored realization gate is not
+inhabited here, and the four frontier inputs are not proved here.
+-/
+theorem
+    realM4_fullLockInAudit_from_manuscriptCNFSATRealizationComponents_realFrontier
+    {m : Nat} (i₀ : Fin m) [hm : Fact (1 < m)]
+    (coordinate : V13RealLinearPublicCoordinate m)
+    {Neutral : Type} {Safe : Type x} {Gauge : Type y}
+    {Transcript : Type z} [DecidableEq Transcript]
+    {Pair : Type a} [Fintype Pair]
+    {Stage : Type b} {Branch : Type c}
+    {HistoryAtom : Type} {Pivot : Type e}
+    {Observer : Type f} {Output : Type f}
+    {PublicLock : Type g} {Quotient : Type h}
+    {LockAux : Type i} {Message : Type j}
+    {CNFPublic : Type k} {Address : CNFPublic -> Type q}
+    {Var : CNFPublic -> Type l}
+    {Witness : CNFPublic -> Type l}
+    {D : AppendixICNFReadoutData
+      PublicLock Quotient LockAux Message CNFPublic Var Witness}
+    {C : CookStylePNPClassInterface.{p}}
+    (R :
+      RealM4ManuscriptCNFSATRealizationComponents
+        (Neutral := Neutral) (Safe := Safe) (Gauge := Gauge)
+        (Transcript := Transcript) (Pair := Pair) (Stage := Stage)
+        (Branch := Branch) (HistoryAtom := HistoryAtom) (Pivot := Pivot)
+        (Observer := Observer) (Output := Output)
+        (PublicLock := PublicLock) (Quotient := Quotient)
+        (LockAux := LockAux) (Message := Message) (CNFPublic := CNFPublic)
+        (Address := Address) (Var := Var) (Witness := Witness)
+        i₀ coordinate D C)
+    (starSWHardness :
+      CompressionStarSWHardness R.components.lowerMachine.lowerFramework)
+    (safeQSSM :
+      RealM4MechanicalInterfaceData.SafeQSSMFrontier
+        (realM4_manuscriptCNFSATRealizationComponents_mechanicalInterface
+          i₀ coordinate R))
+    (boundedGaugeIncidence :
+      RealM4MechanicalInterfaceData.BoundedGaugeIncidenceFrontier
+        (realM4_manuscriptCNFSATRealizationComponents_mechanicalInterface
+          i₀ coordinate R))
+    (boundaryMixing :
+      RealM4MechanicalInterfaceData.BoundaryMixingFrontier
+        (realM4_manuscriptCNFSATRealizationComponents_mechanicalInterface
+          i₀ coordinate R)) :
+    let M :=
+      realM4_manuscriptCNFSATRealizationComponents_mechanicalInterface
+        i₀ coordinate R
+    ((∀ w0 w1, M.publicInput w0 = M.publicInput w1 ->
+      M.target w0 = M.target w1) ∧
+      (PairNeutral M.oppositeSupport M.neutralSkeleton ∧
+        HasMessageOppositePair M.oppositeSupport M.target ∧
+          ¬ ∃ f : V13RealLinearNoTargetRowsMap m i₀ -> Bool,
+            ∀ omega, M.target omega = f (M.neutralSkeleton omega)) ∧
+        (∀ E : RawEvidence Neutral Safe Gauge,
+          M.semantics.SatNormal (CDENF E) = M.semantics.SatRaw E) ∧
+          (∀ gamma : Gauge,
+            M.semantics.SatNormal (CDENF (.gauge gamma)) =
+              M.semantics.gaugeSat gamma) ∧
+            (∀ gamma omega, M.semantics.gaugeSat gamma omega) ∧
+              (BalancedBit M.target ∧
+                BalancedConditioning
+                  (Omega := V13RealLinearNoTargetRowsWorld m i₀)
+                  M.historyField M.target) ∧
+                (∀ omega,
+                  realM4CNFWitnessReadout R.cnfSATSpineData.messageBit
+                      ((R.cnfSATSpineData.cnfWorldOfMechanical omega).toWitness) =
+                    M.target omega) ∧
+                  (∀ {Y W}, R.cnfSATSpineData.verifier Y W ->
+                    realM4CNFWitnessReadout R.cnfSATSpineData.messageBit W =
+                      R.cnfSATSpineData.messageOfMechanicalPublic Y)) ∧
+      (C.inNP R.components.languageNPData.separatedLanguage ∧
+        ¬ C.inP R.components.languageNPData.separatedLanguage) ∧
+        (¬ C.pEqualsNP) ∧ C.officialSeparation ∧
+          ∃ separatedLanguage : C.Language,
+            C.inNP separatedLanguage ∧ ¬ C.inP separatedLanguage := by
+  dsimp only
+  exact
+    ⟨realM4_manuscriptCNFSATRealizationComponents_fullStructuralTransfer
+        i₀ coordinate R,
+      realM4_strictNamedRealLockInEndpoints_from_manuscriptCNFSATRealizationComponents_realFrontier
+        i₀ coordinate R starSWHardness safeQSSM boundedGaugeIncidence
+        boundaryMixing⟩
+
+/--
 Finite-variable supplier endpoint for the preferred strict named-language
 route.  The construction object carries finite CNF variable-family data rather
 than raw address syntax; the theorem projects it to the existing strict
@@ -24911,7 +25003,8 @@ def realM4ManuscriptCNFSATRealizationComponentItems :
   "projectedMechanicalInterface",
   "cnfSpineStructuralReadoutAudit",
   "cnfFullStructuralTransferAudit",
-  "strictNamedEndpointThroughCNFRealizationComponents"
+  "strictNamedEndpointThroughCNFRealizationComponents",
+  "fullLockInAuditThroughCNFRealizationComponents"
 ]
 
 theorem realM4ManuscriptCNFSATRealizationComponentItems_exact :
@@ -24923,7 +25016,8 @@ theorem realM4ManuscriptCNFSATRealizationComponentItems_exact :
         "projectedMechanicalInterface",
         "cnfSpineStructuralReadoutAudit",
         "cnfFullStructuralTransferAudit",
-        "strictNamedEndpointThroughCNFRealizationComponents" ] := by
+        "strictNamedEndpointThroughCNFRealizationComponents",
+        "fullLockInAuditThroughCNFRealizationComponents" ] := by
   rfl
 
 def realM4ManuscriptCNFSATRealizationComponentEndpointHypothesisAudit :
@@ -24946,7 +25040,7 @@ theorem
   rfl
 
 def realM4ManuscriptCNFSATRealizationComponentStatement : String :=
-  "The CNF-anchored manuscript-M4 realization gate refines the transparent strict component gate with explicit CNF/mechanical identification data.  It constructs the manuscript-facing SAT interface from the Appendix-I CNF readout spine, audits the six named structural fields plus CNF readout over the same mechanical target, and then reuses the strict named endpoint with exactly StarSW hardness plus safeQSSM / boundedGaugeIncidence / boundaryMixing as mathematical frontier inputs.  The gate is not inhabited here; it marks the remaining real construction work needed to identify the manuscript SAT ensemble with the mechanical endpoint."
+  "The CNF-anchored manuscript-M4 realization gate refines the transparent strict component gate with explicit CNF/mechanical identification data.  It constructs the manuscript-facing SAT interface from the Appendix-I CNF readout spine, audits the six named structural fields plus CNF readout over the same mechanical target, and reuses the strict named endpoint with exactly StarSW hardness plus safeQSSM / boundedGaugeIncidence / boundaryMixing as mathematical frontier inputs.  The full lock-in audit packages these structural and endpoint consequences from the same CNF realization object.  The gate is not inhabited here; it marks the remaining real construction work needed to identify the manuscript SAT ensemble with the mechanical endpoint."
 
 def realM4StrictNamedSelfReductionUpperItems : List String := [
   "lockedMessageUpperSupport",
