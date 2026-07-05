@@ -541,6 +541,49 @@ theorem v13RealLinearGaugeCNFFormula_noPublicTargetTags_obstruction
   exact hNoTags
     (v13RealLinearGaugeCNFFormula_publicSyntaxDeterminesMessage i₀)
 
+/-- No-public-readout-tags shape for verifier-valid gauge-CNF witnesses when
+the full gauge-buffered formula syntax is viewed as public. -/
+def V13RealLinearGaugeCNFFormulaNoPublicReadoutTags {m : Nat}
+    (i₀ : Fin m) : Prop :=
+  ¬ ∃ f : ConcreteCNF.Formula (V13RealLinearGaugeCNFVar m) -> Bool,
+      ∀ {Y : V13RealLinearPublic m}
+        {W : V13RealLinearGaugeCNFWitness m},
+        v13RealLinearGaugeCNFVerifier Y W →
+          v13RealLinearGaugeCNFReadout i₀ W =
+            f (v13RealLinearGaugeCNFFormula Y)
+
+/-- The full gauge-buffered formula syntax determines the readout of every
+verifier-valid gauge-CNF witness through the target-coordinate unit tag. -/
+theorem v13RealLinearGaugeCNFFormula_publicSyntaxDeterminesReadout
+    {m : Nat} (i₀ : Fin m) :
+    ∃ f : ConcreteCNF.Formula (V13RealLinearGaugeCNFVar m) -> Bool,
+      ∀ {Y : V13RealLinearPublic m}
+        {W : V13RealLinearGaugeCNFWitness m},
+        v13RealLinearGaugeCNFVerifier Y W →
+          v13RealLinearGaugeCNFReadout i₀ W =
+            f (v13RealLinearGaugeCNFFormula Y) := by
+  refine ⟨v13RealLinearGaugeCNFFormulaPositiveTargetTag i₀, ?_⟩
+  intro Y W hW
+  calc
+    v13RealLinearGaugeCNFReadout i₀ W =
+        v13RealLinearMessageOfPublic i₀ Y :=
+      v13RealLinearGaugeCNFReadout_eq_publicMessage_of_valid i₀ hW
+    _ =
+        v13RealLinearGaugeCNFFormulaPositiveTargetTag i₀
+          (v13RealLinearGaugeCNFFormula Y) :=
+      (v13RealLinearGaugeCNFFormulaPositiveTargetTag_eq_publicMessage
+        i₀ Y).symm
+
+/-- Named gauge-CNF readout obstruction: every verifier-valid readout is
+fixed, but the fixing is visible in the full public formula syntax through
+the target-coordinate unit clause. -/
+theorem v13RealLinearGaugeCNFFormula_noPublicReadoutTags_obstruction
+    {m : Nat} (i₀ : Fin m) :
+    ¬ V13RealLinearGaugeCNFFormulaNoPublicReadoutTags i₀ := by
+  intro hNoTags
+  exact hNoTags
+    (v13RealLinearGaugeCNFFormula_publicSyntaxDeterminesReadout i₀)
+
 /-- Flip the free hidden gauge coordinate when `gamma = true`; leave every
 locked witness coordinate unchanged. -/
 def v13RealLinearGaugeCNFGaugeAction {m : Nat}
