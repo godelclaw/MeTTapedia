@@ -3033,6 +3033,10 @@ theorem section92Step4CurrentFiniteFrontierPreviousBoundaryUpgradeBadFaceExactHi
     Section92Step4CurrentFiniteFrontierPreviousBoundaryUpgradeBadFaceExactHinge :=
   section92Step4CurrentFiniteFrontierPreviousBoundaryUpgradeBadFaceExactHinge
 
+theorem section92Step4CurrentFiniteFrontierConcreteBadFaceFork_audit :
+    Section92Step4CurrentFiniteFrontierConcreteBadFaceFork :=
+  section92Step4CurrentFiniteFrontierConcreteBadFaceFork
+
 /-! ## Section 9.2 two-layer ambient execution obstruction -/
 
 theorem section92Step4TwoLayerCounterexampleClass_audit :
