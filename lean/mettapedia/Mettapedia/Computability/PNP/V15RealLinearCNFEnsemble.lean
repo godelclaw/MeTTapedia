@@ -7526,6 +7526,97 @@ def v13RealLinearNoTargetRowsGaugeCNFAppendixICNFHiddenGauge
     Bool :=
   v13RealLinearGaugeCNFHiddenGauge omega.assignment
 
+/-- The satisfying assignment carried by an Appendix-I CNF world is a valid
+hidden witness over that same public instance. -/
+theorem
+    v13RealLinearNoTargetRowsGaugeCNFAppendixICNFWorld_toWitness_verifier
+    {m : Nat} {i₀ : Fin m}
+    (omega :
+      RealM4CNFWorld
+        (v13RealLinearNoTargetRowsGaugeCNFAppendixICNFReadoutData i₀)) :
+    realM4CNFVerifier
+        (v13RealLinearNoTargetRowsGaugeCNFAppendixICNFReadoutData i₀)
+        omega.publicInstance omega.toWitness := by
+  exact ⟨omega.support, ⟨rfl, omega.sat⟩⟩
+
+/-- Projecting the world-level Appendix-I CNF hidden-gauge action to a witness
+is exactly the witness-level hidden-gauge action. -/
+@[simp] theorem
+    v13RealLinearNoTargetRowsGaugeCNFAppendixICNFGaugeAction_toWitness
+    {m : Nat} {i₀ : Fin m} (gamma : Bool)
+    (omega :
+      RealM4CNFWorld
+        (v13RealLinearNoTargetRowsGaugeCNFAppendixICNFReadoutData i₀)) :
+    (v13RealLinearNoTargetRowsGaugeCNFAppendixICNFGaugeAction
+        gamma omega).toWitness =
+      v13RealLinearNoTargetRowsGaugeCNFAppendixICNFWitnessGaugeAction
+        gamma omega.toWitness :=
+  rfl
+
+/-- The witness-level and world-level Appendix-I CNF hidden-gauge coordinates
+agree under `toWitness`. -/
+@[simp] theorem
+    v13RealLinearNoTargetRowsGaugeCNFAppendixICNFHiddenGauge_toWitness
+    {m : Nat} {i₀ : Fin m}
+    (omega :
+      RealM4CNFWorld
+        (v13RealLinearNoTargetRowsGaugeCNFAppendixICNFReadoutData i₀)) :
+    v13RealLinearNoTargetRowsGaugeCNFAppendixICNFWitnessHiddenGauge
+        omega.toWitness =
+      v13RealLinearNoTargetRowsGaugeCNFAppendixICNFHiddenGauge omega :=
+  rfl
+
+/-- The valid-witness Boolean fiber coordinate of a world witness is exactly
+the world's free hidden-gauge coordinate. -/
+theorem
+    v13RealLinearNoTargetRowsGaugeCNFAppendixICNFWorld_toWitnessFiberEquivBool
+    {m : Nat} {i₀ : Fin m}
+    (omega :
+      RealM4CNFWorld
+        (v13RealLinearNoTargetRowsGaugeCNFAppendixICNFReadoutData i₀)) :
+    v13RealLinearNoTargetRowsGaugeCNFAppendixICNFWitnessFiberEquivBool
+        omega.publicInstance
+        ⟨omega.toWitness,
+          v13RealLinearNoTargetRowsGaugeCNFAppendixICNFWorld_toWitness_verifier
+            omega⟩ =
+      v13RealLinearNoTargetRowsGaugeCNFAppendixICNFHiddenGauge omega :=
+  rfl
+
+/-- The world-level action induces Boolean xor on the valid-witness fiber
+coordinate after projecting through `toWitness`. -/
+theorem
+    v13RealLinearNoTargetRowsGaugeCNFAppendixICNFWorld_toWitnessFiberEquivBool_action
+    {m : Nat} {i₀ : Fin m} (gamma : Bool)
+    (omega :
+      RealM4CNFWorld
+        (v13RealLinearNoTargetRowsGaugeCNFAppendixICNFReadoutData i₀)) :
+    v13RealLinearNoTargetRowsGaugeCNFAppendixICNFWitnessFiberEquivBool
+        (v13RealLinearNoTargetRowsGaugeCNFAppendixICNFGaugeAction
+          gamma omega).publicInstance
+        ⟨(v13RealLinearNoTargetRowsGaugeCNFAppendixICNFGaugeAction
+            gamma omega).toWitness,
+          v13RealLinearNoTargetRowsGaugeCNFAppendixICNFWorld_toWitness_verifier
+            (v13RealLinearNoTargetRowsGaugeCNFAppendixICNFGaugeAction
+              gamma omega)⟩ =
+      (gamma ^^
+        v13RealLinearNoTargetRowsGaugeCNFAppendixICNFWitnessFiberEquivBool
+          omega.publicInstance
+          ⟨omega.toWitness,
+            v13RealLinearNoTargetRowsGaugeCNFAppendixICNFWorld_toWitness_verifier
+              omega⟩) := by
+  change
+    v13RealLinearNoTargetRowsGaugeCNFAppendixICNFWitnessHiddenGauge
+        (v13RealLinearNoTargetRowsGaugeCNFAppendixICNFGaugeAction
+          gamma omega).toWitness =
+      (gamma ^^
+        v13RealLinearNoTargetRowsGaugeCNFAppendixICNFWitnessHiddenGauge
+          omega.toWitness)
+  simpa [
+    v13RealLinearNoTargetRowsGaugeCNFAppendixICNFGaugeAction_toWitness]
+    using
+      v13RealLinearNoTargetRowsGaugeCNFAppendixICNFWitnessGaugeAction_hiddenGauge
+        gamma omega.toWitness
+
 /-- Direct carrier characterization: a no-target-rows Appendix-I CNF world
 is exactly a base no-target-rows public instance plus the free hidden gauge
 bit. -/
