@@ -2484,6 +2484,165 @@ theorem taitEdgeColorable_of_relabel_realizedCutColorAgreement
 
 end EdgeColoringGlue
 
+section RealizedCutTaitGlueCertificates
+
+variable [DecidableEq V] [Fintype V]
+variable {G : SimpleGraph V} [DecidableRel G.Adj]
+
+/-- Realized-cut Tait-glue certificate: two Tait edge colorings, a nonzero-preserving relabeling
+of the outside coloring, and color agreement on the realized cut support. -/
+def RealizedCutTaitGlueCertificate
+    {edgeCut : Finset G.edgeSet} (_realization : CyclicEdgeCutRealization G edgeCut) : Prop :=
+  ∃ inside : G.EdgeColoring Color, ∃ outside : G.EdgeColoring Color,
+    ∃ σ : Color → Color, ∃ hσ : Function.Injective σ,
+      (∀ {c : Color}, c ≠ 0 → σ c ≠ 0) ∧
+        IsTaitEdgeColoring G inside ∧
+          IsTaitEdgeColoring G outside ∧
+            EdgeColoringsAgreeOn edgeCut inside (edgeColoringMapOfInjective outside σ hσ)
+
+/-- Package explicit realized-cut gluing data as a certificate. -/
+theorem realizedCutTaitGlueCertificate_of_colorAgreement
+    {edgeCut : Finset G.edgeSet} (realization : CyclicEdgeCutRealization G edgeCut)
+    (inside outside : G.EdgeColoring Color)
+    (hinside : IsTaitEdgeColoring G inside) (houtside : IsTaitEdgeColoring G outside)
+    (σ : Color → Color) (hσ : Function.Injective σ)
+    (hσ_nonzero : ∀ {c : Color}, c ≠ 0 → σ c ≠ 0)
+    (hagree : EdgeColoringsAgreeOn edgeCut inside (edgeColoringMapOfInjective outside σ hσ)) :
+    RealizedCutTaitGlueCertificate realization :=
+  ⟨inside, outside, σ, hσ, hσ_nonzero, hinside, houtside, hagree⟩
+
+/-- A realized-cut Tait-glue certificate gives a Tait edge coloring of the original graph. -/
+theorem taitEdgeColorable_of_realizedCutTaitGlueCertificate
+    {edgeCut : Finset G.edgeSet} (realization : CyclicEdgeCutRealization G edgeCut)
+    (certificate : RealizedCutTaitGlueCertificate realization) :
+    TaitEdgeColorable G := by
+  rcases certificate with
+    ⟨inside, outside, σ, hσ, hσ_nonzero, hinside, houtside, hagree⟩
+  exact taitEdgeColorable_of_relabel_realizedCutColorAgreement realization inside outside
+    hinside houtside σ hσ hσ_nonzero hagree
+
+/-- A minimal Tait counterexample cannot carry a realized-cut Tait-glue certificate. -/
+theorem false_of_minimalTaitCounterexample_of_realizedCutTaitGlueCertificate
+    {minimal : MinimalTaitCounterexample G}
+    {edgeCut : Finset G.edgeSet} (realization : CyclicEdgeCutRealization G edgeCut)
+    (certificate : RealizedCutTaitGlueCertificate realization) :
+    False :=
+  minimal.uncolorable
+    (taitEdgeColorable_of_realizedCutTaitGlueCertificate realization certificate)
+
+variable [DecidableEq W] [Fintype W]
+variable {T : SimpleGraph W} [DecidableRel T.Adj]
+
+/-- Generic separator-normal-form step using realized-cut Tait-glue certificates: if every
+separating dual cycle of length `k` glues to a Tait coloring, no such separator exists in a
+minimal counterexample. -/
+theorem noSeparatingDualCycleOfLength_of_forall_cycle_realizedCutTaitGlueCertificate
+    {minimal : MinimalTaitCounterexample G} {dual : PlaneCubicDualData G T} {k : Nat}
+    (hcert :
+      ∀ cycle : SeparatingDualCycleData dual k,
+        RealizedCutTaitGlueCertificate cycle.realization) :
+    NoSeparatingDualCycleOfLength dual k := by
+  rintro ⟨cycle⟩
+  exact false_of_minimalTaitCounterexample_of_realizedCutTaitGlueCertificate
+    (minimal := minimal) cycle.realization (hcert cycle)
+
+/-- Triangle cut-and-paste surgery from realized-cut Tait-glue certificates for every
+separating dual triangle. -/
+def separatingTriangleCutPasteSurgery_of_forall_triangle_realizedCutTaitGlueCertificate
+    {minimal : MinimalTaitCounterexample G} {dual : PlaneCubicDualData G T}
+    (hcert :
+      ∀ cycle : SeparatingDualCycleData dual 3,
+        RealizedCutTaitGlueCertificate cycle.realization) :
+    SeparatingTriangleCutPasteSurgery minimal dual where
+  no_separating_triangle :=
+    noSeparatingDualCycleOfLength_of_forall_cycle_realizedCutTaitGlueCertificate
+      (minimal := minimal) hcert
+
+/-- Four-cycle identification surgery from realized-cut Tait-glue certificates for every
+separating dual 4-cycle. -/
+def separatingFourCycleIdentificationSurgery_of_forall_fourCycle_realizedCutTaitGlueCertificate
+    {minimal : MinimalTaitCounterexample G} {dual : PlaneCubicDualData G T}
+    (hcert :
+      ∀ cycle : SeparatingDualCycleData dual 4,
+        RealizedCutTaitGlueCertificate cycle.realization) :
+    SeparatingFourCycleIdentificationSurgery minimal dual where
+  no_separating_four_cycle :=
+    noSeparatingDualCycleOfLength_of_forall_cycle_realizedCutTaitGlueCertificate
+      (minimal := minimal) hcert
+
+/-- Graph-side small-cut normal-form step from realized-cut Tait-glue certificates. -/
+theorem noCyclicEdgeCutOfSizeAtMostFour_of_forall_smallCut_realizedCutTaitGlueCertificate
+    {minimal : MinimalTaitCounterexample G}
+    (hcert :
+      ∀ cut : SmallCyclicEdgeCut G, cut.edgeCut.card ≤ 4 →
+        RealizedCutTaitGlueCertificate cut.toCyclicEdgeCutRealization) :
+    NoCyclicEdgeCutOfSizeAtMostFour G := by
+  rintro ⟨cut, hcard⟩
+  exact false_of_minimalTaitCounterexample_of_realizedCutTaitGlueCertificate
+    (minimal := minimal) cut.toCyclicEdgeCutRealization (hcert cut hcard)
+
+/-- Small cyclic-cut surgery from realized-cut Tait-glue certificates for every size-at-most-four
+cyclic cut. -/
+def smallCyclicCutBirkhoffSurgery_of_forall_smallCut_realizedCutTaitGlueCertificate
+    {minimal : MinimalTaitCounterexample G}
+    (hcert :
+      ∀ cut : SmallCyclicEdgeCut G, cut.edgeCut.card ≤ 4 →
+        RealizedCutTaitGlueCertificate cut.toCyclicEdgeCutRealization) :
+    SmallCyclicCutBirkhoffSurgery minimal where
+  no_small_cyclic_edge_cut :=
+    noCyclicEdgeCutOfSizeAtMostFour_of_forall_smallCut_realizedCutTaitGlueCertificate
+      (minimal := minimal) hcert
+
+/-- Assemble the Lemma 5.2 surgery suite when low-degree vertices are handled by smaller-surgery
+witnesses and separator cuts are handled by realized-cut Tait-glue certificates. -/
+def lemma52BirkhoffSurgerySuite_of_lowDegreeWitnesses_and_realizedCutTaitGlueCertificates
+    {minimal : MinimalTaitCounterexample G} {dual : PlaneCubicDualData G T}
+    (hlowDegree :
+      ∀ v : W, T.degree v < 5 → Nonempty (SmallerTaitSurgeryWitness minimal))
+    (htriangle :
+      ∀ cycle : SeparatingDualCycleData dual 3,
+        RealizedCutTaitGlueCertificate cycle.realization)
+    (hfourCycle :
+      ∀ cycle : SeparatingDualCycleData dual 4,
+        RealizedCutTaitGlueCertificate cycle.realization)
+    (hsmallCut :
+      ∀ cut : SmallCyclicEdgeCut G, cut.edgeCut.card ≤ 4 →
+        RealizedCutTaitGlueCertificate cut.toCyclicEdgeCutRealization) :
+    Lemma52BirkhoffSurgerySuite minimal dual where
+  vertex_deletion :=
+    vertexDeletionSurgery_of_forall_lowDegree_smallerTaitSurgeryWitness hlowDegree
+  triangle_cut_paste :=
+    separatingTriangleCutPasteSurgery_of_forall_triangle_realizedCutTaitGlueCertificate
+      htriangle
+  four_cycle_identification :=
+    separatingFourCycleIdentificationSurgery_of_forall_fourCycle_realizedCutTaitGlueCertificate
+      hfourCycle
+  small_cyclic_cut :=
+    smallCyclicCutBirkhoffSurgery_of_forall_smallCut_realizedCutTaitGlueCertificate
+      hsmallCut
+
+/-- Exact-duality Lemma 5.2 endpoint from low-degree smaller-surgery witnesses plus
+realized-cut Tait-glue certificates for separator cuts. -/
+theorem lemma52MinimalCounterexampleNormalFormObligation_of_lowDegreeWitnesses_and_realizedCutTaitGlueCertificates
+    {minimal : MinimalTaitCounterexample G} {dual : PlaneCubicDualData G T}
+    (hlowDegree :
+      ∀ v : W, T.degree v < 5 → Nonempty (SmallerTaitSurgeryWitness minimal))
+    (htriangle :
+      ∀ cycle : SeparatingDualCycleData dual 3,
+        RealizedCutTaitGlueCertificate cycle.realization)
+    (hfourCycle :
+      ∀ cycle : SeparatingDualCycleData dual 4,
+        RealizedCutTaitGlueCertificate cycle.realization)
+    (hsmallCut :
+      ∀ cut : SmallCyclicEdgeCut G, cut.edgeCut.card ≤ 4 →
+        RealizedCutTaitGlueCertificate cut.toCyclicEdgeCutRealization) :
+    Lemma52MinimalCounterexampleNormalFormObligation minimal dual :=
+  lemma52MinimalCounterexampleNormalFormObligation_of_birkhoffSurgerySuite
+    (lemma52BirkhoffSurgerySuite_of_lowDegreeWitnesses_and_realizedCutTaitGlueCertificates
+      hlowDegree htriangle hfourCycle hsmallCut)
+
+end RealizedCutTaitGlueCertificates
+
 section ColoringGlue
 
 variable [DecidableEq V]
