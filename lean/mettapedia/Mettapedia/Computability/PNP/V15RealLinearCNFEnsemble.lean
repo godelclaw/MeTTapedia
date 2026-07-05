@@ -4225,6 +4225,141 @@ theorem
     v13RealLinearNoTargetRowsGaugeCNFAppendixICNFWitnessReadout_eq_targetBit
       i₀ hValid
 
+/-- Clause-level witness characterization for the concrete no-target-rows
+Appendix-I CNF: every satisfying assignment is the canonical locked
+assignment for its public instance, with exactly its own hidden-gauge bit left
+free. -/
+theorem
+    v13RealLinearNoTargetRowsGaugeCNFAppendixICNFSatAssignment_eq_canonical
+    {m : Nat} {i₀ : Fin m}
+    {Y : V13RealLinearNoTargetRowsWorld m i₀}
+    {α : ConcreteCNF.Assignment (V13RealLinearGaugeCNFVar m)}
+    (hα :
+      ConcreteCNF.IsSatFormula
+        ((v13RealLinearNoTargetRowsGaugeCNFAppendixICNFReadoutData i₀)
+          |>.formula Y) α) :
+    α =
+      v13RealLinearGaugeCNFAssignment
+        (v13RealLinearNoTargetRowsPublicInput Y)
+        (v13RealLinearGaugeCNFHiddenGauge α) := by
+  have hVerifier :
+      v13RealLinearGaugeCNFVerifier
+        (v13RealLinearNoTargetRowsPublicInput Y) α := by
+    simpa [v13RealLinearNoTargetRowsGaugeCNFAppendixICNFReadoutData,
+      v13RealLinearGaugeCNFVerifier] using hα
+  funext v
+  cases v with
+  | some j =>
+      calc
+        α (some j) =
+            v13RealLinearCNFDecodedAssignment
+              (v13RealLinearNoTargetRowsPublicInput Y) j :=
+          v13RealLinearGaugeCNFFormula_forces_decodedBit hVerifier j
+        _ =
+            v13RealLinearGaugeCNFAssignment
+              (v13RealLinearNoTargetRowsPublicInput Y)
+              (v13RealLinearGaugeCNFHiddenGauge α) (some j) := by
+          rfl
+  | none =>
+      rfl
+
+/-- Two satisfying assignments for the same no-target-rows Appendix-I CNF
+instance are equal exactly when their free hidden-gauge bits are equal. -/
+theorem
+    v13RealLinearNoTargetRowsGaugeCNFAppendixICNFSatAssignment_eq_iff_hiddenGauge_eq
+    {m : Nat} {i₀ : Fin m}
+    {Y : V13RealLinearNoTargetRowsWorld m i₀}
+    {α β : ConcreteCNF.Assignment (V13RealLinearGaugeCNFVar m)}
+    (hα :
+      ConcreteCNF.IsSatFormula
+        ((v13RealLinearNoTargetRowsGaugeCNFAppendixICNFReadoutData i₀)
+          |>.formula Y) α)
+    (hβ :
+      ConcreteCNF.IsSatFormula
+        ((v13RealLinearNoTargetRowsGaugeCNFAppendixICNFReadoutData i₀)
+          |>.formula Y) β) :
+    α = β ↔
+      v13RealLinearGaugeCNFHiddenGauge α =
+        v13RealLinearGaugeCNFHiddenGauge β := by
+  constructor
+  · intro h
+    rw [h]
+  · intro hGauge
+    rw [
+      v13RealLinearNoTargetRowsGaugeCNFAppendixICNFSatAssignment_eq_canonical
+        hα,
+      v13RealLinearNoTargetRowsGaugeCNFAppendixICNFSatAssignment_eq_canonical
+        hβ,
+      hGauge]
+
+/-- Any two satisfying assignments for the same no-target-rows Appendix-I CNF
+instance agree on every locked witness coordinate.  Only the hidden-gauge
+coordinate can vary. -/
+theorem
+    v13RealLinearNoTargetRowsGaugeCNFAppendixICNFSatAssignments_agree_on_lockedCoordinate
+    {m : Nat} {i₀ : Fin m}
+    {Y : V13RealLinearNoTargetRowsWorld m i₀}
+    {α β : ConcreteCNF.Assignment (V13RealLinearGaugeCNFVar m)}
+    (hα :
+      ConcreteCNF.IsSatFormula
+        ((v13RealLinearNoTargetRowsGaugeCNFAppendixICNFReadoutData i₀)
+          |>.formula Y) α)
+    (hβ :
+      ConcreteCNF.IsSatFormula
+        ((v13RealLinearNoTargetRowsGaugeCNFAppendixICNFReadoutData i₀)
+          |>.formula Y) β)
+    (j : Fin m) :
+    α (some j) = β (some j) := by
+  have hVerifierα :
+      v13RealLinearGaugeCNFVerifier
+        (v13RealLinearNoTargetRowsPublicInput Y) α := by
+    simpa [v13RealLinearNoTargetRowsGaugeCNFAppendixICNFReadoutData,
+      v13RealLinearGaugeCNFVerifier] using hα
+  have hVerifierβ :
+      v13RealLinearGaugeCNFVerifier
+        (v13RealLinearNoTargetRowsPublicInput Y) β := by
+    simpa [v13RealLinearNoTargetRowsGaugeCNFAppendixICNFReadoutData,
+      v13RealLinearGaugeCNFVerifier] using hβ
+  calc
+    α (some j) =
+        v13RealLinearCNFDecodedAssignment
+          (v13RealLinearNoTargetRowsPublicInput Y) j :=
+      v13RealLinearGaugeCNFFormula_forces_decodedBit hVerifierα j
+    _ = β (some j) :=
+      (v13RealLinearGaugeCNFFormula_forces_decodedBit hVerifierβ j).symm
+
+/-- Clause-level `singleMessage` for the concrete no-target-rows Appendix-I
+CNF: all satisfying assignments for one public instance project to the same
+fixed target bit. -/
+theorem
+    v13RealLinearNoTargetRowsGaugeCNFAppendixICNFSatAssignments_same_readout
+    {m : Nat} {i₀ : Fin m}
+    {Y : V13RealLinearNoTargetRowsWorld m i₀}
+    {α β : ConcreteCNF.Assignment (V13RealLinearGaugeCNFVar m)}
+    (hα :
+      ConcreteCNF.IsSatFormula
+        ((v13RealLinearNoTargetRowsGaugeCNFAppendixICNFReadoutData i₀)
+          |>.formula Y) α)
+    (hβ :
+      ConcreteCNF.IsSatFormula
+        ((v13RealLinearNoTargetRowsGaugeCNFAppendixICNFReadoutData i₀)
+          |>.formula Y) β) :
+    ((v13RealLinearNoTargetRowsGaugeCNFAppendixICNFReadoutData i₀)
+        |>.projection Y α) =
+      ((v13RealLinearNoTargetRowsGaugeCNFAppendixICNFReadoutData i₀)
+        |>.projection Y β) := by
+  calc
+    ((v13RealLinearNoTargetRowsGaugeCNFAppendixICNFReadoutData i₀)
+        |>.projection Y α) =
+        v13RealLinearNoTargetRowsTargetBit Y :=
+      v13RealLinearNoTargetRowsGaugeCNFAppendixICNFReadoutData_projection_eq_targetBit
+        i₀ trivial hα
+    _ =
+      ((v13RealLinearNoTargetRowsGaugeCNFAppendixICNFReadoutData i₀)
+        |>.projection Y β) :=
+      (v13RealLinearNoTargetRowsGaugeCNFAppendixICNFReadoutData_projection_eq_targetBit
+        i₀ trivial hβ).symm
+
 /-- The concrete no-target-rows Appendix-I CNF data satisfies the manuscript
 arbitrary-output SAT-search readout contract: every satisfying assignment
 returned by SAT search projects to the same fixed target bit. -/
