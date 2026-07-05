@@ -1194,6 +1194,235 @@ theorem xorGaugeSingleMessageGaugeAction_nontrivial :
   have hcoord := congrFun hfixed (1 : Fin 2)
   simp [W, xorGaugeSingleMessageGaugeAction] at hcoord
 
+/-- Read the free hidden-gauge coordinate from a gauge-buffered XOR witness. -/
+def xorGaugeSingleMessageHiddenGauge
+    {Y : XorGaugeSingleMessagePublic}
+    (W : XorGaugeSingleMessageWitness Y) : Bool :=
+  W 1
+
+/-- Every verifier-valid gauge-buffered XOR witness is the canonical
+assignment for its public input and its hidden-gauge bit. -/
+theorem xorGaugeSingleMessageValidWitness_eq_assignment
+    {Y : XorGaugeSingleMessagePublic}
+    {W : XorGaugeSingleMessageWitness Y}
+    (hW : xorGaugeSingleMessageVerifier Y W) :
+    W =
+      xorGaugeSingleMessageAssignment Y
+        (xorGaugeSingleMessageHiddenGauge W) := by
+  funext i
+  fin_cases i
+  · exact xorGaugeSingleMessageWitness_message_eq_M hW
+  · rfl
+
+/-- For a fixed public XOR instance, verifier-valid gauge-buffered witnesses
+are exactly the two choices of the free hidden-gauge bit. -/
+noncomputable def xorGaugeSingleMessageWitnessFiberEquivBool
+    (Y : XorGaugeSingleMessagePublic) :
+    {W : XorGaugeSingleMessageWitness Y //
+      xorGaugeSingleMessageVerifier Y W} ≃ Bool where
+  toFun := fun W => xorGaugeSingleMessageHiddenGauge W.val
+  invFun := fun gamma =>
+    ⟨xorGaugeSingleMessageAssignment Y gamma,
+      xorGaugeSingleMessageFormula_satisfied_assignment Y gamma⟩
+  left_inv := by
+    intro W
+    apply Subtype.ext
+    exact (xorGaugeSingleMessageValidWitness_eq_assignment W.property).symm
+  right_inv := by
+    intro gamma
+    rfl
+
+/-- Finite witness-fiber instance induced by the hidden-gauge coordinate. -/
+noncomputable instance xorGaugeSingleMessageWitnessFiberFintype
+    (Y : XorGaugeSingleMessagePublic) :
+    Fintype
+      {W : XorGaugeSingleMessageWitness Y //
+        xorGaugeSingleMessageVerifier Y W} :=
+  Fintype.ofEquiv Bool
+    (xorGaugeSingleMessageWitnessFiberEquivBool Y).symm
+
+/-- The verifier-valid gauge-buffered XOR witness fiber over a fixed public
+instance has cardinality exactly two. -/
+theorem xorGaugeSingleMessageWitnessFiber_card_eq_two
+    (Y : XorGaugeSingleMessagePublic) :
+    Fintype.card
+      {W : XorGaugeSingleMessageWitness Y //
+        xorGaugeSingleMessageVerifier Y W} = 2 := by
+  have hCard :=
+    Fintype.card_congr (xorGaugeSingleMessageWitnessFiberEquivBool Y)
+  simpa using hCard
+
+/-- Both hidden-gauge values occur among verifier-valid gauge-buffered XOR
+witnesses over any fixed public instance. -/
+theorem xorGaugeSingleMessageWitnessFiber_exists_hiddenGauge
+    (Y : XorGaugeSingleMessagePublic)
+    (gamma : Bool) :
+    ∃ W : XorGaugeSingleMessageWitness Y,
+      xorGaugeSingleMessageVerifier Y W ∧
+        xorGaugeSingleMessageHiddenGauge W = gamma := by
+  let W := (xorGaugeSingleMessageWitnessFiberEquivBool Y).symm gamma
+  have hHidden :
+      xorGaugeSingleMessageHiddenGauge W.val = gamma :=
+    (xorGaugeSingleMessageWitnessFiberEquivBool Y).right_inv gamma
+  exact ⟨W.val, W.property, hHidden⟩
+
+/-- The gauge-buffered XOR hidden-gauge action changes the free coordinate by
+xor with the acting Boolean gauge element. -/
+theorem xorGaugeSingleMessageGaugeAction_hiddenGauge
+    (gamma : Bool) {Y : XorGaugeSingleMessagePublic}
+    (W : XorGaugeSingleMessageWitness Y) :
+    xorGaugeSingleMessageHiddenGauge
+        (xorGaugeSingleMessageGaugeAction gamma W) =
+      (gamma ^^ xorGaugeSingleMessageHiddenGauge W) := by
+  cases gamma <;>
+    simp [xorGaugeSingleMessageHiddenGauge,
+      xorGaugeSingleMessageGaugeAction]
+
+/-- Gauge-buffered XOR witness-level hidden-gauge actions compose by xor. -/
+@[simp] theorem xorGaugeSingleMessageGaugeAction_xor
+    (gamma delta : Bool) {Y : XorGaugeSingleMessagePublic}
+    (W : XorGaugeSingleMessageWitness Y) :
+    xorGaugeSingleMessageGaugeAction gamma
+        (xorGaugeSingleMessageGaugeAction delta W) =
+      xorGaugeSingleMessageGaugeAction (gamma ^^ delta) W := by
+  funext i
+  fin_cases i <;> cases gamma <;> cases delta <;>
+    simp [xorGaugeSingleMessageGaugeAction]
+
+/-- The nontrivial witness-level gauge element changes every gauge-buffered
+XOR witness by flipping its free hidden coordinate. -/
+theorem xorGaugeSingleMessageGaugeAction_true_ne
+    {Y : XorGaugeSingleMessagePublic}
+    (W : XorGaugeSingleMessageWitness Y) :
+    xorGaugeSingleMessageGaugeAction true W ≠ W := by
+  intro hfixed
+  have hcoord := congrFun hfixed (1 : Fin 2)
+  simp [xorGaugeSingleMessageGaugeAction] at hcoord
+
+/-- Exact orbit characterization for verifier-valid gauge-buffered XOR
+witnesses over a fixed public instance: acting by `gamma` reaches `W'`
+exactly when the hidden-gauge coordinate is xor-shifted by `gamma`. -/
+theorem xorGaugeSingleMessageGaugeAction_eq_iff_of_valid
+    (gamma : Bool)
+    {Y : XorGaugeSingleMessagePublic}
+    {W W' : XorGaugeSingleMessageWitness Y}
+    (hW : xorGaugeSingleMessageVerifier Y W)
+    (hW' : xorGaugeSingleMessageVerifier Y W') :
+    xorGaugeSingleMessageGaugeAction gamma W = W' ↔
+      (gamma ^^ xorGaugeSingleMessageHiddenGauge W) =
+        xorGaugeSingleMessageHiddenGauge W' := by
+  constructor
+  · intro hAction
+    have hHidden :=
+      congrArg xorGaugeSingleMessageHiddenGauge hAction
+    simpa [xorGaugeSingleMessageGaugeAction_hiddenGauge] using hHidden
+  · intro hGauge
+    have hActionValid :
+        xorGaugeSingleMessageVerifier Y
+          (xorGaugeSingleMessageGaugeAction gamma W) :=
+      xorGaugeSingleMessageGaugeAction_preserves_verifier gamma hW
+    calc
+      xorGaugeSingleMessageGaugeAction gamma W =
+          xorGaugeSingleMessageAssignment Y
+            (xorGaugeSingleMessageHiddenGauge
+              (xorGaugeSingleMessageGaugeAction gamma W)) :=
+        xorGaugeSingleMessageValidWitness_eq_assignment hActionValid
+      _ = xorGaugeSingleMessageAssignment Y
+            (xorGaugeSingleMessageHiddenGauge W') := by
+        rw [xorGaugeSingleMessageGaugeAction_hiddenGauge, hGauge]
+      _ = W' :=
+        (xorGaugeSingleMessageValidWitness_eq_assignment hW').symm
+
+/-- Under the exact valid-witness fiber equivalence, the witness-level
+hidden-gauge action is the Boolean xor action. -/
+theorem xorGaugeSingleMessageWitnessFiberEquivBool_action
+    (Y : XorGaugeSingleMessagePublic)
+    (gamma : Bool)
+    (W :
+      {W : XorGaugeSingleMessageWitness Y //
+        xorGaugeSingleMessageVerifier Y W}) :
+    xorGaugeSingleMessageWitnessFiberEquivBool
+        Y
+        ⟨xorGaugeSingleMessageGaugeAction gamma W.val,
+          xorGaugeSingleMessageGaugeAction_preserves_verifier
+            gamma W.property⟩ =
+      (gamma ^^ xorGaugeSingleMessageWitnessFiberEquivBool Y W) := by
+  change
+    xorGaugeSingleMessageHiddenGauge
+        (xorGaugeSingleMessageGaugeAction gamma W.val) =
+      (gamma ^^ xorGaugeSingleMessageHiddenGauge W.val)
+  exact xorGaugeSingleMessageGaugeAction_hiddenGauge gamma W.val
+
+/-- Over a fixed public instance, verifier-valid gauge-buffered XOR witnesses
+are transitive under the witness-level hidden-gauge action. -/
+theorem xorGaugeSingleMessageGaugeAction_transitive_of_valid
+    {Y : XorGaugeSingleMessagePublic}
+    (W W' : XorGaugeSingleMessageWitness Y)
+    (hW : xorGaugeSingleMessageVerifier Y W)
+    (hW' : xorGaugeSingleMessageVerifier Y W') :
+    ∃ gamma : Bool,
+      xorGaugeSingleMessageGaugeAction gamma W = W' := by
+  let gamma :=
+    xorGaugeSingleMessageHiddenGauge W ^^
+      xorGaugeSingleMessageHiddenGauge W'
+  refine ⟨gamma, ?_⟩
+  exact
+    (xorGaugeSingleMessageGaugeAction_eq_iff_of_valid gamma hW hW').mpr
+      (by
+        dsimp [gamma]
+        cases h₀ : xorGaugeSingleMessageHiddenGauge W <;>
+          cases h₁ : xorGaugeSingleMessageHiddenGauge W' <;>
+          simp)
+
+/-- The witness-level hidden-gauge action is simply transitive on the
+verifier-valid gauge-buffered XOR witness fiber over a fixed public instance. -/
+theorem xorGaugeSingleMessageGaugeAction_unique_of_valid
+    {Y : XorGaugeSingleMessagePublic}
+    (W W' : XorGaugeSingleMessageWitness Y)
+    (hW : xorGaugeSingleMessageVerifier Y W)
+    (hW' : xorGaugeSingleMessageVerifier Y W') :
+    ∃! gamma : Bool,
+      xorGaugeSingleMessageGaugeAction gamma W = W' := by
+  let gamma :=
+    xorGaugeSingleMessageHiddenGauge W ^^
+      xorGaugeSingleMessageHiddenGauge W'
+  refine ⟨gamma, ?_, ?_⟩
+  · exact
+      (xorGaugeSingleMessageGaugeAction_eq_iff_of_valid gamma hW hW').mpr
+        (by
+          dsimp [gamma]
+          cases h₀ : xorGaugeSingleMessageHiddenGauge W <;>
+            cases h₁ : xorGaugeSingleMessageHiddenGauge W' <;>
+            simp)
+  · intro delta hdelta
+    have hHidden :
+        (delta ^^ xorGaugeSingleMessageHiddenGauge W) =
+          xorGaugeSingleMessageHiddenGauge W' :=
+      (xorGaugeSingleMessageGaugeAction_eq_iff_of_valid
+        delta hW hW').mp hdelta
+    dsimp [gamma]
+    cases h₀ : xorGaugeSingleMessageHiddenGauge W <;>
+      cases h₁ : xorGaugeSingleMessageHiddenGauge W' <;>
+      cases delta <;>
+      simp [h₀, h₁] at hHidden ⊢
+
+/-- A verifier-valid gauge-buffered XOR witness has a nontrivial hidden-gauge
+fiber over the same public instance: flipping the free coordinate preserves
+verifier validity and readout while changing the witness. -/
+theorem xorGaugeSingleMessage_nontrivialHiddenGaugeFiber
+    {Y : XorGaugeSingleMessagePublic}
+    (W : XorGaugeSingleMessageWitness Y)
+    (hW : xorGaugeSingleMessageVerifier Y W) :
+    ∃ W' : XorGaugeSingleMessageWitness Y,
+      xorGaugeSingleMessageVerifier Y W' ∧
+        xorGaugeSingleMessageWitnessMessage Y W' =
+          xorGaugeSingleMessageWitnessMessage Y W ∧
+        W' ≠ W := by
+  refine ⟨xorGaugeSingleMessageGaugeAction true W, ?_, ?_, ?_⟩
+  · exact xorGaugeSingleMessageGaugeAction_preserves_verifier true hW
+  · exact xorGaugeSingleMessageGaugeAction_preserves_readout true W
+  · exact xorGaugeSingleMessageGaugeAction_true_ne W
+
 /-- A world of the gauge-buffered XOR SAT spine is a public instance together
 with a satisfying two-variable assignment. -/
 structure XorGaugeSingleMessageSATWorld where
