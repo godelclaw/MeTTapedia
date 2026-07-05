@@ -2562,6 +2562,38 @@ structure ClosedCollarWindingFreedomActualCollarEmbeddingGeometryData
     normalForm.annular.outerBoundaryEdges = collarGeometry.outerAmbientBoundary
 
 /--
+Stronger repaired annulus-geometry source for the winding realization bridge.
+The project-wide previous-boundary witness geometry records the missing
+placement condition for positive collar layers; this structure pins that
+stronger surface to the winding witness support equalities.
+-/
+structure ClosedCollarWindingFreedomActualCollarEmbeddingPreviousBoundaryGeometryData
+    {V : Type} [DecidableEq V] {G : SimpleGraph V}
+    (normalForm : ClosedCollarWindingFreedomNormalFormRealization G) where
+  emb : PlaneEmbeddingWithBoundary G
+  previousGeometry : PlanarBoundaryAnnulusPreviousBoundaryWitnessGeometry emb
+  collarEdges_eq :
+    normalForm.annular.collarEdges =
+      closedCollarActualCollarGeometryEdgeSupport
+        previousGeometry.toPlanarBoundaryAnnulusCollarGeometry
+  outerBoundaryEdges_eq :
+    normalForm.annular.outerBoundaryEdges =
+      previousGeometry.toPlanarBoundaryAnnulusCollarGeometry.outerAmbientBoundary
+
+def ClosedCollarWindingFreedomActualCollarEmbeddingPreviousBoundaryGeometryData.toGeometryData
+    {V : Type} [DecidableEq V] {G : SimpleGraph V}
+    {normalForm : ClosedCollarWindingFreedomNormalFormRealization G}
+    (data :
+      ClosedCollarWindingFreedomActualCollarEmbeddingPreviousBoundaryGeometryData
+        normalForm) :
+    ClosedCollarWindingFreedomActualCollarEmbeddingGeometryData normalForm where
+  emb := data.emb
+  collarGeometry :=
+    data.previousGeometry.toPlanarBoundaryAnnulusCollarGeometry
+  collarEdges_eq := data.collarEdges_eq
+  outerBoundaryEdges_eq := data.outerBoundaryEdges_eq
+
+/--
 Cut-open radial face extracted from already identified embedded collar
 geometry.  This is the second geometric obligation needed by the finite n6
 taxonomy route.
@@ -2652,6 +2684,28 @@ def ClosedCollarWindingFreedomActualCollarEmbeddingSuppliesGeometryData :
         Nonempty
           (ClosedCollarWindingFreedomActualCollarEmbeddingGeometryData
             normalForm)
+
+/--
+Stronger geometry-data obligation: actual collar constraints supply the
+repaired previous-boundary witness annulus geometry, not merely the weaker
+collar-geometry shell.
+-/
+def ClosedCollarWindingFreedomActualCollarEmbeddingSuppliesPreviousBoundaryGeometryData :
+    Prop :=
+  ∀ {V : Type} [DecidableEq V] {G : SimpleGraph V},
+    (normalForm : ClosedCollarWindingFreedomNormalFormRealization G) →
+      normalForm.actualCollarEmbeddingConstraints →
+        Nonempty
+          (ClosedCollarWindingFreedomActualCollarEmbeddingPreviousBoundaryGeometryData
+            normalForm)
+
+theorem closedCollarWindingFreedomActualCollarEmbeddingSuppliesGeometryData_of_previousBoundaryGeometryData
+    (hgeometry :
+      ClosedCollarWindingFreedomActualCollarEmbeddingSuppliesPreviousBoundaryGeometryData) :
+    ClosedCollarWindingFreedomActualCollarEmbeddingSuppliesGeometryData := by
+  intro V _hV G normalForm hactual
+  rcases hgeometry normalForm hactual with ⟨previousData⟩
+  exact ⟨previousData.toGeometryData⟩
 
 /--
 Second factored data obligation: once the embedded collar geometry is known,
@@ -7057,6 +7111,52 @@ theorem section92Step4RepairedByGeometryRadialFaceExtractionN6AuditedKeysAndExac
   intro hgeometry hradial hn6 hkeys hsampleRows hslice1000302Rows hslice1001289Rows
   exact
     closedCollarWindingFreedomNonrealizableInNormalForm_of_geometryN6AuditedArchiveKey_of_exactRowCoverage
+      hgeometry hradial hn6 hkeys hsampleRows hslice1000302Rows hslice1001289Rows
+
+theorem closedCollarWindingFreedomNonrealizableInNormalForm_of_previousBoundaryGeometryN6AuditedArchiveKey_of_exactRowCoverage
+    (hgeometry :
+      ClosedCollarWindingFreedomActualCollarEmbeddingSuppliesPreviousBoundaryGeometryData)
+    (hradial :
+      ClosedCollarWindingFreedomActualCollarGeometrySuppliesRadialFaceExtraction)
+    (hn6 :
+      ClosedCollarWindingFreedomEveryRadialFaceNormalFormHasN6Representation)
+    (hkeys :
+      ClosedCollarWindingFreedomEveryRadialFaceN6RepresentationHasAuditedArchiveKey)
+    (hsampleRows :
+      ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSampleRadialFaceRowsCoveredByLab)
+    (hslice1000302Rows :
+      ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSlice1000302RadialFaceRowsCoveredByLab)
+    (hslice1001289Rows :
+      ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSlice1001289RadialFaceRowsCoveredByLab) :
+    ClosedCollarWindingFreedomNonrealizableInNormalForm :=
+  closedCollarWindingFreedomNonrealizableInNormalForm_of_geometryN6AuditedArchiveKey_of_exactRowCoverage
+    (closedCollarWindingFreedomActualCollarEmbeddingSuppliesGeometryData_of_previousBoundaryGeometryData
+      hgeometry)
+    hradial hn6 hkeys hsampleRows hslice1000302Rows hslice1001289Rows
+
+/--
+Repaired Section 9.2 Step 4 target through the stronger previous-boundary
+witness geometry surface.  This pins the winding obstruction to the repaired
+annulus-geometry interface: previous-boundary geometry, radial-face extraction,
+radial-face n6 extraction, audited ten-key spectrum, and exact row coverage
+refute the residual winding-freedom witness.
+-/
+def Section92Step4RepairedByPreviousBoundaryGeometryRadialFaceExtractionN6AuditedKeysAndExactRowCoverageTarget :
+    Prop :=
+  ClosedCollarWindingFreedomActualCollarEmbeddingSuppliesPreviousBoundaryGeometryData →
+    ClosedCollarWindingFreedomActualCollarGeometrySuppliesRadialFaceExtraction →
+      ClosedCollarWindingFreedomEveryRadialFaceNormalFormHasN6Representation →
+        ClosedCollarWindingFreedomEveryRadialFaceN6RepresentationHasAuditedArchiveKey →
+          ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSampleRadialFaceRowsCoveredByLab →
+            ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSlice1000302RadialFaceRowsCoveredByLab →
+              ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSlice1001289RadialFaceRowsCoveredByLab →
+                ClosedCollarWindingFreedomNonrealizableInNormalForm
+
+theorem section92Step4RepairedByPreviousBoundaryGeometryRadialFaceExtractionN6AuditedKeysAndExactRowCoverageTarget :
+    Section92Step4RepairedByPreviousBoundaryGeometryRadialFaceExtractionN6AuditedKeysAndExactRowCoverageTarget := by
+  intro hgeometry hradial hn6 hkeys hsampleRows hslice1000302Rows hslice1001289Rows
+  exact
+    closedCollarWindingFreedomNonrealizableInNormalForm_of_previousBoundaryGeometryN6AuditedArchiveKey_of_exactRowCoverage
       hgeometry hradial hn6 hkeys hsampleRows hslice1000302Rows hslice1001289Rows
 
 theorem closedCollarWindingFreedomNonrealizableInNormalForm_of_embeddedGeometryN6AuditedArchiveKey_of_rowCoverage
