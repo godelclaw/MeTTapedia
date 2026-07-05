@@ -2101,6 +2101,130 @@ theorem section92Step4N6ExhaustiveNormalFormObstructionTarget :
       exact closedCollarWindingFreedomSimplePatchN6_noLabNormalFormPass labPass
 
 /--
+Structural prefix blockers used by the n6 realization lab.  The names match
+the lab's first-failed normal-form prefix checks.
+-/
+inductive ClosedCollarSimplePatchN6StructuralBlockerId where
+  | connectedMultigraph
+  | cubicMultigraph
+  | bridgelessMultigraph
+  | planarMultigraph
+  | simpleEndpointRealization
+  deriving DecidableEq, Repr
+
+def ClosedCollarSimplePatchN6StructuralBlockerId.labName :
+    ClosedCollarSimplePatchN6StructuralBlockerId → String
+  | .connectedMultigraph => "connected_multigraph"
+  | .cubicMultigraph => "cubic_multigraph"
+  | .bridgelessMultigraph => "bridgeless_multigraph"
+  | .planarMultigraph => "planar_multigraph"
+  | .simpleEndpointRealization => "simple_endpoint_realization"
+
+def closedCollarSimplePatchN6StructuralBlockerIds :
+    List ClosedCollarSimplePatchN6StructuralBlockerId :=
+  [.connectedMultigraph, .cubicMultigraph, .bridgelessMultigraph,
+    .planarMultigraph, .simpleEndpointRealization]
+
+/--
+Normal-form field whose failure would explain a lab structural blocker.  This
+is the explicit bridge obligation from graph-facing normal form to the lab's
+prefix tests.
+-/
+def ClosedCollarSimplePatchN6StructuralBlockerId.excludedByNormalForm
+    {G : SimpleGraph V}
+    (blocker : ClosedCollarSimplePatchN6StructuralBlockerId)
+    (data : ClosedCollarWindingFreedomSimplePatchN6NormalFormRepresentation G) :
+    Prop :=
+  match blocker with
+  | .connectedMultigraph => data.normalForm.actualCollarEmbeddingConstraints
+  | .cubicMultigraph => data.normalForm.cubicBridgelessTaitSetting
+  | .bridgelessMultigraph => data.normalForm.cubicBridgelessTaitSetting
+  | .planarMultigraph => data.normalForm.dualTriangulationNormalForm
+  | .simpleEndpointRealization => data.normalForm.actualCollarEmbeddingConstraints
+
+/--
+A structural blocker is realized only if the corresponding normal-form field
+fails.  Honest normal-form data carries proofs of those fields, so the
+structural branch is impossible once the lab classification is aligned with
+this predicate.
+-/
+def ClosedCollarSimplePatchN6StructuralBlockerId.RealizesAgainstNormalForm
+    {G : SimpleGraph V}
+    (blocker : ClosedCollarSimplePatchN6StructuralBlockerId)
+    (data : ClosedCollarWindingFreedomSimplePatchN6NormalFormRepresentation G) :
+    Prop :=
+  ¬ blocker.excludedByNormalForm data
+
+theorem closedCollarSimplePatchN6StructuralBlocker_not_realizesAgainstNormalForm
+    {G : SimpleGraph V}
+    (data : ClosedCollarWindingFreedomSimplePatchN6NormalFormRepresentation G)
+    (blocker : ClosedCollarSimplePatchN6StructuralBlockerId) :
+    ¬ blocker.RealizesAgainstNormalForm data := by
+  cases blocker <;> intro hblocker
+  · exact hblocker data.normalForm.hactualCollarEmbeddingConstraints
+  · exact hblocker data.normalForm.hcubicBridgelessTaitSetting
+  · exact hblocker data.normalForm.hcubicBridgelessTaitSetting
+  · exact hblocker data.normalForm.hdualTriangulationNormalForm
+  · exact hblocker data.normalForm.hactualCollarEmbeddingConstraints
+
+/--
+Detailed exhaustive lab outcome for an honest n6 normal-form representation.
+The structural branch records the exact lab prefix blocker and the normal-form
+field whose failure would be required for that blocker to apply.
+-/
+inductive ClosedCollarWindingFreedomSimplePatchN6DetailedLabOutcome
+    {V : Type} {G : SimpleGraph V}
+    (data : ClosedCollarWindingFreedomSimplePatchN6NormalFormRepresentation G) where
+  | structural
+      (blocker : ClosedCollarSimplePatchN6StructuralBlockerId)
+      (hrealizes : blocker.RealizesAgainstNormalForm data)
+  | exactTemplate
+      (candidate : ClosedCollarDiagonalTwoPoleTemplateCandidate G)
+      (hrealizes : candidate.Realizes)
+  | residualPass
+      (pass : ClosedCollarWindingFreedomSimplePatchN6LabNormalFormPass G)
+
+/--
+Sharper coverage obligation from the exhaustive n6 lab: every graph-facing n6
+normal-form representation receives a detailed lab outcome.
+-/
+def ClosedCollarWindingFreedomSimplePatchN6NormalFormDetailedClassifiedByExhaustiveLab :
+    Prop :=
+  ∀ {V : Type} {G : SimpleGraph V},
+    (data : ClosedCollarWindingFreedomSimplePatchN6NormalFormRepresentation G) →
+      Nonempty
+        (ClosedCollarWindingFreedomSimplePatchN6DetailedLabOutcome data)
+
+/--
+Sharper n6 finite-subclass obstruction target.  The detailed classification
+already ties structural prefix blockers to violations of named normal-form
+fields, so the only remaining coverage obligation is the exhaustive lab
+classification itself.
+-/
+def Section92Step4N6DetailedNormalFormObstructionTarget : Prop :=
+  ClosedCollarWindingFreedomSimplePatchN6ExhaustiveBlockedAfterCyclicallyFiveTemplateExclusion →
+    ClosedCollarWindingFreedomSimplePatchN6NormalFormDetailedClassifiedByExhaustiveLab →
+      ∀ {V : Type} {G : SimpleGraph V},
+        (data : ClosedCollarWindingFreedomSimplePatchN6NormalFormRepresentation G) →
+          False
+
+theorem section92Step4N6DetailedNormalFormObstructionTarget :
+    Section92Step4N6DetailedNormalFormObstructionTarget := by
+  intro _hexhaustive hclassified V G data
+  rcases hclassified data with ⟨outcome⟩
+  cases outcome with
+  | structural blocker hrealizes =>
+      exact
+        closedCollarSimplePatchN6StructuralBlocker_not_realizesAgainstNormalForm
+          data blocker hrealizes
+  | exactTemplate candidate hrealizes =>
+      exact
+        closedCollarWindingFreedomNormalFormRealization_false_of_forcedTemplate
+          data.normalForm candidate hrealizes
+  | residualPass pass =>
+      exact closedCollarWindingFreedomSimplePatchN6_noLabNormalFormPass pass
+
+/--
 Representative planar profile-preserving samples from the six-internal
 simple-patch search.  These are not exhaustive certificates; they pin the first
 normal-form blocker after planarity has been passed.
