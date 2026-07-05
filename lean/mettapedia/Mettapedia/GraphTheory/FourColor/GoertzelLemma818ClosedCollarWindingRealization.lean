@@ -12947,6 +12947,35 @@ theorem section92Step4CurrentFiniteFrontierMaxCutHistogramSoundnessExactCriteria
     section92Step4CurrentFiniteFrontierOneCollarBridgeMaxCutHistogramSoundnessExactCriterion⟩
 
 /--
+Histogram-soundness fork for the current finite frontier.  The repair branch
+says that the remaining factored normal-form bridge plus histogram soundness
+kills the winding-freedom witness.  The obstruction branch says that, if the
+finite audited rows and histogram soundness are accepted but nonrealizability
+still fails, then a surviving witness has a named factored extraction blocker.
+-/
+def Section92Step4CurrentFiniteFrontierHistogramSoundnessRepairedOrObstructedFork :
+    Prop :=
+  ClosedCollarWindingFreedomCurrentFiniteRealizationFrontierEvidence ∧
+    (ClosedCollarWindingFreedomCurrentFiniteFrontierRemainingFactoredBridge →
+      ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceMaxCutHistogramSoundness →
+        ClosedCollarWindingFreedomNonrealizableInNormalForm) ∧
+      (ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceAuditedRowsCoveredByLab →
+        ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceMaxCutHistogramSoundness →
+          ¬ ClosedCollarWindingFreedomNonrealizableInNormalForm →
+            ClosedCollarWindingFreedomFactoredPreviousBoundaryWitnessRepairObstruction)
+
+theorem section92Step4CurrentFiniteFrontierHistogramSoundnessRepairedOrObstructedFork :
+    Section92Step4CurrentFiniteFrontierHistogramSoundnessRepairedOrObstructedFork := by
+  refine
+    ⟨closedCollarWindingFreedomCurrentFiniteRealizationFrontierEvidence,
+      closedCollarWindingFreedomNonrealizableInNormalForm_of_currentFiniteFrontierRemainingFactoredBridge_of_maxCutHistogramSoundness,
+      ?_⟩
+  intro hrows _hsound hnot
+  exact
+    closedCollarWindingFreedomFactoredPreviousBoundaryWitnessRepairObstruction_of_auditedRows_of_not_nonrealizable
+      hrows hnot
+
+/--
 Current finite-frontier fork with the remaining bridge stated explicitly.  The
 finite evidence is on record; if the five factored normal-form obligations are
 proved, the audited rows kill the winding-freedom witness.  If audited rows are
