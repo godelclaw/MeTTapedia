@@ -1138,6 +1138,116 @@ theorem v13RealLinearSmallNoTargetRowsCNFSATWorld_singleMessage :
     v13RealLinearSmallNoTargetRowsCNFSATWorldTarget_eq_message omega₁]
   exact congrArg v13RealLinearSmallNoTargetRowsCNFMessage hPublic
 
+/-- Target-blind neutral skeleton for the no-target-row SAT world: retain the
+public non-target row bit and the hidden gauge bit, but omit the public
+message bit. -/
+def v13RealLinearSmallNoTargetRowsCNFSATWorldNeutralSkeleton
+    (omega : V13RealLinearSmallNoTargetRowsCNFSATWorld) : Bool × Bool :=
+  (omega.publicInput.spare, omega.assignment none)
+
+/-- Opposite support for no-target-row SAT worlds pairs verifier-valid worlds
+with opposite public messages but the same non-target row and hidden gauge
+bits. -/
+def v13RealLinearSmallNoTargetRowsCNFSATWorldOppositeSupport
+    (omega₀ omega₁ : V13RealLinearSmallNoTargetRowsCNFSATWorld) : Prop :=
+  v13RealLinearSmallNoTargetRowsCNFSATWorldNeutralSkeleton omega₀ =
+      v13RealLinearSmallNoTargetRowsCNFSATWorldNeutralSkeleton omega₁ ∧
+    omega₀.publicInput.msg = false ∧ omega₁.publicInput.msg = true
+
+/-- The non-target-row plus hidden-gauge neutral skeleton is pair-neutral
+across supported opposite-message SAT-world pairs. -/
+theorem v13RealLinearSmallNoTargetRowsCNFSATWorld_pairNeutral :
+    PairNeutral
+      v13RealLinearSmallNoTargetRowsCNFSATWorldOppositeSupport
+      v13RealLinearSmallNoTargetRowsCNFSATWorldNeutralSkeleton := by
+  intro omega₀ omega₁ hSupport
+  exact hSupport.1
+
+/-- Canonical no-target-row SAT world with a chosen public row payload and
+hidden gauge bit. -/
+def v13RealLinearSmallNoTargetRowsCNFSATWorldOfPublicGauge
+    (Y : V13RealLinearSmallNoTargetRowsCNFPublic) (gauge : Bool) :
+    V13RealLinearSmallNoTargetRowsCNFSATWorld where
+  publicInput := Y
+  assignment := v13RealLinearSmallNoTargetRowsCNFAssignment Y gauge
+  sat := v13RealLinearSmallNoTargetRowsCNFFormula_satisfied_assignment Y gauge
+
+/-- The concrete no-target-row SAT-world surface has an explicit
+opposite-message pair in the same neutral-skeleton fiber. -/
+theorem v13RealLinearSmallNoTargetRowsCNFSATWorld_hasMessageOppositePair :
+    HasMessageOppositePair
+      v13RealLinearSmallNoTargetRowsCNFSATWorldOppositeSupport
+      v13RealLinearSmallNoTargetRowsCNFSATWorldTarget := by
+  let YFalse : V13RealLinearSmallNoTargetRowsCNFPublic :=
+    { msg := false, spare := false }
+  let YTrue : V13RealLinearSmallNoTargetRowsCNFPublic :=
+    { msg := true, spare := false }
+  let omegaFalse :
+      V13RealLinearSmallNoTargetRowsCNFSATWorld :=
+    v13RealLinearSmallNoTargetRowsCNFSATWorldOfPublicGauge YFalse false
+  let omegaTrue :
+      V13RealLinearSmallNoTargetRowsCNFSATWorld :=
+    v13RealLinearSmallNoTargetRowsCNFSATWorldOfPublicGauge YTrue false
+  refine ⟨omegaFalse, omegaTrue, ?_, ?_, ?_⟩
+  · simp [omegaFalse, omegaTrue, YFalse, YTrue,
+      v13RealLinearSmallNoTargetRowsCNFSATWorldOppositeSupport,
+      v13RealLinearSmallNoTargetRowsCNFSATWorldNeutralSkeleton,
+      v13RealLinearSmallNoTargetRowsCNFSATWorldOfPublicGauge]
+  · calc
+      v13RealLinearSmallNoTargetRowsCNFSATWorldTarget omegaFalse =
+          v13RealLinearSmallNoTargetRowsCNFMessage
+            omegaFalse.publicInput :=
+        v13RealLinearSmallNoTargetRowsCNFSATWorldTarget_eq_message
+          omegaFalse
+      _ = false := by
+        simp [omegaFalse, YFalse,
+          v13RealLinearSmallNoTargetRowsCNFSATWorldOfPublicGauge,
+          v13RealLinearSmallNoTargetRowsCNFMessage]
+  · calc
+      v13RealLinearSmallNoTargetRowsCNFSATWorldTarget omegaTrue =
+          v13RealLinearSmallNoTargetRowsCNFMessage omegaTrue.publicInput :=
+        v13RealLinearSmallNoTargetRowsCNFSATWorldTarget_eq_message
+          omegaTrue
+      _ = true := by
+        simp [omegaTrue, YTrue,
+          v13RealLinearSmallNoTargetRowsCNFSATWorldOfPublicGauge,
+          v13RealLinearSmallNoTargetRowsCNFMessage]
+
+/-- Structural `noPublicTargetTags` transfer for the concrete small
+no-target-row SAT world: the retained public non-target row and hidden gauge
+bits are target-blind, yet the surface contains same-skeleton worlds with
+opposite fixed message readouts. -/
+theorem v13RealLinearSmallNoTargetRowsCNFSATWorld_noPublicTargetTags :
+    PairNeutral
+        v13RealLinearSmallNoTargetRowsCNFSATWorldOppositeSupport
+        v13RealLinearSmallNoTargetRowsCNFSATWorldNeutralSkeleton ∧
+      HasMessageOppositePair
+        v13RealLinearSmallNoTargetRowsCNFSATWorldOppositeSupport
+        v13RealLinearSmallNoTargetRowsCNFSATWorldTarget ∧
+        ¬ ∃ f : Bool × Bool -> Bool,
+          ∀ omega : V13RealLinearSmallNoTargetRowsCNFSATWorld,
+            v13RealLinearSmallNoTargetRowsCNFSATWorldTarget omega =
+              f
+                (v13RealLinearSmallNoTargetRowsCNFSATWorldNeutralSkeleton
+                  omega) := by
+  have hPair :
+      PairNeutral
+        v13RealLinearSmallNoTargetRowsCNFSATWorldOppositeSupport
+        v13RealLinearSmallNoTargetRowsCNFSATWorldNeutralSkeleton :=
+    v13RealLinearSmallNoTargetRowsCNFSATWorld_pairNeutral
+  have hOpp :
+      HasMessageOppositePair
+        v13RealLinearSmallNoTargetRowsCNFSATWorldOppositeSupport
+        v13RealLinearSmallNoTargetRowsCNFSATWorldTarget :=
+    v13RealLinearSmallNoTargetRowsCNFSATWorld_hasMessageOppositePair
+  exact
+    ⟨hPair, hOpp,
+      neutralSkeleton_not_sufficient
+        v13RealLinearSmallNoTargetRowsCNFSATWorldOppositeSupport
+        v13RealLinearSmallNoTargetRowsCNFSATWorldNeutralSkeleton
+        v13RealLinearSmallNoTargetRowsCNFSATWorldTarget
+        hPair hOpp⟩
+
 /-- Semantic verifier for the explicit small gauge-CNF instance. -/
 def v13RealLinearSmallGaugeCNFVerifier
     (msg : Bool) (W : V13RealLinearSmallGaugeCNFWitness) : Prop :=
