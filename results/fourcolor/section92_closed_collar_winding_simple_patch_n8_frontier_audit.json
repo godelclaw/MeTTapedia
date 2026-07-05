@@ -5,11 +5,11 @@
     "exact_template_blocker_count": 0,
     "non_template_cyclic_cut_blocker_count": 0,
     "normal_form_after_template_exclusion_passing_count": 0,
-    "processed_patch_topology_count": 4500000,
+    "processed_patch_topology_count": 5000000,
     "profile_preserving_case_count": 0,
-    "radial_order_case_count": 9000000,
+    "radial_order_case_count": 10000000,
     "structural_first_blocker_count": 0,
-    "verdict": "n8_first_4500000_found_no_profile_preserving_patch"
+    "verdict": "n8_first_5000000_found_no_profile_preserving_patch"
   },
   "prefix_ranges": [
     {
@@ -61,6 +61,11 @@
       "next_patch_start_index": 4500000,
       "patch_start_index": 4000000,
       "processed_patch_topology_count": 500000
+    },
+    {
+      "next_patch_start_index": 5000000,
+      "patch_start_index": 4500000,
+      "processed_patch_topology_count": 500000
     }
   ],
   "prefix_template_blocker_files": [
@@ -73,9 +78,10 @@
     "section92_closed_collar_winding_simple_patch_template_blockers_n8_2500000_3000000.json",
     "section92_closed_collar_winding_simple_patch_template_blockers_n8_3000000_3500000.json",
     "section92_closed_collar_winding_simple_patch_template_blockers_n8_3500000_4000000.json",
-    "section92_closed_collar_winding_simple_patch_template_blockers_n8_4000000_4500000.json"
+    "section92_closed_collar_winding_simple_patch_template_blockers_n8_4000000_4500000.json",
+    "section92_closed_collar_winding_simple_patch_template_blockers_n8_4500000_5000000.json"
   ],
-  "remaining_prefix_unprocessed_patch_topology_count": 1184587725,
+  "remaining_prefix_unprocessed_patch_topology_count": 1184087725,
   "schema": "fourcolor-section-9-2-closed-collar-winding-simple-patch-n8-frontier-audit-v1",
   "source": "Artifact audit for n8 closed-collar winding simple-patch frontier verdicts",
   "stratified_sample": {
