@@ -728,6 +728,69 @@ theorem hasCycleOnTightSide (tight : TightSeparatingDualFiveCycle cycle) :
 
 end TightSeparatingDualFiveCycle
 
+/-- The five boundary positions of a disk bounded by a separating dual 5-cycle. -/
+inductive FiveBoundaryIndex where
+  | b0
+  | b1
+  | b2
+  | b3
+  | b4
+  deriving DecidableEq
+
+/-- Boundary-charge arithmetic profile for the five vertices on a separating 5-cycle.  The
+geometric disk-counting part of Lemma 5.3 supplies the hypotheses: each boundary charge is at
+most one, and the total boundary charge is at least four. -/
+structure FiveBoundaryChargeProfile where
+  ch0 : Int
+  ch1 : Int
+  ch2 : Int
+  ch3 : Int
+  ch4 : Int
+  ch0_le_one : ch0 ≤ 1
+  ch1_le_one : ch1 ≤ 1
+  ch2_le_one : ch2 ≤ 1
+  ch3_le_one : ch3 ≤ 1
+  ch4_le_one : ch4 ≤ 1
+  boundary_sum_ge_four : 4 ≤ ch0 + ch1 + ch2 + ch3 + ch4
+
+namespace FiveBoundaryChargeProfile
+
+/-- Read a boundary charge by boundary position. -/
+def charge (profile : FiveBoundaryChargeProfile) : FiveBoundaryIndex → Int
+  | .b0 => profile.ch0
+  | .b1 => profile.ch1
+  | .b2 => profile.ch2
+  | .b3 => profile.ch3
+  | .b4 => profile.ch4
+
+/-- Every charge in the five-boundary profile is at most one. -/
+theorem charge_le_one (profile : FiveBoundaryChargeProfile) (i : FiveBoundaryIndex) :
+    profile.charge i ≤ 1 := by
+  cases i <;> simp [charge, profile.ch0_le_one, profile.ch1_le_one,
+    profile.ch2_le_one, profile.ch3_le_one, profile.ch4_le_one]
+
+/-- In a five-entry integer profile with each entry at most one and total at least four, at most
+one boundary charge can differ from one.  This is the finite arithmetic core of the Lemma 5.3
+disk-charge count. -/
+theorem not_two_boundaryCharges_ne_one
+    (profile : FiveBoundaryChargeProfile) {i j : FiveBoundaryIndex} (hij : i ≠ j)
+    (hi : profile.charge i ≠ 1) (hj : profile.charge j ≠ 1) :
+    False := by
+  have hlei := profile.charge_le_one i
+  have hlej := profile.charge_le_one j
+  have hi0 : profile.charge i ≤ 0 := by omega
+  have hj0 : profile.charge j ≤ 0 := by omega
+  have h0 := profile.ch0_le_one
+  have h1 := profile.ch1_le_one
+  have h2 := profile.ch2_le_one
+  have h3 := profile.ch3_le_one
+  have h4 := profile.ch4_le_one
+  have hsum := profile.boundary_sum_ge_four
+  cases i <;> cases j <;> simp [charge] at hij hi hj hi0 hj0
+  all_goals omega
+
+end FiveBoundaryChargeProfile
+
 /-- Lemma 5.3 as the exact remaining disk-triangulation obligation: in normal form, every
 separating dual 5-cycle is tight, i.e. yields CAP5 pinch data on the primal side. -/
 def Lemma53DiskTriangulationTightnessObligation
