@@ -130,6 +130,7 @@ def verify_no_profile_case_verdicts(
     profile_failure_kind_histogram: Counter[str] = Counter()
     first_blocking_state_index_histogram: Counter[str] = Counter()
     wrong_profile_proper_extension_count_histogram: Counter[str] = Counter()
+    wrong_profile_landed_profile_histogram: Counter[str] = Counter()
     for index, item in enumerate(case_verdicts):
         if not isinstance(item, dict):
             fail(failures, label, f"case_verdicts[{index}] is not an object")
@@ -180,6 +181,20 @@ def verify_no_profile_case_verdicts(
         if not isinstance(variant_count, int) or variant_count < 0:
             fail(failures, label, f"case_verdicts[{index}] has invalid profile variant count")
             variant_count = -1
+        desired_profile_key = item.get("desired_profile_key")
+        if not isinstance(desired_profile_key, str) or not desired_profile_key:
+            fail(failures, label, f"case_verdicts[{index}] has invalid desired profile key")
+            desired_profile_key = ""
+        profile_histogram = item.get("proper_tait_extension_profile_histogram")
+        if not isinstance(profile_histogram, dict):
+            fail(failures, label, f"case_verdicts[{index}] has invalid profile histogram")
+            profile_histogram = {}
+        parsed_profile_histogram: dict[str, int] = {}
+        for profile_key, count in profile_histogram.items():
+            if not isinstance(profile_key, str) or not isinstance(count, int) or count <= 0:
+                fail(failures, label, f"case_verdicts[{index}] has bad profile histogram entry")
+                continue
+            parsed_profile_histogram[profile_key] = count
         conflicts = item.get("terminal_precolor_conflict_vertices")
         if not isinstance(conflicts, list) or not all(
             isinstance(vertex, str) for vertex in conflicts
@@ -191,11 +206,15 @@ def verify_no_profile_case_verdicts(
                 fail(failures, label, f"case_verdicts[{index}] lacks conflict vertices")
             if proper_count != 0 or variant_count != 0:
                 fail(failures, label, f"case_verdicts[{index}] terminal conflict has extensions")
+            if parsed_profile_histogram:
+                fail(failures, label, f"case_verdicts[{index}] terminal conflict has profile histogram")
         elif failure_kind == "no_proper_tait_extension":
             if conflicts:
                 fail(failures, label, f"case_verdicts[{index}] no-proper case has conflicts")
             if proper_count != 0 or variant_count != 0:
                 fail(failures, label, f"case_verdicts[{index}] no-proper case has extensions")
+            if parsed_profile_histogram:
+                fail(failures, label, f"case_verdicts[{index}] no-proper case has profile histogram")
         elif failure_kind == "proper_extensions_wrong_profile":
             if conflicts:
                 fail(failures, label, f"case_verdicts[{index}] wrong-profile case has conflicts")
@@ -203,8 +222,16 @@ def verify_no_profile_case_verdicts(
                 fail(failures, label, f"case_verdicts[{index}] wrong-profile case lacks extensions")
             if variant_count <= 0:
                 fail(failures, label, f"case_verdicts[{index}] wrong-profile case lacks profiles")
+            if sum(parsed_profile_histogram.values()) != proper_count:
+                fail(failures, label, f"case_verdicts[{index}] profile histogram sum mismatch")
+            if len(parsed_profile_histogram) != variant_count:
+                fail(failures, label, f"case_verdicts[{index}] profile variant count mismatch")
+            if desired_profile_key in parsed_profile_histogram:
+                fail(failures, label, f"case_verdicts[{index}] wrong-profile case includes desired profile")
             if proper_count > 0:
                 wrong_profile_proper_extension_count_histogram[str(proper_count)] += 1
+                for profile_key, count in parsed_profile_histogram.items():
+                    wrong_profile_landed_profile_histogram[profile_key] += count
 
     if seen_pairs != expected_pairs:
         missing = expected_pairs - seen_pairs
@@ -221,6 +248,8 @@ def verify_no_profile_case_verdicts(
             sorted_counter(first_blocking_state_index_histogram),
         "wrong_profile_proper_extension_count_histogram":
             sorted_counter(wrong_profile_proper_extension_count_histogram),
+        "wrong_profile_landed_profile_histogram":
+            sorted_counter(wrong_profile_landed_profile_histogram),
     }
 
 
@@ -380,6 +409,7 @@ def verify_stratified_sample(
                 "profile_failure_kind_histogram",
                 "first_blocking_state_index_histogram",
                 "wrong_profile_proper_extension_count_histogram",
+                "wrong_profile_landed_profile_histogram",
             ]:
                 if summary.get(key) != sample_case_verdict_summary.get(key):
                     fail(failures, label, f"sample summary mismatch for {key}")

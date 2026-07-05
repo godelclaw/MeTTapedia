@@ -43,6 +43,7 @@
   ],
   "case_verdicts": [
     {
+      "desired_profile_key": "rb:2/0|rp:2/0|bp:2/0",
       "first_blocking_state_index": 0,
       "matching_profile_extension_count": 0,
       "patch_edge_count": 16,
@@ -51,6 +52,7 @@
       "profile_preserving": false,
       "profile_variant_count": 0,
       "proper_tait_extension_count": 0,
+      "proper_tait_extension_profile_histogram": {},
       "radial_order": [
         "P0:A-B",
         "P1:A-C"
@@ -60,6 +62,7 @@
       "verdict": "no_profile_preserving_extension"
     },
     {
+      "desired_profile_key": "rb:2/0|rp:2/0|bp:2/0",
       "first_blocking_state_index": 0,
       "matching_profile_extension_count": 0,
       "patch_edge_count": 16,
@@ -68,6 +71,7 @@
       "profile_preserving": false,
       "profile_variant_count": 0,
       "proper_tait_extension_count": 0,
+      "proper_tait_extension_profile_histogram": {},
       "radial_order": [
         "P1:A-C",
         "P0:A-B"
@@ -79,6 +83,7 @@
       "verdict": "no_profile_preserving_extension"
     },
     {
+      "desired_profile_key": "rb:2/0|rp:2/0|bp:2/0",
       "first_blocking_state_index": 0,
       "matching_profile_extension_count": 0,
       "patch_edge_count": 16,
@@ -87,6 +92,9 @@
       "profile_preserving": false,
       "profile_variant_count": 1,
       "proper_tait_extension_count": 2,
+      "proper_tait_extension_profile_histogram": {
+        "rb:1/0|rp:2/0|bp:1/0": 2
+      },
       "radial_order": [
         "P0:A-B",
         "P1:A-D"
@@ -96,6 +104,7 @@
       "verdict": "no_profile_preserving_extension"
     },
     {
+      "desired_profile_key": "rb:2/0|rp:2/0|bp:2/0",
       "first_blocking_state_index": 0,
       "matching_profile_extension_count": 0,
       "patch_edge_count": 16,
@@ -104,6 +113,7 @@
       "profile_preserving": false,
       "profile_variant_count": 0,
       "proper_tait_extension_count": 0,
+      "proper_tait_extension_profile_histogram": {},
       "radial_order": [
         "P1:A-D",
         "P0:A-B"
@@ -115,6 +125,7 @@
       "verdict": "no_profile_preserving_extension"
     },
     {
+      "desired_profile_key": "rb:2/0|rp:2/0|bp:2/0",
       "first_blocking_state_index": 2,
       "matching_profile_extension_count": 0,
       "patch_edge_count": 16,
@@ -123,6 +134,7 @@
       "profile_preserving": false,
       "profile_variant_count": 0,
       "proper_tait_extension_count": 0,
+      "proper_tait_extension_profile_histogram": {},
       "radial_order": [
         "P0:A-B",
         "P1:A-N1"
@@ -132,6 +144,7 @@
       "verdict": "no_profile_preserving_extension"
     },
     {
+      "desired_profile_key": "rb:2/0|rp:2/0|bp:2/0",
       "first_blocking_state_index": 0,
       "matching_profile_extension_count": 0,
       "patch_edge_count": 16,
@@ -140,6 +153,7 @@
       "profile_preserving": false,
       "profile_variant_count": 0,
       "proper_tait_extension_count": 0,
+      "proper_tait_extension_profile_histogram": {},
       "radial_order": [
         "P1:A-N1",
         "P0:A-B"
@@ -149,6 +163,7 @@
       "verdict": "no_profile_preserving_extension"
     },
     {
+      "desired_profile_key": "rb:2/0|rp:2/0|bp:2/0",
       "first_blocking_state_index": 0,
       "matching_profile_extension_count": 0,
       "patch_edge_count": 16,
@@ -157,6 +172,7 @@
       "profile_preserving": false,
       "profile_variant_count": 0,
       "proper_tait_extension_count": 0,
+      "proper_tait_extension_profile_histogram": {},
       "radial_order": [
         "P0:A-B",
         "P1:A-N2"
@@ -166,6 +182,7 @@
       "verdict": "no_profile_preserving_extension"
     },
     {
+      "desired_profile_key": "rb:2/0|rp:2/0|bp:2/0",
       "first_blocking_state_index": 0,
       "matching_profile_extension_count": 0,
       "patch_edge_count": 16,
@@ -174,6 +191,7 @@
       "profile_preserving": false,
       "profile_variant_count": 0,
       "proper_tait_extension_count": 0,
+      "proper_tait_extension_profile_histogram": {},
       "radial_order": [
         "P1:A-N2",
         "P0:A-B"
@@ -183,6 +201,7 @@
       "verdict": "no_profile_preserving_extension"
     },
     {
+      "desired_profile_key": "rb:2/0|rp:2/0|bp:2/0",
       "first_blocking_state_index": 0,
       "matching_profile_extension_count": 0,
       "patch_edge_count": 16,
@@ -191,6 +210,9 @@
       "profile_preserving": false,
       "profile_variant_count": 1,
       "proper_tait_extension_count": 1,
+      "proper_tait_extension_profile_histogram": {
+        "rb:1/0|rp:2/0|bp:1/0": 1
+      },
       "radial_order": [
         "P0:A-B",
         "P1:A-N3"
@@ -200,6 +222,7 @@
       "verdict": "no_profile_preserving_extension"
     },
     {
+      "desired_profile_key": "rb:2/0|rp:2/0|bp:2/0",
       "first_blocking_state_index": 0,
       "matching_profile_extension_count": 0,
       "patch_edge_count": 16,
@@ -208,6 +231,9 @@
       "profile_preserving": false,
       "profile_variant_count": 1,
       "proper_tait_extension_count": 2,
+      "proper_tait_extension_profile_histogram": {
+        "rb:1/0|rp:1/0|bp:2/0": 2
+      },
       "radial_order": [
         "P1:A-N3",
         "P0:A-B"
@@ -217,6 +243,7 @@
       "verdict": "no_profile_preserving_extension"
     },
     {
+      "desired_profile_key": "rb:2/0|rp:2/0|bp:2/0",
       "first_blocking_state_index": 0,
       "matching_profile_extension_count": 0,
       "patch_edge_count": 16,
@@ -225,6 +252,7 @@
       "profile_preserving": false,
       "profile_variant_count": 0,
       "proper_tait_extension_count": 0,
+      "proper_tait_extension_profile_histogram": {},
       "radial_order": [
         "P0:A-B",
         "P1:A-N4"
@@ -234,6 +262,7 @@
       "verdict": "no_profile_preserving_extension"
     },
     {
+      "desired_profile_key": "rb:2/0|rp:2/0|bp:2/0",
       "first_blocking_state_index": 0,
       "matching_profile_extension_count": 0,
       "patch_edge_count": 16,
@@ -242,6 +271,13 @@
       "profile_preserving": false,
       "profile_variant_count": 5,
       "proper_tait_extension_count": 6,
+      "proper_tait_extension_profile_histogram": {
+        "rb:1/0|rp:1/0|bp:3/0": 2,
+        "rb:1/0|rp:2/0|bp:2/0": 1,
+        "rb:1/0|rp:2/0|bp:3/0": 1,
+        "rb:2/0|rp:1/0|bp:2/0": 1,
+        "rb:2/0|rp:1/0|bp:3/0": 1
+      },
       "radial_order": [
         "P1:A-N4",
         "P0:A-B"
@@ -251,6 +287,7 @@
       "verdict": "no_profile_preserving_extension"
     },
     {
+      "desired_profile_key": "rb:2/0|rp:2/0|bp:2/0",
       "first_blocking_state_index": 0,
       "matching_profile_extension_count": 0,
       "patch_edge_count": 16,
@@ -259,6 +296,11 @@
       "profile_preserving": false,
       "profile_variant_count": 3,
       "proper_tait_extension_count": 3,
+      "proper_tait_extension_profile_histogram": {
+        "rb:1/0|rp:3/0|bp:1/0": 1,
+        "rb:2/0|rp:2/0|bp:1/0": 1,
+        "rb:2/0|rp:3/0|bp:1/0": 1
+      },
       "radial_order": [
         "P0:A-B",
         "P1:A-N5"
@@ -268,6 +310,7 @@
       "verdict": "no_profile_preserving_extension"
     },
     {
+      "desired_profile_key": "rb:2/0|rp:2/0|bp:2/0",
       "first_blocking_state_index": 0,
       "matching_profile_extension_count": 0,
       "patch_edge_count": 16,
@@ -276,6 +319,7 @@
       "profile_preserving": false,
       "profile_variant_count": 0,
       "proper_tait_extension_count": 0,
+      "proper_tait_extension_profile_histogram": {},
       "radial_order": [
         "P1:A-N5",
         "P0:A-B"
@@ -285,6 +329,7 @@
       "verdict": "no_profile_preserving_extension"
     },
     {
+      "desired_profile_key": "rb:2/0|rp:2/0|bp:2/0",
       "first_blocking_state_index": 0,
       "matching_profile_extension_count": 0,
       "patch_edge_count": 16,
@@ -293,6 +338,9 @@
       "profile_preserving": false,
       "profile_variant_count": 1,
       "proper_tait_extension_count": 1,
+      "proper_tait_extension_profile_histogram": {
+        "rb:2/0|rp:2/0|bp:1/0": 1
+      },
       "radial_order": [
         "P0:A-B",
         "P1:A-N6"
@@ -302,6 +350,7 @@
       "verdict": "no_profile_preserving_extension"
     },
     {
+      "desired_profile_key": "rb:2/0|rp:2/0|bp:2/0",
       "first_blocking_state_index": 0,
       "matching_profile_extension_count": 0,
       "patch_edge_count": 16,
@@ -310,6 +359,10 @@
       "profile_preserving": false,
       "profile_variant_count": 2,
       "proper_tait_extension_count": 2,
+      "proper_tait_extension_profile_histogram": {
+        "rb:1/0|rp:2/0|bp:2/0": 1,
+        "rb:2/0|rp:1/0|bp:2/0": 1
+      },
       "radial_order": [
         "P1:A-N6",
         "P0:A-B"
@@ -319,6 +372,7 @@
       "verdict": "no_profile_preserving_extension"
     },
     {
+      "desired_profile_key": "rb:2/0|rp:2/0|bp:2/0",
       "first_blocking_state_index": 0,
       "matching_profile_extension_count": 0,
       "patch_edge_count": 16,
@@ -327,6 +381,7 @@
       "profile_preserving": false,
       "profile_variant_count": 0,
       "proper_tait_extension_count": 0,
+      "proper_tait_extension_profile_histogram": {},
       "radial_order": [
         "P0:A-B",
         "P1:A-N7"
@@ -336,6 +391,7 @@
       "verdict": "no_profile_preserving_extension"
     },
     {
+      "desired_profile_key": "rb:2/0|rp:2/0|bp:2/0",
       "first_blocking_state_index": 0,
       "matching_profile_extension_count": 0,
       "patch_edge_count": 16,
@@ -344,6 +400,7 @@
       "profile_preserving": false,
       "profile_variant_count": 0,
       "proper_tait_extension_count": 0,
+      "proper_tait_extension_profile_histogram": {},
       "radial_order": [
         "P1:A-N7",
         "P0:A-B"
@@ -353,6 +410,7 @@
       "verdict": "no_profile_preserving_extension"
     },
     {
+      "desired_profile_key": "rb:2/0|rp:2/0|bp:2/0",
       "first_blocking_state_index": 0,
       "matching_profile_extension_count": 0,
       "patch_edge_count": 16,
@@ -361,6 +419,7 @@
       "profile_preserving": false,
       "profile_variant_count": 0,
       "proper_tait_extension_count": 0,
+      "proper_tait_extension_profile_histogram": {},
       "radial_order": [
         "P0:A-C",
         "P1:A-N0"
@@ -372,6 +431,7 @@
       "verdict": "no_profile_preserving_extension"
     },
     {
+      "desired_profile_key": "rb:2/0|rp:2/0|bp:2/0",
       "first_blocking_state_index": 0,
       "matching_profile_extension_count": 0,
       "patch_edge_count": 16,
@@ -380,6 +440,9 @@
       "profile_preserving": false,
       "profile_variant_count": 1,
       "proper_tait_extension_count": 1,
+      "proper_tait_extension_profile_histogram": {
+        "rb:1/0|rp:1/0|bp:1/0": 1
+      },
       "radial_order": [
         "P1:A-N0",
         "P0:A-C"
@@ -389,6 +452,7 @@
       "verdict": "no_profile_preserving_extension"
     },
     {
+      "desired_profile_key": "rb:2/0|rp:2/0|bp:2/0",
       "first_blocking_state_index": 0,
       "matching_profile_extension_count": 0,
       "patch_edge_count": 16,
@@ -397,6 +461,7 @@
       "profile_preserving": false,
       "profile_variant_count": 0,
       "proper_tait_extension_count": 0,
+      "proper_tait_extension_profile_histogram": {},
       "radial_order": [
         "P0:A-C",
         "P1:A-N1"
@@ -408,6 +473,7 @@
       "verdict": "no_profile_preserving_extension"
     },
     {
+      "desired_profile_key": "rb:2/0|rp:2/0|bp:2/0",
       "first_blocking_state_index": 0,
       "matching_profile_extension_count": 0,
       "patch_edge_count": 16,
@@ -416,6 +482,9 @@
       "profile_preserving": false,
       "profile_variant_count": 1,
       "proper_tait_extension_count": 1,
+      "proper_tait_extension_profile_histogram": {
+        "rb:1/0|rp:1/0|bp:1/0": 1
+      },
       "radial_order": [
         "P1:A-N1",
         "P0:A-C"
@@ -425,6 +494,7 @@
       "verdict": "no_profile_preserving_extension"
     },
     {
+      "desired_profile_key": "rb:2/0|rp:2/0|bp:2/0",
       "first_blocking_state_index": 0,
       "matching_profile_extension_count": 0,
       "patch_edge_count": 16,
@@ -433,6 +503,7 @@
       "profile_preserving": false,
       "profile_variant_count": 0,
       "proper_tait_extension_count": 0,
+      "proper_tait_extension_profile_histogram": {},
       "radial_order": [
         "P0:A-C",
         "P1:A-N2"
@@ -444,6 +515,7 @@
       "verdict": "no_profile_preserving_extension"
     },
     {
+      "desired_profile_key": "rb:2/0|rp:2/0|bp:2/0",
       "first_blocking_state_index": 0,
       "matching_profile_extension_count": 0,
       "patch_edge_count": 16,
@@ -452,6 +524,9 @@
       "profile_preserving": false,
       "profile_variant_count": 1,
       "proper_tait_extension_count": 1,
+      "proper_tait_extension_profile_histogram": {
+        "rb:1/0|rp:2/0|bp:1/0": 1
+      },
       "radial_order": [
         "P1:A-N2",
         "P0:A-C"
@@ -461,6 +536,7 @@
       "verdict": "no_profile_preserving_extension"
     },
     {
+      "desired_profile_key": "rb:2/0|rp:2/0|bp:2/0",
       "first_blocking_state_index": 0,
       "matching_profile_extension_count": 0,
       "patch_edge_count": 16,
@@ -469,6 +545,7 @@
       "profile_preserving": false,
       "profile_variant_count": 0,
       "proper_tait_extension_count": 0,
+      "proper_tait_extension_profile_histogram": {},
       "radial_order": [
         "P0:A-C",
         "P1:A-N3"
@@ -480,6 +557,7 @@
       "verdict": "no_profile_preserving_extension"
     },
     {
+      "desired_profile_key": "rb:2/0|rp:2/0|bp:2/0",
       "first_blocking_state_index": 0,
       "matching_profile_extension_count": 0,
       "patch_edge_count": 16,
@@ -488,6 +566,9 @@
       "profile_preserving": false,
       "profile_variant_count": 1,
       "proper_tait_extension_count": 1,
+      "proper_tait_extension_profile_histogram": {
+        "rb:1/0|rp:2/0|bp:1/0": 1
+      },
       "radial_order": [
         "P1:A-N3",
         "P0:A-C"
@@ -497,6 +578,7 @@
       "verdict": "no_profile_preserving_extension"
     },
     {
+      "desired_profile_key": "rb:2/0|rp:2/0|bp:2/0",
       "first_blocking_state_index": 0,
       "matching_profile_extension_count": 0,
       "patch_edge_count": 16,
@@ -505,6 +587,7 @@
       "profile_preserving": false,
       "profile_variant_count": 0,
       "proper_tait_extension_count": 0,
+      "proper_tait_extension_profile_histogram": {},
       "radial_order": [
         "P0:A-C",
         "P1:A-N5"
@@ -516,6 +599,7 @@
       "verdict": "no_profile_preserving_extension"
     },
     {
+      "desired_profile_key": "rb:2/0|rp:2/0|bp:2/0",
       "first_blocking_state_index": 0,
       "matching_profile_extension_count": 0,
       "patch_edge_count": 16,
@@ -524,6 +608,9 @@
       "profile_preserving": false,
       "profile_variant_count": 1,
       "proper_tait_extension_count": 1,
+      "proper_tait_extension_profile_histogram": {
+        "rb:1/0|rp:2/0|bp:1/0": 1
+      },
       "radial_order": [
         "P1:A-N5",
         "P0:A-C"
@@ -533,6 +620,7 @@
       "verdict": "no_profile_preserving_extension"
     },
     {
+      "desired_profile_key": "rb:2/0|rp:2/0|bp:2/0",
       "first_blocking_state_index": 0,
       "matching_profile_extension_count": 0,
       "patch_edge_count": 16,
@@ -541,6 +629,7 @@
       "profile_preserving": false,
       "profile_variant_count": 0,
       "proper_tait_extension_count": 0,
+      "proper_tait_extension_profile_histogram": {},
       "radial_order": [
         "P0:A-C",
         "P1:A-N6"
@@ -552,6 +641,7 @@
       "verdict": "no_profile_preserving_extension"
     },
     {
+      "desired_profile_key": "rb:2/0|rp:2/0|bp:2/0",
       "first_blocking_state_index": 0,
       "matching_profile_extension_count": 0,
       "patch_edge_count": 16,
@@ -560,6 +650,9 @@
       "profile_preserving": false,
       "profile_variant_count": 1,
       "proper_tait_extension_count": 1,
+      "proper_tait_extension_profile_histogram": {
+        "rb:1/0|rp:1/0|bp:1/0": 1
+      },
       "radial_order": [
         "P1:A-N6",
         "P0:A-C"
@@ -569,6 +662,7 @@
       "verdict": "no_profile_preserving_extension"
     },
     {
+      "desired_profile_key": "rb:2/0|rp:2/0|bp:2/0",
       "first_blocking_state_index": 0,
       "matching_profile_extension_count": 0,
       "patch_edge_count": 16,
@@ -577,6 +671,7 @@
       "profile_preserving": false,
       "profile_variant_count": 0,
       "proper_tait_extension_count": 0,
+      "proper_tait_extension_profile_histogram": {},
       "radial_order": [
         "P0:A-C",
         "P1:A-N7"
@@ -588,6 +683,7 @@
       "verdict": "no_profile_preserving_extension"
     },
     {
+      "desired_profile_key": "rb:2/0|rp:2/0|bp:2/0",
       "first_blocking_state_index": 0,
       "matching_profile_extension_count": 0,
       "patch_edge_count": 16,
@@ -596,6 +692,9 @@
       "profile_preserving": false,
       "profile_variant_count": 1,
       "proper_tait_extension_count": 1,
+      "proper_tait_extension_profile_histogram": {
+        "rb:1/0|rp:2/0|bp:1/0": 1
+      },
       "radial_order": [
         "P1:A-N7",
         "P0:A-C"
@@ -605,6 +704,7 @@
       "verdict": "no_profile_preserving_extension"
     },
     {
+      "desired_profile_key": "rb:2/0|rp:2/0|bp:2/0",
       "first_blocking_state_index": 0,
       "matching_profile_extension_count": 0,
       "patch_edge_count": 16,
@@ -613,6 +713,7 @@
       "profile_preserving": false,
       "profile_variant_count": 0,
       "proper_tait_extension_count": 0,
+      "proper_tait_extension_profile_histogram": {},
       "radial_order": [
         "P0:A-D",
         "P1:A-N0"
@@ -624,6 +725,7 @@
       "verdict": "no_profile_preserving_extension"
     },
     {
+      "desired_profile_key": "rb:2/0|rp:2/0|bp:2/0",
       "first_blocking_state_index": 0,
       "matching_profile_extension_count": 0,
       "patch_edge_count": 16,
@@ -632,6 +734,9 @@
       "profile_preserving": false,
       "profile_variant_count": 1,
       "proper_tait_extension_count": 1,
+      "proper_tait_extension_profile_histogram": {
+        "rb:1/0|rp:2/0|bp:1/0": 1
+      },
       "radial_order": [
         "P1:A-N0",
         "P0:A-D"
@@ -641,6 +746,7 @@
       "verdict": "no_profile_preserving_extension"
     },
     {
+      "desired_profile_key": "rb:2/0|rp:2/0|bp:2/0",
       "first_blocking_state_index": 0,
       "matching_profile_extension_count": 0,
       "patch_edge_count": 16,
@@ -649,6 +755,7 @@
       "profile_preserving": false,
       "profile_variant_count": 0,
       "proper_tait_extension_count": 0,
+      "proper_tait_extension_profile_histogram": {},
       "radial_order": [
         "P0:A-D",
         "P1:A-N1"
@@ -660,6 +767,7 @@
       "verdict": "no_profile_preserving_extension"
     },
     {
+      "desired_profile_key": "rb:2/0|rp:2/0|bp:2/0",
       "first_blocking_state_index": 0,
       "matching_profile_extension_count": 0,
       "patch_edge_count": 16,
@@ -668,6 +776,9 @@
       "profile_preserving": false,
       "profile_variant_count": 1,
       "proper_tait_extension_count": 2,
+      "proper_tait_extension_profile_histogram": {
+        "rb:1/0|rp:1/0|bp:2/0": 2
+      },
       "radial_order": [
         "P1:A-N1",
         "P0:A-D"
@@ -677,6 +788,7 @@
       "verdict": "no_profile_preserving_extension"
     },
     {
+      "desired_profile_key": "rb:2/0|rp:2/0|bp:2/0",
       "first_blocking_state_index": 0,
       "matching_profile_extension_count": 0,
       "patch_edge_count": 16,
@@ -685,6 +797,7 @@
       "profile_preserving": false,
       "profile_variant_count": 0,
       "proper_tait_extension_count": 0,
+      "proper_tait_extension_profile_histogram": {},
       "radial_order": [
         "P0:A-D",
         "P1:A-N2"
@@ -696,6 +809,7 @@
       "verdict": "no_profile_preserving_extension"
     },
     {
+      "desired_profile_key": "rb:2/0|rp:2/0|bp:2/0",
       "first_blocking_state_index": 0,
       "matching_profile_extension_count": 0,
       "patch_edge_count": 16,
@@ -704,6 +818,11 @@
       "profile_preserving": false,
       "profile_variant_count": 3,
       "proper_tait_extension_count": 3,
+      "proper_tait_extension_profile_histogram": {
+        "rb:1/0|rp:2/0|bp:1/0": 1,
+        "rb:2/0|rp:1/0|bp:1/0": 1,
+        "rb:2/0|rp:2/0|bp:1/0": 1
+      },
       "radial_order": [
         "P1:A-N2",
         "P0:A-D"
@@ -713,6 +832,7 @@
       "verdict": "no_profile_preserving_extension"
     },
     {
+      "desired_profile_key": "rb:2/0|rp:2/0|bp:2/0",
       "first_blocking_state_index": 0,
       "matching_profile_extension_count": 0,
       "patch_edge_count": 16,
@@ -721,6 +841,7 @@
       "profile_preserving": false,
       "profile_variant_count": 0,
       "proper_tait_extension_count": 0,
+      "proper_tait_extension_profile_histogram": {},
       "radial_order": [
         "P0:A-D",
         "P1:A-N3"
@@ -732,6 +853,7 @@
       "verdict": "no_profile_preserving_extension"
     },
     {
+      "desired_profile_key": "rb:2/0|rp:2/0|bp:2/0",
       "first_blocking_state_index": 0,
       "matching_profile_extension_count": 0,
       "patch_edge_count": 16,
@@ -740,6 +862,9 @@
       "profile_preserving": false,
       "profile_variant_count": 1,
       "proper_tait_extension_count": 1,
+      "proper_tait_extension_profile_histogram": {
+        "rb:1/0|rp:1/0|bp:1/0": 1
+      },
       "radial_order": [
         "P1:A-N3",
         "P0:A-D"
@@ -749,6 +874,7 @@
       "verdict": "no_profile_preserving_extension"
     },
     {
+      "desired_profile_key": "rb:2/0|rp:2/0|bp:2/0",
       "first_blocking_state_index": 0,
       "matching_profile_extension_count": 0,
       "patch_edge_count": 16,
@@ -757,6 +883,7 @@
       "profile_preserving": false,
       "profile_variant_count": 0,
       "proper_tait_extension_count": 0,
+      "proper_tait_extension_profile_histogram": {},
       "radial_order": [
         "P0:A-D",
         "P1:A-N5"
@@ -768,6 +895,7 @@
       "verdict": "no_profile_preserving_extension"
     },
     {
+      "desired_profile_key": "rb:2/0|rp:2/0|bp:2/0",
       "first_blocking_state_index": 0,
       "matching_profile_extension_count": 0,
       "patch_edge_count": 16,
@@ -776,6 +904,9 @@
       "profile_preserving": false,
       "profile_variant_count": 1,
       "proper_tait_extension_count": 1,
+      "proper_tait_extension_profile_histogram": {
+        "rb:1/0|rp:1/0|bp:1/0": 1
+      },
       "radial_order": [
         "P1:A-N5",
         "P0:A-D"
@@ -785,6 +916,7 @@
       "verdict": "no_profile_preserving_extension"
     },
     {
+      "desired_profile_key": "rb:2/0|rp:2/0|bp:2/0",
       "first_blocking_state_index": 0,
       "matching_profile_extension_count": 0,
       "patch_edge_count": 16,
@@ -793,6 +925,7 @@
       "profile_preserving": false,
       "profile_variant_count": 0,
       "proper_tait_extension_count": 0,
+      "proper_tait_extension_profile_histogram": {},
       "radial_order": [
         "P0:A-D",
         "P1:A-N6"
@@ -804,6 +937,7 @@
       "verdict": "no_profile_preserving_extension"
     },
     {
+      "desired_profile_key": "rb:2/0|rp:2/0|bp:2/0",
       "first_blocking_state_index": 0,
       "matching_profile_extension_count": 0,
       "patch_edge_count": 16,
@@ -812,6 +946,9 @@
       "profile_preserving": false,
       "profile_variant_count": 1,
       "proper_tait_extension_count": 1,
+      "proper_tait_extension_profile_histogram": {
+        "rb:1/0|rp:2/0|bp:1/0": 1
+      },
       "radial_order": [
         "P1:A-N6",
         "P0:A-D"
@@ -821,6 +958,7 @@
       "verdict": "no_profile_preserving_extension"
     },
     {
+      "desired_profile_key": "rb:2/0|rp:2/0|bp:2/0",
       "first_blocking_state_index": 0,
       "matching_profile_extension_count": 0,
       "patch_edge_count": 16,
@@ -829,6 +967,7 @@
       "profile_preserving": false,
       "profile_variant_count": 0,
       "proper_tait_extension_count": 0,
+      "proper_tait_extension_profile_histogram": {},
       "radial_order": [
         "P0:A-D",
         "P1:A-N7"
@@ -840,6 +979,7 @@
       "verdict": "no_profile_preserving_extension"
     },
     {
+      "desired_profile_key": "rb:2/0|rp:2/0|bp:2/0",
       "first_blocking_state_index": 0,
       "matching_profile_extension_count": 0,
       "patch_edge_count": 16,
@@ -848,6 +988,9 @@
       "profile_preserving": false,
       "profile_variant_count": 1,
       "proper_tait_extension_count": 1,
+      "proper_tait_extension_profile_histogram": {
+        "rb:1/0|rp:2/0|bp:1/0": 1
+      },
       "radial_order": [
         "P1:A-N7",
         "P0:A-D"
@@ -857,6 +1000,7 @@
       "verdict": "no_profile_preserving_extension"
     },
     {
+      "desired_profile_key": "rb:2/0|rp:2/0|bp:2/0",
       "first_blocking_state_index": 0,
       "matching_profile_extension_count": 0,
       "patch_edge_count": 16,
@@ -865,6 +1009,7 @@
       "profile_preserving": false,
       "profile_variant_count": 0,
       "proper_tait_extension_count": 0,
+      "proper_tait_extension_profile_histogram": {},
       "radial_order": [
         "P0:A-N0",
         "P1:A-N1"
@@ -874,6 +1019,7 @@
       "verdict": "no_profile_preserving_extension"
     },
     {
+      "desired_profile_key": "rb:2/0|rp:2/0|bp:2/0",
       "first_blocking_state_index": 0,
       "matching_profile_extension_count": 0,
       "patch_edge_count": 16,
@@ -882,6 +1028,13 @@
       "profile_preserving": false,
       "profile_variant_count": 5,
       "proper_tait_extension_count": 6,
+      "proper_tait_extension_profile_histogram": {
+        "rb:1/0|rp:1/0|bp:3/0": 2,
+        "rb:1/0|rp:2/0|bp:2/0": 1,
+        "rb:1/0|rp:2/0|bp:3/0": 1,
+        "rb:2/0|rp:1/0|bp:2/0": 1,
+        "rb:2/0|rp:1/0|bp:3/0": 1
+      },
       "radial_order": [
         "P1:A-N1",
         "P0:A-N0"
@@ -891,6 +1044,7 @@
       "verdict": "no_profile_preserving_extension"
     },
     {
+      "desired_profile_key": "rb:2/0|rp:2/0|bp:2/0",
       "first_blocking_state_index": 0,
       "matching_profile_extension_count": 0,
       "patch_edge_count": 16,
@@ -899,6 +1053,11 @@
       "profile_preserving": false,
       "profile_variant_count": 3,
       "proper_tait_extension_count": 3,
+      "proper_tait_extension_profile_histogram": {
+        "rb:1/0|rp:3/0|bp:1/0": 1,
+        "rb:2/0|rp:1/0|bp:2/0": 1,
+        "rb:2/0|rp:3/0|bp:2/0": 1
+      },
       "radial_order": [
         "P0:A-N0",
         "P1:A-N1"
@@ -908,6 +1067,7 @@
       "verdict": "no_profile_preserving_extension"
     },
     {
+      "desired_profile_key": "rb:2/0|rp:2/0|bp:2/0",
       "first_blocking_state_index": 0,
       "matching_profile_extension_count": 0,
       "patch_edge_count": 16,
@@ -916,6 +1076,9 @@
       "profile_preserving": false,
       "profile_variant_count": 1,
       "proper_tait_extension_count": 2,
+      "proper_tait_extension_profile_histogram": {
+        "rb:2/0|rp:2/0|bp:1/0": 2
+      },
       "radial_order": [
         "P1:A-N1",
         "P0:A-N0"
@@ -925,6 +1088,7 @@
       "verdict": "no_profile_preserving_extension"
     },
     {
+      "desired_profile_key": "rb:2/0|rp:2/0|bp:2/0",
       "first_blocking_state_index": 0,
       "matching_profile_extension_count": 0,
       "patch_edge_count": 16,
@@ -933,6 +1097,9 @@
       "profile_preserving": false,
       "profile_variant_count": 1,
       "proper_tait_extension_count": 1,
+      "proper_tait_extension_profile_histogram": {
+        "rb:2/0|rp:2/0|bp:1/0": 1
+      },
       "radial_order": [
         "P0:A-N0",
         "P1:A-N2"
@@ -942,6 +1109,7 @@
       "verdict": "no_profile_preserving_extension"
     },
     {
+      "desired_profile_key": "rb:2/0|rp:2/0|bp:2/0",
       "first_blocking_state_index": 0,
       "matching_profile_extension_count": 0,
       "patch_edge_count": 16,
@@ -950,6 +1118,11 @@
       "profile_preserving": false,
       "profile_variant_count": 3,
       "proper_tait_extension_count": 3,
+      "proper_tait_extension_profile_histogram": {
+        "rb:1/0|rp:1/0|bp:1/0": 1,
+        "rb:1/0|rp:2/0|bp:2/0": 1,
+        "rb:2/0|rp:1/0|bp:2/0": 1
+      },
       "radial_order": [
         "P1:A-N2",
         "P0:A-N0"
@@ -959,6 +1132,7 @@
       "verdict": "no_profile_preserving_extension"
     },
     {
+      "desired_profile_key": "rb:2/0|rp:2/0|bp:2/0",
       "first_blocking_state_index": 0,
       "matching_profile_extension_count": 0,
       "patch_edge_count": 16,
@@ -967,6 +1141,9 @@
       "profile_preserving": false,
       "profile_variant_count": 1,
       "proper_tait_extension_count": 2,
+      "proper_tait_extension_profile_histogram": {
+        "rb:3/0|rp:1/0|bp:1/0": 2
+      },
       "radial_order": [
         "P0:A-N0",
         "P1:A-N3"
@@ -976,6 +1153,7 @@
       "verdict": "no_profile_preserving_extension"
     },
     {
+      "desired_profile_key": "rb:2/0|rp:2/0|bp:2/0",
       "first_blocking_state_index": 0,
       "matching_profile_extension_count": 0,
       "patch_edge_count": 16,
@@ -984,6 +1162,9 @@
       "profile_preserving": false,
       "profile_variant_count": 1,
       "proper_tait_extension_count": 2,
+      "proper_tait_extension_profile_histogram": {
+        "rb:3/0|rp:1/0|bp:1/0": 2
+      },
       "radial_order": [
         "P1:A-N3",
         "P0:A-N0"
@@ -993,6 +1174,7 @@
       "verdict": "no_profile_preserving_extension"
     },
     {
+      "desired_profile_key": "rb:2/0|rp:2/0|bp:2/0",
       "first_blocking_state_index": 0,
       "matching_profile_extension_count": 0,
       "patch_edge_count": 16,
@@ -1001,6 +1183,7 @@
       "profile_preserving": false,
       "profile_variant_count": 0,
       "proper_tait_extension_count": 0,
+      "proper_tait_extension_profile_histogram": {},
       "radial_order": [
         "P0:A-N0",
         "P1:A-N4"
@@ -1010,6 +1193,7 @@
       "verdict": "no_profile_preserving_extension"
     },
     {
+      "desired_profile_key": "rb:2/0|rp:2/0|bp:2/0",
       "first_blocking_state_index": 0,
       "matching_profile_extension_count": 0,
       "patch_edge_count": 16,
@@ -1018,6 +1202,7 @@
       "profile_preserving": false,
       "profile_variant_count": 0,
       "proper_tait_extension_count": 0,
+      "proper_tait_extension_profile_histogram": {},
       "radial_order": [
         "P1:A-N4",
         "P0:A-N0"
@@ -1027,6 +1212,7 @@
       "verdict": "no_profile_preserving_extension"
     },
     {
+      "desired_profile_key": "rb:2/0|rp:2/0|bp:2/0",
       "first_blocking_state_index": 0,
       "matching_profile_extension_count": 0,
       "patch_edge_count": 16,
@@ -1035,6 +1221,11 @@
       "profile_preserving": false,
       "profile_variant_count": 3,
       "proper_tait_extension_count": 3,
+      "proper_tait_extension_profile_histogram": {
+        "rb:1/0|rp:2/0|bp:1/0": 1,
+        "rb:2/0|rp:1/0|bp:1/0": 1,
+        "rb:2/0|rp:2/0|bp:1/0": 1
+      },
       "radial_order": [
         "P0:A-N0",
         "P1:A-N4"
@@ -1044,6 +1235,7 @@
       "verdict": "no_profile_preserving_extension"
     },
     {
+      "desired_profile_key": "rb:2/0|rp:2/0|bp:2/0",
       "first_blocking_state_index": 0,
       "matching_profile_extension_count": 0,
       "patch_edge_count": 16,
@@ -1052,6 +1244,7 @@
       "profile_preserving": false,
       "profile_variant_count": 0,
       "proper_tait_extension_count": 0,
+      "proper_tait_extension_profile_histogram": {},
       "radial_order": [
         "P1:A-N4",
         "P0:A-N0"
@@ -1061,6 +1254,7 @@
       "verdict": "no_profile_preserving_extension"
     },
     {
+      "desired_profile_key": "rb:2/0|rp:2/0|bp:2/0",
       "first_blocking_state_index": 0,
       "matching_profile_extension_count": 0,
       "patch_edge_count": 16,
@@ -1069,6 +1263,7 @@
       "profile_preserving": false,
       "profile_variant_count": 0,
       "proper_tait_extension_count": 0,
+      "proper_tait_extension_profile_histogram": {},
       "radial_order": [
         "P0:A-N0",
         "P1:A-N5"
@@ -1078,6 +1273,7 @@
       "verdict": "no_profile_preserving_extension"
     },
     {
+      "desired_profile_key": "rb:2/0|rp:2/0|bp:2/0",
       "first_blocking_state_index": 0,
       "matching_profile_extension_count": 0,
       "patch_edge_count": 16,
@@ -1086,6 +1282,9 @@
       "profile_preserving": false,
       "profile_variant_count": 1,
       "proper_tait_extension_count": 1,
+      "proper_tait_extension_profile_histogram": {
+        "rb:1/0|rp:1/0|bp:1/0": 1
+      },
       "radial_order": [
         "P1:A-N5",
         "P0:A-N0"
@@ -1095,6 +1294,7 @@
       "verdict": "no_profile_preserving_extension"
     },
     {
+      "desired_profile_key": "rb:2/0|rp:2/0|bp:2/0",
       "first_blocking_state_index": 0,
       "matching_profile_extension_count": 0,
       "patch_edge_count": 16,
@@ -1103,6 +1303,9 @@
       "profile_preserving": false,
       "profile_variant_count": 1,
       "proper_tait_extension_count": 2,
+      "proper_tait_extension_profile_histogram": {
+        "rb:1/0|rp:1/0|bp:2/0": 2
+      },
       "radial_order": [
         "P0:A-N0",
         "P1:A-N6"
@@ -1112,6 +1315,7 @@
       "verdict": "no_profile_preserving_extension"
     },
     {
+      "desired_profile_key": "rb:2/0|rp:2/0|bp:2/0",
       "first_blocking_state_index": 0,
       "matching_profile_extension_count": 0,
       "patch_edge_count": 16,
@@ -1120,6 +1324,7 @@
       "profile_preserving": false,
       "profile_variant_count": 0,
       "proper_tait_extension_count": 0,
+      "proper_tait_extension_profile_histogram": {},
       "radial_order": [
         "P1:A-N6",
         "P0:A-N0"
@@ -1129,6 +1334,7 @@
       "verdict": "no_profile_preserving_extension"
     },
     {
+      "desired_profile_key": "rb:2/0|rp:2/0|bp:2/0",
       "first_blocking_state_index": 0,
       "matching_profile_extension_count": 0,
       "patch_edge_count": 16,
@@ -1137,6 +1343,7 @@
       "profile_preserving": false,
       "profile_variant_count": 0,
       "proper_tait_extension_count": 0,
+      "proper_tait_extension_profile_histogram": {},
       "radial_order": [
         "P0:A-N0",
         "P1:A-N6"
@@ -1146,6 +1353,7 @@
       "verdict": "no_profile_preserving_extension"
     },
     {
+      "desired_profile_key": "rb:2/0|rp:2/0|bp:2/0",
       "first_blocking_state_index": 0,
       "matching_profile_extension_count": 0,
       "patch_edge_count": 16,
@@ -1154,6 +1362,9 @@
       "profile_preserving": false,
       "profile_variant_count": 1,
       "proper_tait_extension_count": 1,
+      "proper_tait_extension_profile_histogram": {
+        "rb:1/0|rp:2/0|bp:1/0": 1
+      },
       "radial_order": [
         "P1:A-N6",
         "P0:A-N0"
@@ -1163,6 +1374,7 @@
       "verdict": "no_profile_preserving_extension"
     },
     {
+      "desired_profile_key": "rb:2/0|rp:2/0|bp:2/0",
       "first_blocking_state_index": 0,
       "matching_profile_extension_count": 0,
       "patch_edge_count": 16,
@@ -1171,6 +1383,10 @@
       "profile_preserving": false,
       "profile_variant_count": 2,
       "proper_tait_extension_count": 2,
+      "proper_tait_extension_profile_histogram": {
+        "rb:1/0|rp:2/0|bp:2/0": 1,
+        "rb:2/0|rp:1/0|bp:2/0": 1
+      },
       "radial_order": [
         "P0:A-N0",
         "P1:A-N7"
@@ -1180,6 +1396,7 @@
       "verdict": "no_profile_preserving_extension"
     },
     {
+      "desired_profile_key": "rb:2/0|rp:2/0|bp:2/0",
       "first_blocking_state_index": 0,
       "matching_profile_extension_count": 0,
       "patch_edge_count": 16,
@@ -1188,6 +1405,10 @@
       "profile_preserving": false,
       "profile_variant_count": 2,
       "proper_tait_extension_count": 2,
+      "proper_tait_extension_profile_histogram": {
+        "rb:1/0|rp:3/0|bp:1/0": 1,
+        "rb:2/0|rp:3/0|bp:1/0": 1
+      },
       "radial_order": [
         "P1:A-N7",
         "P0:A-N0"
@@ -1197,6 +1418,7 @@
       "verdict": "no_profile_preserving_extension"
     },
     {
+      "desired_profile_key": "rb:2/0|rp:2/0|bp:2/0",
       "first_blocking_state_index": 0,
       "matching_profile_extension_count": 0,
       "patch_edge_count": 16,
@@ -1205,6 +1427,7 @@
       "profile_preserving": false,
       "profile_variant_count": 0,
       "proper_tait_extension_count": 0,
+      "proper_tait_extension_profile_histogram": {},
       "radial_order": [
         "P0:A-N1",
         "P1:A-N2"
@@ -1214,6 +1437,7 @@
       "verdict": "no_profile_preserving_extension"
     },
     {
+      "desired_profile_key": "rb:2/0|rp:2/0|bp:2/0",
       "first_blocking_state_index": 0,
       "matching_profile_extension_count": 0,
       "patch_edge_count": 16,
@@ -1222,6 +1446,9 @@
       "profile_preserving": false,
       "profile_variant_count": 1,
       "proper_tait_extension_count": 1,
+      "proper_tait_extension_profile_histogram": {
+        "rb:1/0|rp:1/0|bp:1/0": 1
+      },
       "radial_order": [
         "P1:A-N2",
         "P0:A-N1"
@@ -1231,6 +1458,7 @@
       "verdict": "no_profile_preserving_extension"
     },
     {
+      "desired_profile_key": "rb:2/0|rp:2/0|bp:2/0",
       "first_blocking_state_index": 0,
       "matching_profile_extension_count": 0,
       "patch_edge_count": 16,
@@ -1239,6 +1467,9 @@
       "profile_preserving": false,
       "profile_variant_count": 1,
       "proper_tait_extension_count": 1,
+      "proper_tait_extension_profile_histogram": {
+        "rb:1/0|rp:2/0|bp:1/0": 1
+      },
       "radial_order": [
         "P0:A-N1",
         "P1:A-N2"
@@ -1248,6 +1479,7 @@
       "verdict": "no_profile_preserving_extension"
     },
     {
+      "desired_profile_key": "rb:2/0|rp:2/0|bp:2/0",
       "first_blocking_state_index": 0,
       "matching_profile_extension_count": 0,
       "patch_edge_count": 16,
@@ -1256,6 +1488,9 @@
       "profile_preserving": false,
       "profile_variant_count": 1,
       "proper_tait_extension_count": 1,
+      "proper_tait_extension_profile_histogram": {
+        "rb:1/0|rp:2/0|bp:1/0": 1
+      },
       "radial_order": [
         "P1:A-N2",
         "P0:A-N1"
@@ -1265,6 +1500,7 @@
       "verdict": "no_profile_preserving_extension"
     },
     {
+      "desired_profile_key": "rb:2/0|rp:2/0|bp:2/0",
       "first_blocking_state_index": 0,
       "matching_profile_extension_count": 0,
       "patch_edge_count": 16,
@@ -1273,6 +1509,7 @@
       "profile_preserving": false,
       "profile_variant_count": 0,
       "proper_tait_extension_count": 0,
+      "proper_tait_extension_profile_histogram": {},
       "radial_order": [
         "P0:A-N1",
         "P1:A-N3"
@@ -1282,6 +1519,7 @@
       "verdict": "no_profile_preserving_extension"
     },
     {
+      "desired_profile_key": "rb:2/0|rp:2/0|bp:2/0",
       "first_blocking_state_index": 0,
       "matching_profile_extension_count": 0,
       "patch_edge_count": 16,
@@ -1290,6 +1528,9 @@
       "profile_preserving": false,
       "profile_variant_count": 1,
       "proper_tait_extension_count": 1,
+      "proper_tait_extension_profile_histogram": {
+        "rb:1/0|rp:2/0|bp:1/0": 1
+      },
       "radial_order": [
         "P1:A-N3",
         "P0:A-N1"
@@ -1299,6 +1540,7 @@
       "verdict": "no_profile_preserving_extension"
     },
     {
+      "desired_profile_key": "rb:2/0|rp:2/0|bp:2/0",
       "first_blocking_state_index": 0,
       "matching_profile_extension_count": 0,
       "patch_edge_count": 16,
@@ -1307,6 +1549,7 @@
       "profile_preserving": false,
       "profile_variant_count": 0,
       "proper_tait_extension_count": 0,
+      "proper_tait_extension_profile_histogram": {},
       "radial_order": [
         "P0:A-N1",
         "P1:A-N4"
@@ -1316,6 +1559,7 @@
       "verdict": "no_profile_preserving_extension"
     },
     {
+      "desired_profile_key": "rb:2/0|rp:2/0|bp:2/0",
       "first_blocking_state_index": 0,
       "matching_profile_extension_count": 0,
       "patch_edge_count": 16,
@@ -1324,6 +1568,7 @@
       "profile_preserving": false,
       "profile_variant_count": 0,
       "proper_tait_extension_count": 0,
+      "proper_tait_extension_profile_histogram": {},
       "radial_order": [
         "P1:A-N4",
         "P0:A-N1"
@@ -1333,6 +1578,7 @@
       "verdict": "no_profile_preserving_extension"
     },
     {
+      "desired_profile_key": "rb:2/0|rp:2/0|bp:2/0",
       "first_blocking_state_index": 2,
       "matching_profile_extension_count": 0,
       "patch_edge_count": 16,
@@ -1341,6 +1587,12 @@
       "profile_preserving": false,
       "profile_variant_count": 4,
       "proper_tait_extension_count": 4,
+      "proper_tait_extension_profile_histogram": {
+        "rb:1/0|rp:2/0|bp:1/0": 1,
+        "rb:2/0|rp:1/0|bp:3/0": 1,
+        "rb:3/0|rp:1/0|bp:2/0": 1,
+        "rb:3/0|rp:2/0|bp:3/0": 1
+      },
       "radial_order": [
         "P0:A-N1",
         "P1:A-N4"
@@ -1350,6 +1602,7 @@
       "verdict": "no_profile_preserving_extension"
     },
     {
+      "desired_profile_key": "rb:2/0|rp:2/0|bp:2/0",
       "first_blocking_state_index": 0,
       "matching_profile_extension_count": 0,
       "patch_edge_count": 16,
@@ -1358,6 +1611,12 @@
       "profile_preserving": false,
       "profile_variant_count": 4,
       "proper_tait_extension_count": 4,
+      "proper_tait_extension_profile_histogram": {
+        "rb:1/0|rp:1/0|bp:2/0": 1,
+        "rb:2/0|rp:3/0|bp:1/0": 1,
+        "rb:3/0|rp:2/0|bp:1/0": 1,
+        "rb:3/0|rp:3/0|bp:2/0": 1
+      },
       "radial_order": [
         "P1:A-N4",
         "P0:A-N1"
@@ -1367,6 +1626,7 @@
       "verdict": "no_profile_preserving_extension"
     },
     {
+      "desired_profile_key": "rb:2/0|rp:2/0|bp:2/0",
       "first_blocking_state_index": 0,
       "matching_profile_extension_count": 0,
       "patch_edge_count": 16,
@@ -1375,6 +1635,10 @@
       "profile_preserving": false,
       "profile_variant_count": 2,
       "proper_tait_extension_count": 2,
+      "proper_tait_extension_profile_histogram": {
+        "rb:1/0|rp:1/0|bp:1/0": 1,
+        "rb:1/0|rp:2/0|bp:1/0": 1
+      },
       "radial_order": [
         "P0:A-N1",
         "P1:A-N5"
@@ -1384,6 +1648,7 @@
       "verdict": "no_profile_preserving_extension"
     },
     {
+      "desired_profile_key": "rb:2/0|rp:2/0|bp:2/0",
       "first_blocking_state_index": 0,
       "matching_profile_extension_count": 0,
       "patch_edge_count": 16,
@@ -1392,6 +1657,10 @@
       "profile_preserving": false,
       "profile_variant_count": 2,
       "proper_tait_extension_count": 2,
+      "proper_tait_extension_profile_histogram": {
+        "rb:2/0|rp:1/0|bp:1/0": 1,
+        "rb:2/0|rp:2/0|bp:1/0": 1
+      },
       "radial_order": [
         "P1:A-N5",
         "P0:A-N1"
@@ -1401,6 +1670,7 @@
       "verdict": "no_profile_preserving_extension"
     },
     {
+      "desired_profile_key": "rb:2/0|rp:2/0|bp:2/0",
       "first_blocking_state_index": 0,
       "matching_profile_extension_count": 0,
       "patch_edge_count": 16,
@@ -1409,6 +1679,9 @@
       "profile_preserving": false,
       "profile_variant_count": 1,
       "proper_tait_extension_count": 1,
+      "proper_tait_extension_profile_histogram": {
+        "rb:1/0|rp:1/0|bp:1/0": 1
+      },
       "radial_order": [
         "P0:A-N1",
         "P1:A-N6"
@@ -1418,6 +1691,7 @@
       "verdict": "no_profile_preserving_extension"
     },
     {
+      "desired_profile_key": "rb:2/0|rp:2/0|bp:2/0",
       "first_blocking_state_index": 0,
       "matching_profile_extension_count": 0,
       "patch_edge_count": 16,
@@ -1426,6 +1700,7 @@
       "profile_preserving": false,
       "profile_variant_count": 0,
       "proper_tait_extension_count": 0,
+      "proper_tait_extension_profile_histogram": {},
       "radial_order": [
         "P1:A-N6",
         "P0:A-N1"
@@ -1435,6 +1710,7 @@
       "verdict": "no_profile_preserving_extension"
     },
     {
+      "desired_profile_key": "rb:2/0|rp:2/0|bp:2/0",
       "first_blocking_state_index": 0,
       "matching_profile_extension_count": 0,
       "patch_edge_count": 16,
@@ -1443,6 +1719,9 @@
       "profile_preserving": false,
       "profile_variant_count": 1,
       "proper_tait_extension_count": 1,
+      "proper_tait_extension_profile_histogram": {
+        "rb:2/0|rp:1/0|bp:1/0": 1
+      },
       "radial_order": [
         "P0:A-N1",
         "P1:A-N6"
@@ -1452,6 +1731,7 @@
       "verdict": "no_profile_preserving_extension"
     },
     {
+      "desired_profile_key": "rb:2/0|rp:2/0|bp:2/0",
       "first_blocking_state_index": 0,
       "matching_profile_extension_count": 0,
       "patch_edge_count": 16,
@@ -1460,6 +1740,11 @@
       "profile_preserving": false,
       "profile_variant_count": 3,
       "proper_tait_extension_count": 3,
+      "proper_tait_extension_profile_histogram": {
+        "rb:1/0|rp:1/0|bp:2/0": 1,
+        "rb:1/0|rp:2/0|bp:1/0": 1,
+        "rb:2/0|rp:1/0|bp:2/0": 1
+      },
       "radial_order": [
         "P1:A-N6",
         "P0:A-N1"
@@ -1469,6 +1754,7 @@
       "verdict": "no_profile_preserving_extension"
     },
     {
+      "desired_profile_key": "rb:2/0|rp:2/0|bp:2/0",
       "first_blocking_state_index": 0,
       "matching_profile_extension_count": 0,
       "patch_edge_count": 16,
@@ -1477,6 +1763,7 @@
       "profile_preserving": false,
       "profile_variant_count": 0,
       "proper_tait_extension_count": 0,
+      "proper_tait_extension_profile_histogram": {},
       "radial_order": [
         "P0:A-N1",
         "P1:A-N7"
@@ -1486,6 +1773,7 @@
       "verdict": "no_profile_preserving_extension"
     },
     {
+      "desired_profile_key": "rb:2/0|rp:2/0|bp:2/0",
       "first_blocking_state_index": 0,
       "matching_profile_extension_count": 0,
       "patch_edge_count": 16,
@@ -1494,6 +1782,9 @@
       "profile_preserving": false,
       "profile_variant_count": 1,
       "proper_tait_extension_count": 3,
+      "proper_tait_extension_profile_histogram": {
+        "rb:1/0|rp:1/0|bp:1/0": 3
+      },
       "radial_order": [
         "P1:A-N7",
         "P0:A-N1"
@@ -1503,6 +1794,7 @@
       "verdict": "no_profile_preserving_extension"
     },
     {
+      "desired_profile_key": "rb:2/0|rp:2/0|bp:2/0",
       "first_blocking_state_index": 0,
       "matching_profile_extension_count": 0,
       "patch_edge_count": 16,
@@ -1511,6 +1803,7 @@
       "profile_preserving": false,
       "profile_variant_count": 0,
       "proper_tait_extension_count": 0,
+      "proper_tait_extension_profile_histogram": {},
       "radial_order": [
         "P0:A-N2",
         "P1:A-N3"
@@ -1520,6 +1813,7 @@
       "verdict": "no_profile_preserving_extension"
     },
     {
+      "desired_profile_key": "rb:2/0|rp:2/0|bp:2/0",
       "first_blocking_state_index": 0,
       "matching_profile_extension_count": 0,
       "patch_edge_count": 16,
@@ -1528,6 +1822,11 @@
       "profile_preserving": false,
       "profile_variant_count": 3,
       "proper_tait_extension_count": 3,
+      "proper_tait_extension_profile_histogram": {
+        "rb:1/0|rp:1/0|bp:2/0": 1,
+        "rb:1/0|rp:2/0|bp:1/0": 1,
+        "rb:1/0|rp:2/0|bp:2/0": 1
+      },
       "radial_order": [
         "P1:A-N3",
         "P0:A-N2"
@@ -1537,6 +1836,7 @@
       "verdict": "no_profile_preserving_extension"
     },
     {
+      "desired_profile_key": "rb:2/0|rp:2/0|bp:2/0",
       "first_blocking_state_index": 2,
       "matching_profile_extension_count": 0,
       "patch_edge_count": 16,
@@ -1545,6 +1845,9 @@
       "profile_preserving": false,
       "profile_variant_count": 1,
       "proper_tait_extension_count": 1,
+      "proper_tait_extension_profile_histogram": {
+        "rb:2/0|rp:1/0|bp:2/0": 1
+      },
       "radial_order": [
         "P0:A-N2",
         "P1:A-N3"
@@ -1554,6 +1857,7 @@
       "verdict": "no_profile_preserving_extension"
     },
     {
+      "desired_profile_key": "rb:2/0|rp:2/0|bp:2/0",
       "first_blocking_state_index": 0,
       "matching_profile_extension_count": 0,
       "patch_edge_count": 16,
@@ -1562,6 +1866,9 @@
       "profile_preserving": false,
       "profile_variant_count": 1,
       "proper_tait_extension_count": 1,
+      "proper_tait_extension_profile_histogram": {
+        "rb:2/0|rp:2/0|bp:1/0": 1
+      },
       "radial_order": [
         "P1:A-N3",
         "P0:A-N2"
@@ -1571,6 +1878,7 @@
       "verdict": "no_profile_preserving_extension"
     },
     {
+      "desired_profile_key": "rb:2/0|rp:2/0|bp:2/0",
       "first_blocking_state_index": 0,
       "matching_profile_extension_count": 0,
       "patch_edge_count": 16,
@@ -1579,6 +1887,10 @@
       "profile_preserving": false,
       "profile_variant_count": 2,
       "proper_tait_extension_count": 4,
+      "proper_tait_extension_profile_histogram": {
+        "rb:1/0|rp:2/0|bp:2/0": 2,
+        "rb:2/0|rp:1/0|bp:2/0": 2
+      },
       "radial_order": [
         "P0:A-N2",
         "P1:A-N4"
@@ -1588,6 +1900,7 @@
       "verdict": "no_profile_preserving_extension"
     },
     {
+      "desired_profile_key": "rb:2/0|rp:2/0|bp:2/0",
       "first_blocking_state_index": 0,
       "matching_profile_extension_count": 0,
       "patch_edge_count": 16,
@@ -1596,6 +1909,7 @@
       "profile_preserving": false,
       "profile_variant_count": 0,
       "proper_tait_extension_count": 0,
+      "proper_tait_extension_profile_histogram": {},
       "radial_order": [
         "P1:A-N4",
         "P0:A-N2"
@@ -1605,6 +1919,7 @@
       "verdict": "no_profile_preserving_extension"
     },
     {
+      "desired_profile_key": "rb:2/0|rp:2/0|bp:2/0",
       "first_blocking_state_index": 0,
       "matching_profile_extension_count": 0,
       "patch_edge_count": 16,
@@ -1613,6 +1928,9 @@
       "profile_preserving": false,
       "profile_variant_count": 1,
       "proper_tait_extension_count": 2,
+      "proper_tait_extension_profile_histogram": {
+        "rb:1/0|rp:1/0|bp:2/0": 2
+      },
       "radial_order": [
         "P0:A-N2",
         "P1:A-N5"
@@ -1622,6 +1940,7 @@
       "verdict": "no_profile_preserving_extension"
     },
     {
+      "desired_profile_key": "rb:2/0|rp:2/0|bp:2/0",
       "first_blocking_state_index": 0,
       "matching_profile_extension_count": 0,
       "patch_edge_count": 16,
@@ -1630,6 +1949,7 @@
       "profile_preserving": false,
       "profile_variant_count": 0,
       "proper_tait_extension_count": 0,
+      "proper_tait_extension_profile_histogram": {},
       "radial_order": [
         "P1:A-N5",
         "P0:A-N2"
@@ -1639,6 +1959,7 @@
       "verdict": "no_profile_preserving_extension"
     },
     {
+      "desired_profile_key": "rb:2/0|rp:2/0|bp:2/0",
       "first_blocking_state_index": 0,
       "matching_profile_extension_count": 0,
       "patch_edge_count": 16,
@@ -1647,6 +1968,9 @@
       "profile_preserving": false,
       "profile_variant_count": 1,
       "proper_tait_extension_count": 2,
+      "proper_tait_extension_profile_histogram": {
+        "rb:1/0|rp:1/0|bp:1/0": 2
+      },
       "radial_order": [
         "P0:A-N2",
         "P1:A-N5"
@@ -1656,6 +1980,7 @@
       "verdict": "no_profile_preserving_extension"
     },
     {
+      "desired_profile_key": "rb:2/0|rp:2/0|bp:2/0",
       "first_blocking_state_index": 0,
       "matching_profile_extension_count": 0,
       "patch_edge_count": 16,
@@ -1664,6 +1989,7 @@
       "profile_preserving": false,
       "profile_variant_count": 0,
       "proper_tait_extension_count": 0,
+      "proper_tait_extension_profile_histogram": {},
       "radial_order": [
         "P1:A-N5",
         "P0:A-N2"
@@ -1673,6 +1999,7 @@
       "verdict": "no_profile_preserving_extension"
     },
     {
+      "desired_profile_key": "rb:2/0|rp:2/0|bp:2/0",
       "first_blocking_state_index": 0,
       "matching_profile_extension_count": 0,
       "patch_edge_count": 16,
@@ -1681,6 +2008,7 @@
       "profile_preserving": false,
       "profile_variant_count": 0,
       "proper_tait_extension_count": 0,
+      "proper_tait_extension_profile_histogram": {},
       "radial_order": [
         "P0:A-N2",
         "P1:A-N6"
@@ -1690,6 +2018,7 @@
       "verdict": "no_profile_preserving_extension"
     },
     {
+      "desired_profile_key": "rb:2/0|rp:2/0|bp:2/0",
       "first_blocking_state_index": 0,
       "matching_profile_extension_count": 0,
       "patch_edge_count": 16,
@@ -1698,6 +2027,7 @@
       "profile_preserving": false,
       "profile_variant_count": 0,
       "proper_tait_extension_count": 0,
+      "proper_tait_extension_profile_histogram": {},
       "radial_order": [
         "P1:A-N6",
         "P0:A-N2"
@@ -1707,6 +2037,7 @@
       "verdict": "no_profile_preserving_extension"
     },
     {
+      "desired_profile_key": "rb:2/0|rp:2/0|bp:2/0",
       "first_blocking_state_index": 0,
       "matching_profile_extension_count": 0,
       "patch_edge_count": 16,
@@ -1715,6 +2046,7 @@
       "profile_preserving": false,
       "profile_variant_count": 0,
       "proper_tait_extension_count": 0,
+      "proper_tait_extension_profile_histogram": {},
       "radial_order": [
         "P0:A-N2",
         "P1:A-N7"
@@ -1724,6 +2056,7 @@
       "verdict": "no_profile_preserving_extension"
     },
     {
+      "desired_profile_key": "rb:2/0|rp:2/0|bp:2/0",
       "first_blocking_state_index": 0,
       "matching_profile_extension_count": 0,
       "patch_edge_count": 16,
@@ -1732,6 +2065,9 @@
       "profile_preserving": false,
       "profile_variant_count": 1,
       "proper_tait_extension_count": 1,
+      "proper_tait_extension_profile_histogram": {
+        "rb:1/0|rp:1/0|bp:1/0": 1
+      },
       "radial_order": [
         "P1:A-N7",
         "P0:A-N2"
@@ -1741,6 +2077,7 @@
       "verdict": "no_profile_preserving_extension"
     },
     {
+      "desired_profile_key": "rb:2/0|rp:2/0|bp:2/0",
       "first_blocking_state_index": 0,
       "matching_profile_extension_count": 0,
       "patch_edge_count": 16,
@@ -1749,6 +2086,9 @@
       "profile_preserving": false,
       "profile_variant_count": 1,
       "proper_tait_extension_count": 1,
+      "proper_tait_extension_profile_histogram": {
+        "rb:1/0|rp:2/0|bp:1/0": 1
+      },
       "radial_order": [
         "P0:A-N2",
         "P1:A-N7"
@@ -1758,6 +2098,7 @@
       "verdict": "no_profile_preserving_extension"
     },
     {
+      "desired_profile_key": "rb:2/0|rp:2/0|bp:2/0",
       "first_blocking_state_index": 0,
       "matching_profile_extension_count": 0,
       "patch_edge_count": 16,
@@ -1766,6 +2107,7 @@
       "profile_preserving": false,
       "profile_variant_count": 0,
       "proper_tait_extension_count": 0,
+      "proper_tait_extension_profile_histogram": {},
       "radial_order": [
         "P1:A-N7",
         "P0:A-N2"
@@ -1775,6 +2117,7 @@
       "verdict": "no_profile_preserving_extension"
     },
     {
+      "desired_profile_key": "rb:2/0|rp:2/0|bp:2/0",
       "first_blocking_state_index": 2,
       "matching_profile_extension_count": 0,
       "patch_edge_count": 16,
@@ -1783,6 +2126,9 @@
       "profile_preserving": false,
       "profile_variant_count": 1,
       "proper_tait_extension_count": 1,
+      "proper_tait_extension_profile_histogram": {
+        "rb:2/0|rp:1/0|bp:1/0": 1
+      },
       "radial_order": [
         "P0:A-N3",
         "P1:A-N4"
@@ -1792,6 +2138,7 @@
       "verdict": "no_profile_preserving_extension"
     },
     {
+      "desired_profile_key": "rb:2/0|rp:2/0|bp:2/0",
       "first_blocking_state_index": 0,
       "matching_profile_extension_count": 0,
       "patch_edge_count": 16,
@@ -1800,6 +2147,9 @@
       "profile_preserving": false,
       "profile_variant_count": 1,
       "proper_tait_extension_count": 1,
+      "proper_tait_extension_profile_histogram": {
+        "rb:2/0|rp:1/0|bp:1/0": 1
+      },
       "radial_order": [
         "P1:A-N4",
         "P0:A-N3"
@@ -1809,6 +2159,7 @@
       "verdict": "no_profile_preserving_extension"
     },
     {
+      "desired_profile_key": "rb:2/0|rp:2/0|bp:2/0",
       "first_blocking_state_index": 0,
       "matching_profile_extension_count": 0,
       "patch_edge_count": 16,
@@ -1817,6 +2168,9 @@
       "profile_preserving": false,
       "profile_variant_count": 1,
       "proper_tait_extension_count": 1,
+      "proper_tait_extension_profile_histogram": {
+        "rb:2/0|rp:1/0|bp:1/0": 1
+      },
       "radial_order": [
         "P0:A-N3",
         "P1:A-N5"
@@ -1826,6 +2180,7 @@
       "verdict": "no_profile_preserving_extension"
     },
     {
+      "desired_profile_key": "rb:2/0|rp:2/0|bp:2/0",
       "first_blocking_state_index": 0,
       "matching_profile_extension_count": 0,
       "patch_edge_count": 16,
@@ -1834,6 +2189,10 @@
       "profile_preserving": false,
       "profile_variant_count": 2,
       "proper_tait_extension_count": 2,
+      "proper_tait_extension_profile_histogram": {
+        "rb:1/0|rp:1/0|bp:2/0": 1,
+        "rb:2/0|rp:1/0|bp:2/0": 1
+      },
       "radial_order": [
         "P1:A-N5",
         "P0:A-N3"
@@ -1843,6 +2202,7 @@
       "verdict": "no_profile_preserving_extension"
     },
     {
+      "desired_profile_key": "rb:2/0|rp:2/0|bp:2/0",
       "first_blocking_state_index": 0,
       "matching_profile_extension_count": 0,
       "patch_edge_count": 16,
@@ -1851,6 +2211,9 @@
       "profile_preserving": false,
       "profile_variant_count": 1,
       "proper_tait_extension_count": 2,
+      "proper_tait_extension_profile_histogram": {
+        "rb:1/0|rp:1/0|bp:2/0": 2
+      },
       "radial_order": [
         "P0:A-N3",
         "P1:A-N5"
@@ -1860,6 +2223,7 @@
       "verdict": "no_profile_preserving_extension"
     },
     {
+      "desired_profile_key": "rb:2/0|rp:2/0|bp:2/0",
       "first_blocking_state_index": 0,
       "matching_profile_extension_count": 0,
       "patch_edge_count": 16,
@@ -1868,6 +2232,7 @@
       "profile_preserving": false,
       "profile_variant_count": 0,
       "proper_tait_extension_count": 0,
+      "proper_tait_extension_profile_histogram": {},
       "radial_order": [
         "P1:A-N5",
         "P0:A-N3"
@@ -1877,6 +2242,7 @@
       "verdict": "no_profile_preserving_extension"
     },
     {
+      "desired_profile_key": "rb:2/0|rp:2/0|bp:2/0",
       "first_blocking_state_index": 0,
       "matching_profile_extension_count": 0,
       "patch_edge_count": 16,
@@ -1885,6 +2251,7 @@
       "profile_preserving": false,
       "profile_variant_count": 0,
       "proper_tait_extension_count": 0,
+      "proper_tait_extension_profile_histogram": {},
       "radial_order": [
         "P0:A-N3",
         "P1:A-N6"
@@ -1894,6 +2261,7 @@
       "verdict": "no_profile_preserving_extension"
     },
     {
+      "desired_profile_key": "rb:2/0|rp:2/0|bp:2/0",
       "first_blocking_state_index": 0,
       "matching_profile_extension_count": 0,
       "patch_edge_count": 16,
@@ -1902,6 +2270,9 @@
       "profile_preserving": false,
       "profile_variant_count": 1,
       "proper_tait_extension_count": 2,
+      "proper_tait_extension_profile_histogram": {
+        "rb:1/0|rp:1/0|bp:1/0": 2
+      },
       "radial_order": [
         "P1:A-N6",
         "P0:A-N3"
@@ -1911,6 +2282,7 @@
       "verdict": "no_profile_preserving_extension"
     },
     {
+      "desired_profile_key": "rb:2/0|rp:2/0|bp:2/0",
       "first_blocking_state_index": 0,
       "matching_profile_extension_count": 0,
       "patch_edge_count": 16,
@@ -1919,6 +2291,9 @@
       "profile_preserving": false,
       "profile_variant_count": 1,
       "proper_tait_extension_count": 1,
+      "proper_tait_extension_profile_histogram": {
+        "rb:2/0|rp:1/0|bp:1/0": 1
+      },
       "radial_order": [
         "P0:A-N3",
         "P1:A-N7"
@@ -1928,6 +2303,7 @@
       "verdict": "no_profile_preserving_extension"
     },
     {
+      "desired_profile_key": "rb:2/0|rp:2/0|bp:2/0",
       "first_blocking_state_index": 2,
       "matching_profile_extension_count": 0,
       "patch_edge_count": 16,
@@ -1936,6 +2312,9 @@
       "profile_preserving": false,
       "profile_variant_count": 1,
       "proper_tait_extension_count": 1,
+      "proper_tait_extension_profile_histogram": {
+        "rb:2/0|rp:1/0|bp:1/0": 1
+      },
       "radial_order": [
         "P1:A-N7",
         "P0:A-N3"
@@ -1945,6 +2324,7 @@
       "verdict": "no_profile_preserving_extension"
     },
     {
+      "desired_profile_key": "rb:2/0|rp:2/0|bp:2/0",
       "first_blocking_state_index": 0,
       "matching_profile_extension_count": 0,
       "patch_edge_count": 16,
@@ -1953,6 +2333,7 @@
       "profile_preserving": false,
       "profile_variant_count": 0,
       "proper_tait_extension_count": 0,
+      "proper_tait_extension_profile_histogram": {},
       "radial_order": [
         "P0:A-N3",
         "P1:A-N7"
@@ -1962,6 +2343,7 @@
       "verdict": "no_profile_preserving_extension"
     },
     {
+      "desired_profile_key": "rb:2/0|rp:2/0|bp:2/0",
       "first_blocking_state_index": 0,
       "matching_profile_extension_count": 0,
       "patch_edge_count": 16,
@@ -1970,6 +2352,9 @@
       "profile_preserving": false,
       "profile_variant_count": 1,
       "proper_tait_extension_count": 1,
+      "proper_tait_extension_profile_histogram": {
+        "rb:1/0|rp:1/0|bp:1/0": 1
+      },
       "radial_order": [
         "P1:A-N7",
         "P0:A-N3"
@@ -1979,6 +2364,7 @@
       "verdict": "no_profile_preserving_extension"
     },
     {
+      "desired_profile_key": "rb:2/0|rp:2/0|bp:2/0",
       "first_blocking_state_index": 0,
       "matching_profile_extension_count": 0,
       "patch_edge_count": 16,
@@ -1987,6 +2373,9 @@
       "profile_preserving": false,
       "profile_variant_count": 1,
       "proper_tait_extension_count": 2,
+      "proper_tait_extension_profile_histogram": {
+        "rb:1/0|rp:1/0|bp:2/0": 2
+      },
       "radial_order": [
         "P0:A-N4",
         "P1:A-N5"
@@ -1996,6 +2385,7 @@
       "verdict": "no_profile_preserving_extension"
     },
     {
+      "desired_profile_key": "rb:2/0|rp:2/0|bp:2/0",
       "first_blocking_state_index": 0,
       "matching_profile_extension_count": 0,
       "patch_edge_count": 16,
@@ -2004,6 +2394,7 @@
       "profile_preserving": false,
       "profile_variant_count": 0,
       "proper_tait_extension_count": 0,
+      "proper_tait_extension_profile_histogram": {},
       "radial_order": [
         "P1:A-N5",
         "P0:A-N4"
@@ -2013,6 +2404,7 @@
       "verdict": "no_profile_preserving_extension"
     },
     {
+      "desired_profile_key": "rb:2/0|rp:2/0|bp:2/0",
       "first_blocking_state_index": 0,
       "matching_profile_extension_count": 0,
       "patch_edge_count": 16,
@@ -2021,6 +2413,9 @@
       "profile_preserving": false,
       "profile_variant_count": 1,
       "proper_tait_extension_count": 1,
+      "proper_tait_extension_profile_histogram": {
+        "rb:2/0|rp:1/0|bp:1/0": 1
+      },
       "radial_order": [
         "P0:A-N4",
         "P1:A-N6"
@@ -2030,6 +2425,7 @@
       "verdict": "no_profile_preserving_extension"
     },
     {
+      "desired_profile_key": "rb:2/0|rp:2/0|bp:2/0",
       "first_blocking_state_index": 0,
       "matching_profile_extension_count": 0,
       "patch_edge_count": 16,
@@ -2038,6 +2434,9 @@
       "profile_preserving": false,
       "profile_variant_count": 1,
       "proper_tait_extension_count": 1,
+      "proper_tait_extension_profile_histogram": {
+        "rb:2/0|rp:1/0|bp:1/0": 1
+      },
       "radial_order": [
         "P1:A-N6",
         "P0:A-N4"
@@ -2047,6 +2446,7 @@
       "verdict": "no_profile_preserving_extension"
     },
     {
+      "desired_profile_key": "rb:2/0|rp:2/0|bp:2/0",
       "first_blocking_state_index": 0,
       "matching_profile_extension_count": 0,
       "patch_edge_count": 16,
@@ -2055,6 +2455,9 @@
       "profile_preserving": false,
       "profile_variant_count": 1,
       "proper_tait_extension_count": 1,
+      "proper_tait_extension_profile_histogram": {
+        "rb:2/0|rp:2/0|bp:1/0": 1
+      },
       "radial_order": [
         "P0:A-N4",
         "P1:A-N6"
@@ -2064,6 +2467,7 @@
       "verdict": "no_profile_preserving_extension"
     },
     {
+      "desired_profile_key": "rb:2/0|rp:2/0|bp:2/0",
       "first_blocking_state_index": 0,
       "matching_profile_extension_count": 0,
       "patch_edge_count": 16,
@@ -2072,6 +2476,11 @@
       "profile_preserving": false,
       "profile_variant_count": 3,
       "proper_tait_extension_count": 4,
+      "proper_tait_extension_profile_histogram": {
+        "rb:1/0|rp:1/0|bp:3/0": 2,
+        "rb:1/0|rp:2/0|bp:3/0": 1,
+        "rb:2/0|rp:1/0|bp:3/0": 1
+      },
       "radial_order": [
         "P1:A-N6",
         "P0:A-N4"
@@ -2081,6 +2490,7 @@
       "verdict": "no_profile_preserving_extension"
     },
     {
+      "desired_profile_key": "rb:2/0|rp:2/0|bp:2/0",
       "first_blocking_state_index": 0,
       "matching_profile_extension_count": 0,
       "patch_edge_count": 16,
@@ -2089,6 +2499,9 @@
       "profile_preserving": false,
       "profile_variant_count": 1,
       "proper_tait_extension_count": 1,
+      "proper_tait_extension_profile_histogram": {
+        "rb:1/0|rp:1/0|bp:1/0": 1
+      },
       "radial_order": [
         "P0:A-N4",
         "P1:A-N7"
@@ -2098,6 +2511,7 @@
       "verdict": "no_profile_preserving_extension"
     },
     {
+      "desired_profile_key": "rb:2/0|rp:2/0|bp:2/0",
       "first_blocking_state_index": 0,
       "matching_profile_extension_count": 0,
       "patch_edge_count": 16,
@@ -2106,6 +2520,7 @@
       "profile_preserving": false,
       "profile_variant_count": 0,
       "proper_tait_extension_count": 0,
+      "proper_tait_extension_profile_histogram": {},
       "radial_order": [
         "P1:A-N7",
         "P0:A-N4"
@@ -2115,6 +2530,7 @@
       "verdict": "no_profile_preserving_extension"
     },
     {
+      "desired_profile_key": "rb:2/0|rp:2/0|bp:2/0",
       "first_blocking_state_index": 0,
       "matching_profile_extension_count": 0,
       "patch_edge_count": 16,
@@ -2123,6 +2539,9 @@
       "profile_preserving": false,
       "profile_variant_count": 1,
       "proper_tait_extension_count": 1,
+      "proper_tait_extension_profile_histogram": {
+        "rb:1/0|rp:2/0|bp:1/0": 1
+      },
       "radial_order": [
         "P0:A-N5",
         "P1:A-N6"
@@ -2132,6 +2551,7 @@
       "verdict": "no_profile_preserving_extension"
     },
     {
+      "desired_profile_key": "rb:2/0|rp:2/0|bp:2/0",
       "first_blocking_state_index": 0,
       "matching_profile_extension_count": 0,
       "patch_edge_count": 16,
@@ -2140,6 +2560,10 @@
       "profile_preserving": false,
       "profile_variant_count": 2,
       "proper_tait_extension_count": 2,
+      "proper_tait_extension_profile_histogram": {
+        "rb:1/0|rp:1/0|bp:1/0": 1,
+        "rb:1/0|rp:2/0|bp:1/0": 1
+      },
       "radial_order": [
         "P1:A-N6",
         "P0:A-N5"
@@ -2149,6 +2573,7 @@
       "verdict": "no_profile_preserving_extension"
     },
     {
+      "desired_profile_key": "rb:2/0|rp:2/0|bp:2/0",
       "first_blocking_state_index": 0,
       "matching_profile_extension_count": 0,
       "patch_edge_count": 16,
@@ -2157,6 +2582,7 @@
       "profile_preserving": false,
       "profile_variant_count": 0,
       "proper_tait_extension_count": 0,
+      "proper_tait_extension_profile_histogram": {},
       "radial_order": [
         "P0:A-N5",
         "P1:A-N6"
@@ -2166,6 +2592,7 @@
       "verdict": "no_profile_preserving_extension"
     },
     {
+      "desired_profile_key": "rb:2/0|rp:2/0|bp:2/0",
       "first_blocking_state_index": 0,
       "matching_profile_extension_count": 0,
       "patch_edge_count": 16,
@@ -2174,6 +2601,9 @@
       "profile_preserving": false,
       "profile_variant_count": 1,
       "proper_tait_extension_count": 1,
+      "proper_tait_extension_profile_histogram": {
+        "rb:1/0|rp:1/0|bp:1/0": 1
+      },
       "radial_order": [
         "P1:A-N6",
         "P0:A-N5"
@@ -2183,6 +2613,7 @@
       "verdict": "no_profile_preserving_extension"
     },
     {
+      "desired_profile_key": "rb:2/0|rp:2/0|bp:2/0",
       "first_blocking_state_index": 0,
       "matching_profile_extension_count": 0,
       "patch_edge_count": 16,
@@ -2191,6 +2622,10 @@
       "profile_preserving": false,
       "profile_variant_count": 2,
       "proper_tait_extension_count": 2,
+      "proper_tait_extension_profile_histogram": {
+        "rb:1/0|rp:2/0|bp:1/0": 1,
+        "rb:2/0|rp:2/0|bp:1/0": 1
+      },
       "radial_order": [
         "P0:A-N5",
         "P1:A-N7"
@@ -2200,6 +2635,7 @@
       "verdict": "no_profile_preserving_extension"
     },
     {
+      "desired_profile_key": "rb:2/0|rp:2/0|bp:2/0",
       "first_blocking_state_index": 0,
       "matching_profile_extension_count": 0,
       "patch_edge_count": 16,
@@ -2208,6 +2644,10 @@
       "profile_preserving": false,
       "profile_variant_count": 2,
       "proper_tait_extension_count": 2,
+      "proper_tait_extension_profile_histogram": {
+        "rb:1/0|rp:2/0|bp:2/0": 1,
+        "rb:2/0|rp:1/0|bp:2/0": 1
+      },
       "radial_order": [
         "P1:A-N7",
         "P0:A-N5"
@@ -2217,6 +2657,7 @@
       "verdict": "no_profile_preserving_extension"
     },
     {
+      "desired_profile_key": "rb:2/0|rp:2/0|bp:2/0",
       "first_blocking_state_index": 0,
       "matching_profile_extension_count": 0,
       "patch_edge_count": 16,
@@ -2225,6 +2666,10 @@
       "profile_preserving": false,
       "profile_variant_count": 2,
       "proper_tait_extension_count": 2,
+      "proper_tait_extension_profile_histogram": {
+        "rb:1/0|rp:2/0|bp:2/0": 1,
+        "rb:2/0|rp:1/0|bp:2/0": 1
+      },
       "radial_order": [
         "P0:A-N6",
         "P1:A-N7"
@@ -2234,6 +2679,7 @@
       "verdict": "no_profile_preserving_extension"
     },
     {
+      "desired_profile_key": "rb:2/0|rp:2/0|bp:2/0",
       "first_blocking_state_index": 0,
       "matching_profile_extension_count": 0,
       "patch_edge_count": 16,
@@ -2242,6 +2688,10 @@
       "profile_preserving": false,
       "profile_variant_count": 2,
       "proper_tait_extension_count": 2,
+      "proper_tait_extension_profile_histogram": {
+        "rb:1/0|rp:2/0|bp:2/0": 1,
+        "rb:2/0|rp:1/0|bp:2/0": 1
+      },
       "radial_order": [
         "P1:A-N7",
         "P0:A-N6"
@@ -2251,6 +2701,7 @@
       "verdict": "no_profile_preserving_extension"
     },
     {
+      "desired_profile_key": "rb:2/0|rp:2/0|bp:2/0",
       "first_blocking_state_index": 0,
       "matching_profile_extension_count": 0,
       "patch_edge_count": 16,
@@ -2259,6 +2710,7 @@
       "profile_preserving": false,
       "profile_variant_count": 0,
       "proper_tait_extension_count": 0,
+      "proper_tait_extension_profile_histogram": {},
       "radial_order": [
         "P0:A-N6",
         "P1:A-N7"
@@ -2268,6 +2720,7 @@
       "verdict": "no_profile_preserving_extension"
     },
     {
+      "desired_profile_key": "rb:2/0|rp:2/0|bp:2/0",
       "first_blocking_state_index": 0,
       "matching_profile_extension_count": 0,
       "patch_edge_count": 16,
@@ -2276,6 +2729,7 @@
       "profile_preserving": false,
       "profile_variant_count": 0,
       "proper_tait_extension_count": 0,
+      "proper_tait_extension_profile_histogram": {},
       "radial_order": [
         "P1:A-N7",
         "P0:A-N6"
@@ -2408,6 +2862,26 @@
     "sampled_patch_topology_count": 65,
     "structural_first_blocker_count": 0,
     "verdict": "template_exclusion_index_sample_found_no_profile_preserving_patch",
+    "wrong_profile_landed_profile_histogram": {
+      "rb:1/0|rp:1/0|bp:1/0": 22,
+      "rb:1/0|rp:1/0|bp:2/0": 16,
+      "rb:1/0|rp:1/0|bp:3/0": 6,
+      "rb:1/0|rp:2/0|bp:1/0": 24,
+      "rb:1/0|rp:2/0|bp:2/0": 11,
+      "rb:1/0|rp:2/0|bp:3/0": 3,
+      "rb:1/0|rp:3/0|bp:1/0": 3,
+      "rb:2/0|rp:1/0|bp:1/0": 11,
+      "rb:2/0|rp:1/0|bp:2/0": 14,
+      "rb:2/0|rp:1/0|bp:3/0": 4,
+      "rb:2/0|rp:2/0|bp:1/0": 11,
+      "rb:2/0|rp:3/0|bp:1/0": 3,
+      "rb:2/0|rp:3/0|bp:2/0": 1,
+      "rb:3/0|rp:1/0|bp:1/0": 4,
+      "rb:3/0|rp:1/0|bp:2/0": 1,
+      "rb:3/0|rp:2/0|bp:1/0": 1,
+      "rb:3/0|rp:2/0|bp:3/0": 1,
+      "rb:3/0|rp:3/0|bp:2/0": 1
+    },
     "wrong_profile_proper_extension_count_histogram": {
       "1": 39,
       "2": 23,

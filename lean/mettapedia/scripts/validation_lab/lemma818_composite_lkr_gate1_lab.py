@@ -1633,6 +1633,16 @@ def closed_collar_profile_payload_for_model(
     return winding_profile_payload(profile)
 
 
+def winding_profile_key(profile: list[dict[str, object]]) -> str:
+    parts: list[str] = []
+    for item in profile:
+        pair = str(item["pair"])
+        winding0 = int(item["winding0_component_count"])
+        winding1 = int(item["winding1_component_count"])
+        parts.append(f"{pair}:{winding0}/{winding1}")
+    return "|".join(parts)
+
+
 PATCH_TERMINALS = ("A", "B", "C", "D")
 PATCH_TERMINAL_VERTICES = {
     "A": "g1:F5",
@@ -1946,6 +1956,7 @@ def simple_patch_profile_extension_diagnostic(
     desired_profile: list[dict[str, object]],
 ) -> dict[str, object]:
     colors = dict(fixed_edge_colors)
+    desired_profile_key = winding_profile_key(desired_profile)
     for edge, color in zip(radial_edges, ("r", "b")):
         colors[edge] = color
 
@@ -1966,9 +1977,11 @@ def simple_patch_profile_extension_diagnostic(
     if terminal_conflicts:
         return {
             "profile_failure_kind": "terminal_precolor_conflict",
+            "desired_profile_key": desired_profile_key,
             "proper_tait_extension_count": 0,
             "matching_profile_extension_count": 0,
             "profile_variant_count": 0,
+            "proper_tait_extension_profile_histogram": {},
             "terminal_precolor_conflict_vertices": terminal_conflicts,
         }
 
@@ -1984,7 +1997,7 @@ def simple_patch_profile_extension_diagnostic(
 
     proper_tait_extension_count = 0
     matching_profile_extension_count = 0
-    profile_variants: set[str] = set()
+    profile_histogram: Counter[str] = Counter()
 
     def rec(i: int) -> None:
         nonlocal proper_tait_extension_count, matching_profile_extension_count
@@ -1994,7 +2007,7 @@ def simple_patch_profile_extension_diagnostic(
                 return
             proper_tait_extension_count += 1
             profile = closed_collar_profile_payload_for_model(model, state)
-            profile_variants.add(json.dumps(profile, sort_keys=True))
+            profile_histogram[winding_profile_key(profile)] += 1
             if profile == desired_profile:
                 matching_profile_extension_count += 1
             return
@@ -2016,9 +2029,12 @@ def simple_patch_profile_extension_diagnostic(
         profile_failure_kind = "no_proper_tait_extension"
     return {
         "profile_failure_kind": profile_failure_kind,
+        "desired_profile_key": desired_profile_key,
         "proper_tait_extension_count": proper_tait_extension_count,
         "matching_profile_extension_count": matching_profile_extension_count,
-        "profile_variant_count": len(profile_variants),
+        "profile_variant_count": len(profile_histogram),
+        "proper_tait_extension_profile_histogram":
+            dict(sorted(profile_histogram.items())),
         "terminal_precolor_conflict_vertices": [],
     }
 
@@ -3656,6 +3672,7 @@ def audit_closed_collar_winding_simple_patch_template_blocker_index_sample(
     profile_failure_kind_histogram: Counter[str] = Counter()
     first_blocking_state_index_histogram: Counter[str] = Counter()
     wrong_profile_proper_extension_count_histogram: Counter[str] = Counter()
+    wrong_profile_landed_profile_histogram: Counter[str] = Counter()
     samples: list[dict[str, object]] = []
     case_verdicts: list[dict[str, object]] = []
     sampled_blockers: set[str] = set()
@@ -3714,6 +3731,14 @@ def audit_closed_collar_winding_simple_patch_template_blocker_index_sample(
                     wrong_profile_proper_extension_count_histogram[
                         str(first_profile_failure["proper_tait_extension_count"])
                     ] += 1
+                    landed_profiles = first_profile_failure[
+                        "proper_tait_extension_profile_histogram"
+                    ]
+                    assert isinstance(landed_profiles, dict)
+                    for profile_key, count in landed_profiles.items():
+                        wrong_profile_landed_profile_histogram[str(profile_key)] += int(
+                            count
+                        )
                 case_verdicts.append(
                     {
                         "patch_index": patch_index,
@@ -3842,6 +3867,8 @@ def audit_closed_collar_winding_simple_patch_template_blocker_index_sample(
                 dict(sorted(first_blocking_state_index_histogram.items())),
             "wrong_profile_proper_extension_count_histogram":
                 dict(sorted(wrong_profile_proper_extension_count_histogram.items())),
+            "wrong_profile_landed_profile_histogram":
+                dict(sorted(wrong_profile_landed_profile_histogram.items())),
             "exact_template_histogram":
                 dict(sorted(exact_template_histogram.items())),
             "non_template_minimum_small_cyclic_cut_size_histogram":
