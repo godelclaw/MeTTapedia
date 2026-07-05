@@ -10110,6 +10110,20 @@ theorem closedCollarWindingFreedomCurrentBoundaryBadWitnessFaceObstruction_of_mu
       closedCollarWindingFreedomCurrentBoundaryBadWitnessFaceEscape_of_multiCollarEscape
         escape⟩
 
+theorem closedCollarWindingFreedomCurrentBoundaryBadWitnessFaceObstruction_iff_multiCollarEscapeObstruction :
+    ClosedCollarWindingFreedomCurrentBoundaryBadWitnessFaceObstruction ↔
+      ClosedCollarWindingFreedomCurrentBoundaryMultiCollarEscapeObstruction := by
+  constructor
+  · exact closedCollarWindingFreedomCurrentBoundaryMultiCollarEscapeObstruction_of_badWitnessFaceObstruction
+  · exact closedCollarWindingFreedomCurrentBoundaryBadWitnessFaceObstruction_of_multiCollarEscapeObstruction
+
+theorem closedCollarWindingFreedom_no_currentBoundaryMultiCollarEscapeObstruction_of_nonrealizable
+    (hnon :
+      ClosedCollarWindingFreedomNonrealizableInNormalForm) :
+    ¬ ClosedCollarWindingFreedomCurrentBoundaryMultiCollarEscapeObstruction := by
+  rintro ⟨_V, _hV, _G, normalForm, _escape⟩
+  exact hnon normalForm
+
 theorem closedCollarWindingFreedomNonrealizableInNormalForm_of_no_currentBoundaryMultiCollarEscape_of_laterBridge_of_auditedRows
     (hgeometry :
       ClosedCollarWindingFreedomActualCollarEmbeddingSuppliesGeometryData)
@@ -10202,6 +10216,48 @@ theorem closedCollarWindingFreedomCurrentBoundaryBadWitnessFaceObstruction_of_la
   closedCollarWindingFreedomCurrentBoundaryBadWitnessFaceObstruction_of_multiCollarEscapeObstruction
     (closedCollarWindingFreedomCurrentBoundaryMultiCollarEscapeObstruction_of_laterBridge_of_auditedRows_of_not_nonrealizable
       hgeometry hradial hn6 hkeys hrows hnot)
+
+theorem closedCollarWindingFreedomNonrealizableInNormalForm_iff_no_currentBoundaryMultiCollarEscapeObstruction_of_laterBridge_of_auditedRows
+    (hgeometry :
+      ClosedCollarWindingFreedomActualCollarEmbeddingSuppliesGeometryData)
+    (hradial :
+      ClosedCollarWindingFreedomActualCollarGeometrySuppliesRadialFaceExtraction)
+    (hn6 :
+      ClosedCollarWindingFreedomEveryRadialFaceNormalFormHasN6Representation)
+    (hkeys :
+      ClosedCollarWindingFreedomEveryRadialFaceN6RepresentationHasAuditedArchiveKey)
+    (hrows :
+      ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceAuditedRowsCoveredByLab) :
+    ClosedCollarWindingFreedomNonrealizableInNormalForm ↔
+      ¬ ClosedCollarWindingFreedomCurrentBoundaryMultiCollarEscapeObstruction := by
+  constructor
+  · exact
+      closedCollarWindingFreedom_no_currentBoundaryMultiCollarEscapeObstruction_of_nonrealizable
+  · exact
+      closedCollarWindingFreedomNonrealizableInNormalForm_of_no_currentBoundaryMultiCollarEscape_of_laterBridge_of_auditedRows
+        hgeometry hradial hn6 hkeys hrows
+
+theorem closedCollarWindingFreedom_not_nonrealizableInNormalForm_iff_currentBoundaryMultiCollarEscapeObstruction_of_laterBridge_of_auditedRows
+    (hgeometry :
+      ClosedCollarWindingFreedomActualCollarEmbeddingSuppliesGeometryData)
+    (hradial :
+      ClosedCollarWindingFreedomActualCollarGeometrySuppliesRadialFaceExtraction)
+    (hn6 :
+      ClosedCollarWindingFreedomEveryRadialFaceNormalFormHasN6Representation)
+    (hkeys :
+      ClosedCollarWindingFreedomEveryRadialFaceN6RepresentationHasAuditedArchiveKey)
+    (hrows :
+      ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceAuditedRowsCoveredByLab) :
+    ¬ ClosedCollarWindingFreedomNonrealizableInNormalForm ↔
+      ClosedCollarWindingFreedomCurrentBoundaryMultiCollarEscapeObstruction := by
+  constructor
+  · exact
+      closedCollarWindingFreedomCurrentBoundaryMultiCollarEscapeObstruction_of_laterBridge_of_auditedRows_of_not_nonrealizable
+        hgeometry hradial hn6 hkeys hrows
+  · intro hmulti hnon
+    exact
+      (closedCollarWindingFreedom_no_currentBoundaryMultiCollarEscapeObstruction_of_nonrealizable
+        hnon) hmulti
 
 theorem closedCollarWindingFreedomNonrealizableInNormalForm_of_badWitnessFaceForcesExactTemplate_of_laterBridge_of_auditedRows
     (hforces :
@@ -10468,6 +10524,31 @@ theorem closedCollarWindingFreedomNonrealizableInNormalForm_iff_suppliesWitnessO
         hgeometry hradial hn6 hkeys hrows
         ((closedCollarWindingFreedom_no_currentBoundaryBadWitnessFaceObstruction_iff_suppliesWitnessOnCurrentBoundary).2
           hwitness)
+
+theorem closedCollarWindingFreedom_not_nonrealizableInNormalForm_iff_not_suppliesWitnessOnCurrentBoundary_of_laterBridge_of_auditedRows
+    (hgeometry :
+      ClosedCollarWindingFreedomActualCollarEmbeddingSuppliesGeometryData)
+    (hradial :
+      ClosedCollarWindingFreedomActualCollarGeometrySuppliesRadialFaceExtraction)
+    (hn6 :
+      ClosedCollarWindingFreedomEveryRadialFaceNormalFormHasN6Representation)
+    (hkeys :
+      ClosedCollarWindingFreedomEveryRadialFaceN6RepresentationHasAuditedArchiveKey)
+    (hrows :
+      ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceAuditedRowsCoveredByLab) :
+    ¬ ClosedCollarWindingFreedomNonrealizableInNormalForm ↔
+      ¬ ClosedCollarWindingFreedomActualCollarGeometrySuppliesWitnessOnCurrentBoundary := by
+  constructor
+  · intro hnot hwitness
+    exact
+      hnot
+        ((closedCollarWindingFreedomNonrealizableInNormalForm_iff_suppliesWitnessOnCurrentBoundary_of_laterBridge_of_auditedRows
+          hgeometry hradial hn6 hkeys hrows).2 hwitness)
+  · intro hnoWitness hnon
+    exact
+      hnoWitness
+        ((closedCollarWindingFreedomNonrealizableInNormalForm_iff_suppliesWitnessOnCurrentBoundary_of_laterBridge_of_auditedRows
+          hgeometry hradial hn6 hkeys hrows).1 hnon)
 
 /--
 If a particular normal-form witness cannot instantiate the concrete
@@ -11474,6 +11555,77 @@ theorem section92Step4CurrentFiniteFrontierPreviousBoundaryUpgradeExactCriterion
     ⟨closedCollarWindingFreedomNonrealizableInNormalForm_iff_no_previousBoundaryWitnessUpgradeObstruction_of_laterBridge_of_auditedRows
         hgeometry hradial hn6 hkeys hrows,
       closedCollarWindingFreedomNonrealizableInNormalForm_iff_suppliesPreviousBoundaryWitnessUpgrade_of_laterBridge_of_auditedRows
+        hgeometry hradial hn6 hkeys hrows⟩
+
+/--
+Exact current-boundary witness-placement criterion for the current frontier.
+With ordinary collar geometry and the later radial-face/n6/archive obligations
+supplied, full normal-form nonrealizability is equivalent to the corrected
+current-boundary witness-placement theorem.  Failure is equivalently failure
+of that theorem, or equivalently the existence of a bad current-boundary
+witness face.
+-/
+def Section92Step4CurrentFiniteFrontierWitnessOnCurrentBoundaryExactCriterion :
+    Prop :=
+  ClosedCollarWindingFreedomCurrentFiniteRealizationFrontierEvidence ∧
+    (¬ ClosedCollarWindingFreedomCurrentBoundaryBadWitnessFaceObstruction ↔
+      ClosedCollarWindingFreedomActualCollarGeometrySuppliesWitnessOnCurrentBoundary) ∧
+    (ClosedCollarWindingFreedomActualCollarEmbeddingSuppliesGeometryData →
+      ClosedCollarWindingFreedomActualCollarGeometrySuppliesRadialFaceExtraction →
+        ClosedCollarWindingFreedomEveryRadialFaceNormalFormHasN6Representation →
+          ClosedCollarWindingFreedomEveryRadialFaceN6RepresentationHasAuditedArchiveKey →
+            ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceAuditedRowsCoveredByLab →
+              ((ClosedCollarWindingFreedomNonrealizableInNormalForm ↔
+                  ClosedCollarWindingFreedomActualCollarGeometrySuppliesWitnessOnCurrentBoundary) ∧
+                (¬ ClosedCollarWindingFreedomNonrealizableInNormalForm ↔
+                  ¬ ClosedCollarWindingFreedomActualCollarGeometrySuppliesWitnessOnCurrentBoundary)))
+
+theorem section92Step4CurrentFiniteFrontierWitnessOnCurrentBoundaryExactCriterion :
+    Section92Step4CurrentFiniteFrontierWitnessOnCurrentBoundaryExactCriterion := by
+  refine
+    ⟨closedCollarWindingFreedomCurrentFiniteRealizationFrontierEvidence,
+      closedCollarWindingFreedom_no_currentBoundaryBadWitnessFaceObstruction_iff_suppliesWitnessOnCurrentBoundary,
+      ?_⟩
+  intro hgeometry hradial hn6 hkeys hrows
+  exact
+    ⟨closedCollarWindingFreedomNonrealizableInNormalForm_iff_suppliesWitnessOnCurrentBoundary_of_laterBridge_of_auditedRows
+        hgeometry hradial hn6 hkeys hrows,
+      closedCollarWindingFreedom_not_nonrealizableInNormalForm_iff_not_suppliesWitnessOnCurrentBoundary_of_laterBridge_of_auditedRows
+        hgeometry hradial hn6 hkeys hrows⟩
+
+/--
+Exact multi-collar escape criterion for the current frontier.  The face-level
+bad-witness obstruction and the multi-collar escape obstruction are the same
+global obstruction.  With the later bridge fields and audited rows, full
+normal-form nonrealizability is equivalent to absence of this obstruction;
+failure is equivalent to its presence.
+-/
+def Section92Step4CurrentFiniteFrontierMultiCollarEscapeExactCriterion :
+    Prop :=
+  ClosedCollarWindingFreedomCurrentFiniteRealizationFrontierEvidence ∧
+    (ClosedCollarWindingFreedomCurrentBoundaryBadWitnessFaceObstruction ↔
+      ClosedCollarWindingFreedomCurrentBoundaryMultiCollarEscapeObstruction) ∧
+    (ClosedCollarWindingFreedomActualCollarEmbeddingSuppliesGeometryData →
+      ClosedCollarWindingFreedomActualCollarGeometrySuppliesRadialFaceExtraction →
+        ClosedCollarWindingFreedomEveryRadialFaceNormalFormHasN6Representation →
+          ClosedCollarWindingFreedomEveryRadialFaceN6RepresentationHasAuditedArchiveKey →
+            ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceAuditedRowsCoveredByLab →
+              ((ClosedCollarWindingFreedomNonrealizableInNormalForm ↔
+                  ¬ ClosedCollarWindingFreedomCurrentBoundaryMultiCollarEscapeObstruction) ∧
+                (¬ ClosedCollarWindingFreedomNonrealizableInNormalForm ↔
+                  ClosedCollarWindingFreedomCurrentBoundaryMultiCollarEscapeObstruction)))
+
+theorem section92Step4CurrentFiniteFrontierMultiCollarEscapeExactCriterion :
+    Section92Step4CurrentFiniteFrontierMultiCollarEscapeExactCriterion := by
+  refine
+    ⟨closedCollarWindingFreedomCurrentFiniteRealizationFrontierEvidence,
+      closedCollarWindingFreedomCurrentBoundaryBadWitnessFaceObstruction_iff_multiCollarEscapeObstruction,
+      ?_⟩
+  intro hgeometry hradial hn6 hkeys hrows
+  exact
+    ⟨closedCollarWindingFreedomNonrealizableInNormalForm_iff_no_currentBoundaryMultiCollarEscapeObstruction_of_laterBridge_of_auditedRows
+        hgeometry hradial hn6 hkeys hrows,
+      closedCollarWindingFreedom_not_nonrealizableInNormalForm_iff_currentBoundaryMultiCollarEscapeObstruction_of_laterBridge_of_auditedRows
         hgeometry hradial hn6 hkeys hrows⟩
 
 /--

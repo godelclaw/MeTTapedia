@@ -2057,6 +2057,11 @@ theorem closedCollarWindingFreedomCurrentBoundaryBadWitnessFaceObstruction_of_mu
   closedCollarWindingFreedomCurrentBoundaryBadWitnessFaceObstruction_of_multiCollarEscapeObstruction
     hmulti
 
+theorem closedCollarWindingFreedomCurrentBoundaryBadWitnessFaceObstruction_iff_multiCollarEscapeObstruction_audit :
+    ClosedCollarWindingFreedomCurrentBoundaryBadWitnessFaceObstruction ↔
+      ClosedCollarWindingFreedomCurrentBoundaryMultiCollarEscapeObstruction :=
+  closedCollarWindingFreedomCurrentBoundaryBadWitnessFaceObstruction_iff_multiCollarEscapeObstruction
+
 theorem closedCollarWindingFreedomPreviousBoundaryWitnessUpgradeObstruction_iff_currentBoundaryBadWitnessFaceObstruction_audit :
     ClosedCollarWindingFreedomPreviousBoundaryWitnessUpgradeObstruction ↔
       ClosedCollarWindingFreedomCurrentBoundaryBadWitnessFaceObstruction :=
@@ -2138,6 +2143,13 @@ theorem closedCollarWindingFreedom_no_currentBoundaryBadWitnessFaceObstruction_i
       ClosedCollarWindingFreedomActualCollarGeometrySuppliesPreviousBoundaryWitnessUpgrade :=
   closedCollarWindingFreedom_no_currentBoundaryBadWitnessFaceObstruction_iff_suppliesPreviousBoundaryWitnessUpgrade
 
+theorem closedCollarWindingFreedom_no_currentBoundaryMultiCollarEscapeObstruction_of_nonrealizable_audit
+    (hnon :
+      ClosedCollarWindingFreedomNonrealizableInNormalForm) :
+    ¬ ClosedCollarWindingFreedomCurrentBoundaryMultiCollarEscapeObstruction :=
+  closedCollarWindingFreedom_no_currentBoundaryMultiCollarEscapeObstruction_of_nonrealizable
+    hnon
+
 theorem closedCollarWindingFreedomNonrealizableInNormalForm_of_no_currentBoundaryMultiCollarEscape_of_laterBridge_of_auditedRows_audit
     (hgeometry :
       ClosedCollarWindingFreedomActualCollarEmbeddingSuppliesGeometryData)
@@ -2171,6 +2183,38 @@ theorem closedCollarWindingFreedomCurrentBoundaryMultiCollarEscapeObstruction_of
     ClosedCollarWindingFreedomCurrentBoundaryMultiCollarEscapeObstruction :=
   closedCollarWindingFreedomCurrentBoundaryMultiCollarEscapeObstruction_of_laterBridge_of_auditedRows_of_not_nonrealizable
     hgeometry hradial hn6 hkeys hrows hnot
+
+theorem closedCollarWindingFreedomNonrealizableInNormalForm_iff_no_currentBoundaryMultiCollarEscapeObstruction_of_laterBridge_of_auditedRows_audit
+    (hgeometry :
+      ClosedCollarWindingFreedomActualCollarEmbeddingSuppliesGeometryData)
+    (hradial :
+      ClosedCollarWindingFreedomActualCollarGeometrySuppliesRadialFaceExtraction)
+    (hn6 :
+      ClosedCollarWindingFreedomEveryRadialFaceNormalFormHasN6Representation)
+    (hkeys :
+      ClosedCollarWindingFreedomEveryRadialFaceN6RepresentationHasAuditedArchiveKey)
+    (hrows :
+      ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceAuditedRowsCoveredByLab) :
+    ClosedCollarWindingFreedomNonrealizableInNormalForm ↔
+      ¬ ClosedCollarWindingFreedomCurrentBoundaryMultiCollarEscapeObstruction :=
+  closedCollarWindingFreedomNonrealizableInNormalForm_iff_no_currentBoundaryMultiCollarEscapeObstruction_of_laterBridge_of_auditedRows
+    hgeometry hradial hn6 hkeys hrows
+
+theorem closedCollarWindingFreedom_not_nonrealizableInNormalForm_iff_currentBoundaryMultiCollarEscapeObstruction_of_laterBridge_of_auditedRows_audit
+    (hgeometry :
+      ClosedCollarWindingFreedomActualCollarEmbeddingSuppliesGeometryData)
+    (hradial :
+      ClosedCollarWindingFreedomActualCollarGeometrySuppliesRadialFaceExtraction)
+    (hn6 :
+      ClosedCollarWindingFreedomEveryRadialFaceNormalFormHasN6Representation)
+    (hkeys :
+      ClosedCollarWindingFreedomEveryRadialFaceN6RepresentationHasAuditedArchiveKey)
+    (hrows :
+      ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceAuditedRowsCoveredByLab) :
+    ¬ ClosedCollarWindingFreedomNonrealizableInNormalForm ↔
+      ClosedCollarWindingFreedomCurrentBoundaryMultiCollarEscapeObstruction :=
+  closedCollarWindingFreedom_not_nonrealizableInNormalForm_iff_currentBoundaryMultiCollarEscapeObstruction_of_laterBridge_of_auditedRows
+    hgeometry hradial hn6 hkeys hrows
 
 theorem closedCollarWindingFreedomNonrealizableInNormalForm_of_no_currentBoundaryBadWitnessFace_of_laterBridge_of_auditedRows_audit
     (hgeometry :
@@ -2417,6 +2461,22 @@ theorem closedCollarWindingFreedomNonrealizableInNormalForm_iff_suppliesWitnessO
   closedCollarWindingFreedomNonrealizableInNormalForm_iff_suppliesWitnessOnCurrentBoundary_of_laterBridge_of_auditedRows
     hgeometry hradial hn6 hkeys hrows
 
+theorem closedCollarWindingFreedom_not_nonrealizableInNormalForm_iff_not_suppliesWitnessOnCurrentBoundary_of_laterBridge_of_auditedRows_audit
+    (hgeometry :
+      ClosedCollarWindingFreedomActualCollarEmbeddingSuppliesGeometryData)
+    (hradial :
+      ClosedCollarWindingFreedomActualCollarGeometrySuppliesRadialFaceExtraction)
+    (hn6 :
+      ClosedCollarWindingFreedomEveryRadialFaceNormalFormHasN6Representation)
+    (hkeys :
+      ClosedCollarWindingFreedomEveryRadialFaceN6RepresentationHasAuditedArchiveKey)
+    (hrows :
+      ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceAuditedRowsCoveredByLab) :
+    ¬ ClosedCollarWindingFreedomNonrealizableInNormalForm ↔
+      ¬ ClosedCollarWindingFreedomActualCollarGeometrySuppliesWitnessOnCurrentBoundary :=
+  closedCollarWindingFreedom_not_nonrealizableInNormalForm_iff_not_suppliesWitnessOnCurrentBoundary_of_laterBridge_of_auditedRows
+    hgeometry hradial hn6 hkeys hrows
+
 theorem section92Step4CurrentFiniteFrontierMultiCollarEscapePressurePoint_audit :
     Section92Step4CurrentFiniteFrontierMultiCollarEscapePressurePoint :=
   section92Step4CurrentFiniteFrontierMultiCollarEscapePressurePoint
@@ -2432,6 +2492,14 @@ theorem section92Step4CurrentFiniteFrontierPreviousBoundaryUpgradeObstructionPre
 theorem section92Step4CurrentFiniteFrontierPreviousBoundaryUpgradeExactCriterion_audit :
     Section92Step4CurrentFiniteFrontierPreviousBoundaryUpgradeExactCriterion :=
   section92Step4CurrentFiniteFrontierPreviousBoundaryUpgradeExactCriterion
+
+theorem section92Step4CurrentFiniteFrontierWitnessOnCurrentBoundaryExactCriterion_audit :
+    Section92Step4CurrentFiniteFrontierWitnessOnCurrentBoundaryExactCriterion :=
+  section92Step4CurrentFiniteFrontierWitnessOnCurrentBoundaryExactCriterion
+
+theorem section92Step4CurrentFiniteFrontierMultiCollarEscapeExactCriterion_audit :
+    Section92Step4CurrentFiniteFrontierMultiCollarEscapeExactCriterion :=
+  section92Step4CurrentFiniteFrontierMultiCollarEscapeExactCriterion
 
 theorem section92Step4CurrentFiniteFrontierBadWitnessFaceExactTemplateExactCriterion_audit :
     Section92Step4CurrentFiniteFrontierBadWitnessFaceExactTemplateExactCriterion :=
