@@ -2311,6 +2311,28 @@ theorem section92Step4CurrentFiniteFrontierBridgeAndHistogramSoundnessExactFork_
     Section92Step4CurrentFiniteFrontierBridgeAndHistogramSoundnessExactFork :=
   section92Step4CurrentFiniteFrontierBridgeAndHistogramSoundnessExactFork
 
+theorem closedCollarWindingFreedomNonrealizableInNormalForm_of_currentFiniteFrontierRemainingFactoredBridge_of_radialFaceRowSemanticSoundness_audit
+    (hbridge :
+      ClosedCollarWindingFreedomCurrentFiniteFrontierRemainingFactoredBridge)
+    (hrowCard :
+      ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceRowCardinalitySound)
+    (hrowHist :
+      ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceRowHistogramEntrySound) :
+    ClosedCollarWindingFreedomNonrealizableInNormalForm :=
+  closedCollarWindingFreedomNonrealizableInNormalForm_of_currentFiniteFrontierRemainingFactoredBridge_of_radialFaceRowSemanticSoundness
+    hbridge hrowCard hrowHist
+
+theorem closedCollarWindingFreedomCurrentFiniteFrontierBridgeOrRadialFaceRowSemanticObstruction_of_not_nonrealizable_audit
+    (hnot :
+      ¬ ClosedCollarWindingFreedomNonrealizableInNormalForm) :
+    ClosedCollarWindingFreedomCurrentFiniteFrontierBridgeOrRadialFaceRowSemanticObstruction :=
+  closedCollarWindingFreedomCurrentFiniteFrontierBridgeOrRadialFaceRowSemanticObstruction_of_not_nonrealizable
+    hnot
+
+theorem section92Step4CurrentFiniteFrontierBridgeAndRadialFaceRowSemanticExactFork_audit :
+    Section92Step4CurrentFiniteFrontierBridgeAndRadialFaceRowSemanticExactFork :=
+  section92Step4CurrentFiniteFrontierBridgeAndRadialFaceRowSemanticExactFork
+
 theorem section92Step4CurrentFiniteFrontierFactoredBridgeFork_audit :
     Section92Step4CurrentFiniteFrontierFactoredBridgeFork :=
   section92Step4CurrentFiniteFrontierFactoredBridgeFork
