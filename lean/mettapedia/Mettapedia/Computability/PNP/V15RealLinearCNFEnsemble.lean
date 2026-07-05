@@ -1020,6 +1020,265 @@ theorem v13RealLinearSmallGaugeCNFSATWorld_noPublicTargetTags :
         v13RealLinearSmallGaugeCNFSATWorldTarget
         hPair hOpp⟩
 
+/-- Canonical SAT world with a chosen public message and hidden gauge bit. -/
+def v13RealLinearSmallGaugeCNFSATWorldOfMessageGauge
+    (msg gauge : Bool) : V13RealLinearSmallGaugeCNFSATWorld where
+  msg := msg
+  assignment := v13RealLinearSmallGaugeCNFAssignment msg gauge
+  sat := v13RealLinearSmallGaugeCNFFormula_satisfied_assignment msg gauge
+
+/-- Every verifier-valid SAT world is the canonical world with the same public
+message and hidden-gauge coordinate. -/
+theorem v13RealLinearSmallGaugeCNFSATWorld_eq_worldOfMessageGauge
+    (omega : V13RealLinearSmallGaugeCNFSATWorld) :
+    v13RealLinearSmallGaugeCNFSATWorldOfMessageGauge
+        omega.msg (omega.assignment none) = omega := by
+  cases omega with
+  | mk msg assignment sat =>
+  simp [v13RealLinearSmallGaugeCNFSATWorldOfMessageGauge]
+  funext v
+  cases v with
+  | none =>
+      rfl
+  | some j =>
+      rcases v13RealLinearSmallGaugeCNFFormula_sat_iff.mp sat with
+        ⟨hmsg, hspare⟩
+      fin_cases j
+      · simpa [v13RealLinearSmallGaugeCNFAssignment,
+          v13RealLinearSmallGaugeCNFMessageIndex] using hmsg.symm
+      · simpa [v13RealLinearSmallGaugeCNFAssignment,
+          v13RealLinearSmallGaugeCNFMessageIndex,
+          v13RealLinearSmallGaugeCNFSpareIndex] using hspare.symm
+
+/-- The SAT-world surface is exactly a public message bit together with a
+hidden gauge bit. -/
+def v13RealLinearSmallGaugeCNFSATWorldEquivBoolProd :
+    V13RealLinearSmallGaugeCNFSATWorld ≃ Bool × Bool where
+  toFun := fun omega => (omega.msg, omega.assignment none)
+  invFun := fun data =>
+    v13RealLinearSmallGaugeCNFSATWorldOfMessageGauge data.1 data.2
+  left_inv := by
+    intro omega
+    exact v13RealLinearSmallGaugeCNFSATWorld_eq_worldOfMessageGauge omega
+  right_inv := by
+    intro data
+    cases data
+    rfl
+
+instance v13RealLinearSmallGaugeCNFSATWorldFintype :
+    Fintype V13RealLinearSmallGaugeCNFSATWorld :=
+  Fintype.ofEquiv (Bool × Bool)
+    v13RealLinearSmallGaugeCNFSATWorldEquivBoolProd.symm
+
+/-- History field for SAT worlds: observe only the hidden gauge bit, not the
+public message bit. -/
+def v13RealLinearSmallGaugeCNFSATWorldHistoryField :
+    FiniteSigmaField V13RealLinearSmallGaugeCNFSATWorld where
+  Atom := Bool
+  atomDecidable := inferInstance
+  atom := v13RealLinearSmallGaugeCNFSATWorldNeutralSkeleton
+
+/-- The global SAT-world surface has four states. -/
+theorem v13RealLinearSmallGaugeCNFSATWorld_card :
+    Fintype.card V13RealLinearSmallGaugeCNFSATWorld = 4 := by
+  calc
+    Fintype.card V13RealLinearSmallGaugeCNFSATWorld =
+        Fintype.card (Bool × Bool) :=
+      Fintype.card_congr
+        v13RealLinearSmallGaugeCNFSATWorldEquivBoolProd
+    _ = 4 := by
+      norm_num
+
+/-- Target-true SAT worlds are exactly the two hidden gauge choices over the
+true public message. -/
+def v13RealLinearSmallGaugeCNFSATWorldTargetTrueEquivGauge :
+    {omega : V13RealLinearSmallGaugeCNFSATWorld //
+      v13RealLinearSmallGaugeCNFSATWorldTarget omega = true} ≃ Bool where
+  toFun := fun omega =>
+    v13RealLinearSmallGaugeCNFSATWorldNeutralSkeleton omega.val
+  invFun := fun gauge =>
+    ⟨v13RealLinearSmallGaugeCNFSATWorldOfMessageGauge true gauge, by
+      simp [v13RealLinearSmallGaugeCNFSATWorldOfMessageGauge,
+        v13RealLinearSmallGaugeCNFSATWorldTarget,
+        v13RealLinearSmallGaugeCNFReadout,
+        v13RealLinearSmallGaugeCNFAssignment]⟩
+  left_inv := by
+    intro omega
+    apply Subtype.ext
+    have hmsg : omega.val.msg = true := by
+      have htarget :=
+        v13RealLinearSmallGaugeCNFSATWorldTarget_eq_message omega.val
+      rw [omega.property] at htarget
+      simpa [v13RealLinearSmallGaugeCNFMessage] using htarget.symm
+    calc
+      v13RealLinearSmallGaugeCNFSATWorldOfMessageGauge true
+          (v13RealLinearSmallGaugeCNFSATWorldNeutralSkeleton omega.val) =
+          v13RealLinearSmallGaugeCNFSATWorldOfMessageGauge
+            omega.val.msg (omega.val.assignment none) := by
+            simp [v13RealLinearSmallGaugeCNFSATWorldNeutralSkeleton, hmsg]
+      _ = omega.val :=
+          v13RealLinearSmallGaugeCNFSATWorld_eq_worldOfMessageGauge omega.val
+  right_inv := by
+    intro gauge
+    rfl
+
+/-- Correct SAT worlds for the constant-true decoder are target-true worlds. -/
+def v13RealLinearSmallGaugeCNFSATWorldCorrectTrueEquivTargetTrue :
+    {omega : V13RealLinearSmallGaugeCNFSATWorld //
+      (fun _ : V13RealLinearSmallGaugeCNFSATWorld => true) omega =
+        v13RealLinearSmallGaugeCNFSATWorldTarget omega} ≃
+      {omega : V13RealLinearSmallGaugeCNFSATWorld //
+        v13RealLinearSmallGaugeCNFSATWorldTarget omega = true} where
+  toFun := fun omega => ⟨omega.val, omega.property.symm⟩
+  invFun := fun omega => ⟨omega.val, omega.property.symm⟩
+  left_inv := by
+    intro omega
+    cases omega
+    rfl
+  right_inv := by
+    intro omega
+    cases omega
+    rfl
+
+/-- There are two target-true SAT worlds. -/
+theorem v13RealLinearSmallGaugeCNFSATWorldTarget_true_card :
+    Fintype.card
+        {omega : V13RealLinearSmallGaugeCNFSATWorld //
+          v13RealLinearSmallGaugeCNFSATWorldTarget omega = true} = 2 := by
+  calc
+    Fintype.card
+        {omega : V13RealLinearSmallGaugeCNFSATWorld //
+          v13RealLinearSmallGaugeCNFSATWorldTarget omega = true} =
+        Fintype.card Bool :=
+      Fintype.card_congr
+        v13RealLinearSmallGaugeCNFSATWorldTargetTrueEquivGauge
+    _ = 2 := by
+      norm_num
+
+/-- The SAT-world target is balanced across the two public message bits and
+the two hidden gauge states. -/
+theorem v13RealLinearSmallGaugeCNFSATWorld_target_balanced :
+    BalancedBit v13RealLinearSmallGaugeCNFSATWorldTarget := by
+  unfold BalancedBit globalDecoderSuccess
+  rw [Fintype.card_congr
+    v13RealLinearSmallGaugeCNFSATWorldCorrectTrueEquivTargetTrue,
+    v13RealLinearSmallGaugeCNFSATWorldTarget_true_card,
+    v13RealLinearSmallGaugeCNFSATWorld_card]
+  norm_num
+
+/-- In a fixed hidden-gauge fiber, the target-true SAT world is unique. -/
+def v13RealLinearSmallGaugeCNFSATWorldFiberTrueEquivUnit
+    (gauge : Bool) :
+    FiberTrue
+        v13RealLinearSmallGaugeCNFSATWorldNeutralSkeleton
+        v13RealLinearSmallGaugeCNFSATWorldTarget gauge ≃ Unit where
+  toFun := fun _ => ()
+  invFun := fun _ =>
+    ⟨v13RealLinearSmallGaugeCNFSATWorldOfMessageGauge true gauge, by
+      simp [v13RealLinearSmallGaugeCNFSATWorldOfMessageGauge,
+        v13RealLinearSmallGaugeCNFSATWorldNeutralSkeleton,
+        v13RealLinearSmallGaugeCNFSATWorldTarget,
+        v13RealLinearSmallGaugeCNFReadout,
+        v13RealLinearSmallGaugeCNFAssignment]⟩
+  left_inv := by
+    intro omega
+    apply Subtype.ext
+    rcases omega.property with ⟨hgauge, htarget⟩
+    have hmsg : omega.val.msg = true := by
+      have htargetMsg :=
+        v13RealLinearSmallGaugeCNFSATWorldTarget_eq_message omega.val
+      rw [htarget] at htargetMsg
+      simpa [v13RealLinearSmallGaugeCNFMessage] using htargetMsg.symm
+    have hgauge' : gauge = omega.val.assignment none := by
+      simpa [v13RealLinearSmallGaugeCNFSATWorldNeutralSkeleton] using hgauge.symm
+    calc
+      v13RealLinearSmallGaugeCNFSATWorldOfMessageGauge true gauge =
+          v13RealLinearSmallGaugeCNFSATWorldOfMessageGauge
+            omega.val.msg (omega.val.assignment none) := by
+            simp [hmsg, hgauge']
+      _ = omega.val :=
+          v13RealLinearSmallGaugeCNFSATWorld_eq_worldOfMessageGauge omega.val
+  right_inv := by
+    intro unitValue
+    cases unitValue
+    rfl
+
+/-- In a fixed hidden-gauge fiber, the target-false SAT world is unique. -/
+def v13RealLinearSmallGaugeCNFSATWorldFiberFalseEquivUnit
+    (gauge : Bool) :
+    FiberFalse
+        v13RealLinearSmallGaugeCNFSATWorldNeutralSkeleton
+        v13RealLinearSmallGaugeCNFSATWorldTarget gauge ≃ Unit where
+  toFun := fun _ => ()
+  invFun := fun _ =>
+    ⟨v13RealLinearSmallGaugeCNFSATWorldOfMessageGauge false gauge, by
+      simp [v13RealLinearSmallGaugeCNFSATWorldOfMessageGauge,
+        v13RealLinearSmallGaugeCNFSATWorldNeutralSkeleton,
+        v13RealLinearSmallGaugeCNFSATWorldTarget,
+        v13RealLinearSmallGaugeCNFReadout,
+        v13RealLinearSmallGaugeCNFAssignment]⟩
+  left_inv := by
+    intro omega
+    apply Subtype.ext
+    rcases omega.property with ⟨hgauge, htarget⟩
+    have hmsg : omega.val.msg = false := by
+      have htargetMsg :=
+        v13RealLinearSmallGaugeCNFSATWorldTarget_eq_message omega.val
+      rw [htarget] at htargetMsg
+      simpa [v13RealLinearSmallGaugeCNFMessage] using htargetMsg.symm
+    have hgauge' : gauge = omega.val.assignment none := by
+      simpa [v13RealLinearSmallGaugeCNFSATWorldNeutralSkeleton] using hgauge.symm
+    calc
+      v13RealLinearSmallGaugeCNFSATWorldOfMessageGauge false gauge =
+          v13RealLinearSmallGaugeCNFSATWorldOfMessageGauge
+            omega.val.msg (omega.val.assignment none) := by
+            simp [hmsg, hgauge']
+      _ = omega.val :=
+          v13RealLinearSmallGaugeCNFSATWorld_eq_worldOfMessageGauge omega.val
+  right_inv := by
+    intro unitValue
+    cases unitValue
+    rfl
+
+/-- The hidden-gauge SAT-world history field is balanced: conditioning on
+either hidden-gauge value leaves one false-message and one true-message world. -/
+theorem
+    v13RealLinearSmallGaugeCNFSATWorld_historyField_balancedConditioning :
+    BalancedConditioning
+      v13RealLinearSmallGaugeCNFSATWorldHistoryField
+      v13RealLinearSmallGaugeCNFSATWorldTarget := by
+  change Neutral
+    v13RealLinearSmallGaugeCNFSATWorldNeutralSkeleton
+    v13RealLinearSmallGaugeCNFSATWorldTarget
+  intro gauge
+  calc
+    Fintype.card
+        (FiberTrue
+          v13RealLinearSmallGaugeCNFSATWorldNeutralSkeleton
+          v13RealLinearSmallGaugeCNFSATWorldTarget gauge) =
+        Fintype.card Unit :=
+      Fintype.card_congr
+        (v13RealLinearSmallGaugeCNFSATWorldFiberTrueEquivUnit gauge)
+    _ = Fintype.card Unit := rfl
+    _ =
+        Fintype.card
+          (FiberFalse
+            v13RealLinearSmallGaugeCNFSATWorldNeutralSkeleton
+            v13RealLinearSmallGaugeCNFSATWorldTarget gauge) :=
+      (Fintype.card_congr
+        (v13RealLinearSmallGaugeCNFSATWorldFiberFalseEquivUnit gauge)).symm
+
+/-- Structural `admissibleHistories` transfer for global SAT worlds.  The
+surface over both public message bits is balanced, and the hidden-gauge history
+field is target-neutral. -/
+theorem v13RealLinearSmallGaugeCNFSATWorld_admissibleHistories :
+    BalancedBit v13RealLinearSmallGaugeCNFSATWorldTarget ∧
+      BalancedConditioning
+        v13RealLinearSmallGaugeCNFSATWorldHistoryField
+        v13RealLinearSmallGaugeCNFSATWorldTarget :=
+  ⟨v13RealLinearSmallGaugeCNFSATWorld_target_balanced,
+    v13RealLinearSmallGaugeCNFSATWorld_historyField_balancedConditioning⟩
+
 /-- Hidden gauge readout for the explicit small real-linear gauge-CNF
 instance. -/
 def v13RealLinearSmallGaugeCNFHiddenGauge
