@@ -9,6 +9,8 @@ namespace Mettapedia.Computability.PNP
 #check smallSingleMessageFormula
 #check smallSingleMessageVerifierDecision
 #check smallSingleMessageCNFReadoutData
+#check SmallSingleMessageNoPublicCoordinateTargetTags
+#check SmallSingleMessageNoPublicCoordinateReadoutTags
 
 #print axioms smallSingleMessageVerifierDecision_correct
 #print axioms smallSingleMessageFormula_satisfied_messageAssignment
@@ -19,5 +21,9 @@ namespace Mettapedia.Computability.PNP
 #print axioms smallSingleMessageCNFReadoutData_supportedSatisfiable
 #print axioms smallSingleMessageCNFReadoutData_projection_eq_M
 #print axioms smallSingleMessageCNFReadoutData_supportedArbitraryOutputSATSearchCorrect
+#print axioms smallSingleMessage_publicCoordinate_determines_message
+#print axioms smallSingleMessage_noPublicTargetTags_obstruction
+#print axioms smallSingleMessage_publicCoordinate_determines_satProjection
+#print axioms smallSingleMessage_noPublicReadoutTags_obstruction
 
 end Mettapedia.Computability.PNP
