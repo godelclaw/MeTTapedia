@@ -7379,6 +7379,89 @@ theorem section92Step4RepairedByFactoredPreviousBoundaryGeometryRadialFaceN6Audi
         hgeometry hradial hn6 hkeys)
       hrows
 
+/--
+Named remaining normal-form blockers after the finite ten-row radial-face archive
+package has been accepted.  These are precisely the geometric/extraction
+obligations in the current previous-boundary repair route.
+-/
+inductive ClosedCollarWindingFreedomPreviousBoundaryNormalFormRepairBlocker where
+  | previousBoundaryGeometry
+  | radialFaceExtraction
+  | radialFaceN6Extraction
+  | auditedArchiveKey
+  deriving DecidableEq
+
+def ClosedCollarWindingFreedomPreviousBoundaryNormalFormRepairBlocker.Occurs :
+    ClosedCollarWindingFreedomPreviousBoundaryNormalFormRepairBlocker → Prop
+  | .previousBoundaryGeometry =>
+      ¬ ClosedCollarWindingFreedomActualCollarEmbeddingSuppliesPreviousBoundaryGeometryData
+  | .radialFaceExtraction =>
+      ¬ ClosedCollarWindingFreedomActualCollarGeometrySuppliesRadialFaceExtraction
+  | .radialFaceN6Extraction =>
+      ¬ ClosedCollarWindingFreedomEveryRadialFaceNormalFormHasN6Representation
+  | .auditedArchiveKey =>
+      ¬ ClosedCollarWindingFreedomEveryRadialFaceN6RepresentationHasAuditedArchiveKey
+
+def ClosedCollarWindingFreedomPreviousBoundaryNormalFormRepairHasBlocker : Prop :=
+  ∃ blocker : ClosedCollarWindingFreedomPreviousBoundaryNormalFormRepairBlocker,
+    blocker.Occurs
+
+/--
+Exact fork theorem for the current repair route: with the finite audited-row
+package in place, failure of the normal-form nonrealizability conclusion must
+come from one of the four named normal-form extraction obligations.
+-/
+theorem closedCollarWindingFreedomPreviousBoundaryNormalFormRepairHasBlocker_of_auditedRows_of_not_nonrealizable
+    (hrows :
+      ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceAuditedRowsCoveredByLab)
+    (hnot :
+      ¬ ClosedCollarWindingFreedomNonrealizableInNormalForm) :
+    ClosedCollarWindingFreedomPreviousBoundaryNormalFormRepairHasBlocker := by
+  classical
+  by_cases hgeometry :
+      ClosedCollarWindingFreedomActualCollarEmbeddingSuppliesPreviousBoundaryGeometryData
+  · by_cases hradial :
+        ClosedCollarWindingFreedomActualCollarGeometrySuppliesRadialFaceExtraction
+    · by_cases hn6 :
+          ClosedCollarWindingFreedomEveryRadialFaceNormalFormHasN6Representation
+      · by_cases hkeys :
+            ClosedCollarWindingFreedomEveryRadialFaceN6RepresentationHasAuditedArchiveKey
+        · exact
+            (hnot
+              (section92Step4RepairedByFactoredPreviousBoundaryGeometryRadialFaceN6AuditedArchiveExtractionAndAuditedRowsTarget
+                hgeometry hradial hn6 hkeys hrows)).elim
+        · exact
+            ⟨.auditedArchiveKey, hkeys⟩
+      · exact
+          ⟨.radialFaceN6Extraction, hn6⟩
+    · exact
+        ⟨.radialFaceExtraction, hradial⟩
+  · exact
+      ⟨.previousBoundaryGeometry, hgeometry⟩
+
+/--
+Full route blocker extractor, including the finite audited-row package itself.
+If the nonrealizability theorem still fails, then either the finite ten-row
+package is not available or one of the four named normal-form extraction
+obligations fails.
+-/
+def ClosedCollarWindingFreedomPreviousBoundaryRepairHasBlocker : Prop :=
+  (¬ ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceAuditedRowsCoveredByLab) ∨
+    ClosedCollarWindingFreedomPreviousBoundaryNormalFormRepairHasBlocker
+
+theorem closedCollarWindingFreedomPreviousBoundaryRepairHasBlocker_of_not_nonrealizable
+    (hnot :
+      ¬ ClosedCollarWindingFreedomNonrealizableInNormalForm) :
+    ClosedCollarWindingFreedomPreviousBoundaryRepairHasBlocker := by
+  classical
+  by_cases hrows :
+      ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceAuditedRowsCoveredByLab
+  · exact
+      Or.inr
+        (closedCollarWindingFreedomPreviousBoundaryNormalFormRepairHasBlocker_of_auditedRows_of_not_nonrealizable
+          hrows hnot)
+  · exact Or.inl hrows
+
 theorem closedCollarWindingFreedomNonrealizableInNormalForm_of_archiveN6Representation_of_rowCoverage
     (hextract :
       ClosedCollarWindingFreedomEveryNormalFormHasArchiveN6Representation)

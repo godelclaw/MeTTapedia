@@ -1263,6 +1263,22 @@ theorem section92Step4RepairedByFactoredPreviousBoundaryGeometryRadialFaceN6Audi
     Section92Step4RepairedByFactoredPreviousBoundaryGeometryRadialFaceN6AuditedArchiveExtractionAndAuditedRowsTarget :=
   section92Step4RepairedByFactoredPreviousBoundaryGeometryRadialFaceN6AuditedArchiveExtractionAndAuditedRowsTarget
 
+theorem closedCollarWindingFreedomPreviousBoundaryNormalFormRepairHasBlocker_of_auditedRows_of_not_nonrealizable_audit
+    (hrows :
+      ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceAuditedRowsCoveredByLab)
+    (hnot :
+      ¬ ClosedCollarWindingFreedomNonrealizableInNormalForm) :
+    ClosedCollarWindingFreedomPreviousBoundaryNormalFormRepairHasBlocker :=
+  closedCollarWindingFreedomPreviousBoundaryNormalFormRepairHasBlocker_of_auditedRows_of_not_nonrealizable
+    hrows hnot
+
+theorem closedCollarWindingFreedomPreviousBoundaryRepairHasBlocker_of_not_nonrealizable_audit
+    (hnot :
+      ¬ ClosedCollarWindingFreedomNonrealizableInNormalForm) :
+    ClosedCollarWindingFreedomPreviousBoundaryRepairHasBlocker :=
+  closedCollarWindingFreedomPreviousBoundaryRepairHasBlocker_of_not_nonrealizable
+    hnot
+
 theorem closedCollarWindingFreedomNonrealizableInNormalForm_of_embeddedGeometryN6AuditedArchiveKey_of_rowCoverage_audit
     (hextract :
       ClosedCollarWindingFreedomEveryNormalFormHasEmbeddedGeometryRealization)
