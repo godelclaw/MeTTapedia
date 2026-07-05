@@ -8276,6 +8276,28 @@ theorem closedCollarWindingFreedomFactoredPreviousBoundaryWitnessRepairObstructi
     (closedCollarWindingFreedomConcretePreviousBoundaryNormalFormExtractionFails_of_auditedRows_of_not_nonrealizable
       hrows hnot)
 
+/--
+Concrete previous-boundary fork verdict for Section 9.2 Step 4.  The first
+branch is the repaired route: if honest normal-form annuli instantiate the
+concrete previous-boundary package, the audited finite rows kill the residual
+per-component winding freedom.  The second branch is the deeper-obstruction
+route: if the audited rows hold but full nonrealizability still fails, then a
+surviving witness has one of the five factored concrete package blockers.
+-/
+def Section92Step4ConcretePreviousBoundaryRepairedOrObstructedFork :
+    Prop :=
+  (ClosedCollarWindingFreedomEveryNormalFormHasConcretePreviousBoundaryNormalFormRealization →
+    ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceAuditedRowsCoveredByLab →
+      ClosedCollarWindingFreedomNonrealizableInNormalForm) ∧
+    (ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceAuditedRowsCoveredByLab →
+      ¬ ClosedCollarWindingFreedomNonrealizableInNormalForm →
+        ClosedCollarWindingFreedomFactoredPreviousBoundaryWitnessRepairObstruction)
+
+theorem section92Step4ConcretePreviousBoundaryRepairedOrObstructedFork :
+    Section92Step4ConcretePreviousBoundaryRepairedOrObstructedFork :=
+  ⟨closedCollarWindingFreedomNonrealizableInNormalForm_of_concretePreviousBoundaryNormalFormRealization_of_auditedRows,
+    closedCollarWindingFreedomFactoredPreviousBoundaryWitnessRepairObstruction_of_concreteBridgeFailure_of_auditedRows_of_not_nonrealizable⟩
+
 theorem closedCollarWindingFreedomNonrealizableInNormalForm_of_archiveN6Representation_of_rowCoverage
     (hextract :
       ClosedCollarWindingFreedomEveryNormalFormHasArchiveN6Representation)
