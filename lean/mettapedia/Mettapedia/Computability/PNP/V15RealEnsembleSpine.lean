@@ -16506,6 +16506,398 @@ theorem
         safeQSSM boundedGaugeIncidence boundaryMixing
 
 /--
+Transparent component surface for the manuscript-M4 realization gate.
+
+This exposes the obligations that were previously hidden behind the single
+`strictNamedConstructionData` field: the no-target-rows public surface data,
+hidden-gauge product, lower machine, locked-message readout data, official
+named-language bridge, and P-membership-indexed K-poly/large-target facts.
+It is a construction interface only; this module does not inhabit it.
+-/
+structure RealM4ManuscriptSingleMessageSATRealizationComponents
+    {m : Nat} (i₀ : Fin m) [hm : Fact (1 < m)]
+    (coordinate : V13RealLinearPublicCoordinate m)
+    {Neutral : Type} {Safe : Type x} {Gauge : Type y}
+    {Transcript : Type z} [DecidableEq Transcript]
+    {Pair : Type a} [Fintype Pair]
+    {Stage : Type b} {Branch : Type c}
+    {HistoryAtom : Type} {Pivot : Type e}
+    {Observer : Type f} {Output : Type f}
+    {PublicLock : Type g} {Quotient : Type h}
+    {LockAux : Type i} {Message : Type j}
+    {CNFPublic : Type k} {Address : CNFPublic -> Type q}
+    {Var : CNFPublic -> Type l}
+    {Witness : CNFPublic -> Type l}
+    (D : AppendixICNFReadoutData
+      PublicLock Quotient LockAux Message CNFPublic Var Witness)
+    (C : CookStylePNPClassInterface.{p}) where
+  law : FiniteRationalLaw (V13RealLinearNoTargetRowsWorld m i₀)
+  transcript : V13RealLinearNoTargetRowsWorld m i₀ -> Transcript
+  observerBit : Transcript -> Bool
+  phaseA :
+    EvidenceSpineBound law
+      (@v13RealLinearNoTargetRowsTargetBit m i₀) transcript observerBit
+      Pair Stage Branch
+  semantics :
+    EvidenceSemantics
+      (V13RealLinearNoTargetRowsWorld m i₀) Neutral Safe Gauge
+  observerEvidence :
+    ObserverEvidenceInterface
+      (V13RealLinearNoTargetRowsWorld m i₀) (V13RealLinearPublic m)
+      Observer Output Neutral Safe Gauge
+  pivotSummary : V13RealLinearNoTargetRowsWorld m i₀ -> Pivot
+  epsMix : Rat
+  safeCost : Safe -> Rat
+  safeBudget : Rat
+  gaugeIncidence : Gauge -> Nat
+  gaugeBound : Nat
+  hiddenGaugeProduct :
+    ∀ gamma omega, semantics.gaugeSat gamma omega
+  lowerMachine : RealM4CompressionLowerMachineData
+  coverageData : RealM4PublicLockCoverageData D
+  lockedMessageData : RealM4LockedMessageRigidityData D.core
+  variableAddressSyntax :
+    RealM4CNFVariableAddressSyntaxData (Address := Address) D
+  languageNPData : RealM4OfficialLanguageNPData C
+  pToDeciderFamilyData :
+    RealM4OfficialPToDeciderFamilyData D C languageNPData
+  eta_of_inP : C.inP languageNPData.separatedLanguage -> Nat
+  eta_pos_of_inP :
+    ∀ hP : C.inP languageNPData.separatedLanguage, 0 < eta_of_inP hP
+  kpolyAt_eq_of_inP :
+    ∀ hP : C.inP languageNPData.separatedLanguage,
+      lowerMachine.lowerFramework.kpolyAt =
+        realM4UniformConstantDecoderKpolyAt
+          ((RealM4OfficialPToDeciderLockedMessageUpperSupportData.ofCoverageLockedMessageDataAndAddressSyntax
+              coverageData lockedMessageData variableAddressSyntax).uniformSupport.withPNPDecider
+            (pToDeciderFamilyData.pnpDeciderFamily_of_inP hP))
+  etaTimes_eq_of_inP :
+    ∀ hP : C.inP languageNPData.separatedLanguage,
+      lowerMachine.lowerFramework.etaTimes =
+        realCNFLinearEtaTimes (eta_of_inP hP)
+  targetBlocks_gt_decoder_of_inP :
+    ∀ hP : C.inP languageNPData.separatedLanguage,
+      realM4UniformSelfReductionDecoderCost
+          ((RealM4OfficialPToDeciderLockedMessageUpperSupportData.ofCoverageLockedMessageDataAndAddressSyntax
+              coverageData lockedMessageData variableAddressSyntax).uniformSupport.withPNPDecider
+            (pToDeciderFamilyData.pnpDeciderFamily_of_inP hP)) <
+        lowerMachine.lowerFramework.targetBlocks
+
+/--
+Assemble transparent manuscript-M4 realization components into the strict
+named construction surface consumed by the preferred endpoint.
+-/
+def realM4_manuscriptSingleMessageSATRealizationComponents_strictConstructionData
+    {m : Nat} (i₀ : Fin m) [hm : Fact (1 < m)]
+    (coordinate : V13RealLinearPublicCoordinate m)
+    {Neutral : Type} {Safe : Type x} {Gauge : Type y}
+    {Transcript : Type z} [DecidableEq Transcript]
+    {Pair : Type a} [Fintype Pair]
+    {Stage : Type b} {Branch : Type c}
+    {HistoryAtom : Type} {Pivot : Type e}
+    {Observer : Type f} {Output : Type f}
+    {PublicLock : Type g} {Quotient : Type h}
+    {LockAux : Type i} {Message : Type j}
+    {CNFPublic : Type k} {Address : CNFPublic -> Type q}
+    {Var : CNFPublic -> Type l}
+    {Witness : CNFPublic -> Type l}
+    {D : AppendixICNFReadoutData
+      PublicLock Quotient LockAux Message CNFPublic Var Witness}
+    {C : CookStylePNPClassInterface.{p}}
+    (R :
+      RealM4ManuscriptSingleMessageSATRealizationComponents
+        (Neutral := Neutral) (Safe := Safe) (Gauge := Gauge)
+        (Transcript := Transcript) (Pair := Pair) (Stage := Stage)
+        (Branch := Branch) (HistoryAtom := HistoryAtom) (Pivot := Pivot)
+        (Observer := Observer) (Output := Output)
+        (PublicLock := PublicLock) (Quotient := Quotient)
+        (LockAux := LockAux) (Message := Message) (CNFPublic := CNFPublic)
+        (Address := Address) (Var := Var) (Witness := Witness)
+        i₀ coordinate D C) :
+    RealM4NoTargetRowsNamedLanguageLargeTargetOfficialConstructionData
+      (Neutral := Neutral) (Safe := Safe) (Gauge := Gauge)
+      (Transcript := Transcript) (Pair := Pair) (Stage := Stage)
+      (Branch := Branch) (HistoryAtom := HistoryAtom) (Pivot := Pivot)
+      (Observer := Observer) (Output := Output)
+      (PublicLock := PublicLock) (Quotient := Quotient)
+      (LockAux := LockAux) (Message := Message) (CNFPublic := CNFPublic)
+      (Address := Address) (Var := Var) (Witness := Witness)
+      i₀ coordinate D C where
+  law := R.law
+  transcript := R.transcript
+  observerBit := R.observerBit
+  phaseA := R.phaseA
+  semantics := R.semantics
+  observerEvidence := R.observerEvidence
+  pivotSummary := R.pivotSummary
+  epsMix := R.epsMix
+  safeCost := R.safeCost
+  safeBudget := R.safeBudget
+  gaugeIncidence := R.gaugeIncidence
+  gaugeBound := R.gaugeBound
+  hiddenGaugeProduct := R.hiddenGaugeProduct
+  lowerMachine := R.lowerMachine
+  coverageData := R.coverageData
+  lockedMessageData := R.lockedMessageData
+  variableAddressSyntax := R.variableAddressSyntax
+  languageNPData := R.languageNPData
+  pToDeciderFamilyData := R.pToDeciderFamilyData
+  eta_of_inP := R.eta_of_inP
+  eta_pos_of_inP := R.eta_pos_of_inP
+  kpolyAt_eq_of_inP := R.kpolyAt_eq_of_inP
+  etaTimes_eq_of_inP := R.etaTimes_eq_of_inP
+  targetBlocks_gt_decoder_of_inP := R.targetBlocks_gt_decoder_of_inP
+
+/--
+Package transparent manuscript-M4 realization components as the existing
+single-field realization gate.
+-/
+def realM4_manuscriptSingleMessageSATRealizationData_of_components
+    {m : Nat} (i₀ : Fin m) [hm : Fact (1 < m)]
+    (coordinate : V13RealLinearPublicCoordinate m)
+    {Neutral : Type} {Safe : Type x} {Gauge : Type y}
+    {Transcript : Type z} [DecidableEq Transcript]
+    {Pair : Type a} [Fintype Pair]
+    {Stage : Type b} {Branch : Type c}
+    {HistoryAtom : Type} {Pivot : Type e}
+    {Observer : Type f} {Output : Type f}
+    {PublicLock : Type g} {Quotient : Type h}
+    {LockAux : Type i} {Message : Type j}
+    {CNFPublic : Type k} {Address : CNFPublic -> Type q}
+    {Var : CNFPublic -> Type l}
+    {Witness : CNFPublic -> Type l}
+    {D : AppendixICNFReadoutData
+      PublicLock Quotient LockAux Message CNFPublic Var Witness}
+    {C : CookStylePNPClassInterface.{p}}
+    (R :
+      RealM4ManuscriptSingleMessageSATRealizationComponents
+        (Neutral := Neutral) (Safe := Safe) (Gauge := Gauge)
+        (Transcript := Transcript) (Pair := Pair) (Stage := Stage)
+        (Branch := Branch) (HistoryAtom := HistoryAtom) (Pivot := Pivot)
+        (Observer := Observer) (Output := Output)
+        (PublicLock := PublicLock) (Quotient := Quotient)
+        (LockAux := LockAux) (Message := Message) (CNFPublic := CNFPublic)
+        (Address := Address) (Var := Var) (Witness := Witness)
+        i₀ coordinate D C) :
+    RealM4ManuscriptSingleMessageSATRealizationData
+      (Neutral := Neutral) (Safe := Safe) (Gauge := Gauge)
+      (Transcript := Transcript) (Pair := Pair) (Stage := Stage)
+      (Branch := Branch) (HistoryAtom := HistoryAtom) (Pivot := Pivot)
+      (Observer := Observer) (Output := Output)
+      (PublicLock := PublicLock) (Quotient := Quotient)
+      (LockAux := LockAux) (Message := Message) (CNFPublic := CNFPublic)
+      (Address := Address) (Var := Var) (Witness := Witness)
+      i₀ coordinate D C where
+  strictNamedConstructionData :=
+    realM4_manuscriptSingleMessageSATRealizationComponents_strictConstructionData
+      i₀ coordinate R
+
+/-- Mechanical interface projected directly from transparent components. -/
+noncomputable def
+    realM4_manuscriptSingleMessageSATRealizationComponents_mechanicalInterface
+    {m : Nat} (i₀ : Fin m) [hm : Fact (1 < m)]
+    (coordinate : V13RealLinearPublicCoordinate m)
+    {Neutral : Type} {Safe : Type x} {Gauge : Type y}
+    {Transcript : Type z} [DecidableEq Transcript]
+    {Pair : Type a} [Fintype Pair]
+    {Stage : Type b} {Branch : Type c}
+    {HistoryAtom : Type} {Pivot : Type e}
+    {Observer : Type f} {Output : Type f}
+    {PublicLock : Type g} {Quotient : Type h}
+    {LockAux : Type i} {Message : Type j}
+    {CNFPublic : Type k} {Address : CNFPublic -> Type q}
+    {Var : CNFPublic -> Type l}
+    {Witness : CNFPublic -> Type l}
+    {D : AppendixICNFReadoutData
+      PublicLock Quotient LockAux Message CNFPublic Var Witness}
+    {C : CookStylePNPClassInterface.{p}}
+    (R :
+      RealM4ManuscriptSingleMessageSATRealizationComponents
+        (Neutral := Neutral) (Safe := Safe) (Gauge := Gauge)
+        (Transcript := Transcript) (Pair := Pair) (Stage := Stage)
+        (Branch := Branch) (HistoryAtom := HistoryAtom) (Pivot := Pivot)
+        (Observer := Observer) (Output := Output)
+        (PublicLock := PublicLock) (Quotient := Quotient)
+        (LockAux := LockAux) (Message := Message) (CNFPublic := CNFPublic)
+        (Address := Address) (Var := Var) (Witness := Witness)
+        i₀ coordinate D C) :
+    RealM4MechanicalInterfaceData
+      (V13RealLinearNoTargetRowsWorld m i₀) (V13RealLinearPublic m)
+      Neutral Safe Gauge Transcript Pair Stage Branch HistoryAtom Pivot
+      Observer Output (V13RealLinearNoTargetRowsMap m i₀) :=
+  realM4_noTargetRowsNamedLanguageLargeTargetConstructionData_mechanicalInterface
+    i₀ coordinate
+    (realM4_manuscriptSingleMessageSATRealizationComponents_strictConstructionData
+      i₀ coordinate R)
+
+/-- Projection audit for transparent manuscript-M4 realization components. -/
+theorem
+    realM4_manuscriptSingleMessageSATRealizationComponents_projection_fields
+    {m : Nat} (i₀ : Fin m) [hm : Fact (1 < m)]
+    (coordinate : V13RealLinearPublicCoordinate m)
+    {Neutral : Type} {Safe : Type x} {Gauge : Type y}
+    {Transcript : Type z} [DecidableEq Transcript]
+    {Pair : Type a} [Fintype Pair]
+    {Stage : Type b} {Branch : Type c}
+    {HistoryAtom : Type} {Pivot : Type e}
+    {Observer : Type f} {Output : Type f}
+    {PublicLock : Type g} {Quotient : Type h}
+    {LockAux : Type i} {Message : Type j}
+    {CNFPublic : Type k} {Address : CNFPublic -> Type q}
+    {Var : CNFPublic -> Type l}
+    {Witness : CNFPublic -> Type l}
+    {D : AppendixICNFReadoutData
+      PublicLock Quotient LockAux Message CNFPublic Var Witness}
+    {C : CookStylePNPClassInterface.{p}}
+    (R :
+      RealM4ManuscriptSingleMessageSATRealizationComponents
+        (Neutral := Neutral) (Safe := Safe) (Gauge := Gauge)
+        (Transcript := Transcript) (Pair := Pair) (Stage := Stage)
+        (Branch := Branch) (HistoryAtom := HistoryAtom) (Pivot := Pivot)
+        (Observer := Observer) (Output := Output)
+        (PublicLock := PublicLock) (Quotient := Quotient)
+        (LockAux := LockAux) (Message := Message) (CNFPublic := CNFPublic)
+        (Address := Address) (Var := Var) (Witness := Witness)
+        i₀ coordinate D C) :
+    let K :=
+      realM4_manuscriptSingleMessageSATRealizationComponents_strictConstructionData
+        i₀ coordinate R
+    K.lowerMachine = R.lowerMachine ∧
+      K.coverageData = R.coverageData ∧
+        K.lockedMessageData = R.lockedMessageData ∧
+          K.variableAddressSyntax = R.variableAddressSyntax ∧
+            K.languageNPData.separatedLanguage =
+              R.languageNPData.separatedLanguage := by
+  dsimp [
+    realM4_manuscriptSingleMessageSATRealizationComponents_strictConstructionData]
+  exact ⟨rfl, rfl, rfl, rfl, rfl⟩
+
+/--
+Structural-field audit for transparent manuscript-M4 realization components.
+The structural interface fields project through the assembled strict named
+construction surface; they are not endpoint hypotheses.
+-/
+theorem
+    realM4_manuscriptSingleMessageSATRealizationComponents_mechanicalInterface_structuralFields
+    {m : Nat} (i₀ : Fin m) [hm : Fact (1 < m)]
+    (coordinate : V13RealLinearPublicCoordinate m)
+    {Neutral : Type} {Safe : Type x} {Gauge : Type y}
+    {Transcript : Type z} [DecidableEq Transcript]
+    {Pair : Type a} [Fintype Pair]
+    {Stage : Type b} {Branch : Type c}
+    {HistoryAtom : Type} {Pivot : Type e}
+    {Observer : Type f} {Output : Type f}
+    {PublicLock : Type g} {Quotient : Type h}
+    {LockAux : Type i} {Message : Type j}
+    {CNFPublic : Type k} {Address : CNFPublic -> Type q}
+    {Var : CNFPublic -> Type l}
+    {Witness : CNFPublic -> Type l}
+    {D : AppendixICNFReadoutData
+      PublicLock Quotient LockAux Message CNFPublic Var Witness}
+    {C : CookStylePNPClassInterface.{p}}
+    (R :
+      RealM4ManuscriptSingleMessageSATRealizationComponents
+        (Neutral := Neutral) (Safe := Safe) (Gauge := Gauge)
+        (Transcript := Transcript) (Pair := Pair) (Stage := Stage)
+        (Branch := Branch) (HistoryAtom := HistoryAtom) (Pivot := Pivot)
+        (Observer := Observer) (Output := Output)
+        (PublicLock := PublicLock) (Quotient := Quotient)
+        (LockAux := LockAux) (Message := Message) (CNFPublic := CNFPublic)
+        (Address := Address) (Var := Var) (Witness := Witness)
+        i₀ coordinate D C) :
+    let M :=
+      realM4_manuscriptSingleMessageSATRealizationComponents_mechanicalInterface
+        i₀ coordinate R
+    (∀ w0 w1, M.publicInput w0 = M.publicInput w1 ->
+      M.target w0 = M.target w1) ∧
+      (PairNeutral M.oppositeSupport M.neutralSkeleton ∧
+        HasMessageOppositePair M.oppositeSupport M.target ∧
+          ¬ ∃ f : V13RealLinearNoTargetRowsMap m i₀ -> Bool,
+            ∀ omega, M.target omega = f (M.neutralSkeleton omega)) ∧
+        (∀ E : RawEvidence Neutral Safe Gauge,
+          M.semantics.SatNormal (CDENF E) = M.semantics.SatRaw E) ∧
+          (∀ gamma : Gauge,
+            M.semantics.SatNormal (CDENF (.gauge gamma)) =
+              M.semantics.gaugeSat gamma) ∧
+            (BalancedBit M.target ∧
+              BalancedConditioning (Omega := V13RealLinearNoTargetRowsWorld m i₀)
+                M.historyField M.target) ∧
+              (∀ gamma omega, M.semantics.gaugeSat gamma omega) := by
+  simpa [
+    realM4_manuscriptSingleMessageSATRealizationData_of_components,
+    realM4_manuscriptSingleMessageSATRealizationComponents_mechanicalInterface,
+    realM4_manuscriptSingleMessageSATRealizationComponents_strictConstructionData]
+    using
+      realM4_noTargetRowsNamedLanguageLargeTargetConstructionData_mechanicalInterface_structuralFields
+        i₀ coordinate
+        (realM4_manuscriptSingleMessageSATRealizationComponents_strictConstructionData
+          i₀ coordinate R)
+
+/--
+Preferred real endpoint from transparent manuscript-M4 realization components.
+After these components are supplied, the theorem-level frontier is still
+exactly StarSW hardness and the three analytic fields over the projected
+mechanical interface.  This is a conditional real-spine endpoint and not an
+unconditional proof of `P != NP`.
+-/
+theorem
+    realM4_strictNamedRealLockInEndpoints_from_manuscriptSingleMessageSATRealizationComponents_realFrontier
+    {m : Nat} (i₀ : Fin m) [hm : Fact (1 < m)]
+    (coordinate : V13RealLinearPublicCoordinate m)
+    {Neutral : Type} {Safe : Type x} {Gauge : Type y}
+    {Transcript : Type z} [DecidableEq Transcript]
+    {Pair : Type a} [Fintype Pair]
+    {Stage : Type b} {Branch : Type c}
+    {HistoryAtom : Type} {Pivot : Type e}
+    {Observer : Type f} {Output : Type f}
+    {PublicLock : Type g} {Quotient : Type h}
+    {LockAux : Type i} {Message : Type j}
+    {CNFPublic : Type k} {Address : CNFPublic -> Type q}
+    {Var : CNFPublic -> Type l}
+    {Witness : CNFPublic -> Type l}
+    {D : AppendixICNFReadoutData
+      PublicLock Quotient LockAux Message CNFPublic Var Witness}
+    {C : CookStylePNPClassInterface.{p}}
+    (R :
+      RealM4ManuscriptSingleMessageSATRealizationComponents
+        (Neutral := Neutral) (Safe := Safe) (Gauge := Gauge)
+        (Transcript := Transcript) (Pair := Pair) (Stage := Stage)
+        (Branch := Branch) (HistoryAtom := HistoryAtom) (Pivot := Pivot)
+        (Observer := Observer) (Output := Output)
+        (PublicLock := PublicLock) (Quotient := Quotient)
+        (LockAux := LockAux) (Message := Message) (CNFPublic := CNFPublic)
+        (Address := Address) (Var := Var) (Witness := Witness)
+        i₀ coordinate D C)
+    (starSWHardness :
+      CompressionStarSWHardness R.lowerMachine.lowerFramework)
+    (safeQSSM :
+      RealM4MechanicalInterfaceData.SafeQSSMFrontier
+        (realM4_manuscriptSingleMessageSATRealizationComponents_mechanicalInterface
+          i₀ coordinate R))
+    (boundedGaugeIncidence :
+      RealM4MechanicalInterfaceData.BoundedGaugeIncidenceFrontier
+        (realM4_manuscriptSingleMessageSATRealizationComponents_mechanicalInterface
+          i₀ coordinate R))
+    (boundaryMixing :
+      RealM4MechanicalInterfaceData.BoundaryMixingFrontier
+        (realM4_manuscriptSingleMessageSATRealizationComponents_mechanicalInterface
+          i₀ coordinate R)) :
+    (C.inNP R.languageNPData.separatedLanguage ∧
+      ¬ C.inP R.languageNPData.separatedLanguage) ∧
+      (¬ C.pEqualsNP) ∧ C.officialSeparation ∧
+        ∃ separatedLanguage : C.Language,
+          C.inNP separatedLanguage ∧ ¬ C.inP separatedLanguage := by
+  simpa [
+    realM4_manuscriptSingleMessageSATRealizationComponents_mechanicalInterface,
+    realM4_manuscriptSingleMessageSATRealizationComponents_strictConstructionData]
+    using
+      realM4_strictNamedRealLockInEndpoints_from_noTargetRowsNamedLanguageLargeTargetConstructionData_realFrontier
+        i₀ coordinate
+        (realM4_manuscriptSingleMessageSATRealizationComponents_strictConstructionData
+          i₀ coordinate R)
+        starSWHardness safeQSSM boundedGaugeIncidence boundaryMixing
+
+/--
 Finite-variable supplier endpoint for the preferred strict named-language
 route.  The construction object carries finite CNF variable-family data rather
 than raw address syntax; the theorem projects it to the existing strict
@@ -23257,6 +23649,89 @@ theorem
 
 def realM4ManuscriptSingleMessageSATRealizationStatement : String :=
   "The manuscript-M4 realization gate is the exact next construction boundary: once the real single-message SAT ensemble is identified with the strict named no-target-rows construction surface, structural fields and the P=NP-side self-reduction upper package project through that gate, and the endpoint theorem has exactly one realization object plus StarSW hardness and safeQSSM / boundedGaugeIncidence / boundaryMixing as hypotheses.  This does not construct M4 and is not an unconditional proof of P != NP."
+
+def realM4ManuscriptSingleMessageSATRealizationComponentFields :
+    List String :=
+  realM4NoTargetRowsNamedLanguageLargeTargetOfficialConstructionDataFields
+
+theorem
+    realM4ManuscriptSingleMessageSATRealizationComponentFields_eq_strictFields :
+    realM4ManuscriptSingleMessageSATRealizationComponentFields =
+      realM4NoTargetRowsNamedLanguageLargeTargetOfficialConstructionDataFields := by
+  rfl
+
+theorem
+    realM4ManuscriptSingleMessageSATRealizationComponentFields_exact :
+    realM4ManuscriptSingleMessageSATRealizationComponentFields =
+      [ "noTargetRowsPublicSurface",
+        "law",
+        "transcript",
+        "observerBit",
+        "phaseA",
+        "semantics",
+        "observerEvidence",
+        "pivotSummary",
+        "epsMix",
+        "safeCost",
+        "safeBudget",
+        "gaugeIncidence",
+        "gaugeBound",
+        "hiddenGaugeProduct",
+        "realCompressionLowerMachineData",
+        "publicLockCoverageData",
+        "lockedMessageRigidityData",
+        "cnfVariableAddressSyntax",
+        "officialLanguageNPData",
+        "officialPToDeciderFamilyData",
+        "pMembershipEtaPositive",
+        "pMembershipKpolyAtConstantDecoderIdentification",
+        "pMembershipEtaTimesLinearFloorIdentification",
+        "pMembershipTargetBlocksExceedsConstantDecoderCost" ] := by
+  rfl
+
+def realM4ManuscriptSingleMessageSATRealizationComponentGateItems :
+    List String := [
+  "transparentManuscriptM4ComponentGate",
+  "strictNamedConstructionAssembly",
+  "singleFieldRealizationGatePackaging",
+  "projectedMechanicalInterface",
+  "projectedStructuralFields",
+  "strictNamedEndpointThroughTransparentComponents"
+]
+
+theorem
+    realM4ManuscriptSingleMessageSATRealizationComponentGateItems_exact :
+    realM4ManuscriptSingleMessageSATRealizationComponentGateItems =
+      [ "transparentManuscriptM4ComponentGate",
+        "strictNamedConstructionAssembly",
+        "singleFieldRealizationGatePackaging",
+        "projectedMechanicalInterface",
+        "projectedStructuralFields",
+        "strictNamedEndpointThroughTransparentComponents" ] := by
+  rfl
+
+def
+    realM4ManuscriptSingleMessageSATRealizationComponentEndpointHypothesisAudit :
+    List String := [
+  "manuscriptM4SingleMessageSATRealizationComponents",
+  "starSWHardness",
+  "safeQSSM",
+  "boundedGaugeIncidence",
+  "boundaryMixing"
+]
+
+theorem
+    realM4ManuscriptSingleMessageSATRealizationComponentEndpointHypothesisAudit_exact :
+    realM4ManuscriptSingleMessageSATRealizationComponentEndpointHypothesisAudit =
+      [ "manuscriptM4SingleMessageSATRealizationComponents",
+        "starSWHardness",
+        "safeQSSM",
+        "boundedGaugeIncidence",
+        "boundaryMixing" ] := by
+  rfl
+
+def realM4ManuscriptSingleMessageSATRealizationComponentStatement : String :=
+  "The transparent manuscript-M4 component gate expands the one-field realization object into the exact strict named construction obligations: the no-target-rows public surface data, hidden-gauge product, real lower machine, public-lock coverage, locked-message rigidity, CNF address syntax, official language/P-to-decider data, and P-membership-indexed eta/K-poly/target-block facts.  Supplying these components packages back into the existing realization gate and the preferred endpoint still has exactly StarSW hardness plus safeQSSM / boundedGaugeIncidence / boundaryMixing as mathematical frontier inputs.  This does not inhabit the real M4 ensemble and is not an unconditional proof of P != NP."
 
 def realM4StrictNamedSelfReductionUpperItems : List String := [
   "lockedMessageUpperSupport",
