@@ -4650,6 +4650,21 @@ def ClosedCollarWindingFreedomNoEmbeddedCollarNormalFormRealization : Prop :=
     ClosedCollarWindingFreedomEmbeddedCollarNormalFormRealization G → False
 
 /--
+The realizability theorem statement for the winding-freedom witness in the
+intended normal-form annulus regime.  A proof of the left branch is the S4
+repair: the normal-form regime forbids the witness.  A proof of the right
+branch is the decisive obstruction: the witness has an embedded collar
+normal-form realization.  This target is blocked pending planar-embedding
+infrastructure that can either construct such an embedded annulus or rule out
+all of them.
+-/
+def ClosedCollarWindingFreedomNormalFormRealizabilityDecisionTheoremStatement :
+    Prop :=
+  ClosedCollarWindingFreedomNonrealizableInNormalForm ∨
+    ∃ (V : Type) (_ : DecidableEq V) (G : SimpleGraph V),
+      Nonempty (ClosedCollarWindingFreedomEmbeddedCollarNormalFormRealization G)
+
+/--
 Extraction datum tying a concrete embedded-collar certificate back to the
 specific normal-form annulus being refuted.
 -/
