@@ -9525,6 +9525,228 @@ theorem realM4_false_of_pEqualsNP_from_noTargetRowsCDENF_lowerMachine_canonicalG
     pToUniformConstantDecoderRegimeData) hEq
 
 /--
+Cook-style class-inequality endpoint for the sharp no-target-rows route with
+the support-neutral constant-decoder regime constructed from explicit
+P-membership-indexed K-poly compatibility facts.
+
+This theorem removes the bundled constant-decoder-regime object from the
+endpoint surface on this path.  It does not prove the real K-poly
+identifications or floor inequality from P-membership; those remain visible
+obligations, alongside the named NP language and the P-to-decider family.
+-/
+theorem realM4_not_pEqualsNP_from_noTargetRowsCDENF_lowerMachine_canonicalGap_realFrontier_pMembershipDeciderLockedMessageAddressSyntaxKpolyCompatibilitySplit
+    {m : Nat} (i₀ : Fin m) [hm : Fact (1 < m)]
+    (coordinate : V13RealLinearPublicCoordinate m)
+    {Neutral : Type} {Safe : Type x} {Gauge : Type y}
+    {Transcript : Type z} [DecidableEq Transcript]
+    {Pair : Type a} [Fintype Pair]
+    {Stage : Type b} {Branch : Type c}
+    {HistoryAtom : Type} {Pivot : Type e}
+    {Observer : Type f} {Output : Type f}
+    {PublicLock : Type g} {Quotient : Type h}
+    {LockAux : Type i} {Message : Type j}
+    {CNFPublic : Type k} {Address : CNFPublic -> Type q}
+    {Var : CNFPublic -> Type l}
+    {Witness : CNFPublic -> Type l}
+    {D : AppendixICNFReadoutData
+      PublicLock Quotient LockAux Message CNFPublic Var Witness}
+    (law : FiniteRationalLaw (V13RealLinearNoTargetRowsWorld m i₀))
+    (transcript : V13RealLinearNoTargetRowsWorld m i₀ -> Transcript)
+    (observerBit : Transcript -> Bool)
+    (phaseA :
+      EvidenceSpineBound law
+        (@v13RealLinearNoTargetRowsTargetBit m i₀) transcript observerBit
+        Pair Stage Branch)
+    (semantics :
+      EvidenceSemantics
+        (V13RealLinearNoTargetRowsWorld m i₀) Neutral Safe Gauge)
+    (observerEvidence :
+      ObserverEvidenceInterface
+        (V13RealLinearNoTargetRowsWorld m i₀) (V13RealLinearPublic m)
+        Observer Output Neutral Safe Gauge)
+    (pivotSummary : V13RealLinearNoTargetRowsWorld m i₀ -> Pivot)
+    (epsMix : Rat)
+    (safeCost : Safe -> Rat)
+    (safeBudget : Rat)
+    (gaugeIncidence : Gauge -> Nat)
+    (gaugeBound : Nat)
+    (hiddenGaugeProduct :
+      ∀ gamma omega, semantics.gaugeSat gamma omega)
+    (lowerMachine : RealM4CompressionLowerMachineData)
+    (starSWHardness :
+      CompressionStarSWHardness lowerMachine.lowerFramework)
+    (safeQSSM :
+      RealM4MechanicalInterfaceData.SafeQSSMFrontier
+        (RealM4MechanicalInterfaceData.ofNoTargetRowsPublicCoordinateCDENFComponents
+          (HistoryAtom := HistoryAtom) (Observer := Observer)
+          (Output := Output)
+          i₀ coordinate law transcript observerBit phaseA semantics
+          observerEvidence pivotSummary epsMix safeCost safeBudget
+          gaugeIncidence gaugeBound hiddenGaugeProduct))
+    (boundedGaugeIncidence :
+      RealM4MechanicalInterfaceData.BoundedGaugeIncidenceFrontier
+        (RealM4MechanicalInterfaceData.ofNoTargetRowsPublicCoordinateCDENFComponents
+          (HistoryAtom := HistoryAtom) (Observer := Observer)
+          (Output := Output)
+          i₀ coordinate law transcript observerBit phaseA semantics
+          observerEvidence pivotSummary epsMix safeCost safeBudget
+          gaugeIncidence gaugeBound hiddenGaugeProduct))
+    (boundaryMixing :
+      RealM4MechanicalInterfaceData.BoundaryMixingFrontier
+        (RealM4MechanicalInterfaceData.ofNoTargetRowsPublicCoordinateCDENFComponents
+          (HistoryAtom := HistoryAtom) (Observer := Observer)
+          (Output := Output)
+          i₀ coordinate law transcript observerBit phaseA semantics
+          observerEvidence pivotSummary epsMix safeCost safeBudget
+          gaugeIncidence gaugeBound hiddenGaugeProduct))
+    {C : CookStylePNPClassInterface.{p}}
+    (coverageData : RealM4PublicLockCoverageData D)
+    (lockedMessageData : RealM4LockedMessageRigidityData D.core)
+    (variableAddressSyntax :
+      RealM4CNFVariableAddressSyntaxData (Address := Address) D)
+    (languageNPData : RealM4OfficialLanguageNPData C)
+    (pToDeciderFamilyData :
+      RealM4OfficialPToDeciderFamilyData D C languageNPData)
+    (eta_of_inP : C.inP languageNPData.separatedLanguage -> Nat)
+    (kpolyAt_eq_of_inP :
+      ∀ hP : C.inP languageNPData.separatedLanguage,
+        lowerMachine.lowerFramework.kpolyAt =
+          realM4UniformConstantDecoderKpolyAt
+            ((RealM4OfficialPToDeciderLockedMessageUpperSupportData.ofCoverageLockedMessageDataAndAddressSyntax
+              coverageData lockedMessageData variableAddressSyntax).uniformSupport.withPNPDecider
+                (pToDeciderFamilyData.pnpDeciderFamily_of_inP hP)))
+    (etaTimes_eq_of_inP :
+      ∀ hP : C.inP languageNPData.separatedLanguage,
+        lowerMachine.lowerFramework.etaTimes =
+          realCNFLinearEtaTimes (eta_of_inP hP))
+    (floor_dominates_decoder_of_inP :
+      ∀ hP : C.inP languageNPData.separatedLanguage,
+        realM4UniformSelfReductionDecoderCost
+            ((RealM4OfficialPToDeciderLockedMessageUpperSupportData.ofCoverageLockedMessageDataAndAddressSyntax
+              coverageData lockedMessageData variableAddressSyntax).uniformSupport.withPNPDecider
+                (pToDeciderFamilyData.pnpDeciderFamily_of_inP hP)) <
+          (eta_of_inP hP) * lowerMachine.lowerFramework.targetBlocks) :
+    ¬ C.pEqualsNP :=
+  realM4_not_pEqualsNP_from_noTargetRowsCDENF_lowerMachine_canonicalGap_realFrontier_pMembershipDeciderLockedMessageAddressSyntaxUniformRegimeSplit
+    i₀ coordinate law transcript observerBit phaseA semantics
+    observerEvidence pivotSummary epsMix safeCost safeBudget gaugeIncidence
+    gaugeBound hiddenGaugeProduct lowerMachine starSWHardness safeQSSM
+    boundedGaugeIncidence boundaryMixing coverageData lockedMessageData
+    variableAddressSyntax languageNPData pToDeciderFamilyData
+    (RealM4OfficialPToUniformConstantDecoderRegimeData.ofKpolyCompatibility
+      (D := D) (F := lowerMachine.lowerFramework) (C := C)
+      (uniformSupport :=
+        (RealM4OfficialPToDeciderLockedMessageUpperSupportData.ofCoverageLockedMessageDataAndAddressSyntax
+          coverageData lockedMessageData variableAddressSyntax).uniformSupport)
+      (N := languageNPData) (P := pToDeciderFamilyData)
+      eta_of_inP kpolyAt_eq_of_inP etaTimes_eq_of_inP
+      floor_dominates_decoder_of_inP)
+
+/-- Explicit contradiction form of the K-poly-compatibility split route. -/
+theorem realM4_false_of_pEqualsNP_from_noTargetRowsCDENF_lowerMachine_canonicalGap_realFrontier_pMembershipDeciderLockedMessageAddressSyntaxKpolyCompatibilitySplit
+    {m : Nat} (i₀ : Fin m) [hm : Fact (1 < m)]
+    (coordinate : V13RealLinearPublicCoordinate m)
+    {Neutral : Type} {Safe : Type x} {Gauge : Type y}
+    {Transcript : Type z} [DecidableEq Transcript]
+    {Pair : Type a} [Fintype Pair]
+    {Stage : Type b} {Branch : Type c}
+    {HistoryAtom : Type} {Pivot : Type e}
+    {Observer : Type f} {Output : Type f}
+    {PublicLock : Type g} {Quotient : Type h}
+    {LockAux : Type i} {Message : Type j}
+    {CNFPublic : Type k} {Address : CNFPublic -> Type q}
+    {Var : CNFPublic -> Type l}
+    {Witness : CNFPublic -> Type l}
+    {D : AppendixICNFReadoutData
+      PublicLock Quotient LockAux Message CNFPublic Var Witness}
+    (law : FiniteRationalLaw (V13RealLinearNoTargetRowsWorld m i₀))
+    (transcript : V13RealLinearNoTargetRowsWorld m i₀ -> Transcript)
+    (observerBit : Transcript -> Bool)
+    (phaseA :
+      EvidenceSpineBound law
+        (@v13RealLinearNoTargetRowsTargetBit m i₀) transcript observerBit
+        Pair Stage Branch)
+    (semantics :
+      EvidenceSemantics
+        (V13RealLinearNoTargetRowsWorld m i₀) Neutral Safe Gauge)
+    (observerEvidence :
+      ObserverEvidenceInterface
+        (V13RealLinearNoTargetRowsWorld m i₀) (V13RealLinearPublic m)
+        Observer Output Neutral Safe Gauge)
+    (pivotSummary : V13RealLinearNoTargetRowsWorld m i₀ -> Pivot)
+    (epsMix : Rat)
+    (safeCost : Safe -> Rat)
+    (safeBudget : Rat)
+    (gaugeIncidence : Gauge -> Nat)
+    (gaugeBound : Nat)
+    (hiddenGaugeProduct :
+      ∀ gamma omega, semantics.gaugeSat gamma omega)
+    (lowerMachine : RealM4CompressionLowerMachineData)
+    (starSWHardness :
+      CompressionStarSWHardness lowerMachine.lowerFramework)
+    (safeQSSM :
+      RealM4MechanicalInterfaceData.SafeQSSMFrontier
+        (RealM4MechanicalInterfaceData.ofNoTargetRowsPublicCoordinateCDENFComponents
+          (HistoryAtom := HistoryAtom) (Observer := Observer)
+          (Output := Output)
+          i₀ coordinate law transcript observerBit phaseA semantics
+          observerEvidence pivotSummary epsMix safeCost safeBudget
+          gaugeIncidence gaugeBound hiddenGaugeProduct))
+    (boundedGaugeIncidence :
+      RealM4MechanicalInterfaceData.BoundedGaugeIncidenceFrontier
+        (RealM4MechanicalInterfaceData.ofNoTargetRowsPublicCoordinateCDENFComponents
+          (HistoryAtom := HistoryAtom) (Observer := Observer)
+          (Output := Output)
+          i₀ coordinate law transcript observerBit phaseA semantics
+          observerEvidence pivotSummary epsMix safeCost safeBudget
+          gaugeIncidence gaugeBound hiddenGaugeProduct))
+    (boundaryMixing :
+      RealM4MechanicalInterfaceData.BoundaryMixingFrontier
+        (RealM4MechanicalInterfaceData.ofNoTargetRowsPublicCoordinateCDENFComponents
+          (HistoryAtom := HistoryAtom) (Observer := Observer)
+          (Output := Output)
+          i₀ coordinate law transcript observerBit phaseA semantics
+          observerEvidence pivotSummary epsMix safeCost safeBudget
+          gaugeIncidence gaugeBound hiddenGaugeProduct))
+    {C : CookStylePNPClassInterface.{p}}
+    (coverageData : RealM4PublicLockCoverageData D)
+    (lockedMessageData : RealM4LockedMessageRigidityData D.core)
+    (variableAddressSyntax :
+      RealM4CNFVariableAddressSyntaxData (Address := Address) D)
+    (languageNPData : RealM4OfficialLanguageNPData C)
+    (pToDeciderFamilyData :
+      RealM4OfficialPToDeciderFamilyData D C languageNPData)
+    (eta_of_inP : C.inP languageNPData.separatedLanguage -> Nat)
+    (kpolyAt_eq_of_inP :
+      ∀ hP : C.inP languageNPData.separatedLanguage,
+        lowerMachine.lowerFramework.kpolyAt =
+          realM4UniformConstantDecoderKpolyAt
+            ((RealM4OfficialPToDeciderLockedMessageUpperSupportData.ofCoverageLockedMessageDataAndAddressSyntax
+              coverageData lockedMessageData variableAddressSyntax).uniformSupport.withPNPDecider
+                (pToDeciderFamilyData.pnpDeciderFamily_of_inP hP)))
+    (etaTimes_eq_of_inP :
+      ∀ hP : C.inP languageNPData.separatedLanguage,
+        lowerMachine.lowerFramework.etaTimes =
+          realCNFLinearEtaTimes (eta_of_inP hP))
+    (floor_dominates_decoder_of_inP :
+      ∀ hP : C.inP languageNPData.separatedLanguage,
+        realM4UniformSelfReductionDecoderCost
+            ((RealM4OfficialPToDeciderLockedMessageUpperSupportData.ofCoverageLockedMessageDataAndAddressSyntax
+              coverageData lockedMessageData variableAddressSyntax).uniformSupport.withPNPDecider
+                (pToDeciderFamilyData.pnpDeciderFamily_of_inP hP)) <
+          (eta_of_inP hP) * lowerMachine.lowerFramework.targetBlocks)
+    (hEq : C.pEqualsNP) :
+    False :=
+  (realM4_not_pEqualsNP_from_noTargetRowsCDENF_lowerMachine_canonicalGap_realFrontier_pMembershipDeciderLockedMessageAddressSyntaxKpolyCompatibilitySplit
+    i₀ coordinate law transcript observerBit phaseA semantics
+    observerEvidence pivotSummary epsMix safeCost safeBudget gaugeIncidence
+    gaugeBound hiddenGaugeProduct lowerMachine starSWHardness safeQSSM
+    boundedGaugeIncidence boundaryMixing coverageData lockedMessageData
+    variableAddressSyntax languageNPData pToDeciderFamilyData eta_of_inP
+    kpolyAt_eq_of_inP etaTimes_eq_of_inP
+    floor_dominates_decoder_of_inP) hEq
+
+/--
 Cook-style official endpoint wrapper for the no-target-rows canonical-gap
 real-frontier route.  The internal clash uses exactly the three analytic
 frontier objects plus StarSW and the explicit P=NP decider; the Cook bridge
@@ -12951,6 +13173,98 @@ theorem realM4NoTargetRowsPToDeciderLockedMessageAddressSyntaxUniformRegimeSplit
 def realM4NoTargetRowsPToDeciderLockedMessageAddressSyntaxUniformRegimeSplitOfficialEndpointStatement : String :=
   "For the real v15/M4 no-target-rows staging route, the Cook-style endpoint follows from the explicit real public-surface and lower-machine construction data, public-lock coverage, locked-message public-message data, real CNF variable address syntax, split official language/P-to-decider data, support-neutral P-to-constant-decoder-regime data, and exactly StarSW hardness plus the three analytic fields safeQSSM / boundedGaugeIncidence / boundaryMixing.  The constant-decoder obligation is indexed only by the uniform CNF support and is reindexed to the locked-message upper support internally.  This is conditional staging, not a proof of P != NP and not yet a full M4 identification."
 
+def realM4NoTargetRowsPToDeciderLockedMessageAddressSyntaxKpolyCompatibilitySplitClassInequalityConstructionInputs :
+    List String :=
+  [ "noTargetRowsPublicSurface",
+    "law",
+    "transcript",
+    "observerBit",
+    "phaseA",
+    "semantics",
+    "observerEvidence",
+    "pivotSummary",
+    "epsMix",
+    "safeCost",
+    "safeBudget",
+    "gaugeIncidence",
+    "gaugeBound",
+    "hiddenGaugeProduct",
+    "realCompressionLowerMachineData",
+    "publicLockCoverageData",
+    "lockedMessageRigidityData",
+    "cnfVariableAddressSyntax",
+    "officialLanguageNPData",
+    "officialPToDeciderFamilyData",
+    "pMembershipKpolyAtConstantDecoderIdentification",
+    "pMembershipEtaTimesLinearFloorIdentification",
+    "pMembershipConstantDecoderBelowLinearFloor" ]
+
+theorem realM4NoTargetRowsPToDeciderLockedMessageAddressSyntaxKpolyCompatibilitySplitClassInequalityConstructionInputs_exact :
+    realM4NoTargetRowsPToDeciderLockedMessageAddressSyntaxKpolyCompatibilitySplitClassInequalityConstructionInputs =
+      [ "noTargetRowsPublicSurface",
+        "law",
+        "transcript",
+        "observerBit",
+        "phaseA",
+        "semantics",
+        "observerEvidence",
+        "pivotSummary",
+        "epsMix",
+        "safeCost",
+        "safeBudget",
+        "gaugeIncidence",
+        "gaugeBound",
+        "hiddenGaugeProduct",
+        "realCompressionLowerMachineData",
+        "publicLockCoverageData",
+        "lockedMessageRigidityData",
+        "cnfVariableAddressSyntax",
+        "officialLanguageNPData",
+        "officialPToDeciderFamilyData",
+        "pMembershipKpolyAtConstantDecoderIdentification",
+        "pMembershipEtaTimesLinearFloorIdentification",
+        "pMembershipConstantDecoderBelowLinearFloor" ] := by
+  rfl
+
+def realM4NoTargetRowsPToDeciderLockedMessageAddressSyntaxKpolyCompatibilitySplitClassInequalityHypothesisAudit :
+    List String :=
+  realM4NoTargetRowsPToDeciderLockedMessageAddressSyntaxKpolyCompatibilitySplitClassInequalityConstructionInputs ++
+    realM4NoTargetRowsPToDeciderOfficialEndpointContentInputs
+
+theorem realM4NoTargetRowsPToDeciderLockedMessageAddressSyntaxKpolyCompatibilitySplitClassInequalityHypothesisAudit_exact :
+    realM4NoTargetRowsPToDeciderLockedMessageAddressSyntaxKpolyCompatibilitySplitClassInequalityHypothesisAudit =
+      [ "noTargetRowsPublicSurface",
+        "law",
+        "transcript",
+        "observerBit",
+        "phaseA",
+        "semantics",
+        "observerEvidence",
+        "pivotSummary",
+        "epsMix",
+        "safeCost",
+        "safeBudget",
+        "gaugeIncidence",
+        "gaugeBound",
+        "hiddenGaugeProduct",
+        "realCompressionLowerMachineData",
+        "publicLockCoverageData",
+        "lockedMessageRigidityData",
+        "cnfVariableAddressSyntax",
+        "officialLanguageNPData",
+        "officialPToDeciderFamilyData",
+        "pMembershipKpolyAtConstantDecoderIdentification",
+        "pMembershipEtaTimesLinearFloorIdentification",
+        "pMembershipConstantDecoderBelowLinearFloor",
+        "starSWHardness",
+        "safeQSSM",
+        "boundedGaugeIncidence",
+        "boundaryMixing" ] := by
+  rfl
+
+def realM4NoTargetRowsPToDeciderLockedMessageAddressSyntaxKpolyCompatibilitySplitClassInequalityStatement : String :=
+  "For the real v15/M4 no-target-rows staging route, the Cook-style class inequality follows from the explicit real public-surface and lower-machine construction data, public-lock coverage, locked-message public-message data, real CNF variable address syntax, split official language/P-to-decider data, and the three explicit P-membership-indexed K-poly compatibility facts needed to construct the support-neutral constant-decoder regime.  The endpoint still depends on exactly StarSW hardness plus the three analytic fields safeQSSM / boundedGaugeIncidence / boundaryMixing as mathematical frontier inputs; this is conditional staging, not a proof of P != NP and not yet a full M4 identification."
+
 def realM4OfficialEndpointConstructionInputsExplicitPNP : List String :=
   realM4CDENFComponentLowerMachineFiniteCNFVariablesCoverageAndRigidityEndgameConstructionInputsExplicitPNP ++
     realM4OfficialPNPBridgeConstructionInputs
@@ -13399,15 +13713,33 @@ def realM4LiftLedger : List RealM4LiftLedgerRow := [
   },
   {
     item := "officialPToUniformConstantDecoderRegimeData"
-    status := .openConstruction
-    checkedName := "RealM4OfficialPToUniformConstantDecoderRegimeData"
-    note := "Official Cook-style bridge content on the current sharp route: prove that the P-membership decider family supplies the support-neutral constant-decoder regime for the real lower framework."
+    status := .partialConstructionTransferred
+    checkedName := "RealM4OfficialPToUniformConstantDecoderRegimeData.ofKpolyCompatibility"
+    note := "The support-neutral constant-decoder regime is no longer primitive on the sharp route; it is constructed from explicit P-membership-indexed K-poly compatibility facts."
   },
   {
     item := "officialPToUniformConstantDecoderRegimeKpolyCompatibility"
     status := .partialConstructionTransferred
     checkedName := "RealM4OfficialPToUniformConstantDecoderRegimeData.ofKpolyCompatibility"
     note := "The support-neutral constant-decoder obligation is built from explicit P-membership-indexed K-poly compatibility facts: kpolyAt identifies with the fixed constant decoder program, etaTimes identifies with the linear floor, and the decoder cost lies below that floor."
+  },
+  {
+    item := "pMembershipKpolyAtConstantDecoderIdentification"
+    status := .openConstruction
+    checkedName := "RealM4OfficialPToUniformConstantDecoderRegimeData.ofKpolyCompatibility"
+    note := "Real official P-membership must identify the lower framework's kpolyAt with the fixed uniform constant-decoder program for the P-derived decider family."
+  },
+  {
+    item := "pMembershipEtaTimesLinearFloorIdentification"
+    status := .openConstruction
+    checkedName := "RealM4OfficialPToUniformConstantDecoderRegimeData.ofKpolyCompatibility"
+    note := "Real official P-membership must identify the lower framework's etaTimes with the linear compression floor used by the real lower framework."
+  },
+  {
+    item := "pMembershipConstantDecoderBelowLinearFloor"
+    status := .openConstruction
+    checkedName := "RealM4OfficialPToUniformConstantDecoderRegimeData.ofKpolyCompatibility"
+    note := "Real official P-membership must prove the fixed self-reduction decoder cost lies below the linear compression floor in the target regime."
   },
   {
     item := "officialPToConstantDecoderRegimeData"
@@ -13480,6 +13812,12 @@ def realM4LiftLedger : List RealM4LiftLedgerRow := [
     status := .partialConstructionTransferred
     checkedName := "realM4_not_pEqualsNP_from_noTargetRowsCDENF_lowerMachine_canonicalGap_realFrontier_pMembershipDeciderLockedMessageAddressSyntaxUniformRegimeSplit"
     note := "Restates the sharp support-neutral official endpoint as the Cook-style class inequality, with the contradiction form available separately from the same construction data and four frontier inputs."
+  },
+  {
+    item := "realNoTargetRowsPToDeciderKpolyCompatibilityOfficialClassInequality"
+    status := .partialConstructionTransferred
+    checkedName := "realM4_not_pEqualsNP_from_noTargetRowsCDENF_lowerMachine_canonicalGap_realFrontier_pMembershipDeciderLockedMessageAddressSyntaxKpolyCompatibilitySplit"
+    note := "Restates the sharp support-neutral official endpoint as the Cook-style class inequality while constructing the constant-decoder regime internally from explicit K-poly compatibility facts."
   },
   {
     item := "officialPNPUpperBridgeAdapter"
@@ -13588,6 +13926,10 @@ theorem realM4LiftLedger_statuses_exact :
         RealM4LiftStatus.partialConstructionTransferred,
         RealM4LiftStatus.openConstruction,
         RealM4LiftStatus.openConstruction,
+        RealM4LiftStatus.partialConstructionTransferred,
+        RealM4LiftStatus.partialConstructionTransferred,
+        RealM4LiftStatus.openConstruction,
+        RealM4LiftStatus.openConstruction,
         RealM4LiftStatus.openConstruction,
         RealM4LiftStatus.partialConstructionTransferred,
         RealM4LiftStatus.partialConstructionTransferred,
@@ -13623,7 +13965,9 @@ def realM4OpenConstructionItems : List String := [
   "realConstantDecoderRegime",
   "officialLanguageNPData",
   "officialPToDeciderFamilyData",
-  "officialPToUniformConstantDecoderRegimeData"
+  "pMembershipKpolyAtConstantDecoderIdentification",
+  "pMembershipEtaTimesLinearFloorIdentification",
+  "pMembershipConstantDecoderBelowLinearFloor"
 ]
 
 theorem realM4OpenConstructionItems_exact :
@@ -13638,7 +13982,9 @@ theorem realM4OpenConstructionItems_exact :
         "realConstantDecoderRegime",
         "officialLanguageNPData",
         "officialPToDeciderFamilyData",
-        "officialPToUniformConstantDecoderRegimeData" ] := by
+        "pMembershipKpolyAtConstantDecoderIdentification",
+        "pMembershipEtaTimesLinearFloorIdentification",
+        "pMembershipConstantDecoderBelowLinearFloor" ] := by
   rfl
 
 def realM4AfterConstructionIrreducibleInputs : List String := [
