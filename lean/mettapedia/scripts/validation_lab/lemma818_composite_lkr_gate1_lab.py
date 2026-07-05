@@ -2939,6 +2939,7 @@ def audit_closed_collar_winding_simple_patch_annular_embedding_sample(
     planar_rotation_system_count = 0
     radial_face_coherent_rotation_count = 0
     blocker_histogram: Counter[str] = Counter()
+    exact_template_histogram: Counter[str] = Counter()
     max_radial_edges_histogram: Counter[str] = Counter()
     samples: list[dict[str, object]] = []
 
@@ -2968,7 +2969,12 @@ def audit_closed_collar_winding_simple_patch_annular_embedding_sample(
             profile_preserving_case_count += 1
             blocker_name = str(case_result["blocker_name"])
             blocker_histogram[blocker_name] += 1
+            exact_template_key = case_result.get("exact_template_key")
+            if exact_template_key is not None:
+                exact_template_histogram[str(exact_template_key)] += 1
             if blocker_name in STRUCTURAL_TEMPLATE_BLOCKERS:
+                payload = case_result["payload"]
+                assert isinstance(payload, dict)
                 if len(samples) < sample_limit:
                     samples.append(
                         {
@@ -2977,6 +2983,7 @@ def audit_closed_collar_winding_simple_patch_annular_embedding_sample(
                             "radial_order": list(radial_order),
                             "template_exclusion_blocker": blocker_name,
                             "embedding_audit_skipped": "structural_blocker",
+                            **payload,
                         }
                     )
                 continue
@@ -3017,6 +3024,8 @@ def audit_closed_collar_winding_simple_patch_annular_embedding_sample(
                 for key, count in histogram.items():
                     max_radial_edges_histogram[str(key)] += int(count)
             if len(samples) < sample_limit:
+                payload = case_result["payload"]
+                assert isinstance(payload, dict)
                 samples.append(
                     {
                         "patch_index": patch_index,
@@ -3024,6 +3033,7 @@ def audit_closed_collar_winding_simple_patch_annular_embedding_sample(
                         "patch_edges": [list(edge_pair) for edge_pair in patch_edges],
                         "radial_order": list(radial_edges),
                         "template_exclusion_blocker": blocker_name,
+                        **payload,
                         "embedding_audit": embedding_audit,
                     }
                 )
@@ -3084,6 +3094,8 @@ def audit_closed_collar_winding_simple_patch_annular_embedding_sample(
                 radial_face_coherent_rotation_count,
             "template_exclusion_blocker_histogram":
                 dict(sorted(blocker_histogram.items())),
+            "exact_template_histogram":
+                dict(sorted(exact_template_histogram.items())),
             "max_radial_cut_edges_on_single_face_histogram":
                 dict(sorted(max_radial_edges_histogram.items())),
         },
@@ -3145,6 +3157,7 @@ def audit_closed_collar_winding_simple_patch_annular_embedding_slice(
     planar_rotation_system_count = 0
     radial_face_coherent_rotation_count = 0
     blocker_histogram: Counter[str] = Counter()
+    exact_template_histogram: Counter[str] = Counter()
     max_radial_edges_histogram: Counter[str] = Counter()
     samples: list[dict[str, object]] = []
     last_seen_patch_index: int | None = None
@@ -3185,8 +3198,13 @@ def audit_closed_collar_winding_simple_patch_annular_embedding_slice(
             profile_preserving_case_count += 1
             blocker_name = str(case_result["blocker_name"])
             blocker_histogram[blocker_name] += 1
+            exact_template_key = case_result.get("exact_template_key")
+            if exact_template_key is not None:
+                exact_template_histogram[str(exact_template_key)] += 1
             if blocker_name in STRUCTURAL_TEMPLATE_BLOCKERS:
                 structural_skipped_case_count += 1
+                payload = case_result["payload"]
+                assert isinstance(payload, dict)
                 if len(samples) < sample_limit:
                     samples.append(
                         {
@@ -3195,6 +3213,7 @@ def audit_closed_collar_winding_simple_patch_annular_embedding_slice(
                             "radial_order": list(radial_order),
                             "template_exclusion_blocker": blocker_name,
                             "embedding_audit_skipped": "structural_blocker",
+                            **payload,
                         }
                     )
                 continue
@@ -3235,6 +3254,8 @@ def audit_closed_collar_winding_simple_patch_annular_embedding_slice(
                 for key, count in histogram.items():
                     max_radial_edges_histogram[str(key)] += int(count)
             if len(samples) < sample_limit:
+                payload = case_result["payload"]
+                assert isinstance(payload, dict)
                 samples.append(
                     {
                         "patch_index": patch_index,
@@ -3242,6 +3263,7 @@ def audit_closed_collar_winding_simple_patch_annular_embedding_slice(
                         "patch_edges": [list(edge_pair) for edge_pair in patch_edges],
                         "radial_order": list(radial_edges),
                         "template_exclusion_blocker": blocker_name,
+                        **payload,
                         "embedding_audit": embedding_audit,
                     }
                 )
@@ -3337,6 +3359,8 @@ def audit_closed_collar_winding_simple_patch_annular_embedding_slice(
                 radial_face_coherent_rotation_count,
             "template_exclusion_blocker_histogram":
                 dict(sorted(blocker_histogram.items())),
+            "exact_template_histogram":
+                dict(sorted(exact_template_histogram.items())),
             "max_radial_cut_edges_on_single_face_histogram":
                 dict(sorted(max_radial_edges_histogram.items())),
         },

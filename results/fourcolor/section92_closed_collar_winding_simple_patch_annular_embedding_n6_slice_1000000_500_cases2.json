@@ -457,6 +457,33 @@
         "total_rotation_system_count": 262144,
         "vertex_count": 18
       },
+      "exact_template_cut": {
+        "cut_edges": [
+          "g0:F4F5",
+          "g1:F1F0"
+        ],
+        "cut_size": 2,
+        "edge_kind_histogram": {
+          "collar": 2
+        },
+        "other_side_vertex_count": 14,
+        "other_side_vertex_kind_histogram": {
+          "collar": 10,
+          "patch_internal": 4
+        },
+        "side_vertex_count": 4,
+        "side_vertex_kind_histogram": {
+          "collar": 2,
+          "patch_internal": 2
+        },
+        "side_vertices": [
+          "N1",
+          "N2",
+          "g0:F5",
+          "g1:F1"
+        ]
+      },
+      "exact_template_key": "edges:g0:F4F5,g1:F1F0|sideCollar:g0:F5,g1:F1",
       "patch_edges": [
         [
           "A",
@@ -927,6 +954,33 @@
         "total_rotation_system_count": 262144,
         "vertex_count": 18
       },
+      "exact_template_cut": {
+        "cut_edges": [
+          "g0:F4F5",
+          "g1:F1F0"
+        ],
+        "cut_size": 2,
+        "edge_kind_histogram": {
+          "collar": 2
+        },
+        "other_side_vertex_count": 14,
+        "other_side_vertex_kind_histogram": {
+          "collar": 10,
+          "patch_internal": 4
+        },
+        "side_vertex_count": 4,
+        "side_vertex_kind_histogram": {
+          "collar": 2,
+          "patch_internal": 2
+        },
+        "side_vertices": [
+          "N1",
+          "N2",
+          "g0:F5",
+          "g1:F1"
+        ]
+      },
+      "exact_template_key": "edges:g0:F4F5,g1:F1F0|sideCollar:g0:F5,g1:F1",
       "patch_edges": [
         [
           "A",
@@ -1028,6 +1082,9 @@
   "summary": {
     "embedding_audited_case_count": 2,
     "enumerated_rotation_system_count": 524288,
+    "exact_template_histogram": {
+      "edges:g0:F4F5,g1:F1F0|sideCollar:g0:F5,g1:F1": 2
+    },
     "max_radial_cut_edges_on_single_face_histogram": {
       "2": 16
     },
