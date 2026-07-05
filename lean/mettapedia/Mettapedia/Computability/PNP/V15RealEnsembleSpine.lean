@@ -12333,6 +12333,77 @@ theorem realM4NoTargetRowsPToDeciderOfficialEndpointHypothesisAudit_exact :
 def realM4NoTargetRowsPToDeciderOfficialEndpointStatement : String :=
   "For the real v15/M4 no-target-rows staging route, the Cook-style endpoint follows from the explicit real public-surface and lower-machine construction data, separated official upper support data, official P-membership-to-decider language data, and exactly StarSW hardness plus the three analytic fields safeQSSM / boundedGaugeIncidence / boundaryMixing.  The theorem does not take a free P=NP decider family or raw clash-to-not-P bridge; this is conditional staging, not a proof of P != NP and not yet a full M4 identification."
 
+def realM4NoTargetRowsPToDeciderLockedMessageBridgeClassInequalityConstructionInputs :
+    List String :=
+  [ "noTargetRowsPublicSurface",
+    "law",
+    "transcript",
+    "observerBit",
+    "phaseA",
+    "semantics",
+    "observerEvidence",
+    "pivotSummary",
+    "epsMix",
+    "safeCost",
+    "safeBudget",
+    "gaugeIncidence",
+    "gaugeBound",
+    "hiddenGaugeProduct",
+    "realCompressionLowerMachineData",
+    "officialPToDeciderLockedMessageUpperBridgeData" ]
+
+theorem realM4NoTargetRowsPToDeciderLockedMessageBridgeClassInequalityConstructionInputs_exact :
+    realM4NoTargetRowsPToDeciderLockedMessageBridgeClassInequalityConstructionInputs =
+      [ "noTargetRowsPublicSurface",
+        "law",
+        "transcript",
+        "observerBit",
+        "phaseA",
+        "semantics",
+        "observerEvidence",
+        "pivotSummary",
+        "epsMix",
+        "safeCost",
+        "safeBudget",
+        "gaugeIncidence",
+        "gaugeBound",
+        "hiddenGaugeProduct",
+        "realCompressionLowerMachineData",
+        "officialPToDeciderLockedMessageUpperBridgeData" ] := by
+  rfl
+
+def realM4NoTargetRowsPToDeciderLockedMessageBridgeClassInequalityHypothesisAudit :
+    List String :=
+  realM4NoTargetRowsPToDeciderLockedMessageBridgeClassInequalityConstructionInputs ++
+    realM4NoTargetRowsPToDeciderOfficialEndpointContentInputs
+
+theorem realM4NoTargetRowsPToDeciderLockedMessageBridgeClassInequalityHypothesisAudit_exact :
+    realM4NoTargetRowsPToDeciderLockedMessageBridgeClassInequalityHypothesisAudit =
+      [ "noTargetRowsPublicSurface",
+        "law",
+        "transcript",
+        "observerBit",
+        "phaseA",
+        "semantics",
+        "observerEvidence",
+        "pivotSummary",
+        "epsMix",
+        "safeCost",
+        "safeBudget",
+        "gaugeIncidence",
+        "gaugeBound",
+        "hiddenGaugeProduct",
+        "realCompressionLowerMachineData",
+        "officialPToDeciderLockedMessageUpperBridgeData",
+        "starSWHardness",
+        "safeQSSM",
+        "boundedGaugeIncidence",
+        "boundaryMixing" ] := by
+  rfl
+
+def realM4NoTargetRowsPToDeciderLockedMessageBridgeClassInequalityStatement : String :=
+  "For the real v15/M4 no-target-rows staging route, the Cook-style class inequality follows from the explicit real public-surface and lower-machine construction data, the packaged locked-message official P-to-decider upper bridge, and exactly StarSW hardness plus the three analytic fields safeQSSM / boundedGaugeIncidence / boundaryMixing.  The bridge still contains the official NP-language, P-to-decider, and constant-decoder-regime obligations; this is conditional staging, not a proof of P != NP and not yet a full M4 identification."
+
 def realM4NoTargetRowsPToDeciderEncodableSyntaxOfficialEndpointConstructionInputs :
     List String :=
   [ "noTargetRowsPublicSurface",
