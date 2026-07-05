@@ -2443,6 +2443,43 @@ theorem xorGaugeSingleMessageSelfReduction_readout_eq_M
       trivial
       (xorGaugeSingleMessageSelfReductionAssignment_satisfies D Y)
 
+/-! ## Gauge-buffered Appendix-I CNF self-reduction readout -/
+
+/-- The Appendix-I CNF witness recovered by bit-fixing under the explicit
+P=NP-side SAT decider.  The theorem statements below keep the decider as a
+hypothesis object; this is not an unconditional SAT-search construction. -/
+def xorGaugeSingleMessageAppendixICNFSelfReductionWitness
+    (D : XorGaugeSingleMessagePNPSATDecider)
+    (Y : XorGaugeSingleMessagePublic) :
+    RealM4CNFWitness xorGaugeSingleMessageAppendixICNFReadoutData where
+  publicInstance := Y
+  assignment := xorGaugeSingleMessageSelfReductionAssignment D Y
+
+/-- Bit-fixing under the explicit SAT decider recovers a verifier-valid
+Appendix-I CNF witness for the public instance. -/
+theorem xorGaugeSingleMessageAppendixICNFSelfReductionWitness_verifier
+    (D : XorGaugeSingleMessagePNPSATDecider)
+    (Y : XorGaugeSingleMessagePublic) :
+    realM4CNFVerifier
+      xorGaugeSingleMessageAppendixICNFReadoutData Y
+      (xorGaugeSingleMessageAppendixICNFSelfReductionWitness D Y) := by
+  exact
+    ⟨trivial, ⟨rfl,
+      xorGaugeSingleMessageSelfReductionAssignment_satisfies D Y⟩⟩
+
+/-- The recovered Appendix-I CNF witness reads out exactly the fixed public
+message `M(Y)`.  The hidden gauge coordinate may be chosen by the search, but
+the single-message readout forces the returned message. -/
+theorem xorGaugeSingleMessageAppendixICNFSelfReduction_readout_eq_M
+    (D : XorGaugeSingleMessagePNPSATDecider)
+    (Y : XorGaugeSingleMessagePublic) :
+    realM4CNFWitnessReadout (fun bit => bit)
+        (xorGaugeSingleMessageAppendixICNFSelfReductionWitness D Y) =
+      xorGaugeSingleMessageM Y := by
+  simpa [xorGaugeSingleMessageAppendixICNFSelfReductionWitness,
+    realM4CNFWitnessReadout, xorGaugeSingleMessageAppendixICNFReadoutData]
+    using xorGaugeSingleMessageSelfReduction_readout_eq_M D Y
+
 /-- The concrete self-reduction uses a fixed program skeleton around the
 explicit SAT decider, so its `kpolyAt` model is constant in `targetBlocks`. -/
 theorem xorGaugeSingleMessageConstantDecoderKpolyAt_const
