@@ -8723,6 +8723,64 @@ theorem section92Step4CurrentFiniteFrontierAndConcreteFork :
       section92Step4RepairedByPreviousBoundaryRadialFaceN6AuditedArchiveExtractionAndAuditedRowsTarget,
       section92Step4ConcretePreviousBoundaryRepairedOrObstructedFork⟩
 
+/--
+The current serious bridge left by the finite frontier: honest normal-form
+annuli must supply embedded collar geometry, upgrade that geometry to the
+previous-boundary witness geometry, choose the cut-open radial face, extract an
+n6 radial-face representation, and identify its audited archive key.
+-/
+def ClosedCollarWindingFreedomCurrentFiniteFrontierRemainingFactoredBridge :
+    Prop :=
+  ClosedCollarWindingFreedomActualCollarEmbeddingSuppliesGeometryData ∧
+    ClosedCollarWindingFreedomActualCollarGeometrySuppliesPreviousBoundaryWitnessUpgrade ∧
+      ClosedCollarWindingFreedomActualCollarGeometrySuppliesRadialFaceExtraction ∧
+        ClosedCollarWindingFreedomEveryRadialFaceNormalFormHasN6Representation ∧
+          ClosedCollarWindingFreedomEveryRadialFaceN6RepresentationHasAuditedArchiveKey
+
+theorem closedCollarWindingFreedomEveryNormalFormHasConcretePreviousBoundaryNormalFormRealization_of_currentFiniteFrontierRemainingFactoredBridge
+    (hbridge :
+      ClosedCollarWindingFreedomCurrentFiniteFrontierRemainingFactoredBridge) :
+    ClosedCollarWindingFreedomEveryNormalFormHasConcretePreviousBoundaryNormalFormRealization := by
+  rcases hbridge with ⟨hgeometry, hupgrade, hradial, hn6, hkeys⟩
+  exact
+    closedCollarWindingFreedomEveryNormalFormHasConcretePreviousBoundaryNormalFormRealization_of_factoredBridge
+      hgeometry hupgrade hradial hn6 hkeys
+
+theorem closedCollarWindingFreedomNonrealizableInNormalForm_of_currentFiniteFrontierRemainingFactoredBridge_of_auditedRows
+    (hbridge :
+      ClosedCollarWindingFreedomCurrentFiniteFrontierRemainingFactoredBridge)
+    (hrows :
+      ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceAuditedRowsCoveredByLab) :
+    ClosedCollarWindingFreedomNonrealizableInNormalForm :=
+  closedCollarWindingFreedomNonrealizableInNormalForm_of_concretePreviousBoundaryNormalFormRealization_of_auditedRows
+    (closedCollarWindingFreedomEveryNormalFormHasConcretePreviousBoundaryNormalFormRealization_of_currentFiniteFrontierRemainingFactoredBridge
+      hbridge)
+    hrows
+
+/--
+Current finite-frontier fork with the remaining bridge stated explicitly.  The
+finite evidence is on record; if the five factored normal-form obligations are
+proved, the audited rows kill the winding-freedom witness.  If audited rows are
+accepted but full nonrealizability still fails, the obstruction is a concrete
+factored previous-boundary witness blocker.
+-/
+def Section92Step4CurrentFiniteFrontierFactoredBridgeFork :
+    Prop :=
+  ClosedCollarWindingFreedomCurrentFiniteRealizationFrontierEvidence ∧
+    (ClosedCollarWindingFreedomCurrentFiniteFrontierRemainingFactoredBridge →
+      ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceAuditedRowsCoveredByLab →
+        ClosedCollarWindingFreedomNonrealizableInNormalForm) ∧
+      (ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceAuditedRowsCoveredByLab →
+        ¬ ClosedCollarWindingFreedomNonrealizableInNormalForm →
+          ClosedCollarWindingFreedomFactoredPreviousBoundaryWitnessRepairObstruction)
+
+theorem section92Step4CurrentFiniteFrontierFactoredBridgeFork :
+    Section92Step4CurrentFiniteFrontierFactoredBridgeFork := by
+  exact
+    ⟨closedCollarWindingFreedomCurrentFiniteRealizationFrontierEvidence,
+      closedCollarWindingFreedomNonrealizableInNormalForm_of_currentFiniteFrontierRemainingFactoredBridge_of_auditedRows,
+      closedCollarWindingFreedomFactoredPreviousBoundaryWitnessRepairObstruction_of_auditedRows_of_not_nonrealizable⟩
+
 end GoertzelLemma818ClosedCollarWindingRealization
 
 end Mettapedia.GraphTheory.FourColor
