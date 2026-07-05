@@ -142,6 +142,15 @@ theorem closedCollarWindingFreedomSimplePatchN6PlanarCyclicCutSamplesEvidence_au
     ClosedCollarWindingFreedomSimplePatchN6PlanarCyclicCutSamplesEvidence :=
   closedCollarWindingFreedomSimplePatchN6PlanarCyclicCutSamplesEvidence
 
+theorem closedCollarWindingFreedomSimplePatchN8First1000000NoProfilePreservingEvidence_audit :
+    ClosedCollarWindingFreedomSimplePatchN8First1000000NoProfilePreservingEvidence :=
+  closedCollarWindingFreedomSimplePatchN8First1000000NoProfilePreservingEvidence
+
+theorem closedCollarWindingFreedomSimplePatchN8First1000000_noProfilePreservingCandidate_audit
+    (candidate : ClosedCollarWindingFreedomSimplePatchN8First1000000ProfilePreservingCandidate) :
+    False :=
+  closedCollarWindingFreedomSimplePatchN8First1000000_noProfilePreservingCandidate candidate
+
 /-! ## Section 9.2 two-layer ambient execution obstruction -/
 
 theorem section92Step4TwoLayerCounterexampleClass_audit :
