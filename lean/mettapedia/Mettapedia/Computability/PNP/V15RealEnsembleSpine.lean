@@ -2199,6 +2199,52 @@ def realM4_uniformConstantDecoderRegime_of_kpolyCompatibility
   etaTimes_eq := etaTimes_eq
   floor_dominates_decoder := floor_dominates_decoder
 
+/-- A positive linear floor dominates the fixed real-M4 self-reduction decoder
+cost once the target-block count is already larger than that fixed cost. -/
+theorem realM4_uniformSelfReductionDecoderCost_lt_linearFloor_of_targetBlocks_gt
+    {PublicLock : Type u} {Quotient : Type v}
+    {LockAux : Type w} {Message : Type z}
+    {Public : Type x} {Var : Public -> Type y}
+    {Witness : Public -> Type y}
+    {D : AppendixICNFReadoutData
+      PublicLock Quotient LockAux Message Public Var Witness}
+    {F : CompressionLowerFramework}
+    (U : RealM4CNFUniformBitFixingData D)
+    (eta : Nat)
+    (eta_pos : 0 < eta)
+    (targetBlocks_gt_decoder :
+      realM4UniformSelfReductionDecoderCost U < F.targetBlocks) :
+    realM4UniformSelfReductionDecoderCost U < eta * F.targetBlocks := by
+  have eta_one_le : 1 ≤ eta := Nat.succ_le_of_lt eta_pos
+  have floor_ge_targetBlocks : F.targetBlocks ≤ eta * F.targetBlocks := by
+    simpa [one_mul] using Nat.mul_le_mul_right F.targetBlocks eta_one_le
+  exact lt_of_lt_of_le targetBlocks_gt_decoder floor_ge_targetBlocks
+
+/-- Sufficient real-M4 constant-decoder regime constructor using the fixed
+decoder cost and the large-target-block condition.  This does not construct
+the real target-block regime; it exposes the remaining numeric growth fact
+needed to turn the constant decoder into a below-linear-floor upper bound. -/
+def realM4_uniformConstantDecoderRegime_of_kpolyCompatibility_largeTarget
+    {PublicLock : Type u} {Quotient : Type v}
+    {LockAux : Type w} {Message : Type z}
+    {Public : Type x} {Var : Public -> Type y}
+    {Witness : Public -> Type y}
+    {D : AppendixICNFReadoutData
+      PublicLock Quotient LockAux Message Public Var Witness}
+    {F : CompressionLowerFramework}
+    (U : RealM4CNFUniformBitFixingData D)
+    (eta : Nat)
+    (eta_pos : 0 < eta)
+    (kpolyAt_eq : F.kpolyAt = realM4UniformConstantDecoderKpolyAt U)
+    (etaTimes_eq : F.etaTimes = realCNFLinearEtaTimes eta)
+    (targetBlocks_gt_decoder :
+      realM4UniformSelfReductionDecoderCost U < F.targetBlocks) :
+    RealM4UniformConstantDecoderRegime F U :=
+  realM4_uniformConstantDecoderRegime_of_kpolyCompatibility
+    U eta kpolyAt_eq etaTimes_eq
+    (realM4_uniformSelfReductionDecoderCost_lt_linearFloor_of_targetBlocks_gt
+      U eta eta_pos targetBlocks_gt_decoder)
+
 /-! ## Real-M4 lower machine as construction data -/
 
 /-- Explicit real lower-side machine data: the product small-success and
@@ -5459,6 +5505,43 @@ def ofKpolyCompatibility
         (kpolyAt_eq_of_inP hP)
         (etaTimes_eq_of_inP hP)
         (floor_dominates_decoder_of_inP hP)
+
+/-- Build the support-neutral official constant-decoder obligation from
+K-poly compatibility facts plus the large-target-block condition.  This
+replaces the direct below-linear-floor proof by the more concrete sufficient
+facts that the linear coefficient is positive and the real target-block count
+exceeds the fixed decoder cost for each P-derived decider family. -/
+def ofKpolyCompatibilityLargeTarget
+    (eta_of_inP : C.inP N.separatedLanguage -> Nat)
+    (eta_pos_of_inP :
+      ∀ hP : C.inP N.separatedLanguage, 0 < eta_of_inP hP)
+    (kpolyAt_eq_of_inP :
+      ∀ hP : C.inP N.separatedLanguage,
+        F.kpolyAt =
+          realM4UniformConstantDecoderKpolyAt
+            (uniformSupport.withPNPDecider
+              (P.pnpDeciderFamily_of_inP hP)))
+    (etaTimes_eq_of_inP :
+      ∀ hP : C.inP N.separatedLanguage,
+        F.etaTimes = realCNFLinearEtaTimes (eta_of_inP hP))
+    (targetBlocks_gt_decoder_of_inP :
+      ∀ hP : C.inP N.separatedLanguage,
+        realM4UniformSelfReductionDecoderCost
+            (uniformSupport.withPNPDecider
+              (P.pnpDeciderFamily_of_inP hP)) <
+          F.targetBlocks) :
+    RealM4OfficialPToUniformConstantDecoderRegimeData
+      D F C uniformSupport N P where
+  constantDecoderRegime_of_inP := by
+    intro hP
+    exact
+      realM4_uniformConstantDecoderRegime_of_kpolyCompatibility_largeTarget
+        (uniformSupport.withPNPDecider (P.pnpDeciderFamily_of_inP hP))
+        (eta_of_inP hP)
+        (eta_pos_of_inP hP)
+        (kpolyAt_eq_of_inP hP)
+        (etaTimes_eq_of_inP hP)
+        (targetBlocks_gt_decoder_of_inP hP)
 
 /-- Reindex support-neutral constant-decoder data to the legacy upper-support
 package. -/
@@ -10759,6 +10842,33 @@ theorem realM4OfficialPToUniformConstantDecoderRegimeKpolyCompatibilityConstruct
 
 def realM4OfficialPToUniformConstantDecoderRegimeKpolyCompatibilityStatement : String :=
   "The support-neutral official P-to-constant-decoder-regime obligation is constructed from explicit P-membership-indexed K-poly compatibility facts: the P-derived SAT decider family must identify the real lower framework's kpolyAt with the fixed constant decoder program, identify etaTimes with the linear floor, and prove the fixed decoder cost lies below that floor.  This decomposes the bridge obligation; it does not prove those compatibility facts from P-membership."
+
+def realM4OfficialPToUniformConstantDecoderRegimeLargeTargetCompatibilityConstructionInputs :
+    List String := [
+  "officialLanguageNPData",
+  "officialPToDeciderFamilyData",
+  "uniformCNFSupportData",
+  "pMembershipEtaPositive",
+  "pMembershipKpolyAtConstantDecoderIdentification",
+  "pMembershipEtaTimesLinearFloorIdentification",
+  "pMembershipTargetBlocksExceedsConstantDecoderCost"
+]
+
+theorem
+    realM4OfficialPToUniformConstantDecoderRegimeLargeTargetCompatibilityConstructionInputs_exact :
+    realM4OfficialPToUniformConstantDecoderRegimeLargeTargetCompatibilityConstructionInputs =
+      [ "officialLanguageNPData",
+        "officialPToDeciderFamilyData",
+        "uniformCNFSupportData",
+        "pMembershipEtaPositive",
+        "pMembershipKpolyAtConstantDecoderIdentification",
+        "pMembershipEtaTimesLinearFloorIdentification",
+        "pMembershipTargetBlocksExceedsConstantDecoderCost" ] := by
+  rfl
+
+def realM4OfficialPToUniformConstantDecoderRegimeLargeTargetCompatibilityStatement :
+    String :=
+  "The support-neutral official P-to-constant-decoder-regime obligation can also be constructed from K-poly compatibility plus a large-target-block condition: eta is positive, kpolyAt identifies with the fixed constant decoder program, etaTimes identifies with the linear floor, and the real target-block count exceeds the fixed decoder cost.  This turns the below-linear-floor proof into a numeric growth obligation; it does not construct the real target-block regime."
 
 def realM4OfficialPToConstantDecoderRegimeConstructionInputs :
     List String := [
