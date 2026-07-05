@@ -1885,6 +1885,410 @@ theorem xorGaugeSingleMessageAppendixICNF_noPublicReadoutTags :
         xorGaugeSingleMessageProjection, xorGaugeSingleMessageAssignment,
         xorGaugeSingleMessageM] using hreadout)
 
+/-! ## Gauge-buffered Appendix-I CNF admissible histories -/
+
+/-- Build an Appendix-I CNF world from a public instance and the free hidden
+gauge bit.  The message coordinate is the forced public readout. -/
+def xorGaugeSingleMessageAppendixICNFWorldOf
+    (Y : XorGaugeSingleMessagePublic) (gauge : Bool) :
+    RealM4CNFWorld xorGaugeSingleMessageAppendixICNFReadoutData where
+  publicInstance := Y
+  support := trivial
+  assignment := xorGaugeSingleMessageAssignment Y gauge
+  sat := xorGaugeSingleMessageFormula_satisfied_assignment Y gauge
+
+/-- Read the hidden gauge bit from an Appendix-I CNF world. -/
+def xorGaugeSingleMessageAppendixICNFWorldGauge
+    (omega : RealM4CNFWorld xorGaugeSingleMessageAppendixICNFReadoutData) :
+    Bool :=
+  omega.assignment 1
+
+@[simp] theorem xorGaugeSingleMessageAppendixICNFWorldOf_publicInstance
+    (Y : XorGaugeSingleMessagePublic) (gauge : Bool) :
+    (xorGaugeSingleMessageAppendixICNFWorldOf Y gauge).publicInstance = Y :=
+  rfl
+
+@[simp] theorem xorGaugeSingleMessageAppendixICNFWorldOf_gauge
+    (Y : XorGaugeSingleMessagePublic) (gauge : Bool) :
+    xorGaugeSingleMessageAppendixICNFWorldGauge
+      (xorGaugeSingleMessageAppendixICNFWorldOf Y gauge) = gauge := by
+  simp [xorGaugeSingleMessageAppendixICNFWorldGauge,
+    xorGaugeSingleMessageAppendixICNFWorldOf]
+
+/-- The concrete Appendix-I CNF world carrier is exactly a public instance plus
+the free hidden gauge bit. -/
+def xorGaugeSingleMessageAppendixICNFWorldEquiv :
+    RealM4CNFWorld xorGaugeSingleMessageAppendixICNFReadoutData ≃
+      XorGaugeSingleMessagePublic × Bool where
+  toFun := fun omega =>
+    (omega.publicInstance, xorGaugeSingleMessageAppendixICNFWorldGauge omega)
+  invFun := fun yg =>
+    xorGaugeSingleMessageAppendixICNFWorldOf yg.1 yg.2
+  left_inv := by
+    intro omega
+    cases omega with
+    | mk Y hY W sat =>
+        have hmsg : W 0 = xorGaugeSingleMessageM Y := by
+          simpa [xorGaugeSingleMessageAppendixICNFReadoutData] using
+            (xorGaugeSingleMessageFormula_sat_iff.mp sat)
+        simp [xorGaugeSingleMessageAppendixICNFWorldGauge,
+          xorGaugeSingleMessageAppendixICNFWorldOf,
+          RealM4CNFWorld.mk.injEq]
+        funext i
+        fin_cases i <;>
+          simp [xorGaugeSingleMessageAssignment, hmsg]
+  right_inv := by
+    intro yg
+    cases yg with
+    | mk Y gauge =>
+        simp [xorGaugeSingleMessageAppendixICNFWorldGauge,
+          xorGaugeSingleMessageAppendixICNFWorldOf]
+
+/-- The Appendix-I CNF world surface is finite because it is equivalent to a
+finite public instance plus one hidden gauge bit. -/
+noncomputable instance :
+    Fintype
+      (RealM4CNFWorld xorGaugeSingleMessageAppendixICNFReadoutData) :=
+  Fintype.ofEquiv (XorGaugeSingleMessagePublic × Bool)
+    xorGaugeSingleMessageAppendixICNFWorldEquiv.symm
+
+/-- The Appendix-I CNF world surface is inhabited by a canonical satisfying
+assignment. -/
+instance :
+    Nonempty
+      (RealM4CNFWorld xorGaugeSingleMessageAppendixICNFReadoutData) :=
+  ⟨xorGaugeSingleMessageAppendixICNFWorldOf (false, false) false⟩
+
+/-- Flipping the left public coordinate toggles the Appendix-I CNF world target
+while preserving the hidden gauge bit. -/
+def xorGaugeSingleMessageAppendixICNFWorldFlipLeft
+    (omega : RealM4CNFWorld xorGaugeSingleMessageAppendixICNFReadoutData) :
+    RealM4CNFWorld xorGaugeSingleMessageAppendixICNFReadoutData :=
+  xorGaugeSingleMessageAppendixICNFWorldOf
+    (xorSingleMessageFlipLeft omega.publicInstance)
+    (xorGaugeSingleMessageAppendixICNFWorldGauge omega)
+
+theorem xorGaugeSingleMessageAppendixICNFWorldOf_public_gauge_eq
+    (omega : RealM4CNFWorld xorGaugeSingleMessageAppendixICNFReadoutData) :
+    xorGaugeSingleMessageAppendixICNFWorldOf omega.publicInstance
+        (xorGaugeSingleMessageAppendixICNFWorldGauge omega) =
+      omega :=
+  xorGaugeSingleMessageAppendixICNFWorldEquiv.left_inv omega
+
+/-- The false and true target fibers of the Appendix-I CNF world surface are
+paired by flipping the left public coordinate and preserving the hidden gauge
+bit. -/
+def xorGaugeSingleMessageAppendixICNFWorldTargetFlipEquiv :
+    {omega :
+      RealM4CNFWorld xorGaugeSingleMessageAppendixICNFReadoutData //
+      xorGaugeSingleMessageAppendixICNFWorldTarget omega = false} ≃
+      {omega :
+        RealM4CNFWorld xorGaugeSingleMessageAppendixICNFReadoutData //
+        xorGaugeSingleMessageAppendixICNFWorldTarget omega = true} where
+  toFun := fun omega =>
+    ⟨xorGaugeSingleMessageAppendixICNFWorldFlipLeft omega.val, by
+      rcases omega with ⟨omega, hω⟩
+      cases omega with
+      | mk Y hY W sat =>
+          rcases Y with ⟨b0, b1⟩
+          cases b0 <;> cases b1 <;>
+            simp [xorGaugeSingleMessageAppendixICNFWorldTarget,
+              xorGaugeSingleMessageAppendixICNFWorldFlipLeft,
+              xorGaugeSingleMessageAppendixICNFWorldOf,
+              realM4CNFMessageOfPublic,
+              xorGaugeSingleMessageAppendixICNFReadoutData,
+              xorGaugeSingleMessageM, xorSingleMessageFlipLeft,
+              xorSingleMessageM] at hω ⊢⟩
+  invFun := fun omega =>
+    ⟨xorGaugeSingleMessageAppendixICNFWorldFlipLeft omega.val, by
+      rcases omega with ⟨omega, hω⟩
+      cases omega with
+      | mk Y hY W sat =>
+          rcases Y with ⟨b0, b1⟩
+          cases b0 <;> cases b1 <;>
+            simp [xorGaugeSingleMessageAppendixICNFWorldTarget,
+              xorGaugeSingleMessageAppendixICNFWorldFlipLeft,
+              xorGaugeSingleMessageAppendixICNFWorldOf,
+              realM4CNFMessageOfPublic,
+              xorGaugeSingleMessageAppendixICNFReadoutData,
+              xorGaugeSingleMessageM, xorSingleMessageFlipLeft,
+              xorSingleMessageM] at hω ⊢⟩
+  left_inv := by
+    intro omega
+    apply Subtype.ext
+    change
+      xorGaugeSingleMessageAppendixICNFWorldFlipLeft
+          (xorGaugeSingleMessageAppendixICNFWorldFlipLeft omega.val) =
+        omega.val
+    simp [xorGaugeSingleMessageAppendixICNFWorldFlipLeft,
+      xorSingleMessageFlipLeft_involutive,
+      xorGaugeSingleMessageAppendixICNFWorldOf_public_gauge_eq]
+  right_inv := by
+    intro omega
+    apply Subtype.ext
+    change
+      xorGaugeSingleMessageAppendixICNFWorldFlipLeft
+          (xorGaugeSingleMessageAppendixICNFWorldFlipLeft omega.val) =
+        omega.val
+    simp [xorGaugeSingleMessageAppendixICNFWorldFlipLeft,
+      xorSingleMessageFlipLeft_involutive,
+      xorGaugeSingleMessageAppendixICNFWorldOf_public_gauge_eq]
+
+theorem xorGaugeSingleMessageAppendixICNFWorldTarget_false_card_eq_true :
+    Fintype.card
+        {omega :
+          RealM4CNFWorld xorGaugeSingleMessageAppendixICNFReadoutData //
+          xorGaugeSingleMessageAppendixICNFWorldTarget omega = false} =
+      Fintype.card
+        {omega :
+          RealM4CNFWorld xorGaugeSingleMessageAppendixICNFReadoutData //
+          xorGaugeSingleMessageAppendixICNFWorldTarget omega = true} :=
+  Fintype.card_congr xorGaugeSingleMessageAppendixICNFWorldTargetFlipEquiv
+
+theorem xorGaugeSingleMessageAppendixICNFWorld_constantTrue_correct_card_eq_true :
+    Fintype.card
+        {omega :
+          RealM4CNFWorld xorGaugeSingleMessageAppendixICNFReadoutData //
+          (fun _ :
+            RealM4CNFWorld xorGaugeSingleMessageAppendixICNFReadoutData =>
+              true) omega =
+            xorGaugeSingleMessageAppendixICNFWorldTarget omega} =
+      Fintype.card
+        {omega :
+          RealM4CNFWorld xorGaugeSingleMessageAppendixICNFReadoutData //
+          xorGaugeSingleMessageAppendixICNFWorldTarget omega = true} := by
+  let e :
+      {omega :
+        RealM4CNFWorld xorGaugeSingleMessageAppendixICNFReadoutData //
+        (fun _ :
+          RealM4CNFWorld xorGaugeSingleMessageAppendixICNFReadoutData =>
+            true) omega =
+          xorGaugeSingleMessageAppendixICNFWorldTarget omega} ≃
+        {omega :
+          RealM4CNFWorld xorGaugeSingleMessageAppendixICNFReadoutData //
+          xorGaugeSingleMessageAppendixICNFWorldTarget omega = true} :=
+    { toFun := fun omega => ⟨omega.val, omega.property.symm⟩
+      invFun := fun omega => ⟨omega.val, omega.property.symm⟩
+      left_inv := by
+        intro omega
+        cases omega
+        rfl
+      right_inv := by
+        intro omega
+        cases omega
+        rfl }
+  exact Fintype.card_congr e
+
+theorem xorGaugeSingleMessageAppendixICNFWorld_card_eq_two_mul_target_true :
+    Fintype.card
+        (RealM4CNFWorld xorGaugeSingleMessageAppendixICNFReadoutData) =
+      2 * Fintype.card
+        {omega :
+          RealM4CNFWorld xorGaugeSingleMessageAppendixICNFReadoutData //
+          xorGaugeSingleMessageAppendixICNFWorldTarget omega = true} := by
+  set a : Nat :=
+    Fintype.card
+      {omega :
+        RealM4CNFWorld xorGaugeSingleMessageAppendixICNFReadoutData //
+        xorGaugeSingleMessageAppendixICNFWorldTarget omega = true}
+  have hcomp :
+      Fintype.card
+          {omega :
+            RealM4CNFWorld xorGaugeSingleMessageAppendixICNFReadoutData //
+            xorGaugeSingleMessageAppendixICNFWorldTarget omega = false} =
+        Fintype.card
+            (RealM4CNFWorld
+              xorGaugeSingleMessageAppendixICNFReadoutData) - a := by
+    simpa [a] using
+      (Fintype.card_subtype_compl
+        (fun omega :
+          RealM4CNFWorld xorGaugeSingleMessageAppendixICNFReadoutData =>
+          xorGaugeSingleMessageAppendixICNFWorldTarget omega = true))
+  have heq :
+      a =
+        Fintype.card
+          {omega :
+            RealM4CNFWorld xorGaugeSingleMessageAppendixICNFReadoutData //
+            xorGaugeSingleMessageAppendixICNFWorldTarget omega = false} := by
+    simpa [a] using
+      xorGaugeSingleMessageAppendixICNFWorldTarget_false_card_eq_true.symm
+  have hsub :
+      Fintype.card
+          (RealM4CNFWorld
+            xorGaugeSingleMessageAppendixICNFReadoutData) - a =
+        a := by
+    simpa [heq] using hcomp.symm
+  have hle :
+      a ≤
+        Fintype.card
+          (RealM4CNFWorld
+            xorGaugeSingleMessageAppendixICNFReadoutData) := by
+    simpa [a] using
+      Fintype.card_subtype_le
+        (fun omega :
+          RealM4CNFWorld xorGaugeSingleMessageAppendixICNFReadoutData =>
+          xorGaugeSingleMessageAppendixICNFWorldTarget omega = true)
+  have hsum :
+      Fintype.card
+          (RealM4CNFWorld
+            xorGaugeSingleMessageAppendixICNFReadoutData) = a + a :=
+    Nat.eq_add_of_sub_eq hle hsub
+  simpa [a, two_mul, Nat.add_comm] using hsum
+
+theorem xorGaugeSingleMessageAppendixICNFWorldTarget_true_card_pos :
+    0 <
+      Fintype.card
+        {omega :
+          RealM4CNFWorld xorGaugeSingleMessageAppendixICNFReadoutData //
+          xorGaugeSingleMessageAppendixICNFWorldTarget omega = true} := by
+  exact
+    Fintype.card_pos_iff.mpr
+      ⟨⟨xorGaugeSingleMessageAppendixICNFWorldOf (false, true) false, by
+        simp [xorGaugeSingleMessageAppendixICNFWorldTarget,
+          xorGaugeSingleMessageAppendixICNFWorldOf,
+          realM4CNFMessageOfPublic,
+          xorGaugeSingleMessageAppendixICNFReadoutData,
+          xorGaugeSingleMessageM, xorSingleMessageM]⟩⟩
+
+/-- The Appendix-I CNF world target is globally balanced. -/
+theorem xorGaugeSingleMessageAppendixICNFWorld_target_balanced :
+    BalancedBit xorGaugeSingleMessageAppendixICNFWorldTarget := by
+  unfold BalancedBit globalDecoderSuccess
+  rw [xorGaugeSingleMessageAppendixICNFWorld_constantTrue_correct_card_eq_true]
+  rw [xorGaugeSingleMessageAppendixICNFWorld_card_eq_two_mul_target_true]
+  set a : Nat :=
+    Fintype.card
+      {omega :
+        RealM4CNFWorld xorGaugeSingleMessageAppendixICNFReadoutData //
+        xorGaugeSingleMessageAppendixICNFWorldTarget omega = true}
+  have hpos : 0 < a := by
+    simpa [a] using
+      xorGaugeSingleMessageAppendixICNFWorldTarget_true_card_pos
+  have hne : (a : Rat) ≠ 0 := by
+    exact_mod_cast (Nat.ne_of_gt hpos)
+  rw [Nat.cast_mul]
+  field_simp [hne]
+  norm_num
+
+/-- A single-public-coordinate history field over Appendix-I CNF worlds. -/
+def xorGaugeSingleMessageAppendixICNFWorldHistoryField
+    (coord : XorSingleMessagePublicCoordinate) :
+    FiniteSigmaField
+      (RealM4CNFWorld xorGaugeSingleMessageAppendixICNFReadoutData) where
+  Atom := Bool
+  atomDecidable := inferInstance
+  atom := fun omega =>
+    xorSingleMessagePublicCoordinateValue coord omega.publicInstance
+
+/-- Flip the public coordinate not observed by the history field, preserving
+the observed atom and hidden gauge bit while toggling the target. -/
+def xorGaugeSingleMessageAppendixICNFWorldFlipUnobserved
+    (coord : XorSingleMessagePublicCoordinate)
+    (omega : RealM4CNFWorld xorGaugeSingleMessageAppendixICNFReadoutData) :
+    RealM4CNFWorld xorGaugeSingleMessageAppendixICNFReadoutData :=
+  xorGaugeSingleMessageAppendixICNFWorldOf
+    (xorSingleMessageFlipUnobserved coord omega.publicInstance)
+    (xorGaugeSingleMessageAppendixICNFWorldGauge omega)
+
+/-- Inside each single-coordinate history atom, preserving the hidden gauge bit
+and flipping the unobserved public coordinate pairs target-true and
+target-false Appendix-I CNF worlds. -/
+def xorGaugeSingleMessageAppendixICNFWorldHistoryFieldFiberFlipEquiv
+    (coord : XorSingleMessagePublicCoordinate) (atom : Bool) :
+    FiberTrue
+        (fun omega :
+          RealM4CNFWorld xorGaugeSingleMessageAppendixICNFReadoutData =>
+          xorSingleMessagePublicCoordinateValue coord omega.publicInstance)
+        xorGaugeSingleMessageAppendixICNFWorldTarget atom ≃
+      FiberFalse
+        (fun omega :
+          RealM4CNFWorld xorGaugeSingleMessageAppendixICNFReadoutData =>
+          xorSingleMessagePublicCoordinateValue coord omega.publicInstance)
+        xorGaugeSingleMessageAppendixICNFWorldTarget atom where
+  toFun := fun omega =>
+    ⟨xorGaugeSingleMessageAppendixICNFWorldFlipUnobserved coord omega.val, by
+      rcases omega with ⟨omega, hω⟩
+      cases omega with
+      | mk Y hY W sat =>
+          cases coord <;> rcases Y with ⟨b0, b1⟩ <;>
+            cases b0 <;> cases b1 <;> cases atom <;>
+              simp [xorGaugeSingleMessageAppendixICNFWorldFlipUnobserved,
+                xorGaugeSingleMessageAppendixICNFWorldOf,
+                xorSingleMessagePublicCoordinateValue,
+                xorGaugeSingleMessageAppendixICNFWorldTarget,
+                realM4CNFMessageOfPublic,
+                xorGaugeSingleMessageAppendixICNFReadoutData,
+                xorGaugeSingleMessageM, xorSingleMessageFlipUnobserved,
+                xorSingleMessageM] at hω ⊢⟩
+  invFun := fun omega =>
+    ⟨xorGaugeSingleMessageAppendixICNFWorldFlipUnobserved coord omega.val, by
+      rcases omega with ⟨omega, hω⟩
+      cases omega with
+      | mk Y hY W sat =>
+          cases coord <;> rcases Y with ⟨b0, b1⟩ <;>
+            cases b0 <;> cases b1 <;> cases atom <;>
+              simp [xorGaugeSingleMessageAppendixICNFWorldFlipUnobserved,
+                xorGaugeSingleMessageAppendixICNFWorldOf,
+                xorSingleMessagePublicCoordinateValue,
+                xorGaugeSingleMessageAppendixICNFWorldTarget,
+                realM4CNFMessageOfPublic,
+                xorGaugeSingleMessageAppendixICNFReadoutData,
+                xorGaugeSingleMessageM, xorSingleMessageFlipUnobserved,
+                xorSingleMessageM] at hω ⊢⟩
+  left_inv := by
+    intro omega
+    apply Subtype.ext
+    change
+      xorGaugeSingleMessageAppendixICNFWorldFlipUnobserved coord
+          (xorGaugeSingleMessageAppendixICNFWorldFlipUnobserved coord
+            omega.val) =
+        omega.val
+    simp [xorGaugeSingleMessageAppendixICNFWorldFlipUnobserved,
+      xorSingleMessageFlipUnobserved_involutive,
+      xorGaugeSingleMessageAppendixICNFWorldOf_public_gauge_eq]
+  right_inv := by
+    intro omega
+    apply Subtype.ext
+    change
+      xorGaugeSingleMessageAppendixICNFWorldFlipUnobserved coord
+          (xorGaugeSingleMessageAppendixICNFWorldFlipUnobserved coord
+            omega.val) =
+        omega.val
+    simp [xorGaugeSingleMessageAppendixICNFWorldFlipUnobserved,
+      xorSingleMessageFlipUnobserved_involutive,
+      xorGaugeSingleMessageAppendixICNFWorldOf_public_gauge_eq]
+
+/-- Every single-public-coordinate history field over Appendix-I CNF worlds
+has balanced target fibers. -/
+theorem xorGaugeSingleMessageAppendixICNFWorld_historyField_balancedConditioning
+    (coord : XorSingleMessagePublicCoordinate) :
+    BalancedConditioning
+      (xorGaugeSingleMessageAppendixICNFWorldHistoryField coord)
+      xorGaugeSingleMessageAppendixICNFWorldTarget := by
+  change Neutral
+    (fun omega :
+      RealM4CNFWorld xorGaugeSingleMessageAppendixICNFReadoutData =>
+      xorSingleMessagePublicCoordinateValue coord omega.publicInstance)
+    xorGaugeSingleMessageAppendixICNFWorldTarget
+  intro atom
+  exact
+    Fintype.card_congr
+      (xorGaugeSingleMessageAppendixICNFWorldHistoryFieldFiberFlipEquiv
+        coord atom)
+
+/-- Structural `admissibleHistories` transferred to the concrete Appendix-I CNF
+worlds: the target is globally balanced and remains balanced after conditioning
+on either single public coordinate. -/
+theorem xorGaugeSingleMessageAppendixICNFWorld_admissibleHistories
+    (coord : XorSingleMessagePublicCoordinate) :
+    BalancedBit xorGaugeSingleMessageAppendixICNFWorldTarget ∧
+      BalancedConditioning
+        (xorGaugeSingleMessageAppendixICNFWorldHistoryField coord)
+        xorGaugeSingleMessageAppendixICNFWorldTarget :=
+  ⟨xorGaugeSingleMessageAppendixICNFWorld_target_balanced,
+    xorGaugeSingleMessageAppendixICNFWorld_historyField_balancedConditioning
+      coord⟩
+
 /-! ## Gauge-buffered XOR CNF self-reduction under an explicit decider -/
 
 /-- Explicit P=NP-side SAT decider object for the concrete gauge-buffered
