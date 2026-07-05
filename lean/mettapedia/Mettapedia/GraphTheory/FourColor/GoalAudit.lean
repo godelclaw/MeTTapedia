@@ -579,6 +579,49 @@ theorem section92Step4RadialFaceArchiveCaseFactoredCoverageGeometryDataObstructi
     Section92Step4RadialFaceArchiveCaseFactoredCoverageGeometryDataObstructionTarget :=
   section92Step4RadialFaceArchiveCaseFactoredCoverageGeometryDataObstructionTarget
 
+theorem closedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSampleRadialFaceCasesCoveredByLab_of_rows_audit
+    (hrows :
+      ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSampleRadialFaceRowsCoveredByLab) :
+    ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSampleRadialFaceCasesCoveredByLab :=
+  closedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSampleRadialFaceCasesCoveredByLab_of_rows
+    hrows
+
+theorem closedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSlice1000302RadialFaceCasesCoveredByLab_of_rows_audit
+    (hrows :
+      ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSlice1000302RadialFaceRowsCoveredByLab) :
+    ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSlice1000302RadialFaceCasesCoveredByLab :=
+  closedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSlice1000302RadialFaceCasesCoveredByLab_of_rows
+    hrows
+
+theorem closedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceArchiveNoRadialFaceCoherentRepresentation_of_row_coverage_audit
+    (hsample :
+      ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSampleRadialFaceRowsCoveredByLab)
+    (hslice :
+      ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSlice1000302RadialFaceRowsCoveredByLab)
+    {V : Type} {G : SimpleGraph V}
+    (representation : ClosedCollarWindingFreedomSimplePatchN6Representation G)
+    (hcase :
+      (representation.patchTopologyIndex, representation.radialOrderIndex.1) ∈
+        closedCollarSimplePatchN6AnnularEmbeddingRadialFaceArchiveCases)
+    (hradial :
+      ClosedCollarWindingFreedomAnnularRealization.RadialFaceCoherent
+        representation.annular) :
+    False :=
+  closedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceArchiveNoRadialFaceCoherentRepresentation_of_row_coverage
+    hsample hslice representation hcase hradial
+
+theorem section92Step4RadialFaceArchiveRowFactoredCoverageNormalFormObstructionTarget_audit :
+    Section92Step4RadialFaceArchiveRowFactoredCoverageNormalFormObstructionTarget :=
+  section92Step4RadialFaceArchiveRowFactoredCoverageNormalFormObstructionTarget
+
+theorem section92Step4RadialFaceArchiveRowFactoredCoverageEmbeddedGeometryObstructionTarget_audit :
+    Section92Step4RadialFaceArchiveRowFactoredCoverageEmbeddedGeometryObstructionTarget :=
+  section92Step4RadialFaceArchiveRowFactoredCoverageEmbeddedGeometryObstructionTarget
+
+theorem section92Step4RadialFaceArchiveRowFactoredCoverageGeometryDataObstructionTarget_audit :
+    Section92Step4RadialFaceArchiveRowFactoredCoverageGeometryDataObstructionTarget :=
+  section92Step4RadialFaceArchiveRowFactoredCoverageGeometryDataObstructionTarget
+
 theorem closedCollarWindingFreedomSimplePatchN8First1000000NoProfilePreservingEvidence_audit :
     ClosedCollarWindingFreedomSimplePatchN8First1000000NoProfilePreservingEvidence :=
   closedCollarWindingFreedomSimplePatchN8First1000000NoProfilePreservingEvidence
