@@ -1085,6 +1085,12 @@ structure V13RealLinearSmallGaugeCNFEnsembleWorld where
   gauge : Bool
 deriving DecidableEq, Fintype
 
+/-- Public input for the global small real-linear gauge-CNF ensemble: the
+locked message bit selecting the concrete public CNF instance. -/
+def v13RealLinearSmallGaugeCNFEnsemblePublicInput
+    (omega : V13RealLinearSmallGaugeCNFEnsembleWorld) : Bool :=
+  omega.msg
+
 /-- The satisfying CNF assignment represented by a global small-ensemble
 world. -/
 def v13RealLinearSmallGaugeCNFEnsembleAssignment
@@ -1118,6 +1124,22 @@ theorem v13RealLinearSmallGaugeCNFEnsembleTarget_eq_message
     v13RealLinearSmallGaugeCNFEnsembleAssignment,
     v13RealLinearSmallGaugeCNFReadout,
     v13RealLinearSmallGaugeCNFMessage]
+
+/-! ## Global small real-linear gauge-CNF single-message transfer -/
+
+/-- Structural `singleMessage` transfer for the global two-message small
+real-linear gauge-CNF ensemble.  Inside a fixed public CNF instance, varying
+the hidden gauge bit does not change the target readout. -/
+theorem v13RealLinearSmallGaugeCNFEnsemble_singleMessage :
+    ∀ omega₀ omega₁ : V13RealLinearSmallGaugeCNFEnsembleWorld,
+      v13RealLinearSmallGaugeCNFEnsemblePublicInput omega₀ =
+        v13RealLinearSmallGaugeCNFEnsemblePublicInput omega₁ ->
+        v13RealLinearSmallGaugeCNFEnsembleTarget omega₀ =
+          v13RealLinearSmallGaugeCNFEnsembleTarget omega₁ := by
+  intro omega₀ omega₁ hPublic
+  rw [v13RealLinearSmallGaugeCNFEnsembleTarget_eq_message omega₀,
+    v13RealLinearSmallGaugeCNFEnsembleTarget_eq_message omega₁]
+  exact congrArg v13RealLinearSmallGaugeCNFMessage hPublic
 
 /-- History field for the global small ensemble: observe only the hidden gauge
 bit, not the public message bit. -/
