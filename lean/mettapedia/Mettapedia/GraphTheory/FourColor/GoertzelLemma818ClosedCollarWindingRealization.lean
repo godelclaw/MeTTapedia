@@ -1,3 +1,4 @@
+import Mettapedia.GraphTheory.FourColor.CyclicEdgeCut
 import Mettapedia.GraphTheory.FourColor.GoertzelLemma818ClosedCollarWinding
 
 namespace Mettapedia.GraphTheory.FourColor
@@ -931,6 +932,91 @@ theorem closedCollarWindingFreedomSimplePatchN6Slices800000_1000000ExactCollarTw
       ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_,
       ?_, ?_, ?_⟩ <;>
     decide
+
+/-- The two exact diagonal collar two-pole templates isolated by the simple-patch lab. -/
+inductive ClosedCollarDiagonalTwoPoleTemplateId where
+  | forward
+  | reverse
+  deriving DecidableEq, Repr
+
+def ClosedCollarDiagonalTwoPoleTemplateId.cutEdges :
+    ClosedCollarDiagonalTwoPoleTemplateId → List String
+  | forward => ["g0:F1F0", "g1:F4F5"]
+  | reverse => ["g0:F4F5", "g1:F1F0"]
+
+def ClosedCollarDiagonalTwoPoleTemplateId.sideCollarVertices :
+    ClosedCollarDiagonalTwoPoleTemplateId → List String
+  | forward => ["g0:F1", "g1:F5"]
+  | reverse => ["g0:F5", "g1:F1"]
+
+def ClosedCollarDiagonalTwoPoleTemplateId.countInN6Slices800000_1000000 :
+    ClosedCollarDiagonalTwoPoleTemplateId → Nat
+  | forward => 216
+  | reverse => 200
+
+/--
+Graph-facing carrier for one of the exact diagonal collar two-pole templates.
+The string labels pin the lab template, while `separator` is the reusable
+normal-form interface: an exact realization would be a small cyclic separator
+candidate in the ambient graph.
+-/
+structure ClosedCollarDiagonalTwoPoleTemplateCandidate
+    (G : SimpleGraph V) where
+  template : ClosedCollarDiagonalTwoPoleTemplateId
+  separator : CyclicSeparatorCandidate G
+
+def ClosedCollarDiagonalTwoPoleTemplateCandidate.cutEdges
+    {G : SimpleGraph V} (candidate : ClosedCollarDiagonalTwoPoleTemplateCandidate G) :
+    List String :=
+  candidate.template.cutEdges
+
+def ClosedCollarDiagonalTwoPoleTemplateCandidate.sideCollarVertices
+    {G : SimpleGraph V} (candidate : ClosedCollarDiagonalTwoPoleTemplateCandidate G) :
+    List String :=
+  candidate.template.sideCollarVertices
+
+def ClosedCollarDiagonalTwoPoleTemplateCandidate.Realizes
+    {G : SimpleGraph V} (candidate : ClosedCollarDiagonalTwoPoleTemplateCandidate G) :
+    Prop :=
+  candidate.separator.Realizes
+
+theorem ClosedCollarDiagonalTwoPoleTemplateCandidate.not_realizes_of_cyclicallyFiveEdgeConnected
+    {G : SimpleGraph V} (candidate : ClosedCollarDiagonalTwoPoleTemplateCandidate G)
+    (hcyclic : CyclicallyFiveEdgeConnected G) :
+    ¬ candidate.Realizes :=
+  candidate.separator.not_realizes_of_cyclicallyFiveEdgeConnected hcyclic
+
+/--
+Normal-form exclusion target for the exact diagonal collar two-pole templates:
+in a cyclically five-edge-connected ambient graph, neither exact template can
+be realized as the complete side-crossing support of its two-pole separator.
+-/
+def Section92WindingExactTemplateNormalFormExclusion : Prop :=
+  ∀ {V : Type} {G : SimpleGraph V},
+    ∀ candidate : ClosedCollarDiagonalTwoPoleTemplateCandidate G,
+      CyclicallyFiveEdgeConnected G → ¬ candidate.Realizes
+
+theorem section92WindingExactTemplateNormalFormExclusion :
+    Section92WindingExactTemplateNormalFormExclusion := by
+  intro V G candidate hcyclic
+  exact candidate.not_realizes_of_cyclicallyFiveEdgeConnected hcyclic
+
+/--
+The current formally supported S4 repair fork.  The lab has narrowed the
+surviving six-internal simple-patch blockers to the two exact diagonal collar
+two-pole templates, and the graph normal-form API excludes any exact realization
+of those templates under cyclic five-edge-connectivity.
+-/
+def ClosedCollarWindingFreedomExactTemplatesBlockedByCyclicallyFiveNormalForm :
+    Prop :=
+  ClosedCollarWindingFreedomSimplePatchN6Slices800000_1000000ExactCollarTwoPoleTemplateEvidence ∧
+    Section92WindingExactTemplateNormalFormExclusion
+
+theorem closedCollarWindingFreedomExactTemplatesBlockedByCyclicallyFiveNormalForm :
+    ClosedCollarWindingFreedomExactTemplatesBlockedByCyclicallyFiveNormalForm := by
+  exact
+    ⟨closedCollarWindingFreedomSimplePatchN6Slices800000_1000000ExactCollarTwoPoleTemplateEvidence,
+      section92WindingExactTemplateNormalFormExclusion⟩
 
 /--
 Representative planar profile-preserving samples from the six-internal
