@@ -2465,6 +2465,29 @@ structure ClosedCollarWindingFreedomNormalFormN6DetailedTaxonomyCoverage
   outcome : ClosedCollarWindingFreedomSimplePatchN6TaxonomyLabOutcome data
 
 /--
+First geometric sub-obligation for the n6 repair route: an honest normal-form
+annular realization can be extracted as one of the enumerated six-internal
+simple-patch representations.
+-/
+structure ClosedCollarWindingFreedomNormalFormN6RepresentationExtraction
+    {V : Type} {G : SimpleGraph V}
+    (normalForm : ClosedCollarWindingFreedomNormalFormRealization G) where
+  data : ClosedCollarWindingFreedomSimplePatchN6NormalFormRepresentation G
+  normalForm_eq : data.normalForm = normalForm
+
+/--
+Global extraction theorem needed before the finite taxonomy can apply: every
+honest normal-form annulus for the winding-freedom witness has an n6
+simple-patch representation.
+-/
+def ClosedCollarWindingFreedomEveryNormalFormHasN6Representation :
+    Prop :=
+  ∀ {V : Type} {G : SimpleGraph V},
+    (normalForm : ClosedCollarWindingFreedomNormalFormRealization G) →
+      Nonempty
+        (ClosedCollarWindingFreedomNormalFormN6RepresentationExtraction normalForm)
+
+/--
 The exact remaining geometric bridge for the n6 repair route: every honest
 normal-form annular realization of the winding-freedom witness is covered by
 the exhaustive n6 detailed taxonomy.
@@ -2475,6 +2498,22 @@ def ClosedCollarWindingFreedomEveryNormalFormCoveredByN6DetailedTaxonomy :
     (normalForm : ClosedCollarWindingFreedomNormalFormRealization G) →
       Nonempty
         (ClosedCollarWindingFreedomNormalFormN6DetailedTaxonomyCoverage normalForm)
+
+/--
+The monolithic n6 coverage bridge factors into two serious obligations:
+extract an n6 representation from the honest normal-form annulus, and classify
+that representation by the exhaustive detailed taxonomy.
+-/
+theorem closedCollarWindingFreedomEveryNormalFormCoveredByN6DetailedTaxonomy_of_extraction_of_classification
+    (hextract : ClosedCollarWindingFreedomEveryNormalFormHasN6Representation)
+    (hclassified :
+      ClosedCollarWindingFreedomSimplePatchN6NormalFormClassifiedByDetailedTaxonomy) :
+    ClosedCollarWindingFreedomEveryNormalFormCoveredByN6DetailedTaxonomy := by
+  intro V G normalForm
+  rcases hextract normalForm with ⟨extraction⟩
+  rcases hclassified extraction.data with ⟨outcome⟩
+  exact
+    ⟨⟨extraction.data, extraction.normalForm_eq, outcome⟩⟩
 
 /--
 Global repair-side consequence of the n6 detailed taxonomy bridge.  Once every
@@ -2522,6 +2561,24 @@ theorem section92Step4RepairedByN6DetailedTaxonomyTarget :
     closedCollarWindingFreedomNonrealizableInNormalFormByN6DetailedTaxonomy
       closedCollarWindingFreedomSimplePatchN6DetailedTaxonomyArtifactEvidence
       hcovered
+
+/--
+Factored repaired target for Section 9.2 Step 4: prove n6 extraction for every
+honest normal-form annulus, then prove the extracted representations are
+classified by the detailed taxonomy.
+-/
+def Section92Step4RepairedByN6ExtractionAndTaxonomyTarget : Prop :=
+  ClosedCollarWindingFreedomEveryNormalFormHasN6Representation →
+    ClosedCollarWindingFreedomSimplePatchN6NormalFormClassifiedByDetailedTaxonomy →
+      ClosedCollarWindingFreedomNonrealizableInNormalForm
+
+theorem section92Step4RepairedByN6ExtractionAndTaxonomyTarget :
+    Section92Step4RepairedByN6ExtractionAndTaxonomyTarget := by
+  intro hextract hclassified
+  exact
+    section92Step4RepairedByN6DetailedTaxonomyTarget
+      (closedCollarWindingFreedomEveryNormalFormCoveredByN6DetailedTaxonomy_of_extraction_of_classification
+        hextract hclassified)
 
 /--
 Representative planar profile-preserving samples from the six-internal

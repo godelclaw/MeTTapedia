@@ -178,6 +178,18 @@ theorem section92Step4RepairedByN6DetailedTaxonomyTarget_audit :
     Section92Step4RepairedByN6DetailedTaxonomyTarget :=
   section92Step4RepairedByN6DetailedTaxonomyTarget
 
+theorem closedCollarWindingFreedomEveryNormalFormCoveredByN6DetailedTaxonomy_of_extraction_of_classification_audit
+    (hextract : ClosedCollarWindingFreedomEveryNormalFormHasN6Representation)
+    (hclassified :
+      ClosedCollarWindingFreedomSimplePatchN6NormalFormClassifiedByDetailedTaxonomy) :
+    ClosedCollarWindingFreedomEveryNormalFormCoveredByN6DetailedTaxonomy :=
+  closedCollarWindingFreedomEveryNormalFormCoveredByN6DetailedTaxonomy_of_extraction_of_classification
+    hextract hclassified
+
+theorem section92Step4RepairedByN6ExtractionAndTaxonomyTarget_audit :
+    Section92Step4RepairedByN6ExtractionAndTaxonomyTarget :=
+  section92Step4RepairedByN6ExtractionAndTaxonomyTarget
+
 theorem closedCollarWindingFreedomSimplePatchTemplateBlockerArchiveEvidence_audit :
     ClosedCollarWindingFreedomSimplePatchTemplateBlockerArchiveEvidence :=
   closedCollarWindingFreedomSimplePatchTemplateBlockerArchiveEvidence
