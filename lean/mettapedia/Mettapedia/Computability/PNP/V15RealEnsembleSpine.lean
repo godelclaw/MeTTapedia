@@ -2250,6 +2250,70 @@ theorem realM4_conditionalClash_from_endgameMechanicalData_explicitPNP
     (C.parameterRecordExplicitPNP S starSWHardness
       safeQSSM boundedGaugeIncidence boundaryMixing)
 
+/--
+Covered-locks version of the real-ensemble conditional endgame staging
+theorem.  Instead of assuming the explicit-P=NP upper discharge package as an
+input, this theorem constructs it from the exposed real Appendix I/D
+construction ingredients: public-lock support coverage, D.8 locked-message
+rigidity, uniform CNF support, the constant decoder regime, and the explicit
+P=NP-side SAT decider family.
+
+This is still conditional staging for the real M4 spine, not a proof of
+`P != NP`; the listed construction ingredients remain to be proved for the
+manuscript ensemble.
+-/
+theorem realM4_conditionalClash_from_coveredLocksAndRigidity_explicitPNP
+    {Omega : Type u} [Fintype Omega] [Nonempty Omega]
+    {Public : Type v} {Neutral : Type w} {Safe : Type x}
+    {Gauge : Type y} {Transcript : Type z} [DecidableEq Transcript]
+    {Pair : Type a} [Fintype Pair]
+    {Stage : Type b} {Branch : Type c}
+    {HistoryAtom : Type d} {Pivot : Type e}
+    {Observer : Type f} {Output : Type f} {Skeleton : Type w}
+    {PublicLock : Type g} {Quotient : Type h}
+    {LockAux : Type i} {Message : Type j}
+    {CNFPublic : Type k} {Var : CNFPublic -> Type l}
+    {Witness : CNFPublic -> Type l}
+    {D : AppendixICNFReadoutData
+      PublicLock Quotient LockAux Message CNFPublic Var Witness}
+    (C : RealM4EndgameMechanicalData Omega Public Neutral Safe Gauge
+      Transcript Pair Stage Branch HistoryAtom Pivot Observer Output Skeleton)
+    (defaultMessage : Message)
+    (publicLockCoverage :
+      D.toAppendixDWitnessData.PublicLockCoveredBySupportedInstances)
+    (lockedMessageRigidity : D.core.LockedMessageRigidity)
+    (uniformSupport : RealM4CNFUniformSupportData D)
+    (pnpDeciderFamily : RealM4ExplicitPNPDeciderFamily D)
+    (constantDecoderRegime :
+      RealM4UniformConstantDecoderRegime C.lowerFramework
+        (uniformSupport.withPNPDecider pnpDeciderFamily))
+    (starSWHardness : CompressionStarSWHardness C.lowerFramework)
+    (safeQSSM :
+      ∀ q : Safe, 0 ≤ C.interfaceData.safeCost q ∧
+        C.interfaceData.safeCost q ≤ C.interfaceData.safeBudget)
+    (boundedGaugeIncidence :
+      ∀ gamma : Gauge,
+        C.interfaceData.gaugeIncidence gamma ≤ C.interfaceData.gaugeBound)
+    (boundaryMixing :
+      BoundaryMixingBound C.interfaceData.target C.interfaceData.pivotSummary
+        C.interfaceData.epsMix) :
+    UpperLowerClash
+      (C.interfaceWithAnalyticFrontier
+        safeQSSM boundedGaugeIncidence boundaryMixing)
+      (C.parameterRecordExplicitPNP
+        (RealM4SelfReductionUpperExplicitPNPDischarge.ofCoveredLocksAndRigidity
+          (D := D) (F := C.lowerFramework)
+          defaultMessage publicLockCoverage lockedMessageRigidity
+          uniformSupport pnpDeciderFamily constantDecoderRegime)
+        starSWHardness safeQSSM boundedGaugeIncidence boundaryMixing) :=
+  realM4_conditionalClash_from_endgameMechanicalData_explicitPNP
+    C
+    (RealM4SelfReductionUpperExplicitPNPDischarge.ofCoveredLocksAndRigidity
+      (D := D) (F := C.lowerFramework)
+      defaultMessage publicLockCoverage lockedMessageRigidity
+      uniformSupport pnpDeciderFamily constantDecoderRegime)
+    starSWHardness safeQSSM boundedGaugeIncidence boundaryMixing
+
 def realM4EndgameStagingConstructionInputs : List String := [
   "realM4EndgameMechanicalData",
   "realM4SelfReductionUpperDischarge"
@@ -2318,6 +2382,81 @@ theorem realM4EndgameStagingHypothesisAuditExplicitPNP_exact :
 
 def realM4EndgameStagingStatementExplicitPNP : String :=
   "For the real v15/M4 staging layer, UpperLowerClash follows from real construction data, StarSW hardness, and the three analytic fields safeQSSM / boundedGaugeIncidence / boundaryMixing, with the self-reduction upper side discharged conditionally from the explicit P=NP decider family."
+
+def realM4CoveredLocksEndgameConstructionInputsExplicitPNP : List String := [
+  "realM4MechanicalInterfaceData",
+  "phaseABudget",
+  "epsSmall",
+  "realCompressionLowerFramework",
+  "kernelNeutrality",
+  "publicLockSupportCoverage",
+  "lockedMessageRigidity",
+  "uniformCNFSupportData",
+  "realConstantDecoderRegime"
+]
+
+theorem realM4CoveredLocksEndgameConstructionInputsExplicitPNP_exact :
+    realM4CoveredLocksEndgameConstructionInputsExplicitPNP =
+      [ "realM4MechanicalInterfaceData",
+        "phaseABudget",
+        "epsSmall",
+        "realCompressionLowerFramework",
+        "kernelNeutrality",
+        "publicLockSupportCoverage",
+        "lockedMessageRigidity",
+        "uniformCNFSupportData",
+        "realConstantDecoderRegime" ] := by
+  rfl
+
+def realM4CoveredLocksEndgameConditionalInputsExplicitPNP : List String := [
+  "pnpDeciderFamily"
+]
+
+theorem realM4CoveredLocksEndgameConditionalInputsExplicitPNP_exact :
+    realM4CoveredLocksEndgameConditionalInputsExplicitPNP =
+      [ "pnpDeciderFamily" ] := by
+  rfl
+
+def realM4CoveredLocksEndgameIrreducibleInputsExplicitPNP : List String := [
+  "starSWHardness",
+  "safeQSSM",
+  "boundedGaugeIncidence",
+  "boundaryMixing"
+]
+
+theorem realM4CoveredLocksEndgameIrreducibleInputsExplicitPNP_exact :
+    realM4CoveredLocksEndgameIrreducibleInputsExplicitPNP =
+      [ "starSWHardness",
+        "safeQSSM",
+        "boundedGaugeIncidence",
+        "boundaryMixing" ] := by
+  rfl
+
+def realM4CoveredLocksEndgameHypothesisAuditExplicitPNP : List String :=
+  realM4CoveredLocksEndgameConstructionInputsExplicitPNP ++
+    realM4CoveredLocksEndgameIrreducibleInputsExplicitPNP ++
+      realM4CoveredLocksEndgameConditionalInputsExplicitPNP
+
+theorem realM4CoveredLocksEndgameHypothesisAuditExplicitPNP_exact :
+    realM4CoveredLocksEndgameHypothesisAuditExplicitPNP =
+      [ "realM4MechanicalInterfaceData",
+        "phaseABudget",
+        "epsSmall",
+        "realCompressionLowerFramework",
+        "kernelNeutrality",
+        "publicLockSupportCoverage",
+        "lockedMessageRigidity",
+        "uniformCNFSupportData",
+        "realConstantDecoderRegime",
+        "starSWHardness",
+        "safeQSSM",
+        "boundedGaugeIncidence",
+        "boundaryMixing",
+        "pnpDeciderFamily" ] := by
+  rfl
+
+def realM4CoveredLocksEndgameStatementExplicitPNP : String :=
+  "For the real v15/M4 staging layer, UpperLowerClash follows by constructing the explicit P=NP-side self-reduction package from public-lock coverage, D.8 locked-message rigidity, uniform CNF support, and the constant decoder regime, then using StarSW hardness and the three analytic fields safeQSSM / boundedGaugeIncidence / boundaryMixing."
 
 /-! ## Real-M4 lift ledger -/
 
@@ -2481,6 +2620,12 @@ def realM4LiftLedger : List RealM4LiftLedgerRow := [
     note := "Given real endgame mechanical data, the explicit-P=NP upper discharge package, StarSW, and the three analytic fields, the v13 UpperLowerClash wiring is checked."
   },
   {
+    item := "realCoveredLocksConditionalClashStaging"
+    status := .partialConstructionTransferred
+    checkedName := "realM4_conditionalClash_from_coveredLocksAndRigidity_explicitPNP"
+    note := "Constructs the explicit-P=NP upper package from public-lock coverage, D.8, uniform CNF support, and the constant decoder regime before invoking the v13 UpperLowerClash wiring."
+  },
+  {
     item := "pnpDecider"
     status := .pnpConditionalInput
     checkedName := "RealM4ExplicitPNPDeciderFamily"
@@ -2536,6 +2681,7 @@ theorem realM4LiftLedger_statuses_exact :
         RealM4LiftStatus.partialConstructionTransferred,
         RealM4LiftStatus.partialConstructionTransferred,
         RealM4LiftStatus.openConstruction,
+        RealM4LiftStatus.partialConstructionTransferred,
         RealM4LiftStatus.partialConstructionTransferred,
         RealM4LiftStatus.pnpConditionalInput,
         RealM4LiftStatus.irreducibleInput,
