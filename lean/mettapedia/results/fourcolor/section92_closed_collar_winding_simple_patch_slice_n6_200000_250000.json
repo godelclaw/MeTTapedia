@@ -1,0 +1,1353 @@
+{
+  "base_winding_profile_histogram": [
+    {
+      "profile": [
+        {
+          "pair": "rb",
+          "winding0_component_count": 2,
+          "winding1_component_count": 0
+        },
+        {
+          "pair": "rp",
+          "winding0_component_count": 2,
+          "winding1_component_count": 0
+        },
+        {
+          "pair": "bp",
+          "winding0_component_count": 2,
+          "winding1_component_count": 0
+        }
+      ],
+      "state_count": 4
+    },
+    {
+      "profile": [
+        {
+          "pair": "rb",
+          "winding0_component_count": 2,
+          "winding1_component_count": 2
+        },
+        {
+          "pair": "rp",
+          "winding0_component_count": 2,
+          "winding1_component_count": 0
+        },
+        {
+          "pair": "bp",
+          "winding0_component_count": 2,
+          "winding1_component_count": 0
+        }
+      ],
+      "state_count": 2
+    }
+  ],
+  "fixed_outer_key": [
+    "r",
+    "r",
+    "b",
+    "b"
+  ],
+  "profile_preserving_samples": [
+    {
+      "graph_summary": {
+        "blocked_normal_form_tests": [
+          "planar_multigraph"
+        ],
+        "edge_count": 27,
+        "first_failed_normal_form_test": "planar_multigraph",
+        "minimum_small_cyclic_cut_size": null,
+        "passed_normal_form_tests": [
+          "connected_multigraph",
+          "cubic_multigraph",
+          "bridgeless_multigraph",
+          "simple_endpoint_realization"
+        ],
+        "small_cyclic_cut_sample_count": 0,
+        "small_cyclic_cut_samples": [],
+        "small_cyclic_cuts_checked": false,
+        "vertex_count": 18
+      },
+      "patch_edges": [
+        [
+          "A",
+          "B"
+        ],
+        [
+          "A",
+          "N3"
+        ],
+        [
+          "B",
+          "N4"
+        ],
+        [
+          "C",
+          "N2"
+        ],
+        [
+          "C",
+          "N5"
+        ],
+        [
+          "D",
+          "N0"
+        ],
+        [
+          "D",
+          "N2"
+        ],
+        [
+          "N0",
+          "N1"
+        ],
+        [
+          "N0",
+          "N2"
+        ],
+        [
+          "N1",
+          "N3"
+        ],
+        [
+          "N1",
+          "N5"
+        ],
+        [
+          "N3",
+          "N4"
+        ],
+        [
+          "N4",
+          "N5"
+        ]
+      ],
+      "patch_index": 200201,
+      "radial_order": [
+        "P0:A-B",
+        "P1:A-N3"
+      ],
+      "state_extensions": [
+        {
+          "profile_preserved": true,
+          "state_index": 0
+        },
+        {
+          "profile_preserved": true,
+          "state_index": 1
+        },
+        {
+          "profile_preserved": true,
+          "state_index": 2
+        },
+        {
+          "profile_preserved": true,
+          "state_index": 3
+        },
+        {
+          "profile_preserved": true,
+          "state_index": 4
+        },
+        {
+          "profile_preserved": true,
+          "state_index": 5
+        }
+      ]
+    },
+    {
+      "graph_summary": {
+        "blocked_normal_form_tests": [
+          "planar_multigraph"
+        ],
+        "edge_count": 27,
+        "first_failed_normal_form_test": "planar_multigraph",
+        "minimum_small_cyclic_cut_size": null,
+        "passed_normal_form_tests": [
+          "connected_multigraph",
+          "cubic_multigraph",
+          "bridgeless_multigraph",
+          "simple_endpoint_realization"
+        ],
+        "small_cyclic_cut_sample_count": 0,
+        "small_cyclic_cut_samples": [],
+        "small_cyclic_cuts_checked": false,
+        "vertex_count": 18
+      },
+      "patch_edges": [
+        [
+          "A",
+          "B"
+        ],
+        [
+          "A",
+          "N3"
+        ],
+        [
+          "B",
+          "N4"
+        ],
+        [
+          "C",
+          "N2"
+        ],
+        [
+          "C",
+          "N5"
+        ],
+        [
+          "D",
+          "N0"
+        ],
+        [
+          "D",
+          "N2"
+        ],
+        [
+          "N0",
+          "N1"
+        ],
+        [
+          "N0",
+          "N2"
+        ],
+        [
+          "N1",
+          "N3"
+        ],
+        [
+          "N1",
+          "N5"
+        ],
+        [
+          "N3",
+          "N4"
+        ],
+        [
+          "N4",
+          "N5"
+        ]
+      ],
+      "patch_index": 200201,
+      "radial_order": [
+        "P1:A-N3",
+        "P0:A-B"
+      ],
+      "state_extensions": [
+        {
+          "profile_preserved": true,
+          "state_index": 0
+        },
+        {
+          "profile_preserved": true,
+          "state_index": 1
+        },
+        {
+          "profile_preserved": true,
+          "state_index": 2
+        },
+        {
+          "profile_preserved": true,
+          "state_index": 3
+        },
+        {
+          "profile_preserved": true,
+          "state_index": 4
+        },
+        {
+          "profile_preserved": true,
+          "state_index": 5
+        }
+      ]
+    },
+    {
+      "graph_summary": {
+        "blocked_normal_form_tests": [
+          "planar_multigraph"
+        ],
+        "edge_count": 27,
+        "first_failed_normal_form_test": "planar_multigraph",
+        "minimum_small_cyclic_cut_size": null,
+        "passed_normal_form_tests": [
+          "connected_multigraph",
+          "cubic_multigraph",
+          "bridgeless_multigraph",
+          "simple_endpoint_realization"
+        ],
+        "small_cyclic_cut_sample_count": 0,
+        "small_cyclic_cut_samples": [],
+        "small_cyclic_cuts_checked": false,
+        "vertex_count": 18
+      },
+      "patch_edges": [
+        [
+          "A",
+          "B"
+        ],
+        [
+          "A",
+          "N3"
+        ],
+        [
+          "B",
+          "N4"
+        ],
+        [
+          "C",
+          "N2"
+        ],
+        [
+          "C",
+          "N5"
+        ],
+        [
+          "D",
+          "N0"
+        ],
+        [
+          "D",
+          "N2"
+        ],
+        [
+          "N0",
+          "N1"
+        ],
+        [
+          "N0",
+          "N2"
+        ],
+        [
+          "N1",
+          "N4"
+        ],
+        [
+          "N1",
+          "N5"
+        ],
+        [
+          "N3",
+          "N4"
+        ],
+        [
+          "N3",
+          "N5"
+        ]
+      ],
+      "patch_index": 200202,
+      "radial_order": [
+        "P0:A-B",
+        "P1:A-N3"
+      ],
+      "state_extensions": [
+        {
+          "profile_preserved": true,
+          "state_index": 0
+        },
+        {
+          "profile_preserved": true,
+          "state_index": 1
+        },
+        {
+          "profile_preserved": true,
+          "state_index": 2
+        },
+        {
+          "profile_preserved": true,
+          "state_index": 3
+        },
+        {
+          "profile_preserved": true,
+          "state_index": 4
+        },
+        {
+          "profile_preserved": true,
+          "state_index": 5
+        }
+      ]
+    },
+    {
+      "graph_summary": {
+        "blocked_normal_form_tests": [
+          "planar_multigraph"
+        ],
+        "edge_count": 27,
+        "first_failed_normal_form_test": "planar_multigraph",
+        "minimum_small_cyclic_cut_size": null,
+        "passed_normal_form_tests": [
+          "connected_multigraph",
+          "cubic_multigraph",
+          "bridgeless_multigraph",
+          "simple_endpoint_realization"
+        ],
+        "small_cyclic_cut_sample_count": 0,
+        "small_cyclic_cut_samples": [],
+        "small_cyclic_cuts_checked": false,
+        "vertex_count": 18
+      },
+      "patch_edges": [
+        [
+          "A",
+          "B"
+        ],
+        [
+          "A",
+          "N3"
+        ],
+        [
+          "B",
+          "N4"
+        ],
+        [
+          "C",
+          "N2"
+        ],
+        [
+          "C",
+          "N5"
+        ],
+        [
+          "D",
+          "N0"
+        ],
+        [
+          "D",
+          "N2"
+        ],
+        [
+          "N0",
+          "N1"
+        ],
+        [
+          "N0",
+          "N2"
+        ],
+        [
+          "N1",
+          "N4"
+        ],
+        [
+          "N1",
+          "N5"
+        ],
+        [
+          "N3",
+          "N4"
+        ],
+        [
+          "N3",
+          "N5"
+        ]
+      ],
+      "patch_index": 200202,
+      "radial_order": [
+        "P1:A-N3",
+        "P0:A-B"
+      ],
+      "state_extensions": [
+        {
+          "profile_preserved": true,
+          "state_index": 0
+        },
+        {
+          "profile_preserved": true,
+          "state_index": 1
+        },
+        {
+          "profile_preserved": true,
+          "state_index": 2
+        },
+        {
+          "profile_preserved": true,
+          "state_index": 3
+        },
+        {
+          "profile_preserved": true,
+          "state_index": 4
+        },
+        {
+          "profile_preserved": true,
+          "state_index": 5
+        }
+      ]
+    },
+    {
+      "graph_summary": {
+        "blocked_normal_form_tests": [
+          "planar_multigraph"
+        ],
+        "edge_count": 27,
+        "first_failed_normal_form_test": "planar_multigraph",
+        "minimum_small_cyclic_cut_size": null,
+        "passed_normal_form_tests": [
+          "connected_multigraph",
+          "cubic_multigraph",
+          "bridgeless_multigraph",
+          "simple_endpoint_realization"
+        ],
+        "small_cyclic_cut_sample_count": 0,
+        "small_cyclic_cut_samples": [],
+        "small_cyclic_cuts_checked": false,
+        "vertex_count": 18
+      },
+      "patch_edges": [
+        [
+          "A",
+          "B"
+        ],
+        [
+          "A",
+          "N3"
+        ],
+        [
+          "B",
+          "N4"
+        ],
+        [
+          "C",
+          "N2"
+        ],
+        [
+          "C",
+          "N5"
+        ],
+        [
+          "D",
+          "N0"
+        ],
+        [
+          "D",
+          "N2"
+        ],
+        [
+          "N0",
+          "N1"
+        ],
+        [
+          "N0",
+          "N3"
+        ],
+        [
+          "N1",
+          "N4"
+        ],
+        [
+          "N1",
+          "N5"
+        ],
+        [
+          "N2",
+          "N5"
+        ],
+        [
+          "N3",
+          "N4"
+        ]
+      ],
+      "patch_index": 200209,
+      "radial_order": [
+        "P0:A-B",
+        "P1:A-N3"
+      ],
+      "state_extensions": [
+        {
+          "profile_preserved": true,
+          "state_index": 0
+        },
+        {
+          "profile_preserved": true,
+          "state_index": 1
+        },
+        {
+          "profile_preserved": true,
+          "state_index": 2
+        },
+        {
+          "profile_preserved": true,
+          "state_index": 3
+        },
+        {
+          "profile_preserved": true,
+          "state_index": 4
+        },
+        {
+          "profile_preserved": true,
+          "state_index": 5
+        }
+      ]
+    },
+    {
+      "graph_summary": {
+        "blocked_normal_form_tests": [
+          "planar_multigraph"
+        ],
+        "edge_count": 27,
+        "first_failed_normal_form_test": "planar_multigraph",
+        "minimum_small_cyclic_cut_size": null,
+        "passed_normal_form_tests": [
+          "connected_multigraph",
+          "cubic_multigraph",
+          "bridgeless_multigraph",
+          "simple_endpoint_realization"
+        ],
+        "small_cyclic_cut_sample_count": 0,
+        "small_cyclic_cut_samples": [],
+        "small_cyclic_cuts_checked": false,
+        "vertex_count": 18
+      },
+      "patch_edges": [
+        [
+          "A",
+          "B"
+        ],
+        [
+          "A",
+          "N3"
+        ],
+        [
+          "B",
+          "N4"
+        ],
+        [
+          "C",
+          "N2"
+        ],
+        [
+          "C",
+          "N5"
+        ],
+        [
+          "D",
+          "N0"
+        ],
+        [
+          "D",
+          "N2"
+        ],
+        [
+          "N0",
+          "N1"
+        ],
+        [
+          "N0",
+          "N3"
+        ],
+        [
+          "N1",
+          "N4"
+        ],
+        [
+          "N1",
+          "N5"
+        ],
+        [
+          "N2",
+          "N5"
+        ],
+        [
+          "N3",
+          "N4"
+        ]
+      ],
+      "patch_index": 200209,
+      "radial_order": [
+        "P1:A-N3",
+        "P0:A-B"
+      ],
+      "state_extensions": [
+        {
+          "profile_preserved": true,
+          "state_index": 0
+        },
+        {
+          "profile_preserved": true,
+          "state_index": 1
+        },
+        {
+          "profile_preserved": true,
+          "state_index": 2
+        },
+        {
+          "profile_preserved": true,
+          "state_index": 3
+        },
+        {
+          "profile_preserved": true,
+          "state_index": 4
+        },
+        {
+          "profile_preserved": true,
+          "state_index": 5
+        }
+      ]
+    },
+    {
+      "graph_summary": {
+        "blocked_normal_form_tests": [
+          "planar_multigraph"
+        ],
+        "edge_count": 27,
+        "first_failed_normal_form_test": "planar_multigraph",
+        "minimum_small_cyclic_cut_size": null,
+        "passed_normal_form_tests": [
+          "connected_multigraph",
+          "cubic_multigraph",
+          "bridgeless_multigraph",
+          "simple_endpoint_realization"
+        ],
+        "small_cyclic_cut_sample_count": 0,
+        "small_cyclic_cut_samples": [],
+        "small_cyclic_cuts_checked": false,
+        "vertex_count": 18
+      },
+      "patch_edges": [
+        [
+          "A",
+          "B"
+        ],
+        [
+          "A",
+          "N3"
+        ],
+        [
+          "B",
+          "N4"
+        ],
+        [
+          "C",
+          "N2"
+        ],
+        [
+          "C",
+          "N5"
+        ],
+        [
+          "D",
+          "N0"
+        ],
+        [
+          "D",
+          "N2"
+        ],
+        [
+          "N0",
+          "N1"
+        ],
+        [
+          "N0",
+          "N4"
+        ],
+        [
+          "N1",
+          "N3"
+        ],
+        [
+          "N1",
+          "N5"
+        ],
+        [
+          "N2",
+          "N5"
+        ],
+        [
+          "N3",
+          "N4"
+        ]
+      ],
+      "patch_index": 200215,
+      "radial_order": [
+        "P0:A-B",
+        "P1:A-N3"
+      ],
+      "state_extensions": [
+        {
+          "profile_preserved": true,
+          "state_index": 0
+        },
+        {
+          "profile_preserved": true,
+          "state_index": 1
+        },
+        {
+          "profile_preserved": true,
+          "state_index": 2
+        },
+        {
+          "profile_preserved": true,
+          "state_index": 3
+        },
+        {
+          "profile_preserved": true,
+          "state_index": 4
+        },
+        {
+          "profile_preserved": true,
+          "state_index": 5
+        }
+      ]
+    },
+    {
+      "graph_summary": {
+        "blocked_normal_form_tests": [
+          "planar_multigraph"
+        ],
+        "edge_count": 27,
+        "first_failed_normal_form_test": "planar_multigraph",
+        "minimum_small_cyclic_cut_size": null,
+        "passed_normal_form_tests": [
+          "connected_multigraph",
+          "cubic_multigraph",
+          "bridgeless_multigraph",
+          "simple_endpoint_realization"
+        ],
+        "small_cyclic_cut_sample_count": 0,
+        "small_cyclic_cut_samples": [],
+        "small_cyclic_cuts_checked": false,
+        "vertex_count": 18
+      },
+      "patch_edges": [
+        [
+          "A",
+          "B"
+        ],
+        [
+          "A",
+          "N3"
+        ],
+        [
+          "B",
+          "N4"
+        ],
+        [
+          "C",
+          "N2"
+        ],
+        [
+          "C",
+          "N5"
+        ],
+        [
+          "D",
+          "N0"
+        ],
+        [
+          "D",
+          "N2"
+        ],
+        [
+          "N0",
+          "N1"
+        ],
+        [
+          "N0",
+          "N4"
+        ],
+        [
+          "N1",
+          "N3"
+        ],
+        [
+          "N1",
+          "N5"
+        ],
+        [
+          "N2",
+          "N5"
+        ],
+        [
+          "N3",
+          "N4"
+        ]
+      ],
+      "patch_index": 200215,
+      "radial_order": [
+        "P1:A-N3",
+        "P0:A-B"
+      ],
+      "state_extensions": [
+        {
+          "profile_preserved": true,
+          "state_index": 0
+        },
+        {
+          "profile_preserved": true,
+          "state_index": 1
+        },
+        {
+          "profile_preserved": true,
+          "state_index": 2
+        },
+        {
+          "profile_preserved": true,
+          "state_index": 3
+        },
+        {
+          "profile_preserved": true,
+          "state_index": 4
+        },
+        {
+          "profile_preserved": true,
+          "state_index": 5
+        }
+      ]
+    },
+    {
+      "graph_summary": {
+        "blocked_normal_form_tests": [
+          "planar_multigraph"
+        ],
+        "edge_count": 27,
+        "first_failed_normal_form_test": "planar_multigraph",
+        "minimum_small_cyclic_cut_size": null,
+        "passed_normal_form_tests": [
+          "connected_multigraph",
+          "cubic_multigraph",
+          "bridgeless_multigraph",
+          "simple_endpoint_realization"
+        ],
+        "small_cyclic_cut_sample_count": 0,
+        "small_cyclic_cut_samples": [],
+        "small_cyclic_cuts_checked": false,
+        "vertex_count": 18
+      },
+      "patch_edges": [
+        [
+          "A",
+          "B"
+        ],
+        [
+          "A",
+          "N3"
+        ],
+        [
+          "B",
+          "N4"
+        ],
+        [
+          "C",
+          "N2"
+        ],
+        [
+          "C",
+          "N5"
+        ],
+        [
+          "D",
+          "N0"
+        ],
+        [
+          "D",
+          "N5"
+        ],
+        [
+          "N0",
+          "N1"
+        ],
+        [
+          "N0",
+          "N3"
+        ],
+        [
+          "N1",
+          "N2"
+        ],
+        [
+          "N1",
+          "N4"
+        ],
+        [
+          "N2",
+          "N5"
+        ],
+        [
+          "N3",
+          "N4"
+        ]
+      ],
+      "patch_index": 200318,
+      "radial_order": [
+        "P0:A-B",
+        "P1:A-N3"
+      ],
+      "state_extensions": [
+        {
+          "profile_preserved": true,
+          "state_index": 0
+        },
+        {
+          "profile_preserved": true,
+          "state_index": 1
+        },
+        {
+          "profile_preserved": true,
+          "state_index": 2
+        },
+        {
+          "profile_preserved": true,
+          "state_index": 3
+        },
+        {
+          "profile_preserved": true,
+          "state_index": 4
+        },
+        {
+          "profile_preserved": true,
+          "state_index": 5
+        }
+      ]
+    },
+    {
+      "graph_summary": {
+        "blocked_normal_form_tests": [
+          "planar_multigraph"
+        ],
+        "edge_count": 27,
+        "first_failed_normal_form_test": "planar_multigraph",
+        "minimum_small_cyclic_cut_size": null,
+        "passed_normal_form_tests": [
+          "connected_multigraph",
+          "cubic_multigraph",
+          "bridgeless_multigraph",
+          "simple_endpoint_realization"
+        ],
+        "small_cyclic_cut_sample_count": 0,
+        "small_cyclic_cut_samples": [],
+        "small_cyclic_cuts_checked": false,
+        "vertex_count": 18
+      },
+      "patch_edges": [
+        [
+          "A",
+          "B"
+        ],
+        [
+          "A",
+          "N3"
+        ],
+        [
+          "B",
+          "N4"
+        ],
+        [
+          "C",
+          "N2"
+        ],
+        [
+          "C",
+          "N5"
+        ],
+        [
+          "D",
+          "N0"
+        ],
+        [
+          "D",
+          "N5"
+        ],
+        [
+          "N0",
+          "N1"
+        ],
+        [
+          "N0",
+          "N3"
+        ],
+        [
+          "N1",
+          "N2"
+        ],
+        [
+          "N1",
+          "N4"
+        ],
+        [
+          "N2",
+          "N5"
+        ],
+        [
+          "N3",
+          "N4"
+        ]
+      ],
+      "patch_index": 200318,
+      "radial_order": [
+        "P1:A-N3",
+        "P0:A-B"
+      ],
+      "state_extensions": [
+        {
+          "profile_preserved": true,
+          "state_index": 0
+        },
+        {
+          "profile_preserved": true,
+          "state_index": 1
+        },
+        {
+          "profile_preserved": true,
+          "state_index": 2
+        },
+        {
+          "profile_preserved": true,
+          "state_index": 3
+        },
+        {
+          "profile_preserved": true,
+          "state_index": 4
+        },
+        {
+          "profile_preserved": true,
+          "state_index": 5
+        }
+      ]
+    },
+    {
+      "graph_summary": {
+        "blocked_normal_form_tests": [
+          "planar_multigraph"
+        ],
+        "edge_count": 27,
+        "first_failed_normal_form_test": "planar_multigraph",
+        "minimum_small_cyclic_cut_size": null,
+        "passed_normal_form_tests": [
+          "connected_multigraph",
+          "cubic_multigraph",
+          "bridgeless_multigraph",
+          "simple_endpoint_realization"
+        ],
+        "small_cyclic_cut_sample_count": 0,
+        "small_cyclic_cut_samples": [],
+        "small_cyclic_cuts_checked": false,
+        "vertex_count": 18
+      },
+      "patch_edges": [
+        [
+          "A",
+          "B"
+        ],
+        [
+          "A",
+          "N3"
+        ],
+        [
+          "B",
+          "N4"
+        ],
+        [
+          "C",
+          "N2"
+        ],
+        [
+          "C",
+          "N5"
+        ],
+        [
+          "D",
+          "N0"
+        ],
+        [
+          "D",
+          "N5"
+        ],
+        [
+          "N0",
+          "N1"
+        ],
+        [
+          "N0",
+          "N4"
+        ],
+        [
+          "N1",
+          "N2"
+        ],
+        [
+          "N1",
+          "N3"
+        ],
+        [
+          "N2",
+          "N5"
+        ],
+        [
+          "N3",
+          "N4"
+        ]
+      ],
+      "patch_index": 200324,
+      "radial_order": [
+        "P0:A-B",
+        "P1:A-N3"
+      ],
+      "state_extensions": [
+        {
+          "profile_preserved": true,
+          "state_index": 0
+        },
+        {
+          "profile_preserved": true,
+          "state_index": 1
+        },
+        {
+          "profile_preserved": true,
+          "state_index": 2
+        },
+        {
+          "profile_preserved": true,
+          "state_index": 3
+        },
+        {
+          "profile_preserved": true,
+          "state_index": 4
+        },
+        {
+          "profile_preserved": true,
+          "state_index": 5
+        }
+      ]
+    },
+    {
+      "graph_summary": {
+        "blocked_normal_form_tests": [
+          "planar_multigraph"
+        ],
+        "edge_count": 27,
+        "first_failed_normal_form_test": "planar_multigraph",
+        "minimum_small_cyclic_cut_size": null,
+        "passed_normal_form_tests": [
+          "connected_multigraph",
+          "cubic_multigraph",
+          "bridgeless_multigraph",
+          "simple_endpoint_realization"
+        ],
+        "small_cyclic_cut_sample_count": 0,
+        "small_cyclic_cut_samples": [],
+        "small_cyclic_cuts_checked": false,
+        "vertex_count": 18
+      },
+      "patch_edges": [
+        [
+          "A",
+          "B"
+        ],
+        [
+          "A",
+          "N3"
+        ],
+        [
+          "B",
+          "N4"
+        ],
+        [
+          "C",
+          "N2"
+        ],
+        [
+          "C",
+          "N5"
+        ],
+        [
+          "D",
+          "N0"
+        ],
+        [
+          "D",
+          "N5"
+        ],
+        [
+          "N0",
+          "N1"
+        ],
+        [
+          "N0",
+          "N4"
+        ],
+        [
+          "N1",
+          "N2"
+        ],
+        [
+          "N1",
+          "N3"
+        ],
+        [
+          "N2",
+          "N5"
+        ],
+        [
+          "N3",
+          "N4"
+        ]
+      ],
+      "patch_index": 200324,
+      "radial_order": [
+        "P1:A-N3",
+        "P0:A-B"
+      ],
+      "state_extensions": [
+        {
+          "profile_preserved": true,
+          "state_index": 0
+        },
+        {
+          "profile_preserved": true,
+          "state_index": 1
+        },
+        {
+          "profile_preserved": true,
+          "state_index": 2
+        },
+        {
+          "profile_preserved": true,
+          "state_index": 3
+        },
+        {
+          "profile_preserved": true,
+          "state_index": 4
+        },
+        {
+          "profile_preserved": true,
+          "state_index": 5
+        }
+      ]
+    }
+  ],
+  "run_id": "tau,tau::rrbb::simple_patch_6_from_200000_limit_50000",
+  "schema": "fourcolor-section-9-2-closed-collar-winding-simple-patch-slice-v1",
+  "search": {
+    "internal_vertex_count": 6,
+    "next_patch_start_index": 250000,
+    "patch_start_index": 200000,
+    "patch_terminals": {
+      "A": "g1:F5",
+      "B": "g0:F1",
+      "C": "g0:F5",
+      "D": "g1:F1"
+    },
+    "patch_topology_limit": 50000,
+    "profile_requirement": "every state in the tau,tau::rrbb winding-freedom fiber must extend to a proper Tait coloring with exactly the same winding profile",
+    "radial_cut_rule": "C0 and C3 remain fixed; the two patch edges incident to terminal A replace C1/C2 and are tested in both orders with colors r,b",
+    "removed_parallel_edges": [
+      "C1:B5=B1",
+      "C2:B6=B2",
+      "I0_1:B5=B1",
+      "I0_2:B6=B2"
+    ],
+    "slice_exhausted_exact_size_space": false
+  },
+  "source": "Section 9.2 sliced simple cubic patch search for the closed-collar winding-freedom witness",
+  "summary": {
+    "first_failed_normal_form_histogram": {
+      "planar_multigraph": 3776
+    },
+    "minimum_small_cyclic_cut_size_histogram": {
+      "not_checked": 3776
+    },
+    "normal_form_prefix_passing_profile_case_count": 0,
+    "processed_patch_topology_count": 50000,
+    "profile_preserving_case_count": 3776,
+    "radial_order_case_count": 100000,
+    "verdict": "simple_patch_slice_found_profile_preserving_cases"
+  },
+  "word": [
+    "tau",
+    "tau"
+  ]
+}
