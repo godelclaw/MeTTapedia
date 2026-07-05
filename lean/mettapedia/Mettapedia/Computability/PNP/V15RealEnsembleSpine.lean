@@ -4503,6 +4503,34 @@ structure RealM4OfficialPNPBridgeData
     UpperLowerClash L P -> ¬ C.inP separatedLanguage
 
 /--
+Degenerate official-bridge inhabitant from an arbitrary NP language.
+Because `UpperLowerClash` contains `False`, a bridge whose only anti-P
+argument is `UpperLowerClash L P -> ¬ inP` can be filled by ex falso.  This is
+a guardrail theorem: the raw bridge data below is only a typed endpoint
+adapter, not the real Cook-style bridge required for serious PNP progress.
+-/
+def realM4_officialBridgeData_of_npWitness_exFalso
+    {Omega : Type u} [Fintype Omega] [Nonempty Omega]
+    {Public : Type v} {Neutral : Type w} {Safe : Type x}
+    {Gauge : Type y} {Transcript : Type z} [DecidableEq Transcript]
+    {Pair : Type a} [Fintype Pair]
+    {Stage : Type b} {Branch : Type c}
+    {HistoryAtom : Type d} {Pivot : Type e}
+    {Observer : Type f} {Output : Type f} {Skeleton : Type w}
+    {L :
+      GaugeBufferedLockedInterface Omega Public Neutral Safe Gauge Transcript
+        Pair Stage Branch HistoryAtom Pivot Observer Output Skeleton}
+    {P : ParameterRecord L}
+    {C : CookStylePNPClassInterface.{p}}
+    (language : C.Language) (hNP : C.inNP language) :
+    RealM4OfficialPNPBridgeData L P C where
+  separatedLanguage := language
+  separatedLanguage_inNP := hNP
+  internalClash_not_inP := by
+    intro clash hP
+    exact False.elim clash.noConsistentBounds
+
+/--
 Adapter from a proved internal clash to the official endpoint, assuming the
 separate bridge data.  This theorem is not a proof of P-vs-NP; the bridge data
 is the still-open Cook-style endpoint obligation.
@@ -6216,7 +6244,7 @@ theorem realM4OfficialPNPBridgeConstructionInputs_exact :
   rfl
 
 def realM4OfficialPNPBridgeStatement : String :=
-  "The real v15/M4 UpperLowerClash is only an internal endpoint.  A separate Cook-style P-vs-NP bridge must instantiate the official class interface, name the separated NP language, and prove that the internal clash rules out membership in P without hiding ensemble existence, lower hardness, or analytic assumptions in parameters."
+  "The real v15/M4 UpperLowerClash is only an internal endpoint.  A separate Cook-style P-vs-NP bridge must instantiate the official class interface, name the separated NP language, and prove that membership in P would generate the internal upper/lower clash without hiding ensemble existence, lower hardness, or analytic assumptions in parameters.  A proof that only uses the False field inside UpperLowerClash is degenerate and does not constitute the real Cook-style bridge."
 
 def realM4EndgameStagingConstructionInputs : List String := [
   "realM4EndgameMechanicalData",
@@ -8178,6 +8206,12 @@ def realM4LiftLedger : List RealM4LiftLedgerRow := [
     note := "The internal UpperLowerClash still needs a separate Cook-style endpoint bridge before it can be read as an official P-vs-NP separation statement."
   },
   {
+    item := "officialPNPBridgeExFalsoOnly"
+    status := .blockedByCounterexample
+    checkedName := "realM4_officialBridgeData_of_npWitness_exFalso"
+    note := "The raw bridge adapter can be inhabited from any NP-language witness by ex falso from UpperLowerClash.noConsistentBounds, so this adapter alone is not the real Cook-style bridge."
+  },
+  {
     item := "officialPNPBridgeAdapter"
     status := .partialConstructionTransferred
     checkedName := "realM4_exists_np_not_p_from_internalClash_bridge"
@@ -8264,6 +8298,7 @@ theorem realM4LiftLedger_statuses_exact :
         RealM4LiftStatus.partialConstructionTransferred,
         RealM4LiftStatus.partialConstructionTransferred,
         RealM4LiftStatus.openConstruction,
+        RealM4LiftStatus.blockedByCounterexample,
         RealM4LiftStatus.partialConstructionTransferred,
         RealM4LiftStatus.partialConstructionTransferred,
         RealM4LiftStatus.pnpConditionalInput,
