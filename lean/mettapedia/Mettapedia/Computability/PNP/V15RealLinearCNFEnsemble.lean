@@ -5478,6 +5478,25 @@ noncomputable def v13RealLinearNoTargetRowsGaugeCNFWorldBaseGaugeEquiv
     cases data with
     | mk base gauge => rfl
 
+/-- The base/gauge equivalence projects a no-target-rows gauge-CNF world to
+its base world and free hidden gauge bit. -/
+theorem v13RealLinearNoTargetRowsGaugeCNFWorldBaseGaugeEquiv_apply
+    {m : Nat} {i₀ : Fin m}
+    (omega : V13RealLinearNoTargetRowsGaugeCNFWorld m i₀) :
+    v13RealLinearNoTargetRowsGaugeCNFWorldBaseGaugeEquiv omega =
+      (omega.base, v13RealLinearNoTargetRowsGaugeCNFHiddenGauge omega) :=
+  rfl
+
+/-- The inverse base/gauge equivalence is the canonical world with that base
+and hidden gauge bit. -/
+theorem v13RealLinearNoTargetRowsGaugeCNFWorldBaseGaugeEquiv_symm_apply
+    {m : Nat} {i₀ : Fin m}
+    (base : V13RealLinearNoTargetRowsWorld m i₀) (gauge : Bool) :
+    (v13RealLinearNoTargetRowsGaugeCNFWorldBaseGaugeEquiv).symm
+        (base, gauge) =
+      v13RealLinearNoTargetRowsGaugeCNFWorldOfBase base gauge :=
+  rfl
+
 noncomputable instance v13RealLinearNoTargetRowsGaugeCNFWorldFintype
     {m : Nat} {i₀ : Fin m} :
     Fintype (V13RealLinearNoTargetRowsGaugeCNFWorld m i₀) :=
@@ -6301,6 +6320,83 @@ theorem v13RealLinearNoTargetRowsGaugeCNFGaugeAction_hidden_true
       !v13RealLinearNoTargetRowsGaugeCNFHiddenGauge omega :=
   rfl
 
+/-- Under the base/gauge equivalence, the concrete hidden-gauge action is
+identity on the base world and xor on the free hidden-gauge bit. -/
+theorem v13RealLinearNoTargetRowsGaugeCNFWorldBaseGaugeEquiv_action
+    {m : Nat} {i₀ : Fin m} (gamma : Bool)
+    (omega : V13RealLinearNoTargetRowsGaugeCNFWorld m i₀) :
+    v13RealLinearNoTargetRowsGaugeCNFWorldBaseGaugeEquiv
+        (v13RealLinearNoTargetRowsGaugeCNFGaugeAction gamma omega) =
+      (omega.base,
+        gamma ^^ v13RealLinearNoTargetRowsGaugeCNFHiddenGauge omega) := by
+  rw [v13RealLinearNoTargetRowsGaugeCNFWorldBaseGaugeEquiv_apply]
+  apply Prod.ext
+  · rfl
+  · simp [v13RealLinearNoTargetRowsGaugeCNFGaugeAction,
+      v13RealLinearNoTargetRowsGaugeCNFHiddenGauge,
+      v13RealLinearGaugeCNFGaugeAction_hiddenGauge]
+
+/-- Over a fixed base world, the no-target-rows gauge-CNF hidden-gauge
+action is transitive: any two satisfying worlds over that base differ by one
+Boolean gauge element. -/
+theorem
+    v13RealLinearNoTargetRowsGaugeCNFGaugeAction_transitive_of_base_eq
+    {m : Nat} {i₀ : Fin m}
+    (omega₀ omega₁ : V13RealLinearNoTargetRowsGaugeCNFWorld m i₀)
+    (hBase : omega₀.base = omega₁.base) :
+    ∃ gamma : Bool,
+      v13RealLinearNoTargetRowsGaugeCNFGaugeAction gamma omega₀ =
+        omega₁ := by
+  refine
+    ⟨v13RealLinearNoTargetRowsGaugeCNFHiddenGauge omega₀ ^^
+      v13RealLinearNoTargetRowsGaugeCNFHiddenGauge omega₁, ?_⟩
+  apply v13RealLinearNoTargetRowsGaugeCNFWorldBaseGaugeEquiv.injective
+  rw [v13RealLinearNoTargetRowsGaugeCNFWorldBaseGaugeEquiv_action,
+    v13RealLinearNoTargetRowsGaugeCNFWorldBaseGaugeEquiv_apply]
+  cases h₀ :
+      v13RealLinearNoTargetRowsGaugeCNFHiddenGauge omega₀ <;>
+    cases h₁ :
+      v13RealLinearNoTargetRowsGaugeCNFHiddenGauge omega₁ <;>
+    simp [hBase]
+
+/-- Exact fixed-base orbit characterization for the no-target-rows
+gauge-CNF hidden-gauge action. -/
+theorem v13RealLinearNoTargetRowsGaugeCNFGaugeAction_eq_iff
+    {m : Nat} {i₀ : Fin m} (gamma : Bool)
+    (omega₀ omega₁ : V13RealLinearNoTargetRowsGaugeCNFWorld m i₀) :
+    v13RealLinearNoTargetRowsGaugeCNFGaugeAction gamma omega₀ =
+      omega₁ ↔
+      omega₀.base = omega₁.base ∧
+        (gamma ^^ v13RealLinearNoTargetRowsGaugeCNFHiddenGauge omega₀) =
+            v13RealLinearNoTargetRowsGaugeCNFHiddenGauge omega₁ := by
+  constructor
+  · intro hAction
+    have hEquiv :=
+      congrArg v13RealLinearNoTargetRowsGaugeCNFWorldBaseGaugeEquiv
+        hAction
+    rw [v13RealLinearNoTargetRowsGaugeCNFWorldBaseGaugeEquiv_action,
+      v13RealLinearNoTargetRowsGaugeCNFWorldBaseGaugeEquiv_apply]
+      at hEquiv
+    exact ⟨congrArg Prod.fst hEquiv, congrArg Prod.snd hEquiv⟩
+  · rintro ⟨hBase, hGauge⟩
+    apply v13RealLinearNoTargetRowsGaugeCNFWorldBaseGaugeEquiv.injective
+    calc
+      v13RealLinearNoTargetRowsGaugeCNFWorldBaseGaugeEquiv
+          (v13RealLinearNoTargetRowsGaugeCNFGaugeAction gamma omega₀) =
+        (omega₀.base,
+          gamma ^^
+            v13RealLinearNoTargetRowsGaugeCNFHiddenGauge omega₀) :=
+        v13RealLinearNoTargetRowsGaugeCNFWorldBaseGaugeEquiv_action
+          gamma omega₀
+      _ =
+        (omega₁.base,
+          v13RealLinearNoTargetRowsGaugeCNFHiddenGauge omega₁) := by
+        rw [hBase, hGauge]
+      _ =
+        v13RealLinearNoTargetRowsGaugeCNFWorldBaseGaugeEquiv omega₁ :=
+        (v13RealLinearNoTargetRowsGaugeCNFWorldBaseGaugeEquiv_apply
+          omega₁).symm
+
 /-- The no-target-rows gauge action is nontrivial over every base world:
 choosing hidden gauge `false` and acting by `true` changes the satisfying
 assignment while preserving the public instance. -/
@@ -6321,6 +6417,34 @@ theorem v13RealLinearNoTargetRowsGaugeCNFGaugeAction_nontrivial
     v13RealLinearGaugeCNFAssignment,
     v13RealLinearNoTargetRowsGaugeCNFGaugeAction,
     v13RealLinearGaugeCNFGaugeAction] at hcoord
+
+/-- A nontrivial hidden public fiber for the gauge-buffered no-target-rows
+CNF surface is a pair of verifier-valid worlds over the same public CNF input
+with distinct satisfying assignments. -/
+def V13RealLinearNoTargetRowsGaugeCNFNontrivialPublicFiber {m : Nat}
+    (i₀ : Fin m) : Prop :=
+  ∃ omega₀ omega₁ : V13RealLinearNoTargetRowsGaugeCNFWorld m i₀,
+    v13RealLinearNoTargetRowsPublicInput omega₀.base =
+      v13RealLinearNoTargetRowsPublicInput omega₁.base ∧
+    omega₀.assignment ≠ omega₁.assignment
+
+/-- Positive hidden-fiber construction for the gauge-buffered no-target-rows
+CNF surface: once the free gauge coordinate is added, every base world has two
+verifier-valid witnesses over the same public CNF input. -/
+theorem v13RealLinearNoTargetRowsGaugeCNF_nontrivialPublicFiber
+    {m : Nat} {i₀ : Fin m}
+    (base : V13RealLinearNoTargetRowsWorld m i₀) :
+    V13RealLinearNoTargetRowsGaugeCNFNontrivialPublicFiber i₀ := by
+  let omega₀ :=
+    v13RealLinearNoTargetRowsGaugeCNFWorldOfBase base false
+  let omega₁ :=
+    v13RealLinearNoTargetRowsGaugeCNFWorldOfBase base true
+  refine ⟨omega₀, omega₁, rfl, ?_⟩
+  intro hAssignment
+  have hNone := congrFun hAssignment none
+  simp [omega₀, omega₁,
+    v13RealLinearNoTargetRowsGaugeCNFWorldOfBase,
+    v13RealLinearGaugeCNFAssignment] at hNone
 
 /-! ## Gauge-buffered CNF evidence semantics -/
 
