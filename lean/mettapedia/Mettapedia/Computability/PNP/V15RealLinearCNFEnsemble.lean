@@ -856,6 +856,244 @@ theorem v13RealLinearSmallGaugeCNFFormula_noPublicTargetTags_obstruction :
   exact hNoTags
     v13RealLinearSmallGaugeCNFFormula_publicSyntaxDeterminesMessage
 
+/-! ## Concrete small no-target-row CNF instance -/
+
+/-- Public data for the concrete no-target-row CNF: the fixed message bit and
+one public non-target row bit.  The formula below contains no unit clause for
+the selected target coordinate; the target is forced through row equations. -/
+structure V13RealLinearSmallNoTargetRowsCNFPublic where
+  msg : Bool
+  spare : Bool
+  deriving DecidableEq
+
+/-- Variables of the concrete no-target-row CNF: two witness coordinates plus
+the free hidden gauge coordinate. -/
+abbrev V13RealLinearSmallNoTargetRowsCNFVar :=
+  V13RealLinearSmallGaugeCNFVar
+
+/-- Witness assignments for the concrete no-target-row CNF. -/
+abbrev V13RealLinearSmallNoTargetRowsCNFWitness :=
+  V13RealLinearSmallGaugeCNFWitness
+
+/-- Public message readout `M(Y)` for the no-target-row CNF instance. -/
+def v13RealLinearSmallNoTargetRowsCNFMessage
+    (Y : V13RealLinearSmallNoTargetRowsCNFPublic) : Bool :=
+  Y.msg
+
+/-- CNF clauses enforcing `x0 xor x1 = rhs` over the selected message
+coordinate `x0` and the public spare coordinate `x1`. -/
+def v13RealLinearSmallNoTargetRowsCNFXorClauses
+    (rhs : Bool) :
+    ConcreteCNF.Formula V13RealLinearSmallNoTargetRowsCNFVar :=
+  let x0 := some v13RealLinearSmallGaugeCNFMessageIndex
+  let x1 := some v13RealLinearSmallGaugeCNFSpareIndex
+  if rhs then
+    [[ConcreteCNF.Literal.pos x0, ConcreteCNF.Literal.pos x1],
+      [ConcreteCNF.Literal.neg x0, ConcreteCNF.Literal.neg x1]]
+  else
+    [[ConcreteCNF.Literal.pos x0, ConcreteCNF.Literal.neg x1],
+      [ConcreteCNF.Literal.neg x0, ConcreteCNF.Literal.pos x1]]
+
+/-- Concrete no-target-row CNF.  It publicly fixes the non-target spare
+coordinate and includes two row-equation clauses forcing
+`x0 xor x1 = msg xor spare`, without publishing a target-coordinate unit
+clause. -/
+def v13RealLinearSmallNoTargetRowsCNFFormula
+    (Y : V13RealLinearSmallNoTargetRowsCNFPublic) :
+    ConcreteCNF.Formula V13RealLinearSmallNoTargetRowsCNFVar :=
+  [ConcreteCNF.unitClause
+    (some v13RealLinearSmallGaugeCNFSpareIndex) Y.spare] ++
+    v13RealLinearSmallNoTargetRowsCNFXorClauses
+      (Bool.xor Y.msg Y.spare)
+
+/-- The concrete row-equation formula contains no unit clause for the target
+coordinate. -/
+theorem v13RealLinearSmallNoTargetRowsCNFFormula_no_target_unit
+    (Y : V13RealLinearSmallNoTargetRowsCNFPublic) :
+    ConcreteCNF.unitClause
+        (some v13RealLinearSmallGaugeCNFMessageIndex) true ∉
+      v13RealLinearSmallNoTargetRowsCNFFormula Y ∧
+    ConcreteCNF.unitClause
+        (some v13RealLinearSmallGaugeCNFMessageIndex) false ∉
+      v13RealLinearSmallNoTargetRowsCNFFormula Y := by
+  cases Y with
+  | mk msg spare =>
+      cases msg <;> cases spare <;>
+        simp [v13RealLinearSmallNoTargetRowsCNFFormula,
+          v13RealLinearSmallNoTargetRowsCNFXorClauses,
+          v13RealLinearSmallGaugeCNFMessageIndex,
+          v13RealLinearSmallGaugeCNFSpareIndex,
+          ConcreteCNF.unitClause, ConcreteCNF.unitLiteral]
+
+/-- Semantic verifier for the concrete no-target-row CNF. -/
+def v13RealLinearSmallNoTargetRowsCNFVerifier
+    (Y : V13RealLinearSmallNoTargetRowsCNFPublic)
+    (W : V13RealLinearSmallNoTargetRowsCNFWitness) : Prop :=
+  ConcreteCNF.IsSatFormula
+    (v13RealLinearSmallNoTargetRowsCNFFormula Y) W
+
+/-- Executable verifier for the concrete no-target-row CNF. -/
+def v13RealLinearSmallNoTargetRowsCNFVerifierDecision
+    (Y : V13RealLinearSmallNoTargetRowsCNFPublic)
+    (W : V13RealLinearSmallNoTargetRowsCNFWitness) : Bool :=
+  decide
+    (W (some v13RealLinearSmallGaugeCNFSpareIndex) = Y.spare ∧
+      Bool.xor (W (some v13RealLinearSmallGaugeCNFMessageIndex))
+          (W (some v13RealLinearSmallGaugeCNFSpareIndex)) =
+        Bool.xor Y.msg Y.spare)
+
+/-- The two explicit row-equation clauses are satisfied exactly when the
+selected two witness coordinates have the prescribed xor. -/
+theorem v13RealLinearSmallNoTargetRowsCNFXorClauses_sat_iff
+    {rhs : Bool} {W : V13RealLinearSmallNoTargetRowsCNFWitness} :
+    ConcreteCNF.IsSatFormula
+        (v13RealLinearSmallNoTargetRowsCNFXorClauses rhs) W ↔
+      Bool.xor (W (some v13RealLinearSmallGaugeCNFMessageIndex))
+        (W (some v13RealLinearSmallGaugeCNFSpareIndex)) = rhs := by
+  cases rhs <;>
+    cases hmsg :
+      W (some v13RealLinearSmallGaugeCNFMessageIndex) <;>
+    cases hspare :
+      W (some v13RealLinearSmallGaugeCNFSpareIndex)
+  all_goals
+    simp [v13RealLinearSmallNoTargetRowsCNFXorClauses,
+      v13RealLinearSmallGaugeCNFMessageIndex,
+      v13RealLinearSmallGaugeCNFSpareIndex,
+      ConcreteCNF.IsSatFormula, ConcreteCNF.IsSatClause,
+      ConcreteCNF.Literal.eval, Bool.xor] at hmsg hspare ⊢
+    simp [hmsg, hspare]
+
+/-- Satisfaction of the concrete no-target-row CNF is exactly the public
+spare-coordinate equation plus the row-equation xor. -/
+theorem v13RealLinearSmallNoTargetRowsCNFFormula_sat_iff
+    {Y : V13RealLinearSmallNoTargetRowsCNFPublic}
+    {W : V13RealLinearSmallNoTargetRowsCNFWitness} :
+    v13RealLinearSmallNoTargetRowsCNFVerifier Y W ↔
+      W (some v13RealLinearSmallGaugeCNFSpareIndex) = Y.spare ∧
+        Bool.xor (W (some v13RealLinearSmallGaugeCNFMessageIndex))
+            (W (some v13RealLinearSmallGaugeCNFSpareIndex)) =
+          Bool.xor Y.msg Y.spare := by
+  rw [v13RealLinearSmallNoTargetRowsCNFVerifier,
+    v13RealLinearSmallNoTargetRowsCNFFormula,
+    ConcreteCNF.isSatFormula_append_iff]
+  have hunit :
+      ConcreteCNF.IsSatFormula
+          [ConcreteCNF.unitClause
+            (some v13RealLinearSmallGaugeCNFSpareIndex) Y.spare] W ↔
+        W (some v13RealLinearSmallGaugeCNFSpareIndex) = Y.spare := by
+    constructor
+    · intro hW
+      have hclause :
+          ConcreteCNF.IsSatClause
+            (ConcreteCNF.unitClause
+              (some v13RealLinearSmallGaugeCNFSpareIndex) Y.spare) W := by
+        exact hW _ (by simp)
+      exact
+        (ConcreteCNF.isSatClause_unitClause_iff W
+          (some v13RealLinearSmallGaugeCNFSpareIndex) Y.spare).mp hclause
+    · intro hspare clause hclause
+      have hclauseEq :
+          clause =
+            ConcreteCNF.unitClause
+              (some v13RealLinearSmallGaugeCNFSpareIndex) Y.spare := by
+        simpa using hclause
+      rw [hclauseEq]
+      exact
+        (ConcreteCNF.isSatClause_unitClause_iff W
+          (some v13RealLinearSmallGaugeCNFSpareIndex) Y.spare).mpr hspare
+  rw [hunit, v13RealLinearSmallNoTargetRowsCNFXorClauses_sat_iff]
+
+/-- The executable verifier decides the semantic no-target-row verifier. -/
+theorem v13RealLinearSmallNoTargetRowsCNFVerifierDecision_correct
+    {Y : V13RealLinearSmallNoTargetRowsCNFPublic}
+    {W : V13RealLinearSmallNoTargetRowsCNFWitness} :
+    v13RealLinearSmallNoTargetRowsCNFVerifierDecision Y W = true ↔
+      v13RealLinearSmallNoTargetRowsCNFVerifier Y W := by
+  rw [v13RealLinearSmallNoTargetRowsCNFVerifierDecision,
+    decide_eq_true_iff]
+  exact v13RealLinearSmallNoTargetRowsCNFFormula_sat_iff.symm
+
+/-- Canonical satisfying assignment for the concrete no-target-row CNF with
+an arbitrary hidden gauge bit. -/
+def v13RealLinearSmallNoTargetRowsCNFAssignment
+    (Y : V13RealLinearSmallNoTargetRowsCNFPublic) (gauge : Bool) :
+    V13RealLinearSmallNoTargetRowsCNFWitness
+  | some j =>
+      if j = v13RealLinearSmallGaugeCNFMessageIndex then
+        Y.msg
+      else
+        Y.spare
+  | none => gauge
+
+@[simp] theorem v13RealLinearSmallNoTargetRowsCNFAssignment_message
+    (Y : V13RealLinearSmallNoTargetRowsCNFPublic) (gauge : Bool) :
+    v13RealLinearSmallNoTargetRowsCNFAssignment Y gauge
+        (some v13RealLinearSmallGaugeCNFMessageIndex) = Y.msg := by
+  simp [v13RealLinearSmallNoTargetRowsCNFAssignment]
+
+@[simp] theorem v13RealLinearSmallNoTargetRowsCNFAssignment_spare
+    (Y : V13RealLinearSmallNoTargetRowsCNFPublic) (gauge : Bool) :
+    v13RealLinearSmallNoTargetRowsCNFAssignment Y gauge
+        (some v13RealLinearSmallGaugeCNFSpareIndex) = Y.spare := by
+  simp [v13RealLinearSmallNoTargetRowsCNFAssignment,
+    v13RealLinearSmallGaugeCNFMessageIndex,
+    v13RealLinearSmallGaugeCNFSpareIndex]
+
+@[simp] theorem v13RealLinearSmallNoTargetRowsCNFAssignment_hiddenGauge
+    (Y : V13RealLinearSmallNoTargetRowsCNFPublic) (gauge : Bool) :
+    v13RealLinearSmallNoTargetRowsCNFAssignment Y gauge none = gauge :=
+  rfl
+
+/-- The canonical assignment satisfies the concrete no-target-row CNF for
+either hidden gauge bit. -/
+theorem v13RealLinearSmallNoTargetRowsCNFFormula_satisfied_assignment
+    (Y : V13RealLinearSmallNoTargetRowsCNFPublic) (gauge : Bool) :
+    v13RealLinearSmallNoTargetRowsCNFVerifier Y
+      (v13RealLinearSmallNoTargetRowsCNFAssignment Y gauge) := by
+  exact v13RealLinearSmallNoTargetRowsCNFFormula_sat_iff.mpr
+    ⟨v13RealLinearSmallNoTargetRowsCNFAssignment_spare Y gauge, by simp⟩
+
+/-- Fixed readout for the concrete no-target-row CNF: read the selected
+target witness coordinate. -/
+def v13RealLinearSmallNoTargetRowsCNFReadout
+    (W : V13RealLinearSmallNoTargetRowsCNFWitness) : Bool :=
+  W (some v13RealLinearSmallGaugeCNFMessageIndex)
+
+/-- Every verifier-valid witness for the concrete no-target-row CNF reads the
+fixed public message, even though the formula contains no target unit clause. -/
+theorem v13RealLinearSmallNoTargetRowsCNFReadout_eq_message_of_valid
+    {Y : V13RealLinearSmallNoTargetRowsCNFPublic}
+    {W : V13RealLinearSmallNoTargetRowsCNFWitness}
+    (hW : v13RealLinearSmallNoTargetRowsCNFVerifier Y W) :
+    v13RealLinearSmallNoTargetRowsCNFReadout W =
+      v13RealLinearSmallNoTargetRowsCNFMessage Y := by
+  rcases v13RealLinearSmallNoTargetRowsCNFFormula_sat_iff.mp hW with
+    ⟨hspare, hxor⟩
+  cases hmsgY : Y.msg <;>
+    cases hspareY : Y.spare <;>
+    cases hmsgW :
+      W (some v13RealLinearSmallGaugeCNFMessageIndex) <;>
+    cases hspareW :
+      W (some v13RealLinearSmallGaugeCNFSpareIndex) <;>
+    simp [v13RealLinearSmallNoTargetRowsCNFReadout,
+      v13RealLinearSmallNoTargetRowsCNFMessage, Bool.xor, hmsgY,
+      hspareY, hmsgW, hspareW] at hspare hxor ⊢
+
+/-- The concrete no-target-row CNF is single-message: all satisfying
+witnesses read the same fixed public message. -/
+theorem v13RealLinearSmallNoTargetRowsCNF_singleMessage
+    (Y : V13RealLinearSmallNoTargetRowsCNFPublic) :
+    SingleMessageReadout
+      (v13RealLinearSmallNoTargetRowsCNFVerifier Y)
+      v13RealLinearSmallNoTargetRowsCNFReadout := by
+  intro W W' hW hW'
+  calc
+    v13RealLinearSmallNoTargetRowsCNFReadout W =
+        v13RealLinearSmallNoTargetRowsCNFMessage Y :=
+      v13RealLinearSmallNoTargetRowsCNFReadout_eq_message_of_valid hW
+    _ = v13RealLinearSmallNoTargetRowsCNFReadout W' :=
+      (v13RealLinearSmallNoTargetRowsCNFReadout_eq_message_of_valid hW').symm
+
 /-- Semantic verifier for the explicit small gauge-CNF instance. -/
 def v13RealLinearSmallGaugeCNFVerifier
     (msg : Bool) (W : V13RealLinearSmallGaugeCNFWitness) : Prop :=
