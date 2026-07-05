@@ -207,4 +207,83 @@ theorem smallSingleMessageCNFReadoutData_supportedArbitraryOutputSATSearchCorrec
       smallSingleMessageCNFReadoutData_singleMessagePromise
       smallSingleMessageCNFReadoutData_supportedSatisfiable
 
+/-! ## Public-target-tag obstruction -/
+
+/-- The small construction has one public coordinate: the public bit itself. -/
+abbrev SmallSingleMessagePublicCoordinate :=
+  Unit
+
+/-- The only public coordinate reads the public bit. -/
+def smallSingleMessagePublicCoordinateValue
+    (_coord : SmallSingleMessagePublicCoordinate)
+    (Y : SmallSingleMessagePublic) : Bool :=
+  Y
+
+/-- No public coordinate should determine the fixed message.  This is the
+no-public-target-tag shape that the small construction fails. -/
+def SmallSingleMessageNoPublicCoordinateTargetTags : Prop :=
+  ∀ coord : SmallSingleMessagePublicCoordinate,
+    ¬ ∃ f : Bool → Bool,
+      ∀ Y : SmallSingleMessagePublic,
+        smallSingleMessageM Y =
+          f (smallSingleMessagePublicCoordinateValue coord Y)
+
+/-- The only public coordinate determines `M(Y)`. -/
+theorem smallSingleMessage_publicCoordinate_determines_message :
+    ∃ coord : SmallSingleMessagePublicCoordinate,
+      ∃ f : Bool → Bool,
+        ∀ Y : SmallSingleMessagePublic,
+          smallSingleMessageM Y =
+            f (smallSingleMessagePublicCoordinateValue coord Y) := by
+  exact ⟨(), id, by intro Y; rfl⟩
+
+/-- Named obstruction: the small CNF anchor is single-message, but it fails the
+no-public-target-tag requirement because its public coordinate is the message
+bit itself. -/
+theorem smallSingleMessage_noPublicTargetTags_obstruction :
+    ¬ SmallSingleMessageNoPublicCoordinateTargetTags := by
+  intro hNoTags
+  rcases smallSingleMessage_publicCoordinate_determines_message with
+    ⟨coord, f, hf⟩
+  exact hNoTags coord ⟨f, hf⟩
+
+/-- No public coordinate should determine the CNF-level readout on every
+satisfying SAT-search output.  This stronger CNF-readout form is also false
+for the small construction. -/
+def SmallSingleMessageNoPublicCoordinateReadoutTags : Prop :=
+  ∀ coord : SmallSingleMessagePublicCoordinate,
+    ¬ ∃ f : Bool → Bool,
+      ∀ {Y : SmallSingleMessagePublic}
+        {α : ConcreteCNF.Assignment (SmallSingleMessageVar Y)},
+          ConcreteCNF.IsSatFormula (smallSingleMessageFormula Y) α →
+            smallSingleMessageProjection Y α =
+              f (smallSingleMessagePublicCoordinateValue coord Y)
+
+/-- The only public coordinate determines the CNF-level readout on every
+satisfying assignment. -/
+theorem smallSingleMessage_publicCoordinate_determines_satProjection :
+    ∃ coord : SmallSingleMessagePublicCoordinate,
+      ∃ f : Bool → Bool,
+        ∀ {Y : SmallSingleMessagePublic}
+          {α : ConcreteCNF.Assignment (SmallSingleMessageVar Y)},
+            ConcreteCNF.IsSatFormula (smallSingleMessageFormula Y) α →
+              smallSingleMessageProjection Y α =
+                f (smallSingleMessagePublicCoordinateValue coord Y) := by
+  refine ⟨(), id, ?_⟩
+  intro Y α hα
+  calc
+    smallSingleMessageProjection Y α = smallSingleMessageM Y :=
+      smallSingleMessageProjection_eq_M_of_sat hα
+    _ = smallSingleMessagePublicCoordinateValue () Y := rfl
+
+/-- Named CNF-readout obstruction: the small single-message CNF anchor cannot
+serve as a no-public-target-tags ensemble, since its public bit predicts every
+valid SAT-search readout. -/
+theorem smallSingleMessage_noPublicReadoutTags_obstruction :
+    ¬ SmallSingleMessageNoPublicCoordinateReadoutTags := by
+  intro hNoTags
+  rcases smallSingleMessage_publicCoordinate_determines_satProjection with
+    ⟨coord, f, hf⟩
+  exact hNoTags coord ⟨f, hf⟩
+
 end Mettapedia.Computability.PNP
