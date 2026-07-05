@@ -9,6 +9,7 @@ from pathlib import Path
 from typing import Any
 
 
+REPO_ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_INPUT = Path(
     "results/fourcolor/"
     "section92_closed_collar_winding_simple_patch_n8_frontier_audit.json"
@@ -17,6 +18,10 @@ DEFAULT_OUTPUT = Path(
     "results/fourcolor/"
     "section92_closed_collar_winding_realizability_n8_frontier_verdict.json"
 )
+DEFAULT_SOURCE_RESULTS_DIR = (
+    REPO_ROOT / "lean" / "mettapedia" / "results" / "fourcolor"
+)
+DEFAULT_STRATIFIED_RESULTS_DIR = REPO_ROOT / "results" / "fourcolor"
 EXPECTED_SCHEMA = (
     "fourcolor-section-9-2-closed-collar-winding-simple-patch-n8-"
     "frontier-audit-v1"
@@ -44,7 +49,18 @@ def parse_args() -> argparse.Namespace:
     )
     parser.add_argument("--input", type=Path, default=DEFAULT_INPUT)
     parser.add_argument("--output", type=Path, default=DEFAULT_OUTPUT)
-    parser.add_argument("--results-dir", type=Path, default=Path("results/fourcolor"))
+    parser.add_argument(
+        "--source-results-dir",
+        type=Path,
+        default=DEFAULT_SOURCE_RESULTS_DIR,
+        help="directory containing the prefix source payload JSON files named by the archive",
+    )
+    parser.add_argument(
+        "--stratified-results-dir",
+        type=Path,
+        default=DEFAULT_STRATIFIED_RESULTS_DIR,
+        help="directory containing the stratified-sample source payload JSON file",
+    )
     return parser.parse_args()
 
 
@@ -240,8 +256,12 @@ def main() -> int:
     if frontier.get("verdict") != EXPECTED_FRONTIER_VERDICT:
         fail(failures, "frontier", "unexpected frontier verdict")
 
-    prefix_summary = verify_prefix(frontier, args.results_dir, failures, evidence_gaps)
-    sample_summary = verify_stratified_sample(frontier, args.results_dir, failures, evidence_gaps)
+    prefix_summary = verify_prefix(
+        frontier, args.source_results_dir, failures, evidence_gaps
+    )
+    sample_summary = verify_stratified_sample(
+        frontier, args.stratified_results_dir, failures, evidence_gaps
+    )
 
     if failures:
         verdict = "n8_frontier_archive_verification_failed"
