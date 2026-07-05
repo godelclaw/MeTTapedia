@@ -5421,4 +5421,18 @@ theorem v13RealLinearNoTargetRowsGaugeCNFAppendixICNF_gaugeFaithfulness
   intro gamma
   rfl
 
+/-- Structural `hiddenGaugeProduct` transferred to the no-target-rows
+Appendix-I CNF world carrier: every transported hidden-gauge predicate is
+satisfied on every concrete Appendix-I CNF world. -/
+theorem v13RealLinearNoTargetRowsGaugeCNFAppendixICNF_hiddenGaugeProduct
+    {m : Nat} (i₀ : Fin m) :
+    ∀ gamma omega,
+      (v13RealLinearNoTargetRowsGaugeCNFAppendixICNFSemantics
+          i₀).gaugeSat gamma omega := by
+  intro gamma omega
+  exact
+    v13RealLinearNoTargetRowsGaugeCNF_hiddenGaugeProduct i₀ gamma
+      (v13RealLinearNoTargetRowsGaugeCNFAppendixICNFWorldAsGaugeCNFWorld
+        omega)
+
 end Mettapedia.Computability.PNP
