@@ -147,6 +147,18 @@ def samples(data: dict[str, object], name: str) -> list[dict[str, object]]:
     return result
 
 
+def case_verdicts(data: dict[str, object], name: str) -> list[dict[str, object]]:
+    value = data.get("case_verdicts")
+    if not isinstance(value, list):
+        raise ValueError(f"{name}: missing list case_verdicts")
+    result: list[dict[str, object]] = []
+    for index, item in enumerate(value):
+        if not isinstance(item, dict):
+            raise ValueError(f"{name}: case_verdicts[{index}] is not an object")
+        result.append(item)
+    return result
+
+
 def object_field(data: dict[str, object], name: str, field: str) -> dict[str, object]:
     value = data.get(field)
     if not isinstance(value, dict):
@@ -1211,10 +1223,26 @@ def audit_n8_frontier(prefix_results_dir: Path, stratified_results_dir: Path) ->
         int_field(stratified_summary, N8_STRATIFIED_SAMPLE_FILE, "radial_order_case_count"),
         130,
     )
+    stratified_case_verdicts = case_verdicts(stratified_data, N8_STRATIFIED_SAMPLE_FILE)
+    assert_equal(
+        "n8 stratified case verdict count",
+        int_field(stratified_summary, N8_STRATIFIED_SAMPLE_FILE, "case_verdict_count"),
+        130,
+    )
+    assert_equal(
+        "n8 stratified case verdict payload count",
+        len(stratified_case_verdicts),
+        130,
+    )
     assert_equal(
         "n8 stratified profile-preserving count",
         int_field(stratified_summary, N8_STRATIFIED_SAMPLE_FILE, "profile_preserving_case_count"),
         0,
+    )
+    assert_equal(
+        "n8 stratified no-profile count",
+        int_field(stratified_summary, N8_STRATIFIED_SAMPLE_FILE, "no_profile_preserving_case_count"),
+        130,
     )
     assert_equal(
         "n8 stratified post-template pass count",
@@ -1239,6 +1267,49 @@ def audit_n8_frontier(prefix_results_dir: Path, stratified_results_dir: Path) ->
         ),
         {},
     )
+    expected_case_pairs = {
+        (patch_index, radial_order_index)
+        for patch_index in sampled_indices
+        for radial_order_index in (0, 1)
+    }
+    seen_case_pairs: set[tuple[int, int]] = set()
+    for index, verdict in enumerate(stratified_case_verdicts):
+        patch_index = verdict.get("patch_index")
+        radial_order_index = verdict.get("radial_order_index")
+        if not isinstance(patch_index, int) or not isinstance(radial_order_index, int):
+            raise ValueError(f"n8 stratified case verdict {index}: invalid indices")
+        if patch_index not in sampled_indices:
+            raise AssertionError(
+                f"n8 stratified case verdict {index}: unsampled patch index"
+            )
+        if radial_order_index not in (0, 1):
+            raise AssertionError(
+                f"n8 stratified case verdict {index}: invalid radial order index"
+            )
+        pair = (patch_index, radial_order_index)
+        if pair in seen_case_pairs:
+            raise AssertionError(
+                f"n8 stratified case verdict {index}: duplicate radial order case"
+            )
+        seen_case_pairs.add(pair)
+        radial_order = verdict.get("radial_order")
+        if (
+            not isinstance(radial_order, list)
+            or len(radial_order) != 2
+            or not all(isinstance(edge, str) for edge in radial_order)
+        ):
+            raise ValueError(f"n8 stratified case verdict {index}: invalid radial order")
+        assert_equal(
+            f"n8 stratified case verdict {index}: profile preserving",
+            verdict.get("profile_preserving"),
+            False,
+        )
+        assert_equal(
+            f"n8 stratified case verdict {index}: verdict",
+            verdict.get("verdict"),
+            "no_profile_preserving_extension",
+        )
+    assert_equal("n8 stratified case verdict pairs", seen_case_pairs, expected_case_pairs)
 
     return {
         "schema": "fourcolor-section-9-2-closed-collar-winding-simple-patch-n8-frontier-audit-v1",
@@ -1257,10 +1328,18 @@ def audit_n8_frontier(prefix_results_dir: Path, stratified_results_dir: Path) ->
             "radial_order_case_count": int_field(
                 stratified_summary, N8_STRATIFIED_SAMPLE_FILE, "radial_order_case_count"
             ),
+            "case_verdict_count": int_field(
+                stratified_summary, N8_STRATIFIED_SAMPLE_FILE, "case_verdict_count"
+            ),
             "profile_preserving_case_count": int_field(
                 stratified_summary,
                 N8_STRATIFIED_SAMPLE_FILE,
                 "profile_preserving_case_count",
+            ),
+            "no_profile_preserving_case_count": int_field(
+                stratified_summary,
+                N8_STRATIFIED_SAMPLE_FILE,
+                "no_profile_preserving_case_count",
             ),
             "normal_form_after_template_exclusion_passing_count": int_field(
                 stratified_summary,

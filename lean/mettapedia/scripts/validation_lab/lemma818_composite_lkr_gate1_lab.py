@@ -3569,6 +3569,7 @@ def audit_closed_collar_winding_simple_patch_template_blocker_index_sample(
     exact_template_histogram: Counter[str] = Counter()
     non_template_minimum_small_cut_histogram: Counter[str] = Counter()
     samples: list[dict[str, object]] = []
+    case_verdicts: list[dict[str, object]] = []
     sampled_blockers: set[str] = set()
 
     for patch_index in patch_indices:
@@ -3581,7 +3582,7 @@ def audit_closed_collar_winding_simple_patch_template_blocker_index_sample(
             patch_edges,
         )
         radial_orders = (radial_edges0, tuple(reversed(radial_edges0)))
-        for radial_order in radial_orders:
+        for radial_order_index, radial_order in enumerate(radial_orders):
             radial_order_case_count += 1
             case_result = classify_simple_patch_template_blocker_case(
                 base_model,
@@ -3592,9 +3593,29 @@ def audit_closed_collar_winding_simple_patch_template_blocker_index_sample(
                 sample_limit,
             )
             if case_result is None:
+                case_verdicts.append(
+                    {
+                        "patch_index": patch_index,
+                        "patch_edge_count": len(patch_edges),
+                        "radial_order_index": radial_order_index,
+                        "radial_order": list(radial_order),
+                        "profile_preserving": False,
+                        "verdict": "no_profile_preserving_extension",
+                    }
+                )
                 continue
             profile_preserving_case_count += 1
             blocker_name = str(case_result["blocker_name"])
+            case_verdicts.append(
+                {
+                    "patch_index": patch_index,
+                    "patch_edge_count": len(patch_edges),
+                    "radial_order_index": radial_order_index,
+                    "radial_order": list(radial_order),
+                    "profile_preserving": True,
+                    "verdict": blocker_name,
+                }
+            )
             first_blocker_histogram[blocker_name] += 1
             if blocker_name in STRUCTURAL_TEMPLATE_BLOCKERS:
                 structural_first_blocker_count += 1
@@ -3664,11 +3685,15 @@ def audit_closed_collar_winding_simple_patch_template_blocker_index_sample(
         },
         "base_winding_profile_histogram": base_fiber["winding_profile_histogram"],
         "samples": samples,
+        "case_verdicts": case_verdicts,
         "summary": {
             "verdict": verdict,
             "sampled_patch_topology_count": sampled_patch_topology_count,
             "radial_order_case_count": radial_order_case_count,
+            "case_verdict_count": len(case_verdicts),
             "profile_preserving_case_count": profile_preserving_case_count,
+            "no_profile_preserving_case_count":
+                radial_order_case_count - profile_preserving_case_count,
             "structural_first_blocker_count": structural_first_blocker_count,
             "exact_template_blocker_count": exact_template_blocker_count,
             "non_template_cyclic_cut_blocker_count":
