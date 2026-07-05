@@ -4154,6 +4154,54 @@ theorem
       i₀)
     hW
 
+/-- Every satisfying assignment returned by SAT search for the concrete
+no-target-rows Appendix-I CNF data projects to the fixed target bit of its
+public instance. -/
+theorem
+    v13RealLinearNoTargetRowsGaugeCNFAppendixICNFReadoutData_projection_eq_targetBit
+    {m : Nat} (i₀ : Fin m)
+    {Y : V13RealLinearNoTargetRowsWorld m i₀}
+    (hY :
+      (v13RealLinearNoTargetRowsGaugeCNFAppendixICNFReadoutData i₀)
+        |>.support Y)
+    {α : ConcreteCNF.Assignment (V13RealLinearGaugeCNFVar m)}
+    (hα :
+      ConcreteCNF.IsSatFormula
+        ((v13RealLinearNoTargetRowsGaugeCNFAppendixICNFReadoutData i₀)
+          |>.formula Y) α) :
+    ((v13RealLinearNoTargetRowsGaugeCNFAppendixICNFReadoutData i₀)
+        |>.projection Y α) =
+      v13RealLinearNoTargetRowsTargetBit Y := by
+  let W :
+      RealM4CNFWitness
+        (v13RealLinearNoTargetRowsGaugeCNFAppendixICNFReadoutData i₀) :=
+    { publicInstance := Y
+      assignment := α }
+  have hValid :
+      realM4CNFVerifier
+          (v13RealLinearNoTargetRowsGaugeCNFAppendixICNFReadoutData i₀)
+          Y W := by
+    exact ⟨hY, ⟨rfl, hα⟩⟩
+  simpa [W, realM4CNFWitnessReadout] using
+    v13RealLinearNoTargetRowsGaugeCNFAppendixICNFWitnessReadout_eq_targetBit
+      i₀ hValid
+
+/-- The concrete no-target-rows Appendix-I CNF data satisfies the manuscript
+arbitrary-output SAT-search readout contract: every satisfying assignment
+returned by SAT search projects to the same fixed target bit. -/
+theorem
+    v13RealLinearNoTargetRowsGaugeCNFAppendixICNFReadoutData_supportedArbitraryOutputSATSearchCorrect
+    {m : Nat} (i₀ : Fin m) :
+    (v13RealLinearNoTargetRowsGaugeCNFAppendixICNFReadoutData i₀)
+      |>.toManuscriptCNFReadoutData
+      |>.SupportedArbitraryOutputSATSearchCorrect := by
+  intro Y hY
+  refine ⟨v13RealLinearNoTargetRowsTargetBit Y, ?_⟩
+  intro out
+  simpa [AppendixICNFReadoutData.toManuscriptCNFReadoutData] using
+    v13RealLinearNoTargetRowsGaugeCNFAppendixICNFReadoutData_projection_eq_targetBit
+      (Y := Y) (α := out.witness) i₀ hY out.isSat
+
 /-- Appendix-I CNF witness returned by the explicit P=NP-side bit-fixing
 self-reduction for the no-target-rows gauge-CNF formula. -/
 def v13RealLinearNoTargetRowsGaugeCNFAppendixICNFSelfReductionWitness
