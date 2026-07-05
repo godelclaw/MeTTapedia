@@ -2625,6 +2625,57 @@ theorem v13RealLinearNoTargetRowsGaugeCNFReadout_eq_publicMessage
         (v13RealLinearNoTargetRowsPublicInput omega.base) :=
   v13RealLinearGaugeCNFReadout_eq_publicMessage_of_valid i₀ omega.sat
 
+/-- The no-target-rows gauge-buffered CNF world as a concrete
+single-message SAT spine: public input is the adjusted no-target-rows real
+linear instance, hidden witness is the gauge-buffered CNF assignment, and
+readout is the selected message coordinate. -/
+def v13RealLinearNoTargetRowsGaugeCNFSingleMessageSATSpine
+    {m : Nat} (i₀ : Fin m) :
+    RealSingleMessageSATSpine
+      (V13RealLinearNoTargetRowsGaugeCNFWorld m i₀)
+      (V13RealLinearPublic m)
+      (V13RealLinearGaugeCNFWitness m) where
+  publicInput := fun omega =>
+    v13RealLinearNoTargetRowsPublicInput omega.base
+  witnessOfWorld := fun omega => omega.assignment
+  verifier := v13RealLinearGaugeCNFVerifier
+  messageOfPublic := v13RealLinearMessageOfPublic i₀
+  witnessReadout := v13RealLinearGaugeCNFReadout i₀
+  target := v13RealLinearNoTargetRowsGaugeCNFTarget
+  worldWitnessValid := by
+    intro omega
+    exact omega.sat
+  readout_eq_message_of_valid := by
+    intro Y W hW
+    exact v13RealLinearGaugeCNFReadout_eq_publicMessage_of_valid i₀ hW
+  target_eq_message := by
+    intro omega
+    exact v13RealLinearNoTargetRowsGaugeCNFReadout_eq_publicMessage omega
+
+/-- Structural `singleMessage` projected from the concrete no-target-rows
+gauge-CNF SAT spine. -/
+theorem
+    v13RealLinearNoTargetRowsGaugeCNFSingleMessageSATSpine_singleMessage
+    {m : Nat} (i₀ : Fin m) :
+    ∀ omega₀ omega₁ : V13RealLinearNoTargetRowsGaugeCNFWorld m i₀,
+      v13RealLinearNoTargetRowsPublicInput omega₀.base =
+        v13RealLinearNoTargetRowsPublicInput omega₁.base ->
+      v13RealLinearNoTargetRowsGaugeCNFTarget omega₀ =
+        v13RealLinearNoTargetRowsGaugeCNFTarget omega₁ :=
+  (v13RealLinearNoTargetRowsGaugeCNFSingleMessageSATSpine i₀).singleMessage
+
+/-- Any verifier-valid gauge-CNF witness over the same no-target-rows public
+instance reads the fixed public message coordinate. -/
+theorem
+    v13RealLinearNoTargetRowsGaugeCNFSingleMessageSATSpine_readout_eq_publicMessage
+    {m : Nat} (i₀ : Fin m) {Y : V13RealLinearPublic m}
+    {W : V13RealLinearGaugeCNFWitness m}
+    (hW : v13RealLinearGaugeCNFVerifier Y W) :
+    v13RealLinearGaugeCNFReadout i₀ W =
+      v13RealLinearMessageOfPublic i₀ Y :=
+  (v13RealLinearNoTargetRowsGaugeCNFSingleMessageSATSpine i₀)
+    |>.readout_eq_message_of_valid hW
+
 /-- Structural `singleMessage` transfer for the no-target-rows
 gauge-buffered CNF world. -/
 theorem v13RealLinearNoTargetRowsGaugeCNF_singleMessage {m : Nat}
