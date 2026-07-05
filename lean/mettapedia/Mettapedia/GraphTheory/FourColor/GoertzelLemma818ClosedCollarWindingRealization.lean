@@ -6562,6 +6562,7 @@ structure ClosedCollarSimplePatchAnnularEmbeddingRadialFaceRowCertificate where
   planarRotationSystemCount : Nat
   radialFaceCoherentRotationCount : Nat
   templateExclusionBlocker : String
+  exactTemplateKey : Option String
   verdict : String
 deriving DecidableEq, Repr
 
@@ -6587,6 +6588,7 @@ def closedCollarSimplePatchN6AnnularEmbeddingRadialFaceSampleRowCertificates :
       planarRotationSystemCount := 8,
       radialFaceCoherentRotationCount := 0,
       templateExclusionBlocker := "excluded_exact_diagonal_two_pole_template",
+      exactTemplateKey := none,
       verdict := "row_has_no_radial_face_coherent_rotation" },
     { archiveFamily := "sample",
       sourceFile :=
@@ -6602,6 +6604,7 @@ def closedCollarSimplePatchN6AnnularEmbeddingRadialFaceSampleRowCertificates :
       planarRotationSystemCount := 8,
       radialFaceCoherentRotationCount := 0,
       templateExclusionBlocker := "excluded_exact_diagonal_two_pole_template",
+      exactTemplateKey := none,
       verdict := "row_has_no_radial_face_coherent_rotation" },
     { archiveFamily := "sample",
       sourceFile :=
@@ -6617,6 +6620,7 @@ def closedCollarSimplePatchN6AnnularEmbeddingRadialFaceSampleRowCertificates :
       planarRotationSystemCount := 8,
       radialFaceCoherentRotationCount := 0,
       templateExclusionBlocker := "excluded_exact_diagonal_two_pole_template",
+      exactTemplateKey := none,
       verdict := "row_has_no_radial_face_coherent_rotation" },
     { archiveFamily := "sample",
       sourceFile :=
@@ -6632,6 +6636,7 @@ def closedCollarSimplePatchN6AnnularEmbeddingRadialFaceSampleRowCertificates :
       planarRotationSystemCount := 8,
       radialFaceCoherentRotationCount := 0,
       templateExclusionBlocker := "excluded_exact_diagonal_two_pole_template",
+      exactTemplateKey := none,
       verdict := "row_has_no_radial_face_coherent_rotation" },
     { archiveFamily := "sample",
       sourceFile :=
@@ -6647,6 +6652,7 @@ def closedCollarSimplePatchN6AnnularEmbeddingRadialFaceSampleRowCertificates :
       planarRotationSystemCount := 8,
       radialFaceCoherentRotationCount := 0,
       templateExclusionBlocker := "excluded_exact_diagonal_two_pole_template",
+      exactTemplateKey := none,
       verdict := "row_has_no_radial_face_coherent_rotation" },
     { archiveFamily := "sample",
       sourceFile :=
@@ -6662,6 +6668,7 @@ def closedCollarSimplePatchN6AnnularEmbeddingRadialFaceSampleRowCertificates :
       planarRotationSystemCount := 8,
       radialFaceCoherentRotationCount := 0,
       templateExclusionBlocker := "excluded_exact_diagonal_two_pole_template",
+      exactTemplateKey := none,
       verdict := "row_has_no_radial_face_coherent_rotation" }]
 
 def closedCollarSimplePatchN6AnnularEmbeddingRadialFaceSlice1000302RowCertificates :
@@ -6680,6 +6687,7 @@ def closedCollarSimplePatchN6AnnularEmbeddingRadialFaceSlice1000302RowCertificat
       planarRotationSystemCount := 8,
       radialFaceCoherentRotationCount := 0,
       templateExclusionBlocker := "excluded_exact_diagonal_two_pole_template",
+      exactTemplateKey := some ClosedCollarDiagonalTwoPoleTemplateId.reverse.labKey,
       verdict := "row_has_no_radial_face_coherent_rotation" },
     { archiveFamily := "slice",
       sourceFile :=
@@ -6695,6 +6703,7 @@ def closedCollarSimplePatchN6AnnularEmbeddingRadialFaceSlice1000302RowCertificat
       planarRotationSystemCount := 8,
       radialFaceCoherentRotationCount := 0,
       templateExclusionBlocker := "excluded_exact_diagonal_two_pole_template",
+      exactTemplateKey := some ClosedCollarDiagonalTwoPoleTemplateId.reverse.labKey,
       verdict := "row_has_no_radial_face_coherent_rotation" }]
 
 def closedCollarSimplePatchN6AnnularEmbeddingRadialFaceSlice1001289RowCertificates :
@@ -6713,6 +6722,7 @@ def closedCollarSimplePatchN6AnnularEmbeddingRadialFaceSlice1001289RowCertificat
       planarRotationSystemCount := 8,
       radialFaceCoherentRotationCount := 0,
       templateExclusionBlocker := "excluded_exact_diagonal_two_pole_template",
+      exactTemplateKey := some ClosedCollarDiagonalTwoPoleTemplateId.reverse.labKey,
       verdict := "row_has_no_radial_face_coherent_rotation" },
     { archiveFamily := "slice",
       sourceFile :=
@@ -6728,6 +6738,7 @@ def closedCollarSimplePatchN6AnnularEmbeddingRadialFaceSlice1001289RowCertificat
       planarRotationSystemCount := 8,
       radialFaceCoherentRotationCount := 0,
       templateExclusionBlocker := "excluded_exact_diagonal_two_pole_template",
+      exactTemplateKey := some ClosedCollarDiagonalTwoPoleTemplateId.reverse.labKey,
       verdict := "row_has_no_radial_face_coherent_rotation" }]
 
 def closedCollarSimplePatchN6AnnularEmbeddingRadialFaceRowCoverageCertificates :
@@ -6790,6 +6801,10 @@ def ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceRowCoverage
         (fun certificate => certificate.templateExclusionBlocker) =
       List.replicate 10 "excluded_exact_diagonal_two_pole_template" ∧
     closedCollarSimplePatchN6AnnularEmbeddingRadialFaceRowCoverageCertificates.map
+        (fun certificate => certificate.exactTemplateKey) =
+      List.replicate 6 none ++
+        List.replicate 4 (some ClosedCollarDiagonalTwoPoleTemplateId.reverse.labKey) ∧
+    closedCollarSimplePatchN6AnnularEmbeddingRadialFaceRowCoverageCertificates.map
         (fun certificate => certificate.verdict) =
       List.replicate 10 "row_has_no_radial_face_coherent_rotation" ∧
     closedCollarSimplePatchN6AnnularEmbeddingRadialFaceRowCoverageVerdict =
@@ -6799,7 +6814,34 @@ theorem closedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceRowCove
     ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceRowCoverageArtifactEvidence := by
   refine
     ⟨closedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceArchiveCaseEvidence,
-      ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩ <;>
+      ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩ <;>
+    decide
+
+/--
+Exact-template payload mirrored from the row archive.  The six sample rows are
+recorded only at blocker level, while the four resumable-slice rows carry the
+reverse diagonal two-pole key checked by the lab.
+-/
+def ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceRowExactTemplateKeyEvidence :
+    Prop :=
+  ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceRowCoverageArtifactEvidence ∧
+    closedCollarSimplePatchN6AnnularEmbeddingRadialFaceSampleRowCertificates.map
+        (fun certificate => certificate.exactTemplateKey) =
+      List.replicate 6 none ∧
+    (closedCollarSimplePatchN6AnnularEmbeddingRadialFaceSlice1000302RowCertificates ++
+        closedCollarSimplePatchN6AnnularEmbeddingRadialFaceSlice1001289RowCertificates).map
+        (fun certificate => certificate.exactTemplateKey) =
+      List.replicate 4 (some ClosedCollarDiagonalTwoPoleTemplateId.reverse.labKey) ∧
+    closedCollarSimplePatchN6AnnularEmbeddingRadialFaceRowCoverageCertificates.map
+        (fun certificate => certificate.exactTemplateKey) =
+      List.replicate 6 none ++
+        List.replicate 4 (some ClosedCollarDiagonalTwoPoleTemplateId.reverse.labKey)
+
+theorem closedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceRowExactTemplateKeyEvidence :
+    ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceRowExactTemplateKeyEvidence := by
+  refine
+    ⟨closedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceRowCoverageArtifactEvidence,
+      ?_, ?_, ?_⟩ <;>
     decide
 
 /--
@@ -13633,6 +13675,22 @@ theorem section92Step4CurrentFiniteFrontierBadWitnessFaceTemplateReductionCriter
         hgeometry hradial hn6 hkeys hrows,
       closedCollarWindingFreedom_not_badWitnessFaceForcesExactTemplate_of_laterBridge_of_auditedRows_of_not_nonrealizable
         hgeometry hradial hn6 hkeys hrows⟩
+
+/--
+Template-payload criterion for the remaining bad-face route.  The row archive
+now carries the exact reverse-template key where the lab supplies it, and the
+formal fork still reduces the repair branch to the bad-face-to-template
+geometric theorem.
+-/
+def Section92Step4CurrentFiniteFrontierBadWitnessFaceTemplatePayloadCriterion :
+    Prop :=
+  ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceRowExactTemplateKeyEvidence ∧
+    Section92Step4CurrentFiniteFrontierBadWitnessFaceTemplateReductionCriterion
+
+theorem section92Step4CurrentFiniteFrontierBadWitnessFaceTemplatePayloadCriterion :
+    Section92Step4CurrentFiniteFrontierBadWitnessFaceTemplatePayloadCriterion :=
+  ⟨closedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceRowExactTemplateKeyEvidence,
+    section92Step4CurrentFiniteFrontierBadWitnessFaceTemplateReductionCriterion⟩
 
 /--
 Exact first-hinge equivalence for the current frontier: the previous-boundary
