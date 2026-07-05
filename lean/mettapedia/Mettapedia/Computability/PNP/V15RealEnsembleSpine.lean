@@ -20727,10 +20727,13 @@ theorem realM4EqualityIndexedLargeTargetCompletionFrontierHypothesisAudit_exact 
   rfl
 
 def realM4EqualityIndexedLargeTargetCompletionFrontierStatement : String :=
-  "The equality-indexed large-target real v15/M4 completion frontier records the strongest current official endpoint route.  Its open construction surface is the no-target-rows public surface, hiddenGaugeProduct, public-lock coverage, locked-message data, CNF address syntax, real lower-machine data, official NP-language/P-to-decider data, and the P=NP-indexed eta/K-poly/target-block obligations.  The no-target-rows public surface and CD-ENF already derive singleMessage, noPublicTargetTags, atomCompleteness, gaugeFaithfulness, and admissibleHistories, so those structural fields are not repeated as open items on this route.  The remaining mathematical frontier after these construction obligations is exactly StarSW hardness plus safeQSSM / boundedGaugeIncidence / boundaryMixing; this is still conditional real-spine staging, not a completed M4 construction or a proof of P != NP."
+  "The equality-indexed large-target real v15/M4 completion frontier records the supplemental P=NP-indexed endpoint route.  Its open construction surface is the no-target-rows public surface, hiddenGaugeProduct, public-lock coverage, locked-message data, CNF address syntax, real lower-machine data, official NP-language/P-to-decider data, and the P=NP-indexed eta/K-poly/target-block obligations.  The no-target-rows public surface and CD-ENF already derive singleMessage, noPublicTargetTags, atomCompleteness, gaugeFaithfulness, and admissibleHistories, so those structural fields are not repeated as open items on this route.  The remaining mathematical frontier after these construction obligations is exactly StarSW hardness plus safeQSSM / boundedGaugeIncidence / boundaryMixing; this is still conditional real-spine staging, not a completed M4 construction or a proof of P != NP."
 
 def realM4RealLockInConstructionObligations : List String :=
-  realM4EqualityIndexedLargeTargetOpenConstructionItems
+  realM4NoTargetRowsEqualityIndexedConcreteConstructionItems ++
+    realM4LargeTargetLowerMachineConstructionItems ++
+      realM4OfficialBridgeConstructionItems ++
+        realM4LargeTargetKpolyCompatibilityConstructionItems
 
 theorem realM4RealLockInConstructionObligations_exact :
     realM4RealLockInConstructionObligations =
@@ -20754,10 +20757,10 @@ theorem realM4RealLockInConstructionObligations_exact :
         "realCompressionLowerMachineData",
         "officialLanguageNPData",
         "officialPToDeciderFamilyData",
-        "pEqualsNPIndexedEtaPositive",
-        "pEqualsNPIndexedKpolyAtConstantDecoderIdentification",
-        "pEqualsNPIndexedEtaTimesLinearFloorIdentification",
-        "pEqualsNPIndexedTargetBlocksExceedsConstantDecoderCost" ] := by
+        "pMembershipEtaPositive",
+        "pMembershipKpolyAtConstantDecoderIdentification",
+        "pMembershipEtaTimesLinearFloorIdentification",
+        "pMembershipTargetBlocksExceedsConstantDecoderCost" ] := by
   rfl
 
 def realM4RealLockInIrreducibleInputs : List String :=
@@ -20772,9 +20775,12 @@ theorem realM4RealLockInIrreducibleInputs_exact :
   rfl
 
 def realM4RealLockInEndpointChainItems : List String := [
-  "structuralFieldsProjectedFromRealConstruction",
-  "selfReductionUpperDischargedFromPEqualsNPWitness",
-  "internalUpperLowerClashAtPEqualsNP",
+  "strictNamedConstructionData",
+  "structuralFieldsProjectedFromStrictNamedConstruction",
+  "pMembershipToSelfReductionUpper",
+  "directParameterRecord",
+  "directUpperLowerClash",
+  "namedLanguageNotInP",
   "cookStyleClassInequality",
   "cookStyleOfficialSeparation",
   "cookStyleExistentialEndpoint"
@@ -20782,9 +20788,12 @@ def realM4RealLockInEndpointChainItems : List String := [
 
 theorem realM4RealLockInEndpointChainItems_exact :
     realM4RealLockInEndpointChainItems =
-      [ "structuralFieldsProjectedFromRealConstruction",
-        "selfReductionUpperDischargedFromPEqualsNPWitness",
-        "internalUpperLowerClashAtPEqualsNP",
+      [ "strictNamedConstructionData",
+        "structuralFieldsProjectedFromStrictNamedConstruction",
+        "pMembershipToSelfReductionUpper",
+        "directParameterRecord",
+        "directUpperLowerClash",
+        "namedLanguageNotInP",
         "cookStyleClassInequality",
         "cookStyleOfficialSeparation",
         "cookStyleExistentialEndpoint" ] := by
@@ -20809,9 +20818,13 @@ def realM4RealLockInCompletionAudit : List String :=
   realM4RealLockInConstructionObligations ++
     realM4RealLockInIrreducibleInputs
 
-theorem realM4RealLockInCompletionAudit_eq_frontier :
+theorem realM4RealLockInCompletionAudit_eq_namedLargeTargetFrontier :
     realM4RealLockInCompletionAudit =
-      realM4EqualityIndexedLargeTargetCompletionFrontierHypothesisAudit := by
+      (realM4NoTargetRowsEqualityIndexedConcreteConstructionItems ++
+        realM4LargeTargetLowerMachineConstructionItems ++
+          realM4OfficialBridgeConstructionItems ++
+            realM4LargeTargetKpolyCompatibilityConstructionItems) ++
+          realM4AfterConstructionIrreducibleInputs := by
   rfl
 
 theorem realM4RealLockInCompletionAudit_exact :
@@ -20836,10 +20849,10 @@ theorem realM4RealLockInCompletionAudit_exact :
         "realCompressionLowerMachineData",
         "officialLanguageNPData",
         "officialPToDeciderFamilyData",
-        "pEqualsNPIndexedEtaPositive",
-        "pEqualsNPIndexedKpolyAtConstantDecoderIdentification",
-        "pEqualsNPIndexedEtaTimesLinearFloorIdentification",
-        "pEqualsNPIndexedTargetBlocksExceedsConstantDecoderCost",
+        "pMembershipEtaPositive",
+        "pMembershipKpolyAtConstantDecoderIdentification",
+        "pMembershipEtaTimesLinearFloorIdentification",
+        "pMembershipTargetBlocksExceedsConstantDecoderCost",
         "starSWHardness",
         "safeQSSM",
         "boundedGaugeIncidence",
@@ -20847,14 +20860,18 @@ theorem realM4RealLockInCompletionAudit_exact :
   rfl
 
 def realM4RealLockInCompletionStatement : String :=
-  "The real v15/M4 lock-in route is the equality-indexed large-target route: first inhabit the real no-target-rows construction surface, the locked readout data, CNF address syntax, real lower machine, official NP-language/P-to-decider data, and the P=NP-indexed eta/K-poly/target-block facts.  Once those construction obligations are discharged, the endpoint chain uses the already checked structural projections, the P=NP-conditional self-reduction upper branch, the internal UpperLowerClash, and the Cook-style class interface.  The remaining irreducible inputs are exactly StarSW hardness plus safeQSSM / boundedGaugeIncidence / boundaryMixing.  The v14 toy endpoint, the raw official bridge adapter, a free unconditional SAT decider, and hidden structural hypotheses are not part of this lock-in route."
+  "The real v15/M4 lock-in route is the strict named large-target route: first inhabit the real no-target-rows construction surface, locked-message readout data, CNF address syntax, real lower machine, official NP-language/P-to-decider data, and P-membership-indexed eta/K-poly/target-block facts.  Once those construction obligations are discharged, the preferred endpoint chain uses the checked structural projections, derives the self-reduction upper side from P-membership of the named NP language, constructs the internal UpperLowerClash directly, proves the named language outside P, and then packages the Cook-style class inequality, official separation proposition, and existential endpoint.  The remaining irreducible inputs are exactly StarSW hardness plus safeQSSM / boundedGaugeIncidence / boundaryMixing.  The v14 toy endpoint, the raw official bridge adapter, a free unconditional SAT decider, hidden structural hypotheses, and the older equality-indexed route are not the preferred lock-in route."
 
 def realM4RealLockInEndpointHypothesisAudit : List String :=
-  realM4NoTargetRowsEqualityIndexedOfficialEndpointHypothesisAudit
+  [ "noTargetRowsNamedLanguageLargeTargetOfficialConstructionData",
+    "starSWHardness",
+    "safeQSSM",
+    "boundedGaugeIncidence",
+    "boundaryMixing" ]
 
 theorem realM4RealLockInEndpointHypothesisAudit_exact :
     realM4RealLockInEndpointHypothesisAudit =
-      [ "noTargetRowsEqualityIndexedOfficialConstructionData",
+      [ "noTargetRowsNamedLanguageLargeTargetOfficialConstructionData",
         "starSWHardness",
         "safeQSSM",
         "boundedGaugeIncidence",
@@ -20862,7 +20879,7 @@ theorem realM4RealLockInEndpointHypothesisAudit_exact :
   rfl
 
 def realM4RealLockInEndpointStatement : String :=
-  "The bundled real v15/M4 lock-in endpoint theorem packages the class inequality, official separation proposition, and Cook-style existential NP-not-P statement from one equality-indexed construction-data surface plus exactly StarSW hardness and the three analytic frontier inputs.  The theorem does not make the construction surface disappear: inhabiting the real no-target-rows M4 data, official language/P-to-decider data, and P=NP-indexed K-poly target facts remains the construction problem."
+  "The bundled real v15/M4 lock-in endpoint theorem packages the named NP language outside P, the class inequality, official separation proposition, and Cook-style existential NP-not-P statement from one strict named construction-data surface plus exactly StarSW hardness and the three analytic frontier inputs.  The theorem does not make the construction surface disappear: inhabiting the real no-target-rows M4 data, official language/P-to-decider data, and P-membership-indexed K-poly target facts remains the construction problem."
 
 def realM4NamedLanguageEndpointRouteItems : List String := [
   "strictPToUpperBridge",
