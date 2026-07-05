@@ -5559,6 +5559,100 @@ theorem
       Y).right_inv gamma
   exact ⟨W.val, W.property, hHidden⟩
 
+/-- Under the exact valid-witness fiber equivalence, the concrete witness
+hidden-gauge action is the Boolean xor action. -/
+theorem
+    v13RealLinearNoTargetRowsGaugeCNFAppendixICNFWitnessFiberEquivBool_action
+    {m : Nat} {i₀ : Fin m}
+    (Y : V13RealLinearNoTargetRowsWorld m i₀)
+    (gamma : Bool)
+    (W :
+      {W :
+        RealM4CNFWitness
+          (v13RealLinearNoTargetRowsGaugeCNFAppendixICNFReadoutData i₀) //
+        realM4CNFVerifier
+          (v13RealLinearNoTargetRowsGaugeCNFAppendixICNFReadoutData i₀)
+          Y W}) :
+    v13RealLinearNoTargetRowsGaugeCNFAppendixICNFWitnessFiberEquivBool
+        Y
+        ⟨v13RealLinearNoTargetRowsGaugeCNFAppendixICNFWitnessGaugeAction
+            gamma W.val,
+          v13RealLinearNoTargetRowsGaugeCNFAppendixICNFWitnessGaugeAction_preserves_verifier
+            gamma W.property⟩ =
+      (gamma ^^
+          v13RealLinearNoTargetRowsGaugeCNFAppendixICNFWitnessFiberEquivBool
+            Y W) := by
+  change
+    v13RealLinearNoTargetRowsGaugeCNFAppendixICNFWitnessHiddenGauge
+        (v13RealLinearNoTargetRowsGaugeCNFAppendixICNFWitnessGaugeAction
+          gamma W.val) =
+      (gamma ^^
+          v13RealLinearNoTargetRowsGaugeCNFAppendixICNFWitnessHiddenGauge
+            W.val)
+  exact
+    v13RealLinearNoTargetRowsGaugeCNFAppendixICNFWitnessGaugeAction_hiddenGauge
+      gamma W.val
+
+/-- The witness-level hidden-gauge action is simply transitive on the
+verifier-valid Appendix-I CNF witness fiber over a fixed public instance:
+there is a unique Boolean gauge element sending one valid witness to another. -/
+theorem
+    v13RealLinearNoTargetRowsGaugeCNFAppendixICNFWitnessGaugeAction_unique_of_valid
+    {m : Nat} {i₀ : Fin m}
+    {Y : V13RealLinearNoTargetRowsWorld m i₀}
+    (W W' :
+      RealM4CNFWitness
+        (v13RealLinearNoTargetRowsGaugeCNFAppendixICNFReadoutData i₀))
+    (hW :
+      realM4CNFVerifier
+        (v13RealLinearNoTargetRowsGaugeCNFAppendixICNFReadoutData i₀)
+        Y W)
+    (hW' :
+      realM4CNFVerifier
+        (v13RealLinearNoTargetRowsGaugeCNFAppendixICNFReadoutData i₀)
+        Y W') :
+    ∃! gamma : Bool,
+      v13RealLinearNoTargetRowsGaugeCNFAppendixICNFWitnessGaugeAction
+          gamma W =
+        W' := by
+  let gamma :=
+    v13RealLinearNoTargetRowsGaugeCNFAppendixICNFWitnessHiddenGauge W ^^
+      v13RealLinearNoTargetRowsGaugeCNFAppendixICNFWitnessHiddenGauge W'
+  refine ⟨gamma, ?_, ?_⟩
+  · change
+      v13RealLinearNoTargetRowsGaugeCNFAppendixICNFWitnessGaugeAction
+          gamma W =
+        W'
+    rw [
+      v13RealLinearNoTargetRowsGaugeCNFAppendixICNFWitnessGaugeAction_eq_iff_of_valid
+        gamma hW hW']
+    dsimp [gamma]
+    cases h₀ :
+        v13RealLinearNoTargetRowsGaugeCNFAppendixICNFWitnessHiddenGauge
+          W <;>
+      cases h₁ :
+        v13RealLinearNoTargetRowsGaugeCNFAppendixICNFWitnessHiddenGauge
+          W' <;>
+      simp
+  · intro delta hdelta
+    have hHidden :
+        (delta ^^
+            v13RealLinearNoTargetRowsGaugeCNFAppendixICNFWitnessHiddenGauge
+              W) =
+          v13RealLinearNoTargetRowsGaugeCNFAppendixICNFWitnessHiddenGauge
+            W' :=
+      (v13RealLinearNoTargetRowsGaugeCNFAppendixICNFWitnessGaugeAction_eq_iff_of_valid
+        delta hW hW').mp hdelta
+    dsimp [gamma]
+    cases h₀ :
+        v13RealLinearNoTargetRowsGaugeCNFAppendixICNFWitnessHiddenGauge
+          W <;>
+      cases h₁ :
+        v13RealLinearNoTargetRowsGaugeCNFAppendixICNFWitnessHiddenGauge
+          W' <;>
+      cases delta <;>
+      simp [h₀, h₁] at hHidden ⊢
+
 /-- Uniform bit-fixing data for the no-target-rows Appendix-I CNF spine.  The
 variable order is the concrete formula-syntax cover, and the explicit SAT
 decider is the P=NP-side hypothesis object. -/
