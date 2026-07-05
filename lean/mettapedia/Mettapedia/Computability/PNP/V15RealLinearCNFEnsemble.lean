@@ -3944,6 +3944,82 @@ def v13RealLinearSmallGaugeCNFEnsembleGaugeAction
   msg := omega.msg
   gauge := if gamma then !omega.gauge else omega.gauge
 
+/-- Hidden-gauge coordinate on the global small real-linear gauge-CNF
+ensemble. -/
+def v13RealLinearSmallGaugeCNFEnsembleHiddenGauge
+    (omega : V13RealLinearSmallGaugeCNFEnsembleWorld) : Bool :=
+  omega.gauge
+
+/-- The global hidden-gauge action preserves the public message bit. -/
+theorem v13RealLinearSmallGaugeCNFEnsembleGaugeAction_publicInput
+    (gamma : Bool) (omega : V13RealLinearSmallGaugeCNFEnsembleWorld) :
+    v13RealLinearSmallGaugeCNFEnsemblePublicInput
+        (v13RealLinearSmallGaugeCNFEnsembleGaugeAction gamma omega) =
+      v13RealLinearSmallGaugeCNFEnsemblePublicInput omega :=
+  rfl
+
+/-- The global hidden-gauge action xors the hidden coordinate with the acting
+Boolean gauge element. -/
+theorem v13RealLinearSmallGaugeCNFEnsembleGaugeAction_hiddenGauge
+    (gamma : Bool) (omega : V13RealLinearSmallGaugeCNFEnsembleWorld) :
+    v13RealLinearSmallGaugeCNFEnsembleHiddenGauge
+        (v13RealLinearSmallGaugeCNFEnsembleGaugeAction gamma omega) =
+      (gamma ^^
+        v13RealLinearSmallGaugeCNFEnsembleHiddenGauge omega) := by
+  cases gamma <;> cases omega <;>
+    simp [v13RealLinearSmallGaugeCNFEnsembleHiddenGauge,
+      v13RealLinearSmallGaugeCNFEnsembleGaugeAction]
+
+/-- The false gauge element acts as the identity on the global small
+real-linear gauge-CNF ensemble. -/
+@[simp] theorem v13RealLinearSmallGaugeCNFEnsembleGaugeAction_false
+    (omega : V13RealLinearSmallGaugeCNFEnsembleWorld) :
+    v13RealLinearSmallGaugeCNFEnsembleGaugeAction false omega = omega := by
+  cases omega
+  rfl
+
+/-- Global small-ensemble hidden-gauge actions compose by xor. -/
+@[simp] theorem v13RealLinearSmallGaugeCNFEnsembleGaugeAction_xor
+    (gamma delta : Bool)
+    (omega : V13RealLinearSmallGaugeCNFEnsembleWorld) :
+    v13RealLinearSmallGaugeCNFEnsembleGaugeAction gamma
+        (v13RealLinearSmallGaugeCNFEnsembleGaugeAction delta omega) =
+      v13RealLinearSmallGaugeCNFEnsembleGaugeAction
+        (gamma ^^ delta) omega := by
+  cases gamma <;> cases delta <;> cases omega <;>
+    simp [v13RealLinearSmallGaugeCNFEnsembleGaugeAction]
+
+/-- The nontrivial gauge element changes every global small-ensemble world by
+flipping its hidden coordinate. -/
+theorem v13RealLinearSmallGaugeCNFEnsembleGaugeAction_true_ne
+    (omega : V13RealLinearSmallGaugeCNFEnsembleWorld) :
+    v13RealLinearSmallGaugeCNFEnsembleGaugeAction true omega ≠
+      omega := by
+  intro hfixed
+  have hhidden :=
+    congrArg v13RealLinearSmallGaugeCNFEnsembleHiddenGauge hfixed
+  rw [v13RealLinearSmallGaugeCNFEnsembleGaugeAction_hiddenGauge]
+    at hhidden
+  cases h :
+      v13RealLinearSmallGaugeCNFEnsembleHiddenGauge omega <;>
+    simp [h] at hhidden
+
+/-- The global small-ensemble hidden-gauge action is free: only `false` fixes
+a world. -/
+theorem v13RealLinearSmallGaugeCNFEnsembleGaugeAction_eq_self_iff
+    (gamma : Bool) (omega : V13RealLinearSmallGaugeCNFEnsembleWorld) :
+    v13RealLinearSmallGaugeCNFEnsembleGaugeAction gamma omega =
+      omega ↔ gamma = false := by
+  cases gamma
+  · simp
+  · constructor
+    · intro hfixed
+      exact False.elim
+        (v13RealLinearSmallGaugeCNFEnsembleGaugeAction_true_ne
+          omega hfixed)
+    · intro hfalse
+      cases hfalse
+
 /-- The global hidden-gauge action is exactly the SAT-level hidden-gauge
 action on the represented concrete witness assignment. -/
 theorem v13RealLinearSmallGaugeCNFEnsembleGaugeAction_assignment
@@ -4028,6 +4104,40 @@ theorem v13RealLinearSmallGaugeCNFEnsemble_hiddenGaugeProduct :
   exact
     v13RealLinearSmallGaugeCNFEnsembleGaugeAction_preserves_target
       gamma omega
+
+/-- Explicit gauge-action data for the global small real-linear gauge-CNF
+ensemble. -/
+def v13RealLinearSmallGaugeCNFEnsembleGaugeActionData :
+    RealM4GaugeActionData
+      V13RealLinearSmallGaugeCNFEnsembleWorld
+      Bool
+      V13RealLinearSmallGaugeCNFNeutral
+      V13RealLinearSmallGaugeCNFSafe
+      V13RealLinearSmallGaugeCNFGauge
+      v13RealLinearSmallGaugeCNFEnsembleTarget
+      v13RealLinearSmallGaugeCNFEnsemblePublicInput
+      v13RealLinearSmallGaugeCNFEnsembleSemantics where
+  act := v13RealLinearSmallGaugeCNFEnsembleGaugeAction
+  publicInvariant := by
+    intro gamma omega
+    exact
+      v13RealLinearSmallGaugeCNFEnsembleGaugeAction_publicInput
+        gamma omega
+  targetInvariant := by
+    intro gamma omega
+    exact
+      v13RealLinearSmallGaugeCNFEnsembleGaugeAction_preserves_target
+        gamma omega
+  gaugeSatisfied := v13RealLinearSmallGaugeCNFEnsemble_hiddenGaugeProduct
+
+/-- The explicit small-ensemble action data projects the
+`hiddenGaugeProduct` structural field. -/
+theorem v13RealLinearSmallGaugeCNFEnsemble_hiddenGaugeProduct_fromActionData :
+    ∀ gamma omega,
+      v13RealLinearSmallGaugeCNFEnsembleSemantics.gaugeSat
+        gamma omega :=
+  RealM4GaugeActionData.hiddenGaugeProduct
+    v13RealLinearSmallGaugeCNFEnsembleGaugeActionData
 
 /-- History field for the global small ensemble: observe only the hidden gauge
 bit, not the public message bit. -/
