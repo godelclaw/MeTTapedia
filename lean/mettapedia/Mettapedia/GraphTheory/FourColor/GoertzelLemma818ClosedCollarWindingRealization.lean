@@ -8781,6 +8781,43 @@ theorem section92Step4CurrentFiniteFrontierFactoredBridgeFork :
       closedCollarWindingFreedomNonrealizableInNormalForm_of_currentFiniteFrontierRemainingFactoredBridge_of_auditedRows,
       closedCollarWindingFreedomFactoredPreviousBoundaryWitnessRepairObstruction_of_auditedRows_of_not_nonrealizable⟩
 
+/--
+First geometric pressure point after the current finite frontier.  If ordinary
+embedded collar geometry and the later radial-face/n6/audited-key obligations
+are all supplied, then proving the previous-boundary witness upgrade repairs
+S4.  Conversely, under those same hypotheses and the audited rows, any failure
+of full nonrealizability must be a failure of that upgrade.
+-/
+def Section92Step4CurrentFiniteFrontierPreviousBoundaryWitnessUpgradePressurePoint :
+    Prop :=
+  ClosedCollarWindingFreedomCurrentFiniteRealizationFrontierEvidence ∧
+    (ClosedCollarWindingFreedomActualCollarEmbeddingSuppliesGeometryData →
+      ClosedCollarWindingFreedomActualCollarGeometrySuppliesRadialFaceExtraction →
+        ClosedCollarWindingFreedomEveryRadialFaceNormalFormHasN6Representation →
+          ClosedCollarWindingFreedomEveryRadialFaceN6RepresentationHasAuditedArchiveKey →
+            ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceAuditedRowsCoveredByLab →
+              ((ClosedCollarWindingFreedomActualCollarGeometrySuppliesPreviousBoundaryWitnessUpgrade →
+                  ClosedCollarWindingFreedomNonrealizableInNormalForm) ∧
+                (¬ ClosedCollarWindingFreedomNonrealizableInNormalForm →
+                  ¬ ClosedCollarWindingFreedomActualCollarGeometrySuppliesPreviousBoundaryWitnessUpgrade)))
+
+theorem section92Step4CurrentFiniteFrontierPreviousBoundaryWitnessUpgradePressurePoint :
+    Section92Step4CurrentFiniteFrontierPreviousBoundaryWitnessUpgradePressurePoint := by
+  refine
+    ⟨closedCollarWindingFreedomCurrentFiniteRealizationFrontierEvidence,
+      ?_⟩
+  intro hgeometry hradial hn6 hkeys hrows
+  constructor
+  · intro hupgrade
+    exact
+      section92Step4RepairedByFactoredCollarGeometryPreviousBoundaryWitnessRadialFaceN6AuditedArchiveExtractionAndAuditedRowsTarget
+        hgeometry hupgrade hradial hn6 hkeys hrows
+  · intro hnot hupgrade
+    exact
+      hnot
+        (section92Step4RepairedByFactoredCollarGeometryPreviousBoundaryWitnessRadialFaceN6AuditedArchiveExtractionAndAuditedRowsTarget
+          hgeometry hupgrade hradial hn6 hkeys hrows)
+
 end GoertzelLemma818ClosedCollarWindingRealization
 
 end Mettapedia.GraphTheory.FourColor
