@@ -5368,6 +5368,90 @@ theorem section92Step4RadialFaceArchiveRowCertificateSoundGeometryDataObstructio
       hradial hsampleSound hsliceSound data hcase
 
 /--
+Archive-specific n6 extraction datum: an honest normal-form annulus is
+represented by one of the audited radial-face archive rows.  This is stronger
+than bare n6 extraction because it records the finite archive case membership
+needed by the row-certificate obstruction.
+-/
+structure ClosedCollarWindingFreedomNormalFormArchiveN6RepresentationExtraction
+    {V : Type} {G : SimpleGraph V}
+    (normalForm : ClosedCollarWindingFreedomNormalFormRealization G) where
+  data : ClosedCollarWindingFreedomSimplePatchN6NormalFormRepresentation G
+  normalForm_eq : data.normalForm = normalForm
+  case_mem_archive :
+    (data.representation.patchTopologyIndex, data.representation.radialOrderIndex.1) ∈
+      closedCollarSimplePatchN6AnnularEmbeddingRadialFaceArchiveCases
+
+/--
+Global archive-extraction obligation: every honest normal-form realization of
+the winding-freedom witness must land in one of the audited radial-face archive
+rows.
+-/
+def ClosedCollarWindingFreedomEveryNormalFormHasArchiveN6Representation :
+    Prop :=
+  ∀ {V : Type} {G : SimpleGraph V},
+    (normalForm : ClosedCollarWindingFreedomNormalFormRealization G) →
+      Nonempty
+        (ClosedCollarWindingFreedomNormalFormArchiveN6RepresentationExtraction
+          normalForm)
+
+theorem closedCollarWindingFreedomEveryNormalFormHasN6Representation_of_archiveN6
+    (hextract :
+      ClosedCollarWindingFreedomEveryNormalFormHasArchiveN6Representation) :
+    ClosedCollarWindingFreedomEveryNormalFormHasN6Representation := by
+  intro V G normalForm
+  rcases hextract normalForm with ⟨archiveExtraction⟩
+  exact
+    ⟨{
+      data := archiveExtraction.data
+      normalForm_eq := archiveExtraction.normalForm_eq
+    }⟩
+
+theorem closedCollarWindingFreedomNonrealizableInNormalForm_of_archiveN6Representation_of_radialFaceRowCertificates
+    (hextract :
+      ClosedCollarWindingFreedomEveryNormalFormHasArchiveN6Representation)
+    (hartifact :
+      ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceRowCoverageArtifactEvidence)
+    (hgeometry :
+      ClosedCollarWindingFreedomActualCollarEmbeddingSuppliesGeometryData)
+    (hradial :
+      ClosedCollarWindingFreedomActualCollarGeometrySuppliesRadialFaceExtraction)
+    (hsampleSound :
+      ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSampleRadialFaceRowCertificateSound)
+    (hsliceSound :
+      ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSlice1000302RadialFaceRowCertificateSound) :
+    ClosedCollarWindingFreedomNonrealizableInNormalForm := by
+  intro V G normalForm
+  rcases hextract normalForm with ⟨archiveExtraction⟩
+  exact
+    section92Step4RadialFaceArchiveRowCertificateSoundGeometryDataObstructionTarget
+      hartifact hgeometry hradial hsampleSound hsliceSound
+      archiveExtraction.data archiveExtraction.case_mem_archive
+
+/--
+Repaired Section 9.2 Step 4 archive target: if the normal-form geometry
+extracts every honest witness into the audited radial-face n6 archive, and
+the row certificates are semantically sound, the residual winding-freedom
+witness has no normal-form realization.
+-/
+def Section92Step4RepairedByArchiveN6ExtractionAndRadialFaceRowCertificatesTarget :
+    Prop :=
+  ClosedCollarWindingFreedomEveryNormalFormHasArchiveN6Representation →
+    ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceRowCoverageArtifactEvidence →
+      ClosedCollarWindingFreedomActualCollarEmbeddingSuppliesGeometryData →
+        ClosedCollarWindingFreedomActualCollarGeometrySuppliesRadialFaceExtraction →
+          ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSampleRadialFaceRowCertificateSound →
+            ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSlice1000302RadialFaceRowCertificateSound →
+              ClosedCollarWindingFreedomNonrealizableInNormalForm
+
+theorem section92Step4RepairedByArchiveN6ExtractionAndRadialFaceRowCertificatesTarget :
+    Section92Step4RepairedByArchiveN6ExtractionAndRadialFaceRowCertificatesTarget := by
+  intro hextract hartifact hgeometry hradial hsampleSound hsliceSound
+  exact
+    closedCollarWindingFreedomNonrealizableInNormalForm_of_archiveN6Representation_of_radialFaceRowCertificates
+      hextract hartifact hgeometry hradial hsampleSound hsliceSound
+
+/--
 Explicit row-level lab coverage for the six sampled radial-face archive rows.
 These are the concrete `(patchTopologyIndex, radialOrderIndex)` obligations
 that the sampled JSON certificates must discharge.
