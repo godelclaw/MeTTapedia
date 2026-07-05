@@ -1524,6 +1524,89 @@ theorem v13RealLinearSmallNoTargetRowsCNFSATWorld_hiddenGaugeProduct :
       v13RealLinearSmallNoTargetRowsCNFSATWorldGaugeAction_preserves_target
         gamma omega⟩
 
+/-- Hidden-gauge coordinate on concrete no-target-row SAT worlds. -/
+def v13RealLinearSmallNoTargetRowsCNFSATWorldHiddenGauge
+    (omega : V13RealLinearSmallNoTargetRowsCNFSATWorld) : Bool :=
+  v13RealLinearSmallNoTargetRowsCNFHiddenGauge omega.assignment
+
+/-- Acting on a concrete no-target-row SAT world changes the hidden-gauge
+coordinate by xor with the acting gauge element. -/
+@[simp] theorem
+    v13RealLinearSmallNoTargetRowsCNFSATWorldGaugeAction_hiddenGauge
+    (gamma : V13RealLinearSmallNoTargetRowsCNFGauge)
+    (omega : V13RealLinearSmallNoTargetRowsCNFSATWorld) :
+    v13RealLinearSmallNoTargetRowsCNFSATWorldHiddenGauge
+        (v13RealLinearSmallNoTargetRowsCNFSATWorldGaugeAction gamma omega) =
+      (gamma ^^
+        v13RealLinearSmallNoTargetRowsCNFSATWorldHiddenGauge omega) := by
+  simpa [v13RealLinearSmallNoTargetRowsCNFSATWorldHiddenGauge,
+    v13RealLinearSmallNoTargetRowsCNFHiddenGauge,
+    v13RealLinearSmallNoTargetRowsCNFSATWorldGaugeAction,
+    v13RealLinearSmallNoTargetRowsCNFGaugeAction,
+    v13RealLinearGaugeCNFHiddenGauge] using
+    v13RealLinearGaugeCNFGaugeAction_hiddenGauge gamma omega.assignment
+
+/-- The false gauge element acts as the identity on concrete no-target-row SAT
+worlds. -/
+@[simp] theorem
+    v13RealLinearSmallNoTargetRowsCNFSATWorldGaugeAction_false
+    (omega : V13RealLinearSmallNoTargetRowsCNFSATWorld) :
+    v13RealLinearSmallNoTargetRowsCNFSATWorldGaugeAction false omega =
+      omega := by
+  cases omega with
+  | mk publicInput assignment sat =>
+      simp [v13RealLinearSmallNoTargetRowsCNFSATWorldGaugeAction,
+        v13RealLinearSmallNoTargetRowsCNFGaugeAction]
+
+/-- Concrete no-target-row SAT-world gauge actions compose by xor. -/
+@[simp] theorem
+    v13RealLinearSmallNoTargetRowsCNFSATWorldGaugeAction_xor
+    (gamma delta : V13RealLinearSmallNoTargetRowsCNFGauge)
+    (omega : V13RealLinearSmallNoTargetRowsCNFSATWorld) :
+    v13RealLinearSmallNoTargetRowsCNFSATWorldGaugeAction gamma
+        (v13RealLinearSmallNoTargetRowsCNFSATWorldGaugeAction
+          delta omega) =
+      v13RealLinearSmallNoTargetRowsCNFSATWorldGaugeAction
+        (gamma ^^ delta) omega := by
+  cases omega with
+  | mk publicInput assignment sat =>
+      simp [v13RealLinearSmallNoTargetRowsCNFSATWorldGaugeAction,
+        v13RealLinearSmallNoTargetRowsCNFGaugeAction]
+
+/-- The nontrivial gauge element changes every concrete no-target-row SAT
+world by flipping its free hidden-gauge coordinate. -/
+theorem
+    v13RealLinearSmallNoTargetRowsCNFSATWorldGaugeAction_true_ne
+    (omega : V13RealLinearSmallNoTargetRowsCNFSATWorld) :
+    v13RealLinearSmallNoTargetRowsCNFSATWorldGaugeAction true omega ≠
+      omega := by
+  intro hfixed
+  have hhidden :=
+    congrArg v13RealLinearSmallNoTargetRowsCNFSATWorldHiddenGauge hfixed
+  rw [v13RealLinearSmallNoTargetRowsCNFSATWorldGaugeAction_hiddenGauge]
+    at hhidden
+  cases h :
+      v13RealLinearSmallNoTargetRowsCNFSATWorldHiddenGauge omega <;>
+    simp [h] at hhidden
+
+/-- The concrete no-target-row SAT-world hidden-gauge action is free: the only
+gauge element fixing a world is `false`. -/
+theorem
+    v13RealLinearSmallNoTargetRowsCNFSATWorldGaugeAction_eq_self_iff
+    (gamma : V13RealLinearSmallNoTargetRowsCNFGauge)
+    (omega : V13RealLinearSmallNoTargetRowsCNFSATWorld) :
+    v13RealLinearSmallNoTargetRowsCNFSATWorldGaugeAction gamma omega =
+      omega ↔ gamma = false := by
+  cases gamma
+  · simp
+  · constructor
+    · intro hfixed
+      exact False.elim
+        (v13RealLinearSmallNoTargetRowsCNFSATWorldGaugeAction_true_ne
+          omega hfixed)
+    · intro hfalse
+      cases hfalse
+
 /-- Every verifier-valid no-target-row SAT world is the canonical world with
 the same public row payload and hidden-gauge coordinate. -/
 theorem v13RealLinearSmallNoTargetRowsCNFSATWorld_eq_worldOfPublicGauge
