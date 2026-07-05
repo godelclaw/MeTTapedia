@@ -1103,6 +1103,30 @@ theorem assignment_eq_of_mem [DecidableEq Var]
     assignment pre v = bit :=
   value_eq_of_mem hnodup hmem
 
+theorem value_eq_false_of_not_mem_keys [DecidableEq Var]
+    {pre : List (Var × Bool)} {v : Var}
+    (hnot : v ∉ pre.map Prod.fst) :
+    value pre v = false := by
+  induction pre with
+  | nil =>
+      simp [value]
+  | cons head tail ih =>
+      rcases head with ⟨u, bit⟩
+      simp only [List.map_cons, List.mem_cons] at hnot
+      have hv_ne_u : v ≠ u := by
+        intro hv_eq_u
+        exact hnot (Or.inl hv_eq_u)
+      have htail : v ∉ tail.map Prod.fst := by
+        intro hmem
+        exact hnot (Or.inr hmem)
+      simp [value, hv_ne_u, ih htail]
+
+theorem assignment_eq_false_of_not_mem_keys [DecidableEq Var]
+    {pre : List (Var × Bool)} {v : Var}
+    (hnot : v ∉ pre.map Prod.fst) :
+    assignment pre v = false :=
+  value_eq_false_of_not_mem_keys hnot
+
 end CNFPrefix
 
 namespace ConcreteCNF

@@ -3553,6 +3553,41 @@ theorem v13RealLinearGaugeCNFFormula_usesOnly_bitFixVarOrder
     ConcreteCNF.formulaUsesOnly_formulaVarCover
       (v13RealLinearGaugeCNFFormula Y)
 
+/-- The self-reduction variable cover contains only locked witness
+coordinates; the free hidden-gauge coordinate is absent from the real CNF
+clauses. -/
+theorem v13RealLinearGaugeCNFBitFixVarOrder_hiddenGauge_not_mem
+    {m : Nat} (Y : V13RealLinearPublic m) :
+    (none : V13RealLinearGaugeCNFVar m) ∉
+      v13RealLinearGaugeCNFBitFixVarOrder Y := by
+  intro hmem
+  have hvars :
+      (none : V13RealLinearGaugeCNFVar m) ∈
+        ConcreteCNF.formulaVars (v13RealLinearGaugeCNFFormula Y) := by
+    exact
+      (ConcreteCNF.mem_dedupVars
+        (v := (none : V13RealLinearGaugeCNFVar m))
+        (vars :=
+          ConcreteCNF.formulaVars
+            (v13RealLinearGaugeCNFFormula Y))).mp
+        (by
+          simpa [v13RealLinearGaugeCNFBitFixVarOrder,
+            ConcreteCNF.formulaVarCover] using hmem)
+  rcases
+      List.mem_flatMap.mp
+        (by simpa [ConcreteCNF.formulaVars] using hvars) with
+    ⟨clause, hclause, hnoneClause⟩
+  have hclause' :
+      clause ∈
+        List.ofFn fun j : Fin m =>
+          ConcreteCNF.unitClause (some j)
+            (v13RealLinearCNFDecodedAssignment Y j) := by
+    simpa [v13RealLinearGaugeCNFFormula] using hclause
+  rcases List.mem_ofFn.mp hclause' with ⟨j, rfl⟩
+  cases hbit : v13RealLinearCNFDecodedAssignment Y j <;>
+    simp [ConcreteCNF.clauseVars, ConcreteCNF.unitClause,
+      ConcreteCNF.unitLiteral, ConcreteCNF.Literal.var, hbit] at hnoneClause
+
 /-- Every concrete gauge-buffered real linear public instance has a satisfying
 assignment, for either choice of the free hidden gauge coordinate. -/
 theorem v13RealLinearGaugeCNFFormula_satisfiable {m : Nat}
@@ -3587,9 +3622,58 @@ theorem v13RealLinearGaugeCNFSelfReductionAssignment_satisfies
       (v13RealLinearGaugeCNFBitFixVarOrder_nodup Y)
       (v13RealLinearGaugeCNFFormula_satisfiable Y)
 
+/-- Because the real gauge coordinate is absent from the bit-fixing variable
+cover, the P=NP-side self-reduction returns the canonical `false` element of
+the hidden-gauge fiber. -/
+theorem v13RealLinearGaugeCNFSelfReductionAssignment_hiddenGauge_false
+    {m : Nat} (D : V13RealLinearGaugeCNFPNPSATDecider m)
+    (Y : V13RealLinearPublic m) :
+    v13RealLinearGaugeCNFHiddenGauge
+        (v13RealLinearGaugeCNFSelfReductionAssignment D Y) =
+      false := by
+  let pre :=
+    realCNFBitFixPrefix D
+      (v13RealLinearGaugeCNFFormula Y)
+      (v13RealLinearGaugeCNFBitFixVarOrder Y)
+  have hkeys :
+      pre.map Prod.fst = v13RealLinearGaugeCNFBitFixVarOrder Y := by
+    simpa [pre, realCNFBitFixPrefix] using
+      (realCNFBitFixPrefixAux_keys
+        D (v13RealLinearGaugeCNFFormula Y)
+        ([] : List (V13RealLinearGaugeCNFVar m × Bool))
+        (v13RealLinearGaugeCNFBitFixVarOrder Y))
+  have hnot : (none : V13RealLinearGaugeCNFVar m) ∉ pre.map Prod.fst := by
+    intro hmem
+    exact v13RealLinearGaugeCNFBitFixVarOrder_hiddenGauge_not_mem Y
+      (by simpa [hkeys] using hmem)
+  simpa [v13RealLinearGaugeCNFHiddenGauge,
+    v13RealLinearGaugeCNFSelfReductionAssignment,
+    realCNFBitFixAssignment, pre] using
+    (CNFPrefix.assignment_eq_false_of_not_mem_keys hnot)
+
+/-- The bit-fixing self-reduction returns the canonical gauge-buffered
+assignment with hidden gauge `false`: locked coordinates are forced by the
+real CNF clauses, and the free coordinate defaults to `false`. -/
+theorem v13RealLinearGaugeCNFSelfReductionAssignment_eq_canonical_false
+    {m : Nat} (D : V13RealLinearGaugeCNFPNPSATDecider m)
+    (Y : V13RealLinearPublic m) :
+    v13RealLinearGaugeCNFSelfReductionAssignment D Y =
+      v13RealLinearGaugeCNFAssignment Y false := by
+  funext v
+  cases v with
+  | none =>
+      simpa [v13RealLinearGaugeCNFHiddenGauge,
+        v13RealLinearGaugeCNFAssignment] using
+        v13RealLinearGaugeCNFSelfReductionAssignment_hiddenGauge_false D Y
+  | some j =>
+      simpa [v13RealLinearGaugeCNFAssignment] using
+        v13RealLinearGaugeCNFFormula_forces_decodedBit
+          (v13RealLinearGaugeCNFSelfReductionAssignment_satisfies D Y) j
+
 /-- The recovered bit-fixing witness reads the fixed public message.  This is
-the P=NP-conditional upper side: the hidden gauge coordinate may be chosen by
-search, but the selected locked coordinate is forced by the CNF. -/
+the P=NP-conditional upper side: the selected locked coordinate is forced by
+the CNF, and the free hidden-gauge coordinate defaults to the canonical
+`false` representative because it is not in the variable cover. -/
 theorem v13RealLinearGaugeCNFSelfReduction_readout_eq_publicMessage
     {m : Nat} (i₀ : Fin m)
     (D : V13RealLinearGaugeCNFPNPSATDecider m)
@@ -4395,6 +4479,38 @@ theorem
         D omega.base
     _ = v13RealLinearNoTargetRowsGaugeCNFTarget omega :=
       (v13RealLinearNoTargetRowsGaugeCNFReadout_eq_targetBit omega).symm
+
+/-- On the concrete no-target-rows gauge-CNF carrier, the explicit P=NP-side
+self-reduction chooses the canonical `false` representative of the free
+hidden-gauge fiber. -/
+theorem
+    v13RealLinearNoTargetRowsGaugeCNFWorldOfSelfReduction_hiddenGauge_false
+    {m : Nat} {i₀ : Fin m}
+    (D : V13RealLinearGaugeCNFPNPSATDecider m)
+    (omega : V13RealLinearNoTargetRowsWorld m i₀) :
+    v13RealLinearNoTargetRowsGaugeCNFHiddenGauge
+        (v13RealLinearNoTargetRowsGaugeCNFWorldOfSelfReduction D omega) =
+      false := by
+  simpa [v13RealLinearNoTargetRowsGaugeCNFHiddenGauge,
+    v13RealLinearNoTargetRowsGaugeCNFWorldOfSelfReduction] using
+    v13RealLinearGaugeCNFSelfReductionAssignment_hiddenGauge_false
+      D (v13RealLinearNoTargetRowsPublicInput omega)
+
+/-- The no-target-rows self-reduction world has exactly the canonical
+`false` hidden-gauge assignment over the same base public instance. -/
+theorem
+    v13RealLinearNoTargetRowsGaugeCNFWorldOfSelfReduction_assignment_eq_base_false
+    {m : Nat} {i₀ : Fin m}
+    (D : V13RealLinearGaugeCNFPNPSATDecider m)
+    (omega : V13RealLinearNoTargetRowsWorld m i₀) :
+    (v13RealLinearNoTargetRowsGaugeCNFWorldOfSelfReduction
+        D omega).assignment =
+      (v13RealLinearNoTargetRowsGaugeCNFWorldOfBase
+        omega false).assignment := by
+  simpa [v13RealLinearNoTargetRowsGaugeCNFWorldOfSelfReduction,
+    v13RealLinearNoTargetRowsGaugeCNFWorldOfBase] using
+    v13RealLinearGaugeCNFSelfReductionAssignment_eq_canonical_false
+      D (v13RealLinearNoTargetRowsPublicInput omega)
 
 /-! ## No-target-rows gauge CNF Appendix-D/I readout construction -/
 
