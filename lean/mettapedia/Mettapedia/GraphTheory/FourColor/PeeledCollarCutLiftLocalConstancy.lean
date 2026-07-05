@@ -51,6 +51,26 @@ structure PeeledCollarCutAmbientSideLocalConstancy
       (G := G) side
       (boundaryEdgeSetEndpointSupport (cut.edgeCut.map φ.mapEdgeSet))
 
+namespace PeeledCollarCutAmbientSideOffBoundaryNoCrossing
+
+/-- Off-boundary no-crossing data are exactly local side constancy across
+ambient edges incident to off-support endpoints. -/
+def toLocalConstancy
+    {H : SimpleGraph W} {G : SimpleGraph V} {φ : H ↪g G}
+    {cut : SmallCyclicEdgeCut H}
+    (offBoundary : PeeledCollarCutAmbientSideOffBoundaryNoCrossing φ cut) :
+    PeeledCollarCutAmbientSideLocalConstancy φ cut where
+  side := offBoundary.side
+  side_comp_embedding := offBoundary.side_comp_embedding
+  offBoundaryEndpoint_side_iff := by
+    intro e hoffSupport u v hu hv
+    exact
+      (not_edgeCrossesVertexSide_iff_forall_side_iff G offBoundary.side e).1
+        (offBoundary.nonBoundaryEndpoint_not_crossing e hoffSupport)
+        u v hu hv
+
+end PeeledCollarCutAmbientSideOffBoundaryNoCrossing
+
 namespace PeeledCollarCutAmbientSideLocalConstancy
 
 /-- Local side constancy gives the off-boundary no-crossing datum. -/
@@ -134,6 +154,24 @@ theorem peeledCollarCutAmbientSideOffBoundaryNoCrossingsToAmbient_of_localConsta
   intro cut
   rcases hlocal cut with ⟨localData⟩
   exact ⟨localData.toOffBoundaryNoCrossing⟩
+
+/-- Off-boundary no-crossing data imply local side constancy. -/
+theorem peeledCollarCutAmbientSideLocalConstanciesToAmbient_of_ambientSideOffBoundaryNoCrossings
+    {H : SimpleGraph W} {G : SimpleGraph V} {φ : H ↪g G}
+    (hoffBoundary : PeeledCollarCutAmbientSideOffBoundaryNoCrossingsToAmbient φ) :
+    PeeledCollarCutAmbientSideLocalConstanciesToAmbient φ := by
+  intro cut
+  rcases hoffBoundary cut with ⟨offBoundary⟩
+  exact ⟨offBoundary.toLocalConstancy⟩
+
+/-- Local side constancy and off-boundary no-crossing are equivalent foundation
+targets for the peeled-collar lift. -/
+theorem peeledCollarCutAmbientSideLocalConstanciesToAmbient_iff_offBoundaryNoCrossings
+    {H : SimpleGraph W} {G : SimpleGraph V} {φ : H ↪g G} :
+    PeeledCollarCutAmbientSideLocalConstanciesToAmbient φ ↔
+      PeeledCollarCutAmbientSideOffBoundaryNoCrossingsToAmbient φ :=
+  ⟨peeledCollarCutAmbientSideOffBoundaryNoCrossingsToAmbient_of_localConstancies,
+    peeledCollarCutAmbientSideLocalConstanciesToAmbient_of_ambientSideOffBoundaryNoCrossings⟩
 
 /-- Local side constancy implies boundary-support data. -/
 theorem peeledCollarCutAmbientSideBoundarySupportsToAmbient_of_localConstancies
