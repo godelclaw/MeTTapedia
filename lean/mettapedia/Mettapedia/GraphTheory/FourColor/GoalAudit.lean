@@ -55,6 +55,23 @@ theorem localTwoPoleDesingularizationCannotRemoveCyclicTwoCut_audit :
     LocalTwoPoleDesingularizationCannotRemoveCyclicTwoCut :=
   localTwoPoleDesingularizationCannotRemoveCyclicTwoCut
 
+theorem closedCollarWindingFreedomEscape_forces_cyclicTwoCut_allSizes_audit :
+    ClosedCollarWindingFreedomEscapeForcesCyclicTwoCutAllSizes :=
+  closedCollarWindingFreedomEscape_forces_cyclicTwoCut_allSizes
+
+theorem closedCollarTriangulationCollarForbidsCyclicTwoCut_of_cyclicallyFiveEdgeConnected_audit
+    {G : SimpleGraph V} (hcyclic : CyclicallyFiveEdgeConnected G) :
+    ClosedCollarTriangulationCollarForbidsCyclicTwoCut G :=
+  closedCollarTriangulationCollarForbidsCyclicTwoCut_of_cyclicallyFiveEdgeConnected hcyclic
+
+theorem closedCollarWindingFreedomEscape_not_simplyRealizable_allSizes_audit :
+    ClosedCollarWindingFreedomEscapeNotSimplyRealizableAllSizes :=
+  closedCollarWindingFreedomEscape_not_simplyRealizable_allSizes
+
+theorem section92Step4RepairedByAllSizesCyclicTwoCutTarget_audit :
+    Section92Step4RepairedByAllSizesCyclicTwoCutTarget :=
+  section92Step4RepairedByAllSizesCyclicTwoCutTarget
+
 theorem closedCollarWindingFreedomSimplePatchSearchLe4BlockedByNormalFormPrefix_audit :
     ClosedCollarWindingFreedomSimplePatchSearchLe4BlockedByNormalFormPrefix :=
   closedCollarWindingFreedomSimplePatchSearchLe4BlockedByNormalFormPrefix
