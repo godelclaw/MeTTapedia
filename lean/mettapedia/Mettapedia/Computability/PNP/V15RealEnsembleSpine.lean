@@ -5616,6 +5616,31 @@ def realM4_officialPToDeciderLockedMessageUpperBridgeData_of_supportAndLanguage
   pnpDeciderFamily_of_inP := L.pnpDeciderFamily_of_inP
   constantDecoderRegime_of_inP := L.constantDecoderRegime_of_inP
 
+namespace RealM4OfficialPToUpperBridgeData
+
+variable {PublicLock : Type g} {Quotient : Type h}
+variable {LockAux : Type i} {Message : Type j}
+variable {CNFPublic : Type k} {Var : CNFPublic -> Type l}
+variable {Witness : CNFPublic -> Type l}
+variable
+  {D : AppendixICNFReadoutData
+    PublicLock Quotient LockAux Message CNFPublic Var Witness}
+variable {F : CompressionLowerFramework}
+variable {C : CookStylePNPClassInterface.{p}}
+
+/-- Under the official class-equality branch `P = NP`, the strict upper
+bridge supplies the exact explicit-PNP self-reduction package used by the real
+endgame.  This keeps the conditional branch tied to the Cook-style interface
+instead of treating the SAT decider family as a free theorem input. -/
+noncomputable def upperDischarge_of_pEqualsNP
+    (B : RealM4OfficialPToUpperBridgeData D F C)
+    (hEq : C.pEqualsNP) :
+    RealM4SelfReductionUpperExplicitPNPDischarge D F :=
+  B.upperDischarge_of_inP
+    (hEq B.separatedLanguage B.separatedLanguage_inNP)
+
+end RealM4OfficialPToUpperBridgeData
+
 namespace RealM4OfficialPToDeciderUpperBridgeData
 
 variable {PublicLock : Type g} {Quotient : Type h}
@@ -5643,6 +5668,15 @@ noncomputable def upperBridge
         B.uniformSupport (B.pnpDeciderFamily_of_inP hP)
         (B.constantDecoderRegime_of_inP hP)
 
+/-- Direct official `P = NP` branch for the decomposed P-membership-to-decider
+bridge.  The SAT decider family and constant decoder regime are obtained from
+P-membership of the named NP language, which is obtained from `pEqualsNP`. -/
+noncomputable def upperDischarge_of_pEqualsNP
+    (B : RealM4OfficialPToDeciderUpperBridgeData D F C)
+    (hEq : C.pEqualsNP) :
+    RealM4SelfReductionUpperExplicitPNPDischarge D F :=
+  B.upperBridge.upperDischarge_of_pEqualsNP hEq
+
 end RealM4OfficialPToDeciderUpperBridgeData
 
 namespace RealM4OfficialPToDeciderLockedMessageUpperBridgeData
@@ -5669,6 +5703,14 @@ noncomputable def upperBridge
         B.coverageData B.lockedMessageData B.uniformSupport
         (B.pnpDeciderFamily_of_inP hP)
         (B.constantDecoderRegime_of_inP hP)
+
+/-- Direct official `P = NP` branch for the locked-message-data
+P-membership-to-decider bridge. -/
+noncomputable def upperDischarge_of_pEqualsNP
+    (B : RealM4OfficialPToDeciderLockedMessageUpperBridgeData D F C)
+    (hEq : C.pEqualsNP) :
+    RealM4SelfReductionUpperExplicitPNPDischarge D F :=
+  B.upperBridge.upperDischarge_of_pEqualsNP hEq
 
 end RealM4OfficialPToDeciderLockedMessageUpperBridgeData
 
@@ -5701,6 +5743,54 @@ noncomputable def realM4_officialUpperBridge_of_pMembershipDeciderLockedMessageD
     (B : RealM4OfficialPToDeciderLockedMessageUpperBridgeData D F C) :
     RealM4OfficialPToUpperBridgeData D F C :=
   B.upperBridge
+
+/-- Top-level alias for extracting the explicit self-reduction upper package
+from official class equality through the strict upper bridge. -/
+noncomputable def realM4_upperDischarge_of_pEqualsNP_upperBridge
+    {PublicLock : Type g} {Quotient : Type h}
+    {LockAux : Type i} {Message : Type j}
+    {CNFPublic : Type k} {Var : CNFPublic -> Type l}
+    {Witness : CNFPublic -> Type l}
+    {D : AppendixICNFReadoutData
+      PublicLock Quotient LockAux Message CNFPublic Var Witness}
+    {F : CompressionLowerFramework}
+    {C : CookStylePNPClassInterface.{p}}
+    (B : RealM4OfficialPToUpperBridgeData D F C)
+    (hEq : C.pEqualsNP) :
+    RealM4SelfReductionUpperExplicitPNPDischarge D F :=
+  B.upperDischarge_of_pEqualsNP hEq
+
+/-- Top-level alias for extracting the explicit self-reduction upper package
+from official class equality through the decomposed P-to-decider bridge. -/
+noncomputable def realM4_upperDischarge_of_pEqualsNP_pMembershipDeciderBridge
+    {PublicLock : Type g} {Quotient : Type h}
+    {LockAux : Type i} {Message : Type j}
+    {CNFPublic : Type k} {Var : CNFPublic -> Type l}
+    {Witness : CNFPublic -> Type l}
+    {D : AppendixICNFReadoutData
+      PublicLock Quotient LockAux Message CNFPublic Var Witness}
+    {F : CompressionLowerFramework}
+    {C : CookStylePNPClassInterface.{p}}
+    (B : RealM4OfficialPToDeciderUpperBridgeData D F C)
+    (hEq : C.pEqualsNP) :
+    RealM4SelfReductionUpperExplicitPNPDischarge D F :=
+  B.upperDischarge_of_pEqualsNP hEq
+
+/-- Top-level alias for extracting the explicit self-reduction upper package
+from official class equality through the locked-message P-to-decider bridge. -/
+noncomputable def realM4_upperDischarge_of_pEqualsNP_pMembershipDeciderLockedMessageBridge
+    {PublicLock : Type g} {Quotient : Type h}
+    {LockAux : Type i} {Message : Type j}
+    {CNFPublic : Type k} {Var : CNFPublic -> Type l}
+    {Witness : CNFPublic -> Type l}
+    {D : AppendixICNFReadoutData
+      PublicLock Quotient LockAux Message CNFPublic Var Witness}
+    {F : CompressionLowerFramework}
+    {C : CookStylePNPClassInterface.{p}}
+    (B : RealM4OfficialPToDeciderLockedMessageUpperBridgeData D F C)
+    (hEq : C.pEqualsNP) :
+    RealM4SelfReductionUpperExplicitPNPDischarge D F :=
+  B.upperDischarge_of_pEqualsNP hEq
 
 /--
 Official endpoint from the stricter upper bridge.  The bridge contributes only
@@ -5745,6 +5835,46 @@ theorem realM4_officialSeparation_from_endgameMechanicalData_upperBridge
         (realM4_conditionalClash_from_endgameMechanicalData_explicitPNP
           M (bridge.upperDischarge_of_inP hP) starSWHardness
           safeQSSM boundedGaugeIncidence boundaryMixing).noConsistentBounds)
+
+/--
+Explicit contradiction branch from official `P = NP`.  The upper package is
+derived from `pEqualsNP` through the bridge's named NP language; StarSW and
+the three analytic frontiers remain the only irreducible content in the clash.
+-/
+theorem realM4_false_of_pEqualsNP_from_endgameMechanicalData_upperBridge
+    {Omega : Type u} [Fintype Omega] [Nonempty Omega]
+    {Public : Type v} {Neutral : Type w} {Safe : Type x}
+    {Gauge : Type y} {Transcript : Type z} [DecidableEq Transcript]
+    {Pair : Type a} [Fintype Pair]
+    {Stage : Type b} {Branch : Type c}
+    {HistoryAtom : Type d} {Pivot : Type e}
+    {Observer : Type f} {Output : Type f} {Skeleton : Type w}
+    {PublicLock : Type g} {Quotient : Type h}
+    {LockAux : Type i} {Message : Type j}
+    {CNFPublic : Type k} {Var : CNFPublic -> Type l}
+    {Witness : CNFPublic -> Type l}
+    {D : AppendixICNFReadoutData
+      PublicLock Quotient LockAux Message CNFPublic Var Witness}
+    (M : RealM4EndgameMechanicalData Omega Public Neutral Safe Gauge
+      Transcript Pair Stage Branch HistoryAtom Pivot Observer Output Skeleton)
+    (starSWHardness : CompressionStarSWHardness M.lowerFramework)
+    (safeQSSM :
+      ∀ q : Safe, 0 ≤ M.interfaceData.safeCost q ∧
+        M.interfaceData.safeCost q ≤ M.interfaceData.safeBudget)
+    (boundedGaugeIncidence :
+      ∀ gamma : Gauge,
+        M.interfaceData.gaugeIncidence gamma ≤ M.interfaceData.gaugeBound)
+    (boundaryMixing :
+      BoundaryMixingBound M.interfaceData.target M.interfaceData.pivotSummary
+        M.interfaceData.epsMix)
+    {C : CookStylePNPClassInterface.{p}}
+    (bridge :
+      RealM4OfficialPToUpperBridgeData D M.lowerFramework C)
+    (hEq : C.pEqualsNP) :
+    False :=
+  (realM4_conditionalClash_from_endgameMechanicalData_explicitPNP
+    M (bridge.upperDischarge_of_pEqualsNP hEq) starSWHardness safeQSSM
+    boundedGaugeIncidence boundaryMixing).noConsistentBounds
 
 /--
 Cook-style existential endpoint from the stricter upper bridge.  This is the
@@ -5948,6 +6078,43 @@ theorem realM4_not_pEqualsNP_from_endgameMechanicalData_pMembershipDeciderBridge
     M starSWHardness safeQSSM boundedGaugeIncidence boundaryMixing
     bridge.upperBridge
 
+/-- Explicit `P = NP` contradiction branch from the decomposed
+P-membership-to-decider bridge. -/
+theorem realM4_false_of_pEqualsNP_from_endgameMechanicalData_pMembershipDeciderBridge
+    {Omega : Type u} [Fintype Omega] [Nonempty Omega]
+    {Public : Type v} {Neutral : Type w} {Safe : Type x}
+    {Gauge : Type y} {Transcript : Type z} [DecidableEq Transcript]
+    {Pair : Type a} [Fintype Pair]
+    {Stage : Type b} {Branch : Type c}
+    {HistoryAtom : Type d} {Pivot : Type e}
+    {Observer : Type f} {Output : Type f} {Skeleton : Type w}
+    {PublicLock : Type g} {Quotient : Type h}
+    {LockAux : Type i} {Message : Type j}
+    {CNFPublic : Type k} {Var : CNFPublic -> Type l}
+    {Witness : CNFPublic -> Type l}
+    {D : AppendixICNFReadoutData
+      PublicLock Quotient LockAux Message CNFPublic Var Witness}
+    (M : RealM4EndgameMechanicalData Omega Public Neutral Safe Gauge
+      Transcript Pair Stage Branch HistoryAtom Pivot Observer Output Skeleton)
+    (starSWHardness : CompressionStarSWHardness M.lowerFramework)
+    (safeQSSM :
+      ∀ q : Safe, 0 ≤ M.interfaceData.safeCost q ∧
+        M.interfaceData.safeCost q ≤ M.interfaceData.safeBudget)
+    (boundedGaugeIncidence :
+      ∀ gamma : Gauge,
+        M.interfaceData.gaugeIncidence gamma ≤ M.interfaceData.gaugeBound)
+    (boundaryMixing :
+      BoundaryMixingBound M.interfaceData.target M.interfaceData.pivotSummary
+        M.interfaceData.epsMix)
+    {C : CookStylePNPClassInterface.{p}}
+    (bridge :
+      RealM4OfficialPToDeciderUpperBridgeData D M.lowerFramework C)
+    (hEq : C.pEqualsNP) :
+    False :=
+  realM4_false_of_pEqualsNP_from_endgameMechanicalData_upperBridge
+    M starSWHardness safeQSSM boundedGaugeIncidence boundaryMixing
+    bridge.upperBridge hEq
+
 /--
 Official endpoint from the locked-message-data decomposed
 P-membership-to-decider bridge.  This is the same Cook-style route as the
@@ -6063,6 +6230,44 @@ theorem realM4_not_pEqualsNP_from_endgameMechanicalData_pMembershipDeciderLocked
   realM4_not_pEqualsNP_from_endgameMechanicalData_upperBridge
     M starSWHardness safeQSSM boundedGaugeIncidence boundaryMixing
     bridge.upperBridge
+
+/-- Explicit `P = NP` contradiction branch from the locked-message-data
+P-membership-to-decider bridge. -/
+theorem realM4_false_of_pEqualsNP_from_endgameMechanicalData_pMembershipDeciderLockedMessageBridge
+    {Omega : Type u} [Fintype Omega] [Nonempty Omega]
+    {Public : Type v} {Neutral : Type w} {Safe : Type x}
+    {Gauge : Type y} {Transcript : Type z} [DecidableEq Transcript]
+    {Pair : Type a} [Fintype Pair]
+    {Stage : Type b} {Branch : Type c}
+    {HistoryAtom : Type d} {Pivot : Type e}
+    {Observer : Type f} {Output : Type f} {Skeleton : Type w}
+    {PublicLock : Type g} {Quotient : Type h}
+    {LockAux : Type i} {Message : Type j}
+    {CNFPublic : Type k} {Var : CNFPublic -> Type l}
+    {Witness : CNFPublic -> Type l}
+    {D : AppendixICNFReadoutData
+      PublicLock Quotient LockAux Message CNFPublic Var Witness}
+    (M : RealM4EndgameMechanicalData Omega Public Neutral Safe Gauge
+      Transcript Pair Stage Branch HistoryAtom Pivot Observer Output Skeleton)
+    (starSWHardness : CompressionStarSWHardness M.lowerFramework)
+    (safeQSSM :
+      ∀ q : Safe, 0 ≤ M.interfaceData.safeCost q ∧
+        M.interfaceData.safeCost q ≤ M.interfaceData.safeBudget)
+    (boundedGaugeIncidence :
+      ∀ gamma : Gauge,
+        M.interfaceData.gaugeIncidence gamma ≤ M.interfaceData.gaugeBound)
+    (boundaryMixing :
+      BoundaryMixingBound M.interfaceData.target M.interfaceData.pivotSummary
+        M.interfaceData.epsMix)
+    {C : CookStylePNPClassInterface.{p}}
+    (bridge :
+      RealM4OfficialPToDeciderLockedMessageUpperBridgeData
+        D M.lowerFramework C)
+    (hEq : C.pEqualsNP) :
+    False :=
+  realM4_false_of_pEqualsNP_from_endgameMechanicalData_upperBridge
+    M starSWHardness safeQSSM boundedGaugeIncidence boundaryMixing
+    bridge.upperBridge hEq
 
 /--
 Official-endpoint staging theorem for already packaged real endgame data.
