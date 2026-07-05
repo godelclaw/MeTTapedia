@@ -1590,6 +1590,135 @@ def realM4_uniformCNFSupport_of_variableNatCoding
     RealM4CNFUniformSupportData D :=
   C.formulaSyntaxSupport
 
+/-- Construction-side finite variable-type data.  This is weaker than the
+older finite variable-family package because it asks only for finite variable
+types; decidable equality and formula-syntax support are supplied via the
+derived Nat coding below. -/
+structure RealM4FiniteCNFVariableTypeData
+    {PublicLock : Type u} {Quotient : Type v}
+    {LockAux : Type w} {Message : Type z}
+    {Public : Type x} {Var : Public -> Type y}
+    {Witness : Public -> Type y}
+    (_D : AppendixICNFReadoutData
+      PublicLock Quotient LockAux Message Public Var Witness) where
+  varFintype : (Y : Public) -> Fintype (Var Y)
+
+namespace RealM4FiniteCNFVariableTypeData
+
+variable {PublicLock : Type u} {Quotient : Type v}
+variable {LockAux : Type w} {Message : Type z}
+variable {Public : Type x} {Var : Public -> Type y}
+variable {Witness : Public -> Type y}
+variable
+  {D : AppendixICNFReadoutData
+    PublicLock Quotient LockAux Message Public Var Witness}
+
+/-- Any finite variable type has an injective Nat code through its canonical
+equivalence with `Fin (card Var)`.  This is a construction supplier for the
+Nat-coded formula-syntax route; an actual syntactic code is still the sharper
+M4 obligation when the ambient variable type is not finite. -/
+noncomputable def variableNatCoding
+    (V : RealM4FiniteCNFVariableTypeData D) :
+    RealM4CNFVariableNatCodingData D where
+  varCode := fun Y v =>
+    letI := V.varFintype Y
+    (Fintype.equivFin (Var Y) v).val
+  varCode_injective := by
+    intro Y v v' hcode
+    letI := V.varFintype Y
+    have hfin :
+        Fintype.equivFin (Var Y) v =
+          Fintype.equivFin (Var Y) v' := by
+      apply Fin.ext
+      exact hcode
+    exact (Fintype.equivFin (Var Y)).injective hfin
+
+noncomputable def formulaSyntaxSupport
+    (V : RealM4FiniteCNFVariableTypeData D) :
+    RealM4CNFUniformSupportData D :=
+  (V.variableNatCoding).formulaSyntaxSupport
+
+end RealM4FiniteCNFVariableTypeData
+
+/-- Top-level alias: finite real CNF variable types supply the Nat-coded
+variable package used by the formula-syntax support route. -/
+noncomputable def realM4_variableNatCoding_of_finiteVariableTypes
+    {PublicLock : Type u} {Quotient : Type v}
+    {LockAux : Type w} {Message : Type z}
+    {Public : Type x} {Var : Public -> Type y}
+    {Witness : Public -> Type y}
+    {D : AppendixICNFReadoutData
+      PublicLock Quotient LockAux Message Public Var Witness}
+    (V : RealM4FiniteCNFVariableTypeData D) :
+    RealM4CNFVariableNatCodingData D :=
+  V.variableNatCoding
+
+/-- Top-level alias: finite variable types supply formula-syntax CNF support
+through the Nat-coded route, avoiding a primitive decidable-equality input. -/
+noncomputable def realM4_formulaSyntaxCNFSupport_of_finiteVariableTypes
+    {PublicLock : Type u} {Quotient : Type v}
+    {LockAux : Type w} {Message : Type z}
+    {Public : Type x} {Var : Public -> Type y}
+    {Witness : Public -> Type y}
+    {D : AppendixICNFReadoutData
+      PublicLock Quotient LockAux Message Public Var Witness}
+    (V : RealM4FiniteCNFVariableTypeData D) :
+    RealM4CNFUniformSupportData D :=
+  V.formulaSyntaxSupport
+
+namespace RealM4FiniteCNFVariableFamilyData
+
+variable {PublicLock : Type u} {Quotient : Type v}
+variable {LockAux : Type w} {Message : Type z}
+variable {Public : Type x} {Var : Public -> Type y}
+variable {Witness : Public -> Type y}
+variable
+  {D : AppendixICNFReadoutData
+    PublicLock Quotient LockAux Message Public Var Witness}
+
+def finiteTypeData
+    (V : RealM4FiniteCNFVariableFamilyData D) :
+    RealM4FiniteCNFVariableTypeData D where
+  varFintype := V.varFintype
+
+noncomputable def variableNatCoding
+    (V : RealM4FiniteCNFVariableFamilyData D) :
+    RealM4CNFVariableNatCodingData D :=
+  V.finiteTypeData.variableNatCoding
+
+noncomputable def formulaSyntaxSupportViaNatCoding
+    (V : RealM4FiniteCNFVariableFamilyData D) :
+    RealM4CNFUniformSupportData D :=
+  V.finiteTypeData.formulaSyntaxSupport
+
+end RealM4FiniteCNFVariableFamilyData
+
+/-- Backward-compatible alias: the older finite variable-family package
+supplies the newer Nat-coded variable package. -/
+noncomputable def realM4_variableNatCoding_of_finiteVariables
+    {PublicLock : Type u} {Quotient : Type v}
+    {LockAux : Type w} {Message : Type z}
+    {Public : Type x} {Var : Public -> Type y}
+    {Witness : Public -> Type y}
+    {D : AppendixICNFReadoutData
+      PublicLock Quotient LockAux Message Public Var Witness}
+    (V : RealM4FiniteCNFVariableFamilyData D) :
+    RealM4CNFVariableNatCodingData D :=
+  V.variableNatCoding
+
+/-- Backward-compatible alias: the older finite variable-family package
+supplies formula-syntax CNF support through the newer Nat-coded route. -/
+noncomputable def realM4_formulaSyntaxCNFSupport_of_finiteVariablesNatCoding
+    {PublicLock : Type u} {Quotient : Type v}
+    {LockAux : Type w} {Message : Type z}
+    {Public : Type x} {Var : Public -> Type y}
+    {Witness : Public -> Type y}
+    {D : AppendixICNFReadoutData
+      PublicLock Quotient LockAux Message Public Var Witness}
+    (V : RealM4FiniteCNFVariableFamilyData D) :
+    RealM4CNFUniformSupportData D :=
+  V.formulaSyntaxSupportViaNatCoding
+
 namespace RealM4CNFUniformSupportData
 
 variable {PublicLock : Type u} {Quotient : Type v}
@@ -2449,6 +2578,25 @@ theorem realM4FiniteCNFVariableFamilyDataConstructionInputs_exact :
     realM4FiniteCNFVariableFamilyDataConstructionInputs =
       [ "varDecidable",
         "varFintype" ] := by
+  rfl
+
+def realM4FiniteCNFVariableTypeDataConstructionInputs : List String := [
+  "varFintype"
+]
+
+theorem realM4FiniteCNFVariableTypeDataConstructionInputs_exact :
+    realM4FiniteCNFVariableTypeDataConstructionInputs =
+      [ "varFintype" ] := by
+  rfl
+
+def realM4VariableNatCodingFromFiniteTypeConstructionInputs :
+    List String := [
+  "cnfVariableFintype"
+]
+
+theorem realM4VariableNatCodingFromFiniteTypeConstructionInputs_exact :
+    realM4VariableNatCodingFromFiniteTypeConstructionInputs =
+      [ "cnfVariableFintype" ] := by
   rfl
 
 def realM4FormulaSyntaxCNFSupportConstructionInputs : List String := [
@@ -7826,6 +7974,12 @@ def realM4LiftLedger : List RealM4LiftLedgerRow := [
     note := "Decidable equality for real CNF variables follows from injective natural coding of the variable syntax; the remaining construction obligation is the code and its injectivity proof."
   },
   {
+    item := "cnfVariableNatCodingFromFiniteTypes"
+    status := .partialConstructionTransferred
+    checkedName := "realM4_variableNatCoding_of_finiteVariableTypes"
+    note := "Finite real CNF variable types mechanically supply an injective Nat code through their canonical finite equivalence.  This is a supplier for the Nat-coded route, not a substitute for explicit syntactic coding when the real variable family is infinite."
+  },
+  {
     item := "uniformCNFSupportData"
     status := .partialConstructionTransferred
     checkedName := "RealM4FiniteCNFVariableFamilyData.uniformSupport"
@@ -8074,6 +8228,7 @@ theorem realM4LiftLedger_statuses_exact :
         RealM4LiftStatus.constructionTransferred,
         RealM4LiftStatus.constructionTransferred,
         RealM4LiftStatus.constructionTransferred,
+        RealM4LiftStatus.partialConstructionTransferred,
         RealM4LiftStatus.partialConstructionTransferred,
         RealM4LiftStatus.partialConstructionTransferred,
         RealM4LiftStatus.partialConstructionTransferred,
