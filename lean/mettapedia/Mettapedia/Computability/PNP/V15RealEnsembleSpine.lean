@@ -2916,6 +2916,40 @@ theorem realM4CompressionLowerMachineDataConstructionInputs_exact :
         "kernelLocalHalfBound" ] := by
   rfl
 
+def realM4ConstantDecoderRegimeConstructionInputs : List String := [
+  "uniformCNFBitFixingPackage",
+  "realCompressionLowerFramework",
+  "kpolyAtConstantDecoderIdentification",
+  "etaTimesLinearFloorIdentification",
+  "constantDecoderBelowLinearFloor"
+]
+
+theorem realM4ConstantDecoderRegimeConstructionInputs_exact :
+    realM4ConstantDecoderRegimeConstructionInputs =
+      [ "uniformCNFBitFixingPackage",
+        "realCompressionLowerFramework",
+        "kpolyAtConstantDecoderIdentification",
+        "etaTimesLinearFloorIdentification",
+        "constantDecoderBelowLinearFloor" ] := by
+  rfl
+
+def realM4ConstantDecoderRegimeExplicitPNPConstructionInputs : List String := [
+  "uniformCNFSupportData",
+  "realCompressionLowerFramework",
+  "kpolyAtConstantDecoderIdentification",
+  "etaTimesLinearFloorIdentification",
+  "constantDecoderBelowLinearFloor"
+]
+
+theorem realM4ConstantDecoderRegimeExplicitPNPConstructionInputs_exact :
+    realM4ConstantDecoderRegimeExplicitPNPConstructionInputs =
+      [ "uniformCNFSupportData",
+        "realCompressionLowerFramework",
+        "kpolyAtConstantDecoderIdentification",
+        "etaTimesLinearFloorIdentification",
+        "constantDecoderBelowLinearFloor" ] := by
+  rfl
+
 def realM4LockSatisfiableConstructionInputs : List String := [
   "publicLockCoverageData",
   "appendixISatOnSupport"
@@ -2931,7 +2965,8 @@ def realM4SelfReductionUpperDischargePrerequisites : List String := [
   "publicLockCoverageData",
   "lockedMessageRigidityData",
   "uniformCNFBitFixingPackage",
-  "realCompressionLowerFramework"
+  "realCompressionLowerFramework",
+  "realConstantDecoderRegime"
 ]
 
 theorem realM4SelfReductionUpperDischargePrerequisites_exact :
@@ -2939,7 +2974,8 @@ theorem realM4SelfReductionUpperDischargePrerequisites_exact :
       [ "publicLockCoverageData",
         "lockedMessageRigidityData",
         "uniformCNFBitFixingPackage",
-        "realCompressionLowerFramework" ] := by
+        "realCompressionLowerFramework",
+        "realConstantDecoderRegime" ] := by
   rfl
 
 def realM4SelfReductionUpperConditionalInputs : List String := [
@@ -2955,7 +2991,8 @@ def realM4SelfReductionUpperExplicitPNPConstructionInputs : List String := [
   "publicLockCoverageData",
   "lockedMessageRigidityData",
   "uniformCNFSupportData",
-  "realCompressionLowerFramework"
+  "realCompressionLowerFramework",
+  "realConstantDecoderRegime"
 ]
 
 theorem realM4SelfReductionUpperExplicitPNPConstructionInputs_exact :
@@ -2963,7 +3000,8 @@ theorem realM4SelfReductionUpperExplicitPNPConstructionInputs_exact :
       [ "publicLockCoverageData",
         "lockedMessageRigidityData",
         "uniformCNFSupportData",
-        "realCompressionLowerFramework" ] := by
+        "realCompressionLowerFramework",
+        "realConstantDecoderRegime" ] := by
   rfl
 
 def realM4SelfReductionUpperExplicitPNPConditionalInputs : List String := [
@@ -10142,6 +10180,12 @@ def realM4LiftLedger : List RealM4LiftLedgerRow := [
     note := "Once finite variable-family data is constructed, the uniform support package is the canonical enumeration of all variables; with the conditional decider it reconstructs the bit-fixing package."
   },
   {
+    item := "realConstantDecoderRegime"
+    status := .openConstruction
+    checkedName := "RealM4UniformConstantDecoderRegime"
+    note := "The real lower framework must identify kpolyAt with the fixed uniform self-reduction decoder, identify etaTimes with the linear floor, and prove that this constant decoder sits below the target-block floor.  This is K-poly compatibility for the real construction, not a new analytic input."
+  },
+  {
     item := "constantDecoderUpperInequality"
     status := .partialConstructionTransferred
     checkedName := "realM4_uniformSelfReductionUpperHypothesis_givenPNP"
@@ -10445,6 +10489,7 @@ theorem realM4LiftLedger_statuses_exact :
         RealM4LiftStatus.partialConstructionTransferred,
         RealM4LiftStatus.partialConstructionTransferred,
         RealM4LiftStatus.partialConstructionTransferred,
+        RealM4LiftStatus.openConstruction,
         RealM4LiftStatus.partialConstructionTransferred,
         RealM4LiftStatus.partialConstructionTransferred,
         RealM4LiftStatus.blockedByCounterexample,
@@ -10503,6 +10548,7 @@ def realM4OpenConstructionItems : List String := [
   "admissibleHistories",
   "cnfVariableAddressSyntax",
   "realCompressionLowerMachineData",
+  "realConstantDecoderRegime",
   "officialPToDeciderLanguageData"
 ]
 
@@ -10515,6 +10561,7 @@ theorem realM4OpenConstructionItems_exact :
         "admissibleHistories",
         "cnfVariableAddressSyntax",
         "realCompressionLowerMachineData",
+        "realConstantDecoderRegime",
         "officialPToDeciderLanguageData" ] := by
   rfl
 
