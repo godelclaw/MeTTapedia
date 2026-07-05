@@ -5823,6 +5823,27 @@ theorem
   simp [v13RealLinearNoTargetRowsGaugeCNFAppendixICNFWitnessGaugeAction_hiddenGauge]
     at hhidden
 
+/-- The witness-level Appendix-I CNF hidden-gauge action is free: the only
+Boolean gauge element fixing a concrete hidden witness is `false`. -/
+theorem
+    v13RealLinearNoTargetRowsGaugeCNFAppendixICNFWitnessGaugeAction_eq_self_iff
+    {m : Nat} {i₀ : Fin m} (gamma : Bool)
+    (W :
+      RealM4CNFWitness
+        (v13RealLinearNoTargetRowsGaugeCNFAppendixICNFReadoutData i₀)) :
+    v13RealLinearNoTargetRowsGaugeCNFAppendixICNFWitnessGaugeAction
+        gamma W =
+      W ↔ gamma = false := by
+  cases gamma
+  · simp
+  · constructor
+    · intro hfixed
+      exact False.elim
+        (v13RealLinearNoTargetRowsGaugeCNFAppendixICNFWitnessGaugeAction_true_ne
+          W hfixed)
+    · intro hfalse
+      cases hfalse
+
 /-- Exact orbit characterization for verifier-valid Appendix-I CNF witnesses
 over a fixed public instance: acting by `gamma` reaches `W'` exactly when
 the hidden-gauge coordinate is xor-shifted by `gamma`. -/
