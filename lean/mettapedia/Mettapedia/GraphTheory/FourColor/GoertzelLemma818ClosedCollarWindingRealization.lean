@@ -13797,6 +13797,45 @@ theorem section92Step4CurrentFiniteFrontierPreviousBoundaryUpgradeBadFaceExactHi
     ⟨closedCollarWindingFreedomCurrentFiniteRealizationFrontierEvidence,
       closedCollarWindingFreedomPreviousBoundaryWitnessUpgradeObstruction_iff_currentBoundaryBadWitnessFaceObstruction⟩
 
+/--
+Concrete bad-face fork at the current finite frontier.  The parsed template
+payloads are present, the previous-boundary upgrade blocker is exactly the
+current-boundary bad-face blocker, and after the later geometry/radial-face/n6
+archive bridge fields plus audited rows, the repair branch is precisely the
+bad-face-to-template theorem while the obstruction branch is precisely the
+surviving non-template bad face.
+-/
+def Section92Step4CurrentFiniteFrontierConcreteBadFaceFork :
+    Prop :=
+  Section92Step4CurrentFiniteFrontierBadWitnessFaceConcreteTemplatePayloadCriterion ∧
+    Section92Step4CurrentFiniteFrontierPreviousBoundaryUpgradeBadFaceExactHinge ∧
+      (ClosedCollarWindingFreedomActualCollarEmbeddingSuppliesGeometryData →
+        ClosedCollarWindingFreedomActualCollarGeometrySuppliesRadialFaceExtraction →
+          ClosedCollarWindingFreedomEveryRadialFaceNormalFormHasN6Representation →
+            ClosedCollarWindingFreedomEveryRadialFaceN6RepresentationHasAuditedArchiveKey →
+              ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceAuditedRowsCoveredByLab →
+                ((ClosedCollarWindingFreedomNonrealizableInNormalForm ↔
+                    ClosedCollarWindingFreedomCurrentBoundaryBadWitnessFaceForcesExactTemplate) ∧
+                  (¬ ClosedCollarWindingFreedomNonrealizableInNormalForm ↔
+                    ClosedCollarWindingFreedomCurrentFiniteFrontierSurvivingBadWitnessFaceObstruction) ∧
+                  (¬ ClosedCollarWindingFreedomNonrealizableInNormalForm ↔
+                    ClosedCollarWindingFreedomCurrentBoundaryBadWitnessFaceNoExactTemplateObstruction)))
+
+theorem section92Step4CurrentFiniteFrontierConcreteBadFaceFork :
+    Section92Step4CurrentFiniteFrontierConcreteBadFaceFork := by
+  refine
+    ⟨section92Step4CurrentFiniteFrontierBadWitnessFaceConcreteTemplatePayloadCriterion,
+      section92Step4CurrentFiniteFrontierPreviousBoundaryUpgradeBadFaceExactHinge,
+      ?_⟩
+  intro hgeometry hradial hn6 hkeys hrows
+  exact
+    ⟨closedCollarWindingFreedomNonrealizableInNormalForm_iff_badWitnessFaceForcesExactTemplate_of_laterBridge_of_auditedRows
+        hgeometry hradial hn6 hkeys hrows,
+      closedCollarWindingFreedom_not_nonrealizableInNormalForm_iff_currentFiniteFrontierSurvivingBadWitnessFaceObstruction_of_laterBridge_of_auditedRows
+        hgeometry hradial hn6 hkeys hrows,
+      closedCollarWindingFreedom_not_nonrealizableInNormalForm_iff_currentBoundaryBadWitnessFaceNoExactTemplateObstruction_of_laterBridge_of_auditedRows
+        hgeometry hradial hn6 hkeys hrows⟩
+
 end GoertzelLemma818ClosedCollarWindingRealization
 
 end Mettapedia.GraphTheory.FourColor
