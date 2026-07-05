@@ -1999,6 +1999,46 @@ theorem lemma52NormalFormExistenceObligation_of_s7NormalFormRegimeExistence
   rcases h with ⟨U, hU, fU, Tdual, hT, dual, regime⟩
   exact ⟨U, hU, fU, Tdual, hT, dual, regime.normal_form⟩
 
+/-- Fixed-dual S7 CAP5-free obligations imply the Lemma 5.2 normal-form existence endpoint. -/
+theorem lemma52NormalFormExistenceObligation_of_s7CAP5FreeObligations
+    {U : Type uS7} [DecidableEq U] [Fintype U]
+    {Tdual : SimpleGraph U} [DecidableRel Tdual.Adj]
+    {minimal : MinimalTaitCounterexample G} {dual : PlaneCubicDualData G Tdual}
+    (obligations : MinimalCounterexampleS7CAP5FreeObligations minimal dual) :
+    Lemma52NormalFormExistenceObligation.{uS7} minimal :=
+  lemma52NormalFormExistenceObligation_of_s7NormalFormRegimeExistence
+    (minimalCounterexampleS7NormalFormRegimeExistenceObligation_of_s7CAP5FreeObligations
+      obligations)
+
+/-- Fixed-dual split S7 CAP5-free obligations imply the Lemma 5.2 normal-form existence
+endpoint. -/
+theorem lemma52NormalFormExistenceObligation_of_s7SplitCAP5FreeObligations
+    {U : Type uS7} [DecidableEq U] [Fintype U]
+    {Tdual : SimpleGraph U} [DecidableRel Tdual.Adj]
+    {minimal : MinimalTaitCounterexample G} {dual : PlaneCubicDualData G Tdual}
+    (obligations : MinimalCounterexampleS7SplitCAP5FreeObligations minimal dual) :
+    Lemma52NormalFormExistenceObligation.{uS7} minimal :=
+  lemma52NormalFormExistenceObligation_of_s7NormalFormRegimeExistence
+    (minimalCounterexampleS7NormalFormRegimeExistenceObligation_of_s7SplitCAP5FreeObligations
+      obligations)
+
+/-- Prop-level S7 CAP5-free existence implies the Lemma 5.2 normal-form existence endpoint. -/
+theorem lemma52NormalFormExistenceObligation_of_s7CAP5FreeExistence
+    {minimal : MinimalTaitCounterexample G}
+    (h : MinimalCounterexampleS7CAP5FreeExistenceObligation.{uS7} minimal) :
+    Lemma52NormalFormExistenceObligation.{uS7} minimal :=
+  lemma52NormalFormExistenceObligation_of_s7NormalFormRegimeExistence
+    (minimalCounterexampleS7NormalFormRegimeExistenceObligation_of_s7CAP5FreeExistence h)
+
+/-- Prop-level split S7 CAP5-free existence implies the Lemma 5.2 normal-form existence
+endpoint. -/
+theorem lemma52NormalFormExistenceObligation_of_s7SplitCAP5FreeExistence
+    {minimal : MinimalTaitCounterexample G}
+    (h : MinimalCounterexampleS7SplitCAP5FreeExistenceObligation.{uS7} minimal) :
+    Lemma52NormalFormExistenceObligation.{uS7} minimal :=
+  lemma52NormalFormExistenceObligation_of_s7NormalFormRegimeExistence
+    (minimalCounterexampleS7NormalFormRegimeExistenceObligation_of_s7SplitCAP5FreeExistence h)
+
 end CAP5Tightness
 
 section EdgeColoringGlue
