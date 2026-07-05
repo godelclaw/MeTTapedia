@@ -1199,6 +1199,50 @@ theorem v13RealLinearSmallNoTargetRowsCNFReadout_eq_message_of_valid
       v13RealLinearSmallNoTargetRowsCNFMessage, Bool.xor, hmsgY,
       hspareY, hmsgW, hspareW] at hspare hxor ⊢
 
+/-- Formula-syntax no-public-readout-tags shape for the concrete
+no-target-row CNF.  It asks whether the full concrete formula syntax alone
+hides the fixed readout of every verifier-valid witness. -/
+def V13RealLinearSmallNoTargetRowsCNFFormulaNoPublicReadoutTags : Prop :=
+  ¬ ∃ f : ConcreteCNF.Formula V13RealLinearSmallNoTargetRowsCNFVar -> Bool,
+      ∀ {Y : V13RealLinearSmallNoTargetRowsCNFPublic}
+        {W : V13RealLinearSmallNoTargetRowsCNFWitness},
+        v13RealLinearSmallNoTargetRowsCNFVerifier Y W →
+          v13RealLinearSmallNoTargetRowsCNFReadout W =
+            f (v13RealLinearSmallNoTargetRowsCNFFormula Y)
+
+/-- Full formula syntax determines the readout of every verifier-valid
+witness for the concrete no-target-row CNF, because valid witnesses read the
+single public message and the formula's spare/xor tags determine that
+message. -/
+theorem
+    v13RealLinearSmallNoTargetRowsCNFFormula_publicSyntaxDeterminesReadout :
+    ∃ f : ConcreteCNF.Formula V13RealLinearSmallNoTargetRowsCNFVar -> Bool,
+      ∀ {Y : V13RealLinearSmallNoTargetRowsCNFPublic}
+        {W : V13RealLinearSmallNoTargetRowsCNFWitness},
+        v13RealLinearSmallNoTargetRowsCNFVerifier Y W →
+          v13RealLinearSmallNoTargetRowsCNFReadout W =
+            f (v13RealLinearSmallNoTargetRowsCNFFormula Y) := by
+  rcases
+    v13RealLinearSmallNoTargetRowsCNFFormula_publicSyntaxDeterminesMessage
+    with ⟨f, hf⟩
+  refine ⟨f, ?_⟩
+  intro Y W hW
+  calc
+    v13RealLinearSmallNoTargetRowsCNFReadout W =
+        v13RealLinearSmallNoTargetRowsCNFMessage Y :=
+      v13RealLinearSmallNoTargetRowsCNFReadout_eq_message_of_valid hW
+    _ = f (v13RealLinearSmallNoTargetRowsCNFFormula Y) := hf Y
+
+/-- Named readout obstruction: with the full concrete formula syntax public,
+no-public-readout-tags fails for verifier-valid witnesses in the small
+no-target-row CNF. -/
+theorem
+    v13RealLinearSmallNoTargetRowsCNFFormula_noPublicReadoutTags_obstruction :
+    ¬ V13RealLinearSmallNoTargetRowsCNFFormulaNoPublicReadoutTags := by
+  intro hNoTags
+  exact hNoTags
+    v13RealLinearSmallNoTargetRowsCNFFormula_publicSyntaxDeterminesReadout
+
 /-- The concrete no-target-row CNF is single-message: all satisfying
 witnesses read the same fixed public message. -/
 theorem v13RealLinearSmallNoTargetRowsCNF_singleMessage
