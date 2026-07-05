@@ -2158,6 +2158,66 @@ def ofComponents
   lowerFramework := lowerFramework
   kernelNeutrality := kernelNeutrality
 
+/-- Build the real endgame mechanical package directly from CD-ENF component
+data.  This avoids reintroducing `atomCompleteness` and `gaugeFaithfulness` as
+hidden fields of a prebuilt `RealM4MechanicalInterfaceData`; both are derived
+from the generic CD-ENF semantics theorem. -/
+def ofCDENFComponents
+    (law : FiniteRationalLaw Omega)
+    (target : Omega -> Bool)
+    (publicInput : Omega -> Public)
+    (neutralSkeleton : Omega -> Skeleton)
+    (oppositeSupport : Omega -> Omega -> Prop)
+    (transcript : Omega -> Transcript)
+    (observerBit : Transcript -> Bool)
+    (phaseA :
+      EvidenceSpineBound law target transcript observerBit Pair Stage Branch)
+    (semantics : EvidenceSemantics Omega Neutral Safe Gauge)
+    (observerEvidence :
+      ObserverEvidenceInterface Omega Public Observer Output Neutral Safe Gauge)
+    (historyField : FiniteSigmaField.{u, d} Omega)
+    (pivotSummary : Omega -> Pivot)
+    (epsMix : Rat)
+    (safeCost : Safe -> Rat)
+    (safeBudget : Rat)
+    (gaugeIncidence : Gauge -> Nat)
+    (gaugeBound : Nat)
+    (singleMessage :
+      ∀ w0 w1, publicInput w0 = publicInput w1 -> target w0 = target w1)
+    (hiddenGaugeProduct :
+      ∀ gamma omega, semantics.gaugeSat gamma omega)
+    (noPublicTargetTags :
+      PairNeutral oppositeSupport neutralSkeleton ∧
+        HasMessageOppositePair oppositeSupport target ∧
+          ¬ ∃ f : Skeleton -> Bool,
+            ∀ omega, target omega = f (neutralSkeleton omega))
+    (admissibleHistories :
+      BalancedBit target ∧
+        BalancedConditioning (Omega := Omega) historyField target)
+    (fixedGapBudget : Rat)
+    (phaseABudget :
+      (1 / 2 : Rat) * phaseA.telescoping.derivativeSum ≤ fixedGapBudget)
+    (epsSmall : epsMix < (1 / 2 : Rat))
+    (lowerFramework : CompressionLowerFramework)
+    (kernelNeutrality : CompressionKernelNeutrality lowerFramework) :
+    RealM4EndgameMechanicalData Omega Public Neutral Safe Gauge
+      Transcript Pair Stage Branch HistoryAtom Pivot Observer Output
+      Skeleton where
+  interfaceData :=
+    RealM4MechanicalInterfaceData.ofCDENFComponents
+      law target publicInput neutralSkeleton oppositeSupport transcript
+      observerBit phaseA semantics observerEvidence historyField pivotSummary
+      epsMix safeCost safeBudget gaugeIncidence gaugeBound singleMessage
+      hiddenGaugeProduct noPublicTargetTags admissibleHistories
+  fixedGapBudget := fixedGapBudget
+  phaseABudget := by
+    simpa [RealM4MechanicalInterfaceData.ofCDENFComponents] using
+      phaseABudget
+  epsSmall := by
+    simpa [RealM4MechanicalInterfaceData.ofCDENFComponents] using epsSmall
+  lowerFramework := lowerFramework
+  kernelNeutrality := kernelNeutrality
+
 def interfaceWithAnalyticFrontier
     (C : RealM4EndgameMechanicalData Omega Public Neutral Safe Gauge
       Transcript Pair Stage Branch HistoryAtom Pivot Observer Output Skeleton)
@@ -2488,6 +2548,125 @@ theorem realM4_conditionalClash_from_components_coveredLocksAndRigidity_explicit
     uniformSupport pnpDeciderFamily constantDecoderRegime
     starSWHardness safeQSSM boundedGaugeIncidence boundaryMixing
 
+/--
+CD-ENF-component covered-locks staging theorem.  This removes both endgame
+wrappers from the theorem hypotheses: the mechanical interface is built from
+component data, while `atomCompleteness` and `gaugeFaithfulness` are supplied
+by the generic CD-ENF semantics theorem rather than accepted as assumptions.
+
+The theorem is still conditional on the explicit P=NP decider family and still
+leaves the real construction obligations visible: public-lock coverage, D.8
+locked-message rigidity, uniform CNF support, the constant-decoder regime,
+hidden-gauge product, no-public-target-tags, admissible histories, and the
+real lower/budget data.
+-/
+theorem realM4_conditionalClash_from_CDENFComponents_coveredLocksAndRigidity_explicitPNP
+    {Omega : Type u} [Fintype Omega] [Nonempty Omega]
+    {Public : Type v} {Neutral : Type w} {Safe : Type x}
+    {Gauge : Type y} {Transcript : Type z} [DecidableEq Transcript]
+    {Pair : Type a} [Fintype Pair]
+    {Stage : Type b} {Branch : Type c}
+    {HistoryAtom : Type d} {Pivot : Type e}
+    {Observer : Type f} {Output : Type f} {Skeleton : Type w}
+    {PublicLock : Type g} {Quotient : Type h}
+    {LockAux : Type i} {Message : Type j}
+    {CNFPublic : Type k} {Var : CNFPublic -> Type l}
+    {Witness : CNFPublic -> Type l}
+    {D : AppendixICNFReadoutData
+      PublicLock Quotient LockAux Message CNFPublic Var Witness}
+    (law : FiniteRationalLaw Omega)
+    (target : Omega -> Bool)
+    (publicInput : Omega -> Public)
+    (neutralSkeleton : Omega -> Skeleton)
+    (oppositeSupport : Omega -> Omega -> Prop)
+    (transcript : Omega -> Transcript)
+    (observerBit : Transcript -> Bool)
+    (phaseA :
+      EvidenceSpineBound law target transcript observerBit Pair Stage Branch)
+    (semantics : EvidenceSemantics Omega Neutral Safe Gauge)
+    (observerEvidence :
+      ObserverEvidenceInterface Omega Public Observer Output Neutral Safe Gauge)
+    (historyField : FiniteSigmaField.{u, d} Omega)
+    (pivotSummary : Omega -> Pivot)
+    (epsMix : Rat)
+    (safeCost : Safe -> Rat)
+    (safeBudget : Rat)
+    (gaugeIncidence : Gauge -> Nat)
+    (gaugeBound : Nat)
+    (singleMessage :
+      ∀ w0 w1, publicInput w0 = publicInput w1 -> target w0 = target w1)
+    (hiddenGaugeProduct :
+      ∀ gamma omega, semantics.gaugeSat gamma omega)
+    (noPublicTargetTags :
+      PairNeutral oppositeSupport neutralSkeleton ∧
+        HasMessageOppositePair oppositeSupport target ∧
+          ¬ ∃ f : Skeleton -> Bool,
+            ∀ omega, target omega = f (neutralSkeleton omega))
+    (admissibleHistories :
+      BalancedBit target ∧
+        BalancedConditioning (Omega := Omega) historyField target)
+    (fixedGapBudget : Rat)
+    (phaseABudget :
+      (1 / 2 : Rat) * phaseA.telescoping.derivativeSum ≤ fixedGapBudget)
+    (epsSmall : epsMix < (1 / 2 : Rat))
+    (lowerFramework : CompressionLowerFramework)
+    (kernelNeutrality : CompressionKernelNeutrality lowerFramework)
+    (defaultMessage : Message)
+    (publicLockCoverage :
+      D.toAppendixDWitnessData.PublicLockCoveredBySupportedInstances)
+    (lockedMessageRigidity : D.core.LockedMessageRigidity)
+    (uniformSupport : RealM4CNFUniformSupportData D)
+    (pnpDeciderFamily : RealM4ExplicitPNPDeciderFamily D)
+    (constantDecoderRegime :
+      RealM4UniformConstantDecoderRegime lowerFramework
+        (uniformSupport.withPNPDecider pnpDeciderFamily))
+    (starSWHardness : CompressionStarSWHardness lowerFramework)
+    (safeQSSM :
+      ∀ q : Safe, 0 ≤ safeCost q ∧ safeCost q ≤ safeBudget)
+    (boundedGaugeIncidence :
+      ∀ gamma : Gauge, gaugeIncidence gamma ≤ gaugeBound)
+    (boundaryMixing :
+      BoundaryMixingBound target pivotSummary epsMix) :
+    UpperLowerClash
+      ((RealM4EndgameMechanicalData.ofCDENFComponents
+          (HistoryAtom := HistoryAtom) (Observer := Observer)
+          (Output := Output)
+          law target publicInput neutralSkeleton oppositeSupport transcript
+          observerBit phaseA semantics observerEvidence historyField
+          pivotSummary epsMix safeCost safeBudget gaugeIncidence gaugeBound
+          singleMessage hiddenGaugeProduct noPublicTargetTags
+          admissibleHistories fixedGapBudget phaseABudget epsSmall
+          lowerFramework kernelNeutrality).interfaceWithAnalyticFrontier
+        safeQSSM boundedGaugeIncidence boundaryMixing)
+      ((RealM4EndgameMechanicalData.ofCDENFComponents
+          (HistoryAtom := HistoryAtom) (Observer := Observer)
+          (Output := Output)
+          law target publicInput neutralSkeleton oppositeSupport transcript
+          observerBit phaseA semantics observerEvidence historyField
+          pivotSummary epsMix safeCost safeBudget gaugeIncidence gaugeBound
+          singleMessage hiddenGaugeProduct noPublicTargetTags
+          admissibleHistories fixedGapBudget phaseABudget epsSmall
+          lowerFramework kernelNeutrality).parameterRecordExplicitPNP
+        (RealM4SelfReductionUpperExplicitPNPDischarge.ofCoveredLocksAndRigidity
+          (D := D) (F := lowerFramework)
+          defaultMessage publicLockCoverage lockedMessageRigidity
+          uniformSupport pnpDeciderFamily constantDecoderRegime)
+        starSWHardness safeQSSM boundedGaugeIncidence boundaryMixing) := by
+  exact
+    realM4_conditionalClash_from_coveredLocksAndRigidity_explicitPNP
+      (RealM4EndgameMechanicalData.ofCDENFComponents
+        (HistoryAtom := HistoryAtom) (Observer := Observer)
+        (Output := Output)
+        law target publicInput neutralSkeleton oppositeSupport transcript
+        observerBit phaseA semantics observerEvidence historyField
+        pivotSummary epsMix safeCost safeBudget gaugeIncidence gaugeBound
+        singleMessage hiddenGaugeProduct noPublicTargetTags
+        admissibleHistories fixedGapBudget phaseABudget epsSmall
+        lowerFramework kernelNeutrality)
+      defaultMessage publicLockCoverage lockedMessageRigidity
+      uniformSupport pnpDeciderFamily constantDecoderRegime
+      starSWHardness safeQSSM boundedGaugeIncidence boundaryMixing
+
 def realM4EndgameStagingConstructionInputs : List String := [
   "realM4EndgameMechanicalData",
   "realM4SelfReductionUpperDischarge"
@@ -2631,6 +2810,122 @@ theorem realM4CoveredLocksEndgameHypothesisAuditExplicitPNP_exact :
 
 def realM4CoveredLocksEndgameStatementExplicitPNP : String :=
   "For the real v15/M4 staging layer, UpperLowerClash follows by constructing the explicit P=NP-side self-reduction package from public-lock coverage, D.8 locked-message rigidity, uniform CNF support, and the constant decoder regime, then using StarSW hardness and the three analytic fields safeQSSM / boundedGaugeIncidence / boundaryMixing."
+
+def realM4CDENFComponentCoveredLocksEndgameConstructionInputsExplicitPNP :
+    List String := [
+  "law",
+  "target",
+  "publicInput",
+  "neutralSkeleton",
+  "oppositeSupport",
+  "transcript",
+  "observerBit",
+  "phaseA",
+  "semantics",
+  "observerEvidence",
+  "historyField",
+  "pivotSummary",
+  "epsMix",
+  "safeCost",
+  "safeBudget",
+  "gaugeIncidence",
+  "gaugeBound",
+  "singleMessage",
+  "hiddenGaugeProduct",
+  "noPublicTargetTags",
+  "admissibleHistories",
+  "fixedGapBudget",
+  "phaseABudget",
+  "epsSmall",
+  "realCompressionLowerFramework",
+  "kernelNeutrality",
+  "publicLockSupportCoverage",
+  "lockedMessageRigidity",
+  "uniformCNFSupportData",
+  "realConstantDecoderRegime"
+]
+
+theorem realM4CDENFComponentCoveredLocksEndgameConstructionInputsExplicitPNP_exact :
+    realM4CDENFComponentCoveredLocksEndgameConstructionInputsExplicitPNP =
+      [ "law",
+        "target",
+        "publicInput",
+        "neutralSkeleton",
+        "oppositeSupport",
+        "transcript",
+        "observerBit",
+        "phaseA",
+        "semantics",
+        "observerEvidence",
+        "historyField",
+        "pivotSummary",
+        "epsMix",
+        "safeCost",
+        "safeBudget",
+        "gaugeIncidence",
+        "gaugeBound",
+        "singleMessage",
+        "hiddenGaugeProduct",
+        "noPublicTargetTags",
+        "admissibleHistories",
+        "fixedGapBudget",
+        "phaseABudget",
+        "epsSmall",
+        "realCompressionLowerFramework",
+        "kernelNeutrality",
+        "publicLockSupportCoverage",
+        "lockedMessageRigidity",
+        "uniformCNFSupportData",
+        "realConstantDecoderRegime" ] := by
+  rfl
+
+def realM4CDENFComponentCoveredLocksEndgameHypothesisAuditExplicitPNP :
+    List String :=
+  realM4CDENFComponentCoveredLocksEndgameConstructionInputsExplicitPNP ++
+    realM4CoveredLocksEndgameIrreducibleInputsExplicitPNP ++
+      realM4CoveredLocksEndgameConditionalInputsExplicitPNP
+
+theorem realM4CDENFComponentCoveredLocksEndgameHypothesisAuditExplicitPNP_exact :
+    realM4CDENFComponentCoveredLocksEndgameHypothesisAuditExplicitPNP =
+      [ "law",
+        "target",
+        "publicInput",
+        "neutralSkeleton",
+        "oppositeSupport",
+        "transcript",
+        "observerBit",
+        "phaseA",
+        "semantics",
+        "observerEvidence",
+        "historyField",
+        "pivotSummary",
+        "epsMix",
+        "safeCost",
+        "safeBudget",
+        "gaugeIncidence",
+        "gaugeBound",
+        "singleMessage",
+        "hiddenGaugeProduct",
+        "noPublicTargetTags",
+        "admissibleHistories",
+        "fixedGapBudget",
+        "phaseABudget",
+        "epsSmall",
+        "realCompressionLowerFramework",
+        "kernelNeutrality",
+        "publicLockSupportCoverage",
+        "lockedMessageRigidity",
+        "uniformCNFSupportData",
+        "realConstantDecoderRegime",
+        "starSWHardness",
+        "safeQSSM",
+        "boundedGaugeIncidence",
+        "boundaryMixing",
+        "pnpDeciderFamily" ] := by
+  rfl
+
+def realM4CDENFComponentCoveredLocksEndgameStatementExplicitPNP : String :=
+  "For the real v15/M4 staging layer, UpperLowerClash follows from explicit CD-ENF mechanical components, public-lock coverage, D.8 locked-message rigidity, uniform CNF support, the real constant-decoder regime, StarSW hardness, and the three analytic fields safeQSSM / boundedGaugeIncidence / boundaryMixing, with atomCompleteness and gaugeFaithfulness construction-transferred from generic CD-ENF semantics and the upper side conditional on the explicit P=NP decider family."
 
 /-! ## Real-M4 lift ledger -/
 
@@ -2824,6 +3119,12 @@ def realM4LiftLedger : List RealM4LiftLedgerRow := [
     note := "Builds the endgame mechanical-data wrapper from explicit components before the covered-locks clash staging theorem is invoked."
   },
   {
+    item := "realCDENFComponentCoveredLocksConditionalClashStaging"
+    status := .partialConstructionTransferred
+    checkedName := "realM4_conditionalClash_from_CDENFComponents_coveredLocksAndRigidity_explicitPNP"
+    note := "Builds both real mechanical wrappers from CD-ENF component data; atom completeness and gauge faithfulness are construction-transferred from generic CD-ENF semantics."
+  },
+  {
     item := "pnpDecider"
     status := .pnpConditionalInput
     checkedName := "RealM4ExplicitPNPDeciderFamily"
@@ -2879,6 +3180,7 @@ theorem realM4LiftLedger_statuses_exact :
         RealM4LiftStatus.openConstruction,
         RealM4LiftStatus.openConstruction,
         RealM4LiftStatus.openConstruction,
+        RealM4LiftStatus.partialConstructionTransferred,
         RealM4LiftStatus.partialConstructionTransferred,
         RealM4LiftStatus.partialConstructionTransferred,
         RealM4LiftStatus.partialConstructionTransferred,
