@@ -3045,6 +3045,44 @@ theorem realM4VariableAddressSyntaxFromFiniteTypeConstructionInputs_exact :
 def realM4VariableAddressSyntaxFromFiniteTypeStatement : String :=
   "Finite real CNF variable types supply a minimal address-syntax presentation by using variables themselves as addresses and the canonical finite code as the address encoder.  This is a mechanical supplier for the address-syntax route when finite variable types are available; it is not a claim that the sharper tagged manuscript variable syntax has been constructed."
 
+def realM4OfficialUpperSupportFromFiniteVariablesConstructionInputs :
+    List String := [
+  "defaultMessage",
+  "publicLockCoverageData",
+  "lockedMessageRigidity",
+  "finiteCNFVariableFamilyData"
+]
+
+theorem realM4OfficialUpperSupportFromFiniteVariablesConstructionInputs_exact :
+    realM4OfficialUpperSupportFromFiniteVariablesConstructionInputs =
+      [ "defaultMessage",
+        "publicLockCoverageData",
+        "lockedMessageRigidity",
+        "finiteCNFVariableFamilyData" ] := by
+  rfl
+
+def realM4OfficialUpperSupportFromFiniteVariablesStatement : String :=
+  "Finite real CNF variable-family data mechanically supplies the construction-side official upper support package by first providing finite-type address syntax and then reusing the address-syntax support route.  This is a finite-variable supplier path; it does not construct the sharper real tagged variable syntax."
+
+def realM4OfficialLockedMessageUpperSupportFromFiniteVariablesConstructionInputs :
+    List String := [
+  "publicLockCoverageData",
+  "lockedMessageRigidityData",
+  "finiteCNFVariableFamilyData"
+]
+
+theorem
+    realM4OfficialLockedMessageUpperSupportFromFiniteVariablesConstructionInputs_exact :
+    realM4OfficialLockedMessageUpperSupportFromFiniteVariablesConstructionInputs =
+      [ "publicLockCoverageData",
+        "lockedMessageRigidityData",
+        "finiteCNFVariableFamilyData" ] := by
+  rfl
+
+def realM4OfficialLockedMessageUpperSupportFromFiniteVariablesStatement :
+    String :=
+  "Finite real CNF variable-family data mechanically supplies the locked-message official upper support package by first providing finite-type address syntax and then reusing the locked-message address-syntax support route.  The public-message invariant is still carried by explicit locked-message data."
+
 def realM4FormulaSyntaxCNFSupportConstructionInputs : List String := [
   "varDecidable"
 ]
@@ -5558,6 +5596,24 @@ def ofCoverageRigidityAndAddressSyntax
     lockedMessageRigidity
     (realM4_variableEncodableSyntax_of_addressSyntax variableAddressSyntax)
 
+noncomputable def ofCoverageRigidityAndFiniteVariableTypes
+    (defaultMessage : Message)
+    (coverageData : RealM4PublicLockCoverageData D)
+    (lockedMessageRigidity : D.core.LockedMessageRigidity)
+    (finiteVariables : RealM4FiniteCNFVariableTypeData D) :
+    RealM4OfficialPToDeciderUpperSupportData D :=
+  ofCoverageRigidityAndAddressSyntax defaultMessage coverageData
+    lockedMessageRigidity finiteVariables.addressSyntax
+
+noncomputable def ofCoverageRigidityAndFiniteVariables
+    (defaultMessage : Message)
+    (coverageData : RealM4PublicLockCoverageData D)
+    (lockedMessageRigidity : D.core.LockedMessageRigidity)
+    (finiteVariables : RealM4FiniteCNFVariableFamilyData D) :
+    RealM4OfficialPToDeciderUpperSupportData D :=
+  ofCoverageRigidityAndFiniteVariableTypes defaultMessage coverageData
+    lockedMessageRigidity finiteVariables.finiteTypeData
+
 end RealM4OfficialPToDeciderUpperSupportData
 
 /--
@@ -5623,6 +5679,22 @@ def ofCoverageLockedMessageDataAndAddressSyntax
   ofCoverageLockedMessageDataAndEncodableSyntax coverageData
     lockedMessageData
     (realM4_variableEncodableSyntax_of_addressSyntax variableAddressSyntax)
+
+noncomputable def ofCoverageLockedMessageDataAndFiniteVariableTypes
+    (coverageData : RealM4PublicLockCoverageData D)
+    (lockedMessageData : RealM4LockedMessageRigidityData D.core)
+    (finiteVariables : RealM4FiniteCNFVariableTypeData D) :
+    RealM4OfficialPToDeciderLockedMessageUpperSupportData D :=
+  ofCoverageLockedMessageDataAndAddressSyntax coverageData lockedMessageData
+    finiteVariables.addressSyntax
+
+noncomputable def ofCoverageLockedMessageDataAndFiniteVariables
+    (coverageData : RealM4PublicLockCoverageData D)
+    (lockedMessageData : RealM4LockedMessageRigidityData D.core)
+    (finiteVariables : RealM4FiniteCNFVariableFamilyData D) :
+    RealM4OfficialPToDeciderLockedMessageUpperSupportData D :=
+  ofCoverageLockedMessageDataAndFiniteVariableTypes coverageData
+    lockedMessageData finiteVariables.finiteTypeData
 
 end RealM4OfficialPToDeciderLockedMessageUpperSupportData
 
