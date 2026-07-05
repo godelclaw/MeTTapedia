@@ -2510,6 +2510,106 @@ theorem closedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSlice1000000Exact
       ?_, ?_, ?_, ?_, ?_, ?_⟩ <;>
     decide
 
+def ClosedCollarDiagonalTwoPoleTemplateId.labKey :
+    ClosedCollarDiagonalTwoPoleTemplateId → String
+  | .forward => "edges:g0:F1F0,g1:F4F5|sideCollar:g0:F1,g1:F5"
+  | .reverse => "edges:g0:F4F5,g1:F1F0|sideCollar:g0:F5,g1:F1"
+
+/-- Per-case exact-template payload for the bounded radial-face slice. -/
+structure ClosedCollarAnnularEmbeddingSliceExactTemplateCase where
+  patchTopologyIndex : Nat
+  radialOrderIndex : Nat
+  template : ClosedCollarDiagonalTwoPoleTemplateId
+  exactTemplateKey : String
+  cutEdges : List String
+  sideCollarVertices : List String
+  sideVertices : List String
+  cutSize : Nat
+  sideVertexCount : Nat
+  otherSideVertexCount : Nat
+
+def closedCollarSimplePatchN6AnnularEmbeddingSlice1000000Case0Template :
+    ClosedCollarAnnularEmbeddingSliceExactTemplateCase where
+  patchTopologyIndex := 1000301
+  radialOrderIndex := 0
+  template := ClosedCollarDiagonalTwoPoleTemplateId.reverse
+  exactTemplateKey := ClosedCollarDiagonalTwoPoleTemplateId.reverse.labKey
+  cutEdges := ["g0:F4F5", "g1:F1F0"]
+  sideCollarVertices := ["g0:F5", "g1:F1"]
+  sideVertices := ["N1", "N2", "g0:F5", "g1:F1"]
+  cutSize := 2
+  sideVertexCount := 4
+  otherSideVertexCount := 14
+
+def closedCollarSimplePatchN6AnnularEmbeddingSlice1000000Case1Template :
+    ClosedCollarAnnularEmbeddingSliceExactTemplateCase where
+  patchTopologyIndex := 1000301
+  radialOrderIndex := 1
+  template := ClosedCollarDiagonalTwoPoleTemplateId.reverse
+  exactTemplateKey := ClosedCollarDiagonalTwoPoleTemplateId.reverse.labKey
+  cutEdges := ["g0:F4F5", "g1:F1F0"]
+  sideCollarVertices := ["g0:F5", "g1:F1"]
+  sideVertices := ["N1", "N2", "g0:F5", "g1:F1"]
+  cutSize := 2
+  sideVertexCount := 4
+  otherSideVertexCount := 14
+
+/--
+Per-case template payload for the bounded radial-face slice.  Both discovered
+cases are the reverse exact diagonal two-pole template, with the exact lab key
+and separator side recorded.
+-/
+def ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSlice1000000ReverseTemplatePayloadEvidence :
+    Prop :=
+  ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSlice1000000ExactTemplateFirstBlockerEvidence ∧
+    closedCollarSimplePatchN6AnnularEmbeddingSlice1000000Case0Template.patchTopologyIndex =
+      1000301 ∧
+    closedCollarSimplePatchN6AnnularEmbeddingSlice1000000Case0Template.radialOrderIndex =
+      0 ∧
+    closedCollarSimplePatchN6AnnularEmbeddingSlice1000000Case1Template.patchTopologyIndex =
+      1000301 ∧
+    closedCollarSimplePatchN6AnnularEmbeddingSlice1000000Case1Template.radialOrderIndex =
+      1 ∧
+    closedCollarSimplePatchN6AnnularEmbeddingSlice1000000Case0Template.template =
+      ClosedCollarDiagonalTwoPoleTemplateId.reverse ∧
+    closedCollarSimplePatchN6AnnularEmbeddingSlice1000000Case1Template.template =
+      ClosedCollarDiagonalTwoPoleTemplateId.reverse ∧
+    closedCollarSimplePatchN6AnnularEmbeddingSlice1000000Case0Template.exactTemplateKey =
+      ClosedCollarDiagonalTwoPoleTemplateId.reverse.labKey ∧
+    closedCollarSimplePatchN6AnnularEmbeddingSlice1000000Case1Template.exactTemplateKey =
+      ClosedCollarDiagonalTwoPoleTemplateId.reverse.labKey ∧
+    closedCollarSimplePatchN6AnnularEmbeddingSlice1000000Case0Template.cutEdges =
+      ClosedCollarDiagonalTwoPoleTemplateId.reverse.cutEdges ∧
+    closedCollarSimplePatchN6AnnularEmbeddingSlice1000000Case1Template.cutEdges =
+      ClosedCollarDiagonalTwoPoleTemplateId.reverse.cutEdges ∧
+    closedCollarSimplePatchN6AnnularEmbeddingSlice1000000Case0Template.sideCollarVertices =
+      ClosedCollarDiagonalTwoPoleTemplateId.reverse.sideCollarVertices ∧
+    closedCollarSimplePatchN6AnnularEmbeddingSlice1000000Case1Template.sideCollarVertices =
+      ClosedCollarDiagonalTwoPoleTemplateId.reverse.sideCollarVertices ∧
+    closedCollarSimplePatchN6AnnularEmbeddingSlice1000000Case0Template.sideVertices =
+      ["N1", "N2", "g0:F5", "g1:F1"] ∧
+    closedCollarSimplePatchN6AnnularEmbeddingSlice1000000Case1Template.sideVertices =
+      ["N1", "N2", "g0:F5", "g1:F1"] ∧
+    closedCollarSimplePatchN6AnnularEmbeddingSlice1000000Case0Template.cutSize =
+      2 ∧
+    closedCollarSimplePatchN6AnnularEmbeddingSlice1000000Case1Template.cutSize =
+      2 ∧
+    closedCollarSimplePatchN6AnnularEmbeddingSlice1000000Case0Template.sideVertexCount =
+      4 ∧
+    closedCollarSimplePatchN6AnnularEmbeddingSlice1000000Case1Template.sideVertexCount =
+      4 ∧
+    closedCollarSimplePatchN6AnnularEmbeddingSlice1000000Case0Template.otherSideVertexCount =
+      14 ∧
+    closedCollarSimplePatchN6AnnularEmbeddingSlice1000000Case1Template.otherSideVertexCount =
+      14
+
+theorem closedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSlice1000000ReverseTemplatePayloadEvidence :
+    ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSlice1000000ReverseTemplatePayloadEvidence := by
+  refine
+    ⟨closedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSlice1000000ExactTemplateFirstBlockerEvidence,
+      ?_⟩
+  decide
+
 /--
 Coverage obligation for using the slice's exact-template first blocker against
 normal-form realizations: a normal-form representation in one of the slice
@@ -2543,6 +2643,42 @@ theorem section92Step4ExactTemplateSlice1000000NormalFormObstructionTarget :
     Section92Step4ExactTemplateSlice1000000NormalFormObstructionTarget := by
   intro _hevidence hforces V G data hcase
   rcases hforces data hcase with ⟨candidate, hrealizes⟩
+  exact
+    closedCollarWindingFreedomNormalFormRealization_false_of_forcedTemplate
+      data.normalForm candidate hrealizes
+
+/--
+Sharper coverage obligation supplied by the refreshed slice archive: a
+normal-form representation in either discovered case must realize the reverse
+exact diagonal two-pole template.
+-/
+def ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSlice1000000NormalFormForcesReverseTemplate :
+    Prop :=
+  ∀ {V : Type} {G : SimpleGraph V},
+    (data : ClosedCollarWindingFreedomSimplePatchN6NormalFormRepresentation G) →
+      (data.representation.patchTopologyIndex, data.representation.radialOrderIndex.1) ∈
+          closedCollarSimplePatchN6AnnularEmbeddingSlice1000000Cases →
+        ∃ candidate : ClosedCollarDiagonalTwoPoleTemplateCandidate G,
+          candidate.template = ClosedCollarDiagonalTwoPoleTemplateId.reverse ∧
+            candidate.Realizes
+
+/--
+Reverse-template normal-form obstruction target for the bounded slice.  This
+is the current sharpest named blocker for the discovered cases.
+-/
+def Section92Step4ReverseTemplateSlice1000000NormalFormObstructionTarget : Prop :=
+  ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSlice1000000ReverseTemplatePayloadEvidence →
+    ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSlice1000000NormalFormForcesReverseTemplate →
+      ∀ {V : Type} {G : SimpleGraph V},
+        (data : ClosedCollarWindingFreedomSimplePatchN6NormalFormRepresentation G) →
+          (data.representation.patchTopologyIndex, data.representation.radialOrderIndex.1) ∈
+              closedCollarSimplePatchN6AnnularEmbeddingSlice1000000Cases →
+            False
+
+theorem section92Step4ReverseTemplateSlice1000000NormalFormObstructionTarget :
+    Section92Step4ReverseTemplateSlice1000000NormalFormObstructionTarget := by
+  intro _hevidence hforces V G data hcase
+  rcases hforces data hcase with ⟨candidate, _htemplate, hrealizes⟩
   exact
     closedCollarWindingFreedomNormalFormRealization_false_of_forcedTemplate
       data.normalForm candidate hrealizes
