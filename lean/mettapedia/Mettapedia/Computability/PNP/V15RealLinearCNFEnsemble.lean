@@ -632,6 +632,213 @@ theorem v13RealLinearGaugeCNFSingleMessageSATSpine_singleMessage
           v13RealLinearGaugeCNFReadout i₀ w1.assignment :=
   (v13RealLinearGaugeCNFSingleMessageSATSpine i₀).singleMessage
 
+/-! ## Concrete small real-linear gauge-CNF instance -/
+
+/-- The selected message coordinate in the concrete two-coordinate real-linear
+gauge-CNF instance. -/
+def v13RealLinearSmallGaugeCNFMessageIndex : Fin 2 :=
+  0
+
+/-- The spare locked coordinate in the concrete two-coordinate real-linear
+gauge-CNF instance. -/
+def v13RealLinearSmallGaugeCNFSpareIndex : Fin 2 :=
+  1
+
+/-- Two-coordinate public right-hand side: the selected coordinate stores the
+message bit and the spare coordinate is fixed to zero. -/
+def v13RealLinearSmallGaugeCNFRhs (msg : Bool) : F2Vec 2 :=
+  fun j =>
+    if j = v13RealLinearSmallGaugeCNFMessageIndex then
+      if msg then (1 : ZMod 2) else 0
+    else
+      0
+
+/-- Concrete public instance in the real linear family: identity map with the
+chosen two-coordinate right-hand side. -/
+def v13RealLinearSmallGaugeCNFPublic (msg : Bool) :
+    V13RealLinearPublic 2 where
+  A := v13RealLinearIdentity 2
+  b := v13RealLinearSmallGaugeCNFRhs msg
+
+/-- The real public decoder reads back the selected message bit of the small
+instance. -/
+theorem v13RealLinearSmallGaugeCNFPublic_message
+    (msg : Bool) :
+    v13RealLinearMessageOfPublic
+      v13RealLinearSmallGaugeCNFMessageIndex
+      (v13RealLinearSmallGaugeCNFPublic msg) = msg := by
+  cases msg <;>
+    simp [v13RealLinearMessageOfPublic, v13RealLinearBit,
+      v13RealLinearSmallGaugeCNFPublic, v13RealLinearSmallGaugeCNFRhs,
+      v13RealLinearSmallGaugeCNFMessageIndex, v13RealLinearIdentity]
+
+/-- Variables of the concrete small gauge-CNF instance: two locked coordinates
+plus the free hidden gauge coordinate `none`. -/
+abbrev V13RealLinearSmallGaugeCNFVar :=
+  V13RealLinearGaugeCNFVar 2
+
+/-- Witness assignments for the concrete small gauge-CNF instance. -/
+abbrev V13RealLinearSmallGaugeCNFWitness :=
+  V13RealLinearGaugeCNFWitness 2
+
+/-- The concrete two-clause CNF: lock the selected coordinate to `msg`, lock
+the spare coordinate to `false`, and leave `none` as hidden gauge state. -/
+def v13RealLinearSmallGaugeCNFFormula
+    (msg : Bool) : ConcreteCNF.Formula V13RealLinearSmallGaugeCNFVar :=
+  [ConcreteCNF.unitClause
+      (some v13RealLinearSmallGaugeCNFMessageIndex) msg,
+    ConcreteCNF.unitClause
+      (some v13RealLinearSmallGaugeCNFSpareIndex) false]
+
+/-- The explicit two-clause formula is exactly the generic real-linear
+gauge-CNF formula at the corresponding concrete public instance. -/
+theorem v13RealLinearSmallGaugeCNFFormula_eq_realGaugeCNFFormula
+    (msg : Bool) :
+    v13RealLinearSmallGaugeCNFFormula msg =
+      v13RealLinearGaugeCNFFormula
+        (v13RealLinearSmallGaugeCNFPublic msg) := by
+  cases msg <;>
+    simp [v13RealLinearSmallGaugeCNFFormula,
+      v13RealLinearGaugeCNFFormula, v13RealLinearCNFDecodedAssignment,
+      v13RealLinearMessageOfPublic, v13RealLinearBit,
+      v13RealLinearSmallGaugeCNFPublic, v13RealLinearSmallGaugeCNFRhs,
+      v13RealLinearSmallGaugeCNFMessageIndex,
+      v13RealLinearSmallGaugeCNFSpareIndex, v13RealLinearIdentity]
+
+/-- Semantic verifier for the explicit small gauge-CNF instance. -/
+def v13RealLinearSmallGaugeCNFVerifier
+    (msg : Bool) (W : V13RealLinearSmallGaugeCNFWitness) : Prop :=
+  ConcreteCNF.IsSatFormula (v13RealLinearSmallGaugeCNFFormula msg) W
+
+/-- Executable verifier for the explicit small gauge-CNF instance. -/
+def v13RealLinearSmallGaugeCNFVerifierDecision
+    (msg : Bool) (W : V13RealLinearSmallGaugeCNFWitness) : Bool :=
+  decide
+    (W (some v13RealLinearSmallGaugeCNFMessageIndex) = msg ∧
+      W (some v13RealLinearSmallGaugeCNFSpareIndex) = false)
+
+/-- Satisfaction of the explicit two-clause CNF is exactly the two locked
+coordinate equalities. -/
+theorem v13RealLinearSmallGaugeCNFFormula_sat_iff
+    {msg : Bool} {W : V13RealLinearSmallGaugeCNFWitness} :
+    v13RealLinearSmallGaugeCNFVerifier msg W ↔
+      W (some v13RealLinearSmallGaugeCNFMessageIndex) = msg ∧
+        W (some v13RealLinearSmallGaugeCNFSpareIndex) = false := by
+  constructor
+  · intro hW
+    constructor
+    · have hclause :
+          ConcreteCNF.IsSatClause
+            (ConcreteCNF.unitClause
+              (some v13RealLinearSmallGaugeCNFMessageIndex) msg) W := by
+        exact hW _ (by simp [v13RealLinearSmallGaugeCNFFormula])
+      exact
+        (ConcreteCNF.isSatClause_unitClause_iff W
+          (some v13RealLinearSmallGaugeCNFMessageIndex) msg).mp hclause
+    · have hclause :
+          ConcreteCNF.IsSatClause
+            (ConcreteCNF.unitClause
+              (some v13RealLinearSmallGaugeCNFSpareIndex) false) W := by
+        exact hW _ (by simp [v13RealLinearSmallGaugeCNFFormula])
+      exact
+        (ConcreteCNF.isSatClause_unitClause_iff W
+          (some v13RealLinearSmallGaugeCNFSpareIndex) false).mp hclause
+  · intro hLocked clause hclause
+    simp [v13RealLinearSmallGaugeCNFFormula] at hclause
+    rcases hclause with hclause | hclause
+    · rw [hclause]
+      exact
+        (ConcreteCNF.isSatClause_unitClause_iff W
+          (some v13RealLinearSmallGaugeCNFMessageIndex) msg).mpr
+          hLocked.1
+    · rw [hclause]
+      exact
+        (ConcreteCNF.isSatClause_unitClause_iff W
+          (some v13RealLinearSmallGaugeCNFSpareIndex) false).mpr
+          hLocked.2
+
+/-- The executable verifier decides the semantic verifier. -/
+theorem v13RealLinearSmallGaugeCNFVerifierDecision_correct
+    {msg : Bool} {W : V13RealLinearSmallGaugeCNFWitness} :
+    v13RealLinearSmallGaugeCNFVerifierDecision msg W = true ↔
+      v13RealLinearSmallGaugeCNFVerifier msg W := by
+  rw [v13RealLinearSmallGaugeCNFVerifierDecision, decide_eq_true_iff]
+  exact v13RealLinearSmallGaugeCNFFormula_sat_iff.symm
+
+/-- Canonical satisfying assignment with an arbitrary hidden gauge bit. -/
+def v13RealLinearSmallGaugeCNFAssignment
+    (msg gauge : Bool) : V13RealLinearSmallGaugeCNFWitness
+  | some j =>
+      if j = v13RealLinearSmallGaugeCNFMessageIndex then
+        msg
+      else
+        false
+  | none => gauge
+
+@[simp] theorem v13RealLinearSmallGaugeCNFAssignment_message
+    (msg gauge : Bool) :
+    v13RealLinearSmallGaugeCNFAssignment msg gauge
+        (some v13RealLinearSmallGaugeCNFMessageIndex) = msg := by
+  simp [v13RealLinearSmallGaugeCNFAssignment]
+
+@[simp] theorem v13RealLinearSmallGaugeCNFAssignment_spare
+    (msg gauge : Bool) :
+    v13RealLinearSmallGaugeCNFAssignment msg gauge
+        (some v13RealLinearSmallGaugeCNFSpareIndex) = false := by
+  simp [v13RealLinearSmallGaugeCNFAssignment,
+    v13RealLinearSmallGaugeCNFMessageIndex,
+    v13RealLinearSmallGaugeCNFSpareIndex]
+
+@[simp] theorem v13RealLinearSmallGaugeCNFAssignment_hiddenGauge
+    (msg gauge : Bool) :
+    v13RealLinearSmallGaugeCNFAssignment msg gauge none = gauge :=
+  rfl
+
+/-- The canonical assignment satisfies the explicit small CNF for either
+hidden gauge bit. -/
+theorem v13RealLinearSmallGaugeCNFFormula_satisfied_assignment
+    (msg gauge : Bool) :
+    v13RealLinearSmallGaugeCNFVerifier msg
+      (v13RealLinearSmallGaugeCNFAssignment msg gauge) := by
+  exact v13RealLinearSmallGaugeCNFFormula_sat_iff.mpr
+    ⟨v13RealLinearSmallGaugeCNFAssignment_message msg gauge,
+      v13RealLinearSmallGaugeCNFAssignment_spare msg gauge⟩
+
+/-- Fixed readout for the explicit small CNF: read the selected locked
+coordinate. -/
+def v13RealLinearSmallGaugeCNFReadout
+    (W : V13RealLinearSmallGaugeCNFWitness) : Bool :=
+  W (some v13RealLinearSmallGaugeCNFMessageIndex)
+
+/-- Public message readout `M(Y)` for the explicit small instance. -/
+def v13RealLinearSmallGaugeCNFMessage (msg : Bool) : Bool :=
+  msg
+
+/-- Any verifier-valid witness for the small concrete CNF reads the public
+message. -/
+theorem v13RealLinearSmallGaugeCNFReadout_eq_message_of_valid
+    {msg : Bool} {W : V13RealLinearSmallGaugeCNFWitness}
+    (hW : v13RealLinearSmallGaugeCNFVerifier msg W) :
+    v13RealLinearSmallGaugeCNFReadout W =
+      v13RealLinearSmallGaugeCNFMessage msg :=
+  (v13RealLinearSmallGaugeCNFFormula_sat_iff.mp hW).1
+
+/-- The explicit small real-linear gauge-CNF instance is single-message:
+hidden gauge assignments may vary, but all satisfying witnesses have the same
+readout. -/
+theorem v13RealLinearSmallGaugeCNF_singleMessage
+    (msg : Bool) :
+    SingleMessageReadout
+      (v13RealLinearSmallGaugeCNFVerifier msg)
+      v13RealLinearSmallGaugeCNFReadout := by
+  intro W W' hW hW'
+  calc
+    v13RealLinearSmallGaugeCNFReadout W =
+        v13RealLinearSmallGaugeCNFMessage msg :=
+      v13RealLinearSmallGaugeCNFReadout_eq_message_of_valid hW
+    _ = v13RealLinearSmallGaugeCNFReadout W' :=
+      (v13RealLinearSmallGaugeCNFReadout_eq_message_of_valid hW').symm
+
 /-! ## Gauge-buffered real linear CNF self-reduction -/
 
 /-- Explicit P=NP-side SAT decider object for the gauge-buffered real linear
