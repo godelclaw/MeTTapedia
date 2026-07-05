@@ -5364,4 +5364,48 @@ theorem v13RealLinearNoTargetRowsGaugeCNF_hiddenGaugeProduct_fromActionData
   RealM4GaugeActionData.hiddenGaugeProduct
     (v13RealLinearNoTargetRowsGaugeCNFGaugeActionData i₀)
 
+/-! ## Appendix-I CNF CD-ENF structural fields -/
+
+/-- Evidence semantics transported from the no-target-rows gauge-CNF world to
+the concrete Appendix-I CNF world carrier. -/
+noncomputable def v13RealLinearNoTargetRowsGaugeCNFAppendixICNFSemantics
+    {m : Nat} (i₀ : Fin m) :
+    EvidenceSemantics
+      (RealM4CNFWorld
+        (v13RealLinearNoTargetRowsGaugeCNFAppendixICNFReadoutData i₀))
+      V13RealLinearNoTargetRowsGaugeCNFNeutral
+      V13RealLinearNoTargetRowsGaugeCNFSafe
+      V13RealLinearNoTargetRowsGaugeCNFGauge where
+  neutralSat := fun n omega =>
+    (v13RealLinearNoTargetRowsGaugeCNFSemantics i₀).neutralSat n
+      (v13RealLinearNoTargetRowsGaugeCNFAppendixICNFWorldAsGaugeCNFWorld
+        omega)
+  safeSat := fun q omega =>
+    (v13RealLinearNoTargetRowsGaugeCNFSemantics i₀).safeSat q
+      (v13RealLinearNoTargetRowsGaugeCNFAppendixICNFWorldAsGaugeCNFWorld
+        omega)
+  gaugeSat := fun gamma omega =>
+    (v13RealLinearNoTargetRowsGaugeCNFSemantics i₀).gaugeSat gamma
+      (v13RealLinearNoTargetRowsGaugeCNFAppendixICNFWorldAsGaugeCNFWorld
+        omega)
+
+/-- Structural `atomCompleteness` transferred to the no-target-rows Appendix-I
+CNF world carrier: CD-ENF normalization preserves the transported evidence
+semantics on concrete Appendix-I CNF worlds. -/
+theorem v13RealLinearNoTargetRowsGaugeCNFAppendixICNF_atomCompleteness
+    {m : Nat} (i₀ : Fin m) :
+    ∀ E :
+      RawEvidence
+        V13RealLinearNoTargetRowsGaugeCNFNeutral
+        V13RealLinearNoTargetRowsGaugeCNFSafe
+        V13RealLinearNoTargetRowsGaugeCNFGauge,
+      (v13RealLinearNoTargetRowsGaugeCNFAppendixICNFSemantics
+          i₀).SatNormal (CDENF E) =
+        (v13RealLinearNoTargetRowsGaugeCNFAppendixICNFSemantics
+          i₀).SatRaw E := by
+  intro E
+  exact
+    CDENF_semantics
+      (v13RealLinearNoTargetRowsGaugeCNFAppendixICNFSemantics i₀) E
+
 end Mettapedia.Computability.PNP
