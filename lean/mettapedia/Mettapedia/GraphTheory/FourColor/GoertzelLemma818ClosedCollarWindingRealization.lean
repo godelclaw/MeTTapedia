@@ -11533,9 +11533,9 @@ theorem section92Step4RepairedByGeometryRadialFaceExtractionN6AuditedKeysAndRowC
 /--
 Current finite realization frontier for the winding-freedom witness.  This
 packages the direct obstruction, bounded le4 search, exhaustive n6
-simple-patch taxonomy, radial-face row audit, and n8 prefix/sample evidence.
-It is deliberately a frontier statement, not a claim that all honest annular
-normal-form realizations have been excluded.
+simple-patch taxonomy, radial-face max-cut row audit, and n8 prefix/sample
+evidence.  It is deliberately a frontier statement, not a claim that all
+honest annular normal-form realizations have been excluded.
 -/
 def ClosedCollarWindingFreedomCurrentFiniteRealizationFrontierEvidence :
     Prop :=
@@ -11543,7 +11543,7 @@ def ClosedCollarWindingFreedomCurrentFiniteRealizationFrontierEvidence :
     LocalTwoPoleDesingularizationCannotRemoveCyclicTwoCut ∧
       ClosedCollarWindingFreedomSimplePatchSearchLe4BlockedByNormalFormPrefix ∧
         ClosedCollarWindingFreedomSimplePatchN6ExhaustiveBlockedAfterCyclicallyFiveTemplateExclusion ∧
-          ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceRowCoverageArtifactEvidence ∧
+          ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceRowMaxCutSeparationEvidence ∧
             ClosedCollarWindingFreedomSimplePatchN8CurrentFrontierEvidence
 
 theorem closedCollarWindingFreedomCurrentFiniteRealizationFrontierEvidence :
@@ -11553,7 +11553,7 @@ theorem closedCollarWindingFreedomCurrentFiniteRealizationFrontierEvidence :
       localTwoPoleDesingularizationCannotRemoveCyclicTwoCut,
       closedCollarWindingFreedomSimplePatchSearchLe4BlockedByNormalFormPrefix,
       closedCollarWindingFreedomSimplePatchN6ExhaustiveBlockedAfterCyclicallyFiveTemplateExclusion,
-      closedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceRowCoverageArtifactEvidence,
+      closedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceRowMaxCutSeparationEvidence,
       closedCollarWindingFreedomSimplePatchN8CurrentFrontierEvidence⟩
 
 /--
