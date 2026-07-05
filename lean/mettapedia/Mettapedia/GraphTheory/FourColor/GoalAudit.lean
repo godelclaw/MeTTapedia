@@ -3275,6 +3275,35 @@ theorem section92Step4CurrentFiniteFrontierBadFaceTemplateRadialFaceRowSemanticF
     Section92Step4CurrentFiniteFrontierBadFaceTemplateRadialFaceRowSemanticFork :=
   section92Step4CurrentFiniteFrontierBadFaceTemplateRadialFaceRowSemanticFork
 
+theorem closedCollarWindingFreedomNormalForm_false_of_previousBoundaryRadialFaceN6AuditedArchiveExtraction_of_radialFaceRowSemanticSoundness_audit
+    {V : Type} [DecidableEq V] {G : SimpleGraph V}
+    {normalForm : ClosedCollarWindingFreedomNormalFormRealization G}
+    (extraction :
+      ClosedCollarWindingFreedomPreviousBoundaryRadialFaceN6AuditedArchiveExtraction
+        normalForm)
+    (hrowCard :
+      ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceRowCardinalitySound)
+    (hrowHist :
+      ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceRowHistogramEntrySound) :
+    False :=
+  closedCollarWindingFreedomNormalForm_false_of_previousBoundaryRadialFaceN6AuditedArchiveExtraction_of_radialFaceRowSemanticSoundness
+    extraction hrowCard hrowHist
+
+theorem closedCollarWindingFreedomNonrealizableInNormalForm_of_previousBoundaryRadialFaceN6AuditedArchiveExtraction_of_radialFaceRowSemanticSoundness_audit
+    (hextract :
+      ClosedCollarWindingFreedomEveryNormalFormHasPreviousBoundaryRadialFaceN6AuditedArchiveExtraction)
+    (hrowCard :
+      ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceRowCardinalitySound)
+    (hrowHist :
+      ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceRowHistogramEntrySound) :
+    ClosedCollarWindingFreedomNonrealizableInNormalForm :=
+  closedCollarWindingFreedomNonrealizableInNormalForm_of_previousBoundaryRadialFaceN6AuditedArchiveExtraction_of_radialFaceRowSemanticSoundness
+    hextract hrowCard hrowHist
+
+theorem section92Step4RepairedByPreviousBoundaryRadialFaceN6AuditedArchiveExtractionAndRadialFaceRowSemanticSoundnessTarget_audit :
+    Section92Step4RepairedByPreviousBoundaryRadialFaceN6AuditedArchiveExtractionAndRadialFaceRowSemanticSoundnessTarget :=
+  section92Step4RepairedByPreviousBoundaryRadialFaceN6AuditedArchiveExtractionAndRadialFaceRowSemanticSoundnessTarget
+
 /-! ## Section 9.2 two-layer ambient execution obstruction -/
 
 theorem section92Step4TwoLayerCounterexampleClass_audit :
