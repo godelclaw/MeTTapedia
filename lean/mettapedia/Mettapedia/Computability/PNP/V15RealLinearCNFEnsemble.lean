@@ -4996,6 +4996,35 @@ theorem
         (v13RealLinearNoTargetRowsGaugeCNFAppendixICNFReadoutData_supportedArbitraryOutputSATSearchCorrect
           i₀)
 
+/-- Witness-level `singleMessage` transfer for the no-target-rows
+Appendix-I CNF spine: any two verifier-valid CNF witnesses over the same
+public instance have the same fixed readout. -/
+theorem
+    v13RealLinearNoTargetRowsGaugeCNFAppendixICNF_singleMessageReadout_eq_of_validWitnesses
+    {m : Nat} (i₀ : Fin m)
+    {Y : V13RealLinearNoTargetRowsWorld m i₀}
+    {W W' :
+      RealM4CNFWitness
+        (v13RealLinearNoTargetRowsGaugeCNFAppendixICNFReadoutData i₀)}
+    (hW :
+      realM4CNFVerifier
+        (v13RealLinearNoTargetRowsGaugeCNFAppendixICNFReadoutData i₀)
+        Y W)
+    (hW' :
+      realM4CNFVerifier
+        (v13RealLinearNoTargetRowsGaugeCNFAppendixICNFReadoutData i₀)
+        Y W') :
+    realM4CNFWitnessReadout (fun bit => bit) W =
+      realM4CNFWitnessReadout (fun bit => bit) W' := by
+  calc
+    realM4CNFWitnessReadout (fun bit => bit) W =
+        v13RealLinearNoTargetRowsTargetBit Y :=
+      v13RealLinearNoTargetRowsGaugeCNFAppendixICNFWitnessReadout_eq_targetBit
+        i₀ hW
+    _ = realM4CNFWitnessReadout (fun bit => bit) W' :=
+      (v13RealLinearNoTargetRowsGaugeCNFAppendixICNFWitnessReadout_eq_targetBit
+        i₀ hW').symm
+
 /-- Appendix-I CNF witness returned by the explicit P=NP-side bit-fixing
 self-reduction for the no-target-rows gauge-CNF formula. -/
 def v13RealLinearNoTargetRowsGaugeCNFAppendixICNFSelfReductionWitness
@@ -5047,6 +5076,31 @@ theorem
     i₀
     (v13RealLinearNoTargetRowsGaugeCNFAppendixICNFSelfReductionWitness_verifier
       D Y)
+
+/-- Witness-level self-reduction form of `singleMessage`: the explicit
+P=NP-side bit-fixing witness has the same readout as any verifier-valid
+Appendix-I CNF witness over the same public instance. -/
+theorem
+    v13RealLinearNoTargetRowsGaugeCNFAppendixICNFSelfReduction_readout_eq_validWitness_readout
+    {m : Nat} {i₀ : Fin m}
+    (D : V13RealLinearGaugeCNFPNPSATDecider m)
+    {Y : V13RealLinearNoTargetRowsWorld m i₀}
+    {W :
+      RealM4CNFWitness
+        (v13RealLinearNoTargetRowsGaugeCNFAppendixICNFReadoutData i₀)}
+    (hW :
+      realM4CNFVerifier
+        (v13RealLinearNoTargetRowsGaugeCNFAppendixICNFReadoutData i₀)
+        Y W) :
+    realM4CNFWitnessReadout (fun bit => bit)
+        (v13RealLinearNoTargetRowsGaugeCNFAppendixICNFSelfReductionWitness
+          D Y) =
+      realM4CNFWitnessReadout (fun bit => bit) W :=
+  v13RealLinearNoTargetRowsGaugeCNFAppendixICNF_singleMessageReadout_eq_of_validWitnesses
+    i₀
+    (v13RealLinearNoTargetRowsGaugeCNFAppendixICNFSelfReductionWitness_verifier
+      D Y)
+    hW
 
 /-- Uniform bit-fixing data for the no-target-rows Appendix-I CNF spine.  The
 variable order is the concrete formula-syntax cover, and the explicit SAT
