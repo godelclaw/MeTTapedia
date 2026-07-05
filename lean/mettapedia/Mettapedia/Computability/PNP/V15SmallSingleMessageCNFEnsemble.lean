@@ -2114,6 +2114,425 @@ theorem xorGaugeSingleMessageAppendixICNF_noPublicReadoutTags :
         xorGaugeSingleMessageProjection, xorGaugeSingleMessageAssignment,
         xorGaugeSingleMessageM] using hreadout)
 
+/-- Witness-level hidden-gauge action for the concrete Appendix-I CNF spine:
+keep the public instance fixed and flip only the free hidden gauge coordinate
+of the CNF assignment. -/
+def xorGaugeSingleMessageAppendixICNFWitnessGaugeAction
+    (gamma : Bool)
+    (W : RealM4CNFWitness
+      xorGaugeSingleMessageAppendixICNFReadoutData) :
+    RealM4CNFWitness xorGaugeSingleMessageAppendixICNFReadoutData where
+  publicInstance := W.publicInstance
+  assignment :=
+    xorGaugeSingleMessageGaugeAction (Y := W.publicInstance) gamma
+      W.assignment
+
+/-- Hidden-gauge coordinate of a concrete Appendix-I CNF witness assignment. -/
+def xorGaugeSingleMessageAppendixICNFWitnessHiddenGauge
+    (W : RealM4CNFWitness
+      xorGaugeSingleMessageAppendixICNFReadoutData) : Bool :=
+  xorGaugeSingleMessageHiddenGauge (Y := W.publicInstance) W.assignment
+
+@[simp] theorem
+    xorGaugeSingleMessageAppendixICNFWitnessGaugeAction_publicInstance
+    (gamma : Bool)
+    (W : RealM4CNFWitness
+      xorGaugeSingleMessageAppendixICNFReadoutData) :
+    (xorGaugeSingleMessageAppendixICNFWitnessGaugeAction
+        gamma W).publicInstance =
+      W.publicInstance :=
+  rfl
+
+/-- The witness-level hidden-gauge action preserves Appendix-I CNF verifier
+validity. -/
+theorem xorGaugeSingleMessageAppendixICNFWitnessGaugeAction_preserves_verifier
+    (gamma : Bool) {Y : XorGaugeSingleMessagePublic}
+    {W : RealM4CNFWitness xorGaugeSingleMessageAppendixICNFReadoutData}
+    (hW :
+      realM4CNFVerifier
+        xorGaugeSingleMessageAppendixICNFReadoutData Y W) :
+    realM4CNFVerifier
+        xorGaugeSingleMessageAppendixICNFReadoutData Y
+        (xorGaugeSingleMessageAppendixICNFWitnessGaugeAction
+          gamma W) := by
+  rcases hW with ⟨hSupport, hSat⟩
+  rcases hSat with ⟨hPublic, hFormula⟩
+  refine
+    ⟨hSupport,
+      ⟨by
+        simpa [xorGaugeSingleMessageAppendixICNFWitnessGaugeAction]
+          using hPublic,
+       ?_⟩⟩
+  have hVerifier :
+      xorGaugeSingleMessageVerifier W.publicInstance W.assignment := by
+    simpa [xorGaugeSingleMessageAppendixICNFReadoutData,
+      xorGaugeSingleMessageVerifier] using hFormula
+  have hAction :
+      xorGaugeSingleMessageVerifier W.publicInstance
+        (xorGaugeSingleMessageGaugeAction (Y := W.publicInstance)
+          gamma W.assignment) :=
+    xorGaugeSingleMessageGaugeAction_preserves_verifier gamma hVerifier
+  simpa [xorGaugeSingleMessageAppendixICNFWitnessGaugeAction,
+    xorGaugeSingleMessageAppendixICNFReadoutData,
+    xorGaugeSingleMessageVerifier] using hAction
+
+/-- The witness-level hidden-gauge action preserves the fixed Appendix-I CNF
+witness readout. -/
+theorem xorGaugeSingleMessageAppendixICNFWitnessGaugeAction_preserves_readout
+    (gamma : Bool)
+    (W : RealM4CNFWitness
+      xorGaugeSingleMessageAppendixICNFReadoutData) :
+    realM4CNFWitnessReadout (fun bit => bit)
+        (xorGaugeSingleMessageAppendixICNFWitnessGaugeAction gamma W) =
+      realM4CNFWitnessReadout (fun bit => bit) W := by
+  simp [realM4CNFWitnessReadout,
+    xorGaugeSingleMessageAppendixICNFWitnessGaugeAction,
+    xorGaugeSingleMessageAppendixICNFReadoutData,
+    xorGaugeSingleMessageProjection]
+
+/-- The witness-level hidden-gauge action changes the free coordinate by xor
+with the acting Boolean gauge element. -/
+theorem xorGaugeSingleMessageAppendixICNFWitnessGaugeAction_hiddenGauge
+    (gamma : Bool)
+    (W : RealM4CNFWitness
+      xorGaugeSingleMessageAppendixICNFReadoutData) :
+    xorGaugeSingleMessageAppendixICNFWitnessHiddenGauge
+        (xorGaugeSingleMessageAppendixICNFWitnessGaugeAction gamma W) =
+      (gamma ^^
+        xorGaugeSingleMessageAppendixICNFWitnessHiddenGauge W) := by
+  simpa [xorGaugeSingleMessageAppendixICNFWitnessHiddenGauge,
+    xorGaugeSingleMessageAppendixICNFWitnessGaugeAction]
+    using xorGaugeSingleMessageGaugeAction_hiddenGauge gamma W.assignment
+
+@[simp] theorem xorGaugeSingleMessageAppendixICNFWitnessGaugeAction_false
+    (W : RealM4CNFWitness
+      xorGaugeSingleMessageAppendixICNFReadoutData) :
+    xorGaugeSingleMessageAppendixICNFWitnessGaugeAction false W = W := by
+  cases W with
+  | mk publicInstance assignment =>
+      simp [xorGaugeSingleMessageAppendixICNFWitnessGaugeAction]
+
+@[simp] theorem xorGaugeSingleMessageAppendixICNFWitnessGaugeAction_xor
+    (gamma delta : Bool)
+    (W : RealM4CNFWitness
+      xorGaugeSingleMessageAppendixICNFReadoutData) :
+    xorGaugeSingleMessageAppendixICNFWitnessGaugeAction gamma
+        (xorGaugeSingleMessageAppendixICNFWitnessGaugeAction delta W) =
+      xorGaugeSingleMessageAppendixICNFWitnessGaugeAction
+        (gamma ^^ delta) W := by
+  cases W with
+  | mk publicInstance assignment =>
+      simp [xorGaugeSingleMessageAppendixICNFWitnessGaugeAction]
+
+/-- The nontrivial witness-level gauge element changes every concrete
+Appendix-I CNF witness by flipping its free hidden-gauge coordinate. -/
+theorem xorGaugeSingleMessageAppendixICNFWitnessGaugeAction_true_ne
+    (W : RealM4CNFWitness
+      xorGaugeSingleMessageAppendixICNFReadoutData) :
+    xorGaugeSingleMessageAppendixICNFWitnessGaugeAction true W ≠ W := by
+  intro hfixed
+  have hhidden :=
+    congrArg xorGaugeSingleMessageAppendixICNFWitnessHiddenGauge hfixed
+  simp [xorGaugeSingleMessageAppendixICNFWitnessGaugeAction_hiddenGauge]
+    at hhidden
+
+/-- Every verifier-valid concrete Appendix-I CNF witness is the canonical
+assignment for its public input and its hidden-gauge bit. -/
+theorem xorGaugeSingleMessageAppendixICNFValidWitness_eq_assignment
+    {Y : XorGaugeSingleMessagePublic}
+    {W : RealM4CNFWitness xorGaugeSingleMessageAppendixICNFReadoutData}
+    (hW :
+      realM4CNFVerifier
+        xorGaugeSingleMessageAppendixICNFReadoutData Y W) :
+    W =
+      { publicInstance := Y
+        assignment :=
+          xorGaugeSingleMessageAssignment Y
+            (xorGaugeSingleMessageAppendixICNFWitnessHiddenGauge W) } := by
+  rcases W with ⟨YW, α⟩
+  change xorGaugeSingleMessageAppendixICNFReadoutData.support Y ∧
+    ∃ _hPublic : YW = Y,
+      ConcreteCNF.IsSatFormula
+        (xorGaugeSingleMessageAppendixICNFReadoutData.formula YW) α at hW
+  rcases hW with ⟨_hSupport, ⟨hPublic, hFormula⟩⟩
+  subst YW
+  have hVerifier : xorGaugeSingleMessageVerifier Y α := by
+    simpa [xorGaugeSingleMessageAppendixICNFReadoutData,
+      xorGaugeSingleMessageVerifier] using hFormula
+  have hAssignment :
+      α = xorGaugeSingleMessageAssignment Y
+        (xorGaugeSingleMessageAppendixICNFWitnessHiddenGauge
+          ({ publicInstance := Y, assignment := α } :
+            RealM4CNFWitness
+              xorGaugeSingleMessageAppendixICNFReadoutData)) := by
+    simpa [xorGaugeSingleMessageAppendixICNFWitnessHiddenGauge] using
+      xorGaugeSingleMessageValidWitness_eq_assignment hVerifier
+  change
+    ({ publicInstance := Y, assignment := α } :
+      RealM4CNFWitness xorGaugeSingleMessageAppendixICNFReadoutData) =
+      { publicInstance := Y
+        assignment :=
+          xorGaugeSingleMessageAssignment Y
+            (xorGaugeSingleMessageAppendixICNFWitnessHiddenGauge
+              ({ publicInstance := Y, assignment := α } :
+                RealM4CNFWitness
+                  xorGaugeSingleMessageAppendixICNFReadoutData)) }
+  simpa using hAssignment
+
+/-- For a fixed public instance, verifier-valid concrete Appendix-I CNF
+witnesses are exactly the two choices of the free hidden-gauge bit. -/
+noncomputable def xorGaugeSingleMessageAppendixICNFWitnessFiberEquivBool
+    (Y : XorGaugeSingleMessagePublic) :
+    {W : RealM4CNFWitness
+        xorGaugeSingleMessageAppendixICNFReadoutData //
+      realM4CNFVerifier
+        xorGaugeSingleMessageAppendixICNFReadoutData Y W} ≃ Bool where
+  toFun := fun W =>
+    xorGaugeSingleMessageAppendixICNFWitnessHiddenGauge W.val
+  invFun := fun gamma =>
+    ⟨{ publicInstance := Y
+       assignment := xorGaugeSingleMessageAssignment Y gamma },
+      by
+        exact ⟨trivial, ⟨rfl,
+          xorGaugeSingleMessageFormula_satisfied_assignment Y gamma⟩⟩⟩
+  left_inv := by
+    intro W
+    apply Subtype.ext
+    exact
+      (xorGaugeSingleMessageAppendixICNFValidWitness_eq_assignment
+        W.property).symm
+  right_inv := by
+    intro gamma
+    change
+      xorGaugeSingleMessageHiddenGauge
+          (xorGaugeSingleMessageAssignment Y gamma) =
+        gamma
+    unfold xorGaugeSingleMessageHiddenGauge
+    exact xorGaugeSingleMessageAssignment_gauge Y gamma
+
+/-- Finite Appendix-I CNF witness-fiber instance induced by the hidden-gauge
+coordinate. -/
+noncomputable instance xorGaugeSingleMessageAppendixICNFWitnessFiberFintype
+    (Y : XorGaugeSingleMessagePublic) :
+    Fintype
+      {W : RealM4CNFWitness
+          xorGaugeSingleMessageAppendixICNFReadoutData //
+        realM4CNFVerifier
+          xorGaugeSingleMessageAppendixICNFReadoutData Y W} :=
+  Fintype.ofEquiv Bool
+    (xorGaugeSingleMessageAppendixICNFWitnessFiberEquivBool Y).symm
+
+/-- The verifier-valid concrete Appendix-I CNF witness fiber over a fixed
+public instance has cardinality exactly two. -/
+theorem xorGaugeSingleMessageAppendixICNFWitnessFiber_card_eq_two
+    (Y : XorGaugeSingleMessagePublic) :
+    Fintype.card
+      {W : RealM4CNFWitness
+          xorGaugeSingleMessageAppendixICNFReadoutData //
+        realM4CNFVerifier
+          xorGaugeSingleMessageAppendixICNFReadoutData Y W} = 2 := by
+  have hCard :=
+    Fintype.card_congr
+      (xorGaugeSingleMessageAppendixICNFWitnessFiberEquivBool Y)
+  simpa using hCard
+
+/-- Both hidden-gauge values occur among verifier-valid concrete Appendix-I
+CNF witnesses over any fixed public instance. -/
+theorem xorGaugeSingleMessageAppendixICNFWitnessFiber_exists_hiddenGauge
+    (Y : XorGaugeSingleMessagePublic)
+    (gamma : Bool) :
+    ∃ W : RealM4CNFWitness
+        xorGaugeSingleMessageAppendixICNFReadoutData,
+      realM4CNFVerifier
+          xorGaugeSingleMessageAppendixICNFReadoutData Y W ∧
+        xorGaugeSingleMessageAppendixICNFWitnessHiddenGauge W = gamma := by
+  let W :=
+    (xorGaugeSingleMessageAppendixICNFWitnessFiberEquivBool Y).symm
+      gamma
+  have hHidden :
+      xorGaugeSingleMessageAppendixICNFWitnessHiddenGauge W.val = gamma :=
+    (xorGaugeSingleMessageAppendixICNFWitnessFiberEquivBool Y).right_inv
+      gamma
+  exact ⟨W.val, W.property, hHidden⟩
+
+/-- Exact orbit characterization for verifier-valid concrete Appendix-I CNF
+witnesses over a fixed public instance. -/
+theorem xorGaugeSingleMessageAppendixICNFWitnessGaugeAction_eq_iff_of_valid
+    (gamma : Bool)
+    {Y : XorGaugeSingleMessagePublic}
+    {W W' :
+      RealM4CNFWitness xorGaugeSingleMessageAppendixICNFReadoutData}
+    (hW :
+      realM4CNFVerifier
+        xorGaugeSingleMessageAppendixICNFReadoutData Y W)
+    (hW' :
+      realM4CNFVerifier
+        xorGaugeSingleMessageAppendixICNFReadoutData Y W') :
+    xorGaugeSingleMessageAppendixICNFWitnessGaugeAction gamma W = W' ↔
+      (gamma ^^ xorGaugeSingleMessageAppendixICNFWitnessHiddenGauge W) =
+        xorGaugeSingleMessageAppendixICNFWitnessHiddenGauge W' := by
+  constructor
+  · intro hAction
+    have hHidden :=
+      congrArg xorGaugeSingleMessageAppendixICNFWitnessHiddenGauge
+        hAction
+    simpa [xorGaugeSingleMessageAppendixICNFWitnessGaugeAction_hiddenGauge]
+      using hHidden
+  · intro hGauge
+    have hActionValid :
+        realM4CNFVerifier
+          xorGaugeSingleMessageAppendixICNFReadoutData Y
+          (xorGaugeSingleMessageAppendixICNFWitnessGaugeAction gamma W) :=
+      xorGaugeSingleMessageAppendixICNFWitnessGaugeAction_preserves_verifier
+        gamma hW
+    calc
+      xorGaugeSingleMessageAppendixICNFWitnessGaugeAction gamma W =
+          ({ publicInstance := Y
+             assignment :=
+              xorGaugeSingleMessageAssignment Y
+                (xorGaugeSingleMessageAppendixICNFWitnessHiddenGauge
+                  (xorGaugeSingleMessageAppendixICNFWitnessGaugeAction
+                    gamma W)) } :
+            RealM4CNFWitness
+              xorGaugeSingleMessageAppendixICNFReadoutData) :=
+        xorGaugeSingleMessageAppendixICNFValidWitness_eq_assignment
+          hActionValid
+      _ =
+          { publicInstance := Y
+            assignment :=
+              xorGaugeSingleMessageAssignment Y
+                (xorGaugeSingleMessageAppendixICNFWitnessHiddenGauge W') } := by
+        rw [xorGaugeSingleMessageAppendixICNFWitnessGaugeAction_hiddenGauge,
+          hGauge]
+      _ = W' :=
+        (xorGaugeSingleMessageAppendixICNFValidWitness_eq_assignment
+          hW').symm
+
+/-- Under the exact valid-witness fiber equivalence, the concrete Appendix-I
+CNF witness-level hidden-gauge action is the Boolean xor action. -/
+theorem xorGaugeSingleMessageAppendixICNFWitnessFiberEquivBool_action
+    (Y : XorGaugeSingleMessagePublic)
+    (gamma : Bool)
+    (W :
+      {W : RealM4CNFWitness
+          xorGaugeSingleMessageAppendixICNFReadoutData //
+        realM4CNFVerifier
+          xorGaugeSingleMessageAppendixICNFReadoutData Y W}) :
+    xorGaugeSingleMessageAppendixICNFWitnessFiberEquivBool Y
+        ⟨xorGaugeSingleMessageAppendixICNFWitnessGaugeAction gamma W.val,
+          xorGaugeSingleMessageAppendixICNFWitnessGaugeAction_preserves_verifier
+            gamma W.property⟩ =
+      (gamma ^^
+        xorGaugeSingleMessageAppendixICNFWitnessFiberEquivBool Y W) := by
+  change
+    xorGaugeSingleMessageAppendixICNFWitnessHiddenGauge
+        (xorGaugeSingleMessageAppendixICNFWitnessGaugeAction
+          gamma W.val) =
+      (gamma ^^
+        xorGaugeSingleMessageAppendixICNFWitnessHiddenGauge W.val)
+  exact xorGaugeSingleMessageAppendixICNFWitnessGaugeAction_hiddenGauge
+    gamma W.val
+
+/-- Over a fixed public instance, verifier-valid concrete Appendix-I CNF
+witnesses are transitive under the witness-level hidden-gauge action. -/
+theorem xorGaugeSingleMessageAppendixICNFWitnessGaugeAction_transitive_of_valid
+    {Y : XorGaugeSingleMessagePublic}
+    (W W' :
+      RealM4CNFWitness xorGaugeSingleMessageAppendixICNFReadoutData)
+    (hW :
+      realM4CNFVerifier
+        xorGaugeSingleMessageAppendixICNFReadoutData Y W)
+    (hW' :
+      realM4CNFVerifier
+        xorGaugeSingleMessageAppendixICNFReadoutData Y W') :
+    ∃ gamma : Bool,
+      xorGaugeSingleMessageAppendixICNFWitnessGaugeAction gamma W =
+        W' := by
+  let gamma :=
+    xorGaugeSingleMessageAppendixICNFWitnessHiddenGauge W ^^
+      xorGaugeSingleMessageAppendixICNFWitnessHiddenGauge W'
+  refine ⟨gamma, ?_⟩
+  exact
+    (xorGaugeSingleMessageAppendixICNFWitnessGaugeAction_eq_iff_of_valid
+      gamma hW hW').mpr
+      (by
+        dsimp [gamma]
+        cases h₀ :
+            xorGaugeSingleMessageAppendixICNFWitnessHiddenGauge W <;>
+          cases h₁ :
+            xorGaugeSingleMessageAppendixICNFWitnessHiddenGauge W' <;>
+          simp)
+
+/-- The witness-level hidden-gauge action is simply transitive on the
+verifier-valid concrete Appendix-I CNF witness fiber over a fixed public
+instance. -/
+theorem xorGaugeSingleMessageAppendixICNFWitnessGaugeAction_unique_of_valid
+    {Y : XorGaugeSingleMessagePublic}
+    (W W' :
+      RealM4CNFWitness xorGaugeSingleMessageAppendixICNFReadoutData)
+    (hW :
+      realM4CNFVerifier
+        xorGaugeSingleMessageAppendixICNFReadoutData Y W)
+    (hW' :
+      realM4CNFVerifier
+        xorGaugeSingleMessageAppendixICNFReadoutData Y W') :
+    ∃! gamma : Bool,
+      xorGaugeSingleMessageAppendixICNFWitnessGaugeAction gamma W =
+        W' := by
+  let gamma :=
+    xorGaugeSingleMessageAppendixICNFWitnessHiddenGauge W ^^
+      xorGaugeSingleMessageAppendixICNFWitnessHiddenGauge W'
+  refine ⟨gamma, ?_, ?_⟩
+  · exact
+      (xorGaugeSingleMessageAppendixICNFWitnessGaugeAction_eq_iff_of_valid
+        gamma hW hW').mpr
+        (by
+          dsimp [gamma]
+          cases h₀ :
+              xorGaugeSingleMessageAppendixICNFWitnessHiddenGauge W <;>
+            cases h₁ :
+              xorGaugeSingleMessageAppendixICNFWitnessHiddenGauge W' <;>
+            simp)
+  · intro delta hdelta
+    have hHidden :
+        (delta ^^ xorGaugeSingleMessageAppendixICNFWitnessHiddenGauge W) =
+          xorGaugeSingleMessageAppendixICNFWitnessHiddenGauge W' :=
+      (xorGaugeSingleMessageAppendixICNFWitnessGaugeAction_eq_iff_of_valid
+        delta hW hW').mp hdelta
+    dsimp [gamma]
+    cases h₀ : xorGaugeSingleMessageAppendixICNFWitnessHiddenGauge W <;>
+      cases h₁ : xorGaugeSingleMessageAppendixICNFWitnessHiddenGauge W' <;>
+      cases delta <;>
+      simp [h₀, h₁] at hHidden ⊢
+
+/-- A verifier-valid concrete Appendix-I CNF witness has a nontrivial
+hidden-gauge fiber over the same public instance: flipping the free coordinate
+preserves verifier validity and readout while changing the witness. -/
+theorem xorGaugeSingleMessageAppendixICNF_nontrivialHiddenGaugeFiber
+    {Y : XorGaugeSingleMessagePublic}
+    (W : RealM4CNFWitness
+      xorGaugeSingleMessageAppendixICNFReadoutData)
+    (hW :
+      realM4CNFVerifier
+        xorGaugeSingleMessageAppendixICNFReadoutData Y W) :
+    ∃ W' : RealM4CNFWitness
+        xorGaugeSingleMessageAppendixICNFReadoutData,
+      realM4CNFVerifier
+          xorGaugeSingleMessageAppendixICNFReadoutData Y W' ∧
+        realM4CNFWitnessReadout (fun bit => bit) W' =
+          realM4CNFWitnessReadout (fun bit => bit) W ∧
+        W' ≠ W := by
+  refine
+    ⟨xorGaugeSingleMessageAppendixICNFWitnessGaugeAction true W,
+      ?_, ?_, ?_⟩
+  · exact
+      xorGaugeSingleMessageAppendixICNFWitnessGaugeAction_preserves_verifier
+        true hW
+  · exact
+      xorGaugeSingleMessageAppendixICNFWitnessGaugeAction_preserves_readout
+        true W
+  · exact xorGaugeSingleMessageAppendixICNFWitnessGaugeAction_true_ne W
+
 /-! ## Gauge-buffered Appendix-I CNF admissible histories -/
 
 /-- Build an Appendix-I CNF world from a public instance and the free hidden
