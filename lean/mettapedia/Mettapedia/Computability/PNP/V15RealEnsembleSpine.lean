@@ -5426,6 +5426,40 @@ variable {uniformSupport : RealM4CNFUniformSupportData D}
 variable {N : RealM4OfficialLanguageNPData C}
 variable {P : RealM4OfficialPToDeciderFamilyData D C N}
 
+/-- Build the support-neutral official constant-decoder obligation from
+explicit P-membership-indexed K-poly compatibility facts.  This keeps the
+program model fixed and exposes the remaining real obligation: P-membership
+must provide the real lower-framework identification and floor inequality for
+the P-derived decider family. -/
+def ofKpolyCompatibility
+    (eta_of_inP : C.inP N.separatedLanguage -> Nat)
+    (kpolyAt_eq_of_inP :
+      ∀ hP : C.inP N.separatedLanguage,
+        F.kpolyAt =
+          realM4UniformConstantDecoderKpolyAt
+            (uniformSupport.withPNPDecider
+              (P.pnpDeciderFamily_of_inP hP)))
+    (etaTimes_eq_of_inP :
+      ∀ hP : C.inP N.separatedLanguage,
+        F.etaTimes = realCNFLinearEtaTimes (eta_of_inP hP))
+    (floor_dominates_decoder_of_inP :
+      ∀ hP : C.inP N.separatedLanguage,
+        realM4UniformSelfReductionDecoderCost
+            (uniformSupport.withPNPDecider
+              (P.pnpDeciderFamily_of_inP hP)) <
+          (eta_of_inP hP) * F.targetBlocks) :
+    RealM4OfficialPToUniformConstantDecoderRegimeData
+      D F C uniformSupport N P where
+  constantDecoderRegime_of_inP := by
+    intro hP
+    exact
+      realM4_uniformConstantDecoderRegime_of_kpolyCompatibility
+        (uniformSupport.withPNPDecider (P.pnpDeciderFamily_of_inP hP))
+        (eta_of_inP hP)
+        (kpolyAt_eq_of_inP hP)
+        (etaTimes_eq_of_inP hP)
+        (floor_dominates_decoder_of_inP hP)
+
 /-- Reindex support-neutral constant-decoder data to the legacy upper-support
 package. -/
 def toLegacySupport
@@ -10349,6 +10383,29 @@ theorem realM4OfficialPToUniformConstantDecoderRegimeConstructionInputs_exact :
         "pMembershipConstantDecoderRegime" ] := by
   rfl
 
+def realM4OfficialPToUniformConstantDecoderRegimeKpolyCompatibilityConstructionInputs :
+    List String := [
+  "officialLanguageNPData",
+  "officialPToDeciderFamilyData",
+  "uniformCNFSupportData",
+  "pMembershipKpolyAtConstantDecoderIdentification",
+  "pMembershipEtaTimesLinearFloorIdentification",
+  "pMembershipConstantDecoderBelowLinearFloor"
+]
+
+theorem realM4OfficialPToUniformConstantDecoderRegimeKpolyCompatibilityConstructionInputs_exact :
+    realM4OfficialPToUniformConstantDecoderRegimeKpolyCompatibilityConstructionInputs =
+      [ "officialLanguageNPData",
+        "officialPToDeciderFamilyData",
+        "uniformCNFSupportData",
+        "pMembershipKpolyAtConstantDecoderIdentification",
+        "pMembershipEtaTimesLinearFloorIdentification",
+        "pMembershipConstantDecoderBelowLinearFloor" ] := by
+  rfl
+
+def realM4OfficialPToUniformConstantDecoderRegimeKpolyCompatibilityStatement : String :=
+  "The support-neutral official P-to-constant-decoder-regime obligation is constructed from explicit P-membership-indexed K-poly compatibility facts: the P-derived SAT decider family must identify the real lower framework's kpolyAt with the fixed constant decoder program, identify etaTimes with the linear floor, and prove the fixed decoder cost lies below that floor.  This decomposes the bridge obligation; it does not prove those compatibility facts from P-membership."
+
 def realM4OfficialPToConstantDecoderRegimeConstructionInputs :
     List String := [
   "officialLanguageNPData",
@@ -13347,6 +13404,12 @@ def realM4LiftLedger : List RealM4LiftLedgerRow := [
     note := "Official Cook-style bridge content on the current sharp route: prove that the P-membership decider family supplies the support-neutral constant-decoder regime for the real lower framework."
   },
   {
+    item := "officialPToUniformConstantDecoderRegimeKpolyCompatibility"
+    status := .partialConstructionTransferred
+    checkedName := "RealM4OfficialPToUniformConstantDecoderRegimeData.ofKpolyCompatibility"
+    note := "The support-neutral constant-decoder obligation is built from explicit P-membership-indexed K-poly compatibility facts: kpolyAt identifies with the fixed constant decoder program, etaTimes identifies with the linear floor, and the decoder cost lies below that floor."
+  },
+  {
     item := "officialPToConstantDecoderRegimeData"
     status := .partialConstructionTransferred
     checkedName := "RealM4OfficialPToUniformConstantDecoderRegimeData.toLegacySupport"
@@ -13526,6 +13589,7 @@ theorem realM4LiftLedger_statuses_exact :
         RealM4LiftStatus.openConstruction,
         RealM4LiftStatus.openConstruction,
         RealM4LiftStatus.openConstruction,
+        RealM4LiftStatus.partialConstructionTransferred,
         RealM4LiftStatus.partialConstructionTransferred,
         RealM4LiftStatus.partialConstructionTransferred,
         RealM4LiftStatus.partialConstructionTransferred,
