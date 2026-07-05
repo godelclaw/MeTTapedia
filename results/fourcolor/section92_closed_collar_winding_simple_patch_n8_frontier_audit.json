@@ -1,0 +1,95 @@
+{
+  "n8_exact_patch_topology_count": 1189087725,
+  "prefix": {
+    "cap5_like_blocker_count": 0,
+    "exact_template_blocker_count": 0,
+    "non_template_cyclic_cut_blocker_count": 0,
+    "normal_form_after_template_exclusion_passing_count": 0,
+    "processed_patch_topology_count": 2000000,
+    "profile_preserving_case_count": 0,
+    "radial_order_case_count": 4000000,
+    "structural_first_blocker_count": 0,
+    "verdict": "n8_first_2000000_found_no_profile_preserving_patch"
+  },
+  "prefix_ranges": [
+    {
+      "next_patch_start_index": 50000,
+      "patch_start_index": 0,
+      "processed_patch_topology_count": 50000
+    },
+    {
+      "next_patch_start_index": 500000,
+      "patch_start_index": 50000,
+      "processed_patch_topology_count": 450000
+    },
+    {
+      "next_patch_start_index": 1000000,
+      "patch_start_index": 500000,
+      "processed_patch_topology_count": 500000
+    },
+    {
+      "next_patch_start_index": 1500000,
+      "patch_start_index": 1000000,
+      "processed_patch_topology_count": 500000
+    },
+    {
+      "next_patch_start_index": 2000000,
+      "patch_start_index": 1500000,
+      "processed_patch_topology_count": 500000
+    }
+  ],
+  "prefix_template_blocker_files": [
+    "section92_closed_collar_winding_simple_patch_template_blockers_n8_000000_050000.json",
+    "section92_closed_collar_winding_simple_patch_template_blockers_n8_050000_500000.json",
+    "section92_closed_collar_winding_simple_patch_template_blockers_n8_500000_1000000.json",
+    "section92_closed_collar_winding_simple_patch_template_blockers_n8_1000000_1500000.json",
+    "section92_closed_collar_winding_simple_patch_template_blockers_n8_1500000_2000000.json"
+  ],
+  "remaining_prefix_unprocessed_patch_topology_count": 1187087725,
+  "schema": "fourcolor-section-9-2-closed-collar-winding-simple-patch-n8-frontier-audit-v1",
+  "source": "Artifact audit for n8 closed-collar winding simple-patch frontier verdicts",
+  "stratified_sample": {
+    "normal_form_after_template_exclusion_passing_count": 0,
+    "profile_preserving_case_count": 0,
+    "radial_order_case_count": 66,
+    "sampled_patch_indices": [
+      0,
+      37158991,
+      74317982,
+      111476974,
+      148635965,
+      185794956,
+      222953948,
+      260112939,
+      297271931,
+      334430922,
+      371589913,
+      408748905,
+      445907896,
+      483066887,
+      520225879,
+      557384870,
+      594543862,
+      631702853,
+      668861844,
+      706020836,
+      743179827,
+      780338818,
+      817497810,
+      854656801,
+      891815793,
+      928974784,
+      966133775,
+      1003292767,
+      1040451758,
+      1077610749,
+      1114769741,
+      1151928732,
+      1189087724
+    ],
+    "sampled_patch_topology_count": 33,
+    "verdict": "n8_stratified_33_found_no_profile_preserving_patch"
+  },
+  "stratified_sample_file": "section92_closed_collar_winding_simple_patch_template_blockers_n8_stratified_33.json",
+  "verdict": "n8_frontier_no_profile_preserving_cases_in_checked_prefix_or_stratified_sample"
+}

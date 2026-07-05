@@ -1942,6 +1942,24 @@ theorem closedCollarWindingFreedomSimplePatchN8Stratified33_noProfilePreservingC
   omega
 
 /--
+Current eight-internal frontier evidence.  The continuous first-2000000
+prefix and the 33-point indexed sample found no profile-preserving
+eight-internal simple-patch candidate, while the coverage certificate records
+that this is not an exhaustion of the n8 space.
+-/
+def ClosedCollarWindingFreedomSimplePatchN8CurrentFrontierEvidence : Prop :=
+  ClosedCollarWindingFreedomSimplePatchTemplateBlockerArchiveEvidence ∧
+    ClosedCollarWindingFreedomSimplePatchN8First2000000CoverageEvidence ∧
+      ClosedCollarWindingFreedomSimplePatchN8Stratified33NoProfilePreservingEvidence
+
+theorem closedCollarWindingFreedomSimplePatchN8CurrentFrontierEvidence :
+    ClosedCollarWindingFreedomSimplePatchN8CurrentFrontierEvidence := by
+  exact
+    ⟨closedCollarWindingFreedomSimplePatchTemplateBlockerArchiveEvidence,
+      closedCollarWindingFreedomSimplePatchN8First2000000CoverageEvidence,
+      closedCollarWindingFreedomSimplePatchN8Stratified33NoProfilePreservingEvidence⟩
+
+/--
 Graph-facing hook for the finite six-internal simple-patch subclass tested by
 the realization lab.  The index fields identify the enumerated patch topology
 and one of the two radial orders; the annular realization supplies the actual
@@ -8657,6 +8675,53 @@ theorem section92Step4RepairedByGeometryRadialFaceExtractionN6AuditedKeysAndRowC
   exact
     closedCollarWindingFreedomNonrealizableInNormalForm_of_geometryN6AuditedArchiveKey_of_rowCoverage
       hgeometry hradial hn6 hkeys hartifact hsampleRows hslice1000302Rows hslice1001289Rows
+
+/--
+Current finite realization frontier for the winding-freedom witness.  This
+packages the direct obstruction, bounded le4 search, exhaustive n6
+simple-patch taxonomy, radial-face row audit, and n8 prefix/sample evidence.
+It is deliberately a frontier statement, not a claim that all honest annular
+normal-form realizations have been excluded.
+-/
+def ClosedCollarWindingFreedomCurrentFiniteRealizationFrontierEvidence :
+    Prop :=
+  ClosedCollarWindingFreedomDirectWitnessBlockedBySimpleNormalForm ∧
+    LocalTwoPoleDesingularizationCannotRemoveCyclicTwoCut ∧
+      ClosedCollarWindingFreedomSimplePatchSearchLe4BlockedByNormalFormPrefix ∧
+        ClosedCollarWindingFreedomSimplePatchN6ExhaustiveBlockedAfterCyclicallyFiveTemplateExclusion ∧
+          ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceRowCoverageArtifactEvidence ∧
+            ClosedCollarWindingFreedomSimplePatchN8CurrentFrontierEvidence
+
+theorem closedCollarWindingFreedomCurrentFiniteRealizationFrontierEvidence :
+    ClosedCollarWindingFreedomCurrentFiniteRealizationFrontierEvidence := by
+  exact
+    ⟨closedCollarWindingFreedomDirectWitnessBlockedBySimpleNormalForm,
+      localTwoPoleDesingularizationCannotRemoveCyclicTwoCut,
+      closedCollarWindingFreedomSimplePatchSearchLe4BlockedByNormalFormPrefix,
+      closedCollarWindingFreedomSimplePatchN6ExhaustiveBlockedAfterCyclicallyFiveTemplateExclusion,
+      closedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceRowCoverageArtifactEvidence,
+      closedCollarWindingFreedomSimplePatchN8CurrentFrontierEvidence⟩
+
+/--
+Serious Section 9.2 Step 4 fork at the current finite frontier.  The finite
+side is bundled with the exact previous-boundary radial-face repair target
+and the concrete repaired-or-obstructed fork: either the remaining
+normal-form extraction bridge repairs S4 by killing the winding-freedom
+witness, or failure of nonrealizability is localized to a named concrete
+previous-boundary blocker.
+-/
+def Section92Step4CurrentFiniteFrontierAndConcreteFork :
+    Prop :=
+  ClosedCollarWindingFreedomCurrentFiniteRealizationFrontierEvidence ∧
+    Section92Step4RepairedByPreviousBoundaryRadialFaceN6AuditedArchiveExtractionAndAuditedRowsTarget ∧
+      Section92Step4ConcretePreviousBoundaryRepairedOrObstructedFork
+
+theorem section92Step4CurrentFiniteFrontierAndConcreteFork :
+    Section92Step4CurrentFiniteFrontierAndConcreteFork := by
+  exact
+    ⟨closedCollarWindingFreedomCurrentFiniteRealizationFrontierEvidence,
+      section92Step4RepairedByPreviousBoundaryRadialFaceN6AuditedArchiveExtractionAndAuditedRowsTarget,
+      section92Step4ConcretePreviousBoundaryRepairedOrObstructedFork⟩
 
 end GoertzelLemma818ClosedCollarWindingRealization
 
