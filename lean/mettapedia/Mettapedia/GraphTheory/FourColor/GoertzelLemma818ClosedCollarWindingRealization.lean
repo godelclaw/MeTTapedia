@@ -2030,6 +2030,77 @@ theorem closedCollarWindingFreedomSimplePatchN6NonrealizableInNormalForm :
       labPass
 
 /--
+Lab classification surface for an honest n6 normal-form representation.  A
+representation that preserves the closed-collar winding witness is classified
+by the exhaustive simple-patch lab as either a structural prefix blocker, an
+exact diagonal two-pole template, or a residual post-template-exclusion pass.
+-/
+structure ClosedCollarWindingFreedomSimplePatchN6ExhaustiveLabClassification
+    {V : Type} {G : SimpleGraph V}
+    (data : ClosedCollarWindingFreedomSimplePatchN6NormalFormRepresentation G) where
+  structuralBlocker : Prop
+  hclassified :
+    structuralBlocker ∨
+      (∃ candidate : ClosedCollarDiagonalTwoPoleTemplateCandidate G,
+        candidate.Realizes) ∨
+        Nonempty (ClosedCollarWindingFreedomSimplePatchN6LabNormalFormPass G)
+
+/--
+Coverage obligation from the finite exhaustive lab to graph-facing n6
+representations: every honest normal-form representation in the n6 subclass
+receives one of the lab classifications.
+-/
+def ClosedCollarWindingFreedomSimplePatchN6NormalFormClassifiedByExhaustiveLab :
+    Prop :=
+  ∀ {V : Type} {G : SimpleGraph V},
+    (data : ClosedCollarWindingFreedomSimplePatchN6NormalFormRepresentation G) →
+      Nonempty
+        (ClosedCollarWindingFreedomSimplePatchN6ExhaustiveLabClassification data)
+
+/--
+Geometric obligation that honest normal-form collars cannot be one of the
+structural prefix blockers of the n6 lab.  This names the missing bridge from
+the graph-facing normal-form fields to the lab's connected/cubic/bridgeless/
+planar/simple-endpoint prefix checks.
+-/
+def ClosedCollarWindingFreedomSimplePatchN6NormalFormExcludesStructuralBlockers :
+    Prop :=
+  ∀ {V : Type} {G : SimpleGraph V}
+    (data : ClosedCollarWindingFreedomSimplePatchN6NormalFormRepresentation G)
+    (classification :
+      ClosedCollarWindingFreedomSimplePatchN6ExhaustiveLabClassification data),
+      ¬ classification.structuralBlocker
+
+/--
+Finite-subclass Section 9.2 Step 4 repair target for six-internal simple
+patches.  Once the exhaustive lab classifies every n6 normal-form
+representation and the graph geometry rules out structural prefix blockers,
+the remaining exact templates are excluded by cyclic five-edge-connectivity
+and the residual post-template-exclusion pass count is zero.
+-/
+def Section92Step4N6ExhaustiveNormalFormObstructionTarget : Prop :=
+  ClosedCollarWindingFreedomSimplePatchN6ExhaustiveBlockedAfterCyclicallyFiveTemplateExclusion →
+    ClosedCollarWindingFreedomSimplePatchN6NormalFormClassifiedByExhaustiveLab →
+      ClosedCollarWindingFreedomSimplePatchN6NormalFormExcludesStructuralBlockers →
+        ∀ {V : Type} {G : SimpleGraph V},
+          (data : ClosedCollarWindingFreedomSimplePatchN6NormalFormRepresentation G) →
+            False
+
+theorem section92Step4N6ExhaustiveNormalFormObstructionTarget :
+    Section92Step4N6ExhaustiveNormalFormObstructionTarget := by
+  intro _hexhaustive hclassified hnoStructural V G data
+  rcases hclassified data with ⟨classification⟩
+  rcases classification.hclassified with hstructural | hremaining
+  · exact (hnoStructural data classification) hstructural
+  · rcases hremaining with htemplate | hpass
+    · rcases htemplate with ⟨candidate, hrealizes⟩
+      exact
+        closedCollarWindingFreedomNormalFormRealization_false_of_forcedTemplate
+          data.normalForm candidate hrealizes
+    · rcases hpass with ⟨labPass⟩
+      exact closedCollarWindingFreedomSimplePatchN6_noLabNormalFormPass labPass
+
+/--
 Representative planar profile-preserving samples from the six-internal
 simple-patch search.  These are not exhaustive certificates; they pin the first
 normal-form blocker after planarity has been passed.
