@@ -1,4 +1,4 @@
-import Mettapedia.GraphTheory.FourColor.PeeledCollarCutLiftPreimage
+import Mettapedia.GraphTheory.FourColor.PeeledCollarCutLiftEndpointRange
 import Mettapedia.GraphTheory.FourColor.GoertzelLemma818ClosedCollarWindingRealization
 
 namespace Mettapedia.GraphTheory.FourColor
@@ -270,6 +270,60 @@ theorem closedCollarWindingFreedomEscape_not_simplyRealizable
 end MinimalCounterexamplePreimagePeeledCollarRouteInputs
 
 /--
+Endpoint-range index of the regime route inputs: the remaining planar
+normal-form obligation is stated as every endpoint of every ambient
+side-crossing edge lying in the embedded collar vertex range.
+-/
+structure MinimalCounterexampleEndpointRangePeeledCollarRouteInputs
+    (G : SimpleGraph V) (H : SimpleGraph W) where
+  regime : MinimalCounterexamplePeeledCollarRegime G W H
+  embedding : H ↪g G
+  ambientSideEndpointRanges :
+    PeeledCollarCutAmbientSideEndpointRangesToAmbient embedding
+
+namespace MinimalCounterexampleEndpointRangePeeledCollarRouteInputs
+
+/-- Endpoint-range route inputs supply the preimage-facing route input record. -/
+def toPreimageRouteInputs
+    {G : SimpleGraph V} {H : SimpleGraph W}
+    (inputs : MinimalCounterexampleEndpointRangePeeledCollarRouteInputs G H) :
+    MinimalCounterexamplePreimagePeeledCollarRouteInputs G H where
+  regime := inputs.regime
+  embedding := inputs.embedding
+  ambientSidePreimages :=
+    peeledCollarCutAmbientSidePreimagesToAmbient_of_ambientSideEndpointRanges
+      inputs.ambientSideEndpointRanges
+
+/-- The endpoint-range route inputs supply cyclic five-edge-connectivity for
+the peeled collar. -/
+theorem cyclicallyFiveEdgeConnected
+    {G : SimpleGraph V} {H : SimpleGraph W}
+    (inputs : MinimalCounterexampleEndpointRangePeeledCollarRouteInputs G H) :
+    CyclicallyFiveEdgeConnected H :=
+  inputs.toPreimageRouteInputs.cyclicallyFiveEdgeConnected
+
+/-- The endpoint-range route inputs supply the no-cyclic-two-cut fact consumed
+by the closed-collar winding theorem. -/
+theorem closedCollarForbidsCyclicTwoCut
+    {G : SimpleGraph V} {H : SimpleGraph W}
+    (inputs : MinimalCounterexampleEndpointRangePeeledCollarRouteInputs G H) :
+    ClosedCollarForbidsCyclicTwoCut H :=
+  inputs.toPreimageRouteInputs.closedCollarForbidsCyclicTwoCut
+
+/--
+Endpoint-range S4 winding salvage: cyclic five-edge-connectivity is obtained
+from the minimal-counterexample normal form plus the planar-facing fact that
+ambient side-crossing edges have endpoints in the embedded collar range.
+-/
+theorem closedCollarWindingFreedomEscape_not_simplyRealizable
+    {G : SimpleGraph V} {H : SimpleGraph W}
+    (inputs : MinimalCounterexampleEndpointRangePeeledCollarRouteInputs G H) :
+    ¬ ClosedCollarWindingFreedomSimplePlanarEscapeRealization H :=
+  inputs.toPreimageRouteInputs.closedCollarWindingFreedomEscape_not_simplyRealizable
+
+end MinimalCounterexampleEndpointRangePeeledCollarRouteInputs
+
+/--
 End-to-end S4 salvage target discharged by the minimal-counterexample peeled
 collar route.  The route input record supplies the upstream collar
 connectivity bridge; the downstream closed-collar theorem then rules out the
@@ -346,6 +400,21 @@ def Section92Step4PreimageRegimeDischargedS4SalvageTarget : Prop :=
 /-- Verbatim end-to-end preimage-regime S4 salvage statement. -/
 theorem section92Step4PreimageRegimeDischargedS4SalvageTarget :
     Section92Step4PreimageRegimeDischargedS4SalvageTarget := by
+  intro V W _ _ G H inputs
+  exact inputs.closedCollarWindingFreedomEscape_not_simplyRealizable
+
+/--
+End-to-end S4 salvage target using the endpoint-range route interface.
+-/
+def Section92Step4EndpointRangeRegimeDischargedS4SalvageTarget : Prop :=
+  ∀ {V W : Type} [DecidableEq V] [DecidableEq W]
+    {G : SimpleGraph V} {H : SimpleGraph W},
+      MinimalCounterexampleEndpointRangePeeledCollarRouteInputs G H →
+        ¬ ClosedCollarWindingFreedomSimplePlanarEscapeRealization H
+
+/-- Verbatim end-to-end endpoint-range S4 salvage statement. -/
+theorem section92Step4EndpointRangeRegimeDischargedS4SalvageTarget :
+    Section92Step4EndpointRangeRegimeDischargedS4SalvageTarget := by
   intro V W _ _ G H inputs
   exact inputs.closedCollarWindingFreedomEscape_not_simplyRealizable
 
