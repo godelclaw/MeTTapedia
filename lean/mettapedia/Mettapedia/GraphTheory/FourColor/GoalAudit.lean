@@ -436,6 +436,10 @@ theorem closedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSlice1001289_noRa
   closedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSlice1001289_noRadialFaceRotationCandidate
     candidate
 
+theorem closedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSlice1001289NoRadialFaceCoherentRepresentation_audit :
+    ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSlice1001289NoRadialFaceCoherentRepresentation :=
+  closedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSlice1001289NoRadialFaceCoherentRepresentation
+
 theorem closedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSlices1000000_1000789ReverseTemplateDiscoveryEvidence_audit :
     ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSlices1000000_1000789ReverseTemplateDiscoveryEvidence :=
   closedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSlices1000000_1000789ReverseTemplateDiscoveryEvidence
@@ -561,11 +565,13 @@ theorem section92Step4RadialFaceSlice1000302GeometryDataObstructionTarget_audit 
     Section92Step4RadialFaceSlice1000302GeometryDataObstructionTarget :=
   section92Step4RadialFaceSlice1000302GeometryDataObstructionTarget
 
-theorem closedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceArchiveNoRadialFaceCoherentRepresentation_of_sample_of_slice1000302_audit
+theorem closedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceArchiveNoRadialFaceCoherentRepresentation_of_sample_of_slices_audit
     (hsample :
       ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSampleRadialFaceCoveredByLab)
-    (hslice :
+    (hslice1000302 :
       ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSlice1000302RadialFaceCoveredByLab)
+    (hslice1001289 :
+      ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSlice1001289RadialFaceCoveredByLab)
     {V : Type} {G : SimpleGraph V}
     (representation : ClosedCollarWindingFreedomSimplePatchN6Representation G)
     (hcase :
@@ -575,8 +581,8 @@ theorem closedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceArchive
       ClosedCollarWindingFreedomAnnularRealization.RadialFaceCoherent
         representation.annular) :
     False :=
-  closedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceArchiveNoRadialFaceCoherentRepresentation_of_sample_of_slice1000302
-    hsample hslice representation hcase hradial
+  closedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceArchiveNoRadialFaceCoherentRepresentation_of_sample_of_slices
+    hsample hslice1000302 hslice1001289 representation hcase hradial
 
 theorem section92Step4RadialFaceArchiveFactoredCoverageNormalFormObstructionTarget_audit :
     Section92Step4RadialFaceArchiveFactoredCoverageNormalFormObstructionTarget :=
@@ -604,11 +610,20 @@ theorem closedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSlice1000302Radia
   closedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSlice1000302RadialFaceCoveredByLab_of_cases
     hcases
 
+theorem closedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSlice1001289RadialFaceCoveredByLab_of_cases_audit
+    (hcases :
+      ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSlice1001289RadialFaceCasesCoveredByLab) :
+    ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSlice1001289RadialFaceCoveredByLab :=
+  closedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSlice1001289RadialFaceCoveredByLab_of_cases
+    hcases
+
 theorem closedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceArchiveNoRadialFaceCoherentRepresentation_of_case_coverage_audit
     (hsample :
       ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSampleRadialFaceCasesCoveredByLab)
-    (hslice :
+    (hslice1000302 :
       ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSlice1000302RadialFaceCasesCoveredByLab)
+    (hslice1001289 :
+      ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSlice1001289RadialFaceCasesCoveredByLab)
     {V : Type} {G : SimpleGraph V}
     (representation : ClosedCollarWindingFreedomSimplePatchN6Representation G)
     (hcase :
@@ -619,7 +634,7 @@ theorem closedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceArchive
         representation.annular) :
     False :=
   closedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceArchiveNoRadialFaceCoherentRepresentation_of_case_coverage
-    hsample hslice representation hcase hradial
+    hsample hslice1000302 hslice1001289 representation hcase hradial
 
 theorem section92Step4RadialFaceArchiveCaseFactoredCoverageNormalFormObstructionTarget_audit :
     Section92Step4RadialFaceArchiveCaseFactoredCoverageNormalFormObstructionTarget :=
@@ -649,6 +664,15 @@ theorem closedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSlice1000302Radia
       ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSlice1000302RadialFaceRowCertificateSound) :
     ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSlice1000302RadialFaceCasesCoveredByLab :=
   closedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSlice1000302RadialFaceCasesCoveredByLab_of_rowCertificateSound
+    hartifact hsound
+
+theorem closedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSlice1001289RadialFaceCasesCoveredByLab_of_rowCertificateSound_audit
+    (hartifact :
+      ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceRowCoverageArtifactEvidence)
+    (hsound :
+      ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSlice1001289RadialFaceRowCertificateSound) :
+    ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSlice1001289RadialFaceCasesCoveredByLab :=
+  closedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSlice1001289RadialFaceCasesCoveredByLab_of_rowCertificateSound
     hartifact hsound
 
 theorem section92Step4RadialFaceArchiveRowCertificateSoundNormalFormObstructionTarget_audit :
@@ -682,10 +706,12 @@ theorem closedCollarWindingFreedomNonrealizableInNormalForm_of_archiveN6Represen
     (hsampleSound :
       ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSampleRadialFaceRowCertificateSound)
     (hsliceSound :
-      ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSlice1000302RadialFaceRowCertificateSound) :
+      ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSlice1000302RadialFaceRowCertificateSound)
+    (hslice1001289Sound :
+      ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSlice1001289RadialFaceRowCertificateSound) :
     ClosedCollarWindingFreedomNonrealizableInNormalForm :=
   closedCollarWindingFreedomNonrealizableInNormalForm_of_archiveN6Representation_of_radialFaceRowCertificates
-    hextract hartifact hgeometry hradial hsampleSound hsliceSound
+    hextract hartifact hgeometry hradial hsampleSound hsliceSound hslice1001289Sound
 
 theorem section92Step4RepairedByArchiveN6ExtractionAndRadialFaceRowCertificatesTarget_audit :
     Section92Step4RepairedByArchiveN6ExtractionAndRadialFaceRowCertificatesTarget :=
@@ -708,10 +734,12 @@ theorem closedCollarWindingFreedomNonrealizableInNormalForm_of_radialFaceArchive
     (hsampleSound :
       ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSampleRadialFaceRowCertificateSound)
     (hsliceSound :
-      ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSlice1000302RadialFaceRowCertificateSound) :
+      ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSlice1000302RadialFaceRowCertificateSound)
+    (hslice1001289Sound :
+      ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSlice1001289RadialFaceRowCertificateSound) :
     ClosedCollarWindingFreedomNonrealizableInNormalForm :=
   closedCollarWindingFreedomNonrealizableInNormalForm_of_radialFaceArchiveN6Representation_of_radialFaceRowCertificates
-    hradial hn6 hartifact hsampleSound hsliceSound
+    hradial hn6 hartifact hsampleSound hsliceSound hslice1001289Sound
 
 theorem section92Step4RepairedByRadialFaceArchiveN6ExtractionAndRowCertificatesTarget_audit :
     Section92Step4RepairedByRadialFaceArchiveN6ExtractionAndRowCertificatesTarget :=
@@ -737,10 +765,12 @@ theorem closedCollarWindingFreedomNonrealizableInNormalForm_of_radialFaceN6Archi
     (hsampleSound :
       ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSampleRadialFaceRowCertificateSound)
     (hsliceSound :
-      ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSlice1000302RadialFaceRowCertificateSound) :
+      ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSlice1000302RadialFaceRowCertificateSound)
+    (hslice1001289Sound :
+      ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSlice1001289RadialFaceRowCertificateSound) :
     ClosedCollarWindingFreedomNonrealizableInNormalForm :=
   closedCollarWindingFreedomNonrealizableInNormalForm_of_radialFaceN6ArchiveMembership_of_rowCertificates
-    hradial hn6 hmembership hartifact hsampleSound hsliceSound
+    hradial hn6 hmembership hartifact hsampleSound hsliceSound hslice1001289Sound
 
 theorem section92Step4RepairedByRadialFaceN6ExtractionArchiveMembershipAndRowCertificatesTarget_audit :
     Section92Step4RepairedByRadialFaceN6ExtractionArchiveMembershipAndRowCertificatesTarget :=
@@ -773,10 +803,12 @@ theorem closedCollarWindingFreedomNonrealizableInNormalForm_of_radialFaceN6Audit
     (hsampleSound :
       ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSampleRadialFaceRowCertificateSound)
     (hsliceSound :
-      ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSlice1000302RadialFaceRowCertificateSound) :
+      ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSlice1000302RadialFaceRowCertificateSound)
+    (hslice1001289Sound :
+      ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSlice1001289RadialFaceRowCertificateSound) :
     ClosedCollarWindingFreedomNonrealizableInNormalForm :=
   closedCollarWindingFreedomNonrealizableInNormalForm_of_radialFaceN6AuditedArchiveKey_of_rowCertificates
-    hradial hn6 hkeys hartifact hsampleSound hsliceSound
+    hradial hn6 hkeys hartifact hsampleSound hsliceSound hslice1001289Sound
 
 theorem section92Step4RepairedByRadialFaceN6ExtractionAuditedKeysAndRowCertificatesTarget_audit :
     Section92Step4RepairedByRadialFaceN6ExtractionAuditedKeysAndRowCertificatesTarget :=
@@ -796,11 +828,20 @@ theorem closedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSlice1000302Radia
   closedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSlice1000302RadialFaceCasesCoveredByLab_of_rows
     hrows
 
+theorem closedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSlice1001289RadialFaceCasesCoveredByLab_of_rows_audit
+    (hrows :
+      ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSlice1001289RadialFaceRowsCoveredByLab) :
+    ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSlice1001289RadialFaceCasesCoveredByLab :=
+  closedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSlice1001289RadialFaceCasesCoveredByLab_of_rows
+    hrows
+
 theorem closedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceArchiveNoRadialFaceCoherentRepresentation_of_row_coverage_audit
     (hsample :
       ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSampleRadialFaceRowsCoveredByLab)
-    (hslice :
+    (hslice1000302 :
       ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSlice1000302RadialFaceRowsCoveredByLab)
+    (hslice1001289 :
+      ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSlice1001289RadialFaceRowsCoveredByLab)
     {V : Type} {G : SimpleGraph V}
     (representation : ClosedCollarWindingFreedomSimplePatchN6Representation G)
     (hcase :
@@ -811,7 +852,7 @@ theorem closedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceArchive
         representation.annular) :
     False :=
   closedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceArchiveNoRadialFaceCoherentRepresentation_of_row_coverage
-    hsample hslice representation hcase hradial
+    hsample hslice1000302 hslice1001289 representation hcase hradial
 
 theorem section92Step4RadialFaceArchiveRowFactoredCoverageNormalFormObstructionTarget_audit :
     Section92Step4RadialFaceArchiveRowFactoredCoverageNormalFormObstructionTarget :=

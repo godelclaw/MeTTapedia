@@ -1,8 +1,8 @@
 {
   "archive_radial_face_coherent_rotation_count": 0,
-  "archive_radial_order_rows_with_overlap": 10,
+  "archive_radial_order_rows_with_overlap": 12,
   "max_radial_cut_edges_on_single_face_histogram": {
-    "2": 80
+    "2": 96
   },
   "overlapping_cases": [
     [
@@ -15,8 +15,8 @@
     ]
   ],
   "overlapping_radial_order_case_count": 2,
-  "planar_rotation_system_rows_with_overlap": 80,
-  "row_coverage_certificate_count": 8,
+  "planar_rotation_system_rows_with_overlap": 96,
+  "row_coverage_certificate_count": 10,
   "row_coverage_certificates": [
     {
       "archive_family": "sample",
@@ -163,6 +163,44 @@
       "source_file": "section92_closed_collar_winding_simple_patch_annular_embedding_n6_slice_1000302_500_cases2.json",
       "template_exclusion_blocker": "excluded_exact_diagonal_two_pole_template",
       "verdict": "row_has_no_radial_face_coherent_rotation"
+    },
+    {
+      "archive_family": "slice",
+      "case": [
+        1001293,
+        0
+      ],
+      "enumerated_rotation_system_count": 262144,
+      "exact_template_key": "edges:g0:F4F5,g1:F1F0|sideCollar:g0:F5,g1:F1",
+      "max_radial_cut_edges_on_single_face_histogram": {
+        "2": 8
+      },
+      "patch_index": 1001293,
+      "planar_rotation_system_count": 8,
+      "radial_face_coherent_rotation_count": 0,
+      "radial_order_index": 0,
+      "source_file": "section92_closed_collar_winding_simple_patch_annular_embedding_n6_slice_1001289_500_cases2.json",
+      "template_exclusion_blocker": "excluded_exact_diagonal_two_pole_template",
+      "verdict": "row_has_no_radial_face_coherent_rotation"
+    },
+    {
+      "archive_family": "slice",
+      "case": [
+        1001293,
+        1
+      ],
+      "enumerated_rotation_system_count": 262144,
+      "exact_template_key": "edges:g0:F4F5,g1:F1F0|sideCollar:g0:F5,g1:F1",
+      "max_radial_cut_edges_on_single_face_histogram": {
+        "2": 8
+      },
+      "patch_index": 1001293,
+      "planar_rotation_system_count": 8,
+      "radial_face_coherent_rotation_count": 0,
+      "radial_order_index": 1,
+      "source_file": "section92_closed_collar_winding_simple_patch_annular_embedding_n6_slice_1001289_500_cases2.json",
+      "template_exclusion_blocker": "excluded_exact_diagonal_two_pole_template",
+      "verdict": "row_has_no_radial_face_coherent_rotation"
     }
   ],
   "row_coverage_sample_cases": [
@@ -198,6 +236,16 @@
     ],
     [
       1000788,
+      1
+    ]
+  ],
+  "row_coverage_slice1001289_cases": [
+    [
+      1001293,
+      0
+    ],
+    [
+      1001293,
       1
     ]
   ],
@@ -351,10 +399,11 @@
   "schema": "fourcolor-section-9-2-closed-collar-winding-simple-patch-n6-radial-face-archive-audit-v1",
   "slice_archive_files": [
     "section92_closed_collar_winding_simple_patch_annular_embedding_n6_slice_1000000_500_cases2.json",
-    "section92_closed_collar_winding_simple_patch_annular_embedding_n6_slice_1000302_500_cases2.json"
+    "section92_closed_collar_winding_simple_patch_annular_embedding_n6_slice_1000302_500_cases2.json",
+    "section92_closed_collar_winding_simple_patch_annular_embedding_n6_slice_1001289_500_cases2.json"
   ],
-  "slice_archive_json_file_count": 2,
-  "slice_archive_radial_order_case_count": 4,
+  "slice_archive_json_file_count": 3,
+  "slice_archive_radial_order_case_count": 6,
   "slice_cases": [
     [
       1000301,
@@ -371,14 +420,22 @@
     [
       1000788,
       1
+    ],
+    [
+      1001293,
+      0
+    ],
+    [
+      1001293,
+      1
     ]
   ],
-  "slice_enumerated_rotation_system_count": 1048576,
-  "slice_exact_template_blocker_count": 4,
+  "slice_enumerated_rotation_system_count": 1572864,
+  "slice_exact_template_blocker_count": 6,
   "slice_exact_template_histogram": {
-    "edges:g0:F4F5,g1:F1F0|sideCollar:g0:F5,g1:F1": 4
+    "edges:g0:F4F5,g1:F1F0|sideCollar:g0:F5,g1:F1": 6
   },
-  "slice_planar_rotation_system_count": 32,
+  "slice_planar_rotation_system_count": 48,
   "slice_row_certificates": [
     {
       "archive_family": "slice",
@@ -455,12 +512,50 @@
       "source_file": "section92_closed_collar_winding_simple_patch_annular_embedding_n6_slice_1000302_500_cases2.json",
       "template_exclusion_blocker": "excluded_exact_diagonal_two_pole_template",
       "verdict": "row_has_no_radial_face_coherent_rotation"
+    },
+    {
+      "archive_family": "slice",
+      "case": [
+        1001293,
+        0
+      ],
+      "enumerated_rotation_system_count": 262144,
+      "exact_template_key": "edges:g0:F4F5,g1:F1F0|sideCollar:g0:F5,g1:F1",
+      "max_radial_cut_edges_on_single_face_histogram": {
+        "2": 8
+      },
+      "patch_index": 1001293,
+      "planar_rotation_system_count": 8,
+      "radial_face_coherent_rotation_count": 0,
+      "radial_order_index": 0,
+      "source_file": "section92_closed_collar_winding_simple_patch_annular_embedding_n6_slice_1001289_500_cases2.json",
+      "template_exclusion_blocker": "excluded_exact_diagonal_two_pole_template",
+      "verdict": "row_has_no_radial_face_coherent_rotation"
+    },
+    {
+      "archive_family": "slice",
+      "case": [
+        1001293,
+        1
+      ],
+      "enumerated_rotation_system_count": 262144,
+      "exact_template_key": "edges:g0:F4F5,g1:F1F0|sideCollar:g0:F5,g1:F1",
+      "max_radial_cut_edges_on_single_face_histogram": {
+        "2": 8
+      },
+      "patch_index": 1001293,
+      "planar_rotation_system_count": 8,
+      "radial_face_coherent_rotation_count": 0,
+      "radial_order_index": 1,
+      "source_file": "section92_closed_collar_winding_simple_patch_annular_embedding_n6_slice_1001289_500_cases2.json",
+      "template_exclusion_blocker": "excluded_exact_diagonal_two_pole_template",
+      "verdict": "row_has_no_radial_face_coherent_rotation"
     }
   ],
   "source": "Artifact audit for radial-face annular embedding verdicts",
-  "total_archive_json_file_count": 5,
-  "unique_audited_patch_topology_count": 4,
-  "unique_audited_radial_order_case_count": 8,
-  "unique_planar_rotation_system_count": 64,
+  "total_archive_json_file_count": 6,
+  "unique_audited_patch_topology_count": 5,
+  "unique_audited_radial_order_case_count": 10,
+  "unique_planar_rotation_system_count": 80,
   "verdict": "radial_face_archive_all_planar_rotations_incoherent"
 }
