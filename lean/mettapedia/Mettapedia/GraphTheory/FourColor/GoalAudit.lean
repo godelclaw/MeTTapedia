@@ -1984,6 +1984,57 @@ theorem closedCollarWindingFreedomPreviousBoundaryWitnessUpgradeObstruction_iff_
       ClosedCollarWindingFreedomCurrentBoundaryBadWitnessFaceObstruction :=
   closedCollarWindingFreedomPreviousBoundaryWitnessUpgradeObstruction_iff_currentBoundaryBadWitnessFaceObstruction
 
+theorem closedCollarWindingFreedomNormalFormRealization_no_exactTemplateRealizes_audit
+    {V : Type} {G : SimpleGraph V}
+    (normalForm : ClosedCollarWindingFreedomNormalFormRealization G) :
+    ¬ ∃ candidate : ClosedCollarDiagonalTwoPoleTemplateCandidate G,
+      candidate.Realizes :=
+  closedCollarWindingFreedomNormalFormRealization_no_exactTemplateRealizes
+    normalForm
+
+def closedCollarWindingFreedomCurrentBoundaryBadWitnessFace_noExactTemplateRealizes_audit
+    {V : Type} [DecidableEq V] {G : SimpleGraph V}
+    {normalForm : ClosedCollarWindingFreedomNormalFormRealization G}
+    (bad :
+      ClosedCollarWindingFreedomCurrentBoundaryBadWitnessFace
+        normalForm) :
+    ¬ ∃ candidate : ClosedCollarDiagonalTwoPoleTemplateCandidate G,
+      candidate.Realizes :=
+  bad.noExactTemplateRealizes
+
+theorem closedCollarWindingFreedomCurrentBoundaryBadWitnessFace_false_of_forcesExactTemplate_audit
+    (hforces :
+      ClosedCollarWindingFreedomCurrentBoundaryBadWitnessFaceForcesExactTemplate)
+    {V : Type} [DecidableEq V] {G : SimpleGraph V}
+    {normalForm : ClosedCollarWindingFreedomNormalFormRealization G}
+    (bad :
+      ClosedCollarWindingFreedomCurrentBoundaryBadWitnessFace
+        normalForm) :
+    False :=
+  closedCollarWindingFreedomCurrentBoundaryBadWitnessFace_false_of_forcesExactTemplate
+    hforces bad
+
+theorem closedCollarWindingFreedom_no_currentBoundaryBadWitnessFaceObstruction_of_badWitnessFaceForcesExactTemplate_audit
+    (hforces :
+      ClosedCollarWindingFreedomCurrentBoundaryBadWitnessFaceForcesExactTemplate) :
+    ¬ ClosedCollarWindingFreedomCurrentBoundaryBadWitnessFaceObstruction :=
+  closedCollarWindingFreedom_no_currentBoundaryBadWitnessFaceObstruction_of_badWitnessFaceForcesExactTemplate
+    hforces
+
+theorem closedCollarWindingFreedom_no_previousBoundaryWitnessUpgradeObstruction_of_badWitnessFaceForcesExactTemplate_audit
+    (hforces :
+      ClosedCollarWindingFreedomCurrentBoundaryBadWitnessFaceForcesExactTemplate) :
+    ¬ ClosedCollarWindingFreedomPreviousBoundaryWitnessUpgradeObstruction :=
+  closedCollarWindingFreedom_no_previousBoundaryWitnessUpgradeObstruction_of_badWitnessFaceForcesExactTemplate
+    hforces
+
+theorem closedCollarWindingFreedomCurrentBoundaryBadWitnessFaceNoExactTemplateObstruction_of_badWitnessFaceObstruction_audit
+    (hbad :
+      ClosedCollarWindingFreedomCurrentBoundaryBadWitnessFaceObstruction) :
+    ClosedCollarWindingFreedomCurrentBoundaryBadWitnessFaceNoExactTemplateObstruction :=
+  closedCollarWindingFreedomCurrentBoundaryBadWitnessFaceNoExactTemplateObstruction_of_badWitnessFaceObstruction
+    hbad
+
 theorem closedCollarWindingFreedom_no_previousBoundaryWitnessUpgradeObstruction_iff_suppliesPreviousBoundaryWitnessUpgrade_audit :
     ¬ ClosedCollarWindingFreedomPreviousBoundaryWitnessUpgradeObstruction ↔
       ClosedCollarWindingFreedomActualCollarGeometrySuppliesPreviousBoundaryWitnessUpgrade :=
@@ -2065,6 +2116,57 @@ theorem closedCollarWindingFreedomCurrentBoundaryBadWitnessFaceObstruction_of_la
       ¬ ClosedCollarWindingFreedomNonrealizableInNormalForm) :
     ClosedCollarWindingFreedomCurrentBoundaryBadWitnessFaceObstruction :=
   closedCollarWindingFreedomCurrentBoundaryBadWitnessFaceObstruction_of_laterBridge_of_auditedRows_of_not_nonrealizable
+    hgeometry hradial hn6 hkeys hrows hnot
+
+theorem closedCollarWindingFreedomNonrealizableInNormalForm_of_badWitnessFaceForcesExactTemplate_of_laterBridge_of_auditedRows_audit
+    (hforces :
+      ClosedCollarWindingFreedomCurrentBoundaryBadWitnessFaceForcesExactTemplate)
+    (hgeometry :
+      ClosedCollarWindingFreedomActualCollarEmbeddingSuppliesGeometryData)
+    (hradial :
+      ClosedCollarWindingFreedomActualCollarGeometrySuppliesRadialFaceExtraction)
+    (hn6 :
+      ClosedCollarWindingFreedomEveryRadialFaceNormalFormHasN6Representation)
+    (hkeys :
+      ClosedCollarWindingFreedomEveryRadialFaceN6RepresentationHasAuditedArchiveKey)
+    (hrows :
+      ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceAuditedRowsCoveredByLab) :
+    ClosedCollarWindingFreedomNonrealizableInNormalForm :=
+  closedCollarWindingFreedomNonrealizableInNormalForm_of_badWitnessFaceForcesExactTemplate_of_laterBridge_of_auditedRows
+    hforces hgeometry hradial hn6 hkeys hrows
+
+theorem closedCollarWindingFreedom_not_badWitnessFaceForcesExactTemplate_of_laterBridge_of_auditedRows_of_not_nonrealizable_audit
+    (hgeometry :
+      ClosedCollarWindingFreedomActualCollarEmbeddingSuppliesGeometryData)
+    (hradial :
+      ClosedCollarWindingFreedomActualCollarGeometrySuppliesRadialFaceExtraction)
+    (hn6 :
+      ClosedCollarWindingFreedomEveryRadialFaceNormalFormHasN6Representation)
+    (hkeys :
+      ClosedCollarWindingFreedomEveryRadialFaceN6RepresentationHasAuditedArchiveKey)
+    (hrows :
+      ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceAuditedRowsCoveredByLab)
+    (hnot :
+      ¬ ClosedCollarWindingFreedomNonrealizableInNormalForm) :
+    ¬ ClosedCollarWindingFreedomCurrentBoundaryBadWitnessFaceForcesExactTemplate :=
+  closedCollarWindingFreedom_not_badWitnessFaceForcesExactTemplate_of_laterBridge_of_auditedRows_of_not_nonrealizable
+    hgeometry hradial hn6 hkeys hrows hnot
+
+theorem closedCollarWindingFreedomCurrentBoundaryBadWitnessFaceNoExactTemplateObstruction_of_laterBridge_of_auditedRows_of_not_nonrealizable_audit
+    (hgeometry :
+      ClosedCollarWindingFreedomActualCollarEmbeddingSuppliesGeometryData)
+    (hradial :
+      ClosedCollarWindingFreedomActualCollarGeometrySuppliesRadialFaceExtraction)
+    (hn6 :
+      ClosedCollarWindingFreedomEveryRadialFaceNormalFormHasN6Representation)
+    (hkeys :
+      ClosedCollarWindingFreedomEveryRadialFaceN6RepresentationHasAuditedArchiveKey)
+    (hrows :
+      ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceAuditedRowsCoveredByLab)
+    (hnot :
+      ¬ ClosedCollarWindingFreedomNonrealizableInNormalForm) :
+    ClosedCollarWindingFreedomCurrentBoundaryBadWitnessFaceNoExactTemplateObstruction :=
+  closedCollarWindingFreedomCurrentBoundaryBadWitnessFaceNoExactTemplateObstruction_of_laterBridge_of_auditedRows_of_not_nonrealizable
     hgeometry hradial hn6 hkeys hrows hnot
 
 theorem closedCollarWindingFreedomNonrealizableInNormalForm_of_no_previousBoundaryWitnessUpgradeObstruction_of_laterBridge_of_auditedRows_audit
@@ -2194,6 +2296,10 @@ theorem section92Step4CurrentFiniteFrontierPreviousBoundaryUpgradeObstructionPre
 theorem section92Step4CurrentFiniteFrontierPreviousBoundaryUpgradeExactCriterion_audit :
     Section92Step4CurrentFiniteFrontierPreviousBoundaryUpgradeExactCriterion :=
   section92Step4CurrentFiniteFrontierPreviousBoundaryUpgradeExactCriterion
+
+theorem section92Step4CurrentFiniteFrontierBadWitnessFaceTemplateReductionCriterion_audit :
+    Section92Step4CurrentFiniteFrontierBadWitnessFaceTemplateReductionCriterion :=
+  section92Step4CurrentFiniteFrontierBadWitnessFaceTemplateReductionCriterion
 
 theorem section92Step4CurrentFiniteFrontierPreviousBoundaryUpgradeBadFaceExactHinge_audit :
     Section92Step4CurrentFiniteFrontierPreviousBoundaryUpgradeBadFaceExactHinge :=
