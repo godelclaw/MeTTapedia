@@ -10397,6 +10397,130 @@ theorem realM4_false_of_pEqualsNP_from_noTargetRowsCDENF_lowerMachine_canonicalG
     pToUniformConstantDecoderRegimeData) hEq
 
 /--
+Bundled named-language endpoint for the sharp support-neutral real route.
+The route yields direct non-membership of the named NP language, then the
+class inequality, official separation proposition, and existential NP-not-P
+endpoint as immediate consequences.
+
+This is still conditional real-spine staging: the theorem assumes the current
+real construction surface, the official P-to-decider bridge obligations, the
+support-neutral constant-decoder regime, and the four real frontier inputs.
+-/
+theorem realM4_namedLanguageRealRouteEndpoints_from_noTargetRowsCDENF_lowerMachine_canonicalGap_realFrontier_pMembershipDeciderLockedMessageAddressSyntaxUniformRegimeSplit
+    {m : Nat} (i₀ : Fin m) [hm : Fact (1 < m)]
+    (coordinate : V13RealLinearPublicCoordinate m)
+    {Neutral : Type} {Safe : Type x} {Gauge : Type y}
+    {Transcript : Type z} [DecidableEq Transcript]
+    {Pair : Type a} [Fintype Pair]
+    {Stage : Type b} {Branch : Type c}
+    {HistoryAtom : Type} {Pivot : Type e}
+    {Observer : Type f} {Output : Type f}
+    {PublicLock : Type g} {Quotient : Type h}
+    {LockAux : Type i} {Message : Type j}
+    {CNFPublic : Type k} {Address : CNFPublic -> Type q}
+    {Var : CNFPublic -> Type l}
+    {Witness : CNFPublic -> Type l}
+    {D : AppendixICNFReadoutData
+      PublicLock Quotient LockAux Message CNFPublic Var Witness}
+    (law : FiniteRationalLaw (V13RealLinearNoTargetRowsWorld m i₀))
+    (transcript : V13RealLinearNoTargetRowsWorld m i₀ -> Transcript)
+    (observerBit : Transcript -> Bool)
+    (phaseA :
+      EvidenceSpineBound law
+        (@v13RealLinearNoTargetRowsTargetBit m i₀) transcript observerBit
+        Pair Stage Branch)
+    (semantics :
+      EvidenceSemantics
+        (V13RealLinearNoTargetRowsWorld m i₀) Neutral Safe Gauge)
+    (observerEvidence :
+      ObserverEvidenceInterface
+        (V13RealLinearNoTargetRowsWorld m i₀) (V13RealLinearPublic m)
+        Observer Output Neutral Safe Gauge)
+    (pivotSummary : V13RealLinearNoTargetRowsWorld m i₀ -> Pivot)
+    (epsMix : Rat)
+    (safeCost : Safe -> Rat)
+    (safeBudget : Rat)
+    (gaugeIncidence : Gauge -> Nat)
+    (gaugeBound : Nat)
+    (hiddenGaugeProduct :
+      ∀ gamma omega, semantics.gaugeSat gamma omega)
+    (lowerMachine : RealM4CompressionLowerMachineData)
+    (starSWHardness :
+      CompressionStarSWHardness lowerMachine.lowerFramework)
+    (safeQSSM :
+      RealM4MechanicalInterfaceData.SafeQSSMFrontier
+        (RealM4MechanicalInterfaceData.ofNoTargetRowsPublicCoordinateCDENFComponents
+          (HistoryAtom := HistoryAtom) (Observer := Observer)
+          (Output := Output)
+          i₀ coordinate law transcript observerBit phaseA semantics
+          observerEvidence pivotSummary epsMix safeCost safeBudget
+          gaugeIncidence gaugeBound hiddenGaugeProduct))
+    (boundedGaugeIncidence :
+      RealM4MechanicalInterfaceData.BoundedGaugeIncidenceFrontier
+        (RealM4MechanicalInterfaceData.ofNoTargetRowsPublicCoordinateCDENFComponents
+          (HistoryAtom := HistoryAtom) (Observer := Observer)
+          (Output := Output)
+          i₀ coordinate law transcript observerBit phaseA semantics
+          observerEvidence pivotSummary epsMix safeCost safeBudget
+          gaugeIncidence gaugeBound hiddenGaugeProduct))
+    (boundaryMixing :
+      RealM4MechanicalInterfaceData.BoundaryMixingFrontier
+        (RealM4MechanicalInterfaceData.ofNoTargetRowsPublicCoordinateCDENFComponents
+          (HistoryAtom := HistoryAtom) (Observer := Observer)
+          (Output := Output)
+          i₀ coordinate law transcript observerBit phaseA semantics
+          observerEvidence pivotSummary epsMix safeCost safeBudget
+          gaugeIncidence gaugeBound hiddenGaugeProduct))
+    {C : CookStylePNPClassInterface.{p}}
+    (coverageData : RealM4PublicLockCoverageData D)
+    (lockedMessageData : RealM4LockedMessageRigidityData D.core)
+    (variableAddressSyntax :
+      RealM4CNFVariableAddressSyntaxData (Address := Address) D)
+    (languageNPData : RealM4OfficialLanguageNPData C)
+    (pToDeciderFamilyData :
+      RealM4OfficialPToDeciderFamilyData D C languageNPData)
+    (pToUniformConstantDecoderRegimeData :
+      RealM4OfficialPToUniformConstantDecoderRegimeData
+        D lowerMachine.lowerFramework C
+          (RealM4OfficialPToDeciderLockedMessageUpperSupportData.ofCoverageLockedMessageDataAndAddressSyntax
+            coverageData lockedMessageData variableAddressSyntax).uniformSupport
+          languageNPData pToDeciderFamilyData) :
+    (C.inNP languageNPData.separatedLanguage ∧
+      ¬ C.inP languageNPData.separatedLanguage) ∧
+      (¬ C.pEqualsNP) ∧ C.officialSeparation ∧
+        ∃ separatedLanguage : C.Language,
+          C.inNP separatedLanguage ∧ ¬ C.inP separatedLanguage :=
+  ⟨⟨languageNPData.separatedLanguage_inNP,
+      realM4_namedLanguage_not_inP_from_noTargetRowsCDENF_lowerMachine_canonicalGap_realFrontier_pMembershipDeciderLockedMessageAddressSyntaxUniformRegimeSplit
+        i₀ coordinate law transcript observerBit phaseA semantics
+        observerEvidence pivotSummary epsMix safeCost safeBudget gaugeIncidence
+        gaugeBound hiddenGaugeProduct lowerMachine starSWHardness safeQSSM
+        boundedGaugeIncidence boundaryMixing coverageData lockedMessageData
+        variableAddressSyntax languageNPData pToDeciderFamilyData
+        pToUniformConstantDecoderRegimeData⟩,
+    realM4_not_pEqualsNP_from_noTargetRowsCDENF_lowerMachine_canonicalGap_realFrontier_pMembershipDeciderLockedMessageAddressSyntaxUniformRegimeSplit
+      i₀ coordinate law transcript observerBit phaseA semantics
+      observerEvidence pivotSummary epsMix safeCost safeBudget gaugeIncidence
+      gaugeBound hiddenGaugeProduct lowerMachine starSWHardness safeQSSM
+      boundedGaugeIncidence boundaryMixing coverageData lockedMessageData
+      variableAddressSyntax languageNPData pToDeciderFamilyData
+      pToUniformConstantDecoderRegimeData,
+    realM4_officialSeparation_from_noTargetRowsCDENF_lowerMachine_canonicalGap_realFrontier_pMembershipDeciderLockedMessageAddressSyntaxUniformRegimeSplit
+      i₀ coordinate law transcript observerBit phaseA semantics
+      observerEvidence pivotSummary epsMix safeCost safeBudget gaugeIncidence
+      gaugeBound hiddenGaugeProduct lowerMachine starSWHardness safeQSSM
+      boundedGaugeIncidence boundaryMixing coverageData lockedMessageData
+      variableAddressSyntax languageNPData pToDeciderFamilyData
+      pToUniformConstantDecoderRegimeData,
+    realM4_exists_np_not_p_from_noTargetRowsCDENF_lowerMachine_canonicalGap_realFrontier_pMembershipDeciderLockedMessageAddressSyntaxUniformRegimeSplit
+      i₀ coordinate law transcript observerBit phaseA semantics
+      observerEvidence pivotSummary epsMix safeCost safeBudget gaugeIncidence
+      gaugeBound hiddenGaugeProduct lowerMachine starSWHardness safeQSSM
+      boundedGaugeIncidence boundaryMixing coverageData lockedMessageData
+      variableAddressSyntax languageNPData pToDeciderFamilyData
+      pToUniformConstantDecoderRegimeData⟩
+
+/--
 Cook-style class-inequality endpoint for the sharp no-target-rows route with
 the support-neutral constant-decoder regime constructed from explicit
 P-membership-indexed K-poly compatibility facts.
@@ -18548,6 +18672,41 @@ theorem realM4NamedLanguageEndpointRouteItems_exact :
 
 def realM4NamedLanguageEndpointStatement : String :=
   "The direct named-language endpoint uses the stricter P-membership-to-upper bridge: the bridge supplies a named NP language, P-membership of that language supplies the P=NP-side self-reduction upper package, and the real frontier clash refutes that P-membership.  Equality-indexed endpoint data is enough for class inequality and an existential NP-not-P statement, but it does not by itself identify the bridge language as outside P."
+
+def realM4NamedLanguageRealRouteEndpointHypothesisAudit : List String :=
+  realM4NoTargetRowsPToDeciderLockedMessageAddressSyntaxUniformRegimeSplitOfficialEndpointHypothesisAudit
+
+theorem realM4NamedLanguageRealRouteEndpointHypothesisAudit_exact :
+    realM4NamedLanguageRealRouteEndpointHypothesisAudit =
+      [ "noTargetRowsPublicSurface",
+        "law",
+        "transcript",
+        "observerBit",
+        "phaseA",
+        "semantics",
+        "observerEvidence",
+        "pivotSummary",
+        "epsMix",
+        "safeCost",
+        "safeBudget",
+        "gaugeIncidence",
+        "gaugeBound",
+        "hiddenGaugeProduct",
+        "realCompressionLowerMachineData",
+        "publicLockCoverageData",
+        "lockedMessageRigidityData",
+        "cnfVariableAddressSyntax",
+        "officialLanguageNPData",
+        "officialPToDeciderFamilyData",
+        "officialPToUniformConstantDecoderRegimeData",
+        "starSWHardness",
+        "safeQSSM",
+        "boundedGaugeIncidence",
+        "boundaryMixing" ] := by
+  rfl
+
+def realM4NamedLanguageRealRouteEndpointStatement : String :=
+  "The sharp support-neutral real route bundles direct non-membership of the named NP language, Cook-style class inequality, official separation, and the existential NP-not-P endpoint.  Its theorem boundary is the explicit no-target-rows construction surface, real lower machine, public-lock coverage, locked-message data, CNF address syntax, split official language/P-to-decider/uniform-constant-decoder obligations, and exactly StarSW hardness plus safeQSSM / boundedGaugeIncidence / boundaryMixing.  This is the strict named-language route; the equality-indexed route still provides the class and existential endpoints without identifying the bridge language as outside P."
 
 /-- Guardrail imported into the real lift: deterministic readout by itself has
 a checked finite counterexample, so M4 must provide public-message invariance
