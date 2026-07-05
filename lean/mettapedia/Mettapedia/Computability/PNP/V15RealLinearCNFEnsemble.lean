@@ -4458,6 +4458,70 @@ theorem v13RealLinearNoTargetRowsGaugeCNFAppendixICNF_noPublicTargetTags
           m i₀)
         hPair hOpp⟩
 
+/-- Readout-level `noPublicTargetTags` transfer for the concrete
+no-target-rows Appendix-I CNF spine: no function of the neutral public
+skeleton can predict the fixed readout for every verifier-valid CNF witness. -/
+theorem v13RealLinearNoTargetRowsGaugeCNFAppendixICNF_noPublicReadoutTags
+    {m : Nat} (i₀ : Fin m) (hm : 1 < m) :
+    ¬ ∃ f : V13RealLinearNoTargetRowsMap m i₀ -> Bool,
+      ∀ {Y : V13RealLinearNoTargetRowsWorld m i₀}
+        {W :
+          RealM4CNFWitness
+            (v13RealLinearNoTargetRowsGaugeCNFAppendixICNFReadoutData
+              i₀)},
+          realM4CNFVerifier
+              (v13RealLinearNoTargetRowsGaugeCNFAppendixICNFReadoutData
+                i₀)
+              Y W →
+            realM4CNFWitnessReadout (fun bit => bit) W =
+              f (v13RealLinearNoTargetRowsNeutralSkeleton Y) := by
+  intro htag
+  rcases htag with ⟨f, hf⟩
+  have hNoTarget :
+      ¬ ∃ f : V13RealLinearNoTargetRowsMap m i₀ -> Bool,
+        ∀ omega :
+          RealM4CNFWorld
+            (v13RealLinearNoTargetRowsGaugeCNFAppendixICNFReadoutData
+              i₀),
+          v13RealLinearNoTargetRowsGaugeCNFAppendixICNFWorldTarget
+              omega =
+            f
+              (v13RealLinearNoTargetRowsGaugeCNFAppendixICNFNeutralSkeleton
+                omega) :=
+    (v13RealLinearNoTargetRowsGaugeCNFAppendixICNF_noPublicTargetTags
+      i₀ hm).2.2
+  exact hNoTarget
+    ⟨f, by
+      intro omega
+      let W :
+          RealM4CNFWitness
+            (v13RealLinearNoTargetRowsGaugeCNFAppendixICNFReadoutData
+              i₀) :=
+        omega.toWitness
+      have hValid :
+          realM4CNFVerifier
+              (v13RealLinearNoTargetRowsGaugeCNFAppendixICNFReadoutData
+                i₀)
+              omega.publicInstance W := by
+        exact ⟨omega.support, ⟨rfl, omega.sat⟩⟩
+      have hReadout := hf (Y := omega.publicInstance) (W := W) hValid
+      have hReadoutTarget :=
+        v13RealLinearNoTargetRowsGaugeCNFAppendixICNFWitnessReadout_eq_targetBit
+          i₀ hValid
+      calc
+        v13RealLinearNoTargetRowsGaugeCNFAppendixICNFWorldTarget
+            omega =
+          v13RealLinearNoTargetRowsTargetBit omega.publicInstance := rfl
+        _ = realM4CNFWitnessReadout (fun bit => bit) W :=
+          hReadoutTarget.symm
+        _ =
+            f
+              (v13RealLinearNoTargetRowsGaugeCNFAppendixICNFNeutralSkeleton
+                omega) := by
+          simpa [W,
+            v13RealLinearNoTargetRowsGaugeCNFAppendixICNFNeutralSkeleton]
+            using hReadout⟩
+
 /-- Pair-neutrality transfers to the gauge-buffered CNF world when the public
 neutral skeleton is the base no-target-rows map skeleton. -/
 theorem v13RealLinearNoTargetRowsGaugeCNF_pairNeutral
