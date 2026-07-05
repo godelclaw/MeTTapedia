@@ -113,6 +113,8 @@ set_option autoImplicit false
 #check CNFPrefix.exists_pair_of_mem_keys
 #check CNFPrefix.value_eq_of_mem
 #check CNFPrefix.assignment_eq_of_mem
+#check CNFPrefix.value_eq_false_of_not_mem_keys
+#check CNFPrefix.assignment_eq_false_of_not_mem_keys
 #check ConcreteCNF.isSatFormula_prefixClauses_iff
 #check ConcreteCNF.isSatFormula_restrictWithPrefix_iff
 #check ConcreteCNF.isSatFormula_of_agree_on_formulaUsesOnly
@@ -1168,6 +1170,8 @@ set_option autoImplicit false
 #print axioms CNFPrefix.exists_pair_of_mem_keys
 #print axioms CNFPrefix.value_eq_of_mem
 #print axioms CNFPrefix.assignment_eq_of_mem
+#print axioms CNFPrefix.value_eq_false_of_not_mem_keys
+#print axioms CNFPrefix.assignment_eq_false_of_not_mem_keys
 #print axioms ConcreteCNF.isSatFormula_prefixClauses_iff
 #print axioms ConcreteCNF.isSatFormula_restrictWithPrefix_iff
 #print axioms ConcreteCNF.isSatFormula_of_agree_on_formulaUsesOnly
