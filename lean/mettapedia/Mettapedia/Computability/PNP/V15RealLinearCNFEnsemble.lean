@@ -4188,6 +4188,104 @@ theorem
     (v13RealLinearNoTargetRowsGaugeCNFAppendixICNFSelfReductionWitness_verifier
       D Y)
 
+/-- Uniform bit-fixing data for the no-target-rows Appendix-I CNF spine.  The
+variable order is the concrete formula-syntax cover, and the explicit SAT
+decider is the P=NP-side hypothesis object. -/
+def v13RealLinearNoTargetRowsGaugeCNFAppendixICNFUniformBitFixingData
+    {m : Nat} (i₀ : Fin m)
+    (D : V13RealLinearGaugeCNFPNPSATDecider m) :
+    RealM4CNFUniformBitFixingData
+      (v13RealLinearNoTargetRowsGaugeCNFAppendixICNFReadoutData i₀) where
+  varDecidable := fun _Y => inferInstance
+  varOrder := fun Y =>
+    v13RealLinearGaugeCNFBitFixVarOrder
+      (v13RealLinearNoTargetRowsPublicInput Y)
+  varOrder_nodup := by
+    intro Y
+    exact
+      v13RealLinearGaugeCNFBitFixVarOrder_nodup
+        (v13RealLinearNoTargetRowsPublicInput Y)
+  formulaUsesOnly := by
+    intro Y _hY clause hclause lit hlit
+    exact
+      v13RealLinearGaugeCNFFormula_usesOnly_bitFixVarOrder
+        (v13RealLinearNoTargetRowsPublicInput Y)
+        (by
+          simpa [v13RealLinearNoTargetRowsGaugeCNFAppendixICNFReadoutData]
+            using hclause)
+        hlit
+  satDecider := fun _Y => D
+  programLengthBound := D.programLength
+  satDecider_programLength_le := by
+    intro _Y
+    rfl
+
+/-- The uniform Appendix-I bit-fixing package computes the same assignment as
+the concrete self-reduction witness construction. -/
+theorem
+    v13RealLinearNoTargetRowsGaugeCNFAppendixICNFUniformBitFixingAssignment_eq_selfReduction
+    {m : Nat} {i₀ : Fin m}
+    (D : V13RealLinearGaugeCNFPNPSATDecider m)
+    (Y : V13RealLinearNoTargetRowsWorld m i₀) :
+    (v13RealLinearNoTargetRowsGaugeCNFAppendixICNFUniformBitFixingData
+      i₀ D).bitFixingAssignment Y =
+      v13RealLinearGaugeCNFSelfReductionAssignment D
+        (v13RealLinearNoTargetRowsPublicInput Y) := by
+  rfl
+
+/-- Uniform P=NP-side bit-fixing for the Appendix-I CNF spine reads the fixed
+base target bit. -/
+theorem
+    v13RealLinearNoTargetRowsGaugeCNFAppendixICNFUniformBitFixing_readout_eq_targetBit
+    {m : Nat} {i₀ : Fin m}
+    (D : V13RealLinearGaugeCNFPNPSATDecider m)
+    (Y : V13RealLinearNoTargetRowsWorld m i₀) :
+    (v13RealLinearNoTargetRowsGaugeCNFAppendixICNFReadoutData i₀).projection
+        Y
+        ((v13RealLinearNoTargetRowsGaugeCNFAppendixICNFUniformBitFixingData
+          i₀ D).bitFixingAssignment Y) =
+      v13RealLinearNoTargetRowsTargetBit Y :=
+  realM4_uniformBitFixingReadout_eq_publicMessage_of_publicMessageInvariant
+    (v13RealLinearNoTargetRowsGaugeCNFAppendixICNFReadoutData i₀)
+    (v13RealLinearNoTargetRowsGaugeCNFAppendixICNFUniformBitFixingData
+      i₀ D)
+    (v13RealLinearNoTargetRowsGaugeCNFAppendixD_publicMessageInvariant
+      i₀)
+    trivial
+
+/-- The uniform Appendix-I self-reduction decoder has constant `kpolyAt` cost
+in the target-block count. -/
+theorem
+    v13RealLinearNoTargetRowsGaugeCNFAppendixICNFUniformConstantDecoderKpolyAt_const
+    {m : Nat} (i₀ : Fin m)
+    (D : V13RealLinearGaugeCNFPNPSATDecider m)
+    (targetBlocks targetBlocks' : Nat) :
+    realM4UniformConstantDecoderKpolyAt
+        (v13RealLinearNoTargetRowsGaugeCNFAppendixICNFUniformBitFixingData
+          i₀ D) targetBlocks =
+      realM4UniformConstantDecoderKpolyAt
+        (v13RealLinearNoTargetRowsGaugeCNFAppendixICNFUniformBitFixingData
+          i₀ D) targetBlocks' :=
+  realM4UniformConstantDecoderKpolyAt_const
+    (v13RealLinearNoTargetRowsGaugeCNFAppendixICNFUniformBitFixingData
+      i₀ D) targetBlocks targetBlocks'
+
+/-- Conditional upper-bound discharge for the no-target-rows Appendix-I CNF
+spine: given the explicit P=NP-side SAT decider and a real lower-framework
+regime identifying `kpolyAt` with the fixed uniform self-reduction decoder, the
+self-reduction upper inequality follows. -/
+theorem
+    v13RealLinearNoTargetRowsGaugeCNFAppendixICNF_selfReductionUpperHypothesis_givenPNP
+    {m : Nat} (i₀ : Fin m) {F : CompressionLowerFramework}
+    (D : V13RealLinearGaugeCNFPNPSATDecider m)
+    (R : RealM4UniformConstantDecoderRegime F
+      (v13RealLinearNoTargetRowsGaugeCNFAppendixICNFUniformBitFixingData
+        i₀ D)) :
+    SelfReductionUpperHypothesis F :=
+  realM4_uniformSelfReductionUpperHypothesis_givenPNP
+    (v13RealLinearNoTargetRowsGaugeCNFAppendixICNFUniformBitFixingData
+      i₀ D) R
+
 /-- Structural `singleMessage` transferred to the concrete no-target-rows
 Appendix-I CNF SAT spine. -/
 theorem
