@@ -4355,6 +4355,47 @@ theorem
         v13RealLinearNoTargetRowsTargetBit, v13RealLinearFullDecoder]
         using congrArg v13RealLinearBit hdecode
 
+/-- The P=NP-side bit-fixing witness for a no-target-rows gauge-CNF public
+instance has the same locked-coordinate readout as any verifier-valid witness
+for that same public instance. -/
+theorem
+    v13RealLinearNoTargetRowsGaugeCNFSelfReduction_readout_eq_validWitness_readout
+    {m : Nat} {i₀ : Fin m}
+    (D : V13RealLinearGaugeCNFPNPSATDecider m)
+    {omega : V13RealLinearNoTargetRowsWorld m i₀}
+    {W : V13RealLinearGaugeCNFWitness m}
+    (hW :
+      v13RealLinearGaugeCNFVerifier
+        (v13RealLinearNoTargetRowsPublicInput omega) W) :
+    v13RealLinearGaugeCNFReadout i₀
+        (v13RealLinearGaugeCNFSelfReductionAssignment D
+          (v13RealLinearNoTargetRowsPublicInput omega)) =
+      v13RealLinearGaugeCNFReadout i₀ W :=
+  v13RealLinearGaugeCNFSelfReduction_readout_eq_validWitness_readout
+    i₀ D hW
+
+/-- World-level readout form of the raw no-target-rows gauge-CNF
+self-reduction theorem: the explicit P=NP-side bit-fixing world has the same
+target readout as any verifier-valid world over the same base instance. -/
+theorem
+    v13RealLinearNoTargetRowsGaugeCNFSelfReduction_target_eq_validWorld_target
+    {m : Nat} {i₀ : Fin m}
+    (D : V13RealLinearGaugeCNFPNPSATDecider m)
+    (omega : V13RealLinearNoTargetRowsGaugeCNFWorld m i₀) :
+    v13RealLinearNoTargetRowsGaugeCNFTarget
+        (v13RealLinearNoTargetRowsGaugeCNFWorldOfSelfReduction
+          D omega.base) =
+      v13RealLinearNoTargetRowsGaugeCNFTarget omega := by
+  calc
+    v13RealLinearNoTargetRowsGaugeCNFTarget
+        (v13RealLinearNoTargetRowsGaugeCNFWorldOfSelfReduction
+          D omega.base) =
+        v13RealLinearNoTargetRowsTargetBit omega.base :=
+      v13RealLinearNoTargetRowsGaugeCNFSelfReduction_target_eq_targetBit
+        D omega.base
+    _ = v13RealLinearNoTargetRowsGaugeCNFTarget omega :=
+      (v13RealLinearNoTargetRowsGaugeCNFReadout_eq_targetBit omega).symm
+
 /-! ## No-target-rows gauge CNF Appendix-D/I readout construction -/
 
 /-- Appendix-D locked core for the no-target-rows gauge-buffered CNF
