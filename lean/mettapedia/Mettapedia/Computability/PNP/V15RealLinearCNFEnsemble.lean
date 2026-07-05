@@ -3897,6 +3897,189 @@ theorem
         v13RealLinearNoTargetRowsTargetBit, v13RealLinearFullDecoder]
         using congrArg v13RealLinearBit hdecode
 
+/-! ## No-target-rows gauge CNF Appendix-D/I readout construction -/
+
+/-- Appendix-D locked core for the no-target-rows gauge-buffered CNF
+construction.  The public lock is the adjusted no-target-rows public surface;
+the quotient is the concrete gauge-buffered CNF witness; and the read
+predicate forces the message to the base target bit, independently of the free
+hidden gauge coordinate. -/
+noncomputable def v13RealLinearNoTargetRowsGaugeCNFAppendixDLockedCore
+    {m : Nat} (i₀ : Fin m) :
+    AppendixDLockedCore
+      (V13RealLinearNoTargetRowsWorld m i₀)
+      (V13RealLinearGaugeCNFWitness m)
+      Unit
+      Bool where
+  publicLockFinite := inferInstance
+  quotientFinite := inferInstance
+  lockAuxFinite := inferInstance
+  messageFinite := inferInstance
+  support := fun _omega => True
+  lockPredicate := fun omega W _unit _message =>
+    v13RealLinearGaugeCNFVerifier
+      (v13RealLinearNoTargetRowsPublicInput omega) W
+  readPredicate := fun omega _W _unit message =>
+    message = v13RealLinearNoTargetRowsTargetBit omega
+
+/-- A verifier-valid no-target-rows gauge-CNF witness determines an
+Appendix-D locked completion whose message is the forced base target bit. -/
+noncomputable def v13RealLinearNoTargetRowsGaugeCNFLockedCompletionOfWitness
+    {m : Nat} {i₀ : Fin m}
+    {omega : V13RealLinearNoTargetRowsWorld m i₀}
+    (W : V13RealLinearGaugeCNFWitness m)
+    (hW :
+      v13RealLinearGaugeCNFVerifier
+        (v13RealLinearNoTargetRowsPublicInput omega) W) :
+    (v13RealLinearNoTargetRowsGaugeCNFAppendixDLockedCore i₀)
+      |>.LockedCompletion omega where
+  quotient := W
+  lockAux := ()
+  message := v13RealLinearNoTargetRowsTargetBit omega
+  lock_ok := by
+    simpa [v13RealLinearNoTargetRowsGaugeCNFAppendixDLockedCore]
+      using hW
+  read_ok := by
+    simp [v13RealLinearNoTargetRowsGaugeCNFAppendixDLockedCore]
+
+/-- The concrete no-target-rows gauge-CNF locked core has the public-message
+invariant: every accepted locked completion reads the base target bit. -/
+theorem
+    v13RealLinearNoTargetRowsGaugeCNFAppendixD_publicMessageInvariant
+    {m : Nat} (i₀ : Fin m) :
+    (v13RealLinearNoTargetRowsGaugeCNFAppendixDLockedCore i₀)
+      |>.PublicMessageInvariant
+        (@v13RealLinearNoTargetRowsTargetBit m i₀) := by
+  intro omega _hSupport L
+  simpa [v13RealLinearNoTargetRowsGaugeCNFAppendixDLockedCore]
+    using L.read_ok
+
+/-- Therefore the concrete no-target-rows gauge-CNF locked core satisfies
+Appendix-D locked-message rigidity. -/
+theorem v13RealLinearNoTargetRowsGaugeCNFAppendixD_lockedMessageRigidity
+    {m : Nat} (i₀ : Fin m) :
+    (v13RealLinearNoTargetRowsGaugeCNFAppendixDLockedCore i₀)
+      |>.LockedMessageRigidity :=
+  AppendixDLockedCore.lockedMessageRigidity_of_publicMessageInvariant
+    (v13RealLinearNoTargetRowsGaugeCNFAppendixDLockedCore i₀)
+    (v13RealLinearNoTargetRowsGaugeCNFAppendixD_publicMessageInvariant
+      i₀)
+
+/-- No-target-rows gauge-buffered CNF instantiated in the stronger
+Appendix-I readout interface over its real Appendix-D locked core.  The CNF
+is the existing concrete gauge-buffered formula over the adjusted public
+input, extraction is identity, and the fixed projection is the selected
+locked coordinate. -/
+noncomputable def v13RealLinearNoTargetRowsGaugeCNFAppendixICNFReadoutData
+    {m : Nat} (i₀ : Fin m) :
+    AppendixICNFReadoutData
+      (V13RealLinearNoTargetRowsWorld m i₀)
+      (V13RealLinearGaugeCNFWitness m)
+      Unit
+      Bool
+      (V13RealLinearNoTargetRowsWorld m i₀)
+      (fun _omega => V13RealLinearGaugeCNFVar m)
+      (fun _omega => V13RealLinearGaugeCNFWitness m) where
+  core := v13RealLinearNoTargetRowsGaugeCNFAppendixDLockedCore i₀
+  support := fun _omega => True
+  publicLock := fun omega => omega
+  validWitness := fun omega W =>
+    v13RealLinearGaugeCNFVerifier
+      (v13RealLinearNoTargetRowsPublicInput omega) W
+  witnessMessage := fun _omega W =>
+    v13RealLinearGaugeCNFReadout i₀ W
+  witnessCompletion := by
+    intro omega W hW
+    exact
+      v13RealLinearNoTargetRowsGaugeCNFLockedCompletionOfWitness
+        (i₀ := i₀) W hW
+  support_publicLock := by
+    intro omega hSupport
+    trivial
+  witnessMessage_eq_completionMessage := by
+    intro omega W hW
+    have hReadout :
+        v13RealLinearGaugeCNFReadout i₀ W =
+          v13RealLinearNoTargetRowsTargetBit omega := by
+      calc
+        v13RealLinearGaugeCNFReadout i₀ W =
+            v13RealLinearMessageOfPublic i₀
+              (v13RealLinearNoTargetRowsPublicInput omega) :=
+          v13RealLinearGaugeCNFReadout_eq_publicMessage_of_valid i₀ hW
+        _ = v13RealLinearNoTargetRowsTargetBit omega := by
+          have hdecode :=
+            v13RealLinearNoTargetRows_fullPublic_decodes_target i₀ omega
+          simpa [v13RealLinearMessageOfPublic,
+            v13RealLinearNoTargetRowsTargetBit, v13RealLinearFullDecoder]
+            using congrArg v13RealLinearBit hdecode
+    simpa [v13RealLinearNoTargetRowsGaugeCNFLockedCompletionOfWitness]
+      using hReadout
+  formula := fun omega =>
+    v13RealLinearGaugeCNFFormula
+      (v13RealLinearNoTargetRowsPublicInput omega)
+  extract := fun _omega α => α
+  projection := fun _omega α =>
+    v13RealLinearGaugeCNFReadout i₀ α
+  cnfSound := by
+    intro omega α hα
+    exact hα
+  projection_eq_witnessMessage := by
+    intro omega α hα
+    rfl
+  satOnSupport := by
+    intro omega _hSupport
+    exact
+      ⟨v13RealLinearGaugeCNFAssignment
+          (v13RealLinearNoTargetRowsPublicInput omega) false,
+        v13RealLinearGaugeCNFFormula_satisfied_assignment
+          (v13RealLinearNoTargetRowsPublicInput omega) false⟩
+
+/-- The concrete no-target-rows gauge-CNF Appendix-I readout has the
+single-message readout property for every supported public instance. -/
+theorem
+    v13RealLinearNoTargetRowsGaugeCNFAppendixI_singleMessageReadout
+    {m : Nat} (i₀ : Fin m)
+    (omega : V13RealLinearNoTargetRowsWorld m i₀) :
+    SingleMessageReadout
+      (ConcreteCNF.IsSatFormula
+        (v13RealLinearNoTargetRowsGaugeCNFAppendixICNFReadoutData i₀
+          |>.formula omega))
+      (v13RealLinearNoTargetRowsGaugeCNFAppendixICNFReadoutData i₀
+        |>.projection omega) :=
+  (v13RealLinearNoTargetRowsGaugeCNFAppendixICNFReadoutData i₀)
+    |>.singleMessageReadout_of_lockedMessageRigidity
+      (v13RealLinearNoTargetRowsGaugeCNFAppendixD_lockedMessageRigidity
+        i₀)
+      trivial
+
+/-- The no-target-rows gauge-CNF Appendix-I data supplies the semantic
+I.26(i)--(iii) items: satisfiability on support, sound extraction, and fixed
+projection readout. -/
+theorem v13RealLinearNoTargetRowsGaugeCNFAppendixI_semantic_i26_items
+    {m : Nat} (i₀ : Fin m)
+    (omega : V13RealLinearNoTargetRowsWorld m i₀) :
+    (∃ α : ConcreteCNF.Assignment (V13RealLinearGaugeCNFVar m),
+      ConcreteCNF.IsSatFormula
+        (v13RealLinearNoTargetRowsGaugeCNFAppendixICNFReadoutData i₀
+          |>.formula omega) α) ∧
+    (∀ α : ConcreteCNF.Assignment (V13RealLinearGaugeCNFVar m),
+      ConcreteCNF.IsSatFormula
+        (v13RealLinearNoTargetRowsGaugeCNFAppendixICNFReadoutData i₀
+          |>.formula omega) α →
+        (v13RealLinearNoTargetRowsGaugeCNFAppendixICNFReadoutData i₀
+          |>.validWitness omega α)) ∧
+    SingleMessageReadout
+      (ConcreteCNF.IsSatFormula
+        (v13RealLinearNoTargetRowsGaugeCNFAppendixICNFReadoutData i₀
+          |>.formula omega))
+      (v13RealLinearNoTargetRowsGaugeCNFAppendixICNFReadoutData i₀
+        |>.projection omega) :=
+  (v13RealLinearNoTargetRowsGaugeCNFAppendixICNFReadoutData i₀)
+    |>.semantic_i26_items_of_lockedMessageRigidity
+      (v13RealLinearNoTargetRowsGaugeCNFAppendixD_lockedMessageRigidity
+        i₀)
+      trivial
+
 /-- Pair-neutrality transfers to the gauge-buffered CNF world when the public
 neutral skeleton is the base no-target-rows map skeleton. -/
 theorem v13RealLinearNoTargetRowsGaugeCNF_pairNeutral
