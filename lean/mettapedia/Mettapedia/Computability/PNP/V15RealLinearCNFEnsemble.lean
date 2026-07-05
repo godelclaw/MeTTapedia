@@ -2432,6 +2432,85 @@ theorem
     _ = v13RealLinearSmallNoTargetRowsCNFReadout W :=
       (v13RealLinearSmallNoTargetRowsCNFReadout_eq_message_of_valid hW).symm
 
+/-- The concrete no-target-row formula variable cover omits the free hidden
+gauge coordinate. -/
+theorem v13RealLinearSmallNoTargetRowsCNFBitFixVarOrder_no_hiddenGauge
+    (Y : V13RealLinearSmallNoTargetRowsCNFPublic) :
+    (none : V13RealLinearSmallNoTargetRowsCNFVar) ∉
+      v13RealLinearSmallNoTargetRowsCNFBitFixVarOrder Y := by
+  cases Y with
+  | mk msg spare =>
+      cases msg <;> cases spare <;>
+        simp [v13RealLinearSmallNoTargetRowsCNFBitFixVarOrder,
+          v13RealLinearSmallNoTargetRowsCNFFormula,
+          v13RealLinearSmallNoTargetRowsCNFXorClauses,
+          ConcreteCNF.formulaVarCover, ConcreteCNF.formulaVars,
+          ConcreteCNF.clauseVars, ConcreteCNF.dedupVars,
+          ConcreteCNF.Literal.var,
+          v13RealLinearSmallGaugeCNFMessageIndex,
+          v13RealLinearSmallGaugeCNFSpareIndex,
+          ConcreteCNF.unitClause, ConcreteCNF.unitLiteral]
+
+/-- The explicit P=NP-side bit-fixing assignment leaves the unmentioned
+hidden-gauge coordinate at the prefix-assignment default `false`. -/
+theorem v13RealLinearSmallNoTargetRowsCNFSelfReduction_hiddenGauge_false
+    (D : V13RealLinearSmallNoTargetRowsCNFPNPSATDecider)
+    (Y : V13RealLinearSmallNoTargetRowsCNFPublic) :
+    v13RealLinearSmallNoTargetRowsCNFHiddenGauge
+        (v13RealLinearSmallNoTargetRowsCNFSelfReductionAssignment D Y) =
+      false := by
+  unfold v13RealLinearSmallNoTargetRowsCNFHiddenGauge
+  unfold v13RealLinearSmallNoTargetRowsCNFSelfReductionAssignment
+  unfold realCNFBitFixAssignment
+  apply CNFPrefix.assignment_eq_false_of_not_mem_keys
+  have hkeys :
+      (realCNFBitFixPrefix D
+          (v13RealLinearSmallNoTargetRowsCNFFormula Y)
+          (v13RealLinearSmallNoTargetRowsCNFBitFixVarOrder Y)).map
+          Prod.fst =
+        v13RealLinearSmallNoTargetRowsCNFBitFixVarOrder Y := by
+    simpa [realCNFBitFixPrefix] using
+      (realCNFBitFixPrefixAux_keys D
+        (v13RealLinearSmallNoTargetRowsCNFFormula Y)
+        ([] : List (V13RealLinearSmallNoTargetRowsCNFVar × Bool))
+        (v13RealLinearSmallNoTargetRowsCNFBitFixVarOrder Y))
+  intro hmem
+  exact
+    v13RealLinearSmallNoTargetRowsCNFBitFixVarOrder_no_hiddenGauge Y
+      (by simpa [hkeys] using hmem)
+
+/-- The explicit P=NP-side bit-fixing assignment for the concrete
+no-target-row CNF is exactly the canonical satisfying witness with hidden
+gauge `false`. -/
+theorem
+    v13RealLinearSmallNoTargetRowsCNFSelfReductionAssignment_eq_base_false
+    (D : V13RealLinearSmallNoTargetRowsCNFPNPSATDecider)
+    (Y : V13RealLinearSmallNoTargetRowsCNFPublic) :
+    v13RealLinearSmallNoTargetRowsCNFSelfReductionAssignment D Y =
+      v13RealLinearSmallNoTargetRowsCNFAssignment Y false := by
+  funext v
+  cases v with
+  | none =>
+      exact
+        v13RealLinearSmallNoTargetRowsCNFSelfReduction_hiddenGauge_false
+          D Y
+  | some j =>
+      fin_cases j
+      · simpa [v13RealLinearSmallNoTargetRowsCNFReadout,
+          v13RealLinearSmallNoTargetRowsCNFAssignment,
+          v13RealLinearSmallNoTargetRowsCNFMessage,
+          v13RealLinearSmallGaugeCNFMessageIndex] using
+          v13RealLinearSmallNoTargetRowsCNFSelfReduction_readout_eq_message
+            D Y
+      · have hsat :=
+          v13RealLinearSmallNoTargetRowsCNFSelfReductionAssignment_satisfies
+            D Y
+        rcases v13RealLinearSmallNoTargetRowsCNFFormula_sat_iff.mp hsat with
+          ⟨hspare, _hxor⟩
+        simpa [v13RealLinearSmallNoTargetRowsCNFAssignment,
+          v13RealLinearSmallGaugeCNFMessageIndex,
+          v13RealLinearSmallGaugeCNFSpareIndex] using hspare
+
 /-- SAT world recovered by bit-fixing under the explicit P=NP-side SAT
 decider. -/
 def v13RealLinearSmallNoTargetRowsCNFSATWorldOfSelfReduction
@@ -2455,6 +2534,20 @@ theorem
   simpa [v13RealLinearSmallNoTargetRowsCNFSATWorldOfSelfReduction,
     v13RealLinearSmallNoTargetRowsCNFSATWorldTarget] using
     v13RealLinearSmallNoTargetRowsCNFSelfReduction_readout_eq_message D Y
+
+/-- Reifying the explicit P=NP-side bit-fixing witness gives exactly the
+canonical small no-target-row SAT world with hidden gauge `false`. -/
+theorem
+    v13RealLinearSmallNoTargetRowsCNFSATWorldOfSelfReduction_eq_base_false
+    (D : V13RealLinearSmallNoTargetRowsCNFPNPSATDecider)
+    (Y : V13RealLinearSmallNoTargetRowsCNFPublic) :
+    v13RealLinearSmallNoTargetRowsCNFSATWorldOfSelfReduction D Y =
+      v13RealLinearSmallNoTargetRowsCNFSATWorldOfPublicGauge Y false := by
+  cases Y with
+  | mk msg spare =>
+      simp [v13RealLinearSmallNoTargetRowsCNFSATWorldOfSelfReduction,
+        v13RealLinearSmallNoTargetRowsCNFSATWorldOfPublicGauge,
+        v13RealLinearSmallNoTargetRowsCNFSelfReductionAssignment_eq_base_false]
 
 /-- The concrete no-target-row self-reduction uses a fixed program skeleton
 around the explicit SAT decider, so the associated `kpolyAt` model is constant
