@@ -493,6 +493,10 @@ theorem closedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceRowMaxC
     ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceRowMaxCutSeparationEvidence :=
   closedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceRowMaxCutSeparationEvidence
 
+theorem closedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceRowHistogramSeparationEvidence_audit :
+    ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceRowHistogramSeparationEvidence :=
+  closedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceRowHistogramSeparationEvidence
+
 theorem closedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFace_noMaxCutCandidate_audit
     (hmaxcut :
       ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceRowMaxCutSeparationEvidence)
@@ -501,6 +505,15 @@ theorem closedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFace_noMaxC
     False :=
   closedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFace_noMaxCutCandidate
     hmaxcut candidate
+
+theorem closedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFace_noMaxCutHistogramCandidate_audit
+    (hhist :
+      ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceRowHistogramSeparationEvidence)
+    (candidate :
+      ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceMaxCutHistogramCandidate) :
+    False :=
+  closedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFace_noMaxCutHistogramCandidate
+    hhist candidate
 
 theorem closedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceArchiveNoRadialFaceCoherentRepresentationByMaxCut_audit :
     ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceArchiveNoRadialFaceCoherentRepresentationByMaxCut :=

@@ -6558,6 +6558,7 @@ structure ClosedCollarSimplePatchAnnularEmbeddingRadialFaceRowCertificate where
   enumeratedRotationSystemCount : Nat
   radialCutEdgeCount : Nat
   maxRadialCutEdgesOnSingleFace : Nat
+  maxRadialCutEdgesOnSingleFaceHistogram : List (Nat × Nat)
   planarRotationSystemCount : Nat
   radialFaceCoherentRotationCount : Nat
   templateExclusionBlocker : String
@@ -6582,6 +6583,7 @@ def closedCollarSimplePatchN6AnnularEmbeddingRadialFaceSampleRowCertificates :
       enumeratedRotationSystemCount := 262144,
       radialCutEdgeCount := 4,
       maxRadialCutEdgesOnSingleFace := 2,
+      maxRadialCutEdgesOnSingleFaceHistogram := [(2, 8)],
       planarRotationSystemCount := 8,
       radialFaceCoherentRotationCount := 0,
       templateExclusionBlocker := "excluded_exact_diagonal_two_pole_template",
@@ -6596,6 +6598,7 @@ def closedCollarSimplePatchN6AnnularEmbeddingRadialFaceSampleRowCertificates :
       enumeratedRotationSystemCount := 262144,
       radialCutEdgeCount := 4,
       maxRadialCutEdgesOnSingleFace := 2,
+      maxRadialCutEdgesOnSingleFaceHistogram := [(2, 8)],
       planarRotationSystemCount := 8,
       radialFaceCoherentRotationCount := 0,
       templateExclusionBlocker := "excluded_exact_diagonal_two_pole_template",
@@ -6610,6 +6613,7 @@ def closedCollarSimplePatchN6AnnularEmbeddingRadialFaceSampleRowCertificates :
       enumeratedRotationSystemCount := 262144,
       radialCutEdgeCount := 4,
       maxRadialCutEdgesOnSingleFace := 2,
+      maxRadialCutEdgesOnSingleFaceHistogram := [(2, 8)],
       planarRotationSystemCount := 8,
       radialFaceCoherentRotationCount := 0,
       templateExclusionBlocker := "excluded_exact_diagonal_two_pole_template",
@@ -6624,6 +6628,7 @@ def closedCollarSimplePatchN6AnnularEmbeddingRadialFaceSampleRowCertificates :
       enumeratedRotationSystemCount := 262144,
       radialCutEdgeCount := 4,
       maxRadialCutEdgesOnSingleFace := 2,
+      maxRadialCutEdgesOnSingleFaceHistogram := [(2, 8)],
       planarRotationSystemCount := 8,
       radialFaceCoherentRotationCount := 0,
       templateExclusionBlocker := "excluded_exact_diagonal_two_pole_template",
@@ -6638,6 +6643,7 @@ def closedCollarSimplePatchN6AnnularEmbeddingRadialFaceSampleRowCertificates :
       enumeratedRotationSystemCount := 262144,
       radialCutEdgeCount := 4,
       maxRadialCutEdgesOnSingleFace := 2,
+      maxRadialCutEdgesOnSingleFaceHistogram := [(2, 8)],
       planarRotationSystemCount := 8,
       radialFaceCoherentRotationCount := 0,
       templateExclusionBlocker := "excluded_exact_diagonal_two_pole_template",
@@ -6652,6 +6658,7 @@ def closedCollarSimplePatchN6AnnularEmbeddingRadialFaceSampleRowCertificates :
       enumeratedRotationSystemCount := 262144,
       radialCutEdgeCount := 4,
       maxRadialCutEdgesOnSingleFace := 2,
+      maxRadialCutEdgesOnSingleFaceHistogram := [(2, 8)],
       planarRotationSystemCount := 8,
       radialFaceCoherentRotationCount := 0,
       templateExclusionBlocker := "excluded_exact_diagonal_two_pole_template",
@@ -6669,6 +6676,7 @@ def closedCollarSimplePatchN6AnnularEmbeddingRadialFaceSlice1000302RowCertificat
       enumeratedRotationSystemCount := 262144,
       radialCutEdgeCount := 4,
       maxRadialCutEdgesOnSingleFace := 2,
+      maxRadialCutEdgesOnSingleFaceHistogram := [(2, 8)],
       planarRotationSystemCount := 8,
       radialFaceCoherentRotationCount := 0,
       templateExclusionBlocker := "excluded_exact_diagonal_two_pole_template",
@@ -6683,6 +6691,7 @@ def closedCollarSimplePatchN6AnnularEmbeddingRadialFaceSlice1000302RowCertificat
       enumeratedRotationSystemCount := 262144,
       radialCutEdgeCount := 4,
       maxRadialCutEdgesOnSingleFace := 2,
+      maxRadialCutEdgesOnSingleFaceHistogram := [(2, 8)],
       planarRotationSystemCount := 8,
       radialFaceCoherentRotationCount := 0,
       templateExclusionBlocker := "excluded_exact_diagonal_two_pole_template",
@@ -6700,6 +6709,7 @@ def closedCollarSimplePatchN6AnnularEmbeddingRadialFaceSlice1001289RowCertificat
       enumeratedRotationSystemCount := 262144,
       radialCutEdgeCount := 4,
       maxRadialCutEdgesOnSingleFace := 2,
+      maxRadialCutEdgesOnSingleFaceHistogram := [(2, 8)],
       planarRotationSystemCount := 8,
       radialFaceCoherentRotationCount := 0,
       templateExclusionBlocker := "excluded_exact_diagonal_two_pole_template",
@@ -6714,6 +6724,7 @@ def closedCollarSimplePatchN6AnnularEmbeddingRadialFaceSlice1001289RowCertificat
       enumeratedRotationSystemCount := 262144,
       radialCutEdgeCount := 4,
       maxRadialCutEdgesOnSingleFace := 2,
+      maxRadialCutEdgesOnSingleFaceHistogram := [(2, 8)],
       planarRotationSystemCount := 8,
       radialFaceCoherentRotationCount := 0,
       templateExclusionBlocker := "excluded_exact_diagonal_two_pole_template",
@@ -6767,6 +6778,9 @@ def ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceRowCoverage
         (fun certificate => certificate.maxRadialCutEdgesOnSingleFace) =
       List.replicate 10 2 ∧
     closedCollarSimplePatchN6AnnularEmbeddingRadialFaceRowCoverageCertificates.map
+        (fun certificate => certificate.maxRadialCutEdgesOnSingleFaceHistogram) =
+      List.replicate 10 [(2, 8)] ∧
+    closedCollarSimplePatchN6AnnularEmbeddingRadialFaceRowCoverageCertificates.map
         (fun certificate => certificate.planarRotationSystemCount) =
       List.replicate 10 8 ∧
     closedCollarSimplePatchN6AnnularEmbeddingRadialFaceRowCoverageCertificates.map
@@ -6785,7 +6799,7 @@ theorem closedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceRowCove
     ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceRowCoverageArtifactEvidence := by
   refine
     ⟨closedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceArchiveCaseEvidence,
-      ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩ <;>
+      ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩ <;>
     decide
 
 /--
@@ -6808,6 +6822,9 @@ def ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceRowMaxCutSe
     closedCollarSimplePatchN6AnnularEmbeddingRadialFaceRowCoverageCertificates.map
         (fun certificate => certificate.maxRadialCutEdgesOnSingleFace) =
       List.replicate 10 2 ∧
+    closedCollarSimplePatchN6AnnularEmbeddingRadialFaceRowCoverageCertificates.map
+        (fun certificate => certificate.maxRadialCutEdgesOnSingleFaceHistogram) =
+      List.replicate 10 [(2, 8)] ∧
     closedCollarSimplePatchN6AnnularEmbeddingRadialFaceArchiveCounts.uniquePlanarRotationSystemCount =
       80 ∧
     closedCollarSimplePatchN6AnnularEmbeddingRadialFaceArchiveCounts.archiveRadialFaceCoherentRotationCount =
@@ -6817,7 +6834,29 @@ theorem closedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceRowMaxC
     ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceRowMaxCutSeparationEvidence := by
   refine
     ⟨closedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceRowCoverageArtifactEvidence,
-      ?_, ?_, ?_, ?_, ?_, ?_⟩ <;>
+      ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩ <;>
+    decide
+
+/--
+Histogram-level form of the radial-face row separation: each audited row has
+exactly eight planar rotations, and every one of those rotations has maximum
+two radial-cut edges on any single face.
+-/
+def ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceRowHistogramSeparationEvidence :
+    Prop :=
+  ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceRowMaxCutSeparationEvidence ∧
+    closedCollarSimplePatchN6AnnularEmbeddingRadialFaceRowCoverageCertificates.map
+        (fun certificate => certificate.maxRadialCutEdgesOnSingleFaceHistogram) =
+      List.replicate 10 [(2, 8)] ∧
+    closedCollarSimplePatchN6AnnularEmbeddingRadialFaceRowCoverageCertificates.map
+        (fun certificate => certificate.planarRotationSystemCount) =
+      List.replicate 10 8
+
+theorem closedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceRowHistogramSeparationEvidence :
+    ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceRowHistogramSeparationEvidence := by
+  refine
+    ⟨closedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceRowMaxCutSeparationEvidence,
+      ?_, ?_⟩ <;>
     decide
 
 /--
@@ -6833,6 +6872,22 @@ structure ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceMaxCu
     certificate.radialCutEdgeCount = 4
   radialCutEdges_on_single_face :
     certificate.maxRadialCutEdgesOnSingleFace = 4
+
+/--
+Histogram-level max-cut candidate: the row audit would have to contain a
+positive-count planar rotation whose maximum single-face radial-cut count is
+four.
+-/
+structure ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceMaxCutHistogramCandidate where
+  certificate : ClosedCollarSimplePatchAnnularEmbeddingRadialFaceRowCertificate
+  certificate_mem :
+    certificate ∈ closedCollarSimplePatchN6AnnularEmbeddingRadialFaceRowCoverageCertificates
+  fourOnSingleFaceRotationCount : Nat
+  fourOnSingleFace_mem :
+    (4, fourOnSingleFaceRotationCount) ∈
+      certificate.maxRadialCutEdgesOnSingleFaceHistogram
+  fourOnSingleFaceRotationCount_pos :
+    0 < fourOnSingleFaceRotationCount
 
 theorem closedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFace_noMaxCutCandidate
     (hmaxcut :
@@ -6853,6 +6908,27 @@ theorem closedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFace_noMaxC
   have hfalse : (4 : Nat) = 2 :=
     candidate.radialCutEdges_on_single_face.symm.trans hmaxTwo
   exact (by decide : (4 : Nat) ≠ 2) hfalse
+
+theorem closedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFace_noMaxCutHistogramCandidate
+    (hhist :
+      ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceRowHistogramSeparationEvidence)
+    (candidate :
+      ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceMaxCutHistogramCandidate) :
+    False := by
+  have hmem :
+      candidate.certificate.maxRadialCutEdgesOnSingleFaceHistogram ∈
+        closedCollarSimplePatchN6AnnularEmbeddingRadialFaceRowCoverageCertificates.map
+          (fun certificate => certificate.maxRadialCutEdgesOnSingleFaceHistogram) :=
+    List.mem_map_of_mem
+      (f := fun certificate => certificate.maxRadialCutEdgesOnSingleFaceHistogram)
+      candidate.certificate_mem
+  have hhistogram :
+      candidate.certificate.maxRadialCutEdgesOnSingleFaceHistogram = [(2, 8)] := by
+    simpa [hhist.2.1] using hmem
+  have hpair : (4, candidate.fourOnSingleFaceRotationCount) = (2, 8) := by
+    simpa [hhistogram] using candidate.fourOnSingleFace_mem
+  have hfirst : (4 : Nat) = 2 := congrArg Prod.fst hpair
+  exact (by decide : (4 : Nat) ≠ 2) hfirst
 
 /--
 Max-cut semantic coverage obligation for the radial-face archive: if an
