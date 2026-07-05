@@ -820,7 +820,7 @@ set_option autoImplicit false
 #check realM4RealLockInExcludedShortcuts
 #check realM4RealLockInExcludedShortcuts_exact
 #check realM4RealLockInCompletionAudit
-#check realM4RealLockInCompletionAudit_eq_frontier
+#check realM4RealLockInCompletionAudit_eq_namedLargeTargetFrontier
 #check realM4RealLockInCompletionAudit_exact
 #check realM4RealLockInCompletionStatement
 #check realM4RealLockInEndpointHypothesisAudit
@@ -1725,7 +1725,7 @@ set_option autoImplicit false
 #print axioms realM4RealLockInExcludedShortcuts
 #print axioms realM4RealLockInExcludedShortcuts_exact
 #print axioms realM4RealLockInCompletionAudit
-#print axioms realM4RealLockInCompletionAudit_eq_frontier
+#print axioms realM4RealLockInCompletionAudit_eq_namedLargeTargetFrontier
 #print axioms realM4RealLockInCompletionAudit_exact
 #print axioms realM4RealLockInCompletionStatement
 #print axioms realM4RealLockInEndpointHypothesisAudit
