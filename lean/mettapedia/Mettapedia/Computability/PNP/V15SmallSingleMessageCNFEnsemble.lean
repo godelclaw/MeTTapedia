@@ -1080,6 +1080,59 @@ theorem xorGaugeSingleMessageCNFReadoutData_supportedArbitraryOutputSATSearchCor
       xorGaugeSingleMessageCNFReadoutData_singleMessagePromise
       xorGaugeSingleMessageCNFReadoutData_supportedSatisfiable
 
+/-! ## Gauge-buffered XOR public-tag structural field -/
+
+/-- No single public coordinate should determine the fixed message in the
+gauge-buffered XOR anchor. -/
+def XorGaugeSingleMessageNoPublicCoordinateTargetTags : Prop :=
+  ∀ coord : XorSingleMessagePublicCoordinate,
+    ¬ ∃ f : Bool -> Bool,
+      ∀ Y : XorGaugeSingleMessagePublic,
+        xorGaugeSingleMessageM Y =
+          f (xorSingleMessagePublicCoordinateValue coord Y)
+
+/-- Structural `noPublicTargetTags` field for the gauge-buffered XOR anchor:
+the added hidden gauge variable does not change the XOR public surface. -/
+theorem xorGaugeSingleMessage_noPublicTargetTags :
+    XorGaugeSingleMessageNoPublicCoordinateTargetTags := by
+  intro coord
+  simpa [XorGaugeSingleMessageNoPublicCoordinateTargetTags,
+    xorGaugeSingleMessageM] using
+    xorSingleMessage_noPublicTargetTags coord
+
+/-- No single public coordinate should determine the CNF-level readout on
+every satisfying SAT-search output for the gauge-buffered XOR anchor. -/
+def XorGaugeSingleMessageNoPublicCoordinateReadoutTags : Prop :=
+  ∀ coord : XorSingleMessagePublicCoordinate,
+    ¬ ∃ f : Bool -> Bool,
+      ∀ {Y : XorGaugeSingleMessagePublic}
+        {W : ConcreteCNF.Assignment (XorGaugeSingleMessageVar Y)},
+          ConcreteCNF.IsSatFormula (xorGaugeSingleMessageFormula Y) W ->
+            xorGaugeSingleMessageProjection Y W =
+              f (xorSingleMessagePublicCoordinateValue coord Y)
+
+/-- Structural CNF-readout form of `noPublicTargetTags`: even after SAT search
+chooses an arbitrary hidden gauge bit, no single public coordinate predicts the
+forced message readout. -/
+theorem xorGaugeSingleMessage_noPublicReadoutTags :
+    XorGaugeSingleMessageNoPublicCoordinateReadoutTags := by
+  intro coord htag
+  exact xorGaugeSingleMessage_noPublicTargetTags coord
+    (by
+      rcases htag with ⟨f, hf⟩
+      refine ⟨f, ?_⟩
+      intro Y
+      have hsat :
+          ConcreteCNF.IsSatFormula
+            (xorGaugeSingleMessageFormula Y)
+            (xorGaugeSingleMessageAssignment Y false) :=
+        xorGaugeSingleMessageFormula_satisfied_assignment Y false
+      have hreadout :=
+        hf (Y := Y) (W := xorGaugeSingleMessageAssignment Y false) hsat
+      simpa [xorGaugeSingleMessageProjection,
+        xorGaugeSingleMessageAssignment, xorGaugeSingleMessageM] using
+        hreadout)
+
 /-- Flip the hidden gauge coordinate when `gamma = true`; leave the message
 coordinate unchanged. -/
 def xorGaugeSingleMessageGaugeAction
