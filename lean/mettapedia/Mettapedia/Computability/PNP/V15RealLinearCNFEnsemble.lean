@@ -5295,6 +5295,37 @@ theorem v13RealLinearNoTargetRowsGaugeCNF_noPublicTargetTags
         (@v13RealLinearNoTargetRowsGaugeCNFTarget m i₀)
         hPair hOpp⟩
 
+/-- Readout-level `noPublicReadoutTags` transfer for the no-target-rows
+gauge-buffered CNF world: no function of the neutral no-target-row skeleton
+can predict the selected-coordinate readout for every verifier-valid
+gauge-CNF witness. -/
+theorem v13RealLinearNoTargetRowsGaugeCNF_noPublicReadoutTags
+    {m : Nat} (i₀ : Fin m) (hm : 1 < m) :
+    ¬ ∃ f : V13RealLinearNoTargetRowsMap m i₀ -> Bool,
+      ∀ {Y : V13RealLinearNoTargetRowsWorld m i₀}
+        {W : V13RealLinearGaugeCNFWitness m},
+        v13RealLinearGaugeCNFVerifier
+            (v13RealLinearNoTargetRowsPublicInput Y) W →
+          v13RealLinearGaugeCNFReadout i₀ W =
+            f (v13RealLinearNoTargetRowsNeutralSkeleton Y) := by
+  intro htag
+  rcases htag with ⟨f, hf⟩
+  have hNoTarget :
+      ¬ ∃ f : V13RealLinearNoTargetRowsMap m i₀ -> Bool,
+        ∀ omega : V13RealLinearNoTargetRowsGaugeCNFWorld m i₀,
+          v13RealLinearNoTargetRowsGaugeCNFTarget omega =
+            f (v13RealLinearNoTargetRowsGaugeCNFNeutralSkeleton
+              omega) :=
+    (v13RealLinearNoTargetRowsGaugeCNF_noPublicTargetTags i₀ hm).2.2
+  exact hNoTarget
+    ⟨f, by
+      intro omega
+      have hReadout :=
+        hf (Y := omega.base) (W := omega.assignment) omega.sat
+      simpa [v13RealLinearNoTargetRowsGaugeCNFTarget,
+        v13RealLinearNoTargetRowsGaugeCNFNeutralSkeleton] using
+          hReadout⟩
+
 /-- A gauge-buffered no-target-rows CNF world is exactly a base no-target-rows
 world together with the free hidden gauge bit. -/
 noncomputable def v13RealLinearNoTargetRowsGaugeCNFWorldBaseGaugeEquiv
