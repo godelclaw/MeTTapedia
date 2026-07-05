@@ -3285,6 +3285,20 @@ theorem v13RealLinearGaugeCNF_selfReductionUpperHypothesis_givenPNP
 
 /-! ## No-target-rows CNF structural transfer -/
 
+/-- The full public instance decoded from a no-target-rows world carries the
+hidden target bit as its selected public message. -/
+theorem v13RealLinearNoTargetRowsTargetBit_eq_publicMessage
+    {m : Nat} (i₀ : Fin m)
+    (omega : V13RealLinearNoTargetRowsWorld m i₀) :
+    v13RealLinearNoTargetRowsTargetBit omega =
+      v13RealLinearMessageOfPublic i₀
+        (v13RealLinearNoTargetRowsPublicInput omega) := by
+  have hdecode :=
+    v13RealLinearNoTargetRows_fullPublic_decodes_target i₀ omega
+  simpa [v13RealLinearMessageOfPublic,
+    v13RealLinearNoTargetRowsTargetBit, v13RealLinearFullDecoder]
+    using (congrArg v13RealLinearBit hdecode).symm
+
 /-- CNF world over the adjusted no-target-rows real linear surface: a base
 no-target-rows world together with a satisfying assignment for its concrete
 CNF public instance. -/
@@ -4594,6 +4608,60 @@ theorem v13RealLinearNoTargetRowsGaugeCNFAppendixICNF_noPublicReadoutTags
           simpa [W,
             v13RealLinearNoTargetRowsGaugeCNFAppendixICNFNeutralSkeleton]
             using hReadout⟩
+
+/-- Formula-syntax no-public-target-tags shape for the no-target-rows
+Appendix-I CNF data.  This is deliberately stronger than the transferred
+neutral-skeleton field: it asks whether the full concrete CNF formula syntax
+alone hides the target bit. -/
+def V13RealLinearNoTargetRowsGaugeCNFAppendixICNFFormulaNoPublicTargetTags
+    {m : Nat} (i₀ : Fin m) : Prop :=
+  ¬ ∃ f : ConcreteCNF.Formula (V13RealLinearGaugeCNFVar m) -> Bool,
+      ∀ Y : V13RealLinearNoTargetRowsWorld m i₀,
+        v13RealLinearNoTargetRowsTargetBit Y =
+          f ((v13RealLinearNoTargetRowsGaugeCNFAppendixICNFReadoutData
+            i₀).formula Y)
+
+/-- The full Appendix-I concrete CNF formula syntax still determines the
+target bit: the gauge-buffered formula contains the selected target-coordinate
+unit tag once the no-target-row public instance has been expanded to its full
+CNF input. -/
+theorem
+    v13RealLinearNoTargetRowsGaugeCNFAppendixICNFFormula_publicSyntaxDeterminesTarget
+    {m : Nat} (i₀ : Fin m) :
+    ∃ f : ConcreteCNF.Formula (V13RealLinearGaugeCNFVar m) -> Bool,
+      ∀ Y : V13RealLinearNoTargetRowsWorld m i₀,
+        v13RealLinearNoTargetRowsTargetBit Y =
+          f ((v13RealLinearNoTargetRowsGaugeCNFAppendixICNFReadoutData
+            i₀).formula Y) := by
+  refine ⟨v13RealLinearGaugeCNFFormulaPositiveTargetTag i₀, ?_⟩
+  intro Y
+  calc
+    v13RealLinearNoTargetRowsTargetBit Y =
+        v13RealLinearMessageOfPublic i₀
+          (v13RealLinearNoTargetRowsPublicInput Y) :=
+      v13RealLinearNoTargetRowsTargetBit_eq_publicMessage i₀ Y
+    _ =
+        v13RealLinearGaugeCNFFormulaPositiveTargetTag i₀
+          ((v13RealLinearNoTargetRowsGaugeCNFAppendixICNFReadoutData
+            i₀).formula Y) := by
+      simpa [v13RealLinearNoTargetRowsGaugeCNFAppendixICNFReadoutData]
+        using
+          (v13RealLinearGaugeCNFFormulaPositiveTargetTag_eq_publicMessage
+            i₀ (v13RealLinearNoTargetRowsPublicInput Y)).symm
+
+/-- Named obstruction: if the full concrete Appendix-I CNF formula syntax is
+made public, `noPublicTargetTags` fails for the no-target-rows real CNF
+surface.  The construction-proved field therefore must use the neutral
+no-target-row skeleton above, not the complete locking formula syntax. -/
+theorem
+    v13RealLinearNoTargetRowsGaugeCNFAppendixICNFFormula_noPublicTargetTags_obstruction
+    {m : Nat} (i₀ : Fin m) :
+    ¬ V13RealLinearNoTargetRowsGaugeCNFAppendixICNFFormulaNoPublicTargetTags
+      i₀ := by
+  intro hNoTags
+  exact hNoTags
+    (v13RealLinearNoTargetRowsGaugeCNFAppendixICNFFormula_publicSyntaxDeterminesTarget
+      i₀)
 
 /-- Pair-neutrality transfers to the gauge-buffered CNF world when the public
 neutral skeleton is the base no-target-rows map skeleton. -/
