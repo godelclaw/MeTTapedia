@@ -11447,6 +11447,129 @@ theorem
       hFloor⟩
 
 /--
+The concrete constant-decoder regime extracted from the equality-indexed
+construction surface at a candidate `P = NP` witness.  This packages the
+fixed self-reduction decoder program and the large-target inequality as the
+`RealM4UniformConstantDecoderRegime` consumed by the upper discharge.
+-/
+def
+    realM4_noTargetRowsEqualityIndexedConstructionData_constantDecoderRegime_givenPEqualsNP
+    {m : Nat} (i₀ : Fin m) [hm : Fact (1 < m)]
+    (coordinate : V13RealLinearPublicCoordinate m)
+    {Neutral : Type} {Safe : Type x} {Gauge : Type y}
+    {Transcript : Type z} [DecidableEq Transcript]
+    {Pair : Type a} [Fintype Pair]
+    {Stage : Type b} {Branch : Type c}
+    {HistoryAtom : Type} {Pivot : Type e}
+    {Observer : Type f} {Output : Type f}
+    {PublicLock : Type g} {Quotient : Type h}
+    {LockAux : Type i} {Message : Type j}
+    {CNFPublic : Type k} {Address : CNFPublic -> Type q}
+    {Var : CNFPublic -> Type l}
+    {Witness : CNFPublic -> Type l}
+    {D : AppendixICNFReadoutData
+      PublicLock Quotient LockAux Message CNFPublic Var Witness}
+    {C : CookStylePNPClassInterface.{p}}
+    (K :
+      RealM4NoTargetRowsEqualityIndexedOfficialConstructionData
+        (Neutral := Neutral) (Safe := Safe) (Gauge := Gauge)
+        (Transcript := Transcript) (Pair := Pair) (Stage := Stage)
+        (Branch := Branch) (HistoryAtom := HistoryAtom) (Pivot := Pivot)
+        (Observer := Observer) (Output := Output)
+        (PublicLock := PublicLock) (Quotient := Quotient)
+        (LockAux := LockAux) (Message := Message) (CNFPublic := CNFPublic)
+        (Address := Address) (Var := Var) (Witness := Witness)
+        i₀ coordinate D C)
+    (hEq : C.pEqualsNP) :
+    RealM4UniformConstantDecoderRegime K.lowerMachine.lowerFramework
+      (realM4_noTargetRowsEqualityIndexedConstructionData_uniformBitFixing_givenPEqualsNP
+        i₀ coordinate K hEq) := by
+  let hP : C.inP K.languageNPData.separatedLanguage :=
+    hEq K.languageNPData.separatedLanguage
+      K.languageNPData.separatedLanguage_inNP
+  let U :=
+    realM4_noTargetRowsEqualityIndexedConstructionData_uniformBitFixing_givenPEqualsNP
+      i₀ coordinate K hEq
+  exact
+    realM4_uniformConstantDecoderRegime_of_kpolyCompatibility_largeTarget
+      U (K.eta_of_pEqualsNP hEq) (K.eta_pos_of_pEqualsNP hEq)
+      (by
+        simpa [U,
+          realM4_noTargetRowsEqualityIndexedConstructionData_uniformBitFixing_givenPEqualsNP,
+          hP] using K.kpolyAt_eq_of_pEqualsNP hEq)
+      (K.etaTimes_eq_of_pEqualsNP hEq)
+      (by
+        simpa [U,
+          realM4_noTargetRowsEqualityIndexedConstructionData_uniformBitFixing_givenPEqualsNP,
+          hP] using K.targetBlocks_gt_decoder_of_pEqualsNP hEq)
+
+/--
+Field audit for the equality-indexed constant-decoder regime.  It confirms
+that the regime has the indexed positive eta, identifies `kpolyAt` with the
+fixed uniform self-reduction decoder, identifies `etaTimes` with the linear
+floor, proves the decoder below that floor, and therefore supplies the v13
+`SelfReductionUpperHypothesis`.
+-/
+theorem
+    realM4_noTargetRowsEqualityIndexedConstructionData_constantDecoderRegime_givenPEqualsNP_fields
+    {m : Nat} (i₀ : Fin m) [hm : Fact (1 < m)]
+    (coordinate : V13RealLinearPublicCoordinate m)
+    {Neutral : Type} {Safe : Type x} {Gauge : Type y}
+    {Transcript : Type z} [DecidableEq Transcript]
+    {Pair : Type a} [Fintype Pair]
+    {Stage : Type b} {Branch : Type c}
+    {HistoryAtom : Type} {Pivot : Type e}
+    {Observer : Type f} {Output : Type f}
+    {PublicLock : Type g} {Quotient : Type h}
+    {LockAux : Type i} {Message : Type j}
+    {CNFPublic : Type k} {Address : CNFPublic -> Type q}
+    {Var : CNFPublic -> Type l}
+    {Witness : CNFPublic -> Type l}
+    {D : AppendixICNFReadoutData
+      PublicLock Quotient LockAux Message CNFPublic Var Witness}
+    {C : CookStylePNPClassInterface.{p}}
+    (K :
+      RealM4NoTargetRowsEqualityIndexedOfficialConstructionData
+        (Neutral := Neutral) (Safe := Safe) (Gauge := Gauge)
+        (Transcript := Transcript) (Pair := Pair) (Stage := Stage)
+        (Branch := Branch) (HistoryAtom := HistoryAtom) (Pivot := Pivot)
+        (Observer := Observer) (Output := Output)
+        (PublicLock := PublicLock) (Quotient := Quotient)
+        (LockAux := LockAux) (Message := Message) (CNFPublic := CNFPublic)
+        (Address := Address) (Var := Var) (Witness := Witness)
+        i₀ coordinate D C)
+    (hEq : C.pEqualsNP) :
+    let U :=
+      realM4_noTargetRowsEqualityIndexedConstructionData_uniformBitFixing_givenPEqualsNP
+        i₀ coordinate K hEq
+    let R :=
+      realM4_noTargetRowsEqualityIndexedConstructionData_constantDecoderRegime_givenPEqualsNP
+        i₀ coordinate K hEq
+    R.eta = K.eta_of_pEqualsNP hEq ∧
+      0 < R.eta ∧
+        K.lowerMachine.lowerFramework.kpolyAt =
+          realM4UniformConstantDecoderKpolyAt U ∧
+          K.lowerMachine.lowerFramework.etaTimes =
+            realCNFLinearEtaTimes R.eta ∧
+            realM4UniformSelfReductionDecoderCost U <
+              R.eta * K.lowerMachine.lowerFramework.targetBlocks ∧
+              SelfReductionUpperHypothesis K.lowerMachine.lowerFramework := by
+  dsimp
+  let U :=
+    realM4_noTargetRowsEqualityIndexedConstructionData_uniformBitFixing_givenPEqualsNP
+      i₀ coordinate K hEq
+  let R :=
+    realM4_noTargetRowsEqualityIndexedConstructionData_constantDecoderRegime_givenPEqualsNP
+      i₀ coordinate K hEq
+  exact
+    ⟨rfl,
+      K.eta_pos_of_pEqualsNP hEq,
+      R.kpolyAt_eq,
+      R.etaTimes_eq,
+      R.floor_dominates_decoder,
+      realM4_uniformSelfReductionUpperHypothesis_givenPNP U R⟩
+
+/--
 Extract the explicit-P=NP self-reduction upper discharge from the bundled
 equality-indexed construction surface at a candidate `P = NP` witness.  The
 SAT decider family is obtained from the named official NP language's
@@ -11491,16 +11614,14 @@ def realM4_selfReductionUpperDischarge_of_noTargetRowsEqualityIndexedConstructio
   let pnpDeciderFamily :=
     K.pToDeciderFamilyData.pnpDeciderFamily_of_inP hP
   exact
-    RealM4SelfReductionUpperExplicitPNPDischarge.ofLockedMessageDataAndLargeTargetKpolyCompatibility
+    RealM4SelfReductionUpperExplicitPNPDischarge.ofLockedMessageData
       K.lockedMessageData uniformSupport pnpDeciderFamily
-      (K.eta_of_pEqualsNP hEq) (K.eta_pos_of_pEqualsNP hEq)
       (by
-        simpa [hP, uniformSupport, pnpDeciderFamily] using
-          K.kpolyAt_eq_of_pEqualsNP hEq)
-      (K.etaTimes_eq_of_pEqualsNP hEq)
-      (by
-        simpa [hP, uniformSupport, pnpDeciderFamily] using
-          K.targetBlocks_gt_decoder_of_pEqualsNP hEq)
+        simpa [uniformSupport, pnpDeciderFamily,
+          realM4_noTargetRowsEqualityIndexedConstructionData_uniformBitFixing_givenPEqualsNP,
+          hP] using
+          realM4_noTargetRowsEqualityIndexedConstructionData_constantDecoderRegime_givenPEqualsNP
+            i₀ coordinate K hEq)
 
 /--
 Checked output of the equality-indexed construction surface's P=NP upper
@@ -12086,6 +12207,31 @@ theorem
 def realM4NoTargetRowsEqualityIndexedPEqualsNPBranchStatement :
     String :=
   "For the real v15/M4 no-target-rows equality-indexed construction surface, a candidate P=NP witness puts the named NP language in P, extracts the SAT decider family, combines it with address-derived uniform CNF support into a uniform bit-fixing object, and identifies that fixed decoder below the linear floor.  This is the conditional upper-side branch only, not an unconditional SAT algorithm."
+
+def realM4NoTargetRowsEqualityIndexedConstantDecoderRegimeItems :
+    List String := [
+  "indexedPositiveEta",
+  "fixedUniformSelfReductionDecoder",
+  "kpolyAtConstantDecoder",
+  "etaTimesLinearFloor",
+  "decoderBelowLinearFloor",
+  "selfReductionUpperHypothesis"
+]
+
+theorem
+    realM4NoTargetRowsEqualityIndexedConstantDecoderRegimeItems_exact :
+    realM4NoTargetRowsEqualityIndexedConstantDecoderRegimeItems =
+      [ "indexedPositiveEta",
+        "fixedUniformSelfReductionDecoder",
+        "kpolyAtConstantDecoder",
+        "etaTimesLinearFloor",
+        "decoderBelowLinearFloor",
+        "selfReductionUpperHypothesis" ] := by
+  rfl
+
+def realM4NoTargetRowsEqualityIndexedConstantDecoderRegimeStatement :
+    String :=
+  "For the real v15/M4 no-target-rows equality-indexed construction surface, a candidate P=NP witness yields a named constant-decoder regime for the address-derived uniform bit-fixing object.  The regime packages eta positivity, kpolyAt as the fixed uniform self-reduction decoder, etaTimes as the linear floor, and the decoder below that floor; this is the exact upper-bound object consumed by the self-reduction discharge."
 
 def realM4NoTargetRowsEqualityIndexedParameterRecordHypothesisAudit :
     List String := [
@@ -17012,6 +17158,12 @@ def realM4LargeTargetLiftLedgerSupplement : List RealM4LiftLedgerRow := [
     note := "At a candidate P=NP witness, the equality-indexed surface now exposes the named-language P-membership, derived SAT decider family, uniform bit-fixing data, and constant-decoder floor facts before packaging the upper discharge."
   },
   {
+    item := "realNoTargetRowsEqualityIndexedConstructionDataConstantDecoderRegime"
+    status := .partialConstructionTransferred
+    checkedName := "realM4_noTargetRowsEqualityIndexedConstructionData_constantDecoderRegime_givenPEqualsNP_fields"
+    note := "At a candidate P=NP witness, the equality-indexed surface now exposes the named constant-decoder regime consumed by the self-reduction upper discharge."
+  },
+  {
     item := "realNoTargetRowsEqualityIndexedConstructionDataParameterRecordAtPEqualsNP"
     status := .partialConstructionTransferred
     checkedName := "realM4_noTargetRowsEqualityIndexedConstructionData_parameterRecord_givenPEqualsNP"
@@ -17075,6 +17227,7 @@ theorem realM4LargeTargetLiftLedgerSupplement_items_exact :
         "realNoTargetRowsEqualityIndexedConstructionDataEndgameMechanicalData",
         "realNoTargetRowsEqualityIndexedConstructionDataLockedMessageUpperSupport",
         "realNoTargetRowsEqualityIndexedConstructionDataPEqualsNPBranch",
+        "realNoTargetRowsEqualityIndexedConstructionDataConstantDecoderRegime",
         "realNoTargetRowsEqualityIndexedConstructionDataParameterRecordAtPEqualsNP",
         "realNoTargetRowsEqualityIndexedConstructionDataInternalClashAtPEqualsNP",
         "realNoTargetRowsEqualityIndexedConstructionDataContradictionAtPEqualsNP",
@@ -17090,6 +17243,7 @@ theorem realM4LargeTargetLiftLedgerSupplement_statuses_exact :
       [ RealM4LiftStatus.partialConstructionTransferred,
         RealM4LiftStatus.openConstruction,
         RealM4LiftStatus.openConstruction,
+        RealM4LiftStatus.partialConstructionTransferred,
         RealM4LiftStatus.partialConstructionTransferred,
         RealM4LiftStatus.partialConstructionTransferred,
         RealM4LiftStatus.partialConstructionTransferred,
