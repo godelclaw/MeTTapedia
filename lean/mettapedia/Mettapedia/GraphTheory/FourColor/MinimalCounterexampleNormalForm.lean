@@ -560,12 +560,27 @@ theorem lemma52_minimalCounterexampleNormalForm
     Nonempty (MinimalCounterexampleNormalForm G T) :=
   ⟨lemma52_minimalCounterexampleNormalFormData h⟩
 
+/-- Exact-duality Lemma 5.2 endpoint from the compact Birkhoff-surgery obligation. -/
+theorem lemma52MinimalCounterexampleNormalFormObligation_of_birkhoffSurgeryObligation
+    {minimal : MinimalTaitCounterexample G} {dual : PlaneCubicDualData G T}
+    (h : Lemma52BirkhoffSurgeryObligation minimal dual) :
+    Lemma52MinimalCounterexampleNormalFormObligation minimal dual :=
+  ⟨lemma52_minimalCounterexampleNormalFormData h, rfl⟩
+
 /-- Lemma 5.2 endpoint from the named Birkhoff surgery suite. -/
 theorem lemma52_minimalCounterexampleNormalForm_of_birkhoffSurgerySuite
     {minimal : MinimalTaitCounterexample G} {dual : PlaneCubicDualData G T}
     (suite : Lemma52BirkhoffSurgerySuite minimal dual) :
     Nonempty (MinimalCounterexampleNormalForm G T) :=
   lemma52_minimalCounterexampleNormalForm suite.toObligation
+
+/-- Exact-duality Lemma 5.2 endpoint from the named Birkhoff surgery suite. -/
+theorem lemma52MinimalCounterexampleNormalFormObligation_of_birkhoffSurgerySuite
+    {minimal : MinimalTaitCounterexample G} {dual : PlaneCubicDualData G T}
+    (suite : Lemma52BirkhoffSurgerySuite minimal dual) :
+    Lemma52MinimalCounterexampleNormalFormObligation minimal dual :=
+  lemma52MinimalCounterexampleNormalFormObligation_of_birkhoffSurgeryObligation
+    suite.toObligation
 
 /-- Assemble the full Lemma 5.2 surgery suite from the concrete smaller-surgery reduction
 targets for each forbidden configuration family. -/
@@ -610,6 +625,26 @@ theorem lemma52_minimalCounterexampleNormalForm_of_smallerTaitSurgeryWitnesses
         Nonempty (SmallerTaitSurgeryWitness minimal)) :
     Nonempty (MinimalCounterexampleNormalForm G T) :=
   lemma52_minimalCounterexampleNormalForm_of_birkhoffSurgerySuite
+    (lemma52BirkhoffSurgerySuite_of_smallerTaitSurgeryWitnesses
+      hlowDegree htriangle hfourCycle hsmallCut)
+
+/-- Exact-duality Lemma 5.2 endpoint directly from concrete smaller-surgery reductions for all
+forbidden configuration families. -/
+theorem lemma52MinimalCounterexampleNormalFormObligation_of_smallerTaitSurgeryWitnesses
+    {minimal : MinimalTaitCounterexample G} {dual : PlaneCubicDualData G T}
+    (hlowDegree :
+      ∀ v : W, T.degree v < 5 → Nonempty (SmallerTaitSurgeryWitness minimal))
+    (htriangle :
+      ∀ _cycle : SeparatingDualCycleData dual 3,
+        Nonempty (SmallerTaitSurgeryWitness minimal))
+    (hfourCycle :
+      ∀ _cycle : SeparatingDualCycleData dual 4,
+        Nonempty (SmallerTaitSurgeryWitness minimal))
+    (hsmallCut :
+      ∀ cut : SmallCyclicEdgeCut G, cut.edgeCut.card ≤ 4 →
+        Nonempty (SmallerTaitSurgeryWitness minimal)) :
+    Lemma52MinimalCounterexampleNormalFormObligation minimal dual :=
+  lemma52MinimalCounterexampleNormalFormObligation_of_birkhoffSurgerySuite
     (lemma52BirkhoffSurgerySuite_of_smallerTaitSurgeryWitnesses
       hlowDegree htriangle hfourCycle hsmallCut)
 
