@@ -1554,6 +1554,10 @@ theorem section92Step4CurrentFiniteFrontierFactoredBridgeFork_audit :
     Section92Step4CurrentFiniteFrontierFactoredBridgeFork :=
   section92Step4CurrentFiniteFrontierFactoredBridgeFork
 
+theorem section92Step4CurrentFiniteFrontierPreviousBoundaryWitnessUpgradePressurePoint_audit :
+    Section92Step4CurrentFiniteFrontierPreviousBoundaryWitnessUpgradePressurePoint :=
+  section92Step4CurrentFiniteFrontierPreviousBoundaryWitnessUpgradePressurePoint
+
 /-! ## Section 9.2 two-layer ambient execution obstruction -/
 
 theorem section92Step4TwoLayerCounterexampleClass_audit :
