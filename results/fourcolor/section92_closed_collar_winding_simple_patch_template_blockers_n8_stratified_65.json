@@ -1,0 +1,161 @@
+{
+  "base_winding_profile_histogram": [
+    {
+      "profile": [
+        {
+          "pair": "rb",
+          "winding0_component_count": 2,
+          "winding1_component_count": 0
+        },
+        {
+          "pair": "rp",
+          "winding0_component_count": 2,
+          "winding1_component_count": 0
+        },
+        {
+          "pair": "bp",
+          "winding0_component_count": 2,
+          "winding1_component_count": 0
+        }
+      ],
+      "state_count": 4
+    },
+    {
+      "profile": [
+        {
+          "pair": "rb",
+          "winding0_component_count": 2,
+          "winding1_component_count": 2
+        },
+        {
+          "pair": "rp",
+          "winding0_component_count": 2,
+          "winding1_component_count": 0
+        },
+        {
+          "pair": "bp",
+          "winding0_component_count": 2,
+          "winding1_component_count": 0
+        }
+      ],
+      "state_count": 2
+    }
+  ],
+  "fixed_outer_key": [
+    "r",
+    "r",
+    "b",
+    "b"
+  ],
+  "run_id": "tau,tau::rrbb::simple_patch_8_template_blockers_indexed_65",
+  "samples": [],
+  "schema": "fourcolor-section-9-2-closed-collar-winding-simple-patch-template-blocker-index-sample-v1",
+  "search": {
+    "classification": "for selected exact topology indices, unrank the simple cubic four-terminal patch and use the same template-exclusion classifier as the resumable slice audit",
+    "exact_patch_topology_count": 1189087725,
+    "excluded_template_keys": [
+      "edges:g0:F1F0,g1:F4F5|sideCollar:g0:F1,g1:F5",
+      "edges:g0:F4F5,g1:F1F0|sideCollar:g0:F5,g1:F1"
+    ],
+    "internal_vertex_count": 8,
+    "patch_terminals": {
+      "A": "g1:F5",
+      "B": "g0:F1",
+      "C": "g0:F5",
+      "D": "g1:F1"
+    },
+    "removed_parallel_edges": [
+      "C1:B5=B1",
+      "C2:B6=B2",
+      "I0_1:B5=B1",
+      "I0_2:B6=B2"
+    ],
+    "sampled_patch_indices": [
+      0,
+      18579495,
+      37158991,
+      55738487,
+      74317982,
+      92897478,
+      111476974,
+      130056469,
+      148635965,
+      167215461,
+      185794956,
+      204374452,
+      222953948,
+      241533443,
+      260112939,
+      278692435,
+      297271931,
+      315851426,
+      334430922,
+      353010418,
+      371589913,
+      390169409,
+      408748905,
+      427328400,
+      445907896,
+      464487392,
+      483066887,
+      501646383,
+      520225879,
+      538805374,
+      557384870,
+      575964366,
+      594543862,
+      613123357,
+      631702853,
+      650282349,
+      668861844,
+      687441340,
+      706020836,
+      724600331,
+      743179827,
+      761759323,
+      780338818,
+      798918314,
+      817497810,
+      836077305,
+      854656801,
+      873236297,
+      891815793,
+      910395288,
+      928974784,
+      947554280,
+      966133775,
+      984713271,
+      1003292767,
+      1021872262,
+      1040451758,
+      1059031254,
+      1077610749,
+      1096190245,
+      1114769741,
+      1133349236,
+      1151928732,
+      1170508228,
+      1189087724
+    ],
+    "sampled_patch_topology_count": 65
+  },
+  "source": "Indexed-sample template-exclusion audit for profile-preserving simple patches in the closed-collar winding-freedom realization lab",
+  "summary": {
+    "cap5_like_blocker_count": 0,
+    "exact_template_blocker_count": 0,
+    "exact_template_histogram": {},
+    "first_failed_after_template_exclusion_histogram": {},
+    "non_template_cyclic_cut_blocker_count": 0,
+    "non_template_minimum_small_cyclic_cut_size_histogram": {},
+    "normal_form_after_template_exclusion_passing_count": 0,
+    "profile_preserving_case_count": 0,
+    "radial_order_case_count": 130,
+    "sampled_patch_topology_count": 65,
+    "structural_first_blocker_count": 0,
+    "verdict": "template_exclusion_index_sample_found_no_profile_preserving_patch"
+  },
+  "word": [
+    "tau",
+    "tau"
+  ]
+}
