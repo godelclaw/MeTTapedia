@@ -2481,6 +2481,88 @@ theorem closedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSlice1000000Radia
   refine ⟨closedCollarWindingFreedomWitnessRealizationData, ?_⟩
   decide
 
+/--
+First-blocker reading of the bounded radial-face slice.  The two discovered
+profile-preserving non-structural cases are already exact diagonal two-pole
+template blockers before the radial-face question is asked; the radial-face
+audit then confirms that neither has a coherent cut-open face.
+-/
+def ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSlice1000000ExactTemplateFirstBlockerEvidence :
+    Prop :=
+  ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSlice1000000RadialFaceEvidence ∧
+    closedCollarSimplePatchN6AnnularEmbeddingSlice1000000Counts.profilePreservingCaseCount =
+      2 ∧
+    closedCollarSimplePatchN6AnnularEmbeddingSlice1000000Counts.exactDiagonalTwoPoleTemplateBlockerCount =
+      2 ∧
+    closedCollarSimplePatchN6AnnularEmbeddingSlice1000000Counts.profilePreservingCaseCount =
+      closedCollarSimplePatchN6AnnularEmbeddingSlice1000000Counts.exactDiagonalTwoPoleTemplateBlockerCount ∧
+    closedCollarSimplePatchN6AnnularEmbeddingSlice1000000Counts.structuralSkippedCaseCount =
+      0 ∧
+    closedCollarSimplePatchN6AnnularEmbeddingSlice1000000Counts.embeddingAuditedCaseCount =
+      closedCollarSimplePatchN6AnnularEmbeddingSlice1000000Counts.exactDiagonalTwoPoleTemplateBlockerCount ∧
+    closedCollarSimplePatchN6AnnularEmbeddingSlice1000000Counts.radialFaceCoherentRotationCount =
+      0
+
+theorem closedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSlice1000000ExactTemplateFirstBlockerEvidence :
+    ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSlice1000000ExactTemplateFirstBlockerEvidence := by
+  refine
+    ⟨closedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSlice1000000RadialFaceEvidence,
+      ?_, ?_, ?_, ?_, ?_, ?_⟩ <;>
+    decide
+
+/--
+Coverage obligation for using the slice's exact-template first blocker against
+normal-form realizations: a normal-form representation in one of the slice
+cases must realize one of the exact diagonal collar two-pole separators.
+-/
+def ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSlice1000000NormalFormForcesExactTemplate :
+    Prop :=
+  ∀ {V : Type} {G : SimpleGraph V},
+    (data : ClosedCollarWindingFreedomSimplePatchN6NormalFormRepresentation G) →
+      (data.representation.patchTopologyIndex, data.representation.radialOrderIndex.1) ∈
+          closedCollarSimplePatchN6AnnularEmbeddingSlice1000000Cases →
+        ∃ candidate : ClosedCollarDiagonalTwoPoleTemplateCandidate G,
+          candidate.Realizes
+
+/--
+Exact-template normal-form obstruction target for the bounded slice.  Once the
+geometry proof supplies the slice-specific exact-template coverage map, cyclic
+five-edge-connectivity excludes every normal-form representation in the two
+discovered cases.
+-/
+def Section92Step4ExactTemplateSlice1000000NormalFormObstructionTarget : Prop :=
+  ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSlice1000000ExactTemplateFirstBlockerEvidence →
+    ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSlice1000000NormalFormForcesExactTemplate →
+      ∀ {V : Type} {G : SimpleGraph V},
+        (data : ClosedCollarWindingFreedomSimplePatchN6NormalFormRepresentation G) →
+          (data.representation.patchTopologyIndex, data.representation.radialOrderIndex.1) ∈
+              closedCollarSimplePatchN6AnnularEmbeddingSlice1000000Cases →
+            False
+
+theorem section92Step4ExactTemplateSlice1000000NormalFormObstructionTarget :
+    Section92Step4ExactTemplateSlice1000000NormalFormObstructionTarget := by
+  intro _hevidence hforces V G data hcase
+  rcases hforces data hcase with ⟨candidate, hrealizes⟩
+  exact
+    closedCollarWindingFreedomNormalFormRealization_false_of_forcedTemplate
+      data.normalForm candidate hrealizes
+
+/--
+Current combined slice verdict: the discovered cases are exact-template first
+blockers, and exact diagonal templates are incompatible with cyclically
+five-edge-connected normal form.
+-/
+def ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSlice1000000BlockedAfterCyclicallyFiveTemplateExclusion :
+    Prop :=
+  ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSlice1000000ExactTemplateFirstBlockerEvidence ∧
+    Section92WindingExactTemplateNormalFormExclusion
+
+theorem closedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSlice1000000BlockedAfterCyclicallyFiveTemplateExclusion :
+    ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSlice1000000BlockedAfterCyclicallyFiveTemplateExclusion := by
+  exact
+    ⟨closedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSlice1000000ExactTemplateFirstBlockerEvidence,
+      section92WindingExactTemplateNormalFormExclusion⟩
+
 /-- Lab-side candidate for a radial-face coherent rotation in the slice. -/
 structure ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSlice1000000RadialFaceRotationCandidate where
   hrotationCountPositive :
