@@ -12793,6 +12793,295 @@ theorem
         K.languageNPData.separatedLanguage_inNP)
 
 /--
+Endgame mechanical data extracted directly from the finite-variable strict
+construction surface.  The finite family supplies upper-side support; the
+mechanical interface and lower framework are projected from the same real
+no-target-rows construction data as the address-syntax route.
+-/
+noncomputable def
+    realM4_noTargetRowsNamedLanguageLargeTargetFiniteVariableConstructionData_endgameMechanicalData
+    {m : Nat} (i₀ : Fin m) [hm : Fact (1 < m)]
+    (coordinate : V13RealLinearPublicCoordinate m)
+    {Neutral : Type} {Safe : Type x} {Gauge : Type y}
+    {Transcript : Type z} [DecidableEq Transcript]
+    {Pair : Type a} [Fintype Pair]
+    {Stage : Type b} {Branch : Type c}
+    {HistoryAtom : Type} {Pivot : Type e}
+    {Observer : Type f} {Output : Type f}
+    {PublicLock : Type g} {Quotient : Type h}
+    {LockAux : Type i} {Message : Type j}
+    {CNFPublic : Type k} {Var : CNFPublic -> Type l}
+    {Witness : CNFPublic -> Type l}
+    {D : AppendixICNFReadoutData
+      PublicLock Quotient LockAux Message CNFPublic Var Witness}
+    {C : CookStylePNPClassInterface.{p}}
+    (K :
+      RealM4NoTargetRowsNamedLanguageLargeTargetFiniteVariableOfficialConstructionData
+        (Neutral := Neutral) (Safe := Safe) (Gauge := Gauge)
+        (Transcript := Transcript) (Pair := Pair) (Stage := Stage)
+        (Branch := Branch) (HistoryAtom := HistoryAtom) (Pivot := Pivot)
+        (Observer := Observer) (Output := Output)
+        (PublicLock := PublicLock) (Quotient := Quotient)
+        (LockAux := LockAux) (Message := Message) (CNFPublic := CNFPublic)
+        (Var := Var) (Witness := Witness)
+        i₀ coordinate D C)
+    (boundaryMixing :
+      RealM4MechanicalInterfaceData.BoundaryMixingFrontier
+        (realM4_noTargetRowsNamedLanguageLargeTargetFiniteVariableConstructionData_mechanicalInterface
+          i₀ coordinate K)) :
+    RealM4EndgameMechanicalData
+      (V13RealLinearNoTargetRowsWorld m i₀) (V13RealLinearPublic m)
+      Neutral Safe Gauge Transcript Pair Stage Branch HistoryAtom Pivot
+      Observer Output (V13RealLinearNoTargetRowsMap m i₀) :=
+  RealM4EndgameMechanicalData.ofComponentsWithLowerMachineCanonicalGap
+    (realM4_noTargetRowsNamedLanguageLargeTargetFiniteVariableConstructionData_mechanicalInterface
+      i₀ coordinate K)
+    boundaryMixing.epsSmall
+    K.lowerMachine
+
+/--
+Audit theorem for the finite-variable strict endgame mechanical package.
+-/
+theorem
+    realM4_noTargetRowsNamedLanguageLargeTargetFiniteVariableConstructionData_endgameMechanicalData_fields
+    {m : Nat} (i₀ : Fin m) [hm : Fact (1 < m)]
+    (coordinate : V13RealLinearPublicCoordinate m)
+    {Neutral : Type} {Safe : Type x} {Gauge : Type y}
+    {Transcript : Type z} [DecidableEq Transcript]
+    {Pair : Type a} [Fintype Pair]
+    {Stage : Type b} {Branch : Type c}
+    {HistoryAtom : Type} {Pivot : Type e}
+    {Observer : Type f} {Output : Type f}
+    {PublicLock : Type g} {Quotient : Type h}
+    {LockAux : Type i} {Message : Type j}
+    {CNFPublic : Type k} {Var : CNFPublic -> Type l}
+    {Witness : CNFPublic -> Type l}
+    {D : AppendixICNFReadoutData
+      PublicLock Quotient LockAux Message CNFPublic Var Witness}
+    {C : CookStylePNPClassInterface.{p}}
+    (K :
+      RealM4NoTargetRowsNamedLanguageLargeTargetFiniteVariableOfficialConstructionData
+        (Neutral := Neutral) (Safe := Safe) (Gauge := Gauge)
+        (Transcript := Transcript) (Pair := Pair) (Stage := Stage)
+        (Branch := Branch) (HistoryAtom := HistoryAtom) (Pivot := Pivot)
+        (Observer := Observer) (Output := Output)
+        (PublicLock := PublicLock) (Quotient := Quotient)
+        (LockAux := LockAux) (Message := Message) (CNFPublic := CNFPublic)
+        (Var := Var) (Witness := Witness)
+        i₀ coordinate D C)
+    (boundaryMixing :
+      RealM4MechanicalInterfaceData.BoundaryMixingFrontier
+        (realM4_noTargetRowsNamedLanguageLargeTargetFiniteVariableConstructionData_mechanicalInterface
+          i₀ coordinate K)) :
+    let M :=
+      realM4_noTargetRowsNamedLanguageLargeTargetFiniteVariableConstructionData_mechanicalInterface
+        i₀ coordinate K
+    let E :=
+      realM4_noTargetRowsNamedLanguageLargeTargetFiniteVariableConstructionData_endgameMechanicalData
+        i₀ coordinate K boundaryMixing
+    E.interfaceData = M ∧
+      E.lowerFramework = K.lowerMachine.lowerFramework ∧
+        ((1 / 2 : Rat) * E.interfaceData.phaseA.telescoping.derivativeSum ≤
+          E.fixedGapBudget) ∧
+          E.interfaceData.epsMix < (1 / 2 : Rat) ∧
+            CompressionKernelNeutrality E.lowerFramework := by
+  dsimp
+  exact
+    ⟨rfl, rfl,
+      (realM4_noTargetRowsNamedLanguageLargeTargetFiniteVariableConstructionData_endgameMechanicalData
+        i₀ coordinate K boundaryMixing).phaseABudget,
+      (realM4_noTargetRowsNamedLanguageLargeTargetFiniteVariableConstructionData_endgameMechanicalData
+        i₀ coordinate K boundaryMixing).epsSmall,
+      (realM4_noTargetRowsNamedLanguageLargeTargetFiniteVariableConstructionData_endgameMechanicalData
+        i₀ coordinate K boundaryMixing).kernelNeutrality⟩
+
+/--
+The v13 parameter record extracted directly from the finite-variable strict
+construction surface under P-membership of the named NP language.
+-/
+noncomputable def
+    realM4_noTargetRowsNamedLanguageLargeTargetFiniteVariableConstructionData_parameterRecord_givenInP
+    {m : Nat} (i₀ : Fin m) [hm : Fact (1 < m)]
+    (coordinate : V13RealLinearPublicCoordinate m)
+    {Neutral : Type} {Safe : Type x} {Gauge : Type y}
+    {Transcript : Type z} [DecidableEq Transcript]
+    {Pair : Type a} [Fintype Pair]
+    {Stage : Type b} {Branch : Type c}
+    {HistoryAtom : Type} {Pivot : Type e}
+    {Observer : Type f} {Output : Type f}
+    {PublicLock : Type g} {Quotient : Type h}
+    {LockAux : Type i} {Message : Type j}
+    {CNFPublic : Type k} {Var : CNFPublic -> Type l}
+    {Witness : CNFPublic -> Type l}
+    {D : AppendixICNFReadoutData
+      PublicLock Quotient LockAux Message CNFPublic Var Witness}
+    {C : CookStylePNPClassInterface.{p}}
+    (K :
+      RealM4NoTargetRowsNamedLanguageLargeTargetFiniteVariableOfficialConstructionData
+        (Neutral := Neutral) (Safe := Safe) (Gauge := Gauge)
+        (Transcript := Transcript) (Pair := Pair) (Stage := Stage)
+        (Branch := Branch) (HistoryAtom := HistoryAtom) (Pivot := Pivot)
+        (Observer := Observer) (Output := Output)
+        (PublicLock := PublicLock) (Quotient := Quotient)
+        (LockAux := LockAux) (Message := Message) (CNFPublic := CNFPublic)
+        (Var := Var) (Witness := Witness)
+        i₀ coordinate D C)
+    (hP : C.inP K.languageNPData.separatedLanguage)
+    (starSWHardness :
+      CompressionStarSWHardness K.lowerMachine.lowerFramework)
+    (safeQSSM :
+      RealM4MechanicalInterfaceData.SafeQSSMFrontier
+        (realM4_noTargetRowsNamedLanguageLargeTargetFiniteVariableConstructionData_mechanicalInterface
+          i₀ coordinate K))
+    (boundedGaugeIncidence :
+      RealM4MechanicalInterfaceData.BoundedGaugeIncidenceFrontier
+        (realM4_noTargetRowsNamedLanguageLargeTargetFiniteVariableConstructionData_mechanicalInterface
+          i₀ coordinate K))
+    (boundaryMixing :
+      RealM4MechanicalInterfaceData.BoundaryMixingFrontier
+        (realM4_noTargetRowsNamedLanguageLargeTargetFiniteVariableConstructionData_mechanicalInterface
+          i₀ coordinate K)) :
+    let E :=
+      realM4_noTargetRowsNamedLanguageLargeTargetFiniteVariableConstructionData_endgameMechanicalData
+        i₀ coordinate K boundaryMixing
+    ParameterRecord
+      (E.interfaceWithAnalyticFrontier
+        safeQSSM.safeQSSM
+        boundedGaugeIncidence.boundedGaugeIncidence
+        boundaryMixing.boundaryMixing) := by
+  dsimp
+  exact
+    (realM4_noTargetRowsNamedLanguageLargeTargetFiniteVariableConstructionData_endgameMechanicalData
+      i₀ coordinate K boundaryMixing).parameterRecordExplicitPNP
+      (realM4_selfReductionUpperDischarge_of_noTargetRowsNamedLanguageLargeTargetFiniteVariableConstructionData_inP
+        i₀ coordinate K hP)
+      starSWHardness
+      safeQSSM.safeQSSM
+      boundedGaugeIncidence.boundedGaugeIncidence
+      boundaryMixing.boundaryMixing
+
+/--
+Internal `UpperLowerClash` extracted directly from the finite-variable strict
+construction surface under P-membership of the named NP language.
+-/
+theorem
+    realM4_noTargetRowsNamedLanguageLargeTargetFiniteVariableConstructionData_upperLowerClash_givenInP
+    {m : Nat} (i₀ : Fin m) [hm : Fact (1 < m)]
+    (coordinate : V13RealLinearPublicCoordinate m)
+    {Neutral : Type} {Safe : Type x} {Gauge : Type y}
+    {Transcript : Type z} [DecidableEq Transcript]
+    {Pair : Type a} [Fintype Pair]
+    {Stage : Type b} {Branch : Type c}
+    {HistoryAtom : Type} {Pivot : Type e}
+    {Observer : Type f} {Output : Type f}
+    {PublicLock : Type g} {Quotient : Type h}
+    {LockAux : Type i} {Message : Type j}
+    {CNFPublic : Type k} {Var : CNFPublic -> Type l}
+    {Witness : CNFPublic -> Type l}
+    {D : AppendixICNFReadoutData
+      PublicLock Quotient LockAux Message CNFPublic Var Witness}
+    {C : CookStylePNPClassInterface.{p}}
+    (K :
+      RealM4NoTargetRowsNamedLanguageLargeTargetFiniteVariableOfficialConstructionData
+        (Neutral := Neutral) (Safe := Safe) (Gauge := Gauge)
+        (Transcript := Transcript) (Pair := Pair) (Stage := Stage)
+        (Branch := Branch) (HistoryAtom := HistoryAtom) (Pivot := Pivot)
+        (Observer := Observer) (Output := Output)
+        (PublicLock := PublicLock) (Quotient := Quotient)
+        (LockAux := LockAux) (Message := Message) (CNFPublic := CNFPublic)
+        (Var := Var) (Witness := Witness)
+        i₀ coordinate D C)
+    (hP : C.inP K.languageNPData.separatedLanguage)
+    (starSWHardness :
+      CompressionStarSWHardness K.lowerMachine.lowerFramework)
+    (safeQSSM :
+      RealM4MechanicalInterfaceData.SafeQSSMFrontier
+        (realM4_noTargetRowsNamedLanguageLargeTargetFiniteVariableConstructionData_mechanicalInterface
+          i₀ coordinate K))
+    (boundedGaugeIncidence :
+      RealM4MechanicalInterfaceData.BoundedGaugeIncidenceFrontier
+        (realM4_noTargetRowsNamedLanguageLargeTargetFiniteVariableConstructionData_mechanicalInterface
+          i₀ coordinate K))
+    (boundaryMixing :
+      RealM4MechanicalInterfaceData.BoundaryMixingFrontier
+        (realM4_noTargetRowsNamedLanguageLargeTargetFiniteVariableConstructionData_mechanicalInterface
+          i₀ coordinate K)) :
+    let E :=
+      realM4_noTargetRowsNamedLanguageLargeTargetFiniteVariableConstructionData_endgameMechanicalData
+        i₀ coordinate K boundaryMixing
+    UpperLowerClash
+      (E.interfaceWithAnalyticFrontier
+        safeQSSM.safeQSSM
+        boundedGaugeIncidence.boundedGaugeIncidence
+        boundaryMixing.boundaryMixing)
+      (realM4_noTargetRowsNamedLanguageLargeTargetFiniteVariableConstructionData_parameterRecord_givenInP
+        i₀ coordinate K hP starSWHardness safeQSSM
+        boundedGaugeIncidence boundaryMixing) := by
+  dsimp
+  exact
+    realM4_conditionalClash_from_endgameMechanicalData_explicitPNP
+      (realM4_noTargetRowsNamedLanguageLargeTargetFiniteVariableConstructionData_endgameMechanicalData
+        i₀ coordinate K boundaryMixing)
+      (realM4_selfReductionUpperDischarge_of_noTargetRowsNamedLanguageLargeTargetFiniteVariableConstructionData_inP
+        i₀ coordinate K hP)
+      starSWHardness
+      safeQSSM.safeQSSM
+      boundedGaugeIncidence.boundedGaugeIncidence
+      boundaryMixing.boundaryMixing
+
+/--
+Direct named-language non-membership endpoint for the finite-variable strict
+route.
+-/
+theorem
+    realM4_namedLanguage_not_inP_from_noTargetRowsNamedLanguageLargeTargetFiniteVariableConstructionData_realFrontier
+    {m : Nat} (i₀ : Fin m) [hm : Fact (1 < m)]
+    (coordinate : V13RealLinearPublicCoordinate m)
+    {Neutral : Type} {Safe : Type x} {Gauge : Type y}
+    {Transcript : Type z} [DecidableEq Transcript]
+    {Pair : Type a} [Fintype Pair]
+    {Stage : Type b} {Branch : Type c}
+    {HistoryAtom : Type} {Pivot : Type e}
+    {Observer : Type f} {Output : Type f}
+    {PublicLock : Type g} {Quotient : Type h}
+    {LockAux : Type i} {Message : Type j}
+    {CNFPublic : Type k} {Var : CNFPublic -> Type l}
+    {Witness : CNFPublic -> Type l}
+    {D : AppendixICNFReadoutData
+      PublicLock Quotient LockAux Message CNFPublic Var Witness}
+    {C : CookStylePNPClassInterface.{p}}
+    (K :
+      RealM4NoTargetRowsNamedLanguageLargeTargetFiniteVariableOfficialConstructionData
+        (Neutral := Neutral) (Safe := Safe) (Gauge := Gauge)
+        (Transcript := Transcript) (Pair := Pair) (Stage := Stage)
+        (Branch := Branch) (HistoryAtom := HistoryAtom) (Pivot := Pivot)
+        (Observer := Observer) (Output := Output)
+        (PublicLock := PublicLock) (Quotient := Quotient)
+        (LockAux := LockAux) (Message := Message) (CNFPublic := CNFPublic)
+        (Var := Var) (Witness := Witness)
+        i₀ coordinate D C)
+    (starSWHardness :
+      CompressionStarSWHardness K.lowerMachine.lowerFramework)
+    (safeQSSM :
+      RealM4MechanicalInterfaceData.SafeQSSMFrontier
+        (realM4_noTargetRowsNamedLanguageLargeTargetFiniteVariableConstructionData_mechanicalInterface
+          i₀ coordinate K))
+    (boundedGaugeIncidence :
+      RealM4MechanicalInterfaceData.BoundedGaugeIncidenceFrontier
+        (realM4_noTargetRowsNamedLanguageLargeTargetFiniteVariableConstructionData_mechanicalInterface
+          i₀ coordinate K))
+    (boundaryMixing :
+      RealM4MechanicalInterfaceData.BoundaryMixingFrontier
+        (realM4_noTargetRowsNamedLanguageLargeTargetFiniteVariableConstructionData_mechanicalInterface
+          i₀ coordinate K)) :
+    ¬ C.inP K.languageNPData.separatedLanguage := by
+  intro hP
+  exact
+    (realM4_noTargetRowsNamedLanguageLargeTargetFiniteVariableConstructionData_upperLowerClash_givenInP
+      i₀ coordinate K hP starSWHardness safeQSSM boundedGaugeIncidence
+      boundaryMixing).noConsistentBounds
+
+/--
 Endgame mechanical data extracted directly from the strict named-language
 large-target construction surface once the boundary-mixing frontier supplies
 the strict `epsSmall` bound.  This is the direct strict route, before any
@@ -22400,6 +22689,37 @@ theorem realM4StrictNamedFiniteVariableRealLockInCompletionAudit_exact :
 
 def realM4StrictNamedFiniteVariableRealLockInStatement : String :=
   "The finite-variable strict named-language lock-in route has the same theorem frontier as the address-syntax strict route, but its construction surface carries finite CNF variable-family data instead of raw CNF address syntax.  Structural fields and the P=NP-side self-reduction upper package are projected from that finite-variable construction surface; the remaining theorem inputs are exactly StarSW hardness plus safeQSSM / boundedGaugeIncidence / boundaryMixing.  This is still a real construction surface, not an inhabited manuscript M4 ensemble."
+
+def realM4StrictNamedFiniteVariableDirectClashItems : List String := [
+  "finiteVariableEndgameMechanicalData",
+  "finiteVariableParameterRecordFromNamedLanguageP",
+  "finiteVariableUpperLowerClashFromNamedLanguageP",
+  "finiteVariableNamedLanguageNotInP"
+]
+
+theorem realM4StrictNamedFiniteVariableDirectClashItems_exact :
+    realM4StrictNamedFiniteVariableDirectClashItems =
+      [ "finiteVariableEndgameMechanicalData",
+        "finiteVariableParameterRecordFromNamedLanguageP",
+        "finiteVariableUpperLowerClashFromNamedLanguageP",
+        "finiteVariableNamedLanguageNotInP" ] := by
+  rfl
+
+def realM4StrictNamedFiniteVariableDirectClashHypothesisAudit :
+    List String :=
+  realM4NamedLanguageLargeTargetFiniteVariableEndpointHypothesisAudit
+
+theorem realM4StrictNamedFiniteVariableDirectClashHypothesisAudit_exact :
+    realM4StrictNamedFiniteVariableDirectClashHypothesisAudit =
+      [ "noTargetRowsNamedLanguageLargeTargetFiniteVariableOfficialConstructionData",
+        "starSWHardness",
+        "safeQSSM",
+        "boundedGaugeIncidence",
+        "boundaryMixing" ] := by
+  rfl
+
+def realM4StrictNamedFiniteVariableDirectClashStatement : String :=
+  "The finite-variable strict named-language direct clash route constructs endgame mechanical data, the v13 ParameterRecord, and the internal UpperLowerClash directly from the finite-variable construction surface and P-membership of the named NP language; this proves the named language outside P.  The theorem boundary is one finite-variable construction-data object plus exactly StarSW hardness and safeQSSM / boundedGaugeIncidence / boundaryMixing, while the self-reduction upper side is discharged inside the proof using finite CNF variable-family data."
 
 def realM4NamedLanguageLargeTargetConstructionDataEndpointHypothesisAudit :
     List String := [
