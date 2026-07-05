@@ -1323,6 +1323,25 @@ theorem closedCollarWindingFreedomPreviousBoundaryWitnessRepairObstruction_of_au
   closedCollarWindingFreedomPreviousBoundaryWitnessRepairObstruction_of_auditedRows_of_not_nonrealizable
     hrows hnot
 
+theorem closedCollarWindingFreedomNormalFormHasFactoredPreviousBoundaryWitnessRepairBlocker_of_auditedRows_audit
+    {V : Type} [DecidableEq V] {G : SimpleGraph V}
+    (hrows :
+      ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceAuditedRowsCoveredByLab)
+    (normalForm : ClosedCollarWindingFreedomNormalFormRealization G) :
+    ClosedCollarWindingFreedomFactoredPreviousBoundaryWitnessRepairHasBlocker
+      normalForm :=
+  closedCollarWindingFreedomNormalFormHasFactoredPreviousBoundaryWitnessRepairBlocker_of_auditedRows
+    hrows normalForm
+
+theorem closedCollarWindingFreedomFactoredPreviousBoundaryWitnessRepairObstruction_of_auditedRows_of_not_nonrealizable_audit
+    (hrows :
+      ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceAuditedRowsCoveredByLab)
+    (hnot :
+      ¬ ClosedCollarWindingFreedomNonrealizableInNormalForm) :
+    ClosedCollarWindingFreedomFactoredPreviousBoundaryWitnessRepairObstruction :=
+  closedCollarWindingFreedomFactoredPreviousBoundaryWitnessRepairObstruction_of_auditedRows_of_not_nonrealizable
+    hrows hnot
+
 theorem closedCollarWindingFreedomNonrealizableInNormalForm_of_embeddedGeometryN6AuditedArchiveKey_of_rowCoverage_audit
     (hextract :
       ClosedCollarWindingFreedomEveryNormalFormHasEmbeddedGeometryRealization)
