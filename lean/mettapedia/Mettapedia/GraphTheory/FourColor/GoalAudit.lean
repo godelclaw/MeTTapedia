@@ -223,6 +223,22 @@ theorem section92Step4RepairedByEmbeddedCollarN6TaxonomyTarget_audit :
     Section92Step4RepairedByEmbeddedCollarN6TaxonomyTarget :=
   section92Step4RepairedByEmbeddedCollarN6TaxonomyTarget
 
+theorem closedCollarWindingFreedomEmbeddedCollarNormalFormRealization_false_of_radialFaceN6_of_classification_audit
+    (hn6 :
+      ClosedCollarWindingFreedomEveryRadialFaceNormalFormHasN6Representation)
+    (hclassified :
+      ClosedCollarWindingFreedomSimplePatchN6NormalFormClassifiedByDetailedTaxonomy)
+    {V : Type} [DecidableEq V] {G : SimpleGraph V}
+    (embedded :
+      ClosedCollarWindingFreedomEmbeddedCollarNormalFormRealization G) :
+    False :=
+  closedCollarWindingFreedomEmbeddedCollarNormalFormRealization_false_of_radialFaceN6_of_classification
+    hn6 hclassified embedded
+
+theorem section92Step4RepairedByCertifiedEmbeddedCollarN6TaxonomyTarget_audit :
+    Section92Step4RepairedByCertifiedEmbeddedCollarN6TaxonomyTarget :=
+  section92Step4RepairedByCertifiedEmbeddedCollarN6TaxonomyTarget
+
 theorem closedCollarWindingFreedomSimplePatchTemplateBlockerArchiveEvidence_audit :
     ClosedCollarWindingFreedomSimplePatchTemplateBlockerArchiveEvidence :=
   closedCollarWindingFreedomSimplePatchTemplateBlockerArchiveEvidence
