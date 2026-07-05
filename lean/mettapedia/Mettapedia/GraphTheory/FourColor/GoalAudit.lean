@@ -1272,6 +1272,19 @@ theorem closedCollarWindingFreedomActualCollarEmbeddingSuppliesPreviousBoundaryG
   closedCollarWindingFreedomActualCollarEmbeddingSuppliesPreviousBoundaryGeometryData_of_geometryData_of_previousBoundaryWitnessUpgrade
     hgeometry hupgrade
 
+def closedCollarWindingFreedomActualCollarGeometryPreviousBoundaryWitnessUpgrade_ofWitnessOnCurrentBoundary_audit
+    {V : Type} [DecidableEq V] {G : SimpleGraph V}
+    {normalForm : ClosedCollarWindingFreedomNormalFormRealization G}
+    (geometry :
+      ClosedCollarWindingFreedomActualCollarEmbeddingGeometryData
+        normalForm)
+    (hwitnessCurrent :
+      geometry.collarGeometry.WitnessOnCurrentBoundary) :
+    ClosedCollarWindingFreedomActualCollarGeometryPreviousBoundaryWitnessUpgrade
+      geometry :=
+  ClosedCollarWindingFreedomActualCollarGeometryPreviousBoundaryWitnessUpgrade.ofWitnessOnCurrentBoundary
+    geometry hwitnessCurrent
+
 theorem closedCollarWindingFreedomActualCollarGeometryPreviousBoundaryWitnessUpgrade_of_witnessOnCurrentBoundary_audit
     {V : Type} [DecidableEq V] {G : SimpleGraph V}
     {normalForm : ClosedCollarWindingFreedomNormalFormRealization G}
@@ -1336,6 +1349,17 @@ theorem closedCollarWindingFreedomConcretePreviousBoundaryNormalFormRealization_
   closedCollarWindingFreedomConcretePreviousBoundaryNormalFormRealization_false_of_auditedRows
     data hrows
 
+theorem closedCollarWindingFreedomConcreteCurrentBoundaryNormalFormRealization_false_of_auditedRows_audit
+    {V : Type} [DecidableEq V] {G : SimpleGraph V}
+    (data :
+      ClosedCollarWindingFreedomConcreteCurrentBoundaryNormalFormRealization
+        G)
+    (hrows :
+      ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceAuditedRowsCoveredByLab) :
+    False :=
+  closedCollarWindingFreedomConcreteCurrentBoundaryNormalFormRealization_false_of_auditedRows
+    data hrows
+
 theorem closedCollarWindingFreedomConcretePreviousBoundaryNonrealizableInNormalForm_of_auditedRows_audit
     (hrows :
       ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceAuditedRowsCoveredByLab) :
@@ -1343,9 +1367,20 @@ theorem closedCollarWindingFreedomConcretePreviousBoundaryNonrealizableInNormalF
   closedCollarWindingFreedomConcretePreviousBoundaryNonrealizableInNormalForm_of_auditedRows
     hrows
 
+theorem closedCollarWindingFreedomConcreteCurrentBoundaryNonrealizableInNormalForm_of_auditedRows_audit
+    (hrows :
+      ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceAuditedRowsCoveredByLab) :
+    ClosedCollarWindingFreedomConcreteCurrentBoundaryNonrealizableInNormalForm :=
+  closedCollarWindingFreedomConcreteCurrentBoundaryNonrealizableInNormalForm_of_auditedRows
+    hrows
+
 theorem section92Step4ConcretePreviousBoundaryNormalFormObstructionTarget_audit :
     Section92Step4ConcretePreviousBoundaryNormalFormObstructionTarget :=
   section92Step4ConcretePreviousBoundaryNormalFormObstructionTarget
+
+theorem section92Step4ConcreteCurrentBoundaryNormalFormObstructionTarget_audit :
+    Section92Step4ConcreteCurrentBoundaryNormalFormObstructionTarget :=
+  section92Step4ConcreteCurrentBoundaryNormalFormObstructionTarget
 
 theorem closedCollarWindingFreedomEveryNormalFormHasConcretePreviousBoundaryNormalFormRealization_of_factoredBridge_audit
     (hgeometry :
@@ -1362,6 +1397,21 @@ theorem closedCollarWindingFreedomEveryNormalFormHasConcretePreviousBoundaryNorm
   closedCollarWindingFreedomEveryNormalFormHasConcretePreviousBoundaryNormalFormRealization_of_factoredBridge
     hgeometry hupgrade hradial hn6 hkeys
 
+theorem closedCollarWindingFreedomEveryNormalFormHasConcreteCurrentBoundaryNormalFormRealization_of_factoredBridge_audit
+    (hgeometry :
+      ClosedCollarWindingFreedomActualCollarEmbeddingSuppliesGeometryData)
+    (hwitness :
+      ClosedCollarWindingFreedomActualCollarGeometrySuppliesWitnessOnCurrentBoundary)
+    (hradial :
+      ClosedCollarWindingFreedomActualCollarGeometrySuppliesRadialFaceExtraction)
+    (hn6 :
+      ClosedCollarWindingFreedomEveryRadialFaceNormalFormHasN6Representation)
+    (hkeys :
+      ClosedCollarWindingFreedomEveryRadialFaceN6RepresentationHasAuditedArchiveKey) :
+    ClosedCollarWindingFreedomEveryNormalFormHasConcreteCurrentBoundaryNormalFormRealization :=
+  closedCollarWindingFreedomEveryNormalFormHasConcreteCurrentBoundaryNormalFormRealization_of_factoredBridge
+    hgeometry hwitness hradial hn6 hkeys
+
 theorem closedCollarWindingFreedomNonrealizableInNormalForm_of_concretePreviousBoundaryNormalFormRealization_of_auditedRows_audit
     (hextract :
       ClosedCollarWindingFreedomEveryNormalFormHasConcretePreviousBoundaryNormalFormRealization)
@@ -1371,9 +1421,22 @@ theorem closedCollarWindingFreedomNonrealizableInNormalForm_of_concretePreviousB
   closedCollarWindingFreedomNonrealizableInNormalForm_of_concretePreviousBoundaryNormalFormRealization_of_auditedRows
     hextract hrows
 
+theorem closedCollarWindingFreedomNonrealizableInNormalForm_of_concreteCurrentBoundaryNormalFormRealization_of_auditedRows_audit
+    (hextract :
+      ClosedCollarWindingFreedomEveryNormalFormHasConcreteCurrentBoundaryNormalFormRealization)
+    (hrows :
+      ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceAuditedRowsCoveredByLab) :
+    ClosedCollarWindingFreedomNonrealizableInNormalForm :=
+  closedCollarWindingFreedomNonrealizableInNormalForm_of_concreteCurrentBoundaryNormalFormRealization_of_auditedRows
+    hextract hrows
+
 theorem section92Step4RepairedByConcretePreviousBoundaryNormalFormRealizationAndAuditedRowsTarget_audit :
     Section92Step4RepairedByConcretePreviousBoundaryNormalFormRealizationAndAuditedRowsTarget :=
   section92Step4RepairedByConcretePreviousBoundaryNormalFormRealizationAndAuditedRowsTarget
+
+theorem section92Step4RepairedByConcreteCurrentBoundaryNormalFormRealizationAndAuditedRowsTarget_audit :
+    Section92Step4RepairedByConcreteCurrentBoundaryNormalFormRealizationAndAuditedRowsTarget :=
+  section92Step4RepairedByConcreteCurrentBoundaryNormalFormRealizationAndAuditedRowsTarget
 
 theorem closedCollarWindingFreedomConcretePreviousBoundaryNormalFormExtractionFails_of_auditedRows_of_not_nonrealizable_audit
     (hrows :
@@ -1384,11 +1447,27 @@ theorem closedCollarWindingFreedomConcretePreviousBoundaryNormalFormExtractionFa
   closedCollarWindingFreedomConcretePreviousBoundaryNormalFormExtractionFails_of_auditedRows_of_not_nonrealizable
     hrows hnot
 
+theorem closedCollarWindingFreedomConcreteCurrentBoundaryNormalFormExtractionFails_of_auditedRows_of_not_nonrealizable_audit
+    (hrows :
+      ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceAuditedRowsCoveredByLab)
+    (hnot :
+      ¬ ClosedCollarWindingFreedomNonrealizableInNormalForm) :
+    ¬ ClosedCollarWindingFreedomEveryNormalFormHasConcreteCurrentBoundaryNormalFormRealization :=
+  closedCollarWindingFreedomConcreteCurrentBoundaryNormalFormExtractionFails_of_auditedRows_of_not_nonrealizable
+    hrows hnot
+
 theorem closedCollarWindingFreedomConcretePreviousBoundaryRepairHasBlocker_of_not_nonrealizable_audit
     (hnot :
       ¬ ClosedCollarWindingFreedomNonrealizableInNormalForm) :
     ClosedCollarWindingFreedomConcretePreviousBoundaryRepairHasBlocker :=
   closedCollarWindingFreedomConcretePreviousBoundaryRepairHasBlocker_of_not_nonrealizable
+    hnot
+
+theorem closedCollarWindingFreedomConcreteCurrentBoundaryRepairHasBlocker_of_not_nonrealizable_audit
+    (hnot :
+      ¬ ClosedCollarWindingFreedomNonrealizableInNormalForm) :
+    ClosedCollarWindingFreedomConcreteCurrentBoundaryRepairHasBlocker :=
+  closedCollarWindingFreedomConcreteCurrentBoundaryRepairHasBlocker_of_not_nonrealizable
     hnot
 
 theorem closedCollarWindingFreedomNormalFormHasPreviousBoundaryWitnessRepairBlocker_of_auditedRows_audit
@@ -1460,6 +1539,10 @@ theorem closedCollarWindingFreedomFactoredPreviousBoundaryWitnessRepairObstructi
 theorem section92Step4ConcretePreviousBoundaryRepairedOrObstructedFork_audit :
     Section92Step4ConcretePreviousBoundaryRepairedOrObstructedFork :=
   section92Step4ConcretePreviousBoundaryRepairedOrObstructedFork
+
+theorem section92Step4ConcreteCurrentBoundaryRepairedOrObstructedFork_audit :
+    Section92Step4ConcreteCurrentBoundaryRepairedOrObstructedFork :=
+  section92Step4ConcreteCurrentBoundaryRepairedOrObstructedFork
 
 theorem closedCollarWindingFreedomNonrealizableInNormalForm_of_embeddedGeometryN6AuditedArchiveKey_of_rowCoverage_audit
     (hextract :
@@ -1562,6 +1645,13 @@ theorem closedCollarWindingFreedomEveryNormalFormHasConcretePreviousBoundaryNorm
   closedCollarWindingFreedomEveryNormalFormHasConcretePreviousBoundaryNormalFormRealization_of_currentFiniteFrontierRemainingFactoredBridge
     hbridge
 
+theorem closedCollarWindingFreedomEveryNormalFormHasConcreteCurrentBoundaryNormalFormRealization_of_currentFiniteFrontierRemainingCurrentBoundaryBridge_audit
+    (hbridge :
+      ClosedCollarWindingFreedomCurrentFiniteFrontierRemainingCurrentBoundaryBridge) :
+    ClosedCollarWindingFreedomEveryNormalFormHasConcreteCurrentBoundaryNormalFormRealization :=
+  closedCollarWindingFreedomEveryNormalFormHasConcreteCurrentBoundaryNormalFormRealization_of_currentFiniteFrontierRemainingCurrentBoundaryBridge
+    hbridge
+
 theorem closedCollarWindingFreedomNonrealizableInNormalForm_of_currentFiniteFrontierRemainingFactoredBridge_of_auditedRows_audit
     (hbridge :
       ClosedCollarWindingFreedomCurrentFiniteFrontierRemainingFactoredBridge)
@@ -1571,9 +1661,22 @@ theorem closedCollarWindingFreedomNonrealizableInNormalForm_of_currentFiniteFron
   closedCollarWindingFreedomNonrealizableInNormalForm_of_currentFiniteFrontierRemainingFactoredBridge_of_auditedRows
     hbridge hrows
 
+theorem closedCollarWindingFreedomNonrealizableInNormalForm_of_currentFiniteFrontierRemainingCurrentBoundaryBridge_of_auditedRows_audit
+    (hbridge :
+      ClosedCollarWindingFreedomCurrentFiniteFrontierRemainingCurrentBoundaryBridge)
+    (hrows :
+      ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceAuditedRowsCoveredByLab) :
+    ClosedCollarWindingFreedomNonrealizableInNormalForm :=
+  closedCollarWindingFreedomNonrealizableInNormalForm_of_currentFiniteFrontierRemainingCurrentBoundaryBridge_of_auditedRows
+    hbridge hrows
+
 theorem section92Step4CurrentFiniteFrontierFactoredBridgeFork_audit :
     Section92Step4CurrentFiniteFrontierFactoredBridgeFork :=
   section92Step4CurrentFiniteFrontierFactoredBridgeFork
+
+theorem section92Step4CurrentFiniteFrontierCurrentBoundaryBridgeFork_audit :
+    Section92Step4CurrentFiniteFrontierCurrentBoundaryBridgeFork :=
+  section92Step4CurrentFiniteFrontierCurrentBoundaryBridgeFork
 
 theorem section92Step4CurrentFiniteFrontierPreviousBoundaryWitnessUpgradePressurePoint_audit :
     Section92Step4CurrentFiniteFrontierPreviousBoundaryWitnessUpgradePressurePoint :=
