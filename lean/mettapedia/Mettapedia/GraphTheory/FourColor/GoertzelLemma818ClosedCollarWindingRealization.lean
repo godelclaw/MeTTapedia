@@ -2147,60 +2147,67 @@ structure ClosedCollarSimplePatchAnnularEmbeddingSampleCounts where
   maxRadialCutEdgesOnSingleFaceTwoCount : Nat
 
 def closedCollarSimplePatchN6AnnularEmbeddingSamplePatchIndices : List Nat :=
-  [821205, 852969]
+  [821205, 852969, 1000301]
+
+def closedCollarSimplePatchN6AnnularEmbeddingSampleCases : List (Nat × Nat) :=
+  [(821205, 0), (821205, 1), (852969, 0), (852969, 1),
+    (1000301, 0), (1000301, 1)]
 
 def closedCollarSimplePatchN6AnnularEmbeddingSampleCounts :
     ClosedCollarSimplePatchAnnularEmbeddingSampleCounts where
   internalVertexCount := 6
-  sampledPatchTopologyCount := 2
-  radialOrderCaseCount := 4
-  profilePreservingCaseCount := 4
-  planarProfilePreservingCaseCount := 4
+  sampledPatchTopologyCount := 3
+  radialOrderCaseCount := 6
+  profilePreservingCaseCount := 6
+  planarProfilePreservingCaseCount := 6
   radialFaceCoherentCaseCount := 0
-  radialFaceIncoherentCaseCount := 4
-  totalRotationSystemCount := 1048576
-  enumeratedRotationSystemCount := 1048576
-  planarRotationSystemCount := 32
+  radialFaceIncoherentCaseCount := 6
+  totalRotationSystemCount := 1572864
+  enumeratedRotationSystemCount := 1572864
+  planarRotationSystemCount := 48
   radialFaceCoherentRotationCount := 0
-  exactDiagonalTwoPoleTemplateBlockerCount := 4
-  maxRadialCutEdgesOnSingleFaceTwoCount := 32
+  exactDiagonalTwoPoleTemplateBlockerCount := 6
+  maxRadialCutEdgesOnSingleFaceTwoCount := 48
 
 /--
-Archived radial-face evidence for the first two planar profile-preserving
-six-internal samples.  These samples preserve the winding-freedom witness and
-pass planarity, but no planar rotation system among the 32 found places all
-four radial-cut edges on one face.  This is a concrete annular embedding
-constraint, not an exhaustive nonrealizability theorem for all fillers.
+Archived radial-face evidence for selected planar profile-preserving
+six-internal cases.  These cases preserve the winding-freedom witness and pass
+planarity, but no planar rotation system among the 48 found places all four
+radial-cut edges on one face.  This is a concrete annular embedding constraint,
+not an exhaustive nonrealizability theorem for all fillers.
 -/
 def ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSampleRadialFaceEvidence :
     Prop :=
   ClosedCollarWindingFreedomWitnessRealizationData ∧
     closedCollarSimplePatchN6AnnularEmbeddingSamplePatchIndices =
-      [821205, 852969] ∧
+      [821205, 852969, 1000301] ∧
+    closedCollarSimplePatchN6AnnularEmbeddingSampleCases =
+      [(821205, 0), (821205, 1), (852969, 0), (852969, 1),
+        (1000301, 0), (1000301, 1)] ∧
     closedCollarSimplePatchN6AnnularEmbeddingSampleCounts.internalVertexCount =
       6 ∧
     closedCollarSimplePatchN6AnnularEmbeddingSampleCounts.sampledPatchTopologyCount =
-      2 ∧
+      3 ∧
     closedCollarSimplePatchN6AnnularEmbeddingSampleCounts.radialOrderCaseCount =
-      4 ∧
+      6 ∧
     closedCollarSimplePatchN6AnnularEmbeddingSampleCounts.profilePreservingCaseCount =
-      4 ∧
+      6 ∧
     closedCollarSimplePatchN6AnnularEmbeddingSampleCounts.planarProfilePreservingCaseCount =
-      4 ∧
+      6 ∧
     closedCollarSimplePatchN6AnnularEmbeddingSampleCounts.radialFaceCoherentCaseCount =
       0 ∧
     closedCollarSimplePatchN6AnnularEmbeddingSampleCounts.radialFaceIncoherentCaseCount =
-      4 ∧
+      6 ∧
     closedCollarSimplePatchN6AnnularEmbeddingSampleCounts.totalRotationSystemCount =
-      1048576 ∧
+      1572864 ∧
     closedCollarSimplePatchN6AnnularEmbeddingSampleCounts.enumeratedRotationSystemCount =
       closedCollarSimplePatchN6AnnularEmbeddingSampleCounts.totalRotationSystemCount ∧
     closedCollarSimplePatchN6AnnularEmbeddingSampleCounts.planarRotationSystemCount =
-      32 ∧
+      48 ∧
     closedCollarSimplePatchN6AnnularEmbeddingSampleCounts.radialFaceCoherentRotationCount =
       0 ∧
     closedCollarSimplePatchN6AnnularEmbeddingSampleCounts.exactDiagonalTwoPoleTemplateBlockerCount =
-      4 ∧
+      6 ∧
     closedCollarSimplePatchN6AnnularEmbeddingSampleCounts.maxRadialCutEdgesOnSingleFaceTwoCount =
       closedCollarSimplePatchN6AnnularEmbeddingSampleCounts.planarRotationSystemCount
 
@@ -2253,8 +2260,8 @@ def ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSampleRadialFaceCover
     Prop :=
   ∀ {V : Type} {G : SimpleGraph V},
     (representation : ClosedCollarWindingFreedomSimplePatchN6Representation G) →
-      representation.patchTopologyIndex ∈
-          closedCollarSimplePatchN6AnnularEmbeddingSamplePatchIndices →
+      (representation.patchTopologyIndex, representation.radialOrderIndex.1) ∈
+          closedCollarSimplePatchN6AnnularEmbeddingSampleCases →
         ClosedCollarWindingFreedomAnnularRealization.RadialFaceCoherent
           representation.annular →
           Nonempty
@@ -2270,8 +2277,8 @@ def ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSampleNoRadialFaceCoh
   ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSampleRadialFaceCoveredByLab →
     ∀ {V : Type} {G : SimpleGraph V},
       (representation : ClosedCollarWindingFreedomSimplePatchN6Representation G) →
-        representation.patchTopologyIndex ∈
-            closedCollarSimplePatchN6AnnularEmbeddingSamplePatchIndices →
+        (representation.patchTopologyIndex, representation.radialOrderIndex.1) ∈
+            closedCollarSimplePatchN6AnnularEmbeddingSampleCases →
           ClosedCollarWindingFreedomAnnularRealization.RadialFaceCoherent
             representation.annular →
             False
@@ -2293,8 +2300,8 @@ def ClosedCollarWindingFreedomSimplePatchN6NormalFormSampleForcesRadialFace :
     Prop :=
   ∀ {V : Type} {G : SimpleGraph V},
     (data : ClosedCollarWindingFreedomSimplePatchN6NormalFormRepresentation G) →
-      data.representation.patchTopologyIndex ∈
-          closedCollarSimplePatchN6AnnularEmbeddingSamplePatchIndices →
+      (data.representation.patchTopologyIndex, data.representation.radialOrderIndex.1) ∈
+          closedCollarSimplePatchN6AnnularEmbeddingSampleCases →
         ClosedCollarWindingFreedomAnnularRealization.RadialFaceCoherent
           data.representation.annular
 
@@ -2310,8 +2317,8 @@ def Section92Step4RadialFaceSampleNormalFormObstructionTarget : Prop :=
     ClosedCollarWindingFreedomSimplePatchN6NormalFormSampleForcesRadialFace →
       ∀ {V : Type} {G : SimpleGraph V},
         (data : ClosedCollarWindingFreedomSimplePatchN6NormalFormRepresentation G) →
-          data.representation.patchTopologyIndex ∈
-              closedCollarSimplePatchN6AnnularEmbeddingSamplePatchIndices →
+          (data.representation.patchTopologyIndex, data.representation.radialOrderIndex.1) ∈
+              closedCollarSimplePatchN6AnnularEmbeddingSampleCases →
             False
 
 theorem section92Step4RadialFaceSampleNormalFormObstructionTarget :
