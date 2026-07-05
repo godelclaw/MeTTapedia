@@ -1,4 +1,4 @@
-import Mettapedia.GraphTheory.FourColor.PeeledCollarCutLiftBoundarySupport
+import Mettapedia.GraphTheory.FourColor.PeeledCollarCutLiftOffBoundary
 import Mettapedia.GraphTheory.FourColor.GoertzelLemma818ClosedCollarWindingRealization
 
 namespace Mettapedia.GraphTheory.FourColor
@@ -378,6 +378,60 @@ theorem closedCollarWindingFreedomEscape_not_simplyRealizable
 end MinimalCounterexampleBoundarySupportPeeledCollarRouteInputs
 
 /--
+Off-boundary index of the regime route inputs: the remaining planar
+normal-form obligation is stated locally, as no ambient side-crossing edge
+being incident to a vertex outside the mapped collar-cut endpoint support.
+-/
+structure MinimalCounterexampleOffBoundaryPeeledCollarRouteInputs
+    (G : SimpleGraph V) (H : SimpleGraph W) where
+  regime : MinimalCounterexamplePeeledCollarRegime G W H
+  embedding : H ↪g G
+  ambientSideOffBoundaryNoCrossings :
+    PeeledCollarCutAmbientSideOffBoundaryNoCrossingsToAmbient embedding
+
+namespace MinimalCounterexampleOffBoundaryPeeledCollarRouteInputs
+
+/-- Off-boundary route inputs supply the boundary-support route input record. -/
+def toBoundarySupportRouteInputs
+    {G : SimpleGraph V} {H : SimpleGraph W}
+    (inputs : MinimalCounterexampleOffBoundaryPeeledCollarRouteInputs G H) :
+    MinimalCounterexampleBoundarySupportPeeledCollarRouteInputs G H where
+  regime := inputs.regime
+  embedding := inputs.embedding
+  ambientSideBoundarySupports :=
+    peeledCollarCutAmbientSideBoundarySupportsToAmbient_of_ambientSideOffBoundaryNoCrossings
+      inputs.ambientSideOffBoundaryNoCrossings
+
+/-- The off-boundary route inputs supply cyclic five-edge-connectivity for the
+peeled collar. -/
+theorem cyclicallyFiveEdgeConnected
+    {G : SimpleGraph V} {H : SimpleGraph W}
+    (inputs : MinimalCounterexampleOffBoundaryPeeledCollarRouteInputs G H) :
+    CyclicallyFiveEdgeConnected H :=
+  inputs.toBoundarySupportRouteInputs.cyclicallyFiveEdgeConnected
+
+/-- The off-boundary route inputs supply the no-cyclic-two-cut fact consumed
+by the closed-collar winding theorem. -/
+theorem closedCollarForbidsCyclicTwoCut
+    {G : SimpleGraph V} {H : SimpleGraph W}
+    (inputs : MinimalCounterexampleOffBoundaryPeeledCollarRouteInputs G H) :
+    ClosedCollarForbidsCyclicTwoCut H :=
+  inputs.toBoundarySupportRouteInputs.closedCollarForbidsCyclicTwoCut
+
+/--
+Off-boundary S4 winding salvage: cyclic five-edge-connectivity is obtained
+from the minimal-counterexample normal form plus the local planar-facing fact
+that ambient side-crossing edges cannot touch off-boundary vertices.
+-/
+theorem closedCollarWindingFreedomEscape_not_simplyRealizable
+    {G : SimpleGraph V} {H : SimpleGraph W}
+    (inputs : MinimalCounterexampleOffBoundaryPeeledCollarRouteInputs G H) :
+    ¬ ClosedCollarWindingFreedomSimplePlanarEscapeRealization H :=
+  inputs.toBoundarySupportRouteInputs.closedCollarWindingFreedomEscape_not_simplyRealizable
+
+end MinimalCounterexampleOffBoundaryPeeledCollarRouteInputs
+
+/--
 End-to-end S4 salvage target discharged by the minimal-counterexample peeled
 collar route.  The route input record supplies the upstream collar
 connectivity bridge; the downstream closed-collar theorem then rules out the
@@ -484,6 +538,21 @@ def Section92Step4BoundarySupportRegimeDischargedS4SalvageTarget : Prop :=
 /-- Verbatim end-to-end boundary-support S4 salvage statement. -/
 theorem section92Step4BoundarySupportRegimeDischargedS4SalvageTarget :
     Section92Step4BoundarySupportRegimeDischargedS4SalvageTarget := by
+  intro V W _ _ G H inputs
+  exact inputs.closedCollarWindingFreedomEscape_not_simplyRealizable
+
+/--
+End-to-end S4 salvage target using the off-boundary route interface.
+-/
+def Section92Step4OffBoundaryRegimeDischargedS4SalvageTarget : Prop :=
+  ∀ {V W : Type} [DecidableEq V] [DecidableEq W]
+    {G : SimpleGraph V} {H : SimpleGraph W},
+      MinimalCounterexampleOffBoundaryPeeledCollarRouteInputs G H →
+        ¬ ClosedCollarWindingFreedomSimplePlanarEscapeRealization H
+
+/-- Verbatim end-to-end off-boundary S4 salvage statement. -/
+theorem section92Step4OffBoundaryRegimeDischargedS4SalvageTarget :
+    Section92Step4OffBoundaryRegimeDischargedS4SalvageTarget := by
   intro V W _ _ G H inputs
   exact inputs.closedCollarWindingFreedomEscape_not_simplyRealizable
 
