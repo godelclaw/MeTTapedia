@@ -14317,6 +14317,107 @@ theorem section92Step4CurrentFiniteFrontierBadFaceTemplateRadialFaceRowHistogram
           (closedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceMaxCutHistogramSoundness_of_rowHistogramSoundness
             hrowSound)⟩
 
+theorem closedCollarWindingFreedomNonrealizableInNormalForm_of_badWitnessFaceForcesExactTemplate_of_laterBridge_of_radialFaceRowSemanticSoundness
+    (hforces :
+      ClosedCollarWindingFreedomCurrentBoundaryBadWitnessFaceForcesExactTemplate)
+    (hgeometry :
+      ClosedCollarWindingFreedomActualCollarEmbeddingSuppliesGeometryData)
+    (hradial :
+      ClosedCollarWindingFreedomActualCollarGeometrySuppliesRadialFaceExtraction)
+    (hn6 :
+      ClosedCollarWindingFreedomEveryRadialFaceNormalFormHasN6Representation)
+    (hkeys :
+      ClosedCollarWindingFreedomEveryRadialFaceN6RepresentationHasAuditedArchiveKey)
+    (hrowCard :
+      ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceRowCardinalitySound)
+    (hrowHist :
+      ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceRowHistogramEntrySound) :
+    ClosedCollarWindingFreedomNonrealizableInNormalForm :=
+  closedCollarWindingFreedomNonrealizableInNormalForm_of_badWitnessFaceForcesExactTemplate_of_laterBridge_of_radialFaceRowHistogramSoundness
+    hforces hgeometry hradial hn6 hkeys ⟨hrowCard, hrowHist⟩
+
+/--
+Fully split row-level obstruction for the combined route: after the later
+geometric fields, any remaining normal-form realization means either the
+bad-face-to-template extraction theorem is false, the row cardinality semantics
+are false, or the row histogram-entry semantics are false.
+-/
+def ClosedCollarWindingFreedomCurrentFiniteFrontierBadFaceTemplateOrRadialFaceRowSemanticObstruction :
+    Prop :=
+  ¬ ClosedCollarWindingFreedomCurrentBoundaryBadWitnessFaceForcesExactTemplate ∨
+    ¬ ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceRowCardinalitySound ∨
+      ¬ ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceRowHistogramEntrySound
+
+theorem closedCollarWindingFreedomCurrentFiniteFrontierBadFaceTemplateOrRadialFaceRowSemanticObstruction_of_laterBridge_of_not_nonrealizable
+    (hgeometry :
+      ClosedCollarWindingFreedomActualCollarEmbeddingSuppliesGeometryData)
+    (hradial :
+      ClosedCollarWindingFreedomActualCollarGeometrySuppliesRadialFaceExtraction)
+    (hn6 :
+      ClosedCollarWindingFreedomEveryRadialFaceNormalFormHasN6Representation)
+    (hkeys :
+      ClosedCollarWindingFreedomEveryRadialFaceN6RepresentationHasAuditedArchiveKey)
+    (hnot :
+      ¬ ClosedCollarWindingFreedomNonrealizableInNormalForm) :
+    ClosedCollarWindingFreedomCurrentFiniteFrontierBadFaceTemplateOrRadialFaceRowSemanticObstruction := by
+  classical
+  by_cases hforces :
+      ClosedCollarWindingFreedomCurrentBoundaryBadWitnessFaceForcesExactTemplate
+  · by_cases hrowCard :
+      ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceRowCardinalitySound
+    · by_cases hrowHist :
+        ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceRowHistogramEntrySound
+      · exact
+          False.elim
+            (hnot
+              (closedCollarWindingFreedomNonrealizableInNormalForm_of_badWitnessFaceForcesExactTemplate_of_laterBridge_of_radialFaceRowSemanticSoundness
+                hforces hgeometry hradial hn6 hkeys hrowCard hrowHist))
+      · exact Or.inr (Or.inr hrowHist)
+    · exact Or.inr (Or.inl hrowCard)
+  · exact Or.inl hforces
+
+/--
+Fully split row-semantic fork for the current finite frontier.  The positive
+branch uses bad-face extraction, row cardinality semantics, and row histogram
+entry semantics.  The negative branch identifies which one of those three
+obligations a surviving normal-form realization must refute.
+-/
+def Section92Step4CurrentFiniteFrontierBadFaceTemplateRadialFaceRowSemanticFork :
+    Prop :=
+  Section92Step4CurrentFiniteFrontierBadFaceTemplateRadialFaceRowHistogramSoundnessFork ∧
+    (ClosedCollarWindingFreedomActualCollarEmbeddingSuppliesGeometryData →
+      ClosedCollarWindingFreedomActualCollarGeometrySuppliesRadialFaceExtraction →
+        ClosedCollarWindingFreedomEveryRadialFaceNormalFormHasN6Representation →
+          ClosedCollarWindingFreedomEveryRadialFaceN6RepresentationHasAuditedArchiveKey →
+            ((ClosedCollarWindingFreedomCurrentBoundaryBadWitnessFaceForcesExactTemplate ∧
+                ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceRowCardinalitySound ∧
+                  ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceRowHistogramEntrySound →
+                    ClosedCollarWindingFreedomNonrealizableInNormalForm) ∧
+              (¬ ClosedCollarWindingFreedomNonrealizableInNormalForm →
+                ClosedCollarWindingFreedomCurrentFiniteFrontierBadFaceTemplateOrRadialFaceRowSemanticObstruction) ∧
+              (ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceRowCardinalitySound ∧
+                ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceRowHistogramEntrySound →
+                  (¬ ClosedCollarWindingFreedomNonrealizableInNormalForm ↔
+                    ClosedCollarWindingFreedomCurrentFiniteFrontierSurvivingBadWitnessFaceObstruction))))
+
+theorem section92Step4CurrentFiniteFrontierBadFaceTemplateRadialFaceRowSemanticFork :
+    Section92Step4CurrentFiniteFrontierBadFaceTemplateRadialFaceRowSemanticFork := by
+  refine
+    ⟨section92Step4CurrentFiniteFrontierBadFaceTemplateRadialFaceRowHistogramSoundnessFork,
+      ?_⟩
+  intro hgeometry hradial hn6 hkeys
+  exact
+    ⟨fun hrepair =>
+      closedCollarWindingFreedomNonrealizableInNormalForm_of_badWitnessFaceForcesExactTemplate_of_laterBridge_of_radialFaceRowSemanticSoundness
+        hrepair.1 hgeometry hradial hn6 hkeys hrepair.2.1 hrepair.2.2,
+      closedCollarWindingFreedomCurrentFiniteFrontierBadFaceTemplateOrRadialFaceRowSemanticObstruction_of_laterBridge_of_not_nonrealizable
+        hgeometry hradial hn6 hkeys,
+      fun hrowSound =>
+        closedCollarWindingFreedom_not_nonrealizableInNormalForm_iff_currentFiniteFrontierSurvivingBadWitnessFaceObstruction_of_laterBridge_of_maxCutHistogramSoundness
+          hgeometry hradial hn6 hkeys
+          (closedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceMaxCutHistogramSoundness_of_rowHistogramSoundness
+            ⟨hrowSound.1, hrowSound.2⟩)⟩
+
 end GoertzelLemma818ClosedCollarWindingRealization
 
 end Mettapedia.GraphTheory.FourColor

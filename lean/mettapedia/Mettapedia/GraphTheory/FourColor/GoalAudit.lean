@@ -3237,6 +3237,44 @@ theorem section92Step4CurrentFiniteFrontierBadFaceTemplateRadialFaceRowHistogram
     Section92Step4CurrentFiniteFrontierBadFaceTemplateRadialFaceRowHistogramSoundnessFork :=
   section92Step4CurrentFiniteFrontierBadFaceTemplateRadialFaceRowHistogramSoundnessFork
 
+theorem closedCollarWindingFreedomNonrealizableInNormalForm_of_badWitnessFaceForcesExactTemplate_of_laterBridge_of_radialFaceRowSemanticSoundness_audit
+    (hforces :
+      ClosedCollarWindingFreedomCurrentBoundaryBadWitnessFaceForcesExactTemplate)
+    (hgeometry :
+      ClosedCollarWindingFreedomActualCollarEmbeddingSuppliesGeometryData)
+    (hradial :
+      ClosedCollarWindingFreedomActualCollarGeometrySuppliesRadialFaceExtraction)
+    (hn6 :
+      ClosedCollarWindingFreedomEveryRadialFaceNormalFormHasN6Representation)
+    (hkeys :
+      ClosedCollarWindingFreedomEveryRadialFaceN6RepresentationHasAuditedArchiveKey)
+    (hrowCard :
+      ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceRowCardinalitySound)
+    (hrowHist :
+      ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceRowHistogramEntrySound) :
+    ClosedCollarWindingFreedomNonrealizableInNormalForm :=
+  closedCollarWindingFreedomNonrealizableInNormalForm_of_badWitnessFaceForcesExactTemplate_of_laterBridge_of_radialFaceRowSemanticSoundness
+    hforces hgeometry hradial hn6 hkeys hrowCard hrowHist
+
+theorem closedCollarWindingFreedomCurrentFiniteFrontierBadFaceTemplateOrRadialFaceRowSemanticObstruction_of_laterBridge_of_not_nonrealizable_audit
+    (hgeometry :
+      ClosedCollarWindingFreedomActualCollarEmbeddingSuppliesGeometryData)
+    (hradial :
+      ClosedCollarWindingFreedomActualCollarGeometrySuppliesRadialFaceExtraction)
+    (hn6 :
+      ClosedCollarWindingFreedomEveryRadialFaceNormalFormHasN6Representation)
+    (hkeys :
+      ClosedCollarWindingFreedomEveryRadialFaceN6RepresentationHasAuditedArchiveKey)
+    (hnot :
+      ¬ ClosedCollarWindingFreedomNonrealizableInNormalForm) :
+    ClosedCollarWindingFreedomCurrentFiniteFrontierBadFaceTemplateOrRadialFaceRowSemanticObstruction :=
+  closedCollarWindingFreedomCurrentFiniteFrontierBadFaceTemplateOrRadialFaceRowSemanticObstruction_of_laterBridge_of_not_nonrealizable
+    hgeometry hradial hn6 hkeys hnot
+
+theorem section92Step4CurrentFiniteFrontierBadFaceTemplateRadialFaceRowSemanticFork_audit :
+    Section92Step4CurrentFiniteFrontierBadFaceTemplateRadialFaceRowSemanticFork :=
+  section92Step4CurrentFiniteFrontierBadFaceTemplateRadialFaceRowSemanticFork
+
 /-! ## Section 9.2 two-layer ambient execution obstruction -/
 
 theorem section92Step4TwoLayerCounterexampleClass_audit :
