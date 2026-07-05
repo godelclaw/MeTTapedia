@@ -12491,10 +12491,16 @@ def realM4LiftLedger : List RealM4LiftLedgerRow := [
     note := "Official Cook-style bridge content: prove that P-membership of the named NP language supplies the Appendix-I SAT decider family."
   },
   {
-    item := "officialPToConstantDecoderRegimeData"
+    item := "officialPToUniformConstantDecoderRegimeData"
     status := .openConstruction
-    checkedName := "RealM4OfficialPToConstantDecoderRegimeData"
-    note := "Official Cook-style bridge content: prove that the P-membership decider family also supplies the matching constant-decoder regime for the real lower framework."
+    checkedName := "RealM4OfficialPToUniformConstantDecoderRegimeData"
+    note := "Official Cook-style bridge content on the current sharp route: prove that the P-membership decider family supplies the support-neutral constant-decoder regime for the real lower framework."
+  },
+  {
+    item := "officialPToConstantDecoderRegimeData"
+    status := .partialConstructionTransferred
+    checkedName := "RealM4OfficialPToUniformConstantDecoderRegimeData.toLegacySupport"
+    note := "The legacy constant-decoder-regime package is no longer primitive on the sharp route; it is obtained by reindexing the support-neutral obligation to the legacy upper-support package."
   },
   {
     item := "officialPToDeciderLanguageData"
@@ -12669,6 +12675,7 @@ theorem realM4LiftLedger_statuses_exact :
         RealM4LiftStatus.partialConstructionTransferred,
         RealM4LiftStatus.partialConstructionTransferred,
         RealM4LiftStatus.partialConstructionTransferred,
+        RealM4LiftStatus.partialConstructionTransferred,
         RealM4LiftStatus.pnpConditionalInput,
         RealM4LiftStatus.irreducibleInput,
         RealM4LiftStatus.irreducibleInput,
@@ -12687,7 +12694,7 @@ def realM4OpenConstructionItems : List String := [
   "realConstantDecoderRegime",
   "officialLanguageNPData",
   "officialPToDeciderFamilyData",
-  "officialPToConstantDecoderRegimeData"
+  "officialPToUniformConstantDecoderRegimeData"
 ]
 
 theorem realM4OpenConstructionItems_exact :
@@ -12702,7 +12709,7 @@ theorem realM4OpenConstructionItems_exact :
         "realConstantDecoderRegime",
         "officialLanguageNPData",
         "officialPToDeciderFamilyData",
-        "officialPToConstantDecoderRegimeData" ] := by
+        "officialPToUniformConstantDecoderRegimeData" ] := by
   rfl
 
 def realM4AfterConstructionIrreducibleInputs : List String := [
