@@ -1,0 +1,49 @@
+import Mettapedia.Computability.PNP.V15RealLinearCNFEnsemble
+
+/-!
+# Regression seal for the v15 real linear CNF ensemble
+-/
+
+namespace Mettapedia.Computability.PNP
+
+set_option autoImplicit false
+
+#check V13RealLinearCNFVar
+#check V13RealLinearCNFWitness
+#check v13RealLinearCNFDecodedAssignment
+#check v13RealLinearCNFFormula
+#check v13RealLinearCNFFormula_satisfied_decodedAssignment
+#check v13RealLinearCNFFormula_forces_decodedBit
+#check v13RealLinearCNFFormula_sat_iff_decodedAssignment
+#check v13RealLinearCNFVerifier
+#check v13RealLinearCNFVerifierDecision
+#check v13RealLinearCNFVerifierDecision_correct
+#check v13RealLinearCNFReadout
+#check v13RealLinearCNFReadout_eq_publicMessage_of_valid
+#check V13RealLinearCNFWorld
+#check v13RealLinearCNFSingleMessageSATSpine
+#check v13RealLinearCNFSingleMessageSATSpine_singleMessage
+#check v13RealLinearCNFReadoutData
+#check v13RealLinearCNFReadoutData_singleMessagePromise
+#check v13RealLinearCNFReadoutData_supportedSatisfiable
+#check v13RealLinearCNFReadoutData_supportedArbitraryOutputSATSearchCorrect
+
+#print axioms v13RealLinearCNFDecodedAssignment
+#print axioms v13RealLinearCNFFormula
+#print axioms v13RealLinearCNFFormula_satisfied_decodedAssignment
+#print axioms v13RealLinearCNFFormula_forces_decodedBit
+#print axioms v13RealLinearCNFFormula_sat_iff_decodedAssignment
+#print axioms v13RealLinearCNFVerifier
+#print axioms v13RealLinearCNFVerifierDecision
+#print axioms v13RealLinearCNFVerifierDecision_correct
+#print axioms v13RealLinearCNFReadout
+#print axioms v13RealLinearCNFReadout_eq_publicMessage_of_valid
+#print axioms V13RealLinearCNFWorld
+#print axioms v13RealLinearCNFSingleMessageSATSpine
+#print axioms v13RealLinearCNFSingleMessageSATSpine_singleMessage
+#print axioms v13RealLinearCNFReadoutData
+#print axioms v13RealLinearCNFReadoutData_singleMessagePromise
+#print axioms v13RealLinearCNFReadoutData_supportedSatisfiable
+#print axioms v13RealLinearCNFReadoutData_supportedArbitraryOutputSATSearchCorrect
+
+end Mettapedia.Computability.PNP
