@@ -1664,4 +1664,114 @@ theorem xorGaugeSingleMessage_hiddenGaugeProduct :
   intro gamma omega
   trivial
 
+/-! ## Gauge-buffered XOR CNF self-reduction under an explicit decider -/
+
+/-- Explicit P=NP-side SAT decider object for the concrete gauge-buffered
+anchor.  The theorem statements below remain conditional on this object; they
+do not construct an unconditional SAT solver. -/
+abbrev XorGaugeSingleMessagePNPSATDecider :=
+  RealCNFPNPSATDecider (Fin 2)
+
+/-- Bit-fixing order for the two-variable anchor: first the forced message
+coordinate, then the hidden gauge coordinate. -/
+def xorGaugeSingleMessageVarOrder : List (Fin 2) :=
+  [0, 1]
+
+theorem xorGaugeSingleMessageVarOrder_nodup :
+    xorGaugeSingleMessageVarOrder.Nodup := by
+  simp [xorGaugeSingleMessageVarOrder]
+
+theorem xorGaugeSingleMessageFormula_usesOnly
+    (Y : XorGaugeSingleMessagePublic) :
+    ConcreteCNF.FormulaUsesOnly
+      (xorGaugeSingleMessageFormula Y)
+      xorGaugeSingleMessageVarOrder := by
+  intro clause hclause lit hlit
+  cases hmsg : xorGaugeSingleMessageM Y
+  · simp [xorGaugeSingleMessageFormula, ConcreteCNF.unitClause,
+      ConcreteCNF.unitLiteral, hmsg] at hclause
+    subst clause
+    have hlit_eq : lit = ConcreteCNF.Literal.neg (0 : Fin 2) := by
+      simpa using hlit
+    subst lit
+    simp [xorGaugeSingleMessageVarOrder, ConcreteCNF.Literal.var]
+  · simp [xorGaugeSingleMessageFormula, ConcreteCNF.unitClause,
+      ConcreteCNF.unitLiteral, hmsg] at hclause
+    subst clause
+    have hlit_eq : lit = ConcreteCNF.Literal.pos (0 : Fin 2) := by
+      simpa using hlit
+    subst lit
+    simp [xorGaugeSingleMessageVarOrder, ConcreteCNF.Literal.var]
+
+theorem xorGaugeSingleMessageFormula_satisfiable
+    (Y : XorGaugeSingleMessagePublic) :
+    ∃ σ : ConcreteCNF.Assignment (Fin 2),
+      ConcreteCNF.IsSatFormula (xorGaugeSingleMessageFormula Y) σ :=
+  ⟨xorGaugeSingleMessageAssignment Y false,
+    xorGaugeSingleMessageFormula_satisfied_assignment Y false⟩
+
+/-- The standard bit-fixing search-to-decision assignment for the concrete
+gauge-buffered CNF, conditional on the explicit SAT decider object. -/
+def xorGaugeSingleMessageSelfReductionAssignment
+    (D : XorGaugeSingleMessagePNPSATDecider)
+    (Y : XorGaugeSingleMessagePublic) :
+    ConcreteCNF.Assignment (Fin 2) :=
+  realCNFBitFixAssignment D
+    (xorGaugeSingleMessageFormula Y)
+    xorGaugeSingleMessageVarOrder
+
+/-- Bit-fixing with the explicit SAT decider returns a satisfying assignment
+for the concrete locked CNF. -/
+theorem xorGaugeSingleMessageSelfReductionAssignment_satisfies
+    (D : XorGaugeSingleMessagePNPSATDecider)
+    (Y : XorGaugeSingleMessagePublic) :
+    ConcreteCNF.IsSatFormula
+      (xorGaugeSingleMessageFormula Y)
+      (xorGaugeSingleMessageSelfReductionAssignment D Y) := by
+  exact
+    realCNFBitFixAssignment_satisfies
+      D
+      (xorGaugeSingleMessageFormula_usesOnly Y)
+      xorGaugeSingleMessageVarOrder_nodup
+      (xorGaugeSingleMessageFormula_satisfiable Y)
+
+/-- The readout of the recovered bit-fixing witness is exactly the fixed
+public message `M(Y)`.  This is the concrete search-to-decision upper side:
+the hidden gauge bit may be chosen arbitrarily by search, but the readout is
+forced by the single-message promise. -/
+theorem xorGaugeSingleMessageSelfReduction_readout_eq_M
+    (D : XorGaugeSingleMessagePNPSATDecider)
+    (Y : XorGaugeSingleMessagePublic) :
+    xorGaugeSingleMessageProjection Y
+        (xorGaugeSingleMessageSelfReductionAssignment D Y) =
+      xorGaugeSingleMessageM Y := by
+  exact
+    xorGaugeSingleMessageCNFReadoutData_projection_eq_M
+      (Y := Y)
+      (W := xorGaugeSingleMessageSelfReductionAssignment D Y)
+      trivial
+      (xorGaugeSingleMessageSelfReductionAssignment_satisfies D Y)
+
+/-- The concrete self-reduction uses a fixed program skeleton around the
+explicit SAT decider, so its `kpolyAt` model is constant in `targetBlocks`. -/
+theorem xorGaugeSingleMessageConstantDecoderKpolyAt_const
+    (D : XorGaugeSingleMessagePNPSATDecider)
+    (targetBlocks targetBlocks' : Nat) :
+    realCNFConstantDecoderKpolyAt D targetBlocks =
+      realCNFConstantDecoderKpolyAt D targetBlocks' :=
+  realCNFConstantDecoderKpolyAt_const D targetBlocks targetBlocks'
+
+/-- Conditional upper-bound discharge for the concrete gauge-buffered CNF:
+given the explicit P=NP-side SAT decider object and a lower-framework regime
+identifying `kpolyAt` with the constant self-reduction decoder and
+`etaTimes t` with a linear floor, the upper cost lies below the floor. -/
+theorem xorGaugeSingleMessage_selfReductionUpperHypothesis_givenPNP
+    {F : CompressionLowerFramework}
+    (D : XorGaugeSingleMessagePNPSATDecider)
+    (R : RealCNFConstantDecoderRegime F D) :
+    SelfReductionUpperHypothesis F where
+  upperStrictlyBelowCompressionFloor := by
+    rw [R.kpolyAt_eq, R.etaTimes_eq]
+    exact R.floor_dominates_decoder
+
 end Mettapedia.Computability.PNP
