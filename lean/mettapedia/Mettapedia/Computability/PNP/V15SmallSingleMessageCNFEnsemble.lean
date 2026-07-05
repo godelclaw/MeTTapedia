@@ -2289,6 +2289,50 @@ theorem xorGaugeSingleMessageAppendixICNFWorld_admissibleHistories
     xorGaugeSingleMessageAppendixICNFWorld_historyField_balancedConditioning
       coord⟩
 
+/-! ## Gauge-buffered Appendix-I CNF CD-ENF structural fields -/
+
+/-- Forget the Appendix-I packaging and view a CNF world as the underlying
+gauge-buffered SAT world. -/
+def xorGaugeSingleMessageAppendixICNFWorldAsSATWorld
+    (omega : RealM4CNFWorld xorGaugeSingleMessageAppendixICNFReadoutData) :
+    XorGaugeSingleMessageSATWorld where
+  publicInput := omega.publicInstance
+  assignment := omega.assignment
+  sat := by
+    simpa [xorGaugeSingleMessageAppendixICNFReadoutData,
+      xorGaugeSingleMessageVerifier] using omega.sat
+
+/-- Evidence semantics transported from the gauge-buffered SAT world carrier
+to the concrete Appendix-I CNF world carrier. -/
+def xorGaugeSingleMessageAppendixICNFSemantics :
+    EvidenceSemantics
+      (RealM4CNFWorld xorGaugeSingleMessageAppendixICNFReadoutData)
+      XorGaugeSingleMessageNeutral
+      XorGaugeSingleMessageSafe
+      XorGaugeSingleMessageGauge where
+  neutralSat := fun n omega =>
+    xorGaugeSingleMessageSemantics.neutralSat n
+      (xorGaugeSingleMessageAppendixICNFWorldAsSATWorld omega)
+  safeSat := fun q omega =>
+    xorGaugeSingleMessageSemantics.safeSat q
+      (xorGaugeSingleMessageAppendixICNFWorldAsSATWorld omega)
+  gaugeSat := fun gamma omega =>
+    xorGaugeSingleMessageSemantics.gaugeSat gamma
+      (xorGaugeSingleMessageAppendixICNFWorldAsSATWorld omega)
+
+/-- Structural `atomCompleteness` transferred to the Appendix-I CNF world
+carrier: CD-ENF preserves the transported evidence semantics on the concrete
+CNF worlds. -/
+theorem xorGaugeSingleMessageAppendixICNF_atomCompleteness :
+    ∀ E : RawEvidence
+      XorGaugeSingleMessageNeutral
+      XorGaugeSingleMessageSafe
+      XorGaugeSingleMessageGauge,
+      xorGaugeSingleMessageAppendixICNFSemantics.SatNormal (CDENF E) =
+        xorGaugeSingleMessageAppendixICNFSemantics.SatRaw E := by
+  intro E
+  exact CDENF_semantics xorGaugeSingleMessageAppendixICNFSemantics E
+
 /-! ## Gauge-buffered XOR CNF self-reduction under an explicit decider -/
 
 /-- Explicit P=NP-side SAT decider object for the concrete gauge-buffered
