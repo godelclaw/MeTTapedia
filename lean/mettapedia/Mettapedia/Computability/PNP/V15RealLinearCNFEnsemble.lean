@@ -3419,6 +3419,58 @@ theorem v13RealLinearSmallGaugeCNFGaugeAction_hidden_true
       !v13RealLinearSmallGaugeCNFHiddenGauge W :=
   rfl
 
+/-- The concrete hidden-gauge action changes the free coordinate by xor with
+the acting Boolean gauge element. -/
+theorem v13RealLinearSmallGaugeCNFGaugeAction_hiddenGauge
+    (gamma : Bool) (W : V13RealLinearSmallGaugeCNFWitness) :
+    v13RealLinearSmallGaugeCNFHiddenGauge
+        (v13RealLinearSmallGaugeCNFGaugeAction gamma W) =
+      (gamma ^^ v13RealLinearSmallGaugeCNFHiddenGauge W) := by
+  simpa [v13RealLinearSmallGaugeCNFHiddenGauge,
+    v13RealLinearSmallGaugeCNFGaugeAction,
+    v13RealLinearGaugeCNFHiddenGauge] using
+    v13RealLinearGaugeCNFGaugeAction_hiddenGauge gamma W
+
+@[simp] theorem v13RealLinearSmallGaugeCNFGaugeAction_false
+    (W : V13RealLinearSmallGaugeCNFWitness) :
+    v13RealLinearSmallGaugeCNFGaugeAction false W = W := by
+  simp [v13RealLinearSmallGaugeCNFGaugeAction]
+
+/-- Concrete small-gauge witness actions compose by xor. -/
+@[simp] theorem v13RealLinearSmallGaugeCNFGaugeAction_xor
+    (gamma delta : Bool) (W : V13RealLinearSmallGaugeCNFWitness) :
+    v13RealLinearSmallGaugeCNFGaugeAction gamma
+        (v13RealLinearSmallGaugeCNFGaugeAction delta W) =
+      v13RealLinearSmallGaugeCNFGaugeAction (gamma ^^ delta) W := by
+  simp [v13RealLinearSmallGaugeCNFGaugeAction]
+
+/-- The nontrivial witness-level gauge element changes every concrete small
+gauge-CNF witness by flipping its free hidden coordinate. -/
+theorem v13RealLinearSmallGaugeCNFGaugeAction_true_ne
+    (W : V13RealLinearSmallGaugeCNFWitness) :
+    v13RealLinearSmallGaugeCNFGaugeAction true W ≠ W := by
+  intro hfixed
+  have hhidden :=
+    congrArg v13RealLinearSmallGaugeCNFHiddenGauge hfixed
+  rw [v13RealLinearSmallGaugeCNFGaugeAction_hiddenGauge] at hhidden
+  cases h : v13RealLinearSmallGaugeCNFHiddenGauge W <;>
+    simp [h] at hhidden
+
+/-- The concrete small-gauge witness action is free: only `false` fixes a
+witness. -/
+theorem v13RealLinearSmallGaugeCNFGaugeAction_eq_self_iff
+    (gamma : Bool) (W : V13RealLinearSmallGaugeCNFWitness) :
+    v13RealLinearSmallGaugeCNFGaugeAction gamma W = W ↔
+      gamma = false := by
+  cases gamma
+  · simp
+  · constructor
+    · intro hfixed
+      exact False.elim
+        (v13RealLinearSmallGaugeCNFGaugeAction_true_ne W hfixed)
+    · intro hfalse
+      cases hfalse
+
 /-- The hidden-gauge action is nontrivial on satisfying witnesses for either
 public message bit. -/
 theorem v13RealLinearSmallGaugeCNFGaugeAction_nontrivial
@@ -3482,6 +3534,70 @@ theorem v13RealLinearSmallGaugeCNFWorldGaugeAction_hidden_true
         (v13RealLinearSmallGaugeCNFWorldGaugeAction true omega) =
       !v13RealLinearSmallGaugeCNFWorldHiddenGauge omega :=
   rfl
+
+/-- Acting on a valid small gauge-CNF world xors the hidden-gauge coordinate
+with the acting Boolean gauge element. -/
+theorem v13RealLinearSmallGaugeCNFWorldGaugeAction_hiddenGauge
+    {msg : Bool} (gamma : Bool)
+    (omega : V13RealLinearSmallGaugeCNFWorld msg) :
+    v13RealLinearSmallGaugeCNFWorldHiddenGauge
+        (v13RealLinearSmallGaugeCNFWorldGaugeAction gamma omega) =
+      (gamma ^^
+        v13RealLinearSmallGaugeCNFWorldHiddenGauge omega) := by
+  exact
+    v13RealLinearSmallGaugeCNFGaugeAction_hiddenGauge
+      gamma omega.assignment
+
+@[simp] theorem v13RealLinearSmallGaugeCNFWorldGaugeAction_false
+    {msg : Bool} (omega : V13RealLinearSmallGaugeCNFWorld msg) :
+    v13RealLinearSmallGaugeCNFWorldGaugeAction false omega = omega := by
+  cases omega with
+  | mk assignment sat =>
+      simp [v13RealLinearSmallGaugeCNFWorldGaugeAction,
+        v13RealLinearSmallGaugeCNFGaugeAction]
+
+/-- Valid small gauge-CNF world actions compose by xor. -/
+@[simp] theorem v13RealLinearSmallGaugeCNFWorldGaugeAction_xor
+    {msg : Bool} (gamma delta : Bool)
+    (omega : V13RealLinearSmallGaugeCNFWorld msg) :
+    v13RealLinearSmallGaugeCNFWorldGaugeAction gamma
+        (v13RealLinearSmallGaugeCNFWorldGaugeAction delta omega) =
+      v13RealLinearSmallGaugeCNFWorldGaugeAction
+        (gamma ^^ delta) omega := by
+  cases omega with
+  | mk assignment sat =>
+      simp [v13RealLinearSmallGaugeCNFWorldGaugeAction,
+        v13RealLinearSmallGaugeCNFGaugeAction]
+
+/-- The nontrivial gauge element changes every valid small gauge-CNF world by
+flipping its free hidden coordinate. -/
+theorem v13RealLinearSmallGaugeCNFWorldGaugeAction_true_ne
+    {msg : Bool} (omega : V13RealLinearSmallGaugeCNFWorld msg) :
+    v13RealLinearSmallGaugeCNFWorldGaugeAction true omega ≠
+      omega := by
+  intro hfixed
+  have hhidden :=
+    congrArg v13RealLinearSmallGaugeCNFWorldHiddenGauge hfixed
+  rw [v13RealLinearSmallGaugeCNFWorldGaugeAction_hiddenGauge] at hhidden
+  cases h :
+      v13RealLinearSmallGaugeCNFWorldHiddenGauge omega <;>
+    simp [h] at hhidden
+
+/-- The valid-world small gauge-CNF action is free: only `false` fixes a
+world. -/
+theorem v13RealLinearSmallGaugeCNFWorldGaugeAction_eq_self_iff
+    {msg : Bool} (gamma : Bool)
+    (omega : V13RealLinearSmallGaugeCNFWorld msg) :
+    v13RealLinearSmallGaugeCNFWorldGaugeAction gamma omega = omega ↔
+      gamma = false := by
+  cases gamma
+  · simp
+  · constructor
+    · intro hfixed
+      exact False.elim
+        (v13RealLinearSmallGaugeCNFWorldGaugeAction_true_ne omega hfixed)
+    · intro hfalse
+      cases hfalse
 
 /-- Neutral evidence atoms for the explicit small gauge-CNF surface. -/
 abbrev V13RealLinearSmallGaugeCNFNeutral :=
@@ -3581,6 +3697,113 @@ theorem v13RealLinearSmallGaugeCNFSATWorld_hiddenGaugeProduct :
   exact
     v13RealLinearSmallGaugeCNFSATWorldGaugeAction_preserves_target
       gamma omega
+
+/-- Hidden-gauge coordinate on global small gauge-CNF SAT worlds. -/
+def v13RealLinearSmallGaugeCNFSATWorldHiddenGauge
+    (omega : V13RealLinearSmallGaugeCNFSATWorld) : Bool :=
+  v13RealLinearSmallGaugeCNFHiddenGauge omega.assignment
+
+/-- Acting on a global small gauge-CNF SAT world xors the hidden-gauge
+coordinate with the acting Boolean gauge element. -/
+@[simp] theorem v13RealLinearSmallGaugeCNFSATWorldGaugeAction_hiddenGauge
+    (gamma : Bool) (omega : V13RealLinearSmallGaugeCNFSATWorld) :
+    v13RealLinearSmallGaugeCNFSATWorldHiddenGauge
+        (v13RealLinearSmallGaugeCNFSATWorldGaugeAction gamma omega) =
+      (gamma ^^
+        v13RealLinearSmallGaugeCNFSATWorldHiddenGauge omega) := by
+  exact
+    v13RealLinearSmallGaugeCNFGaugeAction_hiddenGauge
+      gamma omega.assignment
+
+/-- The false gauge element acts as the identity on global small gauge-CNF
+SAT worlds. -/
+@[simp] theorem v13RealLinearSmallGaugeCNFSATWorldGaugeAction_false
+    (omega : V13RealLinearSmallGaugeCNFSATWorld) :
+    v13RealLinearSmallGaugeCNFSATWorldGaugeAction false omega =
+      omega := by
+  cases omega with
+  | mk msg assignment sat =>
+      simp [v13RealLinearSmallGaugeCNFSATWorldGaugeAction,
+        v13RealLinearSmallGaugeCNFGaugeAction]
+
+/-- Global small gauge-CNF SAT-world actions compose by xor. -/
+@[simp] theorem v13RealLinearSmallGaugeCNFSATWorldGaugeAction_xor
+    (gamma delta : Bool)
+    (omega : V13RealLinearSmallGaugeCNFSATWorld) :
+    v13RealLinearSmallGaugeCNFSATWorldGaugeAction gamma
+        (v13RealLinearSmallGaugeCNFSATWorldGaugeAction delta omega) =
+      v13RealLinearSmallGaugeCNFSATWorldGaugeAction
+        (gamma ^^ delta) omega := by
+  cases omega with
+  | mk msg assignment sat =>
+      simp [v13RealLinearSmallGaugeCNFSATWorldGaugeAction,
+        v13RealLinearSmallGaugeCNFGaugeAction]
+
+/-- The nontrivial gauge element changes every global small gauge-CNF SAT
+world by flipping its free hidden coordinate. -/
+theorem v13RealLinearSmallGaugeCNFSATWorldGaugeAction_true_ne
+    (omega : V13RealLinearSmallGaugeCNFSATWorld) :
+    v13RealLinearSmallGaugeCNFSATWorldGaugeAction true omega ≠
+      omega := by
+  intro hfixed
+  have hhidden :=
+    congrArg v13RealLinearSmallGaugeCNFSATWorldHiddenGauge hfixed
+  rw [v13RealLinearSmallGaugeCNFSATWorldGaugeAction_hiddenGauge]
+    at hhidden
+  cases h :
+      v13RealLinearSmallGaugeCNFSATWorldHiddenGauge omega <;>
+    simp [h] at hhidden
+
+/-- The global small gauge-CNF SAT-world action is free: only `false` fixes a
+world. -/
+theorem v13RealLinearSmallGaugeCNFSATWorldGaugeAction_eq_self_iff
+    (gamma : Bool) (omega : V13RealLinearSmallGaugeCNFSATWorld) :
+    v13RealLinearSmallGaugeCNFSATWorldGaugeAction gamma omega =
+      omega ↔ gamma = false := by
+  cases gamma
+  · simp
+  · constructor
+    · intro hfixed
+      exact False.elim
+        (v13RealLinearSmallGaugeCNFSATWorldGaugeAction_true_ne
+          omega hfixed)
+    · intro hfalse
+      cases hfalse
+
+/-- Explicit gauge-action data for the global small gauge-CNF SAT-world
+surface. -/
+def v13RealLinearSmallGaugeCNFSATWorldGaugeActionData :
+    RealM4GaugeActionData
+      V13RealLinearSmallGaugeCNFSATWorld
+      Bool
+      V13RealLinearSmallGaugeCNFNeutral
+      V13RealLinearSmallGaugeCNFSafe
+      V13RealLinearSmallGaugeCNFGauge
+      v13RealLinearSmallGaugeCNFSATWorldTarget
+      v13RealLinearSmallGaugeCNFSATWorldPublicInput
+      v13RealLinearSmallGaugeCNFSATWorldSemantics where
+  act := v13RealLinearSmallGaugeCNFSATWorldGaugeAction
+  publicInvariant := by
+    intro gamma omega
+    exact
+      v13RealLinearSmallGaugeCNFSATWorldGaugeAction_publicInput
+        gamma omega
+  targetInvariant := by
+    intro gamma omega
+    exact
+      v13RealLinearSmallGaugeCNFSATWorldGaugeAction_preserves_target
+        gamma omega
+  gaugeSatisfied := v13RealLinearSmallGaugeCNFSATWorld_hiddenGaugeProduct
+
+/-- The explicit small gauge-CNF SAT-world action data projects the
+`hiddenGaugeProduct` structural field. -/
+theorem
+    v13RealLinearSmallGaugeCNFSATWorld_hiddenGaugeProduct_fromActionData :
+    ∀ gamma omega,
+      v13RealLinearSmallGaugeCNFSATWorldSemantics.gaugeSat
+        gamma omega :=
+  RealM4GaugeActionData.hiddenGaugeProduct
+    v13RealLinearSmallGaugeCNFSATWorldGaugeActionData
 
 /-- Gauge satisfaction for the explicit small surface is target preservation
 under the concrete hidden-gauge action. -/
