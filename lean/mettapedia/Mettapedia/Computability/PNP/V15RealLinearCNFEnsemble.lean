@@ -6600,6 +6600,43 @@ theorem
   simp [v13RealLinearNoTargetRowsGaugeCNFAppendixICNFGaugeAction,
     v13RealLinearGaugeCNFGaugeAction] at hcoord
 
+/-- The concrete Appendix-I CNF hidden-gauge fiber over every public instance
+is nontrivial: flipping the free gauge bit gives another satisfying witness
+with the same public instance, same projection readout, and same world target. -/
+theorem
+    v13RealLinearNoTargetRowsGaugeCNFAppendixICNF_nontrivialHiddenGaugeFiber
+    {m : Nat} {i₀ : Fin m}
+    (omega :
+      RealM4CNFWorld
+        (v13RealLinearNoTargetRowsGaugeCNFAppendixICNFReadoutData i₀)) :
+    ∃ omega' :
+      RealM4CNFWorld
+        (v13RealLinearNoTargetRowsGaugeCNFAppendixICNFReadoutData i₀),
+      omega'.publicInstance = omega.publicInstance ∧
+        (v13RealLinearNoTargetRowsGaugeCNFAppendixICNFReadoutData i₀).projection
+            omega'.publicInstance omega'.assignment =
+          (v13RealLinearNoTargetRowsGaugeCNFAppendixICNFReadoutData i₀).projection
+            omega.publicInstance omega.assignment ∧
+        v13RealLinearNoTargetRowsGaugeCNFAppendixICNFWorldTarget omega' =
+          v13RealLinearNoTargetRowsGaugeCNFAppendixICNFWorldTarget omega ∧
+        omega'.assignment ≠ omega.assignment := by
+  refine
+    ⟨v13RealLinearNoTargetRowsGaugeCNFAppendixICNFGaugeAction true omega,
+      ?_, ?_, ?_, ?_⟩
+  · exact
+      v13RealLinearNoTargetRowsGaugeCNFAppendixICNFGaugeAction_publicInstance
+        true omega
+  · exact
+      v13RealLinearNoTargetRowsGaugeCNFAppendixICNFGaugeAction_preserves_projection
+        true omega
+  · exact
+      v13RealLinearNoTargetRowsGaugeCNFAppendixICNFGaugeAction_preserves_target
+        true omega
+  · intro hassign
+    have hcoord := congrFun hassign none
+    simp [v13RealLinearNoTargetRowsGaugeCNFAppendixICNFGaugeAction,
+      v13RealLinearGaugeCNFGaugeAction] at hcoord
+
 /-- The Appendix-I CNF hidden-gauge action is free: the only gauge element
 fixing a concrete world is `false`. -/
 theorem
