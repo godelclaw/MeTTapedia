@@ -24994,6 +24994,116 @@ theorem realM4CNFMechanicalSATSpineBridgeItems_exact :
 def realM4CNFMechanicalSATSpineBridgeStatement : String :=
   "The CNF/mechanical SAT-spine bridge names the explicit data needed to use the actual Appendix-I CNF SAT readout over the current real mechanical endpoint: a supported satisfying CNF world for each mechanical world, a projection from CNF public instances to mechanical public instances, compatibility between CNF public messages and mechanical public messages, and equality between mapped CNF witness readout and the mechanical target.  From these fields Lean constructs a RealSingleMessageSATSpine and the manuscript-facing ensemble interface.  This exposes the missing real M4 identification data rather than pretending it has already been supplied."
 
+def realM4ManuscriptCNFSATRealizationComponentConstructionObligations :
+    List String :=
+  realM4StrictNamedRealLockInConstructionObligations ++
+    realM4CNFMechanicalSATSpineBridgeItems
+
+theorem
+    realM4ManuscriptCNFSATRealizationComponentConstructionObligations_eq_fields :
+    realM4ManuscriptCNFSATRealizationComponentConstructionObligations =
+      realM4StrictNamedRealLockInConstructionObligations ++
+        realM4CNFMechanicalSATSpineBridgeItems := by
+  rfl
+
+theorem
+    realM4ManuscriptCNFSATRealizationComponentConstructionObligations_exact :
+    realM4ManuscriptCNFSATRealizationComponentConstructionObligations =
+      [ "noTargetRowsPublicSurface",
+        "law",
+        "transcript",
+        "observerBit",
+        "phaseA",
+        "semantics",
+        "observerEvidence",
+        "pivotSummary",
+        "epsMix",
+        "safeCost",
+        "safeBudget",
+        "gaugeIncidence",
+        "gaugeBound",
+        "hiddenGaugeProduct",
+        "realCompressionLowerMachineData",
+        "publicLockCoverageData",
+        "lockedMessageRigidityData",
+        "cnfVariableAddressSyntax",
+        "officialLanguageNPData",
+        "officialPToDeciderFamilyData",
+        "pMembershipEtaPositive",
+        "pMembershipKpolyAtConstantDecoderIdentification",
+        "pMembershipEtaTimesLinearFloorIdentification",
+        "pMembershipTargetBlocksExceedsConstantDecoderCost",
+        "appendixICNFWorldForEachMechanicalWorld",
+        "cnfPublicToMechanicalPublicProjection",
+        "mechanicalPublicMessage",
+        "cnfPublicMessageCompatibility",
+        "mappedCNFWitnessReadoutEqualsMechanicalTarget",
+        "realSingleMessageSATSpineFromCNF",
+        "manuscriptEnsembleInterfaceFromCNF" ] := by
+  rfl
+
+def realM4ManuscriptCNFSATRealizationComponentIrreducibleInputs :
+    List String :=
+  realM4StrictNamedRealLockInIrreducibleInputs
+
+theorem
+    realM4ManuscriptCNFSATRealizationComponentIrreducibleInputs_exact :
+    realM4ManuscriptCNFSATRealizationComponentIrreducibleInputs =
+      [ "starSWHardness",
+        "safeQSSM",
+        "boundedGaugeIncidence",
+        "boundaryMixing" ] := by
+  rfl
+
+def realM4ManuscriptCNFSATRealizationComponentCompletionAudit :
+    List String :=
+  realM4ManuscriptCNFSATRealizationComponentConstructionObligations ++
+    realM4ManuscriptCNFSATRealizationComponentIrreducibleInputs
+
+theorem
+    realM4ManuscriptCNFSATRealizationComponentCompletionAudit_exact :
+    realM4ManuscriptCNFSATRealizationComponentCompletionAudit =
+      [ "noTargetRowsPublicSurface",
+        "law",
+        "transcript",
+        "observerBit",
+        "phaseA",
+        "semantics",
+        "observerEvidence",
+        "pivotSummary",
+        "epsMix",
+        "safeCost",
+        "safeBudget",
+        "gaugeIncidence",
+        "gaugeBound",
+        "hiddenGaugeProduct",
+        "realCompressionLowerMachineData",
+        "publicLockCoverageData",
+        "lockedMessageRigidityData",
+        "cnfVariableAddressSyntax",
+        "officialLanguageNPData",
+        "officialPToDeciderFamilyData",
+        "pMembershipEtaPositive",
+        "pMembershipKpolyAtConstantDecoderIdentification",
+        "pMembershipEtaTimesLinearFloorIdentification",
+        "pMembershipTargetBlocksExceedsConstantDecoderCost",
+        "appendixICNFWorldForEachMechanicalWorld",
+        "cnfPublicToMechanicalPublicProjection",
+        "mechanicalPublicMessage",
+        "cnfPublicMessageCompatibility",
+        "mappedCNFWitnessReadoutEqualsMechanicalTarget",
+        "realSingleMessageSATSpineFromCNF",
+        "manuscriptEnsembleInterfaceFromCNF",
+        "starSWHardness",
+        "safeQSSM",
+        "boundedGaugeIncidence",
+        "boundaryMixing" ] := by
+  rfl
+
+def realM4ManuscriptCNFSATRealizationComponentCompletionStatement :
+    String :=
+  "The CNF-anchored manuscript-M4 completion audit expands the remaining construction gate into the strict named real lock-in construction obligations plus the CNF/mechanical SAT-spine identification fields.  After those construction obligations are supplied, the irreducible mathematical inputs are exactly StarSW hardness and the three analytic frontier fields safeQSSM / boundedGaugeIncidence / boundaryMixing.  This audit does not inhabit the real M4 construction and does not prove P != NP unconditionally."
+
 def realM4ManuscriptCNFSATRealizationComponentItems :
     List String := [
   "transparentManuscriptM4ComponentGate",
@@ -25001,6 +25111,7 @@ def realM4ManuscriptCNFSATRealizationComponentItems :
   "cnfDerivedManuscriptEnsembleInterface",
   "componentProjection",
   "projectedMechanicalInterface",
+  "cnfConstructionObligationAudit",
   "cnfSpineStructuralReadoutAudit",
   "cnfFullStructuralTransferAudit",
   "strictNamedEndpointThroughCNFRealizationComponents",
@@ -25014,6 +25125,7 @@ theorem realM4ManuscriptCNFSATRealizationComponentItems_exact :
         "cnfDerivedManuscriptEnsembleInterface",
         "componentProjection",
         "projectedMechanicalInterface",
+        "cnfConstructionObligationAudit",
         "cnfSpineStructuralReadoutAudit",
         "cnfFullStructuralTransferAudit",
         "strictNamedEndpointThroughCNFRealizationComponents",
@@ -25040,7 +25152,7 @@ theorem
   rfl
 
 def realM4ManuscriptCNFSATRealizationComponentStatement : String :=
-  "The CNF-anchored manuscript-M4 realization gate refines the transparent strict component gate with explicit CNF/mechanical identification data.  It constructs the manuscript-facing SAT interface from the Appendix-I CNF readout spine, audits the six named structural fields plus CNF readout over the same mechanical target, and reuses the strict named endpoint with exactly StarSW hardness plus safeQSSM / boundedGaugeIncidence / boundaryMixing as mathematical frontier inputs.  The full lock-in audit packages these structural and endpoint consequences from the same CNF realization object.  The gate is not inhabited here; it marks the remaining real construction work needed to identify the manuscript SAT ensemble with the mechanical endpoint."
+  "The CNF-anchored manuscript-M4 realization gate refines the transparent strict component gate with explicit CNF/mechanical identification data.  It constructs the manuscript-facing SAT interface from the Appendix-I CNF readout spine, audits the six named structural fields plus CNF readout over the same mechanical target, and reuses the strict named endpoint with exactly StarSW hardness plus safeQSSM / boundedGaugeIncidence / boundaryMixing as mathematical frontier inputs.  The full lock-in audit packages these structural and endpoint consequences from the same CNF realization object, while the completion audit expands the uninhabited construction gate into strict named real lock-in fields plus CNF/mechanical SAT-spine identification fields.  The gate is not inhabited here; it marks the remaining real construction work needed to identify the manuscript SAT ensemble with the mechanical endpoint."
 
 def realM4StrictNamedSelfReductionUpperItems : List String := [
   "lockedMessageUpperSupport",
