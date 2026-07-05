@@ -1273,6 +1273,9 @@ def audit_n8_frontier(prefix_results_dir: Path, stratified_results_dir: Path) ->
         for radial_order_index in (0, 1)
     }
     seen_case_pairs: set[tuple[int, int]] = set()
+    profile_failure_kind_histogram: Counter[str] = Counter()
+    first_blocking_state_index_histogram: Counter[str] = Counter()
+    wrong_profile_proper_extension_count_histogram: Counter[str] = Counter()
     for index, verdict in enumerate(stratified_case_verdicts):
         patch_index = verdict.get("patch_index")
         radial_order_index = verdict.get("radial_order_index")
@@ -1309,7 +1312,95 @@ def audit_n8_frontier(prefix_results_dir: Path, stratified_results_dir: Path) ->
             verdict.get("verdict"),
             "no_profile_preserving_extension",
         )
+        first_blocking_state_index = verdict.get("first_blocking_state_index")
+        if not isinstance(first_blocking_state_index, int):
+            raise ValueError(
+                f"n8 stratified case verdict {index}: invalid blocking state"
+            )
+        first_blocking_state_index_histogram[str(first_blocking_state_index)] += 1
+        failure_kind = verdict.get("profile_failure_kind")
+        if not isinstance(failure_kind, str) or failure_kind not in (
+            "terminal_precolor_conflict",
+            "no_proper_tait_extension",
+            "proper_extensions_wrong_profile",
+        ):
+            raise ValueError(
+                f"n8 stratified case verdict {index}: invalid failure kind"
+            )
+        profile_failure_kind_histogram[failure_kind] += 1
+        proper_count = verdict.get("proper_tait_extension_count")
+        matching_count = verdict.get("matching_profile_extension_count")
+        variant_count = verdict.get("profile_variant_count")
+        if not isinstance(proper_count, int) or proper_count < 0:
+            raise ValueError(f"n8 stratified case verdict {index}: invalid proper count")
+        if matching_count != 0:
+            raise AssertionError(
+                f"n8 stratified case verdict {index}: nonzero matching count"
+            )
+        if not isinstance(variant_count, int) or variant_count < 0:
+            raise ValueError(
+                f"n8 stratified case verdict {index}: invalid profile variant count"
+            )
+        conflicts = verdict.get("terminal_precolor_conflict_vertices")
+        if not isinstance(conflicts, list) or not all(
+            isinstance(vertex, str) for vertex in conflicts
+        ):
+            raise ValueError(
+                f"n8 stratified case verdict {index}: invalid terminal conflicts"
+            )
+        if failure_kind == "terminal_precolor_conflict":
+            if not conflicts or proper_count != 0 or variant_count != 0:
+                raise AssertionError(
+                    f"n8 stratified case verdict {index}: bad terminal conflict"
+                )
+        elif failure_kind == "no_proper_tait_extension":
+            if conflicts or proper_count != 0 or variant_count != 0:
+                raise AssertionError(
+                    f"n8 stratified case verdict {index}: bad no-proper case"
+                )
+        else:
+            if conflicts or proper_count <= 0 or variant_count <= 0:
+                raise AssertionError(
+                    f"n8 stratified case verdict {index}: bad wrong-profile case"
+                )
+            wrong_profile_proper_extension_count_histogram[str(proper_count)] += 1
     assert_equal("n8 stratified case verdict pairs", seen_case_pairs, expected_case_pairs)
+    profile_failure_kind_histogram_dict = dict(
+        sorted(profile_failure_kind_histogram.items())
+    )
+    first_blocking_state_index_histogram_dict = dict(
+        sorted(first_blocking_state_index_histogram.items())
+    )
+    wrong_profile_proper_extension_count_histogram_dict = dict(
+        sorted(wrong_profile_proper_extension_count_histogram.items())
+    )
+    assert_equal(
+        "n8 stratified profile failure kind histogram",
+        dict_field(
+            stratified_summary,
+            N8_STRATIFIED_SAMPLE_FILE,
+            "profile_failure_kind_histogram",
+        ),
+        profile_failure_kind_histogram_dict,
+    )
+    assert_equal(
+        "n8 stratified first blocking state histogram",
+        dict_field(
+            stratified_summary,
+            N8_STRATIFIED_SAMPLE_FILE,
+            "first_blocking_state_index_histogram",
+        ),
+        first_blocking_state_index_histogram_dict,
+    )
+    assert_equal(
+        "n8 stratified wrong-profile proper-extension histogram",
+        dict_field(
+            stratified_summary,
+            N8_STRATIFIED_SAMPLE_FILE,
+            "wrong_profile_proper_extension_count_histogram",
+        ),
+        wrong_profile_proper_extension_count_histogram_dict,
+    )
 
     return {
         "schema": "fourcolor-section-9-2-closed-collar-winding-simple-patch-n8-frontier-audit-v1",
@@ -1341,6 +1432,12 @@ def audit_n8_frontier(prefix_results_dir: Path, stratified_results_dir: Path) ->
                 N8_STRATIFIED_SAMPLE_FILE,
                 "no_profile_preserving_case_count",
             ),
+            "profile_failure_kind_histogram":
+                profile_failure_kind_histogram_dict,
+            "first_blocking_state_index_histogram":
+                first_blocking_state_index_histogram_dict,
+            "wrong_profile_proper_extension_count_histogram":
+                wrong_profile_proper_extension_count_histogram_dict,
             "normal_form_after_template_exclusion_passing_count": int_field(
                 stratified_summary,
                 N8_STRATIFIED_SAMPLE_FILE,

@@ -15,7 +15,25 @@
   "stratified_sample": {
     "radial_order_case_count": 130,
     "sampled_patch_topology_count": 65,
-    "source_case_verdict_count": 130,
+    "source_case_verdicts": {
+      "first_blocking_state_index_histogram": {
+        "0": 125,
+        "2": 5
+      },
+      "profile_failure_kind_histogram": {
+        "no_proper_tait_extension": 38,
+        "proper_extensions_wrong_profile": 76,
+        "terminal_precolor_conflict": 16
+      },
+      "source_case_verdict_count": 130,
+      "wrong_profile_proper_extension_count_histogram": {
+        "1": 39,
+        "2": 23,
+        "3": 8,
+        "4": 4,
+        "6": 2
+      }
+    },
     "source_file": "section92_closed_collar_winding_simple_patch_template_blockers_n8_stratified_65.json",
     "source_file_present": true,
     "source_summary": {
@@ -23,16 +41,32 @@
       "case_verdict_count": 130,
       "exact_template_blocker_count": 0,
       "exact_template_histogram": {},
+      "first_blocking_state_index_histogram": {
+        "0": 125,
+        "2": 5
+      },
       "first_failed_after_template_exclusion_histogram": {},
       "no_profile_preserving_case_count": 130,
       "non_template_cyclic_cut_blocker_count": 0,
       "non_template_minimum_small_cyclic_cut_size_histogram": {},
       "normal_form_after_template_exclusion_passing_count": 0,
+      "profile_failure_kind_histogram": {
+        "no_proper_tait_extension": 38,
+        "proper_extensions_wrong_profile": 76,
+        "terminal_precolor_conflict": 16
+      },
       "profile_preserving_case_count": 0,
       "radial_order_case_count": 130,
       "sampled_patch_topology_count": 65,
       "structural_first_blocker_count": 0,
-      "verdict": "template_exclusion_index_sample_found_no_profile_preserving_patch"
+      "verdict": "template_exclusion_index_sample_found_no_profile_preserving_patch",
+      "wrong_profile_proper_extension_count_histogram": {
+        "1": 39,
+        "2": 23,
+        "3": 8,
+        "4": 4,
+        "6": 2
+      }
     }
   },
   "verdict": "n8_frontier_archive_fully_verified_from_sources"

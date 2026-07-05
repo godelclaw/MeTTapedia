@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import argparse
 import json
+from collections import Counter
 from pathlib import Path
 from typing import Any
 
@@ -38,6 +39,11 @@ EXPECTED_PREFIX_VERDICT = "n8_first_6000000_found_no_profile_preserving_patch"
 EXPECTED_SAMPLE_VERDICT = "n8_stratified_65_found_no_profile_preserving_patch"
 EXPECTED_SAMPLE_FILE_VERDICT = "template_exclusion_index_sample_found_no_profile_preserving_patch"
 EXPECTED_CASE_VERDICT = "no_profile_preserving_extension"
+EXPECTED_PROFILE_FAILURE_KINDS = {
+    "terminal_precolor_conflict",
+    "no_proper_tait_extension",
+    "proper_extensions_wrong_profile",
+}
 OUTPUT_SCHEMA = "fourcolor-section-9-2-winding-realizability-n8-frontier-verdict-v1"
 
 
@@ -93,6 +99,10 @@ def require_zero_counts(counts: dict[str, Any], names: list[str], failures: list
             fail(failures, label, f"{name} is nonzero")
 
 
+def sorted_counter(counter: Counter[str]) -> dict[str, int]:
+    return dict(sorted(counter.items()))
+
+
 def verify_no_profile_case_verdicts(
     case_verdicts: Any,
     sampled_indices: list[int],
@@ -100,7 +110,7 @@ def verify_no_profile_case_verdicts(
     failures: list[str],
     gaps: list[str],
     label: str,
-) -> int | None:
+) -> dict[str, Any] | None:
     if case_verdicts is None:
         gap(gaps, label, "stratified source has no per-case verdict payloads")
         return None
@@ -117,6 +127,9 @@ def verify_no_profile_case_verdicts(
         for radial_order_index in (0, 1)
     }
     seen_pairs: set[tuple[int, int]] = set()
+    profile_failure_kind_histogram: Counter[str] = Counter()
+    first_blocking_state_index_histogram: Counter[str] = Counter()
+    wrong_profile_proper_extension_count_histogram: Counter[str] = Counter()
     for index, item in enumerate(case_verdicts):
         if not isinstance(item, dict):
             fail(failures, label, f"case_verdicts[{index}] is not an object")
@@ -145,6 +158,53 @@ def verify_no_profile_case_verdicts(
             fail(failures, label, f"case_verdicts[{index}] is profile-preserving")
         if item.get("verdict") != EXPECTED_CASE_VERDICT:
             fail(failures, label, f"case_verdicts[{index}] has unexpected verdict")
+        first_blocking_state_index = item.get("first_blocking_state_index")
+        if not isinstance(first_blocking_state_index, int):
+            fail(failures, label, f"case_verdicts[{index}] has invalid blocking state")
+        else:
+            first_blocking_state_index_histogram[str(first_blocking_state_index)] += 1
+        failure_kind = item.get("profile_failure_kind")
+        if not isinstance(failure_kind, str) or failure_kind not in EXPECTED_PROFILE_FAILURE_KINDS:
+            fail(failures, label, f"case_verdicts[{index}] has invalid failure kind")
+            failure_kind = ""
+        else:
+            profile_failure_kind_histogram[failure_kind] += 1
+        proper_count = item.get("proper_tait_extension_count")
+        matching_count = item.get("matching_profile_extension_count")
+        variant_count = item.get("profile_variant_count")
+        if not isinstance(proper_count, int) or proper_count < 0:
+            fail(failures, label, f"case_verdicts[{index}] has invalid proper count")
+            proper_count = -1
+        if matching_count != 0:
+            fail(failures, label, f"case_verdicts[{index}] has nonzero matching count")
+        if not isinstance(variant_count, int) or variant_count < 0:
+            fail(failures, label, f"case_verdicts[{index}] has invalid profile variant count")
+            variant_count = -1
+        conflicts = item.get("terminal_precolor_conflict_vertices")
+        if not isinstance(conflicts, list) or not all(
+            isinstance(vertex, str) for vertex in conflicts
+        ):
+            fail(failures, label, f"case_verdicts[{index}] has invalid conflict vertices")
+            conflicts = []
+        if failure_kind == "terminal_precolor_conflict":
+            if not conflicts:
+                fail(failures, label, f"case_verdicts[{index}] lacks conflict vertices")
+            if proper_count != 0 or variant_count != 0:
+                fail(failures, label, f"case_verdicts[{index}] terminal conflict has extensions")
+        elif failure_kind == "no_proper_tait_extension":
+            if conflicts:
+                fail(failures, label, f"case_verdicts[{index}] no-proper case has conflicts")
+            if proper_count != 0 or variant_count != 0:
+                fail(failures, label, f"case_verdicts[{index}] no-proper case has extensions")
+        elif failure_kind == "proper_extensions_wrong_profile":
+            if conflicts:
+                fail(failures, label, f"case_verdicts[{index}] wrong-profile case has conflicts")
+            if proper_count <= 0:
+                fail(failures, label, f"case_verdicts[{index}] wrong-profile case lacks extensions")
+            if variant_count <= 0:
+                fail(failures, label, f"case_verdicts[{index}] wrong-profile case lacks profiles")
+            if proper_count > 0:
+                wrong_profile_proper_extension_count_histogram[str(proper_count)] += 1
 
     if seen_pairs != expected_pairs:
         missing = expected_pairs - seen_pairs
@@ -153,7 +213,15 @@ def verify_no_profile_case_verdicts(
             fail(failures, label, f"missing {len(missing)} sampled radial-order verdicts")
         if extra:
             fail(failures, label, f"found {len(extra)} unexpected radial-order verdicts")
-    return len(case_verdicts)
+    return {
+        "source_case_verdict_count": len(case_verdicts),
+        "profile_failure_kind_histogram":
+            sorted_counter(profile_failure_kind_histogram),
+        "first_blocking_state_index_histogram":
+            sorted_counter(first_blocking_state_index_histogram),
+        "wrong_profile_proper_extension_count_histogram":
+            sorted_counter(wrong_profile_proper_extension_count_histogram),
+    }
 
 
 def verify_prefix(frontier: dict[str, Any], results_dir: Path, failures: list[str], gaps: list[str]) -> dict[str, Any]:
@@ -268,7 +336,7 @@ def verify_stratified_sample(
 
     sample_payload_present = False
     sample_payload_summary: dict[str, Any] | None = None
-    sample_case_verdict_count: int | None = None
+    sample_case_verdict_summary: dict[str, Any] | None = None
     if not isinstance(sample_file_name, str):
         fail(failures, label, "missing stratified_sample_file")
     elif not (results_dir / sample_file_name).exists():
@@ -299,7 +367,7 @@ def verify_stratified_sample(
             fail(failures, label, "sample case verdict count mismatch")
         if samples != []:
             fail(failures, label, "expected empty per-sample payload list")
-        sample_case_verdict_count = verify_no_profile_case_verdicts(
+        sample_case_verdict_summary = verify_no_profile_case_verdicts(
             payload.get("case_verdicts"),
             sampled_indices,
             radial_cases,
@@ -307,6 +375,14 @@ def verify_stratified_sample(
             gaps,
             label,
         )
+        if sample_case_verdict_summary is not None:
+            for key in [
+                "profile_failure_kind_histogram",
+                "first_blocking_state_index_histogram",
+                "wrong_profile_proper_extension_count_histogram",
+            ]:
+                if summary.get(key) != sample_case_verdict_summary.get(key):
+                    fail(failures, label, f"sample summary mismatch for {key}")
         sample_payload_summary = summary
 
     return {
@@ -315,7 +391,7 @@ def verify_stratified_sample(
         "source_file": sample_file_name,
         "source_file_present": sample_payload_present,
         "source_summary": sample_payload_summary,
-        "source_case_verdict_count": sample_case_verdict_count,
+        "source_case_verdicts": sample_case_verdict_summary,
     }
 
 
