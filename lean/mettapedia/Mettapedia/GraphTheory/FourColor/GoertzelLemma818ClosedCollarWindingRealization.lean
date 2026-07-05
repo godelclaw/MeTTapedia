@@ -9257,6 +9257,110 @@ theorem closedCollarWindingFreedomPreviousBoundaryWitnessUpgradeObstruction_of_l
     (closedCollarWindingFreedomCurrentBoundaryBadWitnessFaceObstruction_of_laterBridge_of_auditedRows_of_not_nonrealizable
       hgeometry hradial hn6 hkeys hrows hnot)
 
+theorem closedCollarWindingFreedom_no_previousBoundaryWitnessUpgradeObstruction_of_nonrealizable
+    (hnon :
+      ClosedCollarWindingFreedomNonrealizableInNormalForm) :
+    ¬ ClosedCollarWindingFreedomPreviousBoundaryWitnessUpgradeObstruction := by
+  rintro ⟨_V, _hV, _G, normalForm, _hupgradeBlocker⟩
+  exact hnon normalForm
+
+theorem closedCollarWindingFreedom_no_currentBoundaryBadWitnessFaceObstruction_of_nonrealizable
+    (hnon :
+      ClosedCollarWindingFreedomNonrealizableInNormalForm) :
+    ¬ ClosedCollarWindingFreedomCurrentBoundaryBadWitnessFaceObstruction := by
+  rintro ⟨_V, _hV, _G, normalForm, _hbad⟩
+  exact hnon normalForm
+
+theorem closedCollarWindingFreedomNonrealizableInNormalForm_iff_no_previousBoundaryWitnessUpgradeObstruction_of_laterBridge_of_auditedRows
+    (hgeometry :
+      ClosedCollarWindingFreedomActualCollarEmbeddingSuppliesGeometryData)
+    (hradial :
+      ClosedCollarWindingFreedomActualCollarGeometrySuppliesRadialFaceExtraction)
+    (hn6 :
+      ClosedCollarWindingFreedomEveryRadialFaceNormalFormHasN6Representation)
+    (hkeys :
+      ClosedCollarWindingFreedomEveryRadialFaceN6RepresentationHasAuditedArchiveKey)
+    (hrows :
+      ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceAuditedRowsCoveredByLab) :
+    ClosedCollarWindingFreedomNonrealizableInNormalForm ↔
+      ¬ ClosedCollarWindingFreedomPreviousBoundaryWitnessUpgradeObstruction := by
+  constructor
+  · exact closedCollarWindingFreedom_no_previousBoundaryWitnessUpgradeObstruction_of_nonrealizable
+  · exact
+      closedCollarWindingFreedomNonrealizableInNormalForm_of_no_previousBoundaryWitnessUpgradeObstruction_of_laterBridge_of_auditedRows
+        hgeometry hradial hn6 hkeys hrows
+
+theorem closedCollarWindingFreedomNonrealizableInNormalForm_iff_no_currentBoundaryBadWitnessFaceObstruction_of_laterBridge_of_auditedRows
+    (hgeometry :
+      ClosedCollarWindingFreedomActualCollarEmbeddingSuppliesGeometryData)
+    (hradial :
+      ClosedCollarWindingFreedomActualCollarGeometrySuppliesRadialFaceExtraction)
+    (hn6 :
+      ClosedCollarWindingFreedomEveryRadialFaceNormalFormHasN6Representation)
+    (hkeys :
+      ClosedCollarWindingFreedomEveryRadialFaceN6RepresentationHasAuditedArchiveKey)
+    (hrows :
+      ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceAuditedRowsCoveredByLab) :
+    ClosedCollarWindingFreedomNonrealizableInNormalForm ↔
+      ¬ ClosedCollarWindingFreedomCurrentBoundaryBadWitnessFaceObstruction := by
+  constructor
+  · exact closedCollarWindingFreedom_no_currentBoundaryBadWitnessFaceObstruction_of_nonrealizable
+  · exact
+      closedCollarWindingFreedomNonrealizableInNormalForm_of_no_currentBoundaryBadWitnessFace_of_laterBridge_of_auditedRows
+        hgeometry hradial hn6 hkeys hrows
+
+theorem closedCollarWindingFreedomNonrealizableInNormalForm_iff_suppliesPreviousBoundaryWitnessUpgrade_of_laterBridge_of_auditedRows
+    (hgeometry :
+      ClosedCollarWindingFreedomActualCollarEmbeddingSuppliesGeometryData)
+    (hradial :
+      ClosedCollarWindingFreedomActualCollarGeometrySuppliesRadialFaceExtraction)
+    (hn6 :
+      ClosedCollarWindingFreedomEveryRadialFaceNormalFormHasN6Representation)
+    (hkeys :
+      ClosedCollarWindingFreedomEveryRadialFaceN6RepresentationHasAuditedArchiveKey)
+    (hrows :
+      ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceAuditedRowsCoveredByLab) :
+    ClosedCollarWindingFreedomNonrealizableInNormalForm ↔
+      ClosedCollarWindingFreedomActualCollarGeometrySuppliesPreviousBoundaryWitnessUpgrade := by
+  constructor
+  · intro hnon
+    exact
+      (closedCollarWindingFreedom_no_previousBoundaryWitnessUpgradeObstruction_iff_suppliesPreviousBoundaryWitnessUpgrade).1
+        (closedCollarWindingFreedom_no_previousBoundaryWitnessUpgradeObstruction_of_nonrealizable
+          hnon)
+  · intro hupgrade
+    exact
+      closedCollarWindingFreedomNonrealizableInNormalForm_of_no_previousBoundaryWitnessUpgradeObstruction_of_laterBridge_of_auditedRows
+        hgeometry hradial hn6 hkeys hrows
+        ((closedCollarWindingFreedom_no_previousBoundaryWitnessUpgradeObstruction_iff_suppliesPreviousBoundaryWitnessUpgrade).2
+          hupgrade)
+
+theorem closedCollarWindingFreedomNonrealizableInNormalForm_iff_suppliesWitnessOnCurrentBoundary_of_laterBridge_of_auditedRows
+    (hgeometry :
+      ClosedCollarWindingFreedomActualCollarEmbeddingSuppliesGeometryData)
+    (hradial :
+      ClosedCollarWindingFreedomActualCollarGeometrySuppliesRadialFaceExtraction)
+    (hn6 :
+      ClosedCollarWindingFreedomEveryRadialFaceNormalFormHasN6Representation)
+    (hkeys :
+      ClosedCollarWindingFreedomEveryRadialFaceN6RepresentationHasAuditedArchiveKey)
+    (hrows :
+      ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceAuditedRowsCoveredByLab) :
+    ClosedCollarWindingFreedomNonrealizableInNormalForm ↔
+      ClosedCollarWindingFreedomActualCollarGeometrySuppliesWitnessOnCurrentBoundary := by
+  constructor
+  · intro hnon
+    exact
+      (closedCollarWindingFreedom_no_currentBoundaryBadWitnessFaceObstruction_iff_suppliesWitnessOnCurrentBoundary).1
+        (closedCollarWindingFreedom_no_currentBoundaryBadWitnessFaceObstruction_of_nonrealizable
+          hnon)
+  · intro hwitness
+    exact
+      closedCollarWindingFreedomNonrealizableInNormalForm_of_no_currentBoundaryBadWitnessFace_of_laterBridge_of_auditedRows
+        hgeometry hradial hn6 hkeys hrows
+        ((closedCollarWindingFreedom_no_currentBoundaryBadWitnessFaceObstruction_iff_suppliesWitnessOnCurrentBoundary).2
+          hwitness)
+
 /--
 If a particular normal-form witness cannot instantiate the concrete
 previous-boundary package, then one of the five factored package fields is the
@@ -10230,6 +10334,38 @@ theorem section92Step4CurrentFiniteFrontierPreviousBoundaryUpgradeObstructionPre
     ⟨closedCollarWindingFreedomNonrealizableInNormalForm_of_no_previousBoundaryWitnessUpgradeObstruction_of_laterBridge_of_auditedRows
         hgeometry hradial hn6 hkeys hrows,
       closedCollarWindingFreedomPreviousBoundaryWitnessUpgradeObstruction_of_laterBridge_of_auditedRows_of_not_nonrealizable
+        hgeometry hradial hn6 hkeys hrows⟩
+
+/--
+Exact current finite-frontier repair criterion.  Once ordinary collar
+geometry and the later radial-face/n6/archive obligations are supplied, the
+full normal-form nonrealizability theorem is equivalent to killing the
+previous-boundary upgrade obstruction; equivalently, it is equivalent to
+universal supply of the previous-boundary witness upgrade.
+-/
+def Section92Step4CurrentFiniteFrontierPreviousBoundaryUpgradeExactCriterion :
+    Prop :=
+  ClosedCollarWindingFreedomCurrentFiniteRealizationFrontierEvidence ∧
+    (ClosedCollarWindingFreedomActualCollarEmbeddingSuppliesGeometryData →
+      ClosedCollarWindingFreedomActualCollarGeometrySuppliesRadialFaceExtraction →
+        ClosedCollarWindingFreedomEveryRadialFaceNormalFormHasN6Representation →
+          ClosedCollarWindingFreedomEveryRadialFaceN6RepresentationHasAuditedArchiveKey →
+            ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceAuditedRowsCoveredByLab →
+              ((ClosedCollarWindingFreedomNonrealizableInNormalForm ↔
+                  ¬ ClosedCollarWindingFreedomPreviousBoundaryWitnessUpgradeObstruction) ∧
+                (ClosedCollarWindingFreedomNonrealizableInNormalForm ↔
+                  ClosedCollarWindingFreedomActualCollarGeometrySuppliesPreviousBoundaryWitnessUpgrade)))
+
+theorem section92Step4CurrentFiniteFrontierPreviousBoundaryUpgradeExactCriterion :
+    Section92Step4CurrentFiniteFrontierPreviousBoundaryUpgradeExactCriterion := by
+  refine
+    ⟨closedCollarWindingFreedomCurrentFiniteRealizationFrontierEvidence,
+      ?_⟩
+  intro hgeometry hradial hn6 hkeys hrows
+  exact
+    ⟨closedCollarWindingFreedomNonrealizableInNormalForm_iff_no_previousBoundaryWitnessUpgradeObstruction_of_laterBridge_of_auditedRows
+        hgeometry hradial hn6 hkeys hrows,
+      closedCollarWindingFreedomNonrealizableInNormalForm_iff_suppliesPreviousBoundaryWitnessUpgrade_of_laterBridge_of_auditedRows
         hgeometry hradial hn6 hkeys hrows⟩
 
 /--
