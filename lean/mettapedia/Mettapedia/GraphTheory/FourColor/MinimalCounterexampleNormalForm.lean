@@ -179,6 +179,8 @@ section PlaneDuality
 variable [DecidableEq V] [Fintype V] [DecidableEq W] [Fintype W]
 variable {G : SimpleGraph V} {T : SimpleGraph W}
 
+universe uDual
+
 /-- Plane triangulation data in the current embedding API: an embedding together with a closed
 walk for every face, each of length three.  This is the reusable target needed before one can
 talk about the cubic graph's planar dual as an honest triangulation. -/
@@ -502,6 +504,39 @@ structure Lemma52BirkhoffSurgeryObligation
   minimum_degree : MinimumDegreeAtLeast T 5
   no_small_cyclic_edge_cut : NoCyclicEdgeCutOfSizeAtMostFour G
 
+/-- Lemma 5.2's planar-duality existence obligation: from the planar cubic minimal
+counterexample, construct some finite triangulation-side dual graph. -/
+def Lemma52CubicDualTriangulationExistenceObligation
+    (_minimal : MinimalTaitCounterexample G) : Prop :=
+  ∃ U : Type uDual, ∃ hU : DecidableEq U, ∃ fU : Fintype U,
+    letI := hU
+    letI := fU
+    ∃ Tdual : SimpleGraph U, ∃ hT : DecidableRel Tdual.Adj,
+      letI := hT
+      CubicDualIsTriangulation G Tdual
+
+/-- Lemma 5.2's full existence endpoint: the minimal counterexample has some dual graph and
+some duality package putting it in normal form.  This Prop-level form is the right target when
+the dual graph itself is not already fixed by downstream code. -/
+def Lemma52NormalFormExistenceObligation
+    (minimal : MinimalTaitCounterexample G) : Prop :=
+  ∃ U : Type uDual, ∃ hU : DecidableEq U, ∃ fU : Fintype U,
+    letI := hU
+    letI := fU
+    ∃ Tdual : SimpleGraph U, ∃ hT : DecidableRel Tdual.Adj,
+      letI := hT
+      ∃ dual : PlaneCubicDualData G Tdual,
+        Lemma52MinimalCounterexampleNormalFormObligation minimal dual
+
+/-- Uniform Birkhoff-surgery obligation over any supplied finite triangulation-side dual.  This
+separates the missing planar-dual construction from the Birkhoff surgery work. -/
+def Lemma52UniformBirkhoffSurgeryObligation
+    (minimal : MinimalTaitCounterexample G) : Prop :=
+  ∀ {U : Type uDual} [DecidableEq U] [Fintype U]
+    {Tdual : SimpleGraph U} [DecidableRel Tdual.Adj],
+      ∀ dual : PlaneCubicDualData G Tdual,
+        Lemma52BirkhoffSurgeryObligation minimal dual
+
 /-- Vertex-deletion surgery surface for Lemma 5.2: a low-degree dual vertex would be deleted,
 the smaller graph colored by minimality, and the color extended back.  The formal conclusion of
 that surgery is the minimum-degree lower bound. -/
@@ -661,6 +696,42 @@ theorem lemma52MinimalCounterexampleNormalFormObligation_of_birkhoffSurgeryOblig
     (h : Lemma52BirkhoffSurgeryObligation minimal dual) :
     Lemma52MinimalCounterexampleNormalFormObligation minimal dual :=
   ⟨lemma52_minimalCounterexampleNormalFormData h, rfl⟩
+
+/-- Any exact-duality Lemma 5.2 normal-form proof supplies the Prop-level existence endpoint. -/
+theorem lemma52NormalFormExistenceObligation_of_exactDuality
+    {U : Type uDual} [DecidableEq U] [Fintype U]
+    {Tdual : SimpleGraph U} [DecidableRel Tdual.Adj]
+    {minimal : MinimalTaitCounterexample G} {dual : PlaneCubicDualData G Tdual}
+    (h : Lemma52MinimalCounterexampleNormalFormObligation minimal dual) :
+    Lemma52NormalFormExistenceObligation.{uDual} minimal :=
+  ⟨U, inferInstance, inferInstance, Tdual, inferInstance, dual, h⟩
+
+/-- Birkhoff surgery for a supplied dual package supplies the Prop-level Lemma 5.2 existence
+endpoint. -/
+theorem lemma52NormalFormExistenceObligation_of_birkhoffSurgeryObligation
+    {U : Type uDual} [DecidableEq U] [Fintype U]
+    {Tdual : SimpleGraph U} [DecidableRel Tdual.Adj]
+    {minimal : MinimalTaitCounterexample G} {dual : PlaneCubicDualData G Tdual}
+    (h : Lemma52BirkhoffSurgeryObligation minimal dual) :
+    Lemma52NormalFormExistenceObligation.{uDual} minimal :=
+  lemma52NormalFormExistenceObligation_of_exactDuality
+    (lemma52MinimalCounterexampleNormalFormObligation_of_birkhoffSurgeryObligation h)
+
+/-- A planar-dual existence proof plus uniform Birkhoff surgeries over every supplied dual
+discharge the Prop-level Lemma 5.2 normal-form existence endpoint. -/
+theorem lemma52NormalFormExistenceObligation_of_cubicDualTriangulationExistence_of_uniformBirkhoffSurgery
+    {minimal : MinimalTaitCounterexample G}
+    (hdual : Lemma52CubicDualTriangulationExistenceObligation.{uDual} minimal)
+    (hsurgery : Lemma52UniformBirkhoffSurgeryObligation.{uDual} minimal) :
+    Lemma52NormalFormExistenceObligation.{uDual} minimal := by
+  rcases hdual with ⟨U, hU, fU, Tdual, hT, hdualData⟩
+  letI := hU
+  letI := fU
+  letI := hT
+  rcases hdualData with ⟨dual⟩
+  exact ⟨U, hU, fU, Tdual, hT, dual,
+    lemma52MinimalCounterexampleNormalFormObligation_of_birkhoffSurgeryObligation
+      (hsurgery dual)⟩
 
 /-- Lemma 5.2 endpoint from the named Birkhoff surgery suite. -/
 theorem lemma52_minimalCounterexampleNormalForm_of_birkhoffSurgerySuite
