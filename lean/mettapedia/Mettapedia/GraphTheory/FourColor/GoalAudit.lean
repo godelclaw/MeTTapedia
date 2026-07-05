@@ -164,6 +164,16 @@ theorem closedCollarWindingFreedomSimplePatchN8First2000000CoverageEvidence_audi
     ClosedCollarWindingFreedomSimplePatchN8First2000000CoverageEvidence :=
   closedCollarWindingFreedomSimplePatchN8First2000000CoverageEvidence
 
+theorem closedCollarWindingFreedomSimplePatchN8Stratified33NoProfilePreservingEvidence_audit :
+    ClosedCollarWindingFreedomSimplePatchN8Stratified33NoProfilePreservingEvidence :=
+  closedCollarWindingFreedomSimplePatchN8Stratified33NoProfilePreservingEvidence
+
+theorem closedCollarWindingFreedomSimplePatchN8Stratified33_noProfilePreservingCandidate_audit
+    (candidate :
+      ClosedCollarWindingFreedomSimplePatchN8Stratified33ProfilePreservingCandidate) :
+    False :=
+  closedCollarWindingFreedomSimplePatchN8Stratified33_noProfilePreservingCandidate candidate
+
 /-! ## Section 9.2 two-layer ambient execution obstruction -/
 
 theorem section92Step4TwoLayerCounterexampleClass_audit :
