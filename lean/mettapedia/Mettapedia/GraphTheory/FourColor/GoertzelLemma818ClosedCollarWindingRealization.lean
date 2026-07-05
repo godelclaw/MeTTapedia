@@ -7462,6 +7462,190 @@ theorem closedCollarWindingFreedomPreviousBoundaryRepairHasBlocker_of_not_nonrea
           hrows hnot)
   · exact Or.inl hrows
 
+/--
+Local form of the finite-row obstruction: a single normal-form witness equipped
+with previous-boundary radial-face geometry, an n6 radial-face representation,
+and an audited archive key is impossible once the ten audited radial-face rows
+are accepted.
+-/
+theorem closedCollarWindingFreedomNormalForm_false_of_previousBoundaryRadialFaceN6AuditedArchiveExtraction_of_auditedRows
+    {V : Type} [DecidableEq V] {G : SimpleGraph V}
+    {normalForm : ClosedCollarWindingFreedomNormalFormRealization G}
+    (extraction :
+      ClosedCollarWindingFreedomPreviousBoundaryRadialFaceN6AuditedArchiveExtraction
+        normalForm)
+    (hrows :
+      ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceAuditedRowsCoveredByLab) :
+    False := by
+  have hcoherentNormal :
+      ClosedCollarWindingFreedomAnnularRealization.RadialFaceCoherent
+        extraction.n6.data.normalFormRadialFace.normalForm.annular :=
+    ⟨extraction.n6.data.normalFormRadialFace.radialFace⟩
+  have hcoherentRepresentation :
+      ClosedCollarWindingFreedomAnnularRealization.RadialFaceCoherent
+        extraction.n6.data.representation.annular := by
+    simpa [extraction.n6.data.annular_eq] using hcoherentNormal
+  exact
+    closedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceArchiveNoRadialFaceCoherentRepresentation_of_row_coverage
+      (closedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSampleRadialFaceRowsCoveredByLab_of_auditedRows
+        hrows)
+      (closedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSlice1000302RadialFaceRowsCoveredByLab_of_auditedRows
+        hrows)
+      (closedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSlice1001289RadialFaceRowsCoveredByLab_of_auditedRows
+        hrows)
+      extraction.n6.data.representation
+      (closedCollarSimplePatchN6RadialFaceAuditedArchiveKeySpectrum_mem
+        extraction.auditedKey)
+      hcoherentRepresentation
+
+/--
+The staged witness-level blockers for the previous-boundary repair route.
+Unlike the global blocker type, these are attached to one concrete normal-form
+realization and identify the first missing datum along the current extraction
+chain.
+-/
+inductive ClosedCollarWindingFreedomPreviousBoundaryWitnessRepairBlocker where
+  | previousBoundaryGeometry
+  | radialFaceExtraction
+  | radialFaceN6Extraction
+  | auditedArchiveKey
+  deriving DecidableEq
+
+def ClosedCollarWindingFreedomPreviousBoundaryWitnessRepairBlocker.Occurs
+    {V : Type} [DecidableEq V] {G : SimpleGraph V}
+    (normalForm : ClosedCollarWindingFreedomNormalFormRealization G) :
+    ClosedCollarWindingFreedomPreviousBoundaryWitnessRepairBlocker → Prop
+  | .previousBoundaryGeometry =>
+      ¬ Nonempty
+        (ClosedCollarWindingFreedomActualCollarEmbeddingPreviousBoundaryGeometryData
+          normalForm)
+  | .radialFaceExtraction =>
+      ∃ previousData :
+          ClosedCollarWindingFreedomActualCollarEmbeddingPreviousBoundaryGeometryData
+            normalForm,
+        ¬ Nonempty
+          (ClosedCollarWindingFreedomActualCollarGeometryRadialFaceExtraction
+            previousData.toGeometryData)
+  | .radialFaceN6Extraction =>
+      ∃ previousData :
+          ClosedCollarWindingFreedomActualCollarEmbeddingPreviousBoundaryGeometryData
+            normalForm,
+        ∃ radialFace :
+            ClosedCollarWindingFreedomActualCollarGeometryRadialFaceExtraction
+              previousData.toGeometryData,
+          ¬ Nonempty
+            (ClosedCollarWindingFreedomRadialFaceN6RepresentationExtraction
+              (ClosedCollarWindingFreedomActualCollarEmbeddingPreviousBoundaryRadialFaceData.ofPreviousBoundaryGeometryExtraction
+                previousData radialFace).toNormalFormRadialFaceRealization)
+  | .auditedArchiveKey =>
+      ∃ previousData :
+          ClosedCollarWindingFreedomActualCollarEmbeddingPreviousBoundaryGeometryData
+            normalForm,
+        ∃ radialFace :
+            ClosedCollarWindingFreedomActualCollarGeometryRadialFaceExtraction
+              previousData.toGeometryData,
+          ∃ n6 :
+              ClosedCollarWindingFreedomRadialFaceN6RepresentationExtraction
+                (ClosedCollarWindingFreedomActualCollarEmbeddingPreviousBoundaryRadialFaceData.ofPreviousBoundaryGeometryExtraction
+                  previousData radialFace).toNormalFormRadialFaceRealization,
+            ¬ closedCollarSimplePatchN6RadialFaceAuditedArchiveKeySpectrum
+              (n6.data.representation.patchTopologyIndex,
+                n6.data.representation.radialOrderIndex.1)
+
+def ClosedCollarWindingFreedomPreviousBoundaryWitnessRepairHasBlocker
+    {V : Type} [DecidableEq V] {G : SimpleGraph V}
+    (normalForm : ClosedCollarWindingFreedomNormalFormRealization G) :
+    Prop :=
+  ∃ blocker : ClosedCollarWindingFreedomPreviousBoundaryWitnessRepairBlocker,
+    blocker.Occurs normalForm
+
+/--
+Instance-level fork: after the finite audited rows, every concrete normal-form
+witness must fail at least one staged extraction datum.  If all staged data
+exist for that witness, the local finite-row obstruction refutes the witness.
+-/
+theorem closedCollarWindingFreedomNormalFormHasPreviousBoundaryWitnessRepairBlocker_of_auditedRows
+    {V : Type} [DecidableEq V] {G : SimpleGraph V}
+    (hrows :
+      ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceAuditedRowsCoveredByLab)
+    (normalForm : ClosedCollarWindingFreedomNormalFormRealization G) :
+    ClosedCollarWindingFreedomPreviousBoundaryWitnessRepairHasBlocker
+      normalForm := by
+  classical
+  by_cases hprevious :
+      Nonempty
+        (ClosedCollarWindingFreedomActualCollarEmbeddingPreviousBoundaryGeometryData
+          normalForm)
+  · rcases hprevious with ⟨previousData⟩
+    by_cases hradial :
+        Nonempty
+          (ClosedCollarWindingFreedomActualCollarGeometryRadialFaceExtraction
+            previousData.toGeometryData)
+    · rcases hradial with ⟨radialFace⟩
+      let previousRadialFaceData :
+          ClosedCollarWindingFreedomActualCollarEmbeddingPreviousBoundaryRadialFaceData
+            normalForm :=
+        ClosedCollarWindingFreedomActualCollarEmbeddingPreviousBoundaryRadialFaceData.ofPreviousBoundaryGeometryExtraction
+          previousData radialFace
+      by_cases hn6 :
+          Nonempty
+            (ClosedCollarWindingFreedomRadialFaceN6RepresentationExtraction
+              previousRadialFaceData.toNormalFormRadialFaceRealization)
+      · rcases hn6 with ⟨n6⟩
+        by_cases hkey :
+            closedCollarSimplePatchN6RadialFaceAuditedArchiveKeySpectrum
+              (n6.data.representation.patchTopologyIndex,
+                n6.data.representation.radialOrderIndex.1)
+        · exact
+            (closedCollarWindingFreedomNormalForm_false_of_previousBoundaryRadialFaceN6AuditedArchiveExtraction_of_auditedRows
+              { previousBoundaryRadialFaceData := previousRadialFaceData
+                n6 := n6
+                auditedKey := hkey }
+              hrows).elim
+        · exact
+            ⟨.auditedArchiveKey,
+              ⟨previousData, radialFace, n6, hkey⟩⟩
+      · exact
+          ⟨.radialFaceN6Extraction,
+            ⟨previousData, radialFace, by
+              simpa [previousRadialFaceData] using hn6⟩⟩
+    · exact
+        ⟨.radialFaceExtraction,
+          ⟨previousData, hradial⟩⟩
+  · exact
+      ⟨.previousBoundaryGeometry, hprevious⟩
+
+/--
+Existential witness-level obstruction: if a normal-form realization survives
+the nonrealizability claim despite the audited finite rows, then some concrete
+surviving witness carries a staged previous-boundary repair blocker.
+-/
+def ClosedCollarWindingFreedomPreviousBoundaryWitnessRepairObstruction :
+    Prop :=
+  ∃ (V : Type), ∃ (hV : DecidableEq V), ∃ (G : SimpleGraph V),
+    ∃ normalForm : ClosedCollarWindingFreedomNormalFormRealization G,
+      @ClosedCollarWindingFreedomPreviousBoundaryWitnessRepairHasBlocker
+        V hV G normalForm
+
+theorem closedCollarWindingFreedomPreviousBoundaryWitnessRepairObstruction_of_auditedRows_of_not_nonrealizable
+    (hrows :
+      ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceAuditedRowsCoveredByLab)
+    (hnot :
+      ¬ ClosedCollarWindingFreedomNonrealizableInNormalForm) :
+    ClosedCollarWindingFreedomPreviousBoundaryWitnessRepairObstruction := by
+  classical
+  by_contra hnone
+  apply hnot
+  intro V G normalForm
+  have hblocker :
+      @ClosedCollarWindingFreedomPreviousBoundaryWitnessRepairHasBlocker
+        V (Classical.decEq V) G normalForm := by
+    letI : DecidableEq V := Classical.decEq V
+    exact
+      closedCollarWindingFreedomNormalFormHasPreviousBoundaryWitnessRepairBlocker_of_auditedRows
+        hrows normalForm
+  exact hnone ⟨V, Classical.decEq V, G, normalForm, hblocker⟩
+
 theorem closedCollarWindingFreedomNonrealizableInNormalForm_of_archiveN6Representation_of_rowCoverage
     (hextract :
       ClosedCollarWindingFreedomEveryNormalFormHasArchiveN6Representation)
