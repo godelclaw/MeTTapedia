@@ -146,6 +146,24 @@ theorem closedCollarWindingFreedomSimplePatchN6PlanarCyclicCutSamplesEvidence_au
     ClosedCollarWindingFreedomSimplePatchN6PlanarCyclicCutSamplesEvidence :=
   closedCollarWindingFreedomSimplePatchN6PlanarCyclicCutSamplesEvidence
 
+theorem closedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSampleRadialFaceEvidence_audit :
+    ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSampleRadialFaceEvidence :=
+  closedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSampleRadialFaceEvidence
+
+theorem closedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSample_noRadialFaceCaseCandidate_audit
+    (candidate :
+      ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSampleRadialFaceCaseCandidate) :
+    False :=
+  closedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSample_noRadialFaceCaseCandidate
+    candidate
+
+theorem closedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSample_noRadialFaceRotationCandidate_audit
+    (candidate :
+      ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSampleRadialFaceRotationCandidate) :
+    False :=
+  closedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSample_noRadialFaceRotationCandidate
+    candidate
+
 theorem closedCollarWindingFreedomSimplePatchN8First1000000NoProfilePreservingEvidence_audit :
     ClosedCollarWindingFreedomSimplePatchN8First1000000NoProfilePreservingEvidence :=
   closedCollarWindingFreedomSimplePatchN8First1000000NoProfilePreservingEvidence
