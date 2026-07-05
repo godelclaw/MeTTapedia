@@ -1749,6 +1749,156 @@ theorem v13RealLinearSmallNoTargetRowsCNFSATWorld_admissibleHistories :
   ⟨v13RealLinearSmallNoTargetRowsCNFSATWorld_target_balanced,
     v13RealLinearSmallNoTargetRowsCNFSATWorld_historyField_balancedConditioning⟩
 
+/-! ## Concrete no-target-row CNF self-reduction -/
+
+/-- Explicit P=NP-side SAT decider object for the concrete no-target-row CNF
+variable type.  The theorems below remain conditional on this object; they do
+not construct an unconditional SAT solver. -/
+abbrev V13RealLinearSmallNoTargetRowsCNFPNPSATDecider :=
+  RealCNFPNPSATDecider V13RealLinearSmallNoTargetRowsCNFVar
+
+/-- Bit-fixing variable order for a concrete no-target-row CNF, computed from
+the variables that actually occur in the finite formula.  The free hidden
+gauge coordinate is absent from the formula and need not be fixed. -/
+def v13RealLinearSmallNoTargetRowsCNFBitFixVarOrder
+    (Y : V13RealLinearSmallNoTargetRowsCNFPublic) :
+    List V13RealLinearSmallNoTargetRowsCNFVar :=
+  ConcreteCNF.formulaVarCover
+    (v13RealLinearSmallNoTargetRowsCNFFormula Y)
+
+/-- The formula-syntax variable cover for the concrete no-target-row CNF has
+no duplicate variables. -/
+theorem v13RealLinearSmallNoTargetRowsCNFBitFixVarOrder_nodup
+    (Y : V13RealLinearSmallNoTargetRowsCNFPublic) :
+    (v13RealLinearSmallNoTargetRowsCNFBitFixVarOrder Y).Nodup := by
+  unfold v13RealLinearSmallNoTargetRowsCNFBitFixVarOrder
+  exact
+    ConcreteCNF.formulaVarCover_nodup
+      (v13RealLinearSmallNoTargetRowsCNFFormula Y)
+
+/-- The bit-fixing variable order covers every variable used by the concrete
+no-target-row CNF formula. -/
+theorem
+    v13RealLinearSmallNoTargetRowsCNFFormula_usesOnly_bitFixVarOrder
+    (Y : V13RealLinearSmallNoTargetRowsCNFPublic) :
+    ConcreteCNF.FormulaUsesOnly
+      (v13RealLinearSmallNoTargetRowsCNFFormula Y)
+      (v13RealLinearSmallNoTargetRowsCNFBitFixVarOrder Y) := by
+  unfold v13RealLinearSmallNoTargetRowsCNFBitFixVarOrder
+  exact
+    ConcreteCNF.formulaUsesOnly_formulaVarCover
+      (v13RealLinearSmallNoTargetRowsCNFFormula Y)
+
+/-- Every concrete no-target-row public instance has a satisfying assignment,
+for either choice of the free hidden gauge coordinate. -/
+theorem v13RealLinearSmallNoTargetRowsCNFFormula_satisfiable
+    (Y : V13RealLinearSmallNoTargetRowsCNFPublic) :
+    ∃ σ : V13RealLinearSmallNoTargetRowsCNFWitness,
+      v13RealLinearSmallNoTargetRowsCNFVerifier Y σ :=
+  ⟨v13RealLinearSmallNoTargetRowsCNFAssignment Y false,
+    v13RealLinearSmallNoTargetRowsCNFFormula_satisfied_assignment Y false⟩
+
+/-- Standard bit-fixing search-to-decision assignment for the concrete
+no-target-row CNF, conditional on the explicit SAT decider object. -/
+def v13RealLinearSmallNoTargetRowsCNFSelfReductionAssignment
+    (D : V13RealLinearSmallNoTargetRowsCNFPNPSATDecider)
+    (Y : V13RealLinearSmallNoTargetRowsCNFPublic) :
+    V13RealLinearSmallNoTargetRowsCNFWitness :=
+  realCNFBitFixAssignment D
+    (v13RealLinearSmallNoTargetRowsCNFFormula Y)
+    (v13RealLinearSmallNoTargetRowsCNFBitFixVarOrder Y)
+
+/-- Bit-fixing with the explicit SAT decider returns a satisfying assignment
+for the concrete no-target-row CNF. -/
+theorem v13RealLinearSmallNoTargetRowsCNFSelfReductionAssignment_satisfies
+    (D : V13RealLinearSmallNoTargetRowsCNFPNPSATDecider)
+    (Y : V13RealLinearSmallNoTargetRowsCNFPublic) :
+    v13RealLinearSmallNoTargetRowsCNFVerifier Y
+      (v13RealLinearSmallNoTargetRowsCNFSelfReductionAssignment D Y) := by
+  exact
+    realCNFBitFixAssignment_satisfies
+      D
+      (v13RealLinearSmallNoTargetRowsCNFFormula_usesOnly_bitFixVarOrder Y)
+      (v13RealLinearSmallNoTargetRowsCNFBitFixVarOrder_nodup Y)
+      (v13RealLinearSmallNoTargetRowsCNFFormula_satisfiable Y)
+
+/-- The recovered bit-fixing witness reads the fixed public message.  This is
+the P=NP-conditional upper side: the hidden gauge coordinate may be chosen by
+search, but the no-target-row equations force the message readout. -/
+theorem v13RealLinearSmallNoTargetRowsCNFSelfReduction_readout_eq_message
+    (D : V13RealLinearSmallNoTargetRowsCNFPNPSATDecider)
+    (Y : V13RealLinearSmallNoTargetRowsCNFPublic) :
+    v13RealLinearSmallNoTargetRowsCNFReadout
+        (v13RealLinearSmallNoTargetRowsCNFSelfReductionAssignment D Y) =
+      v13RealLinearSmallNoTargetRowsCNFMessage Y :=
+  v13RealLinearSmallNoTargetRowsCNFReadout_eq_message_of_valid
+    (v13RealLinearSmallNoTargetRowsCNFSelfReductionAssignment_satisfies
+      D Y)
+
+/-- Any verifier-valid witness has the same readout as the bit-fixing witness
+returned by the explicit P=NP-side search-to-decision decoder. -/
+theorem
+    v13RealLinearSmallNoTargetRowsCNFSelfReduction_readout_eq_validWitness_readout
+    (D : V13RealLinearSmallNoTargetRowsCNFPNPSATDecider)
+    {Y : V13RealLinearSmallNoTargetRowsCNFPublic}
+    {W : V13RealLinearSmallNoTargetRowsCNFWitness}
+    (hW : v13RealLinearSmallNoTargetRowsCNFVerifier Y W) :
+    v13RealLinearSmallNoTargetRowsCNFReadout
+        (v13RealLinearSmallNoTargetRowsCNFSelfReductionAssignment D Y) =
+      v13RealLinearSmallNoTargetRowsCNFReadout W := by
+  calc
+    v13RealLinearSmallNoTargetRowsCNFReadout
+        (v13RealLinearSmallNoTargetRowsCNFSelfReductionAssignment D Y) =
+        v13RealLinearSmallNoTargetRowsCNFMessage Y :=
+      v13RealLinearSmallNoTargetRowsCNFSelfReduction_readout_eq_message D Y
+    _ = v13RealLinearSmallNoTargetRowsCNFReadout W :=
+      (v13RealLinearSmallNoTargetRowsCNFReadout_eq_message_of_valid hW).symm
+
+/-- SAT world recovered by bit-fixing under the explicit P=NP-side SAT
+decider. -/
+def v13RealLinearSmallNoTargetRowsCNFSATWorldOfSelfReduction
+    (D : V13RealLinearSmallNoTargetRowsCNFPNPSATDecider)
+    (Y : V13RealLinearSmallNoTargetRowsCNFPublic) :
+    V13RealLinearSmallNoTargetRowsCNFSATWorld where
+  publicInput := Y
+  assignment := v13RealLinearSmallNoTargetRowsCNFSelfReductionAssignment D Y
+  sat :=
+    v13RealLinearSmallNoTargetRowsCNFSelfReductionAssignment_satisfies D Y
+
+/-- The self-reduction SAT world reads out exactly the fixed public message
+of its no-target-row CNF instance. -/
+theorem
+    v13RealLinearSmallNoTargetRowsCNFSATWorldOfSelfReduction_target_eq_message
+    (D : V13RealLinearSmallNoTargetRowsCNFPNPSATDecider)
+    (Y : V13RealLinearSmallNoTargetRowsCNFPublic) :
+    v13RealLinearSmallNoTargetRowsCNFSATWorldTarget
+        (v13RealLinearSmallNoTargetRowsCNFSATWorldOfSelfReduction D Y) =
+      v13RealLinearSmallNoTargetRowsCNFMessage Y := by
+  simpa [v13RealLinearSmallNoTargetRowsCNFSATWorldOfSelfReduction,
+    v13RealLinearSmallNoTargetRowsCNFSATWorldTarget] using
+    v13RealLinearSmallNoTargetRowsCNFSelfReduction_readout_eq_message D Y
+
+/-- The concrete no-target-row self-reduction uses a fixed program skeleton
+around the explicit SAT decider, so the associated `kpolyAt` model is constant
+in the target-block count. -/
+theorem v13RealLinearSmallNoTargetRowsCNFConstantDecoderKpolyAt_const
+    (D : V13RealLinearSmallNoTargetRowsCNFPNPSATDecider)
+    (targetBlocks targetBlocks' : Nat) :
+    realCNFConstantDecoderKpolyAt D targetBlocks =
+      realCNFConstantDecoderKpolyAt D targetBlocks' :=
+  realCNFConstantDecoderKpolyAt_const D targetBlocks targetBlocks'
+
+/-- Conditional upper-bound discharge for the concrete no-target-row CNF:
+given the explicit P=NP-side SAT decider and a lower-framework regime
+identifying `kpolyAt` with the fixed self-reduction decoder and `etaTimes t`
+with a linear floor, the self-reduction upper inequality follows. -/
+theorem v13RealLinearSmallNoTargetRowsCNF_selfReductionUpperHypothesis_givenPNP
+    {F : CompressionLowerFramework}
+    (D : V13RealLinearSmallNoTargetRowsCNFPNPSATDecider)
+    (R : RealCNFConstantDecoderRegime F D) :
+    SelfReductionUpperHypothesis F :=
+  realCNF_selfReductionUpperHypothesis_givenPNP D R
+
 /-- Semantic verifier for the explicit small gauge-CNF instance. -/
 def v13RealLinearSmallGaugeCNFVerifier
     (msg : Bool) (W : V13RealLinearSmallGaugeCNFWitness) : Prop :=
