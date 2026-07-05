@@ -6794,6 +6794,37 @@ theorem v13RealLinearNoTargetRowsGaugeCNFAppendixICNF_singleMessage
   simp [v13RealLinearNoTargetRowsGaugeCNFAppendixICNFWorldTarget,
     realM4CNFMessageOfPublic, hPublic]
 
+/-- Structural `singleMessage` at the concrete Appendix-I CNF readout
+boundary: for two satisfying CNF worlds over the same public instance, the
+actual fixed projection of the carried CNF assignment is identical. -/
+theorem
+    v13RealLinearNoTargetRowsGaugeCNFAppendixICNF_projection_singleMessage
+    {m : Nat} (i₀ : Fin m) :
+    ∀ omega₀ omega₁ :
+      RealM4CNFWorld
+        (v13RealLinearNoTargetRowsGaugeCNFAppendixICNFReadoutData i₀),
+      omega₀.publicInstance = omega₁.publicInstance →
+        (v13RealLinearNoTargetRowsGaugeCNFAppendixICNFReadoutData i₀).projection
+            omega₀.publicInstance omega₀.assignment =
+          (v13RealLinearNoTargetRowsGaugeCNFAppendixICNFReadoutData
+              i₀).projection omega₁.publicInstance omega₁.assignment := by
+  intro omega₀ omega₁ hPublic
+  calc
+    (v13RealLinearNoTargetRowsGaugeCNFAppendixICNFReadoutData i₀).projection
+        omega₀.publicInstance omega₀.assignment =
+        v13RealLinearNoTargetRowsGaugeCNFAppendixICNFWorldTarget omega₀ :=
+      v13RealLinearNoTargetRowsGaugeCNFAppendixICNFWorld_projection_eq_target
+        omega₀
+    _ =
+        v13RealLinearNoTargetRowsGaugeCNFAppendixICNFWorldTarget omega₁ :=
+      v13RealLinearNoTargetRowsGaugeCNFAppendixICNF_singleMessage
+        i₀ omega₀ omega₁ hPublic
+    _ =
+        (v13RealLinearNoTargetRowsGaugeCNFAppendixICNFReadoutData i₀).projection
+          omega₁.publicInstance omega₁.assignment :=
+      (v13RealLinearNoTargetRowsGaugeCNFAppendixICNFWorld_projection_eq_target
+        omega₁).symm
+
 /-- Neutral skeleton for no-target-rows Appendix-I CNF worlds: keep the base
 no-target-rows map skeleton and ignore the satisfying assignment. -/
 noncomputable def
