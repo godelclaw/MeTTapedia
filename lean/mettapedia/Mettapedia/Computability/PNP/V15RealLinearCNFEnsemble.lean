@@ -1057,6 +1057,68 @@ abbrev V13RealLinearSmallGaugeCNFSafe :=
 abbrev V13RealLinearSmallGaugeCNFGauge :=
   Bool
 
+/-! ## Global small real-linear gauge-CNF SAT-world hidden-gauge product -/
+
+/-- Hidden-gauge action on global SAT worlds: preserve the public small CNF
+instance and apply the concrete verifier-preserving hidden-gauge flip to the
+carried satisfying witness. -/
+def v13RealLinearSmallGaugeCNFSATWorldGaugeAction
+    (gamma : Bool) (omega : V13RealLinearSmallGaugeCNFSATWorld) :
+    V13RealLinearSmallGaugeCNFSATWorld where
+  msg := omega.msg
+  assignment := v13RealLinearSmallGaugeCNFGaugeAction gamma omega.assignment
+  sat := v13RealLinearSmallGaugeCNFGaugeAction_preserves_verifier
+    gamma omega.sat
+
+/-- The SAT-world hidden-gauge action preserves the public CNF instance. -/
+theorem v13RealLinearSmallGaugeCNFSATWorldGaugeAction_publicInput
+    (gamma : Bool) (omega : V13RealLinearSmallGaugeCNFSATWorld) :
+    v13RealLinearSmallGaugeCNFSATWorldPublicInput
+        (v13RealLinearSmallGaugeCNFSATWorldGaugeAction gamma omega) =
+      v13RealLinearSmallGaugeCNFSATWorldPublicInput omega :=
+  rfl
+
+/-- The SAT-world hidden-gauge action preserves the message readout. -/
+theorem v13RealLinearSmallGaugeCNFSATWorldGaugeAction_preserves_target
+    (gamma : Bool) (omega : V13RealLinearSmallGaugeCNFSATWorld) :
+    v13RealLinearSmallGaugeCNFSATWorldTarget
+        (v13RealLinearSmallGaugeCNFSATWorldGaugeAction gamma omega) =
+      v13RealLinearSmallGaugeCNFSATWorldTarget omega :=
+  v13RealLinearSmallGaugeCNFGaugeAction_preserves_readout
+    gamma omega.assignment
+
+/-- Gauge satisfaction for the SAT-world surface is target preservation under
+the concrete hidden-gauge action on satisfying witnesses. -/
+def v13RealLinearSmallGaugeCNFSATWorldGaugeSat
+    (gamma : V13RealLinearSmallGaugeCNFGauge)
+    (omega : V13RealLinearSmallGaugeCNFSATWorld) : Prop :=
+  v13RealLinearSmallGaugeCNFSATWorldTarget
+      (v13RealLinearSmallGaugeCNFSATWorldGaugeAction gamma omega) =
+    v13RealLinearSmallGaugeCNFSATWorldTarget omega
+
+/-- Evidence semantics for the global small real-linear gauge-CNF SAT-world
+surface. -/
+def v13RealLinearSmallGaugeCNFSATWorldSemantics :
+    EvidenceSemantics
+      V13RealLinearSmallGaugeCNFSATWorld
+      V13RealLinearSmallGaugeCNFNeutral
+      V13RealLinearSmallGaugeCNFSafe
+      V13RealLinearSmallGaugeCNFGauge where
+  neutralSat := fun _ _ => True
+  safeSat := fun _ _ => True
+  gaugeSat := v13RealLinearSmallGaugeCNFSATWorldGaugeSat
+
+/-- Structural `hiddenGaugeProduct` transfer for the global SAT-world small
+real-linear gauge-CNF surface.  Every hidden-gauge action is satisfied because
+the action preserves verifier validity and the fixed message readout. -/
+theorem v13RealLinearSmallGaugeCNFSATWorld_hiddenGaugeProduct :
+    ∀ gamma omega,
+      v13RealLinearSmallGaugeCNFSATWorldSemantics.gaugeSat gamma omega := by
+  intro gamma omega
+  exact
+    v13RealLinearSmallGaugeCNFSATWorldGaugeAction_preserves_target
+      gamma omega
+
 /-- Gauge satisfaction for the explicit small surface is target preservation
 under the concrete hidden-gauge action. -/
 def v13RealLinearSmallGaugeCNFGaugeSat
