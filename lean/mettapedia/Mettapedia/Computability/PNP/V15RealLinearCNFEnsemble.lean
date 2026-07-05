@@ -1424,6 +1424,31 @@ theorem v13RealLinearSmallNoTargetRowsCNFSATWorldTarget_eq_message
       v13RealLinearSmallNoTargetRowsCNFMessage omega.publicInput :=
   v13RealLinearSmallNoTargetRowsCNFReadout_eq_message_of_valid omega.sat
 
+/-- The concrete small no-target-row CNF SAT surface instantiated as a real
+single-message SAT spine: public instances are the row payloads, hidden
+witnesses are satisfying assignments, and every valid witness reads the
+fixed public message. -/
+def v13RealLinearSmallNoTargetRowsCNFSATWorldRealSingleMessageSATSpine :
+    RealSingleMessageSATSpine
+      V13RealLinearSmallNoTargetRowsCNFSATWorld
+      V13RealLinearSmallNoTargetRowsCNFPublic
+      V13RealLinearSmallNoTargetRowsCNFWitness where
+  publicInput := v13RealLinearSmallNoTargetRowsCNFSATWorldPublicInput
+  witnessOfWorld := fun omega => omega.assignment
+  verifier := v13RealLinearSmallNoTargetRowsCNFVerifier
+  messageOfPublic := v13RealLinearSmallNoTargetRowsCNFMessage
+  witnessReadout := v13RealLinearSmallNoTargetRowsCNFReadout
+  target := v13RealLinearSmallNoTargetRowsCNFSATWorldTarget
+  worldWitnessValid := by
+    intro omega
+    exact omega.sat
+  readout_eq_message_of_valid := by
+    intro Y W hW
+    exact v13RealLinearSmallNoTargetRowsCNFReadout_eq_message_of_valid hW
+  target_eq_message := by
+    intro omega
+    exact v13RealLinearSmallNoTargetRowsCNFSATWorldTarget_eq_message omega
+
 /-- Structural `singleMessage` transfer for the global no-target-row SAT
 surface: inside one public row-equation CNF instance, all verifier-valid
 satisfying witnesses have the same fixed message readout. -/
@@ -1437,6 +1462,41 @@ theorem v13RealLinearSmallNoTargetRowsCNFSATWorld_singleMessage :
   rw [v13RealLinearSmallNoTargetRowsCNFSATWorldTarget_eq_message omega₀,
     v13RealLinearSmallNoTargetRowsCNFSATWorldTarget_eq_message omega₁]
   exact congrArg v13RealLinearSmallNoTargetRowsCNFMessage hPublic
+
+/-- Structural `singleMessage` obtained from the concrete small no-target-row
+real single-message SAT spine. -/
+theorem
+    v13RealLinearSmallNoTargetRowsCNFSATWorldRealSingleMessageSATSpine_singleMessage :
+    ∀ omega₀ omega₁ : V13RealLinearSmallNoTargetRowsCNFSATWorld,
+      v13RealLinearSmallNoTargetRowsCNFSATWorldPublicInput omega₀ =
+        v13RealLinearSmallNoTargetRowsCNFSATWorldPublicInput omega₁ ->
+        v13RealLinearSmallNoTargetRowsCNFSATWorldTarget omega₀ =
+          v13RealLinearSmallNoTargetRowsCNFSATWorldTarget omega₁ :=
+  v13RealLinearSmallNoTargetRowsCNFSATWorldRealSingleMessageSATSpine
+    |>.singleMessage
+
+/-- Any two verifier-valid concrete small no-target-row witnesses over one
+public instance have the same fixed readout. -/
+theorem
+    v13RealLinearSmallNoTargetRowsCNFSATWorldRealSingleMessageSATSpine_readout_eq_of_valid
+    {Y : V13RealLinearSmallNoTargetRowsCNFPublic}
+    {W W' : V13RealLinearSmallNoTargetRowsCNFWitness}
+    (hW : v13RealLinearSmallNoTargetRowsCNFVerifier Y W)
+    (hW' : v13RealLinearSmallNoTargetRowsCNFVerifier Y W') :
+    v13RealLinearSmallNoTargetRowsCNFReadout W =
+      v13RealLinearSmallNoTargetRowsCNFReadout W' :=
+  v13RealLinearSmallNoTargetRowsCNFSATWorldRealSingleMessageSATSpine
+    |>.readout_eq_of_valid hW hW'
+
+/-- The witness carried by a concrete small no-target-row SAT world reads
+exactly that world's target bit. -/
+theorem
+    v13RealLinearSmallNoTargetRowsCNFSATWorldRealSingleMessageSATSpine_worldWitness_readout_eq_target
+    (omega : V13RealLinearSmallNoTargetRowsCNFSATWorld) :
+    v13RealLinearSmallNoTargetRowsCNFReadout omega.assignment =
+      v13RealLinearSmallNoTargetRowsCNFSATWorldTarget omega :=
+  v13RealLinearSmallNoTargetRowsCNFSATWorldRealSingleMessageSATSpine
+    |>.worldWitness_readout_eq_target omega
 
 /-- Target-blind neutral skeleton for the no-target-row SAT world: retain the
 public non-target row bit and the hidden gauge bit, but omit the public
