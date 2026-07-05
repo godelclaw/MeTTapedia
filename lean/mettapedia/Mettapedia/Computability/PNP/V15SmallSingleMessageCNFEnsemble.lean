@@ -1,4 +1,5 @@
 import Mettapedia.Computability.PNP.PNPv13ManuscriptCNFReadoutCore
+import Mettapedia.Computability.PNP.V15RealEnsembleSpine
 
 /-!
 # PNP v15: small concrete single-message CNF ensemble
@@ -484,6 +485,92 @@ theorem xorSingleMessageCNFReadoutData_supportedArbitraryOutputSATSearchCorrect 
     xorSingleMessageCNFReadoutData.supportedArbitraryOutputSATSearchCorrect_of_singleMessagePromise
       xorSingleMessageCNFReadoutData_singleMessagePromise
       xorSingleMessageCNFReadoutData_supportedSatisfiable
+
+/-! ## XOR CNF SAT spine -/
+
+/-- Hidden SAT witnesses for the XOR anchor are concrete assignments to the
+single CNF variable. -/
+abbrev XorSingleMessageSATWitness :=
+  ConcreteCNF.Assignment (Fin 1)
+
+/-- A world of the XOR SAT spine is a public instance together with a
+satisfying CNF assignment. -/
+structure XorSingleMessageSATWorld where
+  publicInput : XorSingleMessagePublic
+  assignment : XorSingleMessageSATWitness
+  sat : ConcreteCNF.IsSatFormula
+    (xorSingleMessageFormula publicInput) assignment
+
+/-- The verifier for the XOR SAT spine is ordinary CNF satisfaction. -/
+def xorSingleMessageSATVerifier
+    (Y : XorSingleMessagePublic)
+    (W : XorSingleMessageSATWitness) : Prop :=
+  ConcreteCNF.IsSatFormula (xorSingleMessageFormula Y) W
+
+/-- The SAT-spine readout reads the single CNF assignment bit. -/
+def xorSingleMessageSATReadout
+    (W : XorSingleMessageSATWitness) : Bool :=
+  W 0
+
+/-- Every verifier-valid XOR SAT witness reads the fixed public message. -/
+theorem xorSingleMessageSATReadout_eq_M_of_valid
+    {Y : XorSingleMessagePublic}
+    {W : XorSingleMessageSATWitness}
+    (hW : xorSingleMessageSATVerifier Y W) :
+    xorSingleMessageSATReadout W = xorSingleMessageM Y := by
+  simpa [xorSingleMessageSATReadout, xorSingleMessageProjection,
+    xorSingleMessageSATVerifier] using
+    xorSingleMessageProjection_eq_M_of_sat (Y := Y) (α := W) hW
+
+/-- The XOR CNF anchor inhabits the real single-message SAT spine interface
+with CNF assignments as hidden witnesses. -/
+def xorSingleMessageRealSingleMessageSATSpine :
+    RealSingleMessageSATSpine
+      XorSingleMessageSATWorld
+      XorSingleMessagePublic
+      XorSingleMessageSATWitness where
+  publicInput := fun omega => omega.publicInput
+  witnessOfWorld := fun omega => omega.assignment
+  verifier := xorSingleMessageSATVerifier
+  messageOfPublic := xorSingleMessageM
+  witnessReadout := xorSingleMessageSATReadout
+  target := fun omega => xorSingleMessageM omega.publicInput
+  worldWitnessValid := by
+    intro omega
+    exact omega.sat
+  readout_eq_message_of_valid := by
+    intro Y W hW
+    exact xorSingleMessageSATReadout_eq_M_of_valid hW
+  target_eq_message := by
+    intro omega
+    rfl
+
+/-- Structural `singleMessage` field for the XOR CNF SAT spine. -/
+theorem xorSingleMessageRealSingleMessageSATSpine_singleMessage :
+    ∀ w0 w1 : XorSingleMessageSATWorld,
+      w0.publicInput = w1.publicInput ->
+        xorSingleMessageM w0.publicInput =
+          xorSingleMessageM w1.publicInput :=
+  xorSingleMessageRealSingleMessageSATSpine.singleMessage
+
+/-- Any two verifier-valid XOR SAT witnesses over one public instance have the
+same readout. -/
+theorem xorSingleMessageSATReadout_eq_of_valid
+    {Y : XorSingleMessagePublic}
+    {W W' : XorSingleMessageSATWitness}
+    (hW : xorSingleMessageSATVerifier Y W)
+    (hW' : xorSingleMessageSATVerifier Y W') :
+    xorSingleMessageSATReadout W =
+      xorSingleMessageSATReadout W' :=
+  xorSingleMessageRealSingleMessageSATSpine.readout_eq_of_valid hW hW'
+
+/-- The world witness of the XOR SAT spine reads the world target. -/
+theorem xorSingleMessageSATWorld_readout_eq_target
+    (omega : XorSingleMessageSATWorld) :
+    xorSingleMessageSATReadout omega.assignment =
+      xorSingleMessageM omega.publicInput :=
+  xorSingleMessageRealSingleMessageSATSpine.worldWitness_readout_eq_target
+    omega
 
 /-- The two single public coordinates of the XOR anchor. -/
 inductive XorSingleMessagePublicCoordinate where
