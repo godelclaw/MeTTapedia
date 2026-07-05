@@ -7694,6 +7694,147 @@ theorem section92Step4ConcretePreviousBoundaryNormalFormObstructionTarget :
   closedCollarWindingFreedomConcretePreviousBoundaryNonrealizableInNormalForm_of_auditedRows
 
 /--
+Extraction record tying the concrete previous-boundary package back to a
+specified normal-form annulus.  This is the remaining normal-form theorem
+needed to turn the local concrete obstruction into full nonrealizability.
+-/
+structure ClosedCollarWindingFreedomConcretePreviousBoundaryNormalFormExtraction
+    {V : Type} [DecidableEq V] {G : SimpleGraph V}
+    (normalForm : ClosedCollarWindingFreedomNormalFormRealization G) where
+  concrete :
+    ClosedCollarWindingFreedomConcretePreviousBoundaryNormalFormRealization G
+  normalForm_eq : concrete.normalForm = normalForm
+
+/--
+Named normal-form bridge for the concrete repair route: every honest
+normal-form annulus for the winding-freedom witness instantiates the concrete
+previous-boundary package.
+-/
+def ClosedCollarWindingFreedomEveryNormalFormHasConcretePreviousBoundaryNormalFormRealization :
+    Prop :=
+  ∀ {V : Type} [DecidableEq V] {G : SimpleGraph V},
+    (normalForm : ClosedCollarWindingFreedomNormalFormRealization G) →
+      Nonempty
+        (ClosedCollarWindingFreedomConcretePreviousBoundaryNormalFormExtraction
+          normalForm)
+
+/--
+The concrete extraction bridge follows from the five factored obligations
+already isolated by the previous-boundary route.
+-/
+theorem closedCollarWindingFreedomEveryNormalFormHasConcretePreviousBoundaryNormalFormRealization_of_factoredBridge
+    (hgeometry :
+      ClosedCollarWindingFreedomActualCollarEmbeddingSuppliesGeometryData)
+    (hupgrade :
+      ClosedCollarWindingFreedomActualCollarGeometrySuppliesPreviousBoundaryWitnessUpgrade)
+    (hradial :
+      ClosedCollarWindingFreedomActualCollarGeometrySuppliesRadialFaceExtraction)
+    (hn6 :
+      ClosedCollarWindingFreedomEveryRadialFaceNormalFormHasN6Representation)
+    (hkeys :
+      ClosedCollarWindingFreedomEveryRadialFaceN6RepresentationHasAuditedArchiveKey) :
+    ClosedCollarWindingFreedomEveryNormalFormHasConcretePreviousBoundaryNormalFormRealization := by
+  intro V _hV G normalForm
+  rcases hgeometry normalForm normalForm.hactualCollarEmbeddingConstraints with
+    ⟨geometry⟩
+  rcases hupgrade geometry with ⟨previousUpgrade⟩
+  rcases hradial previousUpgrade.toPreviousBoundaryGeometryData.toGeometryData with
+    ⟨radialFace⟩
+  let previousBoundaryRadialFaceData :
+      ClosedCollarWindingFreedomActualCollarEmbeddingPreviousBoundaryRadialFaceData
+        normalForm :=
+    ClosedCollarWindingFreedomActualCollarEmbeddingPreviousBoundaryRadialFaceData.ofPreviousBoundaryGeometryExtraction
+      previousUpgrade.toPreviousBoundaryGeometryData
+      radialFace
+  rcases hn6 previousBoundaryRadialFaceData.toNormalFormRadialFaceRealization with
+    ⟨n6⟩
+  let concrete :
+      ClosedCollarWindingFreedomConcretePreviousBoundaryNormalFormRealization
+        G :=
+    { normalForm := normalForm
+      geometry := geometry
+      previousUpgrade := previousUpgrade
+      radialFace := radialFace
+      n6 := n6
+      auditedKey := hkeys n6.data }
+  exact
+    ⟨{
+      concrete := concrete
+      normalForm_eq := rfl
+    }⟩
+
+theorem closedCollarWindingFreedomNonrealizableInNormalForm_of_concretePreviousBoundaryNormalFormRealization_of_auditedRows
+    (hextract :
+      ClosedCollarWindingFreedomEveryNormalFormHasConcretePreviousBoundaryNormalFormRealization)
+    (hrows :
+      ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceAuditedRowsCoveredByLab) :
+    ClosedCollarWindingFreedomNonrealizableInNormalForm := by
+  classical
+  intro V G normalForm
+  letI : DecidableEq V := Classical.decEq V
+  rcases hextract normalForm with ⟨extraction⟩
+  exact
+    closedCollarWindingFreedomConcretePreviousBoundaryNormalFormRealization_false_of_auditedRows
+      extraction.concrete hrows
+
+/--
+Route-facing repaired target at the exact concrete bridge level.  The finite
+side is the audited radial-face rows; the remaining mathematical side is the
+normal-form theorem that every witness supplies the concrete package.
+-/
+def Section92Step4RepairedByConcretePreviousBoundaryNormalFormRealizationAndAuditedRowsTarget :
+    Prop :=
+  ClosedCollarWindingFreedomEveryNormalFormHasConcretePreviousBoundaryNormalFormRealization →
+    ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceAuditedRowsCoveredByLab →
+      ClosedCollarWindingFreedomNonrealizableInNormalForm
+
+theorem section92Step4RepairedByConcretePreviousBoundaryNormalFormRealizationAndAuditedRowsTarget :
+    Section92Step4RepairedByConcretePreviousBoundaryNormalFormRealizationAndAuditedRowsTarget :=
+  closedCollarWindingFreedomNonrealizableInNormalForm_of_concretePreviousBoundaryNormalFormRealization_of_auditedRows
+
+/--
+The exact remaining bridge failure forced by the current fork: if the audited
+rows are accepted but full normal-form nonrealizability is still false, then
+the theorem extracting the concrete previous-boundary package from every
+normal-form witness is false.
+-/
+theorem closedCollarWindingFreedomConcretePreviousBoundaryNormalFormExtractionFails_of_auditedRows_of_not_nonrealizable
+    (hrows :
+      ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceAuditedRowsCoveredByLab)
+    (hnot :
+      ¬ ClosedCollarWindingFreedomNonrealizableInNormalForm) :
+    ¬ ClosedCollarWindingFreedomEveryNormalFormHasConcretePreviousBoundaryNormalFormRealization := by
+  intro hextract
+  exact
+    hnot
+      (closedCollarWindingFreedomNonrealizableInNormalForm_of_concretePreviousBoundaryNormalFormRealization_of_auditedRows
+        hextract hrows)
+
+/--
+Coarse concrete-bridge repair blocker: after the finite side is included, the
+only way the concrete route can fail to prove nonrealizability is that either
+the audited rows are unavailable or the concrete package extraction bridge is
+false.
+-/
+def ClosedCollarWindingFreedomConcretePreviousBoundaryRepairHasBlocker :
+    Prop :=
+  (¬ ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceAuditedRowsCoveredByLab) ∨
+    ¬ ClosedCollarWindingFreedomEveryNormalFormHasConcretePreviousBoundaryNormalFormRealization
+
+theorem closedCollarWindingFreedomConcretePreviousBoundaryRepairHasBlocker_of_not_nonrealizable
+    (hnot :
+      ¬ ClosedCollarWindingFreedomNonrealizableInNormalForm) :
+    ClosedCollarWindingFreedomConcretePreviousBoundaryRepairHasBlocker := by
+  classical
+  by_cases hrows :
+      ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceAuditedRowsCoveredByLab
+  · exact
+      Or.inr
+        (closedCollarWindingFreedomConcretePreviousBoundaryNormalFormExtractionFails_of_auditedRows_of_not_nonrealizable
+          hrows hnot)
+  · exact Or.inl hrows
+
+/--
 The staged witness-level blockers for the previous-boundary repair route.
 Unlike the global blocker type, these are attached to one concrete normal-form
 realization and identify the first missing datum along the current extraction

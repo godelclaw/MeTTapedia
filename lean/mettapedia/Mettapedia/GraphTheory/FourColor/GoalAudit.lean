@@ -1326,6 +1326,50 @@ theorem section92Step4ConcretePreviousBoundaryNormalFormObstructionTarget_audit 
     Section92Step4ConcretePreviousBoundaryNormalFormObstructionTarget :=
   section92Step4ConcretePreviousBoundaryNormalFormObstructionTarget
 
+theorem closedCollarWindingFreedomEveryNormalFormHasConcretePreviousBoundaryNormalFormRealization_of_factoredBridge_audit
+    (hgeometry :
+      ClosedCollarWindingFreedomActualCollarEmbeddingSuppliesGeometryData)
+    (hupgrade :
+      ClosedCollarWindingFreedomActualCollarGeometrySuppliesPreviousBoundaryWitnessUpgrade)
+    (hradial :
+      ClosedCollarWindingFreedomActualCollarGeometrySuppliesRadialFaceExtraction)
+    (hn6 :
+      ClosedCollarWindingFreedomEveryRadialFaceNormalFormHasN6Representation)
+    (hkeys :
+      ClosedCollarWindingFreedomEveryRadialFaceN6RepresentationHasAuditedArchiveKey) :
+    ClosedCollarWindingFreedomEveryNormalFormHasConcretePreviousBoundaryNormalFormRealization :=
+  closedCollarWindingFreedomEveryNormalFormHasConcretePreviousBoundaryNormalFormRealization_of_factoredBridge
+    hgeometry hupgrade hradial hn6 hkeys
+
+theorem closedCollarWindingFreedomNonrealizableInNormalForm_of_concretePreviousBoundaryNormalFormRealization_of_auditedRows_audit
+    (hextract :
+      ClosedCollarWindingFreedomEveryNormalFormHasConcretePreviousBoundaryNormalFormRealization)
+    (hrows :
+      ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceAuditedRowsCoveredByLab) :
+    ClosedCollarWindingFreedomNonrealizableInNormalForm :=
+  closedCollarWindingFreedomNonrealizableInNormalForm_of_concretePreviousBoundaryNormalFormRealization_of_auditedRows
+    hextract hrows
+
+theorem section92Step4RepairedByConcretePreviousBoundaryNormalFormRealizationAndAuditedRowsTarget_audit :
+    Section92Step4RepairedByConcretePreviousBoundaryNormalFormRealizationAndAuditedRowsTarget :=
+  section92Step4RepairedByConcretePreviousBoundaryNormalFormRealizationAndAuditedRowsTarget
+
+theorem closedCollarWindingFreedomConcretePreviousBoundaryNormalFormExtractionFails_of_auditedRows_of_not_nonrealizable_audit
+    (hrows :
+      ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceAuditedRowsCoveredByLab)
+    (hnot :
+      ¬ ClosedCollarWindingFreedomNonrealizableInNormalForm) :
+    ¬ ClosedCollarWindingFreedomEveryNormalFormHasConcretePreviousBoundaryNormalFormRealization :=
+  closedCollarWindingFreedomConcretePreviousBoundaryNormalFormExtractionFails_of_auditedRows_of_not_nonrealizable
+    hrows hnot
+
+theorem closedCollarWindingFreedomConcretePreviousBoundaryRepairHasBlocker_of_not_nonrealizable_audit
+    (hnot :
+      ¬ ClosedCollarWindingFreedomNonrealizableInNormalForm) :
+    ClosedCollarWindingFreedomConcretePreviousBoundaryRepairHasBlocker :=
+  closedCollarWindingFreedomConcretePreviousBoundaryRepairHasBlocker_of_not_nonrealizable
+    hnot
+
 theorem closedCollarWindingFreedomNormalFormHasPreviousBoundaryWitnessRepairBlocker_of_auditedRows_audit
     {V : Type} [DecidableEq V] {G : SimpleGraph V}
     (hrows :
