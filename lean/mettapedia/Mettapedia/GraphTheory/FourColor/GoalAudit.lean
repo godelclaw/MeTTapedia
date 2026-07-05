@@ -934,6 +934,66 @@ theorem section92Step4RepairedByRadialFaceN6ExtractionAuditedKeysAndRowCoverageT
     Section92Step4RepairedByRadialFaceN6ExtractionAuditedKeysAndRowCoverageTarget :=
   section92Step4RepairedByRadialFaceN6ExtractionAuditedKeysAndRowCoverageTarget
 
+theorem closedCollarWindingFreedomNonrealizableInNormalForm_of_radialFaceArchiveN6Representation_of_rowCoverage_audit
+    (hradial : ClosedCollarWindingFreedomEveryNormalFormHasRadialFace)
+    (hn6 :
+      ClosedCollarWindingFreedomEveryRadialFaceNormalFormHasArchiveN6Representation)
+    (hsampleRows :
+      ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSampleRadialFaceRowsCoveredByLab)
+    (hslice1000302Rows :
+      ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSlice1000302RadialFaceRowsCoveredByLab)
+    (hslice1001289Rows :
+      ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSlice1001289RadialFaceRowsCoveredByLab) :
+    ClosedCollarWindingFreedomNonrealizableInNormalForm :=
+  closedCollarWindingFreedomNonrealizableInNormalForm_of_radialFaceArchiveN6Representation_of_rowCoverage
+    hradial hn6 hsampleRows hslice1000302Rows hslice1001289Rows
+
+theorem section92Step4RepairedByRadialFaceArchiveN6ExtractionAndRowCoverageTarget_audit :
+    Section92Step4RepairedByRadialFaceArchiveN6ExtractionAndRowCoverageTarget :=
+  section92Step4RepairedByRadialFaceArchiveN6ExtractionAndRowCoverageTarget
+
+theorem closedCollarWindingFreedomNonrealizableInNormalForm_of_archiveN6Representation_of_rowCoverage_audit
+    (hextract :
+      ClosedCollarWindingFreedomEveryNormalFormHasArchiveN6Representation)
+    (hgeometry :
+      ClosedCollarWindingFreedomActualCollarEmbeddingSuppliesGeometryData)
+    (hradial :
+      ClosedCollarWindingFreedomActualCollarGeometrySuppliesRadialFaceExtraction)
+    (hsampleRows :
+      ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSampleRadialFaceRowsCoveredByLab)
+    (hslice1000302Rows :
+      ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSlice1000302RadialFaceRowsCoveredByLab)
+    (hslice1001289Rows :
+      ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSlice1001289RadialFaceRowsCoveredByLab) :
+    ClosedCollarWindingFreedomNonrealizableInNormalForm :=
+  closedCollarWindingFreedomNonrealizableInNormalForm_of_archiveN6Representation_of_rowCoverage
+    hextract hgeometry hradial hsampleRows hslice1000302Rows hslice1001289Rows
+
+theorem section92Step4RepairedByArchiveN6ExtractionAndRowCoverageTarget_audit :
+    Section92Step4RepairedByArchiveN6ExtractionAndRowCoverageTarget :=
+  section92Step4RepairedByArchiveN6ExtractionAndRowCoverageTarget
+
+theorem closedCollarWindingFreedomNonrealizableInNormalForm_of_geometryRadialFaceArchiveN6Representation_of_rowCoverage_audit
+    (hgeometry :
+      ClosedCollarWindingFreedomActualCollarEmbeddingSuppliesGeometryData)
+    (hradial :
+      ClosedCollarWindingFreedomActualCollarGeometrySuppliesRadialFaceExtraction)
+    (hn6 :
+      ClosedCollarWindingFreedomEveryRadialFaceNormalFormHasArchiveN6Representation)
+    (hsampleRows :
+      ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSampleRadialFaceRowsCoveredByLab)
+    (hslice1000302Rows :
+      ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSlice1000302RadialFaceRowsCoveredByLab)
+    (hslice1001289Rows :
+      ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSlice1001289RadialFaceRowsCoveredByLab) :
+    ClosedCollarWindingFreedomNonrealizableInNormalForm :=
+  closedCollarWindingFreedomNonrealizableInNormalForm_of_geometryRadialFaceArchiveN6Representation_of_rowCoverage
+    hgeometry hradial hn6 hsampleRows hslice1000302Rows hslice1001289Rows
+
+theorem section92Step4RepairedByGeometryRadialFaceArchiveN6ExtractionAndRowCoverageTarget_audit :
+    Section92Step4RepairedByGeometryRadialFaceArchiveN6ExtractionAndRowCoverageTarget :=
+  section92Step4RepairedByGeometryRadialFaceArchiveN6ExtractionAndRowCoverageTarget
+
 theorem closedCollarWindingFreedomNonrealizableInNormalForm_of_embeddedGeometryN6AuditedArchiveKey_of_rowCoverage_audit
     (hextract :
       ClosedCollarWindingFreedomEveryNormalFormHasEmbeddedGeometryRealization)
