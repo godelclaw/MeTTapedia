@@ -5644,6 +5644,93 @@ theorem v13RealLinearNoTargetRowsGaugeCNF_hiddenGaugeProduct_fromActionData
   RealM4GaugeActionData.hiddenGaugeProduct
     (v13RealLinearNoTargetRowsGaugeCNFGaugeActionData i₀)
 
+/-! ## Appendix-I CNF gauge action -/
+
+/-- Flip the hidden gauge coordinate of a no-target-rows Appendix-I CNF
+world, preserving the supported public instance and CNF satisfiability. -/
+def v13RealLinearNoTargetRowsGaugeCNFAppendixICNFGaugeAction
+    {m : Nat} {i₀ : Fin m} (gamma : Bool)
+    (omega :
+      RealM4CNFWorld
+        (v13RealLinearNoTargetRowsGaugeCNFAppendixICNFReadoutData i₀)) :
+    RealM4CNFWorld
+      (v13RealLinearNoTargetRowsGaugeCNFAppendixICNFReadoutData i₀) where
+  publicInstance := omega.publicInstance
+  support := omega.support
+  assignment := v13RealLinearGaugeCNFGaugeAction gamma omega.assignment
+  sat := by
+    simpa [v13RealLinearNoTargetRowsGaugeCNFAppendixICNFReadoutData,
+      v13RealLinearGaugeCNFVerifier]
+      using v13RealLinearGaugeCNFGaugeAction_preserves_verifier
+        gamma omega.sat
+
+@[simp] theorem
+    v13RealLinearNoTargetRowsGaugeCNFAppendixICNFGaugeAction_publicInstance
+    {m : Nat} {i₀ : Fin m} (gamma : Bool)
+    (omega :
+      RealM4CNFWorld
+        (v13RealLinearNoTargetRowsGaugeCNFAppendixICNFReadoutData i₀)) :
+    (v13RealLinearNoTargetRowsGaugeCNFAppendixICNFGaugeAction
+        gamma omega).publicInstance =
+      omega.publicInstance :=
+  rfl
+
+/-- The lifted Appendix-I hidden-gauge action preserves the CNF readout
+projection. -/
+theorem
+    v13RealLinearNoTargetRowsGaugeCNFAppendixICNFGaugeAction_preserves_projection
+    {m : Nat} {i₀ : Fin m} (gamma : Bool)
+    (omega :
+      RealM4CNFWorld
+        (v13RealLinearNoTargetRowsGaugeCNFAppendixICNFReadoutData i₀)) :
+    (v13RealLinearNoTargetRowsGaugeCNFAppendixICNFReadoutData i₀).projection
+          (v13RealLinearNoTargetRowsGaugeCNFAppendixICNFGaugeAction
+            gamma omega).publicInstance
+          (v13RealLinearNoTargetRowsGaugeCNFAppendixICNFGaugeAction
+            gamma omega).assignment =
+      (v13RealLinearNoTargetRowsGaugeCNFAppendixICNFReadoutData i₀).projection
+        omega.publicInstance omega.assignment := by
+  simpa [v13RealLinearNoTargetRowsGaugeCNFAppendixICNFGaugeAction,
+    v13RealLinearNoTargetRowsGaugeCNFAppendixICNFReadoutData]
+    using v13RealLinearGaugeCNFGaugeAction_preserves_readout
+      gamma i₀ omega.assignment
+
+/-- The lifted Appendix-I hidden-gauge action preserves the world target. -/
+theorem
+    v13RealLinearNoTargetRowsGaugeCNFAppendixICNFGaugeAction_preserves_target
+    {m : Nat} {i₀ : Fin m} (gamma : Bool)
+    (omega :
+      RealM4CNFWorld
+        (v13RealLinearNoTargetRowsGaugeCNFAppendixICNFReadoutData i₀)) :
+    v13RealLinearNoTargetRowsGaugeCNFAppendixICNFWorldTarget
+        (v13RealLinearNoTargetRowsGaugeCNFAppendixICNFGaugeAction
+          gamma omega) =
+      v13RealLinearNoTargetRowsGaugeCNFAppendixICNFWorldTarget omega :=
+  rfl
+
+/-- The hidden-gauge coordinate visible in the Appendix-I CNF assignment. -/
+def v13RealLinearNoTargetRowsGaugeCNFAppendixICNFHiddenGauge
+    {m : Nat} {i₀ : Fin m}
+    (omega :
+      RealM4CNFWorld
+        (v13RealLinearNoTargetRowsGaugeCNFAppendixICNFReadoutData i₀)) :
+    Bool :=
+  v13RealLinearGaugeCNFHiddenGauge omega.assignment
+
+/-- Acting by the nontrivial gauge element flips the free hidden-gauge
+coordinate in the Appendix-I CNF world. -/
+theorem
+    v13RealLinearNoTargetRowsGaugeCNFAppendixICNFGaugeAction_hidden_true
+    {m : Nat} {i₀ : Fin m}
+    (omega :
+      RealM4CNFWorld
+        (v13RealLinearNoTargetRowsGaugeCNFAppendixICNFReadoutData i₀)) :
+    v13RealLinearNoTargetRowsGaugeCNFAppendixICNFHiddenGauge
+        (v13RealLinearNoTargetRowsGaugeCNFAppendixICNFGaugeAction
+          true omega) =
+      !v13RealLinearNoTargetRowsGaugeCNFAppendixICNFHiddenGauge omega :=
+  rfl
+
 /-! ## Appendix-I CNF CD-ENF structural fields -/
 
 /-- Evidence semantics transported from the no-target-rows gauge-CNF world to
@@ -5714,5 +5801,44 @@ theorem v13RealLinearNoTargetRowsGaugeCNFAppendixICNF_hiddenGaugeProduct
     v13RealLinearNoTargetRowsGaugeCNF_hiddenGaugeProduct i₀ gamma
       (v13RealLinearNoTargetRowsGaugeCNFAppendixICNFWorldAsGaugeCNFWorld
         omega)
+
+/-- Explicit gauge-action data on the concrete no-target-rows Appendix-I CNF
+world carrier.  The action flips only the free hidden gauge bit, while
+preserving the supported public instance and fixed target readout. -/
+def v13RealLinearNoTargetRowsGaugeCNFAppendixICNFGaugeActionData
+    {m : Nat} (i₀ : Fin m) :
+    RealM4GaugeActionData
+      (RealM4CNFWorld
+        (v13RealLinearNoTargetRowsGaugeCNFAppendixICNFReadoutData i₀))
+      (V13RealLinearNoTargetRowsWorld m i₀)
+      V13RealLinearNoTargetRowsGaugeCNFNeutral
+      V13RealLinearNoTargetRowsGaugeCNFSafe
+      V13RealLinearNoTargetRowsGaugeCNFGauge
+      (@v13RealLinearNoTargetRowsGaugeCNFAppendixICNFWorldTarget
+        m i₀)
+      (fun omega => omega.publicInstance)
+      (v13RealLinearNoTargetRowsGaugeCNFAppendixICNFSemantics i₀) where
+  act := v13RealLinearNoTargetRowsGaugeCNFAppendixICNFGaugeAction
+  publicInvariant := by
+    intro gamma omega
+    rfl
+  targetInvariant := by
+    intro gamma omega
+    exact
+      v13RealLinearNoTargetRowsGaugeCNFAppendixICNFGaugeAction_preserves_target
+        gamma omega
+  gaugeSatisfied :=
+    v13RealLinearNoTargetRowsGaugeCNFAppendixICNF_hiddenGaugeProduct i₀
+
+/-- The explicit Appendix-I CNF action data projects the transported
+`hiddenGaugeProduct` structural field. -/
+theorem
+    v13RealLinearNoTargetRowsGaugeCNFAppendixICNF_hiddenGaugeProduct_fromActionData
+    {m : Nat} (i₀ : Fin m) :
+    ∀ gamma omega,
+      (v13RealLinearNoTargetRowsGaugeCNFAppendixICNFSemantics
+          i₀).gaugeSat gamma omega :=
+  RealM4GaugeActionData.hiddenGaugeProduct
+    (v13RealLinearNoTargetRowsGaugeCNFAppendixICNFGaugeActionData i₀)
 
 end Mettapedia.Computability.PNP
