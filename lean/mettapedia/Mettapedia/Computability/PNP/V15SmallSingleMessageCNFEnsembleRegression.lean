@@ -22,6 +22,11 @@ namespace Mettapedia.Computability.PNP
 #check xorSingleMessageRealSingleMessageSATSpine_singleMessage
 #check xorSingleMessageSATReadout_eq_of_valid
 #check xorSingleMessageSATWorld_readout_eq_target
+#check xorSingleMessageTarget
+#check xorSingleMessageHistoryField
+#check xorSingleMessage_target_balanced
+#check xorSingleMessage_historyField_balancedConditioning
+#check xorSingleMessage_admissibleHistories
 
 #print axioms smallSingleMessageVerifierDecision_correct
 #print axioms smallSingleMessageFormula_satisfied_messageAssignment
@@ -54,5 +59,12 @@ namespace Mettapedia.Computability.PNP
 #print axioms xorSingleMessage_publicCoordinate_has_oppositeMessages
 #print axioms xorSingleMessage_noPublicTargetTags
 #print axioms xorSingleMessage_noPublicReadoutTags
+#print axioms xorSingleMessageTargetFlipEquiv
+#print axioms xorSingleMessageTarget_false_card_eq_true
+#print axioms xorSingleMessage_world_card_eq_two_mul_target_true
+#print axioms xorSingleMessage_target_balanced
+#print axioms xorSingleMessageHistoryFieldFiberFlipEquiv
+#print axioms xorSingleMessage_historyField_balancedConditioning
+#print axioms xorSingleMessage_admissibleHistories
 
 end Mettapedia.Computability.PNP
