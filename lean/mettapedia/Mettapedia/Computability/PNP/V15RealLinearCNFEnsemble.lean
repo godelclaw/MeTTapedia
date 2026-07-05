@@ -1704,6 +1704,17 @@ def v13RealLinearNoTargetRowsGaugeCNFSemantics {m : Nat}
   safeSat := fun _ _ => True
   gaugeSat := v13RealLinearNoTargetRowsGaugeCNFGaugeSat
 
+/-- Structural `gaugeFaithfulness` for the gauge-buffered CNF surface: a raw
+gauge atom normalizes to exactly the concrete hidden-gauge predicate. -/
+theorem v13RealLinearNoTargetRowsGaugeCNF_gaugeFaithfulness
+    {m : Nat} (i₀ : Fin m) :
+    ∀ gamma : V13RealLinearNoTargetRowsGaugeCNFGauge,
+      (v13RealLinearNoTargetRowsGaugeCNFSemantics i₀).SatNormal
+          (CDENF (.gauge gamma)) =
+        (v13RealLinearNoTargetRowsGaugeCNFSemantics i₀).gaugeSat gamma := by
+  intro gamma
+  rfl
+
 /-- The concrete hidden-gauge action satisfies the gauge predicate at every
 world.  This is the `hiddenGaugeProduct` structural field for the
 gauge-buffered no-target-rows CNF surface. -/
