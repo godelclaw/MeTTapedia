@@ -902,6 +902,61 @@ theorem exists_adjacent_charges_eq_one
 
 end FiveBoundaryChargeProfile
 
+/-- Arithmetic interface for the Euler charge count on a disk triangulation bounded by a
+5-cycle.  The geometric disk layer must supply the identity and the interior-charge upper bound;
+this structure then produces the boundary-charge profile used by the finite CAP5 argument. -/
+structure FiveCycleDiskEulerChargeData where
+  ch0 : Int
+  ch1 : Int
+  ch2 : Int
+  ch3 : Int
+  ch4 : Int
+  interior_charge_sum : Int
+  ch0_le_one : ch0 ≤ 1
+  ch1_le_one : ch1 ≤ 1
+  ch2_le_one : ch2 ≤ 1
+  ch3_le_one : ch3 ≤ 1
+  ch4_le_one : ch4 ≤ 1
+  euler_charge_identity : interior_charge_sum + (ch0 + ch1 + ch2 + ch3 + ch4) = 6
+  interior_charge_sum_le_two : interior_charge_sum ≤ 2
+
+namespace FiveCycleDiskEulerChargeData
+
+/-- The Euler identity plus the interior-charge bound force total boundary charge at least four. -/
+theorem boundary_charge_sum_ge_four (data : FiveCycleDiskEulerChargeData) :
+    4 ≤ data.ch0 + data.ch1 + data.ch2 + data.ch3 + data.ch4 := by
+  have hidentity := data.euler_charge_identity
+  have hinterior := data.interior_charge_sum_le_two
+  omega
+
+/-- Convert the disk Euler-charge data into the five-boundary charge profile used by the finite
+Lemma 5.3 arithmetic. -/
+def toFiveBoundaryChargeProfile (data : FiveCycleDiskEulerChargeData) :
+    FiveBoundaryChargeProfile where
+  ch0 := data.ch0
+  ch1 := data.ch1
+  ch2 := data.ch2
+  ch3 := data.ch3
+  ch4 := data.ch4
+  ch0_le_one := data.ch0_le_one
+  ch1_le_one := data.ch1_le_one
+  ch2_le_one := data.ch2_le_one
+  ch3_le_one := data.ch3_le_one
+  ch4_le_one := data.ch4_le_one
+  boundary_sum_ge_four := data.boundary_charge_sum_ge_four
+
+/-- Disk Euler-charge data supplies three consecutive unit boundary charges. -/
+theorem exists_three_consecutive_charges_eq_one
+    (data : FiveCycleDiskEulerChargeData) :
+    ∃ i : FiveBoundaryIndex,
+      data.toFiveBoundaryChargeProfile.charge i = 1 ∧
+        data.toFiveBoundaryChargeProfile.charge (FiveBoundaryIndex.next i) = 1 ∧
+          data.toFiveBoundaryChargeProfile.charge
+            (FiveBoundaryIndex.next (FiveBoundaryIndex.next i)) = 1 :=
+  data.toFiveBoundaryChargeProfile.exists_three_consecutive_charges_eq_one
+
+end FiveCycleDiskEulerChargeData
+
 /-- Local disk-triangulation facts around a chordless separating dual 5-cycle, after the charge
 count has identified unit-charge boundary vertices.  Each boundary edge has an interior triangular
 face apex; a unit-charge boundary vertex has at most one interior neighbor in the disk. -/
