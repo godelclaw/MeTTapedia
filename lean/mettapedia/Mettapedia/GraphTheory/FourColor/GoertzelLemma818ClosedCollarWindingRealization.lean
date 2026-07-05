@@ -2895,6 +2895,42 @@ def ClosedCollarWindingFreedomActualCollarGeometryPreviousBoundaryWitnessUpgrade
   outerBoundaryEdges_eq := by
     simpa [upgrade.collarGeometry_eq] using geometry.outerBoundaryEdges_eq
 
+theorem closedCollarWindingFreedomActualCollarGeometryPreviousBoundaryWitnessUpgrade_of_witnessOnCurrentBoundary
+    {V : Type} [DecidableEq V] {G : SimpleGraph V}
+    {normalForm : ClosedCollarWindingFreedomNormalFormRealization G}
+    (geometry :
+      ClosedCollarWindingFreedomActualCollarEmbeddingGeometryData
+        normalForm)
+    (hwitnessCurrent :
+      geometry.collarGeometry.WitnessOnCurrentBoundary) :
+    Nonempty
+      (ClosedCollarWindingFreedomActualCollarGeometryPreviousBoundaryWitnessUpgrade
+        geometry) := by
+  refine
+    ⟨{
+      previousGeometry :=
+        planarBoundaryAnnulusPreviousBoundaryWitnessGeometry_of_collarGeometry
+          geometry.collarGeometry
+          ((geometry.collarGeometry.witnessOnCurrentBoundary_iff_previousBoundaryWitness).1
+            hwitnessCurrent)
+      collarGeometry_eq := rfl
+    }⟩
+
+/--
+Winding-route spelling of the corrected annulus-geometry condition: every
+embedded collar geometry extracted from an honest normal-form witness places
+its face witnesses on the current boundary.  This is the exact property that
+upgrades ordinary collar geometry to previous-boundary witness geometry.
+-/
+def ClosedCollarWindingFreedomActualCollarGeometrySuppliesWitnessOnCurrentBoundary :
+    Prop :=
+  ∀ {V : Type} [DecidableEq V] {G : SimpleGraph V}
+    {normalForm : ClosedCollarWindingFreedomNormalFormRealization G},
+      (geometry :
+        ClosedCollarWindingFreedomActualCollarEmbeddingGeometryData
+          normalForm) →
+        geometry.collarGeometry.WitnessOnCurrentBoundary
+
 /--
 Factored form of the first previous-boundary blocker: actual collar constraints
 must first supply ordinary embedded collar geometry, and that geometry must
@@ -2910,6 +2946,15 @@ def ClosedCollarWindingFreedomActualCollarGeometrySuppliesPreviousBoundaryWitnes
         Nonempty
           (ClosedCollarWindingFreedomActualCollarGeometryPreviousBoundaryWitnessUpgrade
             geometry)
+
+theorem closedCollarWindingFreedomActualCollarGeometrySuppliesPreviousBoundaryWitnessUpgrade_of_witnessOnCurrentBoundary
+    (hwitness :
+      ClosedCollarWindingFreedomActualCollarGeometrySuppliesWitnessOnCurrentBoundary) :
+    ClosedCollarWindingFreedomActualCollarGeometrySuppliesPreviousBoundaryWitnessUpgrade := by
+  intro V _hV G normalForm geometry
+  exact
+    closedCollarWindingFreedomActualCollarGeometryPreviousBoundaryWitnessUpgrade_of_witnessOnCurrentBoundary
+      geometry (hwitness geometry)
 
 theorem closedCollarWindingFreedomActualCollarEmbeddingSuppliesPreviousBoundaryGeometryData_of_geometryData_of_previousBoundaryWitnessUpgrade
     (hgeometry :
@@ -8817,6 +8862,50 @@ theorem section92Step4CurrentFiniteFrontierPreviousBoundaryWitnessUpgradePressur
       hnot
         (section92Step4RepairedByFactoredCollarGeometryPreviousBoundaryWitnessRadialFaceN6AuditedArchiveExtractionAndAuditedRowsTarget
           hgeometry hupgrade hradial hn6 hkeys hrows)
+
+/--
+The previous-boundary hinge reduced to the exact corrected annulus-geometry
+condition.  Under ordinary collar geometry and the later radial-face/n6/archive
+obligations, proving `WitnessOnCurrentBoundary` for every extracted collar
+geometry is enough to kill the winding-freedom witness; if nonrealizability
+still fails under those later fields, this witness-placement condition is
+false.
+-/
+def Section92Step4CurrentFiniteFrontierWitnessOnCurrentBoundaryPressurePoint :
+    Prop :=
+  ClosedCollarWindingFreedomCurrentFiniteRealizationFrontierEvidence ∧
+    (ClosedCollarWindingFreedomActualCollarEmbeddingSuppliesGeometryData →
+      ClosedCollarWindingFreedomActualCollarGeometrySuppliesRadialFaceExtraction →
+        ClosedCollarWindingFreedomEveryRadialFaceNormalFormHasN6Representation →
+          ClosedCollarWindingFreedomEveryRadialFaceN6RepresentationHasAuditedArchiveKey →
+            ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceAuditedRowsCoveredByLab →
+              ((ClosedCollarWindingFreedomActualCollarGeometrySuppliesWitnessOnCurrentBoundary →
+                  ClosedCollarWindingFreedomNonrealizableInNormalForm) ∧
+                (¬ ClosedCollarWindingFreedomNonrealizableInNormalForm →
+                  ¬ ClosedCollarWindingFreedomActualCollarGeometrySuppliesWitnessOnCurrentBoundary)))
+
+theorem section92Step4CurrentFiniteFrontierWitnessOnCurrentBoundaryPressurePoint :
+    Section92Step4CurrentFiniteFrontierWitnessOnCurrentBoundaryPressurePoint := by
+  refine
+    ⟨closedCollarWindingFreedomCurrentFiniteRealizationFrontierEvidence,
+      ?_⟩
+  intro hgeometry hradial hn6 hkeys hrows
+  constructor
+  · intro hwitness
+    exact
+      section92Step4RepairedByFactoredCollarGeometryPreviousBoundaryWitnessRadialFaceN6AuditedArchiveExtractionAndAuditedRowsTarget
+        hgeometry
+        (closedCollarWindingFreedomActualCollarGeometrySuppliesPreviousBoundaryWitnessUpgrade_of_witnessOnCurrentBoundary
+          hwitness)
+        hradial hn6 hkeys hrows
+  · intro hnot hwitness
+    exact
+      hnot
+        (section92Step4RepairedByFactoredCollarGeometryPreviousBoundaryWitnessRadialFaceN6AuditedArchiveExtractionAndAuditedRowsTarget
+          hgeometry
+          (closedCollarWindingFreedomActualCollarGeometrySuppliesPreviousBoundaryWitnessUpgrade_of_witnessOnCurrentBoundary
+            hwitness)
+          hradial hn6 hkeys hrows)
 
 end GoertzelLemma818ClosedCollarWindingRealization
 
