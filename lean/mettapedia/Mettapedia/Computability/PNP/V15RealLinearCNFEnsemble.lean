@@ -1331,6 +1331,82 @@ theorem v13RealLinearSmallGaugeCNFEnsemble_admissibleHistories :
   ⟨v13RealLinearSmallGaugeCNFEnsemble_target_balanced,
     v13RealLinearSmallGaugeCNFEnsemble_historyField_balancedConditioning⟩
 
+/-! ## Global small real-linear gauge-CNF no-public-target-tags transfer -/
+
+/-- Target-blind neutral skeleton for the global small real-linear gauge-CNF
+ensemble.  It records only the hidden gauge bit and deliberately omits the
+public message bit and full formula syntax. -/
+def v13RealLinearSmallGaugeCNFEnsembleNeutralSkeleton
+    (omega : V13RealLinearSmallGaugeCNFEnsembleWorld) : Bool :=
+  omega.gauge
+
+/-- Opposite support for the global small ensemble pairs the two public
+message phases within the same hidden-gauge fiber. -/
+def v13RealLinearSmallGaugeCNFEnsembleOppositeSupport
+    (omega₀ omega₁ : V13RealLinearSmallGaugeCNFEnsembleWorld) : Prop :=
+  omega₀.gauge = omega₁.gauge ∧
+    omega₀.msg = false ∧ omega₁.msg = true
+
+/-- The target-blind neutral skeleton is pair-neutral across the supported
+opposite-message pairs. -/
+theorem v13RealLinearSmallGaugeCNFEnsemble_pairNeutral :
+    PairNeutral
+      v13RealLinearSmallGaugeCNFEnsembleOppositeSupport
+      v13RealLinearSmallGaugeCNFEnsembleNeutralSkeleton := by
+  intro omega₀ omega₁ hSupport
+  exact hSupport.1
+
+/-- The global small ensemble has an explicit opposite-message pair for the
+same hidden gauge bit. -/
+theorem v13RealLinearSmallGaugeCNFEnsemble_hasMessageOppositePair :
+    HasMessageOppositePair
+      v13RealLinearSmallGaugeCNFEnsembleOppositeSupport
+      v13RealLinearSmallGaugeCNFEnsembleTarget := by
+  refine
+    ⟨{ msg := false, gauge := false },
+      { msg := true, gauge := false },
+      ?_, ?_, ?_⟩
+  · simp [v13RealLinearSmallGaugeCNFEnsembleOppositeSupport]
+  · simp [v13RealLinearSmallGaugeCNFEnsembleTarget,
+      v13RealLinearSmallGaugeCNFEnsembleAssignment,
+      v13RealLinearSmallGaugeCNFReadout]
+  · simp [v13RealLinearSmallGaugeCNFEnsembleTarget,
+      v13RealLinearSmallGaugeCNFEnsembleAssignment,
+      v13RealLinearSmallGaugeCNFReadout]
+
+/-- Structural `noPublicTargetTags` transfer for the global small real-linear
+gauge-CNF ensemble, using the target-blind neutral skeleton.  This is separate
+from the full-formula-syntax obstruction: the full two-clause formula exposes
+the target unit clause, while this neutral skeleton does not include that row. -/
+theorem v13RealLinearSmallGaugeCNFEnsemble_noPublicTargetTags :
+    PairNeutral
+        v13RealLinearSmallGaugeCNFEnsembleOppositeSupport
+        v13RealLinearSmallGaugeCNFEnsembleNeutralSkeleton ∧
+      HasMessageOppositePair
+        v13RealLinearSmallGaugeCNFEnsembleOppositeSupport
+        v13RealLinearSmallGaugeCNFEnsembleTarget ∧
+        ¬ ∃ f : Bool -> Bool,
+          ∀ omega : V13RealLinearSmallGaugeCNFEnsembleWorld,
+            v13RealLinearSmallGaugeCNFEnsembleTarget omega =
+              f (v13RealLinearSmallGaugeCNFEnsembleNeutralSkeleton omega) := by
+  have hPair :
+      PairNeutral
+        v13RealLinearSmallGaugeCNFEnsembleOppositeSupport
+        v13RealLinearSmallGaugeCNFEnsembleNeutralSkeleton :=
+    v13RealLinearSmallGaugeCNFEnsemble_pairNeutral
+  have hOpp :
+      HasMessageOppositePair
+        v13RealLinearSmallGaugeCNFEnsembleOppositeSupport
+        v13RealLinearSmallGaugeCNFEnsembleTarget :=
+    v13RealLinearSmallGaugeCNFEnsemble_hasMessageOppositePair
+  exact
+    ⟨hPair, hOpp,
+      neutralSkeleton_not_sufficient
+        v13RealLinearSmallGaugeCNFEnsembleOppositeSupport
+        v13RealLinearSmallGaugeCNFEnsembleNeutralSkeleton
+        v13RealLinearSmallGaugeCNFEnsembleTarget
+        hPair hOpp⟩
+
 /-! ## Gauge-buffered real linear CNF self-reduction -/
 
 /-- Explicit P=NP-side SAT decider object for the gauge-buffered real linear
