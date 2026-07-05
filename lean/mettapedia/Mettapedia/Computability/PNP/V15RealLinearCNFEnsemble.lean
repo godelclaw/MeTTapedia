@@ -5728,6 +5728,44 @@ theorem
       i₀)
     hW
 
+/-- The satisfying assignment carried by a no-target-rows Appendix-I CNF
+world projects to that world's fixed target bit. -/
+theorem
+    v13RealLinearNoTargetRowsGaugeCNFAppendixICNFWorld_projection_eq_target
+    {m : Nat} {i₀ : Fin m}
+    (omega :
+      RealM4CNFWorld
+        (v13RealLinearNoTargetRowsGaugeCNFAppendixICNFReadoutData i₀)) :
+    (v13RealLinearNoTargetRowsGaugeCNFAppendixICNFReadoutData i₀).projection
+        omega.publicInstance omega.assignment =
+      v13RealLinearNoTargetRowsGaugeCNFAppendixICNFWorldTarget omega := by
+  have hReadout :
+      realM4CNFWitnessReadout (fun bit => bit) omega.toWitness =
+        v13RealLinearNoTargetRowsTargetBit omega.publicInstance :=
+    v13RealLinearNoTargetRowsGaugeCNFAppendixICNFWitnessReadout_eq_targetBit
+      i₀ (by
+        exact ⟨omega.support, ⟨rfl, omega.sat⟩⟩)
+  simpa [RealM4CNFWorld.toWitness, realM4CNFWitnessReadout,
+    v13RealLinearNoTargetRowsGaugeCNFAppendixICNFWorldTarget,
+    realM4CNFMessageOfPublic,
+    v13RealLinearNoTargetRowsGaugeCNFAppendixICNFReadoutData] using
+    hReadout
+
+/-- The hidden witness extracted from a no-target-rows Appendix-I CNF world
+reads the same fixed target as the world itself. -/
+theorem
+    v13RealLinearNoTargetRowsGaugeCNFAppendixICNFWorld_toWitness_readout_eq_target
+    {m : Nat} {i₀ : Fin m}
+    (omega :
+      RealM4CNFWorld
+        (v13RealLinearNoTargetRowsGaugeCNFAppendixICNFReadoutData i₀)) :
+    realM4CNFWitnessReadout (fun bit => bit) omega.toWitness =
+      v13RealLinearNoTargetRowsGaugeCNFAppendixICNFWorldTarget omega := by
+  simpa [RealM4CNFWorld.toWitness, realM4CNFWitnessReadout]
+    using
+      v13RealLinearNoTargetRowsGaugeCNFAppendixICNFWorld_projection_eq_target
+        omega
+
 /-- Every satisfying assignment returned by SAT search for the concrete
 no-target-rows Appendix-I CNF data projects to the fixed target bit of its
 public instance. -/
