@@ -1380,6 +1380,18 @@ theorem v13RealLinearSmallNoTargetRowsCNFSATWorld_atomCompleteness :
     CDENF_semantics
       v13RealLinearSmallNoTargetRowsCNFSATWorldSemantics E
 
+/-- Structural `gaugeFaithfulness` transfer for the concrete no-target-row
+SAT-world surface: a raw gauge atom normalizes to exactly the concrete
+hidden-gauge predicate on satisfying SAT worlds. -/
+theorem v13RealLinearSmallNoTargetRowsCNFSATWorld_gaugeFaithfulness :
+    ∀ gamma : V13RealLinearSmallNoTargetRowsCNFGauge,
+      v13RealLinearSmallNoTargetRowsCNFSATWorldSemantics.SatNormal
+          (CDENF (.gauge gamma)) =
+        v13RealLinearSmallNoTargetRowsCNFSATWorldSemantics.gaugeSat
+          gamma := by
+  intro gamma
+  rfl
+
 /-- Structural `hiddenGaugeProduct` transfer for the concrete no-target-row
 SAT-world surface.  Every hidden-gauge action is satisfied because it
 preserves verifier validity, public input, and fixed message readout. -/
