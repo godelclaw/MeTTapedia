@@ -5425,6 +5425,140 @@ theorem
       v13RealLinearNoTargetRowsGaugeCNFAppendixICNFWitnessGaugeAction_true_ne
         W
 
+/-- For a fixed no-target-rows public instance, verifier-valid Appendix-I CNF
+witnesses are exactly the two choices of the free hidden-gauge bit. -/
+noncomputable def
+    v13RealLinearNoTargetRowsGaugeCNFAppendixICNFWitnessFiberEquivBool
+    {m : Nat} {i₀ : Fin m}
+    (Y : V13RealLinearNoTargetRowsWorld m i₀) :
+    {W :
+      RealM4CNFWitness
+        (v13RealLinearNoTargetRowsGaugeCNFAppendixICNFReadoutData i₀) //
+      realM4CNFVerifier
+        (v13RealLinearNoTargetRowsGaugeCNFAppendixICNFReadoutData i₀)
+        Y W} ≃ Bool where
+  toFun := fun W =>
+    v13RealLinearNoTargetRowsGaugeCNFAppendixICNFWitnessHiddenGauge
+      W.val
+  invFun := fun gamma =>
+    ⟨{ publicInstance := Y
+       assignment :=
+        v13RealLinearGaugeCNFAssignment
+          (v13RealLinearNoTargetRowsPublicInput Y) gamma },
+      by
+        refine ⟨trivial, ⟨rfl, ?_⟩⟩
+        simpa [v13RealLinearNoTargetRowsGaugeCNFAppendixICNFReadoutData,
+          v13RealLinearGaugeCNFVerifier] using
+          v13RealLinearGaugeCNFFormula_satisfied_assignment
+            (v13RealLinearNoTargetRowsPublicInput Y) gamma⟩
+  left_inv := by
+    intro W
+    rcases W with ⟨⟨YW, α⟩, hW⟩
+    apply Subtype.ext
+    change
+      ({ publicInstance := Y
+         assignment :=
+          v13RealLinearGaugeCNFAssignment
+            (v13RealLinearNoTargetRowsPublicInput Y)
+            (v13RealLinearGaugeCNFHiddenGauge α) } :
+        RealM4CNFWitness
+          (v13RealLinearNoTargetRowsGaugeCNFAppendixICNFReadoutData i₀)) =
+        { publicInstance := YW
+          assignment := α }
+    change True ∧
+      ∃ hPublic : YW = Y,
+        ConcreteCNF.IsSatFormula
+          ((v13RealLinearNoTargetRowsGaugeCNFAppendixICNFReadoutData
+            i₀).formula YW) α at hW
+    rcases hW with ⟨_hSupport, ⟨hPublic, hα⟩⟩
+    subst YW
+    let gauge : Bool := v13RealLinearGaugeCNFHiddenGauge α
+    change
+      ({ publicInstance := Y
+         assignment :=
+          v13RealLinearGaugeCNFAssignment
+            (v13RealLinearNoTargetRowsPublicInput Y) gauge } :
+        RealM4CNFWitness
+          (v13RealLinearNoTargetRowsGaugeCNFAppendixICNFReadoutData i₀)) =
+        { publicInstance := Y
+          assignment := α }
+    have hCanonical :
+        α =
+          v13RealLinearGaugeCNFAssignment
+            (v13RealLinearNoTargetRowsPublicInput Y)
+            gauge := by
+      dsimp [gauge]
+      exact
+        v13RealLinearNoTargetRowsGaugeCNFAppendixICNFSatAssignment_eq_canonical
+          hα
+    rw [RealM4CNFWitness.mk.injEq]
+    exact ⟨rfl, heq_of_eq hCanonical.symm⟩
+  right_inv := by
+    intro gamma
+    simp [v13RealLinearNoTargetRowsGaugeCNFAppendixICNFWitnessHiddenGauge,
+      v13RealLinearGaugeCNFHiddenGauge, v13RealLinearGaugeCNFAssignment]
+
+/-- Finite witness-fiber instance induced by the hidden-gauge coordinate. -/
+noncomputable instance
+    v13RealLinearNoTargetRowsGaugeCNFAppendixICNFWitnessFiberFintype
+    {m : Nat} {i₀ : Fin m}
+    (Y : V13RealLinearNoTargetRowsWorld m i₀) :
+    Fintype
+      {W :
+        RealM4CNFWitness
+          (v13RealLinearNoTargetRowsGaugeCNFAppendixICNFReadoutData i₀) //
+        realM4CNFVerifier
+          (v13RealLinearNoTargetRowsGaugeCNFAppendixICNFReadoutData i₀)
+          Y W} :=
+  Fintype.ofEquiv Bool
+    (v13RealLinearNoTargetRowsGaugeCNFAppendixICNFWitnessFiberEquivBool
+      Y).symm
+
+/-- The verifier-valid Appendix-I CNF witness fiber over a fixed public
+instance has cardinality exactly two. -/
+theorem
+    v13RealLinearNoTargetRowsGaugeCNFAppendixICNFWitnessFiber_card_eq_two
+    {m : Nat} {i₀ : Fin m}
+    (Y : V13RealLinearNoTargetRowsWorld m i₀) :
+    Fintype.card
+      {W :
+        RealM4CNFWitness
+          (v13RealLinearNoTargetRowsGaugeCNFAppendixICNFReadoutData i₀) //
+        realM4CNFVerifier
+          (v13RealLinearNoTargetRowsGaugeCNFAppendixICNFReadoutData i₀)
+          Y W} = 2 := by
+  have hCard :=
+    Fintype.card_congr
+      (v13RealLinearNoTargetRowsGaugeCNFAppendixICNFWitnessFiberEquivBool
+        Y)
+  simpa using hCard
+
+/-- Both hidden-gauge values occur among verifier-valid Appendix-I CNF
+witnesses over any fixed public instance. -/
+theorem
+    v13RealLinearNoTargetRowsGaugeCNFAppendixICNFWitnessFiber_exists_hiddenGauge
+    {m : Nat} {i₀ : Fin m}
+    (Y : V13RealLinearNoTargetRowsWorld m i₀)
+    (gamma : Bool) :
+    ∃ W :
+      RealM4CNFWitness
+        (v13RealLinearNoTargetRowsGaugeCNFAppendixICNFReadoutData i₀),
+      realM4CNFVerifier
+          (v13RealLinearNoTargetRowsGaugeCNFAppendixICNFReadoutData i₀)
+          Y W ∧
+        v13RealLinearNoTargetRowsGaugeCNFAppendixICNFWitnessHiddenGauge W =
+          gamma := by
+  let W :=
+    (v13RealLinearNoTargetRowsGaugeCNFAppendixICNFWitnessFiberEquivBool
+      Y).symm gamma
+  have hHidden :
+      v13RealLinearNoTargetRowsGaugeCNFAppendixICNFWitnessHiddenGauge
+          W.val =
+        gamma :=
+    (v13RealLinearNoTargetRowsGaugeCNFAppendixICNFWitnessFiberEquivBool
+      Y).right_inv gamma
+  exact ⟨W.val, W.property, hHidden⟩
+
 /-- Uniform bit-fixing data for the no-target-rows Appendix-I CNF spine.  The
 variable order is the concrete formula-syntax cover, and the explicit SAT
 decider is the P=NP-side hypothesis object. -/
