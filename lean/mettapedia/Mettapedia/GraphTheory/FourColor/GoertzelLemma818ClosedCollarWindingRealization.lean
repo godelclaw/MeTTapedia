@@ -2843,6 +2843,68 @@ theorem closedCollarWindingFreedomActualCollarEmbeddingSuppliesGeometryData_of_p
   exact ⟨previousData.toGeometryData⟩
 
 /--
+Witness upgrade for an already extracted embedded collar geometry: the same
+collar geometry is promoted to the previous-boundary witness geometry required
+by the current repair route.
+-/
+structure ClosedCollarWindingFreedomActualCollarGeometryPreviousBoundaryWitnessUpgrade
+    {V : Type} [DecidableEq V] {G : SimpleGraph V}
+    {normalForm : ClosedCollarWindingFreedomNormalFormRealization G}
+    (geometry :
+      ClosedCollarWindingFreedomActualCollarEmbeddingGeometryData
+        normalForm) where
+  previousGeometry :
+    PlanarBoundaryAnnulusPreviousBoundaryWitnessGeometry geometry.emb
+  collarGeometry_eq :
+    previousGeometry.toPlanarBoundaryAnnulusCollarGeometry =
+      geometry.collarGeometry
+
+def ClosedCollarWindingFreedomActualCollarGeometryPreviousBoundaryWitnessUpgrade.toPreviousBoundaryGeometryData
+    {V : Type} [DecidableEq V] {G : SimpleGraph V}
+    {normalForm : ClosedCollarWindingFreedomNormalFormRealization G}
+    {geometry :
+      ClosedCollarWindingFreedomActualCollarEmbeddingGeometryData
+        normalForm}
+    (upgrade :
+      ClosedCollarWindingFreedomActualCollarGeometryPreviousBoundaryWitnessUpgrade
+        geometry) :
+    ClosedCollarWindingFreedomActualCollarEmbeddingPreviousBoundaryGeometryData
+      normalForm where
+  emb := geometry.emb
+  previousGeometry := upgrade.previousGeometry
+  collarEdges_eq := by
+    simpa [upgrade.collarGeometry_eq] using geometry.collarEdges_eq
+  outerBoundaryEdges_eq := by
+    simpa [upgrade.collarGeometry_eq] using geometry.outerBoundaryEdges_eq
+
+/--
+Factored form of the first previous-boundary blocker: actual collar constraints
+must first supply ordinary embedded collar geometry, and that geometry must
+then upgrade to the previous-boundary witness geometry.
+-/
+def ClosedCollarWindingFreedomActualCollarGeometrySuppliesPreviousBoundaryWitnessUpgrade :
+    Prop :=
+  ∀ {V : Type} [DecidableEq V] {G : SimpleGraph V}
+    {normalForm : ClosedCollarWindingFreedomNormalFormRealization G},
+      (geometry :
+        ClosedCollarWindingFreedomActualCollarEmbeddingGeometryData
+          normalForm) →
+        Nonempty
+          (ClosedCollarWindingFreedomActualCollarGeometryPreviousBoundaryWitnessUpgrade
+            geometry)
+
+theorem closedCollarWindingFreedomActualCollarEmbeddingSuppliesPreviousBoundaryGeometryData_of_geometryData_of_previousBoundaryWitnessUpgrade
+    (hgeometry :
+      ClosedCollarWindingFreedomActualCollarEmbeddingSuppliesGeometryData)
+    (hupgrade :
+      ClosedCollarWindingFreedomActualCollarGeometrySuppliesPreviousBoundaryWitnessUpgrade) :
+    ClosedCollarWindingFreedomActualCollarEmbeddingSuppliesPreviousBoundaryGeometryData := by
+  intro V _hV G normalForm hactual
+  rcases hgeometry normalForm hactual with ⟨geometry⟩
+  rcases hupgrade geometry with ⟨upgrade⟩
+  exact ⟨upgrade.toPreviousBoundaryGeometryData⟩
+
+/--
 Second factored data obligation: once the embedded collar geometry is known,
 it supplies the cut-open radial face used by the normal-form n6 extraction.
 -/
@@ -7378,6 +7440,30 @@ theorem section92Step4RepairedByFactoredPreviousBoundaryGeometryRadialFaceN6Audi
       (closedCollarWindingFreedomEveryNormalFormHasPreviousBoundaryRadialFaceN6AuditedArchiveExtraction_of_previousBoundaryGeometryData_of_radialFace_of_radialFaceN6_of_auditedArchiveKey
         hgeometry hradial hn6 hkeys)
       hrows
+
+/--
+Previous-boundary repair target with the first geometric blocker split into
+ordinary embedded collar geometry plus a previous-boundary witness upgrade.
+This is the route-facing form of the next serious geometric pressure point.
+-/
+def Section92Step4RepairedByFactoredCollarGeometryPreviousBoundaryWitnessRadialFaceN6AuditedArchiveExtractionAndAuditedRowsTarget :
+    Prop :=
+  ClosedCollarWindingFreedomActualCollarEmbeddingSuppliesGeometryData →
+    ClosedCollarWindingFreedomActualCollarGeometrySuppliesPreviousBoundaryWitnessUpgrade →
+      ClosedCollarWindingFreedomActualCollarGeometrySuppliesRadialFaceExtraction →
+        ClosedCollarWindingFreedomEveryRadialFaceNormalFormHasN6Representation →
+          ClosedCollarWindingFreedomEveryRadialFaceN6RepresentationHasAuditedArchiveKey →
+            ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceAuditedRowsCoveredByLab →
+              ClosedCollarWindingFreedomNonrealizableInNormalForm
+
+theorem section92Step4RepairedByFactoredCollarGeometryPreviousBoundaryWitnessRadialFaceN6AuditedArchiveExtractionAndAuditedRowsTarget :
+    Section92Step4RepairedByFactoredCollarGeometryPreviousBoundaryWitnessRadialFaceN6AuditedArchiveExtractionAndAuditedRowsTarget := by
+  intro hgeometry hupgrade hradial hn6 hkeys hrows
+  exact
+    section92Step4RepairedByFactoredPreviousBoundaryGeometryRadialFaceN6AuditedArchiveExtractionAndAuditedRowsTarget
+      (closedCollarWindingFreedomActualCollarEmbeddingSuppliesPreviousBoundaryGeometryData_of_geometryData_of_previousBoundaryWitnessUpgrade
+        hgeometry hupgrade)
+      hradial hn6 hkeys hrows
 
 /--
 Named remaining normal-form blockers after the finite ten-row radial-face archive
