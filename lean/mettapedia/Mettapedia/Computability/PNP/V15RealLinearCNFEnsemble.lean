@@ -7665,6 +7665,46 @@ with acting on the reified Appendix-I CNF world. -/
         v13RealLinearNoTargetRowsGaugeCNFAppendixICNFWitnessGaugeAction,
         v13RealLinearNoTargetRowsGaugeCNFAppendixICNFGaugeAction]
 
+/-- Reifying the explicit P=NP-side Appendix-I CNF self-reduction witness
+produces exactly the canonical world with hidden gauge `false`. -/
+theorem
+    v13RealLinearNoTargetRowsGaugeCNFAppendixICNFSelfReductionWorld_eq_base_false
+    {m : Nat} {i₀ : Fin m}
+    (D : V13RealLinearGaugeCNFPNPSATDecider m)
+    (Y : V13RealLinearNoTargetRowsWorld m i₀) :
+    v13RealLinearNoTargetRowsGaugeCNFAppendixICNFWorldOfValidWitness
+        (v13RealLinearNoTargetRowsGaugeCNFAppendixICNFSelfReductionWitness
+          D Y)
+        (v13RealLinearNoTargetRowsGaugeCNFAppendixICNFSelfReductionWitness_verifier
+          D Y) =
+      v13RealLinearNoTargetRowsGaugeCNFAppendixICNFWorldOfBase
+        Y false := by
+  rw [RealM4CNFWorld.mk.injEq]
+  exact
+    ⟨rfl, heq_of_eq
+      (v13RealLinearNoTargetRowsGaugeCNFAppendixICNFSelfReductionWitness_assignment_eq_base_false
+        D Y)⟩
+
+/-- The Appendix-I CNF world reified from the explicit P=NP-side
+self-reduction witness is the canonical `false` hidden-gauge representative.
+-/
+theorem
+    v13RealLinearNoTargetRowsGaugeCNFAppendixICNFSelfReductionWorld_hiddenGauge_false
+    {m : Nat} {i₀ : Fin m}
+    (D : V13RealLinearGaugeCNFPNPSATDecider m)
+    (Y : V13RealLinearNoTargetRowsWorld m i₀) :
+    v13RealLinearNoTargetRowsGaugeCNFAppendixICNFHiddenGauge
+        (v13RealLinearNoTargetRowsGaugeCNFAppendixICNFWorldOfValidWitness
+          (v13RealLinearNoTargetRowsGaugeCNFAppendixICNFSelfReductionWitness
+            D Y)
+          (v13RealLinearNoTargetRowsGaugeCNFAppendixICNFSelfReductionWitness_verifier
+            D Y)) =
+      false := by
+  rw [
+    v13RealLinearNoTargetRowsGaugeCNFAppendixICNFSelfReductionWorld_eq_base_false
+      D Y]
+  rfl
+
 /-- Projecting the world-level Appendix-I CNF hidden-gauge action to a witness
 is exactly the witness-level hidden-gauge action. -/
 @[simp] theorem
