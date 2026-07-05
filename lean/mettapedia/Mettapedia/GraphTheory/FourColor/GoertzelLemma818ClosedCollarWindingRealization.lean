@@ -1966,6 +1966,16 @@ structure ClosedCollarWindingFreedomSimplePatchN6NormalFormRepresentation
   annular_eq : representation.annular = normalForm.annular
 
 /--
+A six-internal simple-patch representation whose normal-form annulus already
+comes with the cut-open radial-face datum needed by the embedding lab.
+-/
+structure ClosedCollarWindingFreedomSimplePatchN6NormalFormRadialFaceRepresentation
+    (G : SimpleGraph V) where
+  normalFormRadialFace : ClosedCollarWindingFreedomNormalFormRadialFaceRealization G
+  representation : ClosedCollarWindingFreedomSimplePatchN6Representation G
+  annular_eq : normalFormRadialFace.normalForm.annular = representation.annular
+
+/--
 A normal-form realization that survives the exhausted six-internal
 simple-patch lab as a post-template-exclusion pass.  The final field is the
 finite lab certificate that such a pass was counted.
@@ -2290,6 +2300,37 @@ theorem closedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSampleNoRadialFac
   exact
     closedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSample_noRadialFaceRotationCandidate
       candidate
+
+/--
+Direct sampled obstruction once the normal-form realization already supplies
+the cut-open radial face.  This is the immediate bridge from actual embedded
+collar data to the archived rotation-system verdict; it still requires the
+finite lab coverage map for the representation class.
+-/
+def ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSampleNoNormalFormRadialFaceRepresentation :
+    Prop :=
+  ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSampleRadialFaceCoveredByLab →
+    ∀ {V : Type} {G : SimpleGraph V},
+      (data :
+        ClosedCollarWindingFreedomSimplePatchN6NormalFormRadialFaceRepresentation G) →
+        (data.representation.patchTopologyIndex, data.representation.radialOrderIndex.1) ∈
+            closedCollarSimplePatchN6AnnularEmbeddingSampleCases →
+          False
+
+theorem closedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSampleNoNormalFormRadialFaceRepresentation :
+    ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSampleNoNormalFormRadialFaceRepresentation := by
+  intro hcovered V G data hsample
+  have hradial :
+      ClosedCollarWindingFreedomAnnularRealization.RadialFaceCoherent
+        data.representation.annular := by
+    have hbase :
+        ClosedCollarWindingFreedomAnnularRealization.RadialFaceCoherent
+          data.normalFormRadialFace.normalForm.annular :=
+      ⟨data.normalFormRadialFace.radialFace⟩
+    simpa [data.annular_eq] using hbase
+  exact
+    closedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSampleNoRadialFaceCoherentRepresentation
+      hcovered data.representation hsample hradial
 
 /--
 Missing geometric reduction for using the radial-face sample against the
