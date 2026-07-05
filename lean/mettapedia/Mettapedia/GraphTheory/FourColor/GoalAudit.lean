@@ -570,6 +570,41 @@ theorem closedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceMaxCutH
   closedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceMaxCutHistogramSoundness_of_rowHistogramSoundness
     hrowSound
 
+theorem closedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceRowCardinalitySound_of_radialCutCardinalitySound_audit
+    (hmaxcut :
+      ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceRowMaxCutSeparationEvidence)
+    (hcut :
+      ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialCutCardinalitySound) :
+    ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceRowCardinalitySound :=
+  closedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceRowCardinalitySound_of_radialCutCardinalitySound
+    hmaxcut hcut
+
+theorem closedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceRowHistogramEntrySound_of_rowCardinalitySound_of_maxHistogramCountSound_audit
+    (hrowCard :
+      ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceRowCardinalitySound)
+    (hhist :
+      ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceMaxHistogramCountSound) :
+    ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceRowHistogramEntrySound :=
+  closedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceRowHistogramEntrySound_of_rowCardinalitySound_of_maxHistogramCountSound
+    hrowCard hhist
+
+theorem closedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceRowHistogramSoundness_of_maxCutHistogramSoundness_audit
+    (hmaxcut :
+      ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceRowMaxCutSeparationEvidence)
+    (hsound :
+      ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceMaxCutHistogramSoundness) :
+    ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceRowHistogramSoundness :=
+  closedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceRowHistogramSoundness_of_maxCutHistogramSoundness
+    hmaxcut hsound
+
+theorem closedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceRowHistogramSoundness_iff_maxCutHistogramSoundness_audit
+    (hmaxcut :
+      ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceRowMaxCutSeparationEvidence) :
+    ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceRowHistogramSoundness ↔
+      ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceMaxCutHistogramSoundness :=
+  closedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceRowHistogramSoundness_iff_maxCutHistogramSoundness
+    hmaxcut
+
 theorem closedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceMaxCutCoveredByLab_of_maxCutSoundness_audit
     (hmaxcut :
       ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceRowMaxCutSeparationEvidence)
