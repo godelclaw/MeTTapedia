@@ -3776,6 +3776,57 @@ def V13RealLinearNoTargetRowsCNFWitnessChangingGaugeAction {m : Nat}
       ∃ omega,
         (act true omega).assignment ≠ omega.assignment
 
+/-- In the ungauged no-target-rows CNF surface, public CNF input equality
+already fixes the satisfying witness assignment. -/
+theorem v13RealLinearNoTargetRowsCNF_assignment_eq_of_publicInput_eq
+    {m : Nat} {i₀ : Fin m}
+    {omega₀ omega₁ : V13RealLinearNoTargetRowsCNFWorld m i₀}
+    (hPublic :
+      v13RealLinearNoTargetRowsPublicInput omega₀.base =
+        v13RealLinearNoTargetRowsPublicInput omega₁.base) :
+    omega₀.assignment = omega₁.assignment := by
+  have hOmega₀ :
+      omega₀.assignment =
+        v13RealLinearCNFDecodedAssignment
+          (v13RealLinearNoTargetRowsPublicInput omega₀.base) := by
+    funext j
+    exact v13RealLinearCNFFormula_forces_decodedBit omega₀.sat j
+  have hOmega₁ :
+      omega₁.assignment =
+        v13RealLinearCNFDecodedAssignment
+          (v13RealLinearNoTargetRowsPublicInput omega₁.base) := by
+    funext j
+    exact v13RealLinearCNFFormula_forces_decodedBit omega₁.sat j
+  calc
+    omega₀.assignment =
+        v13RealLinearCNFDecodedAssignment
+          (v13RealLinearNoTargetRowsPublicInput omega₀.base) := hOmega₀
+    _ =
+        v13RealLinearCNFDecodedAssignment
+          (v13RealLinearNoTargetRowsPublicInput omega₁.base) := by
+      rw [hPublic]
+    _ = omega₁.assignment := hOmega₁.symm
+
+/-- A nontrivial hidden public fiber for the ungauged no-target-rows CNF
+surface would be two verifier-valid worlds over the same public CNF input
+with distinct satisfying assignments. -/
+def V13RealLinearNoTargetRowsCNFNontrivialPublicFiber {m : Nat}
+    (i₀ : Fin m) : Prop :=
+  ∃ omega₀ omega₁ : V13RealLinearNoTargetRowsCNFWorld m i₀,
+    v13RealLinearNoTargetRowsPublicInput omega₀.base =
+      v13RealLinearNoTargetRowsPublicInput omega₁.base ∧
+    omega₀.assignment ≠ omega₁.assignment
+
+/-- Named singleton-fiber obstruction for the ungauged no-target-rows CNF
+surface: there is no hidden witness degree of freedom over fixed public CNF
+syntax before adding the gauge buffer. -/
+theorem v13RealLinearNoTargetRowsCNF_nontrivialPublicFiber_obstruction
+    {m : Nat} (i₀ : Fin m) :
+    ¬ V13RealLinearNoTargetRowsCNFNontrivialPublicFiber i₀ := by
+  rintro ⟨omega₀, omega₁, hPublic, hDifferent⟩
+  exact hDifferent
+    (v13RealLinearNoTargetRowsCNF_assignment_eq_of_publicInput_eq hPublic)
+
 /-- Named hidden-gauge obstruction for the all-bits-locking real linear CNF:
 because every public instance has a unique satisfying assignment, no
 public-preserving action can change a satisfying witness assignment.  The
@@ -3786,28 +3837,9 @@ theorem
     {m : Nat} (i₀ : Fin m) :
     ¬ V13RealLinearNoTargetRowsCNFWitnessChangingGaugeAction i₀ := by
   rintro ⟨act, hPublic, omega, hchanges⟩
-  have hAct :
-      (act true omega).assignment =
-        v13RealLinearCNFDecodedAssignment
-          (v13RealLinearNoTargetRowsPublicInput
-            (act true omega).base) := by
-    funext j
-    exact v13RealLinearCNFFormula_forces_decodedBit
-      (act true omega).sat j
-  have hOmega :
-      omega.assignment =
-        v13RealLinearCNFDecodedAssignment
-          (v13RealLinearNoTargetRowsPublicInput omega.base) := by
-    funext j
-    exact v13RealLinearCNFFormula_forces_decodedBit omega.sat j
-  have hDecoded :
-      v13RealLinearCNFDecodedAssignment
-          (v13RealLinearNoTargetRowsPublicInput
-            (act true omega).base) =
-        v13RealLinearCNFDecodedAssignment
-          (v13RealLinearNoTargetRowsPublicInput omega.base) := by
-    rw [hPublic omega]
-  exact hchanges (hAct.trans (hDecoded.trans hOmega.symm))
+  exact hchanges
+    (v13RealLinearNoTargetRowsCNF_assignment_eq_of_publicInput_eq
+      (hPublic omega))
 
 /-- Public-coordinate history field lifted from the base no-target-rows
 surface to the concrete CNF world. -/
