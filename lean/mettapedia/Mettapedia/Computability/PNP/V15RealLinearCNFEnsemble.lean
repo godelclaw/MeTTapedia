@@ -445,6 +445,54 @@ theorem v13RealLinearNoTargetRowsCNF_singleMessage {m : Nat}
     _ = v13RealLinearNoTargetRowsCNFTarget omega₁ :=
       (v13RealLinearNoTargetRowsCNFReadout_eq_publicMessage omega₁).symm
 
+/-- A manuscript-facing hidden gauge action should be able to move the hidden
+witness while preserving the public instance.  This shape asks only for that
+witness-changing part over the concrete no-target-rows CNF world. -/
+def V13RealLinearNoTargetRowsCNFWitnessChangingGaugeAction {m : Nat}
+    (i₀ : Fin m) : Prop :=
+  ∃ act :
+      Bool ->
+        V13RealLinearNoTargetRowsCNFWorld m i₀ ->
+          V13RealLinearNoTargetRowsCNFWorld m i₀,
+    (∀ omega,
+      v13RealLinearNoTargetRowsPublicInput (act true omega).base =
+        v13RealLinearNoTargetRowsPublicInput omega.base) ∧
+      ∃ omega,
+        (act true omega).assignment ≠ omega.assignment
+
+/-- Named hidden-gauge obstruction for the all-bits-locking real linear CNF:
+because every public instance has a unique satisfying assignment, no
+public-preserving action can change a satisfying witness assignment.  The
+current CNF therefore lacks the free hidden witness coordinate needed for a
+nontrivial manuscript-style gauge action. -/
+theorem
+    v13RealLinearNoTargetRowsCNF_hiddenWitnessGaugeAction_obstruction
+    {m : Nat} (i₀ : Fin m) :
+    ¬ V13RealLinearNoTargetRowsCNFWitnessChangingGaugeAction i₀ := by
+  rintro ⟨act, hPublic, omega, hchanges⟩
+  have hAct :
+      (act true omega).assignment =
+        v13RealLinearCNFDecodedAssignment
+          (v13RealLinearNoTargetRowsPublicInput
+            (act true omega).base) := by
+    funext j
+    exact v13RealLinearCNFFormula_forces_decodedBit
+      (act true omega).sat j
+  have hOmega :
+      omega.assignment =
+        v13RealLinearCNFDecodedAssignment
+          (v13RealLinearNoTargetRowsPublicInput omega.base) := by
+    funext j
+    exact v13RealLinearCNFFormula_forces_decodedBit omega.sat j
+  have hDecoded :
+      v13RealLinearCNFDecodedAssignment
+          (v13RealLinearNoTargetRowsPublicInput
+            (act true omega).base) =
+        v13RealLinearCNFDecodedAssignment
+          (v13RealLinearNoTargetRowsPublicInput omega.base) := by
+    rw [hPublic omega]
+  exact hchanges (hAct.trans (hDecoded.trans hOmega.symm))
+
 /-- Public-coordinate history field lifted from the base no-target-rows
 surface to the concrete CNF world. -/
 noncomputable def v13RealLinearNoTargetRowsCNFPublicCoordinateField
