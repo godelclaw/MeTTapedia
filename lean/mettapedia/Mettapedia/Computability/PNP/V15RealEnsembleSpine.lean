@@ -5115,6 +5115,72 @@ def ofCoverageRigidityAndAddressSyntax
 end RealM4OfficialPToDeciderUpperSupportData
 
 /--
+Construction-side support for the decomposed official P-to-decider bridge
+when the public-message invariant is carried as explicit locked-message data.
+Unlike `RealM4OfficialPToDeciderUpperSupportData`, this support package does
+not need a default message or a raw D.8 proposition at the theorem boundary.
+-/
+structure RealM4OfficialPToDeciderLockedMessageUpperSupportData
+    {PublicLock : Type g} {Quotient : Type h}
+    {LockAux : Type i} {Message : Type j}
+    {CNFPublic : Type k} {Var : CNFPublic -> Type l}
+    {Witness : CNFPublic -> Type l}
+    (D : AppendixICNFReadoutData
+      PublicLock Quotient LockAux Message CNFPublic Var Witness) where
+  coverageData : RealM4PublicLockCoverageData D
+  lockedMessageData : RealM4LockedMessageRigidityData D.core
+  uniformSupport : RealM4CNFUniformSupportData D
+
+namespace RealM4OfficialPToDeciderLockedMessageUpperSupportData
+
+variable {PublicLock : Type g} {Quotient : Type h}
+variable {LockAux : Type i} {Message : Type j}
+variable {CNFPublic : Type k} {Var : CNFPublic -> Type l}
+variable {Witness : CNFPublic -> Type l}
+variable
+  {D : AppendixICNFReadoutData
+    PublicLock Quotient LockAux Message CNFPublic Var Witness}
+
+def ofCoverageLockedMessageDataAndUniformSupport
+    (coverageData : RealM4PublicLockCoverageData D)
+    (lockedMessageData : RealM4LockedMessageRigidityData D.core)
+    (uniformSupport : RealM4CNFUniformSupportData D) :
+    RealM4OfficialPToDeciderLockedMessageUpperSupportData D where
+  coverageData := coverageData
+  lockedMessageData := lockedMessageData
+  uniformSupport := uniformSupport
+
+def ofCoverageLockedMessageDataAndVariableNatCoding
+    (coverageData : RealM4PublicLockCoverageData D)
+    (lockedMessageData : RealM4LockedMessageRigidityData D.core)
+    (variableNatCoding : RealM4CNFVariableNatCodingData D) :
+    RealM4OfficialPToDeciderLockedMessageUpperSupportData D :=
+  ofCoverageLockedMessageDataAndUniformSupport coverageData lockedMessageData
+    (realM4_uniformCNFSupport_of_variableNatCoding variableNatCoding)
+
+def ofCoverageLockedMessageDataAndEncodableSyntax
+    (coverageData : RealM4PublicLockCoverageData D)
+    (lockedMessageData : RealM4LockedMessageRigidityData D.core)
+    (variableSyntax : RealM4CNFVariableEncodableSyntaxData D) :
+    RealM4OfficialPToDeciderLockedMessageUpperSupportData D :=
+  ofCoverageLockedMessageDataAndVariableNatCoding coverageData
+    lockedMessageData
+    (realM4_variableNatCoding_of_encodableSyntax variableSyntax)
+
+def ofCoverageLockedMessageDataAndAddressSyntax
+    {Address : CNFPublic -> Type a}
+    (coverageData : RealM4PublicLockCoverageData D)
+    (lockedMessageData : RealM4LockedMessageRigidityData D.core)
+    (variableAddressSyntax :
+      RealM4CNFVariableAddressSyntaxData (Address := Address) D) :
+    RealM4OfficialPToDeciderLockedMessageUpperSupportData D :=
+  ofCoverageLockedMessageDataAndEncodableSyntax coverageData
+    lockedMessageData
+    (realM4_variableEncodableSyntax_of_addressSyntax variableAddressSyntax)
+
+end RealM4OfficialPToDeciderLockedMessageUpperSupportData
+
+/--
 Official-language part of the decomposed P-to-decider bridge.  This is the
 remaining Cook-style bridge content after construction-side M4 support has
 been separated: name the NP language, prove it is in NP, and show that
@@ -5181,6 +5247,45 @@ structure RealM4OfficialPToConstantDecoderRegimeData
       RealM4UniformConstantDecoderRegime F
         (S.uniformSupport.withPNPDecider (P.pnpDeciderFamily_of_inP hP))
 
+/-- Official-language package for the locked-message-data bridge route. -/
+structure RealM4OfficialPToDeciderLockedMessageLanguageData
+    {PublicLock : Type g} {Quotient : Type h}
+    {LockAux : Type i} {Message : Type j}
+    {CNFPublic : Type k} {Var : CNFPublic -> Type l}
+    {Witness : CNFPublic -> Type l}
+    (D : AppendixICNFReadoutData
+      PublicLock Quotient LockAux Message CNFPublic Var Witness)
+    (F : CompressionLowerFramework)
+    (C : CookStylePNPClassInterface.{p})
+    (S : RealM4OfficialPToDeciderLockedMessageUpperSupportData D) where
+  separatedLanguage : C.Language
+  separatedLanguage_inNP : C.inNP separatedLanguage
+  pnpDeciderFamily_of_inP :
+    C.inP separatedLanguage -> RealM4ExplicitPNPDeciderFamily D
+  constantDecoderRegime_of_inP :
+    ∀ hP : C.inP separatedLanguage,
+      RealM4UniformConstantDecoderRegime F
+        (S.uniformSupport.withPNPDecider (pnpDeciderFamily_of_inP hP))
+
+/-- The P-membership-to-constant-decoder-regime obligation for the
+locked-message-data official bridge route. -/
+structure RealM4OfficialPToLockedMessageConstantDecoderRegimeData
+    {PublicLock : Type g} {Quotient : Type h}
+    {LockAux : Type i} {Message : Type j}
+    {CNFPublic : Type k} {Var : CNFPublic -> Type l}
+    {Witness : CNFPublic -> Type l}
+    (D : AppendixICNFReadoutData
+      PublicLock Quotient LockAux Message CNFPublic Var Witness)
+    (F : CompressionLowerFramework)
+    (C : CookStylePNPClassInterface.{p})
+    (S : RealM4OfficialPToDeciderLockedMessageUpperSupportData D)
+    (N : RealM4OfficialLanguageNPData C)
+    (P : RealM4OfficialPToDeciderFamilyData D C N) where
+  constantDecoderRegime_of_inP :
+    ∀ hP : C.inP N.separatedLanguage,
+      RealM4UniformConstantDecoderRegime F
+        (S.uniformSupport.withPNPDecider (P.pnpDeciderFamily_of_inP hP))
+
 namespace RealM4OfficialPToDeciderLanguageData
 
 variable {PublicLock : Type g} {Quotient : Type h}
@@ -5230,6 +5335,49 @@ def pToConstantDecoderRegimeData
 
 end RealM4OfficialPToDeciderLanguageData
 
+namespace RealM4OfficialPToDeciderLockedMessageLanguageData
+
+variable {PublicLock : Type g} {Quotient : Type h}
+variable {LockAux : Type i} {Message : Type j}
+variable {CNFPublic : Type k} {Var : CNFPublic -> Type l}
+variable {Witness : CNFPublic -> Type l}
+variable
+  {D : AppendixICNFReadoutData
+    PublicLock Quotient LockAux Message CNFPublic Var Witness}
+variable {F : CompressionLowerFramework}
+variable {C : CookStylePNPClassInterface.{p}}
+variable {S : RealM4OfficialPToDeciderLockedMessageUpperSupportData D}
+
+def ofSplitOfficialData
+    (N : RealM4OfficialLanguageNPData C)
+    (P : RealM4OfficialPToDeciderFamilyData D C N)
+    (R : RealM4OfficialPToLockedMessageConstantDecoderRegimeData
+      D F C S N P) :
+    RealM4OfficialPToDeciderLockedMessageLanguageData D F C S where
+  separatedLanguage := N.separatedLanguage
+  separatedLanguage_inNP := N.separatedLanguage_inNP
+  pnpDeciderFamily_of_inP := P.pnpDeciderFamily_of_inP
+  constantDecoderRegime_of_inP := R.constantDecoderRegime_of_inP
+
+def languageNPData
+    (L : RealM4OfficialPToDeciderLockedMessageLanguageData D F C S) :
+    RealM4OfficialLanguageNPData C where
+  separatedLanguage := L.separatedLanguage
+  separatedLanguage_inNP := L.separatedLanguage_inNP
+
+def pToDeciderFamilyData
+    (L : RealM4OfficialPToDeciderLockedMessageLanguageData D F C S) :
+    RealM4OfficialPToDeciderFamilyData D C L.languageNPData where
+  pnpDeciderFamily_of_inP := L.pnpDeciderFamily_of_inP
+
+def pToConstantDecoderRegimeData
+    (L : RealM4OfficialPToDeciderLockedMessageLanguageData D F C S) :
+    RealM4OfficialPToLockedMessageConstantDecoderRegimeData D F C S
+      L.languageNPData L.pToDeciderFamilyData where
+  constantDecoderRegime_of_inP := L.constantDecoderRegime_of_inP
+
+end RealM4OfficialPToDeciderLockedMessageLanguageData
+
 /--
 Decomposed official upper bridge.  This is the next sharper target behind
 `RealM4OfficialPToUpperBridgeData`: P-membership of the named NP language must
@@ -5258,6 +5406,29 @@ structure RealM4OfficialPToDeciderUpperBridgeData
       RealM4UniformConstantDecoderRegime F
         (uniformSupport.withPNPDecider (pnpDeciderFamily_of_inP hP))
 
+/-- Decomposed official upper bridge whose construction-side support carries
+explicit locked-message public-message data. -/
+structure RealM4OfficialPToDeciderLockedMessageUpperBridgeData
+    {PublicLock : Type g} {Quotient : Type h}
+    {LockAux : Type i} {Message : Type j}
+    {CNFPublic : Type k} {Var : CNFPublic -> Type l}
+    {Witness : CNFPublic -> Type l}
+    (D : AppendixICNFReadoutData
+      PublicLock Quotient LockAux Message CNFPublic Var Witness)
+    (F : CompressionLowerFramework)
+    (C : CookStylePNPClassInterface.{p}) where
+  separatedLanguage : C.Language
+  separatedLanguage_inNP : C.inNP separatedLanguage
+  coverageData : RealM4PublicLockCoverageData D
+  lockedMessageData : RealM4LockedMessageRigidityData D.core
+  uniformSupport : RealM4CNFUniformSupportData D
+  pnpDeciderFamily_of_inP :
+    C.inP separatedLanguage -> RealM4ExplicitPNPDeciderFamily D
+  constantDecoderRegime_of_inP :
+    ∀ hP : C.inP separatedLanguage,
+      RealM4UniformConstantDecoderRegime F
+        (uniformSupport.withPNPDecider (pnpDeciderFamily_of_inP hP))
+
 /-- Reassemble the monolithic P-to-decider bridge from separated construction
 support and official-language implication data. -/
 def realM4_officialPToDeciderUpperBridgeData_of_supportAndLanguage
@@ -5277,6 +5448,28 @@ def realM4_officialPToDeciderUpperBridgeData_of_supportAndLanguage
   defaultMessage := S.defaultMessage
   coverageData := S.coverageData
   lockedMessageRigidity := S.lockedMessageRigidity
+  uniformSupport := S.uniformSupport
+  pnpDeciderFamily_of_inP := L.pnpDeciderFamily_of_inP
+  constantDecoderRegime_of_inP := L.constantDecoderRegime_of_inP
+
+/-- Reassemble the locked-message-data P-to-decider bridge from separated
+construction support and official-language implication data. -/
+def realM4_officialPToDeciderLockedMessageUpperBridgeData_of_supportAndLanguage
+    {PublicLock : Type g} {Quotient : Type h}
+    {LockAux : Type i} {Message : Type j}
+    {CNFPublic : Type k} {Var : CNFPublic -> Type l}
+    {Witness : CNFPublic -> Type l}
+    {D : AppendixICNFReadoutData
+      PublicLock Quotient LockAux Message CNFPublic Var Witness}
+    {F : CompressionLowerFramework}
+    {C : CookStylePNPClassInterface.{p}}
+    (S : RealM4OfficialPToDeciderLockedMessageUpperSupportData D)
+    (L : RealM4OfficialPToDeciderLockedMessageLanguageData D F C S) :
+    RealM4OfficialPToDeciderLockedMessageUpperBridgeData D F C where
+  separatedLanguage := L.separatedLanguage
+  separatedLanguage_inNP := L.separatedLanguage_inNP
+  coverageData := S.coverageData
+  lockedMessageData := S.lockedMessageData
   uniformSupport := S.uniformSupport
   pnpDeciderFamily_of_inP := L.pnpDeciderFamily_of_inP
   constantDecoderRegime_of_inP := L.constantDecoderRegime_of_inP
@@ -5310,6 +5503,33 @@ noncomputable def upperBridge
 
 end RealM4OfficialPToDeciderUpperBridgeData
 
+namespace RealM4OfficialPToDeciderLockedMessageUpperBridgeData
+
+variable {PublicLock : Type g} {Quotient : Type h}
+variable {LockAux : Type i} {Message : Type j}
+variable {CNFPublic : Type k} {Var : CNFPublic -> Type l}
+variable {Witness : CNFPublic -> Type l}
+variable
+  {D : AppendixICNFReadoutData
+    PublicLock Quotient LockAux Message CNFPublic Var Witness}
+variable {F : CompressionLowerFramework}
+variable {C : CookStylePNPClassInterface.{p}}
+
+noncomputable def upperBridge
+    (B : RealM4OfficialPToDeciderLockedMessageUpperBridgeData D F C) :
+    RealM4OfficialPToUpperBridgeData D F C where
+  separatedLanguage := B.separatedLanguage
+  separatedLanguage_inNP := B.separatedLanguage_inNP
+  upperDischarge_of_inP := by
+    intro hP
+    exact
+      RealM4SelfReductionUpperExplicitPNPDischarge.ofCoverageDataAndLockedMessageData
+        B.coverageData B.lockedMessageData B.uniformSupport
+        (B.pnpDeciderFamily_of_inP hP)
+        (B.constantDecoderRegime_of_inP hP)
+
+end RealM4OfficialPToDeciderLockedMessageUpperBridgeData
+
 /-- Top-level alias exposing the construction of the strict upper bridge from
 the decomposed P-membership-to-decider data. -/
 noncomputable def realM4_officialUpperBridge_of_pMembershipDeciderData
@@ -5322,6 +5542,21 @@ noncomputable def realM4_officialUpperBridge_of_pMembershipDeciderData
     {F : CompressionLowerFramework}
     {C : CookStylePNPClassInterface.{p}}
     (B : RealM4OfficialPToDeciderUpperBridgeData D F C) :
+    RealM4OfficialPToUpperBridgeData D F C :=
+  B.upperBridge
+
+/-- Top-level alias exposing the strict upper bridge from the locked-message
+P-membership-to-decider data. -/
+noncomputable def realM4_officialUpperBridge_of_pMembershipDeciderLockedMessageData
+    {PublicLock : Type g} {Quotient : Type h}
+    {LockAux : Type i} {Message : Type j}
+    {CNFPublic : Type k} {Var : CNFPublic -> Type l}
+    {Witness : CNFPublic -> Type l}
+    {D : AppendixICNFReadoutData
+      PublicLock Quotient LockAux Message CNFPublic Var Witness}
+    {F : CompressionLowerFramework}
+    {C : CookStylePNPClassInterface.{p}}
+    (B : RealM4OfficialPToDeciderLockedMessageUpperBridgeData D F C) :
     RealM4OfficialPToUpperBridgeData D F C :=
   B.upperBridge
 
@@ -5485,6 +5720,85 @@ theorem realM4_exists_np_not_p_from_endgameMechanicalData_pMembershipDeciderBrid
     {C : CookStylePNPClassInterface.{p}}
     (bridge :
       RealM4OfficialPToDeciderUpperBridgeData D M.lowerFramework C) :
+    ∃ separatedLanguage : C.Language,
+      C.inNP separatedLanguage ∧ ¬ C.inP separatedLanguage :=
+  realM4_exists_np_not_p_from_endgameMechanicalData_upperBridge
+    M starSWHardness safeQSSM boundedGaugeIncidence boundaryMixing
+    bridge.upperBridge
+
+/--
+Official endpoint from the locked-message-data decomposed
+P-membership-to-decider bridge.  This is the same Cook-style route as the
+ordinary P-to-decider bridge, but the upper support package carries the
+public-message invariant as explicit locked-message data.
+-/
+theorem realM4_officialSeparation_from_endgameMechanicalData_pMembershipDeciderLockedMessageBridge
+    {Omega : Type u} [Fintype Omega] [Nonempty Omega]
+    {Public : Type v} {Neutral : Type w} {Safe : Type x}
+    {Gauge : Type y} {Transcript : Type z} [DecidableEq Transcript]
+    {Pair : Type a} [Fintype Pair]
+    {Stage : Type b} {Branch : Type c}
+    {HistoryAtom : Type d} {Pivot : Type e}
+    {Observer : Type f} {Output : Type f} {Skeleton : Type w}
+    {PublicLock : Type g} {Quotient : Type h}
+    {LockAux : Type i} {Message : Type j}
+    {CNFPublic : Type k} {Var : CNFPublic -> Type l}
+    {Witness : CNFPublic -> Type l}
+    {D : AppendixICNFReadoutData
+      PublicLock Quotient LockAux Message CNFPublic Var Witness}
+    (M : RealM4EndgameMechanicalData Omega Public Neutral Safe Gauge
+      Transcript Pair Stage Branch HistoryAtom Pivot Observer Output Skeleton)
+    (starSWHardness : CompressionStarSWHardness M.lowerFramework)
+    (safeQSSM :
+      ∀ q : Safe, 0 ≤ M.interfaceData.safeCost q ∧
+        M.interfaceData.safeCost q ≤ M.interfaceData.safeBudget)
+    (boundedGaugeIncidence :
+      ∀ gamma : Gauge,
+        M.interfaceData.gaugeIncidence gamma ≤ M.interfaceData.gaugeBound)
+    (boundaryMixing :
+      BoundaryMixingBound M.interfaceData.target M.interfaceData.pivotSummary
+        M.interfaceData.epsMix)
+    {C : CookStylePNPClassInterface.{p}}
+    (bridge :
+      RealM4OfficialPToDeciderLockedMessageUpperBridgeData
+        D M.lowerFramework C) :
+    C.officialSeparation :=
+  realM4_officialSeparation_from_endgameMechanicalData_upperBridge
+    M starSWHardness safeQSSM boundedGaugeIncidence boundaryMixing
+    bridge.upperBridge
+
+/-- Cook-style existential endpoint from the locked-message-data
+P-membership-to-decider bridge. -/
+theorem realM4_exists_np_not_p_from_endgameMechanicalData_pMembershipDeciderLockedMessageBridge
+    {Omega : Type u} [Fintype Omega] [Nonempty Omega]
+    {Public : Type v} {Neutral : Type w} {Safe : Type x}
+    {Gauge : Type y} {Transcript : Type z} [DecidableEq Transcript]
+    {Pair : Type a} [Fintype Pair]
+    {Stage : Type b} {Branch : Type c}
+    {HistoryAtom : Type d} {Pivot : Type e}
+    {Observer : Type f} {Output : Type f} {Skeleton : Type w}
+    {PublicLock : Type g} {Quotient : Type h}
+    {LockAux : Type i} {Message : Type j}
+    {CNFPublic : Type k} {Var : CNFPublic -> Type l}
+    {Witness : CNFPublic -> Type l}
+    {D : AppendixICNFReadoutData
+      PublicLock Quotient LockAux Message CNFPublic Var Witness}
+    (M : RealM4EndgameMechanicalData Omega Public Neutral Safe Gauge
+      Transcript Pair Stage Branch HistoryAtom Pivot Observer Output Skeleton)
+    (starSWHardness : CompressionStarSWHardness M.lowerFramework)
+    (safeQSSM :
+      ∀ q : Safe, 0 ≤ M.interfaceData.safeCost q ∧
+        M.interfaceData.safeCost q ≤ M.interfaceData.safeBudget)
+    (boundedGaugeIncidence :
+      ∀ gamma : Gauge,
+        M.interfaceData.gaugeIncidence gamma ≤ M.interfaceData.gaugeBound)
+    (boundaryMixing :
+      BoundaryMixingBound M.interfaceData.target M.interfaceData.pivotSummary
+        M.interfaceData.epsMix)
+    {C : CookStylePNPClassInterface.{p}}
+    (bridge :
+      RealM4OfficialPToDeciderLockedMessageUpperBridgeData
+        D M.lowerFramework C) :
     ∃ separatedLanguage : C.Language,
       C.inNP separatedLanguage ∧ ¬ C.inP separatedLanguage :=
   realM4_exists_np_not_p_from_endgameMechanicalData_upperBridge
@@ -8447,6 +8761,34 @@ theorem realM4OfficialPToDeciderUpperSupportFromAddressSyntaxConstructionInputs_
         "cnfVariableAddressSyntax" ] := by
   rfl
 
+def realM4OfficialPToDeciderLockedMessageUpperSupportConstructionInputs :
+    List String := [
+  "publicLockCoverageData",
+  "lockedMessageRigidityData",
+  "uniformCNFSupportData"
+]
+
+theorem realM4OfficialPToDeciderLockedMessageUpperSupportConstructionInputs_exact :
+    realM4OfficialPToDeciderLockedMessageUpperSupportConstructionInputs =
+      [ "publicLockCoverageData",
+        "lockedMessageRigidityData",
+        "uniformCNFSupportData" ] := by
+  rfl
+
+def realM4OfficialPToDeciderLockedMessageUpperSupportFromAddressSyntaxConstructionInputs :
+    List String := [
+  "publicLockCoverageData",
+  "lockedMessageRigidityData",
+  "cnfVariableAddressSyntax"
+]
+
+theorem realM4OfficialPToDeciderLockedMessageUpperSupportFromAddressSyntaxConstructionInputs_exact :
+    realM4OfficialPToDeciderLockedMessageUpperSupportFromAddressSyntaxConstructionInputs =
+      [ "publicLockCoverageData",
+        "lockedMessageRigidityData",
+        "cnfVariableAddressSyntax" ] := by
+  rfl
+
 def realM4OfficialLanguageNPConstructionInputs : List String := [
   "cookStylePNPClassInterface",
   "separatedLanguage",
@@ -8485,6 +8827,20 @@ theorem realM4OfficialPToConstantDecoderRegimeConstructionInputs_exact :
         "pMembershipConstantDecoderRegime" ] := by
   rfl
 
+def realM4OfficialPToLockedMessageConstantDecoderRegimeConstructionInputs :
+    List String := [
+  "officialLanguageNPData",
+  "officialPToDeciderFamilyData",
+  "pMembershipConstantDecoderRegime"
+]
+
+theorem realM4OfficialPToLockedMessageConstantDecoderRegimeConstructionInputs_exact :
+    realM4OfficialPToLockedMessageConstantDecoderRegimeConstructionInputs =
+      [ "officialLanguageNPData",
+        "officialPToDeciderFamilyData",
+        "pMembershipConstantDecoderRegime" ] := by
+  rfl
+
 def realM4OfficialPToDeciderLanguageSplitConstructionInputs :
     List String :=
   realM4OfficialLanguageNPConstructionInputs ++
@@ -8493,6 +8849,24 @@ def realM4OfficialPToDeciderLanguageSplitConstructionInputs :
 
 theorem realM4OfficialPToDeciderLanguageSplitConstructionInputs_exact :
     realM4OfficialPToDeciderLanguageSplitConstructionInputs =
+      [ "cookStylePNPClassInterface",
+        "separatedLanguage",
+        "separatedLanguageInNP",
+        "officialLanguageNPData",
+        "pMembershipToPNPDeciderFamily",
+        "officialLanguageNPData",
+        "officialPToDeciderFamilyData",
+        "pMembershipConstantDecoderRegime" ] := by
+  rfl
+
+def realM4OfficialPToDeciderLockedMessageLanguageSplitConstructionInputs :
+    List String :=
+  realM4OfficialLanguageNPConstructionInputs ++
+    realM4OfficialPToDeciderFamilyConstructionInputs ++
+      realM4OfficialPToLockedMessageConstantDecoderRegimeConstructionInputs
+
+theorem realM4OfficialPToDeciderLockedMessageLanguageSplitConstructionInputs_exact :
+    realM4OfficialPToDeciderLockedMessageLanguageSplitConstructionInputs =
       [ "cookStylePNPClassInterface",
         "separatedLanguage",
         "separatedLanguageInNP",
@@ -8541,6 +8915,26 @@ theorem realM4OfficialPToDeciderUpperBridgeDecomposedInputs_exact :
 def realM4OfficialPToDeciderUpperBridgeDecompositionStatement : String :=
   "The real v15/M4 official P-to-decider upper bridge decomposes into construction-side support data and official-language implication data.  The support data contains the default message, public-lock coverage, D.8 locked-message rigidity, and uniform CNF support.  The official-language side further splits into the named NP language, the P-membership-to-SAT-decider implication, and the P-membership-to-constant-decoder-regime implication."
 
+def realM4OfficialPToDeciderLockedMessageUpperBridgeDecomposedInputs :
+    List String :=
+  realM4OfficialPToDeciderLockedMessageUpperSupportConstructionInputs ++
+    realM4OfficialPToDeciderLanguageConstructionInputs
+
+theorem realM4OfficialPToDeciderLockedMessageUpperBridgeDecomposedInputs_exact :
+    realM4OfficialPToDeciderLockedMessageUpperBridgeDecomposedInputs =
+      [ "publicLockCoverageData",
+        "lockedMessageRigidityData",
+        "uniformCNFSupportData",
+        "cookStylePNPClassInterface",
+        "separatedLanguage",
+        "separatedLanguageInNP",
+        "pMembershipToPNPDeciderFamily",
+        "pMembershipConstantDecoderRegime" ] := by
+  rfl
+
+def realM4OfficialPToDeciderLockedMessageUpperBridgeDecompositionStatement : String :=
+  "The real v15/M4 locked-message official P-to-decider upper bridge decomposes into construction-side support data and official-language implication data.  The support data contains public-lock coverage, locked-message public-message data, and uniform CNF support.  The official-language side further splits into the named NP language, the P-membership-to-SAT-decider implication, and the P-membership-to-constant-decoder-regime implication."
+
 def realM4OfficialPToDeciderUpperBridgeConstructionInputs : List String := [
   "cookStylePNPClassInterface",
   "separatedLanguage",
@@ -8568,6 +8962,33 @@ theorem realM4OfficialPToDeciderUpperBridgeConstructionInputs_exact :
 
 def realM4OfficialPToDeciderUpperBridgeStatement : String :=
   "For the real v15/M4 official upper bridge, P-membership of the named NP language must construct the Appendix-I SAT decider family and the associated constant-decoder regime.  Public-lock coverage, D.8 locked-message rigidity, and uniform CNF support remain explicit construction data; StarSW hardness and the analytic fields are not part of the bridge."
+
+def realM4OfficialPToDeciderLockedMessageUpperBridgeConstructionInputs :
+    List String := [
+  "cookStylePNPClassInterface",
+  "separatedLanguage",
+  "separatedLanguageInNP",
+  "publicLockCoverageData",
+  "lockedMessageRigidityData",
+  "uniformCNFSupportData",
+  "pMembershipToPNPDeciderFamily",
+  "pMembershipConstantDecoderRegime"
+]
+
+theorem realM4OfficialPToDeciderLockedMessageUpperBridgeConstructionInputs_exact :
+    realM4OfficialPToDeciderLockedMessageUpperBridgeConstructionInputs =
+      [ "cookStylePNPClassInterface",
+        "separatedLanguage",
+        "separatedLanguageInNP",
+        "publicLockCoverageData",
+        "lockedMessageRigidityData",
+        "uniformCNFSupportData",
+        "pMembershipToPNPDeciderFamily",
+        "pMembershipConstantDecoderRegime" ] := by
+  rfl
+
+def realM4OfficialPToDeciderLockedMessageUpperBridgeStatement : String :=
+  "For the real v15/M4 locked-message official upper bridge, P-membership of the named NP language must construct the Appendix-I SAT decider family and the associated constant-decoder regime.  Public-lock coverage, locked-message public-message data, and uniform CNF support remain explicit construction data; StarSW hardness and the analytic fields are not part of the bridge."
 
 def realM4EndgameStagingConstructionInputs : List String := [
   "realM4EndgameMechanicalData",
@@ -11114,6 +11535,12 @@ def realM4LiftLedger : List RealM4LiftLedgerRow := [
     note := "Construction-side upper support is separated from the official bridge and can be built from default message, public-lock coverage, D.8 rigidity, and real CNF variable address syntax."
   },
   {
+    item := "officialPToDeciderLockedMessageUpperSupportData"
+    status := .partialConstructionTransferred
+    checkedName := "RealM4OfficialPToDeciderLockedMessageUpperSupportData.ofCoverageLockedMessageDataAndAddressSyntax"
+    note := "Construction-side official upper support can also be built from public-lock coverage, explicit locked-message public-message data, and real CNF variable address syntax, with no default-message/raw-D.8 boundary."
+  },
+  {
     item := "officialLanguageNPData"
     status := .openConstruction
     checkedName := "RealM4OfficialLanguageNPData"
@@ -11138,10 +11565,28 @@ def realM4LiftLedger : List RealM4LiftLedgerRow := [
     note := "The legacy official-language package is now reassembled from the named NP-language data, P-to-decider data, and P-to-constant-decoder-regime data."
   },
   {
+    item := "officialPToDeciderLockedMessageLanguageData"
+    status := .partialConstructionTransferred
+    checkedName := "RealM4OfficialPToDeciderLockedMessageLanguageData"
+    note := "The locked-message official-language package is reassembled from the same named NP-language and P-to-decider obligations, but its constant-decoder regime is indexed by locked-message support data."
+  },
+  {
+    item := "officialPToDeciderLockedMessageUpperBridgeData"
+    status := .partialConstructionTransferred
+    checkedName := "realM4_officialPToDeciderLockedMessageUpperBridgeData_of_supportAndLanguage"
+    note := "The monolithic locked-message official P-to-decider bridge is assembled from locked-message construction-side support data and official-language implication data."
+  },
+  {
     item := "officialPToDeciderUpperBridgeAdapter"
     status := .partialConstructionTransferred
     checkedName := "realM4_exists_np_not_p_from_endgameMechanicalData_pMembershipDeciderBridge"
     note := "Given the decomposed P-membership-to-decider bridge, real endgame data plus StarSW and the three analytic fields imply the Cook-style existential endpoint."
+  },
+  {
+    item := "officialPToDeciderLockedMessageUpperBridgeAdapter"
+    status := .partialConstructionTransferred
+    checkedName := "realM4_exists_np_not_p_from_endgameMechanicalData_pMembershipDeciderLockedMessageBridge"
+    note := "Given the locked-message decomposed P-membership-to-decider bridge, real endgame data plus StarSW and the three analytic fields imply the Cook-style existential endpoint."
   },
   {
     item := "realNoTargetRowsPToDeciderOfficialEndpointStaging"
@@ -11258,9 +11703,13 @@ theorem realM4LiftLedger_statuses_exact :
         RealM4LiftStatus.partialConstructionTransferred,
         RealM4LiftStatus.partialConstructionTransferred,
         RealM4LiftStatus.partialConstructionTransferred,
+        RealM4LiftStatus.partialConstructionTransferred,
         RealM4LiftStatus.openConstruction,
         RealM4LiftStatus.openConstruction,
         RealM4LiftStatus.openConstruction,
+        RealM4LiftStatus.partialConstructionTransferred,
+        RealM4LiftStatus.partialConstructionTransferred,
+        RealM4LiftStatus.partialConstructionTransferred,
         RealM4LiftStatus.partialConstructionTransferred,
         RealM4LiftStatus.partialConstructionTransferred,
         RealM4LiftStatus.partialConstructionTransferred,
