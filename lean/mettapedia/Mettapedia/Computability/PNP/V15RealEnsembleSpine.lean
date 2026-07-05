@@ -6282,6 +6282,48 @@ theorem realM4_false_of_pEqualsNP_from_endgameMechanicalData_upperBridge
     boundedGaugeIncidence boundaryMixing).noConsistentBounds
 
 /--
+Named-language endpoint from the stricter upper bridge.  Unlike the equality
+indexed bridge, this surface refutes P-membership of the same NP language
+carried by the bridge, because the upper package is available from an arbitrary
+proof that this named language is in P.
+-/
+theorem realM4_namedLanguage_not_inP_from_endgameMechanicalData_upperBridge
+    {Omega : Type u} [Fintype Omega] [Nonempty Omega]
+    {Public : Type v} {Neutral : Type w} {Safe : Type x}
+    {Gauge : Type y} {Transcript : Type z} [DecidableEq Transcript]
+    {Pair : Type a} [Fintype Pair]
+    {Stage : Type b} {Branch : Type c}
+    {HistoryAtom : Type d} {Pivot : Type e}
+    {Observer : Type f} {Output : Type f} {Skeleton : Type w}
+    {PublicLock : Type g} {Quotient : Type h}
+    {LockAux : Type i} {Message : Type j}
+    {CNFPublic : Type k} {Var : CNFPublic -> Type l}
+    {Witness : CNFPublic -> Type l}
+    {D : AppendixICNFReadoutData
+      PublicLock Quotient LockAux Message CNFPublic Var Witness}
+    (M : RealM4EndgameMechanicalData Omega Public Neutral Safe Gauge
+      Transcript Pair Stage Branch HistoryAtom Pivot Observer Output Skeleton)
+    (starSWHardness : CompressionStarSWHardness M.lowerFramework)
+    (safeQSSM :
+      ∀ q : Safe, 0 ≤ M.interfaceData.safeCost q ∧
+        M.interfaceData.safeCost q ≤ M.interfaceData.safeBudget)
+    (boundedGaugeIncidence :
+      ∀ gamma : Gauge,
+        M.interfaceData.gaugeIncidence gamma ≤ M.interfaceData.gaugeBound)
+    (boundaryMixing :
+      BoundaryMixingBound M.interfaceData.target M.interfaceData.pivotSummary
+        M.interfaceData.epsMix)
+    {C : CookStylePNPClassInterface.{p}}
+    (bridge :
+      RealM4OfficialPToUpperBridgeData D M.lowerFramework C) :
+    ¬ C.inP bridge.separatedLanguage := by
+  intro hP
+  exact
+    (realM4_conditionalClash_from_endgameMechanicalData_explicitPNP
+      M (bridge.upperDischarge_of_inP hP) starSWHardness
+      safeQSSM boundedGaugeIncidence boundaryMixing).noConsistentBounds
+
+/--
 Cook-style existential endpoint from the stricter upper bridge.  This is the
 same content as `realM4_officialSeparation_from_endgameMechanicalData_upperBridge`
 spelled directly as `∃ L, inNP L ∧ ¬ inP L`.
@@ -6319,12 +6361,9 @@ theorem realM4_exists_np_not_p_from_endgameMechanicalData_upperBridge
       C.inNP separatedLanguage ∧ ¬ C.inP separatedLanguage :=
   ⟨bridge.separatedLanguage,
     bridge.separatedLanguage_inNP,
-    by
-      intro hP
-      exact
-        (realM4_conditionalClash_from_endgameMechanicalData_explicitPNP
-          M (bridge.upperDischarge_of_inP hP) starSWHardness
-          safeQSSM boundedGaugeIncidence boundaryMixing).noConsistentBounds⟩
+    realM4_namedLanguage_not_inP_from_endgameMechanicalData_upperBridge
+      M starSWHardness safeQSSM boundedGaugeIncidence boundaryMixing
+      bridge⟩
 
 /--
 Cook-style negated class equality from the stricter upper bridge.  This is
@@ -6407,6 +6446,42 @@ theorem realM4_officialSeparation_from_endgameMechanicalData_pMembershipDeciderB
       RealM4OfficialPToDeciderUpperBridgeData D M.lowerFramework C) :
     C.officialSeparation :=
   realM4_officialSeparation_from_endgameMechanicalData_upperBridge
+    M starSWHardness safeQSSM boundedGaugeIncidence boundaryMixing
+    bridge.upperBridge
+
+/-- Named-language non-membership endpoint from the decomposed
+P-membership-to-decider bridge. -/
+theorem realM4_namedLanguage_not_inP_from_endgameMechanicalData_pMembershipDeciderBridge
+    {Omega : Type u} [Fintype Omega] [Nonempty Omega]
+    {Public : Type v} {Neutral : Type w} {Safe : Type x}
+    {Gauge : Type y} {Transcript : Type z} [DecidableEq Transcript]
+    {Pair : Type a} [Fintype Pair]
+    {Stage : Type b} {Branch : Type c}
+    {HistoryAtom : Type d} {Pivot : Type e}
+    {Observer : Type f} {Output : Type f} {Skeleton : Type w}
+    {PublicLock : Type g} {Quotient : Type h}
+    {LockAux : Type i} {Message : Type j}
+    {CNFPublic : Type k} {Var : CNFPublic -> Type l}
+    {Witness : CNFPublic -> Type l}
+    {D : AppendixICNFReadoutData
+      PublicLock Quotient LockAux Message CNFPublic Var Witness}
+    (M : RealM4EndgameMechanicalData Omega Public Neutral Safe Gauge
+      Transcript Pair Stage Branch HistoryAtom Pivot Observer Output Skeleton)
+    (starSWHardness : CompressionStarSWHardness M.lowerFramework)
+    (safeQSSM :
+      ∀ q : Safe, 0 ≤ M.interfaceData.safeCost q ∧
+        M.interfaceData.safeCost q ≤ M.interfaceData.safeBudget)
+    (boundedGaugeIncidence :
+      ∀ gamma : Gauge,
+        M.interfaceData.gaugeIncidence gamma ≤ M.interfaceData.gaugeBound)
+    (boundaryMixing :
+      BoundaryMixingBound M.interfaceData.target M.interfaceData.pivotSummary
+        M.interfaceData.epsMix)
+    {C : CookStylePNPClassInterface.{p}}
+    (bridge :
+      RealM4OfficialPToDeciderUpperBridgeData D M.lowerFramework C) :
+    ¬ C.inP bridge.separatedLanguage :=
+  realM4_namedLanguage_not_inP_from_endgameMechanicalData_upperBridge
     M starSWHardness safeQSSM boundedGaugeIncidence boundaryMixing
     bridge.upperBridge
 
@@ -6558,6 +6633,43 @@ theorem realM4_officialSeparation_from_endgameMechanicalData_pMembershipDeciderL
         D M.lowerFramework C) :
     C.officialSeparation :=
   realM4_officialSeparation_from_endgameMechanicalData_upperBridge
+    M starSWHardness safeQSSM boundedGaugeIncidence boundaryMixing
+    bridge.upperBridge
+
+/-- Named-language non-membership endpoint from the locked-message-data
+P-membership-to-decider bridge. -/
+theorem realM4_namedLanguage_not_inP_from_endgameMechanicalData_pMembershipDeciderLockedMessageBridge
+    {Omega : Type u} [Fintype Omega] [Nonempty Omega]
+    {Public : Type v} {Neutral : Type w} {Safe : Type x}
+    {Gauge : Type y} {Transcript : Type z} [DecidableEq Transcript]
+    {Pair : Type a} [Fintype Pair]
+    {Stage : Type b} {Branch : Type c}
+    {HistoryAtom : Type d} {Pivot : Type e}
+    {Observer : Type f} {Output : Type f} {Skeleton : Type w}
+    {PublicLock : Type g} {Quotient : Type h}
+    {LockAux : Type i} {Message : Type j}
+    {CNFPublic : Type k} {Var : CNFPublic -> Type l}
+    {Witness : CNFPublic -> Type l}
+    {D : AppendixICNFReadoutData
+      PublicLock Quotient LockAux Message CNFPublic Var Witness}
+    (M : RealM4EndgameMechanicalData Omega Public Neutral Safe Gauge
+      Transcript Pair Stage Branch HistoryAtom Pivot Observer Output Skeleton)
+    (starSWHardness : CompressionStarSWHardness M.lowerFramework)
+    (safeQSSM :
+      ∀ q : Safe, 0 ≤ M.interfaceData.safeCost q ∧
+        M.interfaceData.safeCost q ≤ M.interfaceData.safeBudget)
+    (boundedGaugeIncidence :
+      ∀ gamma : Gauge,
+        M.interfaceData.gaugeIncidence gamma ≤ M.interfaceData.gaugeBound)
+    (boundaryMixing :
+      BoundaryMixingBound M.interfaceData.target M.interfaceData.pivotSummary
+        M.interfaceData.epsMix)
+    {C : CookStylePNPClassInterface.{p}}
+    (bridge :
+      RealM4OfficialPToDeciderLockedMessageUpperBridgeData
+        D M.lowerFramework C) :
+    ¬ C.inP bridge.separatedLanguage :=
+  realM4_namedLanguage_not_inP_from_endgameMechanicalData_upperBridge
     M starSWHardness safeQSSM boundedGaugeIncidence boundaryMixing
     bridge.upperBridge
 
@@ -18095,6 +18207,26 @@ theorem realM4RealLockInEndpointHypothesisAudit_exact :
 
 def realM4RealLockInEndpointStatement : String :=
   "The bundled real v15/M4 lock-in endpoint theorem packages the class inequality, official separation proposition, and Cook-style existential NP-not-P statement from one equality-indexed construction-data surface plus exactly StarSW hardness and the three analytic frontier inputs.  The theorem does not make the construction surface disappear: inhabiting the real no-target-rows M4 data, official language/P-to-decider data, and P=NP-indexed K-poly target facts remains the construction problem."
+
+def realM4NamedLanguageEndpointRouteItems : List String := [
+  "strictPToUpperBridge",
+  "namedNPLanguage",
+  "pMembershipYieldsSelfReductionUpper",
+  "frontierClashRefutesPMembership",
+  "namedLanguageOutsideP"
+]
+
+theorem realM4NamedLanguageEndpointRouteItems_exact :
+    realM4NamedLanguageEndpointRouteItems =
+      [ "strictPToUpperBridge",
+        "namedNPLanguage",
+        "pMembershipYieldsSelfReductionUpper",
+        "frontierClashRefutesPMembership",
+        "namedLanguageOutsideP" ] := by
+  rfl
+
+def realM4NamedLanguageEndpointStatement : String :=
+  "The direct named-language endpoint uses the stricter P-membership-to-upper bridge: the bridge supplies a named NP language, P-membership of that language supplies the P=NP-side self-reduction upper package, and the real frontier clash refutes that P-membership.  Equality-indexed endpoint data is enough for class inequality and an existential NP-not-P statement, but it does not by itself identify the bridge language as outside P."
 
 /-- Guardrail imported into the real lift: deterministic readout by itself has
 a checked finite counterexample, so M4 must provide public-message invariance
