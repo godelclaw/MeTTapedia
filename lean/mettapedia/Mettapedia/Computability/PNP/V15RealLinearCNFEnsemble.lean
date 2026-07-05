@@ -1363,6 +1363,23 @@ def v13RealLinearSmallNoTargetRowsCNFSATWorldSemantics :
   safeSat := fun _ _ => True
   gaugeSat := v13RealLinearSmallNoTargetRowsCNFSATWorldGaugeSat
 
+/-- Structural `atomCompleteness` transfer for the concrete no-target-row
+SAT-world surface: CD-ENF normalization preserves the concrete evidence
+semantics. -/
+theorem v13RealLinearSmallNoTargetRowsCNFSATWorld_atomCompleteness :
+    ∀ E :
+      RawEvidence
+        V13RealLinearSmallNoTargetRowsCNFNeutral
+        V13RealLinearSmallNoTargetRowsCNFSafe
+        V13RealLinearSmallNoTargetRowsCNFGauge,
+      v13RealLinearSmallNoTargetRowsCNFSATWorldSemantics.SatNormal
+          (CDENF E) =
+        v13RealLinearSmallNoTargetRowsCNFSATWorldSemantics.SatRaw E := by
+  intro E
+  exact
+    CDENF_semantics
+      v13RealLinearSmallNoTargetRowsCNFSATWorldSemantics E
+
 /-- Structural `hiddenGaugeProduct` transfer for the concrete no-target-row
 SAT-world surface.  Every hidden-gauge action is satisfied because it
 preserves verifier validity, public input, and fixed message readout. -/
