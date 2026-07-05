@@ -4889,11 +4889,50 @@ structure CookStylePNPClassInterface where
 
 namespace CookStylePNPClassInterface
 
+/-- The Cook-style class equality proposition: every NP language is in P. -/
+def pEqualsNP (C : CookStylePNPClassInterface) : Prop :=
+  ∀ L : C.Language, C.inNP L -> C.inP L
+
 theorem officialSeparation_of_np_not_p
     (C : CookStylePNPClassInterface) {L : C.Language}
     (hNP : C.inNP L) (hNotP : ¬ C.inP L) :
     C.officialSeparation :=
   C.officialSeparation_iff_exists_np_not_p.mpr ⟨L, hNP, hNotP⟩
+
+theorem not_pEqualsNP_of_np_not_p
+    (C : CookStylePNPClassInterface) {L : C.Language}
+    (hNP : C.inNP L) (hNotP : ¬ C.inP L) :
+    ¬ C.pEqualsNP := by
+  intro hEq
+  exact hNotP (hEq L hNP)
+
+/-- In the abstract Cook-style endpoint interface, official separation is
+equivalent to the negation of the class-equality proposition `P = NP`. -/
+theorem officialSeparation_iff_not_pEqualsNP
+    (C : CookStylePNPClassInterface) :
+    C.officialSeparation ↔ ¬ C.pEqualsNP := by
+  classical
+  rw [C.officialSeparation_iff_exists_np_not_p]
+  constructor
+  · intro hSep
+    rcases hSep with ⟨L, hNP, hNotP⟩
+    exact C.not_pEqualsNP_of_np_not_p hNP hNotP
+  · intro hNotEq
+    by_contra hNoWitness
+    apply hNotEq
+    intro L hNP
+    by_contra hNotP
+    exact hNoWitness ⟨L, hNP, hNotP⟩
+
+theorem officialSeparation_of_not_pEqualsNP
+    (C : CookStylePNPClassInterface) (hNotEq : ¬ C.pEqualsNP) :
+    C.officialSeparation :=
+  (C.officialSeparation_iff_not_pEqualsNP).mpr hNotEq
+
+theorem not_pEqualsNP_of_officialSeparation
+    (C : CookStylePNPClassInterface) (hSep : C.officialSeparation) :
+    ¬ C.pEqualsNP :=
+  (C.officialSeparation_iff_not_pEqualsNP).mp hSep
 
 end CookStylePNPClassInterface
 
@@ -5753,6 +5792,50 @@ theorem realM4_exists_np_not_p_from_endgameMechanicalData_upperBridge
           safeQSSM boundedGaugeIncidence boundaryMixing).noConsistentBounds⟩
 
 /--
+Cook-style negated class equality from the stricter upper bridge.  This is
+the same nondegenerate endpoint as the existential theorem above, stated as
+`not (P = NP)` inside the supplied Cook-style interface.
+-/
+theorem realM4_not_pEqualsNP_from_endgameMechanicalData_upperBridge
+    {Omega : Type u} [Fintype Omega] [Nonempty Omega]
+    {Public : Type v} {Neutral : Type w} {Safe : Type x}
+    {Gauge : Type y} {Transcript : Type z} [DecidableEq Transcript]
+    {Pair : Type a} [Fintype Pair]
+    {Stage : Type b} {Branch : Type c}
+    {HistoryAtom : Type d} {Pivot : Type e}
+    {Observer : Type f} {Output : Type f} {Skeleton : Type w}
+    {PublicLock : Type g} {Quotient : Type h}
+    {LockAux : Type i} {Message : Type j}
+    {CNFPublic : Type k} {Var : CNFPublic -> Type l}
+    {Witness : CNFPublic -> Type l}
+    {D : AppendixICNFReadoutData
+      PublicLock Quotient LockAux Message CNFPublic Var Witness}
+    (M : RealM4EndgameMechanicalData Omega Public Neutral Safe Gauge
+      Transcript Pair Stage Branch HistoryAtom Pivot Observer Output Skeleton)
+    (starSWHardness : CompressionStarSWHardness M.lowerFramework)
+    (safeQSSM :
+      ∀ q : Safe, 0 ≤ M.interfaceData.safeCost q ∧
+        M.interfaceData.safeCost q ≤ M.interfaceData.safeBudget)
+    (boundedGaugeIncidence :
+      ∀ gamma : Gauge,
+        M.interfaceData.gaugeIncidence gamma ≤ M.interfaceData.gaugeBound)
+    (boundaryMixing :
+      BoundaryMixingBound M.interfaceData.target M.interfaceData.pivotSummary
+        M.interfaceData.epsMix)
+    {C : CookStylePNPClassInterface.{p}}
+    (bridge :
+      RealM4OfficialPToUpperBridgeData D M.lowerFramework C) :
+    ¬ C.pEqualsNP :=
+  C.not_pEqualsNP_of_np_not_p
+    bridge.separatedLanguage_inNP
+    (by
+      intro hP
+      exact
+        (realM4_conditionalClash_from_endgameMechanicalData_explicitPNP
+          M (bridge.upperDischarge_of_inP hP) starSWHardness
+          safeQSSM boundedGaugeIncidence boundaryMixing).noConsistentBounds)
+
+/--
 Official endpoint from the decomposed P-membership-to-decider bridge.  This
 keeps the upper-side SAT decider route visible: the theorem does not take a
 free P=NP decider family, but the bridge data must show how P-membership of
@@ -5826,6 +5909,42 @@ theorem realM4_exists_np_not_p_from_endgameMechanicalData_pMembershipDeciderBrid
     ∃ separatedLanguage : C.Language,
       C.inNP separatedLanguage ∧ ¬ C.inP separatedLanguage :=
   realM4_exists_np_not_p_from_endgameMechanicalData_upperBridge
+    M starSWHardness safeQSSM boundedGaugeIncidence boundaryMixing
+    bridge.upperBridge
+
+/-- Cook-style negated class equality from the decomposed
+P-membership-to-decider bridge. -/
+theorem realM4_not_pEqualsNP_from_endgameMechanicalData_pMembershipDeciderBridge
+    {Omega : Type u} [Fintype Omega] [Nonempty Omega]
+    {Public : Type v} {Neutral : Type w} {Safe : Type x}
+    {Gauge : Type y} {Transcript : Type z} [DecidableEq Transcript]
+    {Pair : Type a} [Fintype Pair]
+    {Stage : Type b} {Branch : Type c}
+    {HistoryAtom : Type d} {Pivot : Type e}
+    {Observer : Type f} {Output : Type f} {Skeleton : Type w}
+    {PublicLock : Type g} {Quotient : Type h}
+    {LockAux : Type i} {Message : Type j}
+    {CNFPublic : Type k} {Var : CNFPublic -> Type l}
+    {Witness : CNFPublic -> Type l}
+    {D : AppendixICNFReadoutData
+      PublicLock Quotient LockAux Message CNFPublic Var Witness}
+    (M : RealM4EndgameMechanicalData Omega Public Neutral Safe Gauge
+      Transcript Pair Stage Branch HistoryAtom Pivot Observer Output Skeleton)
+    (starSWHardness : CompressionStarSWHardness M.lowerFramework)
+    (safeQSSM :
+      ∀ q : Safe, 0 ≤ M.interfaceData.safeCost q ∧
+        M.interfaceData.safeCost q ≤ M.interfaceData.safeBudget)
+    (boundedGaugeIncidence :
+      ∀ gamma : Gauge,
+        M.interfaceData.gaugeIncidence gamma ≤ M.interfaceData.gaugeBound)
+    (boundaryMixing :
+      BoundaryMixingBound M.interfaceData.target M.interfaceData.pivotSummary
+        M.interfaceData.epsMix)
+    {C : CookStylePNPClassInterface.{p}}
+    (bridge :
+      RealM4OfficialPToDeciderUpperBridgeData D M.lowerFramework C) :
+    ¬ C.pEqualsNP :=
+  realM4_not_pEqualsNP_from_endgameMechanicalData_upperBridge
     M starSWHardness safeQSSM boundedGaugeIncidence boundaryMixing
     bridge.upperBridge
 
@@ -5905,6 +6024,43 @@ theorem realM4_exists_np_not_p_from_endgameMechanicalData_pMembershipDeciderLock
     ∃ separatedLanguage : C.Language,
       C.inNP separatedLanguage ∧ ¬ C.inP separatedLanguage :=
   realM4_exists_np_not_p_from_endgameMechanicalData_upperBridge
+    M starSWHardness safeQSSM boundedGaugeIncidence boundaryMixing
+    bridge.upperBridge
+
+/-- Cook-style negated class equality from the locked-message-data
+P-membership-to-decider bridge. -/
+theorem realM4_not_pEqualsNP_from_endgameMechanicalData_pMembershipDeciderLockedMessageBridge
+    {Omega : Type u} [Fintype Omega] [Nonempty Omega]
+    {Public : Type v} {Neutral : Type w} {Safe : Type x}
+    {Gauge : Type y} {Transcript : Type z} [DecidableEq Transcript]
+    {Pair : Type a} [Fintype Pair]
+    {Stage : Type b} {Branch : Type c}
+    {HistoryAtom : Type d} {Pivot : Type e}
+    {Observer : Type f} {Output : Type f} {Skeleton : Type w}
+    {PublicLock : Type g} {Quotient : Type h}
+    {LockAux : Type i} {Message : Type j}
+    {CNFPublic : Type k} {Var : CNFPublic -> Type l}
+    {Witness : CNFPublic -> Type l}
+    {D : AppendixICNFReadoutData
+      PublicLock Quotient LockAux Message CNFPublic Var Witness}
+    (M : RealM4EndgameMechanicalData Omega Public Neutral Safe Gauge
+      Transcript Pair Stage Branch HistoryAtom Pivot Observer Output Skeleton)
+    (starSWHardness : CompressionStarSWHardness M.lowerFramework)
+    (safeQSSM :
+      ∀ q : Safe, 0 ≤ M.interfaceData.safeCost q ∧
+        M.interfaceData.safeCost q ≤ M.interfaceData.safeBudget)
+    (boundedGaugeIncidence :
+      ∀ gamma : Gauge,
+        M.interfaceData.gaugeIncidence gamma ≤ M.interfaceData.gaugeBound)
+    (boundaryMixing :
+      BoundaryMixingBound M.interfaceData.target M.interfaceData.pivotSummary
+        M.interfaceData.epsMix)
+    {C : CookStylePNPClassInterface.{p}}
+    (bridge :
+      RealM4OfficialPToDeciderLockedMessageUpperBridgeData
+        D M.lowerFramework C) :
+    ¬ C.pEqualsNP :=
+  realM4_not_pEqualsNP_from_endgameMechanicalData_upperBridge
     M starSWHardness safeQSSM boundedGaugeIncidence boundaryMixing
     bridge.upperBridge
 
@@ -12523,14 +12679,14 @@ def realM4LiftLedger : List RealM4LiftLedgerRow := [
   {
     item := "officialPToDeciderUpperBridgeAdapter"
     status := .partialConstructionTransferred
-    checkedName := "realM4_exists_np_not_p_from_endgameMechanicalData_pMembershipDeciderBridge"
-    note := "Given the decomposed P-membership-to-decider bridge, real endgame data plus StarSW and the three analytic fields imply the Cook-style existential endpoint."
+    checkedName := "realM4_not_pEqualsNP_from_endgameMechanicalData_pMembershipDeciderBridge"
+    note := "Given the decomposed P-membership-to-decider bridge, real endgame data plus StarSW and the three analytic fields rule out Cook-style P = NP; the existential endpoint follows by the class-interface equivalence."
   },
   {
     item := "officialPToDeciderLockedMessageUpperBridgeAdapter"
     status := .partialConstructionTransferred
-    checkedName := "realM4_exists_np_not_p_from_endgameMechanicalData_pMembershipDeciderLockedMessageBridge"
-    note := "Given the locked-message decomposed P-membership-to-decider bridge, real endgame data plus StarSW and the three analytic fields imply the Cook-style existential endpoint."
+    checkedName := "realM4_not_pEqualsNP_from_endgameMechanicalData_pMembershipDeciderLockedMessageBridge"
+    note := "Given the locked-message decomposed P-membership-to-decider bridge, real endgame data plus StarSW and the three analytic fields rule out Cook-style P = NP; the existential endpoint follows by the class-interface equivalence."
   },
   {
     item := "realNoTargetRowsPToDeciderOfficialEndpointStaging"
@@ -12559,8 +12715,8 @@ def realM4LiftLedger : List RealM4LiftLedgerRow := [
   {
     item := "officialPNPUpperBridgeAdapter"
     status := .partialConstructionTransferred
-    checkedName := "realM4_exists_np_not_p_from_endgameMechanicalData_upperBridge"
-    note := "Given the strict upper bridge, the real endgame data plus StarSW and the three analytic fields imply the Cook-style existential endpoint without taking a free P=NP decider family as a theorem hypothesis."
+    checkedName := "realM4_not_pEqualsNP_from_endgameMechanicalData_upperBridge"
+    note := "Given the strict upper bridge, the real endgame data plus StarSW and the three analytic fields rule out Cook-style P = NP without taking a free P=NP decider family as a theorem hypothesis."
   },
   {
     item := "officialPNPBridgeAdapter"
