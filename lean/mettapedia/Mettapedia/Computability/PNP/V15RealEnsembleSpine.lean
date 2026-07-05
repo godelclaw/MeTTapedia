@@ -11416,6 +11416,486 @@ theorem
         i₀ coordinate K).hiddenGaugeProduct⟩
 
 /--
+Locked-message upper support projected from the strict named-language
+large-target construction surface.  Public-lock coverage and explicit
+locked-message data come from `K`, while real address syntax supplies the
+uniform CNF support used by bit-fixing.
+-/
+def
+    realM4_noTargetRowsNamedLanguageLargeTargetConstructionData_lockedMessageUpperSupport
+    {m : Nat} (i₀ : Fin m) [hm : Fact (1 < m)]
+    (coordinate : V13RealLinearPublicCoordinate m)
+    {Neutral : Type} {Safe : Type x} {Gauge : Type y}
+    {Transcript : Type z} [DecidableEq Transcript]
+    {Pair : Type a} [Fintype Pair]
+    {Stage : Type b} {Branch : Type c}
+    {HistoryAtom : Type} {Pivot : Type e}
+    {Observer : Type f} {Output : Type f}
+    {PublicLock : Type g} {Quotient : Type h}
+    {LockAux : Type i} {Message : Type j}
+    {CNFPublic : Type k} {Address : CNFPublic -> Type q}
+    {Var : CNFPublic -> Type l}
+    {Witness : CNFPublic -> Type l}
+    {D : AppendixICNFReadoutData
+      PublicLock Quotient LockAux Message CNFPublic Var Witness}
+    {C : CookStylePNPClassInterface.{p}}
+    (K :
+      RealM4NoTargetRowsNamedLanguageLargeTargetOfficialConstructionData
+        (Neutral := Neutral) (Safe := Safe) (Gauge := Gauge)
+        (Transcript := Transcript) (Pair := Pair) (Stage := Stage)
+        (Branch := Branch) (HistoryAtom := HistoryAtom) (Pivot := Pivot)
+        (Observer := Observer) (Output := Output)
+        (PublicLock := PublicLock) (Quotient := Quotient)
+        (LockAux := LockAux) (Message := Message) (CNFPublic := CNFPublic)
+        (Address := Address) (Var := Var) (Witness := Witness)
+        i₀ coordinate D C) :
+    RealM4OfficialPToDeciderLockedMessageUpperSupportData D :=
+  RealM4OfficialPToDeciderLockedMessageUpperSupportData.ofCoverageLockedMessageDataAndAddressSyntax
+    K.coverageData K.lockedMessageData K.variableAddressSyntax
+
+/--
+Uniform bit-fixing data extracted from the strict named-language construction
+surface under a concrete P-membership proof for the named NP language.  This
+is the real search-to-decision upper branch: P-membership supplies the SAT
+decider family, and construction-side address syntax supplies uniform CNF
+support.
+-/
+def
+    realM4_noTargetRowsNamedLanguageLargeTargetConstructionData_uniformBitFixing_givenInP
+    {m : Nat} (i₀ : Fin m) [hm : Fact (1 < m)]
+    (coordinate : V13RealLinearPublicCoordinate m)
+    {Neutral : Type} {Safe : Type x} {Gauge : Type y}
+    {Transcript : Type z} [DecidableEq Transcript]
+    {Pair : Type a} [Fintype Pair]
+    {Stage : Type b} {Branch : Type c}
+    {HistoryAtom : Type} {Pivot : Type e}
+    {Observer : Type f} {Output : Type f}
+    {PublicLock : Type g} {Quotient : Type h}
+    {LockAux : Type i} {Message : Type j}
+    {CNFPublic : Type k} {Address : CNFPublic -> Type q}
+    {Var : CNFPublic -> Type l}
+    {Witness : CNFPublic -> Type l}
+    {D : AppendixICNFReadoutData
+      PublicLock Quotient LockAux Message CNFPublic Var Witness}
+    {C : CookStylePNPClassInterface.{p}}
+    (K :
+      RealM4NoTargetRowsNamedLanguageLargeTargetOfficialConstructionData
+        (Neutral := Neutral) (Safe := Safe) (Gauge := Gauge)
+        (Transcript := Transcript) (Pair := Pair) (Stage := Stage)
+        (Branch := Branch) (HistoryAtom := HistoryAtom) (Pivot := Pivot)
+        (Observer := Observer) (Output := Output)
+        (PublicLock := PublicLock) (Quotient := Quotient)
+        (LockAux := LockAux) (Message := Message) (CNFPublic := CNFPublic)
+        (Address := Address) (Var := Var) (Witness := Witness)
+        i₀ coordinate D C)
+    (hP : C.inP K.languageNPData.separatedLanguage) :
+    RealM4CNFUniformBitFixingData D :=
+  (realM4_noTargetRowsNamedLanguageLargeTargetConstructionData_lockedMessageUpperSupport
+    i₀ coordinate K).uniformSupport.withPNPDecider
+      (K.pToDeciderFamilyData.pnpDeciderFamily_of_inP hP)
+
+/--
+Field audit for the strict named-language P-membership upper branch.  It
+exposes the SAT-decider family, bit-fixing satisfiability, decoder-cost
+uniformity, and the large-target K-poly facts before they are packaged into a
+`SelfReductionUpperHypothesis`.
+-/
+theorem
+    realM4_noTargetRowsNamedLanguageLargeTargetConstructionData_uniformBitFixing_givenInP_fields
+    {m : Nat} (i₀ : Fin m) [hm : Fact (1 < m)]
+    (coordinate : V13RealLinearPublicCoordinate m)
+    {Neutral : Type} {Safe : Type x} {Gauge : Type y}
+    {Transcript : Type z} [DecidableEq Transcript]
+    {Pair : Type a} [Fintype Pair]
+    {Stage : Type b} {Branch : Type c}
+    {HistoryAtom : Type} {Pivot : Type e}
+    {Observer : Type f} {Output : Type f}
+    {PublicLock : Type g} {Quotient : Type h}
+    {LockAux : Type i} {Message : Type j}
+    {CNFPublic : Type k} {Address : CNFPublic -> Type q}
+    {Var : CNFPublic -> Type l}
+    {Witness : CNFPublic -> Type l}
+    {D : AppendixICNFReadoutData
+      PublicLock Quotient LockAux Message CNFPublic Var Witness}
+    {C : CookStylePNPClassInterface.{p}}
+    (K :
+      RealM4NoTargetRowsNamedLanguageLargeTargetOfficialConstructionData
+        (Neutral := Neutral) (Safe := Safe) (Gauge := Gauge)
+        (Transcript := Transcript) (Pair := Pair) (Stage := Stage)
+        (Branch := Branch) (HistoryAtom := HistoryAtom) (Pivot := Pivot)
+        (Observer := Observer) (Output := Output)
+        (PublicLock := PublicLock) (Quotient := Quotient)
+        (LockAux := LockAux) (Message := Message) (CNFPublic := CNFPublic)
+        (Address := Address) (Var := Var) (Witness := Witness)
+        i₀ coordinate D C)
+    (hP : C.inP K.languageNPData.separatedLanguage) :
+    let U :=
+      realM4_noTargetRowsNamedLanguageLargeTargetConstructionData_uniformBitFixing_givenInP
+        i₀ coordinate K hP
+    0 < K.eta_of_inP hP ∧
+      (∀ {Y : CNFPublic}, D.support Y ->
+        ConcreteCNF.IsSatFormula (D.formula Y)
+          (U.bitFixingAssignment Y)) ∧
+        (∀ Y : CNFPublic,
+          realCNFSelfReductionDecoderCost (U.satDecider Y) ≤
+            realM4UniformSelfReductionDecoderCost U) ∧
+          K.lowerMachine.lowerFramework.kpolyAt =
+            realM4UniformConstantDecoderKpolyAt U ∧
+            K.lowerMachine.lowerFramework.etaTimes =
+              realCNFLinearEtaTimes (K.eta_of_inP hP) ∧
+              realM4UniformSelfReductionDecoderCost U <
+                K.eta_of_inP hP *
+                  K.lowerMachine.lowerFramework.targetBlocks := by
+  dsimp
+  let U :=
+    realM4_noTargetRowsNamedLanguageLargeTargetConstructionData_uniformBitFixing_givenInP
+      i₀ coordinate K hP
+  have hKpoly :
+      K.lowerMachine.lowerFramework.kpolyAt =
+        realM4UniformConstantDecoderKpolyAt U := by
+    simpa [U,
+      realM4_noTargetRowsNamedLanguageLargeTargetConstructionData_uniformBitFixing_givenInP,
+      realM4_noTargetRowsNamedLanguageLargeTargetConstructionData_lockedMessageUpperSupport]
+      using K.kpolyAt_eq_of_inP hP
+  have hTarget :
+      realM4UniformSelfReductionDecoderCost U <
+        K.lowerMachine.lowerFramework.targetBlocks := by
+    simpa [U,
+      realM4_noTargetRowsNamedLanguageLargeTargetConstructionData_uniformBitFixing_givenInP,
+      realM4_noTargetRowsNamedLanguageLargeTargetConstructionData_lockedMessageUpperSupport]
+      using K.targetBlocks_gt_decoder_of_inP hP
+  have hFloor :
+      realM4UniformSelfReductionDecoderCost U <
+        K.eta_of_inP hP *
+          K.lowerMachine.lowerFramework.targetBlocks :=
+    realM4_uniformSelfReductionDecoderCost_lt_linearFloor_of_targetBlocks_gt
+      (F := K.lowerMachine.lowerFramework) U (K.eta_of_inP hP)
+      (K.eta_pos_of_inP hP) hTarget
+  exact
+    ⟨K.eta_pos_of_inP hP,
+      (fun hY => realM4_uniformBitFixingAssignment_satisfies D U hY),
+      (fun Y => realM4UniformSelfReductionDecoderCost_bounds_instance U Y),
+      hKpoly,
+      K.etaTimes_eq_of_inP hP,
+      hFloor⟩
+
+/--
+The concrete constant-decoder regime extracted from strict named-language
+construction data under P-membership of the named NP language.
+-/
+def
+    realM4_noTargetRowsNamedLanguageLargeTargetConstructionData_constantDecoderRegime_givenInP
+    {m : Nat} (i₀ : Fin m) [hm : Fact (1 < m)]
+    (coordinate : V13RealLinearPublicCoordinate m)
+    {Neutral : Type} {Safe : Type x} {Gauge : Type y}
+    {Transcript : Type z} [DecidableEq Transcript]
+    {Pair : Type a} [Fintype Pair]
+    {Stage : Type b} {Branch : Type c}
+    {HistoryAtom : Type} {Pivot : Type e}
+    {Observer : Type f} {Output : Type f}
+    {PublicLock : Type g} {Quotient : Type h}
+    {LockAux : Type i} {Message : Type j}
+    {CNFPublic : Type k} {Address : CNFPublic -> Type q}
+    {Var : CNFPublic -> Type l}
+    {Witness : CNFPublic -> Type l}
+    {D : AppendixICNFReadoutData
+      PublicLock Quotient LockAux Message CNFPublic Var Witness}
+    {C : CookStylePNPClassInterface.{p}}
+    (K :
+      RealM4NoTargetRowsNamedLanguageLargeTargetOfficialConstructionData
+        (Neutral := Neutral) (Safe := Safe) (Gauge := Gauge)
+        (Transcript := Transcript) (Pair := Pair) (Stage := Stage)
+        (Branch := Branch) (HistoryAtom := HistoryAtom) (Pivot := Pivot)
+        (Observer := Observer) (Output := Output)
+        (PublicLock := PublicLock) (Quotient := Quotient)
+        (LockAux := LockAux) (Message := Message) (CNFPublic := CNFPublic)
+        (Address := Address) (Var := Var) (Witness := Witness)
+        i₀ coordinate D C)
+    (hP : C.inP K.languageNPData.separatedLanguage) :
+    RealM4UniformConstantDecoderRegime K.lowerMachine.lowerFramework
+      (realM4_noTargetRowsNamedLanguageLargeTargetConstructionData_uniformBitFixing_givenInP
+        i₀ coordinate K hP) := by
+  let U :=
+    realM4_noTargetRowsNamedLanguageLargeTargetConstructionData_uniformBitFixing_givenInP
+      i₀ coordinate K hP
+  exact
+    realM4_uniformConstantDecoderRegime_of_kpolyCompatibility_largeTarget
+      U (K.eta_of_inP hP) (K.eta_pos_of_inP hP)
+      (by
+        simpa [U,
+          realM4_noTargetRowsNamedLanguageLargeTargetConstructionData_uniformBitFixing_givenInP,
+          realM4_noTargetRowsNamedLanguageLargeTargetConstructionData_lockedMessageUpperSupport]
+          using K.kpolyAt_eq_of_inP hP)
+      (K.etaTimes_eq_of_inP hP)
+      (by
+        simpa [U,
+          realM4_noTargetRowsNamedLanguageLargeTargetConstructionData_uniformBitFixing_givenInP,
+          realM4_noTargetRowsNamedLanguageLargeTargetConstructionData_lockedMessageUpperSupport]
+          using K.targetBlocks_gt_decoder_of_inP hP)
+
+/--
+Field audit for the strict named-language constant-decoder regime.  The final
+conjunct is the v13 `SelfReductionUpperHypothesis` for the real lower
+framework.
+-/
+theorem
+    realM4_noTargetRowsNamedLanguageLargeTargetConstructionData_constantDecoderRegime_givenInP_fields
+    {m : Nat} (i₀ : Fin m) [hm : Fact (1 < m)]
+    (coordinate : V13RealLinearPublicCoordinate m)
+    {Neutral : Type} {Safe : Type x} {Gauge : Type y}
+    {Transcript : Type z} [DecidableEq Transcript]
+    {Pair : Type a} [Fintype Pair]
+    {Stage : Type b} {Branch : Type c}
+    {HistoryAtom : Type} {Pivot : Type e}
+    {Observer : Type f} {Output : Type f}
+    {PublicLock : Type g} {Quotient : Type h}
+    {LockAux : Type i} {Message : Type j}
+    {CNFPublic : Type k} {Address : CNFPublic -> Type q}
+    {Var : CNFPublic -> Type l}
+    {Witness : CNFPublic -> Type l}
+    {D : AppendixICNFReadoutData
+      PublicLock Quotient LockAux Message CNFPublic Var Witness}
+    {C : CookStylePNPClassInterface.{p}}
+    (K :
+      RealM4NoTargetRowsNamedLanguageLargeTargetOfficialConstructionData
+        (Neutral := Neutral) (Safe := Safe) (Gauge := Gauge)
+        (Transcript := Transcript) (Pair := Pair) (Stage := Stage)
+        (Branch := Branch) (HistoryAtom := HistoryAtom) (Pivot := Pivot)
+        (Observer := Observer) (Output := Output)
+        (PublicLock := PublicLock) (Quotient := Quotient)
+        (LockAux := LockAux) (Message := Message) (CNFPublic := CNFPublic)
+        (Address := Address) (Var := Var) (Witness := Witness)
+        i₀ coordinate D C)
+    (hP : C.inP K.languageNPData.separatedLanguage) :
+    let U :=
+      realM4_noTargetRowsNamedLanguageLargeTargetConstructionData_uniformBitFixing_givenInP
+        i₀ coordinate K hP
+    let R :=
+      realM4_noTargetRowsNamedLanguageLargeTargetConstructionData_constantDecoderRegime_givenInP
+        i₀ coordinate K hP
+    R.eta = K.eta_of_inP hP ∧
+      0 < R.eta ∧
+        K.lowerMachine.lowerFramework.kpolyAt =
+          realM4UniformConstantDecoderKpolyAt U ∧
+          K.lowerMachine.lowerFramework.etaTimes =
+            realCNFLinearEtaTimes R.eta ∧
+            realM4UniformSelfReductionDecoderCost U <
+              R.eta * K.lowerMachine.lowerFramework.targetBlocks ∧
+              SelfReductionUpperHypothesis K.lowerMachine.lowerFramework := by
+  dsimp
+  let U :=
+    realM4_noTargetRowsNamedLanguageLargeTargetConstructionData_uniformBitFixing_givenInP
+      i₀ coordinate K hP
+  let R :=
+    realM4_noTargetRowsNamedLanguageLargeTargetConstructionData_constantDecoderRegime_givenInP
+      i₀ coordinate K hP
+  exact
+    ⟨rfl,
+      K.eta_pos_of_inP hP,
+      R.kpolyAt_eq,
+      R.etaTimes_eq,
+      R.floor_dominates_decoder,
+      realM4_uniformSelfReductionUpperHypothesis_givenPNP U R⟩
+
+/--
+Explicit self-reduction upper discharge from strict named-language
+construction data under P-membership of the named NP language.  The SAT
+decider is derived from that P-membership proof; the readout side uses the
+locked-message data carried by the real construction surface.
+-/
+def
+    realM4_selfReductionUpperDischarge_of_noTargetRowsNamedLanguageLargeTargetConstructionData_inP
+    {m : Nat} (i₀ : Fin m) [hm : Fact (1 < m)]
+    (coordinate : V13RealLinearPublicCoordinate m)
+    {Neutral : Type} {Safe : Type x} {Gauge : Type y}
+    {Transcript : Type z} [DecidableEq Transcript]
+    {Pair : Type a} [Fintype Pair]
+    {Stage : Type b} {Branch : Type c}
+    {HistoryAtom : Type} {Pivot : Type e}
+    {Observer : Type f} {Output : Type f}
+    {PublicLock : Type g} {Quotient : Type h}
+    {LockAux : Type i} {Message : Type j}
+    {CNFPublic : Type k} {Address : CNFPublic -> Type q}
+    {Var : CNFPublic -> Type l}
+    {Witness : CNFPublic -> Type l}
+    {D : AppendixICNFReadoutData
+      PublicLock Quotient LockAux Message CNFPublic Var Witness}
+    {C : CookStylePNPClassInterface.{p}}
+    (K :
+      RealM4NoTargetRowsNamedLanguageLargeTargetOfficialConstructionData
+        (Neutral := Neutral) (Safe := Safe) (Gauge := Gauge)
+        (Transcript := Transcript) (Pair := Pair) (Stage := Stage)
+        (Branch := Branch) (HistoryAtom := HistoryAtom) (Pivot := Pivot)
+        (Observer := Observer) (Output := Output)
+        (PublicLock := PublicLock) (Quotient := Quotient)
+        (LockAux := LockAux) (Message := Message) (CNFPublic := CNFPublic)
+        (Address := Address) (Var := Var) (Witness := Witness)
+        i₀ coordinate D C)
+    (hP : C.inP K.languageNPData.separatedLanguage) :
+    RealM4SelfReductionUpperExplicitPNPDischarge
+      D K.lowerMachine.lowerFramework := by
+  let support :=
+    realM4_noTargetRowsNamedLanguageLargeTargetConstructionData_lockedMessageUpperSupport
+      i₀ coordinate K
+  exact
+    RealM4SelfReductionUpperExplicitPNPDischarge.ofLockedMessageData
+      K.lockedMessageData support.uniformSupport
+      (K.pToDeciderFamilyData.pnpDeciderFamily_of_inP hP)
+      (realM4_noTargetRowsNamedLanguageLargeTargetConstructionData_constantDecoderRegime_givenInP
+        i₀ coordinate K hP)
+
+/--
+Checked output of the strict named-language P-membership upper side:
+bit-fixing produces satisfying assignments, the locked readout returns the
+fixed public message, instance decoder costs are uniformly bounded, and
+`SelfReductionUpperHypothesis` follows for the real lower framework.
+-/
+theorem
+    realM4_noTargetRowsNamedLanguageLargeTargetConstructionData_selfReduction_outputs_givenInP
+    {m : Nat} (i₀ : Fin m) [hm : Fact (1 < m)]
+    (coordinate : V13RealLinearPublicCoordinate m)
+    {Neutral : Type} {Safe : Type x} {Gauge : Type y}
+    {Transcript : Type z} [DecidableEq Transcript]
+    {Pair : Type a} [Fintype Pair]
+    {Stage : Type b} {Branch : Type c}
+    {HistoryAtom : Type} {Pivot : Type e}
+    {Observer : Type f} {Output : Type f}
+    {PublicLock : Type g} {Quotient : Type h}
+    {LockAux : Type i} {Message : Type j}
+    {CNFPublic : Type k} {Address : CNFPublic -> Type q}
+    {Var : CNFPublic -> Type l}
+    {Witness : CNFPublic -> Type l}
+    {D : AppendixICNFReadoutData
+      PublicLock Quotient LockAux Message CNFPublic Var Witness}
+    {C : CookStylePNPClassInterface.{p}}
+    (K :
+      RealM4NoTargetRowsNamedLanguageLargeTargetOfficialConstructionData
+        (Neutral := Neutral) (Safe := Safe) (Gauge := Gauge)
+        (Transcript := Transcript) (Pair := Pair) (Stage := Stage)
+        (Branch := Branch) (HistoryAtom := HistoryAtom) (Pivot := Pivot)
+        (Observer := Observer) (Output := Output)
+        (PublicLock := PublicLock) (Quotient := Quotient)
+        (LockAux := LockAux) (Message := Message) (CNFPublic := CNFPublic)
+        (Address := Address) (Var := Var) (Witness := Witness)
+        i₀ coordinate D C)
+    (hP : C.inP K.languageNPData.separatedLanguage) :
+    let S :=
+      realM4_selfReductionUpperDischarge_of_noTargetRowsNamedLanguageLargeTargetConstructionData_inP
+        i₀ coordinate K hP
+    (∀ {Y : CNFPublic}, D.support Y ->
+      ConcreteCNF.IsSatFormula (D.formula Y)
+        (S.uniformBitFixing.bitFixingAssignment Y)) ∧
+    (∀ {Y : CNFPublic}, D.support Y ->
+      D.projection Y (S.uniformBitFixing.bitFixingAssignment Y) =
+        S.publicMessage (D.publicLock Y)) ∧
+    (∀ Y : CNFPublic,
+      realCNFSelfReductionDecoderCost (S.uniformBitFixing.satDecider Y) ≤
+        realM4UniformSelfReductionDecoderCost S.uniformBitFixing) ∧
+    SelfReductionUpperHypothesis K.lowerMachine.lowerFramework := by
+  dsimp
+  exact
+    realM4_selfReductionUpperExplicitPNPDischarge_assignment_readout_cost_and_upper
+      (S :=
+        realM4_selfReductionUpperDischarge_of_noTargetRowsNamedLanguageLargeTargetConstructionData_inP
+          i₀ coordinate K hP)
+
+/--
+Specialization of the strict named-language upper discharge at a candidate
+`P = NP` witness.  The equality witness is used only to put the already named
+NP language in `P`; the SAT decider family then enters the same explicit
+P-membership upper package.
+-/
+def
+    realM4_selfReductionUpperDischarge_of_noTargetRowsNamedLanguageLargeTargetConstructionData_pEqualsNP
+    {m : Nat} (i₀ : Fin m) [hm : Fact (1 < m)]
+    (coordinate : V13RealLinearPublicCoordinate m)
+    {Neutral : Type} {Safe : Type x} {Gauge : Type y}
+    {Transcript : Type z} [DecidableEq Transcript]
+    {Pair : Type a} [Fintype Pair]
+    {Stage : Type b} {Branch : Type c}
+    {HistoryAtom : Type} {Pivot : Type e}
+    {Observer : Type f} {Output : Type f}
+    {PublicLock : Type g} {Quotient : Type h}
+    {LockAux : Type i} {Message : Type j}
+    {CNFPublic : Type k} {Address : CNFPublic -> Type q}
+    {Var : CNFPublic -> Type l}
+    {Witness : CNFPublic -> Type l}
+    {D : AppendixICNFReadoutData
+      PublicLock Quotient LockAux Message CNFPublic Var Witness}
+    {C : CookStylePNPClassInterface.{p}}
+    (K :
+      RealM4NoTargetRowsNamedLanguageLargeTargetOfficialConstructionData
+        (Neutral := Neutral) (Safe := Safe) (Gauge := Gauge)
+        (Transcript := Transcript) (Pair := Pair) (Stage := Stage)
+        (Branch := Branch) (HistoryAtom := HistoryAtom) (Pivot := Pivot)
+        (Observer := Observer) (Output := Output)
+        (PublicLock := PublicLock) (Quotient := Quotient)
+        (LockAux := LockAux) (Message := Message) (CNFPublic := CNFPublic)
+        (Address := Address) (Var := Var) (Witness := Witness)
+        i₀ coordinate D C)
+    (hEq : C.pEqualsNP) :
+    RealM4SelfReductionUpperExplicitPNPDischarge
+      D K.lowerMachine.lowerFramework :=
+  realM4_selfReductionUpperDischarge_of_noTargetRowsNamedLanguageLargeTargetConstructionData_inP
+    i₀ coordinate K
+    (hEq K.languageNPData.separatedLanguage
+      K.languageNPData.separatedLanguage_inNP)
+
+/--
+Checked output of the strict named-language upper branch under a candidate
+`P = NP` witness.  This is the real conditional self-reduction side used by
+the lock-in route, stated separately from StarSW and the analytic frontiers.
+-/
+theorem
+    realM4_noTargetRowsNamedLanguageLargeTargetConstructionData_selfReduction_outputs_givenPEqualsNP
+    {m : Nat} (i₀ : Fin m) [hm : Fact (1 < m)]
+    (coordinate : V13RealLinearPublicCoordinate m)
+    {Neutral : Type} {Safe : Type x} {Gauge : Type y}
+    {Transcript : Type z} [DecidableEq Transcript]
+    {Pair : Type a} [Fintype Pair]
+    {Stage : Type b} {Branch : Type c}
+    {HistoryAtom : Type} {Pivot : Type e}
+    {Observer : Type f} {Output : Type f}
+    {PublicLock : Type g} {Quotient : Type h}
+    {LockAux : Type i} {Message : Type j}
+    {CNFPublic : Type k} {Address : CNFPublic -> Type q}
+    {Var : CNFPublic -> Type l}
+    {Witness : CNFPublic -> Type l}
+    {D : AppendixICNFReadoutData
+      PublicLock Quotient LockAux Message CNFPublic Var Witness}
+    {C : CookStylePNPClassInterface.{p}}
+    (K :
+      RealM4NoTargetRowsNamedLanguageLargeTargetOfficialConstructionData
+        (Neutral := Neutral) (Safe := Safe) (Gauge := Gauge)
+        (Transcript := Transcript) (Pair := Pair) (Stage := Stage)
+        (Branch := Branch) (HistoryAtom := HistoryAtom) (Pivot := Pivot)
+        (Observer := Observer) (Output := Output)
+        (PublicLock := PublicLock) (Quotient := Quotient)
+        (LockAux := LockAux) (Message := Message) (CNFPublic := CNFPublic)
+        (Address := Address) (Var := Var) (Witness := Witness)
+        i₀ coordinate D C)
+    (hEq : C.pEqualsNP) :
+    let S :=
+      realM4_selfReductionUpperDischarge_of_noTargetRowsNamedLanguageLargeTargetConstructionData_pEqualsNP
+        i₀ coordinate K hEq
+    (∀ {Y : CNFPublic}, D.support Y ->
+      ConcreteCNF.IsSatFormula (D.formula Y)
+        (S.uniformBitFixing.bitFixingAssignment Y)) ∧
+    (∀ {Y : CNFPublic}, D.support Y ->
+      D.projection Y (S.uniformBitFixing.bitFixingAssignment Y) =
+        S.publicMessage (D.publicLock Y)) ∧
+    (∀ Y : CNFPublic,
+      realCNFSelfReductionDecoderCost (S.uniformBitFixing.satDecider Y) ≤
+        realM4UniformSelfReductionDecoderCost S.uniformBitFixing) ∧
+    SelfReductionUpperHypothesis K.lowerMachine.lowerFramework := by
+  dsimp
+  exact
+    realM4_noTargetRowsNamedLanguageLargeTargetConstructionData_selfReduction_outputs_givenInP
+      i₀ coordinate K
+      (hEq K.languageNPData.separatedLanguage
+        K.languageNPData.separatedLanguage_inNP)
+
+/--
 Bundled strict named-language endpoint from one large-target construction
 surface.  After the construction bundle is supplied, the theorem-level
 mathematical hypotheses are exactly StarSW hardness plus safeQSSM,
@@ -20147,6 +20627,55 @@ theorem realM4StrictNamedRealLockInEndpointHypothesisAudit_exact :
 
 def realM4StrictNamedRealLockInStatement : String :=
   "The strict named-language large-target route is the preferred real lock-in audit surface: its construction obligations are exactly the fields of the no-target-rows named-language large-target construction object, and after that construction object is supplied, the endpoint theorem has exactly StarSW hardness plus safeQSSM / boundedGaugeIncidence / boundaryMixing as mathematical frontier inputs.  The equality-indexed lock-in route is obtained mechanically from this strict route by specialization at a candidate P=NP witness."
+
+def realM4StrictNamedSelfReductionUpperItems : List String := [
+  "lockedMessageUpperSupport",
+  "pMembershipDerivedSATDecider",
+  "addressDerivedUniformBitFixing",
+  "pMembershipEtaPositive",
+  "kpolyAtConstantDecoder",
+  "etaTimesLinearFloor",
+  "targetBlocksExceedsConstantDecoderCost",
+  "selfReductionUpperHypothesis",
+  "bitFixingReadoutReturnsPublicMessage"
+]
+
+theorem realM4StrictNamedSelfReductionUpperItems_exact :
+    realM4StrictNamedSelfReductionUpperItems =
+      [ "lockedMessageUpperSupport",
+        "pMembershipDerivedSATDecider",
+        "addressDerivedUniformBitFixing",
+        "pMembershipEtaPositive",
+        "kpolyAtConstantDecoder",
+        "etaTimesLinearFloor",
+        "targetBlocksExceedsConstantDecoderCost",
+        "selfReductionUpperHypothesis",
+        "bitFixingReadoutReturnsPublicMessage" ] := by
+  rfl
+
+def realM4StrictNamedSelfReductionUpperConditionalInputs :
+    List String := [
+  "pMembershipOfNamedLanguage"
+]
+
+theorem realM4StrictNamedSelfReductionUpperConditionalInputs_exact :
+    realM4StrictNamedSelfReductionUpperConditionalInputs =
+      [ "pMembershipOfNamedLanguage" ] := by
+  rfl
+
+def realM4StrictNamedSelfReductionUpperPEqualsNPSpecializationInputs :
+    List String := [
+  "pEqualsNPWitness"
+]
+
+theorem
+    realM4StrictNamedSelfReductionUpperPEqualsNPSpecializationInputs_exact :
+    realM4StrictNamedSelfReductionUpperPEqualsNPSpecializationInputs =
+      [ "pEqualsNPWitness" ] := by
+  rfl
+
+def realM4StrictNamedSelfReductionUpperStatement : String :=
+  "For the strict named-language large-target construction surface, P-membership of the named NP language derives the SAT decider family used by real bit-fixing self-reduction, constructs the constant decoder regime from P-membership-indexed eta/K-poly/target-block fields, and yields SelfReductionUpperHypothesis for the real lower framework; a candidate P=NP witness supplies this P-membership by NP membership of the named language."
 
 def realM4NamedLanguageLargeTargetKpolySplitBundleStatement : String :=
   "The large-target K-poly split bundle packages named-language NP membership and non-membership, Cook-style class inequality, the official separation proposition, and the existential NP-not-P endpoint from the same explicit construction surface.  Its mathematical frontier inputs remain exactly StarSW hardness plus safeQSSM / boundedGaugeIncidence / boundaryMixing; the P-membership-indexed eta, K-poly, floor, and target-block facts are construction obligations for locking the real route."
