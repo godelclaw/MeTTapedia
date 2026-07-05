@@ -4788,6 +4788,407 @@ theorem v13RealLinearNoTargetRowsGaugeCNF_admissibleHistories
     v13RealLinearNoTargetRowsGaugeCNF_publicCoordinate_balancedConditioning
       i₀ coordinate⟩
 
+/-- Forget the Appendix-I packaging and view a no-target-rows Appendix-I CNF
+world as the underlying no-target-rows gauge-CNF world. -/
+noncomputable def
+    v13RealLinearNoTargetRowsGaugeCNFAppendixICNFWorldAsGaugeCNFWorld
+    {m : Nat} {i₀ : Fin m}
+    (omega :
+      RealM4CNFWorld
+        (v13RealLinearNoTargetRowsGaugeCNFAppendixICNFReadoutData i₀)) :
+    V13RealLinearNoTargetRowsGaugeCNFWorld m i₀ where
+  base := omega.publicInstance
+  assignment := omega.assignment
+  sat := omega.sat
+
+/-- Add the Appendix-I packaging to an underlying no-target-rows
+gauge-CNF world. -/
+noncomputable def
+    v13RealLinearNoTargetRowsGaugeCNFAppendixICNFWorldOfGaugeCNFWorld
+    {m : Nat} {i₀ : Fin m}
+    (omega : V13RealLinearNoTargetRowsGaugeCNFWorld m i₀) :
+    RealM4CNFWorld
+      (v13RealLinearNoTargetRowsGaugeCNFAppendixICNFReadoutData i₀) where
+  publicInstance := omega.base
+  support := trivial
+  assignment := omega.assignment
+  sat := omega.sat
+
+/-- The no-target-rows Appendix-I CNF world carrier is the same concrete
+carrier as the no-target-rows gauge-CNF SAT world. -/
+noncomputable def
+    v13RealLinearNoTargetRowsGaugeCNFAppendixICNFWorldGaugeCNFEquiv
+    {m : Nat} {i₀ : Fin m} :
+    RealM4CNFWorld
+        (v13RealLinearNoTargetRowsGaugeCNFAppendixICNFReadoutData i₀) ≃
+      V13RealLinearNoTargetRowsGaugeCNFWorld m i₀ where
+  toFun :=
+    v13RealLinearNoTargetRowsGaugeCNFAppendixICNFWorldAsGaugeCNFWorld
+  invFun :=
+    v13RealLinearNoTargetRowsGaugeCNFAppendixICNFWorldOfGaugeCNFWorld
+  left_inv := by
+    intro omega
+    cases omega with
+    | mk publicInstance support assignment sat =>
+        simp
+          [v13RealLinearNoTargetRowsGaugeCNFAppendixICNFWorldAsGaugeCNFWorld,
+            v13RealLinearNoTargetRowsGaugeCNFAppendixICNFWorldOfGaugeCNFWorld]
+  right_inv := by
+    intro omega
+    cases omega with
+    | mk base assignment sat =>
+        simp
+          [v13RealLinearNoTargetRowsGaugeCNFAppendixICNFWorldAsGaugeCNFWorld,
+            v13RealLinearNoTargetRowsGaugeCNFAppendixICNFWorldOfGaugeCNFWorld]
+
+noncomputable instance
+    v13RealLinearNoTargetRowsGaugeCNFAppendixICNFWorldFintype
+    {m : Nat} {i₀ : Fin m} :
+    Fintype
+      (RealM4CNFWorld
+        (v13RealLinearNoTargetRowsGaugeCNFAppendixICNFReadoutData i₀)) :=
+  Fintype.ofEquiv (V13RealLinearNoTargetRowsGaugeCNFWorld m i₀)
+    v13RealLinearNoTargetRowsGaugeCNFAppendixICNFWorldGaugeCNFEquiv.symm
+
+/-- Public-coordinate history field lifted to the no-target-rows Appendix-I
+CNF world. -/
+noncomputable def
+    v13RealLinearNoTargetRowsGaugeCNFAppendixICNFPublicCoordinateField
+    {m : Nat} {i₀ : Fin m}
+    (coordinate : V13RealLinearPublicCoordinate m) :
+    FiniteSigmaField
+      (RealM4CNFWorld
+        (v13RealLinearNoTargetRowsGaugeCNFAppendixICNFReadoutData i₀)) where
+  Atom := ZMod 2
+  atomDecidable := inferInstance
+  atom := fun omega =>
+    v13RealLinearCoordinateValue coordinate
+      (v13RealLinearNoTargetRowsPublicInput omega.publicInstance)
+
+/-- The Appendix-I CNF world target agrees with the target of the underlying
+no-target-rows gauge-CNF world. -/
+theorem
+    v13RealLinearNoTargetRowsGaugeCNFAppendixICNFWorldTarget_eq_gaugeCNFTarget
+    {m : Nat} {i₀ : Fin m}
+    (omega :
+      RealM4CNFWorld
+        (v13RealLinearNoTargetRowsGaugeCNFAppendixICNFReadoutData i₀)) :
+    v13RealLinearNoTargetRowsGaugeCNFAppendixICNFWorldTarget omega =
+      v13RealLinearNoTargetRowsGaugeCNFTarget
+        (v13RealLinearNoTargetRowsGaugeCNFAppendixICNFWorldAsGaugeCNFWorld
+          omega) := by
+  calc
+    v13RealLinearNoTargetRowsGaugeCNFAppendixICNFWorldTarget omega =
+        v13RealLinearNoTargetRowsTargetBit omega.publicInstance := by
+      rfl
+    _ =
+        v13RealLinearNoTargetRowsGaugeCNFTarget
+          (v13RealLinearNoTargetRowsGaugeCNFAppendixICNFWorldAsGaugeCNFWorld
+            omega) :=
+      (v13RealLinearNoTargetRowsGaugeCNFReadout_eq_targetBit
+        (v13RealLinearNoTargetRowsGaugeCNFAppendixICNFWorldAsGaugeCNFWorld
+          omega)).symm
+
+/-- Constant-true correct fibers transfer from the Appendix-I CNF world to the
+underlying no-target-rows gauge-CNF world. -/
+noncomputable def
+    v13RealLinearNoTargetRowsGaugeCNFAppendixICNFCorrectTrueEquivGaugeCNF
+    {m : Nat} {i₀ : Fin m} :
+    {omega :
+      RealM4CNFWorld
+        (v13RealLinearNoTargetRowsGaugeCNFAppendixICNFReadoutData i₀) //
+      (fun _ :
+        RealM4CNFWorld
+          (v13RealLinearNoTargetRowsGaugeCNFAppendixICNFReadoutData i₀) =>
+        true) omega =
+        v13RealLinearNoTargetRowsGaugeCNFAppendixICNFWorldTarget omega} ≃
+      {omega : V13RealLinearNoTargetRowsGaugeCNFWorld m i₀ //
+        (fun _ : V13RealLinearNoTargetRowsGaugeCNFWorld m i₀ => true)
+          omega =
+          v13RealLinearNoTargetRowsGaugeCNFTarget omega} where
+  toFun := fun omega =>
+    ⟨v13RealLinearNoTargetRowsGaugeCNFAppendixICNFWorldAsGaugeCNFWorld
+        omega.val, by
+      calc
+        true =
+            v13RealLinearNoTargetRowsGaugeCNFAppendixICNFWorldTarget
+              omega.val :=
+          omega.property
+        _ =
+            v13RealLinearNoTargetRowsGaugeCNFTarget
+              (v13RealLinearNoTargetRowsGaugeCNFAppendixICNFWorldAsGaugeCNFWorld
+                omega.val) :=
+          v13RealLinearNoTargetRowsGaugeCNFAppendixICNFWorldTarget_eq_gaugeCNFTarget
+            omega.val⟩
+  invFun := fun omega =>
+    ⟨v13RealLinearNoTargetRowsGaugeCNFAppendixICNFWorldOfGaugeCNFWorld
+        omega.val, by
+      calc
+        true =
+            v13RealLinearNoTargetRowsGaugeCNFTarget omega.val :=
+          omega.property
+        _ =
+            v13RealLinearNoTargetRowsGaugeCNFAppendixICNFWorldTarget
+              (v13RealLinearNoTargetRowsGaugeCNFAppendixICNFWorldOfGaugeCNFWorld
+                omega.val) := by
+          rw [
+            v13RealLinearNoTargetRowsGaugeCNFAppendixICNFWorldTarget_eq_gaugeCNFTarget]
+          simp
+            [v13RealLinearNoTargetRowsGaugeCNFAppendixICNFWorldAsGaugeCNFWorld,
+              v13RealLinearNoTargetRowsGaugeCNFAppendixICNFWorldOfGaugeCNFWorld]⟩
+  left_inv := by
+    intro omega
+    apply Subtype.ext
+    exact
+      v13RealLinearNoTargetRowsGaugeCNFAppendixICNFWorldGaugeCNFEquiv.left_inv
+        omega.val
+  right_inv := by
+    intro omega
+    apply Subtype.ext
+    exact
+      v13RealLinearNoTargetRowsGaugeCNFAppendixICNFWorldGaugeCNFEquiv.right_inv
+        omega.val
+
+/-- Global target balance transfers to the no-target-rows Appendix-I CNF
+world. -/
+theorem v13RealLinearNoTargetRowsGaugeCNFAppendixICNF_target_balanced
+    {m : Nat} (i₀ : Fin m) (hm : 1 < m) :
+    BalancedBit
+      (@v13RealLinearNoTargetRowsGaugeCNFAppendixICNFWorldTarget
+        m i₀) := by
+  unfold BalancedBit globalDecoderSuccess
+  have hcorrect :
+      Fintype.card
+          {omega :
+            RealM4CNFWorld
+              (v13RealLinearNoTargetRowsGaugeCNFAppendixICNFReadoutData
+                i₀) //
+            (fun _ :
+              RealM4CNFWorld
+                (v13RealLinearNoTargetRowsGaugeCNFAppendixICNFReadoutData
+                  i₀) => true) omega =
+              v13RealLinearNoTargetRowsGaugeCNFAppendixICNFWorldTarget
+                omega} =
+        Fintype.card
+          {omega : V13RealLinearNoTargetRowsGaugeCNFWorld m i₀ //
+            (fun _ : V13RealLinearNoTargetRowsGaugeCNFWorld m i₀ =>
+              true) omega =
+              v13RealLinearNoTargetRowsGaugeCNFTarget omega} :=
+    Fintype.card_congr
+      v13RealLinearNoTargetRowsGaugeCNFAppendixICNFCorrectTrueEquivGaugeCNF
+  have hall :
+      Fintype.card
+          (RealM4CNFWorld
+            (v13RealLinearNoTargetRowsGaugeCNFAppendixICNFReadoutData
+              i₀)) =
+        Fintype.card (V13RealLinearNoTargetRowsGaugeCNFWorld m i₀) :=
+    Fintype.card_congr
+      v13RealLinearNoTargetRowsGaugeCNFAppendixICNFWorldGaugeCNFEquiv
+  rw [hcorrect, hall]
+  have hbalanced :=
+    v13RealLinearNoTargetRowsGaugeCNF_target_balanced i₀ hm
+  unfold BalancedBit globalDecoderSuccess at hbalanced
+  exact hbalanced
+
+/-- Target-true public-coordinate fibers transfer from the Appendix-I CNF
+world to the underlying no-target-rows gauge-CNF world. -/
+noncomputable def
+    v13RealLinearNoTargetRowsGaugeCNFAppendixICNFFiberTrueEquivGaugeCNF
+    {m : Nat} {i₀ : Fin m}
+    (coordinate : V13RealLinearPublicCoordinate m) (value : ZMod 2) :
+    FiberTrue
+        (fun omega :
+          RealM4CNFWorld
+            (v13RealLinearNoTargetRowsGaugeCNFAppendixICNFReadoutData i₀) =>
+          v13RealLinearCoordinateValue coordinate
+            (v13RealLinearNoTargetRowsPublicInput omega.publicInstance))
+        (@v13RealLinearNoTargetRowsGaugeCNFAppendixICNFWorldTarget m i₀)
+        value ≃
+      FiberTrue
+        (fun omega : V13RealLinearNoTargetRowsGaugeCNFWorld m i₀ =>
+          v13RealLinearCoordinateValue coordinate
+            (v13RealLinearNoTargetRowsPublicInput omega.base))
+        (@v13RealLinearNoTargetRowsGaugeCNFTarget m i₀) value where
+  toFun := fun omega =>
+    ⟨v13RealLinearNoTargetRowsGaugeCNFAppendixICNFWorldAsGaugeCNFWorld
+        omega.val, by
+      rcases omega.property with ⟨hatom, htarget⟩
+      exact
+        ⟨hatom, by
+          rw [
+            (v13RealLinearNoTargetRowsGaugeCNFAppendixICNFWorldTarget_eq_gaugeCNFTarget
+              omega.val).symm]
+          exact htarget⟩⟩
+  invFun := fun omega =>
+    ⟨v13RealLinearNoTargetRowsGaugeCNFAppendixICNFWorldOfGaugeCNFWorld
+        omega.val, by
+      rcases omega.property with ⟨hatom, htarget⟩
+      constructor
+      · exact hatom
+      · rw [
+          v13RealLinearNoTargetRowsGaugeCNFAppendixICNFWorldTarget_eq_gaugeCNFTarget]
+        simp
+          [v13RealLinearNoTargetRowsGaugeCNFAppendixICNFWorldAsGaugeCNFWorld,
+            v13RealLinearNoTargetRowsGaugeCNFAppendixICNFWorldOfGaugeCNFWorld]
+        exact htarget⟩
+  left_inv := by
+    intro omega
+    apply Subtype.ext
+    exact
+      v13RealLinearNoTargetRowsGaugeCNFAppendixICNFWorldGaugeCNFEquiv.left_inv
+        omega.val
+  right_inv := by
+    intro omega
+    apply Subtype.ext
+    exact
+      v13RealLinearNoTargetRowsGaugeCNFAppendixICNFWorldGaugeCNFEquiv.right_inv
+        omega.val
+
+/-- Target-false public-coordinate fibers transfer from the Appendix-I CNF
+world to the underlying no-target-rows gauge-CNF world. -/
+noncomputable def
+    v13RealLinearNoTargetRowsGaugeCNFAppendixICNFFiberFalseEquivGaugeCNF
+    {m : Nat} {i₀ : Fin m}
+    (coordinate : V13RealLinearPublicCoordinate m) (value : ZMod 2) :
+    FiberFalse
+        (fun omega :
+          RealM4CNFWorld
+            (v13RealLinearNoTargetRowsGaugeCNFAppendixICNFReadoutData i₀) =>
+          v13RealLinearCoordinateValue coordinate
+            (v13RealLinearNoTargetRowsPublicInput omega.publicInstance))
+        (@v13RealLinearNoTargetRowsGaugeCNFAppendixICNFWorldTarget m i₀)
+        value ≃
+      FiberFalse
+        (fun omega : V13RealLinearNoTargetRowsGaugeCNFWorld m i₀ =>
+          v13RealLinearCoordinateValue coordinate
+            (v13RealLinearNoTargetRowsPublicInput omega.base))
+        (@v13RealLinearNoTargetRowsGaugeCNFTarget m i₀) value where
+  toFun := fun omega =>
+    ⟨v13RealLinearNoTargetRowsGaugeCNFAppendixICNFWorldAsGaugeCNFWorld
+        omega.val, by
+      rcases omega.property with ⟨hatom, htarget⟩
+      exact
+        ⟨hatom, by
+          rw [
+            (v13RealLinearNoTargetRowsGaugeCNFAppendixICNFWorldTarget_eq_gaugeCNFTarget
+              omega.val).symm]
+          exact htarget⟩⟩
+  invFun := fun omega =>
+    ⟨v13RealLinearNoTargetRowsGaugeCNFAppendixICNFWorldOfGaugeCNFWorld
+        omega.val, by
+      rcases omega.property with ⟨hatom, htarget⟩
+      constructor
+      · exact hatom
+      · rw [
+          v13RealLinearNoTargetRowsGaugeCNFAppendixICNFWorldTarget_eq_gaugeCNFTarget]
+        simp
+          [v13RealLinearNoTargetRowsGaugeCNFAppendixICNFWorldAsGaugeCNFWorld,
+            v13RealLinearNoTargetRowsGaugeCNFAppendixICNFWorldOfGaugeCNFWorld]
+        exact htarget⟩
+  left_inv := by
+    intro omega
+    apply Subtype.ext
+    exact
+      v13RealLinearNoTargetRowsGaugeCNFAppendixICNFWorldGaugeCNFEquiv.left_inv
+        omega.val
+  right_inv := by
+    intro omega
+    apply Subtype.ext
+    exact
+      v13RealLinearNoTargetRowsGaugeCNFAppendixICNFWorldGaugeCNFEquiv.right_inv
+        omega.val
+
+/-- Public-coordinate conditioning balance transfers to the no-target-rows
+Appendix-I CNF world. -/
+theorem
+    v13RealLinearNoTargetRowsGaugeCNFAppendixICNF_publicCoordinate_balancedConditioning
+    {m : Nat} (i₀ : Fin m)
+    (coordinate : V13RealLinearPublicCoordinate m) :
+    BalancedConditioning
+      (v13RealLinearNoTargetRowsGaugeCNFAppendixICNFPublicCoordinateField
+        (i₀ := i₀) coordinate)
+      (@v13RealLinearNoTargetRowsGaugeCNFAppendixICNFWorldTarget
+        m i₀) := by
+  classical
+  change Neutral
+    (fun omega :
+      RealM4CNFWorld
+        (v13RealLinearNoTargetRowsGaugeCNFAppendixICNFReadoutData i₀) =>
+      v13RealLinearCoordinateValue coordinate
+        (v13RealLinearNoTargetRowsPublicInput omega.publicInstance))
+    (@v13RealLinearNoTargetRowsGaugeCNFAppendixICNFWorldTarget m i₀)
+  intro value
+  calc
+    Fintype.card
+        (FiberTrue
+          (fun omega :
+            RealM4CNFWorld
+              (v13RealLinearNoTargetRowsGaugeCNFAppendixICNFReadoutData
+                i₀) =>
+            v13RealLinearCoordinateValue coordinate
+              (v13RealLinearNoTargetRowsPublicInput
+                omega.publicInstance))
+          (@v13RealLinearNoTargetRowsGaugeCNFAppendixICNFWorldTarget
+            m i₀) value) =
+        Fintype.card
+          (FiberTrue
+            (fun omega : V13RealLinearNoTargetRowsGaugeCNFWorld m i₀ =>
+              v13RealLinearCoordinateValue coordinate
+                (v13RealLinearNoTargetRowsPublicInput omega.base))
+            (@v13RealLinearNoTargetRowsGaugeCNFTarget m i₀) value) :=
+      Fintype.card_congr
+        (v13RealLinearNoTargetRowsGaugeCNFAppendixICNFFiberTrueEquivGaugeCNF
+          coordinate value)
+    _ =
+        Fintype.card
+          (FiberFalse
+            (fun omega : V13RealLinearNoTargetRowsGaugeCNFWorld m i₀ =>
+              v13RealLinearCoordinateValue coordinate
+                (v13RealLinearNoTargetRowsPublicInput omega.base))
+            (@v13RealLinearNoTargetRowsGaugeCNFTarget m i₀) value) := by
+      have h :=
+        v13RealLinearNoTargetRowsGaugeCNF_publicCoordinate_balancedConditioning
+          i₀ coordinate
+      change Neutral
+        (fun omega : V13RealLinearNoTargetRowsGaugeCNFWorld m i₀ =>
+          v13RealLinearCoordinateValue coordinate
+            (v13RealLinearNoTargetRowsPublicInput omega.base))
+        (@v13RealLinearNoTargetRowsGaugeCNFTarget m i₀) at h
+      exact h value
+    _ =
+        Fintype.card
+          (FiberFalse
+            (fun omega :
+              RealM4CNFWorld
+                (v13RealLinearNoTargetRowsGaugeCNFAppendixICNFReadoutData
+                  i₀) =>
+              v13RealLinearCoordinateValue coordinate
+                (v13RealLinearNoTargetRowsPublicInput
+                  omega.publicInstance))
+            (@v13RealLinearNoTargetRowsGaugeCNFAppendixICNFWorldTarget
+              m i₀) value) :=
+      (Fintype.card_congr
+        (v13RealLinearNoTargetRowsGaugeCNFAppendixICNFFiberFalseEquivGaugeCNF
+          coordinate value)).symm
+
+/-- Structural `admissibleHistories` transferred to the no-target-rows
+Appendix-I CNF world using a public-coordinate history field. -/
+theorem v13RealLinearNoTargetRowsGaugeCNFAppendixICNF_admissibleHistories
+    {m : Nat} (i₀ : Fin m)
+    (coordinate : V13RealLinearPublicCoordinate m) (hm : 1 < m) :
+    BalancedBit
+        (@v13RealLinearNoTargetRowsGaugeCNFAppendixICNFWorldTarget
+          m i₀) ∧
+      BalancedConditioning
+        (v13RealLinearNoTargetRowsGaugeCNFAppendixICNFPublicCoordinateField
+          (i₀ := i₀) coordinate)
+        (@v13RealLinearNoTargetRowsGaugeCNFAppendixICNFWorldTarget
+          m i₀) :=
+  ⟨v13RealLinearNoTargetRowsGaugeCNFAppendixICNF_target_balanced
+      i₀ hm,
+    v13RealLinearNoTargetRowsGaugeCNFAppendixICNF_publicCoordinate_balancedConditioning
+      i₀ coordinate⟩
+
 /-- Flip the hidden gauge coordinate of a no-target-rows gauge-buffered CNF
 world, preserving the base public instance and verifier validity. -/
 def v13RealLinearNoTargetRowsGaugeCNFGaugeAction {m : Nat}
