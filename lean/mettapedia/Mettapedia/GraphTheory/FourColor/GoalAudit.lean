@@ -138,6 +138,10 @@ theorem closedCollarWindingFreedomSimplePatchN6NonrealizableInNormalForm_audit :
     ClosedCollarWindingFreedomSimplePatchN6NonrealizableInNormalForm :=
   closedCollarWindingFreedomSimplePatchN6NonrealizableInNormalForm
 
+theorem section92Step4N6ExhaustiveNormalFormObstructionTarget_audit :
+    Section92Step4N6ExhaustiveNormalFormObstructionTarget :=
+  section92Step4N6ExhaustiveNormalFormObstructionTarget
+
 theorem closedCollarWindingFreedomSimplePatchTemplateBlockerArchiveEvidence_audit :
     ClosedCollarWindingFreedomSimplePatchTemplateBlockerArchiveEvidence :=
   closedCollarWindingFreedomSimplePatchTemplateBlockerArchiveEvidence
