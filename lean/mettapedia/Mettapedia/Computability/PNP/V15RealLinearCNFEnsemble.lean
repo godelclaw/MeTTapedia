@@ -4136,6 +4136,58 @@ theorem
       i₀)
     hW
 
+/-- Appendix-I CNF witness returned by the explicit P=NP-side bit-fixing
+self-reduction for the no-target-rows gauge-CNF formula. -/
+def v13RealLinearNoTargetRowsGaugeCNFAppendixICNFSelfReductionWitness
+    {m : Nat} {i₀ : Fin m}
+    (D : V13RealLinearGaugeCNFPNPSATDecider m)
+    (Y : V13RealLinearNoTargetRowsWorld m i₀) :
+    RealM4CNFWitness
+      (v13RealLinearNoTargetRowsGaugeCNFAppendixICNFReadoutData i₀) where
+  publicInstance := Y
+  assignment :=
+    v13RealLinearGaugeCNFSelfReductionAssignment D
+      (v13RealLinearNoTargetRowsPublicInput Y)
+
+/-- The explicit P=NP-side bit-fixing witness satisfies the Appendix-I CNF
+verifier for the same no-target-rows public instance. -/
+theorem
+    v13RealLinearNoTargetRowsGaugeCNFAppendixICNFSelfReductionWitness_verifier
+    {m : Nat} {i₀ : Fin m}
+    (D : V13RealLinearGaugeCNFPNPSATDecider m)
+    (Y : V13RealLinearNoTargetRowsWorld m i₀) :
+    realM4CNFVerifier
+      (v13RealLinearNoTargetRowsGaugeCNFAppendixICNFReadoutData i₀)
+      Y
+      (v13RealLinearNoTargetRowsGaugeCNFAppendixICNFSelfReductionWitness
+        D Y) := by
+  constructor
+  · trivial
+  · refine ⟨rfl, ?_⟩
+    simpa
+      [v13RealLinearNoTargetRowsGaugeCNFAppendixICNFSelfReductionWitness,
+        v13RealLinearNoTargetRowsGaugeCNFAppendixICNFReadoutData,
+        v13RealLinearGaugeCNFVerifier]
+      using
+        v13RealLinearGaugeCNFSelfReductionAssignment_satisfies D
+          (v13RealLinearNoTargetRowsPublicInput Y)
+
+/-- The Appendix-I CNF witness recovered by explicit P=NP-side bit-fixing reads
+the fixed base target bit. -/
+theorem
+    v13RealLinearNoTargetRowsGaugeCNFAppendixICNFSelfReduction_readout_eq_targetBit
+    {m : Nat} {i₀ : Fin m}
+    (D : V13RealLinearGaugeCNFPNPSATDecider m)
+    (Y : V13RealLinearNoTargetRowsWorld m i₀) :
+    realM4CNFWitnessReadout (fun bit => bit)
+        (v13RealLinearNoTargetRowsGaugeCNFAppendixICNFSelfReductionWitness
+          D Y) =
+      v13RealLinearNoTargetRowsTargetBit Y :=
+  v13RealLinearNoTargetRowsGaugeCNFAppendixICNFWitnessReadout_eq_targetBit
+    i₀
+    (v13RealLinearNoTargetRowsGaugeCNFAppendixICNFSelfReductionWitness_verifier
+      D Y)
+
 /-- Structural `singleMessage` transferred to the concrete no-target-rows
 Appendix-I CNF SAT spine. -/
 theorem
