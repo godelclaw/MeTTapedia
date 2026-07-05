@@ -13377,6 +13377,79 @@ theorem section92Step4CurrentFiniteFrontierBridgeAndHistogramSoundnessExactFork 
     closedCollarWindingFreedomNonrealizableInNormalForm_of_currentFiniteFrontierRemainingFactoredBridge_of_maxCutHistogramSoundness
       hbridge hsound
 
+theorem closedCollarWindingFreedomNonrealizableInNormalForm_of_currentFiniteFrontierRemainingFactoredBridge_of_radialFaceRowSemanticSoundness
+    (hbridge :
+      ClosedCollarWindingFreedomCurrentFiniteFrontierRemainingFactoredBridge)
+    (hrowCard :
+      ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceRowCardinalitySound)
+    (hrowHist :
+      ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceRowHistogramEntrySound) :
+    ClosedCollarWindingFreedomNonrealizableInNormalForm :=
+  closedCollarWindingFreedomNonrealizableInNormalForm_of_currentFiniteFrontierRemainingFactoredBridge_of_maxCutHistogramSoundness
+    hbridge
+    (closedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceMaxCutHistogramSoundness_of_rowHistogramSoundness
+      ⟨hrowCard, hrowHist⟩)
+
+/--
+The precise residual obstruction after the current finite frontier and split
+row semantics: either the factored normal-form bridge is false, the audited row
+cardinality semantics are false, or the positive row histogram-entry semantics
+are false.
+-/
+def ClosedCollarWindingFreedomCurrentFiniteFrontierBridgeOrRadialFaceRowSemanticObstruction :
+    Prop :=
+  (¬ ClosedCollarWindingFreedomCurrentFiniteFrontierRemainingFactoredBridge) ∨
+    ¬ ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceRowCardinalitySound ∨
+      ¬ ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceRowHistogramEntrySound
+
+theorem closedCollarWindingFreedomCurrentFiniteFrontierBridgeOrRadialFaceRowSemanticObstruction_of_not_nonrealizable
+    (hnot :
+      ¬ ClosedCollarWindingFreedomNonrealizableInNormalForm) :
+    ClosedCollarWindingFreedomCurrentFiniteFrontierBridgeOrRadialFaceRowSemanticObstruction := by
+  classical
+  by_cases hbridge :
+      ClosedCollarWindingFreedomCurrentFiniteFrontierRemainingFactoredBridge
+  · by_cases hrowCard :
+      ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceRowCardinalitySound
+    · by_cases hrowHist :
+        ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceRowHistogramEntrySound
+      · exact
+          False.elim
+            (hnot
+              (closedCollarWindingFreedomNonrealizableInNormalForm_of_currentFiniteFrontierRemainingFactoredBridge_of_radialFaceRowSemanticSoundness
+                hbridge hrowCard hrowHist))
+      · exact Or.inr (Or.inr hrowHist)
+    · exact Or.inr (Or.inl hrowCard)
+  · exact Or.inl hbridge
+
+/--
+Compact exact fork for the current S4 repair route with the semantic side split
+to the audited rows.  The finite evidence is recorded; the positive branch is
+the factored geometric bridge plus row-cardinality and row-histogram semantics,
+while the negative branch localizes any surviving realization to one of those
+three obligations.
+-/
+def Section92Step4CurrentFiniteFrontierBridgeAndRadialFaceRowSemanticExactFork :
+    Prop :=
+  ClosedCollarWindingFreedomCurrentFiniteRealizationFrontierEvidence ∧
+    (ClosedCollarWindingFreedomCurrentFiniteFrontierRemainingFactoredBridge ∧
+      ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceRowCardinalitySound ∧
+        ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingRadialFaceRowHistogramEntrySound →
+          ClosedCollarWindingFreedomNonrealizableInNormalForm) ∧
+      (¬ ClosedCollarWindingFreedomNonrealizableInNormalForm →
+        ClosedCollarWindingFreedomCurrentFiniteFrontierBridgeOrRadialFaceRowSemanticObstruction)
+
+theorem section92Step4CurrentFiniteFrontierBridgeAndRadialFaceRowSemanticExactFork :
+    Section92Step4CurrentFiniteFrontierBridgeAndRadialFaceRowSemanticExactFork := by
+  refine
+    ⟨closedCollarWindingFreedomCurrentFiniteRealizationFrontierEvidence,
+      ?_,
+      closedCollarWindingFreedomCurrentFiniteFrontierBridgeOrRadialFaceRowSemanticObstruction_of_not_nonrealizable⟩
+  rintro ⟨hbridge, hrowCard, hrowHist⟩
+  exact
+    closedCollarWindingFreedomNonrealizableInNormalForm_of_currentFiniteFrontierRemainingFactoredBridge_of_radialFaceRowSemanticSoundness
+      hbridge hrowCard hrowHist
+
 /--
 Current finite-frontier fork with the remaining bridge stated explicitly.  The
 finite evidence is on record; if the five factored normal-form obligations are
