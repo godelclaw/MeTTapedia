@@ -8989,6 +8989,16 @@ theorem ChainFiberAppendCertifiedParentRowsTriple.baseDataStructural
         ChainFiberAppendQuotientFibrationParentRowsStructuralFields.ofTotalConnectedAndLiftImage
           proj' hTotal hImage⟩⟩
 
+/--
+Superseded as the live Gate-2 pin by the target-surface remainder in
+`GoertzelLemma818TripleTauTargetProgress`.
+
+This universal append-transfer hypothesis is retained as a stronger legacy
+sufficient route.  Its quantifier ranges over every non-singleton prefix that
+already has a concrete fibration certificate; the current formal evidence only
+supports the representative-target append surface and the generated `TTT`
+certified triples.
+-/
 def concreteChainFiberAppendQuotientFibrationParentRowsNonSingletonPrefixCertifiedParentRowsRemainderClosed :
     Prop :=
   ∀ (word : List GoertzelLemma818FrontierMode.TauOrient)
