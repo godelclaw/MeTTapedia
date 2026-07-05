@@ -14221,6 +14221,79 @@ theorem realM4OpenConstructionItems_exact :
         "pMembershipConstantDecoderBelowLinearFloor" ] := by
   rfl
 
+def realM4ConcreteEnsembleConstructionItems : List String := [
+  "publicLockCoverageData",
+  "lockedMessageRigidityData",
+  "noPublicTargetTags",
+  "hiddenGaugeProduct",
+  "admissibleHistories",
+  "cnfVariableAddressSyntax"
+]
+
+theorem realM4ConcreteEnsembleConstructionItems_exact :
+    realM4ConcreteEnsembleConstructionItems =
+      [ "publicLockCoverageData",
+        "lockedMessageRigidityData",
+        "noPublicTargetTags",
+        "hiddenGaugeProduct",
+        "admissibleHistories",
+        "cnfVariableAddressSyntax" ] := by
+  rfl
+
+def realM4LowerMachineConstructionItems : List String := [
+  "realCompressionLowerMachineData",
+  "realConstantDecoderRegime"
+]
+
+theorem realM4LowerMachineConstructionItems_exact :
+    realM4LowerMachineConstructionItems =
+      [ "realCompressionLowerMachineData",
+        "realConstantDecoderRegime" ] := by
+  rfl
+
+def realM4OfficialBridgeConstructionItems : List String := [
+  "officialLanguageNPData",
+  "officialPToDeciderFamilyData"
+]
+
+theorem realM4OfficialBridgeConstructionItems_exact :
+    realM4OfficialBridgeConstructionItems =
+      [ "officialLanguageNPData",
+        "officialPToDeciderFamilyData" ] := by
+  rfl
+
+def realM4KpolyCompatibilityConstructionItems : List String := [
+  "pMembershipKpolyAtConstantDecoderIdentification",
+  "pMembershipEtaTimesLinearFloorIdentification",
+  "pMembershipConstantDecoderBelowLinearFloor"
+]
+
+theorem realM4KpolyCompatibilityConstructionItems_exact :
+    realM4KpolyCompatibilityConstructionItems =
+      [ "pMembershipKpolyAtConstantDecoderIdentification",
+        "pMembershipEtaTimesLinearFloorIdentification",
+        "pMembershipConstantDecoderBelowLinearFloor" ] := by
+  rfl
+
+theorem realM4OpenConstructionItems_decomposes :
+    realM4OpenConstructionItems =
+      realM4ConcreteEnsembleConstructionItems ++
+        realM4LowerMachineConstructionItems ++
+          realM4OfficialBridgeConstructionItems ++
+            realM4KpolyCompatibilityConstructionItems := by
+  rfl
+
+def realM4PNPConditionalUpperInputs : List String := [
+  "pEqualsNPWitness",
+  "pnpDeciderFamilyDerivedFromPEqualsNP"
+]
+
+theorem realM4PNPConditionalUpperInputs_exact :
+    realM4PNPConditionalUpperInputs =
+      [ "pEqualsNPWitness",
+        "pnpDeciderFamilyDerivedFromPEqualsNP" ] := by
+  rfl
+
 def realM4AfterConstructionIrreducibleInputs : List String := [
   "starSWHardness",
   "safeQSSM",
@@ -14235,6 +14308,37 @@ theorem realM4AfterConstructionIrreducibleInputs_exact :
         "boundedGaugeIncidence",
         "boundaryMixing" ] := by
   rfl
+
+def realM4CompletionFrontierHypothesisAudit : List String :=
+  realM4OpenConstructionItems ++
+    realM4PNPConditionalUpperInputs ++
+      realM4AfterConstructionIrreducibleInputs
+
+theorem realM4CompletionFrontierHypothesisAudit_exact :
+    realM4CompletionFrontierHypothesisAudit =
+      [ "publicLockCoverageData",
+        "lockedMessageRigidityData",
+        "noPublicTargetTags",
+        "hiddenGaugeProduct",
+        "admissibleHistories",
+        "cnfVariableAddressSyntax",
+        "realCompressionLowerMachineData",
+        "realConstantDecoderRegime",
+        "officialLanguageNPData",
+        "officialPToDeciderFamilyData",
+        "pMembershipKpolyAtConstantDecoderIdentification",
+        "pMembershipEtaTimesLinearFloorIdentification",
+        "pMembershipConstantDecoderBelowLinearFloor",
+        "pEqualsNPWitness",
+        "pnpDeciderFamilyDerivedFromPEqualsNP",
+        "starSWHardness",
+        "safeQSSM",
+        "boundedGaugeIncidence",
+        "boundaryMixing" ] := by
+  rfl
+
+def realM4CompletionFrontierStatement : String :=
+  "The real v15/M4 completion frontier separates into concrete ensemble construction, lower-machine and constant-decoder construction, official Cook-style bridge construction, and the remaining P=NP-side K-poly compatibility facts.  After those construction obligations are discharged, the irreducible mathematical frontier is exactly StarSW hardness plus safeQSSM / boundedGaugeIncidence / boundaryMixing, with the self-reduction upper side conditional on a concrete P=NP witness and its derived SAT decider family.  This is a completion audit for the real spine, not a proof of P != NP and not a claim that the manuscript M4 construction is already complete."
 
 /-- Guardrail imported into the real lift: deterministic readout by itself has
 a checked finite counterexample, so M4 must provide public-message invariance
