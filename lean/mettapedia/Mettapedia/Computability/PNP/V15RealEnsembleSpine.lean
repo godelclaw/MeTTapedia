@@ -11220,6 +11220,101 @@ theorem
         i₀ coordinate K boundaryMixing).kernelNeutrality⟩
 
 /--
+Locked-message official upper support projected from the bundled
+equality-indexed construction surface.  The bundle supplies public-lock
+coverage and explicit public-message rigidity directly, while real CNF
+address syntax mechanically supplies the formula-syntax uniform CNF support.
+-/
+def
+    realM4_noTargetRowsEqualityIndexedConstructionData_lockedMessageUpperSupport
+    {m : Nat} (i₀ : Fin m) [hm : Fact (1 < m)]
+    (coordinate : V13RealLinearPublicCoordinate m)
+    {Neutral : Type} {Safe : Type x} {Gauge : Type y}
+    {Transcript : Type z} [DecidableEq Transcript]
+    {Pair : Type a} [Fintype Pair]
+    {Stage : Type b} {Branch : Type c}
+    {HistoryAtom : Type} {Pivot : Type e}
+    {Observer : Type f} {Output : Type f}
+    {PublicLock : Type g} {Quotient : Type h}
+    {LockAux : Type i} {Message : Type j}
+    {CNFPublic : Type k} {Address : CNFPublic -> Type q}
+    {Var : CNFPublic -> Type l}
+    {Witness : CNFPublic -> Type l}
+    {D : AppendixICNFReadoutData
+      PublicLock Quotient LockAux Message CNFPublic Var Witness}
+    {C : CookStylePNPClassInterface.{p}}
+    (K :
+      RealM4NoTargetRowsEqualityIndexedOfficialConstructionData
+        (Neutral := Neutral) (Safe := Safe) (Gauge := Gauge)
+        (Transcript := Transcript) (Pair := Pair) (Stage := Stage)
+        (Branch := Branch) (HistoryAtom := HistoryAtom) (Pivot := Pivot)
+        (Observer := Observer) (Output := Output)
+        (PublicLock := PublicLock) (Quotient := Quotient)
+        (LockAux := LockAux) (Message := Message) (CNFPublic := CNFPublic)
+        (Address := Address) (Var := Var) (Witness := Witness)
+        i₀ coordinate D C) :
+    RealM4OfficialPToDeciderLockedMessageUpperSupportData D :=
+  RealM4OfficialPToDeciderLockedMessageUpperSupportData.ofCoverageLockedMessageDataAndAddressSyntax
+    K.coverageData K.lockedMessageData K.variableAddressSyntax
+
+/--
+Field audit for the locked-message upper support projected from the
+equality-indexed construction bundle.  This is construction-side support only:
+it does not add StarSW, analytic, or official-language hypotheses.
+-/
+theorem
+    realM4_noTargetRowsEqualityIndexedConstructionData_lockedMessageUpperSupport_fields
+    {m : Nat} (i₀ : Fin m) [hm : Fact (1 < m)]
+    (coordinate : V13RealLinearPublicCoordinate m)
+    {Neutral : Type} {Safe : Type x} {Gauge : Type y}
+    {Transcript : Type z} [DecidableEq Transcript]
+    {Pair : Type a} [Fintype Pair]
+    {Stage : Type b} {Branch : Type c}
+    {HistoryAtom : Type} {Pivot : Type e}
+    {Observer : Type f} {Output : Type f}
+    {PublicLock : Type g} {Quotient : Type h}
+    {LockAux : Type i} {Message : Type j}
+    {CNFPublic : Type k} {Address : CNFPublic -> Type q}
+    {Var : CNFPublic -> Type l}
+    {Witness : CNFPublic -> Type l}
+    {D : AppendixICNFReadoutData
+      PublicLock Quotient LockAux Message CNFPublic Var Witness}
+    {C : CookStylePNPClassInterface.{p}}
+    (K :
+      RealM4NoTargetRowsEqualityIndexedOfficialConstructionData
+        (Neutral := Neutral) (Safe := Safe) (Gauge := Gauge)
+        (Transcript := Transcript) (Pair := Pair) (Stage := Stage)
+        (Branch := Branch) (HistoryAtom := HistoryAtom) (Pivot := Pivot)
+        (Observer := Observer) (Output := Output)
+        (PublicLock := PublicLock) (Quotient := Quotient)
+        (LockAux := LockAux) (Message := Message) (CNFPublic := CNFPublic)
+        (Address := Address) (Var := Var) (Witness := Witness)
+        i₀ coordinate D C) :
+    let S :=
+      realM4_noTargetRowsEqualityIndexedConstructionData_lockedMessageUpperSupport
+        i₀ coordinate K
+    D.toAppendixDWitnessData.PublicLockCoveredBySupportedInstances ∧
+      D.core.LockSatisfiable ∧
+        D.core.PublicMessageInvariant S.lockedMessageData.publicMessage ∧
+          D.core.LockedMessageRigidity ∧
+            (∀ Y : CNFPublic, (S.uniformSupport.varOrder Y).Nodup) ∧
+              (∀ {Y : CNFPublic}, D.support Y ->
+                ConcreteCNF.FormulaUsesOnly (D.formula Y)
+                  (S.uniformSupport.varOrder Y)) := by
+  dsimp
+  exact
+    ⟨K.coverageData.publicLockCoverage,
+      K.coverageData.lockSatisfiable,
+      K.lockedMessageData.publicMessageInvariant,
+      K.lockedMessageData.lockedMessageRigidity,
+      (fun Y =>
+        (realM4_formulaSyntaxCNFSupport_of_addressSyntax
+          K.variableAddressSyntax).varOrder_nodup Y),
+      (fun hY =>
+        (realM4_formulaSyntaxCNFSupport_of_addressSyntax
+          K.variableAddressSyntax).formulaUsesOnly hY)⟩
+
+/--
 Extract the explicit-P=NP self-reduction upper discharge from the bundled
 equality-indexed construction surface at a candidate `P = NP` witness.  The
 SAT decider family is obtained from the named official NP language's
@@ -11809,6 +11904,29 @@ theorem realM4NoTargetRowsEqualityIndexedEndgameMechanicalDataItems_exact :
 def realM4NoTargetRowsEqualityIndexedEndgameMechanicalDataStatement :
     String :=
   "For the real v15/M4 no-target-rows equality-indexed construction surface, the generic endgame mechanical-data package is obtained from the named mechanical interface, the canonical fixed-gap/Phase-A budget construction, the real lower-machine data, and the epsSmall field of boundaryMixing.  This removes lower-framework instantiation and Phase-A budgeting from the theorem boundary while leaving boundaryMixing as one of the four irreducible frontier inputs."
+
+def realM4NoTargetRowsEqualityIndexedLockedMessageUpperSupportItems :
+    List String := [
+  "publicLockCoverage",
+  "lockSatisfiable",
+  "publicMessageInvariant",
+  "lockedMessageRigidity",
+  "addressDerivedUniformCNFSupport"
+]
+
+theorem
+    realM4NoTargetRowsEqualityIndexedLockedMessageUpperSupportItems_exact :
+    realM4NoTargetRowsEqualityIndexedLockedMessageUpperSupportItems =
+      [ "publicLockCoverage",
+        "lockSatisfiable",
+        "publicMessageInvariant",
+        "lockedMessageRigidity",
+        "addressDerivedUniformCNFSupport" ] := by
+  rfl
+
+def realM4NoTargetRowsEqualityIndexedLockedMessageUpperSupportStatement :
+    String :=
+  "For the real v15/M4 no-target-rows equality-indexed construction surface, public-lock coverage, D.7 lock satisfiability, explicit public-message invariance, D.8 locked-message rigidity, and formula-syntax uniform CNF support are projected from the construction bundle.  The uniform support is derived mechanically from real CNF address syntax; no StarSW, analytic, or official-language hypothesis is used."
 
 def realM4NoTargetRowsEqualityIndexedParameterRecordHypothesisAudit :
     List String := [
@@ -16723,6 +16841,12 @@ def realM4LargeTargetLiftLedgerSupplement : List RealM4LiftLedgerRow := [
     note := "The bundled equality-indexed surface now projects to the generic endgame mechanical-data package: named interface, canonical Phase-A budget, epsSmall from boundaryMixing, real lower framework, and kernel neutrality."
   },
   {
+    item := "realNoTargetRowsEqualityIndexedConstructionDataLockedMessageUpperSupport"
+    status := .partialConstructionTransferred
+    checkedName := "realM4_noTargetRowsEqualityIndexedConstructionData_lockedMessageUpperSupport_fields"
+    note := "The bundled equality-indexed surface now projects public-lock coverage, D.7 satisfiability, explicit public-message invariance, D.8 rigidity, and address-derived uniform CNF support without theorem-level frontier hypotheses."
+  },
+  {
     item := "realNoTargetRowsEqualityIndexedConstructionDataParameterRecordAtPEqualsNP"
     status := .partialConstructionTransferred
     checkedName := "realM4_noTargetRowsEqualityIndexedConstructionData_parameterRecord_givenPEqualsNP"
@@ -16784,6 +16908,7 @@ theorem realM4LargeTargetLiftLedgerSupplement_items_exact :
         "realNoTargetRowsPToDeciderLargeTargetKpolyCompatibilityAtEqualityOfficialEndpoint",
         "realNoTargetRowsEqualityIndexedConstructionDataMechanicalInterface",
         "realNoTargetRowsEqualityIndexedConstructionDataEndgameMechanicalData",
+        "realNoTargetRowsEqualityIndexedConstructionDataLockedMessageUpperSupport",
         "realNoTargetRowsEqualityIndexedConstructionDataParameterRecordAtPEqualsNP",
         "realNoTargetRowsEqualityIndexedConstructionDataInternalClashAtPEqualsNP",
         "realNoTargetRowsEqualityIndexedConstructionDataContradictionAtPEqualsNP",
@@ -16799,6 +16924,7 @@ theorem realM4LargeTargetLiftLedgerSupplement_statuses_exact :
       [ RealM4LiftStatus.partialConstructionTransferred,
         RealM4LiftStatus.openConstruction,
         RealM4LiftStatus.openConstruction,
+        RealM4LiftStatus.partialConstructionTransferred,
         RealM4LiftStatus.partialConstructionTransferred,
         RealM4LiftStatus.partialConstructionTransferred,
         RealM4LiftStatus.partialConstructionTransferred,
