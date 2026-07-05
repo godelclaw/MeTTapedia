@@ -128,6 +128,16 @@ theorem closedCollarWindingFreedomSimplePatchN6ExhaustiveBlockedAfterCyclicallyF
     ClosedCollarWindingFreedomSimplePatchN6ExhaustiveBlockedAfterCyclicallyFiveTemplateExclusion :=
   closedCollarWindingFreedomSimplePatchN6ExhaustiveBlockedAfterCyclicallyFiveTemplateExclusion
 
+theorem closedCollarWindingFreedomSimplePatchN6_noLabNormalFormPass_audit
+    {V : Type} {G : SimpleGraph V}
+    (data : ClosedCollarWindingFreedomSimplePatchN6LabNormalFormPass G) :
+    False :=
+  closedCollarWindingFreedomSimplePatchN6_noLabNormalFormPass data
+
+theorem closedCollarWindingFreedomSimplePatchN6NonrealizableInNormalForm_audit :
+    ClosedCollarWindingFreedomSimplePatchN6NonrealizableInNormalForm :=
+  closedCollarWindingFreedomSimplePatchN6NonrealizableInNormalForm
+
 theorem closedCollarWindingFreedomSimplePatchN6PlanarCyclicCutSamplesEvidence_audit :
     ClosedCollarWindingFreedomSimplePatchN6PlanarCyclicCutSamplesEvidence :=
   closedCollarWindingFreedomSimplePatchN6PlanarCyclicCutSamplesEvidence
