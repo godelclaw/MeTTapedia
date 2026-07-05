@@ -645,6 +645,10 @@ set_option autoImplicit false
 #check RealM4LiftLedgerRow
 #check realM4LiftLedger
 #check realM4LiftLedger_statuses_exact
+#check realM4LargeTargetLiftLedgerSupplement
+#check realM4LargeTargetLiftLedgerSupplement_items_exact
+#check realM4LargeTargetLiftLedgerSupplement_statuses_exact
+#check realM4LargeTargetLiftLedgerSupplementStatement
 #check realM4OpenConstructionItems
 #check realM4OpenConstructionItems_exact
 #check realM4ConcreteEnsembleConstructionItems
@@ -1321,6 +1325,10 @@ set_option autoImplicit false
 #print axioms RealM4LiftLedgerRow
 #print axioms realM4LiftLedger
 #print axioms realM4LiftLedger_statuses_exact
+#print axioms realM4LargeTargetLiftLedgerSupplement
+#print axioms realM4LargeTargetLiftLedgerSupplement_items_exact
+#print axioms realM4LargeTargetLiftLedgerSupplement_statuses_exact
+#print axioms realM4LargeTargetLiftLedgerSupplementStatement
 #print axioms realM4OpenConstructionItems
 #print axioms realM4OpenConstructionItems_exact
 #print axioms realM4ConcreteEnsembleConstructionItems

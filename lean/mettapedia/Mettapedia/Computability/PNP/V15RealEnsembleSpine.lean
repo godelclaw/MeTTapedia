@@ -14840,6 +14840,60 @@ theorem realM4LiftLedger_statuses_exact :
         RealM4LiftStatus.irreducibleInput] := by
   rfl
 
+def realM4LargeTargetLiftLedgerSupplement : List RealM4LiftLedgerRow := [
+  {
+    item := "officialPToUniformConstantDecoderRegimeLargeTargetCompatibility"
+    status := .partialConstructionTransferred
+    checkedName := "RealM4OfficialPToUniformConstantDecoderRegimeData.ofKpolyCompatibilityLargeTarget"
+    note := "The support-neutral constant-decoder regime can be constructed from K-poly identification, linear-floor identification, eta positivity, and a target-block count exceeding the fixed self-reduction decoder cost."
+  },
+  {
+    item := "pMembershipEtaPositive"
+    status := .openConstruction
+    checkedName := "RealM4OfficialPToUniformConstantDecoderRegimeData.ofKpolyCompatibilityLargeTarget"
+    note := "The real P-membership-indexed linear-floor coefficient must be positive before target-block growth can imply the strict below-floor inequality."
+  },
+  {
+    item := "pMembershipTargetBlocksExceedsConstantDecoderCost"
+    status := .openConstruction
+    checkedName := "RealM4OfficialPToUniformConstantDecoderRegimeData.ofKpolyCompatibilityLargeTarget"
+    note := "The real target-block regime must prove that the target-block count exceeds the fixed self-reduction decoder cost for each P-derived decider family."
+  },
+  {
+    item := "realNoTargetRowsPToDeciderLargeTargetKpolyCompatibilityOfficialClassInequality"
+    status := .partialConstructionTransferred
+    checkedName := "realM4_not_pEqualsNP_from_noTargetRowsCDENF_lowerMachine_canonicalGap_realFrontier_pMembershipDeciderLockedMessageAddressSyntaxLargeTargetKpolyCompatibilitySplit"
+    note := "The no-target-rows locked-message official endpoint can use the large-target K-poly compatibility decomposition instead of a direct below-linear-floor assumption."
+  },
+  {
+    item := "realNoTargetRowsPToDeciderLargeTargetKpolyCompatibilityAtEqualityContradiction"
+    status := .partialConstructionTransferred
+    checkedName := "realM4_false_of_pEqualsNP_from_noTargetRowsCDENF_lowerMachine_canonicalGap_realFrontier_pMembershipDeciderLockedMessageAddressSyntaxLargeTargetKpolyCompatibilityAtEquality"
+    note := "At a concrete P=NP witness, the contradiction route uses eta positivity and target-block growth for the extracted SAT decider family rather than a direct below-floor premise."
+  }
+]
+
+theorem realM4LargeTargetLiftLedgerSupplement_items_exact :
+    List.map (fun row => row.item) realM4LargeTargetLiftLedgerSupplement =
+      [ "officialPToUniformConstantDecoderRegimeLargeTargetCompatibility",
+        "pMembershipEtaPositive",
+        "pMembershipTargetBlocksExceedsConstantDecoderCost",
+        "realNoTargetRowsPToDeciderLargeTargetKpolyCompatibilityOfficialClassInequality",
+        "realNoTargetRowsPToDeciderLargeTargetKpolyCompatibilityAtEqualityContradiction" ] := by
+  rfl
+
+theorem realM4LargeTargetLiftLedgerSupplement_statuses_exact :
+    List.map (fun row => row.status) realM4LargeTargetLiftLedgerSupplement =
+      [ RealM4LiftStatus.partialConstructionTransferred,
+        RealM4LiftStatus.openConstruction,
+        RealM4LiftStatus.openConstruction,
+        RealM4LiftStatus.partialConstructionTransferred,
+        RealM4LiftStatus.partialConstructionTransferred ] := by
+  rfl
+
+def realM4LargeTargetLiftLedgerSupplementStatement : String :=
+  "The large-target lift supplement records the real constant-decoder route that replaces the direct below-linear-floor K-poly premise by eta positivity and target-block growth.  The constructor and official endpoints are mechanically wired, while the real positivity and target-growth facts remain explicit construction obligations; the mathematical frontier after construction remains StarSW hardness plus safeQSSM / boundedGaugeIncidence / boundaryMixing."
+
 def realM4OpenConstructionItems : List String := [
   "publicLockCoverageData",
   "lockedMessageRigidityData",
