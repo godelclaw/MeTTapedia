@@ -1,29 +1,14 @@
 {
   "evidence_gaps": [
-    "prefix: 13 prefix source files are absent",
     "stratified_sample: stratified source has aggregate counts but no per-sample payloads"
   ],
   "failures": [],
   "frontier_verdict": "n8_frontier_no_profile_preserving_cases_in_checked_prefix_or_stratified_sample",
   "input_archive": "section92_closed_collar_winding_simple_patch_n8_frontier_audit.json",
   "prefix": {
-    "missing_source_file_count": 13,
-    "missing_source_files": [
-      "section92_closed_collar_winding_simple_patch_template_blockers_n8_000000_050000.json",
-      "section92_closed_collar_winding_simple_patch_template_blockers_n8_050000_500000.json",
-      "section92_closed_collar_winding_simple_patch_template_blockers_n8_500000_1000000.json",
-      "section92_closed_collar_winding_simple_patch_template_blockers_n8_1000000_1500000.json",
-      "section92_closed_collar_winding_simple_patch_template_blockers_n8_1500000_2000000.json",
-      "section92_closed_collar_winding_simple_patch_template_blockers_n8_2000000_2500000.json",
-      "section92_closed_collar_winding_simple_patch_template_blockers_n8_2500000_3000000.json",
-      "section92_closed_collar_winding_simple_patch_template_blockers_n8_3000000_3500000.json",
-      "section92_closed_collar_winding_simple_patch_template_blockers_n8_3500000_4000000.json",
-      "section92_closed_collar_winding_simple_patch_template_blockers_n8_4000000_4500000.json",
-      "section92_closed_collar_winding_simple_patch_template_blockers_n8_4500000_5000000.json",
-      "section92_closed_collar_winding_simple_patch_template_blockers_n8_5000000_5500000.json",
-      "section92_closed_collar_winding_simple_patch_template_blockers_n8_5500000_6000000.json"
-    ],
-    "present_source_file_count": 0,
+    "missing_source_file_count": 0,
+    "missing_source_files": [],
+    "present_source_file_count": 13,
     "processed_patch_topology_count": 6000000,
     "radial_order_case_count": 12000000,
     "range_count": 13
