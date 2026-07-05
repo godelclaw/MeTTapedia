@@ -6622,6 +6622,32 @@ def ClosedCollarWindingFreedomEveryNormalFormHasPreviousBoundaryRadialFaceN6Audi
         (ClosedCollarWindingFreedomPreviousBoundaryRadialFaceN6AuditedArchiveExtraction
           normalForm)
 
+/--
+The combined extraction bridge is exactly supplied by the three named
+normal-form sub-obligations already isolated by the route: previous-boundary
+radial-face geometry, radial-face n6 extraction, and audited ten-row key
+membership.
+-/
+theorem closedCollarWindingFreedomEveryNormalFormHasPreviousBoundaryRadialFaceN6AuditedArchiveExtraction_of_previousBoundaryRadialFaceData_of_radialFaceN6_of_auditedArchiveKey
+    (hdata :
+      ClosedCollarWindingFreedomActualCollarEmbeddingSuppliesPreviousBoundaryRadialFaceData)
+    (hn6 :
+      ClosedCollarWindingFreedomEveryRadialFaceNormalFormHasN6Representation)
+    (hkeys :
+      ClosedCollarWindingFreedomEveryRadialFaceN6RepresentationHasAuditedArchiveKey) :
+    ClosedCollarWindingFreedomEveryNormalFormHasPreviousBoundaryRadialFaceN6AuditedArchiveExtraction := by
+  intro V _hV G normalForm
+  rcases hdata normalForm normalForm.hactualCollarEmbeddingConstraints with
+    ⟨previousBoundaryRadialFaceData⟩
+  rcases hn6 previousBoundaryRadialFaceData.toNormalFormRadialFaceRealization with
+    ⟨n6⟩
+  exact
+    ⟨{
+      previousBoundaryRadialFaceData := previousBoundaryRadialFaceData
+      n6 := n6
+      auditedKey := hkeys n6.data
+    }⟩
+
 theorem closedCollarWindingFreedomNonrealizableInNormalForm_of_radialFaceN6AuditedArchiveKey_of_rowCertificates
     (hradial : ClosedCollarWindingFreedomEveryNormalFormHasRadialFace)
     (hn6 :
@@ -7143,6 +7169,31 @@ theorem section92Step4RepairedByPreviousBoundaryRadialFaceN6AuditedArchiveExtrac
   exact
     closedCollarWindingFreedomNonrealizableInNormalForm_of_previousBoundaryRadialFaceN6AuditedArchiveExtraction_of_exactRowCoverage
       hextract hsampleRows hslice1000302Rows hslice1001289Rows
+
+/--
+Factored form of the previous-boundary radial-face archive target.  It exposes
+the three concrete normal-form obligations that supply the combined extraction
+bridge: previous-boundary radial-face data, radial-face n6 extraction, and the
+audited ten-row archive key.
+-/
+def Section92Step4RepairedByFactoredPreviousBoundaryRadialFaceN6AuditedArchiveExtractionTarget :
+    Prop :=
+  ClosedCollarWindingFreedomActualCollarEmbeddingSuppliesPreviousBoundaryRadialFaceData →
+    ClosedCollarWindingFreedomEveryRadialFaceNormalFormHasN6Representation →
+      ClosedCollarWindingFreedomEveryRadialFaceN6RepresentationHasAuditedArchiveKey →
+        ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSampleRadialFaceRowsCoveredByLab →
+          ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSlice1000302RadialFaceRowsCoveredByLab →
+            ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSlice1001289RadialFaceRowsCoveredByLab →
+              ClosedCollarWindingFreedomNonrealizableInNormalForm
+
+theorem section92Step4RepairedByFactoredPreviousBoundaryRadialFaceN6AuditedArchiveExtractionTarget :
+    Section92Step4RepairedByFactoredPreviousBoundaryRadialFaceN6AuditedArchiveExtractionTarget := by
+  intro hdata hn6 hkeys hsampleRows hslice1000302Rows hslice1001289Rows
+  exact
+    section92Step4RepairedByPreviousBoundaryRadialFaceN6AuditedArchiveExtractionTarget
+      (closedCollarWindingFreedomEveryNormalFormHasPreviousBoundaryRadialFaceN6AuditedArchiveExtraction_of_previousBoundaryRadialFaceData_of_radialFaceN6_of_auditedArchiveKey
+        hdata hn6 hkeys)
+      hsampleRows hslice1000302Rows hslice1001289Rows
 
 theorem closedCollarWindingFreedomNonrealizableInNormalForm_of_archiveN6Representation_of_rowCoverage
     (hextract :
