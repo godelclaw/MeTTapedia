@@ -4314,6 +4314,244 @@ theorem section92Step4NoProfileSlice1000789NormalFormObstructionTarget :
     closedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSlice1000789NoProfilePreservingRepresentation
       hcovered data.representation hrange
 
+def closedCollarSimplePatchN6AnnularEmbeddingSlice1001289Cases :
+    List (Nat × Nat) :=
+  [(1001293, 0), (1001293, 1)]
+
+def closedCollarSimplePatchN6AnnularEmbeddingSlice1001289Counts :
+    ClosedCollarSimplePatchAnnularEmbeddingSliceCounts where
+  internalVertexCount := 6
+  exactPatchTopologyCount := 1858980
+  patchStartIndex := 1001289
+  patchTopologyLimit := 500
+  nextPatchStartIndex := 1001294
+  stoppedByEmbeddingCaseLimit := true
+  embeddingCaseLimit := 2
+  processedPatchTopologyCount := 5
+  radialOrderCaseCount := 10
+  profilePreservingCaseCount := 2
+  structuralSkippedCaseCount := 0
+  embeddingAuditedCaseCount := 2
+  radialFaceCoherentCaseCount := 0
+  radialFaceIncoherentCaseCount := 2
+  totalRotationSystemCount := 524288
+  enumeratedRotationSystemCount := 524288
+  planarRotationSystemCount := 16
+  radialFaceCoherentRotationCount := 0
+  exactDiagonalTwoPoleTemplateBlockerCount := 2
+  maxRadialCutEdgesOnSingleFaceTwoCount := 16
+
+/--
+Archived evidence from the fourth bounded radial-face slice mode.  The scan
+processed topology indices `1001289` through `1001293`, discovered two
+profile-preserving non-structural cases at topology `1001293`, exhausted both
+rotation-system searches, and found no radial-face coherent planar rotation.
+-/
+def ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSlice1001289RadialFaceEvidence :
+    Prop :=
+  ClosedCollarWindingFreedomWitnessRealizationData ∧
+    closedCollarSimplePatchN6AnnularEmbeddingSlice1001289Cases =
+      [(1001293, 0), (1001293, 1)] ∧
+    closedCollarSimplePatchN6AnnularEmbeddingSlice1001289Counts.internalVertexCount =
+      6 ∧
+    closedCollarSimplePatchN6AnnularEmbeddingSlice1001289Counts.exactPatchTopologyCount =
+      1858980 ∧
+    closedCollarSimplePatchN6AnnularEmbeddingSlice1001289Counts.patchStartIndex =
+      1001289 ∧
+    closedCollarSimplePatchN6AnnularEmbeddingSlice1001289Counts.patchTopologyLimit =
+      500 ∧
+    closedCollarSimplePatchN6AnnularEmbeddingSlice1001289Counts.nextPatchStartIndex =
+      1001294 ∧
+    closedCollarSimplePatchN6AnnularEmbeddingSlice1001289Counts.stoppedByEmbeddingCaseLimit =
+      true ∧
+    closedCollarSimplePatchN6AnnularEmbeddingSlice1001289Counts.embeddingCaseLimit =
+      2 ∧
+    closedCollarSimplePatchN6AnnularEmbeddingSlice1001289Counts.processedPatchTopologyCount =
+      5 ∧
+    closedCollarSimplePatchN6AnnularEmbeddingSlice1001289Counts.radialOrderCaseCount =
+      10 ∧
+    closedCollarSimplePatchN6AnnularEmbeddingSlice1001289Counts.profilePreservingCaseCount =
+      2 ∧
+    closedCollarSimplePatchN6AnnularEmbeddingSlice1001289Counts.structuralSkippedCaseCount =
+      0 ∧
+    closedCollarSimplePatchN6AnnularEmbeddingSlice1001289Counts.embeddingAuditedCaseCount =
+      2 ∧
+    closedCollarSimplePatchN6AnnularEmbeddingSlice1001289Counts.radialFaceCoherentCaseCount =
+      0 ∧
+    closedCollarSimplePatchN6AnnularEmbeddingSlice1001289Counts.radialFaceIncoherentCaseCount =
+      2 ∧
+    closedCollarSimplePatchN6AnnularEmbeddingSlice1001289Counts.totalRotationSystemCount =
+      524288 ∧
+    closedCollarSimplePatchN6AnnularEmbeddingSlice1001289Counts.enumeratedRotationSystemCount =
+      closedCollarSimplePatchN6AnnularEmbeddingSlice1001289Counts.totalRotationSystemCount ∧
+    closedCollarSimplePatchN6AnnularEmbeddingSlice1001289Counts.planarRotationSystemCount =
+      16 ∧
+    closedCollarSimplePatchN6AnnularEmbeddingSlice1001289Counts.radialFaceCoherentRotationCount =
+      0 ∧
+    closedCollarSimplePatchN6AnnularEmbeddingSlice1001289Counts.exactDiagonalTwoPoleTemplateBlockerCount =
+      2 ∧
+    closedCollarSimplePatchN6AnnularEmbeddingSlice1001289Counts.maxRadialCutEdgesOnSingleFaceTwoCount =
+      closedCollarSimplePatchN6AnnularEmbeddingSlice1001289Counts.planarRotationSystemCount
+
+theorem closedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSlice1001289RadialFaceEvidence :
+    ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSlice1001289RadialFaceEvidence := by
+  refine ⟨closedCollarWindingFreedomWitnessRealizationData, ?_⟩
+  decide
+
+/--
+First-blocker reading of the fourth bounded radial-face slice.  The two
+discovered profile-preserving non-structural cases are already exact diagonal
+two-pole template blockers, and the radial-face audit finds no coherent
+cut-open face.
+-/
+def ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSlice1001289ExactTemplateFirstBlockerEvidence :
+    Prop :=
+  ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSlice1001289RadialFaceEvidence ∧
+    closedCollarSimplePatchN6AnnularEmbeddingSlice1001289Counts.profilePreservingCaseCount =
+      2 ∧
+    closedCollarSimplePatchN6AnnularEmbeddingSlice1001289Counts.exactDiagonalTwoPoleTemplateBlockerCount =
+      2 ∧
+    closedCollarSimplePatchN6AnnularEmbeddingSlice1001289Counts.profilePreservingCaseCount =
+      closedCollarSimplePatchN6AnnularEmbeddingSlice1001289Counts.exactDiagonalTwoPoleTemplateBlockerCount ∧
+    closedCollarSimplePatchN6AnnularEmbeddingSlice1001289Counts.structuralSkippedCaseCount =
+      0 ∧
+    closedCollarSimplePatchN6AnnularEmbeddingSlice1001289Counts.embeddingAuditedCaseCount =
+      closedCollarSimplePatchN6AnnularEmbeddingSlice1001289Counts.exactDiagonalTwoPoleTemplateBlockerCount ∧
+    closedCollarSimplePatchN6AnnularEmbeddingSlice1001289Counts.radialFaceCoherentRotationCount =
+      0
+
+theorem closedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSlice1001289ExactTemplateFirstBlockerEvidence :
+    ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSlice1001289ExactTemplateFirstBlockerEvidence := by
+  refine
+    ⟨closedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSlice1001289RadialFaceEvidence,
+      ?_, ?_, ?_, ?_, ?_, ?_⟩ <;>
+    decide
+
+def closedCollarSimplePatchN6AnnularEmbeddingSlice1001289Case0Template :
+    ClosedCollarAnnularEmbeddingSliceExactTemplateCase where
+  patchTopologyIndex := 1001293
+  radialOrderIndex := 0
+  template := ClosedCollarDiagonalTwoPoleTemplateId.reverse
+  exactTemplateKey := ClosedCollarDiagonalTwoPoleTemplateId.reverse.labKey
+  cutEdges := ["g0:F4F5", "g1:F1F0"]
+  sideCollarVertices := ["g0:F5", "g1:F1"]
+  sideVertices := ["N2", "N5", "g0:F5", "g1:F1"]
+  cutSize := 2
+  sideVertexCount := 4
+  otherSideVertexCount := 14
+
+def closedCollarSimplePatchN6AnnularEmbeddingSlice1001289Case1Template :
+    ClosedCollarAnnularEmbeddingSliceExactTemplateCase where
+  patchTopologyIndex := 1001293
+  radialOrderIndex := 1
+  template := ClosedCollarDiagonalTwoPoleTemplateId.reverse
+  exactTemplateKey := ClosedCollarDiagonalTwoPoleTemplateId.reverse.labKey
+  cutEdges := ["g0:F4F5", "g1:F1F0"]
+  sideCollarVertices := ["g0:F5", "g1:F1"]
+  sideVertices := ["N2", "N5", "g0:F5", "g1:F1"]
+  cutSize := 2
+  sideVertexCount := 4
+  otherSideVertexCount := 14
+
+/--
+Per-case template payload for the fourth bounded radial-face slice.  Both
+discovered cases are again the reverse exact diagonal two-pole template.
+-/
+def ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSlice1001289ReverseTemplatePayloadEvidence :
+    Prop :=
+  ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSlice1001289ExactTemplateFirstBlockerEvidence ∧
+    closedCollarSimplePatchN6AnnularEmbeddingSlice1001289Case0Template.patchTopologyIndex =
+      1001293 ∧
+    closedCollarSimplePatchN6AnnularEmbeddingSlice1001289Case0Template.radialOrderIndex =
+      0 ∧
+    closedCollarSimplePatchN6AnnularEmbeddingSlice1001289Case1Template.patchTopologyIndex =
+      1001293 ∧
+    closedCollarSimplePatchN6AnnularEmbeddingSlice1001289Case1Template.radialOrderIndex =
+      1 ∧
+    closedCollarSimplePatchN6AnnularEmbeddingSlice1001289Case0Template.template =
+      ClosedCollarDiagonalTwoPoleTemplateId.reverse ∧
+    closedCollarSimplePatchN6AnnularEmbeddingSlice1001289Case1Template.template =
+      ClosedCollarDiagonalTwoPoleTemplateId.reverse ∧
+    closedCollarSimplePatchN6AnnularEmbeddingSlice1001289Case0Template.exactTemplateKey =
+      ClosedCollarDiagonalTwoPoleTemplateId.reverse.labKey ∧
+    closedCollarSimplePatchN6AnnularEmbeddingSlice1001289Case1Template.exactTemplateKey =
+      ClosedCollarDiagonalTwoPoleTemplateId.reverse.labKey ∧
+    closedCollarSimplePatchN6AnnularEmbeddingSlice1001289Case0Template.cutEdges =
+      ClosedCollarDiagonalTwoPoleTemplateId.reverse.cutEdges ∧
+    closedCollarSimplePatchN6AnnularEmbeddingSlice1001289Case1Template.cutEdges =
+      ClosedCollarDiagonalTwoPoleTemplateId.reverse.cutEdges ∧
+    closedCollarSimplePatchN6AnnularEmbeddingSlice1001289Case0Template.sideCollarVertices =
+      ClosedCollarDiagonalTwoPoleTemplateId.reverse.sideCollarVertices ∧
+    closedCollarSimplePatchN6AnnularEmbeddingSlice1001289Case1Template.sideCollarVertices =
+      ClosedCollarDiagonalTwoPoleTemplateId.reverse.sideCollarVertices ∧
+    closedCollarSimplePatchN6AnnularEmbeddingSlice1001289Case0Template.sideVertices =
+      ["N2", "N5", "g0:F5", "g1:F1"] ∧
+    closedCollarSimplePatchN6AnnularEmbeddingSlice1001289Case1Template.sideVertices =
+      ["N2", "N5", "g0:F5", "g1:F1"] ∧
+    closedCollarSimplePatchN6AnnularEmbeddingSlice1001289Case0Template.cutSize =
+      2 ∧
+    closedCollarSimplePatchN6AnnularEmbeddingSlice1001289Case1Template.cutSize =
+      2 ∧
+    closedCollarSimplePatchN6AnnularEmbeddingSlice1001289Case0Template.sideVertexCount =
+      4 ∧
+    closedCollarSimplePatchN6AnnularEmbeddingSlice1001289Case1Template.sideVertexCount =
+      4 ∧
+    closedCollarSimplePatchN6AnnularEmbeddingSlice1001289Case0Template.otherSideVertexCount =
+      14 ∧
+    closedCollarSimplePatchN6AnnularEmbeddingSlice1001289Case1Template.otherSideVertexCount =
+      14
+
+theorem closedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSlice1001289ReverseTemplatePayloadEvidence :
+    ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSlice1001289ReverseTemplatePayloadEvidence := by
+  refine
+    ⟨closedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSlice1001289ExactTemplateFirstBlockerEvidence,
+      ?_⟩
+  decide
+
+def ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSlice1001289NormalFormForcesReverseTemplate :
+    Prop :=
+  ∀ {V : Type} {G : SimpleGraph V},
+    (data : ClosedCollarWindingFreedomSimplePatchN6NormalFormRepresentation G) →
+      (data.representation.patchTopologyIndex, data.representation.radialOrderIndex.1) ∈
+          closedCollarSimplePatchN6AnnularEmbeddingSlice1001289Cases →
+        ∃ candidate : ClosedCollarDiagonalTwoPoleTemplateCandidate G,
+          candidate.template = ClosedCollarDiagonalTwoPoleTemplateId.reverse ∧
+            candidate.Realizes
+
+def Section92Step4ReverseTemplateSlice1001289NormalFormObstructionTarget :
+    Prop :=
+  ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSlice1001289ReverseTemplatePayloadEvidence →
+    ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSlice1001289NormalFormForcesReverseTemplate →
+      ∀ {V : Type} {G : SimpleGraph V},
+        (data : ClosedCollarWindingFreedomSimplePatchN6NormalFormRepresentation G) →
+          (data.representation.patchTopologyIndex, data.representation.radialOrderIndex.1) ∈
+              closedCollarSimplePatchN6AnnularEmbeddingSlice1001289Cases →
+            False
+
+theorem section92Step4ReverseTemplateSlice1001289NormalFormObstructionTarget :
+    Section92Step4ReverseTemplateSlice1001289NormalFormObstructionTarget := by
+  intro _hevidence hforces V G data hcase
+  rcases hforces data hcase with ⟨candidate, _htemplate, hrealizes⟩
+  exact
+    closedCollarWindingFreedomNormalFormRealization_false_of_forcedTemplate
+      data.normalForm candidate hrealizes
+
+/-- Lab-side candidate for a radial-face coherent rotation in the fourth slice. -/
+structure ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSlice1001289RadialFaceRotationCandidate where
+  hrotationCountPositive :
+    0 <
+      closedCollarSimplePatchN6AnnularEmbeddingSlice1001289Counts.radialFaceCoherentRotationCount
+
+theorem closedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSlice1001289_noRadialFaceRotationCandidate
+    (candidate :
+      ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSlice1001289RadialFaceRotationCandidate) :
+    False := by
+  have hzero :
+      closedCollarSimplePatchN6AnnularEmbeddingSlice1001289Counts.radialFaceCoherentRotationCount =
+        0 := rfl
+  have hpos := candidate.hrotationCountPositive
+  omega
+
 /--
 Cumulative discovery evidence for the two consecutive bounded radial-face
 slices.  Four audited profile-preserving cases have been found, all four are
@@ -4382,6 +4620,61 @@ theorem closedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSlices1000000_100
     ⟨closedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSlices1000000_1000789ReverseTemplateDiscoveryEvidence,
       closedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSlice1000789NoProfilePreservingEvidence,
       ?_, ?_, ?_, ?_, ?_⟩ <;>
+    decide
+
+/--
+Cumulative bounded-slice evidence through topology index `1001293`.  Across
+the adjacent slices from `1000000`, the lab has processed `1294` patch
+topologies and `2588` radial-order cases, found six profile-preserving cases,
+and every audited case is either a reverse exact-template blocker or has no
+coherent radial-face rotation.
+-/
+def ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSlices1000000_1001294Evidence :
+    Prop :=
+  ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSlices1000000_1001289Evidence ∧
+    ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSlice1001289ReverseTemplatePayloadEvidence ∧
+    closedCollarSimplePatchN6AnnularEmbeddingSlice1000000Counts.processedPatchTopologyCount +
+        closedCollarSimplePatchN6AnnularEmbeddingSlice1000302Counts.processedPatchTopologyCount +
+          closedCollarSimplePatchN6AnnularEmbeddingSlice1000789Counts.processedPatchTopologyCount +
+            closedCollarSimplePatchN6AnnularEmbeddingSlice1001289Counts.processedPatchTopologyCount =
+      1294 ∧
+    closedCollarSimplePatchN6AnnularEmbeddingSlice1000000Counts.radialOrderCaseCount +
+        closedCollarSimplePatchN6AnnularEmbeddingSlice1000302Counts.radialOrderCaseCount +
+          closedCollarSimplePatchN6AnnularEmbeddingSlice1000789Counts.radialOrderCaseCount +
+            closedCollarSimplePatchN6AnnularEmbeddingSlice1001289Counts.radialOrderCaseCount =
+      2588 ∧
+    closedCollarSimplePatchN6AnnularEmbeddingSlice1000000Counts.profilePreservingCaseCount +
+        closedCollarSimplePatchN6AnnularEmbeddingSlice1000302Counts.profilePreservingCaseCount +
+          closedCollarSimplePatchN6AnnularEmbeddingSlice1000789Counts.profilePreservingCaseCount +
+            closedCollarSimplePatchN6AnnularEmbeddingSlice1001289Counts.profilePreservingCaseCount =
+      6 ∧
+    closedCollarSimplePatchN6AnnularEmbeddingSlice1000000Counts.embeddingAuditedCaseCount +
+        closedCollarSimplePatchN6AnnularEmbeddingSlice1000302Counts.embeddingAuditedCaseCount +
+          closedCollarSimplePatchN6AnnularEmbeddingSlice1000789Counts.embeddingAuditedCaseCount +
+            closedCollarSimplePatchN6AnnularEmbeddingSlice1001289Counts.embeddingAuditedCaseCount =
+      6 ∧
+    closedCollarSimplePatchN6AnnularEmbeddingSlice1000000Counts.planarRotationSystemCount +
+        closedCollarSimplePatchN6AnnularEmbeddingSlice1000302Counts.planarRotationSystemCount +
+          closedCollarSimplePatchN6AnnularEmbeddingSlice1000789Counts.planarRotationSystemCount +
+            closedCollarSimplePatchN6AnnularEmbeddingSlice1001289Counts.planarRotationSystemCount =
+      48 ∧
+    closedCollarSimplePatchN6AnnularEmbeddingSlice1000000Counts.radialFaceCoherentRotationCount +
+        closedCollarSimplePatchN6AnnularEmbeddingSlice1000302Counts.radialFaceCoherentRotationCount +
+          closedCollarSimplePatchN6AnnularEmbeddingSlice1000789Counts.radialFaceCoherentRotationCount +
+            closedCollarSimplePatchN6AnnularEmbeddingSlice1001289Counts.radialFaceCoherentRotationCount =
+      0 ∧
+    closedCollarSimplePatchN6AnnularEmbeddingSlice1000000Counts.exactDiagonalTwoPoleTemplateBlockerCount +
+        closedCollarSimplePatchN6AnnularEmbeddingSlice1000302Counts.exactDiagonalTwoPoleTemplateBlockerCount +
+          closedCollarSimplePatchN6AnnularEmbeddingSlice1000789Counts.exactDiagonalTwoPoleTemplateBlockerCount +
+            closedCollarSimplePatchN6AnnularEmbeddingSlice1001289Counts.exactDiagonalTwoPoleTemplateBlockerCount =
+      6
+
+theorem closedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSlices1000000_1001294Evidence :
+    ClosedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSlices1000000_1001294Evidence := by
+  refine
+    ⟨closedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSlices1000000_1001289Evidence,
+      closedCollarWindingFreedomSimplePatchN6AnnularEmbeddingSlice1001289ReverseTemplatePayloadEvidence,
+      ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩ <;>
     decide
 
 /--
